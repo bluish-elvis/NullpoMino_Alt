@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>Randomizer Rules Descriptions</comment>
+<entry key="MemorylessRandomizer">偏り補正を行いません。</entry>
+<entry key="BagRandomizer">7種全てのピース１個ずつでランダムに1巡を繰り返します。</entry>
+<entry key="BagNoSZORandomizer">1個ずつ全種ピースを1巡しますが、S/Z/O型のブロックは最初のブロックになりません。</entry>
+<entry key="BagBonusRandomizer">ランダムで1巡する中に、1個だけ何らかのピースが追加されます。</entry>
+<entry key="BagBonusBagRandomizer">ランダムで1巡する中に、1個だけ何らかのピースが追加されます。</entry>
+<entry key="BagDoublesRandomizer">2個ずつの全ピースをランダムに1巡します。</entry>
+<entry key="BagNonuplesRandomizer">9個ずつの全ピースをランダムに1巡します。</entry>
+<entry key="BagMinusRandomizer">ランダムで1巡しますが、その内から1種のピースが差し引かれます。</entry>
+<entry key="BagMinusTwoRandomizer">ランダムで1巡しますが、その内から2種のピースが差し引かれます。</entry>
+<entry key="History4RollsRandomizer">直近4個までと同じピースは4回再抽選されます。</entry>
+<entry key="History6RollsRandomizer">直近4個までと同じピースは6回再抽選されます。</entry>
+<entry key="StrictHistoryRandomizer">直近4個までと同じピースは重複出現しなくなります。</entry>
+<entry key="NintendoRandomizer">２連続で同じピースが出なくなります。</entry>
+<entry key="GameBoyRandomizer">抽選されるピース種類の範囲がある程度変動します。</entry>
+<entry key="DistanceLinearWeightRandomizer">出現していないピースの出現率が少しずつ増していきます。</entry>
+<entry key="DistanceQuadWeightRandomizer">出現していないピースの出現率が加速度的に増していきます。</entry>
+<entry key="DistanceExpWeightRandomizer">出現していないピースの出現率が途中で一気に増していきます。</entry>
+<entry key="FixedSequenceRandomizer">sequence.txtで設定された順序で完全に固定されます。</entry>
+
+</properties>

@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>NetLobby language file - Japanese</comment>
+
+<!--Title-->
+<entry key="Title_NetLobby">NullpoMino NetLobby</entry>
+
+<!--MessageBoxes-->
+<entry key="MessageBody_ServerDelete">以下のサーバーをリストから消去しますか？</entry>
+<entry key="MessageTitle_ServerDelete">サーバーを消す</entry>
+<entry key="MessageBody_SetObserver">以下のサーバーで監視機能を有効にしますか？\n監視機能を有効にすると1人プレイ画面でも画面下にプレイヤー数が出るようになります。\n一度に一つのサーバーしか監視できません(前のサーバーの監視は解除されます)</entry>
+<entry key="MessageTitle_SetObserver">監視設定</entry>
+<entry key="MessageBody_UnsetObserver">監視機能を無効にしますか？\n(現在監視しているサーバーは %s:%d)</entry>
+<entry key="MessageTitle_UnsetObserver">監視解除</entry>
+
+<!--Server select screen elements-->
+<entry key="ServerSelect_LabelName">ニックネーム(#トリップ):</entry>
+<entry key="ServerSelect_LabelTeam">チーム名(空なら無所属):</entry>
+<entry key="ServerSelect_ServerAdd">追加(A)...</entry>
+<entry key="ServerSelect_ServerDelete">消去(D)...</entry>
+<entry key="ServerSelect_SetObserver">監視(S)...</entry>
+<entry key="ServerSelect_UnsetObserver">監視解除(U)...</entry>
+<entry key="ServerSelect_Connect">接続(C)</entry>
+<entry key="ServerSelect_Exit">終了(X)</entry>
+
+<!--Lobby menu elements-->
+<entry key="Lobby_Menu">メニュー(M)</entry>
+<entry key="Lobby_Menu_CreateGame">ルーム作成</entry>
+<entry key="Lobby_Menu_QuickStart">クイックスタート(Q)</entry>
+<entry key="Lobby_Menu_RoomCreate">マルチプレイヤー</entry>
+<entry key="Lobby_Menu_RoomCreate1P">シングルプレイヤー</entry>
+
+<!--Lobby screen elements-->
+<entry key="Lobby_Tab_Lobby">ロビー(Y)</entry>
+<entry key="Lobby_Tab_NoRoom">(ルームなし)</entry>
+<entry key="Lobby_Tab_Room">ルーム(R):</entry>
+<entry key="Lobby_QuickStart">クイックスタート(Q)</entry>
+<entry key="Lobby_QuickStart_Tip">Coming soon?</entry>
+<entry key="Lobby_RoomCreate">ルーム作成(N)...</entry>
+<entry key="Lobby_RoomCreate_Tip">対戦用ルームを作成します</entry>
+<entry key="Lobby_RoomCreate1P">1人プレイ...</entry>
+<entry key="Lobby_RoomCreate1P_Tip">1人プレイ用ルームを作成します</entry>
+<entry key="Lobby_Options">オプション(O)...</entry>
+<entry key="Lobby_Options_Tip">他のコマンドはこの中にあります</entry>
+<entry key="Lobby_RuleChange">ルール(R)...</entry>
+<entry key="Lobby_RuleChange_Tip">使用するルールを変更します</entry>
+<entry key="Lobby_TeamChange">チーム(T)...</entry>
+<entry key="Lobby_TeamChange_Tip">所属するチームを変更します</entry>
+<entry key="Lobby_Ranking">ランキング(K)...</entry>
+<entry key="Lobby_Ranking_Tip">対戦モードのレートランキングを確認できます</entry>
+<entry key="Lobby_Disconnect">ログアウト(L)</entry>
+<entry key="Lobby_Disconnect_Tip">サーバーとの接続を切断して、サーバー選択画面に戻ります</entry>
+<entry key="Lobby_ChatSend">送信(S)</entry>
+<entry key="Lobby_TeamChange_OK">OK</entry>
+<entry key="Lobby_TeamChange_Cancel">キャンセル(C)</entry>
+
+<!--RoomTable column names-->
+<entry key="RoomTable_ID">ID</entry>
+<entry key="RoomTable_Name">名前</entry>
+<entry key="RoomTable_Rated">レート</entry>
+<entry key="RoomTable_RuleName">ルール</entry>
+<entry key="RoomTable_ModeName">モード</entry>
+<entry key="RoomTable_Status">状態</entry>
+<entry key="RoomTable_Players">参加者数</entry>
+<entry key="RoomTable_Spectators">観戦者数</entry>
+
+<!--RoomTable status names-->
+<entry key="RoomTable_Rated_True">あり</entry>
+<entry key="RoomTable_Rated_False">なし</entry>
+<entry key="RoomTable_RuleName_Any">*自由*</entry>
+<entry key="RoomTable_Status_Playing">ゲーム中</entry>
+<entry key="RoomTable_Status_Waiting">待機中</entry>
+
+<!--Room screen elements-->
+<entry key="Room_Leave">退出(L)</entry>
+<entry key="Room_Leave_Tip">このルームを出ます</entry>
+<entry key="Room_Join">参戦(J)</entry>
+<entry key="Room_Join_Tip">ゲームに参加します</entry>
+<entry key="Room_SitOut">観戦(W)</entry>
+<entry key="Room_SitOut_Tip">観戦モードに移行します</entry>
+<entry key="Room_TeamChange">チーム(T)...</entry>
+<entry key="Room_TeamChange_Tip">所属するチームを変更します</entry>
+<entry key="Room_ViewSetting">設定確認(V)...</entry>
+<entry key="Room_ViewSetting_Tip">このルームの設定を確認します</entry>
+<entry key="Room_Ranking">ランキング(K)...</entry>
+<entry key="Room_Ranking_Tip">対戦モードのレートランキングを確認できます</entry>
+<entry key="Room_ChatSend">送信(S)</entry>
+<entry key="Room_TeamChange_OK">OK</entry>
+<entry key="Room_TeamChange_Cancel">キャンセル(C)</entry>
+
+<!--StatTable column names-->
+<entry key="StatTable_Rank">\#</entry>
+<entry key="StatTable_Name">名前</entry>
+<entry key="StatTable_Attack">攻撃数</entry>
+<entry key="StatTable_APL">APL</entry>
+<entry key="StatTable_APM">APM</entry>
+<entry key="StatTable_Lines">消去数</entry>
+<entry key="StatTable_LPM">LPM</entry>
+<entry key="StatTable_Piece">ピース数</entry>
+<entry key="StatTable_PPS">PPS</entry>
+<entry key="StatTable_Time">時間</entry>
+<entry key="StatTable_KO">KO</entry>
+<entry key="StatTable_Wins">勝利数</entry>
+<entry key="StatTable_Games">試合数</entry>
+
+<!--StatTable1P column names-->
+<entry key="StatTable1P_Description">説明</entry>
+<entry key="StatTable1P_Value">値</entry>
+
+<!--RoomUserList status name-->
+<entry key="RoomUserList_Playing"> <ゲーム中></entry>
+<entry key="RoomUserList_Ready"> <準備完了></entry>
+
+<!--Server Add screen elements-->
+<entry key="ServerAdd_Host">ホスト名またはIPアドレス:ポート番号</entry>
+<entry key="ServerAdd_OK">OK</entry>
+<entry key="ServerAdd_Cancel">キャンセル(C)</entry>
+
+<!--Create Room Waiting screen elements-->
+<entry key="CreateRoom_Waiting_Text">サーバーからプリセット情報を受信中です。しばらくお待ちください...</entry>
+<entry key="CreateRoom_Waiting_Cancel">キャンセル(C)</entry>
+<entry key="CreateRated_Name">ルーム名:</entry>
+<entry key="CreateRated_Preset">プリセット:</entry>
+<entry key="CreateRated_MaxPlayers">最大人数 (2-6):</entry>
+<entry key="CreateRated_OK">OK</entry>
+<entry key="CreateRated_Custom">カスタム(U)...</entry>
+<entry key="CreateRated_Cancel">キャンセル(C)</entry>
+<entry key="CreateRated_Name_Tip">ここで入力したルーム名がロビー画面やルーム画面で表示されます</entry>
+<entry key="CreateRated_Preset_Tip">使用するプリセットを選択します</entry>
+<entry key="CreateRated_MaxPlayers_Tip">このルームでの最大プレイ人数を選択します</entry>
+
+<!--Create Room screen elements-->
+<entry key="CreateRoom_Tab_Main">全般</entry>
+<entry key="CreateRoom_Tab_Speed">速度</entry>
+<entry key="CreateRoom_Tab_Bonus">ボーナス</entry>
+<entry key="CreateRoom_Tab_Garbage">邪魔ブロック</entry>
+<entry key="CreateRoom_Tab_Misc">自動スタート</entry>
+<entry key="CreateRoom_Tab_RatedRule">ルール</entry>
+<entry key="CreateRoom_Tab_Preset">プリセット</entry>
+<entry key="CreateRoom_Name">ルーム名:</entry>
+<entry key="CreateRoom_Mode">モード:</entry>
+<entry key="CreateRoom_MaxPlayers">最大人数 (2-6):</entry>
+<entry key="CreateRoom_AutoStartSeconds">自動開始するまでの秒数(1-999秒、0で無効)</entry>
+<entry key="CreateRoom_Gravity">落下速度・分子(GRAVITY):</entry>
+<entry key="CreateRoom_Denominator">落下速度・分母(G-MAX):</entry>
+<entry key="CreateRoom_ARE">出現時間(ARE):</entry>
+<entry key="CreateRoom_ARELine">ライン消去後の出現時間(ARE LINE):</entry>
+<entry key="CreateRoom_LineDelay">ライン消去時間(LINE DELAY):</entry>
+<entry key="CreateRoom_LockDelay">固定時間(LOCK DELAY):</entry>
+<entry key="CreateRoom_DAS">横溜め時間(DAS):</entry>
+<entry key="CreateRoom_HurryupSeconds">HURRY UP開始までの秒数(0-999秒, -1で無効):</entry>
+<entry key="CreateRoom_HurryupInterval">HURRY UP後、床を上げる間隔(1-99):</entry>
+<entry key="CreateRoom_MapSetID">マップセットID (0-99):</entry>
+<entry key="CreateRoom_GarbagePercent">邪魔ブロックの穴の位置が変わる確率 (0-100):</entry>
+<entry key="CreateRoom_TargetTimer">ターゲットの移動間隔 (0-3600):</entry>
+<entry key="CreateRoom_UseMap">マップ有効(P)</entry>
+<entry key="CreateRoom_RuleLock">全員のルールを自分と同じものに固定(L)</entry>
+<entry key="CreateRoom_TSpinEnableType">スピンボーナス</entry>
+<entry key="CreateRoom_TSpin_Disable">なし</entry>
+<entry key="CreateRoom_TSpin_TOnly">Ｔ字のみ有効</entry>
+<entry key="CreateRoom_TSpin_All">全ピース有効</entry>
+<entry key="CreateRoom_SpinCheckType">スピン判定タイプ</entry>
+<entry key="CreateRoom_SpinCheck_4Point">4-Point (3-Corner T)</entry>
+<entry key="CreateRoom_SpinCheck_Immobile">Immobile</entry>
+<entry key="CreateRoom_TSpinEnableEZ">"Immobile"スピン判定でEZスピンを有効にする</entry>
+<entry key="CreateRoom_B2B">Back to Back有効(B2B)</entry>
+<entry key="CreateRoom_Combo">コンボ有効(M)</entry>
+<entry key="CreateRoom_RensaBlock">ライン消去でせり上がり抑制</entry>
+<entry key="CreateRoom_Counter">相殺</entry>
+<entry key="CreateRoom_Bravo">全消しボーナス</entry>
+<entry key="CreateRoom_ReduceLineSend">3人以上の対戦では攻撃力を減らす(R)</entry>
+<entry key="CreateRoom_GarbageChangePerAttack">1回の攻撃ごとに邪魔ブロックの穴の位置を変える(G)</entry>
+<entry key="CreateRoom_DivideChangeRateByPlayers">穴の位置が変わる確率をプレイヤー数で変動させる</entry>
+<entry key="CreateRoom_B2BChunk">B2Bで穴の位置を変える</entry>
+<entry key="CreateRoom_UseFractionalGarbage">断片的邪魔ブロックシステムを使う(F)</entry>
+<entry key="CreateRoom_IsTarget">ターゲットシステムを使う(T)</entry>
+<entry key="CreateRoom_AutoStartTNET2">TNET2型の自動スタートタイマーを使う(A)</entry>
+<entry key="CreateRoom_DisableTimerAfterSomeoneCancelled">誰かがキャンセルしたらタイマー無効化(D)</entry>
+<entry key="CreateRoom_YourRule">(今使用中のルール - レート変動なし)</entry>
+<entry key="CreateRoom_PresetID">プリセット番号:</entry>
+<entry key="CreateRoom_PresetSave">保存(S)</entry>
+<entry key="CreateRoom_PresetLoad">読み込み(L)</entry>
+<entry key="CreateRoom_PresetCode">プリセットコード:</entry>
+<entry key="CreateRoom_PresetCodeExport">プリセットコードに設定をエクスポート(E)</entry>
+<entry key="CreateRoom_PresetCodeImport">プリセットコードから設定をインポート(I)</entry>
+<entry key="CreateRoom_OK">OK</entry>
+<entry key="CreateRoom_Join">参戦(J)</entry>
+<entry key="CreateRoom_Watch">観戦(W)</entry>
+<entry key="CreateRoom_Cancel">キャンセル(C)</entry>
+<entry key="CreateRoom_Name_Tip">ここで入力したルーム名がロビー画面やルーム画面で表示されます</entry>
+<entry key="CreateRoom_Mode_Tip">このルームで使うゲームモードを選択します</entry>
+<entry key="CreateRoom_MaxPlayers_Tip">このルームでの最大プレイ人数を選択します</entry>
+<entry key="CreateRoom_AutoStartSeconds_Tip">半分以上のプレイヤーがOK表示を出したあと、この秒数が経過すると自動的にゲームが始まります</entry>
+<entry key="CreateRoom_HurryupSeconds_Tip">この秒数が経過するとHurry Upが発生します</entry>
+<entry key="CreateRoom_HurryupInterval_Tip">Hurry Up後にこの回数ブロックを置くと床が1ライン上がります</entry>
+<entry key="CreateRoom_TSpinEnableType_Tip">スピンボーナスの種類を選択します</entry>
+<entry key="CreateRoom_SpinCheckType_Tip">使用するスピン判定を選択します。"4-Point"はピースの四隅にブロックが3つ以上あればスピン成功、"Immobile"は全く動けない位置にピースがはまればスピン成功と見なされます</entry>
+<entry key="CreateRoom_MapSetID_Tip">使用するマップセット番号を選択します(下のマップ有効がONの場合のみ)</entry>
+<entry key="CreateRoom_GarbagePercent_Tip">どれぐらいの確率で邪魔ブロックの穴の位置が変わるかを設定します</entry>
+<entry key="CreateRoom_TargetTimer_Tip">どれぐらいの間隔でターゲットカーソルが移動するかを設定します。「ターゲットシステムを使う」がONになっている場合のみ使われます。</entry>
+<entry key="CreateRoom_UseMap_Tip">一定のパターンでブロックが置かれた状態でゲームが始まります</entry>
+<entry key="CreateRoom_RuleLock_Tip">全員のルールを自分が使用しているものと同じものに固定します</entry>
+<entry key="CreateRoom_TSpinEnableEZ_Tip">"Immobile"スピン判定を使用しているときにEZスピンが有効になります</entry>
+<entry key="CreateRoom_B2B_Tip">連続4ライン消しまたはスピン消しをすると1ライン余分に送ることができます</entry>
+<entry key="CreateRoom_Combo_Tip">連続でラインを消す(コンボ)と攻撃力が上がります</entry>
+<entry key="CreateRoom_RensaBlock_Tip">ラインを消している間は邪魔ブロックがせり上がらなくなります</entry>
+<entry key="CreateRoom_Counter_Tip">せり上がる前の邪魔ブロックをこちらの攻撃で相殺できます</entry>
+<entry key="CreateRoom_Bravo_Tip">全消しすると大量の邪魔ブロックを送れます</entry>
+<entry key="CreateRoom_ReduceLineSend_Tip">3人以上の対戦で全員の攻撃力が減少します</entry>
+<entry key="CreateRoom_GarbageChangePerAttack_Tip">1回の攻撃では邪魔ブロックの穴の位置が必ず一直線になるようになります</entry>
+<entry key="CreateRoom_DivideChangeRateByPlayers_Tip">邪魔ブロックの穴の位置が敵プレイヤーの数に応じて自動的に変動します</entry>
+<entry key="CreateRoom_B2BChunk_Tip">B2Bで余分に送られた邪魔ブロックの穴の位置が変わるようになります</entry>
+<entry key="CreateRoom_UseFractionalGarbage_Tip">3人以上の対戦で小数点以下の攻撃が発生するようになります</entry>
+<entry key="CreateRoom_IsTarget_Tip">ターゲットのプレイヤーにだけ邪魔ブロックが送られます</entry>
+<entry key="CreateRoom_AutoStartTNET2_Tip">時間内にOK表示を出さなかったプレイヤー全員が自動的に観戦モードに移ります</entry>
+<entry key="CreateRoom_DisableTimerAfterSomeoneCancelled_Tip">誰かがOK表示を取り消すと次の対戦まで自動スタートタイマーが無効になります</entry>
+
+<!--Create Room 1P screen elements-->
+<entry key="CreateRoom1P_Mode_Label">ゲームモード:</entry>
+<entry key="CreateRoom1P_Rule_Label">ルール:</entry>
+<entry key="CreateRoom1P_YourRule">(今使用中のルール)</entry>
+<entry key="CreateRoom1P_OK">OK</entry>
+<entry key="CreateRoom1P_OK_Watch">観戦(W)</entry>
+<entry key="CreateRoom1P_Cancel">キャンセル(C)</entry>
+
+<!--MPRanking screen elements-->
+<entry key="MPRanking_Rank">\#</entry>
+<entry key="MPRanking_Name">名前</entry>
+<entry key="MPRanking_Rating">レート</entry>
+<entry key="MPRanking_PlayCount">試合数</entry>
+<entry key="MPRanking_WinCount">勝利数</entry>
+<entry key="MPRanking_OK">OK</entry>
+
+<!--Rule change screen elements-->
+<entry key="RuleChange_Tab_Tuning">チューニング</entry>
+<entry key="RuleChange_OK">OK</entry>
+<entry key="RuleChange_Cancel">キャンセル(C)</entry>
+
+<!--Game Tuning-->
+<entry key="GameTuning_ComboboxGeneric_Auto">自動</entry>
+<entry key="GameTuning_ComboboxGeneric_Disable">常に無効</entry>
+<entry key="GameTuning_ComboboxGeneric_Enable">常に有効</entry>
+<entry key="GameTuning_RotateButtonDefaultRight_Label">Aボタンの回転方向</entry>
+<entry key="GameTuning_RotateButtonDefaultRight_Auto">自動 (ルールに従う)</entry>
+<entry key="GameTuning_RotateButtonDefaultRight_Left">左 (反時計回り)</entry>
+<entry key="GameTuning_RotateButtonDefaultRight_Right">右 (時計回り)</entry>
+<entry key="GameTuning_MoveDiagonal_Label">斜め移動</entry>
+<entry key="GameTuning_BlockShowOutlineOnly_Label">ブロック枠線だけ表示</entry>
+<entry key="GameTuning_Skin_Label">ブロックの絵柄</entry>
+<entry key="GameTuning_Skin_Auto">自動 (ルールに従う)</entry>
+<entry key="GameTuning_OutlineType_Label">ブロック枠線</entry>
+<entry key="GameTuning_OutlineType_Auto">自動 (モードに従う)</entry>
+<entry key="GameTuning_OutlineType_None">なし</entry>
+<entry key="GameTuning_OutlineType_Normal">通常</entry>
+<entry key="GameTuning_OutlineType_Connect">繋がり表示</entry>
+<entry key="GameTuning_OutlineType_SameColor">色でくっつく</entry>
+<entry key="GameTuning_MinDAS_Label">最低DAS (-1で自動)</entry>
+<entry key="GameTuning_MaxDAS_Label">最高DAS (-1で自動)</entry>
+<entry key="GameTuning_DasDelay_Label">横移動間隔 (-1で自動)</entry>
+<entry key="GameTuning_ReverseUpDown_Label">上ボタンと下ボタンの役割を反転させる</entry>
+
+<!--Popup Menu-->
+<entry key="Popup_Cut">切り取り</entry>
+<entry key="Popup_Copy">コピー</entry>
+<entry key="Popup_Paste">貼り付け</entry>
+<entry key="Popup_Delete">消去</entry>
+<entry key="Popup_SelectAll">すべて選択</entry>
+<entry key="Popup_Clear">ログ消去</entry>
+<entry key="Popup_RoomTable_Join">参戦</entry>
+<entry key="Popup_RoomTable_Watch">観戦</entry>
+<entry key="Popup_RoomTable_Detail">詳細</entry>
+<entry key="Popup_ServerSelect_Connect">接続</entry>
+<entry key="Popup_ServerSelect_Delete">削除...</entry>
+<entry key="Popup_ServerSelect_SetObserver">監視...</entry>
+
+<!--System Messages-->
+<entry key="SysMsg_ServerConnected">*** %s:%dに接続しました</entry>
+<entry key="SysMsg_ServerVersion">*** サーバーバージョン:</entry>
+<entry key="SysMsg_NumberOfPlayers">*** 今のプレイヤー数:</entry>
+<entry key="SysMsg_LoginOK">*** ログイン成功</entry>
+<entry key="SysMsg_YourNickname">*** あなたのニックネーム:</entry>
+<entry key="SysMsg_YourUID">*** あなたのユーザー番号:</entry>
+<entry key="SysMsg_LoginFail">*** ログインに失敗しました 原因:</entry>
+<entry key="SysMsg_LoginFailDifferentVersion">*** サーバーとバージョンが違うため接続できませんでした(クライアント:%s, サーバー:%s)</entry>
+<entry key="SysMsg_LoginFailDifferentBuild">*** サーバーとビルドタイプが異なるため接続できませんでした(クライアント:%s, サーバー:%s)</entry>
+<entry key="SysMsg_Banned">*** あなたはアク禁になりました(期間:%s～%s)</entry>
+<entry key="SysMsg_Banned_Permanent">無期限</entry>
+<entry key="SysMsg_EnterRoom">*** %sさんが入室しました</entry>
+<entry key="SysMsg_LeaveRoom">*** %sさんが退出しました</entry>
+<entry key="SysMsg_EnterRoomWithHost">*** %s {%s} さんが入室しました</entry>
+<entry key="SysMsg_LeaveRoomWithHost">*** %s {%s} さんが退出しました</entry>
+<entry key="SysMsg_RoomJoinFail">*** 指定されたルームはすでに存在しませんでした</entry>
+<entry key="SysMsg_RoomJoin_Title">*** 現在のルーム名:</entry>
+<entry key="SysMsg_RoomJoin_ID">*** 現在のルームID:</entry>
+<entry key="SysMsg_RoomJoin_Rule">*** ルール:</entry>
+<entry key="SysMsg_RoomJoin_Lobby">*** ロビーに戻りました</entry>
+<entry key="SysMsg_StatusChange_Spectator">*** %sさんは観戦モードです</entry>
+<entry key="SysMsg_StatusChange_Queue">*** %sさんは順番待ち中です</entry>
+<entry key="SysMsg_StatusChange_Joined">*** %sさんは参戦中です</entry>
+<entry key="SysMsg_DisconnectedOK">*** 切断されました</entry>
+<entry key="SysMsg_DisconnectedError">*** 切断されました</entry>
+<entry key="SysMsg_GameStart">*** ゲーム開始</entry>
+<entry key="SysMsg_GameEnd">*** ゲーム終了</entry>
+<entry key="SysMsg_Winner">*** %sさんが勝利しました</entry>
+<entry key="SysMsg_WinnerTeam">*** チーム"%s"が勝利しました</entry>
+<entry key="SysMsg_SendRuleDataStart">*** ルールデータ送信中...</entry>
+<entry key="SysMsg_SendRuleDataOK">*** ルールデータ送信完了</entry>
+<entry key="SysMsg_AutoStartBegin">*** あと%s秒以内にゲームが始まります</entry>
+<entry key="SysMsg_ChangeTeam">*** %sさんが所属チームを"%s"に変更しました</entry>
+<entry key="SysMsg_ChangeTeam_None">*** %sさんがチームから外れました</entry>
+<entry key="SysMsg_RoomCreateMapReady">*** マップデータ送信中...</entry>
+<entry key="SysMsg_KO">*** %sさんが%sさんをKOしました</entry>
+<entry key="SysMsg_Rating">*** %sさんのレーティング: %d (%+d)</entry>
+<entry key="SysMsg_Kicked_0">*** ルーム "%s" (ID:%s) は管理者によって強制的に削除されました</entry>
+<entry key="SysMsg_ReplaySaved">*** replay/netreplay.repにリプレイをダウンロードしました</entry>
+
+<!--TripSeparator-->
+<entry key="TripSeparator_EnableConvert">true</entry>
+<entry key="TripSeparator_True">◆</entry>
+<entry key="TripSeparator_False">◇</entry>
+</properties>

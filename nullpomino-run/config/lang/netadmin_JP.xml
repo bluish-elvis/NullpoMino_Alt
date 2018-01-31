@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>NetAdmin language file - Japanese</comment>
+
+<!--Title-->
+<entry key="Title_ServerAdmin">NullpoMino NetAdmin</entry>
+
+<!--Console-->
+<entry key="Console_LoginOK">%s:%dにログインしました。\nコマンド一覧を表示するには'help'と入力してください。</entry>
+<entry key="Console_UnknownCommand">不明なコマンドです: %s\nコマンド一覧を表示するには'help'と入力してください。</entry>
+<entry key="Console_Help_Error">ヘルプファイルの読み込みに失敗しました(%s)</entry>
+<entry key="Console_Logout">ログアウトしました。</entry>
+<entry key="Console_Shutdown">サーバーにシャットダウンコマンドを送信しています...</entry>
+<entry key="Console_Ban_InvalidLength">%sは有効な規制期間ではありません(有効範囲:-1～6)</entry>
+<entry key="Console_Ban_NoParams">規制するIPアドレスが指定されていません。\nUsage: ban <IP> (規制期間;-1～6)</entry>
+<entry key="Console_Ban_Result">[ban] IP:%s, 規制期間:%s, 今切断した接続数:%s</entry>
+<entry key="Console_BanList_Result">IP:%s, 規制期間:%s, 追加日:%s</entry>
+<entry key="Console_BanList_Result_None">アクセス規制は今のところありません。</entry>
+<entry key="Console_UnBan_NoParams">解除するIPアドレスが指定されていません。\nUsage: unban <IP>\n全てのアクセス規制を解除するには'unban ALL'と入力してください。</entry>
+<entry key="Console_UnBan_Result">[unban] IP:%s, 解除数:%s</entry>
+<entry key="Console_PlayerDelete_NoParams">プレイヤーの名前が指定されていません。\nUsage: playerdelete <プレイヤーの名前></entry>
+<entry key="Console_PlayerDelete_Result">[playerdelete] %sのデータを削除しました。</entry>
+<entry key="Console_Announce">管理人メッセージを送信しました:</entry>
+<entry key="Console_RoomDelete_NoParams">ルームIDが指定されていません。\nUsage: roomdelete <RoomID></entry>
+<entry key="Console_RoomDelete_OK">[roomdelete] ルームを削除しました。ID:%s ルーム名:%s</entry>
+<entry key="Console_RoomDelete_NG">[roomdelete] ID:%sのルームは存在しませんでした。</entry>
+
+<!--Messages-->
+<entry key="Title_ConfirmKick">切断</entry>
+<entry key="Message_ConfirmKick">以下のIPを切断します。よろしいですか？</entry>
+<entry key="Title_ConfirmBan">アクセス規制</entry>
+<entry key="Message_ConfirmBan">以下のIPを次の期間でアクセス規制します:%s</entry>
+
+<!--Ban types-->
+<entry key="BanType-1">切断のみ</entry>
+<entry key="BanType0">1時間</entry>
+<entry key="BanType1">6時間</entry>
+<entry key="BanType2">24時間</entry>
+<entry key="BanType3">1週間</entry>
+<entry key="BanType4">1ヶ月</entry>
+<entry key="BanType5">1年</entry>
+<entry key="BanType6">無期限</entry>
+
+<!--Ban dialog elements-->
+<entry key="Title_BanDialog">アクセス規制</entry>
+<entry key="Ban_IP">IP</entry>
+<entry key="Ban_Length">期間</entry>
+<entry key="Ban_Length_Tip">アクセス規制の期間を選択します。この期間が過ぎると自動解除です。「切断のみ」の場合は規制の追加はしません。</entry>
+<entry key="Ban_Confirm">OK</entry>
+<entry key="Ban_Cancel">キャンセル(C)</entry>
+
+<!--Login screen elements-->
+<entry key="Login_Server">サーバー:ポート</entry>
+<entry key="Login_Username">ユーザー名</entry>
+<entry key="Login_Password">パスワード</entry>
+<entry key="Login_RememberUsername">ユーザー名を記憶する</entry>
+<entry key="Login_RememberPassword">パスワードを記憶する</entry>
+<entry key="Login_Login">ログイン(L)</entry>
+<entry key="Login_Quit">終了(Q)</entry>
+
+<!--Lobby screen elements-->
+<entry key="Lobby_Tab_Console">コンソール</entry>
+<entry key="Lobby_Tab_Users">ユーザー</entry>
+<entry key="Lobby_Tab_MPRanking">ランキング</entry>
+<entry key="Lobby_Tab_RoomList">ルーム</entry>
+<entry key="Lobby_Console_Execute">実行(E)</entry>
+
+<!--UserTable column names-->
+<entry key="UserTable_IP">IP</entry>
+<entry key="UserTable_Hostname">ホスト名</entry>
+<entry key="UserTable_Type">種類</entry>
+<entry key="UserTable_Name">名前</entry>
+
+<!--UserTable user types-->
+<entry key="UserTable_Type_Guest">ゲスト</entry>
+<entry key="UserTable_Type_Player">プレイヤー</entry>
+<entry key="UserTable_Type_Observer">監視者</entry>
+<entry key="UserTable_Type_Admin">管理者</entry>
+
+<!--MPRanking column names-->
+<entry key="MPRanking_Rank">\#</entry>
+<entry key="MPRanking_Name">名前</entry>
+<entry key="MPRanking_Rating">レート</entry>
+<entry key="MPRanking_PlayCount">試合数</entry>
+<entry key="MPRanking_WinCount">勝利数</entry>
+<entry key="MPRanking_Button_LoadRanking">ランキングを読み込み/最新に更新(L)</entry>
+
+<!--RoomTable column names-->
+<entry key="RoomTable_ID">ID</entry>
+<entry key="RoomTable_Name">名前</entry>
+<entry key="RoomTable_Rated">レート</entry>
+<entry key="RoomTable_RuleName">ルール</entry>
+<entry key="RoomTable_Status">状態</entry>
+<entry key="RoomTable_Players">参加者数</entry>
+<entry key="RoomTable_Spectators">観戦者数</entry>
+
+<!--RoomTable status names-->
+<entry key="RoomTable_Rated_True">あり</entry>
+<entry key="RoomTable_Rated_False">なし</entry>
+<entry key="RoomTable_RuleName_Any">*自由*</entry>
+<entry key="RoomTable_Status_Playing">ゲーム中</entry>
+<entry key="RoomTable_Status_Waiting">待機中</entry>
+
+<!--Login messages-->
+<entry key="Login_Message_Default">必要事項を記入して「ログイン」ボタンをクリックしてください。</entry>
+<entry key="Login_Message_Connecting">接続中...</entry>
+<entry key="Login_Message_LoggingIn">ログイン中...</entry>
+<entry key="Login_Message_VersionError">サーバーのバージョンが違います(クライアント:%f, サーバー:%f)</entry>
+<entry key="Login_Message_BuildTypeError">サーバーとビルドタイプが異なります(クライアント:%s, サーバー:%s)</entry>
+<entry key="Login_Message_DisabledError">このサーバーでは管理機能が無効に設定されています。</entry>
+<entry key="Login_Message_LoginError">ログインに失敗しました。ユーザー名かパスワードを確認してください。</entry>
+<entry key="Login_Message_Banned">あなたはアク禁になりました(期間:%s～%s)</entry>
+<entry key="Login_Message_Banned_Permanent">無期限</entry>
+<entry key="Login_Message_UnwantedDisconnect">切断されました (%s)</entry>
+<entry key="Login_Message_LoggingOut">サーバーから正常にログアウトしました。</entry>
+<entry key="Login_Message_Shutdown">サーバーのシャットダウンが完了しました。</entry>
+
+<!--Popup Menu-->
+<entry key="Popup_Cut">切り取り</entry>
+<entry key="Popup_Copy">コピー</entry>
+<entry key="Popup_Paste">貼り付け</entry>
+<entry key="Popup_Delete">削除</entry>
+<entry key="Popup_SelectAll">すべて選択</entry>
+<entry key="Popup_Clear">ログ消去</entry>
+<entry key="Popup_Kick">切断...</entry>
+<entry key="Popup_Ban">規制...</entry>
+</properties>

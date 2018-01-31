@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>NetLobby language file - Default English</comment>
+
+<!--Title-->
+<entry key="Title_NetLobby">NullpoMino NetLobby</entry>
+
+<!--MessageBoxes-->
+<entry key="MessageBody_ServerDelete">Do you really want to delete the following server from the list?</entry>
+<entry key="MessageTitle_ServerDelete">Delete Server</entry>
+<entry key="MessageBody_SetObserver">Do you want to enable the watch feature for the following server?\nThe watch feature displays the current number of players on the bottom of the screen.\nOnly one server can be watched at a time.</entry>
+<entry key="MessageTitle_SetObserver">Enable Watch</entry>
+<entry key="MessageBody_UnsetObserver">Disable watch feature?\n(Currently watching %s:%d)</entry>
+<entry key="MessageTitle_UnsetObserver">Disable Watch</entry>
+
+<!--Server select screen elements-->
+<entry key="ServerSelect_LabelName">Nickname (#Tripcode)</entry>
+<entry key="ServerSelect_LabelTeam">Team (blank for none)</entry>
+<entry key="ServerSelect_ServerAdd">Add...</entry>
+<entry key="ServerSelect_ServerDelete">Delete...</entry>
+<entry key="ServerSelect_SetObserver">Set to watch...</entry>
+<entry key="ServerSelect_UnsetObserver">Unset watch...</entry>
+<entry key="ServerSelect_Connect">Connect</entry>
+<entry key="ServerSelect_Exit">Exit</entry>
+
+<!--Lobby menu elements-->
+<entry key="Lobby_Menu">Menu</entry>
+<entry key="Lobby_Menu_CreateGame">Create game...</entry>
+<entry key="Lobby_Menu_QuickStart">Quick Start</entry>
+<entry key="Lobby_Menu_RoomCreate">Multiplayer</entry>
+<entry key="Lobby_Menu_RoomCreate1P">Single player</entry>
+
+<!--Lobby screen elements-->
+<entry key="Lobby_Tab_Lobby">Lobby</entry>
+<entry key="Lobby_Tab_NoRoom">(No Room)</entry>
+<entry key="Lobby_Tab_Room">Room:</entry>
+<entry key="Lobby_QuickStart">Quick Start</entry>
+<entry key="Lobby_QuickStart_Tip">Get right into a game.</entry>
+<entry key="Lobby_RoomCreate">New Room...</entry>
+<entry key="Lobby_RoomCreate_Tip">Create a multi-player room.</entry>
+<entry key="Lobby_RoomCreate1P">New 1P Room...</entry>
+<entry key="Lobby_RoomCreate1P_Tip">Create a single-player room.</entry>
+<entry key="Lobby_Options">Options...</entry>
+<entry key="Lobby_Options_Tip">Misc commands are in here.</entry>
+<entry key="Lobby_RuleChange">Change rule...</entry>
+<entry key="Lobby_RuleChange_Tip">Select a rule to use.</entry>
+<entry key="Lobby_TeamChange">Change team...</entry>
+<entry key="Lobby_TeamChange_Tip">Change which team you are in.</entry>
+<entry key="Lobby_Ranking">Leaderboard...</entry>
+<entry key="Lobby_Ranking_Tip">You can see the multiplayer rating leaderboard here.</entry>
+<entry key="Lobby_Disconnect">Disconnect</entry>
+<entry key="Lobby_Disconnect_Tip">Disconnect from the server and return to the server selection screen.</entry>
+<entry key="Lobby_ChatSend">Send</entry>
+<entry key="Lobby_TeamChange_OK">OK</entry>
+<entry key="Lobby_TeamChange_Cancel">Cancel</entry>
+
+<!--RoomTable column names-->
+<entry key="RoomTable_ID">ID</entry>
+<entry key="RoomTable_Name">Name</entry>
+<entry key="RoomTable_Rated">Rated</entry>
+<entry key="RoomTable_RuleName">Rule</entry>
+<entry key="RoomTable_ModeName">Mode</entry>
+<entry key="RoomTable_Status">Status</entry>
+<entry key="RoomTable_Players">Players</entry>
+<entry key="RoomTable_Spectators">Spectators</entry>
+
+<!--RoomTable status names-->
+<entry key="RoomTable_Rated_True">Yes</entry>
+<entry key="RoomTable_Rated_False">No</entry>
+<entry key="RoomTable_RuleName_Any">*Any*</entry>
+<entry key="RoomTable_Status_Playing">Playing</entry>
+<entry key="RoomTable_Status_Waiting">Waiting</entry>
+
+<!--Room screen elements-->
+<entry key="Room_Leave">Leave</entry>
+<entry key="Room_Leave_Tip">Leave the current room.</entry>
+<entry key="Room_Join">Join</entry>
+<entry key="Room_Join_Tip">Join in the game.</entry>
+<entry key="Room_SitOut">Watch</entry>
+<entry key="Room_SitOut_Tip">Become spectator of the game.</entry>
+<entry key="Room_TeamChange">Team...</entry>
+<entry key="Room_TeamChange_Tip">Change which team you are in.</entry>
+<entry key="Room_ViewSetting">View Setting...</entry>
+<entry key="Room_ViewSetting_Tip">View settings of the current room.</entry>
+<entry key="Room_Ranking">Ranking...</entry>
+<entry key="Room_Ranking_Tip">You can see the leaderboard of multiplayer rating here.</entry>
+<entry key="Room_ChatSend">Send</entry>
+<entry key="Room_TeamChange_OK">OK</entry>
+<entry key="Room_TeamChange_Cancel">Cancel</entry>
+
+<!--StatTable column names-->
+<entry key="StatTable_Rank">\#</entry>
+<entry key="StatTable_Name">Name</entry>
+<entry key="StatTable_Attack">Attack</entry>
+<entry key="StatTable_APL">APL</entry>
+<entry key="StatTable_APM">APM</entry>
+<entry key="StatTable_Lines">Lines</entry>
+<entry key="StatTable_LPM">LPM</entry>
+<entry key="StatTable_Piece">Pieces</entry>
+<entry key="StatTable_PPS">PPS</entry>
+<entry key="StatTable_Time">Time</entry>
+<entry key="StatTable_KO">KO</entry>
+<entry key="StatTable_Wins">Wins</entry>
+<entry key="StatTable_Games">Games</entry>
+
+<!--StatTable1P column names-->
+<entry key="StatTable1P_Description">Description</entry>
+<entry key="StatTable1P_Value">Value</entry>
+
+<!--RoomUserList status name-->
+<entry key="RoomUserList_Playing"> <Playing></entry>
+<entry key="RoomUserList_Ready"> <Ready></entry>
+
+<!--Server Add screen elements-->
+<entry key="ServerAdd_Host">Hostname(or IP address):Port</entry>
+<entry key="ServerAdd_OK">OK</entry>
+<entry key="ServerAdd_Cancel">Cancel</entry>
+
+<!--Create Room Waiting screen elements-->
+<entry key="CreateRoom_Waiting_Text">Please wait while preset information is retrieved from the server...</entry>
+<entry key="CreateRoom_Waiting_Cancel">Cancel</entry>
+<entry key="CreateRated_Name">Room Name:</entry>
+<entry key="CreateRated_Preset">Room Type:</entry>
+<entry key="CreateRated_MaxPlayers">Max Players (2-6):</entry>
+<entry key="CreateRated_OK">OK</entry>
+<entry key="CreateRated_Custom">Customize...</entry>
+<entry key="CreateRated_Cancel">Cancel</entry>
+<entry key="CreateRated_Name_Tip">Room name will be displayed on lobby and room screens.</entry>
+<entry key="CreateRated_Preset_Tip">Select the type of game this room will have.</entry>
+<entry key="CreateRated_MaxPlayers_Tip">Select the max number of players for this room.</entry>
+
+<!--Create Room screen elements-->
+<entry key="CreateRoom_Tab_Main">Main</entry>
+<entry key="CreateRoom_Tab_Speed">Speed</entry>
+<entry key="CreateRoom_Tab_Bonus">Bonus</entry>
+<entry key="CreateRoom_Tab_Garbage">Garbage</entry>
+<entry key="CreateRoom_Tab_Misc">Auto-start</entry>
+<entry key="CreateRoom_Tab_RatedRule">Rated-rule</entry>
+<entry key="CreateRoom_Tab_Preset">Preset</entry>
+<entry key="CreateRoom_Name">Room Name:</entry>
+<entry key="CreateRoom_Mode">Mode:</entry>
+<entry key="CreateRoom_MaxPlayers">Max Players (2-6):</entry>
+<entry key="CreateRoom_AutoStartSeconds">Auto Start Delay in seconds (1-999, 0 to disable it)</entry>
+<entry key="CreateRoom_Gravity">Gravity:</entry>
+<entry key="CreateRoom_Denominator">Denominator (G-MAX):</entry>
+<entry key="CreateRoom_ARE">ARE:</entry>
+<entry key="CreateRoom_ARELine">ARE Line:</entry>
+<entry key="CreateRoom_LineDelay">Line Delay:</entry>
+<entry key="CreateRoom_LockDelay">Lock Delay:</entry>
+<entry key="CreateRoom_DAS">Delayed Auto Shift (DAS):</entry>
+<entry key="CreateRoom_HurryupSeconds">Hurryup Seconds (0-999, -1 to disable it):</entry>
+<entry key="CreateRoom_HurryupInterval">Hurryup Interval (1-99):</entry>
+<entry key="CreateRoom_MapSetID">Map Set ID (0-99):</entry>
+<entry key="CreateRoom_GarbagePercent">Garbage Change Percent (0-100):</entry>
+<entry key="CreateRoom_TargetTimer">Target move delay (0-3600):</entry>
+<entry key="CreateRoom_UseMap">Use Maps</entry>
+<entry key="CreateRoom_RuleLock">Rule Lock</entry>
+<entry key="CreateRoom_TSpinEnableType">Spin Bonus</entry>
+<entry key="CreateRoom_TSpin_Disable">Disable</entry>
+<entry key="CreateRoom_TSpin_TOnly">T-Spin Only</entry>
+<entry key="CreateRoom_TSpin_All">All Spins</entry>
+<entry key="CreateRoom_SpinCheckType">Spin Recognition Type</entry>
+<entry key="CreateRoom_SpinCheck_4Point">4-Point (3-Corner T)</entry>
+<entry key="CreateRoom_SpinCheck_Immobile">Immobile</entry>
+<entry key="CreateRoom_TSpinEnableEZ">EZ Spins</entry>
+<entry key="CreateRoom_B2B">Back to Back</entry>
+<entry key="CreateRoom_Combo">Combo</entry>
+<entry key="CreateRoom_RensaBlock">Garbage Blocking</entry>
+<entry key="CreateRoom_Counter">Garbage Countering</entry>
+<entry key="CreateRoom_Bravo">All Clear Bonus</entry>
+<entry key="CreateRoom_ReduceLineSend">Reduce attack power in 3P+ game</entry>
+<entry key="CreateRoom_GarbageChangePerAttack">Change garbage hole per attack</entry>
+<entry key="CreateRoom_DivideChangeRateByPlayers">Divide hole change rate by number of players</entry>
+<entry key="CreateRoom_B2BChunk">Change garbage hole for B2B</entry>
+<entry key="CreateRoom_UseFractionalGarbage">Use fractional garbage system</entry>
+<entry key="CreateRoom_IsTarget">Use Target system</entry>
+<entry key="CreateRoom_AutoStartTNET2">Use TNET2 style auto start timer</entry>
+<entry key="CreateRoom_DisableTimerAfterSomeoneCancelled">Disable auto start timer after someone cancels ready status</entry>
+<entry key="CreateRoom_PresetID">Preset Number:</entry>
+<entry key="CreateRoom_PresetSave">Save</entry>
+<entry key="CreateRoom_PresetLoad">Load</entry>
+<entry key="CreateRoom_PresetCode">Preset Code:</entry>
+<entry key="CreateRoom_PresetCodeExport">Export to a Preset Code</entry>
+<entry key="CreateRoom_PresetCodeImport">Import from a Preset Code</entry>
+<entry key="CreateRoom_Join">Join</entry>
+<entry key="CreateRoom_Watch">Watch</entry>
+<entry key="CreateRoom_OK">OK</entry>
+<entry key="CreateRoom_Cancel">Cancel</entry>
+<entry key="CreateRoom_Name_Tip">Room name will be displayed on lobby and room screens.</entry>
+<entry key="CreateRoom_Mode_Tip">Select a game mode.</entry>
+<entry key="CreateRoom_MaxPlayers_Tip">Select the max number of players for this room.</entry>
+<entry key="CreateRoom_AutoStartSeconds_Tip">Select the countdown length in seconds.</entry>
+<entry key="CreateRoom_HurryupSeconds_Tip">Select how many seconds it takes before Hurry Up starts.</entry>
+<entry key="CreateRoom_HurryupInterval_Tip">Hurry up garbage will rise after every [This Setting] pieces are placed.</entry>
+<entry key="CreateRoom_TSpinEnableType_Tip">Select which spin bonus type to use. "T-Spin Only" will only recognize T piece twists, while "All Spins" will recognize all pieces.</entry>
+<entry key="CreateRoom_SpinCheckType_Tip">Select which method of spin detection to use. "4-Point" will check if 3 of 4 points around the piece are blocked. "Immobile" which check if the piece cannot move when locked.</entry>
+<entry key="CreateRoom_MapSetID_Tip">Select which map set to use.</entry>
+<entry key="CreateRoom_GarbagePercent_Tip">Select how often the garbage hole changes.</entry>
+<entry key="CreateRoom_TargetTimer_Tip">Select how often the target cursor moves. Only used when "Use Target system" option is checked.</entry>
+<entry key="CreateRoom_UseMap_Tip">If enabled, every match will begin with predefined pattern of blocks.</entry>
+<entry key="CreateRoom_RuleLock_Tip">Forces everyone to use the rule you are currently using.</entry>
+<entry key="CreateRoom_TSpinEnableEZ_Tip">If enabled, EZ spins will count when using "Immobile" recognition type.</entry>
+<entry key="CreateRoom_B2B_Tip">If enabled, a back-to-back bonus will send an extra garbage to the opponents.</entry>
+<entry key="CreateRoom_Combo_Tip">Consecutive line clears (Combo) will send extra garbages to the opponents.</entry>
+<entry key="CreateRoom_RensaBlock_Tip">Consecutive line clears (Combo) will block incoming attacks.</entry>
+<entry key="CreateRoom_Counter_Tip">Outgoing garbage cancels out incoming garbage.</entry>
+<entry key="CreateRoom_Bravo_Tip">Perfectly clearing the playfield sends additional garbage.</entry>
+<entry key="CreateRoom_ReduceLineSend_Tip">All players' attack power will be reduced on 3+ player games.</entry>
+<entry key="CreateRoom_GarbageChangePerAttack_Tip">Garbage hole will change location per attack.</entry>
+<entry key="CreateRoom_DivideChangeRateByPlayers_Tip">Garbage hole change rate will be divided by number of live opposing players/teams.</entry>
+<entry key="CreateRoom_B2BChunk_Tip">Garbage hole of extra B2B add will change location.</entry>
+<entry key="CreateRoom_UseFractionalGarbage_Tip">Number of garbage will be fractional on 3+ player games.</entry>
+<entry key="CreateRoom_IsTarget_Tip">Garbage will send only to the targeted player.</entry>
+<entry key="CreateRoom_AutoStartTNET2_Tip">Countdown starts only when most players are ready. Players who are not ready are become spectators.</entry>
+<entry key="CreateRoom_DisableTimerAfterSomeoneCancelled_Tip">Auto start timer will be disabled when someone cancels ready status.</entry>
+<entry key="CreateRoom_CustomRated_Tip">If not enabled, the game options will be overwritten with the server's predefined settings.</entry>
+
+<!--Create Room 1P screen elements-->
+<entry key="CreateRoom1P_Mode_Label">Game Mode:</entry>
+<entry key="CreateRoom1P_Rule_Label">Rule:</entry>
+<entry key="CreateRoom1P_YourRule">ANY RULE</entry>
+<entry key="CreateRoom1P_OK">OK</entry>
+<entry key="CreateRoom1P_OK_Watch">Watch</entry>
+<entry key="CreateRoom1P_Cancel">Cancel</entry>
+
+<!--MPRanking screen elements-->
+<entry key="MPRanking_Rank">\#</entry>
+<entry key="MPRanking_Name">Name</entry>
+<entry key="MPRanking_Rating">Rating</entry>
+<entry key="MPRanking_PlayCount">Games</entry>
+<entry key="MPRanking_WinCount">Wins</entry>
+<entry key="MPRanking_OK">OK</entry>
+
+<!--Rule change screen elements-->
+<entry key="RuleChange_Tab_Tuning">Game Tuning</entry>
+<entry key="RuleChange_OK">OK</entry>
+<entry key="RuleChange_Cancel">Cancel</entry>
+
+<!--Game Tuning-->
+<entry key="GameTuning_ComboboxGeneric_Auto">Auto</entry>
+<entry key="GameTuning_ComboboxGeneric_Disable">Always Disable</entry>
+<entry key="GameTuning_ComboboxGeneric_Enable">Always Enable</entry>
+<entry key="GameTuning_RotateButtonDefaultRight_Label">Rotate direction for A button</entry>
+<entry key="GameTuning_RotateButtonDefaultRight_Auto">Auto (Use rule setting)</entry>
+<entry key="GameTuning_RotateButtonDefaultRight_Left">Left (Counter-clockwise)</entry>
+<entry key="GameTuning_RotateButtonDefaultRight_Right">Right (Clockwise)</entry>
+<entry key="GameTuning_MoveDiagonal_Label">Diagonal Move</entry>
+<entry key="GameTuning_BlockShowOutlineOnly_Label">Show Outline Only</entry>
+<entry key="GameTuning_Skin_Label">Block Skin</entry>
+<entry key="GameTuning_Skin_Auto">Auto (Use rule setting)</entry>
+<entry key="GameTuning_OutlineType_Label">Outline Type</entry>
+<entry key="GameTuning_OutlineType_Auto">Auto (Depends to mode)</entry>
+<entry key="GameTuning_OutlineType_None">None</entry>
+<entry key="GameTuning_OutlineType_Normal">Normal</entry>
+<entry key="GameTuning_OutlineType_Connect">Connect</entry>
+<entry key="GameTuning_OutlineType_SameColor">Same Color</entry>
+<entry key="GameTuning_MinDAS_Label">Minimum DAS (-1:Auto)</entry>
+<entry key="GameTuning_MaxDAS_Label">Maximum DAS (-1:Auto)</entry>
+<entry key="GameTuning_DasDelay_Label">Move Delay (-1:Auto)</entry>
+<entry key="GameTuning_ReverseUpDown_Label">Reverse Up and Down button</entry>
+
+<!--Popup Menu-->
+<entry key="Popup_Cut">Cut</entry>
+<entry key="Popup_Copy">Copy</entry>
+<entry key="Popup_Paste">Paste</entry>
+<entry key="Popup_Delete">Delete</entry>
+<entry key="Popup_SelectAll">Select All</entry>
+<entry key="Popup_Clear">Clear</entry>
+<entry key="Popup_RoomTable_Join">Join</entry>
+<entry key="Popup_RoomTable_Watch">Watch</entry>
+<entry key="Popup_RoomTable_Detail">Detail</entry>
+<entry key="Popup_ServerSelect_Connect">Connect</entry>
+<entry key="Popup_ServerSelect_Delete">Delete...</entry>
+<entry key="Popup_ServerSelect_SetObserver">Watch...</entry>
+
+<!--System Messages-->
+<entry key="SysMsg_ServerConnected">*** Connected to %s:%d</entry>
+<entry key="SysMsg_ServerVersion">*** Server version:</entry>
+<entry key="SysMsg_NumberOfPlayers">*** Number of players:</entry>
+<entry key="SysMsg_LoginOK">*** Login successful</entry>
+<entry key="SysMsg_YourNickname">*** Your nickname:</entry>
+<entry key="SysMsg_YourUID">*** Your user number:</entry>
+<entry key="SysMsg_LoginFail">*** LOGIN FAILED! Reason:</entry>
+<entry key="SysMsg_LoginFailDifferentVersion">*** Login failed because the server version is different (Client:%s, Server:%s)</entry>
+<entry key="SysMsg_LoginFailDifferentBuild">*** Login failed because the build type of server is different (Client:%s, Server:%s)</entry>
+<entry key="SysMsg_Banned">*** YOU ARE BANNED!! (%s - %s)</entry>
+<entry key="SysMsg_Banned_Permanent">Permanent</entry>
+<entry key="SysMsg_EnterRoom">*** %s has entered the room</entry>
+<entry key="SysMsg_LeaveRoom">*** %s left the room</entry>
+<entry key="SysMsg_EnterRoomWithHost">*** %s {%s} entered the room</entry>
+<entry key="SysMsg_LeaveRoomWithHost">*** %s {%s} left the room</entry>
+<entry key="SysMsg_RoomJoinFail">*** ROOM JOIN FAILED! (Room doesn't exist)</entry>
+<entry key="SysMsg_RoomJoin_Title">*** Current room name:</entry>
+<entry key="SysMsg_RoomJoin_ID">*** Current room ID:</entry>
+<entry key="SysMsg_RoomJoin_Rule">*** Rule:</entry>
+<entry key="SysMsg_RoomJoin_Lobby">*** You returned to lobby</entry>
+<entry key="SysMsg_StatusChange_Spectator">*** %s is spectating</entry>
+<entry key="SysMsg_StatusChange_Queue">*** %s joined the queue</entry>
+<entry key="SysMsg_StatusChange_Joined">*** %s joined the game</entry>
+<entry key="SysMsg_DisconnectedOK">*** DISCONNECTED</entry>
+<entry key="SysMsg_DisconnectedError">*** ERROR DISCONNECTED!</entry>
+<entry key="SysMsg_GameStart">*** Game has started</entry>
+<entry key="SysMsg_GameEnd">*** Game has ended</entry>
+<entry key="SysMsg_Winner">*** %s has won the match</entry>
+<entry key="SysMsg_WinnerTeam">*** Team "%s" has won the match</entry>
+<entry key="SysMsg_SendRuleDataStart">*** Sending rule data...</entry>
+<entry key="SysMsg_SendRuleDataOK">*** Rule data send OK</entry>
+<entry key="SysMsg_AutoStartBegin">*** Game will begin within %s seconds</entry>
+<entry key="SysMsg_ChangeTeam">*** %s is now on team %s</entry>
+<entry key="SysMsg_ChangeTeam_None">*** %s is now alone</entry>
+<entry key="SysMsg_RoomCreateMapReady">*** Sending maps...</entry>
+<entry key="SysMsg_KO">*** %s KO'd %s</entry>
+<entry key="SysMsg_Rating">*** %s's rating: %d (%+d)</entry>
+<entry key="SysMsg_Kicked_0">*** Room "%s" (ID:%s) has been deleted by the admin</entry>
+<entry key="SysMsg_ReplaySaved">*** Replay has been downloaded to replay/netreplay.rep</entry>
+
+<!--TripSeparator-->
+<entry key="TripSeparator_EnableConvert">false</entry>
+<entry key="TripSeparator_True">!</entry>
+<entry key="TripSeparator_False">?</entry>
+</properties>

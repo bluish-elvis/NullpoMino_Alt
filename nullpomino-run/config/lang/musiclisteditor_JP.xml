@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>MusicListEditor language file - Japanese</comment>
+
+<!--Title-->
+<entry key="Title_MusicListEditor">NullpoMino MusicListEditor</entry>
+<entry key="Title_FileSaveFailed">保存失敗</entry>
+
+<!--Message-->
+<entry key="Message_FileSaveFailed">ファイルの保存に失敗しました</entry>
+
+<!--Music Name Labels-->
+<entry key="MusicListEditor_LabelMusic0">#0 (通常1)</entry>
+<entry key="MusicListEditor_LabelMusic1">#1 (通常2)</entry>
+<entry key="MusicListEditor_LabelMusic2">#2 (通常3)</entry>
+<entry key="MusicListEditor_LabelMusic3">#3 (通常4)</entry>
+<entry key="MusicListEditor_LabelMusic4">#4 (通常5)</entry>
+<entry key="MusicListEditor_LabelMusic5">#5 (通常6)</entry>
+<entry key="MusicListEditor_LabelMusic6">#6 (パズル1)</entry>
+<entry key="MusicListEditor_LabelMusic7">#7 (パズル2)</entry>
+<entry key="MusicListEditor_LabelMusic8">#8 (パズル3)</entry>
+<entry key="MusicListEditor_LabelMusic9">#9 (パズル4)</entry>
+<entry key="MusicListEditor_LabelMusic10">#10 (エンディング)</entry>
+<entry key="MusicListEditor_LabelMusic11">#11 (イージーエンディング)</entry>
+<entry key="MusicListEditor_LabelMusic12">#12 (その他1)</entry>
+<entry key="MusicListEditor_LabelMusic13">#13 (その他2)</entry>
+<entry key="MusicListEditor_LabelMusic14">#14 (その他3)</entry>
+<entry key="MusicListEditor_LabelMusic15">#15 (その他4)</entry>
+
+<!--Buttons-->
+<entry key="MusicListEditor_NoLoop_Tip">これにチェックを入れると曲がループしなくなります</entry>
+<entry key="MusicListEditor_OpenFileDialog">...</entry>
+<entry key="MusicListEditor_OpenFileDialog_Tip">ファイル選択ダイアログを開きます</entry>
+<entry key="MusicListEditor_Clear">×</entry>
+<entry key="MusicListEditor_Clear_Tip">ファイル名を空にします</entry>
+<entry key="MusicListEditor_OK">OK</entry>
+<entry key="MusicListEditor_Cancel">キャンセル(C)</entry>
+
+<!--FileChooser-->
+<entry key="FileChooser_ogg">Ogg Vorbis (*.ogg)</entry>
+<entry key="FileChooser_wav">RIFF waveform Audio Format (*.wav)</entry>
+<entry key="FileChooser_xm">FastTracker II Music Modules (*.xm)</entry>
+<entry key="FileChooser_mod">ProTracker / NoiseTracker Music Module (*.mod)</entry>
+<entry key="FileChooser_aif">AIFF (*.aif)</entry>
+<entry key="FileChooser_aiff">AIFF (*.aiff)</entry>
+
+<!--Popup Menu-->
+<entry key="Popup_Cut">切り取り</entry>
+<entry key="Popup_Copy">コピー</entry>
+<entry key="Popup_Paste">貼り付け</entry>
+<entry key="Popup_Delete">削除</entry>
+<entry key="Popup_SelectAll">すべて選択</entry>
+</properties>

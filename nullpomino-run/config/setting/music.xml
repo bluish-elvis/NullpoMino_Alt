@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>NullpoMino Music List</comment>
+
+    <entry key="music.filename.MENU_1">res/bgm/title_technika2.ogg</entry>
+    <entry key="music.filename.MENU_2">res/bgm/sm-ssc_witp.ogg</entry>
+    <entry key="music.filename.MENU_3">res/bgm/title_technika3.ogg</entry>
+
+    <entry key="music.filename.GENERIC_1">res/bgm/steam/Clouds.ogg</entry>
+    <entry key="music.filename.GENERIC_2">res/bgm/steam/unt_dummy.ogg</entry>
+    <entry key="music.filename.GENERIC_3">res/bgm/steam/rb_MischievousMasquerade.ogg</entry>
+    <entry key="music.filename.GENERIC_4">res/bgm/steam/unt_core.ogg</entry>
+    <entry key="music.filename.GENERIC_5">res/bgm/steam/icey_labo.ogg</entry>
+    <entry key="music.filename.GENERIC_6">res/bgm/Astra_walkthrough.ogg</entry>
+
+    <entry key="music.filename.RETRO_1">res/bgm/retro/nes2.ogg</entry>
+    <entry key="music.filename.RETRO_2">res/bgm/retro/rus_Kalinka.ogg</entry>
+    <entry key="music.filename.RETRO_3">res/bgm/retro/sega_Tetremix.ogg</entry>
+    <entry key="music.filename.PUZZLE_1">res/bgm/9Jack.ogg</entry>
+    <entry key="music.filename.PUZZLE_2">res/bgm/steam/unt_battle1.ogg</entry>
+    <entry key="music.filename.PUZZLE_3">res/bgm/steam/unt_battle2.ogg</entry>
+
+    <entry key="music.filename.RUSH_1">res/bgm/steam/rb_fullon.ogg</entry>
+    <entry key="music.filename.RUSH_2">res/bgm/steam/rb_brawlbreax.ogg</entry>
+    <entry key="music.filename.RUSH_3">res/bgm/steam/rb_hitech.ogg</entry>
+    <entry key="music.filename.EXTRA_1">res/bgm/1_grand/vs1.ogg</entry>
+    <entry key="music.filename.EXTRA_2">res/bgm/2_absolute/vs2.ogg</entry>
+    <entry key="music.filename.EXTRA_3">res/bgm/3_instinct/vs3.ogg</entry>
+
+    <entry key="music.filename.GM_1">res/bgm/A_MIDSUMMERS_BLISS.ogg</entry>
+    <entry key="music.filename.GM_20G_1">res/bgm/tex1.ogg</entry>
+    <entry key="music.filename.ENDING_1">res/bgm/ending_starliteinfinite.ogg</entry>
+
+    <entry key="music.filename.GM_2">res/bgm/ddp/play_black1.ogg</entry>
+    <entry key="music.filename.GM_20G_2">res/bgm/ddp/play_black5.ogg</entry>
+    <entry key="music.filename.STORM_1">res/bgm/ddp/speed_black2.ogg</entry>
+    <entry key="music.filename.STORM_2">res/bgm/ddp/sudden_black2.ogg</entry>
+    <entry key="music.filename.ENDING_2">res/bgm/2_absolute/roll.ogg</entry>
+
+    <entry key="music.filename.GM_3">res/bgm/ddp/play_blue4.ogg</entry>
+    <entry key="music.filename.GM_20G_3">res/bgm/ddp/play_blue2.ogg</entry>
+    <entry key="music.filename.BLITZ_1">res/bgm/ddp/play_blue5.ogg</entry>
+    <entry key="music.filename.BLITZ_2">res/bgm/ddp/speed_blue.ogg</entry>
+    <entry key="music.filename.BLITZ_3">res/bgm/ddp/speed_black1.ogg</entry>
+    <entry key="music.filename.BLITZ_4">res/bgm/ddp/finale_white.ogg</entry>
+    <entry key="music.filename.ENDING_3">res/bgm/3_instinct/roll_.ogg</entry>
+
+    <entry key="music.filename.FINALE_1">res/bgm/finale_dreadnought.ogg</entry>
+    <entry key="music.filename.FINALE_2">res/bgm/finale_hesperides.ogg</entry>
+    <entry key="music.filename.FINALE_3">res/bgm/finale_siva.ogg</entry>
+    <entry key="music.filename.ENDING_4">res/bgm/fb_kaerezunochi.ogg</entry>
+
+    <entry key="music.filename.FAILED">res/bgm/ddp/result_black.ogg</entry>
+    <entry key="music.filename.RESULT_1">res/bgm/result_technika2_1.ogg</entry>
+    <entry key="music.filename.RESULT_2">res/bgm/result_technika2_2.ogg</entry>
+    <entry key="music.filename.CLEARED">res/bgm/ddp/result_blue.ogg</entry>
+
+    <entry key="music.noloop.BLITZ_1">false</entry>
+    <entry key="music.noloop.BLITZ_2">false</entry>
+    <entry key="music.noloop.BLITZ_3">false</entry>
+    <entry key="music.noloop.BLITZ_4">false</entry>
+    <entry key="music.noloop.CLEARED">false</entry>
+    <entry key="music.noloop.ENDING_1">false</entry>
+    <entry key="music.noloop.ENDING_2">true</entry>
+    <entry key="music.noloop.ENDING_3">true</entry>
+    <entry key="music.noloop.ENDING_4">true</entry>
+    <entry key="music.noloop.EXTRA_1">false</entry>
+    <entry key="music.noloop.EXTRA_2">false</entry>
+    <entry key="music.noloop.EXTRA_3">false</entry>
+    <entry key="music.noloop.FAILED">false</entry>
+    <entry key="music.noloop.FINALE_1">false</entry>
+    <entry key="music.noloop.FINALE_2">false</entry>
+    <entry key="music.noloop.FINALE_3">false</entry>
+    <entry key="music.noloop.GENERIC_1">false</entry>
+    <entry key="music.noloop.GENERIC_2">false</entry>
+    <entry key="music.noloop.GENERIC_3">false</entry>
+    <entry key="music.noloop.GENERIC_4">false</entry>
+    <entry key="music.noloop.GENERIC_5">false</entry>
+    <entry key="music.noloop.GENERIC_6">false</entry>
+    <entry key="music.noloop.GM_1">false</entry>
+    <entry key="music.noloop.GM_2">false</entry>
+    <entry key="music.noloop.GM_20G_1">false</entry>
+    <entry key="music.noloop.GM_20G_2">false</entry>
+    <entry key="music.noloop.GM_20G_3">false</entry>
+    <entry key="music.noloop.GM_3">false</entry>
+    <entry key="music.noloop.MENU_1">false</entry>
+    <entry key="music.noloop.MENU_2">false</entry>
+    <entry key="music.noloop.MENU_3">false</entry>
+    <entry key="music.noloop.PUZZLE_1">false</entry>
+    <entry key="music.noloop.PUZZLE_2">false</entry>
+    <entry key="music.noloop.PUZZLE_3">false</entry>
+    <entry key="music.noloop.RESULT_1">false</entry>
+    <entry key="music.noloop.RESULT_2">false</entry>
+    <entry key="music.noloop.RETRO_1">false</entry>
+    <entry key="music.noloop.RETRO_2">false</entry>
+    <entry key="music.noloop.RETRO_3">false</entry>
+    <entry key="music.noloop.RUSH_1">false</entry>
+    <entry key="music.noloop.RUSH_2">false</entry>
+    <entry key="music.noloop.RUSH_3">false</entry>
+    <entry key="music.noloop.STORM_1">false</entry>
+    <entry key="music.noloop.STORM_2">false</entry>
+</properties>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+ <comment>Game mode description language file - Default English</comment>
+ <entry key="Marathon">Standard game mode for beginners.</entry>
+ <entry key="MarathonPlus">Standard game mode for Various Players. Goal for the "Bonus level"!</entry>
+ <entry key="MarathonDrill">How long can you survive against the rising garbage lines?</entry>
+ <entry key="MarathonShuttle">Try to empty "GOAL" counter as fast as you can.</entry>
+ <entry key="MarathonExtreme">Gameplay is similar to Marathon mode, but it's Much Faster!</entry>
+ <entry key="SprintLine">Clear certain number of lines as fast as possible.</entry>
+ <entry key="SprintScore">Get certain number of points as fast as possible.</entry>
+ <entry key="SprintDig">Clear all garbage lines as fast as possible.</entry>
+ <entry key="SprintCombo">Try to clear all the lines in the well in one combo.</entry>
+ <entry key="SprintUltra">Score as many points as possible within the time limit.</entry>
+ <entry key="SquareMode">Create 4x4 squares to get more points.</entry>
+ <entry key="RetroClassic">A classic game that takes you to the nostalgic feeling.</entry>
+ <entry key="RetroMarathon">A game based on the classics where efficiency is important.</entry>
+ <entry key="RetroMania">A classic game that many Japanese players played like a monkey.</entry>
+ <entry key="RetroModern">Modern Arranged RETRO MANIA. What's waiting beyond the level 15...?</entry>
+ <entry key="GrandFestival">Try to score many Points and Fireworks as possible, within level 300.</entry>
+ <entry key="GrandBlossom">Erase all gem blocks from the playfield within the time limit.</entry>
+ <entry key="GrandMarathon">Try to score many Points for the better grade, until reach level 999.</entry>
+ <entry key="GrandMania">Grade base is different, and Speed increasing will keep after level 500.</entry>
+ <entry key="GrandMastery">Each Level Intensity will Varies Greatly by Your Skill!</entry>
+ <entry key="GrandMountain">Watch out for rising garbage blocks.</entry>
+ <entry key="GrandRoads">Complete Levels by each 10 lines, before runs out the time limit.</entry>
+ <entry key="GrandStorm">Play High speed Throughout. and Can you break the level 500 barrier?</entry>
+ <entry key="GrandLightning">Much Faster With Insane Gimmicks. This won't ends at level 999 as usual!</entry>
+ <entry key="GrandPhantom">This has some speed, and the playfield is gonna invisible!</entry>
+ <entry key="GrandFinale">Only for players who have INFINITY Brain Power. Good luck!</entry>
+ <entry key="PracticeMode">You can practice various speed settings in this mode.</entry>
+ <entry key="ToolVSMapEditMode">This is a tool for creating maps for VS-BATTLE mode and NetPlay mode.</entry>
+ <entry key="VSBattleMode">Battle against human or AI opponent.</entry>
+ <entry key="VS-SprintLine">Clear certain number of lines before your opponent.</entry>
+ <entry key="VS-DIG_RACE">Clear all garbage lines before your opponent.</entry>
+ <entry key="Avalanche1P">Connect 4 or more same color blocks to clear them.</entry>
+ <entry key="Avalanche1PFever">Premade chains will drop down endlessly.</entry>
+ <entry key="AvalancheVS">Clear chains to send your opponent garbage.</entry>
+ <entry key="AvalancheVSFever">Use premade chains to attack your opponent.</entry>
+ <entry key="AvalancheVSDig">Dig down to the flashing gem before your opponent.</entry>
+ <entry key="AvalancheVSBomb">Clear chains to send bombs.</entry>
+ <entry key="AvalancheVSSPF">Clear chains to send patterned garbages.</entry>
+ <entry key="Physician">Clear gem blocks by lining up blocks of the same color.</entry>
+ <entry key="PhysicianVS">Clear all gem blocks before your opponent.</entry>
+ <entry key="SPF_VS-BATTLE_lBETAr">Use gems to clear blocks of the same color.</entry>
+ <entry key="[MORE...]">You can access more game modes from here.</entry>
+
+ <!--Folder descriptions.-->
+ <!--Same rules apply as mode descriptions, but you'll need to add the "_" prefix.-->
+ <entry key="_[ALL_MODES]">This folder contains all available game modes.</entry>
+ <entry key="_POPULAR_MODES">This folder contains the Recommended modes.</entry>
+ <entry key="_GUIDELINES_MODES">Standard modes Based by TTC Guidelines. Have fun!</entry>
+ <entry key="_RETROSPECTIVE_MODES">Nostalgia modes. Let's Enjoy the Near-Original!</entry>
+ <entry key="_TIME_TRIAL_MODES">Simple Race modes. Try your best in the short time!</entry>
+ <entry key="_GRAND_MANIA_MODES">Grade Recognizing modes. Challenge to be a GrandMaster!</entry>
+ <entry key="_MISC_MODES">Not-Categorizable variety modes.</entry>
+ <entry key="_TYPE_AVALANCHE">Connect 4 or more same color blocks to clear them.</entry>
+ <entry key="_TYPE_PHYSICIAN">Clear gem blocks by lining up blocks of the same color.</entry>
+ <entry key="_TYPE_SPF">Use gems to clear blocks of the same color.</entry>
+</properties>
