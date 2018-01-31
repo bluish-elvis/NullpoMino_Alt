@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>AIRanksTool language file - Default English</comment>
+
+<!--Main window (AIRanksTool)-->
+<entry key="Main_Title">AI Ranks Tool</entry>
+<!--Generation Tab -->
+<entry key="Main_Generation_Tab_Title">Generation</entry>
+<entry key="Main_Input_Label">Input File</entry>
+<entry key="Main_Input_Tip">File that will be loaded to iterate upon - leave blank if it is the first time you use the generator</entry>
+<entry key="Main_New_File_Text">(New File)</entry>
+<entry key="Main_Output_Label">Output File</entry>
+<entry key="Main_Output_Tip">File that will be saved after iterations are done</entry>
+<entry key="Main_Iterations_Label">Number of iterations</entry>
+<entry key="Main_Iterations_Tip">Number of iterations to run over the ranks in input file</entry>
+<entry key="Main_Go_Label">Go</entry>
+<entry key="Main_Go_Tip">Launch the iterations</entry>
+<entry key="Main_Bests_Label">View Bests</entry>
+<entry key="Main_Bests_Tip">View the highest ranked surfaces in the ranks in input file</entry>
+<entry key="Main_Worsts_Label">View Worsts</entry>
+<entry key="Main_Worsts_Tip">View the lowest ranked surfaces in the ranks in input file</entry>
+
+<!--AI Config Tab-->
+<entry key="Main_AI_Config_Tab_Title">AI Config</entry>
+<entry key="Main_Ranks_File_Used_Label">Ranks File used</entry>
+<entry key="Main_Ranks_File_Used_Tooltip">Ranks file to be used by RanksAI</entry>
+
+<entry key="Main_Num_Previews_Label">Number of piece previews</entry>
+<entry key="Main_Num_Previews_Tip">Number of piece previews to use in RanksAI</entry>
+
+<entry key="Main_Allow_Hold">Allow Hold</entry>
+<entry key="Main_Allow_Hold_Tip">Allows the use of hold in RanksAI</entry>
+
+<entry key="Main_Speed_Limit_Label">Speed Limit (tpm)</entry>
+<entry key="Main_Speed_Limit_Tip">Specify a speed limit in TPM</entry>
+
+<entry key="Main_Set_Default_Label">Save</entry>
+<entry key="Main_Set_Default_Tip">Saves the AI Configuration</entry>
+
+<!--Progress window (RanksIterator)-->
+<entry key="Progress_Message">Computing ranks...</entry>
+<entry key="Progress_Note">Iteration:%d(%d%%)/%d- total :%d%%</entry>
+<entry key="Progress_Note_Save_File">Saving File...</entry>
+<entry key="Progress_Note_Load_File">Loading File...</entry>
+<entry key="Progress_Cancel_Button">Cancel</entry>
+
+<!--Result window (RanksResult)-->
+<entry key="Result_Title">Results</entry>
+<entry key="Result_Progress_Message">Sorting ranks...</entry>
+<entry key="Result_Progress_Note">Completed %d%%.</entry>
+<entry key="Result_Score">Score :</entry>
+<entry key="Result_Next">Next</entry>
+<entry key="Result_Previous">Previous</entry>
+</properties>

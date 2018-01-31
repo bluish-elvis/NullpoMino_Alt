@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>Wallkick</comment>
+<entry key="StandardWallkick">Super Rotation System</entry>
+<entry key="StandardMild180Wallkick">SRS with saner 180's wallkick</entry>
+<entry key="StandardSymmetricWallkick">SRS with symmetric I piece kicks</entry>
+<entry key="StandardSymmetricMild180Wallkick">SRSs180 with symmetric I piece kicks</entry>
+<entry key="ClassicWallkick">Simply 1 horizonal wallkick</entry>
+<entry key="ClassicPlusWallkick">1 horizonal and T/I pieces' floorkicks</entry>
+<entry key="DTETWallkick">DTET Rotation System</entry>
+<entry key="GBCWallkick" />
+<entry key="WallOnlyWallkick">Wallkick but no placed block kicks</entry>
+<entry key="AvalancheWallkick" />
+<entry key="AvalancheClassicWallkick" />
+<entry key="PhysicianWallkick" />
+</properties>

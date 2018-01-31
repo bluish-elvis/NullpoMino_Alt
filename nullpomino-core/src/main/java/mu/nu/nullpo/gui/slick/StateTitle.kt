@@ -1,0 +1,135 @@
+/* Copyright (c) 2010, NullNoname
+ * All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ * Neither the name of NullNoname nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE. */
+package mu.nu.nullpo.gui.slick
+
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.net.UpdateChecker
+import org.apache.log4j.Logger
+import org.newdawn.slick.*
+import org.newdawn.slick.state.StateBasedGame
+
+/** Title screen state */
+class StateTitle internal constructor():DummyMenuChooseState() {
+
+	/** true when new version is already checked */
+	private var isNewVersionChecked = false
+	override val maxCursor:Int get()= CHOICES.size
+	init{minChoiceY = 20-CHOICES.size}
+
+	/* Fetch this state's ID */
+	override fun getID():Int = ID
+
+	/* State initialization */
+	override fun init(container:GameContainer, game:StateBasedGame) {}
+
+	/* Called when entering this state */
+	override fun enter(container:GameContainer?, game:StateBasedGame?) {
+		// Observer start
+		NullpoMinoSlick.startObserverClient()
+		// Call GC
+		System.gc()
+
+		// Update title bar
+		if(container is AppGameContainer) {
+			container.setTitle("NullpoMino version"+GameManager.versionString)
+			container.setUpdateOnlyWhenVisible(true)
+		}
+
+		// New Version check
+		if(!isNewVersionChecked&&NullpoMinoSlick.propGlobal.getProperty("updatechecker.enable", true)) {
+			isNewVersionChecked = true
+
+			var startupCount = NullpoMinoSlick.propGlobal.getProperty("updatechecker.startupCount", 0)
+			val startupMax = NullpoMinoSlick.propGlobal.getProperty("updatechecker.startupMax", 20)
+
+			if(startupCount>=startupMax) {
+				val strURL = NullpoMinoSlick.propGlobal.getProperty("updatechecker.url", "")
+				UpdateChecker.startCheckForUpdates(strURL)
+				startupCount = 0
+			} else
+				startupCount++
+
+			if(startupMax>=1) {
+				NullpoMinoSlick.propGlobal.setProperty("updatechecker.startupCount", startupCount)
+				NullpoMinoSlick.saveConfig()
+			}
+		}
+		if(ResourceHolder.bgmIsPlaying()) ResourceHolder.bgmStop()
+	}
+
+	/* Draw the screen */
+	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
+		// Background
+		g.drawImage(ResourceHolder.imgTitleBG, 0f, 0f)
+
+		// Menu
+
+		FontNano.printFont(0, 0, "NULLPOMINO VERSION "+GameManager.versionString,
+			COLOR.ORANGE, 0.5f)
+
+		renderChoices(2, minChoiceY, CHOICES)
+
+		FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
+
+		if(UpdateChecker.isNewVersionAvailable(GameManager.versionMajor, GameManager.versionMinor)) {
+			val strTemp =
+				String.format(NullpoMinoSlick.getUIText("Title_NewVersion"), UpdateChecker.latestVersionFullString, UpdateChecker.strReleaseDate)
+			FontNormal.printTTF(16, 416, strTemp)
+		}
+		super.renderImpl(container, game, g)
+	}
+
+	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
+		ResourceHolder.soundManager.play("decide1")
+
+		StateSelectMode.isTopLevel = true
+		if(cursor==CHOICEID.size-1)
+			container.exit()
+		else
+			game.enterState(CHOICEID[cursor])
+
+		return false
+	}
+
+	companion object {
+		/** This state's ID */
+		const val ID = 1
+
+		/** Strings for menu choices */
+		private val CHOICES = arrayOf("GAME START", "WATCH REPLAY",
+			//"NETPLAY",
+			"CONFIGURATIONS", "EXIT")
+		private val CHOICEID = intArrayOf(StateSelectMode.ID, StateReplaySelect.ID,
+			//StateNetGame.ID,
+			StateConfigMainMenu.ID, -1)
+		/** UI Text identifier Strings */
+		private val UI_TEXT = arrayOf("Title_Start", "Title_Replay",
+			//"Title_NetPlay",
+			"Title_Config", "Title_Exit")
+
+		/** Log */
+		internal var log = Logger.getLogger(StateTitle::class.java)
+	}
+}

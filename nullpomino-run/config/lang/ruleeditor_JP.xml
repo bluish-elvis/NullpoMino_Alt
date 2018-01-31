@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>RuleEditor language file - Japanese</comment>
+
+<!--Title-->
+<entry key="Title_RuleEditor">NullpoMino RuleEditor</entry>
+<entry key="Title_FileLoadFailed">読み込み失敗</entry>
+<entry key="Title_FileSaveFailed">保存失敗</entry>
+
+<!--Message-->
+<entry key="Message_FileLoadFailed">ファイルの読み込みに失敗しました</entry>
+<entry key="Message_FileSaveFailed">ファイルの保存に失敗しました</entry>
+
+<!--Menu-->
+<entry key="JMenu_File">ファイル(F)</entry>
+<entry key="JMenuItem_New">新規作成(N)</entry>
+<entry key="JMenuItem_Open">開く(O)...</entry>
+<entry key="JMenuItem_Save">上書き保存(S)</entry>
+<entry key="JMenuItem_SaveAs">名前を付けて保存(A)...</entry>
+<entry key="JMenuItem_Exit">終了(X)</entry>
+
+<!--Tab Names-->
+<entry key="TabName_Basic">基本</entry>
+<entry key="TabName_Field">フィールド</entry>
+<entry key="TabName_Hold">ホールド</entry>
+<entry key="TabName_Drop">ドロップ</entry>
+<entry key="TabName_Rotate">回転</entry>
+<entry key="TabName_LockDelay">固定時間</entry>
+<entry key="TabName_ARE">ARE(出現時間)</entry>
+<entry key="TabName_Line">ライン消去</entry>
+<entry key="TabName_Move">移動</entry>
+<entry key="TabName_PieceOffset">回転パターン補正</entry>
+<entry key="TabName_PieceOffsetX">X座標補正</entry>
+<entry key="TabName_PieceOffsetY">Y座標補正</entry>
+<entry key="TabName_PieceSpawn">出現位置補正</entry>
+<entry key="TabName_PieceSpawnX">X座標補正</entry>
+<entry key="TabName_PieceSpawnY">Y座標補正</entry>
+<entry key="TabName_PieceSpawnBigX">ビッグ時X座標補正</entry>
+<entry key="TabName_PieceSpawnBigY">ビッグ時Y座標補正</entry>
+<entry key="TabName_PieceColor">色</entry>
+<entry key="TabName_PieceDirection">初期方向</entry>
+
+<!--Basic-->
+<entry key="Basic_RuleName">ルール名</entry>
+<entry key="Basic_NextDisplay">NEXT表示数</entry>
+<entry key="Basic_Style">ゲームスタイル</entry>
+<entry key="Basic_Skin">ブロックの絵柄</entry>
+<entry key="Basic_Ghost">ゴースト表示</entry>
+<entry key="Basic_EnterAboveField">ブロックピースがフィールド枠外から出現</entry>
+<entry key="Basic_EnterMaxDistanceY">ブロックピース出現予定地が埋まっているときにY座標を上にずらす最大回数</entry>
+<entry key="Basic_Randomizer">NEXT順生成アルゴリズム</entry>
+<entry key="Basic_ResetRandomizer">リセット(R)</entry>
+
+<!--Field-->
+<entry key="Field_FieldWidth">幅</entry>
+<entry key="Field_FieldHeight">高さ</entry>
+<entry key="Field_FieldHiddenHeight">見えない部分の高さ</entry>
+<entry key="Field_FieldCeiling">天井</entry>
+<entry key="Field_FieldLockoutDeath">フィールド枠内に置けないと死亡</entry>
+<entry key="Field_FieldPartialLockoutDeath">フィールド枠外にはみ出しただけで死亡</entry>
+
+<!--Hold-->
+<entry key="Hold_HoldEnable">ホールド有効</entry>
+<entry key="Hold_HoldInitial">先行ホールド</entry>
+<entry key="Hold_HoldInitialLimit">先行ホールド連続使用不可</entry>
+<entry key="Hold_HoldResetDirection">ホールド時にピースの向きを元に戻す</entry>
+<entry key="Hold_HoldLimit">使用できる回数(-1:無制限)</entry>
+
+<!--Drop-->
+<entry key="Drop_HardDropEnable">ハードドロップ有効</entry>
+<entry key="Drop_HardDropLock">ハードドロップで即固定</entry>
+<entry key="Drop_HardDropLimit">ハードドロップ連続使用不可</entry>
+<entry key="Drop_SoftDropEnable">ソフトドロップ有効</entry>
+<entry key="Drop_SoftDropLock">ソフトドロップで即固定</entry>
+<entry key="Drop_SoftDropLimit">ソフトドロップ連続使用不可</entry>
+<entry key="Drop_SoftDropSurfaceLock">ソフトドロップを接地状態で使用すると即固定</entry>
+<entry key="Drop_SoftDropSpeed">ソフトドロップ速度(1.0=1倍)</entry>
+<entry key="Drop_SoftDropMultiplyNativeSpeed">ソフトドロップ速度を現在の通常速度ﾗn倍にする</entry>
+<entry key="Drop_SoftDropGravitySpeedLimit">ソフトドロップ速度に上限をつける(現在の通常速度が上限)</entry>
+
+<!--Rotate-->
+<entry key="Rotate_RotateInitial">先行回転</entry>
+<entry key="Rotate_RotateInitialLimit">先行回転連続使用不可</entry>
+<entry key="Rotate_RotateWallkick">壁蹴り</entry>
+<entry key="Rotate_RotateInitialWallkick">先行回転でも壁蹴りする</entry>
+<entry key="Rotate_RotateMaxUpwardWallkick">上方向へ壁蹴りできる回数(-1:無制限)</entry>
+<entry key="Rotate_RotateButtonDefaultRight">Aボタンで右回転</entry>
+<entry key="Rotate_RotateButtonAllowReverse">Bボタンで逆回転可能</entry>
+<entry key="Rotate_RotateButtonAllowDouble">Eボタンで180ｰ回転可能</entry>
+<entry key="Rotate_WallkickSystem">壁蹴りシステム</entry>
+<entry key="Rotate_ResetWallkickSystem">リセット(R)</entry>
+
+<!--LockDelay-->
+<entry key="LockDelay_LockDelayMinMax">最小固定時間と最大固定時間(-1:指定なし)</entry>
+<entry key="LockDelay_LockResetFall">落下で固定時間リセット</entry>
+<entry key="LockDelay_LockResetMove">移動で固定時間リセット</entry>
+<entry key="LockDelay_LockResetRotate">回転で固定時間リセット</entry>
+<entry key="LockDelay_LockResetWallkick">壁蹴りで固定時間リセット</entry>
+<entry key="LockDelay_LockDelayLockResetLimitShareCount">移動回数と回転回数を共有(移動回数制限だけ使う)</entry>
+<entry key="LockDelay_LockDelayLockResetLimitMove">移動回数制限(-1:無限)</entry>
+<entry key="LockDelay_LockDelayLockResetLimitRotate">回転回数制限(-1:無限)</entry>
+<entry key="LockDelay_LockDelayLockResetLimitOver">移動回数か回転回数が制限を超過したときの処理:</entry>
+<entry key="LockDelay_LockDelayLockResetLimitOverNoReset">固定時間リセットを無効にする</entry>
+<entry key="LockDelay_LockDelayLockResetLimitOverInstant">強制的に固定させる</entry>
+<entry key="LockDelay_LockDelayLockResetLimitOverNoWallkick">壁蹴りを無効にする</entry>
+
+<!--ARE-->
+<entry key="ARE_MinMax">最小AREと最大ARE(-1:指定なし)</entry>
+<entry key="ARE_LineMinMax">最小・最大ライン消去後ARE(-1:指定なし)</entry>
+<entry key="ARE_LockFlash">固定した瞬間に光るフレーム数</entry>
+<entry key="ARE_LockFlashOnlyFrame">固定した後にブロックが光る専用フレームを入れる</entry>
+<entry key="ARE_LockFlashBeforeLineClear">ライン消去よりも前にブロックが光るフレームを入れる</entry>
+<entry key="ARE_CancelMove">横移動入力でAREキャンセル</entry>
+<entry key="ARE_CancelRotate">回転入力でAREキャンセル</entry>
+<entry key="ARE_CancelHold">ホールド入力でAREキャンセル</entry>
+
+<!--Line-->
+<entry key="Line_MinMax">最小ライン消去時間と最大ライン消去時間(-1:指定なし)</entry>
+<entry key="Line_FallAnim">ライン消去後に上のブロックが1段ずつ落ちるアニメーションを表示</entry>
+<entry key="Line_CancelMove">横移動入力でライン消去アニメキャンセル</entry>
+<entry key="Line_CancelRotate">回転入力でライン消去アニメキャンセル</entry>
+<entry key="Line_CancelHold">ホールド入力でライン消去アニメキャンセル</entry>
+
+<!--Move-->
+<entry key="Move_DASMinMax">最低横溜め(DAS)時間と最高横溜め時間(-1:指定なし)</entry>
+<entry key="Move_DASDelay1">横移動間隔 1/</entry>
+<entry key="Move_DASDelay2">G (0:ワープ移動)</entry>
+<entry key="Move_DASInReady">Ready中に横溜め可能</entry>
+<entry key="Move_DASInMoveFirstFrame">移動可能になった最初のフレームで横溜め可能</entry>
+<entry key="Move_DASInLockFlash">ブロックが光った瞬間に横溜め可能</entry>
+<entry key="Move_DASInLineClear">ライン消去中に横溜め可能</entry>
+<entry key="Move_DASInARE">ARE中に横溜め可能</entry>
+<entry key="Move_DASInARELastFrame">AREの最後のフレームで横溜め可能</entry>
+<entry key="Move_DASInEndingStart">エンディング突入アニメ中に横溜め可能</entry>
+<entry key="Move_DASChargeOnBlockedMove">壁に向かって方向キーを押すと横溜めを一瞬で最大にする</entry>
+<entry key="Move_DASStoreChargeOnNeutral">方向キーを離した後も横溜めを維持する</entry>
+<entry key="Move_DASRedirectInDelay">待ち時間中に方向キーを押すと横溜め方向を変更</entry>
+<entry key="Move_FirstFrame">ピースが出現した最初のフレームから移動可能</entry>
+<entry key="Move_Diagonal">斜め移動</entry>
+<entry key="Move_UpAndDown">上下同時押し可能</entry>
+<entry key="Move_LeftAndRightAllow">左右同時押し可能</entry>
+<entry key="Move_LeftAndRightUsePreviousInput">左右同時押ししたときに前フレームの入力を優先</entry>
+<entry key="Move_ShiftLock">ドロップキーを離すまで横溜めを利用した横移動をしない</entry>
+
+<!--PieceNames-->
+<entry key="PieceName0">I</entry>
+<entry key="PieceName1">L</entry>
+<entry key="PieceName2">O</entry>
+<entry key="PieceName3">Z</entry>
+<entry key="PieceName4">T</entry>
+<entry key="PieceName5">J</entry>
+<entry key="PieceName6">S</entry>
+<entry key="PieceName7">I1</entry>
+<entry key="PieceName8">I2</entry>
+<entry key="PieceName9">I3</entry>
+<entry key="PieceName10">L3</entry>
+
+<!--ColorNames-->
+<entry key="ColorName0">灰</entry>
+<entry key="ColorName1">赤</entry>
+<entry key="ColorName2">橙</entry>
+<entry key="ColorName3">黄</entry>
+<entry key="ColorName4">緑</entry>
+<entry key="ColorName5">水</entry>
+<entry key="ColorName6">青</entry>
+<entry key="ColorName7">紫</entry>
+
+<!--DirectionNames-->
+<entry key="DirectionName0">上(平らな面が下)</entry>
+<entry key="DirectionName1">右(平らな面が左)</entry>
+<entry key="DirectionName2">下(平らな面が上)</entry>
+<entry key="DirectionName3">左(平らな面が右)</entry>
+<entry key="DirectionName4">ランダム</entry>
+
+<!--FileChooser-->
+<entry key="FileChooser_RuleFile">ルールファイル (*.rul)</entry>
+</properties>

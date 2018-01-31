@@ -1,0 +1,69 @@
+#Mode folder list
+
+#:POPULAR MODES
+Marathon
+MarathonDrill
+SprintUltra
+SprintLine
+SprintDig
+GrandFestival
+PracticeMode
+GrandMastery
+GrandStorm
+GrandLightning
+GrandBlossom
+VSBattleMode
+
+:GUIDELINES MODES
+Marathon
+MarathonPlus
+MarathonExtreme
+MarathonShuttle
+MarathonDrill
+PracticeMode
+SquareMode
+VSBattleMode
+ToolVSMapEditMode
+
+:RETROSPECTIVE MODES
+RetroClassic
+RetroMarathon
+RetroMania
+RetroModern
+
+:TIME TRIAL MODES
+SprintLine
+SprintScore
+SprintDig
+SprintCombo
+SprintUltra
+
+:GRAND MANIA MODES
+GrandFestival
+GrandMarathon
+GrandMania
+GrandMastery
+GrandStorm
+GrandLightning
+GrandMountain
+GrandPhantom
+GrandFinale
+GrandRoads
+GrandBlossom
+
+
+:TYPE AVALANCHE
+Avalanche1P
+Avalanche1PFever
+AvalancheVS
+AvalancheVSFever
+AvalancheVSDig
+AvalancheVSBOMB
+AvalancheVSSPF
+
+:TYPE PHYSICIAN
+Physician
+PhysicianVS
+
+:TYPE SPF
+SPF
