@@ -23,14 +23,13 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import mu.nu.nullpo.game.component.BGMStatus.BGM.*
 
 /** TECHNICIAN Mode */
 class MarathonShuttle:NetDummyMode() {
@@ -166,7 +165,7 @@ class MarathonShuttle:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
-			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
+			drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0,
 				"GAME TYPE", GAMETYPE_SHORTNAME[goaltype], "LEVEL", (startlevel+1).toString(),
 				"SPIN BONUS", if(tspinEnableType==0) "OFF" else if(tspinEnableType==1) "T-ONLY" else "ALL",
 				"EZ SPIN", GeneralUtil.getONorOFF(enableTSpinKick), "SPIN TYPE", if(spinCheckType==0) "4POINT" else "IMMOBILE",
@@ -292,7 +291,7 @@ class MarathonShuttle:NetDummyMode() {
 		setSpeed(engine)
 
 		if(netIsWatch)
-			owner.bgmStatus.bgm = SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 		else {
 			setStartBgmlv(engine)
 			owner.bgmStatus.bgm = tableBGM[bgmlv]
@@ -335,16 +334,16 @@ class MarathonShuttle:NetDummyMode() {
 		if(owner.menuOnly) return
 
 		receiver.drawScoreFont(engine, playerID, 0, 0, "SHUTTLE RUN\n("+GAMETYPE_NAME[goaltype]
-			+")", EventReceiver.COLOR.WHITE)
+			+")", COLOR.WHITE)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&startlevel==0&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE   LINE TIME", EventReceiver.COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE   LINE TIME", COLOR.BLUE, scale)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, playerID, 3, topY+i, rankingScore[goaltype][i].toString(), i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 11, topY+i, rankingLines[goaltype][i].toString(), i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 16,
@@ -353,7 +352,7 @@ class MarathonShuttle:NetDummyMode() {
 			}
 		} else {
 			// SCORE
-			receiver.drawScoreFont(engine, playerID, 0, 2, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 2, "SCORE", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 2, "+$lastscore")
 			val scget = scgettime<engine.statistics.score
 			if(scget) scgettime += Math.ceil((engine.statistics.score-scgettime)/24.0).toInt()
@@ -361,54 +360,52 @@ class MarathonShuttle:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 3, sc.toString(), scget, 2f)
 
 			// GOAL
-			receiver.drawScoreFont(engine, playerID, 0, 5, "GOAL", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 5, "GOAL", COLOR.BLUE)
 			var strGoal = goal.toString()
 			if(lastgoal!=0&&scget&&engine.ending==0) strGoal += "-$lastgoal"
 			receiver.drawScoreNum(engine, playerID, 5, 5, strGoal, 2f)
 
 			val remainLevelTime = maxOf(0, if(goaltype!=GAMETYPE_SPECIAL) TIMELIMIT_LEVEL-levelTimer else totalTimer)
-			val fontcolorLevelTime = if(remainLevelTime<10*60)
-				EventReceiver.COLOR.RED
-			else if(remainLevelTime<30*60)
-				EventReceiver.COLOR.ORANGE
-			else if(remainLevelTime<60*60)
-				EventReceiver.COLOR.YELLOW
-			else
-				EventReceiver.COLOR.WHITE
+			val fontcolorLevelTime = when {
+				remainLevelTime<10*60 -> COLOR.RED
+				remainLevelTime<30*60 -> COLOR.ORANGE
+				remainLevelTime<60*60 -> COLOR.YELLOW
+				else -> COLOR.WHITE
+			}
 			if(goaltype==GAMETYPE_SPECIAL) {
 				// LEVEL TIME
-				receiver.drawScoreFont(engine, playerID, 0, 6, "LIMIT", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 0, 6, "LIMIT", COLOR.BLUE)
 				receiver.drawScoreNum(engine, playerID, 0, 7, GeneralUtil.getTime(remainLevelTime.toFloat()), fontcolorLevelTime, 2f)
 				// +30sec
 				if(lasttimebonus>0&&scget&&engine.ending==0)
 					receiver.drawScoreFont(engine, playerID, 6, 6,
-						String.format("+%3.2fSEC.", lasttimebonus/60.0f), EventReceiver.COLOR.YELLOW)
+						String.format("+%3.2fSEC.", lasttimebonus/60.0f), COLOR.YELLOW)
 			} else {
 				// LEVEL BONUS
-				receiver.drawScoreFont(engine, playerID, 0, 6, "BONUS", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 0, 6, "BONUS", COLOR.BLUE)
 				val levelBonus = maxOf(0, (TIMELIMIT_LEVEL-levelTimer)*(engine.statistics.level+1))
 				receiver.drawScoreNum(engine, playerID, 0, 7, levelBonus.toString(), fontcolorLevelTime, 2f)
 				receiver.drawScoreNum(engine, playerID, 6, 6, GeneralUtil.getTime(remainLevelTime.toFloat()), fontcolorLevelTime)
 			}
 			// LEVEL
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 9, (engine.statistics.level+1).toString(), 2f)
 
 			// TOTAL TIME
-			receiver.drawScoreFont(engine, playerID, 0, 10, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 10, "TIME", COLOR.BLUE)
 			var totaltime = engine.statistics.time
-			var fontcolorTotalTime = EventReceiver.COLOR.WHITE
+			var fontcolorTotalTime = COLOR.WHITE
 			if(goaltype==GAMETYPE_10MIN_EASY||goaltype==GAMETYPE_10MIN_HARD) {
 				totaltime = TIMELIMIT_10MIN-totaltime
 
 				fontcolorTotalTime = if(totaltime<10*60)
-					EventReceiver.COLOR.RED
+					COLOR.RED
 				else if(totaltime<30*60)
-					EventReceiver.COLOR.ORANGE
+					COLOR.ORANGE
 				else if(totaltime<60*60)
-					EventReceiver.COLOR.YELLOW
+					COLOR.YELLOW
 				else
-					EventReceiver.COLOR.WHITE
+					COLOR.WHITE
 			}
 			receiver.drawScoreNum(engine, playerID, 0, 11, GeneralUtil.getTime(totaltime.toFloat()), fontcolorTotalTime, 2f)
 
@@ -417,18 +414,17 @@ class MarathonShuttle:NetDummyMode() {
 				var remainRollTime = TIMELIMIT_ROLL-rolltime
 				if(remainRollTime<0) remainRollTime = 0
 
-				receiver.drawScoreFont(engine, playerID, 0, 13, "ROLL TIME", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 0, 13, "ROLL TIME", COLOR.BLUE)
 				receiver.drawScoreNum(engine, playerID, 0, 14, GeneralUtil.getTime(remainRollTime.toFloat()), remainRollTime>0&&remainRollTime<10*60, 2f)
 			}
 
 			if(regretdispframe>0)
 			// REGRET
-				receiver.drawMenuFont(engine, playerID, 2, 21, "REGRET", if(regretdispframe%4==0)
-					EventReceiver.COLOR.YELLOW
-				else if(regretdispframe%4==2)
-					EventReceiver.COLOR.RED
-				else
-					EventReceiver.COLOR.ORANGE)
+				receiver.drawMenuFont(engine, playerID, 2, 21, "REGRET", when {
+					regretdispframe%4==0 -> COLOR.YELLOW
+					regretdispframe%4==2 -> COLOR.RED
+					else -> COLOR.ORANGE
+				})
 			else if(scget) renderLineAlert(engine, playerID, receiver)
 
 		}
@@ -579,10 +575,8 @@ class MarathonShuttle:NetDummyMode() {
 			} else
 				sum = get
 			if(pts>0) lastscore = get
-			if(lines>=1)
-				engine.statistics.scoreFromLineClear += get
-			else
-				engine.statistics.scoreFromOtherBonus += get
+			if(lines>=1) engine.statistics.scoreFromLineClear += get
+			else engine.statistics.scoreFromOtherBonus += get
 			scgettime += spd
 			engine.statistics.score += get
 
@@ -626,7 +620,7 @@ class MarathonShuttle:NetDummyMode() {
 					// Ending (SPECIAL）
 					engine.ending = 2
 					engine.timerActive = false
-					owner.bgmStatus.bgm = ENDING_1
+					owner.bgmStatus.bgm = BGM.ENDING_1
 					owner.bgmStatus.fadesw = false
 					engine.playSE("endingstart")
 				} else {
@@ -666,7 +660,7 @@ class MarathonShuttle:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		val b = if(engine.statistics.time<10800) BGMStatus.BGM.RESULT_1 else BGMStatus.BGM.RESULT_2
+		val b = if(engine.statistics.time<10800) BGM.RESULT_1 else BGM.RESULT_2
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = b
 
@@ -675,18 +669,18 @@ class MarathonShuttle:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, AbstractMode.Statistic.SCORE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.LEVEL, AbstractMode.Statistic.TIME, AbstractMode.Statistic.SPL, AbstractMode.Statistic.LPM)
-		drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, rankingRank)
-		drawResultNetRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[0])
-		drawResultNetRankDaily(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[1])
+		drawResultStats(engine, playerID, receiver, 0, COLOR.BLUE, AbstractMode.Statistic.SCORE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.LEVEL, AbstractMode.Statistic.TIME, AbstractMode.Statistic.SPL, AbstractMode.Statistic.LPM)
+		drawResultRank(engine, playerID, receiver, 12, COLOR.BLUE, rankingRank)
+		drawResultNetRank(engine, playerID, receiver, 14, COLOR.BLUE, netRankingRank[0])
+		drawResultNetRankDaily(engine, playerID, receiver, 16, COLOR.BLUE, netRankingRank[1])
 
-		if(netIsPB) receiver.drawMenuFont(engine, playerID, 2, 18, "NEW PB", EventReceiver.COLOR.ORANGE)
+		if(netIsPB) receiver.drawMenuFont(engine, playerID, 2, 18, "NEW PB", COLOR.ORANGE)
 
 		if(netIsNetPlay&&netReplaySendStatus==1)
-			receiver.drawMenuFont(engine, playerID, 0, 19, "SENDING...", EventReceiver.COLOR.PINK)
+			receiver.drawMenuFont(engine, playerID, 0, 19, "SENDING...", COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch
 			&&netReplaySendStatus==2)
-			receiver.drawMenuFont(engine, playerID, 1, 19, "A: RETRY", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, playerID, 1, 19, "A: RETRY", COLOR.RED)
 
 	}
 
@@ -697,12 +691,9 @@ class MarathonShuttle:NetDummyMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until RANKING_TYPE) {
-				rankingScore[gametypeIndex][i] = prop.getProperty("technician.ranking."+ruleName+"."+gametypeIndex+".score."
-					+i, 0)
-				rankingLines[gametypeIndex][i] = prop.getProperty("technician.ranking."+ruleName+"."+gametypeIndex+".lines."
-					+i, 0)
-				rankingTime[gametypeIndex][i] = prop.getProperty("technician.ranking."+ruleName+"."+gametypeIndex+".time."
-					+i, 0)
+				rankingScore[gametypeIndex][i] = prop.getProperty("technician.ranking.$ruleName.$gametypeIndex.score.$i", 0)
+				rankingLines[gametypeIndex][i] = prop.getProperty("technician.ranking.$ruleName.$gametypeIndex.lines.$i", 0)
+				rankingTime[gametypeIndex][i] = prop.getProperty("technician.ranking.$ruleName.$gametypeIndex.time.$i", 0)
 			}
 
 	}
@@ -842,12 +833,9 @@ class MarathonShuttle:NetDummyMode() {
 	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until RANKING_TYPE) {
-				prop!!.setProperty("technician.ranking."+ruleName+"."+gametypeIndex+".score."
-					+i, rankingScore[gametypeIndex][i])
-				prop.setProperty("technician.ranking."+ruleName+"."+gametypeIndex+".lines."
-					+i, rankingLines[gametypeIndex][i])
-				prop.setProperty("technician.ranking."+ruleName+"."+gametypeIndex+".time."
-					+i, rankingTime[gametypeIndex][i])
+				prop!!.setProperty("technician.ranking.$ruleName.$gametypeIndex.score.$i", rankingScore[gametypeIndex][i])
+				prop.setProperty("technician.ranking.$ruleName.$gametypeIndex.lines.$i", rankingLines[gametypeIndex][i])
+				prop.setProperty("technician.ranking.$ruleName.$gametypeIndex.time.$i", rankingTime[gametypeIndex][i])
 			}
 
 	}
@@ -923,7 +911,7 @@ class MarathonShuttle:NetDummyMode() {
 
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(5, 8, 15, 17, 19, -1)
-		private val tableBGM = arrayOf(GENERIC_1, GENERIC_2, GENERIC_3, GENERIC_4, GENERIC_5, GENERIC_6)
+		private val tableBGM = arrayOf(BGM.GENERIC_1, BGM.GENERIC_2, BGM.GENERIC_3, BGM.GENERIC_4, BGM.GENERIC_5, BGM.GENERIC_6)
 		/** Combo goal table */
 		private val COMBO_GOAL_TABLE = intArrayOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)
 

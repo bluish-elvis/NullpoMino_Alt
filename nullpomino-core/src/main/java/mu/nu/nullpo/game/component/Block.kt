@@ -48,7 +48,7 @@ class Block(
 	constructor(cint:Int = 0, skin:Int = 0, aint:Int = 0):this(null, skin, aint) {
 		this.cint = cint
 	}
-	//val aset:Set<ATTRIBUTE> get() = aint.map{it.bit}.sum()
+	//val aset:Set<ATTRIBUTE> get() = aint.values{it.bit}.sum()
 
 	/** 固定してから経過した frame count */
 	var elapsedFrames:Int = 0
@@ -195,13 +195,13 @@ class Block(
 		val gem:COLOR
 			get() = when {
 				this==RAINBOW -> GEM_RAINBOW
-				this.ordinal in RED.ordinal..PURPLE.ordinal -> COLOR.values()[this.ordinal+7]
+				ordinal in RED.ordinal..PURPLE.ordinal -> COLOR.values()[ordinal+7]
 				else -> this
 			}
 		val ungem:COLOR
 			get() = when {
 				this==GEM_RAINBOW -> RAINBOW
-				this.ordinal in GEM_RED.ordinal..GEM_PURPLE.ordinal -> COLOR.values()[this.ordinal-7]
+				ordinal in GEM_RED.ordinal..GEM_PURPLE.ordinal -> COLOR.values()[ordinal-7]
 				else -> this
 			}
 	}
@@ -243,7 +243,7 @@ class Block(
 		/** Ignore block connections (for Avalanche modes) */
 		IGNORE_BLOCKLINK;
 
-		val bit:Int get() = 2.0.pow(this.ordinal).roundToInt()
+		val bit:Int get() = 2.0.pow(ordinal).roundToInt()
 
 	}
 

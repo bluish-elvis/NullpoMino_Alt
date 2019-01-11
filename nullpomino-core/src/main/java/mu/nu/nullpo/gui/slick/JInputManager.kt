@@ -22,7 +22,7 @@ object JInputManager {
 	/** JInput keyboard */
 	var keyboard:Keyboard? = null
 
-	/** Keysym map */
+	/** Keysym values */
 	var keyMap:HashMap<Int, Component.Identifier.Key> = HashMap()
 
 	/** Init keysym mappings */

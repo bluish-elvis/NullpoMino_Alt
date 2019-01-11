@@ -23,7 +23,9 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -95,7 +97,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 	/** Zenkeshi ojama bonus */
 	private var zenKeshiOjama:IntArray = IntArray(0)
 
-	/** Indices for map previews */
+	/** Indices for values previews */
 	private var previewChain:IntArray = IntArray(0)
 	private var previewSubset:IntArray = IntArray(0)
 
@@ -436,8 +438,8 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						mapNumber[playerID] = -1
 					39 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 					40 -> enableSE[playerID] = !enableSE[playerID]
 					41 -> bigDisplay = !bigDisplay
@@ -517,7 +519,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 				else
 					mapNumber[playerID], true)
 
-			// Random map preview
+			// Random values preview
 			if(useMap[playerID]&&propMap[playerID]!=null&&mapNumber[playerID]<0)
 				if(menuTime%30==0) {
 					engine.statc[5]++
@@ -614,7 +616,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						else
 							mapNumber[playerID].toString()+"/"+(mapMaxNo[playerID]-1))
 					menuColor = COLOR.COBALT
-					drawMenu(engine, playerID, receiver, "BGM", BGMStatus[bgmno].toString())
+					drawMenu(engine, playerID, receiver, "BGM", BGM.values[bgmno].toString())
 					menuColor = COLOR.YELLOW
 					drawMenu(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 					menuColor = COLOR.COBALT
@@ -739,24 +741,24 @@ class AvalancheVS:AvalancheVSDummyMode() {
 					for(i in 0 until feverThreshold[playerID]) {
 						if(color==0) color = FEVER_METER_COLORS.size
 						color--
-						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "d",FEVER_METER_COLORS[color])
+						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "d", FEVER_METER_COLORS[color])
 					}
 				} else {
 					for(i in feverPoints[playerID] until feverThreshold[playerID])
 						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "c")
 					for(i in 0 until feverPoints[playerID]) {
 						val color = feverThreshold[playerID]-1-i
-						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "d",FEVER_METER_COLORS[color])
+						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "d", FEVER_METER_COLORS[color])
 					}
 				}
 			} else if(engine.displaysize==1) {
 				receiver.drawDirectFont(fldPosX+220, fldPosY+240, "FEVER", playerColor, .5f)
 				receiver.drawDirectFont(fldPosX+228, fldPosY+256, feverPoints[playerID].toString()+"/"
-					+feverThreshold[playerID], scale=.5f)
+					+feverThreshold[playerID], scale = .5f)
 			} else if(engine.gameStarted) {
 				receiver.drawDirectFont(fldPosX+124, fldPosY+232, "FEVER", playerColor, .5f)
 				receiver.drawDirectFont(fldPosX+132, fldPosY+240, feverPoints[playerID].toString()+"/"
-					+feverThreshold[playerID], scale=.5f)
+					+feverThreshold[playerID], scale = .5f)
 			}
 		}
 
@@ -992,7 +994,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 		savePreset(engine, owner.replayProp, -1-playerID, "")
 		if(xyzzy==573) owner.replayProp.setProperty("avalanchevs.debugcheatenable", true)
 
-		if(useMap[playerID])fldBackup[playerID]?.let{ saveMap(it, owner.replayProp, playerID)}
+		if(useMap[playerID]) fldBackup[playerID]?.let {saveMap(it, owner.replayProp, playerID)}
 
 		owner.replayProp.setProperty("avalanchevs.version", version)
 	}

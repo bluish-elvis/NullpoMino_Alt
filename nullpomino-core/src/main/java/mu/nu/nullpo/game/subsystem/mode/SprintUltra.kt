@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
@@ -238,8 +239,8 @@ class SprintUltra:NetDummyMode() {
 					}
 					7 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 					8 -> big = !big
 					9 -> {
@@ -351,9 +352,9 @@ class SprintUltra:NetDummyMode() {
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 
 		if(netIsWatch)
-			owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 		else
-			owner.bgmStatus.bgm = BGMStatus[bgmno]
+			owner.bgmStatus.bgm = BGM.values[bgmno]
 
 		engine.tspinAllowKick = enableTSpinKick
 		if(tspinEnableType==0)

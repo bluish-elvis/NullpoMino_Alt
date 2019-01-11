@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
@@ -197,7 +197,7 @@ class RetroMania:AbstractMode() {
 
 		engine.big = big
 
-		owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+		owner.bgmStatus.bgm = BGM.SILENT
 		setSpeed(engine)
 	}
 

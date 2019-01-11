@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.*
@@ -236,7 +236,7 @@ class RetroMarathon:AbstractMode() {
 		engine.big = big
 		engine.statistics.levelDispAdd = 1
 
-		owner.bgmStatus.bgm = BGMStatus.BGM.RETRO_S(0)
+		owner.bgmStatus.bgm = BGM.RETRO_S(0)
 		when(gametype) {
 			GAMETYPE_PRESSURE -> {
 				engine.statistics.level = 0

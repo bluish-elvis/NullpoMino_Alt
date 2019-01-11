@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -232,7 +233,7 @@ class PhysicianVS:AbstractMode() {
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		//field.readProperty(prop, id);
-		field.stringToField(prop.getProperty("map.$id", ""))
+		field.stringToField(prop.getProperty("values.$id", ""))
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
@@ -245,7 +246,7 @@ class PhysicianVS:AbstractMode() {
 	 */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		//field.writeProperty(prop, id);
-		prop.setProperty("map.$id", field.fieldToString())
+		prop.setProperty("values.$id", field.fieldToString())
 	}
 
 	/** For previewMapRead
@@ -257,13 +258,13 @@ class PhysicianVS:AbstractMode() {
 	private fun loadMapPreview(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propMap[playerID].isNullOrEmpty()||forceReload) {
 			mapMaxNo[playerID] = 0
-			propMap[playerID] = receiver.loadProperties("config/map/vsbattle/"+mapSet[playerID]+".map")
+			propMap[playerID] = receiver.loadProperties("config/values/vsbattle/"+mapSet[playerID]+".values")
 		}
 
 		if(propMap[playerID].isNullOrEmpty())
 			engine.field?.reset()
 		else propMap[playerID]?.let {
-			mapMaxNo[playerID] = it.getProperty("map.maxMapNumber", 0)
+			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
 			loadMap(engine.field!!, it, id)
 			engine.field!!.setAllSkin(engine.skin)
@@ -380,8 +381,8 @@ class PhysicianVS:AbstractMode() {
 					12 -> enableSE[playerID] = !enableSE[playerID]
 					13 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 					14 -> {
 						useMap[playerID] = !useMap[playerID]
@@ -438,7 +439,7 @@ class PhysicianVS:AbstractMode() {
 				else
 					mapNumber[playerID], true)
 
-			// Random map preview
+			// Random values preview
 			if(useMap[playerID]&&propMap[playerID]!=null&&mapNumber[playerID]<0)
 				if(menuTime%30==0) {
 					engine.statc[5]++
@@ -481,7 +482,7 @@ class PhysicianVS:AbstractMode() {
 					else
 						"NORMAL")
 				menuColor = COLOR.PINK
-				drawMenu(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]), "BGM", BGMStatus[bgmno].toString())
+				drawMenu(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]), "BGM", BGM.values[bgmno].toString())
 				menuColor = COLOR.CYAN
 				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", mapSet[playerID].toString(), "MAP NO.",
 					if(mapNumber[playerID]<0)
@@ -504,8 +505,8 @@ class PhysicianVS:AbstractMode() {
 					engine.field!!.setAllSkin(engine.skin)
 				} else {
 					if(propMap[playerID]==null) {
-						propMap[playerID] = receiver.loadProperties("config/map/vsbattle/"
-							+mapSet[playerID]+".map")
+						propMap[playerID] = receiver.loadProperties("config/values/vsbattle/"
+							+mapSet[playerID]+".values")
 					}else propMap[playerID]?.let {
 						engine.createFieldIfNeeded()
 
@@ -546,7 +547,7 @@ class PhysicianVS:AbstractMode() {
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_CONNECT
 		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.bgmStatus.bgm = BGMStatus[bgmno]
+		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 
 		engine.tspinAllowKick = false
 		engine.tspinEnable = false
@@ -763,7 +764,7 @@ class PhysicianVS:AbstractMode() {
 				owner.engine[1].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 			}
 		}
 	}

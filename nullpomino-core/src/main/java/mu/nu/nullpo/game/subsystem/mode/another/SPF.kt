@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -108,10 +109,10 @@ class SPF:AbstractMode() {
 	/** Drop patterns */
 	private var dropPattern:Array<Array<IntArray>> = emptyArray()
 
-	/** Drop map set selected */
+	/** Drop values set selected */
 	private var dropSet:IntArray = IntArray(0)
 
-	/** Drop map selected */
+	/** Drop values selected */
 	private var dropMap:IntArray = IntArray(0)
 
 	/** Drop multipliers */
@@ -258,7 +259,7 @@ class SPF:AbstractMode() {
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		//field.readProperty(prop, id);
-		field.stringToField(prop.getProperty("map.$id", ""))
+		field.stringToField(prop.getProperty("values.$id", ""))
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
@@ -271,7 +272,7 @@ class SPF:AbstractMode() {
 	 */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		//field.writeProperty(prop, id);
-		prop.setProperty("map.$id", field.fieldToString())
+		prop.setProperty("values.$id", field.fieldToString())
 	}
 
 	/** For previewMapRead
@@ -283,10 +284,10 @@ class SPF:AbstractMode() {
 	private fun loadMapPreview(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propMap[playerID]==null||forceReload) {
 			mapMaxNo[playerID] = 0
-			propMap[playerID] = receiver.loadProperties("config/map/spf/"+mapSet[playerID]+".map")
+			propMap[playerID] = receiver.loadProperties("config/values/spf/"+mapSet[playerID]+".values")
 		}
 		propMap[playerID]?.let {
-			mapMaxNo[playerID] = it.getProperty("map.maxMapNumber", 0)
+			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
 			loadMap(engine.field!!, it, id)
 			engine.field!!.setAllSkin(engine.skin)
@@ -296,7 +297,7 @@ class SPF:AbstractMode() {
 	private fun loadDropMapPreview(engine:GameEngine, playerID:Int, pattern:Array<IntArray>?) {
 
 		pattern?.let {
-			log.debug("Loading drop map preview")
+			log.debug("Loading drop values preview")
 			engine.createFieldIfNeeded()
 			engine.field!!.reset()
 			var patternCol = 0
@@ -430,8 +431,8 @@ class SPF:AbstractMode() {
 					}
 					9 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 					10 -> {
 						useMap[playerID] = !useMap[playerID]
@@ -521,7 +522,7 @@ class SPF:AbstractMode() {
 				else
 					mapNumber[playerID], true)
 
-			// Random map preview
+			// Random values preview
 			if(useMap[playerID]&&propMap[playerID]!=null&&mapNumber[playerID]<0)
 				if(menuTime%30==0) {
 					engine.statc[5]++
@@ -564,7 +565,7 @@ class SPF:AbstractMode() {
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/3", COLOR.YELLOW)
 			} else if(menuCursor<18) {
 				initMenu(COLOR.PINK, 9)
-				drawMenu(engine, playerID, receiver, "BGM", BGMStatus[bgmno].toString())
+				drawMenu(engine, playerID, receiver, "BGM", BGM.values[bgmno].toString())
 				menuColor = COLOR.CYAN
 				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", mapSet[playerID].toString(), "MAP NO.",
 					if(mapNumber[playerID]<0)
@@ -631,8 +632,8 @@ class SPF:AbstractMode() {
 					engine.field!!.setAllSkin(engine.skin)
 				} else {
 					if(propMap[playerID]==null)
-						propMap[playerID] = receiver.loadProperties("config/map/spf/"
-							+mapSet[playerID]+".map")
+						propMap[playerID] = receiver.loadProperties("config/values/spf/"
+							+mapSet[playerID]+".values")
 					else propMap[playerID]?.let {
 						engine.createFieldIfNeeded()
 
@@ -667,7 +668,7 @@ class SPF:AbstractMode() {
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		//engine.big = big[playerID];
 		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.bgmStatus.bgm = BGMStatus[bgmno]
+		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 		//engine.colorClearSize = big[playerID] ? 8 : 2;
 		engine.colorClearSize = 2
 		engine.ignoreHidden = false
@@ -1194,7 +1195,7 @@ class SPF:AbstractMode() {
 				winnerID = -1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
@@ -1203,7 +1204,7 @@ class SPF:AbstractMode() {
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
 				// 2P win
 				winnerID = 1
@@ -1212,7 +1213,7 @@ class SPF:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 			}
 	}
 
@@ -1264,7 +1265,7 @@ class SPF:AbstractMode() {
 		/** Number of players */
 		private const val MAX_PLAYERS = 2
 
-		/** Names of drop map sets */
+		/** Names of drop values sets */
 		private val DROP_SET_NAMES = arrayOf("CLASSIC", "REMIX", "SWORD", "S-MIRROR", "AVALANCHE", "A-MIRROR")
 
 		private val DROP_PATTERNS =

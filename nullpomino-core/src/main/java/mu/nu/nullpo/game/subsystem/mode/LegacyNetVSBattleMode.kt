@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.*
 import mu.nu.nullpo.game.play.GameEngine
@@ -223,10 +224,10 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 	/** Map number to use */
 	private var mapNo:Int = 0
 
-	/** Random for selecting map in Practice mode */
+	/** Random for selecting values in Practice mode */
 	private var randMap:Random? = null
 
-	/** Practice mode last used map number */
+	/** Practice mode last used values number */
 	private var mapPreviousPracticeMap:Int = 0
 
 	/** UID of player who attacked local player last */
@@ -640,11 +641,11 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 		engine.stat = GameEngine.Status.READY
 		engine.resetStatc()
 
-		// map
+		// values
 		if(currentRoomInfo!=null&&currentRoomInfo!!.useMap&&netLobby!!.mapList.size>0) {
 			if(randMap==null) randMap = Random()
 
-			var map = 0
+			var map:Int
 			val maxMap = netLobby!!.mapList.size
 			do
 				map = randMap!!.nextInt(maxMap)
@@ -786,7 +787,7 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 					}
 				}
 
-				// Random map preview
+				// Random values preview
 				if(currentRoomInfo!=null&&currentRoomInfo!!.useMap&&!netLobby!!.mapList.isEmpty())
 					if(menuTime%30==0) {
 						engine.statc[5]++
@@ -910,9 +911,9 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 			targetTimer = 0
 		}
 		if(isPractice)
-			owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 		else {
-			owner.bgmStatus.bgm = BGMStatus.BGM.EXTRA_1
+			owner.bgmStatus.bgm = BGM.EXTRA_1
 			owner.bgmStatus.fadesw = false
 		}
 		pieceMoveTimer = 0
@@ -1252,24 +1253,19 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 			} else if(newMeterValue<engine.meterValue) engine.meterValue--
 		} else
 			engine.meterValue = newMeterValue
-		if(tempGarbage>=4)
-			engine.meterColor = GameEngine.METER_COLOR_RED
-		else if(tempGarbage>=3)
-			engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		else if(tempGarbage>=1)
-			engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		else
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
+		engine.meterColor = when {
+			tempGarbage>=4 -> GameEngine.METER_COLOR_RED
+			tempGarbage>=3 -> GameEngine.METER_COLOR_ORANGE
+			tempGarbage>=1 -> GameEngine.METER_COLOR_YELLOW
+			else -> GameEngine.METER_COLOR_GREEN
+		}
 
 		// APL & APM
 		if(playerID==0&&engine.gameActive&&engine.timerActive) {
 			val tempGarbageSent = garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR
 			playerAPM[0] = tempGarbageSent*3600/engine.statistics.time
 
-			if(engine.statistics.lines>0)
-				playerAPL[0] = tempGarbageSent/engine.statistics.lines
-			else
-				playerAPL[0] = 0f
+			playerAPL[0] = if(engine.statistics.lines>0) tempGarbageSent/engine.statistics.lines else 0f
 		}
 
 		// Timer
@@ -1288,20 +1284,20 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 		// Automatically start timer
 		if(playerID==0&&currentRoomInfo!=null&&autoStartActive&&!isNetGameActive)
-			if(numPlayers<=1)
-				autoStartActive = false
-			else if(autoStartTimer>0)
-				autoStartTimer--
-			else {
-				if(playerSeatNumber!=-1) netLobby!!.netPlayerClient!!.send("autostart\n")
-				autoStartTimer = 0
-				autoStartActive = false
+			when {
+				numPlayers<=1 -> autoStartActive = false
+				autoStartTimer>0 -> autoStartTimer--
+				else -> {
+					if(playerSeatNumber!=-1) netLobby!!.netPlayerClient!!.send("autostart\n")
+					autoStartTimer = 0
+					autoStartActive = false
+				}
 			}
 
 		// End practice mode
 		if(playerID==0&&isPractice&&isPracticeExitAllowed&&engine.ctrl!!.isPush(Controller.BUTTON_F)) {
 			engine.timerActive = false
-			owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 			isPracticeExitAllowed = false
 
 			if(isPractice) {
@@ -1365,21 +1361,24 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 			val y = receiver.getFieldDisplayPositionY(engine, playerID)
 
 			// Name
-			if(playerNames!=null&&playerNames[playerID]!=null&&playerNames[playerID].isNotEmpty()) {
+			if(playerNames[playerID].isNotEmpty()) {
 				var name = playerNames[playerID]
 				var fontcolorNum = playerTeamColors[playerID]
 				if(fontcolorNum<0) fontcolorNum = 0
 				if(fontcolorNum>TEAM_FONT_COLORS.size-1) fontcolorNum = TEAM_FONT_COLORS.size-1
 				val fontcolor = TEAM_FONT_COLORS[fontcolorNum]
 
-				if(engine.displaysize==-1) {
-					if(name.length>7) name = name.substring(0, 7)+".."
-					receiver.drawDirectTTF(x, y-16, name, fontcolor)
-				} else if(playerID==0) {
-					if(name.length>14) name = name.substring(0, 14)+".."
-					receiver.drawDirectTTF(x, y-20, name, fontcolor)
-				} else
-					receiver.drawDirectTTF(x, y-20, name, fontcolor)
+				when {
+					engine.displaysize==-1 -> {
+						if(name.length>7) name = name.substring(0, 7)+".."
+						receiver.drawDirectTTF(x, y-16, name, fontcolor)
+					}
+					playerID==0 -> {
+						if(name.length>14) name = name.substring(0, 14)+".."
+						receiver.drawDirectTTF(x, y-20, name, fontcolor)
+					}
+					else -> receiver.drawDirectTTF(x, y-20, name, fontcolor)
+				}
 			}
 
 			// garbage blockcount
@@ -1551,7 +1550,7 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 			}
 
 		if(playerID==0&&!isDead[playerID]) {
-			owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 			engine.resetFieldVisible()
 
 			sendField(engine)
@@ -1586,46 +1585,33 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 		val place = playerPlace[playerID]
 
 		if(engine.displaysize!=-1) {
-			if(isReady[playerID]&&!isNetGameActive)
-				receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
-			else if(numNowPlayers==2&&isDead[playerID])
-				receiver.drawDirectFont(x+52, y+204, "LOSE", COLOR.WHITE)
-			else if(place==1) {
-				//receiver.drawDirect(x + 12, y + 204, "GAME OVER", EventReceiver.COLOR.WHITE);
-			} else if(place==2)
-				receiver.drawDirectFont(x+12, y+204, "2ND PLACE", COLOR.WHITE)
-			else if(place==3)
-				receiver.drawDirectFont(x+12, y+204, "3RD PLACE", COLOR.RED)
-			else if(place==4)
-				receiver.drawDirectFont(x+12, y+204, "4TH PLACE", COLOR.GREEN)
-			else if(place==5)
-				receiver.drawDirectFont(x+12, y+204, "5TH PLACE", COLOR.BLUE)
-			else if(place==6)
-				receiver.drawDirectFont(x+12, y+204, "6TH PLACE", COLOR.PURPLE)
+			when {
+				isReady[playerID]&&!isNetGameActive -> receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
+				numNowPlayers==2&&isDead[playerID] -> receiver.drawDirectFont(x+52, y+204, "LOSE", COLOR.WHITE)
+				place==1 -> receiver.drawDirectFont(x+12, y+204, "YOU WIN!!", COLOR.YELLOW)
+				place==2 -> receiver.drawDirectFont(x+12, y+204, "2ND PLACE", COLOR.WHITE)
+				place==3 -> receiver.drawDirectFont(x+12, y+204, "3RD PLACE", COLOR.RED)
+				place==4 -> receiver.drawDirectFont(x+12, y+204, "4TH PLACE", COLOR.GREEN)
+				place==5 -> receiver.drawDirectFont(x+12, y+204, "5TH PLACE", COLOR.BLUE)
+				place==6 -> receiver.drawDirectFont(x+12, y+204, "6TH PLACE", COLOR.PURPLE)
+			}
 
 			if(playerKObyYou[playerID])
 				receiver.drawDirectFont(x+52, y+236, "K.O.", COLOR.PINK)
 		} else {
-			if(isReady[playerID]&&!isNetGameActive)
-				receiver.drawDirectFont(x+36, y+80, "OK", COLOR.YELLOW, .5f)
-			else if(numNowPlayers==2||currentRoomInfo!!.maxPlayers==2)
-				receiver.drawDirectFont(x+28, y+80, "LOSE", COLOR.WHITE, .5f)
-			else if(place==1) {
-				//receiver.drawDirect(x + 8, y + 80, "GAME OVER", EventReceiver.COLOR.WHITE, .5f);
-			} else if(place==2)
-				receiver.drawDirectFont(x+8, y+80, "2ND PLACE", COLOR.WHITE, .5f)
-			else if(place==3)
-				receiver.drawDirectFont(x+8, y+80, "3RD PLACE", COLOR.RED, .5f)
-			else if(place==4)
-				receiver.drawDirectFont(x+8, y+80, "4TH PLACE", COLOR.GREEN, .5f)
-			else if(place==5)
-				receiver.drawDirectFont(x+8, y+80, "5TH PLACE", COLOR.BLUE, .5f)
-			else if(place==6)
-				receiver.drawDirectFont(x+8, y+80, "6TH PLACE", COLOR.PURPLE, .5f)
+			when {
+				isReady[playerID]&&!isNetGameActive -> receiver.drawDirectFont(x+36, y+80, "OK", COLOR.YELLOW, .5f)
+				numNowPlayers==2||currentRoomInfo!!.maxPlayers==2 -> receiver.drawDirectFont(x+28, y+80, "LOSE", COLOR.WHITE, .5f)
+				place==1 -> receiver.drawDirectFont(x+8, y+80, "YOU WIN!!", COLOR.YELLOW, .5f)
+				place==2 -> receiver.drawDirectFont(x+8, y+80, "2ND PLACE", COLOR.WHITE, .5f)
+				place==3 -> receiver.drawDirectFont(x+8, y+80, "3RD PLACE", COLOR.RED, .5f)
+				place==4 -> receiver.drawDirectFont(x+8, y+80, "4TH PLACE", COLOR.GREEN, .5f)
+				place==5 -> receiver.drawDirectFont(x+8, y+80, "5TH PLACE", COLOR.BLUE, .5f)
+				place==6 -> receiver.drawDirectFont(x+8, y+80, "6TH PLACE", COLOR.PURPLE, .5f)
+			}
 
 			if(playerKObyYou[playerID])
-				receiver.drawDirectFont(x+28,
-					y+96, "K.O.", COLOR.PINK, .5f)
+				receiver.drawDirectFont(x+28, y+96, "K.O.", COLOR.PINK, .5f)
 		}
 	}
 
@@ -1646,7 +1632,7 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 		if(engine.statc[0]==0) {
 			//if((playerID == 0) && (playerSeatNumber != -1)) numWins++;
-			owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 			if(engine.ai!=null) engine.ai!!.shutdown(engine, playerID)
 			engine.resetFieldVisible()
 			engine.playSE("excellent")
@@ -1671,21 +1657,16 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 		val x = receiver.getFieldDisplayPositionX(engine, playerID)
 		val y = receiver.getFieldDisplayPositionY(engine, playerID)
 
-		if(engine.displaysize!=-1) {
-			if(isReady[playerID]&&!isNetGameActive)
-				receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
-			else if(numNowPlayers==2||currentRoomInfo!!.maxPlayers==2)
-				receiver.drawDirectFont(x+52, y+204, "WIN!", COLOR.YELLOW)
-			else
-				receiver.drawDirectFont(x+4, y+204, "1ST PLACE!", COLOR.YELLOW)
-		} else if(isReady[playerID]&&!isNetGameActive)
-			receiver.drawDirectFont(x+36,
-				y+80, "OK", COLOR.YELLOW, .5f)
-		else if(numNowPlayers==2||currentRoomInfo!!.maxPlayers==2)
-			receiver.drawDirectFont(x+28,
-				y+80, "WIN!", COLOR.YELLOW, .5f)
-		else
-			receiver.drawDirectFont(x+4, y+80, "1ST PLACE!", COLOR.YELLOW, .5f)
+		when {
+			engine.displaysize!=-1 -> when {
+				isReady[playerID]&&!isNetGameActive -> receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
+				numNowPlayers==2||currentRoomInfo!!.maxPlayers==2 -> receiver.drawDirectFont(x+52, y+204, "WIN!", COLOR.YELLOW)
+				else -> receiver.drawDirectFont(x+4, y+204, "1ST PLACE!", COLOR.YELLOW)
+			}
+			isReady[playerID]&&!isNetGameActive -> receiver.drawDirectFont(x+36, y+80, "OK", COLOR.YELLOW, .5f)
+			numNowPlayers==2||currentRoomInfo!!.maxPlayers==2 -> receiver.drawDirectFont(x+28, y+80, "WIN!", COLOR.YELLOW, .5f)
+			else -> receiver.drawDirectFont(x+4, y+80, "1ST PLACE!", COLOR.YELLOW, .5f)
+		}
 	}
 
 	/* Processing of the results screen */
@@ -1714,25 +1695,17 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 		if(!isPractice) {
 			receiver.drawMenuFont(engine, playerID, 0, 0, "RESULT", COLOR.ORANGE, scale)
-			if(playerPlace[playerID]==1) {
-				if(numNowPlayers==2)
-					receiver.drawMenuFont(engine, playerID, 6, 1, "WIN!", COLOR.YELLOW, scale)
-				else if(numNowPlayers>2) receiver.drawMenuFont(engine, playerID, 6, 1, "1ST!", COLOR.YELLOW, scale)
-			} else if(playerPlace[playerID]==2) {
-				if(numNowPlayers==2)
-					receiver.drawMenuFont(engine, playerID, 6, 1, "LOSE", COLOR.WHITE, scale)
-				else
-					receiver.drawMenuFont(engine, playerID, 7, 1, "2ND", COLOR.WHITE, scale)
-			} else if(playerPlace[playerID]==3)
-				receiver.drawMenuFont(engine, playerID, 7, 1, "3RD", COLOR.RED, scale)
-			else if(playerPlace[playerID]==4)
-				receiver.drawMenuFont(engine, playerID, 7, 1, "4TH", COLOR.GREEN, scale)
-			else if(playerPlace[playerID]==5)
-				receiver.drawMenuFont(engine, playerID, 7, 1, "5TH", COLOR.BLUE, scale)
-			else if(playerPlace[playerID]==6)
-				receiver.drawMenuFont(engine, playerID, 7, 1, "6TH", COLOR.COBALT, scale)
-		} else
-			receiver.drawMenuFont(engine, playerID, 0, 0, "PRACTICE", COLOR.PINK, scale)
+			when {
+				playerPlace[playerID]==1 -> receiver.drawMenuFont(engine, playerID, 6, 1,
+					if(numNowPlayers==2) "WIN!" else "1ST!", COLOR.YELLOW, scale)
+				playerPlace[playerID]==2 -> receiver.drawMenuFont(engine, playerID, 6, 1,
+					if(numNowPlayers==2) "LOSE" else "2ND.", COLOR.WHITE, scale)
+				playerPlace[playerID]==3 -> receiver.drawMenuFont(engine, playerID, 7, 1, "3RD", COLOR.RED, scale)
+				playerPlace[playerID]==4 -> receiver.drawMenuFont(engine, playerID, 7, 1, "4TH", COLOR.GREEN, scale)
+				playerPlace[playerID]==5 -> receiver.drawMenuFont(engine, playerID, 7, 1, "5TH", COLOR.BLUE, scale)
+				playerPlace[playerID]==6 -> receiver.drawMenuFont(engine, playerID, 7, 1, "6TH", COLOR.COBALT, scale)
+			}
+		} else receiver.drawMenuFont(engine, playerID, 0, 0, "PRACTICE", COLOR.PINK, scale)
 
 		drawResultScale(engine, playerID, receiver, 2, COLOR.ORANGE, scale, "ATTACK", String.format("%10g",
 			garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR), "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "ATK/LINE", String.format("%10g", playerAPL[playerID]), "ATTACK/MIN", String.format("%10g", playerAPM[playerID]), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time.toFloat())))
@@ -1991,7 +1964,7 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 			if(isPractice) {
 				isPractice = false
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 				owner.engine[0].gameEnded()
 				owner.engine[0].stat = GameEngine.Status.SETTING
 				owner.engine[0].resetStatc()

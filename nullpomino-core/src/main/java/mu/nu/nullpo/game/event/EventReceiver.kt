@@ -38,11 +38,10 @@ import java.util.zip.GZIPOutputStream
 open class EventReceiver {
 
 	/** Font cint constants */
-	enum class FONT(val id:Int) { NORMAL(0), NANO(-1), NUM(1), GRADE(2), GRADE_BIG(3), TTF(4); }
+	enum class FONT { NORMAL, NANO, NUM, GRADE, GRADE_BIG, TTF; }
 
 	/** Font cint constants */
-	enum class COLOR { WHITE, BLUE, RED, PINK, GREEN, YELLOW, CYAN, ORANGE, PURPLE, COBALT;
-	}
+	enum class COLOR { WHITE, BLUE, RED, PINK, GREEN, YELLOW, CYAN, ORANGE, PURPLE, COBALT; }
 
 	/** Background display */
 	protected var showbg:Boolean = false

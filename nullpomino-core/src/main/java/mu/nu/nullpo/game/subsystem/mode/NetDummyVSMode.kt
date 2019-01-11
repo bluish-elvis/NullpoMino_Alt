@@ -1,6 +1,8 @@
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.*
 import mu.nu.nullpo.game.play.GameEngine
@@ -110,10 +112,10 @@ open class NetDummyVSMode:NetDummyMode() {
 	/** NET-VS: Map number to use */
 	private var netvsMapNo:Int = 0
 
-	/** NET-VS: Random for selecting map in Practice mode */
+	/** NET-VS: Random for selecting values in Practice mode */
 	private var netvsRandMap:Random? = null
 
-	/** NET-VS: Practice mode last used map number */
+	/** NET-VS: Practice mode last used values number */
 	private var netvsMapPreviousPracticeMap:Int = 0
 
 	/** NET-VS: UID of player who attacked local player last (-1: Suicide or
@@ -651,9 +653,9 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(playerID==0) {
 			// Set BGM
 			if(netvsIsPractice)
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 			else {
-				owner.bgmStatus.bgm = BGMStatus.BGM.EXTRA_1
+				owner.bgmStatus.bgm = BGM.EXTRA_1
 				owner.bgmStatus.fadesw = false
 			}
 
@@ -716,7 +718,7 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(playerID==0&&netvsIsPractice&&netvsIsPracticeExitAllowed&&engine.ctrl!!.isPush(Controller.BUTTON_F)) {
 			netvsIsPractice = false
 			netvsIsPracticeExitAllowed = false
-			owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 			engine.field!!.reset()
 			engine.gameEnded()
 			engine.stat = GameEngine.Status.SETTING
@@ -760,7 +762,7 @@ open class NetDummyVSMode:NetDummyMode() {
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==0) engine.gameEnded()
 		engine.allowTextRenderByReceiver = false
-		owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+		owner.bgmStatus.bgm = BGM.SILENT
 		engine.resetFieldVisible()
 
 		// Practice
@@ -866,7 +868,7 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		if(engine.statc[0]==0) {
 			engine.gameEnded()
-			owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 			engine.resetFieldVisible()
 			engine.playSE("excellent")
 		}
@@ -1179,7 +1181,7 @@ open class NetDummyVSMode:NetDummyMode() {
 			if(netvsIsPractice) {
 				netvsIsPractice = false
 				netvsIsPracticeExitAllowed = false
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 				owner.engine[0].gameEnded()
 				owner.engine[0].stat = GameEngine.Status.SETTING
 				owner.engine[0].resetStatc()

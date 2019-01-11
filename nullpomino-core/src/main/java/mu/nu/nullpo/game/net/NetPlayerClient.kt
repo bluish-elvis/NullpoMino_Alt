@@ -244,15 +244,19 @@ class NetPlayerClient:NetBaseClient {
 			val p = getPlayerInfoByUID(Integer.parseInt(message[2]))
 
 			if(p!=null)
-				if(message[1]=="watchonly") {
-					p.seatID = -1
-					p.queueID = -1
-				} else if(message[1]=="joinqueue") {
-					p.seatID = -1
-					p.queueID = Integer.parseInt(message[4])
-				} else if(message[1]=="joinseat") {
-					p.seatID = Integer.parseInt(message[4])
-					p.queueID = -1
+				when {
+					message[1]=="watchonly" -> {
+						p.seatID = -1
+						p.queueID = -1
+					}
+					message[1]=="joinqueue" -> {
+						p.seatID = -1
+						p.queueID = Integer.parseInt(message[4])
+					}
+					message[1]=="joinseat" -> {
+						p.seatID = Integer.parseInt(message[4])
+						p.queueID = -1
+					}
 				}
 		}
 

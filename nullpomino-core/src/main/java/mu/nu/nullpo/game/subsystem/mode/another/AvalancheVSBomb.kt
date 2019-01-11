@@ -23,7 +23,9 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -256,8 +258,8 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					29 -> bigDisplay = !bigDisplay
 					30 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 					31 -> enableSE[playerID] = !enableSE[playerID]
 					32, 33 -> {
@@ -295,7 +297,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 				else
 					mapNumber[playerID], true)
 
-			// Random map preview
+			// Random values preview
 			if(useMap[playerID]&&propMap[playerID]!=null&&mapNumber[playerID]<0)
 				if(menuTime%30==0) {
 					engine.statc[5]++
@@ -364,13 +366,13 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/4", EventReceiver.COLOR.YELLOW)
 			} else {
 				initMenu(EventReceiver.COLOR.PINK, 26)
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", mapSet[playerID].toString(), "MAP NO.",
-					if(mapNumber[playerID]<0)
-						"RANDOM"
+				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", mapSet[playerID].toString(),
+					"MAP NO.",
+					if(mapNumber[playerID]<0) "RANDOM"
 					else
 						mapNumber[playerID].toString()+"/"+(mapMaxNo[playerID]-1), "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
 				menuColor = EventReceiver.COLOR.COBALT
-				drawMenu(engine, playerID, receiver, "BGM", BGMStatus[bgmno].toString(), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
+				drawMenu(engine, playerID, receiver, "BGM", BGM.values[bgmno].toString(), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 				menuColor = EventReceiver.COLOR.GREEN
 				drawMenu(engine, playerID, receiver, "LOAD", presetNumber[playerID].toString(), "SAVE", presetNumber[playerID].toString())
 
@@ -535,7 +537,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 		saveOtherSetting(engine, owner.replayProp)
 		savePreset(engine, owner.replayProp, -1-playerID, "bombbattle")
 
-		if(useMap[playerID])fldBackup[playerID]?.let{ saveMap(it, owner.replayProp, playerID)}
+		if(useMap[playerID]) fldBackup[playerID]?.let {saveMap(it, owner.replayProp, playerID)}
 
 		owner.replayProp.setProperty("avalanchevs.version", version)
 	}

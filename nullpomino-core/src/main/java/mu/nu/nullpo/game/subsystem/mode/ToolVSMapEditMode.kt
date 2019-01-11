@@ -69,7 +69,7 @@ class ToolVSMapEditMode:AbstractMode() {
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		//field.readProperty(prop, id);
-		field.stringToField(prop.getProperty("map.$id", ""))
+		field.stringToField(prop.getProperty("values.$id", ""))
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
@@ -82,18 +82,18 @@ class ToolVSMapEditMode:AbstractMode() {
 	 */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		//field.writeProperty(prop, id);
-		prop.setProperty("map.$id", field.fieldToString())
+		prop.setProperty("values.$id", field.fieldToString())
 	}
 
 	/** AllMapRead
 	 * @param setID MapSetID
 	 */
 	private fun loadAllMaps(setID:Int) {
-		propMap = receiver.loadProperties("config/map/vsbattle/$setID.map")?:CustomProperties()
+		propMap = receiver.loadProperties("config/values/vsbattle/$setID.values")?:CustomProperties()
 
 		listFields!!.clear()
 
-		val maxMap = propMap!!.getProperty("map.maxMapNumber", 0)
+		val maxMap = propMap!!.getProperty("values.maxMapNumber", 0)
 		for(i in 0 until maxMap) {
 			val fld = Field()
 			loadMap(fld, propMap!!, i)
@@ -108,12 +108,12 @@ class ToolVSMapEditMode:AbstractMode() {
 		propMap = CustomProperties()
 
 		val maxMap = listFields!!.size
-		propMap!!.setProperty("map.maxMapNumber", maxMap)
+		propMap!!.setProperty("values.maxMapNumber", maxMap)
 
 		for(i in 0 until maxMap)
 			saveMap(listFields!![i], propMap!!, i)
 
-		receiver.saveProperties("config/map/vsbattle/$setID.map", propMap!!)
+		receiver.saveProperties("config/values/vsbattle/$setID.values", propMap!!)
 	}
 
 	private fun grayToRandomColor(field:Field) {

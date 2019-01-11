@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
@@ -47,7 +47,7 @@ class StateConfigMainMenu:DummyMenuChooseState() {
 	override fun init(container:GameContainer, game:StateBasedGame) {}
 
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		if(!ResourceHolder.bgmIsPlaying()) ResourceHolder.bgmStart(BGMStatus.BGM.MENU_2)
+		if(!ResourceHolder.bgmIsPlaying()) ResourceHolder.bgmStart(BGM.MENU_2)
 	}
 
 	/* Draw the screen */

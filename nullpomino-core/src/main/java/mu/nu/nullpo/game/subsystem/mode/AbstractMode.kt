@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
@@ -381,7 +382,7 @@ abstract class AbstractMode:GameMode {
 	protected fun drawMenuBGM(engine:GameEngine, playerID:Int, receiver:EventReceiver, bgmno:Int) {
 		val cur = menuCursor==statcMenu&&!engine.owner.replayMode
 		receiver.drawMenuFont(engine, playerID, 0, menuY, "BGM", color = menuColor)
-		receiver.drawMenuFont(engine, playerID, 0, menuY+1, BGMStatus[bgmno].toString(), cur)
+		receiver.drawMenuFont(engine, playerID, 0, menuY+1, BGM.values[bgmno].drawName, cur)
 		receiver.drawMenuNum(engine, playerID, 8, menuY, String.format("%2d", bgmno), cur)
 		if(cur) receiver.drawMenuFont(engine, playerID, 7, menuY, "b", true)
 		statcMenu++

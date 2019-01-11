@@ -23,12 +23,12 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import mu.nu.nullpo.game.component.BGMStatus.BGM.*
-import mu.nu.nullpo.game.event.EventReceiver.COLOR
 
 /** RETRO MANIA mode (Original from NullpoUE build 121909 by Zircean) */
 class RetroModern:AbstractMode() {
@@ -245,7 +245,7 @@ class RetroModern:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
-		receiver.drawScoreFont(engine, playerID, 0, 0, "RETRO MODERN",color = COLOR.COBALT)
+		receiver.drawScoreFont(engine, playerID, 0, 0, "RETRO MODERN", color = COLOR.COBALT)
 		receiver.drawScoreFont(engine, playerID, 0, 1, "("+GAMETYPE_NAME[gametype]
 			+" SPEED)", COLOR.COBALT)
 
@@ -254,7 +254,7 @@ class RetroModern:AbstractMode() {
 			if(!owner.replayMode&&!big&&startlevel==0&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE LV LINE TIME",color= COLOR.BLUE, scale=scale)
+				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE LV LINE TIME", color = COLOR.BLUE, scale = scale)
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreNum(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
@@ -274,7 +274,7 @@ class RetroModern:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 4, sc.toString(), scget, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 7, "LINE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 8, String.format("%03d/%03d", engine.statistics.lines, totalnorma), scale=2f)
+			receiver.drawScoreNum(engine, playerID, 0, 8, String.format("%03d/%03d", engine.statistics.lines, totalnorma), scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 10, "LEVEL", COLOR.BLUE)
 			var lvdem = 0
@@ -283,10 +283,10 @@ class RetroModern:AbstractMode() {
 			else if(engine.statistics.level<levelNorma.size) lvdem = norm*100/levelNorma[engine.statistics.level]
 			if(lvdem<0) lvdem *= -1
 			if(lvdem>=100) lvdem -= lvdem-lvdem%100
-			receiver.drawScoreNum(engine, playerID, 5, 10, String.format("%02d.%02d", engine.statistics.level, lvdem), scale=2f)
+			receiver.drawScoreNum(engine, playerID, 5, 10, String.format("%02d.%02d", engine.statistics.level, lvdem), scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 11, "TIME", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 12, GeneralUtil.getTime(engine.statistics.time.toFloat()), scale=2f)
+			receiver.drawScoreNum(engine, playerID, 0, 12, GeneralUtil.getTime(engine.statistics.time.toFloat()), scale = 2f)
 
 			// Roll 残り time
 			if(rolltime>0) {
@@ -654,11 +654,26 @@ class RetroModern:AbstractMode() {
 		private const val STRING_POWERON_PATTERN = "4040050165233516506133350555213560141520224542633206134255165200333560031332022463366645230432611435533550326251231351500244220365666413154321122014634420132506140113461064400566344110153223400634050546214410040214650102256233133116353263111335043461206211262231565235306361150440653002222453302523255563545455656660124120450663502223206465164461126135621055103645066644052535021110020361422122352566156434351304346510363640453452505655142263102605202216351615031650050464160613325366023413453036542441246445101562252141201460505435130040221311400543416041660644410106141444041454511600413146353206260246251556635262420616451361336106153451563316660054255631510320566516465265421144640513424316315421664414026440165341010302443625101652205230550602002033120044344034100160442632436645325512265351205642343342312121523120061530234443062420033310461403306365402313212656105101254352514216210355230014040335464640401464125332132315552404146634264364245513600336065666305002023203545052006445544450440460"
 
 		/** Gravity table */
-		private val tableDenominator = arrayOf(intArrayOf(24, 15, 10, 6, 20, 5, 5, 4, 3, 3, 2, 2, 2, 2, 2, 1), intArrayOf(24, 15, 10, 4, 20, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1), intArrayOf(15, 6, 4, 3, 20, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 20, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(1, 1, 1, -2, 20, 1, 1, -2, -3, -4, -4, -4, -5, -4, -3, 0))
+		private val tableDenominator = arrayOf(
+			intArrayOf(24, 15, 10, 6, 20, 5, 5, 4, 3, 3, 2, 2, 2, 2, 2, 1),
+			intArrayOf(24, 15, 10, 4, 20, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1),
+			intArrayOf(15, 6, 4, 3, 20, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+			intArrayOf(1, 1, 1, 1, 20, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+			intArrayOf(1, 1, 1, -2, 20, 1, 1, -2, -3, -4, -4, -4, -5, -4, -3, 0))
 		/** Lock delay table */
-		private val tableLockDelay = arrayOf(intArrayOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 24), intArrayOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 24, 24, 24, 20, 20, 19), intArrayOf(39, 30, 30, 29, 39, 28, 28, 24, 24, 24, 24, 24, 24, 20, 20, 19), intArrayOf(24, 24, 24, 30, 39, 24, 24, 24, 24, 24, 24, 24, 24, 20, 20, 19), intArrayOf(24, 24, 24, 30, 39, 24, 24, 25, 25, 25, 24, 23, 23, 23, 23, 25))
+		private val tableLockDelay = arrayOf(
+			intArrayOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 24),
+			intArrayOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 24, 24, 24, 20, 20, 19),
+			intArrayOf(39, 30, 30, 29, 39, 28, 28, 24, 24, 24, 24, 24, 24, 20, 20, 19),
+			intArrayOf(24, 24, 24, 30, 39, 24, 24, 24, 24, 24, 24, 24, 24, 20, 20, 19),
+			intArrayOf(24, 24, 24, 30, 39, 24, 24, 25, 25, 25, 24, 23, 23, 23, 23, 25))
 		/** ARE table */
-		private val tableARE = arrayOf(intArrayOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26), intArrayOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26), intArrayOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26), intArrayOf(26, 26, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26), intArrayOf(26, 26, 26, 26, 28, 25, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20))
+		private val tableARE = arrayOf(
+			intArrayOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26),
+			intArrayOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26),
+			intArrayOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26),
+			intArrayOf(26, 26, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26),
+			intArrayOf(26, 26, 26, 26, 28, 25, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20))
 
 		/** Lines until level up occers */
 		private val levelNorma = intArrayOf(6, 6, 7, 9, 6, 9, 9, 9, 10, 10, 20, 16, 16, 16, 16)
@@ -667,11 +682,22 @@ class RetroModern:AbstractMode() {
 		private const val MAX_LINES = 300
 
 		/** Score multiply table */
-		private val tableScoreMult = arrayOf(intArrayOf(1, 2, 3, 4, 5, 6, 6, 6, 8, 8, 10, 10, 10, 10, 10, 11, 12, 13), intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 20), intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 20), intArrayOf(5, 5, 6, 6, 8, 8, 10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 20, 20), intArrayOf(5, 5, 6, 7, 8, 9, 10, 10, 11, 12, 13, 14, 14, 15, 15, 16, 25, 25))
+		private val tableScoreMult = arrayOf(
+			intArrayOf(1, 2, 3, 4, 5, 6, 6, 6, 8, 8, 10, 10, 10, 10, 10, 11, 12, 13),
+			intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 20),
+			intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 20),
+			intArrayOf(5, 5, 6, 6, 8, 8, 10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 20, 20),
+			intArrayOf(5, 5, 6, 7, 8, 9, 10, 10, 11, 12, 13, 14, 14, 15, 15, 16, 25, 25))
 		private val tableBonusMult = intArrayOf(1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 5, 5, 10)
 
-		private val levelBG = intArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 14, 19, 10, 11, 12, 13, 29, 36)
-		private val tableBGM = arrayOf(GENERIC_1, GENERIC_1, GENERIC_1, GENERIC_1, PUZZLE_1, PUZZLE_1, GENERIC_2, GENERIC_2, GENERIC_3, GENERIC_3, GENERIC_3, GM_2, GM_2, GM_20G_2, GM_20G_2, GM_20G_1, SILENT, ENDING_4)
+		private val levelBG = intArrayOf(
+			0, 1, 2, 3, 4, 5,
+			6, 7, 8, 9, 14, 19,
+			10, 11, 12, 13, 29, 36)
+		private val tableBGM = arrayOf(
+			BGM.GENERIC_1, BGM.GENERIC_1, BGM.GENERIC_1, BGM.GENERIC_1, BGM.PUZZLE_1, BGM.PUZZLE_1,
+			BGM.GENERIC_2, BGM.GENERIC_2, BGM.GENERIC_3, BGM.GENERIC_3, BGM.GENERIC_3, BGM.GM_2,
+			BGM.GM_2, BGM.GM_20G_2, BGM.GM_20G_2, BGM.GM_20G_1, BGM.SILENT, BGM.ENDING_4)
 		/** Name of game types */
 		private val GAMETYPE_NAME = arrayOf("EASY", "NORMAL", "INTENSE", "HARD", "OVERED")
 

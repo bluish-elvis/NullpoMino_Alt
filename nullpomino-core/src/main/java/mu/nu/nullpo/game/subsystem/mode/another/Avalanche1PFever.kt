@@ -61,7 +61,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	/** Time to display added time */
 	private var timeLimitAddDisplay:Int = 0
 
-	/** Fever map CustomProperties */
+	/** Fever values CustomProperties */
 	private var propFeverMap:CustomProperties = CustomProperties()
 
 	/** Chain levels for Fever Mode */
@@ -74,7 +74,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	/** Flag set to true when last piece caused a clear */
 	private var cleared:Boolean = false
 
-	/** List of subsets in selected map */
+	/** List of subsets in selected values */
 	private var mapSubsets:Array<String>? = null
 
 	/** Fever chain count when last chain hit occurred */
@@ -95,7 +95,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	/** Flag set when fast-forward is enabled */
 	private var fastinuse:Boolean = false
 
-	/** Indices for map previews */
+	/** Indices for values previews */
 	private var previewChain:Int = 0
 	private var previewSubset:Int = 0
 
@@ -569,8 +569,8 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 	private fun loadMapSetFever(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propFeverMap==null||forceReload) {
-			receiver.loadProperties("config/map/avalanche/"+
-				Avalanche1PDummyMode.FEVER_MAPS[id]+"Endless.map")?.let{propFeverMap = it}
+			receiver.loadProperties("config/values/avalanche/"+
+				Avalanche1PDummyMode.FEVER_MAPS[id]+"Endless.values")?.let{propFeverMap = it}
 			feverChainMin = propFeverMap!!.getProperty("minChain", 3)
 			feverChainMax = propFeverMap!!.getProperty("maxChain", 15)
 			val subsets = propFeverMap!!.getProperty("sets")

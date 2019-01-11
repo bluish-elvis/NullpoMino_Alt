@@ -359,7 +359,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		/** Block colors */
 		val BLOCK_COLORS = intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_PURPLE)
 
-		/** Fever map files list */
+		/** Fever values files list */
 		val FEVER_MAPS = arrayOf("Fever", "15th", "15thDS", "7", "Poochy7")
 
 		const val DAS = 10

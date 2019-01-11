@@ -1,14 +1,13 @@
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import java.util.Random
+import java.util.*
 
 /** VS-DIG RACE mode */
 class VSDigRaceMode:AbstractMode() {
@@ -210,8 +209,8 @@ class VSDigRaceMode:AbstractMode() {
 					11 -> enableSE[playerID] = !enableSE[playerID]
 					12 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 				}
 			}
@@ -264,7 +263,7 @@ class VSDigRaceMode:AbstractMode() {
 			} else {
 				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, 9, "GOAL", goalLines[playerID].toString(), "CHANGERATE",
 					garbagePercent[playerID].toString()+"%", "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
-				drawMenu(engine, playerID, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM", BGMStatus[bgmno].toString())
+				drawMenu(engine, playerID, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM", BGM.values[bgmno].toString())
 			}
 		} else
 			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
@@ -287,7 +286,7 @@ class VSDigRaceMode:AbstractMode() {
 	/* Called at game start */
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.bgmStatus.bgm = BGMStatus[bgmno]
+		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		engine.meterValue = receiver.getMeterMax(engine)
@@ -461,7 +460,7 @@ class VSDigRaceMode:AbstractMode() {
 				winnerID = -1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
@@ -470,7 +469,7 @@ class VSDigRaceMode:AbstractMode() {
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 				if(!owner.replayMode) winCount[0]++
 			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
 				// 2P win
@@ -480,7 +479,7 @@ class VSDigRaceMode:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 				if(!owner.replayMode) winCount[1]++
 			}
 	}

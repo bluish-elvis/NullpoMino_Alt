@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
@@ -306,7 +307,7 @@ class VSBattleMode:AbstractMode() {
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		//field.readProperty(prop, id);
-		field.stringToField(prop.getProperty("map.$id", ""))
+		field.stringToField(prop.getProperty("values.$id", ""))
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
@@ -319,7 +320,7 @@ class VSBattleMode:AbstractMode() {
 	 */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		//field.writeProperty(prop, id);
-		prop.setProperty("map.$id", field.fieldToString())
+		prop.setProperty("values.$id", field.fieldToString())
 	}
 
 	/** I have now accumulatedgarbage blockOfcountReturns
@@ -343,11 +344,11 @@ class VSBattleMode:AbstractMode() {
 	private fun loadMapPreview(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propMap!![playerID]==null||forceReload) {
 			mapMaxNo[playerID] = 0
-			propMap[playerID] = receiver.loadProperties("config/map/vsbattle/"+mapSet[playerID]+".map")
+			propMap[playerID] = receiver.loadProperties("config/values/vsbattle/"+mapSet[playerID]+".values")
 		}
 
-		propMap!![playerID]?.let{
-			mapMaxNo[playerID] = it.getProperty("map.maxMapNumber", 0)
+		propMap[playerID]?.let{
+			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
 			loadMap(engine.field!!, it, id)
 			engine.field!!.setAllSkin(engine.skin)
@@ -487,8 +488,8 @@ class VSBattleMode:AbstractMode() {
 					}
 					23 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 					24 -> showStats = !showStats
 					25 -> {
@@ -544,7 +545,7 @@ class VSBattleMode:AbstractMode() {
 				else
 					mapNumber[playerID], true)
 
-			// Random map preview
+			// Random values preview
 			if(useMap[playerID]&&propMap!![playerID]!=null&&mapNumber[playerID]<0)
 				if(menuTime%30==0) {
 					engine.statc[5]++
@@ -600,7 +601,7 @@ class VSBattleMode:AbstractMode() {
 						"NONE"
 					else
 						hurryupSeconds[playerID].toString()+"SEC", "INTERVAL", hurryupInterval[playerID].toString())
-				drawMenu(engine, playerID, receiver, 8, COLOR.PINK, 23, "BGM", BGMStatus[bgmno].toString(), "SHOW STATS", GeneralUtil.getONorOFF(showStats))
+				drawMenu(engine, playerID, receiver, 8, COLOR.PINK, 23, "BGM", BGM.values[bgmno].toString(), "SHOW STATS", GeneralUtil.getONorOFF(showStats))
 				drawMenu(engine, playerID, receiver, 12, COLOR.CYAN, 25, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", mapSet[playerID].toString(), "MAP NO.",
 					if(mapNumber[playerID]<0)
 						"RANDOM"
@@ -623,7 +624,7 @@ class VSBattleMode:AbstractMode() {
 						engine.field!!.setAllSkin(engine.skin)
 					} else {
 						if(propMap!![playerID]==null)
-							propMap[playerID] = receiver.loadProperties("config/map/vsbattle/"+mapSet[playerID]+".map")
+							propMap[playerID] = receiver.loadProperties("config/values/vsbattle/"+mapSet[playerID]+".values")
 
 						propMap!![playerID]?.let {
 							engine.createFieldIfNeeded()
@@ -653,7 +654,7 @@ class VSBattleMode:AbstractMode() {
 		engine.comboType = if(enableCombo[playerID]) GameEngine.COMBO_TYPE_NORMAL else GameEngine.COMBO_TYPE_DISABLE
 		engine.big = big[playerID]
 		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.bgmStatus.bgm = BGMStatus[bgmno]
+		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 
 		engine.tspinAllowKick = enableTSpinKick[playerID]
 		if(version>=4) {
@@ -1023,7 +1024,7 @@ class VSBattleMode:AbstractMode() {
 				winnerID = -1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
@@ -1032,7 +1033,7 @@ class VSBattleMode:AbstractMode() {
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 				if(!owner.replayMode) winCount[0]++
 			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
 				// 2P win
@@ -1042,7 +1043,7 @@ class VSBattleMode:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 				if(!owner.replayMode) winCount[1]++
 			}
 	}

@@ -7,7 +7,7 @@ class RanksIteratorPart internal constructor(private val oneIteration:OneIterati
 
 	private val sMin:Int
 	private val sMax:Int
-	private val size:Int = this.ranks!!.size
+	private val size:Int = ranks!!.size
 	private val surface:IntArray
 	private val surfaceDecodedWork:IntArray
 
@@ -15,10 +15,10 @@ class RanksIteratorPart internal constructor(private val oneIteration:OneIterati
 
 		sMin = i*size/totalParts
 		sMax = if(i==totalParts-1) size else (i+1)*size/totalParts
-		surface = IntArray(this.ranks!!.stackWidth-1)
-		this.ranks!!.decode(sMin, surface)
+		surface = IntArray(ranks!!.stackWidth-1)
+		ranks!!.decode(sMin, surface)
 		surfaceDecodedWork = IntArray(ranks!!.stackWidth-1)
-		this.ranks!!.decode(sMin, surfaceDecodedWork)
+		ranks!!.decode(sMin, surfaceDecodedWork)
 		priority = Thread.MIN_PRIORITY
 	}
 

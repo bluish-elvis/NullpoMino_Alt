@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
@@ -250,7 +250,7 @@ class MarathonExtreme:NetDummyMode() {
 		engine.big = big
 
 		if(netIsWatch)
-			owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 		else
 			owner.bgmStatus.bgm = tableBGM[bgmlv]
 
@@ -402,7 +402,7 @@ class MarathonExtreme:NetDummyMode() {
 				engine.playSE("levelup")
 				engine.playSE("endingstart")
 				owner.bgmStatus.fadesw = false
-				owner.bgmStatus.bgm = BGMStatus.BGM.ENDING_3
+				owner.bgmStatus.bgm = BGM.ENDING_3
 				engine.bone = true
 				engine.ending = 2
 				engine.timerActive = false
@@ -421,7 +421,7 @@ class MarathonExtreme:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		val b = if(engine.ending==0) BGMStatus.BGM.FAILED else BGMStatus.BGM.CLEARED
+		val b = if(engine.ending==0) BGM.FAILED else BGM.CLEARED
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = b
 
@@ -682,7 +682,7 @@ class MarathonExtreme:NetDummyMode() {
 
 		/** Line counts when BGM changes occur */
 		private val tableBGMChange = intArrayOf(66, 133, -1)
-		private val tableBGM = arrayOf(BGMStatus.BGM.RUSH_1, BGMStatus.BGM.RUSH_2, BGMStatus.BGM.RUSH_3)
+		private val tableBGM = arrayOf(BGM.RUSH_1, BGM.RUSH_2, BGM.RUSH_3)
 		/** Number of entries in rankings */
 		private const val RANKING_MAX = 10
 

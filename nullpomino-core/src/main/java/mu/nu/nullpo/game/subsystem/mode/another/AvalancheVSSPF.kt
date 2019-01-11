@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -42,10 +43,10 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 	/** Drop patterns */
 	private var dropPattern:Array<Array<IntArray>> = Array(AvalancheVSDummyMode.MAX_PLAYERS){emptyArray<IntArray>()}
 
-	/** Drop map set selected */
+	/** Drop values set selected */
 	private var dropSet:IntArray = IntArray(AvalancheVSDummyMode.MAX_PLAYERS)
 
-	/** Drop map selected */
+	/** Drop values selected */
 	private var dropMap:IntArray = IntArray(AvalancheVSDummyMode.MAX_PLAYERS)
 
 	/** Drop multipliers */
@@ -321,8 +322,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					27 -> bigDisplay = !bigDisplay
 					28 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 					29 -> enableSE[playerID] = !enableSE[playerID]
 					30, 31 -> {
@@ -373,7 +374,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				else
 					mapNumber[playerID], true)
 
-			// Random map preview
+			// Random values preview
 			if(useMap[playerID]&&propMap[playerID]!=null&&mapNumber[playerID]<0)
 				if(menuTime%30==0) {
 					engine.statc[5]++
@@ -465,7 +466,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					else
 						mapNumber[playerID].toString()+"/"+(mapMaxNo[playerID]-1), "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
 				menuColor = COLOR.COBALT
-				drawMenu(engine, playerID, receiver, "BGM", BGMStatus[bgmno].toString(), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
+				drawMenu(engine, playerID, receiver, "BGM", BGM.values[bgmno].toString(), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 				menuColor = COLOR.GREEN
 				drawMenu(engine, playerID, receiver, "LOAD", presetNumber[playerID].toString(), "SAVE", presetNumber[playerID].toString())
 
@@ -691,7 +692,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		private val BLOCK_COLORS =
 			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_YELLOW)
 
-		/** Names of drop map sets */
+		/** Names of drop values sets */
 		private val DROP_SET_NAMES = arrayOf("CLASSIC", "REMIX", "SWORD", "S-MIRROR", "AVALANCHE", "A-MIRROR")
 
 		private val DROP_PATTERNS =

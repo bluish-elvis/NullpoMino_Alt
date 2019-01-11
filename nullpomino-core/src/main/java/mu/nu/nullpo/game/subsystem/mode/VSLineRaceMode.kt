@@ -1,6 +1,6 @@
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
@@ -205,8 +205,8 @@ class VSLineRaceMode:AbstractMode() {
 					11 -> enableSE[playerID] = !enableSE[playerID]
 					12 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 				}
 			}
@@ -258,7 +258,7 @@ class VSLineRaceMode:AbstractMode() {
 			menuColor = EventReceiver.COLOR.CYAN
 			drawMenuCompact(engine, playerID, receiver, "GOAL", goalLines[playerID].toString(), "BIG", GeneralUtil.getONorOFF(big[playerID]), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 			menuColor = EventReceiver.COLOR.PINK
-			drawMenuCompact(engine, playerID, receiver, "BGM", BGMStatus[bgmno].toString())
+			drawMenuCompact(engine, playerID, receiver, "BGM", BGM.values[bgmno].toString())
 		} else
 			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
 	}
@@ -267,7 +267,7 @@ class VSLineRaceMode:AbstractMode() {
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.big = big[playerID]
 		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.bgmStatus.bgm = BGMStatus[bgmno]
+		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		engine.meterValue = receiver.getMeterMax(engine)
@@ -369,7 +369,7 @@ class VSLineRaceMode:AbstractMode() {
 				winnerID = -1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
@@ -378,7 +378,7 @@ class VSLineRaceMode:AbstractMode() {
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 				if(!owner.replayMode) winCount[0]++
 			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
 				// 2P win
@@ -388,7 +388,7 @@ class VSLineRaceMode:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 				if(!owner.replayMode) winCount[1]++
 			}
 	}

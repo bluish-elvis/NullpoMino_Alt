@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
@@ -392,7 +392,7 @@ class GrandRoads:NetDummyMode() {
 	 * (after Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		if(netIsWatch)
-			owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 		else
 			owner.bgmStatus.bgm = tableBGM[goaltype][bgmlv]
 		engine.lives = tableLives[goaltype]
@@ -460,7 +460,7 @@ class GrandRoads:NetDummyMode() {
 			}
 
 			// Section time
-			if(showsectiontime&&sectionTime!=null&&!netIsWatch) {
+			if(showsectiontime&&sectionTime.isNotEmpty()&&!netIsWatch) {
 				val x = if(receiver.nextDisplayType==2) 25 else 12
 				val y = if(receiver.nextDisplayType==2) 4 else 2
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
@@ -496,7 +496,7 @@ class GrandRoads:NetDummyMode() {
 		// Ending start
 		if(engine.ending==2&&engine.staffrollEnable&&!rollstarted&&!netIsWatch) {
 			rollstarted = true
-			owner.bgmStatus.bgm = BGMStatus.BGM.FINALE_3
+			owner.bgmStatus.bgm = BGM.FINALE_3
 			owner.bgmStatus.fadesw = false
 
 			// VOID ending
@@ -667,7 +667,7 @@ class GrandRoads:NetDummyMode() {
 
 	/** Additional routine for game result screen */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		if(goaltype>=GAMETYPE_HELL&&engine.statistics.rollclear>=1) owner.bgmStatus.bgm = BGMStatus.BGM.CLEARED
+		if(goaltype>=GAMETYPE_HELL&&engine.statistics.rollclear>=1) owner.bgmStatus.bgm = BGM.CLEARED
 		if(!netIsWatch) {
 			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				engine.statc[1]--
@@ -946,21 +946,22 @@ class GrandRoads:NetDummyMode() {
 			9, // HELL-X
 			9)// VOID
 		/** Level timer tables */
-		private val tableLevelTimer = arrayOf(intArrayOf(6400, 6250, 6000, 5750, 5500, 5250, 5000, 4750, 4500, 4250, // NORMAL 000-100
-			4000, 3750, 3500, 3250, 3000), // NORMAL 100-150
-			intArrayOf(4500, 4200, 4100, 3900, 3700, 3500, 3300, 3100, 2900, 2700, 2500, 2350, 2200, 2100, 2000), // HIGH SPEED 1
-			intArrayOf(4000, 3900, 3800, 3700, 3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2500), // HIGH SPEED 2
-			intArrayOf(3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2550, 2400, 2250, 2100, 2000), // ANOTHER
-			intArrayOf(3000, 2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000, 2000, 2000, 2000, 2000), // ANOTHER 2
-			intArrayOf(6400, 6200, 6000, 5800, 5600, 5400, 5200, 5000, 4800, 4600, // NORMAL 000-100
-				4300, 4000, 3800, 3600, 3500, 3400, 3300, 3200, 3100, 3000), // NORMAL 100-200
-			intArrayOf(4000, 3890, 3780, 3670, 3560, 3450, 3340, 3230, 3120, 3010, // ANOTHER 000-100
-				2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000), // ANOTHER 100-200
-			intArrayOf(4000, 3890, 3780, 3670, 3560, 3450, 3340, 3230, 3120, 3010, // BASIC 000-100
-				2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000), // BASIC 100-200
-			intArrayOf(2000), // HELL
-			intArrayOf(2000), // VOID
-			intArrayOf(2000))// VOID
+		private val tableLevelTimer =
+			arrayOf(intArrayOf(6400, 6250, 6000, 5750, 5500, 5250, 5000, 4750, 4500, 4250, // NORMAL 000-100
+				4000, 3750, 3500, 3250, 3000), // NORMAL 100-150
+				intArrayOf(4500, 4200, 4100, 3900, 3700, 3500, 3300, 3100, 2900, 2700, 2500, 2350, 2200, 2100, 2000), // HIGH SPEED 1
+				intArrayOf(4000, 3900, 3800, 3700, 3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2500), // HIGH SPEED 2
+				intArrayOf(3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2550, 2400, 2250, 2100, 2000), // ANOTHER
+				intArrayOf(3000, 2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000, 2000, 2000, 2000, 2000), // ANOTHER 2
+				intArrayOf(6400, 6200, 6000, 5800, 5600, 5400, 5200, 5000, 4800, 4600, // NORMAL 000-100
+					4300, 4000, 3800, 3600, 3500, 3400, 3300, 3200, 3100, 3000), // NORMAL 100-200
+				intArrayOf(4000, 3890, 3780, 3670, 3560, 3450, 3340, 3230, 3120, 3010, // ANOTHER 000-100
+					2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000), // ANOTHER 100-200
+				intArrayOf(4000, 3890, 3780, 3670, 3560, 3450, 3340, 3230, 3120, 3010, // BASIC 000-100
+					2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000), // BASIC 100-200
+				intArrayOf(2000), // HELL
+				intArrayOf(2000), // VOID
+				intArrayOf(2000))// VOID
 
 		/** Speed table for ANOTHER */
 		private val tableAnother = arrayOf(intArrayOf(19, 18, 17, 16, 15, 14, 13, 12, 11, 10), // ARE
@@ -970,11 +971,12 @@ class GrandRoads:NetDummyMode() {
 		)
 
 		/** Speed table for NORMAL 200 */
-		private val tableNormal200 = arrayOf(intArrayOf(25, 25, 25, 25, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10), // ARE
-			intArrayOf(25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6), // Line delay
-			intArrayOf(30, 30, 30, 30, 29, 29, 29, 29, 28, 28, 28, 27, 27, 27, 26, 26, 25, 25, 24, 24), // Lock delay
-			intArrayOf(15, 15, 15, 15, 15, 14, 14, 14, 14, 13, 13, 13, 12, 12, 11, 10, 9, 8, 7, 6) // DAS
-		)
+		private val tableNormal200 =
+			arrayOf(intArrayOf(25, 25, 25, 25, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10), // ARE
+				intArrayOf(25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6), // Line delay
+				intArrayOf(30, 30, 30, 30, 29, 29, 29, 29, 28, 28, 28, 27, 27, 27, 26, 26, 25, 25, 24, 24), // Lock delay
+				intArrayOf(15, 15, 15, 15, 15, 14, 14, 14, 14, 13, 13, 13, 12, 12, 11, 10, 9, 8, 7, 6) // DAS
+			)
 
 		/** Speed table for VOID */
 		private val tableVoid = arrayOf(intArrayOf(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1), // ARE
@@ -984,11 +986,12 @@ class GrandRoads:NetDummyMode() {
 		)
 
 		/** Speed table for BASIC */
-		private val tableBasic = arrayOf(intArrayOf(26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7), // ARE
-			intArrayOf(40, 36, 33, 30, 27, 24, 21, 19, 17, 15, 13, 11, 9, 8, 7, 6, 5, 4, 3, 3), // Line delay
-			intArrayOf(28, 28, 28, 27, 27, 27, 26, 26, 26, 25, 25, 25, 24, 24, 23, 22, 22, 21, 21, 20), // Lock delay
-			intArrayOf(15, 15, 15, 15, 15, 14, 14, 14, 14, 13, 13, 13, 12, 12, 11, 10, 9, 8, 7, 6) // DAS
-		)
+		private val tableBasic =
+			arrayOf(intArrayOf(26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7), // ARE
+				intArrayOf(40, 36, 33, 30, 27, 24, 21, 19, 17, 15, 13, 11, 9, 8, 7, 6, 5, 4, 3, 3), // Line delay
+				intArrayOf(28, 28, 28, 27, 27, 27, 26, 26, 26, 25, 25, 25, 24, 24, 23, 22, 22, 21, 21, 20), // Lock delay
+				intArrayOf(15, 15, 15, 15, 15, 14, 14, 14, 14, 13, 13, 13, 12, 12, 11, 10, 9, 8, 7, 6) // DAS
+			)
 
 		/** BGM change lines table */
 		private val tableBGMChange = arrayOf(intArrayOf(50, 100), // NORMAL
@@ -1028,17 +1031,17 @@ class GrandRoads:NetDummyMode() {
 			10, // HELL
 			10, // HELL-X
 			10)// VOID
-		private val tableBGM = arrayOf(arrayOf(BGMStatus.BGM.GM_2, BGMStatus.BGM.GM_1, BGMStatus.BGM.EXTRA_2), // NORMAL
-			arrayOf(BGMStatus.BGM.GM_3, BGMStatus.BGM.EXTRA_1, BGMStatus.BGM.GM_20G_2), // HI-SPEED 1
-			arrayOf(BGMStatus.BGM.GM_20G_1, BGMStatus.BGM.GM_20G_2, BGMStatus.BGM.GM_20G_3), // HI-SPEED 2
-			arrayOf(BGMStatus.BGM.BLITZ_1, BGMStatus.BGM.STORM_1, BGMStatus.BGM.STORM_2), // ANOTHER
-			arrayOf(BGMStatus.BGM.BLITZ_2, BGMStatus.BGM.BLITZ_3, BGMStatus.BGM.BLITZ_4), // ANOTHER2
-			arrayOf(BGMStatus.BGM.EXTRA_2, BGMStatus.BGM.GM_2, BGMStatus.BGM.GM_3, BGMStatus.BGM.EXTRA_1, BGMStatus.BGM.BLITZ_1), // NORMAL 200
-			arrayOf(BGMStatus.BGM.BLITZ_1, BGMStatus.BGM.STORM_1, BGMStatus.BGM.BLITZ_2, BGMStatus.BGM.STORM_2, BGMStatus.BGM.BLITZ_3), // ANOTHER 200
-			arrayOf(BGMStatus.BGM.EXTRA_3, BGMStatus.BGM.GM_2, BGMStatus.BGM.GM_20G_1, BGMStatus.BGM.BLITZ_1, BGMStatus.BGM.STORM_2), // BASIC
-			arrayOf(BGMStatus.BGM.FINALE_3), // HELL
-			arrayOf(BGMStatus.BGM.FINALE_1), // HELL-X
-			arrayOf(BGMStatus.BGM.FINALE_2))// VOID
+		private val tableBGM = arrayOf(arrayOf(BGM.GM_2, BGM.GM_1, BGM.EXTRA_2), // NORMAL
+			arrayOf(BGM.GM_3, BGM.EXTRA_1, BGM.GM_20G_2), // HI-SPEED 1
+			arrayOf(BGM.GM_20G_1, BGM.GM_20G_2, BGM.GM_20G_3), // HI-SPEED 2
+			arrayOf(BGM.BLITZ_1, BGM.STORM_1, BGM.STORM_2), // ANOTHER
+			arrayOf(BGM.BLITZ_2, BGM.BLITZ_3, BGM.BLITZ_4), // ANOTHER2
+			arrayOf(BGM.EXTRA_2, BGM.GM_2, BGM.GM_3, BGM.EXTRA_1, BGM.BLITZ_1), // NORMAL 200
+			arrayOf(BGM.BLITZ_1, BGM.STORM_1, BGM.BLITZ_2, BGM.STORM_2, BGM.BLITZ_3), // ANOTHER 200
+			arrayOf(BGM.EXTRA_3, BGM.GM_2, BGM.GM_20G_1, BGM.BLITZ_1, BGM.STORM_2), // BASIC
+			arrayOf(BGM.FINALE_3), // HELL
+			arrayOf(BGM.FINALE_1), // HELL-X
+			arrayOf(BGM.FINALE_2))// VOID
 
 		/** Game types */
 		private const val GAMETYPE_NORMAL = 0
@@ -1057,13 +1060,16 @@ class GrandRoads:NetDummyMode() {
 		private const val GAMETYPE_MAX = 11
 
 		/** Game type names (short) */
-		private val GAMETYPE_NAME = arrayOf("EASY", "HARD", "20G", "ANOTHER", "EXTREME", "MODERATE", "EXHAUST", "CHALLENGE", "FURTHEST", "FORGOTTEN", "PRIME.01")
+		private val GAMETYPE_NAME =
+			arrayOf("EASY", "HARD", "20G", "ANOTHER", "EXTREME", "MODERATE", "EXHAUST", "CHALLENGE", "FURTHEST", "FORGOTTEN", "PRIME.01")
 
 		/** Game type names (long) */
-		private val GAMETYPE_NAME_LONG = arrayOf("EASY", "HARD", "20G", "ANOTHER", "EXTREME", "MODERATE", "EXHAUST", "CHALLENGE", "FURTHEST", "FORGOTTEN", "PRIMORDIAL BIT")
+		private val GAMETYPE_NAME_LONG =
+			arrayOf("EASY", "HARD", "20G", "ANOTHER", "EXTREME", "MODERATE", "EXHAUST", "CHALLENGE", "FURTHEST", "FORGOTTEN", "PRIMORDIAL BIT")
 
 		/** HELL-X fade table */
-		private val tableHellXFade = intArrayOf(600, 550, 500, 450, 400, 350, 300, 270, 240, 210, 190, 170, 160, 150, 140, 130, 125, 120, 115, 110, 100, 90, 80, 70, 60, 58, 56, 54, 52, 50)
+		private val tableHellXFade =
+			intArrayOf(600, 550, 500, 450, 400, 350, 300, 270, 240, 210, 190, 170, 160, 150, 140, 130, 125, 120, 115, 110, 100, 90, 80, 70, 60, 58, 56, 54, 52, 50)
 
 		/** Ending time limit */
 		private const val ROLLTIMELIMIT = 3238

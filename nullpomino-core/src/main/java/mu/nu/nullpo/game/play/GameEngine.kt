@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.play
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 import mu.nu.nullpo.util.GeneralUtil
@@ -1651,7 +1652,7 @@ class GameEngine
 	private fun statSetting() {
 		//  event 発生
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = BGMStatus.BGM.MENU_3
+		owner.bgmStatus.bgm = BGM.MENU_3
 		owner.mode?.also {if(it.onSetting(this, playerID)) return}
 		owner.receiver.onSetting(this, playerID)
 
@@ -1674,7 +1675,7 @@ class GameEngine
 		if(statc[0]==0) {
 
 			if(!readyDone&&!owner.bgmStatus.fadesw&&owner.bgmStatus.bgm.id<0&&
-				owner.bgmStatus.bgm.id !in BGMStatus.BGM.FINALE_1.id..BGMStatus.BGM.FINALE_3.id)
+				owner.bgmStatus.bgm.id !in BGM.FINALE_1.id..BGM.FINALE_3.id)
 				owner.bgmStatus.fadesw = true
 			// fieldInitialization
 			createFieldIfNeeded()
@@ -2731,7 +2732,7 @@ class GameEngine
 
 		if(statc[2]==0) {
 			timerActive = false
-			owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 			playSE("endingstart")
 			statc[2] = 1
 		}
@@ -2817,7 +2818,7 @@ class GameEngine
 
 				gameEnded()
 				blockShowOutlineOnly = false
-				if(owner.players<2) owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				if(owner.players<2) owner.bgmStatus.bgm = BGM.SILENT
 
 				if(field!!.isEmpty) statc[0] = statc[1]
 				else {
@@ -2908,9 +2909,9 @@ class GameEngine
 		// Event
 		owner.bgmStatus.fadesw = false
 		when {
-			ending==2 -> owner.bgmStatus.bgm = BGMStatus.BGM.CLEARED
-			ending!=0 -> owner.bgmStatus.bgm = if(statistics.time<10800) BGMStatus.BGM.RESULT_1 else BGMStatus.BGM.RESULT_2
-			else -> owner.bgmStatus.bgm = BGMStatus.BGM.FAILED
+			ending==2 -> owner.bgmStatus.bgm = BGM.CLEARED
+			ending!=0 -> owner.bgmStatus.bgm = if(statistics.time<10800) BGM.RESULT_1 else BGM.RESULT_2
+			else -> owner.bgmStatus.bgm = BGM.FAILED
 		}
 
 		owner.mode?.also {if(it.onResult(this, playerID)) return}
