@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
@@ -333,7 +333,7 @@ class GrandFinale:AbstractMode() {
 		} else {
 			menuTime++
 			menuCursor = -1
-			owner.bgmStatus.bgm = BGMStatus[BGMStatus.BGM.FINALE_1.id-gametype]
+			owner.bgmStatus.bgm = BGM.FINALE(gametype)
 			return menuTime<60
 		}
 
@@ -351,7 +351,7 @@ class GrandFinale:AbstractMode() {
 	/** Ready screen */
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
 
-		owner.bgmStatus.bgm = BGMStatus[BGMStatus.BGM.FINALE_1.id-gametype]
+		owner.bgmStatus.bgm = BGM.FINALE(gametype)
 		return false
 	}
 
@@ -476,7 +476,7 @@ class GrandFinale:AbstractMode() {
 			getMedalFontColor(medalCO)?.let {receiver.drawScoreFont(engine, playerID, 3, 21, "CO", it)}
 
 			// Section Time
-			if(showsectiontime&&sectionTime!=null) {
+			if(showsectiontime&&sectionTime.isNotEmpty()) {
 				val x = if(receiver.nextDisplayType==2) 8 else 12
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
 
@@ -520,7 +520,7 @@ class GrandFinale:AbstractMode() {
 		// Ending start
 		if(engine.ending==2&&!rollstarted) {
 			rollstarted = true
-			owner.bgmStatus.bgm = BGMStatus.BGM.ENDING_4
+			owner.bgmStatus.bgm = BGM.ENDING_4
 		}
 
 		return false
@@ -656,7 +656,7 @@ class GrandFinale:AbstractMode() {
 				engine.statistics.level = 999
 				engine.timerActive = false
 				engine.ending = 2
-				owner.bgmStatus.bgm = BGMStatus.BGM.ENDING_4
+				owner.bgmStatus.bgm = BGM.ENDING_4
 				rollclear = 1
 
 				if(gametype==1&&joker>0) grade = 31

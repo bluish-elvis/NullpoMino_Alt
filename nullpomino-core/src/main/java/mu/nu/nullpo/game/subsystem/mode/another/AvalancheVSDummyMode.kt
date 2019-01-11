@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -126,13 +127,13 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	/** Zenkeshi reward type */
 	protected var zenKeshiType:IntArray = IntArray(MAX_PLAYERS)
 
-	/** Selected fever map set file */
+	/** Selected fever values set file */
 	protected var feverMapSet:IntArray = IntArray(MAX_PLAYERS)
 
-	/** Selected fever map set file's subset list */
+	/** Selected fever values set file's subset list */
 	protected var feverMapSubsets:Array<Array<String>> = emptyArray()
 
-	/** Fever map CustomProperties */
+	/** Fever values CustomProperties */
 	protected var propFeverMap:Array<CustomProperties?> = emptyArray()
 
 	/** Chain level boundaries for Fever Mode */
@@ -341,7 +342,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		field?.run {
 			reset()
 			//field.readProperty(prop, id);
-			stringToField(prop?.getProperty("map.$id", "")?:"")
+			stringToField(prop?.getProperty("values.$id", "")?:"")
 			setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
 			setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
 			setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
@@ -355,7 +356,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	 */
 	protected fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		//field.writeProperty(prop, id);
-		prop.setProperty("map.$id", field.fieldToString())
+		prop.setProperty("values.$id", field.fieldToString())
 	}
 
 	/** For previewMapRead
@@ -367,13 +368,13 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected fun loadMapPreview(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propMap[playerID].isNullOrEmpty()||forceReload) {
 			mapMaxNo[playerID] = 0
-			propMap[playerID] = receiver.loadProperties("config/map/avalanche/"+mapSet[playerID]+".map")
+			propMap[playerID] = receiver.loadProperties("config/values/avalanche/"+mapSet[playerID]+".values")
 		}
 
 		if(propMap[playerID].isNullOrEmpty()&&engine.field!=null)
 			engine.field!!.reset()
 		else propMap[playerID]?.let {
-			mapMaxNo[playerID] = it.getProperty("map.maxMapNumber", 0)
+			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
 			loadMap(engine.field, it, id)
 			engine.field!!.setAllSkin(engine.skin)
@@ -382,7 +383,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	protected fun loadMapSetFever(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propFeverMap[playerID].isNullOrEmpty()||forceReload) {
-			propFeverMap[playerID] = receiver.loadProperties("config/map/avalanche/"+FEVER_MAPS[id]+".map")
+			propFeverMap[playerID] = receiver.loadProperties("config/values/avalanche/"+FEVER_MAPS[id]+".values")
 			feverChainMin[playerID] = propFeverMap[playerID]?.getProperty("minChain", 3)?:3
 			feverChainMax[playerID] = propFeverMap[playerID]?.getProperty("maxChain", 15)?:15
 			val subsets = propFeverMap[playerID]?.getProperty("sets")?:""
@@ -454,8 +455,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 				engine.field!!.setAllSkin(engine.skin)
 			} else {
 				if(propMap[playerID].isNullOrEmpty())
-					propMap[playerID] = receiver.loadProperties("config/map/avalanche/"
-						+mapSet[playerID]+".map")
+					propMap[playerID] = receiver.loadProperties("config/values/avalanche/"
+						+mapSet[playerID]+".values")
 
 				propMap[playerID]?.let {
 					engine.createFieldIfNeeded()
@@ -483,7 +484,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.bgmStatus.bgm = BGMStatus[bgmno]
+		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 		engine.ignoreHidden = true
 
 		engine.tspinAllowKick = false
@@ -659,7 +660,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 				owner.engine[1].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 			}
 		}
 	}
@@ -806,7 +807,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		val BLOCK_COLORS =
 			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_PURPLE)
 
-		/** Fever map files list */
+		/** Fever values files list */
 		val FEVER_MAPS = arrayOf("Fever", "15th", "15thDS", "7", "Compendium")
 
 		/** Chain multipliers */

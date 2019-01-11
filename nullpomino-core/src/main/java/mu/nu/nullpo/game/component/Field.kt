@@ -329,10 +329,10 @@ class Field:Serializable {
 	 */
 	val howManyGemClears:Int
 		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
-			.filter{getLineFlag(it)}
+			.filter {getLineFlag(it)}
 			.sumBy {
-				(0 until width).count {j-> getBlock(j, it)?.isGemBlock==true}
-				}
+				(0 until width).count {j -> getBlock(j, it)?.isGemBlock==true}
+			}
 
 	/** Checks for item blocks cleared
 	 * @return A boolean array with true at each index for which an item block
@@ -358,7 +358,7 @@ class Field:Serializable {
 	// Check the lines we are clearing.
 	val howManyGarbageLineClears:Int
 		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
-			.filter{getLineFlag(it)}.count {
+			.filter {getLineFlag(it)}.count {
 				(0 until width).any {j ->
 					getBlock(j, it)?.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)==true
 				}
@@ -489,7 +489,7 @@ class Field:Serializable {
 				if(j<width-1) mapStr.append(",")
 			}
 
-			p.setProperty(id.toString()+".field.map."+i, mapStr.toString())
+			p.setProperty(id.toString()+".field.values."+i, mapStr.toString())
 		}
 	}
 
@@ -499,7 +499,7 @@ class Field:Serializable {
 	 */
 	fun readProperty(p:CustomProperties, id:Int) {
 		for(i in 0 until height) {
-			val mapStr = p.getProperty(id.toString()+".field.map."+i, "")
+			val mapStr = p.getProperty(id.toString()+".field.values."+i, "")
 			val mapArray = mapStr.split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 
 			for(j in mapArray.indices) {
@@ -2110,7 +2110,8 @@ class Field:Serializable {
 	 * @param highestWallY 最も高いHurryupBlockの位置
 	 */
 	@JvmOverloads
-	fun stringToField(str:String, skin:Int = 0, highestGarbageY:Int = Integer.MAX_VALUE, highestWallY:Int = Integer.MAX_VALUE) {
+	fun stringToField(str:String, skin:Int = 0, highestGarbageY:Int = Integer.MAX_VALUE,
+		highestWallY:Int = Integer.MAX_VALUE) {
 		for(i in -1 until height) {
 			val index = (height-1-i)*width
 			/* Much like NullNoname's try/catch from the old stringToField that
@@ -2158,7 +2159,8 @@ class Field:Serializable {
 		return strResult.toString()
 	}
 
-	fun attrStringToRow(str:String, skin:Int):Array<Block> = attrStringToRow(str.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray(), skin)
+	fun attrStringToRow(str:String, skin:Int):Array<Block> =
+		attrStringToRow(str.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray(), skin)
 
 	fun attrStringToRow(strArray:Array<String>, skin:Int):Array<Block> {
 		val row = Array<Block>(width) {j ->
@@ -2262,7 +2264,8 @@ class Field:Serializable {
 	}
 
 	@JvmOverloads
-	fun garbageDrop(engine:GameEngine, drop:Int, big:Boolean, hard:Int = 0, countdown:Int = 0, avoidColumn:Int = -1, color:Int = Block.BLOCK_COLOR_GRAY) {
+	fun garbageDrop(engine:GameEngine, drop:Int, big:Boolean, hard:Int = 0, countdown:Int = 0, avoidColumn:Int = -1,
+		color:Int = Block.BLOCK_COLOR_GRAY) {
 		var drop = drop
 		var y = -1*hiddenHeight
 		var actualWidth = width
@@ -2310,7 +2313,8 @@ class Field:Serializable {
 	}
 
 	@JvmOverloads
-	fun garbageDropPlace(x:Int, y:Int, big:Boolean, hard:Int, color:Int = Block.BLOCK_COLOR_GRAY, countdown:Int = 0):Boolean {
+	fun garbageDropPlace(x:Int, y:Int, big:Boolean, hard:Int, color:Int = Block.BLOCK_COLOR_GRAY,
+		countdown:Int = 0):Boolean {
 		val b = getBlock(x, y) ?: return false
 		if(big) {
 			garbageDropPlace(x+1, y, false, hard)
@@ -2382,13 +2386,13 @@ class Field:Serializable {
 			var y:Int
 			y = 0
 			while(y<placeHeight) {
-				{
-					x = 0
-					while(x<width) {
-						placeBlock[x][y] = false
-						x++
-					}
+
+				x = 0
+				while(x<width) {
+					placeBlock[x][y] = false
+					x++
 				}
+
 				y++
 			}
 			var i = 0
@@ -2410,12 +2414,10 @@ class Field:Serializable {
 			var y:Int
 			y = 0
 			while(y<placeHeight) {
-				{
-					x = 0
-					while(x<width) {
-						placeBlock[x][y] = true
-						x++
-					}
+				x = 0
+				while(x<width) {
+					placeBlock[x][y] = true
+					x++
 				}
 				y++
 			}

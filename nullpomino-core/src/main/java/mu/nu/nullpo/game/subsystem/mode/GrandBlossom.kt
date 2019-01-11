@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
@@ -336,10 +337,10 @@ class GrandBlossom:AbstractMode() {
 	private fun loadStageSet(id:Int) {
 		propStageSet = if(id>=0) {
 			log.debug("Loading stage set from custom set #$id")
-			receiver.loadProperties("config/map/gemmania/custom$id.map")
+			receiver.loadProperties("config/values/gemmania/custom$id.values")
 		} else {
 			log.debug("Loading stage set from default set")
-			receiver.loadProperties("config/map/gemmania/default.map")
+			receiver.loadProperties("config/values/gemmania/default.values")
 		}?:CustomProperties()
 	}
 
@@ -350,10 +351,10 @@ class GrandBlossom:AbstractMode() {
 		if(!owner.replayMode)
 			if(id>=0) {
 				log.debug("Saving stage set to custom set #$id")
-				receiver.saveProperties("config/map/gemmania/custom$id.map", propStageSet)
+				receiver.saveProperties("config/values/gemmania/custom$id.values", propStageSet)
 			} else {
 				log.debug("Saving stage set to default set")
-				receiver.saveProperties("config/map/gemmania/default.map", propStageSet)
+				receiver.saveProperties("config/values/gemmania/default.values", propStageSet)
 			}
 	}
 
@@ -369,7 +370,7 @@ class GrandBlossom:AbstractMode() {
 		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
 		limittimeStart = prop.getProperty(id.toString()+".gemmania.limittimeStart", 3600*3)
 		stagetimeStart = prop.getProperty(id.toString()+".gemmania.stagetimeStart", 3600)
-		stagebgm = prop.getProperty(id.toString()+".gemmania.stagebgm", BGMStatus.BGM.PUZZLE_1.id)
+		stagebgm = prop.getProperty(id.toString()+".gemmania.stagebgm", BGM.PUZZLE_1.id)
 		gimmickMirror = prop.getProperty(id.toString()+".gemmania.gimmickMirror", 0)
 		gimmickRoll = prop.getProperty(id.toString()+".gemmania.gimmickRoll", 0)
 		gimmickBig = prop.getProperty(id.toString()+".gemmania.gimmickBig", 0)
@@ -569,8 +570,8 @@ class GrandBlossom:AbstractMode() {
 					}
 					3 -> {
 						stagebgm += change
-						if(stagebgm<0) stagebgm = BGMStatus.count
-						if(stagebgm>BGMStatus.count) stagebgm = 0
+						if(stagebgm<0) stagebgm =BGM.count
+						if(stagebgm>BGM.count) stagebgm = 0
 					}
 					4 -> {
 						gimmickMirror += change
@@ -775,7 +776,7 @@ class GrandBlossom:AbstractMode() {
 
 		// BGM切り替え
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = BGMStatus[stagebgm]
+		owner.bgmStatus.bgm = BGM.values[stagebgm]
 	}
 
 	/* Render score */
@@ -864,7 +865,7 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// Section Time
-			if(showsectiontime&&sectionTime!=null) {
+			if(showsectiontime&&sectionTime.isNotEmpty()) {
 				val y = if(receiver.nextDisplayType==2) 4 else 2
 				val x = if(receiver.nextDisplayType==2) 22 else 12
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
@@ -1258,7 +1259,7 @@ class GrandBlossom:AbstractMode() {
 			if(engine.statc[0]==0) {
 				engine.playSE("died")
 				engine.playSE("shutter")
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 
 				engine.timerActive = false
 				engine.blockShowOutlineOnly = false

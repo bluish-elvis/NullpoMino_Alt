@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import org.apache.log4j.Logger
 import org.newdawn.slick.*
 import org.newdawn.slick.font.effects.ColorEffect
@@ -116,7 +116,7 @@ object ResourceHolder {
 
 	/** Current BGM number */
 	private var bgmint:Pair<Int, Int> = Pair(0, 0)
-	private var bgmPlaying:BGMStatus.BGM? = null
+	private var bgmPlaying:BGM? = null
 	internal val bGmax:Int get() = imgPlayBG.size
 
 	/** 画像や音声を読み込み */
@@ -281,11 +281,11 @@ object ResourceHolder {
 		}
 
 		// 音楽
-		bgm = BGMStatus.BGM.values().map {arrayOfNulls<Music?>(it.nums)}.toTypedArray()
+		bgm = BGM.values.map {arrayOfNulls<Music?>(it.nums)}.toTypedArray()
 		bgmPlaying = null
 
 		if(NullpoMinoSlick.propConfig.getProperty("option.bgmpreload", false))
-			BGMStatus.BGM.values().forEach {loadBGM(it, false)}
+			BGM.values.forEach {loadBGM(it, false)}
 	}
 
 	/** Load background images. */
@@ -350,7 +350,7 @@ object ResourceHolder {
 	 * @param bgm BGM enum
 	 * @param showErr 例外が発生したときにコンソールに表示する
 	 */
-	private fun loadBGM(bgm:BGMStatus.BGM, showErr:Boolean) {
+	private fun loadBGM(bgm:BGM, showErr:Boolean) {
 		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
 		val name = bgm.name
 		val n = bgm.longName
@@ -380,7 +380,7 @@ object ResourceHolder {
 	/** 指定した numberのBGMを再生
 	 * @param M enums of BGM [mu.nu.nullpo.game.component.BGMStatus.BGM]
 	 */
-	internal fun bgmStart(M:BGMStatus.BGM) {
+	internal fun bgmStart(M:BGM) {
 		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
 		bgmStop()
 		val x = M.id
@@ -388,7 +388,7 @@ object ResourceHolder {
 		val bgmvolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
 		NullpoMinoSlick.appGameContainer.musicVolume = bgmvolume/256.toFloat()
 
-		if(M!=BGMStatus.BGM.SILENT) {
+		if(M!=BGM.SILENT) {
 			bgm[x][y]?.let {
 				try {
 					if(NullpoMinoSlick.propMusic.getProperty("music.noloop."+M.name, false))
@@ -403,13 +403,6 @@ object ResourceHolder {
 			bgmPlaying = M
 			bgmint = Pair(x, y)
 		}
-	}
-
-	/** 指定した numberのBGMを再生
-	 * @param no BGM number
-	 */
-	internal fun bgmStart(no:Int) {
-		bgmStart(BGMStatus[no])
 	}
 
 	/** Current BGMを一時停止 */
@@ -427,7 +420,7 @@ object ResourceHolder {
 	 */
 	internal fun bgmIsPlaying():Boolean = bgmPlaying!=null&&(bgm[bgmint.first][bgmint.second]?.playing() ?: false)
 
-	internal fun bgmPlaying():BGMStatus.BGM? = bgmPlaying
+	internal fun bgmPlaying():BGM? = bgmPlaying
 
 	/** BGMを停止 */
 	internal fun bgmStop() {

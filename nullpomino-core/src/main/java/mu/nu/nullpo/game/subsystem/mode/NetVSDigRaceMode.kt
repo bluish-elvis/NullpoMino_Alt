@@ -14,7 +14,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	/** Number of garbage lines left */
 	private var playerRemainLines:IntArray = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
 
-	/** Number of gems available at the start of the game (for map game) */
+	/** Number of gems available at the start of the game (for values game) */
 	private var playerStartGems:IntArray = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
 
 	/* Mode name */
@@ -119,7 +119,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 
 	}
 
-	/** Turn all normal blocks to gem (for map game)
+	/** Turn all normal blocks to gem (for values game)
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */

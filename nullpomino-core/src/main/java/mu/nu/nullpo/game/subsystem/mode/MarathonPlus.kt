@@ -324,7 +324,7 @@ class MarathonPlus:NetDummyMode() {
 
 		setSpeed(engine)
 		if(netIsWatch)
-			owner.bgmStatus.bgm = SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 		else
 			owner.bgmStatus.bgm = if(startlevel) tableBGM[4][goaltype] else tableBGM[goaltype][0]
 		owner.bgmStatus.fadesw = false
@@ -550,7 +550,7 @@ class MarathonPlus:NetDummyMode() {
 						engine.statistics.score += bonusScore
 						engine.statistics.scoreFromOtherBonus += bonusScore
 
-						owner.bgmStatus.bgm = ENDING_2
+						owner.bgmStatus.bgm = BGM.ENDING_2
 						engine.ending = 1
 						engine.timerActive = false
 					} else {
@@ -857,7 +857,7 @@ class MarathonPlus:NetDummyMode() {
 			// Bonus level entered
 			if(message[3]=="bonuslevelenter") {
 				engine.meterValue = 0
-				owner.bgmStatus.bgm = GM_20G_1
+				owner.bgmStatus.bgm = BGM.GM_20G_1
 				engine.timerActive = false
 				engine.ending = 1
 				engine.stat = GameEngine.Status.CUSTOM

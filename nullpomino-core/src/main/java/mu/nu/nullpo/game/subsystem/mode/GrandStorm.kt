@@ -23,8 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
-import mu.nu.nullpo.game.component.BGMStatus.BGM.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
@@ -481,15 +480,15 @@ class GrandStorm:AbstractMode() {
 			}
 
 			// medal
-			getMedalFontColor(medalAC)?.let{ receiver.drawScoreFont(engine, playerID, 0, 20, "AC", it)}
-			getMedalFontColor(medalST)?.let{ receiver.drawScoreFont(engine, playerID, 3, 20, "ST", it)}
-			getMedalFontColor(medalSK)?.let{ receiver.drawScoreFont(engine, playerID, 0, 21, "SK", it)}
-			getMedalFontColor(medalRE)?.let{ receiver.drawScoreFont(engine, playerID, 3, 21, "RE", it)}
-			getMedalFontColor(medalRO)?.let{ receiver.drawScoreFont(engine, playerID, 0, 22, "SK", it)}
-			getMedalFontColor(medalCO)?.let{ receiver.drawScoreFont(engine, playerID, 3, 22, "CO", it)}
+			getMedalFontColor(medalAC)?.let {receiver.drawScoreFont(engine, playerID, 0, 20, "AC", it)}
+			getMedalFontColor(medalST)?.let {receiver.drawScoreFont(engine, playerID, 3, 20, "ST", it)}
+			getMedalFontColor(medalSK)?.let {receiver.drawScoreFont(engine, playerID, 0, 21, "SK", it)}
+			getMedalFontColor(medalRE)?.let {receiver.drawScoreFont(engine, playerID, 3, 21, "RE", it)}
+			getMedalFontColor(medalRO)?.let {receiver.drawScoreFont(engine, playerID, 0, 22, "SK", it)}
+			getMedalFontColor(medalCO)?.let {receiver.drawScoreFont(engine, playerID, 3, 22, "CO", it)}
 
 			// Section Time
-			if(showsectiontime&&sectionTime!=null) {
+			if(showsectiontime&&sectionTime.isNotEmpty()) {
 				val x = if(receiver.nextDisplayType==2) 8 else 12
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
 
@@ -673,7 +672,7 @@ class GrandStorm:AbstractMode() {
 				// ST medal
 				stMedalCheck(engine, levelb/100)
 
-				owner.bgmStatus.bgm = ENDING_2
+				owner.bgmStatus.bgm = BGM.ENDING_2
 				// RO medal
 				roMedalCheck(engine)
 			} else if(nextseclv==500&&engine.statistics.level>=500&&lv500torikan>0
@@ -837,12 +836,12 @@ class GrandStorm:AbstractMode() {
 			}
 			2 -> {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", COLOR.BLUE)
-				getMedalFontColor(medalSK)?.let{ receiver.drawMenuFont(engine, playerID, 5, 2, "SK", it)}
-				getMedalFontColor(medalST)?.let{ receiver.drawMenuFont(engine, playerID, 8, 2, "ST", it)}
-				getMedalFontColor(medalAC)?.let{ receiver.drawMenuFont(engine, playerID, 1, 3, "AC", it)}
-				getMedalFontColor(medalCO)?.let{ receiver.drawMenuFont(engine, playerID, 4, 3, "CO", it)}
-				getMedalFontColor(medalRE)?.let{ receiver.drawMenuFont(engine, playerID, 7, 3, "RE", it)}
-				getMedalFontColor(medalRO)?.let{ receiver.drawMenuFont(engine, playerID, 8, 4, "RO", it)}
+				getMedalFontColor(medalSK)?.let {receiver.drawMenuFont(engine, playerID, 5, 2, "SK", it)}
+				getMedalFontColor(medalST)?.let {receiver.drawMenuFont(engine, playerID, 8, 2, "ST", it)}
+				getMedalFontColor(medalAC)?.let {receiver.drawMenuFont(engine, playerID, 1, 3, "AC", it)}
+				getMedalFontColor(medalCO)?.let {receiver.drawMenuFont(engine, playerID, 4, 3, "CO", it)}
+				getMedalFontColor(medalRE)?.let {receiver.drawMenuFont(engine, playerID, 7, 3, "RE", it)}
+				getMedalFontColor(medalRO)?.let {receiver.drawMenuFont(engine, playerID, 8, 4, "RO", it)}
 
 				drawResultStats(engine, playerID, receiver, 5, COLOR.BLUE,
 					AbstractMode.Statistic.LPM, AbstractMode.Statistic.SPM, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.PPS)
@@ -855,15 +854,13 @@ class GrandStorm:AbstractMode() {
 
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		var b:BGMStatus.BGM = FAILED
-		if(engine.ending>0)
-			b = if(engine.statistics.level<900)
-				RESULT_2
-			else
-				CLEARED
-
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = b
+		owner.bgmStatus.bgm = if(engine.ending>0)
+			if(engine.statistics.level<900)
+				BGM.RESULT_2
+			else
+				BGM.CLEARED
+		else BGM.FAILED
 		// ページ切り替え
 		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
@@ -998,11 +995,12 @@ class GrandStorm:AbstractMode() {
 
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(300, 500, 999, -1)
-		private val tableBGM = arrayOf(GM_20G_2, STORM_1, STORM_2)
+		private val tableBGM = arrayOf(BGM.GM_20G_2, BGM.STORM_1, BGM.STORM_2)
 		/** 段位のName */
 		private val tableGradeName = arrayOf("", "m", "Gm", "GM")
 		/** 裏段位のName */
-		private val tableSecretGradeName = arrayOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "GM")
+		private val tableSecretGradeName =
+			arrayOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "GM")
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 1982

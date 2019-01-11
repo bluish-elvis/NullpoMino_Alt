@@ -23,8 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
-import mu.nu.nullpo.game.component.BGMStatus.BGM.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
@@ -273,7 +272,7 @@ class Marathon:NetDummyMode() {
 		setSpeed(engine)
 
 		if(netIsWatch)
-			owner.bgmStatus.bgm = SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 		else
 			owner.bgmStatus.bgm = tableBGM[bgmlv]
 	}
@@ -403,7 +402,7 @@ class Marathon:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		val b = if(engine.ending==0) BGMStatus.BGM.RESULT_1 else BGMStatus.BGM.RESULT_2
+		val b = if(engine.ending==0) BGM.RESULT_1 else BGM.RESULT_2
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = b
 
@@ -548,7 +547,8 @@ class Marathon:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+		val bg =
+			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
 		msg += engine.statistics.score.toString()+"\t"+engine.statistics.lines+"\t"+engine.statistics.totalPieceLocked+"\t"
 		msg += engine.statistics.time.toString()+"\t"+engine.statistics.level+"\t"
@@ -646,7 +646,8 @@ class Marathon:NetDummyMode() {
 
 		/** Line counts when BGM changes occur */
 		private val tableBGMChange = intArrayOf(60, 80, 140, 170, 200, -1)
-		private val tableBGM = arrayOf(GENERIC_1, GENERIC_2, GENERIC_3, GENERIC_4, GENERIC_5, GENERIC_6)
+		private val tableBGM =
+			arrayOf(BGM.GENERIC_1, BGM.GENERIC_2, BGM.GENERIC_3, BGM.GENERIC_4, BGM.GENERIC_5, BGM.GENERIC_6)
 		/** Line counts when game ending occurs */
 		private val tableGameClearLines = intArrayOf(150, 200, -1)
 

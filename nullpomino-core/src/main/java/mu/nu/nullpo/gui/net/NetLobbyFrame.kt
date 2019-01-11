@@ -510,7 +510,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	val currentTimeAsString:String
 		get() = SimpleDateFormat("HH:mm:ss").format(GregorianCalendar().time)
 
-	/** Get currenlty selected map set ID
+	/** Get currenlty selected values set ID
 	 * @return Map set ID
 	 */
 	val currentSelectedMapSetID:Int
@@ -2919,10 +2919,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 	/** To save the settings in the lobby */
 	fun saveConfig() {
-		propConfig.setProperty("mainwindow.width", this.size.width)
-		propConfig.setProperty("mainwindow.height", this.size.height)
-		propConfig.setProperty("mainwindow.x", this.location.x)
-		propConfig.setProperty("mainwindow.y", this.location.y)
+		propConfig.setProperty("mainwindow.width", size.width)
+		propConfig.setProperty("mainwindow.height", size.height)
+		propConfig.setProperty("mainwindow.x", location.x)
+		propConfig.setProperty("mainwindow.y", location.y)
 		propConfig.setProperty("lobby.splitLobby.location", splitLobby?.dividerLocation ?: 0)
 		propConfig.setProperty("lobby.splitLobbyChat.location", splitLobbyChat?.dividerLocation ?: 0)
 		propConfig.setProperty("room.splitRoom.location", splitRoom?.dividerLocation ?: 0)
@@ -3632,20 +3632,20 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					mapList.clear()
 					val propMap = CustomProperties()
 					try {
-						val `in` = FileInputStream("config/map/vsbattle/$setID.map")
+						val `in` = FileInputStream("config/values/vsbattle/$setID.values")
 						propMap.load(`in`)
 						`in`.close()
 					} catch(e2:IOException) {
 						log.error("Map set $setID not found", e2)
 					}
 
-					val maxMap = propMap.getProperty("map.maxMapNumber", 0)
+					val maxMap = propMap.getProperty("values.maxMapNumber", 0)
 					log.debug("Number of maps:$maxMap")
 
 					val strMap = StringBuilder()
 
 					for(i in 0 until maxMap) {
-						val strMapTemp = propMap.getProperty("map.$i", "")
+						val strMapTemp = propMap.getProperty("values.$i", "")
 						mapList.add(strMapTemp)
 						strMap.append(strMapTemp)
 						if(i<maxMap-1) strMap.append("\t")
@@ -3966,10 +3966,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// PlayerList
 		if(message[0]=="playerlist"||message[0]=="playerupdate"||
 			message[0]=="playernew"||message[0]=="playerlogout") {
-			SwingUtilities.invokeLater {this.updateLobbyUserList()}
+			SwingUtilities.invokeLater {updateLobbyUserList()}
 
 			if(tabLobbyAndRoom.isEnabledAt(1)) {
-				SwingUtilities.invokeLater {this.updateRoomUserList()}
+				SwingUtilities.invokeLater {updateRoomUserList()}
 
 				if(message[0]=="playerlogout") {
 					val p = NetPlayerInfo(message[1])
@@ -4182,7 +4182,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			addSystemChatLogLater(txtpaneLobbyChatLog, strKickMsg, Color.red)
 		}
 		// Map receive
-		if(message[0]=="map") {
+		if(message[0]=="values") {
 			val strDecompressed = NetUtil.decompressString(message[1])
 			val strMaps = strDecompressed.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 
@@ -4243,7 +4243,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					if(uid==netPlayerClient!!.playerUID) setRoomJoinButtonVisible(false)
 				}
 
-			SwingUtilities.invokeLater {this.updateRoomUserList()}
+			SwingUtilities.invokeLater {updateRoomUserList()}
 		}
 		// Automatically start timerStart
 		if(message[0]=="autostartbegin") {

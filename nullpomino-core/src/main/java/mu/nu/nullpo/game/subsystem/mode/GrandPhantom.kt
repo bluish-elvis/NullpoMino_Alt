@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus.BGM.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
@@ -967,7 +967,7 @@ class GrandPhantom:AbstractMode() {
 
 		/** BGM change level */
 		private val tableBGMChange = intArrayOf(300, 500, -1)
-		private val tableBGM = arrayOf(BLITZ_4, BLITZ_3, BLITZ_2, STORM_2)
+		private val tableBGM = arrayOf(BGM.BLITZ_4, BGM.BLITZ_3, BGM.BLITZ_2, BGM.STORM_2)
 		/** Grade names */
 
 		private val tableGradeName = arrayOf("", "m", "MK", "MV", "MO", "MM", "GM")

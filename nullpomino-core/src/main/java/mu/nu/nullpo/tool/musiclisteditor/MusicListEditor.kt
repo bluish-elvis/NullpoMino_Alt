@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.tool.musiclisteditor
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.log4j.Logger
 import org.apache.log4j.PropertyConfigurator
@@ -38,16 +38,16 @@ import javax.swing.*
 class MusicListEditor:JFrame(), ActionListener {
 
 	/** Swing版のSave settings用Property file */
-	private var propConfig:CustomProperties = CustomProperties()
+	private val propConfig:CustomProperties = CustomProperties()
 
 	/** Default language file */
-	private var propLangDefault:CustomProperties = CustomProperties()
+	private val propLangDefault:CustomProperties = CustomProperties()
 
 	/** UI翻訳用Property file */
-	private var propLang:CustomProperties = CustomProperties()
+	private val propLang:CustomProperties = CustomProperties()
 
 	/** 音楽リストが含まれるProperty file */
-	private var propMusic:CustomProperties = CustomProperties()
+	private val propMusic:CustomProperties = CustomProperties()
 
 	/** 音楽のFilename用テキストボックス */
 	private var txtfldMusicFileNames:Array<JTextField> = emptyArray()
@@ -70,7 +70,6 @@ class MusicListEditor:JFrame(), ActionListener {
 	/** Initialization */
 	private fun init() {
 		// 設定ファイル読み込み
-		propConfig = CustomProperties()
 		try {
 			val `in` = FileInputStream("config/setting/swing.xml")
 			propConfig!!.loadFromXML(`in`)
@@ -79,7 +78,6 @@ class MusicListEditor:JFrame(), ActionListener {
 		}
 
 		// 言語ファイル読み込み
-		propLangDefault = CustomProperties()
 		try {
 			val `in` = FileInputStream("config/lang/musiclisteditor_default.xml")
 			propLangDefault!!.loadFromXML(`in`)
@@ -88,7 +86,6 @@ class MusicListEditor:JFrame(), ActionListener {
 			log.error("Couldn't load default UI language file", e)
 		}
 
-		propLang = CustomProperties()
 		try {
 			val `in` = FileInputStream(
 				"config/lang/musiclisteditor_"+Locale.getDefault().country+".xml")
@@ -125,16 +122,17 @@ class MusicListEditor:JFrame(), ActionListener {
 		pMusicSetting.layout = BoxLayout(pMusicSetting, BoxLayout.Y_AXIS)
 		pMusicSetting.alignmentX = Component.LEFT_ALIGNMENT
 		this.add(pMusicSetting)
-		val num = BGMStatus.BGM.values().size-1
+		val num = BGM.countAll-1
 		txtfldMusicFileNames = Array(num){JTextField(45)}
 		chkboxNoLoop = Array(num){JCheckBox()}
 
-		for(Track in BGMStatus.BGM.values()) {
-			if(Track==BGMStatus.BGM.SILENT) continue
-			val i = Track.ordinal-1
-			val x = Track.id
-			val n = Track.name
+		//TODO:Tab : BGM. : Category
+		for(Track in BGM.values.flatMap {bgm->List(bgm.nums){bgm}}) {
+			if(Track==BGM.SILENT) continue
+			val i = Track.id-1
+			val name = Track.fullName(Track.idx)
 			val t = Track.longName
+			val num = Track.nums
 			val pMusicTemp = JPanel(BorderLayout())
 			pMusicSetting.add(pMusicTemp)
 
@@ -146,14 +144,14 @@ class MusicListEditor:JFrame(), ActionListener {
 			pMusicTemp.add(pMusicTempTexts, BorderLayout.EAST)
 
 			txtfldMusicFileNames[i].componentPopupMenu = TextFieldPopupMenu(txtfldMusicFileNames[i])
-			txtfldMusicFileNames[i].text = propMusic!!.getProperty("music.filename.$n", "")
+			txtfldMusicFileNames[i].text = propMusic.getProperty("music.filename.$name", "")
 			pMusicTempTexts.add(txtfldMusicFileNames[i], BorderLayout.CENTER)
 
 			val pMusicTempTextsButtons = JPanel(BorderLayout())
 			pMusicTempTexts.add(pMusicTempTextsButtons, BorderLayout.EAST)
 
 			chkboxNoLoop[i].toolTipText = getUIText("MusicListEditor_NoLoop_Tip")
-			chkboxNoLoop[i].isSelected = propMusic!!.getProperty("music.noloop.$n", false)
+			chkboxNoLoop[i].isSelected = propMusic.getProperty("music.noloop.$name", false)
 			pMusicTempTextsButtons.add(chkboxNoLoop[i], BorderLayout.WEST)
 
 			val btnClear = JButton(getUIText("MusicListEditor_Clear"))
@@ -217,7 +215,7 @@ class MusicListEditor:JFrame(), ActionListener {
 
 	/** 音楽リスト読み込み */
 	private fun loadMusicList() {
-		propMusic = CustomProperties()
+		propMusic.clear()
 		try {
 			val `in` = FileInputStream("config/setting/music.xml")
 			propMusic!!.loadFromXML(`in`)
@@ -297,7 +295,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		} else if(e.actionCommand=="OK") {
 			val prop = CustomProperties()
 			for(i in txtfldMusicFileNames.indices) {
-				val track = BGMStatus[i+1].name
+				val track = BGM.values[i+1].name
 				prop.setProperty("music.filename.$track", txtfldMusicFileNames[i].text)
 				prop.setProperty("music.noloop.$track", chkboxNoLoop[i].isSelected)
 			}

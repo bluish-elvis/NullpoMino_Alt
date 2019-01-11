@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
@@ -338,7 +338,7 @@ class GrandFestival:AbstractMode() {
 
 		setSpeed(engine)
 		bgmlv = if(engine.statistics.level<500) 0 else 1
-		owner.bgmStatus.bgm = if(engine.statistics.level<500) BGMStatus.BGM.GM_2 else BGMStatus.BGM.GM_20G_2
+		owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GM_2 else BGM.GM_20G_2
 
 	}
 
@@ -528,7 +528,7 @@ class GrandFestival:AbstractMode() {
 					if(hanabi>0) bonusspeed /= hanabi
 					bgmlv++
 					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = BGMStatus.BGM.GM_20G_2
+					owner.bgmStatus.bgm = BGM.GM_20G_2
 
 					engine.statistics.level = 300
 					engine.timerActive = false
@@ -539,10 +539,11 @@ class GrandFestival:AbstractMode() {
 					owner.backgroundStatus.fadebg = (nextseclv-100)/100
 				}
 			}
-			lastscore = 6*((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
-				*lines
-				*comboValue*if(engine.field!!.isEmpty) 4 else 1)
-				+engine.statistics.level/(if(engine.tspin) 2 else 3)+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
+			lastscore = 6*
+				((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
+					*lines
+					*comboValue*if(engine.field!!.isEmpty) 4 else 1)
+					+engine.statistics.level/(if(engine.tspin) 2 else 3)+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			// AC medal
 			if(engine.field!!.isEmpty) {
 
@@ -552,7 +553,7 @@ class GrandFestival:AbstractMode() {
 			}
 			temphanabi += (
 				(lines*1.9-.9)
-					*(if(engine.ending==0)(if(engine.tspin) 4.0 else if(engine.tspinmini) 2.0 else 1.0) else 2.8)
+					*(if(engine.ending==0) (if(engine.tspin) 4.0 else if(engine.tspinmini) 2.0 else 1.0) else 2.8)
 					*(if(engine.lockDelay>engine.lockDelayNow) 1.3 else 1.0)*(if(levelb%25==0) 1.3 else 1.0)*combobonus.toDouble()).toInt()
 			if(sectionscomp>=0&&sectionscomp<sectionscore.size) sectionscore[sectionscomp] += lastscore
 			engine.statistics.scoreFromLineClear += lastscore
@@ -783,10 +784,12 @@ class GrandFestival:AbstractMode() {
 		private const val CURRENT_VERSION = 0
 
 		/** Gravity table (Gravity speed value) */
-		private val tableGravityValue = intArrayOf(4, 5, 6, 8, 10, 12, 16, 32, 48, 64, 4, 5, 6, 8, 12, 32, 48, 80, 112, 128, 144, 16, 48, 80, 112, 144, 176, 192, 208, 224, 240, -1)
+		private val tableGravityValue =
+			intArrayOf(4, 5, 6, 8, 10, 12, 16, 32, 48, 64, 4, 5, 6, 8, 12, 32, 48, 80, 112, 128, 144, 16, 48, 80, 112, 144, 176, 192, 208, 224, 240, -1)
 
 		/** Gravity table (Gravity change level) */
-		private val tableGravityChangeLevel = intArrayOf(8, 19, 35, 40, 50, 60, 70, 80, 90, 100, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180, 200, 212, 221, 232, 244, 256, 267, 277, 287, 295, 300, 10000)
+		private val tableGravityChangeLevel =
+			intArrayOf(8, 19, 35, 40, 50, 60, 70, 80, 90, 100, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180, 200, 212, 221, 232, 244, 256, 267, 277, 287, 295, 300, 10000)
 		/** 段位 pointのCombo bonus */
 		private val tableHanabiComboBonus = floatArrayOf(1f, 1.5f, 1.9f, 2.2f, 2.9f, 3.5f, 3.9f)
 

@@ -23,7 +23,9 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.EventReceiver.FONT
 import mu.nu.nullpo.game.play.GameEngine
@@ -217,7 +219,7 @@ class RetroClassic:AbstractMode() {
 		engine.statistics.levelDispAdd = 1
 		engine.big = big
 
-		owner.bgmStatus.bgm = BGMStatus.BGM.RETRO_N(0)
+		owner.bgmStatus.bgm = BGM.RETRO_N(0)
 		setSpeed(engine)
 	}
 
@@ -242,17 +244,17 @@ class RetroClassic:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE"+
 				if(lastscore>0) "(+"+lastscore.toString()+")" else "", COLOR.BLUE)
 			receiver.drawScore(engine, playerID, 0, 4, GeneralUtil.capsInteger(engine.statistics.score, 6),
-				font=if(engine.statistics.score<=999999)FONT.NUM else FONT.NORMAL,scale = 2f)
+				font = if(engine.statistics.score<=999999) FONT.NUM else FONT.NORMAL, scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", COLOR.BLUE)
 			receiver.drawScore(engine, playerID, 0, 7, when(gametype) {
 				GAMETYPE_TYPE_B -> String.format("-%2d", maxOf(25-engine.statistics.lines, 0))
 				else -> GeneralUtil.capsInteger(engine.statistics.lines, 3)
-			},if(gametype!=GAMETYPE_TYPE_B && engine.statistics.lines<999)FONT.NUM else FONT.NORMAL, scale = 2f)
+			}, if(gametype!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.NORMAL, scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.BLUE)
 			receiver.drawScore(engine, playerID, 0, 10, LEVEL_NAME[engine.statistics.level],
-				if(engine.statistics.level<30) FONT.NUM else FONT.NORMAL,scale = 2f)
+				if(engine.statistics.level<30) FONT.NUM else FONT.NORMAL, scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time.toFloat()), 2f)
@@ -495,8 +497,6 @@ class RetroClassic:AbstractMode() {
 	}
 
 	companion object {
-
-
 
 		/** Current version of this mode */
 		private const val CURRENT_VERSION = 2

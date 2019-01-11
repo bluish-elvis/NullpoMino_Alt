@@ -1,6 +1,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -9,11 +10,6 @@ import mu.nu.nullpo.util.GeneralUtil
 
 /** DIG CHALLENGE mode */
 class MarathonDrill:NetDummyMode() {
-
-	/** Garbage speed table */
-	private val GARBAGE_TIMER_TABLE = arrayOf(
-		intArrayOf(200, 190, 180, 170, 160, 150, 140, 130, 120, 110, 100, 95, 90, 85, 80, 75, 70, 65, 60, 60), // Normal
-		intArrayOf(200, 190, 185, 180, 175, 170, 165, 160, 155, 150, 145, 140, 135, 130, 125, 120, 115, 110, 105, 100))// Realtime
 
 	/** Most recent increase in score */
 	private var lastscore:Int = 0
@@ -172,8 +168,8 @@ class MarathonDrill:NetDummyMode() {
 					}
 					2 -> {
 						bgmno += change
-						if(bgmno<-1) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = -1
+						if(bgmno<-1) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = -1
 					}
 					3 -> {
 						tspinEnableType += change
@@ -278,8 +274,7 @@ class MarathonDrill:NetDummyMode() {
 
 		setSpeed(engine)
 
-		owner.bgmStatus.bgm = if(netIsWatch)
-			BGMStatus.BGM.SILENT else BGMStatus[bgmno]
+		owner.bgmStatus.bgm = if(netIsWatch) BGM.SILENT else BGM.values[bgmno]
 	}
 
 	/* Render score */
@@ -309,24 +304,24 @@ class MarathonDrill:NetDummyMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 4, engine.statistics.score.toString(), scale=2f)
+			receiver.drawScoreNum(engine, playerID, 0, 4, engine.statistics.score.toString(), scale = 2f)
 			receiver.drawScoreNum(engine, playerID, 5, 3, "+$lastscore")
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "DEPTH", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 7, garbageDigged.toString(),scale= 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 7, garbageDigged.toString(), scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LINE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, engine.statistics.lines.toString(), scale=2f)
+			receiver.drawScoreNum(engine, playerID, 0, 10, engine.statistics.lines.toString(), scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "LEVEL", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 5, 12, (engine.statistics.level+1).toString(), scale=2f)
+			receiver.drawScoreNum(engine, playerID, 5, 12, (engine.statistics.level+1).toString(), scale = 2f)
 			receiver.drawScoreNum(engine, playerID, 1, 13, garbageTotal.toString())
 			receiver.drawSpeedMeter(engine, playerID, 0, 14,
 				garbageTotal%LEVEL_GARBAGE_LINES*1f/(LEVEL_GARBAGE_LINES-1))
 			receiver.drawScoreNum(engine, playerID, 1, 15, garbageNextLevelLines.toString())
 
 			receiver.drawScoreFont(engine, playerID, 0, 16, "TIME", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 17, GeneralUtil.getTime(engine.statistics.time.toFloat()), scale=2f)
+			receiver.drawScoreNum(engine, playerID, 0, 17, GeneralUtil.getTime(engine.statistics.time.toFloat()), scale = 2f)
 
 			renderLineAlert(engine, playerID, receiver)
 
@@ -421,23 +416,20 @@ class MarathonDrill:NetDummyMode() {
 	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		menuTime = 0
 		var pts = menuTime
-		if(engine.tspin) {
-			if(lines==0&&!engine.tspinez)
-				pts = if(engine.tspinmini) 0 else 1// T-Spin 0 lines
-			else if(engine.tspinez&&lines>0)
-				pts = 1+lines+(if(engine.b2b) 1 else 0)// Immobile EZ Spin
-			else if(lines==1)
-				pts += if(engine.tspinmini) if(engine.b2b) 3 else 2 else if(engine.b2b) 2 else 1// T-Spin 1 line
-			else if(lines==2)
-				pts += if(engine.tspinmini&&engine.useAllSpinBonus) if(engine.b2b) 5 else 4 else if(engine.b2b) 4 else 3// T-Spin 2 lines
-			else if(lines>=3) pts += if(engine.b2b) 5 else 4// Twister 3 lines
-		} else if(lines==1)
-			pts = 1 // 1列
-		else if(lines==2)
-			pts = if(engine.split) if(engine.b2b) 4 else 3 else 2 // 2列
-		else if(lines==3)
-			pts = if(engine.split) if(engine.b2b) 5 else 4 else 3 // 3列
-		else if(lines>=4) pts = if(engine.b2b) 6 else 5
+		when {
+			engine.tspin -> when {
+				lines==0&&!engine.tspinez -> pts = if(engine.tspinmini) 0 else 1// T-Spin 0 lines
+				engine.tspinez&&lines>0 -> pts = 1+lines+(if(engine.b2b) 1 else 0)// Immobile EZ Spin
+				lines==1 -> pts += if(engine.tspinmini) if(engine.b2b) 3 else 2 else if(engine.b2b) 2 else 1// T-Spin 1 line
+				lines==2 -> pts += if(engine.tspinmini&&engine.useAllSpinBonus) if(engine.b2b) 5 else 4 else if(engine.b2b) 4 else 3// T-Spin 2 lines
+				lines>=3 -> pts += if(engine.b2b) 5 else 4// Twister 3 lines
+			}// Twister 3 lines
+			lines==1 -> pts = 1 // 1列
+			lines==2 -> pts = if(engine.split) if(engine.b2b) 4 else 3 else 2 // 2列
+			lines==3 -> pts = if(engine.split) if(engine.b2b) 5 else 4 else 3 // 3列
+			lines>=4 -> pts = if(engine.b2b) 6 else 5
+			// All clear
+		}
 		// All clear
 		if(lines>=1&&engine.field!!.isEmpty) pts += 10
 		return pts
@@ -539,7 +531,7 @@ class MarathonDrill:NetDummyMode() {
 			if(receiver.isStickySkin(engine))
 				for(x in 0 until w)
 					if(x!=garbageHole) {
-						field.getBlock(x, h-1)?.apply{
+						field.getBlock(x, h-1)?.apply {
 							if(!field.getBlockEmpty(x-1, h-1)) setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
 							if(!field.getBlockEmpty(x+1, h-1)) setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
 						}
@@ -566,9 +558,8 @@ class MarathonDrill:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		val b = if(engine.statistics.time<10800) BGMStatus.BGM.RESULT_1 else BGMStatus.BGM.RESULT_2
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = b
+		owner.bgmStatus.bgm = if(engine.statistics.time<10800)BGM.RESULT_1 else BGM.RESULT_2
 
 		return super.onResult(engine, playerID)
 	}
@@ -713,7 +704,8 @@ class MarathonDrill:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+		val bg =
+			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
 		msg += engine.statistics.score.toString()+"\t"+engine.statistics.lines+"\t"+engine.statistics.totalPieceLocked+"\t"
 		msg += engine.statistics.time.toString()+"\t"+engine.statistics.level+"\t"
@@ -813,6 +805,11 @@ class MarathonDrill:NetDummyMode() {
 		/** Fall velocity table (numerators) */
 		private val tableGravity = intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
 		/** Fall velocity table (denominators) */
-		private val tableDenominator = intArrayOf(64, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
+		private val tableDenominator =
+			intArrayOf(64, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
+		/** Garbage speed table */
+		private val GARBAGE_TIMER_TABLE = arrayOf(
+			intArrayOf(200, 190, 180, 170, 160, 150, 140, 130, 120, 110, 100, 95, 90, 85, 80, 75, 70, 65, 60, 60), // Normal
+			intArrayOf(200, 190, 185, 180, 175, 170, 165, 160, 155, 150, 145, 140, 135, 130, 125, 120, 115, 110, 105, 100))// Realtime
 	}
 }

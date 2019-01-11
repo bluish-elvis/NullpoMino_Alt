@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -188,8 +189,8 @@ class SprintDig:NetDummyMode() {
 					}
 					7 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 					8 -> {
 						goaltype += change
@@ -294,9 +295,9 @@ class SprintDig:NetDummyMode() {
 		if(version<=0) engine.big = big
 
 		if(netIsWatch)
-			owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+			owner.bgmStatus.bgm = BGM.SILENT
 		else
-			owner.bgmStatus.bgm = BGMStatus[bgmno]
+			owner.bgmStatus.bgm = BGM.values[bgmno]
 	}
 
 	/** Fill the playfield with garbage

@@ -33,7 +33,7 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 
 		fun iterate() {
 
-			if(ranks!!.completionPercentageIncrease()) this.progress = ranks!!.completionPercentage
+			if(ranks!!.completionPercentageIncrease()) progress = ranks!!.completionPercentage
 		}
 
 		override fun doInBackground():Void? {

@@ -23,11 +23,10 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
-import mu.nu.nullpo.game.component.BGMStatus.BGM.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
-import mu.nu.nullpo.game.event.EventReceiver.*
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
@@ -612,7 +611,7 @@ class GrandMania:AbstractMode() {
 			getMedalFontColor(medalCO)?.let {receiver.drawScoreFont(engine, playerID, 3, 22, "CO", it)}
 
 			// Section Time
-			if(showsectiontime&&sectionTime!=null) {
+			if(showsectiontime&&sectionTime.isNotEmpty()) {
 				val x = receiver.nextDisplayType==2
 				receiver.drawScoreFont(engine, playerID, if(x) 8 else 10, 2, "SECTION TIME", COLOR.BLUE)
 
@@ -684,7 +683,7 @@ class GrandMania:AbstractMode() {
 				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 			}
 
-			owner.bgmStatus.bgm = ENDING_2
+			owner.bgmStatus.bgm = BGM.ENDING_2
 		}
 
 		return false
@@ -1050,12 +1049,12 @@ class GrandMania:AbstractMode() {
 			}
 			2 -> {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", COLOR.BLUE)
-				getMedalFontColor(medalSK)?.let{ receiver.drawMenuFont(engine, playerID, 5, 2, "SK", it)}
-				getMedalFontColor(medalST)?.let{ receiver.drawMenuFont(engine, playerID, 8, 2, "ST", it)}
-				getMedalFontColor(medalAC)?.let{ receiver.drawMenuFont(engine, playerID, 1, 3, "AC", it)}
-				getMedalFontColor(medalCO)?.let{ receiver.drawMenuFont(engine, playerID, 4, 3, "CO", it)}
-				getMedalFontColor(medalRE)?.let{ receiver.drawMenuFont(engine, playerID, 7, 3, "RE", it)}
-				getMedalFontColor(medalRO)?.let{ receiver.drawMenuFont(engine, playerID, 8, 4, "RO", it)}
+				getMedalFontColor(medalSK)?.let {receiver.drawMenuFont(engine, playerID, 5, 2, "SK", it)}
+				getMedalFontColor(medalST)?.let {receiver.drawMenuFont(engine, playerID, 8, 2, "ST", it)}
+				getMedalFontColor(medalAC)?.let {receiver.drawMenuFont(engine, playerID, 1, 3, "AC", it)}
+				getMedalFontColor(medalCO)?.let {receiver.drawMenuFont(engine, playerID, 4, 3, "CO", it)}
+				getMedalFontColor(medalRE)?.let {receiver.drawMenuFont(engine, playerID, 7, 3, "RE", it)}
+				getMedalFontColor(medalRO)?.let {receiver.drawMenuFont(engine, playerID, 8, 4, "RO", it)}
 
 				drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, AbstractMode.Statistic.LPM, AbstractMode.Statistic.SPM, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.PPS)
 
@@ -1103,15 +1102,10 @@ class GrandMania:AbstractMode() {
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 
-		var b:BGMStatus.BGM = FAILED
-		if(engine.ending>0)
-			b = if(rollclear<=1)
-				RESULT_2
-			else
-				CLEARED
-
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = b
+		owner.bgmStatus.bgm = if(engine.ending>0)
+			if(rollclear<=1) BGM.RESULT_2 else BGM.CLEARED
+		else BGM.FAILED
 		// ページ切り替え
 		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
@@ -1268,7 +1262,7 @@ class GrandMania:AbstractMode() {
 		private val tableBGMFadeout = intArrayOf(475, 680, 880, -1)
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(500, 700, 900, -1)
-		private val tableBGM = arrayOf(GM_2, GM_20G_2, STORM_1, STORM_2)
+		private val tableBGM = arrayOf(BGM.GM_2, BGM.GM_20G_2, BGM.STORM_1, BGM.STORM_2)
 		/** Line clear時に入る段位 point */
 		private val tableGradePoint =
 			arrayOf(intArrayOf(10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2), intArrayOf(20, 20, 20, 18, 16, 15, 13, 10, 11, 11, 12), intArrayOf(40, 36, 33, 30, 27, 24, 20, 18, 17, 16, 15), intArrayOf(50, 47, 44, 40, 40, 38, 36, 34, 32, 31, 30))

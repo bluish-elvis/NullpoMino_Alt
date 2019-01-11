@@ -74,7 +74,7 @@ class NetServer {
 	/** Number of rooms created so far (Used for room ID) */
 	private var roomCount = 0
 
-	/** RNG for map selection */
+	/** RNG for values selection */
 	private val rand = Random()
 
 	/** true if shutdown is requested by the admin */
@@ -1215,7 +1215,7 @@ class NetServer {
 
 				if(roomInfo.strMode.isEmpty()) roomInfo.strMode = NetUtil.urlDecode(message[3])
 
-				// Set map
+				// Set values
 				if(roomInfo.useMap&&message.size>4) {
 					val strDecompressed = NetUtil.decompressString(message[4])
 					val strMaps = strDecompressed.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
@@ -1402,7 +1402,7 @@ class NetServer {
 							if(i<maxMap-1) strMapTemp.append("\t")
 						}
 						val strCompressed = NetUtil.compressString(strMapTemp.toString())
-						send(client, "map\t$strCompressed\n")
+						send(client, "values\t$strCompressed\n")
 					}
 
 					broadcast(

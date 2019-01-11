@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import org.apache.log4j.Logger
 import org.newdawn.slick.GameContainer
@@ -107,7 +107,7 @@ class StateSelectMode:DummyMenuScrollState() {
 	/* Enter */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		prepareModeList()
-		if(ResourceHolder.bgmPlaying()!=BGMStatus.BGM.MENU_1) ResourceHolder.bgmStart(BGMStatus.BGM.MENU_1)
+		if(ResourceHolder.bgmPlaying()!=BGM.MENU_1) ResourceHolder.bgmStart(BGM.MENU_1)
 	}
 
 	/* Render screen */

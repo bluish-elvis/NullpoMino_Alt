@@ -407,10 +407,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 	/** Save settings */
 	private fun saveConfig() {
-		propConfig.setProperty("mainwindow.width", this.size.width)
-		propConfig.setProperty("mainwindow.height", this.size.height)
-		propConfig.setProperty("mainwindow.x", this.location.x)
-		propConfig.setProperty("mainwindow.y", this.location.y)
+		propConfig.setProperty("mainwindow.width", size.width)
+		propConfig.setProperty("mainwindow.height", size.height)
+		propConfig.setProperty("mainwindow.x", location.x)
+		propConfig.setProperty("mainwindow.y", location.y)
 
 		val tmUsers = tableUsers!!.columnModel
 		propConfig.setProperty("tableUsers.width.ip", tmUsers.getColumn(0).width)

@@ -325,8 +325,8 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** NET: Results screen */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		/*
-    BGMStatus.BGM b=BGMStatus.BGM.FAILED;
-    if(engine.ending>=2)b=engine.statistics.time<10800?BGMStatus.BGM.RESULT_1:BGMStatus.BGM.RESULT_2;
+    BGMStatus.BGM b=BGM.FAILED;
+    if(engine.ending>=2)b=engine.statistics.time<10800?BGM.RESULT_1:BGM.RESULT_2;
     owner.bgmStatus.fadesw=false;
     owner.bgmStatus.bgm=b; */
 		// NET: Retry

@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
@@ -350,7 +351,7 @@ class GrandMountain:AbstractMode() {
 				engine.random.nextInt(engine.field!!.width)
 		setSpeed(engine)
 		setStartBgmlv(engine)
-		owner.bgmStatus.bgm = BGMStatus[bgmlv]
+		owner.bgmStatus.bgm = BGM.values[bgmlv]
 	}
 
 	/* Render score */
@@ -439,7 +440,7 @@ class GrandMountain:AbstractMode() {
 			}
 
 			// Section Time
-			if(showsectiontime&&sectionTime!=null) {
+			if(showsectiontime&&sectionTime.isNotEmpty()) {
 				val x = if(receiver.nextDisplayType==2) 8 else 12
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
 
@@ -672,7 +673,7 @@ class GrandMountain:AbstractMode() {
 				if(tableBGMChange[bgmlv]!=-1&&engine.statistics.level>=tableBGMChange[bgmlv]) {
 					bgmlv++
 					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = BGMStatus[bgmlv]
+					owner.bgmStatus.bgm = BGM.values[bgmlv]
 				}
 
 				// Update level for next section

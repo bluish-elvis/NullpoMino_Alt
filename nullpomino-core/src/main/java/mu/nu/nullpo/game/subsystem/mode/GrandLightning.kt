@@ -24,7 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
-import mu.nu.nullpo.game.component.BGMStatus.BGM.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
@@ -230,7 +230,8 @@ class GrandLightning:AbstractMode() {
 		lvstopse = prop.getProperty("speedmania2.lvstopse", true)
 		showsectiontime = prop.getProperty("speedmania2.showsectiontime", true)
 		big = prop.getProperty("speedmania2.big", false)
-		torikan = prop.getProperty("speedmania2.torikan.$strRuleName", if(classic) DEFAULT_TORIKAN_CLASSIC else DEFAULT_TORIKAN)
+		torikan =
+			prop.getProperty("speedmania2.torikan.$strRuleName", if(classic) DEFAULT_TORIKAN_CLASSIC else DEFAULT_TORIKAN)
 		gradedisp = prop.getProperty("speedmania2.gradedisp", false)
 	}
 
@@ -494,12 +495,12 @@ class GrandLightning:AbstractMode() {
 					COLOR.ORANGE)
 
 			// medal
-			getMedalFontColor(medalAC)?.let{receiver.drawScoreFont(engine, playerID, 0, 20, "AC", it)}
-			getMedalFontColor(medalST)?.let{receiver.drawScoreFont(engine, playerID, 3, 20, "ST", it)}
-			getMedalFontColor(medalSK)?.let{receiver.drawScoreFont(engine, playerID, 0, 21, "SK", it)}
-			getMedalFontColor(medalCO)?.let{receiver.drawScoreFont(engine, playerID, 3, 21, "CO", it)}
+			getMedalFontColor(medalAC)?.let {receiver.drawScoreFont(engine, playerID, 0, 20, "AC", it)}
+			getMedalFontColor(medalST)?.let {receiver.drawScoreFont(engine, playerID, 3, 20, "ST", it)}
+			getMedalFontColor(medalSK)?.let {receiver.drawScoreFont(engine, playerID, 0, 21, "SK", it)}
+			getMedalFontColor(medalCO)?.let {receiver.drawScoreFont(engine, playerID, 3, 21, "CO", it)}
 			// Section Time
-			if(showsectiontime&&sectionTime!=null) {
+			if(showsectiontime&&sectionTime.isNotEmpty()) {
 				val y = if(receiver.nextDisplayType==2) 4 else 2
 				val x = if(receiver.nextDisplayType==2) 20 else 12
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
@@ -561,7 +562,7 @@ class GrandLightning:AbstractMode() {
 		if(engine.ending==2&&!rollstarted) {
 			rollstarted = true
 			engine.big = true
-			owner.bgmStatus.bgm = ENDING_3
+			owner.bgmStatus.bgm = BGMStatus.BGM.ENDING_3
 		}
 
 		return false
@@ -877,10 +878,10 @@ class GrandLightning:AbstractMode() {
 			}
 			2 -> {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", COLOR.BLUE)
-				 getMedalFontColor(medalAC)?.let{receiver.drawMenuFont(engine, playerID, 5, 2, "AC",it)}
-				 getMedalFontColor(medalCO)?.let{receiver.drawMenuFont(engine, playerID, 8, 2, "CO",it)}
-				 getMedalFontColor(medalST)?.let{receiver.drawMenuFont(engine, playerID, 2, 3, "ST",it)}
-				 getMedalFontColor(medalSK)?.let{receiver.drawMenuFont(engine, playerID, 6, 3, "SK",it)}
+				getMedalFontColor(medalAC)?.let {receiver.drawMenuFont(engine, playerID, 5, 2, "AC", it)}
+				getMedalFontColor(medalCO)?.let {receiver.drawMenuFont(engine, playerID, 8, 2, "CO", it)}
+				getMedalFontColor(medalST)?.let {receiver.drawMenuFont(engine, playerID, 2, 3, "ST", it)}
+				getMedalFontColor(medalSK)?.let {receiver.drawMenuFont(engine, playerID, 6, 3, "SK", it)}
 
 				drawResultStats(engine, playerID, receiver, 4, COLOR.RED, AbstractMode.Statistic.LPM, AbstractMode.Statistic.SPM, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.PPS)
 
@@ -893,18 +894,12 @@ class GrandLightning:AbstractMode() {
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 
-		var b:BGMStatus.BGM = FAILED
-		when(engine.ending) {
-			0 -> {
-			}
-			1 -> b = RESULT_2
-			2 -> b = if(rollclear>0)
-				CLEARED
-			else
-				RESULT_2
-		}
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = b
+		owner.bgmStatus.bgm = when {
+			engine.ending==0 -> BGM.FAILED
+			engine.ending==2&&rollclear>0 -> BGM.CLEARED
+			else -> BGM.RESULT_2
+		}
 		// ページ切り替え
 		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
@@ -1054,19 +1049,22 @@ class GrandLightning:AbstractMode() {
 		private val tableGarbage = intArrayOf(50, 33, 27, 25, 21, 18, 15, 12, 9, 7, 0, 0, 0, 0)
 
 		/** REGRET criteria Time */
-		private val tableTimeRegret = intArrayOf(6000, 5800, 5600, 5400, 5200, 5000, 4750, 4500, 4250, 4000, 3750, 3500, 3250, 3000)
+		private val tableTimeRegret =
+			intArrayOf(6000, 5800, 5600, 5400, 5200, 5000, 4750, 4500, 4250, 4000, 3750, 3500, 3250, 3000)
 
 		/** BGM fadeout levels */
 		private val tableBGMFadeout = intArrayOf(485, 685, 985, -1)
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(500, 700, 1000, -1)
-		private val tableBGM = arrayOf(BLITZ_1, BLITZ_2, BLITZ_3, BLITZ_4)
+		private val tableBGM = arrayOf(BGM.BLITZ_1, BGM.BLITZ_2, BGM.BLITZ_3, BGM.BLITZ_4)
 		/** 段位のName */
-		private val tableGradeName = arrayOf("1", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13")
+		private val tableGradeName =
+			arrayOf("1", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13")
 
 		/** 裏段位のName */
 
-		private val tableSecretGradeName = arrayOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "GM")
+		private val tableSecretGradeName =
+			arrayOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "GM")
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 3238

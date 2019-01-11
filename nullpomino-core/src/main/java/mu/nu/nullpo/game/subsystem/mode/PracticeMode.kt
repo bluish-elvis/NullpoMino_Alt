@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
@@ -378,8 +379,8 @@ class PracticeMode:AbstractMode() {
 					}
 					7 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 					8 -> big = !big
 					9 -> {
@@ -493,7 +494,7 @@ class PracticeMode:AbstractMode() {
 					engine.createFieldIfNeeded()
 					engine.field!!.reset()
 
-					val prop = receiver.loadProperties("config/map/practice/$mapNumber.map")
+					val prop = receiver.loadProperties("config/values/practice/$mapNumber.values")
 					if(prop!=null) {
 						loadMap(engine.field!!, prop, 0)
 						engine.field!!.setAllSkin(engine.skin)
@@ -503,7 +504,7 @@ class PracticeMode:AbstractMode() {
 					if(engine.field!=null) {
 						val prop = CustomProperties()
 						saveMap(engine.field!!, prop, 0)
-						receiver.saveProperties("config/map/practice/$mapNumber.map", prop)
+						receiver.saveProperties("config/values/practice/$mapNumber.values", prop)
 					}
 				} else if(menuCursor==44)
 				// Preset読み込み
@@ -520,7 +521,7 @@ class PracticeMode:AbstractMode() {
 					receiver.saveModeConfig(owner.modeConfig)
 
 					if(useMap&&(engine.field==null||engine.field!!.isEmpty)) {
-						val prop = receiver.loadProperties("config/map/practice/$mapNumber.map")
+						val prop = receiver.loadProperties("config/values/practice/$mapNumber.values")
 						if(prop!=null) {
 							engine.createFieldIfNeeded()
 							loadMap(engine.field!!, prop, 0)
@@ -589,7 +590,7 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuNum(engine, playerID, 12, 5, String.format("%2d", engine.speed.lineDelay), menuCursor==4)
 			receiver.drawMenuFont(engine, playerID, 15, 5, "DAS:", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuNum(engine, playerID, 20, 5, String.format("%2d", engine.speed.das), menuCursor==6)
-			receiver.drawMenuFont(engine, playerID, 2, 7, String.format("BGM:%2d %s", bgmno, BGMStatus[bgmno].toString()), menuCursor==7)
+			receiver.drawMenuFont(engine, playerID, 2, 7, String.format("BGM:%2d %s", bgmno, BGM.values[bgmno].toString()), menuCursor==7)
 			receiver.drawMenuFont(engine, playerID, 2, 8, "BIG:"+GeneralUtil.getONorOFF(big), menuCursor==8)
 			receiver.drawMenuFont(engine, playerID, 2, 9, "LEVEL TYPE:"+LEVELTYPE_STRING[leveltype], menuCursor==9)
 			receiver.drawMenuFont(engine, playerID, 2, 10, "SPIN BONUS:"+if(tspinEnableType==0) "OFF" else if(tspinEnableType==1) "T-ONLY" else "ALL", menuCursor==10)
@@ -674,19 +675,19 @@ class PracticeMode:AbstractMode() {
 			if(version>=2)
 				if(useMap) {
 					if(owner.replayMode) {
-						log.debug("Loading map data from replay data")
+						log.debug("Loading values data from replay data")
 						engine.createFieldIfNeeded()
 						loadMap(engine.field!!, owner.replayProp, 0)
 						engine.field!!.setAllSkin(engine.skin)
 					} else {
-						log.debug("Backup map data")
+						log.debug("Backup values data")
 						fldBackup = Field(engine.field)
 					}
 				} else if(engine.field!=null) {
-					log.debug("Use no map, reseting field")
+					log.debug("Use no values, reseting field")
 					engine.field!!.reset()
 				} else
-					log.debug("Use no map")
+					log.debug("Use no values")
 		}
 
 		// Another Rule
@@ -743,7 +744,7 @@ class PracticeMode:AbstractMode() {
 
 		// Hebo Hidden
 		setHeboHidden(engine)
-		owner.bgmStatus.bgm = BGMStatus[bgmno]
+		owner.bgmStatus.bgm = BGM.values[bgmno]
 
 		goal = 5*(engine.statistics.level+1)
 
@@ -999,7 +1000,7 @@ class PracticeMode:AbstractMode() {
 				if(leveltype==LEVELTYPE_MANIA) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 			}
 
-			owner.bgmStatus.bgm = BGMStatus.BGM.ENDING_1
+			owner.bgmStatus.bgm = BGM.ENDING_1
 		}
 
 		return false

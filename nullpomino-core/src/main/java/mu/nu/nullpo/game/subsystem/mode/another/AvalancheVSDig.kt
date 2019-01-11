@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
@@ -31,7 +31,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import java.util.Random
+import java.util.*
 
 /** AVALANCHE VS DIG RACE mode (Release Candidate 1) */
 class AvalancheVSDig:AvalancheVSDummyMode() {
@@ -224,8 +224,8 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 					23 -> cascadeSlow[playerID] = !cascadeSlow[playerID]
 					24 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 					25 -> enableSE[playerID] = !enableSE[playerID]
 					26 -> bigDisplay = !bigDisplay
@@ -310,7 +310,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 					else
 						"CLASSIC")
 				menuColor = EventReceiver.COLOR.PINK
-				drawMenuCompact(engine, playerID, receiver, "BGM", BGMStatus[bgmno].toString())
+				drawMenuCompact(engine, playerID, receiver, "BGM", BGM.values[bgmno].toString())
 				menuColor = EventReceiver.COLOR.YELLOW
 				drawMenuCompact(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 				menuColor = EventReceiver.COLOR.PINK
@@ -485,7 +485,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 				owner.engine[1].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGMStatus.BGM.SILENT
+				owner.bgmStatus.bgm = BGM.SILENT
 			}
 		}
 	}

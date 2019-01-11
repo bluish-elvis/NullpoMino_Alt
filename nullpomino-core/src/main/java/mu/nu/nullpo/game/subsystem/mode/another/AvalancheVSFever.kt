@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -255,8 +255,8 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 					24 -> newChainPower[playerID] = !newChainPower[playerID]
 					25 -> {
 						bgmno += change
-						if(bgmno<0) bgmno = BGMStatus.count
-						if(bgmno>BGMStatus.count) bgmno = 0
+						if(bgmno<0) bgmno =BGM.count
+						if(bgmno>BGM.count) bgmno = 0
 					}
 					26 -> enableSE[playerID] = !enableSE[playerID]
 					27 -> bigDisplay = !bigDisplay
@@ -346,7 +346,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/4", COLOR.YELLOW)
 			} else {
 				initMenu(COLOR.PINK, 25)
-				drawMenu(engine, playerID, receiver, "BGM", BGMStatus[bgmno].toString())
+				drawMenu(engine, playerID, receiver, "BGM", BGM.values[bgmno].toString())
 				menuColor = COLOR.YELLOW
 				drawMenu(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 				menuColor = COLOR.PINK
