@@ -239,8 +239,8 @@ class SprintUltra:NetDummyMode() {
 					}
 					7 -> {
 						bgmno += change
-						if(bgmno<0) bgmno =BGM.count
-						if(bgmno>BGM.count) bgmno = 0
+						if(bgmno<0) bgmno = BGM.count-1
+						if(bgmno>=BGM.count) bgmno = 0
 					}
 					8 -> big = !big
 					9 -> {

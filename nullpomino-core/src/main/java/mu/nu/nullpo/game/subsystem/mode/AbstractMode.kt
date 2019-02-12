@@ -499,10 +499,12 @@ abstract class AbstractMode:GameMode {
 	protected fun drawResultRank(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
 		scale:Float, rank:Int, str:String) {
 		if(rank!=-1) {
-			var postfix = "TH"
-			if(rank%10==1&&rank%100!=11) postfix = "ST"
-			if(rank%10==2&&rank%100!=12) postfix = "ND"
-			if(rank%10==3&&rank%100!=13) postfix = "RD"
+			var postfix = when {
+				rank%10==0&&rank%100!=10 -> "ST"
+				rank%10==1&&rank%100!=11 -> "ND"
+				rank%10==2&&rank%100!=12 -> "RD"
+				else -> "TH"
+			}
 			receiver.drawMenuFont(engine, playerID, 5, y, postfix, color, scale)
 			receiver.drawMenuFont(engine, playerID, 5, y+1, str, color, scale*.8f)
 			receiver.drawMenuNum(engine, playerID, 0, y, String.format("%3d", rank+1), scale = scale*2)

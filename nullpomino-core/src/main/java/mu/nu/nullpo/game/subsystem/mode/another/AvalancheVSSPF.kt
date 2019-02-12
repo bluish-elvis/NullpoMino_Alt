@@ -322,8 +322,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					27 -> bigDisplay = !bigDisplay
 					28 -> {
 						bgmno += change
-						if(bgmno<0) bgmno =BGM.count
-						if(bgmno>BGM.count) bgmno = 0
+						if(bgmno<0) bgmno = BGM.count-1
+						if(bgmno>=BGM.count) bgmno = 0
 					}
 					29 -> enableSE[playerID] = !enableSE[playerID]
 					30, 31 -> {

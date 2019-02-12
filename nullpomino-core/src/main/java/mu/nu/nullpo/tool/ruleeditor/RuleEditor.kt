@@ -56,7 +56,7 @@ class RuleEditor:JFrame, ActionListener {
 	private var strNowFile:String? = null
 
 	/** タブ */
-	private var tabPane:JTabbedPane? = null
+	private var tabPane:JTabbedPane = JTabbedPane()
 
 	//----------------------------------------------------------------------
 	/* 基本設定パネル */
@@ -535,12 +535,12 @@ class RuleEditor:JFrame, ActionListener {
 
 		// タブ全体 --------------------------------------------------
 		tabPane = JTabbedPane()
-		contentPane.add(tabPane!!, BorderLayout.NORTH)
+		contentPane.add(tabPane, BorderLayout.NORTH)
 
 		// 基本設定タブ --------------------------------------------------
 		val panelBasic = JPanel()
 		panelBasic.layout = BoxLayout(panelBasic, BoxLayout.Y_AXIS)
-		tabPane!!.addTab(getUIText("TabName_Basic"), panelBasic)
+		tabPane.addTab(getUIText("TabName_Basic"), panelBasic)
 
 		// Rule name
 		val pRuleName = JPanel()
@@ -629,7 +629,7 @@ class RuleEditor:JFrame, ActionListener {
 		// fieldタブ --------------------------------------------------
 		val panelField = JPanel()
 		panelField.layout = BoxLayout(panelField, BoxLayout.Y_AXIS)
-		tabPane!!.addTab(getUIText("TabName_Field"), panelField)
+		tabPane.addTab(getUIText("TabName_Field"), panelField)
 
 		// fieldの幅
 		val pFieldWidth = JPanel()
@@ -1355,7 +1355,7 @@ class RuleEditor:JFrame, ActionListener {
 	 * @param filename Filename
 	 * @return テキストファイルを読み込んだVector&lt;String&gt;
 	 */
-	fun getTextFileVector(filename:String):Vector<String> {
+	private fun getTextFileVector(filename:String):Vector<String> {
 		val vec = Vector<String>()
 
 		try {
@@ -1376,7 +1376,7 @@ class RuleEditor:JFrame, ActionListener {
 	 * @param vecSrc 元のVector&lt;String&gt;
 	 * @return 加工したVector&lt;String&gt;
 	 */
-	fun createShortStringVector(vecSrc:Vector<String>?):Vector<String> {
+	private fun createShortStringVector(vecSrc:Vector<String>?):Vector<String> {
 		val vec = Vector<String>()
 
 		for(str in vecSrc!!) {

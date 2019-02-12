@@ -224,8 +224,8 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 					23 -> cascadeSlow[playerID] = !cascadeSlow[playerID]
 					24 -> {
 						bgmno += change
-						if(bgmno<0) bgmno =BGM.count
-						if(bgmno>BGM.count) bgmno = 0
+						if(bgmno<0) bgmno = BGM.count-1
+						if(bgmno>=BGM.count) bgmno = 0
 					}
 					25 -> enableSE[playerID] = !enableSE[playerID]
 					26 -> bigDisplay = !bigDisplay

@@ -25,12 +25,14 @@ package mu.nu.nullpo.game.component
 
 import java.io.Serializable
 import kotlin.reflect.full.createInstance
+import kotlin.reflect.full.primaryConstructor
 
 /** 音楽の再生状況を管理するクラス */
 class BGMStatus:Serializable {
 
 	/** Current BGM */
 	var bgm:BGM = BGM.SILENT
+	var track:Int = 0
 
 	/** 音量 (1f=100%, .5f=50%) */
 	var volume:Float = 1f
@@ -46,49 +48,52 @@ class BGMStatus:Serializable {
 	var fadespd:Float = 0f
 
 	/** 音楽の定数 */
-	sealed class BGM(val hidden:Boolean = false, val nums:Int = 1, ln:String = "", vararg sn:String = emptyArray()) {
-		constructor(nums:Int, ln:String, vararg sn:String):this(false, nums, ln, *sn)
-		constructor():this(false, 1, "")
+	sealed class BGM(idx:Int = 0, val hidden:Boolean = false, nums:Int = 1, ln:String = "",
+		vararg sn:String = emptyArray()) {
+		constructor(idx:Int, nums:Int, ln:String, vararg sn:String):this(idx, false, nums, ln, *sn)
 
-		open val idx:Int = 0
-
-		val id:Int get() = BGM::class.java.declaredClasses.indexOfFirst {it==this::class.java}
-
-		val longName:String = if(ln.isEmpty()) BGM::class.simpleName ?: "" else ln
-		val subName = sn.toList()
-		fun fullName(idx:Int) = longName+if(subName.isEmpty()) "" else subName[idx]
+		val id:Int = BGM::class.java.declaredClasses.indexOfFirst {it==this::class.java}
+		val idx:Int = minOf(maxOf(0, idx), nums-1)
+		val nums:Int = maxOf(1, nums)
 
 		val name = this::class.simpleName ?: ""
-
-		val drawName:String = "#$id-$idx ${name.replace('_', ' ')}"
+		val longName:String = if(ln.isEmpty()) name else ln
+		val subName:String = if(sn.isEmpty()) "" else sn[maxOf(minOf(this.idx, minOf(sn.size, nums)-1), 0)]
+		val drawName:String = "#$id-${this.idx} ${name.replace('_', ' ')}"
+		val fullName:String = "$longName $subName"
 		//var filename:Array<String> = Array(maxOf(1, nums)) {""}
 
+		override fun equals(other:Any?):Boolean =
+			super.equals(other)||if(other is BGM) id==other.id&&idx==other.idx else false
 		operator fun compareTo(o:BGM):Int = if(id==o.id) idx-o.idx else id-o.id
-		//operator fun invoke(i:Int):BGMStatus.BGM =
+		override fun hashCode():Int = super.hashCode()
+
+		override fun toString():String = fullName
+
 
 		object SILENT:BGM(ln = "Silent")
-		data class GENERIC(override val idx:Int = 0):BGM(6, "Guidelines Modes", *Array(6) {"Level:${it+1}"})
-		data class RUSH(override val idx:Int = 0):BGM(3, "TimeAttack Rush", *Array(3) {"Level:${it+1}"})
-		data class EXTRA(override val idx:Int = 0):BGM(3, "Extra Modes")
-		data class RETRO_N(override val idx:Int = 0):BGM(3, "Retro Classic:N.")
-		data class RETRO_A(override val idx:Int = 0):BGM(5, "Retro Marathon:AT")
-		data class RETRO_S(override val idx:Int = 0):BGM(3, "Retro Mania:S", "Marathon", "Deadlock", "Modern")
-		data class PUZZLE(override val idx:Int = 0):BGM(3, "Grand Blossom", "SAKURA", "TOMOYO", "CELBERUS")
-		data class GM_1(override val idx:Int = 0):BGM(2, "Grand Marathon", "NORMAL", "20G")
-		data class GM_2(override val idx:Int = 0):BGM(4, "Grand Mania", "NORMAL", "20G 500", "Storm 300/700", "Storm 500/900")
-		data class GM_3(override val idx:Int = 0):BGM(6, "Grand Mastery",
+		class GENERIC(idx:Int = 0):BGM(idx, 6, "Guidelines Modes", *Array(6) {"Level:${it+1}"})
+		class RUSH(idx:Int = 0):BGM(idx, 3, "TimeAttack Rush", *Array(3) {"Level:${it+1}"})
+		class EXTRA(idx:Int = 0):BGM(idx, 3, "Extra Modes")
+		class RETRO_N(idx:Int = 0):BGM(idx, 3, "Retro Classic:N.")
+		class RETRO_A(idx:Int = 0):BGM(idx, 5, ln = "Retro Marathon:AT")
+		class RETRO_S(idx:Int = 0):BGM(idx, 3, "Retro Mania:S", "Marathon", "Deadlock", "Modern")
+		class PUZZLE(idx:Int = 0):BGM(idx, 3, "Grand Blossom", "SAKURA", "TOMOYO", "CELBERUS")
+		class GM_1(idx:Int = 0):BGM(idx, 2, "Grand Marathon", "NORMAL", "20G")
+		class GM_2(idx:Int = 0):BGM(idx, 4, "Grand Mania", "NORMAL", "20G 500", "Storm 300/700", "Storm 500/900")
+		class GM_3(idx:Int = 0):BGM(idx, 6, "Grand Mastery",
 			"NORMAL", "20G", "Blitz", "Blitz 500", "Lightning 700", "Lightning 1k")
 
-		data class MENU(override val idx:Int = 0):BGM(true, 3, "Menu Screen BGM",
+		class MENU(idx:Int = 0):BGM(idx, true, 3, "Menu Screen BGM",
 			"Mode Select", "General Config", "Mode Config")
 
-		data class ENDING(override val idx:Int = 0):BGM(true, 4, "Ending Challenge",
+		class ENDING(idx:Int = 0):BGM(idx, true, 4, "Ending Challenge",
 			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)")
 
-		data class RESULT(override val idx:Int = 0):BGM(true, 4, "Play Result",
+		class RESULT(idx:Int = 0):BGM(idx, true, 4, "Play Result",
 			"Failure", "Done Sprint", "Done Enduro", "Cleared Game")
 
-		data class FINALE(override val idx:Int = 0):BGM(true, 3, "Grand Finale", "Genuine", "Joker", "Further")
+		class FINALE(idx:Int = 0):BGM(idx, true, 3, "Grand Finale", "Genuine", "Joker", "Further")
 
 		//operator fun get(index: Int): BGM = if(this.idx)
 		companion object {
@@ -134,25 +139,19 @@ class BGMStatus:Serializable {
 			val FINALE_2 = FINALE(1)
 			val FINALE_3 = FINALE(2)
 
-			val values = BGM::class.sealedSubclasses.mapNotNull {
-				if(it.isFinal) it.objectInstance
-				else it.createInstance()
-			}
-			/*@JvmStatic fun valueOf(value:String) = requireNotNull(values[value]) {
-				"No enum constant ${BGM::class.java.name}.$value"
-			}
-
-			@JvmStatic fun valueOf(value:Int) = values.flatMap{n,b->
-				listOf(b.nums){i.get
-			}*/
-
-			val listStr = BGM::class.sealedSubclasses.mapNotNull{it.qualifiedName}
-			val count get() = values.filter {!it.hidden}.sumBy {minOf(1, it.nums)}
+			val all:List<List<BGM>>
+				get() = BGM::class.sealedSubclasses.map {bg ->
+					bg.objectInstance?.let {listOf(it)}
+						?: List(bg.createInstance().nums) {i -> bg.primaryConstructor?.call(i)}.filterNotNull()
+				}
+			val values:List<BGM> get() = all.flatten()
+			val listStr:List<String> get() = values.map {it.fullName}
+			val count:Int get() = values.count {!it.hidden}
 			/** 音楽のMaximumcount */
-			val countAll:Int get() = values.sumBy {minOf(1, it.nums)}
+			val countAll:Int get() = values.size
 			/** 選択できない音楽のcount */
-			val countUnselectable get() = values.filter {it.hidden}.sumBy {minOf(1, it.nums)}
-
+			val countUnselectable:Int get() = values.count {it.hidden}
+			val countCategory:Int get() = values.size
 		}
 	}
 

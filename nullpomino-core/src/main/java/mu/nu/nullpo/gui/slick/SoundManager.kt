@@ -65,28 +65,6 @@ class SoundManager
 		return true
 	}
 
-	/** Load WAVE file
-	 * @param name 登録名
-	 * @param fileurl Filename (URL）
-	 * @return true if successful, false if failed
-	 */
-	fun load(name:String, fileurl:URL):Boolean {
-		if(counter>=maxClips) {
-			log.error("No more wav files can be loaded ($maxClips)")
-			return false
-		}
-
-		try {
-			val clip = Sound(fileurl)
-			clipMap[name] = clip
-		} catch(e:Throwable) {
-			log.error("Failed to load wav file", e)
-			return false
-		}
-
-		return true
-	}
-
 	/** 再生
 	 * @param name 登録名
 	 */

@@ -258,8 +258,8 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					29 -> bigDisplay = !bigDisplay
 					30 -> {
 						bgmno += change
-						if(bgmno<0) bgmno =BGM.count
-						if(bgmno>BGM.count) bgmno = 0
+						if(bgmno<0) bgmno = BGM.count-1
+						if(bgmno>=BGM.count) bgmno = 0
 					}
 					31 -> enableSE[playerID] = !enableSE[playerID]
 					32, 33 -> {

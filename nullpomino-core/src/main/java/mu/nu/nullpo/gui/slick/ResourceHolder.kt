@@ -116,7 +116,7 @@ object ResourceHolder {
 
 	/** Current BGM number */
 	private var bgmint:Pair<Int, Int> = Pair(0, 0)
-	private var bgmPlaying:BGM? = null
+	var bgmPlaying:BGM? = null;private set
 	internal val bGmax:Int get() = imgPlayBG.size
 
 	/** 画像や音声を読み込み */
@@ -130,7 +130,7 @@ object ResourceHolder {
 		while(File("$skindir/graphics/blockskin/normal/n$numBlocks.png").canRead())
 			numBlocks++
 
-		log.debug(numBlocks.toString()+" block skins found")
+		log.debug("$numBlocks block skins found")
 
 		for(i in 0 until numBlocks) {
 			loadImage("$skindir/graphics/blockskin/normal/n$i.png").let {
@@ -144,7 +144,7 @@ object ResourceHolder {
 		while(File("$skindir/graphics/frames/$numFrames.png").canRead())
 			numFrames++
 
-		log.debug(numBlocks.toString()+" frame skins found")
+		log.debug("$numBlocks frame skins found")
 
 
 		imgFrame = Array(numFrames) {loadImage("$skindir/graphics/frames/$it.png")}
@@ -281,11 +281,11 @@ object ResourceHolder {
 		}
 
 		// 音楽
-		bgm = BGM.values.map {arrayOfNulls<Music?>(it.nums)}.toTypedArray()
+		bgm = BGM.all.map {arrayOfNulls<Music?>(it.size)}.toTypedArray()
 		bgmPlaying = null
 
 		if(NullpoMinoSlick.propConfig.getProperty("option.bgmpreload", false))
-			BGM.values.forEach {loadBGM(it, false)}
+			BGM.all.forEach{list -> list.forEach{loadBGM(it, false)}}
 	}
 
 	/** Load background images. */
@@ -296,7 +296,7 @@ object ResourceHolder {
 			while(File("$skindir$numBGs.png").canRead())
 				numBGs++
 
-			if(numBGs>0) log.debug(numBGs.toString()+" backgrounds found")
+			if(numBGs>0) log.debug("$numBGs backgrounds found")
 			else log.warn("no backgrounds found")
 			imgPlayBG = Array(numBGs) {loadImage("$skindir$it.png")}
 		}
@@ -356,7 +356,7 @@ object ResourceHolder {
 		val n = bgm.longName
 		bgm.id
 		this.bgm[bgm.id].forEachIndexed {idx, b ->
-			val sub = bgm.subName[idx]
+			val sub = bgm.subName
 			if(b==null) try {
 				val filename = NullpoMinoSlick.propMusic.getProperty("music.filename.$name.$idx", null)
 				if(filename.isNullOrEmpty()) {
@@ -388,8 +388,8 @@ object ResourceHolder {
 		val bgmvolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
 		NullpoMinoSlick.appGameContainer.musicVolume = bgmvolume/256.toFloat()
 
-		if(M!=BGM.SILENT) {
-			bgm[x][y]?.let {
+		if(M!=BGM.SILENT && M!=bgmPlaying) {
+			bgm[x][y]?.also {
 				try {
 					if(NullpoMinoSlick.propMusic.getProperty("music.noloop."+M.name, false))
 						it.play()
@@ -420,7 +420,6 @@ object ResourceHolder {
 	 */
 	internal fun bgmIsPlaying():Boolean = bgmPlaying!=null&&(bgm[bgmint.first][bgmint.second]?.playing() ?: false)
 
-	internal fun bgmPlaying():BGM? = bgmPlaying
 
 	/** BGMを停止 */
 	internal fun bgmStop() {

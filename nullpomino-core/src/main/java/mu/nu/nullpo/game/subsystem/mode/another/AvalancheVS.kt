@@ -438,8 +438,8 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						mapNumber[playerID] = -1
 					39 -> {
 						bgmno += change
-						if(bgmno<0) bgmno =BGM.count
-						if(bgmno>BGM.count) bgmno = 0
+						if(bgmno<0) bgmno = BGM.count-1
+						if(bgmno>=BGM.count) bgmno = 0
 					}
 					40 -> enableSE[playerID] = !enableSE[playerID]
 					41 -> bigDisplay = !bigDisplay

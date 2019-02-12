@@ -49,6 +49,9 @@ class MusicListEditor:JFrame(), ActionListener {
 	/** 音楽リストが含まれるProperty file */
 	private val propMusic:CustomProperties = CustomProperties()
 
+	/** タブ */
+	private var tabPane:JTabbedPane = JTabbedPane()
+
 	/** 音楽のFilename用テキストボックス */
 	private var txtfldMusicFileNames:Array<JTextField> = emptyArray()
 
@@ -72,7 +75,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		// 設定ファイル読み込み
 		try {
 			val `in` = FileInputStream("config/setting/swing.xml")
-			propConfig!!.loadFromXML(`in`)
+			propConfig.loadFromXML(`in`)
 			`in`.close()
 		} catch(e:IOException) {
 		}
@@ -80,7 +83,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		// 言語ファイル読み込み
 		try {
 			val `in` = FileInputStream("config/lang/musiclisteditor_default.xml")
-			propLangDefault!!.loadFromXML(`in`)
+			propLangDefault.loadFromXML(`in`)
 			`in`.close()
 		} catch(e:IOException) {
 			log.error("Couldn't load default UI language file", e)
@@ -89,7 +92,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		try {
 			val `in` = FileInputStream(
 				"config/lang/musiclisteditor_"+Locale.getDefault().country+".xml")
-			propLang!!.loadFromXML(`in`)
+			propLang.loadFromXML(`in`)
 			`in`.close()
 		} catch(e:IOException) {
 		}
@@ -98,7 +101,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		loadMusicList()
 
 		// Look&Feel設定
-		if(propConfig!!.getProperty("option.usenativelookandfeel", true))
+		if(propConfig.getProperty("option.usenativelookandfeel", true))
 			try {
 				UIManager.getInstalledLookAndFeels()
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
@@ -122,49 +125,62 @@ class MusicListEditor:JFrame(), ActionListener {
 		pMusicSetting.layout = BoxLayout(pMusicSetting, BoxLayout.Y_AXIS)
 		pMusicSetting.alignmentX = Component.LEFT_ALIGNMENT
 		this.add(pMusicSetting)
+
+		// タブ全体 --------------------------------------------------
+		tabPane = JTabbedPane()
+		this.add(tabPane, BorderLayout.NORTH)
 		val num = BGM.countAll-1
-		txtfldMusicFileNames = Array(num){JTextField(45)}
-		chkboxNoLoop = Array(num){JCheckBox()}
-
+		val panels:Array<JPanel> = Array(BGM.countCategory-1) {
+			JPanel().apply {
+				layout = BoxLayout(this, BoxLayout.Y_AXIS)
+				alignmentY = Component.TOP_ALIGNMENT
+			}
+		}
+		txtfldMusicFileNames = Array(num) {JTextField(45)}
+		chkboxNoLoop = Array(num) {JCheckBox()}
 		//TODO:Tab : BGM. : Category
-		for(Track in BGM.values.flatMap {bgm->List(bgm.nums){bgm}}) {
-			if(Track==BGM.SILENT) continue
-			val i = Track.id-1
-			val name = Track.fullName(Track.idx)
-			val t = Track.longName
-			val num = Track.nums
-			val pMusicTemp = JPanel(BorderLayout())
-			pMusicSetting.add(pMusicTemp)
+		BGM.values.forEachIndexed {i, Track ->
+			if(Track!=BGM.SILENT) {
+				val i = i-1
+				val name = "${Track.name}.${Track.idx}"
+				val id = Track.id
+				panels[Track.id-1].let {
+					if(Track.idx==0) tabPane.addTab(Track.longName, it)
 
-			val pMusicTempLabels = JPanel(BorderLayout())
-			pMusicTemp.add(pMusicTempLabels, BorderLayout.WEST)
-			pMusicTempLabels.add(JLabel(i.toString()+"#"+x+":"+t), BorderLayout.WEST)
+					val pMusicTemp = JPanel(BorderLayout())
+					it.add(pMusicTemp)
 
-			val pMusicTempTexts = JPanel(BorderLayout())
-			pMusicTemp.add(pMusicTempTexts, BorderLayout.EAST)
+					val pMusicTempLabels = JPanel(BorderLayout())
+					pMusicTemp.add(pMusicTempLabels, BorderLayout.WEST)
+					pMusicTempLabels.add(JLabel("${Track.id}-${Track.idx} ${Track.fullName}"), BorderLayout.WEST)
 
-			txtfldMusicFileNames[i].componentPopupMenu = TextFieldPopupMenu(txtfldMusicFileNames[i])
-			txtfldMusicFileNames[i].text = propMusic.getProperty("music.filename.$name", "")
-			pMusicTempTexts.add(txtfldMusicFileNames[i], BorderLayout.CENTER)
+					val pMusicTempTexts = JPanel(BorderLayout())
+					pMusicTemp.add(pMusicTempTexts, BorderLayout.EAST)
 
-			val pMusicTempTextsButtons = JPanel(BorderLayout())
-			pMusicTempTexts.add(pMusicTempTextsButtons, BorderLayout.EAST)
+					txtfldMusicFileNames[i].componentPopupMenu = TextFieldPopupMenu(txtfldMusicFileNames[i])
+					txtfldMusicFileNames[i].text = propMusic.getProperty("music.filename.$name", "")
+					pMusicTempTexts.add(txtfldMusicFileNames[i], BorderLayout.CENTER)
 
-			chkboxNoLoop[i].toolTipText = getUIText("MusicListEditor_NoLoop_Tip")
-			chkboxNoLoop[i].isSelected = propMusic.getProperty("music.noloop.$name", false)
-			pMusicTempTextsButtons.add(chkboxNoLoop[i], BorderLayout.WEST)
+					val pMusicTempTextsButtons = JPanel(BorderLayout())
+					pMusicTempTexts.add(pMusicTempTextsButtons, BorderLayout.EAST)
 
-			val btnClear = JButton(getUIText("MusicListEditor_Clear"))
-			btnClear.toolTipText = getUIText("MusicListEditor_Clear_Tip")
-			btnClear.actionCommand = "Clear$i"
-			btnClear.addActionListener(this)
-			pMusicTempTextsButtons.add(btnClear, BorderLayout.CENTER)
+					chkboxNoLoop[i].toolTipText = getUIText("MusicListEditor_NoLoop_Tip")
+					chkboxNoLoop[i].isSelected = propMusic.getProperty("music.noloop.$name", false)
+					pMusicTempTextsButtons.add(chkboxNoLoop[i], BorderLayout.WEST)
 
-			val btnOpen = JButton(getUIText("MusicListEditor_OpenFileDialog"))
-			btnOpen.toolTipText = getUIText("MusicListEditor_OpenFileDialog_Tip")
-			btnOpen.actionCommand = "OpenFileDialog$i"
-			btnOpen.addActionListener(this)
-			pMusicTempTextsButtons.add(btnOpen, BorderLayout.EAST)
+					val btnClear = JButton(getUIText("MusicListEditor_Clear"))
+					btnClear.toolTipText = getUIText("MusicListEditor_Clear_Tip")
+					btnClear.actionCommand = "Clear$i"
+					btnClear.addActionListener(this)
+					pMusicTempTextsButtons.add(btnClear, BorderLayout.CENTER)
+
+					val btnOpen = JButton(getUIText("MusicListEditor_OpenFileDialog"))
+					btnOpen.toolTipText = getUIText("MusicListEditor_OpenFileDialog_Tip")
+					btnOpen.actionCommand = "OpenFileDialog$i"
+					btnOpen.addActionListener(this)
+					pMusicTempTextsButtons.add(btnOpen, BorderLayout.EAST)
+				}
+			}
 		}
 
 		// 画面下の button類
@@ -208,17 +224,14 @@ class MusicListEditor:JFrame(), ActionListener {
 	 * @param str 文字列
 	 * @return 翻訳後のUIの文字列 (無いならそのままstrを返す）
 	 */
-	private fun getUIText(str:String):String {
-		val result = propLang!!.getProperty(str)
-		return result ?: propLangDefault!!.getProperty(str, str)
-	}
+	private fun getUIText(str:String):String = propLang.getProperty(str) ?: propLangDefault.getProperty(str, str)
 
 	/** 音楽リスト読み込み */
 	private fun loadMusicList() {
 		propMusic.clear()
 		try {
 			val `in` = FileInputStream("config/setting/music.xml")
-			propMusic!!.loadFromXML(`in`)
+			propMusic.loadFromXML(`in`)
 			`in`.close()
 		} catch(e:IOException) {
 		}
@@ -294,9 +307,9 @@ class MusicListEditor:JFrame(), ActionListener {
 			txtfldMusicFileNames[number].text = ""
 		} else if(e.actionCommand=="OK") {
 			val prop = CustomProperties()
-			for(i in txtfldMusicFileNames.indices) {
-				val track = BGM.values[i+1].name
-				prop.setProperty("music.filename.$track", txtfldMusicFileNames[i].text)
+			txtfldMusicFileNames.forEachIndexed {i, it ->
+				val track = BGM.values[i+1].let {"${it.name}.${it.idx}"}
+				prop.setProperty("music.filename.$track", it.text)
 				prop.setProperty("music.noloop.$track", chkboxNoLoop[i].isSelected)
 			}
 
@@ -324,7 +337,7 @@ class MusicListEditor:JFrame(), ActionListener {
 				field.cut()
 			}
 		}
-		private val copyAction:Action= object:AbstractAction(getUIText("Popup_Copy")) {
+		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
 			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
@@ -356,7 +369,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		init {
 
 			add(cutAction)
-			add(copyAction )
+			add(copyAction)
 			add(pasteAction)
 			add(deleteAction)
 			add(selectAllAction)
@@ -372,7 +385,7 @@ class MusicListEditor:JFrame(), ActionListener {
 			super.show(c, x, y)
 		}
 
-			private val serialVersionUID = 1L
+		private val serialVersionUID = 1L
 
 	}
 
