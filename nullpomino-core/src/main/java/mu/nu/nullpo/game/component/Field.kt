@@ -331,7 +331,7 @@ class Field:Serializable {
 		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
 			.filter {getLineFlag(it)}
 			.sumBy {
-				(0 until width).count {j -> getBlock(j, it)?.isGemBlock==true}
+				(0 until width).count {j -> getBlock(j, it)?.isGemBlock ?: false}
 			}
 
 	/** Checks for item blocks cleared
@@ -589,7 +589,9 @@ class Field:Serializable {
 	 */
 	@Throws(ArrayIndexOutOfBoundsException::class)
 	fun setBlockE(x:Int, y:Int, blk:Block?) {
-		if((getBlock(x, y)?.copy(blk))==null) blockField[y][x] = Block(blk)
+		if(y<0) {
+			if((getBlock(x, y)?.copy(blk))==null) blockHidden[y*-1-1][x] = Block(blk)
+		} else if((getBlock(x, y)?.copy(blk))==null) blockField[y][x] = Block(blk)
 	}
 
 	/** 指定した座標にあるBlock colorを取得

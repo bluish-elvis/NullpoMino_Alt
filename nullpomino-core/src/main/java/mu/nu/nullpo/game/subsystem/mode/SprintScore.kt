@@ -240,8 +240,8 @@ class SprintScore:NetDummyMode() {
 					}
 					7 -> {
 						bgmno += change
-						if(bgmno<0) bgmno =BGM.count
-						if(bgmno>BGM.count) bgmno = 0
+						if(bgmno<0) bgmno = BGM.count-1
+						if(bgmno>=BGM.count) bgmno = 0
 					}
 					8 -> big = !big
 					9 -> {
@@ -362,13 +362,13 @@ class SprintScore:NetDummyMode() {
 
 		if(version>=1) {
 			engine.tspinAllowKick = enableTSpinKick
-			if(tspinEnableType==0)
-				engine.tspinEnable = false
-			else if(tspinEnableType==1)
-				engine.tspinEnable = true
-			else {
-				engine.tspinEnable = true
-				engine.useAllSpinBonus = true
+			when(tspinEnableType) {
+				0 -> engine.tspinEnable = false
+				1 -> engine.tspinEnable = true
+				else -> {
+					engine.tspinEnable = true
+					engine.useAllSpinBonus = true
+				}
 			}
 		} else
 			engine.tspinEnable = enableTSpin
@@ -409,8 +409,9 @@ class SprintScore:NetDummyMode() {
 			if(sc in 1..4800) fontcolor = EventReceiver.COLOR.ORANGE
 			if(sc in 1..2400) fontcolor = EventReceiver.COLOR.RED
 			receiver.drawScoreNum(engine, playerID, 5, 6, "+$lastscore")
-			receiver.drawScoreNum(engine, playerID, 0, 7, scgettime.toString(), fontcolor, 2f)
-			if(scgettime<engine.statistics.score) scgettime += Math.ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
+			receiver.drawScoreNum(engine, playerID, 0, 4, scgettime.toString(), fontcolor, 2f)
+			if(scgettime<engine.statistics.score) scgettime += Math.ceil(((engine.statistics.score-scgettime)/10f).toDouble())
+				.toInt()
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 7, engine.statistics.lines.toString(), 2f)
@@ -720,7 +721,8 @@ class SprintScore:NetDummyMode() {
 
 	/** NET: It returns true when the current settings doesn't prevent replay
 	 * data from sending. */
-	override fun netIsNetRankingSendOK(engine:GameEngine):Boolean = netIsNetRankingViewOK(engine)&&engine.statistics.score>=GOAL_TABLE[goaltype]
+	override fun netIsNetRankingSendOK(engine:GameEngine):Boolean =
+		netIsNetRankingViewOK(engine)&&engine.statistics.score>=GOAL_TABLE[goaltype]
 
 	companion object {
 		/* ----- Main constants ----- */

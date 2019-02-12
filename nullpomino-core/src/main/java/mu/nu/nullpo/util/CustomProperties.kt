@@ -205,7 +205,7 @@ class CustomProperties:Properties() {
 		try {
 			val out = ByteArrayOutputStream()
 			store(out, comments)
-			result = URLEncoder.encode(out.toString(code), code)
+			result = URLEncoder.encode(out.toString(code.name()), code.name())
 		} catch(e:UnsupportedEncodingException) {
 			throw Error("UTF-8 not supported", e)
 		} catch(e:Exception) {
@@ -221,7 +221,7 @@ class CustomProperties:Properties() {
 	 */
 	fun decode(source:String):Boolean {
 		try {
-			val decodedString = URLDecoder.decode(source, code)
+			val decodedString = URLDecoder.decode(source, code.name())
 			val `in` = ByteArrayInputStream(decodedString.toByteArray(code))
 			load(`in`)
 		} catch(e:UnsupportedEncodingException) {

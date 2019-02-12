@@ -85,22 +85,22 @@ class Block(
 	/** このBlockが宝石Blockかどうか判定
 	 * @return このBlockが宝石Blockだったらtrue
 	 */
-	val isGemBlock:Boolean get() = color?.type==GEM
+	val isGemBlock:Boolean get() = color?.type===GEM
 
 	/** Checks to see if `this` is a gold square block
 	 * @return `true` if the block is a gold square block
 	 */
-	val isGoldSquareBlock:Boolean get() = color?.type==SQUARE_GOLD
+	val isGoldSquareBlock:Boolean get() = color?.type===SQUARE_GOLD
 
 	/** Checks to see if `this` is a silver square block
 	 * @return `true` if the block is a silver square block
 	 */
-	val isSilverSquareBlock:Boolean get() = color?.type==SQUARE_SILVER
+	val isSilverSquareBlock:Boolean get() = color?.type===SQUARE_SILVER
 
 	/** Checks to see if `this` is a normal block (gray to purple)
 	 * @return `true` if the block is a normal block
 	 */
-	val isNormalBlock:Boolean get() = color?.type==BLOCK
+	val isNormalBlock:Boolean get() = color?.type===BLOCK
 
 	val drawColor:Int
 		get() = when(cint) {
@@ -187,21 +187,21 @@ class Block(
 		RAINBOW, GEM_RAINBOW;
 
 		val type:TYPE = when {
+			name.contains("GEM_") -> GEM
 			name.contains("SQUARE_SILVER") -> SQUARE_SILVER
 			name.contains("SQUARE_GOLD") -> SQUARE_GOLD
-			name.contains("GEM") -> GEM
 			else -> BLOCK
 		}
 		val gem:COLOR
 			get() = when {
 				this==RAINBOW -> GEM_RAINBOW
-				ordinal in RED.ordinal..PURPLE.ordinal -> COLOR.values()[ordinal+7]
+				type==BLOCK -> COLOR.values()[ordinal+7]
 				else -> this
 			}
 		val ungem:COLOR
 			get() = when {
 				this==GEM_RAINBOW -> RAINBOW
-				ordinal in GEM_RED.ordinal..GEM_PURPLE.ordinal -> COLOR.values()[ordinal-7]
+				type==GEM -> COLOR.values()[ordinal-7]
 				else -> this
 			}
 	}

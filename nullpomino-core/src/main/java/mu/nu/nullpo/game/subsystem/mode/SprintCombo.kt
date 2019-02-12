@@ -271,8 +271,8 @@ class SprintCombo:NetDummyMode() {
 					}
 					13 -> {
 						bgmno += change
-						if(bgmno<0) bgmno =BGM.count
-						if(bgmno>BGM.count) bgmno = 0
+						if(bgmno<0) bgmno = BGM.count-1
+						if(bgmno>=BGM.count) bgmno = 0
 					}
 					14, 15 -> {
 						presetNumber += change

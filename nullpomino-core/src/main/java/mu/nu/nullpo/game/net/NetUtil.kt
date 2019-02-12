@@ -66,7 +66,7 @@ object NetUtil {
 	 */
 	fun urlEncode(str:String):String {
 		try {
-			return URLEncoder.encode(str, StandardCharsets.UTF_8)
+			return URLEncoder.encode(str, StandardCharsets.UTF_8.name())
 		} catch(e:UnsupportedEncodingException) {
 			throw Error("UTF-8 Not Supported", e)
 		}
@@ -79,7 +79,7 @@ object NetUtil {
 	 */
 	fun urlDecode(str:String):String {
 		try {
-			return URLDecoder.decode(str, StandardCharsets.UTF_8)
+			return URLDecoder.decode(str, StandardCharsets.UTF_8.name())
 		} catch(e:UnsupportedEncodingException) {
 			throw Error("UTF-8 Not Supported", e)
 		}

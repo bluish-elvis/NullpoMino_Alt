@@ -168,8 +168,8 @@ class MarathonDrill:NetDummyMode() {
 					}
 					2 -> {
 						bgmno += change
-						if(bgmno<-1) bgmno =BGM.count
-						if(bgmno>BGM.count) bgmno = -1
+						if(bgmno<-1) bgmno = BGM.count-1
+						if(bgmno>=BGM.count) bgmno = 0
 					}
 					3 -> {
 						tspinEnableType += change

@@ -660,8 +660,7 @@ class GrandRoads:NetDummyMode() {
 
 		if(netIsNetPlay&&netReplaySendStatus==1)
 			receiver.drawMenuFont(engine, playerID, 0, 21, "SENDING...", EventReceiver.COLOR.PINK)
-		else if(netIsNetPlay&&!netIsWatch
-			&&netReplaySendStatus==2)
+		else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2)
 			receiver.drawMenuFont(engine, playerID, 1, 21, "A: RETRY", EventReceiver.COLOR.RED)
 	}
 

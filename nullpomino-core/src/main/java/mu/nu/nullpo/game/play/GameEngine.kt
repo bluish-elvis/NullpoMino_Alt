@@ -2909,8 +2909,8 @@ class GameEngine
 		// Event
 		owner.bgmStatus.fadesw = false
 		when {
-			ending==2 -> owner.bgmStatus.bgm = BGM.CLEARED
-			ending!=0 -> owner.bgmStatus.bgm = if(statistics.time<10800) BGM.RESULT_1 else BGM.RESULT_2
+			ending==2 -> owner.bgmStatus.bgm = BGM.RESULT(3)
+			ending!=0 -> owner.bgmStatus.bgm = if(statistics.time<10800) BGM.RESULT(1) else BGM.RESULT(2)
 			else -> owner.bgmStatus.bgm = BGM.FAILED
 		}
 
@@ -3032,7 +3032,7 @@ class GameEngine
 		when {
 			statc[0]==0 -> {
 				// fieldをバックアップにコピー
-				interruptItemMirrorField = field?.let {Field(it)} ?: Field()
+				interruptItemMirrorField = field?.also {Field(it)} ?: Field()
 				// fieldのBlockを全部消す
 				field!!.reset()
 			}

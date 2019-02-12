@@ -107,7 +107,7 @@ class StateSelectMode:DummyMenuScrollState() {
 	/* Enter */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		prepareModeList()
-		if(ResourceHolder.bgmPlaying()!=BGM.MENU_1) ResourceHolder.bgmStart(BGM.MENU_1)
+		if(ResourceHolder.bgmPlaying!=BGM.MENU_1) ResourceHolder.bgmStart(BGM.MENU_1)
 	}
 
 	/* Render screen */

@@ -440,7 +440,7 @@ class StateInGame:BasicGameState() {
 
 		if(gameManager!=null) {
 			// BGM
-			if(ResourceHolder.bgmPlaying()!=gameManager!!.bgmStatus.bgm&&!gameManager!!.bgmStatus.fadesw)
+			if(ResourceHolder.bgmPlaying!=gameManager!!.bgmStatus.bgm&&!gameManager!!.bgmStatus.fadesw)
 				ResourceHolder.bgmStart(gameManager!!.bgmStatus.bgm)
 			if(ResourceHolder.bgmIsPlaying()) {
 				val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
