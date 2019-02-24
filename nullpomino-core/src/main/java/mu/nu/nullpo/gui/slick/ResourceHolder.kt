@@ -254,6 +254,7 @@ object ResourceHolder {
 			loadSE("gradeup")
 			loadSE("levelstop")
 			loadSE("levelup")
+			loadSE("levelup_section")
 
 			loadSE("endingstart")
 			loadSE("excellent")

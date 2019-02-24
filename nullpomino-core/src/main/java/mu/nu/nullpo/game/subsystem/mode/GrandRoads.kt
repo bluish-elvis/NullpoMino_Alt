@@ -496,7 +496,7 @@ class GrandRoads:NetDummyMode() {
 		// Ending start
 		if(engine.ending==2&&engine.staffrollEnable&&!rollstarted&&!netIsWatch) {
 			rollstarted = true
-			owner.bgmStatus.bgm = BGM.FINALE_3
+			owner.bgmStatus.bgm = BGM.FINALE(2)
 			owner.bgmStatus.fadesw = false
 
 			// VOID ending
@@ -666,7 +666,7 @@ class GrandRoads:NetDummyMode() {
 
 	/** Additional routine for game result screen */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		if(goaltype>=GAMETYPE_HELL&&engine.statistics.rollclear>=1) owner.bgmStatus.bgm = BGM.CLEARED
+		if(goaltype>=GAMETYPE_HELL&&engine.statistics.rollclear>=1) owner.bgmStatus.bgm = BGM.RESULT(3)
 		if(!netIsWatch) {
 			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				engine.statc[1]--
@@ -1030,17 +1030,17 @@ class GrandRoads:NetDummyMode() {
 			10, // HELL
 			10, // HELL-X
 			10)// VOID
-		private val tableBGM = arrayOf(arrayOf(BGM.GM_2, BGM.GM_1, BGM.EXTRA_2), // NORMAL
-			arrayOf(BGM.GM_3, BGM.EXTRA_1, BGM.GM_20G_2), // HI-SPEED 1
-			arrayOf(BGM.GM_20G_1, BGM.GM_20G_2, BGM.GM_20G_3), // HI-SPEED 2
-			arrayOf(BGM.BLITZ_1, BGM.STORM_1, BGM.STORM_2), // ANOTHER
-			arrayOf(BGM.BLITZ_2, BGM.BLITZ_3, BGM.BLITZ_4), // ANOTHER2
-			arrayOf(BGM.EXTRA_2, BGM.GM_2, BGM.GM_3, BGM.EXTRA_1, BGM.BLITZ_1), // NORMAL 200
-			arrayOf(BGM.BLITZ_1, BGM.STORM_1, BGM.BLITZ_2, BGM.STORM_2, BGM.BLITZ_3), // ANOTHER 200
-			arrayOf(BGM.EXTRA_3, BGM.GM_2, BGM.GM_20G_1, BGM.BLITZ_1, BGM.STORM_2), // BASIC
-			arrayOf(BGM.FINALE_3), // HELL
-			arrayOf(BGM.FINALE_1), // HELL-X
-			arrayOf(BGM.FINALE_2))// VOID
+		private val tableBGM = arrayOf(arrayOf(BGM.GM_2(0), BGM.GM_1(0), BGM.EXTRA(1)), // NORMAL
+			arrayOf(BGM.GM_3(0), BGM.EXTRA(0), BGM.GM_2(1)), // HI-SPEED 1
+			arrayOf(BGM.GM_1(1), BGM.GM_2(1), BGM.GM_3(1)), // HI-SPEED 2
+			arrayOf(BGM.GM_3(2), BGM.GM_2(2), BGM.GM_2(3)), // ANOTHER
+			arrayOf(BGM.GM_3(3), BGM.GM_3(4), BGM.GM_3(5)), // ANOTHER2
+			arrayOf(BGM.EXTRA(1), BGM.GM_2(0), BGM.GM_3(0), BGM.EXTRA(0), BGM.GM_3(2)), // NORMAL 200
+			arrayOf(BGM.GM_3(2), BGM.GM_2(2), BGM.GM_3(3), BGM.GM_2(3), BGM.GM_3(4)), // ANOTHER 200
+			arrayOf(BGM.EXTRA(2), BGM.GM_2(0), BGM.GM_1(1), BGM.GM_3(2), BGM.GM_2(3)), // BASIC
+			arrayOf(BGM.FINALE(2)), // HELL
+			arrayOf(BGM.FINALE(0)), // HELL-X
+			arrayOf(BGM.FINALE(1)))// VOID
 
 		/** Game types */
 		private const val GAMETYPE_NORMAL = 0

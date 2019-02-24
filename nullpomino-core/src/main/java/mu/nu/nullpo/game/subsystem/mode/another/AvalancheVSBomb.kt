@@ -496,7 +496,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 				if(b2.isEmpty) continue
 				if(b2.countdown>0) explode(engine, playerID, x2, y2)
 				b2.cint = Block.BLOCK_COLOR_GRAY
-				b2.setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, true)
+				b2.setAttribute(true, Block.ATTRIBUTE.GARBAGE)
 				b2.hard = ojamaHard[playerID]
 
 				if(engine.displaysize==1) {

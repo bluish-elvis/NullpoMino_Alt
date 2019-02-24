@@ -318,7 +318,7 @@ class GrandMarathon:AbstractMode() {
 				isShowBestSectionTime = false
 				sectionscomp = 0
 				bgmlv = if(engine.statistics.level<500) 0 else 1
-				owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GM_1 else BGM.GM_20G_1
+				owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GM_1(0)else BGM.GM_1(1)
 				return false
 			}
 
@@ -331,7 +331,7 @@ class GrandMarathon:AbstractMode() {
 			menuCursor = -1
 
 			bgmlv = if(engine.statistics.level<500) 0 else 1
-			owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GM_1 else BGM.GM_20G_1
+			owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GM_1(0)else BGM.GM_1(1)
 			return menuTime<60
 		}
 
@@ -614,7 +614,7 @@ class GrandMarathon:AbstractMode() {
 						if(engine.statistics.time<tablePier21GradeTime[i]) gmPier = i
 					if(gmPier>3) grade++
 					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = BGM.ENDING_1
+					owner.bgmStatus.bgm = BGM.ENDING(0)
 
 					engine.ending = 2
 				} else {
@@ -645,7 +645,7 @@ class GrandMarathon:AbstractMode() {
 				if(bgmlv==0&&nextseclv==500) {
 					bgmlv++
 					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = BGM.GM_20G_1
+					owner.bgmStatus.bgm = BGM.GM_1(1)
 				}
 
 				nextseclv += 100
@@ -780,9 +780,9 @@ class GrandMarathon:AbstractMode() {
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = when(engine.ending) {
-			0 -> BGM.FAILED
-			2 -> BGM.CLEARED
-			else -> BGM.RESULT_2
+			0 -> BGM.RESULT(0)
+			2 -> BGM.RESULT(3)
+			else -> BGM.RESULT(2)
 
 		}
 

@@ -967,7 +967,7 @@ class GrandPhantom:AbstractMode() {
 
 		/** BGM change level */
 		private val tableBGMChange = intArrayOf(300, 500, -1)
-		private val tableBGM = arrayOf(BGM.BLITZ_4, BGM.BLITZ_3, BGM.BLITZ_2, BGM.STORM_2)
+		private val tableBGM = arrayOf(BGM.GM_3(5), BGM.GM_3(4), BGM.GM_3(3), BGM.GM_2(3))
 		/** Grade names */
 
 		private val tableGradeName = arrayOf("", "m", "MK", "MV", "MO", "MM", "GM")

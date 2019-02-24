@@ -620,7 +620,7 @@ class MarathonShuttle:NetDummyMode() {
 					// Ending (SPECIAL）
 					engine.ending = 2
 					engine.timerActive = false
-					owner.bgmStatus.bgm = BGM.ENDING_1
+					owner.bgmStatus.bgm = BGM.ENDING(0)
 					owner.bgmStatus.fadesw = false
 					engine.playSE("endingstart")
 				} else {
@@ -660,7 +660,7 @@ class MarathonShuttle:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		val b = if(engine.statistics.time<10800) BGM.RESULT_1 else BGM.RESULT_2
+		val b = if(engine.statistics.time<10800) BGM.RESULT(1) else BGM.RESULT(2)
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = b
 
@@ -911,7 +911,7 @@ class MarathonShuttle:NetDummyMode() {
 
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(5, 8, 15, 17, 19, -1)
-		private val tableBGM = arrayOf(BGM.GENERIC_1, BGM.GENERIC_2, BGM.GENERIC_3, BGM.GENERIC_4, BGM.GENERIC_5, BGM.GENERIC_6)
+		private val tableBGM = arrayOf(BGM.GENERIC(0), BGM.GENERIC(1), BGM.GENERIC(2), BGM.GENERIC(3), BGM.GENERIC(4), BGM.GENERIC(5))
 		/** Combo goal table */
 		private val COMBO_GOAL_TABLE = intArrayOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)
 

@@ -365,17 +365,16 @@ class GrandBlossom:AbstractMode() {
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		field.readProperty(prop, id)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
-		limittimeStart = prop.getProperty(id.toString()+".gemmania.limittimeStart", 3600*3)
-		stagetimeStart = prop.getProperty(id.toString()+".gemmania.stagetimeStart", 3600)
-		stagebgm = prop.getProperty(id.toString()+".gemmania.stagebgm", BGM.PUZZLE_1.id)
-		gimmickMirror = prop.getProperty(id.toString()+".gemmania.gimmickMirror", 0)
-		gimmickRoll = prop.getProperty(id.toString()+".gemmania.gimmickRoll", 0)
-		gimmickBig = prop.getProperty(id.toString()+".gemmania.gimmickBig", 0)
-		gimmickXRay = prop.getProperty(id.toString()+".gemmania.gimmickXRay", 0)
-		gimmickColor = prop.getProperty(id.toString()+".gemmania.gimmickColor", 0)
+		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+		field.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
+		limittimeStart = prop.getProperty("$id.gemmania.limittimeStart", 3600*3)
+		stagetimeStart = prop.getProperty("$id.gemmania.stagetimeStart", 3600)
+		stagebgm = prop.getProperty("$id.gemmania.stagebgm", BGM.PUZZLE(0).id)
+		gimmickMirror = prop.getProperty("$id.gemmania.gimmickMirror", 0)
+		gimmickRoll = prop.getProperty("$id.gemmania.gimmickRoll", 0)
+		gimmickBig = prop.getProperty("$id.gemmania.gimmickBig", 0)
+		gimmickXRay = prop.getProperty("$id.gemmania.gimmickXRay", 0)
+		gimmickColor = prop.getProperty("$id.gemmania.gimmickColor", 0)
 	}
 
 	/** Map保存
@@ -385,14 +384,14 @@ class GrandBlossom:AbstractMode() {
 	 */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		field.writeProperty(prop, id)
-		prop.setProperty(id.toString()+".gemmania.limittimeStart", limittimeStart)
-		prop.setProperty(id.toString()+".gemmania.stagetimeStart", stagetimeStart)
-		prop.setProperty(id.toString()+".gemmania.stagebgm", stagebgm)
-		prop.setProperty(id.toString()+".gemmania.gimmickMirror", gimmickMirror)
-		prop.setProperty(id.toString()+".gemmania.gimmickRoll", gimmickRoll)
-		prop.setProperty(id.toString()+".gemmania.gimmickBig", gimmickBig)
-		prop.setProperty(id.toString()+".gemmania.gimmickXRay", gimmickXRay)
-		prop.setProperty(id.toString()+".gemmania.gimmickColor", gimmickColor)
+		prop.setProperty("$id.gemmania.limittimeStart", limittimeStart)
+		prop.setProperty("$id.gemmania.stagetimeStart", stagetimeStart)
+		prop.setProperty("$id.gemmania.stagebgm", stagebgm)
+		prop.setProperty("$id.gemmania.gimmickMirror", gimmickMirror)
+		prop.setProperty("$id.gemmania.gimmickRoll", gimmickRoll)
+		prop.setProperty("$id.gemmania.gimmickBig", gimmickBig)
+		prop.setProperty("$id.gemmania.gimmickXRay", gimmickXRay)
+		prop.setProperty("$id.gemmania.gimmickColor", gimmickColor)
 	}
 
 	/** Load settings from property file
@@ -709,11 +708,10 @@ class GrandBlossom:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 0, 19, "EXIT-> D+E", COLOR.ORANGE)
 		} else if(editModeScreen==2)
 		// エディットMenu   stage 画面
-			drawMenu(engine, playerID, receiver, 0, COLOR.GREEN, 0, "MAP EDIT", "[PUSH A]", "STAGE TIME", GeneralUtil.getTime(stagetimeStart.toFloat()), "LIMIT TIME", GeneralUtil.getTime(limittimeStart.toFloat()), "BGM", stagebgm.toString(), "MIRROR",
-				if(gimmickMirror==0)
-					"OFF"
-				else
-					gimmickMirror.toString())
+			drawMenu(engine, playerID, receiver, 0, COLOR.GREEN, 0, "MAP EDIT", "[PUSH A]",
+				"STAGE TIME", GeneralUtil.getTime(stagetimeStart.toFloat()), "LIMIT TIME", GeneralUtil.getTime(limittimeStart.toFloat()),
+				"BGM", stagebgm.toString(), "MIRROR",
+				if(gimmickMirror==0) "OFF" else gimmickMirror.toString())
 		else {
 			// 普通のMenu
 			if(!engine.owner.replayMode) receiver.drawMenuFont(engine, playerID, 0, 19, "D:EDIT", COLOR.ORANGE)
@@ -721,11 +719,11 @@ class GrandBlossom:AbstractMode() {
 			var strTrainingType = "OFF"
 			if(trainingType==1) strTrainingType = "ON"
 			if(trainingType==2) strTrainingType = "ON+RESET"
-			drawMenu(engine, playerID, receiver, 0, COLOR.PINK, 0, "STAGE NO.", getStageName(startstage), "STAGE SET",
-				if(stageset<0)
-					"DEFAULT"
-				else
-					"EDIT $stageset", "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "RANDOM", GeneralUtil.getONorOFF(randomnext), "TRAINING", strTrainingType, "NEXT COUNT", startnextc.toString())
+			drawMenu(engine, playerID, receiver, 0, COLOR.PINK, 0, "STAGE NO.", getStageName(startstage),
+				"STAGE SET", if(stageset<0) "DEFAULT" else "EDIT $stageset",
+				"FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g),
+				"LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime),
+				"RANDOM", GeneralUtil.getONorOFF(randomnext), "TRAINING", strTrainingType, "NEXT COUNT", startnextc.toString())
 		}
 	}
 
@@ -826,7 +824,7 @@ class GrandBlossom:AbstractMode() {
 
 			if(trainingType==0) {
 				receiver.drawScoreFont(engine, playerID, 0, 8, "CLEAR", COLOR.PINK)
-				receiver.drawScoreNum(engine, playerID, 0, 9, clearper.toString()+"%")
+				receiver.drawScoreNum(engine, playerID, 0, 9, "$clearper%")
 			} else {
 				receiver.drawScoreFont(engine, playerID, 0, 8, "BEST TIME", COLOR.PINK)
 				receiver.drawScoreNum(engine, playerID, 0, 9, GeneralUtil.getTime(trainingBestTime.toFloat()))
@@ -1209,7 +1207,7 @@ class GrandBlossom:AbstractMode() {
 				COLOR.WHITE)
 
 			receiver.drawMenuFont(engine, playerID, 2, 10, "EXTEND", COLOR.PINK)
-			receiver.drawMenuFont(engine, playerID, 2, 11, timeextendStageClearSeconds.toString()+" SEC.")
+			receiver.drawMenuFont(engine, playerID, 2, 11, "$timeextendStageClearSeconds SEC.")
 
 			receiver.drawMenuFont(engine, playerID, 0, 13, "CLEAR TIME", COLOR.PINK)
 			receiver.drawMenuFont(engine, playerID, 1, 14, GeneralUtil.getTime(cleartime.toFloat()))
@@ -1229,7 +1227,7 @@ class GrandBlossom:AbstractMode() {
 
 			if(trainingType==0) {
 				receiver.drawMenuFont(engine, playerID, 0, 13, "CLEAR PER.", COLOR.PINK)
-				receiver.drawMenuFont(engine, playerID, 3, 14, clearper.toString()+"%")
+				receiver.drawMenuFont(engine, playerID, 3, 14, "$clearper%")
 			}
 
 			receiver.drawMenuFont(engine, playerID, 0, 16, "TOTAL TIME", COLOR.PINK)
@@ -1244,7 +1242,7 @@ class GrandBlossom:AbstractMode() {
 
 			if(trainingType==0) {
 				receiver.drawMenuFont(engine, playerID, 0, 13, "CLEAR PER.", COLOR.PINK)
-				receiver.drawMenuFont(engine, playerID, 3, 14, clearper.toString()+"%")
+				receiver.drawMenuFont(engine, playerID, 3, 14, "$clearper%")
 			}
 
 			receiver.drawMenuFont(engine, playerID, 0, 16, "TOTAL TIME", COLOR.PINK)
@@ -1278,10 +1276,11 @@ class GrandBlossom:AbstractMode() {
 					if(engine.field!!.getBlockColor(i, engine.statc[0])!=Block.BLOCK_COLOR_NONE) {
 						val blk = engine.field!!.getBlock(i, engine.statc[0])
 
-						if(blk!=null) {
-							blk.cint = Block.BLOCK_COLOR_GRAY
-							blk.darkness = 0f
-							blk.elapsedFrames = -1
+						blk?.apply{
+							color = Block.COLOR.WHITE
+							type = Block.TYPE.BLOCK
+							darkness = 0f
+							elapsedFrames = -1
 						}
 					}
 				engine.statc[0]++

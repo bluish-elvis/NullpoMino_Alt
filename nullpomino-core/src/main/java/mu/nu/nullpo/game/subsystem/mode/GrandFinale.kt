@@ -520,7 +520,7 @@ class GrandFinale:AbstractMode() {
 		// Ending start
 		if(engine.ending==2&&!rollstarted) {
 			rollstarted = true
-			owner.bgmStatus.bgm = BGM.ENDING_4
+			owner.bgmStatus.bgm = BGM.ENDING(3)
 		}
 
 		return false
@@ -656,7 +656,7 @@ class GrandFinale:AbstractMode() {
 				engine.statistics.level = 999
 				engine.timerActive = false
 				engine.ending = 2
-				owner.bgmStatus.bgm = BGM.ENDING_4
+				owner.bgmStatus.bgm = BGM.ENDING(3)
 				rollclear = 1
 
 				if(gametype==1&&joker>0) grade = 31

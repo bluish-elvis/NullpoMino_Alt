@@ -28,6 +28,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.ModeManager
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.apache.log4j.Logger
 import org.apache.log4j.PropertyConfigurator
 import org.lwjgl.opengl.Display

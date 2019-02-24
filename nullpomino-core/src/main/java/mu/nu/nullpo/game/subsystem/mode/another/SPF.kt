@@ -260,9 +260,8 @@ class SPF:AbstractMode() {
 		field.reset()
 		//field.readProperty(prop, id);
 		field.stringToField(prop.getProperty("values.$id", ""))
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
+		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+		field.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 	}
 
 	/** MapSave
@@ -307,8 +306,8 @@ class SPF:AbstractMode() {
 				for(patternRow in 0 until it[patternCol].size) {
 					engine.field!!.setBlockColor(x, maxHeight-patternRow, it[patternCol][patternRow])
 					val blk = engine.field!!.getBlock(x, maxHeight-patternRow)
-					blk!!.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-					blk.setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
+					blk!!.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
+					blk.setAttribute(true, Block.ATTRIBUTE.OUTLINE)
 				}
 				patternCol++
 			}
@@ -833,10 +832,10 @@ class SPF:AbstractMode() {
 			for(x in 0 until width) {
 				b = engine.field!!.getBlock(x, y)
 				if(b==null) continue
-				if(!b.getAttribute(Block.BLOCK_ATTRIBUTE_ERASE)||b.isEmpty) continue
+				if(!b.getAttribute(Block.ATTRIBUTE.ERASE)||b.isEmpty) continue
 				add = multiplier*7
 				if(b.bonusValue>1) add *= b.bonusValue.toDouble()
-				if(b.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)) {
+				if(b.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
 					add /= 2.0
 					b.secondaryColor = 0
 				}
@@ -897,7 +896,7 @@ class SPF:AbstractMode() {
 					b.countdown--
 				else if(b.countdown==1) {
 					b.countdown = 0
-					b.setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, false)
+					b.setAttribute(false, Block.ATTRIBUTE.GARBAGE)
 					b.cint = b.secondaryColor
 					result = true
 				}
@@ -932,11 +931,11 @@ class SPF:AbstractMode() {
 				maxY = y
 				var expanded = false
 				b = engine.field!!.getBlock(x, y)
-				if(!b!!.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN)&&
-					b.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)&&
-					b.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)&&
-					!b.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)&&
-					!b.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)) {
+				if(!b!!.getAttribute(Block.ATTRIBUTE.BROKEN)&&
+					b.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)&&
+					b.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)&&
+					!b.getAttribute(Block.ATTRIBUTE.CONNECT_UP)&&
+					!b.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
 					//Find boundaries of existing gem block
 					maxX++
 					maxY++
@@ -951,7 +950,7 @@ class SPF:AbstractMode() {
 							maxX--
 							break
 						}
-						if(!test.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)) break
+						if(!test.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) break
 						maxX++
 					}
 					while(maxY<height) {
@@ -964,28 +963,28 @@ class SPF:AbstractMode() {
 							maxY--
 							break
 						}
-						if(!test.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) break
+						if(!test.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) break
 						maxY++
 					}
 					log.debug("Pre-existing square found: ("+minX+", "+minY+") to ("+
 						maxX+", "+maxY+")")
-				} else if(b.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN)&&
+				} else if(b.getAttribute(Block.ATTRIBUTE.BROKEN)&&
 					color==engine.field!!.getBlockColor(x+1, y)&&
 					color==engine.field!!.getBlockColor(x, y+1)&&
 					color==engine.field!!.getBlockColor(x+1, y+1)) {
 					val bR = engine.field!!.getBlock(x+1, y)
 					val bD = engine.field!!.getBlock(x, y+1)
 					val bDR = engine.field!!.getBlock(x+1, y+1)
-					if(bR!!.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN)&&
-						bD!!.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN)&&
-						bDR!!.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN)) {
+					if(bR!!.getAttribute(Block.ATTRIBUTE.BROKEN)&&
+						bD!!.getAttribute(Block.ATTRIBUTE.BROKEN)&&
+						bDR!!.getAttribute(Block.ATTRIBUTE.BROKEN)) {
 						//Form new gem block
 						maxX = x+1
 						maxY = y+1
-						b.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, false)
-						bR.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, false)
-						bD.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, false)
-						bDR.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, false)
+						b.setAttribute(false, Block.ATTRIBUTE.BROKEN)
+						bR.setAttribute(false, Block.ATTRIBUTE.BROKEN)
+						bD.setAttribute(false, Block.ATTRIBUTE.BROKEN)
+						bDR.setAttribute(false, Block.ATTRIBUTE.BROKEN)
 						expanded = true
 					}
 					log.debug("New square formed: ("+minX+", "+minY+") to ("+
@@ -1006,7 +1005,7 @@ class SPF:AbstractMode() {
 					log.debug("Testing to expand up. testY = $testY")
 					if(color!=engine.field!!.getBlockColor(minX, testY)||color!=engine.field!!.getBlockColor(maxX, testY))
 						break
-					if(engine.field!!.getBlock(minX, testY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)||engine.field!!.getBlock(maxX, testY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT))
+					if(engine.field!!.getBlock(minX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)||engine.field!!.getBlock(maxX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
 						break
 					expandHere = true
 					testX = minX
@@ -1014,7 +1013,7 @@ class SPF:AbstractMode() {
 						if(engine.field!!.getBlockColor(testX, testY)!=color) {
 							done = true
 							expandHere = false
-						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP))
+						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_UP))
 							expandHere = false
 						testX++
 					}
@@ -1030,7 +1029,7 @@ class SPF:AbstractMode() {
 				while(testX>=0&&!done) {
 					if(color!=engine.field!!.getBlockColor(testX, minY)||color!=engine.field!!.getBlockColor(testX, maxY))
 						break
-					if(engine.field!!.getBlock(testX, minY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)||engine.field!!.getBlock(testX, maxY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN))
+					if(engine.field!!.getBlock(testX, minY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_UP)||engine.field!!.getBlock(testX, maxY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN))
 						break
 					expandHere = true
 					testY = minY
@@ -1038,7 +1037,7 @@ class SPF:AbstractMode() {
 						if(engine.field!!.getBlockColor(testX, testY)!=color) {
 							done = true
 							expandHere = false
-						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT))
+						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT))
 							expandHere = false
 						testY++
 					}
@@ -1054,7 +1053,7 @@ class SPF:AbstractMode() {
 				while(testX<width&&!done) {
 					if(color!=engine.field!!.getBlockColor(testX, minY)||color!=engine.field!!.getBlockColor(testX, maxY))
 						break
-					if(engine.field!!.getBlock(testX, minY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)||engine.field!!.getBlock(testX, maxY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN))
+					if(engine.field!!.getBlock(testX, minY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_UP)||engine.field!!.getBlock(testX, maxY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN))
 						break
 					expandHere = true
 					testY = minY
@@ -1062,7 +1061,7 @@ class SPF:AbstractMode() {
 						if(engine.field!!.getBlockColor(testX, testY)!=color) {
 							done = true
 							expandHere = false
-						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT))
+						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
 							expandHere = false
 						testY++
 					}
@@ -1078,7 +1077,7 @@ class SPF:AbstractMode() {
 				while(testY<height&&!done) {
 					if(color!=engine.field!!.getBlockColor(minX, testY)||color!=engine.field!!.getBlockColor(maxX, testY))
 						break
-					if(engine.field!!.getBlock(minX, testY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)||engine.field!!.getBlock(maxX, testY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT))
+					if(engine.field!!.getBlock(minX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)||engine.field!!.getBlock(maxX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
 						break
 					expandHere = true
 					testX = minX
@@ -1086,7 +1085,7 @@ class SPF:AbstractMode() {
 						if(engine.field!!.getBlockColor(testX, testY)!=color) {
 							done = true
 							expandHere = false
-						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN))
+						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN))
 							expandHere = false
 						testX++
 					}
@@ -1108,11 +1107,11 @@ class SPF:AbstractMode() {
 							testY = minY
 							while(testY<=maxY) {
 								bTest = engine.field!!.getBlock(testX, testY)
-								bTest!!.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, false)
-								bTest!!.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, testX!=minX)
-								bTest!!.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, testY!=maxY)
-								bTest!!.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, testY!=minY)
-								bTest!!.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, testX!=maxX)
+								bTest!!.setAttribute(false, Block.ATTRIBUTE.BROKEN)
+								bTest!!.setAttribute(testX!=minX, Block.ATTRIBUTE.CONNECT_LEFT)
+								bTest!!.setAttribute(testY!=maxY, Block.ATTRIBUTE.CONNECT_DOWN)
+								bTest!!.setAttribute(testY!=minY, Block.ATTRIBUTE.CONNECT_UP)
+								bTest!!.setAttribute(testX!=maxX, Block.ATTRIBUTE.CONNECT_RIGHT)
 								bTest!!.bonusValue = size
 								testY++
 							}
@@ -1157,7 +1156,7 @@ class SPF:AbstractMode() {
 				var patternRow = 0
 				for(y in dropRows-hiddenHeight downTo -1*hiddenHeight) {
 					val b = engine.field!!.getBlock(x, y)
-					if(b!!.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)&&b.secondaryColor==0) {
+					if(b!!.getAttribute(Block.ATTRIBUTE.GARBAGE)&&b.secondaryColor==0) {
 						if(patternRow>=dropPattern[enemyID][patternCol].size) patternRow = 0
 						b.secondaryColor = dropPattern[enemyID][patternCol][patternRow]
 						patternRow++

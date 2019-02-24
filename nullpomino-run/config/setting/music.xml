@@ -8,11 +8,14 @@
  <entry key="music.filename.MENU.2">res/bgm/title_technika3.ogg</entry>
 
  <entry key="music.filename.GENERIC.0">res/bgm/steam/Clouds.ogg</entry>
- <entry key="music.filename.GENERIC.1">res/bgm/steam/unt_dummy.ogg</entry>
- <entry key="music.filename.GENERIC.2">res/bgm/steam/rb_MischievousMasquerade.ogg</entry>
+ <entry key="music.filename.GENERIC.1">res/bgm/steam/sonic_PulpSolstice1.ogg</entry>
+ <entry key="music.filename.GENERIC.2">res/bgm/steam/dlr_battle.ogg</entry>
  <entry key="music.filename.GENERIC.3">res/bgm/steam/unt_core.ogg</entry>
  <entry key="music.filename.GENERIC.4">res/bgm/steam/icey_labo.ogg</entry>
  <entry key="music.filename.GENERIC.5">res/bgm/Astra_walkthrough.ogg</entry>
+ <entry key="music.filename.RUSH.0">res/bgm/steam/rb_fullon.ogg</entry>
+ <entry key="music.filename.RUSH.1">res/bgm/steam/rb_brawlbreax.ogg</entry>
+ <entry key="music.filename.RUSH.2">res/bgm/steam/rb_hitech.ogg</entry>
 
  <entry key="music.filename.RETRO_N.0">res/bgm/retro/nes1.ogg</entry>
  <entry key="music.filename.RETRO_N.1">res/bgm/retro/nes2.ogg</entry>
@@ -28,9 +31,6 @@
  <entry key="music.filename.PUZZLE.1">res/bgm/steam/unt_battle1.ogg</entry>
  <entry key="music.filename.PUZZLE.2">res/bgm/steam/unt_battle2.ogg</entry>
 
- <entry key="music.filename.RUSH.0">res/bgm/steam/rb_fullon.ogg</entry>
- <entry key="music.filename.RUSH.1">res/bgm/steam/rb_brawlbreax.ogg</entry>
- <entry key="music.filename.RUSH.2">res/bgm/steam/rb_hitech.ogg</entry>
  <entry key="music.filename.EXTRA.0">res/bgm/1_grand/vs1.ogg</entry>
  <entry key="music.filename.EXTRA.1">res/bgm/2_absolute/vs2.ogg</entry>
  <entry key="music.filename.EXTRA.2">res/bgm/3_instinct/vs3.ogg</entry>
@@ -58,10 +58,10 @@
  <entry key="music.filename.FINALE.2">res/bgm/finale_siva.ogg</entry>
  <entry key="music.filename.ENDING.3">res/bgm/fb_kaerezunochi.ogg</entry>
 
- <entry key="music.filename.RESULT.0">res/bgm/ddp/result_black.ogg</entry>
+ <entry key="music.filename.RESULT.0">res/bgm/result_technika3_1.ogg</entry>
  <entry key="music.filename.RESULT.1">res/bgm/result_technika2_1.ogg</entry>
  <entry key="music.filename.RESULT.2">res/bgm/result_technika2_2.ogg</entry>
- <entry key="music.filename.RESULT.3">res/bgm/ddp/result_blue.ogg</entry>
+ <entry key="music.filename.RESULT.3">res/bgm/result_technika3_2.ogg</entry>
 
  <entry key="music.noloop.ENDING.0">false</entry>
  <entry key="music.noloop.ENDING.1">true</entry>

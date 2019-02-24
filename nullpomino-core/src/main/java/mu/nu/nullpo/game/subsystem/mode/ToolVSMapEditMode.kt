@@ -70,9 +70,8 @@ class ToolVSMapEditMode:AbstractMode() {
 		field.reset()
 		//field.readProperty(prop, id);
 		field.stringToField(prop.getProperty("values.$id", ""))
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
+		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+		field.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 	}
 
 	/** MapSave
@@ -170,7 +169,7 @@ class ToolVSMapEditMode:AbstractMode() {
 			// EDIT
 				engine.enterFieldEdit()
 			else if(menuCursor==1)
-			// GRAY->?
+			// WHITE->?
 				grayToRandomColor(engine.field!!)
 			else if(menuCursor==2)
 			// CLEAR
@@ -219,7 +218,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		if(menuCursor in 0..2)
 			receiver.drawMenuFont(engine, playerID, 0, 2+menuCursor, "b", EventReceiver.COLOR.RED)
 		receiver.drawMenuFont(engine, playerID, 1, 2, "[EDIT]", menuCursor==0)
-		receiver.drawMenuFont(engine, playerID, 1, 3, "[GRAY->?]", menuCursor==1)
+		receiver.drawMenuFont(engine, playerID, 1, 3, "[WHITE->?]", menuCursor==1)
 		receiver.drawMenuFont(engine, playerID, 1, 4, "[CLEAR]", menuCursor==2)
 
 		receiver.drawMenuFont(engine, playerID, 0, 6, "MAP DATA", EventReceiver.COLOR.COBALT)

@@ -298,9 +298,9 @@ class Piece(
 	 * @param attr 変更したい属性
 	 * @param status 変更後 state
 	 */
-	fun setAttribute(attr:Int, status:Boolean) {
+	fun setAttribute(status:Boolean, vararg attrs:Block.ATTRIBUTE) {
 		for(element in block)
-			element.setAttribute(attr, status)
+			element.setAttribute(status, *attrs)
 	}
 
 	/** 相対X位置と相対Y位置をずらす
@@ -358,26 +358,26 @@ class Piece(
 			val bx = dataX[direction][j]
 			val by = dataY[direction][j]
 
-			block[j].setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, false)
-			block[j].setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, false)
-			block[j].setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, false)
-			block[j].setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, false)
+			block[j].setAttribute(false, Block.ATTRIBUTE.CONNECT_UP)
+			block[j].setAttribute(false, Block.ATTRIBUTE.CONNECT_DOWN)
+			block[j].setAttribute(false, Block.ATTRIBUTE.CONNECT_LEFT)
+			block[j].setAttribute(false, Block.ATTRIBUTE.CONNECT_RIGHT)
 
 			if(connectBlocks) {
-				block[j].setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, false)
+				block[j].setAttribute(false, Block.ATTRIBUTE.BROKEN)
 				// 他の3つのBlockとの繋がりを調べる
 				for(k in 0 until maxBlock)
 					if(k!=j) {
 						val bx2 = dataX[direction][k]
 						val by2 = dataY[direction][k]
 
-						if(bx==bx2&&by-1==by2) block[j].setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true) // Up
-						if(bx==bx2&&by+1==by2) block[j].setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true) // Down
-						if(by==by2&&bx-1==bx2) block[j].setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true) // 左
-						if(by==by2&&bx+1==bx2) block[j].setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true) // 右
+						if(bx==bx2&&by-1==by2) block[j].setAttribute(true, Block.ATTRIBUTE.CONNECT_UP) // Up
+						if(bx==bx2&&by+1==by2) block[j].setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN) // Down
+						if(by==by2&&bx-1==bx2) block[j].setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT) // 左
+						if(by==by2&&bx+1==bx2) block[j].setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT) // 右
 					}
 			} else
-				block[j].setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, true)
+				block[j].setAttribute(true, Block.ATTRIBUTE.BROKEN)
 		}
 	}
 
@@ -507,8 +507,8 @@ class Piece(
 			val x2 = x+dataX[rt][i]*size //Multiply co-ordinate offset by piece size.
 			val y2 = y+dataY[rt][i]*size
 
-			fld?.setAllAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, false)
-			block[i].setAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, true)
+			fld?.setAllAttribute(false, Block.ATTRIBUTE.LAST_COMMIT)
+			block[i].setAttribute(true, Block.ATTRIBUTE.LAST_COMMIT)
 
 			/* Loop through width/height of the block, setting cells in the
  * field.
@@ -524,65 +524,65 @@ class Piece(
 
 					// Set Big block connections
 					if(big) {
-						if(block[i].getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)&&block[i].getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)) {
+						if(block[i].getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)&&block[i].getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) {
 							// Top
-							if(l==0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true)
+							if(l==0) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN)
 							// Bottom
-							if(l==1) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true)
-						} else if(block[i].getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)) {
+							if(l==1) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_UP)
+						} else if(block[i].getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
 							// Top
-							if(l==0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true)
+							if(l==0) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN)
 							// Bottom
-							if(l==1) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true)
+							if(l==1) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_UP)
 							// Left
 							if(k==0) {
-								blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
-								blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 							}
 							// Right
-							if(k==1) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
-						} else if(block[i].getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)) {
+							if(k==1) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+						} else if(block[i].getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) {
 							// Top
-							if(l==0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true)
+							if(l==0) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN)
 							// Bottom
-							if(l==1) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true)
+							if(l==1) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_UP)
 							// Left
-							if(k==0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+							if(k==0) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 							// Right
 							if(k==1) {
-								blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
-								blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 							}
 						}
 
-						if(block[i].getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)&&block[i].getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
+						if(block[i].getAttribute(Block.ATTRIBUTE.CONNECT_UP)&&block[i].getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) {
 							// Left
-							if(k==0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+							if(k==0) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 							// Right
-							if(k==1) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
-						} else if(block[i].getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
+							if(k==1) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+						} else if(block[i].getAttribute(Block.ATTRIBUTE.CONNECT_UP)) {
 							// Left
-							if(k==0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+							if(k==0) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 							// Right
-							if(k==1) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
+							if(k==1) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
 							// Top
 							if(l==0) {
-								blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true)
-								blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true)
+								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_UP)
+								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN)
 							}
 							// Bottom
-							if(l==1) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true)
-						} else if(block[i].getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
+							if(l==1) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_UP)
+						} else if(block[i].getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) {
 							// Left
-							if(k==0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+							if(k==0) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 							// Right
-							if(k==1) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
+							if(k==1) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
 							// Top
-							if(l==0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true)
+							if(l==0) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN)
 							// Bottom
 							if(l==1) {
-								blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true)
-								blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true)
+								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_UP)
+								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN)
 							}
 						}
 					}

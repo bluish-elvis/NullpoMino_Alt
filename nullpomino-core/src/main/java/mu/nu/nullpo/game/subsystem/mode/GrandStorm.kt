@@ -672,7 +672,7 @@ class GrandStorm:AbstractMode() {
 				// ST medal
 				stMedalCheck(engine, levelb/100)
 
-				owner.bgmStatus.bgm = BGM.ENDING_2
+				owner.bgmStatus.bgm = BGM.ENDING(1)
 				// RO medal
 				roMedalCheck(engine)
 			} else if(nextseclv==500&&engine.statistics.level>=500&&lv500torikan>0
@@ -857,10 +857,10 @@ class GrandStorm:AbstractMode() {
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = if(engine.ending>0)
 			if(engine.statistics.level<900)
-				BGM.RESULT_2
+				BGM.RESULT(2)
 			else
-				BGM.CLEARED
-		else BGM.FAILED
+				BGM.RESULT(3)
+		else BGM.RESULT(0)
 		// ページ切り替え
 		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
@@ -995,7 +995,7 @@ class GrandStorm:AbstractMode() {
 
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(300, 500, 999, -1)
-		private val tableBGM = arrayOf(BGM.GM_20G_2, BGM.STORM_1, BGM.STORM_2)
+		private val tableBGM = arrayOf(BGM.GM_2(1), BGM.GM_2(2), BGM.GM_2(3))
 		/** 段位のName */
 		private val tableGradeName = arrayOf("", "m", "Gm", "GM")
 		/** 裏段位のName */

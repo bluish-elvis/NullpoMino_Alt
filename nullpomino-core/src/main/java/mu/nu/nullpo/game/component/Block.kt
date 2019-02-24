@@ -33,19 +33,62 @@ import kotlin.math.roundToInt
 class Block(
 	/** Block color */
 	var color:COLOR? = null,
+	/** Block type */
+	var type:TYPE = BLOCK,
 	/** Blockの絵柄 */
 	var skin:Int = 0,
 	/** Blockの属性 */
-	var aint:Int = 0):Serializable {
+	vararg attrs:ATTRIBUTE):Serializable {
+	/** Blockの属性 */
+	var aint:Int = attrs.fold(0) {x, y -> x or y.bit}
 
 	/** Block color integer */
 	var cint:Int
-		get() = color?.ordinal ?: 0
-		set(v) {
-			color = if(v<=BLOCK_COLOR_NONE) null else COLOR.values()[v]
+		get() = if(color==COLOR.RAINBOW) {
+			if(type==GEM) BLOCK_COLOR_GEM_RAINBOW
+			else BLOCK_COLOR_RAINBOW
+		} else {
+			val ci:Int = (color?.ordinal ?: 0)
+			when(type) {
+				BLOCK -> if(color==COLOR.BLACK&&getAttribute(ATTRIBUTE.BONE)) BLOCK_COLOR_GRAY
+				else ci
+				GEM -> if(color==COLOR.BLACK||color==COLOR.WHITE) {
+					BLOCK_COLOR_GEM_RAINBOW
+				} else ci+BLOCK_COLOR_GEM_RED-BLOCK_COLOR_RED
+				SQUARE_SILVER -> ci+BLOCK_COLOR_SQUARE_SILVER_1
+				SQUARE_GOLD -> ci+BLOCK_COLOR_SQUARE_GOLD_1
+			}
 		}
-	constructor():this(null,0,0)
-	constructor(cint:Int = 0, skin:Int = 0, aint:Int = 0):this(null, skin, aint) {
+		set(v) {
+			color = when(v) {
+				in BLOCK_COLOR_GRAY..BLOCK_COLOR_PURPLE -> {
+					type = BLOCK;COLOR.values()[v]
+				}
+				BLOCK_COLOR_RAINBOW -> {
+					type = BLOCK;COLOR.RAINBOW
+				}
+				in BLOCK_COLOR_GEM_RED..BLOCK_COLOR_GEM_PURPLE -> {
+					type = GEM
+					COLOR.values()[v-BLOCK_COLOR_GEM_RED]
+				}
+				BLOCK_COLOR_GEM_RAINBOW -> {
+					type = GEM;COLOR.RAINBOW
+				}
+				in BLOCK_COLOR_SQUARE_SILVER_1..BLOCK_COLOR_SQUARE_SILVER_9 -> {
+					type = SQUARE_SILVER
+					COLOR.values()[v-BLOCK_COLOR_SQUARE_SILVER_1]
+				}
+				in BLOCK_COLOR_SQUARE_GOLD_1..BLOCK_COLOR_SQUARE_GOLD_9 -> {
+					type = SQUARE_GOLD
+					COLOR.values()[v-BLOCK_COLOR_SQUARE_GOLD_1]
+				}
+				else -> null
+			}
+		}
+
+	constructor():this(null, BLOCK, 0)
+	constructor(color:COLOR?, skin:Int, vararg attrs:ATTRIBUTE):this(color, BLOCK, skin, *attrs)
+	constructor(cint:Int = 0, skin:Int = 0, vararg attrs:ATTRIBUTE):this(null, BLOCK, skin, *attrs) {
 		this.cint = cint
 	}
 	//val aset:Set<ATTRIBUTE> get() = aint.values{it.bit}.sum()
@@ -85,22 +128,22 @@ class Block(
 	/** このBlockが宝石Blockかどうか判定
 	 * @return このBlockが宝石Blockだったらtrue
 	 */
-	val isGemBlock:Boolean get() = color?.type===GEM
+	val isGemBlock:Boolean get() = type===GEM
 
 	/** Checks to see if `this` is a gold square block
 	 * @return `true` if the block is a gold square block
 	 */
-	val isGoldSquareBlock:Boolean get() = color?.type===SQUARE_GOLD
+	val isGoldSquareBlock:Boolean get() = type===SQUARE_GOLD
 
 	/** Checks to see if `this` is a silver square block
 	 * @return `true` if the block is a silver square block
 	 */
-	val isSilverSquareBlock:Boolean get() = color?.type===SQUARE_SILVER
+	val isSilverSquareBlock:Boolean get() = type===SQUARE_SILVER
 
 	/** Checks to see if `this` is a normal block (gray to purple)
 	 * @return `true` if the block is a normal block
 	 */
-	val isNormalBlock:Boolean get() = color?.type===BLOCK
+	val isNormalBlock:Boolean get() = type===BLOCK
 
 	val drawColor:Int
 		get() = when(cint) {
@@ -112,6 +155,7 @@ class Block(
 	/** 設定をReset to defaults */
 	fun reset(del:Boolean = false) {
 		if(del) color = null
+		type = BLOCK
 		skin = 0
 		aint = 0
 		elapsedFrames = 0
@@ -128,7 +172,7 @@ class Block(
 	/** Copy constructor
 	 * @param b Copy source
 	 */
-	constructor(b:Block?):this(b?.color, b?.skin?:0, b?.aint?:0) {
+	constructor(b:Block?):this(b?.color, b?.type ?: BLOCK, b?.skin ?: 0) {
 		copy(b)
 	}
 
@@ -138,6 +182,7 @@ class Block(
 	fun copy(b:Block?) {
 		b?.let {
 			color = b.color
+			type = b.type
 			skin = b.skin
 			aint = b.aint
 			elapsedFrames = b.elapsedFrames
@@ -149,23 +194,25 @@ class Block(
 			countdown = b.countdown
 			secondaryColor = b.secondaryColor
 			bonusValue = b.bonusValue
-		}?:reset(true)
+		} ?: reset(true)
 	}
 
 	/** 指定した属性 stateを調べる
 	 * @param attr 調べたい属性
 	 * @return 指定した属性がすべてセットされている場合はtrue
 	 */
-	fun getAttribute(attr:ATTRIBUTE):Boolean = getAttribute(attr.bit)
+	fun getAttribute(vararg attr:ATTRIBUTE):Boolean = (aint and attr.fold(0) {x, y -> x or y.bit})!=0
 
-	fun getAttribute(attr:Int):Boolean = aint and attr!=0
 	/** 属性を変更する
-	 * @param attr 変更したい属性
+	 * @param attrs 変更したい属性
 	 * @param status 変更後 state
 	 */
-	fun setAttribute(attr:ATTRIBUTE, status:Boolean) = setAttribute(attr.bit, status)
+	fun setAttribute(status:Boolean, vararg attrs:ATTRIBUTE) {
+		val attr=attrs.fold(0) {x, y -> x or y.bit}
+		aint = if(status) aint or attr else aint and attr.inv()
+	}
 
-	fun setAttribute(attr:Int, status:Boolean) {
+	fun setAttribute(status:Boolean, attr:Int) {
 		aint = if(status) aint or attr else aint and attr.inv()
 	}
 
@@ -178,13 +225,8 @@ class Block(
 	override fun toString():String = ""+blockToChar()
 
 	enum class TYPE { BLOCK, GEM, SQUARE_GOLD, SQUARE_SILVER }
-	enum class COLOR { GRAY, RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE,
-		GEM_RED, GEM_ORANGE, GEM_YELLOW, GEM_GREEN, GEM_CYAN, GEM_BLUE, GEM_PURPLE,
-		SQUARE_GOLD_1, SQUARE_GOLD_2, SQUARE_GOLD_3, SQUARE_GOLD_4, SQUARE_GOLD_5,
-		SQUARE_GOLD_6, SQUARE_GOLD_7, SQUARE_GOLD_8, SQUARE_GOLD_9,
-		SQUARE_SILVER_1, SQUARE_SILVER_2, SQUARE_SILVER_3, SQUARE_SILVER_4, SQUARE_SILVER_5,
-		SQUARE_SILVER_6, SQUARE_SILVER_7, SQUARE_SILVER_8, SQUARE_SILVER_9,
-		RAINBOW, GEM_RAINBOW;
+	enum class COLOR {
+		BLACK, WHITE, RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, RAINBOW;
 
 		val type:TYPE = when {
 			name.contains("GEM_") -> GEM
@@ -192,18 +234,6 @@ class Block(
 			name.contains("SQUARE_GOLD") -> SQUARE_GOLD
 			else -> BLOCK
 		}
-		val gem:COLOR
-			get() = when {
-				this==RAINBOW -> GEM_RAINBOW
-				type==BLOCK -> COLOR.values()[ordinal+7]
-				else -> this
-			}
-		val ungem:COLOR
-			get() = when {
-				this==GEM_RAINBOW -> RAINBOW
-				type==GEM -> COLOR.values()[ordinal-7]
-				else -> this
-			}
 	}
 
 	enum class ITEM { RANDOM }

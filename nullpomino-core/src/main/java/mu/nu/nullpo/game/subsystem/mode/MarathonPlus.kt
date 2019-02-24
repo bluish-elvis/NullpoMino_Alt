@@ -461,11 +461,11 @@ class MarathonPlus:NetDummyMode() {
 
 			for(i in 0 until engine.field!!.height)
 				for(j in 0 until engine.field!!.width) {
-					val blk = engine.field!!.getBlock(j, i)
-
-					if(blk!=null&&blk.cint>Block.BLOCK_COLOR_NONE) {
-						blk.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, false)
-						blk.setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, goaltype>0)
+					engine.field!!.getBlock(j, i)?.apply {
+						if(color!=null) {
+							setAttribute(false, Block.ATTRIBUTE.VISIBLE)
+							setAttribute(goaltype>0, Block.ATTRIBUTE.OUTLINE)
+						}
 					}
 				}
 		}
@@ -550,7 +550,7 @@ class MarathonPlus:NetDummyMode() {
 						engine.statistics.score += bonusScore
 						engine.statistics.scoreFromOtherBonus += bonusScore
 
-						owner.bgmStatus.bgm = BGM.ENDING_2
+						owner.bgmStatus.bgm = BGM.ENDING(1)
 						engine.ending = 1
 						engine.timerActive = false
 					} else {
@@ -857,7 +857,7 @@ class MarathonPlus:NetDummyMode() {
 			// Bonus level entered
 			if(message[3]=="bonuslevelenter") {
 				engine.meterValue = 0
-				owner.bgmStatus.bgm = BGM.GM_20G_1
+				owner.bgmStatus.bgm = BGM.GM_1(1)
 				engine.timerActive = false
 				engine.ending = 1
 				engine.stat = GameEngine.Status.CUSTOM
@@ -1007,10 +1007,11 @@ class MarathonPlus:NetDummyMode() {
 		private val tableBGMChange =
 			arrayOf(intArrayOf(100, 150), intArrayOf(80, 180), intArrayOf(130, 300), intArrayOf(140, 280, 350))
 		private val tableBGM =
-			arrayOf(arrayOf(BGM.PUZZLE_1,BGM. GENERIC_2, BGM.GENERIC_3,BGM.GM_1), arrayOf(BGM.GENERIC_1, BGM.PUZZLE_2, BGM.GENERIC_3, BGM.GM_20G_1), //30levels
-				arrayOf(BGM.GENERIC_2, BGM.GM_20G_1, BGM.GM_20G_3, BGM.GENERIC_5), //50levels
-				arrayOf(BGM.GENERIC_3, BGM.GENERIC_4, BGM.PUZZLE_3,BGM.GM_20G_3,BGM.GENERIC_6), //200levels
-				arrayOf(BGM.EXTRA_2,BGM. RUSH_1, BGM.RUSH_2, BGM.RUSH_3))//challenge mode
+			arrayOf(arrayOf(BGM.PUZZLE(0),BGM.GENERIC(1), BGM.GENERIC(2),BGM.GM_1(0)),
+				arrayOf(BGM.GENERIC(0), BGM.PUZZLE(1), BGM.GENERIC(2), BGM.GM_1(1)), //30levels
+				arrayOf(BGM.GENERIC(1), BGM.GM_1(1), BGM.GM_3(1), BGM.GENERIC(4)), //50levels
+				arrayOf(BGM.GENERIC(2), BGM.GENERIC(3), BGM.PUZZLE(2),BGM.GM_3(1),BGM.GENERIC(5)), //200levels
+				arrayOf(BGM.EXTRA(1),BGM.RUSH(0), BGM.RUSH(1), BGM.RUSH(2)))//challenge mode
 
 		/** Ending time */
 		private val ROLLTIMELIMIT = intArrayOf(-1, 5000, 7500, 10000)

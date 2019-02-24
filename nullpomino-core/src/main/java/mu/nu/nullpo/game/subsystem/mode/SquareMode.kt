@@ -360,7 +360,7 @@ class SquareMode:AbstractMode() {
 		for(i in field.hiddenHeight*-1 until field.heightWithoutHurryupFloor)
 			for(j in 0 until field.width) {
 				val blk = field.getBlock(j, i)
-				if(blk!=null&&!blk.isEmpty&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN))
+				if(blk!=null&&!blk.isEmpty&&blk.getAttribute(Block.ATTRIBUTE.BROKEN))
 					blk.cint = Block.BLOCK_COLOR_GRAY
 			}
 	}
@@ -401,7 +401,7 @@ class SquareMode:AbstractMode() {
 	 */
 	private fun avalanche(engine:GameEngine, playerID:Int, lines:Int) {
 		val field = engine.field
-		field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY, false)
+		field!!.setAllAttribute(false, Block.ATTRIBUTE.ANTIGRAVITY)
 
 		val hiddenHeight = field.hiddenHeight
 		val height = field.height
@@ -426,12 +426,12 @@ class SquareMode:AbstractMode() {
 					val blk = field.getBlock(x, y)
 					if(blk!=null&&!blk.isEmpty) {
 						// Change each affected block to broken and garbage, and break connections.
-						blk.setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, true)
-						blk.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, true)
-						blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, false)
-						blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, false)
-						blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, false)
-						blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, false)
+						blk.setAttribute(true, Block.ATTRIBUTE.GARBAGE)
+						blk.setAttribute(true, Block.ATTRIBUTE.BROKEN)
+						blk.setAttribute(false, Block.ATTRIBUTE.CONNECT_UP)
+						blk.setAttribute(false, Block.ATTRIBUTE.CONNECT_DOWN)
+						blk.setAttribute(false, Block.ATTRIBUTE.CONNECT_LEFT)
+						blk.setAttribute(false, Block.ATTRIBUTE.CONNECT_RIGHT)
 						if(grayoutEnable!=0) blk.cint = Block.BLOCK_COLOR_GRAY
 					}
 				}
@@ -439,9 +439,9 @@ class SquareMode:AbstractMode() {
 			// Set anti-gravity when TNT avalanche is used
 				for(x in 0 until field.width) {
 					var blk = field.getBlock(x, y)
-					if(blk!=null&&!blk.isEmpty) blk.setAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY, true)
+					if(blk!=null&&!blk.isEmpty) blk.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
 					blk = field.getBlock(x, y-1)
-					if(blk!=null&&!blk.isEmpty) blk.setAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY, true)
+					if(blk!=null&&!blk.isEmpty) blk.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
 				}
 		// Reset line flags
 		for(y in -1*hiddenHeight until height)

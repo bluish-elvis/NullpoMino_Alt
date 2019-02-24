@@ -1,7 +1,9 @@
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Block.COLOR
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -296,11 +298,11 @@ class VSDigRaceMode:AbstractMode() {
 	 * @param engine GameEngine
 	 */
 	private fun fillGarbage(engine:GameEngine, playerID:Int) {
-		val w = engine.field!!.width
-		val h = engine.field!!.height
-		var hole = -1
+		val w:Int = engine.field!!.width
+		val h:Int = engine.field!!.height
+		var hole:Int = -1
 
-		for(y in h-1 downTo h-goalLines[playerID]) {
+		for(y:Int in h-1 downTo h-goalLines[playerID]) {
 			if(hole==-1||engine.random.nextInt(100)<garbagePercent[playerID]) {
 				var newhole = -1
 				do
@@ -309,28 +311,28 @@ class VSDigRaceMode:AbstractMode() {
 				hole = newhole
 			}
 
-			var prevColor = -1
-			for(x in 0 until w)
+			var prevColor:COLOR? = null
+			for(x:Int in 0 until w)
 				if(x!=hole) {
-					var color = Block.BLOCK_COLOR_GRAY
+					var color:COLOR = COLOR.WHITE
 					if(y==h-1) {
 						do
-							color = Block.BLOCK_COLOR_GEM_RED+engine.random.nextInt(7)
+							color = COLOR.values()[1+engine.random.nextInt(7)]
 						while(color==prevColor)
 						prevColor = color
 					}
-					engine.field!!.setBlock(x, y, Block(color, engine.skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+					engine.field!!.setBlock(x, y, Block(color, if(y==h-1) Block.TYPE.BLOCK else Block.TYPE.GEM,
+						engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 				}
-
 			// Set connections
 			if(receiver.isStickySkin(engine)&&y!=h-1)
-				for(x in 0 until w)
+				for(x:Int in 0 until w)
 					if(x!=hole) {
 						val blk = engine.field!!.getBlock(x, y)
 						if(blk!=null) {
-							if(!engine.field!!.getBlockEmpty(x-1, y)) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
+							if(!engine.field!!.getBlockEmpty(x-1, y)) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
 							if(!engine.field!!.getBlockEmpty(x+1, y))
-								blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 						}
 					}
 		}
@@ -339,18 +341,18 @@ class VSDigRaceMode:AbstractMode() {
 	private fun getRemainGarbageLines(engine:GameEngine?, playerID:Int):Int {
 		if(engine?.field==null) return -1
 
-		val w = engine.field!!.width
-		val h = engine.field!!.height
-		var lines = 0
+		val w:Int = engine.field!!.width
+		val h:Int = engine.field!!.height
+		var lines:Int = 0
 		var hasGemBlock = false
 
-		for(y in h-1 downTo h-goalLines[playerID])
+		for(y:Int in h-1 downTo h-goalLines[playerID])
 			if(!engine.field!!.getLineFlag(y))
-				for(x in 0 until w) {
+				for(x:Int in 0 until w) {
 					val blk = engine.field!!.getBlock(x, y)
 
 					if(blk!=null&&blk.isGemBlock) hasGemBlock = true
-					if(blk!=null&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)) {
+					if(blk!=null&&blk.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
 						lines++
 						break
 					}
@@ -365,8 +367,8 @@ class VSDigRaceMode:AbstractMode() {
 		var enemyID = 0
 		if(playerID==0) enemyID = 1
 
-		val x = receiver.getFieldDisplayPositionX(engine, playerID)
-		val y = receiver.getFieldDisplayPositionY(engine, playerID)
+		val x:Int = receiver.getFieldDisplayPositionX(engine, playerID)
+		val y:Int = receiver.getFieldDisplayPositionY(engine, playerID)
 
 		val remainLines = maxOf(0, getRemainGarbageLines(engine, playerID))
 		var fontColor = EventReceiver.COLOR.WHITE
@@ -387,11 +389,11 @@ class VSDigRaceMode:AbstractMode() {
 		val strLines = remainLines.toString()
 
 		if(remainLines>0)
-			if(strLines.length==1)
-				receiver.drawMenuFont(engine, playerID, 4, 21, strLines, fontColor, 2f)
-			else if(strLines.length==2)
-				receiver.drawMenuFont(engine, playerID, 3, 21, strLines, fontColor, 2f)
-			else if(strLines.length==3) receiver.drawMenuFont(engine, playerID, 2, 21, strLines, fontColor, 2f)
+			when {
+				strLines.length==1 -> receiver.drawMenuFont(engine, playerID, 4, 21, strLines, fontColor, 2f)
+				strLines.length==2 -> receiver.drawMenuFont(engine, playerID, 3, 21, strLines, fontColor, 2f)
+				strLines.length==3 -> receiver.drawMenuFont(engine, playerID, 2, 21, strLines, fontColor, 2f)
+			}
 
 		// 1st/2nd
 		if(remainLines<enemyRemainLines)
@@ -424,10 +426,8 @@ class VSDigRaceMode:AbstractMode() {
 
 			if(!owner.replayMode) {
 				receiver.drawDirectFont(x-44, y+190, "WINS", fontColor2, .5f)
-				if(winCount[playerID]>=10)
-					receiver.drawDirectFont(x-44, y+204, winCount[playerID].toString())
-				else
-					receiver.drawDirectFont(x-36, y+204, winCount[playerID].toString())
+				receiver.drawDirectFont(x-if(winCount[playerID]>=10) 44 else 36, y+204,
+					winCount[playerID].toString())
 			}
 		}
 	}
@@ -487,12 +487,11 @@ class VSDigRaceMode:AbstractMode() {
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 0, "RESULT", EventReceiver.COLOR.ORANGE)
-		if(winnerID==-1)
-			receiver.drawMenuFont(engine, playerID, 6, 1, "DRAW", EventReceiver.COLOR.GREEN)
-		else if(winnerID==playerID)
-			receiver.drawMenuFont(engine, playerID, 6, 1, "WIN!", EventReceiver.COLOR.YELLOW)
-		else
-			receiver.drawMenuFont(engine, playerID, 6, 1, "LOSE", EventReceiver.COLOR.WHITE)
+		when(winnerID) {
+			-1 -> receiver.drawMenuFont(engine, playerID, 6, 1, "DRAW", EventReceiver.COLOR.GREEN)
+			playerID -> receiver.drawMenuFont(engine, playerID, 6, 1, "WIN!", EventReceiver.COLOR.YELLOW)
+			else -> receiver.drawMenuFont(engine, playerID, 6, 1, "LOSE", EventReceiver.COLOR.WHITE)
+		}
 		drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.ORANGE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.LPM, AbstractMode.Statistic.PPS, AbstractMode.Statistic.TIME)
 	}
 

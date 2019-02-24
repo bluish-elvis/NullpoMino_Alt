@@ -113,7 +113,7 @@ class Field:Serializable {
 					for(j in 0 until width)
 						if(!getBlockEmpty(j, i)) {
 							val b = getBlock(j, i)
-							if(b?.getAttribute(Block.BLOCK_ATTRIBUTE_ERASE)!=true) return false
+							if(b?.getAttribute(ATTRIBUTE.ERASE)!=true) return false
 						}
 			}
 
@@ -205,7 +205,7 @@ class Field:Serializable {
 			for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
 				if(!getLineFlag(i))
 					for(j in 0 until width)
-						if(!getBlockEmpty(j, i)&&getBlock(j, i)!!.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)) return i
+						if(!getBlockEmpty(j, i)&&getBlock(j, i)!!.getAttribute(ATTRIBUTE.GARBAGE)) return i
 
 			return height
 		}
@@ -283,7 +283,7 @@ class Field:Serializable {
 			val attack = lastLinesCleared
 			attack.forEachIndexed {y, it ->
 				it.forEachIndexed {x, b ->
-					if(b?.getAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT)==true)
+					if(b?.getAttribute(ATTRIBUTE.LAST_COMMIT)==true)
 						attack[y][x] = null
 				}
 			}
@@ -360,7 +360,7 @@ class Field:Serializable {
 		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
 			.filter {getLineFlag(it)}.count {
 				(0 until width).any {j ->
-					getBlock(j, it)?.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)==true
+					getBlock(j, it)?.getAttribute(ATTRIBUTE.GARBAGE)==true
 				}
 			}
 
@@ -380,7 +380,7 @@ class Field:Serializable {
 				if(getLineFlag(i))
 					for(j in 0 until width)
 						getBlock(j, i)?.let {blk ->
-							if(!blk.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE))
+							if(!blk.getAttribute(ATTRIBUTE.GARBAGE))
 								if(blk.isGoldSquareBlock)
 									squares[0]++
 								else if(blk.isSilverSquareBlock) squares[1]++
@@ -489,7 +489,7 @@ class Field:Serializable {
 				if(j<width-1) mapStr.append(",")
 			}
 
-			p.setProperty(id.toString()+".field.values."+i, mapStr.toString())
+			p.setProperty("$id.field.values.$i", mapStr.toString())
 		}
 	}
 
@@ -499,7 +499,7 @@ class Field:Serializable {
 	 */
 	fun readProperty(p:CustomProperties, id:Int) {
 		for(i in 0 until height) {
-			val mapStr = p.getProperty(id.toString()+".field.values."+i, "")
+			val mapStr = p.getProperty("$id.field.values.$i", "")
 			val mapArray = mapStr.split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 
 			for(j in mapArray.indices) {
@@ -645,7 +645,18 @@ class Field:Serializable {
 	 */
 	@Throws(ArrayIndexOutOfBoundsException::class)
 	fun setBlockColorE(x:Int, y:Int, c:Int) {
-		getBlockE(x, y)?.cint = c
+		if(getBlockE(x, y)?.also {it.cint = c}==null&&c>=1) blockField[y][x] = Block(c)
+	}
+
+	/** 指定した座標にあるBlock colorを変更 (失敗したら例外送出）
+	 * @param x X-coordinate
+	 * @param y Y-coordinate
+	 * @param c 色
+	 * @throws ArrayIndexOutOfBoundsException 指定した座標が範囲外
+	 */
+	@Throws(ArrayIndexOutOfBoundsException::class)
+	fun setBlockColorE(x:Int, y:Int, c:Block.COLOR) {
+		if(getBlockE(x, y)?.also {it.color = c}==null) blockField[y][x] = Block(c)
 	}
 
 	/** Line clear flagを取得
@@ -759,7 +770,7 @@ class Field:Serializable {
 				lines++
 				if(inv) lastLinesSplited = true
 				for(j in 0 until width)
-					getBlock(j, i)!!.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true)
+					getBlock(j, i)!!.setAttribute(true, ATTRIBUTE.ERASE)
 			} else if(lines>=1) inv = true
 		}
 
@@ -778,10 +789,10 @@ class Field:Serializable {
 			var g = false
 
 			for(j in 0 until width)
-				if(getBlockEmpty(j, i)||getBlock(j, i)!!.getAttribute(Block.BLOCK_ATTRIBUTE_WALL)) {
+				if(getBlockEmpty(j, i)||getBlock(j, i)!!.getAttribute(ATTRIBUTE.WALL)) {
 					flag = false
 					break
-				} else if(getBlock(j, i)!!.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE))
+				} else if(getBlock(j, i)!!.getAttribute(ATTRIBUTE.GARBAGE))
 					g = true
 
 			if(flag) {
@@ -801,10 +812,10 @@ class Field:Serializable {
 			var g = false
 
 			for(j in 0 until width)
-				if(getBlockEmpty(j, i)||getBlock(j, i)!!.getAttribute(Block.BLOCK_ATTRIBUTE_WALL)) {
+				if(getBlockEmpty(j, i)||getBlock(j, i)!!.getAttribute(ATTRIBUTE.WALL)) {
 					flag = false
 					break
-				} else if(getBlock(j, i)!!.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE))
+				} else if(getBlock(j, i)!!.getAttribute(ATTRIBUTE.GARBAGE))
 					g = true
 			if(flag) {
 				lines.add(i)
@@ -828,7 +839,7 @@ class Field:Serializable {
 				lines++
 				for(j in 0 until width) {
 					val b = getBlock(j, i) ?: continue
-					g = b.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)
+					g = b.getAttribute(ATTRIBUTE.GARBAGE)
 					if(b.hard>0) {
 						b.hard--
 						setLineFlag(i, false)
@@ -844,8 +855,8 @@ class Field:Serializable {
 				for(j in 0 until width) {
 					val blk = getBlock(j, i)
 
-					if(blk!=null&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
-						blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, false)
+					if(blk!=null&&blk.getAttribute(ATTRIBUTE.CONNECT_UP)) {
+						blk.setAttribute(false, ATTRIBUTE.CONNECT_UP)
 						setBlockLinkBroken(j, i)
 					}
 				}
@@ -853,8 +864,8 @@ class Field:Serializable {
 				for(j in 0 until width) {
 					val blk = getBlock(j, i)
 
-					if(blk!=null&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
-						blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, false)
+					if(blk!=null&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
+						blk.setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
 						setBlockLinkBroken(j, i)
 					}
 				}
@@ -1237,35 +1248,27 @@ class Field:Serializable {
 			val y = heightWithoutHurryupFloor-1
 
 			for(j in 0 until width)
-				if(j!=hole) {
-					val blk = Block()
-					blk.cint = color
-					blk.skin = skin
-					blk.aint = (Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_OUTLINE
-						or Block.BLOCK_ATTRIBUTE_GARBAGE)
-					setBlock(j, y, blk)
-				}
+				if(j!=hole)
+					setBlock(j, y, Block(color, skin,
+						ATTRIBUTE.VISIBLE, ATTRIBUTE.OUTLINE, ATTRIBUTE.GARBAGE))
 
 			// Set connections
 			for(j in 0 until width)
-				if(j!=hole) {
-					val blk = getBlock(j, y)
-					if(blk!=null) {
-						if(!getBlockEmpty(j-1, y)) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
-						if(!getBlockEmpty(j+1, y)) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+				if(j!=hole)
+					getBlock(j, y)?.run {
+						if(!getBlockEmpty(j-1, y)) setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
+						if(!getBlockEmpty(j+1, y)) setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
 					}
-				}
 
 		}
 	}
 
 	/** 一番下のLinesの形をコピーしたgarbage blockを一番下に追加
-	 * @param color garbage block cint
 	 * @param skin garbage blockの絵柄
-	 * @param attribute garbage blockの属性
+	 * @param attrs garbage blockの属性
 	 * @param lines 追加するgarbage blockのLinescount
 	 */
-	fun addBottomCopyGarbage(color:Int, skin:Int, attribute:Int, lines:Int) {
+	fun addBottomCopyGarbage(skin:Int, lines:Int, vararg attrs:ATTRIBUTE) {
 		for(k in 0 until lines) {
 			pushUp(1)
 
@@ -1273,10 +1276,7 @@ class Field:Serializable {
 				val empty = getBlockEmpty(j, height-2)
 
 				if(!empty) {
-					val blk = Block()
-					blk.cint = color
-					blk.skin = skin
-					blk.aint = attribute
+					val blk = Block(Block.COLOR.WHITE, skin, *attrs)
 					setBlock(j, heightWithoutHurryupFloor-1, blk)
 				}
 			}
@@ -1287,12 +1287,10 @@ class Field:Serializable {
 	 * @param attr 変更したい属性
 	 * @param status 変更後 state
 	 */
-	fun setAllAttribute(attr:Int, status:Boolean) {
+	fun setAllAttribute(status:Boolean, vararg attr:ATTRIBUTE) {
 		for(i in hiddenHeight*-1 until height)
 			for(j in 0 until width) {
-				val blk = getBlock(j, i)
-
-				blk?.setAttribute(attr, status)
+				getBlock(j, i)?.setAttribute(status, *attr)
 			}
 	}
 
@@ -1301,10 +1299,9 @@ class Field:Serializable {
 	 */
 	fun setAllSkin(skin:Int) {
 		for(i in hiddenHeight*-1 until height)
-			for(j in 0 until width) {
-				val blk = getBlock(j, i)
-				if(blk!=null) blk.skin = skin
-			}
+			for(j in 0 until width)
+				getBlock(j, i)?.skin = skin
+
 	}
 
 	/** Checks for 2x2 square formations of gem and
@@ -1378,12 +1375,12 @@ class Field:Serializable {
 							 * clears, is a garbage block, is not the same cint
 							 * as id, or has connections outside the area. */
 							if(blk==null||blk.isEmpty||blk.isGoldSquareBlock||blk.isSilverSquareBlock
-								||blk.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN)
-								||blk.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)||blk.cint!=id
-								||l==0&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)
-								||l==3&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)
-								||k==0&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)
-								||k==3&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
+								||blk.getAttribute(ATTRIBUTE.BROKEN)
+								||blk.getAttribute(ATTRIBUTE.GARBAGE)||blk.cint!=id
+								||l==0&&blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)
+								||l==3&&blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)
+								||k==0&&blk.getAttribute(ATTRIBUTE.CONNECT_UP)
+								||k==3&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
 								squareCheck = false
 								break
 							}
@@ -1403,10 +1400,10 @@ class Field:Serializable {
 							blk!!.cint = Block.BLOCK_COLOR_SQUARE_GOLD_1+squareX[l]+squareY[k]
 							// For stylistic concerns, we attach all blocks in
 							// the square together.
-							if(k>0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true)
-							if(k<3) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true)
-							if(l>0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
-							if(l<3) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+							if(k>0) blk.setAttribute(true, ATTRIBUTE.CONNECT_UP)
+							if(k<3) blk.setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
+							if(l>0) blk.setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
+							if(l<3) blk.setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
 						}
 				}
 			}
@@ -1425,12 +1422,12 @@ class Field:Serializable {
 							val blk = getBlock(j+l, i+k)
 							// See above, but without the cint checking.
 							if(blk==null||blk.isEmpty||blk.isGoldSquareBlock||blk.isSilverSquareBlock
-								||blk.getAttribute(Block.BLOCK_ATTRIBUTE_BROKEN)
-								||blk.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)
-								||l==0&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)
-								||l==3&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)
-								||k==0&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)
-								||k==3&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
+								||blk.getAttribute(ATTRIBUTE.BROKEN)
+								||blk.getAttribute(ATTRIBUTE.GARBAGE)
+								||l==0&&blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)
+								||l==3&&blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)
+								||k==0&&blk.getAttribute(ATTRIBUTE.CONNECT_UP)
+								||k==3&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
 								squareCheck = false
 								break
 							}
@@ -1447,10 +1444,10 @@ class Field:Serializable {
 						for(l in 0..3) {
 							val blk = getBlock(j+l, i+k)
 							blk!!.cint = Block.BLOCK_COLOR_SQUARE_SILVER_1+squareX[l]+squareY[k]
-							if(k>0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true)
-							if(k<3) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true)
-							if(l>0) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
-							if(l<3) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+							if(k>0) blk.setAttribute(true, ATTRIBUTE.CONNECT_UP)
+							if(k<3) blk.setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
+							if(l>0) blk.setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
+							if(l<3) blk.setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
 						}
 				}
 			}
@@ -1468,7 +1465,7 @@ class Field:Serializable {
 			val bil = ArrayList<Int>()
 			for(j in 0 until width) {
 				val b = getBlock(j, i)
-				if(b!!.isEmpty||b==null) {
+				if(b?.isEmpty!=false) {
 					bil.clear()
 					break
 				}
@@ -1481,7 +1478,7 @@ class Field:Serializable {
 					for(j in bil) {
 						val b = getBlock(j, i)
 						b!!.cint = Block.BLOCK_COLOR_GEM_RAINBOW
-						b.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true)
+						b.setAttribute(true, ATTRIBUTE.ERASE)
 					}
 			}
 		}
@@ -1496,7 +1493,7 @@ class Field:Serializable {
 		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
 			for(j in 0 until width) {
 				val b = getBlock(j, i) ?: continue
-				if(b.cint==Block.BLOCK_COLOR_GEM_RAINBOW&&b.getAttribute(Block.BLOCK_ATTRIBUTE_ERASE))
+				if(b.cint==Block.BLOCK_COLOR_GEM_RAINBOW&&b.getAttribute(ATTRIBUTE.ERASE))
 					ret++
 			}
 		return ret
@@ -1519,8 +1516,8 @@ class Field:Serializable {
 		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
 			for(j in 0 until width) {
 				val b = getBlock(j, i) ?: continue
-				if(b.cint==Block.BLOCK_COLOR_GEM_RAINBOW&&b.getAttribute(Block.BLOCK_ATTRIBUTE_ERASE)) {
-					val big = b.getAttribute(Block.BLOCK_ATTRIBUTE_IGNORE_BLOCKLINK)
+				if(b.cint==Block.BLOCK_COLOR_GEM_RAINBOW&&b.getAttribute(ATTRIBUTE.ERASE)) {
+					val big = b.getAttribute(ATTRIBUTE.IGNORE_BLOCKLINK)
 					ret += detonateBomb(j, i, if(big) bigw else w, if(big) bigh else h)
 					setLineFlag(i, false)
 				}
@@ -1544,9 +1541,9 @@ class Field:Serializable {
 		for(i in r[0]..r[1])
 			for(j in r[2]..r[3]) {
 				val b = getBlock(j, i) ?: continue
-				if(!b.getAttribute(Block.BLOCK_ATTRIBUTE_ERASE)) {
+				if(!b.getAttribute(ATTRIBUTE.ERASE)) {
 					blocks++
-					b.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true)
+					b.setAttribute(true, ATTRIBUTE.ERASE)
 				}
 			}
 		return blocks
@@ -1568,34 +1565,34 @@ class Field:Serializable {
 					b.hard--
 					continue
 				}
-				if(b.getAttribute(Block.BLOCK_ATTRIBUTE_ERASE)) {
+				if(b.getAttribute(ATTRIBUTE.ERASE)) {
 					total++
-					if(b.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) {
+					if(b.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
 						bAdj = getBlock(j, i+1)
 						if(bAdj!=null) {
-							bAdj.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, false)
-							bAdj.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, true)
+							bAdj.setAttribute(false, ATTRIBUTE.CONNECT_UP)
+							bAdj.setAttribute(true, ATTRIBUTE.BROKEN)
 						}
 					}
-					if(b.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)) {
+					if(b.getAttribute(ATTRIBUTE.CONNECT_UP)) {
 						bAdj = getBlock(j, i-1)
 						if(bAdj!=null) {
-							bAdj.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, false)
-							bAdj.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, true)
+							bAdj.setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
+							bAdj.setAttribute(true, ATTRIBUTE.BROKEN)
 						}
 					}
-					if(b.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)) {
+					if(b.getAttribute(ATTRIBUTE.CONNECT_LEFT)) {
 						bAdj = getBlock(j-1, i)
 						if(bAdj!=null) {
-							bAdj.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, false)
-							bAdj.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, true)
+							bAdj.setAttribute(false, ATTRIBUTE.CONNECT_RIGHT)
+							bAdj.setAttribute(true, ATTRIBUTE.BROKEN)
 						}
 					}
-					if(b.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)) {
+					if(b.getAttribute(ATTRIBUTE.CONNECT_RIGHT)) {
 						bAdj = getBlock(j+1, i)
 						if(bAdj!=null) {
-							bAdj.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, false)
-							bAdj.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, true)
+							bAdj.setAttribute(false, ATTRIBUTE.CONNECT_LEFT)
+							bAdj.setAttribute(true, ATTRIBUTE.BROKEN)
 						}
 					}
 
@@ -1620,7 +1617,7 @@ class Field:Serializable {
 	fun checkLineColor(size:Int, flag:Boolean, diagonals:Boolean, gemSame:Boolean):Int {
 		if(size<1) return 0
 		if(flag) {
-			setAllAttribute(Block.BLOCK_ATTRIBUTE_ERASE, false)
+			setAllAttribute(false, ATTRIBUTE.ERASE)
 			lineColorsCleared = IntArray(0)
 			gemsCleared = 0
 		}
@@ -1655,9 +1652,9 @@ class Field:Serializable {
 					while(lineColor==blockColor) {
 						getBlock(x, y)?.apply {
 							if(hard>0) hard--
-							else if(!getAttribute(Block.BLOCK_ATTRIBUTE_ERASE)) {
+							else if(!getAttribute(ATTRIBUTE.ERASE)) {
 								if(isGemBlock) gemsCleared++
-								setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true)
+								setAttribute(true, ATTRIBUTE.ERASE)
 							}
 						}
 						if(dir!=1) y++
@@ -1732,7 +1729,7 @@ class Field:Serializable {
 		val blockColor = getBlockColor(x, y, gemSame)
 		if(blockColor==Block.BLOCK_COLOR_NONE||blockColor==Block.BLOCK_COLOR_INVALID) return 0
 		val b = getBlock(x, y) ?: return 0
-		return if(b.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)) 0
+		return if(b.getAttribute(ATTRIBUTE.GARBAGE)) 0
 		else clearColor(x, y, blockColor, flag, garbageClear, gemSame, ignoreHidden)
 	}
 
@@ -1746,17 +1743,20 @@ class Field:Serializable {
 		val blockColor = getBlockColor(x, y, gemSame)
 		if(blockColor==Block.BLOCK_COLOR_INVALID) return 0
 		val b = getBlock(x, y)
-		if(flag&&b!!.getAttribute(Block.BLOCK_ATTRIBUTE_ERASE)) return 0
-		if(garbageClear&&b!!.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)
-			&&!b.getAttribute(Block.BLOCK_ATTRIBUTE_WALL))
-			if(flag) {
-				b.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true)
-				garbageCleared++
-			} else if(b.hard>0) b.hard--
-			else setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
+		if(flag&&b!!.getAttribute(ATTRIBUTE.ERASE)) return 0
+		if(garbageClear&&b!!.getAttribute(ATTRIBUTE.GARBAGE)
+			&&!b.getAttribute(ATTRIBUTE.WALL))
+			when {
+				flag -> {
+					b.setAttribute(true, ATTRIBUTE.ERASE)
+					garbageCleared++
+				}
+				b.hard>0 -> b.hard--
+				else -> setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
+			}
 		if(blockColor!=targetColor) return 0
 		when {
-			flag -> b!!.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true)
+			flag -> b!!.setAttribute(true, ATTRIBUTE.ERASE)
 			b!!.hard>0 -> b.hard--
 			else -> setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
 		}
@@ -1783,7 +1783,7 @@ class Field:Serializable {
 				if(getBlockColor(x, y, gemSame)==targetColor) {
 					total++
 					if(flag)
-						getBlock(x, y)!!.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, true)
+						getBlock(x, y)!!.setAttribute(true, ATTRIBUTE.ERASE)
 					else
 						setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
 				}
@@ -1791,7 +1791,7 @@ class Field:Serializable {
 	}
 
 	fun doCascadeGravity(type:GameEngine.LineGravity):Boolean {
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, false)
+		setAllAttribute(false, ATTRIBUTE.LAST_COMMIT)
 		return if(type==GameEngine.LineGravity.CASCADE_SLOW)
 			doCascadeSlow()
 		else
@@ -1805,25 +1805,25 @@ class Field:Serializable {
 	fun doCascadeGravity():Boolean {
 		var result = false
 
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, false)
+		setAllAttribute(false, ATTRIBUTE.CASCADE_FALL)
 
 		for(i in heightWithoutHurryupFloor-1 downTo hiddenHeight*-1)
 			for(j in 0 until width) {
 				val blk = getBlock(j, i)
 
-				if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY)) {
+				if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
 					var fall = true
 					checkBlockLink(j, i)
 
 					for(k in heightWithoutHurryupFloor-1 downTo hiddenHeight*-1)
 						for(l in 0 until width) {
 							getBlock(l, k)?.let {
-								if(!it.isEmpty&&it.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)
-									&&!it.getAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL)) {
+								if(!it.isEmpty&&it.getAttribute(ATTRIBUTE.TEMP_MARK)
+									&&!it.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
 									val bBelow = getBlock(l, k+1)
 
 									if(getCoordAttribute(l, k+1)==COORD_WALL||(bBelow!=null&&!bBelow.isEmpty
-											&&!bBelow.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)))
+											&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK)))
 										fall = false
 
 								}
@@ -1839,11 +1839,11 @@ class Field:Serializable {
 
 								if(getCoordAttribute(l, k+1)!=COORD_WALL&&bTemp!=null&&!bTemp.isEmpty&&bBelow!=null
 									&&bBelow.isEmpty
-									&&bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)
-									&&!bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL)) {
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false)
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, true)
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, true)
+									&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)
+									&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
+									bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
+									bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL)
+									bTemp.setAttribute(true, ATTRIBUTE.LAST_COMMIT)
 									setBlock(l, k+1, bTemp)
 									setBlock(l, k, Block())
 								}
@@ -1852,8 +1852,7 @@ class Field:Serializable {
 				}
 			}
 
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false)
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, false)
+		setAllAttribute(false, ATTRIBUTE.TEMP_MARK, ATTRIBUTE.CASCADE_FALL)
 
 		/* for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor();
 		 * i++) { setLineFlag(i, false); } */
@@ -1869,13 +1868,13 @@ class Field:Serializable {
 	fun doCascadeSlow():Boolean {
 		var result = false
 
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, false)
+		setAllAttribute(false, ATTRIBUTE.CASCADE_FALL)
 
 		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
 			for(j in 0 until width) {
 				val blk = getBlock(j, i)
 
-				if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY)) {
+				if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
 					var fall = true
 					checkBlockLink(j, i)
 
@@ -1883,12 +1882,12 @@ class Field:Serializable {
 						for(l in 0 until width) {
 							val bTemp = getBlock(l, k)
 
-							if(bTemp!=null&&!bTemp.isEmpty&&bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)
-								&&!bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL)) {
+							if(bTemp!=null&&!bTemp.isEmpty&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)
+								&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
 								val bBelow = getBlock(l, k+1)
 
 								if(getCoordAttribute(l, k+1)==COORD_WALL||(bBelow!=null&&!bBelow.isEmpty
-										&&!bBelow.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)))
+										&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK)))
 									fall = false
 							}
 						}
@@ -1902,11 +1901,11 @@ class Field:Serializable {
 
 								if(getCoordAttribute(l, k+1)!=COORD_WALL&&bTemp!=null&&!bTemp.isEmpty&&bBelow!=null
 									&&bBelow.isEmpty
-									&&bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)
-									&&!bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL)) {
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false)
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, true)
-									bTemp.setAttribute(Block.BLOCK_ATTRIBUTE_LAST_COMMIT, true)
+									&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)
+									&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
+									bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
+									bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL)
+									bTemp.setAttribute(true, ATTRIBUTE.LAST_COMMIT)
 									setBlock(l, k+1, bTemp)
 									setBlock(l, k, Block())
 								}
@@ -1915,8 +1914,7 @@ class Field:Serializable {
 				}
 			}
 
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false)
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL, false)
+		setAllAttribute(false, ATTRIBUTE.TEMP_MARK, ATTRIBUTE.CASCADE_FALL)
 
 		return result
 	}
@@ -1926,7 +1924,7 @@ class Field:Serializable {
 	 * @param y Y coord
 	 */
 	fun checkBlockLink(x:Int, y:Int) {
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false)
+		setAllAttribute(false, ATTRIBUTE.TEMP_MARK)
 		checkBlockLinkSub(x, y)
 	}
 
@@ -1936,14 +1934,14 @@ class Field:Serializable {
 	 */
 	protected fun checkBlockLinkSub(x:Int, y:Int) {
 		val blk = getBlock(x, y)
-		if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)) {
-			blk.setAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, true)
+		if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.TEMP_MARK)) {
+			blk.setAttribute(true, ATTRIBUTE.TEMP_MARK)
 
-			if(!blk.getAttribute(Block.BLOCK_ATTRIBUTE_IGNORE_BLOCKLINK)) {
-				if(blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)) checkBlockLinkSub(x, y-1)
-				if(blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) checkBlockLinkSub(x, y+1)
-				if(blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)) checkBlockLinkSub(x-1, y)
-				if(blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)) checkBlockLinkSub(x+1, y)
+			if(!blk.getAttribute(ATTRIBUTE.IGNORE_BLOCKLINK)) {
+				if(blk.getAttribute(ATTRIBUTE.CONNECT_UP)) checkBlockLinkSub(x, y-1)
+				if(blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) checkBlockLinkSub(x, y+1)
+				if(blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)) checkBlockLinkSub(x-1, y)
+				if(blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)) checkBlockLinkSub(x+1, y)
 			}
 		}
 	}
@@ -1954,7 +1952,7 @@ class Field:Serializable {
 	 * @param y Y coord
 	 */
 	fun setBlockLinkBroken(x:Int, y:Int) {
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false)
+		setAllAttribute(false, ATTRIBUTE.TEMP_MARK)
 		setBlockLinkBrokenSub(x, y)
 	}
 
@@ -1964,13 +1962,13 @@ class Field:Serializable {
 	 */
 	protected fun setBlockLinkBrokenSub(x:Int, y:Int) {
 		val blk = getBlock(x, y)
-		if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)&&blk.isNormalBlock) {
-			blk.setAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, true)
-			blk.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, true)
-			if(blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP)) setBlockLinkBrokenSub(x, y-1)
-			if(blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN)) setBlockLinkBrokenSub(x, y+1)
-			if(blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT)) setBlockLinkBrokenSub(x-1, y)
-			if(blk.getAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT)) setBlockLinkBrokenSub(x+1, y)
+		if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.TEMP_MARK)&&blk.isNormalBlock) {
+			blk.setAttribute(true, ATTRIBUTE.TEMP_MARK)
+			blk.setAttribute(true, ATTRIBUTE.BROKEN)
+			if(blk.getAttribute(ATTRIBUTE.CONNECT_UP)) setBlockLinkBrokenSub(x, y-1)
+			if(blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) setBlockLinkBrokenSub(x, y+1)
+			if(blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)) setBlockLinkBrokenSub(x-1, y)
+			if(blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)) setBlockLinkBrokenSub(x+1, y)
 		}
 	}
 
@@ -1987,7 +1985,7 @@ class Field:Serializable {
 	 * @param y Y coord
 	 */
 	fun setBlockLinkByColor(x:Int, y:Int) {
-		setAllAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, false)
+		setAllAttribute(false, ATTRIBUTE.TEMP_MARK)
 		setBlockLinkByColorSub(x, y)
 	}
 
@@ -1997,29 +1995,29 @@ class Field:Serializable {
 	 */
 	protected fun setBlockLinkByColorSub(x:Int, y:Int) {
 		val blk = getBlock(x, y)
-		if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)
-			&&!blk.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)&&blk.isNormalBlock) {
-			blk.setAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK, true)
+		if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.TEMP_MARK)
+			&&!blk.getAttribute(ATTRIBUTE.GARBAGE)&&blk.isNormalBlock) {
+			blk.setAttribute(true, ATTRIBUTE.TEMP_MARK)
 			if(getBlockColor(x, y-1)==blk.cint) {
-				blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, true)
+				blk.setAttribute(true, ATTRIBUTE.CONNECT_UP)
 				setBlockLinkByColorSub(x, y-1)
 			} else
-				blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, false)
+				blk.setAttribute(false, ATTRIBUTE.CONNECT_UP)
 			if(getBlockColor(x, y+1)==blk.cint) {
-				blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, true)
+				blk.setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
 				setBlockLinkByColorSub(x, y+1)
 			} else
-				blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, false)
+				blk.setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
 			if(getBlockColor(x-1, y)==blk.cint) {
-				blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
+				blk.setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
 				setBlockLinkByColorSub(x-1, y)
 			} else
-				blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, false)
+				blk.setAttribute(false, ATTRIBUTE.CONNECT_LEFT)
 			if(getBlockColor(x+1, y)==blk.cint) {
-				blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+				blk.setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
 				setBlockLinkByColorSub(x+1, y)
 			} else
-				blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, false)
+				blk.setAttribute(false, ATTRIBUTE.CONNECT_RIGHT)
 		}
 	}
 
@@ -2032,8 +2030,8 @@ class Field:Serializable {
 			pushUp(1)
 
 			for(j in 0 until width) {
-				val blk = Block(Block.COLOR.GRAY, skin,
-					Block.BLOCK_ATTRIBUTE_WALL or Block.BLOCK_ATTRIBUTE_GARBAGE or Block.BLOCK_ATTRIBUTE_VISIBLE)
+				val blk = Block(Block.COLOR.WHITE, Block.TYPE.BLOCK, skin,
+					Block.ATTRIBUTE.WALL, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE)
 				setBlock(j, heightWithoutHurryupFloor-1, blk)
 			}
 
@@ -2092,13 +2090,13 @@ class Field:Serializable {
 
 			row[j] = Block(blkColor, skin).apply {
 				elapsedFrames = -1
-				setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-				setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
+				setAttribute(true, ATTRIBUTE.VISIBLE)
+				setAttribute(true, ATTRIBUTE.OUTLINE)
 
 				if(isGarbage)
 				// not only sport one hole (i.e. TGM garbage)
-					setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, true)
-				if(isWall) setAttribute(Block.BLOCK_ATTRIBUTE_WALL, true)
+					setAttribute(true, ATTRIBUTE.GARBAGE)
+				if(isWall) setAttribute(true, ATTRIBUTE.WALL)
 			}
 		}
 
@@ -2164,26 +2162,22 @@ class Field:Serializable {
 	fun attrStringToRow(str:String, skin:Int):Array<Block> =
 		attrStringToRow(str.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray(), skin)
 
-	fun attrStringToRow(strArray:Array<String>, skin:Int):Array<Block> {
-		val row = Array<Block>(width) {j ->
-			var blkColor = Block.BLOCK_COLOR_NONE
-			var attr = 0
+	fun attrStringToRow(strArray:Array<String>, skin:Int):Array<Block> = Array(width) {j ->
+		var blkColor = Block.BLOCK_COLOR_NONE
+		var attr = 0
 
-			try {
-				val strSubArray = strArray[j].split("/".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
-				if(strSubArray.isNotEmpty()) blkColor = Integer.parseInt(strSubArray[0], 16)
-				if(strSubArray.size>1) attr = Integer.parseInt(strSubArray[1], 16)
-			} catch(e:Exception) {
-			}
-
-			Block(blkColor, skin, attr).apply {
-				elapsedFrames = -1
-				setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-				setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-			}
+		try {
+			val strSubArray = strArray[j].split("/".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			if(strSubArray.isNotEmpty()) blkColor = Integer.parseInt(strSubArray[0], 16)
+			if(strSubArray.size>1) attr = Integer.parseInt(strSubArray[1], 16)
+		} catch(e:Exception) {
 		}
 
-		return row
+		Block(blkColor, skin ).apply {
+			elapsedFrames = -1
+			aint = attr
+			setAttribute(true, ATTRIBUTE.VISIBLE, ATTRIBUTE.OUTLINE)
+		}
 	}
 
 	fun attrStringToField(str:String, skin:Int) {
@@ -2204,7 +2198,7 @@ class Field:Serializable {
 					setBlock(j, i, row[j])
 			} catch(e:Exception) {
 				for(j in 0 until width)
-					setBlock(j, i, Block(Block.BLOCK_COLOR_NONE))
+					setBlock(j, i, null)
 			}
 
 		}
@@ -2238,7 +2232,7 @@ class Field:Serializable {
 		var total = 0
 		val colorsClearedArray = BooleanArray(7)
 		if(flag) {
-			setAllAttribute(Block.BLOCK_ATTRIBUTE_ERASE, false)
+			setAllAttribute(false, ATTRIBUTE.ERASE)
 			garbageCleared = 0
 			colorClearExtraCount = 0
 			colorsCleared = 0
@@ -2325,14 +2319,14 @@ class Field:Serializable {
 		}
 		if(getBlockEmptyF(x, y)) {
 			setBlockColor(x, y, color)
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY, false)
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, true)
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, true)
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, false)
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, false)
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, false)
-			b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, false)
+			b.setAttribute(false, ATTRIBUTE.ANTIGRAVITY)
+			b.setAttribute(true, ATTRIBUTE.GARBAGE)
+			b.setAttribute(true, ATTRIBUTE.BROKEN)
+			b.setAttribute(true, ATTRIBUTE.VISIBLE)
+			b.setAttribute(false, ATTRIBUTE.CONNECT_UP)
+			b.setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
+			b.setAttribute(false, ATTRIBUTE.CONNECT_LEFT)
+			b.setAttribute(false, ATTRIBUTE.CONNECT_RIGHT)
 			b.hard = hard
 			b.secondaryColor = 0
 			b.countdown = countdown
@@ -2346,7 +2340,7 @@ class Field:Serializable {
 			for(j in 0 until width) {
 				val blk = getBlock(j, i)
 
-				if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY)) {
+				if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
 					var fall = true
 					checkBlockLink(j, i)
 
@@ -2354,12 +2348,12 @@ class Field:Serializable {
 						for(l in 0 until width) {
 							val bTemp = getBlock(l, k)
 
-							if(bTemp!=null&&!bTemp.isEmpty&&bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)
-								&&!bTemp.getAttribute(Block.BLOCK_ATTRIBUTE_CASCADE_FALL)) {
+							if(bTemp!=null&&!bTemp.isEmpty&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)
+								&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
 								val bBelow = getBlock(l, k+1)
 
 								if(getCoordAttribute(l, k+1)==COORD_WALL||(bBelow!=null&&!bBelow.isEmpty
-										&&!bBelow.getAttribute(Block.BLOCK_ATTRIBUTE_TEMP_MARK)))
+										&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK)))
 									fall = false
 							}
 						}
@@ -2497,7 +2491,6 @@ class Field:Serializable {
 				done = false
 				break
 			}
-		var colorSide:Int
 		var bestSwitch:Int
 		var bestSwitchCount:Int
 		var excess = 0
@@ -2521,31 +2514,14 @@ class Field:Serializable {
 					}
 					for(i in colorCounts.indices)
 						canSwitch[i] = colorCounts[i]<maxCount
-
-					colorSide = getBlockColor(x, y-2)
-					for(i in colors.indices)
-						if(colors[i]==colorSide) {
-							canSwitch[i] = false
-							break
-						}
-					colorSide = getBlockColor(x, y+2)
-					for(i in colors.indices)
-						if(colors[i]==colorSide) {
-							canSwitch[i] = false
-							break
-						}
-					colorSide = getBlockColor(x-2, y)
-					for(i in colors.indices)
-						if(colors[i]==colorSide) {
-							canSwitch[i] = false
-							break
-						}
-					colorSide = getBlockColor(x+2, y)
-					for(i in colors.indices)
-						if(colors[i]==colorSide) {
-							canSwitch[i] = false
-							break
-						}
+					listOf(getBlockColor(x, y-2), getBlockColor(x, y+2),
+						getBlockColor(x-2, y), getBlockColor(x+2, y)).forEach {
+						for(i in colors.indices)
+							if(colors[i]==it) {
+								canSwitch[i] = false
+								break
+							}
+					}
 					bestSwitch = -1
 					bestSwitchCount = Integer.MAX_VALUE
 					for(i in colorCounts.indices)
@@ -2619,17 +2595,16 @@ class Field:Serializable {
 	}
 
 	fun addHoverBlock(x:Int, y:Int, color:Int):Boolean {
-		val b = getBlock(x, y) ?: return false
-		b.cint = color
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY, true)
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, false)
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_BROKEN, true)
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_UP, false)
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_DOWN, false)
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, false)
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, false)
-		b.setAttribute(Block.BLOCK_ATTRIBUTE_ERASE, false)
+		getBlock(x, y)?.also {b ->
+			b.cint = color
+			b.setAttribute(true, ATTRIBUTE.ANTIGRAVITY, ATTRIBUTE.BROKEN,
+				ATTRIBUTE.VISIBLE)
+			b.setAttribute(false, ATTRIBUTE.GARBAGE, ATTRIBUTE.ERASE,
+				ATTRIBUTE.CONNECT_UP, ATTRIBUTE.CONNECT_DOWN,
+				ATTRIBUTE.CONNECT_LEFT, ATTRIBUTE.CONNECT_RIGHT)
+
+			return true
+		} ?: return false
 		return true
 	}
 
@@ -2658,7 +2633,7 @@ class Field:Serializable {
 	}
 
 	fun gemColorCheck(size:Int, flag:Boolean, garbageClear:Boolean, ignoreHidden:Boolean):Int {
-		if(flag) setAllAttribute(Block.BLOCK_ATTRIBUTE_ERASE, false)
+		if(flag) setAllAttribute(false, ATTRIBUTE.ERASE)
 
 		val temp = Field(this)
 		var total = 0
@@ -2667,8 +2642,7 @@ class Field:Serializable {
 		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
 			for(j in 0 until width) {
 				b = getBlock(j, i)
-				if(b==null) continue
-				if(!b.isGemBlock) continue
+				if(b?.isGemBlock!=true) continue
 				val clear = temp.clearColor(j, i, false, garbageClear, true, ignoreHidden)
 				if(clear>=size) {
 					total += clear

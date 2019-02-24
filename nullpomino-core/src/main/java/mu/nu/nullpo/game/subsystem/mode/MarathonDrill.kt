@@ -525,15 +525,15 @@ class MarathonDrill:NetDummyMode() {
 
 			for(x in 0 until w)
 				if(x!=garbageHole)
-					field.setBlock(x, h-1, Block(Block.BLOCK_COLOR_GRAY, engine.skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+					field.setBlock(x, h-1, Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE , Block.ATTRIBUTE.GARBAGE))
 
 			// Set connections
 			if(receiver.isStickySkin(engine))
 				for(x in 0 until w)
 					if(x!=garbageHole) {
 						field.getBlock(x, h-1)?.apply {
-							if(!field.getBlockEmpty(x-1, h-1)) setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
-							if(!field.getBlockEmpty(x+1, h-1)) setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+							if(!field.getBlockEmpty(x-1, h-1)) setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+							if(!field.getBlockEmpty(x+1, h-1)) setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 						}
 					}
 		}
@@ -559,7 +559,7 @@ class MarathonDrill:NetDummyMode() {
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = if(engine.statistics.time<10800)BGM.RESULT_1 else BGM.RESULT_2
+		owner.bgmStatus.bgm = if(engine.statistics.time<10800)BGM.RESULT(1) else BGM.RESULT(2)
 
 		return super.onResult(engine, playerID)
 	}

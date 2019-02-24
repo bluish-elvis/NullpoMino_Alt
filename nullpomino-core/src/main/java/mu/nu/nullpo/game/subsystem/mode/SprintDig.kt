@@ -23,8 +23,10 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Block.COLOR
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -305,39 +307,40 @@ class SprintDig:NetDummyMode() {
 	 * @param height Garbage height level number
 	 */
 	private fun fillGarbage(engine:GameEngine, height:Int) {
-		val w = engine.field!!.width
-		val h = engine.field!!.height
-		var hole = -1
+		val w:Int = engine.field!!.width
+		val h:Int = engine.field!!.height
+		var hole:Int = -1
 
-		for(y in h-1 downTo h-GOAL_TABLE[height]) {
-			var newhole = -1
+		for(y:Int in h-1 downTo h-GOAL_TABLE[height]) {
+			var newhole:Int = -1
 			do
 				newhole = engine.random.nextInt(w)
 			while(newhole==hole)
 			hole = newhole
 
-			var prevColor = -1
-			for(x in 0 until w)
+			var prevColor:COLOR? = null
+			for(x:Int in 0 until w)
 				if(x!=hole) {
-					var color = Block.BLOCK_COLOR_GRAY
+					var color:COLOR = COLOR.WHITE
 					if(y==h-1) {
 						do
-							color = Block.BLOCK_COLOR_GEM_RED+engine.random.nextInt(7)
+							color = COLOR.values()[1+engine.random.nextInt(7)]
 						while(color==prevColor)
 						prevColor = color
 					}
-					engine.field!!.setBlock(x, y, Block(color, engine.skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+					engine.field!!.setBlock(x, y, Block(color, if(y==h-1) Block.TYPE.BLOCK else Block.TYPE.GEM,
+						engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 				}
 
 			// Set connections
 			if(receiver.isStickySkin(engine)&&y!=h-1)
-				for(x in 0 until w)
+				for(x:Int in 0 until w)
 					if(x!=hole) {
-						val blk = engine.field!!.getBlock(x, y)
+						val blk:Block? = engine.field!!.getBlock(x, y)
 						if(blk!=null) {
-							if(!engine.field!!.getBlockEmpty(x-1, y)) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
+							if(!engine.field!!.getBlockEmpty(x-1, y)) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
 							if(!engine.field!!.getBlockEmpty(x+1, y))
-								blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 						}
 					}
 		}
@@ -355,7 +358,7 @@ class SprintDig:NetDummyMode() {
 				for(x in 0 until w) {
 					val blk = engine.field!!.getBlock(x, y)
 
-					if(blk!=null&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)) {
+					if(blk!=null&&blk.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
 						lines++
 						break
 					}
@@ -612,7 +615,8 @@ class SprintDig:NetDummyMode() {
 
 	/** NET: It returns true when the current settings doesn't prevent replay
 	 * data from sending. */
-	override fun netIsNetRankingSendOK(engine:GameEngine):Boolean = netIsNetRankingViewOK(engine)&&getRemainGarbageLines(engine, goaltype)==0&&engine.ending!=0
+	override fun netIsNetRankingSendOK(engine:GameEngine):Boolean =
+		netIsNetRankingViewOK(engine)&&getRemainGarbageLines(engine, goaltype)==0&&engine.ending!=0
 
 	companion object {
 		/* ----- Main variables ----- */

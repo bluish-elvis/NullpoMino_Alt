@@ -73,7 +73,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 						while(color==prevColor)
 						prevColor = color
 					}
-					engine.field!!.setBlock(x, y, Block(color, skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+					engine.field!!.setBlock(x, y, Block(color, skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 				}
 
 			// Set connections
@@ -82,9 +82,9 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 					if(x!=hole) {
 						val blk = engine.field!!.getBlock(x, y)
 						if(blk!=null) {
-							if(!engine.field!!.getBlockEmpty(x-1, y)) blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
+							if(!engine.field!!.getBlockEmpty(x-1, y)) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
 							if(!engine.field!!.getBlockEmpty(x+1, y))
-								blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
+								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 						}
 					}
 		}
@@ -109,7 +109,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 					val blk = engine.field!!.getBlock(x, y)
 
 					if(blk!=null&&blk.isGemBlock) hasGemBlock = true
-					if(blk!=null&&blk.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)) {
+					if(blk!=null&&blk.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
 						lines++
 						break
 					}
