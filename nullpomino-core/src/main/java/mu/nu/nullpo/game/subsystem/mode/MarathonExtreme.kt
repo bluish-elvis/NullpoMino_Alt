@@ -243,26 +243,23 @@ class MarathonExtreme:NetDummyMode() {
 		engine.statistics.level = startlevel
 		engine.statistics.levelDispAdd = 1
 		engine.b2bEnable = enableB2B
-		if(enableCombo)
-			engine.comboType = GameEngine.COMBO_TYPE_NORMAL
-		else
-			engine.comboType = GameEngine.COMBO_TYPE_DISABLE
+		engine.comboType = if(enableCombo)
+			GameEngine.COMBO_TYPE_NORMAL
+		else GameEngine.COMBO_TYPE_DISABLE
 		engine.big = big
 
-		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.SILENT
-		else
-			owner.bgmStatus.bgm = tableBGM[bgmlv]
+		owner.bgmStatus.bgm = if(netIsWatch) BGM.SILENT
+		else tableBGM[bgmlv]
 
 		if(version>=1) {
 			engine.tspinAllowKick = enableTSpinKick
-			if(tspinEnableType==0)
-				engine.tspinEnable = false
-			else if(tspinEnableType==1)
-				engine.tspinEnable = true
-			else {
-				engine.tspinEnable = true
-				engine.useAllSpinBonus = true
+			when(tspinEnableType) {
+				0 -> engine.tspinEnable = false
+				1 -> engine.tspinEnable = true
+				else -> {
+					engine.tspinEnable = true
+					engine.useAllSpinBonus = true
+				}
 			}
 		} else
 			engine.tspinEnable = enableTSpin
@@ -402,7 +399,7 @@ class MarathonExtreme:NetDummyMode() {
 				engine.playSE("levelup")
 				engine.playSE("endingstart")
 				owner.bgmStatus.fadesw = false
-				owner.bgmStatus.bgm = BGM.ENDING_3
+				owner.bgmStatus.bgm = BGM.ENDING(2)
 				engine.bone = true
 				engine.ending = 2
 				engine.timerActive = false
@@ -421,7 +418,7 @@ class MarathonExtreme:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		val b = if(engine.ending==0) BGM.FAILED else BGM.CLEARED
+		val b = if(engine.ending==0) BGM.RESULT(0) else BGM.RESULT(3)
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = b
 
@@ -503,10 +500,8 @@ class MarathonExtreme:NetDummyMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(endlessIndex in 0..1) {
-				rankingScore[endlessIndex][i] = prop.getProperty("extreme.ranking."+ruleName+"."+endlessIndex+".score."
-					+i, 0)
-				rankingLines[endlessIndex][i] = prop.getProperty("extreme.ranking."+ruleName+"."+endlessIndex+".lines."
-					+i, 0)
+				rankingScore[endlessIndex][i] = prop.getProperty("extreme.ranking.$ruleName.$endlessIndex.score.$i", 0)
+				rankingLines[endlessIndex][i] = prop.getProperty("extreme.ranking.$ruleName.$endlessIndex.lines.$i", 0)
 				rankingTime[endlessIndex][i] = prop.getProperty("extreme.ranking.$ruleName.$endlessIndex.time.$i", 0)
 			}
 	}
@@ -682,7 +677,7 @@ class MarathonExtreme:NetDummyMode() {
 
 		/** Line counts when BGM changes occur */
 		private val tableBGMChange = intArrayOf(66, 133, -1)
-		private val tableBGM = arrayOf(BGM.RUSH_1, BGM.RUSH_2, BGM.RUSH_3)
+		private val tableBGM = arrayOf(BGM.RUSH(0), BGM.RUSH(1), BGM.RUSH(2))
 		/** Number of entries in rankings */
 		private const val RANKING_MAX = 10
 

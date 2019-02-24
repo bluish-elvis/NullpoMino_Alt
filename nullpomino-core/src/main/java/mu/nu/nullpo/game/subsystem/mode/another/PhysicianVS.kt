@@ -234,9 +234,8 @@ class PhysicianVS:AbstractMode() {
 		field.reset()
 		//field.readProperty(prop, id);
 		field.stringToField(prop.getProperty("values.$id", ""))
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
+		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+		field.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 	}
 
 	/** MapSave

@@ -23,8 +23,9 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
@@ -411,7 +412,8 @@ class GrandMountain:AbstractMode() {
 				EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 6, "+$lastscore", g20)
 			receiver.drawScoreNum(engine, playerID, 0, 7, scgettime.toString(), g20, 2f)
-			if(scgettime<engine.statistics.score) scgettime += Math.ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
+			if(scgettime<engine.statistics.score) scgettime += Math.ceil(((engine.statistics.score-scgettime)/10f).toDouble())
+				.toInt()
 
 			// level
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", if(g20)
@@ -550,8 +552,8 @@ class GrandMountain:AbstractMode() {
 								if(x!=garbagePos)
 									for(j in 0..1)
 										for(k in 0..1)
-											field.setBlock(x*2+k, h-1
-												-j, Block(Block.BLOCK_COLOR_GRAY, engine.skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+											field.setBlock(x*2+k, h-1-j,
+												Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 
 							//int prevHole=garbagePos;do
 							garbagePos = engine.random.nextInt(w/2)
@@ -562,26 +564,23 @@ class GrandMountain:AbstractMode() {
 								if(tableGarbagePatternBig[garbagePos][i]!=0)
 									for(j in 0..1)
 										for(k in 0..1)
-											field.setBlock(i*2+k, h-1
-												-j, Block(Block.BLOCK_COLOR_GRAY, engine.skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+											field.setBlock(i*2+k, h-1-j,
+												Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 							garbagePos++
-							field.addBottomCopyGarbage(Block.BLOCK_COLOR_GRAY, engine.skin, Block.BLOCK_ATTRIBUTE_GARBAGE
-								or Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_OUTLINE, 2)
+							field.addBottomCopyGarbage(engine.skin, 2, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 						}
-						GOALTYPE_COPY -> field.addBottomCopyGarbage(Block.BLOCK_COLOR_GRAY, engine.skin, Block.BLOCK_ATTRIBUTE_GARBAGE or Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_OUTLINE, 2)
+						GOALTYPE_COPY -> field.addBottomCopyGarbage(engine.skin, 2, Block.ATTRIBUTE.GARBAGE,
+							Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 					}//					while(garbagePos==prevHole);
 					// Set connections
 					if(receiver.isStickySkin(engine))
 						for(y in 1..1)
 							for(x in 0 until w)
-								if(x!=garbagePos) {
-									val blk = field.getBlock(x, h-y)
-									if(blk!=null) {
-										if(!field.getBlockEmpty(x-1, h-y))
-											blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
-										if(!field.getBlockEmpty(x+1, h-y))
-											blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
-									}
+								if(x!=garbagePos) field.getBlock(x, h-y)?.run {
+									if(!field.getBlockEmpty(x-1, h-y))
+										setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+									if(!field.getBlockEmpty(x+1, h-y))
+										setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 								}
 
 				} else {
@@ -591,18 +590,15 @@ class GrandMountain:AbstractMode() {
 							field.pushUp()
 							for(x in 0 until w)
 								if(x!=garbagePos)
-									field.setBlock(x, h-1, Block(Block.BLOCK_COLOR_GRAY, engine.skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+									field.setBlock(x, h-1, Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 							// Set connections
 							if(receiver.isStickySkin(engine))
 								for(x in 0 until w)
-									if(x!=garbagePos) {
-										val blk = field.getBlock(x, h-1)
-										if(blk!=null) {
-											if(!field.getBlockEmpty(x-1, h-1))
-												blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
-											if(!field.getBlockEmpty(x+1, h-1))
-												blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
-										}
+									if(x!=garbagePos) field.getBlock(x, h-1)?.run {
+										if(!field.getBlockEmpty(x-1, h-1))
+											setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+										if(!field.getBlockEmpty(x+1, h-1))
+											setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 									}
 							//int prevHole=garbagePos;do
 							garbagePos = engine.random.nextInt(w)
@@ -611,23 +607,21 @@ class GrandMountain:AbstractMode() {
 							field.pushUp()
 							for(i in 0 until tableGarbagePattern[garbagePos].size)
 								if(tableGarbagePattern[garbagePos][i]!=0)
-									field.setBlock(i, h-1, Block(Block.BLOCK_COLOR_GRAY, engine.skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+									field.setBlock(i, h-1, Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 							garbagePos++
 						}
-						GOALTYPE_COPY -> field.addBottomCopyGarbage(Block.BLOCK_COLOR_GRAY, engine.skin, Block.BLOCK_ATTRIBUTE_GARBAGE
-							or Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_OUTLINE, 1)
+						GOALTYPE_COPY -> field.addBottomCopyGarbage(engine.skin, 1,
+							Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 					}//while(garbagePos==prevHole);
 					if(receiver.isStickySkin(engine))
 						for(x in 0 until w)
-							if(x!=garbagePos) {
-								val blk = field.getBlock(x, h-1)
-								if(blk!=null) {
-									if(!field.getBlockEmpty(x-1, h-1))
-										blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_LEFT, true)
-									if(!field.getBlockEmpty(x+1, h-1))
-										blk.setAttribute(Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT, true)
-								}
+							if(x!=garbagePos) field.getBlock(x, h-1)?.run {
+								if(!field.getBlockEmpty(x-1, h-1))
+									setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+								if(!field.getBlockEmpty(x+1, h-1))
+									setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 							}
+
 				}
 
 				garbageTotal++

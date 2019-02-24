@@ -311,9 +311,8 @@ class PracticeMode:AbstractMode() {
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		field.readProperty(prop, id)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-		field.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
+		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+		field.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 	}
 
 	/** MapSave
@@ -1000,7 +999,7 @@ class PracticeMode:AbstractMode() {
 				if(leveltype==LEVELTYPE_MANIA) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 			}
 
-			owner.bgmStatus.bgm = BGM.ENDING_1
+			owner.bgmStatus.bgm = BGM.ENDING(0)
 		}
 
 		return false

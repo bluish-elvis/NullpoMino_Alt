@@ -683,7 +683,7 @@ class GrandMania:AbstractMode() {
 				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 			}
 
-			owner.bgmStatus.bgm = BGM.ENDING_2
+			owner.bgmStatus.bgm = BGM.ENDING(1)
 		}
 
 		return false
@@ -1104,8 +1104,8 @@ class GrandMania:AbstractMode() {
 
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = if(engine.ending>0)
-			if(rollclear<=1) BGM.RESULT_2 else BGM.CLEARED
-		else BGM.FAILED
+			if(rollclear<=1) BGM.RESULT(2) else BGM.RESULT(3)
+		else BGM.RESULT(0)
 		// ページ切り替え
 		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
@@ -1262,7 +1262,7 @@ class GrandMania:AbstractMode() {
 		private val tableBGMFadeout = intArrayOf(475, 680, 880, -1)
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(500, 700, 900, -1)
-		private val tableBGM = arrayOf(BGM.GM_2, BGM.GM_20G_2, BGM.STORM_1, BGM.STORM_2)
+		private val tableBGM = arrayOf(BGM.GM_2(0), BGM.GM_2(1), BGM.GM_2(2), BGM.GM_2(3))
 		/** Line clear時に入る段位 point */
 		private val tableGradePoint =
 			arrayOf(intArrayOf(10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2), intArrayOf(20, 20, 20, 18, 16, 15, 13, 10, 11, 11, 12), intArrayOf(40, 36, 33, 30, 27, 24, 20, 18, 17, 16, 15), intArrayOf(50, 47, 44, 40, 40, 38, 36, 34, 32, 31, 30))

@@ -115,8 +115,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				for(patternRow in 0 until pattern[patternCol].size) {
 					engine.field!!.setBlockColor(x, maxHeight-patternRow, pattern[patternCol][patternRow])
 					val blk = engine.field!!.getBlock(x, maxHeight-patternRow)
-					blk!!.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-					blk.setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
+					blk!!.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
+					blk.setAttribute(true, Block.ATTRIBUTE.OUTLINE)
 				}
 				patternCol++
 			}
@@ -599,11 +599,11 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		for(x in 0 until engine.field!!.width)
 			for(y in -1*engine.field!!.hiddenHeight until engine.field!!.height) {
 				val b = engine.field!!.getBlock(x, y)
-				if(b!!.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)&&b.hard<4) {
+				if(b!!.getAttribute(Block.ATTRIBUTE.GARBAGE)&&b.hard<4) {
 					b.hard = 0
 					b.cint = b.secondaryColor
 					b.countdown = 0
-					b.setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, false)
+					b.setAttribute(false, Block.ATTRIBUTE.GARBAGE)
 				}
 			}
 		return false
@@ -636,7 +636,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					else if(b.countdown==1) {
 						b.countdown = 0
 						b.hard = 0
-						b.setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, false)
+						b.setAttribute(false, Block.ATTRIBUTE.GARBAGE)
 						b.cint = b.secondaryColor
 						result = true
 					}
@@ -658,7 +658,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				var patternRow = 0
 				for(y in (drop+width-1)/width-hiddenHeight downTo -1*hiddenHeight) {
 					val b = engine.field!!.getBlock(x, y)
-					if(b!!.getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)&&b.secondaryColor==0) {
+					if(b!!.getAttribute(Block.ATTRIBUTE.GARBAGE)&&b.secondaryColor==0) {
 						if(patternRow>=dropPattern[enemyID][patternCol].size) patternRow = 0
 						b.secondaryColor = dropPattern[enemyID][patternCol][patternRow]
 						patternRow++

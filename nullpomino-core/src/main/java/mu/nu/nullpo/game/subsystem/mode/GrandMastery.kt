@@ -921,7 +921,7 @@ class GrandMastery:AbstractMode() {
 				engine.blockHiddenAnim = true
 			}
 
-			owner.bgmStatus.bgm = BGM.ENDING_3
+			owner.bgmStatus.bgm = BGM.ENDING(2)
 		}
 
 		return false
@@ -1470,10 +1470,10 @@ class GrandMastery:AbstractMode() {
 
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = when {
-			engine.ending==1||engine.ending==2&&rollclear==0 -> BGM.RESULT_2
-			rollclear>0||promotionFlag&&grade>=promotionalExam -> BGM.CLEARED
-			demotionFlag&&grade<=qualifiedGrade -> BGM.FAILED
-			else -> BGM.FAILED
+			engine.ending==1||engine.ending==2&&rollclear==0 -> BGM.RESULT(2)
+			rollclear>0||promotionFlag&&grade>=promotionalExam -> BGM.RESULT(3)
+			demotionFlag&&grade<=qualifiedGrade -> BGM.RESULT(0)
+			else -> BGM.RESULT(0)
 		}
 
 		// ページ切り替え
@@ -1703,7 +1703,7 @@ class GrandMastery:AbstractMode() {
 		private val tableBGMFadeout = intArrayOf(485, 785, 1185, -1)
 		/** BGM change level */
 		private val tableBGMChange = intArrayOf(500, 800, 1200, -1)
-		private val tableBGM = arrayOf(BGM.GM_3, BGM.GM_20G_3, BGM.BLITZ_1, BGM.BLITZ_2)
+		private val tableBGM = arrayOf(BGM.GM_3(0), BGM.GM_3(1), BGM.GM_3(2), BGM.GM_3(3))
 		/** Line clear時に入る段位 point */
 		private val tableGradePoint =
 			arrayOf(intArrayOf(10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2), intArrayOf(20, 20, 20, 18, 16, 15, 13, 10, 11, 11, 12), intArrayOf(40, 36, 33, 30, 27, 24, 20, 18, 17, 16, 15), intArrayOf(50, 47, 44, 40, 40, 38, 36, 34, 32, 31, 30))

@@ -457,9 +457,8 @@ open class NetDummyVSMode:NetDummyMode() {
 			engine.createFieldIfNeeded()
 			engine.field!!.stringToField(netLobby!!.mapList[map])
 			engine.field!!.setAllSkin(engine.skin)
-			engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-			engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-			engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
+			engine.field!!.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+			engine.field!!.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 		}
 	}
 
@@ -575,9 +574,8 @@ open class NetDummyVSMode:NetDummyMode() {
 					engine.createFieldIfNeeded()
 					engine.field!!.stringToField(netLobby!!.mapList[engine.statc[5]])
 					engine.field!!.setAllSkin(engine.skin)
-					engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-					engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-					engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
+					engine.field!!.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+					engine.field!!.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 				}
 			} else if(engine.field!=null&&!engine.field!!.isEmpty) engine.field!!.reset()
 
@@ -636,9 +634,8 @@ open class NetDummyVSMode:NetDummyMode() {
 				else if(netCurrentRoomInfo!!.ruleLock&&netLobby!!.ruleOptLock!=null)
 					engine.field!!.setAllSkin(netLobby!!.ruleOptLock!!.skin)
 				else if(netvsPlayerSkin[playerID]>=0) engine.field!!.setAllSkin(netvsPlayerSkin[playerID])
-				engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-				engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-				engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
+				engine.field!!.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+				engine.field!!.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 			}
 
 		if(netvsIsPractice&&engine.statc[0]>=10) netvsIsPracticeExitAllowed = true
@@ -655,7 +652,7 @@ open class NetDummyVSMode:NetDummyMode() {
 			if(netvsIsPractice)
 				owner.bgmStatus.bgm = BGM.SILENT
 			else {
-				owner.bgmStatus.bgm = BGM.EXTRA_1
+				owner.bgmStatus.bgm = BGM.EXTRA(0)
 				owner.bgmStatus.fadesw = false
 			}
 

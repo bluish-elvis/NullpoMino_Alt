@@ -492,7 +492,7 @@ class RetroClassic:AbstractMode() {
 			for(x in 0 until engine.field!!.width) {
 				f = engine.random.nextFloat()
 				if(f<0.5)
-					engine.field!!.setBlock(x, y, Block((f*14).toInt()+2, engine.skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+					engine.field!!.setBlock(x, y, Block((f*14).toInt()+2, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 			}
 	}
 

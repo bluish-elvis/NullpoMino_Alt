@@ -412,7 +412,7 @@ class SprintCombo:NetDummyMode() {
 		for(y in h-1 downTo h-stackHeight) {
 			for(x in 0 until w)
 				if(x<comboColumn-1||x>comboColumn-2+comboWidth)
-					engine.field!!.setBlock(x, y, Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+					engine.field!!.setBlock(x, y, Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 			stackColour++
 		}
 
@@ -420,7 +420,7 @@ class SprintCombo:NetDummyMode() {
 		if(comboWidth==4)
 			for(i in 0..11)
 				if(SHAPE_TABLE[shapetype][i]==1)
-					engine.field!!.setBlock(i%4+comboColumn-1, h-1-i/4, Block(SHAPE_COLOUR_TABLE[shapetype], engine.skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+					engine.field!!.setBlock(i%4+comboColumn-1, h-1-i/4, Block(SHAPE_COLOUR_TABLE[shapetype], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
@@ -473,27 +473,31 @@ class SprintCombo:NetDummyMode() {
 		if(lines>0) {
 			scgettime = 0
 
-			if(engine.tspin) {
-				// T-Spin 1 line
-				if(lines==1) {
-					lastevent = if(engine.tspinmini)
-						EVENT_TSPIN_SINGLE_MINI
-					else
-						EVENT_TSPIN_SINGLE
-				} else if(lines==2) {
-					lastevent = if(engine.tspinmini&&engine.useAllSpinBonus)
-						EVENT_TSPIN_DOUBLE_MINI
-					else
-						EVENT_TSPIN_DOUBLE
-				} else if(lines>=3) lastevent = EVENT_TSPIN_TRIPLE// T-Spin 3 lines
-				// T-Spin 2 lines
-			} else if(lines==1)
-				lastevent = EVENT_SINGLE
-			else if(lines==2)
-				lastevent = EVENT_DOUBLE
-			else if(lines==3)
-				lastevent = EVENT_TRIPLE
-			else if(lines>=4) lastevent = EVENT_FOUR
+			// Goal
+			when {
+				engine.tspin ->
+					when {
+						lines==1 -> // T-Spin 1 line
+							lastevent =
+							if(engine.tspinmini) EVENT_TSPIN_SINGLE_MINI
+							else EVENT_TSPIN_SINGLE
+						lines==2 -> // T-Spin 2 lines
+							lastevent = if(engine.tspinmini&&engine.useAllSpinBonus)
+							EVENT_TSPIN_DOUBLE_MINI else EVENT_TSPIN_DOUBLE
+						lines>=3 ->// T-Spin 3 lines
+							lastevent = EVENT_TSPIN_TRIPLE
+					}
+				lines==1 -> lastevent = EVENT_SINGLE
+				lines==2 -> lastevent = EVENT_DOUBLE
+				lines==3 -> lastevent = EVENT_TRIPLE
+				lines>=4 -> lastevent = EVENT_FOUR
+
+				// B2B
+
+				// Combo
+
+				// add any remaining stack lines
+			}
 
 			// B2B
 			lastb2b = engine.b2b
@@ -509,7 +513,7 @@ class SprintCombo:NetDummyMode() {
 			while(tmplines<=lines&&remainStack>0) {
 				for(x in 0 until engine.field!!.width)
 					if(x<comboColumn-1||x>comboColumn-2+comboWidth)
-						engine.field!!.setBlock(x, -ceilingAdjust-tmplines, Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_GARBAGE))
+						engine.field!!.setBlock(x, -ceilingAdjust-tmplines, Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 				stackColour++
 				tmplines++
 				remainStack--
@@ -765,10 +769,10 @@ class SprintCombo:NetDummyMode() {
 		private val SHAPE_TABLE = arrayOf(intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), intArrayOf(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0), intArrayOf(0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0), intArrayOf(1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0), intArrayOf(0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0), intArrayOf(1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0), intArrayOf(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1))
 
 		/** Starting shape colour */
-		private val SHAPE_COLOUR_TABLE = intArrayOf(Block.BLOCK_COLOR_NONE, Block.BLOCK_COLOR_CYAN, Block.BLOCK_COLOR_CYAN, Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_ORANGE)
+		private val SHAPE_COLOUR_TABLE:Array<Block.COLOR?> = arrayOf(null, Block.COLOR.CYAN, Block.COLOR.CYAN, Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.GREEN, Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.ORANGE)
 
 		/** Stack colour order */
-		private val STACK_COLOUR_TABLE = intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_ORANGE, Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_CYAN, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_PURPLE)
+		private val STACK_COLOUR_TABLE:Array<Block.COLOR> = arrayOf(Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW, Block.COLOR.GREEN, Block.COLOR.CYAN, Block.COLOR.BLUE, Block.COLOR.PURPLE)
 
 		/** Meter colors for really high combos in Endless */
 		private val METER_COLOUR_TABLE = intArrayOf(GameEngine.METER_COLOR_GREEN, GameEngine.METER_COLOR_YELLOW, GameEngine.METER_COLOR_ORANGE, GameEngine.METER_COLOR_RED, GameEngine.METER_COLOR_PINK, GameEngine.METER_COLOR_PURPLE, GameEngine.METER_COLOR_DARKBLUE, GameEngine.METER_COLOR_BLUE, GameEngine.METER_COLOR_CYAN, GameEngine.METER_COLOR_DARKGREEN)

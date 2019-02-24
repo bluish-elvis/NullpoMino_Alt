@@ -25,6 +25,8 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.slick.img.FontNano
+import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.apache.log4j.Logger
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
@@ -107,7 +109,7 @@ class StateSelectMode:DummyMenuScrollState() {
 	/* Enter */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		prepareModeList()
-		if(ResourceHolder.bgmPlaying!=BGM.MENU_1) ResourceHolder.bgmStart(BGM.MENU_1)
+		if(ResourceHolder.bgmPlaying!=BGM.MENU(0)) ResourceHolder.bgmStart(BGM.MENU(0))
 	}
 
 	/* Render screen */

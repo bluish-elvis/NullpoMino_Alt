@@ -25,6 +25,7 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
@@ -47,7 +48,7 @@ class StateConfigMainMenu:DummyMenuChooseState() {
 	override fun init(container:GameContainer, game:StateBasedGame) {}
 
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		if(!ResourceHolder.bgmIsPlaying()) ResourceHolder.bgmStart(BGM.MENU_2)
+		if(!ResourceHolder.bgmIsPlaying()) ResourceHolder.bgmStart(BGM.MENU(1))
 	}
 
 	/* Draw the screen */

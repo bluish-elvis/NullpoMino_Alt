@@ -343,9 +343,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			reset()
 			//field.readProperty(prop, id);
 			stringToField(prop?.getProperty("values.$id", "")?:"")
-			setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-			setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-			setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
+			setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+			setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 		}
 	}
 
@@ -617,14 +616,15 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	protected fun loadFeverMap(engine:GameEngine, playerID:Int, rand:Random?, chain:Int, subset:Int) {
 		engine.createFieldIfNeeded()
-		engine.field!!.reset()
-		engine.field!!.stringToField(propFeverMap[playerID]?.getProperty(
-			feverMapSubsets[playerID][subset]+"."+numColors[playerID]+"colors."+chain+"chain")?:"")
-		engine.field!!.setBlockLinkByColor()
-		engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, false)
-		engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY, false)
-		engine.field!!.setAllSkin(engine.skin)
-		engine.field!!.shuffleColors(BLOCK_COLORS, numColors[playerID], Random(rand!!.nextLong()))
+		engine.field?.run {
+			reset()
+			stringToField(propFeverMap[playerID]?.getProperty(
+				feverMapSubsets[playerID][subset]+"."+numColors[playerID]+"colors."+chain+"chain") ?: "")
+			setBlockLinkByColor()
+			setAllAttribute(false, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.ANTIGRAVITY)
+			setAllSkin(engine.skin)
+			shuffleColors(BLOCK_COLORS, numColors[playerID], Random(rand!!.nextLong()))
+		}
 	}
 
 	/* Called after every frame */

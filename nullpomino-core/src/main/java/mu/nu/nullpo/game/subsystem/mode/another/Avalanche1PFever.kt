@@ -585,11 +585,9 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	private fun loadFeverMap(engine:GameEngine, rand:Random, chain:Int, subset:Int) {
 		engine.createFieldIfNeeded()
 		engine.field!!.reset()
-		engine.field!!.stringToField(propFeverMap!!.getProperty(mapSubsets!![subset]+
-			"."+numColors+"colors."+chain+"chain"))
+		engine.field!!.stringToField(propFeverMap.getProperty("${mapSubsets!![subset]}.${numColors}colors.${chain}chain"))
 		engine.field!!.setBlockLinkByColor()
-		engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, false)
-		engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_ANTIGRAVITY, false)
+		engine.field!!.setAllAttribute(false, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.ANTIGRAVITY)
 		engine.field!!.setAllSkin(engine.skin)
 		engine.field!!.shuffleColors(Avalanche1PDummyMode.BLOCK_COLORS, numColors, rand)
 	}
@@ -602,10 +600,8 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		for(i in 0 until RANKING_MAX)
 			for(j in Avalanche1PDummyMode.FEVER_MAPS.indices)
 				for(colors in 3..5) {
-					rankingScore!![colors-3][j][i] = prop!!.getProperty("avalanchefever.ranking."+ruleName+"."+colors+
-						"colors."+Avalanche1PDummyMode.FEVER_MAPS[j]+".score."+i, 0)
-					rankingTime!![colors-3][j][i] = prop.getProperty("avalanchefever.ranking."+ruleName+"."+colors+
-						"colors."+Avalanche1PDummyMode.FEVER_MAPS[j]+".time."+i, -1)
+					rankingScore!![colors-3][j][i] = prop!!.getProperty("avalanchefever.ranking.$ruleName.${colors}colors.${Avalanche1PDummyMode.FEVER_MAPS[j]}.score.$i", 0)
+					rankingTime!![colors-3][j][i] = prop.getProperty("avalanchefever.ranking.$ruleName.${colors}colors.${Avalanche1PDummyMode.FEVER_MAPS[j]}.time.$i", -1)
 				}
 	}
 
@@ -617,10 +613,10 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		for(i in 0 until RANKING_MAX)
 			for(j in Avalanche1PDummyMode.FEVER_MAPS.indices)
 				for(colors in 3..5) {
-					prop!!.setProperty("avalanchefever.ranking."+ruleName+"."+colors+
-						"colors."+Avalanche1PDummyMode.FEVER_MAPS[j]+".score."+i, rankingScore!![colors-3][j][i])
-					prop.setProperty("avalanchefever.ranking."+ruleName+"."+colors+
-						"colors."+Avalanche1PDummyMode.FEVER_MAPS[j]+".time."+i, rankingTime!![colors-3][j][i])
+					prop!!.setProperty("avalanchefever.ranking.$ruleName.${colors}colors.${Avalanche1PDummyMode.FEVER_MAPS[j]}.score.$i",
+						rankingScore!![colors-3][j][i])
+					prop.setProperty("avalanchefever.ranking.$ruleName.${colors}colors.${Avalanche1PDummyMode.FEVER_MAPS[j]}.time.$i",
+						rankingTime!![colors-3][j][i])
 				}
 	}
 

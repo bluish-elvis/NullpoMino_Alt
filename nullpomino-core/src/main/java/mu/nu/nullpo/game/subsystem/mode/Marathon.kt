@@ -402,7 +402,7 @@ class Marathon:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		val b = if(engine.ending==0) BGM.RESULT_1 else BGM.RESULT_2
+		val b = if(engine.ending==0) BGM.RESULT(1) else BGM.RESULT(2)
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = b
 
@@ -647,7 +647,7 @@ class Marathon:NetDummyMode() {
 		/** Line counts when BGM changes occur */
 		private val tableBGMChange = intArrayOf(60, 80, 140, 170, 200, -1)
 		private val tableBGM =
-			arrayOf(BGM.GENERIC_1, BGM.GENERIC_2, BGM.GENERIC_3, BGM.GENERIC_4, BGM.GENERIC_5, BGM.GENERIC_6)
+			arrayOf(BGM.GENERIC(0), BGM.GENERIC(1), BGM.GENERIC(2), BGM.GENERIC(3), BGM.GENERIC(4), BGM.GENERIC(5))
 		/** Line counts when game ending occurs */
 		private val tableGameClearLines = intArrayOf(150, 200, -1)
 

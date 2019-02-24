@@ -115,7 +115,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param blk BlockInstance of a class
 	 */
 	protected fun drawBlock(x:Int, y:Int, blk:Block) {
-		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), blk.darkness, blk.alpha, 1f, blk.aint)
+		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), blk.darkness, blk.alpha, 1f, blk.aint)
 	}
 
 	/** BlockUsing an instance of the classBlockDraw a
@@ -126,7 +126,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param scale Enlargement factor
 	 */
 	protected fun drawBlock(x:Int, y:Int, blk:Block, scale:Float) {
-		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), blk.darkness, blk.alpha, scale, blk.aint)
+		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), blk.darkness, blk.alpha, scale, blk.aint)
 	}
 
 	/** BlockUsing an instance of the classBlockDraw a
@@ -138,11 +138,11 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param darkness Lightness or darkness
 	 */
 	protected fun drawBlock(x:Int, y:Int, blk:Block, scale:Float, darkness:Float) {
-		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), darkness, blk.alpha, scale, blk.aint)
+		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), darkness, blk.alpha, scale, blk.aint)
 	}
 
 	protected fun drawBlockForceVisible(x:Int, y:Int, blk:Block, scale:Float) {
-		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.BLOCK_ATTRIBUTE_BONE), blk.darkness,
+		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), blk.darkness,
 			.5f*blk.alpha+.5f, scale, blk.aint)
 	}
 

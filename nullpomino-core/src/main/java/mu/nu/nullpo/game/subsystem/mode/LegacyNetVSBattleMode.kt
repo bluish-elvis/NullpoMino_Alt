@@ -655,9 +655,8 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 			engine.createFieldIfNeeded()
 			engine.field!!.stringToField(netLobby!!.mapList[map])
 			engine.field!!.setAllSkin(engine.skin)
-			engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-			engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-			engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
+			engine.field!!.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+			engine.field!!.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 		}
 	}
 
@@ -795,9 +794,8 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 						engine.createFieldIfNeeded()
 						engine.field!!.stringToField(netLobby!!.mapList[engine.statc[5]])
 						engine.field!!.setAllSkin(engine.skin)
-						engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-						engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-						engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
+						engine.field!!.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+						engine.field!!.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 					}
 
 				// Practice mode
@@ -865,9 +863,8 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 				else if(rulelockFlag&&netLobby!!.ruleOptLock!=null)
 					engine.field!!.setAllSkin(netLobby!!.ruleOptLock!!.skin)
 				else if(playerSkin[playerID]>=0) engine.field!!.setAllSkin(playerSkin[playerID])
-				engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-				engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-				engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, false)
+				engine.field!!.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+				engine.field!!.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 			}
 
 		if(isPractice&&engine.statc[0]>=10) isPracticeExitAllowed = true
@@ -913,7 +910,7 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 		if(isPractice)
 			owner.bgmStatus.bgm = BGM.SILENT
 		else {
-			owner.bgmStatus.bgm = BGM.EXTRA_1
+			owner.bgmStatus.bgm = BGM.EXTRA(0)
 			owner.bgmStatus.fadesw = false
 		}
 		pieceMoveTimer = 0
@@ -2068,27 +2065,26 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 					val pieceSkin = Integer.parseInt(message[10])
 					val pieceBig = message.size>11&&java.lang.Boolean.parseBoolean(message[11])
 
-					owner.engine[playerID].nowPieceObject = Piece(id)
-					owner.engine[playerID].nowPieceObject!!.direction = pieceDir
-					owner.engine[playerID].nowPieceObject!!.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-					owner.engine[playerID].nowPieceObject!!.setColor(pieceColor)
-					owner.engine[playerID].nowPieceObject!!.setSkin(pieceSkin)
-					owner.engine[playerID].nowPieceX = pieceX
-					owner.engine[playerID].nowPieceY = pieceY
-					//owner.engine[playerID].nowPieceBottomY = pieceBottomY;
-					owner.engine[playerID].nowPieceObject!!.big = pieceBig
-					owner.engine[playerID].nowPieceObject!!.updateConnectData()
-					owner.engine[playerID].nowPieceBottomY =
-						owner.engine[playerID].nowPieceObject!!.getBottom(pieceX, pieceY, owner.engine[playerID].field)
-
-					if(owner.engine[playerID].stat!=GameEngine.Status.EXCELLENT) {
-						owner.engine[playerID].stat = GameEngine.Status.MOVE
-						owner.engine[playerID].statc[0] = 2
+					owner.engine[playerID].apply {
+						nowPieceObject = Piece(id).apply {
+							direction = pieceDir
+							setAttribute(true, Block.ATTRIBUTE.VISIBLE)
+							setColor(pieceColor)
+							setSkin(pieceSkin)
+							//owner.engine[playerID].nowPieceBottomY = pieceBottomY;
+							big = pieceBig
+							updateConnectData()
+						}
+						nowPieceX = pieceX
+						nowPieceY = pieceY
+						nowPieceBottomY = nowPieceObject!!.getBottom(pieceX, pieceY, owner.engine[playerID].field)
+						if(stat!=GameEngine.Status.EXCELLENT) {
+							stat = GameEngine.Status.MOVE
+							statc[0] = 2
+						}
 					}
-
 					playerSkin[playerID] = pieceSkin
-				} else
-					owner.engine[playerID].nowPieceObject = null
+				} else owner.engine[playerID].nowPieceObject = null
 
 				if(playerSeatNumber==-1&&!netPlayTimerActive&&!isNetGameFinished&&!isNewcomer) {
 					netPlayTimerActive = true

@@ -463,7 +463,8 @@ class GrandLightning:AbstractMode() {
 				receiver.drawScoreFont(engine, playerID, 0, 6, "SCORE", COLOR.RED)
 				receiver.drawScoreNum(engine, playerID, 5, 6, "+$lastscore")
 				receiver.drawScoreNum(engine, playerID, 0, 7, scgettime.toString(), 2f)
-				if(scgettime<engine.statistics.score) scgettime += Math.ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
+				if(scgettime<engine.statistics.score) scgettime += Math.ceil(((engine.statistics.score-scgettime)/10f).toDouble())
+					.toInt()
 			}
 
 			// level
@@ -552,8 +553,8 @@ class GrandLightning:AbstractMode() {
 			// せり上がり
 			if(garbageCount>=tableGarbage[engine.statistics.level/100]&&tableGarbage[engine.statistics.level/100]!=0) {
 				engine.playSE("garbage")
-				engine.field!!.addBottomCopyGarbage(Block.BLOCK_COLOR_GRAY, engine.skin, Block.BLOCK_ATTRIBUTE_GARBAGE
-					or Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_OUTLINE, 1)
+				engine.field!!.addBottomCopyGarbage(engine.skin, 1,
+					Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 				garbageCount = 0
 			}
 		}
@@ -562,7 +563,7 @@ class GrandLightning:AbstractMode() {
 		if(engine.ending==2&&!rollstarted) {
 			rollstarted = true
 			engine.big = true
-			owner.bgmStatus.bgm = BGMStatus.BGM.ENDING_3
+			owner.bgmStatus.bgm = BGMStatus.BGM.ENDING(2)
 		}
 
 		return false
@@ -896,9 +897,9 @@ class GrandLightning:AbstractMode() {
 
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = when {
-			engine.ending==0 -> BGM.FAILED
-			engine.ending==2&&rollclear>0 -> BGM.CLEARED
-			else -> BGM.RESULT_2
+			engine.ending==0 -> BGM.RESULT(0)
+			engine.ending==2&&rollclear>0 -> BGM.RESULT(3)
+			else -> BGM.RESULT(2)
 		}
 		// ページ切り替え
 		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
@@ -1056,7 +1057,7 @@ class GrandLightning:AbstractMode() {
 		private val tableBGMFadeout = intArrayOf(485, 685, 985, -1)
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(500, 700, 1000, -1)
-		private val tableBGM = arrayOf(BGM.BLITZ_1, BGM.BLITZ_2, BGM.BLITZ_3, BGM.BLITZ_4)
+		private val tableBGM = arrayOf(BGM.GM_3(2), BGM.GM_3(3), BGM.GM_3(4), BGM.GM_3(5))
 		/** 段位のName */
 		private val tableGradeName =
 			arrayOf("1", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13")

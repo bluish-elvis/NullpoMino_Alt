@@ -324,7 +324,7 @@ class RetroModern:AbstractMode() {
 				engine.meterColor = GameEngine.METER_COLOR_LIMIT
 				var bg = levelBG[levelBG.size-1]
 				if(rolltime<=ROLLTIMELIMIT-3600) bg = levelBG[rolltime*MAX_LEVEL/(ROLLTIMELIMIT-3600)]
-				//else owner.bgmStatus.bgm=ENDING_2;
+				//else owner.bgmStatus.bgm=ENDING(1);
 
 				if(owner.backgroundStatus.fadebg!=bg) {
 					owner.backgroundStatus.fadebg = bg
@@ -583,14 +583,10 @@ class RetroModern:AbstractMode() {
 	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until GAMETYPE_MAX) {
-				rankingScore[gametypeIndex][i] = prop!!.getProperty("retromodern.ranking."+ruleName+"."+gametypeIndex+".score."
-					+i, 0)
-				rankingLevel[gametypeIndex][i] = prop.getProperty("retromodern.ranking."+ruleName+"."+gametypeIndex+".level."
-					+i, 0)
-				rankingLines[gametypeIndex][i] = prop.getProperty("retromodern.ranking."+ruleName+"."+gametypeIndex+".lines."
-					+i, 0)
-				rankingTime[gametypeIndex][i] = prop.getProperty("retromodern.ranking."+ruleName+"."+gametypeIndex+".time."
-					+i, 0)
+				rankingScore[gametypeIndex][i] = prop!!.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.score.$i", 0)
+				rankingLevel[gametypeIndex][i] = prop.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.level.$i", 0)
+				rankingLines[gametypeIndex][i] = prop.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.lines.$i", 0)
+				rankingTime[gametypeIndex][i] = prop.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.time.$i", 0)
 
 			}
 	}
@@ -599,14 +595,10 @@ class RetroModern:AbstractMode() {
 	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until GAMETYPE_MAX) {
-				prop!!.setProperty("retromodern.ranking."+ruleName+"."+gametypeIndex+".score."
-					+i, rankingScore[gametypeIndex][i])
-				prop.setProperty("retromodern.ranking."+ruleName+"."+gametypeIndex+".level."
-					+i, rankingLevel[gametypeIndex][i])
-				prop.setProperty("retromodern.ranking."+ruleName+"."+gametypeIndex+".lines."
-					+i, rankingLines[gametypeIndex][i])
-				prop.setProperty("retromodern.ranking."+ruleName+"."+gametypeIndex+".time."
-					+i, rankingTime[gametypeIndex][i])
+				prop!!.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.score.$i", rankingScore[gametypeIndex][i])
+				prop.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.level.$i", rankingLevel[gametypeIndex][i])
+				prop.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.lines.$i", rankingLines[gametypeIndex][i])
+				prop.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.time.$i", rankingTime[gametypeIndex][i])
 			}
 	}
 
@@ -695,9 +687,9 @@ class RetroModern:AbstractMode() {
 			6, 7, 8, 9, 14, 19,
 			10, 11, 12, 13, 29, 36)
 		private val tableBGM = arrayOf(
-			BGM.GENERIC_1, BGM.GENERIC_1, BGM.GENERIC_1, BGM.GENERIC_1, BGM.PUZZLE_1, BGM.PUZZLE_1,
-			BGM.GENERIC_2, BGM.GENERIC_2, BGM.GENERIC_3, BGM.GENERIC_3, BGM.GENERIC_3, BGM.GM_2,
-			BGM.GM_2, BGM.GM_20G_2, BGM.GM_20G_2, BGM.GM_20G_1, BGM.SILENT, BGM.ENDING_4)
+			BGM.GENERIC(0), BGM.GENERIC(0), BGM.GENERIC(0), BGM.GENERIC(0), BGM.PUZZLE(0), BGM.PUZZLE(0),
+			BGM.GENERIC(1), BGM.GENERIC(1), BGM.GENERIC(2), BGM.GENERIC(2), BGM.GENERIC(2), BGM.GM_2(0),
+			BGM.GM_2(0), BGM.GM_2(1), BGM.GM_2(1), BGM.GM_1(1), BGM.SILENT, BGM.ENDING(3))
 		/** Name of game types */
 		private val GAMETYPE_NAME = arrayOf("EASY", "NORMAL", "INTENSE", "HARD", "OVERED")
 

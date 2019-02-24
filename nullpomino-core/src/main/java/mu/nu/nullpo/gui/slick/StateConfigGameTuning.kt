@@ -29,6 +29,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.PreviewMode
 import mu.nu.nullpo.gui.GameKeyDummy
+import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
@@ -242,21 +243,22 @@ class StateConfigGameTuning:BaseGameState() {
 			FontNormal.printFontGrid(2, 3, "A BUTTON ROTATE:$strTemp", cursor==0)
 
 			val skinmax = ResourceHolder.imgNormalBlockList.size
-			sk = if(owSkin==-1)
-				(sk+1)%skinmax
-			else if(owSkin==-2)
-				Random().nextInt(skinmax)
-			else
-				owSkin
+			sk = when(owSkin) {
+				-1 -> (sk+1)%skinmax
+				-2 -> Random().nextInt(skinmax)
+				else -> owSkin
+			}
 			val imgBlock = ResourceHolder.imgNormalBlockList[sk]
 			if(ResourceHolder.blockStickyFlagList[sk])
-				for(j in 0..8)
-					imgBlock.draw((144+j*16).toFloat(), 64f, (144+j*16+16).toFloat(), (64+16).toFloat(), 0f, (j*16).toFloat(), 16f, (j*16+16).toFloat())
+				for(j in 0..8) imgBlock.draw((160+j*16).toFloat(), 64f, (160+j*16+16).toFloat(), (64+16).toFloat(), 0f, (j*16).toFloat(), 16f, (j*16+16).toFloat())
 			else
-				imgBlock.draw(144f, 64f, (144+144).toFloat(), (64+16).toFloat(), 0f, 0f, 144f, 16f)
-			FontNormal.printFontGrid(2, 4, "SKIN:"+if(owSkin==-1) "AUTO" else if(owSkin==-2) "RANDOM" else owSkin.toString()+":", cursor==1)
-			FontNormal.printFontGrid(18, 4, NullpoMinoSlick.propSkins.getProperty("Skin$owSkin", "").toUpperCase(),
-				cursor==1)
+				imgBlock.draw(160f, 64f, (160+144).toFloat(), (64+16).toFloat(), 0f, 0f, 144f, 16f)
+			FontNormal.printFontGrid(2, 4, "SKIN:${String.format("%02d",owSkin)}:", cursor==1)
+			FontNormal.printFontGrid(19, 4, when(owSkin) {
+				-1 -> "AUTO"
+				-2 -> "RANDOM"
+				else -> NullpoMinoSlick.propSkins.getProperty("Skin$owSkin", "").toUpperCase()
+			}, cursor==1)
 
 			FontNormal.printFontGrid(2, 5, "MIN DAS:"+if(owMinDAS==-1) "AUTO" else owMinDAS.toString(), cursor==2)
 			FontNormal.printFontGrid(2, 6, "MAX DAS:"+if(owMaxDAS==-1) "AUTO" else owMaxDAS.toString(), cursor==3)

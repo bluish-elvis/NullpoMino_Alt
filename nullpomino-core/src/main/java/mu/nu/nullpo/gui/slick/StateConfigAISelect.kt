@@ -26,6 +26,7 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.gui.GameKeyDummy
+import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
 import org.newdawn.slick.GameContainer

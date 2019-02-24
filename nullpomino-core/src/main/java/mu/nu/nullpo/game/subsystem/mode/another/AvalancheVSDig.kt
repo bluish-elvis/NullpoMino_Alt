@@ -372,7 +372,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 					if(engine.field!!.getBlockEmpty(j, y-i))
 						engine.field!!.setBlockColor(j, y-i, AvalancheVSDummyMode.BLOCK_COLORS[rand.nextInt(numColors[playerID])])
 		while(engine.field!!.clearColor(sizeLimit, false, false, true)>0)
-		engine.field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
+		engine.field!!.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE)
 		engine.field!!.setAllSkin(engine.skin)
 	}
 

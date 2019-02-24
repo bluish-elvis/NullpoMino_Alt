@@ -73,7 +73,7 @@
 <entry key="option.firstSetupMode">false</entry>
 <entry key="option.bgmpreload">true</entry>
 <entry key="option.enableframestep">false</entry>
-<entry key="option.bgmvolume">35</entry>
+<entry key="option.bgmvolume">25</entry>
 <entry key="option.darknextarea">true</entry>
 <entry key="option.smoothfall">true</entry>
 <entry key="option.screenwidth">640</entry>

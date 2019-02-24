@@ -1054,11 +1054,11 @@ class GameEngine
 		field?.let {f ->
 			for(x in 0 until f.width) for(y in 0 until f.height)
 				f.getBlock(x, y)?.run {
-					if(cint>Block.BLOCK_COLOR_NONE) {
+					if(color!=null) {
 						alpha = 1f
 						darkness = 0f
-						setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-						setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
+						setAttribute(true, Block.ATTRIBUTE.VISIBLE)
+						setAttribute(true, Block.ATTRIBUTE.OUTLINE)
 					}
 				}
 		}
@@ -1318,20 +1318,20 @@ class GameEngine
 					f.getBlock(i, j)?.run {
 						if(cint>=Block.BLOCK_COLOR_GRAY) {
 							if(elapsedFrames<0) {
-								if(!getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)) darkness = 0f
+								if(!getAttribute(Block.ATTRIBUTE.GARBAGE)) darkness = 0f
 							} else if(elapsedFrames<ruleopt.lockflash) {
 								darkness = -.8f
 								if(outlineOnly) {
-									setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
-									setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, false)
-									setAttribute(Block.BLOCK_ATTRIBUTE_BONE, false)
+									setAttribute(true, Block.ATTRIBUTE.OUTLINE)
+									setAttribute(false, Block.ATTRIBUTE.VISIBLE)
+									setAttribute(false, Block.ATTRIBUTE.BONE)
 								}
 							} else {
 								darkness = 0f
-								setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, true)
+								setAttribute(true, Block.ATTRIBUTE.OUTLINE)
 								if(outlineOnly) {
-									setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, false)
-									setAttribute(Block.BLOCK_ATTRIBUTE_BONE, false)
+									setAttribute(false, Block.ATTRIBUTE.VISIBLE)
+									setAttribute(false, Block.ATTRIBUTE.BONE)
 								}
 							}
 
@@ -1343,8 +1343,8 @@ class GameEngine
 
 								if(elapsedFrames>=blockHidden) {
 									alpha = 0.0f
-									setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, false)
-									setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, false)
+									setAttribute(false, Block.ATTRIBUTE.OUTLINE)
+									setAttribute(false, Block.ATTRIBUTE.VISIBLE)
 								}
 							}
 
@@ -1360,8 +1360,8 @@ class GameEngine
 						for(j in f.hiddenHeight*-1 until f.height) {
 							f.getBlock(i, j)?.apply {
 								if(cint>=Block.BLOCK_COLOR_GRAY) {
-									setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, itemXRayCount%36==i)
-									setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, itemXRayCount%36==i)
+									setAttribute(itemXRayCount%36==i, Block.ATTRIBUTE.VISIBLE)
+									setAttribute(itemXRayCount%36==i, Block.ATTRIBUTE.OUTLINE)
 								}
 							}
 						}
@@ -1380,8 +1380,8 @@ class GameEngine
 
 							f.getBlock(i, j)?.apply {
 								alpha = bright*.1f
-								setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, false)
-								setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
+								setAttribute(false, Block.ATTRIBUTE.OUTLINE)
+								setAttribute(true, Block.ATTRIBUTE.VISIBLE)
 							}
 						}
 					itemColorCount++
@@ -1652,7 +1652,7 @@ class GameEngine
 	private fun statSetting() {
 		//  event 発生
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = BGM.MENU_3
+		owner.bgmStatus.bgm = BGM.MENU(2)
 		owner.mode?.also {if(it.onSetting(this, playerID)) return}
 		owner.receiver.onSetting(this, playerID)
 
@@ -1675,7 +1675,7 @@ class GameEngine
 		if(statc[0]==0) {
 
 			if(!readyDone&&!owner.bgmStatus.fadesw&&owner.bgmStatus.bgm.id<0&&
-				owner.bgmStatus.bgm.id !in BGM.FINALE_1.id..BGM.FINALE_3.id)
+				owner.bgmStatus.bgm.id !in BGM.FINALE(0).id..BGM.FINALE(2).id)
 				owner.bgmStatus.fadesw = true
 			// fieldInitialization
 			createFieldIfNeeded()
@@ -1713,8 +1713,8 @@ class GameEngine
 						it.setColor(ruleopt.pieceColor[it.id])
 						it.setSkin(skin)
 						it.updateConnectData()
-						it.setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
-						it.setAttribute(Block.BLOCK_ATTRIBUTE_BONE, bone)
+						it.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
+						it.setAttribute(bone, Block.ATTRIBUTE.BONE)
 
 						if(randomBlockColor) {
 							if(blockColors.size<numColors||numColors<1) numColors = blockColors.size
@@ -1810,7 +1810,7 @@ class GameEngine
 						if(nextPieceCount<0) nextPieceCount = 0
 
 						if(bone)
-							getNextObject(nextPieceCount+ruleopt.nextDisplay-1)!!.setAttribute(Block.BLOCK_ATTRIBUTE_BONE, true)
+							getNextObject(nextPieceCount+ruleopt.nextDisplay-1)!!.setAttribute(true, Block.ATTRIBUTE.BONE)
 
 						nowPieceObject = getNextObjectCopy(nextPieceCount)
 						nextPieceCount++
@@ -1854,7 +1854,7 @@ class GameEngine
 				initialHoldFlag = false
 				holdDisable = true
 			}
-			if(framecolor!=FRAME_SKIN_GB)playSE("piece${getNextObject(nextPieceCount)!!.id}")
+			if(framecolor!=FRAME_SKIN_GB) playSE("piece${getNextObject(nextPieceCount)!!.id}")
 
 			if(!nowPieceObject!!.offsetApplied)
 				nowPieceObject!!.applyOffsetArray(ruleopt.pieceOffsetX[nowPieceObject!!.id], ruleopt.pieceOffsetY[nowPieceObject!!.id])
@@ -1898,7 +1898,7 @@ class GameEngine
 			tspinmini = false
 			tspinez = false
 
-			getNextObject(nextPieceCount+ruleopt.nextDisplay-1)!!.setAttribute(Block.BLOCK_ATTRIBUTE_BONE, bone)
+			getNextObject(nextPieceCount+ruleopt.nextDisplay-1)!!.setAttribute(bone, Block.ATTRIBUTE.BONE)
 
 			if(ending==0) timerActive = true
 
@@ -2259,7 +2259,7 @@ class GameEngine
 					if(useAllSpinBonus) setAllSpin(nowPieceX, nowPieceY, nowPieceObject, field)
 					else setTSpin(nowPieceX, nowPieceY, nowPieceObject, field)
 
-				nowPieceObject!!.setAttribute(Block.BLOCK_ATTRIBUTE_SELFPLACED, true)
+				nowPieceObject!!.setAttribute(true, Block.ATTRIBUTE.SELFPLACED)
 
 				val partialLockOut = nowPieceObject!!.isPartialLockOut(nowPieceX, nowPieceY, field)
 				val put = nowPieceObject!!.placeToField(nowPieceX, nowPieceY, field)
@@ -2539,7 +2539,7 @@ class GameEngine
 				}
 				for(j in 0 until field!!.width) {
 					field!!.getBlock(j, i)?.let {b ->
-						if(b.getAttribute(Block.BLOCK_ATTRIBUTE_ERASE)) {
+						if(b.getAttribute(Block.ATTRIBUTE.ERASE)) {
 							owner.mode?.also {it.blockBreak(this, playerID, j, i, b)}
 							owner.receiver.also {r ->
 								if(displaysize==1) {
@@ -2625,7 +2625,7 @@ class GameEngine
 			if(owner.mode!=null) skip = owner.mode!!.lineClearEnd(this, playerID)
 			owner.receiver.lineClearEnd(this, playerID)
 			if(sticky>0) field!!.setBlockLinkByColor()
-			if(sticky==2) field!!.setAllAttribute(Block.BLOCK_ATTRIBUTE_IGNORE_BLOCKLINK, true)
+			if(sticky==2) field!!.setAllAttribute(true, Block.ATTRIBUTE.IGNORE_BLOCKLINK)
 
 			if(!skip) {
 				if(lineGravityType==LineGravity.NATIVE) field!!.downFloatingBlocks()
@@ -2834,15 +2834,15 @@ class GameEngine
 							field!!.getBlock(x, field!!.height-statc[0]/animint)?.apply {
 								if(ending==2&&!topout) {
 									if(statc[0]%animint==0) {
-										setAttribute(Block.BLOCK_ATTRIBUTE_OUTLINE, false)
+										setAttribute(false, Block.ATTRIBUTE.OUTLINE)
 										darkness = -.1f
 										elapsedFrames = -1
 									}
 									alpha = 1f-(1+statc[0]%animint)*1f/animint
 								} else if(statc[0]%animint==0) {
-									if(!getAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE)) {
+									if(!getAttribute(Block.ATTRIBUTE.GARBAGE)) {
 										cint = Block.BLOCK_COLOR_GRAY
-										setAttribute(Block.BLOCK_ATTRIBUTE_GARBAGE, true)
+										setAttribute(true, Block.ATTRIBUTE.GARBAGE)
 									}
 									darkness = .3f
 									elapsedFrames = -1
@@ -2886,7 +2886,7 @@ class GameEngine
 				for(i in 0 until field!!.width) {
 					field!!.getBlock(i, y)?.let {b ->
 
-						if(b.cint!=Block.BLOCK_COLOR_NONE) {
+						if(b.color!=null) {
 							owner.mode?.also {it.blockBreak(this, playerID, i, y, b)}
 							owner.receiver.blockBreak(this, playerID, i, y, b)
 							field!!.setBlockColor(i, y, Block.BLOCK_COLOR_NONE)
@@ -2911,7 +2911,7 @@ class GameEngine
 		when {
 			ending==2 -> owner.bgmStatus.bgm = BGM.RESULT(3)
 			ending!=0 -> owner.bgmStatus.bgm = if(statistics.time<10800) BGM.RESULT(1) else BGM.RESULT(2)
-			else -> owner.bgmStatus.bgm = BGM.FAILED
+			else -> owner.bgmStatus.bgm = BGM.RESULT(0)
 		}
 
 		owner.mode?.also {if(it.onResult(this, playerID)) return}
@@ -2984,8 +2984,8 @@ class GameEngine
 		if(ctrl!!.isPress(Controller.BUTTON_A)&&fldeditFrames>10)
 			try {
 				if(field!!.getBlockColorE(fldeditX, fldeditY)!=fldeditColor) {
-					val blk = Block(fldeditColor, skin, Block.BLOCK_ATTRIBUTE_VISIBLE or Block.BLOCK_ATTRIBUTE_OUTLINE)
-					field!!.setBlockE(fldeditX, fldeditY, blk)
+					field!!.setBlockE(fldeditX, fldeditY,
+						Block(fldeditColor, skin, Block.ATTRIBUTE.VISIBLE , Block.ATTRIBUTE.OUTLINE))
 					playSE("change")
 				}
 			} catch(e:Exception) {
@@ -2995,7 +2995,7 @@ class GameEngine
 		if(ctrl!!.isPress(Controller.BUTTON_D)&&fldeditFrames>10)
 			try {
 				if(!field!!.getBlockEmptyE(fldeditX, fldeditY)) {
-					field!!.setBlockColorE(fldeditX, fldeditY, Block.BLOCK_COLOR_NONE)
+					field!!.setBlock(fldeditX, fldeditY, null)
 					playSE("change")
 				}
 			} catch(e:Exception) {

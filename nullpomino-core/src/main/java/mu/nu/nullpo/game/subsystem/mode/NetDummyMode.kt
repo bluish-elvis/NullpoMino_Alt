@@ -325,8 +325,8 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** NET: Results screen */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		/*
-    BGMStatus.BGM b=BGM.FAILED;
-    if(engine.ending>=2)b=engine.statistics.time<10800?BGM.RESULT_1:BGM.RESULT_2;
+    BGMStatus.BGM b=BGM.RESULT(0);
+    if(engine.ending>=2)b=engine.statistics.time<10800?BGM.RESULT(1):BGM.RESULT(2);
     owner.bgmStatus.fadesw=false;
     owner.bgmStatus.bgm=b; */
 		// NET: Retry
@@ -695,7 +695,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 			engine.nowPieceObject = Piece(id).apply {
 				direction = pieceDir
-				setAttribute(Block.BLOCK_ATTRIBUTE_VISIBLE, true)
+				setAttribute(true, Block.ATTRIBUTE.VISIBLE)
 				setColor(pieceColor)
 				setSkin(pieceSkin)
 				big = pieceBig
