@@ -6,7 +6,7 @@ import java.util.*
 abstract class Randomizer {
 
 	protected var r:Random = Random()
-	var pieces:IntArray = IntArray(Piece.PIECE_COUNT)
+	var pieces:IntArray = IntArray(Piece.PIECE_COUNT){it}
 
 	protected val isPieceSZOOnly:Boolean
 		get() = pieces.all{it==Piece.PIECE_O||it==Piece.PIECE_Z||it==Piece.PIECE_S}

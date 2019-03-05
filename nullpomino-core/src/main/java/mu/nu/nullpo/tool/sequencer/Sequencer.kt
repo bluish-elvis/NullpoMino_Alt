@@ -75,33 +75,37 @@ class Sequencer:JFrame(), ActionListener {
 	private var sequence:IntArray = IntArray(0)
 
 	/** Enabled Pieces */
-	private var nextPieceEnable:BooleanArray = BooleanArray(Piece.PIECE_COUNT){it<Piece.PIECE_STANDARD_COUNT}
+	private var nextPieceEnable:BooleanArray = BooleanArray(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
 
 	/** Constructor */
 	init {
 
 		// Load config file
 		try {
-			val `in` = FileInputStream("config/setting/swing.xmk")
-			propConfig.load(`in`)
-			`in`.close()
+			FileInputStream("config/setting/swing.xml").let {
+				propConfig.loadFromXML(it)
+				it.close()
+			}
 		} catch(e:IOException) {
 		}
 
 		// Load UI Language file
 		try {
-			val `in` = FileInputStream("config/lang/sequencer_default.xml")
-			propLangDefault.load(`in`)
-			`in`.close()
+			FileInputStream("config/lang/sequencer_default.xml").let {
+				propLangDefault.loadFromXML(it)
+				it.close()
+			}
 		} catch(e:IOException) {
 			log.error("Couldn't load default UI language file", e)
 		}
 
 		try {
-			val `in` = FileInputStream(
-				"config/lang/sequencer_"+Locale.getDefault().country+".xml")
-			propLang.load(`in`)
-			`in`.close()
+			FileInputStream(
+				"config/lang/sequencer_"+Locale.getDefault().country+".xml").let {
+				propLang.loadFromXML(it)
+				it.close()
+			}
+
 		} catch(e:IOException) {
 		}
 
@@ -115,7 +119,7 @@ class Sequencer:JFrame(), ActionListener {
 			}
 
 		// Initialize enabled pieces
-		nextPieceEnable = BooleanArray(Piece.PIECE_COUNT){it<Piece.PIECE_STANDARD_COUNT}
+		nextPieceEnable = BooleanArray(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
 
 		title = getUIText("Title_Sequencer")
 		defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
@@ -233,7 +237,7 @@ class Sequencer:JFrame(), ActionListener {
 
 		vectorRandomizer = getTextFileVector("config/list/randomizer.lst")
 		comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer))
-		comboboxRandomizer!!.preferredSize = Dimension(200, 30)
+		comboboxRandomizer!!.preferredSize = Dimension(222, 30)
 		comboboxRandomizer!!.selectedIndex = 0
 		pRandomizer.add(comboboxRandomizer)
 
@@ -257,7 +261,7 @@ class Sequencer:JFrame(), ActionListener {
 
 	}
 
-	fun getTextFileVector(filename:String):Vector<String> {
+	private fun getTextFileVector(filename:String):Vector<String> {
 		val vec = Vector<String>()
 
 		try {
@@ -275,7 +279,7 @@ class Sequencer:JFrame(), ActionListener {
 		return vec
 	}
 
-	fun createShortStringVector(vecSrc:Vector<String>?):Vector<String> {
+	private fun createShortStringVector(vecSrc:Vector<String>?):Vector<String> {
 		val vec = Vector<String>()
 
 		for(aVecSrc in vecSrc!!) vec.add(createShortString(aVecSrc))
@@ -283,7 +287,7 @@ class Sequencer:JFrame(), ActionListener {
 		return vec
 	}
 
-	fun createShortString(str:String):String {
+	private fun createShortString(str:String):String {
 		val last = str.lastIndexOf('.')
 
 		val newStr:String
@@ -294,8 +298,9 @@ class Sequencer:JFrame(), ActionListener {
 		return newStr
 	}
 
-	fun readReplayToUI(prop:CustomProperties, playerID:Int) {
-		txtfldSeed!!.text = java.lang.Long.parseLong(prop.getProperty(playerID.toString()+".replay.randSeed", "0"), 16).toString()
+	private fun readReplayToUI(prop:CustomProperties, playerID:Int) {
+		txtfldSeed!!.text = java.lang.Long.parseLong(prop.getProperty(playerID.toString()+".replay.randSeed", "0"), 16)
+			.toString()
 		comboboxRandomizer!!.selectedItem = createShortString(prop.getProperty(playerID.toString()+".ruleopt.strRandomizer", null))
 	}
 
@@ -336,7 +341,7 @@ class Sequencer:JFrame(), ActionListener {
 	 * @param txtfld JTextField
 	 * @return An int value from JTextField (If fails, it will return zero)
 	 */
-	fun getIntTextField(txtfld:JTextField?):Int {
+	private fun getIntTextField(txtfld:JTextField?):Int {
 		var v = 0
 
 		try {
@@ -351,7 +356,7 @@ class Sequencer:JFrame(), ActionListener {
 	 * @param txtfld JTextField
 	 * @return A long value from JTextField (If fails, it will return zero)
 	 */
-	fun getLongTextField(txtfld:JTextField?):Long {
+	private fun getLongTextField(txtfld:JTextField?):Long {
 		var v = 0L
 
 		try {
@@ -362,7 +367,7 @@ class Sequencer:JFrame(), ActionListener {
 		return v
 	}
 
-	fun generate() {
+	private fun generate() {
 		val randomizerClass:Class<*>
 		val randomizerObject:Randomizer
 
@@ -372,7 +377,7 @@ class Sequencer:JFrame(), ActionListener {
 			randomizerClass = Class.forName(name)
 			randomizerObject = randomizerClass.newInstance() as Randomizer
 			randomizerObject.setState(nextPieceEnable, getLongTextField(txtfldSeed))
-			sequence = IntArray(getIntTextField(txtfldSeqLength)){
+			sequence = IntArray(getIntTextField(txtfldSeqLength)) {
 				for(i in 0 until getIntTextField(txtfldSeqOffset))
 					randomizerObject.next()
 				return@IntArray randomizerObject.next()
@@ -386,10 +391,10 @@ class Sequencer:JFrame(), ActionListener {
 
 	fun display() {
 		if(txtareaSequence!!.text!="") txtareaSequence!!.text = ""
-		for(i in 1..sequence!!.size) {
-			txtareaSequence!!.append(getUIText("PieceName"+sequence!![i-1]))
-			if(i%5==0) txtareaSequence!!.append(" ")
-			if(i%60==0) txtareaSequence!!.append("\n")
+		for(i in 1..sequence.size) {
+			txtareaSequence!!.append(getUIText("PieceName"+sequence[i-1]))
+			if(i%35==0) txtareaSequence!!.append("\n")
+			else if(i%7==0) txtareaSequence!!.append(" ")
 		}
 	}
 
@@ -412,7 +417,7 @@ class Sequencer:JFrame(), ActionListener {
 
 			if(c.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
 				val file = c.selectedFile
-				var prop = CustomProperties()
+				val prop:CustomProperties
 
 				try {
 					prop = load(file.path)
@@ -462,7 +467,7 @@ class Sequencer:JFrame(), ActionListener {
 			dispose()
 	}
 
-	fun setPieceEnable() {
+	private fun setPieceEnable() {
 		val setPieceEnableFrame = JFrame(getUIText("Title_SetPieceEnable"))
 		setPieceEnableFrame.contentPane.layout = GridLayout(0, 2, 10, 10)
 		val chkboxEnable = arrayOfNulls<JCheckBox>(Piece.PIECE_COUNT)
@@ -474,9 +479,9 @@ class Sequencer:JFrame(), ActionListener {
 		}
 		//if(Piece.PIECE_COUNT%2==0) setPieceEnableFrame.getContentPane().add(new JLabel(""));
 		val btnConfirm = JButton(getUIText("Button_Confirm"))
-		btnConfirm.addActionListener {e ->
+		btnConfirm.addActionListener {
 			for(i in 0 until Piece.PIECE_COUNT)
-				nextPieceEnable[i] = chkboxEnable[i]?.isSelected?:false
+				nextPieceEnable[i] = chkboxEnable[i]?.isSelected ?: false
 			setPieceEnableFrame.dispose()
 		}
 		setPieceEnableFrame.contentPane.add(btnConfirm)

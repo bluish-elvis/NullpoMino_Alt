@@ -1,52 +1,52 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<comment>Sequencer language file - Japanese</comment>
+ <comment>Sequencer language file - Japanese</comment>
 
-<!--Title-->
-<entry key="Title_Sequencer">NullpoMino Sequence Viewer</entry>
-<entry key="Title_SetPieceEnable">出現可能ピースの設定</entry>
-<entry key="Title_FileLoadFailed">読み込み失敗</entry>
-<entry key="Title_FileSaveFailed">保存失敗</entry>
+ <!--Title-->
+ <entry key="Title_Sequencer">NullpoMino Sequence Viewer</entry>
+ <entry key="Title_SetPieceEnable">出現可能ピースの設定</entry>
+ <entry key="Title_FileLoadFailed">読み込み失敗</entry>
+ <entry key="Title_FileSaveFailed">保存失敗</entry>
 
-<!--Message-->
-<entry key="Message_FileLoadFailed">リプレイファイルの読み込みに失敗しました。</entry>
-<entry key="Message_FileSaveFailed">NEXT順テキストファイルの保存に失敗しました。</entry>
+ <!--Message-->
+ <entry key="Message_FileLoadFailed">リプレイファイルの読み込みに失敗しました。</entry>
+ <entry key="Message_FileSaveFailed">NEXT順テキストファイルの保存に失敗しました。</entry>
 
-<!--Menu-->
-<entry key="JMenu_File">ファイル</entry>
-<entry key="JMenuItem_New">新規作成(N)</entry>
-<entry key="JMenuItem_Open">リプレイを開く(O)</entry>
-<entry key="JMenuItem_Save">テキストファイルに保存(S)</entry>
-<entry key="JMenuItem_Reset">リセット(R)</entry>
-<entry key="JMenuItem_Exit">終了(X)</entry>
-<entry key="JMenu_Options">オプション</entry>
-<entry key="JMenuItem_SetPieceEnable">出現可能ピースの設定...</entry>
+ <!--Menu-->
+ <entry key="JMenu_File">ファイル</entry>
+ <entry key="JMenuItem_New">新規作成(N)</entry>
+ <entry key="JMenuItem_Open">リプレイを開く(O)</entry>
+ <entry key="JMenuItem_Save">テキストファイルに保存(S)</entry>
+ <entry key="JMenuItem_Reset">リセット(R)</entry>
+ <entry key="JMenuItem_Exit">終了(X)</entry>
+ <entry key="JMenu_Options">オプション</entry>
+ <entry key="JMenuItem_SetPieceEnable">出現可能ピースの設定...</entry>
 
-<!--Option-->
-<entry key="Option_Seed">乱数種</entry>
-<entry key="Option_SequenceLength">表示するピース数</entry>
-<entry key="Option_SequenceOffset">表示開始オフセット</entry>
-<entry key="Option_Randomizer">NEXT順生成アルゴリズム</entry>
-<entry key="Option_Generate">NEXT順を生成(G)</entry>
+ <!--Option-->
+ <entry key="Option_Seed">乱数種</entry>
+ <entry key="Option_SequenceLength">表示するピース数</entry>
+ <entry key="Option_SequenceOffset">表示開始オフセット</entry>
+ <entry key="Option_Randomizer">NEXT順生成アルゴリズム</entry>
+ <entry key="Option_Generate">NEXT順を生成(G)</entry>
 
-<!--PieceNames-->
-<entry key="PieceName0">I</entry>
-<entry key="PieceName1">L</entry>
-<entry key="PieceName2">O</entry>
-<entry key="PieceName3">Z</entry>
-<entry key="PieceName4">T</entry>
-<entry key="PieceName5">J</entry>
-<entry key="PieceName6">S</entry>
-<entry key="PieceName7">[I1]</entry>
-<entry key="PieceName8">[I2]</entry>
-<entry key="PieceName9">[I3]</entry>
-<entry key="PieceName10">[L3]</entry>
+ <!--PieceNames-->
+ <entry key="PieceName0">I</entry>
+ <entry key="PieceName1">L</entry>
+ <entry key="PieceName2">O</entry>
+ <entry key="PieceName3">Z</entry>
+ <entry key="PieceName4">T</entry>
+ <entry key="PieceName5">J</entry>
+ <entry key="PieceName6">S</entry>
+ <entry key="PieceName7">[I1]</entry>
+ <entry key="PieceName8">[I2]</entry>
+ <entry key="PieceName9">[I3]</entry>
+ <entry key="PieceName10">[L3]</entry>
 
-<!--FileChooser-->
-<entry key="FileChooser_ReplayFile">リプレイファイル (*.rep)</entry>
-<entry key="FileChooser_TextFile">テキストファイル (*.txt)</entry>
+ <!--FileChooser-->
+ <entry key="FileChooser_ReplayFile">リプレイファイル (*.rep)</entry>
+ <entry key="FileChooser_TextFile">テキストファイル (*.txt)</entry>
 
-<!--Buttons-->
-<entry key="Button_Confirm">OK</entry>
+ <!--Buttons-->
+ <entry key="Button_Confirm">OK</entry>
 </properties>

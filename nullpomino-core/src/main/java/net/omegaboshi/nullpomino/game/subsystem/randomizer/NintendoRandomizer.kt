@@ -10,8 +10,8 @@ class NintendoRandomizer:Randomizer {
 	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
 
 	override fun next():Int {
-		var id = r.nextInt(roll)
-		if(id==prev||id==pieces.size) id = r.nextInt(pieces.size)
+		var id:Int = r.nextInt(roll)
+		if(id==prev||id>=pieces.size) id = r.nextInt(pieces.size)
 		prev = id
 		return pieces[id]
 	}

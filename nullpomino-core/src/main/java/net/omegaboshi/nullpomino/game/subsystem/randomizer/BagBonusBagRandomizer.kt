@@ -2,23 +2,19 @@ package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 class BagBonusBagRandomizer:BagBonusRandomizer {
 
-	private var bonusbag:IntArray = IntArray(pieces.size)
-	private var bonuspt:Int = 0
+	private var bonusbag:IntArray = IntArray(pieces.size){it}
+	private var bonuspt:Int = pieces.size
 
 	constructor():super()
 
 	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
 
-	init {
-		for(i in pieces.indices) {
-			bag[i] = pieces[i]
-			bonusbag[i] = pieces[i]
-		}
-		shuffleBonus()
-		shuffle()
-	}
-
 	override fun shuffle() {
+		if(bonuspt>=pieces.size) {
+			bonuspt = 0
+			shuffleBonus()
+		}
+		bonus = pieces.size
 		bag[bonus] = bonusbag[bonuspt]
 		for(i in baglen downTo 2) {
 			val j = r.nextInt(i)
@@ -32,6 +28,7 @@ class BagBonusBagRandomizer:BagBonusRandomizer {
 	}
 
 	private fun shuffleBonus() {
+		bonusbag = IntArray(pieces.size){it}
 		for(i in pieces.size downTo 2) {
 			val j = r.nextInt(i)
 			val temp = bonusbag[i-1]
@@ -41,17 +38,11 @@ class BagBonusBagRandomizer:BagBonusRandomizer {
 	}
 
 	override fun next():Int {
-		val id = bag[pt]
-		pt++
-		if(pt==baglen) {
+		if(pt>=baglen) {
 			pt = 0
 			bonuspt++
-			if(bonuspt==pieces.size) {
-				bonuspt = 0
-				shuffleBonus()
-			}
 			shuffle()
 		}
-		return id
+		return bag[pt++]
 	}
 }

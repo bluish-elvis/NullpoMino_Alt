@@ -1,52 +1,52 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<comment>Sequencer language file - Default English</comment>
+ <comment>Sequencer language file - Default English</comment>
 
-<!--Title-->
-<entry key="Title_Sequencer">NullpoMino Sequence Viewer</entry>
-<entry key="Title_SetPieceEnable">Set piece enable</entry>
-<entry key="Title_FileLoadFailed">Load failed</entry>
-<entry key="Title_FileSaveFailed">Save failed</entry>
+ <!--Title-->
+ <entry key="Title_Sequencer">NullpoMino Sequence Viewer</entry>
+ <entry key="Title_SetPieceEnable">Set piece enable</entry>
+ <entry key="Title_FileLoadFailed">Load failed</entry>
+ <entry key="Title_FileSaveFailed">Save failed</entry>
 
-<!--Message-->
-<entry key="Message_FileLoadFailed">Failed to load a replay file</entry>
-<entry key="Message_FileSaveFailed">Failed to save a sequence file</entry>
+ <!--Message-->
+ <entry key="Message_FileLoadFailed">Failed to load a replay file</entry>
+ <entry key="Message_FileSaveFailed">Failed to save a sequence file</entry>
 
-<!--Menu-->
-<entry key="JMenu_File">File</entry>
-<entry key="JMenuItem_New">New</entry>
-<entry key="JMenuItem_Open">Open replay file...</entry>
-<entry key="JMenuItem_Save">Save to text file...</entry>
-<entry key="JMenuItem_Reset">Reset all</entry>
-<entry key="JMenuItem_Exit">Exit</entry>
-<entry key="JMenu_Options">Options</entry>
-<entry key="JMenuItem_SetPieceEnable">Set piece enable...</entry>
+ <!--Menu-->
+ <entry key="JMenu_File">File</entry>
+ <entry key="JMenuItem_New">New</entry>
+ <entry key="JMenuItem_Open">Open replay file...</entry>
+ <entry key="JMenuItem_Save">Save to text file...</entry>
+ <entry key="JMenuItem_Reset">Reset all</entry>
+ <entry key="JMenuItem_Exit">Exit</entry>
+ <entry key="JMenu_Options">Options</entry>
+ <entry key="JMenuItem_SetPieceEnable">Set piece enable...</entry>
 
-<!--Option-->
-<entry key="Option_Seed">Seed</entry>
-<entry key="Option_SequenceLength">Sequence Length</entry>
-<entry key="Option_SequenceOffset">Sequence Offset</entry>
-<entry key="Option_Randomizer">Randomizer</entry>
-<entry key="Option_Generate">Generate Sequence</entry>
+ <!--Option-->
+ <entry key="Option_Seed">Seed</entry>
+ <entry key="Option_SequenceLength">Sequence Length</entry>
+ <entry key="Option_SequenceOffset">Sequence Offset</entry>
+ <entry key="Option_Randomizer">Randomizer</entry>
+ <entry key="Option_Generate">Generate Sequence</entry>
 
-<!--PieceNames-->
-<entry key="PieceName0">I</entry>
-<entry key="PieceName1">L</entry>
-<entry key="PieceName2">O</entry>
-<entry key="PieceName3">Z</entry>
-<entry key="PieceName4">T</entry>
-<entry key="PieceName5">J</entry>
-<entry key="PieceName6">S</entry>
-<entry key="PieceName7">[I1]</entry>
-<entry key="PieceName8">[I2]</entry>
-<entry key="PieceName9">[I3]</entry>
-<entry key="PieceName10">[L3]</entry>
+ <!--PieceNames-->
+ <entry key="PieceName0">I</entry>
+ <entry key="PieceName1">L</entry>
+ <entry key="PieceName2">O</entry>
+ <entry key="PieceName3">Z</entry>
+ <entry key="PieceName4">T</entry>
+ <entry key="PieceName5">J</entry>
+ <entry key="PieceName6">S</entry>
+ <entry key="PieceName7">[I1]</entry>
+ <entry key="PieceName8">[I2]</entry>
+ <entry key="PieceName9">[I3]</entry>
+ <entry key="PieceName10">[L3]</entry>
 
-<!--FileChooser-->
-<entry key="FileChooser_ReplayFile">Replay File (*.rep)</entry>
-<entry key="FileChooser_TextFile">Text File (*.txt)</entry>
+ <!--FileChooser-->
+ <entry key="FileChooser_ReplayFile">Replay File (*.rep)</entry>
+ <entry key="FileChooser_TextFile">Text File (*.txt)</entry>
 
-<!--Buttons-->
-<entry key="Button_Confirm">OK</entry>
+ <!--Buttons-->
+ <entry key="Button_Confirm">OK</entry>
 </properties>
