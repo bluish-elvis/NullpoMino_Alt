@@ -313,12 +313,12 @@ class GrandPhantom:AbstractMode() {
 
 		if(sectionlasttime<best) {
 			if(medalST<3) {
-				engine.playSE("medal1")
+				engine.playSE("medal3")
 				medalST = 3
 			}
 			if(!owner.replayMode) sectionIsNewRecord[sectionNumber] = true
 		} else if(sectionlasttime<best+300&&medalST<2) {
-			engine.playSE("medal1")
+			engine.playSE("medal2")
 			medalST = 2
 		} else if(sectionlasttime<best+600&&medalST<1) {
 			engine.playSE("medal1")
@@ -331,8 +331,7 @@ class GrandPhantom:AbstractMode() {
 		val rotateAverage = rotateCount.toFloat()/engine.statistics.totalPieceLocked.toFloat()
 
 		if(rotateAverage>=1.2f&&medalRO<3) {
-			receiver.playSE("medal1")
-			medalRO++
+			receiver.playSE("medal${++medalRO}")
 		}
 	}
 
@@ -482,12 +481,12 @@ class GrandPhantom:AbstractMode() {
 				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time.toFloat()), time>0&&time<10*60, 2f)
 			}
 
-			getMedalFontColor(medalAC)?.let{receiver.drawScoreFont(engine, playerID, 0, 20, "AC", it)}
-			getMedalFontColor(medalST)?.let{receiver.drawScoreFont(engine, playerID, 3, 20, "ST", it)}
-			getMedalFontColor(medalSK)?.let{receiver.drawScoreFont(engine, playerID, 0, 21, "SK", it)}
-			getMedalFontColor(medalRE)?.let{receiver.drawScoreFont(engine, playerID, 3, 21, "RE", it)}
-			getMedalFontColor(medalRO)?.let{receiver.drawScoreFont(engine, playerID, 0, 22, "RO", it)}
-			getMedalFontColor(medalCO)?.let{receiver.drawScoreFont(engine, playerID, 3, 22, "CO", it)}
+			receiver.drawScoreMedal(engine, playerID, 0, 20, "AC", medalAC)
+			receiver.drawScoreMedal(engine, playerID, 3, 20, "ST", medalST)
+			receiver.drawScoreMedal(engine, playerID, 0, 21, "SK", medalSK)
+			receiver.drawScoreMedal(engine, playerID, 3, 21, "RE", medalRE)
+			receiver.drawScoreMedal(engine, playerID, 0, 22, "RO", medalRO)
+			receiver.drawScoreMedal(engine, playerID, 3, 22, "CO", medalCO)
 
 			if(showsectiontime&&sectionTime.isNotEmpty()) {
 				val x = if(receiver.nextDisplayType==2) 8 else 12
@@ -532,8 +531,7 @@ class GrandPhantom:AbstractMode() {
 					if(blocks>=150) recoveryFlag = true
 				} else if(blocks<=70) {
 					recoveryFlag = false
-					receiver.playSE("medal1")
-					medalRE++
+					receiver.playSE("medal${++medalRE}")
 				}
 			}
 		}
@@ -592,20 +590,18 @@ class GrandPhantom:AbstractMode() {
 				if(big) {
 					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
 						||engine.statistics.totalQuadruple==4) {
-						receiver.playSE("medal1")
-						medalSK++
+						receiver.playSE("medal${++medalSK}")
+
 					}
 				} else if(engine.statistics.totalQuadruple==5||engine.statistics.totalQuadruple==10
 					||engine.statistics.totalQuadruple==17) {
-					receiver.playSE("medal1")
-					medalSK++
+					receiver.playSE("medal${++medalSK}")
 				}
 			}
 
 			if(engine.field!!.isEmpty)
 				if(medalAC<3) {
-					receiver.playSE("medal1")
-					medalAC++
+					receiver.playSE("medal${++medalAC}")
 				}
 
 			if(big) {
@@ -613,20 +609,20 @@ class GrandPhantom:AbstractMode() {
 					receiver.playSE("medal1")
 					medalCO = 1
 				} else if(engine.combo>=3&&medalCO<2) {
-					receiver.playSE("medal1")
+					receiver.playSE("medal2")
 					medalCO = 2
 				} else if(engine.combo>=4&&medalCO<3) {
-					receiver.playSE("medal1")
+					receiver.playSE("medal3")
 					medalCO = 3
 				}
 			} else if(engine.combo>=4&&medalCO<1) {
 				receiver.playSE("medal1")
 				medalCO = 1
 			} else if(engine.combo>=5&&medalCO<2) {
-				receiver.playSE("medal1")
+				receiver.playSE("medal2")
 				medalCO = 2
 			} else if(engine.combo>=7&&medalCO<3) {
-				receiver.playSE("medal1")
+				receiver.playSE("medal3")
 				medalCO = 3
 			}
 

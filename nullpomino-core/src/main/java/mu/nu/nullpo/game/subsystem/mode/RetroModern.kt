@@ -451,7 +451,7 @@ class RetroModern:AbstractMode() {
 			num = 100
 		else if(engine.lineClearing>=4) num = 100000
 		if(linecount>=3) num *= 5
-		receiver.drawMenuDecorations(engine, playerID, 2, engine.lastline-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
+		receiver.drawMenuBadges(engine, playerID, 2, engine.lastline-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
 		receiver.drawMenuNum(engine, playerID, 4, engine.lastline, lastscore.toString(), COLOR.CYAN)
 
 		if(engine.split) {

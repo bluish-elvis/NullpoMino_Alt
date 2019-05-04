@@ -173,7 +173,7 @@ class RendererSlick:EventReceiver() {
 		graphics.color = Color.white
 	}
 
-	override fun drawMenuDecorations(engine:GameEngine, playerID:Int, x:Int, y:Int, nums:Int, scale:Float) {
+	override fun drawMenuBadges(engine:GameEngine, playerID:Int, x:Int, y:Int, nums:Int, scale:Float) {
 		var x = x
 		var y = y
 		x *= BS
@@ -182,16 +182,16 @@ class RendererSlick:EventReceiver() {
 			x += getFieldDisplayPositionX(engine, playerID)+4
 			y += getFieldDisplayPositionY(engine, playerID)+52
 		}
-		drawDecorations(x, y, BS*10, nums, scale)
+		drawBadges(x, y, BS*10, nums, scale)
 	}
 
-	override fun drawScoreDecorations(engine:GameEngine, playerID:Int, x:Int, y:Int, width:Int, nums:Int,
+	override fun drawScoreBadges(engine:GameEngine, playerID:Int, x:Int, y:Int, width:Int, nums:Int,
 		scale:Float) {
-		drawDecorations(getScoreDisplayPositionX(engine, playerID)+x*BS, getScoreDisplayPositionY(engine, playerID)+y*BS, width, nums, scale)
+		drawBadges(getScoreDisplayPositionX(engine, playerID)+x*BS, getScoreDisplayPositionY(engine, playerID)+y*BS, width, nums, scale)
 	}
 
 	/* 勲章を描画 */
-	override fun drawDecorations(x:Int, y:Int, width:Int, nums:Int, scale:Float) {
+	override fun drawBadges(x:Int, y:Int, width:Int, nums:Int, scale:Float) {
 		var nums = nums
 		var nx = x
 		var ny = y
@@ -219,6 +219,28 @@ class RendererSlick:EventReceiver() {
 				mh = 0
 			}
 		}
+	}
+
+	override fun drawMenuMedal(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, tier:Int, scale:Float) {
+		var x = x
+		var y = y
+		x *= BS
+		y *= BS
+		if(!engine.owner.menuOnly) {
+			x += getFieldDisplayPositionX(engine, playerID)+4
+			y += getFieldDisplayPositionY(engine, playerID)+52
+		}
+		drawMedal(x, y, str, tier, scale)
+	}
+
+	override fun drawScoreMedal(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, tier:Int,
+		scale:Float) {
+		drawMedal(getScoreDisplayPositionX(engine, playerID)+x*BS, getScoreDisplayPositionY(engine, playerID)+y*BS, str, tier, scale)
+	}
+
+	/* 勲章を描画 */
+	override fun drawMedal(x:Int, y:Int, str:String, tier:Int, scale:Float) {
+		FontMedal.printFont(x, y, str, tier, scale)
 	}
 
 	/* Get key name by button ID */
@@ -630,14 +652,14 @@ class RendererSlick:EventReceiver() {
 						graphics.drawLine((x3+ls).toFloat(), y3.toFloat(), (x3+ls).toFloat(), (y3+ls).toFloat())
 						graphics.drawLine((x3-1+ls).toFloat(), y3.toFloat(), (x3-1+ls).toFloat(), (y3+ls).toFloat())
 					}
-					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT ,Block.ATTRIBUTE.CONNECT_UP))
-						graphics . fillRect (x3.toFloat(), y3.toFloat(), 2f, 2f)
-					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT ,Block.ATTRIBUTE.CONNECT_DOWN))
-						graphics . fillRect (x3.toFloat(), (y3+blksize*2-2).toFloat(), 2f, 2f)
-					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT ,Block.ATTRIBUTE.CONNECT_UP))
-						graphics . fillRect ((x3+blksize*2-2).toFloat(), y3.toFloat(), 2f, 2f)
-					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT ,Block.ATTRIBUTE.CONNECT_DOWN))
-						graphics . fillRect ((x3+blksize*2-2).toFloat(), (y3+blksize*2-2).toFloat(), 2f, 2f)
+					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_UP))
+						graphics.fillRect(x3.toFloat(), y3.toFloat(), 2f, 2f)
+					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_DOWN))
+						graphics.fillRect(x3.toFloat(), (y3+blksize*2-2).toFloat(), 2f, 2f)
+					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_UP))
+						graphics.fillRect((x3+blksize*2-2).toFloat(), y3.toFloat(), 2f, 2f)
+					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
+						graphics.fillRect((x3+blksize*2-2).toFloat(), (y3+blksize*2-2).toFloat(), 2f, 2f)
 				}
 		}
 	}

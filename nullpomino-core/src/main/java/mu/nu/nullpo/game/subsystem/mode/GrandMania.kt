@@ -374,7 +374,7 @@ class GrandMania:AbstractMode() {
 
 		if(sectionlasttime<best) {
 			if(medalST<3) {
-				engine.playSE("medal1")
+				engine.playSE("medal3")
 				if(medalST<1) dectemp += 3
 				if(medalST<2) dectemp += 6
 				medalST = 3
@@ -385,7 +385,7 @@ class GrandMania:AbstractMode() {
 				sectionIsNewRecord[sectionNumber] = true
 			}
 		} else if(sectionlasttime<best+300&&medalST<2) {
-			engine.playSE("medal1")
+			engine.playSE("medal2")
 			if(medalST<1) dectemp += 3
 			medalST = 2
 			dectemp += 6
@@ -403,8 +403,7 @@ class GrandMania:AbstractMode() {
 		val rotateAverage = rotateCount.toFloat()/engine.statistics.totalPieceLocked.toFloat()
 
 		if(rotateAverage>=1.2f&&medalRO<3) {
-			engine.playSE("medal1")
-			medalRO++
+			engine.playSE("medal${++medalRO}")
 			dectemp += 6
 		}
 	}
@@ -494,8 +493,8 @@ class GrandMania:AbstractMode() {
 		receiver.drawScoreFont(engine, playerID, 0, 0, "GRAND MANIA", COLOR.CYAN)
 
 		receiver.drawScoreFont(engine, playerID, -1, -4*2, "DECORATION", scale = .5f)
-		receiver.drawScoreDecorations(engine, playerID, 0, -3, 100, decoration)
-		receiver.drawScoreDecorations(engine, playerID, 5, -4, 100, dectemp)
+		receiver.drawScoreBadges(engine, playerID, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, playerID, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startlevel==0&&!big&&!always20g
 				&&engine.ai==null)
@@ -603,12 +602,12 @@ class GrandMania:AbstractMode() {
 			}
 
 			// medal
-			getMedalFontColor(medalAC)?.let {receiver.drawScoreFont(engine, playerID, 0, 20, "AC", it)}
-			getMedalFontColor(medalST)?.let {receiver.drawScoreFont(engine, playerID, 3, 20, "ST", it)}
-			getMedalFontColor(medalSK)?.let {receiver.drawScoreFont(engine, playerID, 0, 21, "SK", it)}
-			getMedalFontColor(medalRE)?.let {receiver.drawScoreFont(engine, playerID, 3, 21, "RE", it)}
-			getMedalFontColor(medalRO)?.let {receiver.drawScoreFont(engine, playerID, 0, 22, "SK", it)}
-			getMedalFontColor(medalCO)?.let {receiver.drawScoreFont(engine, playerID, 3, 22, "CO", it)}
+			receiver.drawScoreMedal(engine, playerID, 0, 20, "AC", medalAC)
+			receiver.drawScoreMedal(engine, playerID, 3, 20, "ST", medalST)
+			receiver.drawScoreMedal(engine, playerID, 0, 21, "SK", medalSK)
+			receiver.drawScoreMedal(engine, playerID, 3, 21, "RE", medalRE)
+			receiver.drawScoreMedal(engine, playerID, 0, 22, "SK", medalRO)
+			receiver.drawScoreMedal(engine, playerID, 3, 22, "CO", medalCO)
 
 			// Section Time
 			if(showsectiontime&&sectionTime.isNotEmpty()) {
@@ -732,9 +731,8 @@ class GrandMania:AbstractMode() {
 
 				} else if(blocks<=70) {
 					recoveryFlag = false
-					engine.playSE("medal1")
 					dectemp += 5+medalRE// 5 11 18
-					medalRE++
+					engine.playSE("medal${++medalRE}")
 				}
 
 			}
@@ -780,6 +778,7 @@ class GrandMania:AbstractMode() {
 
 				if(tableGradeChange[grade]!=-1&&gradeInternal>=tableGradeChange[grade]) {
 					engine.playSE("gradeup")
+					engine.playSE("grade${grade*4/17}")
 					grade++
 					dectemp++
 					gradeflash = 180
@@ -795,14 +794,12 @@ class GrandMania:AbstractMode() {
 				if(big) {
 					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
 						||engine.statistics.totalQuadruple==4) {
-						engine.playSE("medal1")
-						medalSK++
+						engine.playSE("medal${++medalSK}")
 					}
 				} else if(engine.statistics.totalQuadruple==10||engine.statistics.totalQuadruple==20
 					||engine.statistics.totalQuadruple==30) {
-					engine.playSE("medal1")
 					dectemp += 3+medalSK*2// 3 8 15
-					medalSK++
+					engine.playSE("medal${++medalSK}")
 				}
 
 			}
@@ -814,9 +811,8 @@ class GrandMania:AbstractMode() {
 				if(lines==3) dectemp += 25
 				if(lines==4) dectemp += 150
 				if(medalAC<3) {
-					engine.playSE("medal1")
 					dectemp += 3+medalAC*4// 3 10 21
-					medalAC++
+					engine.playSE("medal${++medalAC}")
 				}
 			}
 
@@ -826,10 +822,10 @@ class GrandMania:AbstractMode() {
 					engine.playSE("medal1")
 					medalCO = 1
 				} else if(engine.combo>=3&&medalCO<2) {
-					engine.playSE("medal1")
+					engine.playSE("medal2")
 					medalCO = 2
 				} else if(engine.combo>=4&&medalCO<3) {
-					engine.playSE("medal1")
+					engine.playSE("medal3")
 					medalCO = 3
 				}
 			} else if(engine.combo>=3&&medalCO<1) {
@@ -837,11 +833,11 @@ class GrandMania:AbstractMode() {
 				medalCO = 1
 				dectemp += 3// 3
 			} else if(engine.combo>=4&&medalCO<2) {
-				engine.playSE("medal1")
+				engine.playSE("medal2")
 				medalCO = 2
 				dectemp += 4// 7
 			} else if(engine.combo>=5&&medalCO<3) {
-				engine.playSE("medal1")
+				engine.playSE("medal3")
 				medalCO = 3
 				dectemp += 5// 12
 			}
@@ -877,14 +873,14 @@ class GrandMania:AbstractMode() {
 
 				// 段位M
 				if(mrollFlag) {
+					engine.playSE("applause4")
 					grade = 18
 					gradeInternal = 32
 					gradeflash = 180
 					lastGradeTime = engine.statistics.time
-				}
+				}else engine.playSE("applause3")
 			} else if(engine.statistics.level>=nextseclv) {
 				// Next Section
-				engine.playSE("levelup")
 
 				// Background切り替え
 				owner.backgroundStatus.fadesw = true
@@ -893,10 +889,11 @@ class GrandMania:AbstractMode() {
 
 				// BGM切り替え
 				if(tableBGMChange[bgmlv]!=-1&&engine.statistics.level>=tableBGMChange[bgmlv]) {
+					engine.playSE("levelup_section")
 					bgmlv++
 					owner.bgmStatus.fadesw = false
 					owner.bgmStatus.bgm = tableBGM[bgmlv]
-				}
+				}else engine.playSE("levelup")
 
 				// Section Timeを記録
 				sectionlasttime = sectionTime[levelb/100]
@@ -969,7 +966,9 @@ class GrandMania:AbstractMode() {
 					grade = 19
 					gradeflash = 180
 					lastGradeTime = engine.statistics.time
+					engine.playSE("applause5")
 					engine.playSE("gradeup")
+					engine.playSE("grade4")
 					gradeInternal = 33
 					rollclear = 3
 					if(mrollLines>=16) {
@@ -1049,12 +1048,12 @@ class GrandMania:AbstractMode() {
 			}
 			2 -> {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", COLOR.BLUE)
-				getMedalFontColor(medalSK)?.let {receiver.drawMenuFont(engine, playerID, 5, 2, "SK", it)}
-				getMedalFontColor(medalST)?.let {receiver.drawMenuFont(engine, playerID, 8, 2, "ST", it)}
-				getMedalFontColor(medalAC)?.let {receiver.drawMenuFont(engine, playerID, 1, 3, "AC", it)}
-				getMedalFontColor(medalCO)?.let {receiver.drawMenuFont(engine, playerID, 4, 3, "CO", it)}
-				getMedalFontColor(medalRE)?.let {receiver.drawMenuFont(engine, playerID, 7, 3, "RE", it)}
-				getMedalFontColor(medalRO)?.let {receiver.drawMenuFont(engine, playerID, 8, 4, "RO", it)}
+				receiver.drawMenuMedal(engine, playerID, 5, 2, "SK", medalSK)
+				receiver.drawMenuMedal(engine, playerID, 8, 2, "ST", medalST)
+				receiver.drawMenuMedal(engine, playerID, 1, 3, "AC", medalAC)
+				receiver.drawMenuMedal(engine, playerID, 4, 3, "CO", medalCO)
+				receiver.drawMenuMedal(engine, playerID, 7, 3, "RE", medalRE)
+				receiver.drawMenuMedal(engine, playerID, 8, 4, "RO", medalRO)
 
 				drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, AbstractMode.Statistic.LPM, AbstractMode.Statistic.SPM, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.PPS)
 

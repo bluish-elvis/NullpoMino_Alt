@@ -275,12 +275,12 @@ class GrandFinale:AbstractMode() {
 
 		if(sectionlasttime<best) {
 			if(medalST<3) {
-				engine.playSE("medal1")
+				engine.playSE("medal3")
 				medalST = 3
 			}
 			if(!owner.replayMode) sectionIsNewRecord[sectionNumber] = true
 		} else if(sectionlasttime<best+300&&medalST<2) {
-			engine.playSE("medal1")
+			engine.playSE("medal2")
 			medalST = 2
 		} else if(sectionlasttime<best+600&&medalST<1) {
 			engine.playSE("medal1")
@@ -470,10 +470,10 @@ class GrandFinale:AbstractMode() {
 			}
 
 			// Medals
-			getMedalFontColor(medalAC)?.let {receiver.drawScoreFont(engine, playerID, 0, 20, "AC", it)}
-			getMedalFontColor(medalST)?.let {receiver.drawScoreFont(engine, playerID, 3, 20, "ST", it)}
-			getMedalFontColor(medalSK)?.let {receiver.drawScoreFont(engine, playerID, 0, 21, "SK", it)}
-			getMedalFontColor(medalCO)?.let {receiver.drawScoreFont(engine, playerID, 3, 21, "CO", it)}
+			receiver.drawScoreMedal(engine, playerID, 0, 20, "AC", medalAC)
+			receiver.drawScoreMedal(engine, playerID, 3, 20, "ST", medalST)
+			receiver.drawScoreMedal(engine, playerID, 0, 21, "SK", medalSK)
+			receiver.drawScoreMedal(engine, playerID, 3, 21, "CO", medalCO)
 
 			// Section Time
 			if(showsectiontime&&sectionTime.isNotEmpty()) {
@@ -587,20 +587,17 @@ class GrandFinale:AbstractMode() {
 				if(big) {
 					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
 						||engine.statistics.totalQuadruple==4) {
-						receiver.playSE("medal1")
-						medalSK++
+						receiver.playSE("medal${++medalSK}")
 					}
 				} else if(engine.statistics.totalQuadruple==5||engine.statistics.totalQuadruple==10
 					||engine.statistics.totalQuadruple==17) {
-					receiver.playSE("medal1")
-					medalSK++
+					receiver.playSE("medal${++medalSK}")
 				}
 			}
 			// AC medal
 			if(engine.field!!.isEmpty)
 				if(medalAC<3) {
-					receiver.playSE("medal1")
-					medalAC++
+					receiver.playSE("medal${++medalAC}")
 				}
 
 			// CO medal
@@ -805,10 +802,10 @@ class GrandFinale:AbstractMode() {
 			}
 		} else if(engine.statc[1]==2) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", COLOR.RED)
-			getMedalFontColor(medalAC)?.let {receiver.drawMenuFont(engine, playerID, 5, 3, "AC", it)}
-			getMedalFontColor(medalST)?.let {receiver.drawMenuFont(engine, playerID, 8, 3, "ST", it)}
-			getMedalFontColor(medalSK)?.let {receiver.drawMenuFont(engine, playerID, 5, 4, "SK", it)}
-			getMedalFontColor(medalCO)?.let {receiver.drawMenuFont(engine, playerID, 8, 4, "CO", it)}
+			receiver.drawMenuMedal(engine, playerID, 5, 3, "AC", medalAC)
+			receiver.drawMenuMedal(engine, playerID, 8, 3, "ST", medalST)
+			receiver.drawMenuMedal(engine, playerID, 5, 4, "SK", medalSK)
+			receiver.drawMenuMedal(engine, playerID, 8, 4, "CO", medalCO)
 
 			drawResultStats(engine, playerID, receiver, 6, COLOR.RED, AbstractMode.Statistic.LPS, AbstractMode.Statistic.SPS, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.PPS)
 		}

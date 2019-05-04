@@ -293,7 +293,7 @@ class GrandLightning:AbstractMode() {
 
 		if(sectionlasttime<best) {
 			if(medalST<3) {
-				engine.playSE("medal1")
+				engine.playSE("medal3")
 				if(medalST<1) dectemp += 3
 				if(medalST<2) dectemp += 6
 				medalST = 3
@@ -304,7 +304,7 @@ class GrandLightning:AbstractMode() {
 				sectionIsNewRecord[sectionNumber] = true
 			}
 		} else if(sectionlasttime<best+300&&medalST<2) {
-			engine.playSE("medal1")
+			engine.playSE("medal2")
 			if(medalST<1) dectemp += 3
 			medalST = 2
 			dectemp += 6
@@ -407,8 +407,8 @@ class GrandLightning:AbstractMode() {
 		receiver.drawScoreFont(engine, playerID, 0, 0, "SPEED MANIA 2", COLOR.RED)
 
 		receiver.drawScoreFont(engine, playerID, -1, -4*2, "DECORATION", scale = .5f)
-		receiver.drawScoreDecorations(engine, playerID, 0, -3, 100, decoration)
-		receiver.drawScoreDecorations(engine, playerID, 5, -4, 100, dectemp)
+		receiver.drawScoreBadges(engine, playerID, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, playerID, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
@@ -496,10 +496,10 @@ class GrandLightning:AbstractMode() {
 					COLOR.ORANGE)
 
 			// medal
-			getMedalFontColor(medalAC)?.let {receiver.drawScoreFont(engine, playerID, 0, 20, "AC", it)}
-			getMedalFontColor(medalST)?.let {receiver.drawScoreFont(engine, playerID, 3, 20, "ST", it)}
-			getMedalFontColor(medalSK)?.let {receiver.drawScoreFont(engine, playerID, 0, 21, "SK", it)}
-			getMedalFontColor(medalCO)?.let {receiver.drawScoreFont(engine, playerID, 3, 21, "CO", it)}
+			receiver.drawScoreMedal(engine, playerID, 0, 20, "AC", medalAC)
+			receiver.drawScoreMedal(engine, playerID, 3, 20, "ST", medalST)
+			receiver.drawScoreMedal(engine, playerID, 0, 21, "SK", medalSK)
+			receiver.drawScoreMedal(engine, playerID, 3, 21, "CO", medalCO)
 			// Section Time
 			if(showsectiontime&&sectionTime.isNotEmpty()) {
 				val y = if(receiver.nextDisplayType==2) 4 else 2
@@ -630,9 +630,8 @@ class GrandLightning:AbstractMode() {
 				if(lines==3) dectemp += 25
 				if(lines==4) dectemp += 150
 				if(medalAC<3) {
-					engine.playSE("medal1")
 					dectemp += 3+medalAC*4// 3 10 21
-					medalAC++
+					engine.playSE("medal${++medalAC}")
 				}
 			}
 
@@ -642,10 +641,10 @@ class GrandLightning:AbstractMode() {
 					engine.playSE("medal1")
 					medalCO = 1
 				} else if(engine.combo>=3&&medalCO<2) {
-					engine.playSE("medal1")
+					engine.playSE("medal2")
 					medalCO = 2
 				} else if(engine.combo>=4&&medalCO<3) {
-					engine.playSE("medal1")
+					engine.playSE("medal3")
 					medalCO = 3
 				}
 			} else if(engine.combo>=3&&medalCO<1) {
@@ -653,11 +652,11 @@ class GrandLightning:AbstractMode() {
 				medalCO = 1
 				dectemp += 3// 3
 			} else if(engine.combo>=4&&medalCO<2) {
-				engine.playSE("medal1")
+				engine.playSE("medal2")
 				medalCO = 2
 				dectemp += 4// 7
 			} else if(engine.combo>=5&&medalCO<3) {
-				engine.playSE("medal1")
+				engine.playSE("medal3")
 				medalCO = 3
 				dectemp += 5// 12
 			}
@@ -879,10 +878,10 @@ class GrandLightning:AbstractMode() {
 			}
 			2 -> {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", COLOR.BLUE)
-				getMedalFontColor(medalAC)?.let {receiver.drawMenuFont(engine, playerID, 5, 2, "AC", it)}
-				getMedalFontColor(medalCO)?.let {receiver.drawMenuFont(engine, playerID, 8, 2, "CO", it)}
-				getMedalFontColor(medalST)?.let {receiver.drawMenuFont(engine, playerID, 2, 3, "ST", it)}
-				getMedalFontColor(medalSK)?.let {receiver.drawMenuFont(engine, playerID, 6, 3, "SK", it)}
+				receiver.drawMenuMedal(engine, playerID, 5, 2, "AC", medalAC)
+				receiver.drawMenuMedal(engine, playerID, 8, 2, "CO", medalCO)
+				receiver.drawMenuMedal(engine, playerID, 2, 3, "ST", medalST)
+				receiver.drawMenuMedal(engine, playerID, 6, 3, "SK", medalSK)
 
 				drawResultStats(engine, playerID, receiver, 4, COLOR.RED, AbstractMode.Statistic.LPM, AbstractMode.Statistic.SPM, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.PPS)
 

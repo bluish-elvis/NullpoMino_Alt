@@ -38,7 +38,7 @@ import java.util.zip.GZIPOutputStream
 open class EventReceiver {
 
 	/** Font cint constants */
-	enum class FONT { NORMAL, NANO, NUM, GRADE, GRADE_BIG, TTF; }
+	enum class FONT { NORMAL, NANO, NUM, GRADE, GRADE_BIG, MEDAL, TTF; }
 
 	/** Font cint constants */
 	enum class COLOR { WHITE, BLUE, RED, PINK, GREEN, YELLOW, CYAN, ORANGE, PURPLE, COBALT; }
@@ -225,7 +225,8 @@ open class EventReceiver {
 		font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
 	}
 
-	fun drawMenuFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+	fun drawMenuFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
+		scale:Float = 1f) =
 		drawMenu(engine, playerID, x, y, str, FONT.NORMAL, color, scale)
 
 	/** [You don't have to override this]
@@ -283,7 +284,8 @@ open class EventReceiver {
 	fun drawMenuNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
 		drawMenuNum(engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.RED else COLOR.BLUE else COLOR.WHITE, scale)
 
-	fun drawMenuNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+	fun drawMenuNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
+		scale:Float = 1f) =
 		drawMenu(engine, playerID, x, y, str, FONT.NANO, color, scale)
 
 	fun drawMenuNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
@@ -299,7 +301,8 @@ open class EventReceiver {
 	 * @param color Font cint
 	 * @param scale Font size
 	 */
-	fun drawMenuGrade(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+	fun drawMenuGrade(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
+		scale:Float = 1f) =
 		drawMenu(engine, playerID, x, y, str, FONT.GRADE, color, scale)
 
 	/** [You don't have to override this]
@@ -326,7 +329,8 @@ open class EventReceiver {
 	 * @param str String to draw
 	 * @param color Font cint
 	 */
-	fun drawMenuTTF(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE) = drawMenu(engine, playerID, x, y, str, font = FONT.TTF, color = color)
+	fun drawMenuTTF(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE) =
+		drawMenu(engine, playerID, x, y, str, font = FONT.TTF, color = color)
 
 	/** [You don't have to override this]
 	 * Draw String inside the field.
@@ -339,7 +343,8 @@ open class EventReceiver {
 	 * @param str String to draw
 	 * @param flag Any boolean variable
 	 */
-	fun drawMenuTTF(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean) = drawMenuTTF(engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.RED else COLOR.BLUE else COLOR.WHITE)
+	fun drawMenuTTF(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean) =
+		drawMenuTTF(engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.RED else COLOR.BLUE else COLOR.WHITE)
 
 	/** Draw String to score display area.
 	 * @param engine GameEngine
@@ -366,7 +371,8 @@ open class EventReceiver {
 	 * @param flag Any boolean variable
 	 * @param scale Font size
 	 */
-	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
+		scale:Float = 1f) =
 		drawScore(engine, playerID, x, y, str, FONT.NORMAL, color, scale)
 
 	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, scale:Float = 1f) =
@@ -384,13 +390,15 @@ open class EventReceiver {
 	 * @param flag Any boolean variable
 	 * @param scale Font size
 	 */
-	fun drawScore(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String,font:FONT = FONT.NORMAL, flag:Boolean, scale:Float = 1f) =
-		drawScore(engine, playerID, x, y, str,font, color = if(flag) (if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE) else COLOR.WHITE, scale = scale)
+	fun drawScore(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, font:FONT = FONT.NORMAL, flag:Boolean,
+		scale:Float = 1f) =
+		drawScore(engine, playerID, x, y, str, font, color = if(flag) (if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE) else COLOR.WHITE, scale = scale)
 
 	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawScore(engine, playerID, x, y, str,FONT.NORMAL, flag = flag, scale = scale)
+		drawScore(engine, playerID, x, y, str, FONT.NORMAL, flag = flag, scale = scale)
 
-	fun drawScoreNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+	fun drawScoreNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
+		scale:Float = 1f) =
 		drawScore(engine, playerID, x, y, str, FONT.NUM, color, scale)
 
 	fun drawScoreNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, scale:Float = 1f) =
@@ -399,13 +407,15 @@ open class EventReceiver {
 	fun drawScoreNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
 		drawScoreNum(engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE, scale)
 
-	fun drawScoreNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+	fun drawScoreNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
+		scale:Float = 1f) =
 		drawScore(engine, playerID, x, y, str, FONT.NANO, color, scale)
 
 	fun drawScoreNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
 		drawScoreNano(engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE, scale)
 
-	fun drawScoreGrade(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+	fun drawScoreGrade(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
+		scale:Float = 1f) =
 		drawScore(engine, playerID, x, y, str, FONT.GRADE, color, scale)
 
 	fun drawScoreGrade(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
@@ -475,7 +485,7 @@ open class EventReceiver {
 	 * @param y Y-coordinate
 	 * @param scale size
 	 */
-	open fun drawScoreDecorations(engine:GameEngine, playerID:Int, x:Int, y:Int,
+	open fun drawScoreBadges(engine:GameEngine, playerID:Int, x:Int, y:Int,
 		width:Int = 0, nums:Int, scale:Float = 1f) {
 	}
 
@@ -486,7 +496,7 @@ open class EventReceiver {
 	 * @param y Y-coordinate
 	 * @param scale size
 	 */
-	open fun drawMenuDecorations(engine:GameEngine, playerID:Int, x:Int, y:Int, nums:Int, scale:Float = 1f) {}
+	open fun drawMenuBadges(engine:GameEngine, playerID:Int, x:Int, y:Int, nums:Int, scale:Float = 1f) {}
 
 	/** Draw Decorations
 	 * @param x X-coordinate
@@ -494,35 +504,35 @@ open class EventReceiver {
 	 * @param width linebreak width
 	 * @param scale size
 	 */
-	open fun drawDecorations(x:Int, y:Int, width:Int = 0, nums:Int, scale:Float = 1f) {}
-
-	/** Draw Badges at score pos
+	open fun drawBadges(x:Int, y:Int, width:Int = 0, nums:Int, scale:Float = 1f) {}
+ 
+	/** Draw Medal at score pos
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param scale size
 	 */
-	fun drawScoreBadges(engine:GameEngine, playerID:Int, x:Int, y:Int, width:Int = 0, nums:Int, scale:Float = 1f) {
+	open fun drawScoreMedal(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {
 	}
 
-	/** Draw Badges at menu pos
+	/** Draw Medal at menu pos
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param scale size
 	 */
-	fun drawMenuBadges(engine:GameEngine, playerID:Int, x:Int, y:Int, nums:Int, scale:Float = 1f) {
+	open fun drawMenuMedal(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, tier:Int, cale:Float = 1f) {
 	}
 
-	/** Draw Badges
+	/** Draw Medal
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param width linebreak width
 	 * @param scale size
 	 */
-	fun drawBadges(x:Int, y:Int, width:Int = 0, nums:Int, scale:Float = 1f) {}
+	open fun drawMedal(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {}
 
 	/** Get width of block image.
 	 * @param engine GameEngine
