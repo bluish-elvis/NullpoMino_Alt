@@ -26,8 +26,7 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.UpdateChecker
-import mu.nu.nullpo.gui.slick.img.FontNano
-import mu.nu.nullpo.gui.slick.img.FontNormal
+import mu.nu.nullpo.gui.slick.img.*
 import org.apache.log4j.Logger
 import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
@@ -91,6 +90,7 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		FontNano.printFont(0, 0, "NULLPOMINO VERSION "+GameManager.versionString,
 			COLOR.ORANGE, 0.5f)
 
+		FontMedal.printFont(600, 432, "ALT", 2)
 		renderChoices(2, minChoiceY, CHOICES)
 
 		FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))

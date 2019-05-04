@@ -59,7 +59,6 @@ object ResourceHolder {
 
 	/** Decoration Spriets : Badges and Medals */
 	internal lateinit var imgBadges:Image
-	internal lateinit var imgMedals:Image
 	/** Regular font */
 	internal lateinit var imgFont:Image
 	internal lateinit var imgFontBig:Image
@@ -71,6 +70,7 @@ object ResourceHolder {
 	/** Grade font */
 	internal lateinit var imgGradeBig:Image
 	internal lateinit var imgGrade:Image
+	internal lateinit var imgFontMedal:Image
 	/** 小物画像 */
 	internal lateinit var imgCursor:Image
 	//public static Image imgSprite;
@@ -158,13 +158,14 @@ object ResourceHolder {
 		imgFontNano = loadImage("$skindir/graphics/font_nano.png")
 		imgFontSmall = loadImage("$skindir/graphics/font_small.png")
 		imgFontBig = loadImage("$skindir/graphics/font_big.png")
+		imgFontMedal = loadImage("$skindir/graphics/font_medal.png")
+
 		imgNumBig = loadImage("$skindir/graphics/number_big.png")
 		imgNum = loadImage("$skindir/graphics/number_small.png")
 		imgGradeBig = loadImage("$skindir/graphics/grade_big.png")
 		imgGrade = loadImage("$skindir/graphics/grade_small.png")
 
 		imgBadges = loadImage("$skindir/graphics/badge.png")
-		imgMedals = loadImage("$skindir/graphics/medal.png")
 
 		imgCursor = loadImage("$skindir/graphics/effects/target.png")
 
@@ -263,6 +264,7 @@ object ResourceHolder {
 			loadSE("regret")
 			for(i in 1..3)
 				loadSE("medal$i")
+					//TODO: MEDAL font
 
 			loadSE("ready")
 			loadSE("go")

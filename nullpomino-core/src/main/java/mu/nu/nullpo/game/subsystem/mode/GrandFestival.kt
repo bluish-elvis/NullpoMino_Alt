@@ -348,8 +348,8 @@ class GrandFestival:AbstractMode() {
 		receiver.drawScoreFont(engine, playerID, 1, 1, "SCORE ATTACK", COLOR.COBALT)
 
 		receiver.drawScoreFont(engine, playerID, -1, -4*2, "DECORATION", scale = .5f)
-		receiver.drawScoreDecorations(engine, playerID, 0, -3, 100, decoration)
-		receiver.drawScoreDecorations(engine, playerID, 5, -4, 100, dectemp)
+		receiver.drawScoreBadges(engine, playerID, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, playerID, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startlevel==0&&!big&&!always20g
 				&&engine.ai==null)
