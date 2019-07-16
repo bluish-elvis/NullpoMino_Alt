@@ -50,7 +50,6 @@ class StateSelectModeFolder:DummyMenuScrollState() {
 	/* Render screen */
 	override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
 		FontNormal.printFontGrid(1, 1, "PICK A MODES FOLDER (${cursor+1}/${list.size})", COLOR.ORANGE)
-		FontNano.printFont(8, 36, ">$strCurrentFolder", COLOR.ORANGE,.5f)
 		FontNormal.printTTF(16, 440, getFolderDesc(list[cursor]))
 	}
 

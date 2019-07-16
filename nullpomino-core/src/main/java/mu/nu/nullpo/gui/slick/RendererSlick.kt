@@ -34,9 +34,14 @@ import mu.nu.nullpo.util.CustomProperties
 import org.lwjgl.input.Keyboard
 import org.newdawn.slick.*
 import java.util.*
+import kotlin.math.cos
+import kotlin.math.pow
 
 /** ゲームの event 処理と描画処理 (Slick版） */
-class RendererSlick:EventReceiver() {
+open class RendererSlick:EventReceiver() {
+	enum class GFX {
+		BLOCK, GEM, HANABI, LINE, SPLASH, BRAVO
+	}
 	/** Log */
 	//static Logger log = Logger.getLogger(RendererSlick.class);
 
@@ -1056,9 +1061,7 @@ class RendererSlick:EventReceiver() {
 					//FontNormal.printFont(x2+16,y+40,NullpoMinoSlick.getUIText("InGame_Next"),COLOR_ORANGE,.5f);
 					FontNano.printFont(x2+16, y+40, "NEXT", COLOR.ORANGE)
 					for(i in 0 until engine.ruleopt.nextDisplay) {
-						val piece = engine.getNextObject(engine.nextPieceCount+i)
-
-						if(piece!=null) {
+						engine.getNextObject(engine.nextPieceCount+i)?.let {piece ->
 							val centerX = (64-(piece.width+1)*16)/2-piece.minimumBlockX*16
 							val centerY = (64-(piece.height+1)*16)/2-piece.minimumBlockY*16
 							drawPiece(x2+centerX, y+48+i*64+centerY, piece, 1f)
@@ -1083,8 +1086,7 @@ class RendererSlick:EventReceiver() {
 				if(engine.ruleopt.nextDisplay>=1) {
 					//FontNormal.printFont(x+60,y,NullpoMinoSlick.getUIText("InGame_Next"),COLOR_ORANGE,.5f);
 					FontNano.printFont(x+60, y, "NEXT", COLOR.ORANGE)
-					val it = engine.getNextObject(engine.nextPieceCount)
-					if(it!=null) {
+					engine.getNextObject(engine.nextPieceCount)?.let {
 						//int x2 = x + 4 + ((-1 + (engine.field.getWidth() - piece.getWidth() + 1) / 2) * 16);
 						val x2 = x+4+engine.getSpawnPosX(engine.field, it)*fldBlkSize //Rules with spawn x modified were misaligned.
 						val y2 = y+48-(it.maximumBlockY+1)*16
@@ -1199,11 +1201,11 @@ class RendererSlick:EventReceiver() {
 				var bg = engine.owner.backgroundStatus.bg%bgmax
 				if(engine.owner.backgroundStatus.fadesw&&!heavyeffect) bg = engine.owner.backgroundStatus.fadebg
 
-				if(bg in 0..(bgmax-1)&&showbg) {
+				if(bg in 0 until bgmax&&showbg) {
 					graphics.color = Color.white
 					val bgi = ResourceHolder.imgPlayBG[bg]
 					if(heavyeffect) {
-						val sc = (1-Math.cos(bgi.rotation/Math.pow(Math.PI, 3.0))/Math.PI).toFloat()*1024f/minOf(bgi.width, bgi.height)
+						val sc = (1-cos(bgi.rotation/Math.PI.pow(3.0))/Math.PI).toFloat()*1024f/minOf(bgi.width, bgi.height)
 						val cx = bgi.width/2*sc
 						val cy = bgi.height/2*sc
 						bgi.setCenterOfRotation(cx, cy)
@@ -1242,7 +1244,7 @@ class RendererSlick:EventReceiver() {
 
 	/* Ready画面の描画処理 */
 	override fun renderReady(engine:GameEngine, playerID:Int) {
-		val graphics = graphics ?: return
+		graphics ?: return
 		if(!engine.allowTextRenderByReceiver) return
 		//if(engine.isVisible == false) return;
 
@@ -1271,20 +1273,24 @@ class RendererSlick:EventReceiver() {
 		val offsetY = getFieldDisplayPositionY(engine, playerID)
 
 		if(engine.statc[0]>1||engine.ruleopt.moveFirstFrame)
-			if(engine.displaysize==1) {
-				if(nextshadow) drawShadowNexts(offsetX+4, offsetY+52, engine, 2f)
-				if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4, offsetY+52, engine, 2f)
-				if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+52, engine, 2f)
-				drawCurrentPiece(offsetX+4, offsetY+52, engine, 2f)
-			} else if(engine.displaysize==0) {
-				if(nextshadow) drawShadowNexts(offsetX+4, offsetY+52, engine, 1f)
-				if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4, offsetY+52, engine, 1f)
-				if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+52, engine, 1f)
-				drawCurrentPiece(offsetX+4, offsetY+52, engine, 1f)
-			} else {
-				if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4, offsetY+4, engine, .5f)
-				if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+4, engine, .5f)
-				drawCurrentPiece(offsetX+4, offsetY+4, engine, .5f)
+			when {
+				engine.displaysize==1 -> {
+					if(nextshadow) drawShadowNexts(offsetX+4, offsetY+52, engine, 2f)
+					if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4, offsetY+52, engine, 2f)
+					if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+52, engine, 2f)
+					drawCurrentPiece(offsetX+4, offsetY+52, engine, 2f)
+				}
+				engine.displaysize==0 -> {
+					if(nextshadow) drawShadowNexts(offsetX+4, offsetY+52, engine, 1f)
+					if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4, offsetY+52, engine, 1f)
+					if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+52, engine, 1f)
+					drawCurrentPiece(offsetX+4, offsetY+52, engine, 1f)
+				}
+				else -> {
+					if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4, offsetY+4, engine, .5f)
+					if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+4, engine, .5f)
+					drawCurrentPiece(offsetX+4, offsetY+4, engine, .5f)
+				}
 			}
 	}
 
@@ -1302,7 +1308,7 @@ class RendererSlick:EventReceiver() {
 
 	override fun lineClear(engine:GameEngine, playerID:Int, y:Int) {
 		val s = if(engine.displaysize==-1) 8 else 16+engine.displaysize*16
-		effectlist.add(EffectObject(GFX_LINE, getFieldDisplayPositionX(engine, playerID)+4, getFieldDisplayPositionY(engine, playerID)+52+y*s, s, engine.fieldWidth))
+		effectlist.add(EffectObject(GFX.LINE, getFieldDisplayPositionX(engine, playerID)+4, getFieldDisplayPositionY(engine, playerID)+52+y*s, s, engine.fieldWidth))
 	}
 
 	/* Blockを消す演出を出すときの処理 */
@@ -1313,10 +1319,10 @@ class RendererSlick:EventReceiver() {
 			// 通常Block
 			if(color>=Block.BLOCK_COLOR_GRAY&&color<=Block.BLOCK_COLOR_PURPLE
 				&&!blk.getAttribute(Block.ATTRIBUTE.BONE))
-				effectlist.add(EffectObject(GFX_BLOCK, getFieldDisplayPositionX(engine, playerID)
+				effectlist.add(EffectObject(GFX.BLOCK, getFieldDisplayPositionX(engine, playerID)
 					+4+x*16, getFieldDisplayPositionY(engine, playerID)+52+y*16, (color-Block.BLOCK_COLOR_GRAY)%ResourceHolder.imgBreak.size))
 			else if(blk.isGemBlock)
-				effectlist.add(EffectObject(GFX_GEM, getFieldDisplayPositionX(engine, playerID)+4
+				effectlist.add(EffectObject(GFX.GEM, getFieldDisplayPositionX(engine, playerID)+4
 					+x*16, getFieldDisplayPositionY(engine, playerID)+52+y*16, (color-Block.BLOCK_COLOR_GEM_RED)%ResourceHolder.imgPErase.size))// 宝石Block
 
 		}
@@ -1325,20 +1331,19 @@ class RendererSlick:EventReceiver() {
 	/* Blockを消す演出を出すときの処理 */
 	override fun shootFireworks(engine:GameEngine, x:Int, y:Int, color:COLOR) {
 		val cint:Int = color.ordinal
-		val obj = EffectObject(if(heavyeffect) GFX_HANABI else GFX_GEM, x, y, cint)
+		val obj = EffectObject(if(heavyeffect) GFX.HANABI else GFX.GEM, x, y, cint)
 		effectlist.add(obj)
 		super.shootFireworks(engine, x, y, color)
 	}
 
 	override fun bravo(engine:GameEngine, playerID:Int) {
-		val obj = EffectObject(GFX_BRAVO, getFieldDisplayPositionX(engine, playerID), getFieldDisplayPositionY(engine, playerID), 0f)
-		effectlist.add(obj)
+		effectlist.add(EffectObject(GFX.BRAVO, getFieldDisplayPositionX(engine, playerID), getFieldDisplayPositionY(engine, playerID), 0f))
 		super.bravo(engine, playerID)
 	}
 
 	/* EXCELLENT画面の描画処理 */
 	override fun renderExcellent(engine:GameEngine, playerID:Int) {
-		val graphics = graphics ?: return
+		graphics ?: return
 		if(!engine.allowTextRenderByReceiver) return
 		if(!engine.isVisible) return
 
@@ -1356,7 +1361,7 @@ class RendererSlick:EventReceiver() {
 
 	/* game over画面の描画処理 */
 	override fun renderGameOver(engine:GameEngine, playerID:Int) {
-		val graphics = graphics ?: return
+		graphics ?: return
 		if(!engine.allowTextRenderByReceiver||!engine.isVisible) return
 		val offsetX = getFieldDisplayPositionX(engine, playerID)
 		val offsetY = getFieldDisplayPositionY(engine, playerID)
@@ -1383,7 +1388,7 @@ class RendererSlick:EventReceiver() {
 
 	/* Render results screen処理 */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		val graphics = graphics ?: return
+		graphics ?: return
 		if(!engine.allowTextRenderByReceiver) return
 		if(!engine.isVisible) return
 
@@ -1399,7 +1404,7 @@ class RendererSlick:EventReceiver() {
 
 	/* fieldエディット画面の描画処理 */
 	override fun renderFieldEdit(engine:GameEngine, playerID:Int) {
-		if(graphics==null) return
+		graphics ?: return
 		val x = getFieldDisplayPositionX(engine, playerID)+4+engine.fldeditX*16
 		val y = getFieldDisplayPositionY(engine, playerID)+52+engine.fldeditY*16
 		val bright = if(engine.fldeditFrames%60>=30) -.5f else -.2f
@@ -1424,27 +1429,29 @@ class RendererSlick:EventReceiver() {
 		while(i<effectlist.size) {
 			val obj = effectlist[i]
 
-			if(obj.effect!=0) emptyflag = false
+			if(obj.effect!=null) emptyflag = false
 
 			obj.anim++
 			when(obj.effect) {
-				GFX_LINE//Lines
+				GFX.LINE//Lines
 				-> {
 					obj.anim += lineeffectspeed/2
-					if(obj.anim>=16) obj.effect = 0
+					if(obj.anim>=16) obj.effect = null
 				}
-				GFX_BLOCK //Normal Block
-					, GFX_GEM // Gem Block
+				GFX.BLOCK //Normal Block
+					, GFX.GEM // Gem Block
 				-> {
 					obj.anim += lineeffectspeed
-					if(obj.effect==1&&obj.anim>=(if(heavyeffect) 36 else 32)||obj.anim>=60) obj.effect = 0
+					if(obj.effect==GFX.BLOCK&&obj.anim>=(if(heavyeffect) 36 else 32)||obj.anim>=60) obj.effect = null
 				}
-				GFX_HANABI // Fireworks
-				-> if(obj.anim>=48) obj.effect = 0
-				GFX_BRAVO//Bravo
-				-> if(obj.anim>=100) obj.effect = 0
+				GFX.HANABI // Fireworks
+				-> if(obj.anim>=48) obj.effect = null
+				GFX.BRAVO//Bravo
+				-> if(obj.anim>=100) obj.effect = null
+				GFX.SPLASH
+				-> if(obj.x<-BS) obj.effect = null
 			}
-			if(obj.effect==0) {
+			if(obj.effect==null) {
 				effectlist.removeAt(i)
 				i--
 			}
@@ -1462,10 +1469,10 @@ class RendererSlick:EventReceiver() {
 			var y = obj.y
 			var srcx:Int
 			var srcy:Int
-			val color:Int = obj.param[0]
+			val color:Int = if(obj.param.isNotEmpty()) obj.param[0] else 0
 			var sq:Int
 			when(obj.effect) {
-				GFX_GEM // Gems frag
+				GFX.GEM // Gems frag
 				-> {
 					x = obj.x-8
 					y = obj.y-8
@@ -1497,7 +1504,7 @@ class RendererSlick:EventReceiver() {
 					}
 				}
 
-				GFX_BLOCK //Normal Block frag
+				GFX.BLOCK //Normal Block frag
 				-> {
 					x = obj.x-40
 					y = obj.y-15
@@ -1515,7 +1522,7 @@ class RendererSlick:EventReceiver() {
 						ResourceHolder.imgBreak[color][1].draw(if(flip) x-sq*.5f else x+sq*1.5f, y-sq*.5f, if(flip) x+sq*1.5f else x-sq*.5f, y+sq*1.5f, srcx.toFloat(), srcy.toFloat(), (srcx+sq).toFloat(), (srcy+sq).toFloat())
 					}
 				}
-				GFX_HANABI //Fireworks
+				GFX.HANABI //Fireworks
 				-> {
 					sq = 192
 					x = obj.x-sq/2
@@ -1525,7 +1532,7 @@ class RendererSlick:EventReceiver() {
 					ResourceHolder.imgHanabi[color].draw(x.toFloat(), y.toFloat(), (x+sq).toFloat(), (y+sq).toFloat(),
 						srcx.toFloat(), srcy.toFloat(), (srcx+sq).toFloat(), (srcy+sq).toFloat())
 				}
-				GFX_LINE //Field Cleaned
+				GFX.LINE //Field Cleaned
 				-> {
 					sq = obj.param[1]*color
 					srcy = (obj.anim/2-1)*color
@@ -1533,19 +1540,19 @@ class RendererSlick:EventReceiver() {
 					ResourceHolder.imgLine[0].draw(x.toFloat(), y.toFloat(), (x+sq).toFloat(), (y+color).toFloat(), 0f, srcy.toFloat(), 80f, (srcy+8).toFloat())
 					graphics.setDrawMode(Graphics.MODE_NORMAL)
 				}
-				GFX_BRAVO //Field Cleaned
-				-> FontNormal.printFont(obj.x+20, obj.x+204, "BRAVO!", COLOR.values()[obj.anim%10], 1f)
+				GFX.BRAVO //Field Cleaned
+				-> {
+					FontNormal.printFont(obj.x+20, obj.x+204, "BRAVO!", COLOR.values()[obj.anim%10+5], 1.5f)
+					FontNormal.printFont(obj.x+52, obj.x+236, "CLEANED", COLOR.values()[obj.anim%10], 1f)
+				}
+				GFX.SPLASH -> {
+
+				}
 			}
 		}
 	}
 
 	companion object {
-		const val GFX_BLOCK = 1
-		const val GFX_GEM = 2
-		const val GFX_HANABI = 3
-		const val GFX_LINE = 4
-		const val GFX_SPLASH = -1
-		const val GFX_BRAVO = -400
 		/** block size */
 		const val BS = 16
 
@@ -1557,7 +1564,7 @@ class RendererSlick:EventReceiver() {
 			when(colorID) {
 				Block.BLOCK_COLOR_GRAY -> return Color(Color.gray)
 				Block.BLOCK_COLOR_RED -> return Color(Color.red)
-				Block.BLOCK_COLOR_ORANGE -> return Color(255, 128, 0)
+				Block.BLOCK_COLOR_ORANGE -> return Color(Color.orange)
 				Block.BLOCK_COLOR_YELLOW -> return Color(Color.yellow)
 				Block.BLOCK_COLOR_GREEN -> return Color(Color.green)
 				Block.BLOCK_COLOR_CYAN -> return Color(Color.cyan)
@@ -1571,7 +1578,7 @@ class RendererSlick:EventReceiver() {
 			when(color) {
 				Block.COLOR.WHITE -> return Color(Color.gray)
 				Block.COLOR.RED -> return Color(Color.red)
-				Block.COLOR.ORANGE -> return Color(255, 128, 0)
+				Block.COLOR.ORANGE -> return Color(Color.orange)
 				Block.COLOR.YELLOW -> return Color(Color.yellow)
 				Block.COLOR.GREEN -> return Color(Color.green)
 				Block.COLOR.CYAN -> return Color(Color.cyan)

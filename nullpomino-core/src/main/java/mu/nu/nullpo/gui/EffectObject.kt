@@ -23,12 +23,13 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui
 
+import mu.nu.nullpo.gui.slick.RendererSlick.GFX
 import org.newdawn.slick.geom.Vector2f
 
 /** 各種エフェクト state */
 open class EffectObject(
 	/** エフェクト type */
-	var effect:Int = 0,
+	var effect:GFX? = null,
 	/** X-coordinate */
 	var x:Int = 0,
 	/** Y-coordinate */
@@ -42,11 +43,18 @@ open class EffectObject(
 	var anim:Int = 0
 	var vel:Vector2f = Vector2f(0f, 0f)
 
+	/** その他パラメータ
+	 * 0: Color
+	 * 1: Skin
+	 * 2: bone true to use bone block ([][][][])
+	 * 3: darkness Darkness or brightness
+	 */
 	var param:IntArray = intArrayOf(*p)
 
-	constructor(effect:Int, x:Int, y:Int, vararg p:Int):this(effect, x, y, 1f, 1f, *p)
+	constructor(effect:GFX, x:Int, y:Int, vararg p:Int):this(effect, x, y, 1f, 1f, *p)
 	constructor(src:EffectObject):this(src.effect, src.x, src.y, src.scale, src.angle, *src.param) {
 		anim = src.anim
 	}
 
 }
+

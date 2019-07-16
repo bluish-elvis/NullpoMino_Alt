@@ -2264,7 +2264,7 @@ class GameEngine
 				val partialLockOut = nowPieceObject!!.isPartialLockOut(nowPieceX, nowPieceY, field)
 				val put = nowPieceObject!!.placeToField(nowPieceX, nowPieceY, field)
 
-				playSE("lock", 1f-(nowPieceY+nowPieceObject!!.height)*.5f/fieldHeight)
+				playSE("lock", 1.5f-(nowPieceY+nowPieceObject!!.height)*.5f/fieldHeight)
 
 				holdDisable = false
 

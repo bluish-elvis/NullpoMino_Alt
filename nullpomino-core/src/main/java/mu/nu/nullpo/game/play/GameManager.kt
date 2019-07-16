@@ -170,7 +170,7 @@ class GameManager
 		internal val log = Logger.getLogger(GameManager::class.java)
 
 		/** Major version */
-		const val versionMajor = 7.6f
+		const val versionMajor = 7.7f
 		/** Minor version */
 		const val versionMinor = 417
 
