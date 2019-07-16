@@ -3,8 +3,8 @@ package net.omegaboshi.nullpomino.game.subsystem.randomizer
 open class BagRandomizer:Randomizer {
 
 	internal open val baglen:Int get() = pieces.size
-	internal open var bag:IntArray = IntArray(baglen){pieces[it%pieces.size]}
-	internal var pt:Int = baglen
+	internal open var bag:IntArray = IntArray( pieces.size){pieces[it%pieces.size]}
+	internal var pt:Int =  pieces.size
 
 	constructor():super()
 

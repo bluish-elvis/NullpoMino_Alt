@@ -69,13 +69,12 @@ class StateSelectMode:DummyMenuScrollState() {
 		}
 
 		// Set cursor postion
-		val lastmode:String = when {
+
+		cursor = getIDbyName(when {
 			isTopLevel -> NullpoMinoSlick.propGlobal.getProperty("name.mode.toplevel", null)
 			strCurrentFolder.isNotEmpty() -> NullpoMinoSlick.propGlobal.getProperty("name.mode.$strCurrentFolder", null)
 			else -> NullpoMinoSlick.propGlobal.getProperty("name.mode", null)
-		}
-
-		cursor = getIDbyName(lastmode)
+		})
 		if(cursor<0) cursor = 0
 		if(cursor>list.size-1) cursor = list.size-1
 	}
@@ -117,7 +116,7 @@ class StateSelectMode:DummyMenuScrollState() {
 
 			FontNormal.printFontGrid(1, 1, "SELECT A GAME MODE (${cursor+1}/${list.size})", COLOR.ORANGE)
 		if(!isTopLevel)
-			FontNano.printFontGrid(8, 36,
+			FontNano.printFont(8, 36,
 				if(strCurrentFolder.isNotEmpty())">$strCurrentFolder" else ">[ALL MODES]", COLOR.ORANGE,.5f)
 
 		FontNormal.printTTF(16, 440, getModeDesc(convModeName(list[cursor], false)))
