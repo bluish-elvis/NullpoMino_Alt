@@ -296,7 +296,7 @@ class GrandFinale:AbstractMode() {
 			val change = updateCursor(engine, 3)
 
 			if(change!=0) {
-				receiver.playSE("change")
+				engine.playSE("change")
 
 				when(menuCursor) {
 					0 -> {
@@ -318,7 +318,7 @@ class GrandFinale:AbstractMode() {
 
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
-				receiver.playSE("decide")
+				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				receiver.saveModeConfig(owner.modeConfig)
 				return false
@@ -384,7 +384,7 @@ class GrandFinale:AbstractMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		receiver.drawScoreFont(engine, playerID, 0, 0, "GRAND FINALE", COLOR.WHITE)
 
-		receiver.drawScoreFont(engine, playerID, 0, 1, "b"+tableModeName[gametype], COLOR.WHITE)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "b${tableModeName[gametype]}", COLOR.WHITE)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null)
@@ -402,7 +402,7 @@ class GrandFinale:AbstractMode() {
 						receiver.drawScoreNum(engine, playerID, 0, topY+i, String.format("%02d", i+1), COLOR.YELLOW, scale)
 						receiver.drawScoreGrade(engine, playerID, 3, topY+i, tableGradeName[rankingGrade[gametype][i]], gcolor, scale)
 						receiver.drawScoreNum(engine, playerID, 9, topY+i, String.format("%03d", rankingLevel[gametype][i]), i==rankingRank, scale)
-						receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[gametype][i].toFloat()), i==rankingRank, scale)
+						receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW SECTION TIME", COLOR.ORANGE)
@@ -417,7 +417,7 @@ class GrandFinale:AbstractMode() {
 
 						val strSectionTime:String
 						strSectionTime =
-							String.format("%3d-%3d %s %3d", temp, temp2, GeneralUtil.getTime(bestSectionTime[gametype][i].toFloat()), bestSectionLine[gametype][i])
+							String.format("%3d-%3d %s %3d", temp, temp2, GeneralUtil.getTime(bestSectionTime[gametype][i]), bestSectionLine[gametype][i])
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -425,7 +425,7 @@ class GrandFinale:AbstractMode() {
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 14, "TOTAL", COLOR.RED)
-					receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(totalTime.toFloat()), 2f)
+					receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(totalTime), 2f)
 					receiver.drawScoreFont(engine, playerID, 9, 14, "AVERAGE", COLOR.RED)
 					receiver.drawScoreNum(engine, playerID, 9, 15, GeneralUtil.getTime(totalTime*1f/SECTION_MAX), 2f)
 
@@ -440,7 +440,7 @@ class GrandFinale:AbstractMode() {
 			// Time
 			receiver.drawScoreFont(engine, playerID, 0, 4, "TIME", color)
 			if((engine.ending!=2) or (rolltime/10%2==0))
-				receiver.drawScoreNum(engine, playerID, 0, 5, GeneralUtil.getTime(engine.statistics.time.toFloat()), 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 5, GeneralUtil.getTime(engine.statistics.time), 2f)
 			// Level
 			receiver.drawScoreFont(engine, playerID, 0, 8, "LEVEL", color)
 			receiver.drawScoreNum(engine, playerID, 0, 9, String.format("%3d", maxOf(engine.statistics.level, 0)))
@@ -466,7 +466,7 @@ class GrandFinale:AbstractMode() {
 				var time = ROLLTIMELIMIT-rolltime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", COLOR.RED)
-				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time.toFloat()), time>0&&time<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
 			}
 
 			// Medals
@@ -492,13 +492,13 @@ class GrandFinale:AbstractMode() {
 						if(i==section&&engine.ending==0) strSeparator = "+"
 
 						val strSectionTime:String
-						strSectionTime = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i].toFloat()))
+						strSectionTime = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
 
 				receiver.drawScoreFont(engine, playerID, x2, 17, "AVERAGE", COLOR.RED)
-				receiver.drawScoreNum(engine, playerID, x2, 18, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+1)).toFloat()), 2f)
+				receiver.drawScoreNum(engine, playerID, x2, 18, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+1))), 2f)
 			}
 		}
 	}
@@ -511,7 +511,7 @@ class GrandFinale:AbstractMode() {
 			if(gametype==1&&engine.statistics.level>=500&&stacks<40) stacks++
 			if(isLeveledPerBlock(engine.statistics.level)) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) owner.receiver.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 		}
@@ -533,7 +533,7 @@ class GrandFinale:AbstractMode() {
 			if(gametype==1&&engine.statistics.level>=500&&stacks<40) stacks++
 			if(isLeveledPerBlock(engine.statistics.level)) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) owner.receiver.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 			lvupflag = true
@@ -579,7 +579,7 @@ class GrandFinale:AbstractMode() {
 				if(grade!=gi) {
 					grade = gi
 					gradeflash = 180
-					receiver.playSE("cool")
+					engine.playSE("cool")
 				}
 			}
 			// 4 lines clear count
@@ -587,39 +587,39 @@ class GrandFinale:AbstractMode() {
 				if(big) {
 					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
 						||engine.statistics.totalQuadruple==4) {
-						receiver.playSE("medal${++medalSK}")
+						engine.playSE("medal${++medalSK}")
 					}
 				} else if(engine.statistics.totalQuadruple==5||engine.statistics.totalQuadruple==10
 					||engine.statistics.totalQuadruple==17) {
-					receiver.playSE("medal${++medalSK}")
+					engine.playSE("medal${++medalSK}")
 				}
 			}
 			// AC medal
 			if(engine.field!!.isEmpty)
 				if(medalAC<3) {
-					receiver.playSE("medal${++medalAC}")
+					engine.playSE("medal${++medalAC}")
 				}
 
 			// CO medal
 			if(big) {
 				if(engine.combo>=2&&medalCO<1) {
-					receiver.playSE("medal1")
+					engine.playSE("medal1")
 					medalCO = 1
 				} else if(engine.combo>=3&&medalCO<2) {
-					receiver.playSE("medal2")
+					engine.playSE("medal2")
 					medalCO = 2
 				} else if(engine.combo>=4&&medalCO<3) {
-					receiver.playSE("medal3")
+					engine.playSE("medal3")
 					medalCO = 3
 				}
 			} else if(engine.combo>=3&&medalCO<1) {
-				receiver.playSE("medal1")
+				engine.playSE("medal1")
 				medalCO = 1
 			} else if(engine.combo>=4&&medalCO<2) {
-				receiver.playSE("medal2")
+				engine.playSE("medal2")
 				medalCO = 2
 			} else if(engine.combo>=5&&medalCO<3) {
-				receiver.playSE("medal3")
+				engine.playSE("medal3")
 				medalCO = 3
 			}
 
@@ -649,7 +649,7 @@ class GrandFinale:AbstractMode() {
 
 			if(engine.statistics.level>=999) {
 				// Ending Start
-				receiver.playSE("endingstart")
+				engine.playSE("endingstart")
 				engine.statistics.level = 999
 				engine.timerActive = false
 				engine.ending = 2
@@ -686,7 +686,7 @@ class GrandFinale:AbstractMode() {
 
 			} else if(engine.statistics.level>=nextseclv) {
 				// Next section
-				receiver.playSE("levelup")
+				engine.playSE("levelup")
 
 				// Change background image
 				owner.backgroundStatus.fadesw = true
@@ -708,7 +708,7 @@ class GrandFinale:AbstractMode() {
 					if(grade!=gi) {
 						grade = gi
 						gradeflash = 180
-						receiver.playSE("cool")
+						engine.playSE("cool")
 					}
 				}
 				gradeflash = 180
@@ -716,7 +716,7 @@ class GrandFinale:AbstractMode() {
 				// Update next section level
 				nextseclv += 100
 				if(nextseclv>999) nextseclv = 999
-			} else if(engine.statistics.level==nextseclv-1&&lvstopse) receiver.playSE("levelstop")
+			} else if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
 
 			// Add score
 
@@ -775,7 +775,7 @@ class GrandFinale:AbstractMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE"+(engine.statc[1]+1)+"/3", COLOR.RED)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 		if(engine.statc[1]==0) {
 			if(grade>=1&&grade<tableGradeName.size) {
@@ -786,7 +786,7 @@ class GrandFinale:AbstractMode() {
 				receiver.drawMenuGrade(engine, playerID, 6, 2, tableGradeName[grade], gcolor, 2f)
 			}
 
-			drawResultStats(engine, playerID, receiver, 4, COLOR.RED, AbstractMode.Statistic.SCORE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.LEVEL_MANIA, AbstractMode.Statistic.TIME)
+			drawResultStats(engine, playerID, receiver, 4, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME)
 			if(secretGrade>4)
 				drawResult(engine, playerID, receiver, 14, COLOR.RED, "S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]))
 		} else if(engine.statc[1]==1) {
@@ -794,11 +794,11 @@ class GrandFinale:AbstractMode() {
 
 			for(i in sectionTime.indices)
 				if(sectionTime[i]>0)
-					receiver.drawMenuFont(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[i].toFloat()), sectionIsNewRecord[i])
+					receiver.drawMenuFont(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[i]), sectionIsNewRecord[i])
 
 			if(sectionavgtime>0) {
 				receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", COLOR.RED)
-				receiver.drawMenuNum(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime.toFloat()))
+				receiver.drawMenuNum(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime))
 			}
 		} else if(engine.statc[1]==2) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", COLOR.RED)
@@ -807,7 +807,7 @@ class GrandFinale:AbstractMode() {
 			receiver.drawMenuMedal(engine, playerID, 5, 4, "SK", medalSK)
 			receiver.drawMenuMedal(engine, playerID, 8, 4, "CO", medalCO)
 
-			drawResultStats(engine, playerID, receiver, 6, COLOR.RED, AbstractMode.Statistic.LPS, AbstractMode.Statistic.SPS, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.PPS)
+			drawResultStats(engine, playerID, receiver, 6, COLOR.RED, Statistic.LPS, Statistic.SPS, Statistic.PIECE, Statistic.PPS)
 		}
 	}
 
@@ -864,8 +864,7 @@ class GrandFinale:AbstractMode() {
 				rankingRollclear[j][i] = prop.getProperty("final.ranking.$ruleName.$j.rollclear.$i", 0)
 			}
 			for(i in 0 until SECTION_MAX)
-				bestSectionTime[j][i] = prop!!.getProperty("final.bestSectionTime."+ruleName+"."+j+"."
-					+i, DEFAULT_SECTION_TIME)
+				bestSectionTime[j][i] = prop!!.getProperty("final.bestSectionTime.$ruleName.$j.$i", DEFAULT_SECTION_TIME)
 		}
 	}
 

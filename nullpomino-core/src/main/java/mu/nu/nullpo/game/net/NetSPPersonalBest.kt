@@ -142,7 +142,7 @@ class NetSPPersonalBest:Serializable {
 			if(i>0) strResult.append(";")
 			strResult.append(NetUtil.compressString(listRecord[i].exportString()))
 		}
-		return strResult.toString()
+		return "$strResult"
 	}
 
 	/** Import the record from a String
@@ -178,7 +178,7 @@ class NetSPPersonalBest:Serializable {
 			result.append(array[i])
 		}
 
-		return result.toString()
+		return "$result"
 	}
 
 	/** Import from a String Array

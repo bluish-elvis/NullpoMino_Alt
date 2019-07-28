@@ -57,14 +57,14 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 	 */
 	private fun getKeyName(key:Int):String {
 		val str = org.lwjgl.input.Keyboard.getKeyName(key)
-		return str?.toUpperCase() ?: key.toString()
+		return str?.toUpperCase() ?: "$key"
 	}
 
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
-		FontNormal.printFontGrid(1, 1, "KEYBOARD NAVIGATION SETTING ("+(player+1)+"P)", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "KEYBOARD NAVIGATION SETTING (${player+1}P)", COLOR.ORANGE)
 
 		FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RED)
 

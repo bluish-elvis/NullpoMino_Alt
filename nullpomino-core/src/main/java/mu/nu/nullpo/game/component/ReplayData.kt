@@ -92,9 +92,9 @@ class ReplayData:Serializable {
 		for(i in 0 until max) {
 			val input = getInputData(i)
 			val previous = getInputData(i-1)
-			if(input!=previous) p.setProperty(id.toString()+".r."+i, input)
+			if(input!=previous) p.setProperty("$id.r.$i", input)
 		}
-		p.setProperty(id.toString()+".r.max", max)
+		p.setProperty("$id.r.max", max)
 	}
 
 	/** プロパティセットから読み込み
@@ -103,11 +103,11 @@ class ReplayData:Serializable {
 	 */
 	fun readProperty(p:CustomProperties, id:Int) {
 		reset()
-		val max = p.getProperty(id.toString()+".r.max", 0)
+		val max = p.getProperty("$id.r.max", 0)
 		var input = 0
 
 		for(i in 0 until max) {
-			val data = p.getProperty(id.toString()+".r."+i, -1)
+			val data = p.getProperty("$id.r.$i", -1)
 			if(data!=-1) input = data
 			setInputData(input, i)
 		}

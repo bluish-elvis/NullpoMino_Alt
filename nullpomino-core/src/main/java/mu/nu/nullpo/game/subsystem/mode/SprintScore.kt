@@ -31,6 +31,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
+import kotlin.math.ceil
 
 /** SCORE RACE Mode */
 class SprintScore:NetDummyMode() {
@@ -132,7 +133,7 @@ class SprintScore:NetDummyMode() {
 			loadPreset(engine, engine.owner.replayProp, -1)
 			version = engine.owner.replayProp.getProperty("scorerace.version", 0)
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty(playerID.toString()+".net.netPlayerName", "")
+			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
 	}
 
@@ -340,7 +341,7 @@ class SprintScore:NetDummyMode() {
 				"B2B", GeneralUtil.getONorOFF(enableB2B), "COMBO", GeneralUtil.getONorOFF(enableCombo))
 			if(!engine.owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
-				drawMenuCompact(engine, playerID, receiver, "LOAD", presetNumber.toString(), "SAVE", presetNumber.toString())
+				drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber", "SAVE", "$presetNumber")
 			}
 		}
 	}
@@ -382,7 +383,7 @@ class SprintScore:NetDummyMode() {
 		if(owner.menuOnly) return
 
 		receiver.drawScoreFont(engine, playerID, 0, 0, "SCORE RACE", EventReceiver.COLOR.RED)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "("+GOAL_TABLE[goaltype]+" PTS GAME)", EventReceiver.COLOR.RED)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "(${GOAL_TABLE[goaltype]} PTS GAME)", EventReceiver.COLOR.RED)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&!netIsWatch) {
@@ -393,9 +394,9 @@ class SprintScore:NetDummyMode() {
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, playerID, 3,
-						topY+i, GeneralUtil.getTime(rankingTime[goaltype][i].toFloat()), rankingRank==i, scale)
+						topY+i, GeneralUtil.getTime(rankingTime[goaltype][i]), rankingRank==i, scale)
 					receiver.drawScoreNum(engine, playerID, 12, topY+i,
-						rankingLines[goaltype][i].toString(), rankingRank==i, scale)
+						"${rankingLines[goaltype][i]}", rankingRank==i, scale)
 					receiver.drawScoreNum(engine, playerID, 17, topY+i,
 						String.format("%.6g", rankingSPL[goaltype][i]), rankingRank==i, scale)
 				}
@@ -409,8 +410,8 @@ class SprintScore:NetDummyMode() {
 			if(sc in 1..4800) fontcolor = EventReceiver.COLOR.ORANGE
 			if(sc in 1..2400) fontcolor = EventReceiver.COLOR.RED
 			receiver.drawScoreNum(engine, playerID, 5, 6, "+$lastscore")
-			receiver.drawScoreNum(engine, playerID, 0, 4, scgettime.toString(), fontcolor, 2f)
-			if(scgettime<engine.statistics.score) scgettime += Math.ceil(((engine.statistics.score-scgettime)/10f).toDouble())
+			receiver.drawScoreNum(engine, playerID, 0, 4, "$scgettime", fontcolor, 2f)
+			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble())
 				.toInt()
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
@@ -426,7 +427,7 @@ class SprintScore:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 16, String.format("%-10g", engine.statistics.spl), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 18, "TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 19, GeneralUtil.getTime(engine.statistics.time.toFloat()), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 19, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			renderLineAlert(engine, playerID, receiver)
 		}
@@ -499,15 +500,15 @@ class SprintScore:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE"+(engine.statc[1]+1)+"/2", EventReceiver.COLOR.RED)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${(engine.statc[1]+1)}/2", EventReceiver.COLOR.RED)
 
 		if(engine.statc[1]==0) {
-			drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, AbstractMode.Statistic.SCORE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.TIME, AbstractMode.Statistic.PIECE)
+			drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.TIME, Statistic.PIECE)
 			drawResultRank(engine, playerID, receiver, 10, EventReceiver.COLOR.BLUE, rankingRank)
 			drawResultNetRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, netRankingRank[0])
 			drawResultNetRankDaily(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[1])
 		} else if(engine.statc[1]==1)
-			drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, AbstractMode.Statistic.SPL, AbstractMode.Statistic.SPM, AbstractMode.Statistic.LPM, AbstractMode.Statistic.PPS)
+			drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, Statistic.SPL, Statistic.SPM, Statistic.LPM, Statistic.PPS)
 
 		if(netIsPB) receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
 
@@ -541,7 +542,7 @@ class SprintScore:NetDummyMode() {
 		engine.owner.replayProp.setProperty("scorerace.version", version)
 
 		// NET: Save name
-		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(playerID.toString()+".net.netPlayerName", netPlayerName)
+		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
 
 		// Update rankings
 		if(!owner.replayMode&&engine.statistics.score>=GOAL_TABLE[goaltype]&&!big&&engine.ai==null) {
@@ -632,11 +633,11 @@ class SprintScore:NetDummyMode() {
 	 */
 	override fun netSendStats(engine:GameEngine) {
 		var msg = "game\tstats\t"
-		msg += engine.statistics.score.toString()+"\t"+engine.statistics.lines+"\t"+engine.statistics.totalPieceLocked+"\t"
-		msg += engine.statistics.time.toString()+"\t"+engine.statistics.spm+"\t"
-		msg += engine.statistics.lpm.toString()+"\t"+engine.statistics.spl+"\t"+goaltype+"\t"
-		msg += engine.gameActive.toString()+"\t"+engine.timerActive+"\t"
-		msg += lastscore.toString()+"\t"+scgettime+"\t"+lastb2b+"\t"+lastcombo+"\t"+lastpiece
+		msg += engine.statistics.score.toString()+"\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += engine.statistics.time.toString()+"\t${engine.statistics.spm}\t"
+		msg += engine.statistics.lpm.toString()+"\t${engine.statistics.spl}\t$goaltype\t"
+		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
+		msg += "$lastscore${"\t$scgettime\t"+lastb2b}\t$lastcombo\t"+lastpiece
 		msg += "\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
@@ -665,16 +666,16 @@ class SprintScore:NetDummyMode() {
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
 		var subMsg = ""
-		subMsg += "SCORE;"+engine.statistics.score+"/"+GOAL_TABLE[goaltype]+"\t"
-		subMsg += "LINE;"+engine.statistics.lines+"\t"
-		subMsg += "TIME;"+GeneralUtil.getTime(engine.statistics.time.toFloat())+"\t"
-		subMsg += "PIECE;"+engine.statistics.totalPieceLocked+"\t"
-		subMsg += "SCORE/LINE;"+engine.statistics.spl+"\t"
-		subMsg += "SCORE/MIN;"+engine.statistics.spm+"\t"
-		subMsg += "LINE/MIN;"+engine.statistics.lpm+"\t"
-		subMsg += "PIECE/SEC;"+engine.statistics.pps+"\t"
+		subMsg += "SCORE;${engine.statistics.score}/${GOAL_TABLE[goaltype]}\t"
+		subMsg += "LINE;${engine.statistics.lines}\t"
+		subMsg += "TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
+		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
+		subMsg += "SCORE/LINE;${engine.statistics.spl}\t"
+		subMsg += "SCORE/MIN;${engine.statistics.spm}\t"
+		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
+		subMsg += "PIECE/SEC;${engine.statistics.pps}\t"
 
-		val msg = "gstat1p\t"+NetUtil.urlEncode(subMsg)+"\n"
+		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -683,11 +684,11 @@ class SprintScore:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += engine.speed.gravity.toString()+"\t"+engine.speed.denominator+"\t"+engine.speed.are+"\t"
-		msg += engine.speed.areLine.toString()+"\t"+engine.speed.lineDelay+"\t"+engine.speed.lockDelay+"\t"
-		msg += engine.speed.das.toString()+"\t"+bgmno+"\t"+big+"\t"+goaltype+"\t"+tspinEnableType+"\t"
-		msg += enableTSpinKick.toString()+"\t"+enableB2B+"\t"+enableCombo+"\t"+presetNumber+"\t"
-		msg += spinCheckType.toString()+"\t"+tspinEnableEZ+"\n"
+		msg += engine.speed.gravity.toString()+"\t${engine.speed.denominator}\t${engine.speed.are}\t"
+		msg += engine.speed.areLine.toString()+"\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
+		msg += engine.speed.das.toString()+"\t$bgmno\t$big\t$goaltype\t$tspinEnableType\t"
+		msg += "$enableTSpinKick${"\t$enableB2B\t"+enableCombo}\t$presetNumber\t"
+		msg += "$spinCheckType${"\t"+tspinEnableEZ}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 

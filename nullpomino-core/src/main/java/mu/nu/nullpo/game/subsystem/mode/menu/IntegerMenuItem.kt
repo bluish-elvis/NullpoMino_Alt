@@ -7,7 +7,7 @@ open class IntegerMenuItem(name:String, displayName:String, color:COLOR, default
 	:AbstractMenuItem<Int>(name, displayName, color, defaultValue) {
 
 	override val valueString:String
-		get() = value.toString()
+		get() = "$value"
 
 	override fun change(dir:Int, fast:Int) {
 		value += dir
@@ -16,12 +16,10 @@ open class IntegerMenuItem(name:String, displayName:String, color:COLOR, default
 	}
 
 	override fun save(playerID:Int, prop:CustomProperties, modeName:String) {
-		prop.setProperty(modeName+"."+name
-			+if(playerID<0) "" else ".p$playerID", value)
+		prop.setProperty("$modeName.$name${if(playerID<0) "" else ".p$playerID"}", value)
 	}
 
 	override fun load(playerID:Int, prop:CustomProperties, modeName:String) {
-		value = prop.getProperty(modeName+"."+name
-			+if(playerID<0) "" else ".p$playerID", DEFAULT_VALUE)
+		value = prop.getProperty("$modeName.$name${if(playerID<0) "" else ".p$playerID"}", DEFAULT_VALUE)
 	}
 }

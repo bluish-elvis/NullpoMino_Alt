@@ -120,7 +120,7 @@ class NetSPRecord:Serializable {
 				if(i>0) strResult.append(",")
 				strResult.append(listCustomStats[i])
 			}
-			return strResult.toString()
+			return "$strResult"
 		}
 		return ""
 	}
@@ -146,8 +146,8 @@ class NetSPRecord:Serializable {
 	,if(stats==null) "" else NetUtil.compressString(stats!!.exportString())
 	,if(listCustomStats.isNullOrEmpty()) "" else NetUtil.compressString(exportCustomStats())
 	, strReplayProp
-	,Integer.toString(gameType)
-	,Integer.toString(style)
+	, "$gameType"
+	, "$style"
 	, strTimeStamp)
 
 	/** Export to a String
@@ -162,7 +162,7 @@ class NetSPRecord:Serializable {
 			result.append(array[i])
 		}
 
-		return result.toString()
+		return "$result"
 	}
 
 	/** Import from a String Array

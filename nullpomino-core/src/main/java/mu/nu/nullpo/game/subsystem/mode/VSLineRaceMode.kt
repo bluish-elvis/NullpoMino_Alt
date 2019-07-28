@@ -254,11 +254,11 @@ class VSLineRaceMode:AbstractMode() {
 		if(engine.statc[4]==0) {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
 			menuColor = EventReceiver.COLOR.GREEN
-			drawMenuCompact(engine, playerID, receiver, "LOAD", presetNumber[playerID].toString(), "SAVE", presetNumber[playerID].toString())
+			drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
 			menuColor = EventReceiver.COLOR.CYAN
-			drawMenuCompact(engine, playerID, receiver, "GOAL", goalLines[playerID].toString(), "BIG", GeneralUtil.getONorOFF(big[playerID]), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
+			drawMenuCompact(engine, playerID, receiver, "GOAL", "$goalLines[playerID]", "BIG", GeneralUtil.getONorOFF(big[playerID]), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 			menuColor = EventReceiver.COLOR.PINK
-			drawMenuCompact(engine, playerID, receiver, "BGM", BGM.values[bgmno].toString())
+			drawMenuCompact(engine, playerID, receiver, "BGM", "$BGM.values[bgmno]")
 		} else
 			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
 	}
@@ -294,7 +294,7 @@ class VSLineRaceMode:AbstractMode() {
 		if(enemyRemainLines in 1..10) fontColorEnemy = EventReceiver.COLOR.RED
 
 		// Lines left (bottom)
-		val strLines = remainLines.toString()
+		val strLines = "$remainLines"
 
 		if(strLines.length==1)
 			receiver.drawMenuFont(engine, playerID, 4, 21, strLines, fontColor, 2f)
@@ -308,22 +308,22 @@ class VSLineRaceMode:AbstractMode() {
 		else if(remainLines>enemyRemainLines) receiver.drawMenuFont(engine, playerID, -2, 22, "2ND", EventReceiver.COLOR.WHITE)
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(256, 16, GeneralUtil.getTime(engine.statistics.time.toFloat()))
+		if(playerID==0) receiver.drawDirectFont(256, 16, GeneralUtil.getTime(engine.statistics.time))
 
 		// Normal layout
 		if(owner.receiver.nextDisplayType!=2&&playerID==0) {
 			receiver.drawScoreFont(engine, playerID, 0, 2, "1P LINES", EventReceiver.COLOR.RED)
-			receiver.drawScoreFont(engine, playerID, 0, 3, remainLines.toString(), fontColor)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "$remainLines", fontColor)
 
 			receiver.drawScoreFont(engine, playerID, 0, 5, "2P LINES", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 6, enemyRemainLines.toString(), fontColorEnemy)
+			receiver.drawScoreFont(engine, playerID, 0, 6, "$enemyRemainLines", fontColorEnemy)
 
 			if(!owner.replayMode) {
 				receiver.drawScoreFont(engine, playerID, 0, 8, "1P WINS", EventReceiver.COLOR.RED)
-				receiver.drawScoreFont(engine, playerID, 0, 9, winCount[0].toString())
+				receiver.drawScoreFont(engine, playerID, 0, 9, "$winCount[0]")
 
 				receiver.drawScoreFont(engine, playerID, 0, 11, "2P WINS", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 12, winCount[1].toString())
+				receiver.drawScoreFont(engine, playerID, 0, 12, "$winCount[1]")
 			}
 		}
 
@@ -334,9 +334,9 @@ class VSLineRaceMode:AbstractMode() {
 			if(!owner.replayMode) {
 				receiver.drawDirectFont(x-44, y+190, "WINS", fontColor2, .5f)
 				if(winCount[playerID]>=10)
-					receiver.drawDirectFont(x-44, y+204, winCount[playerID].toString())
+					receiver.drawDirectFont(x-44, y+204, "$winCount[playerID]")
 				else
-					receiver.drawDirectFont(x-36, y+204, winCount[playerID].toString())
+					receiver.drawDirectFont(x-36, y+204, "$winCount[playerID]")
 			}
 		}
 	}
@@ -402,7 +402,7 @@ class VSLineRaceMode:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 6, 1, "WIN!", EventReceiver.COLOR.YELLOW)
 		else
 			receiver.drawMenuFont(engine, playerID, 6, 1, "LOSE", EventReceiver.COLOR.WHITE)
-		drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.ORANGE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.LPM, AbstractMode.Statistic.PPS, AbstractMode.Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS, Statistic.TIME)
 	}
 
 	/* Called when saving replay */

@@ -62,13 +62,13 @@ class StateConfigMainMenu:DummyMenuChooseState() {
 		FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RED)
 
 		FontNormal.printFontGrid(2, 3, "[GENERAL OPTIONS]", cursor==0)
-		FontNormal.printFontGrid(2, 4, "[RULE SELECT]:"+(player+1)+"P", cursor==1)
-		FontNormal.printFontGrid(2, 5, "[GAME TUNING]:"+(player+1)+"P", cursor==2)
-		FontNormal.printFontGrid(2, 6, "[AI SETTING]:"+(player+1)+"P", cursor==3)
-		FontNormal.printFontGrid(2, 7, "[KEYBOARD SETTING]:"+(player+1)+"P", cursor==4)
-		FontNormal.printFontGrid(2, 8, "[KEYBOARD NAVIGATION SETTING]:"+(player+1)+"P", cursor==5)
-		FontNormal.printFontGrid(2, 9, "[KEYBOARD RESET]:"+(player+1)+"P", cursor==6)
-		FontNormal.printFontGrid(2, 10, "[JOYSTICK SETTING]:"+(player+1)+"P", cursor==7)
+		FontNormal.printFontGrid(2, 4, "[RULE SELECT]:${player+1}P", cursor==1)
+		FontNormal.printFontGrid(2, 5, "[GAME TUNING]:${player+1}P", cursor==2)
+		FontNormal.printFontGrid(2, 6, "[AI SETTING]:${player+1}P", cursor==3)
+		FontNormal.printFontGrid(2, 7, "[KEYBOARD SETTING]:${player+1}P", cursor==4)
+		FontNormal.printFontGrid(2, 8, "[KEYBOARD NAVIGATION SETTING]:${player+1}P", cursor==5)
+		FontNormal.printFontGrid(2, 9, "[KEYBOARD RESET]:${player+1}P", cursor==6)
+		FontNormal.printFontGrid(2, 10, "[JOYSTICK SETTING]:${player+1}P", cursor==7)
 
 		FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
 	}

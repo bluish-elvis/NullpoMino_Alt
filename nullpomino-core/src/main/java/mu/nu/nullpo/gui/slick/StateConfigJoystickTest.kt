@@ -80,14 +80,14 @@ class StateConfigJoystickTest:BasicGameState() {
 
 		ResourceHolder.imgMenuBG[0].draw(0f, 0f)
 
-		FontNormal.printFontGrid(1, 1, "JOYSTICK INPUT TEST ("+(player+1)+"P)", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "JOYSTICK INPUT TEST (${player+1}P)", COLOR.ORANGE)
 
 		if(joyNumber<0)
 			FontNormal.printFontGrid(1, 3, "NO JOYSTICK", COLOR.RED)
 		else if(frame>=KEYACCEPTFRAME) {
 			FontNormal.printFontGrid(1, 3, "JOYSTICK NUMBER:$joyNumber", COLOR.RED)
 
-			FontNormal.printFontGrid(1, 5, "LAST PRESSED BUTTON:"+if(lastPressButton==-1) "NONE" else lastPressButton.toString())
+			FontNormal.printFontGrid(1, 5, "LAST PRESSED BUTTON:"+if(lastPressButton==-1) "NONE" else "$lastPressButton")
 
 			val controller = ControllerManager.controllers!![joyNumber]
 

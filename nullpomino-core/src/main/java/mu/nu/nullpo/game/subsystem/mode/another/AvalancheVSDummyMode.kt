@@ -180,6 +180,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		get() = GameEngine.GAMESTYLE_AVALANCHE
 
 	/* Mode initialization */
+	@Suppress("RemoveExplicitTypeArguments")
 	override fun modeInit(manager:GameManager) {
 		owner = manager
 		receiver = owner.receiver
@@ -367,7 +368,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected fun loadMapPreview(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propMap[playerID].isNullOrEmpty()||forceReload) {
 			mapMaxNo[playerID] = 0
-			propMap[playerID] = receiver.loadProperties("config/values/avalanche/"+mapSet[playerID]+".values")
+			propMap[playerID] = receiver.loadProperties("config/values/avalanche/${mapSet[playerID]}.values")
 		}
 
 		if(propMap[playerID].isNullOrEmpty()&&engine.field!=null)
@@ -382,7 +383,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	protected fun loadMapSetFever(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propFeverMap[playerID].isNullOrEmpty()||forceReload) {
-			propFeverMap[playerID] = receiver.loadProperties("config/values/avalanche/"+FEVER_MAPS[id]+".values")
+			propFeverMap[playerID] = receiver.loadProperties("config/values/avalanche/${FEVER_MAPS[id]}.values")
 			feverChainMin[playerID] = propFeverMap[playerID]?.getProperty("minChain", 3)?:3
 			feverChainMax[playerID] = propFeverMap[playerID]?.getProperty("maxChain", 15)?:15
 			val subsets = propFeverMap[playerID]?.getProperty("sets")?:""
@@ -454,8 +455,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 				engine.field!!.setAllSkin(engine.skin)
 			} else {
 				if(propMap[playerID].isNullOrEmpty())
-					propMap[playerID] = receiver.loadProperties("config/values/avalanche/"
-						+mapSet[playerID]+".values")
+					propMap[playerID] = receiver.loadProperties("config/values/avalanche/${mapSet[playerID]}.values")
 
 				propMap[playerID]?.let {
 					engine.createFieldIfNeeded()
@@ -507,7 +507,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			cleared[playerID] = true
 
 			chainDisplay[playerID] = 60
-			engine.playSE("combo"+minOf(engine.chain, 20))
+			engine.playSE("combo${minOf(engine.chain, 20)}")
 			onClear(engine, playerID)
 
 			val pts = calcPts(engine, playerID, avalanche)
@@ -619,7 +619,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		engine.field?.run {
 			reset()
 			stringToField(propFeverMap[playerID]?.getProperty(
-				feverMapSubsets[playerID][subset]+"."+numColors[playerID]+"colors."+chain+"chain") ?: "")
+				"${feverMapSubsets[playerID][subset]}.${numColors[playerID]}colors.${chain}chain") ?: "")
 			setBlockLinkByColor()
 			setAllAttribute(false, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.ANTIGRAVITY)
 			setAllSkin(engine.skin)
@@ -704,7 +704,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, baseX+if(engine.chain>9)
 				0
 			else
-				1, textHeight, engine.chain.toString()+" CHAIN!", getChainColor(engine, playerID))
+				1, textHeight, "${engine.chain} CHAIN!", getChainColor(engine, playerID))
 		if(zenKeshi[playerID]||zenKeshiDisplay[playerID]>0)
 			receiver.drawMenuFont(engine, playerID, baseX+1, textHeight+1, "ZENKESHI!", COLOR.YELLOW)
 	}
@@ -724,13 +724,11 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 		for(i in 0 until if(dangerColumnDouble[playerID]&&!big[playerID]) 2 else 1)
 			if(engine.field==null||engine.field!!.getBlockEmpty(baseX+i, 0))
-				if(big[playerID])
-					receiver.drawMenuFont(engine, playerID, 2, 0, "e", COLOR.RED, 2f)
-				else if(engine.displaysize==1)
-					receiver.drawMenuFont(engine, playerID,
-						4+i*2, 0, "e", COLOR.RED, 2f)
-				else
-					receiver.drawMenuFont(engine, playerID, 2+i, 0, "e", COLOR.RED)
+				when {
+					big[playerID] -> receiver.drawMenuFont(engine, playerID, 2, 0, "e", COLOR.RED, 2f)
+					engine.displaysize==1 -> receiver.drawMenuFont(engine, playerID, 4+i*2, 0, "e", COLOR.RED, 2f)
+					else -> receiver.drawMenuFont(engine, playerID, 2+i, 0, "e", COLOR.RED)
+				}
 	}
 
 	protected fun drawHardOjama(engine:GameEngine, playerID:Int) {
@@ -739,8 +737,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 				for(y in 0 until engine.field!!.height) {
 					val hard = engine.field!!.getBlock(x, y)!!.hard
 					if(hard>0)
-						if(engine.displaysize==1) receiver.drawMenuFont(engine, playerID, x*2, y*2, hard.toString(), COLOR.YELLOW, 2f)
-						else receiver.drawMenuFont(engine, playerID, x, y, hard.toString(), COLOR.YELLOW)
+						if(engine.displaysize==1) receiver.drawMenuFont(engine, playerID, x*2, y*2, "$hard", COLOR.YELLOW, 2f)
+						else receiver.drawMenuFont(engine, playerID, x, y, "$hard", COLOR.YELLOW)
 				}
 	}
 
@@ -750,23 +748,19 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		y++
 		receiver.drawScoreFont(engine, playerID, x, y, "1P: ", COLOR.RED)
 		if(scgettime[0]>0&&lastscore[0]>0&&lastmultiplier[0]>0)
-			receiver.drawScoreFont(engine, playerID, x+4, y, "+"
-				+lastscore[0]+"e"+lastmultiplier[0], COLOR.RED)
-		else
-			receiver.drawScoreFont(engine, playerID, x+4, y, score[0].toString(), COLOR.RED)
+			receiver.drawScoreFont(engine, playerID, x+4, y, "+${lastscore[0]}e${lastmultiplier[0]}", COLOR.RED)
+		else receiver.drawScoreFont(engine, playerID, x+4, y, "$score[0]", COLOR.RED)
 		y++
 		receiver.drawScoreFont(engine, playerID, x, y, "2P: ", COLOR.BLUE)
 		if(scgettime[1]>0&&lastscore[1]>0&&lastmultiplier[1]>0)
-			receiver.drawScoreFont(engine, playerID, x+4, y, "+"
-				+lastscore[1]+"e"+lastmultiplier[1], COLOR.BLUE)
-		else
-			receiver.drawScoreFont(engine, playerID, x+4, y, score[1].toString(), COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, x+4, y, "+${lastscore[1]}e${lastmultiplier[1]}", COLOR.BLUE)
+		else receiver.drawScoreFont(engine, playerID, x+4, y, "$score[1]", COLOR.BLUE)
 	}
 
 	protected fun drawOjama(engine:GameEngine, playerID:Int, x:Int, y:Int, headerColor:COLOR) {
 		receiver.drawScoreFont(engine, playerID, x, y, "OJAMA", headerColor)
-		val ojamaStr1P = ojama[0].toString()+ if(ojamaAdd[0]>0) "(+"+ojamaAdd[0].toString()+")" else ""
-		val ojamaStr2P =  ojama[1].toString()+if(ojamaAdd[1]>0) "(+"+ojamaAdd[1].toString()+")" else ""
+		val ojamaStr1P = "${ojama[0]}${if(ojamaAdd[0]>0) "(+${ojamaAdd[0]})" else ""}"
+		val ojamaStr2P = "${ojama[1]}${if(ojamaAdd[1]>0) "(+${ojamaAdd[1]})" else ""}"
 		receiver.drawScoreFont(engine, playerID, x, y+1, "1P:", COLOR.RED)
 		receiver.drawScoreFont(engine, playerID, x+4, y+1, ojamaStr1P, ojama[0]>0)
 		receiver.drawScoreFont(engine, playerID, x, y+2, "2P:", COLOR.BLUE)
@@ -775,8 +769,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	protected fun drawAttack(engine:GameEngine, playerID:Int, x:Int, y:Int, headerColor:COLOR) {
 		receiver.drawScoreFont(engine, playerID, x, y, "ATTACK", headerColor)
-		receiver.drawScoreFont(engine, playerID, x, y+1, "1P: "+ojamaSent[0].toString(), COLOR.RED)
-		receiver.drawScoreFont(engine, playerID, x, y+2, "2P: "+ojamaSent[1].toString(), COLOR.BLUE)
+		receiver.drawScoreFont(engine, playerID, x, y+1, "1P: ${ojamaSent[0]}", COLOR.RED)
+		receiver.drawScoreFont(engine, playerID, x, y+2, "2P: ${ojamaSent[1]}", COLOR.BLUE)
 	}
 
 	/* Render results screen */
@@ -796,7 +790,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			"PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
 			"ATTACK/MIN", String.format("%10g", apm),
 			"PIECE/SEC", String.format("%10g", engine.statistics.pps),
-			"TIME", String.format("%10s", GeneralUtil.getTime(owner.engine[0].statistics.time.toFloat())))
+			"TIME", String.format("%10s", GeneralUtil.getTime(owner.engine[0].statistics.time)))
 	}
 
 	companion object {

@@ -71,10 +71,10 @@ class NetObserverClient:NetBaseClient {
 			playerCount = Integer.parseInt(message[2])
 			observerCount = Integer.parseInt(message[3])
 
-			val pingInterval:Long = if(message.size>6) java.lang.Long.parseLong(message[6]) else NetBaseClient.PING_INTERVAL
-			if(pingInterval!=NetBaseClient.PING_INTERVAL) startPingTask(pingInterval)
+			val pingInterval:Long = if(message.size>6) java.lang.Long.parseLong(message[6]) else PING_INTERVAL
+			if(pingInterval!=PING_INTERVAL) startPingTask(pingInterval)
 
-			send("observerlogin\t"+GameManager.versionMajor+"\t"+GameManager.isDevBuild+"\n")
+			send("observerlogin\t${GameManager.versionMajor}\t${GameManager.isDevBuild}\n")
 		}
 		// 人count更新
 		if(message[0]=="observerupdate") {

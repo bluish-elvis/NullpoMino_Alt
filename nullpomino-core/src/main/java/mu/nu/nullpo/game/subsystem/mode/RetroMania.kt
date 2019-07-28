@@ -178,7 +178,7 @@ class RetroMania:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "LEVEL", startlevel.toString(), "BIG", GeneralUtil.getONorOFF(big), "POWERON", GeneralUtil.getONorOFF(poweron))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "LEVEL", "$startlevel", "BIG", GeneralUtil.getONorOFF(big), "POWERON", GeneralUtil.getONorOFF(poweron))
 	}
 
 	/** Ready */
@@ -204,7 +204,7 @@ class RetroMania:AbstractMode() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		receiver.drawScoreFont(engine, playerID, 0, 0, "RETRO MANIA", COLOR.GREEN)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "("+GAMETYPE_NAME[gametype]+" SPEED)", COLOR.GREEN)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "(${GAMETYPE_NAME[gametype]} SPEED)", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
@@ -216,9 +216,9 @@ class RetroMania:AbstractMode() {
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreNum(engine, playerID, 0, topY+i,
 						String.format("%2d", i+1), COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, playerID, 3, topY+i, rankingScore[gametype][i].toString(), i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 10, topY+i, rankingLines[gametype][i].toString(), i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[gametype][i].toFloat()), i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 3, topY+i, "$rankingScore[gametype][i]", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 10, topY+i, "$rankingLines[gametype][i]", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
 				}
 			}
 		} else {
@@ -227,7 +227,7 @@ class RetroMania:AbstractMode() {
 			val strScore:String = if(lastscore==0||scgettime>=120)
 				engine.statistics.score.toString()
 			else
-				engine.statistics.score.toString()+"(+"+lastscore.toString()+")"
+				"${engine.statistics.score}(+$lastscore)"
 			receiver.drawScoreNum(engine, playerID, 0, 4, strScore, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", COLOR.BLUE)
@@ -237,7 +237,7 @@ class RetroMania:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 10, engine.statistics.level.toString(), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time.toFloat()), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			//receiver.drawScore(engine, playerID, 0, 15, String.valueOf(linesAfterLastLevelUp));
 			//receiver.drawScore(engine, playerID, 0, 16, GeneralUtil.getTime(levelTime[minOf(engine.statistics.level,15)] - levelTimer));

@@ -187,7 +187,7 @@ class GameManager
 		 * @return Version information
 		 */
 		val versionString:String
-			get() = versionMajor.toString()+"."+versionMinor+if(isDevBuild) "DEV" else ""
+			get() = "$versionMajor.$versionMinor${if(isDevBuild) "DEV" else ""}"
 
 		/** Get build type as string
 		 * @return Build type as String

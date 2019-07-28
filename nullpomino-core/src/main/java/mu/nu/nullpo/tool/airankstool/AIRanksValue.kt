@@ -1,9 +1,6 @@
 package mu.nu.nullpo.tool.airankstool
 
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.io.ObjectInputStream
+import java.io.*
 
 object AIRanksValue {
 
@@ -14,7 +11,7 @@ object AIRanksValue {
 		val fis:FileInputStream
 		val `in`:ObjectInputStream
 		var ranks:Ranks
-		val inputFile = AIRanksConstants.RANKSAI_DIR+"ranks20"
+		val inputFile = "${AIRanksConstants.RANKSAI_DIR}ranks20"
 
 		if(inputFile.trim {it<=' '}.isEmpty())
 			ranks = Ranks(4, 9)

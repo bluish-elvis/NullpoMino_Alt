@@ -92,10 +92,10 @@ class ToolVSMapEditMode:AbstractMode() {
 
 		listFields!!.clear()
 
-		val maxMap = propMap!!.getProperty("values.maxMapNumber", 0)
+		val maxMap = propMap.getProperty("values.maxMapNumber", 0)
 		for(i in 0 until maxMap) {
 			val fld = Field()
-			loadMap(fld, propMap!!, i)
+			loadMap(fld, propMap, i)
 			listFields!!.add(fld)
 		}
 	}
@@ -107,12 +107,12 @@ class ToolVSMapEditMode:AbstractMode() {
 		propMap = CustomProperties()
 
 		val maxMap = listFields!!.size
-		propMap!!.setProperty("values.maxMapNumber", maxMap)
+		propMap.setProperty("values.maxMapNumber", maxMap)
 
 		for(i in 0 until maxMap)
-			saveMap(listFields!![i], propMap!!, i)
+			saveMap(listFields!![i], propMap, i)
 
-		receiver.saveProperties("config/values/vsbattle/$setID.values", propMap!!)
+		receiver.saveProperties("config/values/vsbattle/$setID.values", propMap)
 	}
 
 	private fun grayToRandomColor(field:Field) {
@@ -223,7 +223,7 @@ class ToolVSMapEditMode:AbstractMode() {
 
 		receiver.drawMenuFont(engine, playerID, 0, 6, "MAP DATA", EventReceiver.COLOR.COBALT)
 		if(listFields!!.size>0)
-			receiver.drawMenuFont(engine, playerID, 0, 7, nowMapID.toString()+"/"+(listFields!!.size-1), menuCursor in 3..5)
+			receiver.drawMenuFont(engine, playerID, 0, 7, "$nowMapID"+"/"+(listFields!!.size-1), menuCursor in 3..5)
 		else
 			receiver.drawMenuFont(engine, playerID, 0, 7, "NO MAPS", menuCursor in 3..5)
 		if(menuCursor in 3..5)
@@ -233,7 +233,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		receiver.drawMenuFont(engine, playerID, 1, 10, "[DELETE]", menuCursor==5)
 
 		receiver.drawMenuFont(engine, playerID, 0, 12, "MAP FILE", EventReceiver.COLOR.COBALT)
-		receiver.drawMenuFont(engine, playerID, 0, 13, nowMapSetID.toString()+"/99", menuCursor in 6..7)
+		receiver.drawMenuFont(engine, playerID, 0, 13, "$nowMapSetID/99", menuCursor in 6..7)
 		if(menuCursor in 6..7)
 			receiver.drawMenuFont(engine, playerID, 0, 14+menuCursor-6, "b", EventReceiver.COLOR.RED)
 		receiver.drawMenuFont(engine, playerID, 1, 14, "[WRITE]", menuCursor==6)

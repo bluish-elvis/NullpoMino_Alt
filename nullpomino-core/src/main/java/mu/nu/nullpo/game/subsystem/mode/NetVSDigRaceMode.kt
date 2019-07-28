@@ -12,10 +12,10 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	private var goalLines:Int = 0 // TODO: Add option to change this
 
 	/** Number of garbage lines left */
-	private var playerRemainLines:IntArray = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
+	private var playerRemainLines:IntArray = IntArray(NETVS_MAX_PLAYERS)
 
 	/** Number of gems available at the start of the game (for values game) */
-	private var playerStartGems:IntArray = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
+	private var playerStartGems:IntArray = IntArray(NETVS_MAX_PLAYERS)
 
 	/* Mode name */
 	override val name:String
@@ -25,8 +25,8 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	override fun modeInit(manager:GameManager) {
 		super.modeInit(manager)
 		goalLines = 18
-		playerRemainLines = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
-		playerStartGems = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
+		playerRemainLines = IntArray(NETVS_MAX_PLAYERS)
+		playerStartGems = IntArray(NETVS_MAX_PLAYERS)
 	}
 
 	/** Apply room settings, but ignore non-speed settings */
@@ -224,20 +224,20 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 					engine.resetStatc()
 				} else {
 					// Send game end message
-					val places = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
-					val uidArray = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
+					val places = IntArray(NETVS_MAX_PLAYERS)
+					val uidArray = IntArray(NETVS_MAX_PLAYERS)
 					for(i in 0 until players) {
 						places[i] = getNowPlayerPlace(owner.engine[i], i)
 						uidArray[i] = -1
 					}
 					for(i in 0 until players)
-						if(places[i]>=0&&places[i]<NetDummyVSMode.NETVS_MAX_PLAYERS) uidArray[places[i]] = netvsPlayerUID[i]
+						if(places[i]>=0&&places[i]<NETVS_MAX_PLAYERS) uidArray[places[i]] = netvsPlayerUID[i]
 
 					val strMsg = StringBuilder("racewin")
 					for(i in 0 until players)
 						if(uidArray[i]!=-1) strMsg.append("\t").append(uidArray[i])
 					strMsg.append("\n")
-					netLobby!!.netPlayerClient!!.send(strMsg.toString())
+					netLobby!!.netPlayerClient!!.send("$strMsg")
 
 					// Wait until everyone dies
 					engine.stat = GameEngine.Status.NOTHING
@@ -262,7 +262,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 				if(remainLines in 1..8) fontColor = EventReceiver.COLOR.ORANGE
 				if(remainLines in 1..4) fontColor = EventReceiver.COLOR.RED
 
-				val strLines = remainLines.toString()
+				val strLines = "$remainLines"
 
 				when {
 					engine.displaysize!=-1 -> when {
@@ -298,7 +298,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 					place==5 -> owner.receiver.drawDirectFont(x, y+168, "6TH", EventReceiver.COLOR.PURPLE, .5f)
 				}
 			} else if(!netvsIsPractice||playerID!=0) {
-				val strTemp = netvsPlayerWinCount[playerID].toString()+"/"+netvsPlayerPlayCount[playerID]
+				val strTemp = "$netvsPlayerWinCount[playerID]"+"/"+netvsPlayerPlayCount[playerID]
 
 				if(engine.displaysize!=-1) {
 					var y2 = 21
@@ -317,7 +317,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 		var scale = 1f
 		if(engine.displaysize==-1) scale = .5f
 
-		drawResultScale(engine, playerID, owner.receiver, 2, EventReceiver.COLOR.ORANGE, scale, "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time.toFloat())))
+		drawResultScale(engine, playerID, owner.receiver, 2, EventReceiver.COLOR.ORANGE, scale, "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 	}
 
 	/* Send stats */
@@ -342,11 +342,11 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	override fun netSendEndGameStats(engine:GameEngine) {
 		val playerID = engine.playerID
 		var msg = "gstat\t"
-		msg += netvsPlayerPlace[playerID].toString()+"\t"
-		msg += 0.toString()+"\t"+0+"\t"+0+"\t"
-		msg += engine.statistics.lines.toString()+"\t"+engine.statistics.lpm+"\t"
-		msg += engine.statistics.totalPieceLocked.toString()+"\t"+engine.statistics.pps+"\t"
-		msg += netvsPlayTimer.toString()+"\t"+0+"\t"+netvsPlayerWinCount[playerID]+"\t"+netvsPlayerPlayCount[playerID]
+		msg += "$netvsPlayerPlace[playerID]\t"
+		msg += 0.toString()+"\t${0}\t${0}\t"
+		msg += engine.statistics.lines.toString()+"\t${engine.statistics.lpm}\t"
+		msg += engine.statistics.totalPieceLocked.toString()+"\t${engine.statistics.pps}\t"
+		msg += "$netvsPlayTimer${"\t${0}\t"+netvsPlayerWinCount[playerID]}\t"+netvsPlayerPlayCount[playerID]
 		msg += "\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}

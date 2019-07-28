@@ -91,7 +91,7 @@ class MusicListEditor:JFrame(), ActionListener {
 
 		try {
 			val `in` = FileInputStream(
-				"config/lang/musiclisteditor_"+Locale.getDefault().country+".xml")
+				"config/lang/musiclisteditor_${Locale.getDefault().country}.xml")
 			propLang.loadFromXML(`in`)
 			`in`.close()
 		} catch(e:IOException) {

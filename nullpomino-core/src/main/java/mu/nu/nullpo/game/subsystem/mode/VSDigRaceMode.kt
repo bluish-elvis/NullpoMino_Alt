@@ -261,11 +261,11 @@ class VSDigRaceMode:AbstractMode() {
 		if(engine.statc[4]==0) {
 			if(menuCursor<9) {
 				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
-				drawMenu(engine, playerID, receiver, 14, EventReceiver.COLOR.GREEN, 7, "LOAD", presetNumber[playerID].toString(), "SAVE", presetNumber[playerID].toString())
+				drawMenu(engine, playerID, receiver, 14, EventReceiver.COLOR.GREEN, 7, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
 			} else {
-				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, 9, "GOAL", goalLines[playerID].toString(), "CHANGERATE",
-					garbagePercent[playerID].toString()+"%", "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
-				drawMenu(engine, playerID, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM", BGM.values[bgmno].toString())
+				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, 9, "GOAL", "$goalLines[playerID]", "CHANGERATE",
+					"$garbagePercent[playerID]%", "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
+				drawMenu(engine, playerID, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM", "$BGM.values[bgmno]")
 			}
 		} else
 			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
@@ -386,7 +386,7 @@ class VSDigRaceMode:AbstractMode() {
  * = EventReceiver.COLOR.RED; */
 
 		// Lines left (bottom)
-		val strLines = remainLines.toString()
+		val strLines = "$remainLines"
 
 		if(remainLines>0)
 			when {
@@ -401,7 +401,7 @@ class VSDigRaceMode:AbstractMode() {
 		else if(remainLines>enemyRemainLines) receiver.drawMenuFont(engine, playerID, -2, 22, "2ND", EventReceiver.COLOR.WHITE)
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(256, 16, GeneralUtil.getTime(engine.statistics.time.toFloat()))
+		if(playerID==0) receiver.drawDirectFont(256, 16, GeneralUtil.getTime(engine.statistics.time))
 
 		// Normal layout
 		if(owner.receiver.nextDisplayType!=2&&playerID==0) {
@@ -413,10 +413,10 @@ class VSDigRaceMode:AbstractMode() {
 
 			if(!owner.replayMode) {
 				receiver.drawScoreFont(engine, playerID, 0, 8, "1P WINS", EventReceiver.COLOR.RED)
-				receiver.drawScoreFont(engine, playerID, 0, 9, winCount[0].toString())
+				receiver.drawScoreFont(engine, playerID, 0, 9, "$winCount[0]")
 
 				receiver.drawScoreFont(engine, playerID, 0, 11, "2P WINS", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 12, winCount[1].toString())
+				receiver.drawScoreFont(engine, playerID, 0, 12, "$winCount[1]")
 			}
 		}
 
@@ -427,7 +427,7 @@ class VSDigRaceMode:AbstractMode() {
 			if(!owner.replayMode) {
 				receiver.drawDirectFont(x-44, y+190, "WINS", fontColor2, .5f)
 				receiver.drawDirectFont(x-if(winCount[playerID]>=10) 44 else 36, y+204,
-					winCount[playerID].toString())
+					"$winCount[playerID]")
 			}
 		}
 	}
@@ -492,7 +492,7 @@ class VSDigRaceMode:AbstractMode() {
 			playerID -> receiver.drawMenuFont(engine, playerID, 6, 1, "WIN!", EventReceiver.COLOR.YELLOW)
 			else -> receiver.drawMenuFont(engine, playerID, 6, 1, "LOSE", EventReceiver.COLOR.WHITE)
 		}
-		drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.ORANGE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.LPM, AbstractMode.Statistic.PPS, AbstractMode.Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS, Statistic.TIME)
 	}
 
 	/* Called when saving replay */

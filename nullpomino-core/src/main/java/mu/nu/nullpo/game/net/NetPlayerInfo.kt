@@ -175,10 +175,10 @@ class NetPlayerInfo:Serializable {
 		uid = Integer.parseInt(pdata[5])
 		seatID = Integer.parseInt(pdata[6])
 		queueID = Integer.parseInt(pdata[7])
-		ready = java.lang.Boolean.parseBoolean(pdata[8])
-		playing = java.lang.Boolean.parseBoolean(pdata[9])
-		connected = java.lang.Boolean.parseBoolean(pdata[10])
-		isTripUse = java.lang.Boolean.parseBoolean(pdata[11])
+		ready = Boolean.parseBoolean(pdata[8])
+		playing = Boolean.parseBoolean(pdata[9])
+		connected = Boolean.parseBoolean(pdata[10])
+		isTripUse = Boolean.parseBoolean(pdata[11])
 		rating[0] = Integer.parseInt(pdata[12])
 		rating[1] = Integer.parseInt(pdata[13])
 		rating[2] = Integer.parseInt(pdata[14])
@@ -211,29 +211,29 @@ class NetPlayerInfo:Serializable {
 	,NetUtil.urlEncode(strCountry)
 	,NetUtil.urlEncode(strHost)
 	,NetUtil.urlEncode(strTeam)
-	,Integer.toString(roomID)
-	,Integer.toString(uid)
-	,Integer.toString(seatID)
-	,Integer.toString(queueID)
+	, "$roomID"
+	, "$uid"
+	, "$seatID"
+	, "$queueID"
 	, Boolean.toString(ready)
 	, Boolean.toString(playing)
 	, Boolean.toString(connected)
 	, Boolean.toString(isTripUse)
-	,Integer.toString(rating[0])
-	,Integer.toString(rating[1])
-	,Integer.toString(rating[2])
-	,Integer.toString(rating[3])
-	,Integer.toString(playCount[0])
-	,Integer.toString(playCount[1])
-	,Integer.toString(playCount[2])
-	,Integer.toString(playCount[3])
-	,Integer.toString(winCount[0])
-	,Integer.toString(winCount[1])
-	,Integer.toString(winCount[2])
-	,Integer.toString(winCount[3])
+	, "$rating[0]"
+	, "$rating[1]"
+	, "$rating[2]"
+	, "$rating[3]"
+	, "$playCount[0]"
+	, "$playCount[1]"
+	, "$playCount[2]"
+	, "$playCount[3]"
+	, "$winCount[0]"
+	, "$winCount[1]"
+	, "$winCount[2]"
+	, "$winCount[3]"
 	,NetUtil.compressString(spPersonalBest.exportString())
-	,Integer.toString(playCountNow)
-	,Integer.toString(winCountNow))
+	, "$playCountNow"
+	, "$winCountNow")
 
 	/** Export to String (Divided by ;)
 	 * @return String
@@ -247,7 +247,7 @@ class NetPlayerInfo:Serializable {
 			if(i<data.size-1) strResult.append(";")
 		}
 
-		return strResult.toString()
+		return "$strResult"
 	}
 
 	/** Reset play flags */

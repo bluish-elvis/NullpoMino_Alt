@@ -1,7 +1,6 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.apache.log4j.Logger
 import org.newdawn.slick.GameContainer

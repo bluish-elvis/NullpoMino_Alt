@@ -239,7 +239,7 @@ open class NetBaseClient:Thread {
 	 * @param interval Interval
 	 */
 	@JvmOverloads
-	fun startPingTask(interval:Long = PING_INTERVAL.toLong()) {
+	fun startPingTask(interval:Long = PING_INTERVAL) {
 		log.debug("Ping interval:$interval")
 		if(timerPing!=null) timerPing.cancel()
 		if(interval<=0) return
@@ -251,7 +251,7 @@ open class NetBaseClient:Thread {
 
 	/** Stop the Ping timer task */
 	fun stopPingTask() {
-		if(timerPing!=null) timerPing.cancel()
+		timerPing.cancel()
 	}
 
 	/** Ping task */
@@ -263,22 +263,21 @@ open class NetBaseClient:Thread {
 						log.error("Ping timeout")
 						threadRunning = false
 						connectedFlag = false
-						if(timerPing!=null) timerPing.cancel()
+						timerPing.cancel()
 					} else {
 						send("ping\n")
 						pingCount++
 
 						if(pingCount>=PING_AUTO_DISCONNECT_COUNT/2)
-							log.debug("Ping "+pingCount+"/"
-								+PING_AUTO_DISCONNECT_COUNT)
+							log.debug("Ping $pingCount/$PING_AUTO_DISCONNECT_COUNT")
 					}
 				} else {
 					log.info("Ping Timer Cancelled")
-					if(timerPing!=null) timerPing.cancel()
+					timerPing.cancel()
 				}
 			} catch(e:Exception) {
 				log.error("Exception in Ping Timer. Stopping the task.", e)
-				if(timerPing!=null) timerPing.cancel()
+				timerPing.cancel()
 			}
 
 		}

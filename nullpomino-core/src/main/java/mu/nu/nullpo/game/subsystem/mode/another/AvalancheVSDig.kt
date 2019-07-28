@@ -40,7 +40,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 	private var version:Int = 0
 
 	/** Ojama handicap to start with */
-	private var handicapRows:IntArray = IntArray(AvalancheVSDummyMode.MAX_PLAYERS)
+	private var handicapRows:IntArray = IntArray(MAX_PLAYERS)
 
 	/* Mode name */
 	override val name:String
@@ -49,7 +49,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
 		super.modeInit(manager)
-		handicapRows = IntArray(AvalancheVSDummyMode.MAX_PLAYERS)
+		handicapRows = IntArray(MAX_PLAYERS)
 	}
 
 	/** Load settings not related to speeds
@@ -241,16 +241,18 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
-				if(menuCursor==27)
-					loadPreset(engine, owner.modeConfig, presetNumber[playerID], "digrace")
-				else if(menuCursor==28) {
-					savePreset(engine, owner.modeConfig, presetNumber[playerID], "digrace")
-					receiver.saveModeConfig(owner.modeConfig)
-				} else {
-					saveOtherSetting(engine, owner.modeConfig)
-					savePreset(engine, owner.modeConfig, -1-playerID, "digrace")
-					receiver.saveModeConfig(owner.modeConfig)
-					engine.statc[4] = 1
+				when(menuCursor) {
+					27 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID], "digrace")
+					28 -> {
+						savePreset(engine, owner.modeConfig, presetNumber[playerID], "digrace")
+						receiver.saveModeConfig(owner.modeConfig)
+					}
+					else -> {
+						saveOtherSetting(engine, owner.modeConfig)
+						savePreset(engine, owner.modeConfig, -1-playerID, "digrace")
+						receiver.saveModeConfig(owner.modeConfig)
+						engine.statc[4] = 1
+					}
 				}
 			}
 
@@ -261,11 +263,11 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 			menuTime++
 			menuCursor = 0
 
-			if(menuTime>=180)
-				engine.statc[4] = 1
-			else if(menuTime>=120)
-				menuCursor = 18
-			else if(menuTime>=60) menuCursor = 9
+			when {
+				menuTime>=180 -> engine.statc[4] = 1
+				menuTime>=120 -> menuCursor = 18
+				menuTime>=60 -> menuCursor = 9
+			}
 		} else // Start
 			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&playerID==1) {
 				owner.engine[0].stat = GameEngine.Status.READY
@@ -280,45 +282,42 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 	/* Setting screen drawing */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(engine.statc[4]==0) {
-			if(menuCursor<9) {
-				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(), "CLEAR DELAY", engine.cascadeClearDelay.toString())
+			when {
+				menuCursor<9 -> {
+					drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(), "CLEAR DELAY", engine.cascadeClearDelay.toString())
 
-				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/3", EventReceiver.COLOR.YELLOW)
-			} else if(menuCursor<18) {
-				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, 9, "COUNTER", AvalancheVSDummyMode.OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", maxAttack[playerID].toString(), "COLORS", numColors[playerID].toString(), "MIN CHAIN", rensaShibari[playerID].toString(), "OJAMA RATE", ojamaRate[playerID].toString(), "HURRYUP",
-					if(hurryupSeconds[playerID]==0)
-						"NONE"
-					else
-						hurryupSeconds[playerID].toString()+"SEC", "HARD OJAMA", ojamaHard[playerID].toString(), "X COLUMN", if(dangerColumnDouble[playerID])
-					"3 AND 4"
-				else
-					"3 ONLY", "X SHOW", GeneralUtil.getONorOFF(dangerColumnShowX[playerID]))
+					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/3", EventReceiver.COLOR.YELLOW)
+				}
+				menuCursor<18 -> {
+					drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, 9,
+						"COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", "$maxAttack[playerID]", "COLORS", "$numColors[playerID]", "MIN CHAIN", "$rensaShibari[playerID]", "OJAMA RATE", "$ojamaRate[playerID]",
+						"HURRYUP", if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]}SEC",
+						"HARD OJAMA", "$ojamaHard[playerID]",
+						"X COLUMN", if(dangerColumnDouble[playerID]) "3 AND 4" else "3 ONLY",
+						"X SHOW", GeneralUtil.getONorOFF(dangerColumnShowX[playerID]))
 
-				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 2/3", EventReceiver.COLOR.YELLOW)
-			} else {
-				initMenu(EventReceiver.COLOR.PURPLE, 18)
-				drawMenu(engine, playerID, receiver, "ROWS", handicapRows[playerID].toString())
-				menuColor = EventReceiver.COLOR.CYAN
-				drawMenu(engine, playerID, receiver, "CHAINPOWER", if(newChainPower[playerID])
-					"FEVER"
-				else
-					"CLASSIC", "CLEAR SIZE", engine.colorClearSize.toString())
-				menuColor = EventReceiver.COLOR.COBALT
-				drawMenu(engine, playerID, receiver, "OUTLINE", AvalancheVSDummyMode.OUTLINE_TYPE_NAMES[outlineType[playerID]], "SHOW CHAIN", AvalancheVSDummyMode.CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]], "FALL ANIM",
-					if(cascadeSlow[playerID])
-						"FEVER"
-					else
-						"CLASSIC")
-				menuColor = EventReceiver.COLOR.PINK
-				drawMenuCompact(engine, playerID, receiver, "BGM", BGM.values[bgmno].toString())
-				menuColor = EventReceiver.COLOR.YELLOW
-				drawMenuCompact(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
-				menuColor = EventReceiver.COLOR.PINK
-				drawMenu(engine, playerID, receiver, "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
-				menuColor = EventReceiver.COLOR.GREEN
-				drawMenuCompact(engine, playerID, receiver, "LOAD", presetNumber[playerID].toString(), "SAVE", presetNumber[playerID].toString())
+					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 2/3", EventReceiver.COLOR.YELLOW)
+				}
+				else -> {
+					initMenu(EventReceiver.COLOR.PURPLE, 18)
+					drawMenu(engine, playerID, receiver, "ROWS", "$handicapRows[playerID]")
+					menuColor = EventReceiver.COLOR.CYAN
+					drawMenu(engine, playerID, receiver, "CHAINPOWER", if(newChainPower[playerID])
+						"FEVER" else "CLASSIC", "CLEAR SIZE", engine.colorClearSize.toString())
+					menuColor = EventReceiver.COLOR.COBALT
+					drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]], "SHOW CHAIN", CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]], "FALL ANIM",
+						if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
+					menuColor = EventReceiver.COLOR.PINK
+					drawMenuCompact(engine, playerID, receiver, "BGM", "$BGM.values[bgmno]")
+					menuColor = EventReceiver.COLOR.YELLOW
+					drawMenuCompact(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
+					menuColor = EventReceiver.COLOR.PINK
+					drawMenu(engine, playerID, receiver, "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
+					menuColor = EventReceiver.COLOR.GREEN
+					drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
 
-				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/3", EventReceiver.COLOR.YELLOW)
+					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/3", EventReceiver.COLOR.YELLOW)
+				}
 			}
 		} else
 			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
@@ -339,7 +338,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 			if(outlineType[playerID]==1) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_SAMECOLOR
 			if(outlineType[playerID]==2) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 
-			if(engine.field!=null) engine.field!!.reset()
+			engine.field?.reset()
 		}
 
 		return false
@@ -350,30 +349,32 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		super.startGame(engine, playerID)
 
 		engine.createFieldIfNeeded()
-		val y = engine.field!!.height-1
-		val rand = Random(engine.random.nextLong())
-		val width = engine.field!!.width
-		val x = rand.nextInt(width)
-		engine.field!!.garbageDropPlace(x, y, false, 0)
-		engine.field!!.setBlockColor(x, y, Block.BLOCK_COLOR_GEM_RAINBOW)
-		engine.field!!.garbageDropPlace(x, y-1, false, 1)
-		if(x>0) {
-			engine.field!!.garbageDropPlace(x-1, y, false, 1)
-			engine.field!!.garbageDropPlace(x-1, y-1, false, 1)
+		engine.field?.also {
+			val y = it.height-1
+			val rand = Random(engine.random.nextLong())
+			val width = it.width
+			val x = rand.nextInt(width)
+			it.garbageDropPlace(x, y, false, 0)
+			it.setBlockColor(x, y, Block.BLOCK_COLOR_GEM_RAINBOW)
+			it.garbageDropPlace(x, y-1, false, 1)
+			if(x>0) {
+				it.garbageDropPlace(x-1, y, false, 1)
+				it.garbageDropPlace(x-1, y-1, false, 1)
+			}
+			if(x<width-1) {
+				it.garbageDropPlace(x+1, y, false, 1)
+				it.garbageDropPlace(x+1, y-1, false, 1)
+			}
+			val sizeLimit = maxOf(engine.colorClearSize-1, 2)
+			do
+				for(i in 0 until handicapRows[playerID])
+					for(j in 0 until width)
+						if(it.getBlockEmpty(j, y-i))
+							it.setBlockColor(j, y-i, BLOCK_COLORS[rand.nextInt(numColors[playerID])])
+			while(it.clearColor(sizeLimit, false, false, true)>0)
+			it.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE)
+			it.setAllSkin(engine.skin)
 		}
-		if(x<width-1) {
-			engine.field!!.garbageDropPlace(x+1, y, false, 1)
-			engine.field!!.garbageDropPlace(x+1, y-1, false, 1)
-		}
-		val sizeLimit = maxOf(engine.colorClearSize-1, 2)
-		do
-			for(i in 0 until handicapRows[playerID])
-				for(j in 0 until width)
-					if(engine.field!!.getBlockEmpty(j, y-i))
-						engine.field!!.setBlockColor(j, y-i, AvalancheVSDummyMode.BLOCK_COLORS[rand.nextInt(numColors[playerID])])
-		while(engine.field!!.clearColor(sizeLimit, false, false, true)>0)
-		engine.field!!.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE)
-		engine.field!!.setAllSkin(engine.skin)
 	}
 
 	/* When the current piece is in action */
@@ -388,7 +389,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		val playerColor = if(playerID==0) EventReceiver.COLOR.RED else EventReceiver.COLOR.BLUE
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(224, 8, GeneralUtil.getTime(engine.statistics.time.toFloat()))
+		if(playerID==0) receiver.drawDirectFont(224, 8, GeneralUtil.getTime(engine.statistics.time))
 
 		// Ojama Counter
 		var fontColor = EventReceiver.COLOR.WHITE
@@ -396,16 +397,15 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		if(ojama[playerID]>=6) fontColor = EventReceiver.COLOR.ORANGE
 		if(ojama[playerID]>=12) fontColor = EventReceiver.COLOR.RED
 
-		var strOjama = ojama[playerID].toString()
-		if(ojamaAdd[playerID]>0) strOjama = strOjama+"(+"+ojamaAdd[playerID].toString()+")"
+		var strOjama = "$ojama[playerID]"
+		if(ojamaAdd[playerID]>0) strOjama += "(+${ojamaAdd[playerID]})"
 
 		if(strOjama!="0") receiver.drawDirectFont(fldPosX+4, fldPosY+32, strOjama, fontColor)
 
 		// Score
 		var strScoreMultiplier = ""
 		if(lastscore[playerID]!=0&&lastmultiplier[playerID]!=0&&scgettime[playerID]>0)
-			strScoreMultiplier = ("("
-				+lastscore[playerID]+"e"+lastmultiplier[playerID]+")")
+			strScoreMultiplier = "(${lastscore[playerID]}e${lastmultiplier[playerID]})"
 
 		if(engine.displaysize==1) {
 			receiver.drawDirectFont(fldPosX+4, fldPosY+440, String.format("%12d", score[playerID]), playerColor)
@@ -432,18 +432,19 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 			ojamaAdd[enemyID] = 0
 		}
 		//Drop garbage if needed.
-		if(ojama[playerID]>0&&!ojamaDrop[playerID]&&(!cleared[playerID]||ojamaCounterMode[playerID]!=AvalancheVSDummyMode.OJAMA_COUNTER_FEVER)) {
+		if(ojama[playerID]>0&&!ojamaDrop[playerID]&&(!cleared[playerID]||ojamaCounterMode[playerID]!=OJAMA_COUNTER_FEVER)) {
 			ojamaDrop[playerID] = true
 			val drop = minOf(ojama[playerID], maxAttack[playerID])
 			ojama[playerID] -= drop
-			engine.field!!.garbageDrop(engine, drop, false, ojamaHard[playerID])
-			engine.field!!.setAllSkin(engine.skin)
+			engine.field?.garbageDrop(engine, drop, false, ojamaHard[playerID])
+			engine.field?.setAllSkin(engine.skin)
 			return true
 		}
 		//Check for game over
-		if(engine.field!=null)
-			if(!engine.field!!.getBlockEmpty(2, 0)||dangerColumnDouble[playerID]&&!engine.field!!.getBlockEmpty(3, 0))
+		engine.field?.also {
+			if(!it.getBlockEmpty(2, 0)||dangerColumnDouble[playerID]&&!it.getBlockEmpty(3, 0))
 				engine.stat = GameEngine.Status.GAMEOVER
+		}
 		return false
 	}
 

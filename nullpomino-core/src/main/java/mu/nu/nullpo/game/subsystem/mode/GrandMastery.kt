@@ -31,6 +31,7 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
 import java.util.*
+import kotlin.math.*
 
 /** GRADE MANIA 3 Mode */
 class GrandMastery:AbstractMode() {
@@ -363,10 +364,10 @@ class GrandMastery:AbstractMode() {
 				}
 
 				log.debug("** Exam data from replay START **")
-				log.debug("Promotional Exam Grade:"+getGradeName(promotionalExam)+" ("+promotionalExam+")")
+				log.debug("Promotional Exam Grade:${getGradeName(promotionalExam)} ($promotionalExam)")
 				log.debug("Promotional Exam Flag:$promotionFlag")
 				log.debug("Demotion Points:$demotionPoints")
-				log.debug("Demotional Exam Grade:"+getGradeName(demotionExamGrade)+" ("+demotionExamGrade+")")
+				log.debug("Demotional Exam Grade:${getGradeName(demotionExamGrade)} ($demotionExamGrade)")
 				log.debug("Demotional Exam Flag:$demotionFlag")
 				log.debug("*** Exam data from replay END ***")
 			}
@@ -609,11 +610,11 @@ class GrandMastery:AbstractMode() {
 					}
 
 					log.debug("** Exam debug log START **")
-					log.debug("Current Qualified Grade:"+getGradeName(qualifiedGrade)+" ("+qualifiedGrade+")")
-					log.debug("Promotional Exam Grade:"+getGradeName(promotionalExam)+" ("+promotionalExam+")")
+					log.debug("Current Qualified Grade:${getGradeName(qualifiedGrade)} ($qualifiedGrade)")
+					log.debug("Promotional Exam Grade:${getGradeName(promotionalExam)} ($promotionalExam)")
 					log.debug("Promotional Exam Flag:$promotionFlag")
 					log.debug("Demotion Points:$demotionPoints")
-					log.debug("Demotional Exam Grade:"+getGradeName(demotionExamGrade)+" ("+demotionExamGrade+")")
+					log.debug("Demotional Exam Grade:${getGradeName(demotionExamGrade)} ($demotionExamGrade)")
 					log.debug("Demotional Exam Flag:$demotionFlag")
 					log.debug("*** Exam debug log END ***")
 				}
@@ -641,7 +642,7 @@ class GrandMastery:AbstractMode() {
 			if(lv500torikan==0)
 				"NONE"
 			else
-				GeneralUtil.getTime(lv500torikan.toFloat()), "EXAM", GeneralUtil.getONorOFF(enableexam))
+				GeneralUtil.getTime(lv500torikan), "EXAM", GeneralUtil.getONorOFF(enableexam))
 	}
 
 	/* Called at game start */
@@ -685,7 +686,7 @@ class GrandMastery:AbstractMode() {
 
 						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1), COLOR.YELLOW)
 						receiver.drawScoreGrade(engine, playerID, 3, 3+i, getGradeName(rankingGrade[i]), gcolor)
-						receiver.drawScoreNum(engine, playerID, 7, 3+i, GeneralUtil.getTime(rankingTime[i].toFloat()), i==rankingRank)
+						receiver.drawScoreNum(engine, playerID, 7, 3+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank)
 						receiver.drawScoreNum(engine, playerID, 15, 3+i, String.format("%03d", rankingLevel[i]), i==rankingRank)
 					}
 
@@ -714,7 +715,7 @@ class GrandMastery:AbstractMode() {
 						val temp2 = minOf((i+1)*100-1, 999)
 
 						val strSectionTime:String
-						strSectionTime = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i].toFloat()))
+						strSectionTime = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i]&&!isAnyExam)
 
@@ -722,7 +723,7 @@ class GrandMastery:AbstractMode() {
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 14, "TOTAL", COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(totalTime.toFloat()), 2f)
+					receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(totalTime), 2f)
 					receiver.drawScoreFont(engine, playerID, if(receiver.nextDisplayType==2)
 						0
 					else
@@ -730,7 +731,7 @@ class GrandMastery:AbstractMode() {
 					receiver.drawScoreNum(engine, playerID, if(receiver.nextDisplayType==2)
 						0
 					else
-						12, if(receiver.nextDisplayType==2) 19 else 15, GeneralUtil.getTime((totalTime/SECTION_MAX).toFloat()), 2f)
+						12, if(receiver.nextDisplayType==2) 19 else 15, GeneralUtil.getTime((totalTime/SECTION_MAX)), 2f)
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
 
@@ -758,14 +759,14 @@ class GrandMastery:AbstractMode() {
 			// Score
 			receiver.drawScoreFont(engine, playerID, 0, 5, "SCORE", if(g20) COLOR.YELLOW else COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 5, "+$lastscore")
-			receiver.drawScoreNum(engine, playerID, 0, 6, scgettime.toString(), 2f)
-			if(scgettime<engine.statistics.score) scgettime += Math.ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
+			receiver.drawScoreNum(engine, playerID, 0, 6, "$scgettime", 2f)
+			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
 
 			// level
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", if(g20) COLOR.YELLOW else COLOR.BLUE)
 
 			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
-			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(g20) 40 else Math.floor(Math.log(engine.speed.gravity.toDouble())).toInt()*4)
+			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4)
 			if(coolcount>0) {
 				receiver.drawScoreFont(engine, playerID, 3, 11, "+")
 				receiver.drawScoreGrade(engine, playerID, 4, 11, String.format("%1d", coolcount))
@@ -778,14 +779,14 @@ class GrandMastery:AbstractMode() {
 			else
 				COLOR.BLUE)
 			if(engine.ending!=2||rolltime/10%2==0)
-				receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time.toFloat()), 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
 				var time = ROLLTIMELIMIT-rolltime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", COLOR.CYAN)
-				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time.toFloat()), time>0&&time<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
 			}
 
 			if(regretdispframe>0)
@@ -832,13 +833,13 @@ class GrandMastery:AbstractMode() {
 						val strSectionTime = StringBuilder()
 						for(l in 0 until i)
 							strSectionTime.append("\n")
-						strSectionTime.append(String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i].toFloat())))
+						strSectionTime.append(String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i])))
 
-						receiver.drawScoreNum(engine, playerID, if(x) 9 else 10, 3, strSectionTime.toString(), color, if(x) .75f else 1f)
+						receiver.drawScoreNum(engine, playerID, if(x) 9 else 10, 3, "$strSectionTime", color, if(x) .75f else 1f)
 					}
 
 				receiver.drawScoreFont(engine, playerID, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, if(x) 8 else 12, if(x) 12 else 15, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0)).toFloat()), 2f)
+				receiver.drawScoreNum(engine, playerID, if(x) 8 else 12, if(x) 12 else 15, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))), 2f)
 
 			}
 		}
@@ -847,7 +848,7 @@ class GrandMastery:AbstractMode() {
 	/* Ready→Goの処理 */
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
 		if(promotionFlag) {
-			engine.framecolor = GameEngine.FRAME_COLOR_BRONZE
+			engine.framecolor = GameEngine.FRAME_SKIN_GRADE
 
 			if(readyframe==100) engine.playSE("item_spawn")
 
@@ -870,10 +871,8 @@ class GrandMastery:AbstractMode() {
 		if(promotionFlag&&readyframe>0) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "PROMOTION", COLOR.YELLOW)
 			receiver.drawMenuFont(engine, playerID, 6, 3, "EXAM", COLOR.YELLOW)
-			receiver.drawMenuGrade(engine, playerID, 2, 6, getGradeName(promotionalExam), if(readyframe%4==0)
-				COLOR.ORANGE
-			else
-				COLOR.WHITE, 2f)
+			receiver.drawMenuGrade(engine, playerID, 2, 6, getGradeName(promotionalExam),
+				if(readyframe%4==0) COLOR.ORANGE else COLOR.WHITE, 2f)
 		}
 	}
 
@@ -1324,11 +1323,11 @@ class GrandMastery:AbstractMode() {
 				}
 
 				log.debug("** Exam result log START **")
-				log.debug("Current Qualified Grade:"+getGradeName(qualifiedGrade)+" ("+qualifiedGrade+")")
-				log.debug("Promotional Exam Grade:"+getGradeName(promotionalExam)+" ("+promotionalExam+")")
+				log.debug("Current Qualified Grade:${getGradeName(qualifiedGrade)} ($qualifiedGrade)")
+				log.debug("Promotional Exam Grade:${getGradeName(promotionalExam)} ($promotionalExam)")
 				log.debug("Promotional Exam Flag:$promotionFlag")
 				log.debug("Demotion Points:$demotionPoints")
-				log.debug("Demotional Exam Grade:"+getGradeName(demotionExamGrade)+" ("+demotionExamGrade+")")
+				log.debug("Demotional Exam Grade:${getGradeName(demotionExamGrade)} ($demotionExamGrade)")
 				log.debug("Demotional Exam Flag:$demotionFlag")
 				log.debug("*** Exam result log END ***")
 			}
@@ -1344,10 +1343,8 @@ class GrandMastery:AbstractMode() {
 			if(promotionFlag) {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "PROMOTION", COLOR.YELLOW)
 				receiver.drawMenuFont(engine, playerID, 1, 3, "CHANCE TO", COLOR.YELLOW)
-				receiver.drawMenuGrade(engine, playerID, 2, 6, getGradeName(qualifiedGrade), if(passframe%4==0)
-					COLOR.ORANGE
-				else
-					COLOR.WHITE, 2f)
+				receiver.drawMenuGrade(engine, playerID, 2, 6, getGradeName(qualifiedGrade),
+					if(passframe%4==0) COLOR.ORANGE else COLOR.WHITE, 2f)
 
 				if(passframe<420)
 					if(grade<promotionalExam)
@@ -1391,7 +1388,7 @@ class GrandMastery:AbstractMode() {
 
 			}
 		} else {
-			receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE"+(engine.statc[1]+1)+"/3", COLOR.RED)
+			receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 			when(engine.statc[1]) {
 				0 -> {
@@ -1404,7 +1401,7 @@ class GrandMastery:AbstractMode() {
 					receiver.drawMenuFont(engine, playerID, 0, 3, "GRADE", COLOR.BLUE)
 					receiver.drawMenuGrade(engine, playerID, 6, 2, getGradeName(rgrade), gcolor, 2f)
 
-					drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, AbstractMode.Statistic.SCORE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.LEVEL_MANIA, AbstractMode.Statistic.TIME)
+					drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME)
 					drawResultRank(engine, playerID, receiver, 12, COLOR.BLUE, rankingRank)
 					if(secretGrade>4)
 						drawResult(engine, playerID, receiver, 15, COLOR.BLUE, "S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]))
@@ -1426,12 +1423,12 @@ class GrandMastery:AbstractMode() {
 									COLOR.CYAN
 								else
 									COLOR.GREEN
-							receiver.drawMenuNum(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[i].toFloat()), color)
+							receiver.drawMenuNum(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[i]), color)
 						}
 
 					if(sectionavgtime>0) {
 						receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", COLOR.BLUE)
-						receiver.drawMenuNum(engine, playerID, 0, 15, GeneralUtil.getTime(sectionavgtime.toFloat()), 1.7f)
+						receiver.drawMenuNum(engine, playerID, 0, 15, GeneralUtil.getTime(sectionavgtime), 1.7f)
 					}
 				}
 				2 -> {
@@ -1447,7 +1444,7 @@ class GrandMastery:AbstractMode() {
 						receiver.drawMenuFont(engine, playerID, 0, 5, strRollPointsTotal)
 					}
 
-					drawResultStats(engine, playerID, receiver, 6, COLOR.BLUE, AbstractMode.Statistic.LPM, AbstractMode.Statistic.SPM, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.PPS)
+					drawResultStats(engine, playerID, receiver, 6, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
 					drawResult(engine, playerID, receiver, 15, COLOR.BLUE, "DECORATION", String.format("%d", dectemp))
 				}
 			}
@@ -1554,8 +1551,7 @@ class GrandMastery:AbstractMode() {
 			rankingRollclear[i] = prop.getProperty("grademania3.ranking.$ruleName.rollclear.$i", 0)
 		}
 		for(i in 0 until SECTION_MAX)
-			bestSectionTime[i] = prop!!.getProperty("grademania3.bestSectionTime."+ruleName+"."
-				+i, tableTimeRegret[i])
+			bestSectionTime[i] = prop!!.getProperty("grademania3.bestSectionTime.$ruleName.$i", tableTimeRegret[i])
 
 		for(i in 0 until GRADE_HISTORY_SIZE)
 			gradeHistory[i] = prop!!.getProperty("grademania3.gradehistory.$ruleName.$i", -1)
@@ -1648,7 +1644,7 @@ class GrandMastery:AbstractMode() {
 		// Debug log
 		log.debug("** Exam grade history START **")
 		for(i in gradeHistory.indices)
-			log.debug(i.toString()+": "+getGradeName(gradeHistory[i])+" ("+gradeHistory[i]+")")
+			log.debug("$i: ${getGradeName(gradeHistory[i])} (${gradeHistory[i]})")
 
 		log.debug("*** Exam grade history END ***")
 		setPromotionalGrade()
@@ -1657,7 +1653,7 @@ class GrandMastery:AbstractMode() {
 	/** 昇格試験の目標段位を設定 */
 	private fun setPromotionalGrade() {
 		var gradesOver = 0
-		var highgrade:Int = 0
+		var highgrade = 0
 
 		for(j in 0 until GRADE_HISTORY_SIZE)
 			if(gradeHistory[j]>qualifiedGrade) {
@@ -1670,8 +1666,8 @@ class GrandMastery:AbstractMode() {
 			if(qualifiedGrade<31&&promotionalExam==32) promotionalExam = 31
 
 			return
-		} else
-			promotionalExam = qualifiedGrade
+		}
+		promotionalExam = qualifiedGrade
 
 	}
 

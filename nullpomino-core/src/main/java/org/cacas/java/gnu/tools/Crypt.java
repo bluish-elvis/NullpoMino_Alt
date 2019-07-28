@@ -1,6 +1,5 @@
 package org.cacas.java.gnu.tools;
 
-import java.nio.ByteBuffer;
 
 // http://www.cacas.org/java/gnu/tools/
 
@@ -20,12 +19,12 @@ public class Crypt{
 
 	private static final int ITERATIONS=16;
 
-	private static final boolean shifts2[]={
+	private static final boolean[] shifts2={
 		false,false,true,true,true,true,true,true,
 		false,true,true,true,true,true,true,false
 	};
 
-	private static final int skb[][]={
+	private static final int[][] skb={
 		{
 			/* for C bits (numbered as per FIPS
 			 * 46) 1 2 3 4 5 6 */
@@ -188,7 +187,7 @@ public class Crypt{
 			}
 	};
 
-	private static final int SPtrans[][]={
+	private static final int[][] SPtrans={
 		{
 			/* nibble 0 */
 			0x00820200,0x00020000,0x80800000,0x80820200,
@@ -347,21 +346,21 @@ public class Crypt{
 		return ((int)b >= 0)?(int)b:(int)b+256;
 	}
 
-	private static int fourBytesToInt(byte b[],int offset){
+	private static int fourBytesToInt(byte[] b,int offset){
 		return byteToUnsigned(b[offset++])
 			|(byteToUnsigned(b[offset++])<<8)
 			|(byteToUnsigned(b[offset++])<<16)
 			|(byteToUnsigned(b[offset])<<24);
 	}
 
-	private static void intToFourBytes(int iValue,byte b[],int offset){
+	private static void intToFourBytes(int iValue,byte[] b,int offset){
 		b[offset++]=(byte)((iValue)&0xff);
 		b[offset++]=(byte)((iValue >>> 8)&0xff);
 		b[offset++]=(byte)((iValue >>> 16)&0xff);
 		b[offset]=(byte)((iValue >>> 24)&0xff);
 	}
 
-	private static void PERM_OP(int a,int b,int n,int m,int results[]){
+	private static void PERM_OP(int a,int b,int n,int m,int[] results){
 		int t;
 
 		t=((a >>> n)^b)&m;
@@ -381,13 +380,13 @@ public class Crypt{
 		return a;
 	}
 
-	private static int[] des_set_key(byte key[]){
-		int schedule[]=new int[ITERATIONS*2];
+	private static int[] des_set_key(byte[] key){
+		int[] schedule=new int[ITERATIONS*2];
 
 		int c=fourBytesToInt(key,0);
 		int d=fourBytesToInt(key,4);
 
-		int results[]=new int[2];
+		int[] results=new int[2];
 
 		PERM_OP(d,c,4,0x0f0f0f0f,results);
 		d=results[0];
@@ -447,7 +446,7 @@ public class Crypt{
 		return schedule;
 	}
 
-	private static int D_ENCRYPT(int L,int R,int S,int E0,int E1,int s[]){
+	private static int D_ENCRYPT(int L,int R,int S,int E0,int E1,int[] s){
 		int t, u, v;
 
 		v=R^(R >>> 16);
@@ -469,10 +468,10 @@ public class Crypt{
 		return L;
 	}
 
-	private static int[] body(int schedule[],int Eswap0,int Eswap1){
+	private static int[] body(int[] schedule,int Eswap0,int Eswap1){
 		int left=0;
 		int right=0;
-		int t=0;
+		int t;
 
 		for(int j=0;j<25;j++){
 			for(int i=0;i<ITERATIONS*2;i+=4){
@@ -492,7 +491,7 @@ public class Crypt{
 		left&=0xffffffff;
 		right&=0xffffffff;
 
-		int results[]=new int[2];
+		int[] results=new int[2];
 
 		PERM_OP(right,left,1,0x55555555,results);
 		right=results[0];
@@ -514,7 +513,7 @@ public class Crypt{
 		right=results[0];
 		left=results[1];
 
-		int out[]=new int[2];
+		int[] out=new int[2];
 
 		out[0]=left;
 		out[1]=right;
@@ -522,7 +521,7 @@ public class Crypt{
 		return out;
 	}
 
-	public static final String alphabet="./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	@SuppressWarnings("WeakerAccess") public static final String alphabet="./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 	public static String crypt(String salt,String original){
 		// wwb -- Should do some sanity checks: salt needs to be 2 chars, in alpha.
@@ -541,18 +540,16 @@ public class Crypt{
 
 		int Eswap0=alphabet.indexOf(charZero);
 		int Eswap1=alphabet.indexOf(charOne)<<4;
-		byte key[]=new byte[8];
+		byte[] key=new byte[8];
 
-		for(int i=0;i<key.length;i++)
-			key[i]=(byte)0;
+		for(int i=0;i<key.length;i++){
+			key[i]=i<original.length()?(byte) ((original.charAt(i))<<1):0;
+		}
 
-		for(int i=0;i<key.length&&i<original.length();i++)
-			key[i]=(byte)((original.charAt(i))<<1);
+		int[] schedule=des_set_key(key);
+		int[] out=body(schedule,Eswap0,Eswap1);
 
-		int schedule[]=des_set_key(key);
-		int out[]=body(schedule,Eswap0,Eswap1);
-
-		byte b[]=new byte[9];
+		byte[] b=new byte[9];
 
 		intToFourBytes(out[0],b,0);
 		intToFourBytes(out[1],b,4);
@@ -594,18 +591,15 @@ public class Crypt{
 
 		int Eswap0=alphabet.indexOf(charZero);
 		int Eswap1=alphabet.indexOf(charOne)<<4;
-		byte key[]=new byte[8];
+		byte[] key=new byte[8];
 
 		for(int i=0;i<key.length;i++)
-			key[i]=(byte)0;
+			key[i]=i<boriginal.length?(byte)((boriginal[i])<<1):0;
 
-		for(int i=0;i<key.length&&i<boriginal.length;i++)
-			key[i]=(byte)((boriginal[i])<<1);
+		int[] schedule=des_set_key(key);
+		int[] out=body(schedule,Eswap0,Eswap1);
 
-		int schedule[]=des_set_key(key);
-		int out[]=body(schedule,Eswap0,Eswap1);
-
-		byte b[]=new byte[9];
+		byte[] b=new byte[9];
 
 		intToFourBytes(out[0],b,0);
 		intToFourBytes(out[1],b,4);
@@ -629,7 +623,7 @@ public class Crypt{
 		return new String(buffer);
 	}
 
-	public static String crypt(ByteBuffer bsalt,ByteBuffer boriginal){
+	public static String crypt(java.nio.ByteBuffer bsalt,java.nio.ByteBuffer boriginal){
 		return crypt(bsalt.array(),boriginal.array());
 	}
 }

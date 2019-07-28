@@ -132,7 +132,7 @@ class StateInGame:BasicGameState() {
 			if(rulename==null) {
 				rulename = NullpoMinoSlick.propGlobal.getProperty("$i.rule", "")
 				if(gameManager!!.mode!!.gameStyle>0)
-					rulename = NullpoMinoSlick.propGlobal.getProperty(i.toString()+".rule."
+					rulename = NullpoMinoSlick.propGlobal.getProperty("$i"+".rule."
 						+gameManager!!.mode!!.gameStyle, "")
 			}
 			if(rulename!=null&&rulename.isNotEmpty()) {
@@ -289,7 +289,7 @@ class StateInGame:BasicGameState() {
 
 				// Fast forward
 				if(fastforward!=0)
-					FontNormal.printFont(offsetX, offsetY+376, "e"+(fastforward+1), COLOR.ORANGE)
+					FontNormal.printFont(offsetX, offsetY+376, "e${fastforward+1}", COLOR.ORANGE)
 				if(it.replayShowInvisible)
 					FontNormal.printFont(offsetX, offsetY+392, "SHOW INVIS", COLOR.ORANGE)
 			}

@@ -242,8 +242,7 @@ class SquareMode:AbstractMode() {
 
 	/* Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
-		receiver.drawScoreFont(engine, playerID, 0, 0, "SQUARE ("+GAMETYPE_NAME[gametype]
-			+")", EventReceiver.COLOR.COBALT)
+		receiver.drawScoreFont(engine, playerID, 0, 0, "SQUARE (${GAMETYPE_NAME[gametype]})", EventReceiver.COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
@@ -257,47 +256,40 @@ class SquareMode:AbstractMode() {
 				else if(gametype==2) receiver.drawScoreFont(engine, playerID, 3, 3, "TIME     SQUARE", EventReceiver.COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
 					if(gametype==0) {
-						receiver.drawScoreFont(engine, playerID, 3, topY+i, rankingScore[gametype][i].toString(), i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 9, topY+i, rankingSquares[gametype][i].toString(), i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i].toFloat()), i==rankingRank, scale)
+						receiver.drawScoreFont(engine, playerID, 3, topY+i, "$rankingScore[gametype][i]", i==rankingRank, scale)
+						receiver.drawScoreFont(engine, playerID, 9, topY+i, "$rankingSquares[gametype][i]", i==rankingRank, scale)
+						receiver.drawScoreFont(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
 					} else if(gametype==1) {
-						receiver.drawScoreFont(engine, playerID, 3, 4+i, rankingScore[gametype][i].toString(), i==rankingRank)
-						receiver.drawScoreFont(engine, playerID, 9, 4+i, rankingSquares[gametype][i].toString(), i==rankingRank)
+						receiver.drawScoreFont(engine, playerID, 3, 4+i, "$rankingScore[gametype][i]", i==rankingRank)
+						receiver.drawScoreFont(engine, playerID, 9, 4+i, "$rankingSquares[gametype][i]", i==rankingRank)
 					} else if(gametype==2) {
-						receiver.drawScoreFont(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[gametype][i].toFloat()), i==rankingRank)
-						receiver.drawScoreFont(engine, playerID, 12, 4+i, rankingSquares[gametype][i].toString(), i==rankingRank)
+						receiver.drawScoreFont(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank)
+						receiver.drawScoreFont(engine, playerID, 12, 4+i, "$rankingSquares[gametype][i]", i==rankingRank)
 					}
 				}
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
-			val strScore:String = if(lastscore==0||scgettime<=0)
-				engine.statistics.score.toString()
-			else
-				engine.statistics.score.toString()+"(+"+lastscore.toString()+")"
-			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
+			receiver.drawScoreFont(engine, playerID, 0, 4, "${engine.statistics.score}${if(lastscore==0||scgettime<=0)
+				"(+$lastscore)" else ""}")
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 7, engine.statistics.lines.toString())
+			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "SQUARE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 10, squares.toString())
+			receiver.drawScoreFont(engine, playerID, 0, 10, "$squares")
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
 			if(gametype==1) {
 				// Ultra timer
 				var time = ULTRA_MAX_TIME-engine.statistics.time
 				if(time<0) time = 0
-				var fontcolor = EventReceiver.COLOR.WHITE
-				if(time<30*60&&time>0) fontcolor = EventReceiver.COLOR.YELLOW
-				if(time<20*60&&time>0) fontcolor = EventReceiver.COLOR.ORANGE
-				if(time<10*60&&time>0) fontcolor = EventReceiver.COLOR.RED
-				receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(time.toFloat()), fontcolor)
+				receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(time), getTimeFontColor(time))
 			} else
 			// Normal timer
-				receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time.toFloat()))
+				receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time))
 		}
 	}
 
@@ -477,7 +469,7 @@ class SquareMode:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
-		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "SCORE", String.format("%10d", engine.statistics.score), "LINE", String.format("%10d", engine.statistics.lines), "SQUARE", String.format("%10d", squares), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time.toFloat())))
+		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "SCORE", String.format("%10d", engine.statistics.score), "LINE", String.format("%10d", engine.statistics.lines), "SQUARE", String.format("%10d", squares), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 		drawResultRank(engine, playerID, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
 	}
 

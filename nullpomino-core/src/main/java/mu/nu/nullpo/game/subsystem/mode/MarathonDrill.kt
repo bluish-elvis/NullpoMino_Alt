@@ -1,7 +1,8 @@
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -113,7 +114,7 @@ class MarathonDrill:NetDummyMode() {
 			loadSetting(owner.replayProp)
 
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty(playerID.toString()+".net.netPlayerName", "")
+			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
 
 		engine.owner.backgroundStatus.bg = startlevel
@@ -295,11 +296,11 @@ class MarathonDrill:NetDummyMode() {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i,
 						String.format("%2d", i+1), COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, playerID, 15, topY+i,
-						rankingDepth[goaltype][i].toString(), i==rankingRank, scale)
+						"${rankingDepth[goaltype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 3, topY+i,
-						rankingScore[goaltype][i].toString(), i==rankingRank, scale)
+						"${rankingScore[goaltype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 10, topY+i,
-						rankingLines[goaltype][i].toString(), i==rankingRank, scale)
+						"${rankingLines[goaltype][i]}", i==rankingRank, scale)
 				}
 			}
 		} else {
@@ -308,20 +309,20 @@ class MarathonDrill:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 5, 3, "+$lastscore")
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "DEPTH", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 7, garbageDigged.toString(), scale = 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 7, "$garbageDigged", scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LINE", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 10, engine.statistics.lines.toString(), scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "LEVEL", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 12, (engine.statistics.level+1).toString(), scale = 2f)
-			receiver.drawScoreNum(engine, playerID, 1, 13, garbageTotal.toString())
+			receiver.drawScoreNum(engine, playerID, 1, 13, "$garbageTotal")
 			receiver.drawSpeedMeter(engine, playerID, 0, 14,
 				garbageTotal%LEVEL_GARBAGE_LINES*1f/(LEVEL_GARBAGE_LINES-1))
-			receiver.drawScoreNum(engine, playerID, 1, 15, garbageNextLevelLines.toString())
+			receiver.drawScoreNum(engine, playerID, 1, 15, "$garbageNextLevelLines")
 
 			receiver.drawScoreFont(engine, playerID, 0, 16, "TIME", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 17, GeneralUtil.getTime(engine.statistics.time.toFloat()), scale = 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 17, GeneralUtil.getTime(engine.statistics.time), scale = 2f)
 
 			renderLineAlert(engine, playerID, receiver)
 
@@ -566,9 +567,9 @@ class MarathonDrill:NetDummyMode() {
 
 	/* Results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, COLOR.BLUE, AbstractMode.Statistic.SCORE, AbstractMode.Statistic.LINES)
+		drawResultStats(engine, playerID, receiver, 0, COLOR.BLUE, Statistic.SCORE, Statistic.LINES)
 		drawResult(engine, playerID, receiver, 4, COLOR.BLUE, "GARBAGE", String.format("%10d", garbageDigged))
-		drawResultStats(engine, playerID, receiver, 6, COLOR.BLUE, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.LEVEL, AbstractMode.Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 6, COLOR.BLUE, Statistic.PIECE, Statistic.LEVEL, Statistic.TIME)
 		drawResultRank(engine, playerID, receiver, 12, COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 14, COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 16, COLOR.BLUE, netRankingRank[1])
@@ -587,7 +588,7 @@ class MarathonDrill:NetDummyMode() {
 		saveSetting(prop)
 
 		// NET: Save name
-		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(playerID.toString()+".net.netPlayerName", netPlayerName)
+		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
 
 		// Update rankings
 		if(!owner.replayMode&&startlevel==0&&engine.ai==null) {
@@ -707,11 +708,11 @@ class MarathonDrill:NetDummyMode() {
 		val bg =
 			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += engine.statistics.score.toString()+"\t"+engine.statistics.lines+"\t"+engine.statistics.totalPieceLocked+"\t"
-		msg += engine.statistics.time.toString()+"\t"+engine.statistics.level+"\t"
-		msg += garbageTimer.toString()+"\t"+garbageTotal+"\t"+garbageDigged+"\t"+goaltype+"\t"
-		msg += engine.gameActive.toString()+"\t"+engine.timerActive+"\t"
-		msg += lastscore.toString()+"\t"+scgettime+"\t"+bg+"\t"+garbagePending+"\n"
+		msg += "${engine.statistics.score}\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += "${engine.statistics.time}\t${engine.statistics.level}\t"
+		msg += "$garbageTimer\t$garbageTotal\t$garbageDigged\t$goaltype\t"
+		msg += "${engine.gameActive}\t${engine.timerActive}\t"
+		msg += "$lastscore\t$scgettime\t$bg\t$garbagePending\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -742,14 +743,14 @@ class MarathonDrill:NetDummyMode() {
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
 		var subMsg = ""
-		subMsg += "SCORE;"+engine.statistics.score+"\t"
-		subMsg += "LINE;"+engine.statistics.lines+"\t"
+		subMsg += "SCORE;${engine.statistics.score}\t"
+		subMsg += "LINE;${engine.statistics.lines}\t"
 		subMsg += "GARBAGE;$garbageDigged\t"
-		subMsg += "PIECE;"+engine.statistics.totalPieceLocked+"\t"
-		subMsg += "LEVEL;"+(engine.statistics.level+engine.statistics.levelDispAdd)+"\t"
-		subMsg += "TIME;"+GeneralUtil.getTime(engine.statistics.time.toFloat())+"\t"
+		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
+		subMsg += "LEVEL;${engine.statistics.level+engine.statistics.levelDispAdd}\t"
+		subMsg += "TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
 
-		val msg = "gstat1p\t"+NetUtil.urlEncode(subMsg)+"\n"
+		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -758,9 +759,9 @@ class MarathonDrill:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += goaltype.toString()+"\t"+startlevel+"\t"+bgmno+"\t"
-		msg += tspinEnableType.toString()+"\t"+enableTSpinKick+"\t"+spinCheckType+"\t"+tspinEnableEZ+"\t"
-		msg += enableB2B.toString()+"\t"+enableCombo+"\t"+engine.speed.das+"\n"
+		msg += "$goaltype\t$startlevel\t$bgmno\t"
+		msg += "$tspinEnableType\t$enableTSpinKick\t$spinCheckType\t$tspinEnableEZ\t"
+		msg += "$enableB2B\t$enableCombo\t${engine.speed.das}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 

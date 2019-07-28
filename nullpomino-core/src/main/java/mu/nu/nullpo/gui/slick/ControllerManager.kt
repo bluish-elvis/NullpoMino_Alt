@@ -80,14 +80,14 @@ object ControllerManager {
 		for(i in 0 until Controllers.getControllerCount()) {
 			val c = Controllers.getController(i)
 
-			if(c.buttonCount in MIN_BUTTONS..(MAX_BUTTONS-1)) controllers!!.add(c)
+			if(c.buttonCount in MIN_BUTTONS until MAX_BUTTONS) controllers!!.add(c)
 		}
 
-		log.info("Found "+controllers!!.size+" controllers from NullpoMinoSlick app")
+		log.info("Found ${controllers!!.size} controllers from NullpoMinoSlick app")
 
 		for(i in controllers!!.indices) {
 			val c = controllers!![i]
-			log.debug("ID:"+i+", AxisCount:"+c.axisCount+", ButtonCount:"+c.buttonCount)
+			log.debug("ID:$i, AxisCount:${c.axisCount}, ButtonCount:"+c.buttonCount)
 		}
 	}
 

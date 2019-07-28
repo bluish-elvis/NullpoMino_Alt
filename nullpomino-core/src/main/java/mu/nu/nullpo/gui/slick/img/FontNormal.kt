@@ -79,16 +79,17 @@ object FontNormal {
 					dy += 8
 					dx = x
 				}
-			} else // Character output
+			} else {
+				val c = stringChar-32// Character output
 				if(scale==.5f) {
-					val sx = (stringChar-32)%32*8
-					val sy = (stringChar-32)/32*8+fontColor*24
+					val sx = c%32*8
+					val sy = c/32*8+fontColor*24
 					ResourceHolder.imgFontSmall.draw(dx.toFloat(), dy.toFloat(), (dx+8).toFloat(), (dy+8).toFloat(),
 						sx.toFloat(), sy.toFloat(), (sx+8).toFloat(), (sy+8).toFloat())
 					dx += 8
 				} else {
-					val sx = (stringChar-32)%32*16
-					val sy = (stringChar-32)/32*16+fontColor*48
+					val sx = c%32*16
+					val sy = c/32*16+fontColor*48
 					//SDLRect rectSrc = new SDLRect(sx, sy, 16, 16);
 					//SDLRect rectDst = new SDLRect(dx, dy, 16, 16);
 					//ResourceHolderSDL.imgFont.blitSurface(rectSrc, dest, rectDst);
@@ -96,6 +97,7 @@ object FontNormal {
 						sx.toFloat(), sy.toFloat(), (sx+16).toFloat(), (sy+16).toFloat())
 					dx = (dx+16*scale).toInt()
 				}
+			}
 		}
 	}
 

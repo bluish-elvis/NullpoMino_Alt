@@ -146,12 +146,10 @@ class NetPlayerClient:NetBaseClient {
 			playerCount = Integer.parseInt(message[2])
 			observerCount = Integer.parseInt(message[3])
 
-			val pingInterval:Long = if(message.size>6) java.lang.Long.parseLong(message[6]) else NetBaseClient.PING_INTERVAL
-			if(pingInterval!=NetBaseClient.PING_INTERVAL) startPingTask(pingInterval)
+			val pingInterval:Long = if(message.size>6) java.lang.Long.parseLong(message[6]) else PING_INTERVAL
+			if(pingInterval!=PING_INTERVAL) startPingTask(pingInterval)
 
-			send("login\t"+GameManager.versionMajor+"\t"+NetUtil.urlEncode(playerName)+"\t"
-				+Locale.getDefault().country+"\t"+
-				NetUtil.urlEncode(playerTeam)+"\n")
+			send("login\t${GameManager.versionMajor}\t${NetUtil.urlEncode(playerName)}\t${Locale.getDefault().country}\t${NetUtil.urlEncode(playerTeam)}\n")
 		}
 		// 人count更新
 		if(message[0]=="observerupdate") {

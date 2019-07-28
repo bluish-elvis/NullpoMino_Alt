@@ -74,10 +74,6 @@
 <entry key="GameTuning_BlockShowOutlineOnly">ブロックの表示を消して枠線だけを表示させます</entry>
 <entry key="GameTuning_Preview">ここでの設定を実際のゲーム画面で確認します(ショートカットキー:Dボタン)</entry>
 
-<!--InGame-->
-<entry key="InGame_Next">NEXT</entry>
-<entry key="InGame_Hold">HOLD</entry>
-
 <!--Init Failed-->
 <entry key="LWJGLLoadFailedMessage_Title">LWJGLがこのOSに対応していません</entry>
 <entry key="LWJGLLoadFailedMessage_Body">LWJGLの読み込みに失敗しました。\n残念ながら、LWGJLはこのOSに未対応のようです。\n\n発生した例外:%s\n詳しいエラーログは"log/log_slick.txt"にあります。</entry>

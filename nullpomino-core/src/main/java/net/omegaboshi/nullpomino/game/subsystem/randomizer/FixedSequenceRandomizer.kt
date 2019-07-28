@@ -1,7 +1,6 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.Piece.Shape
 import java.io.*
 import java.util.*
 
@@ -30,7 +29,7 @@ class FixedSequenceRandomizer:Randomizer {
 			}
 
 		}
-		sequenceTranslated = IntArray(sequence.toString().length){pieceCharToId(sequence.toString()[it])}
+		sequenceTranslated = IntArray("$sequence".length){pieceCharToId("$sequence"[it])}
 		println(Arrays.toString(sequenceTranslated))
 
 	}
@@ -38,7 +37,7 @@ class FixedSequenceRandomizer:Randomizer {
 	private fun pieceCharToId(c:Char):Int {
 		var i = 0
 		while(i<Piece.PIECE_STANDARD_COUNT) {
-			if(c==Shape.names[i][0]) break
+			if(c==Piece.Shape.names[i][0]) break
 			i++
 		}
 		return i

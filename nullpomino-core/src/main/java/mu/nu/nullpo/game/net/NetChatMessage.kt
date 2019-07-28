@@ -112,10 +112,10 @@ class NetChatMessage:Serializable {
 	 * @return String array (String[7])
 	 */
 	fun exportStringArray():Array<String> = arrayOf(
-		Integer.toString(uid)
+		"$uid"
 		, NetUtil.urlEncode(strUserName)
 		, NetUtil.urlEncode(strHost)
-		, Integer.toString(roomID)
+		, "$roomID"
 		, NetUtil.urlEncode(strRoomName)
 		, GeneralUtil.exportCalendarString(timestamp!!)
 		, NetUtil.urlEncode(strMessage))
@@ -132,7 +132,7 @@ class NetChatMessage:Serializable {
 			if(i<data.size-1) strResult.append(";")
 		}
 
-		return strResult.toString()
+		return "$strResult"
 	}
 
 	/** Delete this NetChatMessage */

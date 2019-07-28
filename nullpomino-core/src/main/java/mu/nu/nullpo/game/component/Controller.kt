@@ -38,7 +38,7 @@ class Controller:Serializable {
 	 * @return button input状態のビット flag
 	 */
 	/** button input状態をビット flagを元に設定
-	 * @param input button input状態のビット flag
+	 * @param input button_input状態のビット flag
 	 */
 	var buttonBit:Int
 		get() {

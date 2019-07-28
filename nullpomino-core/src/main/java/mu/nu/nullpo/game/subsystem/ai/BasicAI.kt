@@ -29,6 +29,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import org.apache.log4j.Logger
+import kotlin.math.abs
 
 /** CommonAI */
 open class BasicAI:DummyAI(), Runnable {
@@ -146,7 +147,7 @@ open class BasicAI:DummyAI(), Runnable {
 					val lrot = engine.getRotateDirection(-1)
 					val rrot = engine.getRotateDirection(1)
 
-					if(Math.abs(rt-bestRt)==2&&engine.ruleopt.rotateButtonAllowDouble
+					if(abs(rt-bestRt)==2&&engine.ruleopt.rotateButtonAllowDouble
 						&&!ctrl.isPress(Controller.BUTTON_E))
 						input = input or Controller.BUTTON_BIT_E
 					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleopt.rotateButtonAllowReverse&&

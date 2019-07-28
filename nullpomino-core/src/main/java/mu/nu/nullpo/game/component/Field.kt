@@ -25,10 +25,12 @@ package mu.nu.nullpo.game.component
 
 import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.LineGravity
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.log4j.Logger
 import java.io.Serializable
 import java.util.*
+import kotlin.math.abs
 
 /** Gamefield */
 class Field:Serializable {
@@ -300,7 +302,7 @@ class Field:Serializable {
 			var rowCheck:Boolean
 
 			for(i in height-1 downTo 1) {
-				holeLoc = -Math.abs(i-height/2)+height/2-1
+				holeLoc = -abs(i-height/2)+height/2-1
 				if(getBlockEmpty(holeLoc, i)&&!getBlockEmpty(holeLoc, i-1)) {
 					rowCheck = true
 					for(j in 0 until width)
@@ -485,11 +487,11 @@ class Field:Serializable {
 			val mapStr = StringBuilder()
 
 			for(j in 0 until width) {
-				mapStr.append(getBlockColor(j, i).toString())
+				mapStr.append("${getBlockColor(j, i)}")
 				if(j<width-1) mapStr.append(",")
 			}
 
-			p.setProperty("$id.field.values.$i", mapStr.toString())
+			p.setProperty("$id.field.values.$i", "$mapStr")
 		}
 	}
 
@@ -1471,8 +1473,8 @@ class Field:Serializable {
 				}
 				if(b.isGemBlock) bil.add(j)
 			}
-			setLineFlag(i, !bil.isEmpty())
-			if(!bil.isEmpty()) {
+			setLineFlag(i, bil.isNotEmpty())
+			if(bil.isNotEmpty()) {
 				ret += bil.size
 				if(ignite)
 					for(j in bil) {
@@ -1774,28 +1776,25 @@ class Field:Serializable {
 	 * @return The number of blocks cleared.
 	 */
 	fun allClearColor(targetColor:Int, flag:Boolean, gemSame:Boolean):Int {
-		var targetColor = targetColor
-		if(targetColor<0) return 0
-		if(gemSame) targetColor = Block.gemToNormalColor(targetColor)
+		var tC = targetColor
+		if(tC<0) return 0
+		if(gemSame) tC = Block.gemToNormalColor(tC)
 		var total = 0
 		for(y in -1*hiddenHeight until height)
 			for(x in 0 until width)
-				if(getBlockColor(x, y, gemSame)==targetColor) {
+				if(getBlockColor(x, y, gemSame)==tC) {
 					total++
-					if(flag)
-						getBlock(x, y)!!.setAttribute(true, ATTRIBUTE.ERASE)
-					else
-						setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
+					if(flag) getBlock(x, y)!!.setAttribute(true, ATTRIBUTE.ERASE)
+					else setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
 				}
 		return total
 	}
 
-	fun doCascadeGravity(type:GameEngine.LineGravity):Boolean {
+	fun doCascadeGravity(type:LineGravity):Boolean {
 		setAllAttribute(false, ATTRIBUTE.LAST_COMMIT)
-		return if(type==GameEngine.LineGravity.CASCADE_SLOW)
+		return if(type==LineGravity.CASCADE_SLOW)
 			doCascadeSlow()
-		else
-			doCascadeGravity()
+		else doCascadeGravity()
 	}
 
 	/** Main routine for cascade gravity.
@@ -2031,7 +2030,7 @@ class Field:Serializable {
 
 			for(j in 0 until width) {
 				val blk = Block(Block.COLOR.WHITE, Block.TYPE.BLOCK, skin,
-					Block.ATTRIBUTE.WALL, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE)
+					ATTRIBUTE.WALL, ATTRIBUTE.GARBAGE, ATTRIBUTE.VISIBLE)
 				setBlock(j, heightWithoutHurryupFloor-1, blk)
 			}
 
@@ -2047,7 +2046,7 @@ class Field:Serializable {
 
 		row?.forEach {strResult.append(it ?: " ")}
 
-		return strResult.toString()
+		return "$strResult"
 	}
 
 	/** fieldを文字列に変換
@@ -2060,10 +2059,10 @@ class Field:Serializable {
 			strResult.append(rowToString(getRow(i)))
 
 		// 終わりの0を取り除く
-		while(strResult.toString().endsWith("0"))
+		while("$strResult".endsWith("0"))
 			strResult = StringBuilder(strResult.substring(0, strResult.length-1))
 
-		return strResult.toString()
+		return "$strResult"
 	}
 
 	/** @param str String representing field state
@@ -2138,11 +2137,11 @@ class Field:Serializable {
 		val strResult = StringBuilder()
 
 		row?.forEach {
-			strResult.append(Integer.toString(it?.cint ?: 0, 16)).append("/")
-			strResult.append(Integer.toString(it?.aint ?: 0, 16)).append(";")
+			strResult.append((it?.cint ?: 0).toString(16)).append("/")
+			strResult.append((it?.aint ?: 0).toString(16)).append(";")
 		}
 
-		return strResult.toString()
+		return "$strResult"
 	}
 
 	/** Convert this field to a String with attributes
@@ -2153,10 +2152,10 @@ class Field:Serializable {
 
 		for(i in height-1 downTo maxOf(-1, highestBlockY))
 			strResult.append(attrRowToString(getRow(i)))
-		while(strResult.toString().endsWith("0/0;"))
+		while("$strResult".endsWith("0/0;"))
 			strResult = StringBuilder(strResult.substring(0, strResult.length-4))
 
-		return strResult.toString()
+		return "$strResult"
 	}
 
 	fun attrStringToRow(str:String, skin:Int):Array<Block> =
@@ -2206,7 +2205,7 @@ class Field:Serializable {
 
 	/** fieldの文字列表現を取得 */
 	override fun toString():String {
-		val str = StringBuilder(javaClass.name+"@"+Integer.toHexString(hashCode())+"\n")
+		val str = StringBuilder("${javaClass.name}@${Integer.toHexString(hashCode())}\n")
 
 		for(i in hiddenHeight*-1 until height) {
 			str.append(String.format("%3d:", i))
@@ -2217,14 +2216,14 @@ class Field:Serializable {
 				str.append(when {
 					color<0 -> "*"
 					color>=10 -> "+"
-					else -> Integer.toString(color)
+					else -> "$color"
 				})
 			}
 
 			str.append("\n")
 		}
 
-		return str.toString()
+		return "$str"
 	}
 
 	fun checkColor(size:Int, flag:Boolean, garbageClear:Boolean, gemSame:Boolean, ignoreHidden:Boolean):Int {
@@ -2262,13 +2261,13 @@ class Field:Serializable {
 	@JvmOverloads
 	fun garbageDrop(engine:GameEngine, drop:Int, big:Boolean, hard:Int = 0, countdown:Int = 0, avoidColumn:Int = -1,
 		color:Int = Block.BLOCK_COLOR_GRAY) {
-		var drop = drop
+		var d = drop
 		var y = -1*hiddenHeight
 		var actualWidth = width
 		if(big) actualWidth = actualWidth shr 1
 		val bigMove = if(big) 2 else 1
-		while(drop>=actualWidth) {
-			drop -= actualWidth
+		while(d>=actualWidth) {
+			d -= actualWidth
 			var x = 0
 			while(x<actualWidth) {
 				garbageDropPlace(x, y, big, hard, color, countdown)
@@ -2276,18 +2275,18 @@ class Field:Serializable {
 			}
 			y += bigMove
 		}
-		if(drop==0) return
+		if(d==0) return
 		val placeBlock = BooleanArray(actualWidth)
 		var j:Int
-		if(drop>actualWidth shr 1) {
+		if(d>actualWidth shr 1) {
 			for(x in 0 until actualWidth)
 				placeBlock[x] = true
 			var start = actualWidth
-			if(avoidColumn in 0..(actualWidth-1)) {
+			if(avoidColumn in 0 until actualWidth) {
 				start--
 				placeBlock[avoidColumn] = false
 			}
-			for(i in start downTo drop+1) {
+			for(i in start downTo d+1) {
 				do
 					j = engine.random.nextInt(actualWidth)
 				while(!placeBlock[j])
@@ -2296,7 +2295,7 @@ class Field:Serializable {
 		} else {
 			for(x in 0 until actualWidth)
 				placeBlock[x] = false
-			for(i in 0 until drop) {
+			for(i in 0 until d) {
 				do
 					j = engine.random.nextInt(actualWidth)
 				while(placeBlock[j]&&j!=avoidColumn)
@@ -2494,7 +2493,7 @@ class Field:Serializable {
 		var bestSwitch:Int
 		var bestSwitchCount:Int
 		var excess = 0
-		var fill = false
+		var fill:Boolean
 		while(!done) {
 			done = true
 			for(y in minY until height)
@@ -2609,9 +2608,9 @@ class Field:Serializable {
 	}
 
 	fun shuffleColors(blockColors:IntArray, numColors:Int, rand:Random) {
-		var blockColors = blockColors
-		blockColors = blockColors.clone()
-		val maxX = minOf(blockColors.size, numColors)
+		var bC = blockColors
+		bC = bC.clone()
+		val maxX = minOf(bC.size, numColors)
 		var temp:Int
 		var j:Int
 		var i = maxX
@@ -2619,16 +2618,16 @@ class Field:Serializable {
 			j = rand.nextInt(i)
 			i--
 			if(j!=i) {
-				temp = blockColors[i]
-				blockColors[i] = blockColors[j]
-				blockColors[j] = temp
+				temp = bC[i]
+				bC[i] = bC[j]
+				bC[j] = temp
 			}
 		}
 		for(x in 0 until width)
 			for(y in 0 until height) {
 				temp = getBlockColor(x, y)-1
 				if(numColors==3&&temp>=3) temp--
-				if(temp in 0..(maxX-1)) setBlockColor(x, y, blockColors[temp])
+				if(temp in 0 until maxX) setBlockColor(x, y, bC[temp])
 			}
 	}
 

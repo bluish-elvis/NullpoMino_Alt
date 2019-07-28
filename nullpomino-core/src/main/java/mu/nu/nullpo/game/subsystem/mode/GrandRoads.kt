@@ -30,6 +30,8 @@ import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import kotlin.math.floor
+import kotlin.math.ln
 
 /** TIME ATTACK mode (Original from NullpoUE build 010210 by Zircean.
  * This mode is heavily modified from the original.) */
@@ -136,7 +138,7 @@ class GrandRoads:NetDummyMode() {
 			loadSetting(owner.replayProp)
 
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty(playerID.toString()+".net.netPlayerName", "")
+			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
 
 		engine.owner.backgroundStatus.bg = startlevel
@@ -288,9 +290,8 @@ class GrandRoads:NetDummyMode() {
 	}
 
 	/** Set the starting bgmlv
-	 * @param engine GameEngine
 	 */
-	private fun setStartBgmlv(engine:GameEngine) {
+	private fun setStartBgmlv() {
 		bgmlv = 0
 		while(bgmlv<tableBGMChange[goaltype].size&&norm>=tableBGMChange[goaltype][bgmlv])
 			bgmlv++
@@ -306,7 +307,7 @@ class GrandRoads:NetDummyMode() {
 			val change = updateCursor(engine, 3)
 
 			if(change!=0) {
-				receiver.playSE("change")
+				engine.playSE("change")
 
 				when(menuCursor) {
 					0 -> {
@@ -332,7 +333,7 @@ class GrandRoads:NetDummyMode() {
 
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
-				receiver.playSE("decide")
+				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				receiver.saveModeConfig(owner.modeConfig)
 
@@ -382,7 +383,7 @@ class GrandRoads:NetDummyMode() {
 			engine.big = big
 			norm = startlevel*10
 			setSpeed(engine)
-			setStartBgmlv(engine)
+			setStartBgmlv()
 		}
 
 		return false
@@ -421,16 +422,13 @@ class GrandRoads:NetDummyMode() {
 					else
 						EventReceiver.COLOR.YELLOW)
 
-					receiver.drawScoreNum(engine, playerID, 8, 4+i, GeneralUtil.getTime(rankingTime[goaltype][i].toFloat()), gcolor)
+					receiver.drawScoreNum(engine, playerID, 8, 4+i, GeneralUtil.getTime(rankingTime[goaltype][i]), gcolor)
 
-					receiver.drawScoreNano(engine, playerID, 11, 8+i*2, if(gcolor==EventReceiver.COLOR.WHITE)
-						"LINES\nCLEARED"
-					else
-						"LIFES\nREMAINED", gcolor, .5f)
-					receiver.drawScoreNum(engine, playerID, 3, 4+i, String.format("%3d", if(gcolor==EventReceiver.COLOR.WHITE)
-						rankingLines[goaltype][i]
-					else
-						rankingLifes[goaltype][i]), gcolor)
+					receiver.drawScoreNano(engine, playerID, 11, 8+i*2,
+						if(gcolor==EventReceiver.COLOR.WHITE) "LINES\nCLEARED" else "LIFES\nREMAINED",
+						gcolor, .5f)
+					receiver.drawScoreNum(engine, playerID, 3, 4+i, String.format("%3d",
+						if(gcolor==EventReceiver.COLOR.WHITE) rankingLines[goaltype][i] else rankingLifes[goaltype][i]), gcolor)
 				}
 			}
 		} else {
@@ -443,20 +441,20 @@ class GrandRoads:NetDummyMode() {
 			receiver.drawSpeedMeter(engine, playerID, 0, 5, if(engine.speed.gravity<0)
 				40
 			else
-				Math.floor(Math.log(engine.speed.gravity.toDouble())).toInt()*(engine.speed.denominator/60))
+				floor(ln(engine.speed.gravity.toDouble())).toInt()*(engine.speed.denominator/60))
 
 			receiver.drawScoreFont(engine, playerID, 0, 7, "TIME LIMIT", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 8, GeneralUtil.getTime(levelTimer.toFloat()), levelTimer in 1..599&&levelTimer%4==0, 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 8, GeneralUtil.getTime(levelTimer), levelTimer in 1 until 600&&levelTimer%4==0, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 10, "TOTAL TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 11, GeneralUtil.getTime(engine.statistics.time.toFloat()), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 11, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			// Remaining ending time
 			if(engine.gameActive&&engine.ending==2&&engine.staffrollEnable) {
 				var time = ROLLTIMELIMIT-rolltime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time.toFloat()), time>0&&time<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
 			}
 
 			// Section time
@@ -475,13 +473,13 @@ class GrandRoads:NetDummyMode() {
 						if(i==engine.statistics.level&&engine.ending==0) strSeparator = "+"
 
 						val strSectionTime:String
-						strSectionTime = String.format("%2d%s%s", i+1, strSeparator, GeneralUtil.getTime(sectionTime[i].toFloat()))
+						strSectionTime = String.format("%2d%s%s", i+1, strSeparator, GeneralUtil.getTime(sectionTime[i]))
 						receiver.drawScoreNum(engine, playerID, x+1, y+1+i-l, strSectionTime, scale)
 					}
 					i++
 				}
 				receiver.drawScoreFont(engine, playerID, 0, 13, "AVERAGE", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 14, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+1)).toFloat()), 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 14, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+1))), 2f)
 			}
 		}
 		super.renderLast(engine, playerID)
@@ -516,7 +514,7 @@ class GrandRoads:NetDummyMode() {
 		if(engine.timerActive&&engine.ending==0)
 			if(levelTimer>0) {
 				levelTimer--
-				if(levelTimer<=600&&levelTimer%60==0) receiver.playSE("countdown")
+				if(levelTimer<=600&&levelTimer%60==0) engine.playSE("countdown")
 			} else if(!netIsWatch) {
 				engine.lives = 0
 				engine.gameEnded()
@@ -574,9 +572,10 @@ class GrandRoads:NetDummyMode() {
 			engine.heboHiddenYNow -= lines
 			if(engine.heboHiddenYNow<0) engine.heboHiddenYNow = 0
 		}
-
+		var bgmChanged = false
 		// BGM change
 		if(bgmlv<tableBGMChange[goaltype].size&&norm>=tableBGMChange[goaltype][bgmlv]) {
+			bgmChanged = true
 			bgmlv++
 			owner.bgmStatus.bgm = tableBGM[goaltype][bgmlv]
 			owner.bgmStatus.fadesw = false
@@ -585,7 +584,7 @@ class GrandRoads:NetDummyMode() {
 
 		// Game completed
 		if(norm>=tableGoalLevel[goaltype]*10) {
-			receiver.playSE("levelup")
+			engine.playSE("levelup_section")
 
 			// Update section time
 			if(engine.timerActive) sectionscomp++
@@ -603,7 +602,8 @@ class GrandRoads:NetDummyMode() {
 				engine.statistics.rollclear = if(engine.lives>=tableLives[goaltype]) 2 else 1
 			}
 		} else if(norm>=(engine.statistics.level+1)*10&&engine.statistics.level<tableGoalLevel[goaltype]-1) {
-			receiver.playSE("levelup")
+			// Level up
+			engine.playSE(if(bgmChanged)"levelup_section" else "levelup")
 			engine.statistics.level++
 
 			owner.backgroundStatus.fadesw = true
@@ -614,7 +614,8 @@ class GrandRoads:NetDummyMode() {
 
 			engine.timerActive = false // Stop timer until the next piece becomes active
 			setSpeed(engine)
-		}// Level up
+		}
+
 	}
 
 	/** Renders game result screen */
@@ -634,7 +635,7 @@ class GrandRoads:NetDummyMode() {
 			receiver.drawMenuNum(engine, playerID, 0, 2, String.format("%04d", norm), gcolor, 2f)
 			receiver.drawMenuFont(engine, playerID, 6, 3, "LINES", EventReceiver.COLOR.BLUE, .8f)
 
-			drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, AbstractMode.Statistic.LPM, AbstractMode.Statistic.TIME, AbstractMode.Statistic.PPS, AbstractMode.Statistic.PIECE)
+			drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.LPM, Statistic.TIME, Statistic.PPS, Statistic.PIECE)
 			drawResultRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, rankingRank)
 			drawResultNetRank(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[0])
 			drawResultNetRankDaily(engine, playerID, receiver, 18, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -647,12 +648,12 @@ class GrandRoads:NetDummyMode() {
 				x = i+engine.statc[1]*10-10
 				if(x>=0)
 					if(sectionTime[x]>0)
-						receiver.drawMenuNum(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[x].toFloat()))
+						receiver.drawMenuNum(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[x]))
 				i++
 			}
 			if(sectionavgtime>0) {
 				receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", EventReceiver.COLOR.BLUE)
-				receiver.drawMenuFont(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime.toFloat()))
+				receiver.drawMenuFont(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime))
 			}
 		}
 
@@ -671,12 +672,12 @@ class GrandRoads:NetDummyMode() {
 			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				engine.statc[1]--
 				if(engine.statc[1]<0) engine.statc[1] = 2
-				receiver.playSE("change")
+				engine.playSE("change")
 			}
 			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 				engine.statc[1]++
 				if(engine.statc[1]>2) engine.statc[1] = 0
-				receiver.playSE("change")
+				engine.playSE("change")
 			}
 		}
 
@@ -689,7 +690,7 @@ class GrandRoads:NetDummyMode() {
 		saveSetting(prop)
 
 		// NET: Save name
-		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(playerID.toString()+".net.netPlayerName", netPlayerName)
+		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
 
 		if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null) {
 			updateRanking(engine.lives, norm, engine.statistics.time, goaltype, engine.statistics.rollclear)
@@ -808,14 +809,14 @@ class GrandRoads:NetDummyMode() {
 		else
 			engine.owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += engine.statistics.lines.toString()+"\t"+engine.statistics.totalPieceLocked+"\t"
-		msg += engine.statistics.time.toString()+"\t"+engine.statistics.lpm+"\t"
-		msg += engine.statistics.pps.toString()+"\t"+goaltype+"\t"
-		msg += engine.gameActive.toString()+"\t"+engine.timerActive+"\t"
-		msg += engine.statistics.level.toString()+"\t"+levelTimer+"\t"+levelTimerMax+"\t"
-		msg += rolltime.toString()+"\t"+norm+"\t"+bg+"\t"+engine.meterValue+"\t"+engine.meterColor+"\t"
-		msg += engine.heboHiddenEnable.toString()+"\t"+engine.heboHiddenTimerNow+"\t"+engine.heboHiddenTimerMax+"\t"
-		msg += engine.heboHiddenYNow.toString()+"\t"+engine.heboHiddenYLimit+"\n"+engine.lives+"\n"
+		msg += engine.statistics.lines.toString()+"\t${engine.statistics.totalPieceLocked}\t"
+		msg += engine.statistics.time.toString()+"\t${engine.statistics.lpm}\t"
+		msg += engine.statistics.pps.toString()+"\t$goaltype\t"
+		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
+		msg += engine.statistics.level.toString()+"\t$levelTimer\t$levelTimerMax\t"
+		msg += "$rolltime${"\t$norm\t$bg\t${engine.meterValue}\t"+engine.meterColor}\t"
+		msg += engine.heboHiddenEnable.toString()+"\t${engine.heboHiddenTimerNow}\t${engine.heboHiddenTimerMax}\t"
+		msg += engine.heboHiddenYNow.toString()+"\t${engine.heboHiddenYLimit}\n${engine.lives}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -852,17 +853,17 @@ class GrandRoads:NetDummyMode() {
 		val subMsg = StringBuilder()
 		subMsg.append("NORM;").append(norm).append("\t")
 		subMsg.append("LEVEL;").append(engine.statistics.level+engine.statistics.levelDispAdd).append("\t")
-		subMsg.append("TIME;").append(GeneralUtil.getTime(engine.statistics.time.toFloat())).append("\t")
+		subMsg.append("TIME;").append(GeneralUtil.getTime(engine.statistics.time)).append("\t")
 		subMsg.append("PIECE;").append(engine.statistics.totalPieceLocked).append("\t")
 		subMsg.append("LINE/MIN;").append(engine.statistics.lpm).append("\t")
 		subMsg.append("PIECE/SEC;").append(engine.statistics.pps).append("\t")
-		subMsg.append("SECTION AVERAGE;").append(GeneralUtil.getTime(sectionavgtime.toFloat())).append("\t")
+		subMsg.append("SECTION AVERAGE;").append(GeneralUtil.getTime(sectionavgtime)).append("\t")
 		for(i in sectionTime.indices)
 			if(sectionTime[i]>0)
 				subMsg.append("SECTION ").append(
-					i+1).append(";").append(GeneralUtil.getTime(sectionTime[i].toFloat())).append("\t")
+					i+1).append(";").append(GeneralUtil.getTime(sectionTime[i])).append("\t")
 
-		val msg = "gstat1p\t"+NetUtil.urlEncode(subMsg.toString())+"\n"
+		val msg = "gstat1p\t${NetUtil.urlEncode("$subMsg")}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -871,7 +872,7 @@ class GrandRoads:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += goaltype.toString()+"\t"+startlevel+"\t"+showsectiontime+"\t"+big+"\n"
+		msg += "$goaltype${"\t$startlevel\t"+showsectiontime}\t$big\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 

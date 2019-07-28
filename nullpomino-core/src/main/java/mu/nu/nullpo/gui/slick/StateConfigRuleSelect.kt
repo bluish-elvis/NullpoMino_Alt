@@ -136,11 +136,11 @@ class StateConfigRuleSelect:DummyMenuScrollState() {
 		list = strRuleNameList
 
 		if(style==0) {
-			strCurrentFileName = NullpoMinoSlick.propGlobal.getProperty(player.toString()+".rulefile", "")
-			strCurrentRuleName = NullpoMinoSlick.propGlobal.getProperty(player.toString()+".rulename", "")
+			strCurrentFileName = NullpoMinoSlick.propGlobal.getProperty("$player.rulefile", "")
+			strCurrentRuleName = NullpoMinoSlick.propGlobal.getProperty("$player.rulename", "")
 		} else {
-			strCurrentFileName = NullpoMinoSlick.propGlobal.getProperty(player.toString()+".rulefile."+style, "")
-			strCurrentRuleName = NullpoMinoSlick.propGlobal.getProperty(player.toString()+".rulename."+style, "")
+			strCurrentFileName = NullpoMinoSlick.propGlobal.getProperty("$player.rulefile.$style", "")
+			strCurrentRuleName = NullpoMinoSlick.propGlobal.getProperty("$player.rulename.$style", "")
 		}
 
 		cursor = 0
@@ -153,10 +153,10 @@ class StateConfigRuleSelect:DummyMenuScrollState() {
 
 	/* Draw the screen */
 	override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
-		val title = "SELECT "+(player+1)+"P RULE ("+(cursor+1)+"/"+list.size+")"
+		val title = "SELECT ${player+1}P RULE (${cursor+1}/${list.size})"
 		FontNormal.printFontGrid(1, 1, title, COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 25, "CURRENT:"+strCurrentRuleName.toUpperCase(), COLOR.BLUE)
+		FontNormal.printFontGrid(1, 25, "CURRENT:${strCurrentRuleName.toUpperCase()}", COLOR.BLUE)
 		FontNormal.printFontGrid(9, 26, strCurrentFileName.toUpperCase(), COLOR.BLUE)
 
 		FontNormal.printFontGrid(1, 28, "A:OK B:CANCEL D:TOGGLE-VIEW", COLOR.GREEN)
@@ -168,13 +168,13 @@ class StateConfigRuleSelect:DummyMenuScrollState() {
 
 		val entry = ruleEntries[cursor]
 		if(style==0) {
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".rule", entry.filepath)
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".rulefile", entry.filename)
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".rulename", entry.rulename)
+			NullpoMinoSlick.propGlobal.setProperty("$player.rule", entry.filepath)
+			NullpoMinoSlick.propGlobal.setProperty("$player.rulefile", entry.filename)
+			NullpoMinoSlick.propGlobal.setProperty("$player.rulename", entry.rulename)
 		} else {
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".rule."+style, entry.filepath)
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".rulefile."+style, entry.filename)
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".rulename."+style, entry.rulename)
+			NullpoMinoSlick.propGlobal.setProperty("$player.rule.$style", entry.filepath)
+			NullpoMinoSlick.propGlobal.setProperty("$player.rulefile.$style", entry.filename)
+			NullpoMinoSlick.propGlobal.setProperty("$player.rulename.$style", entry.rulename)
 		}
 
 		NullpoMinoSlick.saveConfig()

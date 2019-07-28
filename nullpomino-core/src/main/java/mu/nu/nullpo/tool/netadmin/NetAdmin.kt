@@ -17,6 +17,7 @@ import java.util.*
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
 import javax.swing.text.*
+import kotlin.system.exitProcess
 
 /** NetAdmin - NetServer admin tool */
 class NetAdmin:JFrame(), ActionListener, NetMessageListener {
@@ -107,7 +108,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		try {
-			val `in` = FileInputStream("config/lang/netadmin_"+Locale.getDefault().country+".xml")
+			val `in` = FileInputStream("config/lang/netadmin_${Locale.getDefault().country}.xml")
 			propLang.load(`in`)
 			`in`.close()
 		} catch(e:IOException) {
@@ -486,7 +487,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	fun shutdown() {
 		logout()
 		saveConfig()
-		System.exit(0)
+		exitProcess(0)
 	}
 
 	/** Send admin command
@@ -511,7 +512,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		}
 		try {
 			val doc = txtpaneConsoleLog!!.document
-			doc.insertString(doc.length, str!!+"\n", sas)
+			str?.let{doc.insertString(doc.length, "$it\n", sas)}
 			txtpaneConsoleLog!!.caretPosition = doc.length
 		} catch(e:Exception) {
 		}
@@ -532,8 +533,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			try {
 				val reader:InputStreamReader
 				reader = try {
-					InputStreamReader(FileInputStream("config/lang/netadmin_help_"
-						+Locale.getDefault().country+".txt"), "UTF-8")
+					InputStreamReader(FileInputStream("config/lang/netadmin_help_${Locale.getDefault().country}.txt"), "UTF-8")
 				} catch(e2:IOException) {
 					InputStreamReader(FileInputStream("config/lang/netadmin_help_default.txt"), "UTF-8")
 				}
@@ -544,7 +544,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				reader.close()
 			} catch(e:IOException) {
 				log.error("Failed to load help file", e)
-				addConsoleLog(String.format(getUIText("Console_Help_Error"), e.toString()), Color.red)
+				addConsoleLog(String.format(getUIText("Console_Help_Error"), "$e"), Color.red)
 			}
 		else if(commands[0].equals("echo", ignoreCase = true)) {
 			val strTemp = GeneralUtil.stringCombine(commands, " ", 1)
@@ -567,7 +567,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		} else if(commands[0].equals("announce", ignoreCase = true)) {
 			val strTemp = GeneralUtil.stringCombine(commands, " ", 1)
 			if(strTemp.isNotEmpty()) {
-				sendCommand("announce\t"+NetUtil.urlEncode(strTemp))
+				sendCommand("announce\t${NetUtil.urlEncode(strTemp)}")
 				addConsoleLog(getUIText("Console_Announce")+strTemp)
 			}
 		} else if(commands[0].equals("myip", ignoreCase = true))
@@ -579,10 +579,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		else if(commands[0].equals("serverhost", ignoreCase = true))
 			addConsoleLog(strServerHost)
 		else if(commands[0].equals("serverport", ignoreCase = true))
-			addConsoleLog(Integer.toString(serverPort))
+			addConsoleLog("$serverPort")
 		else if(commands[0].equals("version", ignoreCase = true)) {
 			addConsoleLog("Client:"+GameManager.versionString)
-			addConsoleLog("Server:"+serverFullVer)
+			addConsoleLog("Server:$serverFullVer")
 		} else if(commands[0].equals("bangui", ignoreCase = true)) {
 			if(commands.size>1)
 				openBanDialog(commands[1])
@@ -612,7 +612,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			sendCommand("banlist")
 		else if(commands[0].equals("unban", ignoreCase = true)) {
 			if(commands.size>1)
-				sendCommand("unban\t"+commands[1])
+				sendCommand("unban\t${commands[1]}")
 			else
 				addConsoleLog(getUIText("Console_UnBan_NoParams"))
 		} else if(commands[0].equals("playerdelete", ignoreCase = true)||commands[0].equals("pdel", ignoreCase = true)) {
@@ -623,7 +623,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				addConsoleLog(getUIText("Console_PlayerDelete_NoParams"))
 		} else if(commands[0].equals("roomdelete", ignoreCase = true)||commands[0].equals("rdel", ignoreCase = true)) {
 			if(commands.size>1)
-				sendCommand("roomdelete\t"+commands[1])
+				sendCommand("roomdelete\t${commands[1]}")
 			else
 				addConsoleLog(getUIText("Console_RoomDelete_NoParams"))
 		} else
@@ -816,8 +816,8 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 			// Ping interval
 			val pingInterval:Long =
-				if(message.size>6) java.lang.Long.parseLong(message[6]) else NetBaseClient.PING_INTERVAL.toLong()
-			if(pingInterval!=NetBaseClient.PING_INTERVAL.toLong()) client.startPingTask(pingInterval)
+				if(message.size>6) java.lang.Long.parseLong(message[6]) else NetBaseClient.PING_INTERVAL
+			if(pingInterval!=NetBaseClient.PING_INTERVAL) client.startPingTask(pingInterval)
 
 			// Send login message
 			val strUsername = txtfldUsername!!.text
@@ -826,7 +826,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			val ePassword = rc4.rc4(NetUtil.stringToBytes(strUsername))
 			val b64Password = Base64Coder.encode(ePassword)
 
-			val strLogin = ("adminlogin\t"+clientMajorVer+"\t"+strUsername+"\t"+String(b64Password)+"\t"
+			val strLogin = ("adminlogin\t$clientMajorVer\t$strUsername\t${String(b64Password)}\t"
 				+clientBuildType+"\n")
 			log.debug("Send login message:$strLogin")
 			client.send(strLogin)
@@ -904,7 +904,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 					if(rank==-1)
 						strRowData[0] = "N/A"
 					else
-						strRowData[0] = Integer.toString(rank+1)
+						strRowData[0] = (rank+1).toString()
 					strRowData[1] = NetUtil.urlDecode(strRankData[1])
 					strRowData[2] = strRankData[2]
 					strRowData[3] = strRankData[3]
@@ -974,13 +974,13 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	 * @return Row data
 	 */
 	private fun createRoomListRowData(r:NetRoomInfo):Array<String> = arrayOf(
-		Integer.toString(r.roomID)
+		r.roomID.toString()
 		, r.strName
 		, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False")
 		, if(r.ruleLock) r.ruleName.toUpperCase() else getUIText("RoomTable_RuleName_Any")
 		, if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting")
 		, r.playerSeatedCount.toString()+"/"+r.maxPlayers
-		, Integer.toString(r.spectatorCount))
+		, r.spectatorCount.toString())
 
 	/** When received an admin command result
 	 * @param client NetBaseClient
@@ -1111,7 +1111,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				labelLoginMessage!!.text = String.format(getUIText("Login_Message_UnwantedDisconnect"), "(null)")
 			} else {
 				log.error("ERROR Disconnected!", ex)
-				labelLoginMessage!!.text = String.format(getUIText("Login_Message_UnwantedDisconnect"), ex.toString())
+				labelLoginMessage!!.text = String.format(getUIText("Login_Message_UnwantedDisconnect"), "$ex")
 			}
 		}
 		logout()
@@ -1453,7 +1453,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 						else strCopy.append(",").append(selectedObject)
 				}
 
-				val ss = StringSelection(strCopy.toString())
+				val ss = StringSelection("$strCopy")
 				val clipboard = Toolkit.getDefaultToolkit().systemClipboard
 				clipboard.setContents(ss, ss)
 			}

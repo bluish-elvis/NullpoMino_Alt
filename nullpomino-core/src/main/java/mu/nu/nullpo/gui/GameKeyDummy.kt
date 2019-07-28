@@ -5,7 +5,7 @@ import mu.nu.nullpo.util.CustomProperties
 
 open class GameKeyDummy
 /** Player numberを指定できるConstructor
- * @param pl Player number
+ * @param player Player number
  */
 @JvmOverloads protected constructor(
 	/** Player ID */

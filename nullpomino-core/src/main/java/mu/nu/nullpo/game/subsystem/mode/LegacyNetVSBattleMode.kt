@@ -33,6 +33,7 @@ import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
 import java.util.*
+import kotlin.math.abs
 
 /** The old version of NET-VS-BATTLE Mode
  */
@@ -602,8 +603,8 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 			garbage[engine.playerID] = totalGarbageLines
 
-			var msg = "game\tfieldattr\t"+garbage[engine.playerID]+"\t"+engine.skin+"\t"
-			msg += strFieldData+"\t"+isCompressed+"\n"
+			var msg = "game\tfieldattr\t${garbage[engine.playerID]}\t${engine.skin}\t"
+			msg += strFieldData+"\t$isCompressed\n"
 			netLobby!!.netPlayerClient!!.send(msg)
 		} else {
 			// Send without attributes
@@ -623,10 +624,10 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 			garbage[engine.playerID] = totalGarbageLines
 
-			var msg = ("game\tfield\t"+garbage[engine.playerID]+"\t"+engine.skin+"\t"
+			var msg = ("game\tfield\t${garbage[engine.playerID]}\t${engine.skin}\t"
 				+engine.field!!.highestGarbageBlockY+"\t")
 			msg += engine.field!!.heightWithoutHurryupFloor.toString()+"\t"
-			msg += strFieldData+"\t"+isCompressed+"\n"
+			msg += strFieldData+"\t$isCompressed\n"
 			netLobby!!.netPlayerClient!!.send(msg)
 		}
 	}
@@ -666,11 +667,11 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 	 */
 	private fun sendGameStat(engine:GameEngine, playerID:Int) {
 		var msg = "gstat\t"
-		msg += playerPlace[playerID].toString()+"\t"
-		msg += (garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR).toString()+"\t"+playerAPL[0]+"\t"+playerAPM[0]+"\t"
-		msg += engine.statistics.lines.toString()+"\t"+engine.statistics.lpm+"\t"
-		msg += engine.statistics.totalPieceLocked.toString()+"\t"+engine.statistics.pps+"\t"
-		msg += netPlayTimer.toString()+"\t"+currentKO+"\t"+numWins+"\t"+numGames
+		msg += "$playerPlace[playerID]\t"
+		msg += (garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR).toString()+"\t${playerAPL[0]}\t${playerAPM[0]}\t"
+		msg += engine.statistics.lines.toString()+"\t${engine.statistics.lpm}\t"
+		msg += engine.statistics.totalPieceLocked.toString()+"\t${engine.statistics.pps}\t"
+		msg += "$netPlayTimer${"\t$currentKO\t"+numWins}\t"+numGames
 		msg += "\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
@@ -831,12 +832,12 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 			if(playerID==0&&playerSeatNumber>=0&&!isReadyChangePending&&numPlayers>=2)
 				if(!isReady[playerID]) {
-					var strTemp = "A("+receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)+" KEY):"
+					var strTemp = "A(${receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
 					if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
 					receiver.drawMenuFont(engine, playerID, 0, 16, strTemp, COLOR.CYAN)
 					receiver.drawMenuFont(engine, playerID, 1, 17, "READY", COLOR.CYAN)
 				} else {
-					var strTemp = "B("+receiver.getKeyNameByButtonID(engine, Controller.BUTTON_B)+" KEY):"
+					var strTemp = "B(${receiver.getKeyNameByButtonID(engine, Controller.BUTTON_B)} KEY):"
 					if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
 					receiver.drawMenuFont(engine, playerID, 0, 16, strTemp, COLOR.BLUE)
 					receiver.drawMenuFont(engine, playerID, 1, 17, "CANCEL", COLOR.BLUE)
@@ -844,7 +845,7 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 		}
 
 		if(playerID==0&&playerSeatNumber>=0) {
-			var strTemp = "F("+receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)+" KEY):"
+			var strTemp = "F(${receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
 			if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
 			receiver.drawMenuFont(engine, playerID, 0, 18, strTemp, COLOR.PURPLE)
 			receiver.drawMenuFont(engine, playerID, 1, 19, "PRACTICE", COLOR.PURPLE)
@@ -933,9 +934,9 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 			numPlayers+numSpectators>=2)
 			if(engine.nowPieceObject==null&&prevPieceID!=Piece.PIECE_NONE||engine.manualLock) {
 				prevPieceID = Piece.PIECE_NONE
-				netLobby!!.netPlayerClient!!.send("game\tpiece\t"+prevPieceID+"\t"+prevPieceX+"\t"+prevPieceY+"\t"+prevPieceDir
+				netLobby!!.netPlayerClient!!.send("game\tpiece\t$prevPieceID\t$prevPieceX\t$prevPieceY\t"+prevPieceDir
 					+"\t"+
-					0+"\t"+engine.skin+"\t"+false+"\n")
+					0+"\t${engine.skin}\t${false}\n")
 
 				if(numNowPlayers==2&&numMaxPlayers==2) netSendNextAndHold(engine)
 			} else if(engine.nowPieceObject!!.id!=prevPieceID||engine.nowPieceX!=prevPieceX||
@@ -947,8 +948,8 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 				val x = prevPieceX+engine.nowPieceObject!!.dataOffsetX[prevPieceDir]
 				val y = prevPieceY+engine.nowPieceObject!!.dataOffsetY[prevPieceDir]
-				netLobby!!.netPlayerClient!!.send("game\tpiece\t"+prevPieceID+"\t"+x+"\t"+y+"\t"+prevPieceDir+"\t"+
-					engine.nowPieceBottomY+"\t"+engine.ruleopt.pieceColor[prevPieceID]+"\t"+engine.skin+"\t"+
+				netLobby!!.netPlayerClient!!.send("game\tpiece\t$prevPieceID\t$x\t$y\t$prevPieceDir\t"+
+					engine.nowPieceBottomY+"\t${engine.ruleopt.pieceColor[prevPieceID]}\t${engine.skin}\t"+
 					engine.nowPieceObject!!.big+"\n")
 
 				if(numNowPlayers==2&&numMaxPlayers==2) netSendNextAndHold(engine)
@@ -1103,7 +1104,7 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 						garbageEntry.lines -= pts[i]
 
 						if(garbageEntry.lines<=0) {
-							pts[i] = Math.abs(garbageEntry.lines)
+							pts[i] = abs(garbageEntry.lines)
 							garbageEntries!!.removeFirst()
 						} else
 							pts[i] = 0
@@ -1120,9 +1121,9 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 				if(targetID!=-1&&!isTargetable(targetID)) setNewTarget()
 				val targetSeatID = if(targetID==-1) -1 else allPlayerSeatNumbers[targetID]
 
-				netLobby!!.netPlayerClient!!.send("game\tattack\t"+stringPts+"\t"+lastevent[playerID]+"\t"+lastb2b[playerID]
+				netLobby!!.netPlayerClient!!.send("game\tattack\t$stringPts\t${lastevent[playerID]}\t"+lastb2b[playerID]
 					+"\t"+
-					lastcombo[playerID]+"\t"+garbage[playerID]+"\t"+lastpiece[playerID]+"\t"+targetSeatID+"\n")
+					lastcombo[playerID]+"\t${garbage[playerID]}\t${lastpiece[playerID]}\t$targetSeatID\n")
 			}
 		}
 
@@ -1234,7 +1235,7 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 		if(playerID==0&&engine.timerActive&&hurryupSeconds>=0&&engine.statistics.time==hurryupSeconds*60&&
 			!isPractice&&!hurryupStarted) {
 			netLobby!!.netPlayerClient!!.send("game\thurryup\n")
-			owner.receiver.playSE("hurryup")
+			engine.playSE("hurryup")
 			hurryupStarted = true
 			hurryupShowFrames = 60*5
 		}
@@ -1330,16 +1331,16 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 			if(currentRoomID!=-1) {
 				receiver.drawDirectFont(x, 286, "PLAYERS", COLOR.CYAN, .5f)
-				receiver.drawDirectFont(x, 294, (""+numPlayers), COLOR.WHITE, .5f)
+				receiver.drawDirectFont(x, 294, ("$numPlayers"), COLOR.WHITE, .5f)
 				receiver.drawDirectFont(x, 302, "SPECTATORS", COLOR.CYAN, .5f)
-				receiver.drawDirectFont(x, 310, (""+numSpectators), COLOR.WHITE, .5f)
+				receiver.drawDirectFont(x, 310, ("$numSpectators"), COLOR.WHITE, .5f)
 				receiver.drawDirectFont(x, 318, "MATCHES", COLOR.CYAN, .5f)
-				receiver.drawDirectFont(x, 326, (""+numGames), COLOR.WHITE, .5f)
+				receiver.drawDirectFont(x, 326, ("$numGames"), COLOR.WHITE, .5f)
 				receiver.drawDirectFont(x, 334, "WINS", COLOR.CYAN, .5f)
-				receiver.drawDirectFont(x, 342, (""+numWins), COLOR.WHITE, .5f)
+				receiver.drawDirectFont(x, 342, ("$numWins"), COLOR.WHITE, .5f)
 			}
 			receiver.drawDirectFont(x, 358, "ALL ROOMS", COLOR.GREEN, .5f)
-			receiver.drawDirectFont(x, 366, (""+netLobby!!.netPlayerClient!!.roomInfoList.size), COLOR.WHITE, .5f)
+			receiver.drawDirectFont(x, 366, ("${netLobby!!.netPlayerClient!!.roomInfoList.size}"), COLOR.WHITE, .5f)
 		}
 
 		// All number of players
@@ -1347,7 +1348,7 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 		// Course time
 		if(playerID==0&&currentRoomID!=-1) {
-			receiver.drawDirectFont(256, 16, GeneralUtil.getTime(netPlayTimer.toFloat()))
+			receiver.drawDirectFont(256, 16, GeneralUtil.getTime(netPlayTimer))
 
 			if(hurryupSeconds>=0&&hurryupShowFrames>0&&!isPractice&&hurryupStarted)
 				receiver.drawDirectFont(playerID, 256-8, 32, "HURRY UP!", hurryupShowFrames%2==0)
@@ -1367,11 +1368,11 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 				when {
 					engine.displaysize==-1 -> {
-						if(name.length>7) name = name.substring(0, 7)+".."
+						if(name.length>7) name = "${name.substring(0, 7)}.."
 						receiver.drawDirectTTF(x, y-16, name, fontcolor)
 					}
 					playerID==0 -> {
-						if(name.length>14) name = name.substring(0, 14)+".."
+						if(name.length>14) name = "${name.substring(0, 14)}.."
 						receiver.drawDirectTTF(x, y-20, name, fontcolor)
 					}
 					else -> receiver.drawDirectTTF(x, y-20, name, fontcolor)
@@ -1407,13 +1408,13 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 					+" KEY):\n END GAME", COLOR.PURPLE)
 
 			if(isPractice&&engine.timerActive)
-				receiver.drawDirectFont(256, 32, GeneralUtil.getTime(engine.statistics.time.toFloat()), COLOR.PURPLE)
+				receiver.drawDirectFont(256, 32, GeneralUtil.getTime(engine.statistics.time), COLOR.PURPLE)
 		}
 
 		// Automatically start timer
 		if(playerID==0&&currentRoomInfo!=null&&autoStartActive
 			&&!isNetGameActive)
-			receiver.drawDirectFont(496, 16, GeneralUtil.getTime(autoStartTimer.toFloat()),
+			receiver.drawDirectFont(496, 16, GeneralUtil.getTime(autoStartTimer),
 				if(currentRoomInfo!!.autoStartTNET2) COLOR.RED else COLOR.YELLOW)
 
 		// Target
@@ -1516,7 +1517,7 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 					receiver.drawDirectFont(x+4+16, y+176, ((lastcombo[playerID]-1).toString()+"COMBO"), COLOR.CYAN, .5f)
 			}
 		} else if(isPlayerExist[playerID]&&engine.isVisible&&!isPractice) {
-			val strTemp = playerWinCount[playerID].toString()+"/"+playerGamesCount[playerID]
+			val strTemp = "$playerWinCount[playerID]"+"/"+playerGamesCount[playerID]
 
 			if(engine.displaysize!=-1) {
 				var y = 21
@@ -1705,17 +1706,17 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 		} else receiver.drawMenuFont(engine, playerID, 0, 0, "PRACTICE", COLOR.PINK, scale)
 
 		drawResultScale(engine, playerID, receiver, 2, COLOR.ORANGE, scale, "ATTACK", String.format("%10g",
-			garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR), "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "ATK/LINE", String.format("%10g", playerAPL[playerID]), "ATTACK/MIN", String.format("%10g", playerAPM[playerID]), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time.toFloat())))
+			garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR), "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "ATK/LINE", String.format("%10g", playerAPL[playerID]), "ATTACK/MIN", String.format("%10g", playerAPM[playerID]), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 
 		if(!isNetGameActive&&playerSeatNumber>=0&&playerID==0) {
-			var strTemp = "A("+receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)+" KEY):"
+			var strTemp = "A(${receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
 			if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
 			receiver.drawMenuFont(engine, playerID, 0, 18, strTemp, COLOR.RED)
 			receiver.drawMenuFont(engine, playerID, 1, 19, "RESTART", COLOR.RED)
 		}
 
 		if(playerSeatNumber>=0&&playerID==0) {
-			var strTempF = "F("+receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)+" KEY):"
+			var strTempF = "F(${receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
 			if(strTempF.length>10) strTempF = strTempF.substring(0, 10)
 			receiver.drawMenuFont(engine, playerID, 0, 20, strTempF, COLOR.PURPLE)
 			if(!isPractice)
@@ -2150,7 +2151,7 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 
 					garbage[0] = totalGarbageLines
 					if(garbage[0]>=4*GARBAGE_DENOMINATOR) owner.engine[0].playSE("danger")
-					netLobby!!.netPlayerClient!!.send("game\tgarbageupdate\t"+garbage[0]+"\n")
+					netLobby!!.netPlayerClient!!.send("game\tgarbageupdate\t${garbage[0]}\n")
 				}
 			}
 			// Update bar rising auction

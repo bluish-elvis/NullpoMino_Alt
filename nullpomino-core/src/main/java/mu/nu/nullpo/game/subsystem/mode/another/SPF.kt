@@ -283,7 +283,7 @@ class SPF:AbstractMode() {
 	private fun loadMapPreview(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propMap[playerID]==null||forceReload) {
 			mapMaxNo[playerID] = 0
-			propMap[playerID] = receiver.loadProperties("config/values/spf/"+mapSet[playerID]+".values")
+			propMap[playerID] = receiver.loadProperties("config/values/spf/${mapSet[playerID]}.values")
 		}
 		propMap[playerID]?.let {
 			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
@@ -560,20 +560,20 @@ class SPF:AbstractMode() {
 				initMenu(COLOR.ORANGE, 0)
 				drawMenu(engine, playerID, receiver, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
 				menuColor = COLOR.GREEN
-				drawMenu(engine, playerID, receiver, "LOAD", presetNumber[playerID].toString(), "SAVE", presetNumber[playerID].toString())
+				drawMenu(engine, playerID, receiver, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/3", COLOR.YELLOW)
 			} else if(menuCursor<18) {
 				initMenu(COLOR.PINK, 9)
-				drawMenu(engine, playerID, receiver, "BGM", BGM.values[bgmno].toString())
+				drawMenu(engine, playerID, receiver, "BGM", "$BGM.values[bgmno]")
 				menuColor = COLOR.CYAN
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", mapSet[playerID].toString(), "MAP NO.",
+				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "$mapSet[playerID]", "MAP NO.",
 					if(mapNumber[playerID]<0)
 						"RANDOM"
 					else
-						mapNumber[playerID].toString()+"/"+(mapMaxNo[playerID]-1), "SE", GeneralUtil.getONorOFF(enableSE[playerID]), "HURRYUP", if(hurryupSeconds[playerID]==0)
+						"$mapNumber[playerID]"+"/"+(mapMaxNo[playerID]-1), "SE", GeneralUtil.getONorOFF(enableSE[playerID]), "HURRYUP", if(hurryupSeconds[playerID]==0)
 					"NONE"
 				else
-					hurryupSeconds[playerID].toString()+"SEC", "COUNTDOWN", ojamaCountdown[playerID].toString())
+					"$hurryupSeconds[playerID]SEC", "COUNTDOWN", "$ojamaCountdown[playerID]")
 				menuColor = COLOR.PINK
 				drawMenu(engine, playerID, receiver, "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
 				menuColor = COLOR.CYAN
@@ -585,21 +585,21 @@ class SPF:AbstractMode() {
 				receiver.drawMenuFont(engine, playerID, 0, 0, "ATTACK", COLOR.CYAN)
 				var multiplier = (100*getAttackMultiplier(dropSet[playerID], dropMap[playerID])).toInt()
 				if(multiplier>=100)
-					receiver.drawMenuFont(engine, playerID, 2, 1, multiplier.toString()+"%", if(multiplier==100)
+					receiver.drawMenuFont(engine, playerID, 2, 1, "$multiplier%", if(multiplier==100)
 						COLOR.YELLOW
 					else
 						COLOR.GREEN)
 				else
-					receiver.drawMenuFont(engine, playerID, 3, 1, multiplier.toString()+"%", COLOR.RED)
+					receiver.drawMenuFont(engine, playerID, 3, 1, "$multiplier%", COLOR.RED)
 				receiver.drawMenuFont(engine, playerID, 0, 2, "DEFEND", COLOR.CYAN)
 				multiplier = (100*getDefendMultiplier(dropSet[playerID], dropMap[playerID])).toInt()
 				if(multiplier>=100)
-					receiver.drawMenuFont(engine, playerID, 2, 3, multiplier.toString()+"%", if(multiplier==100)
+					receiver.drawMenuFont(engine, playerID, 2, 3, "$multiplier%", if(multiplier==100)
 						COLOR.YELLOW
 					else
 						COLOR.RED)
 				else
-					receiver.drawMenuFont(engine, playerID, 3, 3, multiplier.toString()+"%", COLOR.GREEN)
+					receiver.drawMenuFont(engine, playerID, 3, 3, "$multiplier%", COLOR.GREEN)
 
 				drawMenu(engine, playerID, receiver, 14, COLOR.CYAN, 18, "DROP SET", DROP_SET_NAMES[dropSet[playerID]], "DROP MAP",
 					String.format("%2d", dropMap[playerID]+1)+"/"+
@@ -684,7 +684,7 @@ class SPF:AbstractMode() {
 		val playerColor = if(playerID==0) COLOR.RED else COLOR.BLUE
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(224, 0, GeneralUtil.getTime(engine.statistics.time.toFloat()))
+		if(playerID==0) receiver.drawDirectFont(224, 0, GeneralUtil.getTime(engine.statistics.time))
 
 		// Ojama Counter
 		val fontColor = when {
@@ -693,7 +693,7 @@ class SPF:AbstractMode() {
 			ojama[playerID]>=12 -> COLOR.RED
 			else -> COLOR.WHITE
 		}
-		val strOjama = ojama[playerID].toString()
+		val strOjama = "$ojama[playerID]"
 		if(strOjama!="0") receiver.drawDirectFont(fldPosX+4, fldPosY+32, strOjama, fontColor)
 
 		// Score
@@ -966,8 +966,8 @@ class SPF:AbstractMode() {
 						if(!test.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) break
 						maxY++
 					}
-					log.debug("Pre-existing square found: ("+minX+", "+minY+") to ("+
-						maxX+", "+maxY+")")
+					log.debug("Pre-existing square found: ($minX, $minY) to ("+
+						maxX+", $maxY)")
 				} else if(b.getAttribute(Block.ATTRIBUTE.BROKEN)&&
 					color==engine.field!!.getBlockColor(x+1, y)&&
 					color==engine.field!!.getBlockColor(x, y+1)&&
@@ -987,8 +987,8 @@ class SPF:AbstractMode() {
 						bDR.setAttribute(false, Block.ATTRIBUTE.BROKEN)
 						expanded = true
 					}
-					log.debug("New square formed: ("+minX+", "+minY+") to ("+
-						maxX+", "+maxY+")")
+					log.debug("New square formed: ($minX, $minY) to ("+
+						maxX+", $maxY)")
 				}
 				if(maxX<=minX||maxY<=minY) continue //No gem block, skip to next block
 				var expandHere:Boolean
@@ -996,8 +996,8 @@ class SPF:AbstractMode() {
 				var testX:Int
 				var testY:Int
 				var bTest:Block?
-				log.debug("Testing square for expansion. Coordinates before: ("+minX+", "+minY+") to ("+
-					maxX+", "+maxY+")")
+				log.debug("Testing square for expansion. Coordinates before: ($minX, $minY) to ("+
+					maxX+", $maxY)")
 				//Expand up
 				testY = minY-1
 				done = false
@@ -1098,8 +1098,8 @@ class SPF:AbstractMode() {
 				log.debug("expanded = $expanded")
 				if(expanded) {
 
-					log.debug("Expanding square. Coordinates after: ("+minX+", "+minY+") to ("+
-						maxX+", "+maxY+")")
+					log.debug("Expanding square. Coordinates after: ($minX, $minY) to ("+
+						maxX+", $maxY)")
 					val size = minOf(maxX-minX+1, maxY-minY+1)
 					testX = minX
 					while(testX<=maxX) {
@@ -1228,9 +1228,9 @@ class SPF:AbstractMode() {
 
 		val apm = (ojamaSent[playerID]*3600).toFloat()/engine.statistics.time.toFloat()
 		drawResult(engine, playerID, receiver, 3, COLOR.ORANGE, "ATTACK", String.format("%10d", ojamaSent[playerID]))
-		drawResultStats(engine, playerID, receiver, 5, COLOR.ORANGE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.PIECE)
+		drawResultStats(engine, playerID, receiver, 5, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE)
 		drawResult(engine, playerID, receiver, 9, COLOR.ORANGE, "ATTACK/MIN", String.format("%10g", apm))
-		drawResultStats(engine, playerID, receiver, 11, COLOR.ORANGE, AbstractMode.Statistic.LPM, AbstractMode.Statistic.PPS, AbstractMode.Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 11, COLOR.ORANGE, Statistic.LPM, Statistic.PPS, Statistic.TIME)
 	}
 
 	/* Called when saving replay */

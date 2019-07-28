@@ -7,17 +7,17 @@ open class BooleanMenuItem(name:String, displayName:String, color:COLOR, default
 	:AbstractMenuItem<Boolean>(name, displayName, color, defaultValue) {
 
 	override val valueString:String
-		get() = value.toString().toUpperCase()
+		get() = "$value".toUpperCase()
 
 	override fun change(dir:Int, fast:Int) {
 		value = !value
 	}
 
 	override fun save(playerID:Int, prop:CustomProperties, modeName:String) {
-		prop.setProperty(modeName+"."+name+if(playerID<0) "" else ".p$playerID", value)
+		prop.setProperty("$modeName.$name${if(playerID<0) "" else ".p$playerID"}", value)
 	}
 
 	override fun load(playerID:Int, prop:CustomProperties, modeName:String) {
-		value = prop.getProperty(modeName+"."+name+if(playerID<0) "" else ".p$playerID", DEFAULT_VALUE)
+		value = prop.getProperty("$modeName.$name${if(playerID<0) "" else ".p$playerID"}", DEFAULT_VALUE)
 	}
 }

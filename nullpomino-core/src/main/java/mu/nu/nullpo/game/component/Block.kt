@@ -222,7 +222,7 @@ class Block(
 	//Colors beyond that would follow the ASCII table starting at '['.
 		if(cint>=10) ('A'.toInt()+(cint-10)).toChar() else ('0'.toInt()+maxOf(0, cint)).toChar()
 
-	override fun toString():String = ""+blockToChar()
+	override fun toString():String = "${blockToChar()}"
 
 	enum class TYPE { BLOCK, GEM, SQUARE_GOLD, SQUARE_SILVER }
 	enum class COLOR {

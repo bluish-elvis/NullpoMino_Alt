@@ -6,7 +6,7 @@ import mu.nu.nullpo.game.component.Piece
 class PoochyBotDefensive:PoochyBot() {
 	/* AI's name */
 	override val name:String
-		get() = super.name+" (Defensive)"
+		get() = "${super.name} (Defensive)"
 
 	/**
 	 * Think routine
@@ -38,7 +38,7 @@ class PoochyBotDefensive:PoochyBot() {
 		//int lidBefore = fld.getHowManyLidAboveHoles();
 
 		//Fetch depths.
-		val depthsBefore = PoochyBot.getColumnDepths(fld)
+		val depthsBefore = getColumnDepths(fld)
 		var deepestY = -1
 		//int deepestX = -1;
 		for(i in 0 until width-1)
@@ -110,9 +110,8 @@ class PoochyBotDefensive:PoochyBot() {
 
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
-			if(PoochyBot.DEBUG_ALL)
-				PoochyBot.log.debug("End of thinkMain("+x+", "+y+", "+rt+", "+rtOld+", fld, piece "+piece.id+", "+depth
-					+"). pts = 0 (Cannot place piece)")
+			if(DEBUG_ALL)
+				PoochyBot.log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.id}, $depth). pts = 0 (Cannot place piece)")
 			return Integer.MIN_VALUE
 		}
 
@@ -130,7 +129,7 @@ class PoochyBotDefensive:PoochyBot() {
 		// Field height (after clears)
 		val heightAfter = fld.highestBlockY
 
-		val depthsAfter = PoochyBot.getColumnDepths(fld)
+		val depthsAfter = getColumnDepths(fld)
 
 		// Danger flag
 		//boolean danger = (heightBefore <= 8);
@@ -149,7 +148,7 @@ class PoochyBotDefensive:PoochyBot() {
 		else if(valley>=4) valleyBonus = 400000
 		if(xMax==0) valleyBonus *= 2
 		if(valley>0)
-			if(PoochyBot.DEBUG_ALL) PoochyBot.log.debug("I piece xMax = $xMax, valley depth = $valley, valley bonus = $valleyBonus")
+			if(DEBUG_ALL) PoochyBot.log.debug("I piece xMax = $xMax, valley depth = $valley, valley bonus = $valleyBonus")
 		pts += valleyBonus
 
 		//Points for line clears
@@ -282,9 +281,8 @@ class PoochyBotDefensive:PoochyBot() {
 				if(heightBefore>=2&&depth==0) pts -= 2000000*(heightBefore-heightAfter)
 			}
 		}
-		if(PoochyBot.DEBUG_ALL)
-			PoochyBot.log.debug("End of thinkMain("+x+", "+y+", "+rt+", "+rtOld+", fld, piece "+piece.id+", "+depth+"). pts = "
-				+pts)
+		if(DEBUG_ALL)
+			PoochyBot.log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.id}, $depth). pts = $pts")
 		return pts
 	}
 }

@@ -30,6 +30,7 @@ import java.io.Serializable
 class Piece(
 	/** ID */
 	val id:Int = 0):Serializable {
+	val type:Shape get() = Shape.values()[id]
 	/** Direction */
 	var direction:Int = DIRECTION_UP
 
@@ -295,7 +296,7 @@ class Piece(
 	}
 
 	/** すべてのBlockの属性を設定
-	 * @param attr 変更したい属性
+	 * @param attrs 変更したい属性
 	 * @param status 変更後 state
 	 */
 	fun setAttribute(status:Boolean, vararg attrs:Block.ATTRIBUTE) {
@@ -750,16 +751,6 @@ class Piece(
 		return rt
 	}
 
-	/** BlockピースのIDの定数 */
-	enum class Shape {
-		I, L, O, Z, T, J, S, I1, I2, I3, L3;
-
-		companion object {
-			val names:List<String> get() = values().map {it.name}
-			fun name(id:Int):String = if(id>=0&&id<=values().size) values()[id].name else "?"
-		}
-	}
-
 	companion object {
 		/** Serial version ID */
 		private const val serialVersionUID = 1204901746632931186L
@@ -778,8 +769,8 @@ class Piece(
 		const val PIECE_L3 = 10
 
 		/** BlockピースのName */
-		@Deprecated("This will be enumed", ReplaceWith("Shape.names", "mu.nu.nullpo.game.component.Piece.Shape"))
-		val PIECE_NAMES = arrayOf("I", "L", "O", "Z", "T", "J", "S", "I1", "I2", "I3", "L3")
+		@Deprecated("This will be enumed", ReplaceWith("Shape.names", "mu.nu.nullpo.game.component.Shape"))
+		val PIECE_NAMES = Shape.values().map{it.name}.toTypedArray()
 
 		/** 通常のBlockピースのIDのMaximumcount */
 		const val PIECE_STANDARD_COUNT = 7
@@ -885,7 +876,18 @@ class Piece(
 		 * @param id ピースID
 		 * @return ピース名(不正な場合は ? を返す)
 		 */
-		@Deprecated("This will be enumed", ReplaceWith("Shape.name", "mu.nu.nullpo.game.component.Piece.Shape"))
-		fun getPieceName(id:Int):String = if(id>=0&&id<PIECE_NAMES.size) PIECE_NAMES[id] else "?"
+		@Deprecated("This will be enumed", ReplaceWith("Shape.name", "mu.nu.nullpo.game.component.Shape"))
+		fun getPieceName(id:Int):String = if(id>=0&&id<Shape.names.size) Shape.names[id] else "?"
+
+	}
+
+	/** BlockピースのIDの定数 */
+	enum class Shape {
+		I, L, O, Z, T, J, S, I1, I2, I3, L3;
+
+		companion object {
+			val names:List<String> get() = values().map {it.name}
+			fun name(id:Int):String = if(id>=0&&id<=values().size) values()[id].name else "?"
+		}
 	}
 }

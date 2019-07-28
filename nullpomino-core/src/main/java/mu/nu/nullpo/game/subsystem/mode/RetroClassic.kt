@@ -153,7 +153,7 @@ class RetroClassic:AbstractMode() {
 			val change = updateCursor(engine, 3)
 
 			if(change!=0) {
-				receiver.playSE("change")
+				engine.playSE("change")
 
 				when(menuCursor) {
 					0 -> {
@@ -179,7 +179,7 @@ class RetroClassic:AbstractMode() {
 
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
-				receiver.playSE("decide")
+				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				receiver.saveModeConfig(owner.modeConfig)
 				return false
@@ -201,7 +201,7 @@ class RetroClassic:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "GAME TYPE", GAMETYPE_NAME[gametype], "LEVEL", LEVEL_NAME[startlevel], "HEIGHT", startheight.toString(), "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "GAME TYPE", GAMETYPE_NAME[gametype], "LEVEL", LEVEL_NAME[startlevel], "HEIGHT", "$startheight", "BIG", GeneralUtil.getONorOFF(big))
 	}
 
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
@@ -226,7 +226,7 @@ class RetroClassic:AbstractMode() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		receiver.drawScoreFont(engine, playerID, 0, 0, "RETRO CLASSIC", COLOR.GREEN)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "("+GAMETYPE_NAME[gametype]+")", COLOR.GREEN)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "(${GAMETYPE_NAME[gametype]})", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -241,8 +241,7 @@ class RetroClassic:AbstractMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE"+
-				if(lastscore>0) "(+"+lastscore.toString()+")" else "", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE${if(lastscore>0) "(+$lastscore)" else ""}", COLOR.BLUE)
 			receiver.drawScore(engine, playerID, 0, 4, GeneralUtil.capsInteger(engine.statistics.score, 6),
 				font = if(engine.statistics.score<=999999) FONT.NUM else FONT.NORMAL, scale = 2f)
 
@@ -257,7 +256,7 @@ class RetroClassic:AbstractMode() {
 				if(engine.statistics.level<30) FONT.NUM else FONT.NORMAL, scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time.toFloat()), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)
 		}
 	}
 
@@ -348,7 +347,7 @@ class RetroClassic:AbstractMode() {
 			owner.backgroundStatus.fadebg = lv
 
 			setSpeed(engine)
-			receiver.playSE("levelup")
+			engine.playSE("levelup")
 		}
 	}
 

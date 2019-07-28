@@ -135,7 +135,7 @@ class UpdateChecker:Runnable {
 						tempStr = tempStr.replace("<Version>", "")
 						tempStr = tempStr.replace("</Version>", "")
 						strLatestVersion = tempStr
-						log.debug("Latest Version:"+strLatestVersion)
+						log.debug("Latest Version:$strLatestVersion")
 					}
 
 					pat = Pattern.compile("<Date>.*</Date>")
@@ -145,7 +145,7 @@ class UpdateChecker:Runnable {
 						tempStr = tempStr.replace("<Date>", "")
 						tempStr = tempStr.replace("</Date>", "")
 						strReleaseDate = tempStr
-						log.debug("Release Date:"+strReleaseDate)
+						log.debug("Release Date:$strReleaseDate")
 					}
 
 					pat = Pattern.compile("<DownloadURL>.*</DownloadURL>")
@@ -155,7 +155,7 @@ class UpdateChecker:Runnable {
 						tempStr = tempStr.replace("<DownloadURL>", "")
 						tempStr = tempStr.replace("</DownloadURL>", "")
 						strDownloadURL = tempStr
-						log.debug("Download URL:"+strDownloadURL)
+						log.debug("Download URL:$strDownloadURL")
 					}
 
 					pat = Pattern.compile("<WindowsInstallerURL>.*</WindowsInstallerURL>")
@@ -165,7 +165,7 @@ class UpdateChecker:Runnable {
 						tempStr = tempStr.replace("<WindowsInstallerURL>", "")
 						tempStr = tempStr.replace("</WindowsInstallerURL>", "")
 						strWindowsInstallerURL = tempStr
-						log.debug("Windows Installer URL:"+strWindowsInstallerURL)
+						log.debug("Windows Installer URL:$strWindowsInstallerURL")
 					}
 				}
 
@@ -184,12 +184,12 @@ class UpdateChecker:Runnable {
 		val latestMajorVersionAsFloat:Float
 			get() {
 				var resultVersion = 0f
-				if(strLatestVersion!=null&&strLatestVersion.isNotEmpty()) {
+				if(strLatestVersion.isNotEmpty()) {
 					val strDot = if(strLatestVersion.contains("_")) "_" else "."
 					val strSplit = strLatestVersion.split(strDot.toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 
 					if(strSplit.size>=2) {
-						val strTemp = strSplit[0]+"."+strSplit[1]
+						val strTemp = "${strSplit[0]}.${strSplit[1]}"
 						try {
 							resultVersion = java.lang.Float.parseFloat(strTemp)
 						} catch(e:NumberFormatException) {
@@ -206,7 +206,7 @@ class UpdateChecker:Runnable {
 		val latestMinorVersionAsInt:Int
 			get() {
 				var resultVersion = 0
-				if(strLatestVersion!=null&&strLatestVersion.isNotEmpty()) {
+				if(strLatestVersion.isNotEmpty()) {
 					val strDot = if(strLatestVersion.contains("_")) "_" else "."
 					val strSplit = strLatestVersion.split(strDot.toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 
@@ -226,7 +226,7 @@ class UpdateChecker:Runnable {
 		 * @return 最新版のVersion numberのString型表現("7.0.0"など)
 		 */
 		val latestVersionFullString:String
-			get() = latestMajorVersionAsFloat.toString()+"."+latestMinorVersionAsInt
+			get() = "$latestMajorVersionAsFloat.$latestMinorVersionAsInt"
 
 		/** Current versionよりも最新版のVersionの方が新しいか判定
 		 * @param nowMajor Current メジャーVersion
@@ -279,6 +279,6 @@ class UpdateChecker:Runnable {
 		 * @param l 削除する event リスナー
 		 * @return 削除されたらtrue, 最初から登録されていなかったらfalse
 		 */
-		fun removeListener(l:UpdateCheckerListener):Boolean = if(listeners==null) false else listeners!!.remove(l)
+		fun removeListener(l:UpdateCheckerListener):Boolean = if(listeners==null) false else listeners.remove(l)
 	}
 }

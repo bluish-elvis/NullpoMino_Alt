@@ -7,7 +7,7 @@ class TimeMenuItem constructor(name:String, displayName:String, color:COLOR, def
 	:IntegerMenuItem(name, displayName, color, defaultValue, min, max) {
 
 	override val valueString:String
-		get() = GeneralUtil.getTime(value.toFloat())
+		get() = GeneralUtil.getTime(value)
 
 	override fun change(dir:Int, fast:Int) {
 		val delta = dir*increment

@@ -29,6 +29,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import kotlin.math.ceil
 
 /** RETRO MANIA mode (Original from NullpoUE build 121909 by Zircean) */
 class RetroModern:AbstractMode() {
@@ -217,7 +218,7 @@ class RetroModern:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "LEVEL", startlevel.toString(), "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "LEVEL", "$startlevel", "BIG", GeneralUtil.getONorOFF(big))
 	}
 
 	/** This function will be called before the game actually begins (after
@@ -246,8 +247,7 @@ class RetroModern:AbstractMode() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		receiver.drawScoreFont(engine, playerID, 0, 0, "RETRO MODERN", color = COLOR.COBALT)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "("+GAMETYPE_NAME[gametype]
-			+" SPEED)", COLOR.COBALT)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "(${GAMETYPE_NAME[gametype]} SPEED)", COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
@@ -257,21 +257,21 @@ class RetroModern:AbstractMode() {
 				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE LV LINE TIME", color = COLOR.BLUE, scale = scale)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreNum(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, playerID, 3, topY+i, rankingScore[gametype][i].toString(), i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 9, topY+i, rankingLines[gametype][i].toString(), i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 12, topY+i, rankingLevel[gametype][i].toString(), i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i].toFloat()), i==rankingRank, scale)
+					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 9, topY+i, "${rankingLines[gametype][i]}", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 12, topY+i, "${rankingLevel[gametype][i]}", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
 				}
 			}
 		} else {
 			// Game statistics
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 5, 3, "+"+lastscore.toString())
+			receiver.drawScoreNum(engine, playerID, 5, 3, "+$lastscore")
 			val scget = scgettime<engine.statistics.score
-			if(scget) scgettime += Math.ceil((engine.statistics.score-scgettime)/24.0).toInt()
-			sc += Math.ceil(((scgettime-sc)/10f).toDouble()).toInt()
-			receiver.drawScoreNum(engine, playerID, 0, 4, sc.toString(), scget, 2f)
+			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/24.0).toInt()
+			sc += ceil(((scgettime-sc)/10f).toDouble()).toInt()
+			receiver.drawScoreNum(engine, playerID, 0, 4, "$sc", scget, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 7, "LINE", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 8, String.format("%03d/%03d", engine.statistics.lines, totalnorma), scale = 2f)
@@ -286,13 +286,13 @@ class RetroModern:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 5, 10, String.format("%02d.%02d", engine.statistics.level, lvdem), scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 11, "TIME", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 12, GeneralUtil.getTime(engine.statistics.time.toFloat()), scale = 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 12, GeneralUtil.getTime(engine.statistics.time), scale = 2f)
 
 			// Roll 残り time
 			if(rolltime>0) {
 				val time = ROLLTIMELIMIT-rolltime
 				receiver.drawScoreFont(engine, playerID, 0, 15, "FLASH BACK", COLOR.CYAN)
-				receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(time.toFloat()), time>0&&time<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
 			}
 
 		}
@@ -452,7 +452,7 @@ class RetroModern:AbstractMode() {
 		else if(engine.lineClearing>=4) num = 100000
 		if(linecount>=3) num *= 5
 		receiver.drawMenuBadges(engine, playerID, 2, engine.lastline-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
-		receiver.drawMenuNum(engine, playerID, 4, engine.lastline, lastscore.toString(), COLOR.CYAN)
+		receiver.drawMenuNum(engine, playerID, 4, engine.lastline, "$lastscore", COLOR.CYAN)
 
 		if(engine.split) {
 			if(engine.lineClearing==2)
@@ -543,7 +543,7 @@ class RetroModern:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", COLOR.ORANGE)
 
-		drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, AbstractMode.Statistic.SCORE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.LEVEL, AbstractMode.Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME)
 		drawResultRank(engine, playerID, receiver, 11, COLOR.BLUE, rankingRank)
 	}
 
