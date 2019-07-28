@@ -27,9 +27,9 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.subsystem.mode.AbstractMode.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import kotlin.math.ceil
 
 /** PHANTOM MANIA mode (Original from NullpoUE build 121909 by Zircean) */
 class GrandPhantom:AbstractMode() {
@@ -331,7 +331,7 @@ class GrandPhantom:AbstractMode() {
 		val rotateAverage = rotateCount.toFloat()/engine.statistics.totalPieceLocked.toFloat()
 
 		if(rotateAverage>=1.2f&&medalRO<3) {
-			receiver.playSE("medal${++medalRO}")
+			engine.playSE("medal${++medalRO}")
 		}
 	}
 
@@ -342,7 +342,7 @@ class GrandPhantom:AbstractMode() {
 			val change = updateCursor(engine, 3)
 
 			if(change!=0) {
-				receiver.playSE("change")
+				engine.playSE("change")
 
 				when(menuCursor) {
 					0 -> {
@@ -365,7 +365,7 @@ class GrandPhantom:AbstractMode() {
 
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
-				receiver.playSE("decide")
+				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				receiver.saveModeConfig(owner.modeConfig)
 				isShowBestSectionTime = false
@@ -430,7 +430,7 @@ class GrandPhantom:AbstractMode() {
 						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
 							receiver.drawScoreFont(engine, playerID, 3, topY+i, tableGradeName[rankingGrade[i]], gcolor)
 						receiver.drawScoreNum(engine, playerID, 9, topY+i, String.format("%03d", rankingLevel[i]), i==rankingRank)
-						receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[i].toFloat()), i==rankingRank)
+						receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank)
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
@@ -444,16 +444,16 @@ class GrandPhantom:AbstractMode() {
 						val temp2 = minOf((i+1)*100-1, 999)
 
 						val strSectionTime:String
-						strSectionTime = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i].toFloat()))
+						strSectionTime = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
 						totalTime += bestSectionTime[i]
 					}
 					receiver.drawScoreFont(engine, playerID, 0, 17, "TOTAL", COLOR.PURPLE)
-					receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(totalTime.toFloat()), 2f)
+					receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(totalTime), 2f)
 					receiver.drawScoreFont(engine, playerID, 9, 17, "AVERAGE", COLOR.PURPLE)
-					receiver.drawScoreNum(engine, playerID, 9, 18, GeneralUtil.getTime((totalTime/SECTION_MAX).toFloat()), 2f)
+					receiver.drawScoreNum(engine, playerID, 9, 18, GeneralUtil.getTime((totalTime/SECTION_MAX)), 2f)
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
 				}
@@ -463,8 +463,8 @@ class GrandPhantom:AbstractMode() {
 
 			// Score
 			receiver.drawScoreFont(engine, playerID, 0, 5, "SCORE", COLOR.PURPLE)
-			receiver.drawScoreNum(engine, playerID, 0, 6, scgettime.toString()+"\n"+lastscore)
-			if(scgettime<engine.statistics.score) scgettime += Math.ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
+			receiver.drawScoreNum(engine, playerID, 0, 6, "$scgettime"+"\n"+lastscore)
+			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.PURPLE)
 			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
@@ -472,13 +472,13 @@ class GrandPhantom:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv))
 
 			receiver.drawScoreFont(engine, playerID, 0, 14, "TIME", COLOR.PURPLE)
-			receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time.toFloat()), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			if(engine.gameActive&&engine.ending==2) {
 				var time = ROLLTIMELIMIT-rolltime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", COLOR.PURPLE)
-				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time.toFloat()), time>0&&time<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
 			}
 
 			receiver.drawScoreMedal(engine, playerID, 0, 20, "AC", medalAC)
@@ -504,13 +504,13 @@ class GrandPhantom:AbstractMode() {
 						if(i==section&&engine.ending==0) strSeparator = "b"
 
 						val strSectionTime:String
-						strSectionTime = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i].toFloat()))
+						strSectionTime = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
 
 				receiver.drawScoreFont(engine, playerID, x2, 17, "AVERAGE", COLOR.PURPLE)
-				receiver.drawScoreNum(engine, playerID, x2, 18, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+1)).toFloat()), 2f)
+				receiver.drawScoreNum(engine, playerID, x2, 18, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+1))), 2f)
 			}
 		}
 	}
@@ -520,7 +520,7 @@ class GrandPhantom:AbstractMode() {
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) owner.receiver.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 
@@ -531,7 +531,7 @@ class GrandPhantom:AbstractMode() {
 					if(blocks>=150) recoveryFlag = true
 				} else if(blocks<=70) {
 					recoveryFlag = false
-					receiver.playSE("medal${++medalRE}")
+					engine.playSE("medal${++medalRE}")
 				}
 			}
 		}
@@ -547,7 +547,7 @@ class GrandPhantom:AbstractMode() {
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) owner.receiver.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 			lvupflag = true
@@ -590,39 +590,39 @@ class GrandPhantom:AbstractMode() {
 				if(big) {
 					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
 						||engine.statistics.totalQuadruple==4) {
-						receiver.playSE("medal${++medalSK}")
+						engine.playSE("medal${++medalSK}")
 
 					}
 				} else if(engine.statistics.totalQuadruple==5||engine.statistics.totalQuadruple==10
 					||engine.statistics.totalQuadruple==17) {
-					receiver.playSE("medal${++medalSK}")
+					engine.playSE("medal${++medalSK}")
 				}
 			}
 
 			if(engine.field!!.isEmpty)
 				if(medalAC<3) {
-					receiver.playSE("medal${++medalAC}")
+					engine.playSE("medal${++medalAC}")
 				}
 
 			if(big) {
 				if(engine.combo>=2&&medalCO<1) {
-					receiver.playSE("medal1")
+					engine.playSE("medal1")
 					medalCO = 1
 				} else if(engine.combo>=3&&medalCO<2) {
-					receiver.playSE("medal2")
+					engine.playSE("medal2")
 					medalCO = 2
 				} else if(engine.combo>=4&&medalCO<3) {
-					receiver.playSE("medal3")
+					engine.playSE("medal3")
 					medalCO = 3
 				}
 			} else if(engine.combo>=4&&medalCO<1) {
-				receiver.playSE("medal1")
+				engine.playSE("medal1")
 				medalCO = 1
 			} else if(engine.combo>=5&&medalCO<2) {
-				receiver.playSE("medal2")
+				engine.playSE("medal2")
 				medalCO = 2
 			} else if(engine.combo>=7&&medalCO<3) {
-				receiver.playSE("medal3")
+				engine.playSE("medal3")
 				medalCO = 3
 			}
 
@@ -636,7 +636,7 @@ class GrandPhantom:AbstractMode() {
 					setAverageSectionTime()
 				}
 
-				receiver.playSE("endingstart")
+				engine.playSE("endingstart")
 				engine.statistics.level = 999
 				engine.timerActive = false
 				engine.ending = 2
@@ -658,7 +658,7 @@ class GrandPhantom:AbstractMode() {
 					setAverageSectionTime()
 				}
 
-				receiver.playSE("endingstart")
+				engine.playSE("endingstart")
 				engine.statistics.level = 300
 				engine.timerActive = false
 				engine.ending = 2
@@ -678,7 +678,7 @@ class GrandPhantom:AbstractMode() {
 					setAverageSectionTime()
 				}
 
-				receiver.playSE("endingstart")
+				engine.playSE("endingstart")
 				engine.statistics.level = 500
 				engine.timerActive = false
 				engine.ending = 2
@@ -698,7 +698,7 @@ class GrandPhantom:AbstractMode() {
 					setAverageSectionTime()
 				}
 
-				receiver.playSE("endingstart")
+				engine.playSE("endingstart")
 				engine.statistics.level = 800
 				engine.timerActive = false
 				engine.ending = 2
@@ -713,7 +713,6 @@ class GrandPhantom:AbstractMode() {
 
 				stMedalCheck(engine, levelb/100)
 			} else if(engine.statistics.level>=nextseclv) {
-				receiver.playSE("levelup")
 
 				owner.backgroundStatus.fadesw = true
 				owner.backgroundStatus.fadecount = 0
@@ -723,7 +722,8 @@ class GrandPhantom:AbstractMode() {
 					bgmlv++
 					owner.bgmStatus.fadesw = false
 					owner.bgmStatus.bgm = tableBGM[bgmlv]
-				}
+					engine.playSE("levelup_section")
+				}else engine.playSE("levelup")
 
 				sectionscomp++
 
@@ -746,7 +746,7 @@ class GrandPhantom:AbstractMode() {
 
 				nextseclv += 100
 				if(nextseclv>999) nextseclv = 999
-			} else if(engine.statistics.level==nextseclv-1&&lvstopse) receiver.playSE("levelstop")
+			} else if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
 
 			lastscore = ((((levelb+lines)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*lines*comboValue
 				*if(engine.field!!.isEmpty) 4 else 1)
@@ -797,7 +797,7 @@ class GrandPhantom:AbstractMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE"+(engine.statc[1]+1)+"/3", COLOR.RED)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${(engine.statc[1]+1)}/3", COLOR.RED)
 
 		if(engine.statc[1]==0) {
 			var gcolor = COLOR.WHITE
@@ -816,11 +816,11 @@ class GrandPhantom:AbstractMode() {
 
 			for(i in sectionTime.indices)
 				if(sectionTime[i]>0)
-					receiver.drawMenuFont(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[i].toFloat()), sectionIsNewRecord[i])
+					receiver.drawMenuFont(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[i]), sectionIsNewRecord[i])
 
 			if(sectionavgtime>0) {
 				receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", COLOR.PURPLE)
-				receiver.drawMenuFont(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime.toFloat()))
+				receiver.drawMenuFont(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime))
 			}
 		} else if(engine.statc[1]==2) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", COLOR.PURPLE)

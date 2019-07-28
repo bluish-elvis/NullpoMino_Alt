@@ -92,10 +92,10 @@ abstract class AbstractRenderer:EventReceiver() {
 				sy = 18*size
 			} else {
 				sx = 0
-				if(attr and Block.BLOCK_ATTRIBUTE_CONNECT_UP!=0) sx = sx or 0x1
-				if(attr and Block.BLOCK_ATTRIBUTE_CONNECT_DOWN!=0) sx = sx or 0x2
-				if(attr and Block.BLOCK_ATTRIBUTE_CONNECT_LEFT!=0) sx = sx or 0x4
-				if(attr and Block.BLOCK_ATTRIBUTE_CONNECT_RIGHT!=0) sx = sx or 0x8
+				if(attr and Block.ATTRIBUTE.CONNECT_UP.bit!=0) sx = sx or 0x1
+				if(attr and Block.ATTRIBUTE.CONNECT_DOWN.bit!=0) sx = sx or 0x2
+				if(attr and Block.ATTRIBUTE.CONNECT_LEFT.bit!=0) sx = sx or 0x4
+				if(attr and Block.ATTRIBUTE.CONNECT_RIGHT.bit!=0) sx = sx or 0x8
 				sx *= size
 				sy = color*size
 				if(bone) sy += 9*size

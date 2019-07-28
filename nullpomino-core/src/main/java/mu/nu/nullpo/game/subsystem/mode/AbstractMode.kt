@@ -140,26 +140,29 @@ abstract class AbstractMode:GameMode {
 
 	override fun onLineClear(engine:GameEngine, playerID:Int):Boolean = false
 
+	/**
+	 * Scoring
+	 * @param engine GameEngine
+	 * @param lines Cleared line
+	 */
 	open fun calcScore(engine:GameEngine, lines:Int):Int {
 		menuTime = 0
-		var pts = menuTime
-		if(engine.tspin) {
-			if(lines==0&&!engine.tspinez)
-				pts = if(engine.tspinmini) 5 else 7// T-Spin 0 lines
-			else if(engine.tspinez&&lines>0)
-				pts = 12*lines*lines+(if(engine.b2b) 15 else 0)// Immobile EZ Spin
-			else if(lines==1)
-				pts += if(engine.tspinmini) if(engine.b2b) 40 else 25 else if(engine.b2b) 50 else 32// T-Spin 1 line
-			else if(lines==2)
-				pts += if(engine.tspinmini&&engine.useAllSpinBonus) if(engine.b2b) 100 else 64 else if(engine.b2b) 111 else 72// T-Spin 2 lines
-			else if(lines>=3) pts += if(engine.b2b) 270 else 180// Twister 3 lines
-		} else if(lines==1)
-			pts = 10 // 1列
-		else if(lines==2)
-			pts = if(engine.split) if(engine.b2b) 72 else 64 else 45 // 2列
-		else if(lines==3)
-			pts = if(engine.split) if(engine.b2b) 160 else 128 else 96 // 3列
-		else if(lines>=4) pts = if(engine.b2b) 256 else 192
+		var pts = 0
+		when {
+			engine.tspin -> when {
+				lines==0&&!engine.tspinez -> pts = if(engine.tspinmini) 5 else 7// Twister 0 lines
+				engine.tspinez&&lines>0 -> pts = 12*lines*lines+(if(engine.b2b) 15 else 0)// Immobile Spin
+				lines==1 -> pts = if(engine.tspinmini) (if(engine.b2b) 36 else 27)
+				else if(engine.b2b) 45 else 32// Twister 1 line
+				lines==2 -> pts = if(engine.tspinmini&&engine.useAllSpinBonus) (if(engine.b2b) 100 else 64)
+				else if(engine.b2b) 111 else 72// Twister 2 lines
+				lines>=3 -> pts += if(engine.b2b) 270 else 180// Twister 3 lines
+			}
+			lines==1 -> pts = 10 // Single
+			lines==2 -> pts = if(engine.split) (if(engine.b2b) 72 else 64) else 45 // Double
+			lines==3 -> pts = if(engine.split) (if(engine.b2b) 160 else 128) else 96 // Triple
+			lines>=4 -> pts = if(engine.b2b) 256 else 192 // Quads
+		}
 		// All clear
 		if(lines>=1&&engine.field!!.isEmpty) pts += pts*10/7+256
 		return pts*10
@@ -251,8 +254,7 @@ abstract class AbstractMode:GameMode {
 					receiver.drawMenuFont(engine, playerID, 2, 22, "TRIPLE", color = COLOR.GREEN)
 				}
 				GameEngine.EVENT_QUADRUPLE -> receiver.drawMenuFont(engine, playerID, 1, 21, "QUADRUPLE", color = COLOR.ORANGE)
-				GameEngine.EVENT_TSPIN_EZ -> receiver.drawMenuFont(engine, playerID, 0, 21, "EZ-"+strPieceName
-					+"-SPIN", color = COLOR.ORANGE)
+				GameEngine.EVENT_TSPIN_EZ -> receiver.drawMenuFont(engine, playerID, 0, 21, "EZ-$strPieceName-SPIN", color = COLOR.ORANGE)
 			}
 		}
 	}
@@ -267,6 +269,13 @@ abstract class AbstractMode:GameMode {
 		3 -> COLOR.YELLOW
 		4 -> COLOR.CYAN
 		else -> null
+	}
+
+	fun getTimeFontColor(time:Int):EventReceiver.COLOR = when {
+		time<600 -> EventReceiver.COLOR.RED
+		time in 600 until 1200 -> EventReceiver.COLOR.ORANGE
+		time in 1200 until 1800 -> EventReceiver.COLOR.YELLOW
+		else -> EventReceiver.COLOR.WHITE
 	}
 	override fun renderLockFlash(engine:GameEngine, playerID:Int) {}
 
@@ -287,7 +296,7 @@ abstract class AbstractMode:GameMode {
 			receiver.drawMenuFont(engine, playerID, 0, i shl 1, menuItem.displayName, menuItem.color)
 			if(menuCursor==i&&!engine.owner.replayMode)
 				receiver.drawMenuFont(engine, playerID, 0, (i shl 1)+1,
-					"b"+menuItem.valueString, true)
+					"b${menuItem.valueString}", true)
 			else
 				receiver.drawMenuFont(engine, playerID, 1, (i shl 1)+1, menuItem.valueString)
 		}
@@ -370,7 +379,7 @@ abstract class AbstractMode:GameMode {
 				receiver.drawMenuFont(engine, playerID, 0, menuY, str[i], color = menuColor)
 			else {
 				if(menuCursor==statcMenu&&!engine.owner.replayMode)
-					receiver.drawMenuFont(engine, playerID, 0, menuY, "b"+str[i], true)
+					receiver.drawMenuFont(engine, playerID, 0, menuY, "b${str[i]}", true)
 				else
 					receiver.drawMenuFont(engine, playerID, 1, menuY, str[i])
 				statcMenu++
@@ -401,7 +410,7 @@ abstract class AbstractMode:GameMode {
 	protected fun drawMenuCompact(engine:GameEngine, playerID:Int, receiver:EventReceiver, vararg str:String) {
 		var i = 0
 		while(i<str.size-1) {
-			receiver.drawMenuFont(engine, playerID, 1, menuY, str[i]+":", color = menuColor)
+			receiver.drawMenuFont(engine, playerID, 1, menuY, "${str[i]}:", color = menuColor)
 			if(menuCursor==statcMenu&&!engine.owner.replayMode) {
 				receiver.drawMenuFont(engine, playerID, 0, menuY, "b", true)
 				receiver.drawMenuFont(engine, playerID, str[i].length+2, menuY, str[i+1], true)
@@ -558,7 +567,7 @@ abstract class AbstractMode:GameMode {
 				}
 				AbstractMode.Statistic.TIME -> {
 					receiver.drawMenuFont(engine, playerID, 0, y, "TIME", color = color, scale = scale*.8f)
-					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%8s", GeneralUtil.getTime(engine.statistics.time.toFloat())),
+					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%8s", GeneralUtil.getTime(engine.statistics.time)),
 						scale = scale*1.7f)
 				}
 				AbstractMode.Statistic.LEVEL -> {
@@ -636,7 +645,7 @@ abstract class AbstractMode:GameMode {
 				color = COLOR.RED
 				y--
 			}
-			receiver.drawScoreFont(engine, 0, -9, y, (playerID+1).toString()+"P INPUT:", color)
+			receiver.drawScoreFont(engine, 0, -9, y, "${(playerID+1)}P INPUT:", color)
 		} else
 			receiver.drawScoreFont(engine, 0, -6, y, "INPUT:", COLOR.BLUE)
 		val ctrl = engine.ctrl

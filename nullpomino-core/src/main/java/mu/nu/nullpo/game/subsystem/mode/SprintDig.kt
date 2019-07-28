@@ -97,7 +97,7 @@ class SprintDig:NetDummyMode() {
 			loadPreset(engine, engine.owner.replayProp, -1)
 
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty(playerID.toString()+".net.netPlayerName", "")
+			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
 	}
 
@@ -266,10 +266,10 @@ class SprintDig:NetDummyMode() {
 			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, engine.speed.gravity, engine.speed.denominator,
 				engine.speed.are, engine.speed.areLine, engine.speed.lineDelay, engine.speed.lockDelay, engine.speed.das)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
-			drawMenuCompact(engine, playerID, receiver, "GOAL", GOAL_TABLE[goaltype].toString())
+			drawMenuCompact(engine, playerID, receiver, "GOAL", "$GOAL_TABLE[goaltype]")
 			if(!engine.owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
-				drawMenuCompact(engine, playerID, receiver, "LOAD", presetNumber.toString(), "SAVE", presetNumber.toString())
+				drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber", "SAVE", "$presetNumber")
 			}
 		}
 	}
@@ -382,14 +382,14 @@ class SprintDig:NetDummyMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[goaltype][i].toFloat()), rankingRank==i)
-					receiver.drawScoreNum(engine, playerID, 12, 4+i, rankingLines[goaltype][i].toString(), rankingRank==i)
-					receiver.drawScoreNum(engine, playerID, 17, 4+i, rankingPiece[goaltype][i].toString(), rankingRank==i)
+					receiver.drawScoreNum(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[goaltype][i]), rankingRank==i)
+					receiver.drawScoreNum(engine, playerID, 12, 4+i, "${rankingLines[goaltype][i]}", rankingRank==i)
+					receiver.drawScoreNum(engine, playerID, 17, 4+i, "${rankingPiece[goaltype][i]}", rankingRank==i)
 				}
 			}
 		} else {
 			val remainLines = getRemainGarbageLines(engine, goaltype)
-			var strLines = remainLines.toString()
+			var strLines = "$remainLines"
 			if(remainLines<0) strLines = "0"
 			var fontcolor = EventReceiver.COLOR.WHITE
 			if(remainLines in 1..14) fontcolor = EventReceiver.COLOR.YELLOW
@@ -412,7 +412,7 @@ class SprintDig:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.pps.toString())
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(engine.statistics.time.toFloat()))
+			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(engine.statistics.time))
 		}
 
 		super.renderLast(engine, playerID)
@@ -437,7 +437,7 @@ class SprintDig:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR.BLUE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.TIME, AbstractMode.Statistic.LPM, AbstractMode.Statistic.PPS)
+		drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.TIME, Statistic.LPM, Statistic.PPS)
 		drawResultRank(engine, playerID, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 13, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 15, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -457,7 +457,7 @@ class SprintDig:NetDummyMode() {
 		savePreset(engine, engine.owner.replayProp, -1)
 
 		// NET: Save name
-		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(playerID.toString()+".net.netPlayerName", netPlayerName)
+		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
 
 		// Update rankings
 		if(!owner.replayMode&&getRemainGarbageLines(engine, goaltype)==0&&engine.ending!=0&&engine.ai==null&&!netIsWatch) {
@@ -541,10 +541,10 @@ class SprintDig:NetDummyMode() {
 	 */
 	override fun netSendStats(engine:GameEngine) {
 		var msg = "game\tstats\t"
-		msg += engine.statistics.lines.toString()+"\t"+engine.statistics.totalPieceLocked+"\t"
-		msg += engine.statistics.time.toString()+"\t"+engine.statistics.lpm+"\t"
-		msg += engine.statistics.pps.toString()+"\t"+goaltype+"\t"
-		msg += engine.gameActive.toString()+"\t"+engine.timerActive+"\t"
+		msg += engine.statistics.lines.toString()+"\t${engine.statistics.totalPieceLocked}\t"
+		msg += engine.statistics.time.toString()+"\t${engine.statistics.lpm}\t"
+		msg += engine.statistics.pps.toString()+"\t$goaltype\t"
+		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
 		msg += engine.meterColor.toString()+"\t"+engine.meterValue
 		msg += "\n"
 		netLobby!!.netPlayerClient!!.send(msg)
@@ -569,14 +569,14 @@ class SprintDig:NetDummyMode() {
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
 		var subMsg = ""
-		subMsg += "GARBAGE;"+(GOAL_TABLE[goaltype]-getRemainGarbageLines(engine, goaltype))+"/"+GOAL_TABLE[goaltype]+"\t"
-		subMsg += "LINE;"+engine.statistics.lines+"\t"
-		subMsg += "PIECE;"+engine.statistics.totalPieceLocked+"\t"
-		subMsg += "TIME;"+GeneralUtil.getTime(engine.statistics.time.toFloat())+"\t"
-		subMsg += "LINE/MIN;"+engine.statistics.lpm+"\t"
-		subMsg += "PIECE/SEC;"+engine.statistics.pps+"\t"
+		subMsg += "GARBAGE;${(GOAL_TABLE[goaltype]-getRemainGarbageLines(engine, goaltype))}/${GOAL_TABLE[goaltype]}\t"
+		subMsg += "LINE;${engine.statistics.lines}\t"
+		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
+		subMsg += "TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
+		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
+		subMsg += "PIECE/SEC;${engine.statistics.pps}\t"
 
-		val msg = "gstat1p\t"+NetUtil.urlEncode(subMsg)+"\n"
+		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -585,9 +585,9 @@ class SprintDig:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += engine.speed.gravity.toString()+"\t"+engine.speed.denominator+"\t"+engine.speed.are+"\t"
-		msg += engine.speed.areLine.toString()+"\t"+engine.speed.lineDelay+"\t"+engine.speed.lockDelay+"\t"
-		msg += engine.speed.das.toString()+"\t"+bgmno+"\t"+goaltype+"\t"+presetNumber
+		msg += engine.speed.gravity.toString()+"\t${engine.speed.denominator}\t${engine.speed.are}\t"
+		msg += engine.speed.areLine.toString()+"\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
+		msg += engine.speed.das.toString()+"\t$bgmno\t$goaltype\t"+presetNumber
 		msg += "\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}

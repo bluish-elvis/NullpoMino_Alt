@@ -33,6 +33,7 @@ import java.io.*
 import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
+import kotlin.math.sqrt
 
 /** Drawing and event handling EventReceiver */
 open class EventReceiver {
@@ -463,7 +464,7 @@ open class EventReceiver {
 
 	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, g:Int, d:Int) {
 		var s = if(g<=0) 1f else 0f
-		if(g>0&&d>0) s = (Math.sqrt((g.toFloat()/d).toDouble())/Math.sqrt(20.0)).toFloat()
+		if(g>0&&d>0) s = (sqrt((g.toFloat()/d).toDouble())/sqrt(20.0)).toFloat()
 		drawSpeedMeter(engine, playerID, x, y, s)
 	}
 
@@ -505,7 +506,7 @@ open class EventReceiver {
 	 * @param scale size
 	 */
 	open fun drawBadges(x:Int, y:Int, width:Int = 0, nums:Int, scale:Float = 1f) {}
- 
+
 	/** Draw Medal at score pos
 	 * @param engine GameEngine
 	 * @param playerID Player ID
@@ -523,13 +524,13 @@ open class EventReceiver {
 	 * @param y Y-coordinate
 	 * @param scale size
 	 */
-	open fun drawMenuMedal(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, tier:Int, cale:Float = 1f) {
+	open fun drawMenuMedal(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {
 	}
 
 	/** Draw Medal
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
-	 * @param width linebreak width
+	 * @param tier medal Tier
 	 * @param scale size
 	 */
 	open fun drawMedal(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {}
@@ -538,10 +539,10 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 * @return Width of block image
 	 */
-	fun getBlockGraphicsWidth(engine:GameEngine):Int {
-		return if(engine.displaysize==-1) 8
-		else if(engine.displaysize==1) 32
-		else 16
+	fun getBlockGraphicsWidth(engine:GameEngine):Int = when {
+		engine.displaysize==-1 -> 8
+		engine.displaysize==1 -> 32
+		else -> 16
 	}
 
 	/** Get height of block image.

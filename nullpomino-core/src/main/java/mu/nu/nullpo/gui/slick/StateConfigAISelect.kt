@@ -89,13 +89,13 @@ class StateConfigAISelect:BaseGameState() {
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		currentAI = NullpoMinoSlick.propGlobal.getProperty(player.toString()+".ai", "")
-		aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty(player.toString()+".aiMoveDelay", 0)
-		aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty(player.toString()+".aiThinkDelay", 0)
-		aiUseThread = NullpoMinoSlick.propGlobal.getProperty(player.toString()+".aiUseThread", true)
-		aiShowHint = NullpoMinoSlick.propGlobal.getProperty(player.toString()+".aiShowHint", false)
-		aiPrethink = NullpoMinoSlick.propGlobal.getProperty(player.toString()+".aiPrethink", false)
-		aiShowState = NullpoMinoSlick.propGlobal.getProperty(player.toString()+".aiShowState", false)
+		currentAI = NullpoMinoSlick.propGlobal.getProperty("$player.ai", "")
+		aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("$player.aiMoveDelay", 0)
+		aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$player.aiThinkDelay", 0)
+		aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$player.aiUseThread", true)
+		aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$player.aiShowHint", false)
+		aiPrethink = NullpoMinoSlick.propGlobal.getProperty("$player.aiPrethink", false)
+		aiShowState = NullpoMinoSlick.propGlobal.getProperty("$player.aiShowState", false)
 
 		aiID = -1
 		for(i in aiPathList.indices)
@@ -137,9 +137,9 @@ class StateConfigAISelect:BaseGameState() {
 			aiObj = aiClass.newInstance() as AIPlayer
 			return@Array aiObj.name
 		} catch(e:ClassNotFoundException) {
-			log.error("AI class "+aiPath[it]+" not found", e)
+			log.error("AI class ${aiPath[it]} not found", e)
 		} catch(e:Throwable) {
-			log.error("AI class "+aiPath[it]+" load failed", e)
+			log.error("AI class ${aiPath[it]} load failed", e)
 		}
 		return@Array "(INVALID)"
 	}
@@ -222,13 +222,13 @@ class StateConfigAISelect:BaseGameState() {
 			ResourceHolder.soundManager.play("decide1")
 
 
-				NullpoMinoSlick.propGlobal.setProperty(player.toString()+".ai", if(aiID>=0)aiPathList[aiID] else "")
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".aiMoveDelay", aiMoveDelay)
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".aiThinkDelay", aiThinkDelay)
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".aiUseThread", aiUseThread)
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".aiShowHint", aiShowHint)
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".aiPrethink", aiPrethink)
-			NullpoMinoSlick.propGlobal.setProperty(player.toString()+".aiShowState", aiShowState)
+				NullpoMinoSlick.propGlobal.setProperty("$player.ai", if(aiID>=0)aiPathList[aiID] else "")
+			NullpoMinoSlick.propGlobal.setProperty("$player.aiMoveDelay", aiMoveDelay)
+			NullpoMinoSlick.propGlobal.setProperty("$player.aiThinkDelay", aiThinkDelay)
+			NullpoMinoSlick.propGlobal.setProperty("$player.aiUseThread", aiUseThread)
+			NullpoMinoSlick.propGlobal.setProperty("$player.aiShowHint", aiShowHint)
+			NullpoMinoSlick.propGlobal.setProperty("$player.aiPrethink", aiPrethink)
+			NullpoMinoSlick.propGlobal.setProperty("$player.aiShowState", aiShowState)
 			NullpoMinoSlick.saveConfig()
 
 			game.enterState(StateConfigMainMenu.ID)

@@ -33,9 +33,11 @@ import org.newdawn.slick.state.StateBasedGame
 class StateLoading:BasicGameState() {
 
 	/** プリロード進行度 */
-	private var preloadCount:Int = 0
-	private var preloadSet:Int = 0
+	private var preloadSet:Int = -2
 
+	private var loadBG:Image = Image(640, 480)
+
+	private val skindir:String = NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
 
@@ -44,8 +46,6 @@ class StateLoading:BasicGameState() {
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		preloadCount = 0
-		preloadSet = 0
 
 		//  input 関連をInitialization
 		GameKey.initGlobalGameKey()
@@ -55,94 +55,95 @@ class StateLoading:BasicGameState() {
 		// 設定を反映させる
 		NullpoMinoSlick.setGeneralConfig()
 
-		// 画像などを読み込み
-		try {
-			ResourceHolder.load()
-		} catch(e:Throwable) {
-			log.error("Resource load failed", e)
-		}
+		if(NullpoMinoSlick.propConfig.getProperty("option.se", true))
+			try {
+				val clip = Sound("$skindir/se/welcome.ogg")
+				clip.play()
+				loadBG = Image("$skindir/graphics/title.png")
+				container?.graphics?.drawImage(loadBG, 0f, 0f)
+			} catch(e:Throwable) {
+			}
 
 	}
 
 	/* Draw the screen */
 	override fun render(container:GameContainer, game:StateBasedGame, g:Graphics) {
-		// 巨大な画像をあらかじめ画面に描画することでメモリにキャッシュさせる
-		if(preloadSet==0)
-			if(preloadCount<ResourceHolder.BLOCK_BREAK_MAX) {
-				try {
-					ResourceHolder.imgBreak[preloadCount][0].draw(0f, 0f)
-				} catch(e:Exception) {
-				}
-
-				preloadCount++
-			} else {
-				preloadCount = 0
-				preloadSet++
-			}
-		if(preloadSet==1)
-			if(preloadCount<ResourceHolder.BLOCK_BREAK_MAX) {
-				try {
-					ResourceHolder.imgBreak[preloadCount][1].draw(0f, 0f)
-				} catch(e:Exception) {
-				}
-
-				preloadCount++
-			} else {
-				preloadCount = 0
-				preloadSet++
-			}
-		if(preloadSet==2)
-			if(preloadCount<ResourceHolder.PERASE_MAX) {
-				try {
-					ResourceHolder.imgPErase[preloadCount].draw(0f, 0f)
-				} catch(e:Exception) {
-				}
-
-				preloadCount++
-			} else {
-				preloadCount = 0
-				preloadSet++
-			}
-		if(preloadSet==3) {
-			ResourceHolder.imgFont.draw(0f, 0f)
-			preloadSet++
-		}
-
-		g.color = Color.black
-		g.fillRect(0f, 0f, 640f, 480f)
+		g.drawImage(loadBG, 0f, 0f)
+		if(preloadSet<=-2)preloadSet=-1
 	}
 
 	/* Update game */
 	override fun update(container:GameContainer, game:StateBasedGame, delta:Int) {
-		if(preloadSet>2) {
-			// Change title bar caption
-			if(container is AppGameContainer) {
-				container.setTitle("NullpoMino_Alt version"+GameManager.versionString)
-				container.setUpdateOnlyWhenVisible(true)
-			}
-
-			// First run
-			if(NullpoMinoSlick.propConfig.getProperty("option.firstSetupMode", true)) {
-				// Set various default settings here
-				GameKey.gamekey[0].loadDefaultKeymap()
-				GameKey.gamekey[0].saveConfig(NullpoMinoSlick.propConfig)
-				NullpoMinoSlick.propConfig.setProperty("option.firstSetupMode", false)
-
-				// Set default rotation button setting (only for first run)
-				if(NullpoMinoSlick.propGlobal.getProperty("global.firstSetupMode", true)) {
-					for(pl in 0..1)
-						if(NullpoMinoSlick.propGlobal.getProperty(pl.toString()+".tuning.owRotateButtonDefaultRight")==null)
-							NullpoMinoSlick.propGlobal.setProperty(pl.toString()+".tuning.owRotateButtonDefaultRight", 0)
-					NullpoMinoSlick.propGlobal.setProperty("global.firstSetupMode", false)
+		when {
+			preloadSet==-1 -> // 画像などを読み込み
+				try {
+					ResourceHolder.load()
+					preloadSet = 0
+				} catch(e:Throwable) {
+					log.error("Resource load failed", e)
+				}
+			preloadSet in 0 .. 3 -> cacheImg()
+			preloadSet > 3 -> {
+				// Change title bar caption
+				if(container is AppGameContainer) {
+					container.setTitle("NullpoMino_Alt version${GameManager.versionString}")
+					container.setUpdateOnlyWhenVisible(true)
 				}
 
-				// Save settings
-				NullpoMinoSlick.saveConfig()
+				// First run
+				if(NullpoMinoSlick.propConfig.getProperty("option.firstSetupMode", true)) {
+					// Set various default settings here
+					GameKey.gamekey[0].loadDefaultKeymap()
+					GameKey.gamekey[0].saveConfig(NullpoMinoSlick.propConfig)
+					NullpoMinoSlick.propConfig.setProperty("option.firstSetupMode", false)
 
+					// Set default rotation button setting (only for first run)
+					if(NullpoMinoSlick.propGlobal.getProperty("global.firstSetupMode", true)) {
+						for(pl in 0..1)
+							if(NullpoMinoSlick.propGlobal.getProperty("$pl.tuning.owRotateButtonDefaultRight")==null)
+								NullpoMinoSlick.propGlobal.setProperty("$pl.tuning.owRotateButtonDefaultRight", 0)
+						NullpoMinoSlick.propGlobal.setProperty("global.firstSetupMode", false)
+					}
+
+					// Save settings
+					NullpoMinoSlick.saveConfig()
+				}
 				// Go to title screen
 				game.enterState(StateTitle.ID)
-			} else
-				game.enterState(StateTitle.ID)
+			}
+		}
+	}
+
+	private fun cacheImg() {
+		// 巨大な画像をあらかじめ画面に描画することでメモリにキャッシュさせる
+		when(preloadSet) {
+			0 -> {for(i in 0 until ResourceHolder.BLOCK_BREAK_MAX)
+				try {
+					ResourceHolder.imgBreak[i][0].draw(0f, 0f)
+				} catch(e:Exception) { }
+
+				preloadSet++
+			}
+			1 -> {for(i in 0 until ResourceHolder.BLOCK_BREAK_MAX)
+				try {
+					ResourceHolder.imgBreak[i][1].draw(0f, 0f)
+				} catch(e:Exception) { }
+
+				preloadSet++
+			}
+			2 -> {for(i in 0 until ResourceHolder.PERASE_MAX)
+				try {
+					ResourceHolder.imgPErase[i].draw(0f, 0f)
+				} catch(e:Exception) { }
+
+				preloadSet++
+			}
+			3 -> {
+				ResourceHolder.let {listOf(it.imgFont,it.imgFontNano,it.imgNum).forEach{
+					it.draw(0f, 0f)
+				}}
+				preloadSet++
+			}
 		}
 	}
 

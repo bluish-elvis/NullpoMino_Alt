@@ -80,7 +80,7 @@ class StateConfigJoystickButton:BasicGameState() {
 
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
-		FontNormal.printFontGrid(1, 1, "JOYSTICK SETTING ("+(player+1)+"P)", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "JOYSTICK SETTING (${player+1}P)", COLOR.ORANGE)
 
 
 			FontNormal.printFontGrid(1, 3, if(joyNumber<0)"NO JOYSTICK" else "JOYSTICK NUMBER:$joyNumber", COLOR.RED)
@@ -89,18 +89,18 @@ class StateConfigJoystickButton:BasicGameState() {
 		//FontNormal.printFontGrid(2, 4, "DOWN           : " + String.valueOf(buttonmap[GameKey.BUTTON_DOWN]), (keynum == 1));
 		//FontNormal.printFontGrid(2, 5, "LEFT           : " + String.valueOf(buttonmap[GameKey.BUTTON_LEFT]), (keynum == 2));
 		//FontNormal.printFontGrid(2, 6, "RIGHT          : " + String.valueOf(buttonmap[GameKey.BUTTON_RIGHT]), (keynum == 3));
-		FontNormal.printFontGrid(2, 5, "A (L/R-ROT)    : "+buttonmap[GameKeyDummy.BUTTON_A].toString(), keynum==4)
-		FontNormal.printFontGrid(2, 6, "B (R/L-ROT)    : "+buttonmap[GameKeyDummy.BUTTON_B].toString(), keynum==5)
-		FontNormal.printFontGrid(2, 7, "C (L/R-ROT)    : "+buttonmap[GameKeyDummy.BUTTON_C].toString(), keynum==6)
-		FontNormal.printFontGrid(2, 8, "D (HOLD)       : "+buttonmap[GameKeyDummy.BUTTON_D].toString(), keynum==7)
-		FontNormal.printFontGrid(2, 9, "E (180-ROT)    : "+buttonmap[GameKeyDummy.BUTTON_E].toString(), keynum==8)
-		FontNormal.printFontGrid(2, 10, "F              : "+buttonmap[GameKeyDummy.BUTTON_F].toString(), keynum==9)
-		FontNormal.printFontGrid(2, 11, "QUIT           : "+buttonmap[GameKeyDummy.BUTTON_QUIT].toString(), keynum==10)
-		FontNormal.printFontGrid(2, 12, "PAUSE          : "+buttonmap[GameKeyDummy.BUTTON_PAUSE].toString(), keynum==11)
-		FontNormal.printFontGrid(2, 13, "GIVEUP         : "+buttonmap[GameKeyDummy.BUTTON_GIVEUP].toString(), keynum==12)
-		FontNormal.printFontGrid(2, 14, "RETRY          : "+buttonmap[GameKeyDummy.BUTTON_RETRY].toString(), keynum==13)
-		FontNormal.printFontGrid(2, 15, "FRAME STEP     : "+buttonmap[GameKeyDummy.BUTTON_FRAMESTEP].toString(), keynum==14)
-		FontNormal.printFontGrid(2, 16, "SCREEN SHOT    : "+buttonmap[GameKeyDummy.BUTTON_SCREENSHOT].toString(), keynum==15)
+		FontNormal.printFontGrid(2, 5, "A (L/R-ROT)    : $buttonmap[GameKeyDummy.BUTTON_A]", keynum==4)
+		FontNormal.printFontGrid(2, 6, "B (R/L-ROT)    : $buttonmap[GameKeyDummy.BUTTON_B]", keynum==5)
+		FontNormal.printFontGrid(2, 7, "C (L/R-ROT)    : $buttonmap[GameKeyDummy.BUTTON_C]", keynum==6)
+		FontNormal.printFontGrid(2, 8, "D (HOLD)       : $buttonmap[GameKeyDummy.BUTTON_D]", keynum==7)
+		FontNormal.printFontGrid(2, 9, "E (180-ROT)    : $buttonmap[GameKeyDummy.BUTTON_E]", keynum==8)
+		FontNormal.printFontGrid(2, 10, "F              : $buttonmap[GameKeyDummy.BUTTON_F]", keynum==9)
+		FontNormal.printFontGrid(2, 11, "QUIT           : $buttonmap[GameKeyDummy.BUTTON_QUIT]", keynum==10)
+		FontNormal.printFontGrid(2, 12, "PAUSE          : $buttonmap[GameKeyDummy.BUTTON_PAUSE]", keynum==11)
+		FontNormal.printFontGrid(2, 13, "GIVEUP         : $buttonmap[GameKeyDummy.BUTTON_GIVEUP]", keynum==12)
+		FontNormal.printFontGrid(2, 14, "RETRY          : $buttonmap[GameKeyDummy.BUTTON_RETRY]", keynum==13)
+		FontNormal.printFontGrid(2, 15, "FRAME STEP     : $buttonmap[GameKeyDummy.BUTTON_FRAMESTEP]", keynum==14)
+		FontNormal.printFontGrid(2, 16, "SCREEN SHOT    : $buttonmap[GameKeyDummy.BUTTON_SCREENSHOT]", keynum==15)
 
 		FontNormal.printFontGrid(1, 5+keynum-4, "b", COLOR.RED)
 		if(frame>=KEYACCEPTFRAME) {

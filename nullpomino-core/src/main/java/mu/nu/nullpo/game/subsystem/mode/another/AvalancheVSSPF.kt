@@ -23,8 +23,9 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -38,26 +39,26 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 	private var version:Int = 0
 
 	/** Settings for starting countdown for ojama blocks */
-	private var ojamaCountdown:IntArray = IntArray(AvalancheVSDummyMode.MAX_PLAYERS)
+	private var ojamaCountdown:IntArray = IntArray(MAX_PLAYERS)
 
 	/** Drop patterns */
-	private var dropPattern:Array<Array<IntArray>> = Array(AvalancheVSDummyMode.MAX_PLAYERS){emptyArray<IntArray>()}
+	private var dropPattern:Array<Array<IntArray>> = emptyArray()
 
 	/** Drop values set selected */
-	private var dropSet:IntArray = IntArray(AvalancheVSDummyMode.MAX_PLAYERS)
+	private var dropSet:IntArray = IntArray(MAX_PLAYERS)
 
 	/** Drop values selected */
-	private var dropMap:IntArray = IntArray(AvalancheVSDummyMode.MAX_PLAYERS)
+	private var dropMap:IntArray = IntArray(MAX_PLAYERS)
 
 	/** Drop multipliers */
-	private var attackMultiplier:DoubleArray = DoubleArray(AvalancheVSDummyMode.MAX_PLAYERS)
-	private var defendMultiplier:DoubleArray = DoubleArray(AvalancheVSDummyMode.MAX_PLAYERS)
+	private var attackMultiplier:DoubleArray = DoubleArray(MAX_PLAYERS)
+	private var defendMultiplier:DoubleArray = DoubleArray(MAX_PLAYERS)
 
 	/** Flag set when counters have been decremented */
-	private var countdownDecremented:BooleanArray = BooleanArray(AvalancheVSDummyMode.MAX_PLAYERS)
+	private var countdownDecremented:BooleanArray = BooleanArray(MAX_PLAYERS)
 
 	/** Flag set when cleared ojama have been turned into normal blocks */
-	private var ojamaChecked:BooleanArray = BooleanArray(AvalancheVSDummyMode.MAX_PLAYERS)
+	private var ojamaChecked:BooleanArray = BooleanArray(MAX_PLAYERS)
 
 	/* Mode name */
 	override val name:String
@@ -66,14 +67,14 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
 		super.modeInit(manager)
-		ojamaCountdown = IntArray(AvalancheVSDummyMode.MAX_PLAYERS)
-		dropSet = IntArray(AvalancheVSDummyMode.MAX_PLAYERS)
-		dropMap = IntArray(AvalancheVSDummyMode.MAX_PLAYERS)
-		dropPattern = Array(AvalancheVSDummyMode.MAX_PLAYERS){emptyArray<IntArray>()}
-		attackMultiplier = DoubleArray(AvalancheVSDummyMode.MAX_PLAYERS)
-		defendMultiplier = DoubleArray(AvalancheVSDummyMode.MAX_PLAYERS)
-		countdownDecremented = BooleanArray(AvalancheVSDummyMode.MAX_PLAYERS)
-		ojamaChecked = BooleanArray(AvalancheVSDummyMode.MAX_PLAYERS)
+		ojamaCountdown = IntArray(MAX_PLAYERS)
+		dropSet = IntArray(MAX_PLAYERS)
+		dropMap = IntArray(MAX_PLAYERS)
+		dropPattern = Array(MAX_PLAYERS){emptyArray<IntArray>()}
+		attackMultiplier = DoubleArray(MAX_PLAYERS)
+		defendMultiplier = DoubleArray(MAX_PLAYERS)
+		countdownDecremented = BooleanArray(MAX_PLAYERS)
+		ojamaChecked = BooleanArray(MAX_PLAYERS)
 	}
 
 	/** Load settings not related to speeds
@@ -281,8 +282,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					}
 					19 -> {
 						feverMapSet[playerID] += change
-						if(feverMapSet[playerID]<0) feverMapSet[playerID] = AvalancheVSDummyMode.FEVER_MAPS.size-1
-						if(feverMapSet[playerID]>=AvalancheVSDummyMode.FEVER_MAPS.size) feverMapSet[playerID] = 0
+						if(feverMapSet[playerID]<0) feverMapSet[playerID] = FEVER_MAPS.size-1
+						if(feverMapSet[playerID]>=FEVER_MAPS.size) feverMapSet[playerID] = 0
 					}
 					20 -> {
 						outlineType[playerID] += change
@@ -427,11 +428,11 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/5", COLOR.YELLOW)
 			} else if(menuCursor<17) {
-				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER", AvalancheVSDummyMode.OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", maxAttack[playerID].toString(), "MIN CHAIN", rensaShibari[playerID].toString(), "CLEAR SIZE", engine.colorClearSize.toString(), "OJAMA RATE", ojamaRate[playerID].toString(), "HURRYUP",
+				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", "$maxAttack[playerID]", "MIN CHAIN", "$rensaShibari[playerID]", "CLEAR SIZE", engine.colorClearSize.toString(), "OJAMA RATE", "$ojamaRate[playerID]", "HURRYUP",
 					if(hurryupSeconds[playerID]==0)
 						"NONE"
 					else
-						hurryupSeconds[playerID].toString()+"SEC", "X COLUMN", if(dangerColumnDouble[playerID])
+						"$hurryupSeconds[playerID]SEC", "X COLUMN", if(dangerColumnDouble[playerID])
 					"3 AND 4"
 				else
 					"3 ONLY", "X SHOW", GeneralUtil.getONorOFF(dangerColumnShowX[playerID]))
@@ -442,58 +443,48 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				drawMenu(engine, playerID, receiver, "COUNTDOWN", if(ojamaCountdown[playerID]==10)
 					"NONE"
 				else
-					ojamaCountdown[playerID].toString(), "ZENKESHI", AvalancheVSDummyMode.ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]])
-				menuColor = if(zenKeshiType[playerID]==AvalancheVSDummyMode.ZENKESHI_MODE_FEVER)
-					COLOR.PURPLE
-				else
-					COLOR.WHITE
-				drawMenu(engine, playerID, receiver, "F-MAP SET", AvalancheVSDummyMode.FEVER_MAPS[feverMapSet[playerID]].toUpperCase())
+					"$ojamaCountdown[playerID]", "ZENKESHI", ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]])
+				menuColor = if(zenKeshiType[playerID]==ZENKESHI_MODE_FEVER)
+					COLOR.PURPLE else COLOR.WHITE
+				drawMenu(engine, playerID, receiver, "F-MAP SET", FEVER_MAPS[feverMapSet[playerID]].toUpperCase())
 				menuColor = COLOR.COBALT
-				drawMenu(engine, playerID, receiver, "OUTLINE", AvalancheVSDummyMode.OUTLINE_TYPE_NAMES[outlineType[playerID]], "SHOW CHAIN", AvalancheVSDummyMode.CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]], "FALL ANIM",
-					if(cascadeSlow[playerID])
-						"FEVER"
-					else
-						"CLASSIC")
+				drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]], "SHOW CHAIN", CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]],
+					"FALL ANIM", if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
 				menuColor = COLOR.CYAN
 				drawMenu(engine, playerID, receiver, "CHAINPOWER", if(newChainPower[playerID]) "FEVER" else "CLASSIC")
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/5", COLOR.YELLOW)
 			} else if(menuCursor<32) {
 				initMenu(COLOR.PINK, 24)
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", mapSet[playerID].toString(), "MAP NO.",
-					if(mapNumber[playerID]<0)
-						"RANDOM"
-					else
-						mapNumber[playerID].toString()+"/"+(mapMaxNo[playerID]-1), "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
+				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "$mapSet[playerID]",
+					"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}",
+					"BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
 				menuColor = COLOR.COBALT
-				drawMenu(engine, playerID, receiver, "BGM", BGM.values[bgmno].toString(), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
+				drawMenu(engine, playerID, receiver, "BGM", "$BGM.values[bgmno]", "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 				menuColor = COLOR.GREEN
-				drawMenu(engine, playerID, receiver, "LOAD", presetNumber[playerID].toString(), "SAVE", presetNumber[playerID].toString())
+				drawMenu(engine, playerID, receiver, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 4/5", COLOR.YELLOW)
 			} else {
 				receiver.drawMenuFont(engine, playerID, 0, 0, "ATTACK", COLOR.CYAN)
 				var multiplier = (100*getAttackMultiplier(dropSet[playerID], dropMap[playerID])).toInt()
 				if(multiplier>=100)
-					receiver.drawMenuFont(engine, playerID, 2, 1, multiplier.toString()+"%", if(multiplier==100)
+					receiver.drawMenuFont(engine, playerID, 2, 1, "$multiplier%", if(multiplier==100)
 						COLOR.YELLOW
 					else
 						COLOR.GREEN)
 				else
-					receiver.drawMenuFont(engine, playerID, 3, 1, multiplier.toString()+"%", COLOR.RED)
+					receiver.drawMenuFont(engine, playerID, 3, 1, "$multiplier%", COLOR.RED)
 				receiver.drawMenuFont(engine, playerID, 0, 2, "DEFEND", COLOR.CYAN)
 				multiplier = (100*getDefendMultiplier(dropSet[playerID], dropMap[playerID])).toInt()
 				if(multiplier>=100)
-					receiver.drawMenuFont(engine, playerID, 2, 3, multiplier.toString()+"%", if(multiplier==100)
-						COLOR.YELLOW
-					else
-						COLOR.RED)
+					receiver.drawMenuFont(engine, playerID, 2, 3, "$multiplier%",
+						if(multiplier==100) COLOR.YELLOW else COLOR.RED)
 				else
-					receiver.drawMenuFont(engine, playerID, 3, 3, multiplier.toString()+"%", COLOR.GREEN)
+					receiver.drawMenuFont(engine, playerID, 3, 3, "$multiplier%", COLOR.GREEN)
 
-				drawMenu(engine, playerID, receiver, 14, COLOR.CYAN, 32, "DROP SET", DROP_SET_NAMES[dropSet[playerID]], "DROP MAP",
-					String.format("%2d", dropMap[playerID]+1)+"/"+
-						String.format("%2d", DROP_PATTERNS[dropSet[playerID]].size))
+				drawMenu(engine, playerID, receiver, 14, COLOR.CYAN, 32, "DROP SET", DROP_SET_NAMES[dropSet[playerID]],
+					"DROP MAP", "${String.format("%2d", dropMap[playerID]+1)}/${String.format("%2d", DROP_PATTERNS[dropSet[playerID]].size)}")
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 5/5", COLOR.YELLOW)
 			}
@@ -524,7 +515,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		val playerColor = if(playerID==0) COLOR.RED else COLOR.BLUE
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(224, 8, GeneralUtil.getTime(engine.statistics.time.toFloat()))
+		if(playerID==0) receiver.drawDirectFont(224, 8, GeneralUtil.getTime(engine.statistics.time))
 
 		// Ojama Counter
 		var fontColor = COLOR.WHITE
@@ -532,16 +523,15 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		if(ojama[playerID]>=6) fontColor = COLOR.ORANGE
 		if(ojama[playerID]>=12) fontColor = COLOR.RED
 
-		var strOjama = ojama[playerID].toString()
-		if(ojamaAdd[playerID]>0) strOjama = strOjama+"(+"+ojamaAdd[playerID].toString()+")"
+		var strOjama = "$ojama[playerID]"
+		if(ojamaAdd[playerID]>0) strOjama += "(+${ojamaAdd[playerID]})"
 
 		if(strOjama!="0") receiver.drawDirectFont(fldPosX+4, fldPosY+32, strOjama, fontColor)
 
 		// Score
 		var strScoreMultiplier = ""
 		if(lastscore[playerID]!=0&&lastmultiplier[playerID]!=0&&scgettime[playerID]>0)
-			strScoreMultiplier = ("("
-				+lastscore[playerID]+"e"+lastmultiplier[playerID]+")")
+			strScoreMultiplier = "(${lastscore[playerID]}e${lastmultiplier[playerID]})"
 
 		if(engine.displaysize==1) {
 			receiver.drawDirectFont(fldPosX+4, fldPosY+440, String.format("%12d", score[playerID]), playerColor)
@@ -551,8 +541,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			receiver.drawDirectFont(fldPosX-28, fldPosY+264, String.format("%8s", strScoreMultiplier), playerColor)
 		}
 
-		if(engine.stat!=GameEngine.Status.MOVE&&engine.stat!=GameEngine.Status.RESULT
-			&&engine.gameStarted)
+		if(engine.stat!=GameEngine.Status.MOVE&&engine.stat!=GameEngine.Status.RESULT&&engine.gameStarted)
 			drawX(engine, playerID)
 
 		if(!owner.engine[playerID].gameActive) return
@@ -598,13 +587,13 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		//Turn cleared ojama into normal blocks
 		for(x in 0 until engine.field!!.width)
 			for(y in -1*engine.field!!.hiddenHeight until engine.field!!.height) {
-				val b = engine.field!!.getBlock(x, y)
-				if(b!!.getAttribute(Block.ATTRIBUTE.GARBAGE)&&b.hard<4) {
+				engine.field!!.getBlock(x, y)?.also{b->
+				if(b.getAttribute(Block.ATTRIBUTE.GARBAGE)&&b.hard<4) {
 					b.hard = 0
 					b.cint = b.secondaryColor
 					b.countdown = 0
 					b.setAttribute(false, Block.ATTRIBUTE.GARBAGE)
-				}
+				}}
 			}
 		return false
 	}
@@ -616,7 +605,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			ojama[enemyID] += ojamaAdd[enemyID]
 			ojamaAdd[enemyID] = 0
 		}
-		if(zenKeshi[playerID]&&zenKeshiType[playerID]==AvalancheVSDummyMode.ZENKESHI_MODE_FEVER) {
+		if(zenKeshi[playerID]&&zenKeshiType[playerID]==ZENKESHI_MODE_FEVER) {
 			loadFeverMap(engine, playerID, 4)
 			zenKeshi[playerID] = false
 			zenKeshiDisplay[playerID] = 120
@@ -631,8 +620,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			for(y in engine.field!!.hiddenHeight*-1 until engine.field!!.height)
 				for(x in 0 until engine.field!!.width) {
 					val b = engine.field!!.getBlock(x, y) ?: continue
-					if(b.countdown>1)
-						b.countdown--
+					if(b.countdown>1) b.countdown--
 					else if(b.countdown==1) {
 						b.countdown = 0
 						b.hard = 0
@@ -644,7 +632,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			if(result) return true
 		}
 		//Drop garbage if needed.
-		if(ojama[playerID]>0&&!ojamaDrop[playerID]&&(!cleared[playerID]||ojamaCounterMode[playerID]!=AvalancheVSDummyMode.OJAMA_COUNTER_FEVER)) {
+		if(ojama[playerID]>0&&!ojamaDrop[playerID]&&(!cleared[playerID]||ojamaCounterMode[playerID]!=OJAMA_COUNTER_FEVER)) {
 			ojamaDrop[playerID] = true
 			val width = engine.field!!.width
 			val hiddenHeight = engine.field!!.hiddenHeight

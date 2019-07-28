@@ -1,13 +1,13 @@
 package net.tetrisconcept.poochy.nullpomino.ai
 
 import mu.nu.nullpo.game.component.*
-import mu.nu.nullpo.game.component.Piece.Shape
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
+import kotlin.math.abs
 
 /**
  * PoochyBot AI
@@ -174,7 +174,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			}
 			if(DEBUG_ALL)
 				log.debug("Currently in ARE. Next piece type = "+
-					Shape.names[nextPiece.id]+", IRS = "+input)
+					Piece.Shape.names[nextPiece.id]+", IRS = "+input)
 			//engine.ctrl.setButtonBit(input);
 			inputARE = input
 		}
@@ -275,18 +275,18 @@ open class PoochyBot:DummyAI(), Runnable {
 				if(holdPiece!=null) input = input or calcIRS(holdPiece, engine)
 			} else {
 				if(DEBUG_ALL)
-					log.debug("bestX = "+bestX+", nowX = "+nowX+
-						", bestY = "+bestY+", nowY = "+nowY+
-						", bestRt = "+bestRt+", rt = "+rt+
-						", bestXSub = "+bestXSub+", bestYSub = "+bestYSub+", bestRtSub = "+bestRtSub)
+					log.debug("bestX = $bestX, nowX = "+nowX+
+						", bestY = $bestY, nowY = "+nowY+
+						", bestRt = $bestRt, rt = "+rt+
+						", bestXSub = $bestXSub, bestYSub = $bestYSub, bestRtSub = "+bestRtSub)
 				printPieceAndDirection(nowType, rt)
 				// Rotation
 				//Rotate iff near destination or stuck
-				var xDiff = Math.abs(nowX-bestX)
+				var xDiff = abs(nowX-bestX)
 				if(bestX<nowX&&nowType==Piece.PIECE_I&&
 					rt==Piece.DIRECTION_DOWN&&bestRt!=rt)
 					xDiff--
-				val best180 = Math.abs(rt-bestRt)==2
+				val best180 = abs(rt-bestRt)==2
 				//Special movements for I piece
 				if(nowType==Piece.PIECE_I) {
 					var hypRtDir = 1
@@ -588,8 +588,8 @@ open class PoochyBot:DummyAI(), Runnable {
 			lastRt = rt
 
 			if(DEBUG_ALL)
-				log.debug("Input = "+input+", moveDir = "+moveDir+", rotateDir = "+rotateDir+
-					", sync = "+sync+", drop = "+drop+", setDAS = "+setDAS)
+				log.debug("Input = $input, moveDir = $moveDir, rotateDir = "+rotateDir+
+					", sync = $sync, drop = $drop, setDAS = "+setDAS)
 
 			delay = 0
 			ctrl.buttonBit = input
@@ -601,7 +601,7 @@ open class PoochyBot:DummyAI(), Runnable {
 	}
 
 	private fun printPieceAndDirection(pieceType:Int, rt:Int) {
-		var result = "Piece "+Shape.names[pieceType]+", direction "
+		var result = "Piece ${Piece.Shape.names[pieceType]}, direction "
 
 		when(rt) {
 			Piece.DIRECTION_LEFT -> result += "left"
@@ -622,7 +622,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		val width = fld!!.width
 		val midColumnX = width/2-1
 		return when {
-			Math.abs(spawnX-bestX)==1 ->
+			abs(spawnX-bestX)==1 ->
 				if(bestRt==1) if(engine.ruleopt.rotateButtonDefaultRight) Controller.BUTTON_BIT_A else Controller.BUTTON_BIT_B
 			 else if(bestRt==3) if(engine.ruleopt.rotateButtonDefaultRight) Controller.BUTTON_BIT_B else Controller.BUTTON_BIT_A
 			else 0
@@ -1188,8 +1188,8 @@ open class PoochyBot:DummyAI(), Runnable {
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
 			if(DEBUG_ALL)
-				log.debug("End of thinkMain("+x+", "+y+", "+rt+", "+rtOld+
-					", fld, piece "+Shape.names[piece.id]+", "+depth+"). pts = 0 (Cannot place piece)")
+				log.debug("End of thinkMain($x, $y, $rt, "+rtOld+
+					", fld, piece ${Piece.Shape.names[piece.id]}, $depth). pts = 0 (Cannot place piece)")
 			return Integer.MIN_VALUE
 		}
 
@@ -1238,14 +1238,14 @@ open class PoochyBot:DummyAI(), Runnable {
 		else if(valley>=4) valleyBonus = 400000
 		if(xMax==0) valleyBonus *= 2
 		if(valley>0&&DEBUG_ALL)
-			log.debug("I piece xMax = "+xMax+", valley depth = "+valley+
+			log.debug("I piece xMax = $xMax, valley depth = "+valley+
 				", valley bonus = "+valleyBonus)
 		pts += valleyBonus
 		if(lines==1&&!danger&&depth==0&&heightAfter>=16&&holeBefore<3&&
 			!tspin&&xMax==width-1) {
 			if(DEBUG_ALL)
-				log.debug("End of thinkMain("+x+", "+y+", "+rt+", "+rtOld+
-					", fld, piece "+Shape.names[piece.id]+", "+depth+"). pts = 0 (Special Condition 3)")
+				log.debug("End of thinkMain($x, $y, $rt, "+rtOld+
+					", fld, piece ${Piece.Shape.names[piece.id]}, $depth). pts = 0 (Special Condition 3)")
 			return Integer.MIN_VALUE
 		}
 		//Points for line clears
@@ -1451,8 +1451,8 @@ open class PoochyBot:DummyAI(), Runnable {
 			}
 		}
 		if(DEBUG_ALL)
-			log.debug("End of thinkMain("+x+", "+y+", "+rt+", "+rtOld+
-				", fld, piece "+Shape.names[piece.id]+", "+depth+"). pts = "+pts)
+			log.debug("End of thinkMain($x, $y, $rt, "+rtOld+
+				", fld, piece ${Piece.Shape.names[piece.id]}, $depth). pts = "+pts)
 		return pts
 	}
 
@@ -1479,7 +1479,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		if(speed.gravity>=0&&speed.gravity<speed.denominator) {
 			if(DEBUG_ALL)
 				log.debug("mostMovableX not applicable - low gravity (gravity = "+
-					speed.gravity+", denominator = "+speed.denominator+")")
+					speed.gravity+", denominator = ${speed.denominator})")
 			if(dir<0)
 				return piece.getMostMovableLeft(testX, testY, rt, fld!!)
 			else if(dir>0) return piece.getMostMovableRight(testX, testY, rt, fld!!)
@@ -1525,8 +1525,8 @@ open class PoochyBot:DummyAI(), Runnable {
 				}
 			} else {
 				if(DEBUG_ALL)
-					log.debug("mostMovableX("+x+", "+y+", "+dir+
-						", piece "+Shape.names[piece.id]+", "+rt+") = "+testX)
+					log.debug("mostMovableX($x, $y, "+dir+
+						", piece ${Piece.Shape.names[piece.id]}, $rt) = "+testX)
 				if(piece.id==Piece.PIECE_I&&testX<0&&rt and 1==1) {
 					val height1 = fld.getHighestBlockY(1)
 					if(height1<fld.getHighestBlockY(2)&&height1<fld.getHighestBlockY(3)+2)
@@ -1563,13 +1563,13 @@ open class PoochyBot:DummyAI(), Runnable {
 			drawScoreFont(engine, playerID, 27, 40, "Y", COLOR.BLUE, .5f)
 			drawScoreFont(engine, playerID, 30, 40, "RT", COLOR.BLUE, .5f)
 			drawScoreFont(engine, playerID, 19, 41, "BEST:", COLOR.BLUE, .5f)
-			drawScoreFont(engine, playerID, 24, 41, bestX.toString(), .5f)
-			drawScoreFont(engine, playerID, 27, 41, bestY.toString(), .5f)
-			drawScoreFont(engine, playerID, 30, 41, bestRt.toString(), .5f)
+			drawScoreFont(engine, playerID, 24, 41, "$bestX", .5f)
+			drawScoreFont(engine, playerID, 27, 41, "$bestY", .5f)
+			drawScoreFont(engine, playerID, 30, 41, "$bestRt", .5f)
 			drawScoreFont(engine, playerID, 19, 42, "SUB:", COLOR.BLUE, .5f)
-			drawScoreFont(engine, playerID, 24, 42, bestXSub.toString(), .5f)
-			drawScoreFont(engine, playerID, 27, 42, bestYSub.toString(), .5f)
-			drawScoreFont(engine, playerID, 30, 42, bestRtSub.toString(), .5f)
+			drawScoreFont(engine, playerID, 24, 42, "$bestXSub", .5f)
+			drawScoreFont(engine, playerID, 27, 42, "$bestYSub", .5f)
+			drawScoreFont(engine, playerID, 30, 42, "$bestRtSub", .5f)
 			drawScoreFont(engine, playerID, 19, 43, "NOW:", COLOR.BLUE, .5f)
 
 			if(engine.nowPieceObject==null)
@@ -1580,7 +1580,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				drawScoreFont(engine, playerID, 30, 43, engine.nowPieceObject!!.direction.toString(), .5f)
 			}
 			drawScoreFont(engine, playerID, 19, 44, "MOVE SCORE:", COLOR.BLUE, .5f)
-			drawScoreFont(engine, playerID, 31, 44, bestPts.toString(), bestPts<=0, .5f)
+			drawScoreFont(engine, playerID, 31, 44, "$bestPts", bestPts<=0, .5f)
 			drawScoreFont(engine, playerID, 19, 45, "THINK ACTIVE:", COLOR.BLUE, .5f)
 			drawScoreFont(engine, playerID, 32, 45, GeneralUtil.getOorX(thinking), .5f)
 			drawScoreFont(engine, playerID, 19, 46, "IN ARE:", COLOR.BLUE, .5f)

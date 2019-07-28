@@ -78,7 +78,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 					pos++
 					result++
 					if(result>8L*QUEUE_SIZE.toLong()*FIELDS.size.toLong()) {
-						println("Endless loop found! Seed = "+java.lang.Long.toString(seed, 16))
+						println("Endless loop found! Seed = "+seed.toString(16))
 						//long end = System.currentTimeMillis();
 						//System.out.println("Runtime: " + (end - start) + "ms");
 						break
@@ -87,7 +87,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 				if(result>bestResult) {
 					bestSeed = seed
 					bestResult = result
-					println("New best result: seed = "+java.lang.Long.toString(bestSeed, 16)
+					println("New best result: seed = "+bestSeed.toString(16)
 						+", result = "+bestResult)
 				}
 			}

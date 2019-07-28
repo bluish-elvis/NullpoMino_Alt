@@ -30,7 +30,7 @@ class StateConfigKeyboardReset:DummyMenuChooseState() {
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
 		// Menu
-		FontNormal.printFontGrid(1, 1, "KEYBOARD RESET ("+(player+1)+"P)", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "KEYBOARD RESET (${player+1}P)", COLOR.ORANGE)
 
 		FontNormal.printFontGrid(1, 3, "RESET SETTINGS TO...", COLOR.GREEN)
 

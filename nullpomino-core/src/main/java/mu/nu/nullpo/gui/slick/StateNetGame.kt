@@ -109,13 +109,11 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 	/* Called when leaving this state */
 	override fun leave(container:GameContainer?, game:StateBasedGame?) {
-		if(gameManager!=null) {
-			gameManager!!.shutdown()
-			gameManager = null
-		}
-		if(netLobby!=null) {
-			netLobby.shutdown()
-		}
+
+		gameManager?.shutdown()
+		gameManager = null
+
+		netLobby.shutdown()
 		ResourceHolder.bgmStop()
 		container!!.setClearEachFrame(false)
 
@@ -132,7 +130,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 	override fun render(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		try {
 			// ゲーム画面
-			if(gameManager!=null&&gameManager!!.mode!=null) gameManager!!.renderAll()
+			if(gameManager?.mode!=null) gameManager?.renderAll()
 
 			// FPS
 			NullpoMinoSlick.drawFPS()
@@ -166,65 +164,61 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 			if(!container.hasFocus()||netLobby.isFocused) GameKey.gamekey[0].clear()
 
 			// TTF font 描画
-			if(ResourceHolder.ttfFont!=null) ResourceHolder.ttfFont!!.loadGlyphs()
+			ResourceHolder.ttfFont?.loadGlyphs()
 
 			// Title bar update
-			if(gameManager!=null&&gameManager!!.engine!=null&&gameManager!!.engine.size>0&&gameManager!!.engine[0]!=null) {
-				val nowInGame = gameManager!!.engine[0].isInGame
-				if(prevInGameFlag!=nowInGame) {
-					prevInGameFlag = nowInGame
-					updateTitleBarCaption()
+
+			gameManager?.also {gameManager ->
+				if(gameManager.engine.isNotEmpty()) {
+					val nowInGame = gameManager.engine[0].isInGame
+					if(prevInGameFlag!=nowInGame) {
+						prevInGameFlag = nowInGame
+						updateTitleBarCaption()
+					}
 				}
 			}
 
 			// Update key input states
 			if(container.hasFocus()&&!netLobby.isFocused)
-				if(gameManager!=null&&gameManager!!.engine.size>0&&
-					gameManager!!.engine[0]!=null
-					&&gameManager!!.engine[0].isInGame)
-					GameKey.gamekey[0].update(container.input, true)
-				else
-					GameKey.gamekey[0].update(container.input, false)
+				gameManager?.also {gameManager ->
+					GameKey.gamekey[0].update(container.input, gameManager.engine.size>0&&gameManager.engine[0].isInGame)
 
-			if(gameManager!=null&&gameManager!!.mode!=null) {
-				// BGM
-				if(ResourceHolder.bgmPlaying!=gameManager!!.bgmStatus.bgm) ResourceHolder.bgmStart(gameManager!!.bgmStatus.bgm)
-				if(ResourceHolder.bgmIsPlaying()) {
-					val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
-					val basevolume2 = basevolume/128.toFloat()
-					var newvolume = gameManager!!.bgmStatus.volume*basevolume2
-					if(newvolume<0f) newvolume = 0f
-					if(newvolume>1f) newvolume = 1f
-					container.musicVolume = newvolume
-					if(newvolume<=0f) ResourceHolder.bgmStop()
+					if(gameManager.mode!=null) {
+						// BGM
+						if(ResourceHolder.bgmPlaying!=gameManager.bgmStatus.bgm) ResourceHolder.bgmStart(gameManager.bgmStatus.bgm)
+						if(ResourceHolder.bgmIsPlaying()) {
+							val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
+							val basevolume2 = basevolume/128.toFloat()
+							var newvolume = gameManager.bgmStatus.volume*basevolume2
+							if(newvolume<0f) newvolume = 0f
+							if(newvolume>1f) newvolume = 1f
+							container.musicVolume = newvolume
+							if(newvolume<=0f) ResourceHolder.bgmStop()
+						}
+					}
+
+					// ゲームの処理を実行
+					if(gameManager.mode!=null) {
+						GameKey.gamekey[0].inputStatusUpdate(gameManager.engine[0].ctrl)
+						gameManager.updateAll()
+
+						if(gameManager.quitFlag) {
+							ResourceHolder.bgmStop()
+							game.enterState(StateTitle.ID)
+							return
+						}
+
+						// Retry button
+						if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_RETRY))
+							gameManager.mode!!.netplayOnRetryKey(gameManager.engine[0], 0)
+					}
 				}
-			}
-
-			// ゲームの処理を実行
-			if(gameManager!=null&&gameManager!!.mode!=null) {
-				GameKey.gamekey[0].inputStatusUpdate(gameManager!!.engine[0].ctrl)
-				gameManager!!.updateAll()
-
-				if(gameManager!!.quitFlag) {
-					ResourceHolder.bgmStop()
-					game.enterState(StateTitle.ID)
-					return
-				}
-
-				// Retry button
-				if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_RETRY))
-					gameManager!!.mode!!.netplayOnRetryKey(gameManager!!.engine[0], 0)
-			}
-
 			// Screenshot button
 			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)||GameKey.gamekey[1].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT))
 				ssflag = true
 
 			// Enter to new mode
-			if(strModeToEnter==null) {
-				enterNewMode(null)
-				strModeToEnter = ""
-			} else if(strModeToEnter.isNotEmpty()) {
+			if(strModeToEnter.isNotEmpty()) {
 				enterNewMode(strModeToEnter)
 				strModeToEnter = ""
 			}
@@ -232,7 +226,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 			if(NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep(true)
 		} catch(e:NullPointerException) {
 			try {
-				if(gameManager!=null&&gameManager!!.quitFlag) {
+				if(gameManager?.quitFlag==true) {
 					game.enterState(StateTitle.ID)
 					return
 				} else
@@ -242,7 +236,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 		} catch(e:Exception) {
 			try {
-				if(gameManager!=null&&gameManager!!.quitFlag) {
+				if(gameManager?.quitFlag==true) {
 					game.enterState(StateTitle.ID)
 					return
 				} else
@@ -261,9 +255,8 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 		NullpoMinoSlick.loadGlobalConfig() // Reload global config file
 
 		val previousMode = gameManager!!.mode
-		val newModeTemp = if(newModeName==null) NetDummyMode() else NullpoMinoSlick.modeManager.getMode(newModeName)
 
-		when(newModeTemp) {
+		when(val newModeTemp = if(newModeName==null) NetDummyMode() else NullpoMinoSlick.modeManager.getMode(newModeName)) {
 			null -> log.error("Cannot find a mode:"+newModeName!!)
 			is NetDummyMode -> {
 				log.info("Enter new mode:"+newModeTemp.name)
@@ -305,12 +298,12 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				gameManager!!.engine[0].ruleopt = ruleopt
 
 				// Randomizer
-				if(ruleopt.strRandomizer!=null&&ruleopt.strRandomizer.isNotEmpty()) {
+				if(ruleopt.strRandomizer.isNotEmpty()) {
 					gameManager!!.engine[0].randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
 				}
 
 				// Wallkick
-				if(ruleopt.strWallkick!=null&&ruleopt.strWallkick.isNotEmpty()) {
+				if(ruleopt.strWallkick.isNotEmpty()) {
 					gameManager!!.engine[0].wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
 				}
 
@@ -341,18 +334,14 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 	/** Update title bar text */
 	fun updateTitleBarCaption() {
-		var strTitle = "NullpoMino Netplay - $modeName"
+		var strTitle = "NullpoMino Netplay"
 
-		if(modeName=="NET-DUMMY")
-			strTitle = "NullpoMino Netplay"
-		else if(gameManager!=null&&gameManager!!.engine!=null&&gameManager!!.engine.size>0
-			&&gameManager!!.engine[0]!=null)
-			strTitle = if(gameManager!!.engine[0].isInGame&&!gameManager!!.replayMode
-				&&!gameManager!!.replayRerecord)
-				"[PLAY] NullpoMino Netplay - $modeName"
-			else
-				"[MENU] NullpoMino Netplay - $modeName"
-
+		gameManager?.also {
+			if(modeName!=="NET-DUMMY" && it.engine.isNotEmpty())
+				strTitle = "[${if(it.engine[0].isInGame&&!it.replayMode&&!it.replayRerecord)
+					"PLAY" else "MENU"
+				}] NullpoMino Netplay - $modeName"
+		}
 		appContainer!!.setTitle(strTitle)
 	}
 
@@ -361,8 +350,9 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 	}
 
 	override fun netlobbyOnExit(lobby:NetLobbyFrame) {
-		if(gameManager!=null&&gameManager!!.engine.size>0&&gameManager!!.engine[0]!=null)
-			gameManager!!.engine[0].quitflag = true
+		gameManager?.also{
+			if(it.engine.isNotEmpty()) it.engine[0].quitflag = true
+		}
 	}
 
 	override fun netlobbyOnInit(lobby:NetLobbyFrame) {}

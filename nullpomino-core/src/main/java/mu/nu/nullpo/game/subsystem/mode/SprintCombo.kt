@@ -145,7 +145,7 @@ class SprintCombo:NetDummyMode() {
 			loadPreset(engine, engine.owner.replayProp, -1)
 
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty(playerID.toString()+".net.netPlayerName", "")
+			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
 	}
 
@@ -337,7 +337,7 @@ class SprintCombo:NetDummyMode() {
 			val strSpawn = if(spawnAboveField) "ABOVE" else "BELOW"
 
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"GOAL", if(GOAL_TABLE[goaltype]==-1) "ENDLESS" else GOAL_TABLE[goaltype].toString())
+				"GOAL", if(GOAL_TABLE[goaltype]==-1) "ENDLESS" else "$GOAL_TABLE[goaltype]")
 			drawMenu(engine, playerID, receiver, 2, if(comboWidth==4)
 				EventReceiver.COLOR.BLUE
 			else
@@ -345,7 +345,7 @@ class SprintCombo:NetDummyMode() {
 				"STARTSHAPE", SHAPE_NAME_TABLE[shapetype])
 			menuColor = EventReceiver.COLOR.BLUE
 			drawMenuCompact(engine, playerID, receiver,
-				"COLUMN", comboColumn.toString(), "WIDTH", comboWidth.toString(), "CEILING", ceilingAdjust.toString())
+				"COLUMN", "$comboColumn", "WIDTH", "$comboWidth", "CEILING", "$ceilingAdjust")
 			drawMenu(engine, playerID, receiver, "PIECESPAWN", strSpawn)
 
 			drawMenuSpeeds(engine, playerID, receiver, engine.speed.gravity, engine.speed.denominator,
@@ -353,7 +353,7 @@ class SprintCombo:NetDummyMode() {
 			drawMenuBGM(engine, playerID, receiver, bgmno)
 			if(!engine.owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
-				drawMenuCompact(engine, playerID, receiver, "LOAD", presetNumber.toString(), "SAVE", presetNumber.toString())
+				drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber", "SAVE", "$presetNumber")
 			}
 		}
 	}
@@ -440,8 +440,8 @@ class SprintCombo:NetDummyMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 4+i, rankingCombo[goaltype][i].toString(), rankingRank==i)
-					receiver.drawScoreNum(engine, playerID, 9, 4+i, GeneralUtil.getTime(rankingTime[goaltype][i].toFloat()), rankingRank==i)
+					receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingCombo[goaltype][i]}", rankingRank==i)
+					receiver.drawScoreNum(engine, playerID, 9, 4+i, GeneralUtil.getTime(rankingTime[goaltype][i]), rankingRank==i)
 				}
 			}
 		} else {
@@ -458,7 +458,7 @@ class SprintCombo:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.pps.toString())
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(engine.statistics.time.toFloat()))
+			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(engine.statistics.time))
 
 			if(lastevent!=EVENT_NONE&&scgettime<120) renderLineAlert(engine, playerID, receiver)
 		}
@@ -562,8 +562,8 @@ class SprintCombo:NetDummyMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, AbstractMode.Statistic.MAXCOMBO, AbstractMode.Statistic.TIME)
-		drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.LPM, AbstractMode.Statistic.PPS)
+		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, Statistic.MAXCOMBO, Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS)
 		drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -584,7 +584,7 @@ class SprintCombo:NetDummyMode() {
 		savePreset(engine, engine.owner.replayProp, -1)
 
 		// NET: Save name
-		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(playerID.toString()+".net.netPlayerName", netPlayerName)
+		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -651,14 +651,14 @@ class SprintCombo:NetDummyMode() {
 	override fun netSendStats(engine:GameEngine) {
 		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += engine.statistics.lines.toString()+"\t"+engine.statistics.totalPieceLocked+"\t"
-		msg += engine.statistics.time.toString()+"\t"+engine.statistics.lpm+"\t"
-		msg += engine.statistics.pps.toString()+"\t"+goaltype+"\t"
-		msg += engine.gameActive.toString()+"\t"+engine.timerActive+"\t"
-		msg += engine.meterColor.toString()+"\t"+engine.meterValue+"\t"
-		msg += bg.toString()+"\t"
-		msg += scgettime.toString()+"\t"+lastevent+"\t"+lastb2b+"\t"+lastcombo+"\t"+lastpiece+"\t"
-		msg += engine.statistics.maxCombo.toString()+"\t"+engine.combo+"\n"
+		msg += engine.statistics.lines.toString()+"\t${engine.statistics.totalPieceLocked}\t"
+		msg += engine.statistics.time.toString()+"\t${engine.statistics.lpm}\t"
+		msg += engine.statistics.pps.toString()+"\t$goaltype\t"
+		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
+		msg += engine.meterColor.toString()+"\t${engine.meterValue}\t"
+		msg += "$bg"+"\t"
+		msg += "$scgettime${"\t$lastevent\t$lastb2b\t$lastcombo\t"+lastpiece}\t"
+		msg += engine.statistics.maxCombo.toString()+"\t${engine.combo}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -689,13 +689,13 @@ class SprintCombo:NetDummyMode() {
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
 		var subMsg = ""
-		subMsg += "MAX COMBO;"+(engine.statistics.maxCombo-1)+"\t"
-		subMsg += "TIME;"+GeneralUtil.getTime(engine.statistics.time.toFloat())+"\t"
-		subMsg += "LINE;"+engine.statistics.lines+"\t"
-		subMsg += "PIECE;"+engine.statistics.totalPieceLocked+"\t"
-		subMsg += "LINE/MIN;"+engine.statistics.lpm+"\t"
-		subMsg += "PIECE/SEC;"+engine.statistics.pps+"\t"
-		val msg = "gstat1p\t"+NetUtil.urlEncode(subMsg)+"\n"
+		subMsg += "MAX COMBO;${(engine.statistics.maxCombo-1)}\t"
+		subMsg += "TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
+		subMsg += "LINE;${engine.statistics.lines}\t"
+		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
+		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
+		subMsg += "PIECE/SEC;${engine.statistics.pps}\t"
+		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -704,10 +704,10 @@ class SprintCombo:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += engine.speed.gravity.toString()+"\t"+engine.speed.denominator+"\t"+engine.speed.are+"\t"
-		msg += engine.speed.areLine.toString()+"\t"+engine.speed.lineDelay+"\t"+engine.speed.lockDelay+"\t"
-		msg += engine.speed.das.toString()+"\t"+bgmno+"\t"+goaltype+"\t"+presetNumber+"\t"
-		msg += shapetype.toString()+"\t"+comboColumn+"\t"+comboWidth+"\t"+ceilingAdjust+"\t"+spawnAboveField+"\n"
+		msg += engine.speed.gravity.toString()+"\t${engine.speed.denominator}\t${engine.speed.are}\t"
+		msg += engine.speed.areLine.toString()+"\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
+		msg += engine.speed.das.toString()+"\t$bgmno\t$goaltype\t$presetNumber\t"
+		msg += "$shapetype${"\t$comboColumn\t$comboWidth\t$ceilingAdjust\t"+spawnAboveField}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 

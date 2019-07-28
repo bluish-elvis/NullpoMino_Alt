@@ -243,54 +243,58 @@ class StateConfigGeneral:BaseGameState() {
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
 		// Basic Options
-		if(cursor<=18) {
-			FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: APPERANCE (1/3)", COLOR.ORANGE)
-			FontNormal.printFontGrid(1, (if(cursor<=4) 3 else if(cursor<=8) 4 else if(cursor<=11) 5 else if(cursor<=14) 6 else 7)+cursor, "b", COLOR.RED)
+		when {
+			cursor<=18 -> {
+				FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: APPERANCE (1/3)", COLOR.ORANGE)
+				FontNormal.printFontGrid(1, (if(cursor<=4) 3 else if(cursor<=8) 4 else if(cursor<=11) 5 else if(cursor<=14) 6 else 7)+cursor, "b", COLOR.RED)
 
-			FontNormal.printFontGrid(2, 3, "SE:"+GeneralUtil.getOorX(se), cursor==0)
-			FontNormal.printFontGrid(2, 4, "BGM:"+GeneralUtil.getOorX(bgm), cursor==1)
-			FontNormal.printFontGrid(2, 5, "BGM PRELOAD:"+GeneralUtil.getOorX(bgmpreload), cursor==2)
-			FontNormal.printFontGrid(2, 6, "SE VOLUME:"+sevolume+"("+sevolume*100/128+"%)", cursor==3)
-			FontNormal.printFontGrid(2, 7, "BGM VOLUME:"+bgmvolume+"("+bgmvolume*100/128+"%)", cursor==4)
+				FontNormal.printFontGrid(2, 3, "SE:"+GeneralUtil.getOorX(se), cursor==0)
+				FontNormal.printFontGrid(2, 4, "BGM:"+GeneralUtil.getOorX(bgm), cursor==1)
+				FontNormal.printFontGrid(2, 5, "BGM PRELOAD:"+GeneralUtil.getOorX(bgmpreload), cursor==2)
+				FontNormal.printFontGrid(2, 6, "SE VOLUME:$sevolume(${sevolume*100/128}%)", cursor==3)
+				FontNormal.printFontGrid(2, 7, "BGM VOLUME:$bgmvolume(${bgmvolume*100/128}%)", cursor==4)
 
-			FontNormal.printFontGrid(2, 9, "SHOW BACKGROUND:"+GeneralUtil.getOorX(showbg), cursor==5)
-			FontNormal.printFontGrid(2, 10, "USE LARGE EFFECT:"+GeneralUtil.getOorX(heavyeffect), cursor==6)
-			FontNormal.printFontGrid(2, 11, "SHOW BG FIELDS GRID:"+GeneralUtil.getOorX(showfieldbggrid), cursor==7)
-			FontNormal.printFontGrid(2, 12, "FIELD BG BRIGHT:"+fieldbgbright+"("+fieldbgbright*100/255+"%)", cursor==8)
+				FontNormal.printFontGrid(2, 9, "SHOW BACKGROUND:"+GeneralUtil.getOorX(showbg), cursor==5)
+				FontNormal.printFontGrid(2, 10, "USE LARGE EFFECT:"+GeneralUtil.getOorX(heavyeffect), cursor==6)
+				FontNormal.printFontGrid(2, 11, "SHOW BG FIELDS GRID:"+GeneralUtil.getOorX(showfieldbggrid), cursor==7)
+				FontNormal.printFontGrid(2, 12, "FIELD BG BRIGHT:$fieldbgbright(${fieldbgbright*100/255}%)", cursor==8)
 
-			FontNormal.printFontGrid(2, 14, "SHOW LINE EFFECT:"+GeneralUtil.getOorX(showlineeffect), cursor==9)
-			FontNormal.printFontGrid(2, 15, "LINE EFFECT SPEED:"+"X "+(lineeffectspeed+1), cursor==10)
-			FontNormal.printFontGrid(2, 16, "SHOW METER:"+GeneralUtil.getOorX(showmeter), cursor==11)
+				FontNormal.printFontGrid(2, 14, "SHOW LINE EFFECT:"+GeneralUtil.getOorX(showlineeffect), cursor==9)
+				FontNormal.printFontGrid(2, 15, "LINE EFFECT SPEED:"+"X "+(lineeffectspeed+1), cursor==10)
+				FontNormal.printFontGrid(2, 16, "SHOW METER:"+GeneralUtil.getOorX(showmeter), cursor==11)
 
-			FontNormal.printFontGrid(2, 18, "DARK NEXT AREA:"+GeneralUtil.getOorX(darknextarea), cursor==12)
-			FontNormal.printFontGrid(2, 19, "SHOW NEXT ABOVE SHADOW:"+GeneralUtil.getOorX(nextshadow), cursor==13)
-			FontNormal.printFontGrid(2, 20, "NEXT DISPLAY TYPE:"+NEXTTYPE_OPTIONS[nexttype], cursor==14)
+				FontNormal.printFontGrid(2, 18, "DARK NEXT AREA:"+GeneralUtil.getOorX(darknextarea), cursor==12)
+				FontNormal.printFontGrid(2, 19, "SHOW NEXT ABOVE SHADOW:"+GeneralUtil.getOorX(nextshadow), cursor==13)
+				FontNormal.printFontGrid(2, 20, "NEXT DISPLAY TYPE:"+NEXTTYPE_OPTIONS[nexttype], cursor==14)
 
-			FontNormal.printFontGrid(2, 22, "OUTLINE GHOST PIECE:"+GeneralUtil.getOorX(outlineghost), cursor==15)
-			FontNormal.printFontGrid(2, 23, "CURRENT PIECE SMOOTH FALL:"+GeneralUtil.getOorX(smoothfall), cursor==16)
-			FontNormal.printFontGrid(2, 24, "SHOW CURRENT PIECE LOCUS:"+GeneralUtil.getOorX(showLocus), cursor==17)
-			FontNormal.printFontGrid(2, 25, "SHOW CONTROLLER INPUT:"+GeneralUtil.getOorX(showInput), cursor==18)
+				FontNormal.printFontGrid(2, 22, "OUTLINE GHOST PIECE:"+GeneralUtil.getOorX(outlineghost), cursor==15)
+				FontNormal.printFontGrid(2, 23, "CURRENT PIECE SMOOTH FALL:"+GeneralUtil.getOorX(smoothfall), cursor==16)
+				FontNormal.printFontGrid(2, 24, "SHOW CURRENT PIECE LOCUS:"+GeneralUtil.getOorX(showLocus), cursor==17)
+				FontNormal.printFontGrid(2, 25, "SHOW CONTROLLER INPUT:"+GeneralUtil.getOorX(showInput), cursor==18)
 
-		} else if(cursor<=24) {
-			FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: GRAPHICS (2/3)", COLOR.ORANGE)
-			FontNormal.printFontGrid(1, 3+cursor-19, "b", COLOR.RED)
+			}
+			cursor<=24 -> {
+				FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: GRAPHICS (2/3)", COLOR.ORANGE)
+				FontNormal.printFontGrid(1, 3+cursor-19, "b", COLOR.RED)
 
-			FontNormal.printFontGrid(2, 3, "FULLSCREEN:"+GeneralUtil.getOorX(fullscreen), cursor==19)
-			FontNormal.printFontGrid(2, 4, "SHOW FPS:"+GeneralUtil.getOorX(showfps), cursor==20)
-			FontNormal.printFontGrid(2, 5, "MAX FPS:$maxfps", cursor==21)
-			FontNormal.printFontGrid(2, 6, "FRAME STEP:"+GeneralUtil.getOorX(enableframestep), cursor==22)
-			FontNormal.printFontGrid(2, 7, "FPS PERFECT MODE:"+GeneralUtil.getOorX(alternateFPSPerfectMode), cursor==23)
-			FontNormal.printFontGrid(2, 8, "FPS PERFECT YIELD:"+GeneralUtil.getOorX(alternateFPSPerfectYield), cursor==24)
-		} else {
-			FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: SLICK (3/3)", COLOR.ORANGE)
-			FontNormal.printFontGrid(1, 3+cursor-25, "b", COLOR.RED)
+				FontNormal.printFontGrid(2, 3, "FULLSCREEN:"+GeneralUtil.getOorX(fullscreen), cursor==19)
+				FontNormal.printFontGrid(2, 4, "SHOW FPS:"+GeneralUtil.getOorX(showfps), cursor==20)
+				FontNormal.printFontGrid(2, 5, "MAX FPS:$maxfps", cursor==21)
+				FontNormal.printFontGrid(2, 6, "FRAME STEP:"+GeneralUtil.getOorX(enableframestep), cursor==22)
+				FontNormal.printFontGrid(2, 7, "FPS PERFECT MODE:"+GeneralUtil.getOorX(alternateFPSPerfectMode), cursor==23)
+				FontNormal.printFontGrid(2, 8, "FPS PERFECT YIELD:"+GeneralUtil.getOorX(alternateFPSPerfectYield), cursor==24)
+			}
+			else -> {
+				FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: SLICK (3/3)", COLOR.ORANGE)
+				FontNormal.printFontGrid(1, 3+cursor-25, "b", COLOR.RED)
 
-			FontNormal.printFontGrid(2, 3, "BGM STREAMING:"+GeneralUtil.getOorX(bgmstreaming), cursor==25)
-			FontNormal.printFontGrid(2, 4, "VSYNC:"+GeneralUtil.getOorX(vsync), cursor==26)
-			FontNormal.printFontGrid(2, 5, "FPS SLEEP TIMING:"+if(alternateFPSTiming) "UPDATE" else "RENDER", cursor==27)
-			FontNormal.printFontGrid(2, 6, "FPS DYNAMIC ADJUST:"+GeneralUtil.getOorX(alternateFPSDynamicAdjust), cursor==28)
-			FontNormal.printFontGrid(2, 7,
-				"SCREEN SIZE:"+SCREENSIZE_TABLE[screenSizeType][0]+"e"+SCREENSIZE_TABLE[screenSizeType][1], cursor==29)
+				FontNormal.printFontGrid(2, 3, "BGM STREAMING:"+GeneralUtil.getOorX(bgmstreaming), cursor==25)
+				FontNormal.printFontGrid(2, 4, "VSYNC:"+GeneralUtil.getOorX(vsync), cursor==26)
+				FontNormal.printFontGrid(2, 5, "FPS SLEEP TIMING:"+if(alternateFPSTiming) "UPDATE" else "RENDER", cursor==27)
+				FontNormal.printFontGrid(2, 6, "FPS DYNAMIC ADJUST:"+GeneralUtil.getOorX(alternateFPSDynamicAdjust), cursor==28)
+				FontNormal.printFontGrid(2, 7,
+					"SCREEN SIZE:${SCREENSIZE_TABLE[screenSizeType][0]}e"+SCREENSIZE_TABLE[screenSizeType][1], cursor==29)
+			}
 		}// Slick Options
 		// Advanced Options
 

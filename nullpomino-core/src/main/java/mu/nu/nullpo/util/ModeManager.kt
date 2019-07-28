@@ -145,7 +145,7 @@ class ModeManager {
 
 		while(true) {
 			// クラス名を読み込み
-			val name = prop.getProperty(count.toString(), null) ?: return
+			val name = prop.getProperty("$count", null) ?: return
 
 			val modeClass:Class<*>
 			val modeObject:GameMode

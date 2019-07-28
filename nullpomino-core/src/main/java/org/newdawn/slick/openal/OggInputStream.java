@@ -8,6 +8,7 @@ import com.jcraft.jorbis.Block;
 import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
 import org.newdawn.slick.util.Log;
 import java.io.IOException;
@@ -333,8 +334,7 @@ public class OggInputStream extends InputStream implements AudioInputStream{
 									_index))>0){
 									float[][] pcm=_pcm[0];
 									//boolean clipflag = false;
-									int bout=(samples<convsize?samples
-										:convsize);
+									int bout=(Math.min(samples,convsize));
 
 									// convert floats to 16 bit signed ints (host order) and
 									// interleave
@@ -461,7 +461,7 @@ public class OggInputStream extends InputStream implements AudioInputStream{
 	/**
 	 * @see java.io.InputStream#read(byte[],int,int)
 	 */
-	public int read(byte[] b,int off,int len) throws IOException{
+	public int read(@NotNull byte[] b,int off,int len) throws IOException{
 		for(int i=0;i<len;i++){
 			try{
 				int value=read();
@@ -486,7 +486,7 @@ public class OggInputStream extends InputStream implements AudioInputStream{
 	/**
 	 * @see java.io.InputStream#read(byte[])
 	 */
-	public int read(byte[] b) throws IOException{
+	public int read(@NotNull byte[] b) throws IOException{
 		return read(b,0,b.length);
 	}
 

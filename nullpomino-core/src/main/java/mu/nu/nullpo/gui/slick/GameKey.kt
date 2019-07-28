@@ -47,7 +47,7 @@ class GameKey:GameKeyDummy {
 	fun update(input:Input, ingame:Boolean = false) {
 		if(player==0&&NullpoMinoSlick.useJInputKeyboard) JInputManager.poll()
 
-		for(i in 0 until GameKeyDummy.MAX_BUTTON) {
+		for(i in 0 until MAX_BUTTON) {
 			val kmap = if(ingame) keymap else keymapNav
 
 			var flag = false
@@ -58,10 +58,10 @@ class GameKey:GameKeyDummy {
 					input.isKeyDown(kmap[i])
 
 			flag = when(i) {
-				GameKeyDummy.BUTTON_UP -> flag or ControllerManager.isControllerUp(player, input)
-				GameKeyDummy.BUTTON_DOWN -> flag or ControllerManager.isControllerDown(player, input)
-				GameKeyDummy.BUTTON_LEFT -> flag or ControllerManager.isControllerLeft(player, input)
-				GameKeyDummy.BUTTON_RIGHT -> flag or ControllerManager.isControllerRight(player, input)
+				BUTTON_UP -> flag or ControllerManager.isControllerUp(player, input)
+				BUTTON_DOWN -> flag or ControllerManager.isControllerDown(player, input)
+				BUTTON_LEFT -> flag or ControllerManager.isControllerLeft(player, input)
+				BUTTON_RIGHT -> flag or ControllerManager.isControllerRight(player, input)
 				else -> flag or ControllerManager.isControllerButton(player, input, buttonmap[i])
 			}
 

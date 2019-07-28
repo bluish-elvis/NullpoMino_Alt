@@ -422,11 +422,11 @@ class RuleEditor:JFrame, ActionListener {
 			try {
 				ruleopt = load(filename)
 				strNowFile = filename
-				title = getUIText("Title_RuleEditor")+":"+strNowFile
+				title = "${getUIText("Title_RuleEditor")}:$strNowFile"
 			} catch(e:IOException) {
 				log.error("Failed to load rule data from $filename", e)
-				JOptionPane.showMessageDialog(this, getUIText("Message_FileLoadFailed")+"\n"
-					+e, getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
+				JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e",
+					getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
 			}
 
 		readRuleToUI(ruleopt)
@@ -454,8 +454,7 @@ class RuleEditor:JFrame, ActionListener {
 		}
 
 		try {
-			val `in` = FileInputStream(
-				"config/lang/ruleeditor_"+Locale.getDefault().country+".xml")
+			val `in` = FileInputStream("config/lang/ruleeditor_${Locale.getDefault().country}.xml")
 			propLang.loadFromXML(`in`)
 			`in`.close()
 		} catch(e:IOException) {
@@ -582,7 +581,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		val model = DefaultComboBoxModel<ComboLabel>()
 		imgBlockSkins!!.indices.forEach {i ->
-			model.addElement(ComboLabel(""+i, ImageIcon(imgBlockSkins!![i])))
+			model.addElement(ComboLabel("$i", ImageIcon(imgBlockSkins!![i])))
 		}
 		comboboxSkin = JComboBox(model).apply {
 			renderer = ComboLabelCellRenderer()
@@ -676,7 +675,7 @@ class RuleEditor:JFrame, ActionListener {
 		// ホールドタブ --------------------------------------------------
 		val panelHold = JPanel()
 		panelHold.layout = BoxLayout(panelHold, BoxLayout.Y_AXIS)
-		tabPane!!.addTab(getUIText("TabName_Hold"), panelHold)
+		tabPane.addTab(getUIText("TabName_Hold"), panelHold)
 
 		// ホールド is enabled
 		chkboxHoldEnable = JCheckBox(getUIText("Hold_HoldEnable"))
@@ -707,7 +706,7 @@ class RuleEditor:JFrame, ActionListener {
 		// ドロップタブ --------------------------------------------------
 		val panelDrop = JPanel()
 		panelDrop.layout = BoxLayout(panelDrop, BoxLayout.Y_AXIS)
-		tabPane!!.addTab(getUIText("TabName_Drop"), panelDrop)
+		tabPane.addTab(getUIText("TabName_Drop"), panelDrop)
 
 		// Hard drop使用可否
 		chkboxDropHardDropEnable = JCheckBox(getUIText("Drop_HardDropEnable"))
@@ -757,7 +756,7 @@ class RuleEditor:JFrame, ActionListener {
 		// rotationタブ --------------------------------------------------
 		val panelRotate = JPanel()
 		panelRotate.layout = BoxLayout(panelRotate, BoxLayout.Y_AXIS)
-		tabPane!!.addTab(getUIText("TabName_Rotate"), panelRotate)
+		tabPane.addTab(getUIText("TabName_Rotate"), panelRotate)
 
 		// 先行rotation
 		chkboxRotateInitial = JCheckBox(getUIText("Rotate_RotateInitial"))
@@ -819,7 +818,7 @@ class RuleEditor:JFrame, ActionListener {
 		// 固定 timeタブ --------------------------------------------------
 		val panelLockDelay = JPanel()
 		panelLockDelay.layout = BoxLayout(panelLockDelay, BoxLayout.Y_AXIS)
-		tabPane!!.addTab(getUIText("TabName_LockDelay"), panelLockDelay)
+		tabPane.addTab(getUIText("TabName_LockDelay"), panelLockDelay)
 
 		// 最低固定 timeと最高固定 time
 		val lLockDelayMin = JLabel(getUIText("LockDelay_LockDelayMinMax"))
@@ -896,7 +895,7 @@ class RuleEditor:JFrame, ActionListener {
 		// AREタブ --------------------------------------------------
 		val panelARE = JPanel()
 		panelARE.layout = BoxLayout(panelARE, BoxLayout.Y_AXIS)
-		tabPane!!.addTab(getUIText("TabName_ARE"), panelARE)
+		tabPane.addTab(getUIText("TabName_ARE"), panelARE)
 
 		// 最低AREと最高ARE
 		val lAREMin = JLabel(getUIText("ARE_MinMax"))
@@ -955,7 +954,7 @@ class RuleEditor:JFrame, ActionListener {
 		// Line clearタブ --------------------------------------------------
 		val panelLine = JPanel()
 		panelLine.layout = BoxLayout(panelLine, BoxLayout.Y_AXIS)
-		tabPane!!.addTab(getUIText("TabName_Line"), panelLine)
+		tabPane.addTab(getUIText("TabName_Line"), panelLine)
 
 		// 最低Line clear timeと最高Line clear time
 		val lLineMin = JLabel(getUIText("Line_MinMax"))
@@ -988,7 +987,7 @@ class RuleEditor:JFrame, ActionListener {
 		// 移動タブ --------------------------------------------------
 		val panelMove = JPanel()
 		panelMove.layout = BoxLayout(panelMove, BoxLayout.Y_AXIS)
-		tabPane!!.addTab(getUIText("TabName_Move"), panelMove)
+		tabPane.addTab(getUIText("TabName_Move"), panelMove)
 
 		// 最低横溜め timeと最高横溜め time
 		val lMoveDASMin = JLabel(getUIText("Move_DASMinMax"))
@@ -1064,7 +1063,7 @@ class RuleEditor:JFrame, ActionListener {
 		// rotationパターン補正タブ ------------------------------------------------
 		val panelPieceOffset = JPanel()
 		panelPieceOffset.layout = BoxLayout(panelPieceOffset, BoxLayout.Y_AXIS)
-		tabPane!!.addTab(getUIText("TabName_PieceOffset"), panelPieceOffset)
+		tabPane.addTab(getUIText("TabName_PieceOffset"), panelPieceOffset)
 		comboboxPieceOffset = JComboBox(RuleOptions.PIECEOFFSET_NAME.map{getUIText(it)}.toTypedArray()).apply {
 			actionCommand = "OffsetPreset"
 		}
@@ -1115,7 +1114,7 @@ class RuleEditor:JFrame, ActionListener {
 		// 出現位置補正タブ ------------------------------------------------
 		val panelPieceSpawn = JPanel().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
-			tabPane!!.addTab(getUIText("TabName_PieceSpawn"), this)
+			tabPane.addTab(getUIText("TabName_PieceSpawn"), this)
 		}
 
 		tabPieceSpawn = JTabbedPane()
@@ -1202,13 +1201,12 @@ class RuleEditor:JFrame, ActionListener {
 		// 色設定タブ --------------------------------------------------
 		val panelPieceColor = JPanel().apply {
 			layout = BoxLayout(this, BoxLayout.X_AXIS)
-			tabPane!!.addTab(getUIText("TabName_PieceColor"), this)
+			tabPane.addTab(getUIText("TabName_PieceColor"), this)
 		}
 
 		val strColorNames = Array(Block.BLOCK_COLOR_COUNT-1) {getUIText("ColorName$it")}
 
-		val pColorRow = Array(2)
-		{
+		val pColorRow = Array(2) {
 			JPanel().apply {
 				layout = BoxLayout(this, BoxLayout.Y_AXIS)
 				panelPieceColor.add(this)
@@ -1218,8 +1216,7 @@ class RuleEditor:JFrame, ActionListener {
 		val bResetColor = arrayOf(JButton(getUIText("Basic_Reset")+" SRS").apply {
 			setMnemonic('S')
 			actionCommand = "PresetColors_SRS"
-		}
-			, JButton(getUIText("Basic_Reset")+" ARS").apply {
+		}, JButton("${getUIText("Basic_Reset")} ARS").apply {
 			setMnemonic('A')
 			actionCommand = "PresetColors_ARS"
 		})
@@ -1245,7 +1242,7 @@ class RuleEditor:JFrame, ActionListener {
 		// 初期Direction設定タブ --------------------------------------------------
 		val panelPieceDirection = JPanel()
 		panelPieceDirection.layout = BoxLayout(panelPieceDirection, BoxLayout.X_AXIS)
-		tabPane!!.addTab(getUIText("TabName_PieceDirection"), panelPieceDirection)
+		tabPane.addTab(getUIText("TabName_PieceDirection"), panelPieceDirection)
 
 		val pDirectRow = Array(2) {
 			JPanel().apply {
@@ -1253,10 +1250,10 @@ class RuleEditor:JFrame, ActionListener {
 				panelPieceDirection.add(this)
 			}
 		}
-		val bResetDirect = arrayOf(JButton(getUIText("Basic_Reset")+" SRS").apply {
+		val bResetDirect = arrayOf(JButton("${getUIText("Basic_Reset")} SRS").apply {
 			setMnemonic('S')
 			actionCommand = "ResetDirection_SRS"
-		}, JButton(getUIText("Basic_Reset")+" ARS").apply {
+		}, JButton("${getUIText("Basic_Reset")} ARS").apply {
 			setMnemonic('A')
 			actionCommand = "ResetDirection_ARS"
 		})
@@ -1292,7 +1289,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		var numBlocks = 0
 		while(File("$skindir/graphics/blockskin/normal/n$numBlocks.png").canRead()) numBlocks++
-		log.debug(numBlocks.toString()+" block skins found")
+		log.debug("$numBlocks block skins found")
 
 		imgBlockSkins = Array(numBlocks) {i ->
 			val imgBlock = loadImage(getURL("$skindir/graphics/blockskin/normal/n$i.png"))
@@ -1318,7 +1315,7 @@ class RuleEditor:JFrame, ActionListener {
 			img = ImageIO.read(url!!)
 			log.debug("Loaded image from $url")
 		} catch(e:IOException) {
-			log.error("Failed to load image from "+url!!, e)
+			log.error("Failed to load image from ${url!!}", e)
 		}
 
 		return img
@@ -1499,12 +1496,12 @@ class RuleEditor:JFrame, ActionListener {
 		comboboxPieceOffset!!.selectedIndex = r.pieceOffset
 		for(i in 0 until Piece.PIECE_COUNT) {
 			for(j in 0 until Piece.DIRECTION_COUNT) {
-				txtfldPieceOffsetX!![i][j].text = r.pieceOffsetX[i][j].toString()
-				txtfldPieceOffsetY!![i][j].text = r.pieceOffsetY[i][j].toString()
-				txtfldPieceSpawnX!![i][j].text = r.pieceSpawnX[i][j].toString()
-				txtfldPieceSpawnY!![i][j].text = r.pieceSpawnY[i][j].toString()
-				txtfldPieceSpawnBigX!![i][j].text = r.pieceSpawnXBig[i][j].toString()
-				txtfldPieceSpawnBigY!![i][j].text = r.pieceSpawnYBig[i][j].toString()
+				txtfldPieceOffsetX!![i][j].text = "$r.pieceOffsetX[i][j]"
+				txtfldPieceOffsetY!![i][j].text = "$r.pieceOffsetY[i][j]"
+				txtfldPieceSpawnX!![i][j].text = "$r.pieceSpawnX[i][j]"
+				txtfldPieceSpawnY!![i][j].text = "$r.pieceSpawnY[i][j]"
+				txtfldPieceSpawnBigX!![i][j].text = "$r.pieceSpawnXBig[i][j]"
+				txtfldPieceSpawnBigY!![i][j].text = "$r.pieceSpawnYBig[i][j]"
 			}
 			comboboxPieceColor!![i].selectedIndex = r.pieceColor[i]-1
 			comboboxPieceDirection!![i].selectedIndex = r.pieceDefaultDirection[i]
@@ -1732,14 +1729,14 @@ class RuleEditor:JFrame, ActionListener {
 					var ruleopt = RuleOptions()
 
 					strNowFile = file.path
-					title = getUIText("Title_RuleEditor")+":"+strNowFile
+					title = "${getUIText("Title_RuleEditor")}:$strNowFile"
 
 					try {
 						ruleopt = load(file.path)
 					} catch(e2:IOException) {
-						log.error("Failed to load rule data from "+strNowFile!!, e2)
-						JOptionPane.showMessageDialog(this, getUIText("Message_FileLoadFailed")+"\n"
-							+e2, getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
+						log.error("Failed to load rule data from ${strNowFile!!}", e2)
+						JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e2",
+							getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
 						return
 					}
 
@@ -1751,14 +1748,14 @@ class RuleEditor:JFrame, ActionListener {
 					try {
 						save(strNowFile!!)
 					} catch(e2:IOException) {
-						log.error("Failed to save rule data to "+strNowFile!!, e2)
-						JOptionPane.showMessageDialog(this, getUIText("Message_FileSaveFailed")+"\n"
-							+e2, getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
+						log.error("Failed to save rule data to ${strNowFile!!}", e2)
+						JOptionPane.showMessageDialog(this, "${getUIText("Message_FileSaveFailed")}\n$e2",
+							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
 					}
 
 				}else {
 					// Nameを付けて保存
-					c = JFileChooser(System.getProperty("user.dir")+"/config/rule")
+					c = JFileChooser("${System.getProperty("user.dir")}/config/rule")
 					c.fileFilter = FileFilterRUL()
 
 					if(c.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
@@ -1770,18 +1767,18 @@ class RuleEditor:JFrame, ActionListener {
 							save(filename)
 						} catch(e2:Exception) {
 							log.error("Failed to save rule data to $filename", e2)
-							JOptionPane.showMessageDialog(this, getUIText("Message_FileSaveFailed")+"\n"
-								+e2, getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
+							JOptionPane.showMessageDialog(this, "${getUIText("Message_FileSaveFailed")}\n$e2",
+								getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
 							return
 						}
 
 						strNowFile = filename
-						title = getUIText("Title_RuleEditor")+":"+strNowFile
+						title = "${getUIText("Title_RuleEditor")}:$strNowFile"
 					}
 				}
 			}
 			"Save","SaveAs" -> {
-				c = JFileChooser(System.getProperty("user.dir")+"/config/rule")
+				c = JFileChooser("${System.getProperty("user.dir")}/config/rule")
 				c.fileFilter = FileFilterRUL()
 				if(c.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
 					val file = c.selectedFile
@@ -1791,12 +1788,13 @@ class RuleEditor:JFrame, ActionListener {
 						save(filename)
 					} catch(e2:Exception) {
 						log.error("Failed to save rule data to $filename", e2)
-						JOptionPane.showMessageDialog(this, getUIText("Message_FileSaveFailed")+"\n"+e2, getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
+						JOptionPane.showMessageDialog(this, "${getUIText("Message_FileSaveFailed")}\n$e2",
+							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
 						return
 					}
 
 					strNowFile = filename
-					title = getUIText("Title_RuleEditor")+":"+strNowFile
+					title = "${getUIText("Title_RuleEditor")}:$strNowFile"
 				}
 			}
 			"OffsetPreset" -> {

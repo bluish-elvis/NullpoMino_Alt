@@ -7,6 +7,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
+import kotlin.math.abs
 
 /**
  * PoochyBot Combo Race AI
@@ -152,7 +153,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 					input = input or Controller.BUTTON_BIT_RIGHT
 				delay = 0
 			}
-			if(DEBUG_ALL) log.debug("Currently in ARE. Next piece type = "+nextPiece.id+", IRS = "+input)
+			if(DEBUG_ALL) log.debug("Currently in ARE. Next piece type = ${nextPiece.id}, IRS = $input")
 			//engine.ctrl.setButtonBit(input);
 			inputARE = input
 		}
@@ -188,10 +189,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 				input = input or Controller.BUTTON_BIT_D
 			else {
 				if(DEBUG_ALL)
-					log.debug("bestX = "+bestX+", nowX = "+nowX+
-						", bestY = "+bestY+", nowY = "+nowY+
-						", bestRt = "+bestRt+", rt = "+rt+
-						", bestRtSub = "+bestRtSub)
+					log.debug("bestX = $bestX, nowX = $nowX, bestY = $bestY, nowY = $nowY, bestRt = $bestRt, rt = $rt, bestRtSub = $bestRtSub")
 				printPieceAndDirection(nowType, rt)
 				// Rotation
 				/* //Rotate iff near destination or stuck
@@ -210,7 +208,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 				 * !(pieceNow.getMinimumBlockY()+nowY == 2 && pieceTouchGround
 				 * && (rt&1) == 0 && nowType != Piece.PIECE_I))))) */
 				if(rt!=bestRt) {
-					val best180 = Math.abs(rt-bestRt)==2
+					val best180 = abs(rt-bestRt)==2
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
 
 					val lrot = engine.getRotateDirection(-1)
@@ -294,8 +292,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 			}
 
 			if(DEBUG_ALL)
-				log.debug("Input = "+input+", moveDir = "+moveDir+", rotateDir = "+rotateDir+
-					", drop = "+drop)
+				log.debug("Input = $input, moveDir = $moveDir, rotateDir = $rotateDir, drop = $drop")
 
 			delay = 0
 			ctrl.buttonBit = input
@@ -700,15 +697,15 @@ class ComboRaceBot:DummyAI(), Runnable {
 		r.drawScoreFont(engine, playerID, 27, 34, "Y", COLOR.BLUE, .5f)
 		r.drawScoreFont(engine, playerID, 30, 34, "RT", COLOR.BLUE, .5f)
 		r.drawScoreFont(engine, playerID, 19, 35, "BEST:", COLOR.BLUE, .5f)
-		r.drawScoreFont(engine, playerID, 24, 35, bestX.toString(), !thinkSuccess, .5f)
-		r.drawScoreFont(engine, playerID, 27, 35, bestY.toString(), !thinkSuccess, .5f)
-		r.drawScoreFont(engine, playerID, 30, 35, bestRt.toString(), !thinkSuccess, .5f)
+		r.drawScoreFont(engine, playerID, 24, 35, "$bestX", !thinkSuccess, .5f)
+		r.drawScoreFont(engine, playerID, 27, 35, "$bestY", !thinkSuccess, .5f)
+		r.drawScoreFont(engine, playerID, 30, 35, "$bestRt", !thinkSuccess, .5f)
 		r.drawScoreFont(engine, playerID, 19, 36, "SUB:", COLOR.BLUE, .5f)
 		if(engine.aiShowHint) {
-			r.drawScoreFont(engine, playerID, 24, 36, bestXSub.toString(), !thinkSuccess, .5f)
-			r.drawScoreFont(engine, playerID, 27, 36, bestYSub.toString(), !thinkSuccess, .5f)
+			r.drawScoreFont(engine, playerID, 24, 36, "$bestXSub", !thinkSuccess, .5f)
+			r.drawScoreFont(engine, playerID, 27, 36, "$bestYSub", !thinkSuccess, .5f)
 		}
-		r.drawScoreFont(engine, playerID, 30, 36, bestRtSub.toString(), !thinkSuccess, .5f)
+		r.drawScoreFont(engine, playerID, 30, 36, "$bestRtSub", !thinkSuccess, .5f)
 		r.drawScoreFont(engine, playerID, 19, 37, "NOW:", COLOR.BLUE, .5f)
 		engine.nowPieceObject?.let{
 			r.drawScoreFont(engine, playerID, 24, 37, engine.nowPieceX.toString(), scale=.5f)
@@ -723,7 +720,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 			bestPts<MAX_THINK_DEPTH*1000 -> COLOR.YELLOW
 			else -> COLOR.GREEN
 		}
-		r.drawScoreFont(engine, playerID, 31, 38, bestPts.toString(), scoreColor, .5f)
+		r.drawScoreFont(engine, playerID, 31, 38, "$bestPts", scoreColor, .5f)
 		r.drawScoreFont(engine, playerID, 19, 39, "THINK ACTIVE:", COLOR.BLUE, .5f)
 		r.drawScoreFont(engine, playerID, 32, 39, GeneralUtil.getOorX(thinking), .5f)
 		r.drawScoreFont(engine, playerID, 19, 40, "THINK REQUEST:", COLOR.BLUE, .5f)
@@ -772,7 +769,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 					return
 				else if(pieceTouchGround&&nowX==bestXSub&&nowY==bestYSub&&rt==bestRtSub) {
 					val rotateDir:Int //-1 = left,  1 = right, 2 = 180
-					val best180 = Math.abs(rt-bestRt)==2
+					val best180 = abs(rt-bestRt)==2
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
 
 					val lrot = engine.getRotateDirection(-1)
@@ -801,7 +798,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 				var writeY = 4
 
 				if(rt!=bestRtSub) {
-					val best180 = Math.abs(rt-bestRtSub)==2
+					val best180 = abs(rt-bestRtSub)==2
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
 
 					val lrot = engine.getRotateDirection(-1)

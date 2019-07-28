@@ -97,30 +97,30 @@ class StateConfigGameTuning:BaseGameState() {
 	 * @param prop Property file to read from
 	 */
 	private fun loadConfig(prop:CustomProperties) {
-		owRotateButtonDefaultRight = prop.getProperty(player.toString()+".tuning.owRotateButtonDefaultRight", -1)
-		owSkin = prop.getProperty(player.toString()+".tuning.owSkin", -1)
-		owMinDAS = prop.getProperty(player.toString()+".tuning.owMinDAS", -1)
-		owMaxDAS = prop.getProperty(player.toString()+".tuning.owMaxDAS", -1)
-		owDasDelay = prop.getProperty(player.toString()+".tuning.owDasDelay", -1)
-		owReverseUpDown = prop.getProperty(player.toString()+".tuning.owReverseUpDown", false)
-		owMoveDiagonal = prop.getProperty(player.toString()+".tuning.owMoveDiagonal", -1)
-		owBlockOutlineType = prop.getProperty(player.toString()+".tuning.owBlockOutlineType", -1)
-		owBlockShowOutlineOnly = prop.getProperty(player.toString()+".tuning.owBlockShowOutlineOnly", -1)
+		owRotateButtonDefaultRight = prop.getProperty("$player.tuning.owRotateButtonDefaultRight", -1)
+		owSkin = prop.getProperty("$player.tuning.owSkin", -1)
+		owMinDAS = prop.getProperty("$player.tuning.owMinDAS", -1)
+		owMaxDAS = prop.getProperty("$player.tuning.owMaxDAS", -1)
+		owDasDelay = prop.getProperty("$player.tuning.owDasDelay", -1)
+		owReverseUpDown = prop.getProperty("$player.tuning.owReverseUpDown", false)
+		owMoveDiagonal = prop.getProperty("$player.tuning.owMoveDiagonal", -1)
+		owBlockOutlineType = prop.getProperty("$player.tuning.owBlockOutlineType", -1)
+		owBlockShowOutlineOnly = prop.getProperty("$player.tuning.owBlockShowOutlineOnly", -1)
 	}
 
 	/** Save settings
 	 * @param prop Property file to save to
 	 */
 	private fun saveConfig(prop:CustomProperties) {
-		prop.setProperty(player.toString()+".tuning.owRotateButtonDefaultRight", owRotateButtonDefaultRight)
-		prop.setProperty(player.toString()+".tuning.owSkin", owSkin)
-		prop.setProperty(player.toString()+".tuning.owMinDAS", owMinDAS)
-		prop.setProperty(player.toString()+".tuning.owMaxDAS", owMaxDAS)
-		prop.setProperty(player.toString()+".tuning.owDasDelay", owDasDelay)
-		prop.setProperty(player.toString()+".tuning.owReverseUpDown", owReverseUpDown)
-		prop.setProperty(player.toString()+".tuning.owMoveDiagonal", owMoveDiagonal)
-		prop.setProperty(player.toString()+".tuning.owBlockOutlineType", owBlockOutlineType)
-		prop.setProperty(player.toString()+".tuning.owBlockShowOutlineOnly", owBlockShowOutlineOnly)
+		prop.setProperty("$player.tuning.owRotateButtonDefaultRight", owRotateButtonDefaultRight)
+		prop.setProperty("$player.tuning.owSkin", owSkin)
+		prop.setProperty("$player.tuning.owMinDAS", owMinDAS)
+		prop.setProperty("$player.tuning.owMaxDAS", owMaxDAS)
+		prop.setProperty("$player.tuning.owDasDelay", owDasDelay)
+		prop.setProperty("$player.tuning.owReverseUpDown", owReverseUpDown)
+		prop.setProperty("$player.tuning.owMoveDiagonal", owMoveDiagonal)
+		prop.setProperty("$player.tuning.owBlockOutlineType", owBlockOutlineType)
+		prop.setProperty("$player.tuning.owBlockShowOutlineOnly", owBlockShowOutlineOnly)
 	}
 
 	/* Called when entering this state */
@@ -159,9 +159,9 @@ class StateConfigGameTuning:BaseGameState() {
 
 			// Rule
 			val ruleopt:RuleOptions
-			var rulename:String? = NullpoMinoSlick.propGlobal.getProperty(i.toString()+".rule", "")
+			var rulename:String? = NullpoMinoSlick.propGlobal.getProperty("$i.rule", "")
 			if(gameManager!!.mode!!.gameStyle>0)
-				rulename = NullpoMinoSlick.propGlobal.getProperty(i.toString()+".rule."
+				rulename = NullpoMinoSlick.propGlobal.getProperty("$i"+".rule."
 					+gameManager!!.mode!!.gameStyle, "")
 			if(rulename!=null&&rulename.isNotEmpty()) {
 				log.info("Load rule options from $rulename")
@@ -184,15 +184,15 @@ class StateConfigGameTuning:BaseGameState() {
 			}
 
 			// AI
-			val aiName = NullpoMinoSlick.propGlobal.getProperty(i.toString()+".ai", "")
+			val aiName = NullpoMinoSlick.propGlobal.getProperty("$i.ai", "")
 			if(aiName.isNotEmpty()) {
 				gameManager!!.engine[i].ai = GeneralUtil.loadAIPlayer(aiName)
-				gameManager!!.engine[i].aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty(i.toString()+".aiMoveDelay", 0)
-				gameManager!!.engine[i].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty(i.toString()+".aiThinkDelay", 0)
-				gameManager!!.engine[i].aiUseThread = NullpoMinoSlick.propGlobal.getProperty(i.toString()+".aiUseThread", true)
-				gameManager!!.engine[i].aiShowHint = NullpoMinoSlick.propGlobal.getProperty(i.toString()+".aiShowHint", false)
-				gameManager!!.engine[i].aiPrethink = NullpoMinoSlick.propGlobal.getProperty(i.toString()+".aiPrethink", false)
-				gameManager!!.engine[i].aiShowState = NullpoMinoSlick.propGlobal.getProperty(i.toString()+".aiShowState", false)
+				gameManager!!.engine[i].aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiMoveDelay", 0)
+				gameManager!!.engine[i].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
+				gameManager!!.engine[i].aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
+				gameManager!!.engine[i].aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
+				gameManager!!.engine[i].aiPrethink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPrethink", false)
+				gameManager!!.engine[i].aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
 			}
 			gameManager!!.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
 
@@ -224,7 +224,7 @@ class StateConfigGameTuning:BaseGameState() {
 				val strButtonF = gameManager!!.receiver.getKeyNameByButtonID(gameManager!!.engine[0], Controller.BUTTON_F)
 				val fontY = if(gameManager!!.receiver.nextDisplayType==2) 1 else 27
 				FontNormal.printFontGrid(1, fontY,
-					"PUSH F BUTTON ("+strButtonF.toUpperCase()+" KEY) TO EXIT", COLOR.YELLOW)
+					"PUSH F BUTTON (${strButtonF.toUpperCase()} KEY) TO EXIT", COLOR.YELLOW)
 
 				gameManager!!.renderAll()
 			} catch(e:Exception) {
@@ -234,7 +234,7 @@ class StateConfigGameTuning:BaseGameState() {
 			// Menu
 			var strTemp = ""
 
-			FontNormal.printFontGrid(1, 1, "GAME TUNING ("+(player+1)+"P)", COLOR.ORANGE)
+			FontNormal.printFontGrid(1, 1, "GAME TUNING (${player+1}P)", COLOR.ORANGE)
 			FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RED)
 
 			if(owRotateButtonDefaultRight==-1) strTemp = "AUTO"
@@ -260,9 +260,9 @@ class StateConfigGameTuning:BaseGameState() {
 				else -> NullpoMinoSlick.propSkins.getProperty("Skin$owSkin", "").toUpperCase()
 			}, cursor==1)
 
-			FontNormal.printFontGrid(2, 5, "MIN DAS:"+if(owMinDAS==-1) "AUTO" else owMinDAS.toString(), cursor==2)
-			FontNormal.printFontGrid(2, 6, "MAX DAS:"+if(owMaxDAS==-1) "AUTO" else owMaxDAS.toString(), cursor==3)
-			FontNormal.printFontGrid(2, 7, "DAS DELAY:"+if(owDasDelay==-1) "AUTO" else owDasDelay.toString(), cursor==4)
+			FontNormal.printFontGrid(2, 5, "MIN DAS:"+if(owMinDAS==-1) "AUTO" else "$owMinDAS", cursor==2)
+			FontNormal.printFontGrid(2, 6, "MAX DAS:"+if(owMaxDAS==-1) "AUTO" else "$owMaxDAS", cursor==3)
+			FontNormal.printFontGrid(2, 7, "DAS DELAY:"+if(owDasDelay==-1) "AUTO" else "$owDasDelay", cursor==4)
 			FontNormal.printFontGrid(2, 8, "REVERSE UP/DOWN:"+GeneralUtil.getOorX(owReverseUpDown), cursor==5)
 
 			if(owMoveDiagonal==-1) strTemp = "AUTO"

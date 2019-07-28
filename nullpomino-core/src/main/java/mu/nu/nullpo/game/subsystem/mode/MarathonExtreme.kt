@@ -30,6 +30,7 @@ import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import kotlin.math.ceil
 
 /** EXTREME Mode */
 class MarathonExtreme:NetDummyMode() {
@@ -121,7 +122,7 @@ class MarathonExtreme:NetDummyMode() {
 			loadSetting(owner.replayProp)
 
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty(playerID.toString()+".net.netPlayerName", "")
+			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
 
 		engine.staffrollEnable = true
@@ -287,9 +288,9 @@ class MarathonExtreme:NetDummyMode() {
 					if(endless) endlessIndex = 1
 
 					receiver.drawScoreNum(engine, playerID, 0, topY+i, String.format("%02d", i+1), EventReceiver.COLOR.RED, scale)
-					receiver.drawScoreNum(engine, playerID, 3, topY+i, rankingScore[endlessIndex][i].toString(), i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 10, topY+i, rankingLines[endlessIndex][i].toString(), i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[endlessIndex][i].toFloat()), i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 3, topY+i, "$rankingScore[endlessIndex][i]", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 10, topY+i, "$rankingLines[endlessIndex][i]", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[endlessIndex][i]), i==rankingRank, scale)
 				}
 			}
 		} else {
@@ -297,16 +298,16 @@ class MarathonExtreme:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 5, 2, engine.statistics.lines.toString(), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 4, "SCORE", EventReceiver.COLOR.RED)
-			receiver.drawScoreNum(engine, playerID, 5, 4, "+"+lastscore.toString())
+			receiver.drawScoreNum(engine, playerID, 5, 4, "+$lastscore")
 			val scget = scgettime<engine.statistics.score
-			if(scget) scgettime += Math.ceil((engine.statistics.score-scgettime)/22.0).toInt()
-			sc += Math.ceil(((scgettime-sc)/10f).toDouble()).toInt()
-			receiver.drawScoreNum(engine, playerID, 0, 5, sc.toString(), scget, 2f)
+			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/22.0).toInt()
+			sc += ceil(((scgettime-sc)/10f).toDouble()).toInt()
+			receiver.drawScoreNum(engine, playerID, 0, 5, "$sc", scget, 2f)
 			if(engine.gameActive&&engine.ending==2) {
 				val remainRollTime = maxOf(0, ROLLTIMELIMIT-rolltime)
 
 				receiver.drawScoreFont(engine, playerID, 0, 7, "ROLL TIME", EventReceiver.COLOR.RED)
-				receiver.drawScoreNum(engine, playerID, 5, 7, GeneralUtil.getTime(remainRollTime.toFloat()), remainRollTime>0&&remainRollTime<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 5, 7, GeneralUtil.getTime(remainRollTime), remainRollTime>0&&remainRollTime<10*60, 2f)
 			} else {
 
 				receiver.drawScoreFont(engine, playerID, 0, 7, "LEVEL", EventReceiver.COLOR.RED)
@@ -314,7 +315,7 @@ class MarathonExtreme:NetDummyMode() {
 					+engine.statistics.lines%10*0.1), 2f)
 			}
 			receiver.drawScoreFont(engine, playerID, 0, 8, "TIME", EventReceiver.COLOR.RED)
-			receiver.drawScoreNum(engine, playerID, 0, 9, GeneralUtil.getTime(engine.statistics.time.toFloat()), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 9, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			if(scget) renderLineAlert(engine, playerID, receiver)
 		}
@@ -427,7 +428,7 @@ class MarathonExtreme:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.RED, AbstractMode.Statistic.SCORE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.LEVEL, AbstractMode.Statistic.TIME, AbstractMode.Statistic.SPL, AbstractMode.Statistic.LPM)
+		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME, Statistic.SPL, Statistic.LPM)
 		drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR.RED, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 14, EventReceiver.COLOR.RED, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 16, EventReceiver.COLOR.RED, netRankingRank[1])
@@ -446,7 +447,7 @@ class MarathonExtreme:NetDummyMode() {
 		saveSetting(prop)
 
 		// NET: Save name
-		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(playerID.toString()+".net.netPlayerName", netPlayerName)
+		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -573,13 +574,13 @@ class MarathonExtreme:NetDummyMode() {
 	override fun netSendStats(engine:GameEngine) {
 		val bg = if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += engine.statistics.score.toString()+"\t"+engine.statistics.lines+"\t"+engine.statistics.totalPieceLocked+"\t"
-		msg += engine.statistics.time.toString()+"\t"+engine.statistics.level+"\t"
-		msg += engine.statistics.lpm.toString()+"\t"+engine.statistics.spl+"\t"+endless+"\t"
-		msg += engine.gameActive.toString()+"\t"+engine.timerActive+"\t"
-		msg += (lastscore.toString()+"\t"+scgettime+"\t"+engine.lastevent+"\t"+engine.b2bbuf+"\t"+engine.combobuf+"\t"
+		msg += engine.statistics.score.toString()+"\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += engine.statistics.time.toString()+"\t${engine.statistics.level}\t"
+		msg += engine.statistics.lpm.toString()+"\t${engine.statistics.spl}\t$endless\t"
+		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
+		msg += ("$lastscore${"\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t"+engine.combobuf}\t"
 			+engine.lasteventpiece+"\t")
-		msg += bg.toString()+"\t"+rolltime+"\t"+engine.meterValue+"\t"+engine.meterColor+"\n"
+		msg += "$bg${"\t$rolltime\t"+engine.meterValue}\t${engine.meterColor}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -612,14 +613,14 @@ class MarathonExtreme:NetDummyMode() {
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
 		var subMsg = ""
-		subMsg += "SCORE;"+engine.statistics.score+"\t"
-		subMsg += "LINE;"+engine.statistics.lines+"\t"
-		subMsg += "LEVEL;"+(engine.statistics.level+engine.statistics.levelDispAdd)+"\t"
-		subMsg += "TIME;"+GeneralUtil.getTime(engine.statistics.time.toFloat())+"\t"
-		subMsg += "SCORE/LINE;"+engine.statistics.spl+"\t"
-		subMsg += "LINE/MIN;"+engine.statistics.lpm+"\t"
+		subMsg += "SCORE;${engine.statistics.score}\t"
+		subMsg += "LINE;${engine.statistics.lines}\t"
+		subMsg += "LEVEL;${(engine.statistics.level+engine.statistics.levelDispAdd)}\t"
+		subMsg += "TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
+		subMsg += "SCORE/LINE;${engine.statistics.spl}\t"
+		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
 
-		val msg = "gstat1p\t"+NetUtil.urlEncode(subMsg)+"\n"
+		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -628,8 +629,8 @@ class MarathonExtreme:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += startlevel.toString()+"\t"+tspinEnableType+"\t"+enableTSpinKick+"\t"+enableB2B+"\t"
-		msg += enableCombo.toString()+"\t"+endless+"\t"+big+"\t"+spinCheckType+"\t"+tspinEnableEZ+"\n"
+		msg += "$startlevel${"\t$tspinEnableType\t"+enableTSpinKick}\t$enableB2B\t"
+		msg += "$enableCombo${"\t$endless\t$big\t$spinCheckType\t"+tspinEnableEZ}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 

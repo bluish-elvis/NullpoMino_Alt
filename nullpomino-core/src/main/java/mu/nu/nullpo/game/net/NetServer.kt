@@ -40,12 +40,13 @@ import java.nio.channels.*
 import java.nio.channels.spi.SelectorProvider
 import java.util.*
 import java.util.zip.*
+import kotlin.math.pow
 
 /** NullpoMino NetServer<br></br>
  * The code is based on
  * [James Greenfield's The
  * Rox Java NIO Tutorial](http://rox-xmlrpc.sourceforge.net/niotut/) */
-class NetServer {
+@Suppress("RemoveExplicitTypeArguments") class NetServer {
 
 	/** List of SocketChannel */
 	private val channelList = LinkedList<SocketChannel>()
@@ -355,8 +356,8 @@ class NetServer {
 			// Send welcome message
 			log.debug("Accept:"+getHostName(socketChannel))
 			send(socketChannel,
-				"welcome\t"+GameManager.versionMajor+"\t"+playerInfoMap.size+"\t"+observerList.size+"\t"
-					+GameManager.versionMinor+"\t"+GameManager.versionString+"\t"+clientPingInterval+"\t"
+				"welcome\t${GameManager.versionMajor}\t${playerInfoMap.size}\t${observerList.size}\t"
+					+GameManager.versionMinor+"\t${GameManager.versionString}\t$clientPingInterval\t"
 					+GameManager.isDevBuild+"\n")
 		}
 	}
@@ -425,7 +426,7 @@ class NetServer {
 
 			// Write until there's not more data ...
 			if(queue!=null) {
-				while(!queue.isEmpty()) {
+				while(queue.isNotEmpty()) {
 					val buf = queue[0]
 					socketChannel.write(buf)
 					if(buf.remaining()>0)
@@ -682,7 +683,7 @@ class NetServer {
 
 	/** Broadcast client count (observers and players) to everyone */
 	fun broadcastUserCountToAll() {
-		val msg = "observerupdate\t"+playerInfoMap.size+"\t"+observerList.size+"\n"
+		val msg = "observerupdate\t${playerInfoMap.size}\t${observerList.size}\n"
 		broadcast(msg)
 		broadcastObserver(msg)
 		writeServerStatusFile()
@@ -765,7 +766,7 @@ class NetServer {
 		if(message[0]=="getinfo") {
 			val loggedInUsersCount = playerInfoMap.size
 			val observerCount = observerList.size
-			send(client, "getinfo\t"+GameManager.versionMajor+"\t"+loggedInUsersCount+"\t"+observerCount+"\n")
+			send(client, "getinfo\t${GameManager.versionMajor}\t$loggedInUsersCount\t$observerCount\n")
 			return
 		}
 		// Disconnect request.
@@ -826,7 +827,7 @@ class NetServer {
 			broadcastUserCountToAll()
 			adminSendClientList()
 
-			log.info("New observer has logged in ("+client.toString()+")")
+			log.info("New observer has logged in ($client)")
 			return
 		}
 		// Player login
@@ -854,7 +855,7 @@ class NetServer {
 			val serverBuildType = GameManager.isDevBuild
 			val clientBuildType = java.lang.Boolean.parseBoolean(message[6])
 			if(serverBuildType!=clientBuildType) {
-				send(client, "observerloginfail\tDIFFERENT_BUILD\t"+GameManager.buildTypeString+"\n")
+				send(client, "observerloginfail\tDIFFERENT_BUILD\t${GameManager.buildTypeString}\n")
 				synchronized(pendingChanges) {
 					pendingChanges.add(ChangeRequest(client, ChangeRequest.DISCONNECT, 0))
 				}
@@ -937,8 +938,8 @@ class NetServer {
 			// Success
 			playerInfoMap[client] = pInfo
 			playerCount++
-			send(client, "loginsuccess\t"+NetUtil.urlEncode(pInfo.strName)+"\t"+pInfo.uid+"\n")
-			log.info(pInfo.strName+" has logged in (Host:"+getHostName(client)+" Team:"+pInfo.strTeam+")")
+			send(client, "loginsuccess\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.uid}\n")
+			log.info(pInfo.strName+" has logged in (Host:${getHostName(client)} Team:${pInfo.strTeam})")
 
 			sendRatedRuleList(client)
 			sendPlayerList(client)
@@ -952,7 +953,7 @@ class NetServer {
 			while(lobbyChatList!!.size>maxLobbyChatHistory) lobbyChatList!!.removeFirst()
 			for(chat in lobbyChatList!!)
 				send(client,
-					"lobbychath\t"+NetUtil.urlEncode(chat.strUserName)+"\t"+GeneralUtil.exportCalendarString(chat.timestamp!!)+"\t"
+					"lobbychath\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t"
 						+NetUtil.urlEncode(chat.strMessage)+"\n")
 
 			return
@@ -965,7 +966,7 @@ class NetServer {
 
 			str.append("\n")
 
-			send(client, str.toString())
+			send(client, "$str")
 
 			//log.info("Sent preset message: " + str);
 
@@ -1063,8 +1064,7 @@ class NetServer {
 					val ch = findPlayerByMsg(msg.substring(5))
 					if(ch==null)
 						send(pInfo.channel,
-							"lobbychat\t"+chat.uid+"\t"+NetUtil.urlEncode(chat.strUserName)+"\t"
-								+GeneralUtil.exportCalendarString(chat.timestamp!!)+"\t"+NetUtil.urlEncode("(private) Cannot find user")+"\n")
+							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode("(private) Cannot find user")}\n")
 					else {
 						var playerName = ""
 						var len = 0
@@ -1075,12 +1075,9 @@ class NetServer {
 						}
 						msg = chat.strMessage.substring(len+6)
 						send(pInfo.channel,
-							"lobbychat\t"+chat.uid+"\t"+NetUtil.urlEncode(chat.strUserName)+"\t"
-								+GeneralUtil.exportCalendarString(chat.timestamp!!)+"\t"+NetUtil.urlEncode(
-								"-> *"+playerName.substring(0, len)+"* "+msg)+"\n")
+							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode("-> *"+playerName.substring(0, len)+"* "+msg)}\n")
 						send(ch,
-							"lobbychat\t"+chat.uid+"\t"+NetUtil.urlEncode(chat.strUserName)+"\t"
-								+GeneralUtil.exportCalendarString(chat.timestamp!!)+"\t"+NetUtil.urlEncode("(private) $msg")+"\n")
+							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode("(private) $msg")}\n")
 
 					}
 				} else {
@@ -1090,8 +1087,7 @@ class NetServer {
 					while(lobbyChatList!!.size>maxLobbyChatHistory) lobbyChatList!!.removeFirst()
 					saveLobbyChatHistory()
 
-					broadcast("lobbychat\t"+chat.uid+"\t"+NetUtil.urlEncode(chat.strUserName)+"\t"
-						+GeneralUtil.exportCalendarString(chat.timestamp!!)+"\t"+NetUtil.urlEncode(chat.strMessage)+"\n")
+					broadcast("lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode(chat.strMessage)}\n")
 				}
 			}
 			return
@@ -1108,8 +1104,7 @@ class NetServer {
 					roomInfo.chatList.add(chat)
 					while(roomInfo.chatList.size>maxRoomChatHistory) roomInfo.chatList.removeFirst()
 
-					broadcast("chat\t"+chat.uid+"\t"+NetUtil.urlEncode(chat.strUserName)+"\t"
-						+GeneralUtil.exportCalendarString(chat.timestamp!!)+"\t"+NetUtil.urlEncode(chat.strMessage)+"\n", pInfo.roomID)
+					broadcast("chat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode(chat.strMessage)}\n", pInfo.roomID)
 				}
 			}
 			return
@@ -1135,7 +1130,7 @@ class NetServer {
 			if(myRank==-1&&pInfo!=null) {
 				strPData.append((-1).toString()+";").append(NetUtil.urlEncode(pInfo.strName)).append(";").append(pInfo.rating[style]).append(";").append(pInfo.playCount[style]).append(";").append(pInfo.winCount[style]).append("\t")
 			}
-			val strPDataC = NetUtil.compressString(strPData.toString())
+			val strPDataC = NetUtil.compressString("$strPData")
 
 			val strMsg = "mpranking\t$style\t$myRank\t$strPDataC\n"
 			send(client, strMsg)
@@ -1150,7 +1145,7 @@ class NetServer {
 				roomInfo.strMode = NetUtil.urlDecode(message[2])
 
 				roomInfo.strName = NetUtil.urlDecode(message[1])
-				if(roomInfo.strName.isEmpty()) roomInfo.strName = "Single ("+pInfo.strName+")"
+				if(roomInfo.strName.isEmpty()) roomInfo.strName = "Single (${pInfo.strName})"
 
 				roomInfo.maxPlayers = 1
 
@@ -1192,9 +1187,9 @@ class NetServer {
 
 				broadcastPlayerInfoUpdate(pInfo)
 				broadcastRoomInfoUpdate(roomInfo, "roomcreate")
-				send(client, "roomcreatesuccess\t"+roomInfo.roomID+"\t0\t-1\n")
+				send(client, "roomcreatesuccess\t${roomInfo.roomID}\t0\t-1\n")
 
-				log.info("NewSingleRoom ID:"+roomInfo.roomID+" Title:"+roomInfo.strName)
+				log.info("NewSingleRoom ID:${roomInfo.roomID} Title:"+roomInfo.strName)
 			}
 		// Multiplayer room
 		if(message[0]=="roomcreate") {
@@ -1225,10 +1220,10 @@ class NetServer {
 					Collections.addAll(roomInfo.mapList, *strMaps)
 
 					if(roomInfo.mapList.isEmpty()) {
-						log.debug("Room"+roomInfo.roomID+": No maps")
+						log.debug("Room${roomInfo.roomID}: No maps")
 						roomInfo.useMap = false
 					} else
-						log.debug("Room"+roomInfo.roomID+": Received "+roomInfo.mapList.size+" maps")
+						log.debug("Room${roomInfo.roomID}: Received ${roomInfo.mapList.size} maps")
 				}
 
 				roomInfo.roomID = roomCount
@@ -1258,11 +1253,10 @@ class NetServer {
 
 				broadcastPlayerInfoUpdate(pInfo)
 				broadcastRoomInfoUpdate(roomInfo, "roomcreate")
-				send(client, "roomcreatesuccess\t"+roomInfo.roomID+"\t"+pInfo.seatID+"\t-1\n")
+				send(client, "roomcreatesuccess\t${roomInfo.roomID}\t${pInfo.seatID}\t-1\n")
 
 				log.info(
-					"NewRoom ID:"+roomInfo.roomID+" Title:"+roomInfo.strName+" RuleLock:"+roomInfo.ruleLock+" Map:"+roomInfo.useMap
-						+" Mode:"+roomInfo.strMode)
+					"NewRoom ID:${roomInfo.roomID} Title:${roomInfo.strName} RuleLock:${roomInfo.ruleLock} Map:${roomInfo.useMap} Mode:${roomInfo.strMode}")
 			}
 			return
 		}
@@ -1301,10 +1295,9 @@ class NetServer {
 
 				broadcastPlayerInfoUpdate(pInfo)
 				broadcastRoomInfoUpdate(roomInfo, "roomcreate")
-				send(client, "roomcreatesuccess\t"+roomInfo.roomID+"\t"+pInfo.seatID+"\t-1\n")
+				send(client, "roomcreatesuccess\t${roomInfo.roomID}\t${pInfo.seatID}\t-1\n")
 
-				log.info("NewRatedRoom ID:"+roomInfo.roomID+" Title:"+roomInfo.strName+" RuleLock:"+roomInfo.ruleLock+" Map:"
-					+roomInfo.useMap+" Mode:"+roomInfo.strMode)
+				log.info("NewRatedRoom ID:${roomInfo.roomID} Title:${roomInfo.strName} RuleLock:${roomInfo.ruleLock} Map:${roomInfo.useMap} Mode:${roomInfo.strMode}")
 			}
 			return
 		}
@@ -1323,7 +1316,7 @@ class NetServer {
 					if(prevRoom!=null) {
 						val seatID = pInfo.seatID
 						broadcast(
-							"playerleave\t"+pInfo.uid+"\t"+NetUtil.urlEncode(pInfo.strName)+"\t"+seatID+"\n", prevRoom.roomID, pInfo)
+							"playerleave\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t$seatID\n", prevRoom.roomID, pInfo)
 						playerDead(pInfo)
 						pInfo.ready = false
 						prevRoom.exitSeat(pInfo)
@@ -1353,7 +1346,7 @@ class NetServer {
 					if(prevRoom!=null) {
 						val seatID = pInfo.seatID
 						broadcast(
-							"playerleave\t"+pInfo.uid+"\t"+NetUtil.urlEncode(pInfo.strName)+"\t"+seatID+"\n", prevRoom.roomID, pInfo)
+							"playerleave\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t$seatID\n", prevRoom.roomID, pInfo)
 						playerDead(pInfo)
 						pInfo.ready = false
 						prevRoom.exitSeat(pInfo)
@@ -1401,21 +1394,20 @@ class NetServer {
 							strMapTemp.append(newRoom.mapList[i])
 							if(i<maxMap-1) strMapTemp.append("\t")
 						}
-						val strCompressed = NetUtil.compressString(strMapTemp.toString())
+						val strCompressed = NetUtil.compressString("$strMapTemp")
 						send(client, "values\t$strCompressed\n")
 					}
 
 					broadcast(
-						"playerenter\t"+pInfo.uid+"\t"+NetUtil.urlEncode(pInfo.strName)+"\t"+pInfo.seatID+"\n", newRoom.roomID, pInfo)
+						"playerenter\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\n", newRoom.roomID, pInfo)
 					broadcastRoomInfoUpdate(newRoom)
 					broadcastPlayerInfoUpdate(pInfo)
-					send(client, "roomjoinsuccess\t"+newRoom.roomID+"\t"+pInfo.seatID+"\t"+pInfo.queueID+"\n")
+					send(client, "roomjoinsuccess\t${newRoom.roomID}\t${pInfo.seatID}\t${pInfo.queueID}\n")
 
 					// Send chat history
 					for(chat in newRoom.chatList)
 						send(client,
-							"chath\t"+NetUtil.urlEncode(chat.strUserName)+"\t"+GeneralUtil.exportCalendarString(chat.timestamp!!)+"\t"
-								+NetUtil.urlEncode(chat.strMessage)+"\n")
+							"chath\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode(chat.strMessage)}\n")
 				} else
 				// No such a room
 					send(client, "roomjoinfail\n")
@@ -1433,8 +1425,7 @@ class NetServer {
 					pInfo.strTeam = strTeam
 					broadcastPlayerInfoUpdate(pInfo)
 
-					broadcast("changeteam\t"+pInfo.uid+"\t"+NetUtil.urlEncode(pInfo.strName)+"\t"+NetUtil.urlEncode(pInfo.strTeam)
-						+"\n", pInfo.roomID)
+					broadcast("changeteam\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${NetUtil.urlEncode(pInfo.strTeam)}\n", pInfo.roomID)
 				}
 			}
 		// Change Player/Spectator status
@@ -1455,8 +1446,7 @@ class NetServer {
 							pInfo.seatID = -1
 							pInfo.queueID = -1
 							//send(client, "changestatus\twatchonly\t-1\n");
-							broadcast("changestatus\twatchonly\t"+pInfo.uid+"\t"+NetUtil.urlEncode(pInfo.strName)+"\t"+prevSeatID
-								+"\n", pInfo.roomID)
+							broadcast("changestatus\twatchonly\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t$prevSeatID\n", pInfo.roomID)
 
 							joinAllQueuePlayers(roomInfo) // Let the queue-player to join
 						} // Change to player
@@ -1465,16 +1455,14 @@ class NetServer {
 							pInfo.queueID = -1
 							pInfo.ready = false
 							//send(client, "changestatus\tjoinseat\t" + pInfo.seatID + "\n");
-							broadcast("changestatus\tjoinseat\t"+pInfo.uid+"\t"+NetUtil.urlEncode(pInfo.strName)+"\t"+pInfo.seatID
-								+"\n", pInfo.roomID)
+							broadcast("changestatus\tjoinseat\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\n", pInfo.roomID)
 						}
 						else -> {
 							pInfo.seatID = -1
 							pInfo.queueID = roomInfo.joinQueue(pInfo)
 							pInfo.ready = false
 							//send(client, "changestatus\tjoinqueue\t" + pInfo.queueID + "\n");
-							broadcast("changestatus\tjoinqueue\t"+pInfo.uid+"\t"+NetUtil.urlEncode(pInfo.strName)+"\t"+pInfo.queueID
-								+"\n", pInfo.roomID)
+							broadcast("changestatus\tjoinqueue\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.queueID}\n", pInfo.roomID)
 						}
 					}
 					broadcastPlayerInfoUpdate(pInfo)
@@ -1529,7 +1517,7 @@ class NetServer {
 								p.ready = false
 								p.seatID = -1
 								p.queueID = -1
-								broadcast("changestatus\twatchonly\t"+p.uid+"\t"+NetUtil.urlEncode(p.strName)+"\t"+prevSeatID+"\n", p.roomID)
+								broadcast("changestatus\twatchonly\t${p.uid}\t${NetUtil.urlEncode(p.strName)}\t$prevSeatID\n", p.roomID)
 							}
 
 						joinAllQueuePlayers(roomInfo)
@@ -1570,14 +1558,14 @@ class NetServer {
 				val roomInfo = getRoomInfo(pInfo.roomID)
 
 				if(!roomInfo!!.singleplayer) {
-					val msg = StringBuilder("gstat\t"+pInfo.uid+"\t"+pInfo.seatID+"\t"+NetUtil.urlEncode(pInfo.strName)+"\t")
+					val msg = StringBuilder("gstat\t${pInfo.uid}\t${pInfo.seatID}\t${NetUtil.urlEncode(pInfo.strName)}\t")
 					for(i in 1 until message.size) {
 						msg.append(message[i])
 						if(i<message.size-1) msg.append("\t")
 					}
 					msg.append("\n")
 
-					broadcast(msg.toString(), roomInfo.roomID)
+					broadcast("$msg", roomInfo.roomID)
 				}
 			}
 		// Single player end-of-game stats
@@ -1586,7 +1574,7 @@ class NetServer {
 				val roomInfo = getRoomInfo(pInfo.roomID)
 
 				if(roomInfo!!.singleplayer) {
-					val msg = "gstat1p\t"+message[1]+"\n"
+					val msg = "gstat1p\t${message[1]}\n"
 					broadcast(msg, roomInfo.roomID)
 				}
 			}
@@ -1601,7 +1589,7 @@ class NetServer {
 					val sChecksum = java.lang.Long.parseLong(message[1])
 					val checksumObj = Adler32()
 					checksumObj.update(NetUtil.stringToBytes(message[2]))
-					log.info("Checksums are: "+sChecksum+" and "+checksumObj.value)
+					log.info("Checksums are: $sChecksum and ${checksumObj.value}")
 
 					if(sChecksum==checksumObj.value) {
 						val strData = NetUtil.decompressString(message[2])
@@ -1621,8 +1609,8 @@ class NetServer {
 
 						val ranking = getSPRanking(rule, record.strModeName, record.gameType)
 						val rankingDaily = getSPRanking(rule, record.strModeName, record.gameType, true)
-						if(ranking==null) log.warn("All-time ranking not found:"+record.strModeName)
-						if(rankingDaily==null) log.warn("Daily ranking not found:"+record.strModeName)
+						if(ranking==null) log.warn("All-time ranking not found:${record.strModeName}")
+						if(rankingDaily==null) log.warn("Daily ranking not found:${record.strModeName}")
 
 						if((ranking!=null||rankingDaily!=null)&&gamerate>=spMinGameRate) {
 							if(ranking!=null) rank = ranking.registerRecord(record)
@@ -1639,7 +1627,7 @@ class NetServer {
 								}
 							}
 
-							log.info("Name:"+pInfo.strName+" Mode:"+record.strModeName+" AllTime:"+rank+" Daily:"+rankDaily)
+							log.info("Name:${pInfo.strName} Mode:${record.strModeName} AllTime:$rank Daily:$rankDaily")
 							broadcast("spsendok\t$rank\t$isPB\t$rankDaily\n", pInfo.roomID)
 						} else
 							broadcast("spsendok\t-1\tfalse\t-1\n", pInfo.roomID)
@@ -1670,8 +1658,8 @@ class NetServer {
 					if(i>0) strRow = ";"
 
 					val record = ranking.listRecord[i]
-					strRow += i.toString()+","+NetUtil.urlEncode(record.strPlayerName)+","
-					strRow += record.strTimeStamp+","+record.stats!!.gamerate+","
+					strRow += "$i${","+NetUtil.urlEncode(record.strPlayerName)},"
+					strRow += record.strTimeStamp+",${record.stats!!.gamerate},"
 					strRow += record.getStatRow(ranking.rankingType)
 
 					if(pInfo!=null&&pInfo.strName==record.strPlayerName) myRank = i
@@ -1686,8 +1674,8 @@ class NetServer {
 						if(maxRecord>0) strRow += ","
 
 						maxRecord++
-						strRow += (-1).toString()+","+NetUtil.urlEncode(record.strPlayerName)+","
-						strRow += record.strTimeStamp+","+record.stats!!.gamerate+","
+						strRow += (-1).toString()+",${NetUtil.urlEncode(record.strPlayerName)},"
+						strRow += record.strTimeStamp+",${record.stats!!.gamerate},"
 						strRow += record.getStatRow(ranking.rankingType)
 
 						strData.append(strRow)
@@ -1695,11 +1683,11 @@ class NetServer {
 				}
 
 				var strMsg = "spranking\t$strRule\t$strMode\t$gameType\t$isDaily\t"
-				strMsg += ranking.rankingType.toString()+"\t"+maxRecord+"\t"+strData+"\n"
+				strMsg += "${ranking.rankingType}\t$maxRecord\t$strData\n"
 				send(client, strMsg)
 			} else {
 				var strMsg = "spranking\t$strRule\t$strMode\t$gameType\t$isDaily\t"
-				strMsg += 0.toString()+"\t"+0+"\n"
+				strMsg += "0\t0\n"
 				send(client, strMsg)
 			}
 		}
@@ -1732,7 +1720,7 @@ class NetServer {
 					checksumObj.update(NetUtil.stringToBytes(record.strReplayProp))
 					val sChecksum = checksumObj.value
 
-					val strMsg = "spdownload\t"+sChecksum+"\t"+record.strReplayProp+"\n"
+					val strMsg = "spdownload\t$sChecksum\t${record.strReplayProp}\n"
 					send(client, strMsg)
 				} else
 					log.warn("Record not found (Mode:$strMode, Rule:$strRule, Type:$gameType Name:$strName)")
@@ -1764,13 +1752,13 @@ class NetServer {
 					val seat = roomInfo.getPlayerSeatNumber(pInfo)
 
 					if(seat!=-1) {
-						val msg = StringBuilder("game\t"+pInfo.uid+"\t"+seat+"\t")
+						val msg = StringBuilder("game\t${pInfo.uid}\t$seat\t")
 						for(i in 1 until message.size) {
 							msg.append(message[i])
 							if(i<message.size-1) msg.append("\t")
 						}
 						msg.append("\n")
-						broadcast(msg.toString(), roomInfo.roomID, pInfo)
+						broadcast("$msg", roomInfo.roomID, pInfo)
 					}
 				}
 			}
@@ -1833,7 +1821,7 @@ class NetServer {
 
 			// Login successful
 			adminList.add(client)
-			send(client, "adminloginsuccess\t"+getHostAddress(client)+"\t"+getHostName(client)+"\n")
+			send(client, "adminloginsuccess\t${getHostAddress(client)}\t${getHostName(client)}\n")
 			adminSendClientList()
 			sendRoomList(client)
 			log.info("Admin has logged in ($strRemoteAddr)")
@@ -1871,7 +1859,7 @@ class NetServer {
 			kickCount = ban(message[1], banLength)
 			saveBanList()
 
-			sendAdminResult(client, "ban\t"+message[1]+"\t"+banLength+"\t"+kickCount)
+			sendAdminResult(client, "ban\t${message[1]}\t$banLength\t$kickCount")
 		}
 		// Un-Ban
 		if(message[0]=="unban") {
@@ -1893,7 +1881,7 @@ class NetServer {
 			}
 			saveBanList()
 
-			sendAdminResult(client, "unban\t"+message[1]+"\t"+count)
+			sendAdminResult(client, "unban\t${message[1]}\t$count")
 		}
 		// Ban List
 		if(message[0]=="banlist") {
@@ -1984,14 +1972,14 @@ class NetServer {
 		}
 		// Shutdown
 		if(message[0]=="shutdown") {
-			log.warn("Shutdown requested by the admin ("+getHostFull(client)+")")
+			log.warn("Shutdown requested by the admin (${getHostFull(client)})")
 			shutdownRequested = true
 			selector!!.wakeup()
 		}
 		// Announce
 		if(message[0]=="announce")
 		// announce\t[Message]
-			broadcast("announce\t"+message[1]+"\n")
+			broadcast("announce\t${message[1]}\n")
 	}
 
 	/** Send admin command result
@@ -1999,14 +1987,14 @@ class NetServer {
 	 * @param msg Message to send
 	 */
 	private fun sendAdminResult(client:SocketChannel, msg:String) {
-		send(client, "adminresult\t"+NetUtil.compressString(msg)+"\n")
+		send(client, "adminresult\t${NetUtil.compressString(msg)}\n")
 	}
 
 	/** Broadcast admin command result to all admins
 	 * @param msg Message to send
 	 */
 	private fun broadcastAdminResult(msg:String) {
-		broadcastAdmin("adminresult\t"+NetUtil.compressString(msg)+"\n")
+		broadcastAdmin("adminresult\t${NetUtil.compressString(msg)}\n")
 	}
 
 	/** Send client list to admin
@@ -2028,15 +2016,15 @@ class NetServer {
 			else if(adminList.contains(ch)) type = 3 // 3:Admin
 
 			var strClientData = "$strIP|$strHost|$type"
-			if(pInfo!=null) strClientData += "|"+pInfo.exportString()
+			if(pInfo!=null) strClientData += "|${pInfo.exportString()}"
 
 			strMsg.append("\t").append(strClientData)
 		}
 
 		if(client==null)
-			broadcastAdminResult(strMsg.toString())
+			broadcastAdminResult("$strMsg")
 		else
-			sendAdminResult(client, strMsg.toString())
+			sendAdminResult(client, "$strMsg")
 	}
 
 	/** Get NetRoomInfo by using roomID
@@ -2064,7 +2052,7 @@ class NetServer {
 		}
 
 		msg.append("\n")
-		send(client, msg.toString())
+		send(client, "$msg")
 	}
 
 	/** Delete a room
@@ -2073,7 +2061,7 @@ class NetServer {
 	 */
 	private fun deleteRoom(roomInfo:NetRoomInfo?):Boolean {
 		if(roomInfo!=null&&roomInfo.playerList.isEmpty()) {
-			log.info("RoomDelete ID:"+roomInfo.roomID+" Title:"+roomInfo.strName)
+			log.info("RoomDelete ID:${roomInfo.roomID} Title:${roomInfo.strName}")
 			broadcastRoomInfoUpdate(roomInfo, "roomdelete")
 			roomInfoList.remove(roomInfo)
 			roomInfo.delete()
@@ -2091,14 +2079,13 @@ class NetServer {
 		if(roomInfo!=null) {
 			if(!roomInfo.playerList.isEmpty()) {
 				val tempList = LinkedList(roomInfo.playerList)
-				for(pInfo in tempList)
-					if(pInfo!=null) {
+				for(pInfo in tempList) {
 						val client = getSocketChannelByPlayer(pInfo)
 						if(client!=null) {
 							// Packet simulation :p
 							processPacket(client, "roomjoin\t-1\tfalse")
 							// Send message to the kicked player
-							send(client, "roomkicked\t0\t"+roomInfo.roomID+"\t"+NetUtil.urlEncode(roomInfo.strName)+"\n")
+							send(client, "roomkicked\t0\t${roomInfo.roomID}\t${NetUtil.urlEncode(roomInfo.strName)}\n")
 						}
 					}
 				roomInfo.playerList.clear()
@@ -2125,7 +2112,7 @@ class NetServer {
 		} else if(!roomInfo.autoStartActive&&(!roomInfo.isSomeoneCancelled||!roomInfo.disableTimerAfterSomeoneCancelled)
 			&&roomInfo.howManyPlayersReady>=minPlayers
 			&&roomInfo.howManyPlayersReady>=roomInfo.numberOfPlayerSeated/2) {
-			broadcast("autostartbegin\t"+roomInfo.autoStartSeconds+"\n", roomInfo.roomID)
+			broadcast("autostartbegin\t${roomInfo.autoStartSeconds}\n", roomInfo.roomID)
 			roomInfo.autoStartActive = true
 		}// Start
 
@@ -2168,7 +2155,7 @@ class NetServer {
 
 			roomInfo.mapPrevious = mapNo
 		}
-		val msg = "start\t"+java.lang.Long.toString(rand.nextLong(), 16)+"\t"+roomInfo.startPlayers+"\t"+mapNo+"\n"
+		val msg = "start\t${rand.nextLong().toString(16)}\t${roomInfo.startPlayers}\t$mapNo\n"
 		broadcast(msg, roomInfo.roomID)
 
 		for(p in roomInfo.playerSeat) {
@@ -2207,7 +2194,7 @@ class NetServer {
 				// Winner is a team
 				var teamName = roomInfo.winnerTeam
 				if(teamName==null) teamName = ""
-				msg += (-1).toString()+"\t"+-1+"\t"+NetUtil.urlEncode(teamName)+"\t"+isTeamWin
+				msg += "${(-1)}\t${-1}\t${NetUtil.urlEncode(teamName)}\t$isTeamWin"
 
 				for(pInfo in roomInfo.playerSeat)
 					if(pInfo.playing) {
@@ -2257,11 +2244,11 @@ class NetServer {
 					for(i in 0 until n) {
 						val p = roomInfo.playerSeatDead[i]
 						val change = p.rating[style]-p.ratingBefore[style]
-						log.debug("#"+(i+1)+" Name:"+p.strName+" Rating:"+p.rating[style]+" ("+change+")")
+						log.debug("#${i+1} Name:${p.strName} Rating:${p.rating[style]} ($change)")
 						setPlayerDataToProperty(p)
 
 						val msgRatingChange =
-							"rating\t"+p.uid+"\t"+p.seatID+"\t"+NetUtil.urlEncode(p.strName)+"\t"+p.rating[style]+"\t"+change+"\n"
+							"rating\t${p.uid}\t${p.seatID}\t${NetUtil.urlEncode(p.strName)}\t${p.rating[style]}\t$change\n"
 						broadcast(msgRatingChange, winner.roomID)
 					}
 					writePlayerDataToFile()
@@ -2274,13 +2261,13 @@ class NetServer {
 					writeMPRankingToFile()
 				}
 
-				msg += winner.uid.toString()+"\t"+winner.seatID+"\t"+NetUtil.urlEncode(winner.strName)+"\t"+isTeamWin
+				msg += "${winner.uid}\t${winner.seatID}\t${NetUtil.urlEncode(winner.strName)}\t$isTeamWin"
 				winner.resetPlayState()
 				winner.winCountNow++
 				broadcastPlayerInfoUpdate(winner)
 			} else
 			// No winner(s)
-				msg += (-1).toString()+"\t"+-1+"\t"+""+"\t"+isTeamWin
+				msg += "${(-1)}\t${-1}\t\t$isTeamWin"
 			msg += "\n"
 			broadcast(msg, roomInfo.roomID)
 
@@ -2311,19 +2298,18 @@ class NetServer {
 	 * @param client Client to send
 	 */
 	private fun sendPlayerList(client:SocketChannel) {
-		val msg = StringBuilder("playerlist\t"+playerInfoMap.size)
+		val msg = StringBuilder("playerlist\t${playerInfoMap.size}")
 
 		for(ch in channelList) {
 			val pInfo = playerInfoMap[ch]
 
 			if(pInfo!=null) {
-				msg.append("\t")
-				msg.append(pInfo.exportString())
+				msg.append("\t${pInfo.exportString()}")
 			}
 		}
 
 		msg.append("\n")
-		send(client, msg.toString())
+		send(client, "$msg")
 	}
 
 	/** Broadcast a player update information
@@ -2331,10 +2317,7 @@ class NetServer {
 	 * @param command Command
 	 */
 	private fun broadcastPlayerInfoUpdate(pInfo:NetPlayerInfo, command:String = "playerupdate") {
-		var msg = command+"\t"
-		msg += pInfo.exportString()
-		msg += "\n"
-		broadcast(msg)
+		broadcast("command$\t${pInfo.exportString()}\n")
 	}
 
 	/** Get NetPlayerInfo by player's name
@@ -2374,7 +2357,7 @@ class NetServer {
 			pInfo.queueID = -1
 			pInfo.ready = false
 			broadcast(
-				"changestatus\tjoinseat\t"+pInfo.uid+"\t"+NetUtil.urlEncode(pInfo.strName)+"\t"+pInfo.seatID+"\n", pInfo.roomID)
+				"changestatus\tjoinseat\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\n", pInfo.roomID)
 			broadcastPlayerInfoUpdate(pInfo)
 			playerJoinedCount++
 		}
@@ -2395,11 +2378,11 @@ class NetServer {
 			pInfo.resetPlayState()
 
 			val place = roomInfo.startPlayers-roomInfo.deadCount
-			var msg = "dead\t"+pInfo.uid+"\t"+NetUtil.urlEncode(pInfo.strName)+"\t"+pInfo.seatID+"\t"+place+"\t"
+			var msg = "dead\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\t$place\t"
 			msg += if(pKOInfo==null)
-				(-1).toString()+"\t"+""
+				"${(-1)}\t"
 			else
-				pKOInfo.uid.toString()+"\t"+NetUtil.urlEncode(pKOInfo.strName)
+				"${pKOInfo.uid}\t${NetUtil.urlEncode(pKOInfo.strName)}"
 			msg += "\n"
 			broadcast(msg, pInfo.roomID)
 
@@ -2473,10 +2456,8 @@ class NetServer {
 		while(i.hasNext()) {
 			ban = i.next()
 			if(ban.addr==remoteAddr)
-				if(ban.isExpired)
-					i.remove()
-				else
-					return ban
+				if(ban.isExpired) i.remove()
+				else return ban
 		}
 
 		return null
@@ -2497,7 +2478,7 @@ class NetServer {
 			}
 
 			msg.append("\n")
-			send(client, msg.toString())
+			send(client, "$msg")
 		}
 		//send(client, "rulelistend\n");
 	}
@@ -2546,7 +2527,7 @@ class NetServer {
 	 * @param oppRank Opponent's rating
 	 * @return Expected score
 	 */
-	private fun expectedScore(myRank:Double, oppRank:Double):Double = 1.0/(1+Math.pow(10.0, (oppRank-myRank)/400.0))
+	private fun expectedScore(myRank:Double, oppRank:Double):Double = 1.0/(1+10.0.pow((oppRank-myRank)/400.0))
 
 	/** Subroutine of rankDelta; Returns multiplier of rating change
 	 * @param playedGames Number of games played by the player
@@ -2560,11 +2541,11 @@ class NetServer {
 
 		var status = propServer.getProperty("netserver.statusformat", "\$observers/\$players")
 
-		status = status.replace("\\\$version".toRegex(), java.lang.Float.toString(GameManager.versionMajor))
-		status = status.replace("\\\$observers".toRegex(), Integer.toString(observerList.size))
-		status = status.replace("\\\$players".toRegex(), Integer.toString(playerInfoMap.size))
-		status = status.replace("\\\$clients".toRegex(), Integer.toString(observerList.size+playerInfoMap.size))
-		status = status.replace("\\\$rooms".toRegex(), Integer.toString(roomInfoList.size))
+		status = status.replace("\\\$version".toRegex(), GameManager.versionMajor.toString())
+		status = status.replace("\\\$observers".toRegex(), observerList.size.toString())
+		status = status.replace("\\\$players".toRegex(), playerInfoMap.size.toString())
+		status = status.replace("\\\$clients".toRegex(), (observerList.size+playerInfoMap.size).toString())
+		status = status.replace("\\\$rooms".toRegex(), roomInfoList.size.toString())
 
 		try {
 			val outFile = FileWriter(propServer.getProperty("netserver.statusfilename", "status.txt"))
@@ -2744,7 +2725,7 @@ class NetServer {
 				strInfo = propPresets.getProperty("0.preset."+i++)
 				if(strInfo!=null) ratedInfoList!!.add(strInfo)
 			}
-			log.info("Loaded "+ratedInfoList!!.size+" presets.")
+			log.info("Loaded ${ratedInfoList!!.size} presets.")
 		}
 
 		/** Load rated-game rule list */
@@ -2784,7 +2765,7 @@ class NetServer {
 							val strTempArray = str.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 							if(strTempArray.size>1) settingID = Integer.parseInt(strTempArray[1])
 
-							log.debug("{RuleLoad} StyleID:"+style+" RuleFile:"+strTempArray[0]+" SettingID:"+settingID)
+							log.debug("{RuleLoad} StyleID:$style RuleFile:${strTempArray[0]} SettingID:"+settingID)
 
 							val `in` = FileInputStream(strTempArray[0])
 							val prop = CustomProperties()
@@ -2856,15 +2837,15 @@ class NetServer {
 			mpRankingList = Array(GameEngine.MAX_GAMESTYLE) {LinkedList<NetPlayerInfo>()}
 
 			for(style in 0 until GameEngine.MAX_GAMESTYLE) {
-				var count = propMPRanking.getProperty(style.toString()+".mpranking.count", 0)
+				var count = propMPRanking.getProperty("$style.mpranking.count", 0)
 				if(count>maxMPRanking) count = maxMPRanking
 
 				for(i in 0 until count) {
 					val p = NetPlayerInfo().apply {
-						strName = propMPRanking.getProperty(style.toString()+".mpranking.strName."+i, "")
-						rating[style] = propMPRanking.getProperty(style.toString()+".mpranking.rating."+i, ratingDefault)
-						playCount[style] = propMPRanking.getProperty(style.toString()+".mpranking.playCount."+i, 0)
-						winCount[style] = propMPRanking.getProperty(style.toString()+".mpranking.winCount."+i, 0)
+						strName = propMPRanking.getProperty("$style.mpranking.strName.$i", "")
+						rating[style] = propMPRanking.getProperty("$style.mpranking.rating.$i", ratingDefault)
+						playCount[style] = propMPRanking.getProperty("$style.mpranking.playCount.$i", 0)
+						winCount[style] = propMPRanking.getProperty("$style.mpranking.winCount.$i", 0)
 					}
 					mpRankingList!![style].add(p)
 				}
@@ -2933,14 +2914,14 @@ class NetServer {
 			for(style in 0 until GameEngine.MAX_GAMESTYLE) {
 				var count = mpRankingList!![style].size
 				if(count>maxMPRanking) count = maxMPRanking
-				propMPRanking.setProperty(style.toString()+".mpranking.count", count)
+				propMPRanking.setProperty("$style.mpranking.count", count)
 
 				for(i in 0 until count) {
 					val p = mpRankingList!![style][i]
-					propMPRanking.setProperty(style.toString()+".mpranking.strName."+i, p.strName)
-					propMPRanking.setProperty(style.toString()+".mpranking.rating."+i, p.rating[style])
-					propMPRanking.setProperty(style.toString()+".mpranking.playCount."+i, p.playCount[style])
-					propMPRanking.setProperty(style.toString()+".mpranking.winCount."+i, p.winCount[style])
+					propMPRanking.setProperty("$style.mpranking.strName.$i", p.strName)
+					propMPRanking.setProperty("$style.mpranking.rating.$i", p.rating[style])
+					propMPRanking.setProperty("$style.mpranking.playCount.$i", p.playCount[style])
+					propMPRanking.setProperty("$style.mpranking.winCount.$i", p.winCount[style])
 				}
 			}
 
@@ -2983,7 +2964,7 @@ class NetServer {
 
 						style = -1
 						for(i in 0 until GameEngine.MAX_GAMESTYLE)
-							if(strStyle.equals(GameEngine.GAMESTYLE_NAMES[i], ignoreCase = true)) {
+							if(strStyle.equals(GameEngine.GAMESTYLE_NAMES[i], true)) {
 								style = i
 								break
 							}
@@ -3025,7 +3006,7 @@ class NetServer {
 									if(k==0) {
 										rankingData.readProperty(propSPRankingAlltime)
 										spRankingListAlltime!!.add(rankingData)
-										log.debug(rankingData.strRuleName+","+rankingData.strModeName+","+rankingData.gameType)
+										log.debug(rankingData.strRuleName+",${rankingData.strModeName},"+rankingData.gameType)
 									} else {
 										rankingData.readProperty(propSPRankingDaily)
 										spRankingListDaily!!.add(rankingData)
@@ -3131,9 +3112,9 @@ class NetServer {
 		private fun getPlayerDataFromProperty(pInfo:NetPlayerInfo) {
 			if(pInfo.isTripUse) {
 				for(i in 0 until GameEngine.MAX_GAMESTYLE) {
-					pInfo.rating[i] = propPlayerData.getProperty("p.rating."+i+"."+pInfo.strName, ratingDefault)
-					pInfo.playCount[i] = propPlayerData.getProperty("p.playCount."+i+"."+pInfo.strName, 0)
-					pInfo.winCount[i] = propPlayerData.getProperty("p.winCount."+i+"."+pInfo.strName, 0)
+					pInfo.rating[i] = propPlayerData.getProperty("p.rating.$i."+pInfo.strName, ratingDefault)
+					pInfo.playCount[i] = propPlayerData.getProperty("p.playCount.$i."+pInfo.strName, 0)
+					pInfo.winCount[i] = propPlayerData.getProperty("p.winCount.$i."+pInfo.strName, 0)
 				}
 				pInfo.spPersonalBest.strPlayerName = pInfo.strName
 				pInfo.spPersonalBest.readProperty(propPlayerData)
@@ -3153,9 +3134,9 @@ class NetServer {
 		private fun setPlayerDataToProperty(pInfo:NetPlayerInfo) {
 			if(pInfo.isTripUse) {
 				for(i in 0 until GameEngine.MAX_GAMESTYLE) {
-					propPlayerData.setProperty("p.rating."+i+"."+pInfo.strName, pInfo.rating[i])
-					propPlayerData.setProperty("p.playCount."+i+"."+pInfo.strName, pInfo.playCount[i])
-					propPlayerData.setProperty("p.winCount."+i+"."+pInfo.strName, pInfo.winCount[i])
+					propPlayerData.setProperty("p.rating.$i."+pInfo.strName, pInfo.rating[i])
+					propPlayerData.setProperty("p.playCount.$i."+pInfo.strName, pInfo.playCount[i])
+					propPlayerData.setProperty("p.winCount.$i."+pInfo.strName, pInfo.winCount[i])
 				}
 				pInfo.spPersonalBest.strPlayerName = pInfo.strName
 				pInfo.spPersonalBest.writeProperty(propPlayerData)
@@ -3296,7 +3277,7 @@ class NetServer {
 		private fun getHostFull(client:SocketChannel):String {
 			if(!allowDNSAccess) return getHostAddress(client)
 			try {
-				return getHostName(client)+" ("+getHostAddress(client)+")"
+				return getHostName(client)+" (${getHostAddress(client)})"
 			} catch(e:Exception) {
 			}
 

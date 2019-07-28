@@ -93,7 +93,7 @@ class StateConfigJoystickMain:BaseGameState() {
 		// Menu
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
-		FontNormal.printFontGrid(1, 1, "JOYSTICK SETTING ("+(player+1)+"P)", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "JOYSTICK SETTING (${player+1}P)", COLOR.ORANGE)
 
 		FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RED)
 
@@ -102,7 +102,7 @@ class StateConfigJoystickMain:BaseGameState() {
 		FontNormal.printFontGrid(2, 5, "JOYSTICK NUMBER:"+if(joyUseNumber==-1)
 			"NOTHING"
 		else
-			joyUseNumber.toString(), cursor==2)
+			"$joyUseNumber", cursor==2)
 		FontNormal.printFontGrid(2, 6, "JOYSTICK BORDER:$joyBorder", cursor==3)
 		FontNormal.printFontGrid(2, 7, "AXIS INPUT:"+GeneralUtil.getONorOFF(!joyIgnoreAxis), cursor==4)
 		FontNormal.printFontGrid(2, 8, "POV INPUT:"+GeneralUtil.getONorOFF(!joyIgnorePOV), cursor==5)
@@ -167,20 +167,23 @@ class StateConfigJoystickMain:BaseGameState() {
 			NullpoMinoSlick.saveConfig()
 			NullpoMinoSlick.setGeneralConfig()
 
-			if(cursor==0) {
-				//[BUTTON SETTING]
-				ResourceHolder.soundManager.play("decide1")
+			when(cursor) {
+				0 -> {
+					//[BUTTON SETTING]
+					ResourceHolder.soundManager.play("decide1")
 
-				NullpoMinoSlick.stateConfigJoystickButton.player = player
-				game.enterState(StateConfigJoystickButton.ID)
-			} else if(cursor==1) {
-				//[INPUT TEST]
-				ResourceHolder.soundManager.play("decide2")
+					NullpoMinoSlick.stateConfigJoystickButton.player = player
+					game.enterState(StateConfigJoystickButton.ID)
+				}
+				1 -> {
+					//[INPUT TEST]
+					ResourceHolder.soundManager.play("decide2")
 
-				NullpoMinoSlick.stateConfigJoystickTest.player = player
-				game.enterState(StateConfigJoystickTest.ID)
-			} else
-				game.enterState(StateConfigMainMenu.ID)
+					NullpoMinoSlick.stateConfigJoystickTest.player = player
+					game.enterState(StateConfigJoystickTest.ID)
+				}
+				else -> game.enterState(StateConfigMainMenu.ID)
+			}
 		}
 
 		// Cancel button

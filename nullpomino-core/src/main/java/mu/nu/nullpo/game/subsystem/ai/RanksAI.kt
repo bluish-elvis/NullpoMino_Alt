@@ -33,6 +33,7 @@ import mu.nu.nullpo.util.CustomProperties
 import org.apache.log4j.Logger
 import java.io.*
 import java.util.*
+import kotlin.math.abs
 
 open class RanksAI:DummyAI(), Runnable {
 
@@ -80,7 +81,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 	private var currentHeightMin:Int = 0
 	private var currentHeightMax:Int = 0
-	private var MAX_PREVIEWS = 2
+	private var previewsMax = 2
 
 	private var heights:IntArray = IntArray(0)
 	private var bestScore:Score = Score()
@@ -147,12 +148,12 @@ open class RanksAI:DummyAI(), Runnable {
 				}
 				surface[i] = diff
 			}
-			log.debug("new surface ="+Arrays.toString(surface))
+			log.debug("new surface =${Arrays.toString(surface)}")
 
 			val surfaceNb = ranks!!.encode(surface)
 
 			rankStacking = ranks!!.getRankValue(surfaceNb).toFloat()
-			if(MAX_PREVIEWS>0&&distanceToSet>0) rankStacking = 0f
+			if(previewsMax>0&&distanceToSet>0) rankStacking = 0f
 
 		}
 
@@ -183,7 +184,7 @@ open class RanksAI:DummyAI(), Runnable {
 		}
 
 		val file = propRanksAI.getProperty("ranksai.file")
-		MAX_PREVIEWS = propRanksAI.getProperty("ranksai.numpreviews", 2)
+		previewsMax = propRanksAI.getProperty("ranksai.numpreviews", 2)
 		allowHold = propRanksAI.getProperty("ranksai.allowhold", false)
 		speedLimit = propRanksAI.getProperty("ranksai.speedlimit", 0)
 
@@ -283,7 +284,7 @@ open class RanksAI:DummyAI(), Runnable {
 						val lrot = engine.getRotateDirection(-1)
 						val rrot = engine.getRotateDirection(1)
 
-						if(Math.abs(rt-bestRt)==2&&engine.ruleopt.rotateButtonAllowDouble
+						if(abs(rt-bestRt)==2&&engine.ruleopt.rotateButtonAllowDouble
 							&&!ctrl.isPress(Controller.BUTTON_E))
 							input = input or Controller.BUTTON_BIT_E
 						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleopt.rotateButtonAllowReverse&&
@@ -439,7 +440,7 @@ open class RanksAI:DummyAI(), Runnable {
 		if(bestScore.rankStacking==0f) threadRunning = false
 		//bestHold=true;
 		thinkLastPieceNo++
-		log.debug("nowX : "+engine.nowPieceX+" X:"+bestX+" Y:"+bestY+" R:"+bestRt+" H:"+bestHold+" Pts:"+bestScore)
+		log.debug("nowX : ${engine.nowPieceX} X:$bestX Y:$bestY R:$bestRt H:$bestHold Pts:$bestScore")
 
 	}
 
@@ -476,7 +477,7 @@ open class RanksAI:DummyAI(), Runnable {
 		var pieceNow = piecesCopy[0]
 
 		// Number of previews to consider
-		val numPreviews = MAX_PREVIEWS
+		val numPreviews = previewsMax
 
 		// Initialization maximum height and minimum height
 		currentHeightMin = 99
@@ -485,7 +486,7 @@ open class RanksAI:DummyAI(), Runnable {
 		//Compute the maximum/minimum heights
 		for(i in 0 until ranks!!.stackWidth) {
 
-			if(heights!![i]<currentHeightMin) currentHeightMin = heights[i]
+			if(heights[i]<currentHeightMin) currentHeightMin = heights[i]
 			if(heights[i]>currentHeightMax) currentHeightMax = heights[i]
 		}
 
@@ -504,7 +505,7 @@ open class RanksAI:DummyAI(), Runnable {
 			bestRtSub = -1
 
 			// Dummy score so that the AI doesn't think the game is over (can't fit a piece anymore)
-			bestScore!!.rankStacking = Integer.MAX_VALUE.toFloat()
+			bestScore.rankStacking = Integer.MAX_VALUE.toFloat()
 
 		} else
 		// Try using hold or not
@@ -538,7 +539,7 @@ open class RanksAI:DummyAI(), Runnable {
 						//If the score is better than the previous best score, change it, and record the chosen move for further application by setControl
 						if(score>bestScore) {
 							log.debug("MAIN new best piece !")
-							if(pieceNow==Piece.PIECE_I) bestScore!!.iPieceUsedInTheStack = true
+							if(pieceNow==Piece.PIECE_I) bestScore.iPieceUsedInTheStack = true
 							bestHold = useHold==1
 							bestX = x
 							bestRt = rt
@@ -554,7 +555,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 						// What are the consequences of scoring a 4-Line ?
 						score = thinkMain(maxX+1, rt, heights, piecesCopy, holdPiece, useHold!=1, numPreviews)
-						log.debug("MAIN (4 Lines) id="+pieceNow+" posX="+(maxX+1)+" rt="+rt+" hold :"+useHold+" score:"+score)
+						log.debug("MAIN (4 Lines) id=$pieceNow posX=${maxX+1} rt=$rt hold :$useHold score:$score")
 
 						//If the score is better than the previous best score, change it, and record the chosen move for further application by setControl
 						if(score>bestScore) {
@@ -598,7 +599,7 @@ open class RanksAI:DummyAI(), Runnable {
 		//Convert the heights to a surface to be able to check if the piece fits the surface
 		val surface = ranks!!.heightsToSurface(heights)
 
-		log.debug("piece id : "+pieces[0]+" rot : "+rt+" x :"+x+" surface :"+Arrays.toString(surface))
+		log.debug("piece id : ${pieces[0]} rot : $rt x :$x surface :${Arrays.toString(surface)}")
 
 		//Boolean value representing the fact that the current piece is the I piece, vertical, and in the rightmost column.
 		val isVerticalIRightMost = pieces[0]==Piece.PIECE_I&&(rt==1||rt==3)&&x==9
@@ -607,7 +608,7 @@ open class RanksAI:DummyAI(), Runnable {
 		if(isVerticalIRightMost||ranks!!.surfaceFitsPiece(surface, pieces[0], rt, x)) {
 
 			// Cloning the heights in order to not alter the heights array, that was passed in parameters (and possibly used elsewhere)
-			val heightsWork = heights!!.clone()
+			val heightsWork = heights.clone()
 
 			// If we are not going to score a 4-Line, add the piece to the heightsWork array and update the minimum and maximum height.
 			if(!isVerticalIRightMost) {
@@ -660,8 +661,7 @@ open class RanksAI:DummyAI(), Runnable {
 					val maxX2 = ranks!!.stackWidth-1
 					// Recursive call to thinkMain to examine that move
 					scoreCurrent = thinkMain(maxX2+1, rt2, heightsWork, pieces2, holdPiece2, true, numPreviews2)
-					log.debug("SUB (4 Lines)"+numPreviews+" id="+pieceNow+" posX="+(maxX2+1)+" rt="+rt2+" score:"
-						+scoreCurrent)
+					log.debug("SUB (4 Lines)$numPreviews id=$pieceNow posX=${maxX2+1} rt=$rt2 score:$scoreCurrent")
 
 					// if the score is better than the previous best score, replace it.
 					if(scoreCurrent>bestScore) {
@@ -699,8 +699,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 								// Recursive call to thinkMain to examine that move
 								scoreCurrent = thinkMain(x2, rt2, heightsWork, pieces2, holdPiece2, h2!=1, numPreviews2)
-								log.debug("SUB "+numPreviews+" id="+pieceNow+" posX="+x2+" rt="+rt2+" hold :"+h2+" score "
-									+scoreCurrent)
+								log.debug("SUB $numPreviews id=$pieceNow posX=$x2 rt=$rt2 hold :$h2 score $scoreCurrent")
 
 								// if the score is better than the previous best score, replace it.
 								if(scoreCurrent>bestScore) {
@@ -715,8 +714,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 								// Recursive call to thinkMain to examine that move
 								scoreCurrent = thinkMain(maxX2+1, rt2, heightsWork, pieces2, holdPiece2, h2!=1, numPreviews2)
-								log.debug("SUB (4 Lines)"+numPreviews+" id="+pieceNow+" posX="+(maxX2+1)+" rt="+rt2+" hold :"
-									+h2+" score:"+scoreCurrent)
+								log.debug("SUB (4 Lines)$numPreviews id=$pieceNow posX=${maxX2+1} rt=$rt2 hold :$h2 score:$scoreCurrent")
 								// if the score is better than the previous best score, replace it.
 								if(scoreCurrent>bestScore) {
 									log.debug("SUB new best piece !")
@@ -740,7 +738,7 @@ open class RanksAI:DummyAI(), Runnable {
 			} else {
 
 				score.computeScore(heightsWork)
-				if(pieces[0]==Piece.PIECE_I&&x<ranks!!.stackWidth&&numPreviews<MAX_PREVIEWS)
+				if(pieces[0]==Piece.PIECE_I&&x<ranks!!.stackWidth&&numPreviews<previewsMax)
 					score.iPieceUsedInTheStack = true
 				return score
 			}// If numPreviews==0, that is, if there are no previews left to consider, just return the score of the surface resulting from the move.

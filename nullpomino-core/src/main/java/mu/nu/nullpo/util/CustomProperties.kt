@@ -113,7 +113,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Byte):Byte = try {
-		java.lang.Byte.parseByte(getProperty(key, defaultValue.toString()))
+		java.lang.Byte.parseByte(getProperty(key, "$defaultValue"))
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -124,7 +124,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Short):Short = try {
-		java.lang.Short.parseShort(getProperty(key, defaultValue.toString()))
+		java.lang.Short.parseShort(getProperty(key, "$defaultValue"))
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -135,7 +135,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Int):Int = try {
-		Integer.parseInt(getProperty(key, defaultValue.toString()))
+		Integer.parseInt(getProperty(key, "$defaultValue"))
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -146,7 +146,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Long):Long = try {
-		java.lang.Long.parseLong(getProperty(key, defaultValue.toString()))
+		java.lang.Long.parseLong(getProperty(key, "$defaultValue"))
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -157,7 +157,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Float):Float = try {
-		java.lang.Float.parseFloat(getProperty(key, defaultValue.toString()))
+		java.lang.Float.parseFloat(getProperty(key, "$defaultValue"))
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -170,7 +170,7 @@ class CustomProperties:Properties() {
 	fun getProperty(key:String, defaultValue:Double):Double {
 
 		return try {
-			java.lang.Double.parseDouble(getProperty(key, defaultValue.toString()))
+			java.lang.Double.parseDouble(getProperty(key, "$defaultValue"))
 		} catch(e:NumberFormatException) {
 			defaultValue
 		}
@@ -182,7 +182,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Char):Char = try {
-		getProperty(key, defaultValue.toString())[0]
+		getProperty(key, "$defaultValue")[0]
 	} catch(e:Exception) {
 		defaultValue
 	}

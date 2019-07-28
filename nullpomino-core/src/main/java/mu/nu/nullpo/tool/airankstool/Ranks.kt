@@ -3,6 +3,8 @@ package mu.nu.nullpo.tool.airankstool
 import mu.nu.nullpo.game.component.Piece
 import java.io.Serializable
 import java.util.*
+import kotlin.math.abs
+import kotlin.math.pow
 
 class Ranks:Serializable {
 	private val ranks:IntArray
@@ -50,7 +52,7 @@ class Ranks:Serializable {
 
 		surfaceWidth = stackWidth-1
 
-		size = Math.pow(base.toDouble(), surfaceWidth.toDouble()).toInt()
+		size = base.toDouble().pow(surfaceWidth.toDouble()).toInt()
 		ranks = IntArray(size)
 		completion = 0
 		error = 0
@@ -69,7 +71,7 @@ class Ranks:Serializable {
 
 		stackWidth = ranksFrom!!.stackWidth
 		surfaceWidth = stackWidth-1
-		size = Math.pow((2*maxJump+1).toDouble(), (stackWidth-1).toDouble()).toInt()
+		size = (2*maxJump+1).toDouble().pow((stackWidth-1).toDouble()).toInt()
 		ranks = IntArray(size)
 		completion = 0
 		error = 0
@@ -114,7 +116,7 @@ class Ranks:Serializable {
 		setRankValue(currentSurfaceNum, getRank(surface, surfaceDecodedWork))
 		synchronized(this) {
 			completion++
-			var errorCurrent = Math.abs(ranks[currentSurfaceNum]-ranksFrom!!.getRankValue(currentSurfaceNum))
+			var errorCurrent = abs(ranks[currentSurfaceNum]-ranksFrom!!.getRankValue(currentSurfaceNum))
 			if(errorCurrent==0) errorCurrent = 0
 			if(errorCurrent>maxError) maxError = errorCurrent
 			error += errorCurrent

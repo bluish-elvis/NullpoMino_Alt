@@ -1,12 +1,11 @@
 package net.tetrisconcept.poochy.nullpomino.ai
 
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import org.apache.log4j.Logger
+import kotlin.math.abs
 
 /**
  * Nohoho AI
@@ -192,12 +191,12 @@ class Nohoho:DummyAI(), Runnable {
 				input = input or Controller.BUTTON_BIT_D
 			else {
 				if(DEBUG_ALL)
-					log.debug("bestX = "+bestX+", nowX = "+nowX+
-						", bestY = "+bestY+", nowY = "+nowY+
-						", bestRt = "+bestRt+", rt = "+rt+
-						", bestXSub = "+bestXSub+", bestYSub = "+bestYSub+", bestRtSub = "+bestRtSub)
+					log.debug("bestX = $bestX, nowX = "+nowX+
+						", bestY = $bestY, nowY = "+nowY+
+						", bestRt = $bestRt, rt = "+rt+
+						", bestXSub = $bestXSub, bestYSub = $bestYSub, bestRtSub = "+bestRtSub)
 				// Rotation
-				val best180 = Math.abs(rt-bestRt)==2
+				val best180 = abs(rt-bestRt)==2
 				if(rt!=bestRt) {
 					val lrot = engine.getRotateDirection(-1)
 					val rrot = engine.getRotateDirection(1)
@@ -294,8 +293,8 @@ class Nohoho:DummyAI(), Runnable {
 			lastRt = rt
 
 			if(DEBUG_ALL)
-				log.debug("Input = "+input+", moveDir = "+moveDir+", rotateDir = "+rotateDir+
-					", sync = "+sync+", drop = "+drop+", setDAS = "+setDAS)
+				log.debug("Input = $input, moveDir = $moveDir, rotateDir = "+rotateDir+
+					", sync = $sync, drop = $drop, setDAS = "+setDAS)
 
 			delay = 0
 			ctrl.buttonBit = input
@@ -434,19 +433,19 @@ class Nohoho:DummyAI(), Runnable {
 				}
 
 				// Hold piece
-				if(holdOK&&pieceHold!=null) {
-					val spawnX = engine.getSpawnPosX(engine.field, pieceHold)
-					val spawnY = engine.getSpawnPosY(pieceHold)
-					val minHoldX = pieceHold.getMostMovableLeft(spawnX, spawnY, rt, engine.field!!)
-					val maxHoldX = pieceHold.getMostMovableRight(spawnX, spawnY, rt, engine.field!!)
+				if(holdOK)pieceHold?.also{
+					val spawnX = engine.getSpawnPosX(engine.field, it)
+					val spawnY = engine.getSpawnPosY(it)
+					val minHoldX = it.getMostMovableLeft(spawnX, spawnY, rt, engine.field!!)
+					val maxHoldX = it.getMostMovableRight(spawnX, spawnY, rt, engine.field!!)
 
 					for(x in minHoldX..maxHoldX) {
 						fld.copy(engine.field!!)
-						val y = pieceHold.getBottom(x, spawnY, rt, fld)
+						val y = it.getBottom(x, spawnY, rt, fld)
 
-						if(!pieceHold.checkCollision(x, y, rt, fld)) {
+						if(!it.checkCollision(x, y, rt, fld)) {
 							// As it is
-							val pts = thinkMain(x, y, rt, -1, fld, pieceHold, defcon)
+							val pts = thinkMain(x, y, rt, -1, fld, it, defcon)
 							if(pts>=bestPts) {
 								bestHold = true
 								bestX = x
@@ -488,8 +487,8 @@ class Nohoho:DummyAI(), Runnable {
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
 			if(DEBUG_ALL)
-				log.debug("End of thinkMain("+x+", "+y+", "+rt+", "+rtOld+
-					", fld, piece "+piece.id+", "+defcon+"). pts = MIN_VALUE (Cannot place piece)")
+				log.debug("End of thinkMain($x, $y, $rt, "+rtOld+
+					", fld, piece ${piece.id}, $defcon). pts = MIN_VALUE (Cannot place piece)")
 			return Integer.MIN_VALUE
 		}
 
@@ -499,17 +498,17 @@ class Nohoho:DummyAI(), Runnable {
 			val maxX = piece.maximumBlockX+x
 			if(maxX<2) {
 				if(DEBUG_ALL)
-					log.debug("End of thinkMain("+x+", "+y+", "+rt+", "+rtOld+", fld, piece "
-						+piece.id+", "+defcon+"). pts = MIN_VALUE (Invalid location/defcon combination)")
+					log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece "
+						+piece.id+", $defcon). pts = MIN_VALUE (Invalid location/defcon combination)")
 				return Integer.MIN_VALUE
 			}
 			val maxY = fld.getHighestBlockY(maxX)
 			var clear = fld.clearColor(maxX, maxY, true, true, false, true)
-			if(clear>=4)
-				pts += if(defcon==5) -4 else 4
-			else if(clear==3)
-				pts += 2
-			else if(clear==2) pts++
+			when {
+				clear>=4 -> pts += if(defcon==5) -4 else 4
+				clear==3 -> pts += 2
+				clear==2 -> pts++
+			}
 
 			clear = if(rt and 1==1) {
 				pts++
@@ -548,8 +547,8 @@ class Nohoho:DummyAI(), Runnable {
 		if(allclear) pts += 1000
 
 		if(DEBUG_ALL)
-			log.debug("End of thinkMain("+x+", "+y+", "+rt+", "+rtOld+
-				", fld, piece "+piece.id+", "+defcon+"). pts = "+pts)
+			log.debug("End of thinkMain($x, $y, $rt, "+rtOld+
+				", fld, piece ${piece.id}, $defcon). pts = "+pts)
 		return pts
 	}
 

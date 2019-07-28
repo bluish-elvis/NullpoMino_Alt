@@ -7,6 +7,7 @@ import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
 import java.util.*
 import javax.swing.*
+import kotlin.math.pow
 
 class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRanks:Int, ascendant:Boolean):JDialog(parent, true), ActionListener, PropertyChangeListener {
 
@@ -35,14 +36,13 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 
 		override fun compare(o1:Int?, o2:Int?):Int {
 
-			return Integer.compare(
-				factorCompare*ranks!!.getRankValue(o2!!), factorCompare*ranks!!.getRankValue(o1!!))
+			return (factorCompare*ranks!!.getRankValue(o2!!)).compareTo(factorCompare*ranks!!.getRankValue(o1!!))
 		}
 
 	}
 
 	internal inner class SurfaceRank(val surface:Int, val rank:Int):Comparable<SurfaceRank> {
-		override fun compareTo(o:SurfaceRank):Int = Integer.compare(factorCompare*o.rank, factorCompare*rank)
+		override fun compareTo(o:SurfaceRank):Int = (factorCompare*o.rank).compareTo(factorCompare*rank)
 
 	}
 
@@ -121,7 +121,7 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 		var surfaceWork = surface
 		var surfaceMirrored = 0
 
-		var factorD = Math.pow((2*maxJump+1).toDouble(), (stackWidth-2).toDouble()).toInt()
+		var factorD = (2*maxJump+1).toDouble().pow((stackWidth-2).toDouble()).toInt()
 		for(i in 0 until stackWidth-1) {
 			val `val` = surfaceWork%(2*maxJump+1)
 			surfaceMirrored += factorD*(2*maxJump-`val`)

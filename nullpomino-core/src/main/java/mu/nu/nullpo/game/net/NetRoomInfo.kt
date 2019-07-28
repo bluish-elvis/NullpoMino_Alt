@@ -441,46 +441,46 @@ class NetRoomInfo:Serializable {
 	/** Stringの配列に変換(Playerリスト除く)
 	 * @return Stringの配列(String[40])
 	 */
-	fun exportStringArray():Array<String> = arrayOf(Integer.toString(roomID)
+	fun exportStringArray():Array<String> = arrayOf("$roomID"
 		,NetUtil.urlEncode(strName)
-		,Integer.toString(maxPlayers)
-		,Integer.toString(playerSeatedCount)
-		,Integer.toString(spectatorCount)
-		,Integer.toString(playerListCount)
+		, "$maxPlayers"
+		, "$playerSeatedCount"
+		, "$spectatorCount"
+		, "$playerListCount"
 		,java.lang.Boolean.toString(playing)
 		,java.lang.Boolean.toString(ruleLock)
 		,NetUtil.urlEncode(ruleName)
-		,Integer.toString(autoStartSeconds)
-		, Integer.toString(gravity)
-		, Integer.toString(denominator)
-		, Integer.toString(are)
-		, Integer.toString(areLine)
-		, Integer.toString(lineDelay)
-		, Integer.toString(lockDelay)
-		, Integer.toString(das)
-		, Integer.toString(tspinEnableType)
+		, "$autoStartSeconds"
+		, "$gravity"
+		, "$denominator"
+		, "$are"
+		, "$areLine"
+		, "$lineDelay"
+		, "$lockDelay"
+		, "$das"
+		, "$tspinEnableType"
 		, java.lang.Boolean.toString(b2b)
 		, java.lang.Boolean.toString(combo)
 		, java.lang.Boolean.toString(rensaBlock)
 		, java.lang.Boolean.toString(counter)
 		, java.lang.Boolean.toString(bravo)
 		, java.lang.Boolean.toString(reduceLineSend)
-		, Integer.toString(hurryupSeconds)
-		, Integer.toString(hurryupInterval)
+		, "$hurryupSeconds"
+		, "$hurryupInterval"
 		, java.lang.Boolean.toString(autoStartTNET2)
 		, java.lang.Boolean.toString(disableTimerAfterSomeoneCancelled)
 		, java.lang.Boolean.toString(useMap)
 		, java.lang.Boolean.toString(useFractionalGarbage)
 		, java.lang.Boolean.toString(garbageChangePerAttack)
-		, Integer.toString(garbagePercent)
-		, Integer.toString(spinCheckType)
+		, "$garbagePercent"
+		, "$spinCheckType"
 		, java.lang.Boolean.toString(tspinEnableEZ)
 		, java.lang.Boolean.toString(b2bChunk)
 		, NetUtil.urlEncode(strMode)
 		, java.lang.Boolean.toString(singleplayer)
 		, java.lang.Boolean.toString(rated)
 		, java.lang.Boolean.toString(customRated)
-		, Integer.toString(style)
+		, "$style"
 		, java.lang.Boolean.toString(divideChangeRateByPlayers))//rdata[41] = Boolean.toString(useTankMode);
 
 	/** Stringに変換(;で区切り)(Playerリスト除く)
@@ -495,7 +495,7 @@ class NetRoomInfo:Serializable {
 			if(i<data.size-1) strResult.append(";")
 		}
 
-		return strResult.toString()
+		return "$strResult"
 	}
 
 	/** Number of playersカウントを更新 */

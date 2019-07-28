@@ -233,11 +233,12 @@ object ResourceHolder {
 			loadSE("step")
 			loadSE("lock")
 			for(i in 0..3)
-				loadSE("erase"+(i+1))
+				loadSE("erase${i+1}")
 			loadSE("erase")
 			loadSE("linefall")
 			for(i in 0..4)
 				loadSE("applause$i")
+			loadSE("twist")
 			loadSE("tspin")
 			loadSE("combo")
 			loadSE("b2b_start")
@@ -264,7 +265,6 @@ object ResourceHolder {
 			loadSE("regret")
 			for(i in 1..3)
 				loadSE("medal$i")
-					//TODO: MEDAL font
 
 			loadSE("ready")
 			loadSE("go")
@@ -311,7 +311,7 @@ object ResourceHolder {
 
 		if(imgBreak.isNullOrEmpty()) imgBreak = Array(BLOCK_BREAK_MAX) {i ->
 			Array(BLOCK_BREAK_SEGMENTS) {
-				loadImage(skindir+"/graphics/effects/break${i}_$it.png")
+				loadImage("$skindir/graphics/effects/break${i}_$it.png")
 			}
 		}
 
@@ -343,7 +343,7 @@ object ResourceHolder {
 
 	private fun loadSE(name:String) {
 
-		val fn = NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")+"/se/"+name
+		val fn = "${NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")}/se/$name"
 		if(File("$fn.wav").canRead())
 			soundManager.load(name, "$fn.wav")
 		else if(File("$fn.ogg").canRead()) soundManager.load(name, "$fn.ogg")
@@ -394,7 +394,7 @@ object ResourceHolder {
 		if(M!=BGM.SILENT && M!=bgmPlaying) {
 			bgm[x][y]?.also {
 				try {
-					if(NullpoMinoSlick.propMusic.getProperty("music.noloop."+M.name, false))
+					if(NullpoMinoSlick.propMusic.getProperty("music.noloop.${M.name}", false))
 						it.play()
 					else it.loop()
 					log.info("Play BGM $x:$y ${M.longName}")

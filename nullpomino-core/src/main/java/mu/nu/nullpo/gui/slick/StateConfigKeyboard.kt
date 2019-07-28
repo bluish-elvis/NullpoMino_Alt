@@ -86,7 +86,7 @@ class StateConfigKeyboard:BasicGameState() {
 	 */
 	private fun getKeyName(key:Int):String {
 		val str = org.lwjgl.input.Keyboard.getKeyName(key)
-		return str?.toUpperCase() ?: key.toString()
+		return str?.toUpperCase() ?: "$key"
 	}
 
 	/* Draw the screen */
@@ -99,54 +99,56 @@ class StateConfigKeyboard:BasicGameState() {
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
 		if(!isNavSetting)
-			FontNormal.printFontGrid(1, 1, "KEYBOARD SETTING ("+(player+1)+"P)", COLOR.ORANGE)
+			FontNormal.printFontGrid(1, 1, "KEYBOARD SETTING (${player+1}P)", COLOR.ORANGE)
 		else
-			FontNormal.printFontGrid(1, 1, "KEYBOARD NAVIGATION SETTING ("+(player+1)+"P)", COLOR.ORANGE)
+			FontNormal.printFontGrid(1, 1, "KEYBOARD NAVIGATION SETTING (${player+1}P)", COLOR.ORANGE)
 		if(!NullpoMinoSlick.useJInputKeyboard)
 			FontNormal.printFontGrid(1, 2, "SLICK NATIVE MODE", COLOR.CYAN)
 		else
 			FontNormal.printFontGrid(1, 2, "JINPUT MODE", COLOR.PINK)
 
-		FontNormal.printFontGrid(2, 4, "UP          : "+getKeyName(keymap[GameKeyDummy.BUTTON_UP]), keynum==0)
-		FontNormal.printFontGrid(2, 5, "DOWN        : "+getKeyName(keymap[GameKeyDummy.BUTTON_DOWN]), keynum==1)
-		FontNormal.printFontGrid(2, 6, "LEFT        : "+getKeyName(keymap[GameKeyDummy.BUTTON_LEFT]), keynum==2)
-		FontNormal.printFontGrid(2, 7, "RIGHT       : "+getKeyName(keymap[GameKeyDummy.BUTTON_RIGHT]), keynum==3)
+		FontNormal.printFontGrid(2, 4, "UP          : ${getKeyName(keymap[GameKeyDummy.BUTTON_UP])}", keynum==0)
+		FontNormal.printFontGrid(2, 5, "DOWN        : ${getKeyName(keymap[GameKeyDummy.BUTTON_DOWN])}", keynum==1)
+		FontNormal.printFontGrid(2, 6, "LEFT        : ${getKeyName(keymap[GameKeyDummy.BUTTON_LEFT])}", keynum==2)
+		FontNormal.printFontGrid(2, 7, "RIGHT       : ${getKeyName(keymap[GameKeyDummy.BUTTON_RIGHT])}", keynum==3)
 		if(!isNavSetting) {
-			FontNormal.printFontGrid(2, 8, "A (L/R-ROT) : "+getKeyName(keymap[GameKeyDummy.BUTTON_A]), keynum==4)
-			FontNormal.printFontGrid(2, 9, "B (R/L-ROT) : "+getKeyName(keymap[GameKeyDummy.BUTTON_B]), keynum==5)
-			FontNormal.printFontGrid(2, 10, "C (L/R-ROT) : "+getKeyName(keymap[GameKeyDummy.BUTTON_C]), keynum==6)
-			FontNormal.printFontGrid(2, 11, "D (HOLD)    : "+getKeyName(keymap[GameKeyDummy.BUTTON_D]), keynum==7)
-			FontNormal.printFontGrid(2, 12, "E (180-ROT) : "+getKeyName(keymap[GameKeyDummy.BUTTON_E]), keynum==8)
+			FontNormal.printFontGrid(2, 8, "A (L/R-ROT) : ${getKeyName(keymap[GameKeyDummy.BUTTON_A])}", keynum==4)
+			FontNormal.printFontGrid(2, 9, "B (R/L-ROT) : ${getKeyName(keymap[GameKeyDummy.BUTTON_B])}", keynum==5)
+			FontNormal.printFontGrid(2, 10, "C (L/R-ROT) : ${getKeyName(keymap[GameKeyDummy.BUTTON_C])}", keynum==6)
+			FontNormal.printFontGrid(2, 11, "D (HOLD)    : ${getKeyName(keymap[GameKeyDummy.BUTTON_D])}", keynum==7)
+			FontNormal.printFontGrid(2, 12, "E (180-ROT) : ${getKeyName(keymap[GameKeyDummy.BUTTON_E])}", keynum==8)
 		} else {
-			FontNormal.printFontGrid(2, 8, "A (SELECT)  : "+getKeyName(keymap[GameKeyDummy.BUTTON_A]), keynum==4)
-			FontNormal.printFontGrid(2, 9, "B (CANCEL)  : "+getKeyName(keymap[GameKeyDummy.BUTTON_B]), keynum==5)
-			FontNormal.printFontGrid(2, 10, "C           : "+getKeyName(keymap[GameKeyDummy.BUTTON_C]), keynum==6)
-			FontNormal.printFontGrid(2, 11, "D           : "+getKeyName(keymap[GameKeyDummy.BUTTON_D]), keynum==7)
-			FontNormal.printFontGrid(2, 12, "E           : "+getKeyName(keymap[GameKeyDummy.BUTTON_E]), keynum==8)
+			FontNormal.printFontGrid(2, 8, "A (SELECT)  : ${getKeyName(keymap[GameKeyDummy.BUTTON_A])}", keynum==4)
+			FontNormal.printFontGrid(2, 9, "B (CANCEL)  : ${getKeyName(keymap[GameKeyDummy.BUTTON_B])}", keynum==5)
+			FontNormal.printFontGrid(2, 10, "C           : ${getKeyName(keymap[GameKeyDummy.BUTTON_C])}", keynum==6)
+			FontNormal.printFontGrid(2, 11, "D           : ${getKeyName(keymap[GameKeyDummy.BUTTON_D])}", keynum==7)
+			FontNormal.printFontGrid(2, 12, "E           : ${getKeyName(keymap[GameKeyDummy.BUTTON_E])}", keynum==8)
 		}
-		FontNormal.printFontGrid(2, 13, "F           : "+getKeyName(keymap[GameKeyDummy.BUTTON_F]), keynum==9)
-		FontNormal.printFontGrid(2, 14, "QUIT        : "+getKeyName(keymap[GameKeyDummy.BUTTON_QUIT]), keynum==10)
-		FontNormal.printFontGrid(2, 15, "PAUSE       : "+getKeyName(keymap[GameKeyDummy.BUTTON_PAUSE]), keynum==11)
-		FontNormal.printFontGrid(2, 16, "GIVEUP      : "+getKeyName(keymap[GameKeyDummy.BUTTON_GIVEUP]), keynum==12)
-		FontNormal.printFontGrid(2, 17, "RETRY       : "+getKeyName(keymap[GameKeyDummy.BUTTON_RETRY]), keynum==13)
-		FontNormal.printFontGrid(2, 18, "FRAME STEP  : "+getKeyName(keymap[GameKeyDummy.BUTTON_FRAMESTEP]), keynum==14)
-		FontNormal.printFontGrid(2, 19, "SCREEN SHOT : "+getKeyName(keymap[GameKeyDummy.BUTTON_SCREENSHOT]), keynum==15)
+		FontNormal.printFontGrid(2, 13, "F           : ${getKeyName(keymap[GameKeyDummy.BUTTON_F])}", keynum==9)
+		FontNormal.printFontGrid(2, 14, "QUIT        : ${getKeyName(keymap[GameKeyDummy.BUTTON_QUIT])}", keynum==10)
+		FontNormal.printFontGrid(2, 15, "PAUSE       : ${getKeyName(keymap[GameKeyDummy.BUTTON_PAUSE])}", keynum==11)
+		FontNormal.printFontGrid(2, 16, "GIVEUP      : ${getKeyName(keymap[GameKeyDummy.BUTTON_GIVEUP])}", keynum==12)
+		FontNormal.printFontGrid(2, 17, "RETRY       : ${getKeyName(keymap[GameKeyDummy.BUTTON_RETRY])}", keynum==13)
+		FontNormal.printFontGrid(2, 18, "FRAME STEP  : ${getKeyName(keymap[GameKeyDummy.BUTTON_FRAMESTEP])}", keynum==14)
+		FontNormal.printFontGrid(2, 19, "SCREEN SHOT : ${getKeyName(keymap[GameKeyDummy.BUTTON_SCREENSHOT])}", keynum==15)
 		FontNormal.printFontGrid(2, 20, "[SAVE & EXIT]", keynum==16)
 
 		FontNormal.printFontGrid(1, 4+keynum, "b", COLOR.RED)
 
 		if(frame>=KEYACCEPTFRAME)
-			if(keyConfigRestFrame>0)
-				FontNormal.printFontGrid(1, 22, "PUSH KEY... "+GeneralUtil.getTime(keyConfigRestFrame.toFloat()), COLOR.PINK)
-			else if(keynum<NUM_KEYS) {
-				FontNormal.printFontGrid(1, 22, "UP/DOWN:   MOVE CURSOR", COLOR.GREEN)
-				FontNormal.printFontGrid(1, 23, "ENTER:     SET KEY", COLOR.GREEN)
-				FontNormal.printFontGrid(1, 24, "DELETE:    SET TO NONE", COLOR.GREEN)
-				FontNormal.printFontGrid(1, 25, "BACKSPACE: CANCEL", COLOR.GREEN)
-			} else {
-				FontNormal.printFontGrid(1, 22, "UP/DOWN:   MOVE CURSOR", COLOR.GREEN)
-				FontNormal.printFontGrid(1, 23, "ENTER:     SAVE & EXIT", COLOR.GREEN)
-				FontNormal.printFontGrid(1, 24, "BACKSPACE: CANCEL", COLOR.GREEN)
+			when {
+				keyConfigRestFrame>0 -> FontNormal.printFontGrid(1, 22, "PUSH KEY... "+GeneralUtil.getTime(keyConfigRestFrame), COLOR.PINK)
+				keynum<NUM_KEYS -> {
+					FontNormal.printFontGrid(1, 22, "UP/DOWN:   MOVE CURSOR", COLOR.GREEN)
+					FontNormal.printFontGrid(1, 23, "ENTER:     SET KEY", COLOR.GREEN)
+					FontNormal.printFontGrid(1, 24, "DELETE:    SET TO NONE", COLOR.GREEN)
+					FontNormal.printFontGrid(1, 25, "BACKSPACE: CANCEL", COLOR.GREEN)
+				}
+				else -> {
+					FontNormal.printFontGrid(1, 22, "UP/DOWN:   MOVE CURSOR", COLOR.GREEN)
+					FontNormal.printFontGrid(1, 23, "ENTER:     SAVE & EXIT", COLOR.GREEN)
+					FontNormal.printFontGrid(1, 24, "BACKSPACE: CANCEL", COLOR.GREEN)
+				}
 			}
 
 		// FPS

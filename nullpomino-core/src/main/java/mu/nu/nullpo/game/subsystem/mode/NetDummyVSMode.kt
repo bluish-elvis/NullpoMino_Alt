@@ -1,7 +1,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.*
@@ -244,12 +244,12 @@ open class NetDummyVSMode:NetDummyMode() {
 						owner.engine[playerID].framecolor = NETVS_PLAYER_COLOR_FRAME[pInfo.seatID]
 
 					// Set team cint
-					if(netvsPlayerTeam!![playerID].isNotEmpty())
-						if(!teamList.contains(netvsPlayerTeam!![playerID])) {
-							teamList.add(netvsPlayerTeam!![playerID])
+					if(netvsPlayerTeam[playerID].isNotEmpty())
+						if(!teamList.contains(netvsPlayerTeam[playerID])) {
+							teamList.add(netvsPlayerTeam[playerID])
 							netvsPlayerTeamColor[playerID] = teamList.size
 						} else
-							netvsPlayerTeamColor[playerID] = teamList.indexOf(netvsPlayerTeam!![playerID])+1
+							netvsPlayerTeamColor[playerID] = teamList.indexOf(netvsPlayerTeam[playerID])+1
 				}
 	}
 
@@ -288,8 +288,8 @@ open class NetDummyVSMode:NetDummyMode() {
 		val x = owner.receiver.getFieldDisplayPositionX(engine, playerID)
 		val y = owner.receiver.getFieldDisplayPositionY(engine, playerID)
 
-		if(netvsPlayerName!=null&&netvsPlayerName!![playerID]!=null&&netvsPlayerName!![playerID].isNotEmpty()) {
-			var name = netvsPlayerName!![playerID]
+		if(netvsPlayerName[playerID].isNotEmpty()) {
+			var name = netvsPlayerName[playerID]
 			var fontcolorNum = netvsPlayerTeamColor[playerID]
 			if(fontcolorNum<0) fontcolorNum = 0
 			if(fontcolorNum>NETVS_TEAM_FONT_COLORS.size-1) fontcolorNum = NETVS_TEAM_FONT_COLORS.size-1
@@ -484,8 +484,8 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		for(i in 0 until players)
 			if(netvsPlayerExist[i]&&!netvsPlayerDead[i]&&owner.engine[i].gameActive)
-				if(netvsPlayerTeam!![i].isNotEmpty()) {
-					if(!listTeamName.contains(netvsPlayerTeam!![i])) listTeamName.add(netvsPlayerTeam!![i])
+				if(netvsPlayerTeam[i].isNotEmpty()) {
+					if(!listTeamName.contains(netvsPlayerTeam[i])) listTeamName.add(netvsPlayerTeam[i])
 				} else
 					noTeamCount++
 
@@ -504,8 +504,8 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(!netvsPlayerExist[playerID]||netvsPlayerDead[playerID]||!netvsPlayerActive[playerID]) return false
 
 		// Is teammate?
-		val myTeam = netvsPlayerTeam!![0]
-		val thisTeam = netvsPlayerTeam!![playerID]
+		val myTeam = netvsPlayerTeam[0]
+		val thisTeam = netvsPlayerTeam[playerID]
 		return myTeam.isEmpty()||thisTeam.isEmpty()||myTeam!=thisTeam
 	}
 
@@ -517,19 +517,19 @@ open class NetDummyVSMode:NetDummyMode() {
 	private fun netvsDrawRoomInfoBox(x:Int, y:Int) {
 		if(netCurrentRoomInfo!=null) {
 			owner.receiver.drawDirectFont(x, y, "PLAYERS", COLOR.CYAN, .5f)
-			owner.receiver.drawDirectFont(x, y+8, (""+netvsNumPlayers), COLOR.WHITE, .5f)
+			owner.receiver.drawDirectFont(x, y+8, "$netvsNumPlayers", COLOR.WHITE, .5f)
 			owner.receiver.drawDirectFont(x, y+16, "SPECTATORS", COLOR.CYAN, .5f)
-			owner.receiver.drawDirectFont(x, y+24, (""+netNumSpectators), COLOR.WHITE, .5f)
+			owner.receiver.drawDirectFont(x, y+24, "$netNumSpectators", COLOR.WHITE, .5f)
 
 			if(!netvsIsWatch()) {
 				owner.receiver.drawDirectFont(x, y+32, "MATCHES", COLOR.CYAN, .5f)
-				owner.receiver.drawDirectFont(x, y+40, (""+netvsPlayerPlayCount[0]), COLOR.WHITE, .5f)
+				owner.receiver.drawDirectFont(x, y+40, "${netvsPlayerPlayCount[0]}", COLOR.WHITE, .5f)
 				owner.receiver.drawDirectFont(x, y+48, "WINS", COLOR.CYAN, .5f)
-				owner.receiver.drawDirectFont(x, y+56, (""+netvsPlayerWinCount[0]), COLOR.WHITE, .5f)
+				owner.receiver.drawDirectFont(x, y+56, "${netvsPlayerWinCount[0]}", COLOR.WHITE, .5f)
 			}
 		}
 		owner.receiver.drawDirectFont(x, y+72, "ALL ROOMS", COLOR.GREEN, .5f)
-		owner.receiver.drawDirectFont(x, y+80, (""+netLobby!!.netPlayerClient!!.roomInfoList.size), COLOR.WHITE, .5f)
+		owner.receiver.drawDirectFont(x, y+80, "${netLobby!!.netPlayerClient!!.roomInfoList.size}", COLOR.WHITE, .5f)
 	}
 
 	/** NET-VS: Settings screen */
@@ -601,12 +601,12 @@ open class NetDummyVSMode:NetDummyMode() {
 			if(playerID==0&&!netvsIsWatch()&&!netvsIsReadyChangePending&&netvsNumPlayers>=2
 				&&!netvsIsNewcomer)
 				if(!netvsPlayerReady[playerID]) {
-					var strTemp = "A("+owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)+" KEY):"
+					var strTemp = "A(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
 					if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
 					owner.receiver.drawMenuFont(engine, playerID, 0, 16, strTemp, COLOR.CYAN)
 					owner.receiver.drawMenuFont(engine, playerID, 1, 17, "READY", COLOR.CYAN)
 				} else {
-					var strTemp = "B("+owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_B)+" KEY):"
+					var strTemp = "B(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_B)} KEY):"
 					if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
 					owner.receiver.drawMenuFont(engine, playerID, 0, 16, strTemp, COLOR.BLUE)
 					owner.receiver.drawMenuFont(engine, playerID, 1, 17, "CANCEL", COLOR.BLUE)
@@ -614,7 +614,7 @@ open class NetDummyVSMode:NetDummyMode() {
 		}
 
 		if(playerID==0&&!netvsIsWatch()&&menuTime>=5) {
-			var strTemp = "F("+owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)+" KEY):"
+			var strTemp = "F(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
 			if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
 			strTemp = strTemp.toUpperCase()
 			owner.receiver.drawMenuFont(engine, playerID, 0, 18, strTemp, COLOR.PURPLE)
@@ -739,10 +739,10 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		// Elapsed time
 		if(playerID==0) {
-			owner.receiver.drawDirectFont(256, 16, GeneralUtil.getTime(netvsPlayTimer.toFloat()))
+			owner.receiver.drawDirectFont(256, 16, GeneralUtil.getTime(netvsPlayTimer))
 
 			if(netvsIsPractice)
-				owner.receiver.drawDirectFont(256, 32, GeneralUtil.getTime(engine.statistics.time.toFloat()),
+				owner.receiver.drawDirectFont(256, 32, GeneralUtil.getTime(engine.statistics.time),
 					COLOR.PURPLE)
 		}
 
@@ -750,7 +750,7 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(playerID==0&&netCurrentRoomInfo!=null&&netvsAutoStartTimerActive
 			&&!netvsIsGameActive)
 			owner.receiver.drawDirectFont(496, 16,
-				GeneralUtil.getTime(netvsAutoStartTimer.toFloat()),
+				GeneralUtil.getTime(netvsAutoStartTimer),
 				if(netCurrentRoomInfo!!.autoStartTNET2) COLOR.RED else COLOR.YELLOW)
 
 	}
@@ -965,12 +965,12 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		if(playerID==0&&!netvsIsWatch()) {
 			// Restart/Practice
-			var strTemp = "A("+owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)+" KEY):"
+			var strTemp = "A(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
 			if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
 			owner.receiver.drawMenuFont(engine, playerID, 0, 18, strTemp, COLOR.RED)
 			owner.receiver.drawMenuFont(engine, playerID, 1, 19, "RESTART", COLOR.RED)
 
-			var strTempF = "F("+owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)+" KEY):"
+			var strTempF = "F(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
 			if(strTempF.length>10) strTempF = strTempF.substring(0, 10)
 			owner.receiver.drawMenuFont(engine, playerID, 0, 20, strTempF, COLOR.PURPLE)
 			if(!netvsIsPractice)
@@ -1014,8 +1014,7 @@ open class NetDummyVSMode:NetDummyMode() {
 
 					if(playerID==0&&!netvsIsWatch())
 						netvsIsReadyChangePending = false
-					else if(pInfo.ready)
-						owner.receiver.playSE("decide")
+					else if(pInfo.ready) owner.receiver.playSE("decide")
 					else if(!pInfo.playing) owner.receiver.playSE("change")
 				}
 			}

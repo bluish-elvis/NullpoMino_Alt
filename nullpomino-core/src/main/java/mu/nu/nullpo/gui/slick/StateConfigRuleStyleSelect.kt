@@ -30,7 +30,7 @@ class StateConfigRuleStyleSelect:DummyMenuChooseState() {
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
 		// Menu
-		FontNormal.printFontGrid(1, 1, "SELECT "+(player+1)+"P STYLE", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "SELECT ${player+1}P STYLE", COLOR.ORANGE)
 
 		FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RED)
 

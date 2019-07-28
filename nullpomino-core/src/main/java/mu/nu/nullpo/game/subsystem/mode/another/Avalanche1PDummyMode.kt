@@ -172,17 +172,17 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		engine.lineGravityType = if(cascadeSlow) GameEngine.LineGravity.CASCADE_SLOW else GameEngine.LineGravity.CASCADE
 		engine.displaysize = if(bigDisplay) 1 else 0
 
-		if(outlinetype==0)
-			engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
-		else if(outlinetype==1)
-			engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_SAMECOLOR
-		else if(outlinetype==2) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
+		when(outlinetype) {
+			0 -> engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
+			1 -> engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_SAMECOLOR
+			2 -> engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
+		}
 
-		if(numColors==3)
-			level = 1
-		else if(numColors==4)
-			level = 5
-		else if(numColors==5) level = 10
+		when(numColors) {
+			3 -> level = 1
+			4 -> level = 5
+			5 -> level = 10
+		}
 		toNextLevel = blocksPerLevel
 
 		zenKeshiCount = 0
@@ -213,7 +213,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	}
 
 	override fun onARE(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.dasCount in 1..(DAS-1)) engine.dasCount = DAS
+		if(engine.dasCount in 1 until DAS) engine.dasCount = DAS
 		return false
 	}
 
@@ -263,7 +263,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 				zenKeshi = false
 
 			onClear(engine, playerID)
-			engine.playSE("combo"+minOf(engine.chain, 20))
+			engine.playSE("combo${minOf(engine.chain, 20)}")
 
 			val pts = calcPts(avalanche)
 
@@ -300,14 +300,12 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	protected open fun calcPts(avalanche:Int):Int = avalanche*10
 
 	protected open fun calcChainMultiplier(chain:Int):Int {
-		return if(chain==2)
-			8
-		else if(chain==3)
-			16
-		else if(chain>=4)
-			32*(chain-3)
-		else
-			0
+		return when {
+			chain==2 -> 8
+			chain==3 -> 16
+			chain>=4 -> 32*(chain-3)
+			else -> 0
+		}
 	}
 
 	protected open fun onClear(engine:GameEngine, playerID:Int) {
@@ -345,7 +343,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		receiver.drawMenuFont(engine, playerID, 0, 12, strScore, EventReceiver.COLOR.RED)
 
 		receiver.drawMenuFont(engine, playerID, 0, 13, "TIME", EventReceiver.COLOR.BLUE)
-		val strTime = String.format("%10s", GeneralUtil.getTime(engine.statistics.time.toFloat()))
+		val strTime = String.format("%10s", GeneralUtil.getTime(engine.statistics.time))
 		receiver.drawMenuFont(engine, playerID, 0, 14, strTime)
 	}
 

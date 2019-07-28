@@ -23,7 +23,6 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
@@ -31,6 +30,7 @@ import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import kotlin.math.ceil
 
 /** ULTRA Mode */
 class SprintUltra:NetDummyMode() {
@@ -131,7 +131,7 @@ class SprintUltra:NetDummyMode() {
 			loadPreset(engine, engine.owner.replayProp, -1)
 			version = engine.owner.replayProp.getProperty("ultra.version", 0)
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty(playerID.toString()+".net.netPlayerName", "")
+			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
 	}
 
@@ -334,7 +334,7 @@ class SprintUltra:NetDummyMode() {
 				"B2B", GeneralUtil.getONorOFF(enableB2B), "COMBO", GeneralUtil.getONorOFF(enableCombo))
 			if(!engine.owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
-				drawMenuCompact(engine, playerID, receiver, "LOAD", presetNumber.toString(), "SAVE", presetNumber.toString())
+				drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber", "SAVE", "$presetNumber")
 			}
 		}
 	}
@@ -375,7 +375,7 @@ class SprintUltra:NetDummyMode() {
 		if(owner.menuOnly) return
 
 		receiver.drawScoreFont(engine, playerID, 0, 0, "ULTRA SCORE ATTACK", EventReceiver.COLOR.CYAN)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "("+(goaltype+1)+" MINUTES SPRINT)", EventReceiver.COLOR.CYAN)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "(${(goaltype+1)} MINUTES SPRINT)", EventReceiver.COLOR.CYAN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -384,8 +384,8 @@ class SprintUltra:NetDummyMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, 5+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 5+i, rankingScore!![goaltype][0][i].toString(), i==rankingRank[0])
-					receiver.drawScoreNum(engine, playerID, 10, 5+i, rankingLines!![goaltype][0][i].toString(), i==rankingRank[0])
+					receiver.drawScoreNum(engine, playerID, 3, 5+i, "${rankingScore!![goaltype][0][i]}", i==rankingRank[0])
+					receiver.drawScoreNum(engine, playerID, 10, 5+i, "${rankingLines!![goaltype][0][i]}", i==rankingRank[0])
 				}
 
 				receiver.drawScoreFont(engine, playerID, 0, 11, "LINE RANKING", EventReceiver.COLOR.GREEN)
@@ -393,15 +393,15 @@ class SprintUltra:NetDummyMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, 13+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 13+i, rankingLines!![goaltype][1][i].toString(), i==rankingRank[1])
-					receiver.drawScoreNum(engine, playerID, 8, 13+i, rankingScore!![goaltype][1][i].toString(), i==rankingRank[1])
+					receiver.drawScoreNum(engine, playerID, 3, 13+i, "${rankingLines!![goaltype][1][i]}", i==rankingRank[1])
+					receiver.drawScoreNum(engine, playerID, 8, 13+i, "${rankingScore!![goaltype][1][i]}", i==rankingRank[1])
 				}
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 3, "+$lastscore")
-			receiver.drawScoreNum(engine, playerID, 0, 4, scgettime.toString(), 2f)
-			if(scgettime<engine.statistics.score) scgettime += Math.ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
+			receiver.drawScoreNum(engine, playerID, 0, 4, "$scgettime", 2f)
+			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 7, engine.statistics.lines.toString(), 2f)
@@ -419,7 +419,7 @@ class SprintUltra:NetDummyMode() {
 			if(time<30*60&&time>0) fontcolor = EventReceiver.COLOR.YELLOW
 			if(time<20*60&&time>0) fontcolor = EventReceiver.COLOR.ORANGE
 			if(time<10*60&&time>0) fontcolor = EventReceiver.COLOR.RED
-			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(time.toFloat()), fontcolor, 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(time), fontcolor, 2f)
 			renderLineAlert(engine, playerID, receiver)
 		}
 
@@ -506,19 +506,19 @@ class SprintUltra:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, AbstractMode.Statistic.SCORE)
+		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE)
 		if(rankingRank[0]!=-1) {
 			val strRank = String.format("RANK %d", rankingRank[0]+1)
 			receiver.drawMenuFont(engine, playerID, 4, 2, strRank, EventReceiver.COLOR.ORANGE)
 		}
 
-		drawResultStats(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, AbstractMode.Statistic.LINES)
+		drawResultStats(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, Statistic.LINES)
 		if(rankingRank[1]!=-1) {
 			val strRank = String.format("RANK %d", rankingRank[1]+1)
 			receiver.drawMenuFont(engine, playerID, 4, 5, strRank, EventReceiver.COLOR.ORANGE)
 		}
 
-		drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR.BLUE, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.SPL, AbstractMode.Statistic.SPM, AbstractMode.Statistic.LPM, AbstractMode.Statistic.PPS)
+		drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR.BLUE, Statistic.PIECE, Statistic.SPL, Statistic.SPM, Statistic.LPM, Statistic.PPS)
 
 		drawResultNetRank(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 18, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -538,7 +538,7 @@ class SprintUltra:NetDummyMode() {
 		engine.owner.replayProp.setProperty("ultra.version", version)
 
 		// NET: Save name
-		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(playerID.toString()+".net.netPlayerName", netPlayerName)
+		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -624,12 +624,12 @@ class SprintUltra:NetDummyMode() {
 	override fun netSendStats(engine:GameEngine) {
 		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += engine.statistics.score.toString()+"\t"+engine.statistics.lines+"\t"+engine.statistics.totalPieceLocked+"\t"
-		msg += engine.statistics.time.toString()+"\t"+engine.statistics.spm+"\t"
-		msg += engine.statistics.lpm.toString()+"\t"+engine.statistics.spl+"\t"+goaltype+"\t"
-		msg += engine.gameActive.toString()+"\t"+engine.timerActive+"\t"
-		msg += lastscore.toString()+"\t"+scgettime+"\t"+engine.lastevent+"\t"+lastb2b+"\t"+lastcombo+"\t"+lastpiece+"\t"
-		msg += bg.toString()+"\n"
+		msg += engine.statistics.score.toString()+"\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += engine.statistics.time.toString()+"\t${engine.statistics.spm}\t"
+		msg += engine.statistics.lpm.toString()+"\t${engine.statistics.spl}\t$goaltype\t"
+		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
+		msg += "$lastscore${"\t$scgettime\t${engine.lastevent}\t$lastb2b\t"+lastcombo}\t$lastpiece\t"
+		msg += "$bg"+"\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -668,15 +668,15 @@ class SprintUltra:NetDummyMode() {
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
 		var subMsg = ""
-		subMsg += "SCORE;"+engine.statistics.score+"\t"
-		subMsg += "LINE;"+engine.statistics.lines+"\t"
-		subMsg += "PIECE;"+engine.statistics.totalPieceLocked+"\t"
-		subMsg += "SCORE/LINE;"+engine.statistics.spl+"\t"
-		subMsg += "SCORE/MIN;"+engine.statistics.spm+"\t"
-		subMsg += "LINE/MIN;"+engine.statistics.lpm+"\t"
-		subMsg += "PIECE/SEC;"+engine.statistics.pps+"\t"
+		subMsg += "SCORE;${engine.statistics.score}\t"
+		subMsg += "LINE;${engine.statistics.lines}\t"
+		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
+		subMsg += "SCORE/LINE;${engine.statistics.spl}\t"
+		subMsg += "SCORE/MIN;${engine.statistics.spm}\t"
+		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
+		subMsg += "PIECE/SEC;${engine.statistics.pps}\t"
 
-		val msg = "gstat1p\t"+NetUtil.urlEncode(subMsg)+"\n"
+		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -685,11 +685,11 @@ class SprintUltra:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += engine.speed.gravity.toString()+"\t"+engine.speed.denominator+"\t"+engine.speed.are+"\t"
-		msg += engine.speed.areLine.toString()+"\t"+engine.speed.lineDelay+"\t"+engine.speed.lockDelay+"\t"
-		msg += engine.speed.das.toString()+"\t"+bgmno+"\t"+big+"\t"+goaltype+"\t"+tspinEnableType+"\t"
-		msg += enableTSpinKick.toString()+"\t"+enableB2B+"\t"+enableCombo+"\t"+presetNumber+"\t"
-		msg += spinCheckType.toString()+"\t"+tspinEnableEZ+"\n"
+		msg += engine.speed.gravity.toString()+"\t${engine.speed.denominator}\t${engine.speed.are}\t"
+		msg += engine.speed.areLine.toString()+"\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
+		msg += engine.speed.das.toString()+"\t$bgmno\t$big\t$goaltype\t$tspinEnableType\t"
+		msg += "$enableTSpinKick${"\t$enableB2B\t"+enableCombo}\t$presetNumber\t"
+		msg += "$spinCheckType${"\t"+tspinEnableEZ}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 

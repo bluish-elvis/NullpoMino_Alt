@@ -74,10 +74,6 @@
 <entry key="GameTuning_BlockShowOutlineOnly">Toggles the block display.</entry>
 <entry key="GameTuning_Preview">Preview your tuning settings. (Hotkey: D button)</entry>
 
-<!--InGame-->
-<entry key="InGame_Next">NEXT</entry>
-<entry key="InGame_Hold">HOLD</entry>
-
 <!--Init Failed-->
 <entry key="LWJGLLoadFailedMessage_Title">LWJGL is not compatible with your OS</entry>
 <entry key="LWJGLLoadFailedMessage_Body">Failed to load LWJGL.\nUnfortunately, it seems LWGJL is not compatible with your OS.\n\nException Message:%s\nPlease refer to "log/log_slick.txt" file for detailed error log.</entry>

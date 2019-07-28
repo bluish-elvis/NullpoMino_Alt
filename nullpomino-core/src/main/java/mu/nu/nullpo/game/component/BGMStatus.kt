@@ -66,7 +66,18 @@ class BGMStatus:Serializable {
 		override fun equals(other:Any?):Boolean =
 			super.equals(other)||if(other is BGM) id==other.id&&idx==other.idx else false
 		operator fun compareTo(o:BGM):Int = if(id==o.id) idx-o.idx else id-o.id
-		override fun hashCode():Int = super.hashCode()
+		override fun hashCode():Int {
+			var result = hidden.hashCode()
+			result = 31*result+id
+			result = 31*result+idx
+			result = 31*result+nums
+			result = 31*result+name.hashCode()
+			result = 31*result+longName.hashCode()
+			result = 31*result+subName.hashCode()
+			result = 31*result+drawName.hashCode()
+			result = 31*result+fullName.hashCode()
+			return result
+		}
 
 		override fun toString():String = fullName
 

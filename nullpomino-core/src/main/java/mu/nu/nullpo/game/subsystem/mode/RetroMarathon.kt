@@ -25,10 +25,8 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver
-import mu.nu.nullpo.game.event.EventReceiver.*
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.subsystem.mode.AbstractMode.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 
@@ -158,14 +156,14 @@ class RetroMarathon:AbstractMode() {
 				menuCursor--
 				if(menuCursor==1&&gametype==GAMETYPE_PRESSURE) menuCursor--
 				if(menuCursor<0) menuCursor = 2
-				receiver.playSE("cursor")
+				engine.playSE("cursor")
 			}
 			// Check for DOWN button, when pressed it will move cursor down.
 			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 				menuCursor++
 				if(menuCursor==1&&gametype==GAMETYPE_PRESSURE) menuCursor++
 				if(menuCursor>2) menuCursor = 0
-				receiver.playSE("cursor")
+				engine.playSE("cursor")
 			}
 
 			// Check for LEFT/RIGHT keys
@@ -174,7 +172,7 @@ class RetroMarathon:AbstractMode() {
 			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
 
 			if(change!=0) {
-				receiver.playSE("change")
+				engine.playSE("change")
 
 				when(menuCursor) {
 					0 -> {
@@ -195,7 +193,7 @@ class RetroMarathon:AbstractMode() {
 
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
-				receiver.playSE("decide")
+				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				receiver.saveModeConfig(owner.modeConfig)
 				return false
@@ -258,7 +256,7 @@ class RetroMarathon:AbstractMode() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		receiver.drawScoreFont(engine, playerID, 0, 0, "RETRO MASTERY", COLOR.GREEN)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "("+GAMETYPE_NAME[gametype]+")", COLOR.GREEN)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "(${GAMETYPE_NAME[gametype]})", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -266,8 +264,8 @@ class RetroMarathon:AbstractMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1), COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 4+i, rankingScore[gametype][i].toString(), i==rankingRank)
-					receiver.drawScoreNum(engine, playerID, 12, 4+i, rankingLines[gametype][i].toString(), i==rankingRank)
+					receiver.drawScoreNum(engine, playerID, 3, 4+i, "$rankingScore[gametype][i]", i==rankingRank)
+					receiver.drawScoreNum(engine, playerID, 12, 4+i, "$rankingLines[gametype][i]", i==rankingRank)
 					receiver.drawScoreNum(engine, playerID, 17, 4+i, String.format("%02d", rankingLevel[gametype][i]), i==rankingRank)
 				}
 			}
@@ -276,10 +274,10 @@ class RetroMarathon:AbstractMode() {
 			val strScore:String = if(lastscore==0||scgettime>=120)
 				engine.statistics.score.toString()
 			else
-				engine.statistics.score.toString()+" (+"+lastscore.toString()+")"
+				"${engine.statistics.score} (+$lastscore)"
 			receiver.drawScoreNum(engine, playerID, 0, 4, strScore, 2f)
 
-			val strLine:String = loons.toString()
+			val strLine:String = "$loons"
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINES", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 7, strLine, 2f)
@@ -288,7 +286,7 @@ class RetroMarathon:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 10, String.format("%02d", engine.statistics.level))
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time.toFloat()), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)
 		}
 	}
 
@@ -361,7 +359,7 @@ class RetroMarathon:AbstractMode() {
 			owner.backgroundStatus.fadebg = lv
 
 			setSpeed(engine)
-			receiver.playSE("levelup")
+			engine.playSE("levelup")
 		}
 
 		// Update meter

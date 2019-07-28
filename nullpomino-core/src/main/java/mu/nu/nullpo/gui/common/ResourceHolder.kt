@@ -10,7 +10,7 @@ abstract class ResourceHolder {
 
 	abstract fun getImgBigBlock(skin:Int):AbstractImage
 
-	fun getBlockIsSticky(skin:Int):Boolean = skin in 0..(imgBlockListSize-1)&&blockStickyFlagList!![skin]
+	fun getBlockIsSticky(skin:Int):Boolean = skin in 0 until imgBlockListSize&&blockStickyFlagList!![skin]
 
 	companion object {
 

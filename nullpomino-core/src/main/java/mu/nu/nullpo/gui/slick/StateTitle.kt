@@ -54,7 +54,7 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 
 		// Update title bar
 		if(container is AppGameContainer) {
-			container.setTitle("NullpoMino version"+GameManager.versionString)
+			container.setTitle("NullpoMino version${GameManager.versionString}")
 			container.setUpdateOnlyWhenVisible(true)
 		}
 
@@ -87,7 +87,7 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 
 		// Menu
 
-		FontNano.printFont(0, 0, "NULLPOMINO VERSION "+GameManager.versionString,
+		FontNano.printFont(0, 0, "NULLPOMINO VERSION ${GameManager.versionString}",
 			COLOR.ORANGE, 0.5f)
 
 		FontMedal.printFont(600, 432, "ALT", 2)
@@ -96,8 +96,8 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
 
 		if(UpdateChecker.isNewVersionAvailable(GameManager.versionMajor, GameManager.versionMinor)) {
-			val strTemp =
-				String.format(NullpoMinoSlick.getUIText("Title_NewVersion"), UpdateChecker.latestVersionFullString, UpdateChecker.strReleaseDate)
+			val strTemp = String.format(NullpoMinoSlick.getUIText("Title_NewVersion"),
+					UpdateChecker.latestVersionFullString, UpdateChecker.strReleaseDate)
 			FontNormal.printTTF(16, 416, strTemp)
 		}
 		super.renderImpl(container, game, g)
@@ -107,10 +107,8 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		ResourceHolder.soundManager.play("decide1")
 
 		StateSelectMode.isTopLevel = true
-		if(cursor==CHOICEID.size-1)
-			container.exit()
-		else
-			game.enterState(CHOICEID[cursor])
+		if(cursor==CHOICEID.size-1) container.exit()
+		else game.enterState(CHOICEID[cursor])
 
 		return false
 	}

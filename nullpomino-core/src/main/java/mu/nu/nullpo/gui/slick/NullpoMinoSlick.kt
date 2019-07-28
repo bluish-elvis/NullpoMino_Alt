@@ -23,12 +23,12 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick
 
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetObserverClient
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.ModeManager
-import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.apache.log4j.Logger
 import org.apache.log4j.PropertyConfigurator
 import org.lwjgl.opengl.Display
@@ -41,6 +41,7 @@ import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.swing.JOptionPane
+import kotlin.system.exitProcess
 
 /** NullpoMino SlickVersion */
 /** Constructor */
@@ -284,11 +285,11 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			}
 
 			try {
-				val `in` = FileInputStream("config/lang/slick_"+Locale.getDefault().country+".xml")
+				val `in` = FileInputStream("config/lang/slick_${Locale.getDefault().country}.xml")
 				propLang.loadFromXML(`in`)
 				`in`.close()
 
-				val out = FileOutputStream("config/lang/slick_"+Locale.getDefault().country+".xml")
+				val out = FileOutputStream("config/lang/slick_${Locale.getDefault().country}.xml")
 				propLang.storeToXML(out, "Slick language file - "+Locale.getDefault().displayCountry)
 				out.close()
 			} catch(e:IOException) {
@@ -303,7 +304,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			}
 
 			try {
-				val `in` = FileInputStream("config/lang/modedesc_"+Locale.getDefault().country+".xml")
+				val `in` = FileInputStream("config/lang/modedesc_${Locale.getDefault().country}.xml")
 				propModeDesc.loadFromXML(`in`)
 				`in`.close()
 			} catch(e:IOException) {
@@ -337,15 +338,15 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 					for(i in 0 until GameEngine.MAX_GAMESTYLE)
 					// TETROMINO
 						if(i==0) {
-							if(propGlobal.getProperty(pl.toString()+".rule")==null) {
-								propGlobal.setProperty(pl.toString()+".rule", propDefaultRule.getProperty("default.rule", ""))
-								propGlobal.setProperty(pl.toString()+".rulefile", propDefaultRule.getProperty("default.rulefile", ""))
-								propGlobal.setProperty(pl.toString()+".rulename", propDefaultRule.getProperty("default.rulename", ""))
+							if(propGlobal.getProperty("$pl.rule")==null) {
+								propGlobal.setProperty("$pl.rule", propDefaultRule.getProperty("default.rule", ""))
+								propGlobal.setProperty("$pl.rulefile", propDefaultRule.getProperty("default.rulefile", ""))
+								propGlobal.setProperty("$pl.rulename", propDefaultRule.getProperty("default.rulename", ""))
 							}
-						} else if(propGlobal.getProperty(pl.toString()+".rule."+i)==null) {
-							propGlobal.setProperty(pl.toString()+".rule."+i, propDefaultRule.getProperty("default.rule.$i", ""))
-							propGlobal.setProperty(pl.toString()+".rulefile."+i, propDefaultRule.getProperty("default.rulefile.$i", ""))
-							propGlobal.setProperty(pl.toString()+".rulename."+i, propDefaultRule.getProperty("default.rulename.$i", ""))
+						} else if(propGlobal.getProperty("$pl.rule.$i")==null) {
+							propGlobal.setProperty("$pl.rule.$i", propDefaultRule.getProperty("default.rule.$i", ""))
+							propGlobal.setProperty("$pl.rulefile.$i", propDefaultRule.getProperty("default.rulefile.$i", ""))
+							propGlobal.setProperty("$pl.rulename.$i", propDefaultRule.getProperty("default.rulename.$i", ""))
 						}
 			} catch(e:Exception) {
 			}
@@ -367,8 +368,8 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			perfectFPSDelay = System.nanoTime()
 
 			// Get driver name and version
-			var strDriverName:String? = null
-			var strDriverVersion:String? = null
+			var strDriverName:String?
+			var strDriverVersion:String?
 			try {
 				strDriverName = Display.getAdapter()
 				strDriverVersion = Display.getVersion()
@@ -391,17 +392,17 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				if(fileLWJGL.isFile&&fileLWJGL.canRead()) {
 					// File exists but incompatible with your OS
 					val strErrorTitle = getUIText("LWJGLLoadFailedMessage_Title")
-					val strErrorMessage = String.format(getUIText("LWJGLLoadFailedMessage_Body"), e.toString())
+					val strErrorMessage = String.format(getUIText("LWJGLLoadFailedMessage_Body"), "$e")
 					JOptionPane.showMessageDialog(null, strErrorMessage, strErrorTitle, JOptionPane.ERROR_MESSAGE)
 				} else {
 					// Not found
 					val strErrorTitle = getUIText("LWJGLNotFoundMessage_Title")
-					val strErrorMessage = String.format(getUIText("LWJGLNotFoundMessage_Body"), e.toString())
+					val strErrorMessage = String.format(getUIText("LWJGLNotFoundMessage_Body"), "$e")
 					JOptionPane.showMessageDialog(null, strErrorMessage, strErrorTitle, JOptionPane.ERROR_MESSAGE)
 				}
 
 				// Exit
-				System.exit(-3)
+				exitProcess(-3)
 			}
 
 			if(strDriverName==null) strDriverName = "(Unknown)"
@@ -432,31 +433,29 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 				// Display an error dialog
 				val strErrorTitle = getUIText("InitFailedMessage_Title")
-				val strErrorMessage = String.format(getUIText("InitFailedMessage_Body"), strDriverName, strDriverVersion, e.toString())
+				val strErrorMessage = String.format(getUIText("InitFailedMessage_Body"), strDriverName, strDriverVersion, "$e")
 				JOptionPane.showMessageDialog(null, strErrorMessage, strErrorTitle, JOptionPane.ERROR_MESSAGE)
 
 				// Exit
-				System.exit(-1)
+				exitProcess(-1)
 			} catch(e:Throwable) {
 				log.fatal("Game initialize failed (NON-SlickException)", e)
 
 				// Display an error dialog
 				val strErrorTitle = getUIText("InitFailedMessageGeneral_Title")
-				val strErrorMessage = String.format(getUIText("InitFailedMessageGeneral_Body"), strDriverName, strDriverVersion, e.toString())
+				val strErrorMessage = String.format(getUIText("InitFailedMessageGeneral_Body"), strDriverName, strDriverVersion, "$e")
 				JOptionPane.showMessageDialog(null, strErrorMessage, strErrorTitle, JOptionPane.ERROR_MESSAGE)
 
 				// Exit
-				System.exit(-2)
+				exitProcess(-2)
 			}
 
 			stopObserverClient()
 
-			if(stateNetGame.netLobby!=null) {
-				log.debug("Calling netLobby shutdown routine")
-				stateNetGame.netLobby.shutdown()
-			}
+			log.debug("Calling netLobby shutdown routine")
+			stateNetGame.netLobby.shutdown()
 
-			System.exit(0)
+			exitProcess(0)
 		}
 
 		/** 設定ファイルを保存 */
@@ -535,7 +534,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			val dir = propGlobal.getProperty("custom.screenshot.directory", "ss")
 			val c = Calendar.getInstance()
 			val dfm = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
-			val filename = dir+"/"+dfm.format(c.time)+".png"
+			val filename = dir+"/${dfm.format(c.time)}.png"
 			log.info("Saving screenshot to $filename")
 
 			// Screenshot作成
@@ -699,7 +698,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		/** FPS display */
 		internal fun drawFPS() {
 			if(propConfig.getProperty("option.showfps", true))
-				FontNormal.printFont(0, 480-16, df.format(actualFPS), COLOR.BLUE)
+				FontNano.printFont(0, 480-8, "${df.format(actualFPS)}FPS", COLOR.WHITE,.5f)
 		}
 
 		/** Observerクライアントを開始 */
@@ -747,7 +746,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 					fontcolor = COLOR.RED
 				val strObserverInfo = String.format("%d/%d", netObserverClient!!.observerCount, netObserverClient!!.playerCount)
 				val strObserverString = String.format("%40s", strObserverInfo)
-				FontNormal.printFont(0, 480-16, strObserverString, fontcolor)
+				FontNano.printFont(0, 480-16, strObserverString, fontcolor)
 			}
 		}
 	}

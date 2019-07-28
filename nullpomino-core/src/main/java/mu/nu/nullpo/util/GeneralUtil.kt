@@ -49,7 +49,7 @@ object GeneralUtil {
 	 * @return String for play time
 	 */
 	fun getTime(t:Float):String = if(t<0) "--:--.--" else String.format("%02d:%02d.%02d", t.toInt()/3600, t.toInt()/60%60, (t%60*5f/3f).toInt())
-
+	fun getTime(t:Int):String = getTime(t.toFloat())
 	/** Returns ON if b is true, OFF if b is false
 	 * @param b Boolean variable to be checked
 	 * @return ON if b is true, OFF if b is false
@@ -67,7 +67,7 @@ object GeneralUtil {
 	fun getReplayFilename(name:String):String {
 		val c = Calendar.getInstance()
 		val dfm = SimpleDateFormat("yyyyMMddHHmm_")
-		return dfm.format(c.time)+name+".rep"
+		return "${dfm.format(c.time)}$name.rep"
 	}
 
 	/** Get date and time from a Calendar
@@ -308,7 +308,7 @@ object GeneralUtil {
 			if(i!=strings.size-1) res.append(separator)
 		}
 
-		return res.toString()
+		return "$res"
 
 	}
 
@@ -316,12 +316,11 @@ object GeneralUtil {
 
 	fun capsInteger(x:Int, digits:Int):String = when {
 		digits<=0 -> ""
-		x<=0 -> (1 until digits).fold("0"){b,_->b+"0"}
-		x.toString().length>digits -> {
+		x<=0 -> (1 until digits).fold("0"){b,_-> "${b}0"}
+		"$x".length>digits -> {
 			val y = (1 until digits).fold(x){b,_->b.div(10)}
 			val z = (1 until digits).fold(minOf(y,35)){b,_->b.times(10)}
-			('A'.toInt()+minOf(y-10,25)).toChar().toString()+
-				if(digits>1)capsInteger(x-z, digits-1)else ""
+			"${('A'.toInt()+minOf(y-10, 25)).toChar()}${if(digits>1) capsInteger(x-z, digits-1) else ""}"
 		}
 		digits>0 -> String.format("%0${digits}d", x)
 		else -> ""

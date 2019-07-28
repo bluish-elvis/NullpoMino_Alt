@@ -36,7 +36,7 @@ class AIRanksTester(private val numTries:Int) {
 		for(i in 0 until numTries) {
 			val tempTotalPieces = totalPieces
 			playGame()
-			println("Game : "+i+" Pieces : "+(totalPieces-tempTotalPieces)+" Cumulated average : "+totalPieces/(i+1))
+			println("Game : $i Pieces : ${totalPieces-tempTotalPieces} Cumulated average : ${totalPieces/(i+1)}")
 		}
 	}
 

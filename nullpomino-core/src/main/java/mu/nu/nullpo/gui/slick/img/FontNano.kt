@@ -48,8 +48,9 @@ object FontNano {
 				dy = (dy+16*scale).toInt()
 				dx = x
 			} else {// 文字出力
-				var sx = (stringChar-32)%32
-				var sy = (stringChar-32)/32+color.ordinal*3
+				val c = stringChar-32// Character output
+				var sx = c%32
+				var sy = c/32+color.ordinal*3
 				val sz = (12*scale).toInt()
 				sx *= 12
 				sy *= 14

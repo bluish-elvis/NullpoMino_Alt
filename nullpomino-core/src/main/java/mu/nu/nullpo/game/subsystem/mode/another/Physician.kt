@@ -23,9 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
@@ -172,7 +170,7 @@ class Physician:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GEMS", hoverBlocks.toString(), "SPEED", SPEED_NAME[speed])
+		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GEMS", "$hoverBlocks", "SPEED", SPEED_NAME[speed])
 	}
 
 	/* Called for initialization during "Ready" screen */
@@ -195,8 +193,8 @@ class Physician:AbstractMode() {
 				receiver.drawScoreFont(engine, playerID, 3, 3, "SCORE  TIME", EventReceiver.COLOR.BLUE)
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreFont(engine, playerID, 0, 4+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
-					receiver.drawScoreFont(engine, playerID, 3, 4+i, rankingScore[i].toString(), i==rankingRank)
-					receiver.drawScoreFont(engine, playerID, 10, 4+i, GeneralUtil.getTime(rankingTime[i].toFloat()), i==rankingRank)
+					receiver.drawScoreFont(engine, playerID, 3, 4+i, "$rankingScore[i]", i==rankingRank)
+					receiver.drawScoreFont(engine, playerID, 10, 4+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank)
 				}
 			}
 		} else {
@@ -204,7 +202,7 @@ class Physician:AbstractMode() {
 			val strScore:String = if(lastscore==0||scgettime<=0)
 				engine.statistics.score.toString()
 			else
-				engine.statistics.score.toString()+"(+"+lastscore.toString()+")"
+				"${engine.statistics.score}(+$lastscore)"
 			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "REST", EventReceiver.COLOR.BLUE)
@@ -233,7 +231,7 @@ class Physician:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 11, SPEED_NAME[speed], SPEED_COLOR[speed])
 
 			receiver.drawScoreFont(engine, playerID, 0, 13, "TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 14, GeneralUtil.getTime(engine.statistics.time.toFloat()))
+			receiver.drawScoreFont(engine, playerID, 0, 14, GeneralUtil.getTime(engine.statistics.time))
 		}
 	}
 
@@ -309,7 +307,7 @@ class Physician:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
-		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "SCORE", String.format("%10d", engine.statistics.score), "CLEARED", String.format("%10d", engine.statistics.lines), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time.toFloat())))
+		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "SCORE", String.format("%10d", engine.statistics.score), "CLEARED", String.format("%10d", engine.statistics.lines), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 		drawResultRank(engine, playerID, receiver, 9, EventReceiver.COLOR.BLUE, rankingRank)
 	}
 

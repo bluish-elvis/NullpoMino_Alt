@@ -19,7 +19,7 @@ class RanksIteratorPart internal constructor(private val oneIteration:OneIterati
 		ranks!!.decode(sMin, surface)
 		surfaceDecodedWork = IntArray(ranks!!.stackWidth-1)
 		ranks!!.decode(sMin, surfaceDecodedWork)
-		priority = Thread.MIN_PRIORITY
+		priority = MIN_PRIORITY
 	}
 
 	override fun run() {
@@ -30,7 +30,7 @@ class RanksIteratorPart internal constructor(private val oneIteration:OneIterati
 			synchronized(this) {
 				oneIteration.iterate()
 			}
-			if(Thread.interrupted()) {
+			if(interrupted()) {
 
 				ranks = null
 				break

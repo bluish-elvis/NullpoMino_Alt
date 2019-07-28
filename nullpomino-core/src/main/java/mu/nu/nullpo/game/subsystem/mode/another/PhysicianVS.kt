@@ -36,9 +36,6 @@ import java.util.*
 /** PHYSICIAN VS-BATTLE mode (beta) */
 class PhysicianVS:AbstractMode() {
 
-	/** Each player's frame cint */
-	private val PLAYER_COLOR_FRAME = intArrayOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
-
 	/** Has accumulatedojama blockOfcount */
 	//private int[] garbage;
 
@@ -257,7 +254,7 @@ class PhysicianVS:AbstractMode() {
 	private fun loadMapPreview(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propMap[playerID].isNullOrEmpty()||forceReload) {
 			mapMaxNo[playerID] = 0
-			propMap[playerID] = receiver.loadProperties("config/values/vsbattle/"+mapSet[playerID]+".values")
+			propMap[playerID] = receiver.loadProperties("config/values/vsbattle/${mapSet[playerID]}.values")
 		}
 
 		if(propMap[playerID].isNullOrEmpty())
@@ -472,22 +469,22 @@ class PhysicianVS:AbstractMode() {
 				initMenu(COLOR.ORANGE, 0)
 				drawMenu(engine, playerID, receiver, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
 				menuColor = COLOR.GREEN
-				drawMenu(engine, playerID, receiver, "LOAD", presetNumber[playerID].toString(), "SAVE", presetNumber[playerID].toString())
+				drawMenu(engine, playerID, receiver, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
 			} else {
 				initMenu(COLOR.CYAN, 9)
-				drawMenu(engine, playerID, receiver, "SPEED", SPEED_NAME[speed[playerID]], "VIRUS", hoverBlocks[playerID].toString(), "MODE",
+				drawMenu(engine, playerID, receiver, "SPEED", SPEED_NAME[speed[playerID]], "VIRUS", "$hoverBlocks[playerID]", "MODE",
 					if(flash[playerID])
 						"FLASH"
 					else
 						"NORMAL")
 				menuColor = COLOR.PINK
-				drawMenu(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]), "BGM", BGM.values[bgmno].toString())
+				drawMenu(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]), "BGM", "$BGM.values[bgmno]")
 				menuColor = COLOR.CYAN
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", mapSet[playerID].toString(), "MAP NO.",
+				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "$mapSet[playerID]", "MAP NO.",
 					if(mapNumber[playerID]<0)
 						"RANDOM"
 					else
-						mapNumber[playerID].toString()+"/"+(mapMaxNo[playerID]-1))
+						"$mapNumber[playerID]"+"/"+(mapMaxNo[playerID]-1))
 			}
 		} else
 			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", COLOR.YELLOW)
@@ -506,7 +503,7 @@ class PhysicianVS:AbstractMode() {
 					if(propMap[playerID]==null) {
 						propMap[playerID] = receiver.loadProperties("config/values/vsbattle/"
 							+mapSet[playerID]+".values")
-					}else propMap[playerID]?.let {
+					} else propMap[playerID]?.let {
 						engine.createFieldIfNeeded()
 
 						if(mapNumber[playerID]<0) {
@@ -531,9 +528,9 @@ class PhysicianVS:AbstractMode() {
 					hoverBlocks[playerID]>=64 -> minY = 5
 				}
 				if(flash[playerID]) {
-					engine.field!!.addRandomHoverBlocks(engine, hoverBlocks[playerID], BLOCK_COLORS, minY, true, true)
-					engine.field!!.setAllSkin(12)
-				} else engine.field!!.addRandomHoverBlocks(engine, hoverBlocks[playerID], HOVER_BLOCK_COLORS, minY, true)
+					engine.field?.addRandomHoverBlocks(engine, hoverBlocks[playerID], BLOCK_COLORS, minY, true, true)
+					engine.field?.setAllSkin(12)
+				} else engine.field?.addRandomHoverBlocks(engine, hoverBlocks[playerID], HOVER_BLOCK_COLORS, minY, true)
 			}
 		}
 
@@ -561,13 +558,13 @@ class PhysicianVS:AbstractMode() {
 		val tempX:Int
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(256, 16, GeneralUtil.getTime(engine.statistics.time.toFloat()))
+		if(playerID==0) receiver.drawDirectFont(256, 16, GeneralUtil.getTime(engine.statistics.time))
 
 		if(engine.gameStarted) {
 			// Rest
 			receiver.drawDirectFont(fldPosX+160, fldPosY+241, "REST", playerColor, .5f)
 			tempX = if(rest[playerID]<10) 8 else 0
-			receiver.drawDirectFont(fldPosX+160+tempX, fldPosY+257, rest[playerID].toString(),
+			receiver.drawDirectFont(fldPosX+160+tempX, fldPosY+257, "$rest[playerID]",
 				if(rest[playerID]<=if(flash[playerID]) 1 else 3) COLOR.RED else COLOR.WHITE)
 
 			// Speed
@@ -632,7 +629,7 @@ class PhysicianVS:AbstractMode() {
 			score[playerID] += pts
 			engine.playSE("gem")
 			setSpeed(engine)
-		} else if(lines==0&&!engine.field!!.canCascade()&&garbageColors[playerID]!=null)
+		} else if(lines==0&&!engine.field!!.canCascade())
 			if(garbageCheck(engine, playerID)) {
 				engine.stat = GameEngine.Status.LINECLEAR
 				engine.statc[0] = engine.lineDelay
@@ -643,14 +640,13 @@ class PhysicianVS:AbstractMode() {
 	 * @param engine GameEngine
 	 */
 	fun setSpeed(engine:GameEngine) {
-		/* engine.speed.gravity =
- * BASE_SPEEDS[speed[playerID]]*(10+(engine.statistics.totalPieceLocked/
- * 10));
- * engine.speed.denominator = 3600; */
+		engine.speed.gravity =
+			intArrayOf(6,8,10)[speed[engine.playerID]]*(10+(engine.statistics.totalPieceLocked/10))
+		engine.speed.denominator = 3600
 	}
 
 	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.field==null) return false
+		engine.field ?: return false
 
 		var enemyID = 0
 		if(playerID==0) enemyID = 1
@@ -659,8 +655,10 @@ class PhysicianVS:AbstractMode() {
 		engine.field!!.lineColorsCleared.let {cleared ->
 			if(cleared.size>1)
 				if(garbageColors[enemyID].isEmpty()) garbageColors[enemyID] = cleared.clone()
-				else {val s=garbageColors.size
-					cleared.forEachIndexed{i,it-> garbageColors[enemyID][s+i]=it}}
+				else {
+					val s = garbageColors.size
+					cleared.forEachIndexed {i, it -> garbageColors[enemyID][s+i] = it}
+				}
 		}
 		engine.field!!.lineColorsCleared = IntArray(0)
 		return garbageCheck(engine, playerID)
@@ -670,7 +668,7 @@ class PhysicianVS:AbstractMode() {
 		if(garbageColors[playerID].isEmpty()) return false
 		val size = garbageColors[playerID].size
 		if(size<2) return false
-		garbageColors[playerID]= garbageColors[playerID].toMutableList().shuffled(engine.random).toIntArray()
+		garbageColors[playerID] = garbageColors[playerID].toMutableList().shuffled(engine.random).toIntArray()
 		val colors = IntArray(4)
 		when {
 			size>=4 -> for(x in 0..3)
@@ -777,7 +775,7 @@ class PhysicianVS:AbstractMode() {
 			else -> receiver.drawMenuFont(engine, playerID, 6, 2, "LOSE", COLOR.WHITE)
 		}
 
-		drawResultStats(engine, playerID, receiver, 3, COLOR.ORANGE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.PIECE, AbstractMode.Statistic.LPM, AbstractMode.Statistic.PPS, AbstractMode.Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 3, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS, Statistic.TIME)
 		/* float apm = (float)(garbageSent[playerID] * 3600) /
  * (float)(engine.statistics.time);
  * drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.ORANGE,
@@ -817,5 +815,7 @@ class PhysicianVS:AbstractMode() {
 
 		/** Number of players */
 		private const val MAX_PLAYERS = 2
+		/** Each player's frame cint */
+		private val PLAYER_COLOR_FRAME = intArrayOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 	}
 }

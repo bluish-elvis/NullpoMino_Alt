@@ -576,7 +576,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		try {
-			val `in` = FileInputStream("config/lang/modedesc_"+Locale.getDefault().country+".xml")
+			val `in` = FileInputStream("config/lang/modedesc_${Locale.getDefault().country}.xml")
 			propModeDesc.load(`in`)
 			`in`.close()
 		} catch(e:IOException) {
@@ -592,7 +592,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		try {
-			val `in` = FileInputStream("config/lang/netlobby_"+Locale.getDefault().country+".xml")
+			val `in` = FileInputStream("config/lang/netlobby_${Locale.getDefault().country}.xml")
 			propLang.load(`in`)
 			`in`.close()
 		} catch(e:IOException) {
@@ -705,7 +705,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelTeamEntry.add(txtfldPlayerTeam, BorderLayout.CENTER)
 
 		// * Server selection list box
-		listmodelServerList = DefaultListModel<String>()
+		listmodelServerList = DefaultListModel()
 		if(GameManager.isDevBuild) {
 			if(!loadListToDefaultListModel(listmodelServerList, "config/setting/netlobby_serverlist_dev.cfg")) {
 				loadListToDefaultListModel(listmodelServerList, "config/list/netlobby_serverlist_default_dev.lst")
@@ -1954,7 +1954,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pRuleList.add(lCreateRoom1PRuleList, BorderLayout.NORTH)
 
 		// ** Rule list listbox
-		listmodelCreateRoom1PRuleList = DefaultListModel<String>()
+		listmodelCreateRoom1PRuleList = DefaultListModel()
 		listboxCreateRoom1PRuleList = JList(listmodelCreateRoom1PRuleList)
 		val spCreateRoom1PRuleList = JScrollPane(listboxCreateRoom1PRuleList)
 		pRuleList.add(spCreateRoom1PRuleList, BorderLayout.CENTER)
@@ -2119,7 +2119,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		val model = DefaultComboBoxModel<ComboLabel>()
 		model.addElement(ComboLabel(getUIText("GameTuning_Skin_Auto")))
 		for(i in imgTuningBlockSkins.indices)
-			model.addElement(ComboLabel(""+i, ImageIcon(imgTuningBlockSkins[i])))
+			model.addElement(ComboLabel("$i", ImageIcon(imgTuningBlockSkins[i])))
 
 		comboboxTuningSkin = JComboBox(model)
 		comboboxTuningSkin.renderer = ComboLabelCellRenderer()
@@ -2200,7 +2200,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		while(File("$skindir/graphics/blockskin/normal/n$numSkins.png").canRead()) {
 			numSkins++
 		}
-		log.debug(numSkins.toString()+" block skins found")
+		log.debug("$numSkins block skins found")
 
 		imgTuningBlockSkins = Array(numSkins) {i ->
 			val imgBlock = loadImage(getURL("$skindir/graphics/blockskin/normal/n$i.png"))
@@ -2641,14 +2641,14 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @return Line data
 	 */
 	fun createRoomListRowData(r:NetRoomInfo):Array<String> = arrayOf(
-		Integer.toString(r.roomID)
+		r.roomID.toString()
 		, r.strName
 		, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False")
 		, if(r.ruleLock) r.ruleName.toUpperCase() else getUIText("RoomTable_RuleName_Any")
 		, r.strMode
 		, if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting")
 		, r.playerSeatedCount.toString()+"/"+r.maxPlayers
-		, Integer.toString(r.spectatorCount))
+		, r.spectatorCount.toString())
 
 	/** Entered the room that you specify
 	 * @param roomID RoomID
@@ -2807,18 +2807,18 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				// Team
 				if(pInfo.strTeam.isNotEmpty()) {
 					name = getPlayerNameWithTripCode(pInfo)+" - "+pInfo.strTeam
-					if(pInfo.uid==netPlayerClient!!.playerUID) name = "*"+getPlayerNameWithTripCode(pInfo)+" - "+pInfo.strTeam
+					if(pInfo.uid==netPlayerClient!!.playerUID) name = "*${getPlayerNameWithTripCode(pInfo)} - "+pInfo.strTeam
 				}
 
 				// Rating
-				name += " |"+pInfo.rating[0]+"|"
+				name += " |${pInfo.rating[0]}|"
 				/* name += " |T:" + pInfo.rating[0] + "|";
 				 * name += "A:" + pInfo.rating[1] + "|";
 				 * name += "P:" + pInfo.rating[2] + "|";
 				 * name += "S:" + pInfo.rating[3] + "|"; */
 
 				// Country code
-				if(pInfo.strCountry.isNotEmpty()) name += " ("+pInfo.strCountry+")"
+				if(pInfo.strCountry.isNotEmpty()) name += " (${pInfo.strCountry})"
 
 				/* XXX Hostname
 				 * if(pInfo.strHost.length() > 0) {
@@ -2828,7 +2828,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				if(pInfo.roomID==-1)
 					listmodelLobbyChatPlayerList.addElement(name)
 				else
-					listmodelLobbyChatPlayerList.addElement("{"+pInfo.roomID+"} "+name)
+					listmodelLobbyChatPlayerList.addElement("{${pInfo.roomID}} "+name)
 			}
 		}
 	}
@@ -2843,7 +2843,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			listmodelRoomChatPlayerList.clear()
 
 			for(i in 0 until roomInfo.maxPlayers)
-				listmodelRoomChatPlayerList.addElement("["+(i+1)+"]")
+				listmodelRoomChatPlayerList.addElement("[${(i+1)}]")
 
 			for(pInfo in pList) {
 				if(pInfo.roomID==roomInfo.roomID) {
@@ -2854,14 +2854,14 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					// Team
 					if(pInfo.strTeam.isNotEmpty()) {
 						name = getPlayerNameWithTripCode(pInfo)+" - "+pInfo.strTeam
-						if(pInfo.uid==netPlayerClient!!.playerUID) name = "*"+getPlayerNameWithTripCode(pInfo)+" - "+pInfo.strTeam
+						if(pInfo.uid==netPlayerClient!!.playerUID) name = "*${getPlayerNameWithTripCode(pInfo)} - "+pInfo.strTeam
 					}
 
 					// Rating
-					name += " |"+pInfo.rating[roomInfo.style]+"|"
+					name += " |${pInfo.rating[roomInfo.style]}|"
 
 					// Country code
-					if(pInfo.strCountry.isNotEmpty()) name += " ("+pInfo.strCountry+")"
+					if(pInfo.strCountry.isNotEmpty()) name += " (${pInfo.strCountry})"
 
 					/* XXX Hostname
 					 * if(pInfo.strHost.length() > 0) {
@@ -2874,7 +2874,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					else if(pInfo.ready) name += getUIText("RoomUserList_Ready")
 
 					if(pInfo.seatID>=0&&pInfo.seatID<roomInfo.maxPlayers)
-						listmodelRoomChatPlayerList.set(pInfo.seatID, "["+(pInfo.seatID+1)+"] "+name)
+						listmodelRoomChatPlayerList.set(pInfo.seatID, "[${(pInfo.seatID+1)}] "+name)
 					else if(pInfo.queueID!=-1)
 						listmodelRoomChatPlayerList.addElement((pInfo.queueID+1).toString()+". "+name)
 					else
@@ -2906,7 +2906,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		ruleOptPlayer!!.writeProperty(prop, 0)
 		val strRuleTemp = prop.encode("RuleData") ?: ""
 		val strRuleData = NetUtil.compressString(strRuleTemp)
-		log.debug("RuleData uncompressed:"+strRuleTemp.length+" compressed:"+strRuleData.length)
+		log.debug("RuleData uncompressed:${strRuleTemp.length} compressed:"+strRuleData.length)
 
 		// checkSam calculation
 		val checksumObj = Adler32()
@@ -3179,11 +3179,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		if(msg.startsWith("/team")) {
 			msg = msg.replaceFirst("/team".toRegex(), "")
 			msg = msg.trim {it<=' '}
-			netPlayerClient!!.send("changeteam\t"+NetUtil.urlEncode(msg)+"\n")
+			netPlayerClient!!.send("changeteam\t${NetUtil.urlEncode(msg)}\n")
 		} else if(roomchat)
-			netPlayerClient!!.send("chat\t"+NetUtil.urlEncode(msg)+"\n")
+			netPlayerClient!!.send("chat\t${NetUtil.urlEncode(msg)}\n")
 		else
-			netPlayerClient!!.send("lobbychat\t"+NetUtil.urlEncode(msg)+"\n")
+			netPlayerClient!!.send("lobbychat\t${NetUtil.urlEncode(msg)}\n")
 	}
 
 	/** Creates NetRoomInfo from Create Room screen
@@ -3359,7 +3359,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		return Array(subEntries.size) {
 			val entry = subEntries[it]
-			return@Array entry.rulename+" ("+entry.filename+")"
+			return@Array entry.rulename+" (${entry.filename})"
 		}
 	}
 
@@ -3368,7 +3368,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Set rule selections
 		val strCurrentFileName = Array<String>(GameEngine.MAX_GAMESTYLE) {
 			if(it==0) propGlobal.getProperty(0.toString()+".rulefile", "")
-			else propGlobal.getProperty(0.toString()+".rulefile."+it, "")
+			else propGlobal.getProperty("0.rulefile.$it", "")
 		}
 
 		for(i in 0 until GameEngine.MAX_GAMESTYLE) {
@@ -3504,7 +3504,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Change teamOK(Lobby screen)
 		if(e.actionCommand=="Lobby_TeamChange_OK")
 			if(netPlayerClient!=null&&netPlayerClient!!.isConnected) {
-				netPlayerClient!!.send("changeteam\t"+NetUtil.urlEncode(txtfldRoomListTeam.text)+"\n")
+				netPlayerClient!!.send("changeteam\t${NetUtil.urlEncode(txtfldRoomListTeam.text)}\n")
 				roomListTopBarCardLayout.first(subpanelRoomListTopBar)
 			}
 		// Change teamCancel(Lobby screen)
@@ -3547,7 +3547,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Change teamOK(Room screen)
 		if(e.actionCommand=="Room_TeamChange_OK")
 			if(netPlayerClient!=null&&netPlayerClient!!.isConnected) {
-				netPlayerClient!!.send("changeteam\t"+NetUtil.urlEncode(txtfldRoomTeam.text)+"\n")
+				netPlayerClient!!.send("changeteam\t${NetUtil.urlEncode(txtfldRoomTeam.text)}\n")
 				roomTopBarCardLayout.first(subpanelRoomTopBar)
 			}
 		// Change teamCancel(Room screen)
@@ -3581,8 +3581,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				r.strName = txtfldCreateRatedName.text
 				backupRoomInfo = r
 
-				val msg = ("ratedroomcreate\t"+NetUtil.urlEncode(r.strName)+"\t"
-					+spinnerCreateRatedMaxPlayers.value+"\t"+presetIndex+"\t"
+				val msg = ("ratedroomcreate\t${NetUtil.urlEncode(r.strName)}\t"
+					+spinnerCreateRatedMaxPlayers.value+"\t$presetIndex\t"
 					+NetUtil.urlEncode("NET-VS-BATTLE")+"\n")
 
 				txtpaneRoomChatLog.text = ""
@@ -3620,7 +3620,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				backupRoomInfo = r
 
 				var msg:String
-				msg = "roomcreate\t"+NetUtil.urlEncode(r!!.strName)+"\t"
+				msg = "roomcreate\t${NetUtil.urlEncode(r!!.strName)}\t"
 				msg += NetUtil.urlEncode(r.exportString())+"\t"
 				msg += NetUtil.urlEncode(r.strMode)+"\t"
 
@@ -3651,8 +3651,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 						if(i<maxMap-1) strMap.append("\t")
 					}
 
-					val strCompressed = NetUtil.compressString(strMap.toString())
-					log.debug("Map uncompressed:"+strMap.length+" compressed:"+strCompressed.length)
+					val strCompressed = NetUtil.compressString("$strMap")
+					log.debug("Map uncompressed:${strMap.length} compressed:"+strCompressed.length)
 
 					msg += strCompressed
 				}
@@ -3735,7 +3735,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					tabLobbyAndRoom.selectedIndex = 1
 					changeCurrentScreenCard(SCREENCARD_LOBBY)
 
-					netPlayerClient!!.send("singleroomcreate\t"+"\t"+NetUtil.urlEncode(strMode)+"\t"+NetUtil.urlEncode(strRule)+"\n")
+					netPlayerClient!!.send("singleroomcreate\t${"\t${NetUtil.urlEncode(strMode)}\t"+NetUtil.urlEncode(strRule)}\n")
 				}
 			} catch(e2:Exception) {
 				log.error("Error on CreateRoom1P_OK", e2)
@@ -3772,13 +3772,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 						propGlobal.setProperty(0.toString()+".rulename", "")
 					}
 				} else if(id>=0) {
-					propGlobal.setProperty(0.toString()+".rule."+i, entry!!.filepath)
-					propGlobal.setProperty(0.toString()+".rulefile."+i, entry.filename)
-					propGlobal.setProperty(0.toString()+".rulename."+i, entry.rulename)
+					propGlobal.setProperty("0.rule.$i", entry!!.filepath)
+					propGlobal.setProperty("0.rulefile.$i", entry.filename)
+					propGlobal.setProperty("0.rulename.$i", entry.rulename)
 				} else {
-					propGlobal.setProperty(0.toString()+".rule."+i, "")
-					propGlobal.setProperty(0.toString()+".rulefile."+i, "")
-					propGlobal.setProperty(0.toString()+".rulename."+i, "")
+					propGlobal.setProperty("0.rule.$i", "")
+					propGlobal.setProperty("0.rulefile.$i", "")
+					propGlobal.setProperty("0.rulename.$i", "")
 				}
 			}
 
@@ -3935,7 +3935,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			prop.decode(strRuleData)
 			ruleOptLock!!.readProperty(prop, 0)
 
-			log.info("Received rule data ("+ruleOptLock!!.strRuleName+")")
+			log.info("Received rule data (${ruleOptLock!!.strRuleName})")
 		}
 		// Rated-game rule list
 		if(message[0]=="rulelist") {
@@ -4191,7 +4191,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val maxMap = strMaps.size
 			Collections.addAll(mapList, *strMaps)
 
-			log.debug("Received "+mapList.size+" maps")
+			log.debug("Received ${mapList.size} maps")
 		}
 		// Lobby chat
 		if(message[0]=="lobbychat") {
@@ -4284,7 +4284,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val rowdata = arrayOfNulls<String>(13)
 			val myRank = Integer.parseInt(message[4])
 
-			rowdata[0] = Integer.toString(myRank) // Rank
+			rowdata[0] = "$myRank" // Rank
 			rowdata[1] = convTripCode(NetUtil.urlDecode(message[3])) // Name
 			rowdata[2] = message[5] // Attack count
 			rowdata[3] = message[6] // APL
@@ -4293,7 +4293,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			rowdata[6] = message[9] // LPM
 			rowdata[7] = message[10] // Piece count
 			rowdata[8] = message[11] // PPS
-			rowdata[9] = GeneralUtil.getTime(Integer.parseInt(message[12]).toFloat()) //  Time
+			rowdata[9] = GeneralUtil.getTime(Integer.parseInt(message[12])) //  Time
 			rowdata[10] = message[13] // KO
 			rowdata[11] = message[14] // Win
 			rowdata[12] = message[15] // Games
@@ -4335,7 +4335,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				tablemodelGameStat1P.addRow(strTempArray)
 
 				if(writerRoomLog!=null&&strTempArray.size>1)
-					writerRoomLog!!.print(" "+strTempArray[0]+":"+strTempArray[1]
+					writerRoomLog!!.print(" ${strTempArray[0]}:"+strTempArray[1]
 						+"\n")
 			}
 
@@ -4386,7 +4386,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				if(rank==-1)
 					strRowData[0] = "N/A"
 				else
-					strRowData[0] = Integer.toString(rank+1)
+					strRowData[0] = (rank+1).toString()
 				strRowData[1] = convTripCode(NetUtil.urlDecode(strRankData[1]))
 				strRowData[2] = strRankData[2]
 				strRowData[3] = strRankData[3]
@@ -4403,7 +4403,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Announcement from the admin
 		if(message[0]=="announce") {
 			val strTime = currentTimeAsString
-			val strMessage = "["+strTime+"]<ADMIN>:"+NetUtil.urlDecode(message[1])
+			val strMessage = "[$strTime]<ADMIN>:"+NetUtil.urlDecode(message[1])
 			addSystemChatLogLater(currentChatLogTextPane, strMessage, Color(255, 32, 0))
 		}
 		// Single player replay download
@@ -4798,7 +4798,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 								strCopy.append(",").append(selectedObject)
 					}
 
-					val ss = StringSelection(strCopy.toString())
+					val ss = StringSelection("$strCopy")
 					val clipboard = Toolkit.getDefaultToolkit().systemClipboard
 					clipboard.setContents(ss, ss)
 				}
@@ -4835,8 +4835,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 	/** Each label of Image Combobox<br></br>
 	 * [Source](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */
-	private inner class ComboLabel constructor(var text:String = "", var icon:Icon? = null) {
-	}
+	private inner class ComboLabel constructor(var text:String = "", var icon:Icon? = null)
 
 	/** ListCellRenderer for Image Combobox<br></br>
 	 * [Source](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */

@@ -32,6 +32,7 @@ import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.GeneralUtil
 import java.io.IOException
 import java.util.*
+import kotlin.math.abs
 
 /** NET-VS-BATTLE Mode */
 class NetVSBattleMode:NetDummyVSMode() {
@@ -122,16 +123,16 @@ class NetVSBattleMode:NetDummyVSMode() {
 	/* Mode Initialization */
 	override fun modeInit(manager:GameManager) {
 		super.modeInit(manager)
-		playerKObyYou = BooleanArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
-		scgettime = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
-		lastevent = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
-		lastb2b = BooleanArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
-		lastcombo = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
-		lastpiece = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
-		garbageSent = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
-		garbage = IntArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
-		playerAPL = FloatArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
-		playerAPM = FloatArray(NetDummyVSMode.NETVS_MAX_PLAYERS)
+		playerKObyYou = BooleanArray(NETVS_MAX_PLAYERS)
+		scgettime = IntArray(NETVS_MAX_PLAYERS)
+		lastevent = IntArray(NETVS_MAX_PLAYERS)
+		lastb2b = BooleanArray(NETVS_MAX_PLAYERS)
+		lastcombo = IntArray(NETVS_MAX_PLAYERS)
+		lastpiece = IntArray(NETVS_MAX_PLAYERS)
+		garbageSent = IntArray(NETVS_MAX_PLAYERS)
+		garbage = IntArray(NETVS_MAX_PLAYERS)
+		playerAPL = FloatArray(NETVS_MAX_PLAYERS)
+		playerAPM = FloatArray(NETVS_MAX_PLAYERS)
 	}
 
 	/** Set new target */
@@ -311,7 +312,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 						garbageEntry.lines -= pts[i]
 
 						if(garbageEntry.lines<=0) {
-							pts[i] = Math.abs(garbageEntry.lines)
+							pts[i] = abs(garbageEntry.lines)
 							garbageEntries.removeFirst()
 						} else
 							pts[i] = 0
@@ -328,9 +329,9 @@ class NetVSBattleMode:NetDummyVSMode() {
 				if(targetID!=-1&&!netvsIsAttackable(targetID)) setNewTarget()
 				val targetSeatID = if(targetID==-1) -1 else netvsPlayerSeatID[targetID]
 
-				netLobby!!.netPlayerClient!!.send("game\tattack\t"+stringPts+"\t"+lastevent[playerID]+"\t"+lastb2b[playerID]
+				netLobby!!.netPlayerClient!!.send("game\tattack\t$stringPts\t${lastevent[playerID]}\t"+lastb2b[playerID]
 					+"\t"+
-					lastcombo[playerID]+"\t"+garbage[playerID]+"\t"+lastpiece[playerID]+"\t"+targetSeatID+"\n")
+					lastcombo[playerID]+"\t${garbage[playerID]}\t${lastpiece[playerID]}\t$targetSeatID\n")
 			}
 		}
 
@@ -353,7 +354,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 
 				if(garbageEntry.lines/GARBAGE_DENOMINATOR>0) {
 					val seatFrom = netvsPlayerSeatID[garbageEntry.playerID]
-					val garbageColor = if(seatFrom<0) Block.BLOCK_COLOR_GRAY else NetDummyVSMode.NETVS_PLAYER_COLOR_BLOCK[seatFrom]
+					val garbageColor = if(seatFrom<0) Block.BLOCK_COLOR_GRAY else NETVS_PLAYER_COLOR_BLOCK[seatFrom]
 					netvsLastAttackerUID = garbageEntry.uid
 					if(netCurrentRoomInfo!!.garbageChangePerAttack) {
 						if(engine.random.nextInt(100)<finalGarbagePercent) {
@@ -431,7 +432,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 			netvsPlayTimer==netCurrentRoomInfo!!.hurryupSeconds*60&&!hurryupStarted) {
 			if(!netvsIsWatch()&&!netvsIsPractice) {
 				netLobby!!.netPlayerClient!!.send("game\thurryup\n")
-				owner.receiver.playSE("hurryup")
+				engine.playSE("hurryup")
 			}
 			hurryupStarted = true
 			hurryupShowFrames = 60*5
@@ -622,7 +623,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 						owner.receiver.drawDirectFont(x+4+16, y+176, ((lastcombo[playerID]-1).toString()+"COMBO"), COLOR.CYAN, .5f)
 				}
 			} else if(!netvsIsPractice||playerID!=0) {
-				val strTemp = netvsPlayerWinCount[playerID].toString()+"/"+netvsPlayerPlayCount[playerID]
+				val strTemp = "$netvsPlayerWinCount[playerID]"+"/"+netvsPlayerPlayCount[playerID]
 
 				if(engine.displaysize!=-1) {
 					var y2 = 21
@@ -642,7 +643,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 		if(engine.displaysize==-1) scale = .5f
 
 		drawResultScale(engine, playerID, owner.receiver, 2, COLOR.ORANGE, scale, "ATTACK", String.format("%10g",
-			garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR), "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "ATK/LINE", String.format("%10g", playerAPL[playerID]), "ATTACK/MIN", String.format("%10g", playerAPM[playerID]), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time.toFloat())))
+			garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR), "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "ATK/LINE", String.format("%10g", playerAPL[playerID]), "ATTACK/MIN", String.format("%10g", playerAPM[playerID]), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 	}
 
 	/* Send stats */
@@ -661,11 +662,11 @@ class NetVSBattleMode:NetDummyVSMode() {
 	override fun netSendEndGameStats(engine:GameEngine) {
 		val playerID = engine.playerID
 		var msg = "gstat\t"
-		msg += netvsPlayerPlace[playerID].toString()+"\t"
-		msg += (garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR).toString()+"\t"+playerAPL[playerID]+"\t"+playerAPM[playerID]+"\t"
-		msg += engine.statistics.lines.toString()+"\t"+engine.statistics.lpm+"\t"
-		msg += engine.statistics.totalPieceLocked.toString()+"\t"+engine.statistics.pps+"\t"
-		msg += netvsPlayTimer.toString()+"\t"+currentKO+"\t"+netvsPlayerWinCount[playerID]+"\t"+netvsPlayerPlayCount[playerID]
+		msg += "$netvsPlayerPlace[playerID]\t"
+		msg += (garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR).toString()+"\t${playerAPL[playerID]}\t${playerAPM[playerID]}\t"
+		msg += engine.statistics.lines.toString()+"\t${engine.statistics.lpm}\t"
+		msg += engine.statistics.totalPieceLocked.toString()+"\t${engine.statistics.pps}\t"
+		msg += "$netvsPlayTimer${"\t$currentKO\t"+netvsPlayerWinCount[playerID]}\t"+netvsPlayerPlayCount[playerID]
 		msg += "\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}

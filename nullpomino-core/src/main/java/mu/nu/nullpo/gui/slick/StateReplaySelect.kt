@@ -96,11 +96,11 @@ class StateReplaySelect:DummyMenuScrollState() {
 		var nF = 0
 		var nR = 0
 		if(fold!=null) {
-			java.util.Arrays.sort(fold, sorter)
+			Arrays.sort(fold, sorter)
 			nF = fold.size
 		}
 		if(reps!=null) {
-			java.util.Arrays.sort(reps, sorter)
+			Arrays.sort(reps, sorter)
 			nR = reps.size
 		}
 
@@ -119,7 +119,7 @@ class StateReplaySelect:DummyMenuScrollState() {
 					prop.load(`in`)
 					`in`.close()
 				} catch(e:IOException) {
-					log.error("Failed to load replay file ("+list[i]+")", e)
+					log.error("Failed to load replay file (${list[i]})", e)
 				}
 
 				modenameList[i] = prop.getProperty("name.mode", "")
@@ -141,16 +141,15 @@ class StateReplaySelect:DummyMenuScrollState() {
 	}
 
 	override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
-		var title = "SELECT REPLAY FILE"
-		title += " ("+(cursor+1)+"/"+list.size+")"
-		if(!strCurrentFolder.isEmpty()) title += "\n"+strCurrentFolder.replace(File.separatorChar, 'b')
+		var title = "SELECT REPLAY FILE (${cursor+1}/${list.size})"
+		if(strCurrentFolder.isNotEmpty()) title += "\n${strCurrentFolder.replace(File.separatorChar, 'b')}"
 		FontNormal.printFontGrid(1, 1, title, COLOR.ORANGE)
 
 		statsList[cursor]?.let{
-			FontNormal.printFontGrid(1, 24, "MODE:"+modenameList[cursor]+" RULE:"+rulenameList[cursor], COLOR.CYAN)
-			FontNormal.printFontGrid(1, 25, "SCORE:"+it.score+" LINE:"+it.lines, COLOR.CYAN)
-			FontNormal.printFontGrid(1, 26, "LEVEL:"+(it.level+it.levelDispAdd)+" TIME:"+GeneralUtil.getTime(it.time.toFloat()), COLOR.CYAN)
-			FontNormal.printFontGrid(1, 27, "GAME RATE:"+if(it.gamerate==0f) "UNKNOWN" else (100*it.gamerate).toString()+"%", COLOR.CYAN)
+			FontNormal.printFontGrid(1, 24, "MODE:${modenameList[cursor]} RULE:${rulenameList[cursor]}", COLOR.CYAN)
+			FontNormal.printFontGrid(1, 25, "SCORE:${it.score} LINE:${it.lines}", COLOR.CYAN)
+			FontNormal.printFontGrid(1, 26, "LEVEL:${it.level+it.levelDispAdd} TIME:${GeneralUtil.getTime(it.time)}", COLOR.CYAN)
+			FontNormal.printFontGrid(1, 27, "GAME RATE:${if(it.gamerate==0f) "UNKNOWN" else (100*it.gamerate).toString()+"%"}", COLOR.CYAN)
 		}
 	}
 
@@ -164,12 +163,11 @@ class StateReplaySelect:DummyMenuScrollState() {
 
 			try {
 				val `in` = GZIPInputStream(FileInputStream(
-					NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", "replay")
-						+strCurrentFolder+"/"+list[cursor]))
+					"${NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", "replay")}$strCurrentFolder/${list[cursor]}"))
 				prop.load(`in`)
 				`in`.close()
 			} catch(e:IOException) {
-				log.error("Failed to load replay file from "+list[cursor], e)
+				log.error("Failed to load replay file from ${list[cursor]}", e)
 				return true
 			}
 
@@ -183,8 +181,7 @@ class StateReplaySelect:DummyMenuScrollState() {
 	override fun onCancel(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		if(strCurrentFolder.isEmpty()||strPrevFolder.isEmpty())
 			game.enterState(StateTitle.ID)
-		else
-			getReplayFileList(strPrevFolder)
+		else getReplayFileList(strPrevFolder)
 		return false
 	}
 

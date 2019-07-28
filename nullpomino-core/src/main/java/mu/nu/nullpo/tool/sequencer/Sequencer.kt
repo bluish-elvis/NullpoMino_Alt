@@ -101,7 +101,7 @@ class Sequencer:JFrame(), ActionListener {
 
 		try {
 			FileInputStream(
-				"config/lang/sequencer_"+Locale.getDefault().country+".xml").let {
+				"config/lang/sequencer_${Locale.getDefault().country}.xml").let {
 				propLang.loadFromXML(it)
 				it.close()
 			}
@@ -299,9 +299,9 @@ class Sequencer:JFrame(), ActionListener {
 	}
 
 	private fun readReplayToUI(prop:CustomProperties, playerID:Int) {
-		txtfldSeed!!.text = java.lang.Long.parseLong(prop.getProperty(playerID.toString()+".replay.randSeed", "0"), 16)
+		txtfldSeed!!.text = java.lang.Long.parseLong(prop.getProperty("$playerID.replay.randSeed", "0"), 16)
 			.toString()
-		comboboxRandomizer!!.selectedItem = createShortString(prop.getProperty(playerID.toString()+".ruleopt.strRandomizer", null))
+		comboboxRandomizer!!.selectedItem = createShortString(prop.getProperty("$playerID.ruleopt.strRandomizer", null))
 	}
 
 	@Throws(IOException::class)
@@ -392,7 +392,7 @@ class Sequencer:JFrame(), ActionListener {
 	fun display() {
 		if(txtareaSequence!!.text!="") txtareaSequence!!.text = ""
 		for(i in 1..sequence.size) {
-			txtareaSequence!!.append(getUIText("PieceName"+sequence[i-1]))
+			txtareaSequence!!.append(getUIText("PieceName${sequence[i-1]}"))
 			if(i%35==0) txtareaSequence!!.append("\n")
 			else if(i%7==0) txtareaSequence!!.append(" ")
 		}
@@ -412,7 +412,7 @@ class Sequencer:JFrame(), ActionListener {
 			// New
 		} else if(e.actionCommand=="Open") {
 			// Open
-			val c = JFileChooser(System.getProperty("user.dir")+"/replay")
+			val c = JFileChooser("${System.getProperty("user.dir")}/replay")
 			c.fileFilter = FileFilterREP()
 
 			if(c.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
@@ -423,8 +423,7 @@ class Sequencer:JFrame(), ActionListener {
 					prop = load(file.path)
 				} catch(e2:IOException) {
 					log.error("Failed to load replay data", e2)
-					JOptionPane.showMessageDialog(this, getUIText("Message_FileLoadFailed")+"\n"
-						+e2, getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
+					JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e2", getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
 					return
 				}
 
@@ -446,8 +445,8 @@ class Sequencer:JFrame(), ActionListener {
 					save(filename)
 				} catch(e2:Exception) {
 					log.error("Failed to save sequence data", e2)
-					JOptionPane.showMessageDialog(this, getUIText("Message_FileSaveFailed")+"\n"
-						+e2, getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
+					JOptionPane.showMessageDialog(this, "${getUIText("Message_FileSaveFailed")}\n$e2",
+						getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
 					return
 				}
 
@@ -472,7 +471,7 @@ class Sequencer:JFrame(), ActionListener {
 		setPieceEnableFrame.contentPane.layout = GridLayout(0, 2, 10, 10)
 		val chkboxEnable = arrayOfNulls<JCheckBox>(Piece.PIECE_COUNT)
 		for(i in 0 until Piece.PIECE_COUNT) {
-			chkboxEnable[i] = JCheckBox("Piece "+getUIText("PieceName$i")!!).apply {
+			chkboxEnable[i] = JCheckBox("Piece ${getUIText("PieceName$i")!!}").apply {
 				isSelected = nextPieceEnable[i]
 			}
 			setPieceEnableFrame.contentPane.add(chkboxEnable[i])
