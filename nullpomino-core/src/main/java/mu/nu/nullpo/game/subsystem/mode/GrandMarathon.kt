@@ -545,12 +545,8 @@ class GrandMarathon:AbstractMode() {
 		if(engine.ending!=0) return
 
 		// Combo
-		if(lines==0)
-			comboValue = 1
-		else {
-			comboValue = comboValue+2*lines-2
-			if(comboValue<1) comboValue = 1
-		}
+		comboValue = if(lines==0) 1
+		else maxOf(1,comboValue+2*lines-2)
 
 		if(lines>=1) {
 			// Calculate score
@@ -707,8 +703,8 @@ class GrandMarathon:AbstractMode() {
 	}
 
 	override fun renderExcellent(engine:GameEngine, playerID:Int) {
-		val offsetX = receiver.getFieldDisplayPositionX(engine, playerID)
-		val offsetY = receiver.getFieldDisplayPositionY(engine, playerID)
+		val offsetX = receiver.fieldX(engine, playerID)
+		val offsetY = receiver.fieldY(engine, playerID)
 
 		if(grade==18) {
 			val col = when {

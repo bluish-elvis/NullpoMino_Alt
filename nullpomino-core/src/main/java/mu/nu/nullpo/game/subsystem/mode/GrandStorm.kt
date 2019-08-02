@@ -417,7 +417,7 @@ class GrandStorm:AbstractMode() {
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 						receiver.drawScoreGrade(engine, playerID, 3, topY+i, tableGradeName[rankingGrade[i]], i==rankingRank, scale)
-						receiver.drawScoreNum(engine, playerID, 9, topY+i, "$rankingLevel[i]", i==rankingRank, scale)
+						receiver.drawScoreNum(engine, playerID, 9, topY+i, "${rankingLevel[i]}", i==rankingRank, scale)
 						receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank, scale)
 					}
 
@@ -581,12 +581,8 @@ class GrandStorm:AbstractMode() {
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
 		// Combo
-		if(lines==0)
-			comboValue = 1
-		else {
-			comboValue = comboValue+2*lines-2
-			if(comboValue<1) comboValue = 1
-		}
+		comboValue = if(lines==0) 1
+		else maxOf(1,comboValue+2*lines-2)
 
 		// RO medal 用カウント
 		var rotateTemp = engine.nowPieceRotateCount

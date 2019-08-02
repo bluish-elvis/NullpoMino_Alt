@@ -1,15 +1,15 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
-import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.Piece.Shape
 import java.util.*
 
 abstract class Randomizer {
 
 	protected var r:Random = Random()
-	var pieces:IntArray = IntArray(Piece.PIECE_COUNT){it}
+	var pieces:IntArray = Shape.values().map {it.ordinal}.toIntArray()
 
 	protected val isPieceSZOOnly:Boolean
-		get() = pieces.all{it==Piece.PIECE_O||it==Piece.PIECE_Z||it==Piece.PIECE_S}
+		get() = pieces.all {p -> listOf(Shape.S, Shape.Z, Shape.O).any {it.ordinal==p}}
 
 	constructor()
 
@@ -17,7 +17,8 @@ abstract class Randomizer {
 		setState(pieceEnable, seed)
 	}
 
-	init {}
+	init {
+	}
 
 	abstract operator fun next():Int
 
@@ -27,13 +28,7 @@ abstract class Randomizer {
 	}
 
 	fun setPieceEnable(pieceEnable:BooleanArray) {
-		pieces = IntArray(pieceEnable.count{it})
-		var piece = 0
-		for(i in 0 until Piece.PIECE_COUNT)
-			if(pieceEnable[i]) {
-				pieces[piece] = i
-				piece++
-			}
+		pieces = Shape.values().map {it.ordinal}.filter {pieceEnable[it]}.toIntArray()
 	}
 
 }

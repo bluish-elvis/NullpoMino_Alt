@@ -233,9 +233,9 @@ class Marathon:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"GOAL", if(goaltype==2) "ENDLESS" else "$tableGameClearLines[goaltype] LINES", "LEVEL", (startlevel+1).toString(),
-				"SPIN BONUS",
-				if(tspinEnableType==0) "OFF" else if(tspinEnableType==1) "T-ONLY" else "ALL", "EZ SPIN", GeneralUtil.getONorOFF(enableTSpinKick),
+				"GOAL", if(goaltype==2) "ENDLESS" else "${tableGameClearLines[goaltype]} LINES", "LEVEL", (startlevel+1).toString(),
+				"SPIN BONUS", if(tspinEnableType==0) "OFF" else if(tspinEnableType==1) "T-ONLY" else "ALL",
+				"EZ SPIN", GeneralUtil.getONorOFF(enableTSpinKick),
 				"SPIN TYPE", if(spinCheckType==0) "4POINT" else "IMMOBILE", "EZIMMOBILE", GeneralUtil.getONorOFF(tspinEnableEZ))
 			drawMenuCompact(engine, playerID, receiver,
 				"B2B", GeneralUtil.getONorOFF(enableB2B), "COMBO", GeneralUtil.getONorOFF(enableCombo), "BIG", GeneralUtil.getONorOFF(big))
@@ -285,7 +285,7 @@ class Marathon:NetDummyMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 0, "ENDLESS MARATHON", EventReceiver.COLOR.GREEN)
 		else
 			receiver.drawScoreFont(engine, playerID, 0, 0,
-				"$tableGameClearLines[goaltype] LINES MARATHON", EventReceiver.COLOR.GREEN)
+				"${tableGameClearLines[goaltype]} LINES MARATHON", EventReceiver.COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {

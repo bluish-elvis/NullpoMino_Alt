@@ -428,11 +428,11 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/5", COLOR.YELLOW)
 			} else if(menuCursor<17) {
-				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", "$maxAttack[playerID]", "MIN CHAIN", "$rensaShibari[playerID]", "CLEAR SIZE", engine.colorClearSize.toString(), "OJAMA RATE", "$ojamaRate[playerID]", "HURRYUP",
+				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", "${maxAttack[playerID]}", "MIN CHAIN", "${rensaShibari[playerID]}", "CLEAR SIZE", engine.colorClearSize.toString(), "OJAMA RATE", "${ojamaRate[playerID]}", "HURRYUP",
 					if(hurryupSeconds[playerID]==0)
 						"NONE"
 					else
-						"$hurryupSeconds[playerID]SEC", "X COLUMN", if(dangerColumnDouble[playerID])
+						"${hurryupSeconds[playerID]}SEC", "X COLUMN", if(dangerColumnDouble[playerID])
 					"3 AND 4"
 				else
 					"3 ONLY", "X SHOW", GeneralUtil.getONorOFF(dangerColumnShowX[playerID]))
@@ -443,7 +443,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				drawMenu(engine, playerID, receiver, "COUNTDOWN", if(ojamaCountdown[playerID]==10)
 					"NONE"
 				else
-					"$ojamaCountdown[playerID]", "ZENKESHI", ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]])
+					"${ojamaCountdown[playerID]}", "ZENKESHI", ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]])
 				menuColor = if(zenKeshiType[playerID]==ZENKESHI_MODE_FEVER)
 					COLOR.PURPLE else COLOR.WHITE
 				drawMenu(engine, playerID, receiver, "F-MAP SET", FEVER_MAPS[feverMapSet[playerID]].toUpperCase())
@@ -456,13 +456,13 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/5", COLOR.YELLOW)
 			} else if(menuCursor<32) {
 				initMenu(COLOR.PINK, 24)
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "$mapSet[playerID]",
+				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "${mapSet[playerID]}",
 					"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}",
 					"BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
 				menuColor = COLOR.COBALT
-				drawMenu(engine, playerID, receiver, "BGM", "$BGM.values[bgmno]", "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
+				drawMenu(engine, playerID, receiver, "BGM", "${BGM.values[bgmno]}", "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 				menuColor = COLOR.GREEN
-				drawMenu(engine, playerID, receiver, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
+				drawMenu(engine, playerID, receiver, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 4/5", COLOR.YELLOW)
 			} else {
@@ -510,8 +510,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
-		val fldPosX = receiver.getFieldDisplayPositionX(engine, playerID)
-		val fldPosY = receiver.getFieldDisplayPositionY(engine, playerID)
+		val fldPosX = receiver.fieldX(engine, playerID)
+		val fldPosY = receiver.fieldY(engine, playerID)
 		val playerColor = if(playerID==0) COLOR.RED else COLOR.BLUE
 
 		// Timer
@@ -523,7 +523,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		if(ojama[playerID]>=6) fontColor = COLOR.ORANGE
 		if(ojama[playerID]>=12) fontColor = COLOR.RED
 
-		var strOjama = "$ojama[playerID]"
+		var strOjama = "${ojama[playerID]}"
 		if(ojamaAdd[playerID]>0) strOjama += "(+${ojamaAdd[playerID]})"
 
 		if(strOjama!="0") receiver.drawDirectFont(fldPosX+4, fldPosY+32, strOjama, fontColor)

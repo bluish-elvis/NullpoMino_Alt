@@ -273,8 +273,8 @@ class StateInGame:BasicGameState() {
 			it.renderAll()
 
 			if(it.engine.isNotEmpty()) {
-				val offsetX = it.receiver.getFieldDisplayPositionX(it.engine[0], 0)
-				val offsetY = it.receiver.getFieldDisplayPositionY(it.engine[0], 0)
+				val offsetX = it.receiver.fieldX(it.engine[0], 0)
+				val offsetY = it.receiver.fieldY(it.engine[0], 0)
 
 				// Pause menu
 				if(pause&&!enableframestep&&!pauseMessageHide) {

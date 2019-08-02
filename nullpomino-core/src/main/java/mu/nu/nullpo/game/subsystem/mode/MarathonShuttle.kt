@@ -532,30 +532,7 @@ class MarathonShuttle:NetDummyMode() {
 		}
 	}
 
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		var pts = 0
-		if(engine.tspin) {
-			if(lines==0&&!engine.tspinez)
-				pts = if(engine.tspinmini) 1 else 4// T-Spin 0 lines
-			else if(engine.tspinez&&lines>0)
-				pts = lines*2+(if(engine.b2b) 1 else 0)// Immobile EZ Spin
-			else if(lines==1)
-				pts += if(engine.tspinmini) if(engine.b2b) 3 else 2 else if(engine.b2b) 5 else 3// T-Spin 1 line
-			else if(lines==2)
-				pts += if(engine.tspinmini&&engine.useAllSpinBonus) if(engine.b2b) 6 else 4 else if(engine.b2b) 10 else 7// T-Spin 2 lines
-			else if(lines>=3) pts += if(engine.b2b) 13 else 9// T-Spin 3 lines
-		} else if(lines==1)
-			pts = 1 // 1列
-		else if(lines==2)
-			pts = if(engine.split) 4 else 3 // 2列
-		else if(lines==3)
-			pts = if(engine.split) if(engine.b2b) 7 else 6 else 5 // 3列
-		else if(lines>=4) pts = if(engine.b2b) 12 else 8
-		// All clear
-		if(lines>=1&&engine.field!!.isEmpty) pts += 18
 
-		return pts
-	}
 
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
@@ -584,7 +561,7 @@ class MarathonShuttle:NetDummyMode() {
 			var cmbindex = engine.combo-1
 			if(cmbindex<0) cmbindex = 0
 			if(cmbindex>=COMBO_GOAL_TABLE.size) cmbindex = COMBO_GOAL_TABLE.size-1
-			lastgoal = this.calcScore(engine, lines)+COMBO_GOAL_TABLE[cmbindex]
+			lastgoal = calcPoint(engine, lines)+COMBO_GOAL_TABLE[cmbindex]
 			goal -= lastgoal
 			lastlineTime = levelTimer
 			if(goal<=0) goal = 0
@@ -816,14 +793,13 @@ class MarathonShuttle:NetDummyMode() {
 	override fun netSendStats(engine:GameEngine) {
 		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += engine.statistics.score.toString()+"\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
-		msg += engine.statistics.time.toString()+"\t${engine.statistics.lpm}\t${engine.statistics.spl}\t"
-		msg += "$goaltype${"\t${engine.gameActive}\t"+engine.timerActive}\t"
-		msg += ("$lastscore${"\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t"+engine.combobuf}\t"
-			+engine.lasteventpiece+"\t")
-		msg += "$lastgoal${"\t$lasttimebonus\t"+regretdispframe}\t"
-		msg += "$bg${"\t${engine.meterValue}\t"+engine.meterColor}\t"
-		msg += engine.statistics.level.toString()+"\t$levelTimer\t$totalTimer\t$rolltime\t$goal\n"
+		msg += "${engine.statistics.score}\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += "${engine.statistics.time}\t${engine.statistics.lpm}\t${engine.statistics.spl}\t"
+		msg += "$goaltype\t${engine.gameActive}\t+${engine.timerActive}\t"
+		msg += "$lastscore\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t${engine.combobuf}\t${engine.lasteventpiece}\t"
+		msg += "$lastgoal\t$lasttimebonus\t$regretdispframe\t"
+		msg += "$bg\t${engine.meterValue}\t${engine.meterColor}\t"
+		msg += "${engine.statistics.level}\t$levelTimer\t$totalTimer\t$rolltime\t$goal\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 

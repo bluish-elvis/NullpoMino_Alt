@@ -421,7 +421,7 @@ class SprintScore:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%-10g", engine.statistics.spm), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "LINE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.lpm.toString(), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 13, "${engine.statistics.lpm}", 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "SCORE/LINE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 16, String.format("%-10g", engine.statistics.spl), 2f)
@@ -633,12 +633,11 @@ class SprintScore:NetDummyMode() {
 	 */
 	override fun netSendStats(engine:GameEngine) {
 		var msg = "game\tstats\t"
-		msg += engine.statistics.score.toString()+"\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
-		msg += engine.statistics.time.toString()+"\t${engine.statistics.spm}\t"
-		msg += engine.statistics.lpm.toString()+"\t${engine.statistics.spl}\t$goaltype\t"
+		msg += "${engine.statistics.score}\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += "${engine.statistics.time}\t${engine.statistics.spm}\t"
+		msg += "${engine.statistics.lpm}\t${engine.statistics.spl}\t$goaltype\t"
 		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
-		msg += "$lastscore${"\t$scgettime\t"+lastb2b}\t$lastcombo\t"+lastpiece
-		msg += "\n"
+		msg += "$lastscore\t$scgettime\t$lastb2b\t$lastcombo\t$lastpiece\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 

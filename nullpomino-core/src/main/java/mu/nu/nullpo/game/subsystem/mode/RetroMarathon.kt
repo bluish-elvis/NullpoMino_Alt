@@ -264,15 +264,15 @@ class RetroMarathon:AbstractMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1), COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 4+i, "$rankingScore[gametype][i]", i==rankingRank)
-					receiver.drawScoreNum(engine, playerID, 12, 4+i, "$rankingLines[gametype][i]", i==rankingRank)
+					receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingScore[gametype][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, playerID, 12, 4+i, "${rankingLines[gametype][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, playerID, 17, 4+i, String.format("%02d", rankingLevel[gametype][i]), i==rankingRank)
 				}
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", COLOR.BLUE)
 			val strScore:String = if(lastscore==0||scgettime>=120)
-				engine.statistics.score.toString()
+				"${engine.statistics.score}"
 			else
 				"${engine.statistics.score} (+$lastscore)"
 			receiver.drawScoreNum(engine, playerID, 0, 4, strScore, 2f)

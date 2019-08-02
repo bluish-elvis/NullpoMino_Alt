@@ -285,8 +285,8 @@ open class NetDummyVSMode:NetDummyMode() {
 	/** NET-VS: Draw player's name */
 	override fun netDrawPlayerName(engine:GameEngine) {
 		val playerID = engine.playerID
-		val x = owner.receiver.getFieldDisplayPositionX(engine, playerID)
-		val y = owner.receiver.getFieldDisplayPositionY(engine, playerID)
+		val x = owner.receiver.fieldX(engine, playerID)
+		val y = owner.receiver.fieldY(engine, playerID)
 
 		if(netvsPlayerName[playerID].isNotEmpty()) {
 			var name = netvsPlayerName[playerID]
@@ -588,8 +588,8 @@ open class NetDummyVSMode:NetDummyMode() {
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(!engine.isVisible) return
 
-		val x = owner.receiver.getFieldDisplayPositionX(engine, playerID)
-		val y = owner.receiver.getFieldDisplayPositionY(engine, playerID)
+		val x = owner.receiver.fieldX(engine, playerID)
+		val y = owner.receiver.fieldY(engine, playerID)
 
 		if(netCurrentRoomInfo!=null) {
 			if(netvsPlayerReady[playerID]&&netvsPlayerExist[playerID])
@@ -804,8 +804,8 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(playerID==0&&netvsIsPractice) return
 		if(!engine.isVisible) return
 
-		val x = owner.receiver.getFieldDisplayPositionX(engine, playerID)
-		val y = owner.receiver.getFieldDisplayPositionY(engine, playerID)
+		val x = owner.receiver.fieldX(engine, playerID)
+		val y = owner.receiver.fieldY(engine, playerID)
 		val place = netvsPlayerPlace[playerID]
 
 		if(engine.displaysize!=-1) {
@@ -888,8 +888,8 @@ open class NetDummyVSMode:NetDummyMode() {
 	override fun renderExcellent(engine:GameEngine, playerID:Int) {
 		if(!engine.isVisible) return
 
-		val x = owner.receiver.getFieldDisplayPositionX(engine, playerID)
-		val y = owner.receiver.getFieldDisplayPositionY(engine, playerID)
+		val x = owner.receiver.fieldX(engine, playerID)
+		val y = owner.receiver.fieldY(engine, playerID)
 
 		if(engine.displaysize!=-1) {
 			if(playerID==0&&netvsIsPractice&&!netvsIsWatch())
@@ -979,8 +979,8 @@ open class NetDummyVSMode:NetDummyMode() {
 				owner.receiver.drawMenuFont(engine, playerID, 1, 21, "RETRY", COLOR.PURPLE)
 		} else if(netvsPlayerReady[playerID]&&netvsPlayerExist[playerID]) {
 			// Player Ready
-			val x = owner.receiver.getFieldDisplayPositionX(engine, playerID)
-			val y = owner.receiver.getFieldDisplayPositionY(engine, playerID)
+			val x = owner.receiver.fieldX(engine, playerID)
+			val y = owner.receiver.fieldY(engine, playerID)
 
 			if(engine.displaysize!=-1)
 				owner.receiver.drawDirectFont(x+68, y+356, "OK", COLOR.YELLOW)

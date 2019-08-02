@@ -575,7 +575,7 @@ class VSBattleMode:AbstractMode() {
 		if(engine.statc[4]==0) {
 			if(menuCursor<9) {
 				drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
-				drawMenu(engine, playerID, receiver, 14, COLOR.GREEN, 7, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
+				drawMenu(engine, playerID, receiver, 14, COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
 			} else if(menuCursor<19) {
 				var strTSpinEnable = ""
 				if(version>=4) {
@@ -588,24 +588,25 @@ class VSBattleMode:AbstractMode() {
 				if(b2bType[playerID]==0) strB2BType = "OFF"
 				if(b2bType[playerID]==1) strB2BType = "ON"
 				if(b2bType[playerID]==2) strB2BType = "SEPARATE"
-				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "GARBAGE", GARBAGE_TYPE_STRING[garbageType[playerID]], "CHANGERATE",
-					"$garbagePercent[playerID]%", "COUNTERING", GeneralUtil.getONorOFF(garbageCounter[playerID]), "BLOCKING", GeneralUtil.getONorOFF(garbageBlocking[playerID]), "SPIN BONUS", strTSpinEnable, "KICK SPIN", GeneralUtil.getONorOFF(enableTSpinKick[playerID]), "SPIN TYPE",
-					if(spinCheckType[playerID]==0)
-						"4POINT"
-					else
-						"IMMOBILE", "EZIMMOBILE", GeneralUtil.getONorOFF(tspinEnableEZ[playerID]), "B2B", strB2BType, "COMBO", GeneralUtil.getONorOFF(enableCombo[playerID]))
+				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "GARBAGE", GARBAGE_TYPE_STRING[garbageType[playerID]],
+					"CHANGERATE", "${garbagePercent[playerID]}%", "COUNTERING", GeneralUtil.getONorOFF(garbageCounter[playerID]),
+					"BLOCKING", GeneralUtil.getONorOFF(garbageBlocking[playerID]), "SPIN BONUS", strTSpinEnable,
+					"KICK SPIN", GeneralUtil.getONorOFF(enableTSpinKick[playerID]),
+					"SPIN TYPE",
+					if(spinCheckType[playerID]==0) "4POINT" else "IMMOBILE",
+					"EZIMMOBILE", GeneralUtil.getONorOFF(tspinEnableEZ[playerID]), "B2B", strB2BType,
+					"COMBO", GeneralUtil.getONorOFF(enableCombo[playerID]))
 			} else {
-				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 19, "BIG", GeneralUtil.getONorOFF(big[playerID]), "SE", GeneralUtil.getONorOFF(enableSE[playerID]), "HURRYUP",
-					if(hurryupSeconds[playerID]==-1)
-						"NONE"
-					else
-						"$hurryupSeconds[playerID]SEC", "INTERVAL", "$hurryupInterval[playerID]")
-				drawMenu(engine, playerID, receiver, 8, COLOR.PINK, 23, "BGM", "$BGM.values[bgmno]", "SHOW STATS", GeneralUtil.getONorOFF(showStats))
-				drawMenu(engine, playerID, receiver, 12, COLOR.CYAN, 25, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "$mapSet[playerID]", "MAP NO.",
-					if(mapNumber[playerID]<0)
-						"RANDOM"
-					else
-						"$mapNumber[playerID]"+"/"+(mapMaxNo[playerID]-1))
+				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 19, "BIG", GeneralUtil.getONorOFF(big[playerID]),
+					"SE", GeneralUtil.getONorOFF(enableSE[playerID]),
+					"HURRYUP",
+					if(hurryupSeconds[playerID]==-1) "NONE" else "${hurryupSeconds[playerID]}SEC",
+					"INTERVAL", "${hurryupInterval[playerID]}")
+				drawMenu(engine, playerID, receiver, 8, COLOR.PINK, 23, "BGM", "${BGM.values[bgmno]}",
+					"SHOW STATS", GeneralUtil.getONorOFF(showStats))
+				drawMenu(engine, playerID, receiver, 12, COLOR.CYAN, 25, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]),
+					"MAP SET", "${mapSet[playerID]}",
+					"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}")
 			}
 		} else
 			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", COLOR.YELLOW)
@@ -694,23 +695,23 @@ class VSBattleMode:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 0, "VS-BATTLE", COLOR.ORANGE)
 
 			receiver.drawScoreFont(engine, playerID, 0, 2, "1P ATTACK", COLOR.RED)
-			receiver.drawScoreFont(engine, playerID, 0, 3, "$garbageSent[0]")
+			receiver.drawScoreFont(engine, playerID, 0, 3, "${garbageSent[0]}")
 
 			receiver.drawScoreFont(engine, playerID, 0, 5, "2P ATTACK", COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 6, "$garbageSent[1]")
+			receiver.drawScoreFont(engine, playerID, 0, 6, "${garbageSent[1]}")
 
 			if(!owner.replayMode) {
 				receiver.drawScoreFont(engine, playerID, 0, 8, "1P WINS", COLOR.RED)
-				receiver.drawScoreFont(engine, playerID, 0, 9, "$winCount[0]")
+				receiver.drawScoreFont(engine, playerID, 0, 9, "${winCount[0]}")
 
 				receiver.drawScoreFont(engine, playerID, 0, 11, "2P WINS", COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 12, "$winCount[1]")
+				receiver.drawScoreFont(engine, playerID, 0, 12, "${winCount[1]}")
 			}
 		}
 
 		if(showStats) {
-			val x = receiver.getFieldDisplayPositionX(engine, playerID)
-			val y = receiver.getFieldDisplayPositionY(engine, playerID)
+			val x = receiver.fieldX(engine, playerID)
+			val y = receiver.fieldY(engine, playerID)
 			var fontColor = COLOR.WHITE
 
 			if(garbage[playerID]>0) {
@@ -728,15 +729,15 @@ class VSBattleMode:AbstractMode() {
 				receiver.drawDirectFont(x-48, y+120, "TOTAL", fontColor, .5f)
 				receiver.drawDirectFont(x-52, y+128, "ATTACK", fontColor, .5f)
 				if(garbageSent[playerID]>=10)
-					receiver.drawDirectFont(x-44, y+142, "$garbageSent[playerID]")
+					receiver.drawDirectFont(x-44, y+142, "${garbageSent[playerID]}")
 				else
-					receiver.drawDirectFont(x-36, y+142, "$garbageSent[playerID]")
+					receiver.drawDirectFont(x-36, y+142, "${garbageSent[playerID]}")
 
 				receiver.drawDirectFont(x-44, y+190, "WINS", fontColor, .5f)
 				if(winCount[playerID]>=10)
-					receiver.drawDirectFont(x-44, y+204, "$winCount[playerID]")
+					receiver.drawDirectFont(x-44, y+204, "${winCount[playerID]}")
 				else
-					receiver.drawDirectFont(x-36, y+204, "$winCount[playerID]")
+					receiver.drawDirectFont(x-36, y+204, "${winCount[playerID]}")
 			}
 		}
 

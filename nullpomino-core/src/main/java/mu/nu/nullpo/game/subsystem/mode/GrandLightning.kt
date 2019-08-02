@@ -23,8 +23,9 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
@@ -600,12 +601,8 @@ class GrandLightning:AbstractMode() {
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
 		// Combo
-		if(lines==0)
-			comboValue = 1
-		else {
-			comboValue = comboValue+2*lines-2
-			if(comboValue<1) comboValue = 1
-		}
+		comboValue = if(lines==0) 1
+		else maxOf(1,comboValue+2*lines-2)
 
 		if(lines>=1&&engine.ending==0) {
 			// 4-line clearカウント

@@ -809,11 +809,11 @@ class GrandRoads:NetDummyMode() {
 		else
 			engine.owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += engine.statistics.lines.toString()+"\t${engine.statistics.totalPieceLocked}\t"
-		msg += engine.statistics.time.toString()+"\t${engine.statistics.lpm}\t"
+		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += "${engine.statistics.time}\t${engine.statistics.lpm}\t"
 		msg += engine.statistics.pps.toString()+"\t$goaltype\t"
 		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
-		msg += engine.statistics.level.toString()+"\t$levelTimer\t$levelTimerMax\t"
+		msg += "${engine.statistics.level}\t$levelTimer\t$levelTimerMax\t"
 		msg += "$rolltime${"\t$norm\t$bg\t${engine.meterValue}\t"+engine.meterColor}\t"
 		msg += engine.heboHiddenEnable.toString()+"\t${engine.heboHiddenTimerNow}\t${engine.heboHiddenTimerMax}\t"
 		msg += engine.heboHiddenYNow.toString()+"\t${engine.heboHiddenYLimit}\n${engine.lives}\n"

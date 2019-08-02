@@ -572,12 +572,8 @@ class GrandPhantom:AbstractMode() {
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
-		if(lines==0)
-			comboValue = 1
-		else {
-			comboValue = comboValue+2*lines-2
-			if(comboValue<1) comboValue = 1
-		}
+		comboValue = if(lines==0) 1
+		else maxOf(1,comboValue+2*lines-2)
 
 		var rotateTemp = engine.nowPieceRotateCount
 		if(rotateTemp>4) rotateTemp = 4

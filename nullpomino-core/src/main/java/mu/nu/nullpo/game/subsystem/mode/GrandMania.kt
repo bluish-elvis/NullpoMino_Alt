@@ -742,12 +742,8 @@ class GrandMania:AbstractMode() {
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
 		// Combo
-		if(lines==0)
-			comboValue = 1
-		else {
-			comboValue = comboValue+2*lines-2
-			if(comboValue<1) comboValue = 1
-		}
+		comboValue = if(lines==0) 1
+		else maxOf(1,comboValue+2*lines-2)
 
 		// RO medal 用カウント
 		var rotateTemp = engine.nowPieceRotateCount
@@ -1063,8 +1059,8 @@ class GrandMania:AbstractMode() {
 	}
 
 	override fun renderExcellent(engine:GameEngine, playerID:Int) {
-		val offsetX = receiver.getFieldDisplayPositionX(engine, playerID)
-		val offsetY = receiver.getFieldDisplayPositionY(engine, playerID)
+		val offsetX = receiver.fieldX(engine, playerID)
+		val offsetY = receiver.fieldY(engine, playerID)
 		var col = COLOR.WHITE
 
 		if(grade==20) {

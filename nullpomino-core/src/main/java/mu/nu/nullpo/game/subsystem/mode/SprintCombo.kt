@@ -337,7 +337,7 @@ class SprintCombo:NetDummyMode() {
 			val strSpawn = if(spawnAboveField) "ABOVE" else "BELOW"
 
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"GOAL", if(GOAL_TABLE[goaltype]==-1) "ENDLESS" else "$GOAL_TABLE[goaltype]")
+				"GOAL", if(GOAL_TABLE[goaltype]==-1) "ENDLESS" else "${GOAL_TABLE[goaltype]}")
 			drawMenu(engine, playerID, receiver, 2, if(comboWidth==4)
 				EventReceiver.COLOR.BLUE
 			else
@@ -452,7 +452,7 @@ class SprintCombo:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 7, engine.statistics.totalPieceLocked.toString())
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LINE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, engine.statistics.lpm.toString())
+			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.lpm}")
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "PIECE/SEC", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.pps.toString())
@@ -651,8 +651,8 @@ class SprintCombo:NetDummyMode() {
 	override fun netSendStats(engine:GameEngine) {
 		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += engine.statistics.lines.toString()+"\t${engine.statistics.totalPieceLocked}\t"
-		msg += engine.statistics.time.toString()+"\t${engine.statistics.lpm}\t"
+		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += "${engine.statistics.time}\t${engine.statistics.lpm}\t"
 		msg += engine.statistics.pps.toString()+"\t$goaltype\t"
 		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
 		msg += engine.meterColor.toString()+"\t${engine.meterValue}\t"

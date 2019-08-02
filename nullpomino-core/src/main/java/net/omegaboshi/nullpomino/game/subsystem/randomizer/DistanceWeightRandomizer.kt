@@ -1,6 +1,6 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
-import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.Piece.Shape
 
 abstract class DistanceWeightRandomizer:Randomizer {
 
@@ -35,7 +35,7 @@ abstract class DistanceWeightRandomizer:Randomizer {
 			}
 		weights[id] = 0
 		for(i in pieces.indices)
-			if(firstPiece&&pieces[i]==Piece.PIECE_O)
+			if(firstPiece&&pieces[i]==Shape.O.ordinal)
 				weights[i] = 3
 			else if(!isAtDistanceLimit(i)) weights[i]++
 		firstPiece = false

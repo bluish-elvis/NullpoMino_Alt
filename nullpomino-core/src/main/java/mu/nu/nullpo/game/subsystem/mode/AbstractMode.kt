@@ -167,7 +167,28 @@ abstract class AbstractMode:GameMode {
 		if(lines>=1&&engine.field!!.isEmpty) pts += pts*10/7+256
 		return pts*10
 	}
+	open fun calcPoint(engine:GameEngine, lines:Int):Int {
+		var pts = 0
+		when {
+			engine.tspin -> when {
+				lines==0&&!engine.tspinez -> pts = if(engine.tspinmini) 1 else 2 // T-Spin 0 lines
+				engine.tspinez&&lines>0 -> pts = lines*2+(if(engine.b2b) 1 else 0) // Immobile EZ Spin
+				lines==1 -> pts += if(engine.tspinmini) if(engine.b2b) 3 else 2
+				else if(engine.b2b) 5 else 3 // T-Spin 1 line
+				lines==2 -> pts += if(engine.tspinmini&&engine.useAllSpinBonus) (if(engine.b2b) 6 else 4)
+				else if(engine.b2b) 10 else 7 // T-Spin 2 lines
+				lines>=3 -> pts += if(engine.b2b) 13 else 9// T-Spin 3 lines
+			}
+			lines==1 -> pts = 1 // Single
+			lines==2 -> pts = if(engine.split) 4 else 3 // Double
+			lines==3 -> pts = if(engine.split) if(engine.b2b) 7 else 6 else 5 // Triple
+			lines>=4 -> pts = if(engine.b2b) 12 else 8 // Quads
+		}
+		// All clear
+		if(lines>=1&&engine.field!!.isEmpty) pts += pts+18
 
+		return pts
+	}
 	override fun onLockFlash(engine:GameEngine, playerID:Int):Boolean = false
 
 	override fun onMove(engine:GameEngine, playerID:Int):Boolean = false

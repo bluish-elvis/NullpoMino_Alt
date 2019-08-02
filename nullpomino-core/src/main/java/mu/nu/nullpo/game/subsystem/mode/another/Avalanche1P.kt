@@ -199,7 +199,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		if(menuCursor<=8) {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GAME TYPE", GAMETYPE_NAME[gametype])
 			if(gametype==2)
-				drawMenu(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, 1, "TARGET", "$SPRINT_MAX_SCORE[sprintTarget]")
+				drawMenu(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, 1, "TARGET", "${SPRINT_MAX_SCORE[sprintTarget]}")
 			drawMenu(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, 2, "SCORE TYPE", SCORETYPE_NAME[scoreType], "COLORS", "$numColors", "X COLUMN",
 				if(dangerColumnDouble)
 					"3 AND 4"
@@ -249,10 +249,10 @@ class Avalanche1P:Avalanche1PDummyMode() {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
-							receiver.drawScoreFont(engine, playerID, 3, topY+i, "$rankingScore[scoreType][numColors-3][gametype][i]", i==rankingRank, scale)
+							receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[scoreType][numColors-3][gametype][i]}", i==rankingRank, scale)
 							receiver.drawScoreFont(engine, playerID, 14, topY+i, GeneralUtil.getTime(rankingTime[scoreType][numColors-3][gametype][i]), i==rankingRank, scale)
 						}
-						1 -> receiver.drawScoreFont(engine, playerID, 3, 4+i, "$rankingScore[scoreType][numColors-3][gametype][i]", i==rankingRank)
+						1 -> receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[scoreType][numColors-3][gametype][i]}", i==rankingRank)
 						2 -> receiver.drawScoreFont(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[scoreType][numColors-3][gametype][i]), i==rankingRank)
 					}
 				}
@@ -260,7 +260,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
 			val strScore:String = if(lastscore==0||lastmultiplier==0||scgettime<=0)
-				engine.statistics.score.toString()
+				"${engine.statistics.score}"
 			else "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
 			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
 
@@ -396,7 +396,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			val strTime = String.format("%10s", GeneralUtil.getTime(engine.statistics.time))
 			receiver.drawMenuFont(engine, playerID, 0, 4, strTime)
 			receiver.drawMenuFont(engine, playerID, 0, 5, "SCORE", EventReceiver.COLOR.BLUE)
-			receiver.drawMenuFont(engine, playerID, 0, 6, engine.statistics.score.toString())
+			receiver.drawMenuFont(engine, playerID, 0, 6, "${engine.statistics.score}")
 			receiver.drawMenuFont(engine, playerID, 0, 7, "ZENKESHI", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuFont(engine, playerID, 0, 8, String.format("%10d", zenKeshiCount))
 			receiver.drawMenuFont(engine, playerID, 0, 9, "MAX CHAIN", EventReceiver.COLOR.BLUE)

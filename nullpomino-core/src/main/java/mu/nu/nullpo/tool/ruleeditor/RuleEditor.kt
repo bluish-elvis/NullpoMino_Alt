@@ -1496,12 +1496,12 @@ class RuleEditor:JFrame, ActionListener {
 		comboboxPieceOffset!!.selectedIndex = r.pieceOffset
 		for(i in 0 until Piece.PIECE_COUNT) {
 			for(j in 0 until Piece.DIRECTION_COUNT) {
-				txtfldPieceOffsetX!![i][j].text = "$r.pieceOffsetX[i][j]"
-				txtfldPieceOffsetY!![i][j].text = "$r.pieceOffsetY[i][j]"
-				txtfldPieceSpawnX!![i][j].text = "$r.pieceSpawnX[i][j]"
-				txtfldPieceSpawnY!![i][j].text = "$r.pieceSpawnY[i][j]"
-				txtfldPieceSpawnBigX!![i][j].text = "$r.pieceSpawnXBig[i][j]"
-				txtfldPieceSpawnBigY!![i][j].text = "$r.pieceSpawnYBig[i][j]"
+				txtfldPieceOffsetX!![i][j].text = "${r.pieceOffsetX[i][j]}"
+				txtfldPieceOffsetY!![i][j].text = "${r.pieceOffsetY[i][j]}"
+				txtfldPieceSpawnX!![i][j].text = "${r.pieceSpawnX[i][j]}"
+				txtfldPieceSpawnY!![i][j].text = "${r.pieceSpawnY[i][j]}"
+				txtfldPieceSpawnBigX!![i][j].text = "${r.pieceSpawnXBig[i][j]}"
+				txtfldPieceSpawnBigY!![i][j].text = "${r.pieceSpawnYBig[i][j]}"
 			}
 			comboboxPieceColor!![i].selectedIndex = r.pieceColor[i]-1
 			comboboxPieceDirection!![i].selectedIndex = r.pieceDefaultDirection[i]

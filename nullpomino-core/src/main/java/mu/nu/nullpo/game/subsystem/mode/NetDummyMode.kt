@@ -637,8 +637,8 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	protected open fun netDrawPlayerName(engine:GameEngine) {
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
 			val name = netPlayerName
-			owner.receiver.drawDirectTTF(owner.receiver.getFieldDisplayPositionX(engine, engine.playerID),
-				owner.receiver.getFieldDisplayPositionY(engine, engine.playerID)-20, name!!)
+			owner.receiver.drawDirectTTF(owner.receiver.fieldX(engine, engine.playerID),
+				owner.receiver.fieldY(engine, engine.playerID)-20, name!!)
 		}
 	}
 

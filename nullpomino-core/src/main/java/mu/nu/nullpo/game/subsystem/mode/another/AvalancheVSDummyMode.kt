@@ -749,12 +749,12 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		receiver.drawScoreFont(engine, playerID, x, y, "1P: ", COLOR.RED)
 		if(scgettime[0]>0&&lastscore[0]>0&&lastmultiplier[0]>0)
 			receiver.drawScoreFont(engine, playerID, x+4, y, "+${lastscore[0]}e${lastmultiplier[0]}", COLOR.RED)
-		else receiver.drawScoreFont(engine, playerID, x+4, y, "$score[0]", COLOR.RED)
+		else receiver.drawScoreFont(engine, playerID, x+4, y, "${score[0]}", COLOR.RED)
 		y++
 		receiver.drawScoreFont(engine, playerID, x, y, "2P: ", COLOR.BLUE)
 		if(scgettime[1]>0&&lastscore[1]>0&&lastmultiplier[1]>0)
 			receiver.drawScoreFont(engine, playerID, x+4, y, "+${lastscore[1]}e${lastmultiplier[1]}", COLOR.BLUE)
-		else receiver.drawScoreFont(engine, playerID, x+4, y, "$score[1]", COLOR.BLUE)
+		else receiver.drawScoreFont(engine, playerID, x+4, y, "${score[1]}", COLOR.BLUE)
 	}
 
 	protected fun drawOjama(engine:GameEngine, playerID:Int, x:Int, y:Int, headerColor:COLOR) {

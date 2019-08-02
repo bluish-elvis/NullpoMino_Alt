@@ -34,6 +34,8 @@ import org.apache.log4j.Logger
 /** PRACTICE Mode */
 class PracticeMode:AbstractMode() {
 
+	private var levelTimer:Int = 0
+	private var lastlineTime:Int = 0
 	/** Level upRemaining until point */
 	private var goal:Int = 0
 
@@ -45,9 +47,8 @@ class PracticeMode:AbstractMode() {
 
 	/** Time to display the most recent increase in score */
 	private var scgettime:Int = 0
-
-	/** Most recent scoring event type */
-	private var lastevent:Int = 0
+	private var sc:Int = 0
+	private var sum:Int = 0
 
 	/** Most recent scoring eventInB2BIf it&#39;s the casetrue */
 	private var lastb2b:Boolean = false
@@ -189,7 +190,6 @@ class PracticeMode:AbstractMode() {
 		lastgoal = 0
 		lastscore = 0
 		scgettime = 0
-		lastevent = EVENT_NONE
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
@@ -564,7 +564,7 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 1, 27, "F:SKIP", EventReceiver.COLOR.RED)
 
 		var cx = 1
-		var cy = 3
+		var cy = menuCursor
 		if(menuCursor<23) {
 			cx = when(menuCursor) {
 				0 -> 10
@@ -576,7 +576,7 @@ class PracticeMode:AbstractMode() {
 				6 -> 19
 				else -> cx
 			}
-			cy = if(menuCursor<=1) 3 else if(menuCursor<=3) 4 else if(menuCursor<=6) 5 else menuCursor
+			cy = if(menuCursor<=1) 3 else if(menuCursor<=3) 4 else if(menuCursor<=6) 5 else cy
 
 			receiver.drawMenuFont(engine, playerID, 2, 3, "GRAVITY:", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuNum(engine, playerID, 11, 3, String.format("%5d/", engine.speed.gravity), menuCursor==0)
@@ -614,8 +614,8 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 2, 21, "ROLL LIMIT:${if(rolltimelimit==0) "NONE" else GeneralUtil.getTime(rolltimelimit)}", menuCursor==21)
 			receiver.drawMenuFont(engine, playerID, 2, 22, "TIME LIMIT PER LEVEL:${GeneralUtil.getONorOFF(timelimitResetEveryLevel)}", menuCursor==22)
 		} else {
-			cx = if(menuCursor<40) cx else if(menuCursor<=45) 15 else if(menuCursor<=49) 16 else cx
-			cy = menuCursor-if(menuCursor<29) 20 else if(menuCursor<40) 19 else if(menuCursor<=45) 30 else 29
+			cx = if(menuCursor in 40..45) 15 else if(menuCursor in 46..49) 16 else cx
+			cy -= if(menuCursor<29) 20 else if(menuCursor<40) 19 else if(menuCursor<=45) 30 else 29
 
 			receiver.drawMenuFont(engine, playerID, 2, 3, "USE BONE BLOCKS:${GeneralUtil.getONorOFF(bone)}", menuCursor==23)
 			var strHiddenFrames = "NONE"
@@ -632,17 +632,17 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 2, 8,
 				"HEBO HIDDEN:${if(heboHiddenLevel==0) "NONE" else "LV$heboHiddenLevel"}", menuCursor==28)
 			receiver.drawMenuFont(engine, playerID, 2, 10, "PIECE I:${GeneralUtil.getONorOFF(pieceEnable[0])}", menuCursor==29)
-			receiver.drawMenuFont(engine, playerID, 2, 11, "PIECE L:"+GeneralUtil.getONorOFF(pieceEnable[1]), menuCursor==30)
-			receiver.drawMenuFont(engine, playerID, 2, 12, "PIECE O:"+GeneralUtil.getONorOFF(pieceEnable[2]), menuCursor==31)
-			receiver.drawMenuFont(engine, playerID, 2, 13, "PIECE Z:"+GeneralUtil.getONorOFF(pieceEnable[3]), menuCursor==32)
-			receiver.drawMenuFont(engine, playerID, 2, 14, "PIECE T:"+GeneralUtil.getONorOFF(pieceEnable[4]), menuCursor==33)
-			receiver.drawMenuFont(engine, playerID, 2, 15, "PIECE J:"+GeneralUtil.getONorOFF(pieceEnable[5]), menuCursor==34)
-			receiver.drawMenuFont(engine, playerID, 2, 16, "PIECE S:"+GeneralUtil.getONorOFF(pieceEnable[6]), menuCursor==35)
-			receiver.drawMenuFont(engine, playerID, 2, 17, "PIECE I1:"+GeneralUtil.getONorOFF(pieceEnable[7]), menuCursor==36)
-			receiver.drawMenuFont(engine, playerID, 2, 18, "PIECE I2:"+GeneralUtil.getONorOFF(pieceEnable[8]), menuCursor==37)
-			receiver.drawMenuFont(engine, playerID, 2, 19, "PIECE I3:"+GeneralUtil.getONorOFF(pieceEnable[9]), menuCursor==38)
-			receiver.drawMenuFont(engine, playerID, 2, 20, "PIECE L3:"+GeneralUtil.getONorOFF(pieceEnable[10]), menuCursor==39)
-			receiver.drawMenuFont(engine, playerID, 16, 10, "USE MAP:"+GeneralUtil.getONorOFF(useMap), menuCursor==40)
+			receiver.drawMenuFont(engine, playerID, 2, 11, "PIECE L:${GeneralUtil.getONorOFF(pieceEnable[1])}", menuCursor==30)
+			receiver.drawMenuFont(engine, playerID, 2, 12, "PIECE O:${GeneralUtil.getONorOFF(pieceEnable[2])}", menuCursor==31)
+			receiver.drawMenuFont(engine, playerID, 2, 13, "PIECE Z:${GeneralUtil.getONorOFF(pieceEnable[3])}", menuCursor==32)
+			receiver.drawMenuFont(engine, playerID, 2, 14, "PIECE T:${GeneralUtil.getONorOFF(pieceEnable[4])}", menuCursor==33)
+			receiver.drawMenuFont(engine, playerID, 2, 15, "PIECE J:${GeneralUtil.getONorOFF(pieceEnable[5])}", menuCursor==34)
+			receiver.drawMenuFont(engine, playerID, 2, 16, "PIECE S:${GeneralUtil.getONorOFF(pieceEnable[6])}", menuCursor==35)
+			receiver.drawMenuFont(engine, playerID, 2, 17, "PIECE I1:${GeneralUtil.getONorOFF(pieceEnable[7])}", menuCursor==36)
+			receiver.drawMenuFont(engine, playerID, 2, 18, "PIECE I2:${GeneralUtil.getONorOFF(pieceEnable[8])}", menuCursor==37)
+			receiver.drawMenuFont(engine, playerID, 2, 19, "PIECE I3:${GeneralUtil.getONorOFF(pieceEnable[9])}", menuCursor==38)
+			receiver.drawMenuFont(engine, playerID, 2, 20, "PIECE L3:${GeneralUtil.getONorOFF(pieceEnable[10])}", menuCursor==39)
+			receiver.drawMenuFont(engine, playerID, 16, 10, "USE MAP:${GeneralUtil.getONorOFF(useMap)}", menuCursor==40)
 			receiver.drawMenuFont(engine, playerID, 16, 11, "[EDIT FIELD MAP]", menuCursor==41)
 			receiver.drawMenuFont(engine, playerID, 16, 12, "[LOAD FIELD MAP]:$mapNumber", menuCursor==42)
 			receiver.drawMenuFont(engine, playerID, 16, 13, "[SAVE FIELD MAP]:$mapNumber", menuCursor==43)
@@ -846,7 +846,7 @@ class PracticeMode:AbstractMode() {
 
 			// 1分間あたりのLines
 			receiver.drawScoreFont(engine, playerID, 0, 14, "LINE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 15, engine.statistics.lpm.toString())
+			receiver.drawScoreNum(engine, playerID, 0, 15, "${engine.statistics.lpm}")
 
 			if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
 				//  GrandLevel
@@ -1020,12 +1020,8 @@ class PracticeMode:AbstractMode() {
 	/** levelTypesMANIAAt the time ofCalculate score */
 	private fun calcScoreMania(engine:GameEngine, playerID:Int, lines:Int) {
 		// Combo
-		if(lines==0)
-			comboValue = 1
-		else {
-			comboValue = comboValue+2*lines-2
-			if(comboValue<1) comboValue = 1
-		}
+		comboValue = if(lines==0) 1
+		else maxOf(1,comboValue+2*lines-2)
 
 		if(lines>=1&&engine.ending==0) {
 			// Level up
@@ -1112,113 +1108,61 @@ class PracticeMode:AbstractMode() {
 		}
 	}
 
-	/** levelTypesMANIAWhen a non-systemCalculate score */
-	private fun calcScoreNormal(engine:GameEngine, playerID:Int, lines:Int) {
-		// Line clear bonus
+
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		var pts = 0
-		var cmb = 0
-
 		if(engine.tspin) {
-			// T-Spin 0 lines
-			if(lines==0&&!engine.tspinez) {
-				if(engine.tspinmini) {
-					pts += 100*(engine.statistics.level+1)
-					lastevent = EVENT_TSPIN_ZERO_MINI
-				} else {
-					pts += 400*(engine.statistics.level+1)
-					lastevent = EVENT_TSPIN_ZERO
-				}
-			} else if(engine.tspinez&&lines>0) {
-				pts += if(engine.b2b)
-					180*(engine.statistics.level+1)
-				else
-					120*(engine.statistics.level+1)
-				lastevent = EVENT_TSPIN_EZ
-			} else if(lines==1) {
-				if(engine.tspinmini) {
-					pts += if(engine.b2b)
-						300*(engine.statistics.level+1)
-					else
-						200*(engine.statistics.level+1)
-					lastevent = EVENT_TSPIN_SINGLE_MINI
-				} else {
-					pts += if(engine.b2b)
-						1200*(engine.statistics.level+1)
-					else
-						800*(engine.statistics.level+1)
-					lastevent = EVENT_TSPIN_SINGLE
-				}
-			} else if(lines==2) {
-				if(engine.tspinmini&&engine.useAllSpinBonus) {
-					pts += if(engine.b2b)
-						600*(engine.statistics.level+1)
-					else
-						400*(engine.statistics.level+1)
-					lastevent = EVENT_TSPIN_DOUBLE_MINI
-				} else {
-					pts += if(engine.b2b)
-						1800*(engine.statistics.level+1)
-					else
-						1200*(engine.statistics.level+1)
-					lastevent = EVENT_TSPIN_DOUBLE
-				}
-			} else if(lines>=3) {
-				pts += if(engine.b2b)
-					2400*(engine.statistics.level+1)
-				else
-					1600*(engine.statistics.level+1)
-				lastevent = EVENT_TSPIN_TRIPLE
-			}// T-Spin 3 lines
-			// T-Spin 2 lines
-			// T-Spin 1 line
-			// Immobile EZ Spin
-		} else if(lines==1) {
-			pts += 100*(engine.statistics.level+1) // 1Column
-			lastevent = EVENT_SINGLE
-		} else if(lines==2) {
-			pts += 300*(engine.statistics.level+1) // 2Column
-			lastevent = EVENT_DOUBLE
-		} else if(lines==3) {
-			pts += 500*(engine.statistics.level+1) // 3Column
-			lastevent = EVENT_TRIPLE
-		} else if(lines>=4) {
-			// 4 lines
-			pts += if(engine.b2b)
-				1200*(engine.statistics.level+1)
-			else
-				800*(engine.statistics.level+1)
-			lastevent = EVENT_FOUR
-		}
-
-		lastb2b = engine.b2b
-
-		// Combo
-		if(engine.combo>=1&&lines>=1) {
-			cmb += (engine.combo-1)*50*(engine.statistics.level+1)
-			lastcombo = engine.combo
-		}
-
+			if(lines==0&&!engine.tspinez)
+				pts = if(engine.tspinmini) 1 else 4// T-Spin 0 lines
+			else if(engine.tspinez&&lines>0)
+				pts = lines*2+(if(engine.b2b) 1 else 0)// Immobile EZ Spin
+			else if(lines==1)
+				pts += if(engine.tspinmini) if(engine.b2b) 3 else 2 else if(engine.b2b) 5 else 3// T-Spin 1 line
+			else if(lines==2)
+				pts += if(engine.tspinmini&&engine.useAllSpinBonus) if(engine.b2b) 6 else 4 else if(engine.b2b) 10 else 7// T-Spin 2 lines
+			else if(lines>=3) pts += if(engine.b2b) 13 else 9// T-Spin 3 lines
+		} else if(lines==1)
+			pts = 1 // 1列
+		else if(lines==2)
+			pts = if(engine.split) 4 else 3 // 2列
+		else if(lines==3)
+			pts = if(engine.split) if(engine.b2b) 7 else 6 else 5 // 3列
+		else if(lines>=4) pts = if(engine.b2b) 12 else 8
 		// All clear
-		if(lines>=1&&engine.field!!.isEmpty) {
-			pts += 1800*(engine.statistics.level+1)
-		}
+		if(lines>=1&&engine.field!!.isEmpty) pts += 18
 
+		return pts
+	}
+	/** levelTypesMANIAWhen a non-systemCalculate score */
+	private fun calcScoreNormal(engine:GameEngine, playerID:Int, lines:Int) {		// Line clear bonus
+		// Line clear bonus
+		val pts = super.calcScore(engine, lines)
+		var cmb = 0
+		// Combo
+		if(engine.combo>=1&&lines>=1) cmb = engine.combo-1
+		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		// Add to score
-		if(pts>0||cmb>0) {
-			lastpiece = engine.nowPieceObject!!.id
-			lastscore = pts+cmb
-			scgettime = 0
-			if(lines>=1)
-				engine.statistics.scoreFromLineClear += pts
-			else
-				engine.statistics.scoreFromOtherBonus += pts
-			engine.statistics.score += pts
+		if(pts+cmb+spd>0) {
+			var get = pts*(10+engine.statistics.level)/10+spd
+			if(cmb>=1) {
+				var b = sum*(1+cmb)/2
+				sum += get
+				b = sum*(2+cmb)/2-b
+				get = b
+			} else
+				sum = get
+			if(pts>0) lastscore = get
+			if(lines>=1) engine.statistics.scoreFromLineClear += get
+			else engine.statistics.scoreFromOtherBonus += get
+			scgettime += spd
+			engine.statistics.score += get
 
 			var cmbindex = engine.combo-1
 			if(cmbindex<0) cmbindex = 0
 			if(cmbindex>=COMBO_GOAL_TABLE.size) cmbindex = COMBO_GOAL_TABLE.size-1
-			lastgoal = pts/100/(engine.statistics.level+1)+COMBO_GOAL_TABLE[cmbindex]
+			lastgoal = calcPoint(engine, lines)+COMBO_GOAL_TABLE[cmbindex]
 			goal -= lastgoal
+			lastlineTime = levelTimer
 			if(goal<=0) goal = 0
 		}
 
@@ -1357,20 +1301,6 @@ class PracticeMode:AbstractMode() {
 		/** Current version */
 		private const val CURRENT_VERSION = 5
 
-		/** Most recent scoring event typeConstantcount */
-		private const val EVENT_NONE = 0
-		private const val EVENT_SINGLE = 1
-		private const val EVENT_DOUBLE = 2
-		private const val EVENT_TRIPLE = 3
-		private const val EVENT_FOUR = 4
-		private const val EVENT_TSPIN_ZERO_MINI = 5
-		private const val EVENT_TSPIN_ZERO = 6
-		private const val EVENT_TSPIN_SINGLE_MINI = 7
-		private const val EVENT_TSPIN_SINGLE = 8
-		private const val EVENT_TSPIN_DOUBLE_MINI = 9
-		private const val EVENT_TSPIN_DOUBLE = 10
-		private const val EVENT_TSPIN_TRIPLE = 11
-		private const val EVENT_TSPIN_EZ = 12
 
 		/** ComboGet in point */
 		private val COMBO_GOAL_TABLE = intArrayOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)

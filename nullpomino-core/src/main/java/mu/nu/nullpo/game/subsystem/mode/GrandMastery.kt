@@ -973,12 +973,8 @@ class GrandMastery:AbstractMode() {
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
 		// Combo
-		if(lines==0)
-			comboValue = 1
-		else {
-			comboValue = comboValue+2*lines-2
-			if(comboValue<1) comboValue = 1
-		}
+		comboValue = if(lines==0) 1
+		else maxOf(1,comboValue+2*lines-2)
 
 		if(lines>=1&&engine.ending==0) {
 			// 段位 point

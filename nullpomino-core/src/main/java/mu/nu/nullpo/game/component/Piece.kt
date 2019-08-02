@@ -504,11 +504,11 @@ class Piece(
 
 		var placed = false
 
+		fld?.setAllAttribute(false, Block.ATTRIBUTE.LAST_COMMIT)
 		for(i in 0 until maxBlock) {
 			val x2 = x+dataX[rt][i]*size //Multiply co-ordinate offset by piece size.
 			val y2 = y+dataY[rt][i]*size
 
-			fld?.setAllAttribute(false, Block.ATTRIBUTE.LAST_COMMIT)
 			block[i].setAttribute(true, Block.ATTRIBUTE.LAST_COMMIT)
 
 			/* Loop through width/height of the block, setting cells in the

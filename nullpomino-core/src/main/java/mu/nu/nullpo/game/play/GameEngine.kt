@@ -2315,10 +2315,8 @@ class GameEngine
 							playSE("b2b_start")
 						}
 						if(ending==0||staffrollEnableStatistics)
-							if(tspinmini)
-								statistics.totalTSpinZeroMini++
-							else
-								statistics.totalTSpinZero++
+							if(tspinmini) statistics.totalTSpinZeroMini++
+							else statistics.totalTSpinZero++
 					} else
 						combo = 0
 
