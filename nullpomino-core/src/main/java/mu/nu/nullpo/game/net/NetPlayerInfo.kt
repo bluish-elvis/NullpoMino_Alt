@@ -219,18 +219,18 @@ class NetPlayerInfo:Serializable {
 	, Boolean.toString(playing)
 	, Boolean.toString(connected)
 	, Boolean.toString(isTripUse)
-	, "$rating[0]"
-	, "$rating[1]"
-	, "$rating[2]"
-	, "$rating[3]"
-	, "$playCount[0]"
-	, "$playCount[1]"
-	, "$playCount[2]"
-	, "$playCount[3]"
-	, "$winCount[0]"
-	, "$winCount[1]"
-	, "$winCount[2]"
-	, "$winCount[3]"
+	, "${rating[0]}"
+	, "${rating[1]}"
+	, "${rating[2]}"
+	, "${rating[3]}"
+	, "${playCount[0]}"
+	, "${playCount[1]}"
+	, "${playCount[2]}"
+	, "${playCount[3]}"
+	, "${winCount[0]}"
+	, "${winCount[1]}"
+	, "${winCount[2]}"
+	, "${winCount[3]}"
 	,NetUtil.compressString(spPersonalBest.exportString())
 	, "$playCountNow"
 	, "$winCountNow")

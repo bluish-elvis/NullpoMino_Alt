@@ -254,11 +254,11 @@ class VSLineRaceMode:AbstractMode() {
 		if(engine.statc[4]==0) {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
 			menuColor = EventReceiver.COLOR.GREEN
-			drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
+			drawMenuCompact(engine, playerID, receiver, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
 			menuColor = EventReceiver.COLOR.CYAN
-			drawMenuCompact(engine, playerID, receiver, "GOAL", "$goalLines[playerID]", "BIG", GeneralUtil.getONorOFF(big[playerID]), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
+			drawMenuCompact(engine, playerID, receiver, "GOAL", "${goalLines[playerID]}", "BIG", GeneralUtil.getONorOFF(big[playerID]), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 			menuColor = EventReceiver.COLOR.PINK
-			drawMenuCompact(engine, playerID, receiver, "BGM", "$BGM.values[bgmno]")
+			drawMenuCompact(engine, playerID, receiver, "BGM", "${BGM.values[bgmno]}")
 		} else
 			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
 	}
@@ -278,8 +278,8 @@ class VSLineRaceMode:AbstractMode() {
 		var enemyID = 0
 		if(playerID==0) enemyID = 1
 
-		val x = receiver.getFieldDisplayPositionX(engine, playerID)
-		val y = receiver.getFieldDisplayPositionY(engine, playerID)
+		val x = receiver.fieldX(engine, playerID)
+		val y = receiver.fieldY(engine, playerID)
 
 		val remainLines = maxOf(0, goalLines[playerID]-engine.statistics.lines)
 		var fontColor = EventReceiver.COLOR.WHITE
@@ -320,10 +320,10 @@ class VSLineRaceMode:AbstractMode() {
 
 			if(!owner.replayMode) {
 				receiver.drawScoreFont(engine, playerID, 0, 8, "1P WINS", EventReceiver.COLOR.RED)
-				receiver.drawScoreFont(engine, playerID, 0, 9, "$winCount[0]")
+				receiver.drawScoreFont(engine, playerID, 0, 9, "${winCount[0]}")
 
 				receiver.drawScoreFont(engine, playerID, 0, 11, "2P WINS", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 12, "$winCount[1]")
+				receiver.drawScoreFont(engine, playerID, 0, 12, "${winCount[1]}")
 			}
 		}
 
@@ -334,9 +334,9 @@ class VSLineRaceMode:AbstractMode() {
 			if(!owner.replayMode) {
 				receiver.drawDirectFont(x-44, y+190, "WINS", fontColor2, .5f)
 				if(winCount[playerID]>=10)
-					receiver.drawDirectFont(x-44, y+204, "$winCount[playerID]")
+					receiver.drawDirectFont(x-44, y+204, "${winCount[playerID]}")
 				else
-					receiver.drawDirectFont(x-36, y+204, "$winCount[playerID]")
+					receiver.drawDirectFont(x-36, y+204, "${winCount[playerID]}")
 			}
 		}
 	}

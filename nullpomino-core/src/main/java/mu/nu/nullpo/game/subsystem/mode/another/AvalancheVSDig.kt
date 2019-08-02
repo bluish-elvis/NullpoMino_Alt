@@ -290,9 +290,9 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 				}
 				menuCursor<18 -> {
 					drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, 9,
-						"COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", "$maxAttack[playerID]", "COLORS", "$numColors[playerID]", "MIN CHAIN", "$rensaShibari[playerID]", "OJAMA RATE", "$ojamaRate[playerID]",
+						"COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", "${maxAttack[playerID]}", "COLORS", "${numColors[playerID]}", "MIN CHAIN", "${rensaShibari[playerID]}", "OJAMA RATE", "${ojamaRate[playerID]}",
 						"HURRYUP", if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]}SEC",
-						"HARD OJAMA", "$ojamaHard[playerID]",
+						"HARD OJAMA", "${ojamaHard[playerID]}",
 						"X COLUMN", if(dangerColumnDouble[playerID]) "3 AND 4" else "3 ONLY",
 						"X SHOW", GeneralUtil.getONorOFF(dangerColumnShowX[playerID]))
 
@@ -300,7 +300,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 				}
 				else -> {
 					initMenu(EventReceiver.COLOR.PURPLE, 18)
-					drawMenu(engine, playerID, receiver, "ROWS", "$handicapRows[playerID]")
+					drawMenu(engine, playerID, receiver, "ROWS", "${handicapRows[playerID]}")
 					menuColor = EventReceiver.COLOR.CYAN
 					drawMenu(engine, playerID, receiver, "CHAINPOWER", if(newChainPower[playerID])
 						"FEVER" else "CLASSIC", "CLEAR SIZE", engine.colorClearSize.toString())
@@ -308,13 +308,13 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 					drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]], "SHOW CHAIN", CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]], "FALL ANIM",
 						if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
 					menuColor = EventReceiver.COLOR.PINK
-					drawMenuCompact(engine, playerID, receiver, "BGM", "$BGM.values[bgmno]")
+					drawMenuCompact(engine, playerID, receiver, "BGM", "${BGM.values[bgmno]}")
 					menuColor = EventReceiver.COLOR.YELLOW
 					drawMenuCompact(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 					menuColor = EventReceiver.COLOR.PINK
 					drawMenu(engine, playerID, receiver, "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
 					menuColor = EventReceiver.COLOR.GREEN
-					drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
+					drawMenuCompact(engine, playerID, receiver, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
 
 					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/3", EventReceiver.COLOR.YELLOW)
 				}
@@ -384,8 +384,8 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
-		val fldPosX = receiver.getFieldDisplayPositionX(engine, playerID)
-		val fldPosY = receiver.getFieldDisplayPositionY(engine, playerID)
+		val fldPosX = receiver.fieldX(engine, playerID)
+		val fldPosY = receiver.fieldY(engine, playerID)
 		val playerColor = if(playerID==0) EventReceiver.COLOR.RED else EventReceiver.COLOR.BLUE
 
 		// Timer
@@ -397,7 +397,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		if(ojama[playerID]>=6) fontColor = EventReceiver.COLOR.ORANGE
 		if(ojama[playerID]>=12) fontColor = EventReceiver.COLOR.RED
 
-		var strOjama = "$ojama[playerID]"
+		var strOjama = "${ojama[playerID]}"
 		if(ojamaAdd[playerID]>0) strOjama += "(+${ojamaAdd[playerID]})"
 
 		if(strOjama!="0") receiver.drawDirectFont(fldPosX+4, fldPosY+32, strOjama, fontColor)

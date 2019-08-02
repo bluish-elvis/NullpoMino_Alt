@@ -193,14 +193,14 @@ class Physician:AbstractMode() {
 				receiver.drawScoreFont(engine, playerID, 3, 3, "SCORE  TIME", EventReceiver.COLOR.BLUE)
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreFont(engine, playerID, 0, 4+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
-					receiver.drawScoreFont(engine, playerID, 3, 4+i, "$rankingScore[i]", i==rankingRank)
+					receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[i]}", i==rankingRank)
 					receiver.drawScoreFont(engine, playerID, 10, 4+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank)
 				}
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
 			val strScore:String = if(lastscore==0||scgettime<=0)
-				engine.statistics.score.toString()
+				"${engine.statistics.score}"
 			else
 				"${engine.statistics.score}(+$lastscore)"
 			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)

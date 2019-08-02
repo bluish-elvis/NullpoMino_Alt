@@ -13,9 +13,9 @@ abstract class AbstractRenderer:EventReceiver() {
 		var x2 = if(scale==.5f) x*8 else x*16
 		var y2 = if(scale==.5f) y*8 else y*16
 		if(!engine.owner.menuOnly) {
-			x2 += getFieldDisplayPositionX(engine, playerID)+4
-			y2 += if(engine.displaysize==-1) getFieldDisplayPositionY(engine, playerID)+4
-			else getFieldDisplayPositionY(engine, playerID)+52
+			x2 += fieldX(engine, playerID)+4
+			y2 += if(engine.displaysize==-1) fieldY(engine, playerID)+4
+			else fieldY(engine, playerID)+52
 		}
 		when(font) {
 			FONT.TTF -> printTTFSpecific(x2, y2, str, color)
@@ -27,10 +27,10 @@ abstract class AbstractRenderer:EventReceiver() {
 		var x2 = x*16
 		var y2 = y*16
 		if(!engine.owner.menuOnly) {
-			x2 += getFieldDisplayPositionX(engine, playerID)+4
+			x2 += fieldX(engine, playerID)+4
 			y2 += if(engine.displaysize==-1)
-				getFieldDisplayPositionY(engine, playerID)+4
-			else getFieldDisplayPositionY(engine, playerID)+52
+				fieldY(engine, playerID)+4
+			else fieldY(engine, playerID)+52
 		}
 		printTTFSpecific(x2, y2, str, color)
 	}
@@ -40,9 +40,9 @@ abstract class AbstractRenderer:EventReceiver() {
 		val size = if(scale==.5f) 8 else 16
 		when(font) {
 			FONT.TTF -> printTTFSpecific(
-				getScoreDisplayPositionX(engine, playerID)+x*16, getScoreDisplayPositionY(engine, playerID)+y*16, str, color)
+				scoreX(engine, playerID)+x*16, scoreY(engine, playerID)+y*16, str, color)
 			else -> printFontSpecific(
-				getScoreDisplayPositionX(engine, playerID)+x*size, getScoreDisplayPositionY(engine, playerID)+y*size, str, color, scale)
+				scoreX(engine, playerID)+x*size, scoreY(engine, playerID)+y*size, str, color, scale)
 		}
 
 	}
@@ -50,7 +50,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	fun drawTTFScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR) {
 		if(engine.owner.menuOnly) return
 		printTTFSpecific(
-			getScoreDisplayPositionX(engine, playerID)+x*16, getScoreDisplayPositionY(engine, playerID)+y*16, str, color)
+			scoreX(engine, playerID)+x*16, scoreY(engine, playerID)+y*16, str, color)
 	}
 
 	override fun drawDirect(x:Int, y:Int, str:String, font:FONT, color:COLOR, scale:Float) {

@@ -288,8 +288,8 @@ class MarathonExtreme:NetDummyMode() {
 					if(endless) endlessIndex = 1
 
 					receiver.drawScoreNum(engine, playerID, 0, topY+i, String.format("%02d", i+1), EventReceiver.COLOR.RED, scale)
-					receiver.drawScoreNum(engine, playerID, 3, topY+i, "$rankingScore[endlessIndex][i]", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 10, topY+i, "$rankingLines[endlessIndex][i]", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[endlessIndex][i]}", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 10, topY+i, "${rankingLines[endlessIndex][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[endlessIndex][i]), i==rankingRank, scale)
 				}
 			}
@@ -574,9 +574,9 @@ class MarathonExtreme:NetDummyMode() {
 	override fun netSendStats(engine:GameEngine) {
 		val bg = if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += engine.statistics.score.toString()+"\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
-		msg += engine.statistics.time.toString()+"\t${engine.statistics.level}\t"
-		msg += engine.statistics.lpm.toString()+"\t${engine.statistics.spl}\t$endless\t"
+		msg += "${engine.statistics.score}\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += "${engine.statistics.time}\t${engine.statistics.level}\t"
+		msg += "${engine.statistics.lpm}\t${engine.statistics.spl}\t$endless\t"
 		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
 		msg += ("$lastscore${"\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t"+engine.combobuf}\t"
 			+engine.lasteventpiece+"\t")

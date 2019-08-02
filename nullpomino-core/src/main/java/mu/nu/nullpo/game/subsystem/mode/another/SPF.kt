@@ -560,20 +560,18 @@ class SPF:AbstractMode() {
 				initMenu(COLOR.ORANGE, 0)
 				drawMenu(engine, playerID, receiver, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
 				menuColor = COLOR.GREEN
-				drawMenu(engine, playerID, receiver, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
+				drawMenu(engine, playerID, receiver, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/3", COLOR.YELLOW)
 			} else if(menuCursor<18) {
 				initMenu(COLOR.PINK, 9)
-				drawMenu(engine, playerID, receiver, "BGM", "$BGM.values[bgmno]")
+				drawMenu(engine, playerID, receiver, "BGM", "${BGM.values[bgmno]}")
 				menuColor = COLOR.CYAN
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "$mapSet[playerID]", "MAP NO.",
-					if(mapNumber[playerID]<0)
-						"RANDOM"
-					else
-						"$mapNumber[playerID]"+"/"+(mapMaxNo[playerID]-1), "SE", GeneralUtil.getONorOFF(enableSE[playerID]), "HURRYUP", if(hurryupSeconds[playerID]==0)
-					"NONE"
-				else
-					"$hurryupSeconds[playerID]SEC", "COUNTDOWN", "$ojamaCountdown[playerID]")
+				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]),
+					"MAP SET", "${mapSet[playerID]}",
+					"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}",
+					"SE", GeneralUtil.getONorOFF(enableSE[playerID]),
+					"HURRYUP", if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]}SEC",
+					"COUNTDOWN", "${ojamaCountdown[playerID]}")
 				menuColor = COLOR.PINK
 				drawMenu(engine, playerID, receiver, "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
 				menuColor = COLOR.CYAN
@@ -585,25 +583,20 @@ class SPF:AbstractMode() {
 				receiver.drawMenuFont(engine, playerID, 0, 0, "ATTACK", COLOR.CYAN)
 				var multiplier = (100*getAttackMultiplier(dropSet[playerID], dropMap[playerID])).toInt()
 				if(multiplier>=100)
-					receiver.drawMenuFont(engine, playerID, 2, 1, "$multiplier%", if(multiplier==100)
-						COLOR.YELLOW
-					else
-						COLOR.GREEN)
+					receiver.drawMenuFont(engine, playerID, 2, 1, "$multiplier%",
+						if(multiplier==100) COLOR.YELLOW else COLOR.GREEN)
 				else
 					receiver.drawMenuFont(engine, playerID, 3, 1, "$multiplier%", COLOR.RED)
 				receiver.drawMenuFont(engine, playerID, 0, 2, "DEFEND", COLOR.CYAN)
 				multiplier = (100*getDefendMultiplier(dropSet[playerID], dropMap[playerID])).toInt()
 				if(multiplier>=100)
-					receiver.drawMenuFont(engine, playerID, 2, 3, "$multiplier%", if(multiplier==100)
-						COLOR.YELLOW
-					else
-						COLOR.RED)
+					receiver.drawMenuFont(engine, playerID, 2, 3, "$multiplier%",
+						if(multiplier==100) COLOR.YELLOW else COLOR.RED)
 				else
 					receiver.drawMenuFont(engine, playerID, 3, 3, "$multiplier%", COLOR.GREEN)
 
-				drawMenu(engine, playerID, receiver, 14, COLOR.CYAN, 18, "DROP SET", DROP_SET_NAMES[dropSet[playerID]], "DROP MAP",
-					String.format("%2d", dropMap[playerID]+1)+"/"+
-						String.format("%2d", DROP_PATTERNS[dropSet[playerID]].size))
+				drawMenu(engine, playerID, receiver, 14, COLOR.CYAN, 18, "DROP SET", DROP_SET_NAMES[dropSet[playerID]],
+					"DROP MAP", String.format("%2d", dropMap[playerID]+1)+"/"+ String.format("%2d", DROP_PATTERNS[dropSet[playerID]].size))
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/3", COLOR.YELLOW)
 			}
@@ -631,8 +624,7 @@ class SPF:AbstractMode() {
 					engine.field!!.setAllSkin(engine.skin)
 				} else {
 					if(propMap[playerID]==null)
-						propMap[playerID] = receiver.loadProperties("config/values/spf/"
-							+mapSet[playerID]+".values")
+						propMap[playerID] = receiver.loadProperties("config/values/spf/${mapSet[playerID]}.values")
 					else propMap[playerID]?.let {
 						engine.createFieldIfNeeded()
 
@@ -679,8 +671,8 @@ class SPF:AbstractMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
-		val fldPosX = receiver.getFieldDisplayPositionX(engine, playerID)
-		val fldPosY = receiver.getFieldDisplayPositionY(engine, playerID)
+		val fldPosX = receiver.fieldX(engine, playerID)
+		val fldPosY = receiver.fieldY(engine, playerID)
 		val playerColor = if(playerID==0) COLOR.RED else COLOR.BLUE
 
 		// Timer
@@ -693,8 +685,7 @@ class SPF:AbstractMode() {
 			ojama[playerID]>=12 -> COLOR.RED
 			else -> COLOR.WHITE
 		}
-		val strOjama = "$ojama[playerID]"
-		if(strOjama!="0") receiver.drawDirectFont(fldPosX+4, fldPosY+32, strOjama, fontColor)
+		if(ojama[playerID]!=0) receiver.drawDirectFont(fldPosX+4, fldPosY+32, "${ojama[playerID]}", fontColor)
 
 		// Score
 		if(engine.displaysize==1)

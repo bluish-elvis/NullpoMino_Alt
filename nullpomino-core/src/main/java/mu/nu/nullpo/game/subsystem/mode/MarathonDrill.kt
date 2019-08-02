@@ -238,13 +238,13 @@ class MarathonDrill:NetDummyMode() {
 				netOnRenderNetPlayRanking(engine, playerID, it)
 			else {
 				drawMenu(engine, playerID, it, 0, COLOR.BLUE, 0,
-					"GAME TYPE", if(goaltype==0) "NORMAL" else "REALTIME", "LEVEL", (startlevel+1).toString())
+					"GAME TYPE", if(goaltype==0) "NORMAL" else "REALTIME", "LEVEL", "${startlevel+1}")
 				drawMenuBGM(engine, playerID, it, bgmno)
 				drawMenu(engine, playerID, it, "SPIN BONUS", if(tspinEnableType==0) "OFF" else if(tspinEnableType==1) "T-ONLY" else "ALL",
 					"EZ SPIN", GeneralUtil.getONorOFF(enableTSpinKick),
 					"SPIN TYPE", if(spinCheckType==0) "4POINT" else "IMMOBILE", "EZIMMOBILE", GeneralUtil.getONorOFF(tspinEnableEZ))
 				drawMenuCompact(engine, playerID, it,
-					"B2B", GeneralUtil.getONorOFF(enableB2B), "COMBO", GeneralUtil.getONorOFF(enableCombo), "DAS", engine.speed.das.toString())
+					"B2B", GeneralUtil.getONorOFF(enableB2B), "COMBO", GeneralUtil.getONorOFF(enableCombo), "DAS", "${engine.speed.das}")
 			}
 		}
 	}
@@ -305,17 +305,17 @@ class MarathonDrill:NetDummyMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 4, engine.statistics.score.toString(), scale = 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 4, "${engine.statistics.score}", scale = 2f)
 			receiver.drawScoreNum(engine, playerID, 5, 3, "+$lastscore")
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "DEPTH", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 7, "$garbageDigged", scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LINE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, engine.statistics.lines.toString(), scale = 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.lines}", scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "LEVEL", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 5, 12, (engine.statistics.level+1).toString(), scale = 2f)
+			receiver.drawScoreNum(engine, playerID, 5, 12, "${engine.statistics.level+1}", scale = 2f)
 			receiver.drawScoreNum(engine, playerID, 1, 13, "$garbageTotal")
 			receiver.drawSpeedMeter(engine, playerID, 0, 14,
 				garbageTotal%LEVEL_GARBAGE_LINES*1f/(LEVEL_GARBAGE_LINES-1))
@@ -327,8 +327,8 @@ class MarathonDrill:NetDummyMode() {
 			renderLineAlert(engine, playerID, receiver)
 
 			if(garbagePending>0) {
-				val x = receiver.getFieldDisplayPositionX(engine, playerID)
-				val y = receiver.getFieldDisplayPositionY(engine, playerID)
+				val x = receiver.fieldX(engine, playerID)
+				val y = receiver.fieldY(engine, playerID)
 				var fontColor = COLOR.WHITE
 
 				if(garbagePending>=1) fontColor = COLOR.YELLOW
@@ -414,33 +414,11 @@ class MarathonDrill:NetDummyMode() {
 		engine.meterColor = GameEngine.METER_COLOR_LIMIT
 	}
 
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		menuTime = 0
-		var pts = menuTime
-		when {
-			engine.tspin -> when {
-				lines==0&&!engine.tspinez -> pts = if(engine.tspinmini) 0 else 1// T-Spin 0 lines
-				engine.tspinez&&lines>0 -> pts = 1+lines+(if(engine.b2b) 1 else 0)// Immobile EZ Spin
-				lines==1 -> pts += if(engine.tspinmini) if(engine.b2b) 3 else 2 else if(engine.b2b) 2 else 1// T-Spin 1 line
-				lines==2 -> pts += if(engine.tspinmini&&engine.useAllSpinBonus) if(engine.b2b) 5 else 4 else if(engine.b2b) 4 else 3// T-Spin 2 lines
-				lines>=3 -> pts += if(engine.b2b) 5 else 4// Twister 3 lines
-			}// Twister 3 lines
-			lines==1 -> pts = 1 // 1列
-			lines==2 -> pts = if(engine.split) if(engine.b2b) 4 else 3 else 2 // 2列
-			lines==3 -> pts = if(engine.split) if(engine.b2b) 5 else 4 else 3 // 3列
-			lines>=4 -> pts = if(engine.b2b) 6 else 5
-			// All clear
-		}
-		// All clear
-		if(lines>=1&&engine.field!!.isEmpty) pts += 10
-		return pts
-	}
-
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
 		garbageTimer -= getGarbageMaxTime(engine.statistics.level)/50
 		// Line clear bonus
-		val pts = calcScore(engine, lines)
+		val pts = calcPoint(engine, lines)
 		if(lines>0) {
 			var cmb = 0
 			val cln = engine.garbageClearing
@@ -454,10 +432,9 @@ class MarathonDrill:NetDummyMode() {
 				sum += get
 				b = sum*(2+cmb)/2-b
 				get = b
-			} else
-				sum = get
+			} else sum = get
 
-			get += cln*10
+			get += cln*100
 			// Decrease waiting garbage
 			garbageTimer -= pts*15+cmb*4-cln*5
 			if(goaltype==GOALTYPE_NORMAL)
@@ -494,14 +471,10 @@ class MarathonDrill:NetDummyMode() {
 
 	/** Get garbage time limit
 	 * @param lv Level
-	 * @return Garbage time limi
+	 * @return Garbage time limit
 	 */
-	private fun getGarbageMaxTime(lv:Int):Int {
-		var lv = lv
-		val t = goaltype
-		if(lv>GARBAGE_TIMER_TABLE[t].size-1) lv = GARBAGE_TIMER_TABLE[t].size-1
-		return GARBAGE_TIMER_TABLE[t][lv]
-	}
+	private fun getGarbageMaxTime(lv:Int):Int =
+		GARBAGE_TIMER_TABLE[goaltype][minOf(lv,GARBAGE_TIMER_TABLE[goaltype].size-1)]
 
 	/** Add garbage line(s)
 	 * @param engine GameEngine
@@ -509,8 +482,8 @@ class MarathonDrill:NetDummyMode() {
 	 */
 	private fun addGarbage(engine:GameEngine, lines:Int = 1) {
 		// Add garbages
-		val field = engine.field
-		val w = field!!.width
+		val field = engine.field?:return
+		val w = field.width
 		val h = field.height
 
 		engine.playSE("garbage")

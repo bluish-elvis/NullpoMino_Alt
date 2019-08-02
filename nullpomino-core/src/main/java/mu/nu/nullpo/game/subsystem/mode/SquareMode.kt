@@ -258,15 +258,15 @@ class SquareMode:AbstractMode() {
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
 					if(gametype==0) {
-						receiver.drawScoreFont(engine, playerID, 3, topY+i, "$rankingScore[gametype][i]", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 9, topY+i, "$rankingSquares[gametype][i]", i==rankingRank, scale)
+						receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
+						receiver.drawScoreFont(engine, playerID, 9, topY+i, "${rankingSquares[gametype][i]}", i==rankingRank, scale)
 						receiver.drawScoreFont(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
 					} else if(gametype==1) {
-						receiver.drawScoreFont(engine, playerID, 3, 4+i, "$rankingScore[gametype][i]", i==rankingRank)
-						receiver.drawScoreFont(engine, playerID, 9, 4+i, "$rankingSquares[gametype][i]", i==rankingRank)
+						receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[gametype][i]}", i==rankingRank)
+						receiver.drawScoreFont(engine, playerID, 9, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
 					} else if(gametype==2) {
 						receiver.drawScoreFont(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank)
-						receiver.drawScoreFont(engine, playerID, 12, 4+i, "$rankingSquares[gametype][i]", i==rankingRank)
+						receiver.drawScoreFont(engine, playerID, 12, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
 					}
 				}
 			}

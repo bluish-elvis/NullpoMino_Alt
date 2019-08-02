@@ -262,7 +262,7 @@ class SprintLine:NetDummyMode() {
 				engine.speed.gravity, engine.speed.denominator,
 				engine.speed.are, engine.speed.areLine, engine.speed.lineDelay, engine.speed.lockDelay, engine.speed.das)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
-			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big), "GOAL", "$GOAL_TABLE[goaltype]")
+			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big), "GOAL", "${GOAL_TABLE[goaltype]}")
 			if(!engine.owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
 				drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber", "SAVE", "$presetNumber")
@@ -328,7 +328,7 @@ class SprintLine:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 7, engine.statistics.totalPieceLocked.toString())
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LINE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, engine.statistics.lpm.toString())
+			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.lpm}")
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "PIECE/SEC", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.pps.toString())
@@ -461,8 +461,8 @@ class SprintLine:NetDummyMode() {
 	 */
 	override fun netSendStats(engine:GameEngine) {
 		var msg = "game\tstats\t"
-		msg += engine.statistics.lines.toString()+"\t${engine.statistics.totalPieceLocked}\t"
-		msg += engine.statistics.time.toString()+"\t${engine.statistics.lpm}\t"
+		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += "${engine.statistics.time}\t${engine.statistics.lpm}\t"
 		msg += engine.statistics.pps.toString()+"\t$goaltype\t"
 		msg += engine.gameActive.toString()+"\t"+engine.timerActive
 		msg += "\n"

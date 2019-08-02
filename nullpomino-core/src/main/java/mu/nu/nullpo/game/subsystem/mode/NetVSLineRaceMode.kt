@@ -124,8 +124,8 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		super.renderLast(engine, playerID)
 
-		val x = owner.receiver.getFieldDisplayPositionX(engine, playerID)
-		val y = owner.receiver.getFieldDisplayPositionY(engine, playerID)
+		val x = owner.receiver.fieldX(engine, playerID)
+		val y = owner.receiver.fieldY(engine, playerID)
 
 
 		if(netvsPlayerExist[playerID]&&engine.isVisible) {
@@ -175,7 +175,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 					place==5 -> owner.receiver.drawDirectFont(x, y+168, "6TH", COLOR.PURPLE, .5f)
 				}
 			} else if(!netvsIsPractice||playerID!=0) {
-				val strTemp = "$netvsPlayerWinCount[playerID]"+"/"+netvsPlayerPlayCount[playerID]
+				val strTemp = "${netvsPlayerWinCount[playerID]}/${netvsPlayerPlayCount[playerID]}"
 
 				if(engine.displaysize!=-1) {
 					var y2 = 21
@@ -218,9 +218,9 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	override fun netSendEndGameStats(engine:GameEngine) {
 		val playerID = engine.playerID
 		var msg = "gstat\t"
-		msg += "$netvsPlayerPlace[playerID]\t"
+		msg += "${netvsPlayerPlace[playerID]}\t"
 		msg += 0.toString()+"\t${0}\t${0}\t"
-		msg += engine.statistics.lines.toString()+"\t${engine.statistics.lpm}\t"
+		msg += "${engine.statistics.lines}\t${engine.statistics.lpm}\t"
 		msg += engine.statistics.totalPieceLocked.toString()+"\t${engine.statistics.pps}\t"
 		msg += "$netvsPlayTimer${"\t${0}\t"+netvsPlayerWinCount[playerID]}\t"+netvsPlayerPlayCount[playerID]
 		msg += "\n"

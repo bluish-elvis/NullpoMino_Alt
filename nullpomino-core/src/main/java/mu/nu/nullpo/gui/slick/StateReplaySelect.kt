@@ -163,7 +163,7 @@ class StateReplaySelect:DummyMenuScrollState() {
 
 			try {
 				val `in` = GZIPInputStream(FileInputStream(
-					"${NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", "replay")}$strCurrentFolder/${list[cursor]}"))
+					"${NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", "replay")}${strCurrentFolder}/${list[cursor]}"))
 				prop.load(`in`)
 				`in`.close()
 			} catch(e:IOException) {

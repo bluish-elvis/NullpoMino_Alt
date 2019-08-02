@@ -667,9 +667,9 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 	 */
 	private fun sendGameStat(engine:GameEngine, playerID:Int) {
 		var msg = "gstat\t"
-		msg += "$playerPlace[playerID]\t"
+		msg += "${playerPlace[playerID]}\t"
 		msg += (garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR).toString()+"\t${playerAPL[0]}\t${playerAPM[0]}\t"
-		msg += engine.statistics.lines.toString()+"\t${engine.statistics.lpm}\t"
+		msg += "${engine.statistics.lines}\t${engine.statistics.lpm}\t"
 		msg += engine.statistics.totalPieceLocked.toString()+"\t${engine.statistics.pps}\t"
 		msg += "$netPlayTimer${"\t$currentKO\t"+numWins}\t"+numGames
 		msg += "\n"
@@ -821,8 +821,8 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 		if(!engine.isVisible) return
 
 		if(currentRoomInfo!=null&&!currentRoomInfo!!.playing) {
-			val x = receiver.getFieldDisplayPositionX(engine, playerID)
-			val y = receiver.getFieldDisplayPositionY(engine, playerID)
+			val x = receiver.fieldX(engine, playerID)
+			val y = receiver.fieldY(engine, playerID)
 
 			if(isReady[playerID]&&isPlayerExist[playerID])
 				if(engine.displaysize!=-1)
@@ -1355,8 +1355,8 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 		}
 
 		if(isPlayerExist[playerID]&&engine.isVisible) {
-			val x = receiver.getFieldDisplayPositionX(engine, playerID)
-			val y = receiver.getFieldDisplayPositionY(engine, playerID)
+			val x = receiver.fieldX(engine, playerID)
+			val y = receiver.fieldY(engine, playerID)
 
 			// Name
 			if(playerNames[playerID].isNotEmpty()) {
@@ -1420,8 +1420,8 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 		// Target
 		if(playerID==targetID&&currentRoomInfo!=null&&currentRoomInfo!!.isTarget&&numAlivePlayers>=3&&
 			isNetGameActive&&!isDead[playerID]) {
-			val x = receiver.getFieldDisplayPositionX(engine, playerID)
-			val y = receiver.getFieldDisplayPositionY(engine, playerID)
+			val x = receiver.fieldX(engine, playerID)
+			val y = receiver.fieldY(engine, playerID)
 			var fontcolor = COLOR.GREEN
 			if(targetTimer>=currentRoomInfo!!.targetTimer-20&&targetTimer%2==0)
 				fontcolor = COLOR.WHITE
@@ -1474,8 +1474,8 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 				if(lastcombo[playerID]>=2)
 					receiver.drawMenuFont(engine, playerID, 2, 22, (lastcombo[playerID]-1).toString()+"COMBO", COLOR.CYAN)
 			} else {
-				val x = receiver.getFieldDisplayPositionX(engine, playerID)
-				val y = receiver.getFieldDisplayPositionY(engine, playerID)
+				val x = receiver.fieldX(engine, playerID)
+				val y = receiver.fieldY(engine, playerID)
 				var x2 = 8
 				if(useFractionalGarbage&&garbage[playerID]>0) x2 = 0
 
@@ -1517,15 +1517,15 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 					receiver.drawDirectFont(x+4+16, y+176, ((lastcombo[playerID]-1).toString()+"COMBO"), COLOR.CYAN, .5f)
 			}
 		} else if(isPlayerExist[playerID]&&engine.isVisible&&!isPractice) {
-			val strTemp = "$playerWinCount[playerID]"+"/"+playerGamesCount[playerID]
+			val strTemp = "${playerWinCount[playerID]}/${playerGamesCount[playerID]}"
 
 			if(engine.displaysize!=-1) {
 				var y = 21
 				if(engine.stat==GameEngine.Status.RESULT) y = 22
 				receiver.drawMenuFont(engine, playerID, 0, y, strTemp, COLOR.WHITE)
 			} else {
-				val x = receiver.getFieldDisplayPositionX(engine, playerID)
-				val y = receiver.getFieldDisplayPositionY(engine, playerID)
+				val x = receiver.fieldX(engine, playerID)
+				val y = receiver.fieldY(engine, playerID)
 				receiver.drawDirectFont(x+4, y+168, strTemp, COLOR.WHITE, .5f)
 			}
 		}// Games count
@@ -1578,8 +1578,8 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 		if(playerID==0&&isPractice) return
 		if(!engine.isVisible) return
 
-		val x = receiver.getFieldDisplayPositionX(engine, playerID)
-		val y = receiver.getFieldDisplayPositionY(engine, playerID)
+		val x = receiver.fieldX(engine, playerID)
+		val y = receiver.fieldY(engine, playerID)
 		val place = playerPlace[playerID]
 
 		if(engine.displaysize!=-1) {
@@ -1652,8 +1652,8 @@ class LegacyNetVSBattleMode:NetDummyMode() {
 	override fun renderExcellent(engine:GameEngine, playerID:Int) {
 		if(!engine.isVisible) return
 
-		val x = receiver.getFieldDisplayPositionX(engine, playerID)
-		val y = receiver.getFieldDisplayPositionY(engine, playerID)
+		val x = receiver.fieldX(engine, playerID)
+		val y = receiver.fieldY(engine, playerID)
 
 		when {
 			engine.displaysize!=-1 -> when {

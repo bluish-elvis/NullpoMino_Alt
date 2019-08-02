@@ -469,22 +469,22 @@ class PhysicianVS:AbstractMode() {
 				initMenu(COLOR.ORANGE, 0)
 				drawMenu(engine, playerID, receiver, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
 				menuColor = COLOR.GREEN
-				drawMenu(engine, playerID, receiver, "LOAD", "$presetNumber[playerID]", "SAVE", "$presetNumber[playerID]")
+				drawMenu(engine, playerID, receiver, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
 			} else {
 				initMenu(COLOR.CYAN, 9)
-				drawMenu(engine, playerID, receiver, "SPEED", SPEED_NAME[speed[playerID]], "VIRUS", "$hoverBlocks[playerID]", "MODE",
+				drawMenu(engine, playerID, receiver, "SPEED", SPEED_NAME[speed[playerID]], "VIRUS", "${hoverBlocks[playerID]}", "MODE",
 					if(flash[playerID])
 						"FLASH"
 					else
 						"NORMAL")
 				menuColor = COLOR.PINK
-				drawMenu(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]), "BGM", "$BGM.values[bgmno]")
+				drawMenu(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]), "BGM", "${BGM.values[bgmno]}")
 				menuColor = COLOR.CYAN
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "$mapSet[playerID]", "MAP NO.",
+				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "${mapSet[playerID]}", "MAP NO.",
 					if(mapNumber[playerID]<0)
 						"RANDOM"
 					else
-						"$mapNumber[playerID]"+"/"+(mapMaxNo[playerID]-1))
+						"${mapNumber[playerID]}"+"/"+(mapMaxNo[playerID]-1))
 			}
 		} else
 			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", COLOR.YELLOW)
@@ -552,8 +552,8 @@ class PhysicianVS:AbstractMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
-		val fldPosX = receiver.getFieldDisplayPositionX(engine, playerID)
-		val fldPosY = receiver.getFieldDisplayPositionY(engine, playerID)
+		val fldPosX = receiver.fieldX(engine, playerID)
+		val fldPosY = receiver.fieldY(engine, playerID)
 		val playerColor = if(playerID==0) COLOR.RED else COLOR.BLUE
 		val tempX:Int
 
@@ -564,7 +564,7 @@ class PhysicianVS:AbstractMode() {
 			// Rest
 			receiver.drawDirectFont(fldPosX+160, fldPosY+241, "REST", playerColor, .5f)
 			tempX = if(rest[playerID]<10) 8 else 0
-			receiver.drawDirectFont(fldPosX+160+tempX, fldPosY+257, "$rest[playerID]",
+			receiver.drawDirectFont(fldPosX+160+tempX, fldPosY+257, "${rest[playerID]}",
 				if(rest[playerID]<=if(flash[playerID]) 1 else 3) COLOR.RED else COLOR.WHITE)
 
 			// Speed

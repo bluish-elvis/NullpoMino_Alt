@@ -216,8 +216,8 @@ class RetroMania:AbstractMode() {
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreNum(engine, playerID, 0, topY+i,
 						String.format("%2d", i+1), COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, playerID, 3, topY+i, "$rankingScore[gametype][i]", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 10, topY+i, "$rankingLines[gametype][i]", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 10, topY+i, "${rankingLines[gametype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
 				}
 			}
@@ -225,7 +225,7 @@ class RetroMania:AbstractMode() {
 			// Game statistics
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", COLOR.BLUE)
 			val strScore:String = if(lastscore==0||scgettime>=120)
-				engine.statistics.score.toString()
+				"${engine.statistics.score}"
 			else
 				"${engine.statistics.score}(+$lastscore)"
 			receiver.drawScoreNum(engine, playerID, 0, 4, strScore, 2f)
@@ -234,7 +234,7 @@ class RetroMania:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 7, engine.statistics.lines.toString(), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, engine.statistics.level.toString(), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.level}", 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)

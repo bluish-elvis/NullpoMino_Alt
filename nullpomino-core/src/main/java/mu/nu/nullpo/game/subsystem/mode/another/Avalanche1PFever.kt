@@ -303,14 +303,14 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
-					receiver.drawScoreFont(engine, playerID, 3, topY+i, "$rankingScore!![numColors-3][mapSet][i]", i==rankingRank, scale)
+					receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore!![numColors-3][mapSet][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 14, topY+i, GeneralUtil.getTime(rankingTime!![numColors-3][mapSet][i]), i==rankingRank, scale)
 				}
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
 			val strScore:String = if(lastscore==0||lastmultiplier==0||scgettime<=0)
-				engine.statistics.score.toString()
+				"${engine.statistics.score}"
 			else "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
 			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
 

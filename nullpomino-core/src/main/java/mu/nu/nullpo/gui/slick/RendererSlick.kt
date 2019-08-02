@@ -40,7 +40,7 @@ import kotlin.math.pow
 /** ゲームの event 処理と描画処理 (Slick版） */
 open class RendererSlick:EventReceiver() {
 	enum class GFX {
-		BLOCK, GEM, HANABI, LINE, SPLASH, BRAVO
+		BLOCK, SPARK, GEM, HANABI, LINE, SPLASH, BRAVO
 	}
 	/** Log */
 	//static Logger log = Logger.getLogger(RendererSlick.class);
@@ -120,8 +120,8 @@ open class RendererSlick:EventReceiver() {
 		var x = x*s
 		var y = y*s
 		if(!engine.owner.menuOnly) {
-			x += getFieldDisplayPositionX(engine, playerID)+4
-			y += getFieldDisplayPositionY(engine, playerID)+52
+			x += fieldX(engine, playerID)+4
+			y += fieldY(engine, playerID)+52
 		}
 		drawDirect(x, y, str, font, color, scale)
 	}
@@ -131,8 +131,8 @@ open class RendererSlick:EventReceiver() {
 		scale:Float) {
 		if(engine.owner.menuOnly) return
 		val s = if(scale<=.5f) BS/2 else BS
-		drawDirect(getScoreDisplayPositionX(engine, playerID)+x*s,
-			getScoreDisplayPositionY(engine, playerID)+y*s, str, font, color, scale)
+		drawDirect(scoreX(engine, playerID)+x*s,
+			scoreY(engine, playerID)+y*s, str, font, color, scale)
 	}
 
 	/* 直接指定した座標へ文字列を描画 */
@@ -154,8 +154,8 @@ open class RendererSlick:EventReceiver() {
 		val graphics = graphics ?: return
 		if(engine.owner.menuOnly) return
 
-		val dx1 = getScoreDisplayPositionX(engine, playerID)+6+x*BS
-		val dy1 = getScoreDisplayPositionY(engine, playerID)+6+y*BS
+		val dx1 = scoreX(engine, playerID)+6+x*BS
+		val dy1 = scoreY(engine, playerID)+6+y*BS
 
 		graphics.color = Color.black
 		graphics.drawRect(dx1.toFloat(), dy1.toFloat(), 41f, 3f)
@@ -182,15 +182,15 @@ open class RendererSlick:EventReceiver() {
 		var x = x*BS
 		var y = y*BS
 		if(!engine.owner.menuOnly) {
-			x += getFieldDisplayPositionX(engine, playerID)+4
-			y += getFieldDisplayPositionY(engine, playerID)+52
+			x += fieldX(engine, playerID)+4
+			y += fieldY(engine, playerID)+52
 		}
 		drawBadges(x, y, BS*10, nums, scale)
 	}
 
 	override fun drawScoreBadges(engine:GameEngine, playerID:Int, x:Int, y:Int, width:Int, nums:Int,
 		scale:Float) {
-		drawBadges(getScoreDisplayPositionX(engine, playerID)+x*BS, getScoreDisplayPositionY(engine, playerID)+y*BS, width, nums, scale)
+		drawBadges(scoreX(engine, playerID)+x*BS, scoreY(engine, playerID)+y*BS, width, nums, scale)
 	}
 
 	/* 勲章を描画 */
@@ -230,15 +230,15 @@ open class RendererSlick:EventReceiver() {
 		x *= BS
 		y *= BS
 		if(!engine.owner.menuOnly) {
-			x += getFieldDisplayPositionX(engine, playerID)+4
-			y += getFieldDisplayPositionY(engine, playerID)+52
+			x += fieldX(engine, playerID)+4
+			y += fieldY(engine, playerID)+52
 		}
 		drawMedal(x, y, str, tier, scale)
 	}
 
 	override fun drawScoreMedal(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, tier:Int,
 		scale:Float) {
-		drawMedal(getScoreDisplayPositionX(engine, playerID)+x*BS, getScoreDisplayPositionY(engine, playerID)+y*BS, str, tier, scale)
+		drawMedal(scoreX(engine, playerID)+x*BS, scoreY(engine, playerID)+y*BS, str, tier, scale)
 	}
 
 	/* 勲章を描画 */
@@ -356,22 +356,20 @@ open class RendererSlick:EventReceiver() {
 		filter.a = alpha
 		if(darkness>0) filter = filter.darker(darkness)
 
-		graphics.drawImage(img, x.toFloat(), y.toFloat(), (x+size).toFloat(), (y+size).toFloat(), sx.toFloat(), sy.toFloat(), (sx+size).toFloat(), (sy+size).toFloat(), filter)
+		graphics.drawImage(img, x, y, (x+size), (y+size), sx, sy, (sx+size), (sy+size), filter)
 
 		if(isSticky&&!isSpecialBlocks) {
 			val d = 16*size
 			val h = size/2
 
 			if(attr and Block.ATTRIBUTE.CONNECT_UP.bit!=0&&attr and Block.ATTRIBUTE.CONNECT_LEFT.bit!=0)
-				graphics.drawImage(img, x.toFloat(), y.toFloat(), (x+h).toFloat(), (y+h).toFloat(), d.toFloat(), sy.toFloat(), (d+h).toFloat(), (sy+h).toFloat(), filter)
+				graphics.drawImage(img, x, y, (x+h), (y+h), d, sy, (d+h), (sy+h), filter)
 			if(attr and Block.ATTRIBUTE.CONNECT_UP.bit!=0&&attr and Block.ATTRIBUTE.CONNECT_RIGHT.bit!=0)
-				graphics.drawImage(img, (x+h).toFloat(), y.toFloat(), (x+h+h).toFloat(), (y+h).toFloat(), (d+h).toFloat(), sy.toFloat(), (d+h+h).toFloat(), (sy+h).toFloat(), filter)
+				graphics.drawImage(img, (x+h), y, (x+h+h), (y+h), (d+h), sy, (d+h+h), (sy+h), filter)
 			if(attr and Block.ATTRIBUTE.CONNECT_DOWN.bit!=0&&attr and Block.ATTRIBUTE.CONNECT_LEFT.bit!=0)
-				graphics.drawImage(img, x.toFloat(), (y+h).toFloat(), (x+h).toFloat(), (y+h+h).toFloat(), d.toFloat(), (sy+h).toFloat(), (d+h).toFloat(), (sy+h
-					+h).toFloat(), filter)
+				graphics.drawImage(img, x, (y+h), (x+h), (y+h+h), d, (sy+h), (d+h), (sy+h+h), filter)
 			if(attr and Block.ATTRIBUTE.CONNECT_DOWN.bit!=0&&attr and Block.ATTRIBUTE.CONNECT_RIGHT.bit!=0)
-				graphics.drawImage(img, (x+h).toFloat(), (y+h).toFloat(), (x+h+h).toFloat(), (y+h+h).toFloat(), (d+h).toFloat(), (sy+h).toFloat(), (d+h
-					+h).toFloat(), (sy+h+h).toFloat(), filter)
+				graphics.drawImage(img, (x+h), (y+h), (x+h+h), (y+h+h), (d+h), (sy+h), (d+h+h), (sy+h+h), filter)
 		}
 
 		if(darkness<0) {
@@ -480,45 +478,43 @@ open class RendererSlick:EventReceiver() {
 					if(y2>=0)
 						if(outlineghost) {
 							val blkTemp = it.block[i]
-							val x3 = x+x2*blksize
-							val y3 = y+y2*blksize
+							val x3:Float = (x+x2*blksize).toFloat()
+							val y3:Float = (y+y2*blksize).toFloat()
 							val ls = blksize-1
 
 							var colorID = blkTemp.drawColor
 							if(blkTemp.getAttribute(Block.ATTRIBUTE.BONE)) colorID = -1
 							var color = getColorByID(colorID)
-							if(showbg)
-								color.a = .5f
-							else
-								color = color.darker(.5f)
+							if(showbg) color.a = .5f
+							else color = color.darker(.5f)
 							graphics.color = color
-							graphics.fillRect(x3.toFloat(), y3.toFloat(), blksize.toFloat(), blksize.toFloat())
+							graphics.fillRect(x3, y3, blksize.toFloat(), blksize.toFloat())
 							graphics.color = Color.white
 
 							if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) {
-								graphics.drawLine(x3.toFloat(), y3.toFloat(), (x3+ls).toFloat(), y3.toFloat())
-								graphics.drawLine(x3.toFloat(), (y3+1).toFloat(), (x3+ls).toFloat(), (y3+1).toFloat())
+								graphics.drawLine(x3, y3, (x3+ls), y3)
+								graphics.drawLine(x3, (y3+1), (x3+ls), (y3+1))
 							}
 							if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) {
-								graphics.drawLine(x3.toFloat(), (y3+ls).toFloat(), (x3+ls).toFloat(), (y3+ls).toFloat())
-								graphics.drawLine(x3.toFloat(), (y3-1+ls).toFloat(), (x3+ls).toFloat(), (y3-1+ls).toFloat())
+								graphics.drawLine(x3, (y3+ls), (x3+ls), (y3+ls))
+								graphics.drawLine(x3, (y3-1+ls), (x3+ls), (y3-1+ls))
 							}
 							if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
-								graphics.drawLine(x3.toFloat(), y3.toFloat(), x3.toFloat(), (y3+ls).toFloat())
-								graphics.drawLine((x3+1).toFloat(), y3.toFloat(), (x3+1).toFloat(), (y3+ls).toFloat())
+								graphics.drawLine(x3, y3, x3, (y3+ls))
+								graphics.drawLine((x3+1), y3, (x3+1), (y3+ls))
 							}
 							if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) {
-								graphics.drawLine((x3+ls).toFloat(), y3.toFloat(), (x3+ls).toFloat(), (y3+ls).toFloat())
-								graphics.drawLine((x3-1+ls).toFloat(), y3.toFloat(), (x3-1+ls).toFloat(), (y3+ls).toFloat())
+								graphics.drawLine((x3+ls), y3, (x3+ls), (y3+ls))
+								graphics.drawLine((x3-1+ls), y3, (x3-1+ls), (y3+ls))
 							}
 							if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_UP))
-								graphics.fillRect(x3.toFloat(), y3.toFloat(), 2f, 2f)
+								graphics.fillRect(x3, y3, 2f, 2f)
 							if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_DOWN))
-								graphics.fillRect(x3.toFloat(), (y3+blksize-2).toFloat(), 2f, 2f)
+								graphics.fillRect(x3, (y3+blksize-2), 2f, 2f)
 							if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_UP))
-								graphics.fillRect((x3+blksize-2).toFloat(), y3.toFloat(), 2f, 2f)
+								graphics.fillRect((x3+blksize-2), y3, 2f, 2f)
 							if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
-								graphics.fillRect((x3+blksize-2).toFloat(), (y3+blksize-2).toFloat(), 2f, 2f)
+								graphics.fillRect((x3+blksize-2), (y3+blksize-2), 2f, 2f)
 						} else {
 							val blkTemp = Block(it.block[i])
 							blkTemp.darkness = .3f
@@ -531,45 +527,43 @@ open class RendererSlick:EventReceiver() {
 
 					if(outlineghost) {
 						val blkTemp = it.block[i]
-						val x3 = x+x2*blksize
-						val y3 = y+y2*blksize
+						val x3:Float = (x+x2*blksize).toFloat()
+						val y3:Float = (y+y2*blksize).toFloat()
 						val ls = blksize*2-1
 
 						var colorID = blkTemp.drawColor
 						if(blkTemp.getAttribute(Block.ATTRIBUTE.BONE)) colorID = -1
 						var color = getColorByID(colorID)
-						if(showbg)
-							color.a = .5f
-						else
-							color = color.darker(.5f)
+						if(showbg) color.a = .5f
+						else color = color.darker(.5f)
 						graphics.color = color
-						graphics.fillRect(x3.toFloat(), y3.toFloat(), (blksize*2).toFloat(), (blksize*2).toFloat())
+						graphics.fillRect(x3, y3, (blksize*2).toFloat(), (blksize*2).toFloat())
 						graphics.color = Color.white
 
 						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) {
-							graphics.drawLine(x3.toFloat(), y3.toFloat(), (x3+ls).toFloat(), y3.toFloat())
-							graphics.drawLine(x3.toFloat(), (y3+1).toFloat(), (x3+ls).toFloat(), (y3+1).toFloat())
+							graphics.drawLine(x3, y3, (x3+ls), y3)
+							graphics.drawLine(x3, (y3+1), (x3+ls), (y3+1))
 						}
 						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) {
-							graphics.drawLine(x3.toFloat(), (y3+ls).toFloat(), (x3+ls).toFloat(), (y3+ls).toFloat())
-							graphics.drawLine(x3.toFloat(), (y3-1+ls).toFloat(), (x3+ls).toFloat(), (y3-1+ls).toFloat())
+							graphics.drawLine(x3, (y3+ls), (x3+ls), (y3+ls))
+							graphics.drawLine(x3, (y3-1+ls), (x3+ls), (y3-1+ls))
 						}
 						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
-							graphics.drawLine(x3.toFloat(), y3.toFloat(), x3.toFloat(), (y3+ls).toFloat())
-							graphics.drawLine((x3+1).toFloat(), y3.toFloat(), (x3+1).toFloat(), (y3+ls).toFloat())
+							graphics.drawLine(x3, y3, x3, (y3+ls))
+							graphics.drawLine((x3+1), y3, (x3+1), (y3+ls))
 						}
 						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) {
-							graphics.drawLine((x3+ls).toFloat(), y3.toFloat(), (x3+ls).toFloat(), (y3+ls).toFloat())
-							graphics.drawLine((x3-1+ls).toFloat(), y3.toFloat(), (x3-1+ls).toFloat(), (y3+ls).toFloat())
+							graphics.drawLine((x3+ls), y3, (x3+ls), (y3+ls))
+							graphics.drawLine((x3-1+ls), y3, (x3-1+ls), (y3+ls))
 						}
 						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_UP))
-							graphics.fillRect(x3.toFloat(), y3.toFloat(), 2f, 2f)
+							graphics.fillRect(x3, y3, 2f, 2f)
 						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_DOWN))
-							graphics.fillRect(x3.toFloat(), (y3+blksize*2-2).toFloat(), 2f, 2f)
+							graphics.fillRect(x3, (y3+blksize*2-2), 2f, 2f)
 						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_UP))
-							graphics.fillRect((x3+blksize*2-2).toFloat(), y3.toFloat(), 2f, 2f)
+							graphics.fillRect((x3+blksize*2-2), y3, 2f, 2f)
 						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
-							graphics.fillRect((x3+blksize*2-2).toFloat(), (y3+blksize*2-2).toFloat(), 2f, 2f)
+							graphics.fillRect((x3+blksize*2-2), (y3+blksize*2-2), 2f, 2f)
 					} else {
 						val blkTemp = Block(it.block[i])
 						blkTemp.darkness = .3f
@@ -597,8 +591,8 @@ open class RendererSlick:EventReceiver() {
 					if(y2>=0) {
 
 						val blkTemp = piece.block[i]
-						val x3 = x+x2*blksize
-						val y3 = y+y2*blksize
+						val x3:Float = (x+x2*blksize).toFloat()
+						val y3:Float = (y+y2*blksize).toFloat()
 						val ls = blksize-1
 
 						var colorID = blkTemp.drawColor
@@ -606,65 +600,63 @@ open class RendererSlick:EventReceiver() {
 						val color = getColorByID(colorID)
 						graphics.color = color
 
-						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) graphics.fillRect(x3.toFloat(), y3.toFloat(), ls.toFloat(), 2f)
+						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) graphics.fillRect(x3, y3, ls.toFloat(), 2f)
 						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN))
-							graphics.fillRect(x3.toFloat(), (y3+ls-1).toFloat(), ls.toFloat(), 2f)
-						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) graphics.fillRect(x3.toFloat(), y3.toFloat(), 2f, ls.toFloat())
+							graphics.fillRect(x3, (y3+ls-1), ls.toFloat(), 2f)
+						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) graphics.fillRect(x3, y3, 2f, ls.toFloat())
 						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
-							graphics.fillRect((x3+ls-1).toFloat(), y3.toFloat(), 2f, ls.toFloat())
+							graphics.fillRect((x3+ls-1), y3, 2f, ls.toFloat())
 						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_UP))
-							graphics.fillRect(x3.toFloat(), y3.toFloat(), 2f, 2f)
+							graphics.fillRect(x3, y3, 2f, 2f)
 						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_DOWN))
-							graphics.fillRect(x3.toFloat(), (y3+blksize-2).toFloat(), 2f, 2f)
+							graphics.fillRect(x3, (y3+blksize-2), 2f, 2f)
 						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_UP))
-							graphics.fillRect((x3+blksize-2).toFloat(), y3.toFloat(), 2f, 2f)
+							graphics.fillRect((x3+blksize-2), y3, 2f, 2f)
 						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
-							graphics.fillRect((x3+blksize-2).toFloat(), (y3+blksize-2).toFloat(), 2f, 2f)
+							graphics.fillRect((x3+blksize-2), (y3+blksize-2), 2f, 2f)
 					}
 				} else {
 					val x2 = engine.ai!!.bestX+piece.dataX[engine.ai!!.bestRt][i]*2
 					val y2 = engine.ai!!.bestY+piece.dataY[engine.ai!!.bestRt][i]*2
 
 					val blkTemp = piece.block[i]
-					val x3 = x+x2*blksize
-					val y3 = y+y2*blksize
+					val x3:Float = (x+x2*blksize).toFloat()
+					val y3:Float = (y+y2*blksize).toFloat()
 					val ls = blksize*2-1
 
 					var colorID = blkTemp.drawColor
 					if(blkTemp.getAttribute(Block.ATTRIBUTE.BONE)) colorID = -1
 					var color = getColorByID(colorID)
-					if(showbg)
-						color.a = .5f
-					else
-						color = color.darker(.5f)
+					if(showbg) color.a = .5f
+					else color = color.darker(.5f)
 					graphics.color = color
 					//graphics.fillRect(x3, y3, blksize * 2, blksize * 2);
 					graphics.color = Color.white
 
 					if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) {
-						graphics.drawLine(x3.toFloat(), y3.toFloat(), (x3+ls).toFloat(), y3.toFloat())
-						graphics.drawLine(x3.toFloat(), (y3+1).toFloat(), (x3+ls).toFloat(), (y3+1).toFloat())
+						graphics.drawLine(x3, y3, (x3+ls), y3)
+						graphics.drawLine(x3, (y3+1), (x3+ls), (y3+1))
 					}
 					if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) {
-						graphics.drawLine(x3.toFloat(), (y3+ls).toFloat(), (x3+ls).toFloat(), (y3+ls).toFloat())
-						graphics.drawLine(x3.toFloat(), (y3-1+ls).toFloat(), (x3+ls).toFloat(), (y3-1+ls).toFloat())
+						graphics.drawLine(x3, (y3+ls), (x3+ls), (y3+ls))
+						graphics.drawLine(x3, (y3-1+ls), (x3+ls), (y3-1+ls))
 					}
 					if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
-						graphics.drawLine(x3.toFloat(), y3.toFloat(), x3.toFloat(), (y3+ls).toFloat())
-						graphics.drawLine((x3+1).toFloat(), y3.toFloat(), (x3+1).toFloat(), (y3+ls).toFloat())
+						graphics.drawLine(x3, y3, x3, (y3+ls))
+						graphics.drawLine((x3+1), y3, (x3+1), (y3+ls))
 					}
 					if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) {
-						graphics.drawLine((x3+ls).toFloat(), y3.toFloat(), (x3+ls).toFloat(), (y3+ls).toFloat())
-						graphics.drawLine((x3-1+ls).toFloat(), y3.toFloat(), (x3-1+ls).toFloat(), (y3+ls).toFloat())
+						graphics.drawLine((x3+ls), y3, (x3+ls), (y3+ls))
+						graphics.drawLine((x3-1+ls), y3, (x3-1+ls), (y3+ls))
 					}
 					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_UP))
-						graphics.fillRect(x3.toFloat(), y3.toFloat(), 2f, 2f)
+						graphics.fillRect(x3, y3, 2f, 2f)
 					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_DOWN))
-						graphics.fillRect(x3.toFloat(), (y3+blksize*2-2).toFloat(), 2f, 2f)
+						graphics.fillRect(x3, (y3+blksize*2-2), 2f, 2f)
 					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_UP))
-						graphics.fillRect((x3+blksize*2-2).toFloat(), y3.toFloat(), 2f, 2f)
+						graphics.fillRect((x3+blksize*2-2), y3, 2f, 2f)
 					if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
-						graphics.fillRect((x3+blksize*2-2).toFloat(), (y3+blksize*2-2).toFloat(), 2f, 2f)
+						graphics.fillRect((x3+blksize*2-2), (y3+blksize*2-2), 2f, 2f)
 				}
 		}
 	}
@@ -717,22 +709,22 @@ open class RendererSlick:EventReceiver() {
 							val ls = blksize-1
 							when(outlineType) {
 								GameEngine.BLOCK_OUTLINE_NORMAL -> {
-									if(field.getBlockColor(j, i-1)==Block.BLOCK_COLOR_NONE) graphics.drawLine(x2.toFloat(), y2.toFloat(), (x2+ls).toFloat(), y2.toFloat())
-									if(field.getBlockColor(j, i+1)==Block.BLOCK_COLOR_NONE) graphics.drawLine(x2.toFloat(), (y2+ls).toFloat(), (x2+ls).toFloat(), (y2+ls).toFloat())
-									if(field.getBlockColor(j-1, i)==Block.BLOCK_COLOR_NONE) graphics.drawLine(x2.toFloat(), y2.toFloat(), x2.toFloat(), (y2+ls).toFloat())
-									if(field.getBlockColor(j+1, i)==Block.BLOCK_COLOR_NONE) graphics.drawLine((x2+ls).toFloat(), y2.toFloat(), (x2+ls).toFloat(), (y2+ls).toFloat())
+									if(field.getBlockColor(j, i-1)==Block.BLOCK_COLOR_NONE) graphics.drawLine(x2, y2, (x2+ls), y2)
+									if(field.getBlockColor(j, i+1)==Block.BLOCK_COLOR_NONE) graphics.drawLine(x2, (y2+ls), (x2+ls), (y2+ls))
+									if(field.getBlockColor(j-1, i)==Block.BLOCK_COLOR_NONE) graphics.drawLine(x2, y2, x2, (y2+ls))
+									if(field.getBlockColor(j+1, i)==Block.BLOCK_COLOR_NONE) graphics.drawLine((x2+ls), y2, (x2+ls), (y2+ls))
 								}
 								GameEngine.BLOCK_OUTLINE_CONNECT -> {
-									if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) graphics.drawLine(x2.toFloat(), y2.toFloat(), (x2+ls).toFloat(), y2.toFloat())
-									if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) graphics.drawLine(x2.toFloat(), (y2+ls).toFloat(), (x2+ls).toFloat(), (y2+ls).toFloat())
-									if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) graphics.drawLine(x2.toFloat(), y2.toFloat(), x2.toFloat(), (y2+ls).toFloat())
-									if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) graphics.drawLine((x2+ls).toFloat(), y2.toFloat(), (x2+ls).toFloat(), (y2+ls).toFloat())
+									if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) graphics.drawLine(x2, y2, (x2+ls), y2)
+									if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) graphics.drawLine(x2, (y2+ls), (x2+ls), (y2+ls))
+									if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) graphics.drawLine(x2, y2, x2, (y2+ls))
+									if(!blk.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) graphics.drawLine((x2+ls), y2, (x2+ls), (y2+ls))
 								}
 								GameEngine.BLOCK_OUTLINE_SAMECOLOR -> {
-									if(field.getBlockColor(j, i-1)!=blk.cint) graphics.drawLine(x2.toFloat(), y2.toFloat(), (x2+ls).toFloat(), y2.toFloat())
-									if(field.getBlockColor(j, i+1)!=blk.cint) graphics.drawLine(x2.toFloat(), (y2+ls).toFloat(), (x2+ls).toFloat(), (y2+ls).toFloat())
-									if(field.getBlockColor(j-1, i)!=blk.cint) graphics.drawLine(x2.toFloat(), y2.toFloat(), x2.toFloat(), (y2+ls).toFloat())
-									if(field.getBlockColor(j+1, i)!=blk.cint) graphics.drawLine((x2+ls).toFloat(), y2.toFloat(), (x2+ls).toFloat(), (y2+ls).toFloat())
+									if(field.getBlockColor(j, i-1)!=blk.cint) graphics.drawLine(x2, y2, (x2+ls), y2)
+									if(field.getBlockColor(j, i+1)!=blk.cint) graphics.drawLine(x2, (y2+ls), (x2+ls), (y2+ls))
+									if(field.getBlockColor(j-1, i)!=blk.cint) graphics.drawLine(x2, y2, x2, (y2+ls))
+									if(field.getBlockColor(j+1, i)!=blk.cint) graphics.drawLine((x2+ls), y2, (x2+ls), (y2+ls))
 								}
 							}
 						}
@@ -785,13 +777,13 @@ open class RendererSlick:EventReceiver() {
 				if(displaysize==-1) img = ResourceHolder.imgFieldbg2Small
 				if(displaysize==1) img = ResourceHolder.imgFieldbg2Big
 
-				graphics.drawImage(img, (x+4).toFloat(), (y+4).toFloat(), (x+4+width*size*4).toFloat(), (y+4+height*size*4).toFloat(), 0f, 0f, (width*size*4).toFloat(), (height*size
-					*4).toFloat(), filter)
+				graphics.drawImage(img, (x+4), (y+4), (x+4+width*size*4), (y+4+height*size*4), 0, 0, (width*size*4), (height*size
+					*4), filter)
 			} else if(showbg) {
 				val filter = Color(Color.black)
 				filter.a = fieldbgbright
 				graphics.color = filter
-				graphics.fillRect((x+4).toFloat(), (y+4).toFloat(), (width*size*4).toFloat(), (height*size*4).toFloat())
+				graphics.fillRect((x+4), (y+4), (width*size*4), (height*size*4))
 				graphics.color = Color.white
 			}
 		//graphics.drawImage(RenderStaffRoll.BG, x+4, y+4, x+4+width*size*4, y+4+height*size*4, 0, 0, width*size*4, height*size*4);
@@ -808,88 +800,87 @@ open class RendererSlick:EventReceiver() {
 				for(i in 0..height) {
 
 					tmpY = y+i*s+4
-					graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+s).toFloat(), (tmpY+s).toFloat(), 0f, 0f, 16f, 16f)
-					graphics.drawImage(fi, (tmpX+maxWidth+s).toFloat(), tmpY.toFloat(), (tmpX+maxWidth+s*2).toFloat(), (tmpY+s).toFloat(), 0f, 0f, 16f, 16f)
+					graphics.drawImage(fi, tmpX, tmpY, (tmpX+s), (tmpY+s), 0, 0, 16, 16)
+					graphics.drawImage(fi, (tmpX+maxWidth+s), tmpY, (tmpX+maxWidth+s*2), (tmpY+s), 0, 0, 16, 16)
 					if(i==height)
 						for(z in 1..width)
-							graphics.drawImage(fi, (tmpX+z*s).toFloat(), tmpY.toFloat(), (tmpX+(z+1)*s).toFloat(), (tmpY+s).toFloat(), 0f, 0f, 16f, 16f)
+							graphics.drawImage(fi, (tmpX+z*s), tmpY, (tmpX+(z+1)*s), (tmpY+s), 0, 0, 16, 16)
 				}
 				graphics.color = Color.white
-				graphics.fillRect((x+4).toFloat(), (y+4).toFloat(), (width*size*4).toFloat(), (height*size*4).toFloat())
+				graphics.fillRect((x+4), (y+4), (width*size*4), (height*size*4))
 			}
 			engine.framecolor==GameEngine.FRAME_SKIN_HEBO -> {
 				val fi = ResourceHolder.imgFrameOld[2]
 
-				graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+s).toFloat(), (tmpY+s).toFloat(), 0f, 0f, 16f, 16f)
+				graphics.drawImage(fi, tmpX, tmpY, (tmpX+s), (tmpY+s), 0, 0, 16, 16)
 				tmpX += 16+(width+2)*s
-				graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX).toFloat(), (tmpY+s).toFloat(), 32f, 0f, 48f, 16f)
+				graphics.drawImage(fi, tmpX, tmpY, (tmpX), (tmpY+s), 32, 0, 48, 16)
 				tmpX = x
 				tmpY += 16
-				graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+16).toFloat(), (tmpY+height*s).toFloat(), 0f, 15f, 16f, 1f)
-				graphics.drawImage(fi, (tmpX+maxWidth).toFloat(), tmpY.toFloat(), (tmpX+16).toFloat(), (tmpY+height*s).toFloat(), 0f, 15f, 16f, 1f)
+				graphics.drawImage(fi, tmpX, tmpY, (tmpX+16), (tmpY+height*s), 0, 15, 16, 1)
+				graphics.drawImage(fi, (tmpX+maxWidth), tmpY, (tmpX+16), (tmpY+height*s), 0, 15, 16, 1)
 			}
 			else -> {
 				if(showmeter) maxWidth = width*s+8
 				val fi = ResourceHolder.imgFrame[engine.framecolor]
 				tmpX = x+4
 				tmpY = y
-				graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+maxWidth).toFloat(), (tmpY+4).toFloat(), (oX+4).toFloat(), 0f, (oX+4+4).toFloat(), 4f)
+				graphics.drawImage(fi, tmpX, tmpY, (tmpX+maxWidth), (tmpY+4), (oX+4), 0, (oX+4+4), 4)
 				tmpY = y+height*size*4+4
-				graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+maxWidth).toFloat(), (tmpY+4).toFloat(), (oX+4).toFloat(), 8f, (oX+4+4).toFloat(), (8+4).toFloat())
+				graphics.drawImage(fi, tmpX, tmpY, (tmpX+maxWidth), (tmpY+4), (oX+4), 8, (oX+4+4), (8+4))
 
 				// 左と右
 				tmpX = x
 				tmpY = y+4
-				graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+4).toFloat(), (tmpY+height*size*4).toFloat(), oX.toFloat(), 4f, (oX+4).toFloat(), (4+4).toFloat())
+				graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+height*size*4), oX, 4, (oX+4), (4+4))
 
 				tmpX = x+width*size*4+if(showmeter) 12 else 4
-				graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+4).toFloat(), (tmpY+height*size*4).toFloat(), (oX+8).toFloat(), 4f, (oX+8+4).toFloat(), (4+4).toFloat())
+				graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+height*size*4), (oX+8), 4, (oX+8+4), 4+4)
 
 				// 左上
 				tmpX = x
 				tmpY = y
-				graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+4).toFloat(), (tmpY+4).toFloat(), oX.toFloat(), 0f, (oX+4).toFloat(), 4f)
+				graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), oX, 0, (oX+4), 4)
 
 				// 左下
 				tmpX = x
 				tmpY = y+height*size*4+4
-				graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+4).toFloat(), (tmpY+4).toFloat(), oX.toFloat(), 8f, (oX+4).toFloat(), (8+4).toFloat())
+				graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), oX, 8, (oX+4), (8+4))
 
 				if(showmeter) {
 					// MeterONのときの右上
 					tmpX = x+width*size*4+12
 					tmpY = y
-					graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+4).toFloat(), (tmpY+4).toFloat(), (oX+8).toFloat(), 0f, (oX+8+4).toFloat(), 4f)
+					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+8), 0, (oX+8+4), 4)
 
 					// MeterONのときの右下
 					tmpX = x+width*size*4+12
 					tmpY = y+height*size*4+4
-					graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+4).toFloat(), (tmpY+4).toFloat(), (oX+8).toFloat(), 8f, (oX+8+4).toFloat(), (8+4).toFloat())
+					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+8), 8, (oX+8+4), (8+4))
 
 					// 右Meterの枠
 					tmpX = x+width*size*4+4
 					tmpY = y+4
-					graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+4).toFloat(), (tmpY+height*size*4).toFloat(), (oX+12).toFloat(), 4f, (oX+12
-						+4).toFloat(), (4+4).toFloat())
+					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+height*size*4), (oX+12), 4, (oX+12+4), (4+4))
 
 					tmpX = x+width*size*4+4
 					tmpY = y
-					graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+4).toFloat(), (tmpY+4).toFloat(), (oX+12).toFloat(), 0f, (oX+12+4).toFloat(), 4f)
+					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+12), 0, (oX+12+4), 4)
 
 					tmpX = x+width*size*4+4
 					tmpY = y+height*size*4+4
-					graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+4).toFloat(), (tmpY+4).toFloat(), (oX+12).toFloat(), 8f, (oX+12+4).toFloat(), (8+4).toFloat())
+					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+12), 8, (oX+12+4), (8+4))
 
 				} else {
 					// MeterOFFのときの右上
 					tmpX = x+width*size*4+4
 					tmpY = y
-					graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+4).toFloat(), (tmpY+4).toFloat(), (oX+8).toFloat(), 0f, (oX+8+4).toFloat(), 4f)
+					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+8), 0, (oX+8+4), 4)
 
 					// MeterOFFのときの右下
 					tmpX = x+width*size*4+4
 					tmpY = y+height*size*4+4
-					graphics.drawImage(fi, tmpX.toFloat(), tmpY.toFloat(), (tmpX+4).toFloat(), (tmpY+4).toFloat(), (oX+8).toFloat(), 8f, (oX+8+4).toFloat(), (8+4).toFloat())
+					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+8), 8, (oX+8+4), (8+4))
 				}
 			}
 		}
@@ -905,7 +896,7 @@ open class RendererSlick:EventReceiver() {
 
 			if(maxHeight>0) {
 				graphics.color = Color.black
-				graphics.fillRect(tmpX.toFloat(), tmpY.toFloat(), 4f, maxHeight.toFloat())
+				graphics.fillRect(tmpX, tmpY, 4, maxHeight)
 				graphics.color = Color.white
 			}
 
@@ -918,7 +909,7 @@ open class RendererSlick:EventReceiver() {
 					tmpY = y+height*size*4+3-(value-1)
 
 					graphics.color = getMeterColorAsColor(engine.meterColorSub, value, maxHeight)
-					graphics.fillRect(tmpX.toFloat(), tmpY.toFloat(), 4f, value.toFloat())
+					graphics.fillRect(tmpX, tmpY, 4, value)
 					graphics.color = Color.white
 				}
 			}
@@ -931,7 +922,7 @@ open class RendererSlick:EventReceiver() {
 					tmpY = y+height*size*4+3-(value-1)
 
 					graphics.color = getMeterColorAsColor(engine.meterColor, value, maxHeight)
-					graphics.fillRect(tmpX.toFloat(), tmpY.toFloat(), 4f, value.toFloat())
+					graphics.fillRect(tmpX, tmpY, 4, value)
 					graphics.color = Color.white
 				}
 			}
@@ -965,25 +956,25 @@ open class RendererSlick:EventReceiver() {
 
 				// HOLD area
 				if(engine.ruleopt.holdEnable&&engine.isHoldVisible) {
-					graphics.fillRect((x-64).toFloat(), (y+48+8).toFloat(), 64f, (64-16).toFloat())
+					graphics.fillRect((x-64), (y+48+8), 64, (64-16))
 					for(i in 0..8) {
 						val filter2 = Color(Color.black)
-						filter2.a = i.toFloat()/8.toFloat()
+						filter2.a = i.toFloat()/8f
 						graphics.color = filter2
-						graphics.fillRect((x-64).toFloat(), (y+47+i).toFloat(), 64f, 1f)
-						graphics.fillRect((x-64).toFloat(), (y+112-i).toFloat(), 64f, 1f)
+						graphics.fillRect((x-64), (y+47+i), 64, 1)
+						graphics.fillRect((x-64), (y+112-i), 63, 1)
 					}
 				}
 
 				// NEXT area
 				if(maxNext>0) {
-					graphics.fillRect(x2.toFloat(), (y+48+8).toFloat(), 64f, (64*maxNext-16).toFloat())
+					graphics.fillRect(x2, (y+48+8), 64, (64*maxNext-16))
 					for(i in 0..8) {
 						val filter2 = Color(Color.black)
-						filter2.a = i.toFloat()/8.toFloat()
+						filter2.a = i.toFloat()/8f
 						graphics.color = filter2
-						graphics.fillRect(x2.toFloat(), (y+47+i).toFloat(), 64f, 1f)
-						graphics.fillRect(x2.toFloat(), (y+48+64*maxNext-i).toFloat(), 64f, 1f)
+						graphics.fillRect(x2, (y+47+i), 64, 1)
+						graphics.fillRect(x2, (y+48+64*maxNext-i), 64, 1)
 					}
 				}
 			} else if(nextDisplayType==1) {
@@ -992,38 +983,38 @@ open class RendererSlick:EventReceiver() {
 
 				// HOLD area
 				if(engine.ruleopt.holdEnable&&engine.isHoldVisible) {
-					graphics.fillRect((x-32).toFloat(), (y+48+8).toFloat(), 32f, (32-16).toFloat())
+					graphics.fillRect((x-32), (y+48+8), 32, (32-16))
 					for(i in 0..8) {
 						val filter2 = Color(Color.black)
-						filter2.a = i.toFloat()/8.toFloat()
+						filter2.a = i.toFloat()/8f
 						graphics.color = filter2
-						graphics.fillRect((x-32).toFloat(), (y+47+i).toFloat(), 32f, 1f)
-						graphics.fillRect((x-32).toFloat(), (y+80-i).toFloat(), 32f, 1f)
+						graphics.fillRect((x-32), (y+47+i), 32, 1)
+						graphics.fillRect((x-32), (y+80-i), 32, 1)
 					}
 				}
 
 				// NEXT area
 				if(maxNext>0) {
-					graphics.fillRect(x2.toFloat(), (y+48+8).toFloat(), 32f, (32*maxNext-16).toFloat())
+					graphics.fillRect(x2, (y+48+8), 32, (32*maxNext-16))
 					for(i in 0..8) {
 						val filter2 = Color(Color.black)
-						filter2.a = i.toFloat()/8.toFloat()
+						filter2.a = i.toFloat()/8f
 						graphics.color = filter2
-						graphics.fillRect(x2.toFloat(), (y+47+i).toFloat(), 32f, 1f)
-						graphics.fillRect(x2.toFloat(), (y+48+32*maxNext-i).toFloat(), 32f, 1f)
+						graphics.fillRect(x2, (y+47+i), 32, 1)
+						graphics.fillRect(x2, (y+48+32*maxNext-i), 32, 1)
 					}
 				}
 			} else {
 				val w = fldWidth*fldBlkSize+15
 
-				graphics.fillRect((x+20).toFloat(), y.toFloat(), (w-40).toFloat(), 48f)
+				graphics.fillRect((x+20), y, (w-40), 48)
 
 				for(i in 0..20) {
 					val filter2 = Color(Color.black)
 					filter2.a = i.toFloat()/20f
 					graphics.color = filter2
-					graphics.fillRect((x+i-1).toFloat(), y.toFloat(), 1f, 48f)
-					graphics.fillRect((x-i+w).toFloat(), y.toFloat(), 1f, 48f)
+					graphics.fillRect((x+i-1), y, 1, 48)
+					graphics.fillRect((x-i+w), y, 1, 48)
 				}
 			}
 
@@ -1099,7 +1090,7 @@ open class RendererSlick:EventReceiver() {
 				var str = "SWAP"
 				var tempColor = if(engine.holdDisable) COLOR.WHITE else COLOR.GREEN
 				if(engine.ruleopt.holdLimit>=0) {
-					str+="\ne$holdRemain"
+					str += "\ne$holdRemain"
 					if(!engine.holdDisable&&holdRemain>0&&holdRemain<=10)
 						tempColor = if(holdRemain<=5) COLOR.RED else COLOR.YELLOW
 				}
@@ -1186,23 +1177,23 @@ open class RendererSlick:EventReceiver() {
 						bgi.draw(320-cx, 240-cy, sc)
 						if(engine.owner.backgroundStatus.fadesw) {
 							val filter = Color(Color.black)
-							if(!engine.owner.backgroundStatus.fadestat)
-								filter.a = engine.owner.backgroundStatus.fadecount.toFloat()/100
+							filter.a = if(!engine.owner.backgroundStatus.fadestat)
+								engine.owner.backgroundStatus.fadecount.toFloat()/100
 							else
-								filter.a = (100-engine.owner.backgroundStatus.fadecount).toFloat()/100
+								(100-engine.owner.backgroundStatus.fadecount).toFloat()/100
 							graphics.color = filter
-							graphics.fillRect(0f, 0f, 640f, 480f)
+							graphics.fillRect(0, 0, 640, 480)
 						}
 					} else {
 						bgi.rotation = 0f
-						graphics.drawImage(bgi, 0f, 0f, 640f, 480f, 0f, 0f, bgi.width.toFloat(), bgi.height.toFloat())
+						graphics.drawImage(bgi, 0, 0, 640, 480, 0, 0, bgi.width, bgi.height)
 					}
 				}
 			}
 		// NEXTなど
 		if(!engine.owner.menuOnly&&engine.isVisible) {
-			val offsetX = getFieldDisplayPositionX(engine, playerID)
-			val offsetY = getFieldDisplayPositionY(engine, playerID)
+			val offsetX = fieldX(engine, playerID)
+			val offsetY = fieldY(engine, playerID)
 
 			if(engine.displaysize!=-1) {
 				drawNext(offsetX, offsetY, engine)
@@ -1222,8 +1213,8 @@ open class RendererSlick:EventReceiver() {
 		//if(engine.isVisible == false) return;
 
 		if(engine.statc[0]>0) {
-			val offsetX = getFieldDisplayPositionX(engine, playerID)
-			val offsetY = getFieldDisplayPositionY(engine, playerID)
+			val offsetX = fieldX(engine, playerID)
+			val offsetY = fieldY(engine, playerID)
 
 			if(engine.statc[0]>0)
 				if(engine.displaysize!=-1) {
@@ -1242,8 +1233,8 @@ open class RendererSlick:EventReceiver() {
 	override fun renderMove(engine:GameEngine, playerID:Int) {
 		if(!engine.isVisible) return
 
-		val offsetX = getFieldDisplayPositionX(engine, playerID)
-		val offsetY = getFieldDisplayPositionY(engine, playerID)
+		val offsetX = fieldX(engine, playerID)
+		val offsetY = fieldY(engine, playerID)
 
 		if(engine.statc[0]>1||engine.ruleopt.moveFirstFrame)
 			when(engine.displaysize) {
@@ -1281,22 +1272,23 @@ open class RendererSlick:EventReceiver() {
 
 	override fun lineClear(engine:GameEngine, playerID:Int, y:Int) {
 		val s = if(engine.displaysize==-1) 8 else 16+engine.displaysize*16
-		effectlist.add(EffectObject(GFX.LINE, getFieldDisplayPositionX(engine, playerID)+4, getFieldDisplayPositionY(engine, playerID)+52+y*s, s, engine.fieldWidth))
+		effectlist.add(EffectObject(GFX.LINE, fieldX(engine, playerID)+4, fieldY(engine, playerID)+52+y*s,
+			s, engine.fieldWidth))
 	}
 
 	/* Blockを消す演出を出すときの処理 */
 	override fun blockBreak(engine:GameEngine, playerID:Int, x:Int, y:Int, blk:Block) {
 		if(showlineeffect&&engine.displaysize!=-1) {
 			val color = blk.drawColor
-
+			val x = fieldX(engine, playerID)+4+x*16
+			val y = fieldY(engine, playerID)+52+y*16
 			// 通常Block
 			if(color>=Block.BLOCK_COLOR_GRAY&&color<=Block.BLOCK_COLOR_PURPLE
 				&&!blk.getAttribute(Block.ATTRIBUTE.BONE))
-				effectlist.add(EffectObject(GFX.BLOCK, getFieldDisplayPositionX(engine, playerID)
-					+4+x*16, getFieldDisplayPositionY(engine, playerID)+52+y*16, (color-Block.BLOCK_COLOR_GRAY)%ResourceHolder.imgBreak.size))
+				effectlist.add(EffectObject(if(blk.getAttribute(Block.ATTRIBUTE.LAST_COMMIT)) GFX.SPARK else GFX.BLOCK,
+					x, y, (color-Block.BLOCK_COLOR_GRAY)%ResourceHolder.imgBreak.size))
 			else if(blk.isGemBlock)
-				effectlist.add(EffectObject(GFX.GEM, getFieldDisplayPositionX(engine, playerID)+4
-					+x*16, getFieldDisplayPositionY(engine, playerID)+52+y*16, (color-Block.BLOCK_COLOR_GEM_RED)%ResourceHolder.imgPErase.size))// 宝石Block
+				effectlist.add(EffectObject(GFX.GEM, x, y, (color-Block.BLOCK_COLOR_GEM_RED)%ResourceHolder.imgPErase.size))// 宝石Block
 
 		}
 	}
@@ -1304,13 +1296,13 @@ open class RendererSlick:EventReceiver() {
 	/* Blockを消す演出を出すときの処理 */
 	override fun shootFireworks(engine:GameEngine, x:Int, y:Int, color:COLOR) {
 		val cint:Int = color.ordinal
-		val obj = EffectObject(if(heavyeffect) GFX.HANABI else GFX.GEM, x, y, cint)
+		val obj = EffectObject(GFX.HANABI, x, y, cint)
 		effectlist.add(obj)
 		super.shootFireworks(engine, x, y, color)
 	}
 
 	override fun bravo(engine:GameEngine, playerID:Int) {
-		effectlist.add(EffectObject(GFX.BRAVO, getFieldDisplayPositionX(engine, playerID), getFieldDisplayPositionY(engine, playerID), 0f))
+		effectlist.add(EffectObject(GFX.BRAVO, fieldX(engine, playerID), fieldY(engine, playerID), 0f))
 		super.bravo(engine, playerID)
 	}
 
@@ -1320,8 +1312,8 @@ open class RendererSlick:EventReceiver() {
 		if(!engine.allowTextRenderByReceiver) return
 		if(!engine.isVisible) return
 
-		val offsetX = getFieldDisplayPositionX(engine, playerID)
-		val offsetY = getFieldDisplayPositionY(engine, playerID)
+		val offsetX = fieldX(engine, playerID)
+		val offsetY = fieldY(engine, playerID)
 
 		if(engine.displaysize!=-1) {
 			if(engine.owner.players<=1)
@@ -1336,8 +1328,8 @@ open class RendererSlick:EventReceiver() {
 	override fun renderGameOver(engine:GameEngine, playerID:Int) {
 		graphics ?: return
 		if(!engine.allowTextRenderByReceiver||!engine.isVisible) return
-		val offsetX = getFieldDisplayPositionX(engine, playerID)
-		val offsetY = getFieldDisplayPositionY(engine, playerID)
+		val offsetX = fieldX(engine, playerID)
+		val offsetY = fieldY(engine, playerID)
 		if(engine.lives>0&&engine.gameActive) {
 			FontNormal.printFont(offsetX+4, offsetY+204, "LEFT", COLOR.WHITE, 1f)
 			FontNumber.printFont(offsetX+132, offsetY+196, ((engine.lives-1)%10).toString(), COLOR.WHITE, 2f)
@@ -1367,19 +1359,19 @@ open class RendererSlick:EventReceiver() {
 
 		var tempColor:COLOR = if(engine.statc[0]==0) COLOR.RED else COLOR.WHITE
 
-		FontNormal.printFont(getFieldDisplayPositionX(engine, playerID)+12,
-			getFieldDisplayPositionY(engine, playerID)+340, "RETRY", tempColor, 1f)
+		FontNormal.printFont(fieldX(engine, playerID)+12,
+			fieldY(engine, playerID)+340, "RETRY", tempColor, 1f)
 
 		tempColor = if(engine.statc[0]==1) COLOR.RED else COLOR.WHITE
-		FontNormal.printFont(getFieldDisplayPositionX(engine, playerID)+108,
-			getFieldDisplayPositionY(engine, playerID)+340, "END", tempColor, 1f)
+		FontNormal.printFont(fieldX(engine, playerID)+108,
+			fieldY(engine, playerID)+340, "END", tempColor, 1f)
 	}
 
 	/* fieldエディット画面の描画処理 */
 	override fun renderFieldEdit(engine:GameEngine, playerID:Int) {
 		graphics ?: return
-		val x = getFieldDisplayPositionX(engine, playerID)+4+engine.fldeditX*16
-		val y = getFieldDisplayPositionY(engine, playerID)+52+engine.fldeditY*16
+		val x = fieldX(engine, playerID)+4+engine.fldeditX*16
+		val y = fieldY(engine, playerID)+52+engine.fldeditY*16
 		val bright = if(engine.fldeditFrames%60>=30) -.5f else -.2f
 		drawBlock(x, y, engine.fldeditColor, engine.skin, false, bright, 1f, 1f)
 	}
@@ -1396,127 +1388,98 @@ open class RendererSlick:EventReceiver() {
 
 	/** Update effects */
 	private fun effectUpdate() {
-		var emptyflag = true
+		effectlist.forEach {
 
-		var i = 0
-		while(i<effectlist.size) {
-			val obj = effectlist[i]
-
-			if(obj.effect!=null) emptyflag = false
-
-			obj.anim++
-			when(obj.effect) {
+			it.anim++
+			when(it.effect) {
 				GFX.LINE//Lines
 				-> {
-					obj.anim += lineeffectspeed/2
-					if(obj.anim>=16) obj.effect = null
+					it.anim += lineeffectspeed/2
+					if(it.anim>=16) it.effect = null
 				}
 				GFX.BLOCK //Normal Block
+					, GFX.SPARK // Controlled Block
 					, GFX.GEM // Gem Block
 				-> {
-					obj.anim += lineeffectspeed
-					if(obj.effect==GFX.BLOCK&&obj.anim>=(if(heavyeffect) 36 else 32)||obj.anim>=60) obj.effect = null
+					it.anim += lineeffectspeed
+					if(it.anim>=(if(it.effect==GFX.GEM) 60 else 36)) it.effect = null
 				}
 				GFX.HANABI // Fireworks
-				-> if(obj.anim>=48) obj.effect = null
+				-> if(it.anim>=48) it.effect = null
 				GFX.BRAVO//Bravo
-				-> if(obj.anim>=100) obj.effect = null
+				-> if(it.anim>=100) it.effect = null
 				GFX.SPLASH
-				-> if(obj.x<-BS) obj.effect = null
+				-> if(it.x<-BS) it.effect = null
 			}
-			if(obj.effect==null) {
-				effectlist.removeAt(i)
-				i--
-			}
-			i++
 		}
-
-		if(emptyflag) effectlist.clear()
+		effectlist.removeIf {it.effect==null}
 	}
 
 	/** Render effects */
 	private fun effectRender() {
 		val graphics = graphics ?: return
-		for(obj in effectlist) {
-			var x = obj.x
-			var y = obj.y
+		effectlist.forEachIndexed {i, it ->
+			var x = it.x
+			var y = it.y
 			var srcx:Int
 			var srcy:Int
-			val color:Int = if(obj.param.isNotEmpty()) obj.param[0] else 0
+			val color:Int = if(it.param.isNotEmpty()) it.param[0] else 0
 			var sq:Int
-			when(obj.effect) {
+			when(it.effect) {
 				GFX.GEM // Gems frag
 				-> {
-					x = obj.x-8
-					y = obj.y-8
-					sq = 32
-					srcx = (obj.anim-1)%10*32
-					srcy = (obj.anim-1)/10*32
-
-					graphics.drawImage(ResourceHolder.imgPErase[color], x.toFloat(), y.toFloat(), (x+sq).toFloat(), (y+sq).toFloat(),
-						srcx.toFloat(), srcy.toFloat(), (srcx+sq).toFloat(), (srcy+sq).toFloat())
-					x = obj.x-40
-					y = obj.y-15
-					sq = 96
-					srcx = (obj.anim-1)%6*sq
-					srcy = (obj.anim-1)/6*sq
-					val flip = obj.x/16%2==0
-					//TI frag
-					if(heavyeffect)
-					//graphics.setDrawMode(Graphics.MODE_ADD);
-						graphics.drawImage(ResourceHolder.imgBreak[color][0], x.toFloat(), y.toFloat(), (x+sq).toFloat(), (y+sq).toFloat(),
-							srcx.toFloat(), srcy.toFloat(), (srcx+sq).toFloat(), (srcy+sq).toFloat())
-					//graphics.setDrawMode(Graphics.MODE_NORMAL);
-					if(obj.anim<32) {//TAP frag
-						y -= 25
-						srcx = (obj.anim-1)%8*sq
-						srcy = (obj.anim-1)/8*sq
-						ResourceHolder.imgBreak[color][1].draw(
-							if(flip) x-sq*.5f else x+sq*1.5f, y-sq*.5f, if(flip) x+sq*1.5f else x-sq*.5f, y+sq*1.5f,
-							srcx.toFloat(), srcy.toFloat(), (srcx+sq).toFloat(), (srcy+sq).toFloat())
-					}
+					x -= 16
+					y -= 16
+					sq = 64
+					srcx = (it.anim-1)%10*sq
+					srcy = (it.anim-1)/10*sq
+					graphics.drawImage(ResourceHolder.imgPErase[color], x, y, x+sq, y+sq, srcx, srcy, srcx+sq, srcy+sq)
+				}
+				GFX.SPARK // TI Block frag
+				-> {
+					x -= 88
+					y -= 38
+					sq = 192
+					srcx = (it.anim-1)%6*sq
+					srcy = (it.anim-1)/6*sq
+					val flip = (i%3==0) != (x%3 == 0)
+					ResourceHolder.imgBreak[color][0].draw(
+						if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,
+						srcx, srcy, srcx+sq, srcy+sq)
 				}
 
-				GFX.BLOCK //Normal Block frag
+				GFX.BLOCK // TAP Block frag
 				-> {
-					x = obj.x-40
-					y = obj.y-15
-					sq = 96
-					srcx = (obj.anim-1)%6*sq
-					srcy = (obj.anim-1)/6*sq
-					val flip = obj.x/16%2==0
-					if(heavyeffect)
-						graphics.drawImage(ResourceHolder.imgBreak[color][0], x.toFloat(), y.toFloat(), (x+sq).toFloat(), (y+sq).toFloat(),
-							srcx.toFloat(), srcy.toFloat(), (srcx+sq).toFloat(), (srcy+sq).toFloat())
-					if(obj.anim<32) {
-						y -= 25
-						srcx = (obj.anim-1)%8*sq
-						srcy = (obj.anim-1)/8*sq
-						ResourceHolder.imgBreak[color][1].draw(if(flip) x-sq*.5f else x+sq*1.5f, y-sq*.5f, if(flip) x+sq*1.5f else x-sq*.5f, y+sq*1.5f, srcx.toFloat(), srcy.toFloat(), (srcx+sq).toFloat(), (srcy+sq).toFloat())
-					}
+					x -= 88
+					y -= 86
+					sq = 192
+					srcx = (it.anim-1)%8*sq
+					srcy = (it.anim-1)/8*sq
+					val flip = (i%3==0) != (x%3 == 0)
+					ResourceHolder.imgBreak[color][1].draw(if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,
+						srcx, srcy, srcx+sq, srcy+sq)
 				}
 				GFX.HANABI //Fireworks
 				-> {
 					sq = 192
-					x = obj.x-sq/2
-					y = obj.y-sq/2
-					srcx = (obj.anim-1)%6*sq
-					srcy = (obj.anim-1)/8*sq
-					ResourceHolder.imgHanabi[color].draw(x.toFloat(), y.toFloat(), (x+sq).toFloat(), (y+sq).toFloat(),
-						srcx.toFloat(), srcy.toFloat(), (srcx+sq).toFloat(), (srcy+sq).toFloat())
+					x -= sq/2
+					y -= sq/2
+					srcx = (it.anim-1)%6*sq
+					srcy = (it.anim-1)/8*sq
+					ResourceHolder.imgHanabi[color].draw(x, y, x+sq, y+sq, srcx, srcy, srcx+sq, srcy+sq)
 				}
-				GFX.LINE //Field Cleaned
+				GFX.LINE //Line Cleaned
 				-> {
-					sq = obj.param[1]*color
-					srcy = (obj.anim/2-1)*color
-					if(obj.anim%2==1) graphics.setDrawMode(Graphics.MODE_ADD)
-					ResourceHolder.imgLine[0].draw(x.toFloat(), y.toFloat(), (x+sq).toFloat(), (y+color).toFloat(), 0f, srcy.toFloat(), 80f, (srcy+8).toFloat())
+					sq = it.param[1]*color
+					srcy = (it.anim/2-1)*color
+					if(it.anim%2==1) graphics.setDrawMode(Graphics.MODE_ADD)
+					ResourceHolder.imgLine[0].draw(x, y, x+sq, y+color, 0, srcy, 80, srcy+8)
 					graphics.setDrawMode(Graphics.MODE_NORMAL)
 				}
 				GFX.BRAVO //Field Cleaned
 				-> {
-					FontNormal.printFont(obj.x+20, obj.x+204, "BRAVO!", COLOR.values()[(obj.anim+5)%10], 1.5f)
-					FontNormal.printFont(obj.x+52, obj.x+236, "CLEANED", COLOR.values()[obj.anim%10], 1f)
+					FontNormal.printFont(it.x+20, it.x+204, "BRAVO!", COLOR.values()[(it.anim+5)%10], 1.5f)
+					FontNormal.printFont(it.x+52, it.x+236, "CLEANED", COLOR.values()[it.anim%10], 1f)
 				}
 				GFX.SPLASH -> {
 

@@ -507,8 +507,8 @@ class RetroModern:AbstractMode() {
 	}
 
 	override fun renderCustom(engine:GameEngine, playerID:Int) {
-		val offsetX = receiver.getFieldDisplayPositionX(engine, playerID)
-		val offsetY = receiver.getFieldDisplayPositionY(engine, playerID)
+		val offsetX = receiver.fieldX(engine, playerID)
+		val offsetY = receiver.fieldY(engine, playerID)
 		val col = COLOR.WHITE
 
 		receiver.drawDirectFont(offsetX+4, offsetY+204, "EXCELLENT!", COLOR.ORANGE, 1f)
@@ -522,8 +522,8 @@ class RetroModern:AbstractMode() {
 
 	override fun renderExcellent(engine:GameEngine, playerID:Int) {
 
-		val offsetX = receiver.getFieldDisplayPositionX(engine, playerID)
-		val offsetY = receiver.getFieldDisplayPositionY(engine, playerID)
+		val offsetX = receiver.fieldX(engine, playerID)
+		val offsetY = receiver.fieldY(engine, playerID)
 		var col = COLOR.WHITE
 
 		receiver.drawDirectFont(offsetX-4, offsetY+228, "YOU REACHED", col)

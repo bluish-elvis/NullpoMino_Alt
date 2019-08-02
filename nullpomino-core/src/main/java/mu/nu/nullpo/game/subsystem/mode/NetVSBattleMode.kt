@@ -483,8 +483,8 @@ class NetVSBattleMode:NetDummyVSMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		super.renderLast(engine, playerID)
 
-		val x = owner.receiver.getFieldDisplayPositionX(engine, playerID)
-		val y = owner.receiver.getFieldDisplayPositionY(engine, playerID)
+		val x = owner.receiver.fieldX(engine, playerID)
+		val y = owner.receiver.fieldY(engine, playerID)
 
 		if(netvsPlayerExist[playerID]&&engine.isVisible) {
 			// Garbage Count
@@ -623,7 +623,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 						owner.receiver.drawDirectFont(x+4+16, y+176, ((lastcombo[playerID]-1).toString()+"COMBO"), COLOR.CYAN, .5f)
 				}
 			} else if(!netvsIsPractice||playerID!=0) {
-				val strTemp = "$netvsPlayerWinCount[playerID]"+"/"+netvsPlayerPlayCount[playerID]
+				val strTemp = "${netvsPlayerWinCount[playerID]}/${netvsPlayerPlayCount[playerID]}"
 
 				if(engine.displaysize!=-1) {
 					var y2 = 21
@@ -662,9 +662,9 @@ class NetVSBattleMode:NetDummyVSMode() {
 	override fun netSendEndGameStats(engine:GameEngine) {
 		val playerID = engine.playerID
 		var msg = "gstat\t"
-		msg += "$netvsPlayerPlace[playerID]\t"
+		msg += "${netvsPlayerPlace[playerID]}\t"
 		msg += (garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR).toString()+"\t${playerAPL[playerID]}\t${playerAPM[playerID]}\t"
-		msg += engine.statistics.lines.toString()+"\t${engine.statistics.lpm}\t"
+		msg += "${engine.statistics.lines}\t${engine.statistics.lpm}\t"
 		msg += engine.statistics.totalPieceLocked.toString()+"\t${engine.statistics.pps}\t"
 		msg += "$netvsPlayTimer${"\t$currentKO\t"+netvsPlayerWinCount[playerID]}\t"+netvsPlayerPlayCount[playerID]
 		msg += "\n"

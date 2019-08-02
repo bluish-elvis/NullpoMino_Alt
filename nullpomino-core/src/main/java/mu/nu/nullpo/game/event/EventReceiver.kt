@@ -101,8 +101,8 @@ open class EventReceiver {
 	fun shootFireworks(engine:GameEngine, playerID:Int) {
 		val mx = engine.fieldWidth*16
 		val my = engine.fieldHeight/2*16
-		val x = getFieldDisplayPositionX(engine, playerID)+engine.random.nextInt(mx)
-		var y = getFieldDisplayPositionY(engine, playerID)+engine.random.nextInt(my)+50
+		val x = fieldX(engine, playerID)+engine.random.nextInt(mx)
+		var y = fieldY(engine, playerID)+engine.random.nextInt(my)+50
 		engine.field?.let {if(my<it.highestBlockY) y += my}
 		shootFireworks(engine, x, y, COLOR.values()[engine.random.nextInt(7)])
 
@@ -369,7 +369,7 @@ open class EventReceiver {
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param str String to draw
-	 * @param flag Any boolean variable
+	 * @param color Font cint
 	 * @param scale Font size
 	 */
 	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
@@ -560,7 +560,7 @@ open class EventReceiver {
 	 * @param playerID Player ID
 	 * @return X position of field
 	 */
-	fun getFieldDisplayPositionX(engine:GameEngine, playerID:Int):Int {
+	fun fieldX(engine:GameEngine, playerID:Int):Int {
 		engine.owner.mode?.let {
 			return if(nextDisplayType==2) NEW_FIELD_OFFSET_X_BSP[it.gameStyle][engine.displaysize+1][playerID]
 			else NEW_FIELD_OFFSET_X[it.gameStyle][engine.displaysize+1][playerID]
@@ -572,7 +572,7 @@ open class EventReceiver {
 	 * @param playerID Player ID
 	 * @return Y position of field
 	 */
-	fun getFieldDisplayPositionY(engine:GameEngine, playerID:Int):Int {
+	fun fieldY(engine:GameEngine, playerID:Int):Int {
 		engine.owner.mode?.let {
 			return if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[it.gameStyle][engine.displaysize+1][playerID]
 			else NEW_FIELD_OFFSET_Y[it.gameStyle][engine.displaysize+1][playerID]
@@ -584,18 +584,16 @@ open class EventReceiver {
 	 * @param playerID Player ID
 	 * @return X position of score display area
 	 */
-	fun getScoreDisplayPositionX(engine:GameEngine, playerID:Int):Int {
-		var xOffset = if(nextDisplayType==2) 256 else 216
-		if(engine.displaysize==1) xOffset += 32
-		return getFieldDisplayPositionX(engine, playerID)+xOffset
-	}
+	fun scoreX(engine:GameEngine, playerID:Int):Int =
+		fieldX(engine, playerID)+(if(nextDisplayType==2) 256 else 216) + if(engine.displaysize==1) 32 else 0
+
 
 	/** Get Y position of score display area
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 * @return Y position of score display area
 	 */
-	fun getScoreDisplayPositionY(engine:GameEngine, playerID:Int):Int = getFieldDisplayPositionY(engine, playerID)+48
+	fun scoreY(engine:GameEngine, playerID:Int):Int = fieldY(engine, playerID)+48
 
 	/** Check if the skin is sticky type
 	 * @param skin Skin ID
@@ -695,26 +693,26 @@ open class EventReceiver {
 	/** It will be called before game screen appears.
 	 * @param manager GameManager that owns this mode
 	 */
-	fun modeInit(manager:GameManager) {}
+	open fun modeInit(manager:GameManager) {}
 
 	/** It will be called at the end of initialization for each player.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun playerInit(engine:GameEngine, playerID:Int) {}
+	open fun playerInit(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called when Ready->Go is about to end, before first piece
 	 * appears.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun startGame(engine:GameEngine, playerID:Int) {}
+	open fun startGame(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called at the start of each frame.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onFirst(engine:GameEngine, playerID:Int) {}
+	open fun onFirst(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called at the end of each frame.
 	 * @param engine GameEngine
@@ -726,73 +724,73 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onSetting(engine:GameEngine, playerID:Int) {}
+	open fun onSetting(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the "Ready->Go" screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onReady(engine:GameEngine, playerID:Int) {}
+	open fun onReady(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the piece movement.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onMove(engine:GameEngine, playerID:Int) {}
+	open fun onMove(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the "Lock flash".
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onLockFlash(engine:GameEngine, playerID:Int) {}
+	open fun onLockFlash(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the line clear.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onLineClear(engine:GameEngine, playerID:Int) {}
+	open fun onLineClear(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the ARE.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onARE(engine:GameEngine, playerID:Int) {}
+	open fun onARE(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the "Ending start" screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onEndingStart(engine:GameEngine, playerID:Int) {}
+	open fun onEndingStart(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the "Custom" screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onCustom(engine:GameEngine, playerID:Int) {}
+	open fun onCustom(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the "EXCELLENT!" screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onExcellent(engine:GameEngine, playerID:Int) {}
+	open fun onExcellent(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the Game Over screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onGameOver(engine:GameEngine, playerID:Int) {}
+	open fun onGameOver(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the end-of-game stats screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onResult(engine:GameEngine, playerID:Int) {}
+	open fun onResult(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the field editor screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun onFieldEdit(engine:GameEngine, playerID:Int) {}
+	open fun onFieldEdit(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called at the start of each frame. (For rendering)
 	 * @param engine GameEngine
@@ -810,7 +808,7 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun renderSetting(engine:GameEngine, playerID:Int) {}
+	open fun renderSetting(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the "Ready->Go" screen. (For rendering)
 	 * @param engine GameEngine
@@ -834,13 +832,13 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun renderEndingStart(engine:GameEngine, playerID:Int) {}
+	open fun renderEndingStart(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the "Custom" screen. (For rendering)
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun renderCustom(engine:GameEngine, playerID:Int) {}
+	open fun renderCustom(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the "EXCELLENT!" screen. (For rendering)
 	 * @param engine GameEngine
@@ -871,7 +869,7 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun renderInput(engine:GameEngine, playerID:Int) {}
+	open fun renderInput(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the line clear. (For rendering)
 	 * @param engine GameEngine
@@ -914,26 +912,26 @@ open class EventReceiver {
 	 * @param playerID Player ID
 	 * @param fall Number of rows the piece falled by Hard Drop
 	 */
-	fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {}
+	open fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {}
 
 	/** It will be called when the player exit the field editor.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun fieldEditExit(engine:GameEngine, playerID:Int) {}
+	open fun fieldEditExit(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called when the piece has locked. (after calcScore)
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 * @param lines Number of lines to be cleared (can be 0)
 	 */
-	fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {}
+	open fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {}
 
 	/** It will be called at the end of line-clear phase.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	fun lineClearEnd(engine:GameEngine, playerID:Int) {}
+	open fun lineClearEnd(engine:GameEngine, playerID:Int) {}
 
 	/** Called when saving replay
 	 * @param owner GameManager

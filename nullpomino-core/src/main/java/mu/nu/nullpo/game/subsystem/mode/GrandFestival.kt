@@ -360,8 +360,8 @@ class GrandFestival:AbstractMode() {
 
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, String.format("%2d", i+1), COLOR.YELLOW)
-						receiver.drawScoreNum(engine, playerID, 2, 3+i, "$rankingHanabi[i]", i==rankingRank)
-						receiver.drawScoreNum(engine, playerID, 6, 3+i, "$rankingScore[i]", i==rankingRank)
+						receiver.drawScoreNum(engine, playerID, 2, 3+i, "${rankingHanabi[i]}", i==rankingRank)
+						receiver.drawScoreNum(engine, playerID, 6, 3+i, "${rankingScore[i]}", i==rankingRank)
 						receiver.drawScoreNum(engine, playerID, 13, 3+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank)
 					}
 
@@ -498,13 +498,8 @@ class GrandFestival:AbstractMode() {
 	 * lines are cleared) */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
 
-		if(lines==0)
-			comboValue = 1
-		else {
-			comboValue = comboValue+2*lines-2
-			if(comboValue<1) comboValue = 1
-
-		}
+		comboValue = if(lines==0) 1
+		else maxOf(1,comboValue+2*lines-2)
 
 		if(lines>=1) {
 			val levelb = engine.statistics.level

@@ -804,7 +804,7 @@ class GrandBlossom:AbstractMode() {
 
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 					receiver.drawScoreFont(engine, playerID, 3, topY+i, getStageName(rankingStage[type][i]), gcolor, scale)
-					receiver.drawScoreNum(engine, playerID, 9, topY+i, "$rankingClearPer[type][i]%", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 9, topY+i, "${rankingClearPer[type][i]}%", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[type][i]), i==rankingRank, scale)
 				}
 			}

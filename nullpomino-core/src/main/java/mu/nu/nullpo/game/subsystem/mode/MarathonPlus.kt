@@ -275,7 +275,7 @@ class MarathonPlus:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"GOAL", "$tableGameClearLevel[goaltype] LEVEL", "CHALLENGE", GeneralUtil.getONorOFF(startlevel),
+				"GOAL", "${tableGameClearLevel[goaltype]} LEVEL", "CHALLENGE", GeneralUtil.getONorOFF(startlevel),
 				"SPIN BONUS",
 				if(tspinEnableType==0) "OFF" else if(tspinEnableType==1) "T-ONLY" else "ALL", "EZ SPIN", GeneralUtil.getONorOFF(enableTSpinKick),
 				"SPIN TYPE", if(spinCheckType==0) "4POINT" else "IMMOBILE", "EZIMMOBILE", GeneralUtil.getONorOFF(tspinEnableEZ))
@@ -349,8 +349,8 @@ class MarathonPlus:NetDummyMode() {
 				val gametype = goaltype+if(startlevel) GAMETYPE_MAX else 0
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, playerID, 3, topY+i, "$rankingScore[gametype][i]", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 11, topY+i, "$rankingLines[gametype][i]", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 11, topY+i, "${rankingLines[gametype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 16, topY+i,
 						GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
 				}
@@ -888,8 +888,8 @@ class MarathonPlus:NetDummyMode() {
 		val bg =
 			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += engine.statistics.score.toString()+"\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
-		msg += engine.statistics.time.toString()+"\t${engine.statistics.level}\t"
+		msg += "${engine.statistics.score}\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += "${engine.statistics.time}\t${engine.statistics.level}\t"
 		msg += engine.statistics.spl.toString()+"\t${engine.statistics.spm}\t${engine.statistics.lpm}\t${engine.statistics.pps}\t"
 		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
 		msg += ("$lastscore${"\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t"+engine.combobuf}\t"
