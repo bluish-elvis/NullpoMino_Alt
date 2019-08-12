@@ -525,11 +525,11 @@ class VSBattleMode:AbstractMode() {
 					loadPreset(engine, owner.modeConfig, presetNumber[playerID])
 				else if(menuCursor==8) {
 					savePreset(engine, owner.modeConfig, presetNumber[playerID])
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 				} else {
 					saveOtherSetting(engine, owner.modeConfig)
 					savePreset(engine, owner.modeConfig, -1-playerID)
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 					engine.statc[4] = 1
 				}
 			}

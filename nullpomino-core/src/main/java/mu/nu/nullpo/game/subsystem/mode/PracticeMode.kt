@@ -511,13 +511,13 @@ class PracticeMode:AbstractMode() {
 				else if(menuCursor==45) {
 					// Preset保存
 					savePreset(engine, owner.modeConfig, presetNumber)
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 				} else {
 					// Start game
 					owner.modeConfig.setProperty("practice.presetNumber", presetNumber)
 					owner.modeConfig.setProperty("practice.mapNumber", mapNumber)
 					savePreset(engine, owner.modeConfig, -1)
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 
 					if(useMap&&(engine.field==null||engine.field!!.isEmpty)) {
 						val prop = receiver.loadProperties("config/values/practice/$mapNumber.values")

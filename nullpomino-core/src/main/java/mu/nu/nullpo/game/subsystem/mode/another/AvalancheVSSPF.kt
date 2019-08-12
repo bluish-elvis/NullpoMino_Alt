@@ -356,11 +356,11 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					loadPreset(engine, owner.modeConfig, presetNumber[playerID], "spf")
 				else if(menuCursor==31) {
 					savePreset(engine, owner.modeConfig, presetNumber[playerID], "spf")
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 				} else {
 					saveOtherSetting(engine, owner.modeConfig)
 					savePreset(engine, owner.modeConfig, -1-playerID, "spf")
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 					engine.statc[4] = 1
 				}
 			}

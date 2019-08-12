@@ -289,12 +289,12 @@ class SprintScore:NetDummyMode() {
 				} else if(menuCursor==17) {
 					// Save preset
 					savePreset(engine, owner.modeConfig, presetNumber)
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 				} else {
 					// Save settings
 					owner.modeConfig.setProperty("scorerace.presetNumber", presetNumber)
 					savePreset(engine, owner.modeConfig, -1)
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 
 					// NET: Signal start of the game
 					if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
@@ -550,7 +550,7 @@ class SprintScore:NetDummyMode() {
 
 			if(rankingRank!=-1) {
 				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 			}
 		}
 	}

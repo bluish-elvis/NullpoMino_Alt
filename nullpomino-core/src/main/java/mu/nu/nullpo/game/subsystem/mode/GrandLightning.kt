@@ -356,7 +356,7 @@ class GrandLightning:AbstractMode() {
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig, engine.ruleopt.strRuleName)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 
 				sectionscomp = 0
 
@@ -930,7 +930,7 @@ class GrandLightning:AbstractMode() {
 
 			if(rankingRank!=-1||medalST==3) {
 				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 			}
 		}
 	}

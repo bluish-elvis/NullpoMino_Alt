@@ -296,11 +296,11 @@ class SprintCombo:NetDummyMode() {
 					if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
 				} else if(menuCursor==15) {
 					savePreset(engine, owner.modeConfig, presetNumber)
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 				} else {
 					owner.modeConfig.setProperty("comborace.presetNumber", presetNumber)
 					savePreset(engine, owner.modeConfig, -1)
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 
 					// NET: Signal start of the game
 					if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
@@ -592,7 +592,7 @@ class SprintCombo:NetDummyMode() {
 
 			if(rankingRank!=-1) {
 				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 			}
 		}
 	}

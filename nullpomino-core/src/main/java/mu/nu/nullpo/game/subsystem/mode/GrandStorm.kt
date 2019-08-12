@@ -353,7 +353,7 @@ class GrandStorm:AbstractMode() {
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 				isShowBestSectionTime = false
 				sectionscomp = 0
 				return false
@@ -887,7 +887,7 @@ class GrandStorm:AbstractMode() {
 
 			if(rankingRank!=-1||medalST==3) {
 				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 			}
 		}
 	}
@@ -955,9 +955,9 @@ class GrandStorm:AbstractMode() {
 	 */
 	private fun checkRanking(gr:Int, lv:Int, time:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(lv>rankingLevel[i])
-				return i
-			else if(lv==rankingLevel[i]&&time<rankingTime[i]) return i
+			if(gr>rankingGrade[i]) return i
+			else if(gr==rankingGrade[i]&&lv>rankingLevel[i]) return i
+			else if(gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
 
 		return -1
 	}

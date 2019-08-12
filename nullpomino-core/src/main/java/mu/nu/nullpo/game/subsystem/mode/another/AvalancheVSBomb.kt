@@ -278,12 +278,12 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					32 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID], "bombbattle")
 					33 -> {
 						savePreset(engine, owner.modeConfig, presetNumber[playerID], "bombbattle")
-						receiver.saveModeConfig(owner.modeConfig)
+						owner.saveModeConfig()
 					}
 					else -> {
 						saveOtherSetting(engine, owner.modeConfig)
 						savePreset(engine, owner.modeConfig, -1-playerID, "bombbattle")
-						receiver.saveModeConfig(owner.modeConfig)
+						owner.saveModeConfig()
 						engine.statc[4] = 1
 					}
 				}

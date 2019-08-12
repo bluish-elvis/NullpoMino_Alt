@@ -414,12 +414,12 @@ class PhysicianVS:AbstractMode() {
 					7 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID])
 					8 -> {
 						savePreset(engine, owner.modeConfig, presetNumber[playerID])
-						receiver.saveModeConfig(owner.modeConfig)
+						owner.saveModeConfig()
 					}
 					else -> {
 						saveOtherSetting(engine, owner.modeConfig)
 						savePreset(engine, owner.modeConfig, -1-playerID)
-						receiver.saveModeConfig(owner.modeConfig)
+						owner.saveModeConfig()
 						engine.statc[4] = 1
 					}
 				}

@@ -367,7 +367,7 @@ class GrandPhantom:AbstractMode() {
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 				isShowBestSectionTime = false
 				sectionscomp = 0
 				return false
@@ -865,7 +865,7 @@ class GrandPhantom:AbstractMode() {
 
 			if(rankingRank!=-1||medalST==3) {
 				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 			}
 		}
 	}
