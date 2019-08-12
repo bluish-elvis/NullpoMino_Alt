@@ -203,7 +203,7 @@ class MarathonDrill:NetDummyMode() {
 
 				// Save settings
 				saveSetting(owner.modeConfig)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 
 				// NET: Signal start of the game
 				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
@@ -276,6 +276,8 @@ class MarathonDrill:NetDummyMode() {
 		setSpeed(engine)
 
 		owner.bgmStatus.bgm = if(netIsWatch) BGM.SILENT else BGM.values[bgmno]
+
+		(0 until GARBAGE_BOTTOM).forEach {addGarbage(engine)}
 	}
 
 	/* Render score */
@@ -347,7 +349,6 @@ class MarathonDrill:NetDummyMode() {
 
 		if(engine.gameActive&&engine.timerActive) {
 			garbageTimer++
-
 			// Update meter
 			updateMeter(engine)
 			engine.field?.let {
@@ -407,10 +408,8 @@ class MarathonDrill:NetDummyMode() {
 		val limitTime = getGarbageMaxTime(engine.statistics.level)
 		var remainTime = limitTime-garbageTimer
 		if(remainTime<0) remainTime = 0
-		if(limitTime>0)
-			engine.meterValue = remainTime*receiver.getMeterMax(engine)/limitTime
-		else
-			engine.meterValue = 0
+		engine.meterValue = if(limitTime>0)
+			remainTime*receiver.getMeterMax(engine)/limitTime else 0
 		engine.meterColor = GameEngine.METER_COLOR_LIMIT
 	}
 
@@ -457,6 +456,13 @@ class MarathonDrill:NetDummyMode() {
 				engine.statistics.score += pts
 			}
 		}
+
+		engine.field?.let {
+			val gh = (it.height-it.highestGarbageBlockY-GARBAGE_BOTTOM)
+			if(gh>0)
+				if(goaltype==GOALTYPE_NORMAL) garbagePending = maxOf(garbagePending, gh)
+				else garbageTimer += gh
+		}
 	}
 
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
@@ -474,7 +480,7 @@ class MarathonDrill:NetDummyMode() {
 	 * @return Garbage time limit
 	 */
 	private fun getGarbageMaxTime(lv:Int):Int =
-		GARBAGE_TIMER_TABLE[goaltype][minOf(lv,GARBAGE_TIMER_TABLE[goaltype].size-1)]
+		GARBAGE_TIMER_TABLE[goaltype][minOf(lv, GARBAGE_TIMER_TABLE[goaltype].size-1)]
 
 	/** Add garbage line(s)
 	 * @param engine GameEngine
@@ -482,7 +488,7 @@ class MarathonDrill:NetDummyMode() {
 	 */
 	private fun addGarbage(engine:GameEngine, lines:Int = 1) {
 		// Add garbages
-		val field = engine.field?:return
+		val field = engine.field ?: return
 		val w = field.width
 		val h = field.height
 
@@ -499,7 +505,7 @@ class MarathonDrill:NetDummyMode() {
 
 			for(x in 0 until w)
 				if(x!=garbageHole)
-					field.setBlock(x, h-1, Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE , Block.ATTRIBUTE.GARBAGE))
+					field.setBlock(x, h-1, Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 
 			// Set connections
 			if(receiver.isStickySkin(engine))
@@ -533,7 +539,7 @@ class MarathonDrill:NetDummyMode() {
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = if(engine.statistics.time<10800)BGM.RESULT(1) else BGM.RESULT(2)
+		owner.bgmStatus.bgm = if(engine.statistics.time<10800) BGM.RESULT(1) else BGM.RESULT(2)
 
 		return super.onResult(engine, playerID)
 	}
@@ -569,7 +575,7 @@ class MarathonDrill:NetDummyMode() {
 
 			if(rankingRank!=-1) {
 				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 			}
 		}
 	}
@@ -776,6 +782,7 @@ class MarathonDrill:NetDummyMode() {
 		private const val GOALTYPE_NORMAL = 0
 		private const val GOALTYPE_REALTIME = 1
 
+		private const val GARBAGE_BOTTOM = 5
 		/** Fall velocity table (numerators) */
 		private val tableGravity = intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
 		/** Fall velocity table (denominators) */

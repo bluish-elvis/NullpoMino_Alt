@@ -622,37 +622,6 @@ open class EventReceiver {
 	 */
 	open fun setGraphics(g:Any) {}
 
-	/** Load properties from "config/setting/mode.cfg"
-	 * @return Properties from "config/setting/mode.cfg". null if load fails.
-	 */
-	fun loadModeConfig():CustomProperties? {
-		val propModeConfig = CustomProperties()
-
-		try {
-			val `in` = GZIPInputStream(FileInputStream("config/setting/mode.cfg"))
-			propModeConfig.load(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-			return null
-		}
-
-		return propModeConfig
-	}
-
-	/** Save properties to "config/setting/mode.cfg"
-	 * @param modeConfig Properties you want to save
-	 */
-	fun saveModeConfig(modeConfig:CustomProperties) {
-		try {
-			val out = GZIPOutputStream(FileOutputStream("config/setting/mode.cfg"))
-			modeConfig.store(out, "NullpoMino Mode Config")
-			out.close()
-		} catch(e:IOException) {
-			log.error("Failed to save mode config", e)
-		}
-
-	}
-
 	/** Load any properties from any location.
 	 * @param filename Filename
 	 * @return Properties you specified, or null if the file doesn't exist.
@@ -661,9 +630,9 @@ open class EventReceiver {
 		val prop = CustomProperties()
 
 		try {
-			val `in` = GZIPInputStream(FileInputStream(filename))
-			prop.load(`in`)
-			`in`.close()
+			val file = GZIPInputStream(FileInputStream(filename))
+			prop.load(file)
+			file.close()
 		} catch(e:IOException) {
 			log.debug("Failed to load custom property file from $filename", e)
 			return null
@@ -681,6 +650,7 @@ open class EventReceiver {
 		try {
 			val out = GZIPOutputStream(FileOutputStream(filename))
 			prop.store(out, "NullpoMino Custom Property File")
+			log.debug("Saving custom property file to $filename")
 			out.close()
 		} catch(e:IOException) {
 			log.debug("Failed to save custom property file to $filename", e)

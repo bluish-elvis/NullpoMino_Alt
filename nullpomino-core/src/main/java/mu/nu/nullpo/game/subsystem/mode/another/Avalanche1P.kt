@@ -173,7 +173,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 				return false
 			}
 
@@ -427,7 +427,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 			if(rankingRank!=-1) {
 				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 			}
 		}
 	}

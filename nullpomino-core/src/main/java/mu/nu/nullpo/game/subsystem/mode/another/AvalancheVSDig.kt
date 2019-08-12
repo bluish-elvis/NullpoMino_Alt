@@ -245,12 +245,12 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 					27 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID], "digrace")
 					28 -> {
 						savePreset(engine, owner.modeConfig, presetNumber[playerID], "digrace")
-						receiver.saveModeConfig(owner.modeConfig)
+						owner.saveModeConfig()
 					}
 					else -> {
 						saveOtherSetting(engine, owner.modeConfig)
 						savePreset(engine, owner.modeConfig, -1-playerID, "digrace")
-						receiver.saveModeConfig(owner.modeConfig)
+						owner.saveModeConfig()
 						engine.statc[4] = 1
 					}
 				}

@@ -228,7 +228,7 @@ class MarathonShuttle:NetDummyMode() {
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 
 				// NET: Signal start of the game
 				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
@@ -830,7 +830,7 @@ class MarathonShuttle:NetDummyMode() {
 
 			if(rankingRank!=-1) {
 				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 			}
 		}
 	}

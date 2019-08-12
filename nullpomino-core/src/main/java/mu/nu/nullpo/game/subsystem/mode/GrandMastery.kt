@@ -590,7 +590,7 @@ class GrandMastery:AbstractMode() {
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 
 				isShowBestSectionTime = false
 
@@ -1528,7 +1528,7 @@ class GrandMastery:AbstractMode() {
 
 			if(rankingRank!=-1||enableexam||medalST==3) {
 				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
-				receiver.saveModeConfig(owner.modeConfig)
+				owner.saveModeConfig()
 			}
 			owner.modeConfig.setProperty("decoration", decoration)
 		}

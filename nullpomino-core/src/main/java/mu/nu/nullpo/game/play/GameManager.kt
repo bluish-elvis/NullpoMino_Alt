@@ -41,7 +41,7 @@ class GameManager
 	var mode:GameMode? = null
 
 	/** Properties used by game mode */
-	var modeConfig:CustomProperties = receiver.loadModeConfig()?:CustomProperties()
+	var modeConfig:CustomProperties = CustomProperties()
 
 	/** Properties for replay file */
 	var replayProp:CustomProperties = CustomProperties()
@@ -99,6 +99,8 @@ class GameManager
 		log.debug("GameManager constructor called")
 	}
 
+	private val cfgMode get() = "config/setting/${mode?.name ?: "mode"}.cfg"
+
 	/** Initialize the game */
 	fun init() {
 		log.debug("GameManager init()")
@@ -110,12 +112,17 @@ class GameManager
 
 		var players = 1
 		mode?.let {
+			receiver.loadProperties(cfgMode)?.let {modeConfig = it}
 			it.modeInit(this)
 			players = it.players
 		}
 		for(i in 0 until players)
 			engine.add(GameEngine(this, i))
 	}
+
+	/** Save properties to "config/setting/mode.cfg"
+	 */
+	fun saveModeConfig() = receiver.saveProperties(cfgMode, modeConfig)
 
 	/** Reset the game */
 	fun reset() {
@@ -125,7 +132,7 @@ class GameManager
 		bgmStatus.reset()
 		backgroundStatus.reset()
 		if(!replayMode) replayProp.clear()
-		engine.forEach{it.init()}
+		engine.forEach {it.init()}
 	}
 
 	/** Shutdown the game */

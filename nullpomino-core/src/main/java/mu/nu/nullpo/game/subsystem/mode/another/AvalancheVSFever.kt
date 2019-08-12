@@ -275,11 +275,11 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 					loadPreset(engine, owner.modeConfig, presetNumber[playerID], "fever")
 				else if(menuCursor==29) {
 					savePreset(engine, owner.modeConfig, presetNumber[playerID], "fever")
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 				} else {
 					saveOtherSetting(engine, owner.modeConfig)
 					savePreset(engine, owner.modeConfig, -1-playerID, "fever")
-					receiver.saveModeConfig(owner.modeConfig)
+					owner.saveModeConfig()
 					engine.statc[4] = 1
 				}
 			}
