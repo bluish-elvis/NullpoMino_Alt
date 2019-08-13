@@ -43,6 +43,9 @@ class GameManager
 	/** Properties used by game mode */
 	var modeConfig:CustomProperties = CustomProperties()
 
+	/** Properties for Records game mode */
+	var recordProp:CustomProperties = CustomProperties()
+
 	/** Properties for replay file */
 	var replayProp:CustomProperties = CustomProperties()
 
@@ -99,8 +102,9 @@ class GameManager
 		log.debug("GameManager constructor called")
 	}
 
-	private val cfgMode get() = "config/setting/${mode?.name ?: "mode"}.cfg"
-
+	val cfgMode get() = "config/setting/mode/${mode?.name ?: "mode"}.cfg"
+	val recorder get() = recorder()
+	fun recorder(ruleName:String? = null):String = "scores/${mode?.name ?: "mode"}/"+ruleName?.let {"/$it"}
 	/** Initialize the game */
 	fun init() {
 		log.debug("GameManager init()")
@@ -113,6 +117,7 @@ class GameManager
 		var players = 1
 		mode?.let {
 			receiver.loadProperties(cfgMode)?.let {modeConfig = it}
+			receiver.loadProperties(recorder)?.let {recordProp = it}
 			it.modeInit(this)
 			players = it.players
 		}

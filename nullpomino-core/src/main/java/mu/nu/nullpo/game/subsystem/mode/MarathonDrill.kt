@@ -574,7 +574,7 @@ class MarathonDrill:NetDummyMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, garbageDigged, goaltype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}

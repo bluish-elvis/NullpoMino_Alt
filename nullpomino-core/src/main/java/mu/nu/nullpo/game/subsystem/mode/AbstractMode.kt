@@ -104,6 +104,12 @@ abstract class AbstractMode:GameMode {
 			item.save(-1, prop, propName)
 	}
 
+	protected open fun saveRanking(ruleName:String, map:Map<String,String>){
+		map.forEach{key, it ->
+			owner.recordProp.setProperty(key,it)
+		}
+		receiver.saveProperties(owner.recorder,owner.recordProp)
+	}
 	override fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {}
 
 	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean = false
