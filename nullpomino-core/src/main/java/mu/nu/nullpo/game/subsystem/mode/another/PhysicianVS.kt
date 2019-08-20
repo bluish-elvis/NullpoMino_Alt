@@ -624,8 +624,7 @@ class PhysicianVS:AbstractMode() {
 			gemsClearedChainTotal[playerID] += gemsCleared
 			lastscore[playerID] = pts
 			scgettime[playerID] = 120
-			engine.statistics.scoreFromLineClear += pts
-			engine.statistics.score += pts
+			engine.statistics.scoreLine += pts
 			score[playerID] += pts
 			engine.playSE("gem")
 			setSpeed(engine)

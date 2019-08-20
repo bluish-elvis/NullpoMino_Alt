@@ -105,7 +105,7 @@ class RetroMania:AbstractMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else
 			loadSetting(owner.replayProp)
@@ -251,7 +251,7 @@ class RetroMania:AbstractMode() {
 
 		// Max-out score, lines, and level
 		if(version>=2) {
-			if(engine.statistics.score>MAX_SCORE) engine.statistics.score = MAX_SCORE
+			if(engine.statistics.score>MAX_SCORE) engine.statistics.scoreBonus = engine.statistics.score-MAX_SCORE
 			if(engine.statistics.lines>MAX_LINES) engine.statistics.lines = MAX_LINES
 			if(engine.statistics.level>MAX_LEVEL) engine.statistics.level = MAX_LEVEL
 		}
@@ -277,8 +277,7 @@ class RetroMania:AbstractMode() {
 		if(pts>0) {
 			lastscore = pts
 			scgettime = 0
-			engine.statistics.scoreFromLineClear += pts
-			engine.statistics.score += pts
+			engine.statistics.scoreLine += pts
 		}
 
 		// Add lines
@@ -313,14 +312,12 @@ class RetroMania:AbstractMode() {
 	/** This function will be called when soft-drop is used */
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
 		if(version>=2&&engine.speed.denominator==1) return
-		engine.statistics.scoreFromSoftDrop += fall
-		engine.statistics.score += fall
+		engine.statistics.scoreSD += fall
 	}
 
 	/** This function will be called when hard-drop is used */
 	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.scoreFromHardDrop += fall
-		engine.statistics.score += fall
+		engine.statistics.scoreHD += fall
 	}
 
 	/** Renders game result screen */
@@ -366,7 +363,7 @@ class RetroMania:AbstractMode() {
 	}
 
 	/** Load the ranking */
-	private fun loadRanking(prop:CustomProperties, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until RANKING_TYPE) {
 				rankingScore[gametypeIndex][i] = prop.getProperty("retromania.ranking.$ruleName.$gametypeIndex.score.$i", 0)

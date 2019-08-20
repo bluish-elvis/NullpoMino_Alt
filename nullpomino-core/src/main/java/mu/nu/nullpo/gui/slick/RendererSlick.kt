@@ -287,10 +287,10 @@ open class RendererSlick:EventReceiver() {
 	}
 
 	/* リプレイを保存 */
-	override fun saveReplay(owner:GameManager, prop:CustomProperties) {
+	override fun saveReplay(owner:GameManager, prop:CustomProperties, foldername:String) {
 		if(owner.mode!!.isNetplayMode) return
 
-		saveReplay(owner, prop, NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", "replay"))
+		super.saveReplay(owner, prop, NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", foldername))
 	}
 
 	/* 1マスBlockを描画 */
@@ -1442,7 +1442,7 @@ open class RendererSlick:EventReceiver() {
 					sq = 192
 					srcx = (it.anim-1)%6*sq
 					srcy = (it.anim-1)/6*sq
-					val flip = (i%3==0) != (x%3 == 0)
+					val flip = (i%3==0)!=(x%3==0)
 					ResourceHolder.imgBreak[color][0].draw(
 						if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,
 						srcx, srcy, srcx+sq, srcy+sq)
@@ -1455,7 +1455,7 @@ open class RendererSlick:EventReceiver() {
 					sq = 192
 					srcx = (it.anim-1)%8*sq
 					srcy = (it.anim-1)/8*sq
-					val flip = (i%3==0) != (x%3 == 0)
+					val flip = (i%3==0)!=(x%3==0)
 					ResourceHolder.imgBreak[color][1].draw(if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,
 						srcx, srcy, srcx+sq, srcy+sq)
 				}
@@ -1523,36 +1523,15 @@ open class RendererSlick:EventReceiver() {
 		fun getMeterColorAsColor(meterColor:Int, value:Int, max:Int):Color {
 			var color = Color(0, 0, 0)
 			when(meterColor) {
-				GameEngine.METER_COLOR_LEVEL -> when {
-					value<max/3 -> {
-						color.g = 1f
-						color.b = (max-value*3f)/max
-					}
-					value<max*2/3 -> {
-						color.r = (value*3f-max)/max
-						color.g = 1f
-						color.b = 0f
-					}
-					else -> {
-						color.g = (max-value)*3f/max
-						color.r = 1f
-					}
+				GameEngine.METER_COLOR_LEVEL -> {
+					color.r = maxOf(0f, minOf((value*3f-max)/max, 1f))
+					color.g = maxOf(0f, minOf((max-value)*3f/max, 1f))
+					color.b = maxOf(0f, minOf((max-value*3f)/max,1f))
 				}
-				GameEngine.METER_COLOR_LIMIT -> when {//red<yellow<green<cyan
-					value<max/3 -> {
-						color.r = 1f
-						color.g = value*3f/max
-					}
-					value<max*2/3 -> {
-						color.r = (max*2f-value*3f)/max
-						color.g = 1f
-						color.b = 0f
-					}
-					else -> {
-						color.r = 0f
-						color.g = 1f
-						color.b = (value*3f-max*2f)/max
-					}
+				GameEngine.METER_COLOR_LIMIT -> {//red<yellow<green<cyan
+					color.r = maxOf(0f, minOf((max*2f-value*3f)/max, 1f))
+					color.g = value*3f/max
+					color.b = maxOf(0f, minOf((value*3f-max*2f)/max, 1f))
 				}
 				else -> color = Color(meterColor)
 			}

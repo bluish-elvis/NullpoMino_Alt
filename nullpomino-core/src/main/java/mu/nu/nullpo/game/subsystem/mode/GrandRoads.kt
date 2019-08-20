@@ -132,7 +132,7 @@ class GrandRoads:NetDummyMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -742,10 +742,10 @@ class GrandRoads:NetDummyMode() {
 	 * @param prop CustomProperties
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(type in 0 until GAMETYPE_MAX) {
-				prop!!.setProperty("timeattack.ranking.$ruleName.$type.lines.$i", rankingLines[type][i])
+				prop.setProperty("timeattack.ranking.$ruleName.$type.lines.$i", rankingLines[type][i])
 				prop.setProperty("timeattack.ranking.$ruleName.$type.lifes.$i", rankingLifes[type][i])
 				prop.setProperty("timeattack.ranking.$ruleName.$type.time.$i", rankingTime[type][i])
 				prop.setProperty("timeattack.ranking.$ruleName.$type.rollclear.$i", rankingRollclear[type][i])

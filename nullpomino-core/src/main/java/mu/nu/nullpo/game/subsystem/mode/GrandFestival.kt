@@ -200,7 +200,7 @@ class GrandFestival:AbstractMode() {
 
 		version = if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -516,8 +516,7 @@ class GrandFestival:AbstractMode() {
 					if(engine.timerActive) {
 						sectionscore[SECTION_MAX] = (1253*ceil(maxOf(18000-engine.statistics.time, 0)/60.0)).toInt()
 						val timebonus = sectionscore[SECTION_MAX]
-						engine.statistics.scoreFromOtherBonus += timebonus
-						engine.statistics.score += timebonus
+						engine.statistics.scoreBonus += timebonus
 
 					}
 					bonusspeed = 3265
@@ -552,8 +551,7 @@ class GrandFestival:AbstractMode() {
 					*(if(engine.ending==0) (if(engine.tspin) 4.0 else if(engine.tspinmini) 2.0 else 1.0) else 2.8)
 					*(if(engine.lockDelay>engine.lockDelayNow) 1.3 else 1.0)*(if(levelb%25==0) 1.3 else 1.0)*combobonus.toDouble()).toInt()
 			if(sectionscomp>=0&&sectionscomp<sectionscore.size) sectionscore[sectionscomp] += lastscore
-			engine.statistics.scoreFromLineClear += lastscore
-			engine.statistics.score += lastscore
+			engine.statistics.scoreLine += lastscore
 		}
 	}
 
@@ -697,38 +695,38 @@ class GrandFestival:AbstractMode() {
 	}
 
 	/** Load the ranking */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			rankingScore[i] = prop!!.getProperty("scoreattack.ranking.$ruleName.score.$i", 0)
+			rankingScore[i] = prop.getProperty("scoreattack.ranking.$ruleName.score.$i", 0)
 			rankingHanabi[i] = prop.getProperty("scoreattack.ranking.$ruleName.hanabi.$i", 0)
 			rankingLevel[i] = prop.getProperty("scoreattack.ranking.$ruleName.level.$i", 0)
 			rankingTime[i] = prop.getProperty("scoreattack.ranking.$ruleName.time.$i", 0)
 		}
 		for(i in 0 until SECTION_MAX) {
-			bestSectionHanabi[i] = prop!!.getProperty("scoreattack.bestSectionHanabi$ruleName.$i", 0)
+			bestSectionHanabi[i] = prop.getProperty("scoreattack.bestSectionHanabi$ruleName.$i", 0)
 			bestSectionScore[i] = prop.getProperty("scoreattack.bestSectionScore.$ruleName.$i", 0)
 			bestSectionTime[i] = prop.getProperty("scoreattack.bestSectionTime.$ruleName.$i", if(i==SECTION_MAX-1)
 				ROLLTIMELIMIT
 			else
 				DEFAULT_SECTION_TIME)
 		}
-		decoration = prop!!.getProperty("decoration", 0)
+		decoration = prop.getProperty("decoration", 0)
 	}
 
 	/** Save the ranking */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			prop!!.setProperty("scoreattack.ranking.$ruleName.score.$i", rankingScore[i])
+			prop.setProperty("scoreattack.ranking.$ruleName.score.$i", rankingScore[i])
 			prop.setProperty("scoreattack.ranking.$ruleName.hanabi.$i", rankingHanabi[i])
 			prop.setProperty("scoreattack.ranking.$ruleName.level.$i", rankingLevel[i])
 			prop.setProperty("scoreattack.ranking.$ruleName.time.$i", rankingTime[i])
 		}
 		for(i in 0 until SECTION_MAX) {
-			prop!!.setProperty("scoreattack.bestSectionHanabi.$ruleName.$i", bestSectionHanabi[i])
+			prop.setProperty("scoreattack.bestSectionHanabi.$ruleName.$i", bestSectionHanabi[i])
 			prop.setProperty("scoreattack.bestSectionScore.$ruleName.$i", bestSectionScore[i])
 			prop.setProperty("scoreattack.bestSectionTime.$ruleName.$i", bestSectionTime[i])
 		}
-		prop!!.setProperty("decoration", decoration)
+		prop.setProperty("decoration", decoration)
 
 	}
 

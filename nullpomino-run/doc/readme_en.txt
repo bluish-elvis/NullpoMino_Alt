@@ -263,7 +263,7 @@ DIG RACE
 	Clear all garbage lines as fast as possible.
 	You win the game when you clear the bottommost line (the line with gem blocks).
 	Amount of garbage lines is selectable from 5, 10, and 18.
-	
+
 COMBO RACE
 	Try to clear all the lines in the well in one combo.
 	Goal is selectable from 20, 40, 100 lines, or endless mode (stops when you break your combo).
@@ -284,7 +284,7 @@ TECHNICIAN
 	            When the 2-minute level timer runs out, the goal counter resets.
 	10MIN-HARD: This is similar to 10MIN-EASY, but when the 2-minute level timer runs out, your game ends instantly.
 	SPECIAL:    When the level increases, 30 seconds is added to your time limit. Survive as long as you can.
-	
+
 SQUARE
 	Try placing your pieces in 4x4 squares to get more points.
 	There are three different game types.
@@ -292,7 +292,7 @@ SQUARE
 	SPRINT:		Try to get 150 points as fast as you can. Can you do it in 8 lines?
 	ULTRA:		Get as many points as you can in 3 minutes.
 	Best effect can be achieved if you use "SQUARE" rule.
-	
+
 DIG CHALLENGE
 	Try to survive against the tide of rising blocks! Send as many lines as you can.
 	There are two different game types.
@@ -302,7 +302,7 @@ DIG CHALLENGE
 RETRO MARATHON
 	A classic game that takes you to the nostalgic feeling.
 	Best effect can be achieved if you use "NINTENDO-R" rule.
-	
+
 RETRO MASTERY
 	A game based on the classics where efficiency is important.
 	Best effect can be achieved if you use "NINTENDO-R" rule.
@@ -365,7 +365,7 @@ GEM MANIA
 
 TOOL-VS MAP EDIT
 	Not really a "game" mode. This is a tool for creating maps for VS-BATTLE mode and NetPlay mode.
-	
+
 	Controls when you editing a map:
 		Up/Down/Left/Right: Move cursor
 		A: Put a block
@@ -375,7 +375,7 @@ TOOL-VS MAP EDIT
 
 VS-BATTLE
 	Battle against human or AI opponent. You can send garbage blocks by clearing 2 or more lines at the same time.
-	
+
 AVALANCHE 1P (RC1)
 	This is a puzzle mode where the objective is to clear clusters of colors, not lines.
 	Make chains to score as much as you can before you top out!
@@ -542,7 +542,7 @@ Thank you on this occasion.
 Tools:
 	Eclipse 3.6
 	http://www.eclipse.org/
-	
+
 	PictBear SE
 	http://www20.pos.to/~sleipnir/
 	(Excite translation: http://www.excite.co.jp/world/english/web/?wb_url=http%3A%2F%2Fwww20.pos.to%2F%7Esleipnir%2F&wb_lp=JAEN&wb_dis=2)
@@ -1087,7 +1087,6 @@ More features and fixes for Netplay
 Various Bugfixes
 Helpful items in SCORE ATTACK mode
 MISSION MANIA mode where players must accomplish certain task within the given time limit
-HANABI MANIA mode with fireworks
 More garbage pattern options for VS-BATTLE (and Netplay)
 More AI players
 Replace Swing version with something better (jME maybe?)

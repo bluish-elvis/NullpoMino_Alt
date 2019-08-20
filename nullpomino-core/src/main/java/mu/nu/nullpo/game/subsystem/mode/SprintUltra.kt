@@ -124,7 +124,7 @@ class SprintUltra:NetDummyMode() {
 		if(!engine.owner.replayMode) {
 			presetNumber = engine.owner.modeConfig.getProperty("ultra.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			presetNumber = 0
@@ -445,25 +445,20 @@ class SprintUltra:NetDummyMode() {
 			} else
 				sum = get
 			if(pts>0) lastscore = get
-			if(lines>=1)
-				engine.statistics.scoreFromLineClear += get
-			else
-				engine.statistics.scoreFromOtherBonus += get
-			engine.statistics.score += get
+			if(lines>=1) engine.statistics.scoreLine += get
+			else engine.statistics.scoreBonus += get
 			scgettime += spd
 		}
 	}
 
 	/* Soft drop */
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.scoreFromSoftDrop += fall
-		engine.statistics.score += fall
+		engine.statistics.scoreSD += fall
 	}
 
 	/* Hard drop */
 	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.scoreFromHardDrop += fall*2
-		engine.statistics.score += fall*2
+		engine.statistics.scoreHD += fall*2
 	}
 
 	/* Each frame Processing at the end of */
@@ -568,11 +563,11 @@ class SprintUltra:NetDummyMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until GOALTYPE_MAX)
 			for(j in 0 until RANKING_TYPE)
 				for(k in 0 until RANKING_MAX) {
-					prop!!.setProperty("ultra.ranking.$ruleName.$i.$j.score.$k", rankingScore!![i][j][k])
+					prop.setProperty("ultra.ranking.$ruleName.$i.$j.score.$k", rankingScore!![i][j][k])
 					prop.setProperty("ultra.ranking.$ruleName.$i.$j.lines.$k", rankingLines!![i][j][k])
 				}
 	}
@@ -624,34 +619,37 @@ class SprintUltra:NetDummyMode() {
 	override fun netSendStats(engine:GameEngine) {
 		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += "${engine.statistics.score}\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
-		msg += "${engine.statistics.time}\t${engine.statistics.spm}\t"
-		msg += "${engine.statistics.lpm}\t${engine.statistics.spl}\t$goaltype\t"
-		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
-		msg += "$lastscore${"\t$scgettime\t${engine.lastevent}\t$lastb2b\t"+lastcombo}\t$lastpiece\t"
-		msg += "$bg"+"\n"
+		msg += "${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t"
+		msg += "${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"
+		msg += "${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t$goaltype\t"
+		msg += "${engine.gameActive}\t${engine.timerActive}\t"
+		msg += "$lastscore\t$scgettime\t${engine.lastevent}\t$lastb2b\t$lastcombo\t$lastpiece\t"
+		msg += "$bg\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		engine.statistics.score = Integer.parseInt(message[4])
-		engine.statistics.lines = Integer.parseInt(message[5])
-		engine.statistics.totalPieceLocked = Integer.parseInt(message[6])
-		engine.statistics.time = Integer.parseInt(message[7])
-		//engine.statistics.spm =  java.lang.Double.parseDouble(message[8])
-		//engine.statistics.lpm = java.lang.Float.parseFloat(message[9])
-		//engine.statistics.spl = java.lang.Double.parseDouble(message[10])
-		goaltype = Integer.parseInt(message[11])
-		engine.gameActive = java.lang.Boolean.parseBoolean(message[12])
-		engine.timerActive = java.lang.Boolean.parseBoolean(message[13])
-		lastscore = Integer.parseInt(message[14])
-		scgettime = Integer.parseInt(message[15])
-		engine.lastevent = Integer.parseInt(message[16])
-		lastb2b = java.lang.Boolean.parseBoolean(message[17])
-		lastcombo = Integer.parseInt(message[18])
-		lastpiece = Integer.parseInt(message[19])
-		owner.backgroundStatus.bg = Integer.parseInt(message[20])
+		listOf<(String)->Unit>({},{},{},{},
+			{engine.statistics.scoreLine = Integer.parseInt(it)},
+			{engine.statistics.scoreSD = Integer.parseInt(it)},
+			{engine.statistics.scoreHD = Integer.parseInt(it)},
+			{engine.statistics.scoreBonus = Integer.parseInt(it)},
+			{engine.statistics.lines = Integer.parseInt(it)},
+			{engine.statistics.totalPieceLocked = Integer.parseInt(it)},
+			{engine.statistics.time = Integer.parseInt(it)},
+			{goaltype = Integer.parseInt(it)},
+			{engine.gameActive = java.lang.Boolean.parseBoolean(it)},
+			{engine.timerActive = java.lang.Boolean.parseBoolean(it)},
+			{lastscore = Integer.parseInt(it)},
+			{scgettime = Integer.parseInt(it)},
+			{engine.lastevent = Integer.parseInt(it)},
+			{lastb2b = java.lang.Boolean.parseBoolean(it)},
+			{lastcombo = Integer.parseInt(it)},
+			{lastpiece = Integer.parseInt(it)},
+			{owner.backgroundStatus.bg = Integer.parseInt(it)}).zip(message).forEach{
+			(x,y)->x(y)
+		}
 
 		// Time meter
 		val limitTime = (goaltype+1)*3600
@@ -685,11 +683,11 @@ class SprintUltra:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += engine.speed.gravity.toString()+"\t${engine.speed.denominator}\t${engine.speed.are}\t"
-		msg += engine.speed.areLine.toString()+"\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
-		msg += engine.speed.das.toString()+"\t$bgmno\t$big\t$goaltype\t$tspinEnableType\t"
-		msg += "$enableTSpinKick${"\t$enableB2B\t"+enableCombo}\t$presetNumber\t"
-		msg += "$spinCheckType${"\t"+tspinEnableEZ}\n"
+		msg += "${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"
+		msg += "${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
+		msg += "${engine.speed.das}\t$bgmno\t$big\t$goaltype\t$tspinEnableType\t"
+		msg += "$enableTSpinKick\t$enableB2B\t$enableCombo\t$presetNumber\t"
+		msg += "$spinCheckType\t$tspinEnableEZ\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 

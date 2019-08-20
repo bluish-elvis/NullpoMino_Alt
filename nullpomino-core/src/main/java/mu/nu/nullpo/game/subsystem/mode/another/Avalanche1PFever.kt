@@ -134,7 +134,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else
 			loadSetting(owner.replayProp)
@@ -588,11 +588,11 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in FEVER_MAPS.indices)
 				for(colors in 3..5) {
-					rankingScore!![colors-3][j][i] = prop!!.getProperty("avalanchefever.ranking.$ruleName.${colors}colors.${FEVER_MAPS[j]}.score.$i", 0)
+					rankingScore!![colors-3][j][i] = prop.getProperty("avalanchefever.ranking.$ruleName.${colors}colors.${FEVER_MAPS[j]}.score.$i", 0)
 					rankingTime!![colors-3][j][i] = prop.getProperty("avalanchefever.ranking.$ruleName.${colors}colors.${FEVER_MAPS[j]}.time.$i", -1)
 				}
 	}
@@ -601,11 +601,11 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in FEVER_MAPS.indices)
 				for(colors in 3..5) {
-					prop!!.setProperty("avalanchefever.ranking.$ruleName.${colors}colors.${FEVER_MAPS[j]}.score.$i",
+					prop.setProperty("avalanchefever.ranking.$ruleName.${colors}colors.${FEVER_MAPS[j]}.score.$i",
 						rankingScore!![colors-3][j][i])
 					prop.setProperty("avalanchefever.ranking.$ruleName.${colors}colors.${FEVER_MAPS[j]}.time.$i",
 						rankingTime!![colors-3][j][i])

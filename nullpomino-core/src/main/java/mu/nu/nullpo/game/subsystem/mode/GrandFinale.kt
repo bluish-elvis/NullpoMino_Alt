@@ -192,7 +192,7 @@ class GrandFinale:AbstractMode() {
 
 		version = if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -721,7 +721,7 @@ class GrandFinale:AbstractMode() {
 			lastscore = (((levelb+lines)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*lines*comboValue+
 				maxOf(0, engine.lockDelay-engine.lockDelayNow)+engine.statistics.level/2)*if(engine.field!!.isEmpty) 2 else 1
 
-			engine.statistics.score += lastscore
+			engine.statistics.scoreLine += lastscore
 			levelUp(engine)
 		}
 
@@ -851,16 +851,16 @@ class GrandFinale:AbstractMode() {
 	 * @param prop CustomProperties
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(j in 0 until RANKING_TYPE) {
 			for(i in 0 until RANKING_MAX) {
-				rankingGrade[j][i] = prop!!.getProperty("final.ranking.$ruleName.$j.grade.$i", 0)
+				rankingGrade[j][i] = prop.getProperty("final.ranking.$ruleName.$j.grade.$i", 0)
 				rankingLevel[j][i] = prop.getProperty("final.ranking.$ruleName.$j.level.$i", 0)
 				rankingTime[j][i] = prop.getProperty("final.ranking.$ruleName.$j.time.$i", 0)
 				rankingRollclear[j][i] = prop.getProperty("final.ranking.$ruleName.$j.rollclear.$i", 0)
 			}
 			for(i in 0 until SECTION_MAX)
-				bestSectionTime[j][i] = prop!!.getProperty("final.bestSectionTime.$ruleName.$j.$i", DEFAULT_SECTION_TIME)
+				bestSectionTime[j][i] = prop.getProperty("final.bestSectionTime.$ruleName.$j.$i", DEFAULT_SECTION_TIME)
 		}
 	}
 
@@ -868,16 +868,16 @@ class GrandFinale:AbstractMode() {
 	 * @param prop CustomProperties
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(j in 0 until RANKING_TYPE) {
 			for(i in 0 until RANKING_MAX) {
-				prop!!.setProperty("final.ranking.$ruleName.$j.grade.$i", rankingGrade[j][i])
+				prop.setProperty("final.ranking.$ruleName.$j.grade.$i", rankingGrade[j][i])
 				prop.setProperty("final.ranking.$ruleName.$j.level.$i", rankingLevel[j][i])
 				prop.setProperty("final.ranking.$ruleName.$j.time.$i", rankingTime[j][i])
 				prop.setProperty("final.ranking.$ruleName.$j.rollclear.$i", rankingRollclear[j][i])
 			}
 			for(i in 0 until SECTION_MAX)
-				prop!!.setProperty("final.bestSectionTime.$ruleName.$j.$i", bestSectionTime[j][i])
+				prop.setProperty("final.bestSectionTime.$ruleName.$j.$i", bestSectionTime[j][i])
 		}
 	}
 

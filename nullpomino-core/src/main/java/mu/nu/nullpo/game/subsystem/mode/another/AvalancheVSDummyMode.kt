@@ -493,12 +493,12 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	/* Called when hard drop used */
 	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.score += fall
+		engine.statistics.scoreHD += fall
 	}
 
 	/* Called when soft drop used */
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.score += fall
+		engine.statistics.scoreSD += fall
 	}
 
 	/* Calculate score */
@@ -531,7 +531,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 			if(engine.field!!.isEmpty) {
 				zenKeshi[playerID] = true
-				engine.statistics.score += 2100
+				engine.statistics.scoreBonus += 2100
 				score[playerID] += 2100
 			} else
 				zenKeshi[playerID] = false
@@ -540,12 +540,10 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	protected fun calcPts(engine:GameEngine, playerID:Int, avalanche:Int):Int = avalanche*10
 
-	protected fun calcChainMultiplier(engine:GameEngine, playerID:Int, chain:Int):Int {
-		return if(newChainPower[playerID])
-			calcChainNewPower(engine, playerID, chain)
-		else
-			calcChainClassicPower(engine, playerID, chain)
-	}
+	protected fun calcChainMultiplier(engine:GameEngine, playerID:Int, chain:Int):Int = if(newChainPower[playerID])
+		calcChainNewPower(engine, playerID, chain)
+	else
+		calcChainClassicPower(engine, playerID, chain)
 
 	protected open fun calcChainNewPower(engine:GameEngine, playerID:Int, chain:Int):Int {
 		return if(chain>CHAIN_POWERS.size)
@@ -554,15 +552,11 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			CHAIN_POWERS[chain-1]
 	}
 
-	protected fun calcChainClassicPower(engine:GameEngine, playerID:Int, chain:Int):Int {
-		return if(chain==2)
-			8
-		else if(chain==3)
-			16
-		else if(chain>=4)
-			32*(chain-3)
-		else
-			0
+	protected fun calcChainClassicPower(engine:GameEngine, playerID:Int, chain:Int):Int = when {
+		chain==2 -> 8
+		chain==3 -> 16
+		chain>=4 -> 32*(chain-3)
+		else -> 0
 	}
 
 	protected open fun onClear(engine:GameEngine, playerID:Int) {}

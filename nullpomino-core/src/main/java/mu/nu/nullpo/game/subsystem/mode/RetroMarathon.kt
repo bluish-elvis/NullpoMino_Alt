@@ -122,7 +122,7 @@ class RetroMarathon:AbstractMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else
 			loadSetting(owner.replayProp)
@@ -299,29 +299,35 @@ class RetroMarathon:AbstractMode() {
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
 		softdropscore /= 2
-		engine.statistics.score += softdropscore
-		engine.statistics.scoreFromSoftDrop += softdropscore
+		engine.statistics.scoreSD += softdropscore
 		softdropscore = 0
 
 		harddropscore /= 2
-		engine.statistics.score += harddropscore
-		engine.statistics.scoreFromHardDrop += harddropscore
+		engine.statistics.scoreHD += harddropscore
 		harddropscore = 0
 
 		// Line clear score
 		var pts = 0
-		if(lines==1) {
-			pts += 40*(engine.statistics.level+1) // Single
-			loons += 1
-		} else if(lines==2) {
-			pts += 100*(engine.statistics.level+1) // Double
-			loons += 2
-		} else if(lines==3) {
-			pts += 200*(engine.statistics.level+1) // Triple
-			loons += 3
-		} else if(lines>=4) {
-			pts += 300*(engine.statistics.level+1) // Four
-			loons += 3
+		// Level up
+
+		// Update meter
+		when {
+			lines==1 -> {
+				pts += 40*(engine.statistics.level+1) // Single
+				loons += 1
+			}
+			lines==2 -> {
+				pts += 100*(engine.statistics.level+1) // Double
+				loons += 2
+			}
+			lines==3 -> {
+				pts += 200*(engine.statistics.level+1) // Triple
+				loons += 3
+			}
+			lines>=4 -> {
+				pts += 300*(engine.statistics.level+1) // Four
+				loons += 3
+			}
 		}
 
 		// Do the ending (at 200 lines for now)
@@ -335,8 +341,7 @@ class RetroMarathon:AbstractMode() {
 			actions++
 			lastscore = pts
 			scgettime = 0
-			engine.statistics.scoreFromLineClear += pts
-			engine.statistics.score += pts
+			engine.statistics.scoreLine += pts
 		}
 
 		efficiency = if(actions!=0) engine.statistics.lines/actions.toFloat() else 0f
@@ -459,10 +464,10 @@ class RetroMarathon:AbstractMode() {
 	 * @param prop CustomProperties
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until RANKING_TYPE) {
-				rankingScore[gametypeIndex][i] = prop!!.getProperty(
+				rankingScore[gametypeIndex][i] = prop.getProperty(
 					"retromarathon.ranking.$ruleName.$gametypeIndex.score.$i", 0)
 				rankingLines[gametypeIndex][i] = prop.getProperty(
 					"retromarathon.ranking.$ruleName.$gametypeIndex.lines.$i", 0)
@@ -475,10 +480,10 @@ class RetroMarathon:AbstractMode() {
 	 * @param prop CustomProperties
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until RANKING_TYPE) {
-				prop!!.setProperty("retromarathon.ranking.$ruleName.$gametypeIndex.score.$i",
+				prop.setProperty("retromarathon.ranking.$ruleName.$gametypeIndex.score.$i",
 					rankingScore[gametypeIndex][i])
 				prop.setProperty("retromarathon.ranking.$ruleName.$gametypeIndex.lines.$i",
 					rankingLines[gametypeIndex][i])

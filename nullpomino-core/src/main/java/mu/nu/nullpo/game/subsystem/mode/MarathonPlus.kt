@@ -141,7 +141,7 @@ class MarathonPlus:NetDummyMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -415,8 +415,7 @@ class MarathonPlus:NetDummyMode() {
 						if(!netIsWatch) {
 							if(!startlevel) {
 								bonusScore = engine.statistics.score*(1+engine.lives)/4
-								engine.statistics.score += bonusScore
-								engine.statistics.scoreFromOtherBonus += bonusScore
+								engine.statistics.scoreBonus += bonusScore
 							} else {
 								engine.staffrollEnable = false
 							}
@@ -496,12 +495,9 @@ class MarathonPlus:NetDummyMode() {
 			} else
 				sum = get
 			if(pts>0) lastscore = get
-			if(lines>=1)
-				engine.statistics.scoreFromLineClear += get
-			else
-				engine.statistics.scoreFromOtherBonus += get
+			if(lines>=1) engine.statistics.scoreLine += get
+			else engine.statistics.scoreBonus += get
 			scgettime += spd
-			engine.statistics.score += get
 		}
 
 		// Bonus level
@@ -550,8 +546,7 @@ class MarathonPlus:NetDummyMode() {
 					if(goaltype==0) {
 						lastlives = engine.lives
 						bonusScore = engine.statistics.score*(1+lastlives)/3
-						engine.statistics.score += bonusScore
-						engine.statistics.scoreFromOtherBonus += bonusScore
+						engine.statistics.scoreBonus += bonusScore
 
 						owner.bgmStatus.bgm = BGM.ENDING(1)
 						engine.ending = 1
@@ -560,8 +555,7 @@ class MarathonPlus:NetDummyMode() {
 						lastlives = engine.lives
 						bonusScore = engine.statistics.score*(1+lastlives)*10
 						bonusScore = bonusTime*(1+lastlives)
-						engine.statistics.score += bonusScore
-						engine.statistics.scoreFromOtherBonus += bonusScore
+						engine.statistics.scoreBonus += bonusScore
 						engine.playSE("endingstart")
 						engine.playSE("levelup_section" )
 						engine.ending = 2
@@ -591,15 +585,13 @@ class MarathonPlus:NetDummyMode() {
 
 	/* Soft drop */
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.scoreFromSoftDrop += fall
-		engine.statistics.score += fall
+		engine.statistics.scoreSD += fall
 		scgettime += fall
 	}
 
 	/* Hard drop */
 	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.scoreFromHardDrop += fall*2
-		engine.statistics.score += fall*2
+		engine.statistics.scoreHD += fall*2
 		scgettime += fall*2
 	}
 
@@ -793,10 +785,10 @@ class MarathonPlus:NetDummyMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in 0 until RANKING_TYPE) {
-				prop!!.setProperty("marathonplus.ranking.$ruleName.$j.score.$i", rankingScore[j][i])
+				prop.setProperty("marathonplus.ranking.$ruleName.$j.score.$i", rankingScore[j][i])
 				prop.setProperty("marathonplus.ranking.$ruleName.$j.lines.$i", rankingLines[j][i])
 				prop.setProperty("marathonplus.ranking.$ruleName.$j.lives.$i", rankingLives[j][i])
 				prop.setProperty("marathonplus.ranking.$ruleName.$j.time.$i", rankingTime[j][i])
@@ -888,41 +880,41 @@ class MarathonPlus:NetDummyMode() {
 		val bg =
 			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += "${engine.statistics.score}\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
-		msg += "${engine.statistics.time}\t${engine.statistics.level}\t"
-		msg += engine.statistics.spl.toString()+"\t${engine.statistics.spm}\t${engine.statistics.lpm}\t${engine.statistics.pps}\t"
-		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
-		msg += ("$lastscore${"\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t"+engine.combobuf}\t"
-			+engine.lasteventpiece+"\t")
-		msg += "$bg"+"\t"
-		msg += "$bonusLines${"\t$bonusFlashNow\t"+bonusPieceCount}\t$bonusTime\n"
+		msg += "${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"
+		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t${engine.statistics.level}\t"
+		msg += "${engine.gameActive}\t${engine.timerActive}\t"
+		msg += "$lastscore\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t${engine.combobuf}\t${engine.lasteventpiece}\t"
+		msg += "$bg\t$bonusLines\t$bonusFlashNow\t$bonusPieceCount\t$bonusTime\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		engine.statistics.score = Integer.parseInt(message[4])
-		engine.statistics.lines = Integer.parseInt(message[5])
-		engine.statistics.totalPieceLocked = Integer.parseInt(message[6])
-		engine.statistics.time = Integer.parseInt(message[7])
-		engine.statistics.level = Integer.parseInt(message[8])
-		//engine.statistics.spl = java.lang.Double.parseDouble(message[9])
-		//engine.statistics.spm =  java.lang.Double.parseDouble(message[10])
-		//engine.statistics.lpm = java.lang.Float.parseFloat(message[11])
-		//engine.statistics.pps = java.lang.Float.parseFloat(message[12])
-		engine.gameActive = java.lang.Boolean.parseBoolean(message[13])
-		engine.timerActive = java.lang.Boolean.parseBoolean(message[14])
-		lastscore = Integer.parseInt(message[15])
-		scgettime = Integer.parseInt(message[16])
-		engine.lastevent = Integer.parseInt(message[17])
-		engine.b2bbuf = Integer.parseInt(message[18])
-		engine.combobuf = Integer.parseInt(message[19])
-		engine.lasteventpiece = Integer.parseInt(message[20])
-		engine.owner.backgroundStatus.bg = Integer.parseInt(message[21])
-		bonusLines = Integer.parseInt(message[22])
-		bonusFlashNow = Integer.parseInt(message[23])
-		bonusPieceCount = Integer.parseInt(message[24])
-		bonusTime = Integer.parseInt(message[25])
+
+		listOf<(String)->Unit>({},{},{},{},
+		{engine.statistics.scoreLine = Integer.parseInt(it)},
+		{engine.statistics.scoreSD = Integer.parseInt(it)},
+		{engine.statistics.scoreHD = Integer.parseInt(it)},
+		{engine.statistics.scoreBonus = Integer.parseInt(it)},
+		{engine.statistics.lines = Integer.parseInt(it)},
+		{engine.statistics.totalPieceLocked = Integer.parseInt(it)},
+		{engine.statistics.time = Integer.parseInt(it)},
+		{engine.statistics.level = Integer.parseInt(it)},
+		{engine.gameActive = java.lang.Boolean.parseBoolean(it)},
+		{engine.timerActive = java.lang.Boolean.parseBoolean(it)},
+		{lastscore = Integer.parseInt(it)},
+		{scgettime = Integer.parseInt(it)},
+		{engine.lastevent = Integer.parseInt(it)},
+		{engine.b2bbuf = Integer.parseInt(it)},
+		{engine.combobuf = Integer.parseInt(it)},
+		{engine.lasteventpiece = Integer.parseInt(it)},
+		{engine.owner.backgroundStatus.bg = Integer.parseInt(it)},
+		{bonusLines = Integer.parseInt(it)},
+		{bonusFlashNow = Integer.parseInt(it)},
+		{bonusPieceCount = Integer.parseInt(it)},
+		{bonusTime = Integer.parseInt(it)}).zip(message).forEach{
+			(x,y)->x(y)
+		}
 
 		// Meter
 		if(engine.statistics.level<20) {
@@ -931,8 +923,7 @@ class MarathonPlus:NetDummyMode() {
 			if(engine.statistics.lines%10>=4) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 			if(engine.statistics.lines%10>=6) engine.meterColor = GameEngine.METER_COLOR_ORANGE
 			if(engine.statistics.lines%10>=8) engine.meterColor = GameEngine.METER_COLOR_RED
-		} else
-			engine.meterValue = 0
+		} else engine.meterValue = 0
 	}
 
 	/** NET: Send end-of-game stats
@@ -964,8 +955,8 @@ class MarathonPlus:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += "$startlevel${"\t$tspinEnableType\t"+enableTSpinKick}\t$enableB2B\t"
-		msg += "$enableCombo${"\t$big\t"+spinCheckType}\t$tspinEnableEZ\n"
+		msg += "$startlevel\t$tspinEnableType\t$enableTSpinKick\t$enableB2B\t"
+		msg += "$enableCombo\t$big\t$spinCheckType\t$tspinEnableEZ\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 

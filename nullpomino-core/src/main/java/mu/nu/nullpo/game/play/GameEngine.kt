@@ -718,31 +718,6 @@ class GameEngine
 		get() = (ruleopt.holdEnable&&!holdDisable&&(holdUsedCount<ruleopt.holdLimit||ruleopt.holdLimit<0)
 			&&!initialHoldContinuousUse)
 
-	/** Constants of main game status */
-	enum class Status {
-		NOTHING, SETTING, READY, MOVE, LOCKFLASH, LINECLEAR, ARE, ENDINGSTART, CUSTOM, EXCELLENT, GAMEOVER, RESULT,
-		FIELDEDIT, INTERRUPTITEM
-	}
-
-	/** Constants of last successful movements */
-	enum class LastMove {
-		NONE, FALL_AUTO, FALL_SELF, SLIDE_AIR, SLIDE_GROUND, ROTATE_AIR, ROTATE_GROUND
-	}
-
-	/** Line gravity types */
-	enum class LineGravity {
-		NATIVE, CASCADE, CASCADE_SLOW
-	}
-
-	/** Clear mode settings */
-	enum class ClearType {
-		LINE, COLOR, LINE_COLOR, GEM_COLOR, LINE_GEM_BOMB, LINE_GEM_SPARK
-	}
-
-	enum class Twister {
-		POINT, IMMOBILE, POINT_MINI, IMMOBILE_EZ, IMMOBILE_MINI
-	}
-
 	/** READY前のInitialization */
 	fun init() {
 		//log.debug("GameEngine init() playerID:" + playerID);
@@ -968,9 +943,11 @@ class GameEngine
 		endTime = 0
 
 		//  event 発生
-		owner.mode?.also {
+		owner.mode?.let {
 			it.playerInit(this, playerID)
 			if(owner.replayMode) it.loadReplay(this, playerID, owner.replayProp)
+			 else it.loadRanking(owner.recordProp, ruleopt.strRuleName)
+
 		}
 		owner.receiver.playerInit(this, playerID)
 		ai?.also {
@@ -1112,69 +1089,69 @@ class GameEngine
 	fun checkTwisted(x:Int, y:Int, p:Piece?, f:Field?):Twister? {
 		p ?: return null
 		f ?: return null
-		if(!tspinAllowKick && kickused) return null
-		val m = if(p.big)2 else 1
+		if(!tspinAllowKick&&kickused) return null
+		val m = if(p.big) 2 else 1
 		var res:Twister? = null
-			if(p.checkCollision(x, y-m, f)&&p.checkCollision(x+m, y, f)
-				&&p.checkCollision(x-m, y, f)) {
-				res = Twister.IMMOBILE
-				val copyField = Field(f)
-				p.placeToField(x, y, copyField)
-				if(p.height+1!=copyField.checkLineNoFlag()&&kickused) res = Twister.IMMOBILE_MINI
-				if(copyField.checkLineNoFlag()==1&&kickused) res = Twister.IMMOBILE_MINI
-			} else if(tspinEnableEZ&&kickused && p.checkCollision(x, y+m, f))
-				res = Twister.IMMOBILE_EZ
+		if(p.checkCollision(x, y-m, f)&&p.checkCollision(x+m, y, f)
+			&&p.checkCollision(x-m, y, f)) {
+			res = Twister.IMMOBILE
+			val copyField = Field(f)
+			p.placeToField(x, y, copyField)
+			if(p.height+1!=copyField.checkLineNoFlag()&&kickused) res = Twister.IMMOBILE_MINI
+			if(copyField.checkLineNoFlag()==1&&kickused) res = Twister.IMMOBILE_MINI
+		} else if(tspinEnableEZ&&kickused&&p.checkCollision(x, y+m, f))
+			res = Twister.IMMOBILE_EZ
 
-			if(p.type==Piece.Shape.T) {
-					if((tspinminiType==TSPINMINI_TYPE_ROTATECHECK
-							&&nowPieceObject!!.checkCollision(nowPieceX, nowPieceY, getRotateDirection(-1), f)
-							&&nowPieceObject!!.checkCollision(nowPieceX, nowPieceY, getRotateDirection(1), f))
-						||(tspinminiType==TSPINMINI_TYPE_WALLKICKFLAG&&kickused)) res = Twister.POINT_MINI
-					else {
-						val tx = IntArray(4)
-						val ty = IntArray(4)
+		if(p.type==Piece.Shape.T) {
+			if((tspinminiType==TSPINMINI_TYPE_ROTATECHECK
+					&&nowPieceObject!!.checkCollision(nowPieceX, nowPieceY, getRotateDirection(-1), f)
+					&&nowPieceObject!!.checkCollision(nowPieceX, nowPieceY, getRotateDirection(1), f))
+				||(tspinminiType==TSPINMINI_TYPE_WALLKICKFLAG&&kickused)) res = Twister.POINT_MINI
+			else {
+				val tx = IntArray(4)
+				val ty = IntArray(4)
 
-						// Setup 4-point coordinates
-						if(p.big) {
-							tx[0] = 1
-							ty[0] = 1
-							tx[1] = 4
-							ty[1] = 1
-							tx[2] = 1
-							ty[2] = 4
-							tx[3] = 4
-							ty[3] = 4
-						} else {
-							tx[0] = 0
-							ty[0] = 0
-							tx[1] = 2
-							ty[1] = 0
-							tx[2] = 0
-							ty[2] = 2
-							tx[3] = 2
-							ty[3] = 2
-						}
-						for(i in tx.indices)
-							if(p.big) {
-								tx[i] += ruleopt.pieceOffsetX[p.id][p.direction]*2
-								ty[i] += ruleopt.pieceOffsetY[p.id][p.direction]*2
-							} else {
-								tx[i] += ruleopt.pieceOffsetX[p.id][p.direction]
-								ty[i] += ruleopt.pieceOffsetY[p.id][p.direction]
-							}
-
-						// Check the corner of the T p
-						var count = 0
-
-						for(i in tx.indices)
-							if(f.getBlockColor(x+tx[i], y+ty[i])!=Block.BLOCK_COLOR_NONE) count++
-
-						if(count>=3) res = Twister.POINT
+				// Setup 4-point coordinates
+				if(p.big) {
+					tx[0] = 1
+					ty[0] = 1
+					tx[1] = 4
+					ty[1] = 1
+					tx[2] = 1
+					ty[2] = 4
+					tx[3] = 4
+					ty[3] = 4
+				} else {
+					tx[0] = 0
+					ty[0] = 0
+					tx[1] = 2
+					ty[1] = 0
+					tx[2] = 0
+					ty[2] = 2
+					tx[3] = 2
+					ty[3] = 2
+				}
+				for(i in tx.indices)
+					if(p.big) {
+						tx[i] += ruleopt.pieceOffsetX[p.id][p.direction]*2
+						ty[i] += ruleopt.pieceOffsetY[p.id][p.direction]*2
+					} else {
+						tx[i] += ruleopt.pieceOffsetX[p.id][p.direction]
+						ty[i] += ruleopt.pieceOffsetY[p.id][p.direction]
 					}
-			} else {
-				val offsetX = ruleopt.pieceOffsetX[p.id][p.direction]
-				val offsetY = ruleopt.pieceOffsetY[p.id][p.direction]
-				if(!p.big)
+
+				// Check the corner of the T p
+				var count = 0
+
+				for(i in tx.indices)
+					if(f.getBlockColor(x+tx[i], y+ty[i])!=Block.BLOCK_COLOR_NONE) count++
+
+				if(count>=3) res = Twister.POINT
+			}
+		} else {
+			val offsetX = ruleopt.pieceOffsetX[p.id][p.direction]
+			val offsetY = ruleopt.pieceOffsetY[p.id][p.direction]
+			if(!p.big)
 				for(i in 0 until Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction].size/2) {
 					var isHighSpot1 = false
 					var isHighSpot2 = false
@@ -1202,7 +1179,7 @@ class GameEngine
 						res = Twister.POINT_MINI
 
 				}
-			}
+		}
 		return res
 	}
 
@@ -1215,7 +1192,7 @@ class GameEngine
 
 		when(checkTwisted(x, y, p, f)) {
 			Twister.POINT, Twister.IMMOBILE -> tspin = true
-			Twister.POINT_MINI,Twister.IMMOBILE_MINI -> {
+			Twister.POINT_MINI, Twister.IMMOBILE_MINI -> {
 				tspinmini = true;tspin = true
 			}
 			Twister.IMMOBILE_EZ -> {
@@ -1238,7 +1215,7 @@ class GameEngine
 		if((!tspinAllowKick&&kickused)||p==null||f==null) return
 		when(checkTwisted(x, y, p, f)) {
 			Twister.POINT, Twister.IMMOBILE -> tspin = true
-			Twister.POINT_MINI,Twister.IMMOBILE_MINI -> {
+			Twister.POINT_MINI, Twister.IMMOBILE_MINI -> {
 				tspinmini = true;tspin = true
 			}
 			Twister.IMMOBILE_EZ -> {
@@ -1558,7 +1535,8 @@ class GameEngine
 				Status.RESULT -> statResult()
 				Status.FIELDEDIT -> statFieldEdit()
 				Status.INTERRUPTITEM -> statInterruptItem()
-				Status.NOTHING -> {}
+				Status.NOTHING -> {
+				}
 			}
 
 		// fieldのBlock stateや統計情報を更新
@@ -2039,7 +2017,7 @@ class GameEngine
 						LastMove.ROTATE_AIR
 
 					if(initialRotateDirection==0) playSE("rotate")
-					if(checkTwisted(nowPieceX,nowPieceY,nowPieceObject,field)!=null)playSE("twist")
+					if(checkTwisted(nowPieceX, nowPieceY, nowPieceObject, field)!=null) playSE("twist")
 					nowPieceRotateCount++
 					if(ending==0||staffrollEnableStatistics) statistics.totalPieceRotate++
 				} else {
@@ -2103,10 +2081,8 @@ class GameEngine
 				// delayCancel = false;
 				delayCancelMoveLeft = false
 				delayCancelMoveRight = false
-			} else if(statc[0]==1&&delayCancel&&dasCount<das) {
-				move = 0
-				delayCancel = false
-			}
+			} else if(statc[0]==1&&delayCancel&&dasCount<das) delayCancel = false
+
 
 			if(move!=0) sidemoveflag = true
 
@@ -2461,8 +2437,8 @@ class GameEngine
 					lasteventpiece = nowPieceObject!!.id
 					lastlines = field!!.lastLinesHeight
 					lastline = field!!.lastLinesBottom
-
-					if(li>=4) playSE("erase4") else playSE("erase$li")
+					playSE("erase${maxOf(1, minOf(li, 4))}")
+					if(li>=4) playSE("applause${maxOf(0, minOf(1+b2bcount, 4))}")
 					if(tspin) {
 						playSE("tspin")
 						when(li) {
@@ -2499,8 +2475,6 @@ class GameEngine
 				}
 				// B2B bonus
 
-				if((split&&li<=2)||(tspin&&li<=1)) playSE("applause0")
-				if(li>=4||(split&&li>2)||(tspin&&li>=2)) playSE("applause1")
 				if(b2bEnable)
 					if(li>=4||split||tspin) {
 						b2bcount++
@@ -2508,11 +2482,11 @@ class GameEngine
 						if(b2bcount==1) playSE("b2b_start")
 						else {
 							b2b = true
-							playSE("b2b_combo", if(b2bbuf>7) 2f else 1f+(b2bbuf-1)/7f)
+							playSE("b2b_combo", maxOf(1.5f, 1f+(b2bbuf-1)/13f))
 
 							if(ingame)
 								when {
-									li==4 -> statistics.totalB2BFour++
+									li==4 -> statistics.totalB2BQuad++
 									split -> statistics.totalB2BSplit++
 									tspin -> statistics.totalB2BTSpin++
 								}
@@ -2528,7 +2502,6 @@ class GameEngine
 				if(comboType!=COMBO_TYPE_DISABLE&&chain==0) {
 					if(comboType==COMBO_TYPE_NORMAL||comboType==COMBO_TYPE_DOUBLE&&li>=2) combo++
 					if(combo>=2) {
-						playSE(if(combo==2) "applause2" else "applause3")
 						playSE("combo", if(combo>15) 3f else 1f+(combo-2)/7f)
 					}
 					if(ingame) if(combo>statistics.maxCombo) statistics.maxCombo = combo
@@ -3191,5 +3164,36 @@ class GameEngine
 
 		val EXPLOD_SIZE_DEFAULT =
 			arrayOf(intArrayOf(4, 3), intArrayOf(3, 0), intArrayOf(3, 1), intArrayOf(3, 2), intArrayOf(3, 3), intArrayOf(4, 4), intArrayOf(5, 5), intArrayOf(5, 5), intArrayOf(6, 6), intArrayOf(6, 6), intArrayOf(7, 7))
+	}
+
+	/** Constants of main game status */
+	enum class Status {
+		NOTHING, SETTING, READY, MOVE, LOCKFLASH, LINECLEAR, ARE, ENDINGSTART, CUSTOM, EXCELLENT, GAMEOVER, RESULT,
+		FIELDEDIT, INTERRUPTITEM
+	}
+
+	/** Constants of last successful movements */
+	enum class LastMove {
+		NONE, FALL_AUTO, FALL_SELF, SLIDE_AIR, SLIDE_GROUND, ROTATE_AIR, ROTATE_GROUND
+	}
+
+	/** Line gravity types */
+	enum class LineGravity {
+		NATIVE, CASCADE, CASCADE_SLOW
+	}
+
+	/** Clear mode settings */
+	enum class ClearType {
+		LINE, COLOR, LINE_COLOR, GEM_COLOR, LINE_GEM_BOMB, LINE_GEM_SPARK
+	}
+
+	enum class Twister {
+		POINT, IMMOBILE, POINT_MINI, IMMOBILE_EZ, IMMOBILE_MINI
+	}
+
+	enum class MeterColor(color:Int) {
+		LEVEL(-1), LIMIT(-2),
+		RED(0x10000), ORANGE(0x8000), YELLOW(0x100), GREEN(0xff0100), DARKGREEN(0xff8000),
+		CYAN(0xff0001), DARKBLUE(0xffff80), BLUE(0xffff01), PURPLE(0x7fff01), PINK(0xff01)
 	}
 }

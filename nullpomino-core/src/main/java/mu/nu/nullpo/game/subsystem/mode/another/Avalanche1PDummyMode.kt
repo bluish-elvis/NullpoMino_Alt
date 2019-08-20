@@ -231,24 +231,23 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 
 	protected open fun addBonus(engine:GameEngine, playerID:Int) {
 		scoreBeforeBonus = engine.statistics.score
-		zenKeshiBonus = if(numColors>=5)
-			zenKeshiCount*zenKeshiCount*1000
-		else if(numColors==4)
-			zenKeshiCount*(zenKeshiCount+1)*500
-		else
-			zenKeshiCount*(zenKeshiCount+3)*250
+		zenKeshiBonus = when {
+			numColors>=5 -> zenKeshiCount*zenKeshiCount*1000
+			numColors==4 -> zenKeshiCount*(zenKeshiCount+1)*500
+			else -> zenKeshiCount*(zenKeshiCount+3)*250
+		}
 		maxChainBonus = engine.statistics.maxChain*engine.statistics.maxChain*2000
-		engine.statistics.score += zenKeshiBonus+maxChainBonus
+		engine.statistics.scoreBonus += zenKeshiBonus+maxChainBonus
 	}
 
 	/* Called when hard drop used */
 	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.score += fall
+		engine.statistics.scoreHD += fall
 	}
 
 	/* Called when soft drop used */
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.score += fall
+		engine.statistics.scoreSD += fall
 	}
 
 	/* Calculate score */
@@ -286,8 +285,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 			lastmultiplier = multiplier
 			scgettime = 120
 			val score = pts*multiplier
-			engine.statistics.scoreFromLineClear += score
-			engine.statistics.score += score
+			engine.statistics.scoreLine += score
 
 			garbageAdd += calcOjama(score, avalanche, pts, multiplier)
 

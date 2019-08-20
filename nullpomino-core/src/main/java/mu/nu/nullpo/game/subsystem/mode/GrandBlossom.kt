@@ -270,14 +270,9 @@ class GrandBlossom:AbstractMode() {
 		engine.createFieldIfNeeded()
 		dectemp = 0
 		decoration = dectemp
-		version = if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
-			CURRENT_VERSION
-		} else {
-			loadSetting(owner.replayProp)
-			owner.replayProp.getProperty("gemmania.version", 0)
-		}
+		version = if(!owner.replayMode) CURRENT_VERSION
+		else owner.replayProp.getProperty("gemmania.version", 0)
+
 
 		if(version<=0) {
 			engine.readyStart = 45
@@ -511,11 +506,11 @@ class GrandBlossom:AbstractMode() {
 						menuCursor = 0
 						menuTime = 0
 					}
-					1 -> if(propStageSet!=null&&engine.field!=null) {
+					1 -> if(propStageSet.isNotEmpty()&&engine.field!=null) {
 						loadMap(engine.field!!, propStageSet, startstage)
 						engine.field!!.setAllSkin(engine.skin)
 					}
-					2 -> if(propStageSet!=null&&engine.field!=null) saveMap(engine.field!!, propStageSet, startstage)
+					2 -> if(propStageSet.isNotEmpty()&&engine.field!=null) saveMap(engine.field!!, propStageSet, startstage)
 					3 -> loadStageSet(stageset)
 					4 -> saveStageSet(stageset)
 				}
@@ -588,11 +583,10 @@ class GrandBlossom:AbstractMode() {
 				if(menuCursor==0) {
 					engine.enterFieldEdit()
 					return true
-				} else {
-					editModeScreen = 1
-					menuCursor = 0
-					menuTime = 0
 				}
+				editModeScreen = 1
+				menuCursor = 0
+				menuTime = 0
 			}
 
 			// Cancel
@@ -631,7 +625,7 @@ class GrandBlossom:AbstractMode() {
 						if(startstage<0) startstage = MAX_STAGE_TOTAL-1
 						if(startstage>MAX_STAGE_TOTAL-1) startstage = 0
 
-						if(propStageSet==null) loadStageSet(stageset)
+						if(propStageSet.isEmpty) loadStageSet(stageset)
 						loadMap(engine.field!!, propStageSet, startstage)
 						engine.field!!.setAllSkin(engine.skin)
 					}
@@ -1400,7 +1394,7 @@ class GrandBlossom:AbstractMode() {
 
 		engine.statistics.level = stage
 		engine.statistics.levelDispAdd = 1
-		engine.statistics.score = clearper
+		engine.statistics.scoreBonus = clearper
 		engine.statistics.writeProperty(prop, playerID)
 
 		// Update rankings
@@ -1419,30 +1413,30 @@ class GrandBlossom:AbstractMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(type in 0 until RANKING_TYPE)
 			for(i in 0 until RANKING_MAX) {
-				rankingStage[type][i] = prop!!.getProperty("gemmania.ranking.$ruleName.$type.stage.$i", 0)
+				rankingStage[type][i] = prop.getProperty("gemmania.ranking.$ruleName.$type.stage.$i", 0)
 				rankingClearPer[type][i] = prop.getProperty("gemmania.ranking.$ruleName.$type.clearper.$i", 0)
 				rankingTime[type][i] = prop.getProperty("gemmania.ranking.$ruleName.$type.time.$i", 0)
 				rankingAllClear[type][i] = prop.getProperty("gemmania.ranking.$ruleName.$type.allclear.$i", 0)
 			}
-		decoration = prop!!.getProperty("decoration", 0)
+		decoration = prop.getProperty("decoration", 0)
 	}
 
 	/** Save rankings to property file
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(type in 0 until RANKING_TYPE)
 			for(i in 0 until RANKING_MAX) {
-				prop!!.setProperty("gemmania.ranking.$ruleName.$type.stage.$i", rankingStage[type][i])
+				prop.setProperty("gemmania.ranking.$ruleName.$type.stage.$i", rankingStage[type][i])
 				prop.setProperty("gemmania.ranking.$ruleName.$type.clearper.$i", rankingClearPer[type][i])
 				prop.setProperty("gemmania.ranking.$ruleName.$type.time.$i", rankingTime[type][i])
 				prop.setProperty("gemmania.ranking.$ruleName.$type.allclear.$i", rankingAllClear[type][i])
 			}
-		prop!!.setProperty("decoration", decoration)
+		prop.setProperty("decoration", decoration)
 	}
 
 	/** Update rankings

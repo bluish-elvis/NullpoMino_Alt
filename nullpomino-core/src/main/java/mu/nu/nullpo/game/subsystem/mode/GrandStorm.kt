@@ -201,7 +201,7 @@ class GrandStorm:AbstractMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			for(i in 0 until SECTION_MAX)
@@ -734,7 +734,7 @@ class GrandStorm:AbstractMode() {
 			lastscore = ((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+if(engine.manualLock) 1 else 0)
 				*lines*comboValue*if(engine.field!!.isEmpty) 4 else 1)
 				+engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
-			engine.statistics.score += lastscore
+			engine.statistics.scoreLine += lastscore
 		}
 	}
 
@@ -896,32 +896,32 @@ class GrandStorm:AbstractMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			rankingGrade[i] = prop!!.getProperty("speedmania.ranking.$ruleName.grade.$i", 0)
+			rankingGrade[i] = prop.getProperty("speedmania.ranking.$ruleName.grade.$i", 0)
 			rankingLevel[i] = prop.getProperty("speedmania.ranking.$ruleName.level.$i", 0)
 			rankingTime[i] = prop.getProperty("speedmania.ranking.$ruleName.time.$i", 0)
 		}
 		for(i in 0 until SECTION_MAX)
-			bestSectionTime[i] = prop!!.getProperty("speedmania.bestSectionTime.$ruleName.$i", DEFAULT_SECTION_TIME)
+			bestSectionTime[i] = prop.getProperty("speedmania.bestSectionTime.$ruleName.$i", DEFAULT_SECTION_TIME)
 
-		decoration = prop!!.getProperty("decoration", 0)
+		decoration = prop.getProperty("decoration", 0)
 	}
 
 	/** Save rankings to property file
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			prop!!.setProperty("speedmania.ranking.$ruleName.grade.$i", rankingGrade[i])
+			prop.setProperty("speedmania.ranking.$ruleName.grade.$i", rankingGrade[i])
 			prop.setProperty("speedmania.ranking.$ruleName.level.$i", rankingLevel[i])
 			prop.setProperty("speedmania.ranking.$ruleName.time.$i", rankingTime[i])
 		}
 		for(i in 0 until SECTION_MAX)
-			prop!!.setProperty("speedmania.bestSectionTime.$ruleName.$i", bestSectionTime[i])
+			prop.setProperty("speedmania.bestSectionTime.$ruleName.$i", bestSectionTime[i])
 
-		prop!!.setProperty("decoration", decoration)
+		prop.setProperty("decoration", decoration)
 	}
 
 	/** Update rankings

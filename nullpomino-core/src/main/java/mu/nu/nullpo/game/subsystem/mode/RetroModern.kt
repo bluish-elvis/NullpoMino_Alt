@@ -115,8 +115,7 @@ class RetroModern:AbstractMode() {
 		engine.speed.das = 15
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+
 			version = CURRENT_VERSION
 		} else
 			loadSetting(owner.replayProp)
@@ -339,8 +338,7 @@ class RetroModern:AbstractMode() {
 					engine.stat = GameEngine.Status.EXCELLENT
 					if(special) {
 						lastscore = 10000000
-						engine.statistics.scoreFromOtherBonus += lastscore
-						engine.statistics.score += lastscore
+						engine.statistics.scoreBonus += lastscore
 					}
 				}
 			}
@@ -365,16 +363,12 @@ class RetroModern:AbstractMode() {
 		// Add score
 		if(pts>0) {
 			lastscore = pts
-			engine.statistics.scoreFromLineClear += pts
-			engine.statistics.score += pts
-		}
+			engine.statistics.scoreLine += pts
+	}
 		if(engine.manualLock) {
 			scgettime++
-			engine.statistics.score++
-			if(engine.ruleopt.harddropLock)
-				engine.statistics.scoreFromHardDrop++
-			else
-				engine.statistics.scoreFromSoftDrop++
+			if(engine.ruleopt.harddropLock) engine.statistics.scoreHD++
+			else engine.statistics.scoreSD++
 		}
 		if(lines>0) {
 			lineslot[linecount] = if(lines>4) 4 else lines
@@ -434,8 +428,7 @@ class RetroModern:AbstractMode() {
 			if(pts>0) {
 				pts *= 10*tableBonusMult[engine.statistics.level]
 				lastscore = pts
-				engine.statistics.scoreFromOtherBonus += pts
-				engine.statistics.score += pts
+				engine.statistics.scoreBonus += pts
 			}
 		}
 		return super.lineClearEnd(engine, playerID)
@@ -464,15 +457,13 @@ class RetroModern:AbstractMode() {
 
 	/** This function will be called when soft-drop is used */
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.scoreFromSoftDrop += fall
-		engine.statistics.score += fall
+		engine.statistics.scoreSD += fall
 		scgettime += fall
 	}
 
 	/** This function will be called when hard-drop is used */
 	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.scoreFromHardDrop += fall
-		engine.statistics.score += fall
+		engine.statistics.scoreHD += fall
 		scgettime += fall
 	}
 
@@ -580,10 +571,10 @@ class RetroModern:AbstractMode() {
 	}
 
 	/** Load the ranking */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until GAMETYPE_MAX) {
-				rankingScore[gametypeIndex][i] = prop!!.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.score.$i", 0)
+				rankingScore[gametypeIndex][i] = prop.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.score.$i", 0)
 				rankingLevel[gametypeIndex][i] = prop.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.level.$i", 0)
 				rankingLines[gametypeIndex][i] = prop.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.lines.$i", 0)
 				rankingTime[gametypeIndex][i] = prop.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.time.$i", 0)
@@ -592,10 +583,10 @@ class RetroModern:AbstractMode() {
 	}
 
 	/** Save the ranking */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until GAMETYPE_MAX) {
-				prop!!.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.score.$i", rankingScore[gametypeIndex][i])
+				prop.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.score.$i", rankingScore[gametypeIndex][i])
 				prop.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.level.$i", rankingLevel[gametypeIndex][i])
 				prop.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.lines.$i", rankingLines[gametypeIndex][i])
 				prop.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.time.$i", rankingTime[gametypeIndex][i])

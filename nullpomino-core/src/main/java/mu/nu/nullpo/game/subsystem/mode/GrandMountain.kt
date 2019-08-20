@@ -185,7 +185,7 @@ class GrandMountain:AbstractMode() {
 
 		version = if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -526,7 +526,6 @@ class GrandMountain:AbstractMode() {
 
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
-		var lines = lines
 		// Combo
 		comboValue = if(lines==0) 1
 		else maxOf(1,comboValue+2*lines-2)
@@ -633,8 +632,9 @@ class GrandMountain:AbstractMode() {
 		if(lines>=1&&engine.ending==0) {
 			// Level up
 			val levelb = engine.statistics.level
-			lines += engine.field!!.howManyGarbageLineClears
-			engine.statistics.level += lines
+			var ls = lines
+			ls += engine.field!!.howManyGarbageLineClears
+			engine.statistics.level += ls
 			levelUp(engine)
 
 			if(engine.statistics.level>=999) {
@@ -676,9 +676,9 @@ class GrandMountain:AbstractMode() {
 			var bravo = 1
 			if(engine.field!!.isEmpty) bravo = 4
 
-			lastscore = ((levelb+lines)/4+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)*lines*comboValue*bravo+
+			lastscore = ((levelb+ls)/4+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)*ls*comboValue*bravo+
 				engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7
-			engine.statistics.score += lastscore
+			engine.statistics.scoreLine += lastscore
 
 		}
 	}
@@ -804,14 +804,14 @@ class GrandMountain:AbstractMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(j in 0 until GOALTYPE_MAX) {
 			for(i in 0 until RANKING_MAX) {
-				rankingLevel[i][j] = prop!!.getProperty("garbagemania.ranking.$ruleName.$j.level.$i", 0)
+				rankingLevel[i][j] = prop.getProperty("garbagemania.ranking.$ruleName.$j.level.$i", 0)
 				rankingTime[i][j] = prop.getProperty("garbagemania.ranking.$ruleName.$j.time.$i", 0)
 			}
 			for(i in 0 until SECTION_MAX)
-				bestSectionTime[i][j] = prop!!.getProperty("garbagemania.bestSectionTime.$ruleName.$j."
+				bestSectionTime[i][j] = prop.getProperty("garbagemania.bestSectionTime.$ruleName.$j."
 					+i, DEFAULT_SECTION_TIME)
 		}
 	}
@@ -820,14 +820,14 @@ class GrandMountain:AbstractMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(j in 0 until GOALTYPE_MAX) {
 			for(i in 0 until RANKING_MAX) {
-				prop!!.setProperty("garbagemania.ranking.$ruleName.$j.level.$i", rankingLevel[i][j])
+				prop.setProperty("garbagemania.ranking.$ruleName.$j.level.$i", rankingLevel[i][j])
 				prop.setProperty("garbagemania.ranking.$ruleName.$j.time.$i", rankingTime[i][j])
 			}
 			for(i in 0 until SECTION_MAX)
-				prop!!.setProperty("garbagemania.bestSectionTime.$ruleName.$j.$i", bestSectionTime[i][j])
+				prop.setProperty("garbagemania.bestSectionTime.$ruleName.$j.$i", bestSectionTime[i][j])
 		}
 	}
 

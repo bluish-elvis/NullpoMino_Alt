@@ -138,7 +138,7 @@ class SprintCombo:NetDummyMode() {
 			version = CURRENT_VERSION
 			presetNumber = engine.owner.modeConfig.getProperty("comborace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 		} else {
 			version = engine.owner.replayProp.getProperty("comborace.version", 0)
 			presetNumber = 0
@@ -607,10 +607,10 @@ class SprintCombo:NetDummyMode() {
 	}
 
 	/** Save the ranking */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in GOAL_TABLE.indices)
 			for(j in 0 until RANKING_MAX) {
-				prop!!.setProperty("comborace.ranking.$ruleName.$i.maxcombo.$j", rankingCombo[i][j])
+				prop.setProperty("comborace.ranking.$ruleName.$i.maxcombo.$j", rankingCombo[i][j])
 				prop.setProperty("comborace.ranking.$ruleName.$i.time.$j", rankingTime[i][j])
 			}
 	}

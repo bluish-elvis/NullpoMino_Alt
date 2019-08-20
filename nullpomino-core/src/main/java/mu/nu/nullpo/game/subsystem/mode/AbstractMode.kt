@@ -104,12 +104,15 @@ abstract class AbstractMode:GameMode {
 			item.save(-1, prop, propName)
 	}
 
-	protected open fun saveRanking(ruleName:String, map:Map<String,String>){
-		map.forEach{key, it ->
-			owner.recordProp.setProperty(key,it)
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {}
+
+	protected fun saveRanking(ruleName:String, map:Map<String, Int>) {
+		map.forEach {key, it ->
+			owner.recordProp.setProperty(key, it)
 		}
-		receiver.saveProperties(owner.recorder,owner.recordProp)
+		receiver.saveProperties(owner.recorder(ruleName), owner.recordProp)
 	}
+
 	override fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {}
 
 	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean = false
@@ -173,6 +176,7 @@ abstract class AbstractMode:GameMode {
 		if(lines>=1&&engine.field!!.isEmpty) pts += pts*10/7+256
 		return pts*10
 	}
+
 	open fun calcPoint(engine:GameEngine, lines:Int):Int {
 		var pts = 0
 		when {
@@ -195,6 +199,7 @@ abstract class AbstractMode:GameMode {
 
 		return pts
 	}
+
 	override fun onLockFlash(engine:GameEngine, playerID:Int):Boolean = false
 
 	override fun onMove(engine:GameEngine, playerID:Int):Boolean = false
@@ -214,6 +219,7 @@ abstract class AbstractMode:GameMode {
 		owner = engine.owner
 		receiver = engine.owner.receiver
 		menuTime = 0
+		loadSetting(if(owner.replayMode) owner.replayProp else owner.modeConfig)
 	}
 
 	override fun renderARE(engine:GameEngine, playerID:Int) {}
@@ -304,6 +310,7 @@ abstract class AbstractMode:GameMode {
 		time in 1200 until 1800 -> EventReceiver.COLOR.YELLOW
 		else -> EventReceiver.COLOR.WHITE
 	}
+
 	override fun renderLockFlash(engine:GameEngine, playerID:Int) {}
 
 	override fun renderMove(engine:GameEngine, playerID:Int) {}
@@ -471,7 +478,8 @@ abstract class AbstractMode:GameMode {
 		}
 	}
 
-	protected fun drawGravity(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int, g:Int, d:Int) {
+	protected fun drawGravity(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int, g:Int,
+		d:Int) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
@@ -520,7 +528,8 @@ abstract class AbstractMode:GameMode {
 		receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13d", num), color = COLOR.WHITE)
 	}
 
-	protected fun drawResult(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, vararg str:String) {
+	protected fun drawResult(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
+		vararg str:String) {
 		drawResultScale(engine, playerID, receiver, y, color, 1f, *str)
 	}
 
@@ -583,9 +592,9 @@ abstract class AbstractMode:GameMode {
 		drawResultStatsScale(engine, playerID, receiver, y, color, 1f, *stats)
 	}
 
-	protected fun drawResultStatsScale(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
+	protected fun drawResultStatsScale(engine:GameEngine, playerID:Int, receiver:EventReceiver, startY:Int, color:COLOR,
 		scale:Float, vararg stats:Statistic) {
-		var y = y
+		var y = startY
 		for(stat in stats) {
 			when(stat) {
 				AbstractMode.Statistic.SCORE -> {

@@ -30,16 +30,15 @@ import java.io.Serializable
 class Statistics:Serializable {
 
 	/** Total score */
-	var score:Int = 0
-
+	val score:Int get() = scoreLine+scoreHD+scoreSD+scoreBonus
 	/** Line clear score */
-	var scoreFromLineClear:Int = 0
+	var scoreLine:Int = 0
 	/** Soft drop score */
-	var scoreFromSoftDrop:Int = 0
+	var scoreSD:Int = 0
 	/** Hard drop score */
-	var scoreFromHardDrop:Int = 0
+	var scoreHD:Int = 0
 	/** その他の方法で手に入れたScore */
-	var scoreFromOtherBonus:Int = 0
+	var scoreBonus:Int = 0
 
 	/** Total line count */
 	var lines:Int = 0
@@ -99,7 +98,7 @@ class Statistics:Serializable {
 	var totalTSpinTriple:Int = 0
 
 	/** Back to Back 4-line clear count */
-	var totalB2BFour:Int = 0
+	var totalB2BQuad:Int = 0
 	/** Back to Back Split clear count */
 	var totalB2BSplit:Int = 0
 	/** Back to Back T-Spin clear count */
@@ -163,13 +162,16 @@ class Statistics:Serializable {
 		importString(s)
 	}
 
+	fun scoreReset() {
+		scoreLine = 0
+		scoreSD = 0
+		scoreHD = 0
+		scoreBonus = 0
+	}
+
 	/** Reset to defaults */
 	fun reset() {
-		score = 0
-		scoreFromLineClear = 0
-		scoreFromSoftDrop = 0
-		scoreFromHardDrop = 0
-		scoreFromOtherBonus = 0
+		scoreReset()
 		lines = 0
 		blocks = 0
 		time = 0
@@ -192,7 +194,7 @@ class Statistics:Serializable {
 		totalTSpinDoubleMini = 0
 		totalTSpinDouble = 0
 		totalTSpinTriple = 0
-		totalB2BFour = 0
+		totalB2BQuad = 0
 		totalB2BSplit = 0
 		totalB2BTSpin = 0
 		totalHoldUsed = 0
@@ -209,11 +211,10 @@ class Statistics:Serializable {
 	 */
 	fun copy(s:Statistics?) {
 		s?.let {b ->
-			score = b.score
-			scoreFromLineClear = b.scoreFromLineClear
-			scoreFromSoftDrop = b.scoreFromSoftDrop
-			scoreFromHardDrop = b.scoreFromHardDrop
-			scoreFromOtherBonus = b.scoreFromOtherBonus
+			scoreLine = b.scoreLine
+			scoreSD = b.scoreSD
+			scoreHD = b.scoreHD
+			scoreBonus = b.scoreBonus
 			lines = b.lines
 			blocks = b.blocks
 			time = b.time
@@ -237,7 +238,7 @@ class Statistics:Serializable {
 			totalTSpinDoubleMini = b.totalTSpinDoubleMini
 			totalTSpinDouble = b.totalTSpinDouble
 			totalTSpinTriple = b.totalTSpinTriple
-			totalB2BFour = b.totalB2BFour
+			totalB2BQuad = b.totalB2BQuad
 			totalB2BSplit = b.totalB2BSplit
 			totalB2BTSpin = b.totalB2BTSpin
 			maxCombo = b.maxCombo
@@ -254,64 +255,55 @@ class Statistics:Serializable {
 	 * @param p プロパティセット
 	 * @param id 任意のID (Player IDなど）
 	 */
-	fun writeProperty(p:CustomProperties, id:Int) {
-		p.setProperty("$id.statistics.score", score)
-		p.setProperty("$id.statistics.scoreFromLineClear", scoreFromLineClear)
-		p.setProperty("$id.statistics.scoreFromSoftDrop", scoreFromSoftDrop)
-		p.setProperty("$id.statistics.scoreFromHardDrop", scoreFromHardDrop)
-		p.setProperty("$id.statistics.scoreFromOtherBonus", scoreFromOtherBonus)
-		p.setProperty("$id.statistics.lines", lines)
-		p.setProperty("$id.statistics.blocks", blocks)
-		p.setProperty("$id.statistics.time", time)
-		p.setProperty("$id.statistics.level", level)
-		p.setProperty("$id.statistics.levelDispAdd", levelDispAdd)
-		p.setProperty("$id.statistics.totalPieceLocked", totalPieceLocked)
-		p.setProperty("$id.statistics.totalPieceActiveTime", totalPieceActiveTime)
-		p.setProperty("$id.statistics.totalPieceMove", totalPieceMove)
-		p.setProperty("$id.statistics.totalPieceRotate", totalPieceRotate)
-		p.setProperty("$id.statistics.totalSingle", totalSingle)
-		p.setProperty("$id.statistics.totalDouble", totalDouble)
-		p.setProperty("$id.statistics.totalSplitDouble", totalSplitDouble)
-		p.setProperty("$id.statistics.totalTriple", totalTriple)
-		p.setProperty("$id.statistics.totalSplitTriple", totalSplitTriple)
-		p.setProperty("$id.statistics.totalFour", totalQuadruple)
-		p.setProperty("$id.statistics.totalTSpinZeroMini", totalTSpinZeroMini)
-		p.setProperty("$id.statistics.totalTSpinZero", totalTSpinZero)
-		p.setProperty("$id.statistics.totalTSpinSingleMini", totalTSpinSingleMini)
-		p.setProperty("$id.statistics.totalTSpinSingle", totalTSpinSingle)
-		p.setProperty("$id.statistics.totalTSpinDoubleMini", totalTSpinDoubleMini)
-		p.setProperty("$id.statistics.totalTSpinDouble", totalTSpinDouble)
-		p.setProperty("$id.statistics.totalTSpinTriple", totalTSpinTriple)
-		p.setProperty("$id.statistics.totalB2BFour", totalB2BFour)
-		p.setProperty("$id.statistics.totalB2BSplit", totalB2BSplit)
-		p.setProperty("$id.statistics.totalB2BTSpin", totalB2BTSpin)
-		p.setProperty("$id.statistics.totalHoldUsed", totalHoldUsed)
-		p.setProperty("$id.statistics.maxCombo", maxCombo)
-		p.setProperty("$id.statistics.spl", spl)
-		p.setProperty("$id.statistics.spm", spm)
-		p.setProperty("$id.statistics.sps", sps)
-		p.setProperty("$id.statistics.lpm", lpm)
-		p.setProperty("$id.statistics.lps", lps)
-		p.setProperty("$id.statistics.ppm", ppm)
-		p.setProperty("$id.statistics.pps", pps)
-		p.setProperty("$id.statistics.gamerate", gamerate)
-		p.setProperty("$id.statistics.maxChain", maxChain)
-		p.setProperty("$id.statistics.rollclear", rollclear)
-
-		for(i in 0 until pieces.size-1)
-			p.setProperty("$id.statistics.pieces.$i", pieces[i])
-	}
+	fun writeProperty(p:CustomProperties, id:Int) =
+		mapOf<String, Comparable<*>>("$id.statistics.scoreFromLineClear" to scoreLine,
+			"$id.statistics.scoreSD" to scoreSD,
+			"$id.statistics.scoreHD" to scoreHD,
+			"$id.statistics.scoreBonus" to scoreBonus,
+			"$id.statistics.lines" to lines,
+			"$id.statistics.blocks" to blocks,
+			"$id.statistics.time" to time,
+			"$id.statistics.level" to level,
+			"$id.statistics.levelDispAdd" to levelDispAdd,
+			"$id.statistics.totalPieceLocked" to totalPieceLocked,
+			"$id.statistics.totalPieceActiveTime" to totalPieceActiveTime,
+			"$id.statistics.totalPieceMove" to totalPieceMove,
+			"$id.statistics.totalPieceRotate" to totalPieceRotate,
+			"$id.statistics.totalSingle" to totalSingle,
+			"$id.statistics.totalDouble" to totalDouble,
+			"$id.statistics.totalSplitDouble" to totalSplitDouble,
+			"$id.statistics.totalTriple" to totalTriple,
+			"$id.statistics.totalSplitTriple" to totalSplitTriple,
+			"$id.statistics.totalFour" to totalQuadruple,
+			"$id.statistics.totalTSpinZeroMini" to totalTSpinZeroMini,
+			"$id.statistics.totalTSpinZero" to totalTSpinZero,
+			"$id.statistics.totalTSpinSingleMini" to totalTSpinSingleMini,
+			"$id.statistics.totalTSpinSingle" to totalTSpinSingle,
+			"$id.statistics.totalTSpinDoubleMini" to totalTSpinDoubleMini,
+			"$id.statistics.totalTSpinDouble" to totalTSpinDouble,
+			"$id.statistics.totalTSpinTriple" to totalTSpinTriple,
+			"$id.statistics.totalB2BFour" to totalB2BQuad,
+			"$id.statistics.totalB2BSplit" to totalB2BSplit,
+			"$id.statistics.totalB2BTSpin" to totalB2BTSpin,
+			"$id.statistics.totalHoldUsed" to totalHoldUsed,
+			"$id.statistics.maxCombo" to maxCombo,
+			"$id.statistics.gamerate" to gamerate,
+			"$id.statistics.maxChain" to maxChain,
+			"$id.statistics.rollclear" to rollclear).plus((0 until pieces.size-1).associate {
+			"$id.statistics.pieces.$it" to pieces[it]
+		}).forEach {(key, it) ->
+			p.setProperty(key, it)
+		}
 
 	/** プロパティセットから読み込み
 	 * @param p プロパティセット
 	 * @param id 任意のID (Player IDなど）
 	 */
 	fun readProperty(p:CustomProperties, id:Int) {
-		score = p.getProperty("$id.statistics.score", 0)
-		scoreFromLineClear = p.getProperty("$id.statistics.scoreFromLineClear", 0)
-		scoreFromSoftDrop = p.getProperty("$id.statistics.scoreFromSoftDrop", 0)
-		scoreFromHardDrop = p.getProperty("$id.statistics.scoreFromHardDrop", 0)
-		scoreFromOtherBonus = p.getProperty("$id.statistics.scoreFromOtherBonus", 0)
+		scoreLine = p.getProperty("$id.statistics.scoreLine", 0)
+		scoreSD = p.getProperty("$id.statistics.scoreSD", 0)
+		scoreHD = p.getProperty("$id.statistics.scoreHD", 0)
+		scoreBonus = p.getProperty("$id.statistics.scoreBonus", 0)
 		lines = p.getProperty("$id.statistics.lines", 0)
 		lines = p.getProperty("$id.statistics.blocks", 0)
 		time = p.getProperty("$id.statistics.time", 0)
@@ -334,7 +326,7 @@ class Statistics:Serializable {
 		totalTSpinDoubleMini = p.getProperty("$id.statistics.totalTSpinDoubleMini", 0)
 		totalTSpinDouble = p.getProperty("$id.statistics.totalTSpinDouble", 0)
 		totalTSpinTriple = p.getProperty("$id.statistics.totalTSpinTriple", 0)
-		totalB2BFour = p.getProperty("$id.statistics.totalB2BFour", 0)
+		totalB2BQuad = p.getProperty("$id.statistics.totalB2BFour", 0)
 		totalB2BSplit = p.getProperty("$id.statistics.totalB2BSplit", 0)
 		totalB2BTSpin = p.getProperty("$id.statistics.totalB2BTSpin", 0)
 		totalHoldUsed = p.getProperty("$id.statistics.totalHoldUsed", 0)
@@ -349,48 +341,44 @@ class Statistics:Serializable {
 	/** Import from String Array
 	 * @param s String Array (String[42])
 	 */
-	fun importStringArray(s:Array<String>) {
-		score = Integer.parseInt(s[0])
-		scoreFromLineClear = Integer.parseInt(s[1])
-		scoreFromSoftDrop = Integer.parseInt(s[2])
-		scoreFromHardDrop = Integer.parseInt(s[3])
-		scoreFromOtherBonus = Integer.parseInt(s[4])
-		lines = Integer.parseInt(s[5])
-		blocks = Integer.parseInt(s[6])
-		time = Integer.parseInt(s[7])
-		level = Integer.parseInt(s[8])
-		levelDispAdd = Integer.parseInt(s[9])
-		totalPieceLocked = Integer.parseInt(s[10])
-		totalPieceActiveTime = Integer.parseInt(s[11])
-		totalPieceMove = Integer.parseInt(s[12])
-		totalPieceRotate = Integer.parseInt(s[13])
-		totalSingle = Integer.parseInt(s[14])
-		totalDouble = Integer.parseInt(s[15])
-		totalSplitDouble = Integer.parseInt(s[16])
-		totalTriple = Integer.parseInt(s[17])
-		totalSplitTriple = Integer.parseInt(s[18])
-		totalQuadruple = Integer.parseInt(s[19])
-		totalTSpinZeroMini = Integer.parseInt(s[20])
-		totalTSpinZero = Integer.parseInt(s[21])
-		totalTSpinSingleMini = Integer.parseInt(s[22])
-		totalTSpinSingle = Integer.parseInt(s[23])
-		totalTSpinDoubleMini = Integer.parseInt(s[24])
-		totalTSpinDouble = Integer.parseInt(s[25])
-		totalTSpinTriple = Integer.parseInt(s[26])
-		totalB2BFour = Integer.parseInt(s[27])
-		totalB2BSplit = Integer.parseInt(s[28])
-		totalB2BTSpin = Integer.parseInt(s[29])
-		totalHoldUsed = Integer.parseInt(s[30])
-		maxCombo = Integer.parseInt(s[31])
-		gamerate = java.lang.Float.parseFloat(s[39])
-		maxChain = Integer.parseInt(s[40])
-		if(s.size>40) rollclear = Integer.parseInt(s[41])
-		for(i in 0 until pieces.size-1)
-			if(s.size>41+i)
-				pieces[i] = Integer.parseInt(s[42+i])
-			else
-				break
-	}
+	fun importStringArray(s:Array<String>) = listOf<(String)->Unit>(
+		{scoreLine = Integer.parseInt(it)},
+		{scoreSD = Integer.parseInt(it)},
+		{scoreHD = Integer.parseInt(it)},
+		{scoreBonus = Integer.parseInt(it)},
+		{lines = Integer.parseInt(it)},
+		{blocks = Integer.parseInt(it)},
+		{time = Integer.parseInt(it)},
+		{level = Integer.parseInt(it)},
+		{levelDispAdd = Integer.parseInt(it)},
+		{totalPieceLocked = Integer.parseInt(it)},
+		{totalPieceActiveTime = Integer.parseInt(it)},
+		{totalPieceMove = Integer.parseInt(it)},
+		{totalPieceRotate = Integer.parseInt(it)},
+		{totalSingle = Integer.parseInt(it)},
+		{totalDouble = Integer.parseInt(it)},
+		{totalSplitDouble = Integer.parseInt(it)},
+		{totalTriple = Integer.parseInt(it)},
+		{totalSplitTriple = Integer.parseInt(it)},
+		{totalQuadruple = Integer.parseInt(it)},
+		{totalTSpinZeroMini = Integer.parseInt(it)},
+		{totalTSpinZero = Integer.parseInt(it)},
+		{totalTSpinSingleMini = Integer.parseInt(it)},
+		{totalTSpinSingle = Integer.parseInt(it)},
+		{totalTSpinDoubleMini = Integer.parseInt(it)},
+		{totalTSpinDouble = Integer.parseInt(it)},
+		{totalTSpinTriple = Integer.parseInt(it)},
+		{totalB2BQuad = Integer.parseInt(it)},
+		{totalB2BSplit = Integer.parseInt(it)},
+		{totalB2BTSpin = Integer.parseInt(it)},
+		{totalHoldUsed = Integer.parseInt(it)},
+		{maxCombo = Integer.parseInt(it)},
+		{gamerate = java.lang.Float.parseFloat(it)},
+		{maxChain = Integer.parseInt(it)},
+		{rollclear = Integer.parseInt(it)}).plus(
+		(0 until pieces.size-1).map {i:Int ->
+			{it:String -> pieces[i] = Integer.parseInt(it)}
+		}).zip(s).forEach {(m, st) -> m(st)}
 
 	/** Import from String
 	 * @param s String (Split by ;)
@@ -403,11 +391,10 @@ class Statistics:Serializable {
 	 * @return String Array (String[38])
 	 */
 	fun exportStringArray():Array<String> = arrayOf(
-		"$score"
-		, "$scoreFromLineClear"
-		, "$scoreFromSoftDrop"
-		, "$scoreFromHardDrop"
-		, "$scoreFromOtherBonus"
+		"$scoreLine"
+		, "$scoreSD"
+		, "$scoreHD"
+		, "$scoreBonus"
 		, "$lines"
 		, "$blocks"
 		, "$time"
@@ -430,21 +417,14 @@ class Statistics:Serializable {
 		, "$totalTSpinDoubleMini"
 		, "$totalTSpinDouble"
 		, "$totalTSpinTriple"
-		, "$totalB2BFour"
+		, "$totalB2BQuad"
 		, "$totalB2BSplit"
 		, "$totalB2BTSpin"
 		, "$totalHoldUsed"
 		, "$maxCombo"
-		, "$spl"
-		, "$spm"
-		, "$sps"
-		, "$lpm"
-		, "$lps"
-		, "$ppm"
-		, "$pps"
 		, "$gamerate"
 		, "$maxChain"
-		, "$rollclear").plus(pieces.map {"$it"})
+		, "$rollclear")+(pieces.map {"$it"})
 
 	/** Export to String
 	 * @return String (Split by ;)

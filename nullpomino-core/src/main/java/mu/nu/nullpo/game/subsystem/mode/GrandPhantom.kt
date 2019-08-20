@@ -212,7 +212,7 @@ class GrandPhantom:AbstractMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			for(i in 0 until SECTION_MAX)
@@ -747,7 +747,7 @@ class GrandPhantom:AbstractMode() {
 			lastscore = ((((levelb+lines)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*lines*comboValue
 				*if(engine.field!!.isEmpty) 4 else 1)
 				+engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
-			engine.statistics.score += lastscore
+			engine.statistics.scoreLine += lastscore
 		}
 	}
 
@@ -871,27 +871,27 @@ class GrandPhantom:AbstractMode() {
 	}
 
 	/** Load the ranking */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			rankingGrade[i] = prop!!.getProperty("phantommania.ranking.$ruleName.grade.$i", 0)
+			rankingGrade[i] = prop.getProperty("phantommania.ranking.$ruleName.grade.$i", 0)
 			rankingLevel[i] = prop.getProperty("phantommania.ranking.$ruleName.level.$i", 0)
 			rankingTime[i] = prop.getProperty("phantommania.ranking.$ruleName.time.$i", 0)
 			rankingRollclear[i] = prop.getProperty("phantommania.ranking.$ruleName.rollclear.$i", 0)
 		}
 		for(i in 0 until SECTION_MAX)
-			bestSectionTime[i] = prop!!.getProperty("phantommania.bestSectionTime.$ruleName.$i", DEFAULT_SECTION_TIME)
+			bestSectionTime[i] = prop.getProperty("phantommania.bestSectionTime.$ruleName.$i", DEFAULT_SECTION_TIME)
 	}
 
 	/** Save the ranking */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			prop!!.setProperty("phantommania.ranking.$ruleName.grade.$i", rankingGrade[i])
+			prop.setProperty("phantommania.ranking.$ruleName.grade.$i", rankingGrade[i])
 			prop.setProperty("phantommania.ranking.$ruleName.level.$i", rankingLevel[i])
 			prop.setProperty("phantommania.ranking.$ruleName.time.$i", rankingTime[i])
 			prop.setProperty("phantommania.ranking.$ruleName.rollclear.$i", rankingRollclear[i])
 		}
 		for(i in 0 until SECTION_MAX)
-			prop!!.setProperty("phantommania.bestSectionTime.$ruleName.$i", bestSectionTime[i])
+			prop.setProperty("phantommania.bestSectionTime.$ruleName.$i", bestSectionTime[i])
 	}
 
 	/** Update the ranking */

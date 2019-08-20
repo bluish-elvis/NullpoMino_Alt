@@ -15,6 +15,6 @@ internal fun Graphics.drawImage(image:Image, x:Int, y:Int, x2:Int, y2:Int, srcx:
 	filter:Color) =
 	this.drawImage(image, x.toFloat(), y.toFloat(), x2.toFloat(), y2.toFloat(), srcx.toFloat(), srcy.toFloat(), srcx2.toFloat(), srcy2.toFloat(), filter)
 
-internal fun Image.draw(x:Int, y:Int, x2:Int, y2:Int, srcx:Int, srcy:Int, srcx2:Int, srcy2:Int) =
+fun Image.draw(x:Int, y:Int, x2:Int, y2:Int, srcx:Int, srcy:Int, srcx2:Int, srcy2:Int) =
 	this.draw(x.toFloat(), y.toFloat(), x2.toFloat(), y2.toFloat(), srcx.toFloat(), srcy.toFloat(), srcx2.toFloat(), srcy2.toFloat())
 
