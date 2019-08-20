@@ -87,7 +87,7 @@ class Physician:AbstractMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else
 			loadSetting(owner.replayProp)
@@ -291,8 +291,7 @@ class Physician:AbstractMode() {
 			gemsClearedChainTotal += gemsCleared
 			lastscore = pts
 			scgettime = 120
-			engine.statistics.scoreFromLineClear += pts
-			engine.statistics.score += pts
+			engine.statistics.scoreLine += pts
 			engine.playSE("gem")
 			setSpeed(engine)
 		}
@@ -348,9 +347,9 @@ class Physician:AbstractMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			rankingScore[i] = prop!!.getProperty("physician.ranking.$ruleName.score.$i", 0)
+			rankingScore[i] = prop.getProperty("physician.ranking.$ruleName.score.$i", 0)
 			rankingTime[i] = prop.getProperty("physician.ranking.$ruleName.time.$i", -1)
 		}
 	}
@@ -359,9 +358,9 @@ class Physician:AbstractMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			prop!!.setProperty("physician.ranking.$ruleName.score.$i", rankingScore[i])
+			prop.setProperty("physician.ranking.$ruleName.score.$i", rankingScore[i])
 			prop.setProperty("physician.ranking.$ruleName.time.$i", rankingTime[i])
 		}
 	}

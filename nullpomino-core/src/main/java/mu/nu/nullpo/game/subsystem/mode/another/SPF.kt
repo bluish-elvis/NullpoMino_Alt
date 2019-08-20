@@ -596,7 +596,7 @@ class SPF:AbstractMode() {
 					receiver.drawMenuFont(engine, playerID, 3, 3, "$multiplier%", COLOR.GREEN)
 
 				drawMenu(engine, playerID, receiver, 14, COLOR.CYAN, 18, "DROP SET", DROP_SET_NAMES[dropSet[playerID]],
-					"DROP MAP", String.format("%2d", dropMap[playerID]+1)+"/"+ String.format("%2d", DROP_PATTERNS[dropSet[playerID]].size))
+					"DROP MAP", String.format("%2d", dropMap[playerID]+1)+"/"+String.format("%2d", DROP_PATTERNS[dropSet[playerID]].size))
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/3", COLOR.YELLOW)
 			}
@@ -763,29 +763,29 @@ class SPF:AbstractMode() {
 		if(diamondPower[playerID]>0) {
 			var y = -1*hiddenHeight
 			while(y<height&&diamondBreakColor==Block.BLOCK_COLOR_INVALID) {
-				{
-					var x = 0
-					while(x<width&&diamondBreakColor==Block.BLOCK_COLOR_INVALID) {
-						if(engine.field!!.getBlockColor(x, y)==DIAMOND_COLOR) {
-							if(engine.displaysize==1) {
-								receiver.blockBreak(engine, playerID, 2*x, 2*y, engine.field!!.getBlock(x, y)!!)
-								receiver.blockBreak(engine, playerID, 2*x+1, 2*y, engine.field!!.getBlock(x, y)!!)
-								receiver.blockBreak(engine, playerID, 2*x, 2*y+1, engine.field!!.getBlock(x, y)!!)
-								receiver.blockBreak(engine, playerID, 2*x+1, 2*y+1, engine.field!!.getBlock(x, y)!!)
-							} else
-								receiver.blockBreak(engine, playerID, x, y, engine.field!!.getBlock(x, y)!!)
 
-							engine.field!!.setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
-							if(y+1>=height) {
-								techBonusDisplay[playerID] = 120
-								engine.statistics.score += 10000
-								score[playerID] += 10000
-							} else
-								diamondBreakColor = engine.field!!.getBlockColor(x, y+1, true)
-						}
-						x++
+				var x = 0
+				while(x<width&&diamondBreakColor==Block.BLOCK_COLOR_INVALID) {
+					if(engine.field!!.getBlockColor(x, y)==DIAMOND_COLOR) {
+						if(engine.displaysize==1) {
+							receiver.blockBreak(engine, playerID, 2*x, 2*y, engine.field!!.getBlock(x, y)!!)
+							receiver.blockBreak(engine, playerID, 2*x+1, 2*y, engine.field!!.getBlock(x, y)!!)
+							receiver.blockBreak(engine, playerID, 2*x, 2*y+1, engine.field!!.getBlock(x, y)!!)
+							receiver.blockBreak(engine, playerID, 2*x+1, 2*y+1, engine.field!!.getBlock(x, y)!!)
+						} else
+							receiver.blockBreak(engine, playerID, x, y, engine.field!!.getBlock(x, y)!!)
+
+						engine.field!!.setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
+						if(y+1>=height) {
+							techBonusDisplay[playerID] = 120
+							engine.statistics.scoreLine += 10000
+							score[playerID] += 10000
+						} else
+							diamondBreakColor = engine.field!!.getBlockColor(x, y+1, true)
 					}
+					x++
 				}
+
 				y++
 			}
 		}
@@ -850,7 +850,7 @@ class SPF:AbstractMode() {
 		if(engine.field!!.isEmpty) {
 			zenKeshiDisplay[playerID] = 120
 			ojamaNew += 12.0
-			engine.statistics.score += 1000
+			engine.statistics.scoreBonus += 1000
 			score[playerID] += 1000
 		}
 
@@ -1094,18 +1094,17 @@ class SPF:AbstractMode() {
 					val size = minOf(maxX-minX+1, maxY-minY+1)
 					testX = minX
 					while(testX<=maxX) {
-						{
-							testY = minY
-							while(testY<=maxY) {
-								bTest = engine.field!!.getBlock(testX, testY)
-								bTest!!.setAttribute(false, Block.ATTRIBUTE.BROKEN)
-								bTest!!.setAttribute(testX!=minX, Block.ATTRIBUTE.CONNECT_LEFT)
-								bTest!!.setAttribute(testY!=maxY, Block.ATTRIBUTE.CONNECT_DOWN)
-								bTest!!.setAttribute(testY!=minY, Block.ATTRIBUTE.CONNECT_UP)
-								bTest!!.setAttribute(testX!=maxX, Block.ATTRIBUTE.CONNECT_RIGHT)
-								bTest!!.bonusValue = size
-								testY++
-							}
+						testY = minY
+						while(testY<=maxY) {
+							bTest = engine.field!!.getBlock(testX, testY)
+							bTest!!.setAttribute(false, Block.ATTRIBUTE.BROKEN)
+							bTest!!.setAttribute(testX!=minX, Block.ATTRIBUTE.CONNECT_LEFT)
+							bTest!!.setAttribute(testY!=maxY, Block.ATTRIBUTE.CONNECT_DOWN)
+							bTest!!.setAttribute(testY!=minY, Block.ATTRIBUTE.CONNECT_UP)
+							bTest!!.setAttribute(testX!=maxX, Block.ATTRIBUTE.CONNECT_RIGHT)
+							bTest!!.bonusValue = size
+							testY++
+
 						}
 						testX++
 					}

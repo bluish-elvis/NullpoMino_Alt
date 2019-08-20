@@ -114,7 +114,7 @@ class RetroClassic:AbstractMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else loadSetting(owner.replayProp)
 
@@ -269,12 +269,10 @@ class RetroClassic:AbstractMode() {
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
 		softdropscore /= 2
-		engine.statistics.score += softdropscore
-		engine.statistics.scoreFromSoftDrop += softdropscore
+		engine.statistics.scoreSD += softdropscore
 		softdropscore = 0
 
-		engine.statistics.score += harddropscore
-		engine.statistics.scoreFromHardDrop += harddropscore
+		engine.statistics.scoreHD += harddropscore
 		harddropscore = 0
 
 		// Line clear score
@@ -298,8 +296,7 @@ class RetroClassic:AbstractMode() {
 		if(pts>0) {
 			lastscore = pts
 			scgettime = 0
-			engine.statistics.scoreFromLineClear += pts
-			engine.statistics.score += pts
+			engine.statistics.scoreLine += pts
 		}
 
 		if(gametype!=GAMETYPE_ARRANGE&&engine.statistics.score>999999&&maxScoredTime==null) {
@@ -416,10 +413,10 @@ class RetroClassic:AbstractMode() {
 	 * @param prop CustomProperties
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until RANKING_TYPE) {
-				rankingScore[gametypeIndex][i] = prop!!.getProperty("retromarathon.ranking.$ruleName.$gametypeIndex.score.$i", 0)
+				rankingScore[gametypeIndex][i] = prop.getProperty("retromarathon.ranking.$ruleName.$gametypeIndex.score.$i", 0)
 				rankingLines[gametypeIndex][i] = prop.getProperty("retromarathon.ranking.$ruleName.$gametypeIndex.lines.$i", 0)
 				rankingLevel[gametypeIndex][i] = prop.getProperty("retromarathon.ranking.$ruleName.$gametypeIndex.level.$i", 0)
 			}
@@ -429,10 +426,10 @@ class RetroClassic:AbstractMode() {
 	 * @param prop CustomProperties
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until RANKING_TYPE) {
-				prop!!.setProperty("retromarathon.ranking.$ruleName.$gametypeIndex.score.$i", rankingScore[gametypeIndex][i])
+				prop.setProperty("retromarathon.ranking.$ruleName.$gametypeIndex.score.$i", rankingScore[gametypeIndex][i])
 				prop.setProperty("retromarathon.ranking.$ruleName.$gametypeIndex.lines.$i", rankingLines[gametypeIndex][i])
 				prop.setProperty("retromarathon.ranking.$ruleName.$gametypeIndex.level.$i", rankingLevel[gametypeIndex][i])
 			}

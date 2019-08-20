@@ -84,6 +84,9 @@ class MarathonDrill:NetDummyMode() {
 
 	/* Initialization for each player */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
+		rankingScore = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+		rankingLines = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+		rankingDepth = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
 		super.playerInit(engine, playerID)
 
 		lastscore = 0
@@ -97,9 +100,6 @@ class MarathonDrill:NetDummyMode() {
 		garbagePending = 0
 
 		rankingRank = -1
-		rankingScore = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingLines = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingDepth = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
 
 		engine.framecolor = GameEngine.FRAME_COLOR_GREEN
 		engine.statistics.levelDispAdd = 1
@@ -108,7 +108,7 @@ class MarathonDrill:NetDummyMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -331,12 +331,12 @@ class MarathonDrill:NetDummyMode() {
 			if(garbagePending>0) {
 				val x = receiver.fieldX(engine, playerID)
 				val y = receiver.fieldY(engine, playerID)
-				var fontColor = COLOR.WHITE
-
-				if(garbagePending>=1) fontColor = COLOR.YELLOW
-				if(garbagePending>=3) fontColor = COLOR.ORANGE
-				if(garbagePending>=4) fontColor = COLOR.RED
-
+				val fontColor = when {
+					garbagePending>=1 -> COLOR.YELLOW
+					garbagePending>=3 -> COLOR.ORANGE
+					garbagePending>=4 -> COLOR.RED
+					else -> COLOR.WHITE
+				}
 				val strTempGarbage = String.format("%5d", garbagePending)
 				receiver.drawDirectNum(x+96, y+372, strTempGarbage, fontColor)
 			}
@@ -443,8 +443,7 @@ class MarathonDrill:NetDummyMode() {
 				}
 
 			lastscore = get
-			engine.statistics.scoreFromLineClear += get
-			engine.statistics.score += get
+			engine.statistics.scoreLine += get
 		} else {
 			if(goaltype==GOALTYPE_NORMAL&&garbagePending>0) {
 				addGarbage(engine, garbagePending)
@@ -452,16 +451,15 @@ class MarathonDrill:NetDummyMode() {
 			}
 			if(pts>0) {
 				lastscore = pts
-				engine.statistics.scoreFromOtherBonus += pts
-				engine.statistics.score += pts
+				engine.statistics.scoreBonus += pts
 			}
 		}
 
 		engine.field?.let {
-			val gh = (it.height-it.highestGarbageBlockY-GARBAGE_BOTTOM)
+			garbageTimer -= (it.howManyBlocks+it.howManyBlocksCovered + it.howManyHoles + it.howManyLidAboveHoles)/(it.width-1)
+			val gh = GARBAGE_BOTTOM-(it.height-it.highestGarbageBlockY)
 			if(gh>0)
-				if(goaltype==GOALTYPE_NORMAL) garbagePending = maxOf(garbagePending, gh)
-				else garbageTimer += gh
+				garbagePending = maxOf(garbagePending, gh)
 		}
 	}
 
@@ -571,10 +569,9 @@ class MarathonDrill:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&startlevel==0&&engine.ai==null) {
-			updateRanking(engine.statistics.score, engine.statistics.lines, garbageDigged, goaltype)
 
-			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			if(updateRanking(engine.statistics.score, engine.statistics.lines, garbageDigged, goaltype)!=-1) {
+				saveRanking(goaltype, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -621,23 +618,22 @@ class MarathonDrill:NetDummyMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in 0 until GOALTYPE_MAX) {
-				rankingScore[j][i] = prop.getProperty("digchallenge.ranking.$ruleName.$j.score.$i", 0)
-				rankingLines[j][i] = prop.getProperty("digchallenge.ranking.$ruleName.$j.lines.$i", 0)
-				rankingDepth[j][i] = prop.getProperty("digchallenge.ranking.$ruleName.$j.depth.$i", 0)
+				rankingScore[j][i] = prop.getProperty("$ruleName.$j.$i.score", 0)
+				rankingLines[j][i] = prop.getProperty("$ruleName.$j.$i.lines", 0)
+				rankingDepth[j][i] = prop.getProperty("$ruleName.$j.$i.depth", 0)
 			}
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
+	 * @param type Goal Type
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(j in 0 until GOALTYPE_MAX) {
-				prop!!.setProperty("digchallenge.ranking.$ruleName.$j.score.$i", rankingScore[j][i])
-				prop.setProperty("digchallenge.ranking.$ruleName.$j.lines.$i", rankingLines[j][i])
-				prop.setProperty("digchallenge.ranking.$ruleName.$j.depth.$i", rankingDepth[j][i])
-			}
+	private fun saveRanking(type:Int, ruleName:String) {
+		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
+			listOf("$ruleName.$type.$i.score" to rankingScore[type][i],
+				"$ruleName.$type.$i.lines" to rankingLines[type][i],
+				"$ruleName.$type.$i.depth" to rankingDepth[type][i])
+		}.toMap())
 	}
 
 	/** Update rankings
@@ -645,7 +641,7 @@ class MarathonDrill:NetDummyMode() {
 	 * @param li Lines
 	 * @param dep Depth
 	 */
-	private fun updateRanking(sc:Int, li:Int, dep:Int, type:Int) {
+	private fun updateRanking(sc:Int, li:Int, dep:Int, type:Int):Int {
 		rankingRank = checkRanking(sc, li, dep, type)
 
 		if(rankingRank!=-1) {
@@ -661,6 +657,7 @@ class MarathonDrill:NetDummyMode() {
 			rankingLines[type][rankingRank] = li
 			rankingDepth[type][rankingRank] = dep
 		}
+		return rankingRank
 	}
 
 	/** Calculate ranking position
@@ -687,8 +684,8 @@ class MarathonDrill:NetDummyMode() {
 		val bg =
 			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
-		msg += "${engine.statistics.score}\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
-		msg += "${engine.statistics.time}\t${engine.statistics.level}\t"
+		msg += "${engine.statistics.scoreLine}\t${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"
+		msg += "${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t${engine.statistics.level}\t"
 		msg += "$garbageTimer\t$garbageTotal\t$garbageDigged\t$goaltype\t"
 		msg += "${engine.gameActive}\t${engine.timerActive}\t"
 		msg += "$lastscore\t$scgettime\t$bg\t$garbagePending\n"
@@ -696,22 +693,26 @@ class MarathonDrill:NetDummyMode() {
 	}
 
 	/** NET: Receive various in-game stats (as well as goaltype) */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		engine.statistics.score = Integer.parseInt(message[4])
-		engine.statistics.lines = Integer.parseInt(message[5])
-		engine.statistics.totalPieceLocked = Integer.parseInt(message[6])
-		engine.statistics.time = Integer.parseInt(message[7])
-		engine.statistics.level = Integer.parseInt(message[8])
-		garbageTimer = Integer.parseInt(message[9])
-		garbageTotal = Integer.parseInt(message[10])
-		garbageDigged = Integer.parseInt(message[11])
-		goaltype = Integer.parseInt(message[12])
-		engine.gameActive = java.lang.Boolean.parseBoolean(message[13])
-		engine.timerActive = java.lang.Boolean.parseBoolean(message[14])
-		lastscore = Integer.parseInt(message[15])
-		scgettime = Integer.parseInt(message[16])
-		engine.owner.backgroundStatus.bg = Integer.parseInt(message[17])
-		garbagePending = Integer.parseInt(message[18])
+		override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+		listOf<(String)->Unit>({},{},{},{},
+		{engine.statistics.scoreLine = Integer.parseInt(it)},
+		{engine.statistics.scoreBonus = Integer.parseInt(it)},
+		{engine.statistics.lines = Integer.parseInt(it)},
+		{engine.statistics.totalPieceLocked = Integer.parseInt(it)},
+		{engine.statistics.time = Integer.parseInt(it)},
+		{engine.statistics.level = Integer.parseInt(it)},
+		{garbageTimer = Integer.parseInt(it)},
+		{garbageTotal = Integer.parseInt(it)},
+		{garbageDigged = Integer.parseInt(it)},
+		{goaltype = Integer.parseInt(it)},
+		{engine.gameActive = java.lang.Boolean.parseBoolean(it)},
+		{engine.timerActive = java.lang.Boolean.parseBoolean(it)},
+		{lastscore = Integer.parseInt(it)},
+		{scgettime = Integer.parseInt(it)},
+		{engine.owner.backgroundStatus.bg = Integer.parseInt(it)},
+		{garbagePending = Integer.parseInt(it)}).zip(message).forEach{
+			(x,y)->x(y)
+		}
 
 		// Meter
 		updateMeter(engine)
@@ -779,6 +780,8 @@ class MarathonDrill:NetDummyMode() {
 		private const val LEVEL_GARBAGE_LINES = 10
 
 		/** Goal type constants */
+		enum class gametime { NORMAL, REALTIME }
+
 		private const val GOALTYPE_NORMAL = 0
 		private const val GOALTYPE_REALTIME = 1
 
@@ -790,7 +793,7 @@ class MarathonDrill:NetDummyMode() {
 			intArrayOf(64, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
 		/** Garbage speed table */
 		private val GARBAGE_TIMER_TABLE = arrayOf(
-			intArrayOf(200, 190, 180, 170, 160, 150, 140, 130, 120, 110, 100, 95, 90, 85, 80, 75, 70, 65, 60, 60), // Normal
-			intArrayOf(200, 190, 185, 180, 175, 170, 165, 160, 155, 150, 145, 140, 135, 130, 125, 120, 115, 110, 105, 100))// Realtime
+			intArrayOf(255, 250, 245, 240, 235, 230, 225, 220, 215, 210, 205, 200, 190, 180, 170, 165, 160, 150, 140, 120), // Normal
+			intArrayOf(300, 290, 280, 270, 260, 250, 240, 230, 220, 210, 200, 190, 180, 175, 170, 165, 160, 150, 140, 125))// Realtime
 	}
 }

@@ -43,8 +43,7 @@ interface GameMode {
 	val players:Int
 
 	/** Get game style.
-	 * @return Game style of this mode (0:Tetromino, 1:Avalanche, 2:Physician,
-	 * 3:SPF)
+	 * @return Game style of this mode (0:Tetromino, 1:Avalanche, 2:Physician, 3:SPF)
 	 */
 	val gameStyle:Int
 
@@ -98,8 +97,7 @@ interface GameMode {
 	/** Ready->Go screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @return true if you override everything of this screen (skips default
-	 * behavior)
+	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun onReady(engine:GameEngine, playerID:Int):Boolean
 
@@ -107,40 +105,35 @@ interface GameMode {
 	 * current piece.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @return true if you override everything of this screen (skips default
-	 * behavior)
+	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun onMove(engine:GameEngine, playerID:Int):Boolean
 
 	/** "Lock flash" screen. Certain rules may skip this screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @return true if you override everything of this screen (skips default
-	 * behavior)
+	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun onLockFlash(engine:GameEngine, playerID:Int):Boolean
 
 	/** During line clear.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @return true if you override everything of this screen (skips default
-	 * behavior)
+	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun onLineClear(engine:GameEngine, playerID:Int):Boolean
 
 	/** During ARE.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @return true if you override everything of this screen (skips default
-	 * behavior)
+	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun onARE(engine:GameEngine, playerID:Int):Boolean
 
 	/** During ending-start sequence.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @return true if you override everything of this screen (skips default
-	 * behavior)
+	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun onEndingStart(engine:GameEngine, playerID:Int):Boolean
 
@@ -154,32 +147,28 @@ interface GameMode {
 	/** "Excellent!" screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @return true if you override everything of this screen (skips default
-	 * behavior)
+	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun onExcellent(engine:GameEngine, playerID:Int):Boolean
 
 	/** "Game Over" screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @return true if you override everything of this screen (skips default
-	 * behavior)
+	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun onGameOver(engine:GameEngine, playerID:Int):Boolean
 
 	/** End-of-game results screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @return true if you override everything of this screen (skips default
-	 * behavior)
+	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun onResult(engine:GameEngine, playerID:Int):Boolean
 
 	/** Field editor screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @return true if you override everything of this screen (skips default
-	 * behavior)
+	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun onFieldEdit(engine:GameEngine, playerID:Int):Boolean
 
@@ -284,8 +273,8 @@ interface GameMode {
 
 	fun lineClear(gameEngine:GameEngine, playerID:Int, i:Int)
 
-	/** Calculate score. Executed before pieceLocked. Please note this event
-	 * will be called even if no lines are cleared!
+	/** Calculate score. Executed before pieceLocked.
+	 *  Please note this event will be called even if no lines are cleared!
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 * @param lines Number of lines. Can be zero.
@@ -322,24 +311,28 @@ interface GameMode {
 	/** When line clear ends
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @return true if you override everything of this screen (skips default
-	 * behavior)
+	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean
+
+	/** Read rankings from property file.
+	 *  This is used in playerInit or from netOnJoin.
+	 * @param prop Property file
+	 * @param ruleName Rule name
+	 */
+	fun loadRanking(prop:CustomProperties, ruleName:String)
 
 	/** Called when saving replay
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @param prop CustomProperties of replay file (You can write additional
-	 * settings here)
+	 * @param prop CustomProperties of replay file (You can write additional settings here)
 	 */
 	fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties)
 
 	/** Called when a replay file is loaded
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @param prop CustomProperties of replay file (You can read additional
-	 * settings here)
+	 * @param prop CustomProperties of replay file (You can read additional settings here)
 	 */
 	fun loadReplay(engine:GameEngine, playerID:Int, prop:CustomProperties)
 

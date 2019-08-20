@@ -108,7 +108,7 @@ class SquareMode:AbstractMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else
 			loadSetting(owner.replayProp)
@@ -379,8 +379,7 @@ class SquareMode:AbstractMode() {
 
 			lastscore = pts
 			scgettime = 120
-			engine.statistics.scoreFromLineClear += pts
-			engine.statistics.score += pts
+			engine.statistics.scoreLine += pts
 			setSpeed(engine)
 
 		}
@@ -520,10 +519,10 @@ class SquareMode:AbstractMode() {
 	 * @param prop CustomProperties to read
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in 0 until GAMETYPE_MAX) {
-				rankingScore[j][i] = prop!!.getProperty("square.ranking.$ruleName.$j.score.$i", 0)
+				rankingScore[j][i] = prop.getProperty("square.ranking.$ruleName.$j.score.$i", 0)
 				rankingTime[j][i] = prop.getProperty("square.ranking.$ruleName.$j.time.$i", -1)
 				rankingSquares[j][i] = prop.getProperty("square.ranking.$ruleName.$j.squares.$i", 0)
 			}
@@ -533,10 +532,10 @@ class SquareMode:AbstractMode() {
 	 * @param prop CustomProperties to write
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in 0 until GAMETYPE_MAX) {
-				prop!!.setProperty("square.ranking.$ruleName.$j.score.$i", rankingScore[j][i])
+				prop.setProperty("square.ranking.$ruleName.$j.score.$i", rankingScore[j][i])
 				prop.setProperty("square.ranking.$ruleName.$j.time.$i", rankingTime[j][i])
 				prop.setProperty("square.ranking.$ruleName.$j.squares.$i", rankingSquares[j][i])
 			}

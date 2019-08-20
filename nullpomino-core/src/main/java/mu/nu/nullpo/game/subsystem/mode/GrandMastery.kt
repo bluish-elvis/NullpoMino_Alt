@@ -342,7 +342,7 @@ class GrandMastery:AbstractMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -1182,7 +1182,7 @@ class GrandMastery:AbstractMode() {
 				*lines*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
 				+engine.statistics.level/if(engine.tspin) 2 else 3)*if(engine.field!!.isEmpty) 3 else 1
 
-			engine.statistics.score += lastscore
+			engine.statistics.scoreLine += lastscore
 		} else if(lines>=1&&engine.ending==2) {
 			// Roll 中のLine clear
 			var points = 0f
@@ -1538,21 +1538,21 @@ class GrandMastery:AbstractMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 
 		for(i in 0 until RANKING_MAX) {
-			rankingGrade[i] = prop!!.getProperty("grademania3.ranking.$ruleName.grade.$i", 0)
+			rankingGrade[i] = prop.getProperty("grademania3.ranking.$ruleName.grade.$i", 0)
 			rankingLevel[i] = prop.getProperty("grademania3.ranking.$ruleName.level.$i", 0)
 			rankingTime[i] = prop.getProperty("grademania3.ranking.$ruleName.time.$i", 0)
 			rankingRollclear[i] = prop.getProperty("grademania3.ranking.$ruleName.rollclear.$i", 0)
 		}
 		for(i in 0 until SECTION_MAX)
-			bestSectionTime[i] = prop!!.getProperty("grademania3.bestSectionTime.$ruleName.$i", tableTimeRegret[i])
+			bestSectionTime[i] = prop.getProperty("grademania3.bestSectionTime.$ruleName.$i", tableTimeRegret[i])
 
 		for(i in 0 until GRADE_HISTORY_SIZE)
-			gradeHistory[i] = prop!!.getProperty("grademania3.gradehistory.$ruleName.$i", -1)
+			gradeHistory[i] = prop.getProperty("grademania3.gradehistory.$ruleName.$i", -1)
 
-		qualifiedGrade = prop!!.getProperty("grademania3.qualified.$ruleName", 0)
+		qualifiedGrade = prop.getProperty("grademania3.qualified.$ruleName", 0)
 		demotionPoints = prop.getProperty("grademania3.demopoint.$ruleName", 0)
 		decoration = prop.getProperty("decoration", 0)
 
@@ -1563,21 +1563,21 @@ class GrandMastery:AbstractMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			prop!!.setProperty("grademania3.ranking.$ruleName.grade.$i", rankingGrade[i])
+			prop.setProperty("grademania3.ranking.$ruleName.grade.$i", rankingGrade[i])
 			prop.setProperty("grademania3.ranking.$ruleName.level.$i", rankingLevel[i])
 			prop.setProperty("grademania3.ranking.$ruleName.time.$i", rankingTime[i])
 			prop.setProperty("grademania3.ranking.$ruleName.rollclear.$i", rankingRollclear[i])
 		}
 
 		for(i in 0 until SECTION_MAX)
-			prop!!.setProperty("grademania3.bestSectionTime.$ruleName.$i", bestSectionTime[i])
+			prop.setProperty("grademania3.bestSectionTime.$ruleName.$i", bestSectionTime[i])
 
 		for(i in 0 until GRADE_HISTORY_SIZE)
-			prop!!.setProperty("grademania3.gradehistory.$ruleName.$i", gradeHistory[i])
+			prop.setProperty("grademania3.gradehistory.$ruleName.$i", gradeHistory[i])
 
-		prop!!.setProperty("grademania3.qualified.$ruleName", qualifiedGrade)
+		prop.setProperty("grademania3.qualified.$ruleName", qualifiedGrade)
 		prop.setProperty("grademania3.demopoint.$ruleName", demotionPoints)
 
 		prop.setProperty("decoration", decoration)

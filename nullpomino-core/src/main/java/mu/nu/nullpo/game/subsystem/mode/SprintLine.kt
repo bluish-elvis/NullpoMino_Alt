@@ -86,7 +86,7 @@ class SprintLine:NetDummyMode() {
 		if(!engine.owner.replayMode) {
 			presetNumber = engine.owner.modeConfig.getProperty("linerace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 		} else {
 			presetNumber = 0
 			loadPreset(engine, engine.owner.replayProp, -1)
@@ -407,10 +407,10 @@ class SprintLine:NetDummyMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until GOALTYPE_MAX)
 			for(j in 0 until RANKING_MAX) {
-				prop!!.setProperty("linerace.ranking.$ruleName.$i.time.$j", rankingTime[i][j])
+				prop.setProperty("linerace.ranking.$ruleName.$i.time.$j", rankingTime[i][j])
 				prop.setProperty("linerace.ranking.$ruleName.$i.piece.$j", rankingPiece[i][j])
 				prop.setProperty("linerace.ranking.$ruleName.$i.pps.$j", rankingPPS[i][j])
 			}

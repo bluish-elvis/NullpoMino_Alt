@@ -585,8 +585,7 @@ open class EventReceiver {
 	 * @return X position of score display area
 	 */
 	fun scoreX(engine:GameEngine, playerID:Int):Int =
-		fieldX(engine, playerID)+(if(nextDisplayType==2) 256 else 216) + if(engine.displaysize==1) 32 else 0
-
+		fieldX(engine, playerID)+(if(nextDisplayType==2) 256 else 216)+if(engine.displaysize==1) 32 else 0
 
 	/** Get Y position of score display area
 	 * @param engine GameEngine
@@ -629,6 +628,7 @@ open class EventReceiver {
 	fun loadProperties(filename:String):CustomProperties? {
 		val prop = CustomProperties()
 
+		log.debug("load custom property file from $filename")
 		try {
 			val file = GZIPInputStream(FileInputStream(filename))
 			prop.load(file)
@@ -648,6 +648,13 @@ open class EventReceiver {
 	 */
 	fun saveProperties(filename:String, prop:CustomProperties):Boolean {
 		try {
+			val repfolder = File(filename).parentFile
+			log.info("Couldn't create folder at ${repfolder.name}")
+			if(!repfolder.exists())
+				if(repfolder.mkdirs())
+					log.info("Created folder: ${repfolder.name}")
+				else
+					log.info("Couldn't create folder at ${repfolder.name}")
 			val out = GZIPOutputStream(FileOutputStream(filename))
 			prop.store(out, "NullpoMino Custom Property File")
 			log.debug("Saving custom property file to $filename")
@@ -903,32 +910,21 @@ open class EventReceiver {
 	 */
 	open fun lineClearEnd(engine:GameEngine, playerID:Int) {}
 
-	/** Called when saving replay
-	 * @param owner GameManager
-	 * @param prop CustomProperties where the replay is going to stored
-	 */
-	open fun saveReplay(owner:GameManager, prop:CustomProperties) {
-		saveReplay(owner, prop, "replay")
-	}
-
 	/** Called when saving replay (This is main body)
 	 * @param owner GameManager
 	 * @param prop CustomProperties where the replay is going to stored
 	 * @param foldername Replay folder name
 	 */
-	fun saveReplay(owner:GameManager, prop:CustomProperties, foldername:String) {
-		var foldername = foldername
+	open fun saveReplay(owner:GameManager, prop:CustomProperties, foldername:String = "replay") {
 		if(owner.mode?.isNetplayMode!=false) return
-		foldername = foldername+"/"+owner.mode?.javaClass!!.simpleName
-		val filename =
-			foldername+"/"+GeneralUtil.getReplayFilename(prop.getProperty("name.rule")).toLowerCase(Locale.ROOT).replace("[\\s-]".toRegex(), "_")
+		val folder = "$foldername/${owner.mode?.javaClass!!.simpleName}"
+		val filename = "$folder/"+
+			GeneralUtil.getReplayFilename(prop.getProperty("name.rule")).toLowerCase(Locale.ROOT).replace("[\\s-]".toRegex(), "_")
 		try {
-			val repfolder = File(foldername)
+			val repfolder = File(folder)
 			if(!repfolder.exists())
-				if(repfolder.mkdirs())
-					log.info("Created replay folder: $foldername")
-				else
-					log.info("Couldn't create replay folder at $foldername")
+				if(repfolder.mkdirs()) log.info("Created replay folder: $folder")
+				else log.error("Couldn't create replay folder at $folder")
 
 			val out = GZIPOutputStream(FileOutputStream(filename))
 			prop.store(out, "NullpoMino Replay")

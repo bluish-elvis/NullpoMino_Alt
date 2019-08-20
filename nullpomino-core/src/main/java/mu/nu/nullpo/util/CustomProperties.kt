@@ -43,69 +43,22 @@ class CustomProperties:Properties() {
 		return elements()
 	}
 
-	/** byte型のプロパティを設定
+	/** プロパティを設定
 	 * @param key キー
 	 * @param value keyに対応する変数
 	 * @return プロパティリストの指定されたキーの前の値。それがない場合は null
 	 */
 	@Synchronized
-	fun setProperty(key:String, value:Byte):Any? = setProperty(key, "$value")
-
-	/** short型のプロパティを設定
-	 * @param key キー
-	 * @param value keyに対応する変数
-	 * @return プロパティリストの指定されたキーの前の値。それがない場合は null
-	 */
-	@Synchronized
-	fun setProperty(key:String, value:Short):Any? = setProperty(key, "$value")
-
-	/** int型のプロパティを設定
-	 * @param key キー
-	 * @param value keyに対応する変数
-	 * @return プロパティリストの指定されたキーの前の値。それがない場合は null
-	 */
-	@Synchronized
-	fun setProperty(key:String, value:Int):Any? = setProperty(key, "$value")
-
-	/** long型のプロパティを設定
-	 * @param key キー
-	 * @param value keyに対応する変数
-	 * @return プロパティリストの指定されたキーの前の値。それがない場合は null
-	 */
-	@Synchronized
-	fun setProperty(key:String, value:Long):Any? = setProperty(key, "$value")
-
-	/** float型のプロパティを設定
-	 * @param key キー
-	 * @param value keyに対応する変数
-	 * @return プロパティリストの指定されたキーの前の値。それがない場合は null
-	 */
-	@Synchronized
-	fun setProperty(key:String, value:Float):Any? = setProperty(key, "$value")
-
-	/** double型のプロパティを設定
-	 * @param key キー
-	 * @param value keyに対応する変数
-	 * @return プロパティリストの指定されたキーの前の値。それがない場合は null
-	 */
-	@Synchronized
-	fun setProperty(key:String, value:Double):Any? = setProperty(key, "$value")
-
-	/** char型のプロパティを設定
-	 * @param key キー
-	 * @param value keyに対応する変数
-	 * @return プロパティリストの指定されたキーの前の値。それがない場合は null
-	 */
-	@Synchronized
-	fun setProperty(key:String, value:Char):Any? = setProperty(key, "$value")
-
-	/** boolean型のプロパティを設定
-	 * @param key キー
-	 * @param value keyに対応する変数
-	 * @return プロパティリストの指定されたキーの前の値。それがない場合は null
-	 */
-	@Synchronized
-	fun setProperty(key:String, value:Boolean):Any? = setProperty(key, "$value")
+	fun <T:Comparable<T>> setProperty(key:String, value:Comparable<T>):Any? = when(value) {
+		is Byte -> setProperty(key, "$value")
+		is Int -> setProperty(key, "$value")
+		is Long -> setProperty(key, "$value")
+		is Float -> setProperty(key, "$value")
+		is Double -> setProperty(key, "$value")
+		is Char -> setProperty(key, "$value")
+		is Boolean -> setProperty(key, "$value")
+		else -> setProperty(key, "$value")
+	}
 
 	/** byte型のプロパティを取得
 	 * @param key キー
@@ -167,13 +120,10 @@ class CustomProperties:Properties() {
 	 * @param defaultValue keyが見つからない場合に返す変数
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
-	fun getProperty(key:String, defaultValue:Double):Double {
-
-		return try {
-			java.lang.Double.parseDouble(getProperty(key, "$defaultValue"))
-		} catch(e:NumberFormatException) {
-			defaultValue
-		}
+	fun getProperty(key:String, defaultValue:Double):Double = try {
+		java.lang.Double.parseDouble(getProperty(key, "$defaultValue"))
+	} catch(e:NumberFormatException) {
+		defaultValue
 	}
 
 	/** char型のプロパティを取得
@@ -199,40 +149,32 @@ class CustomProperties:Properties() {
 	 * @param comments 識別コメント
 	 * @return URLEncoderでエンコードされたプロパティセット文字列
 	 */
-	fun encode(comments:String):String? {
-		var result:String? = null
-
-		try {
-			val out = ByteArrayOutputStream()
-			store(out, comments)
-			result = URLEncoder.encode(out.toString(code.name()), code.name())
-		} catch(e:UnsupportedEncodingException) {
-			throw Error("UTF-8 not supported", e)
-		} catch(e:Exception) {
-			e.printStackTrace()
-		}
-
-		return result
+	fun encode(comments:String):String? = try {
+		val out = ByteArrayOutputStream()
+		store(out, comments)
+		URLEncoder.encode(out.toString(code.name()), code.name())
+	} catch(e:UnsupportedEncodingException) {
+		throw Error("UTF-8 not supported", e)
+	} catch(e:Exception) {
+		e.printStackTrace()
+		null
 	}
 
 	/** encode(String)でエンコードしたStringからプロパティセットを復元
 	 * @param source encode(String)でエンコードしたString
 	 * @return 成功するとtrue
 	 */
-	fun decode(source:String):Boolean {
-		try {
+	fun decode(source:String):Boolean = try {
 			val decodedString = URLDecoder.decode(source, code.name())
-			val `in` = ByteArrayInputStream(decodedString.toByteArray(code))
-			load(`in`)
+			val prop = ByteArrayInputStream(decodedString.toByteArray(code))
+			load(prop)
+			true
 		} catch(e:UnsupportedEncodingException) {
 			throw Error("UTF-8 not supported", e)
 		} catch(e:Exception) {
 			e.printStackTrace()
-			return false
+			false
 		}
-
-		return true
-	}
 
 	companion object {
 

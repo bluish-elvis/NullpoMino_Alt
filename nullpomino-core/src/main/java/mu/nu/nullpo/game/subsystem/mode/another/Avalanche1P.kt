@@ -83,7 +83,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else
 			loadSetting(owner.replayProp)
@@ -470,12 +470,12 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in 0 until GAMETYPE_MAX)
 				for(colors in 3..5)
 					for(sctype in 0 until SCORETYPE_MAX) {
-						rankingScore[sctype][colors-3][j][i] = prop!!.getProperty("avalanche.ranking.$ruleName.scoretype$sctype.${colors}colors.$j.score.$i", 0)
+						rankingScore[sctype][colors-3][j][i] = prop.getProperty("avalanche.ranking.$ruleName.scoretype$sctype.${colors}colors.$j.score.$i", 0)
 						rankingTime[sctype][colors-3][j][i] = prop.getProperty("avalanche.ranking.$ruleName.scoretype$sctype.${colors}colors.$j.time.$i", -1)
 					}
 	}

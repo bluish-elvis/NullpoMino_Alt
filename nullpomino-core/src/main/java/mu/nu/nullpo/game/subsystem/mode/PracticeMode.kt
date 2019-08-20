@@ -1100,8 +1100,7 @@ class PracticeMode:AbstractMode() {
 			if(engine.clearMode==GameEngine.ClearType.LINE_GEM_BOMB||engine.clearMode==GameEngine.ClearType.LINE_GEM_SPARK) {
 				lastscore /= 7+3*engine.chain
 			}
-			engine.statistics.score += lastscore
-			engine.statistics.scoreFromLineClear += lastscore
+			engine.statistics.scoreLine += lastscore
 			scgettime = 0
 
 			setMeter(engine, playerID)
@@ -1152,10 +1151,9 @@ class PracticeMode:AbstractMode() {
 			} else
 				sum = get
 			if(pts>0) lastscore = get
-			if(lines>=1) engine.statistics.scoreFromLineClear += get
-			else engine.statistics.scoreFromOtherBonus += get
+			if(lines>=1) engine.statistics.scoreLine += get
+			else engine.statistics.scoreBonus += get
 			scgettime += spd
-			engine.statistics.score += get
 
 			var cmbindex = engine.combo-1
 			if(cmbindex<0) cmbindex = 0
@@ -1265,8 +1263,7 @@ class PracticeMode:AbstractMode() {
 	/* Soft drop */
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
 		if(leveltype!=LEVELTYPE_MANIA&&leveltype!=LEVELTYPE_MANIAPLUS) {
-			engine.statistics.scoreFromSoftDrop += fall
-			engine.statistics.score += fall
+			engine.statistics.scoreSD += fall
 		}
 	}
 
@@ -1275,8 +1272,7 @@ class PracticeMode:AbstractMode() {
 		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
 			if(fall*2>harddropBonus) harddropBonus = fall*2
 		} else {
-			engine.statistics.scoreFromHardDrop += fall*2
-			engine.statistics.score += fall*2
+			engine.statistics.scoreHD += fall*2
 		}
 	}
 

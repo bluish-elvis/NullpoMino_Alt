@@ -104,7 +104,8 @@ class GameManager
 
 	val cfgMode get() = "config/setting/mode/${mode?.name ?: "mode"}.cfg"
 	val recorder get() = recorder()
-	fun recorder(ruleName:String? = null):String = "scores/${mode?.name ?: "mode"}/"+ruleName?.let {"/$it"}
+	//fun recorder(ruleName:String? = null):String = "scores/${mode?.name ?: "mode"}/${ruleName?.let {"/$it"}?:""}.rec"
+	fun recorder(ruleName:String? = null):String = "scores/${mode?.name ?: "mode"}.rec"
 	/** Initialize the game */
 	fun init() {
 		log.debug("GameManager init()")

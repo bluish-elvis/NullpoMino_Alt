@@ -211,13 +211,12 @@ class GrandLightning:AbstractMode() {
 
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
-			loadSetting(owner.modeConfig, engine.ruleopt.strRuleName, !engine.ruleopt.lockresetMove)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			torikan =
+				owner.modeConfig.getProperty("speedmania2.torikan.${engine.ruleopt.strRuleName}",
+					if(engine.ruleopt.lockresetMove) DEFAULT_TORIKAN else DEFAULT_TORIKAN_CLASSIC)
 		} else {
 			version = owner.replayProp.getProperty("speedmania2.version", 0)
 			System.arraycopy(tableTimeRegret, 0, bestSectionTime, 0, SECTION_MAX)
-
-			loadSetting(owner.replayProp, engine.ruleopt.strRuleName, !engine.ruleopt.lockresetMove)
 		}
 
 		owner.backgroundStatus.bg = 20+startlevel
@@ -227,27 +226,24 @@ class GrandLightning:AbstractMode() {
 	 * @param prop Property file
 	 * @param strRuleName Rule name
 	 */
-	protected fun loadSetting(prop:CustomProperties?, strRuleName:String, classic:Boolean) {
-		startlevel = prop!!.getProperty("speedmania2.startlevel", 0)
+	override fun loadSetting(prop:CustomProperties) {
+		startlevel = prop.getProperty("speedmania2.startlevel", 0)
 		lvstopse = prop.getProperty("speedmania2.lvstopse", true)
 		showsectiontime = prop.getProperty("speedmania2.showsectiontime", true)
 		big = prop.getProperty("speedmania2.big", false)
-		torikan =
-			prop.getProperty("speedmania2.torikan.$strRuleName", if(classic) DEFAULT_TORIKAN_CLASSIC else DEFAULT_TORIKAN)
 		gradedisp = prop.getProperty("speedmania2.gradedisp", false)
 	}
 
-	/** Save settings to property file
-	 * @param prop Property file
-	 * @param strRuleName Rule name
-	 */
-	protected fun saveSetting(prop:CustomProperties?, strRuleName:String) {
-		prop!!.setProperty("speedmania2.startlevel", startlevel)
+	override fun saveSetting(prop:CustomProperties) {
+		prop.setProperty("speedmania2.startlevel", startlevel)
 		prop.setProperty("speedmania2.lvstopse", lvstopse)
 		prop.setProperty("speedmania2.showsectiontime", showsectiontime)
 		prop.setProperty("speedmania2.big", big)
-		prop.setProperty("speedmania2.torikan.$strRuleName", torikan)
 		prop.setProperty("speedmania2.gradedisp", gradedisp)
+	}
+	private fun saveSetting(prop:CustomProperties, strRuleName:String) {
+		saveSetting(prop)
+		prop.setProperty("speedmania2.torikan.$strRuleName", torikan)
 	}
 
 	/** Set BGM at start of game
@@ -355,7 +351,7 @@ class GrandLightning:AbstractMode() {
 			// 決定
 			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
 
 				sectionscomp = 0
@@ -602,7 +598,7 @@ class GrandLightning:AbstractMode() {
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
 		// Combo
 		comboValue = if(lines==0) 1
-		else maxOf(1,comboValue+2*lines-2)
+		else maxOf(1, comboValue+2*lines-2)
 
 		if(lines>=1&&engine.ending==0) {
 			// 4-line clearカウント
@@ -778,7 +774,7 @@ class GrandLightning:AbstractMode() {
 				*lines*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
 				+engine.statistics.level/if(engine.tspin) 2 else 3)*if(engine.field!!.isEmpty) 2 else 1
 
-			engine.statistics.score += lastscore
+			engine.statistics.scoreLine += lastscore
 		}
 	}
 
@@ -939,34 +935,34 @@ class GrandLightning:AbstractMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun loadRanking(prop:CustomProperties?, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			rankingGrade[i] = prop!!.getProperty("speedmania2.ranking.$ruleName.grade.$i", 0)
+			rankingGrade[i] = prop.getProperty("speedmania2.ranking.$ruleName.grade.$i", 0)
 			rankingLevel[i] = prop.getProperty("speedmania2.ranking.$ruleName.level.$i", 0)
 			rankingTime[i] = prop.getProperty("speedmania2.ranking.$ruleName.time.$i", 0)
 			rankingRollclear[i] = prop.getProperty("speedmania2.ranking.$ruleName.rollclear.$i", 0)
 		}
 		for(i in 0 until SECTION_MAX)
-			bestSectionTime[i] = prop!!.getProperty("speedmania2.bestSectionTime.$ruleName.$i", tableTimeRegret[i])
+			bestSectionTime[i] = prop.getProperty("speedmania2.bestSectionTime.$ruleName.$i", tableTimeRegret[i])
 
-		decoration = prop!!.getProperty("decoration", 0)
+		decoration = prop.getProperty("decoration", 0)
 	}
 
 	/** Save rankings to property file
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			prop!!.setProperty("speedmania2.ranking.$ruleName.grade.$i", rankingGrade[i])
+			prop.setProperty("speedmania2.ranking.$ruleName.grade.$i", rankingGrade[i])
 			prop.setProperty("speedmania2.ranking.$ruleName.level.$i", rankingLevel[i])
 			prop.setProperty("speedmania2.ranking.$ruleName.time.$i", rankingTime[i])
 			prop.setProperty("speedmania2.ranking.$ruleName.rollclear.$i", rankingRollclear[i])
 		}
 		for(i in 0 until SECTION_MAX)
-			prop!!.setProperty("speedmania2.bestSectionTime.$ruleName.$i", bestSectionTime[i])
+			prop.setProperty("speedmania2.bestSectionTime.$ruleName.$i", bestSectionTime[i])
 
-		prop!!.setProperty("decoration", decoration)
+		prop.setProperty("decoration", decoration)
 	}
 
 	/** Update rankings

@@ -8,7 +8,6 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.gui.net.NetLobbyListener
-import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
 import java.io.IOException
@@ -187,6 +186,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * NetDummyMode will stop and hide all players.
 	 * Call netPlayerInit if you want to init NetPlay variables. */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
+		super.playerInit(engine,playerID)
 		engine.stat = GameEngine.Status.NOTHING
 		engine.isVisible = false
 	}
@@ -548,15 +548,9 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			owner.engine[0].ruleopt.copy(it)
 			owner.engine[0].randomizer = randomizer
 			owner.engine[0].wallkick = wallkick
-			loadRanking(owner.modeConfig, owner.engine[0].ruleopt.strRuleName)
+			loadRanking(owner.recordProp, owner.engine[0].ruleopt.strRuleName)
 		}
 	}
-
-	/** NET: Read rankings from property file. This is used from netOnJoin.
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
-	protected open fun loadRanking(prop:CustomProperties, ruleName:String) {}
 
 	/** NET: Update player count */
 	protected open fun netUpdatePlayerExist() {
@@ -923,7 +917,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 			val d = netRankingView
 
-			if(!netRankingNoDataFlag[d]&&netRankingReady[d]&&netRankingPlace!=null&&netRankingPlace[d]!=null) {
+			if(!netRankingNoDataFlag[d]&&netRankingReady[d]&&netRankingPlace[d]!=null) {
 				receiver.drawMenuFont(engine, playerID, 0, 1, "<<", COLOR.ORANGE)
 				receiver.drawMenuFont(engine, playerID, 38, 1, ">>", COLOR.ORANGE)
 				receiver.drawMenuFont(engine, playerID, 3, 1,
@@ -933,22 +927,16 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				var endIndex = startIndex+20
 				if(endIndex>netRankingPlace[d].size) endIndex = netRankingPlace[d].size
 
-				if(netRankingType==NetSPRecord.RANKINGTYPE_GENERIC_SCORE)
-					receiver.drawMenuFont(engine, playerID, 1, 3, "    SCORE   LINE TIME     NAME", COLOR.BLUE)
-				else if(netRankingType==NetSPRecord.RANKINGTYPE_GENERIC_TIME)
-					receiver.drawMenuFont(engine, playerID, 1, 3, "    TIME     PIECE PPS    NAME", COLOR.BLUE)
-				else if(netRankingType==NetSPRecord.RANKINGTYPE_SCORERACE)
-					receiver.drawMenuFont(engine, playerID, 1, 3, "    TIME     LINE SPL    NAME", COLOR.BLUE)
-				else if(netRankingType==NetSPRecord.RANKINGTYPE_DIGRACE)
-					receiver.drawMenuFont(engine, playerID, 1, 3, "    TIME     LINE PIECE  NAME", COLOR.BLUE)
-				else if(netRankingType==NetSPRecord.RANKINGTYPE_ULTRA)
-					receiver.drawMenuFont(engine, playerID, 1, 3, "    SCORE   LINE PIECE    NAME", COLOR.BLUE)
-				else if(netRankingType==NetSPRecord.RANKINGTYPE_COMBORACE)
-					receiver.drawMenuFont(engine, playerID, 1, 3, "    COMBO TIME     PPS    NAME", COLOR.BLUE)
-				else if(netRankingType==NetSPRecord.RANKINGTYPE_DIGCHALLENGE)
-					receiver.drawMenuFont(engine, playerID, 1, 3, "    SCORE   LINE TIME     NAME", COLOR.BLUE)
-				else if(netRankingType==NetSPRecord.RANKINGTYPE_TIMEATTACK)
-					receiver.drawMenuFont(engine, playerID, 1, 3, "    LINE  TIME     PPS    NAME", COLOR.BLUE)
+				when(netRankingType) {
+					NetSPRecord.RANKINGTYPE_GENERIC_SCORE -> receiver.drawMenuFont(engine, playerID, 1, 3, "    SCORE   LINE TIME     NAME", COLOR.BLUE)
+					NetSPRecord.RANKINGTYPE_GENERIC_TIME -> receiver.drawMenuFont(engine, playerID, 1, 3, "    TIME     PIECE PPS    NAME", COLOR.BLUE)
+					NetSPRecord.RANKINGTYPE_SCORERACE -> receiver.drawMenuFont(engine, playerID, 1, 3, "    TIME     LINE SPL    NAME", COLOR.BLUE)
+					NetSPRecord.RANKINGTYPE_DIGRACE -> receiver.drawMenuFont(engine, playerID, 1, 3, "    TIME     LINE PIECE  NAME", COLOR.BLUE)
+					NetSPRecord.RANKINGTYPE_ULTRA -> receiver.drawMenuFont(engine, playerID, 1, 3, "    SCORE   LINE PIECE    NAME", COLOR.BLUE)
+					NetSPRecord.RANKINGTYPE_COMBORACE -> receiver.drawMenuFont(engine, playerID, 1, 3, "    COMBO TIME     PPS    NAME", COLOR.BLUE)
+					NetSPRecord.RANKINGTYPE_DIGCHALLENGE -> receiver.drawMenuFont(engine, playerID, 1, 3, "    SCORE   LINE TIME     NAME", COLOR.BLUE)
+					NetSPRecord.RANKINGTYPE_TIMEATTACK -> receiver.drawMenuFont(engine, playerID, 1, 3, "    LINE  TIME     PPS    NAME", COLOR.BLUE)
+				}
 
 				for((c, i) in (startIndex until endIndex).withIndex()) {
 					if(i==netRankingCursor[d])
@@ -961,57 +949,66 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 					else
 						receiver.drawMenuNum(engine, playerID, 1, 4+c, String.format("%3d", netRankingPlace[d][i]+1), rankColor)
 
-					if(netRankingType==NetSPRecord.RANKINGTYPE_GENERIC_SCORE) {
-						receiver.drawMenuNum(engine, playerID, 5, 4+c, "${netRankingScore[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 13, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 18, 4+c, GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
-						receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
-					} else if(netRankingType==NetSPRecord.RANKINGTYPE_GENERIC_TIME) {
-						receiver.drawMenuNum(engine, playerID, 5, 4+c, GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 14, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 20, 4+c, String.format("%.5g", netRankingPPS[d][i]), i==netRankingCursor[d])
-						receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
-					} else if(netRankingType==NetSPRecord.RANKINGTYPE_SCORERACE) {
-						receiver.drawMenuNum(engine, playerID, 5, 4+c, GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 19, 4+c, String.format("%.5g", netRankingSPL[d][i]), i==netRankingCursor[d])
-						receiver.drawMenuTTF(engine, playerID, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
-					} else if(netRankingType==NetSPRecord.RANKINGTYPE_DIGRACE) {
-						receiver.drawMenuNum(engine, playerID, 5, 4+c, GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 19, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuTTF(engine, playerID, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
-					} else if(netRankingType==NetSPRecord.RANKINGTYPE_ULTRA) {
-						receiver.drawMenuNum(engine, playerID, 5, 4+c, "${netRankingScore[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 13, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 18, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuTTF(engine, playerID, 27, 4+c,
-							netRankingName[d][i], i==netRankingCursor[d])
-					} else if(netRankingType==NetSPRecord.RANKINGTYPE_COMBORACE) {
-						receiver.drawMenuNum(engine, playerID, 5, 4+c,
-							"${(netRankingScore[d][i]-1)}", i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 11, 4+c,
-							GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 20, 4+c,
-							String.format("%.4g", netRankingPPS[d][i]), i==netRankingCursor[d])
-						receiver.drawMenuTTF(engine, playerID, 27, 4+c,
-							netRankingName[d][i], i==netRankingCursor[d])
-					} else if(netRankingType==NetSPRecord.RANKINGTYPE_DIGCHALLENGE) {
-						receiver.drawMenuNum(engine, playerID, 5, 4+c,
-							"${netRankingScore[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 13, 4+c,
-							"${netRankingLines[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 18, 4+c,
-							"${netRankingDepth[d][i]}", i==netRankingCursor[d])
-						receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
-					} else if(netRankingType==NetSPRecord.RANKINGTYPE_TIMEATTACK) {
-						var fontcolor = COLOR.WHITE
-						if(netRankingRollclear[d][i]==1) fontcolor = COLOR.GREEN
-						if(netRankingRollclear[d][i]==2) fontcolor = COLOR.ORANGE
-						receiver.drawMenuNum(engine, playerID, 5, 4+c, "${netRankingLines[d][i]}", fontcolor)
-						receiver.drawMenuNum(engine, playerID, 11, 4+c, GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
-						receiver.drawMenuNum(engine, playerID, 20, 4+c, String.format("%.4g", netRankingPPS[d][i]), i==netRankingCursor[d])
-						receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+					when(netRankingType) {
+						NetSPRecord.RANKINGTYPE_GENERIC_SCORE -> {
+							receiver.drawMenuNum(engine, playerID, 5, 4+c, "${netRankingScore[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 13, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 18, 4+c, GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
+							receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+						}
+						NetSPRecord.RANKINGTYPE_GENERIC_TIME -> {
+							receiver.drawMenuNum(engine, playerID, 5, 4+c, GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 14, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 20, 4+c, String.format("%.5g", netRankingPPS[d][i]), i==netRankingCursor[d])
+							receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+						}
+						NetSPRecord.RANKINGTYPE_SCORERACE -> {
+							receiver.drawMenuNum(engine, playerID, 5, 4+c, GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 19, 4+c, String.format("%.5g", netRankingSPL[d][i]), i==netRankingCursor[d])
+							receiver.drawMenuTTF(engine, playerID, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+						}
+						NetSPRecord.RANKINGTYPE_DIGRACE -> {
+							receiver.drawMenuNum(engine, playerID, 5, 4+c, GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 19, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuTTF(engine, playerID, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+						}
+						NetSPRecord.RANKINGTYPE_ULTRA -> {
+							receiver.drawMenuNum(engine, playerID, 5, 4+c, "${netRankingScore[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 13, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 18, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuTTF(engine, playerID, 27, 4+c,
+								netRankingName[d][i], i==netRankingCursor[d])
+						}
+						NetSPRecord.RANKINGTYPE_COMBORACE -> {
+							receiver.drawMenuNum(engine, playerID, 5, 4+c,
+								"${(netRankingScore[d][i]-1)}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 11, 4+c,
+								GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 20, 4+c,
+								String.format("%.4g", netRankingPPS[d][i]), i==netRankingCursor[d])
+							receiver.drawMenuTTF(engine, playerID, 27, 4+c,
+								netRankingName[d][i], i==netRankingCursor[d])
+						}
+						NetSPRecord.RANKINGTYPE_DIGCHALLENGE -> {
+							receiver.drawMenuNum(engine, playerID, 5, 4+c,
+								"${netRankingScore[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 13, 4+c,
+								"${netRankingLines[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 18, 4+c,
+								"${netRankingDepth[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+						}
+						NetSPRecord.RANKINGTYPE_TIMEATTACK -> {
+							var fontcolor = COLOR.WHITE
+							if(netRankingRollclear[d][i]==1) fontcolor = COLOR.GREEN
+							if(netRankingRollclear[d][i]==2) fontcolor = COLOR.ORANGE
+							receiver.drawMenuNum(engine, playerID, 5, 4+c, "${netRankingLines[d][i]}", fontcolor)
+							receiver.drawMenuNum(engine, playerID, 11, 4+c, GeneralUtil.getTime(netRankingTime[d][i]), i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, playerID, 20, 4+c, String.format("%.4g", netRankingPPS[d][i]), i==netRankingCursor[d])
+							receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+						}
 					}
 
 				}

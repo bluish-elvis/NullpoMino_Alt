@@ -147,7 +147,7 @@ class MarathonShuttle:NetDummyMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -521,8 +521,7 @@ class MarathonShuttle:NetDummyMode() {
 			// Finished
 			if(rolltime>=TIMELIMIT_ROLL&&!netIsWatch) {
 				lastscore = totalTimer*2
-				engine.statistics.score += lastscore
-				engine.statistics.scoreFromOtherBonus += lastscore
+				engine.statistics.scoreBonus += lastscore
 				engine.lastevent = GameEngine.EVENT_NONE
 
 				engine.gameEnded()
@@ -553,10 +552,9 @@ class MarathonShuttle:NetDummyMode() {
 			} else
 				sum = get
 			if(pts>0) lastscore = get
-			if(lines>=1) engine.statistics.scoreFromLineClear += get
-			else engine.statistics.scoreFromOtherBonus += get
+			if(lines>=1) engine.statistics.scoreLine += get
+			else engine.statistics.scoreBonus += get
 			scgettime += spd
-			engine.statistics.score += get
 
 			var cmbindex = engine.combo-1
 			if(cmbindex<0) cmbindex = 0
@@ -572,8 +570,7 @@ class MarathonShuttle:NetDummyMode() {
 			if(goal<=0&&!levelTimeOut&&goaltype!=GAMETYPE_SPECIAL) {
 				lasttimebonus = (TIMELIMIT_LEVEL-levelTimer)*(engine.statistics.level+1)
 				if(lasttimebonus<0) lasttimebonus = 0
-				engine.statistics.scoreFromOtherBonus += lasttimebonus
-				engine.statistics.score += lasttimebonus
+				engine.statistics.scoreBonus += lasttimebonus
 			} else if(goal<=0&&goaltype==GAMETYPE_SPECIAL) {
 				lasttimebonus = TIMELIMIT_SPECIAL_BONUS
 				totalTimer += lasttimebonus
@@ -625,15 +622,13 @@ class MarathonShuttle:NetDummyMode() {
 
 	/* Hard drop */
 	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.scoreFromHardDrop += fall*2
-		engine.statistics.score += fall*2
+		engine.statistics.scoreHD += fall*2
 		scgettime += fall*2
 	}
 
 	/* Soft drop */
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.scoreFromSoftDrop += fall
-		engine.statistics.score += fall
+		engine.statistics.scoreSD += fall
 		scgettime += fall
 	}
 
@@ -717,6 +712,17 @@ class MarathonShuttle:NetDummyMode() {
 	 * leaderboard screen from showing. */
 	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = !big&&engine.ai==null&&startlevel==0
 
+	/** NET: Send game options to all spectators
+	 * @param engine GameEngine
+	 */
+	override fun netSendOptions(engine:GameEngine) {
+		var msg = "game\toption\t"
+		msg += "$goaltype${"\t$startlevel\t"+tspinEnableType}\t"
+		msg += "$enableTSpinKick${"\t$enableB2B\t"+enableCombo}\t$big\t"
+		msg += "$spinCheckType${"\t"+tspinEnableEZ}\n"
+		netLobby!!.netPlayerClient!!.send(msg)
+	}
+
 	/** NET: Receive game options */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
 		goaltype = Integer.parseInt(message[4])
@@ -730,34 +736,57 @@ class MarathonShuttle:NetDummyMode() {
 		tspinEnableEZ = java.lang.Boolean.parseBoolean(message[12])
 	}
 
+	/** NET: Send various in-game stats (as well as goaltype)
+	 * @param engine GameEngine
+	 */
+	override fun netSendStats(engine:GameEngine) {
+		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
+		var msg = "game\tstats\t"
+		msg += "${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"
+		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t"
+		msg += "$goaltype\t${engine.gameActive}\t${engine.timerActive}\t"
+		msg += "$lastscore\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t${engine.combobuf}\t${engine.lasteventpiece}\t"
+		msg += "$lastgoal\t$lasttimebonus\t$regretdispframe\t"
+		msg += "$bg\t${engine.meterValue}\t${engine.meterColor}\t"
+		msg += "${engine.statistics.level}\t$levelTimer\t$totalTimer\t$rolltime\t$goal\n"
+		netLobby!!.netPlayerClient!!.send(msg)
+	}
+
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		engine.statistics.score = Integer.parseInt(message[4])
-		engine.statistics.lines = Integer.parseInt(message[5])
-		engine.statistics.totalPieceLocked = Integer.parseInt(message[6])
-		engine.statistics.time = Integer.parseInt(message[7])
-		//engine.statistics.lpm = java.lang.Float.parseFloat(message[8])
-		//engine.statistics.spl = java.lang.Double.parseDouble(message[9])
-		goaltype = Integer.parseInt(message[10])
-		engine.gameActive = java.lang.Boolean.parseBoolean(message[11])
-		engine.timerActive = java.lang.Boolean.parseBoolean(message[12])
-		lastscore = Integer.parseInt(message[13])
-		scgettime = Integer.parseInt(message[14])
-		engine.lastevent = Integer.parseInt(message[15])
-		engine.b2bbuf = Integer.parseInt(message[16])
-		engine.combobuf = Integer.parseInt(message[17])
-		engine.lasteventpiece = Integer.parseInt(message[18])
-		lastgoal = Integer.parseInt(message[19])
-		lasttimebonus = Integer.parseInt(message[20])
-		regretdispframe = Integer.parseInt(message[21])
-		owner.backgroundStatus.bg = Integer.parseInt(message[22])
-		engine.meterValue = Integer.parseInt(message[23])
-		engine.meterColor = Integer.parseInt(message[24])
-		engine.statistics.level = Integer.parseInt(message[25])
-		levelTimer = Integer.parseInt(message[26])
-		totalTimer = Integer.parseInt(message[27])
-		rolltime = Integer.parseInt(message[28])
-		goal = Integer.parseInt(message[29])
+
+		listOf<(String)->Unit>({},{},{},{},
+			{engine.statistics.scoreLine = Integer.parseInt(it)},
+			{engine.statistics.scoreSD = Integer.parseInt(it)},
+			{engine.statistics.scoreHD = Integer.parseInt(it)},
+			{engine.statistics.scoreBonus = Integer.parseInt(it)},
+			{engine.statistics.lines = Integer.parseInt(it)},
+			{engine.statistics.totalPieceLocked = Integer.parseInt(it)},
+			{engine.statistics.time = Integer.parseInt(it)},
+			{goaltype = Integer.parseInt(it)},
+			{engine.gameActive = java.lang.Boolean.parseBoolean(it)},
+			{engine.timerActive = java.lang.Boolean.parseBoolean(it)},
+			{lastscore = Integer.parseInt(it)},
+			{scgettime = Integer.parseInt(it)},
+			{engine.lastevent = Integer.parseInt(it)},
+			{engine.b2bbuf = Integer.parseInt(it)},
+			{engine.combobuf = Integer.parseInt(it)},
+			{engine.lasteventpiece = Integer.parseInt(it)},
+			{lastgoal = Integer.parseInt(it)},
+			{lasttimebonus = Integer.parseInt(it)},
+			{regretdispframe = Integer.parseInt(it)},
+			{owner.backgroundStatus.bg = Integer.parseInt(it)},
+			{engine.meterValue = Integer.parseInt(it)},
+			{engine.meterColor = Integer.parseInt(it)},
+			{engine.statistics.level = Integer.parseInt(it)},
+			{levelTimer = Integer.parseInt(it)},
+			{totalTimer = Integer.parseInt(it)},
+			{rolltime = Integer.parseInt(it)},
+			{goal = Integer.parseInt(it)}).zip(message).forEach{
+			(x,y)->x(y)
+		}
+
+
 	}
 
 	/** NET: Send end-of-game stats
@@ -776,41 +805,14 @@ class MarathonShuttle:NetDummyMode() {
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
-	/** NET: Send game options to all spectators
-	 * @param engine GameEngine
-	 */
-	override fun netSendOptions(engine:GameEngine) {
-		var msg = "game\toption\t"
-		msg += "$goaltype${"\t$startlevel\t"+tspinEnableType}\t"
-		msg += "$enableTSpinKick${"\t$enableB2B\t"+enableCombo}\t$big\t"
-		msg += "$spinCheckType${"\t"+tspinEnableEZ}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
-	}
-
-	/** NET: Send various in-game stats (as well as goaltype)
-	 * @param engine GameEngine
-	 */
-	override fun netSendStats(engine:GameEngine) {
-		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
-		var msg = "game\tstats\t"
-		msg += "${engine.statistics.score}\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
-		msg += "${engine.statistics.time}\t${engine.statistics.lpm}\t${engine.statistics.spl}\t"
-		msg += "$goaltype\t${engine.gameActive}\t+${engine.timerActive}\t"
-		msg += "$lastscore\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t${engine.combobuf}\t${engine.lasteventpiece}\t"
-		msg += "$lastgoal\t$lasttimebonus\t$regretdispframe\t"
-		msg += "$bg\t${engine.meterValue}\t${engine.meterColor}\t"
-		msg += "${engine.statistics.level}\t$levelTimer\t$totalTimer\t$rolltime\t$goal\n"
-		netLobby!!.netPlayerClient!!.send(msg)
-	}
-
 	/** Save rankings to property file
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until RANKING_TYPE) {
-				prop!!.setProperty("technician.ranking.$ruleName.$gametypeIndex.score.$i", rankingScore[gametypeIndex][i])
+				prop.setProperty("technician.ranking.$ruleName.$gametypeIndex.score.$i", rankingScore[gametypeIndex][i])
 				prop.setProperty("technician.ranking.$ruleName.$gametypeIndex.lines.$i", rankingLines[gametypeIndex][i])
 				prop.setProperty("technician.ranking.$ruleName.$gametypeIndex.time.$i", rankingTime[gametypeIndex][i])
 			}

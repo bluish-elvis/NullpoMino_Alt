@@ -90,7 +90,7 @@ class SprintDig:NetDummyMode() {
 			version = CURRENT_VERSION
 			presetNumber = engine.owner.modeConfig.getProperty("digrace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 		} else {
 			version = engine.owner.replayProp.getProperty("digrace.version", 0)
 			presetNumber = 0
@@ -313,8 +313,7 @@ class SprintDig:NetDummyMode() {
 
 		for(y:Int in h-1 downTo h-GOAL_TABLE[height]) {
 			var newhole:Int = -1
-			do
-				newhole = engine.random.nextInt(w)
+			do newhole = engine.random.nextInt(w)
 			while(newhole==hole)
 			hole = newhole
 
@@ -487,10 +486,10 @@ class SprintDig:NetDummyMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until GOALTYPE_MAX)
 			for(j in 0 until RANKING_MAX) {
-				prop!!.setProperty("digrace.ranking.$ruleName.$i.time.$j", rankingTime[i][j])
+				prop.setProperty("digrace.ranking.$ruleName.$i.time.$j", rankingTime[i][j])
 				prop.setProperty("digrace.ranking.$ruleName.$i.lines.$j", rankingLines[i][j])
 				prop.setProperty("digrace.ranking.$ruleName.$i.piece.$j", rankingPiece[i][j])
 			}

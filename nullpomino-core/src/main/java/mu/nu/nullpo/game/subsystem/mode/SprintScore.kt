@@ -126,7 +126,7 @@ class SprintScore:NetDummyMode() {
 		if(!engine.owner.replayMode) {
 			presetNumber = engine.owner.modeConfig.getProperty("scorerace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			presetNumber = 0
@@ -454,25 +454,20 @@ class SprintScore:NetDummyMode() {
 			} else
 				sum = get
 			if(pts>0) lastscore = get
-			if(lines>=1)
-				engine.statistics.scoreFromLineClear += get
-			else
-				engine.statistics.scoreFromOtherBonus += get
-			engine.statistics.score += get
+			if(lines>=1) engine.statistics.scoreLine += get
+			else engine.statistics.scoreBonus += get
 			scgettime += spd
 		}
 	}
 
 	/* Soft drop */
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.scoreFromSoftDrop += fall
-		engine.statistics.score += fall
+		engine.statistics.scoreSD += fall
 	}
 
 	/* Hard drop */
 	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		engine.statistics.scoreFromHardDrop += fall*2
-		engine.statistics.score += fall*2
+		engine.statistics.scoreHD += fall*2
 	}
 
 	/* Called after every frame */
@@ -577,10 +572,10 @@ class SprintScore:NetDummyMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	private fun saveRanking(prop:CustomProperties?, ruleName:String) {
+	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until GOALTYPE_MAX)
 			for(j in 0 until RANKING_MAX) {
-				prop!!.setProperty("scorerace.ranking.$ruleName.$i.time.$j", rankingTime[i][j])
+				prop.setProperty("scorerace.ranking.$ruleName.$i.time.$j", rankingTime[i][j])
 				prop.setProperty("scorerace.ranking.$ruleName.$i.lines.$j", rankingLines[i][j])
 				prop.setProperty("scorerace.ranking.$ruleName.$i.spl.$j", rankingSPL[i][j])
 			}
@@ -633,8 +628,8 @@ class SprintScore:NetDummyMode() {
 	 */
 	override fun netSendStats(engine:GameEngine) {
 		var msg = "game\tstats\t"
-		msg += "${engine.statistics.score}\t${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
-		msg += "${engine.statistics.time}\t${engine.statistics.spm}\t"
+		msg += "${engine.statistics.scoreLine}\t${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"
+		msg += "${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t"
 		msg += "${engine.statistics.lpm}\t${engine.statistics.spl}\t$goaltype\t"
 		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
 		msg += "$lastscore\t$scgettime\t$lastb2b\t$lastcombo\t$lastpiece\n"
@@ -643,13 +638,13 @@ class SprintScore:NetDummyMode() {
 
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		engine.statistics.score = Integer.parseInt(message[4])
-		engine.statistics.lines = Integer.parseInt(message[5])
-		engine.statistics.totalPieceLocked = Integer.parseInt(message[6])
-		engine.statistics.time = Integer.parseInt(message[7])
-		//engine.statistics.spm =  java.lang.Double.parseDouble(message[8])
-		//engine.statistics.lpm = java.lang.Float.parseFloat(message[9])
-		//engine.statistics.spl = java.lang.Double.parseDouble(message[10])
+		engine.statistics.scoreLine = Integer.parseInt(message[4])
+		engine.statistics.scoreHD = Integer.parseInt(message[5])
+		engine.statistics.scoreSD = Integer.parseInt(message[6])
+		engine.statistics.scoreBonus = Integer.parseInt(message[7])
+		engine.statistics.lines = Integer.parseInt(message[8])
+		engine.statistics.totalPieceLocked = Integer.parseInt(message[9])
+		engine.statistics.time = Integer.parseInt(message[10])
 		goaltype = Integer.parseInt(message[11])
 		engine.gameActive = java.lang.Boolean.parseBoolean(message[12])
 		engine.timerActive = java.lang.Boolean.parseBoolean(message[13])
