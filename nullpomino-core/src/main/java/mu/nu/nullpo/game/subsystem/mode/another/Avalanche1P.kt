@@ -426,7 +426,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			updateRanking(engine.statistics.score, engine.statistics.time, gametype, scoreType, numColors)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}

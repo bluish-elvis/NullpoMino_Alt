@@ -37,18 +37,28 @@ class GameManager
 	/** EventReceiver: Manages various events, and renders everything to the screen */
 	val receiver:EventReceiver = EventReceiver()) {
 
+
+	/** Properties used by statistics */
+	var statsProp:CustomProperties = CustomProperties()
+	val statsFile get() = "scores/stats"
+
 	/** Game Mode */
 	var mode:GameMode? = null
 
 	/** Properties used by game mode */
 	var modeConfig:CustomProperties = CustomProperties()
 
+	val cfgMode get() = "config/setting/mode/${mode?.name ?: "mode"}.cfg"
+
 	/** Properties for Records game mode */
 	var recordProp:CustomProperties = CustomProperties()
 
+	val recorder get() = recorder()
+	//fun recorder(ruleName:String? = null):String = "scores/${mode?.name ?: "mode"}/${ruleName?.let {"/$it"}?:""}.rec"
+	fun recorder():String = "scores/${mode?.name ?: "mode"}.rec"
+
 	/** Properties for replay file */
 	var replayProp:CustomProperties = CustomProperties()
-
 	/** true if replay mode */
 	var replayMode:Boolean = false
 
@@ -102,10 +112,6 @@ class GameManager
 		log.debug("GameManager constructor called")
 	}
 
-	val cfgMode get() = "config/setting/mode/${mode?.name ?: "mode"}.cfg"
-	val recorder get() = recorder()
-	//fun recorder(ruleName:String? = null):String = "scores/${mode?.name ?: "mode"}/${ruleName?.let {"/$it"}?:""}.rec"
-	fun recorder(ruleName:String? = null):String = "scores/${mode?.name ?: "mode"}.rec"
 	/** Initialize the game */
 	fun init() {
 		log.debug("GameManager init()")
@@ -119,6 +125,7 @@ class GameManager
 		mode?.let {
 			receiver.loadProperties(cfgMode)?.let {modeConfig = it}
 			receiver.loadProperties(recorder)?.let {recordProp = it}
+			receiver.loadProperties(statsFile)?.let {statsProp = it}
 			it.modeInit(this)
 			players = it.players
 		}

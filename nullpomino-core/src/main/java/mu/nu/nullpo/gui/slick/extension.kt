@@ -2,6 +2,8 @@ package mu.nu.nullpo.gui.slick
 
 import org.newdawn.slick.*
 
+internal fun Graphics.drawRect(x1:Int, y1:Int, width:Int, height:Int) =
+	this.drawRect(x1.toFloat(), y1.toFloat(), width.toFloat(), height.toFloat())
 internal fun Graphics.fillRect(x1:Int, y1:Int, width:Int, height:Int) =
 	this.fillRect(x1.toFloat(), y1.toFloat(), width.toFloat(), height.toFloat())
 

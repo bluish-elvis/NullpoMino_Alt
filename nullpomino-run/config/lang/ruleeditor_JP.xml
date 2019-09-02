@@ -75,9 +75,9 @@
 <entry key="Drop_SoftDropLock">ソフトドロップで即固定</entry>
 <entry key="Drop_SoftDropLimit">ソフトドロップ連続使用不可</entry>
 <entry key="Drop_SoftDropSurfaceLock">ソフトドロップを接地状態で使用すると即固定</entry>
-<entry key="Drop_SoftDropSpeed">ソフトドロップ速度(1.0=1倍)</entry>
-<entry key="Drop_SoftDropMultiplyNativeSpeed">ソフトドロップ速度を現在の通常速度ﾗn倍にする</entry>
-<entry key="Drop_SoftDropGravitySpeedLimit">ソフトドロップ速度に上限をつける(現在の通常速度が上限)</entry>
+<entry key="Drop_SoftDropSpeed">ソフトドロップ速度(1.0 = 1.0G or 1倍)</entry>
+<entry key="Drop_SoftDropMultiplyNativeSpeed">ソフトドロップ速度を通常速度への倍率にする</entry>
+<entry key="Drop_SoftDropGravitySpeedLimit">ソフトドロップ速度を現在の通常速度に影響させない</entry>
 
 <!--Rotate-->
 <entry key="Rotate_RotateInitial">先行回転</entry>

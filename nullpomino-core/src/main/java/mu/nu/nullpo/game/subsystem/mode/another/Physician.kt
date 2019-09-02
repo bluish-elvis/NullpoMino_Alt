@@ -319,7 +319,7 @@ class Physician:AbstractMode() {
 			updateRanking(engine.statistics.score, engine.statistics.time)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -349,8 +349,8 @@ class Physician:AbstractMode() {
 	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			rankingScore[i] = prop.getProperty("physician.ranking.$ruleName.score.$i", 0)
-			rankingTime[i] = prop.getProperty("physician.ranking.$ruleName.time.$i", -1)
+			rankingScore[i] = prop.getProperty("physician.ranking.$ruleName.$i.score", 0)
+			rankingTime[i] = prop.getProperty("physician.ranking.$ruleName.$i.time", -1)
 		}
 	}
 
@@ -360,8 +360,8 @@ class Physician:AbstractMode() {
 	 */
 	fun saveRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			prop.setProperty("physician.ranking.$ruleName.score.$i", rankingScore[i])
-			prop.setProperty("physician.ranking.$ruleName.time.$i", rankingTime[i])
+			prop.setProperty("physician.ranking.$ruleName.$i.score", rankingScore[i])
+			prop.setProperty("physician.ranking.$ruleName.$i.time", rankingTime[i])
 		}
 	}
 

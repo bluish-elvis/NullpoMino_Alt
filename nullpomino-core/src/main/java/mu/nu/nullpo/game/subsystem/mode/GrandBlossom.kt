@@ -1403,7 +1403,7 @@ class GrandBlossom:AbstractMode() {
 			updateRanking(if(randomnext) 1 else 0, stage, clearper, engine.statistics.time, allclear)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -1421,7 +1421,7 @@ class GrandBlossom:AbstractMode() {
 				rankingTime[type][i] = prop.getProperty("gemmania.ranking.$ruleName.$type.time.$i", 0)
 				rankingAllClear[type][i] = prop.getProperty("gemmania.ranking.$ruleName.$type.allclear.$i", 0)
 			}
-		decoration = prop.getProperty("decoration", 0)
+		decoration = owner.statsProp.getProperty("decoration", 0)
 	}
 
 	/** Save rankings to property file
@@ -1429,14 +1429,17 @@ class GrandBlossom:AbstractMode() {
 	 * @param ruleName Rule name
 	 */
 	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(type in 0 until RANKING_TYPE)
-			for(i in 0 until RANKING_MAX) {
-				prop.setProperty("gemmania.ranking.$ruleName.$type.stage.$i", rankingStage[type][i])
-				prop.setProperty("gemmania.ranking.$ruleName.$type.clearper.$i", rankingClearPer[type][i])
-				prop.setProperty("gemmania.ranking.$ruleName.$type.time.$i", rankingTime[type][i])
-				prop.setProperty("gemmania.ranking.$ruleName.$type.allclear.$i", rankingAllClear[type][i])
+		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf("$j.$ruleName.$i.stage" to rankingStage[j][i],
+					"$j.$ruleName.$i.clear" to rankingClearPer[j][i],
+					"$j.$ruleName.$i.time" to rankingTime[j][i],
+					"$j.$ruleName.$i.all" to rankingAllClear[j][i])
 			}
-		prop.setProperty("decoration", decoration)
+		})
+
+		owner.statsProp.setProperty("decoration", decoration)
+		receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update rankings

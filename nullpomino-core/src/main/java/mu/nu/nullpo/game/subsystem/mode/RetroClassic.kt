@@ -109,9 +109,12 @@ class RetroClassic:AbstractMode() {
 		engine.speed.are = 10
 		engine.speed.areLine = 20
 		engine.speed.lineDelay = 20
-		engine.speed.lockDelay = 0
 		engine.speed.das = if(gametype==GAMETYPE_ARRANGE) 12 else 16
-
+		engine.ruleopt.lockresetMove = false
+		engine.ruleopt.softdropLock = true
+		engine.ruleopt.softdropSpeed = .5f
+		engine.ruleopt.softdropMultiplyNativeSpeed = false
+		engine.ruleopt.softdropGravitySpeedLimit = true
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
 			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
@@ -143,6 +146,7 @@ class RetroClassic:AbstractMode() {
 			engine.speed.gravity = 1
 			engine.speed.denominator = tableDenominator[lv]
 		}
+		engine.speed.lockDelay = engine.speed.denominator/engine.speed.gravity
 	}
 
 	/** Main routine for game setup screen */
@@ -328,7 +332,7 @@ class RetroClassic:AbstractMode() {
 
 			levellines += 10
 
-			engine.framecolor = engine.statistics.level
+			//engine.framecolor = engine.statistics.level
 			if(engine.statistics.level>255) {
 				engine.statistics.level = 0
 			}
@@ -381,7 +385,7 @@ class RetroClassic:AbstractMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.level, gametype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}

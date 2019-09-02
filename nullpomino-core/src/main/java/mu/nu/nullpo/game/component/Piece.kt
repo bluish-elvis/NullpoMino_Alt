@@ -182,6 +182,7 @@ class Piece(
 
 	init {
 		resetOffsetArray()
+		updateConnectData()
 	}
 
 	/** Copy constructor
@@ -189,6 +190,7 @@ class Piece(
 	 */
 	constructor(p:Piece):this(p.id) {
 		copy(p)
+		updateConnectData()
 	}
 
 	/** Blockピースの dataを他のPieceからコピー

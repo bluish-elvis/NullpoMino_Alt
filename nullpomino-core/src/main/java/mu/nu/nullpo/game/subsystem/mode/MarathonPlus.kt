@@ -727,7 +727,7 @@ class MarathonPlus:NetDummyMode() {
 					0)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}

@@ -482,7 +482,7 @@ class SquareMode:AbstractMode() {
 			updateRanking(engine.statistics.score, engine.statistics.time, squares, gametype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}

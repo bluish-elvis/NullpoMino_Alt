@@ -812,7 +812,7 @@ class GrandMarathon:AbstractMode() {
 			if(sectionAnyNewRecord) updateBestSectionTime()
 
 			if(rankingRank!=-1||sectionAnyNewRecord) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -824,32 +824,33 @@ class GrandMarathon:AbstractMode() {
 	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			rankingGrade[i] = prop.getProperty("grademania1.ranking.$ruleName.grade.$i", 0)
-			rankingLevel[i] = prop.getProperty("grademania1.ranking.$ruleName.level.$i", 0)
-			rankingTime[i] = prop.getProperty("grademania1.ranking.$ruleName.time.$i", 0)
+			rankingGrade[i] = prop.getProperty("$ruleName.$i.grade", 0)
+			rankingLevel[i] = prop.getProperty("$ruleName.$i.level", 0)
+			rankingTime[i] = prop.getProperty("$ruleName.$i.time", 0)
 		}
 		for(i in 0 until SECTION_MAX) {
-			bestSectionScore[i] = prop.getProperty("grademania1.bestSectionScore.$ruleName.$i", 0)
-			bestSectionTime[i] = prop.getProperty("grademania1.bestSectionTime.$ruleName.$i", DEFAULT_SECTION_TIME)
+			bestSectionScore[i] = prop.getProperty("$ruleName.sectionscore.$i", 0)
+			bestSectionTime[i] = prop.getProperty("$ruleName.sectiontime.$i", DEFAULT_SECTION_TIME)
 		}
-		decoration = prop.getProperty("decoration", 0)
+		decoration = owner.statsProp.getProperty("decoration", 0)
 	}
 
 	/** Save rankings to property file
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			prop.setProperty("grademania1.ranking.$ruleName.grade.$i", rankingGrade[i])
-			prop.setProperty("grademania1.ranking.$ruleName.level.$i", rankingLevel[i])
-			prop.setProperty("grademania1.ranking.$ruleName.time.$i", rankingTime[i])
-		}
-		for(i in 0 until SECTION_MAX) {
-			prop.setProperty("grademania1.bestSectionTime.$ruleName.$i", bestSectionScore[i])
-			prop.setProperty("grademania1.bestSectionTime.$ruleName.$i", bestSectionTime[i])
-		}
-		prop.setProperty("decoration", decoration)
+	fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
+			listOf("$ruleName.$i.grade" to rankingGrade[i],
+				"$ruleName.$i.level" to rankingLevel[i],
+				"$ruleName.$i.time" to rankingTime[i])
+		}+ (0 until SECTION_MAX).flatMap {i ->
+			listOf("$ruleName.sectiontime.$i" to bestSectionTime[i],
+				"$ruleName.sectionscore.$i" to bestSectionScore[i])
+		})
+
+		owner.statsProp.setProperty("decoration", decoration)
+		receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update rankings

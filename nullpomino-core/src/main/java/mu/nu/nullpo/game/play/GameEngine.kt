@@ -1848,7 +1848,7 @@ class GameEngine
 				initialHoldFlag = false
 				holdDisable = true
 			}
-			if(framecolor!=FRAME_SKIN_GB) playSE("piece${getNextObject(nextPieceCount)!!.id}")
+			if(framecolor !in FRAME_SKIN_SG..FRAME_SKIN_GB) playSE("piece${getNextObject(nextPieceCount)!!.id}")
 
 			if(!nowPieceObject!!.offsetApplied)
 				nowPieceObject!!.applyOffsetArray(ruleopt.pieceOffsetX[nowPieceObject!!.id], ruleopt.pieceOffsetY[nowPieceObject!!.id])
@@ -2434,10 +2434,11 @@ class GameEngine
 
 				if(li>0) {
 					playSE("erase")
+					if(li>=(if(tspin)3 else 4))playSE("eraser")
 					lasteventpiece = nowPieceObject!!.id
 					lastlines = field!!.lastLinesHeight
 					lastline = field!!.lastLinesBottom
-					playSE("erase${maxOf(1, minOf(li, 4))}")
+					playSE("line${maxOf(1, minOf(li, 4))}")
 					if(li>=4) playSE("applause${maxOf(0, minOf(1+b2bcount, 4))}")
 					if(tspin) {
 						playSE("tspin")
@@ -2513,6 +2514,7 @@ class GameEngine
 
 			} else if(clearMode==ClearType.LINE_GEM_BOMB) {
 
+				playSE("bomb")
 				playSE("erase")
 			}
 			if(field!!.howManyGemClears>0) playSE("gem")
@@ -3120,6 +3122,7 @@ class GameEngine
 		const val FRAME_SKIN_GB = -2
 		const val FRAME_SKIN_SG = -3
 		const val FRAME_SKIN_HEBO = -4
+		const val FRAME_SKIN_METAL = -5
 
 		/** Constants of meter colors */
 		const val METER_COLOR_LEVEL = -1

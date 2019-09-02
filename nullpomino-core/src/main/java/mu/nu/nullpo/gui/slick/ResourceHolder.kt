@@ -232,9 +232,10 @@ object ResourceHolder {
 			loadSE("softdrop")
 			loadSE("step")
 			loadSE("lock")
-			for(i in 0..3)
-				loadSE("erase${i+1}")
 			loadSE("erase")
+			loadSE("eraser")
+			for(i in 0..3)
+				loadSE("line${i+1}")
 			loadSE("linefall")
 			for(i in 0..4)
 				loadSE("applause$i")
@@ -278,6 +279,7 @@ object ResourceHolder {
 
 			loadSE("garbage")
 			loadSE("gem")
+			loadSE("bomb")
 			loadSE("square_s")
 			loadSE("square_g")
 

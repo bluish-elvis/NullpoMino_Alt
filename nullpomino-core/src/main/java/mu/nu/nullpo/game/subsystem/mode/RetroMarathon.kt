@@ -27,6 +27,7 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.RetroMarathon.Companion.GAMETYPE.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 
@@ -46,7 +47,7 @@ class RetroMarathon:AbstractMode() {
 	private var scgettime:Int = 0
 
 	/** Selected game type */
-	private var gametype:Int = 0
+	private var gametype:GAMETYPE = RACE200
 
 	/** Selected starting level */
 	private var startlevel:Int = 0
@@ -119,7 +120,14 @@ class RetroMarathon:AbstractMode() {
 		engine.speed.are = 12
 		engine.speed.areLine = 15
 		engine.speed.das = 12
-
+		engine.ruleopt.lockresetMove = false
+		engine.ruleopt.lockresetRotate = false
+		engine.ruleopt.lockresetWallkick = false
+		engine.ruleopt.lockresetFall = true
+		engine.ruleopt.softdropLock = true
+		engine.ruleopt.softdropMultiplyNativeSpeed = false
+		engine.ruleopt.softdropGravitySpeedLimit = true
+		engine.ruleopt.softdropSpeed = .5f
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
 			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
@@ -127,7 +135,7 @@ class RetroMarathon:AbstractMode() {
 		} else
 			loadSetting(owner.replayProp)
 
-		engine.owner.backgroundStatus.bg = if(gametype==GAMETYPE_PRESSURE) 0 else startlevel
+		engine.owner.backgroundStatus.bg = if(gametype==PRESSURE) 0 else startlevel
 		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
 		engine.framecolor = GameEngine.FRAME_COLOR_GRAY
 	}
@@ -154,14 +162,14 @@ class RetroMarathon:AbstractMode() {
 			// Check for UP button, when pressed it will move cursor up.
 			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				menuCursor--
-				if(menuCursor==1&&gametype==GAMETYPE_PRESSURE) menuCursor--
+				if(menuCursor==1&&gametype==PRESSURE) menuCursor--
 				if(menuCursor<0) menuCursor = 2
 				engine.playSE("cursor")
 			}
 			// Check for DOWN button, when pressed it will move cursor down.
 			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 				menuCursor++
-				if(menuCursor==1&&gametype==GAMETYPE_PRESSURE) menuCursor++
+				if(menuCursor==1&&gametype==PRESSURE) menuCursor++
 				if(menuCursor>2) menuCursor = 0
 				engine.playSE("cursor")
 			}
@@ -176,10 +184,12 @@ class RetroMarathon:AbstractMode() {
 
 				when(menuCursor) {
 					0 -> {
-						gametype += change
-						if(gametype<0) gametype = GAMETYPE_MAX-1
-						if(gametype>GAMETYPE_MAX-1) gametype = 0
-						engine.owner.backgroundStatus.bg = if(gametype==GAMETYPE_PRESSURE) 0 else startlevel
+						gametype = when(gametype) {
+							values().first() -> values().last()
+							values().last() -> values().first()
+							else -> values()[gametype.ordinal+change]
+						}
+						engine.owner.backgroundStatus.bg = if(gametype==PRESSURE) 0 else startlevel
 					}
 					1 -> {
 						startlevel += change
@@ -219,8 +229,8 @@ class RetroMarathon:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 0, menuCursor*2+1, "b", COLOR.RED)
 
 		receiver.drawMenuFont(engine, playerID, 0, 0, "GAME TYPE", COLOR.BLUE)
-		receiver.drawMenuFont(engine, playerID, 1, 1, GAMETYPE_NAME[gametype], menuCursor==0)
-		if(gametype!=GAMETYPE_PRESSURE) {
+		receiver.drawMenuFont(engine, playerID, 1, 1, gametype.name, menuCursor==0)
+		if(gametype!=ENDLESS) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "LEVEL", COLOR.BLUE)
 			receiver.drawMenuFont(engine, playerID, 1, 3, String.format("%02d", startlevel), menuCursor==1)
 		}
@@ -234,17 +244,17 @@ class RetroMarathon:AbstractMode() {
 		engine.big = big
 		engine.statistics.levelDispAdd = 1
 
-		owner.bgmStatus.bgm = BGM.RETRO_S(0)
+		owner.bgmStatus.bgm = BGM.RETRO_A(0)
 		when(gametype) {
-			GAMETYPE_PRESSURE -> {
+			PRESSURE -> {
 				engine.statistics.level = 0
 				levellines = 5
 			}
-			GAMETYPE_200 -> {
+			RACE200 -> {
 				engine.statistics.level = startlevel
 				levellines = 10*minOf(startlevel+1, 10)
 			}
-			GAMETYPE_ENDLESS -> {
+			ENDLESS -> {
 				engine.statistics.level = startlevel
 				levellines = if(startlevel<=9) (startlevel+1)*10 else (startlevel+11)*5
 			}
@@ -256,7 +266,7 @@ class RetroMarathon:AbstractMode() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		receiver.drawScoreFont(engine, playerID, 0, 0, "RETRO MASTERY", COLOR.GREEN)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "(${GAMETYPE_NAME[gametype]})", COLOR.GREEN)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "(${gametype.name})", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -264,9 +274,9 @@ class RetroMarathon:AbstractMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1), COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingScore[gametype][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, playerID, 12, 4+i, "${rankingLines[gametype][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, playerID, 17, 4+i, String.format("%02d", rankingLevel[gametype][i]), i==rankingRank)
+					receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingScore[gametype.ordinal][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, playerID, 12, 4+i, "${rankingLines[gametype.ordinal][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, playerID, 17, 4+i, String.format("%02d", rankingLevel[gametype.ordinal][i]), i==rankingRank)
 				}
 			}
 		} else {
@@ -277,7 +287,7 @@ class RetroMarathon:AbstractMode() {
 				"${engine.statistics.score} (+$lastscore)"
 			receiver.drawScoreNum(engine, playerID, 0, 4, strScore, 2f)
 
-			val strLine:String = "$loons"
+			val strLine = "$loons"
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINES", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 7, strLine, 2f)
@@ -331,7 +341,7 @@ class RetroMarathon:AbstractMode() {
 		}
 
 		// Do the ending (at 200 lines for now)
-		if(gametype==GAMETYPE_200&&loons>=200) {
+		if(gametype==RACE200&&loons>=200) {
 			engine.ending = 1
 			engine.gameEnded()
 		}
@@ -350,7 +360,7 @@ class RetroMarathon:AbstractMode() {
 			// Level up
 			engine.statistics.level++
 
-			levellines += if(gametype==GAMETYPE_PRESSURE) 5 else 10
+			levellines += if(gametype==PRESSURE) 5 else 10
 
 			owner.backgroundStatus.fadesw = true
 			owner.backgroundStatus.fadecount = 0
@@ -362,14 +372,14 @@ class RetroMarathon:AbstractMode() {
 			else if(lv>=19) lv = 19
 
 			owner.backgroundStatus.fadebg = lv
-
+			owner.bgmStatus.bgm = BGM.RETRO_A(maxOf(lv/4, 4))
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}
 
 		// Update meter
 		val togo = levellines-loons
-		if(gametype==GAMETYPE_PRESSURE) {
+		if(gametype==PRESSURE) {
 			engine.meterValue = loons%5*receiver.getMeterMax(engine)/4
 			when(togo) {
 				1 -> engine.meterColor = GameEngine.METER_COLOR_RED
@@ -434,7 +444,7 @@ class RetroMarathon:AbstractMode() {
 			updateRanking(engine.statistics.score, loons, engine.statistics.level, gametype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -444,7 +454,7 @@ class RetroMarathon:AbstractMode() {
 	 * @param prop CustomProperties
 	 */
 	override fun loadSetting(prop:CustomProperties) {
-		gametype = prop.getProperty("retromastery.gametype", 0)
+		gametype = GAMETYPE.values()[prop.getProperty("retromastery.gametype", 0)]
 		startlevel = prop.getProperty("retromastery.startlevel", 0)
 		big = prop.getProperty("retromastery.big", false)
 		version = prop.getProperty("retromastery.version", 0)
@@ -454,7 +464,7 @@ class RetroMarathon:AbstractMode() {
 	 * @param prop CustomProperties
 	 */
 	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("retromastery.gametype", gametype)
+		prop.setProperty("retromastery.gametype", gametype.ordinal)
 		prop.setProperty("retromastery.startlevel", startlevel)
 		prop.setProperty("retromastery.big", big)
 		prop.setProperty("retromastery.version", version)
@@ -498,21 +508,21 @@ class RetroMarathon:AbstractMode() {
 	 * @param lv Level
 	 * @param type Game type
 	 */
-	private fun updateRanking(sc:Int, li:Int, lv:Int, type:Int) {
+	private fun updateRanking(sc:Int, li:Int, lv:Int, type:GAMETYPE) {
 		rankingRank = checkRanking(sc, li, lv, type)
-
+		val t = type.ordinal
 		if(rankingRank!=-1) {
 			// Shift the ranking data
 			for(i in RANKING_MAX-1 downTo rankingRank+1) {
-				rankingScore[type][i] = rankingScore[type][i-1]
-				rankingLines[type][i] = rankingLines[type][i-1]
-				rankingLevel[type][i] = rankingLevel[type][i-1]
+				rankingScore[t][i] = rankingScore[t][i-1]
+				rankingLines[t][i] = rankingLines[t][i-1]
+				rankingLevel[t][i] = rankingLevel[t][i-1]
 			}
 
 			// Insert a new data
-			rankingScore[type][rankingRank] = sc
-			rankingLines[type][rankingRank] = li
-			rankingLevel[type][rankingRank] = lv
+			rankingScore[t][rankingRank] = sc
+			rankingLines[t][rankingRank] = li
+			rankingLevel[t][rankingRank] = lv
 		}
 	}
 
@@ -523,13 +533,14 @@ class RetroMarathon:AbstractMode() {
 	 * @param lv Level
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
-	private fun checkRanking(sc:Int, li:Int, lv:Int, type:Int):Int {
+	private fun checkRanking(sc:Int, li:Int, lv:Int, type:GAMETYPE):Int {
+		val t = type.ordinal
 		for(i in 0 until RANKING_MAX)
-			if(sc>rankingScore[type][i])
+			if(sc>rankingScore[t][i])
 				return i
-			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i])
+			else if(sc==rankingScore[t][i]&&li>rankingLines[t][i])
 				return i
-			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&lv<rankingLevel[type][i]) return i
+			else if(sc==rankingScore[t][i]&&li==rankingLines[t][i]&&lv<rankingLevel[t][i]) return i
 
 		return -1
 	}
@@ -562,19 +573,17 @@ class RetroMarathon:AbstractMode() {
 			9, 8, 8, 8, 8, 7, 7, 7, 7, 7, // 20
 			6)
 
-		/** Game types */
-		private const val GAMETYPE_200 = 0
-		private const val GAMETYPE_ENDLESS = 1
-		private const val GAMETYPE_PRESSURE = 2
-		private const val GAMETYPE_MAX = 3
-
 		/** Game type name */
-		private val GAMETYPE_NAME = arrayOf("200", "ENDLESS", "PRESSURE")
+		private enum class GAMETYPE {
+			RACE200, ENDLESS, PRESSURE
+		}
 
 		/** Number of ranking records */
 		private const val RANKING_MAX = 10
 
 		/** Number of ranking types */
-		private const val RANKING_TYPE = 3
+		private val RANKING_TYPE:Int
+			get() = GAMETYPE.values().size
+
 	}
 }

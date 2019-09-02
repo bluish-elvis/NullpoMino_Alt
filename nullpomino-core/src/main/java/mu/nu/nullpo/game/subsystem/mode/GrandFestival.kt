@@ -499,7 +499,7 @@ class GrandFestival:AbstractMode() {
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
 
 		comboValue = if(lines==0) 1
-		else maxOf(1,comboValue+2*lines-2)
+		else maxOf(1, comboValue+2*lines-2)
 
 		if(lines>=1) {
 			val levelb = engine.statistics.level
@@ -687,7 +687,7 @@ class GrandFestival:AbstractMode() {
 			if(sectionAnyNewRecord) updateBestSectionTime()
 
 			if(rankingRank!=-1||sectionAnyNewRecord) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 			owner.modeConfig.setProperty("decoration", decoration)
@@ -697,37 +697,36 @@ class GrandFestival:AbstractMode() {
 	/** Load the ranking */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			rankingScore[i] = prop.getProperty("scoreattack.ranking.$ruleName.score.$i", 0)
+			rankingScore[i] = prop.getProperty("scoreattack.ranking.$ruleName.$i.score", 0)
 			rankingHanabi[i] = prop.getProperty("scoreattack.ranking.$ruleName.hanabi.$i", 0)
-			rankingLevel[i] = prop.getProperty("scoreattack.ranking.$ruleName.level.$i", 0)
-			rankingTime[i] = prop.getProperty("scoreattack.ranking.$ruleName.time.$i", 0)
+			rankingLevel[i] = prop.getProperty("scoreattack.ranking.$ruleName.$i.level", 0)
+			rankingTime[i] = prop.getProperty("scoreattack.ranking.$ruleName.$i.time", 0)
 		}
 		for(i in 0 until SECTION_MAX) {
-			bestSectionHanabi[i] = prop.getProperty("scoreattack.bestSectionHanabi$ruleName.$i", 0)
-			bestSectionScore[i] = prop.getProperty("scoreattack.bestSectionScore.$ruleName.$i", 0)
-			bestSectionTime[i] = prop.getProperty("scoreattack.bestSectionTime.$ruleName.$i", if(i==SECTION_MAX-1)
-				ROLLTIMELIMIT
-			else
-				DEFAULT_SECTION_TIME)
+			bestSectionHanabi[i] = prop.getProperty("$ruleName.sectionhanabi.$i", 0)
+			bestSectionScore[i] = prop.getProperty("$ruleName.sectionscore.$i", 0)
+			bestSectionTime[i] = prop.getProperty("$ruleName.sectiontime.$i",
+				if(i==SECTION_MAX-1) ROLLTIMELIMIT else DEFAULT_SECTION_TIME)
 		}
-		decoration = prop.getProperty("decoration", 0)
+		decoration = owner.statsProp.getProperty("decoration", 0)
 	}
 
 	/** Save the ranking */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			prop.setProperty("scoreattack.ranking.$ruleName.score.$i", rankingScore[i])
-			prop.setProperty("scoreattack.ranking.$ruleName.hanabi.$i", rankingHanabi[i])
-			prop.setProperty("scoreattack.ranking.$ruleName.level.$i", rankingLevel[i])
-			prop.setProperty("scoreattack.ranking.$ruleName.time.$i", rankingTime[i])
-		}
-		for(i in 0 until SECTION_MAX) {
-			prop.setProperty("scoreattack.bestSectionHanabi.$ruleName.$i", bestSectionHanabi[i])
-			prop.setProperty("scoreattack.bestSectionScore.$ruleName.$i", bestSectionScore[i])
-			prop.setProperty("scoreattack.bestSectionTime.$ruleName.$i", bestSectionTime[i])
-		}
-		prop.setProperty("decoration", decoration)
+	fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
+			listOf("$ruleName.$i.score" to rankingScore[i],
+				"$ruleName.$i.hanabi" to rankingHanabi[i],
+				"$ruleName.$i.level" to rankingLevel[i],
+				"$ruleName.$i.time" to rankingTime[i])
+		}+(0 until SECTION_MAX).flatMap {i ->
+			listOf(
+				"$ruleName.sectionscore.$i" to bestSectionScore[i],
+				"$ruleName.sectionhanabi.$i" to bestSectionHanabi[i],
+			"$ruleName.sectiontime.$i" to bestSectionTime[i])
+		})
 
+		owner.statsProp.setProperty("decoration", decoration)
+		receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update the ranking */

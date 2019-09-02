@@ -649,7 +649,6 @@ open class EventReceiver {
 	fun saveProperties(filename:String, prop:CustomProperties):Boolean {
 		try {
 			val repfolder = File(filename).parentFile
-			log.info("Couldn't create folder at ${repfolder.name}")
 			if(!repfolder.exists())
 				if(repfolder.mkdirs())
 					log.info("Created folder: ${repfolder.name}")

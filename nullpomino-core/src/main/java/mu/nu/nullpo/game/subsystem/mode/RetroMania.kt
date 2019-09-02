@@ -102,6 +102,14 @@ class RetroMania:AbstractMode() {
 		engine.speed.lineDelay = 42
 		engine.speed.lockDelay = 30
 		engine.speed.das = 20
+		engine.ruleopt.lockresetMove = false
+		engine.ruleopt.lockresetRotate = false
+		engine.ruleopt.lockresetWallkick = false
+		engine.ruleopt.lockresetFall = true
+		engine.ruleopt.softdropLock = true
+		engine.ruleopt.softdropMultiplyNativeSpeed = false
+		engine.ruleopt.softdropGravitySpeedLimit = true
+		engine.ruleopt.softdropSpeed = 1f
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
@@ -112,7 +120,7 @@ class RetroMania:AbstractMode() {
 
 		engine.owner.backgroundStatus.bg = startlevel/2
 		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
-		engine.framecolor = GameEngine.FRAME_COLOR_GRAY
+		engine.framecolor = GameEngine.FRAME_SKIN_SG
 	}
 
 	/** Set the gravity speed
@@ -197,7 +205,7 @@ class RetroMania:AbstractMode() {
 
 		engine.big = big
 
-		owner.bgmStatus.bgm = BGM.SILENT
+		owner.bgmStatus.bgm = BGM.RETRO_S(0)
 		setSpeed(engine)
 	}
 
@@ -338,7 +346,7 @@ class RetroMania:AbstractMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, gametype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}

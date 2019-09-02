@@ -121,7 +121,7 @@ class RetroModern:AbstractMode() {
 			loadSetting(owner.replayProp)
 		if(startlevel>15) startlevel = 15
 		engine.owner.backgroundStatus.bg = levelBG[startlevel]
-		engine.framecolor = GameEngine.FRAME_COLOR_WHITE
+		engine.framecolor = GameEngine.FRAME_SKIN_HEBO
 	}
 
 	/** Set the gravity speed
@@ -130,41 +130,53 @@ class RetroModern:AbstractMode() {
 	private fun setSpeed(engine:GameEngine) {
 		var lv = engine.statistics.level
 
+		engine.ruleopt.lockresetMove = gametype==4
+		engine.ruleopt.lockresetRotate = gametype==4
+		engine.ruleopt.lockresetWallkick = gametype==4
+		engine.ruleopt.lockresetFall = true
+		engine.ruleopt.softdropLock = true
+		engine.ruleopt.softdropMultiplyNativeSpeed = false
+		engine.ruleopt.softdropGravitySpeedLimit = true
 		if(lv<0) lv = 0
-		if(lv<=MAX_LEVEL) {
-			val d = tableDenominator[gametype][lv]
-			if(d==0)
-				engine.speed.gravity = -1
-			else {
-				engine.speed.gravity = if(d<0) d*-1 else 1
-				engine.speed.denominator = if(d>0) d else 1
-			}
-			engine.speed.areLine = tableARE[gametype][lv]
-			engine.speed.are = engine.speed.areLine
-			engine.speed.lockDelay = tableLockDelay[gametype][lv]
+		when {
+			lv<=MAX_LEVEL -> {
+				val d = tableDenominator[gametype][lv]
+				if(d==0)
+					engine.speed.gravity = -1
+				else {
+					engine.speed.gravity = if(d<0) d*-1 else 1
+					engine.speed.denominator = if(d>0) d else 1
+				}
+				engine.speed.areLine = tableARE[gametype][lv]
+				engine.speed.are = engine.speed.areLine
+				engine.speed.lockDelay = tableLockDelay[gametype][lv]
 
-			engine.speed.lineDelay = if(gametype==4) 30 else if(gametype==0) 57 else 42
-		} else if(lv==MAX_LEVEL+1) {
-			engine.speed.gravity = 1
-			engine.speed.denominator = 24
-			engine.speed.areLine = 31
-			engine.speed.are = engine.speed.areLine
-			engine.speed.lockDelay = 44
-			engine.speed.lineDelay = 57
-		} else if(gametype==4) {
-			engine.speed.gravity = -1
-			engine.speed.denominator = 1
-			engine.speed.areLine = 15
-			engine.speed.are = engine.speed.areLine
-			engine.speed.lineDelay = 25
-			engine.speed.lockDelay = 22
-		} else {
-			engine.speed.denominator = 1
-			engine.speed.gravity = engine.speed.denominator
-			engine.speed.areLine = 17
-			engine.speed.are = engine.speed.areLine
-			engine.speed.lineDelay = 42
-			engine.speed.lockDelay = 18
+				engine.speed.lineDelay = if(gametype==4) 30 else if(gametype==0) 57 else 42
+			}
+			lv==MAX_LEVEL+1 -> {
+				engine.speed.gravity = 1
+				engine.speed.denominator = 24
+				engine.speed.areLine = 31
+				engine.speed.are = engine.speed.areLine
+				engine.speed.lockDelay = 44
+				engine.speed.lineDelay = 57
+			}
+			gametype==4 -> {
+				engine.speed.gravity = -1
+				engine.speed.denominator = 1
+				engine.speed.areLine = 15
+				engine.speed.are = engine.speed.areLine
+				engine.speed.lineDelay = 25
+				engine.speed.lockDelay = 22
+			}
+			else -> {
+				engine.speed.denominator = 1
+				engine.speed.gravity = engine.speed.denominator
+				engine.speed.areLine = 17
+				engine.speed.are = engine.speed.areLine
+				engine.speed.lineDelay = 42
+				engine.speed.lockDelay = 18
+			}
 		}
 	}
 
@@ -364,7 +376,7 @@ class RetroModern:AbstractMode() {
 		if(pts>0) {
 			lastscore = pts
 			engine.statistics.scoreLine += pts
-	}
+		}
 		if(engine.manualLock) {
 			scgettime++
 			if(engine.ruleopt.harddropLock) engine.statistics.scoreHD++
@@ -405,6 +417,25 @@ class RetroModern:AbstractMode() {
 
 	}
 
+	override fun renderLineClear(engine:GameEngine, playerID:Int) {
+		var num = 0
+
+		when {
+			engine.lineClearing==1 -> num = 1
+			engine.lineClearing==2 -> num = 10
+			engine.lineClearing==3 -> num = 100
+			engine.lineClearing>=4 -> num = 100000
+		}
+		if(linecount>=3) num *= 5
+		receiver.drawMenuBadges(engine, playerID, 2, engine.lastline-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
+		receiver.drawMenuNum(engine, playerID, 4, engine.lastline, "$lastscore", COLOR.CYAN)
+
+		if(engine.split) when {
+			engine.lineClearing==2 -> receiver.drawMenuFont(engine, playerID, 0, engine.lastlines[0], "SPLIT TWIN", COLOR.PURPLE)
+			engine.lineClearing==3 -> receiver.drawMenuFont(engine, playerID, 0, engine.lastlines[0], "1.2.TRIPLE", COLOR.PURPLE)
+		}
+	}
+
 	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
 		if(linecount>=3) {
 			var pts = 0
@@ -432,27 +463,6 @@ class RetroModern:AbstractMode() {
 			}
 		}
 		return super.lineClearEnd(engine, playerID)
-	}
-
-	override fun renderLineClear(engine:GameEngine, playerID:Int) {
-		var num = 0
-		if(engine.lineClearing==1)
-			num = 1
-		else if(engine.lineClearing==2)
-			num = 10
-		else if(engine.lineClearing==3)
-			num = 100
-		else if(engine.lineClearing>=4) num = 100000
-		if(linecount>=3) num *= 5
-		receiver.drawMenuBadges(engine, playerID, 2, engine.lastline-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
-		receiver.drawMenuNum(engine, playerID, 4, engine.lastline, "$lastscore", COLOR.CYAN)
-
-		if(engine.split) {
-			if(engine.lineClearing==2)
-				receiver.drawMenuFont(engine, playerID, 0, engine.lastlines[0], "SPLIT TWIN", COLOR.PURPLE)
-			if(engine.lineClearing==3)
-				receiver.drawMenuFont(engine, playerID, 0, engine.lastlines[0], "1.2.TRIPLE", COLOR.PURPLE)
-		}
 	}
 
 	/** This function will be called when soft-drop is used */
@@ -519,14 +529,15 @@ class RetroModern:AbstractMode() {
 
 		receiver.drawDirectFont(offsetX-4, offsetY+228, "YOU REACHED", col)
 		receiver.drawDirectFont(offsetX-4, offsetY+244, "THE EDGE OF", col)
-		receiver.drawDirectFont(offsetX+8, offsetY+260, "THIS MODE", col)
+		receiver.drawDirectFont(offsetX-4, offsetY+260, "THE JOURNEY", col)
 		if(special) {
 			receiver.drawDirectFont(offsetX+4, offsetY+292, "CLOCK WISE", col)
 			receiver.drawDirectFont(offsetX+40, offsetY+308, "BONUS", col)
-			col = if(engine.statc[0]%4==0)
-				COLOR.YELLOW
-			else if(engine.statc[0]%2==0) col else COLOR.ORANGE
-			receiver.drawDirectFont(offsetX-4, offsetY+266, "+ 10000000", col)
+			receiver.drawDirectFont(offsetX-4, offsetY+266, "+ 10000000", when {
+				engine.statc[0]%4==0 -> COLOR.YELLOW
+				engine.statc[0]%2==0 -> col
+				else -> COLOR.ORANGE
+			})
 		}
 	}
 
@@ -548,7 +559,7 @@ class RetroModern:AbstractMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.level, engine.statistics.time, gametype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
