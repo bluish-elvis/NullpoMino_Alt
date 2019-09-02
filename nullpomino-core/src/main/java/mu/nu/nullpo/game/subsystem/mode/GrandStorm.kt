@@ -886,7 +886,7 @@ class GrandStorm:AbstractMode() {
 			if(medalST==3) updateBestSectionTime()
 
 			if(rankingRank!=-1||medalST==3) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -898,14 +898,14 @@ class GrandStorm:AbstractMode() {
 	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			rankingGrade[i] = prop.getProperty("speedmania.ranking.$ruleName.grade.$i", 0)
-			rankingLevel[i] = prop.getProperty("speedmania.ranking.$ruleName.level.$i", 0)
-			rankingTime[i] = prop.getProperty("speedmania.ranking.$ruleName.time.$i", 0)
+			rankingGrade[i] = prop.getProperty("$ruleName.$i.grade", 0)
+			rankingLevel[i] = prop.getProperty("$ruleName.$i.level", 0)
+			rankingTime[i] = prop.getProperty("$ruleName.$i.time", 0)
 		}
 		for(i in 0 until SECTION_MAX)
-			bestSectionTime[i] = prop.getProperty("speedmania.bestSectionTime.$ruleName.$i", DEFAULT_SECTION_TIME)
+			bestSectionTime[i] = prop.getProperty("$ruleName.sectionTime.$i", DEFAULT_SECTION_TIME)
 
-		decoration = prop.getProperty("decoration", 0)
+		decoration = owner.statsProp.getProperty("decoration", 0)
 	}
 
 	/** Save rankings to property file
@@ -913,15 +913,16 @@ class GrandStorm:AbstractMode() {
 	 * @param ruleName Rule name
 	 */
 	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			prop.setProperty("speedmania.ranking.$ruleName.grade.$i", rankingGrade[i])
-			prop.setProperty("speedmania.ranking.$ruleName.level.$i", rankingLevel[i])
-			prop.setProperty("speedmania.ranking.$ruleName.time.$i", rankingTime[i])
-		}
-		for(i in 0 until SECTION_MAX)
-			prop.setProperty("speedmania.bestSectionTime.$ruleName.$i", bestSectionTime[i])
+		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
+			listOf("$ruleName.$i.grade" to rankingGrade[i],
+				"$ruleName.$i.level" to rankingLevel[i],
+				"$ruleName.$i.time" to rankingTime[i])
+		}+ (0 until SECTION_MAX).flatMap {i ->
+			listOf("$ruleName.sectiontime.$i" to bestSectionTime[i])
+		})
 
-		prop.setProperty("decoration", decoration)
+		owner.statsProp.setProperty("decoration", decoration)
+		receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update rankings

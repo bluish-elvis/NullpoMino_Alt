@@ -841,7 +841,7 @@ class GrandFinale:AbstractMode() {
 			if(medalST==3) updateBestSectionTime(gametype)
 
 			if(rankingRank!=-1||medalST==3) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -854,13 +854,13 @@ class GrandFinale:AbstractMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(j in 0 until RANKING_TYPE) {
 			for(i in 0 until RANKING_MAX) {
-				rankingGrade[j][i] = prop.getProperty("final.ranking.$ruleName.$j.grade.$i", 0)
-				rankingLevel[j][i] = prop.getProperty("final.ranking.$ruleName.$j.level.$i", 0)
-				rankingTime[j][i] = prop.getProperty("final.ranking.$ruleName.$j.time.$i", 0)
-				rankingRollclear[j][i] = prop.getProperty("final.ranking.$ruleName.$j.rollclear.$i", 0)
+				rankingGrade[j][i] = prop.getProperty("$j.$ruleName.$i.grade", 0)
+				rankingLevel[j][i] = prop.getProperty("$j.$ruleName.$i.level", 0)
+				rankingTime[j][i] = prop.getProperty("$j.$ruleName.$i.time", 0)
+				rankingRollclear[j][i] = prop.getProperty("$j.$ruleName.$i.clear", 0)
 			}
 			for(i in 0 until SECTION_MAX)
-				bestSectionTime[j][i] = prop.getProperty("final.bestSectionTime.$ruleName.$j.$i", DEFAULT_SECTION_TIME)
+				bestSectionTime[j][i] = prop.getProperty("$j.$ruleName.$i.sectiontime", DEFAULT_SECTION_TIME)
 		}
 	}
 
@@ -868,17 +868,21 @@ class GrandFinale:AbstractMode() {
 	 * @param prop CustomProperties
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(j in 0 until RANKING_TYPE) {
-			for(i in 0 until RANKING_MAX) {
-				prop.setProperty("final.ranking.$ruleName.$j.grade.$i", rankingGrade[j][i])
-				prop.setProperty("final.ranking.$ruleName.$j.level.$i", rankingLevel[j][i])
-				prop.setProperty("final.ranking.$ruleName.$j.time.$i", rankingTime[j][i])
-				prop.setProperty("final.ranking.$ruleName.$j.rollclear.$i", rankingRollclear[j][i])
+	fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf("$j.$ruleName.$i.grade" to rankingGrade[j][i],
+					"$j.$ruleName.$i.level" to rankingLevel[j][i],
+					"$j.$ruleName.$i.time" to rankingTime[j][i],
+					"$j.$ruleName.$i.clear" to rankingRollclear[j][i])
+			}+(0 until SECTION_MAX).flatMap {i ->
+				listOf("$j,$ruleName.sectiontime.$i" to bestSectionTime[j][i])
 			}
-			for(i in 0 until SECTION_MAX)
-				prop.setProperty("final.bestSectionTime.$ruleName.$j.$i", bestSectionTime[j][i])
-		}
+		})
+
+
+		//owner.statsProp.setProperty("decoration", decoration)
+		//receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update the ranking

@@ -831,7 +831,7 @@ class MarathonShuttle:NetDummyMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goaltype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}

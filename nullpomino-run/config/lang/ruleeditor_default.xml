@@ -75,9 +75,9 @@
 <entry key="Drop_SoftDropLock">Instant lock by soft drop</entry>
 <entry key="Drop_SoftDropLimit">Can't use soft drop again until release the button</entry>
 <entry key="Drop_SoftDropSurfaceLock">Instant lock by soft drop on surface</entry>
-<entry key="Drop_SoftDropSpeed">Soft drop speed (1.0=1G)</entry>
+<entry key="Drop_SoftDropSpeed">Soft drop speed (1.0=1G or x1)</entry>
 <entry key="Drop_SoftDropMultiplyNativeSpeed">Multiply soft drop speed by native speed</entry>
-<entry key="Drop_SoftDropGravitySpeedLimit">Non-Additive soft drop</entry>
+<entry key="Drop_SoftDropGravitySpeedLimit">Soft drop speed doesn't effect by native speed</entry>
 
 <!--Rotate-->
 <entry key="Rotate_RotateInitial">Initial Rotate</entry>

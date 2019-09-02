@@ -540,7 +540,7 @@ class SprintUltra:NetDummyMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines)
 
 			if(rankingRank[0]!=-1||rankingRank[1]!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}

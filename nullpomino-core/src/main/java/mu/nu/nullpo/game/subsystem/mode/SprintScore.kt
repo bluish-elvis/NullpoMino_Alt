@@ -544,7 +544,7 @@ class SprintScore:NetDummyMode() {
 			updateRanking(engine.statistics.time, engine.statistics.lines, engine.statistics.spl)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}

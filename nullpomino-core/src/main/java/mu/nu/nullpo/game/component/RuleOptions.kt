@@ -130,10 +130,10 @@ class RuleOptions:Serializable {
 	/** Soft drop速度 (1f=1G, .5f=0.5G) */
 	var softdropSpeed:Float = 0f
 
-	/** Soft drop速度をCurrent 通常速度×n倍にする */
+	/** Soft drop速度を通常速度×n倍にする */
 	var softdropMultiplyNativeSpeed:Boolean = false
 
-	/** Use new soft drop codes */
+	/** Soft drop速度を通常速度に影響させない */
 	var softdropGravitySpeedLimit:Boolean = false
 
 	/** 先行rotation */

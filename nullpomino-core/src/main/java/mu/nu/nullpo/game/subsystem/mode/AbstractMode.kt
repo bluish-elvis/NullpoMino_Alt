@@ -106,11 +106,12 @@ abstract class AbstractMode:GameMode {
 
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {}
 
+	protected fun saveRanking(ruleName:String, map:List<Pair<String, Int>>) = saveRanking(ruleName, map.toMap())
 	protected fun saveRanking(ruleName:String, map:Map<String, Int>) {
 		map.forEach {key, it ->
 			owner.recordProp.setProperty(key, it)
 		}
-		receiver.saveProperties(owner.recorder(ruleName), owner.recordProp)
+		receiver.saveProperties(owner.recorder(), owner.recordProp)
 	}
 
 	override fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {}
@@ -272,18 +273,18 @@ abstract class AbstractMode:GameMode {
 				GameEngine.EVENT_DOUBLE -> receiver.drawMenuFont(engine, playerID, 2, 21, "DOUBLE", color = COLOR.BLUE)
 				GameEngine.EVENT_TSPIN_DOUBLE_MINI -> {
 					receiver.drawMenuFont(engine, playerID, -2, 21, "MINI", color = if(lastb2b) COLOR.GREEN else COLOR.CYAN)
-					receiver.drawMenuFont(engine, playerID, 2, 20, "$strPieceName-SPIN", color = if(lastb2b) COLOR.PINK else COLOR.PURPLE)
+					receiver.drawMenuFont(engine, playerID, 2, 21, "$strPieceName-SPIN", color = if(lastb2b) COLOR.PINK else COLOR.PURPLE)
 					receiver.drawMenuFont(engine, playerID, 2, 22, "DOUBLE", color = COLOR.CYAN)
 				}
 				GameEngine.EVENT_TSPIN_DOUBLE -> {
-					receiver.drawMenuFont(engine, playerID, 2, 20, "$strPieceName-SPIN", color = if(lastb2b) COLOR.PINK else COLOR.PURPLE)
+					receiver.drawMenuFont(engine, playerID, 2, 21, "$strPieceName-SPIN", color = if(lastb2b) COLOR.PINK else COLOR.PURPLE)
 					receiver.drawMenuFont(engine, playerID, 2, 22, "DOUBLE", color = COLOR.CYAN)
 				}
 				GameEngine.EVENT_SPLIT_DOUBLE -> receiver.drawMenuFont(engine, playerID, 0, 21, "SPLIT TWIN", color = COLOR.PURPLE)
 				GameEngine.EVENT_TRIPLE -> receiver.drawMenuFont(engine, playerID, 2, 21, "TRIPLE", color = COLOR.GREEN)
 				GameEngine.EVENT_SPLIT_TRIPLE -> receiver.drawMenuFont(engine, playerID, 0, 21, "1.2.TRIPLE", color = COLOR.CYAN)
 				GameEngine.EVENT_TSPIN_TRIPLE -> {
-					receiver.drawMenuFont(engine, playerID, 2, 20, "$strPieceName-SPIN", color = if(lastb2b) COLOR.YELLOW else COLOR.ORANGE)
+					receiver.drawMenuFont(engine, playerID, 2, 21, "$strPieceName-SPIN", color = if(lastb2b) COLOR.YELLOW else COLOR.ORANGE)
 					receiver.drawMenuFont(engine, playerID, 2, 22, "TRIPLE", color = COLOR.GREEN)
 				}
 				GameEngine.EVENT_QUADRUPLE -> receiver.drawMenuFont(engine, playerID, 1, 21, "QUADRUPLE", color = COLOR.ORANGE)

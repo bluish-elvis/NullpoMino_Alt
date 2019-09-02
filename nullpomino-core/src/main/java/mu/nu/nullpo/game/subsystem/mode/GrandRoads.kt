@@ -696,7 +696,7 @@ class GrandRoads:NetDummyMode() {
 			updateRanking(engine.lives, norm, engine.statistics.time, goaltype, engine.statistics.rollclear)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}

@@ -591,7 +591,7 @@ class SprintCombo:NetDummyMode() {
 			updateRanking(engine.statistics.maxCombo-1, if(engine.ending==0) -1 else engine.statistics.time)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}

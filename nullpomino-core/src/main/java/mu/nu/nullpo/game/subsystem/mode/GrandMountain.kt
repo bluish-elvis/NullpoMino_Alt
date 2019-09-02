@@ -528,7 +528,7 @@ class GrandMountain:AbstractMode() {
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
 		// Combo
 		comboValue = if(lines==0) 1
-		else maxOf(1,comboValue+2*lines-2)
+		else maxOf(1, comboValue+2*lines-2)
 
 		if(lines==0) {
 			// せり上がり
@@ -665,7 +665,7 @@ class GrandMountain:AbstractMode() {
 					owner.bgmStatus.fadesw = false
 					owner.bgmStatus.bgm = BGM.values[bgmlv]
 					engine.playSE("levelup_section")
-				}else engine.playSE("levelup")
+				} else engine.playSE("levelup")
 
 				// Update level for next section
 				nextseclv += 100
@@ -794,7 +794,7 @@ class GrandMountain:AbstractMode() {
 			if(sectionAnyNewRecord) updateBestSectionTime(goaltype)
 
 			if(rankingRank!=-1||sectionAnyNewRecord) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -807,12 +807,12 @@ class GrandMountain:AbstractMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(j in 0 until GOALTYPE_MAX) {
 			for(i in 0 until RANKING_MAX) {
-				rankingLevel[i][j] = prop.getProperty("garbagemania.ranking.$ruleName.$j.level.$i", 0)
-				rankingTime[i][j] = prop.getProperty("garbagemania.ranking.$ruleName.$j.time.$i", 0)
+				rankingLevel[i][j] = prop.getProperty("$ruleName.$i.level", 0)
+				rankingTime[i][j] = prop.getProperty("$ruleName.$i.time", 0)
 			}
-			for(i in 0 until SECTION_MAX)
-				bestSectionTime[i][j] = prop.getProperty("garbagemania.bestSectionTime.$ruleName.$j."
-					+i, DEFAULT_SECTION_TIME)
+			for(i in 0 until SECTION_MAX) {
+				bestSectionTime[i][j] = prop.getProperty("$ruleName.sectiontime.$i", DEFAULT_SECTION_TIME)
+			}
 		}
 	}
 
@@ -820,15 +820,19 @@ class GrandMountain:AbstractMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(j in 0 until GOALTYPE_MAX) {
-			for(i in 0 until RANKING_MAX) {
-				prop.setProperty("garbagemania.ranking.$ruleName.$j.level.$i", rankingLevel[i][j])
-				prop.setProperty("garbagemania.ranking.$ruleName.$j.time.$i", rankingTime[i][j])
+	fun saveRanking(ruleName:String) {
+
+		super.saveRanking(ruleName, (0 until GOALTYPE_MAX).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf("$ruleName.$i.level" to rankingLevel[j][j],
+					"$ruleName.$i.time" to rankingTime[j][j])
+			}+(0 until SECTION_MAX).flatMap {i ->
+				listOf("$ruleName.sectiontime.$i" to bestSectionTime[i][j])
 			}
-			for(i in 0 until SECTION_MAX)
-				prop.setProperty("garbagemania.bestSectionTime.$ruleName.$j.$i", bestSectionTime[i][j])
-		}
+		})
+
+//		owner.statsProp.setProperty("decoration", decoration)
+//		receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update rankings

@@ -133,6 +133,25 @@ class Statistics:Serializable {
 
 	/** Roll cleared flag (0=Not Reached 1=Reached 2=Fully Survived) */
 	var rollclear:Int = 0
+		set(it) {
+			if(field==it || !(0..2).contains(it)) return
+			when(it) {
+				1 -> rollReached++
+				2 -> {
+					if(field<1) rollReached++
+					rollSurvived++
+				}
+			}
+			field = it
+			rollclearHistory = rollclearHistory.plus(it).takeLast(historyMax).toIntArray()
+		}
+	/** Roll cleared history */
+	var rollclearHistory:IntArray = IntArray(historyMax)
+
+	/** Roll Reached Count */
+	var rollReached:Int = 0
+	/** Roll Survived Count */
+	var rollSurvived:Int = 0
 
 	var pieces:IntArray = IntArray(Piece.PIECE_COUNT)
 
@@ -245,10 +264,57 @@ class Statistics:Serializable {
 			gamerate = b.gamerate
 			maxChain = b.maxChain
 			rollclear = b.rollclear
+			rollclearHistory=
+				b.rollclearHistory
 			garbageLines = b.garbageLines
 
 			pieces = b.pieces
 		} ?: reset()
+	}
+
+	/** 他のStatisticsの値を合成
+	 * @param s Copy source
+	 */
+	fun combine(s:Statistics?) {
+		s?.let {b ->
+			scoreLine += b.scoreLine
+			scoreSD += b.scoreSD
+			scoreHD += b.scoreHD
+			scoreBonus += b.scoreBonus
+			lines += b.lines
+			blocks += b.blocks
+			time += b.time
+			level += b.level
+			levelDispAdd += b.levelDispAdd
+			totalPieceLocked += b.totalPieceLocked
+			totalPieceActiveTime += b.totalPieceActiveTime
+			totalPieceMove += b.totalPieceMove
+			totalPieceRotate += b.totalPieceRotate
+			totalHoldUsed += b.totalHoldUsed
+			totalSingle += b.totalSingle
+			totalDouble += b.totalDouble
+			totalSplitDouble += b.totalSplitDouble
+			totalTriple += b.totalTriple
+			totalSplitTriple += b.totalSplitTriple
+			totalQuadruple += b.totalQuadruple
+			totalTSpinZeroMini += b.totalTSpinZeroMini
+			totalTSpinZero += b.totalTSpinZero
+			totalTSpinSingleMini += b.totalTSpinSingleMini
+			totalTSpinSingle += b.totalTSpinSingle
+			totalTSpinDoubleMini += b.totalTSpinDoubleMini
+			totalTSpinDouble += b.totalTSpinDouble
+			totalTSpinTriple += b.totalTSpinTriple
+			totalB2BQuad += b.totalB2BQuad
+			totalB2BSplit += b.totalB2BSplit
+			totalB2BTSpin += b.totalB2BTSpin
+			maxCombo = maxOf(maxCombo, b.maxCombo)
+			gamerate = (gamerate+b.gamerate)/2f
+			maxChain = maxOf(maxCombo, b.maxChain)
+			rollclear = b.rollclear
+			garbageLines += b.garbageLines
+
+			pieces = pieces.mapIndexed {it, i -> it+b.pieces[i]}.toIntArray()
+		}
 	}
 
 	/** プロパティセットに保存
@@ -442,6 +508,7 @@ class Statistics:Serializable {
 	companion object {
 		/** Serial version ID */
 		private const val serialVersionUID = -499640168205398295L
+		const val historyMax = 100
 	}
 }
 
