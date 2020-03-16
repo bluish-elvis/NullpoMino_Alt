@@ -67,7 +67,7 @@ class StateSelectModeFolder:DummyMenuScrollState() {
 	override fun onCancel(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		StateSelectMode.isTopLevel = true
 		game.enterState(StateSelectMode.ID)
-		return false
+		return true
 	}
 
 	companion object {

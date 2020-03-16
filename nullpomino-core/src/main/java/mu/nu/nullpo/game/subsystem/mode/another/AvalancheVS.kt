@@ -26,6 +26,7 @@ package mu.nu.nullpo.game.subsystem.mode.another
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -216,8 +217,8 @@ class AvalancheVS:AvalancheVSDummyMode() {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -462,21 +463,21 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			}
 
 			if(xyzzy!=573&&playerID==0) {
-				if(engine.ctrl!!.isPush(Controller.BUTTON_UP))
+				if(engine.ctrl.isPush(Controller.BUTTON_UP))
 					if(xyzzy==1)
 						xyzzy++
 					else if(xyzzy!=2) xyzzy = 1
-				if(engine.ctrl!!.isPush(Controller.BUTTON_DOWN))
+				if(engine.ctrl.isPush(Controller.BUTTON_DOWN))
 					if(xyzzy==2||xyzzy==3)
 						xyzzy++
 					else
 						xyzzy = 0
-				if(engine.ctrl!!.isPush(Controller.BUTTON_LEFT))
+				if(engine.ctrl.isPush(Controller.BUTTON_LEFT))
 					if(xyzzy==4||xyzzy==6)
 						xyzzy++
 					else
 						xyzzy = 0
-				if(engine.ctrl!!.isPush(Controller.BUTTON_RIGHT))
+				if(engine.ctrl.isPush(Controller.BUTTON_RIGHT))
 					if(xyzzy==5||xyzzy==7)
 						xyzzy++
 					else
@@ -484,7 +485,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				if(xyzzy==573&&menuCursor>43)
@@ -505,7 +506,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 				}
 			}
 
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B))
+			if(engine.ctrl.isPush(Controller.BUTTON_B))
 				if(xyzzy==8&&playerID==0)
 					xyzzy++
 				else
@@ -545,7 +546,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
 				owner.engine[1].resetStatc()
-			} else if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
+			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
 
 		return true
 	}
@@ -650,7 +651,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		val fldPosX = receiver.fieldX(engine, playerID)
 		val fldPosY = receiver.fieldY(engine, playerID)
-		val playerColor = if(playerID==0) COLOR.RED else COLOR.BLUE
+		val playerColor = EventReceiver.getPlayerColor(playerID)
 
 		// Timer
 		if(playerID==0) receiver.drawDirectFont(224, 8, GeneralUtil.getTime(engine.statistics.time))
@@ -752,7 +753,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	protected fun drawXorTimer(engine:GameEngine, playerID:Int) {
+	private fun drawXorTimer(engine:GameEngine, playerID:Int) {
 		if(inFever[playerID]) {
 			val strFeverTimer = String.format("%02d", (feverTime[playerID]+59)/60)
 
@@ -782,60 +783,60 @@ class AvalancheVS:AvalancheVSDummyMode() {
 		if(engine.chain==1) ojamaAddToFever[enemyID] = inFever[enemyID]
 	}
 
-	override fun addOjama(engine:GameEngine, playerID:Int, pts:Int) {
+	override fun addOjama(engine:GameEngine, playerID:Int, pts:Int):Int {
 		var enemyID = 0
 		if(playerID==0) enemyID = 1
 
-		var ojamaNew = 0
-		if(zenKeshi[playerID]&&zenKeshiType[playerID]==ZENKESHI_MODE_ON) ojamaNew += zenKeshiOjama[playerID]
+		var pow = 0
+		if(zenKeshi[playerID]&&zenKeshiType[playerID]==ZENKESHI_MODE_ON) pow += zenKeshiOjama[playerID]
 		//Add ojama
 		var rate = ojamaRate[playerID]
 		if(hurryupSeconds[playerID]>0&&engine.statistics.time>hurryupSeconds[playerID])
 			rate = rate shr engine.statistics.time/(hurryupSeconds[playerID]*60)
 		if(rate<=0) rate = 1
-		ojamaNew += if(inFever[playerID])
+		pow += if(inFever[playerID])
 			(pts*feverPower[playerID]+10*rate-1)/(10*rate)
 		else
 			(pts+rate-1)/rate
-		ojamaSent[playerID] += ojamaNew
+		ojamaSent[playerID] += pow
 
 		if(feverThreshold[playerID]>0&&feverTimeCriteria[playerID]==FEVER_TIME_CRITERIA_ATTACK&&!inFever[playerID]) {
 			feverTime[playerID] = minOf(feverTime[playerID]+60, feverTimeMax[playerID]*60)
 			feverTimeLimitAdd[playerID] = 60
 			feverTimeLimitAddDisplay[playerID] = 60
 		}
-
+		var ojamaSend = pow
 		var countered = false
 		if(ojamaCounterMode[playerID]!=OJAMA_COUNTER_OFF) {
 			//Counter ojama
 			if(inFever[playerID]) {
-				if(ojamaFever[playerID]>0&&ojamaNew>0) {
-					val delta = minOf(ojamaFever[playerID], ojamaNew)
+				if(ojamaFever[playerID]>0&&ojamaSend>0) {
+					val delta = minOf(ojamaFever[playerID], ojamaSend)
 					ojamaFever[playerID] -= delta
-					ojamaNew -= delta
+					ojamaSend -= delta
 					countered = true
 				}
-				if(ojamaAdd[playerID]>0&&ojamaNew>0) {
-					val delta = minOf(ojamaAdd[playerID], ojamaNew)
+				if(ojamaAdd[playerID]>0&&ojamaSend>0) {
+					val delta = minOf(ojamaAdd[playerID], ojamaSend)
 					ojamaAdd[playerID] -= delta
-					ojamaNew -= delta
+					ojamaSend -= delta
 					countered = true
 				}
 			}
-			if(ojama[playerID]>0&&ojamaNew>0) {
-				val delta = minOf(ojama[playerID], ojamaNew)
+			if(ojama[playerID]>0&&ojamaSend>0) {
+				val delta = minOf(ojama[playerID], ojamaSend)
 				ojama[playerID] -= delta
-				ojamaNew -= delta
+				ojamaSend -= delta
 				countered = true
 			}
-			if(ojamaAdd[playerID]>0&&ojamaNew>0) {
-				val delta = minOf(ojamaAdd[playerID], ojamaNew)
+			if(ojamaAdd[playerID]>0&&ojamaSend>0) {
+				val delta = minOf(ojamaAdd[playerID], ojamaSend)
 				ojamaAdd[playerID] -= delta
-				ojamaNew -= delta
+				ojamaSend -= delta
 				countered = true
 			}
 		}
-		if(ojamaNew>0) ojamaAdd[enemyID] += ojamaNew
+		ojamaAdd[enemyID] += maxOf(0,ojamaSend)
 		if(countered&&feverPointCriteria[playerID]!=FEVER_POINT_CRITERIA_CLEAR||engine.field!!.garbageCleared>0&&feverPointCriteria[playerID]!=FEVER_POINT_CRITERIA_COUNTER) {
 			if(feverThreshold[playerID]>0&&feverThreshold[playerID]>feverPoints[playerID]) feverPoints[playerID]++
 			if(feverThreshold[enemyID]>0&&feverTimeCriteria[enemyID]==FEVER_TIME_CRITERIA_COUNTER&&!inFever[enemyID]) {
@@ -844,6 +845,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 				feverTimeLimitAddDisplay[enemyID] = 60
 			}
 		}
+		return pow
 	}
 
 	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
@@ -899,7 +901,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			feverPoints[playerID] = 0
 			engine.field = feverBackupField[playerID]
 			if(engine.field!=null&&ojamaMeter[playerID])
-				engine.meterValue = ojama[playerID]*receiver.getBlockGraphicsHeight(engine)/engine.field!!.width
+				engine.meterValue = ojama[playerID]*receiver.getBlockHeight(engine)/engine.field!!.width
 			ojama[playerID] += ojamaFever[playerID]
 			ojamaFever[playerID] = 0
 			ojamaAddToFever[playerID] = false
@@ -934,7 +936,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 		super.onLast(engine, playerID)
 
 		// Debug cheat :p
-		if(engine.ctrl!!.isPush(Controller.BUTTON_F)&&xyzzy==573)
+		if(engine.ctrl.isPush(Controller.BUTTON_F)&&xyzzy==573)
 			if(feverPoints[playerID]<feverThreshold[playerID]) feverPoints[playerID]++
 
 		if(feverTimeLimitAddDisplay[playerID]>0) feverTimeLimitAddDisplay[playerID]--

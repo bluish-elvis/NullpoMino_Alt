@@ -1,7 +1,9 @@
 package mu.nu.nullpo.gui.slick
 
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.gui.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNano
+import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.newdawn.slick.*
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
@@ -15,7 +17,9 @@ abstract class BaseGameState:BasicGameState() {
 	override fun getID():Int = 0
 
 	/* State initialization */
-	override fun init(container:GameContainer, game:StateBasedGame) {}
+	override fun init(container:GameContainer, game:StateBasedGame) {
+
+	}
 
 	/** Draw the screen. BaseGameState will do the common things (such as
 	 * Framerate Cap or Screen Shot) here.
@@ -84,7 +88,7 @@ abstract class BaseGameState:BasicGameState() {
 			val z = minOf(MouseInput.mouseHold+1,MouseInput.das)*8/(MouseInput.das+1)
 			ResourceHolder.imgCursor.draw(
 				x*16f-8, y*16f-8, x*16f+24, y*16f+24, 32f*(z%4), 32f*(z/4), 32f*(1+(z%4)), 32f*(1+z/4))
-			FontNano.printFont(x*16-8, y*16-8,"$x\n$y\n${MouseInput.mouseHold}",scale=.5f)
+			FontNano.printFont(/*x*16-8, y*16-8*/0,0,"$x\n$y\n${MouseInput.mouseHold}",scale=.5f)
 		}
 	}
 

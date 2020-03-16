@@ -23,12 +23,13 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.RuleOptions
+import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.PreviewMode
 import mu.nu.nullpo.gui.GameKeyDummy
+import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
@@ -65,8 +66,11 @@ class StateConfigGameTuning:BaseGameState() {
 	private var owMinDAS:Int = 0
 	private var owMaxDAS:Int = 0
 
-	/** DAS Delay -1=Auto 0 or above=Fixed */
-	private var owDasDelay:Int = 0
+	/** DAS Repeat Rate -1=Auto 0 or above=Fixed */
+	private var owDASRate:Int = 0
+
+	/** SoftDrop Speed -1=Auto =Fixed Factor above 6=Always x5-20 Speed */
+	private var owSDSpd:Int = 0
 
 	/** Reverse the roles of up/down keys in-game */
 	private var owReverseUpDown:Boolean = false
@@ -81,6 +85,9 @@ class StateConfigGameTuning:BaseGameState() {
 	private var owBlockShowOutlineOnly:Int = 0
 
 	private var sk:Int = 0
+
+	private var spdpv:Float = 0f
+
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
 
@@ -101,7 +108,8 @@ class StateConfigGameTuning:BaseGameState() {
 		owSkin = prop.getProperty("$player.tuning.owSkin", -1)
 		owMinDAS = prop.getProperty("$player.tuning.owMinDAS", -1)
 		owMaxDAS = prop.getProperty("$player.tuning.owMaxDAS", -1)
-		owDasDelay = prop.getProperty("$player.tuning.owDasDelay", -1)
+		owDASRate = prop.getProperty("$player.tuning.owDasDelay", -1)
+		owSDSpd = prop.getProperty("$player.tuning.owSDSpd", -1)
 		owReverseUpDown = prop.getProperty("$player.tuning.owReverseUpDown", false)
 		owMoveDiagonal = prop.getProperty("$player.tuning.owMoveDiagonal", -1)
 		owBlockOutlineType = prop.getProperty("$player.tuning.owBlockOutlineType", -1)
@@ -116,7 +124,8 @@ class StateConfigGameTuning:BaseGameState() {
 		prop.setProperty("$player.tuning.owSkin", owSkin)
 		prop.setProperty("$player.tuning.owMinDAS", owMinDAS)
 		prop.setProperty("$player.tuning.owMaxDAS", owMaxDAS)
-		prop.setProperty("$player.tuning.owDasDelay", owDasDelay)
+		prop.setProperty("$player.tuning.owDasDelay", owDASRate)
+		prop.setProperty("$player.tuning.owSDSpd", owSDSpd)
 		prop.setProperty("$player.tuning.owReverseUpDown", owReverseUpDown)
 		prop.setProperty("$player.tuning.owMoveDiagonal", owMoveDiagonal)
 		prop.setProperty("$player.tuning.owBlockOutlineType", owBlockOutlineType)
@@ -125,81 +134,82 @@ class StateConfigGameTuning:BaseGameState() {
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
+		super.enter(container, game)
 		isPreview = false
 		loadConfig(NullpoMinoSlick.propGlobal)
 	}
 
 	/* Called when leaving the state */
 	override fun leave(container:GameContainer?, game:StateBasedGame?) {
+		super.leave(container, game)
 		stopPreviewGame()
 	}
 
 	/** Start the preview game */
 	private fun startPreviewGame() {
-		gameManager = GameManager(RendererSlick())
-		gameManager!!.receiver.setGraphics(appContainer.graphics)
+		gameManager = GameManager(RendererSlick()).also {
+			it.receiver.setGraphics(appContainer.graphics)
 
-		gameManager!!.mode = PreviewMode()
-		gameManager!!.init()
+			it.mode = PreviewMode()
+			it.init()
 
-		gameManager!!.backgroundStatus.bg = -1 // Force no BG
+			it.backgroundStatus.bg = -1 // Force no BG
 
-		// Initialization for each player
-		for(i in 0 until gameManager!!.players) {
-			// Tuning
-			gameManager!!.engine[i].owRotateButtonDefaultRight = owRotateButtonDefaultRight
-			gameManager!!.engine[i].owSkin = owSkin
-			gameManager!!.engine[i].owMinDAS = owMinDAS
-			gameManager!!.engine[i].owMaxDAS = owMaxDAS
-			gameManager!!.engine[i].owDasDelay = owDasDelay
-			gameManager!!.engine[i].owReverseUpDown = owReverseUpDown
-			gameManager!!.engine[i].owMoveDiagonal = owMoveDiagonal
-			gameManager!!.engine[i].owBlockOutlineType = owBlockOutlineType
-			gameManager!!.engine[i].owBlockShowOutlineOnly = owBlockShowOutlineOnly
+			// Initialization for each player
+			for(i in 0 until it.players) {
+				// Tuning
+				it.engine[i].owRotateButtonDefaultRight = owRotateButtonDefaultRight
+				it.engine[i].owSkin = owSkin
+				it.engine[i].owMinDAS = owMinDAS
+				it.engine[i].owMaxDAS = owMaxDAS
+				it.engine[i].owDASDelay = owDASRate
+				it.engine[i].owSDSpd = owSDSpd
+				it.engine[i].owReverseUpDown = owReverseUpDown
+				it.engine[i].owMoveDiagonal = owMoveDiagonal
+				it.engine[i].owBlockOutlineType = owBlockOutlineType
+				it.engine[i].owBlockShowOutlineOnly = owBlockShowOutlineOnly
+				it.engine[i].lives = 99
+				// Rule
+				val ruleopt:RuleOptions
+				var rulename:String? = NullpoMinoSlick.propGlobal.getProperty("$i.rule", "")
+				if(it.mode!!.gameStyle>0)
+					rulename = NullpoMinoSlick.propGlobal.getProperty("$i"+".rule."
+						+it.mode!!.gameStyle, "")
+				if(rulename!=null&&rulename.isNotEmpty()) {
+					log.info("Load rule options from $rulename")
+					ruleopt = GeneralUtil.loadRule(rulename)
+				} else {
+					log.info("Load rule options from setting file")
+					ruleopt = RuleOptions()
+					ruleopt.readProperty(NullpoMinoSlick.propGlobal, i)
+				}
+				it.engine[i].ruleopt = ruleopt
 
-			// Rule
-			val ruleopt:RuleOptions
-			var rulename:String? = NullpoMinoSlick.propGlobal.getProperty("$i.rule", "")
-			if(gameManager!!.mode!!.gameStyle>0)
-				rulename = NullpoMinoSlick.propGlobal.getProperty("$i"+".rule."
-					+gameManager!!.mode!!.gameStyle, "")
-			if(rulename!=null&&rulename.isNotEmpty()) {
-				log.info("Load rule options from $rulename")
-				ruleopt = GeneralUtil.loadRule(rulename)
-			} else {
-				log.info("Load rule options from setting file")
-				ruleopt = RuleOptions()
-				ruleopt.readProperty(NullpoMinoSlick.propGlobal, i)
+				// Randomizer
+				if(ruleopt.strRandomizer.isNotEmpty())
+					it.engine[i].randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
+
+				// Wallkick
+				if(ruleopt.strWallkick.isNotEmpty())
+					it.engine[i].wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
+
+				// AI
+				val aiName = NullpoMinoSlick.propGlobal.getProperty("$i.ai", "")
+				if(aiName.isNotEmpty()) {
+					it.engine[i].ai = GeneralUtil.loadAIPlayer(aiName)
+					it.engine[i].aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiMoveDelay", 0)
+					it.engine[i].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
+					it.engine[i].aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
+					it.engine[i].aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
+					it.engine[i].aiPrethink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPrethink", false)
+					it.engine[i].aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
+				}
+				it.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
+
+				// Init
+				it.engine[i].init()
 			}
-			gameManager!!.engine[i].ruleopt = ruleopt
-
-			// Randomizer
-			if(ruleopt.strRandomizer!=null&&ruleopt.strRandomizer.isNotEmpty()) {
-				gameManager!!.engine[i].randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
-			}
-
-			// Wallkick
-			if(ruleopt.strWallkick!=null&&ruleopt.strWallkick.isNotEmpty()) {
-				gameManager!!.engine[i].wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
-			}
-
-			// AI
-			val aiName = NullpoMinoSlick.propGlobal.getProperty("$i.ai", "")
-			if(aiName.isNotEmpty()) {
-				gameManager!!.engine[i].ai = GeneralUtil.loadAIPlayer(aiName)
-				gameManager!!.engine[i].aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiMoveDelay", 0)
-				gameManager!!.engine[i].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
-				gameManager!!.engine[i].aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
-				gameManager!!.engine[i].aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
-				gameManager!!.engine[i].aiPrethink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPrethink", false)
-				gameManager!!.engine[i].aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
-			}
-			gameManager!!.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
-
-			// Init
-			gameManager!!.engine[i].init()
 		}
-
 		isPreview = true
 	}
 
@@ -207,10 +217,9 @@ class StateConfigGameTuning:BaseGameState() {
 	private fun stopPreviewGame() {
 		if(isPreview) {
 			isPreview = false
-			if(gameManager!=null) {
-				gameManager!!.shutdown()
-				gameManager = null
-			}
+			gameManager?.shutdown()
+			gameManager = null
+
 		}
 	}
 
@@ -221,12 +230,17 @@ class StateConfigGameTuning:BaseGameState() {
 		if(isPreview)
 		// Preview
 			try {
-				val strButtonF = gameManager!!.receiver.getKeyNameByButtonID(gameManager!!.engine[0], Controller.BUTTON_F)
-				val fontY = if(gameManager!!.receiver.nextDisplayType==2) 1 else 27
-				FontNormal.printFontGrid(1, fontY,
-					"PUSH F BUTTON (${strButtonF.toUpperCase()} KEY) TO EXIT", COLOR.YELLOW)
-
-				gameManager!!.renderAll()
+				gameManager?.let {
+					val engine = it.engine.first()
+					val strButtonF = it.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)
+					val fontY = if(it.receiver.nextDisplayType==2) 1 else 27
+					FontNormal.printFontGrid(1, fontY,
+						"PUSH F BUTTON (ASSIGNED: ${strButtonF.toUpperCase()}) TO EXIT", COLOR.YELLOW)
+					val spd = engine.speed
+					val ow = engine.softDropSpd
+					FontNano.printFontGrid(16,13,"${spd.gravity}>$ow/${spd.denominator} ${engine.gcount}")
+					it.renderAll()
+				}
 			} catch(e:Exception) {
 				log.error("Render fail", e)
 			}
@@ -235,7 +249,7 @@ class StateConfigGameTuning:BaseGameState() {
 			var strTemp = ""
 
 			FontNormal.printFontGrid(1, 1, "GAME TUNING (${player+1}P)", COLOR.ORANGE)
-			FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RED)
+			FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RAINBOW)
 
 			if(owRotateButtonDefaultRight==-1) strTemp = "AUTO"
 			if(owRotateButtonDefaultRight==0) strTemp = "LEFT"
@@ -253,31 +267,35 @@ class StateConfigGameTuning:BaseGameState() {
 				for(j in 0..8) imgBlock.draw((160+j*16).toFloat(), 64f, (160+j*16+16).toFloat(), (64+16).toFloat(), 0f, (j*16).toFloat(), 16f, (j*16+16).toFloat())
 			else
 				imgBlock.draw(160f, 64f, (160+144).toFloat(), (64+16).toFloat(), 0f, 0f, 144f, 16f)
-			FontNormal.printFontGrid(2, 4, "SKIN:${String.format("%02d",owSkin)}:", cursor==1)
+			FontNormal.printFontGrid(2, 4, "SKIN:${String.format("%02d", owSkin)}:", cursor==1
+				, COLOR.WHITE, if(ResourceHolder.blockStickyFlagList[sk]) COLOR.BLUE else COLOR.RED)
 			FontNormal.printFontGrid(19, 4, when(owSkin) {
 				-1 -> "AUTO"
 				-2 -> "RANDOM"
 				else -> NullpoMinoSlick.propSkins.getProperty("Skin$owSkin", "").toUpperCase()
-			}, cursor==1)
+			}, cursor==1, COLOR.WHITE, if(ResourceHolder.blockStickyFlagList[sk]) COLOR.BLUE else COLOR.RED)
 
-			FontNormal.printFontGrid(2, 5, "MIN DAS:"+if(owMinDAS==-1) "AUTO" else "$owMinDAS", cursor==2)
-			FontNormal.printFontGrid(2, 6, "MAX DAS:"+if(owMaxDAS==-1) "AUTO" else "$owMaxDAS", cursor==3)
-			FontNormal.printFontGrid(2, 7, "DAS DELAY:"+if(owDasDelay==-1) "AUTO" else "$owDasDelay", cursor==4)
-			FontNormal.printFontGrid(2, 8, "REVERSE UP/DOWN:"+GeneralUtil.getOorX(owReverseUpDown), cursor==5)
+			FontNormal.printFontGrid(2, 5, "MIN DAS:"+if(owMinDAS==-1) "AUTO" else "$owMinDAS", cursor==2, rainbow = (spdpv/2).toInt())
+			FontNormal.printFontGrid(2, 6, "MAX DAS:"+if(owMaxDAS==-1) "AUTO" else "$owMaxDAS", cursor==3, rainbow = (spdpv/2).toInt())
+			FontNormal.printFontGrid(2, 7, "DAS DELAY:"+if(owDASRate==-1) "AUTO" else "$owDASRate", cursor==4, rainbow = (spdpv/2).toInt())
+			FontNormal.printFontGrid(2, 8, "SOFTDROP SPEED:"+if(owSDSpd==-1) "AUTO" else
+				if(owSDSpd<SDS_FIXED.size) "${SDS_FIXED[owSDSpd]}G" else "*${owSDSpd-SDS_FIXED.size+5}", cursor==5, rainbow = (spdpv/4).toInt())
+			FontNormal.printFontGrid(2, 9, "REVERSE UP/DOWN:"+GeneralUtil.getOorX(owReverseUpDown), cursor==6)
 
 			if(owMoveDiagonal==-1) strTemp = "AUTO"
 			if(owMoveDiagonal==0) strTemp = "e"
 			if(owMoveDiagonal==1) strTemp = "c"
-			FontNormal.printFontGrid(2, 9, "DIAGONAL MOVE:$strTemp", cursor==6)
+			FontNormal.printFontGrid(2, 10, "DIAGONAL MOVE:$strTemp", cursor==7)
 
-			FontNormal.printFontGrid(2, 10, "OUTLINE TYPE:"+OUTLINE_TYPE_NAMES[owBlockOutlineType+1], cursor==7)
+			FontNormal.printFontGrid(2, 11, "OUTLINE TYPE:"+OUTLINE_TYPE_NAMES[owBlockOutlineType+1], cursor==8)
 
 			if(owBlockShowOutlineOnly==-1) strTemp = "AUTO"
 			if(owBlockShowOutlineOnly==0) strTemp = "e"
 			if(owBlockShowOutlineOnly==1) strTemp = "c"
-			FontNormal.printFontGrid(2, 11, "SHOW OUTLINE ONLY:$strTemp", cursor==8)
+			FontNormal.printFontGrid(2, 12, "SHOW OUTLINE ONLY:$strTemp", cursor==9)
 
-			FontNormal.printFontGrid(2, 12, "[PREVIEW]", cursor==9)
+			FontNormal.printFontGrid(2, 13, "[PREVIEW]", cursor==10)
+			FontNano.printFontGrid(13, 13, "HOTKEY : D BUTTON")
 
 			if(cursor>=0&&cursor<UI_TEXT.size)
 				FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
@@ -287,6 +305,35 @@ class StateConfigGameTuning:BaseGameState() {
 	/* Update game state */
 	@Throws(SlickException::class)
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
+		spdpv += when(cursor) {
+			2, 3, 4 -> {
+				when(cursor) {
+					2 -> owMinDAS
+					3 -> owMaxDAS
+					4 -> owDASRate
+					else -> -1
+				}.let {
+					when {
+						it<0 -> 1f
+						it==0 -> 0f
+						else -> 20f/(it*2+1)
+					}
+				}-if(spdpv>18) 18f else 0f
+			}
+			5 -> {
+				owSDSpd.let {
+					when(it) {
+						in SDS_FIXED.indices ->
+							if(it==SDS_FIXED.indices.last) 0f else (SDS_FIXED[it]*3)
+						in SDS_FIXED.size..SDS_FIXED.size+15 ->
+							(it-SDS_FIXED.size+5f)/3f
+						else -> 2f
+					}
+				}-if(spdpv>36) 36f else 0f
+			}
+			else -> 0f
+		}
+
 		if(isPreview)
 		// Preview
 			try {
@@ -320,12 +367,12 @@ class StateConfigGameTuning:BaseGameState() {
 			// Cursor movement
 			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
 				cursor--
-				if(cursor<0) cursor = 9
+				if(cursor<0) cursor = 10
 				ResourceHolder.soundManager.play("cursor")
 			}
 			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 				cursor++
-				if(cursor>9) cursor = 0
+				if(cursor>10) cursor = 0
 				ResourceHolder.soundManager.play("cursor")
 			}
 
@@ -359,27 +406,32 @@ class StateConfigGameTuning:BaseGameState() {
 						if(owMaxDAS>99) owMaxDAS = -1
 					}
 					4 -> {
-						owDasDelay += change
-						if(owDasDelay<-1) owDasDelay = 99
-						if(owDasDelay>99) owDasDelay = -1
+						owDASRate += change
+						if(owDASRate<-1) owDASRate = 99
+						if(owDASRate>99) owDASRate = -1
 					}
-					5 -> owReverseUpDown = owReverseUpDown xor true
-					6 -> {
+					5 -> {
+						owSDSpd += change
+						if(owSDSpd<-1) owSDSpd = SDS_FIXED.size+15
+						if(owSDSpd>SDS_FIXED.size+15) owSDSpd = -1
+					}
+					6 -> owReverseUpDown = owReverseUpDown xor true
+					7 -> {
 						owMoveDiagonal += change
 						if(owMoveDiagonal<-1) owMoveDiagonal = 1
 						if(owMoveDiagonal>1) owMoveDiagonal = -1
 					}
-					7 -> {
+					8 -> {
 						owBlockOutlineType += change
 						if(owBlockOutlineType<-1) owBlockOutlineType = 3
 						if(owBlockOutlineType>3) owBlockOutlineType = -1
 					}
-					8 -> {
+					9 -> {
 						owBlockShowOutlineOnly += change
 						if(owBlockShowOutlineOnly<-1) owBlockShowOutlineOnly = 1
 						if(owBlockShowOutlineOnly>1) owBlockShowOutlineOnly = -1
 					}
-					9 -> {
+					10 -> {
 					}
 				}
 			}
@@ -395,16 +447,15 @@ class StateConfigGameTuning:BaseGameState() {
 			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
 				ResourceHolder.soundManager.play("decide2")
 
-				if(cursor==9) {
+				if(cursor==10) {
 					// Preview
 					startPreviewGame()
 					return
-				} else {
-					// Save
-					saveConfig(NullpoMinoSlick.propGlobal)
-					NullpoMinoSlick.saveConfig()
-					game.enterState(StateConfigMainMenu.ID)
 				}
+				// Save
+				saveConfig(NullpoMinoSlick.propGlobal)
+				NullpoMinoSlick.saveConfig()
+				game.enterState(StateConfigMainMenu.ID)
 			}
 
 			// Cancel button

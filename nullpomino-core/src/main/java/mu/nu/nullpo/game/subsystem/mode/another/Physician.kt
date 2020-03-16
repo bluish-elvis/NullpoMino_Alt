@@ -122,8 +122,8 @@ class Physician:AbstractMode() {
 			val change = updateCursor(engine, 1)
 
 			var m = 1
-			if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-			if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+			if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+			if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -147,7 +147,7 @@ class Physician:AbstractMode() {
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -155,7 +155,7 @@ class Physician:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -277,7 +277,7 @@ class Physician:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		var gemsCleared = engine.field!!.gemsCleared
 		if(gemsCleared>0&&lines>0) {
 			var pts = 0
@@ -294,7 +294,9 @@ class Physician:AbstractMode() {
 			engine.statistics.scoreLine += pts
 			engine.playSE("gem")
 			setSpeed(engine)
+			return pts
 		}
+		return 0
 	}
 
 	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
@@ -408,6 +410,7 @@ class Physician:AbstractMode() {
 
 		/** Block colors */
 		private val BLOCK_COLORS = intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_YELLOW)
+
 		/** Hovering block colors */
 		private val HOVER_BLOCK_COLORS = intArrayOf(Block.BLOCK_COLOR_GEM_RED, Block.BLOCK_COLOR_GEM_BLUE, Block.BLOCK_COLOR_GEM_YELLOW)
 		private val BASE_SPEEDS = intArrayOf(10, 20, 25)

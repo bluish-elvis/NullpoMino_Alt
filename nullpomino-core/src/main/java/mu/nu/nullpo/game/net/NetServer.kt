@@ -211,17 +211,17 @@ import kotlin.math.pow
 		val socketSelector = SelectorProvider.provider().openSelector()
 
 		// Create a new non-blocking server socket channel
-		serverChannel = ServerSocketChannel.open()
-		serverChannel!!.configureBlocking(false)
+		serverChannel = ServerSocketChannel.open()?.also {
+			it.configureBlocking(false)
 
-		// Bind the server socket to the specified address and port
-		val isa = InetSocketAddress(port)
-		serverChannel!!.socket().bind(isa)
+			// Bind the server socket to the specified address and port
+			val isa = InetSocketAddress(port)
+			it.socket().bind(isa)
 
-		// Register the server socket channel, indicating an interest in
-		// accepting new connections
-		serverChannel!!.register(socketSelector, SelectionKey.OP_ACCEPT)
-
+			// Register the server socket channel, indicating an interest in
+			// accepting new connections
+			it.register(socketSelector, SelectionKey.OP_ACCEPT)
+		}
 		log.info("Listening on port $port...")
 
 		return socketSelector
@@ -1125,10 +1125,13 @@ import kotlin.math.pow
 					prevRating = p.rating[style]
 					nowRank = i
 				}
-				strPData.append(nowRank).append(";").append(NetUtil.urlEncode(p.strName)).append(";").append(p.rating[style]).append(";").append(p.playCount[style]).append(";").append(p.winCount[style]).append("\t")
+				strPData.append(nowRank).append(";").append(NetUtil.urlEncode(p.strName)).append(";").append(p.rating[style])
+					.append(";").append(p.playCount[style]).append(";").append(p.winCount[style]).append("\t")
 			}
 			if(myRank==-1&&pInfo!=null) {
-				strPData.append((-1).toString()+";").append(NetUtil.urlEncode(pInfo.strName)).append(";").append(pInfo.rating[style]).append(";").append(pInfo.playCount[style]).append(";").append(pInfo.winCount[style]).append("\t")
+				strPData.append((-1).toString()+";").append(NetUtil.urlEncode(pInfo.strName)).append(";")
+					.append(pInfo.rating[style]).append(";").append(pInfo.playCount[style]).append(";").append(pInfo.winCount[style])
+					.append("\t")
 			}
 			val strPDataC = NetUtil.compressString("$strPData")
 
@@ -1887,17 +1890,18 @@ import kotlin.math.pow
 		if(message[0]=="banlist") {
 			// Cleanup expired bans
 			val tempList = LinkedList<NetServerBan>()
-			banList?.let {tempList += it}
+			banList?.let {
+				tempList += it
 
-			for(ban in tempList)
-				if(ban.isExpired) banList!!.remove(ban)
+				for(ban in tempList)
+					if(ban.isExpired) it.remove(ban)
 
-			// Create list
-			val strResult = StringBuilder()
-			for(ban in banList!!)
-				strResult.append("\t").append(ban.exportString())
-
-			sendAdminResult(client, "banlist$strResult")
+				// Create list
+				val strResult = StringBuilder()
+				for(ban in it)
+					strResult.append("\t").append(ban.exportString())
+				sendAdminResult(client, "banlist$strResult")
+			}
 		}
 		// Player delete
 		if(message[0]=="playerdelete") {
@@ -2080,14 +2084,14 @@ import kotlin.math.pow
 			if(!roomInfo.playerList.isEmpty()) {
 				val tempList = LinkedList(roomInfo.playerList)
 				for(pInfo in tempList) {
-						val client = getSocketChannelByPlayer(pInfo)
-						if(client!=null) {
-							// Packet simulation :p
-							processPacket(client, "roomjoin\t-1\tfalse")
-							// Send message to the kicked player
-							send(client, "roomkicked\t0\t${roomInfo.roomID}\t${NetUtil.urlEncode(roomInfo.strName)}\n")
-						}
+					val client = getSocketChannelByPlayer(pInfo)
+					if(client!=null) {
+						// Packet simulation :p
+						processPacket(client, "roomjoin\t-1\tfalse")
+						// Send message to the kicked player
+						send(client, "roomkicked\t0\t${roomInfo.roomID}\t${NetUtil.urlEncode(roomInfo.strName)}\n")
 					}
+				}
 				roomInfo.playerList.clear()
 			}
 			deleteRoom(roomInfo)
@@ -2300,7 +2304,7 @@ import kotlin.math.pow
 	private fun sendPlayerList(client:SocketChannel) {
 		val msg = StringBuilder("playerlist\t${playerInfoMap.size}")
 
-		for(ch in channelList) {
+		channelList.forEach {ch ->
 			val pInfo = playerInfoMap[ch]
 
 			if(pInfo!=null) {
@@ -2324,25 +2328,16 @@ import kotlin.math.pow
 	 * @param name Name
 	 * @return NetPlayerInfo (null if not found)
 	 */
-	private fun searchPlayerByName(name:String):NetPlayerInfo? {
-		for(ch in channelList) {
-			val pInfo = playerInfoMap[ch]
-			if(pInfo!=null&&pInfo.strName==name) return pInfo
-		}
-		return null
-	}
+	private fun searchPlayerByName(name:String):NetPlayerInfo? =
+		channelList.map {playerInfoMap[it]}
+			.firstOrNull {it?.strName==name}
 
 	/** Get NetPlayerInfo by player's ID
 	 * @param uid ID
 	 * @return NetPlayerInfo (null if not found)
 	 */
-	private fun searchPlayerByUID(uid:Int):NetPlayerInfo? {
-		for(ch in channelList) {
-			val pInfo = playerInfoMap[ch]
-			if(pInfo!=null&&pInfo.uid==uid) return pInfo
-		}
-		return null
-	}
+	private fun searchPlayerByUID(uid:Int):NetPlayerInfo? =
+		channelList.map {playerInfoMap[it]}.firstOrNull {it?.uid==uid}
 
 	/** Move queue player(s) to the game seat if possible
 	 * @param roomInfo The room
@@ -2372,25 +2367,23 @@ import kotlin.math.pow
 	 * @param pKOInfo Assailant (can be null)
 	 */
 	private fun playerDead(pInfo:NetPlayerInfo, pKOInfo:NetPlayerInfo? = null) {
-		val roomInfo = getRoomInfo(pInfo.roomID)
+		getRoomInfo(pInfo.roomID)?.let {roomInfo ->
+			if(pInfo.seatID!=-1&&pInfo.playing&&roomInfo.playing) {
+				pInfo.resetPlayState()
 
-		if(roomInfo!=null&&pInfo.seatID!=-1&&pInfo.playing&&roomInfo.playing) {
-			pInfo.resetPlayState()
+				val place = roomInfo.startPlayers-roomInfo.deadCount
+				var msg = "dead\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\t$place\t"
+				msg += if(pKOInfo==null) "${(-1)}\t"
+				else "${pKOInfo.uid}\t${NetUtil.urlEncode(pKOInfo.strName)}"
+				msg += "\n"
+				broadcast(msg, pInfo.roomID)
 
-			val place = roomInfo.startPlayers-roomInfo.deadCount
-			var msg = "dead\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\t$place\t"
-			msg += if(pKOInfo==null)
-				"${(-1)}\t"
-			else
-				"${pKOInfo.uid}\t${NetUtil.urlEncode(pKOInfo.strName)}"
-			msg += "\n"
-			broadcast(msg, pInfo.roomID)
+				roomInfo.deadCount++
+				roomInfo.playerSeatDead.addFirst(pInfo)
+				gameFinished(roomInfo)
 
-			roomInfo.deadCount++
-			roomInfo.playerSeatDead.addFirst(pInfo)
-			gameFinished(roomInfo)
-
-			broadcastPlayerInfoUpdate(pInfo)
+				broadcastPlayerInfoUpdate(pInfo)
+			}
 		}
 	}
 
@@ -2410,7 +2403,7 @@ import kotlin.math.pow
 			ban(ch, banLength)
 		if(banChannels.isEmpty()&&banLength>=0)
 		// Add ban entry manually
-			banList!!.add(NetServerBan(strIP, banLength))
+			banList?.add(NetServerBan(strIP, banLength))
 
 		return banChannels.size
 	}
@@ -2426,7 +2419,7 @@ import kotlin.math.pow
 		if(banLength<0)
 			log.info("Kicked player: $remoteAddr")
 		else {
-			banList!!.add(NetServerBan(remoteAddr, banLength))
+			banList?.add(NetServerBan(remoteAddr, banLength))
 			log.info("Banned player: $remoteAddr")
 		}
 
@@ -2473,7 +2466,7 @@ import kotlin.math.pow
 			for(i in 0 until ruleList!![style].size) {
 				val tempObj = ruleList!![style][i]
 
-					msg.append("\t").append(NetUtil.urlEncode(tempObj.strRuleName))
+				msg.append("\t").append(NetUtil.urlEncode(tempObj.strRuleName))
 
 			}
 
@@ -2488,15 +2481,7 @@ import kotlin.math.pow
 	 * @param name Rule Name
 	 * @return Rated-game rule (null if not found)
 	 */
-	private fun getRatedRule(style:Int, name:String):RuleOptions? {
-		for(i in 0 until ruleList!![style].size) {
-			val rule = ruleList!![style][i]
-
-			if(name==rule.strRuleName) return rule
-		}
-
-		return null
-	}
+	private fun getRatedRule(style:Int, name:String) = ruleList?.get(style)?.firstOrNull {it.strRuleName==name}
 
 	/*
 	/** Get rated-game rule index
@@ -2520,7 +2505,8 @@ import kotlin.math.pow
 	 * @param myScore 0:Loss, 1:Win
 	 * @return New rating
 	 */
-	private fun rankDelta(playedGames:Int, myRank:Double, oppRank:Double, myScore:Double):Double = maxDelta(playedGames)*(myScore-expectedScore(myRank, oppRank))
+	private fun rankDelta(playedGames:Int, myRank:Double, oppRank:Double, myScore:Double):Double =
+		maxDelta(playedGames)*(myScore-expectedScore(myRank, oppRank))
 
 	/** Subroutine of rankDelta; Returns expected score.
 	 * @param myRank Player's rating
@@ -2533,7 +2519,8 @@ import kotlin.math.pow
 	 * @param playedGames Number of games played by the player
 	 * @return Multiplier of rating change
 	 */
-	private fun maxDelta(playedGames:Int):Double = if(playedGames>ratingProvisionalGames) ratingNormalMaxDiff else ratingNormalMaxDiff+400/(playedGames+3)
+	private fun maxDelta(playedGames:Int):Double =
+		if(playedGames>ratingProvisionalGames) ratingNormalMaxDiff else ratingNormalMaxDiff+400/(playedGames+3)
 
 	/** Write server-status file */
 	private fun writeServerStatusFile() {
@@ -2563,6 +2550,7 @@ import kotlin.math.pow
 		companion object {
 			/** Delayed disconnect action */
 			const val DISCONNECT = 1
+
 			/** interestOps change action */
 			const val CHANGEOPS = 2
 		}

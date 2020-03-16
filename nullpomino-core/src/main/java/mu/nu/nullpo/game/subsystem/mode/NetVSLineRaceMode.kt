@@ -88,7 +88,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	}
 
 	/* Calculate Score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Meter
 		updateMeter(engine)
 
@@ -106,7 +106,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 					uidArray[i] = -1
 				}
 				for(i in 0 until players)
-					if(places[i]>=0&&places[i]<NETVS_MAX_PLAYERS) uidArray[places[i]] = netvsPlayerUID[i]
+					if(places[i] in 0 until NETVS_MAX_PLAYERS) uidArray[places[i]] = netvsPlayerUID[i]
 
 				val strMsg = StringBuilder("racewin")
 				for(i in 0 until players)
@@ -118,6 +118,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 				engine.stat = GameEngine.Status.NOTHING
 				engine.resetStatc()
 			}
+		return 0
 	}
 
 	/* Drawing processing at the end of every frame */
@@ -142,10 +143,10 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 				val strLines = "$remainLines"
 
 				when {
-					engine.displaysize!=-1 -> when {
-						strLines.length==1 -> owner.receiver.drawMenuFont(engine, playerID, 4, 21, strLines, fontColor, 2f)
-						strLines.length==2 -> owner.receiver.drawMenuFont(engine, playerID, 3, 21, strLines, fontColor, 2f)
-						strLines.length==3 -> owner.receiver.drawMenuFont(engine, playerID, 2, 21, strLines, fontColor, 2f)
+					engine.displaysize!=-1 -> when(strLines.length) {
+						1 -> owner.receiver.drawMenuFont(engine, playerID, 4, 21, strLines, fontColor, 2f)
+						2 -> owner.receiver.drawMenuFont(engine, playerID, 3, 21, strLines, fontColor, 2f)
+						3 -> owner.receiver.drawMenuFont(engine, playerID, 2, 21, strLines, fontColor, 2f)
 					}
 					strLines.length==1 -> owner.receiver.drawDirectFont(x+4+32, y+168, strLines, fontColor, 1f)
 					strLines.length==2 -> owner.receiver.drawDirectFont(x+4+24, y+168, strLines, fontColor, 1f)

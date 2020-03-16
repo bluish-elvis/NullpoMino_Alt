@@ -400,14 +400,14 @@ open class NetDummyVSMode:NetDummyMode() {
 			engine.b2bEnable = netCurrentRoomInfo!!.b2b
 			engine.comboType = if(netCurrentRoomInfo!!.combo) GameEngine.COMBO_TYPE_NORMAL else GameEngine.COMBO_TYPE_DISABLE
 
-			if(netCurrentRoomInfo!!.tspinEnableType==0) {
-				engine.tspinEnable = false
+			if(netCurrentRoomInfo!!.twistEnableType==0) {
+				engine.twistEnable = false
 				engine.useAllSpinBonus = false
-			} else if(netCurrentRoomInfo!!.tspinEnableType==1) {
-				engine.tspinEnable = true
+			} else if(netCurrentRoomInfo!!.twistEnableType==1) {
+				engine.twistEnable = true
 				engine.useAllSpinBonus = false
-			} else if(netCurrentRoomInfo!!.tspinEnableType==2) {
-				engine.tspinEnable = true
+			} else if(netCurrentRoomInfo!!.twistEnableType==2) {
+				engine.twistEnable = true
 				engine.useAllSpinBonus = true
 			}
 		}
@@ -543,13 +543,13 @@ open class NetDummyVSMode:NetDummyMode() {
 
 			if(!netvsIsReadyChangePending&&netvsNumPlayers>=2&&!netvsIsNewcomer&&menuTime>=5) {
 				// Ready ON
-				if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&!netvsPlayerReady[0]) {
+				if(engine.ctrl.isPush(Controller.BUTTON_A)&&!netvsPlayerReady[0]) {
 					engine.playSE("decide")
 					netvsIsReadyChangePending = true
 					netLobby!!.netPlayerClient!!.send("ready\ttrue\n")
 				}
 				// Ready OFF
-				if(engine.ctrl!!.isPush(Controller.BUTTON_B)&&netvsPlayerReady[0]) {
+				if(engine.ctrl.isPush(Controller.BUTTON_B)&&netvsPlayerReady[0]) {
 					engine.playSE("decide")
 					netvsIsReadyChangePending = true
 					netLobby!!.netPlayerClient!!.send("ready\tfalse\n")
@@ -557,7 +557,7 @@ open class NetDummyVSMode:NetDummyMode() {
 			}
 
 			// Practice Mode
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
 				engine.playSE("decide")
 				netvsStartPractice(engine)
 				return true
@@ -712,7 +712,7 @@ open class NetDummyVSMode:NetDummyMode() {
 			}
 
 		// End practice mode
-		if(playerID==0&&netvsIsPractice&&netvsIsPracticeExitAllowed&&engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+		if(playerID==0&&netvsIsPractice&&netvsIsPracticeExitAllowed&&engine.ctrl.isPush(Controller.BUTTON_F)) {
 			netvsIsPractice = false
 			netvsIsPracticeExitAllowed = false
 			owner.bgmStatus.bgm = BGM.SILENT
@@ -870,7 +870,7 @@ open class NetDummyVSMode:NetDummyMode() {
 			engine.playSE("excellent")
 		}
 
-		if(engine.statc[0]>=120&&engine.ctrl!!.isPush(Controller.BUTTON_A)) engine.statc[0] = engine.field!!.height+1+180
+		if(engine.statc[0]>=120&&engine.ctrl.isPush(Controller.BUTTON_A)) engine.statc[0] = engine.field!!.height+1+180
 
 		if(engine.statc[0]>=engine.field!!.height+1+180) {
 			if(!netvsIsGameActive&&netvsPlayerResultReceived[playerID]) {
@@ -916,7 +916,7 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		if(playerID==0&&!netvsIsWatch()) {
 			// To the settings screen
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				netvsIsPractice = false
 				engine.stat = GameEngine.Status.SETTING
@@ -924,7 +924,7 @@ open class NetDummyVSMode:NetDummyMode() {
 				return true
 			}
 			// Start Practice
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("decide")
 				netvsStartPractice(engine)
 				return true

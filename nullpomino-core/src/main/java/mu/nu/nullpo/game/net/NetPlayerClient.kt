@@ -45,16 +45,16 @@ class NetPlayerClient:NetBaseClient {
 	/** @return Current Player名
 	 */
 	var playerName:String=""
-		protected set
+		private set
 
 	/** 自分のTeam name */
-	protected var playerTeam:String=""
+	private var playerTeam:String=""
 
 	/** 自分のPlayer識別 number */
 	/** @return Current Playerの識別 number
 	 */
 	var playerUID:Int = 0
-		protected set
+		private set
 
 	/** サーバーVersion */
 	/** @return サーバーVersion
@@ -65,13 +65,13 @@ class NetPlayerClient:NetBaseClient {
 	/** @return Number of players
 	 */
 	var playerCount = -1
-		protected set
+		private set
 
 	/** Observercount */
 	/** @return Observercount
 	 */
 	var observerCount = -1
-		protected set
+		private set
 
 	/** 自分自身の情報を取得
 	 * @return 自分自身の情報
@@ -82,14 +82,7 @@ class NetPlayerClient:NetBaseClient {
 	/** @return Current room ID
 	 */
 	val currentRoomID:Int
-		get() {
-			try {
-				return yourPlayerInfo!!.roomID
-			} catch(e:NullPointerException) {
-			}
-
-			return -1
-		}
+		get() = yourPlayerInfo?.roomID?:-1
 
 	/** @return Current room info
 	 */
@@ -281,7 +274,7 @@ class NetPlayerClient:NetBaseClient {
 	 */
 	fun getPlayerInfoByName(name:String):NetPlayerInfo? {
 		for(pInfo in playerInfoList)
-			if(pInfo!=null&&pInfo.strName==name) return pInfo
+			if(pInfo.strName==name) return pInfo
 		return null
 	}
 
@@ -291,7 +284,7 @@ class NetPlayerClient:NetBaseClient {
 	 */
 	fun getPlayerInfoByUID(uid:Int):NetPlayerInfo? {
 		for(pInfo in playerInfoList)
-			if(pInfo!=null&&pInfo.uid==uid) return pInfo
+			if(pInfo.uid==uid) return pInfo
 		return null
 	}
 

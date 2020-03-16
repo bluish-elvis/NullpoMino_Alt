@@ -23,17 +23,16 @@ class NetServerBan {
 	 */
 	val endDate:Calendar?
 		get() {
-			var res:Calendar? = startDate.clone() as Calendar
-			when(banLength) {
-				BANLENGTH_1HOUR -> res!!.add(Calendar.HOUR, 1)
-				BANLENGTH_6HOURS -> res!!.add(Calendar.HOUR, 6)
-				BANLENGTH_24HOURS -> res!!.add(Calendar.HOUR, 24)
-				BANLENGTH_1WEEK -> res!!.add(Calendar.WEEK_OF_MONTH, 1)
-				BANLENGTH_1MONTH -> res!!.add(Calendar.MONTH, 1)
-				BANLENGTH_1YEAR -> res!!.add(Calendar.YEAR, 1)
-				else -> res = null
+			return (startDate.clone() as Calendar).also {
+				when(banLength) {
+					BANLENGTH_1HOUR -> it.add(Calendar.HOUR, 1)
+					BANLENGTH_6HOURS -> it.add(Calendar.HOUR, 6)
+					BANLENGTH_24HOURS -> it.add(Calendar.HOUR, 24)
+					BANLENGTH_1WEEK -> it.add(Calendar.WEEK_OF_MONTH, 1)
+					BANLENGTH_1MONTH -> it.add(Calendar.MONTH, 1)
+					BANLENGTH_1YEAR -> it.add(Calendar.YEAR, 1)
+				}
 			}
-			return res
 		}
 
 	/** Returns a boolean representing whether or not this NetServerBan is

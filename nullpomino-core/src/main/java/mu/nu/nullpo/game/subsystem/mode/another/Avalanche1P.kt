@@ -105,7 +105,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		// Menu
 		if(!engine.owner.replayMode) {
 			// Up
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				menuCursor--
 				if(menuCursor<0)
 					menuCursor = 10
@@ -113,7 +113,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 				engine.playSE("cursor")
 			}
 			// Down
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 				menuCursor++
 				if(menuCursor>10)
 					menuCursor = 0
@@ -123,8 +123,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 			// Configuration changes
 			var change = 0
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -170,7 +170,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -178,7 +178,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -267,7 +267,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LEVEL", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 7, "$level")
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "OJAMA SENT", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "POWER", EventReceiver.COLOR.BLUE)
 			var strSent = "$garbageSent"
 			if(garbageAdd>0) strSent = "$strSent(+$garbageAdd)"
 			receiver.drawScoreFont(engine, playerID, 0, 10, strSent)
@@ -288,9 +288,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 				&&engine.stat!=GameEngine.Status.RESULT)
 				drawXorTimer(engine, playerID)
 
-			var textHeight = 13
-			if(engine.field!=null) textHeight = engine.field!!.height+1
-			if(engine.displaysize==1) textHeight = 11
+			val textHeight = if(engine.displaysize==1) 11 else (engine.field?.height ?: 12)+1
 
 			val baseX = if(engine.displaysize==1) 1 else 0
 			if(engine.chain>0&&chainDisplay>0&&showChains)
@@ -366,11 +364,11 @@ class Avalanche1P:Avalanche1PDummyMode() {
 				chain==3 -> return 16
 				chain>=4 -> return 32*(chain-3)
 			}
-		} else return if(chain>CHAIN_POWERS_FEVERTYPE.size)
+		}
+		return if(chain>CHAIN_POWERS_FEVERTYPE.size)
 			CHAIN_POWERS_FEVERTYPE[CHAIN_POWERS_FEVERTYPE.size-1]
 		else
 			CHAIN_POWERS_FEVERTYPE[chain-1]
-		return 0
 	}
 
 	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {

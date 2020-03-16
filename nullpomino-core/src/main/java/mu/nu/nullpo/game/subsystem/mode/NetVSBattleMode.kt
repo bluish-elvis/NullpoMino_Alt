@@ -191,7 +191,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 	}
 
 	/* Calculate Score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Attack
 		if(lines>0&&playerID==0) {
 			val pts = IntArray(ATTACK_CATEGORIES)
@@ -207,36 +207,36 @@ class NetVSBattleMode:NetDummyVSMode() {
 			var attackLineIndex = LINE_ATTACK_INDEX_SINGLE
 			var mainAttackCategory = ATTACK_CATEGORY_NORMAL
 
-			// T-Spin style attack
-			if(engine.tspin) {
+			// Twister style attack
+			if(engine.twist) {
 				mainAttackCategory = ATTACK_CATEGORY_SPIN
 
 				// EZ-T
-				if(engine.tspinez) {
+				if(engine.twistez) {
 					attackLineIndex = LINE_ATTACK_INDEX_EZ_T
-					lastevent[playerID] = EVENT_TSPIN_EZ
+					lastevent[playerID] = EVENT_TWIST_EZ
 				} else if(lines==1) {
-					if(engine.tspinmini) {
+					if(engine.twistmini) {
 						attackLineIndex = LINE_ATTACK_INDEX_TMINI
-						lastevent[playerID] = EVENT_TSPIN_SINGLE_MINI
+						lastevent[playerID] = EVENT_TWIST_SINGLE_MINI
 					} else {
 						attackLineIndex = LINE_ATTACK_INDEX_TSINGLE
-						lastevent[playerID] = EVENT_TSPIN_SINGLE
+						lastevent[playerID] = EVENT_TWIST_SINGLE
 					}
 				} else if(lines==2) {
-					if(engine.tspinmini&&engine.useAllSpinBonus) {
+					if(engine.twistmini&&engine.useAllSpinBonus) {
 						attackLineIndex = LINE_ATTACK_INDEX_TMINI_D
-						lastevent[playerID] = EVENT_TSPIN_DOUBLE_MINI
+						lastevent[playerID] = EVENT_TWIST_DOUBLE_MINI
 					} else {
 						attackLineIndex = LINE_ATTACK_INDEX_TDOUBLE
-						lastevent[playerID] = EVENT_TSPIN_DOUBLE
+						lastevent[playerID] = EVENT_TWIST_DOUBLE
 					}
 				} else if(lines>=3) {
 					attackLineIndex = LINE_ATTACK_INDEX_TTRIPLE
-					lastevent[playerID] = EVENT_TSPIN_TRIPLE
-				}// T-Spin 3 lines
-				// T-Spin 2 lines
-				// T-Spin 1 line
+					lastevent[playerID] = EVENT_TWIST_TRIPLE
+				}// Twister 3 lines
+				// Twister 2 lines
+				// Twister 1 line
 			} else // Single
 				if(lines==1) {
 					attackLineIndex = LINE_ATTACK_INDEX_SINGLE
@@ -337,7 +337,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 
 		// Garbage lines appear
 		if((lines==0||!netCurrentRoomInfo!!.rensaBlock)&&totalGarbageLines>=GARBAGE_DENOMINATOR&&!netvsIsPractice) {
-			engine.playSE("garbage")
+			engine.playSE("garbage${if(totalGarbageLines-GARBAGE_DENOMINATOR>3)1 else 0}")
 
 			var smallGarbageCount = 0
 			var hole = lastHole
@@ -418,6 +418,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 				if(hurryupCount%netCurrentRoomInfo!!.hurryupInterval==0) engine.field!!.addHurryupFloor(1, engine.skin)
 			} else
 				hurryupCount = netCurrentRoomInfo!!.hurryupInterval-1
+		return 0
 	}
 
 	/* Executed at the end of each frame */
@@ -441,10 +442,10 @@ class NetVSBattleMode:NetDummyVSMode() {
 		// Garbage meter
 		val tempGarbage = garbage[playerID]/GARBAGE_DENOMINATOR
 		val tempGarbageF = garbage[playerID].toFloat()/GARBAGE_DENOMINATOR
-		val newMeterValue = (tempGarbageF*owner.receiver.getBlockGraphicsHeight(engine)).toInt()
+		val newMeterValue = (tempGarbageF*owner.receiver.getBlockHeight(engine)).toInt()
 		if(playerID==0&&!netvsIsWatch()) {
 			if(newMeterValue>engine.meterValue) {
-				engine.meterValue += owner.receiver.getBlockGraphicsHeight(engine)/2
+				engine.meterValue += owner.receiver.getBlockHeight(engine)/2
 				if(engine.meterValue>newMeterValue) engine.meterValue = newMeterValue
 			} else if(newMeterValue<engine.meterValue) engine.meterValue--
 		} else
@@ -553,27 +554,27 @@ class NetVSBattleMode:NetDummyVSMode() {
 							owner.receiver.drawMenuFont(engine, playerID, 3, 21, "FOUR", COLOR.RED)
 						else
 							owner.receiver.drawMenuFont(engine, playerID, 3, 21, "FOUR", COLOR.ORANGE)
-						EVENT_TSPIN_SINGLE_MINI -> if(lastb2b[playerID])
+						EVENT_TWIST_SINGLE_MINI -> if(lastb2b[playerID])
 							owner.receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-MINI-S", COLOR.RED)
 						else
 							owner.receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-MINI-S", COLOR.ORANGE)
-						EVENT_TSPIN_SINGLE -> if(lastb2b[playerID])
+						EVENT_TWIST_SINGLE -> if(lastb2b[playerID])
 							owner.receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-SINGLE", COLOR.RED)
 						else
 							owner.receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-SINGLE", COLOR.ORANGE)
-						EVENT_TSPIN_DOUBLE_MINI -> if(lastb2b[playerID])
+						EVENT_TWIST_DOUBLE_MINI -> if(lastb2b[playerID])
 							owner.receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-MINI-D", COLOR.RED)
 						else
 							owner.receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-MINI-D", COLOR.ORANGE)
-						EVENT_TSPIN_DOUBLE -> if(lastb2b[playerID])
+						EVENT_TWIST_DOUBLE -> if(lastb2b[playerID])
 							owner.receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-DOUBLE", COLOR.RED)
 						else
 							owner.receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-DOUBLE", COLOR.ORANGE)
-						EVENT_TSPIN_TRIPLE -> if(lastb2b[playerID])
+						EVENT_TWIST_TRIPLE -> if(lastb2b[playerID])
 							owner.receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-TRIPLE", COLOR.RED)
 						else
 							owner.receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-TRIPLE", COLOR.ORANGE)
-						EVENT_TSPIN_EZ -> if(lastb2b[playerID])
+						EVENT_TWIST_EZ -> if(lastb2b[playerID])
 							owner.receiver.drawMenuFont(engine, playerID, 3, 21, "EZ-$strPieceName", COLOR.RED)
 						else
 							owner.receiver.drawMenuFont(engine, playerID, 3, 21, "EZ-$strPieceName", COLOR.ORANGE)
@@ -593,27 +594,27 @@ class NetVSBattleMode:NetDummyVSMode() {
 							owner.receiver.drawDirectFont(x-4, y+168, "QUADRUPLE", COLOR.RED, .5f)
 						else
 							owner.receiver.drawDirectFont(x-4, y+168, "QUADRUPLE", COLOR.ORANGE, .5f)
-						EVENT_TSPIN_SINGLE_MINI -> if(lastb2b[playerID])
+						EVENT_TWIST_SINGLE_MINI -> if(lastb2b[playerID])
 							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-S", COLOR.RED, .5f)
 						else
 							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-S", COLOR.ORANGE, .5f)
-						EVENT_TSPIN_SINGLE -> if(lastb2b[playerID])
+						EVENT_TWIST_SINGLE -> if(lastb2b[playerID])
 							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-SINGLE", COLOR.RED, .5f)
 						else
 							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-SINGLE", COLOR.ORANGE, .5f)
-						EVENT_TSPIN_DOUBLE_MINI -> if(lastb2b[playerID])
+						EVENT_TWIST_DOUBLE_MINI -> if(lastb2b[playerID])
 							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-D", COLOR.RED, .5f)
 						else
 							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-D", COLOR.ORANGE, .5f)
-						EVENT_TSPIN_DOUBLE -> if(lastb2b[playerID])
+						EVENT_TWIST_DOUBLE -> if(lastb2b[playerID])
 							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-DOUBLE", COLOR.RED, .5f)
 						else
 							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-DOUBLE", COLOR.ORANGE, .5f)
-						EVENT_TSPIN_TRIPLE -> if(lastb2b[playerID])
+						EVENT_TWIST_TRIPLE -> if(lastb2b[playerID])
 							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-TRIPLE", COLOR.RED, .5f)
 						else
 							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-TRIPLE", COLOR.ORANGE, .5f)
-						EVENT_TSPIN_EZ -> if(lastb2b[playerID])
+						EVENT_TWIST_EZ -> if(lastb2b[playerID])
 							owner.receiver.drawDirectFont(x+4+24, y+168, "EZ-$strPieceName", COLOR.RED, .5f)
 						else
 							owner.receiver.drawDirectFont(x+4+24, y+168, "EZ-$strPieceName", COLOR.ORANGE, .5f)
@@ -806,12 +807,12 @@ class NetVSBattleMode:NetDummyVSMode() {
 		private const val EVENT_DOUBLE = 2
 		private const val EVENT_TRIPLE = 3
 		private const val EVENT_FOUR = 4
-		private const val EVENT_TSPIN_SINGLE_MINI = 5
-		private const val EVENT_TSPIN_SINGLE = 6
-		private const val EVENT_TSPIN_DOUBLE = 7
-		private const val EVENT_TSPIN_TRIPLE = 8
-		private const val EVENT_TSPIN_DOUBLE_MINI = 9
-		private const val EVENT_TSPIN_EZ = 10
+		private const val EVENT_TWIST_SINGLE_MINI = 5
+		private const val EVENT_TWIST_SINGLE = 6
+		private const val EVENT_TWIST_DOUBLE = 7
+		private const val EVENT_TWIST_TRIPLE = 8
+		private const val EVENT_TWIST_DOUBLE_MINI = 9
+		private const val EVENT_TWIST_EZ = 10
 
 		/** Type of attack performed */
 		private const val ATTACK_CATEGORY_NORMAL = 0
@@ -822,7 +823,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 		private const val ATTACK_CATEGORY_GEM = 5
 		private const val ATTACK_CATEGORIES = 6
 
-		/** Attack table (for T-Spin only) */
+		/** Attack table (for Twister only) */
 		private val LINE_ATTACK_TABLE = arrayOf(
 			// 1-2P, 3P, 4P, 5P, 6P
 			intArrayOf(0, 0, 0, 0, 0), // Single

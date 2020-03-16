@@ -190,7 +190,7 @@ class GrandStorm:AbstractMode() {
 		rankingTime = IntArray(RANKING_MAX)
 		bestSectionTime = IntArray(SECTION_MAX)
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.b2bEnable = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.framecolor = GameEngine.FRAME_COLOR_RED
@@ -344,13 +344,13 @@ class GrandStorm:AbstractMode() {
 			}
 
 			// section time display切替
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -360,7 +360,7 @@ class GrandStorm:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -579,7 +579,7 @@ class GrandStorm:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Combo
 		comboValue = if(lines==0) 1
 		else maxOf(1,comboValue+2*lines-2)
@@ -735,7 +735,9 @@ class GrandStorm:AbstractMode() {
 				*lines*comboValue*if(engine.field!!.isEmpty) 4 else 1)
 				+engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			engine.statistics.scoreLine += lastscore
+			return lastscore
 		}
+		return 0
 	}
 
 	/* 各 frame の終わりの処理 */
@@ -753,7 +755,7 @@ class GrandStorm:AbstractMode() {
 
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
-			rolltime += if(version>=1&&engine.ctrl!!.isPress(Controller.BUTTON_F))
+			rolltime += if(version>=1&&engine.ctrl.isPress(Controller.BUTTON_F))
 				5
 			else
 				1
@@ -856,18 +858,18 @@ class GrandStorm:AbstractMode() {
 				BGM.RESULT(3)
 		else BGM.RESULT(0)
 		// ページ切り替え
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
 			if(engine.statc[1]>2) engine.statc[1] = 0
 			engine.playSE("change")
 		}
 		// section time display切替
-		if(engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 			engine.playSE("change")
 			isShowBestSectionTime = !isShowBestSectionTime
 		}

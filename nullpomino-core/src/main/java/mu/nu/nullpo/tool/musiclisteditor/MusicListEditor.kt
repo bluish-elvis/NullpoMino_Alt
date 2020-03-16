@@ -33,6 +33,7 @@ import java.awt.event.ActionListener
 import java.io.*
 import java.util.*
 import javax.swing.*
+import kotlin.collections.HashMap
 
 /** MusicListEditor (音楽リスト編集ツール) */
 class MusicListEditor:JFrame(), ActionListener {
@@ -205,18 +206,19 @@ class MusicListEditor:JFrame(), ActionListener {
 
 		// ファイルフィルタ
 		hashmapFileFilters = HashMap()
-		hashmapFileFilters!![".wav"] = SimpleFileFilter(".wav", getUIText("FileChooser_wav"))
-		hashmapFileFilters!![".xm"] = SimpleFileFilter(".xm", getUIText("FileChooser_xm"))
-		hashmapFileFilters!![".mod"] = SimpleFileFilter(".mod", getUIText("FileChooser_mod"))
-		hashmapFileFilters!![".aif"] = SimpleFileFilter(".aif", getUIText("FileChooser_aif"))
-		hashmapFileFilters!![".aiff"] = SimpleFileFilter(".aif", getUIText("FileChooser_aiff"))
-		hashmapFileFilters!![".ogg"] = SimpleFileFilter(".ogg", getUIText("FileChooser_ogg"))
-
+		hashmapFileFilters?.also {
+			it[".wav"] = SimpleFileFilter(".wav", getUIText("FileChooser_wav"))
+			it[".xm"] = SimpleFileFilter(".xm", getUIText("FileChooser_xm"))
+			it[".mod"] = SimpleFileFilter(".mod", getUIText("FileChooser_mod"))
+			it[".aif"] = SimpleFileFilter(".aif", getUIText("FileChooser_aif"))
+			it[".aiff"] = SimpleFileFilter(".aif", getUIText("FileChooser_aiff"))
+			it[".ogg"] = SimpleFileFilter(".ogg", getUIText("FileChooser_ogg"))
+		}
 		// ファイル選択ダイアログ
-		fileChooser = JFileChooser()
-
-		for(filter in hashmapFileFilters!!.values) {
-			fileChooser!!.addChoosableFileFilter(filter)
+		fileChooser = JFileChooser().apply {
+			hashmapFileFilters?.forEach {_,filter ->
+				addChoosableFileFilter(filter)
+			}
 		}
 	}
 
@@ -275,7 +277,7 @@ class MusicListEditor:JFrame(), ActionListener {
 			if(defaultDirectory.isEmpty()) defaultDirectory = "$currentDirectory/res/bgm"
 
 			val file = File(defaultDirectory)
-			fileChooser!!.currentDirectory = file
+			fileChooser?.currentDirectory = file
 
 			// ファイル選択ダイアログの default 拡張子を設定
 			if(file.isFile)
@@ -284,13 +286,13 @@ class MusicListEditor:JFrame(), ActionListener {
 					val lastPeriod = strName.lastIndexOf('.')
 					if(lastPeriod!=-1) {
 						val strExt = strName.substring(lastPeriod, strName.length)
-						fileChooser!!.fileFilter = hashmapFileFilters!![strExt]
+						fileChooser?.fileFilter = hashmapFileFilters!![strExt]
 					}
 				} catch(e2:Exception) {
 				}
 
 			// ファイル選択ダイアログを表示
-			if(fileChooser!!.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
+			if(fileChooser?.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
 				val strPath = fileChooser!!.selectedFile.path
 				txtfldMusicFileNames[number].text = strPath
 			}

@@ -1,3 +1,4 @@
 /target/
 /.settings/
 !javaws.jar
+!lib/**/*.jar

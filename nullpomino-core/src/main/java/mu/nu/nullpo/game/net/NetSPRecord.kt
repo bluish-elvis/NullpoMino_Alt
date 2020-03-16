@@ -9,13 +9,13 @@ import java.util.*
 class NetSPRecord:Serializable {
 
 	/** Player Name */
-	var strPlayerName:String=""
+	var strPlayerName:String = ""
 
 	/** Game Mode Name */
-	var strModeName:String=""
+	var strModeName:String = ""
 
 	/** Rule Name */
-	var strRuleName:String=""
+	var strRuleName:String = ""
 
 	/** Main Stats */
 	var stats:Statistics? = null
@@ -24,10 +24,10 @@ class NetSPRecord:Serializable {
 	var listCustomStats:LinkedList<String> = LinkedList()
 
 	/** Replay data (Compressed) */
-	var strReplayProp:String=""
+	var strReplayProp:String = ""
 
 	/** Time stamp (GMT) */
-	var strTimeStamp:String=""
+	var strTimeStamp:String = ""
 
 	/** Game Type ID */
 	var gameType:Int = 0
@@ -140,15 +140,15 @@ class NetSPRecord:Serializable {
 	 * @return String Array (String[9])
 	 */
 	fun exportStringArray():Array<String> = arrayOf(
-	NetUtil.urlEncode(strPlayerName)
-	,NetUtil.urlEncode(strModeName)
-	,NetUtil.urlEncode(strRuleName)
-	,if(stats==null) "" else NetUtil.compressString(stats!!.exportString())
-	,if(listCustomStats.isNullOrEmpty()) "" else NetUtil.compressString(exportCustomStats())
-	, strReplayProp
-	, "$gameType"
-	, "$style"
-	, strTimeStamp)
+		NetUtil.urlEncode(strPlayerName)
+		, NetUtil.urlEncode(strModeName)
+		, NetUtil.urlEncode(strRuleName)
+		, if(stats==null) "" else NetUtil.compressString(stats!!.exportString())
+		, if(listCustomStats.isNullOrEmpty()) "" else NetUtil.compressString(exportCustomStats())
+		, strReplayProp
+		, "$gameType"
+		, "$style"
+		, strTimeStamp)
 
 	/** Export to a String
 	 * @return String (Split by ;)
@@ -241,44 +241,52 @@ class NetSPRecord:Serializable {
 	 */
 	fun getStatRow(type:Int):String {
 		var strRow = ""
-
-		if(type!=RANKINGTYPE_GENERIC_SCORE) {
-			if(type==RANKINGTYPE_GENERIC_TIME) {
-				strRow += stats!!.time.toString()+","
-				strRow += stats!!.totalPieceLocked.toString()+","
-				strRow += stats!!.pps
-			} else if(type==RANKINGTYPE_SCORERACE) {
-				strRow += stats!!.time.toString()+","
-				strRow += stats!!.lines.toString()+","
-				strRow += stats!!.spl
-			} else if(type==RANKINGTYPE_DIGRACE) {
-				strRow += stats!!.time.toString()+","
-				strRow += stats!!.lines.toString()+","
-				strRow += stats!!.totalPieceLocked
-			} else if(type==RANKINGTYPE_ULTRA) {
-				strRow += stats!!.score.toString()+","
-				strRow += stats!!.lines.toString()+","
-				strRow += stats!!.totalPieceLocked
-			} else if(type==RANKINGTYPE_COMBORACE) {
-				strRow += stats!!.maxCombo.toString()+","
-				strRow += stats!!.time.toString()+","
-				strRow += stats!!.pps
-			} else if(type==RANKINGTYPE_DIGCHALLENGE) {
-				strRow += stats!!.score.toString()+","
-				strRow += stats!!.lines.toString()+","
-				strRow += stats!!.time
-			} else if(type==RANKINGTYPE_TIMEATTACK) {
-				strRow += stats!!.lines.toString()+","
-				strRow += stats!!.time.toString()+","
-				strRow += stats!!.pps.toString()+","
-				strRow += stats!!.rollclear
+		stats?.also {
+			if(type!=RANKINGTYPE_GENERIC_SCORE) {
+				when(type) {
+					RANKINGTYPE_GENERIC_TIME -> {
+						strRow += it.time.toString()+","
+						strRow += it.totalPieceLocked.toString()+","
+						strRow += it.pps
+					}
+					RANKINGTYPE_SCORERACE -> {
+						strRow += it.time.toString()+","
+						strRow += it.lines.toString()+","
+						strRow += it.spl
+					}
+					RANKINGTYPE_DIGRACE -> {
+						strRow += it.time.toString()+","
+						strRow += it.lines.toString()+","
+						strRow += it.totalPieceLocked
+					}
+					RANKINGTYPE_ULTRA -> {
+						strRow += it.score.toString()+","
+						strRow += it.lines.toString()+","
+						strRow += it.totalPieceLocked
+					}
+					RANKINGTYPE_COMBORACE -> {
+						strRow += it.maxCombo.toString()+","
+						strRow += it.time.toString()+","
+						strRow += it.pps
+					}
+					RANKINGTYPE_DIGCHALLENGE -> {
+						strRow += it.score.toString()+","
+						strRow += it.lines.toString()+","
+						strRow += it.time
+					}
+					RANKINGTYPE_TIMEATTACK -> {
+						strRow += it.lines.toString()+","
+						strRow += it.time.toString()+","
+						strRow += it.pps.toString()+","
+						strRow += it.rollclear
+					}
+				}
+			} else {
+				strRow += it.score.toString()+","
+				strRow += it.lines.toString()+","
+				strRow += it.time
 			}
-		} else {
-			strRow += stats!!.score.toString()+","
-			strRow += stats!!.lines.toString()+","
-			strRow += stats!!.time
 		}
-
 		return strRow
 	}
 

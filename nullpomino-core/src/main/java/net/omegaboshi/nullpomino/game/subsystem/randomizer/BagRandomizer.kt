@@ -1,33 +1,40 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
+import mu.nu.nullpo.game.component.Piece
+
 open class BagRandomizer:Randomizer {
+	open val noSZO = false
+	open val limitPrev = false
 
 	internal open val baglen:Int get() = pieces.size
-	internal open var bag:IntArray = IntArray( pieces.size){pieces[it%pieces.size]}
-	internal var pt:Int =  pieces.size
+	private var bag:IntArray = IntArray(0)
+	internal open val bagInit:IntArray get() = IntArray(baglen) {pieces[it%pieces.size]}
 
+	private var pt:Int = pieces.size
+	var isfirst = true
 	constructor():super()
-
 
 	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
 
-
-
 	open fun shuffle() {
-		bag = IntArray(baglen){pieces[it%pieces.size]}
-		for(i in baglen downTo 2) {
-			val j = r.nextInt(i)
-			val temp = bag[i-1]
-			bag[i-1] = bag[j]
-			bag[j] = temp
+		val tmp = bagInit.toMutableList()
+		bag = IntArray(0)
+		while(tmp.isNotEmpty()) {
+			var i = 0
+			do i = r.nextInt(tmp.size)
+			while(if(tmp.size==baglen) noSZO&&isfirst&&(tmp[i]==Piece.Shape.S.ordinal||tmp[i]==Piece.Shape.Z.ordinal||tmp[i]==Piece.Shape.O.ordinal)
+				else limitPrev&&bag.takeLast(minOf(4,maxOf(0,tmp.size-1))).any {it==tmp[i]})
+			isfirst=false
+			bag += tmp.removeAt(i)
 		}
 	}
 
 	override fun next():Int {
-		if(pt>=baglen) {
+		if(pt>=bag.size) {
 			pt = 0
 			this.shuffle()
 		}
 		return bag[pt++]
 	}
+
 }

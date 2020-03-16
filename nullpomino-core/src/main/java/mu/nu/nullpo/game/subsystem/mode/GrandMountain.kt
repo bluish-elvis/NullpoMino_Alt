@@ -175,7 +175,7 @@ class GrandMountain:AbstractMode() {
 		engine.speed.lockDelay = 31
 		engine.speed.das = 15
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.bighalf = true
@@ -298,13 +298,13 @@ class GrandMountain:AbstractMode() {
 			}
 
 			//  section time display切替
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -314,7 +314,7 @@ class GrandMountain:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -525,7 +525,7 @@ class GrandMountain:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Combo
 		comboValue = if(lines==0) 1
 		else maxOf(1, comboValue+2*lines-2)
@@ -535,7 +535,7 @@ class GrandMountain:AbstractMode() {
 			garbageCount--
 
 			if(garbageCount<=0) {
-				engine.playSE("garbage")
+				engine.playSE("garbage0")
 
 				val field = engine.field
 				val w = field!!.width
@@ -556,7 +556,7 @@ class GrandMountain:AbstractMode() {
 						}
 						GOALTYPE_PATTERN -> {
 							field.pushUp(2)
-							for(i in 0 until tableGarbagePatternBig[garbagePos].size)
+							for(i in tableGarbagePatternBig[garbagePos].indices)
 								if(tableGarbagePatternBig[garbagePos][i]!=0)
 									for(j in 0..1)
 										for(k in 0..1)
@@ -601,7 +601,7 @@ class GrandMountain:AbstractMode() {
 						}
 						GOALTYPE_PATTERN -> {
 							field.pushUp()
-							for(i in 0 until tableGarbagePattern[garbagePos].size)
+							for(i in tableGarbagePattern[garbagePos].indices)
 								if(tableGarbagePattern[garbagePos][i]!=0)
 									field.setBlock(i, h-1, Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 							garbagePos++
@@ -679,8 +679,9 @@ class GrandMountain:AbstractMode() {
 			lastscore = ((levelb+ls)/4+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)*ls*comboValue*bravo+
 				engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7
 			engine.statistics.scoreLine += lastscore
-
+			return lastscore
 		}
+		return 0
 	}
 
 	/* Called when hard drop used */
@@ -703,7 +704,7 @@ class GrandMountain:AbstractMode() {
 
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
-			rolltime += if(version>=1&&engine.ctrl!!.isPress(Controller.BUTTON_F))
+			rolltime += if(version>=1&&engine.ctrl.isPress(Controller.BUTTON_F))
 				5
 			else
 				1
@@ -764,18 +765,18 @@ class GrandMountain:AbstractMode() {
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		// ページ切り替え
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
 			if(engine.statc[1]>2) engine.statc[1] = 0
 			engine.playSE("change")
 		}
 		//  section time display切替
-		if(engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 			engine.playSE("change")
 			isShowBestSectionTime = !isShowBestSectionTime
 		}

@@ -23,8 +23,10 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick.img
 
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.gui.slick.ResourceHolder
+import mu.nu.nullpo.gui.slick.*
+import mu.nu.nullpo.gui.slick.RendererSlick
 import org.newdawn.slick.Color
 
 /** Normal display class string */
@@ -52,8 +54,8 @@ object FontNormal {
 	 * @param str String
 	 * @param color Letter cint
 	 */
-	fun printTTF(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE) {
-		ResourceHolder.ttfFont?.run {drawString(x.toFloat(), y.toFloat(), str, getFontColorAsColor(color))}
+	fun printTTF(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, alpha:Float = 1f) {
+		ResourceHolder.ttfFont?.run {drawString(x.toFloat(), y.toFloat(), str, getFontColorAsColor(color).apply {a = alpha})}
 	}
 
 	/** Draws the string
@@ -63,29 +65,34 @@ object FontNormal {
 	 * @param color Letter cint
 	 * @param scale Enlargement factor
 	 */
-	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
-		var dx = x
-		var dy = y
-		val fontColor = color.ordinal
-		for(i in 0 until str.length) {
-			val stringChar = str[i].toInt()
+	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
+		rainbow:Int = NullpoMinoSlick.rainbow) {
+		var dx = x.toFloat()
+		var dy = y.toFloat()
+		val filter = Color(Color.white).apply {
+			a = alpha
+		}
+		str.forEachIndexed {i, char ->
+			val stringChar = char.toInt()
 
 			if(stringChar==0x0A) {
 				// New line (\n)
 				if(scale==1f) {
-					dy = (dy+16*scale).toInt()
-					dx = x
+					dy += 16*scale
+					dx = x.toFloat()
 				} else {
 					dy += 8
-					dx = x
+					dx = x.toFloat()
 				}
 			} else {
 				val c = stringChar-32// Character output
+				val fontColor = (if(color==COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
 				if(scale==.5f) {
 					val sx = c%32*8
 					val sy = c/32*8+fontColor*24
-					ResourceHolder.imgFontSmall.draw(dx.toFloat(), dy.toFloat(), (dx+8).toFloat(), (dy+8).toFloat(),
-						sx.toFloat(), sy.toFloat(), (sx+8).toFloat(), (sy+8).toFloat())
+
+					ResourceHolder.imgFontSmall.draw(dx, dy, (dx+8), (dy+8),
+						sx.toFloat(), sy.toFloat(), sx+8f, sy+8f, filter)
 					dx += 8
 				} else {
 					val sx = c%32*16
@@ -93,9 +100,9 @@ object FontNormal {
 					//SDLRect rectSrc = new SDLRect(sx, sy, 16, 16);
 					//SDLRect rectDst = new SDLRect(dx, dy, 16, 16);
 					//ResourceHolderSDL.imgFont.blitSurface(rectSrc, dest, rectDst);
-					ResourceHolder.imgFont.draw(dx.toFloat(), dy.toFloat(), dx+16*scale, dy+16*scale,
-						sx.toFloat(), sy.toFloat(), (sx+16).toFloat(), (sy+16).toFloat())
-					dx = (dx+16*scale).toInt()
+					ResourceHolder.imgFont.draw(dx, dy, dx+16*scale, dy+16*scale,
+						sx.toFloat(), sy.toFloat(), sx+16f, sy+16f, filter)
+					dx = (dx+16*scale)
 				}
 			}
 		}
@@ -112,8 +119,8 @@ object FontNormal {
 	 * @param scale Enlargement factor
 	 */
 	fun printFont(x:Int, y:Int, str:String, flag:Boolean, fontColorFalse:COLOR = COLOR.WHITE,
-		fontColorTrue:COLOR = COLOR.RED, scale:Float = 1f) =
-		printFont(x, y, str, if(flag) fontColorTrue else fontColorFalse, scale)
+		fontColorTrue:COLOR = COLOR.RED, scale:Float = 1f, alpha:Float = 1f, rainbow:Int = NullpoMinoSlick.rainbow) =
+		printFont(x, y, str, if(flag) fontColorTrue else fontColorFalse, scale, alpha, rainbow)
 
 	/** Draws the string (16x16Grid units)
 	 * @param fontX X-coordinate
@@ -121,8 +128,9 @@ object FontNormal {
 	 * @param fontStr String
 	 * @param fontColor Letter cint
 	 */
-	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, fontColor:COLOR = COLOR.WHITE, scale:Float = 1f) =
-		printFont(fontX*16, fontY*16, fontStr, fontColor, scale)
+	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, fontColor:COLOR = COLOR.WHITE, scale:Float = 1f,
+		alpha:Float = 1f, rainbow:Int = NullpoMinoSlick.rainbow) =
+		printFont(fontX*16, fontY*16, fontStr, fontColor, scale, alpha, rainbow)
 
 	/** flagThefalseIf it&#39;s the casefontColorTrue cint, trueIf it&#39;s the
 	 * casefontColorTrue colorDraws the string in (16x16Grid units)
@@ -134,6 +142,7 @@ object FontNormal {
 	 * @param fontColorTrue flagThetrueText cint in the case of
 	 */
 	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, flag:Boolean,
-		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RED) =
-		printFont(fontX*16, fontY*16, fontStr, if(flag) fontColorTrue else fontColorFalse)
+		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RAINBOW, alpha:Float = 1f,
+		rainbow:Int = NullpoMinoSlick.rainbow) =
+		printFont(fontX*16, fontY*16, fontStr, if(flag) fontColorTrue else fontColorFalse, alpha = alpha, rainbow = rainbow)
 }

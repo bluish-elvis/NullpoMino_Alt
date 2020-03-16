@@ -25,6 +25,7 @@ package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -120,8 +121,8 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -268,7 +269,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				if(menuCursor==28)
@@ -285,7 +286,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 			menuTime++
 		} else if(engine.statc[4]==0) {
 			menuTime++
@@ -304,7 +305,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
 				owner.engine[1].resetStatc()
-			} else if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
+			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
 
 		return true
 	}
@@ -381,7 +382,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		val fldPosX = receiver.fieldX(engine, playerID)
 		val fldPosY = receiver.fieldY(engine, playerID)
-		val playerColor = if(playerID==0) COLOR.RED else COLOR.BLUE
+		val playerColor = EventReceiver.getPlayerColor(playerID)
 
 		// Timer
 		if(playerID==0) receiver.drawDirectFont(224, 8, GeneralUtil.getTime(engine.statistics.time))
@@ -454,37 +455,38 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 		feverChainDisplay[playerID] = feverChain[playerID]
 	}
 
-	override fun addOjama(engine:GameEngine, playerID:Int, pts:Int) {
+	override fun addOjama(engine:GameEngine, playerID:Int, pts:Int):Int {
 		var enemyID = 0
 		if(playerID==0) enemyID = 1
 
-		var ojamaNew = 0
-		if(zenKeshi[playerID]&&zenKeshiType[playerID]==ZENKESHI_MODE_ON) ojamaNew += 30
+		var pow = 0
+		if(zenKeshi[playerID]&&zenKeshiType[playerID]==ZENKESHI_MODE_ON) pow += 30
 		//Add ojama
 		var rate = ojamaRate[playerID]
 		if(hurryupSeconds[playerID]>0&&engine.statistics.time>hurryupSeconds[playerID])
 			rate = rate shr engine.statistics.time/(hurryupSeconds[playerID]*60)
 		if(rate<=0) rate = 1
-		ojamaNew += (pts+rate-1)/rate
-		ojamaSent[playerID] += ojamaNew
-
+		pow += (pts+rate-1)/rate
+		ojamaSent[playerID] += pow
+		var send = pow
 		//Counter ojama
-		if(ojama[playerID]>0&&ojamaNew>0) {
-			val delta = minOf(ojama[playerID], ojamaNew)
+		if(ojama[playerID]>0&&send>0) {
+			val delta = minOf(ojama[playerID], send)
 			ojama[playerID] -= delta
-			ojamaNew -= delta
+			send -= delta
 		}
-		if(ojamaAdd[playerID]>0&&ojamaNew>0) {
-			val delta = minOf(ojamaAdd[playerID], ojamaNew)
+		if(ojamaAdd[playerID]>0&&send>0) {
+			val delta = minOf(ojamaAdd[playerID], send)
 			ojamaAdd[playerID] -= delta
-			ojamaNew -= delta
+			send -= delta
 		}
-		if(ojamaHandicapLeft[playerID]>0&&ojamaNew>0) {
-			val delta = minOf(ojamaHandicapLeft[playerID], ojamaNew)
+		if(ojamaHandicapLeft[playerID]>0&&send>0) {
+			val delta = minOf(ojamaHandicapLeft[playerID], send)
 			ojamaHandicapLeft[playerID] -= delta
-			ojamaNew -= delta
+			send -= delta
 		}
-		if(ojamaNew>0) ojamaAdd[enemyID] += ojamaNew
+		if(send>0) ojamaAdd[enemyID] += send
+		return pow
 	}
 
 	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
@@ -545,6 +547,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 		/** Chain multipliers */
 		private val FEVER_POWERS = intArrayOf(4, 10, 18, 21, 29, 46, 76, 113, 150, 223, 259, 266, 313, 364, 398, 432, 468, 504, 540, 576, 612, 648, 684, 720 //Arle
 		)
+
 		/** Constants for chain display settings */
 		const val CHAIN_DISPLAY_FEVERSIZE = 4
 	}

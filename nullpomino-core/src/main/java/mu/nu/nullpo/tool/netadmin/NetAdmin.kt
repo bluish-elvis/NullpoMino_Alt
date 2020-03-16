@@ -223,37 +223,42 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		spPassword.add(passfldPassword!!, BorderLayout.EAST)
 
 		// * Remember Username checkbox
-		chkboxRememberUsername = JCheckBox(getUIText("Login_RememberUsername"))
-		chkboxRememberUsername!!.isSelected = propConfig.getProperty("login.rememberUsername", false)
-		chkboxRememberUsername!!.alignmentX = 0f
+		chkboxRememberUsername = JCheckBox(getUIText("Login_RememberUsername")) .apply{
+			isSelected = propConfig.getProperty("login.rememberUsername", false)
+			alignmentX = 0f
+		}
 		mpLogin.add(chkboxRememberUsername)
 
 		// * Remember Password checkbox
-		chkboxRememberPassword = JCheckBox(getUIText("Login_RememberPassword"))
-		chkboxRememberPassword!!.isSelected = propConfig.getProperty("login.rememberPassword", false)
-		chkboxRememberPassword!!.alignmentX = 0f
+		chkboxRememberPassword = JCheckBox(getUIText("Login_RememberPassword")).apply {
+			isSelected = propConfig.getProperty("login.rememberPassword", false)
+			alignmentX = 0f
+		}
 		mpLogin.add(chkboxRememberPassword)
 
 		// * Buttons panel
-		val spButtons = JPanel()
-		spButtons.layout = BoxLayout(spButtons, BoxLayout.X_AXIS)
-		spButtons.alignmentX = 0f
+		val spButtons = JPanel().apply {
+			layout = BoxLayout(this, BoxLayout.X_AXIS)
+			alignmentX = 0f
+		}
 		mpLogin.add(spButtons)
 
 		// ** Login button
-		btnLogin = JButton(getUIText("Login_Login"))
-		btnLogin!!.setMnemonic('L')
-		btnLogin!!.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnLogin!!.maximumSize.height)
-		btnLogin!!.actionCommand = "Login_Login"
-		btnLogin!!.addActionListener(this)
+		btnLogin = JButton(getUIText("Login_Login")).also {
+			it.setMnemonic('L')
+			it.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), it.maximumSize.height)
+			it.actionCommand = "Login_Login"
+			it.addActionListener(this)
+		}
 		spButtons.add(btnLogin)
 
 		// ** Quit button
-		val btnQuit = JButton(getUIText("Login_Quit"))
-		btnQuit.setMnemonic('Q')
-		btnQuit.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnQuit.maximumSize.height)
-		btnQuit.actionCommand = "Login_Quit"
-		btnQuit.addActionListener(this)
+		val btnQuit = JButton(getUIText("Login_Quit")).also {
+			it.setMnemonic('Q')
+			it.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), it.maximumSize.height)
+			it.actionCommand = "Login_Quit"
+			it.addActionListener(this)
+		}
 		spButtons.add(btnQuit)
 	}
 

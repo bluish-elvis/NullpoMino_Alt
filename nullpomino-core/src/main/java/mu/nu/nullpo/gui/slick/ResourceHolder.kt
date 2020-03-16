@@ -35,19 +35,17 @@ import java.io.IOException
 import java.util.*
 
 /** 画像や音声の管理をするクラス */
-object ResourceHolder {
+object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	/** Log */
 	internal val log = Logger.getLogger(ResourceHolder::class.java)
 
-	/** Number of images for block spatter animation during line clears */
-	internal const val BLOCK_BREAK_MAX = 8
-
 	/** Number of image splits for block spatter animation during line clears */
-	internal const val BLOCK_BREAK_SEGMENTS = 2
+	override val BLOCK_BREAK_SEGMENTS = 2
+
+	override val BACKGROUND_MAX get() = imgPlayBG.size
 
 	/** Number of gem block clear effects */
-	internal const val PERASE_MAX = 7
-	internal const val HANABI_MAX = 7
+	override val imgBlockListSize:Int get() = imgNormalBlockList.size
 
 	/** Block images */
 	internal var imgNormalBlockList:LinkedList<Image> = LinkedList()
@@ -55,7 +53,7 @@ object ResourceHolder {
 	internal var imgBigBlockList:LinkedList<Image> = LinkedList()
 
 	/** Block sticky flag */
-	internal var blockStickyFlagList:LinkedList<Boolean> = LinkedList()
+	override var blockStickyFlagList:LinkedList<Boolean> = LinkedList()
 
 	/** Decoration Spriets : Badges and Medals */
 	internal lateinit var imgBadges:Image
@@ -210,6 +208,7 @@ object ResourceHolder {
 			log.info("Loading Sound Effect")
 			loadSE("cursor")
 			loadSE("change")
+			loadSE("cancel")
 			loadSE("decide")
 			for(i in 0..2) {
 				loadSE("decide$i")
@@ -233,14 +232,18 @@ object ResourceHolder {
 			loadSE("step")
 			loadSE("lock")
 			loadSE("erase")
-			loadSE("eraser")
-			for(i in 0..3)
-				loadSE("line${i+1}")
+			for(i in 0..2)
+			loadSE("erase$i")
+			for(i in 1..4)
+				loadSE("line$i")
 			loadSE("linefall")
-			for(i in 0..4)
+			for(i in 0..5)
 				loadSE("applause$i")
+			for(i in 0..1)
+				loadSE("crowd$i")
+			loadSE("cheer")
 			loadSE("twist")
-			loadSE("tspin")
+			loadSE("twister")
 			loadSE("combo")
 			loadSE("b2b_start")
 			loadSE("b2b_combo")
@@ -249,8 +252,8 @@ object ResourceHolder {
 			loadSE("danger")
 			loadSE("dead")
 			loadSE("shutter")
-			loadSE("gameover")
-			loadSE("end")
+			loadSE("gamelost")
+			loadSE("gamewon")
 
 			for(i in 0..4)
 				loadSE("grade$i")
@@ -267,8 +270,8 @@ object ResourceHolder {
 			for(i in 1..3)
 				loadSE("medal$i")
 
-			loadSE("ready")
-			loadSE("go")
+			loadSE("start0")
+			loadSE("start1")
 			loadSE("pause")
 			loadSE("countdown")
 			loadSE("hurryup")
@@ -277,7 +280,8 @@ object ResourceHolder {
 			loadSE("stagefail")
 			loadSE("matchend")
 
-			loadSE("garbage")
+			loadSE("garbage0")
+			loadSE("garbage1")
 			loadSE("gem")
 			loadSE("bomb")
 			loadSE("square_s")

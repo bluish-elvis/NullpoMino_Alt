@@ -341,7 +341,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			}
 
 			// Retry
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&!netIsWatch&&netReplaySendStatus==2) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&!netIsWatch&&netReplaySendStatus==2) {
 				engine.playSE("decide")
 				if(netNumSpectators>0||netForceSendMovements) {
 					netLobby!!.netPlayerClient!!.send("game\tretry\n")
@@ -379,7 +379,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		val change = super.updateCursor(engine, maxCursor, playerID)
 
 		// NET: Signal cursor change
-		if((engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)||engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN))&&
+		if((engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)||engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN))&&
 			netIsNetPlay&&(netNumSpectators>0||netForceSendMovements))
 			netLobby!!.netPlayerClient!!.send("game\tcursor\t$menuCursor\n")
 
@@ -869,19 +869,19 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 			if(!netRankingNoDataFlag[d]&&netRankingReady[d]) {
 				// Up
-				if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+				if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 					netRankingCursor[d]--
 					if(netRankingCursor[d]<0) netRankingCursor[d] = netRankingPlace[d].size-1
 					engine.playSE("cursor")
 				}
 				// Down
-				if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+				if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 					netRankingCursor[d]++
 					if(netRankingCursor[d]>netRankingPlace[d].size-1) netRankingCursor[d] = 0
 					engine.playSE("cursor")
 				}
 				// Download
-				if(engine.ctrl!!.isPush(Controller.BUTTON_A)) {
+				if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 					engine.playSE("decide")
 
 					netLobby!!.netPlayerClient!!.send("spdownload\t${NetUtil.urlEncode(netCurrentRoomInfo!!.ruleName)}\t${NetUtil.urlEncode(name)}\t$goaltype\t${netRankingView!=0}\t${NetUtil.urlEncode(netRankingName[d][netRankingCursor[d]])}\n")
@@ -891,13 +891,13 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			}
 
 			// Left/Right
-			if(engine.ctrl!!.isPush(Controller.BUTTON_LEFT)||engine.ctrl!!.isPush(Controller.BUTTON_RIGHT)) {
+			if(engine.ctrl.isPush(Controller.BUTTON_LEFT)||engine.ctrl.isPush(Controller.BUTTON_RIGHT)) {
 				netRankingView = if(netRankingView==0) 1 else 0
 				engine.playSE("change")
 			}
 
 			// Exit
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) {
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) {
 				netIsNetRankingDisplayMode = false
 				owner.menuOnly = false
 			}

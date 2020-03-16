@@ -82,27 +82,31 @@ class Statistics:Serializable {
 	/** 4-line clear count */
 	var totalQuadruple:Int = 0
 
-	/** T-Spin 0 lines (with wallkick) count */
-	var totalTSpinZeroMini:Int = 0
-	/** T-Spin 0 lines (without wallkick) count */
-	var totalTSpinZero:Int = 0
-	/** T-Spin 1 line (with wallkick) count */
-	var totalTSpinSingleMini:Int = 0
-	/** T-Spin 1 line (without wallkick) count */
-	var totalTSpinSingle:Int = 0
-	/** T-Spin 2 line (with wallkick) count */
-	var totalTSpinDoubleMini:Int = 0
-	/** T-Spin 2 line (without wallkick) count */
-	var totalTSpinDouble:Int = 0
-	/** T-Spin 3 line count */
-	var totalTSpinTriple:Int = 0
+	/** Twister but no-line (with wallkick) count */
+	var totalTwistZeroMini:Int = 0
+	/** Twister but no-line (without wallkick) count */
+	var totalTwistZero:Int = 0
+	/** Twister 1-line (with wallkick) count */
+	var totalTwistSingleMini:Int = 0
+	/** Twister 1-line (without wallkick) count */
+	var totalTwistSingle:Int = 0
+	/** Twister 2-line (with wallkick) count */
+	var totalTwistDoubleMini:Int = 0
+	/** Twister 2-line (without wallkick) count */
+	var totalTwistDouble:Int = 0
+	/** Twister Split 2-line count */
+	var totalTwistSplitDouble:Int = 0
+	/** Twister 3 line count */
+	var totalTwistTriple:Int = 0
+	/** Twister One-Two-3-line count */
+	var totalTwistSplitTriple:Int = 0
 
 	/** Back to Back 4-line clear count */
 	var totalB2BQuad:Int = 0
 	/** Back to Back Split clear count */
 	var totalB2BSplit:Int = 0
-	/** Back to Back T-Spin clear count */
-	var totalB2BTSpin:Int = 0
+	/** Back to Back Twister clear count */
+	var totalB2BTwist:Int = 0
 
 	/** Hold use count */
 	var totalHoldUsed:Int = 0
@@ -206,16 +210,18 @@ class Statistics:Serializable {
 		totalTriple = 0
 		totalSplitTriple = 0
 		totalQuadruple = 0
-		totalTSpinZeroMini = 0
-		totalTSpinZero = 0
-		totalTSpinSingleMini = 0
-		totalTSpinSingle = 0
-		totalTSpinDoubleMini = 0
-		totalTSpinDouble = 0
-		totalTSpinTriple = 0
+		totalTwistZeroMini = 0
+		totalTwistZero = 0
+		totalTwistSingleMini = 0
+		totalTwistSingle = 0
+		totalTwistDoubleMini = 0
+		totalTwistDouble = 0
+		totalTwistSplitDouble = 0
+		totalTwistTriple = 0
+		totalTwistSplitTriple = 0
 		totalB2BQuad = 0
 		totalB2BSplit = 0
-		totalB2BTSpin = 0
+		totalB2BTwist = 0
 		totalHoldUsed = 0
 		maxCombo = 0
 		gamerate = 0f
@@ -250,16 +256,18 @@ class Statistics:Serializable {
 			totalTriple = b.totalTriple
 			totalSplitTriple = b.totalSplitTriple
 			totalQuadruple = b.totalQuadruple
-			totalTSpinZeroMini = b.totalTSpinZeroMini
-			totalTSpinZero = b.totalTSpinZero
-			totalTSpinSingleMini = b.totalTSpinSingleMini
-			totalTSpinSingle = b.totalTSpinSingle
-			totalTSpinDoubleMini = b.totalTSpinDoubleMini
-			totalTSpinDouble = b.totalTSpinDouble
-			totalTSpinTriple = b.totalTSpinTriple
+			totalTwistZeroMini = b.totalTwistZeroMini
+			totalTwistZero = b.totalTwistZero
+			totalTwistSingleMini = b.totalTwistSingleMini
+			totalTwistSingle = b.totalTwistSingle
+			totalTwistDoubleMini = b.totalTwistDoubleMini
+			totalTwistDouble = b.totalTwistDouble
+			totalTwistSplitDouble = b.totalTwistSplitDouble
+			totalTwistTriple = b.totalTwistTriple
+			totalTwistSplitTriple = b.totalTwistSplitTriple
 			totalB2BQuad = b.totalB2BQuad
 			totalB2BSplit = b.totalB2BSplit
-			totalB2BTSpin = b.totalB2BTSpin
+			totalB2BTwist = b.totalB2BTwist
 			maxCombo = b.maxCombo
 			gamerate = b.gamerate
 			maxChain = b.maxChain
@@ -297,16 +305,18 @@ class Statistics:Serializable {
 			totalTriple += b.totalTriple
 			totalSplitTriple += b.totalSplitTriple
 			totalQuadruple += b.totalQuadruple
-			totalTSpinZeroMini += b.totalTSpinZeroMini
-			totalTSpinZero += b.totalTSpinZero
-			totalTSpinSingleMini += b.totalTSpinSingleMini
-			totalTSpinSingle += b.totalTSpinSingle
-			totalTSpinDoubleMini += b.totalTSpinDoubleMini
-			totalTSpinDouble += b.totalTSpinDouble
-			totalTSpinTriple += b.totalTSpinTriple
+			totalTwistZeroMini += b.totalTwistZeroMini
+			totalTwistZero += b.totalTwistZero
+			totalTwistSingleMini += b.totalTwistSingleMini
+			totalTwistSingle += b.totalTwistSingle
+			totalTwistDoubleMini += b.totalTwistDoubleMini
+			totalTwistDouble += b.totalTwistDouble
+			totalTwistSplitDouble += b.totalTwistSplitDouble
+			totalTwistTriple += b.totalTwistTriple
+			totalTwistSplitTriple += b.totalTwistSplitTriple
 			totalB2BQuad += b.totalB2BQuad
 			totalB2BSplit += b.totalB2BSplit
-			totalB2BTSpin += b.totalB2BTSpin
+			totalB2BTwist += b.totalB2BTwist
 			maxCombo = maxOf(maxCombo, b.maxCombo)
 			gamerate = (gamerate+b.gamerate)/2f
 			maxChain = maxOf(maxCombo, b.maxChain)
@@ -341,16 +351,18 @@ class Statistics:Serializable {
 			"$id.statistics.totalTriple" to totalTriple,
 			"$id.statistics.totalSplitTriple" to totalSplitTriple,
 			"$id.statistics.totalFour" to totalQuadruple,
-			"$id.statistics.totalTSpinZeroMini" to totalTSpinZeroMini,
-			"$id.statistics.totalTSpinZero" to totalTSpinZero,
-			"$id.statistics.totalTSpinSingleMini" to totalTSpinSingleMini,
-			"$id.statistics.totalTSpinSingle" to totalTSpinSingle,
-			"$id.statistics.totalTSpinDoubleMini" to totalTSpinDoubleMini,
-			"$id.statistics.totalTSpinDouble" to totalTSpinDouble,
-			"$id.statistics.totalTSpinTriple" to totalTSpinTriple,
+			"$id.statistics.totalTwistZeroMini" to totalTwistZeroMini,
+			"$id.statistics.totalTwistZero" to totalTwistZero,
+			"$id.statistics.totalTwistSingleMini" to totalTwistSingleMini,
+			"$id.statistics.totalTwistSingle" to totalTwistSingle,
+			"$id.statistics.totalTwistDoubleMini" to totalTwistDoubleMini,
+			"$id.statistics.totalTwistDouble" to totalTwistDouble,
+			"$id.statistics.totalTwistSplitDouble" to totalTwistSplitDouble,
+			"$id.statistics.totalTwistTriple" to totalTwistTriple,
+			"$id.statistics.totalTwistSplitTriple" to totalTwistSplitTriple,
 			"$id.statistics.totalB2BFour" to totalB2BQuad,
 			"$id.statistics.totalB2BSplit" to totalB2BSplit,
-			"$id.statistics.totalB2BTSpin" to totalB2BTSpin,
+			"$id.statistics.totalB2BTwist" to totalB2BTwist,
 			"$id.statistics.totalHoldUsed" to totalHoldUsed,
 			"$id.statistics.maxCombo" to maxCombo,
 			"$id.statistics.gamerate" to gamerate,
@@ -385,16 +397,18 @@ class Statistics:Serializable {
 		totalTriple = p.getProperty("$id.statistics.totalTriple", 0)
 		totalSplitTriple = p.getProperty("$id.statistics.totalSplitTriple", 0)
 		totalQuadruple = p.getProperty("$id.statistics.totalFour", 0)
-		totalTSpinZeroMini = p.getProperty("$id.statistics.totalTSpinZeroMini", 0)
-		totalTSpinZero = p.getProperty("$id.statistics.totalTSpinZero", 0)
-		totalTSpinSingleMini = p.getProperty("$id.statistics.totalTSpinSingleMini", 0)
-		totalTSpinSingle = p.getProperty("$id.statistics.totalTSpinSingle", 0)
-		totalTSpinDoubleMini = p.getProperty("$id.statistics.totalTSpinDoubleMini", 0)
-		totalTSpinDouble = p.getProperty("$id.statistics.totalTSpinDouble", 0)
-		totalTSpinTriple = p.getProperty("$id.statistics.totalTSpinTriple", 0)
+		totalTwistZeroMini = p.getProperty("$id.statistics.totalTwistZeroMini", 0)
+		totalTwistZero = p.getProperty("$id.statistics.totalTwistZero", 0)
+		totalTwistSingleMini = p.getProperty("$id.statistics.totalTwistSingleMini", 0)
+		totalTwistSingle = p.getProperty("$id.statistics.totalTwistSingle", 0)
+		totalTwistDoubleMini = p.getProperty("$id.statistics.totalTwistDoubleMini", 0)
+		totalTwistDouble = p.getProperty("$id.statistics.totalTwistDouble", 0)
+		totalTwistSplitDouble = p.getProperty("$id.statistics.totalTwistSplitDouble", 0)
+		totalTwistTriple = p.getProperty("$id.statistics.totalTwistSplitTriple", 0)
+		totalTwistSplitTriple = p.getProperty("$id.statistics.totalTwistTriple", 0)
 		totalB2BQuad = p.getProperty("$id.statistics.totalB2BFour", 0)
 		totalB2BSplit = p.getProperty("$id.statistics.totalB2BSplit", 0)
-		totalB2BTSpin = p.getProperty("$id.statistics.totalB2BTSpin", 0)
+		totalB2BTwist = p.getProperty("$id.statistics.totalB2BTwist", 0)
 		totalHoldUsed = p.getProperty("$id.statistics.totalHoldUsed", 0)
 		maxCombo = p.getProperty("$id.statistics.maxCombo", 0)
 		gamerate = p.getProperty("$id.statistics.gamerate", 0f)
@@ -427,16 +441,18 @@ class Statistics:Serializable {
 		{totalTriple = Integer.parseInt(it)},
 		{totalSplitTriple = Integer.parseInt(it)},
 		{totalQuadruple = Integer.parseInt(it)},
-		{totalTSpinZeroMini = Integer.parseInt(it)},
-		{totalTSpinZero = Integer.parseInt(it)},
-		{totalTSpinSingleMini = Integer.parseInt(it)},
-		{totalTSpinSingle = Integer.parseInt(it)},
-		{totalTSpinDoubleMini = Integer.parseInt(it)},
-		{totalTSpinDouble = Integer.parseInt(it)},
-		{totalTSpinTriple = Integer.parseInt(it)},
+		{totalTwistZeroMini = Integer.parseInt(it)},
+		{totalTwistZero = Integer.parseInt(it)},
+		{totalTwistSingleMini = Integer.parseInt(it)},
+		{totalTwistSingle = Integer.parseInt(it)},
+		{totalTwistDoubleMini = Integer.parseInt(it)},
+		{totalTwistDouble = Integer.parseInt(it)},
+		{totalTwistSplitDouble = Integer.parseInt(it)},
+		{totalTwistTriple = Integer.parseInt(it)},
+		{totalTwistSplitTriple = Integer.parseInt(it)},
 		{totalB2BQuad = Integer.parseInt(it)},
 		{totalB2BSplit = Integer.parseInt(it)},
-		{totalB2BTSpin = Integer.parseInt(it)},
+		{totalB2BTwist = Integer.parseInt(it)},
 		{totalHoldUsed = Integer.parseInt(it)},
 		{maxCombo = Integer.parseInt(it)},
 		{gamerate = java.lang.Float.parseFloat(it)},
@@ -476,16 +492,18 @@ class Statistics:Serializable {
 		, "$totalTriple"
 		, "$totalSplitTriple"
 		, "$totalQuadruple"
-		, "$totalTSpinZeroMini"
-		, "$totalTSpinZero"
-		, "$totalTSpinSingleMini"
-		, "$totalTSpinSingle"
-		, "$totalTSpinDoubleMini"
-		, "$totalTSpinDouble"
-		, "$totalTSpinTriple"
+		, "$totalTwistZeroMini"
+		, "$totalTwistZero"
+		, "$totalTwistSingleMini"
+		, "$totalTwistSingle"
+		, "$totalTwistDoubleMini"
+		, "$totalTwistDouble"
+		, "$totalTwistSplitDouble"
+		, "$totalTwistTriple"
+		, "$totalTwistSplitTriple"
 		, "$totalB2BQuad"
 		, "$totalB2BSplit"
-		, "$totalB2BTSpin"
+		, "$totalB2BTwist"
 		, "$totalHoldUsed"
 		, "$maxCombo"
 		, "$gamerate"

@@ -119,6 +119,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 		/** Game mode description file */
 		internal val propModeDesc:CustomProperties = CustomProperties()
+
 		/** Skin description file */
 		internal val propSkins:CustomProperties = CustomProperties()
 
@@ -228,7 +229,13 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		private var prevCalcTime:Long = 0
 
 		/** frame count */
-		private var frameCount:Long = 0
+		var frameCount:Long = 0;private set
+
+		/** upTime by frame */
+		var upTimeFrame:Long = 0;private set
+
+		/** rainbow counter */
+		val rainbow get() = (upTimeFrame%18).toInt()/2
 
 		/** 実際のFPS */
 		private var actualFPS = 0.0
@@ -378,7 +385,8 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				log.fatal("LWJGL load failed", e)
 
 				// LWJGL Load failed! Do the file of LWJGL exist?
-				val fileLWJGL:File = if(!System.getProperty("os.arch").contains("64")&&System.getProperty("os.name").contains("Windows"))
+				val fileLWJGL:File = if(!System.getProperty("os.arch").contains("64")&&System.getProperty("os.name")
+						.contains("Windows"))
 					File("lib/lwjgl.dll")
 				else if(System.getProperty("os.arch").contains("64")&&System.getProperty("os.name").contains("Windows"))
 					File("lib/lwjgl64.dll")
@@ -556,21 +564,22 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				// ImageOut.write(screenImage, filename);
 
 				// なので自前で画面をコピーする
-				if(ssImage==null) ssImage = BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_RGB)
+				BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_RGB).also {ssImage ->
 
-				for(i in 0 until screenWidth)
-					for(j in 0 until screenHeight) {
-						val color = screenImage.getColor(i, j+1) // SomehowY-coordinateThe+1I seem not to deviate
+					for(i in 0 until screenWidth)
+						for(j in 0 until screenHeight) {
+							val color = screenImage.getColor(i, j+1) // SomehowY-coordinateThe+1I seem not to deviate
 
-						val rgb = color.red and 0x000000FF shl 16 or (
-							color.green and 0x000000FF shl 8) or
-							(color.blue and 0x000000FF)
+							val rgb = color.red and 0x000000FF shl 16 or (
+								color.green and 0x000000FF shl 8) or
+								(color.blue and 0x000000FF)
 
-						ssImage!!.setRGB(i, j, rgb)
-					}
+							ssImage.setRGB(i, j, rgb)
+						}
 
-				// ファイルに保存
-				javax.imageio.ImageIO.write(ssImage!!, "png", File(filename))
+					// ファイルに保存
+					javax.imageio.ImageIO.write(ssImage, "png", File(filename))
+				}
 			} catch(e:Throwable) {
 				log.error("Failed to create screen shot", e)
 			}
@@ -656,6 +665,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		 */
 		private fun calcFPS(ingame:Boolean, period:Long) {
 			frameCount++
+			upTimeFrame++
 			calcInterval += period
 
 			// 1秒おきにFPSを再計算する
@@ -698,7 +708,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		/** FPS display */
 		internal fun drawFPS() {
 			if(propConfig.getProperty("option.showfps", true))
-				FontNano.printFont(0, 480-8, "${df.format(actualFPS)}FPS", COLOR.WHITE,.5f)
+				FontNano.printFont(0, 480-8, "${df.format(actualFPS)}FPS", COLOR.WHITE, .5f)
 		}
 
 		/** Observerクライアントを開始 */
@@ -720,7 +730,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 			if(host.isNotEmpty()&&port>0) {
 				netObserverClient = NetObserverClient(host, port)
-				netObserverClient!!.start()
+				netObserverClient?.start()
 			}
 		}
 
@@ -739,14 +749,14 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 		/** Observerクライアントからの情報を描画 */
 		internal fun drawObserverClient() {
-			if(netObserverClient!=null&&netObserverClient!!.isConnected) {
-				var fontcolor = COLOR.BLUE
-				if(netObserverClient!!.observerCount>1) fontcolor = COLOR.GREEN
-				if(netObserverClient!!.observerCount>0&&netObserverClient!!.playerCount>0)
-					fontcolor = COLOR.RED
-				val strObserverInfo = String.format("%d/%d", netObserverClient!!.observerCount, netObserverClient!!.playerCount)
-				val strObserverString = String.format("%40s", strObserverInfo)
-				FontNano.printFont(0, 480-16, strObserverString, fontcolor)
+			netObserverClient?.let {
+				if(it.isConnected) {
+					val fontcolor = if(it.observerCount>0&&it.playerCount>0) COLOR.RED
+					else if(it.observerCount>1) COLOR.GREEN else COLOR.BLUE
+					val strObserverInfo = String.format("%d/%d", it.observerCount, it.playerCount)
+					val strObserverString = String.format("%40s", strObserverInfo)
+					FontNano.printFont(0, 480-16, strObserverString, fontcolor)
+				}
 			}
 		}
 	}

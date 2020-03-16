@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.component
 
 import java.io.Serializable
+import kotlin.math.sqrt
 
 /** Blockピースの落下速度や出現待ち timeなどの data */
 class SpeedParam:Serializable {
@@ -49,6 +50,7 @@ class SpeedParam:Serializable {
 	/** 横移動 time */
 	var das:Int = 14
 
+	val rank:Float get() = if(gravity<0)1f else (sqrt((gravity.toFloat()/denominator).toDouble())/sqrt(20.0)).toFloat()
 	/** Constructor */
 	constructor() {
 		reset()
@@ -90,5 +92,6 @@ class SpeedParam:Serializable {
 	companion object {
 		/** Serial version ID */
 		private const val serialVersionUID = -955934100998757270L
+		val SDS_FIXED = floatArrayOf(0.5f,1f,2f,3f,4f,5f,20f)
 	}
 }

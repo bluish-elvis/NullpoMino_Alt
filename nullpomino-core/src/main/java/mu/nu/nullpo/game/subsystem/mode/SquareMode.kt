@@ -62,7 +62,7 @@ class SquareMode:AbstractMode() {
 	private var outlinetype:Int = 0
 
 	/** Type of spins allowed (0=off 1=t-only 2=all) */
-	private var tspinEnableType:Int = 0
+	private var twistEnableType:Int = 0
 
 	/** Use TNT64 avalanche (native+cascade) */
 	private var tntAvalanche:Boolean = false
@@ -98,7 +98,7 @@ class SquareMode:AbstractMode() {
 		squares = 0
 
 		outlinetype = 0
-		tspinEnableType = 2
+		twistEnableType = 2
 		grayoutEnable = 1
 
 		rankingRank = -1
@@ -155,9 +155,9 @@ class SquareMode:AbstractMode() {
 						if(outlinetype>2) outlinetype = 0
 					}
 					2 -> {
-						tspinEnableType += change
-						if(tspinEnableType<0) tspinEnableType = 2
-						if(tspinEnableType>2) tspinEnableType = 0
+						twistEnableType += change
+						if(twistEnableType<0) twistEnableType = 2
+						if(twistEnableType>2) twistEnableType = 0
 					}
 					3 -> tntAvalanche = !tntAvalanche
 					4 -> {
@@ -169,7 +169,7 @@ class SquareMode:AbstractMode() {
 			}
 
 			// A button (confirm)
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -177,7 +177,7 @@ class SquareMode:AbstractMode() {
 			}
 
 			// B button (cancel)
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -202,7 +202,7 @@ class SquareMode:AbstractMode() {
 		if(grayoutEnable==2) grayoutStr = "ALL"
 		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GAME TYPE", GAMETYPE_NAME[gametype],
 			"OUTLINE", strOutline,
-			"SPIN BONUS", if(tspinEnableType==0) "OFF" else if(tspinEnableType==1) "T-ONLY" else "ALL",
+			"SPIN BONUS", if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL",
 			"AVALANCHE", if(tntAvalanche) "TNT" else "WORLDS",
 			"GRAYOUT", grayoutStr)
 	}
@@ -216,12 +216,12 @@ class SquareMode:AbstractMode() {
 		if(outlinetype==1) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_CONNECT
 		if(outlinetype==2) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 
-		if(tspinEnableType==0)
-			engine.tspinEnable = false
-		else if(tspinEnableType==1)
-			engine.tspinEnable = true
+		if(twistEnableType==0)
+			engine.twistEnable = false
+		else if(twistEnableType==1)
+			engine.twistEnable = true
 		else {
-			engine.tspinEnable = true
+			engine.twistEnable = true
 			engine.useAllSpinBonus = true
 		}
 
@@ -249,24 +249,28 @@ class SquareMode:AbstractMode() {
 				val scale = if(receiver.nextDisplayType==2&&gametype==0) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2&&gametype==0) 6 else 4
 
-				if(gametype==0)
-					receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE SQUARE TIME", EventReceiver.COLOR.BLUE, scale)
-				else if(gametype==1)
-					receiver.drawScoreFont(engine, playerID, 3, 3, "SCORE SQUARE", EventReceiver.COLOR.BLUE)
-				else if(gametype==2) receiver.drawScoreFont(engine, playerID, 3, 3, "TIME     SQUARE", EventReceiver.COLOR.BLUE)
+				when(gametype) {
+					0 -> receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE SQUARE TIME", EventReceiver.COLOR.BLUE, scale)
+					1 -> receiver.drawScoreFont(engine, playerID, 3, 3, "SCORE SQUARE", EventReceiver.COLOR.BLUE)
+					2 -> receiver.drawScoreFont(engine, playerID, 3, 3, "TIME     SQUARE", EventReceiver.COLOR.BLUE)
+				}
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
-					if(gametype==0) {
-						receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 9, topY+i, "${rankingSquares[gametype][i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
-					} else if(gametype==1) {
-						receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[gametype][i]}", i==rankingRank)
-						receiver.drawScoreFont(engine, playerID, 9, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
-					} else if(gametype==2) {
-						receiver.drawScoreFont(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank)
-						receiver.drawScoreFont(engine, playerID, 12, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
+					when(gametype) {
+						0 -> {
+							receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
+							receiver.drawScoreFont(engine, playerID, 9, topY+i, "${rankingSquares[gametype][i]}", i==rankingRank, scale)
+							receiver.drawScoreFont(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
+						}
+						1 -> {
+							receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[gametype][i]}", i==rankingRank)
+							receiver.drawScoreFont(engine, playerID, 9, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
+						}
+						2 -> {
+							receiver.drawScoreFont(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank)
+							receiver.drawScoreFont(engine, playerID, 12, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
+						}
 					}
 				}
 			}
@@ -359,10 +363,10 @@ class SquareMode:AbstractMode() {
 
 	/* Calculates line-clear score
  * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
-		if(lines>0&&engine.tspin) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+		if(lines>0&&engine.twist) {
 			avalanche(engine, playerID, lines)
-			return
+			return 0
 		}
 
 		// Line clear bonus
@@ -381,8 +385,9 @@ class SquareMode:AbstractMode() {
 			scgettime = 120
 			engine.statistics.scoreLine += pts
 			setSpeed(engine)
-
+			return pts
 		}
+		return 0
 	}
 
 	/** Spin avalanche routine.
@@ -429,10 +434,12 @@ class SquareMode:AbstractMode() {
 			else if(tntAvalanche)
 			// Set anti-gravity when TNT avalanche is used
 				for(x in 0 until field.width) {
-					var blk = field.getBlock(x, y)
-					if(blk!=null&&!blk.isEmpty) blk.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
-					blk = field.getBlock(x, y-1)
-					if(blk!=null&&!blk.isEmpty) blk.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
+					field.getBlock(x, y)?.also {
+						if(!it.isEmpty) it.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
+					}
+					field.getBlock(x, y-1)?.also {
+						if(!it.isEmpty) it.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
+					}
 				}
 		// Reset line flags
 		for(y in -1*hiddenHeight until height)
@@ -494,7 +501,7 @@ class SquareMode:AbstractMode() {
 	override fun loadSetting(prop:CustomProperties) {
 		gametype = prop.getProperty("square.gametype", 0)
 		outlinetype = prop.getProperty("square.outlinetype", 0)
-		tspinEnableType = prop.getProperty("square.tspinEnableType", 2)
+		twistEnableType = prop.getProperty("square.twistEnableType", 2)
 		tntAvalanche = prop.getProperty("square.tntAvalanche", false)
 		grayoutEnable = if(version==0)
 			if(prop.getProperty("square.grayoutEnable", false)) 2 else 0
@@ -509,7 +516,7 @@ class SquareMode:AbstractMode() {
 	override fun saveSetting(prop:CustomProperties) {
 		prop.setProperty("square.gametype", gametype)
 		prop.setProperty("square.outlinetype", outlinetype)
-		prop.setProperty("square.tspinEnableType", tspinEnableType)
+		prop.setProperty("square.twistEnableType", twistEnableType)
 		prop.setProperty("square.tntAvalanche", tntAvalanche)
 		prop.setProperty("square.grayoutEnable", grayoutEnable)
 		prop.setProperty("square.version", version)

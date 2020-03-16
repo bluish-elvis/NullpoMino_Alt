@@ -26,6 +26,7 @@ package mu.nu.nullpo.game.subsystem.mode.another
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -113,7 +114,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			val maxHeight = engine.field!!.height-1
 			for(x in 0 until engine.field!!.width) {
 				if(patternCol>=pattern.size) patternCol = 0
-				for(patternRow in 0 until pattern[patternCol].size) {
+				for(patternRow in pattern[patternCol].indices) {
 					engine.field!!.setBlockColor(x, maxHeight-patternRow, pattern[patternCol][patternRow])
 					val blk = engine.field!!.getBlock(x, maxHeight-patternRow)
 					blk!!.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
@@ -150,7 +151,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		if(!engine.owner.replayMode&&engine.statc[4]==0) {
 			// Configuration changes
 			// Up
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				menuCursor--
 				if(menuCursor<0) {
 					menuCursor = 33
@@ -159,7 +160,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				engine.playSE("cursor")
 			}
 			// Down
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 				menuCursor++
 				if(menuCursor>33) {
 					menuCursor = 0
@@ -170,15 +171,15 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 			// Configuration changes
 			var change = 0
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
 
 			if(change!=0) {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -349,7 +350,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				if(menuCursor==30)
@@ -366,7 +367,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			// プレビュー用Map読み込み
 			if(useMap[playerID]&&menuTime==0)
@@ -404,7 +405,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
 				owner.engine[1].resetStatc()
-			} else if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
+			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
 
 		return true
 	}
@@ -512,7 +513,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		val fldPosX = receiver.fieldX(engine, playerID)
 		val fldPosY = receiver.fieldY(engine, playerID)
-		val playerColor = if(playerID==0) COLOR.RED else COLOR.BLUE
+		val playerColor = EventReceiver.getPlayerColor(playerID)
 
 		// Timer
 		if(playerID==0) receiver.drawDirectFont(224, 8, GeneralUtil.getTime(engine.statistics.time))

@@ -129,6 +129,7 @@ class StateConfigRuleSelect:DummyMenuScrollState() {
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
+		super.enter(container, game)
 		strFileList = ruleFileList?: emptyArray()
 		createRuleEntries(strFileList, style)
 		strRuleNameList = extractRuleNameListFromRuleEntries()

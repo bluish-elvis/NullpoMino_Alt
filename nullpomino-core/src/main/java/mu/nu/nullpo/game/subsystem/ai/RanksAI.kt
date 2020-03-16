@@ -32,7 +32,6 @@ import mu.nu.nullpo.tool.airankstool.Ranks
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.log4j.Logger
 import java.io.*
-import java.util.*
 import kotlin.math.abs
 
 open class RanksAI:DummyAI(), Runnable {
@@ -148,7 +147,7 @@ open class RanksAI:DummyAI(), Runnable {
 				}
 				surface[i] = diff
 			}
-			log.debug("new surface =${Arrays.toString(surface)}")
+			log.debug("new surface =${surface.contentToString()}")
 
 			val surfaceNb = ranks!!.encode(surface)
 
@@ -415,10 +414,7 @@ open class RanksAI:DummyAI(), Runnable {
 			pieces[i] = engine.getNextObject(engine.nextPieceCount+i-1)!!.id
 
 		val holdPiece = IntArray(1)
-		if(engine.holdPieceObject==null)
-			holdPiece[0] = -1
-		else
-			holdPiece[0] = engine.holdPieceObject!!.id
+		holdPiece[0] = engine.holdPieceObject?.id?:-1
 
 		val holdOK = engine.isHoldOK
 
@@ -599,7 +595,7 @@ open class RanksAI:DummyAI(), Runnable {
 		//Convert the heights to a surface to be able to check if the piece fits the surface
 		val surface = ranks!!.heightsToSurface(heights)
 
-		log.debug("piece id : ${pieces[0]} rot : $rt x :$x surface :${Arrays.toString(surface)}")
+		log.debug("piece id : ${pieces[0]} rot : $rt x :$x surface :${surface.contentToString()}")
 
 		//Boolean value representing the fact that the current piece is the I piece, vertical, and in the rightmost column.
 		val isVerticalIRightMost = pieces[0]==Piece.PIECE_I&&(rt==1||rt==3)&&x==9
@@ -735,15 +731,15 @@ open class RanksAI:DummyAI(), Runnable {
 
 				// Returns the best score
 				return bestScore
-			} else {
+			}
 
-				score.computeScore(heightsWork)
-				if(pieces[0]==Piece.PIECE_I&&x<ranks!!.stackWidth&&numPreviews<previewsMax)
-					score.iPieceUsedInTheStack = true
-				return score
-			}// If numPreviews==0, that is, if there are no previews left to consider, just return the score of the surface resulting from the move.
-		} else
+			score.computeScore(heightsWork)
+			if(pieces[0]==Piece.PIECE_I&&x<ranks!!.stackWidth&&numPreviews<previewsMax)
+				score.iPieceUsedInTheStack = true
 			return score
+			// If numPreviews==0, that is, if there are no previews left to consider, just return the score of the surface resulting from the move.
+		}
+		return score
 
 	}
 

@@ -170,25 +170,28 @@ class AIRanksTool:JFrame(), ActionListener {
 		numIterationsSpinner!!.toolTipText = getUIText("Main_Iterations_Tip")
 
 		//Go button (starts the generation)
-		goButton = JButton(getUIText("Main_Go_Label"))
-		goButton!!.actionCommand = "go"
-		goButton!!.addActionListener(this)
-		goButton!!.toolTipText = getUIText("Main_Go_Tip")
-		goButton!!.setMnemonic('G')
+		goButton = JButton(getUIText("Main_Go_Label")).also {
+			it.actionCommand = "go"
+			it.addActionListener(this)
+			it.toolTipText = getUIText("Main_Go_Tip")
+			it.setMnemonic('G')
+		}
 
 		// View Bests Button
-		viewBestsButton = JButton(getUIText("Main_Bests_Label"))
-		viewBestsButton!!.actionCommand = "bests"
-		viewBestsButton!!.addActionListener(this)
-		viewBestsButton!!.toolTipText = getUIText("Main_Bests_Tip")
-		viewBestsButton!!.setMnemonic('B')
+		viewBestsButton = JButton(getUIText("Main_Bests_Label")).also {
+			it.actionCommand = "bests"
+			it.addActionListener(this)
+			it.toolTipText = getUIText("Main_Bests_Tip")
+			it.setMnemonic('B')
+		}
 
 		// View worsts Button
-		viewWorstsButton = JButton(getUIText("Main_Worsts_Label"))
-		viewWorstsButton!!.actionCommand = "worsts"
-		viewWorstsButton!!.addActionListener(this)
-		viewWorstsButton!!.toolTipText = getUIText("Main_Worsts_Tip")
-		viewWorstsButton!!.setMnemonic('W')
+		viewWorstsButton = JButton(getUIText("Main_Worsts_Label")).also {
+			it.actionCommand = "worsts"
+			it.addActionListener(this)
+			it.toolTipText = getUIText("Main_Worsts_Tip")
+			it.setMnemonic('W')
+		}
 
 		//*******************************************************************
 
@@ -226,21 +229,24 @@ class AIRanksTool:JFrame(), ActionListener {
 
 		//Switch to allow hold
 		allowHoldLabel = JLabel(getUIText("Main_Allow_Hold"))
-		allowHoldCheckBox = JCheckBox()
-		allowHoldCheckBox!!.isSelected = allowHold
-		allowHoldCheckBox!!.toolTipText = getUIText("Main_Allow_Hold_Tip")
+		allowHoldCheckBox = JCheckBox().apply {
+			isSelected = allowHold
+			toolTipText = getUIText("Main_Allow_Hold_Tip")
+		}
 
 		//Speed Limit
 		speedLimitLabel = JLabel(getUIText("Main_Speed_Limit_Label"))
-		speedLimitField = JFormattedTextField(speedLimit)
-		speedLimitField!!.toolTipText = getUIText("Main_Speed_Limit_Tip")
+		speedLimitField = JFormattedTextField(speedLimit).apply {
+			toolTipText = getUIText("Main_Speed_Limit_Tip")
+		}
 
 		// Save config Button
-		saveAIConfigButton = JButton(getUIText("Main_Set_Default_Label"))
-		saveAIConfigButton!!.actionCommand = "default"
-		saveAIConfigButton!!.addActionListener(this)
-		saveAIConfigButton!!.toolTipText = getUIText("Main_Set_Default_Tip")
-		saveAIConfigButton!!.setMnemonic('S')
+		saveAIConfigButton = JButton(getUIText("Main_Set_Default_Label")).also {
+			it.actionCommand = "default"
+			it.addActionListener(this)
+			it.toolTipText = getUIText("Main_Set_Default_Tip")
+			it.setMnemonic('S')
+		}
 
 		//*************************************************************************
 		// Generates the panels
@@ -448,8 +454,8 @@ class AIRanksTool:JFrame(), ActionListener {
 	}
 
 	fun setEnabledBWButtons(b:Boolean) {
-		viewBestsButton!!.isEnabled = b
-		viewWorstsButton!!.isEnabled = b
+		viewBestsButton?.isEnabled = b
+		viewWorstsButton?.isEnabled = b
 
 	}
 

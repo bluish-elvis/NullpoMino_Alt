@@ -17,9 +17,6 @@ abstract class Randomizer {
 		setState(pieceEnable, seed)
 	}
 
-	init {
-	}
-
 	abstract operator fun next():Int
 
 	fun setState(pieceEnable:BooleanArray, seed:Long) {

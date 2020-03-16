@@ -71,20 +71,17 @@ class PracticeMode:AbstractMode() {
 	/** BGM number */
 	private var bgmno:Int = 0
 
-	/** Flag for types of T-Spins allowed (0=none, 1=normal, 2=all spin) */
-	private var tspinEnableType:Int = 0
+	/** Flag for types of Twisters allowed (0=none, 1=normal, 2=all spin) */
+	private var twistEnableType:Int = 0
 
-	/** Old flag for allowing T-Spins */
-	private var enableTSpin:Boolean = false
+	/** Old flag for allowing Twisters */
+	private var enableTwist:Boolean = false
 
-	/** Flag for enabling wallkick T-Spins */
-	private var enableTSpinKick:Boolean = false
-
-	/** Spin check type (4Point or Immobile) */
-	private var spinCheckType:Int = 0
+	/** Flag for enabling wallkick Twisters */
+	private var enableTwistKick:Boolean = false
 
 	/** Immobile EZ spin */
-	private var tspinEnableEZ:Boolean = false
+	private var twistEnableEZ:Boolean = false
 
 	/** Flag for enabling B2B */
 	private var enableB2B:Boolean = false
@@ -232,11 +229,10 @@ class PracticeMode:AbstractMode() {
 		engine.speed.lockDelay = prop.getProperty("practice.lockDelay.$preset", 30)
 		engine.speed.das = prop.getProperty("practice.das.$preset", 14)
 		bgmno = prop.getProperty("practice.bgmno.$preset", 0)
-		tspinEnableType = prop.getProperty("practice.tspinEnableType.$preset", 1)
-		enableTSpin = prop.getProperty("practice.enableTSpin.$preset", true)
-		enableTSpinKick = prop.getProperty("practice.enableTSpinKick.$preset", true)
-		spinCheckType = prop.getProperty("practice.spinCheckType.$preset", 0)
-		tspinEnableEZ = prop.getProperty("practice.tspinEnableEZ.$preset", false)
+		twistEnableType = prop.getProperty("practice.twistEnableType.$preset", 1)
+		enableTwist = prop.getProperty("practice.enableTwist.$preset", true)
+		enableTwistKick = prop.getProperty("practice.enableTwistKick.$preset", true)
+		twistEnableEZ = prop.getProperty("practice.twistEnableEZ.$preset", false)
 		enableB2B = prop.getProperty("practice.enableB2B.$preset", true)
 		comboType = prop.getProperty("practice.comboType.$preset", GameEngine.COMBO_TYPE_NORMAL)
 		big = prop.getProperty("practice.big.$preset", false)
@@ -275,11 +271,10 @@ class PracticeMode:AbstractMode() {
 		prop.setProperty("practice.lockDelay.$preset", engine.speed.lockDelay)
 		prop.setProperty("practice.das.$preset", engine.speed.das)
 		prop.setProperty("practice.bgmno.$preset", bgmno)
-		prop.setProperty("practice.tspinEnableType.$preset", tspinEnableType)
-		prop.setProperty("practice.enableTSpin.$preset", enableTSpin)
-		prop.setProperty("practice.enableTSpinKick.$preset", enableTSpinKick)
-		prop.setProperty("practice.spinCheckType.$preset", spinCheckType)
-		prop.setProperty("practice.tspinEnableEZ.$preset", tspinEnableEZ)
+		prop.setProperty("practice.twistEnableType.$preset", twistEnableType)
+		prop.setProperty("practice.enableTwist.$preset", enableTwist)
+		prop.setProperty("practice.enableTwistKick.$preset", enableTwistKick)
+		prop.setProperty("practice.twistEnableEZ.$preset", twistEnableEZ)
 		prop.setProperty("practice.enableB2B.$preset", enableB2B)
 		prop.setProperty("practice.comboType.$preset", comboType)
 		prop.setProperty("practice.big.$preset", big)
@@ -337,8 +332,8 @@ class PracticeMode:AbstractMode() {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -388,18 +383,13 @@ class PracticeMode:AbstractMode() {
 						if(leveltype>LEVELTYPE_MAX-1) leveltype = 0
 					}
 					10 -> {
-						//enableTSpin = !enableTSpin;
-						tspinEnableType += change
-						if(tspinEnableType<0) tspinEnableType = 2
-						if(tspinEnableType>2) tspinEnableType = 0
+						//enableTwist = !enableTwist;
+						twistEnableType += change
+						if(twistEnableType<0) twistEnableType = 2
+						if(twistEnableType>2) twistEnableType = 0
 					}
-					11 -> enableTSpinKick = !enableTSpinKick
-					12 -> {
-						spinCheckType += change
-						if(spinCheckType<0) spinCheckType = 1
-						if(spinCheckType>1) spinCheckType = 0
-					}
-					13 -> tspinEnableEZ = !tspinEnableEZ
+					11 -> enableTwistKick = !enableTwistKick
+					13 -> twistEnableEZ = !twistEnableEZ
 					14 -> enableB2B = !enableB2B
 					15 -> {
 						comboType += change
@@ -481,7 +471,7 @@ class PracticeMode:AbstractMode() {
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				if(menuCursor==41) {
@@ -493,7 +483,7 @@ class PracticeMode:AbstractMode() {
 					engine.createFieldIfNeeded()
 					engine.field!!.reset()
 
-					val prop = receiver.loadProperties("config/values/practice/$mapNumber.values")
+					val prop = receiver.loadProperties("config/map/practice/$mapNumber.map")
 					if(prop!=null) {
 						loadMap(engine.field!!, prop, 0)
 						engine.field!!.setAllSkin(engine.skin)
@@ -503,7 +493,7 @@ class PracticeMode:AbstractMode() {
 					if(engine.field!=null) {
 						val prop = CustomProperties()
 						saveMap(engine.field!!, prop, 0)
-						receiver.saveProperties("config/values/practice/$mapNumber.values", prop)
+						receiver.saveProperties("config/map/practice/$mapNumber.map", prop)
 					}
 				} else if(menuCursor==44)
 				// Preset読み込み
@@ -520,7 +510,7 @@ class PracticeMode:AbstractMode() {
 					owner.saveModeConfig()
 
 					if(useMap&&(engine.field==null||engine.field!!.isEmpty)) {
-						val prop = receiver.loadProperties("config/values/practice/$mapNumber.values")
+						val prop = receiver.loadProperties("config/map/practice/$mapNumber.map")
 						if(prop!=null) {
 							engine.createFieldIfNeeded()
 							loadMap(engine.field!!, prop, 0)
@@ -535,7 +525,7 @@ class PracticeMode:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -545,7 +535,7 @@ class PracticeMode:AbstractMode() {
 			menuCursor = 0
 
 			if(menuTime>=60) menuCursor = 22
-			if(menuTime>=120||engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+			if(menuTime>=120||engine.ctrl.isPush(Controller.BUTTON_F)) {
 				owner.menuOnly = false
 				return false
 			}
@@ -593,10 +583,9 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 2, 7, String.format("BGM:%2d %s", bgmno, "${BGM.values[bgmno]}".toUpperCase()), menuCursor==7)
 			receiver.drawMenuFont(engine, playerID, 2, 8, "BIG:${GeneralUtil.getONorOFF(big)}", menuCursor==8)
 			receiver.drawMenuFont(engine, playerID, 2, 9, "LEVEL TYPE:${LEVELTYPE_STRING[leveltype]}", menuCursor==9)
-			receiver.drawMenuFont(engine, playerID, 2, 10, "SPIN BONUS:${if(tspinEnableType==0) "OFF" else if(tspinEnableType==1) "T-ONLY" else "ALL"}", menuCursor==10)
-			receiver.drawMenuFont(engine, playerID, 2, 11, "EZ SPIN:${GeneralUtil.getONorOFF(enableTSpinKick)}", menuCursor==11)
-			receiver.drawMenuFont(engine, playerID, 2, 12, "SPIN TYPE:${if(spinCheckType==0) "4POINT" else "IMMOBILE"}", menuCursor==12)
-			receiver.drawMenuFont(engine, playerID, 2, 13, "EZ IMMOBILE:${GeneralUtil.getONorOFF(tspinEnableEZ)}", menuCursor==13)
+			receiver.drawMenuFont(engine, playerID, 2, 10, "SPIN BONUS:${if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL"}", menuCursor==10)
+			receiver.drawMenuFont(engine, playerID, 2, 11, "EZ SPIN:${GeneralUtil.getONorOFF(enableTwistKick)}", menuCursor==11)
+			receiver.drawMenuFont(engine, playerID, 2, 13, "EZ IMMOBILE:${GeneralUtil.getONorOFF(twistEnableEZ)}", menuCursor==13)
 			receiver.drawMenuFont(engine, playerID, 2, 14, "B2B:${GeneralUtil.getONorOFF(enableB2B)}", menuCursor==14)
 			receiver.drawMenuFont(engine, playerID, 2, 15, "COMBO:${COMBOTYPE_STRING[comboType]}", menuCursor==15)
 			receiver.drawMenuFont(engine, playerID, 2, 16, "LEVEL STOP SE:${GeneralUtil.getONorOFF(lvstopse)}", menuCursor==16)
@@ -709,21 +698,20 @@ class PracticeMode:AbstractMode() {
 			engine.comboType = comboType
 			engine.statistics.levelDispAdd = 1
 
-			engine.tspinAllowKick = enableTSpinKick
-			when(tspinEnableType) {
-				0 -> engine.tspinEnable = false
-				1 -> engine.tspinEnable = true
+			engine.twistAllowKick = enableTwistKick
+			when(twistEnableType) {
+				0 -> engine.twistEnable = false
+				1 -> engine.twistEnable = true
 				else -> {
-					engine.tspinEnable = true
+					engine.twistEnable = true
 					engine.useAllSpinBonus = true
 				}
 			}
 
-			engine.spinCheckType = spinCheckType
-			engine.tspinEnableEZ = tspinEnableEZ
+			engine.twistEnableEZ = twistEnableEZ
 		} else {
-			engine.tspinEnable = false
-			engine.tspinAllowKick = false
+			engine.twistEnable = false
+			engine.twistAllowKick = false
 			engine.b2bEnable = false
 			engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 			engine.statistics.levelDispAdd = 0
@@ -746,7 +734,7 @@ class PracticeMode:AbstractMode() {
 
 		engine.meterValue = 0
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
-		setMeter(engine, playerID)
+		setMeter(engine)
 	}
 
 	/** Set Hebo Hidden params
@@ -838,8 +826,6 @@ class PracticeMode:AbstractMode() {
 				receiver.drawScoreFont(engine, playerID, 0, 20, "ROLL TIME", EventReceiver.COLOR.BLUE)
 				receiver.drawScoreFont(engine, playerID, 0, 21, GeneralUtil.getTime(remainTime), remainTime>0&&remainTime<10*60, 2f)
 			}
-			// Line clear event
-			renderLineAlert(engine, playerID, receiver)
 			// 1分間あたり score
 			receiver.drawScoreFont(engine, playerID, 0, 11, "SCORE/MIN", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%-10g", engine.statistics.spm))
@@ -941,7 +927,7 @@ class PracticeMode:AbstractMode() {
 		}
 
 		// Update meter
-		setMeter(engine, playerID)
+		setMeter(engine)
 	}
 
 	/* Called at game over */
@@ -959,7 +945,7 @@ class PracticeMode:AbstractMode() {
 				if(engine.statistics.level<nextseclv-1) {
 					engine.statistics.level++
 					if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
-					setMeter(engine, playerID)
+					setMeter(engine)
 				}
 
 				// Hard drop bonusInitialization
@@ -994,7 +980,7 @@ class PracticeMode:AbstractMode() {
 				if(engine.statistics.level<nextseclv-1) {
 					engine.statistics.level++
 					if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
-					setMeter(engine, playerID)
+					setMeter(engine)
 				}
 				lvupflag = true
 			}
@@ -1003,7 +989,7 @@ class PracticeMode:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Decrease Hebo Hidden
 		if(engine.heboHiddenEnable&&lines>0) {
 			engine.heboHiddenTimerNow = 0
@@ -1011,14 +997,14 @@ class PracticeMode:AbstractMode() {
 			if(engine.heboHiddenYNow<0) engine.heboHiddenYNow = 0
 		}
 
-		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
-			calcScoreMania(engine, playerID, lines)
+		return if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
+			calcScoreMania(engine, lines)
 		else
-			calcScoreNormal(engine, playerID, lines)
+			calcScoreNormal(engine, lines)
 	}
 
 	/** levelTypesMANIAAt the time ofCalculate score */
-	private fun calcScoreMania(engine:GameEngine, playerID:Int, lines:Int) {
+	private fun calcScoreMania(engine:GameEngine, lines:Int):Int {
 		// Combo
 		comboValue = if(lines==0) 1
 		else maxOf(1,comboValue+2*lines-2)
@@ -1103,23 +1089,24 @@ class PracticeMode:AbstractMode() {
 			engine.statistics.scoreLine += lastscore
 			scgettime = 0
 
-			setMeter(engine, playerID)
+			setMeter(engine)
 		}
+		return if(lines>=1) lastscore else 0
 	}
 
 
 	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		var pts = 0
-		if(engine.tspin) {
-			if(lines==0&&!engine.tspinez)
-				pts = if(engine.tspinmini) 1 else 4// T-Spin 0 lines
-			else if(engine.tspinez&&lines>0)
+		if(engine.twist) {
+			if(lines==0&&!engine.twistez)
+				pts = if(engine.twistmini) 1 else 4// Twister 0 lines
+			else if(engine.twistez&&lines>0)
 				pts = lines*2+(if(engine.b2b) 1 else 0)// Immobile EZ Spin
 			else if(lines==1)
-				pts += if(engine.tspinmini) if(engine.b2b) 3 else 2 else if(engine.b2b) 5 else 3// T-Spin 1 line
+				pts += if(engine.twistmini) if(engine.b2b) 3 else 2 else if(engine.b2b) 5 else 3// Twister 1 line
 			else if(lines==2)
-				pts += if(engine.tspinmini&&engine.useAllSpinBonus) if(engine.b2b) 6 else 4 else if(engine.b2b) 10 else 7// T-Spin 2 lines
-			else if(lines>=3) pts += if(engine.b2b) 13 else 9// T-Spin 3 lines
+				pts += if(engine.twistmini&&engine.useAllSpinBonus) if(engine.b2b) 6 else 4 else if(engine.b2b) 10 else 7// Twister 2 lines
+			else if(lines>=3) pts += if(engine.b2b) 13 else 9// Twister 3 lines
 		} else if(lines==1)
 			pts = 1 // 1列
 		else if(lines==2)
@@ -1133,7 +1120,7 @@ class PracticeMode:AbstractMode() {
 		return pts
 	}
 	/** levelTypesMANIAWhen a non-systemCalculate score */
-	private fun calcScoreNormal(engine:GameEngine, playerID:Int, lines:Int) {		// Line clear bonus
+	private fun calcScoreNormal(engine:GameEngine, lines:Int):Int {
 		// Line clear bonus
 		val pts = super.calcScore(engine, lines)
 		var cmb = 0
@@ -1208,14 +1195,15 @@ class PracticeMode:AbstractMode() {
 			}
 		}
 
-		setMeter(engine, playerID)
+		setMeter(engine)
+		return if(pts>0) lastscore else 0
 	}
 
 	/** MeterUpdate the amount of
 	 * @param engine GameEngine
 	 * @param playerID Player number
 	 */
-	private fun setMeter(engine:GameEngine, playerID:Int) {
+	private fun setMeter(engine:GameEngine) {
 		if(engine.gameActive&&engine.ending==2) {
 			val remainRollTime = rolltimelimit-rolltime
 			engine.meterValue = remainRollTime*receiver.getMeterMax(engine)/rolltimelimit

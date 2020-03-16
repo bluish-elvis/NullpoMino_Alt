@@ -95,8 +95,8 @@ class BGMStatus:Serializable {
 		class GM_3(idx:Int = 0):BGM(idx, 6, "Grand Mastery",
 			"NORMAL", "20G", "Blitz", "Blitz 500", "Lightning 700", "Lightning 1k")
 
-		class MENU(idx:Int = 0):BGM(idx, true, 3, "Menu Screen BGM",
-			"Mode Select", "General Config", "Mode Config")
+		class MENU(idx:Int = 0):BGM(idx, true, 4, "Menu Screen BGM",
+			"Title Menu", "Mode Select", "General Config", "Mode Config")
 
 		class ENDING(idx:Int = 0):BGM(idx, true, 4, "Ending Challenge",
 			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)")

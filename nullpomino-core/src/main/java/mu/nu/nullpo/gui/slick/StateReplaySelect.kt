@@ -25,6 +25,7 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
@@ -34,7 +35,6 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 import java.io.*
 import java.nio.file.Paths
-import java.util.*
 import java.util.zip.GZIPInputStream
 
 /** リプレイ選択画面のステート */
@@ -42,6 +42,7 @@ class StateReplaySelect:DummyMenuScrollState() {
 	private var strCurrentFolder:String = ""
 	private var strPrevFolder:String = ""
 	private var fileList:Array<File> = emptyArray()
+
 	/** Mode name */
 	private var modenameList:Array<String> = emptyArray()
 
@@ -60,20 +61,20 @@ class StateReplaySelect:DummyMenuScrollState() {
 	override fun getID():Int = ID
 
 	/* State initialization */
-	override fun init(container:GameContainer, game:StateBasedGame) {}
+	//override fun init(container:GameContainer, game:StateBasedGame) {}
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		strPrevFolder = ""
+		super.enter(container, game)
 		getReplayFileList()
 	}
 
 	/** リプレイファイル一覧を取得
 	 * @return リプレイファイルのFilenameの配列。
 	 */
-	private fun getReplayFileList(mode:String?):Array<Statistics?> {
+	private fun getReplayFileList(mode:String? = null) {
 		var d = NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", "replay")
-		if(mode!=null) {
+		if(!mode.isNullOrEmpty()) {
 			strCurrentFolder = mode
 			d += strCurrentFolder
 			try {
@@ -89,63 +90,41 @@ class StateReplaySelect:DummyMenuScrollState() {
 		}
 
 		val dir = File(d)
-		val fold = dir.listFiles(FileFilter {it.isDirectory})
-		val reps = dir.listFiles {i -> i.name.endsWith(".rep")}
-
-		val sorter = Comparator.comparing<File, String>{it.name}
-		var nF = 0
-		var nR = 0
-		if(fold!=null) {
-			Arrays.sort(fold, sorter)
-			nF = fold.size
-		}
-		if(reps!=null) {
-			Arrays.sort(reps, sorter)
-			nR = reps.size
-		}
-
-		val nT = nF+nR
-		list = Array(nT) {reps!![it].name}
+		val fold:Array<File> = dir.listFiles(FileFilter {it.isDirectory})?.sortedBy {it.name}?.toTypedArray()
+			?: emptyArray()
+		fileList = dir.listFiles {i -> i.name.endsWith(".rep")}?.sortedBy {it.name}?.toTypedArray()
+			?: emptyArray()
+		val nF = fold.size
+		val nT = nF+fileList.size
+		list = (fold.map {it.name}+fileList.map {it.name}).toTypedArray()
 		modenameList = Array(nT) {""}
 		rulenameList = Array(nT) {""}
 		statsList = arrayOfNulls(nT)
+		fileList.forEachIndexed {i, it ->
+			val prop = CustomProperties()
 
-		for(i in 0 until nT) {
-			if(i<nR) {
-				val prop = CustomProperties()
+			try {
+				val `in` = GZIPInputStream(FileInputStream(it))
+				prop.load(`in`)
+				`in`.close()
+			} catch(e:IOException) {
+				log.error("Failed to load replay file (${it})", e)
+			}
+			modenameList[i+nF] = prop.getProperty("name.mode", "")
+			rulenameList[i+nF] = prop.getProperty("name.rule", "")
 
-				try {
-					val `in` = GZIPInputStream(FileInputStream(reps[i]))
-					prop.load(`in`)
-					`in`.close()
-				} catch(e:IOException) {
-					log.error("Failed to load replay file (${list[i]})", e)
-				}
-
-				modenameList[i] = prop.getProperty("name.mode", "")
-				rulenameList[i] = prop.getProperty("name.rule", "")
-
-				statsList[i] = Statistics().apply {
-					readProperty(prop, 0)
-				}
-			} else {
-				list[i] = fold!![i-nR].name
-				statsList[i] = null
+			statsList[i+nF] = Statistics().apply {
+				readProperty(prop, 0)
 			}
 		}
-		return statsList
-	}
-
-	private fun getReplayFileList() {
-		getReplayFileList(null)
 	}
 
 	override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
-		var title = "SELECT REPLAY FILE (${cursor+1}/${list.size})"
-		if(strCurrentFolder.isNotEmpty()) title += "\n${strCurrentFolder.replace(File.separatorChar, 'b')}"
-		FontNormal.printFontGrid(1, 1, title, COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "SELECT REPLAY FILE (${cursor+1}/${list.size})", COLOR.ORANGE)
+		if(strCurrentFolder.isNotEmpty()) FontNano.printFont(8, 36,
+			">${strCurrentFolder.replace(File.separatorChar, 'b')}", COLOR.ORANGE)
 
-		statsList[cursor]?.let{
+		statsList[cursor]?.let {
 			FontNormal.printFontGrid(1, 24, "MODE:${modenameList[cursor]} RULE:${rulenameList[cursor]}", COLOR.CYAN)
 			FontNormal.printFontGrid(1, 25, "SCORE:${it.score} LINE:${it.lines}", COLOR.CYAN)
 			FontNormal.printFontGrid(1, 26, "LEVEL:${it.level+it.levelDispAdd} TIME:${GeneralUtil.getTime(it.time)}", COLOR.CYAN)
@@ -157,7 +136,7 @@ class StateReplaySelect:DummyMenuScrollState() {
 		if(list.isNullOrEmpty()) return false
 		ResourceHolder.soundManager.play("decide0")
 		if(statsList[cursor]==null) {
-			getReplayFileList(GeneralUtil.nulltoEmpty(strCurrentFolder)+File.separator+list[cursor])
+			getReplayFileList((strCurrentFolder)+File.separator+list[cursor])
 		} else {
 			val prop = CustomProperties()
 
@@ -182,7 +161,7 @@ class StateReplaySelect:DummyMenuScrollState() {
 		if(strCurrentFolder.isEmpty()||strPrevFolder.isEmpty())
 			game.enterState(StateTitle.ID)
 		else getReplayFileList(strPrevFolder)
-		return false
+		return true
 	}
 
 	companion object {

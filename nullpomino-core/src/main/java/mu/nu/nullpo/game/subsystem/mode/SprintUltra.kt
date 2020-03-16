@@ -54,27 +54,6 @@ class SprintUltra:NetDummyMode() {
 	/** BGM number */
 	private var bgmno:Int = 0
 
-	/** Flag for types of T-Spins allowed (0=none, 1=normal, 2=all spin) */
-	private var tspinEnableType:Int = 0
-
-	/** Old flag for allowing T-Spins */
-	private var enableTSpin:Boolean = false
-
-	/** Flag for enabling wallkick T-Spins */
-	private var enableTSpinKick:Boolean = false
-
-	/** Spin check type (4Point or Immobile) */
-	private var spinCheckType:Int = 0
-
-	/** Immobile EZ spin */
-	private var tspinEnableEZ:Boolean = false
-
-	/** Flag for enabling B2B */
-	private var enableB2B:Boolean = false
-
-	/** Flag for enabling combos */
-	private var enableCombo:Boolean = false
-
 	/** Big */
 	private var big:Boolean = false
 
@@ -149,13 +128,6 @@ class SprintUltra:NetDummyMode() {
 		engine.speed.lockDelay = prop.getProperty("ultra.lockDelay.$preset", 30)
 		engine.speed.das = prop.getProperty("ultra.das.$preset", 14)
 		bgmno = prop.getProperty("ultra.bgmno.$preset", 0)
-		tspinEnableType = prop.getProperty("ultra.tspinEnableType.$preset", 1)
-		enableTSpin = prop.getProperty("ultra.enableTSpin.$preset", true)
-		enableTSpinKick = prop.getProperty("ultra.enableTSpinKick.$preset", true)
-		spinCheckType = prop.getProperty("ultra.spinCheckType.$preset", 0)
-		tspinEnableEZ = prop.getProperty("ultra.tspinEnableEZ.$preset", false)
-		enableB2B = prop.getProperty("ultra.enableB2B.$preset", true)
-		enableCombo = prop.getProperty("ultra.enableCombo.$preset", true)
 		big = prop.getProperty("ultra.big.$preset", false)
 		goaltype = prop.getProperty("ultra.goaltype.$preset", 2)
 	}
@@ -174,13 +146,6 @@ class SprintUltra:NetDummyMode() {
 		prop.setProperty("ultra.lockDelay.$preset", engine.speed.lockDelay)
 		prop.setProperty("ultra.das.$preset", engine.speed.das)
 		prop.setProperty("ultra.bgmno.$preset", bgmno)
-		prop.setProperty("ultra.tspinEnableType.$preset", tspinEnableType)
-		prop.setProperty("ultra.enableTSpin.$preset", enableTSpin)
-		prop.setProperty("ultra.enableTSpinKick.$preset", enableTSpinKick)
-		prop.setProperty("ultra.spinCheckType.$preset", spinCheckType)
-		prop.setProperty("ultra.tspinEnableEZ.$preset", tspinEnableEZ)
-		prop.setProperty("ultra.enableB2B.$preset", enableB2B)
-		prop.setProperty("ultra.enableCombo.$preset", enableCombo)
 		prop.setProperty("ultra.big.$preset", big)
 		prop.setProperty("ultra.goaltype.$preset", goaltype)
 	}
@@ -198,8 +163,8 @@ class SprintUltra:NetDummyMode() {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -248,22 +213,7 @@ class SprintUltra:NetDummyMode() {
 						if(goaltype<0) goaltype = GOALTYPE_MAX-1
 						if(goaltype>GOALTYPE_MAX-1) goaltype = 0
 					}
-					10 -> {
-						//enableTSpin = !enableTSpin;
-						tspinEnableType += change
-						if(tspinEnableType<0) tspinEnableType = 2
-						if(tspinEnableType>2) tspinEnableType = 0
-					}
-					11 -> enableTSpinKick = !enableTSpinKick
-					12 -> {
-						spinCheckType += change
-						if(spinCheckType<0) spinCheckType = 1
-						if(spinCheckType>1) spinCheckType = 0
-					}
-					13 -> tspinEnableEZ = !tspinEnableEZ
-					14 -> enableB2B = !enableB2B
-					15 -> enableCombo = !enableCombo
-					16, 17 -> {
+					10 , 11 -> {
 						presetNumber += change
 						if(presetNumber<0) presetNumber = 99
 						if(presetNumber>99) presetNumber = 0
@@ -275,7 +225,7 @@ class SprintUltra:NetDummyMode() {
 			}
 
 			// Confirm
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				if(menuCursor==16) {
@@ -299,10 +249,10 @@ class SprintUltra:NetDummyMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
 
 			// NET: Netplay Ranking
-			if(engine.ctrl!!.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!netIsWatch
+			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!netIsWatch
 				&&netIsNetRankingViewOK(engine))
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 
@@ -327,11 +277,6 @@ class SprintUltra:NetDummyMode() {
 			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, engine.speed.gravity, engine.speed.denominator, engine.speed.are, engine.speed.areLine, engine.speed.lineDelay, engine.speed.lockDelay, engine.speed.das)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
 			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big), "GOAL", (goaltype+1).toString()+"MIN")
-			drawMenu(engine, playerID, receiver, "SPIN BONUS", if(tspinEnableType==0) "OFF" else if(tspinEnableType==1) "T-ONLY" else "ALL",
-				"EZ SPIN", GeneralUtil.getONorOFF(enableTSpinKick), "SPIN TYPE", if(spinCheckType==0) "4POINT" else "IMMOBILE",
-				"EZIMMOBILE", GeneralUtil.getONorOFF(tspinEnableEZ))
-			drawMenuCompact(engine, playerID, receiver,
-				"B2B", GeneralUtil.getONorOFF(enableB2B), "COMBO", GeneralUtil.getONorOFF(enableCombo))
 			if(!engine.owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
 				drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber", "SAVE", "$presetNumber")
@@ -343,11 +288,8 @@ class SprintUltra:NetDummyMode() {
  * Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.big = big
-		engine.b2bEnable = enableB2B
-		if(enableCombo)
+		engine.b2bEnable = true
 			engine.comboType = GameEngine.COMBO_TYPE_NORMAL
-		else
-			engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.meterValue = 320
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 
@@ -356,18 +298,10 @@ class SprintUltra:NetDummyMode() {
 		else
 			owner.bgmStatus.bgm = BGM.values[bgmno]
 
-		engine.tspinAllowKick = enableTSpinKick
-		if(tspinEnableType==0)
-			engine.tspinEnable = false
-		else if(tspinEnableType==1)
-			engine.tspinEnable = true
-		else {
-			engine.tspinEnable = true
-			engine.useAllSpinBonus = true
-		}
-
-		engine.spinCheckType = spinCheckType
-		engine.tspinEnableEZ = tspinEnableEZ
+		engine.twistAllowKick = true
+		engine.twistEnable = true
+		engine.useAllSpinBonus = true
+		engine.twistEnableEZ = true
 	}
 
 	/* Render score */
@@ -413,26 +347,20 @@ class SprintUltra:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 13, "${engine.statistics.lpm}", 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "TIME", EventReceiver.COLOR.BLUE)
-			var time = (goaltype+1)*3600-engine.statistics.time
-			if(time<0) time = 0
-			var fontcolor = EventReceiver.COLOR.WHITE
-			if(time<30*60&&time>0) fontcolor = EventReceiver.COLOR.YELLOW
-			if(time<20*60&&time>0) fontcolor = EventReceiver.COLOR.ORANGE
-			if(time<10*60&&time>0) fontcolor = EventReceiver.COLOR.RED
-			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(time), fontcolor, 2f)
-			renderLineAlert(engine, playerID, receiver)
+			val time = maxOf(0,(goaltype+1)*3600-engine.statistics.time)
+			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(time), getTimeFontColor(time), 2f)
 		}
 
 		super.renderLast(engine, playerID)
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Line clear bonus
 		val pts = calcScore(engine, lines)
 		var cmb = 0
 		// Combo
-		if(enableCombo&&engine.combo>=1&&lines>=1) cmb = engine.combo-1
+		if(engine.combo>=1&&lines>=1) cmb = engine.combo-1
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		// Add to score
 		if(pts+cmb+spd>0) {
@@ -449,6 +377,7 @@ class SprintUltra:NetDummyMode() {
 			else engine.statistics.scoreBonus += get
 			scgettime += spd
 		}
+		return if(pts>0)lastscore else 0
 	}
 
 	/* Soft drop */
@@ -502,16 +431,14 @@ class SprintUltra:NetDummyMode() {
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE)
-		if(rankingRank[0]!=-1) {
-			val strRank = String.format("RANK %d", rankingRank[0]+1)
-			receiver.drawMenuFont(engine, playerID, 4, 2, strRank, EventReceiver.COLOR.ORANGE)
-		}
+		if(rankingRank[0]==0) receiver.drawMenuFont(engine, playerID, 0, 2, "NEW RECORD", EventReceiver.COLOR.ORANGE)
+		else if(rankingRank[0]!=-1)
+			receiver.drawMenuFont(engine, playerID, 4, 2, String.format("RANK %d", rankingRank[0]+1), EventReceiver.COLOR.ORANGE)
 
 		drawResultStats(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, Statistic.LINES)
-		if(rankingRank[1]!=-1) {
-			val strRank = String.format("RANK %d", rankingRank[1]+1)
-			receiver.drawMenuFont(engine, playerID, 4, 5, strRank, EventReceiver.COLOR.ORANGE)
-		}
+		if(rankingRank[1]==0) receiver.drawMenuFont(engine, playerID, 0, 5, "NEW RECORD", EventReceiver.COLOR.ORANGE)
+		else if(rankingRank[1]!=-1)
+			receiver.drawMenuFont(engine, playerID, 4, 5, String.format("RANK %d", rankingRank[1]+1), EventReceiver.COLOR.ORANGE)
 
 		drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR.BLUE, Statistic.PIECE, Statistic.SPL, Statistic.SPM, Statistic.LPM, Statistic.PPS)
 
@@ -630,7 +557,7 @@ class SprintUltra:NetDummyMode() {
 
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		listOf<(String)->Unit>({},{},{},{},
+		listOf<(String)->Unit>({}, {}, {}, {},
 			{engine.statistics.scoreLine = Integer.parseInt(it)},
 			{engine.statistics.scoreSD = Integer.parseInt(it)},
 			{engine.statistics.scoreHD = Integer.parseInt(it)},
@@ -643,12 +570,12 @@ class SprintUltra:NetDummyMode() {
 			{engine.timerActive = java.lang.Boolean.parseBoolean(it)},
 			{lastscore = Integer.parseInt(it)},
 			{scgettime = Integer.parseInt(it)},
-			{engine.lastevent = Integer.parseInt(it)},
+			{engine.lastevent = GameEngine.ScoreEvent.parseInt(it)},
 			{lastb2b = java.lang.Boolean.parseBoolean(it)},
 			{lastcombo = Integer.parseInt(it)},
 			{lastpiece = Integer.parseInt(it)},
-			{owner.backgroundStatus.bg = Integer.parseInt(it)}).zip(message).forEach{
-			(x,y)->x(y)
+			{owner.backgroundStatus.bg = Integer.parseInt(it)}).zip(message).forEach {(x, y) ->
+			x(y)
 		}
 
 		// Time meter
@@ -685,9 +612,7 @@ class SprintUltra:NetDummyMode() {
 		var msg = "game\toption\t"
 		msg += "${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"
 		msg += "${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
-		msg += "${engine.speed.das}\t$bgmno\t$big\t$goaltype\t$tspinEnableType\t"
-		msg += "$enableTSpinKick\t$enableB2B\t$enableCombo\t$presetNumber\t"
-		msg += "$spinCheckType\t$tspinEnableEZ\n"
+		msg += "${engine.speed.das}\t$bgmno\t$big\t$goaltype\t$presetNumber\t"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -703,13 +628,7 @@ class SprintUltra:NetDummyMode() {
 		bgmno = Integer.parseInt(message[11])
 		big = java.lang.Boolean.parseBoolean(message[12])
 		goaltype = Integer.parseInt(message[13])
-		tspinEnableType = Integer.parseInt(message[14])
-		enableTSpinKick = java.lang.Boolean.parseBoolean(message[15])
-		enableB2B = java.lang.Boolean.parseBoolean(message[16])
-		enableCombo = java.lang.Boolean.parseBoolean(message[17])
-		presetNumber = Integer.parseInt(message[18])
-		spinCheckType = Integer.parseInt(message[19])
-		tspinEnableEZ = java.lang.Boolean.parseBoolean(message[20])
+		presetNumber = Integer.parseInt(message[14])
 	}
 
 	/** NET: Get goal type */

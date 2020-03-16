@@ -246,7 +246,7 @@ class StateConfigGeneral:BaseGameState() {
 		when {
 			cursor<=18 -> {
 				FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: APPERANCE (1/3)", COLOR.ORANGE)
-				FontNormal.printFontGrid(1, (if(cursor<=4) 3 else if(cursor<=8) 4 else if(cursor<=11) 5 else if(cursor<=14) 6 else 7)+cursor, "b", COLOR.RED)
+				FontNormal.printFontGrid(1, (if(cursor<=4) 3 else if(cursor<=8) 4 else if(cursor<=11) 5 else if(cursor<=14) 6 else 7)+cursor, "b", COLOR.RAINBOW)
 
 				FontNormal.printFontGrid(2, 3, "SE:"+GeneralUtil.getOorX(se), cursor==0)
 				FontNormal.printFontGrid(2, 4, "BGM:"+GeneralUtil.getOorX(bgm), cursor==1)
@@ -313,12 +313,12 @@ class StateConfigGeneral:BaseGameState() {
 		// Cursor movement
 		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
 			cursor--
-			if(cursor<0) cursor = 27
+			if(cursor<0) cursor = 29
 			ResourceHolder.soundManager.play("cursor")
 		}
 		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 			cursor++
-			if(cursor>27) cursor = 0
+			if(cursor>29) cursor = 0
 			ResourceHolder.soundManager.play("cursor")
 		}
 

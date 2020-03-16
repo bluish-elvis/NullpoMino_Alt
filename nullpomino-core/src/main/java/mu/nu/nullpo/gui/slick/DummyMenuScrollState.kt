@@ -27,9 +27,6 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 	private var pDownMaxY:Int = 0
 	private val sbHeight get() = 16*(pageHeight-1)-(LINE_WIDTH shl 1)
 
-	private var flashY = 0
-	private var flashT = -1
-
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Background
@@ -45,12 +42,6 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 				if(cursor>=maxentry) {
 					maxentry = cursor
 					minentry = maxentry-pageHeight+1
-				}
-				if(flashT in 0 until 24) {
-					val z = flashT/3
-					val y = flashY+3
-					ResourceHolder.imgLine[0].draw(0f, y*16f, SB_TEXT_X*16f, (y+1)*16f, 0f, 8f*z, 80f, 8f*(1+z))
-					flashT++
 				}
 				drawMenuList(g)
 				onRenderSuccess(container, game, g)
@@ -81,9 +72,13 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 					//Down arrow
 					minentry++
 				}
-				maxCursor>pageHeight -> {
-					minentry = maxOf(0, (MouseInput.mouseY-32)*(maxCursor+1-pageHeight)/sbHeight)
-				}
+				maxCursor>pageHeight ->
+					maxOf(0, (MouseInput.mouseY-32)*(maxCursor+1-pageHeight)/sbHeight).let {
+						if(it!=minentry) {
+							ResourceHolder.soundManager.play("cursor")
+							minentry = it
+						}
+					}
 			}
 			if(cursor>=maxentry) cursor = maxentry-1
 			if(cursor<minentry) cursor = minentry
@@ -144,12 +139,14 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 	}
 
 	override fun onChange(container:GameContainer, game:StateBasedGame, delta:Int, change:Int) {
+		ResourceHolder.soundManager.play("cursor")
 		if(change==1) pageDown()
 		else if(change==-1) pageUp()
+		flashY = cursor-minentry
+		flashT = 0
 	}
 
 	private fun pageDown() {
-		ResourceHolder.soundManager.play("cursor")
 		val max = maxCursor-pageHeight
 		if(minentry>=max) cursor = maxCursor
 		else {
@@ -163,7 +160,6 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 	}
 
 	private fun pageUp() {
-		ResourceHolder.soundManager.play("cursor")
 		if(minentry==0) cursor = 0
 		else {
 			cursor -= pageHeight

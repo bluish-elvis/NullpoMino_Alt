@@ -28,7 +28,9 @@ import mu.nu.nullpo.game.component.BackgroundStatus
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.subsystem.mode.GameMode
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
+import java.util.*
 
 /** GameManager: The container of the game */
 class GameManager
@@ -54,8 +56,9 @@ class GameManager
 	var recordProp:CustomProperties = CustomProperties()
 
 	val recorder get() = recorder()
-	//fun recorder(ruleName:String? = null):String = "scores/${mode?.name ?: "mode"}/${ruleName?.let {"/$it"}?:""}.rec"
-	fun recorder():String = "scores/${mode?.name ?: "mode"}.rec"
+	fun recorder(ruleName:String? = null):String =
+		"scores/${mode?.javaClass?.simpleName ?: ""}${ruleName?.let {"_$it"}?:""}.rec"
+	//fun recorder():String = "scores/${mode?.name ?: "mode"}.rec"
 
 	/** Properties for replay file */
 	var replayProp:CustomProperties = CustomProperties()
@@ -102,11 +105,12 @@ class GameManager
 		get() = engine.any {it.gameActive}
 
 	/** Get winner ID
-	 * @return Player ID of last survivor. -1 in single player game. -2 in tied
-	 * game.
+	 * @return Player ID of last survivor.
+	 * -2 in single player game.
+	 * -1 in tied game.
 	 */
 	val winner:Int
-		get() = if(players<2) -1 else engine.indexOfLast {it.stat!=GameEngine.Status.GAMEOVER}
+		get() = if(players<2) -2 else engine.indexOfLast {it.stat!=GameEngine.Status.GAMEOVER}
 
 	init {
 		log.debug("GameManager constructor called")
@@ -124,7 +128,6 @@ class GameManager
 		var players = 1
 		mode?.let {
 			receiver.loadProperties(cfgMode)?.let {modeConfig = it}
-			receiver.loadProperties(recorder)?.let {recordProp = it}
 			receiver.loadProperties(statsFile)?.let {statsProp = it}
 			it.modeInit(this)
 			players = it.players
@@ -190,9 +193,9 @@ class GameManager
 		internal val log = Logger.getLogger(GameManager::class.java)
 
 		/** Major version */
-		const val versionMajor = 7.7f
+		const val versionMajor = 7.70f
 		/** Minor version */
-		const val versionMinor = 417
+		const val versionMinor = 2020
 
 		/** Development-build flag (false:Release-build true:Dev-build) */
 		const val isDevBuild = true

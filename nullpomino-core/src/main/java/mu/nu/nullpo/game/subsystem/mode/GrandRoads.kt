@@ -119,7 +119,7 @@ class GrandRoads:NetDummyMode() {
 		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingRollclear = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.framecolor = GameEngine.FRAME_COLOR_WHITE
@@ -332,7 +332,7 @@ class GrandRoads:NetDummyMode() {
 			}
 
 			// Check for A button, when pressed this will begin the game
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -344,10 +344,10 @@ class GrandRoads:NetDummyMode() {
 			}
 
 			// Check for B button, when pressed this will shutdown the game engine.
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
 
 			// NET: Netplay Ranking
-			if(engine.ctrl!!.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!big
+			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!big
 				&&engine.ai==null)
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 
@@ -559,9 +559,9 @@ class GrandRoads:NetDummyMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Don't do anything during the ending
-		if(engine.ending!=0) return
+		if(engine.ending!=0) return 0
 
 		// Add lines to norm
 		norm += lines
@@ -603,7 +603,7 @@ class GrandRoads:NetDummyMode() {
 			}
 		} else if(norm>=(engine.statistics.level+1)*10&&engine.statistics.level<tableGoalLevel[goaltype]-1) {
 			// Level up
-			engine.playSE(if(bgmChanged)"levelup_section" else "levelup")
+			engine.playSE(if(bgmChanged) "levelup_section" else "levelup")
 			engine.statistics.level++
 
 			owner.backgroundStatus.fadesw = true
@@ -615,7 +615,7 @@ class GrandRoads:NetDummyMode() {
 			engine.timerActive = false // Stop timer until the next piece becomes active
 			setSpeed(engine)
 		}
-
+		return 0
 	}
 
 	/** Renders game result screen */
@@ -669,12 +669,12 @@ class GrandRoads:NetDummyMode() {
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		if(goaltype>=GAMETYPE_HELL&&engine.statistics.rollclear>=1) owner.bgmStatus.bgm = BGM.RESULT(3)
 		if(!netIsWatch) {
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				engine.statc[1]--
 				if(engine.statc[1]<0) engine.statc[1] = 2
 				engine.playSE("change")
 			}
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 				engine.statc[1]++
 				if(engine.statc[1]>2) engine.statc[1] = 0
 				engine.playSE("change")
@@ -933,6 +933,7 @@ class GrandRoads:NetDummyMode() {
 			30, // HELL
 			30, // HELL-X
 			30)// VOID
+
 		/** Max Life table */
 		private val tableLives = intArrayOf(2, // NORMAL
 			2, // HIGH SPEED 1
@@ -945,6 +946,7 @@ class GrandRoads:NetDummyMode() {
 			9, // HELL
 			9, // HELL-X
 			9)// VOID
+
 		/** Level timer tables */
 		private val tableLevelTimer =
 			arrayOf(intArrayOf(6400, 6250, 6000, 5750, 5500, 5250, 5000, 4750, 4500, 4250, // NORMAL 000-100

@@ -360,6 +360,7 @@ class RuleEditor:JFrame, ActionListener {
 
 	/** rotationパターン補正タブ */
 	private var tabPieceOffset:JTabbedPane? = null
+
 	/** rotationパターン補正(X) input 欄 */
 	private var txtfldPieceOffsetX:Array<Array<JTextField>>? = null
 
@@ -568,20 +569,20 @@ class RuleEditor:JFrame, ActionListener {
 		val lStyle = JLabel(getUIText("Basic_Style"))
 		pStyle.add(lStyle)
 
-		comboboxStyle = JComboBox(GameEngine.GAMESTYLE_NAMES)
-		comboboxStyle!!.preferredSize = Dimension(100, 30)
+		comboboxStyle = JComboBox(GameEngine.GAMESTYLE_NAMES).apply {
+			preferredSize = Dimension(100, 30)
+		}
 		pStyle.add(comboboxStyle)
 
 		// 絵柄
 		val pSkin = JPanel()
 		panelBasic.add(pSkin)
 
-		val lSkin = JLabel(getUIText("Basic_Skin"))
-		pSkin.add(lSkin)
+		pSkin.add(JLabel(getUIText("Basic_Skin")))
 
 		val model = DefaultComboBoxModel<ComboLabel>()
-		imgBlockSkins!!.indices.forEach {i ->
-			model.addElement(ComboLabel("$i", ImageIcon(imgBlockSkins!![i])))
+		imgBlockSkins?.forEachIndexed {i, it ->
+			model.addElement(ComboLabel("$i", ImageIcon(it)))
 		}
 		comboboxSkin = JComboBox(model).apply {
 			renderer = ComboLabelCellRenderer()
@@ -615,15 +616,17 @@ class RuleEditor:JFrame, ActionListener {
 		pRandomizer.add(lRandomizer)
 
 		vectorRandomizer = getTextFileVector("config/list/randomizer.lst")
-		comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer)).apply{
-		preferredSize = Dimension(200, 30)
-		pRandomizer.add(this)}
+		comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer)).apply {
+			preferredSize = Dimension(200, 30)
+			pRandomizer.add(this)
+		}
 
-		val btnResetRandomizer = JButton(getUIText("Basic_Reset")).also{
-		it.setMnemonic('R')
-		it.actionCommand = "ResetRandomizer"
-		it.addActionListener(this)
-		pRandomizer.add(it)}
+		val btnResetRandomizer = JButton(getUIText("Basic_Reset")).also {
+			it.setMnemonic('R')
+			it.actionCommand = "ResetRandomizer"
+			it.addActionListener(this)
+			pRandomizer.add(it)
+		}
 
 		// fieldタブ --------------------------------------------------
 		val panelField = JPanel()
@@ -634,8 +637,7 @@ class RuleEditor:JFrame, ActionListener {
 		val pFieldWidth = JPanel()
 		panelField.add(pFieldWidth)
 
-		val lFieldWidth = JLabel(getUIText("Field_FieldWidth"))
-		pFieldWidth.add(lFieldWidth)
+		pFieldWidth.add(JLabel(getUIText("Field_FieldWidth")))
 
 		txtfldFieldWidth = JTextField("", 5)
 		pFieldWidth.add(txtfldFieldWidth)
@@ -644,8 +646,7 @@ class RuleEditor:JFrame, ActionListener {
 		val pFieldHeight = JPanel()
 		panelField.add(pFieldHeight)
 
-		val lFieldHeight = JLabel(getUIText("Field_FieldHeight"))
-		pFieldHeight.add(lFieldHeight)
+		pFieldHeight.add(JLabel(getUIText("Field_FieldHeight")))
 
 		txtfldFieldHeight = JTextField("", 5)
 		pFieldHeight.add(txtfldFieldHeight)
@@ -654,8 +655,7 @@ class RuleEditor:JFrame, ActionListener {
 		val pFieldHiddenHeight = JPanel()
 		panelField.add(pFieldHiddenHeight)
 
-		val lFieldHiddenHeight = JLabel(getUIText("Field_FieldHiddenHeight"))
-		pFieldHiddenHeight.add(lFieldHiddenHeight)
+		pFieldHiddenHeight.add(JLabel(getUIText("Field_FieldHiddenHeight")))
 
 		txtfldFieldHiddenHeight = JTextField("", 5)
 		pFieldHiddenHeight.add(txtfldFieldHiddenHeight)
@@ -1064,10 +1064,10 @@ class RuleEditor:JFrame, ActionListener {
 		val panelPieceOffset = JPanel()
 		panelPieceOffset.layout = BoxLayout(panelPieceOffset, BoxLayout.Y_AXIS)
 		tabPane.addTab(getUIText("TabName_PieceOffset"), panelPieceOffset)
-		comboboxPieceOffset = JComboBox(RuleOptions.PIECEOFFSET_NAME.map{getUIText(it)}.toTypedArray()).apply {
+		comboboxPieceOffset = JComboBox(RuleOptions.PIECEOFFSET_NAME.map {getUIText(it)}.toTypedArray()).apply {
 			actionCommand = "OffsetPreset"
 		}
-		comboboxPieceOffset!!.addActionListener(this)
+		comboboxPieceOffset?.addActionListener(this)
 		panelPieceOffset.add(comboboxPieceOffset)
 
 		tabPieceOffset = JTabbedPane()
@@ -1076,7 +1076,7 @@ class RuleEditor:JFrame, ActionListener {
 		// rotationパターン補正(X)タブ --------------------------------------------------
 		val panelPieceOffsetX = JPanel()
 		panelPieceOffsetX.layout = BoxLayout(panelPieceOffsetX, BoxLayout.Y_AXIS)
-		tabPieceOffset!!.addTab(getUIText("TabName_PieceOffsetX"), panelPieceOffsetX)
+		tabPieceOffset?.addTab(getUIText("TabName_PieceOffsetX"), panelPieceOffsetX)
 
 		val pPieceOffsetX = Array(Piece.PIECE_COUNT) {
 			JPanel().apply {
@@ -1093,7 +1093,7 @@ class RuleEditor:JFrame, ActionListener {
 		// rotationパターン補正(Y)タブ --------------------------------------------------
 		val panelPieceOffsetY = JPanel().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
-			tabPieceOffset!!.addTab(getUIText("TabName_PieceOffsetY"), this)
+			tabPieceOffset?.addTab(getUIText("TabName_PieceOffsetY"), this)
 		}
 
 		val pPieceOffsetY = Array(Piece.PIECE_COUNT) {
@@ -1123,7 +1123,7 @@ class RuleEditor:JFrame, ActionListener {
 		// 出現位置補正(X)タブ --------------------------------------------------
 		val panelPieceSpawnX = JPanel()
 		panelPieceSpawnX.layout = BoxLayout(panelPieceSpawnX, BoxLayout.Y_AXIS)
-		tabPieceSpawn!!.addTab(getUIText("TabName_PieceSpawnX"), panelPieceSpawnX)
+		tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnX"), panelPieceSpawnX)
 
 		val pPieceSpawnX = Array(Piece.PIECE_COUNT) {
 			JPanel().apply {
@@ -1143,7 +1143,7 @@ class RuleEditor:JFrame, ActionListener {
 		// 出現位置補正(Y)タブ --------------------------------------------------
 		val panelPieceSpawnY = JPanel().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
-			tabPieceSpawn!!.addTab(getUIText("TabName_PieceSpawnY"), this)
+			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnY"), this)
 		}
 
 		val pPieceSpawnY = Array(Piece.PIECE_COUNT) {
@@ -1164,7 +1164,7 @@ class RuleEditor:JFrame, ActionListener {
 		// Big時出現位置補正(X)タブ --------------------------------------------------
 		val panelPieceSpawnBigX = JPanel().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
-			tabPieceSpawn!!.addTab(getUIText("TabName_PieceSpawnBigX"), this)
+			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnBigX"), this)
 		}
 
 		val pPieceSpawnBigX = Array(Piece.PIECE_COUNT) {
@@ -1182,7 +1182,7 @@ class RuleEditor:JFrame, ActionListener {
 		// Big時出現位置補正(Y)タブ --------------------------------------------------
 		val panelPieceSpawnBigY = JPanel().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
-			tabPieceSpawn!!.addTab(getUIText("TabName_PieceSpawnBigY"), this)
+			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnBigY"), this)
 		}
 
 		val pPieceSpawnBigY = Array(Piece.PIECE_COUNT) {
@@ -1395,116 +1395,112 @@ class RuleEditor:JFrame, ActionListener {
 	 * @param r ルール設定
 	 */
 	fun readRuleToUI(r:RuleOptions) {
-		txtfldRuleName!!.text = r.strRuleName
-		txtfldNextDisplay!!.text = r.nextDisplay.toString()
-		comboboxStyle!!.selectedIndex = r.style
-		comboboxSkin!!.selectedIndex = r.skin
-		chkboxGhost!!.isSelected = r.ghost
-		chkboxEnterAboveField!!.isSelected = r.pieceEnterAboveField
-		txtfldEnterMaxDistanceY!!.text = r.pieceEnterMaxDistanceY.toString()
-		val indexRandomizer = vectorRandomizer!!.indexOf(r.strRandomizer)
-		comboboxRandomizer!!.selectedIndex = indexRandomizer
+		txtfldRuleName?.text = r.strRuleName
+		txtfldNextDisplay?.text = r.nextDisplay.toString()
+		comboboxStyle?.selectedIndex = r.style
+		comboboxSkin?.selectedIndex = r.skin
+		chkboxGhost?.isSelected = r.ghost
+		chkboxEnterAboveField?.isSelected = r.pieceEnterAboveField
+		txtfldEnterMaxDistanceY?.text = r.pieceEnterMaxDistanceY.toString()
+		comboboxRandomizer?.selectedIndex = vectorRandomizer?.indexOf(r.strRandomizer) ?: 0
 
-		txtfldFieldWidth!!.text = r.fieldWidth.toString()
-		txtfldFieldHeight!!.text = r.fieldHeight.toString()
-		txtfldFieldHiddenHeight!!.text = r.fieldHiddenHeight.toString()
-		chkboxFieldCeiling!!.isSelected = r.fieldCeiling
-		chkboxFieldLockoutDeath!!.isSelected = r.fieldLockoutDeath
-		chkboxFieldPartialLockoutDeath!!.isSelected = r.fieldPartialLockoutDeath
+		txtfldFieldWidth?.text = r.fieldWidth.toString()
+		txtfldFieldHeight?.text = r.fieldHeight.toString()
+		txtfldFieldHiddenHeight?.text = r.fieldHiddenHeight.toString()
+		chkboxFieldCeiling?.isSelected = r.fieldCeiling
+		chkboxFieldLockoutDeath?.isSelected = r.fieldLockoutDeath
+		chkboxFieldPartialLockoutDeath?.isSelected = r.fieldPartialLockoutDeath
 
-		chkboxHoldEnable!!.isSelected = r.holdEnable
-		chkboxHoldInitial!!.isSelected = r.holdInitial
-		chkboxHoldInitialLimit!!.isSelected = r.holdInitialLimit
-		chkboxHoldResetDirection!!.isSelected = r.holdResetDirection
-		txtfldHoldLimit!!.text = r.holdLimit.toString()
+		chkboxHoldEnable?.isSelected = r.holdEnable
+		chkboxHoldInitial?.isSelected = r.holdInitial
+		chkboxHoldInitialLimit?.isSelected = r.holdInitialLimit
+		chkboxHoldResetDirection?.isSelected = r.holdResetDirection
+		txtfldHoldLimit?.text = r.holdLimit.toString()
 
-		chkboxDropHardDropEnable!!.isSelected = r.harddropEnable
-		chkboxDropHardDropLock!!.isSelected = r.harddropLock
-		chkboxDropHardDropLimit!!.isSelected = r.harddropLimit
-		chkboxDropSoftDropEnable!!.isSelected = r.softdropEnable
-		chkboxDropSoftDropLock!!.isSelected = r.softdropLock
-		chkboxDropSoftDropLimit!!.isSelected = r.softdropLimit
-		chkboxDropSoftDropSurfaceLock!!.isSelected = r.softdropSurfaceLock
-		txtfldDropSoftDropSpeed!!.text = r.softdropSpeed.toString()
-		chkboxDropSoftDropMultiplyNativeSpeed!!.isSelected = r.softdropMultiplyNativeSpeed
-		chkboxDropSoftDropGravitySpeedLimit!!.isSelected = r.softdropGravitySpeedLimit
+		chkboxDropHardDropEnable?.isSelected = r.harddropEnable
+		chkboxDropHardDropLock?.isSelected = r.harddropLock
+		chkboxDropHardDropLimit?.isSelected = r.harddropLimit
+		chkboxDropSoftDropEnable?.isSelected = r.softdropEnable
+		chkboxDropSoftDropLock?.isSelected = r.softdropLock
+		chkboxDropSoftDropLimit?.isSelected = r.softdropLimit
+		chkboxDropSoftDropSurfaceLock?.isSelected = r.softdropSurfaceLock
+		txtfldDropSoftDropSpeed?.text = r.softdropSpeed.toString()
+		chkboxDropSoftDropMultiplyNativeSpeed?.isSelected = r.softdropMultiplyNativeSpeed
+		chkboxDropSoftDropGravitySpeedLimit?.isSelected = r.softdropGravitySpeedLimit
 
-		chkboxRotateInitial!!.isSelected = r.rotateInitial
-		chkboxRotateInitialLimit!!.isSelected = r.rotateInitialLimit
-		chkboxRotateWallkick!!.isSelected = r.rotateWallkick
-		chkboxRotateInitialWallkick!!.isSelected = r.rotateInitialWallkick
-		txtfldRotateMaxUpwardWallkick!!.text = r.rotateMaxUpwardWallkick.toString()
-		chkboxRotateButtonDefaultRight!!.isSelected = r.rotateButtonDefaultRight
-		chkboxRotateButtonAllowReverse!!.isSelected = r.rotateButtonAllowReverse
-		chkboxRotateButtonAllowDouble!!.isSelected = r.rotateButtonAllowDouble
-		val indexWallkick = vectorWallkickSystem!!.indexOf(r.strWallkick)
-		comboboxWallkickSystem!!.selectedIndex = indexWallkick
+		chkboxRotateInitial?.isSelected = r.rotateInitial
+		chkboxRotateInitialLimit?.isSelected = r.rotateInitialLimit
+		chkboxRotateWallkick?.isSelected = r.rotateWallkick
+		chkboxRotateInitialWallkick?.isSelected = r.rotateInitialWallkick
+		txtfldRotateMaxUpwardWallkick?.text = r.rotateMaxUpwardWallkick.toString()
+		chkboxRotateButtonDefaultRight?.isSelected = r.rotateButtonDefaultRight
+		chkboxRotateButtonAllowReverse?.isSelected = r.rotateButtonAllowReverse
+		chkboxRotateButtonAllowDouble?.isSelected = r.rotateButtonAllowDouble
+		comboboxWallkickSystem?.selectedIndex = vectorWallkickSystem?.indexOf(r.strWallkick) ?: 0
+		txtfldLockDelayMin?.text = r.minLockDelay.toString()
+		txtfldLockDelayMax?.text = r.maxLockDelay.toString()
+		chkboxLockDelayLockResetFall?.isSelected = r.lockresetFall
+		chkboxLockDelayLockResetMove?.isSelected = r.lockresetMove
+		chkboxLockDelayLockResetRotate?.isSelected = r.lockresetRotate
+		chkboxLockDelayLockResetWallkick?.isSelected = r.lockresetWallkick
+		chkboxLockDelayLockResetLimitShareCount?.isSelected = r.lockresetLimitShareCount
+		txtfldLockDelayLockResetLimitMove?.text = r.lockresetLimitMove.toString()
+		txtfldLockDelayLockResetLimitRotate?.text = r.lockresetLimitRotate.toString()
+		when(r.lockresetLimitOver) {
+			RuleOptions.LOCKRESET_LIMIT_OVER_NORESET -> radioLockDelayLockResetLimitOverNoReset?.isSelected = true
+			RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT -> radioLockDelayLockResetLimitOverInstant?.isSelected = true
+			RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK -> radioLockDelayLockResetLimitOverNoWallkick?.isSelected = true
+		}
 
-		txtfldLockDelayMin!!.text = r.minLockDelay.toString()
-		txtfldLockDelayMax!!.text = r.maxLockDelay.toString()
-		chkboxLockDelayLockResetFall!!.isSelected = r.lockresetFall
-		chkboxLockDelayLockResetMove!!.isSelected = r.lockresetMove
-		chkboxLockDelayLockResetRotate!!.isSelected = r.lockresetRotate
-		chkboxLockDelayLockResetWallkick!!.isSelected = r.lockresetWallkick
-		chkboxLockDelayLockResetLimitShareCount!!.isSelected = r.lockresetLimitShareCount
-		txtfldLockDelayLockResetLimitMove!!.text = r.lockresetLimitMove.toString()
-		txtfldLockDelayLockResetLimitRotate!!.text = r.lockresetLimitRotate.toString()
-		if(r.lockresetLimitOver==RuleOptions.LOCKRESET_LIMIT_OVER_NORESET)
-			radioLockDelayLockResetLimitOverNoReset!!.isSelected = true
-		else if(r.lockresetLimitOver==RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT)
-			radioLockDelayLockResetLimitOverInstant!!.isSelected = true
-		else if(r.lockresetLimitOver==RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK)
-			radioLockDelayLockResetLimitOverNoWallkick!!.isSelected = true
+		txtfldAREMin?.text = r.minARE.toString()
+		txtfldAREMax?.text = r.maxARE.toString()
+		txtfldARELineMin?.text = r.minARELine.toString()
+		txtfldARELineMax?.text = r.maxARELine.toString()
+		txtfldARELockFlash?.text = r.lockflash.toString()
+		chkboxARELockFlashOnlyFrame?.isSelected = r.lockflashOnlyFrame
+		chkboxARELockFlashBeforeLineClear?.isSelected = r.lockflashBeforeLineClear
+		chkboxARECancelMove?.isSelected = r.areCancelMove
+		chkboxARECancelRotate?.isSelected = r.areCancelRotate
+		chkboxARECancelHold?.isSelected = r.areCancelHold
 
-		txtfldAREMin!!.text = r.minARE.toString()
-		txtfldAREMax!!.text = r.maxARE.toString()
-		txtfldARELineMin!!.text = r.minARELine.toString()
-		txtfldARELineMax!!.text = r.maxARELine.toString()
-		txtfldARELockFlash!!.text = r.lockflash.toString()
-		chkboxARELockFlashOnlyFrame!!.isSelected = r.lockflashOnlyFrame
-		chkboxARELockFlashBeforeLineClear!!.isSelected = r.lockflashBeforeLineClear
-		chkboxARECancelMove!!.isSelected = r.areCancelMove
-		chkboxARECancelRotate!!.isSelected = r.areCancelRotate
-		chkboxARECancelHold!!.isSelected = r.areCancelHold
+		txtfldLineDelayMin?.text = r.minLineDelay.toString()
+		txtfldLineDelayMax?.text = r.maxLineDelay.toString()
+		chkboxLineFallAnim?.isSelected = r.lineFallAnim
+		chkboxLineCancelMove?.isSelected = r.lineCancelMove
+		chkboxLineCancelRotate?.isSelected = r.lineCancelRotate
+		chkboxLineCancelHold?.isSelected = r.lineCancelHold
 
-		txtfldLineDelayMin!!.text = r.minLineDelay.toString()
-		txtfldLineDelayMax!!.text = r.maxLineDelay.toString()
-		chkboxLineFallAnim!!.isSelected = r.lineFallAnim
-		chkboxLineCancelMove!!.isSelected = r.lineCancelMove
-		chkboxLineCancelRotate!!.isSelected = r.lineCancelRotate
-		chkboxLineCancelHold!!.isSelected = r.lineCancelHold
-
-		txtfldMoveDASMin!!.text = r.minDAS.toString()
-		txtfldMoveDASMax!!.text = r.maxDAS.toString()
-		txtfldMoveDASDelay!!.text = r.dasDelay.toString()
-		chkboxMoveDASInReady!!.isSelected = r.dasInReady
-		chkboxMoveDASInMoveFirstFrame!!.isSelected = r.dasInMoveFirstFrame
-		chkboxMoveDASInLockFlash!!.isSelected = r.dasInLockFlash
-		chkboxMoveDASInLineClear!!.isSelected = r.dasInLineClear
-		chkboxMoveDASInARE!!.isSelected = r.dasInARE
-		chkboxMoveDASInARELastFrame!!.isSelected = r.dasInARELastFrame
-		chkboxMoveDASInEndingStart!!.isSelected = r.dasInEndingStart
-		chkboxMoveDASChargeOnBlockedMove!!.isSelected = r.dasChargeOnBlockedMove
-		chkboxMoveDASStoreChargeOnNeutral!!.isSelected = r.dasStoreChargeOnNeutral
-		chkboxMoveDASRedirectInDelay!!.isSelected = r.dasRedirectInDelay
-		chkboxMoveFirstFrame!!.isSelected = r.moveFirstFrame
-		chkboxMoveDiagonal!!.isSelected = r.moveDiagonal
-		chkboxMoveUpAndDown!!.isSelected = r.moveUpAndDown
-		chkboxMoveLeftAndRightAllow!!.isSelected = r.moveLeftAndRightAllow
-		chkboxMoveLeftAndRightUsePreviousInput!!.isSelected = r.moveLeftAndRightUsePreviousInput
-		chkboxMoveShiftLockEnable!!.isSelected = r.shiftLockEnable
-		comboboxPieceOffset!!.selectedIndex = r.pieceOffset
+		txtfldMoveDASMin?.text = r.minDAS.toString()
+		txtfldMoveDASMax?.text = r.maxDAS.toString()
+		txtfldMoveDASDelay?.text = r.dasDelay.toString()
+		chkboxMoveDASInReady?.isSelected = r.dasInReady
+		chkboxMoveDASInMoveFirstFrame?.isSelected = r.dasInMoveFirstFrame
+		chkboxMoveDASInLockFlash?.isSelected = r.dasInLockFlash
+		chkboxMoveDASInLineClear?.isSelected = r.dasInLineClear
+		chkboxMoveDASInARE?.isSelected = r.dasInARE
+		chkboxMoveDASInARELastFrame?.isSelected = r.dasInARELastFrame
+		chkboxMoveDASInEndingStart?.isSelected = r.dasInEndingStart
+		chkboxMoveDASChargeOnBlockedMove?.isSelected = r.dasChargeOnBlockedMove
+		chkboxMoveDASStoreChargeOnNeutral?.isSelected = r.dasStoreChargeOnNeutral
+		chkboxMoveDASRedirectInDelay?.isSelected = r.dasRedirectInDelay
+		chkboxMoveFirstFrame?.isSelected = r.moveFirstFrame
+		chkboxMoveDiagonal?.isSelected = r.moveDiagonal
+		chkboxMoveUpAndDown?.isSelected = r.moveUpAndDown
+		chkboxMoveLeftAndRightAllow?.isSelected = r.moveLeftAndRightAllow
+		chkboxMoveLeftAndRightUsePreviousInput?.isSelected = r.moveLeftAndRightUsePreviousInput
+		chkboxMoveShiftLockEnable?.isSelected = r.shiftLockEnable
+		comboboxPieceOffset?.selectedIndex = r.pieceOffset
 		for(i in 0 until Piece.PIECE_COUNT) {
 			for(j in 0 until Piece.DIRECTION_COUNT) {
-				txtfldPieceOffsetX!![i][j].text = "${r.pieceOffsetX[i][j]}"
-				txtfldPieceOffsetY!![i][j].text = "${r.pieceOffsetY[i][j]}"
-				txtfldPieceSpawnX!![i][j].text = "${r.pieceSpawnX[i][j]}"
-				txtfldPieceSpawnY!![i][j].text = "${r.pieceSpawnY[i][j]}"
-				txtfldPieceSpawnBigX!![i][j].text = "${r.pieceSpawnXBig[i][j]}"
-				txtfldPieceSpawnBigY!![i][j].text = "${r.pieceSpawnYBig[i][j]}"
+				txtfldPieceOffsetX?.let {it[i][j].text = "${r.pieceOffsetX[i][j]}"}
+				txtfldPieceOffsetY?.let {it[i][j].text = "${r.pieceOffsetY[i][j]}"}
+				txtfldPieceSpawnX?.let {it[i][j].text = "${r.pieceSpawnX[i][j]}"}
+				txtfldPieceSpawnY?.let {it[i][j].text = "${r.pieceSpawnY[i][j]}"}
+				txtfldPieceSpawnBigX?.let {it[i][j].text = "${r.pieceSpawnXBig[i][j]}"}
+				txtfldPieceSpawnBigY?.let {it[i][j].text = "${r.pieceSpawnYBig[i][j]}"}
 			}
-			comboboxPieceColor!![i].selectedIndex = r.pieceColor[i]-1
-			comboboxPieceDirection!![i].selectedIndex = r.pieceDefaultDirection[i]
+			comboboxPieceColor?.get(i)?.selectedIndex = r.pieceColor[i]-1
+			comboboxPieceDirection?.get(i)?.selectedIndex = r.pieceDefaultDirection[i]
 		}
 	}
 
@@ -1753,7 +1749,7 @@ class RuleEditor:JFrame, ActionListener {
 							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
 					}
 
-				}else {
+				} else {
 					// Nameを付けて保存
 					c = JFileChooser("${System.getProperty("user.dir")}/config/rule")
 					c.fileFilter = FileFilterRUL()
@@ -1777,7 +1773,7 @@ class RuleEditor:JFrame, ActionListener {
 					}
 				}
 			}
-			"Save","SaveAs" -> {
+			"Save", "SaveAs" -> {
 				c = JFileChooser("${System.getProperty("user.dir")}/config/rule")
 				c.fileFilter = FileFilterRUL()
 				if(c.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
@@ -1826,7 +1822,7 @@ class RuleEditor:JFrame, ActionListener {
 					i++
 				}
 			}
-				"ResetRandomizer" // NEXT順生成アルゴリズムの選択リセット
+			"ResetRandomizer" // NEXT順生成アルゴリズムの選択リセット
 			-> comboboxRandomizer!!.setSelectedItem(null)
 			"Exit" // 終了
 			-> dispose()
@@ -1834,7 +1830,7 @@ class RuleEditor:JFrame, ActionListener {
 	}
 
 	/** ファイル選択画面のフィルタ */
-	protected inner class FileFilterRUL:FileFilter() {
+	private inner class FileFilterRUL:FileFilter() {
 		override fun accept(f:File):Boolean = if(f.isDirectory) true else f.name.endsWith(".rul")
 
 		override fun getDescription():String = getUIText("FileChooser_RuleFile")
@@ -1842,16 +1838,16 @@ class RuleEditor:JFrame, ActionListener {
 
 	/** 画像表示Comboボックスの項目<br></br>
 	 * [出典](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */
-	protected inner class ComboLabel(
+	private inner class ComboLabel(
 		var text:String = "",
 		var icon:Icon? = null
-	) {
-	}
+	)
 
 	/** 画像表示ComboボックスのListCellRenderer<br></br>
 	 * [出典](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */
-	protected inner class ComboLabelCellRenderer:JLabel(), ListCellRenderer<Any> {
-		fun getListCellRendererComponent(list:JList<out Nothing>?, value:Nothing?, index:Int, isSelected:Boolean, cellHasFocus:Boolean):Component {
+	private inner class ComboLabelCellRenderer:JLabel(), ListCellRenderer<Any> {
+		fun getListCellRendererComponent(list:JList<out Nothing>?, value:Nothing?, index:Int, isSelected:Boolean,
+			cellHasFocus:Boolean):Component {
 			TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
 		}
 

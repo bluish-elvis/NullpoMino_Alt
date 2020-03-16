@@ -4,6 +4,7 @@ net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNoSZORandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusBagRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.BagDoublesRandomizer
+net.omegaboshi.nullpomino.game.subsystem.randomizer.BagQuintHistoryRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNonuplesRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusTwoRandomizer

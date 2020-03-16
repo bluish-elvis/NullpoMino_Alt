@@ -25,6 +25,7 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -75,20 +76,17 @@ class VSBattleMode:AbstractMode() {
 	/** UseBGM */
 	private var bgmno:Int = 0
 
-	/** Flag for types of T-Spins allowed (0=none, 1=normal, 2=all spin) */
-	private var tspinEnableType:IntArray = IntArray(0)
+	/** Flag for types of Twisters allowed (0=none, 1=normal, 2=all spin) */
+	private var twistEnableType:IntArray = IntArray(0)
 
-	/** Old flag for allowing T-Spins */
-	private var enableTSpin:BooleanArray = BooleanArray(0)
+	/** Old flag for allowing Twisters */
+	private var enableTwist:BooleanArray = BooleanArray(0)
 
-	/** Flag for enabling wallkick T-Spins */
-	private var enableTSpinKick:BooleanArray = BooleanArray(0)
-
-	/** Spin check type (4Point or Immobile) */
-	private var spinCheckType:IntArray = IntArray(0)
+	/** Flag for enabling wallkick Twisters */
+	private var enableTwistKick:BooleanArray = BooleanArray(0)
 
 	/** Immobile EZ spin */
-	private var tspinEnableEZ:BooleanArray = BooleanArray(0)
+	private var twistEnableEZ:BooleanArray = BooleanArray(0)
 
 	/** B2B Type (0=OFF 1=ON 2=ON+Separated-garbage) */
 	private var b2bType:IntArray = IntArray(0)
@@ -179,11 +177,10 @@ class VSBattleMode:AbstractMode() {
 		lastcombo = IntArray(MAX_PLAYERS)
 		lastpiece = IntArray(MAX_PLAYERS)
 		bgmno = 0
-		tspinEnableType = IntArray(MAX_PLAYERS)
-		enableTSpin = BooleanArray(MAX_PLAYERS)
-		enableTSpinKick = BooleanArray(MAX_PLAYERS)
-		spinCheckType = IntArray(MAX_PLAYERS)
-		tspinEnableEZ = BooleanArray(MAX_PLAYERS)
+		twistEnableType = IntArray(MAX_PLAYERS)
+		enableTwist = BooleanArray(MAX_PLAYERS)
+		enableTwistKick = BooleanArray(MAX_PLAYERS)
+		twistEnableEZ = BooleanArray(MAX_PLAYERS)
 		b2bType = IntArray(MAX_PLAYERS)
 		enableCombo = BooleanArray(MAX_PLAYERS)
 		big = BooleanArray(MAX_PLAYERS)
@@ -248,11 +245,10 @@ class VSBattleMode:AbstractMode() {
 		garbagePercent[playerID] = prop.getProperty("vsbattle.garbagePercent.p$playerID", 100)
 		garbageCounter[playerID] = prop.getProperty("vsbattle.garbageCounter.p$playerID", true)
 		garbageBlocking[playerID] = prop.getProperty("vsbattle.garbageBlocking.p$playerID", true)
-		tspinEnableType[playerID] = prop.getProperty("vsbattle.tspinEnableType.p$playerID", 1)
-		enableTSpin[playerID] = prop.getProperty("vsbattle.enableTSpin.p$playerID", true)
-		enableTSpinKick[playerID] = prop.getProperty("vsbattle.enableTSpinKick.p$playerID", true)
-		spinCheckType[playerID] = prop.getProperty("vsbattle.spinCheckType.p$playerID", 0)
-		tspinEnableEZ[playerID] = prop.getProperty("vsbattle.tspinEnableEZ.p$playerID", false)
+		twistEnableType[playerID] = prop.getProperty("vsbattle.twistEnableType.p$playerID", 1)
+		enableTwist[playerID] = prop.getProperty("vsbattle.enableTwist.p$playerID", true)
+		enableTwistKick[playerID] = prop.getProperty("vsbattle.enableTwistKick.p$playerID", true)
+		twistEnableEZ[playerID] = prop.getProperty("vsbattle.twistEnableEZ.p$playerID", false)
 		if(version>=5)
 			b2bType[playerID] = prop.getProperty("vsbattle.b2bType.p$playerID", 1)
 		else {
@@ -282,11 +278,10 @@ class VSBattleMode:AbstractMode() {
 		prop.setProperty("vsbattle.garbagePercent.p$playerID", garbagePercent[playerID])
 		prop.setProperty("vsbattle.garbageCounter.p$playerID", garbageCounter[playerID])
 		prop.setProperty("vsbattle.garbageBlocking.p$playerID", garbageBlocking[playerID])
-		prop.setProperty("vsbattle.tspinEnableType.p$playerID", tspinEnableType[playerID])
-		prop.setProperty("vsbattle.enableTSpin.p$playerID", enableTSpin[playerID])
-		prop.setProperty("vsbattle.enableTSpinKick.p$playerID", enableTSpinKick[playerID])
-		prop.setProperty("vsbattle.spinCheckType.p$playerID", spinCheckType[playerID])
-		prop.setProperty("vsbattle.tspinEnableEZ.p$playerID", tspinEnableEZ[playerID])
+		prop.setProperty("vsbattle.twistEnableType.p$playerID", twistEnableType[playerID])
+		prop.setProperty("vsbattle.enableTwist.p$playerID", enableTwist[playerID])
+		prop.setProperty("vsbattle.enableTwistKick.p$playerID", enableTwistKick[playerID])
+		prop.setProperty("vsbattle.twistEnableEZ.p$playerID", twistEnableEZ[playerID])
 		prop.setProperty("vsbattle.b2bType.p$playerID", b2bType[playerID])
 		prop.setProperty("vsbattle.enableCombo.p$playerID", enableCombo[playerID])
 		prop.setProperty("vsbattle.big.p$playerID", big[playerID])
@@ -343,7 +338,7 @@ class VSBattleMode:AbstractMode() {
 	private fun loadMapPreview(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propMap[playerID]==null||forceReload) {
 			mapMaxNo[playerID] = 0
-			propMap[playerID] = receiver.loadProperties("config/values/vsbattle/${mapSet[playerID]}.values")
+			propMap[playerID] = receiver.loadProperties("config/map/vsbattle/${mapSet[playerID]}.map")
 		}
 
 		propMap[playerID]?.let {
@@ -397,8 +392,8 @@ class VSBattleMode:AbstractMode() {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -454,18 +449,13 @@ class VSBattleMode:AbstractMode() {
 					11 -> garbageCounter[playerID] = !garbageCounter[playerID]
 					12 -> garbageBlocking[playerID] = !garbageBlocking[playerID]
 					13 -> {
-						//enableTSpin[playerID] = !enableTSpin[playerID];
-						tspinEnableType[playerID] += change
-						if(tspinEnableType[playerID]<0) tspinEnableType[playerID] = 2
-						if(tspinEnableType[playerID]>2) tspinEnableType[playerID] = 0
+						//enableTwist[playerID] = !enableTwist[playerID];
+						twistEnableType[playerID] += change
+						if(twistEnableType[playerID]<0) twistEnableType[playerID] = 2
+						if(twistEnableType[playerID]>2) twistEnableType[playerID] = 0
 					}
-					14 -> enableTSpinKick[playerID] = !enableTSpinKick[playerID]
-					15 -> {
-						spinCheckType[playerID] += change
-						if(spinCheckType[playerID]<0) spinCheckType[playerID] = 1
-						if(spinCheckType[playerID]>1) spinCheckType[playerID] = 0
-					}
-					16 -> tspinEnableEZ[playerID] = !tspinEnableEZ[playerID]
+					14 -> enableTwistKick[playerID] = !enableTwistKick[playerID]
+					16 -> twistEnableEZ[playerID] = !twistEnableEZ[playerID]
 					17 -> {
 						//enableB2B[playerID] = !enableB2B[playerID];
 						b2bType[playerID] += change
@@ -518,7 +508,7 @@ class VSBattleMode:AbstractMode() {
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				if(menuCursor==7)
@@ -535,7 +525,7 @@ class VSBattleMode:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			// プレビュー用Map読み込み
 			if(useMap[playerID]&&menuTime==0)
@@ -565,7 +555,7 @@ class VSBattleMode:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
 				owner.engine[1].resetStatc()
-			} else if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
+			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
 
 		return true
 	}
@@ -573,40 +563,44 @@ class VSBattleMode:AbstractMode() {
 	/* Setting screen drawing */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(engine.statc[4]==0) {
-			if(menuCursor<9) {
-				drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
-				drawMenu(engine, playerID, receiver, 14, COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
-			} else if(menuCursor<19) {
-				var strTSpinEnable = ""
-				if(version>=4) {
-					if(tspinEnableType[playerID]==0) strTSpinEnable = "OFF"
-					if(tspinEnableType[playerID]==1) strTSpinEnable = "T-ONLY"
-					if(tspinEnableType[playerID]==2) strTSpinEnable = "ALL"
-				} else
-					strTSpinEnable = GeneralUtil.getONorOFF(enableTSpin[playerID])
-				var strB2BType = ""
-				if(b2bType[playerID]==0) strB2BType = "OFF"
-				if(b2bType[playerID]==1) strB2BType = "ON"
-				if(b2bType[playerID]==2) strB2BType = "SEPARATE"
-				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "GARBAGE", GARBAGE_TYPE_STRING[garbageType[playerID]],
-					"CHANGERATE", "${garbagePercent[playerID]}%", "COUNTERING", GeneralUtil.getONorOFF(garbageCounter[playerID]),
-					"BLOCKING", GeneralUtil.getONorOFF(garbageBlocking[playerID]), "SPIN BONUS", strTSpinEnable,
-					"KICK SPIN", GeneralUtil.getONorOFF(enableTSpinKick[playerID]),
-					"SPIN TYPE",
-					if(spinCheckType[playerID]==0) "4POINT" else "IMMOBILE",
-					"EZIMMOBILE", GeneralUtil.getONorOFF(tspinEnableEZ[playerID]), "B2B", strB2BType,
-					"COMBO", GeneralUtil.getONorOFF(enableCombo[playerID]))
-			} else {
-				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 19, "BIG", GeneralUtil.getONorOFF(big[playerID]),
-					"SE", GeneralUtil.getONorOFF(enableSE[playerID]),
-					"HURRYUP",
-					if(hurryupSeconds[playerID]==-1) "NONE" else "${hurryupSeconds[playerID]}SEC",
-					"INTERVAL", "${hurryupInterval[playerID]}")
-				drawMenu(engine, playerID, receiver, 8, COLOR.PINK, 23, "BGM", "${BGM.values[bgmno]}",
-					"SHOW STATS", GeneralUtil.getONorOFF(showStats))
-				drawMenu(engine, playerID, receiver, 12, COLOR.CYAN, 25, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]),
-					"MAP SET", "${mapSet[playerID]}",
-					"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}")
+			when {
+				menuCursor<9 -> {
+					drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
+					drawMenu(engine, playerID, receiver, 14, COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
+				}
+				menuCursor<19 -> {
+					var strTWISTEnable = ""
+					if(version>=4) {
+						if(twistEnableType[playerID]==0) strTWISTEnable = "OFF"
+						if(twistEnableType[playerID]==1) strTWISTEnable = "T-ONLY"
+						if(twistEnableType[playerID]==2) strTWISTEnable = "ALL"
+					} else
+						strTWISTEnable = GeneralUtil.getONorOFF(enableTwist[playerID])
+					val strB2BType = when(b2bType[playerID]) {
+						0 -> "OFF"
+						1 -> "ON"
+						2 -> "SEPARATE"
+						else -> ""
+					}
+					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "GARBAGE", GARBAGE_TYPE_STRING[garbageType[playerID]],
+						"CHANGERATE", "${garbagePercent[playerID]}%", "COUNTERING", GeneralUtil.getONorOFF(garbageCounter[playerID]),
+						"BLOCKING", GeneralUtil.getONorOFF(garbageBlocking[playerID]), "SPIN BONUS", strTWISTEnable,
+						"KICK SPIN", GeneralUtil.getONorOFF(enableTwistKick[playerID]),
+						"EZIMMOBILE", GeneralUtil.getONorOFF(twistEnableEZ[playerID]), "B2B", strB2BType,
+						"COMBO", GeneralUtil.getONorOFF(enableCombo[playerID]))
+				}
+				else -> {
+					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 19, "BIG", GeneralUtil.getONorOFF(big[playerID]),
+						"SE", GeneralUtil.getONorOFF(enableSE[playerID]),
+						"HURRYUP",
+						if(hurryupSeconds[playerID]==-1) "NONE" else "${hurryupSeconds[playerID]}SEC",
+						"INTERVAL", "${hurryupInterval[playerID]}")
+					drawMenu(engine, playerID, receiver, 8, COLOR.PINK, 23, "BGM", "${BGM.values[bgmno]}",
+						"SHOW STATS", GeneralUtil.getONorOFF(showStats))
+					drawMenu(engine, playerID, receiver, 12, COLOR.CYAN, 25, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]),
+						"MAP SET", "${mapSet[playerID]}",
+						"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}")
+				}
 			}
 		} else
 			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", COLOR.YELLOW)
@@ -624,7 +618,7 @@ class VSBattleMode:AbstractMode() {
 						engine.field!!.setAllSkin(engine.skin)
 					} else {
 						if(propMap[playerID]==null)
-							propMap[playerID] = receiver.loadProperties("config/values/vsbattle/${mapSet[playerID]}.values")
+							propMap[playerID] = receiver.loadProperties("config/map/vsbattle/${mapSet[playerID]}.map")
 
 						propMap[playerID]?.let {
 							engine.createFieldIfNeeded()
@@ -656,28 +650,25 @@ class VSBattleMode:AbstractMode() {
 		engine.enableSE = enableSE[playerID]
 		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 
-		engine.tspinAllowKick = enableTSpinKick[playerID]
+		engine.twistAllowKick = enableTwistKick[playerID]
 		if(version>=4) {
 			when {
-				tspinEnableType[playerID]==0 -> {
-					engine.tspinEnable = false
+				twistEnableType[playerID]==0 -> {
+					engine.twistEnable = false
 					engine.useAllSpinBonus = false
 				}
-				tspinEnableType[playerID]==1 -> {
-					engine.tspinEnable = true
+				twistEnableType[playerID]==1 -> {
+					engine.twistEnable = true
 					engine.useAllSpinBonus = false
 				}
-				tspinEnableType[playerID]==2 -> {
-					engine.tspinEnable = true
+				twistEnableType[playerID]==2 -> {
+					engine.twistEnable = true
 					engine.useAllSpinBonus = true
 				}
 			}
-		} else engine.tspinEnable = enableTSpin[playerID]
+		} else engine.twistEnable = enableTwist[playerID]
+		engine.twistEnableEZ = twistEnableEZ[playerID]
 
-		if(version>=5) {
-			engine.spinCheckType = spinCheckType[playerID]
-			engine.tspinEnableEZ = tspinEnableEZ[playerID]
-		}
 	}
 
 	/* Render score */
@@ -688,7 +679,7 @@ class VSBattleMode:AbstractMode() {
 
 			if(hurryupSeconds[playerID]>=0&&engine.timerActive&&
 				engine.statistics.time>=hurryupSeconds[playerID]*60&&engine.statistics.time<(hurryupSeconds[playerID]+5)*60)
-				receiver.drawDirectFont(playerID, 256-8, 32, "HURRY UP!", engine.statistics.time%2==0)
+				receiver.drawDirectFont(playerID, 256-8, 32, "DANGER", engine.statistics.time%2==0)
 		}
 
 		if(playerID==0&&owner.receiver.nextDisplayType!=2&&showStats) {
@@ -710,125 +701,77 @@ class VSBattleMode:AbstractMode() {
 		}
 
 		if(showStats) {
-			val x = receiver.fieldX(engine, playerID)
-			val y = receiver.fieldY(engine, playerID)
-			var fontColor = COLOR.WHITE
+			val x = receiver.fieldX(engine)
+			val y = receiver.fieldY(engine)
+			val fontColor = when {
+				garbage[playerID]>=1 -> COLOR.YELLOW
+				garbage[playerID]>=3 -> COLOR.ORANGE
+				garbage[playerID]>=4 -> COLOR.RED
+				else -> COLOR.WHITE
+			}
 
+			val strTempGarbage = String.format("%5d", garbage[playerID])
 			if(garbage[playerID]>0) {
-				if(garbage[playerID]>=1) fontColor = COLOR.YELLOW
-				if(garbage[playerID]>=3) fontColor = COLOR.ORANGE
-				if(garbage[playerID]>=4) fontColor = COLOR.RED
-
-				val strTempGarbage = String.format("%5d", garbage[playerID])
 				receiver.drawDirectFont(x+96, y+372, strTempGarbage, fontColor)
 			}
 
 			if(owner.receiver.nextDisplayType==2) {
-				fontColor = if(playerID==0) COLOR.RED else COLOR.BLUE
+				val fontColor = EventReceiver.getPlayerColor(playerID)
 
 				receiver.drawDirectFont(x-48, y+120, "TOTAL", fontColor, .5f)
-				receiver.drawDirectFont(x-52, y+128, "ATTACK", fontColor, .5f)
-				if(garbageSent[playerID]>=10)
-					receiver.drawDirectFont(x-44, y+142, "${garbageSent[playerID]}")
-				else
-					receiver.drawDirectFont(x-36, y+142, "${garbageSent[playerID]}")
+				receiver.drawDirectFont(x-52, y+128, "SPIKE", fontColor, .5f)
+				receiver.drawDirectFont(x-if(garbageSent[playerID]>=10) 44 else 36, y+142, "${garbageSent[playerID]}")
 
 				receiver.drawDirectFont(x-44, y+190, "WINS", fontColor, .5f)
-				if(winCount[playerID]>=10)
-					receiver.drawDirectFont(x-44, y+204, "${winCount[playerID]}")
-				else
-					receiver.drawDirectFont(x-36, y+204, "${winCount[playerID]}")
+				receiver.drawDirectFont(x-if(winCount[playerID]>=10) 44 else 36, y+204, "${winCount[playerID]}")
 			}
-		}
-
-		// Line clear event Display
-		if(lastevent[playerID]!=EVENT_NONE&&scgettime[playerID]<120) {
-			val strPieceName = Piece.Shape.names[lastpiece[playerID]]
-
-
-			when(lastevent[playerID]) {
-				EVENT_SINGLE -> receiver.drawMenuFont(engine, playerID, 2, 21, "SINGLE", COLOR.COBALT)
-				EVENT_DOUBLE -> receiver.drawMenuFont(engine, playerID, 2, 21, "DOUBLE", COLOR.BLUE)
-				EVENT_TRIPLE -> receiver.drawMenuFont(engine, playerID, 2, 21, "TRIPLE", COLOR.GREEN)
-				EVENT_FOUR -> if(lastb2b[playerID])
-					receiver.drawMenuFont(engine, playerID, 3, 21, "FOUR", COLOR.RED)
-				else
-					receiver.drawMenuFont(engine, playerID, 3, 21, "FOUR", COLOR.ORANGE)
-				EVENT_TSPIN_SINGLE_MINI -> if(lastb2b[playerID])
-					receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-MINI-S", COLOR.RED)
-				else
-					receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-MINI-S", COLOR.ORANGE)
-				EVENT_TSPIN_SINGLE -> if(lastb2b[playerID])
-					receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-SINGLE", COLOR.RED)
-				else
-					receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-SINGLE", COLOR.ORANGE)
-				EVENT_TSPIN_DOUBLE_MINI -> if(lastb2b[playerID])
-					receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-MINI-D", COLOR.RED)
-				else
-					receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-MINI-D", COLOR.ORANGE)
-				EVENT_TSPIN_DOUBLE -> if(lastb2b[playerID])
-					receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-DOUBLE", COLOR.RED)
-				else
-					receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-DOUBLE", COLOR.ORANGE)
-				EVENT_TSPIN_TRIPLE -> if(lastb2b[playerID])
-					receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-TRIPLE", COLOR.RED)
-				else
-					receiver.drawMenuFont(engine, playerID, 1, 21, "$strPieceName-TRIPLE", COLOR.ORANGE)
-				EVENT_TSPIN_EZ -> if(lastb2b[playerID])
-					receiver.drawMenuFont(engine, playerID, 3, 21, "EZ-$strPieceName", COLOR.RED)
-				else
-					receiver.drawMenuFont(engine, playerID, 3, 21, "EZ-$strPieceName", COLOR.ORANGE)
-			}
-
-			if(lastcombo[playerID]>=2)
-				receiver.drawMenuFont(engine, playerID, 2, 22, (lastcombo[playerID]-1).toString()+"COMBO", COLOR.CYAN)
 		}
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		var enemyID = 0
 		if(playerID==0) enemyID = 1
+		var pts = super.calcPower(engine, lines)
 
 		//  Attack
 		if(lines>0) {
-			var pts = 0
 			var ptsB2B = 0
 			scgettime[playerID] = 0
 
-			if(engine.tspin) {
+			if(engine.twist) {
 				// Immobile EZ Spin
-				if(engine.tspinez) {
+				if(engine.twistez) {
 					if(engine.useAllSpinBonus) {
 						//pts += 0;
 					} else
 						pts += 1
-					lastevent[playerID] = EVENT_TSPIN_EZ
+					lastevent[playerID] = EVENT_TWIST_EZ
 				} else if(lines==1) {
-					if(engine.tspinmini) {
+					if(engine.twistmini) {
 						if(engine.useAllSpinBonus) {
 							//pts += 0;
 						} else
 							pts += 1
-						lastevent[playerID] = EVENT_TSPIN_SINGLE_MINI
+						lastevent[playerID] = EVENT_TWIST_SINGLE_MINI
 					} else {
 						pts += 2
-						lastevent[playerID] = EVENT_TSPIN_SINGLE
+						lastevent[playerID] = EVENT_TWIST_SINGLE
 					}
 				} else if(lines==2) {
-					if(engine.tspinmini&&engine.useAllSpinBonus) {
+					if(engine.twistmini&&engine.useAllSpinBonus) {
 						pts += 3
-						lastevent[playerID] = EVENT_TSPIN_DOUBLE_MINI
+						lastevent[playerID] = EVENT_TWIST_DOUBLE_MINI
 					} else {
 						pts += 4
-						lastevent[playerID] = EVENT_TSPIN_DOUBLE
+						lastevent[playerID] = EVENT_TWIST_DOUBLE
 					}
 				} else if(lines>=3) {
 					pts += 6
-					lastevent[playerID] = EVENT_TSPIN_TRIPLE
-				}// T-Spin 3 lines
-				// T-Spin 2 lines
-				// T-Spin 1 line
+					lastevent[playerID] = EVENT_TWIST_TRIPLE
+				}// Twister 3 lines
+				// Twister 2 lines
+				// Twister 1 line
 			} else if(lines==1)
 			// 1Column
 				lastevent[playerID] = EVENT_SINGLE
@@ -848,7 +791,7 @@ class VSBattleMode:AbstractMode() {
 				lastb2b[playerID] = true
 
 				if(pts>0) {
-					ptsB2B += if(version>=1&&lastevent[playerID]==EVENT_TSPIN_TRIPLE&&!engine.useAllSpinBonus)
+					ptsB2B += if(version>=1&&lastevent[playerID]==EVENT_TWIST_TRIPLE&&!engine.useAllSpinBonus)
 						2
 					else
 						1
@@ -925,7 +868,7 @@ class VSBattleMode:AbstractMode() {
 		// Rising auction
 		garbage[playerID] = getTotalGarbageLines(playerID)
 		if((lines==0||!garbageBlocking[playerID])&&garbage[playerID]>0) {
-			engine.playSE("garbage")
+			engine.playSE("garbage${if(garbage[playerID]>3)1 else 0}")
 
 			while(!garbageEntries[playerID].isEmpty()) {
 				val garbageEntry = garbageEntries[playerID].poll()
@@ -996,6 +939,7 @@ class VSBattleMode:AbstractMode() {
 
 			if(hurryupCount[playerID]%hurryupInterval[playerID]==0) engine.field!!.addHurryupFloor(1, engine.skin)
 		}
+		return pts
 	}
 
 	/* Called after every frame */
@@ -1007,9 +951,9 @@ class VSBattleMode:AbstractMode() {
 			engine.playSE("hurryup")
 
 		// Rising auctionMeter
-		if(garbage[playerID]*receiver.getBlockGraphicsHeight(engine)>engine.meterValue)
-			engine.meterValue += receiver.getBlockGraphicsHeight(engine)/2
-		else if(garbage[playerID]*receiver.getBlockGraphicsHeight(engine)<engine.meterValue) engine.meterValue--
+		if(garbage[playerID]*receiver.getBlockHeight(engine)>engine.meterValue)
+			engine.meterValue += receiver.getBlockHeight(engine)/2
+		else if(garbage[playerID]*receiver.getBlockHeight(engine)<engine.meterValue) engine.meterValue--
 		when {
 			garbage[playerID]>=4 -> engine.meterColor = GameEngine.METER_COLOR_RED
 			garbage[playerID]>=3 -> engine.meterColor = GameEngine.METER_COLOR_ORANGE
@@ -1134,11 +1078,11 @@ class VSBattleMode:AbstractMode() {
 		private const val EVENT_DOUBLE = 2
 		private const val EVENT_TRIPLE = 3
 		private const val EVENT_FOUR = 4
-		private const val EVENT_TSPIN_SINGLE_MINI = 5
-		private const val EVENT_TSPIN_SINGLE = 6
-		private const val EVENT_TSPIN_DOUBLE = 7
-		private const val EVENT_TSPIN_TRIPLE = 8
-		private const val EVENT_TSPIN_DOUBLE_MINI = 9
-		private const val EVENT_TSPIN_EZ = 10
+		private const val EVENT_TWIST_SINGLE_MINI = 5
+		private const val EVENT_TWIST_SINGLE = 6
+		private const val EVENT_TWIST_DOUBLE = 7
+		private const val EVENT_TWIST_TRIPLE = 8
+		private const val EVENT_TWIST_DOUBLE_MINI = 9
+		private const val EVENT_TWIST_EZ = 10
 	}
 }

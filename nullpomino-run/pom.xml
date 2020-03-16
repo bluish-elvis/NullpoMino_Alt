@@ -2,10 +2,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
  <modelVersion>4.0.0</modelVersion>
  <artifactId>nullpomino-run</artifactId>
+ <version>7.7.2020</version>
  <parent>
   <groupId>mu.nu.nullpo</groupId>
   <artifactId>nullpomino-parent</artifactId>
-  <version>7.6.Alt</version>
+  <version>7.7.2020</version>
   <relativePath>../nullpomino-parent</relativePath>
  </parent>
 
@@ -14,7 +15,7 @@
   <dependency>
    <groupId>mu.nu.nullpo</groupId>
    <artifactId>nullpomino-core</artifactId>
-   <version>7.6.Alt</version>
+   <version>7.7.2020</version>
   </dependency>
  </dependencies>
  <build>
@@ -80,6 +81,9 @@
        <resources>
         <resource>
          <directory>res</directory>
+         <excludes>
+          <exclude>se/*/</exclude>
+         </excludes>
         </resource>
        </resources>
       </configuration>

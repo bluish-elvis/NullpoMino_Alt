@@ -23,7 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.gui.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.newdawn.slick.*
@@ -43,6 +43,48 @@ abstract class DummyMenuChooseState:BaseGameState() {
 	/** Set to false to ignore mouse input */
 	protected open val mouseEnabled:Boolean = true
 
+	protected var flashY = 0
+	protected var flashT = -1
+
+	override fun enter(container:GameContainer?, game:StateBasedGame?) {
+		flashY = 0
+		flashT = -1
+		val i = ResourceHolder.imgLine[1].copy()
+		ig =
+			Image(i.height, i.width).apply {
+				graphics.clear()
+				i.rotate(270f)
+				i.setCenterOfRotation(i.width/2f, i.width/2f)
+				graphics.drawImage(i, 0f, 0f)
+			}.getFlippedCopy(true, false)
+		super.enter(container, game)
+	}
+
+	override fun leave(container:GameContainer?, game:StateBasedGame?) {
+		ig.destroy()
+		super.leave(container, game)
+	}
+
+	/* Draw the screen */
+	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
+		// Menu
+		if(flashT in 0 until 32) {
+			val i = flashT/3
+			val j = flashT/2
+			val y = flashY
+			g.setDrawMode(Graphics.MODE_ADD)
+			if(i<8)
+				ResourceHolder.imgLine[0].draw(0f, y*16f, container.screenWidth.toFloat(), (y+1)*16f,
+					0f, 8f*i, 80f, 8f*(1+i))
+			if(j<16)
+				ig.draw(0f, y*16f, container.width.toFloat(), 16f*(1+y),
+					0f, 16f*j, 160f, 16f*(1+j))
+
+			g.setDrawMode(Graphics.MODE_NORMAL)
+			flashT++
+		}
+		super.renderImpl(container, game, g)
+	}
 
 	@Throws(SlickException::class)
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
@@ -51,7 +93,6 @@ abstract class DummyMenuChooseState:BaseGameState() {
 
 		// Update key input states
 		GameKey.gamekey[0].update(container.input)
-
 		// Mouse
 		var mouseConfirm = false
 		if(mouseEnabled) mouseConfirm = updateMouseInput(container.input)
@@ -62,11 +103,15 @@ abstract class DummyMenuChooseState:BaseGameState() {
 				cursor--
 				if(cursor<0) cursor = maxCursor-1
 				ResourceHolder.soundManager.play("cursor")
+				flashY = cursor+minChoiceY
+				flashT = 0
 			}
 			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 				cursor++
 				if(cursor>=maxCursor) cursor = 0
 				ResourceHolder.soundManager.play("cursor")
+				flashY = cursor+minChoiceY
+				flashT = 0
 			}
 
 			var change = 0
@@ -81,14 +126,15 @@ abstract class DummyMenuChooseState:BaseGameState() {
 
 		}
 		if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_D)) {
-			if(onPushButtonD(container, game, delta))
-			return
+			if(onPushButtonD(container, game, delta)) return
 		}
 
 		// Cancel button
 		if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_B)||MouseInput.isMouseRightClicked) {
-			if(onCancel(container, game, delta))
-			return
+			if(onCancel(container, game, delta)) {
+				ResourceHolder.soundManager.play("cancel")
+				return
+			}
 		}
 	}
 
@@ -101,6 +147,8 @@ abstract class DummyMenuChooseState:BaseGameState() {
 				if(newCursor==cursor) return true
 				ResourceHolder.soundManager.play("cursor")
 				cursor = newCursor
+				flashY = newCursor+minChoiceY
+				flashT = 0
 			}
 		}
 		return false
@@ -111,8 +159,8 @@ abstract class DummyMenuChooseState:BaseGameState() {
 	}
 
 	protected fun renderChoices(x:Int, y:Int, choices:Array<String>) {
-		FontNormal.printFontGrid(x-1, y+cursor, "b", COLOR.RED)
-		choices.forEachIndexed {i,z->
+		FontNormal.printFontGrid(x-1, y+cursor, "b", EventReceiver.COLOR.RAINBOW)
+		choices.forEachIndexed {i, z ->
 			FontNormal.printFontGrid(x, y+i, z, cursor==i)
 		}
 	}
@@ -137,4 +185,8 @@ abstract class DummyMenuChooseState:BaseGameState() {
 	 * @return True to skip all further update processing, false otherwise.
 	 */
 	protected open fun onPushButtonD(container:GameContainer, game:StateBasedGame, delta:Int):Boolean = false
+
+	companion object {
+		private var ig = Image(1, 1)
+	}
 }

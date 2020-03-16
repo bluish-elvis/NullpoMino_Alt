@@ -80,6 +80,7 @@ class GrandMarathon:AbstractMode() {
 	/** Section Time */
 	private var sectionTime:IntArray = IntArray(SECTION_MAX)
 	private var sectionscore:IntArray = IntArray(SECTION_MAX)
+
 	/** Section Time記録 */
 	private var bestSectionTime:IntArray = IntArray(SECTION_MAX)
 	private var bestSectionScore:IntArray = IntArray(SECTION_MAX)
@@ -181,7 +182,7 @@ class GrandMarathon:AbstractMode() {
 		bestSectionScore = IntArray(SECTION_MAX)
 		bestSectionTime = IntArray(SECTION_MAX)
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.b2bEnable = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.bighalf = false
@@ -306,13 +307,13 @@ class GrandMarathon:AbstractMode() {
 			}
 
 			// section time display切替
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -324,7 +325,7 @@ class GrandMarathon:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -379,8 +380,7 @@ class GrandMarathon:AbstractMode() {
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1), COLOR.YELLOW)
 						var gc = if(i==rankingRank)
-							if(playerID%2==0) COLOR.YELLOW
-							else COLOR.ORANGE
+							if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE
 						else COLOR.WHITE
 						if(rankingGrade[i]>=18) {
 							var gmP = 0
@@ -541,12 +541,11 @@ class GrandMarathon:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
-		if(engine.ending!=0) return
-
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+		if(engine.ending!=0) return 0
 		// Combo
 		comboValue = if(lines==0) 1
-		else maxOf(1,comboValue+2*lines-2)
+		else maxOf(1, comboValue+2*lines-2)
 
 		if(lines>=1) {
 			// Calculate score
@@ -646,7 +645,9 @@ class GrandMarathon:AbstractMode() {
 				if(nextseclv>999) nextseclv = 999
 			} else if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
 
+			return lastscore
 		}
+		return 0
 	}
 
 	/* 各 frame の終わりの処理 */
@@ -780,18 +781,18 @@ class GrandMarathon:AbstractMode() {
 		}
 
 		// ページ切り替え
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
 			if(engine.statc[1]>2) engine.statc[1] = 0
 			engine.playSE("change")
 		}
 		// section time display切替
-		if(engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 			engine.playSE("change")
 			isShowBestSectionTime = !isShowBestSectionTime
 		}
@@ -844,7 +845,7 @@ class GrandMarathon:AbstractMode() {
 			listOf("$ruleName.$i.grade" to rankingGrade[i],
 				"$ruleName.$i.level" to rankingLevel[i],
 				"$ruleName.$i.time" to rankingTime[i])
-		}+ (0 until SECTION_MAX).flatMap {i ->
+		}+(0 until SECTION_MAX).flatMap {i ->
 			listOf("$ruleName.sectiontime.$i" to bestSectionTime[i],
 				"$ruleName.sectionscore.$i" to bestSectionScore[i])
 		})
@@ -908,14 +909,19 @@ class GrandMarathon:AbstractMode() {
 
 		/** 落下速度 table */
 		private val tableGravityValue = intArrayOf(4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160, 192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1)
+
 		/** 落下速度が変わる level */
 		private val tableGravityChangeLevel = intArrayOf(30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230, 233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000)
+
 		/** ARE table */
 		private val tableARE = intArrayOf(30, 27, 25)
+
 		/** Line clear time table */
 		private val tableLineDelay = intArrayOf(41, 40, 25)
+
 		/** 固定 time table */
 		private val tableLockDelay = intArrayOf(30, 30, 30)
+
 		/** DAS table */
 		private val tableDAS = intArrayOf(16, 15, 14)
 
@@ -950,6 +956,7 @@ class GrandMarathon:AbstractMode() {
 
 		/** GMの時の評価Time */
 		private val tablePier21GradeTime = intArrayOf(GM_999_TIME_REQUIRE, 44800, 40000, 38166, 36333, 34500, 33000)
+
 		/** GM */
 		private val tablePier21GradeName = arrayOf("CARBON", "STEEL", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
 

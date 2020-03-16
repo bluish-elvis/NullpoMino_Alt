@@ -183,9 +183,9 @@ class GrandFestival:AbstractMode() {
 		bestSectionScore = IntArray(SECTION_MAX)
 		bestSectionTime = IntArray(SECTION_MAX)
 
-		engine.tspinEnable = true
-		engine.tspinEnableEZ = true
-		engine.tspinminiType = GameEngine.TSPINMINI_TYPE_ROTATECHECK
+		engine.twistEnable = true
+		engine.twistEnableEZ = true
+		engine.twistminiType = GameEngine.TWISTMINI_TYPE_ROTATECHECK
 		engine.b2bEnable = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.bighalf = false
@@ -289,13 +289,13 @@ class GrandFestival:AbstractMode() {
 
 			// Check for F button, when pressed this will flip Leaderboard/Best
 			// Section Time Records
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
 
 			// Check for A button, when pressed this will begin the game
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -306,7 +306,7 @@ class GrandFestival:AbstractMode() {
 
 			// Check for B button, when pressed this will shutdown the game
 			// engine.
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -496,7 +496,7 @@ class GrandFestival:AbstractMode() {
 
 	/** Calculates line-clear score (This function will be called even if no
 	 * lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 
 		comboValue = if(lines==0) 1
 		else maxOf(1, comboValue+2*lines-2)
@@ -538,7 +538,7 @@ class GrandFestival:AbstractMode() {
 				((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
 					*lines
 					*comboValue*if(engine.field!!.isEmpty) 4 else 1)
-					+engine.statistics.level/(if(engine.tspin) 2 else 3)+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
+					+engine.statistics.level/(if(engine.twist) 2 else 3)+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			// AC medal
 			if(engine.field!!.isEmpty) {
 
@@ -548,11 +548,13 @@ class GrandFestival:AbstractMode() {
 			}
 			temphanabi += (
 				(lines*1.9-.9)
-					*(if(engine.ending==0) (if(engine.tspin) 4.0 else if(engine.tspinmini) 2.0 else 1.0) else 2.8)
+					*(if(engine.ending==0) (if(engine.twist) 4.0 else if(engine.twistmini) 2.0 else 1.0) else 2.8)
 					*(if(engine.lockDelay>engine.lockDelayNow) 1.3 else 1.0)*(if(levelb%25==0) 1.3 else 1.0)*combobonus.toDouble()).toInt()
 			if(sectionscomp>=0&&sectionscomp<sectionscore.size) sectionscore[sectionscomp] += lastscore
 			engine.statistics.scoreLine += lastscore
+			return lastscore
 		}
+		return 0
 	}
 
 	/** This function will be called when hard-drop is used */
@@ -564,7 +566,7 @@ class GrandFestival:AbstractMode() {
 	override fun onLast(engine:GameEngine, playerID:Int) {
 		if(inthanabi>0) inthanabi--
 		if(temphanabi>0&&inthanabi<=0) {
-			receiver.shootFireworks(engine, playerID)
+			receiver.shootFireworks(engine)
 			hanabi++
 			sectionhanabi[sectionscomp]++
 			temphanabi--
@@ -585,7 +587,7 @@ class GrandFestival:AbstractMode() {
 			rolltime++
 			bonusint--
 			if(bonusint<=0) {
-				receiver.shootFireworks(engine, playerID)
+				receiver.shootFireworks(engine)
 				hanabi++
 				sectionhanabi[sectionscomp+1]++
 				bonusint += bonusspeed
@@ -658,18 +660,18 @@ class GrandFestival:AbstractMode() {
 	/** Additional routine for game result screen */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		// Page change
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
 			if(engine.statc[1]>2) engine.statc[1] = 0
 			engine.playSE("change")
 		}
 		// Flip Leaderboard/Best Section Time Records
-		if(engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 			engine.playSE("change")
 			isShowBestSectionTime = !isShowBestSectionTime
 		}

@@ -34,13 +34,13 @@ class SoundManager
  */
 @JvmOverloads constructor(
 	/** 登録できるWAVE file のMaximumcount */
-	protected val maxClips:Int = 128) {
+	private val maxClips:Int = 128) {
 
 	/** WAVE file data (Name-> data本体) */
-	protected val clipMap:HashMap<String, Sound> = HashMap(maxClips)
+	private val clipMap:HashMap<String, Sound> = HashMap(maxClips)
 
 	/** 登録されたWAVE file count */
-	protected val counter = 0
+	private val counter = 0
 
 	/** Load WAVE file
 	 * @param name 登録名
@@ -52,10 +52,8 @@ class SoundManager
 			log.error("No more wav files can be loaded ($maxClips)")
 			return false
 		}
-
 		try {
-			val clip = Sound(filename)
-			clipMap[name] = clip
+			clipMap[name] = Sound(filename)
 		} catch(e:Throwable) {
 			log.error("Failed to load wav file", e)
 			return false
@@ -68,22 +66,18 @@ class SoundManager
 	 * @param name 登録名
 	 */
 	@JvmOverloads
-	fun play(name:String, loop:Boolean = false, pitch:Float = 1f, vol:Float = 1f) {
-		// Nameに対応するクリップを取得
-		val clip = clipMap[name]
+	fun play(name:String, loop:Boolean = false, pitch:Float = 1f, vol:Float = 1f) =
+		clipMap[name]?.run {
+			if(!loop) play(pitch, vol)
+			else if(!playing()) loop(pitch, vol)
 
-		if(clip!=null)
-			if(!loop) clip.play(pitch, vol)
-			else if(!clip.playing()) clip.loop()
-	}
+		}
 
 	/** 停止
 	 * @param name 登録名
 	 */
-	fun stop(name:String) {
-		val clip = clipMap[name]
-
-		if(clip!=null) if(clip.playing()) clip.stop()
+	fun stop(name:String) = clipMap[name]?.run {
+		if(playing()) stop()
 	}
 
 	companion object {

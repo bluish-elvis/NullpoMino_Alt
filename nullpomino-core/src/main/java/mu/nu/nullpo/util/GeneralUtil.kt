@@ -27,11 +27,14 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.log4j.Logger
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.*
+
+fun Boolean.toInt() = if(this) 1 else 0
 
 /** Generic static utils */
 object GeneralUtil {
@@ -244,9 +247,9 @@ object GeneralUtil {
 	 * @param filename Classpath of the randomizer
 	 * @return Randomizer (null if something fails)
 	 */
-	fun loadRandomizer(filename:String):Randomizer? {
+	fun loadRandomizer(filename:String):Randomizer {
 		val randomizerClass:Class<*>
-		var randomizerObject:Randomizer? = null
+		var randomizerObject:Randomizer = MemorylessRandomizer()
 
 		try {
 			randomizerClass = Class.forName(filename)
@@ -311,8 +314,6 @@ object GeneralUtil {
 		return "$res"
 
 	}
-
-	inline fun nulltoEmpty(a:String?):String = a ?: ""
 
 	fun capsInteger(x:Int, digits:Int):String = when {
 		digits<=0 -> ""

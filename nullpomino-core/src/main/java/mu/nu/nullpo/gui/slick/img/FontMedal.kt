@@ -24,6 +24,7 @@
 package mu.nu.nullpo.gui.slick.img
 
 import mu.nu.nullpo.gui.slick.ResourceHolder
+import org.newdawn.slick.Color
 
 /** 普通の文字列の表示クラス */
 object FontMedal {
@@ -35,7 +36,10 @@ object FontMedal {
 	 * @param tier 文字色
 	 * @param scale 拡大率
 	 */
-	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {
+	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = 1f, darkness:Float = 0f) {
+		val filter = Color(Color.white).apply {
+			a = alpha
+		}.darker(maxOf(0f,darkness))
 		val sy:Float = maxOf(0, 4-tier)*24f
 		ResourceHolder.imgFontMedal.draw(x-5*scale, y-4*scale, x-scale, y+20*scale,
 			0f, sy, 4f, sy+24f)
@@ -43,13 +47,13 @@ object FontMedal {
 			4f, sy, 6f, sy+24f)
 		ResourceHolder.imgFontMedal.draw(x+(1+9*str.length)*scale, y-4*scale, x+(5+9*str.length)*scale, y+20*scale,
 			6f, sy, 10f, sy+24f)
-		for(i in 0 until str.length) {
+		for(i in str.indices) {
 			val stringChar = str[i].toInt() - 0x41
 			if(stringChar in 0x00..0x1B) {// Character output
 				val dx:Float = x+i*9f
 				val sx:Float = stringChar*9f+10f
 				ResourceHolder.imgFontMedal.draw(dx, y*scale, dx+9*scale, y+16*scale,
-					sx, sy+4f, sx+9f, sy+20f)
+					sx, sy+4f, sx+9f, sy+20f, filter)
 			}
 		}
 	}
@@ -60,6 +64,6 @@ object FontMedal {
 	 * @param str String
 	 * @param tier Letter cint
 	 */
-	fun printFontGrid(fontX:Int, fontY:Int, str:String, tier:Int= 0, scale:Float = 1f) =
-		printFont(fontX*16, fontY*16, str, tier, scale)
+	fun printFontGrid(fontX:Int, fontY:Int, str:String, tier:Int= 0, scale:Float = 1f, alpha:Float = 1f, darkness:Float = 0f) =
+		printFont(fontX*16, fontY*16, str, tier, scale, alpha, darkness)
 }

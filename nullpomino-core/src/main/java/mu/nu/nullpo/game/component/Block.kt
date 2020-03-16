@@ -103,7 +103,7 @@ class Block(
 	var alpha:Float = 1f
 
 	/** ゲームが始まってから何番目に置いたBlockか (負countだったら初期配置やgarbage block) */
-	var pieceNum:Int = -1; protected set
+	var pieceNum:Int = -1; private set
 
 	/** アイテム number */
 	var item:Int = 0

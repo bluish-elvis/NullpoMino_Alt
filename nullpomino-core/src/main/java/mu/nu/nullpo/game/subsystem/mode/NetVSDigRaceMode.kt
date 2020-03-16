@@ -148,7 +148,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 				// Update meter
 				val remainLines = getRemainGarbageLines(engine, playerID)
 				playerRemainLines[playerID] = remainLines
-				engine.meterValue = remainLines*owner.receiver.getBlockGraphicsHeight(engine)
+				engine.meterValue = remainLines*owner.receiver.getBlockHeight(engine)
 				engine.meterColor = GameEngine.METER_COLOR_GREEN
 			} else {
 				// Map game
@@ -193,7 +193,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 		if(netCurrentRoomInfo==null||!netCurrentRoomInfo!!.useMap) {
 			// Normal game
 			remainLines = playerRemainLines[playerID]
-			engine.meterValue = remainLines*owner.receiver.getBlockGraphicsHeight(engine)
+			engine.meterValue = remainLines*owner.receiver.getBlockHeight(engine)
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			if(remainLines<=14) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 			if(remainLines<=8) engine.meterColor = GameEngine.METER_COLOR_ORANGE
@@ -209,7 +209,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 		}
 	}
 
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		if(lines>0&&playerID==0) {
 			if(netCurrentRoomInfo==null||!netCurrentRoomInfo!!.useMap)
 				playerRemainLines[playerID] = getRemainGarbageLines(engine, playerID)
@@ -231,7 +231,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 						uidArray[i] = -1
 					}
 					for(i in 0 until players)
-						if(places[i]>=0&&places[i]<NETVS_MAX_PLAYERS) uidArray[places[i]] = netvsPlayerUID[i]
+						if(places[i] in 0 until NETVS_MAX_PLAYERS) uidArray[places[i]] = netvsPlayerUID[i]
 
 					val strMsg = StringBuilder("racewin")
 					for(i in 0 until players)
@@ -244,6 +244,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 					engine.resetStatc()
 				}
 		}
+		return 0
 	}
 
 	/* Drawing processing at the end of every frame */
@@ -265,10 +266,10 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 				val strLines = "$remainLines"
 
 				when {
-					engine.displaysize!=-1 -> when {
-						strLines.length==1 -> owner.receiver.drawMenuFont(engine, playerID, 4, 21, strLines, fontColor, 2f)
-						strLines.length==2 -> owner.receiver.drawMenuFont(engine, playerID, 3, 21, strLines, fontColor, 2f)
-						strLines.length==3 -> owner.receiver.drawMenuFont(engine, playerID, 2, 21, strLines, fontColor, 2f)
+					engine.displaysize!=-1 -> when(strLines.length) {
+						1 -> owner.receiver.drawMenuFont(engine, playerID, 4, 21, strLines, fontColor, 2f)
+						2 -> owner.receiver.drawMenuFont(engine, playerID, 3, 21, strLines, fontColor, 2f)
+						3 -> owner.receiver.drawMenuFont(engine, playerID, 2, 21, strLines, fontColor, 2f)
 					}
 					strLines.length==1 -> owner.receiver.drawDirectFont(x+4+32, y+168, strLines, fontColor, 1f)
 					strLines.length==2 -> owner.receiver.drawDirectFont(x+4+24, y+168, strLines, fontColor, 1f)

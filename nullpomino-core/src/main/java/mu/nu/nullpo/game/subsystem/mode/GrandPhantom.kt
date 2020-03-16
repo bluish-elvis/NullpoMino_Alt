@@ -201,7 +201,7 @@ class GrandPhantom:AbstractMode() {
 		rankingRollclear = IntArray(RANKING_MAX)
 		bestSectionTime = IntArray(SECTION_MAX)
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.framecolor = GameEngine.FRAME_COLOR_CYAN
@@ -358,13 +358,13 @@ class GrandPhantom:AbstractMode() {
 			}
 
 			// Check for F button, when pressed this will flip Leaderboard/Best Section Time Records
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
 
 			// Check for A button, when pressed this will begin the game
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -374,7 +374,7 @@ class GrandPhantom:AbstractMode() {
 			}
 
 			// Check for B button, when pressed this will shutdown the game engine.
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -571,7 +571,7 @@ class GrandPhantom:AbstractMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		comboValue = if(lines==0) 1
 		else maxOf(1,comboValue+2*lines-2)
 
@@ -748,7 +748,9 @@ class GrandPhantom:AbstractMode() {
 				*if(engine.field!!.isEmpty) 4 else 1)
 				+engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			engine.statistics.scoreLine += lastscore
+			//return lastscore
 		}
+		return 0
 	}
 
 	/** This function will be called when the game timer updates */
@@ -765,7 +767,7 @@ class GrandPhantom:AbstractMode() {
 		}
 
 		if(engine.gameActive&&engine.ending==2) {
-			if(engine.ctrl!!.isPress(Controller.BUTTON_F)&&engine.statistics.level<999) rolltime += 5
+			if(engine.ctrl.isPress(Controller.BUTTON_F)&&engine.statistics.level<999) rolltime += 5
 			rolltime++
 
 			val remainRollTime = ROLLTIMELIMIT-rolltime
@@ -834,18 +836,18 @@ class GrandPhantom:AbstractMode() {
 	/** Additional routine for game result screen */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		// Page change
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
 			if(engine.statc[1]>2) engine.statc[1] = 0
 			engine.playSE("change")
 		}
 		// Flip Leaderboard/Best Section Time Records
-		if(engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 			engine.playSE("change")
 			isShowBestSectionTime = !isShowBestSectionTime
 		}

@@ -181,7 +181,7 @@ class GrandFinale:AbstractMode() {
 		bestSectionTime = Array(RANKING_TYPE) {IntArray(SECTION_MAX)}
 		bestSectionLine = Array(RANKING_TYPE) {IntArray(SECTION_MAX)}
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.framecolor = GameEngine.FRAME_COLOR_GRAY
@@ -311,13 +311,13 @@ class GrandFinale:AbstractMode() {
 			}
 
 			// Check for F button, when pressed this will flip Leaderboard/Best Section Time Records
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
 
 			// Check for A button, when pressed this will begin the game
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -325,7 +325,7 @@ class GrandFinale:AbstractMode() {
 			}
 
 			// Check for B button, when pressed this will shutdown the game engine.
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			sectionscomp = 0
 
@@ -556,10 +556,10 @@ class GrandFinale:AbstractMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		if(engine.ending>0&&lines>0)
 			engine.temphanabi += ((lines*1.9-.9)*(if(grade==31) 3.5 else 1.0+grade/10.0)*
-				(if(engine.tspin) 4.0 else if(engine.tspinmini) 2.0 else 1.0)
+				(if(engine.twist) 4.0 else if(engine.twistmini) 2.0 else 1.0)
 				*if(engine.lockDelay>engine.lockDelayNow) 1.3 else 1.0).toInt()
 
 		// Combo
@@ -591,7 +591,7 @@ class GrandFinale:AbstractMode() {
 				}
 			}
 			// AC medal
-			if(engine.field!!.isEmpty)
+			if(engine.field?.isEmpty==true)
 				if(medalAC<3) {
 					engine.playSE("medal${++medalAC}")
 				}
@@ -671,7 +671,7 @@ class GrandFinale:AbstractMode() {
 				engine.ending = 1
 				rollclear = 1
 
-				secretGrade = engine.field!!.secretGrade
+				secretGrade = engine.field?.secretGrade?:0
 				// Section Timeを記録
 				sectionlasttime = sectionTime[levelb/100]
 				sectionscomp++
@@ -724,7 +724,7 @@ class GrandFinale:AbstractMode() {
 			engine.statistics.scoreLine += lastscore
 			levelUp(engine)
 		}
-
+	return 0
 	}
 
 	/** This function will be called when the game timer updates */
@@ -765,7 +765,7 @@ class GrandFinale:AbstractMode() {
 
 	/** This function will be called when the player tops out */
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.statc[0]==0) secretGrade = engine.field!!.secretGrade
+		if(engine.statc[0]==0) secretGrade = engine.field?.secretGrade?:0
 		return false
 	}
 
@@ -810,18 +810,18 @@ class GrandFinale:AbstractMode() {
 	/** Additional routine for game result screen */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		// Page change
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
 			if(engine.statc[1]>2) engine.statc[1] = 0
 			engine.playSE("change")
 		}
 		// Flip Leaderboard/Best Section Time Records
-		if(engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 			engine.playSE("change")
 			isShowBestSectionTime = !isShowBestSectionTime
 		}

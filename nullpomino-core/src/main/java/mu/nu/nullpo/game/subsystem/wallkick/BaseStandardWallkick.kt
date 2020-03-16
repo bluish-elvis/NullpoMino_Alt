@@ -26,7 +26,7 @@ open class BaseStandardWallkick:Wallkick {
 	@Suppress("UNREACHABLE_CODE") override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
 		field:Field, ctrl:Controller?):WallkickResult? {
 		getKickTable(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)?.let {kicktable ->
-			for(i in 0 until kicktable[rtOld].size) {
+			for(i in kicktable[rtOld].indices) {
 				var x2 = kicktable[rtOld][i][0]
 				var y2 = kicktable[rtOld][i][1]
 

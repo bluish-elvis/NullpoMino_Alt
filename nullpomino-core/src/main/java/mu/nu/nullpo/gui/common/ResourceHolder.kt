@@ -1,32 +1,27 @@
 package mu.nu.nullpo.gui.common
 
+import java.util.*
+
 abstract class ResourceHolder {
 
 	abstract val imgBlockListSize:Int
 
-	abstract fun getImgNormalBlock(skin:Int):AbstractImage
+	fun getBlockIsSticky(skin:Int):Boolean = skin in 0 until imgBlockListSize&&blockStickyFlagList[skin]
 
-	abstract fun getImgSmallBlock(skin:Int):AbstractImage
+	/** Block sticky flag */
+	open var blockStickyFlagList:LinkedList<Boolean> = LinkedList()
 
-	abstract fun getImgBigBlock(skin:Int):AbstractImage
+	/** BackgroundOfcount */
+	internal open val BACKGROUND_MAX = 20
 
-	fun getBlockIsSticky(skin:Int):Boolean = skin in 0 until imgBlockListSize&&blockStickyFlagList!![skin]
+	/** Number of image splits for block spatter animation during line clears */
+	abstract val BLOCK_BREAK_SEGMENTS:Int
 
-	companion object {
+	/** Number of images for block spatter animation during line clears */
+	internal val BLOCK_BREAK_MAX = 8
 
-		/** BackgroundOfcount */
-		const val BACKGROUND_MAX = 20
+	/** Number of gem block clear effects */
+	internal val PERASE_MAX = 7
+	internal val HANABI_MAX = 7
 
-		/** Number of images for block spatter animation during line clears */
-		const val BLOCK_BREAK_MAX = 8
-
-		/** Number of image splits for block spatter animation during line clears */
-		const val BLOCK_BREAK_SEGMENTS = 2
-
-		/** Number of gem block clear effects */
-		const val PERASE_MAX = 7
-
-		/** Block sticky flag */
-		var blockStickyFlagList:List<Boolean>? = null
-	}
 }
