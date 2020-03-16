@@ -150,8 +150,8 @@ class SprintDig:NetDummyMode() {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -211,7 +211,7 @@ class SprintDig:NetDummyMode() {
 			}
 
 			// Confirm
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				if(menuCursor==9) {
@@ -239,10 +239,10 @@ class SprintDig:NetDummyMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
 
 			// NET: Netplay Ranking
-			if(engine.ctrl!!.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!big
+			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!big
 				&&engine.ai==null)
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 
@@ -282,7 +282,7 @@ class SprintDig:NetDummyMode() {
 				fillGarbage(engine, goaltype)
 
 				// Update meter
-				engine.meterValue = GOAL_TABLE[goaltype]*receiver.getBlockGraphicsHeight(engine)
+				engine.meterValue = GOAL_TABLE[goaltype]*receiver.getBlockHeight(engine)
 				engine.meterColor = GameEngine.METER_COLOR_GREEN
 
 				// NET: Send field
@@ -418,10 +418,10 @@ class SprintDig:NetDummyMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Update meter
 		val remainLines = getRemainGarbageLines(engine, goaltype)
-		engine.meterValue = remainLines*receiver.getBlockGraphicsHeight(engine)
+		engine.meterValue = remainLines*receiver.getBlockHeight(engine)
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		if(remainLines<=14) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 		if(remainLines<=8) engine.meterColor = GameEngine.METER_COLOR_ORANGE
@@ -432,6 +432,7 @@ class SprintDig:NetDummyMode() {
 			engine.ending = 1
 			engine.gameEnded()
 		}
+		return 0
 	}
 
 	/* Render results screen */

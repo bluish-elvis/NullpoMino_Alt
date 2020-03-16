@@ -23,6 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick
 
+import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.UpdateChecker
@@ -36,8 +37,12 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 
 	/** true when new version is already checked */
 	private var isNewVersionChecked = false
-	override val maxCursor:Int get()= CHOICES.size
-	init{minChoiceY = 20-CHOICES.size}
+	override val maxCursor:Int get() = CHOICES.size
+	private var rollY = 0f
+
+	init {
+		minChoiceY = 20-CHOICES.size
+	}
 
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
@@ -47,6 +52,7 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
+		super.enter(container, game)
 		// Observer start
 		NullpoMinoSlick.startObserverClient()
 		// Call GC
@@ -77,16 +83,21 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 				NullpoMinoSlick.saveConfig()
 			}
 		}
-		if(ResourceHolder.bgmIsPlaying()) ResourceHolder.bgmStop()
+		if(ResourceHolder.bgmPlaying!=BGMStatus.BGM.MENU(0)) ResourceHolder.bgmStart(BGMStatus.BGM.MENU(0))
+	}
+
+	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
+		super.updateImpl(container, game, delta)
+		val mY = container.screenHeight*RenderStaffRoll.img.textureHeight
+		rollY += delta/32f
+		if(rollY>mY) rollY -= mY
 	}
 
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Background
 		g.drawImage(ResourceHolder.imgTitleBG, 0f, 0f)
-
 		// Menu
-
 		FontNano.printFont(0, 0, "NULLPOMINO VERSION ${GameManager.versionString}",
 			COLOR.ORANGE, 0.5f)
 
@@ -95,12 +106,16 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 
 		FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
 
+		FontNano.printFont(300, 0, "$rollY")
+		FontNano.printFont(300, 10, "${container.screenHeight*RenderStaffRoll.img.textureHeight}")
+		RenderStaffRoll.draw(container.screenWidth-RenderStaffRoll.img.width.toFloat(), 0f, rollY, container.screenHeight.toFloat(), Color(200, 233, 255, 200))
+		super.renderImpl(container, game, g)
+
 		if(UpdateChecker.isNewVersionAvailable(GameManager.versionMajor, GameManager.versionMinor)) {
 			val strTemp = String.format(NullpoMinoSlick.getUIText("Title_NewVersion"),
-					UpdateChecker.latestVersionFullString, UpdateChecker.strReleaseDate)
+				UpdateChecker.latestVersionFullString, UpdateChecker.strReleaseDate)
 			FontNormal.printTTF(16, 416, strTemp)
 		}
-		super.renderImpl(container, game, g)
 	}
 
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
@@ -124,6 +139,7 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		private val CHOICEID = intArrayOf(StateSelectMode.ID, StateReplaySelect.ID,
 			//StateNetGame.ID,
 			StateConfigMainMenu.ID, -1)
+
 		/** UI Text identifier Strings */
 		private val UI_TEXT = arrayOf("Title_Start", "Title_Replay",
 			//"Title_NetPlay",

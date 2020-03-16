@@ -256,7 +256,7 @@ class GrandBlossom:AbstractMode() {
 		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingAllClear = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.framecolor = GameEngine.FRAME_COLOR_PINK
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
@@ -332,10 +332,10 @@ class GrandBlossom:AbstractMode() {
 	private fun loadStageSet(id:Int) {
 		propStageSet = if(id>=0) {
 			log.debug("Loading stage set from custom set #$id")
-			receiver.loadProperties("config/values/gemmania/custom$id.values")
+			receiver.loadProperties("config/map/gemmania/custom$id.map")
 		} else {
 			log.debug("Loading stage set from default set")
-			receiver.loadProperties("config/values/gemmania/default.values")
+			receiver.loadProperties("config/map/gemmania/default.map")
 		} ?: CustomProperties()
 	}
 
@@ -346,10 +346,10 @@ class GrandBlossom:AbstractMode() {
 		if(!owner.replayMode)
 			if(id>=0) {
 				log.debug("Saving stage set to custom set #$id")
-				receiver.saveProperties("config/values/gemmania/custom$id.values", propStageSet)
+				receiver.saveProperties("config/map/gemmania/custom$id.map", propStageSet)
 			} else {
 				log.debug("Saving stage set to default set")
-				receiver.saveProperties("config/values/gemmania/default.values", propStageSet)
+				receiver.saveProperties("config/map/gemmania/default.map", propStageSet)
 			}
 	}
 
@@ -497,7 +497,7 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				when(menuCursor) {
@@ -517,7 +517,7 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPress(Controller.BUTTON_D)&&engine.ctrl!!.isPress(Controller.BUTTON_E)) {
+			if(engine.ctrl.isPress(Controller.BUTTON_D)&&engine.ctrl.isPress(Controller.BUTTON_E)) {
 				editModeScreen = 0
 				menuCursor = 0
 				menuTime = 0
@@ -526,13 +526,13 @@ class GrandBlossom:AbstractMode() {
 			menuTime++
 		} else if(editModeScreen==2) {
 			// Up
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				menuCursor--
 				if(menuCursor<0) menuCursor = 4
 				engine.playSE("cursor")
 			}
 			// Down
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 				menuCursor++
 				if(menuCursor>4) menuCursor = 0
 				engine.playSE("cursor")
@@ -540,15 +540,15 @@ class GrandBlossom:AbstractMode() {
 
 			// Configuration changes
 			var change = 0
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
 
 			if(change!=0) {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -577,7 +577,7 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				if(menuCursor==0) {
@@ -590,7 +590,7 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_B)&&menuTime>=5) {
 				editModeScreen = 1
 				menuCursor = 0
 				menuTime = 0
@@ -599,13 +599,13 @@ class GrandBlossom:AbstractMode() {
 			menuTime++
 		} else if(!engine.owner.replayMode) {
 			// Up
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				menuCursor--
 				if(menuCursor<0) menuCursor = 8
 				engine.playSE("cursor")
 			}
 			// Down
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 				menuCursor++
 				if(menuCursor>8) menuCursor = 0
 				engine.playSE("cursor")
@@ -613,8 +613,8 @@ class GrandBlossom:AbstractMode() {
 
 			// Configuration changes
 			var change = 0
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -657,7 +657,7 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -665,10 +665,10 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			// エディット
-			if(engine.ctrl!!.isPush(Controller.BUTTON_D)) {
+			if(engine.ctrl.isPush(Controller.BUTTON_D)) {
 				if(stageset<0) stageset = 0
 
 				loadStageSet(stageset)
@@ -896,7 +896,7 @@ class GrandBlossom:AbstractMode() {
 	override fun onLast(engine:GameEngine, playerID:Int) {
 		if(timeextendDisp>0) timeextendDisp--
 
-		if(engine.gameActive&&engine.timerActive&&engine.ctrl!!.isPress(Controller.BUTTON_F)) {
+		if(engine.gameActive&&engine.timerActive&&engine.ctrl.isPress(Controller.BUTTON_F)) {
 			skipbuttonPressTime++
 
 			if(skipbuttonPressTime>=60&&(stage<MAX_STAGE_NORMAL-1||trainingType!=0)&&limittimeNow>30*60
@@ -1002,7 +1002,7 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// 実際に消えるLinescount(Big時半分にならない)
 		val realLines = engine.field!!.lines
 
@@ -1040,8 +1040,9 @@ class GrandBlossom:AbstractMode() {
 				// Update level for next section
 				nextseclv += 100
 			} else if(speedlevel==nextseclv-1&&lvstopse) engine.playSE("levelstop")
-
+			return gemClears
 		}
+		return 0
 	}
 
 	/* Line clear処理が終わったときの処理 */
@@ -1141,7 +1142,7 @@ class GrandBlossom:AbstractMode() {
 		}
 
 		// Next 画面へ
-		if(engine.statc[0]>=300||engine.ctrl!!.isPush(Controller.BUTTON_A)) {
+		if(engine.statc[0]>=300||engine.ctrl.isPush(Controller.BUTTON_A)) {
 			// Training
 			if(trainingType!=0) {
 				if(clearflag) limittimeNow += timeextendStageClearSeconds*60
@@ -1273,13 +1274,13 @@ class GrandBlossom:AbstractMode() {
 				engine.statc[0]++
 			} else if(engine.statc[0]<engine.field!!.height+1+600) {
 				// コンティニュー選択
-				if(engine.ctrl!!.isPush(Controller.BUTTON_UP)||engine.ctrl!!.isPush(Controller.BUTTON_DOWN)) {
+				if(engine.ctrl.isPush(Controller.BUTTON_UP)||engine.ctrl.isPush(Controller.BUTTON_DOWN)) {
 					engine.statc[1]++
 					if(engine.statc[1]>1) engine.statc[1] = 0
 					engine.playSE("cursor")
 				}
 				// 決定
-				if(engine.ctrl!!.isPush(Controller.BUTTON_A)) {
+				if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 					if(engine.statc[1]==0) {
 						// YES
 						limittimeNow = limittimeStart
@@ -1333,12 +1334,12 @@ class GrandBlossom:AbstractMode() {
 
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
 			if(engine.statc[1]>2) engine.statc[1] = 0
 			engine.playSE("change")

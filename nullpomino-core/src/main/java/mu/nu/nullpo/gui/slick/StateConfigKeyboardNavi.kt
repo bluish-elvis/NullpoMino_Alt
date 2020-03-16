@@ -73,11 +73,11 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 	}
 
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
-		if(cursor==0)
-			for(i in 0 until GameKeyDummy.MAX_BUTTON) {
-				ResourceHolder.soundManager.play("decide1")
+		if(cursor==0){
+			for(i in 0 until GameKeyDummy.MAX_BUTTON)
 				GameKey.gamekey[player].keymapNav[i] = GameKey.gamekey[player].keymap[i]
-			}
+			ResourceHolder.soundManager.play("decide1")
+		}
 		else if(cursor==1) {
 			ResourceHolder.soundManager.play("decide2")
 			NullpoMinoSlick.stateConfigKeyboard.player = player
@@ -95,14 +95,14 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 
 	override fun onCancel(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		game.enterState(StateConfigMainMenu.ID)
-		return false
+		return true
 	}
 
 	/** Called when entering this state */
-	override fun enter(container:GameContainer?, game:StateBasedGame?) {}
+	//override fun enter(container:GameContainer?, game:StateBasedGame?) {}
 
 	/** Called when leaving this state */
-	override fun leave(container:GameContainer?, game:StateBasedGame?) {}
+	//override fun leave(container:GameContainer?, game:StateBasedGame?) {}
 
 	companion object {
 		/** This state's ID */

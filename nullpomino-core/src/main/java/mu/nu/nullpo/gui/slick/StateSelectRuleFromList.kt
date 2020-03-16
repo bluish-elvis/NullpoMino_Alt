@@ -112,6 +112,7 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 
 	/* When the player enters this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
+		super.enter(container, game)
 		prepareRuleList()
 	}
 
@@ -138,7 +139,7 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 	/* Cancel */
 	override fun onCancel(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		game.enterState(StateSelectMode.ID)
-		return false
+		return true
 	}
 
 	/** RuleEntry */

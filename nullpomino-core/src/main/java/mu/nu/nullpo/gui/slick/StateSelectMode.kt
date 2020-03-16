@@ -107,6 +107,7 @@ class StateSelectMode:DummyMenuScrollState() {
 
 	/* Enter */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
+		super.enter(container, game)
 		prepareModeList()
 		if(ResourceHolder.bgmPlaying!=BGM.MENU(0)) ResourceHolder.bgmStart(BGM.MENU(0))
 	}
@@ -150,7 +151,7 @@ class StateSelectMode:DummyMenuScrollState() {
 		if(isTopLevel) game.enterState(StateTitle.ID)
 		else game.enterState(StateSelectModeFolder.ID)
 
-		return false
+		return true
 	}
 
 	companion object {

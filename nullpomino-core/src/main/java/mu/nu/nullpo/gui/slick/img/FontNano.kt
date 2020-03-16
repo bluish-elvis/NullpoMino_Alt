@@ -25,6 +25,7 @@ package mu.nu.nullpo.gui.slick.img
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.ResourceHolder
+import org.newdawn.slick.Color
 
 /** 普通の文字列の表示クラス */
 object FontNano {
@@ -36,28 +37,32 @@ object FontNano {
 	 * @param color 文字色
 	 * @param scale 拡大率
 	 */
-	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
-		var dx = x
-		var dy = y
+	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) {
+		var dx = x.toFloat()
+		var dy = y.toFloat()
+		val filter = Color(Color.white).apply {
+			a = alpha
+		}
 
-		for(i in 0 until str.length) {
-			val stringChar = str[i].toInt()
+		for(char in str) {
+			val stringChar = char.toInt()
 
 			if(stringChar==0x0A) {
 				// 改行 (\n）
-				dy = (dy+16*scale).toInt()
-				dx = x
+				dy = (dy+16*scale)
+				dx = x.toFloat()
 			} else {// 文字出力
 				val c = stringChar-32// Character output
 				var sx = c%32
 				var sy = c/32+color.ordinal*3
-				val sz = (12*scale).toInt()
+				val w = 12f*scale
+				val h = 14f*scale
 				sx *= 12
 				sy *= 14
-				ResourceHolder.imgFontNano.draw(dx.toFloat(), dy.toFloat(), (dx+sz).toFloat(), dy+14*scale,
-					sx.toFloat(), sy.toFloat(), (sx+12).toFloat(), (sy+14).toFloat())
+				ResourceHolder.imgFontNano.draw(dx, dy, dx+w, dy+h,
+					sx.toFloat(), sy.toFloat(), sx+12f, sy+14f, filter)
 
-				dx += sz
+				dx += w
 			}
 		}
 	}
@@ -68,8 +73,9 @@ object FontNano {
 	 * @param fontStr String
 	 * @param fontColor Letter cint
 	 */
-	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, fontColor:COLOR = COLOR.WHITE, scale:Float = 1f) =
-		printFont(fontX*16, fontY*16, fontStr, fontColor, scale)
+	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, fontColor:COLOR = COLOR.WHITE, scale:Float = 1f,
+		alpha:Float = 1f) =
+		printFont(fontX*16, fontY*16, fontStr, fontColor, scale, alpha)
 
 	/** flagThefalseIf it&#39;s the casefontColorTrue cint, trueIf it&#39;s the
 	 * casefontColorTrue colorDraws the string in (16x16Grid units)
@@ -81,7 +87,7 @@ object FontNano {
 	 * @param fontColorTrue flagThetrueText cint in the case of
 	 */
 	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, flag:Boolean,
-		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RED) =
-		printFont(fontX*16, fontY*16, fontStr, color = if(flag) fontColorTrue else fontColorFalse)
+		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RED, alpha:Float = 1f) =
+		printFont(fontX*16, fontY*16, fontStr, color = if(flag) fontColorTrue else fontColorFalse, alpha = alpha)
 }
 

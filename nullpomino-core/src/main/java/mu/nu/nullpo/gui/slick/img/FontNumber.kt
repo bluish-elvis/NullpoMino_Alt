@@ -25,6 +25,7 @@ package mu.nu.nullpo.gui.slick.img
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.ResourceHolder
+import org.newdawn.slick.Color
 
 /** 普通の文字列の表示クラス */
 object FontNumber {
@@ -35,12 +36,15 @@ object FontNumber {
 	 * @param color 文字色
 	 * @param scale 拡大率
 	 */
-	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
+	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) {
 		var dx = x
 		var dy = y
 		val fontBig = scale>=1.5f
-		for(i in 0 until str.length) {
-			var stringChar = str[i].toInt()
+		val filter = Color(Color.white).apply {
+			a = alpha
+		}
+		for(element in str) {
+			var stringChar = element.toInt()
 			// 文字出力
 			when(stringChar) {
 				0x0A -> {
@@ -88,8 +92,8 @@ object FontNumber {
 	 * @param scale Enlargement factor
 	 */
 	fun printFont(x:Int, y:Int, str:String, flag:Boolean, fontColorFalse:COLOR = COLOR.WHITE,
-		fontColorTrue:COLOR = COLOR.RED, scale:Float = 1f) =
-		printFont(x, y, str, if(flag) fontColorTrue else fontColorFalse, scale)
+		fontColorTrue:COLOR = COLOR.RED, scale:Float = 1f, alpha:Float = 1f) =
+		printFont(x, y, str, if(flag) fontColorTrue else fontColorFalse, scale, alpha)
 
 	/** Draws the string (16x16Grid units)
 	 * @param fontX X-coordinate
@@ -97,8 +101,8 @@ object FontNumber {
 	 * @param fontStr String
 	 * @param fontColor Letter cint
 	 */
-	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, fontColor:COLOR = COLOR.WHITE, scale:Float = 1f) =
-		printFont(fontX*16, fontY*16, fontStr, fontColor, scale)
+	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, fontColor:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+		printFont(fontX*16, fontY*16, fontStr, fontColor, scale, alpha)
 
 	/** flagThefalseIf it&#39;s the casefontColorTrue cint, trueIf it&#39;s the
 	 * casefontColorTrue colorDraws the string in (16x16Grid units)
@@ -110,6 +114,6 @@ object FontNumber {
 	 * @param fontColorTrue flagThetrueText cint in the case of
 	 */
 	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, flag:Boolean,
-		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RED) =
-		printFont(fontX*16, fontY*16, fontStr, color = if(flag) fontColorTrue else fontColorFalse)
+		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RED, alpha:Float = 1f) =
+		printFont(fontX*16, fontY*16, fontStr, color = if(flag) fontColorTrue else fontColorFalse, alpha = alpha)
 }

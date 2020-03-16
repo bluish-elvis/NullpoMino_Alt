@@ -44,7 +44,7 @@ class AIRanksTester(private val numTries:Int) {
 		init()
 		/* if ((pieces[0]==Piece.PIECE_S) || (pieces[0]==Piece.PIECE_Z) ||
  * (pieces[0]==Piece.PIECE_O)){
- * //System.out.println("Suchec !!");
+ * //System.out.println("Suchec");
  * } */
 		val heights = IntArray(9)
 		val holdPiece = intArrayOf(-1)

@@ -154,8 +154,8 @@ class VSDigRaceMode:AbstractMode() {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -218,7 +218,7 @@ class VSDigRaceMode:AbstractMode() {
 			}
 
 			// Confirm
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				if(menuCursor==7)
@@ -235,7 +235,7 @@ class VSDigRaceMode:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else if(engine.statc[4]==0) {
@@ -251,7 +251,7 @@ class VSDigRaceMode:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
 				owner.engine[1].resetStatc()
-			} else if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
+			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
 
 		return true
 	}
@@ -279,7 +279,7 @@ class VSDigRaceMode:AbstractMode() {
 
 			// Update meter
 			val remainLines = getRemainGarbageLines(engine, playerID)
-			engine.meterValue = remainLines*receiver.getBlockGraphicsHeight(engine)
+			engine.meterValue = remainLines*receiver.getBlockHeight(engine)
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 		}
 		return false
@@ -389,10 +389,10 @@ class VSDigRaceMode:AbstractMode() {
 		val strLines = "$remainLines"
 
 		if(remainLines>0)
-			when {
-				strLines.length==1 -> receiver.drawMenuFont(engine, playerID, 4, 21, strLines, fontColor, 2f)
-				strLines.length==2 -> receiver.drawMenuFont(engine, playerID, 3, 21, strLines, fontColor, 2f)
-				strLines.length==3 -> receiver.drawMenuFont(engine, playerID, 2, 21, strLines, fontColor, 2f)
+			when(strLines.length) {
+				1 -> receiver.drawMenuFont(engine, playerID, 4, 21, strLines, fontColor, 2f)
+				2 -> receiver.drawMenuFont(engine, playerID, 3, 21, strLines, fontColor, 2f)
+				3 -> receiver.drawMenuFont(engine, playerID, 2, 21, strLines, fontColor, 2f)
 			}
 
 		// 1st/2nd
@@ -433,13 +433,13 @@ class VSDigRaceMode:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		var enemyID = 0
 		if(playerID==0) enemyID = 1
 
 		// Update meter
 		val remainLines = getRemainGarbageLines(engine, playerID)
-		engine.meterValue = remainLines*receiver.getBlockGraphicsHeight(engine)
+		engine.meterValue = remainLines*receiver.getBlockHeight(engine)
 		if(remainLines<=14) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 		if(remainLines<=8) engine.meterColor = GameEngine.METER_COLOR_ORANGE
 		if(remainLines<=4) engine.meterColor = GameEngine.METER_COLOR_RED
@@ -450,6 +450,7 @@ class VSDigRaceMode:AbstractMode() {
 			owner.engine[enemyID].stat = GameEngine.Status.GAMEOVER
 			owner.engine[enemyID].resetStatc()
 		}
+		return 0
 	}
 
 	override fun onLast(engine:GameEngine, playerID:Int) {

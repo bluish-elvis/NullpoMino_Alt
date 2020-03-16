@@ -1,7 +1,6 @@
 package mu.nu.nullpo.gui.menu
 
-import java.util.Arrays
-import java.util.Vector
+import java.util.*
 
 class AlphaMenuItem(name:String, color:Int, choiceList:Vector<String>)
 	:NumericMenuItem(name, color, 0, 0, choiceList.size, -1, ARITHSTYLE_MODULAR) {

@@ -33,17 +33,17 @@ class NetObserverClient:NetBaseClient {
 	/** サーバーVersion */
 	@Volatile
 	var serverVersion = 0f
-		protected set
+		private set
 
 	/** Number of players */
 	@Volatile
 	var playerCount = 0
-		protected set
+		private set
 
 	/** Observercount */
 	@Volatile
 	var observerCount = 0
-		protected set
+		private set
 
 	/** Default constructor */
 	constructor():super()

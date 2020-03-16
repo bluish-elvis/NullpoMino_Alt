@@ -111,7 +111,7 @@ class RetroMarathon:AbstractMode() {
 		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingLevel = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.bighalf = true
@@ -160,14 +160,14 @@ class RetroMarathon:AbstractMode() {
 		// Menu
 		if(!engine.owner.replayMode) {
 			// Check for UP button, when pressed it will move cursor up.
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				menuCursor--
 				if(menuCursor==1&&gametype==PRESSURE) menuCursor--
 				if(menuCursor<0) menuCursor = 2
 				engine.playSE("cursor")
 			}
 			// Check for DOWN button, when pressed it will move cursor down.
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 				menuCursor++
 				if(menuCursor==1&&gametype==PRESSURE) menuCursor++
 				if(menuCursor>2) menuCursor = 0
@@ -176,8 +176,8 @@ class RetroMarathon:AbstractMode() {
 
 			// Check for LEFT/RIGHT keys
 			var change = 0
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
-			if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
+			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -202,7 +202,7 @@ class RetroMarathon:AbstractMode() {
 			}
 
 			// Check for A button, when pressed this will begin the game
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -210,7 +210,7 @@ class RetroMarathon:AbstractMode() {
 			}
 
 			// Check for B button, when pressed this will shutdown the game engine.
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -307,7 +307,7 @@ class RetroMarathon:AbstractMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		softdropscore /= 2
 		engine.statistics.scoreSD += softdropscore
 		softdropscore = 0
@@ -405,6 +405,7 @@ class RetroMarathon:AbstractMode() {
 			}
 
 		}
+		return pts
 	}
 
 	/** This function will be called when soft-drop is used */
@@ -454,7 +455,7 @@ class RetroMarathon:AbstractMode() {
 	 * @param prop CustomProperties
 	 */
 	override fun loadSetting(prop:CustomProperties) {
-		gametype = GAMETYPE.values()[prop.getProperty("retromastery.gametype", 0)]
+		gametype = values()[prop.getProperty("retromastery.gametype", 0)]
 		startlevel = prop.getProperty("retromastery.startlevel", 0)
 		big = prop.getProperty("retromastery.big", false)
 		version = prop.getProperty("retromastery.version", 0)
@@ -583,7 +584,7 @@ class RetroMarathon:AbstractMode() {
 
 		/** Number of ranking types */
 		private val RANKING_TYPE:Int
-			get() = GAMETYPE.values().size
+			get() = values().size
 
 	}
 }

@@ -145,8 +145,8 @@ class SprintLine:NetDummyMode() {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -207,7 +207,7 @@ class SprintLine:NetDummyMode() {
 			}
 
 			// Confirm
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5&&!netIsWatch) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5&&!netIsWatch) {
 				engine.playSE("decide")
 
 				if(menuCursor==10) {
@@ -234,10 +234,10 @@ class SprintLine:NetDummyMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
 
 			// NET: Netplay Ranking
-			if(engine.ctrl!!.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!big
+			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!big
 				&&engine.ai==null)
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 
@@ -341,7 +341,7 @@ class SprintLine:NetDummyMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		val remainLines = GOAL_TABLE[goaltype]-engine.statistics.lines
 		engine.meterValue = remainLines*receiver.getMeterMax(engine)/GOAL_TABLE[goaltype]
 
@@ -354,6 +354,7 @@ class SprintLine:NetDummyMode() {
 			engine.ending = 1
 			engine.gameEnded()
 		} else if(engine.statistics.lines>=GOAL_TABLE[goaltype]-5) owner.bgmStatus.fadesw = true
+		return 0
 	}
 
 	/* Render results screen */

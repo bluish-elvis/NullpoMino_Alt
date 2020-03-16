@@ -26,6 +26,7 @@
  <!--Option-->
  <entry key="Option_Seed">乱数種</entry>
  <entry key="Option_SequenceLength">表示するピース数</entry>
+ <entry key="Option_SequenceSize">表示するピースの区切り数</entry>
  <entry key="Option_SequenceOffset">表示開始オフセット</entry>
  <entry key="Option_Randomizer">NEXT順生成アルゴリズム</entry>
  <entry key="Option_Generate">NEXT順を生成(G)</entry>

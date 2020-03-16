@@ -48,10 +48,10 @@ import javax.swing.*
 import javax.swing.table.DefaultTableModel
 import javax.swing.text.*
 
+
 /** NullpoMino NetLobby */
 /** Constructor */
 class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
-
 	/** NetPlayerClient */
 	var netPlayerClient:NetPlayerClient? = null
 
@@ -358,7 +358,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private lateinit var chkboxCreateRoomRuleLock:JCheckBox
 
 	/** Spin bonusType(Create room screen) */
-	private lateinit var comboboxCreateRoomTSpinEnableType:JComboBox<*>
+	private lateinit var comboboxCreateRoomTWISTEnableType:JComboBox<*>
 
 	/** Spin recognition type (4-point, immobile, etc.) */
 	private lateinit var comboboxCreateRoomSpinCheckType:JComboBox<*>
@@ -379,7 +379,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private lateinit var chkboxCreateRoomBravo:JCheckBox
 
 	/** Allow EZ spins */
-	private lateinit var chkboxCreateRoomTSpinEnableEZ:JCheckBox
+	private lateinit var chkboxCreateRoomTWISTEnableEZ:JCheckBox
 
 	/** 3If I live more than Attack Reduce the force(Create room screen) */
 	private lateinit var chkboxCreateRoomReduceLineSend:JCheckBox
@@ -1608,22 +1608,22 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomBonusOwner.add(containerpanelCreateRoomBonus, BorderLayout.NORTH)
 
 		// ** Spin bonusPanel
-		val subpanelTSpinEnableType = JPanel(BorderLayout())
-		containerpanelCreateRoomBonus.add(subpanelTSpinEnableType)
+		val subpanelTWISTEnableType = JPanel(BorderLayout())
+		containerpanelCreateRoomBonus.add(subpanelTWISTEnableType)
 
 		// *** &quot;Spin bonus:&quot;Label
-		val labelTSpinEnableType = JLabel(getUIText("CreateRoom_TSpinEnableType"))
-		subpanelTSpinEnableType.add(labelTSpinEnableType, BorderLayout.WEST)
+		val labelTWISTEnableType = JLabel(getUIText("CreateRoom_TwistEnableType"))
+		subpanelTWISTEnableType.add(labelTWISTEnableType, BorderLayout.WEST)
 
 		// *** Spin bonus
 		val strSpinBonusNames = arrayOfNulls<String>(COMBOBOX_SPINBONUS_NAMES.size)
 		for(i in strSpinBonusNames.indices)
 			strSpinBonusNames[i] = getUIText(COMBOBOX_SPINBONUS_NAMES[i])
-		comboboxCreateRoomTSpinEnableType = JComboBox(strSpinBonusNames)
-		comboboxCreateRoomTSpinEnableType.selectedIndex = propConfig.getProperty("createroom.defaultTspinEnableType", 2)
-		comboboxCreateRoomTSpinEnableType.preferredSize = Dimension(200, 20)
-		comboboxCreateRoomTSpinEnableType.toolTipText = getUIText("CreateRoom_TSpinEnableType_Tip")
-		subpanelTSpinEnableType.add(comboboxCreateRoomTSpinEnableType, BorderLayout.EAST)
+		comboboxCreateRoomTWISTEnableType = JComboBox(strSpinBonusNames)
+		comboboxCreateRoomTWISTEnableType.selectedIndex = propConfig.getProperty("createroom.defaultTwistEnableType", 2)
+		comboboxCreateRoomTWISTEnableType.preferredSize = Dimension(200, 20)
+		comboboxCreateRoomTWISTEnableType.toolTipText = getUIText("CreateRoom_TwistEnableType_Tip")
+		subpanelTWISTEnableType.add(comboboxCreateRoomTWISTEnableType, BorderLayout.EAST)
 
 		// ** Spin check type panel
 		val subpanelSpinCheckType = JPanel(BorderLayout())
@@ -1638,17 +1638,17 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		for(i in strSpinCheckTypeNames.indices)
 			strSpinCheckTypeNames[i] = getUIText(COMBOBOX_SPINCHECKTYPE_NAMES[i])
 		comboboxCreateRoomSpinCheckType = JComboBox(strSpinCheckTypeNames)
-		comboboxCreateRoomSpinCheckType.selectedIndex = propConfig.getProperty("createroom.defaultSpinCheckType", 1)
+		comboboxCreateRoomSpinCheckType.selectedIndex = propConfig.getProperty("createroom.defaultWISTCheckType", 1)
 		comboboxCreateRoomSpinCheckType.preferredSize = Dimension(200, 20)
 		comboboxCreateRoomSpinCheckType.toolTipText = getUIText("CreateRoom_SpinCheckType_Tip")
 		subpanelSpinCheckType.add(comboboxCreateRoomSpinCheckType, BorderLayout.EAST)
 
 		// ** EZ Spin checkbox
-		chkboxCreateRoomTSpinEnableEZ = JCheckBox(getUIText("CreateRoom_TSpinEnableEZ"))
-		chkboxCreateRoomTSpinEnableEZ.setMnemonic('E')
-		chkboxCreateRoomTSpinEnableEZ.isSelected = propConfig.getProperty("createroom.defaultTSpinEnableEZ", false)
-		chkboxCreateRoomTSpinEnableEZ.toolTipText = getUIText("CreateRoom_TSpinEnableEZ_Tip")
-		containerpanelCreateRoomBonus.add(chkboxCreateRoomTSpinEnableEZ)
+		chkboxCreateRoomTWISTEnableEZ = JCheckBox(getUIText("CreateRoom_TwistEnableEZ"))
+		chkboxCreateRoomTWISTEnableEZ.setMnemonic('E')
+		chkboxCreateRoomTWISTEnableEZ.isSelected = propConfig.getProperty("createroom.defaultTwistEnableEZ", false)
+		chkboxCreateRoomTWISTEnableEZ.toolTipText = getUIText("CreateRoom_TwistEnableEZ_Tip")
+		containerpanelCreateRoomBonus.add(chkboxCreateRoomTWISTEnableEZ)
 
 		// ** Flag for enabling B2B
 		chkboxCreateRoomB2B = JCheckBox(getUIText("CreateRoom_B2B"))
@@ -2706,9 +2706,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					hurryupInterval = propConfig.getProperty("createroom.defaultHurryupInterval", 5)
 					garbagePercent = propConfig.getProperty("createroom.defaultGarbagePercent", 90)
 					ruleLock = propConfig.getProperty("createroom.defaultRuleLock", false)
-					tspinEnableType = propConfig.getProperty("createroom.defaultTspinEnableType", 2)
-					spinCheckType = propConfig.getProperty("createroom.defaultSpinCheckType", 1)
-					tspinEnableEZ = propConfig.getProperty("createroom.defaultTspinEnableEZ", true)
+					twistEnableType = propConfig.getProperty("createroom.defaultTwistEnableType", 2)
+					spinCheckType = propConfig.getProperty("createroom.defaultWISTCheckType", 1)
+					twistEnableEZ = propConfig.getProperty("createroom.defaultTwistEnableEZ", true)
 					b2b = propConfig.getProperty("createroom.defaultB2B", true)
 					combo = propConfig.getProperty("createroom.defaultCombo", true)
 					rensaBlock = propConfig.getProperty("createroom.defaultRensaBlock", true)
@@ -2987,9 +2987,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			propConfig.setProperty("createroom.defaultHurryupSeconds", it.hurryupSeconds)
 			propConfig.setProperty("createroom.defaultHurryupInterval", it.hurryupInterval)
 			propConfig.setProperty("createroom.defaultRuleLock", it.ruleLock)
-			propConfig.setProperty("createroom.defaultTSpinEnableType", it.tspinEnableType)
-			propConfig.setProperty("createroom.defaultSpinCheckType", it.spinCheckType)
-			propConfig.setProperty("createroom.defaultTSpinEnableEZ", it.tspinEnableEZ)
+			propConfig.setProperty("createroom.defaultTwistEnableType", it.twistEnableType)
+			propConfig.setProperty("createroom.defaultWISTCheckType", it.spinCheckType)
+			propConfig.setProperty("createroom.defaultTwistEnableEZ", it.twistEnableEZ)
 			propConfig.setProperty("createroom.defaultB2B", it.b2b)
 			propConfig.setProperty("createroom.defaultCombo", it.combo)
 			propConfig.setProperty("createroom.defaultRensaBlock", it.rensaBlock)
@@ -3207,9 +3207,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val integerHurryupSeconds = spinnerCreateRoomHurryupSeconds.value as Int
 			val integerHurryupInterval = spinnerCreateRoomHurryupInterval.value as Int
 			val rulelock = chkboxCreateRoomRuleLock.isSelected
-			val tspinEnableType = comboboxCreateRoomTSpinEnableType.selectedIndex
+			val twistEnableType = comboboxCreateRoomTWISTEnableType.selectedIndex
 			val spinCheckType = comboboxCreateRoomSpinCheckType.selectedIndex
-			val tspinEnableEZ = chkboxCreateRoomTSpinEnableEZ.isSelected
+			val twistEnableEZ = chkboxCreateRoomTWISTEnableEZ.isSelected
 			val b2b = chkboxCreateRoomB2B.isSelected
 			val combo = chkboxCreateRoomCombo.isSelected
 			val rensaBlock = chkboxCreateRoomRensaBlock.isSelected
@@ -3241,9 +3241,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			roomInfo.hurryupSeconds = integerHurryupSeconds
 			roomInfo.hurryupInterval = integerHurryupInterval
 			roomInfo.ruleLock = rulelock
-			roomInfo.tspinEnableType = tspinEnableType
+			roomInfo.twistEnableType = twistEnableType
 			roomInfo.spinCheckType = spinCheckType
-			roomInfo.tspinEnableEZ = tspinEnableEZ
+			roomInfo.twistEnableEZ = twistEnableEZ
 			roomInfo.b2b = b2b
 			roomInfo.combo = combo
 			roomInfo.rensaBlock = rensaBlock
@@ -3292,9 +3292,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			spinnerCreateRoomTargetTimer.value = r.targetTimer
 			chkboxCreateRoomUseMap.isSelected = r.useMap
 			chkboxCreateRoomRuleLock.isSelected = r.ruleLock
-			comboboxCreateRoomTSpinEnableType.selectedIndex = r.tspinEnableType
+			comboboxCreateRoomTWISTEnableType.selectedIndex = r.twistEnableType
 			comboboxCreateRoomSpinCheckType.selectedIndex = r.spinCheckType
-			chkboxCreateRoomTSpinEnableEZ.isSelected = r.tspinEnableEZ
+			chkboxCreateRoomTWISTEnableEZ.isSelected = r.twistEnableEZ
 			chkboxCreateRoomB2B.isSelected = r.b2b
 			chkboxCreateRoomCombo.isSelected = r.combo
 			chkboxCreateRoomRensaBlock.isSelected = r.rensaBlock
@@ -3632,7 +3632,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					mapList.clear()
 					val propMap = CustomProperties()
 					try {
-						val `in` = FileInputStream("config/values/vsbattle/$setID.values")
+						val `in` = FileInputStream("config/map/vsbattle/$setID.map")
 						propMap.load(`in`)
 						`in`.close()
 					} catch(e2:IOException) {
@@ -4900,7 +4900,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			arrayOf("GameTuning_OutlineType_Auto", "GameTuning_OutlineType_None", "GameTuning_OutlineType_Normal", "GameTuning_OutlineType_Connect", "GameTuning_OutlineType_SameColor")
 
 		/** Spin bonus names */
-		val COMBOBOX_SPINBONUS_NAMES = arrayOf("CreateRoom_TSpin_Disable", "CreateRoom_TSpin_TOnly", "CreateRoom_TSpin_All")
+		val COMBOBOX_SPINBONUS_NAMES = arrayOf("CreateRoom_Twist_Disable", "CreateRoom_Twist_TOnly", "CreateRoom_Twist_All")
 
 		/** Names for spin check types */
 		val COMBOBOX_SPINCHECKTYPE_NAMES = arrayOf("CreateRoom_SpinCheck_4Point", "CreateRoom_SpinCheck_Immobile")

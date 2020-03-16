@@ -200,8 +200,8 @@ class SprintCombo:NetDummyMode() {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -286,7 +286,7 @@ class SprintCombo:NetDummyMode() {
 			}
 
 			// Confirm
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				if(menuCursor==14) {
@@ -310,10 +310,10 @@ class SprintCombo:NetDummyMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
 
 			// NET: Netplay Ranking
-			if(engine.ctrl!!.isPush(Controller.BUTTON_D)&&netIsNetPlay
+			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay
 				&&netIsNetRankingViewOK(engine))
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 
@@ -384,8 +384,8 @@ class SprintCombo:NetDummyMode() {
 		else
 			owner.bgmStatus.bgm = BGM.values[bgmno]
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
-		engine.tspinEnable = true
-		engine.tspinAllowKick = true
+		engine.twistEnable = true
+		engine.twistAllowKick = true
 		engine.ruleopt.pieceEnterAboveField = spawnAboveField
 	}
 
@@ -446,21 +446,19 @@ class SprintCombo:NetDummyMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "LINE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 4, engine.statistics.lines.toString())
+			receiver.drawScoreNum(engine, playerID, 0, 4, "${engine.statistics.lines}",2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "PIECE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 7, engine.statistics.totalPieceLocked.toString())
+			receiver.drawScoreNum(engine, playerID, 0, 7, "${engine.statistics.totalPieceLocked}",2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LINE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.lpm}")
+			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.lpm}",2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "PIECE/SEC", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.pps.toString())
+			receiver.drawScoreNum(engine, playerID, 0, 13, "${engine.statistics.pps}",2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(engine.statistics.time))
-
-			if(lastevent!=EVENT_NONE&&scgettime<120) renderLineAlert(engine, playerID, receiver)
+			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(engine.statistics.time),2f)
 		}
 
 		super.renderLast(engine, playerID)
@@ -468,24 +466,24 @@ class SprintCombo:NetDummyMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		//  Attack
 		if(lines>0) {
 			scgettime = 0
 
 			// Goal
 			when {
-				engine.tspin ->
+				engine.twist ->
 					when {
-						lines==1 -> // T-Spin 1 line
+						lines==1 -> // Twister 1 line
 							lastevent =
-							if(engine.tspinmini) EVENT_TSPIN_SINGLE_MINI
-							else EVENT_TSPIN_SINGLE
-						lines==2 -> // T-Spin 2 lines
-							lastevent = if(engine.tspinmini&&engine.useAllSpinBonus)
-							EVENT_TSPIN_DOUBLE_MINI else EVENT_TSPIN_DOUBLE
-						lines>=3 ->// T-Spin 3 lines
-							lastevent = EVENT_TSPIN_TRIPLE
+							if(engine.twistmini) EVENT_TWIST_SINGLE_MINI
+							else EVENT_TWIST_SINGLE
+						lines==2 -> // Twister 2 lines
+							lastevent = if(engine.twistmini&&engine.useAllSpinBonus)
+							EVENT_TWIST_DOUBLE_MINI else EVENT_TWIST_DOUBLE
+						lines>=3 ->// Twister 3 lines
+							lastevent = EVENT_TWIST_TRIPLE
 					}
 				lines==1 -> lastevent = EVENT_SINGLE
 				lines==2 -> lastevent = EVENT_DOUBLE
@@ -553,6 +551,7 @@ class SprintCombo:NetDummyMode() {
 			engine.resetStatc()
 			engine.stat = if(engine.statistics.maxCombo>40) GameEngine.Status.EXCELLENT else GameEngine.Status.GAMEOVER
 		}
+		return 0
 	}
 
 	/** This function will be called when the game timer updates */
@@ -753,11 +752,11 @@ class SprintCombo:NetDummyMode() {
 		private const val EVENT_DOUBLE = 2
 		private const val EVENT_TRIPLE = 3
 		private const val EVENT_FOUR = 4
-		private const val EVENT_TSPIN_SINGLE_MINI = 5
-		private const val EVENT_TSPIN_SINGLE = 6
-		private const val EVENT_TSPIN_DOUBLE = 7
-		private const val EVENT_TSPIN_TRIPLE = 8
-		private const val EVENT_TSPIN_DOUBLE_MINI = 9
+		private const val EVENT_TWIST_SINGLE_MINI = 5
+		private const val EVENT_TWIST_SINGLE = 6
+		private const val EVENT_TWIST_DOUBLE = 7
+		private const val EVENT_TWIST_TRIPLE = 8
+		private const val EVENT_TWIST_DOUBLE_MINI = 9
 
 		/** Number of starting shapes */
 		private const val SHAPETYPE_MAX = 9

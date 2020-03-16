@@ -49,27 +49,6 @@ class Marathon:NetDummyMode() {
 	/** Level at start time */
 	private var startlevel:Int = 0
 
-	/** Flag for types of T-Spins allowed (0=none, 1=normal, 2=all spin) */
-	private var tspinEnableType:Int = 0
-
-	/** Old flag for allowing T-Spins */
-	private var enableTSpin:Boolean = false
-
-	/** Flag for enabling wallkick T-Spins */
-	private var enableTSpinKick:Boolean = false
-
-	/** Spin check type (4Point or Immobile) */
-	private var spinCheckType:Int = 0
-
-	/** Immobile EZ spin */
-	private var tspinEnableEZ:Boolean = false
-
-	/** Flag for enabling B2B */
-	private var enableB2B:Boolean = false
-
-	/** Flag for enabling combos */
-	private var enableCombo:Boolean = false
-
 	/** Game type */
 	private var goaltype:Int = 0
 
@@ -131,12 +110,17 @@ class Marathon:NetDummyMode() {
 	 */
 	fun setSpeed(engine:GameEngine) {
 		var lv = engine.statistics.level
-
 		if(lv<0) lv = 0
 		if(lv>=tableGravity.size) lv = tableGravity.size-1
+		val ln = engine.statistics.lines
 
 		engine.speed.gravity = tableGravity[lv]
 		engine.speed.denominator = tableDenominator[lv]
+		engine.speed.are = maxOf(0, minOf(24-ln/50, 60-ln/5))
+		engine.speed.areLine = maxOf(0, minOf(24-ln/50, 70-ln/4))
+		engine.speed.lineDelay = maxOf(0, minOf(40, 70-ln/5, 80-ln/4))
+		engine.speed.lockDelay = maxOf(18, minOf(30, 50-ln/10))
+		engine.speed.das = maxOf(6, minOf(14, 24-ln/20))
 	}
 
 	/* Called at settings screen */
@@ -146,7 +130,7 @@ class Marathon:NetDummyMode() {
 			netOnUpdateNetPlayRanking(engine, goaltype)
 		else if(!engine.owner.replayMode) {
 			// Configuration changes
-			val change = updateCursor(engine, 8, playerID)
+			val change = updateCursor(engine, 3, playerID)
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -173,22 +157,7 @@ class Marathon:NetDummyMode() {
 						}
 						engine.owner.backgroundStatus.bg = startlevel
 					}
-					2 -> {
-						//enableTSpin = !enableTSpin;
-						tspinEnableType += change
-						if(tspinEnableType<0) tspinEnableType = 2
-						if(tspinEnableType>2) tspinEnableType = 0
-					}
-					3 -> enableTSpinKick = !enableTSpinKick
-					4 -> {
-						spinCheckType += change
-						if(spinCheckType<0) spinCheckType = 1
-						if(spinCheckType>1) spinCheckType = 0
-					}
-					5 -> tspinEnableEZ = !tspinEnableEZ
-					6 -> enableB2B = !enableB2B
-					7 -> enableCombo = !enableCombo
-					8 -> big = !big
+					2 -> big = !big
 				}
 
 				// NET: Signal options change
@@ -196,7 +165,7 @@ class Marathon:NetDummyMode() {
 			}
 
 			// Confirm
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -208,10 +177,10 @@ class Marathon:NetDummyMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitflag = true
 
 			// NET: Netplay Ranking
-			if(engine.ctrl!!.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startlevel==0&&!big&&
+			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startlevel==0&&!big&&
 				engine.ai==null)
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 
@@ -233,12 +202,8 @@ class Marathon:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"GOAL", if(goaltype==2) "ENDLESS" else "${tableGameClearLines[goaltype]} LINES", "LEVEL", (startlevel+1).toString(),
-				"SPIN BONUS", if(tspinEnableType==0) "OFF" else if(tspinEnableType==1) "T-ONLY" else "ALL",
-				"EZ SPIN", GeneralUtil.getONorOFF(enableTSpinKick),
-				"SPIN TYPE", if(spinCheckType==0) "4POINT" else "IMMOBILE", "EZIMMOBILE", GeneralUtil.getONorOFF(tspinEnableEZ))
-			drawMenuCompact(engine, playerID, receiver,
-				"B2B", GeneralUtil.getONorOFF(enableB2B), "COMBO", GeneralUtil.getONorOFF(enableCombo), "BIG", GeneralUtil.getONorOFF(big))
+				"GOAL", if(goaltype==2) "ENDLESS" else "${tableGameClearLines[goaltype]} LINES", "LEVEL", (startlevel+1).toString())
+			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big))
 
 		}
 	}
@@ -247,28 +212,13 @@ class Marathon:NetDummyMode() {
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.statistics.level = startlevel
 		engine.statistics.levelDispAdd = 1
-		engine.b2bEnable = enableB2B
-		if(enableCombo)
-			engine.comboType = GameEngine.COMBO_TYPE_NORMAL
-		else
-			engine.comboType = GameEngine.COMBO_TYPE_DISABLE
+		engine.b2bEnable = true
+		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.big = big
 
-		if(version>=2) {
-			engine.tspinAllowKick = enableTSpinKick
-			if(tspinEnableType==0)
-				engine.tspinEnable = false
-			else if(tspinEnableType==1)
-				engine.tspinEnable = true
-			else {
-				engine.tspinEnable = true
-				engine.useAllSpinBonus = true
-			}
-		} else
-			engine.tspinEnable = enableTSpin
-
-		engine.spinCheckType = spinCheckType
-		engine.tspinEnableEZ = tspinEnableEZ
+		engine.twistAllowKick = true
+		engine.twistEnable = true
+		engine.useAllSpinBonus = true
 
 		setSpeed(engine)
 
@@ -310,7 +260,6 @@ class Marathon:NetDummyMode() {
 			val scget = scgettime<engine.statistics.score
 			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/24.0).toInt()
 			sc += ceil(((scgettime-sc)/10f).toDouble()).toInt()
-			if(scget) renderLineAlert(engine, playerID, receiver)
 			receiver.drawScoreNum(engine, playerID, 0, 5, "$sc", scget, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 8, "LEVEL", EventReceiver.COLOR.BLUE)
@@ -328,12 +277,12 @@ class Marathon:NetDummyMode() {
 	override fun onLast(engine:GameEngine, playerID:Int) {}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Line clear bonus
 		val pts = calcScore(engine, lines)
 		var cmb = 0
 		// Combo
-		if(enableCombo&&engine.combo>=1&&lines>=1) cmb = engine.combo-1
+		if(engine.combo>=1&&lines>=1) cmb = engine.combo-1
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		// Add to score
 		if(pts+cmb+spd>0) {
@@ -383,6 +332,7 @@ class Marathon:NetDummyMode() {
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}
+		return if(pts>0) lastscore else 0
 	}
 
 	/* Soft drop */
@@ -433,7 +383,7 @@ class Marathon:NetDummyMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goaltype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -444,13 +394,6 @@ class Marathon:NetDummyMode() {
 	 */
 	override fun loadSetting(prop:CustomProperties) {
 		startlevel = prop.getProperty("marathon.startlevel", 0)
-		tspinEnableType = prop.getProperty("marathon.tspinEnableType", 2)
-		enableTSpin = prop.getProperty("marathon.enableTSpin", true)
-		enableTSpinKick = prop.getProperty("marathon.enableTSpinKick", true)
-		spinCheckType = prop.getProperty("marathon.spinCheckType", 1)
-		tspinEnableEZ = prop.getProperty("marathon.tspinEnableEZ", true)
-		enableB2B = prop.getProperty("marathon.enableB2B", true)
-		enableCombo = prop.getProperty("marathon.enableCombo", true)
 		goaltype = prop.getProperty("marathon.gametype", 0)
 		big = prop.getProperty("marathon.big", false)
 		version = prop.getProperty("marathon.version", 0)
@@ -460,14 +403,8 @@ class Marathon:NetDummyMode() {
 	 * @param prop Property file
 	 */
 	override fun saveSetting(prop:CustomProperties) {
+
 		prop.setProperty("marathon.startlevel", startlevel)
-		prop.setProperty("marathon.tspinEnableType", tspinEnableType)
-		prop.setProperty("marathon.enableTSpin", enableTSpin)
-		prop.setProperty("marathon.enableTSpinKick", enableTSpinKick)
-		prop.setProperty("marathon.spinCheckType", spinCheckType)
-		prop.setProperty("marathon.tspinEnableEZ", tspinEnableEZ)
-		prop.setProperty("marathon.enableB2B", enableB2B)
-		prop.setProperty("marathon.enableCombo", enableCombo)
 		prop.setProperty("marathon.gametype", goaltype)
 		prop.setProperty("marathon.big", big)
 		prop.setProperty("marathon.version", version)
@@ -480,23 +417,24 @@ class Marathon:NetDummyMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in 0 until GAMETYPE_MAX) {
-				rankingScore[j][i] = prop.getProperty("marathon.ranking.$ruleName.$j.score.$i", 0)
-				rankingLines[j][i] = prop.getProperty("marathon.ranking.$ruleName.$j.lines.$i", 0)
-				rankingTime[j][i] = prop.getProperty("marathon.ranking.$ruleName.$j.time.$i", 0)
+				rankingScore[j][i] = prop.getProperty("marathon.$ruleName.$j.score.$i", 0)
+				rankingLines[j][i] = prop.getProperty("marathon.$ruleName.$j.lines.$i", 0)
+				rankingTime[j][i] = prop.getProperty("marathon.$ruleName.$j.time.$i", 0)
 			}
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(j in 0 until GAMETYPE_MAX) {
-				prop.setProperty("marathon.ranking.$ruleName.$j.score.$i", rankingScore[j][i])
-				prop.setProperty("marathon.ranking.$ruleName.$j.lines.$i", rankingLines[j][i])
-				prop.setProperty("marathon.ranking.$ruleName.$j.time.$i", rankingTime[j][i])
+	fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until GAMETYPE_MAX).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf(
+					"marathon.$ruleName.$j.score.$i" to rankingScore[j][i],
+					"marathon.$ruleName.$j.lines.$i" to rankingLines[j][i],
+					"marathon.$ruleName.$j.time.$i" to rankingTime[j][i])
 			}
+		})
 	}
 
 	/** Update rankings
@@ -547,17 +485,16 @@ class Marathon:NetDummyMode() {
 			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
 		msg += "${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"
-			msg+="${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
+		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
 		msg += "${engine.statistics.time}\t${engine.statistics.level}\t"
 		msg += "$goaltype\t${engine.gameActive}\t${engine.timerActive}\t"
-		msg += "$lastscore\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t${engine.combobuf}\t${engine.lasteventpiece}\t"
-		msg += "$bg"+"\n"
+		msg += "$lastscore\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t${engine.combobuf}\t$bg\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		listOf<(String)->Unit>({},{},{},{},
+		listOf<(String)->Unit>({}, {}, {}, {},
 			{engine.statistics.scoreLine = Integer.parseInt(it)},
 			{engine.statistics.scoreSD = Integer.parseInt(it)},
 			{engine.statistics.scoreHD = Integer.parseInt(it)},
@@ -571,14 +508,12 @@ class Marathon:NetDummyMode() {
 			{engine.timerActive = java.lang.Boolean.parseBoolean(it)},
 			{lastscore = Integer.parseInt(it)},
 			{scgettime = Integer.parseInt(it)},
-			{engine.lastevent = Integer.parseInt(it)},
+			{engine.lastevent = GameEngine.ScoreEvent.parseInt(it)},
 			{engine.b2bbuf = Integer.parseInt(it)},
 			{engine.combobuf = Integer.parseInt(it)},
-			{engine.lasteventpiece = Integer.parseInt(it)},
-			{engine.owner.backgroundStatus.bg = Integer.parseInt(it)}).zip(message).forEach{
-			(x,y)->x(y)
+			{engine.owner.backgroundStatus.bg = Integer.parseInt(it)}).zip(message).forEach {(x, y) ->
+			x(y)
 		}
-
 
 		// Meter
 		engine.meterValue = engine.statistics.lines%10*receiver.getMeterMax(engine)/9
@@ -608,23 +543,15 @@ class Marathon:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendOptions(engine:GameEngine) {
-		var msg = "game\toption\t"
-		msg += "$startlevel\t$tspinEnableType\t$enableTSpinKick\t$spinCheckType\t$tspinEnableEZ\t"
-		msg += "$enableB2B\t$enableCombo\t$goaltype\t$big\n"
+		val msg = "game\toption\t$startlevel\t$goaltype\t$big\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
 	/** NET: Receive game options */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
 		startlevel = Integer.parseInt(message[4])
-		tspinEnableType = Integer.parseInt(message[5])
-		enableTSpinKick = java.lang.Boolean.parseBoolean(message[6])
-		spinCheckType = Integer.parseInt(message[7])
-		tspinEnableEZ = java.lang.Boolean.parseBoolean(message[8])
-		enableB2B = java.lang.Boolean.parseBoolean(message[9])
-		enableCombo = java.lang.Boolean.parseBoolean(message[10])
-		goaltype = Integer.parseInt(message[11])
-		big = java.lang.Boolean.parseBoolean(message[12])
+		goaltype = Integer.parseInt(message[5])
+		big = java.lang.Boolean.parseBoolean(message[6])
 	}
 
 	/** NET: Get goal type */
@@ -645,9 +572,10 @@ class Marathon:NetDummyMode() {
 		private val tableDenominator = intArrayOf(64, 50, 40, 33, 25, 20, 13, 10, 8, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1)
 
 		/** Line counts when BGM changes occur */
-		private val tableBGMChange = intArrayOf(60, 80, 140, 170, 200, -1)
+		private val tableBGMChange = intArrayOf(50, 100, 150, 175, 200, -1)
 		private val tableBGM =
 			arrayOf(BGM.GENERIC(0), BGM.GENERIC(1), BGM.GENERIC(2), BGM.GENERIC(3), BGM.GENERIC(4), BGM.GENERIC(5))
+
 		/** Line counts when game ending occurs */
 		private val tableGameClearLines = intArrayOf(150, 200, -1)
 

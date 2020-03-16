@@ -91,7 +91,7 @@ class RetroMania:AbstractMode() {
 		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.bighalf = false
@@ -163,7 +163,7 @@ class RetroMania:AbstractMode() {
 			}
 
 			// Check for A button, when pressed this will begin the game
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -171,7 +171,7 @@ class RetroMania:AbstractMode() {
 			}
 
 			// Check for B button, when pressed this will shutdown the game engine.
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -267,7 +267,7 @@ class RetroMania:AbstractMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Determines line-clear bonus
 		var pts = 0
 		val mult = minOf(engine.statistics.level/2+1, 5)
@@ -315,6 +315,7 @@ class RetroMania:AbstractMode() {
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}
+		return pts
 	}
 
 	/** This function will be called when soft-drop is used */

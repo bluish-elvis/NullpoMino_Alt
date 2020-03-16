@@ -1097,8 +1097,7 @@ open class PoochyBot:DummyAI(), Runnable {
 
 			if(bestPts>0)
 				break
-			else
-				bestPts = Integer.MIN_VALUE
+			bestPts = Integer.MIN_VALUE
 		}
 
 		if(engine.aiShowHint) {
@@ -1168,9 +1167,9 @@ open class PoochyBot:DummyAI(), Runnable {
 
 		// Field height (before placement)
 		val heightBefore = fld.highestBlockY
-		// T-Spin flag
-		var tspin = false
-		if(piece.id==Piece.PIECE_T&&rtOld!=-1&&fld.isTSpinSpot(x, y, piece.big)) tspin = true
+		// Twister flag
+		var twist = false
+		if(piece.id==Piece.PIECE_T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) twist = true
 
 		//Does move fill in valley with an I piece?
 		var valley = 0
@@ -1242,7 +1241,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				", valley bonus = "+valleyBonus)
 		pts += valleyBonus
 		if(lines==1&&!danger&&depth==0&&heightAfter>=16&&holeBefore<3&&
-			!tspin&&xMax==width-1) {
+			!twist&&xMax==width-1) {
 			if(DEBUG_ALL)
 				log.debug("End of thinkMain($x, $y, $rt, "+rtOld+
 					", fld, piece ${Piece.Shape.names[piece.id]}, $depth). pts = 0 (Special Condition 3)")
@@ -1291,8 +1290,8 @@ open class PoochyBot:DummyAI(), Runnable {
 			 * pts += (lidAfter - lidBefore) * 500;
 			 * } */
 
-			if(tspin&&lines>=1)
-			// T-Spin Bonus - retained from Basic AI, but should never actually trigger
+			if(twist&&lines>=1)
+			// Twister Bonus - retained from Basic AI, but should never actually trigger
 				pts += 100000*lines
 
 			testY = fld.hiddenHeight

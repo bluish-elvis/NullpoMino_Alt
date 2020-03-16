@@ -88,10 +88,10 @@ class PoochyBotDefensive:PoochyBot() {
 
 		// Field height (before placement)
 		val heightBefore = fld.highestBlockY
-		// T-Spin flag
-		var tspin = false
-		if(piece.id==Piece.PIECE_T&&rtOld!=-1&&fld.isTSpinSpot(x, y, piece.big)) {
-			tspin = true
+		// Twister flag
+		var twist = false
+		if(piece.id==Piece.PIECE_T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) {
+			twist = true
 		}
 
 		//Does move fill in valley with an I piece?
@@ -111,7 +111,7 @@ class PoochyBotDefensive:PoochyBot() {
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
 			if(DEBUG_ALL)
-				PoochyBot.log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.id}, $depth). pts = 0 (Cannot place piece)")
+				log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.id}, $depth). pts = 0 (Cannot place piece)")
 			return Integer.MIN_VALUE
 		}
 
@@ -148,7 +148,7 @@ class PoochyBotDefensive:PoochyBot() {
 		else if(valley>=4) valleyBonus = 400000
 		if(xMax==0) valleyBonus *= 2
 		if(valley>0)
-			if(DEBUG_ALL) PoochyBot.log.debug("I piece xMax = $xMax, valley depth = $valley, valley bonus = $valleyBonus")
+			if(DEBUG_ALL) log.debug("I piece xMax = $xMax, valley depth = $valley, valley bonus = $valleyBonus")
 		pts += valleyBonus
 
 		//Points for line clears
@@ -221,8 +221,8 @@ class PoochyBotDefensive:PoochyBot() {
 			 * pts += (lidAfter - lidBefore) * 500;
 			 * } */
 
-			if(tspin&&lines>=1) {
-				// T-Spin Bonus - retained from Basic AI, but should never actually trigger
+			if(twist&&lines>=1) {
+				// Twister Bonus - retained from Basic AI, but should never actually trigger
 				pts += 100000*lines
 			}
 
@@ -282,7 +282,7 @@ class PoochyBotDefensive:PoochyBot() {
 			}
 		}
 		if(DEBUG_ALL)
-			PoochyBot.log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.id}, $depth). pts = $pts")
+			log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.id}, $depth). pts = $pts")
 		return pts
 	}
 }

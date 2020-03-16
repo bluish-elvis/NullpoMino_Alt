@@ -200,7 +200,7 @@ class GrandLightning:AbstractMode() {
 		rankingRollclear = IntArray(RANKING_MAX)
 		bestSectionTime = IntArray(SECTION_MAX)
 
-		engine.tspinEnable = true
+		engine.twistEnable = true
 		engine.b2bEnable = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.framecolor = GameEngine.FRAME_COLOR_RED
@@ -343,13 +343,13 @@ class GrandLightning:AbstractMode() {
 			}
 
 			// section time display切替
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -360,7 +360,7 @@ class GrandLightning:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -550,7 +550,7 @@ class GrandLightning:AbstractMode() {
 
 			// せり上がり
 			if(garbageCount>=tableGarbage[engine.statistics.level/100]&&tableGarbage[engine.statistics.level/100]!=0) {
-				engine.playSE("garbage")
+				engine.playSE("garbage0")
 				engine.field!!.addBottomCopyGarbage(engine.skin, 1,
 					Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 				garbageCount = 0
@@ -595,7 +595,7 @@ class GrandLightning:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Combo
 		comboValue = if(lines==0) 1
 		else maxOf(1, comboValue+2*lines-2)
@@ -772,10 +772,11 @@ class GrandLightning:AbstractMode() {
 
 			lastscore = ((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+if(engine.manualLock) 1 else 0)
 				*lines*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
-				+engine.statistics.level/if(engine.tspin) 2 else 3)*if(engine.field!!.isEmpty) 2 else 1
+				+engine.statistics.level/if(engine.twist) 2 else 3)*if(engine.field!!.isEmpty) 2 else 1
 
 			engine.statistics.scoreLine += lastscore
 		}
+		return 0
 	}
 
 	/* 各 frame の終わりの処理 */
@@ -895,18 +896,18 @@ class GrandLightning:AbstractMode() {
 			else -> BGM.RESULT(2)
 		}
 		// ページ切り替え
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
 			if(engine.statc[1]>2) engine.statc[1] = 0
 			engine.playSE("change")
 		}
 		// section time display切替
-		if(engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 			engine.playSE("change")
 			isShowBestSectionTime = !isShowBestSectionTime
 		}

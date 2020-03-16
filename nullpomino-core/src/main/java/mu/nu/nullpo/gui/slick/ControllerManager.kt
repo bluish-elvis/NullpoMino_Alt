@@ -49,44 +49,43 @@ object ControllerManager {
 	var method = CONTROLLER_METHOD_SLICK_DEFAULT
 
 	/** Joystick state */
-	var controllers:ArrayList<Controller>? = null
+	var controllers:ArrayList<Controller> = ArrayList()
 
 	/** 各Playerが使用するJoystick の number */
-	var controllerID:IntArray=IntArray(0)
+	var controllerID:IntArray = IntArray(0)
 
 	/** Joystick direction key が反応する閾値 (一部検出法では使えない) */
-	var border:FloatArray=FloatArray(0)
+	var border:FloatArray = FloatArray(0)
 
 	/** アナログスティック無視 */
-	var ignoreAxis:BooleanArray= BooleanArray(0)
+	var ignoreAxis:BooleanArray = BooleanArray(0)
 
 	/** ハットスイッチ無視 */
-	var ignorePOV:BooleanArray= BooleanArray(0)
+	var ignorePOV:BooleanArray = BooleanArray(0)
 
 	/** Joystick のcountを取得
 	 * @return Joystick のcount
 	 */
 	val controllerCount:Int
-		get() = if(controllers==null) 0 else controllers!!.size
+		get() = controllers.size
 
 	/** Initialization */
 	fun initControllers() {
 		controllers = ArrayList()
-		controllerID = IntArray(2){-1}
-		border = FloatArray(2){0f}
+		controllerID = IntArray(2) {-1}
+		border = FloatArray(2) {0f}
 		ignoreAxis = BooleanArray(2)
 		ignorePOV = BooleanArray(2)
 		Controllers.destroy()
 		for(i in 0 until Controllers.getControllerCount()) {
 			val c = Controllers.getController(i)
 
-			if(c.buttonCount in MIN_BUTTONS until MAX_BUTTONS) controllers!!.add(c)
+			if(c.buttonCount in MIN_BUTTONS until MAX_BUTTONS) controllers.add(c)
 		}
 
-		log.info("Found ${controllers!!.size} controllers from NullpoMinoSlick app")
+		log.info("Found ${controllers.size} controllers from NullpoMinoSlick app")
 
-		for(i in controllers!!.indices) {
-			val c = controllers!![i]
+		controllers.forEachIndexed {i, c ->
 			log.debug("ID:$i, AxisCount:${c.axisCount}, ButtonCount:"+c.buttonCount)
 		}
 	}
@@ -107,9 +106,9 @@ object ControllerManager {
 			else if(method==CONTROLLER_METHOD_SLICK_ALTERNATE)
 				return input.isControllerUp(controller)||!ignoreAxis[player]&&input.getAxisValue(controller, 1)<-border[player]
 			else if(method==CONTROLLER_METHOD_LWJGL)
-				if(controller>=0&&controller<controllers!!.size) {
-					val axisValue = controllers!![controller].yAxisValue
-					val povValue = controllers!![controller].povY
+				if(controller>=0&&controller<controllers.size) {
+					val axisValue = controllers[controller].yAxisValue
+					val povValue = controllers[controller].povY
 					return !ignoreAxis[player]&&axisValue<-border[player]||!ignorePOV[player]&&povValue<-border[player]
 				}
 		} catch(e:Throwable) {
@@ -135,9 +134,9 @@ object ControllerManager {
 			else if(method==CONTROLLER_METHOD_SLICK_ALTERNATE)
 				return input.isControllerDown(controller)||!ignoreAxis[player]&&input.getAxisValue(controller, 1)>border[player]
 			else if(method==CONTROLLER_METHOD_LWJGL)
-				if(controller>=0&&controller<controllers!!.size) {
-					val axisValue = controllers!![controller].yAxisValue
-					val povValue = controllers!![controller].povY
+				if(controller>=0&&controller<controllers.size) {
+					val axisValue = controllers[controller].yAxisValue
+					val povValue = controllers[controller].povY
 					return !ignoreAxis[player]&&axisValue>border[player]||!ignorePOV[player]&&povValue>border[player]
 				}
 		} catch(e:Throwable) {
@@ -163,9 +162,9 @@ object ControllerManager {
 			else if(method==CONTROLLER_METHOD_SLICK_ALTERNATE)
 				return input.isControllerLeft(controller)||!ignoreAxis[player]&&input.getAxisValue(controller, 0)<-border[player]
 			else if(method==CONTROLLER_METHOD_LWJGL)
-				if(controller>=0&&controller<controllers!!.size) {
-					val axisValue = controllers!![controller].xAxisValue
-					val povValue = controllers!![controller].povX
+				if(controller>=0&&controller<controllers.size) {
+					val axisValue = controllers[controller].xAxisValue
+					val povValue = controllers[controller].povX
 					return !ignoreAxis[player]&&axisValue<-border[player]||!ignorePOV[player]&&povValue<-border[player]
 				}
 		} catch(e:Throwable) {
@@ -191,9 +190,9 @@ object ControllerManager {
 			else if(method==CONTROLLER_METHOD_SLICK_ALTERNATE)
 				return input.isControllerRight(controller)||!ignoreAxis[player]&&input.getAxisValue(controller, 0)>border[player]
 			else if(method==CONTROLLER_METHOD_LWJGL)
-				if(controller>=0&&controller<controllers!!.size) {
-					val axisValue = controllers!![controller].xAxisValue
-					val povValue = controllers!![controller].povX
+				if(controller>=0&&controller<controllers.size) {
+					val axisValue = controllers[controller].xAxisValue
+					val povValue = controllers[controller].povX
 					return !ignoreAxis[player]&&axisValue>border[player]||!ignorePOV[player]&&povValue>border[player]
 				}
 		} catch(e:Throwable) {
@@ -219,8 +218,8 @@ object ControllerManager {
 			if(method==CONTROLLER_METHOD_SLICK_DEFAULT||method==CONTROLLER_METHOD_SLICK_ALTERNATE)
 				return input.isButtonPressed(button, controller)
 			else if(method==CONTROLLER_METHOD_LWJGL)
-				if(controller>=0&&controller<controllers!!.size) {
-					val c = controllers!![controller]
+				if(controller>=0&&controller<controllers.size) {
+					val c = controllers[controller]
 					if(button<c.buttonCount) return c.isButtonPressed(button)
 				}
 		} catch(e:ArrayIndexOutOfBoundsException) {

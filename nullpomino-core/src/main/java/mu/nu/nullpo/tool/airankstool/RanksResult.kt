@@ -34,10 +34,8 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 	//private JFrame parent;
 	internal inner class SurfaceComparator:Comparator<Int> {
 
-		override fun compare(o1:Int?, o2:Int?):Int {
-
-			return (factorCompare*ranks!!.getRankValue(o2!!)).compareTo(factorCompare*ranks!!.getRankValue(o1!!))
-		}
+		override fun compare(o1:Int?, o2:Int?):Int =
+			(factorCompare*ranks!!.getRankValue(o2!!)).compareTo(factorCompare*ranks!!.getRankValue(o1!!))
 
 	}
 

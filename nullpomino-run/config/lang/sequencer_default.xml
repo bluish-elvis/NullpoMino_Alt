@@ -26,6 +26,7 @@
  <!--Option-->
  <entry key="Option_Seed">Seed</entry>
  <entry key="Option_SequenceLength">Sequence Length</entry>
+ <entry key="Option_SequenceSize">Sequence Section Size</entry>
  <entry key="Option_SequenceOffset">Sequence Offset</entry>
  <entry key="Option_Randomizer">Randomizer</entry>
  <entry key="Option_Generate">Generate Sequence</entry>

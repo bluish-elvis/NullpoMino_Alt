@@ -80,7 +80,7 @@ open class NetBaseClient:Thread {
 	/** @return Regular always And are connectedtrue
 	 */
 	val isConnected:Boolean
-		get() = socket!=null&&socket!!.isConnected&&connectedFlag
+		get() = connectedFlag&&socket?.isConnected ?: false
 
 	/** Default constructor */
 	constructor():super() {
@@ -115,16 +115,17 @@ open class NetBaseClient:Thread {
 
 		try {
 			// Connection
-			socket = Socket(host, port)
+			socket = Socket(host, port).also {
+				ip = it.inetAddress.hostAddress
+			}
 			connectedFlag = true
-			ip = socket!!.inetAddress.hostAddress
 
 			// pingHitTimerPreparation
 			startPingTask()
 
 			// Message reception
 			val buf = ByteArray(BUF_SIZE)
-			var size:Int = socket!!.getInputStream().read(buf)
+			val size:Int = socket!!.getInputStream().read(buf)
 
 			while(threadRunning&&(size)>0) {
 				val message = String(buf, 0, size, StandardCharsets.UTF_8)
@@ -153,7 +154,7 @@ open class NetBaseClient:Thread {
 			exDisconnectReason = e
 		}
 
-		if(timerPing!=null) timerPing.cancel()
+		timerPing.cancel()
 		connectedFlag = false
 		threadRunning = false
 
@@ -241,7 +242,7 @@ open class NetBaseClient:Thread {
 	@JvmOverloads
 	fun startPingTask(interval:Long = PING_INTERVAL) {
 		log.debug("Ping interval:$interval")
-		if(timerPing!=null) timerPing.cancel()
+		timerPing.cancel()
 		if(interval<=0) return
 		pingCount = 0
 		taskPing = PingTask()

@@ -6,7 +6,7 @@
 <entry key="BagRandomizer">7種全てのピース１個ずつでランダムに1巡を繰り返します。</entry>
 <entry key="BagNoSZORandomizer">1個ずつ全種ピースを1巡しますが、S/Z/O型のブロックは最初のブロックになりません。</entry>
 <entry key="BagBonusRandomizer">ランダムで1巡する中に、1個だけ何らかのピースが追加されます。</entry>
-<entry key="BagBonusBagRandomizer">ランダムで1巡する中に、1個だけ何らかのピースが追加されます。</entry>
+<entry key="BagBonusBagRandomizer">ランダムで1巡する中に1個ピースが追加されます。追加ピースもランダムで一巡します。</entry>
 <entry key="BagDoublesRandomizer">2個ずつの全ピースをランダムに1巡します。</entry>
 <entry key="BagNonuplesRandomizer">9個ずつの全ピースをランダムに1巡します。</entry>
 <entry key="BagMinusRandomizer">ランダムで1巡しますが、その内から1種のピースが差し引かれます。</entry>
@@ -15,7 +15,7 @@
 <entry key="History6RollsRandomizer">直近4個までと同じピースは6回再抽選されます。</entry>
 <entry key="StrictHistoryRandomizer">直近4個までと同じピースは重複出現しなくなります。</entry>
 <entry key="NintendoRandomizer">２連続で同じピースが出なくなります。</entry>
-<entry key="GameBoyRandomizer">抽選されるピース種類の範囲がある程度変動します。</entry>
+<entry key="GameBoyRandomizer">出現したピースに応じて、次に抽選されるピースの範囲が変動します。</entry>
 <entry key="DistanceLinearWeightRandomizer">出現していないピースの出現率が少しずつ増していきます。</entry>
 <entry key="DistanceQuadWeightRandomizer">出現していないピースの出現率が加速度的に増していきます。</entry>
 <entry key="DistanceExpWeightRandomizer">出現していないピースの出現率が途中で一気に増していきます。</entry>

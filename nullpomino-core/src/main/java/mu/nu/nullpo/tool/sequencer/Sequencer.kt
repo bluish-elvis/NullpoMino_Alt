@@ -55,6 +55,9 @@ class Sequencer:JFrame(), ActionListener {
 	/** Sequence Length textfield */
 	private var txtfldSeqLength:JTextField? = null
 
+	/** Sequence Section Size textfield */
+	private var txtfldSeqSize:JTextField? = null
+
 	/** Sequence Offset textfield */
 	private var txtfldSeqOffset:JTextField? = null
 
@@ -140,124 +143,134 @@ class Sequencer:JFrame(), ActionListener {
 		jMenuBar = menuBar
 
 		// File menu
-		val mFile = JMenu(getUIText("JMenu_File"))
-		mFile.setMnemonic('F')
-		menuBar.add(mFile)
+		val mFile = JMenu(getUIText("JMenu_File")).apply {
+			setMnemonic('F')
+			menuBar.add(this)
+		}
 
 		// New
-		val miNew = JMenuItem(getUIText("JMenuItem_New"))
-		miNew.setMnemonic('N')
-		miNew.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK)
-		miNew.actionCommand = "New"
-		miNew.addActionListener(this)
-		//mFile.add(miNew);
+		JMenuItem(getUIText("JMenuItem_New")).also {
+			it.setMnemonic('N')
+			it.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK)
+			it.actionCommand = "New"
+			it.addActionListener(this)
+			//mFile.add(it);
+		}
 
 		// Open
-		val miOpen = JMenuItem(getUIText("JMenuItem_Open"))
-		miOpen.setMnemonic('O')
-		miOpen.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK)
-		miOpen.actionCommand = "Open"
-		miOpen.addActionListener(this)
-		mFile.add(miOpen)
+		JMenuItem(getUIText("JMenuItem_Open")).also {
+			it.setMnemonic('O')
+			it.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK)
+			it.actionCommand = "Open"
+			it.addActionListener(this)
+			mFile.add(it)
+		}
 
 		// Save
-		val miSave = JMenuItem(getUIText("JMenuItem_Save"))
-		miSave.setMnemonic('S')
-		miSave.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK)
-		miSave.actionCommand = "Save"
-		miSave.addActionListener(this)
-		mFile.add(miSave)
+		JMenuItem(getUIText("JMenuItem_Save")).also {
+			it.setMnemonic('S')
+			it.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK)
+			it.actionCommand = "Save"
+			it.addActionListener(this)
+			mFile.add(it)
+		}
 
 		// Reset
-		val miReset = JMenuItem(getUIText("JMenuItem_Reset"))
-		miReset.setMnemonic('R')
-		miReset.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK)
-		miReset.actionCommand = "Reset"
-		miReset.addActionListener(this)
-		mFile.add(miReset)
+		JMenuItem(getUIText("JMenuItem_Reset")).also {
+			it.setMnemonic('R')
+			it.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK)
+			it.actionCommand = "Reset"
+			it.addActionListener(this)
+			mFile.add(it)
+		}
 
 		// Exit
-		val miExit = JMenuItem(getUIText("JMenuItem_Exit"))
-		miExit.setMnemonic('X')
-		miExit.actionCommand = "Exit"
-		miExit.addActionListener(this)
-		mFile.add(miExit)
+		JMenuItem(getUIText("JMenuItem_Exit")).also {
+			it.setMnemonic('X')
+			it.actionCommand = "Exit"
+			it.addActionListener(this)
+			mFile.add(it)
+		}
 
 		// Options menu
-		val mOptions = JMenu(getUIText("JMenu_Options"))
-		mOptions.setMnemonic('P')
-		menuBar.add(mOptions)
+		val mOptions = JMenu(getUIText("JMenu_Options")).apply {
+			setMnemonic('P')
+			menuBar.add(this)
+		}
 
 		// Set piece enable
-		val miSetPieceEnable = JMenuItem(getUIText("JMenuItem_SetPieceEnable"))
-		miSetPieceEnable.setMnemonic('E')
-		miSetPieceEnable.actionCommand = "Set piece enable"
-		miSetPieceEnable.addActionListener(this)
-		mOptions.add(miSetPieceEnable)
+		JMenuItem(getUIText("JMenuItem_SetPieceEnable")).also {
+			it.setMnemonic('E')
+			it.actionCommand = "Set piece enable"
+			it.addActionListener(this)
+			mOptions.add(it)
+		}
 
 		// Set up content pane ------------------------------
 		contentPane.layout = BoxLayout(contentPane, BoxLayout.Y_AXIS)
 
 		// Seed
-		val pSeed = JPanel()
-		contentPane.add(pSeed)
-
-		val lSeed = JLabel(getUIText("Option_Seed"))
-		pSeed.add(lSeed)
-
-		txtfldSeed = JTextField("0", 15)
-		pSeed.add(txtfldSeed)
+		JPanel().apply {
+			contentPane.add(this)
+			add(JLabel(getUIText("Option_Seed")))
+			txtfldSeed = JTextField("0", 15)
+			add(txtfldSeed)
+		}
 
 		// Sequence Length
-		val pSeqLength = JPanel()
-		contentPane.add(pSeqLength)
-
-		val lSeqLength = JLabel(getUIText("Option_SequenceLength"))
-		pSeqLength.add(lSeqLength)
-
-		txtfldSeqLength = JTextField("100", 6)
-		pSeqLength.add(txtfldSeqLength)
-
+		JPanel().apply {
+			contentPane.add(this)
+			add(JLabel(getUIText("Option_SequenceLength")))
+			txtfldSeqLength = JTextField("100", 6)
+			add(txtfldSeqLength)
+		}
+		// Sequence Size
+		JPanel().apply {
+			contentPane.add(this)
+			add(JLabel(getUIText("Option_SequenceSize")))
+			txtfldSeqSize = JTextField("7", 3)
+			add(txtfldSeqSize)
+		}
 		// Sequence Offset
-		val pSeqOffset = JPanel()
-		contentPane.add(pSeqOffset)
-
-		val lSeqOffset = JLabel(getUIText("Option_SequenceOffset"))
-		pSeqOffset.add(lSeqOffset)
-
-		txtfldSeqOffset = JTextField("0", 6)
-		pSeqOffset.add(txtfldSeqOffset)
+		JPanel().apply {
+			contentPane.add(this)
+			add(JLabel(getUIText("Option_SequenceOffset")))
+			txtfldSeqOffset = JTextField("0", 6)
+			add(txtfldSeqOffset)
+		}
 
 		// Randomizer
-		val pRandomizer = JPanel()
-		contentPane.add(pRandomizer)
-
-		val lRandomizer = JLabel(getUIText("Option_Randomizer"))
-		pRandomizer.add(lRandomizer)
-
-		vectorRandomizer = getTextFileVector("config/list/randomizer.lst")
-		comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer))
-		comboboxRandomizer!!.preferredSize = Dimension(222, 30)
-		comboboxRandomizer!!.selectedIndex = 0
-		pRandomizer.add(comboboxRandomizer)
-
+		JPanel().apply {
+			contentPane.add(this)
+			add(JLabel(getUIText("Option_Randomizer")))
+			vectorRandomizer = getTextFileVector("config/list/randomizer.lst")
+			comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer)).apply {
+				preferredSize = Dimension(222, 30)
+				selectedIndex = 0
+			}
+			add(comboboxRandomizer)
+		}
 		// Generate
-		val pGenerate = JPanel()
-		contentPane.add(pGenerate)
+		JPanel().apply {
+			contentPane.add(this)
 
-		btnGenerate = JButton(getUIText("Option_Generate"))
-		btnGenerate!!.setMnemonic('G')
-		btnGenerate!!.actionCommand = "Generate"
-		btnGenerate!!.addActionListener(this)
-		pGenerate.add(btnGenerate)
+			btnGenerate = JButton(getUIText("Option_Generate")).also {
+				it.setMnemonic('G')
+				it.actionCommand = "Generate"
+				it.addActionListener(this@Sequencer)
+			}
+			add(btnGenerate)
+		}
 
 		// Sequence
-		txtareaSequence = JTextArea(10, 37)
-		txtareaSequence!!.lineWrap = true
-		txtareaSequence!!.isEditable = false
-
-		val pSequence = JScrollPane(txtareaSequence, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
-		contentPane.add(pSequence)
+		txtareaSequence = JTextArea(10, 37).apply {
+			lineWrap = true
+			isEditable = false
+		}
+		contentPane.add(
+			JScrollPane(txtareaSequence, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
+		)
 
 	}
 
@@ -265,14 +278,14 @@ class Sequencer:JFrame(), ActionListener {
 		val vec = Vector<String>()
 
 		try {
-			val `in` = BufferedReader(FileReader(filename))
+			val read = BufferedReader(FileReader(filename))
 
 			while(true) {
-				val str = `in`.readLine()
+				val str = read.readLine()
 				if(str==null||str.isEmpty()) break
 				vec.add(str)
 			}
-			`in`.close()
+			read.close()
 		} catch(e:IOException) {
 		}
 
@@ -282,7 +295,9 @@ class Sequencer:JFrame(), ActionListener {
 	private fun createShortStringVector(vecSrc:Vector<String>?):Vector<String> {
 		val vec = Vector<String>()
 
-		for(aVecSrc in vecSrc!!) vec.add(createShortString(aVecSrc))
+		vecSrc?.forEach {aVecSrc ->
+			vec.add(createShortString(aVecSrc))
+		}
 
 		return vec
 	}
@@ -291,17 +306,14 @@ class Sequencer:JFrame(), ActionListener {
 		val last = str.lastIndexOf('.')
 
 		val newStr:String
-		newStr = if(last!=-1)
-			str.substring(last+1)
-		else
-			str
+		newStr = if(last!=-1) str.substring(last+1) else str
 		return newStr
 	}
 
 	private fun readReplayToUI(prop:CustomProperties, playerID:Int) {
-		txtfldSeed!!.text = java.lang.Long.parseLong(prop.getProperty("$playerID.replay.randSeed", "0"), 16)
+		txtfldSeed?.text = java.lang.Long.parseLong(prop.getProperty("$playerID.replay.randSeed", "0"), 16)
 			.toString()
-		comboboxRandomizer!!.selectedItem = createShortString(prop.getProperty("$playerID.ruleopt.strRandomizer", null))
+		comboboxRandomizer?.selectedItem = createShortString(prop.getProperty("$playerID.ruleopt.strRandomizer", null))
 	}
 
 	@Throws(IOException::class)
@@ -331,41 +343,19 @@ class Sequencer:JFrame(), ActionListener {
 	 * @return Translated text (If translated text is NOT available, it will
 	 * return str itself)
 	 */
-	fun getUIText(str:String):String? {
-		var result:String? = propLang.getProperty(str)
-		if(result==null) result = propLangDefault.getProperty(str, str)
-		return result
-	}
+	fun getUIText(str:String):String = propLang.getProperty(str) ?: propLangDefault.getProperty(str, str) ?: ""
 
 	/** Get int value from a JTextField
 	 * @param txtfld JTextField
 	 * @return An int value from JTextField (If fails, it will return zero)
 	 */
-	private fun getIntTextField(txtfld:JTextField?):Int {
-		var v = 0
-
-		try {
-			v = Integer.parseInt(txtfld!!.text)
-		} catch(e:Exception) {
-		}
-
-		return v
-	}
+	private fun getIntTextField(txtfld:JTextField?):Int = txtfld?.text?.toIntOrNull() ?: 0
 
 	/** Get long value from a JTextField
 	 * @param txtfld JTextField
 	 * @return A long value from JTextField (If fails, it will return zero)
 	 */
-	private fun getLongTextField(txtfld:JTextField?):Long {
-		var v = 0L
-
-		try {
-			v = java.lang.Long.parseLong(txtfld!!.text)
-		} catch(e:Exception) {
-		}
-
-		return v
-	}
+	private fun getLongTextField(txtfld:JTextField?):Long = txtfld?.text?.toLongOrNull() ?: 0L
 
 	private fun generate() {
 		val randomizerClass:Class<*>
@@ -390,20 +380,22 @@ class Sequencer:JFrame(), ActionListener {
 	}
 
 	fun display() {
-		if(txtareaSequence!!.text!="") txtareaSequence!!.text = ""
+		if(txtareaSequence?.text!="") txtareaSequence?.text = ""
+		val ct = getIntTextField(txtfldSeqSize)
 		for(i in 1..sequence.size) {
-			txtareaSequence!!.append(getUIText("PieceName${sequence[i-1]}"))
-			if(i%35==0) txtareaSequence!!.append("\n")
-			else if(i%7==0) txtareaSequence!!.append(" ")
+			txtareaSequence?.append(getUIText("PieceName${sequence[i-1]}"))
+			if(i%(ct*5)==0) txtareaSequence?.append("\n")
+			else if(i%ct==0) txtareaSequence?.append(" ")
 		}
 	}
 
 	fun reset() {
-		txtfldSeed!!.text = "0"
-		txtfldSeqLength!!.text = "100"
-		txtfldSeqOffset!!.text = "0"
-		comboboxRandomizer!!.selectedIndex = 0
-		txtareaSequence!!.text = ""
+		txtfldSeed?.text = "0"
+		txtfldSeqLength?.text = "100"
+		txtfldSeqSize?.text = "7"
+		txtfldSeqOffset?.text = "0"
+		comboboxRandomizer?.selectedIndex = 0
+		txtareaSequence?.text = ""
 		sequence = IntArray(0)
 	}
 
@@ -471,7 +463,7 @@ class Sequencer:JFrame(), ActionListener {
 		setPieceEnableFrame.contentPane.layout = GridLayout(0, 2, 10, 10)
 		val chkboxEnable = arrayOfNulls<JCheckBox>(Piece.PIECE_COUNT)
 		for(i in 0 until Piece.PIECE_COUNT) {
-			chkboxEnable[i] = JCheckBox("Piece ${getUIText("PieceName$i")!!}").apply {
+			chkboxEnable[i] = JCheckBox("Piece ${getUIText("PieceName$i")}").apply {
 				isSelected = nextPieceEnable[i]
 			}
 			setPieceEnableFrame.contentPane.add(chkboxEnable[i])
@@ -488,13 +480,13 @@ class Sequencer:JFrame(), ActionListener {
 		setPieceEnableFrame.isVisible = true
 	}
 
-	protected inner class FileFilterREP:FileFilter() {
+	private inner class FileFilterREP:FileFilter() {
 		override fun accept(f:File):Boolean = if(f.isDirectory) true else f.name.endsWith(".rep")
 
 		override fun getDescription():String? = getUIText("FileChooser_ReplayFile")
 	}
 
-	protected inner class FileFilterTXT:FileFilter() {
+	private inner class FileFilterTXT:FileFilter() {
 		override fun accept(f:File):Boolean = if(f.isDirectory) true else f.name.endsWith(".txt")
 
 		override fun getDescription():String? = getUIText("FileChooser_TextFile")

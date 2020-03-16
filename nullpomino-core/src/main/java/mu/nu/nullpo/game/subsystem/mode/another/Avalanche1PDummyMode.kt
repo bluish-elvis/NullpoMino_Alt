@@ -165,7 +165,8 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		}
 	}
 
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean = if(engine.statc[0]==0) readyInit(engine, playerID) else false
+	override fun onReady(engine:GameEngine, playerID:Int):Boolean =
+		if(engine.statc[0]==0) readyInit(engine, playerID) else false
 
 	protected open fun readyInit(engine:GameEngine, playerID:Int):Boolean {
 		engine.numColors = numColors
@@ -200,9 +201,9 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.useAllSpinBonus = false
-		engine.tspinAllowKick = false
+		engine.twistAllowKick = false
 
 		engine.speed.are = 30
 		engine.speed.areLine = 30
@@ -251,7 +252,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, avalanche:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, avalanche:Int):Int {
 		if(avalanche>0) {
 			if(zenKeshi) garbageAdd += 30
 			if(engine.field!!.isEmpty) {
@@ -290,7 +291,9 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 			garbageAdd += calcOjama(score, avalanche, pts, multiplier)
 
 			setSpeed(engine)
+			return pts
 		}
+		return 0
 	}
 
 	protected open fun calcOjama(score:Int, avalanche:Int, pts:Int, multiplier:Int):Int = (score+ojamaRate-1)/ojamaRate

@@ -31,7 +31,7 @@ import java.util.ArrayList
 class ReplayData:Serializable {
 
 	/** Button input data */
-	var inputDataArray:ArrayList<Int>? = null
+	var inputDataArray:ArrayList<Int> = ArrayList(DEFAULT_ARRAYLIST_SIZE)
 
 	/** Default constructor */
 	constructor() {
@@ -47,10 +47,7 @@ class ReplayData:Serializable {
 
 	/** Reset to defaults */
 	fun reset() {
-		if(inputDataArray==null)
-			inputDataArray = ArrayList(DEFAULT_ARRAYLIST_SIZE)
-		else
-			inputDataArray!!.clear()
+		inputDataArray.clear()
 	}
 
 	/** 他のReplayDataからコピー
@@ -58,9 +55,10 @@ class ReplayData:Serializable {
 	 */
 	fun copy(r:ReplayData) {
 		reset()
+		r.inputDataArray.forEachIndexed {i, it ->
+			inputDataArray.add(i, it)
+		}
 
-		for(i in r.inputDataArray!!.indices)
-			inputDataArray!!.add(i, r.inputDataArray!![i])
 	}
 
 	/** button input状況を設定
@@ -68,17 +66,17 @@ class ReplayData:Serializable {
 	 * @param frame frame (経過 time）
 	 */
 	fun setInputData(input:Int, frame:Int) {
-		if(frame<0||frame>=inputDataArray!!.size)
-			inputDataArray!!.add(input)
+		if(frame<0||frame>=inputDataArray.size)
+			inputDataArray.add(input)
 		else
-			inputDataArray!![frame] = input
+			inputDataArray[frame] = input
 	}
 
 	/** button input状況を取得
 	 * @param frame frame (経過 time）
 	 * @return button input状況のビット flag
 	 */
-	fun getInputData(frame:Int):Int = if(frame<0||frame>=inputDataArray!!.size) 0 else inputDataArray!![frame]
+	fun getInputData(frame:Int):Int = if(frame<0||frame>=inputDataArray.size) 0 else inputDataArray[frame]
 
 	/** プロパティセットに保存
 	 * @param p プロパティセット
@@ -87,7 +85,7 @@ class ReplayData:Serializable {
 	 */
 	fun writeProperty(p:CustomProperties, id:Int, maxFrame:Int) {
 		var max = maxFrame
-		if(maxFrame<0||maxFrame>inputDataArray!!.size) max = inputDataArray!!.size
+		if(maxFrame<0||maxFrame>inputDataArray.size) max = inputDataArray.size
 
 		for(i in 0 until max) {
 			val input = getInputData(i)

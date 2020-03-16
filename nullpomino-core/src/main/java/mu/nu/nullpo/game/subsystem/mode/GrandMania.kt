@@ -240,7 +240,7 @@ class GrandMania:AbstractMode() {
 		bestSectionTime = IntArray(SECTION_MAX)
 		bestSectionQuads = IntArray(SECTION_MAX)
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.b2bEnable = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.bighalf = true
@@ -434,13 +434,13 @@ class GrandMania:AbstractMode() {
 			}
 
 			// section time display切替
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -452,7 +452,7 @@ class GrandMania:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -740,10 +740,10 @@ class GrandMania:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Combo
 		comboValue = if(lines==0) 1
-		else maxOf(1,comboValue+2*lines-2)
+		else maxOf(1, comboValue+2*lines-2)
 
 		// RO medal 用カウント
 		var rotateTemp = engine.nowPieceRotateCount
@@ -874,7 +874,7 @@ class GrandMania:AbstractMode() {
 					gradeInternal = 32
 					gradeflash = 180
 					lastGradeTime = engine.statistics.time
-				}else engine.playSE("applause3")
+				} else engine.playSE("applause3")
 			} else if(engine.statistics.level>=nextseclv) {
 				// Next Section
 
@@ -889,7 +889,7 @@ class GrandMania:AbstractMode() {
 					owner.bgmStatus.fadesw = false
 					owner.bgmStatus.bgm = tableBGM[bgmlv]
 					engine.playSE("levelup_section")
-				}else engine.playSE("levelup")
+				} else engine.playSE("levelup")
 
 				// Section Timeを記録
 				sectionlasttime = sectionTime[levelb/100]
@@ -918,10 +918,11 @@ class GrandMania:AbstractMode() {
 					*comboValue*if(engine.field!!.isEmpty) 4 else 1)+engine.statistics.level/2
 					+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			engine.statistics.scoreLine += lastscore
+			return lastscore
 		} else if(lines>=1&&mrollFlag&&engine.ending==2)
 		// 消えRoll 中のLine clear
 			mrollLines += lines
-
+		return 0
 	}
 
 	/* Called when hard drop used */
@@ -1063,25 +1064,30 @@ class GrandMania:AbstractMode() {
 		val offsetY = receiver.fieldY(engine, playerID)
 		var col = COLOR.WHITE
 
-		if(grade==20) {
+		if(grade>=19) {
 			col = if(engine.statc[0]%4==0)
 				COLOR.YELLOW
 			else if(engine.statc[0]%2==0) col else COLOR.ORANGE
 			receiver.drawDirectFont(offsetX+12, offsetY+230, "YOU ARE A", COLOR.WHITE, 1f)
 			receiver.drawDirectFont(offsetX+22, offsetY+250, "GRAND", col, 1.5f)
 			receiver.drawDirectFont(offsetX+12, offsetY+274, "MASTER", col, 1.5f)
+			if(grade==19) {
+				col = if(engine.statc[0]%4==0) COLOR.RED
+				else if(engine.statc[0]%2==0) COLOR.YELLOW
+				else COLOR.ORANGE
+				receiver.drawDirectFont(offsetX+20, offsetY+266, "LET'S TRY", COLOR.BLUE, 1f)
+				receiver.drawDirectFont(offsetX+4, offsetY+282, "MORE LINES", col, 1f)
+				receiver.drawDirectFont(offsetX+12, offsetY+292, "IN STEALTH", COLOR.WHITE, 1f)
+			}
 		} else if(grade>=17) {
 			receiver.drawDirectFont(offsetX+44, offsetY+250, "BUT...", COLOR.WHITE, 1f)
-			if(grade==19) {
-				col = if(engine.statc[0]%4==0)
-					COLOR.RED
-				else if(engine.statc[0]%2==0)
-					COLOR.YELLOW
-				else
-					COLOR.ORANGE
-				receiver.drawDirectFont(offsetX+20, offsetY+266, "IT'S TOO", COLOR.BLUE, 1f)
-				receiver.drawDirectFont(offsetX+12, offsetY+282, "CLOSE FOR", col, 1f)
-				receiver.drawDirectFont(offsetX+12, offsetY+292, "NEXT RANK", COLOR.WHITE, 1f)
+			if(mrollSectiontime&&!mrollFourline) {
+				col = if(engine.statc[0]%4==0) COLOR.RED
+				else if(engine.statc[0]%2==0) COLOR.YELLOW
+				else COLOR.ORANGE
+				receiver.drawDirectFont(offsetX+20, offsetY+266, "CHALLENGE", COLOR.BLUE, 1f)
+				receiver.drawDirectFont(offsetX+4, offsetY+282, "MORE QUADS", col, 1f)
+				receiver.drawDirectFont(offsetX+12, offsetY+292, "NEXT TIME", COLOR.WHITE, 1f)
 			} else {
 				col = if(engine.statc[0]%4==0)
 					COLOR.CYAN
@@ -1102,18 +1108,18 @@ class GrandMania:AbstractMode() {
 			if(rollclear<=1) BGM.RESULT(2) else BGM.RESULT(3)
 		else BGM.RESULT(0)
 		// ページ切り替え
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
 			if(engine.statc[1]>2) engine.statc[1] = 0
 			engine.playSE("change")
 		}
 		// section time display切替
-		if(engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 			engine.playSE("change")
 			isShowBestSectionTime = !isShowBestSectionTime
 		}
@@ -1169,7 +1175,7 @@ class GrandMania:AbstractMode() {
 				"$ruleName.$i.level" to rankingLevel[i],
 				"$ruleName.$i.time" to rankingTime[i],
 				"$ruleName.$i.clear" to rankingRollclear[i])
-		}+ (0 until SECTION_MAX).flatMap {i ->
+		}+(0 until SECTION_MAX).flatMap {i ->
 			listOf("$ruleName.sectiontime.$i" to bestSectionTime[i],
 				"$ruleName.sectionquads.$i" to bestSectionQuads[i])
 		})
@@ -1243,23 +1249,30 @@ class GrandMania:AbstractMode() {
 
 		/** ARE table */
 		private val tableARE = intArrayOf(25, 25, 24, 23, 22, 21, 19, 16, 14, 12)
+
 		/** ARE after line clear table */
 		private val tableARELine = intArrayOf(25, 25, 24, 22, 20, 18, 15, 12, 9, 6)
+
 		/** Line clear time table */
 		private val tableLineDelay = intArrayOf(40, 38, 35, 31, 25, 20, 16, 12, 9, 6)
+
 		/** 固定 time table */
 		private val tableLockDelay = intArrayOf(30, 30, 30, 30, 30, 30, 28, 26, 24, 20)
+
 		/** DAS table */
 		private val tableDAS = intArrayOf(15, 14, 13, 12, 11, 10, 9, 8, 7, 6)
 
 		/** BGM fadeout levels */
 		private val tableBGMFadeout = intArrayOf(475, 680, 880, -1)
+
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(500, 700, 900, -1)
 		private val tableBGM = arrayOf(BGM.GM_2(0), BGM.GM_2(1), BGM.GM_2(2), BGM.GM_2(3))
+
 		/** Line clear時に入る段位 point */
 		private val tableGradePoint =
 			arrayOf(intArrayOf(10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2), intArrayOf(20, 20, 20, 18, 16, 15, 13, 10, 11, 11, 12), intArrayOf(40, 36, 33, 30, 27, 24, 20, 18, 17, 16, 15), intArrayOf(50, 47, 44, 40, 40, 38, 36, 34, 32, 31, 30))
+
 		/** 段位 pointのCombo bonus */
 		private val tableGradeComboBonus =
 			arrayOf(floatArrayOf(1.0f, 1.2f, 1.2f, 1.4f, 1.4f, 1.4f, 1.4f, 1.5f, 1.5f, 2.0f), floatArrayOf(1.0f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.0f, 2.1f, 2.5f), floatArrayOf(1.0f, 1.5f, 1.8f, 2.0f, 2.2f, 2.3f, 2.4f, 2.5f, 2.6f, 3.0f), floatArrayOf(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f))
@@ -1276,6 +1289,7 @@ class GrandMania:AbstractMode() {
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", // 9～17
 			"m", "Gm", "GM" // 18～20
 		)
+
 		/** 詳細段位のName */
 		private val tableDetailGradeName = arrayOf("9", "8", "7", "6", "5", "4", "3", "2", "1", // 0～8
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", // 9～17

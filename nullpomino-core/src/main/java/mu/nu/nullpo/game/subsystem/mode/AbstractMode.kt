@@ -34,6 +34,8 @@ import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import java.util.*
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 /** Dummy implementation of game mode. Used as a base of most game modes. */
 abstract class AbstractMode:GameMode {
@@ -111,7 +113,7 @@ abstract class AbstractMode:GameMode {
 		map.forEach {key, it ->
 			owner.recordProp.setProperty(key, it)
 		}
-		receiver.saveProperties(owner.recorder(), owner.recordProp)
+		receiver.saveProperties(owner.recorder(ruleName), owner.recordProp)
 	}
 
 	override fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {}
@@ -124,8 +126,7 @@ abstract class AbstractMode:GameMode {
 
 	override fun blockBreak(engine:GameEngine, playerID:Int, x:Int, y:Int, blk:Block) {}
 	override fun lineClear(gameEngine:GameEngine, playerID:Int, i:Int) {}
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {}
-
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int = 0
 	override fun fieldEditExit(engine:GameEngine, playerID:Int) {}
 
 	override fun loadReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {}
@@ -156,50 +157,49 @@ abstract class AbstractMode:GameMode {
 	 * @param lines Cleared line
 	 */
 	open fun calcScore(engine:GameEngine, lines:Int):Int {
-		menuTime = 0
-		var pts = 0
-		when {
-			engine.tspin -> when {
-				lines==0&&!engine.tspinez -> pts = if(engine.tspinmini) 5 else 7// Twister 0 lines
-				engine.tspinez&&lines>0 -> pts = 12*lines*lines+(if(engine.b2b) 15 else 0)// Immobile Spin
-				lines==1 -> pts = if(engine.tspinmini) (if(engine.b2b) 36 else 27)
+		val pts = when {
+			engine.twist -> when {
+				lines<=0&&!engine.twistez -> if(engine.twistmini) 5 else 7// Twister 0 lines
+				engine.twistez&&lines>0 -> 12*lines*lines+(if(engine.b2b) 15 else 0)// Immobile Spin
+				lines==1 -> if(engine.twistmini) (if(engine.b2b) 36 else 27)
 				else if(engine.b2b) 45 else 32// Twister 1 line
-				lines==2 -> pts = if(engine.tspinmini&&engine.useAllSpinBonus) (if(engine.b2b) 100 else 64)
+				lines==2 -> if(engine.twistmini&&engine.useAllSpinBonus) (if(engine.b2b) 100 else 64)
 				else if(engine.b2b) 111 else 72// Twister 2 lines
-				lines>=3 -> pts += if(engine.b2b) 270 else 180// Twister 3 lines
+				else -> if(engine.b2b) 270 else 180// Twister 3 lines
 			}
-			lines==1 -> pts = 10 // Single
-			lines==2 -> pts = if(engine.split) (if(engine.b2b) 72 else 64) else 45 // Double
-			lines==3 -> pts = if(engine.split) (if(engine.b2b) 160 else 128) else 96 // Triple
-			lines>=4 -> pts = if(engine.b2b) 256 else 192 // Quads
+			lines==1 -> 10 // Single
+			lines==2 -> if(engine.split) (if(engine.b2b) 72 else 64) else 45 // Double
+			lines==3 -> if(engine.split) (if(engine.b2b) 160 else 128) else 96 // Triple
+			lines>=4 -> if(engine.b2b) 256 else 192 // Quads
+			else -> 0
 		}
 		// All clear
-		if(lines>=1&&engine.field!!.isEmpty) pts += pts*10/7+256
-		return pts*10
+
+		return (pts+if(lines>=1&&engine.field?.isEmpty==true) pts*10/7+256 else 0)*10
 	}
 
-	open fun calcPoint(engine:GameEngine, lines:Int):Int {
-		var pts = 0
-		when {
-			engine.tspin -> when {
-				lines==0&&!engine.tspinez -> pts = if(engine.tspinmini) 1 else 2 // T-Spin 0 lines
-				engine.tspinez&&lines>0 -> pts = lines*2+(if(engine.b2b) 1 else 0) // Immobile EZ Spin
-				lines==1 -> pts += if(engine.tspinmini) if(engine.b2b) 3 else 2
-				else if(engine.b2b) 5 else 3 // T-Spin 1 line
-				lines==2 -> pts += if(engine.tspinmini&&engine.useAllSpinBonus) (if(engine.b2b) 6 else 4)
-				else if(engine.b2b) 10 else 7 // T-Spin 2 lines
-				lines>=3 -> pts += if(engine.b2b) 13 else 9// T-Spin 3 lines
-			}
-			lines==1 -> pts = 1 // Single
-			lines==2 -> pts = if(engine.split) 4 else 3 // Double
-			lines==3 -> pts = if(engine.split) if(engine.b2b) 7 else 6 else 5 // Triple
-			lines>=4 -> pts = if(engine.b2b) 12 else 8 // Quads
+	open fun calcPoint(engine:GameEngine, lines:Int):Int = when {
+		engine.twist -> when {
+			lines<=0&&!engine.twistez -> if(engine.twistmini) 1 else 2 // Twister 0 lines
+			engine.twistez&&lines>0 -> lines*2+(if(engine.b2b) 1 else 0) // Immobile EZ Spin
+			lines==1 -> if(engine.twistmini) if(engine.b2b) 3 else 2
+			else if(engine.b2b) 5 else 3 // Twister 1 line
+			lines==2 -> if(engine.twistmini&&engine.useAllSpinBonus) (if(engine.b2b) 6 else 4)
+			else if(engine.b2b) 10 else 7 // Twister 2 lines
+			else -> if(engine.b2b) 13 else 9// Twister 3 lines
 		}
-		// All clear
-		if(lines>=1&&engine.field!!.isEmpty) pts += pts+18
+		lines==1 -> 1 // Single
+		lines==2 -> if(engine.split) 4 else 3 // Double
+		lines==3 -> if(engine.split) if(engine.b2b) 7 else 6 else 5 // Triple
+		lines>=4 -> if(engine.b2b) 12 else 8 // Quads
+		else -> 0
+	}+if(lines>=1&&engine.field?.isEmpty==true) 18 else 0 // All clear
 
-		return pts
-	}
+	open fun calcPower(engine:GameEngine, lines:Int):Int = maxOf(0, when {
+		engine.twist -> lines*2
+		lines<=3 -> lines-1
+		else -> lines
+	}+ceil(engine.b2bcount/5f).roundToInt()+ceil(engine.combo/3f).roundToInt());
 
 	override fun onLockFlash(engine:GameEngine, playerID:Int):Boolean = false
 
@@ -239,60 +239,6 @@ abstract class AbstractMode:GameMode {
 
 	override fun renderLineClear(engine:GameEngine, playerID:Int) {}
 
-	fun renderLineAlert(engine:GameEngine, playerID:Int, receiver:EventReceiver) {
-		val lastb2b = engine.b2bcount>1
-		if(engine.lastevent!=GameEngine.EVENT_NONE) {
-			val strPieceName = Piece.Shape.names[engine.lasteventpiece]
-
-			if(lastb2b) {
-				receiver.drawMenuFont(engine, playerID, 0, 20, "BACK 2 BACK", color = COLOR.RED)
-				receiver.drawMenuNum(engine, playerID, 0, 22, String.format("%2d", engine.b2bbuf), color = COLOR.YELLOW, scale = 1.5f)
-				receiver.drawMenuFont(engine, playerID, 2, 23, "COMBO!", color = COLOR.ORANGE, scale = .75f)
-			}
-			if(engine.combobuf>=2) {
-				receiver.drawMenuNum(engine, playerID, 4, 22, String.format("%2d", engine.combobuf), color = COLOR.CYAN, scale = 1.5f)
-				receiver.drawMenuFont(engine, playerID, 6, 23, "HITS CHAIN!", color = COLOR.BLUE, scale = .75f)
-			}
-
-			when(engine.lastevent) {
-				GameEngine.EVENT_TSPIN_ZERO_MINI -> {
-					receiver.drawMenuFont(engine, playerID, -2, 21, "MINI", color = COLOR.PURPLE)
-					receiver.drawMenuFont(engine, playerID, 2, 21, "$strPieceName-SPIN", color = COLOR.PINK)
-				}
-				GameEngine.EVENT_TSPIN_ZERO -> receiver.drawMenuFont(engine, playerID, 2, 21, "$strPieceName-SPIN", color = COLOR.PINK)
-				GameEngine.EVENT_SINGLE -> receiver.drawMenuFont(engine, playerID, 2, 21, "SINGLE", color = COLOR.COBALT)
-				GameEngine.EVENT_TSPIN_SINGLE_MINI -> {
-					receiver.drawMenuFont(engine, playerID, -2, 21, "MINI", color = if(lastb2b) COLOR.CYAN else COLOR.BLUE)
-					receiver.drawMenuFont(engine, playerID, 2, 21, "$strPieceName-SPIN", color = if(lastb2b) COLOR.PINK else COLOR.PURPLE)
-					receiver.drawMenuFont(engine, playerID, 2, 22, "SINGLE", color = COLOR.BLUE)
-				}
-				GameEngine.EVENT_TSPIN_SINGLE -> {
-					receiver.drawMenuFont(engine, playerID, 2, 21, "$strPieceName-SPIN", color = if(lastb2b) COLOR.PINK else COLOR.PURPLE)
-					receiver.drawMenuFont(engine, playerID, 2, 22, "SINGLE", color = COLOR.BLUE)
-				}
-				GameEngine.EVENT_DOUBLE -> receiver.drawMenuFont(engine, playerID, 2, 21, "DOUBLE", color = COLOR.BLUE)
-				GameEngine.EVENT_TSPIN_DOUBLE_MINI -> {
-					receiver.drawMenuFont(engine, playerID, -2, 21, "MINI", color = if(lastb2b) COLOR.GREEN else COLOR.CYAN)
-					receiver.drawMenuFont(engine, playerID, 2, 21, "$strPieceName-SPIN", color = if(lastb2b) COLOR.PINK else COLOR.PURPLE)
-					receiver.drawMenuFont(engine, playerID, 2, 22, "DOUBLE", color = COLOR.CYAN)
-				}
-				GameEngine.EVENT_TSPIN_DOUBLE -> {
-					receiver.drawMenuFont(engine, playerID, 2, 21, "$strPieceName-SPIN", color = if(lastb2b) COLOR.PINK else COLOR.PURPLE)
-					receiver.drawMenuFont(engine, playerID, 2, 22, "DOUBLE", color = COLOR.CYAN)
-				}
-				GameEngine.EVENT_SPLIT_DOUBLE -> receiver.drawMenuFont(engine, playerID, 0, 21, "SPLIT TWIN", color = COLOR.PURPLE)
-				GameEngine.EVENT_TRIPLE -> receiver.drawMenuFont(engine, playerID, 2, 21, "TRIPLE", color = COLOR.GREEN)
-				GameEngine.EVENT_SPLIT_TRIPLE -> receiver.drawMenuFont(engine, playerID, 0, 21, "1.2.TRIPLE", color = COLOR.CYAN)
-				GameEngine.EVENT_TSPIN_TRIPLE -> {
-					receiver.drawMenuFont(engine, playerID, 2, 21, "$strPieceName-SPIN", color = if(lastb2b) COLOR.YELLOW else COLOR.ORANGE)
-					receiver.drawMenuFont(engine, playerID, 2, 22, "TRIPLE", color = COLOR.GREEN)
-				}
-				GameEngine.EVENT_QUADRUPLE -> receiver.drawMenuFont(engine, playerID, 1, 21, "QUADRUPLE", color = COLOR.ORANGE)
-				GameEngine.EVENT_TSPIN_EZ -> receiver.drawMenuFont(engine, playerID, 0, 21, "EZ-$strPieceName-SPIN", color = COLOR.ORANGE)
-			}
-		}
-	}
-
 	/** medal の文字色を取得
 	 * @param medalColor medal 状態
 	 * @return medal の文字色
@@ -306,10 +252,10 @@ abstract class AbstractMode:GameMode {
 	}
 
 	fun getTimeFontColor(time:Int):EventReceiver.COLOR = when {
-		time<600 -> EventReceiver.COLOR.RED
+		time<600 -> if(time/10%2==0) EventReceiver.COLOR.RED else EventReceiver.COLOR.WHITE
 		time in 600 until 1200 -> EventReceiver.COLOR.ORANGE
 		time in 1200 until 1800 -> EventReceiver.COLOR.YELLOW
-		else -> EventReceiver.COLOR.WHITE
+		else -> if(time/5%12==0) EventReceiver.COLOR.GREEN else EventReceiver.COLOR.WHITE
 	}
 
 	override fun renderLockFlash(engine:GameEngine, playerID:Int) {}
@@ -366,21 +312,21 @@ abstract class AbstractMode:GameMode {
 	 */
 	protected open fun updateCursor(engine:GameEngine, maxCursor:Int, playerID:Int):Int {
 		// Up
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			menuCursor--
 			if(menuCursor<0) menuCursor = maxCursor
 			engine.playSE("cursor")
 		}
 		// Down
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			menuCursor++
 			if(menuCursor>maxCursor) menuCursor = 0
 			engine.playSE("cursor")
 		}
 
 		// Configuration changes
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_LEFT)) return -1
-		return if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_RIGHT)) 1 else 0
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)) return -1
+		return if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) 1 else 0
 	}
 
 	protected fun updateMenu(engine:GameEngine) {
@@ -390,8 +336,8 @@ abstract class AbstractMode:GameMode {
 		if(change!=0) {
 			engine.playSE("change")
 			var fast = 0
-			if(engine.ctrl!!.isPush(Controller.BUTTON_E)) fast++
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)) fast += 2
+			if(engine.ctrl.isPush(Controller.BUTTON_E)) fast++
+			if(engine.ctrl.isPush(Controller.BUTTON_F)) fast += 2
 			menu[menuCursor].change(change, fast)
 		}
 	}
@@ -675,18 +621,11 @@ abstract class AbstractMode:GameMode {
 	 */
 	override fun renderInput(engine:GameEngine, playerID:Int) {
 		val receiver = engine.owner.receiver
-		var y = 24
-		if(isVSMode&&!isNetplayMode) {
-			var color = COLOR.BLUE
-			if(playerID==0) {
-				color = COLOR.RED
-				y--
-			}
-			receiver.drawScoreFont(engine, 0, -9, y, "${(playerID+1)}P INPUT:", color)
-		} else
-			receiver.drawScoreFont(engine, 0, -6, y, "INPUT:", COLOR.BLUE)
+		var y = 25-players+playerID
+
+		receiver.drawScoreFont(engine, 0, -9, y, "${(playerID+1)}P INPUT:", EventReceiver.getPlayerColor(playerID))
 		val ctrl = engine.ctrl
-		if(ctrl!!.isPress(Controller.BUTTON_LEFT)) receiver.drawScoreFont(engine, 0, 0, y, "<")
+		if(ctrl.isPress(Controller.BUTTON_LEFT)) receiver.drawScoreFont(engine, 0, 0, y, "<")
 		if(ctrl.isPress(Controller.BUTTON_DOWN)) receiver.drawScoreFont(engine, 0, 1, y, "n")
 		if(ctrl.isPress(Controller.BUTTON_UP)) receiver.drawScoreFont(engine, 0, 2, y, "k")
 		if(ctrl.isPress(Controller.BUTTON_RIGHT)) receiver.drawScoreFont(engine, 0, 3, y, ">")
@@ -697,4 +636,5 @@ abstract class AbstractMode:GameMode {
 		if(ctrl.isPress(Controller.BUTTON_E)) receiver.drawScoreFont(engine, 0, 8, y, "E")
 		if(ctrl.isPress(Controller.BUTTON_F)) receiver.drawScoreFont(engine, 0, 9, y, "F")
 	}
+
 }

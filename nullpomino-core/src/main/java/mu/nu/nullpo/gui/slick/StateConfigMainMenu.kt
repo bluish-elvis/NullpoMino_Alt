@@ -25,18 +25,20 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** Options screen */
-class StateConfigMainMenu:DummyMenuChooseState() {
+internal class StateConfigMainMenu:DummyMenuChooseState() {
 
 	/** Player number */
 	private var player = 0
 
-	override val maxCursor = 7
+	override val maxCursor = CHOICES.size
+
 	init {
 		minChoiceY = 3
 	}
@@ -45,10 +47,11 @@ class StateConfigMainMenu:DummyMenuChooseState() {
 	override fun getID():Int = ID
 
 	/* State initialization */
-	override fun init(container:GameContainer, game:StateBasedGame) {}
+	//override fun init(container:GameContainer, game:StateBasedGame) {}
 
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		if(!ResourceHolder.bgmIsPlaying()) ResourceHolder.bgmStart(BGM.MENU(1))
+		super.enter(container, game)
+		if(!ResourceHolder.bgmIsPlaying()) ResourceHolder.bgmStart(BGM.MENU(2))
 	}
 
 	/* Draw the screen */
@@ -57,20 +60,17 @@ class StateConfigMainMenu:DummyMenuChooseState() {
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
 		// Menu
-		FontNormal.printFontGrid(1, 1, "OPTIONS", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "OPTIONS", player==0, COLOR.ORANGE , COLOR.CYAN)
+		FontNano.printFont(8, 36, "FOR ${player+1}P", COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RED)
+		FontNormal.printFontGrid(1, 3+cursor, "b", player==0, COLOR.RED, COLOR.BLUE)
 
-		FontNormal.printFontGrid(2, 3, "[GENERAL OPTIONS]", cursor==0)
-		FontNormal.printFontGrid(2, 4, "[RULE SELECT]:${player+1}P", cursor==1)
-		FontNormal.printFontGrid(2, 5, "[GAME TUNING]:${player+1}P", cursor==2)
-		FontNormal.printFontGrid(2, 6, "[AI SETTING]:${player+1}P", cursor==3)
-		FontNormal.printFontGrid(2, 7, "[KEYBOARD SETTING]:${player+1}P", cursor==4)
-		FontNormal.printFontGrid(2, 8, "[KEYBOARD NAVIGATION SETTING]:${player+1}P", cursor==5)
-		FontNormal.printFontGrid(2, 9, "[KEYBOARD RESET]:${player+1}P", cursor==6)
-		FontNormal.printFontGrid(2, 10, "[JOYSTICK SETTING]:${player+1}P", cursor==7)
+		CHOICES.forEachIndexed {i, it ->
+			FontNormal.printFontGrid(2, 3+i, "[${it.first}]", cursor==i, COLOR.WHITE,
+				if(player==0) COLOR.BLUE else COLOR.RED)
+		}
 
-		FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
+		FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText("ConfigMainMenu_${CHOICES[cursor].second}"))
 	}
 
 	override fun onChange(container:GameContainer, game:StateBasedGame, delta:Int, change:Int) {
@@ -120,15 +120,22 @@ class StateConfigMainMenu:DummyMenuChooseState() {
 
 	override fun onCancel(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		game.enterState(StateTitle.ID)
-		return false
+		return true
 	}
 
 	companion object {
 		/** This state's ID */
 		const val ID = 5
 
-		/** UI Text identifier Strings */
-		private val UI_TEXT =
-			arrayOf("ConfigMainMenu_General", "ConfigMainMenu_Rule", "ConfigMainMenu_GameTuning", "ConfigMainMenu_AI", "ConfigMainMenu_Keyboard", "ConfigMainMenu_KeyboardNavi", "ConfigMainMenu_KeyboardReset", "ConfigMainMenu_Joystick")
+		/** Text identifier Strings */
+		private val CHOICES =
+			arrayOf("GENERAL OPTIONS" to "General",
+				"RULE SELECT" to "Rule", "GAME TUNING" to "GameTuning",
+				"AI SETTING" to "AI",
+				"KEYBOARD SETTING" to "Keyboard",
+				"KEYBOARD NAVIGATION SETTING" to "KeyboardNavi",
+				"KEYBOARD RESET" to "KeyboardReset",
+				"JOYSTICK SETTING" to "Joystick")
+
 	}
 }

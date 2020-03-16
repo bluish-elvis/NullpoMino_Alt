@@ -42,13 +42,13 @@ class NetRoomInfo:Serializable {
 	/** DAS */
 	var das = 14
 
-	/** Flag for types of T-Spins allowed (0=none, 1=normal, 2=all spin) */
-	var tspinEnableType = 1
+	/** Flag for types of Twisters allowed (0=none, 1=normal, 2=all spin) */
+	var twistEnableType = 1
 
 	var spinCheckType = SPINTYPE_4POINT
 
 	/** Allow EZ-spins in spinCheckType 2 */
-	var tspinEnableEZ = false
+	var twistEnableEZ = false
 
 	/** Flag for enabling B2B */
 	var b2b = true
@@ -183,86 +183,40 @@ class NetRoomInfo:Serializable {
 	 * @return 今ゲーム席にいる人のcount
 	 */
 	val numberOfPlayerSeated:Int
-		get() {
-			var count = 0
-			for(aPlayerSeat in playerSeat) if(aPlayerSeat!=null) count++
-			return count
-		}
+		get() = playerSeat.size
 
 	/** 何人のPlayerが準備完了したかcountえる
 	 * @return 準備完了したNumber of players
 	 */
 	val howManyPlayersReady:Int
-		get() {
-			var count = 0
-			for(pInfo in playerSeat)
-				if(pInfo!=null) if(pInfo.ready) count++
-			return count
-		}
+		get() = playerSeat.count {it.ready}
 
 	/** 何人のPlayerがプレイ中かcountえる(死んだ人とまだ部屋に来た直後の人は含みません)
 	 * @return プレイ中のNumber of players
 	 */
 	val howManyPlayersPlaying:Int
-		get() {
-			var count = 0
-			for(pInfo in playerSeatNowPlaying)
-				if(pInfo!=null) if(pInfo.playing&&playerSeat.contains(pInfo)) count++
-			return count
-		}
+		get() = playerSeatNowPlaying.count {it.playing&&playerSeat.contains(it)}
 
 	/** 最後に生き残ったPlayerの情報を取得
 	 * @return 最後に生き残ったPlayerの情報(まだ2人以上生きている場合や,そもそもゲームが始まっていない場合はnull)
 	 */
 	val winner:NetPlayerInfo?
-		get() {
-			if(startPlayers>=2&&howManyPlayersPlaying<2
-				&&playing)
-				for(pInfo in playerSeatNowPlaying)
-					if(pInfo!=null)
-						if(pInfo.playing&&pInfo.connected
-							&&playerSeat.contains(pInfo))
-							return pInfo
-			return null
-		}
+		get() = if(startPlayers>=2&&howManyPlayersPlaying<2&&playing)
+			playerSeatNowPlaying.first {it.playing&&it.connected&&playerSeat.contains(it)}
+		else null
 
 	/** 最後に生き残ったTeam nameを取得
 	 * @return 最後に生き残ったTeam name
 	 */
 	val winnerTeam:String?
-		get() {
-			if(startPlayers>=2&&howManyPlayersPlaying>=2
-				&&playing)
-				for(pInfo in playerSeatNowPlaying)
-					if(pInfo!=null&&pInfo.playing&&pInfo.connected
-						&&playerSeat.contains(pInfo))
-						return if(pInfo.strTeam.isEmpty())
-							null
-						else
-							pInfo.strTeam
-
-			return null
-		}
+		get() = if(startPlayers>=2&&howManyPlayersPlaying>=2&&playing)
+			playerSeatNowPlaying.first {it.playing&&it.connected&&playerSeat.contains(it)}.strTeam
+		else null
 
 	/** @return 1つのチームだけが生き残っている場合にtrue
 	 */
 	val isTeamWin:Boolean
-		get() {
-			var teamname:String? = null
-
-			if(startPlayers>=2&&howManyPlayersPlaying>=2
-				&&playing)
-				for(pInfo in playerSeatNowPlaying)
-					if(pInfo!=null&&pInfo.playing&&pInfo.connected
-						&&playerSeat.contains(pInfo))
-						if(pInfo.strTeam.isEmpty())
-							return false
-						else if(teamname==null)
-							teamname = pInfo.strTeam
-						else if(teamname!=pInfo.strTeam) return false
-
-			return teamname!=null
-		}
+		get() = winnerTeam!=null
 
 	/** @return true if it's a team game
 	 */
@@ -271,12 +225,13 @@ class NetRoomInfo:Serializable {
 			val teamList = LinkedList<String>()
 
 			if(startPlayers>=2)
-				for(pInfo in playerSeatNowPlaying)
-					if(pInfo!=null&&pInfo.strTeam.isNotEmpty())
-						if(teamList.contains(pInfo.strTeam))
+				playerSeatNowPlaying
+					.filter {it.strTeam.isNotEmpty()}
+					.forEach {
+						if(teamList.contains(it.strTeam))
 							return true
-						else
-							teamList.add(pInfo.strTeam)
+						else teamList.add(it.strTeam)
+					}
 
 			return false
 		}
@@ -320,9 +275,9 @@ class NetRoomInfo:Serializable {
 		lineDelay = n.lineDelay
 		lockDelay = n.lockDelay
 		das = n.das
-		tspinEnableType = n.tspinEnableType
+		twistEnableType = n.twistEnableType
 		spinCheckType = n.spinCheckType
-		tspinEnableEZ = n.tspinEnableEZ
+		twistEnableEZ = n.twistEnableEZ
 		b2b = n.b2b
 		b2bChunk = n.b2bChunk
 		combo = n.combo
@@ -402,7 +357,7 @@ class NetRoomInfo:Serializable {
 		lineDelay = Integer.parseInt(rdata[14])
 		lockDelay = Integer.parseInt(rdata[15])
 		das = Integer.parseInt(rdata[16])
-		tspinEnableType = Integer.parseInt(rdata[17])
+		twistEnableType = Integer.parseInt(rdata[17])
 		b2b = java.lang.Boolean.parseBoolean(rdata[18])
 		combo = java.lang.Boolean.parseBoolean(rdata[19])
 		rensaBlock = java.lang.Boolean.parseBoolean(rdata[20])
@@ -418,7 +373,7 @@ class NetRoomInfo:Serializable {
 		garbageChangePerAttack = java.lang.Boolean.parseBoolean(rdata[30])
 		garbagePercent = Integer.parseInt(rdata[31])
 		spinCheckType = Integer.parseInt(rdata[32])
-		tspinEnableEZ = java.lang.Boolean.parseBoolean(rdata[33])
+		twistEnableEZ = java.lang.Boolean.parseBoolean(rdata[33])
 		b2bChunk = java.lang.Boolean.parseBoolean(rdata[34])
 		strMode = NetUtil.urlDecode(rdata[35])
 		singleplayer = java.lang.Boolean.parseBoolean(rdata[36])
@@ -442,14 +397,14 @@ class NetRoomInfo:Serializable {
 	 * @return Stringの配列(String[40])
 	 */
 	fun exportStringArray():Array<String> = arrayOf("$roomID"
-		,NetUtil.urlEncode(strName)
+		, NetUtil.urlEncode(strName)
 		, "$maxPlayers"
 		, "$playerSeatedCount"
 		, "$spectatorCount"
 		, "$playerListCount"
-		,java.lang.Boolean.toString(playing)
-		,java.lang.Boolean.toString(ruleLock)
-		,NetUtil.urlEncode(ruleName)
+		, java.lang.Boolean.toString(playing)
+		, java.lang.Boolean.toString(ruleLock)
+		, NetUtil.urlEncode(ruleName)
 		, "$autoStartSeconds"
 		, "$gravity"
 		, "$denominator"
@@ -458,7 +413,7 @@ class NetRoomInfo:Serializable {
 		, "$lineDelay"
 		, "$lockDelay"
 		, "$das"
-		, "$tspinEnableType"
+		, "$twistEnableType"
 		, java.lang.Boolean.toString(b2b)
 		, java.lang.Boolean.toString(combo)
 		, java.lang.Boolean.toString(rensaBlock)
@@ -474,7 +429,7 @@ class NetRoomInfo:Serializable {
 		, java.lang.Boolean.toString(garbageChangePerAttack)
 		, "$garbagePercent"
 		, "$spinCheckType"
-		, java.lang.Boolean.toString(tspinEnableEZ)
+		, java.lang.Boolean.toString(twistEnableEZ)
 		, java.lang.Boolean.toString(b2bChunk)
 		, NetUtil.urlEncode(strMode)
 		, java.lang.Boolean.toString(singleplayer)
@@ -490,7 +445,7 @@ class NetRoomInfo:Serializable {
 		val data = exportStringArray()
 		val strResult = StringBuilder()
 
-		for(i in data.indices) {
+		data.indices.forEach {i ->
 			strResult.append(data[i])
 			if(i<data.size-1) strResult.append(";")
 		}
@@ -516,9 +471,8 @@ class NetRoomInfo:Serializable {
 	 * @return ゲーム席 number(いないなら-1)
 	 */
 	fun getPlayerSeatNumber(pInfo:NetPlayerInfo):Int {
-		for(i in playerSeat.indices)
-			if(playerSeat[i]===pInfo) return i
-		return -1
+		return playerSeat.indices.firstOrNull {playerSeat[it]===pInfo}
+			?: -1
 	}
 
 	/** @return 順番待ちなしですぐにゲーム席に入れるならtrue
@@ -575,12 +529,14 @@ class NetRoomInfo:Serializable {
 		val ipList = LinkedList<String>()
 
 		if(startPlayers>=2)
-			for(pInfo in playerSeatNowPlaying)
-				if(pInfo!=null&&pInfo.strRealIP.isNotEmpty())
-					if(ipList.contains(pInfo.strRealIP))
+			playerSeatNowPlaying
+				.filter {it.strRealIP.isNotEmpty()}
+				.forEach {
+					if(ipList.contains(it.strRealIP))
 						return true
 					else
-						ipList.add(pInfo.strRealIP)
+						ipList.add(it.strRealIP)
+				}
 
 		return false
 	}

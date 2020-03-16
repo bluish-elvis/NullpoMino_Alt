@@ -211,28 +211,28 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			}
 
 			if(xyzzy!=573) {
-				if(engine.ctrl!!.isPush(Controller.BUTTON_UP))
+				if(engine.ctrl.isPush(Controller.BUTTON_UP))
 					if(xyzzy==1)
 						xyzzy++
 					else if(xyzzy!=2) xyzzy = 1
-				if(engine.ctrl!!.isPush(Controller.BUTTON_DOWN))
+				if(engine.ctrl.isPush(Controller.BUTTON_DOWN))
 					if(xyzzy==2||xyzzy==3)
 						xyzzy++
 					else
 						xyzzy = 0
-				if(engine.ctrl!!.isPush(Controller.BUTTON_LEFT))
+				if(engine.ctrl.isPush(Controller.BUTTON_LEFT))
 					if(xyzzy==4||xyzzy==6)
 						xyzzy++
 					else
 						xyzzy = 0
-				if(engine.ctrl!!.isPush(Controller.BUTTON_RIGHT))
+				if(engine.ctrl.isPush(Controller.BUTTON_RIGHT))
 					if(xyzzy==5||xyzzy==7)
 						xyzzy++
 					else
 						xyzzy = 0
 			}
 
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A))
+			if(engine.ctrl.isPush(Controller.BUTTON_A))
 				if(xyzzy==573&&menuCursor>5) {
 					loadMapSetFever(engine, playerID, mapSet, true)
 					loadFeverMap(engine, Random(), previewChain, previewSubset)
@@ -248,7 +248,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 					return false
 				}
 
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B))
+			if(engine.ctrl.isPush(Controller.BUTTON_B))
 				if(xyzzy==8)
 					xyzzy++
 				else
@@ -347,9 +347,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 			if(!engine.gameActive) return
 
-			var textHeight = 13
-			if(engine.field!=null) textHeight = engine.field!!.height+1
-			if(engine.displaysize==1) textHeight = 11
+			val textHeight = if(engine.displaysize==1) 11 else (engine.field?.height ?: 12)+1
 
 			val baseX = if(engine.displaysize==1) 1 else 0
 			if(engine.chain>0&&chainDisplay>0&&chainDisplayType!=0) {
@@ -371,7 +369,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	protected fun drawXorTimer(engine:GameEngine, playerID:Int) {
+	private fun drawXorTimer(engine:GameEngine, playerID:Int) {
 		val strFeverTimer = String.format("%02d", (timeLimit+59)/60)
 
 		for(i in 0..1)
@@ -413,7 +411,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		if(timeLimit<=900) engine.meterColor = GameEngine.METER_COLOR_ORANGE
 		if(timeLimit<=300) engine.meterColor = GameEngine.METER_COLOR_RED
 
-		if(!fastinuse&&engine.ctrl!!.isPress(Controller.BUTTON_F)&&
+		if(!fastinuse&&engine.ctrl.isPress(Controller.BUTTON_F)&&
 			(fastenable==2||engine.stat==GameEngine.Status.LINECLEAR&&fastenable==1)) {
 			fastinuse = true
 			for(i in 0..3)
@@ -562,7 +560,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 	private fun loadMapSetFever(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propFeverMap==null||forceReload) {
-			receiver.loadProperties("config/values/avalanche/${FEVER_MAPS[id]}Endless.values")?.let{propFeverMap = it}
+			receiver.loadProperties("config/map/avalanche/${FEVER_MAPS[id]}Endless.map")?.let{propFeverMap = it}
 			feverChainMin = propFeverMap.getProperty("minChain", 3)
 			feverChainMax = propFeverMap.getProperty("maxChain", 15)
 			val subsets = propFeverMap.getProperty("sets")

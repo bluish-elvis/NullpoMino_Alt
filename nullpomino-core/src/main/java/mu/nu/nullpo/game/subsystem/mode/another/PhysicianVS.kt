@@ -25,6 +25,7 @@ package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -254,7 +255,7 @@ class PhysicianVS:AbstractMode() {
 	private fun loadMapPreview(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
 		if(propMap[playerID].isNullOrEmpty()||forceReload) {
 			mapMaxNo[playerID] = 0
-			propMap[playerID] = receiver.loadProperties("config/values/vsbattle/${mapSet[playerID]}.values")
+			propMap[playerID] = receiver.loadProperties("config/map/vsbattle/${mapSet[playerID]}.map")
 		}
 
 		if(propMap[playerID].isNullOrEmpty())
@@ -316,8 +317,8 @@ class PhysicianVS:AbstractMode() {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl!!.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl!!.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
 					0 -> {
@@ -407,7 +408,7 @@ class PhysicianVS:AbstractMode() {
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
 				when(menuCursor) {
@@ -426,7 +427,7 @@ class PhysicianVS:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			// プレビュー用Map読み込み
 			if(useMap[playerID]&&menuTime==0)
@@ -457,7 +458,7 @@ class PhysicianVS:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
 				owner.engine[1].resetStatc()
-			} else if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
+			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.statc[4] = 0// Cancel
 
 		return true
 	}
@@ -501,8 +502,7 @@ class PhysicianVS:AbstractMode() {
 					engine.field!!.setAllSkin(engine.skin)
 				} else {
 					if(propMap[playerID]==null) {
-						propMap[playerID] = receiver.loadProperties("config/values/vsbattle/"
-							+mapSet[playerID]+".values")
+						propMap[playerID] = receiver.loadProperties("config/map/vsbattle/${mapSet[playerID]}.map")
 					} else propMap[playerID]?.let {
 						engine.createFieldIfNeeded()
 
@@ -545,8 +545,8 @@ class PhysicianVS:AbstractMode() {
 		engine.enableSE = enableSE[playerID]
 		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 
-		engine.tspinAllowKick = false
-		engine.tspinEnable = false
+		engine.twistAllowKick = false
+		engine.twistEnable = false
 		engine.useAllSpinBonus = false
 	}
 
@@ -554,7 +554,7 @@ class PhysicianVS:AbstractMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		val fldPosX = receiver.fieldX(engine, playerID)
 		val fldPosY = receiver.fieldY(engine, playerID)
-		val playerColor = if(playerID==0) COLOR.RED else COLOR.BLUE
+		val playerColor = EventReceiver.getPlayerColor(playerID)
 		val tempX:Int
 
 		// Timer
@@ -609,8 +609,8 @@ class PhysicianVS:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
-		if(engine.field==null) return
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+		if(engine.field==null) return 0
 		var gemsCleared = engine.field!!.gemsCleared
 		if(gemsCleared>0&&lines>0) {
 			var pts = 0
@@ -628,11 +628,13 @@ class PhysicianVS:AbstractMode() {
 			score[playerID] += pts
 			engine.playSE("gem")
 			setSpeed(engine)
+			return pts
 		} else if(lines==0&&!engine.field!!.canCascade())
 			if(garbageCheck(engine, playerID)) {
 				engine.stat = GameEngine.Status.LINECLEAR
 				engine.statc[0] = engine.lineDelay
 			}
+		return 0
 	}
 
 	/** Set the gravity rate

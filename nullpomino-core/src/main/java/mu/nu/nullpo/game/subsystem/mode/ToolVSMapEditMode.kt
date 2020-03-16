@@ -88,7 +88,7 @@ class ToolVSMapEditMode:AbstractMode() {
 	 * @param setID MapSetID
 	 */
 	private fun loadAllMaps(setID:Int) {
-		propMap = receiver.loadProperties("config/values/vsbattle/$setID.values")?:CustomProperties()
+		propMap = receiver.loadProperties("config/map/vsbattle/$setID.map")?:CustomProperties()
 
 		listFields!!.clear()
 
@@ -112,7 +112,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		for(i in 0 until maxMap)
 			saveMap(listFields!![i], propMap, i)
 
-		receiver.saveProperties("config/values/vsbattle/$setID.values", propMap)
+		receiver.saveProperties("config/map/vsbattle/$setID.map", propMap)
 	}
 
 	private fun grayToRandomColor(field:Field) {
@@ -162,7 +162,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		}
 
 		// 決定
-		if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+		if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 			engine.playSE("decide")
 
 			if(menuCursor==0)
@@ -205,7 +205,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		}
 
 		// 終了
-		if(engine.ctrl!!.isPress(Controller.BUTTON_D)&&engine.ctrl!!.isPress(Controller.BUTTON_E)&&menuTime>=5)
+		if(engine.ctrl.isPress(Controller.BUTTON_D)&&engine.ctrl.isPress(Controller.BUTTON_E)&&menuTime>=5)
 			engine.quitflag = true
 
 		menuTime++

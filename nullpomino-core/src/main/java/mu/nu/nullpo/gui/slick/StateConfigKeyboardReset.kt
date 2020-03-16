@@ -48,13 +48,13 @@ class StateConfigKeyboardReset:DummyMenuChooseState() {
 		GameKey.gamekey[player].saveConfig(NullpoMinoSlick.propConfig)
 		NullpoMinoSlick.saveConfig()
 		game.enterState(StateConfigMainMenu.ID)
-		return false
+		return true
 	}
 
 	/* Cancel */
 	override fun onCancel(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		game.enterState(StateConfigMainMenu.ID)
-		return false
+		return true
 	}
 
 	companion object {

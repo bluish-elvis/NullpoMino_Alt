@@ -90,10 +90,11 @@ open class BasicAI:DummyAI(), Runnable {
 		thinking = false
 		threadRunning = false
 
-		if((thread==null||!thread!!.isAlive)&&engine.aiUseThread) {
-			thread = Thread(this, "AI_$playerID")
-			thread!!.isDaemon = true
-			thread!!.start()
+		if(thread?.isAlive!=true&&engine.aiUseThread) {
+			thread = Thread(this, "AI_$playerID").apply {
+				isDaemon = true
+				start()
+			}
 			thinkDelay = engine.aiThinkDelay
 			thinkCurrentPieceNo = 0
 			thinkLastPieceNo = 0
@@ -102,8 +103,8 @@ open class BasicAI:DummyAI(), Runnable {
 
 	/* End processing */
 	override fun shutdown(engine:GameEngine, playerID:Int) {
-		if(thread!=null&&thread!!.isAlive) {
-			thread!!.interrupt()
+		if(thread?.isAlive==true) {
+			thread?.interrupt()
 			threadRunning = false
 			thread = null
 		}
@@ -465,9 +466,9 @@ open class BasicAI:DummyAI(), Runnable {
 		val needIValleyBefore = fld.totalValleyNeedIPiece
 		// Field height (before placement)
 		val heightBefore = fld.highestBlockY
-		// T-Spin flag
-		var tspin = false
-		if(piece.id==Piece.PIECE_T&&rtOld!=-1&&fld.isTSpinSpot(x, y, piece.big)) tspin = true
+		// Twister flag
+		var twist = false
+		if(piece.id==Piece.PIECE_T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) twist = true
 
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) return 0
@@ -496,7 +497,7 @@ open class BasicAI:DummyAI(), Runnable {
 			y*20
 
 		// LinescountAdditional points in
-		if(lines==1&&!danger&&depth==0&&heightAfter>=16&&holeBefore<3&&!tspin&&engine.combo<1) return 0
+		if(lines==1&&!danger&&depth==0&&heightAfter>=16&&holeBefore<3&&!twist&&engine.combo<1) return 0
 		if(!danger&&depth==0) {
 			if(lines==1) pts += 10
 			if(lines==2) pts += 50
@@ -539,8 +540,8 @@ open class BasicAI:DummyAI(), Runnable {
 				else
 					(lidBefore-lidAfter)*20
 
-			if(tspin&&lines>=1)
-			// T-Spin bonus
+			if(twist&&lines>=1)
+			// Twister bonus
 				pts += 100000*lines
 
 			if(needIValleyAfter>needIValleyBefore&&needIValleyAfter>=2) {

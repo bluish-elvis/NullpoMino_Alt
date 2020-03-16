@@ -37,10 +37,13 @@ class Field:Serializable {
 
 	/** fieldの幅 */
 	var width:Int = DEFAULT_WIDTH; private set
+
 	/** Field height */
 	var height:Int = DEFAULT_HEIGHT; private set
+
 	/** fieldより上の見えない部分の高さ */
 	var hiddenHeight:Int = DEFAULT_HIDDEN_HEIGHT; private set
+
 	/** 天井の有無 */
 	var ceiling:Boolean = false
 
@@ -52,16 +55,16 @@ class Field:Serializable {
 	 * any visible effects outside this function. -Kitaru */
 
 	/** fieldのBlock */
-	private var blockField:Array<Array<Block?>> = emptyArray()
+	private var blockField:Array<Array<Block?>> = Array(height) {arrayOfNulls<Block>(width)}; private set
 
 	/** field上の見えない部分のBlock */
-	private var blockHidden:Array<Array<Block?>> = emptyArray()
+	private var blockHidden:Array<Array<Block?>> = Array(hiddenHeight) {arrayOfNulls<Block>(width)}; private set
 
 	/** Line clear flag */
-	private var lineflagField:BooleanArray = BooleanArray(height)
+	private var lineflagField:BooleanArray = BooleanArray(height); private set
 
 	/** 見えない部分のLine clear flag */
-	private var lineflagHidden:BooleanArray = BooleanArray(hiddenHeight)
+	private var lineflagHidden:BooleanArray = BooleanArray(hiddenHeight); private set
 
 	/** HURRY UP地面のcount */
 	var hurryupFloorLines:Int = 0; private set
@@ -70,24 +73,24 @@ class Field:Serializable {
 	var colorClearExtraCount:Int = 0
 
 	/** Number of different colors in simultaneous cint clears */
-	var colorsCleared:Int = 0
+	var colorsCleared:Int = 0; private set
 
 	/** Number of gems cleared in last cint or line cint clear */
-	var gemsCleared:Int = 0
+	var gemsCleared:Int = 0; private set
 
 	/** Number of garbage blocks cleared in last cint clear */
-	var garbageCleared:Int = 0
+	var garbageCleared:Int = 0; private set
 
 	/** List of colors of lines cleared in most recent line cint clear */
 	var lineColorsCleared:IntArray = IntArray(0)
 
 	/** List of last rows cleared in most recent horizontal line clear. */
-	var lastLinesCleared:Array<Array<Block?>> = emptyArray()
-	var lastLinesHeight:IntArray = IntArray(0)
+	var lastLinesCleared:Array<Array<Block?>> = emptyArray(); private set
+	var lastLinesHeight:IntArray = IntArray(0); private set
 
-	var lastLinesSplited:Boolean = false
+	var lastLinesSplited:Boolean = false; private set
 
-	var lastexplodedbombs:Boolean = false
+	var lastexplodedbombs:Boolean = false; private set
 
 	/** Used for TGM garbage, can later be extended to all types */
 	// public ArrayList<Block[]> pendingGarbage;
@@ -100,6 +103,7 @@ class Field:Serializable {
 
 	val lastLinesTop:Int get() = lastLinesHeight.min() ?: height
 	val lastLinesBottom:Int get() = lastLinesHeight.max() ?: 0
+
 	/** 消えるLinescountを数える
 	 * @return Linescount
 	 */
@@ -109,108 +113,59 @@ class Field:Serializable {
 	 * @return All clearだったらtrue
 	 */
 	val isEmpty:Boolean
-		get() {
-			(hiddenHeight*-1 until heightWithoutHurryupFloor).forEach {i ->
-				if(!getLineFlag(i))
-					for(j in 0 until width)
-						if(!getBlockEmpty(j, i)) {
-							val b = getBlock(j, i)
-							if(b?.getAttribute(ATTRIBUTE.ERASE)!=true) return false
-						}
-			}
-
-			return true
-		}
-
-	val howManyBlocksCovered:Int
-		get() {
-			var blocksCovered = 0
-
-			for(j in 0 until width) {
-
-				val highestBlockY = getHighestBlockY(j)
-				for(i in highestBlockY until heightWithoutHurryupFloor)
-					if(!getLineFlag(i))
-
-						if(getBlockEmpty(j, i)) blocksCovered++
-
-			}
-
-			return blocksCovered
-		}
+		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor).filter {!getLineFlag(it)}
+			.all {getRow(it).all {b -> b?.getAttribute(ATTRIBUTE.ERASE) ?: true}}
 
 	/** field内に何個のBlockがあるか調べる
 	 * @return field内にあるBlockのcount
 	 */
 	val howManyBlocks:Int
-		get() {
-			var count = 0
-
-			for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
-				if(!getLineFlag(i))
-					for(j in 0 until width)
-						if(!getBlockEmpty(j, i)) count++
-
-			return count
-		}
+		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
+			.filter {!getLineFlag(it)}
+			.sumBy {getRow(it).count {b -> b?.isEmpty==false}}
 
 	/** 左から何個のBlockが並んでいるか調べる
 	 * @return 左から並んでいるBlockの総count
 	 */
 	val howManyBlocksFromLeft:Int
-		get() {
-			var count = 0
-
-			for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
-				if(!getLineFlag(i))
-					for(j in 0 until width)
-						if(!getBlockEmpty(j, i)) count++
-						else break
-
-			return count
-		}
+		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
+			.filter {!getLineFlag(it)}
+			.sumBy {getRow(it).takeWhile {b -> b?.isEmpty==false}.size}
 
 	/** 右から何個のBlockが並んでいるか調べる
 	 * @return 右から並んでいるBlockの総count
 	 */
 	val howManyBlocksFromRight:Int
-		get() {
-			var count = 0
-
-			for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
-				if(!getLineFlag(i))
-					for(j in width-1 downTo 1)
-						if(!getBlockEmpty(j, i)) count++
-						else break
-
-			return count
-		}
+		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
+			.filter {!getLineFlag(it)}
+			.sumBy {getRow(it).takeLastWhile {b -> b?.isEmpty==false}.size}
 
 	/** 一番上にあるBlockのY-coordinateを取得
 	 * @return 一番上にあるBlockのY-coordinate
 	 */
 	val highestBlockY:Int
-		get() {
-			for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
-				if(!getLineFlag(i))
-					for(j in 0 until width)
-						if(!getBlockEmpty(j, i)) return i
-
-			return height
-		}
+		get() =
+			(hiddenHeight*-1 until heightWithoutHurryupFloor)
+				.filter {!getLineFlag(it)}
+				.firstOrNull {getRow(it).filterNotNull().any {b -> !b.isEmpty}} ?: height
 
 	/** garbage blockが最初に現れるY-coordinateを取得
 	 * @return garbage blockが最初に現れるY-coordinate
 	 */
 	val highestGarbageBlockY:Int
-		get() {
-			for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
-				if(!getLineFlag(i))
-					for(j in 0 until width)
-						if(!getBlockEmpty(j, i)&&getBlock(j, i)!!.getAttribute(ATTRIBUTE.GARBAGE)) return i
+		get() =
+			(hiddenHeight*-1 until heightWithoutHurryupFloor)
+				.filter {!getLineFlag(it)}
+				.firstOrNull {getRow(it).filterNotNull().any {b -> b.getAttribute(ATTRIBUTE.GARBAGE)}} ?: height
 
-			return height
+	val howManyBlocksCovered:Int
+		get() = (0 until width).sumBy {j ->
+			(getHighestBlockY(j) until heightWithoutHurryupFloor)
+				.filter {!getLineFlag(it)}
+				.count {getBlockEmpty(j, it)}
 		}
+
+	val danger:Boolean get() = (howManyBlocks+howManyLidAboveHoles)*5/(width*heightWithoutHurryupFloor)>=4
 
 	/** field内の隙間のcountを調べる
 	 * @return field内の隙間のcount
@@ -322,9 +277,8 @@ class Field:Serializable {
 	 * @return 宝石Blockのcount
 	 */
 	val howManyGems:Int
-		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor).sumBy {i ->
-			(0 until width).count {getBlock(it, i)?.isGemBlock ?: false}
-		}
+		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
+			.sumBy {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
 
 	/** 宝石Blockがいくつ消えるか取得
 	 * @return 消える宝石Blockのcount
@@ -332,28 +286,18 @@ class Field:Serializable {
 	val howManyGemClears:Int
 		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
 			.filter {getLineFlag(it)}
-			.sumBy {
-				(0 until width).count {j -> getBlock(j, it)?.isGemBlock ?: false}
-			}
+			.sumBy {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
 
 	/** Checks for item blocks cleared
 	 * @return A boolean array with true at each index for which an item block
 	 * of the corresponding ID number was cleared
 	 */
 	val itemClears:BooleanArray
-		get() {
-			val result = BooleanArray(Block.MAX_ITEM+1)
-
-			for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
-				if(getLineFlag(i))
-					for(j in 0 until width) {
-						getBlock(j, i)?.let {blk ->
-							if(blk.item>0&&blk.item<=Block.MAX_ITEM) result[blk.item] = true
-						}
-					}
-
-			return result
+		get() = BooleanArray(Block.MAX_ITEM+1) {item ->
+			(hiddenHeight*-1 until heightWithoutHurryupFloor)
+				.filter {getLineFlag(it)}.any {i -> getRow(i).any {b -> b?.item==item}}
 		}
+
 	/** Garbageを含むラインがいくつ消えるか取得
 	 * @return 消去予定のGarbageを含むライン数
 	 */
@@ -361,9 +305,7 @@ class Field:Serializable {
 	val howManyGarbageLineClears:Int
 		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
 			.filter {getLineFlag(it)}.count {
-				(0 until width).any {j ->
-					getBlock(j, it)?.getAttribute(ATTRIBUTE.GARBAGE)==true
-				}
+				getRow(it).filterNotNull().any {b -> b.getAttribute(ATTRIBUTE.GARBAGE)}
 			}
 
 	/** Checks the lines that are currently being cleared to see how many strips
@@ -455,8 +397,8 @@ class Field:Serializable {
 			hiddenHeight = o.hiddenHeight
 			ceiling = o.ceiling
 
-			blockField = o.blockField.clone()
-			blockHidden = o.blockHidden.clone()
+			blockField = o.blockField.map {x -> x.map {y -> y?.let {Block(it)}}.toTypedArray()}.toTypedArray()
+			blockHidden = o.blockHidden.map {x -> x.map {y -> y?.let {Block(it)}}.toTypedArray()}.toTypedArray()
 			lineflagField = o.lineflagField.clone()
 			lineflagHidden = o.lineflagField.clone()
 			hurryupFloorLines = o.hurryupFloorLines
@@ -468,7 +410,7 @@ class Field:Serializable {
 			lineColorsCleared = o.lineColorsCleared.clone()
 			lastLinesCleared = o.lastLinesCleared.clone()
 			garbageCleared = o.garbageCleared
-			lastLinesHeight = o.lastLinesHeight.map {it}.toIntArray()
+			lastLinesHeight = o.lastLinesHeight.clone()
 			lastLinesSplited = o.lastLinesSplited
 
 			explodHeight = o.explodHeight
@@ -532,41 +474,25 @@ class Field:Serializable {
 		else -> COORD_VANISH// 置いたBlockが消える
 	}
 
-	/** @param y height of the row in the field
-	 * @return a reference to the row
+	/** 指定された座標にBlockが置けるかを取得
+	 * @param x X-coordinate
+	 * @param y Y-coordinate
+	 * @return Blockが置ける座標ならtrue
 	 */
-	fun getRow(y:Int):Array<Block?>? = try {
-		getRowE(y)
-	} catch(e:ArrayIndexOutOfBoundsException) {
-		null
-	}
+	fun getCoordVaild(x:Int, y:Int):Boolean = getCoordAttribute(x, y).let {it==COORD_NORMAL||it==COORD_HIDDEN}
 
 	/** @param y height of the row in the field
 	 * @return a reference to the row
 	 */
-	@Throws(ArrayIndexOutOfBoundsException::class)
-	fun getRowE(y:Int):Array<Block?> = if(y>=0) blockField[y]
-	else blockHidden[y*-1-1]// field外
+	fun getRow(y:Int):Array<Block?> = (if(y>=0) blockField.getOrNull(y)
+	else blockHidden.getOrNull(y*-1-1)) ?: arrayOfNulls<Block?>(10)
 
 	/** 指定した座標にあるBlockを取得
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @return 成功したら指定した座標にあるBlockオブジェクト, 失敗したらnull
 	 */
-	fun getBlock(x:Int, y:Int):Block? = try {
-		getBlockE(x, y)
-	} catch(e:ArrayIndexOutOfBoundsException) {
-		null
-	}
-
-	/** 指定した座標にあるBlockを取得 (失敗したら例外送出）
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @return 指定した座標にあるBlockオブジェクト
-	 * @throws ArrayIndexOutOfBoundsException 指定した座標が範囲外
-	 */
-	@Throws(ArrayIndexOutOfBoundsException::class)
-	fun getBlockE(x:Int, y:Int):Block? = getRowE(y)[x]
+	fun getBlock(x:Int, y:Int):Block? = getRow(y).getOrNull(x)
 
 	/** Set block to specific location
 	 * @param x X-coordinate
@@ -574,38 +500,16 @@ class Field:Serializable {
 	 * @param blk Block
 	 * @return true if successful, false if failed
 	 */
-	fun setBlock(x:Int, y:Int, blk:Block?):Boolean = try {
-		setBlockE(x, y, blk)
-		true
-	} catch(e:ArrayIndexOutOfBoundsException) {
-		false
-	} catch(e:NullPointerException) {
-		false
-	}
-
-	/** Set block to specific location (Throws exception when fails)
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param blk Block
-	 * @throws ArrayIndexOutOfBoundsException When the coordinate is invalid
-	 */
-	@Throws(ArrayIndexOutOfBoundsException::class)
-	fun setBlockE(x:Int, y:Int, blk:Block?) {
+	fun setBlock(x:Int, y:Int, blk:Block?):Boolean = if(getCoordVaild(x, y)) try {
 		if(y<0) {
 			if((getBlock(x, y)?.copy(blk))==null) blockHidden[y*-1-1][x] = Block(blk)
 		} else if((getBlock(x, y)?.copy(blk))==null) blockField[y][x] = Block(blk)
+		true
+	} catch(e:Throwable) {
+		log.error("setBlock($x,$y)", e)
+		false
 	}
-
-	/** 指定した座標にあるBlock colorを取得
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @return 指定した座標にあるBlock cint (失敗したらBLOCK_COLOR_INVALID）
-	 */
-	fun getBlockColor(x:Int, y:Int):Int = try {
-		getBlockColorE(x, y)
-	} catch(e:ArrayIndexOutOfBoundsException) {
-		Block.BLOCK_COLOR_INVALID
-	}
+	else false
 
 	/** 指定した座標にあるBlock colorを取得
 	 * @param x X-coordinate
@@ -614,17 +518,10 @@ class Field:Serializable {
 	 * corresponding normal block.
 	 * @return 指定した座標にあるBlock cint (失敗したらBLOCK_COLOR_INVALID）
 	 */
-	fun getBlockColor(x:Int, y:Int, gemSame:Boolean):Int =
-		if(gemSame) Block.gemToNormalColor(getBlockColor(x, y)) else getBlockColor(x, y)
-
-	/** 指定した座標にあるBlock colorを取得 (失敗したら例外送出）
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @return 指定した座標にあるBlock cint
-	 * @throws ArrayIndexOutOfBoundsException 指定した座標が範囲外
-	 */
-	@Throws(ArrayIndexOutOfBoundsException::class)
-	fun getBlockColorE(x:Int, y:Int):Int = getBlockE(x, y)?.cint ?: Block.BLOCK_COLOR_NONE
+	fun getBlockColor(x:Int, y:Int, gemSame:Boolean = false):Int =
+		if(getCoordVaild(x, y)) (getBlock(x, y)?.cint ?: Block.BLOCK_COLOR_NONE)
+			.let {if(gemSame) Block.gemToNormalColor(it) else it}
+		else Block.BLOCK_COLOR_INVALID
 
 	/** 指定した座標にあるBlock colorを変更
 	 * @param x X-coordinate
@@ -632,248 +529,115 @@ class Field:Serializable {
 	 * @param c 色
 	 * @return true if successful, false if failed
 	 */
-	fun setBlockColor(x:Int, y:Int, c:Int):Boolean = try {
-		setBlockColorE(x, y, c)
-		true
-	} catch(e:ArrayIndexOutOfBoundsException) {
-		false
-	}
-
-	/** 指定した座標にあるBlock colorを変更 (失敗したら例外送出）
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param c 色
-	 * @throws ArrayIndexOutOfBoundsException 指定した座標が範囲外
-	 */
-	@Throws(ArrayIndexOutOfBoundsException::class)
-	fun setBlockColorE(x:Int, y:Int, c:Int) {
-		if(getBlockE(x, y)?.also {it.cint = c}==null&&c>=1) blockField[y][x] = Block(c)
-	}
-
-	/** 指定した座標にあるBlock colorを変更 (失敗したら例外送出）
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param c 色
-	 * @throws ArrayIndexOutOfBoundsException 指定した座標が範囲外
-	 */
-	@Throws(ArrayIndexOutOfBoundsException::class)
-	fun setBlockColorE(x:Int, y:Int, c:Block.COLOR) {
-		if(getBlockE(x, y)?.also {it.color = c}==null) blockField[y][x] = Block(c)
-	}
+	fun setBlockColor(x:Int, y:Int, c:Int):Boolean =
+		if(getCoordVaild(x, y))
+			if(getBlock(x, y)?.also {it.cint = c}==null&&c>=1) setBlock(x, y, Block(c)) else true
+		else false
 
 	/** Line clear flagを取得
 	 * @param y Y-coordinate
 	 * @return 消える列ならtrue, そうでないなら (もしくは座標が範囲外なら）false
 	 */
 	fun getLineFlag(y:Int):Boolean =
-		if(y>=0)// field内
-			try {
-				lineflagField[y]
-			} catch(e:ArrayIndexOutOfBoundsException) {
-				false
-			}
-		else try {
-			lineflagHidden[y*-1-1]
-		} catch(e:ArrayIndexOutOfBoundsException) {
-			false
-		}
+		(if(y>=0) lineflagField.getOrNull(y)
+		else lineflagHidden.getOrNull(y*-1-1)) ?: false
 
 	/** 指定した座標にあるBlockが空白かどうか判定
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @return 指定した座標にあるBlockが空白ならtrue (指定した座標が範囲外の場合もtrue）
 	 */
-	fun getBlockEmpty(x:Int, y:Int):Boolean = try {
-		getBlockEmptyE(x, y)
-	} catch(e:ArrayIndexOutOfBoundsException) {
-		true
-	}
+	fun getBlockEmpty(x:Int, y:Int, ob:Boolean = true):Boolean = if(getCoordVaild(x, y)) getBlock(x, y)?.isEmpty ?: true
+	else ob
 
 	/** 指定した座標にあるBlockが空白かどうか判定 (指定した座標が範囲外の場合はfalse）
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @return 指定した座標にあるBlockが空白ならtrue (指定した座標が範囲外の場合はfalse）
 	 */
-	fun getBlockEmptyF(x:Int, y:Int):Boolean = try {
-		getBlockEmptyE(x, y)
-	} catch(e:ArrayIndexOutOfBoundsException) {
-		false
-	}
-
-	/** 指定した座標にあるBlockが空白かどうか判定 (失敗したら例外送出）
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @return 指定した座標にあるBlockが空白ならtrue
-	 * @throws ArrayIndexOutOfBoundsException 指定した座標が範囲外
-	 */
-	@Throws(ArrayIndexOutOfBoundsException::class)
-	fun getBlockEmptyE(x:Int, y:Int):Boolean = getBlockE(x, y)?.isEmpty ?: true
-
-	/** Line clear flagを取得 (失敗したら例外送出）
-	 * @param y Y-coordinate
-	 * @return 消える列ならtrue, そうでないならfalse
-	 * @throws ArrayIndexOutOfBoundsException 指定した座標が範囲外
-	 */
-	@Throws(ArrayIndexOutOfBoundsException::class)
-	fun getLineFlagE(y:Int):Boolean =
-		if(y>=0) lineflagField[y]// field内
-		else lineflagHidden[y*-1-1]// field外
+	fun getBlockEmptyF(x:Int, y:Int):Boolean = getBlockEmpty(x, y, false)
 
 	/** Line clear flagを設定
 	 * @param y Y-coordinate
 	 * @param flag 設定するLine clear flag
 	 * @return true if successful, false if failed
 	 */
-	fun setLineFlag(y:Int, flag:Boolean):Boolean =
+	fun setLineFlag(y:Int, flag:Boolean):Boolean = try {
 		if(y>=0)// field内
-			try {
-				lineflagField[y] = flag
-				true
-			} catch(e:ArrayIndexOutOfBoundsException) {
-				false
-			}
-		else try {
-			lineflagHidden[y*-1-1] = flag
-			true
-		} catch(e:ArrayIndexOutOfBoundsException) {
-			false
-		}
-
-	/** Line clear flagを設定 (失敗したら例外送出）
-	 * @param y Y-coordinate
-	 * @param flag 設定するLine clear flag
-	 * @throws ArrayIndexOutOfBoundsException 指定した座標が範囲外
-	 */
-	@Throws(ArrayIndexOutOfBoundsException::class)
-	fun setLineFlagE(y:Int, flag:Boolean) =
-		if(y>=0) lineflagField[y] = flag// field内
+			lineflagField[y] = flag
 		else lineflagHidden[y*-1-1] = flag
+		true
+	} catch(e:ArrayIndexOutOfBoundsException) {
+		false
+	}
 
 	/** Line clear check
 	 * @return 消えるLinescount
 	 */
 	fun checkLine():Int {
-		var lines = 0
+		val lines = checkLinesNoFlag()
+		lastLinesCleared = lines.map {getRow(it)}.toTypedArray()
+		lastLinesHeight = lines
+
 		lastLinesSplited = false
-		var inv = lastLinesSplited
-		lastLinesCleared = emptyArray()
-		lastLinesHeight = IntArray(0)
-
-
+		var inv = false
 		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor) {
-			val flag = !(0 until width).any {
-				getBlockEmpty(it, i)||getBlock(it, i)?.getAttribute(ATTRIBUTE.WALL) ?: true
-			}
-
+			val flag = lines.any {it==i}
 			setLineFlag(i, flag)
 			if(flag) {
-				lastLinesCleared += getRowE(i)
-				lastLinesHeight += i
-				lines++
 				if(inv) lastLinesSplited = true
-				for(j in 0 until width)
-					getBlock(j, i)!!.setAttribute(true, ATTRIBUTE.ERASE)
-			} else if(lines>=1) inv = true
+				getRow(i).forEach {
+					it?.setAttribute(true, ATTRIBUTE.ERASE)
+				}
+			} else if(i>=lines.sortedArray()[0]) inv = true
 		}
-
-		return lines
+		return lines.size
 	}
 
 	/** Line clear check (消去 flagの設定とかはしない）
 	 * @return 消えるLinescount
 	 */
-	fun checkLineNoFlag():Int {
-		var lines = 0
-		garbageCleared = 0
-
-		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor) {
-			var flag = true
-			var g = false
-
-			for(j in 0 until width)
-				if(getBlockEmpty(j, i)||getBlock(j, i)!!.getAttribute(ATTRIBUTE.WALL)) {
-					flag = false
-					break
-				} else if(getBlock(j, i)!!.getAttribute(ATTRIBUTE.GARBAGE))
-					g = true
-
-			if(flag) {
-				lines++
-				if(g) garbageCleared++
-			}
-		}
-
-		return lines
-	}
+	fun checkLineNoFlag():Int = checkLinesNoFlag().size
 
 	fun checkLinesNoFlag():IntArray {
-		val lines = ArrayList<Int>(height)
-
-		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor) {
-			var flag = true
-			var g = false
-
-			for(j in 0 until width)
-				if(getBlockEmpty(j, i)||getBlock(j, i)!!.getAttribute(ATTRIBUTE.WALL)) {
-					flag = false
-					break
-				} else if(getBlock(j, i)!!.getAttribute(ATTRIBUTE.GARBAGE))
-					g = true
-			if(flag) {
-				lines.add(i)
-				if(g) garbageCleared++
+		val lines = (hiddenHeight*-1 until heightWithoutHurryupFloor)
+			.filter {
+				getRow(it).all {b -> b?.isEmpty==false&&!b.getAttribute(ATTRIBUTE.WALL)}
 			}
+		garbageCleared = lines.count {
+			getRow(it).any {b -> b?.getAttribute(ATTRIBUTE.GARBAGE)==true}
 		}
-
-		return lines.stream().sorted().mapToInt {x -> x}.toArray()
+		return lines.toIntArray()
 	}
 
 	/** Linesを消す
 	 * @return 消えたLinescount
 	 */
 	fun clearLine():Int {
-		var lines = 0
-		garbageCleared = 0
-		var g = false
+		val lines = checkLinesNoFlag()
 		// field内
-		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
-			if(getLineFlag(i)) {
-				lines++
-				for(j in 0 until width) {
-					val b = getBlock(j, i) ?: continue
-					g = b.getAttribute(ATTRIBUTE.GARBAGE)
-					if(b.hard>0) {
-						b.hard--
-						setLineFlag(i, false)
-					} else
-						setBlockColor(j, i, Block.BLOCK_COLOR_NONE)
-				}
-				if(g) garbageCleared++
+		lines.forEach {i ->
+			getRow(i).filterNotNull().forEach {
+				if(it.hard>0) {
+					it.hard--
+					setLineFlag(i, false)
+				} else it.color = null
 			}
-
-		// 消えたLinesの上下のBlockの結合を解除
-		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor) {
-			if(getLineFlag(i-1))
-				for(j in 0 until width) {
-					val blk = getBlock(j, i)
-
-					if(blk!=null&&blk.getAttribute(ATTRIBUTE.CONNECT_UP)) {
-						blk.setAttribute(false, ATTRIBUTE.CONNECT_UP)
-						setBlockLinkBroken(j, i)
-					}
+			// 消えたLinesの上下のBlockの結合を解除
+			getRow(i+1).filterNotNull().forEachIndexed {j, blk ->
+				if(blk.getAttribute(ATTRIBUTE.CONNECT_UP)) {
+					blk.setAttribute(false, ATTRIBUTE.CONNECT_UP)
+					setBlockLinkBroken(j, i)
 				}
-			if(getLineFlag(i+1))
-				for(j in 0 until width) {
-					val blk = getBlock(j, i)
-
-					if(blk!=null&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
-						blk.setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
-						setBlockLinkBroken(j, i)
-					}
+			}
+			getRow(i-1).filterNotNull().forEachIndexed {j, blk ->
+				if(blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
+					blk.setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
+					setBlockLinkBroken(j, i)
 				}
+			}
 		}
-
-		return lines
+		return lines.size
 	}
 
 	/** 上にあったBlockをすべて下まで下ろす
@@ -895,10 +659,9 @@ class Field:Serializable {
 					}
 
 				// 一番上を空白にする
-				for(l in 0 until width) {
-					//val blk = Block()
+				for(l in 0 until width)
 					setBlock(l, hiddenHeight*-1, Block())
-				}
+
 				setLineFlag(hiddenHeight*-1, false)
 			} else y--
 
@@ -907,7 +670,7 @@ class Field:Serializable {
 
 	/** 上にあったBlockを1段だけ下ろす */
 	fun downFloatingBlocksSingleLine() {
-		var y = heightWithoutHurryupFloor-1
+		val y = heightWithoutHurryupFloor-1
 
 		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
 			if(getLineFlag(y)) {
@@ -925,7 +688,7 @@ class Field:Serializable {
 				}
 				setLineFlag(hiddenHeight*-1, false)
 				break
-			} else y--
+			}
 	}
 
 	/** Check if specified line is completely empty
@@ -935,13 +698,13 @@ class Field:Serializable {
 	 */
 	fun isEmptyLine(y:Int):Boolean = (0 until width).all {getBlockEmpty(it, y)}
 
-	/** T-Spinになる地形だったらtrue
+	/** Twisterになる地形だったらtrue
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param big Bigかどうか
-	 * @return T-Spinになる地形だったらtrue
+	 * @return Twisterになる地形だったらtrue
 	 */
-	fun isTSpinSpot(x:Int, y:Int, big:Boolean):Boolean {
+	fun isTwistSpot(x:Int, y:Int, big:Boolean):Boolean {
 		// 判定用相対座標を設定
 		val tx = IntArray(4)
 		val ty = IntArray(4)
@@ -976,11 +739,11 @@ class Field:Serializable {
 
 	}
 
-	/** T-Spinできそうな穴だったらtrue
+	/** Twisterできそうな穴だったらtrue
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param big Bigかどうか
-	 * @return T-Spinできそうな穴だったらtrue
+	 * @return Twisterできそうな穴だったらtrue
 	 */
 	fun isTSlot(x:Int, y:Int, big:Boolean):Boolean {
 		// 中央が埋まってると無理
@@ -1036,9 +799,9 @@ class Field:Serializable {
 
 	}
 
-	/** T-Spinできそうな穴が何個あるか調べる
+	/** Twisterできそうな穴が何個あるか調べる
 	 * @param big Bigだったらtrue
-	 * @return T-Spinできそうな穴のcount
+	 * @return Twisterできそうな穴のcount
 	 */
 	fun getHowManyTSlot(big:Boolean):Int {
 		var result = 0
@@ -1050,11 +813,11 @@ class Field:Serializable {
 		return result
 	}
 
-	/** T-Spinで消えるLinescountを返す
+	/** Twisterで消えるLinescountを返す
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param big Bigかどうか(未対応)
-	 * @return T-Spinで消えるLinescount(T-Spinじゃない場合などは0)
+	 * @return Twisterで消えるLinescount(Twisterじゃない場合などは0)
 	 */
 	fun getTSlotLineClear(x:Int, y:Int, big:Boolean):Int {
 		if(!isTSlot(x, y, big)) return 0
@@ -1077,48 +840,26 @@ class Field:Serializable {
 		return lines
 	}
 
-	/** T-Spinで消えるLinescountを返す(field全体)
+	/** Twisterで消えるLinescountを返す(field全体)
 	 * @param big Bigかどうか(未対応)
-	 * @return T-Spinで消えるLinescount(T-Spinじゃない場合などは0)
+	 * @param minimum 最低Linescount(2にするとTwister Doubleにだけ反応)
+	 * @return Twisterで消えるLinescount(Twisterじゃない場合やminimumに満たないLinesなどは0)
 	 */
-	fun getTSlotLineClearAll(big:Boolean):Int {
-		var result = 0
-		for(j in 0 until width)
-			for(i in 0 until heightWithoutHurryupFloor-2)
-				if(!getLineFlag(i)) result += getTSlotLineClear(j, i, big)
-
-		return result
-	}
-
-	/** T-Spinで消えるLinescountを返す(field全体)
-	 * @param big Bigかどうか(未対応)
-	 * @param minimum 最低Linescount(2にするとT-Spin Doubleにだけ反応)
-	 * @return T-Spinで消えるLinescount(T-Spinじゃない場合やminimumに満たないLinesなどは0)
-	 */
-	fun getTSlotLineClearAll(big:Boolean, minimum:Int):Int {
-		var result = 0
-
-		for(j in 0 until width)
-			for(i in 0 until heightWithoutHurryupFloor-2)
-				if(!getLineFlag(i)) {
-					val temp = getTSlotLineClear(j, i, big)
-
-					if(temp>=minimum) result += temp
-				}
-
-		return result
-	}
+	fun getTSlotLineClearAll(big:Boolean, minimum:Int = 0):Int = (0 until width)
+		.sumBy {j ->
+			(0 until heightWithoutHurryupFloor-2)
+				.filter {getLineFlag(it)&&getTSlotLineClear(j, it, big)>=minimum}
+				.sumBy {getTSlotLineClear(j, it, big)}
+		}
 
 	/** 一番上にあるBlockのY-coordinateを取得 (X-coordinateを指定できるVersion）
 	 * @param x X-coordinate
 	 * @return 一番上にあるBlockのY-coordinate
 	 */
-	fun getHighestBlockY(x:Int):Int {
-		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
-			if(!getLineFlag(i)) if(!getBlockEmpty(x, i)) return i
-
-		return height
-	}
+	fun getHighestBlockY(x:Int):Int =
+		(hiddenHeight*-1 until heightWithoutHurryupFloor)
+			.firstOrNull {!getLineFlag(it)&&!getBlockEmpty(x, it)}
+			?: height
 
 	/** 指定した座標の下に隙間があるか調べる
 	 * @param x X-coordinate
@@ -1155,9 +896,7 @@ class Field:Serializable {
 			for(i in hiddenHeight*-1 until heightWithoutHurryupFloor-1)
 			// Blockを1段下からコピー
 				for(j in 0 until width) {
-					var blk = getBlock(j, i+1)
-					if(blk==null) blk = Block()
-					setBlock(j, i, blk)
+					setBlock(j, i, getBlock(j, i+1) ?: Block())
 					setLineFlag(i, getLineFlag(i+1))
 				}
 
@@ -1199,11 +938,7 @@ class Field:Serializable {
 	fun cutLine(y:Int, lines:Int) {
 		for(k in 0 until lines) {
 			for(i in y downTo hiddenHeight*-1+1) {
-				for(j in 0 until width) {
-					var blk = getBlock(j, i-1)
-					if(blk==null) blk = Block()
-					setBlock(j, i, blk)
-				}
+				for(j in 0 until width) setBlock(j, i, getBlock(j, i-1) ?: Block())
 				setLineFlag(i, getLineFlag(i+1))
 			}
 
@@ -1226,13 +961,11 @@ class Field:Serializable {
 			pushUp(1)
 
 			for(j in 0 until width)
-				if(j!=hole) {
-					val blk = Block()
-					blk.cint = color
-					blk.skin = skin
-					blk.aint = attribute
-					setBlock(j, heightWithoutHurryupFloor-1, blk)
-				}
+				if(j!=hole) setBlock(j, heightWithoutHurryupFloor-1, Block().apply {
+					cint = color
+					this.skin = skin
+					aint = attribute
+				})
 
 		}
 	}
@@ -1274,13 +1007,8 @@ class Field:Serializable {
 		for(k in 0 until lines) {
 			pushUp(1)
 
-			for(j in 0 until width) {
-				val empty = getBlockEmpty(j, height-2)
-
-				if(!empty) {
-					val blk = Block(Block.COLOR.WHITE, skin, *attrs)
-					setBlock(j, heightWithoutHurryupFloor-1, blk)
-				}
+			for(j in 0 until width) if(!getBlockEmpty(j, height-2)) {
+				setBlock(j, heightWithoutHurryupFloor-1, Block(Block.COLOR.WHITE, skin, *attrs))
 			}
 		}
 	}
@@ -1316,24 +1044,25 @@ class Field:Serializable {
 		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor-1)
 			for(j in 0 until width-1) {
 				// rootBlk is the upper-left square
-				val rootBlk = getBlock(j, i)
-				var squareCheck = false
-				/* id is the cint of the top-left square: if it is a
-				 * monosquare, every block in the 4x4 area will have this
-				 * cint. */
-				if(rootBlk!=null&&rootBlk.isGemBlock) {
-					squareCheck = true
-					for(k in 1..4) {
-						val blk = getBlock(j+1, i)
-						if(blk==null||blk.isEmpty||!blk.isGemBlock||
-							blk.cint==Block.BLOCK_COLOR_GEM_RAINBOW) {
-							squareCheck = false
-							break
+				getBlock(j, i)?.let {rootBlk ->
+					var squareCheck = false
+					/* id is the cint of the top-left square: if it is a
+					 * monosquare, every block in the 4x4 area will have this
+					 * cint. */
+					if(rootBlk.isGemBlock) {
+						squareCheck = true
+						for(k in 1..4) {
+							val blk = getBlock(j+1, i)
+							if(blk==null||blk.isEmpty||!blk.isGemBlock||
+								blk.cint==Block.BLOCK_COLOR_GEM_RAINBOW) {
+								squareCheck = false
+								break
+							}
 						}
 					}
-				}
-				if(squareCheck) {
-
+					if(squareCheck) {
+						//TODO: Gain Big Bomb
+					}
 				}
 			}
 
@@ -1397,15 +1126,13 @@ class Field:Serializable {
 					val squareX = intArrayOf(0, 1, 1, 2)
 					val squareY = intArrayOf(0, 3, 3, 6)
 					for(k in 0..3)
-						for(l in 0..3) {
-							val blk = getBlock(j+l, i+k)
-							blk!!.cint = Block.BLOCK_COLOR_SQUARE_GOLD_1+squareX[l]+squareY[k]
-							// For stylistic concerns, we attach all blocks in
-							// the square together.
-							if(k>0) blk.setAttribute(true, ATTRIBUTE.CONNECT_UP)
-							if(k<3) blk.setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
-							if(l>0) blk.setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
-							if(l<3) blk.setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
+						for(l in 0..3) getBlock(j+l, i+k)?.apply {
+							cint = Block.BLOCK_COLOR_SQUARE_GOLD_1+squareX[l]+squareY[k]
+							// For stylistic concerns, we attach all blocks in the square together.
+							if(k>0) setAttribute(true, ATTRIBUTE.CONNECT_UP)
+							if(k<3) setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
+							if(l>0) setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
+							if(l<3) setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
 						}
 				}
 			}
@@ -1443,13 +1170,12 @@ class Field:Serializable {
 					val squareX = intArrayOf(0, 1, 1, 2)
 					val squareY = intArrayOf(0, 3, 3, 6)
 					for(k in 0..3)
-						for(l in 0..3) {
-							val blk = getBlock(j+l, i+k)
-							blk!!.cint = Block.BLOCK_COLOR_SQUARE_SILVER_1+squareX[l]+squareY[k]
-							if(k>0) blk.setAttribute(true, ATTRIBUTE.CONNECT_UP)
-							if(k<3) blk.setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
-							if(l>0) blk.setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
-							if(l<3) blk.setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
+						for(l in 0..3) getBlock(j+l, i+k)?.apply {
+							cint = Block.BLOCK_COLOR_SQUARE_SILVER_1+squareX[l]+squareY[k]
+							if(k>0) setAttribute(true, ATTRIBUTE.CONNECT_UP)
+							if(k<3) setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
+							if(l>0) setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
+							if(l<3) setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
 						}
 				}
 			}
@@ -1477,11 +1203,12 @@ class Field:Serializable {
 			if(bil.isNotEmpty()) {
 				ret += bil.size
 				if(ignite)
-					for(j in bil) {
-						val b = getBlock(j, i)
-						b!!.cint = Block.BLOCK_COLOR_GEM_RAINBOW
-						b.setAttribute(true, ATTRIBUTE.ERASE)
-					}
+					for(j in bil)
+						getBlock(j, i)?.run {
+							cint = Block.BLOCK_COLOR_GEM_RAINBOW
+							setAttribute(true, ATTRIBUTE.ERASE)
+						}
+
 			}
 		}
 		return ret
@@ -1558,7 +1285,6 @@ class Field:Serializable {
 	@JvmOverloads fun clearProceed(gemType:Int = 0):Int {
 		var total = 0
 		var b:Block?
-		var bAdj:Block?
 		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
 			for(j in 0 until width) {
 				b = getBlock(j, i)
@@ -1570,38 +1296,34 @@ class Field:Serializable {
 				if(b.getAttribute(ATTRIBUTE.ERASE)) {
 					total++
 					if(b.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
-						bAdj = getBlock(j, i+1)
-						if(bAdj!=null) {
-							bAdj.setAttribute(false, ATTRIBUTE.CONNECT_UP)
-							bAdj.setAttribute(true, ATTRIBUTE.BROKEN)
+						getBlock(j, i+1)?.run {
+							setAttribute(false, ATTRIBUTE.CONNECT_UP)
+							setAttribute(true, ATTRIBUTE.BROKEN)
 						}
 					}
 					if(b.getAttribute(ATTRIBUTE.CONNECT_UP)) {
-						bAdj = getBlock(j, i-1)
-						if(bAdj!=null) {
-							bAdj.setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
-							bAdj.setAttribute(true, ATTRIBUTE.BROKEN)
+						getBlock(j, i-1)?.run {
+							setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
+							setAttribute(true, ATTRIBUTE.BROKEN)
 						}
 					}
 					if(b.getAttribute(ATTRIBUTE.CONNECT_LEFT)) {
-						bAdj = getBlock(j-1, i)
-						if(bAdj!=null) {
-							bAdj.setAttribute(false, ATTRIBUTE.CONNECT_RIGHT)
-							bAdj.setAttribute(true, ATTRIBUTE.BROKEN)
+						getBlock(j-1, i)?.run {
+							setAttribute(false, ATTRIBUTE.CONNECT_RIGHT)
+							setAttribute(true, ATTRIBUTE.BROKEN)
 						}
 					}
 					if(b.getAttribute(ATTRIBUTE.CONNECT_RIGHT)) {
-						bAdj = getBlock(j+1, i)
-						if(bAdj!=null) {
-							bAdj.setAttribute(false, ATTRIBUTE.CONNECT_LEFT)
-							bAdj.setAttribute(true, ATTRIBUTE.BROKEN)
+						getBlock(j+1, i)?.run {
+							setAttribute(false, ATTRIBUTE.CONNECT_LEFT)
+							setAttribute(true, ATTRIBUTE.BROKEN)
 						}
 					}
 
-					if(gemType!=0&&b.isGemBlock&&b.cint!=Block.BLOCK_COLOR_GEM_RAINBOW) {
-						setBlockColor(j, i, Block.BLOCK_COLOR_GEM_RAINBOW)
-					} else
-						setBlockColor(j, i, Block.BLOCK_COLOR_NONE)
+
+					setBlockColor(j, i, if(gemType!=0&&b.isGemBlock&&b.cint!=Block.BLOCK_COLOR_GEM_RAINBOW)
+						Block.BLOCK_COLOR_GEM_RAINBOW else
+						Block.BLOCK_COLOR_NONE)
 				}
 			}
 		return total
@@ -1730,8 +1452,7 @@ class Field:Serializable {
 	fun clearColor(x:Int, y:Int, flag:Boolean, garbageClear:Boolean, gemSame:Boolean, ignoreHidden:Boolean):Int {
 		val blockColor = getBlockColor(x, y, gemSame)
 		if(blockColor==Block.BLOCK_COLOR_NONE||blockColor==Block.BLOCK_COLOR_INVALID) return 0
-		val b = getBlock(x, y) ?: return 0
-		return if(b.getAttribute(ATTRIBUTE.GARBAGE)) 0
+		return if(getBlock(x, y)?.getAttribute(ATTRIBUTE.GARBAGE)!=false) 0
 		else clearColor(x, y, blockColor, flag, garbageClear, gemSame, ignoreHidden)
 	}
 
@@ -1743,24 +1464,25 @@ class Field:Serializable {
 		ignoreHidden:Boolean):Int {
 		if(ignoreHidden&&y<0) return 0
 		val blockColor = getBlockColor(x, y, gemSame)
-		if(blockColor==Block.BLOCK_COLOR_INVALID) return 0
-		val b = getBlock(x, y)
-		if(flag&&b!!.getAttribute(ATTRIBUTE.ERASE)) return 0
-		if(garbageClear&&b!!.getAttribute(ATTRIBUTE.GARBAGE)
-			&&!b.getAttribute(ATTRIBUTE.WALL))
-			when {
-				flag -> {
-					b.setAttribute(true, ATTRIBUTE.ERASE)
-					garbageCleared++
+		if(blockColor==Block.BLOCK_COLOR_INVALID||blockColor==Block.BLOCK_COLOR_NONE) return 0
+		getBlock(x, y)?.also {b ->
+			if(flag&&b.getAttribute(ATTRIBUTE.ERASE)) return 0
+			if(garbageClear&&b.getAttribute(ATTRIBUTE.GARBAGE)
+				&&!b.getAttribute(ATTRIBUTE.WALL))
+				when {
+					flag -> {
+						b.setAttribute(true, ATTRIBUTE.ERASE)
+						garbageCleared++
+					}
+					b.hard>0 -> b.hard--
+					else -> setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
 				}
+			if(blockColor!=targetColor) return 0
+			when {
+				flag -> b.setAttribute(true, ATTRIBUTE.ERASE)
 				b.hard>0 -> b.hard--
 				else -> setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
 			}
-		if(blockColor!=targetColor) return 0
-		when {
-			flag -> b!!.setAttribute(true, ATTRIBUTE.ERASE)
-			b!!.hard>0 -> b.hard--
-			else -> setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
 		}
 		return (1+clearColor(x+1, y, targetColor, flag, garbageClear, gemSame, ignoreHidden)
 			+clearColor(x-1, y, targetColor, flag, garbageClear, gemSame, ignoreHidden)
@@ -1784,7 +1506,7 @@ class Field:Serializable {
 			for(x in 0 until width)
 				if(getBlockColor(x, y, gemSame)==tC) {
 					total++
-					if(flag) getBlock(x, y)!!.setAttribute(true, ATTRIBUTE.ERASE)
+					if(flag) getBlock(x, y)?.setAttribute(true, ATTRIBUTE.ERASE)
 					else setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
 				}
 		return total
@@ -1807,10 +1529,8 @@ class Field:Serializable {
 		setAllAttribute(false, ATTRIBUTE.CASCADE_FALL)
 
 		for(i in heightWithoutHurryupFloor-1 downTo hiddenHeight*-1)
-			for(j in 0 until width) {
-				val blk = getBlock(j, i)
-
-				if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
+			for(j in 0 until width) getBlock(j, i)?.let {blk ->
+				if(!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
 					var fall = true
 					checkBlockLink(j, i)
 
@@ -1832,21 +1552,18 @@ class Field:Serializable {
 					if(fall) {
 						result = true
 						for(k in heightWithoutHurryupFloor-1 downTo hiddenHeight*-1)
-							for(l in 0 until width) {
-								val bTemp = getBlock(l, k)
-								val bBelow = getBlock(l, k+1)
-
-								if(getCoordAttribute(l, k+1)!=COORD_WALL&&bTemp!=null&&!bTemp.isEmpty&&bBelow!=null
-									&&bBelow.isEmpty
-									&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)
-									&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
-									bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
-									bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL)
-									bTemp.setAttribute(true, ATTRIBUTE.LAST_COMMIT)
-									setBlock(l, k+1, bTemp)
-									setBlock(l, k, Block())
+							for(l in 0 until width)
+								getBlock(l, k)?.let {bTemp ->
+									getBlock(l, k+1)?.let {bBelow ->
+										if(getCoordAttribute(l, k+1)!=COORD_WALL&&!bTemp.isEmpty&&bBelow.isEmpty&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
+											bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
+											bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL)
+											bTemp.setAttribute(true, ATTRIBUTE.LAST_COMMIT)
+											setBlock(l, k+1, bTemp)
+											setBlock(l, k, Block())
+										}
+									}
 								}
-							}
 					}
 				}
 			}
@@ -1931,16 +1648,17 @@ class Field:Serializable {
 	 * @param x X coord
 	 * @param y Y coord
 	 */
-	protected fun checkBlockLinkSub(x:Int, y:Int) {
-		val blk = getBlock(x, y)
-		if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.TEMP_MARK)) {
-			blk.setAttribute(true, ATTRIBUTE.TEMP_MARK)
+	private fun checkBlockLinkSub(x:Int, y:Int) {
+		getBlock(x, y)?.also {
+			if(!it.isEmpty&&!it.getAttribute(ATTRIBUTE.TEMP_MARK)) {
+				it.setAttribute(true, ATTRIBUTE.TEMP_MARK)
 
-			if(!blk.getAttribute(ATTRIBUTE.IGNORE_BLOCKLINK)) {
-				if(blk.getAttribute(ATTRIBUTE.CONNECT_UP)) checkBlockLinkSub(x, y-1)
-				if(blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) checkBlockLinkSub(x, y+1)
-				if(blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)) checkBlockLinkSub(x-1, y)
-				if(blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)) checkBlockLinkSub(x+1, y)
+				if(!it.getAttribute(ATTRIBUTE.IGNORE_BLOCKLINK)) {
+					if(it.getAttribute(ATTRIBUTE.CONNECT_UP)) checkBlockLinkSub(x, y-1)
+					if(it.getAttribute(ATTRIBUTE.CONNECT_DOWN)) checkBlockLinkSub(x, y+1)
+					if(it.getAttribute(ATTRIBUTE.CONNECT_LEFT)) checkBlockLinkSub(x-1, y)
+					if(it.getAttribute(ATTRIBUTE.CONNECT_RIGHT)) checkBlockLinkSub(x+1, y)
+				}
 			}
 		}
 	}
@@ -1959,15 +1677,16 @@ class Field:Serializable {
 	 * @param x X coord
 	 * @param y Y coord
 	 */
-	protected fun setBlockLinkBrokenSub(x:Int, y:Int) {
-		val blk = getBlock(x, y)
-		if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.TEMP_MARK)&&blk.isNormalBlock) {
-			blk.setAttribute(true, ATTRIBUTE.TEMP_MARK)
-			blk.setAttribute(true, ATTRIBUTE.BROKEN)
-			if(blk.getAttribute(ATTRIBUTE.CONNECT_UP)) setBlockLinkBrokenSub(x, y-1)
-			if(blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) setBlockLinkBrokenSub(x, y+1)
-			if(blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)) setBlockLinkBrokenSub(x-1, y)
-			if(blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)) setBlockLinkBrokenSub(x+1, y)
+	private fun setBlockLinkBrokenSub(x:Int, y:Int) {
+		getBlock(x, y)?.run {
+			if(!isEmpty&&!getAttribute(ATTRIBUTE.TEMP_MARK)&&isNormalBlock) {
+				setAttribute(true, ATTRIBUTE.TEMP_MARK)
+				setAttribute(true, ATTRIBUTE.BROKEN)
+				if(getAttribute(ATTRIBUTE.CONNECT_UP)) setBlockLinkBrokenSub(x, y-1)
+				if(getAttribute(ATTRIBUTE.CONNECT_DOWN)) setBlockLinkBrokenSub(x, y+1)
+				if(getAttribute(ATTRIBUTE.CONNECT_LEFT)) setBlockLinkBrokenSub(x-1, y)
+				if(getAttribute(ATTRIBUTE.CONNECT_RIGHT)) setBlockLinkBrokenSub(x+1, y)
+			}
 		}
 	}
 
@@ -1992,31 +1711,27 @@ class Field:Serializable {
 	 * @param x X coord
 	 * @param y Y coord
 	 */
-	protected fun setBlockLinkByColorSub(x:Int, y:Int) {
-		val blk = getBlock(x, y)
-		if(blk!=null&&!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.TEMP_MARK)
-			&&!blk.getAttribute(ATTRIBUTE.GARBAGE)&&blk.isNormalBlock) {
-			blk.setAttribute(true, ATTRIBUTE.TEMP_MARK)
-			if(getBlockColor(x, y-1)==blk.cint) {
-				blk.setAttribute(true, ATTRIBUTE.CONNECT_UP)
-				setBlockLinkByColorSub(x, y-1)
-			} else
-				blk.setAttribute(false, ATTRIBUTE.CONNECT_UP)
-			if(getBlockColor(x, y+1)==blk.cint) {
-				blk.setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
-				setBlockLinkByColorSub(x, y+1)
-			} else
-				blk.setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
-			if(getBlockColor(x-1, y)==blk.cint) {
-				blk.setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
-				setBlockLinkByColorSub(x-1, y)
-			} else
-				blk.setAttribute(false, ATTRIBUTE.CONNECT_LEFT)
-			if(getBlockColor(x+1, y)==blk.cint) {
-				blk.setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
-				setBlockLinkByColorSub(x+1, y)
-			} else
-				blk.setAttribute(false, ATTRIBUTE.CONNECT_RIGHT)
+	private fun setBlockLinkByColorSub(x:Int, y:Int) {
+		getBlock(x, y)?.run {
+			if(!isEmpty&&!getAttribute(ATTRIBUTE.TEMP_MARK)&&!getAttribute(ATTRIBUTE.GARBAGE)&&isNormalBlock) {
+				setAttribute(true, ATTRIBUTE.TEMP_MARK)
+				if(getBlockColor(x, y-1)==cint) {
+					setAttribute(true, ATTRIBUTE.CONNECT_UP)
+					setBlockLinkByColorSub(x, y-1)
+				} else setAttribute(false, ATTRIBUTE.CONNECT_UP)
+				if(getBlockColor(x, y+1)==cint) {
+					setAttribute(true, ATTRIBUTE.CONNECT_DOWN)
+					setBlockLinkByColorSub(x, y+1)
+				} else setAttribute(false, ATTRIBUTE.CONNECT_DOWN)
+				if(getBlockColor(x-1, y)==cint) {
+					setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
+					setBlockLinkByColorSub(x-1, y)
+				} else setAttribute(false, ATTRIBUTE.CONNECT_LEFT)
+				if(getBlockColor(x+1, y)==cint) {
+					setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
+					setBlockLinkByColorSub(x+1, y)
+				} else setAttribute(false, ATTRIBUTE.CONNECT_RIGHT)
+			}
 		}
 	}
 
@@ -2172,7 +1887,7 @@ class Field:Serializable {
 		} catch(e:Exception) {
 		}
 
-		Block(blkColor, skin ).apply {
+		Block(blkColor, skin).apply {
 			elapsedFrames = -1
 			aint = attr
 			setAttribute(true, ATTRIBUTE.VISIBLE, ATTRIBUTE.OUTLINE)
@@ -2460,26 +2175,26 @@ class Field:Serializable {
 							cIndex = i
 							break
 						}
-
-					if(colors.size==2) {
-						if(colors[0]==colorUp&&colors[1]!=colorLeft||colors[0]==colorLeft&&colors[1]!=colorUp) {
-							colorCounts[1]++
+					if(cIndex!=-1)
+						if(colors.size==2) {
+							if(colors[0]==colorUp&&colors[1]!=colorLeft||colors[0]==colorLeft&&colors[1]!=colorUp) {
+								colorCounts[1]++
+								colorCounts[cIndex]--
+								setBlockColor(x, y, colors[1])
+							} else if(colors[1]==colorUp&&colors[0]!=colorLeft||colors[1]==colorLeft&&colors[0]!=colorUp) {
+								colorCounts[0]++
+								colorCounts[cIndex]--
+								setBlockColor(x, y, colors[0])
+							}
+						} else {
+							var newColor:Int
+							do
+								newColor = colorRand.nextInt(colors.size)
+							while(colors[newColor]==colorUp||colors[newColor]==colorLeft)
 							colorCounts[cIndex]--
-							setBlockColor(x, y, colors[1])
-						} else if(colors[1]==colorUp&&colors[0]!=colorLeft||colors[1]==colorLeft&&colors[0]!=colorUp) {
-							colorCounts[0]++
-							colorCounts[cIndex]--
-							setBlockColor(x, y, colors[0])
+							colorCounts[newColor]++
+							setBlockColor(x, y, colors[newColor])
 						}
-					} else {
-						var newColor:Int
-						do
-							newColor = colorRand.nextInt(colors.size)
-						while(colors[newColor]==colorUp||colors[newColor]==colorLeft)
-						colorCounts[cIndex]--
-						colorCounts[newColor]++
-						setBlockColor(x, y, colors[newColor])
-					}
 				}
 		val canSwitch = BooleanArray(colors.size)
 		val minCount = count/colors.size

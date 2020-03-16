@@ -99,7 +99,7 @@ class RetroModern:AbstractMode() {
 		rankingLines = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
 		rankingTime = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
 
-		engine.tspinEnable = false
+		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.bighalf = false
@@ -206,7 +206,7 @@ class RetroModern:AbstractMode() {
 			}
 
 			// Check for A button, when pressed this will begin the game
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -214,7 +214,7 @@ class RetroModern:AbstractMode() {
 			}
 
 			// Check for B button, when pressed this will shutdown the game engine.
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -311,7 +311,7 @@ class RetroModern:AbstractMode() {
 
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		if(special&&(engine.ctrl!!.isPress(Controller.BUTTON_B)||engine.ctrl!!.isPress(Controller.BUTTON_E))) special = false
+		if(special&&(engine.ctrl.isPress(Controller.BUTTON_B)||engine.ctrl.isPress(Controller.BUTTON_E))) special = false
 		// Update the meter
 		if(engine.ending==0) {
 			if(engine.statistics.level<levelNorma.size)
@@ -358,7 +358,7 @@ class RetroModern:AbstractMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Determines line-clear bonus
 		var pts = 0
 		val mult = tableScoreMult[gametype][engine.statistics.level]*10
@@ -414,7 +414,7 @@ class RetroModern:AbstractMode() {
 			engine.meterValue = 0
 			if(newlevel<tableBGM.size) owner.bgmStatus.bgm = tableBGM[newlevel]
 		}
-
+		return pts
 	}
 
 	override fun renderLineClear(engine:GameEngine, playerID:Int) {
@@ -430,9 +430,9 @@ class RetroModern:AbstractMode() {
 		receiver.drawMenuBadges(engine, playerID, 2, engine.lastline-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
 		receiver.drawMenuNum(engine, playerID, 4, engine.lastline, "$lastscore", COLOR.CYAN)
 
-		if(engine.split) when {
-			engine.lineClearing==2 -> receiver.drawMenuFont(engine, playerID, 0, engine.lastlines[0], "SPLIT TWIN", COLOR.PURPLE)
-			engine.lineClearing==3 -> receiver.drawMenuFont(engine, playerID, 0, engine.lastlines[0], "1.2.TRIPLE", COLOR.PURPLE)
+		if(engine.split) when(engine.lineClearing) {
+			2 -> receiver.drawMenuFont(engine, playerID, 0, engine.lastlines[0], "SPLIT TWIN", COLOR.PURPLE)
+			3 -> receiver.drawMenuFont(engine, playerID, 0, engine.lastlines[0], "1.2.TRIPLE", COLOR.PURPLE)
 		}
 	}
 
@@ -460,6 +460,7 @@ class RetroModern:AbstractMode() {
 				pts *= 10*tableBonusMult[engine.statistics.level]
 				lastscore = pts
 				engine.statistics.scoreBonus += pts
+				receiver.addScore(engine,engine.fieldWidth/2,engine.fieldHeight+1,pts, COLOR.RAINBOW)
 			}
 		}
 		return super.lineClearEnd(engine, playerID)
@@ -496,7 +497,7 @@ class RetroModern:AbstractMode() {
 		engine.holdPieceObject = null
 		if(engine.statc[0]==0) engine.playSE("excellent")
 		when {
-			engine.statc[0]>=200&&engine.ctrl!!.isPush(Controller.BUTTON_A) -> engine.statc[0] = 300
+			engine.statc[0]>=200&&engine.ctrl.isPush(Controller.BUTTON_A) -> engine.statc[0] = 300
 		}
 		if(engine.statc[0]==300) {
 			setSpeed(engine)
@@ -525,7 +526,7 @@ class RetroModern:AbstractMode() {
 
 		val offsetX = receiver.fieldX(engine, playerID)
 		val offsetY = receiver.fieldY(engine, playerID)
-		var col = COLOR.WHITE
+		val col = COLOR.WHITE
 
 		receiver.drawDirectFont(offsetX-4, offsetY+228, "YOU REACHED", col)
 		receiver.drawDirectFont(offsetX-4, offsetY+244, "THE EDGE OF", col)

@@ -330,8 +330,8 @@ class GrandMastery:AbstractMode() {
 		rankingRollclear = IntArray(RANKING_MAX)
 		bestSectionTime = IntArray(SECTION_MAX)
 
-		engine.tspinEnable = true
-		engine.tspinEnableEZ = true
+		engine.twistEnable = true
+		engine.twistEnableEZ = true
 		engine.b2bEnable = true
 		engine.framecolor = GameEngine.FRAME_COLOR_SILVER
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
@@ -569,7 +569,7 @@ class GrandMastery:AbstractMode() {
 					5 -> big = !big
 					6 -> gradedisp = !gradedisp
 					7 -> {
-						lv500torikan += if(engine.ctrl!!.isPress(Controller.BUTTON_E))
+						lv500torikan += if(engine.ctrl.isPress(Controller.BUTTON_E))
 							3600*change
 						else
 							60*change
@@ -581,13 +581,13 @@ class GrandMastery:AbstractMode() {
 			}
 
 			// section time display切替
-			if(engine.ctrl!!.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
 
 			// 決定
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 				saveSetting(owner.modeConfig)
 				owner.saveModeConfig()
@@ -623,7 +623,7 @@ class GrandMastery:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl!!.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
 
 			menuTime++
 		} else {
@@ -852,7 +852,7 @@ class GrandMastery:AbstractMode() {
 
 			if(readyframe==100) engine.playSE("item_spawn")
 
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)||engine.ctrl!!.isPush(Controller.BUTTON_B)) readyframe = 0
+			if(engine.ctrl.isPush(Controller.BUTTON_A)||engine.ctrl.isPush(Controller.BUTTON_B)) readyframe = 0
 
 			if(readyframe>0) {
 				readyframe--
@@ -971,7 +971,7 @@ class GrandMastery:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Combo
 		comboValue = if(lines==0) 1
 		else maxOf(1, comboValue+2*lines-2)
@@ -1180,13 +1180,14 @@ class GrandMastery:AbstractMode() {
 
 			lastscore = ((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
 				*lines*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
-				+engine.statistics.level/if(engine.tspin) 2 else 3)*if(engine.field!!.isEmpty) 3 else 1
+				+engine.statistics.level/if(engine.twist) 2 else 3)*if(engine.field!!.isEmpty) 3 else 1
 
 			engine.statistics.scoreLine += lastscore
+			return lastscore
 		} else if(lines>=1&&engine.ending==2) {
 			// Roll 中のLine clear
 			var points = 0f
-			if(!mrollFlag||engine.tspin||engine.b2b) {
+			if(!mrollFlag||engine.twist||engine.b2b) {
 				if(lines==1) points = 0.04f
 				if(lines==2) points = 0.09f
 				if(lines==3) points = 0.15f
@@ -1209,7 +1210,9 @@ class GrandMastery:AbstractMode() {
 					engine.playSE("grade${grade/8}")
 				}
 			}
+			return (points*100).toInt()
 		}
+		return 0
 	}
 
 	/* Called when hard drop used */
@@ -1452,7 +1455,7 @@ class GrandMastery:AbstractMode() {
 		if(passframe>0) {
 			engine.allowTextRenderByReceiver = false // Turn off RETRY/END menu
 
-			if(engine.ctrl!!.isPush(Controller.BUTTON_A)||engine.ctrl!!.isPush(Controller.BUTTON_B))
+			if(engine.ctrl.isPush(Controller.BUTTON_A)||engine.ctrl.isPush(Controller.BUTTON_B))
 				if(passframe>420)
 					passframe = 420
 				else if(passframe<300) passframe = 0
@@ -1465,7 +1468,7 @@ class GrandMastery:AbstractMode() {
 			} else if(demotionFlag)
 				if(passframe==420)
 					if(grade>=qualifiedGrade) engine.playSE("gradeup")
-					else engine.playSE("gameover")
+					else engine.playSE("gamelost")
 
 			passframe--
 			return true
@@ -1482,18 +1485,18 @@ class GrandMastery:AbstractMode() {
 		}
 
 		// ページ切り替え
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_UP)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
-		if(engine.ctrl!!.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
 			if(engine.statc[1]>2) engine.statc[1] = 0
 			engine.playSE("change")
 		}
 		// section time display切替
-		if(engine.ctrl!!.isPush(Controller.BUTTON_F)) {
+		if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 			engine.playSE("change")
 			isShowBestSectionTime = !isShowBestSectionTime
 		}

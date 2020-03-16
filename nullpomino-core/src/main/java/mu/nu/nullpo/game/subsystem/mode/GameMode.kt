@@ -279,7 +279,7 @@ interface GameMode {
 	 * @param playerID Player ID
 	 * @param lines Number of lines. Can be zero.
 	 */
-	fun calcScore(engine:GameEngine, playerID:Int, lines:Int)
+	fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int
 
 	/** After soft drop is used
 	 * @param engine GameEngine

@@ -86,15 +86,16 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 		// 60FPS
 		NullpoMinoSlick.altMaxFPS = 60
-		appContainer!!.alwaysRender = true
-		appContainer!!.setUpdateOnlyWhenVisible(false)
+		appContainer?.alwaysRender = true
+		appContainer?.setUpdateOnlyWhenVisible(false)
 
 		// Clear each frame
-		appContainer!!.setClearEachFrame(!showbg)
+		appContainer?.setClearEachFrame(!showbg)
 
 		// gameManager initialization
-		gameManager = GameManager(RendererSlick())
-		gameManager!!.receiver.setGraphics(appContainer!!.graphics)
+		gameManager = GameManager(RendererSlick()).apply {
+			receiver.setGraphics(appContainer!!.graphics)
+		}
 
 		// Lobby initialization
 		netLobby.addListener(this)
@@ -115,12 +116,12 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 		netLobby.shutdown()
 		ResourceHolder.bgmStop()
-		container!!.setClearEachFrame(false)
+		container?.setClearEachFrame(false)
 
 		// FPS restore
 		NullpoMinoSlick.altMaxFPS = NullpoMinoSlick.propConfig.getProperty("option.maxfps", 60)
-		appContainer!!.alwaysRender = !NullpoMinoSlick.alternateFPSTiming
-		appContainer!!.setUpdateOnlyWhenVisible(true)
+		appContainer?.alwaysRender = !NullpoMinoSlick.alternateFPSTiming
+		appContainer?.setUpdateOnlyWhenVisible(true)
 
 		// Reload global config (because it can change rules)
 		NullpoMinoSlick.loadGlobalConfig()
@@ -183,7 +184,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				gameManager?.also {gameManager ->
 					GameKey.gamekey[0].update(container.input, gameManager.engine.size>0&&gameManager.engine[0].isInGame)
 
-					if(gameManager.mode!=null) {
+					gameManager.mode?.let {mode->
 						// BGM
 						if(ResourceHolder.bgmPlaying!=gameManager.bgmStatus.bgm) ResourceHolder.bgmStart(gameManager.bgmStatus.bgm)
 						if(ResourceHolder.bgmIsPlaying()) {
@@ -195,10 +196,8 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 							container.musicVolume = newvolume
 							if(newvolume<=0f) ResourceHolder.bgmStop()
 						}
-					}
 
-					// ゲームの処理を実行
-					if(gameManager.mode!=null) {
+						// ゲームの処理を実行
 						GameKey.gamekey[0].inputStatusUpdate(gameManager.engine[0].ctrl)
 						gameManager.updateAll()
 
@@ -210,7 +209,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 						// Retry button
 						if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_RETRY))
-							gameManager.mode!!.netplayOnRetryKey(gameManager.engine[0], 0)
+							mode.netplayOnRetryKey(gameManager.engine[0], 0)
 					}
 				}
 			// Screenshot button
@@ -229,8 +228,8 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				if(gameManager?.quitFlag==true) {
 					game.enterState(StateTitle.ID)
 					return
-				} else
-					log.error("update NPE", e)
+				}
+				log.error("update NPE", e)
 			} catch(e2:Throwable) {
 			}
 
@@ -239,8 +238,8 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				if(gameManager?.quitFlag==true) {
 					game.enterState(StateTitle.ID)
 					return
-				} else
-					log.error("update fail", e)
+				}
+				log.error("update fail", e)
 			} catch(e2:Throwable) {
 			}
 
@@ -275,7 +274,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				gameManager!!.engine[0].owSkin = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owSkin", -1)
 				gameManager!!.engine[0].owMinDAS = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owMinDAS", -1)
 				gameManager!!.engine[0].owMaxDAS = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owMaxDAS", -1)
-				gameManager!!.engine[0].owDasDelay = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owDasDelay", -1)
+				gameManager!!.engine[0].owDASDelay = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owDasDelay", -1)
 				gameManager!!.engine[0].owReverseUpDown = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owReverseUpDown", false)
 				gameManager!!.engine[0].owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owMoveDiagonal", -1)
 				gameManager!!.engine[0].owBlockOutlineType = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owBlockOutlineType", -1)
@@ -298,14 +297,14 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				gameManager!!.engine[0].ruleopt = ruleopt
 
 				// Randomizer
-				if(ruleopt.strRandomizer.isNotEmpty()) {
+				if(ruleopt.strRandomizer.isNotEmpty())
 					gameManager!!.engine[0].randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
-				}
+
 
 				// Wallkick
-				if(ruleopt.strWallkick.isNotEmpty()) {
+				if(ruleopt.strWallkick.isNotEmpty())
 					gameManager!!.engine[0].wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
-				}
+
 
 				// AI
 				val aiName = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".ai", "")

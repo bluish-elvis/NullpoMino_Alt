@@ -31,11 +31,13 @@ class Piece(
 	/** ID */
 	val id:Int = 0):Serializable {
 	val type:Shape get() = Shape.values()[id]
+
 	/** Direction */
 	var direction:Int = DIRECTION_UP
 
 	/** BigBlock */
 	var big:Boolean = false
+
 	/** Connect blocks in this piece? */
 	var connectBlocks:Boolean = true
 
@@ -72,7 +74,7 @@ class Piece(
 	 * @return An int array containing the cint of each block
 	 */
 	val colors:IntArray
-		get() = IntArray(block.size){block[it].cint}
+		get() = IntArray(block.size) {block[it].cint}
 
 	/** ピースの幅を取得
 	 * @return ピースの幅
@@ -388,34 +390,12 @@ class Piece(
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param rt Direction
-	 * @param fld field
 	 * @return 1つ以上Blockがfield枠外に置かれるならtrue, そうでないならfalse
 	 */
-	fun isPartialLockOut(x:Int, y:Int, rt:Int, fld:Field):Boolean {
+	fun isPartialLockOut(x:Int, y:Int, rt:Int = direction):Boolean {
+		var placed = false
 		// Bigでは専用処理
-		if(big) return isPartialLockOutBig(x, y, rt, fld)
-
-		var placed = false
-
-		for(i in 0 until maxBlock) {
-			val y2 = y+dataY[rt][i]
-			if(y2<0) placed = true
-		}
-
-		return placed
-	}
-
-	/** 1つ以上Blockがfield枠外に置かれるかどうか判定(Big用)
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param rt Direction
-	 * @param fld field
-	 * @return 1つ以上Blockがfield枠外に置かれるならtrue, そうでないならfalse
-	 */
-	protected fun isPartialLockOutBig(x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		var placed = false
-
-		for(i in 0 until maxBlock) {
+		if(big) for(i in 0 until maxBlock) {
 			val y2 = y+dataY[rt][i]*2
 
 			// 4Block分置く
@@ -424,31 +404,36 @@ class Piece(
 					val y3 = y2+l
 					if(y3<0) placed = true
 				}
+		} else for(i in 0 until maxBlock) {
+			val y2 = y+dataY[rt][i]
+			if(y2<0) placed = true
 		}
-
 		return placed
 	}
-
-	/** 1つ以上Blockがfield枠外に置かれるかどうか判定
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param fld field
-	 * @return 1つ以上Blockがfield枠外に置かれるならtrue, そうでないならfalse
-	 */
-	fun isPartialLockOut(x:Int, y:Int, fld:Field):Boolean = isPartialLockOut(x, y, direction, fld)
-
 	/** 1つ以上Blockをfield枠内に置けるかどうか判定(fieldに変更は加えません)
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param rt Direction
-	 * @param fld field
 	 * @return 1つ以上Blockをfield枠内に置けるならtrue, そうでないならfalse
 	 */
-	fun canPlaceToVisibleField(x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		// Bigでは専用処理
-		if(big) return canPlaceToVisibleFieldBig(x, y, rt, fld)
-
+	fun canPlaceToVisibleField(x:Int, y:Int, rt:Int = direction):Boolean {
 		var placed = false
+		// Bigでは専用処理
+		if(big) {
+
+			for(i in 0 until maxBlock) {
+				val y2 = y+dataY[rt][i]*2
+
+				// 4Block分置く
+				for(k in 0..1)
+					for(l in 0..1) {
+						val y3 = y2+l
+						if(y3>=0) placed = true
+					}
+			}
+
+			return placed
+		}
 
 		for(i in 0 until maxBlock) {
 			val y2 = y+dataY[rt][i]
@@ -457,38 +442,6 @@ class Piece(
 
 		return placed
 	}
-
-	/** 1つ以上Blockをfield枠内に置けるかどうか判定(fieldに変更は加えません。Big用)
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param rt Direction
-	 * @param fld field
-	 * @return 1つ以上Blockをfield枠内に置けるならtrue, そうでないならfalse
-	 */
-	protected fun canPlaceToVisibleFieldBig(x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		var placed = false
-
-		for(i in 0 until maxBlock) {
-			val y2 = y+dataY[rt][i]*2
-
-			// 4Block分置く
-			for(k in 0..1)
-				for(l in 0..1) {
-					val y3 = y2+l
-					if(y3>=0) placed = true
-				}
-		}
-
-		return placed
-	}
-
-	/** 1つ以上Blockをfield枠内に置けるかどうか判定(fieldに変更は加えません)
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param fld field
-	 * @return 1つ以上Blockをfield枠内に置けるならtrue, そうでないならfalse
-	 */
-	fun canPlaceToVisibleField(x:Int, y:Int, fld:Field):Boolean = canPlaceToVisibleField(x, y, direction, fld)
 
 	/** fieldにピースを置く
 	 * @param x X-coordinate
@@ -501,8 +454,7 @@ class Piece(
 		updateConnectData()
 
 		//On a Big piece, double its size.
-		var size = 1
-		if(big) size = 2
+		val size = if(big) 2 else 1
 
 		var placed = false
 
@@ -772,7 +724,7 @@ class Piece(
 
 		/** BlockピースのName */
 		@Deprecated("This will be enumed", ReplaceWith("Shape.names", "mu.nu.nullpo.game.component.Shape"))
-		val PIECE_NAMES = Shape.values().map{it.name}.toTypedArray()
+		val PIECE_NAMES = Shape.values().map {it.name}.toTypedArray()
 
 		/** 通常のBlockピースのIDのMaximumcount */
 		const val PIECE_STANDARD_COUNT = 7
@@ -892,4 +844,5 @@ class Piece(
 			fun name(id:Int):String = if(id>=0&&id<=values().size) values()[id].name else "?"
 		}
 	}
+
 }
