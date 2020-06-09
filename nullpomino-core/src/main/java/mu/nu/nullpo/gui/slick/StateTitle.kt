@@ -37,7 +37,7 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 
 	/** true when new version is already checked */
 	private var isNewVersionChecked = false
-	override val maxCursor:Int get() = CHOICES.size
+	override val numChoice:Int get() = CHOICES.size
 	private var rollY = 0f
 
 	init {
@@ -100,6 +100,8 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		// Menu
 		FontNano.printFont(0, 0, "NULLPOMINO VERSION ${GameManager.versionString}",
 			COLOR.ORANGE, 0.5f)
+		FontNano.printFont(0, 8, "${container.width}*${container.height} SCR:${container.screenWidth}*${container.screenHeight}",
+			COLOR.WHITE, 0.5f)
 
 		FontMedal.printFont(600, 432, "ALT", 2)
 		renderChoices(2, minChoiceY, CHOICES)
@@ -107,8 +109,8 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
 
 		FontNano.printFont(300, 0, "$rollY")
-		FontNano.printFont(300, 10, "${container.screenHeight*RenderStaffRoll.img.textureHeight}")
-		RenderStaffRoll.draw(container.screenWidth-RenderStaffRoll.img.width.toFloat(), 0f, rollY, container.screenHeight.toFloat(), Color(200, 233, 255, 200))
+		FontNano.printFont(300, 10, "${container.screenHeight*RenderStaffRoll.img.textureHeight	}")
+		RenderStaffRoll.draw(600-RenderStaffRoll.img.width.toFloat(), 0f, rollY, 480f, Color(200, 233, 255, 200))
 		super.renderImpl(container, game, g)
 
 		if(UpdateChecker.isNewVersionAvailable(GameManager.versionMajor, GameManager.versionMinor)) {
@@ -133,9 +135,9 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		const val ID = 1
 
 		/** Strings for menu choices */
-		private val CHOICES = arrayOf("GAME START", "WATCH REPLAY",
+		private val CHOICES = arrayOf("Game Start", "Watch Replay",
 			//"NETPLAY",
-			"CONFIGURATIONS", "EXIT")
+			"Configurations", "Exit")
 		private val CHOICEID = intArrayOf(StateSelectMode.ID, StateReplaySelect.ID,
 			//StateNetGame.ID,
 			StateConfigMainMenu.ID, -1)

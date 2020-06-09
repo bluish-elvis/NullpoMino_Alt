@@ -23,7 +23,9 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick.img
 
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import org.newdawn.slick.Color
 
@@ -37,14 +39,15 @@ object FontNano {
 	 * @param color 文字色
 	 * @param scale 拡大率
 	 */
-	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) {
+	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float =1f ,
+		rainbow:Int = NullpoMinoSlick.rainbow) {
 		var dx = x.toFloat()
 		var dy = y.toFloat()
 		val filter = Color(Color.white).apply {
 			a = alpha
 		}
 
-		for(char in str) {
+		str.forEachIndexed { i, char ->
 			val stringChar = char.toInt()
 
 			if(stringChar==0x0A) {
@@ -52,9 +55,10 @@ object FontNano {
 				dy = (dy+16*scale)
 				dx = x.toFloat()
 			} else {// 文字出力
+				val col = (if(color==COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
 				val c = stringChar-32// Character output
 				var sx = c%32
-				var sy = c/32+color.ordinal*3
+				var sy = c/32+col*3
 				val w = 12f*scale
 				val h = 14f*scale
 				sx *= 12

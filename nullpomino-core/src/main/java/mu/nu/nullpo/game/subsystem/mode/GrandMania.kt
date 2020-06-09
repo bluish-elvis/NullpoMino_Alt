@@ -180,7 +180,7 @@ class GrandMania:AbstractMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "GRAND MANIA"
+		get() = "Grand Mania"
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {

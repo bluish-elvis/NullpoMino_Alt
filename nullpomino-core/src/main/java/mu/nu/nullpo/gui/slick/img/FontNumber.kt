@@ -23,7 +23,9 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick.img
 
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import org.newdawn.slick.Color
 
@@ -36,15 +38,16 @@ object FontNumber {
 	 * @param color 文字色
 	 * @param scale 拡大率
 	 */
-	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) {
+	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
+		rainbow:Int = NullpoMinoSlick.rainbow) {
 		var dx = x
 		var dy = y
 		val fontBig = scale>=1.5f
 		val filter = Color(Color.white).apply {
 			a = alpha
 		}
-		for(element in str) {
-			var stringChar = element.toInt()
+		str.forEachIndexed {i, c ->
+			var stringChar = c.toInt()
 			// 文字出力
 			when(stringChar) {
 				0x0A -> {
@@ -64,7 +67,8 @@ object FontNumber {
 
 			if(stringChar in 0x30..0x40) { // 文字出力
 				var sx = (stringChar-48)%32
-				var sy = color.ordinal
+				var sy = (if(color==COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
+
 				if(fontBig) {
 					sx *= 24
 					sy *= 32

@@ -282,7 +282,7 @@ class SprintDig:NetDummyMode() {
 				fillGarbage(engine, goaltype)
 
 				// Update meter
-				engine.meterValue = GOAL_TABLE[goaltype]*receiver.getBlockHeight(engine)
+				engine.meterValue = GOAL_TABLE[goaltype]*receiver.getBlockSize(engine)
 				engine.meterColor = GameEngine.METER_COLOR_GREEN
 
 				// NET: Send field
@@ -421,7 +421,7 @@ class SprintDig:NetDummyMode() {
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Update meter
 		val remainLines = getRemainGarbageLines(engine, goaltype)
-		engine.meterValue = remainLines*receiver.getBlockHeight(engine)
+		engine.meterValue = remainLines*receiver.getBlockSize(engine)
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		if(remainLines<=14) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 		if(remainLines<=8) engine.meterColor = GameEngine.METER_COLOR_ORANGE

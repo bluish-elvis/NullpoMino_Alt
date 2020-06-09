@@ -75,7 +75,7 @@ class MarathonExtreme:NetDummyMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "MARATHON EXTREME"
+		get() = "Marathon:Extreme"
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -247,7 +247,7 @@ class MarathonExtreme:NetDummyMode() {
 					var endlessIndex = 0
 					if(endless) endlessIndex = 1
 
-					receiver.drawScoreNum(engine, playerID, 0, topY+i, String.format("%02d", i+1), EventReceiver.COLOR.RED, scale)
+					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%02d", i+1), EventReceiver.COLOR.RED, scale)
 					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[endlessIndex][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 10, topY+i, "${rankingLines[endlessIndex][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[endlessIndex][i]), i==rankingRank, scale)

@@ -72,7 +72,7 @@ class Marathon:NetDummyMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "MARATHON"
+		get() = "Marathon"
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {

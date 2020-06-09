@@ -662,7 +662,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		val fld:Field = if(engine.stat===GameEngine.Status.READY)
 			Field(engine.fieldWidth, engine.fieldHeight, engine.fieldHiddenHeight, engine.ruleopt.fieldCeiling)
 		else
-			Field(engine.field!!)
+			Field(engine.field)
 		var pieceNow = engine.nowPieceObject
 		var pieceHold = engine.holdPieceObject
 		/* Piece pieceNow = null;

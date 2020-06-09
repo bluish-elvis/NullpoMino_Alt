@@ -671,7 +671,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected open fun updateOjamaMeter(engine:GameEngine, playerID:Int) {
 		var width = 6
 		if(engine.field!=null) width = engine.field!!.width
-		val blockHeight = receiver.getBlockHeight(engine)
+		val blockHeight = receiver.getBlockSize(engine)
 		// Rising auctionMeter
 		val value = ojama[playerID]*blockHeight/width
 		when {
@@ -718,9 +718,9 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		for(i in 0 until if(dangerColumnDouble[playerID]&&!big[playerID]) 2 else 1)
 			if(engine.field==null||engine.field!!.getBlockEmpty(baseX+i, 0))
 				when {
-					big[playerID] -> receiver.drawMenuFont(engine, playerID, 2, 0, "e", COLOR.RED, 2f)
-					engine.displaysize==1 -> receiver.drawMenuFont(engine, playerID, 4+i*2, 0, "e", COLOR.RED, 2f)
-					else -> receiver.drawMenuFont(engine, playerID, 2+i, 0, "e", COLOR.RED)
+					big[playerID] -> receiver.drawMenuFont(engine, playerID, 2, 0, "\u0085", COLOR.RED, 2f)
+					engine.displaysize==1 -> receiver.drawMenuFont(engine, playerID, 4+i*2, 0, "\u0085", COLOR.RED, 2f)
+					else -> receiver.drawMenuFont(engine, playerID, 2+i, 0, "\u0085", COLOR.RED)
 				}
 	}
 

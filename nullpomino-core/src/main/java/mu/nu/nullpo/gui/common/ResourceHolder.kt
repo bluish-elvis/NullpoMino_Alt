@@ -24,4 +24,30 @@ abstract class ResourceHolder {
 	internal val PERASE_MAX = 7
 	internal val HANABI_MAX = 7
 
+	internal val SE_LIST = arrayListOf<String>("cursor", "change", "decide", "cancel", "pause",
+		"hold", "initialhold", "holdfail", "move", "movefail",
+		"rotate", "wallkick", "initialrotate", "rotfail",
+		"harddrop", "softdrop", "step", "lock",
+		"erase", "linefall", "cheer", "twist", "twister",
+		"combo", "b2b_start", "b2b_combo", "b2b_end",
+
+		"danger", "dead", "shutter",
+		"gradeup", "levelstop", "levelup", "levelup_section",
+		"endingstart", "excellent",
+		"bravo", "cool", "regret",
+
+		"countdown", "hurryup", "timeout",
+		"gamelost", "gamewon", "stageclear", "stagefail", "matchend",
+		"gem", "bomb", "square_s", "square_g")
+		.also {a ->
+			a.addAll(listOf(
+				(0..1).flatMap {listOf("start$it", "garbage$it", "crowd$it")},
+				(0..2).flatMap {listOf("decide$it", "erase$it", "firecracker$it")},
+				(0..4).map {"grade$it"}, (0..5).map {"applause$it"},
+				(0..10).map {"piece$it"},
+				(1..3).map {"medal$it"},
+				(1..4).map {"line$it"}
+			).flatten())
+		}
+
 }

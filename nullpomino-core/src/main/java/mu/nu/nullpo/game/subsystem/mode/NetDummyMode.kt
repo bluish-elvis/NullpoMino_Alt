@@ -884,7 +884,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 					engine.playSE("decide")
 
-					netLobby!!.netPlayerClient!!.send("spdownload\t${NetUtil.urlEncode(netCurrentRoomInfo!!.ruleName)}\t${NetUtil.urlEncode(name)}\t$goaltype\t${netRankingView!=0}\t${NetUtil.urlEncode(netRankingName[d][netRankingCursor[d]])}\n")
+					netLobby!!.netPlayerClient!!.send("spdownload\t${NetUtil.urlEncode(netCurrentRoomInfo!!.ruleName)}\t${NetUtil.urlEncode(id)}\t$goaltype\t${netRankingView!=0}\t${NetUtil.urlEncode(netRankingName[d][netRankingCursor[d]])}\n")
 					netIsNetRankingDisplayMode = false
 					owner.menuOnly = false
 				}
@@ -940,7 +940,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 				for((c, i) in (startIndex until endIndex).withIndex()) {
 					if(i==netRankingCursor[d])
-						receiver.drawMenuFont(engine, playerID, 0, 4+c, "b", COLOR.RED)
+						receiver.drawMenuFont(engine, playerID, 0, 4+c, "\u0082", COLOR.RED)
 
 					val rankColor = if(i==netRankingMyRank[d])
 						COLOR.PINK else COLOR.YELLOW
@@ -1065,8 +1065,8 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		netIsNetRankingDisplayMode = true
 		owner.menuOnly = true
 		val rule = if(netCurrentRoomInfo!!.rated) netCurrentRoomInfo!!.ruleName else "all"
-		netLobby!!.netPlayerClient!!.send("spranking\t${NetUtil.urlEncode(rule)}\t${NetUtil.urlEncode(name)}\t$goaltype\tfalse\n")
-		netLobby!!.netPlayerClient!!.send("spranking\t${NetUtil.urlEncode(rule)}\t${NetUtil.urlEncode(name)}\t$goaltype\ttrue\n")
+		netLobby!!.netPlayerClient!!.send("spranking\t${NetUtil.urlEncode(rule)}\t${NetUtil.urlEncode(id)}\t$goaltype\tfalse\n")
+		netLobby!!.netPlayerClient!!.send("spranking\t${NetUtil.urlEncode(rule)}\t${NetUtil.urlEncode(id)}\t$goaltype\ttrue\n")
 	}
 
 	/** Receive 1P NetPlay ranking.

@@ -64,7 +64,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param attr Attribute
 	 */
 	@JvmOverloads
-	protected fun drawBlock(x:Int, y:Int, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float,
+	protected fun drawBlock(x:Float, y:Float, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float,
 		attr:Int = 0) {
 		var sk = skin
 
@@ -76,31 +76,31 @@ abstract class AbstractRenderer:EventReceiver() {
 		val isSpecialBlocks = color>=Block.BLOCK_COLOR_COUNT
 		val isSticky = resources?.getBlockIsSticky(sk) ?: false
 
-		val size = (BS*scale).toInt()
-
-		var sx = color*size
-		if(bone) sx += 9*size
+		var sx = color
+		if(bone) sx += 9
 		var sy = 0
-		if(isSpecialBlocks) sx = (color-Block.BLOCK_COLOR_COUNT+18)*size
+		if(isSpecialBlocks) sx = (color-Block.BLOCK_COLOR_COUNT+18)
 
 		if(isSticky)
 			if(isSpecialBlocks) {
-				sx = (color-Block.BLOCK_COLOR_COUNT)*size
-				sy = 18*size
+				sx = (color-Block.BLOCK_COLOR_COUNT)
+				sy = 18
 			} else {
 				sx = 0
 				if(attr and Block.ATTRIBUTE.CONNECT_UP.bit!=0) sx = sx or 0x1
 				if(attr and Block.ATTRIBUTE.CONNECT_DOWN.bit!=0) sx = sx or 0x2
 				if(attr and Block.ATTRIBUTE.CONNECT_LEFT.bit!=0) sx = sx or 0x4
 				if(attr and Block.ATTRIBUTE.CONNECT_RIGHT.bit!=0) sx = sx or 0x8
-				sx *= size
-				sy = color*size
-				if(bone) sy += 9*size
+				sy = color
+				if(bone) sy += 9
 			}
 
 
-		drawBlockSpecific(x, y, sx, sy, sk, size, darkness, alpha)
+		drawBlockSpecific(x, y, sx, sy, sk, BS*scale, darkness, alpha)
 	}
+
+	protected fun drawBlock(x:Int, y:Int, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float,
+		attr:Int = 0) = drawBlock(x.toFloat(), y.toFloat(), color, skin, bone, darkness, alpha, scale, attr)
 
 	/* 1マスBlockを描画 */
 	override fun drawSingleBlock(engine:GameEngine, playerID:Int, x:Int, y:Int, color:Int, skin:Int, bone:Boolean,
@@ -111,29 +111,37 @@ abstract class AbstractRenderer:EventReceiver() {
 	/* 勲章を描画 */
 	override fun drawBadges(x:Int, y:Int, width:Int, nums:Int, scale:Float) {
 		var n = nums
-		var nx = x
-		var ny = y
+		var nx = x.toFloat()
+		var ny = y.toFloat()
 		var z:Int
+		val b = FontBadge.b
 		var mh = 0
-		val sx = intArrayOf(0, 10, 20, 30, 0, 10, 20, 30, 0, 20, 40, 0)
-		val sy = intArrayOf(0, 0, 0, 0, 14, 14, 14, 14, 24, 24, 0, 44)
-		val w = intArrayOf(10, 10, 10, 10, 10, 10, 10, 10, 20, 20, 32, 64)
-		val h = intArrayOf(10, 10, 14, 14, 14, 14, 15, 15, 15, 15, 32, 48)
-		val b = intArrayOf(1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000)
 		while(n>0) {
 			z = 0
-			while(z<b.size-1&&n>=b[z+1]) {
-				if(mh<h[z]) mh = h[z]
-				z++
-			}
-			drawBadgesSpecific(nx, ny, sx[z], sy[z], (w[z]*scale).toInt(), (h[z]*scale).toInt())
-			n -= b[z]
-			nx += (w[z]*scale).toInt()
-			if(width>w[0]*scale&&nx>=x+width) {
-				nx = x
-				ny += (mh*scale).toInt()
+			while(z<b.size-1&&n>=b[z+1]) z++
+			val w = FontBadge(z).w*scale
+			val h = FontBadge(z).h
+			if(nx+w>width) {
+				nx = x.toFloat()
+				ny += mh*scale
 				mh = 0
 			}
+			if(h>mh) mh = h
+			drawBadgesSpecific(nx, ny, z, scale)
+			n -= b[z]
+			nx += w
+		}
+	}
+
+	class FontBadge(type:Int) {
+		val type = maxOf(0, minOf(b.size-1, type))
+		val sx = intArrayOf(0, 10, 20, 30, 0, 10, 20, 30, 0, 20, 40, 0)[type]
+		val sy = intArrayOf(0, 0, 0, 0, 14, 14, 14, 14, 24, 24, 0, 44)[type]
+		val w = intArrayOf(10, 10, 10, 10, 10, 10, 10, 10, 20, 20, 32, 64)[type]
+		val h = intArrayOf(10, 10, 14, 14, 14, 14, 15, 15, 15, 15, 32, 48)[type]
+
+		companion object {
+			val b = intArrayOf(1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000)
 		}
 	}
 
@@ -144,11 +152,11 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param scale 拡大率
 	 * @param darkness 暗さもしくは明るさ
 	 */
-	protected fun drawBlock(x:Int, y:Int, blk:Block, scale:Float = 1f, darkness:Float = blk.darkness,
+	protected fun drawBlock(x:Float, y:Float, blk:Block, scale:Float = 1f, darkness:Float = blk.darkness,
 		alpha:Float = blk.alpha) =
 		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), darkness, alpha, scale, blk.aint)
 
-	protected fun drawBlockForceVisible(x:Int, y:Int, blk:Block, scale:Float) =
+	protected fun drawBlockForceVisible(x:Float, y:Float, blk:Block, scale:Float) =
 		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), blk.darkness, .5f*blk.alpha+.5f, scale, blk.aint)
 
 	/** Blockピースを描画 (暗さもしくは明るさの指定可能）
@@ -163,35 +171,36 @@ abstract class AbstractRenderer:EventReceiver() {
 		ow:Float = 1f) {
 		for(i in 0 until piece.maxBlock) {
 			val ls = 16f*scale
-			val x2 = x+(piece.dataX[piece.direction][i].toFloat()*ls).toInt()
-			val y2 = y+(piece.dataY[piece.direction][i].toFloat()*ls).toInt()
+			val x2 = x+(piece.dataX[piece.direction][i].toFloat()*ls)
+			val y2 = y+(piece.dataY[piece.direction][i].toFloat()*ls)
 
 			val blkTemp = Block(piece.block[i])
 			blkTemp.darkness += darkness
 			blkTemp.alpha *= alpha
 
 			drawBlock(x2, y2, blkTemp, scale)
-
-			if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP))
-				drawLineSpecific(x2, y2, (x2+ls.toInt()), y2, w = ow)
-			if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN))
-				drawLineSpecific(x2, (y2+ls.toInt()), (x2+ls.toInt()), (y2+ls.toInt()), w = ow)
-			if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT))
-				drawLineSpecific(x2, y2, x2, (y2+ls.toInt()), w = ow)
-			if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
-				drawLineSpecific((x2+ls.toInt()), y2, (x2+ls.toInt()), (y2+ls.toInt()), w = ow)
+			if(ow>0) {
+				if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP))
+					drawLineSpecific(x2, y2, (x2+ls), y2, w = ow)
+				if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN))
+					drawLineSpecific(x2, (y2+ls), (x2+ls), (y2+ls), w = ow)
+				if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT))
+					drawLineSpecific(x2, y2, x2, (y2+ls), w = ow)
+				if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
+					drawLineSpecific((x2+ls), y2, (x2+ls), (y2+ls), w = ow)
+			}
 		}
 	}
 
 	/** Currently working onBlockDraw a piece
 	 * (Y-coordinateThe0MoreBlockDisplay only)
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
+	 * @param x X-coordinate of base field
+	 * @param y Y-coordinate of base field
 	 * @param engine GameEngineInstance of
 	 * @param scale Display magnification
 	 */
 	protected fun drawCurrentPiece(x:Int, y:Int, engine:GameEngine, scale:Float) {
-		val blksize = (getBlockWidth(engine)*scale).toInt()
+		val blksize = (getBlockSize(engine)*scale).toInt()
 		val bx = engine.nowPieceX
 		val by = engine.nowPieceY
 		var g = engine.fpf
@@ -216,7 +225,7 @@ abstract class AbstractRenderer:EventReceiver() {
 						if(y2>it.dataY[it.direction][i]) y2 = it.dataY[it.direction][i]
 					}
 					val b = it.block[i]
-					drawBlock(x+((x2+bx).toFloat()*16f*scale).toInt(), y+((y2+by-z).toFloat()*16f*scale).toInt(), b, scale*if(engine.big) 2 else 1, -.1f, .4f)
+					drawBlock(x+((x2+bx).toFloat()*16f*scale), y+((y2+by-z).toFloat()*16f*scale), b, scale*if(engine.big) 2 else 1, -.1f, .4f)
 					i++
 				}
 				if(z==0) drawPiece(x+bx*blksize, y+by*blksize+ys, it, scale*if(engine.big) 2 else 1, ow = 2f)
@@ -232,30 +241,29 @@ abstract class AbstractRenderer:EventReceiver() {
 	protected fun drawField(x:Int, y:Int, engine:GameEngine, size:Int) {
 		if(!doesGraphicsExist()) return
 
-		var blksize = getBlockWidth(engine)
+		var blksize = getBlockSize(engine)
 		var scale = 1f
 		if(size==-1) {
 			blksize /= 2
-			scale = .5f
+			scale /= 2
 		} else if(size==1) {
 			blksize *= 2
-			scale = 2f
+			scale *= 2
 		}
 
 		val field = engine.field ?: return
 		val width = field.width
 		val height = field.height
 		var viewHeight = field.height
-		var outlineType = 0
 
 		if(engine.heboHiddenEnable&&engine.gameActive) viewHeight -= engine.heboHiddenYNow
 
-		outlineType = if(engine.owBlockOutlineType==-1) engine.blockOutlineType else engine.owBlockOutlineType
+		val outlineType = if(engine.owBlockOutlineType==-1) engine.blockOutlineType else engine.owBlockOutlineType
 
 		for(i in -field.hiddenHeight until viewHeight)
 			for(j in 0 until width) {
-				val x2 = x+j*blksize
-				val y2 = y+i*blksize
+				val x2 = (x+j*blksize).toFloat()
+				val y2 = (y+i*blksize).toFloat()
 
 				field.getBlock(j, i)?.also {blk ->
 					if(blk.color!=null) {
@@ -315,7 +323,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	 */
 	protected fun drawNext(x:Int, y:Int, engine:GameEngine) {
 		val fldWidth = engine.fieldWidth+1
-		val fldBlkSize = getBlockWidth(engine)
+		val fldBlkSize = getBlockSize(engine)
 		if(engine.isNextVisible)
 			when(nextDisplayType) {
 				2 -> if(engine.ruleopt.nextDisplay>=1) {
@@ -326,7 +334,7 @@ abstract class AbstractRenderer:EventReceiver() {
 						engine.getNextObject(engine.nextPieceCount+i)?.let {piece ->
 							val centerX = (64-(piece.width+1)*16)/2-piece.minimumBlockX*16
 							val centerY = (64-(piece.height+1)*16)/2-piece.minimumBlockY*16
-							drawPiece(x2+centerX, y+48+i*64+centerY, piece, 1f)
+							drawPiece(x2+centerX, y+48+i*64+centerY, piece, 1f, ow = 0f)
 						}
 					}
 				}
@@ -338,7 +346,7 @@ abstract class AbstractRenderer:EventReceiver() {
 						engine.getNextObject(engine.nextPieceCount+i)?.let {
 							val centerX = (32-(it.width+1)*8)/2-it.minimumBlockX*8
 							val centerY = (32-(it.height+1)*8)/2-it.minimumBlockY*8
-							drawPiece(x2+centerX, y+48+i*32+centerY, it, .5f)
+							drawPiece(x2+centerX, y+48+i*32+centerY, it, .75f, ow = 0f)
 						}
 					}
 				}
@@ -351,20 +359,20 @@ abstract class AbstractRenderer:EventReceiver() {
 							//int x2 = x + 4 + ((-1 + (engine.field.getWidth() - piece.getWidth() + 1) / 2) * 16);
 							val x2 = x+4+engine.getSpawnPosX(engine.field, it)*fldBlkSize //Rules with spawn x modified were misaligned.
 							val y2 = y+48-(it.maximumBlockY+1)*16
-							drawPiece(x2, y2, it)
+							drawPiece(x2, y2, it, ow = 0f)
 						}
 					}
 
 					// NEXT2・3
 					for(i in 0 until minOf(2, engine.ruleopt.nextDisplay-1))
 						engine.getNextObject(engine.nextPieceCount+i+1)?.let {
-							drawPiece(x+124+i*40, y+48-(it.maximumBlockY+1)*8, it, .5f)
+							drawPiece(x+124+i*40, y+48-(it.maximumBlockY+1)*8, it, .5f, ow = 0f)
 						}
 
 					// NEXT4～
 					for(i in 0 until engine.ruleopt.nextDisplay-3) engine.getNextObject(engine.nextPieceCount+i+3)?.let {
 						if(showmeter) drawPiece(x+176, y+i*40+88-(it.maximumBlockY+1)*8, it, .5f)
-						else drawPiece(x+168, y+i*40+88-(it.maximumBlockY+1)*8, it, .5f)
+						else drawPiece(x+168, y+i*40+88-(it.maximumBlockY+1)*8, it, .5f, ow = 0f)
 					}
 				}
 			}
@@ -415,7 +423,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param engine GameEngineInstance of
 	 * @param scale Display magnification
 	 */
-	protected abstract fun drawGhostPiece(x:Int, y:Int, engine:GameEngine, scale:Float)
+	protected abstract fun drawGhostPiece(x:Float, y:Float, engine:GameEngine, scale:Float)
 
 	protected abstract fun drawHintPiece(x:Int, y:Int, engine:GameEngine, scale:Float)
 
@@ -481,18 +489,18 @@ abstract class AbstractRenderer:EventReceiver() {
 			when(engine.displaysize) {
 				1 -> {
 					if(nextshadow) drawShadowNexts(offsetX+4, offsetY+52, engine, 2f)
-					if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4, offsetY+52, engine, 2f)
+					if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4f, offsetY+52f, engine, 2f)
 					if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+52, engine, 2f)
 					drawCurrentPiece(offsetX+4, offsetY+52, engine, 2f)
 				}
 				0 -> {
 					if(nextshadow) drawShadowNexts(offsetX+4, offsetY+52, engine, 1f)
-					if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4, offsetY+52, engine, 1f)
+					if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4f, offsetY+52f, engine, 1f)
 					if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+52, engine, 1f)
 					drawCurrentPiece(offsetX+4, offsetY+52, engine, 1f)
 				}
 				else -> {
-					if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4, offsetY+4, engine, .5f)
+					if(engine.ghost&&engine.ruleopt.ghost) drawGhostPiece(offsetX+4f, offsetY+4f, engine, .5f)
 					if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+4, engine, .5f)
 					drawCurrentPiece(offsetX+4, offsetY+4, engine, .5f)
 				}
@@ -512,9 +520,9 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	override fun lineClear(engine:GameEngine, playerID:Int, y:Int) {
-		val s = getBlockHeight(engine)
+		val s = getBlockSize(engine)
 		effectlist.add(BeamH(fieldX(engine, playerID)+4, fieldY(engine, playerID)+52+y*s,
-			getBlockWidth(engine)*engine.fieldWidth, s))
+			getBlockSize(engine)*engine.fieldWidth, s))
 	}
 
 	/* Blockを消す演出を出すときの処理 */
@@ -522,8 +530,8 @@ abstract class AbstractRenderer:EventReceiver() {
 		resources ?: return
 		if(showlineeffect&&engine.displaysize!=-1) {
 			val color = blk.drawColor
-			val sx = fieldX(engine)+4+x*getBlockWidth(engine)
-			val sy = fieldY(engine)+52+y*getBlockHeight(engine)
+			val sx = fieldX(engine)+4+x*getBlockSize(engine)
+			val sy = fieldY(engine)+52+y*getBlockSize(engine)
 			// 通常Block
 			if(color>=Block.BLOCK_COLOR_GRAY&&color<=Block.BLOCK_COLOR_PURPLE
 				&&!blk.getAttribute(Block.ATTRIBUTE.BONE))
@@ -538,10 +546,10 @@ abstract class AbstractRenderer:EventReceiver() {
 	/* ラインを消す演出の処理 */
 	override fun calcScore(engine:GameEngine, event:GameEngine.ScoreEvent?) {
 		event ?: return
-		val w = engine.fieldWidth*getBlockWidth(engine)/2
+		val w = engine.fieldWidth*getBlockSize(engine)/2
 		val sx = fieldX(engine)+4+w
 
-		val sy = fieldY(engine)+52+getBlockHeight(engine)/2*
+		val sy = fieldY(engine)+52+getBlockSize(engine)/2*
 			when {
 				event.lines==0 -> engine.nowPieceBottomY*2
 				event.split -> (engine.field?.lastLinesTop ?: engine.field?.lastLinesBottom ?: engine.fieldHeight)*2
@@ -555,7 +563,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	override fun addCombo(x:Int, y:Int, pts:Int, type:CHAIN, ex:Int) {
-		effectlist.add(PopupCombo(x, y, pts, type, ex))
+		if(pts>0) effectlist.add(PopupCombo(x, y, pts, type, ex))
 	}
 
 	override fun shootFireworks(engine:GameEngine, x:Int, y:Int, color:COLOR) {
@@ -579,10 +587,10 @@ abstract class AbstractRenderer:EventReceiver() {
 		if(engine.displaysize!=-1) {
 			if(engine.owner.players<=1)
 				drawDirectFont(offsetX+4, offsetY+204, "EXCELLENT!", COLOR.ORANGE, 1f)
-			else drawDirectFont(offsetX+36, offsetY+204, "YOU WIN!", COLOR.ORANGE, 1f)
+			else drawDirectFont(offsetX+36, offsetY+204, "You WIN!", COLOR.ORANGE, 1f)
 		} else if(engine.owner.players<=1)
 			drawDirectFont(offsetX+4, offsetY+80, "EXCELLENT!", COLOR.ORANGE, .5f)
-		else drawDirectFont(offsetX+20, offsetY+80, "YOU WIN!", COLOR.ORANGE, .5f)
+		else drawDirectFont(offsetX+20, offsetY+80, "You WIN!", COLOR.ORANGE, .5f)
 	}
 
 	/* game over画面の描画処理 */
@@ -601,13 +609,13 @@ abstract class AbstractRenderer:EventReceiver() {
 							drawDirectFont(offsetX+12, offsetY+204, "GAME OVER", COLOR.WHITE, 1f)
 						else drawDirectFont(offsetX+28, offsetY+204, "THE END", COLOR.WHITE, 1f)
 						engine.owner.winner==-2 -> drawDirectFont(offsetX+52, offsetY+204, "DRAW", COLOR.GREEN, 1f)
-						engine.owner.players<3 -> drawDirectFont(offsetX+52, offsetY+204, "LOSE", COLOR.WHITE, 1f)
+						engine.owner.players<3 -> drawDirectFont(offsetX+20, offsetY+80, "You Lost", COLOR.WHITE, 1f)
 					}
 				engine.owner.players<2 -> if(engine.ending==0)
 					drawDirectFont(offsetX+4, offsetY+204, "GAME OVER", COLOR.WHITE, 1f)
 				else drawDirectFont(offsetX+20, offsetY+204, "THE END", COLOR.WHITE, 1f)
 				engine.owner.winner==-2 -> drawDirectFont(offsetX+28, offsetY+80, "DRAW", COLOR.GREEN, .5f)
-				engine.owner.players<3 -> drawDirectFont(offsetX+28, offsetY+80, "LOSE", COLOR.WHITE, .5f)
+				engine.owner.players<3 -> drawDirectFont(offsetX+12, offsetY+80, "You Lost", COLOR.WHITE, .5f)
 			}
 	}
 
@@ -638,8 +646,8 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	/* fieldエディット画面の描画処理 */
 	override fun renderFieldEdit(engine:GameEngine, playerID:Int) {
-		val x = fieldX(engine, playerID)+4+engine.fldeditX*16
-		val y = fieldY(engine, playerID)+52+engine.fldeditY*16
+		val x = fieldX(engine, playerID)+4f+engine.fldeditX*getBlockSize(engine)
+		val y = fieldY(engine, playerID)+52f+engine.fldeditY*getBlockSize(engine)
 		val bright = if(engine.fldeditFrames%60>=30) -.5f else -.2f
 		drawBlock(x, y, engine.fldeditColor, engine.skin, false, bright, 1f, 1f)
 	}
@@ -691,13 +699,13 @@ abstract class AbstractRenderer:EventReceiver() {
 	fun drawCombo(x:Int, y:Int, pts:Int, type:CHAIN) {
 		when(type) {
 			CHAIN.B2B -> {
-				drawFont(x-18, y-18, "BACK 2 BACK", FONT.NANO, COLOR.RED)
+				drawFont(x-18, y-15, "BACK 2 BACK", FONT.NANO, COLOR.RED)
 				drawDirectNum(x-18, y, String.format("%2d", pts), color = COLOR.YELLOW, scale = 1.5f)
-				drawFont(x-18, y+20, "CHAIN!",FONT.NANO, COLOR.ORANGE, .75f)
+				drawFont(x-18, y+20, "CHAIN!", FONT.NANO, COLOR.ORANGE, .75f)
 			}
 			CHAIN.COMBO -> {
 				drawDirectNum(x-18, y-0, String.format("%2d", pts), color = COLOR.CYAN, scale = 1.5f)
-				drawFont(x+18, y+8, "REN", FONT.NANO , COLOR.BLUE, .5f)
+				drawFont(x+18, y+8, "REN", FONT.NANO, COLOR.BLUE, .5f)
 				drawFont(x-18, y+20, "COMBO!", FONT.NANO, color = COLOR.BLUE, scale = .75f)
 			}
 		}
@@ -706,19 +714,19 @@ abstract class AbstractRenderer:EventReceiver() {
 	protected abstract fun printFontSpecific(x:Int, y:Int, str:String,
 		font:FONT, color:COLOR, scale:Float, alpha:Float)
 
-	protected abstract fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, alpha:Float )
+	protected abstract fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, alpha:Float)
 
 	protected abstract fun doesGraphicsExist():Boolean
 
-	protected abstract fun drawBlockSpecific(x:Int, y:Int, sx:Int, sy:Int, sk:Int,
-		size:Int, darkness:Float, alpha:Float)
+	protected abstract fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int,
+		size:Float, darkness:Float, alpha:Float)
 
-	protected abstract fun drawLineSpecific(x:Int, y:Int, sx:Int, sy:Int, color:Int = 0xFFFFFF, alpha:Float = 1f,
+	protected abstract fun drawLineSpecific(x:Float, y:Float, sx:Float, sy:Float, color:Int = 0xFFFFFF, alpha:Float = 1f,
 		w:Float = 1f)
 
 	protected abstract fun drawOutlineSpecific(i:Int, j:Int, x:Int, y:Int, blksize:Int, blk:Block, outlineType:Int)
 
-	protected abstract fun drawBadgesSpecific(x:Int, y:Int, sx:Int, sy:Int, w:Int, h:Int)
+	protected abstract fun drawBadgesSpecific(x:Float, y:Float, type:Int, scale:Float)
 	protected abstract fun drawFieldSpecific(x:Int, y:Int, width:Int, viewHeight:Int, blksize:Int, scale:Float,
 		outlineType:Int)
 

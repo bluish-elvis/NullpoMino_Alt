@@ -167,14 +167,18 @@ internal open class RendererSlick:AbstractRenderer() {
 		super.saveReplay(owner, prop, NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", foldername))
 	}
 
-	override fun drawBlockSpecific(x:Int, y:Int, sx:Int, sy:Int, sk:Int,
-		size:Int, darkness:Float, alpha:Float) {
-		val graphics = graphics ?: return
+	override fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int, size:Float, darkness:Float, alpha:Float) {
+		val g = graphics ?: return
 		val img:Image = when {
 			size*2<=BS -> ResourceHolder.imgSmallBlockList[sk]
 			size>=BS*2 -> ResourceHolder.imgBigBlockList[sk]
 			else -> ResourceHolder.imgNormalBlockList[sk]
-		} ?: return
+		}
+		val si = when {
+			size*2<=BS -> BS/2
+			size>=BS*2 -> BS*2
+			else -> BS
+		}
 		val filter = Color(Color.white).apply {
 			a = alpha
 		}.darker(maxOf(0f, darkness))
@@ -183,28 +187,27 @@ internal open class RendererSlick:AbstractRenderer() {
 		if(sx>=imageWidth&&imageWidth!=-1) return
 		val imageHeight = img.height
 		if(sy>=imageHeight&&imageHeight!=-1) return
-		graphics.drawImage(img, x.toFloat(), y.toFloat(), (x+size).toFloat(), (y+size).toFloat(), sx.toFloat(), sy.toFloat(), (sx+size).toFloat(), (sy+size).toFloat(), filter)
+		g.drawImage(img, x, y, (x+size), (y+size), sx*si.toFloat(), sy*si.toFloat(), (sx+1f)*si, (sy+1f)*si, filter)
 
 		if(darkness<0) {
 			val brightfilter = Color(Color.white)
 			brightfilter.a = -darkness
-			graphics.color = brightfilter
-			graphics.fillRect(x.toFloat(), y.toFloat(), size.toFloat(), size.toFloat())
+			g.color = brightfilter
+			g.fillRect(x, y, size, size)
 		}
 	}
 
-	override fun drawLineSpecific(x:Int, y:Int, sx:Int, sy:Int, color:Int, alpha:Float, w:Float) {
-		graphics?.lineWidth = w
-		graphics?.color = Color(color+(maxOf(0f, minOf(1f, alpha))*255).toInt() shl 24)
-		graphics?.drawLine(x, y, sx, sy)
-		graphics?.lineWidth = 1f
+	override fun drawLineSpecific(x:Float, y:Float, sx:Float, sy:Float, color:Int, alpha:Float, w:Float) {
+		val g = graphics ?: return
+		g.lineWidth = w
+		g.color = Color(color).apply {a = alpha}
+		g.drawLine(x, y, sx, sy)
+		g.lineWidth = 1f
 	}
 
 	override fun drawOutlineSpecific(i:Int, j:Int, x:Int, y:Int, blksize:Int, blk:Block, outlineType:Int) {
 		//TODO:("Not yet implemented")
-
 		val g = graphics ?: return
-		val blksize = BS
 		/*blk.let {
 
 					val x2 = x+it.dataX[it.direction][i]
@@ -253,10 +256,11 @@ internal open class RendererSlick:AbstractRenderer() {
 				}*/
 	}
 
-	override fun drawBadgesSpecific(x:Int, y:Int, sx:Int, sy:Int, w:Int, h:Int) {
+	override fun drawBadgesSpecific(x:Float, y:Float, type:Int, scale:Float) {
+		val b = FontBadge(type)
 		graphics?.drawImage(ResourceHolder.imgBadges,
-			x.toFloat(), y.toFloat(), (x+w).toFloat(), (y+h).toFloat(),
-			sx.toFloat(), sy.toFloat(), (sx+w).toFloat(), (sy+h).toFloat())
+			x, y, x+b.w*scale, y+b.h*scale,
+			b.sx.toFloat(), b.sy.toFloat(), (b.sx+b.w).toFloat(), (b.sy+b.h).toFloat())
 	}
 
 	override fun drawFieldSpecific(x:Int, y:Int, width:Int, viewHeight:Int, blksize:Int, scale:Float, outlineType:Int) {
@@ -376,7 +380,7 @@ internal open class RendererSlick:AbstractRenderer() {
 	 * @param engine GameEngineのインスタンス
 	 * @param scale 表示倍率
 	 */
-	override fun drawGhostPiece(x:Int, y:Int, engine:GameEngine, scale:Float) {
+	override fun drawGhostPiece(x:Float, y:Float, engine:GameEngine, scale:Float) {
 		val g = graphics ?: return
 		val blksize = (BS*scale).toInt()
 

@@ -692,7 +692,7 @@ class GrandMastery:AbstractMode() {
 
 					receiver.drawScoreFont(engine, playerID, 0, 14, "QUALIFY CANDIDATE", COLOR.YELLOW)
 					if(promotionalExam>qualifiedGrade) {
-						receiver.drawScoreFont(engine, playerID, 4, 15, "b")
+						receiver.drawScoreFont(engine, playerID, 4, 15, "\u0082")
 						receiver.drawScoreGrade(engine, playerID, 5, 15, getGradeName(promotionalExam), scale = 1.67f)
 					}
 					receiver.drawScoreGrade(engine, playerID, 0, 15, getGradeName(qualifiedGrade), scale = 2f)

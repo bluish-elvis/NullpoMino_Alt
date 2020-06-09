@@ -59,13 +59,13 @@ object GeneralUtil {
 	 */
 
 	@JvmOverloads
-	fun getONorOFF(b:Boolean, islong:Boolean = false):String = if(b) if(islong) "c ENABLE" else "c ON" else if(islong) "c DISABLE" else "e OFF"
+	fun getONorOFF(b:Boolean, islong:Boolean = false):String = if(b)  "\u0083 ${if(islong)"ENABLE" else "ON"}" else "\u0085 ${if(islong) "DISABLE" else "OFF"}"
 
 	/** Returns ○ if b is true, × if b is false
 	 * @param b Boolean variable to be checked
 	 * @return ○ if b is true, × if b is false
 	 */
-	fun getOorX(b:Boolean):String = if(b) "c" else "e"
+	fun getOorX(b:Boolean):String = if(b) "\u0083" else "\u0085"
 
 	fun getReplayFilename(name:String):String {
 		val c = Calendar.getInstance()

@@ -150,21 +150,18 @@ class StateConfigAISelect:BaseGameState() {
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
 		// Menu
-		FontNormal.printFontGrid(1, 1, (player+1).toString()+"P AI SETTING", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, (player+1).toString()+"P AI setting", COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RED)
+		FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RAINBOW)
 
-		val aiName:String = if(aiID<0)
-			"(DISABLE)"
-		else
-			aiNameList[aiID].toUpperCase()
-		FontNormal.printFontGrid(2, 3, "AI TYPE:$aiName", cursor==0)
-		FontNormal.printFontGrid(2, 4, "AI MOVE DELAY:$aiMoveDelay", cursor==1)
-		FontNormal.printFontGrid(2, 5, "AI THINK DELAY:$aiThinkDelay", cursor==2)
-		FontNormal.printFontGrid(2, 6, "AI USE THREAD:"+GeneralUtil.getONorOFF(aiUseThread), cursor==3)
-		FontNormal.printFontGrid(2, 7, "AI SHOW HINT:"+GeneralUtil.getONorOFF(aiShowHint), cursor==4)
-		FontNormal.printFontGrid(2, 8, "AI PRE-THINK:"+GeneralUtil.getONorOFF(aiPrethink), cursor==5)
-		FontNormal.printFontGrid(2, 9, "AI SHOW INFO:"+GeneralUtil.getONorOFF(aiShowState), cursor==6)
+		val aiName:String = if(aiID<0) "(disable)" else aiNameList[aiID]
+		FontNormal.printFontGrid(2, 3, "AI type:$aiName", cursor==0)
+		FontNormal.printFontGrid(2, 4, "AI move delay:$aiMoveDelay", cursor==1)
+		FontNormal.printFontGrid(2, 5, "AI think delay:$aiThinkDelay", cursor==2)
+		FontNormal.printFontGrid(2, 6, "AI use thread:"+GeneralUtil.getONorOFF(aiUseThread), cursor==3)
+		FontNormal.printFontGrid(2, 7, "AI show hint:"+GeneralUtil.getONorOFF(aiShowHint), cursor==4)
+		FontNormal.printFontGrid(2, 8, "AI pre-think:"+GeneralUtil.getONorOFF(aiPrethink), cursor==5)
+		FontNormal.printFontGrid(2, 9, "AI show info:"+GeneralUtil.getONorOFF(aiShowState), cursor==6)
 
 		FontNormal.printFontGrid(1, 28, "A:OK B:CANCEL", COLOR.GREEN)
 	}
@@ -177,12 +174,12 @@ class StateConfigAISelect:BaseGameState() {
 		// Cursor movement
 		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
 			cursor--
-			if(cursor<0) cursor = 5
+			if(cursor<0) cursor = 6
 			ResourceHolder.soundManager.play("cursor")
 		}
 		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 			cursor++
-			if(cursor>5) cursor = 0
+			if(cursor>6) cursor = 0
 			ResourceHolder.soundManager.play("cursor")
 		}
 
@@ -222,7 +219,7 @@ class StateConfigAISelect:BaseGameState() {
 			ResourceHolder.soundManager.play("decide1")
 
 
-				NullpoMinoSlick.propGlobal.setProperty("$player.ai", if(aiID>=0)aiPathList[aiID] else "")
+			NullpoMinoSlick.propGlobal.setProperty("$player.ai", if(aiID>=0)aiPathList[aiID] else "")
 			NullpoMinoSlick.propGlobal.setProperty("$player.aiMoveDelay", aiMoveDelay)
 			NullpoMinoSlick.propGlobal.setProperty("$player.aiThinkDelay", aiThinkDelay)
 			NullpoMinoSlick.propGlobal.setProperty("$player.aiUseThread", aiUseThread)

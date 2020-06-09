@@ -309,9 +309,9 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		for(i in 0 until if(dangerColumnDouble) 2 else 1)
 			if(engine.field==null||engine.field!!.getBlockEmpty(2+i, 0))
 				if(engine.displaysize==1)
-					receiver.drawMenuFont(engine, playerID, 4+i*2, 0, "e", EventReceiver.COLOR.RED, 2f)
+					receiver.drawMenuFont(engine, playerID, 4+i*2, 0, "\u0085", EventReceiver.COLOR.RED, 2f)
 				else
-					receiver.drawMenuFont(engine, playerID, 2+i, 0, "e", EventReceiver.COLOR.RED)
+					receiver.drawMenuFont(engine, playerID, 2+i, 0, "\u0085", EventReceiver.COLOR.RED)
 	}
 
 	/* Called after every frame */

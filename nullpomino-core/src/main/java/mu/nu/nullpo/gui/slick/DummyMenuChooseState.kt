@@ -35,7 +35,7 @@ abstract class DummyMenuChooseState:BaseGameState() {
 	protected var cursor = 0
 
 	/** Max cursor value */
-	abstract val maxCursor:Int
+	abstract val numChoice:Int
 
 	/** Top choice's y-coordinate */
 	protected open var minChoiceY = 3
@@ -97,18 +97,18 @@ abstract class DummyMenuChooseState:BaseGameState() {
 		var mouseConfirm = false
 		if(mouseEnabled) mouseConfirm = updateMouseInput(container.input)
 
-		if(maxCursor>=0) {
+		if(numChoice>=0) {
 			// Cursor movement
 			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
 				cursor--
-				if(cursor<0) cursor = maxCursor-1
+				if(cursor<0) cursor = numChoice-1
 				ResourceHolder.soundManager.play("cursor")
 				flashY = cursor+minChoiceY
 				flashT = 0
 			}
 			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 				cursor++
-				if(cursor>=maxCursor) cursor = 0
+				if(cursor>=numChoice) cursor = 0
 				ResourceHolder.soundManager.play("cursor")
 				flashY = cursor+minChoiceY
 				flashT = 0
@@ -143,7 +143,7 @@ abstract class DummyMenuChooseState:BaseGameState() {
 		if(MouseInput.isMouseClicked) {
 			val y = MouseInput.mouseY shr 4
 			val newCursor = y-minChoiceY
-			if(newCursor in 0 until maxCursor) {
+			if(newCursor in 0 until numChoice) {
 				if(newCursor==cursor) return true
 				ResourceHolder.soundManager.play("cursor")
 				cursor = newCursor
@@ -159,7 +159,7 @@ abstract class DummyMenuChooseState:BaseGameState() {
 	}
 
 	protected fun renderChoices(x:Int, y:Int, choices:Array<String>) {
-		FontNormal.printFontGrid(x-1, y+cursor, "b", EventReceiver.COLOR.RAINBOW)
+		FontNormal.printFontGrid(x-1, y+cursor, "\u0082", EventReceiver.COLOR.RAINBOW)
 		choices.forEachIndexed {i, z ->
 			FontNormal.printFontGrid(x, y+i, z, cursor==i)
 		}

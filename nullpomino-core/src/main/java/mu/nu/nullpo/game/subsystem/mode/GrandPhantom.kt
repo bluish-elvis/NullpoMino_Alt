@@ -501,7 +501,7 @@ class GrandPhantom:AbstractMode() {
 
 						val section = engine.statistics.level/100
 						var strSeparator = " "
-						if(i==section&&engine.ending==0) strSeparator = "b"
+						if(i==section&&engine.ending==0) strSeparator = "\u0082"
 
 						val strSectionTime:String
 						strSectionTime = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))

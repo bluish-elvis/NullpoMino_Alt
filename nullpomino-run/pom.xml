@@ -33,6 +33,7 @@
       </goals>
       <configuration>
        <outputDirectory>${project.build.directory}/install/config</outputDirectory>
+       <overwrite>false</overwrite>
        <resources>
         <resource>
          <directory>config</directory>
@@ -78,12 +79,21 @@
       </goals>
       <configuration>
        <outputDirectory>${project.build.directory}/install/res</outputDirectory>
+       <overwrite>true</overwrite>
        <resources>
         <resource>
          <directory>res</directory>
-         <excludes>
-          <exclude>se/*/</exclude>
-         </excludes>
+         <includes>
+          <include>bgm/**/*.ogg</include>
+          <include>bgm/**/*.txt</include>
+          <include>font/*.ttf</include>
+          <include>graphics/**/*.png</include>
+          <include>icons/*.icns</include>
+          <include>icons/*.ico</include>
+          <include>icons/*.png</include>
+          <include>se/*.ogg</include>
+          <include>se/*.wav</include>
+         </includes>
         </resource>
        </resources>
       </configuration>

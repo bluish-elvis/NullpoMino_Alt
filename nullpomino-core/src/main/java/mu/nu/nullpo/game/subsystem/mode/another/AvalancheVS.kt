@@ -721,14 +721,14 @@ class AvalancheVS:AvalancheVSDummyMode() {
 					for(i in 0 until feverThreshold[playerID]) {
 						if(color==0) color = FEVER_METER_COLORS.size
 						color--
-						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "d", FEVER_METER_COLORS[color])
+						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "\u0084", FEVER_METER_COLORS[color])
 					}
 				} else {
 					for(i in feverPoints[playerID] until feverThreshold[playerID])
-						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "c")
+						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "\u0083")
 					for(i in 0 until feverPoints[playerID]) {
 						val color = feverThreshold[playerID]-1-i
-						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "d", FEVER_METER_COLORS[color])
+						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "\u0084", FEVER_METER_COLORS[color])
 					}
 				}
 			} else if(engine.displaysize==1) {
@@ -901,7 +901,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			feverPoints[playerID] = 0
 			engine.field = feverBackupField[playerID]
 			if(engine.field!=null&&ojamaMeter[playerID])
-				engine.meterValue = ojama[playerID]*receiver.getBlockHeight(engine)/engine.field!!.width
+				engine.meterValue = ojama[playerID]*receiver.getBlockSize(engine)/engine.field!!.width
 			ojama[playerID] += ojamaFever[playerID]
 			ojamaFever[playerID] = 0
 			ojamaAddToFever[playerID] = false

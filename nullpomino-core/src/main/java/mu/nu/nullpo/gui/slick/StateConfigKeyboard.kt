@@ -133,7 +133,7 @@ class StateConfigKeyboard:BasicGameState() {
 		FontNormal.printFontGrid(2, 19, "SCREEN SHOT : ${getKeyName(keymap[GameKeyDummy.BUTTON_SCREENSHOT])}", keynum==15)
 		FontNormal.printFontGrid(2, 20, "[SAVE & EXIT]", keynum==16)
 
-		FontNormal.printFontGrid(1, 4+keynum, "b", COLOR.RED)
+		FontNormal.printFontGrid(1, 4+keynum, "\u0082", COLOR.RAINBOW)
 
 		if(frame>=KEYACCEPTFRAME)
 			when {

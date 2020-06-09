@@ -84,35 +84,35 @@ class ModeManager {
 
 	}
 
-	/** Mode Classnameを取得
-	 * @param id ModeID
+	/** Mode Identifier Nameを取得
+	 * @param id Mode No.
 	 * @return Mode name (idが不正なら「*INVALID MODE*」）
 	 */
-	fun getCName(id:Int):String {
+	fun getID(id:Int):String {
 		return try {
-			modelist[id].javaClass.simpleName
+			modelist[id].id
 		} catch(e:Exception) {
 			"*INVALID MODE*"
 		}
 
 	}
 
-	/** Mode nameからIDを取得
+	/** Mode name/Mode IDからID numberを取得
 	 * @param name Mode name
-	 * @return ModeID (見つからない場合は-1）
+	 * @return ModeNumber (見つからない場合は-1）
 	 */
-	fun getIDbyName(name:String?):Int {
+	fun getNum(name:String?):Int {
 		if(name==null) return -1
 
 		for(i in modelist.indices)
-			if(name.compareTo(modelist[i].name)==0||name.compareTo(modelist[i].javaClass.simpleName)==0)
+			if(name.compareTo(modelist[i].name)==0||name.compareTo(modelist[i].id)==0)
 				return i
 
 		return -1
 	}
 
 	/** Mode オブジェクトを取得
-	 * @param id ModeID
+	 * @param id Mode No.
 	 * @return Modeオブジェクト (idが不正ならnull）
 	 */
 	fun getMode(id:Int):GameMode? {
@@ -130,7 +130,7 @@ class ModeManager {
 	 */
 	fun getMode(name:String):GameMode? {
 		return try {
-			modelist[getIDbyName(name)]
+			modelist[getNum(name)]
 		} catch(e:Exception) {
 			null
 		}

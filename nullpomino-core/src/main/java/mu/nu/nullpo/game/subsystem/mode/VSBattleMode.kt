@@ -39,6 +39,7 @@ class VSBattleMode:AbstractMode() {
 
 	/** garbage blockType of */
 	private var garbageType:IntArray = IntArray(0)
+	private val garbageStyle get() = garbageType.map {GARBAGE_STYLE.values()[it]}
 
 	/** Rate of change of garbage holes */
 	private var garbagePercent:IntArray = IntArray(0)
@@ -50,19 +51,16 @@ class VSBattleMode:AbstractMode() {
 	private var garbageBlocking:BooleanArray = BooleanArray(0)
 
 	/** Has accumulatedgarbage blockOfcount */
-	private var garbage:IntArray = IntArray(0)
+	private val garbage:IntArray get() = (0 until players).map {getTotalGarbageLines(it)}.toIntArray()
 
-	/** Had sentgarbage blockOfcount */
+	/** Had sent garbage blockOfcount */
 	private var garbageSent:IntArray = IntArray(0)
+
+	/** Had guard garbage blockOfcount */
+	private var garbageGuard:IntArray = IntArray(0)
 
 	/** Last garbage hole position */
 	private var lastHole:IntArray = IntArray(0)
-
-	/** Time to display the most recent increase in score */
-	private var scgettime:IntArray = IntArray(0)
-
-	/** Most recent scoring event type */
-	private var lastevent:IntArray = IntArray(0)
 
 	/** Most recent scoring eventInB2BIf it&#39;s the casetrue */
 	private var lastb2b:BooleanArray = BooleanArray(0)
@@ -150,7 +148,7 @@ class VSBattleMode:AbstractMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "VS-BATTLE"
+		get() = "VS:Face to Face"
 
 	override val isVSMode:Boolean
 		get() = true
@@ -168,11 +166,9 @@ class VSBattleMode:AbstractMode() {
 		garbagePercent = IntArray(MAX_PLAYERS)
 		garbageCounter = BooleanArray(MAX_PLAYERS)
 		garbageBlocking = BooleanArray(MAX_PLAYERS)
-		garbage = IntArray(MAX_PLAYERS)
 		garbageSent = IntArray(MAX_PLAYERS)
+		garbageGuard = IntArray(MAX_PLAYERS)
 		lastHole = IntArray(MAX_PLAYERS)
-		scgettime = IntArray(MAX_PLAYERS)
-		lastevent = IntArray(MAX_PLAYERS)
 		lastb2b = BooleanArray(MAX_PLAYERS)
 		lastcombo = IntArray(MAX_PLAYERS)
 		lastpiece = IntArray(MAX_PLAYERS)
@@ -239,9 +235,9 @@ class VSBattleMode:AbstractMode() {
 		val playerID = engine.playerID
 		bgmno = prop.getProperty("vsbattle.bgmno", 0)
 		if(version>=5)
-			garbageType[playerID] = prop.getProperty("vsbattle.garbageType.p$playerID", GARBAGE_TYPE_NOCHANGE_ONE_ATTACK)
+			garbageType[playerID] = prop.getProperty("vsbattle.garbageType.p$playerID", 0)
 		else
-			garbageType[playerID] = prop.getProperty("vsbattle.garbageType", GARBAGE_TYPE_NOCHANGE_ONE_ATTACK)
+			garbageType[playerID] = prop.getProperty("vsbattle.garbageType", 0)
 		garbagePercent[playerID] = prop.getProperty("vsbattle.garbagePercent.p$playerID", 100)
 		garbageCounter[playerID] = prop.getProperty("vsbattle.garbageCounter.p$playerID", true)
 		garbageBlocking[playerID] = prop.getProperty("vsbattle.garbageBlocking.p$playerID", true)
@@ -321,13 +317,7 @@ class VSBattleMode:AbstractMode() {
 	 * @param playerID Player ID
 	 * @return I have now accumulatedgarbage blockOfcount
 	 */
-	private fun getTotalGarbageLines(playerID:Int):Int {
-		var count = 0
-		garbageEntries[playerID].forEach {garbageEntry ->
-			count += garbageEntry.lines
-		}
-		return count
-	}
+	private fun getTotalGarbageLines(playerID:Int):Int = garbageEntries[playerID].sumBy {it.lines}
 
 	/** For previewMapRead
 	 * @param engine GameEngine
@@ -357,12 +347,10 @@ class VSBattleMode:AbstractMode() {
 		}
 
 		engine.framecolor = PLAYER_COLOR_FRAME[playerID]
-
-		garbage[playerID] = 0
+		engine.ruleopt.lockresetLimitMove = engine.ruleopt.lockresetLimitMove.let {if(it<0) 30 else minOf(it, 30)}
+		engine.ruleopt.lockresetLimitRotate = engine.ruleopt.lockresetLimitRotate.let {if(it<0) 20 else minOf(it, 20)}
 		garbageSent[playerID] = 0
 		lastHole[playerID] = -1
-		scgettime[playerID] = 0
-		lastevent[playerID] = EVENT_NONE
 		lastb2b[playerID] = false
 		lastcombo[playerID] = 0
 
@@ -386,7 +374,7 @@ class VSBattleMode:AbstractMode() {
 		// Menu
 		if(!engine.owner.replayMode&&engine.statc[4]==0) {
 			// Configuration changes
-			val change = updateCursor(engine, 27, playerID)
+			val change = updateCursor(engine, 26, playerID)
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -438,8 +426,8 @@ class VSBattleMode:AbstractMode() {
 					}
 					9 -> {
 						garbageType[playerID] += change
-						if(garbageType[playerID]<0) garbageType[playerID] = 2
-						if(garbageType[playerID]>2) garbageType[playerID] = 0
+						if(garbageType[playerID]<0) garbageType[playerID] = GARBAGE_STYLE.values().size-1
+						if(garbageType[playerID]>=GARBAGE_STYLE.values().size) garbageType[playerID] = 0
 					}
 					10 -> {
 						garbagePercent[playerID] += change
@@ -455,40 +443,40 @@ class VSBattleMode:AbstractMode() {
 						if(twistEnableType[playerID]>2) twistEnableType[playerID] = 0
 					}
 					14 -> enableTwistKick[playerID] = !enableTwistKick[playerID]
-					16 -> twistEnableEZ[playerID] = !twistEnableEZ[playerID]
-					17 -> {
+					15 -> twistEnableEZ[playerID] = !twistEnableEZ[playerID]
+					16 -> {
 						//enableB2B[playerID] = !enableB2B[playerID];
 						b2bType[playerID] += change
 						if(b2bType[playerID]<0) b2bType[playerID] = 2
 						if(b2bType[playerID]>2) b2bType[playerID] = 0
 					}
-					18 -> enableCombo[playerID] = !enableCombo[playerID]
-					19 -> big[playerID] = !big[playerID]
-					20 -> enableSE[playerID] = !enableSE[playerID]
-					21 -> {
+					17 -> enableCombo[playerID] = !enableCombo[playerID]
+					18 -> big[playerID] = !big[playerID]
+					19 -> enableSE[playerID] = !enableSE[playerID]
+					20 -> {
 						hurryupSeconds[playerID] += change
 						if(hurryupSeconds[playerID]<-1) hurryupSeconds[playerID] = 300
 						if(hurryupSeconds[playerID]>300) hurryupSeconds[playerID] = -1
 					}
-					22 -> {
+					21 -> {
 						hurryupInterval[playerID] += change
 						if(hurryupInterval[playerID]<1) hurryupInterval[playerID] = 99
 						if(hurryupInterval[playerID]>99) hurryupInterval[playerID] = 1
 					}
-					23 -> {
+					22 -> {
 						bgmno += change
 						if(bgmno<0) bgmno = BGM.count-1
 						if(bgmno>=BGM.count) bgmno = 0
 					}
-					24 -> showStats = !showStats
-					25 -> {
+					23 -> showStats = !showStats
+					24 -> {
 						useMap[playerID] = !useMap[playerID]
 						if(!useMap[playerID]) {
 							if(engine.field!=null) engine.field!!.reset()
 						} else
 							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 					}
-					26 -> {
+					25 -> {
 						mapSet[playerID] += change
 						if(mapSet[playerID]<0) mapSet[playerID] = 99
 						if(mapSet[playerID]>99) mapSet[playerID] = 0
@@ -497,7 +485,7 @@ class VSBattleMode:AbstractMode() {
 							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 						}
 					}
-					27 -> if(useMap[playerID]) {
+					26 -> if(useMap[playerID]) {
 						mapNumber[playerID] += change
 						if(mapNumber[playerID]<-1) mapNumber[playerID] = mapMaxNo[playerID]-1
 						if(mapNumber[playerID]>mapMaxNo[playerID]-1) mapNumber[playerID] = -1
@@ -511,16 +499,18 @@ class VSBattleMode:AbstractMode() {
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
-				if(menuCursor==7)
-					loadPreset(engine, owner.modeConfig, presetNumber[playerID])
-				else if(menuCursor==8) {
-					savePreset(engine, owner.modeConfig, presetNumber[playerID])
-					owner.saveModeConfig()
-				} else {
-					saveOtherSetting(engine, owner.modeConfig)
-					savePreset(engine, owner.modeConfig, -1-playerID)
-					owner.saveModeConfig()
-					engine.statc[4] = 1
+				when(menuCursor) {
+					7 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID])
+					8 -> {
+						savePreset(engine, owner.modeConfig, presetNumber[playerID])
+						owner.saveModeConfig()
+					}
+					else -> {
+						saveOtherSetting(engine, owner.modeConfig)
+						savePreset(engine, owner.modeConfig, -1-playerID)
+						owner.saveModeConfig()
+						engine.statc[4] = 1
+					}
 				}
 			}
 
@@ -550,7 +540,7 @@ class VSBattleMode:AbstractMode() {
 			if(menuTime>=60) menuCursor = 9
 			if(menuTime>=120) engine.statc[4] = 1
 		} else // Start
-			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&playerID==1) {
+			if(owner.engine[0].statc[4]==1&&((owner.engine[1].statc[4]==1||owner.engine[1].ai!=null)&&playerID==1)) {
 				owner.engine[0].stat = GameEngine.Status.READY
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
@@ -568,21 +558,21 @@ class VSBattleMode:AbstractMode() {
 					drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
 					drawMenu(engine, playerID, receiver, 14, COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
 				}
-				menuCursor<19 -> {
-					var strTWISTEnable = ""
-					if(version>=4) {
-						if(twistEnableType[playerID]==0) strTWISTEnable = "OFF"
-						if(twistEnableType[playerID]==1) strTWISTEnable = "T-ONLY"
-						if(twistEnableType[playerID]==2) strTWISTEnable = "ALL"
-					} else
-						strTWISTEnable = GeneralUtil.getONorOFF(enableTwist[playerID])
+				menuCursor<18 -> {
+					val strTWISTEnable = when {
+						twistEnableType[playerID]==0 -> "OFF"
+						twistEnableType[playerID]==1 -> "T-ONLY"
+						twistEnableType[playerID]==2 -> "ALL"
+						else -> ""
+					}
+
 					val strB2BType = when(b2bType[playerID]) {
 						0 -> "OFF"
 						1 -> "ON"
 						2 -> "SEPARATE"
 						else -> ""
 					}
-					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "GARBAGE", GARBAGE_TYPE_STRING[garbageType[playerID]],
+					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "GARBAGE", garbageStyle[playerID].name,
 						"CHANGERATE", "${garbagePercent[playerID]}%", "COUNTERING", GeneralUtil.getONorOFF(garbageCounter[playerID]),
 						"BLOCKING", GeneralUtil.getONorOFF(garbageBlocking[playerID]), "SPIN BONUS", strTWISTEnable,
 						"KICK SPIN", GeneralUtil.getONorOFF(enableTwistKick[playerID]),
@@ -590,14 +580,14 @@ class VSBattleMode:AbstractMode() {
 						"COMBO", GeneralUtil.getONorOFF(enableCombo[playerID]))
 				}
 				else -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 19, "BIG", GeneralUtil.getONorOFF(big[playerID]),
+					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 18, "BIG", GeneralUtil.getONorOFF(big[playerID]),
 						"SE", GeneralUtil.getONorOFF(enableSE[playerID]),
 						"HURRYUP",
 						if(hurryupSeconds[playerID]==-1) "NONE" else "${hurryupSeconds[playerID]}SEC",
 						"INTERVAL", "${hurryupInterval[playerID]}")
-					drawMenu(engine, playerID, receiver, 8, COLOR.PINK, 23, "BGM", "${BGM.values[bgmno]}",
+					drawMenu(engine, playerID, receiver, 8, COLOR.PINK, 22, "BGM", "${BGM.values[bgmno]}",
 						"SHOW STATS", GeneralUtil.getONorOFF(showStats))
-					drawMenu(engine, playerID, receiver, 12, COLOR.CYAN, 25, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]),
+					drawMenu(engine, playerID, receiver, 12, COLOR.CYAN, 24, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]),
 						"MAP SET", "${mapSet[playerID]}",
 						"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}")
 				}
@@ -675,56 +665,54 @@ class VSBattleMode:AbstractMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		// Status display
 		if(playerID==0) {
-			receiver.drawDirectFont(256, 16, GeneralUtil.getTime(engine.statistics.time))
+			receiver.drawDirectNum(232, 16, GeneralUtil.getTime(engine.statistics.time), scale = 2f)
 
 			if(hurryupSeconds[playerID]>=0&&engine.timerActive&&
 				engine.statistics.time>=hurryupSeconds[playerID]*60&&engine.statistics.time<(hurryupSeconds[playerID]+5)*60)
-				receiver.drawDirectFont(playerID, 256-8, 32, "DANGER", engine.statistics.time%2==0)
-		}
+				receiver.drawDirectFont(256, 32, "DANGER", if(engine.statistics.time%2==0) COLOR.RED else COLOR.WHITE)
 
-		if(playerID==0&&owner.receiver.nextDisplayType!=2&&showStats) {
-			receiver.drawScoreFont(engine, playerID, 0, 0, "VS-BATTLE", COLOR.ORANGE)
+			if(owner.receiver.nextDisplayType!=2&&showStats) {
+				receiver.drawScoreFont(engine, playerID, 0, 0, "VS-BATTLE", COLOR.ORANGE)
 
-			receiver.drawScoreFont(engine, playerID, 0, 2, "1P ATTACK", COLOR.RED)
-			receiver.drawScoreFont(engine, playerID, 0, 3, "${garbageSent[0]}")
+				receiver.drawScoreFont(engine, playerID, 0, 2, "1P ATTACK", COLOR.RED)
+				receiver.drawScoreNum(engine, playerID, 0, 3, "${garbageSent[0]}")
 
-			receiver.drawScoreFont(engine, playerID, 0, 5, "2P ATTACK", COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 6, "${garbageSent[1]}")
+				receiver.drawScoreFont(engine, playerID, 0, 5, "2P ATTACK", COLOR.BLUE)
+				receiver.drawScoreNum(engine, playerID, 0, 6, "${garbageSent[1]}")
 
-			if(!owner.replayMode) {
-				receiver.drawScoreFont(engine, playerID, 0, 8, "1P WINS", COLOR.RED)
-				receiver.drawScoreFont(engine, playerID, 0, 9, "${winCount[0]}")
+				if(!owner.replayMode) {
+					receiver.drawScoreFont(engine, playerID, 0, 8, "1P WINS", COLOR.RED)
+					receiver.drawScoreNum(engine, playerID, 0, 9, "${winCount[0]}")
 
-				receiver.drawScoreFont(engine, playerID, 0, 11, "2P WINS", COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 12, "${winCount[1]}")
+					receiver.drawScoreFont(engine, playerID, 0, 11, "2P WINS", COLOR.BLUE)
+					receiver.drawScoreNum(engine, playerID, 0, 12, "${winCount[1]}")
+				}
 			}
 		}
-
 		if(showStats) {
 			val x = receiver.fieldX(engine)
 			val y = receiver.fieldY(engine)
-			val fontColor = when {
-				garbage[playerID]>=1 -> COLOR.YELLOW
-				garbage[playerID]>=3 -> COLOR.ORANGE
-				garbage[playerID]>=4 -> COLOR.RED
-				else -> COLOR.WHITE
-			}
 
 			val strTempGarbage = String.format("%5d", garbage[playerID])
-			if(garbage[playerID]>0) {
-				receiver.drawDirectFont(x+96, y+372, strTempGarbage, fontColor)
+			garbageEntries[playerID].forEachIndexed {i, g ->
+				receiver.drawDirectNum(x+176, y+372-i*16, "${g.lines}", when {
+					g.lines>=1 -> COLOR.YELLOW
+					g.lines>=3 -> COLOR.ORANGE
+					g.lines>=4 -> COLOR.RED
+					else -> COLOR.WHITE
+				})
 			}
 
-			if(owner.receiver.nextDisplayType==2) {
-				val fontColor = EventReceiver.getPlayerColor(playerID)
+//			if(owner.receiver.nextDisplayType==2) {
+			val fontColor = EventReceiver.getPlayerColor(playerID)
 
-				receiver.drawDirectFont(x-48, y+120, "TOTAL", fontColor, .5f)
-				receiver.drawDirectFont(x-52, y+128, "SPIKE", fontColor, .5f)
-				receiver.drawDirectFont(x-if(garbageSent[playerID]>=10) 44 else 36, y+142, "${garbageSent[playerID]}")
+			receiver.drawDirectFont(x-48, y+120, "TOTAL", fontColor, .5f)
+			receiver.drawDirectFont(x-52, y+128, "SPIKE", fontColor, .5f)
+			receiver.drawDirectNum(x-if(garbageSent[playerID]>=10) 44 else 36, y+142, "${garbageSent[playerID]}")
 
-				receiver.drawDirectFont(x-44, y+190, "WINS", fontColor, .5f)
-				receiver.drawDirectFont(x-if(winCount[playerID]>=10) 44 else 36, y+204, "${winCount[playerID]}")
-			}
+			receiver.drawDirectFont(x-44, y+190, "WINS", fontColor, .5f)
+			receiver.drawDirectNum(x-if(winCount[playerID]>=10) 44 else 36, y+204, "${winCount[playerID]}")
+//			}
 		}
 	}
 
@@ -733,110 +721,21 @@ class VSBattleMode:AbstractMode() {
 		var enemyID = 0
 		if(playerID==0) enemyID = 1
 		var pts = super.calcPower(engine, lines)
-
 		//  Attack
 		if(lines>0) {
 			var ptsB2B = 0
-			scgettime[playerID] = 0
-
-			if(engine.twist) {
-				// Immobile EZ Spin
-				if(engine.twistez) {
-					if(engine.useAllSpinBonus) {
-						//pts += 0;
-					} else
-						pts += 1
-					lastevent[playerID] = EVENT_TWIST_EZ
-				} else if(lines==1) {
-					if(engine.twistmini) {
-						if(engine.useAllSpinBonus) {
-							//pts += 0;
-						} else
-							pts += 1
-						lastevent[playerID] = EVENT_TWIST_SINGLE_MINI
-					} else {
-						pts += 2
-						lastevent[playerID] = EVENT_TWIST_SINGLE
-					}
-				} else if(lines==2) {
-					if(engine.twistmini&&engine.useAllSpinBonus) {
-						pts += 3
-						lastevent[playerID] = EVENT_TWIST_DOUBLE_MINI
-					} else {
-						pts += 4
-						lastevent[playerID] = EVENT_TWIST_DOUBLE
-					}
-				} else if(lines>=3) {
-					pts += 6
-					lastevent[playerID] = EVENT_TWIST_TRIPLE
-				}// Twister 3 lines
-				// Twister 2 lines
-				// Twister 1 line
-			} else if(lines==1)
-			// 1Column
-				lastevent[playerID] = EVENT_SINGLE
-			else if(lines==2) {
-				pts += 1 // 2Column
-				lastevent[playerID] = EVENT_DOUBLE
-			} else if(lines==3) {
-				pts += 2 // 3Column
-				lastevent[playerID] = EVENT_TRIPLE
-			} else if(lines>=4) {
-				pts += 4 // 4 lines
-				lastevent[playerID] = EVENT_FOUR
-			}
 
 			// B2B
+			lastb2b[playerID] = engine.b2b
 			if(engine.b2b) {
-				lastb2b[playerID] = true
-
-				if(pts>0) {
-					ptsB2B += if(version>=1&&lastevent[playerID]==EVENT_TWIST_TRIPLE&&!engine.useAllSpinBonus)
-						2
-					else
-						1
-
-					if(b2bType[playerID]==1) pts += ptsB2B // Non-separated B2B
-				}
-			} else
-				lastb2b[playerID] = false
-
-			// Combo
-			if(engine.comboType!=GameEngine.COMBO_TYPE_DISABLE) {
-				var cmbindex = engine.combo-1
-				if(cmbindex<0) cmbindex = 0
-				if(cmbindex>=COMBO_ATTACK_TABLE.size) cmbindex = COMBO_ATTACK_TABLE.size-1
-				pts += COMBO_ATTACK_TABLE[cmbindex]
-				lastcombo[playerID] = engine.combo
+				if(b2bType[playerID]==2)
+					ptsB2B += if(!engine.useAllSpinBonus) 2 else 1
 			}
-
-			// All clear
-			if(lines>=1&&engine.field!!.isEmpty) pts += 6
 
 			// gem block attack
 			pts += engine.field!!.howManyGemClears
 
 			lastpiece[playerID] = engine.nowPieceObject!!.id
-
-			/* if(pts > 0) {
- * garbageSent[playerID] += pts;
- * if(garbage[playerID] > 0) {
- * // Offset
- * garbage[playerID] -= pts;
- * if(garbage[playerID] < 0) {
- * // Ojama return
- * garbage[enemyID] += Math.abs(garbage[playerID]);
- * garbage[playerID] = 0;
- * }
- * } else {
- * // Attack
- * garbage[enemyID] += pts;
- * }
- * } */
-
-			// Attack lines count
-			garbageSent[playerID] += pts
-			if(b2bType[playerID]==2) garbageSent[playerID] += ptsB2B
 
 			// Offset
 			garbage[playerID] = getTotalGarbageLines(playerID)
@@ -848,112 +747,78 @@ class VSBattleMode:AbstractMode() {
 					if(garbageEntry.lines<=0) {
 						pts = abs(garbageEntry.lines)
 						garbageEntries[playerID].removeFirst()
-					} else
-						pts = 0
+					} else pts = 0
 				}
 
 			//  Attack
 			if(pts>0) {
-				garbageEntries[enemyID].add(GarbageEntry(pts, playerID))
+				garbageSent[playerID] += pts
+				garbageEntries[enemyID].add(GarbageEntry(pts-ptsB2B, playerID))
 
 				// Separated B2B
 				if(b2bType[playerID]==2&&ptsB2B>0) garbageEntries[enemyID].add(GarbageEntry(ptsB2B, playerID))
-
-				garbage[enemyID] = getTotalGarbageLines(enemyID)
 
 				if(owner.engine[enemyID].ai==null&&garbage[enemyID]>=4) owner.engine[enemyID].playSE("danger")
 			}
 		}
 
 		// Rising auction
-		garbage[playerID] = getTotalGarbageLines(playerID)
 		if((lines==0||!garbageBlocking[playerID])&&garbage[playerID]>0) {
-			engine.playSE("garbage${if(garbage[playerID]>3)1 else 0}")
+			engine.playSE("garbage${if(garbage[playerID]>=3) 1 else 0}")
+			var gct = 0
+			do {
+				garbageEntries[playerID].first {it.lines>0}.let {
 
-			while(!garbageEntries[playerID].isEmpty()) {
-				val garbageEntry = garbageEntries[playerID].poll()
-				val garbageColor = PLAYER_COLOR_BLOCK[garbageEntry.playerID]
-
-				if(garbageEntry.lines>0) {
-					var hole = lastHole[playerID]
-					if(hole==-1||version<=4) hole = engine.random.nextInt(engine.field!!.width)
-
-					if(garbageType[playerID]==GARBAGE_TYPE_NORMAL)
-					// Change the normal hole position
-						while(garbageEntry.lines>0) {
-							engine.field!!.addSingleHoleGarbage(hole, garbageColor, engine.skin, 1)
-
-							if(version>=5) {
-								if(engine.random.nextInt(100)<garbagePercent[playerID])
-									hole = engine.random.nextInt(engine.field!!.width)
-							} else if(engine.random.nextInt(10)>=7) hole = engine.random.nextInt(engine.field!!.width)
-
-							garbageEntry.lines--
+					if(it.lines>0) {
+						val garbageColor = PLAYER_COLOR_BLOCK[it.playerID]
+						val l = minOf(it.lines, when(garbageStyle[playerID]) {
+							GARBAGE_STYLE.FiveLines -> 5-gct
+							GARBAGE_STYLE.Primitive -> 1
+							else -> engine.fieldHeight
+						})
+						var hole = lastHole[playerID]
+						if(hole==-1) hole = engine.random.nextInt(engine.field!!.width)
+						else if(engine.random.nextInt(100)<garbagePercent[playerID]||hole==-1) {
+							var newHole = engine.random.nextInt(engine.field!!.width-1)
+							if(newHole>=hole) newHole++
+							hole = newHole
 						}
-					else if(garbageType[playerID]==GARBAGE_TYPE_NOCHANGE_ONE_RISE) {
-						// 1Hole position does not change at the rising times of auction
-						if(version>=5) {
-							if(engine.random.nextInt(100)<garbagePercent[playerID]) {
-								var newHole = engine.random.nextInt(engine.field!!.width-1)
-								if(newHole>=hole) newHole++
-								hole = newHole
-							}
-						} else
-							hole = engine.random.nextInt(engine.field!!.width)
 
-						engine.field!!.addSingleHoleGarbage(hole, garbageColor, engine.skin, garbage[playerID])
-						garbageEntries[playerID].clear()
-						break
-					} else if(garbageType[playerID]==GARBAGE_TYPE_NOCHANGE_ONE_ATTACK) {
-						// garbage blockThe position of the holes in the1Of times Attack I will not change(2If you change more than once)
-						if(version>=5) {
-							if(engine.random.nextInt(100)<garbagePercent[playerID]) {
-								var newHole = engine.random.nextInt(engine.field!!.width-1)
-								if(newHole>=hole) newHole++
-								hole = newHole
-							}
-						} else
-							hole = engine.random.nextInt(engine.field!!.width)
-
-						engine.field!!.addSingleHoleGarbage(hole, garbageColor, engine.skin, garbageEntry.lines)
+						engine.field?.addSingleHoleGarbage(hole, garbageColor, engine.skin, l)
+						gct += l
+						it.lines -= l
+						lastHole[playerID] = hole
 					}
-
-					lastHole[playerID] = hole
 				}
-			}
-
-			garbage[playerID] = 0
+				garbageEntries[playerID].removeAll {it.lines<=0}
+			} while(when(garbageStyle[playerID]) {
+					GARBAGE_STYLE.STACK -> false
+					GARBAGE_STYLE.FiveLines -> gct<5
+					else -> true
+				}&&!garbageEntries[playerID].isEmpty())
 		}
 
 		// HURRY UP!
-		if(version>=2) {
-			if(hurryupSeconds[playerID]>=0&&engine.timerActive)
-				if(engine.statistics.time>=hurryupSeconds[playerID]*60) {
-					hurryupCount[playerID]++
+		if(hurryupSeconds[playerID]>=0&&engine.timerActive)
+			if(engine.statistics.time>=hurryupSeconds[playerID]*60) {
+				hurryupCount[playerID]++
 
-					if(hurryupCount[playerID]%hurryupInterval[playerID]==0) engine.field!!.addHurryupFloor(1, engine.skin)
-				} else
-					hurryupCount[playerID] = hurryupInterval[playerID]-1
-		} else if(hurryupSeconds[playerID]>=0&&engine.timerActive&&engine.statistics.time>=hurryupSeconds[playerID]*60) {
-			hurryupCount[playerID]++
+				if(hurryupCount[playerID]%hurryupInterval[playerID]==0) engine.field!!.addHurryupFloor(1, engine.skin)
+			} else hurryupCount[playerID] = hurryupInterval[playerID]-1
 
-			if(hurryupCount[playerID]%hurryupInterval[playerID]==0) engine.field!!.addHurryupFloor(1, engine.skin)
-		}
 		return pts
 	}
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		scgettime[playerID]++
-
 		// HURRY UP!
 		if(playerID==0&&engine.timerActive&&hurryupSeconds[playerID]>=0&&engine.statistics.time==hurryupSeconds[playerID]*60)
 			engine.playSE("hurryup")
 
 		// Rising auctionMeter
-		if(garbage[playerID]*receiver.getBlockHeight(engine)>engine.meterValue)
-			engine.meterValue += receiver.getBlockHeight(engine)/2
-		else if(garbage[playerID]*receiver.getBlockHeight(engine)<engine.meterValue) engine.meterValue--
+		if(garbage[playerID]*receiver.getBlockSize(engine)>engine.meterValue)
+			engine.meterValue += receiver.getBlockSize(engine)/2
+		else if(garbage[playerID]*receiver.getBlockSize(engine)<engine.meterValue) engine.meterValue--
 		when {
 			garbage[playerID]>=4 -> engine.meterColor = GameEngine.METER_COLOR_RED
 			garbage[playerID]>=3 -> engine.meterColor = GameEngine.METER_COLOR_ORANGE
@@ -966,14 +831,18 @@ class VSBattleMode:AbstractMode() {
 			if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// Draw
 				winnerID = -1
-				owner.engine[0].gameEnded()
-				owner.engine[1].gameEnded()
+				owner.engine.forEach {
+					it.gameEnded()
+					it.stopSE("danger")
+				}
 				owner.bgmStatus.bgm = BGM.SILENT
 			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
-				owner.engine[0].gameEnded()
-				owner.engine[1].gameEnded()
+				owner.engine.forEach {
+					it.gameEnded()
+					it.stopSE("danger")
+				}
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
@@ -982,8 +851,10 @@ class VSBattleMode:AbstractMode() {
 			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
 				// 2P win
 				winnerID = 1
-				owner.engine[0].gameEnded()
-				owner.engine[1].gameEnded()
+				owner.engine.forEach {
+					it.gameEnded()
+					it.stopSE("danger")
+				}
 				owner.engine[1].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
@@ -994,22 +865,21 @@ class VSBattleMode:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "RESULT", COLOR.ORANGE)
 		when(winnerID) {
-			-1 -> receiver.drawMenuFont(engine, playerID, 6, 1, "DRAW", COLOR.GREEN)
-			playerID -> receiver.drawMenuFont(engine, playerID, 6, 1, "WIN!", COLOR.YELLOW)
-			else -> receiver.drawMenuFont(engine, playerID, 6, 1, "LOSE", COLOR.WHITE)
+			-1 -> receiver.drawMenuFont(engine, playerID, 0, 0, "Double KO.", COLOR.YELLOW)
+			playerID -> receiver.drawMenuFont(engine, playerID, 1, 0, "You Won!", COLOR.GREEN)
+			else -> receiver.drawMenuFont(engine, playerID, 1, 0, "You Lost", COLOR.RED)
 		}
 
 		val apm = (garbageSent[playerID]*3600).toFloat()/engine.statistics.time.toFloat()
 		var apl = 0f
 		if(engine.statistics.lines>0) apl = garbageSent[playerID].toFloat()/engine.statistics.lines.toFloat()
 
-		drawResult(engine, playerID, receiver, 2, COLOR.ORANGE, "ATTACK", String.format("%10d", garbageSent[playerID]))
+		drawResult(engine, playerID, receiver, 2, COLOR.ORANGE, "ATTACK", garbageSent[playerID])
 		drawResultStats(engine, playerID, receiver, 4, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE)
-		drawResult(engine, playerID, receiver, 8, COLOR.ORANGE, "ATK/LINE", String.format("%10g", apl))
-		drawResult(engine, playerID, receiver, 10, COLOR.ORANGE, "ATTACK/MIN", String.format("%10g", apm))
-		drawResultStats(engine, playerID, receiver, 12, COLOR.ORANGE, Statistic.LPM, Statistic.PPS, Statistic.TIME)
+		drawResult(engine, playerID, receiver, 8, COLOR.ORANGE, "ATK/LINE", apl)
+		drawResult(engine, playerID, receiver, 10, COLOR.ORANGE, "ATTACK/MIN", apm)
+		drawResultStats(engine, playerID, receiver, 12, COLOR.ORANGE, Statistic.PPS, Statistic.MAXCOMBO, Statistic.MAXB2B)
 	}
 
 	/* Called when saving replay */
@@ -1022,24 +892,11 @@ class VSBattleMode:AbstractMode() {
 		owner.replayProp.setProperty("vsbattle.version", version)
 	}
 
-	/** I was sent from the enemygarbage blockOf data */
-	private inner class GarbageEntry
-	/** With parametersConstructor
-	 * @param g garbage blockcount
-	 * @param p Source
+	/** sent from the enemygarbage blockOf data
+	 * @param lines garbage blockcount
+	 * @param playerID Sender players ID
 	 */
-	(g:Int, p:Int) {
-		/** garbage blockcount */
-		var lines = 0
-
-		/** Source */
-		var playerID = 0
-
-		init {
-			lines = g
-			playerID = p
-		}
-	}
+	private data class GarbageEntry(var lines:Int, val playerID:Int)
 
 	companion object {
 		/** Combo attack table */
@@ -1047,18 +904,15 @@ class VSBattleMode:AbstractMode() {
 
 		/** garbage blockChanges to the position of the holes in the normally
 		 * random */
-		private const val GARBAGE_TYPE_NORMAL = 0
-
-		/** garbage blockThe position of the holes in the1I would not change my time
-		 * at the rising auction */
-		private const val GARBAGE_TYPE_NOCHANGE_ONE_RISE = 1
-
-		/** garbage blockThe position of the holes in the1Of times Attack I will not
-		 * change(2If you change more than once) */
-		private const val GARBAGE_TYPE_NOCHANGE_ONE_ATTACK = 2
-
-		/** garbage blockThe display name of the type */
-		private val GARBAGE_TYPE_STRING = arrayOf("NORMAL", "ONE RISE", "1-ATTACK")
+		private enum class GARBAGE_STYLE {
+			STACK // One Attack will One garbage-Group
+			,
+			FiveLines // Each One turn will draws max 5 lines
+			,
+			OnceAll // All garbages will put-out on Once placing
+			,
+			Primitive // All garbages will put-out and all garbage groups will scattered
+		}
 
 		/** Each player's garbage block cint */
 		private val PLAYER_COLOR_BLOCK = intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE)
@@ -1072,17 +926,5 @@ class VSBattleMode:AbstractMode() {
 		/** Number of players */
 		private const val MAX_PLAYERS = 2
 
-		/** Most recent scoring event type constants */
-		private const val EVENT_NONE = 0
-		private const val EVENT_SINGLE = 1
-		private const val EVENT_DOUBLE = 2
-		private const val EVENT_TRIPLE = 3
-		private const val EVENT_FOUR = 4
-		private const val EVENT_TWIST_SINGLE_MINI = 5
-		private const val EVENT_TWIST_SINGLE = 6
-		private const val EVENT_TWIST_DOUBLE = 7
-		private const val EVENT_TWIST_TRIPLE = 8
-		private const val EVENT_TWIST_DOUBLE_MINI = 9
-		private const val EVENT_TWIST_EZ = 10
 	}
 }

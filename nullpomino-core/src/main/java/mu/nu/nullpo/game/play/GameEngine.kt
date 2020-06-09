@@ -302,6 +302,7 @@ class GameEngine
 
 	/** Most recent scoring event type */
 	var lastevent:ScoreEvent? = null
+	val lasteventshape:Piece.Shape? get() =lastevent?.piece?.type
 	val lasteventpiece:Int get() = lastevent?.piece?.id ?: 0
 
 	var lastlines:IntArray = IntArray(0)
@@ -1396,7 +1397,7 @@ class GameEngine
 		ruleopt.writeProperty(owner.replayProp, playerID)
 
 		if(playerID==0) {
-			owner.mode?.let {owner.replayProp.setProperty("name.mode", it.name)}
+			owner.mode?.let {owner.replayProp.setProperty("name.mode", it.id)}
 			owner.replayProp.setProperty("name.rule", ruleopt.strRuleName)
 
 			// Local timestamp
@@ -2458,8 +2459,9 @@ class GameEngine
 										split -> statistics.totalB2BSplit++
 										twist -> statistics.totalB2BTwist++
 									}
-								owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY-(combobuf>=1).toInt(), b2bcount, CHAIN.B2B)
+								owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY-(combobuf>=1).toInt(), b2bcount-1, CHAIN.B2B)
 							}
+							if(ingame) if(b2bcount>=statistics.maxB2B) statistics.maxB2B = b2bcount-1
 							b2bbuf = b2bcount
 						} else if(b2bcount!=0&&combo<=0) {
 							b2b = false
@@ -2471,9 +2473,9 @@ class GameEngine
 						if(comboType==COMBO_TYPE_NORMAL||comboType==COMBO_TYPE_DOUBLE&&li>=2) combo++
 						if(combo>=2) {
 							playSE("combo", minOf(2f, 1f+(combo-2)/7f))
+							owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY+b2b.toInt(), combo-1, CHAIN.COMBO)
 						}
-						if(ingame) if(combo>statistics.maxCombo) statistics.maxCombo = combo
-						owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY+b2b.toInt(), combo, CHAIN.COMBO)
+						if(ingame) if(combo>=statistics.maxCombo) statistics.maxCombo = combo-1
 						combobuf = combo
 					}
 
@@ -2747,6 +2749,7 @@ class GameEngine
 		owner.receiver.onExcellent(this, playerID)
 
 		if(statc[0]==0) {
+			stopSE("danger")
 			gameEnded()
 			owner.bgmStatus.fadesw = true
 			resetFieldVisible()

@@ -23,7 +23,9 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick.img
 
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 
 /** 普通の文字列の表示クラス */
@@ -36,11 +38,12 @@ object FontGrade {
 	 * @param color 文字色
 	 * @param scale 拡大率
 	 */
-	fun printBigFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
+	fun printBigFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f,
+		rainbow:Int = NullpoMinoSlick.rainbow) {
 		var dx = x
 		var i = 0
-		val color = color.ordinal
 		while(i<str.length) {
+			val color = (if(color==COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
 			var sC = str[i].toInt()
 			var nX = -1
 			var nY = -1
@@ -91,11 +94,12 @@ object FontGrade {
 	 * @param color 文字色
 	 * @param scale 拡大率
 	 */
-	fun printMiniFont(fX:Int, fY:Int, fontStr:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
+	fun printMiniFont(fX:Int, fY:Int, fontStr:String, color:COLOR = COLOR.WHITE, scale:Float = 1f,
+		rainbow:Int = NullpoMinoSlick.rainbow) {
 		var dx = fX
 		var i = 0
-		val color = color.ordinal
 		while(i<fontStr.length) {
+			val color = (if(color==COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
 			var sC = fontStr[i].toInt()
 			when(sC) {
 				in 0x31..0x39 -> if(sC==0x31&&i<fontStr.length-1) {

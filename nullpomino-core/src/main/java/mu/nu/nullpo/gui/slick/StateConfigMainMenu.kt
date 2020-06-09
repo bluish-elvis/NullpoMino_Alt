@@ -37,7 +37,7 @@ internal class StateConfigMainMenu:DummyMenuChooseState() {
 	/** Player number */
 	private var player = 0
 
-	override val maxCursor = CHOICES.size
+	override val numChoice = CHOICES.size
 
 	init {
 		minChoiceY = 3
@@ -61,9 +61,9 @@ internal class StateConfigMainMenu:DummyMenuChooseState() {
 
 		// Menu
 		FontNormal.printFontGrid(1, 1, "OPTIONS", player==0, COLOR.ORANGE , COLOR.CYAN)
-		FontNano.printFont(8, 36, "FOR ${player+1}P", COLOR.ORANGE)
+		FontNano.printFontGrid(8, 1, "FOR ${player+1}P", COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 3+cursor, "b", player==0, COLOR.RED, COLOR.BLUE)
+		FontNormal.printFontGrid(1, 3+cursor, "\u0082", player==0, COLOR.RED, COLOR.BLUE)
 
 		CHOICES.forEachIndexed {i, it ->
 			FontNormal.printFontGrid(2, 3+i, "[${it.first}]", cursor==i, COLOR.WHITE,
@@ -129,13 +129,13 @@ internal class StateConfigMainMenu:DummyMenuChooseState() {
 
 		/** Text identifier Strings */
 		private val CHOICES =
-			arrayOf("GENERAL OPTIONS" to "General",
-				"RULE SELECT" to "Rule", "GAME TUNING" to "GameTuning",
-				"AI SETTING" to "AI",
-				"KEYBOARD SETTING" to "Keyboard",
-				"KEYBOARD NAVIGATION SETTING" to "KeyboardNavi",
-				"KEYBOARD RESET" to "KeyboardReset",
-				"JOYSTICK SETTING" to "Joystick")
+			arrayOf("General Settings" to "General",
+				"RULE Select" to "Rule", "Tweaks Handling" to "GameTuning",
+				"AI Setting" to "AI",
+				"In-Game Keyboard Assign" to "Keyboard",
+				"Keyboard Assign" to "KeyboardNavi",
+				"RESET Keyboard Assign" to "KeyboardReset",
+				"Joystick SETTING" to "Joystick")
 
 	}
 }

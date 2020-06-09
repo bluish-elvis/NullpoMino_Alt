@@ -442,10 +442,10 @@ class NetVSBattleMode:NetDummyVSMode() {
 		// Garbage meter
 		val tempGarbage = garbage[playerID]/GARBAGE_DENOMINATOR
 		val tempGarbageF = garbage[playerID].toFloat()/GARBAGE_DENOMINATOR
-		val newMeterValue = (tempGarbageF*owner.receiver.getBlockHeight(engine)).toInt()
+		val newMeterValue = (tempGarbageF*owner.receiver.getBlockSize(engine)).toInt()
 		if(playerID==0&&!netvsIsWatch()) {
 			if(newMeterValue>engine.meterValue) {
-				engine.meterValue += owner.receiver.getBlockHeight(engine)/2
+				engine.meterValue += owner.receiver.getBlockSize(engine)/2
 				if(engine.meterValue>newMeterValue) engine.meterValue = newMeterValue
 			} else if(newMeterValue<engine.meterValue) engine.meterValue--
 		} else
@@ -753,7 +753,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 					}
 
 					garbage[0] = totalGarbageLines
-					if(garbage[0]>=4*GARBAGE_DENOMINATOR) owner.engine[0].playSE("danger")
+					if(garbage[0]>=4*GARBAGE_DENOMINATOR) owner.engine[0].loopSE("danger")
 					netSendStats(owner.engine[0])
 				}
 			}

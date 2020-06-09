@@ -1168,7 +1168,7 @@ class SPF:AbstractMode() {
 		if(zenKeshiDisplay[playerID]>0) zenKeshiDisplay[playerID]--
 		var width = 1
 		if(engine.field!=null) width = engine.field!!.width
-		val blockHeight = receiver.getBlockHeight(engine)
+		val blockHeight = receiver.getBlockSize(engine)
 		// Rising auctionMeter
 		if(ojama[playerID]*blockHeight/width>engine.meterValue)
 			engine.meterValue++

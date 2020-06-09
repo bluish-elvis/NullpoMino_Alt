@@ -641,7 +641,7 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 17, 17, "BLOCK FALL:${BLOCK_CASCADE_TYPE_STRING[cascadeStyle]}", menuCursor==46)
 			receiver.drawMenuFont(engine, playerID, 17, 18, "BLOCK ERASE:${BLOCK_ERASE_TYPE_STRING[eraseStyle]}", menuCursor==47)
 		}
-		if(!owner.replayMode) receiver.drawMenuFont(engine, playerID, cx, cy, "b", EventReceiver.COLOR.RED)
+		if(!owner.replayMode) receiver.drawMenuFont(engine, playerID, cx, cy, "\u0082", EventReceiver.COLOR.RED)
 	}
 
 	/* Called for initialization during Ready (before initialization) */

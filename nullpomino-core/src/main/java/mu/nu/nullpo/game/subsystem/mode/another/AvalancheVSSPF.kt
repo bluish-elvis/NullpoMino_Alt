@@ -567,7 +567,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 								Block.BLOCK_COLOR_YELLOW -> COLOR.YELLOW
 								else -> COLOR.WHITE
 							}
-						str = if(b.countdown>=10) "d" else b.countdown.toString()
+						str = if(b.countdown>=10) "\u0084" else b.countdown.toString()
 						receiver.drawMenuFont(engine, playerID, x*d, y*d, str, textColor, 1f*d)
 					}
 				}

@@ -58,7 +58,7 @@ class StateSelectMode:DummyMenuScrollState() {
 		if(isTopLevel) {
 			listMode = StateSelectModeFolder.listTopLevelModes
 			list = Array(listMode.size){convModeName(listMode[it], true)}
-			list += "[MORE...]"
+			list += "[more...]"
 		} else {
 			listMode = StateSelectModeFolder.mapFolder[strCurrentFolder]
 			list = if(strCurrentFolder.isNotBlank() && listMode?.isNotEmpty()==true)
@@ -101,8 +101,8 @@ class StateSelectMode:DummyMenuScrollState() {
 
 	private fun convModeName(str:String, sw:Boolean):String {
 		val mm = NullpoMinoSlick.modeManager
-		val i = mm.getIDbyName(str)
-		return if(i==-1) str else if(sw) mm.getName(i) else mm.getCName(i)
+		val i = mm.getNum(str)
+		return if(i==-1) str else if(sw) mm.getName(i) else mm.getID(i)
 	}
 
 	/* Enter */
@@ -115,10 +115,10 @@ class StateSelectMode:DummyMenuScrollState() {
 	/* Render screen */
 	public override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
 
-			FontNormal.printFontGrid(1, 1, "SELECT A GAME MODE (${cursor+1}/${list.size})", COLOR.ORANGE)
+			FontNormal.printFontGrid(1, 1, "Select a Game Mode (${cursor+1}/${list.size})", COLOR.ORANGE)
 		if(!isTopLevel)
 			FontNano.printFont(8, 36,
-				if(strCurrentFolder.isNotEmpty())">$strCurrentFolder" else ">[ALL MODES]", COLOR.ORANGE,.5f)
+				if(strCurrentFolder.isNotEmpty())">$strCurrentFolder" else ">[All modes]", COLOR.ORANGE,.5f)
 
 		FontNormal.printTTF(16, 440, getModeDesc(convModeName(list[cursor], false)))
 	}

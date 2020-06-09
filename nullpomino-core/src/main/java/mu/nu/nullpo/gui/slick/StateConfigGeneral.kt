@@ -246,7 +246,7 @@ class StateConfigGeneral:BaseGameState() {
 		when {
 			cursor<=18 -> {
 				FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: APPERANCE (1/3)", COLOR.ORANGE)
-				FontNormal.printFontGrid(1, (if(cursor<=4) 3 else if(cursor<=8) 4 else if(cursor<=11) 5 else if(cursor<=14) 6 else 7)+cursor, "b", COLOR.RAINBOW)
+				FontNormal.printFontGrid(1, (if(cursor<=4) 3 else if(cursor<=8) 4 else if(cursor<=11) 5 else if(cursor<=14) 6 else 7)+cursor, "\u0082", COLOR.RAINBOW)
 
 				FontNormal.printFontGrid(2, 3, "SE:"+GeneralUtil.getOorX(se), cursor==0)
 				FontNormal.printFontGrid(2, 4, "BGM:"+GeneralUtil.getOorX(bgm), cursor==1)
@@ -275,7 +275,7 @@ class StateConfigGeneral:BaseGameState() {
 			}
 			cursor<=24 -> {
 				FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: GRAPHICS (2/3)", COLOR.ORANGE)
-				FontNormal.printFontGrid(1, 3+cursor-19, "b", COLOR.RED)
+				FontNormal.printFontGrid(1, 3+cursor-19, "\u0082", COLOR.RAINBOW)
 
 				FontNormal.printFontGrid(2, 3, "FULLSCREEN:"+GeneralUtil.getOorX(fullscreen), cursor==19)
 				FontNormal.printFontGrid(2, 4, "SHOW FPS:"+GeneralUtil.getOorX(showfps), cursor==20)
@@ -286,7 +286,7 @@ class StateConfigGeneral:BaseGameState() {
 			}
 			else -> {
 				FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: SLICK (3/3)", COLOR.ORANGE)
-				FontNormal.printFontGrid(1, 3+cursor-25, "b", COLOR.RED)
+				FontNormal.printFontGrid(1, 3+cursor-25, "\u0082", COLOR.RAINBOW)
 
 				FontNormal.printFontGrid(2, 3, "BGM STREAMING:"+GeneralUtil.getOorX(bgmstreaming), cursor==25)
 				FontNormal.printFontGrid(2, 4, "VSYNC:"+GeneralUtil.getOorX(vsync), cursor==26)

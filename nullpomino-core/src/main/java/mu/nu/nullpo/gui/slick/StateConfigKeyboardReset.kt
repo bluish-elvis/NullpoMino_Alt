@@ -11,7 +11,7 @@ class StateConfigKeyboardReset:DummyMenuChooseState() {
 
 	/** Player number */
 	var player = 0
-	override val maxCursor = 2
+	override val numChoice = 3
 
 	/** Constructor */
 	init {
@@ -34,7 +34,7 @@ class StateConfigKeyboardReset:DummyMenuChooseState() {
 
 		FontNormal.printFontGrid(1, 3, "RESET SETTINGS TO...", COLOR.GREEN)
 
-		FontNormal.printFontGrid(1, 4+cursor, "b", COLOR.RED)
+		FontNormal.printFontGrid(1, 4+cursor, "\u0082", COLOR.RAINBOW)
 
 		FontNormal.printFontGrid(2, 4, "BLOCKBOX STYLE (DEFAULT)", cursor==0)
 		FontNormal.printFontGrid(2, 5, "GUIDELINE STYLE", cursor==1)

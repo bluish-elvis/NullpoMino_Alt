@@ -62,8 +62,11 @@ abstract class AbstractMode:GameMode {
 	/** Number of frames spent in menu */
 	protected var menuTime = 0
 
+	override final val id:String
+		get() = this::class.simpleName ?: "noName"
+
 	override val name:String
-		get() = "DUMMY"
+		get() = this::class.simpleName ?: "No Name"
 
 	override val players:Int
 		get() = 1
@@ -81,7 +84,7 @@ abstract class AbstractMode:GameMode {
 	enum class Statistic {
 		SCORE, LINES, TIME,
 		LEVEL, LEVEL_MANIA, PIECE,
-		MAXCOMBO, SPL, SPM, SPS,
+		MAXCOMBO, MAXB2B, SPL, SPM, SPS,
 		LPM, LPS, PPM, PPS,
 		MAXCHAIN, LEVEL_ADD_DISP
 	}
@@ -195,11 +198,20 @@ abstract class AbstractMode:GameMode {
 		else -> 0
 	}+if(lines>=1&&engine.field?.isEmpty==true) 18 else 0 // All clear
 
-	open fun calcPower(engine:GameEngine, lines:Int):Int = maxOf(0, when {
-		engine.twist -> lines*2
+	fun calcPower(engine:GameEngine, lines:Int):Int = maxOf(0, when {
+		engine.twist -> (if(engine.lasteventshape==Piece.Shape.T) lines*2 else lines+1)+if(engine.b2b) 1 else 0
+		engine.twistmini -> lines+if(if(engine.lasteventshape==Piece.Shape.T)engine.b2b else engine.b2bcount>2) 1 else 0
+		engine.twistez -> lines+if(engine.lasteventshape==Piece.Shape.T)(minOf(2,engine.b2bcount)-1) else if(engine.b2b) 0 else -1
 		lines<=3 -> lines-1
-		else -> lines
-	}+ceil(engine.b2bcount/5f).roundToInt()+ceil(engine.combo/3f).roundToInt());
+		else -> lines+if(engine.b2b) 1+engine.b2bcount/4 else 0
+	}+when(val it = engine.combo) {
+		if(it<=1) it else 0 -> 0
+		in 2..3 -> 1
+		in 4..5 -> 2
+		in 6..7 -> 3
+		in 8..10 -> 4
+		else -> 5
+	}+if(lines>=1&&engine.field?.isEmpty==true) 7 else 0)
 
 	override fun onLockFlash(engine:GameEngine, playerID:Int):Boolean = false
 
@@ -360,7 +372,7 @@ abstract class AbstractMode:GameMode {
 				receiver.drawMenuFont(engine, playerID, 0, menuY, str[i], color = menuColor)
 			else {
 				if(menuCursor==statcMenu&&!engine.owner.replayMode)
-					receiver.drawMenuFont(engine, playerID, 0, menuY, "b${str[i]}", true)
+					receiver.drawMenuFont(engine, playerID, 0, menuY, "\u0082${str[i]}", true)
 				else
 					receiver.drawMenuFont(engine, playerID, 1, menuY, str[i])
 				statcMenu++
@@ -374,7 +386,7 @@ abstract class AbstractMode:GameMode {
 		receiver.drawMenuFont(engine, playerID, 0, menuY, "BGM", color = menuColor)
 		receiver.drawMenuFont(engine, playerID, 0, menuY+1, BGM.values[bgmno].drawName, cur)
 		receiver.drawMenuNum(engine, playerID, 8, menuY, String.format("%2d", bgmno), cur)
-		if(cur) receiver.drawMenuFont(engine, playerID, 7, menuY, "b", true)
+		if(cur) receiver.drawMenuFont(engine, playerID, 7, menuY, "\u0082", true)
 		statcMenu++
 		menuY += 2
 
@@ -393,7 +405,7 @@ abstract class AbstractMode:GameMode {
 		while(i<str.size-1) {
 			receiver.drawMenuFont(engine, playerID, 1, menuY, "${str[i]}:", color = menuColor)
 			if(menuCursor==statcMenu&&!engine.owner.replayMode) {
-				receiver.drawMenuFont(engine, playerID, 0, menuY, "b", true)
+				receiver.drawMenuFont(engine, playerID, 0, menuY, "\u0082", true)
 				receiver.drawMenuFont(engine, playerID, str[i].length+2, menuY, str[i+1], true)
 			} else
 				receiver.drawMenuFont(engine, playerID, str[i].length+2, menuY, str[i+1])
@@ -416,7 +428,7 @@ abstract class AbstractMode:GameMode {
 		receiver.drawSpeedMeter(engine, playerID, -12, menuY+1, g, d)
 		for(i in 0..1) {
 			if(menuCursor==statcMenu&&!engine.owner.replayMode) {
-				receiver.drawMenuFont(engine, playerID, 5, menuY, "b", true)
+				receiver.drawMenuFont(engine, playerID, 5, menuY, "\u0082", true)
 				receiver.drawMenuNum(engine, playerID, 6, menuY, String.format("%5d", if(i==0) g else d), true)
 			} else
 				receiver.drawMenuNum(engine, playerID, 6, menuY, String.format("%5d", if(i==0) g else d))
@@ -449,7 +461,7 @@ abstract class AbstractMode:GameMode {
 		for(i in 0..1) {
 			val cur = menuCursor==statcMenu&&!engine.owner.replayMode
 			if(cur) {
-				receiver.drawMenuFont(engine, playerID, 3+i*3, menuY, "b", true)
+				receiver.drawMenuFont(engine, playerID, 3+i*3, menuY, "\u0082", true)
 				if(i==1) wait = "LINE"
 			}
 			receiver.drawMenuNum(engine, playerID, 4+i*3, menuY, String.format(if(i==0) "%2d/" else "%2d", if(i==0) are else aline), cur)
@@ -460,7 +472,7 @@ abstract class AbstractMode:GameMode {
 			val cur = menuCursor==statcMenu&&!engine.owner.replayMode
 			if(cur) {
 				wait = if(i==0) "LINE" else if(i==1) "LOCK" else "DAS"
-				receiver.drawMenuFont(engine, playerID, 7-i*3, menuY, "b", true)
+				receiver.drawMenuFont(engine, playerID, 7-i*3, menuY, "\u0082", true)
 			}
 			receiver.drawMenuNum(engine, playerID, 8-i*3, menuY, String.format(if(i==1) "%2d+" else "%2d", if(i==0) lined else if(i==1) lock else das), cur)
 			statcMenu++
@@ -475,10 +487,15 @@ abstract class AbstractMode:GameMode {
 		receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13d", num), color = COLOR.WHITE)
 	}
 
-	protected fun drawResult(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
-		vararg str:String) {
-		drawResultScale(engine, playerID, receiver, y, color, 1f, *str)
+	protected fun drawResult(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, str:String,
+		num:Float) {
+		receiver.drawMenuFont(engine, playerID, 0, y, str, color = color)
+		receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13g", num), color = COLOR.WHITE)
 	}
+
+	protected fun drawResult(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
+		vararg str:String) =
+		drawResultScale(engine, playerID, receiver, y, color, 1f, *str)
 
 	protected fun drawResultScale(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int,
 		color:COLOR = COLOR.WHITE, scale:Float,
@@ -545,70 +562,81 @@ abstract class AbstractMode:GameMode {
 		for(stat in stats) {
 			when(stat) {
 				AbstractMode.Statistic.SCORE -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "SCORE", color = color, scale = scale*.75f)
+					receiver.drawMenuFont(engine, playerID, 0, y, "Score", color = color, scale = scale*.75f)
 					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%7d", engine.statistics.score), scale = scale*1.9f)
 				}
 				AbstractMode.Statistic.TIME -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "TIME", color = color, scale = scale*.8f)
+					receiver.drawMenuFont(engine, playerID, 0, y, "Elapsed Time", color = color, scale = scale*.8f)
 					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%8s", GeneralUtil.getTime(engine.statistics.time)),
 						scale = scale*1.7f)
 				}
 				AbstractMode.Statistic.LEVEL -> {
-					receiver.drawMenuFont(engine, playerID, 0, y+1, "LEVEL", color, scale)
+					receiver.drawMenuFont(engine, playerID, 0, y+1, "Level", color, scale)
 					receiver.drawMenuNum(engine, playerID, 5, y, String.format("%03d", engine.statistics.level+1), scale = scale*2f)
 				}
+				AbstractMode.Statistic.LEVEL_ADD_DISP -> {
+					receiver.drawMenuFont(engine, playerID, 0, y, "Level", color, scale)
+					receiver.drawMenuNum(engine, playerID, 0, y+1,
+						String.format("%10d", engine.statistics.level+engine.statistics.levelDispAdd), scale = scale)
+				}
 				AbstractMode.Statistic.LEVEL_MANIA -> {
-					receiver.drawMenuFont(engine, playerID, 0, y+1, "LEVEL", color, scale)
+					receiver.drawMenuFont(engine, playerID, 0, y+1, "Level", color, scale)
 					receiver.drawMenuNum(engine, playerID, 5, y, String.format("%03d", engine.statistics.level), scale = scale*2f)
 				}
 				AbstractMode.Statistic.LINES -> {
-					receiver.drawMenuFont(engine, playerID, 6, y+1, "LINES", color, scale*.8f)
+					receiver.drawMenuFont(engine, playerID, 6, y, "Lines", color, scale*.8f)
+					receiver.drawMenuFont(engine, playerID, 6, y+1, "clear", color, scale*.8f)
 					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%4d", engine.statistics.lines), scale = scale*2f)
 				}
 				AbstractMode.Statistic.PIECE -> {
 					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%4d", engine.statistics.totalPieceLocked), scale = scale*2f)
-					receiver.drawMenuFont(engine, playerID, 6, y+1, "PIECE", color, scale*.75f)
+					receiver.drawMenuFont(engine, playerID, 6, y, "Pieces", color, scale*.8f)
+					receiver.drawMenuFont(engine, playerID, 6, y+1, "set", color, scale*.8f)
 				}
 				AbstractMode.Statistic.MAXCOMBO -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "MAX COMBO", color, scale)
-					receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%5d", engine.statistics.maxCombo-1), scale = scale)
+					receiver.drawMenuFont(engine, playerID, 0, y, "Best", color, scale*.8f)
+					receiver.drawMenuFont(engine, playerID, 6, y, "Combo", color, scale*.8f)
+					receiver.drawMenuFont(engine, playerID, 6, y+1, "HITS", color, scale)
+					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%4d", engine.statistics.maxCombo), scale = scale*2f)
+				}
+				AbstractMode.Statistic.MAXB2B -> {
+					receiver.drawMenuFont(engine, playerID, 0, y, "Back2Back Peak", color, scale*.75f)
+					receiver.drawMenuFont(engine, playerID, 6, y+1, "Chain", color, scale*.8f)
+					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%4d", engine.statistics.maxB2B), scale = scale*2f)
 				}
 				AbstractMode.Statistic.MAXCHAIN -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "MAX COMBO", color, scale)
-					receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%5d", engine.statistics.maxChain-1), scale = scale)
+					receiver.drawMenuFont(engine, playerID, 0, y, "Longest", color, scale*.8f)
+					receiver.drawMenuFont(engine, playerID, 6, y, "Chain", color, scale*.8f)
+					receiver.drawMenuFont(engine, playerID, 6, y+1, "HITS", color, scale)
+					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%4d", engine.statistics.maxChain-1), scale = scale*2f)
 				}
 				AbstractMode.Statistic.SPL -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "SCORE/LINE", color, scale)
+					receiver.drawMenuFont(engine, playerID, 0, y, "Score/Line", color, scale)
 					receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13g", engine.statistics.spl), scale = scale)
 				}
 				AbstractMode.Statistic.SPM -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "SCORE/MIN", color, scale)
+					receiver.drawMenuFont(engine, playerID, 0, y, "Score/min", color, scale)
 					receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13g", engine.statistics.spm), scale = scale)
 				}
 				AbstractMode.Statistic.SPS -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "SCORE/SEC", color, scale)
+					receiver.drawMenuFont(engine, playerID, 0, y, "Score/sec", color, scale)
 					receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13g", engine.statistics.sps), scale = scale)
 				}
 				AbstractMode.Statistic.LPM -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "LINE/MIN", color, scale)
+					receiver.drawMenuFont(engine, playerID, 0, y, "Lines/min", color, scale)
 					receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13g", engine.statistics.lpm), scale = scale)
 				}
 				AbstractMode.Statistic.LPS -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "LINE/SEC", color, scale)
+					receiver.drawMenuFont(engine, playerID, 0, y, "Lines/sec", color, scale)
 					receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13g", engine.statistics.lps), scale = scale)
 				}
 				AbstractMode.Statistic.PPM -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "PIECE/MIN", color, scale)
+					receiver.drawMenuFont(engine, playerID, 0, y, "Pieces/min", color, scale)
 					receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13g", engine.statistics.ppm), scale = scale)
 				}
 				AbstractMode.Statistic.PPS -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "PIECE/SEC", color, scale)
+					receiver.drawMenuFont(engine, playerID, 0, y, "Pieces/sec", color, scale)
 					receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13g", engine.statistics.pps), scale = scale)
-				}
-				AbstractMode.Statistic.LEVEL_ADD_DISP -> {
-					receiver.drawMenuFont(engine, playerID, 0, y, "LEVEL", color, scale)
-					receiver.drawMenuNum(engine, playerID, 0, y+1,
-						String.format("%10d", engine.statistics.level+engine.statistics.levelDispAdd), scale = scale)
 				}
 			}
 			y += 2
