@@ -279,7 +279,7 @@ class VSDigRaceMode:AbstractMode() {
 
 			// Update meter
 			val remainLines = getRemainGarbageLines(engine, playerID)
-			engine.meterValue = remainLines*receiver.getBlockHeight(engine)
+			engine.meterValue = remainLines*receiver.getBlockSize(engine)
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 		}
 		return false
@@ -439,7 +439,7 @@ class VSDigRaceMode:AbstractMode() {
 
 		// Update meter
 		val remainLines = getRemainGarbageLines(engine, playerID)
-		engine.meterValue = remainLines*receiver.getBlockHeight(engine)
+		engine.meterValue = remainLines*receiver.getBlockSize(engine)
 		if(remainLines<=14) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 		if(remainLines<=8) engine.meterColor = GameEngine.METER_COLOR_ORANGE
 		if(remainLines<=4) engine.meterColor = GameEngine.METER_COLOR_RED

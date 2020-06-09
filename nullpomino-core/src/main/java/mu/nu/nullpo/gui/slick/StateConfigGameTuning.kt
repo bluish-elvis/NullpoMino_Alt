@@ -249,7 +249,7 @@ class StateConfigGameTuning:BaseGameState() {
 			var strTemp = ""
 
 			FontNormal.printFontGrid(1, 1, "GAME TUNING (${player+1}P)", COLOR.ORANGE)
-			FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RAINBOW)
+			FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RAINBOW)
 
 			if(owRotateButtonDefaultRight==-1) strTemp = "AUTO"
 			if(owRotateButtonDefaultRight==0) strTemp = "LEFT"
@@ -275,24 +275,24 @@ class StateConfigGameTuning:BaseGameState() {
 				else -> NullpoMinoSlick.propSkins.getProperty("Skin$owSkin", "").toUpperCase()
 			}, cursor==1, COLOR.WHITE, if(ResourceHolder.blockStickyFlagList[sk]) COLOR.BLUE else COLOR.RED)
 
-			FontNormal.printFontGrid(2, 5, "MIN DAS:"+if(owMinDAS==-1) "AUTO" else "$owMinDAS", cursor==2, rainbow = (spdpv/2).toInt())
-			FontNormal.printFontGrid(2, 6, "MAX DAS:"+if(owMaxDAS==-1) "AUTO" else "$owMaxDAS", cursor==3, rainbow = (spdpv/2).toInt())
-			FontNormal.printFontGrid(2, 7, "DAS DELAY:"+if(owDASRate==-1) "AUTO" else "$owDASRate", cursor==4, rainbow = (spdpv/2).toInt())
-			FontNormal.printFontGrid(2, 8, "SOFTDROP SPEED:"+if(owSDSpd==-1) "AUTO" else
+			FontNormal.printFontGrid(2, 5, "min DAS:"+if(owMinDAS==-1) "AUTO" else "$owMinDAS", cursor==2, rainbow = (spdpv/2).toInt())
+			FontNormal.printFontGrid(2, 6, "max DAS:"+if(owMaxDAS==-1) "AUTO" else "$owMaxDAS", cursor==3, rainbow = (spdpv/2).toInt())
+			FontNormal.printFontGrid(2, 7, "DAS delay:"+if(owDASRate==-1) "AUTO" else "$owDASRate", cursor==4, rainbow = (spdpv/2).toInt())
+			FontNormal.printFontGrid(2, 8, "SoftDrop Speed:"+if(owSDSpd==-1) "AUTO" else
 				if(owSDSpd<SDS_FIXED.size) "${SDS_FIXED[owSDSpd]}G" else "*${owSDSpd-SDS_FIXED.size+5}", cursor==5, rainbow = (spdpv/4).toInt())
-			FontNormal.printFontGrid(2, 9, "REVERSE UP/DOWN:"+GeneralUtil.getOorX(owReverseUpDown), cursor==6)
+			FontNormal.printFontGrid(2, 9, "Reverse UP/DOWN:"+GeneralUtil.getOorX(owReverseUpDown), cursor==6)
 
 			if(owMoveDiagonal==-1) strTemp = "AUTO"
-			if(owMoveDiagonal==0) strTemp = "e"
-			if(owMoveDiagonal==1) strTemp = "c"
-			FontNormal.printFontGrid(2, 10, "DIAGONAL MOVE:$strTemp", cursor==7)
+			if(owMoveDiagonal==0) strTemp = "\u0085"
+			if(owMoveDiagonal==1) strTemp = "\u0083"
+			FontNormal.printFontGrid(2, 10, "Diagonal Move:$strTemp", cursor==7)
 
 			FontNormal.printFontGrid(2, 11, "OUTLINE TYPE:"+OUTLINE_TYPE_NAMES[owBlockOutlineType+1], cursor==8)
 
 			if(owBlockShowOutlineOnly==-1) strTemp = "AUTO"
-			if(owBlockShowOutlineOnly==0) strTemp = "e"
-			if(owBlockShowOutlineOnly==1) strTemp = "c"
-			FontNormal.printFontGrid(2, 12, "SHOW OUTLINE ONLY:$strTemp", cursor==9)
+			if(owBlockShowOutlineOnly==0) strTemp = "\u0085"
+			if(owBlockShowOutlineOnly==1) strTemp = "\u0083"
+			FontNormal.printFontGrid(2, 12, "SHOW Outline Only:$strTemp", cursor==9)
 
 			FontNormal.printFontGrid(2, 13, "[PREVIEW]", cursor==10)
 			FontNano.printFontGrid(13, 13, "HOTKEY : D BUTTON")
@@ -460,6 +460,7 @@ class StateConfigGameTuning:BaseGameState() {
 
 			// Cancel button
 			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_B)) {
+				ResourceHolder.soundManager.play("cancel")
 				loadConfig(NullpoMinoSlick.propGlobal)
 				game.enterState(StateConfigMainMenu.ID)
 			}

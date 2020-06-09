@@ -23,6 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick.img
 
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import org.newdawn.slick.Color
 

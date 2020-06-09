@@ -135,8 +135,7 @@ open class BasicAI:DummyAI(), Runnable {
 			val nowX = engine.nowPieceX
 			val nowY = engine.nowPieceY
 			val rt = pieceNow!!.direction
-			if(engine.field==null)return
-			val fld = engine.field!!
+			val fld = engine.field?:return
 			val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 
 			if((bestHold||forceHold)&&engine.isHoldOK)

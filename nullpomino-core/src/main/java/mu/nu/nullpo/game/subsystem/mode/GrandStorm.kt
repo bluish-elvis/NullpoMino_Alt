@@ -222,7 +222,7 @@ class GrandStorm:AbstractMode() {
 		lvstopse = prop.getProperty("speedmania.lvstopse", true)
 		showsectiontime = prop.getProperty("speedmania.showsectiontime", true)
 		big = prop.getProperty("speedmania.big", false)
-		lv500torikan = prop.getProperty("speedmania.lv500torikan", 12300)
+		lv500torikan = prop.getProperty("speedmania.lv500torikan", 18000)
 	}
 
 	/** Save settings to property file
@@ -337,8 +337,9 @@ class GrandStorm:AbstractMode() {
 					3 -> big = !big
 					4 -> {
 						lv500torikan += 60*change
-						if(lv500torikan<0) lv500torikan = 72000
-						if(lv500torikan>72000) lv500torikan = 0
+						if(lv500torikan<0) lv500torikan = 36000
+						if(lv500torikan in 1..12300) lv500torikan = if (change<0) 0 else 12300
+						if(lv500torikan>36000) lv500torikan = 0
 					}
 				}
 			}
@@ -401,9 +402,9 @@ class GrandStorm:AbstractMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
-		receiver.drawScoreFont(engine, playerID, 0, 0, "SPEED MANIA", COLOR.RED)
+		receiver.drawScoreFont(engine, playerID, 0, 0, "Grand Storm", COLOR.RED)
 
-		receiver.drawScoreFont(engine, playerID, -1, -4*2, "DECORATION", scale = .5f)
+		receiver.drawScoreNano(engine, playerID, -1, -4*2, "DECORATION", scale = .5f)
 		receiver.drawScoreBadges(engine, playerID, 0, -3, 100, decoration)
 		receiver.drawScoreBadges(engine, playerID, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
@@ -412,13 +413,13 @@ class GrandStorm:AbstractMode() {
 					// Rankings
 					val scale = if(receiver.nextDisplayType==2) .5f else 1f
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
-					receiver.drawScoreFont(engine, playerID, 3, topY-1, "GRADE LEVEL TIME", COLOR.BLUE, scale)
+					receiver.drawScoreFont(engine, playerID, 2, topY-1, "LEVEL TIME", COLOR.BLUE, scale)
 
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-						receiver.drawScoreGrade(engine, playerID, 3, topY+i, tableGradeName[rankingGrade[i]], i==rankingRank, scale)
-						receiver.drawScoreNum(engine, playerID, 9, topY+i, "${rankingLevel[i]}", i==rankingRank, scale)
-						receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank, scale)
+						receiver.drawScoreGrade(engine, playerID, 2, topY+i, tableGradeName[rankingGrade[i]], i==rankingRank, scale)
+						receiver.drawScoreNum(engine, playerID, 5, topY+i, "${rankingLevel[i]}", i==rankingRank, scale)
+						receiver.drawScoreNum(engine, playerID, 8, topY+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank, scale)
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
@@ -440,9 +441,9 @@ class GrandStorm:AbstractMode() {
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 14, "TOTAL", COLOR.BLUE)
-					receiver.drawScoreFont(engine, playerID, 0, 15, GeneralUtil.getTime(totalTime))
+					receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(totalTime), 2f)
 					receiver.drawScoreFont(engine, playerID, 9, 14, "AVERAGE", COLOR.BLUE)
-					receiver.drawScoreFont(engine, playerID, 9, 15, GeneralUtil.getTime((totalTime/SECTION_MAX)))
+					receiver.drawScoreNum(engine, playerID, 9, 15, GeneralUtil.getTime((totalTime/SECTION_MAX)), 2f)
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
 				}
@@ -582,7 +583,7 @@ class GrandStorm:AbstractMode() {
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Combo
 		comboValue = if(lines==0) 1
-		else maxOf(1,comboValue+2*lines-2)
+		else maxOf(1, comboValue+2*lines-2)
 
 		// RO medal 用カウント
 		var rotateTemp = engine.nowPieceRotateCount
@@ -919,7 +920,7 @@ class GrandStorm:AbstractMode() {
 			listOf("$ruleName.$i.grade" to rankingGrade[i],
 				"$ruleName.$i.level" to rankingLevel[i],
 				"$ruleName.$i.time" to rankingTime[i])
-		}+ (0 until SECTION_MAX).flatMap {i ->
+		}+(0 until SECTION_MAX).flatMap {i ->
 			listOf("$ruleName.sectiontime.$i" to bestSectionTime[i])
 		})
 
@@ -978,12 +979,16 @@ class GrandStorm:AbstractMode() {
 
 		/** ARE table */
 		private val tableARE = intArrayOf(16, 12, 10, 8, 6, 4)
+
 		/** ARE after line clear table */
 		private val tableARELine = intArrayOf(12, 9, 7, 6, 5, 4)
+
 		/** Line clear time table */
 		private val tableLineDelay = intArrayOf(12, 9, 7, 6, 5, 4)
+
 		/** 固定 time table */
 		private val tableLockDelay = intArrayOf(30, 28, 26, 24, 22, 20)
+
 		/** DAS table */
 		private val tableDAS = intArrayOf(12, 10, 8, 6, 5, 4)
 
@@ -993,8 +998,10 @@ class GrandStorm:AbstractMode() {
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(300, 500, 999, -1)
 		private val tableBGM = arrayOf(BGM.GM_2(1), BGM.GM_2(2), BGM.GM_2(3))
+
 		/** 段位のName */
 		private val tableGradeName = arrayOf("", "m", "Gm", "GM")
+
 		/** 裏段位のName */
 		private val tableSecretGradeName =
 			arrayOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "GM")

@@ -102,7 +102,7 @@ class StateConfigJoystickButton:BasicGameState() {
 		FontNormal.printFontGrid(2, 15, "FRAME STEP     : ${buttonmap[GameKeyDummy.BUTTON_FRAMESTEP]}", keynum==14)
 		FontNormal.printFontGrid(2, 16, "SCREEN SHOT    : ${buttonmap[GameKeyDummy.BUTTON_SCREENSHOT]}", keynum==15)
 
-		FontNormal.printFontGrid(1, 5+keynum-4, "b", COLOR.RED)
+		FontNormal.printFontGrid(1, 5+keynum-4, "\u0082", COLOR.RAINBOW)
 		if(frame>=KEYACCEPTFRAME) {
 			FontNormal.printFontGrid(1, 20, "UP/DOWN:   MOVE CURSOR", COLOR.GREEN)
 			FontNormal.printFontGrid(1, 21, "ENTER:     OK", COLOR.GREEN)

@@ -26,7 +26,6 @@ package mu.nu.nullpo.gui.slick.img
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.*
-import mu.nu.nullpo.gui.slick.RendererSlick
 import org.newdawn.slick.Color
 
 /** Normal display class string */
@@ -77,33 +76,36 @@ object FontNormal {
 
 			if(stringChar==0x0A) {
 				// New line (\n)
-				if(scale==1f) {
-					dy += 16*scale
-					dx = x.toFloat()
-				} else {
-					dy += 8
-					dx = x.toFloat()
-				}
+				dy += 16*scale
+				dx = x.toFloat()
 			} else {
 				val c = stringChar-32// Character output
 				val fontColor = (if(color==COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
-				if(scale==.5f) {
-					val sx = c%32*8
-					val sy = c/32*8+fontColor*24
+				val dy = dy + if(char.isLowerCase()) 3f*scale else 0f
 
-					ResourceHolder.imgFontSmall.draw(dx, dy, (dx+8), (dy+8),
-						sx.toFloat(), sy.toFloat(), sx+8f, sy+8f, filter)
-					dx += 8
-				} else {
-					val sx = c%32*16
-					val sy = c/32*16+fontColor*48
-					//SDLRect rectSrc = new SDLRect(sx, sy, 16, 16);
-					//SDLRect rectDst = new SDLRect(dx, dy, 16, 16);
-					//ResourceHolderSDL.imgFont.blitSurface(rectSrc, dest, rectDst);
-					ResourceHolder.imgFont.draw(dx, dy, dx+16*scale, dy+16*scale,
-						sx.toFloat(), sy.toFloat(), sx+16f, sy+16f, filter)
-					dx = (dx+16*scale)
+				when {
+					scale<=.5f -> {
+						val s = scale*2
+						val sx = c%32*8
+						val sy = (c/32+fontColor*4)*8
+						ResourceHolder.imgFontSmall.draw(dx, dy, dx+8*s, dy+8*s,
+							sx.toFloat(), sy.toFloat(), sx+8f, sy+8f, filter)
+					}
+					scale>=2f -> {
+						val s = scale/2
+						val sx = c%32*32
+						val sy = (c/32+fontColor*4)*32
+						ResourceHolder.imgFontBig.draw(dx, dy, dx+32*s, dy+32*s,
+							sx.toFloat(), sy.toFloat(), sx+32f, sy+32f, filter)
+					}
+					else -> {
+						val sx = c%32*16
+						val sy = (c/32+fontColor*4)*16
+						ResourceHolder.imgFont.draw(dx, dy, dx+16*scale, dy+16*scale,
+							sx.toFloat(), sy.toFloat(), sx+16f, sy+16f, filter)
+					}
 				}
+				dx += 16*scale
 			}
 		}
 	}
@@ -119,7 +121,7 @@ object FontNormal {
 	 * @param scale Enlargement factor
 	 */
 	fun printFont(x:Int, y:Int, str:String, flag:Boolean, fontColorFalse:COLOR = COLOR.WHITE,
-		fontColorTrue:COLOR = COLOR.RED, scale:Float = 1f, alpha:Float = 1f, rainbow:Int = NullpoMinoSlick.rainbow) =
+		fontColorTrue:COLOR = COLOR.RAINBOW, scale:Float = 1f, alpha:Float = 1f, rainbow:Int = NullpoMinoSlick.rainbow) =
 		printFont(x, y, str, if(flag) fontColorTrue else fontColorFalse, scale, alpha, rainbow)
 
 	/** Draws the string (16x16Grid units)
@@ -142,7 +144,7 @@ object FontNormal {
 	 * @param fontColorTrue flagThetrueText cint in the case of
 	 */
 	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, flag:Boolean,
-		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RAINBOW, alpha:Float = 1f,
+		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RAINBOW, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = NullpoMinoSlick.rainbow) =
-		printFont(fontX*16, fontY*16, fontStr, if(flag) fontColorTrue else fontColorFalse, alpha = alpha, rainbow = rainbow)
+		printFont(fontX*16, fontY*16, fontStr, flag, fontColorFalse, fontColorTrue, scale, alpha, rainbow)
 }

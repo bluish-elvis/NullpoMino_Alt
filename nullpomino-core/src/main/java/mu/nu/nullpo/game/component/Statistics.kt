@@ -111,8 +111,10 @@ class Statistics:Serializable {
 	/** Hold use count */
 	var totalHoldUsed:Int = 0
 
-	/** Largest combo */
+	/** Longest combo */
 	var maxCombo:Int = 0
+	/** Longest Back to Back Chain */
+	var maxB2B:Int = 0
 
 	/** 1Linesあたりの得点 (Score Per Line) */
 	val spl:Double get() = if(lines>0) score.toDouble()/lines.toDouble() else 0.0
@@ -132,7 +134,7 @@ class Statistics:Serializable {
 
 	/** TAS detection: slowdown rate */
 	var gamerate:Float = 0f
-	/** Max chain */
+	/** Longest Avalanche-chain */
 	var maxChain:Int = 0
 
 	/** Roll cleared flag (0=Not Reached 1=Reached 2=Fully Survived) */
@@ -269,6 +271,7 @@ class Statistics:Serializable {
 			totalB2BSplit = b.totalB2BSplit
 			totalB2BTwist = b.totalB2BTwist
 			maxCombo = b.maxCombo
+			maxB2B = b.maxB2B
 			gamerate = b.gamerate
 			maxChain = b.maxChain
 			rollclear = b.rollclear
@@ -318,6 +321,7 @@ class Statistics:Serializable {
 			totalB2BSplit += b.totalB2BSplit
 			totalB2BTwist += b.totalB2BTwist
 			maxCombo = maxOf(maxCombo, b.maxCombo)
+			maxB2B = maxOf(maxB2B, b.maxB2B)
 			gamerate = (gamerate+b.gamerate)/2f
 			maxChain = maxOf(maxCombo, b.maxChain)
 			rollclear = b.rollclear
@@ -365,6 +369,7 @@ class Statistics:Serializable {
 			"$id.statistics.totalB2BTwist" to totalB2BTwist,
 			"$id.statistics.totalHoldUsed" to totalHoldUsed,
 			"$id.statistics.maxCombo" to maxCombo,
+			"$id.statistics.maxB2B" to maxB2B,
 			"$id.statistics.gamerate" to gamerate,
 			"$id.statistics.maxChain" to maxChain,
 			"$id.statistics.rollclear" to rollclear).plus((0 until pieces.size-1).associate {
@@ -411,6 +416,7 @@ class Statistics:Serializable {
 		totalB2BTwist = p.getProperty("$id.statistics.totalB2BTwist", 0)
 		totalHoldUsed = p.getProperty("$id.statistics.totalHoldUsed", 0)
 		maxCombo = p.getProperty("$id.statistics.maxCombo", 0)
+		maxB2B = p.getProperty("$id.statistics.maxB2B", 0)
 		gamerate = p.getProperty("$id.statistics.gamerate", 0f)
 		maxChain = p.getProperty("$id.statistics.maxChain", 0)
 		rollclear = p.getProperty("$id.statistics.rollclear", 0)
@@ -455,6 +461,7 @@ class Statistics:Serializable {
 		{totalB2BTwist = Integer.parseInt(it)},
 		{totalHoldUsed = Integer.parseInt(it)},
 		{maxCombo = Integer.parseInt(it)},
+		{maxB2B = Integer.parseInt(it)},
 		{gamerate = java.lang.Float.parseFloat(it)},
 		{maxChain = Integer.parseInt(it)},
 		{rollclear = Integer.parseInt(it)}).plus(
@@ -506,6 +513,7 @@ class Statistics:Serializable {
 		, "$totalB2BTwist"
 		, "$totalHoldUsed"
 		, "$maxCombo"
+		, "$maxB2B"
 		, "$gamerate"
 		, "$maxChain"
 		, "$rollclear")+(pieces.map {"$it"})

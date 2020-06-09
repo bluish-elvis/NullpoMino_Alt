@@ -95,7 +95,7 @@ open class EventReceiver {
 	 * @param pts Number of points last gained
 	 */
 	fun addScore(engine:GameEngine, x:Int, y:Int, pts:Int, color:COLOR = getPlayerColor(engine.playerID)) =
-		addScore(fieldX(engine)+x*getBlockWidth(engine), fieldY(engine)+y*getBlockHeight(engine), pts, color)
+		addScore(fieldX(engine)+x*getBlockSize(engine), fieldY(engine)+y*getBlockSize(engine), pts, color)
 
 	open fun addCombo(x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN, ex:Int) {}
 
@@ -105,8 +105,8 @@ open class EventReceiver {
 	 * @param pts Number of points last gained
 	 */
 	fun addCombo(engine:GameEngine, x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN) =
-		addCombo(fieldX(engine)+x*getBlockWidth(engine), fieldY(engine)+y*getBlockHeight(engine),
-			pts, type, -(x+2)*getBlockWidth(engine)+18)
+		addCombo(fieldX(engine)+x*getBlockSize(engine), fieldY(engine)+y*getBlockSize(engine),
+			pts, type, -(x+2)*getBlockSize(engine)+18)
 
 	/** It will be called when a fireworks shoots.
 	 * @param engine GameEngine
@@ -123,7 +123,7 @@ open class EventReceiver {
 	 * @param playerID Player ID
 	 */
 	fun shootFireworks(engine:GameEngine) {
-		val mx = engine.fieldWidth*getBlockWidth(engine)
+		val mx = engine.fieldWidth*getBlockSize(engine)
 		val my = engine.fieldHeight*8
 		val x = fieldX(engine)+random.nextInt(mx)
 		var y = fieldY(engine)+random.nextInt(my)+50
@@ -427,7 +427,7 @@ open class EventReceiver {
 	 */
 	fun drawScore(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, font:FONT = FONT.NORMAL, flag:Boolean,
 		scale:Float = 1f) =
-		drawScore(engine, playerID, x, y, str, font, color = if(flag) (if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE) else COLOR.WHITE, scale = scale)
+		drawScore(engine, playerID, x, y, str, font, color = if(flag) COLOR.RAINBOW else COLOR.WHITE, scale = scale)
 
 	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
 		drawScore(engine, playerID, x, y, str, FONT.NORMAL, flag = flag, scale = scale)
@@ -440,21 +440,21 @@ open class EventReceiver {
 		drawScore(engine, playerID, x, y, str, FONT.NUM, scale = scale)
 
 	fun drawScoreNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawScoreNum(engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE, scale)
+		drawScoreNum(engine, playerID, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale)
 
 	fun drawScoreNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
 		scale:Float = 1f) =
 		drawScore(engine, playerID, x, y, str, FONT.NANO, color, scale)
 
 	fun drawScoreNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawScoreNano(engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE, scale)
+		drawScoreNano(engine, playerID, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale)
 
 	fun drawScoreGrade(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
 		scale:Float = 1f) =
 		drawScore(engine, playerID, x, y, str, FONT.GRADE, color, scale)
 
 	fun drawScoreGrade(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawScoreGrade(engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE, scale)
+		drawScoreGrade(engine, playerID, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale)
 
 	fun drawScoreTTF(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE) =
 		drawScore(engine, playerID, x, y, str, FONT.TTF, color)
@@ -516,7 +516,7 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 * @return Maximum length of the meter
 	 */
-	fun getMeterMax(engine:GameEngine):Int = if(!showmeter) 0 else engine.fieldHeight*getBlockHeight(engine)
+	fun getMeterMax(engine:GameEngine):Int = if(!showmeter) 0 else engine.fieldHeight*getBlockSize(engine)
 
 	/** Draw Decorations at score pos
 	 * @param engine GameEngine
@@ -589,24 +589,14 @@ open class EventReceiver {
 	 */
 	open fun drawMedal(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {}
 
-	/** Get width of block image.
+	/** Get width and Height of block image.
 	 * @param engine GameEngine
 	 * @return Width of block image
 	 */
-	fun getBlockWidth(engine:GameEngine):Int = when(engine.displaysize) {
-		-1 -> 8
-		1 -> 32
-		else -> 16
-	}
-
-	/** Get height of block image.
-	 * @param engine GameEngine
-	 * @return Height of block image
-	 */
-	fun getBlockHeight(engine:GameEngine):Int = when(engine.displaysize) {
-		-1 -> 8
-		1 -> 32
-		else -> 16
+	fun getBlockSize(engine:GameEngine):Int = when(engine.displaysize) {
+		-1 -> BS/2
+		1 -> BS*2
+		else -> BS
 	}
 
 	/** Get X position of field
@@ -991,7 +981,7 @@ open class EventReceiver {
 	}
 
 	companion object {
-		/** cell size(block,font) */
+		/** cell and block size(block,font) */
 		const val BS = 16
 
 		/** Log */

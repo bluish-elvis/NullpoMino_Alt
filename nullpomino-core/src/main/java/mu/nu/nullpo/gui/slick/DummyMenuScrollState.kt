@@ -16,7 +16,7 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 
 	/** List of entries */
 	protected var list:Array<String> = emptyArray()
-	override val maxCursor:Int get() = list.size
+	override val numChoice:Int get() = list.size
 
 	protected var emptyError:String = ""
 
@@ -72,8 +72,8 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 					//Down arrow
 					minentry++
 				}
-				maxCursor>pageHeight ->
-					maxOf(0, (MouseInput.mouseY-32)*(maxCursor+1-pageHeight)/sbHeight).let {
+				numChoice>pageHeight ->
+					maxOf(0, (MouseInput.mouseY-32)*(numChoice+1-pageHeight)/sbHeight).let {
 						if(it!=minentry) {
 							ResourceHolder.soundManager.play("cursor")
 							minentry = it
@@ -102,8 +102,8 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 		val maxentry = minOf(minentry+pageHeight-1, list.size)
 
 		(minentry until maxentry).forEachIndexed {y, i ->
-			FontNormal.printFontGrid(2, 3+y, list[i].toUpperCase(), cursor==i)
-			if(cursor==i) FontNormal.printFontGrid(1, 3+y, "b", COLOR.RED)
+			FontNormal.printFontGrid(2, 3+y, list[i], cursor==i)
+			if(cursor==i) FontNormal.printFontGrid(1, 3+y, "\u0082", COLOR.RAINBOW)
 		}
 
 		//Draw scroll bar
@@ -147,8 +147,8 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 	}
 
 	private fun pageDown() {
-		val max = maxCursor-pageHeight
-		if(minentry>=max) cursor = maxCursor
+		val max = numChoice-pageHeight
+		if(minentry>=max) cursor = numChoice
 		else {
 			cursor += pageHeight
 			minentry += pageHeight

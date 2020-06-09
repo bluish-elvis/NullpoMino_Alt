@@ -32,6 +32,10 @@ import mu.nu.nullpo.util.CustomProperties
 /** Game mode interface */
 interface GameMode {
 
+	/** Get mode identifier.
+	 * @return Mode identifier
+	 */
+	val id:String
 	/** Get mode name.
 	 * @return Mode name
 	 */

@@ -13,7 +13,7 @@ class StateConfigRuleStyleSelect:DummyMenuChooseState() {
 	/** Player number */
 	var player = 0
 
-	override val maxCursor = GameEngine.MAX_GAMESTYLE-1
+	override val numChoice = GameEngine.MAX_GAMESTYLE-1
 	init {
 		minChoiceY = 3
 	}
@@ -32,7 +32,7 @@ class StateConfigRuleStyleSelect:DummyMenuChooseState() {
 		// Menu
 		FontNormal.printFontGrid(1, 1, "SELECT ${player+1}P STYLE", COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RED)
+		FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RAINBOW)
 
 		for(i in 0 until GameEngine.MAX_GAMESTYLE)
 			FontNormal.printFontGrid(2, 3+i, GameEngine.GAMESTYLE_NAMES[i], cursor==i)

@@ -484,7 +484,7 @@ class Field:Serializable {
 	/** @param y height of the row in the field
 	 * @return a reference to the row
 	 */
-	fun getRow(y:Int):Array<Block?> = (if(y>=0) blockField.getOrNull(y)
+	fun getRow(y:Int):Array<Block?> = (if(height>0&&y>=0) blockField.getOrNull(y)
 	else blockHidden.getOrNull(y*-1-1)) ?: arrayOfNulls<Block?>(10)
 
 	/** 指定した座標にあるBlockを取得
@@ -576,6 +576,7 @@ class Field:Serializable {
 	 */
 	fun checkLine():Int {
 		val lines = checkLinesNoFlag()
+		if(height<=0 || lines.isEmpty()) return 0
 		lastLinesCleared = lines.map {getRow(it)}.toTypedArray()
 		lastLinesHeight = lines
 
@@ -589,7 +590,7 @@ class Field:Serializable {
 				getRow(i).forEach {
 					it?.setAttribute(true, ATTRIBUTE.ERASE)
 				}
-			} else if(i>=lines.sortedArray()[0]) inv = true
+			} else if(i>=lines.sortedArray().first()) inv = true
 		}
 		return lines.size
 	}

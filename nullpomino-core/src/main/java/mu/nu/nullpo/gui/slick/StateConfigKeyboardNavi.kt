@@ -38,7 +38,7 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 
 	/** StateBasedGame */
 	private lateinit var gameObj:StateBasedGame
-	override val maxCursor = 1
+	override val numChoice = 2
 	init {
 		minChoiceY = 1
 	}
@@ -66,7 +66,7 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 
 		FontNormal.printFontGrid(1, 1, "KEYBOARD NAVIGATION SETTING (${player+1}P)", COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 3+cursor, "b", COLOR.RED)
+		FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RED)
 
 		FontNormal.printFontGrid(2, 3, "COPY FROM GAME KEYS", cursor==0)
 		FontNormal.printFontGrid(2, 4, "CUSTOMIZE", cursor==1)

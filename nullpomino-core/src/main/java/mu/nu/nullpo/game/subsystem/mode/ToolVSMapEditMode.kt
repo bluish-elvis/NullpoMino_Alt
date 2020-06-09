@@ -216,7 +216,7 @@ class ToolVSMapEditMode:AbstractMode() {
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "FIELD EDIT", EventReceiver.COLOR.COBALT)
 		if(menuCursor in 0..2)
-			receiver.drawMenuFont(engine, playerID, 0, 2+menuCursor, "b", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, playerID, 0, 2+menuCursor, "\u0082", EventReceiver.COLOR.RED)
 		receiver.drawMenuFont(engine, playerID, 1, 2, "[EDIT]", menuCursor==0)
 		receiver.drawMenuFont(engine, playerID, 1, 3, "[WHITE->?]", menuCursor==1)
 		receiver.drawMenuFont(engine, playerID, 1, 4, "[CLEAR]", menuCursor==2)
@@ -227,7 +227,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		else
 			receiver.drawMenuFont(engine, playerID, 0, 7, "NO MAPS", menuCursor in 3..5)
 		if(menuCursor in 3..5)
-			receiver.drawMenuFont(engine, playerID, 0, 8+menuCursor-3, "b", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, playerID, 0, 8+menuCursor-3, "\u0082", EventReceiver.COLOR.RED)
 		receiver.drawMenuFont(engine, playerID, 1, 8, "[SAVE]", menuCursor==3)
 		receiver.drawMenuFont(engine, playerID, 1, 9, "[LOAD]", menuCursor==4)
 		receiver.drawMenuFont(engine, playerID, 1, 10, "[DELETE]", menuCursor==5)
@@ -235,7 +235,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		receiver.drawMenuFont(engine, playerID, 0, 12, "MAP FILE", EventReceiver.COLOR.COBALT)
 		receiver.drawMenuFont(engine, playerID, 0, 13, "$nowMapSetID/99", menuCursor in 6..7)
 		if(menuCursor in 6..7)
-			receiver.drawMenuFont(engine, playerID, 0, 14+menuCursor-6, "b", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, playerID, 0, 14+menuCursor-6, "\u0082", EventReceiver.COLOR.RED)
 		receiver.drawMenuFont(engine, playerID, 1, 14, "[WRITE]", menuCursor==6)
 		receiver.drawMenuFont(engine, playerID, 1, 15, "[READ]", menuCursor==7)
 

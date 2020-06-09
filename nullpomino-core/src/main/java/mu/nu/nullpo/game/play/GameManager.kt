@@ -50,14 +50,14 @@ class GameManager
 	/** Properties used by game mode */
 	var modeConfig:CustomProperties = CustomProperties()
 
-	val cfgMode get() = "config/setting/mode/${mode?.name ?: "mode"}.cfg"
+	val cfgMode get() = "config/setting/mode/${mode?.id ?: "_common"}.cfg"
 
 	/** Properties for Records game mode */
 	var recordProp:CustomProperties = CustomProperties()
 
 	val recorder get() = recorder()
 	fun recorder(ruleName:String? = null):String =
-		"scores/${mode?.javaClass?.simpleName ?: ""}${ruleName?.let {"_$it"}?:""}.rec"
+		"scores/${mode?.id ?: ""}${ruleName?.let {"_$it"}?:""}.rec"
 	//fun recorder():String = "scores/${mode?.name ?: "mode"}.rec"
 
 	/** Properties for replay file */

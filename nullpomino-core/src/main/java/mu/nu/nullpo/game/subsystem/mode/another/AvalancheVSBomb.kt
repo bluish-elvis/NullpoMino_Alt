@@ -513,7 +513,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 		var width = 6
 		if(engine.field!=null) width = engine.field!!.width
 		width *= 6
-		val blockHeight = receiver.getBlockHeight(engine)
+		val blockHeight = receiver.getBlockSize(engine)
 		// Rising auctionMeter
 		val value = ojama[playerID]*blockHeight/width
 		engine.meterColor = when {

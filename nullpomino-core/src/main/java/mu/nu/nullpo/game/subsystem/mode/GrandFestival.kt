@@ -138,7 +138,7 @@ class GrandFestival:AbstractMode() {
 
 	/** Returns the name of this mode */
 	override val name:String
-		get() = "GRAND FESTIVAL"
+		get() = "Grand Festival"
 
 	/** This function will be called when the game enters the main game
 	 * screen. */

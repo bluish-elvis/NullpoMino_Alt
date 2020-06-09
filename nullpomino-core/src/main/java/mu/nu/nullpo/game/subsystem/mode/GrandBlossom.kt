@@ -189,7 +189,7 @@ class GrandBlossom:AbstractMode() {
 
 	/* Mode nameを取得 */
 	override val name:String
-		get() = "GRAND BLOSSOM"
+		get() = "Grand Blossom"
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -868,7 +868,7 @@ class GrandBlossom:AbstractMode() {
 
 				for(i in sectionTime.indices)
 					if(sectionTime[i]!=0) {
-						val strSeparator = if(i==stage&&engine.ending==0) "b" else " "
+						val strSeparator = if(i==stage&&engine.ending==0) "\u0082" else " "
 
 						val strSectionTime:String = when {
 							sectionTime[i]==-1 -> String.format("%3s%s%s", getStageName(i), strSeparator, "FAILED")
@@ -1317,7 +1317,7 @@ class GrandBlossom:AbstractMode() {
 			if(engine.statc[0]>=engine.field!!.height+1&&engine.statc[0]<engine.field!!.height+1+600) {
 				receiver.drawMenuFont(engine, playerID, 1, 7, "CONTINUE?", COLOR.PINK)
 
-				receiver.drawMenuFont(engine, playerID, 3, 9+engine.statc[1]*2, "b", COLOR.RED)
+				receiver.drawMenuFont(engine, playerID, 3, 9+engine.statc[1]*2, "\u0082", COLOR.RED)
 				receiver.drawMenuFont(engine, playerID, 4, 9, "YES", engine.statc[1]==0)
 				receiver.drawMenuFont(engine, playerID, 4, 11, "NO", engine.statc[1]==1)
 

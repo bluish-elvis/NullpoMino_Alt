@@ -226,7 +226,7 @@ class RetroMarathon:AbstractMode() {
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(!engine.owner.replayMode)
-			receiver.drawMenuFont(engine, playerID, 0, menuCursor*2+1, "b", COLOR.RED)
+			receiver.drawMenuFont(engine, playerID, 0, menuCursor*2+1, "\u0082", COLOR.RED)
 
 		receiver.drawMenuFont(engine, playerID, 0, 0, "GAME TYPE", COLOR.BLUE)
 		receiver.drawMenuFont(engine, playerID, 1, 1, gametype.name, menuCursor==0)

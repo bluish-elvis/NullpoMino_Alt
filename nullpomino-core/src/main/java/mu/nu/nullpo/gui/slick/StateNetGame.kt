@@ -258,7 +258,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 		when(val newModeTemp = if(newModeName==null) NetDummyMode() else NullpoMinoSlick.modeManager.getMode(newModeName)) {
 			null -> log.error("Cannot find a mode:"+newModeName!!)
 			is NetDummyMode -> {
-				log.info("Enter new mode:"+newModeTemp.name)
+				log.info("Enter new mode:"+newModeTemp.id)
 
 				modeName = newModeTemp.name
 

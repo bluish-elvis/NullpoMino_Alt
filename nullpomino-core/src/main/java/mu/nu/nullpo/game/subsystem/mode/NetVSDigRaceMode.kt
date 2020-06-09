@@ -148,7 +148,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 				// Update meter
 				val remainLines = getRemainGarbageLines(engine, playerID)
 				playerRemainLines[playerID] = remainLines
-				engine.meterValue = remainLines*owner.receiver.getBlockHeight(engine)
+				engine.meterValue = remainLines*owner.receiver.getBlockSize(engine)
 				engine.meterColor = GameEngine.METER_COLOR_GREEN
 			} else {
 				// Map game
@@ -193,7 +193,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 		if(netCurrentRoomInfo==null||!netCurrentRoomInfo!!.useMap) {
 			// Normal game
 			remainLines = playerRemainLines[playerID]
-			engine.meterValue = remainLines*owner.receiver.getBlockHeight(engine)
+			engine.meterValue = remainLines*owner.receiver.getBlockSize(engine)
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			if(remainLines<=14) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 			if(remainLines<=8) engine.meterColor = GameEngine.METER_COLOR_ORANGE

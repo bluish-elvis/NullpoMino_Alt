@@ -114,17 +114,18 @@ class StateInGame:BasicGameState() {
 			it.init()
 
 			// Initialization for each player
-			for(i in 0 until it.players) {
+			for(i in 0 until it.players)it.engine[i].let{e->
 				// チューニング設定
-				it.engine[i].owRotateButtonDefaultRight = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owRotateButtonDefaultRight", -1)
-				it.engine[i].owSkin = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owSkin", -1)
-				it.engine[i].owMinDAS = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMinDAS", -1)
-				it.engine[i].owMaxDAS = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMaxDAS", -1)
-				it.engine[i].owDASDelay = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owDasDelay", -1)
-				it.engine[i].owReverseUpDown = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owReverseUpDown", false)
-				it.engine[i].owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMoveDiagonal", -1)
-				it.engine[i].owBlockOutlineType = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owBlockOutlineType", -1)
-				it.engine[i].owBlockShowOutlineOnly = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owBlockShowOutlineOnly", -1)
+				e.owRotateButtonDefaultRight = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owRotateButtonDefaultRight", -1)
+				e.owSkin = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owSkin", -1)
+				e.owMinDAS = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMinDAS", -1)
+				e.owMaxDAS = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMaxDAS", -1)
+				e.owDASDelay = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owDasDelay", -1)
+				e.owSDSpd = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owSDSpd", -1)
+				e.owReverseUpDown = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owReverseUpDown", false)
+				e.owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMoveDiagonal", -1)
+				e.owBlockOutlineType = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owBlockOutlineType", -1)
+				e.owBlockShowOutlineOnly = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owBlockShowOutlineOnly", -1)
 
 				// ルール
 				val ruleopt:RuleOptions
@@ -143,33 +144,33 @@ class StateInGame:BasicGameState() {
 					ruleopt = RuleOptions()
 					ruleopt.readProperty(NullpoMinoSlick.propGlobal, i)
 				}
-				it.engine[i].ruleopt = ruleopt
+				e.ruleopt = ruleopt
 
 				// NEXT順生成アルゴリズム
 				if(ruleopt.strRandomizer.isNotEmpty()) {
-					it.engine[i].randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
+					e.randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
 				}
 
 				// Wallkick
 				if(ruleopt.strWallkick.isNotEmpty()) {
-					it.engine[i].wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
+					e.wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
 				}
 
 				// AI
 				val aiName = NullpoMinoSlick.propGlobal.getProperty("$i.ai", "")
 				if(aiName.isNotEmpty()) {
-					it.engine[i].ai = GeneralUtil.loadAIPlayer(aiName)
-					it.engine[i].aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiMoveDelay", 0)
-					it.engine[i].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
-					it.engine[i].aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
-					it.engine[i].aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
-					it.engine[i].aiPrethink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPrethink", false)
-					it.engine[i].aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
+					e.ai = GeneralUtil.loadAIPlayer(aiName)
+					e.aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiMoveDelay", 0)
+					e.aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
+					e.aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
+					e.aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
+					e.aiPrethink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPrethink", false)
+					e.aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
 				}
 				it.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
 
 				// Called at initialization
-				it.engine[i].init()
+				e.init()
 			}
 		}
 		updateTitleBarCaption()
@@ -272,11 +273,11 @@ class StateInGame:BasicGameState() {
 
 				// Pause menu
 				if(pause&&!enableframestep&&!pauseMessageHide) {
-					FontNormal.printFont(offsetX+12, offsetY+188+cursor*16, "b", COLOR.RED)
+					FontNormal.printFont(offsetX+12, offsetY+188+cursor*16, "\u0082", COLOR.RAINBOW)
 
-					FontNormal.printFont(offsetX+28, offsetY+188, "CONTINUE", cursor==0)
-					FontNormal.printFont(offsetX+28, offsetY+204, "RETRY", cursor==1)
-					FontNormal.printFont(offsetX+28, offsetY+220, "END", cursor==2)
+					FontNormal.printFont(offsetX+28, offsetY+188, "Continue", cursor==0)
+					FontNormal.printFont(offsetX+28, offsetY+204, "Restart", cursor==1)
+					FontNormal.printFont(offsetX+28, offsetY+220, "Exit", cursor==2)
 					if(it.replayMode&&!it.replayRerecord)
 						FontNormal.printFont(offsetX+28, offsetY+236, "RERECORD", cursor==3)
 				}
