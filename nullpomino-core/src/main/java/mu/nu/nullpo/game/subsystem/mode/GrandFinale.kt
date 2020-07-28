@@ -438,11 +438,11 @@ class GrandFinale:AbstractMode() {
 				receiver.drawScoreGrade(engine, playerID, 0, 2, tableGradeName[grade], gradeflash>0&&gradeflash%4==0, 2f)
 
 			// Time
-			receiver.drawScoreFont(engine, playerID, 0, 4, "TIME", color)
+			receiver.drawScoreFont(engine, playerID, 0, 4, "Time", color)
 			if((engine.ending!=2) or (rolltime/10%2==0))
 				receiver.drawScoreNum(engine, playerID, 0, 5, GeneralUtil.getTime(engine.statistics.time), 2f)
 			// Level
-			receiver.drawScoreFont(engine, playerID, 0, 8, "LEVEL", color)
+			receiver.drawScoreFont(engine, playerID, 0, 8, "Level", color)
 			receiver.drawScoreNum(engine, playerID, 0, 9, String.format("%3d", maxOf(engine.statistics.level, 0)))
 			receiver.drawSpeedMeter(engine, playerID, 0, 10,
 				if(gametype==1)
@@ -451,7 +451,7 @@ class GrandFinale:AbstractMode() {
 					engine.statistics.level*40/999)
 			receiver.drawScoreNum(engine, playerID, 0, 11, String.format("%3d", nextseclv))
 			// Lines
-			receiver.drawScoreFont(engine, playerID, 0, 13, if(gametype==1) "JOKERS" else "LINES",
+			receiver.drawScoreFont(engine, playerID, 0, 13, if(gametype==1) "JOKERS" else "Lines",
 				if(gametype==1&&joker<=0) COLOR.WHITE else color)
 			receiver.drawScoreNum(engine, playerID, 0, 14, String.format("%3d",
 				if(gametype==1) joker else engine.statistics.lines), 2f)

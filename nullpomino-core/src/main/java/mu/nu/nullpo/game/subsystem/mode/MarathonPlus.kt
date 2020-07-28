@@ -315,15 +315,15 @@ class MarathonPlus:NetDummyMode() {
 			if(level>=tableGameClearLevel[goaltype]&&!startlevel) strline += "/$bonusLines"
 			receiver.drawScoreNum(engine, playerID, 5, 2, strline, 2f)
 			val scget:Boolean = scgettime<engine.statistics.score
-			receiver.drawScoreFont(engine, playerID, 0, 4, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 4, "Score", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 4, "+$lastscore")
 			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/24.0).toInt()
 			sc += ceil(((scgettime-sc)/10f).toDouble()).toInt()
 			receiver.drawScoreNum(engine, playerID, 0, 5, "$sc", scget, 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 7, "LEVEL", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 7, "Level", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 7, "$level"+"/"+tableGameClearLevel[goaltype], 2f)
-			receiver.drawScoreFont(engine, playerID, 0, 8, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 8, "Time", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 9, GeneralUtil.getTime(engine.statistics.time), 2f)
 			if(engine.ending==2) {
 				val remainRollTime = maxOf(0, bonusTimeMax-bonusTime)
@@ -598,7 +598,7 @@ class MarathonPlus:NetDummyMode() {
 				EventReceiver.COLOR.YELLOW
 			else
 				EventReceiver.COLOR.WHITE)
-			receiver.drawMenuFont(engine, playerID, 4, 12, "LEVEL", if(engine.statc[0]%2==0)
+			receiver.drawMenuFont(engine, playerID, 4, 12, "Level", if(engine.statc[0]%2==0)
 				EventReceiver.COLOR.YELLOW
 			else
 				EventReceiver.COLOR.WHITE)

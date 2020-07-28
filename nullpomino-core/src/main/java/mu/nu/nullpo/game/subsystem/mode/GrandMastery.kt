@@ -638,7 +638,7 @@ class GrandMastery:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "LEVEL", (startlevel*100).toString(), "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big), "GRADE DISP", GeneralUtil.getONorOFF(gradedisp), "LV500LIMIT",
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(), "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big), "GRADE DISP", GeneralUtil.getONorOFF(gradedisp), "LV500LIMIT",
 			if(lv500torikan==0)
 				"NONE"
 			else
@@ -757,13 +757,13 @@ class GrandMastery:AbstractMode() {
 			}
 
 			// Score
-			receiver.drawScoreFont(engine, playerID, 0, 5, "SCORE", if(g20) COLOR.YELLOW else COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 5, "Score", if(g20) COLOR.YELLOW else COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 5, "+$lastscore")
 			receiver.drawScoreNum(engine, playerID, 0, 6, "$scgettime", 2f)
 			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
 
 			// level
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", if(g20) COLOR.YELLOW else COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", if(g20) COLOR.YELLOW else COLOR.BLUE)
 
 			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
 			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4)
@@ -774,7 +774,7 @@ class GrandMastery:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv))
 
 			// Time
-			receiver.drawScoreFont(engine, playerID, 0, 14, "TIME", if(g20)
+			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", if(g20)
 				COLOR.YELLOW
 			else
 				COLOR.BLUE)

@@ -186,7 +186,7 @@ class RetroMania:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "LEVEL", "$startlevel", "BIG", GeneralUtil.getONorOFF(big), "POWERON", GeneralUtil.getONorOFF(poweron))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "Level", "$startlevel", "BIG", GeneralUtil.getONorOFF(big), "POWERON", GeneralUtil.getONorOFF(poweron))
 	}
 
 	/** Ready */
@@ -231,7 +231,7 @@ class RetroMania:AbstractMode() {
 			}
 		} else {
 			// Game statistics
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
 			val strScore:String = if(lastscore==0||scgettime>=120)
 				"${engine.statistics.score}"
 			else
@@ -241,10 +241,10 @@ class RetroMania:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 7, engine.statistics.lines.toString(), 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.level}", 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 12, "Time", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			//receiver.drawScore(engine, playerID, 0, 15, String.valueOf(linesAfterLastLevelUp));

@@ -275,7 +275,7 @@ class SquareMode:AbstractMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 4, "${engine.statistics.score}${if(lastscore==0||scgettime<=0)
 				"(+$lastscore)" else ""}")
 
@@ -285,7 +285,7 @@ class SquareMode:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 9, "SQUARE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 10, "$squares")
 
-			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 12, "Time", EventReceiver.COLOR.BLUE)
 			if(gametype==1) {
 				// Ultra timer
 				var time = ULTRA_MAX_TIME-engine.statistics.time
@@ -475,7 +475,7 @@ class SquareMode:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
-		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "SCORE", String.format("%10d", engine.statistics.score), "LINE", String.format("%10d", engine.statistics.lines), "SQUARE", String.format("%10d", squares), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
+		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score), "LINE", String.format("%10d", engine.statistics.lines), "SQUARE", String.format("%10d", squares), "Time", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 		drawResultRank(engine, playerID, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
 	}
 

@@ -375,7 +375,7 @@ class GrandLightning:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.RED, 0, "LEVEL", (startlevel*100).toString(), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big), "LV500LIMIT",
+		drawMenu(engine, playerID, receiver, 0, COLOR.RED, 0, "Level", (startlevel*100).toString(), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big), "LV500LIMIT",
 			if(torikan==0)
 				"NONE"
 			else
@@ -458,7 +458,7 @@ class GrandLightning:AbstractMode() {
 					receiver.drawScoreGrade(engine, playerID, 0, 1, tableGradeName[grade], gradeflash>0&&gradeflash%4==0, 2f)
 
 				// Score
-				receiver.drawScoreFont(engine, playerID, 0, 6, "SCORE", COLOR.RED)
+				receiver.drawScoreFont(engine, playerID, 0, 6, "Score", COLOR.RED)
 				receiver.drawScoreNum(engine, playerID, 5, 6, "+$lastscore")
 				receiver.drawScoreNum(engine, playerID, 0, 7, "$scgettime", 2f)
 				if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble())
@@ -466,13 +466,13 @@ class GrandLightning:AbstractMode() {
 			}
 
 			// level
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.RED)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.RED)
 			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
 			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128)
 			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv))
 
 			// Time
-			receiver.drawScoreFont(engine, playerID, 0, 14, "TIME", COLOR.RED)
+			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", COLOR.RED)
 			if((engine.ending!=2) or (rolltime/10%2==0))
 				receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), 2f)
 

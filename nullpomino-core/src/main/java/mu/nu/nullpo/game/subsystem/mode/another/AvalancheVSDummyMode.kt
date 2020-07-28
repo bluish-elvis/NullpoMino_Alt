@@ -737,7 +737,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	protected fun drawScores(engine:GameEngine, playerID:Int, x:Int, y:Int, headerColor:COLOR) {
 		var y = y
-		receiver.drawScoreFont(engine, playerID, x, y, "SCORE", headerColor)
+		receiver.drawScoreFont(engine, playerID, x, y, "Score", headerColor)
 		y++
 		receiver.drawScoreFont(engine, playerID, x, y, "1P: ", COLOR.RED)
 		if(scgettime[0]>0&&lastscore[0]>0&&lastmultiplier[0]>0)
@@ -783,7 +783,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			"PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
 			"ATTACK/MIN", String.format("%10g", apm),
 			"PIECE/SEC", String.format("%10g", engine.statistics.pps),
-			"TIME", String.format("%10s", GeneralUtil.getTime(owner.engine[0].statistics.time)))
+			"Time", String.format("%10s", GeneralUtil.getTime(owner.engine[0].statistics.time)))
 	}
 
 	companion object {

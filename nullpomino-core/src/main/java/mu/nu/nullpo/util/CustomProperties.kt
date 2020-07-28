@@ -93,6 +93,20 @@ class CustomProperties:Properties() {
 		defaultValue
 	}
 
+	/** intArray型のプロパティを取得
+	 * @param key キー
+	 * @param defaultValue keyが見つからない場合に返す変数
+	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
+	 */
+	fun getProperty(key:String, defaultValue:IntArray):IntArray = try {
+		getProperty(key, "$defaultValue").split(',').map {Integer.parseInt(it)}.toIntArray()
+	} catch(e:NumberFormatException) {
+		defaultValue
+	}
+
+	fun setProperty(key:String, value:IntArray):Any =
+		setProperty(key, value.joinToString(separator = ","))
+
 	/** long型のプロパティを取得
 	 * @param key キー
 	 * @param defaultValue keyが見つからない場合に返す変数
@@ -165,16 +179,16 @@ class CustomProperties:Properties() {
 	 * @return 成功するとtrue
 	 */
 	fun decode(source:String):Boolean = try {
-			val decodedString = URLDecoder.decode(source, code.name())
-			val prop = ByteArrayInputStream(decodedString.toByteArray(code))
-			load(prop)
-			true
-		} catch(e:UnsupportedEncodingException) {
-			throw Error("UTF-8 not supported", e)
-		} catch(e:Exception) {
-			e.printStackTrace()
-			false
-		}
+		val decodedString = URLDecoder.decode(source, code.name())
+		val prop = ByteArrayInputStream(decodedString.toByteArray(code))
+		load(prop)
+		true
+	} catch(e:UnsupportedEncodingException) {
+		throw Error("UTF-8 not supported", e)
+	} catch(e:Exception) {
+		e.printStackTrace()
+		false
+	}
 
 	companion object {
 

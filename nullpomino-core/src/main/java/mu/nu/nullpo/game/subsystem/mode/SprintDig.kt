@@ -410,7 +410,7 @@ class SprintDig:NetDummyMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 12, "PIECE/SEC", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.pps.toString())
 
-			receiver.drawScoreFont(engine, playerID, 0, 15, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 15, "Time", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(engine.statistics.time))
 		}
 

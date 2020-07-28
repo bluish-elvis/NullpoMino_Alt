@@ -401,7 +401,7 @@ class SprintScore:NetDummyMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
 			var sc = GOAL_TABLE[goaltype]-engine.statistics.score
 			if(sc<0) sc = 0
 			var fontcolor = EventReceiver.COLOR.WHITE
@@ -425,7 +425,7 @@ class SprintScore:NetDummyMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 15, "SCORE/LINE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 16, String.format("%-10g", engine.statistics.spl), 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 18, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 18, "Time", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 19, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 		}

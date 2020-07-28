@@ -595,13 +595,13 @@ class PhysicianVS:AbstractMode() {
  * EventReceiver.COLOR.BLUE);
  * receiver.drawScore(engine, playerID, 3, 8, SPEED_NAME[speed[1]],
  * SPEED_COLOR[speed[1]]);
- * receiver.drawScore(engine, playerID, -1, 10, "SCORE",
+ * receiver.drawScore(engine, playerID, -1, 10, "Score",
  * EventReceiver.COLOR.PURPLE);
  * receiver.drawScore(engine, playerID, -1, 11, "1P: " +
  * String.valueOf(score[0]), EventReceiver.COLOR.RED);
  * receiver.drawScore(engine, playerID, -1, 12, "2P: " +
  * String.valueOf(score[1]), EventReceiver.COLOR.BLUE);
- * receiver.drawScore(engine, playerID, -1, 14, "TIME",
+ * receiver.drawScore(engine, playerID, -1, 14, "Time",
  * EventReceiver.COLOR.GREEN);
  * receiver.drawScore(engine, playerID, -1, 15,
  * GeneralUtil.getTime(engine.statistics.time));

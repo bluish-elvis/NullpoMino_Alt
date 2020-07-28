@@ -231,7 +231,7 @@ class RetroMarathon:AbstractMode() {
 		receiver.drawMenuFont(engine, playerID, 0, 0, "GAME TYPE", COLOR.BLUE)
 		receiver.drawMenuFont(engine, playerID, 1, 1, gametype.name, menuCursor==0)
 		if(gametype!=ENDLESS) {
-			receiver.drawMenuFont(engine, playerID, 0, 2, "LEVEL", COLOR.BLUE)
+			receiver.drawMenuFont(engine, playerID, 0, 2, "Level", COLOR.BLUE)
 			receiver.drawMenuFont(engine, playerID, 1, 3, String.format("%02d", startlevel), menuCursor==1)
 		}
 		receiver.drawMenuFont(engine, playerID, 0, 4, "BIG", COLOR.BLUE)
@@ -280,7 +280,7 @@ class RetroMarathon:AbstractMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
 			val strScore:String = if(lastscore==0||scgettime>=120)
 				"${engine.statistics.score}"
 			else
@@ -289,13 +289,13 @@ class RetroMarathon:AbstractMode() {
 
 			val strLine = "$loons"
 
-			receiver.drawScoreFont(engine, playerID, 0, 6, "LINES", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 6, "Lines", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 7, strLine, 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 10, String.format("%02d", engine.statistics.level))
 
-			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 12, "Time", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)
 		}
 	}
@@ -424,7 +424,7 @@ class RetroMarathon:AbstractMode() {
 
 		drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE)
 
-		receiver.drawMenuFont(engine, playerID, 0, 5, "LINES", COLOR.BLUE)
+		receiver.drawMenuFont(engine, playerID, 0, 5, "Lines", COLOR.BLUE)
 		val strLines = String.format("%10d", loons)
 		receiver.drawMenuFont(engine, playerID, 0, 6, strLines)
 		val strFour = String.format("%10s", String.format("+%d", engine.statistics.totalQuadruple))

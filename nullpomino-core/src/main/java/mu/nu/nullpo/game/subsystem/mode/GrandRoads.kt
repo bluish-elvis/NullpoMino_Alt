@@ -370,7 +370,7 @@ class GrandRoads:NetDummyMode() {
 		else
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
 				"DIFFICULTY", GAMETYPE_NAME[goaltype],
-				"LEVEL", (startlevel+1).toString(),
+				"Level", (startlevel+1).toString(),
 				"SHOW STIME", GeneralUtil.getONorOFF(showsectiontime),
 				"BIG", GeneralUtil.getONorOFF(big))
 	}
@@ -411,7 +411,7 @@ class GrandRoads:NetDummyMode() {
 		//receiver.drawScoreBadges(engine, playerID,5,-4,100,dectemp);
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null&&!netIsWatch) {
-				receiver.drawScoreFont(engine, playerID, 8, 3, "TIME", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 8, 3, "Time", EventReceiver.COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
 					var gcolor = EventReceiver.COLOR.WHITE
@@ -432,7 +432,7 @@ class GrandRoads:NetDummyMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "LEVEL", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Level", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 2, String.format("%02d", engine.statistics.level+1), 2f)
 			receiver.drawScoreNum(engine, playerID, 8, 3, String.format("/%3d", tableGoalLevel[goaltype]))
 			val strLevel = String.format("%3d/%3d", norm, (engine.statistics.level+1)*10)
@@ -633,7 +633,7 @@ class GrandRoads:NetDummyMode() {
 			receiver.drawMenuFont(engine, playerID, 0, 1, "LIFE REMAINED", EventReceiver.COLOR.BLUE, .8f)
 
 			receiver.drawMenuNum(engine, playerID, 0, 2, String.format("%04d", norm), gcolor, 2f)
-			receiver.drawMenuFont(engine, playerID, 6, 3, "LINES", EventReceiver.COLOR.BLUE, .8f)
+			receiver.drawMenuFont(engine, playerID, 6, 3, "Lines", EventReceiver.COLOR.BLUE, .8f)
 
 			drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.LPM, Statistic.TIME, Statistic.PPS, Statistic.PIECE)
 			drawResultRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, rankingRank)

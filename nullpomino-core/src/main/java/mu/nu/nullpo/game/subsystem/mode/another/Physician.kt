@@ -198,7 +198,7 @@ class Physician:AbstractMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
 			val strScore:String = if(lastscore==0||scgettime<=0)
 				"${engine.statistics.score}"
 			else
@@ -230,7 +230,7 @@ class Physician:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 10, "SPEED", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 11, SPEED_NAME[speed], SPEED_COLOR[speed])
 
-			receiver.drawScoreFont(engine, playerID, 0, 13, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 13, "Time", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 14, GeneralUtil.getTime(engine.statistics.time))
 		}
 	}
@@ -308,7 +308,7 @@ class Physician:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
-		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "SCORE", String.format("%10d", engine.statistics.score), "CLEARED", String.format("%10d", engine.statistics.lines), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
+		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score), "CLEARED", String.format("%10d", engine.statistics.lines), "Time", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 		drawResultRank(engine, playerID, receiver, 9, EventReceiver.COLOR.BLUE, rankingRank)
 	}
 

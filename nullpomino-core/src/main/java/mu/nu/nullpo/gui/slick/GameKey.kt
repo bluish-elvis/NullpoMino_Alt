@@ -39,8 +39,7 @@ class GameKey:GameKeyDummy {
 	constructor(pl:Int):super(pl)
 
 	/** Update button input status
-	 * @param input Slick's Input class (You can get it with
-	 * container.getInput())
+	 * @param input Slick's Input class (You can get it with container.getInput())
 	 * @param ingame true if ingame
 	 */
 	@JvmOverloads
@@ -50,19 +49,17 @@ class GameKey:GameKeyDummy {
 		for(i in 0 until MAX_BUTTON) {
 			val kmap = if(ingame) keymap else keymapNav
 
-			var flag = false
-			if(kmap[i]!=0)
-				flag = if(NullpoMinoSlick.useJInputKeyboard)
-					JInputManager.isKeyDown(kmap[i])
+			val flag = kmap[i].any {
+				if(NullpoMinoSlick.useJInputKeyboard)
+					JInputManager.isKeyDown(it)
 				else
-					input.isKeyDown(kmap[i])
-
-			flag = when(i) {
-				BUTTON_UP -> flag or ControllerManager.isControllerUp(player, input)
-				BUTTON_DOWN -> flag or ControllerManager.isControllerDown(player, input)
-				BUTTON_LEFT -> flag or ControllerManager.isControllerLeft(player, input)
-				BUTTON_RIGHT -> flag or ControllerManager.isControllerRight(player, input)
-				else -> flag or ControllerManager.isControllerButton(player, input, buttonmap[i])
+					input.isKeyDown(it)
+			} or when(i) {
+				BUTTON_UP -> ControllerManager.isControllerUp(player, input)
+				BUTTON_DOWN -> ControllerManager.isControllerDown(player, input)
+				BUTTON_LEFT -> ControllerManager.isControllerLeft(player, input)
+				BUTTON_RIGHT -> ControllerManager.isControllerRight(player, input)
+				else -> buttonmap[i].any {ControllerManager.isControllerButton(player, input, it)}
 			}
 
 			if(flag) inputstate[i]++
@@ -71,8 +68,7 @@ class GameKey:GameKeyDummy {
 	}
 
 	/** Reset keyboard settings to default
-	 * @param type Settings type (0=Blockbox 1=Guideline
-	 * 2=NullpoMino-Classic)
+	 * @param type Settings type (0=Blockbox 1=Guideline 2=NullpoMino-Classic)
 	 */
 	@JvmOverloads
 	fun loadDefaultKeymap(type:Int = 0) {
@@ -124,7 +120,7 @@ class GameKey:GameKeyDummy {
 			ControllerManager.initControllers()
 			JInputManager.initKeymap()
 			JInputManager.initKeyboard()
-			gamekey=arrayOf(GameKey(0), GameKey(1))
+			gamekey = arrayOf(GameKey(0), GameKey(1))
 		}
 	}
 }

@@ -467,7 +467,7 @@ class GrandMania:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "LEVEL", (startlevel*100).toString(), "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(), "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
 	}
 
 	/* Called at game start */
@@ -566,7 +566,7 @@ class GrandMania:AbstractMode() {
 				receiver.drawScoreGrade(engine, playerID, 3, 3, tableDetailGradeName[gradeInternal], gradeflash>0&&gradeflash%4==0||g20)
 
 			// Score
-			receiver.drawScoreFont(engine, playerID, 0, 6, "SCORE", if(g20&&mrollFourline)
+			receiver.drawScoreFont(engine, playerID, 0, 6, "Score", if(g20&&mrollFourline)
 				COLOR.CYAN
 			else
 				COLOR.BLUE)
@@ -575,7 +575,7 @@ class GrandMania:AbstractMode() {
 			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
 
 			// level
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", if(g20&&mrollSectiontime
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", if(g20&&mrollSectiontime
 				&&mrollFourline)
 				COLOR.CYAN
 			else
@@ -586,7 +586,7 @@ class GrandMania:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv), g20)
 
 			// Time
-			receiver.drawScoreFont(engine, playerID, 0, 14, "TIME", if(g20&&mrollSectiontime)
+			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", if(g20&&mrollSectiontime)
 				COLOR.CYAN
 			else
 				COLOR.BLUE)
