@@ -325,7 +325,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
-		receiver.drawMenuFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
 		val strScoreBefore = String.format("%10d", scoreBeforeBonus)
 		receiver.drawMenuFont(engine, playerID, 0, 4, strScoreBefore, EventReceiver.COLOR.GREEN)
 
@@ -343,7 +343,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		val strScore = String.format("%10d", engine.statistics.score)
 		receiver.drawMenuFont(engine, playerID, 0, 12, strScore, EventReceiver.COLOR.RED)
 
-		receiver.drawMenuFont(engine, playerID, 0, 13, "TIME", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, playerID, 0, 13, "Time", EventReceiver.COLOR.BLUE)
 		val strTime = String.format("%10s", GeneralUtil.getTime(engine.statistics.time))
 		receiver.drawMenuFont(engine, playerID, 0, 14, strTime)
 	}

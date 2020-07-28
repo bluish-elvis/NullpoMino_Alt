@@ -332,7 +332,7 @@ class SprintUltra:NetDummyMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 3, "+$lastscore")
 			receiver.drawScoreNum(engine, playerID, 0, 4, "$scgettime", 2f)
 			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
@@ -346,7 +346,7 @@ class SprintUltra:NetDummyMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 12, "LINE/MIN", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, "${engine.statistics.lpm}", 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 15, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 15, "Time", EventReceiver.COLOR.BLUE)
 			val time = maxOf(0,(goaltype+1)*3600-engine.statistics.time)
 			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(time), getTimeFontColor(time), 2f)
 		}

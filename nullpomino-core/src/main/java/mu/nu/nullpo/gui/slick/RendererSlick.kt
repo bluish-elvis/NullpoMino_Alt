@@ -130,7 +130,7 @@ internal open class RendererSlick:AbstractRenderer() {
 
 		if(btnID>=0&&btnID<keymap.size) {
 			val keycode = keymap[btnID]
-			return Keyboard.getKeyName(keycode) ?: "($keycode)"
+			return keycode.joinToString {Keyboard.getKeyName(it) ?: "($it)"}
 		}
 
 		return ""

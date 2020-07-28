@@ -205,7 +205,7 @@ class RetroClassic:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "GAME TYPE", GAMETYPE_NAME[gametype], "LEVEL", LEVEL_NAME[startlevel], "HEIGHT", "$startheight", "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "GAME TYPE", GAMETYPE_NAME[gametype], "Level", LEVEL_NAME[startlevel], "HEIGHT", "$startheight", "BIG", GeneralUtil.getONorOFF(big))
 	}
 
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
@@ -255,11 +255,11 @@ class RetroClassic:AbstractMode() {
 				else -> GeneralUtil.capsInteger(engine.statistics.lines, 3)
 			}, if(gametype!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.NORMAL, scale = 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.BLUE)
 			receiver.drawScore(engine, playerID, 0, 10, LEVEL_NAME[engine.statistics.level],
 				if(engine.statistics.level<30) FONT.NUM else FONT.NORMAL, scale = 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 12, "Time", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)
 		}
 	}
@@ -368,7 +368,7 @@ class RetroClassic:AbstractMode() {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", COLOR.ORANGE)
 
 		drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES)
-		receiver.drawMenuFont(engine, playerID, 0, 7, "LEVEL", COLOR.BLUE)
+		receiver.drawMenuFont(engine, playerID, 0, 7, "Level", COLOR.BLUE)
 		val strLevel = String.format("%10s", LEVEL_NAME[engine.statistics.level])
 		receiver.drawMenuFont(engine, playerID, 0, 8, strLevel)
 		drawResultStats(engine, playerID, receiver, 9, COLOR.BLUE, Statistic.TIME, Statistic.SPL, Statistic.LPM)

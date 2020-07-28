@@ -331,7 +331,7 @@ class GrandMountain:AbstractMode() {
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "PATTERN", if(goaltype==GOALTYPE_RANDOM)
 			"RANDOM"
-		else if(goaltype==GOALTYPE_PATTERN) "PATTERN" else "COPY", "LEVEL", (startlevel*100).toString(), "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
+		else if(goaltype==GOALTYPE_PATTERN) "PATTERN" else "COPY", "Level", (startlevel*100).toString(), "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
 	}
 
 	/* Called at game start */
@@ -407,7 +407,7 @@ class GrandMountain:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 4, "LEFT:$garbageCount")
 
 			// Score
-			receiver.drawScoreFont(engine, playerID, 0, 6, "SCORE", if(g20)
+			receiver.drawScoreFont(engine, playerID, 0, 6, "Score", if(g20)
 				EventReceiver.COLOR.CYAN
 			else
 				EventReceiver.COLOR.BLUE)
@@ -417,7 +417,7 @@ class GrandMountain:AbstractMode() {
 				.toInt()
 
 			// level
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", if(g20)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", if(g20)
 				EventReceiver.COLOR.CYAN
 			else
 				EventReceiver.COLOR.BLUE)
@@ -427,7 +427,7 @@ class GrandMountain:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv), g20)
 
 			// Time
-			receiver.drawScoreFont(engine, playerID, 0, 14, "TIME", if(g20)
+			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", if(g20)
 				EventReceiver.COLOR.CYAN
 			else
 				EventReceiver.COLOR.BLUE)

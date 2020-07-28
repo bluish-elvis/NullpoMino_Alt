@@ -23,6 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick
 
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
@@ -48,6 +49,7 @@ class StateConfigKeyboard:BasicGameState() {
 
 	/** Number of button currently being configured */
 	private var keynum:Int = 0
+	private var keypos:Int = 0
 
 	/** Frame counter */
 	private var frame:Int = 0
@@ -56,7 +58,7 @@ class StateConfigKeyboard:BasicGameState() {
 	private var keyConfigRestFrame:Int = 0
 
 	/** Button settings */
-	private var keymap:IntArray = IntArray(NUM_KEYS)
+	private var keymap:Array<IntArray> = Array(NUM_KEYS) {IntArray(MAX_KEYS) {0}}
 
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
@@ -69,7 +71,7 @@ class StateConfigKeyboard:BasicGameState() {
 		frame = 0
 		keyConfigRestFrame = 0
 
-		keymap = IntArray(NUM_KEYS) {
+		keymap = Array(NUM_KEYS) {
 			if(!isNavSetting) GameKey.gamekey[player].keymap[it]
 			else GameKey.gamekey[player].keymapNav[it]
 		}
@@ -99,53 +101,35 @@ class StateConfigKeyboard:BasicGameState() {
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
 		if(!isNavSetting)
-			FontNormal.printFontGrid(1, 1, "KEYBOARD SETTING (${player+1}P)", COLOR.ORANGE)
+			FontNormal.printFontGrid(1, 1, "KEYBOARD Assign (${player+1}P)", COLOR.ORANGE)
 		else
-			FontNormal.printFontGrid(1, 1, "KEYBOARD NAVIGATION SETTING (${player+1}P)", COLOR.ORANGE)
+			FontNormal.printFontGrid(1, 1, "KEYBOARD Navigation Assign (${player+1}P)", COLOR.ORANGE)
 		if(!NullpoMinoSlick.useJInputKeyboard)
-			FontNormal.printFontGrid(1, 2, "SLICK NATIVE MODE", COLOR.CYAN)
+			FontNormal.printFontGrid(1, 2, "Slick native mode", COLOR.CYAN)
 		else
-			FontNormal.printFontGrid(1, 2, "JINPUT MODE", COLOR.PINK)
+			FontNormal.printFontGrid(1, 2, "Jinput mode", COLOR.PINK)
 
-		FontNormal.printFontGrid(2, 4, "UP          : ${getKeyName(keymap[GameKeyDummy.BUTTON_UP])}", keynum==0)
-		FontNormal.printFontGrid(2, 5, "DOWN        : ${getKeyName(keymap[GameKeyDummy.BUTTON_DOWN])}", keynum==1)
-		FontNormal.printFontGrid(2, 6, "LEFT        : ${getKeyName(keymap[GameKeyDummy.BUTTON_LEFT])}", keynum==2)
-		FontNormal.printFontGrid(2, 7, "RIGHT       : ${getKeyName(keymap[GameKeyDummy.BUTTON_RIGHT])}", keynum==3)
-		if(!isNavSetting) {
-			FontNormal.printFontGrid(2, 8, "A (L/R-ROT) : ${getKeyName(keymap[GameKeyDummy.BUTTON_A])}", keynum==4)
-			FontNormal.printFontGrid(2, 9, "B (R/L-ROT) : ${getKeyName(keymap[GameKeyDummy.BUTTON_B])}", keynum==5)
-			FontNormal.printFontGrid(2, 10, "C (L/R-ROT) : ${getKeyName(keymap[GameKeyDummy.BUTTON_C])}", keynum==6)
-			FontNormal.printFontGrid(2, 11, "D (HOLD)    : ${getKeyName(keymap[GameKeyDummy.BUTTON_D])}", keynum==7)
-			FontNormal.printFontGrid(2, 12, "E (180-ROT) : ${getKeyName(keymap[GameKeyDummy.BUTTON_E])}", keynum==8)
-		} else {
-			FontNormal.printFontGrid(2, 8, "A (SELECT)  : ${getKeyName(keymap[GameKeyDummy.BUTTON_A])}", keynum==4)
-			FontNormal.printFontGrid(2, 9, "B (CANCEL)  : ${getKeyName(keymap[GameKeyDummy.BUTTON_B])}", keynum==5)
-			FontNormal.printFontGrid(2, 10, "C           : ${getKeyName(keymap[GameKeyDummy.BUTTON_C])}", keynum==6)
-			FontNormal.printFontGrid(2, 11, "D           : ${getKeyName(keymap[GameKeyDummy.BUTTON_D])}", keynum==7)
-			FontNormal.printFontGrid(2, 12, "E           : ${getKeyName(keymap[GameKeyDummy.BUTTON_E])}", keynum==8)
+		(0 until GameKeyDummy.MAX_BUTTON).forEach {
+			val flag = keynum==it
+			FontNormal.printFontGrid(2, it+4, GameKeyDummy.arrayKeyName(isNavSetting)[it], flag)
+			FontNormal.printFontGrid(13, it+4, ":", flag)
+			keymap[it].forEachIndexed {i, key -> FontNormal.printFontGrid(15+i*10, it+4, getKeyName(key), flag)}
 		}
-		FontNormal.printFontGrid(2, 13, "F           : ${getKeyName(keymap[GameKeyDummy.BUTTON_F])}", keynum==9)
-		FontNormal.printFontGrid(2, 14, "QUIT        : ${getKeyName(keymap[GameKeyDummy.BUTTON_QUIT])}", keynum==10)
-		FontNormal.printFontGrid(2, 15, "PAUSE       : ${getKeyName(keymap[GameKeyDummy.BUTTON_PAUSE])}", keynum==11)
-		FontNormal.printFontGrid(2, 16, "GIVEUP      : ${getKeyName(keymap[GameKeyDummy.BUTTON_GIVEUP])}", keynum==12)
-		FontNormal.printFontGrid(2, 17, "RETRY       : ${getKeyName(keymap[GameKeyDummy.BUTTON_RETRY])}", keynum==13)
-		FontNormal.printFontGrid(2, 18, "FRAME STEP  : ${getKeyName(keymap[GameKeyDummy.BUTTON_FRAMESTEP])}", keynum==14)
-		FontNormal.printFontGrid(2, 19, "SCREEN SHOT : ${getKeyName(keymap[GameKeyDummy.BUTTON_SCREENSHOT])}", keynum==15)
-		FontNormal.printFontGrid(2, 20, "[SAVE & EXIT]", keynum==16)
+		FontNormal.printFontGrid(2, 20, "SAVE & EXIT", keynum==16)
 
-		FontNormal.printFontGrid(1, 4+keynum, "\u0082", COLOR.RAINBOW)
+		FontNormal.printFontGrid(14+if(keynum!=16) keypos*10 else 0, 4+keynum, if(keynum==16) "?" else "\u0082", COLOR.RAINBOW)
 
 		if(frame>=KEYACCEPTFRAME)
 			when {
 				keyConfigRestFrame>0 -> FontNormal.printFontGrid(1, 22, "PUSH KEY... "+GeneralUtil.getTime(keyConfigRestFrame), COLOR.PINK)
 				keynum<NUM_KEYS -> {
-					FontNormal.printFontGrid(1, 22, "UP/DOWN:   MOVE CURSOR", COLOR.GREEN)
+					FontNormal.printFontGrid(1, 22, "<\u008B\u008E>:   MOVE CURSOR", COLOR.GREEN)
 					FontNormal.printFontGrid(1, 23, "ENTER:     SET KEY", COLOR.GREEN)
 					FontNormal.printFontGrid(1, 24, "DELETE:    SET TO NONE", COLOR.GREEN)
 					FontNormal.printFontGrid(1, 25, "BACKSPACE: CANCEL", COLOR.GREEN)
 				}
 				else -> {
-					FontNormal.printFontGrid(1, 22, "UP/DOWN:   MOVE CURSOR", COLOR.GREEN)
+					FontNormal.printFontGrid(1, 22, "<\u008B\u008E>:   MOVE CURSOR", COLOR.GREEN)
 					FontNormal.printFontGrid(1, 23, "ENTER:     SAVE & EXIT", COLOR.GREEN)
 					FontNormal.printFontGrid(1, 24, "BACKSPACE: CANCEL", COLOR.GREEN)
 				}
@@ -197,7 +181,7 @@ class StateConfigKeyboard:BasicGameState() {
 			if(keyConfigRestFrame>0) {
 				// Key-set mode
 				ResourceHolder.soundManager.play("move")
-				keymap[keynum] = key
+				if(keymap[keynum].size<=keypos) keymap[keynum] = keymap[keynum]+key else keymap[keynum][keypos] = key
 				keyConfigRestFrame = 0
 			} else {
 				// Menu mode
@@ -212,6 +196,16 @@ class StateConfigKeyboard:BasicGameState() {
 					if(keynum>NUM_KEYS) keynum = 0
 				}
 
+				if(key==Input.KEY_LEFT) {
+					ResourceHolder.soundManager.play("change")
+					keypos--
+					if(keypos<0) keypos = MAX_KEYS-1
+				}
+				if(key==Input.KEY_RIGHT) {
+					ResourceHolder.soundManager.play("change")
+					keypos++
+					if(keypos>=MAX_KEYS) keypos = 0
+				}
 				// Enter
 				if(key==Input.KEY_ENTER) {
 
@@ -236,17 +230,14 @@ class StateConfigKeyboard:BasicGameState() {
 
 				// Delete
 				if(key==Input.KEY_DELETE)
-					if(keynum<NUM_KEYS&&keymap[keynum]!=0) {
+					if(keynum<NUM_KEYS&&keymap[keynum][keypos]>0) {
 						ResourceHolder.soundManager.play("change")
-						keymap[keynum] = 0
+						keymap[keynum]=(keymap[keynum].toList()-keymap[keynum][keypos]).toIntArray()
 					}
 
 				// Backspace
 				if(key==Input.KEY_BACK)
-					if(isNavSetting)
-						gameObj.enterState(StateConfigKeyboardNavi.ID)
-					else
-						gameObj.enterState(StateConfigMainMenu.ID)
+					gameObj.enterState(if(isNavSetting) StateConfigKeyboardNavi.ID else StateConfigMainMenu.ID)
 			}
 	}
 
@@ -269,5 +260,6 @@ class StateConfigKeyboard:BasicGameState() {
 
 		/** Number of keys to set */
 		const val NUM_KEYS = 16
+		const val MAX_KEYS = 3
 	}
 }

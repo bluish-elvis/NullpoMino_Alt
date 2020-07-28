@@ -321,7 +321,7 @@ class GrandFestival:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "LEVEL", (startlevel*100).toString(), "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "SHOW SECT.", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(), "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "SHOW SECT.", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
 	}
 
 	/** This function will be called before the game actually begins (after
@@ -391,12 +391,12 @@ class GrandFestival:AbstractMode() {
 				}
 		} else {
 			val g20 = engine.speed.gravity<0&&rolltime%2==0
-			receiver.drawScoreFont(engine, playerID, 0, 5, "SCORE", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 5, "Score", COLOR.BLUE)
 			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
 			receiver.drawScoreNum(engine, playerID, 0, 6, "$scgettime", g20, 2f)
 			receiver.drawScoreNum(engine, playerID, 5, 4, "$hanabi", g20, 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.BLUE)
 			var tempLevel = engine.statistics.level
 			if(tempLevel<0) tempLevel = 0
 			val strLevel = String.format("%3d", tempLevel)
@@ -405,7 +405,7 @@ class GrandFestival:AbstractMode() {
 			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4)
 			receiver.drawScoreNum(engine, playerID, 0, 12, "300")
 
-			receiver.drawScoreFont(engine, playerID, 0, 14, "TIME", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			if(engine.gameActive&&engine.ending==2) {
@@ -628,7 +628,7 @@ class GrandFestival:AbstractMode() {
 
 		if(engine.statc[1]==0) {
 			receiver.drawMenuNum(engine, playerID, 0, 2, String.format("%04d", hanabi), 2f)
-			receiver.drawMenuFont(engine, playerID, 6, 3, "SCORE", COLOR.BLUE, .8f)
+			receiver.drawMenuFont(engine, playerID, 6, 3, "Score", COLOR.BLUE, .8f)
 			receiver.drawMenuNum(engine, playerID, 0, 4, String.format("%7d", engine.statistics.score), 1.9f)
 			drawResultStats(engine, playerID, receiver, 6, COLOR.BLUE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME)
 			drawResultRank(engine, playerID, receiver, 13, COLOR.BLUE, rankingRank)
@@ -637,13 +637,13 @@ class GrandFestival:AbstractMode() {
 
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "SECTION", COLOR.BLUE)
-			receiver.drawMenuFont(engine, playerID, 0, 3, "SCORE", COLOR.BLUE)
+			receiver.drawMenuFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
 
 			for(i in sectionscore.indices)
 				receiver.drawMenuNum(engine, playerID, 0, (if(i==SECTION_MAX) 5 else 4)+i, String.format("%4d %d", sectionhanabi[i], sectionscore[i]), sectionIsNewRecord[i])
 			receiver.drawMenuFont(engine, playerID, 0, 4+SECTION_MAX, "BONUS", COLOR.BLUE)
 
-			receiver.drawMenuFont(engine, playerID, 0, 7+SECTION_MAX, "TIME", COLOR.BLUE)
+			receiver.drawMenuFont(engine, playerID, 0, 7+SECTION_MAX, "Time", COLOR.BLUE)
 			for(i in sectionTime.indices)
 				if(sectionTime[i]>0)
 					receiver.drawMenuNum(engine, playerID, 2, 8+SECTION_MAX

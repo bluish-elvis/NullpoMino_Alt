@@ -318,7 +318,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 		var scale = 1f
 		if(engine.displaysize==-1) scale = .5f
 
-		drawResultScale(engine, playerID, owner.receiver, 2, EventReceiver.COLOR.ORANGE, scale, "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
+		drawResultScale(engine, playerID, owner.receiver, 2, EventReceiver.COLOR.ORANGE, scale, "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "Time", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 	}
 
 	/* Send stats */

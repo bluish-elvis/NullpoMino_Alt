@@ -12,13 +12,13 @@ open class GameKeyDummy
 	val player:Int = 0) {
 
 	/** Key code (ingame) */
-	val keymap:IntArray
+	val keymap:Array<IntArray>
 
 	/** Key code (menu) */
-	val keymapNav:IntArray
+	val keymapNav:Array<IntArray>
 
 	/** Joystick button number */
-	val buttonmap:IntArray
+	val buttonmap:Array<IntArray>
 
 	/** Joystick direction key border */
 	var joyBorder:Int = 0
@@ -29,13 +29,13 @@ open class GameKeyDummy
 	/** Button input flag */
 	protected val pressstate:BooleanArray
 
+	private val empty get() = IntArray(0)
+
 	init {
-		keymap = IntArray(MAX_BUTTON)
-		keymapNav = IntArray(MAX_BUTTON)
-		buttonmap = IntArray(MAX_BUTTON)
+		keymap = Array(MAX_BUTTON) {empty}
+		keymapNav = Array(MAX_BUTTON) {empty}
+		buttonmap = Array(MAX_BUTTON) {empty}
 		joyBorder = 0
-		for(i in buttonmap.indices)
-			buttonmap[i] = -1
 		inputstate = IntArray(MAX_BUTTON)
 		pressstate = BooleanArray(MAX_BUTTON)
 	}
@@ -84,22 +84,22 @@ open class GameKeyDummy
 	 */
 	open fun loadConfig(prop:CustomProperties) {
 		// Keyboard - ingame
-		keymap[BUTTON_UP] = prop.getProperty("key.p$player.up", 0)
-		keymap[BUTTON_DOWN] = prop.getProperty("key.p$player.down", 0)
-		keymap[BUTTON_LEFT] = prop.getProperty("key.p$player.left", 0)
-		keymap[BUTTON_RIGHT] = prop.getProperty("key.p$player.right", 0)
-		keymap[BUTTON_A] = prop.getProperty("key.p$player.a", 0)
-		keymap[BUTTON_B] = prop.getProperty("key.p$player.b", 0)
-		keymap[BUTTON_C] = prop.getProperty("key.p$player.c", 0)
-		keymap[BUTTON_D] = prop.getProperty("key.p$player.d", 0)
-		keymap[BUTTON_E] = prop.getProperty("key.p$player.e", 0)
-		keymap[BUTTON_F] = prop.getProperty("key.p$player.f", 0)
-		keymap[BUTTON_QUIT] = prop.getProperty("key.p$player.quit", 0)
-		keymap[BUTTON_PAUSE] = prop.getProperty("key.p$player.pause", 0)
-		keymap[BUTTON_GIVEUP] = prop.getProperty("key.p$player.giveup", 0)
-		keymap[BUTTON_RETRY] = prop.getProperty("key.p$player.retry", 0)
-		keymap[BUTTON_FRAMESTEP] = prop.getProperty("key.p$player.framestep", 0)
-		keymap[BUTTON_SCREENSHOT] = prop.getProperty("key.p$player.screenshot", 0)
+		keymap[BUTTON_UP] = prop.getProperty("key.p$player.up", empty)
+		keymap[BUTTON_DOWN] = prop.getProperty("key.p$player.down", empty)
+		keymap[BUTTON_LEFT] = prop.getProperty("key.p$player.left", empty)
+		keymap[BUTTON_RIGHT] = prop.getProperty("key.p$player.right", empty)
+		keymap[BUTTON_A] = prop.getProperty("key.p$player.a", empty)
+		keymap[BUTTON_B] = prop.getProperty("key.p$player.b", empty)
+		keymap[BUTTON_C] = prop.getProperty("key.p$player.c", empty)
+		keymap[BUTTON_D] = prop.getProperty("key.p$player.d", empty)
+		keymap[BUTTON_E] = prop.getProperty("key.p$player.e", empty)
+		keymap[BUTTON_F] = prop.getProperty("key.p$player.f", empty)
+		keymap[BUTTON_QUIT] = prop.getProperty("key.p$player.quit", empty)
+		keymap[BUTTON_PAUSE] = prop.getProperty("key.p$player.pause", empty)
+		keymap[BUTTON_GIVEUP] = prop.getProperty("key.p$player.giveup", empty)
+		keymap[BUTTON_RETRY] = prop.getProperty("key.p$player.retry", empty)
+		keymap[BUTTON_FRAMESTEP] = prop.getProperty("key.p$player.framestep", empty)
+		keymap[BUTTON_SCREENSHOT] = prop.getProperty("key.p$player.screenshot", empty)
 
 		// Keyboard - menu
 		keymapNav[BUTTON_UP] = prop.getProperty("keynav.p$player.up", keymap[BUTTON_UP])
@@ -124,18 +124,18 @@ open class GameKeyDummy
 		//buttonmap[BUTTON_DOWN] = prop.getProperty("button.p" + player + ".down", 0);
 		//buttonmap[BUTTON_LEFT] = prop.getProperty("button.p" + player + ".left", 0);
 		//buttonmap[BUTTON_RIGHT] = prop.getProperty("button.p" + player + ".right", 0);
-		buttonmap[BUTTON_A] = prop.getProperty("button.p$player.a", -1)
-		buttonmap[BUTTON_B] = prop.getProperty("button.p$player.b", -1)
-		buttonmap[BUTTON_C] = prop.getProperty("button.p$player.c", -1)
-		buttonmap[BUTTON_D] = prop.getProperty("button.p$player.d", -1)
-		buttonmap[BUTTON_E] = prop.getProperty("button.p$player.e", -1)
-		buttonmap[BUTTON_F] = prop.getProperty("button.p$player.f", -1)
-		buttonmap[BUTTON_QUIT] = prop.getProperty("button.p$player.quit", -1)
-		buttonmap[BUTTON_PAUSE] = prop.getProperty("button.p$player.pause", -1)
-		buttonmap[BUTTON_GIVEUP] = prop.getProperty("button.p$player.giveup", -1)
-		buttonmap[BUTTON_RETRY] = prop.getProperty("button.p$player.retry", -1)
-		buttonmap[BUTTON_FRAMESTEP] = prop.getProperty("button.p$player.framestep", -1)
-		buttonmap[BUTTON_SCREENSHOT] = prop.getProperty("button.p$player.screenshot", -1)
+		buttonmap[BUTTON_A] = prop.getProperty("button.p$player.a", empty)
+		buttonmap[BUTTON_B] = prop.getProperty("button.p$player.b", empty)
+		buttonmap[BUTTON_C] = prop.getProperty("button.p$player.c", empty)
+		buttonmap[BUTTON_D] = prop.getProperty("button.p$player.d", empty)
+		buttonmap[BUTTON_E] = prop.getProperty("button.p$player.e", empty)
+		buttonmap[BUTTON_F] = prop.getProperty("button.p$player.f", empty)
+		buttonmap[BUTTON_QUIT] = prop.getProperty("button.p$player.quit", empty)
+		buttonmap[BUTTON_PAUSE] = prop.getProperty("button.p$player.pause", empty)
+		buttonmap[BUTTON_GIVEUP] = prop.getProperty("button.p$player.giveup", empty)
+		buttonmap[BUTTON_RETRY] = prop.getProperty("button.p$player.retry", empty)
+		buttonmap[BUTTON_FRAMESTEP] = prop.getProperty("button.p$player.framestep", empty)
+		buttonmap[BUTTON_SCREENSHOT] = prop.getProperty("button.p$player.screenshot", empty)
 
 		joyBorder = prop.getProperty("joyBorder.p$player", 0)
 	}
@@ -206,7 +206,7 @@ open class GameKeyDummy
 	 * @param ctrl input 状況を伝えるControllerのインスタンス
 	 */
 	fun inputStatusUpdate(ctrl:Controller?) {
-		ctrl?.let {c -> c.buttonPress = BooleanArray(c.buttonPress.size){i->isPressKey(i)}}
+		ctrl?.let {c -> c.buttonPress = BooleanArray(c.buttonPress.size) {i -> isPressKey(i)}}
 	}
 
 	companion object {
@@ -232,6 +232,12 @@ open class GameKeyDummy
 		/** Max button number */
 		const val MAX_BUTTON = 16
 
+		val DIR_NAME = listOf("UP", "DOWN", "LEFT", "RIGHT")
+		val NAV_KEYS = listOf("SELECT", "CANCEL", "C", "D", "E", "F")
+		val PLAY_KEYS = listOf("CW Spin", "CCW Spin", "CW Spin", "Swap Hold", "180 Spin", "F")
+		val SYS_KEYS = listOf("AppQuit", "Pause", "BackToMenu", "Retry", "FrameStep", "ScreenShot")
+
+		fun arrayKeyName(isNav:Boolean):List<String> = DIR_NAME+(if(isNav) NAV_KEYS else PLAY_KEYS)+SYS_KEYS
 		fun isNavKey(key:Int):Boolean =//return (key >= BUTTON_NAV_UP) && (key <= BUTTON_NAV_CANCEL);
 			false
 	}

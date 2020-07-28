@@ -107,8 +107,8 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 		}
 
 		//Draw scroll bar
-		FontNormal.printFontGrid(SB_TEXT_X, 2, "k", SB_TEXT_COLOR)
-		FontNormal.printFontGrid(SB_TEXT_X, 2+pageHeight, "n", SB_TEXT_COLOR)
+		FontNormal.printFontGrid(SB_TEXT_X, 2, "\u008b", SB_TEXT_COLOR)
+		FontNormal.printFontGrid(SB_TEXT_X, 2+pageHeight, "\u008e", SB_TEXT_COLOR)
 		//Draw shadow
 		graphics.color = SB_SHADOW_COLOR
 		graphics.fillRect((SB_MIN_X+SB_WIDTH).toFloat(), (SB_MIN_Y+LINE_WIDTH).toFloat(), LINE_WIDTH.toFloat(), sbHeight.toFloat())

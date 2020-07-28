@@ -194,7 +194,7 @@ class MarathonExtreme:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.RED, 0,
-				"LEVEL", (startlevel+1).toString())
+				"Level", (startlevel+1).toString())
 
 			drawMenuCompact(engine, playerID, receiver, "ENDLESS", GeneralUtil.getONorOFF(endless), "BIG", GeneralUtil.getONorOFF(big))
 		}
@@ -257,7 +257,7 @@ class MarathonExtreme:NetDummyMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "LINE", EventReceiver.COLOR.RED)
 			receiver.drawScoreNum(engine, playerID, 5, 2, engine.statistics.lines.toString(), 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 4, "SCORE", EventReceiver.COLOR.RED)
+			receiver.drawScoreFont(engine, playerID, 0, 4, "Score", EventReceiver.COLOR.RED)
 			receiver.drawScoreNum(engine, playerID, 5, 4, "+$lastscore")
 			val scget = scgettime<engine.statistics.score
 			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/22.0).toInt()
@@ -270,11 +270,11 @@ class MarathonExtreme:NetDummyMode() {
 				receiver.drawScoreNum(engine, playerID, 5, 7, GeneralUtil.getTime(remainRollTime), remainRollTime>0&&remainRollTime<10*60, 2f)
 			} else {
 
-				receiver.drawScoreFont(engine, playerID, 0, 7, "LEVEL", EventReceiver.COLOR.RED)
+				receiver.drawScoreFont(engine, playerID, 0, 7, "Level", EventReceiver.COLOR.RED)
 				receiver.drawScoreNum(engine, playerID, 5, 7, String.format("%.1f", engine.statistics.level.toDouble()+1.0
 					+engine.statistics.lines%10*0.1), 2f)
 			}
-			receiver.drawScoreFont(engine, playerID, 0, 8, "TIME", EventReceiver.COLOR.RED)
+			receiver.drawScoreFont(engine, playerID, 0, 8, "Time", EventReceiver.COLOR.RED)
 			receiver.drawScoreNum(engine, playerID, 0, 9, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 		}

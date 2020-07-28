@@ -80,16 +80,16 @@ class StateConfigJoystickTest:BasicGameState() {
 
 		ResourceHolder.imgMenuBG[0].draw(0f, 0f)
 
-		FontNormal.printFontGrid(1, 1, "JOYSTICK INPUT TEST (${player+1}P)", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "Joystick Input TEST (${player+1}P)", COLOR.ORANGE)
 
 		if(joyNumber<0)
-			FontNormal.printFontGrid(1, 3, "NO JOYSTICK", COLOR.RED)
+			FontNormal.printFontGrid(1, 3, "Not Found Joystick", COLOR.RED)
 		else if(frame>=KEYACCEPTFRAME) {
-			FontNormal.printFontGrid(1, 3, "JOYSTICK NUMBER:$joyNumber", COLOR.RED)
+			FontNormal.printFontGrid(1, 3, "Joystick Number:$joyNumber", COLOR.RED)
 
-			FontNormal.printFontGrid(1, 5, "LAST PRESSED BUTTON:"+if(lastPressButton==-1) "NONE" else "$lastPressButton")
+			FontNormal.printFontGrid(1, 5, "Last Pressed Button:"+if(lastPressButton==-1) "NONE" else "$lastPressButton")
 
-			val controller = ControllerManager.controllers!![joyNumber]
+			val controller = ControllerManager.controllers[joyNumber]
 
 			FontNormal.printFontGrid(1, 7, "AXIS X:"+controller.xAxisValue)
 			FontNormal.printFontGrid(1, 8, "AXIS Y:"+controller.yAxisValue)

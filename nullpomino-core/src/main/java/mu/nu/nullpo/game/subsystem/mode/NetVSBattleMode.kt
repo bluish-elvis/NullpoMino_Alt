@@ -644,7 +644,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 		if(engine.displaysize==-1) scale = .5f
 
 		drawResultScale(engine, playerID, owner.receiver, 2, COLOR.ORANGE, scale, "ATTACK", String.format("%10g",
-			garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR), "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "ATK/LINE", String.format("%10g", playerAPL[playerID]), "ATTACK/MIN", String.format("%10g", playerAPM[playerID]), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
+			garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR), "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "ATK/LINE", String.format("%10g", playerAPL[playerID]), "ATTACK/MIN", String.format("%10g", playerAPM[playerID]), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "Time", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 	}
 
 	/* Send stats */

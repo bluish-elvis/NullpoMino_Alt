@@ -202,7 +202,7 @@ class Marathon:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"GOAL", if(goaltype==2) "ENDLESS" else "${tableGameClearLines[goaltype]} LINES", "LEVEL", (startlevel+1).toString())
+				"GOAL", if(goaltype==2) "ENDLESS" else "${tableGameClearLines[goaltype]} LINES", "Level", (startlevel+1).toString())
 			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big))
 
 		}
@@ -255,18 +255,18 @@ class Marathon:NetDummyMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "LINE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 2, engine.statistics.lines.toString(), 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 4, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 4, "Score", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 4, "+$lastscore")
 			val scget = scgettime<engine.statistics.score
 			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/24.0).toInt()
 			sc += ceil(((scgettime-sc)/10f).toDouble()).toInt()
 			receiver.drawScoreNum(engine, playerID, 0, 5, "$sc", scget, 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 8, "LEVEL", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 8, "Level", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 8, String.format("%.1f", engine.statistics.level.toFloat()+
 				if(engine.statistics.level>=19&&tableGameClearLines[goaltype]<0) 1f else engine.statistics.lines%10*0.1f+1f), 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Time", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 10, GeneralUtil.getTime(engine.statistics.time), 2f)
 		}
 

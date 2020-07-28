@@ -229,7 +229,7 @@ class RetroModern:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "LEVEL", "$startlevel", "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "Level", "$startlevel", "BIG", GeneralUtil.getONorOFF(big))
 	}
 
 	/** This function will be called before the game actually begins (after
@@ -277,7 +277,7 @@ class RetroModern:AbstractMode() {
 			}
 		} else {
 			// Game statistics
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 3, "+$lastscore")
 			val scget = scgettime<engine.statistics.score
 			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/24.0).toInt()
@@ -287,7 +287,7 @@ class RetroModern:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 7, "LINE", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 8, String.format("%03d/%03d", engine.statistics.lines, totalnorma), scale = 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 10, "LEVEL", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 10, "Level", COLOR.BLUE)
 			var lvdem = 0
 			if(rolltime>0)
 				lvdem = rolltime*100/ROLLTIMELIMIT
@@ -296,7 +296,7 @@ class RetroModern:AbstractMode() {
 			if(lvdem>=100) lvdem -= lvdem-lvdem%100
 			receiver.drawScoreNum(engine, playerID, 5, 10, String.format("%02d.%02d", engine.statistics.level, lvdem), scale = 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 11, "TIME", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 11, "Time", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 12, GeneralUtil.getTime(engine.statistics.time), scale = 2f)
 
 			// Roll 残り time

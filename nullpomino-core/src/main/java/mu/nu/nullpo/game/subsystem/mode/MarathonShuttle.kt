@@ -146,7 +146,7 @@ class MarathonShuttle:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 			drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0,
-				"GAME TYPE", GAMETYPE_SHORTNAME[goaltype], "LEVEL", (startlevel+1).toString())
+				"GAME TYPE", GAMETYPE_SHORTNAME[goaltype], "Level", (startlevel+1).toString())
 
 			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big))
 		}
@@ -299,7 +299,7 @@ class MarathonShuttle:NetDummyMode() {
 			}
 		} else {
 			// SCORE
-			receiver.drawScoreFont(engine, playerID, 0, 2, "SCORE", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 2, "Score", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 2, "+$lastscore")
 			val scget = scgettime<engine.statistics.score
 			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/24.0).toInt()
@@ -335,11 +335,11 @@ class MarathonShuttle:NetDummyMode() {
 				receiver.drawScoreNum(engine, playerID, 6, 6, GeneralUtil.getTime(remainLevelTime), fontcolorLevelTime)
 			}
 			// LEVEL
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 9, (engine.statistics.level+1).toString(), 2f)
 
 			// TOTAL TIME
-			receiver.drawScoreFont(engine, playerID, 0, 10, "TIME", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 10, "Time", COLOR.BLUE)
 			var totaltime = engine.statistics.time
 			var fontcolorTotalTime = COLOR.WHITE
 			if(goaltype==GAMETYPE_10MIN_EASY||goaltype==GAMETYPE_10MIN_HARD) {

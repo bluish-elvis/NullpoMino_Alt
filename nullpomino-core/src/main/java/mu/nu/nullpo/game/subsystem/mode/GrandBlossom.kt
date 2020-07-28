@@ -827,7 +827,7 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			//  level
-			receiver.drawScoreFont(engine, playerID, 0, 11, "LEVEL", COLOR.PINK)
+			receiver.drawScoreFont(engine, playerID, 0, 11, "Level", COLOR.PINK)
 			var tempLevel = speedlevel
 			if(tempLevel<0) tempLevel = 0
 			val strLevel = String.format("%3d", tempLevel)

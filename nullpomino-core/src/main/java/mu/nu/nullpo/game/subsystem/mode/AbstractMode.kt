@@ -654,8 +654,8 @@ abstract class AbstractMode:GameMode {
 		receiver.drawScoreFont(engine, 0, -9, y, "${(playerID+1)}P INPUT:", EventReceiver.getPlayerColor(playerID))
 		val ctrl = engine.ctrl
 		if(ctrl.isPress(Controller.BUTTON_LEFT)) receiver.drawScoreFont(engine, 0, 0, y, "<")
-		if(ctrl.isPress(Controller.BUTTON_DOWN)) receiver.drawScoreFont(engine, 0, 1, y, "n")
-		if(ctrl.isPress(Controller.BUTTON_UP)) receiver.drawScoreFont(engine, 0, 2, y, "k")
+		if(ctrl.isPress(Controller.BUTTON_DOWN)) receiver.drawScoreFont(engine, 0, 1, y, "\u008e")
+		if(ctrl.isPress(Controller.BUTTON_UP)) receiver.drawScoreFont(engine, 0, 2, y, "\u008b")
 		if(ctrl.isPress(Controller.BUTTON_RIGHT)) receiver.drawScoreFont(engine, 0, 3, y, ">")
 		if(ctrl.isPress(Controller.BUTTON_A)) receiver.drawScoreFont(engine, 0, 4, y, "A")
 		if(ctrl.isPress(Controller.BUTTON_B)) receiver.drawScoreFont(engine, 0, 5, y, "B")

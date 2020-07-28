@@ -220,7 +220,7 @@ class MarathonDrill:NetDummyMode() {
 				netOnRenderNetPlayRanking(engine, playerID, it)
 			else {
 				drawMenu(engine, playerID, it, 0, COLOR.BLUE, 0, "GAME TYPE", if(goaltype==0) "NORMAL" else "REALTIME")
-				drawMenuCompact(engine, playerID, it, "HEIGHT", "$garbageHeight", "LEVEL", "${startlevel+1}")
+				drawMenuCompact(engine, playerID, it, "HEIGHT", "$garbageHeight", "Level", "${startlevel+1}")
 				drawMenuBGM(engine, playerID, it, bgmno)
 				drawMenuCompact(engine, playerID, it, "DAS", "${engine.speed.das}")
 			}
@@ -284,7 +284,7 @@ class MarathonDrill:NetDummyMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 4, "${engine.statistics.score}", scale = 2f)
 			receiver.drawScoreNum(engine, playerID, 5, 3, "+$lastscore")
 
@@ -294,14 +294,14 @@ class MarathonDrill:NetDummyMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LINE", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.lines}", scale = 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 12, "LEVEL", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 12, "Level", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 12, "${engine.statistics.level+1}", scale = 2f)
 			receiver.drawScoreNum(engine, playerID, 1, 13, "$garbageTotal")
 			receiver.drawSpeedMeter(engine, playerID, 0, 14,
 				garbageTotal%LEVEL_GARBAGE_LINES*1f/(LEVEL_GARBAGE_LINES-1))
 			receiver.drawScoreNum(engine, playerID, 1, 15, "$garbageNextLevelLines")
 
-			receiver.drawScoreFont(engine, playerID, 0, 16, "TIME", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 16, "Time", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 17, GeneralUtil.getTime(engine.statistics.time), scale = 2f)
 
 			if(garbagePending>0) {
@@ -314,7 +314,7 @@ class MarathonDrill:NetDummyMode() {
 				val strTempGarbage = String.format("%2d", garbagePending)
 				receiver.drawMenuNum(engine, playerID, 10, 20, strTempGarbage, fontColor)
 			}
-			receiver.drawMenuFont(engine, playerID, garbageHole, 20, "k")
+			receiver.drawMenuFont(engine, playerID, garbageHole, 20, "\u008b")
 		}
 
 	}

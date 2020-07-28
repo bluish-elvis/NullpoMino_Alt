@@ -342,7 +342,7 @@ class GrandMarathon:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "LEVEL", (startlevel*100).toString(),
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(),
 			"FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g),
 			"LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
 	}
@@ -436,7 +436,7 @@ class GrandMarathon:AbstractMode() {
 			// 段位上昇時のフラッシュ
 			if(gradeflash>0) gradeflash--
 
-			receiver.drawScoreFont(engine, playerID, 0, 5, "SCORE",
+			receiver.drawScoreFont(engine, playerID, 0, 5, "Score",
 				color = if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 5, "+$lastscore", if(g20) COLOR.YELLOW else COLOR.WHITE)
 			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble())
@@ -444,13 +444,13 @@ class GrandMarathon:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 6, "$scgettime",
 				if(g20) COLOR.YELLOW else COLOR.WHITE, 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL",
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Level",
 				if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%3d", maxOf(engine.statistics.level, 0)), g20)
 			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4)
 			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv), g20)
 
-			receiver.drawScoreFont(engine, playerID, 0, 14, "TIME",
+			receiver.drawScoreFont(engine, playerID, 0, 14, "Time",
 				if(g20) if(gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE)
 			if(engine.ending!=2||rolltime/30%2==0)
 				receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), g20, 2f)

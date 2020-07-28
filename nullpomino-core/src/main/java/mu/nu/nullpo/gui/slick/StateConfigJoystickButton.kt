@@ -44,12 +44,13 @@ class StateConfigJoystickButton:BasicGameState() {
 
 	/** Number of button currently being configured */
 	private var keynum:Int = 0
+	private var keypos:Int = 0
 
 	/** 経過 frame count */
 	private var frame:Int = 0
 
 	/** Button settings */
-	private var buttonmap:IntArray = IntArray(GameKeyDummy.MAX_BUTTON)
+	private var buttonmap:Array<IntArray> = Array(GameKeyDummy.MAX_BUTTON) {IntArray(MAX_KEYS){-1} }
 
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
@@ -59,7 +60,7 @@ class StateConfigJoystickButton:BasicGameState() {
 		keynum = 4
 		frame = 0
 
-		buttonmap = IntArray(GameKeyDummy.MAX_BUTTON)
+		buttonmap = Array(GameKeyDummy.MAX_BUTTON) {IntArray(MAX_KEYS)}
 
 		joyNumber = ControllerManager.controllerID[player]
 
@@ -80,31 +81,20 @@ class StateConfigJoystickButton:BasicGameState() {
 
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
-		FontNormal.printFontGrid(1, 1, "JOYSTICK SETTING (${player+1}P)", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "JOYSTICK setting (${player+1}P)", COLOR.ORANGE)
 
+		FontNormal.printFontGrid(1, 3, if(joyNumber<0) "Not Found Joystick" else "Joystick Number:$joyNumber", COLOR.RED)
+		(4 until GameKeyDummy.MAX_BUTTON).forEach {
+			val flag = keynum==it
+			FontNormal.printFontGrid(2, it+1, GameKeyDummy.arrayKeyName(false)[it], flag)
+			FontNormal.printFontGrid(13, it+1, ":", flag)
+			buttonmap[it].forEachIndexed {i, key -> FontNormal.printFontGrid(15+i*3, it+1, "${key}", flag)}
+		}
 
-			FontNormal.printFontGrid(1, 3, if(joyNumber<0)"NO JOYSTICK" else "JOYSTICK NUMBER:$joyNumber", COLOR.RED)
-
-		//FontNormal.printFontGrid(2, 3, "UP             : " + String.valueOf(buttonmap[GameKey.BUTTON_UP]), (keynum == 0));
-		//FontNormal.printFontGrid(2, 4, "DOWN           : " + String.valueOf(buttonmap[GameKey.BUTTON_DOWN]), (keynum == 1));
-		//FontNormal.printFontGrid(2, 5, "LEFT           : " + String.valueOf(buttonmap[GameKey.BUTTON_LEFT]), (keynum == 2));
-		//FontNormal.printFontGrid(2, 6, "RIGHT          : " + String.valueOf(buttonmap[GameKey.BUTTON_RIGHT]), (keynum == 3));
-		FontNormal.printFontGrid(2, 5, "A (L/R-ROT)    : ${buttonmap[GameKeyDummy.BUTTON_A]}", keynum==4)
-		FontNormal.printFontGrid(2, 6, "B (R/L-ROT)    : ${buttonmap[GameKeyDummy.BUTTON_B]}", keynum==5)
-		FontNormal.printFontGrid(2, 7, "C (L/R-ROT)    : ${buttonmap[GameKeyDummy.BUTTON_C]}", keynum==6)
-		FontNormal.printFontGrid(2, 8, "D (HOLD)       : ${buttonmap[GameKeyDummy.BUTTON_D]}", keynum==7)
-		FontNormal.printFontGrid(2, 9, "E (180-ROT)    : ${buttonmap[GameKeyDummy.BUTTON_E]}", keynum==8)
-		FontNormal.printFontGrid(2, 10, "F              : ${buttonmap[GameKeyDummy.BUTTON_F]}", keynum==9)
-		FontNormal.printFontGrid(2, 11, "QUIT           : ${buttonmap[GameKeyDummy.BUTTON_QUIT]}", keynum==10)
-		FontNormal.printFontGrid(2, 12, "PAUSE          : ${buttonmap[GameKeyDummy.BUTTON_PAUSE]}", keynum==11)
-		FontNormal.printFontGrid(2, 13, "GIVEUP         : ${buttonmap[GameKeyDummy.BUTTON_GIVEUP]}", keynum==12)
-		FontNormal.printFontGrid(2, 14, "RETRY          : ${buttonmap[GameKeyDummy.BUTTON_RETRY]}", keynum==13)
-		FontNormal.printFontGrid(2, 15, "FRAME STEP     : ${buttonmap[GameKeyDummy.BUTTON_FRAMESTEP]}", keynum==14)
-		FontNormal.printFontGrid(2, 16, "SCREEN SHOT    : ${buttonmap[GameKeyDummy.BUTTON_SCREENSHOT]}", keynum==15)
-
+		FontNormal.printFontGrid(14+keypos*3, 1+keynum, "\u0082", COLOR.RAINBOW)
 		FontNormal.printFontGrid(1, 5+keynum-4, "\u0082", COLOR.RAINBOW)
 		if(frame>=KEYACCEPTFRAME) {
-			FontNormal.printFontGrid(1, 20, "UP/DOWN:   MOVE CURSOR", COLOR.GREEN)
+			FontNormal.printFontGrid(1, 22, "<\u008B\u008E>:   MOVE CURSOR", COLOR.GREEN)
 			FontNormal.printFontGrid(1, 21, "ENTER:     OK", COLOR.GREEN)
 			FontNormal.printFontGrid(1, 22, "DELETE:    NO SET", COLOR.GREEN)
 			FontNormal.printFontGrid(1, 23, "BACKSPACE: CANCEL", COLOR.GREEN)
@@ -132,7 +122,7 @@ class StateConfigJoystickButton:BasicGameState() {
 				try {
 					if(ControllerManager.isControllerButton(player, container.input, i)) {
 						ResourceHolder.soundManager.play("change")
-						buttonmap[keynum] = i
+						buttonmap[keynum][keypos] = i
 						frame = 0
 					}
 				} catch(e:Throwable) {
@@ -173,9 +163,17 @@ class StateConfigJoystickButton:BasicGameState() {
 				ResourceHolder.soundManager.play("cursor")
 				keynum++
 				if(keynum>15) keynum = 4
+			} else if(key==Input.KEY_LEFT) {
+				ResourceHolder.soundManager.play("change")
+				keypos--
+				if(keypos<0) keypos = StateConfigKeyboard.MAX_KEYS-1
+			} else if(key==Input.KEY_RIGHT) {
+				ResourceHolder.soundManager.play("change")
+				keypos++
+				if(keypos>=StateConfigKeyboard.MAX_KEYS) keypos = 0
 			} else if(key==Input.KEY_DELETE) {
 				ResourceHolder.soundManager.play("change")
-				buttonmap[keynum] = -1
+				buttonmap[keynum][keypos] = -1
 			} else if(key==Input.KEY_BACK) {
 				gameObj.enterState(StateConfigJoystickMain.ID)
 				return
@@ -210,5 +208,7 @@ class StateConfigJoystickButton:BasicGameState() {
 
 		/** Key input を受付可能になるまでの frame count */
 		const val KEYACCEPTFRAME = 20
+
+		const val MAX_KEYS = 3
 	}
 }

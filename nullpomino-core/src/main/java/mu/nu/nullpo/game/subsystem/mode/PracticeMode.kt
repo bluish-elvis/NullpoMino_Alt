@@ -805,14 +805,14 @@ class PracticeMode:AbstractMode() {
 
 		} else {
 			// Score
-			receiver.drawScoreFont(engine, playerID, 0, 5, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 5, "Score", EventReceiver.COLOR.BLUE)
 
 			if(lastscore>0&&scgettime<120)
 				receiver.drawScoreNum(engine, playerID, 6, 5, "+$lastscore")
 			receiver.drawScoreNum(engine, playerID, 0, 6, "${engine.statistics.score}", 2f)
 
 			// Time
-			receiver.drawScoreFont(engine, playerID, 0, 17, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 17, "Time", EventReceiver.COLOR.BLUE)
 			var time = engine.statistics.time
 			if(timelimit>0) time = timelimitTimer
 			if(time<0) time = 0
@@ -836,7 +836,7 @@ class PracticeMode:AbstractMode() {
 
 			if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
 				//  GrandLevel
-				receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 0, 9, "Level", EventReceiver.COLOR.BLUE)
 				var tempLevel = engine.statistics.level
 				if(tempLevel<0) tempLevel = 0
 				val strLevel = String.format("%3d", tempLevel)
@@ -876,7 +876,7 @@ class PracticeMode:AbstractMode() {
 					}
 				}
 
-				receiver.drawScoreFont(engine, playerID, 0, 8, "LEVEL", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 0, 8, "Level", EventReceiver.COLOR.BLUE)
 				receiver.drawScoreNum(engine, playerID, 0, 9, (engine.statistics.level+1).toString())
 			}
 

@@ -389,7 +389,7 @@ class GrandPhantom:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.PURPLE, 0, "LEVEL", (startlevel*100).toString(), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.PURPLE, 0, "Level", (startlevel*100).toString(), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
 	}
 
 	/** This function will be called before the game actually begins (after
@@ -462,16 +462,16 @@ class GrandPhantom:AbstractMode() {
 				receiver.drawScoreFont(engine, playerID, 0, 2, tableGradeName[grade], gradeflash>0&&gradeflash%4==0, 2f)
 
 			// Score
-			receiver.drawScoreFont(engine, playerID, 0, 5, "SCORE", COLOR.PURPLE)
+			receiver.drawScoreFont(engine, playerID, 0, 5, "Score", COLOR.PURPLE)
 			receiver.drawScoreNum(engine, playerID, 0, 6, "$scgettime"+"\n"+lastscore)
 			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.PURPLE)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.PURPLE)
 			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
 			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128)
 			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv))
 
-			receiver.drawScoreFont(engine, playerID, 0, 14, "TIME", COLOR.PURPLE)
+			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", COLOR.PURPLE)
 			receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			if(engine.gameActive&&engine.ending==2) {

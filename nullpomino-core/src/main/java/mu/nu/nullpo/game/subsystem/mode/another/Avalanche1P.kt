@@ -241,8 +241,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 				when(gametype) {
 					0 -> receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE      TIME", EventReceiver.COLOR.BLUE, scale)
-					1 -> receiver.drawScoreFont(engine, playerID, 3, 3, "SCORE", EventReceiver.COLOR.BLUE)
-					2 -> receiver.drawScoreFont(engine, playerID, 3, 3, "TIME", EventReceiver.COLOR.BLUE)
+					1 -> receiver.drawScoreFont(engine, playerID, 3, 3, "Score", EventReceiver.COLOR.BLUE)
+					2 -> receiver.drawScoreFont(engine, playerID, 3, 3, "Time", EventReceiver.COLOR.BLUE)
 				}
 
 				for(i in 0 until RANKING_MAX) {
@@ -258,13 +258,13 @@ class Avalanche1P:Avalanche1PDummyMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
 			val strScore:String = if(lastscore==0||lastmultiplier==0||scgettime<=0)
 				"${engine.statistics.score}"
 			else "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
 			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
 
-			receiver.drawScoreFont(engine, playerID, 0, 6, "LEVEL", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 6, "Level", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 7, "$level")
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "POWER", EventReceiver.COLOR.BLUE)
@@ -272,7 +272,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			if(garbageAdd>0) strSent = "$strSent(+$garbageAdd)"
 			receiver.drawScoreFont(engine, playerID, 0, 10, strSent)
 
-			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 12, "Time", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time))
 
 			receiver.drawScoreFont(engine, playerID, 11, 6, "CLEARED", EventReceiver.COLOR.BLUE)
@@ -390,10 +390,10 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 		if(gametype==2) {
 			receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
-			receiver.drawMenuFont(engine, playerID, 0, 3, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawMenuFont(engine, playerID, 0, 3, "Time", EventReceiver.COLOR.BLUE)
 			val strTime = String.format("%10s", GeneralUtil.getTime(engine.statistics.time))
 			receiver.drawMenuFont(engine, playerID, 0, 4, strTime)
-			receiver.drawMenuFont(engine, playerID, 0, 5, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawMenuFont(engine, playerID, 0, 5, "Score", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuFont(engine, playerID, 0, 6, "${engine.statistics.score}")
 			receiver.drawMenuFont(engine, playerID, 0, 7, "ZENKESHI", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuFont(engine, playerID, 0, 8, String.format("%10d", zenKeshiCount))
