@@ -543,7 +543,7 @@ public class Input{
 	/** True if the controllers system has been initialised */
 	private static boolean controllersInited=false;
 	/** The list of controllers */
-	private static ArrayList controllers=new ArrayList();
+	private static final ArrayList controllers=new ArrayList();
 
 	/** The last recorded mouse x position */
 	private int lastMouseX;
@@ -552,7 +552,7 @@ public class Input{
 	/** The state of the mouse buttons */
 	protected boolean[] mousePressed=new boolean[10];
 	/** The state of the controller buttons */
-	private boolean[][] controllerPressed=new boolean[MAX_CONTROLLERS][MAX_BUTTONS];
+	private final boolean[][] controllerPressed=new boolean[MAX_CONTROLLERS][MAX_BUTTONS];
 
 	/** The character values representing the pressed keys */
 	protected char[] keys=new char[1024];
@@ -562,7 +562,7 @@ public class Input{
 	protected long[] nextRepeat=new long[1024];
 
 	/** The control states from the controllers */
-	private boolean[][] controls=new boolean[MAX_CONTROLLERS][MAX_BUTTONS+10];
+	private final boolean[][] controls=new boolean[MAX_CONTROLLERS][MAX_BUTTONS+10];
 	/** True if the event has been consumed */
 	protected boolean consumed=false;
 	/** A list of listeners to be notified of input events */

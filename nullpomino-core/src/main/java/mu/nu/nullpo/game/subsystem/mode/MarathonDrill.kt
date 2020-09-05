@@ -67,8 +67,8 @@ class MarathonDrill:NetDummyMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "DRILL MARATHON"
-
+		get() = "Drill Marathon"
+	override val gameIntensity:Int = 1
 	/* Initialization for each player */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		rankingScore = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}

@@ -131,7 +131,7 @@ class SPF:AbstractMode() {
 
 	/* Mode name */
 	override val name:String get() = "SPF VS-BATTLE (BETA)"
-
+	override val gameIntensity:Int = 2
 	override val isVSMode:Boolean get() = true
 
 	/* Number of players */

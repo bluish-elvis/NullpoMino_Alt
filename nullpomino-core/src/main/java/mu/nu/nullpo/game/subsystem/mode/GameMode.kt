@@ -51,6 +51,12 @@ interface GameMode {
 	 */
 	val gameStyle:Int
 
+	/** Get game intensity.
+	 * @return Game genre of this mode (-1:Retro/Puzzle, 0: Generic/Guideline,
+	 *  1: Various Unique, 2:Rush Trial, 3:Grand 20G Challenge)
+	 */
+	val gameIntensity:Int
+
 	/** Is netplay-only mode?
 	 * @return true if this is netplay-only mode.
 	 */

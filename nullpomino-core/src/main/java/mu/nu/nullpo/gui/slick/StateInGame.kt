@@ -120,7 +120,7 @@ class StateInGame:BasicGameState() {
 				e.owSkin = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owSkin", -1)
 				e.owMinDAS = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMinDAS", -1)
 				e.owMaxDAS = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMaxDAS", -1)
-				e.owDASDelay = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owDasDelay", -1)
+				e.owARR = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owDasDelay", -1)
 				e.owSDSpd = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owSDSpd", -1)
 				e.owReverseUpDown = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owReverseUpDown", false)
 				e.owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMoveDiagonal", -1)

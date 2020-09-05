@@ -88,7 +88,7 @@ class SquareMode:AbstractMode() {
 	/* Returns the name of this mode */
 	override val name:String
 		get() = "SQUARE"
-
+	override val gameIntensity:Int = -1
 	/* This function will be called when the game enters the main game
  * screen. */
 	override fun playerInit(engine:GameEngine, playerID:Int) {

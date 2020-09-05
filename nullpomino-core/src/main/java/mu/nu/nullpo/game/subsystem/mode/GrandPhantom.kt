@@ -156,8 +156,8 @@ class GrandPhantom:AbstractMode() {
 
 	/** Returns the name of this mode */
 	override val name:String
-		get() = "GRAND PHANTOM"
-
+		get() = "Grand Phantom"
+	override val gameIntensity:Int = 3
 	/** This function will be called when the game enters
 	 * the main game screen. */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -426,7 +426,8 @@ class GrandPhantom:AbstractMode() {
 						var gcolor = COLOR.WHITE
 						if(rankingRollclear[i]==1) gcolor = COLOR.GREEN
 						if(rankingRollclear[i]==2) gcolor = COLOR.ORANGE
-						receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW)
+						receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1),
+							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW)
 						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
 							receiver.drawScoreFont(engine, playerID, 3, topY+i, tableGradeName[rankingGrade[i]], gcolor)
 						receiver.drawScoreNum(engine, playerID, 9, topY+i, String.format("%03d", rankingLevel[i]), i==rankingRank)

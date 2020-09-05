@@ -115,7 +115,7 @@ class PhysicianVS:AbstractMode() {
 	/* Mode name */
 	override val name:String
 		get() = "PHYSICIAN VS-BATTLE (RC1)"
-
+	override val gameIntensity:Int = 2
 	override val isVSMode:Boolean
 		get() = true
 

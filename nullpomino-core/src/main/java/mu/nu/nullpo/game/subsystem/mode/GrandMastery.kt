@@ -248,7 +248,7 @@ class GrandMastery:AbstractMode() {
 	/* Mode name */
 	override val name:String
 		get() = "GRAND MASTERY"
-
+	override val gameIntensity:Int = 1
 	/** @return 何らかの試験中ならtrue
 	 */
 	private val isAnyExam:Boolean
@@ -684,7 +684,8 @@ class GrandMastery:AbstractMode() {
 						if(rankingRollclear[i]==1||rankingRollclear[i]==3) gcolor = COLOR.GREEN
 						if(rankingRollclear[i]==2||rankingRollclear[i]==4) gcolor = COLOR.ORANGE
 
-						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1), COLOR.YELLOW)
+						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1),
+							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW)
 						receiver.drawScoreGrade(engine, playerID, 3, 3+i, getGradeName(rankingGrade[i]), gcolor)
 						receiver.drawScoreNum(engine, playerID, 7, 3+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank)
 						receiver.drawScoreNum(engine, playerID, 15, 3+i, String.format("%03d", rankingLevel[i]), i==rankingRank)

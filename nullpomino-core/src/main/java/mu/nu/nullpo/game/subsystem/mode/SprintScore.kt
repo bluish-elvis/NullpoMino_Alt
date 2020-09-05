@@ -102,8 +102,8 @@ class SprintScore:NetDummyMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "SCORE RACE"
-
+		get() = "Score SprintRace"
+	override val gameIntensity:Int = 2
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)

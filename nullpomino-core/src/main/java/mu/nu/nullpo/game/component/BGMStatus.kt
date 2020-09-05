@@ -84,7 +84,7 @@ class BGMStatus:Serializable {
 
 		object SILENT:BGM(ln = "Silent")
 		class GENERIC(idx:Int = 0):BGM(idx, 6, "Guidelines Modes", *Array(6) {"Level:${it+1}"})
-		class RUSH(idx:Int = 0):BGM(idx, 3, "TimeAttack Rush", *Array(3) {"Level:${it+1}"})
+		class RUSH(idx:Int = 0):BGM(idx, 3, "Trial Rush", *Array(3) {"Level:${it+1}"})
 		class EXTRA(idx:Int = 0):BGM(idx, 3, "Extra Modes")
 		class RETRO_N(idx:Int = 0):BGM(idx, 3, "Retro Classic:N.")
 		class RETRO_A(idx:Int = 0):BGM(idx, 5, ln = "Retro Marathon:AT")
@@ -95,8 +95,10 @@ class BGMStatus:Serializable {
 		class GM_3(idx:Int = 0):BGM(idx, 6, "Grand Mastery",
 			"NORMAL", "20G", "Blitz", "Blitz 500", "Lightning 700", "Lightning 1k")
 
-		class MENU(idx:Int = 0):BGM(idx, true, 4, "Menu Screen BGM",
-			"Title Menu", "Mode Select", "General Config", "Mode Config")
+		class MENU(idx:Int = 0):BGM(idx, true, 8, "Select BGM",
+			"Title Menu/Replay", "Mode Select", "General Config",
+			"Mode Config(Retro/Puzzle)", "Mode Config(Generic)","Mode Config(Unique)",
+			"Mode Config(Trial)", "Mode Config(Grand 20G)")
 
 		class ENDING(idx:Int = 0):BGM(idx, true, 4, "Ending Challenge",
 			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)")

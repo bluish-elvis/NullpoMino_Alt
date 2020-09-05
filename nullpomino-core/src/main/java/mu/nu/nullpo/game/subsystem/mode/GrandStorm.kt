@@ -25,6 +25,7 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
@@ -147,8 +148,8 @@ class GrandStorm:AbstractMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "GRAND STORM"
-
+		get() = "Grand Storm"
+	override val gameIntensity:Int = 3
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
@@ -416,7 +417,8 @@ class GrandStorm:AbstractMode() {
 					receiver.drawScoreFont(engine, playerID, 2, topY-1, "LEVEL TIME", COLOR.BLUE, scale)
 
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+						receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1),
+							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW, scale)
 						receiver.drawScoreGrade(engine, playerID, 2, topY+i, tableGradeName[rankingGrade[i]], i==rankingRank, scale)
 						receiver.drawScoreNum(engine, playerID, 5, topY+i, "${rankingLevel[i]}", i==rankingRank, scale)
 						receiver.drawScoreNum(engine, playerID, 8, topY+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank, scale)

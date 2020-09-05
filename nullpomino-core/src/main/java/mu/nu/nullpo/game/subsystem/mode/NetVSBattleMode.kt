@@ -771,19 +771,19 @@ class NetVSBattleMode:NetDummyVSMode() {
 	/** Garbage data */
 	private inner class GarbageEntry {
 		/** Number of garbage lines */
-		internal var lines:Int = 0
+		var lines:Int = 0
 
 		/** Sender's playerID */
-		internal var playerID:Int = 0
+		var playerID:Int = 0
 
 		/** Sender's UID */
-		internal var uid = 0
+		var uid = 0
 
 		/** Constructor
 		 * @param g Lines
 		 * @param p Sender's playerID
 		 */
-		internal constructor(g:Int, p:Int) {
+		constructor(g:Int, p:Int) {
 			lines = g
 			playerID = p
 		}
@@ -793,7 +793,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 		 * @param p Sender's playerID
 		 * @param s Sender's UID
 		 */
-		internal constructor(g:Int, p:Int, s:Int) {
+		constructor(g:Int, p:Int, s:Int) {
 			lines = g
 			playerID = p
 			uid = s

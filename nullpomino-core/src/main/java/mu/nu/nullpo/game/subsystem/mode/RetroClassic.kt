@@ -23,16 +23,16 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.EventReceiver.FONT
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import net.omegaboshi.nullpomino.game.subsystem.randomizer.NintendoRandomizer
 
-/** RETRO CLASSIC mode (Original from NullpoUE build 010210 by Zircean & NTD) */
+/** RETRO CLASSIC mode (Based from NES, Original from NullpoUE build 010210 by Zircean) */
 class RetroClassic:AbstractMode() {
 
 	/** Amount of points you just get from line clears */
@@ -63,8 +63,9 @@ class RetroClassic:AbstractMode() {
 	/** Big mode on/off */
 	private var big:Boolean = false
 
-	/** Version of this mode */
-	private var version:Int = 0
+	/** Max interval of I-piece */
+	private var drought:Int = 0
+	private val droughts:MutableList<Int> = mutableListOf()
 
 	/** Your place on leaderboard (-1: out of rank) */
 	private var rankingRank:Int = 0
@@ -83,7 +84,9 @@ class RetroClassic:AbstractMode() {
 
 	/** Returns the name of this mode */
 	override val name:String
-		get() = "RETRO CLASSIC"
+		get() = "Retro Classic .N"
+
+	override val gameIntensity:Int = -1
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -94,31 +97,33 @@ class RetroClassic:AbstractMode() {
 		softdropscore = 0
 		harddropscore = 0
 		levellines = 0
+		drought = 0
+		droughts.removeAll {true}
 
 		rankingRank = -1
 		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingLevel = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
-		engine.twistEnable = false
-		engine.b2bEnable = false
-		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
-		engine.bighalf = false
-		engine.bigmove = false
-
-		engine.speed.are = 10
-		engine.speed.areLine = 20
-		engine.speed.lineDelay = 20
-		engine.speed.das = if(gametype==GAMETYPE_ARRANGE) 12 else 16
-		engine.ruleopt.lockresetMove = false
-		engine.ruleopt.softdropLock = true
-		engine.ruleopt.softdropSpeed = .5f
-		engine.ruleopt.softdropMultiplyNativeSpeed = false
-		engine.ruleopt.softdropGravitySpeedLimit = true
+		engine.run {
+			twistEnable = false
+			b2bEnable = false
+			comboType = GameEngine.COMBO_TYPE_DISABLE
+			bighalf = false
+			bigmove = false
+			owSkin = if(gametype==GAMETYPE_ARRANGE) 8 else 9
+			speed.are = 10
+			speed.areLine = 20
+			speed.lineDelay = 20
+			speed.das = if(gametype==GAMETYPE_ARRANGE) 12 else 16
+			owMinDAS = -1
+			owMaxDAS = -1
+			owARR = 6
+			owSDSpd = 1
+		}
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
 			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
-			version = CURRENT_VERSION
 		} else loadSetting(owner.replayProp)
 
 		engine.owner.backgroundStatus.bg = startlevel
@@ -147,6 +152,7 @@ class RetroClassic:AbstractMode() {
 			engine.speed.denominator = tableDenominator[lv]
 		}
 		engine.speed.lockDelay = engine.speed.denominator/engine.speed.gravity
+
 	}
 
 	/** Main routine for game setup screen */
@@ -205,11 +211,32 @@ class RetroClassic:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "GAME TYPE", GAMETYPE_NAME[gametype], "Level", LEVEL_NAME[startlevel], "HEIGHT", "$startheight", "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "GAME TYPE", GAMETYPE_NAME[gametype],
+			"Level", LEVEL_NAME[startlevel], "HEIGHT", "$startheight", "BIG", GeneralUtil.getONorOFF(big))
 	}
 
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==0) {
+			engine.run {
+				randomizer = NintendoRandomizer()
+				ruleopt.run {
+					rotateInitial = false
+					lockresetMove = false
+					softdropLock = true
+					softdropMultiplyNativeSpeed = false
+					softdropGravitySpeedLimit = false
+					holdEnable = false
+					dasInARE = false
+					dasInReady = false
+					dasChargeOnBlockedMove = true
+					dasStoreChargeOnNeutral = true
+					dasRedirectInARE = true
+					areCancelMove = false
+					areCancelRotate = false
+				}
+			}
+
+
 			engine.createFieldIfNeeded()
 			fillGarbage(engine, startheight)
 		}
@@ -227,6 +254,18 @@ class RetroClassic:AbstractMode() {
 		setSpeed(engine)
 	}
 
+	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
+		// 新規ピース出現時
+		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable)
+			if(engine.run {getNextObjectCopy(nextPieceCount)}?.type!=Piece.Shape.I) drought++
+			else {
+				if(drought>7) droughts += drought
+				drought = 0
+			}
+
+		return false
+	}
+
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		receiver.drawScoreFont(engine, playerID, 0, 0, "RETRO CLASSIC", COLOR.GREEN)
@@ -237,7 +276,8 @@ class RetroClassic:AbstractMode() {
 				receiver.drawScoreFont(engine, playerID, 3, 3, "SCORE    LINE LV.", COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1), COLOR.YELLOW)
+					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1),
+						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW)
 					receiver.drawScoreNum(engine, playerID, 3, 4+i, GeneralUtil.capsInteger(rankingScore[gametype][i], 6), i==rankingRank)
 					receiver.drawScoreNum(engine, playerID, 12, 4+i, GeneralUtil.capsInteger(rankingLines[gametype][i], 3), i==rankingRank)
 					receiver.drawScore(engine, playerID, 17, 4+i, LEVEL_NAME[rankingLevel[gametype][i]],
@@ -261,6 +301,9 @@ class RetroClassic:AbstractMode() {
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "Time", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)
+
+			receiver.drawScoreFont(engine, playerID, 0, 16, "I-Piece Drought", COLOR.BLUE)
+			receiver.drawScoreNum(engine, playerID, 0, 17, "$drought / ${maxOf(drought, droughts.maxOrNull() ?: 0)}", 2f)
 		}
 	}
 
@@ -340,12 +383,7 @@ class RetroClassic:AbstractMode() {
 			owner.backgroundStatus.fadesw = true
 			owner.backgroundStatus.fadecount = 0
 
-			var lv = engine.statistics.level
-
-			if(lv<0) lv = 0
-			if(lv>=19) lv = 19
-
-			owner.backgroundStatus.fadebg = lv
+			owner.backgroundStatus.fadebg = maxOf(0, minOf(19, engine.statistics.level))
 
 			setSpeed(engine)
 			engine.playSE("levelup")
@@ -363,17 +401,57 @@ class RetroClassic:AbstractMode() {
 		harddropscore += fall
 	}
 
+	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+		if(engine.statc[0]==0) {
+			if(drought>7) droughts += drought
+			drought = 0
+		}
+		return false
+	}
+
+	/* 結果画面の処理 */
+	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
+			engine.statc[1]--
+			if(engine.statc[1]<0) engine.statc[1] = 2
+			engine.playSE("change")
+		}
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+			engine.statc[1]++
+			if(engine.statc[1]>2) engine.statc[1] = 0
+			engine.playSE("change")
+		}
+
+		return false
+	}
+
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
+		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${engine.statc[1]+1}/2", COLOR.ORANGE)
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", COLOR.ORANGE)
 
-		drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES)
-		receiver.drawMenuFont(engine, playerID, 0, 7, "Level", COLOR.BLUE)
-		val strLevel = String.format("%10s", LEVEL_NAME[engine.statistics.level])
-		receiver.drawMenuFont(engine, playerID, 0, 8, strLevel)
-		drawResultStats(engine, playerID, receiver, 9, COLOR.BLUE, Statistic.TIME, Statistic.SPL, Statistic.LPM)
-		drawResultRank(engine, playerID, receiver, 15, COLOR.BLUE, rankingRank)
-
+		if(engine.statc[1]==0) {
+			drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES)
+			receiver.drawMenuFont(engine, playerID, 0, 7, "Level", COLOR.BLUE)
+			val strLevel = String.format("%10s", LEVEL_NAME[engine.statistics.level])
+			receiver.drawMenuFont(engine, playerID, 0, 8, strLevel)
+			drawResultStats(engine, playerID, receiver, 9, COLOR.BLUE, Statistic.SPL)
+			drawResultRank(engine, playerID, receiver, 15, COLOR.BLUE, rankingRank)
+			drawResult(engine, playerID, receiver, 11, COLOR.BLUE, "QUAD%", String.format("%3d%%", engine.statistics.run {
+				totalQuadruple*100/maxOf(1, totalQuadruple+totalSingle+totalDouble+totalTriple+totalSplitDouble+totalSplitTriple)
+			}))
+		} else {
+			drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.TIME, Statistic.LPM)
+			receiver.drawMenuFont(engine, playerID, 0, 7, "I-Droughts", COLOR.BLUE)
+			receiver.drawMenuFont(engine, playerID, 0, 8, "Longest", COLOR.BLUE, .8f)
+			receiver.drawMenuNum(engine, playerID, 0, 8, String.format("%3d", droughts.maxOrNull() ?: 0), 2f)
+			receiver.drawMenuFont(engine, playerID, 0, 10, "Average", COLOR.BLUE, .8f)
+			receiver.drawMenuNum(engine, playerID, 0, 11, String.format("%3d", droughts.average()), 2f)
+			drawResult(engine, playerID, receiver, 13, COLOR.RED, "Burnouts", String.format("%3d",
+				engine.statistics.run {
+					totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple
+				}))
+		}
 	}
 
 	/** This function will be called when the replay data is going to be
@@ -400,7 +478,6 @@ class RetroClassic:AbstractMode() {
 		startlevel = prop.getProperty("retromarathon.startlevel", 0)
 		startheight = prop.getProperty("retromarathon.startheight", 0)
 		big = prop.getProperty("retromarathon.big", false)
-		version = prop.getProperty("retromarathon.version", 0)
 	}
 
 	/** Save the settings
@@ -411,7 +488,6 @@ class RetroClassic:AbstractMode() {
 		prop.setProperty("retromarathon.startlevel", startlevel)
 		prop.setProperty("retromarathon.startheight", startheight)
 		prop.setProperty("retromarathon.big", big)
-		prop.setProperty("retromarathon.version", version)
 	}
 
 	/** Load the ranking
@@ -487,7 +563,7 @@ class RetroClassic:AbstractMode() {
 	 */
 	private fun fillGarbage(engine:GameEngine, height:Int) {
 		val h = engine.field!!.height
-		val startHeight = if(version>=2) h-1 else h
+		val startHeight = h-1
 		var f:Float
 		for(y in startHeight downTo h-tableGarbageHeight[height])
 			for(x in 0 until engine.field!!.width) {

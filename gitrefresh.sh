@@ -1,1 +1,1 @@
-git reflog expire --expire-unreachable="now" --all&&git prune --expire="now" -v&&git gc --aggressive --prune="now"
+git remote prune origin && git repack && git prune-packed && git reflog expire --expire=now --all && git gc --aggressive --prune=now

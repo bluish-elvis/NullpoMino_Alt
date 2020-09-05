@@ -38,6 +38,7 @@ class SprintUltra:NetDummyMode() {
 	/** Most recent increase in score */
 	private var lastscore:Int = 0
 	private var sum:Int = 0
+	private var pow:Int = 0
 
 	/** Time to display the most recent increase in score */
 	private var scgettime:Int = 0
@@ -70,14 +71,18 @@ class SprintUltra:NetDummyMode() {
 	private var rankingRank:IntArray = IntArray(0)
 
 	/** Rankings' scores */
-	private var rankingScore:Array<Array<IntArray>>? = null
+	private var rankingScore:Array<Array<IntArray>> = Array(GOALTYPE_MAX) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
 
 	/** Rankings' line counts */
-	private var rankingLines:Array<Array<IntArray>>? = null
+	private var rankingLines:Array<Array<IntArray>> = Array(GOALTYPE_MAX) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
+
+	/** Rankings' sent line counts */
+	private var rankingPower:Array<Array<IntArray>> = Array(GOALTYPE_MAX) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
 
 	/* Mode name */
 	override val name:String
-		get() = "ULTRA"
+		get() = "ULTRA Score Attack"
+	override val gameIntensity:Int = 2
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -88,6 +93,7 @@ class SprintUltra:NetDummyMode() {
 		lastcombo = 0
 		lastpiece = 0
 		bgmno = 0
+		pow = 0
 
 		rankingRank = IntArray(RANKING_TYPE)
 		rankingRank[0] = -1
@@ -95,6 +101,7 @@ class SprintUltra:NetDummyMode() {
 
 		rankingScore = Array(GOALTYPE_MAX) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
 		rankingLines = Array(GOALTYPE_MAX) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
+		rankingPower = Array(GOALTYPE_MAX) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
 
 		engine.framecolor = GameEngine.FRAME_COLOR_BLUE
 
@@ -213,7 +220,7 @@ class SprintUltra:NetDummyMode() {
 						if(goaltype<0) goaltype = GOALTYPE_MAX-1
 						if(goaltype>GOALTYPE_MAX-1) goaltype = 0
 					}
-					10 , 11 -> {
+					10, 11 -> {
 						presetNumber += change
 						if(presetNumber<0) presetNumber = 99
 						if(presetNumber>99) presetNumber = 0
@@ -289,7 +296,7 @@ class SprintUltra:NetDummyMode() {
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.big = big
 		engine.b2bEnable = true
-			engine.comboType = GameEngine.COMBO_TYPE_NORMAL
+		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.meterValue = 320
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 
@@ -308,7 +315,7 @@ class SprintUltra:NetDummyMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, playerID, 0, 0, "ULTRA SCORE ATTACK", EventReceiver.COLOR.CYAN)
+		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.CYAN)
 		receiver.drawScoreFont(engine, playerID, 0, 1, "(${(goaltype+1)} MINUTES SPRINT)", EventReceiver.COLOR.CYAN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
@@ -318,8 +325,8 @@ class SprintUltra:NetDummyMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, 5+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 5+i, "${rankingScore!![goaltype][0][i]}", i==rankingRank[0])
-					receiver.drawScoreNum(engine, playerID, 10, 5+i, "${rankingLines!![goaltype][0][i]}", i==rankingRank[0])
+					receiver.drawScoreNum(engine, playerID, 3, 5+i, "${rankingScore[goaltype][0][i]}", i==rankingRank[0])
+					receiver.drawScoreNum(engine, playerID, 10, 5+i, "${rankingLines[goaltype][0][i]}", i==rankingRank[0])
 				}
 
 				receiver.drawScoreFont(engine, playerID, 0, 11, "LINE RANKING", EventReceiver.COLOR.GREEN)
@@ -327,8 +334,8 @@ class SprintUltra:NetDummyMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, 13+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 13+i, "${rankingLines!![goaltype][1][i]}", i==rankingRank[1])
-					receiver.drawScoreNum(engine, playerID, 8, 13+i, "${rankingScore!![goaltype][1][i]}", i==rankingRank[1])
+					receiver.drawScoreNum(engine, playerID, 3, 13+i, "${rankingLines[goaltype][1][i]}", i==rankingRank[1])
+					receiver.drawScoreNum(engine, playerID, 8, 13+i, "${rankingScore[goaltype][1][i]}", i==rankingRank[1])
 				}
 			}
 		} else {
@@ -347,7 +354,7 @@ class SprintUltra:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 13, "${engine.statistics.lpm}", 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "Time", EventReceiver.COLOR.BLUE)
-			val time = maxOf(0,(goaltype+1)*3600-engine.statistics.time)
+			val time = maxOf(0, (goaltype+1)*3600-engine.statistics.time)
 			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(time), getTimeFontColor(time), 2f)
 		}
 
@@ -377,7 +384,8 @@ class SprintUltra:NetDummyMode() {
 			else engine.statistics.scoreBonus += get
 			scgettime += spd
 		}
-		return if(pts>0)lastscore else 0
+		pow += calcPower(engine, lines)
+		return if(pts>0) lastscore else 0
 	}
 
 	/* Soft drop */
@@ -464,10 +472,11 @@ class SprintUltra:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.score, engine.statistics.lines)
+			val type = goaltype
+			updateRanking(type, engine.statistics.score, engine.statistics.lines)
 
 			if(rankingRank[0]!=-1||rankingRank[1]!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleopt.strRuleName, type)
 				owner.saveModeConfig()
 			}
 		}
@@ -481,8 +490,9 @@ class SprintUltra:NetDummyMode() {
 		for(i in 0 until GOALTYPE_MAX)
 			for(j in 0 until RANKING_TYPE)
 				for(k in 0 until RANKING_MAX) {
-					rankingScore!![i][j][k] = prop.getProperty("ultra.ranking.$ruleName.$i.$j.score.$k", 0)
-					rankingLines!![i][j][k] = prop.getProperty("ultra.ranking.$ruleName.$i.$j.lines.$k", 0)
+					rankingScore[i][j][k] = prop.getProperty("$ruleName.$i.$j.score.$k", 0)
+					rankingLines[i][j][k] = prop.getProperty("$ruleName.$i.$j.lines.$k", 0)
+					rankingPower[i][j][k] = prop.getProperty("$ruleName.$i.$j.lines.$k", 0)
 				}
 	}
 
@@ -490,33 +500,34 @@ class SprintUltra:NetDummyMode() {
 	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until GOALTYPE_MAX)
-			for(j in 0 until RANKING_TYPE)
-				for(k in 0 until RANKING_MAX) {
-					prop.setProperty("ultra.ranking.$ruleName.$i.$j.score.$k", rankingScore!![i][j][k])
-					prop.setProperty("ultra.ranking.$ruleName.$i.$j.lines.$k", rankingLines!![i][j][k])
-				}
+	fun saveRanking(ruleName:String, type:Int) {
+		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf("$ruleName.$type.$i.score" to rankingScore[type][j][i],
+					"$ruleName.$type.$i.lines" to rankingLines[type][j][i],
+					"$ruleName.$type.$i.power" to rankingPower[type][j][i])
+			}
+		})
 	}
 
 	/** Update rankings
 	 * @param sc Score
 	 * @param li Lines
 	 */
-	private fun updateRanking(sc:Int, li:Int) {
+	private fun updateRanking(type:Int, sc:Int, li:Int) {
 		for(i in 0 until RANKING_TYPE) {
 			rankingRank[i] = checkRanking(sc, li, i)
 
 			if(rankingRank[i]!=-1) {
 				// Shift down ranking entries
 				for(j in RANKING_MAX-1 downTo rankingRank[i]+1) {
-					rankingScore!![goaltype][i][j] = rankingScore!![goaltype][i][j-1]
-					rankingLines!![goaltype][i][j] = rankingLines!![goaltype][i][j-1]
+					rankingScore[type][i][j] = rankingScore[type][i][j-1]
+					rankingLines[type][i][j] = rankingLines[type][i][j-1]
 				}
 
 				// Add new data
-				rankingScore!![goaltype][i][rankingRank[i]] = sc
-				rankingLines!![goaltype][i][rankingRank[i]] = li
+				rankingScore[type][i][rankingRank[i]] = sc
+				rankingLines[type][i][rankingRank[i]] = li
 			}
 		}
 	}
@@ -530,12 +541,12 @@ class SprintUltra:NetDummyMode() {
 	private fun checkRanking(sc:Int, li:Int, rankingtype:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(rankingtype==0) {
-				if(sc>rankingScore!![goaltype][rankingtype][i])
+				if(sc>rankingScore[goaltype][rankingtype][i])
 					return i
-				else if(sc==rankingScore!![goaltype][rankingtype][i]&&li>rankingLines!![goaltype][rankingtype][i]) return i
-			} else if(li>rankingLines!![goaltype][rankingtype][i])
+				else if(sc==rankingScore[goaltype][rankingtype][i]&&li>rankingLines[goaltype][rankingtype][i]) return i
+			} else if(li>rankingLines[goaltype][rankingtype][i])
 				return i
-			else if(li==rankingLines!![goaltype][rankingtype][i]&&sc>rankingScore!![goaltype][rankingtype][i]) return i
+			else if(li==rankingLines[goaltype][rankingtype][i]&&sc>rankingScore[goaltype][rankingtype][i]) return i
 
 		return -1
 	}

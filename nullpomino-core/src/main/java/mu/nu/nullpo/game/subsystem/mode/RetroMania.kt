@@ -30,7 +30,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 
-/** RETRO MANIA mode (Original from NullpoUE build 121909 by Zircean & S) */
+/** RETRO MANIA mode (Based System16, Original from NullpoUE build 121909 by Zircean) */
 class RetroMania:AbstractMode() {
 
 	/** Amount of points you just get from line clears */
@@ -75,7 +75,9 @@ class RetroMania:AbstractMode() {
 
 	/** Returns the name of this mode */
 	override val name:String
-		get() = "RETRO MANIA"
+		get() = "Retro Mania .S"
+
+	override val gameIntensity:Int = -1
 
 	/** This function will be called when
 	 * the game enters the main game screen. */
@@ -102,14 +104,10 @@ class RetroMania:AbstractMode() {
 		engine.speed.lineDelay = 42
 		engine.speed.lockDelay = 30
 		engine.speed.das = 20
-		engine.ruleopt.lockresetMove = false
-		engine.ruleopt.lockresetRotate = false
-		engine.ruleopt.lockresetWallkick = false
-		engine.ruleopt.lockresetFall = true
-		engine.ruleopt.softdropLock = true
-		engine.ruleopt.softdropMultiplyNativeSpeed = false
-		engine.ruleopt.softdropGravitySpeedLimit = true
-		engine.ruleopt.softdropSpeed = 1f
+		engine.owMinDAS = -1
+		engine.owMaxDAS = -1
+		engine.owARR = 1
+		engine.owSDSpd = 2
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
@@ -191,9 +189,26 @@ class RetroMania:AbstractMode() {
 
 	/** Ready */
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.statc[0]==0)
+		if(engine.statc[0]==0) {
+
+			engine.ruleopt.run {
+				lockresetMove = false
+				lockresetRotate = false
+				lockresetWallkick = false
+				lockresetFall = true
+				softdropLock = true
+				softdropMultiplyNativeSpeed = false
+				softdropGravitySpeedLimit = true
+				rotateInitial = false
+				holdEnable = false
+				dasInARE = false
+				dasInReady = false
+				areCancelMove = false
+				areCancelRotate = false
+			}
 			if(poweron)
 				engine.nextPieceArrayID = GeneralUtil.createNextPieceArrayFromNumberString(STRING_POWERON_PATTERN)
+		}
 		return false
 	}
 

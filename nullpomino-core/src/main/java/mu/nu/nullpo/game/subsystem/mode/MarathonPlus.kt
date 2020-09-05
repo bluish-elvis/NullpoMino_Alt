@@ -95,8 +95,8 @@ class MarathonPlus:NetDummyMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "MARATHON+"
-
+		get() = "Marathon+ ScoreAttack"
+	override val gameIntensity:Int = 1
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)

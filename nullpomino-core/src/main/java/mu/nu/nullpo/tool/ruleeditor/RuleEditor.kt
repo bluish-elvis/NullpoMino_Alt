@@ -1472,7 +1472,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		txtfldMoveDASMin?.text = r.minDAS.toString()
 		txtfldMoveDASMax?.text = r.maxDAS.toString()
-		txtfldMoveDASDelay?.text = r.dasDelay.toString()
+		txtfldMoveDASDelay?.text = r.dasARR.toString()
 		chkboxMoveDASInReady?.isSelected = r.dasInReady
 		chkboxMoveDASInMoveFirstFrame?.isSelected = r.dasInMoveFirstFrame
 		chkboxMoveDASInLockFlash?.isSelected = r.dasInLockFlash
@@ -1482,7 +1482,7 @@ class RuleEditor:JFrame, ActionListener {
 		chkboxMoveDASInEndingStart?.isSelected = r.dasInEndingStart
 		chkboxMoveDASChargeOnBlockedMove?.isSelected = r.dasChargeOnBlockedMove
 		chkboxMoveDASStoreChargeOnNeutral?.isSelected = r.dasStoreChargeOnNeutral
-		chkboxMoveDASRedirectInDelay?.isSelected = r.dasRedirectInDelay
+		chkboxMoveDASRedirectInDelay?.isSelected = r.dasRedirectInARE
 		chkboxMoveFirstFrame?.isSelected = r.moveFirstFrame
 		chkboxMoveDiagonal?.isSelected = r.moveDiagonal
 		chkboxMoveUpAndDown?.isSelected = r.moveUpAndDown
@@ -1595,7 +1595,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		r.minDAS = getIntTextField(txtfldMoveDASMin)
 		r.maxDAS = getIntTextField(txtfldMoveDASMax)
-		r.dasDelay = getIntTextField(txtfldMoveDASDelay)
+		r.dasARR = getIntTextField(txtfldMoveDASDelay)
 		r.dasInReady = chkboxMoveDASInReady!!.isSelected
 		r.dasInMoveFirstFrame = chkboxMoveDASInMoveFirstFrame!!.isSelected
 		r.dasInLockFlash = chkboxMoveDASInLockFlash!!.isSelected
@@ -1605,7 +1605,7 @@ class RuleEditor:JFrame, ActionListener {
 		r.dasInEndingStart = chkboxMoveDASInEndingStart!!.isSelected
 		r.dasChargeOnBlockedMove = chkboxMoveDASChargeOnBlockedMove!!.isSelected
 		r.dasStoreChargeOnNeutral = chkboxMoveDASStoreChargeOnNeutral!!.isSelected
-		r.dasRedirectInDelay = chkboxMoveDASRedirectInDelay!!.isSelected
+		r.dasRedirectInARE = chkboxMoveDASRedirectInDelay!!.isSelected
 		r.moveFirstFrame = chkboxMoveFirstFrame!!.isSelected
 		r.moveDiagonal = chkboxMoveDiagonal!!.isSelected
 		r.moveUpAndDown = chkboxMoveUpAndDown!!.isSelected

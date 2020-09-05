@@ -64,7 +64,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 	/* Mode name */
 	override val name:String
 		get() = "AVALANCHE-SPF VS-BATTLE (BETA)"
-
+	override val gameIntensity:Int = 1
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
 		super.modeInit(manager)

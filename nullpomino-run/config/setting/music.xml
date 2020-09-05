@@ -3,19 +3,27 @@
 <properties>
  <comment>NullpoMino Music List</comment>
 
- <entry key="music.filename.MENU.0">res/bgm/title_technika2.ogg</entry>
- <entry key="music.filename.MENU.1">res/bgm/sm-ssc_witp.ogg</entry>
- <entry key="music.filename.MENU.2">res/bgm/title_technika3.ogg</entry>
+ <entry key="music.filename.MENU.0">res/bgm/beats/cbr_menu2.ogg</entry>
+ <entry key="music.filename.MENU.1">res/bgm/beats/cbr_menu1.ogg</entry>
+ <entry key="music.filename.MENU.2">res/bgm/beats/cbr_menu3.ogg</entry>
+ <entry key="music.filename.MENU.3">res/bgm/beats/xx_collon0.ogg</entry>
+ <entry key="music.filename.MENU.4">res/bgm/beats/cbr_prepare1.ogg</entry>
+ <entry key="music.filename.MENU.5">res/bgm/beats/cbr_prepare2.ogg</entry>
+ <entry key="music.filename.MENU.6">res/bgm/beats/xx_collon0.ogg</entry>
+ <entry key="music.filename.MENU.7">res/bgm/beats/cbr_prepare3.ogg</entry>
 
- <entry key="music.filename.GENERIC.0">res/bgm/steam/Clouds.ogg</entry>
+ <entry key="music.filename.GENERIC.0">res/bgm/steam/sonic_StardustSpeedway2.ogg</entry>
  <entry key="music.filename.GENERIC.1">res/bgm/steam/sonic_PulpSolstice1.ogg</entry>
  <entry key="music.filename.GENERIC.2">res/bgm/steam/dlr_battle.ogg</entry>
- <entry key="music.filename.GENERIC.3">res/bgm/steam/unt_core.ogg</entry>
+ <entry key="music.filename.GENERIC.3">res/bgm/steam/unt_dummy.ogg</entry>
  <entry key="music.filename.GENERIC.4">res/bgm/steam/icey_labo.ogg</entry>
  <entry key="music.filename.GENERIC.5">res/bgm/Astra_walkthrough.ogg</entry>
- <entry key="music.filename.RUSH.0">res/bgm/steam/rb_fullon.ogg</entry>
- <entry key="music.filename.RUSH.1">res/bgm/steam/rb_brawlbreax.ogg</entry>
- <entry key="music.filename.RUSH.2">res/bgm/steam/rb_hitech.ogg</entry>
+ <entry key="music.filename.RUSH.0">res/bgm/steam/sonic_BossPuyo.ogg</entry>
+ <entry key="music.filename.RUSH.1">res/bgm/steam/rb_hitech.ogg</entry>
+ <entry key="music.filename.RUSH.2">res/bgm/beats/cxb_rush.ogg</entry>
+ <entry key="music.filename.PUZZLE.0">res/bgm/9Jack.ogg</entry>
+ <entry key="music.filename.PUZZLE.1">res/bgm/steam/unt_battle1.ogg</entry>
+ <entry key="music.filename.PUZZLE.2">res/bgm/steam/unt_battle2.ogg</entry>
 
  <entry key="music.filename.RETRO_N.0">res/bgm/retro/nes1.ogg</entry>
  <entry key="music.filename.RETRO_N.1">res/bgm/retro/nes2.ogg</entry>
@@ -26,18 +34,16 @@
  <entry key="music.filename.RETRO_A.3">res/bgm/retro/rus_Kalinka_b.ogg</entry>
  <entry key="music.filename.RETRO_A.4">res/bgm/retro/rus_Troika.ogg</entry>
  <entry key="music.filename.RETRO_S.0">res/bgm/retro/sega_Tetremix.ogg</entry>
- <entry key="music.filename.RETRO_S.2">res/bgm/retro/sega_Tetremix_mbm.ogg</entry>
- <entry key="music.filename.PUZZLE.0">res/bgm/9Jack.ogg</entry>
- <entry key="music.filename.PUZZLE.1">res/bgm/steam/unt_battle1.ogg</entry>
- <entry key="music.filename.PUZZLE.2">res/bgm/steam/unt_battle2.ogg</entry>
+ <entry key="music.filename.RETRO_S.1">res/bgm/retro/sega_Tetremix_mbm.ogg</entry>
+ <entry key="music.filename.RETRO_S.2">res/bgm/retro/bps_technotris_1of4.ogg</entry>
 
  <entry key="music.filename.EXTRA.0">res/bgm/1_grand/vs1.ogg</entry>
- <entry key="music.filename.EXTRA.1">res/bgm/2_absolute/vs2.ogg</entry>
- <entry key="music.filename.EXTRA.2">res/bgm/3_instinct/vs3.ogg</entry>
+ <entry key="music.filename.EXTRA.1">res/bgm/steam/hydelic_butterflyeffect.ogg</entry>
+ <entry key="music.filename.EXTRA.2">res/bgm/steam/hydelic_starliteinfinite.ogg</entry>
 
  <entry key="music.filename.GM_1.0">res/bgm/A_MIDSUMMERS_BLISS.ogg</entry>
  <entry key="music.filename.GM_1.1">res/bgm/tex1.ogg</entry>
- <entry key="music.filename.ENDING.0">res/bgm/ending_starliteinfinite.ogg</entry>
+ <entry key="music.filename.ENDING.0">res/bgm/retro/ds_ending.ogg</entry>
 
  <entry key="music.filename.GM_2.0">res/bgm/ddp/play_black1.ogg</entry>
  <entry key="music.filename.GM_2.1">res/bgm/ddp/play_black5.ogg</entry>
@@ -53,15 +59,15 @@
  <entry key="music.filename.GM_3.5">res/bgm/ddp/finale_white.ogg</entry>
  <entry key="music.filename.ENDING.2">res/bgm/3_instinct/roll_.ogg</entry>
 
- <entry key="music.filename.FINALE.0">res/bgm/finale_dreadnought.ogg</entry>
- <entry key="music.filename.FINALE.1">res/bgm/finale_hesperides.ogg</entry>
- <entry key="music.filename.FINALE.2">res/bgm/finale_siva.ogg</entry>
+ <entry key="music.filename.FINALE.0">res/bgm/beats/finale_dreadnought.ogg</entry>
+ <entry key="music.filename.FINALE.1">res/bgm/beats/finale_hesperides.ogg</entry>
+ <entry key="music.filename.FINALE.2">res/bgm/beats/finale_siva.ogg</entry>
  <entry key="music.filename.ENDING.3">res/bgm/fb_kaerezunochi.ogg</entry>
 
- <entry key="music.filename.RESULT.0">res/bgm/result_technika3_1.ogg</entry>
- <entry key="music.filename.RESULT.1">res/bgm/result_technika2_1.ogg</entry>
- <entry key="music.filename.RESULT.2">res/bgm/result_technika2_2.ogg</entry>
- <entry key="music.filename.RESULT.3">res/bgm/result_technika3_2.ogg</entry>
+ <entry key="music.filename.RESULT.0">res/bgm/beats/cbr_result2.ogg</entry>
+ <entry key="music.filename.RESULT.1">res/bgm/beats/xx_collon1.ogg</entry>
+ <entry key="music.filename.RESULT.2">res/bgm/beats/cbr_result1.ogg</entry>
+ <entry key="music.filename.RESULT.3">res/bgm/beats/cbr_result3.ogg</entry>
 
  <entry key="music.noloop.ENDING.0">false</entry>
  <entry key="music.noloop.ENDING.1">true</entry>

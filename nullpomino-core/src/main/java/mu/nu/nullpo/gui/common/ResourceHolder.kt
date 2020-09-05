@@ -31,7 +31,7 @@ abstract class ResourceHolder {
 		"erase", "linefall", "cheer", "twist", "twister",
 		"combo", "b2b_start", "b2b_combo", "b2b_end",
 
-		"danger", "dead", "shutter",
+		"danger", "dead", "dead_last", "shutter",
 		"gradeup", "levelstop", "levelup", "levelup_section",
 		"endingstart", "excellent",
 		"bravo", "cool", "regret",

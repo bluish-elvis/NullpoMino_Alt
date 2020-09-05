@@ -32,7 +32,6 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import java.util.*
-import kotlin.math.abs
 
 /** VS-BATTLE Mode */
 class VSBattleMode:AbstractMode() {
@@ -540,7 +539,7 @@ class VSBattleMode:AbstractMode() {
 			if(menuTime>=60) menuCursor = 9
 			if(menuTime>=120) engine.statc[4] = 1
 		} else // Start
-			if(owner.engine[0].statc[4]==1&&((owner.engine[1].statc[4]==1||owner.engine[1].ai!=null)&&playerID==1)) {
+			if(owner.engine[0].statc[4]==1&&((owner.engine[1].statc[4]==1||owner.engine[1].ai!=null)&&(playerID==1||engine.ctrl.isPush(Controller.BUTTON_A)))) {
 				owner.engine[0].stat = GameEngine.Status.READY
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
@@ -669,23 +668,19 @@ class VSBattleMode:AbstractMode() {
 
 			if(hurryupSeconds[playerID]>=0&&engine.timerActive&&
 				engine.statistics.time>=hurryupSeconds[playerID]*60&&engine.statistics.time<(hurryupSeconds[playerID]+5)*60)
-				receiver.drawDirectFont(256, 32, "DANGER", if(engine.statistics.time%2==0) COLOR.RED else COLOR.WHITE)
+				receiver.drawDirectFont(256, 32, "DANGER", if(engine.statistics.time%2==0) COLOR.RED else COLOR.YELLOW)
 
 			if(owner.receiver.nextDisplayType!=2&&showStats) {
 				receiver.drawScoreFont(engine, playerID, 0, 0, "VS-BATTLE", COLOR.ORANGE)
 
-				receiver.drawScoreFont(engine, playerID, 0, 2, "1P ATTACK", COLOR.RED)
-				receiver.drawScoreNum(engine, playerID, 0, 3, "${garbageSent[0]}")
-
-				receiver.drawScoreFont(engine, playerID, 0, 5, "2P ATTACK", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 6, "${garbageSent[1]}")
+				receiver.drawScoreFont(engine, playerID, 0, 2, "SPIKES", COLOR.PINK)
+				receiver.drawScoreNum(engine, playerID, 0, 3, "${garbageSent[0]}", EventReceiver.getPlayerColor(0))
+				receiver.drawScoreNum(engine, playerID, 8, 3, "${garbageSent[1]}", EventReceiver.getPlayerColor(1))
 
 				if(!owner.replayMode) {
-					receiver.drawScoreFont(engine, playerID, 0, 8, "1P WINS", COLOR.RED)
-					receiver.drawScoreNum(engine, playerID, 0, 9, "${winCount[0]}")
-
-					receiver.drawScoreFont(engine, playerID, 0, 11, "2P WINS", COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, 0, 12, "${winCount[1]}")
+					receiver.drawScoreFont(engine, playerID, 0, 5, "VICTORIES", COLOR.CYAN)
+					receiver.drawScoreNum(engine, playerID, 0, 6, "${winCount[0]}", EventReceiver.getPlayerColor(0))
+					receiver.drawScoreNum(engine, playerID, 8, 6, "${winCount[1]}", EventReceiver.getPlayerColor(1))
 				}
 			}
 		}
@@ -706,12 +701,12 @@ class VSBattleMode:AbstractMode() {
 //			if(owner.receiver.nextDisplayType==2) {
 			val fontColor = EventReceiver.getPlayerColor(playerID)
 
-			receiver.drawDirectFont(x-48, y+120, "TOTAL", fontColor, .5f)
-			receiver.drawDirectFont(x-52, y+128, "SPIKE", fontColor, .5f)
-			receiver.drawDirectNum(x-if(garbageSent[playerID]>=10) 44 else 36, y+142, "${garbageSent[playerID]}")
+			receiver.drawDirectFont(x-40, y+120, "TOTAL", fontColor, .5f)
+			receiver.drawDirectFont(x-40, y+128, "SPIKE", fontColor, .5f)
+			receiver.drawDirectNum(x-36, y+142, "${garbageSent[playerID]}")
 
 			receiver.drawDirectFont(x-44, y+190, "WINS", fontColor, .5f)
-			receiver.drawDirectNum(x-if(winCount[playerID]>=10) 44 else 36, y+204, "${winCount[playerID]}")
+			receiver.drawDirectNum(x-36, y+204, "${winCount[playerID]}")
 //			}
 		}
 	}
@@ -739,26 +734,28 @@ class VSBattleMode:AbstractMode() {
 
 			// Offset
 			garbage[playerID] = getTotalGarbageLines(playerID)
+			var ofs = 0
 			if(pts>0&&garbage[playerID]>0&&garbageCounter[playerID])
-				while(!garbageEntries[playerID].isEmpty()&&pts>0) {
-					val garbageEntry = garbageEntries[playerID].first
-					garbageEntry.lines -= pts
-
-					if(garbageEntry.lines<=0) {
-						pts = abs(garbageEntry.lines)
+				while(!garbageEntries[playerID].isEmpty()&&(pts-ofs)>0) {
+					val entry = garbageEntries[playerID].first
+					val gl = entry.lines
+					if(gl<=(pts-ofs)) {
+						ofs += gl
 						garbageEntries[playerID].removeFirst()
-					} else pts = 0
+					} else {
+						entry.lines -= maxOf(0, pts-ofs)
+						ofs = pts
+					}
 				}
 
 			//  Attack
-			if(pts>0) {
-				garbageSent[playerID] += pts
-				garbageEntries[enemyID].add(GarbageEntry(pts-ptsB2B, playerID))
-
+			if((pts-ofs)>0) {
+				garbageSent[playerID] += pts-ofs
+				garbageEntries[enemyID].add(GarbageEntry(pts-ofs-if(b2bType[playerID]==2) ptsB2B else 0, playerID))
 				// Separated B2B
 				if(b2bType[playerID]==2&&ptsB2B>0) garbageEntries[enemyID].add(GarbageEntry(ptsB2B, playerID))
 
-				if(owner.engine[enemyID].ai==null&&garbage[enemyID]>=4) owner.engine[enemyID].playSE("danger")
+				if(owner.engine[enemyID].ai==null&&garbage[enemyID]>=4) owner.engine[enemyID].playSE("levelstop")
 			}
 		}
 
@@ -819,12 +816,7 @@ class VSBattleMode:AbstractMode() {
 		if(garbage[playerID]*receiver.getBlockSize(engine)>engine.meterValue)
 			engine.meterValue += receiver.getBlockSize(engine)/2
 		else if(garbage[playerID]*receiver.getBlockSize(engine)<engine.meterValue) engine.meterValue--
-		when {
-			garbage[playerID]>=4 -> engine.meterColor = GameEngine.METER_COLOR_RED
-			garbage[playerID]>=3 -> engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			garbage[playerID]>=1 -> engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			else -> engine.meterColor = GameEngine.METER_COLOR_GREEN
-		}
+		engine.meterColor = GameEngine.METER_COLOR_RED
 
 		// Settlement
 		if(playerID==1&&owner.engine[0].gameActive)
@@ -877,8 +869,8 @@ class VSBattleMode:AbstractMode() {
 
 		drawResult(engine, playerID, receiver, 2, COLOR.ORANGE, "ATTACK", garbageSent[playerID])
 		drawResultStats(engine, playerID, receiver, 4, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE)
-		drawResult(engine, playerID, receiver, 8, COLOR.ORANGE, "ATK/LINE", apl)
-		drawResult(engine, playerID, receiver, 10, COLOR.ORANGE, "ATTACK/MIN", apm)
+		drawResult(engine, playerID, receiver, 8, COLOR.ORANGE, "Spikes/LINE", apl)
+		drawResult(engine, playerID, receiver, 10, COLOR.ORANGE, "Spikes/MIN", apm)
 		drawResultStats(engine, playerID, receiver, 12, COLOR.ORANGE, Statistic.PPS, Statistic.MAXCOMBO, Statistic.MAXB2B)
 	}
 
@@ -918,7 +910,7 @@ class VSBattleMode:AbstractMode() {
 		private val PLAYER_COLOR_BLOCK = intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE)
 
 		/** Each player's frame cint */
-		private val PLAYER_COLOR_FRAME = intArrayOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
+		private val PLAYER_COLOR_FRAME = intArrayOf(GameEngine.FRAME_COLOR_GREEN, GameEngine.FRAME_COLOR_BLUE)
 
 		/** Current version */
 		private const val CURRENT_VERSION = 5

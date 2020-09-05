@@ -31,7 +31,7 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import kotlin.math.ceil
 
-/** RETRO MANIA mode (Original from NullpoUE build 121909 by Zircean) */
+/** RETRO MODERN mode (Based from NAOMI, build by Venom_Nhelv 20180131-2020 */
 class RetroModern:AbstractMode() {
 	private var totalnorma:Int = 0
 
@@ -76,7 +76,7 @@ class RetroModern:AbstractMode() {
 
 	/** Returns the name of this mode */
 	override val name:String
-		get() = "RETRO MODERN"
+		get() = "Retro Modern.S"
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -137,6 +137,8 @@ class RetroModern:AbstractMode() {
 		engine.ruleopt.softdropLock = true
 		engine.ruleopt.softdropMultiplyNativeSpeed = false
 		engine.ruleopt.softdropGravitySpeedLimit = true
+		engine.ruleopt.softdropSpeed = 1f
+		engine.owSDSpd = -1
 		if(lv<0) lv = 0
 		when {
 			lv<=MAX_LEVEL -> {

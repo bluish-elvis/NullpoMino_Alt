@@ -179,7 +179,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	/* Game style */
 	override val gameStyle:Int
 		get() = GameEngine.GAMESTYLE_AVALANCHE
-
+	override val gameIntensity:Int = 2
 	/* Mode initialization */
 	@Suppress("RemoveExplicitTypeArguments")
 	override fun modeInit(manager:GameManager) {

@@ -62,9 +62,15 @@ class GrandFestival:AbstractMode() {
 	private var inthanabi:Int = 0
 	private var bonusspeed:Int = 0
 	private var bonusint:Int = 0
-	/** Elapsed time from last line clear (lastscore is displayed to screen
-	 * until
-	 * this reaches to 120) */
+	private var halfminline:Int = 0
+	private var halfminbonus:Boolean = false
+
+	/** Elapsed time from last line clear */
+	private var lastlinetime:Int = 0
+
+	/** Elapsed time from last piece spawns */
+	private var lastspawntime:Int = 0
+
 	private var scgettime:Int = 0
 
 	/** Remaining ending time limit */
@@ -130,6 +136,7 @@ class GrandFestival:AbstractMode() {
 
 	/** Level records */
 	private var rankingLevel:IntArray = IntArray(RANKING_MAX)
+
 	/** Time records */
 	private var rankingTime:IntArray = IntArray(RANKING_MAX)
 
@@ -157,6 +164,10 @@ class GrandFestival:AbstractMode() {
 		hanabi = temphanabi
 		rolltime = 0
 		bgmlv = 0
+		halfminline = 0
+		halfminbonus = false
+		lastlinetime = 0
+		lastspawntime = 0
 		sectionhanabi = IntArray(SECTION_MAX+1)
 		sectionscore = IntArray(SECTION_MAX+1)
 		sectionTime = IntArray(SECTION_MAX)
@@ -394,7 +405,7 @@ class GrandFestival:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 5, "Score", COLOR.BLUE)
 			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
 			receiver.drawScoreNum(engine, playerID, 0, 6, "$scgettime", g20, 2f)
-			receiver.drawScoreNum(engine, playerID, 5, 4, "$hanabi", g20, 2f)
+			receiver.drawScoreNum(engine, playerID, 5, 4, "$hanabi", g20||inthanabi>-100, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.BLUE)
 			var tempLevel = engine.statistics.level
@@ -449,9 +460,13 @@ class GrandFestival:AbstractMode() {
 
 	/** This function will be called when the piece is active */
 	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
-			if(engine.statistics.level<299) engine.statistics.level++
-			levelUp(engine)
+		if(lastspawntime<120) lastspawntime++
+		if(engine.statc[0]==0&&!engine.holdDisable) {
+			lastspawntime = 0
+			if(engine.ending==0&&!lvupflag) {
+				if(engine.statistics.level<299) engine.statistics.level++
+				levelUp(engine)
+			}
 		}
 		if(engine.ending==0&&engine.statc[0]>0) lvupflag = false
 
@@ -502,6 +517,7 @@ class GrandFestival:AbstractMode() {
 		else maxOf(1, comboValue+2*lines-2)
 
 		if(lines>=1) {
+			halfminline += lines
 			val levelb = engine.statistics.level
 			var indexcombo = engine.combo+if(engine.b2b) 0 else -1
 			if(indexcombo<0) indexcombo = 0
@@ -514,13 +530,11 @@ class GrandFestival:AbstractMode() {
 
 				if(engine.statistics.level>=300) {
 					if(engine.timerActive) {
-						sectionscore[SECTION_MAX] = (1253*ceil(maxOf(18000-engine.statistics.time, 0)/60.0)).toInt()
-						val timebonus = sectionscore[SECTION_MAX]
+						val timebonus = (1253*ceil(maxOf(18000-engine.statistics.time, 0)/60.0)).toInt()
+						sectionscore[SECTION_MAX] = timebonus
 						engine.statistics.scoreBonus += timebonus
-
 					}
-					bonusspeed = 3265
-					if(hanabi>0) bonusspeed /= hanabi
+					bonusspeed = 3265/maxOf(1, hanabi)
 					bgmlv++
 					owner.bgmStatus.fadesw = false
 					owner.bgmStatus.bgm = BGM.GM_2(1)
@@ -528,6 +542,8 @@ class GrandFestival:AbstractMode() {
 					engine.statistics.level = 300
 					engine.timerActive = false
 					engine.ending = 2
+					halfminbonus = true
+					halfminline = 0
 				} else if(owner.backgroundStatus.bg<(nextseclv-100)/100) {
 					owner.backgroundStatus.fadesw = true
 					owner.backgroundStatus.fadecount = 0
@@ -546,10 +562,18 @@ class GrandFestival:AbstractMode() {
 				if(lines==3) dectemp += 25
 				if(lines==4) dectemp += 150
 			}
-			temphanabi += (
-				(lines*1.9-.9)
-					*(if(engine.ending==0) (if(engine.twist) 4.0 else if(engine.twistmini) 2.0 else 1.0) else 2.8)
-					*(if(engine.lockDelay>engine.lockDelayNow) 1.3 else 1.0)*(if(levelb%25==0) 1.3 else 1.0)*combobonus.toDouble()).toInt()
+			temphanabi += maxOf(1, (
+				when(lines) {
+					2 -> 2.9
+					3 -> 3.8
+					else -> if(lines>=4) 4.7 else 1.0
+				}*combobonus*(if(engine.twist) 4.0 else if(engine.twistmini) 2.0 else 1.0)*(if(engine.split) 1.4 else 1.0)
+					*(if(inthanabi>-100) 1.3 else 1.0)*(maxOf(engine.statistics.level-lastspawntime, 100)/100.0)
+					*(maxOf(engine.statistics.level-lastspawntime, 120)/120.0)
+					*(if(halfminbonus) 1.4 else 1.0)*(if(engine.ending==0&&(levelb%25==0||levelb==299)) 1.3 else 1.0)
+				).toInt())
+			halfminbonus = false
+			lastlinetime = 0
 			if(sectionscomp>=0&&sectionscomp<sectionscore.size) sectionscore[sectionscomp] += lastscore
 			engine.statistics.scoreLine += lastscore
 			return lastscore
@@ -564,13 +588,14 @@ class GrandFestival:AbstractMode() {
 
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		if(inthanabi>0) inthanabi--
+		if(lastlinetime<100) lastlinetime++
+		if(inthanabi>-100) inthanabi--
 		if(temphanabi>0&&inthanabi<=0) {
 			receiver.shootFireworks(engine)
 			hanabi++
 			sectionhanabi[sectionscomp]++
 			temphanabi--
-			inthanabi += GameEngine.HANABI_INTERVAL
+			inthanabi += GameEngine.HANABI_INTERVAL-minOf(inthanabi, 0)
 		}
 		if(engine.temphanabi>0&&engine.inthanabi<=0) {
 			hanabi++
@@ -580,6 +605,10 @@ class GrandFestival:AbstractMode() {
 		if(engine.timerActive&&engine.ending==0) {
 			val section = engine.statistics.level/100
 			if(section>=0&&section<sectionTime.size) sectionTime[section]++
+			if(engine.statistics.time%1800==0) {
+				if(halfminline>0) halfminbonus = true
+				halfminline = 0
+			}
 		}
 
 		// Increase ending timer
@@ -589,7 +618,7 @@ class GrandFestival:AbstractMode() {
 			if(bonusint<=0) {
 				receiver.shootFireworks(engine)
 				hanabi++
-				sectionhanabi[sectionscomp+1]++
+				sectionhanabi[SECTION_MAX]++
 				bonusint += bonusspeed
 			}
 			val remainRollTime = ROLLTIMELIMIT-rolltime
@@ -604,9 +633,10 @@ class GrandFestival:AbstractMode() {
 		}
 	}
 
-	/*override fun onExcellent(engine:GameEngine, playerID:Int):Boolean {
+	override fun onExcellent(engine:GameEngine, playerID:Int):Boolean {
+		engine.statc[1] = temphanabi
 		return super.onExcellent(engine, playerID)
-	}*/
+	}
 
 	/** This function will be called when the player tops out */
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
@@ -724,7 +754,7 @@ class GrandFestival:AbstractMode() {
 			listOf(
 				"$ruleName.sectionscore.$i" to bestSectionScore[i],
 				"$ruleName.sectionhanabi.$i" to bestSectionHanabi[i],
-			"$ruleName.sectiontime.$i" to bestSectionTime[i])
+				"$ruleName.sectiontime.$i" to bestSectionTime[i])
 		})
 
 		owner.statsProp.setProperty("decoration", decoration)
@@ -785,11 +815,12 @@ class GrandFestival:AbstractMode() {
 		/** Gravity table (Gravity change level) */
 		private val tableGravityChangeLevel =
 			intArrayOf(8, 19, 35, 40, 50, 60, 70, 80, 90, 100, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180, 200, 212, 221, 232, 244, 256, 267, 277, 287, 295, 300, 10000)
+
 		/** 段位 pointのCombo bonus */
-		private val tableHanabiComboBonus = floatArrayOf(1f, 1.5f, 1.9f, 2.2f, 2.9f, 3.5f, 3.9f)
+		private val tableHanabiComboBonus = doubleArrayOf(1.0, 1.5, 1.9, 2.2, 2.9, 3.5, 3.9, 4.2, 4.5)
 
 		/** Ending time limit */
-		private const val ROLLTIMELIMIT = 3238
+		private const val ROLLTIMELIMIT = 3265
 
 		/** Number of hiscore records */
 		private const val RANKING_MAX = 10

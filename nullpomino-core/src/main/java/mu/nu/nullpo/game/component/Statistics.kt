@@ -140,7 +140,7 @@ class Statistics:Serializable {
 	/** Roll cleared flag (0=Not Reached 1=Reached 2=Fully Survived) */
 	var rollclear:Int = 0
 		set(it) {
-			if(field==it || !(0..2).contains(it)) return
+			if(field==it||!(0..2).contains(it)) return
 			when(it) {
 				1 -> rollReached++
 				2 -> {
@@ -389,6 +389,7 @@ class Statistics:Serializable {
 		scoreBonus = p.getProperty("$id.statistics.scoreBonus", 0)
 		lines = p.getProperty("$id.statistics.lines", 0)
 		lines = p.getProperty("$id.statistics.blocks", 0)
+		blocks = p.getProperty("$id.statistics.blocks", 0)
 		time = p.getProperty("$id.statistics.time", 0)
 		level = p.getProperty("$id.statistics.level", 0)
 		levelDispAdd = p.getProperty("$id.statistics.levelDispAdd", 0)
@@ -480,43 +481,12 @@ class Statistics:Serializable {
 	 * @return String Array (String[38])
 	 */
 	fun exportStringArray():Array<String> = arrayOf(
-		"$scoreLine"
-		, "$scoreSD"
-		, "$scoreHD"
-		, "$scoreBonus"
-		, "$lines"
-		, "$blocks"
-		, "$time"
-		, "$level"
-		, "$levelDispAdd"
-		, "$totalPieceLocked"
-		, "$totalPieceActiveTime"
-		, "$totalPieceMove"
-		, "$totalPieceRotate"
-		, "$totalSingle"
-		, "$totalDouble"
-		, "$totalSplitDouble"
-		, "$totalTriple"
-		, "$totalSplitTriple"
-		, "$totalQuadruple"
-		, "$totalTwistZeroMini"
-		, "$totalTwistZero"
-		, "$totalTwistSingleMini"
-		, "$totalTwistSingle"
-		, "$totalTwistDoubleMini"
-		, "$totalTwistDouble"
-		, "$totalTwistSplitDouble"
-		, "$totalTwistTriple"
-		, "$totalTwistSplitTriple"
-		, "$totalB2BQuad"
-		, "$totalB2BSplit"
-		, "$totalB2BTwist"
-		, "$totalHoldUsed"
-		, "$maxCombo"
-		, "$maxB2B"
-		, "$gamerate"
-		, "$maxChain"
-		, "$rollclear")+(pieces.map {"$it"})
+		"$scoreLine", "$scoreSD", "$scoreHD", "$scoreBonus", "$lines", "$blocks", "$time", "$level", "$levelDispAdd",
+		"$totalPieceLocked", "$totalPieceActiveTime", "$totalPieceMove", "$totalPieceRotate", "$totalSingle", "$totalDouble",
+		"$totalSplitDouble", "$totalTriple", "$totalSplitTriple", "$totalQuadruple", "$totalTwistZeroMini", "$totalTwistZero",
+		"$totalTwistSingleMini", "$totalTwistSingle", "$totalTwistDoubleMini", "$totalTwistDouble", "$totalTwistSplitDouble",
+		"$totalTwistTriple", "$totalTwistSplitTriple", "$totalB2BQuad", "$totalB2BSplit", "$totalB2BTwist", "$totalHoldUsed",
+		"$maxCombo", "$maxB2B", "$gamerate", "$maxChain", "$rollclear")+(pieces.map {"$it"})
 
 	/** Export to String
 	 * @return String (Split by ;)

@@ -37,7 +37,7 @@ import java.util.*
 class StateSelectMode:DummyMenuScrollState() {
 
 	/** Current folder name */
-	private var strCurrentFolder:String=""
+	private var strCurrentFolder:String = ""
 
 	/** Constructor */
 	init {
@@ -57,13 +57,13 @@ class StateSelectMode:DummyMenuScrollState() {
 		val listMode:LinkedList<String>?
 		if(isTopLevel) {
 			listMode = StateSelectModeFolder.listTopLevelModes
-			list = Array(listMode.size){convModeName(listMode[it], true)}
+			list = Array(listMode.size) {convModeName(listMode[it], true)}
 			list += "[more...]"
 		} else {
 			listMode = StateSelectModeFolder.mapFolder[strCurrentFolder]
-			list = if(strCurrentFolder.isNotBlank() && listMode?.isNotEmpty()==true)
-				Array(listMode.size){convModeName(listMode[it], true)}
-			 else
+			list = if(strCurrentFolder.isNotBlank()&&listMode?.isNotEmpty()==true)
+				Array(listMode.size) {convModeName(listMode[it], true)}
+			else
 				NullpoMinoSlick.modeManager.getModeNames(false)
 
 		}
@@ -84,7 +84,7 @@ class StateSelectMode:DummyMenuScrollState() {
 	 * @return ID (-1 if not found)
 	 */
 	private fun getIDbyName(name:String?):Int =
-		if(name.isNullOrEmpty()||list.isEmpty())-1 else list.indexOfFirst {it == name}
+		if(name.isNullOrEmpty()||list.isEmpty()) -1 else list.indexOfFirst {it==name}
 
 	/** Get game mode description
 	 * @param str Mode name
@@ -96,7 +96,7 @@ class StateSelectMode:DummyMenuScrollState() {
 		str2 = str2.replace(')', 'r')
 
 		return NullpoMinoSlick.propModeDesc.getProperty(str2)
-		?:NullpoMinoSlick.propDefaultModeDesc.getProperty(str2, str2)?:str2
+			?: NullpoMinoSlick.propDefaultModeDesc.getProperty(str2, str2) ?: str2
 	}
 
 	private fun convModeName(str:String, sw:Boolean):String {
@@ -109,16 +109,16 @@ class StateSelectMode:DummyMenuScrollState() {
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		super.enter(container, game)
 		prepareModeList()
-		if(ResourceHolder.bgmPlaying!=BGM.MENU(0)) ResourceHolder.bgmStart(BGM.MENU(0))
+		if(ResourceHolder.bgmPlaying!=BGM.MENU(1)) ResourceHolder.bgmStart(BGM.MENU(1))
 	}
 
 	/* Render screen */
 	public override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
 
-			FontNormal.printFontGrid(1, 1, "Select a Game Mode (${cursor+1}/${list.size})", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "Select a Game Mode (${cursor+1}/${list.size})", COLOR.ORANGE)
 		if(!isTopLevel)
 			FontNano.printFont(8, 36,
-				if(strCurrentFolder.isNotEmpty())">$strCurrentFolder" else ">[All modes]", COLOR.ORANGE,.5f)
+				if(strCurrentFolder.isNotEmpty()) ">${strCurrentFolder.toUpperCase()}" else ">[All modes]", COLOR.ORANGE, .5f)
 
 		FontNormal.printTTF(16, 440, getModeDesc(convModeName(list[cursor], false)))
 	}
