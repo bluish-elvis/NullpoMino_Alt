@@ -68,7 +68,7 @@ class StateConfigJoystickTest:BasicGameState() {
 		frame = 0
 		buttonCount = 0
 
-		if(joyNumber>=0) buttonCount = ControllerManager.controllers!![joyNumber].buttonCount
+		if(joyNumber>=0) buttonCount = ControllerManager.controllers[joyNumber].buttonCount
 	}
 
 	/* Draw the screen */

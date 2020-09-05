@@ -55,16 +55,16 @@ class Field:Serializable {
 	 * any visible effects outside this function. -Kitaru */
 
 	/** fieldのBlock */
-	private var blockField:Array<Array<Block?>> = Array(height) {arrayOfNulls<Block>(width)}; private set
+	private var blockField:Array<Array<Block?>> = Array(height) {arrayOfNulls<Block>(width)}
 
 	/** field上の見えない部分のBlock */
-	private var blockHidden:Array<Array<Block?>> = Array(hiddenHeight) {arrayOfNulls<Block>(width)}; private set
+	private var blockHidden:Array<Array<Block?>> = Array(hiddenHeight) {arrayOfNulls<Block>(width)}
 
 	/** Line clear flag */
-	private var lineflagField:BooleanArray = BooleanArray(height); private set
+	private var lineflagField:BooleanArray = BooleanArray(height)
 
 	/** 見えない部分のLine clear flag */
-	private var lineflagHidden:BooleanArray = BooleanArray(hiddenHeight); private set
+	private var lineflagHidden:BooleanArray = BooleanArray(hiddenHeight)
 
 	/** HURRY UP地面のcount */
 	var hurryupFloorLines:Int = 0; private set
@@ -101,8 +101,8 @@ class Field:Serializable {
 	private var explodWidthBig:Int = 0
 	private var explodHeightBig:Int = 0
 
-	val lastLinesTop:Int get() = lastLinesHeight.min() ?: height
-	val lastLinesBottom:Int get() = lastLinesHeight.max() ?: 0
+	val lastLinesTop:Int get() = lastLinesHeight.minOrNull() ?: height
+	val lastLinesBottom:Int get() = lastLinesHeight.maxOrNull() ?: 0
 
 	/** 消えるLinescountを数える
 	 * @return Linescount
@@ -113,8 +113,7 @@ class Field:Serializable {
 	 * @return All clearだったらtrue
 	 */
 	val isEmpty:Boolean
-		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor).filter {!getLineFlag(it)}
-			.all {getRow(it).all {b -> b?.getAttribute(ATTRIBUTE.ERASE) ?: true}}
+		get() = howManyBlocks==0
 
 	/** field内に何個のBlockがあるか調べる
 	 * @return field内にあるBlockのcount
@@ -576,7 +575,7 @@ class Field:Serializable {
 	 */
 	fun checkLine():Int {
 		val lines = checkLinesNoFlag()
-		if(height<=0 || lines.isEmpty()) return 0
+		if(height<=0||lines.isEmpty()) return 0
 		lastLinesCleared = lines.map {getRow(it)}.toTypedArray()
 		lastLinesHeight = lines
 

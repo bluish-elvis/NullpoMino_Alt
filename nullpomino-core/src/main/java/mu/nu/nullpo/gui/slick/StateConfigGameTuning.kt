@@ -162,7 +162,7 @@ class StateConfigGameTuning:BaseGameState() {
 				it.engine[i].owSkin = owSkin
 				it.engine[i].owMinDAS = owMinDAS
 				it.engine[i].owMaxDAS = owMaxDAS
-				it.engine[i].owDASDelay = owDASRate
+				it.engine[i].owARR = owDASRate
 				it.engine[i].owSDSpd = owSDSpd
 				it.engine[i].owReverseUpDown = owReverseUpDown
 				it.engine[i].owMoveDiagonal = owMoveDiagonal

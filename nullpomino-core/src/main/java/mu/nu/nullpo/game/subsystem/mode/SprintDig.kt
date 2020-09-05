@@ -66,8 +66,8 @@ class SprintDig:NetDummyMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "DIG RACE"
-
+		get() = "Digging Sprint"
+	override val gameIntensity:Int = 2
 	/* Initialization for each player */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
@@ -380,7 +380,8 @@ class SprintDig:NetDummyMode() {
 				receiver.drawScoreFont(engine, playerID, 3, 3, "TIME     LINE $strPieceTemp", EventReceiver.COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
+					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1),
+						if(rankingRank==i) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.YELLOW)
 					receiver.drawScoreNum(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[goaltype][i]), rankingRank==i)
 					receiver.drawScoreNum(engine, playerID, 12, 4+i, "${rankingLines[goaltype][i]}", rankingRank==i)
 					receiver.drawScoreNum(engine, playerID, 17, 4+i, "${rankingPiece[goaltype][i]}", rankingRank==i)

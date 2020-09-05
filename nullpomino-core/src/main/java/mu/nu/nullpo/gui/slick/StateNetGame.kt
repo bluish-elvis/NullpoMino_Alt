@@ -274,7 +274,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				gameManager!!.engine[0].owSkin = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owSkin", -1)
 				gameManager!!.engine[0].owMinDAS = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owMinDAS", -1)
 				gameManager!!.engine[0].owMaxDAS = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owMaxDAS", -1)
-				gameManager!!.engine[0].owDASDelay = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owDasDelay", -1)
+				gameManager!!.engine[0].owARR = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owDasDelay", -1)
 				gameManager!!.engine[0].owReverseUpDown = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owReverseUpDown", false)
 				gameManager!!.engine[0].owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owMoveDiagonal", -1)
 				gameManager!!.engine[0].owBlockOutlineType = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owBlockOutlineType", -1)

@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.component
 
 import java.io.Serializable
+import kotlin.math.roundToInt
 
 /** Blockピース
  * @param id BlockピースのID */
@@ -96,7 +97,7 @@ class Piece(
 
 			return (max-min)*wide
 		}
-
+	val centerX:Int get() = (width/2f).roundToInt()
 	/** ピースの高さを取得
 	 * @return ピースの高さ
 	 */

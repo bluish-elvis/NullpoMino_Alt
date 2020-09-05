@@ -124,7 +124,7 @@ class RuleOptions:Serializable {
 	/** Soft drop連続使用不可 */
 	var softdropLimit:Boolean = false
 
-	/** 接地状態でSoft dropすると即固定 */
+	/** 接地状態でSoft dropすると即固定 (falseだと20Gのみ) */
 	var softdropSurfaceLock:Boolean = false
 
 	/** Soft drop速度 (1f=1G, .5f=0.5G) */
@@ -224,7 +224,7 @@ class RuleOptions:Serializable {
 	var maxDAS:Int = 0
 
 	/** 横移動間隔 */
-	var dasDelay:Int = 0
+	var dasARR:Int = 0
 
 	var shiftLockEnable:Boolean = false
 
@@ -257,8 +257,8 @@ class RuleOptions:Serializable {
 	 */
 	var dasStoreChargeOnNeutral:Boolean = false
 
-	/** Allow direction changes during delays without zeroing DAS charge */
-	var dasRedirectInDelay:Boolean = false
+	/** Allow direction changes during ARE delay without zeroing DAS charge */
+	var dasRedirectInARE:Boolean = false
 
 	/** 最初の frame で移動可能 */
 	var moveFirstFrame:Boolean = false
@@ -400,7 +400,7 @@ class RuleOptions:Serializable {
 		minDAS = -1
 		maxDAS = -1
 
-		dasDelay = 0
+		dasARR = 0
 
 		shiftLockEnable = false
 
@@ -413,7 +413,7 @@ class RuleOptions:Serializable {
 		dasInEndingStart = true
 		dasChargeOnBlockedMove = false
 		dasStoreChargeOnNeutral = false
-		dasRedirectInDelay = false
+		dasRedirectInARE = false
 
 		moveFirstFrame = true
 		moveDiagonal = true
@@ -527,7 +527,7 @@ class RuleOptions:Serializable {
 		minDAS = o.minDAS
 		maxDAS = o.maxDAS
 
-		dasDelay = o.dasDelay
+		dasARR = o.dasARR
 
 		shiftLockEnable = o.shiftLockEnable
 
@@ -540,7 +540,7 @@ class RuleOptions:Serializable {
 		dasInEndingStart = o.dasInEndingStart
 		dasChargeOnBlockedMove = o.dasChargeOnBlockedMove
 		dasStoreChargeOnNeutral = o.dasStoreChargeOnNeutral
-		dasRedirectInDelay = o.dasRedirectInDelay
+		dasRedirectInARE = o.dasRedirectInARE
 
 		moveFirstFrame = o.moveFirstFrame
 		moveDiagonal = o.moveDiagonal
@@ -650,7 +650,7 @@ class RuleOptions:Serializable {
 		if(minDAS!=r.minDAS) return false
 		if(maxDAS!=r.maxDAS) return false
 
-		if(dasDelay!=r.dasDelay) return false
+		if(dasARR!=r.dasARR) return false
 
 		if(shiftLockEnable!=r.shiftLockEnable) return false
 
@@ -663,7 +663,7 @@ class RuleOptions:Serializable {
 		if(dasInEndingStart!=r.dasInEndingStart) return false
 		if(dasChargeOnBlockedMove!=r.dasChargeOnBlockedMove) return false
 		if(dasStoreChargeOnNeutral!=r.dasStoreChargeOnNeutral) return false
-		if(dasRedirectInDelay!=r.dasRedirectInDelay) return false
+		if(dasRedirectInARE!=r.dasRedirectInARE) return false
 
 		if(moveFirstFrame!=r.moveFirstFrame) return false
 		if(moveDiagonal!=r.moveDiagonal) return false
@@ -770,7 +770,7 @@ class RuleOptions:Serializable {
 		p.setProperty("$id.ruleopt.minDAS", minDAS)
 		p.setProperty("$id.ruleopt.maxDAS", maxDAS)
 
-		p.setProperty("$id.ruleopt.dasDelay", dasDelay)
+		p.setProperty("$id.ruleopt.dasDelay", dasARR)
 
 		p.setProperty("$id.ruleopt.shiftLockEnable", shiftLockEnable)
 
@@ -783,7 +783,7 @@ class RuleOptions:Serializable {
 		p.setProperty("$id.ruleopt.dasInEndingStart", dasInEndingStart)
 		p.setProperty("$id.ruleopt.dasOnBlockedMove", dasChargeOnBlockedMove)
 		p.setProperty("$id.ruleopt.dasStoreChargeOnNeutral", dasStoreChargeOnNeutral)
-		p.setProperty("$id.ruleopt.dasRedirectInARE", dasRedirectInDelay)
+		p.setProperty("$id.ruleopt.dasRedirectInARE", dasRedirectInARE)
 
 		p.setProperty("$id.ruleopt.moveFirstFrame", moveFirstFrame)
 		p.setProperty("$id.ruleopt.moveDiagonal", moveDiagonal)
@@ -913,7 +913,7 @@ class RuleOptions:Serializable {
 		minDAS = p.getProperty("$id.ruleopt.minDAS", minDAS)
 		maxDAS = p.getProperty("$id.ruleopt.maxDAS", maxDAS)
 
-		dasDelay = p.getProperty("$id.ruleopt.dasDelay", dasDelay)
+		dasARR = p.getProperty("$id.ruleopt.dasDelay", dasARR)
 		shiftLockEnable = p.getProperty("$id.ruleopt.shiftLockEnable", shiftLockEnable)
 
 		dasInReady = p.getProperty("$id.ruleopt.dasInReady", dasInReady)
@@ -925,7 +925,7 @@ class RuleOptions:Serializable {
 		dasInEndingStart = p.getProperty("$id.ruleopt.dasInEndingStart", dasInEndingStart)
 		dasChargeOnBlockedMove = p.getProperty("$id.ruleopt.dasOnBlockedMove", dasChargeOnBlockedMove)
 		dasStoreChargeOnNeutral = p.getProperty("$id.ruleopt.dasStoreChargeOnNeutral", dasStoreChargeOnNeutral)
-		dasRedirectInDelay = p.getProperty("$id.ruleopt.dasRedirectInARE", dasRedirectInDelay)
+		dasRedirectInARE = p.getProperty("$id.ruleopt.dasRedirectInARE", dasRedirectInARE)
 
 		moveFirstFrame = p.getProperty("$id.ruleopt.moveFirstFrame", moveFirstFrame)
 		moveDiagonal = p.getProperty("$id.ruleopt.moveDiagonal", moveDiagonal)

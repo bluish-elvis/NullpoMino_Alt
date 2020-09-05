@@ -25,6 +25,7 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.RetroMarathon.Companion.GAMETYPE.*
@@ -91,7 +92,7 @@ class RetroMarathon:AbstractMode() {
 
 	/** Returns the name of this mode */
 	override val name:String
-		get() = "RETRO MASTERY"
+		get() = "Retro Marathon.A"
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -126,8 +127,9 @@ class RetroMarathon:AbstractMode() {
 		engine.ruleopt.lockresetFall = true
 		engine.ruleopt.softdropLock = true
 		engine.ruleopt.softdropMultiplyNativeSpeed = false
-		engine.ruleopt.softdropGravitySpeedLimit = true
+		engine.ruleopt.softdropGravitySpeedLimit = false
 		engine.ruleopt.softdropSpeed = .5f
+		engine.owSDSpd = -1
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
 			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
@@ -273,7 +275,8 @@ class RetroMarathon:AbstractMode() {
 				receiver.drawScoreFont(engine, playerID, 3, 3, "SCORE    LINE LV.", COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1), COLOR.YELLOW)
+					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1),
+						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW)
 					receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingScore[gametype.ordinal][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, playerID, 12, 4+i, "${rankingLines[gametype.ordinal][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, playerID, 17, 4+i, String.format("%02d", rankingLevel[gametype.ordinal][i]), i==rankingRank)

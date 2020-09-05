@@ -1,23 +1,25 @@
 #Mode folder list
 
-#:POPULAR MODES
+#:Popular
 Marathon
-MarathonDrill
 SprintUltra
 SprintLine
-SprintDig
 GrandFestival
 PracticeMode
+MarathonDrill
+SprintDig
+GrandMania
 GrandMastery
+MarathonExtreme
 GrandStorm
 GrandLightning
 GrandBlossom
 VSBattleMode
 
-:GUIDELINES MODES
+:Guidelines & Uniques
 Marathon
-MarathonPlus
 MarathonExtreme
+MarathonPlus
 MarathonShuttle
 MarathonDrill
 PracticeMode
@@ -25,20 +27,20 @@ SquareMode
 VSBattleMode
 ToolVSMapEditMode
 
-:RETROSPECTIVE MODES
+:Retrospective style
 RetroClassic
 RetroMarathon
 RetroMania
 RetroModern
 
-:TIME TRIAL MODES
+:Trial Rush
 SprintLine
 SprintScore
 SprintDig
 SprintCombo
 SprintUltra
 
-:GRAND MANIA MODES
+:Grand Challenges
 GrandFestival
 GrandMarathon
 GrandMania

@@ -4,7 +4,7 @@
  <artifactId>nullpomino-core</artifactId>
  <version>7.7.2020</version>
  <properties>
-  <kotlin.version>1.3.11</kotlin.version>
+  <kotlin.version>1.4.10</kotlin.version>
  </properties>
 
 
@@ -30,9 +30,6 @@
       </goals>
      </execution>
     </executions>
-    <configuration>
-     <jvmTarget>1.8</jvmTarget>
-    </configuration>
    </plugin>
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
@@ -53,10 +50,6 @@
       </goals>
      </execution>
     </executions>
-    <configuration>
-     <source>10</source>
-     <target>10</target>
-    </configuration>
    </plugin>
   </plugins>
  </build>

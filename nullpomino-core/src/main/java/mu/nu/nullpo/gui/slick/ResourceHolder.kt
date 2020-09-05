@@ -57,18 +57,22 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 
 	/** Decoration Spriets : Badges and Medals */
 	internal lateinit var imgBadges:Image
+
 	/** Regular font */
 	internal lateinit var imgFont:Image
 	internal lateinit var imgFontBig:Image
 	internal lateinit var imgFontSmall:Image
 	internal lateinit var imgFontNano:Image
+
 	/** Number font */
 	internal lateinit var imgNumBig:Image
 	internal lateinit var imgNum:Image
+
 	/** Grade font */
 	internal lateinit var imgGradeBig:Image
 	internal lateinit var imgGrade:Image
 	internal lateinit var imgFontMedal:Image
+
 	/** 小物画像 */
 	internal lateinit var imgCursor:Image
 	//public static Image imgSprite;
@@ -85,21 +89,26 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 
 	/** Beam animation during line clears */
 	internal var imgLine:Array<Image> = emptyArray()
+
 	/** Block spatter animation during line clears */
 	internal var imgBreak:Array<Array<Image>> = emptyArray()
+
 	/** Effects for clearing gem blocks */
 	internal var imgPErase:Array<Image> = emptyArray()
+
 	/** Effects for Fireworks */
 	internal var imgHanabi:Array<Image> = emptyArray()
 
 	/** Title Background */
 	internal lateinit var imgTitleBG:Image
+
 	/** Title Logo */
 	internal lateinit var imgLogo:Image
 	internal lateinit var imgLogoSmall:Image
 
 	/** Menu Background */
 	internal var imgMenuBG:Array<Image> = emptyArray()
+
 	/** プレイ中のBackground */
 	internal var imgPlayBG:Array<Image> = emptyArray()
 
@@ -114,7 +123,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 
 	/** Current BGM number */
 	private var bgmint:Pair<Int, Int> = Pair(0, 0)
-	var bgmPlaying:BGM? = null;private set
+	var bgmPlaying:BGM? = null; private set
 	internal val bGmax:Int get() = imgPlayBG.size
 
 	/** 画像や音声を読み込み */
@@ -206,7 +215,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 			}
 
 			log.info("Loading Sound Effect")
-			SE_LIST.forEach{loadSE(it)}
+			SE_LIST.forEach {loadSE(it)}
 		}
 
 		// 音楽
@@ -214,7 +223,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		bgmPlaying = null
 
 		if(NullpoMinoSlick.propConfig.getProperty("option.bgmpreload", false))
-			BGM.all.forEach{list -> list.forEach{loadBGM(it, false)}}
+			BGM.all.forEach {list -> list.forEach {loadBGM(it, false)}}
 	}
 
 	/** Load background images. */
@@ -270,9 +279,8 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	private fun loadSE(name:String) {
 
 		val fn = "${NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")}/se/$name"
-		if(File("$fn.wav").canRead())
-			soundManager.load(name, "$fn.wav")
-		else if(File("$fn.ogg").canRead()) soundManager.load(name, "$fn.ogg")
+		val wav = File("$fn.wav").canRead()&&soundManager.load(name, "$fn.wav")
+		if(!wav&&File("$fn.ogg").canRead()) soundManager.load(name, "$fn.ogg")
 	}
 
 	/** 指定した numberのBGMをメモリ上に読み込み
@@ -317,7 +325,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		val bgmvolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
 		NullpoMinoSlick.appGameContainer.musicVolume = bgmvolume/256.toFloat()
 
-		if(M!=BGM.SILENT && M!=bgmPlaying) {
+		if(M!=BGM.SILENT&&M!=bgmPlaying) {
 			bgm[x][y]?.also {
 				try {
 					if(NullpoMinoSlick.propMusic.getProperty("music.noloop.${M.name}", false))
@@ -348,7 +356,6 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	 * @return 再生中ならtrue
 	 */
 	internal fun bgmIsPlaying():Boolean = bgmPlaying!=null&&(bgm[bgmint.first][bgmint.second]?.playing() ?: false)
-
 
 	/** BGMを停止 */
 	internal fun bgmStop() {

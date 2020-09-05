@@ -244,7 +244,8 @@ class Marathon:NetDummyMode() {
 				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1),
+						if(rankingRank==i) EventReceiver.COLOR.RAINBOW else if(rankingLines[goaltype][i]>tableGameClearLines[goaltype])EventReceiver.COLOR.CYAN else EventReceiver.COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[goaltype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 10, topY+i, "${rankingLines[goaltype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 15, topY+i,

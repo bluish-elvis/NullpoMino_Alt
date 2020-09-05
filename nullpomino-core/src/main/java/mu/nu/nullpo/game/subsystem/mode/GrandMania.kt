@@ -508,7 +508,8 @@ class GrandMania:AbstractMode() {
 						if(rankingRollclear[i]==1||rankingRollclear[i]==3) gcolor = COLOR.GREEN
 						if(rankingRollclear[i]==2||rankingRollclear[i]==4) gcolor = COLOR.ORANGE
 
-						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1), COLOR.YELLOW)
+						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1),
+							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW)
 						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
 							receiver.drawScoreGrade(engine, playerID, 3, 3+i, tableGradeName[rankingGrade[i]], gcolor)
 						receiver.drawScoreNum(engine, playerID, 7, 3+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank)

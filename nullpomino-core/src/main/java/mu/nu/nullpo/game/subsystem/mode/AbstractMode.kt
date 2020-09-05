@@ -74,6 +74,8 @@ abstract class AbstractMode:GameMode {
 	override val gameStyle:Int
 		get() = GameEngine.GAMESTYLE_TETROMINO
 
+	override val gameIntensity:Int = 0
+
 	override val isNetplayMode:Boolean
 		get() = false
 
@@ -163,55 +165,65 @@ abstract class AbstractMode:GameMode {
 		val pts = when {
 			engine.twist -> when {
 				lines<=0&&!engine.twistez -> if(engine.twistmini) 5 else 7// Twister 0 lines
-				engine.twistez&&lines>0 -> 12*lines*lines+(if(engine.b2b) 15 else 0)// Immobile Spin
-				lines==1 -> if(engine.twistmini) (if(engine.b2b) 36 else 27)
+				engine.twistez -> (if(engine.b2b) 11+lines else 0)+when {
+					lines==1 -> 20
+					lines==2 -> 40
+					else -> lines*30+10
+				}// Immobile Spin
+				lines==1 -> if(engine.twistmini) (if(engine.b2b) 32 else 24)
 				else if(engine.b2b) 45 else 32// Twister 1 line
-				lines==2 -> if(engine.twistmini&&engine.useAllSpinBonus) (if(engine.b2b) 100 else 64)
-				else if(engine.b2b) 111 else 72// Twister 2 lines
-				else -> if(engine.b2b) 270 else 180// Twister 3 lines
+				lines==2 -> if(engine.twistmini&&engine.useAllSpinBonus) (if(engine.b2b) 75 else 50)
+				else if(engine.b2b) 100 else 72// Twister 2 lines
+				lines==3 -> if(engine.b2b) 125 else 100// Twister 3 lines
+				else -> if(engine.b2b) 175 else 135// 180Twister Quads
 			}
 			lines==1 -> 10 // Single
-			lines==2 -> if(engine.split) (if(engine.b2b) 72 else 64) else 45 // Double
-			lines==3 -> if(engine.split) (if(engine.b2b) 160 else 128) else 96 // Triple
+			lines==2 -> if(engine.split) (if(engine.b2b) 64 else 48) else 36 // Double
+			lines==3 -> if(engine.split) (if(engine.b2b) 128 else 102) else 81 // Triple
 			lines>=4 -> if(engine.b2b) 256 else 192 // Quads
 			else -> 0
 		}
 		// All clear
 
-		return (pts+if(lines>=1&&engine.field?.isEmpty==true) pts*10/7+256 else 0)*10
+		return if(lines>=1&&engine.field?.isEmpty==true) pts*170/7+2048 else pts*10
 	}
 
+	/**Tetris World Style Goal*/
 	open fun calcPoint(engine:GameEngine, lines:Int):Int = when {
 		engine.twist -> when {
-			lines<=0&&!engine.twistez -> if(engine.twistmini) 1 else 2 // Twister 0 lines
+			lines<=0&&!engine.twistez -> 1 // Twister 0 lines
 			engine.twistez&&lines>0 -> lines*2+(if(engine.b2b) 1 else 0) // Immobile EZ Spin
 			lines==1 -> if(engine.twistmini) if(engine.b2b) 3 else 2
 			else if(engine.b2b) 5 else 3 // Twister 1 line
 			lines==2 -> if(engine.twistmini&&engine.useAllSpinBonus) (if(engine.b2b) 6 else 4)
-			else if(engine.b2b) 10 else 7 // Twister 2 lines
-			else -> if(engine.b2b) 13 else 9// Twister 3 lines
+			else if(engine.b2b) 8 else 6 // Twister 2 lines
+			else -> if(engine.b2b) 12 else 8// Twister 3 lines
 		}
 		lines==1 -> 1 // Single
 		lines==2 -> if(engine.split) 4 else 3 // Double
 		lines==3 -> if(engine.split) if(engine.b2b) 7 else 6 else 5 // Triple
 		lines>=4 -> if(engine.b2b) 12 else 8 // Quads
 		else -> 0
-	}+if(lines>=1&&engine.field?.isEmpty==true) 18 else 0 // All clear
-
-	fun calcPower(engine:GameEngine, lines:Int):Int = maxOf(0, when {
-		engine.twist -> (if(engine.lasteventshape==Piece.Shape.T) lines*2 else lines+1)+if(engine.b2b) 1 else 0
-		engine.twistmini -> lines+if(if(engine.lasteventshape==Piece.Shape.T)engine.b2b else engine.b2bcount>2) 1 else 0
-		engine.twistez -> lines+if(engine.lasteventshape==Piece.Shape.T)(minOf(2,engine.b2bcount)-1) else if(engine.b2b) 0 else -1
-		lines<=3 -> lines-1
-		else -> lines+if(engine.b2b) 1+engine.b2bcount/4 else 0
 	}+when(val it = engine.combo) {
 		if(it<=1) it else 0 -> 0
-		in 2..3 -> 1
-		in 4..5 -> 2
-		in 6..7 -> 3
-		in 8..10 -> 4
+		in 2..4 -> 1
+		in 5..8 -> 2
+		else -> 3
+	}+if(lines>=1&&engine.field?.isEmpty==true) 18 else 0 // All clear
+
+	/**VS Attack lines*/
+	fun calcPower(engine:GameEngine, lines:Int):Int = maxOf(if(lines==1) (engine.combo+1)/4 else 0, (when {
+		engine.twist -> (if(engine.lasteventshape==Piece.Shape.T) lines*2 else lines+1)
+		engine.twistez -> lines+if(engine.lasteventshape==Piece.Shape.T) 0 else -1
+		lines<=3 -> lines-1
+		else -> lines
+	}+if(engine.b2b) when(engine.b2bcount) {
+		in 0..2 -> 1
+		in 3..7 -> 2
+		in 8..22 -> 3
+		in 24..66 -> 4
 		else -> 5
-	}+if(lines>=1&&engine.field?.isEmpty==true) 7 else 0)
+	} else 0)*(3+engine.combo)/4)+if(lines>=1&&engine.field?.isEmpty==true) 10 else 0
 
 	override fun onLockFlash(engine:GameEngine, playerID:Int):Boolean = false
 

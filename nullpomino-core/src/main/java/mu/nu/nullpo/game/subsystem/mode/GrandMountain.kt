@@ -133,8 +133,8 @@ class GrandMountain:AbstractMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "GRAND MOUNTAIN"
-
+		get() = "Grand Mountain"
+	override val gameIntensity:Int = 1
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
@@ -370,7 +370,8 @@ class GrandMountain:AbstractMode() {
 					receiver.drawScoreFont(engine, playerID, 3, 2, "LEVEL TIME", EventReceiver.COLOR.BLUE)
 
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
+						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1),
+							if(rankingRank==i) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.YELLOW)
 						receiver.drawScoreNum(engine, playerID, 3, 3+i, "${rankingLevel[i][goaltype]}", i==rankingRank)
 						receiver.drawScoreNum(engine, playerID, 9, 3+i, GeneralUtil.getTime(rankingTime[i][goaltype]), i==rankingRank)
 					}

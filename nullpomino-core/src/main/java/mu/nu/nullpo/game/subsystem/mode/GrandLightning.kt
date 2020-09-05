@@ -155,7 +155,7 @@ class GrandLightning:AbstractMode() {
 	/* Mode name */
 	override val name:String
 		get() = "Grand Lightning"
-
+	override val gameIntensity:Int = 3
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)

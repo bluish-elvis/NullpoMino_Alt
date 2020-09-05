@@ -41,9 +41,6 @@ class SprintCombo:NetDummyMode() {
 	 * until this reaches to 120) */
 	private var scgettime:Int = 0
 
-	/** Most recent scoring event type */
-	private var lastevent:Int = 0
-
 	/** Most recent scoring eventInB2BIf it&#39;s the casetrue */
 	private var lastb2b:Boolean = false
 
@@ -72,10 +69,10 @@ class SprintCombo:NetDummyMode() {
 	private var rankingRank:Int = 0
 
 	/** Rankings' times */
-	private var rankingTime:Array<IntArray> = Array(GOAL_TABLE.size) {IntArray(RANKING_MAX)}
+	private var rankingTime:Array<Array<IntArray>> = Array(GOAL_TABLE.size) {Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}}
 
 	/** Rankings' Combo */
-	private var rankingCombo:Array<IntArray> = Array(GOAL_TABLE.size) {IntArray(RANKING_MAX)}
+	private var rankingCombo:Array<Array<IntArray>> = Array(GOAL_TABLE.size) {Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}}
 
 	/** Shape type */
 	private var shapetype:Int = 0
@@ -83,11 +80,16 @@ class SprintCombo:NetDummyMode() {
 	/** Stack colour */
 	private var stackColour:Int = 0
 
-	/** Column number of combo well (starts from 1) */
-	private var comboColumn:Int = 0
-
 	/** Width of combo well */
 	private var comboWidth:Int = 0
+
+	/** */
+	private val gameType:Int
+		get() = when {
+			comboWidth<4 -> 0
+			comboWidth==4 -> 1
+			else -> 2
+		}
 
 	/** Height difference between ceiling and stack (negative number lowers the
 	 * stack height) */
@@ -105,15 +107,14 @@ class SprintCombo:NetDummyMode() {
 
 	/** Returns the name of this mode */
 	override val name:String
-		get() = "COMBO RACE"
-
+		get() = "REN Sprint"
+	override val gameIntensity:Int = 2
 	/** This function will be called when the game enters the main game
 	 * screen. */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
 
 		scgettime = 0
-		lastevent = EVENT_NONE
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
@@ -127,8 +128,8 @@ class SprintCombo:NetDummyMode() {
 		nextseclines = 10
 
 		rankingRank = -1
-		rankingTime = Array(GOAL_TABLE.size) {IntArray(RANKING_MAX)}
-		rankingCombo = Array(GOAL_TABLE.size) {IntArray(RANKING_MAX)}
+		rankingTime = Array(GOAL_TABLE.size) {Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}}
+		rankingCombo = Array(GOAL_TABLE.size) {Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}}
 
 		engine.framecolor = GameEngine.FRAME_COLOR_RED
 
@@ -163,7 +164,6 @@ class SprintCombo:NetDummyMode() {
 		goaltype = prop.getProperty("comborace.goaltype.$preset", 1)
 		shapetype = prop.getProperty("comborace.shapetype.$preset", 1)
 		comboWidth = prop.getProperty("comborace.comboWidth.$preset", 4)
-		comboColumn = prop.getProperty("comborace.comboColumn.$preset", 4)
 		ceilingAdjust = prop.getProperty("comborace.ceilingAdjust.$preset", -2)
 		spawnAboveField = prop.getProperty("comborace.spawnAboveField.$preset", true)
 	}
@@ -182,7 +182,6 @@ class SprintCombo:NetDummyMode() {
 		prop.setProperty("comborace.goaltype.$preset", goaltype)
 		prop.setProperty("comborace.shapetype.$preset", shapetype)
 		prop.setProperty("comborace.comboWidth.$preset", comboWidth)
-		prop.setProperty("comborace.comboColumn.$preset", comboColumn)
 		prop.setProperty("comborace.ceilingAdjust.$preset", ceilingAdjust)
 		prop.setProperty("comborace.spawnAboveField.$preset", spawnAboveField)
 	}
@@ -194,7 +193,7 @@ class SprintCombo:NetDummyMode() {
 			netOnUpdateNetPlayRanking(engine, goaltype)
 		else if(!engine.owner.replayMode) {
 			// Configuration changes
-			val change = updateCursor(engine, 15)
+			val change = updateCursor(engine, 13)
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -215,66 +214,56 @@ class SprintCombo:NetDummyMode() {
 						if(shapetype>SHAPETYPE_MAX-1) shapetype = 0
 					}
 					2 -> {
-						comboColumn += change
-						if(comboColumn>10) comboColumn = 1
-						if(comboColumn<1) comboColumn = 10
-						while(comboColumn+comboWidth-1>10)
-							comboWidth--
+						comboWidth += change
+						if(comboWidth>10) comboWidth = 2
+						if(comboWidth<2) comboWidth = 10
 					}
 					3 -> {
-						comboWidth += change
-						if(comboWidth>10) comboWidth = 1
-						if(comboWidth<1) comboWidth = 10
-						while(comboColumn+comboWidth-1>10)
-							comboColumn--
-					}
-					4 -> {
 						ceilingAdjust += change
 						if(ceilingAdjust>10) ceilingAdjust = -10
 						if(ceilingAdjust<-10) ceilingAdjust = 10
 					}
-					5 -> spawnAboveField = !spawnAboveField
-					6 -> {
+					4 -> {
 						engine.speed.gravity += change*m
 						if(engine.speed.gravity<-1) engine.speed.gravity = 99999
 						if(engine.speed.gravity>99999) engine.speed.gravity = -1
 					}
-					7 -> {
+					5 -> {
 						engine.speed.denominator += change*m
 						if(engine.speed.denominator<-1) engine.speed.denominator = 99999
 						if(engine.speed.denominator>99999) engine.speed.denominator = -1
 					}
-					8 -> {
+					6 -> {
 						engine.speed.are += change
 						if(engine.speed.are<0) engine.speed.are = 99
 						if(engine.speed.are>99) engine.speed.are = 0
 					}
-					9 -> {
+					7 -> {
 						engine.speed.areLine += change
 						if(engine.speed.areLine<0) engine.speed.areLine = 99
 						if(engine.speed.areLine>99) engine.speed.areLine = 0
 					}
-					10 -> {
+					8 -> {
 						engine.speed.lineDelay += change
 						if(engine.speed.lineDelay<0) engine.speed.lineDelay = 99
 						if(engine.speed.lineDelay>99) engine.speed.lineDelay = 0
 					}
-					11 -> {
+					9 -> {
 						engine.speed.lockDelay += change
 						if(engine.speed.lockDelay<0) engine.speed.lockDelay = 99
 						if(engine.speed.lockDelay>99) engine.speed.lockDelay = 0
 					}
-					12 -> {
+					10 -> {
 						engine.speed.das += change
 						if(engine.speed.das<0) engine.speed.das = 99
 						if(engine.speed.das>99) engine.speed.das = 0
 					}
-					13 -> {
+					11 -> {
 						bgmno += change
 						if(bgmno<0) bgmno = BGM.count-1
 						if(bgmno>=BGM.count) bgmno = 0
 					}
-					14, 15 -> {
+					12, 13 -> {
 						presetNumber += change
 						if(presetNumber<0) presetNumber = 99
 						if(presetNumber>99) presetNumber = 0
@@ -334,19 +323,14 @@ class SprintCombo:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
-			val strSpawn = if(spawnAboveField) "ABOVE" else "BELOW"
 
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
 				"GOAL", if(GOAL_TABLE[goaltype]==-1) "ENDLESS" else "${GOAL_TABLE[goaltype]}")
-			drawMenu(engine, playerID, receiver, 2, if(comboWidth==4)
-				EventReceiver.COLOR.BLUE
-			else
-				EventReceiver.COLOR.WHITE, 1,
-				"STARTSHAPE", SHAPE_NAME_TABLE[shapetype])
+			drawMenu(engine, playerID, receiver, 2,
+				if(comboWidth==4) EventReceiver.COLOR.BLUE else EventReceiver.COLOR.WHITE,
+				1, "STARTSHAPE", SHAPE_NAME_TABLE[shapetype])
 			menuColor = EventReceiver.COLOR.BLUE
-			drawMenuCompact(engine, playerID, receiver,
-				"COLUMN", "$comboColumn", "WIDTH", "$comboWidth", "CEILING", "$ceilingAdjust")
-			drawMenu(engine, playerID, receiver, "PIECESPAWN", strSpawn)
+			drawMenuCompact(engine, playerID, receiver, "WIDTH", "$comboWidth")
 
 			drawMenuSpeeds(engine, playerID, receiver, engine.speed.gravity, engine.speed.denominator,
 				engine.speed.are, engine.speed.areLine, engine.speed.lineDelay, engine.speed.lockDelay, engine.speed.das)
@@ -361,6 +345,7 @@ class SprintCombo:NetDummyMode() {
 	/** Ready */
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==0) {
+			engine.fieldWidth = maxOf(4, comboWidth)
 			engine.createFieldIfNeeded()
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			engine.meterValue = if(GOAL_TABLE[goaltype]==-1) 0 else receiver.getMeterMax(engine)
@@ -397,7 +382,7 @@ class SprintCombo:NetDummyMode() {
 		val w = engine.field!!.width
 		val h = engine.field!!.height
 		val stackHeight:Int
-
+		val cx = w-comboWidth/2-1
 		/* set initial stack height and remaining stack lines
  * depending on the goal lines and ceiling height adjustment */
 		if(GOAL_TABLE[height]>h+ceilingAdjust||GOAL_TABLE[height]==-1) {
@@ -409,56 +394,62 @@ class SprintCombo:NetDummyMode() {
 		}
 
 		// fill stack from the bottom to the top
-		for(y in h-1 downTo h-stackHeight) {
-			for(x in 0 until w)
-				if(x<comboColumn-1||x>comboColumn-2+comboWidth)
-					engine.field!!.setBlock(x, y, Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
-			stackColour++
-		}
+		if(w>comboWidth)
+			for(y in h-1 downTo h-stackHeight) {
+				for(x in 0 until w)
+					if(x<cx-1||x>cx-2+comboWidth)
+						engine.field!!.setBlock(x, y, Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+				stackColour++
+			}
 
 		// insert starting shape
 		if(comboWidth==4)
 			for(i in 0..11)
 				if(SHAPE_TABLE[shapetype][i]==1)
-					engine.field!!.setBlock(i%4+comboColumn-1, h-1-i/4, Block(SHAPE_COLOUR_TABLE[shapetype], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+					engine.field!!.setBlock(i%4, h-1-i/4, Block(SHAPE_COLOUR_TABLE[shapetype], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, playerID, 0, 0, "COMBO RACE", EventReceiver.COLOR.RED)
+		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.RED)
 		if(GOAL_TABLE[goaltype]==-1)
 			receiver.drawScoreFont(engine, playerID, 0, 1, "(ENDLESS GAME)", EventReceiver.COLOR.WHITE)
 		else
-			receiver.drawScoreFont(engine, playerID, 0, 1, "("+GOAL_TABLE[goaltype]
-				+" LINES GAME)", EventReceiver.COLOR.WHITE)
+			receiver.drawScoreFont(engine, playerID, 0, 1, "("+(GOAL_TABLE[goaltype]-1)
+				+"CHAIN Challenge)", EventReceiver.COLOR.WHITE)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				receiver.drawScoreFont(engine, playerID, 3, 3, "COMBO TIME", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 3, 3, "RECORD", EventReceiver.COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingCombo[goaltype][i]}", rankingRank==i)
-					receiver.drawScoreNum(engine, playerID, 9, 4+i, GeneralUtil.getTime(rankingTime[goaltype][i]), rankingRank==i)
+					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1),
+						if(rankingRank==i) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.YELLOW)
+					if(rankingCombo[goaltype][gameType][i]==GOAL_TABLE[goaltype]-1)
+						receiver.drawScoreFont(engine, playerID, 2, 4+i, "PERFECT", true)
+					else receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingCombo[goaltype][gameType][i]}", rankingRank==i)
+					receiver.drawScoreNum(engine, playerID, 9, 4+i, GeneralUtil.getTime(rankingTime[goaltype][gameType][i]), rankingRank==i)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "LINE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 4, "${engine.statistics.lines}",2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 6, "PIECE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 7, "${engine.statistics.totalPieceLocked}",2f)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Longest Chain", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreNum(engine, playerID, 0, 4, "${engine.statistics.maxCombo}",
+				engine.statistics.maxCombo>0&&engine.combo-1==engine.statistics.maxCombo, 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LINE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.lpm}",2f)
+			receiver.drawScoreFont(engine, playerID, 0, 6, "Lines", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreNum(engine, playerID, 0, 7, "${engine.statistics.lines}",
+				engine.statistics.lines==engine.statistics.totalPieceLocked, 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 12, "PIECE/SEC", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 13, "${engine.statistics.pps}",2f)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "PIECE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.totalPieceLocked}", 2f)
+
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "Time", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(engine.statistics.time),2f)
+			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(scgettime), 2f)
+			receiver.drawScoreNano(engine, playerID, 0, 17, GeneralUtil.getTime(engine.statistics.time))
 		}
 
 		super.renderLast(engine, playerID)
@@ -471,52 +462,29 @@ class SprintCombo:NetDummyMode() {
 		if(lines>0) {
 			scgettime = 0
 
-			// Goal
-			when {
-				engine.twist ->
-					when {
-						lines==1 -> // Twister 1 line
-							lastevent =
-							if(engine.twistmini) EVENT_TWIST_SINGLE_MINI
-							else EVENT_TWIST_SINGLE
-						lines==2 -> // Twister 2 lines
-							lastevent = if(engine.twistmini&&engine.useAllSpinBonus)
-							EVENT_TWIST_DOUBLE_MINI else EVENT_TWIST_DOUBLE
-						lines>=3 ->// Twister 3 lines
-							lastevent = EVENT_TWIST_TRIPLE
-					}
-				lines==1 -> lastevent = EVENT_SINGLE
-				lines==2 -> lastevent = EVENT_DOUBLE
-				lines==3 -> lastevent = EVENT_TRIPLE
-				lines>=4 -> lastevent = EVENT_FOUR
-
-				// B2B
-
-				// Combo
-
-				// add any remaining stack lines
-			}
-
 			// B2B
 			lastb2b = engine.b2b
 
 			// Combo
 			lastcombo = engine.combo
-
+			scgettime = engine.statistics.time
 			lastpiece = engine.nowPieceObject!!.id
 
 			// add any remaining stack lines
-			if(GOAL_TABLE[goaltype]==-1) remainStack = Integer.MAX_VALUE
-			var tmplines = 1
-			while(tmplines<=lines&&remainStack>0) {
-				for(x in 0 until engine.field!!.width)
-					if(x<comboColumn-1||x>comboColumn-2+comboWidth)
-						engine.field!!.setBlock(x, -ceilingAdjust-tmplines, Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
-				stackColour++
-				tmplines++
-				remainStack--
+			val w = engine.field!!.width
+			if(w>comboWidth) {
+				if(GOAL_TABLE[goaltype]==-1) remainStack = Integer.MAX_VALUE
+				val cx = w-comboWidth/2-1
+				var tmplines = 1
+				while(tmplines<=lines&&remainStack>0) {
+					for(x in 0 until w)
+						if(x<cx-1||x>cx-2+comboWidth)
+							engine.field!!.setBlock(x, -ceilingAdjust-tmplines, Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+					stackColour++
+					tmplines++
+					remainStack--
+				}
 			}
-
 			if(GOAL_TABLE[goaltype]==-1) {
 				val meterMax = receiver.getMeterMax(engine)
 				val colorIndex = (engine.statistics.maxCombo-1)/meterMax
@@ -533,30 +501,34 @@ class SprintCombo:NetDummyMode() {
 				if(remainLines<=10) engine.meterColor = GameEngine.METER_COLOR_RED
 
 				// Goal
-				if(engine.statistics.lines>=GOAL_TABLE[goaltype]) {
-					engine.ending = 1
-					engine.gameEnded()
-				} else if(engine.statistics.lines>=GOAL_TABLE[goaltype]-5)
-					owner.bgmStatus.fadesw = true
-				else if(engine.statistics.lines>=nextseclines) {
-					owner.backgroundStatus.fadesw = true
-					owner.backgroundStatus.fadecount = 0
-					owner.backgroundStatus.fadebg = nextseclines/10
-					nextseclines += 10
+				when {
+					engine.statistics.lines>=GOAL_TABLE[goaltype] -> {
+						engine.ending = 1
+						engine.gameEnded()
+					}
+					engine.statistics.lines>=GOAL_TABLE[goaltype]-5 -> owner.bgmStatus.fadesw = true
+					engine.statistics.lines>=nextseclines -> {
+						owner.backgroundStatus.fadesw = true
+						owner.backgroundStatus.fadecount = 0
+						owner.backgroundStatus.fadebg = nextseclines/10
+						nextseclines += 10
+					}
 				}
 			}
-		} else if(GOAL_TABLE[goaltype]==-1&&engine.statistics.maxCombo>=2) {
+		} else if(engine.statistics.maxCombo>=(if(GOAL_TABLE[goaltype]==-1) 2 else GOAL_TABLE[goaltype]-engine.statistics.lines)) {
 			engine.ending = 1
 			engine.gameEnded()
 			engine.resetStatc()
-			engine.stat = if(engine.statistics.maxCombo>40) GameEngine.Status.EXCELLENT else GameEngine.Status.GAMEOVER
+			engine.stat = if(engine.statistics.maxCombo>=if(GOAL_TABLE[goaltype]==-1) 40 else GOAL_TABLE[goaltype]-1)
+				GameEngine.Status.EXCELLENT else GameEngine.Status.GAMEOVER
+			engine.statistics.time = scgettime
 		}
 		return 0
 	}
 
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		scgettime++
+
 	}
 
 	/** Renders game result screen */
@@ -587,10 +559,10 @@ class SprintCombo:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.maxCombo-1, if(engine.ending==0) -1 else engine.statistics.time)
+			updateRanking(engine.statistics.maxCombo, if(engine.ending==0) -1 else engine.statistics.time)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleopt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -599,19 +571,23 @@ class SprintCombo:NetDummyMode() {
 	/** Load the ranking */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in GOAL_TABLE.indices)
-			for(j in 0 until RANKING_MAX) {
-				rankingCombo[i][j] = prop.getProperty("comborace.ranking.$ruleName.$i.maxcombo.$j", 0)
-				rankingTime[i][j] = prop.getProperty("comborace.ranking.$ruleName.$i.time.$j", -1)
-			}
+			for(j in 0 until GAMETYPE_MAX)
+				for(k in 0 until RANKING_MAX) {
+					rankingCombo[i][j][k] = prop.getProperty("$ruleName.$i.$j.maxcombo.$k", 0)
+					rankingTime[i][j][k] = prop.getProperty("$ruleName.$i.$j.time.$k", -1)
+				}
 	}
 
 	/** Save the ranking */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in GOAL_TABLE.indices)
-			for(j in 0 until RANKING_MAX) {
-				prop.setProperty("comborace.ranking.$ruleName.$i.maxcombo.$j", rankingCombo[i][j])
-				prop.setProperty("comborace.ranking.$ruleName.$i.time.$j", rankingTime[i][j])
+	fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until GOAL_TABLE.size).flatMap {i ->
+			(0 until GAMETYPE_MAX).flatMap {j ->
+				(0 until RANKING_MAX).flatMap {k ->
+					listOf("$ruleName.$i.$j.maxcombo.$k" to rankingCombo[i][j][k],
+						"$ruleName.$i.$j.time.$k" to rankingTime[i][j][k])
+				}
 			}
+		})
 	}
 
 	/** Update the ranking */
@@ -621,24 +597,24 @@ class SprintCombo:NetDummyMode() {
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
 			for(i in RANKING_MAX-1 downTo rankingRank+1) {
-				rankingCombo[goaltype][i] = rankingCombo[goaltype][i-1]
-				rankingTime[goaltype][i] = rankingTime[goaltype][i-1]
+				rankingCombo[goaltype][gameType][i] = rankingCombo[goaltype][gameType][i-1]
+				rankingTime[goaltype][gameType][i] = rankingTime[goaltype][gameType][i-1]
 			}
 
 			// Add new data
-			rankingCombo[goaltype][rankingRank] = maxcombo
-			rankingTime[goaltype][rankingRank] = time
+			rankingCombo[goaltype][gameType][rankingRank] = maxcombo
+			rankingTime[goaltype][gameType][rankingRank] = time
 		}
 	}
 
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
-	private fun checkRanking(maxcombo:Int, time:Int):Int {
+	private fun checkRanking(combo:Int, time:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(maxcombo>rankingCombo[goaltype][i])
+			if(combo>rankingCombo[goaltype][gameType][i])
 				return i
-			else if(maxcombo==rankingCombo[goaltype][i]&&time>=0&&
-				(time<rankingTime[goaltype][i]||rankingTime[goaltype][i]==-1))
+			else if(combo==rankingCombo[goaltype][gameType][i]&&time>=0&&
+				(time<rankingTime[goaltype][gameType][i]||rankingTime[goaltype][gameType][i]==-1))
 				return i
 
 		return -1
@@ -656,7 +632,7 @@ class SprintCombo:NetDummyMode() {
 		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
 		msg += engine.meterColor.toString()+"\t${engine.meterValue}\t"
 		msg += "$bg"+"\t"
-		msg += "$scgettime${"\t$lastevent\t$lastb2b\t$lastcombo\t"+lastpiece}\t"
+		msg += "$scgettime${"\t\t$lastb2b\t$lastcombo\t"+lastpiece}\t"
 		msg += engine.statistics.maxCombo.toString()+"\t${engine.combo}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
@@ -675,7 +651,6 @@ class SprintCombo:NetDummyMode() {
 		engine.meterValue = Integer.parseInt(message[13])
 		owner.backgroundStatus.bg = Integer.parseInt(message[14])
 		scgettime = Integer.parseInt(message[15])
-		lastevent = Integer.parseInt(message[16])
 		lastb2b = java.lang.Boolean.parseBoolean(message[17])
 		lastcombo = Integer.parseInt(message[18])
 		lastpiece = Integer.parseInt(message[19])
@@ -706,7 +681,7 @@ class SprintCombo:NetDummyMode() {
 		msg += engine.speed.gravity.toString()+"\t${engine.speed.denominator}\t${engine.speed.are}\t"
 		msg += engine.speed.areLine.toString()+"\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
 		msg += engine.speed.das.toString()+"\t$bgmno\t$goaltype\t$presetNumber\t"
-		msg += "$shapetype${"\t$comboColumn\t$comboWidth\t$ceilingAdjust\t"+spawnAboveField}\n"
+		msg += "$shapetype${"\t\t$comboWidth\t$ceilingAdjust\t"+spawnAboveField}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -723,7 +698,6 @@ class SprintCombo:NetDummyMode() {
 		goaltype = Integer.parseInt(message[12])
 		presetNumber = Integer.parseInt(message[13])
 		shapetype = Integer.parseInt(message[14])
-		comboColumn = Integer.parseInt(message[15])
 		comboWidth = Integer.parseInt(message[16])
 		ceilingAdjust = Integer.parseInt(message[17])
 		spawnAboveField = java.lang.Boolean.parseBoolean(message[18])
@@ -743,20 +717,11 @@ class SprintCombo:NetDummyMode() {
 		/** Number of ranking records */
 		private const val RANKING_MAX = 10
 
-		/** HindranceLinescountConstantcount */
-		private val GOAL_TABLE = intArrayOf(20, 40, 100, -1)
+		/** Number of ranking types */
+		private const val GAMETYPE_MAX = 3
 
-		/** Most recent scoring event typeConstantcount */
-		private const val EVENT_NONE = 0
-		private const val EVENT_SINGLE = 1
-		private const val EVENT_DOUBLE = 2
-		private const val EVENT_TRIPLE = 3
-		private const val EVENT_FOUR = 4
-		private const val EVENT_TWIST_SINGLE_MINI = 5
-		private const val EVENT_TWIST_SINGLE = 6
-		private const val EVENT_TWIST_DOUBLE = 7
-		private const val EVENT_TWIST_TRIPLE = 8
-		private const val EVENT_TWIST_DOUBLE_MINI = 9
+		/** HindranceLinescountConstantcount */
+		private val GOAL_TABLE = intArrayOf(21, 41, 101, -1)
 
 		/** Number of starting shapes */
 		private const val SHAPETYPE_MAX = 9

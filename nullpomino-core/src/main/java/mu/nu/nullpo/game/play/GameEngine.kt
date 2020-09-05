@@ -76,7 +76,7 @@ class GameEngine
 
 	/** Gravity counter (The piece falls when this reaches
 	 * to the value of speed.denominator) */
-	var gcount:Int = 0;private set
+	var gcount:Int = 0; private set
 
 	/** The first random-seed */
 	var randSeed:Long = 0
@@ -302,7 +302,7 @@ class GameEngine
 
 	/** Most recent scoring event type */
 	var lastevent:ScoreEvent? = null
-	val lasteventshape:Piece.Shape? get() =lastevent?.piece?.type
+	val lasteventshape:Piece.Shape? get() = lastevent?.piece?.type
 	val lasteventpiece:Int get() = lastevent?.piece?.id ?: 0
 
 	var lastlines:IntArray = IntArray(0)
@@ -535,8 +535,8 @@ class GameEngine
 	var owMinDAS:Int = -1
 	var owMaxDAS:Int = -1
 
-	/** DAS delay (-1=Auto 0orAbove=Fixed) */
-	var owDASDelay:Int = -1
+	/** ARR (-1=Auto 0orAbove=Fixed) */
+	var owARR:Int = -1
 
 	/** SoftDrop Speed -1(Below 0)=Auto 0=Always Instant  above=Fixed */
 	var owSDSpd:Int = 0
@@ -678,7 +678,7 @@ class GameEngine
 	 * @return 横移動速度
 	 */
 	val dasDelay:Int
-		get() = if(owDASDelay>=0) owDASDelay else ruleopt.dasDelay
+		get() = if(owARR>=0) owARR else ruleopt.dasARR
 
 	/** 現在使用中のBlockスキン numberを取得
 	 * @return Blockスキン number
@@ -737,7 +737,7 @@ class GameEngine
 
 	/** READY前のInitialization */
 	fun init() {
-		log.debug("GameEngine init() playerID:"+playerID);
+		log.debug("GameEngine init() playerID:$playerID")
 
 		field = null
 		statistics.reset()
@@ -768,7 +768,7 @@ class GameEngine
 			owSkin = owner.replayProp.getProperty("$playerID.tuning.owSkin", -1)
 			owMinDAS = owner.replayProp.getProperty("$playerID.tuning.owMinDAS", -1)
 			owMaxDAS = owner.replayProp.getProperty("$playerID.tuning.owMaxDAS", -1)
-			owDASDelay = owner.replayProp.getProperty("$playerID.tuning.owDasDelay", -1)
+			owARR = owner.replayProp.getProperty("$playerID.tuning.owDasDelay", -1)
 			owReverseUpDown = owner.replayProp.getProperty("$playerID.tuning.owReverseUpDown", false)
 			owMoveDiagonal = owner.replayProp.getProperty("$playerID.tuning.owMoveDiagonal", -1)
 
@@ -1216,7 +1216,7 @@ class GameEngine
 	fun getSpawnPosX(fld:Field?, piece:Piece?):Int {
 		var x = 0
 		piece?.let {
-			x = -1+(fld?.width ?: 0-it.width+1)/2
+			x = (fld?.width ?: 0-it.width+1)/2-piece.centerX
 			if(big&&bigmove&&x%2!=0) x++
 
 			x += if(big) ruleopt.pieceSpawnXBig[it.id][it.direction]
@@ -1417,7 +1417,7 @@ class GameEngine
 		owner.replayProp.setProperty("$playerID.tuning.owSkin", owSkin)
 		owner.replayProp.setProperty("$playerID.tuning.owMinDAS", owMinDAS)
 		owner.replayProp.setProperty("$playerID.tuning.owMaxDAS", owMaxDAS)
-		owner.replayProp.setProperty("$playerID.tuning.owDasDelay", owDASDelay)
+		owner.replayProp.setProperty("$playerID.tuning.owDasDelay", owARR)
 		owner.replayProp.setProperty("$playerID.tuning.owReverseUpDown", owReverseUpDown)
 		owner.replayProp.setProperty("$playerID.tuning.owMoveDiagonal", owMoveDiagonal)
 
@@ -1631,7 +1631,7 @@ class GameEngine
 	private fun statSetting() {
 		//  event 発生
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = BGM.MENU(3)
+		owner.bgmStatus.bgm = BGM.MENU(4+(owner.mode?.gameIntensity ?: 0))
 		owner.mode?.also {if(it.onSetting(this, playerID)) return}
 		owner.receiver.onSetting(this, playerID)
 
@@ -1648,7 +1648,7 @@ class GameEngine
 
 		// 横溜め
 		if(ruleopt.dasInReady&&gameActive) padRepeat()
-		else if(ruleopt.dasRedirectInDelay) dasRedirect()
+		else if(ruleopt.dasRedirectInARE) dasRedirect()
 
 		// Initialization
 		if(statc[0]==0) {
@@ -1678,33 +1678,32 @@ class GameEngine
 			}
 			// NEXTピースのオブジェクトを作成
 			if(nextPieceArrayObject.isEmpty()) {
-				nextPieceArrayObject = Array(nextPieceArrayID.size) {Piece(nextPieceArrayID[it])}
-
-				nextPieceArrayObject.forEach {p ->
-					p?.let {
-						it.direction = ruleopt.pieceDefaultDirection[it.id]
-						if(it.direction>=Piece.DIRECTION_COUNT)
-							it.direction = random.nextInt(Piece.DIRECTION_COUNT)
-						it.connectBlocks = connectBlocks
-						it.setColor(ruleopt.pieceColor[it.id])
-						it.setSkin(skin)
-						it.updateConnectData()
-						it.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
-						it.setAttribute(bone, Block.ATTRIBUTE.BONE)
+				nextPieceArrayObject = Array(nextPieceArrayID.size) {
+					Piece(nextPieceArrayID[it]).also {p->
+						p.direction = ruleopt.pieceDefaultDirection[p.id]
+						if(p.direction>=Piece.DIRECTION_COUNT)
+							p.direction = random.nextInt(Piece.DIRECTION_COUNT)
+						p.connectBlocks = connectBlocks
+						p.setColor(ruleopt.pieceColor[p.id])
+						p.setSkin(skin)
+						p.updateConnectData()
+						p.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
+						p.setAttribute(bone, Block.ATTRIBUTE.BONE)
 
 						if(randomBlockColor) {
 							if(blockColors.size<numColors||numColors<1) numColors = blockColors.size
-							val size = it.maxBlock
+							val size = p.maxBlock
 							val colors = IntArray(size)
 							for(j in 0 until size)
 								colors[j] = blockColors[random.nextInt(numColors)]
-							it.setColor(colors)
-							it.updateConnectData()
+							p.setColor(colors)
+							p.updateConnectData()
 						}
 						if(clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)
-							it.block[random.nextInt(it.maxBlock)].cint += 7
+							p.block[random.nextInt(p.maxBlock)].cint += 7
 					}
 				}
+
 			}
 
 			if(!readyDone) {
@@ -2036,6 +2035,7 @@ class GameEngine
 						piece.placeToField(nowPieceX, nowPieceY, field)
 						nowPieceObject = null
 						stat = Status.GAMEOVER
+						stopSE("danger")
 						if(ending==2&&staffrollNoDeath) stat = Status.NOTHING
 						resetStatc()
 						return
@@ -2150,7 +2150,7 @@ class GameEngine
 
 		while((gcount>=speed.denominator||speed.gravity<0)&&nowPieceObject?.checkCollision(nowPieceX, nowPieceY+1, field)==false) {
 			if(speed.gravity>=0) gcount -= speed.denominator
-			if(ruleopt.softdropGravitySpeedLimit)gcount-=gcount%speed.denominator
+			if(ruleopt.softdropGravitySpeedLimit) gcount -= gcount%speed.denominator
 			nowPieceY++
 			if(speed.gravity>speed.denominator/2||speed.gravity<0||softdropUsed) fpf++
 			if(ruleopt.lockresetFall) {
@@ -2208,7 +2208,7 @@ class GameEngine
 
 				// Soft drop固定
 				if(ruleopt.softdropEnable&&
-					(ruleopt.softdropLock&&it.isPress(down)||it.isPush(down)&&ruleopt.softdropSurfaceLock&&!softdropUsed)
+					(ruleopt.softdropLock&&it.isPress(down)||it.isPush(down)&&(ruleopt.softdropSurfaceLock||speed.gravity<0)&&!softdropUsed)
 					&&!softdropContinuousUse&&(isDiagonalMoveEnabled||!sidemoveflag)&&(ruleopt.moveUpAndDown||!updown)) {
 					softdropContinuousUse = true
 					manualLock = true
@@ -2292,6 +2292,7 @@ class GameEngine
 						!put&&ruleopt.fieldLockoutDeath||partialLockOut&&ruleopt.fieldPartialLockoutDeath -> {
 							// 画面外に置いて死亡
 							stat = Status.GAMEOVER
+							stopSE("danger")
 							if(ending==2&&staffrollNoDeath) stat = Status.NOTHING
 						}
 						(lineGravityType==LineGravity.CASCADE||lineGravityType==LineGravity.CASCADE_SLOW)&&!connectBlocks -> {
@@ -2351,7 +2352,7 @@ class GameEngine
 		// 横溜め
 		if(ruleopt.dasInLockFlash)
 			padRepeat()
-		else if(ruleopt.dasRedirectInDelay) dasRedirect()
+		else if(ruleopt.dasRedirectInARE) dasRedirect()
 
 		// Next ステータス
 		if(statc[0]>=ruleopt.lockflash) {
@@ -2382,7 +2383,7 @@ class GameEngine
 		// 横溜め
 		if(ruleopt.dasInLineClear)
 			padRepeat()
-		else if(ruleopt.dasRedirectInDelay) dasRedirect()
+		else if(ruleopt.dasRedirectInARE) dasRedirect()
 
 		// 最初の frame
 		if(statc[0]==0) {
@@ -2452,7 +2453,7 @@ class GameEngine
 							if(b2bcount==1) playSE("b2b_start")
 							else {
 								b2b = true
-								playSE("b2b_combo", minOf(2f, 1f+(b2bbuf-1)/13f))
+								playSE("b2b_combo", minOf(1.5f, 1f+(b2bbuf-1)/13f))
 								if(ingame)
 									when {
 										li==4 -> statistics.totalB2BQuad++
@@ -2668,7 +2669,7 @@ class GameEngine
 		// 横溜め
 		if(ruleopt.dasInARE&&(statc[0]<statc[1]-1||ruleopt.dasInARELastFrame))
 			padRepeat()
-		else if(ruleopt.dasRedirectInDelay) dasRedirect()
+		else if(ruleopt.dasRedirectInARE) dasRedirect()
 
 		// Next ステータス
 		if(statc[0]>=statc[1]&&!lagARE) {
@@ -2698,7 +2699,7 @@ class GameEngine
 		checkDropContinuousUse()
 		// 横溜め
 		if(ruleopt.dasInEndingStart) padRepeat()
-		else if(ruleopt.dasRedirectInDelay) dasRedirect()
+		else if(ruleopt.dasRedirectInARE) dasRedirect()
 
 		if(statc[2]==0) {
 			timerActive = false
@@ -2769,21 +2770,19 @@ class GameEngine
 		//  event 発生
 		owner.mode?.also {if(it.onGameOver(this, playerID)) return}
 		owner.receiver.onGameOver(this, playerID)
-
-		var topout = statc[2]==0
 		if(statc[0]==0) {
-			topout = gameActive
-			if(topout&&ending==2) topout = !staffrollNoDeath
-			statc[2] = if(topout) 0 else 1
+			//死亡時はgameActive中にStatus.GAMEOVERになる
+			statc[2] = if(gameActive&&!staffrollNoDeath) 0 else 1
 			stopSE("danger")
-			if(topout) playSE("dead")
 		}
+
+		val topout = statc[2]==0
 		if(!topout||lives<=0) {
 			// もう復活できないとき
 			val animint = 6
 			statc[1] = animint*(field!!.height+1)
 			if(statc[0]==0) {
-
+				if(topout) playSE("dead_last")
 				gameEnded()
 				blockShowOutlineOnly = false
 				if(owner.players<2) owner.bgmStatus.bgm = BGM.SILENT
@@ -2842,6 +2841,7 @@ class GameEngine
 		} else {
 			// 復活できるとき
 			if(statc[0]==0) {
+				if(topout) playSE("dead")
 				//blockShowOutlineOnly=false;
 				resetFieldVisible()
 				for(i in field!!.hiddenHeight*-1 until field!!.height)
@@ -2861,8 +2861,7 @@ class GameEngine
 					}
 				}
 
-			} else if(statc[1]<are)
-				statc[1]++
+			} else if(statc[1]<are) statc[1]++
 			else {
 				lives--
 				resetStatc()
@@ -2875,11 +2874,12 @@ class GameEngine
 	private fun statResult() {
 		// Event
 		owner.bgmStatus.fadesw = false
-		when {
-			ending==2 -> owner.bgmStatus.bgm = BGM.RESULT(3)
-			ending!=0 -> owner.bgmStatus.bgm = if(statistics.time<10800) BGM.RESULT(1) else BGM.RESULT(2)
-			else -> owner.bgmStatus.bgm = BGM.RESULT(0)
-		}
+		owner.bgmStatus.bgm = BGM.RESULT(
+			when {
+				ending==2 -> if(owner.mode?.gameIntensity==1) (if(statistics.time<10800) 1 else 2) else 3
+				ending!=0 -> if(statistics.time<10800) 1 else 2
+				else -> 0
+			})
 
 		owner.mode?.also {if(it.onResult(this, playerID)) return}
 		owner.receiver.onResult(this, playerID)
@@ -3190,7 +3190,7 @@ class GameEngine
 
 	enum class MeterColor(color:Int) {
 		LEVEL(-1), LIMIT(-2),
-		RED(0x10000), ORANGE(0x8000), YELLOW(0x100), GREEN(0xff0100), DARKGREEN(0xff8000),
-		CYAN(0xff0001), DARKBLUE(0xffff80), BLUE(0xffff01), PURPLE(0x7fff01), PINK(0xff01)
+		RED(0xFF0000), ORANGE(0xFF8000), YELLOW(0xFFFF00), GREEN(0x00ff00), DARKGREEN(0x008000),
+		CYAN(0x00FFFF), DARKBLUE(0x0000FF), BLUE(0x0080FF), PURPLE(0x8000FF), PINK(0xff0080)
 	}
 }

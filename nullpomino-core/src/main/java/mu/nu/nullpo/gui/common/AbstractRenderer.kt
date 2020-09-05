@@ -10,7 +10,7 @@ import java.util.ArrayList
 
 abstract class AbstractRenderer:EventReceiver() {
 
-	open internal var resources:ResourceHolder? = null
+	internal open var resources:ResourceHolder? = null
 
 	/** 演出オブジェクト */
 	protected val effectlist:ArrayList<EffectObject> = ArrayList(10*4)

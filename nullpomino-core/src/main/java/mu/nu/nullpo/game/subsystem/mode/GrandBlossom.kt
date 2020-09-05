@@ -187,11 +187,11 @@ class GrandBlossom:AbstractMode() {
 	private var decoration:Int = 0
 	private var dectemp:Int = 0
 
-	/* Mode nameを取得 */
+	/** Mode nameを取得 */
 	override val name:String
 		get() = "Grand Blossom"
-
-	/* Initialization */
+	override val gameIntensity:Int = -1
+	/** Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		log.debug("playerInit called")
 
@@ -796,7 +796,8 @@ class GrandBlossom:AbstractMode() {
 					if(rankingAllClear[type][i]==1) gcolor = COLOR.GREEN
 					if(rankingAllClear[type][i]==2) gcolor = COLOR.ORANGE
 
-					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1),
+						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW, scale)
 					receiver.drawScoreFont(engine, playerID, 3, topY+i, getStageName(rankingStage[type][i]), gcolor, scale)
 					receiver.drawScoreNum(engine, playerID, 9, topY+i, "${rankingClearPer[type][i]}%", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[type][i]), i==rankingRank, scale)
@@ -1417,10 +1418,10 @@ class GrandBlossom:AbstractMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(type in 0 until RANKING_TYPE)
 			for(i in 0 until RANKING_MAX) {
-				rankingStage[type][i] = prop.getProperty("gemmania.ranking.$ruleName.$type.stage.$i", 0)
-				rankingClearPer[type][i] = prop.getProperty("gemmania.ranking.$ruleName.$type.clearper.$i", 0)
-				rankingTime[type][i] = prop.getProperty("gemmania.ranking.$ruleName.$type.time.$i", 0)
-				rankingAllClear[type][i] = prop.getProperty("gemmania.ranking.$ruleName.$type.allclear.$i", 0)
+				rankingStage[type][i] = prop.getProperty("$ruleName.$type.stage.$i", 0)
+				rankingClearPer[type][i] = prop.getProperty("$ruleName.$type.clearper.$i", 0)
+				rankingTime[type][i] = prop.getProperty("$ruleName.$type.time.$i", 0)
+				rankingAllClear[type][i] = prop.getProperty("$ruleName.$type.allclear.$i", 0)
 			}
 		decoration = owner.statsProp.getProperty("decoration", 0)
 	}

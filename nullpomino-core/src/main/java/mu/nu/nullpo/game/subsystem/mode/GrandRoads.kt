@@ -91,7 +91,14 @@ class GrandRoads:NetDummyMode() {
 
 	/** Returns the name of this mode */
 	override val name:String
-		get() = "GRAND ROAD"
+		get() = "Grand Roads"
+	override val gameIntensity:Int
+		get() = when(goaltype) {
+			GAMETYPE_HIGHSPEED1, GAMETYPE_BASIC -> 1
+			GAMETYPE_HIGHSPEED2, GAMETYPE_ANOTHER, GAMETYPE_ANOTHER200 -> 2
+			GAMETYPE_ANOTHER2, GAMETYPE_HELL, GAMETYPE_HELLX, GAMETYPE_VOID -> 3
+			else -> 0
+		}
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -182,7 +189,7 @@ class GrandRoads:NetDummyMode() {
 				engine.speed.are = 6
 				engine.speed.areLine = 6
 				engine.speed.lineDelay = 4
-				engine.speed.lockDelay = 13
+				engine.speed.lockDelay = 20//13
 				engine.speed.das = 7
 			}
 			GAMETYPE_NORMAL200 -> {

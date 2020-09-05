@@ -1,5 +1,5 @@
 #NullpoMino RuleData
-#Mon Mar 04 02:45:44 JST 2019
+#Fri Dec 11 12:58:42 JST 2020
 0.ruleopt.pieceColor.9=5
 0.ruleopt.softdropMultiplyNativeSpeed=false
 0.ruleopt.ghost=true
@@ -21,7 +21,7 @@
 0.ruleopt.pieceColor.0=2
 0.ruleopt.pieceColor.3=5
 0.ruleopt.pieceColor.2=4
-0.ruleopt.softdropSurfaceLock=true
+0.ruleopt.softdropSurfaceLock=false
 0.ruleopt.minLineDelay=-1
 0.ruleopt.pieceColor.10=3
 0.ruleopt.fieldWidth=10
@@ -33,7 +33,7 @@
 0.ruleopt.maxARE=-1
 0.ruleopt.harddropLock=true
 0.ruleopt.minDAS=-1
-0.ruleopt.fieldHiddenHeight=3
+0.ruleopt.fieldHiddenHeight=20
 0.ruleopt.dasInLineClear=true
 0.ruleopt.lockflashBeforeLineClear=true
 0.ruleopt.lineFallAnim=true
@@ -75,7 +75,7 @@
 0.ruleopt.areCancelRotate=false
 0.ruleopt.dasInLockFlash=true
 0.ruleopt.dasStoreChargeOnNeutral=false
-0.ruleopt.strWallkick=mu.nu.nullpo.game.subsystem.wallkick.StandardWallkick
+0.ruleopt.strWallkick=mu.nu.nullpo.game.subsystem.wallkick.StandardSymmetricMild180Wallkick
 0.ruleopt.strRuleName=GLOBAL-ADVANCE
 0.ruleopt.holdResetDirection=true
 0.ruleopt.rotateWallkick=true
@@ -101,7 +101,7 @@
 0.ruleopt.maxDAS=-1
 0.ruleopt.moveLeftAndRightAllow=true
 0.ruleopt.fieldCeiling=false
-0.ruleopt.dasRedirectInARE=false
+0.ruleopt.dasRedirectInARE=true
 0.ruleopt.maxLockDelay=-1
 0.ruleopt.softdropLock=false
 0.ruleopt.fieldLockoutDeath=false

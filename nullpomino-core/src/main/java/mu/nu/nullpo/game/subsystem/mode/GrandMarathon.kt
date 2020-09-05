@@ -378,7 +378,8 @@ class GrandMarathon:AbstractMode() {
 					receiver.drawScoreFont(engine, playerID, 3, 2, "GRADE TIME LEVEL", COLOR.BLUE)
 
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1), COLOR.YELLOW)
+						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1),
+							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW)
 						var gc = if(i==rankingRank)
 							if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE
 						else COLOR.WHITE
@@ -573,8 +574,15 @@ class GrandMarathon:AbstractMode() {
 			// 段位上昇
 			while(grade<17&&engine.statistics.score>=tableGradeScore[grade]) {
 				engine.playSE("gradeup")
-				engine.playSE("grade${grade*4/17}")
 				grade++
+				when {
+					grade in 0..4 -> engine.playSE("grade0")
+					grade in 5..8 -> engine.playSE("grade1")
+					grade in 9..12 -> engine.playSE("grade2")
+					grade in 13..16 -> engine.playSE("grade3")
+					grade>=17 -> engine.playSE("grade4")
+				}
+
 				dectemp++
 				gradeflash = 180
 				lastGradeTime = engine.statistics.time

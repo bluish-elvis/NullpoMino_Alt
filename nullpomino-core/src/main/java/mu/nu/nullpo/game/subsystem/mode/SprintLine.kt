@@ -61,8 +61,8 @@ class SprintLine:NetDummyMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "LINE RACE"
-
+		get() = "Lines SprintRace"
+	override val gameIntensity:Int = 2
 	/* Initialization for each player */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		log.debug("playerInit")

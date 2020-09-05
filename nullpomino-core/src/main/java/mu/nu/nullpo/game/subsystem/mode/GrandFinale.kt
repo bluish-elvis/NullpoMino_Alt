@@ -140,7 +140,7 @@ class GrandFinale:AbstractMode() {
 	/** Returns the name of this mode */
 	override val name:String
 		get() = "Grand Finale"
-
+	override val gameIntensity:Int = 3
 	/** This function will be called when the game enters the main game
 	 * screen. */
 	override fun playerInit(engine:GameEngine, playerID:Int) {

@@ -98,8 +98,8 @@ class MarathonShuttle:NetDummyMode() {
 
 	/* Mode name */
 	override val name:String
-		get() = "MARATHON SHUTTLE RUN"
-
+		get() = "MARATHON ShuttleRun"
+	override val gameIntensity:Int = 1
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
