@@ -38,10 +38,10 @@ class VSBattleMode:AbstractMode() {
 
 	/** garbage blockType of */
 	private var garbageType:IntArray = IntArray(0)
-	private val garbageStyle get() = garbageType.map {GARBAGE_STYLE.values()[it]}
+	private val garbageStyle get() = garbageType.map {GarbageStyle.values()[it]}
 
 	/** Rate of change of garbage holes */
-	private var garbagePercent:IntArray = IntArray(0)
+	private var messiness:Array<IntArray> = Array(0) {IntArray(0)}
 
 	/** Allow garbage countering */
 	private var garbageCounter:BooleanArray = BooleanArray(0)
@@ -49,20 +49,23 @@ class VSBattleMode:AbstractMode() {
 	/** Allow garbage blocking */
 	private var garbageBlocking:BooleanArray = BooleanArray(0)
 
-	/** Has accumulatedgarbage blockOfcount */
-	private val garbage:IntArray get() = (0 until players).map {getTotalGarbageLines(it)}.toIntArray()
+	/** Has accumulated garbage blockOfcount */
+	private val garbage:IntArray get() = (0 until players).map {p -> garbageEntries[p].sumBy {it.lines}}.toIntArray()
 
 	/** Had sent garbage blockOfcount */
-	private var garbageSent:IntArray = IntArray(0)
+	private val garbageSent:IntArray get() = owner.engine.map {it.statistics.attacks}.toIntArray()
+
+	/** Had sent garbage per minutes */
+	private val attackSpd:FloatArray get() = owner.engine.map {it.statistics.apm}.toFloatArray()
+
+	/** VS Score */
+	private val score:FloatArray get() = owner.engine.map {it.statistics.vs}.toFloatArray()
 
 	/** Had guard garbage blockOfcount */
 	private var garbageGuard:IntArray = IntArray(0)
 
 	/** Last garbage hole position */
 	private var lastHole:IntArray = IntArray(0)
-
-	/** Most recent scoring eventInB2BIf it&#39;s the casetrue */
-	private var lastb2b:BooleanArray = BooleanArray(0)
 
 	/** Most recent scoring eventInCombocount */
 	private var lastcombo:IntArray = IntArray(0)
@@ -79,14 +82,14 @@ class VSBattleMode:AbstractMode() {
 	/** Old flag for allowing Twisters */
 	private var enableTwist:BooleanArray = BooleanArray(0)
 
-	/** Flag for enabling wallkick Twisters */
-	private var enableTwistKick:BooleanArray = BooleanArray(0)
-
 	/** Immobile EZ spin */
 	private var twistEnableEZ:BooleanArray = BooleanArray(0)
 
 	/** B2B Type (0=OFF 1=ON 2=ON+Separated-garbage) */
 	private var b2bType:IntArray = IntArray(0)
+
+	/** Flag for Split chains b2b */
+	private var splitb2b:BooleanArray = BooleanArray(0)
 
 	/** Flag for enabling combos */
 	private var enableCombo:BooleanArray = BooleanArray(0)
@@ -94,7 +97,7 @@ class VSBattleMode:AbstractMode() {
 	/** Big */
 	private var big:BooleanArray = BooleanArray(0)
 
-	/** Sound effectsON/OFF */
+	/** Sound effects ON/OFF */
 	private var enableSE:BooleanArray = BooleanArray(0)
 
 	/** HurryupSeconds before the startcount(-1InHurryupNo) */
@@ -146,8 +149,7 @@ class VSBattleMode:AbstractMode() {
 	private var version:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "VS:Face to Face"
+	override val name:String = "VS:Face to Face"
 
 	override val isVSMode:Boolean
 		get() = true
@@ -159,24 +161,21 @@ class VSBattleMode:AbstractMode() {
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
 		owner = manager
-		receiver = owner.receiver
 
 		garbageType = IntArray(MAX_PLAYERS)
-		garbagePercent = IntArray(MAX_PLAYERS)
+		messiness = Array(MAX_PLAYERS) {IntArray(2)}
 		garbageCounter = BooleanArray(MAX_PLAYERS)
 		garbageBlocking = BooleanArray(MAX_PLAYERS)
-		garbageSent = IntArray(MAX_PLAYERS)
 		garbageGuard = IntArray(MAX_PLAYERS)
 		lastHole = IntArray(MAX_PLAYERS)
-		lastb2b = BooleanArray(MAX_PLAYERS)
 		lastcombo = IntArray(MAX_PLAYERS)
 		lastpiece = IntArray(MAX_PLAYERS)
 		bgmno = 0
 		twistEnableType = IntArray(MAX_PLAYERS)
 		enableTwist = BooleanArray(MAX_PLAYERS)
-		enableTwistKick = BooleanArray(MAX_PLAYERS)
 		twistEnableEZ = BooleanArray(MAX_PLAYERS)
 		b2bType = IntArray(MAX_PLAYERS)
+		splitb2b = BooleanArray(MAX_PLAYERS)
 		enableCombo = BooleanArray(MAX_PLAYERS)
 		big = BooleanArray(MAX_PLAYERS)
 		enableSE = BooleanArray(MAX_PLAYERS)
@@ -204,9 +203,9 @@ class VSBattleMode:AbstractMode() {
 	private fun loadPreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
 		engine.speed.gravity = prop.getProperty("vsbattle.gravity.$preset", 4)
 		engine.speed.denominator = prop.getProperty("vsbattle.denominator.$preset", 256)
-		engine.speed.are = prop.getProperty("vsbattle.are.$preset", 10)
-		engine.speed.areLine = prop.getProperty("vsbattle.areLine.$preset", 5)
-		engine.speed.lineDelay = prop.getProperty("vsbattle.lineDelay.$preset", 20)
+		engine.speed.are = prop.getProperty("vsbattle.are.$preset", 2)
+		engine.speed.areLine = prop.getProperty("vsbattle.areLine.$preset", 3)
+		engine.speed.lineDelay = prop.getProperty("vsbattle.lineDelay.$preset", 2)
 		engine.speed.lockDelay = prop.getProperty("vsbattle.lockDelay.$preset", 30)
 		engine.speed.das = prop.getProperty("vsbattle.das.$preset", 14)
 	}
@@ -233,23 +232,15 @@ class VSBattleMode:AbstractMode() {
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
 		bgmno = prop.getProperty("vsbattle.bgmno", 0)
-		if(version>=5)
-			garbageType[playerID] = prop.getProperty("vsbattle.garbageType.p$playerID", 0)
-		else
-			garbageType[playerID] = prop.getProperty("vsbattle.garbageType", 0)
-		garbagePercent[playerID] = prop.getProperty("vsbattle.garbagePercent.p$playerID", 100)
+		garbageType[playerID] = prop.getProperty("vsbattle.garbageType.p$playerID", 0)
+		messiness[playerID] = prop.getProperty("vsbattle.messiness.p$playerID", intArrayOf(90,30))
 		garbageCounter[playerID] = prop.getProperty("vsbattle.garbageCounter.p$playerID", true)
 		garbageBlocking[playerID] = prop.getProperty("vsbattle.garbageBlocking.p$playerID", true)
 		twistEnableType[playerID] = prop.getProperty("vsbattle.twistEnableType.p$playerID", 1)
 		enableTwist[playerID] = prop.getProperty("vsbattle.enableTwist.p$playerID", true)
-		enableTwistKick[playerID] = prop.getProperty("vsbattle.enableTwistKick.p$playerID", true)
 		twistEnableEZ[playerID] = prop.getProperty("vsbattle.twistEnableEZ.p$playerID", false)
-		if(version>=5)
-			b2bType[playerID] = prop.getProperty("vsbattle.b2bType.p$playerID", 1)
-		else {
-			val b = prop.getProperty("vsbattle.enableB2B.p$playerID", true)
-			b2bType[playerID] = if(b) 1 else 0
-		}
+		b2bType[playerID] = prop.getProperty("vsbattle.b2bType.p$playerID", 1)
+		splitb2b[playerID] = prop.getProperty("vsbattle.splitb2b.p$playerID", true)
 		enableCombo[playerID] = prop.getProperty("vsbattle.enableCombo.p$playerID", true)
 		big[playerID] = prop.getProperty("vsbattle.big.p$playerID", false)
 		enableSE[playerID] = prop.getProperty("vsbattle.enableSE.p$playerID", true)
@@ -270,14 +261,14 @@ class VSBattleMode:AbstractMode() {
 		val playerID = engine.playerID
 		prop.setProperty("vsbattle.bgmno", bgmno)
 		prop.setProperty("vsbattle.garbageType.p$playerID", garbageType[playerID])
-		prop.setProperty("vsbattle.garbagePercent.p$playerID", garbagePercent[playerID])
+		prop.setProperty("vsbattle.messiness.p$playerID", messiness[playerID])
 		prop.setProperty("vsbattle.garbageCounter.p$playerID", garbageCounter[playerID])
 		prop.setProperty("vsbattle.garbageBlocking.p$playerID", garbageBlocking[playerID])
 		prop.setProperty("vsbattle.twistEnableType.p$playerID", twistEnableType[playerID])
 		prop.setProperty("vsbattle.enableTwist.p$playerID", enableTwist[playerID])
-		prop.setProperty("vsbattle.enableTwistKick.p$playerID", enableTwistKick[playerID])
 		prop.setProperty("vsbattle.twistEnableEZ.p$playerID", twistEnableEZ[playerID])
 		prop.setProperty("vsbattle.b2bType.p$playerID", b2bType[playerID])
+		prop.setProperty("vsbattle.splitb2b.p$playerID", splitb2b[playerID])
 		prop.setProperty("vsbattle.enableCombo.p$playerID", enableCombo[playerID])
 		prop.setProperty("vsbattle.big.p$playerID", big[playerID])
 		prop.setProperty("vsbattle.enableSE.p$playerID", enableSE[playerID])
@@ -312,12 +303,6 @@ class VSBattleMode:AbstractMode() {
 		prop.setProperty("values.$id", field.fieldToString())
 	}
 
-	/** I have now accumulatedgarbage blockOfcountReturns
-	 * @param playerID Player ID
-	 * @return I have now accumulatedgarbage blockOfcount
-	 */
-	private fun getTotalGarbageLines(playerID:Int):Int = garbageEntries[playerID].sumBy {it.lines}
-
 	/** For previewMapRead
 	 * @param engine GameEngine
 	 * @param playerID Player number
@@ -350,7 +335,6 @@ class VSBattleMode:AbstractMode() {
 		engine.ruleopt.lockresetLimitRotate = engine.ruleopt.lockresetLimitRotate.let {if(it<0) 20 else minOf(it, 20)}
 		garbageSent[playerID] = 0
 		lastHole[playerID] = -1
-		lastb2b[playerID] = false
 		lastcombo[playerID] = 0
 
 		garbageEntries[playerID] = LinkedList()
@@ -373,7 +357,7 @@ class VSBattleMode:AbstractMode() {
 		// Menu
 		if(!engine.owner.replayMode&&engine.statc[4]==0) {
 			// Configuration changes
-			val change = updateCursor(engine, 26, playerID)
+			val change = updateCursor(engine, 27, playerID)
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -383,99 +367,54 @@ class VSBattleMode:AbstractMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-					0 -> {
-						engine.speed.gravity += change*m
-						if(engine.speed.gravity<-1) engine.speed.gravity = 99999
-						if(engine.speed.gravity>99999) engine.speed.gravity = -1
-					}
-					1 -> {
-						engine.speed.denominator += change*m
-						if(engine.speed.denominator<-1) engine.speed.denominator = 99999
-						if(engine.speed.denominator>99999) engine.speed.denominator = -1
-					}
-					2 -> {
-						engine.speed.are += change
-						if(engine.speed.are<0) engine.speed.are = 99
-						if(engine.speed.are>99) engine.speed.are = 0
-					}
-					3 -> {
-						engine.speed.areLine += change
-						if(engine.speed.areLine<0) engine.speed.areLine = 99
-						if(engine.speed.areLine>99) engine.speed.areLine = 0
-					}
-					4 -> {
-						engine.speed.lineDelay += change
-						if(engine.speed.lineDelay<0) engine.speed.lineDelay = 99
-						if(engine.speed.lineDelay>99) engine.speed.lineDelay = 0
-					}
-					5 -> {
-						engine.speed.lockDelay += change
-						if(engine.speed.lockDelay<0) engine.speed.lockDelay = 99
-						if(engine.speed.lockDelay>99) engine.speed.lockDelay = 0
-					}
-					6 -> {
-						engine.speed.das += change
-						if(engine.speed.das<0) engine.speed.das = 99
-						if(engine.speed.das>99) engine.speed.das = 0
-					}
-					7, 8 -> {
-						presetNumber[playerID] += change
-						if(presetNumber[playerID]<0) presetNumber[playerID] = 99
-						if(presetNumber[playerID]>99) presetNumber[playerID] = 0
-					}
-					9 -> {
-						garbageType[playerID] += change
-						if(garbageType[playerID]<0) garbageType[playerID] = GARBAGE_STYLE.values().size-1
-						if(garbageType[playerID]>=GARBAGE_STYLE.values().size) garbageType[playerID] = 0
-					}
-					10 -> {
-						garbagePercent[playerID] += change
-						if(garbagePercent[playerID]<0) garbagePercent[playerID] = 100
-						if(garbagePercent[playerID]>100) garbagePercent[playerID] = 0
-					}
-					11 -> garbageCounter[playerID] = !garbageCounter[playerID]
-					12 -> garbageBlocking[playerID] = !garbageBlocking[playerID]
-					13 -> {
-						//enableTwist[playerID] = !enableTwist[playerID];
+					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
+					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
+					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
+					3 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
+					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
+					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
+					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
+					7, 8 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
+					9 -> garbageType[playerID] = rangeCursor(garbageType[playerID]+change, 0, GarbageStyle.values().size-1)
+					10 -> messiness[playerID][0] = rangeCursor(messiness[playerID][0]+change, 0, 100)
+					11 -> messiness[playerID][1] = rangeCursor(messiness[playerID][1]+change, 0, 100)
+					12 -> garbageCounter[playerID] = !garbageCounter[playerID]
+					13 -> garbageBlocking[playerID] = !garbageBlocking[playerID]
+					14 -> {
 						twistEnableType[playerID] += change
 						if(twistEnableType[playerID]<0) twistEnableType[playerID] = 2
 						if(twistEnableType[playerID]>2) twistEnableType[playerID] = 0
 					}
-					14 -> enableTwistKick[playerID] = !enableTwistKick[playerID]
 					15 -> twistEnableEZ[playerID] = !twistEnableEZ[playerID]
 					16 -> {
-						//enableB2B[playerID] = !enableB2B[playerID];
 						b2bType[playerID] += change
 						if(b2bType[playerID]<0) b2bType[playerID] = 2
 						if(b2bType[playerID]>2) b2bType[playerID] = 0
 					}
-					17 -> enableCombo[playerID] = !enableCombo[playerID]
-					18 -> big[playerID] = !big[playerID]
-					19 -> enableSE[playerID] = !enableSE[playerID]
-					20 -> {
+					17 -> splitb2b[playerID] = !splitb2b[playerID]
+					18 -> enableCombo[playerID] = !enableCombo[playerID]
+					19 -> big[playerID] = !big[playerID]
+					20 -> enableSE[playerID] = !enableSE[playerID]
+					21 -> {
 						hurryupSeconds[playerID] += change
 						if(hurryupSeconds[playerID]<-1) hurryupSeconds[playerID] = 300
 						if(hurryupSeconds[playerID]>300) hurryupSeconds[playerID] = -1
 					}
-					21 -> {
+					22 -> {
 						hurryupInterval[playerID] += change
 						if(hurryupInterval[playerID]<1) hurryupInterval[playerID] = 99
 						if(hurryupInterval[playerID]>99) hurryupInterval[playerID] = 1
 					}
-					22 -> {
-						bgmno += change
-						if(bgmno<0) bgmno = BGM.count-1
-						if(bgmno>=BGM.count) bgmno = 0
-					}
-					23 -> showStats = !showStats
-					24 -> {
+					23 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					24 -> showStats = !showStats
+					25 -> {
 						useMap[playerID] = !useMap[playerID]
 						if(!useMap[playerID]) {
 							if(engine.field!=null) engine.field!!.reset()
 						} else
 							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 					}
-					25 -> {
+					26 -> {
 						mapSet[playerID] += change
 						if(mapSet[playerID]<0) mapSet[playerID] = 99
 						if(mapSet[playerID]>99) mapSet[playerID] = 0
@@ -484,7 +423,7 @@ class VSBattleMode:AbstractMode() {
 							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 						}
 					}
-					26 -> if(useMap[playerID]) {
+					27 -> if(useMap[playerID]) {
 						mapNumber[playerID] += change
 						if(mapNumber[playerID]<-1) mapNumber[playerID] = mapMaxNo[playerID]-1
 						if(mapNumber[playerID]>mapMaxNo[playerID]-1) mapNumber[playerID] = -1
@@ -539,7 +478,8 @@ class VSBattleMode:AbstractMode() {
 			if(menuTime>=60) menuCursor = 9
 			if(menuTime>=120) engine.statc[4] = 1
 		} else // Start
-			if(owner.engine[0].statc[4]==1&&((owner.engine[1].statc[4]==1||owner.engine[1].ai!=null)&&(playerID==1||engine.ctrl.isPush(Controller.BUTTON_A)))) {
+			if(owner.engine[0].statc[4]==1&&((owner.engine[1].statc[4]==1||owner.engine[1].ai!=null)&&
+					(playerID==1||engine.ctrl.isPush(Controller.BUTTON_A)))) {
 				owner.engine[0].stat = GameEngine.Status.READY
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
@@ -554,28 +494,26 @@ class VSBattleMode:AbstractMode() {
 		if(engine.statc[4]==0) {
 			when {
 				menuCursor<9 -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
-					drawMenu(engine, playerID, receiver, 14, COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
+					drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.ORANGE, 0, engine.speed)
+					drawMenu(engine, playerID, receiver, 5, COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE",
+						"${presetNumber[playerID]}")
 				}
 				menuCursor<18 -> {
-					val strTWISTEnable = when {
-						twistEnableType[playerID]==0 -> "OFF"
-						twistEnableType[playerID]==1 -> "T-ONLY"
-						twistEnableType[playerID]==2 -> "ALL"
-						else -> ""
-					}
+					val strTWISTEnable = listOf("OFF", "T-ONLY", "ALL")[twistEnableType[playerID]]
+					val strB2BType = listOf("OFF", "ON", "SEPARATE")[b2bType[playerID]]
 
-					val strB2BType = when(b2bType[playerID]) {
-						0 -> "OFF"
-						1 -> "ON"
-						2 -> "SEPARATE"
-						else -> ""
+					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "GARBAGE", garbageStyle[playerID].name)
+					receiver.drawMenuFont(engine, playerID, 0, 2, "Messiness", COLOR.YELLOW)
+					messiness[playerID].map {"$it%"}.forEachIndexed {i, it ->
+						val f = menuCursor==(10+i)&&!engine.owner.replayMode
+						receiver.drawMenuFont(engine, playerID, 5*i+if(f) 1 else 0, 3, "\u0082$it", f)
 					}
-					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "GARBAGE", garbageStyle[playerID].name,
-						"CHANGERATE", "${garbagePercent[playerID]}%", "COUNTERING", GeneralUtil.getONorOFF(garbageCounter[playerID]),
+					drawMenu(engine, playerID, receiver, 4, COLOR.CYAN, 11, "COUNTERING",
+						GeneralUtil.getONorOFF(garbageCounter[playerID]),
 						"BLOCKING", GeneralUtil.getONorOFF(garbageBlocking[playerID]), "SPIN BONUS", strTWISTEnable,
-						"KICK SPIN", GeneralUtil.getONorOFF(enableTwistKick[playerID]),
-						"EZIMMOBILE", GeneralUtil.getONorOFF(twistEnableEZ[playerID]), "B2B", strB2BType,
+						"EZIMMOBILE", GeneralUtil.getONorOFF(twistEnableEZ[playerID]),
+						"B2B", strB2BType,
+						"B2B SPLIT", GeneralUtil.getONorOFF(enableCombo[playerID]),
 						"COMBO", GeneralUtil.getONorOFF(enableCombo[playerID]))
 				}
 				else -> {
@@ -634,12 +572,13 @@ class VSBattleMode:AbstractMode() {
 	/* Called at game start */
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.b2bEnable = b2bType[playerID]>=1
+		engine.splitb2b = version>=5&&splitb2b[playerID]
 		engine.comboType = if(enableCombo[playerID]) GameEngine.COMBO_TYPE_NORMAL else GameEngine.COMBO_TYPE_DISABLE
 		engine.big = big[playerID]
 		engine.enableSE = enableSE[playerID]
 		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 
-		engine.twistAllowKick = enableTwistKick[playerID]
+		engine.twistAllowKick = true
 		if(version>=4) {
 			when {
 				twistEnableType[playerID]==0 -> {
@@ -662,6 +601,7 @@ class VSBattleMode:AbstractMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
+		fun col(it:Int) = EventReceiver.getPlayerColor(it)
 		// Status display
 		if(playerID==0) {
 			receiver.drawDirectNum(232, 16, GeneralUtil.getTime(engine.statistics.time), scale = 2f)
@@ -673,24 +613,33 @@ class VSBattleMode:AbstractMode() {
 			if(owner.receiver.nextDisplayType!=2&&showStats) {
 				receiver.drawScoreFont(engine, playerID, 0, 0, "VS-BATTLE", COLOR.ORANGE)
 
-				receiver.drawScoreFont(engine, playerID, 0, 2, "SPIKES", COLOR.PINK)
-				receiver.drawScoreNum(engine, playerID, 0, 3, "${garbageSent[0]}", EventReceiver.getPlayerColor(0))
-				receiver.drawScoreNum(engine, playerID, 8, 3, "${garbageSent[1]}", EventReceiver.getPlayerColor(1))
-
 				if(!owner.replayMode) {
-					receiver.drawScoreFont(engine, playerID, 0, 5, "VICTORIES", COLOR.CYAN)
-					receiver.drawScoreNum(engine, playerID, 0, 6, "${winCount[0]}", EventReceiver.getPlayerColor(0))
-					receiver.drawScoreNum(engine, playerID, 8, 6, "${winCount[1]}", EventReceiver.getPlayerColor(1))
+					receiver.drawScoreFont(engine, playerID, 3, 3, "WINS", COLOR.CYAN)
+					receiver.drawScoreNum(engine, playerID, 0, 1, String.format("%2d", winCount[0]), col(0), 2f)
+					receiver.drawScoreNum(engine, playerID, 6, 1, String.format("%2d", winCount[1]), col(1), 2f)
 				}
+				receiver.drawScoreFont(engine, playerID, 2, 5, "SPIKES", COLOR.PINK)
+				receiver.drawScoreNum(engine, playerID, 1, 6, String.format("%3d", garbageSent[0]), col(0))
+				receiver.drawScoreNum(engine, playerID, 6, 6, String.format("%3d", garbageSent[1]), col(1))
+
 			}
 		}
 		if(showStats) {
+			receiver.drawSpeedMeter(engine, playerID, 0, 7, attackSpd[0]/50, 5f)
+			receiver.drawSpeedMeter(engine, playerID, 5, 7, attackSpd[1]/50, 5f)
+			receiver.drawScoreNum(engine, playerID, 1, 8, String.format("%5.2f", attackSpd[0]), col(0))
+			receiver.drawScoreNum(engine, playerID, 6, 8, String.format("%5.2f", attackSpd[1]), col(1))
+			receiver.drawScoreFont(engine, playerID, 0, 10, "RANK POINT", COLOR.PURPLE)
+			receiver.drawScoreNum(engine, playerID, 0, 11, String.format("%6.2f", score[0]), col(0))
+			receiver.drawScoreNum(engine, playerID, 5, 11, String.format("%6.2f", score[1]), col(1))
+			receiver.drawSpeedMeter(engine, playerID, 0, 12, score[0]/50, 5f)
+			receiver.drawSpeedMeter(engine, playerID, 5, 12, score[1]/50, 5f)
 			val x = receiver.fieldX(engine)
-			val y = receiver.fieldY(engine)
+			val y = receiver.fieldY(engine)+24*EventReceiver.BS+1
 
-			val strTempGarbage = String.format("%5d", garbage[playerID])
+
 			garbageEntries[playerID].forEachIndexed {i, g ->
-				receiver.drawDirectNum(x+176, y+372-i*16, "${g.lines}", when {
+				receiver.drawDirectNum(x+engine.fieldWidth*EventReceiver.BS, y-i*16, "${g.lines}", when {
 					g.lines>=1 -> COLOR.YELLOW
 					g.lines>=3 -> COLOR.ORANGE
 					g.lines>=4 -> COLOR.RED
@@ -699,14 +648,17 @@ class VSBattleMode:AbstractMode() {
 			}
 
 //			if(owner.receiver.nextDisplayType==2) {
-			val fontColor = EventReceiver.getPlayerColor(playerID)
+			val mycol = col(playerID)
 
-			receiver.drawDirectFont(x-40, y+120, "TOTAL", fontColor, .5f)
-			receiver.drawDirectFont(x-40, y+128, "SPIKE", fontColor, .5f)
-			receiver.drawDirectNum(x-36, y+142, "${garbageSent[playerID]}")
+			receiver.drawDirectFont(x-32, y-8, "WINS", mycol, .5f)
+			receiver.drawDirectNum(x-24, y-24, String.format("%2d", winCount[playerID]))
 
-			receiver.drawDirectFont(x-44, y+190, "WINS", fontColor, .5f)
-			receiver.drawDirectNum(x-36, y+204, "${winCount[playerID]}")
+			receiver.drawDirectNano(x+36, y, "SENT", mycol, .5f)
+			receiver.drawDirectNum(x, y, String.format("%3d", garbageSent[playerID]))
+
+			receiver.drawDirectNano(x+68, y-8, "RP", mycol, .5f)
+			receiver.drawDirectNum(x+84, y-8, String.format("%6.2f", score[playerID]), mycol)
+
 //			}
 		}
 	}
@@ -721,7 +673,6 @@ class VSBattleMode:AbstractMode() {
 			var ptsB2B = 0
 
 			// B2B
-			lastb2b[playerID] = engine.b2b
 			if(engine.b2b) {
 				if(b2bType[playerID]==2)
 					ptsB2B += if(!engine.useAllSpinBonus) 2 else 1
@@ -730,10 +681,10 @@ class VSBattleMode:AbstractMode() {
 			// gem block attack
 			pts += engine.field!!.howManyGemClears
 
+			engine.statistics.attacks += pts
 			lastpiece[playerID] = engine.nowPieceObject!!.id
 
 			// Offset
-			garbage[playerID] = getTotalGarbageLines(playerID)
 			var ofs = 0
 			if(pts>0&&garbage[playerID]>0&&garbageCounter[playerID])
 				while(!garbageEntries[playerID].isEmpty()&&(pts-ofs)>0) {
@@ -768,20 +719,20 @@ class VSBattleMode:AbstractMode() {
 
 					if(it.lines>0) {
 						val garbageColor = PLAYER_COLOR_BLOCK[it.playerID]
-						val l = minOf(it.lines, when(garbageStyle[playerID]) {
-							GARBAGE_STYLE.FiveLines -> 5-gct
-							GARBAGE_STYLE.Primitive -> 1
-							else -> engine.fieldHeight
-						})
+						val l = minOf(it.lines,
+							if(garbageStyle[playerID]==GarbageStyle.FiveLines) 5-gct else (engine.field?.height ?: 20)/2)
+						val w = engine.field?.width ?: 10
 						var hole = lastHole[playerID]
-						if(hole==-1) hole = engine.random.nextInt(engine.field!!.width)
-						else if(engine.random.nextInt(100)<garbagePercent[playerID]||hole==-1) {
-							var newHole = engine.random.nextInt(engine.field!!.width-1)
-							if(newHole>=hole) newHole++
-							hole = newHole
+						if(hole==-1||messiness[playerID][0]==10) hole = engine.random.nextInt(w)
+						else {
+							val rand = engine.random.nextFloat()
+							if(rand<(messiness[playerID][0]/100f)) {
+								val newHole = (rand*w).toInt()
+								hole = newHole+if(newHole>=hole) 1 else 0
+							}
 						}
 
-						engine.field?.addSingleHoleGarbage(hole, garbageColor, engine.skin, l)
+						engine.field?.addRandomHoleGarbage(engine, hole, messiness[playerID][1]/100f, garbageColor, engine.skin, l)
 						gct += l
 						it.lines -= l
 						lastHole[playerID] = hole
@@ -789,8 +740,8 @@ class VSBattleMode:AbstractMode() {
 				}
 				garbageEntries[playerID].removeAll {it.lines<=0}
 			} while(when(garbageStyle[playerID]) {
-					GARBAGE_STYLE.STACK -> false
-					GARBAGE_STYLE.FiveLines -> gct<5
+					GarbageStyle.STACK -> false
+					GarbageStyle.FiveLines -> gct<5
 					else -> true
 				}&&!garbageEntries[playerID].isEmpty())
 		}
@@ -862,15 +813,8 @@ class VSBattleMode:AbstractMode() {
 			playerID -> receiver.drawMenuFont(engine, playerID, 1, 0, "You Won!", COLOR.GREEN)
 			else -> receiver.drawMenuFont(engine, playerID, 1, 0, "You Lost", COLOR.RED)
 		}
-
-		val apm = (garbageSent[playerID]*3600).toFloat()/engine.statistics.time.toFloat()
-		var apl = 0f
-		if(engine.statistics.lines>0) apl = garbageSent[playerID].toFloat()/engine.statistics.lines.toFloat()
-
-		drawResult(engine, playerID, receiver, 2, COLOR.ORANGE, "ATTACK", garbageSent[playerID])
-		drawResultStats(engine, playerID, receiver, 4, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE)
-		drawResult(engine, playerID, receiver, 8, COLOR.ORANGE, "Spikes/LINE", apl)
-		drawResult(engine, playerID, receiver, 10, COLOR.ORANGE, "Spikes/MIN", apm)
+		drawResultStats(engine, playerID, receiver, 2, COLOR.ORANGE, Statistic.VS, Statistic.LINES)
+		drawResultStats(engine, playerID, receiver, 6, COLOR.PINK, Statistic.ATTACKS, Statistic.APM, Statistic.APL)
 		drawResultStats(engine, playerID, receiver, 12, COLOR.ORANGE, Statistic.PPS, Statistic.MAXCOMBO, Statistic.MAXB2B)
 	}
 
@@ -891,19 +835,15 @@ class VSBattleMode:AbstractMode() {
 	private data class GarbageEntry(var lines:Int, val playerID:Int)
 
 	companion object {
-		/** Combo attack table */
-		private val COMBO_ATTACK_TABLE = intArrayOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)
 
-		/** garbage blockChanges to the position of the holes in the normally
-		 * random */
-		private enum class GARBAGE_STYLE {
-			STACK // One Attack will One garbage-Group
-			,
-			FiveLines // Each One turn will draws max 5 lines
-			,
-			OnceAll // All garbages will put-out on Once placing
-			,
-			Primitive // All garbages will put-out and all garbage groups will scattered
+		/** garbage blockChanges to the position of the holes in the normally random */
+		private enum class GarbageStyle {
+			/** One Attack will be One garbage-Group*/
+			STACK,
+			/** Each One turn will draws max 5 lines*/
+			FiveLines,
+			/** All garbages will put-out on Once placing**/
+			OnceAll,
 		}
 
 		/** Each player's garbage block cint */

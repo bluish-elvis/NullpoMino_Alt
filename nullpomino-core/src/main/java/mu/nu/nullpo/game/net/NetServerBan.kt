@@ -126,7 +126,7 @@ class NetServerBan {
 	fun importString(strInput:String) {
 		val strArray = strInput.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 		addr = strArray[0]
-		banLength = Integer.parseInt(strArray[1])
+		banLength = strArray[1].toInt()
 		importStartDate(strArray[2])
 	}
 

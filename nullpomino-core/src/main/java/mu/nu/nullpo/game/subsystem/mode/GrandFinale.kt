@@ -138,8 +138,7 @@ class GrandFinale:AbstractMode() {
 	private var bestSectionLine:Array<IntArray> = Array(RANKING_TYPE) {IntArray(SECTION_MAX)}
 
 	/** Returns the name of this mode */
-	override val name:String
-		get() = "Grand Finale"
+	override val name:String = "Grand Finale"
 	override val gameIntensity:Int = 3
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -183,6 +182,7 @@ class GrandFinale:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
+		engine.splitb2b = false
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.framecolor = GameEngine.FRAME_COLOR_GRAY
 		engine.bighalf = true
@@ -448,18 +448,20 @@ class GrandFinale:AbstractMode() {
 				if(gametype==1)
 					if(engine.statistics.level<500) engine.statistics.level*20/500 else 80-engine.statistics.level*80/999
 				else
-					engine.statistics.level*40/999)
+					engine.statistics.level*40/999,
+				4)
 			receiver.drawScoreNum(engine, playerID, 0, 11, String.format("%3d", nextseclv))
 			// Lines
 			receiver.drawScoreFont(engine, playerID, 0, 13, if(gametype==1) "JOKERS" else "Lines",
 				if(gametype==1&&joker<=0) COLOR.WHITE else color)
-			receiver.drawScoreNum(engine, playerID, 0, 14, String.format("%3d",
+			receiver.drawScoreNum(engine, playerID, 1, 14, String.format("%3d",
 				if(gametype==1) joker else engine.statistics.lines), 2f)
 			if(gametype!=0)
-				receiver.drawSpeedMeter(engine, playerID, 1, 16,
-					if(gametype==1) 40-joker else engine.statistics.lines*40/FURTHEST_LINES)
+				receiver.drawSpeedMeter(engine, playerID, 0, 16,
+					if(gametype==1) 40-joker else engine.statistics.lines*40/FURTHEST_LINES,
+					4)
 			if(gametype==2)
-				receiver.drawScoreNum(engine, playerID, 2, 17, String.format("%3d", FURTHEST_LINES))
+				receiver.drawScoreNum(engine, playerID, 1, 17, String.format("%3d", FURTHEST_LINES))
 
 			// Remain roll time
 			if(engine.gameActive&&engine.ending==2) {
@@ -771,7 +773,7 @@ class GrandFinale:AbstractMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${engine.statc[1]+1}/3", COLOR.RED)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 		if(engine.statc[1]==0) {
 			if(grade>=1&&grade<tableGradeName.size) {

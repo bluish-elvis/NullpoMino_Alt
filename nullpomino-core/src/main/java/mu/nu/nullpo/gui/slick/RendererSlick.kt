@@ -90,33 +90,45 @@ internal open class RendererSlick:AbstractRenderer() {
 
 	override fun doesGraphicsExist():Boolean = graphics!=null
 
-	/* スピードMeterを描画 */
-	override fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Float) {
-		val s = if(sp<0||sp>1) 1f else sp
-		val graphics = graphics ?: return
+	/** スピードMeterを描画
+	 * @param sp ゲージ量(0f~1f)
+	 * @param len ゲージ長さ*/
+	override fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Float, len:Float) {
+		val s = if(sp<0) 1f else sp
+		val g = graphics ?: return
 		if(engine.owner.menuOnly) return
 
-		val dx1 = scoreX(engine, playerID)+6+x*BS
-		val dy1 = scoreY(engine, playerID)+6+y*BS
+		val dx1 = scoreX(engine, playerID)+x*BS+maxOf((minOf(len, 1f)*BS).toInt()/2, 0)
+		val dy1 = scoreY(engine, playerID)+y*BS+BS/2
+		val w = maxOf(1f, len-1)*BS
 
-		graphics.color = Color.black
-		graphics.drawRect(dx1.toFloat(), dy1.toFloat(), 41f, 3f)
+		g.color = Color.black
+		g.drawRect((dx1-1).toFloat(), (dy1-1).toFloat(), w+1, 3f)
 
 
-		graphics.color = if(s<=0.5) Color.green else if(s<0.75) Color.yellow else Color.orange
-		graphics.fillRect((dx1+1).toFloat(), (dy1+1).toFloat(), 40f, 2f)
+		g.color = if(s<0.25f) Color.cyan else if(s<0.5f) Color.green else if(s<0.75f) Color.yellow else if(s<1f) Color.orange
+		else Color.red
+		g.fillRect(dx1.toFloat(), dy1.toFloat(), w, 2f)
+		if(s<.25f) {
+			g.color = Color.green
+			g.fillRect(dx1.toFloat(), dy1.toFloat(), s*w*4, 2f)
+		}
 		if(s<.5f) {
-			graphics.color = Color.yellow
-			graphics.fillRect((dx1+1).toFloat(), (dy1+1).toFloat(), s*80, 2f)
+			g.color = Color.yellow
+			g.fillRect(dx1.toFloat(), dy1.toFloat(), s*w*2, 2f)
 		}
 		if(s<0.75f) {
-			graphics.color = Color.orange
-			graphics.fillRect((dx1+1).toFloat(), (dy1+1).toFloat(), (s*40f*3f/4f).toInt().toFloat(), 2f)
+			g.color = Color.orange
+			g.fillRect(dx1.toFloat(), dy1.toFloat(), s*w/.75f, 2f)
 		}
-		graphics.color = Color.red
-		graphics.fillRect((dx1+1).toFloat(), (dy1+1).toFloat(), s*40, 2f)
-
-		graphics.color = Color.white
+		if(s<1f) {
+			g.color = Color.red
+			g.fillRect(dx1.toFloat(), dy1.toFloat(), s*w, 2f)
+		} else {
+			g.color = Color.white
+			g.fillRect(dx1.toFloat(), dy1.toFloat(), minOf(1f, s-1)*w, 2f)
+		}
+		g.color = Color.white
 	}
 
 	/* 勲章を描画 */

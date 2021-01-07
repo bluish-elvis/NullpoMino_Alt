@@ -5,8 +5,7 @@ import mu.nu.nullpo.game.play.GameEngine
 /** PREVIEW mode - A game mode for Tuning preview */
 class PreviewMode:AbstractMode() {
 	/* Mode name */
-	override val name:String
-		get() = "PREVIEW"
+	override val name:String = "PREVIEW"
 
 	/* Player init */
 	override fun playerInit(engine:GameEngine, playerID:Int) {

@@ -72,8 +72,7 @@ class Nohoho:DummyAI(), Runnable {
 	private var inARE:Boolean = false
 
 	/* AI's name */
-	override val name:String
-		get() = "Avalanche-R V0.01"
+	override val name:String = "Avalanche-R V0.01"
 
 	/* Called at initialization */
 	override fun init(engine:GameEngine, playerID:Int) {
@@ -107,7 +106,7 @@ class Nohoho:DummyAI(), Runnable {
 	}
 
 	/* End processing */
-	override fun shutdown(engine:GameEngine, playerID:Int) {
+	override fun shutdown() {
 		if(thread!=null&&thread!!.isAlive) {
 			thread!!.interrupt()
 			threadRunning = false

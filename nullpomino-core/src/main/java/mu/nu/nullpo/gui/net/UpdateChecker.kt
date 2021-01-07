@@ -191,7 +191,7 @@ class UpdateChecker:Runnable {
 					if(strSplit.size>=2) {
 						val strTemp = "${strSplit[0]}.${strSplit[1]}"
 						try {
-							resultVersion = java.lang.Float.parseFloat(strTemp)
+							resultVersion = strTemp.toFloat()
 						} catch(e:NumberFormatException) {
 						}
 
@@ -213,7 +213,7 @@ class UpdateChecker:Runnable {
 					if(strSplit.isNotEmpty()) {
 						val strTemp = strSplit[strSplit.size-1]
 						try {
-							resultVersion = Integer.parseInt(strTemp)
+							resultVersion = strTemp.toInt()
 						} catch(e:NumberFormatException) {
 						}
 

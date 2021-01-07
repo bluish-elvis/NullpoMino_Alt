@@ -20,28 +20,37 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
 package mu.nu.nullpo.tool.ruleeditor
 
+import com.sun.javafx.application.ParametersImpl
+import javafx.application.Application
+import javafx.event.EventHandler
+import javafx.scene.Scene
+import javafx.scene.control.*
+import javafx.scene.control.Button
+import javafx.scene.control.Dialog
+import javafx.scene.control.TextField
+import javafx.scene.image.Image
+import javafx.scene.layout.VBox
+import javafx.stage.Stage
+import javafx.stage.WindowEvent
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.log4j.Logger
 import org.apache.log4j.PropertyConfigurator
-import java.awt.*
-import java.awt.event.*
-import java.awt.image.BufferedImage
 import java.io.*
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
 import javax.imageio.ImageIO
-import javax.swing.*
-import javax.swing.filechooser.FileFilter
 
 /** ルールエディター */
-class RuleEditor:JFrame, ActionListener {
+class RuleEditorFX:Application() {
 
+	private var stage:Stage = Stage()
+	private var scene:Scene? = null
 	/** Swing版のSave settings用Property file */
 	val propConfig:CustomProperties = CustomProperties()
 
@@ -56,37 +65,37 @@ class RuleEditor:JFrame, ActionListener {
 	private var strNowFile:String? = null
 
 	/** タブ */
-	private val tabPane:JTabbedPane = JTabbedPane()
+	private val tabPane:TabPane = TabPane()
 
 	//----------------------------------------------------------------------
 	/* 基本設定パネル */
 
 	/** Rule name */
-	private val txtfldRuleName:JTextField = JTextField("", 15)
+	private val txtfldRuleName:TextField = TextField()
 
 	/** NEXT表示countのテキストfield */
-	private val txtfldNextDisplay:JTextField = JTextField("", 5)
+	private val txtfldNextDisplay:TextField = TextField()
 
 	/** Game style combobox */
-	private var comboboxStyle:JComboBox<*>? = null
+	private var comboboxStyle:ComboBox<*>? = null
 
 	/** 絵柄のComboボックス */
-	private var comboboxSkin:JComboBox<*>? = null
+	private var comboboxSkin:ComboBox<*>? = null
 
 	/** ghost is enabled */
-	private val chkboxGhost:JCheckBox = JCheckBox()
+	private val chkboxGhost:CheckBox = CheckBox()
 
 	/** Blockピースがfield枠外から出現 */
-	private val chkboxEnterAboveField:JCheckBox = JCheckBox()
+	private val chkboxEnterAboveField:CheckBox = CheckBox()
 
 	/** 出現予定地が埋まっているときにY-coordinateを上にずらすMaximum count */
-	private val txtfldEnterMaxDistanceY:JTextField = JTextField("", 5)
+	private val txtfldEnterMaxDistanceY:TextField = TextField()
 
 	/** NEXT順生成アルゴリズム */
-	private var comboboxRandomizer:JComboBox<*>? = null
+	private var comboboxRandomizer:ComboBox<*>? = null
 
 	/** NEXT順生成アルゴリズムのリスト */
-	private var vectorRandomizer:Vector<String>? = null
+	private var vectorRandomizer:Vector<String> = Vector()
 
 	/** NEXT順生成アルゴリズムのリセット button
 	 * private JButton btnResetRandomizer; */
@@ -95,348 +104,313 @@ class RuleEditor:JFrame, ActionListener {
 	/* field設定パネル */
 
 	/** fieldの幅 */
-	private val txtfldFieldWidth:JTextField = JTextField("", 5)
+	private val txtfldFieldWidth:TextField = TextField()
 
 	/** Field height */
-	private val txtfldFieldHeight:JTextField = JTextField("", 5)
+	private val txtfldFieldHeight:TextField = TextField()
 
 	/** fieldの見えない部分の高さ */
-	private val txtfldFieldHiddenHeight:JTextField = JTextField("", 5)
+	private val txtfldFieldHiddenHeight:TextField = TextField()
 
 	/** fieldの天井 */
-	private val chkboxFieldCeiling:JCheckBox = JCheckBox()
+	private val chkboxFieldCeiling:CheckBox = CheckBox()
 
 	/** field枠内に置けないと死亡 */
-	private val chkboxFieldLockoutDeath:JCheckBox = JCheckBox()
+	private val chkboxFieldLockoutDeath:CheckBox = CheckBox()
 
 	/** field枠外にはみ出しただけで死亡 */
-	private val chkboxFieldPartialLockoutDeath:JCheckBox = JCheckBox()
+	private val chkboxFieldPartialLockoutDeath:CheckBox = CheckBox()
 
 	//----------------------------------------------------------------------
 	/* ホールド設定パネル */
 
 	/** ホールド is enabled */
-	private val chkboxHoldEnable:JCheckBox = JCheckBox()
+	private val chkboxHoldEnable:CheckBox = CheckBox()
 
 	/** 先行ホールド */
-	private val chkboxHoldInitial:JCheckBox = JCheckBox()
+	private val chkboxHoldInitial:CheckBox = CheckBox()
 
 	/** 先行ホールド連続使用不可 */
-	private val chkboxHoldInitialLimit:JCheckBox = JCheckBox()
+	private val chkboxHoldInitialLimit:CheckBox = CheckBox()
 
 	/** ホールドを使ったときにBlockピースの向きを初期状態に戻す */
-	private val chkboxHoldResetDirection:JCheckBox = JCheckBox()
+	private val chkboxHoldResetDirection:CheckBox = CheckBox()
 
 	/** ホールドできる count (-1:無制限) */
-	private val txtfldHoldLimit:JTextField = JTextField("", 5)
+	private val txtfldHoldLimit:TextField = TextField()
 
 	//----------------------------------------------------------------------
 	/* ドロップ設定パネル */
 
 	/** Hard drop使用可否 */
-	private val chkboxDropHardDropEnable:JCheckBox = JCheckBox()
+	private val chkboxDropHardDropEnable:CheckBox = CheckBox()
 
 	/** Hard dropで即固定 */
-	private val chkboxDropHardDropLock:JCheckBox = JCheckBox()
+	private val chkboxDropHardDropLock:CheckBox = CheckBox()
 
 	/** Hard drop連続使用不可 */
-	private val chkboxDropHardDropLimit:JCheckBox = JCheckBox()
+	private val chkboxDropHardDropLimit:CheckBox = CheckBox()
 
 	/** Soft drop使用可否 */
-	private val chkboxDropSoftDropEnable:JCheckBox = JCheckBox()
+	private val chkboxDropSoftDropEnable:CheckBox = CheckBox()
 
 	/** Soft dropで即固定 */
-	private val chkboxDropSoftDropLock:JCheckBox = JCheckBox()
+	private val chkboxDropSoftDropLock:CheckBox = CheckBox()
 
 	/** Soft drop連続使用不可 */
-	private val chkboxDropSoftDropLimit:JCheckBox = JCheckBox()
+	private val chkboxDropSoftDropLimit:CheckBox = CheckBox()
 
 	/** 接地状態でSoft dropすると即固定 */
-	private val chkboxDropSoftDropSurfaceLock:JCheckBox = JCheckBox()
+	private val chkboxDropSoftDropSurfaceLock:CheckBox = CheckBox()
 
 	/** Soft drop速度 */
-	private val txtfldDropSoftDropSpeed:JTextField = JTextField("", 5)
+	private val txtfldDropSoftDropSpeed:TextField = TextField()
 
 	/** Soft drop速度をCurrent 通常速度×n倍にする */
-	private val chkboxDropSoftDropMultiplyNativeSpeed:JCheckBox = JCheckBox()
+	private val chkboxDropSoftDropMultiplyNativeSpeed:CheckBox = CheckBox()
 
 	/** Use new soft drop codes */
-	private val chkboxDropSoftDropGravitySpeedLimit:JCheckBox = JCheckBox()
+	private val chkboxDropSoftDropGravitySpeedLimit:CheckBox = CheckBox()
 
 	//----------------------------------------------------------------------
 	/* rotation設定パネル */
 
 	/** 先行rotation */
-	private val chkboxRotateInitial:JCheckBox = JCheckBox()
+	private val chkboxRotateInitial:CheckBox = CheckBox()
 
 	/** 先行rotation連続使用不可 */
-	private val chkboxRotateInitialLimit:JCheckBox = JCheckBox()
+	private val chkboxRotateInitialLimit:CheckBox = CheckBox()
 
 	/** Wallkick */
-	private val chkboxRotateWallkick:JCheckBox = JCheckBox()
+	private val chkboxRotateWallkick:CheckBox = CheckBox()
 
 	/** 先行rotationでもWallkickする */
-	private val chkboxRotateInitialWallkick:JCheckBox = JCheckBox()
+	private val chkboxRotateInitialWallkick:CheckBox = CheckBox()
 
 	/** 上DirectionへのWallkickができる count (-1:無限) */
-	private val txtfldRotateMaxUpwardWallkick:JTextField = JTextField("", 5)
+	private val txtfldRotateMaxUpwardWallkick:TextField = TextField()
 
 	/** falseなら左が正rotation, When true,右が正rotation */
-	private val chkboxRotateButtonDefaultRight:JCheckBox = JCheckBox()
+	private val chkboxRotateButtonDefaultRight:CheckBox = CheckBox()
 
 	/** 逆rotationを許可 (falseなら正rotationと同じ) */
-	private val chkboxRotateButtonAllowReverse:JCheckBox = JCheckBox()
+	private val chkboxRotateButtonAllowReverse:CheckBox = CheckBox()
 
 	/** 2rotationを許可 (falseなら正rotationと同じ) */
-	private val chkboxRotateButtonAllowDouble:JCheckBox = JCheckBox()
+	private val chkboxRotateButtonAllowDouble:CheckBox = CheckBox()
 
 	/** Wallkickアルゴリズム */
-	private var comboboxWallkickSystem:JComboBox<*>? = null
+	private var comboboxWallkickSystem:ComboBox<*>? = null
 
 	/** Wallkickアルゴリズムのリスト */
 	private var vectorWallkickSystem:Vector<String>? = null
 
 	/** Wallkickアルゴリズムのリセット button */
-	private var btnResetWallkickSystem:JButton? = null
+	private val btnResetWallkickSystem:Button = Button()
 
 	//----------------------------------------------------------------------
 	/* 固定 time設定パネル */
 
 	/** 最低固定 time */
-	private val txtfldLockDelayMin:JTextField = JTextField("", 5)
+	private val txtfldLockDelayMin:TextField = TextField()
 
 	/** 最高固定 time */
-	private val txtfldLockDelayMax:JTextField = JTextField("", 5)
+	private val txtfldLockDelayMax:TextField = TextField()
 
 	/** 落下で固定 timeリセット */
-	private val chkboxLockDelayLockResetFall:JCheckBox = JCheckBox()
+	private val chkboxLockDelayLockResetFall:CheckBox = CheckBox()
 
 	/** 移動で固定 timeリセット */
-	private val chkboxLockDelayLockResetMove:JCheckBox = JCheckBox()
+	private val chkboxLockDelayLockResetMove:CheckBox = CheckBox()
 
 	/** rotationで固定 timeリセット */
-	private val chkboxLockDelayLockResetRotate:JCheckBox = JCheckBox()
+	private val chkboxLockDelayLockResetRotate:CheckBox = CheckBox()
 
 	/** Lock delay reset by wallkick */
-	private val chkboxLockDelayLockResetWallkick:JCheckBox = JCheckBox()
+	private val chkboxLockDelayLockResetWallkick:CheckBox = CheckBox()
 
 	/** 横移動 counterとrotation counterを共有 (横移動 counterだけ使う) */
-	private val chkboxLockDelayLockResetLimitShareCount:JCheckBox = JCheckBox()
+	private val chkboxLockDelayLockResetLimitShareCount:CheckBox = CheckBox()
 
 	/** 横移動 count制限 */
-	private val txtfldLockDelayLockResetLimitMove:JTextField = JTextField("", 5)
+	private val txtfldLockDelayLockResetLimitMove:TextField = TextField()
 
 	/** rotation count制限 */
-	private val txtfldLockDelayLockResetLimitRotate:JTextField = JTextField("", 5)
+	private val txtfldLockDelayLockResetLimitRotate:TextField = TextField()
 
 	/** 横移動 counterかrotation counterが超過したら固定 timeリセットを無効にする */
-	private var radioLockDelayLockResetLimitOverNoReset:JRadioButton? = null
+	private val radioLockDelayLockResetLimitOverNoReset:RadioButton = RadioButton()
 
 	/** 横移動 counterかrotation counterが超過したら即座に固定する */
-	private var radioLockDelayLockResetLimitOverInstant:JRadioButton? = null
+	private val radioLockDelayLockResetLimitOverInstant:RadioButton = RadioButton()
 
 	/** 横移動 counterかrotation counterが超過したらWallkick無効にする */
-	private var radioLockDelayLockResetLimitOverNoWallkick:JRadioButton? = null
+	private val radioLockDelayLockResetLimitOverNoWallkick:RadioButton = RadioButton()
 
 	//----------------------------------------------------------------------
 	/* ARE設定パネル */
 
 	/** 最低ARE */
-	private val txtfldAREMin:JTextField = JTextField("", 5)
+	private val txtfldAREMin:TextField = TextField()
 
 	/** 最高ARE */
-	private val txtfldAREMax:JTextField = JTextField("", 5)
+	private val txtfldAREMax:TextField = TextField()
 
 	/** 最低ARE after line clear */
-	private val txtfldARELineMin:JTextField = JTextField("", 5)
+	private val txtfldARELineMin:TextField = TextField()
 
 	/** 最高ARE after line clear */
-	private val txtfldARELineMax:JTextField = JTextField("", 5)
+	private val txtfldARELineMax:TextField = TextField()
 
 	/** 固定した瞬間に光る frame count */
-	private val txtfldARELockFlash:JTextField = JTextField("", 5)
+	private val txtfldARELockFlash:TextField = TextField()
 
 	/** Blockが光る専用 frame を入れる */
-	private val chkboxARELockFlashOnlyFrame:JCheckBox = JCheckBox()
+	private val chkboxARELockFlashOnlyFrame:CheckBox = CheckBox()
 
 	/** Line clear前にBlockが光る frame を入れる */
-	private val chkboxARELockFlashBeforeLineClear:JCheckBox = JCheckBox()
+	private val chkboxARELockFlashBeforeLineClear:CheckBox = CheckBox()
 
 	/** ARE cancel on move checkbox */
-	private val chkboxARECancelMove:JCheckBox = JCheckBox()
+	private val chkboxARECancelMove:CheckBox = CheckBox()
 
 	/** ARE cancel on rotate checkbox */
-	private val chkboxARECancelRotate:JCheckBox = JCheckBox()
+	private val chkboxARECancelRotate:CheckBox = CheckBox()
 
 	/** ARE cancel on hold checkbox */
-	private val chkboxARECancelHold:JCheckBox = JCheckBox()
+	private val chkboxARECancelHold:CheckBox = CheckBox()
 
 	//----------------------------------------------------------------------
 	/* Line clear設定パネル */
 
 	/** 最低Line clear time */
-	private val txtfldLineDelayMin:JTextField = JTextField("", 5)
+	private val txtfldLineDelayMin:TextField = TextField()
 
 	/** 最高Line clear time */
-	private val txtfldLineDelayMax:JTextField = JTextField("", 5)
+	private val txtfldLineDelayMax:TextField = TextField()
 
 	/** 落下アニメ */
-	private val chkboxLineFallAnim:JCheckBox = JCheckBox()
+	private val chkboxLineFallAnim:CheckBox = CheckBox()
 
 	/** Line delay cancel on move checkbox */
-	private val chkboxLineCancelMove:JCheckBox = JCheckBox()
+	private val chkboxLineCancelMove:CheckBox = CheckBox()
 
 	/** Line delay cancel on rotate checkbox */
-	private val chkboxLineCancelRotate:JCheckBox = JCheckBox()
+	private val chkboxLineCancelRotate:CheckBox = CheckBox()
 
 	/** Line delay cancel on hold checkbox */
-	private val chkboxLineCancelHold:JCheckBox = JCheckBox()
+	private val chkboxLineCancelHold:CheckBox = CheckBox()
 
 	//----------------------------------------------------------------------
 	/* 移動設定パネル */
 
 	/** 最低横溜め time */
-	private val txtfldMoveDASMin:JTextField = JTextField("", 5)
+	private val txtfldMoveDASMin:TextField = TextField()
 
 	/** 最高横溜め time */
-	private val txtfldMoveDASMax:JTextField = JTextField("", 5)
+	private val txtfldMoveDASMax:TextField = TextField()
 
 	/** 横移動間隔 */
-	private val txtfldMoveDASDelay:JTextField = JTextField("", 5)
+	private val txtfldMoveDASDelay:TextField = TextField()
 
 	/** Ready画面で横溜め可能 */
-	private val chkboxMoveDASInReady:JCheckBox = JCheckBox()
+	private val chkboxMoveDASInReady:CheckBox = CheckBox()
 
 	/** 最初の frame で横溜め可能 */
-	private val chkboxMoveDASInMoveFirstFrame:JCheckBox = JCheckBox()
+	private val chkboxMoveDASInMoveFirstFrame:CheckBox = CheckBox()
 
 	/** Blockが光った瞬間に横溜め可能 */
-	private val chkboxMoveDASInLockFlash:JCheckBox = JCheckBox()
+	private val chkboxMoveDASInLockFlash:CheckBox = CheckBox()
 
 	/** Line clear中に横溜め可能 */
-	private val chkboxMoveDASInLineClear:JCheckBox = JCheckBox()
+	private val chkboxMoveDASInLineClear:CheckBox = CheckBox()
 
 	/** ARE中に横溜め可能 */
-	private val chkboxMoveDASInARE:JCheckBox = JCheckBox()
+	private val chkboxMoveDASInARE:CheckBox = CheckBox()
 
 	/** AREの最後の frame で横溜め可能 */
-	private val chkboxMoveDASInARELastFrame:JCheckBox = JCheckBox()
+	private val chkboxMoveDASInARELastFrame:CheckBox = CheckBox()
 
 	/** Ending突入画面で横溜め可能 */
-	private val chkboxMoveDASInEndingStart:JCheckBox = JCheckBox()
+	private val chkboxMoveDASInEndingStart:CheckBox = CheckBox()
 
 	/** DAS charge on blocked move checkbox */
-	private val chkboxMoveDASChargeOnBlockedMove:JCheckBox = JCheckBox()
+	private val chkboxMoveDASChargeOnBlockedMove:CheckBox = CheckBox()
 
 	/** Store DAS Charge on neutral checkbox */
-	private val chkboxMoveDASStoreChargeOnNeutral:JCheckBox = JCheckBox()
+	private val chkboxMoveDASStoreChargeOnNeutral:CheckBox = CheckBox()
 
 	/** Redirect in delay checkbox */
-	private val chkboxMoveDASRedirectInDelay:JCheckBox = JCheckBox()
+	private val chkboxMoveDASRedirectInDelay:CheckBox = CheckBox()
 
 	/** 最初の frame に移動可能 */
-	private val chkboxMoveFirstFrame:JCheckBox = JCheckBox()
+	private val chkboxMoveFirstFrame:CheckBox = CheckBox()
 
 	/** 斜め移動 */
-	private val chkboxMoveDiagonal:JCheckBox = JCheckBox()
+	private val chkboxMoveDiagonal:CheckBox = CheckBox()
 
 	/** 上下同時押し可能 */
-	private val chkboxMoveUpAndDown:JCheckBox = JCheckBox()
+	private val chkboxMoveUpAndDown:CheckBox = CheckBox()
 
 	/** 左右同時押し可能 */
-	private val chkboxMoveLeftAndRightAllow:JCheckBox = JCheckBox()
+	private val chkboxMoveLeftAndRightAllow:CheckBox = CheckBox()
 
 	/** 左右同時押ししたときに前の frame の input Directionを優先する */
-	private val chkboxMoveLeftAndRightUsePreviousInput:JCheckBox = JCheckBox()
+	private val chkboxMoveLeftAndRightUsePreviousInput:CheckBox = CheckBox()
 
 	/** Shift lock checkbox */
-	private val chkboxMoveShiftLockEnable:JCheckBox = JCheckBox()
+	private val chkboxMoveShiftLockEnable:CheckBox = CheckBox()
 
 	//----------------------------------------------------------------------
 	/* rotationパターン補正パネル */
 
 	/** プリセット選択Comboボックス */
-	private var comboboxPieceOffset:JComboBox<*>? = null
+	private var comboboxPieceOffset:ComboBox<*>? = null
 
 	/** rotationパターン補正タブ */
-	private var tabPieceOffset:JTabbedPane? = null
+	private var tabPieceOffset:TabPane? = null
 
 	/** rotationパターン補正(X) input 欄 */
-	private var txtfldPieceOffsetX:Array<Array<JTextField>>? = null
+	private var txtfldPieceOffsetX:Array<Array<TextField>> = emptyArray()
 
 	/** rotationパターン補正(Y) input 欄 */
-	private var txtfldPieceOffsetY:Array<Array<JTextField>>? = null
+	private var txtfldPieceOffsetY:Array<Array<TextField>> = emptyArray()
 
 	//----------------------------------------------------------------------
 	/* rotationパターン補正パネル */
 
 	/** rotationパターン補正タブ */
-	private var tabPieceSpawn:JTabbedPane? = null
+	private var tabPieceSpawn:TabPane? = null
 
 	/** 出現位置補正(X) input 欄 */
-	private var txtfldPieceSpawnX:Array<Array<JTextField>>? = null
+	private var txtfldPieceSpawnX:Array<Array<TextField>> = emptyArray()
 
 	/** 出現位置補正(Y) input 欄 */
-	private var txtfldPieceSpawnY:Array<Array<JTextField>>? = null
+	private var txtfldPieceSpawnY:Array<Array<TextField>> = emptyArray()
 
 	/** Big時出現位置補正(X) input 欄 */
-	private var txtfldPieceSpawnBigX:Array<Array<JTextField>>? = null
+	private var txtfldPieceSpawnBigX:Array<Array<TextField>> = emptyArray()
 
 	/** Big時出現位置補正(Y) input 欄 */
-	private var txtfldPieceSpawnBigY:Array<Array<JTextField>>? = null
+	private var txtfldPieceSpawnBigY:Array<Array<TextField>> = emptyArray()
 
 	//----------------------------------------------------------------------
 	/* 色設定パネル */
 
 	/** 色選択Comboボックス */
-	private var comboboxPieceColor:Array<JComboBox<*>>? = null
+	private var comboboxPieceColor:Array<ComboBox<*>>? = null
 
 	//----------------------------------------------------------------------
 	/* 初期Direction設定パネル */
 
 	/** 初期Direction選択Comboボックス */
-	private var comboboxPieceDirection:Array<JComboBox<*>>? = null
+	private var comboboxPieceDirection:Array<ComboBox<*>>? = null
 
 	//----------------------------------------------------------------------
 	/** Block画像 */
-	private var imgBlockSkins:Array<BufferedImage>? = null
-
-	/** Constructor */
-	constructor():super() {
-
-		init()
-		readRuleToUI(RuleOptions())
-
-		isVisible = true
-	}
-
-	/** 特定のファイルを読み込むConstructor
-	 * @param filename Filename (空文字列かnullにするとパラメータなしConstructorと同じ動作）
-	 */
-	constructor(filename:String?):super() {
-
-		init()
-
-		var ruleopt = RuleOptions()
-
-		if(filename!=null&&filename.isNotEmpty())
-			try {
-				ruleopt = load(filename)
-				strNowFile = filename
-				title = "${getUIText("Title_RuleEditor")}:$strNowFile"
-			} catch(e:IOException) {
-				log.error("Failed to load rule data from $filename", e)
-				JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e",
-					getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
-			}
-
-		readRuleToUI(ruleopt)
-
-		isVisible = true
-	}
-
-	/** Initialization */
-	private fun init() {
+	private var imgBlockSkins:Array<Image>? = null
+	override fun init() {
+		log.info(ParametersImpl.getParameters(this))
 		// 設定ファイル読み込み
 		try {
 			val `in` = FileInputStream("config/setting/swing.xml")
@@ -460,25 +434,62 @@ class RuleEditor:JFrame, ActionListener {
 			`in`.close()
 		} catch(e:IOException) {
 		}
+		strNowFile = null
+		loadBlockSkins()
+	}
+
+	override fun start(p0:Stage?) {
+		stage = p0 ?: return
+		stage.onCloseRequest = EventHandler<WindowEvent> {
+			log.info("CLOSING")
+		}
 
 		// Look&Feel設定
-		if(propConfig.getProperty("option.usenativelookandfeel", true))
+		/*if(propConfig.getProperty("option.usenativelookandfeel", true))
 			try {
 				UIManager.getInstalledLookAndFeels()
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
 			} catch(e:Exception) {
 				log.warn("Failed to set native look&feel", e)
+			}*/
+
+
+		stage.title = getUIText("Title_RuleEditor")
+
+		var ruleopt = RuleOptions()
+
+		readRuleToUI(RuleOptions())
+		initUI()
+		stage.sizeToScene()
+	}
+	/** 特定のファイルを読み込むConstructor
+	 * @param filename Filename (空文字列かnullにするとパラメータなしConstructorと同じ動作）
+	 */
+	constructor(filename:String?):super() {
+
+		init()
+
+
+		var ruleopt = RuleOptions()
+
+		if(filename!=null&&filename.isNotEmpty())
+			try {
+				ruleopt = load(filename)
+				strNowFile = filename
+				stage.title = "${getUIText("Title_RuleEditor")}:$strNowFile"
+			} catch(e:IOException) {
+				log.error("Failed to load rule data from $filename", e)
+				Alert(
+					Alert.AlertType.ERROR, "${getUIText("Message_FileLoadFailed")}\n$e",
+				).apply {
+					title = getUIText("Title_FileLoadFailed")
+				}
 			}
 
-		strNowFile = null
+		readRuleToUI(ruleopt)
 
-		title = getUIText("Title_RuleEditor")
-		defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
-
-		loadBlockSkins()
-
+		stage.show()
 		initUI()
-		pack()
 	}
 
 	/** 画面のInitialization */
@@ -537,21 +548,20 @@ class RuleEditor:JFrame, ActionListener {
 		contentPane.add(tabPane, BorderLayout.NORTH)
 
 		// 基本設定タブ --------------------------------------------------
-		val panelBasic = JPanel()
-		panelBasic.layout = BoxLayout(panelBasic, BoxLayout.Y_AXIS)
+		val panelBasic = VBox()
 		tabPane.addTab(getUIText("TabName_Basic"), panelBasic)
 
 		// Rule name
-		txtfldRuleName.columns = 15
-		panelBasic.add(JPanel().apply {
+		txtfldRuleName.prefColumnCount = 15
+		panelBasic.children.addAll(listOf(JPanel().apply {
 			add(JLabel(getUIText("Basic_RuleName")))
 			add(txtfldRuleName)
-		})
+		}))
 
 		// NEXT表示count
 		panelBasic.add(JPanel().apply {
 			add(JLabel(getUIText("Basic_NextDisplay")))
-			txtfldNextDisplay.columns = 5
+			txtfldNextDisplay.prefColumnCount = 5
 			add(txtfldNextDisplay)
 		})
 
@@ -594,7 +604,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		pEnterMaxDistanceY.add(JLabel(getUIText("Basic_EnterMaxDistanceY")))
 
-		txtfldEnterMaxDistanceY.columns = 5
+		txtfldEnterMaxDistanceY.prefColumnCount = 5
 		pEnterMaxDistanceY.add(txtfldEnterMaxDistanceY)
 
 		// NEXT順生成アルゴリズム
@@ -669,11 +679,11 @@ class RuleEditor:JFrame, ActionListener {
 		panelHold.add(chkboxHoldInitialLimit)
 
 		// ホールドを使ったときにBlockピースの向きを初期状態に戻す
-		chkboxHoldResetDirection.text = (getUIText("Hold_HoldResetDirection"))
+		chkboxHoldResetDirection.text = getUIText("Hold_HoldResetDirection")
 		panelHold.add(chkboxHoldResetDirection)
 
 		// ホールドできる count
-		txtfldHoldLimit.columns = 5
+		txtfldHoldLimit.prefColumnCount = 5
 		val pHoldLimit = JPanel().apply {
 			add(JLabel(getUIText("Hold_HoldLimit")))
 			add(txtfldHoldLimit)
@@ -726,7 +736,7 @@ class RuleEditor:JFrame, ActionListener {
 		panelDrop.add(pDropSoftDropSpeed)
 		pDropSoftDropSpeed.add(JLabel(getUIText("Drop_SoftDropSpeed")))
 
-		txtfldDropSoftDropSpeed.columns = (5)
+		txtfldDropSoftDropSpeed.prefColumnCount = 5
 		pDropSoftDropSpeed.add(txtfldDropSoftDropSpeed)
 
 		// rotationタブ --------------------------------------------------
@@ -735,31 +745,31 @@ class RuleEditor:JFrame, ActionListener {
 		tabPane.addTab(getUIText("TabName_Rotate"), panelRotate)
 
 		// 先行rotation
-		chkboxRotateInitial.text = (getUIText("Rotate_RotateInitial"))
+		chkboxRotateInitial.text = getUIText("Rotate_RotateInitial")
 		panelRotate.add(chkboxRotateInitial)
 
 		// 先行rotation連続使用不可
-		chkboxRotateInitialLimit.text = (getUIText("Rotate_RotateInitialLimit"))
+		chkboxRotateInitialLimit.text = getUIText("Rotate_RotateInitialLimit")
 		panelRotate.add(chkboxRotateInitialLimit)
 
 		// Wallkick
-		chkboxRotateWallkick.text = (getUIText("Rotate_RotateWallkick"))
+		chkboxRotateWallkick.text = getUIText("Rotate_RotateWallkick")
 		panelRotate.add(chkboxRotateWallkick)
 
 		// 先行rotationでもWallkickする
-		chkboxRotateInitialWallkick.text = (getUIText("Rotate_RotateInitialWallkick"))
+		chkboxRotateInitialWallkick.text = getUIText("Rotate_RotateInitialWallkick")
 		panelRotate.add(chkboxRotateInitialWallkick)
 
 		// Aで右rotation
-		chkboxRotateButtonDefaultRight.text = (getUIText("Rotate_RotateButtonDefaultRight"))
+		chkboxRotateButtonDefaultRight.text = getUIText("Rotate_RotateButtonDefaultRight")
 		panelRotate.add(chkboxRotateButtonDefaultRight)
 
 		// 逆rotation許可
-		chkboxRotateButtonAllowReverse.text = (getUIText("Rotate_RotateButtonAllowReverse"))
+		chkboxRotateButtonAllowReverse.text = getUIText("Rotate_RotateButtonAllowReverse")
 		panelRotate.add(chkboxRotateButtonAllowReverse)
 
 		// 2rotation許可
-		chkboxRotateButtonAllowDouble.text = (getUIText("Rotate_RotateButtonAllowDouble"))
+		chkboxRotateButtonAllowDouble.text = getUIText("Rotate_RotateButtonAllowDouble")
 		panelRotate.add(chkboxRotateButtonAllowDouble)
 
 		// UpDirectionへWallkickできる count
@@ -767,7 +777,7 @@ class RuleEditor:JFrame, ActionListener {
 		panelRotate.add(pRotateMaxUpwardWallkick)
 		pRotateMaxUpwardWallkick.add(JLabel(getUIText("Rotate_RotateMaxUpwardWallkick")))
 
-		txtfldRotateMaxUpwardWallkick.columns = (5)
+		txtfldRotateMaxUpwardWallkick.prefColumnCount = 5
 		pRotateMaxUpwardWallkick.add(txtfldRotateMaxUpwardWallkick)
 
 		// Wallkickアルゴリズム
@@ -782,10 +792,11 @@ class RuleEditor:JFrame, ActionListener {
 			pWallkickSystem.add(this)
 		}
 
-		btnResetWallkickSystem = JButton(getUIText("Rotate_ResetWallkickSystem")).also {
+		btnResetWallkickSystem.also {
+			it.text = getUIText("Rotate_ResetWallkickSystem")
 			it.setMnemonic('R')
 			it.actionCommand = "ResetWallkickSystem"
-			it.addActionListener(this)
+			it.setOnAction(this)
 			pWallkickSystem.add(it)
 		}
 
@@ -800,29 +811,29 @@ class RuleEditor:JFrame, ActionListener {
 		val pLockDelayMinMax = JPanel()
 		panelLockDelay.add(pLockDelayMinMax)
 
-		txtfldLockDelayMin.columns = 5
+		txtfldLockDelayMin.prefColumnCount = 5
 		pLockDelayMinMax.add(txtfldLockDelayMin)
-		txtfldLockDelayMax.columns = 5
+		txtfldLockDelayMax.prefColumnCount = 5
 		pLockDelayMinMax.add(txtfldLockDelayMax)
 
 		// 落下で固定 timeリセット
-		chkboxLockDelayLockResetFall.text = (getUIText("LockDelay_LockResetFall"))
+		chkboxLockDelayLockResetFall.text = getUIText("LockDelay_LockResetFall")
 		panelLockDelay.add(chkboxLockDelayLockResetFall)
 
 		// 移動で固定 timeリセット
-		chkboxLockDelayLockResetMove.text = (getUIText("LockDelay_LockResetMove"))
+		chkboxLockDelayLockResetMove.text = getUIText("LockDelay_LockResetMove")
 		panelLockDelay.add(chkboxLockDelayLockResetMove)
 
 		// rotationで固定 timeリセット
-		chkboxLockDelayLockResetRotate.text = (getUIText("LockDelay_LockResetRotate"))
+		chkboxLockDelayLockResetRotate.text = getUIText("LockDelay_LockResetRotate")
 		panelLockDelay.add(chkboxLockDelayLockResetRotate)
 
 		// Lock delay reset by wallkick
-		chkboxLockDelayLockResetWallkick.text = (getUIText("LockDelay_LockResetWallkick"))
+		chkboxLockDelayLockResetWallkick.text = getUIText("LockDelay_LockResetWallkick")
 		panelLockDelay.add(chkboxLockDelayLockResetWallkick)
 
 		// 横移動 counterとrotation counterを共有 (横移動 counterだけ使う）
-		chkboxLockDelayLockResetLimitShareCount.text = (getUIText("LockDelay_LockDelayLockResetLimitShareCount"))
+		chkboxLockDelayLockResetLimitShareCount.text = getUIText("LockDelay_LockDelayLockResetLimitShareCount")
 		panelLockDelay.add(chkboxLockDelayLockResetLimitShareCount)
 
 		// 横移動 count制限
@@ -830,7 +841,7 @@ class RuleEditor:JFrame, ActionListener {
 		panelLockDelay.add(pLockDelayLockResetLimitMove)
 		pLockDelayLockResetLimitMove.add(JLabel(getUIText("LockDelay_LockDelayLockResetLimitMove")))
 
-		txtfldLockDelayLockResetLimitMove.columns = 5
+		txtfldLockDelayLockResetLimitMove.prefColumnCount = 5
 		pLockDelayLockResetLimitMove.add(txtfldLockDelayLockResetLimitMove)
 
 		// rotation count制限
@@ -839,7 +850,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		pLockDelayLockResetLimitRotate.add(JLabel(getUIText("LockDelay_LockDelayLockResetLimitRotate")))
 
-		txtfldLockDelayLockResetLimitRotate.columns = 5
+		txtfldLockDelayLockResetLimitRotate.prefColumnCount = 5
 		pLockDelayLockResetLimitRotate.add(txtfldLockDelayLockResetLimitRotate)
 
 		// 移動またはrotation count制限が超過した時の設定
@@ -851,15 +862,15 @@ class RuleEditor:JFrame, ActionListener {
 
 		val gLockDelayLockResetLimitOver = ButtonGroup()
 
-		radioLockDelayLockResetLimitOverNoReset = JRadioButton(getUIText("LockDelay_LockDelayLockResetLimitOverNoReset"))
+		radioLockDelayLockResetLimitOverNoReset.text = getUIText("LockDelay_LockDelayLockResetLimitOverNoReset")
 		pLockDelayLockResetLimitOver.add(radioLockDelayLockResetLimitOverNoReset)
 		gLockDelayLockResetLimitOver.add(radioLockDelayLockResetLimitOverNoReset)
 
-		radioLockDelayLockResetLimitOverInstant = JRadioButton(getUIText("LockDelay_LockDelayLockResetLimitOverInstant"))
+		radioLockDelayLockResetLimitOverInstant.text = getUIText("LockDelay_LockDelayLockResetLimitOverInstant")
 		pLockDelayLockResetLimitOver.add(radioLockDelayLockResetLimitOverInstant)
 		gLockDelayLockResetLimitOver.add(radioLockDelayLockResetLimitOverInstant)
 
-		radioLockDelayLockResetLimitOverNoWallkick = JRadioButton(getUIText("LockDelay_LockDelayLockResetLimitOverNoWallkick"))
+		radioLockDelayLockResetLimitOverNoWallkick.text = getUIText("LockDelay_LockDelayLockResetLimitOverNoWallkick")
 		pLockDelayLockResetLimitOver.add(radioLockDelayLockResetLimitOverNoWallkick)
 		gLockDelayLockResetLimitOver.add(radioLockDelayLockResetLimitOverNoWallkick)
 
@@ -874,9 +885,9 @@ class RuleEditor:JFrame, ActionListener {
 		val pAREMinMax = JPanel()
 		panelARE.add(pAREMinMax)
 
-		txtfldAREMin.columns = 5
+		txtfldAREMin.prefColumnCount = 5
 		pAREMinMax.add(txtfldAREMin)
-		txtfldAREMax.columns = 5
+		txtfldAREMax.prefColumnCount = 5
 		pAREMinMax.add(txtfldAREMax)
 
 		// 最低ARE after line clearと最高ARE after line clear
@@ -885,9 +896,9 @@ class RuleEditor:JFrame, ActionListener {
 		val pARELineMinMax = JPanel()
 		panelARE.add(pARELineMinMax)
 
-		txtfldARELineMin.columns = 5
+		txtfldARELineMin.prefColumnCount = 5
 		pARELineMinMax.add(txtfldARELineMin)
-		txtfldARELineMax.columns = 5
+		txtfldARELineMax.prefColumnCount = 5
 		pARELineMinMax.add(txtfldARELineMax)
 
 		// 固定した瞬間に光る frame count
@@ -896,27 +907,27 @@ class RuleEditor:JFrame, ActionListener {
 		val pARELockFlash = JPanel()
 		panelARE.add(pARELockFlash)
 
-		txtfldARELockFlash.columns = 5
+		txtfldARELockFlash.prefColumnCount = 5
 		pARELockFlash.add(txtfldARELockFlash)
 
 		// Blockが光る専用 frame を入れる
-		chkboxARELockFlashOnlyFrame.text = (getUIText("ARE_LockFlashOnlyFrame"))
+		chkboxARELockFlashOnlyFrame.text = getUIText("ARE_LockFlashOnlyFrame")
 		panelARE.add(chkboxARELockFlashOnlyFrame)
 
 		// Line clear前にBlockが光る frame を入れる
-		chkboxARELockFlashBeforeLineClear.text = (getUIText("ARE_LockFlashBeforeLineClear"))
+		chkboxARELockFlashBeforeLineClear.text = getUIText("ARE_LockFlashBeforeLineClear")
 		panelARE.add(chkboxARELockFlashBeforeLineClear)
 
 		// ARE cancel on move
-		chkboxARECancelMove.text = (getUIText("ARE_CancelMove"))
+		chkboxARECancelMove.text = getUIText("ARE_CancelMove")
 		panelARE.add(chkboxARECancelMove)
 
 		// ARE cancel on move
-		chkboxARECancelRotate.text = (getUIText("ARE_CancelRotate"))
+		chkboxARECancelRotate.text = getUIText("ARE_CancelRotate")
 		panelARE.add(chkboxARECancelRotate)
 
 		// ARE cancel on move
-		chkboxARECancelHold.text = (getUIText("ARE_CancelHold"))
+		chkboxARECancelHold.text = getUIText("ARE_CancelHold")
 		panelARE.add(chkboxARECancelHold)
 
 		// Line clearタブ --------------------------------------------------
@@ -930,25 +941,25 @@ class RuleEditor:JFrame, ActionListener {
 		val pLineMinMax = JPanel()
 		panelLine.add(pLineMinMax)
 
-		txtfldLineDelayMin.columns = (5)
+		txtfldLineDelayMin.prefColumnCount = 5
 		pLineMinMax.add(txtfldLineDelayMin)
-		txtfldLineDelayMax.columns = (5)
+		txtfldLineDelayMax.prefColumnCount = 5
 		pLineMinMax.add(txtfldLineDelayMax)
 
 		// 落下アニメ
-		chkboxLineFallAnim.text = (getUIText("Line_FallAnim"))
+		chkboxLineFallAnim.text = getUIText("Line_FallAnim")
 		panelLine.add(chkboxLineFallAnim)
 
 		// Line delay cancel on move
-		chkboxLineCancelMove.text = (getUIText("Line_CancelMove"))
+		chkboxLineCancelMove.text = getUIText("Line_CancelMove")
 		panelLine.add(chkboxLineCancelMove)
 
 		// Line delay cancel on rotate
-		chkboxLineCancelRotate.text = (getUIText("Line_CancelRotate"))
+		chkboxLineCancelRotate.text = getUIText("Line_CancelRotate")
 		panelLine.add(chkboxLineCancelRotate)
 
 		// Line delay cancel on hold
-		chkboxLineCancelHold.text = (getUIText("Line_CancelHold"))
+		chkboxLineCancelHold.text = getUIText("Line_CancelHold")
 		panelLine.add(chkboxLineCancelHold)
 
 		// 移動タブ --------------------------------------------------
@@ -962,9 +973,9 @@ class RuleEditor:JFrame, ActionListener {
 		val pMoveDASMinMax = JPanel()
 		panelMove.add(pMoveDASMinMax)
 
-		txtfldMoveDASMin.columns = (5)
+		txtfldMoveDASMin.prefColumnCount = 5
 		pMoveDASMinMax.add(txtfldMoveDASMin)
-		txtfldMoveDASMax.columns = (5)
+		txtfldMoveDASMax.prefColumnCount = 5
 		pMoveDASMinMax.add(txtfldMoveDASMax)
 
 		// 横移動間隔
@@ -973,55 +984,55 @@ class RuleEditor:JFrame, ActionListener {
 
 		pMoveDASDelay.add(JLabel(getUIText("Move_DASDelay1")))
 
-		txtfldMoveDASDelay.columns = (5)
+		txtfldMoveDASDelay.prefColumnCount = 5
 		pMoveDASDelay.add(txtfldMoveDASDelay)
 
 		pMoveDASDelay.add(JLabel(getUIText("Move_DASDelay2")))
 
 		// ○○のとき横溜め可能
-		chkboxMoveDASInReady.text = (getUIText("Move_DASInReady"))
+		chkboxMoveDASInReady.text = getUIText("Move_DASInReady")
 		panelMove.add(chkboxMoveDASInReady)
-		chkboxMoveDASInMoveFirstFrame.text = (getUIText("Move_DASInMoveFirstFrame"))
+		chkboxMoveDASInMoveFirstFrame.text = getUIText("Move_DASInMoveFirstFrame")
 		panelMove.add(chkboxMoveDASInMoveFirstFrame)
-		chkboxMoveDASInLockFlash.text = (getUIText("Move_DASInLockFlash"))
+		chkboxMoveDASInLockFlash.text = getUIText("Move_DASInLockFlash")
 		panelMove.add(chkboxMoveDASInLockFlash)
-		chkboxMoveDASInLineClear.text = (getUIText("Move_DASInLineClear"))
+		chkboxMoveDASInLineClear.text = getUIText("Move_DASInLineClear")
 		panelMove.add(chkboxMoveDASInLineClear)
-		chkboxMoveDASInARE.text = (getUIText("Move_DASInARE"))
+		chkboxMoveDASInARE.text = getUIText("Move_DASInARE")
 		panelMove.add(chkboxMoveDASInARE)
-		chkboxMoveDASInARELastFrame.text = (getUIText("Move_DASInARELastFrame"))
+		chkboxMoveDASInARELastFrame.text = getUIText("Move_DASInARELastFrame")
 		panelMove.add(chkboxMoveDASInARELastFrame)
-		chkboxMoveDASInEndingStart.text = (getUIText("Move_DASInEndingStart"))
+		chkboxMoveDASInEndingStart.text = getUIText("Move_DASInEndingStart")
 		panelMove.add(chkboxMoveDASInEndingStart)
-		chkboxMoveDASChargeOnBlockedMove.text = (getUIText("Move_DASChargeOnBlockedMove"))
+		chkboxMoveDASChargeOnBlockedMove.text = getUIText("Move_DASChargeOnBlockedMove")
 		panelMove.add(chkboxMoveDASChargeOnBlockedMove)
-		chkboxMoveDASStoreChargeOnNeutral.text = (getUIText("Move_DASStoreChargeOnNeutral"))
+		chkboxMoveDASStoreChargeOnNeutral.text = getUIText("Move_DASStoreChargeOnNeutral")
 		panelMove.add(chkboxMoveDASStoreChargeOnNeutral)
-		chkboxMoveDASRedirectInDelay.text = (getUIText("Move_DASRedirectInDelay"))
+		chkboxMoveDASRedirectInDelay.text = getUIText("Move_DASRedirectInDelay")
 		panelMove.add(chkboxMoveDASRedirectInDelay)
 
 		// 最初の frame に移動可能
-		chkboxMoveFirstFrame.text = (getUIText("Move_FirstFrame"))
+		chkboxMoveFirstFrame.text = getUIText("Move_FirstFrame")
 		panelMove.add(chkboxMoveFirstFrame)
 
 		// 斜め移動
-		chkboxMoveDiagonal.text = (getUIText("Move_Diagonal"))
+		chkboxMoveDiagonal.text = getUIText("Move_Diagonal")
 		panelMove.add(chkboxMoveDiagonal)
 
 		// Up下同時押し
-		chkboxMoveUpAndDown.text = (getUIText("Move_UpAndDown"))
+		chkboxMoveUpAndDown.text = getUIText("Move_UpAndDown")
 		panelMove.add(chkboxMoveUpAndDown)
 
 		// 左右同時押し
-		chkboxMoveLeftAndRightAllow.text = (getUIText("Move_LeftAndRightAllow"))
+		chkboxMoveLeftAndRightAllow.text = getUIText("Move_LeftAndRightAllow")
 		panelMove.add(chkboxMoveLeftAndRightAllow)
 
 		// 左右同時押ししたときに前 frame の input を優先
-		chkboxMoveLeftAndRightUsePreviousInput.text = (getUIText("Move_LeftAndRightUsePreviousInput"))
+		chkboxMoveLeftAndRightUsePreviousInput.text = getUIText("Move_LeftAndRightUsePreviousInput")
 		panelMove.add(chkboxMoveLeftAndRightUsePreviousInput)
 
 		// Shift lock
-		chkboxMoveShiftLockEnable.text = (getUIText("Move_ShiftLock"))
+		chkboxMoveShiftLockEnable.text = getUIText("Move_ShiftLock")
 		panelMove.add(chkboxMoveShiftLockEnable)
 
 		// rotationパターン補正タブ ------------------------------------------------
@@ -1672,7 +1683,7 @@ class RuleEditor:JFrame, ActionListener {
 					try {
 						ruleopt = load(file.path)
 					} catch(e2:IOException) {
-						log.error("Failed to load rule data from ${strNowFile!!}", e2)
+						log.error("Failed to load rule data from $strNowFile", e2)
 						JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e2",
 							getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
 						return
@@ -1821,7 +1832,7 @@ class RuleEditor:JFrame, ActionListener {
 		private const val serialVersionUID = 1L
 
 		/** Log */
-		internal val log = Logger.getLogger(RuleEditor::class.java)
+		internal val log = Logger.getLogger(RuleEditorFX::class.java)
 
 		/** メイン関数
 		 * @param args コマンドLines引数
@@ -1831,10 +1842,8 @@ class RuleEditor:JFrame, ActionListener {
 			PropertyConfigurator.configure("config/etc/log.cfg")
 			log.debug("RuleEditor start")
 
-			if(args.isNotEmpty())
-				RuleEditor(args[0])
-			else
-				RuleEditor()
+			launch(RuleEditorFX::class.java, *args)
 		}
 	}
 }
+*/

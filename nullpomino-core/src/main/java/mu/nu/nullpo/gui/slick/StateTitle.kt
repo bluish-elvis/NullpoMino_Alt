@@ -109,7 +109,7 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
 
 		FontNano.printFont(300, 0, "$rollY")
-		FontNano.printFont(300, 10, "${container.screenHeight*RenderStaffRoll.img.textureHeight	}")
+		FontNano.printFont(300, 10, "${container.screenHeight*RenderStaffRoll.img.textureHeight}")
 		RenderStaffRoll.draw(600-RenderStaffRoll.img.width.toFloat(), 0f, rollY, 480f, Color(200, 233, 255, 200))
 		super.renderImpl(container, game, g)
 
@@ -136,15 +136,15 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 
 		/** Strings for menu choices */
 		private val CHOICES = arrayOf("Game Start", "Watch Replay",
-			//"NETPLAY",
+			"Online Game",
 			"Configurations", "Exit")
 		private val CHOICEID = intArrayOf(StateSelectMode.ID, StateReplaySelect.ID,
-			//StateNetGame.ID,
+			StateNetGame.ID,
 			StateConfigMainMenu.ID, -1)
 
 		/** UI Text identifier Strings */
 		private val UI_TEXT = arrayOf("Title_Start", "Title_Replay",
-			//"Title_NetPlay",
+			"Title_NetPlay",
 			"Title_Config", "Title_Exit")
 
 		/** Log */

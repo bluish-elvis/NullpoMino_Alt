@@ -74,8 +74,7 @@ class RetroMania:AbstractMode() {
 	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
 	/** Returns the name of this mode */
-	override val name:String
-		get() = "Retro Mania .S"
+	override val name:String = "Retro Mania .S"
 
 	override val gameIntensity:Int = -1
 
@@ -95,6 +94,7 @@ class RetroMania:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
+		engine.splitb2b = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.bighalf = false
 		engine.bigmove = false

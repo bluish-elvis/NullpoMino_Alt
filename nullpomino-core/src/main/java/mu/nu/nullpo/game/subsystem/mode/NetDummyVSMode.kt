@@ -123,8 +123,7 @@ open class NetDummyVSMode:NetDummyMode() {
 	internal var netvsLastAttackerUID:Int = 0
 
 	/* Mode Name */
-	override val name:String
-		get() = "NET-VS-DUMMY"
+	override val name:String = "NET-VS-DUMMY"
 
 	override val isVSMode:Boolean
 		get() = true
@@ -398,6 +397,8 @@ open class NetDummyVSMode:NetDummyMode() {
 			engine.speed.das = netCurrentRoomInfo!!.das
 
 			engine.b2bEnable = netCurrentRoomInfo!!.b2b
+			engine.splitb2b = netCurrentRoomInfo!!.splitb2b
+
 			engine.comboType = if(netCurrentRoomInfo!!.combo) GameEngine.COMBO_TYPE_NORMAL else GameEngine.COMBO_TYPE_DISABLE
 
 			if(netCurrentRoomInfo!!.twistEnableType==0) {
@@ -468,7 +469,7 @@ open class NetDummyVSMode:NetDummyMode() {
 	 * @param message Message
 	 */
 	internal open fun netvsRecvEndGameStats(message:Array<String>) {
-		val seatID = Integer.parseInt(message[2])
+		val seatID = message[2].toInt()
 		val playerID = netvsGetPlayerIDbySeatID(seatID)
 
 		if(playerID!=0||netvsIsWatch()) netvsPlayerResultReceived[playerID] = true
@@ -1029,7 +1030,7 @@ open class NetDummyVSMode:NetDummyMode() {
 		}
 		// Player status change (Join/Watch)
 		if(message[0]=="changestatus") {
-			val uid = Integer.parseInt(message[2])
+			val uid = message[2].toInt()
 
 			netUpdatePlayerExist()
 			netvsSetGameScreenLayout()
@@ -1052,7 +1053,7 @@ open class NetDummyVSMode:NetDummyMode() {
 		}
 		// Someone entered here
 		if(message[0]=="playerenter") {
-			val seatID = Integer.parseInt(message[3])
+			val seatID = message[3].toInt()
 			if(seatID!=-1&&netvsNumPlayers<2) owner.receiver.playSE("levelstop")
 		}
 		// Someone leave here
@@ -1064,7 +1065,7 @@ open class NetDummyVSMode:NetDummyMode() {
 		// Automatic timer start
 		if(message[0]=="autostartbegin")
 			if(netvsNumPlayers>=2) {
-				val seconds = Integer.parseInt(message[1])
+				val seconds = message[1].toInt()
 				netvsAutoStartTimer = seconds*60
 				netvsAutoStartTimerActive = true
 			}
@@ -1072,10 +1073,10 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(message[0]=="autostartstop") netvsAutoStartTimerActive = false
 		// Game Started
 		if(message[0]=="start") {
-			val randseed = java.lang.Long.parseLong(message[1], 16)
-			netvsNumNowPlayers = Integer.parseInt(message[2])
+			val randseed = message[1].toLong(16)
+			netvsNumNowPlayers = message[2].toInt()
 			netvsNumAlivePlayers = netvsNumNowPlayers
-			netvsMapNo = Integer.parseInt(message[3])
+			netvsMapNo = message[3].toInt()
 
 			netvsResetFlags()
 			netUpdatePlayerExist()
@@ -1140,12 +1141,12 @@ open class NetDummyVSMode:NetDummyMode() {
 		}
 		// Dead
 		if(message[0]=="dead") {
-			val seatID = Integer.parseInt(message[3])
+			val seatID = message[3].toInt()
 			val playerID = netvsGetPlayerIDbySeatID(seatID)
 
 			if(!netvsPlayerDead[playerID]) {
 				netvsPlayerDead[playerID] = true
-				netvsPlayerPlace[playerID] = Integer.parseInt(message[4])
+				netvsPlayerPlace[playerID] = message[4].toInt()
 				owner.engine[playerID].stat = GameEngine.Status.GAMEOVER
 				owner.engine[playerID].resetStatc()
 				netvsNumAlivePlayers--
@@ -1183,7 +1184,7 @@ open class NetDummyVSMode:NetDummyMode() {
 				owner.engine[0].resetStatc()
 			}
 
-			val flagTeamWin = java.lang.Boolean.parseBoolean(message[4])
+			val flagTeamWin = message[4].toBoolean()
 
 			if(flagTeamWin) {
 				// Team won
@@ -1200,7 +1201,7 @@ open class NetDummyVSMode:NetDummyMode() {
 					}
 			} else {
 				// Normal player won
-				val seatID = Integer.parseInt(message[2])
+				val seatID = message[2].toInt()
 				if(seatID!=-1) {
 					val playerID = netvsGetPlayerIDbySeatID(seatID)
 					if(netvsPlayerExist[playerID]) {
@@ -1223,8 +1224,8 @@ open class NetDummyVSMode:NetDummyMode() {
 		}
 		// Game messages
 		if(message[0]=="game") {
-			//int uid = Integer.parseInt(message[1]);
-			val seatID = Integer.parseInt(message[2])
+			//int uid = message[1].toInt();
+			val seatID = message[2].toInt()
 			val playerID = netvsGetPlayerIDbySeatID(seatID)
 			val engine = owner.engine[playerID]
 

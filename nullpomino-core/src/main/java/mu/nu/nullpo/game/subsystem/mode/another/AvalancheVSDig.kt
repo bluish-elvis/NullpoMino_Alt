@@ -44,8 +44,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 	private var handicapRows:IntArray = IntArray(MAX_PLAYERS)
 
 	/* Mode name */
-	override val name:String
-		get() = "AVALANCHE VS DIG RACE (RC1)"
+	override val name:String = "AVALANCHE VS DIG RACE (RC1)"
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
@@ -107,44 +106,13 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-					0 -> {
-						engine.speed.gravity += change*m
-						if(engine.speed.gravity<-1) engine.speed.gravity = 99999
-						if(engine.speed.gravity>99999) engine.speed.gravity = -1
-					}
-					1 -> {
-						engine.speed.denominator += change*m
-						if(engine.speed.denominator<-1) engine.speed.denominator = 99999
-						if(engine.speed.denominator>99999) engine.speed.denominator = -1
-					}
-					2 -> {
-						engine.speed.are += change
-						if(engine.speed.are<0) engine.speed.are = 99
-						if(engine.speed.are>99) engine.speed.are = 0
-					}
-					3 -> {
-						engine.speed.areLine += change
-						if(engine.speed.areLine<0) engine.speed.areLine = 99
-						if(engine.speed.areLine>99) engine.speed.areLine = 0
-					}
-					4 -> {
-						engine.speed.lineDelay += change
-						if(engine.speed.lineDelay<0) engine.speed.lineDelay = 99
-						if(engine.speed.lineDelay>99) engine.speed.lineDelay = 0
-					}
-					5 -> {
-						if(m>=10)
-							engine.speed.lockDelay += change*10
-						else
-							engine.speed.lockDelay += change
-						if(engine.speed.lockDelay<0) engine.speed.lockDelay = 999
-						if(engine.speed.lockDelay>999) engine.speed.lockDelay = 0
-					}
-					6 -> {
-						engine.speed.das += change
-						if(engine.speed.das<0) engine.speed.das = 99
-						if(engine.speed.das>99) engine.speed.das = 0
-					}
+					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
+					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
+					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
+					3 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
+					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
+					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change*minOf(m, 10), 0, 999)
+					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
 					7 -> {
 						engine.cascadeDelay += change
 						if(engine.cascadeDelay<0) engine.cascadeDelay = 20
@@ -223,18 +191,10 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 						if(chainDisplayType[playerID]>3) chainDisplayType[playerID] = 0
 					}
 					23 -> cascadeSlow[playerID] = !cascadeSlow[playerID]
-					24 -> {
-						bgmno += change
-						if(bgmno<0) bgmno = BGM.count-1
-						if(bgmno>=BGM.count) bgmno = 0
-					}
+					24 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
 					25 -> enableSE[playerID] = !enableSE[playerID]
 					26 -> bigDisplay = !bigDisplay
-					27, 28 -> {
-						presetNumber[playerID] += change
-						if(presetNumber[playerID]<0) presetNumber[playerID] = 99
-						if(presetNumber[playerID]>99) presetNumber[playerID] = 0
-					}
+					27, 28 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change,0,99)
 				}
 			}
 
@@ -285,13 +245,18 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		if(engine.statc[4]==0) {
 			when {
 				menuCursor<9 -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(), "CLEAR DELAY", engine.cascadeClearDelay.toString())
+					drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX",
+						engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE",
+						engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY",
+						engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(),
+						"CLEAR DELAY", engine.cascadeClearDelay.toString())
 
 					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/3", COLOR.YELLOW)
 				}
 				menuCursor<18 -> {
 					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9,
-						"COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", "${maxAttack[playerID]}", "COLORS", "${numColors[playerID]}", "MIN CHAIN", "${rensaShibari[playerID]}", "OJAMA RATE", "${ojamaRate[playerID]}",
+						"COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", "${maxAttack[playerID]}", "COLORS",
+						"${numColors[playerID]}", "MIN CHAIN", "${rensaShibari[playerID]}", "OJAMA RATE", "${ojamaRate[playerID]}",
 						"HURRYUP", if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]}SEC",
 						"HARD OJAMA", "${ojamaHard[playerID]}",
 						"X COLUMN", if(dangerColumnDouble[playerID]) "3 AND 4" else "3 ONLY",
@@ -306,7 +271,8 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 					drawMenu(engine, playerID, receiver, "CHAINPOWER", if(newChainPower[playerID])
 						"FEVER" else "CLASSIC", "CLEAR SIZE", engine.colorClearSize.toString())
 					menuColor = COLOR.COBALT
-					drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]], "SHOW CHAIN", CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]], "FALL ANIM",
+					drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]], "SHOW CHAIN",
+						CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]], "FALL ANIM",
 						if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
 					menuColor = COLOR.PINK
 					drawMenuCompact(engine, playerID, receiver, "BGM", "${BGM.values[bgmno]}")

@@ -155,8 +155,7 @@ class GrandPhantom:AbstractMode() {
 	private var bestSectionTime:IntArray = IntArray(SECTION_MAX)
 
 	/** Returns the name of this mode */
-	override val name:String
-		get() = "Grand Phantom"
+	override val name:String = "Grand Phantom"
 	override val gameIntensity:Int = 3
 	/** This function will be called when the game enters
 	 * the main game screen. */
@@ -203,6 +202,7 @@ class GrandPhantom:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
+		engine.splitb2b = false
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.framecolor = GameEngine.FRAME_COLOR_CYAN
 		engine.bighalf = true
@@ -468,9 +468,9 @@ class GrandPhantom:AbstractMode() {
 			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.PURPLE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
-			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128)
-			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv))
+			receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
+			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
+			receiver.drawScoreNum(engine, playerID, 1, 12, String.format("%3d", nextseclv))
 
 			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", COLOR.PURPLE)
 			receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), 2f)
@@ -796,7 +796,7 @@ class GrandPhantom:AbstractMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${(engine.statc[1]+1)}/3", COLOR.RED)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${(engine.statc[1]+1)}/3", COLOR.RED)
 
 		if(engine.statc[1]==0) {
 			var gcolor = COLOR.WHITE

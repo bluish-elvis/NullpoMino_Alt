@@ -18,8 +18,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	private var playerStartGems:IntArray = IntArray(NETVS_MAX_PLAYERS)
 
 	/* Mode name */
-	override val name:String
-		get() = "NET-VS-DIG RACE"
+	override val name:String = "NET-VS-DIG RACE"
 
 	/* Mode init */
 	override fun modeInit(manager:GameManager) {
@@ -55,7 +54,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 		if(skin<0) skin = 0
 
 		for(y in h-1 downTo h-goalLines) {
-			if(hole==-1||engine.random.nextInt(100)<netCurrentRoomInfo!!.garbagePercent) {
+			if(hole==-1||engine.random.nextInt(100)<netCurrentRoomInfo!!.messiness) {
 				var newhole = -1
 				do
 					newhole = engine.random.nextInt(w)
@@ -335,7 +334,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	/* Receive stats */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
 		val playerID = engine.playerID
-		if(message.size>4) playerRemainLines[playerID] = Integer.parseInt(message[4])
+		if(message.size>4) playerRemainLines[playerID] = message[4].toInt()
 		updateMeter(engine)
 	}
 
@@ -354,17 +353,17 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 
 	/* Receive end-of-game stats */
 	override fun netvsRecvEndGameStats(message:Array<String>) {
-		val seatID = Integer.parseInt(message[2])
+		val seatID = message[2].toInt()
 		val playerID = netvsGetPlayerIDbySeatID(seatID)
 
 		if(playerID!=0||netvsIsWatch()) {
 			val engine = owner.engine[playerID]
 
-			engine.statistics.lines = Integer.parseInt(message[8])
-			//engine.statistics.lpm = java.lang.Float.parseFloat(message[9])
-			engine.statistics.totalPieceLocked = Integer.parseInt(message[10])
-			//engine.statistics.pps = java.lang.Float.parseFloat(message[11])
-			engine.statistics.time = Integer.parseInt(message[12])
+			engine.statistics.lines = message[8].toInt()
+			//engine.statistics.lpm = message[9].toFloat()
+			engine.statistics.totalPieceLocked = message[10].toInt()
+			//engine.statistics.pps = message[11].toFloat()
+			engine.statistics.time = message[12].toInt()
 
 			netvsPlayerResultReceived[playerID] = true
 		}

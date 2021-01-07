@@ -50,16 +50,16 @@ class Sequencer:JFrame(), ActionListener {
 
 	//----------------------------------------------------------------------
 	/** Rand-seed textfield */
-	private var txtfldSeed:JTextField? = null
+	private val txtfldSeed:JTextField = JTextField()
 
 	/** Sequence Length textfield */
-	private var txtfldSeqLength:JTextField? = null
+	private val txtfldSeqLength:JTextField = JTextField()
 
 	/** Sequence Section Size textfield */
-	private var txtfldSeqSize:JTextField? = null
+	private val txtfldSeqSize:JTextField = JTextField()
 
 	/** Sequence Offset textfield */
-	private var txtfldSeqOffset:JTextField? = null
+	private val txtfldSeqOffset:JTextField = JTextField()
 
 	/** Randomizer combobox */
 	private var comboboxRandomizer:JComboBox<*>? = null
@@ -68,10 +68,10 @@ class Sequencer:JFrame(), ActionListener {
 	private var vectorRandomizer:Vector<String>? = null
 
 	/** Generate button */
-	private var btnGenerate:JButton? = null
+	private val btnGenerate:JButton = JButton()
 
 	/** Generated Sequence textarea */
-	private var txtareaSequence:JTextArea? = null
+	private val txtareaSequence:JTextArea = JTextArea()
 
 	//----------------------------------------------------------------------
 	/** Generated Sequence */
@@ -213,30 +213,38 @@ class Sequencer:JFrame(), ActionListener {
 		JPanel().apply {
 			contentPane.add(this)
 			add(JLabel(getUIText("Option_Seed")))
-			txtfldSeed = JTextField("0", 15)
-			add(txtfldSeed)
+			add(txtfldSeed.apply {
+				text = "0"
+				columns = 15
+			})
 		}
 
 		// Sequence Length
 		JPanel().apply {
 			contentPane.add(this)
 			add(JLabel(getUIText("Option_SequenceLength")))
-			txtfldSeqLength = JTextField("100", 6)
-			add(txtfldSeqLength)
+			add(txtfldSeqLength.apply {
+				text = "100"
+				columns = 6
+			})
 		}
 		// Sequence Size
 		JPanel().apply {
 			contentPane.add(this)
 			add(JLabel(getUIText("Option_SequenceSize")))
-			txtfldSeqSize = JTextField("7", 3)
-			add(txtfldSeqSize)
+			add(txtfldSeqSize.apply {
+				text = "7"
+				columns = 3
+			})
 		}
 		// Sequence Offset
 		JPanel().apply {
 			contentPane.add(this)
 			add(JLabel(getUIText("Option_SequenceOffset")))
-			txtfldSeqOffset = JTextField("0", 6)
-			add(txtfldSeqOffset)
+			add(txtfldSeqOffset.apply {
+				text = "0"
+				columns = 6
+			})
 		}
 
 		// Randomizer
@@ -253,22 +261,22 @@ class Sequencer:JFrame(), ActionListener {
 		// Generate
 		JPanel().apply {
 			contentPane.add(this)
-
-			btnGenerate = JButton(getUIText("Option_Generate")).also {
+			add(btnGenerate.also {
+				it.text = getUIText("Option_Generate")
 				it.setMnemonic('G')
 				it.actionCommand = "Generate"
 				it.addActionListener(this@Sequencer)
-			}
-			add(btnGenerate)
+			})
 		}
 
 		// Sequence
-		txtareaSequence = JTextArea(10, 37).apply {
-			lineWrap = true
-			isEditable = false
-		}
 		contentPane.add(
-			JScrollPane(txtareaSequence, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+			JScrollPane(txtareaSequence.apply {
+				rows = 10
+				columns = 37
+				lineWrap = true
+				isEditable = false
+			}, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
 		)
 
@@ -305,14 +313,11 @@ class Sequencer:JFrame(), ActionListener {
 	private fun createShortString(str:String):String {
 		val last = str.lastIndexOf('.')
 
-		val newStr:String
-		newStr = if(last!=-1) str.substring(last+1) else str
-		return newStr
+		return if(last!=-1) str.substring(last+1) else str
 	}
 
 	private fun readReplayToUI(prop:CustomProperties, playerID:Int) {
-		txtfldSeed?.text = java.lang.Long.parseLong(prop.getProperty("$playerID.replay.randSeed", "0"), 16)
-			.toString()
+		txtfldSeed.text = prop.getProperty("$playerID.replay.randSeed", "0").toLong(16).toString()
 		comboboxRandomizer?.selectedItem = createShortString(prop.getProperty("$playerID.ruleopt.strRandomizer", null))
 	}
 
@@ -334,7 +339,7 @@ class Sequencer:JFrame(), ActionListener {
 		val out = BufferedWriter(FileWriter(filename))
 		out.write("# NullpoMino Piece Sequence")
 		out.newLine()
-		out.write(txtareaSequence!!.text)
+		out.write(txtareaSequence.text)
 		out.close()
 	}
 
@@ -365,7 +370,7 @@ class Sequencer:JFrame(), ActionListener {
 
 		try {
 			randomizerClass = Class.forName(name)
-			randomizerObject = randomizerClass.newInstance() as Randomizer
+			randomizerObject = randomizerClass.getDeclaredConstructor().newInstance() as Randomizer
 			randomizerObject.setState(nextPieceEnable, getLongTextField(txtfldSeed))
 			sequence = IntArray(getIntTextField(txtfldSeqLength)) {
 				for(i in 0 until getIntTextField(txtfldSeqOffset))
@@ -380,22 +385,22 @@ class Sequencer:JFrame(), ActionListener {
 	}
 
 	fun display() {
-		if(txtareaSequence?.text!="") txtareaSequence?.text = ""
+		if(txtareaSequence.text!="") txtareaSequence.text = ""
 		val ct = getIntTextField(txtfldSeqSize)
 		for(i in 1..sequence.size) {
-			txtareaSequence?.append(getUIText("PieceName${sequence[i-1]}"))
-			if(i%(ct*5)==0) txtareaSequence?.append("\n")
-			else if(i%ct==0) txtareaSequence?.append(" ")
+			txtareaSequence.append(getUIText("PieceName${sequence[i-1]}"))
+			if(i%(ct*5)==0) txtareaSequence.append("\n")
+			else if(i%ct==0) txtareaSequence.append(" ")
 		}
 	}
 
 	fun reset() {
-		txtfldSeed?.text = "0"
-		txtfldSeqLength?.text = "100"
-		txtfldSeqSize?.text = "7"
-		txtfldSeqOffset?.text = "0"
+		txtfldSeed.text = "0"
+		txtfldSeqLength.text = "100"
+		txtfldSeqSize.text = "7"
+		txtfldSeqOffset.text = "0"
 		comboboxRandomizer?.selectedIndex = 0
-		txtareaSequence?.text = ""
+		txtareaSequence.text = ""
 		sequence = IntArray(0)
 	}
 
@@ -415,7 +420,8 @@ class Sequencer:JFrame(), ActionListener {
 					prop = load(file.path)
 				} catch(e2:IOException) {
 					log.error("Failed to load replay data", e2)
-					JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e2", getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
+					JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e2", getUIText("Title_FileLoadFailed"),
+						JOptionPane.ERROR_MESSAGE)
 					return
 				}
 
@@ -483,13 +489,13 @@ class Sequencer:JFrame(), ActionListener {
 	private inner class FileFilterREP:FileFilter() {
 		override fun accept(f:File):Boolean = if(f.isDirectory) true else f.name.endsWith(".rep")
 
-		override fun getDescription():String? = getUIText("FileChooser_ReplayFile")
+		override fun getDescription():String = getUIText("FileChooser_ReplayFile")
 	}
 
 	private inner class FileFilterTXT:FileFilter() {
 		override fun accept(f:File):Boolean = if(f.isDirectory) true else f.name.endsWith(".txt")
 
-		override fun getDescription():String? = getUIText("FileChooser_TextFile")
+		override fun getDescription():String = getUIText("FileChooser_TextFile")
 	}
 
 	companion object {

@@ -11,8 +11,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	private var goalLines:Int = 0 // TODO: Add option to change this
 
 	/* Mode name */
-	override val name:String
-		get() = "NET-VS-LINE RACE"
+	override val name:String = "NET-VS-LINE RACE"
 
 	/* Mode init */
 	override fun modeInit(manager:GameManager) {
@@ -209,9 +208,9 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 
 	/* Receive stats */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		if(message.size>4) engine.statistics.lines = Integer.parseInt(message[4])
-		//if(message.size>5) engine.statistics.pps = java.lang.Float.parseFloat(message[5])
-		//if(message.size>6) engine.statistics.lpm = java.lang.Float.parseFloat(message[6])
+		if(message.size>4) engine.statistics.lines = message[4].toInt()
+		//if(message.size>5) engine.statistics.pps = message[5].toFloat()
+		//if(message.size>6) engine.statistics.lpm = message[6].toFloat()
 		updateMeter(engine)
 	}
 
@@ -230,17 +229,17 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 
 	/* Receive end-of-game stats */
 	override fun netvsRecvEndGameStats(message:Array<String>) {
-		val seatID = Integer.parseInt(message[2])
+		val seatID = message[2].toInt()
 		val playerID = netvsGetPlayerIDbySeatID(seatID)
 
 		if(playerID!=0||netvsIsWatch()) {
 			val engine = owner.engine[playerID]
 
-			engine.statistics.lines = Integer.parseInt(message[8])
-			//engine.statistics.lpm = java.lang.Float.parseFloat(message[9])
-			engine.statistics.totalPieceLocked = Integer.parseInt(message[10])
-			//engine.statistics.pps = java.lang.Float.parseFloat(message[11])
-			engine.statistics.time = Integer.parseInt(message[12])
+			engine.statistics.lines = message[8].toInt()
+			//engine.statistics.lpm = message[9].toFloat()
+			engine.statistics.totalPieceLocked = message[10].toInt()
+			//engine.statistics.pps = message[11].toFloat()
+			engine.statistics.time = message[12].toInt()
 
 			netvsPlayerResultReceived[playerID] = true
 		}

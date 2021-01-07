@@ -48,7 +48,6 @@ import javax.swing.*
 import javax.swing.table.DefaultTableModel
 import javax.swing.text.*
 
-
 /** NullpoMino NetLobby */
 /** Constructor */
 class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
@@ -60,7 +59,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	var ruleOptLock:RuleOptions? = null
 
 	/** Map list */
-	var mapList:LinkedList<String> = LinkedList()
+	val mapList:LinkedList<String> = LinkedList()
 
 	/** Event listeners */
 	private var listeners:LinkedList<NetLobbyListener>? = LinkedList()
@@ -114,413 +113,403 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private var writerRoomLog:PrintWriter? = null
 
 	/** Rated-game rule name list */
-	private lateinit var listRatedRuleName:Array<LinkedList<String>>
+	private val listRatedRuleName:Array<LinkedList<String>> = Array(GameEngine.MAX_GAMESTYLE) {LinkedList<String>()}
 
 	/** Layout manager for main screen */
-	private lateinit var contentPaneCardLayout:CardLayout
+	private val contentPaneCardLayout:CardLayout = CardLayout()
 
 	/** Menu bars (all screens) */
-	private lateinit var menuBar:Array<JMenuBar>
+	private val menuBar:Array<JMenuBar> = Array(SCREENCARD_NAMES.size) {JMenuBar()}
 
 	/** Text field of player name (Server select screen) */
-	private lateinit var txtfldPlayerName:JTextField
+	private val txtfldPlayerName:JTextField = JTextField()
 
 	/** Text field of team name (Server select screen) */
-	private lateinit var txtfldPlayerTeam:JTextField
+	private val txtfldPlayerTeam:JTextField = JTextField()
 
 	/** Listbox for servers (Server select screen) */
-	private lateinit var listboxServerList:JList<*>
+	private val listboxServerList:JList<String> = JList()
 
 	/** Listbox data for servers (Server select screen) */
-	private lateinit var listmodelServerList:DefaultListModel<String>
+	private var listmodelServerList:DefaultListModel<String> = DefaultListModel()
 
 	/** Connect button (Server select screen) */
-	private lateinit var btnServerConnect:JButton
+	private val btnServerConnect:JButton = JButton()
 
 	/** Lobby/Room Tab */
-	private lateinit var tabLobbyAndRoom:JTabbedPane
+	private val tabLobbyAndRoom:JTabbedPane = JTabbedPane()
 
 	/** JSplitPane (Lobby screen) */
-	private var splitLobby:JSplitPane? = null
+	private val splitLobby:JSplitPane = JSplitPane()
 
 	/** At the top of the lobby screen layout manager */
-	private lateinit var roomListTopBarCardLayout:CardLayout
+	private val roomListTopBarCardLayout:CardLayout = CardLayout()
 
 	/** Panel at the top of the lobby screen */
-	private lateinit var subpanelRoomListTopBar:JPanel
+	private val subpanelRoomListTopBar:JPanel = JPanel()
 
 	/** Lobby popup menu (Lobby screen) */
-	private lateinit var popupLobbyOptions:JPopupMenu
+	private val popupLobbyOptions:JPopupMenu = JPopupMenu()
 
 	/** Rule change menu item (Lobby screen) */
-	private lateinit var itemLobbyMenuRuleChange:JMenuItem
+	private val itemLobbyMenuRuleChange:JMenuItem = JMenuItem()
 
 	/** Team change menu item (Lobby screen) */
-	private lateinit var itemLobbyMenuTeamChange:JMenuItem
+	private val itemLobbyMenuTeamChange:JMenuItem = JMenuItem()
 
 	/** Leaderboard menu item (Lobby screen) */
-	private lateinit var itemLobbyMenuRanking:JMenuItem
+	private val itemLobbyMenuRanking:JMenuItem = JMenuItem()
 
 	/** Quick Start button(Lobby screen) */
-	private lateinit var btnRoomListQuickStart:JButton
+	private val btnRoomListQuickStart:JButton = JButton()
 
 	/** Create a Room button(Lobby screen) */
-	private lateinit var btnRoomListRoomCreate:JButton
+	private val btnRoomListRoomCreate:JButton = JButton()
 
 	/** Create Room 1P (Lobby screen) */
-	private lateinit var btnRoomListRoomCreate1P:JButton
+	private val btnRoomListRoomCreate1P:JButton = JButton()
 
 	/** Options menu button (Lobby screen) */
-	private lateinit var btnRoomListOptions:JButton
+	private val btnRoomListOptions:JButton = JButton()
 
 	/** Team name input Column(Lobby screen) */
-	private lateinit var txtfldRoomListTeam:JTextField
+	private val txtfldRoomListTeam:JTextField = JTextField()
 
 	/** Room list table */
-	private lateinit var tableRoomList:JTable
-
-	/** Room list tableのカラム名(翻訳後) */
-	private lateinit var strTableColumnNames:Array<String>
+	private val tableRoomList:JTable = JTable()
 
 	/** Room list tableの data */
-	private lateinit var tablemodelRoomList:DefaultTableModel
+	private var tablemodelRoomList:DefaultTableModel = DefaultTableModel()
 
 	/** Chat logAndPlayerPartition line of the list(Lobby screen) */
-	private var splitLobbyChat:JSplitPane? = null
+	private val splitLobbyChat:JSplitPane = JSplitPane()
 
 	/** Chat log(Lobby screen) */
-	private lateinit var txtpaneLobbyChatLog:JTextPane
+	private val txtpaneLobbyChatLog:JTextPane = JTextPane()
 
 	/** PlayerList(Lobby screen) */
-	private lateinit var listboxLobbyChatPlayerList:JList<*>
+	private var listboxLobbyChatPlayerList:JList<String> = JList()
 
 	/** PlayerList(Lobby screen)Of data */
-	private lateinit var listmodelLobbyChatPlayerList:DefaultListModel<String>
+	private var listmodelLobbyChatPlayerList:DefaultListModel<String> = DefaultListModel()
 
 	/** Chat input Column(Lobby screen) */
-	private lateinit var txtfldLobbyChatInput:JTextField
+	private val txtfldLobbyChatInput:JTextField = JTextField()
 
 	/** Submit chat button(Lobby screen) */
-	private lateinit var btnLobbyChatSend:JButton
+	private val btnLobbyChatSend:JButton = JButton()
 
 	/** Participation in a war button(Room screen) */
-	private lateinit var btnRoomButtonsJoin:JButton
+	private val btnRoomButtonsJoin:JButton = JButton()
 
 	/** Withdrawal button(Room screen) */
-	private lateinit var btnRoomButtonsSitOut:JButton
+	private val btnRoomButtonsSitOut:JButton = JButton()
 
 	/** Change team button(Room screen) */
-	private lateinit var btnRoomButtonsTeamChange:JButton
+	private val btnRoomButtonsTeamChange:JButton = JButton()
 
 	/** View Settings button (Room screen) */
-	private lateinit var btnRoomButtonsViewSetting:JButton
+	private val btnRoomButtonsViewSetting:JButton = JButton()
 
 	/** Leaderboard button (Room screen) */
-	private lateinit var btnRoomButtonsRanking:JButton
+	private val btnRoomButtonsRanking:JButton = JButton()
 
 	/** Partition line separating the upper and lower(Room screen) */
-	private var splitRoom:JSplitPane? = null
+	private val splitRoom:JSplitPane = JSplitPane()
 
 	/** Room at the top of the screen layout manager */
-	private lateinit var roomTopBarCardLayout:CardLayout
+	private val roomTopBarCardLayout:CardLayout = CardLayout()
 
 	/** Top panel room screen */
-	private lateinit var subpanelRoomTopBar:JPanel
+	private val subpanelRoomTopBar:JPanel = JPanel()
 
 	/** Game stats panel */
-	private lateinit var subpanelGameStat:JPanel
+	private val subpanelGameStat:JPanel = JPanel()
 
 	/** CardLayout for game stats */
-	private lateinit var gameStatCardLayout:CardLayout
+	private var gameStatCardLayout:CardLayout = CardLayout()
 
 	/** Multiplayer game stats table */
-	private lateinit var tableGameStat:JTable
-
-	/** Multiplayer game stats table column names */
-	private lateinit var strGameStatTableColumnNames:Array<String>
+	private var tableGameStat:JTable = JTable()
 
 	/** Multiplayer game stats table data */
-	private lateinit var tablemodelGameStat:DefaultTableModel
+	private val tablemodelGameStat:DefaultTableModel = DefaultTableModel()
 
 	/** Multiplayer game stats table */
-	private lateinit var tableGameStat1P:JTable
-
-	/** Multiplayer game stats table column names */
-	private lateinit var strGameStatTableColumnNames1P:Array<String>
+	private val tableGameStat1P:JTable = JTable()
 
 	/** Multiplayer game stats table data */
-	private lateinit var tablemodelGameStat1P:DefaultTableModel
+	private val tablemodelGameStat1P:DefaultTableModel = DefaultTableModel()
 
 	/** Chat logAndPlayerPartition line of the list(Room screen) */
-	private var splitRoomChat:JSplitPane? = null
+	private val splitRoomChat:JSplitPane = JSplitPane()
 
 	/** Chat log(Room screen) */
-	private lateinit var txtpaneRoomChatLog:JTextPane
+	private val txtpaneRoomChatLog:JTextPane = JTextPane()
 
 	/** PlayerList(Room screen) */
-	private lateinit var listboxRoomChatPlayerList:JList<*>
+	private val listboxRoomChatPlayerList:JList<String> = JList()
 
 	/** PlayerList(Room screen)Of data */
-	private lateinit var listmodelRoomChatPlayerList:DefaultListModel<String>
+	private val listmodelRoomChatPlayerList:DefaultListModel<String> = DefaultListModel()
 
 	/** The same roomPlayerInformation */
 	/** Being in the same roomPlayerReturns a list(The update does not)
 	 * @return Being in the same roomPlayerList
 	 */
-	lateinit var sameRoomPlayerInfoList:LinkedList<NetPlayerInfo>
-		private set
+	@Suppress("MemberVisibilityCanBePrivate") val sameRoomPlayerInfoList:LinkedList<NetPlayerInfo> = LinkedList()
 
 	/** Chat input Column(Room screen) */
-	private lateinit var txtfldRoomChatInput:JTextField
+	private val txtfldRoomChatInput:JTextField = JTextField()
 
 	/** Submit chat button(Room screen) */
-	private lateinit var btnRoomChatSend:JButton
-
+	private val btnRoomChatSend:JButton = JButton()
 	/** Team name input Column(Room screen) */
-	private lateinit var txtfldRoomTeam:JTextField
+	private val txtfldRoomTeam:JTextField = JTextField()
 
 	/** Host name input Column(Server add screen) */
-	private lateinit var txtfldServerAddHost:JTextField
+	private val txtfldServerAddHost:JTextField = JTextField()
 
 	/** OK button(Server add screen) */
-	private lateinit var btnServerAddOK:JButton
+	private val btnServerAddOK:JButton = JButton()
 
-	private lateinit var txtfldCreateRatedName:JTextField
+	private val txtfldCreateRatedName:JTextField = JTextField()
 
 	/** Cancel button (Created rated waiting screen) */
-	private lateinit var btnCreateRatedWaitingCancel:JButton
+	private val btnCreateRatedWaitingCancel:JButton = JButton()
 
 	/** Presets box (Create rated screen) */
-	private lateinit var comboboxCreateRatedPresets:JComboBox<String>
+	private val comboboxCreateRatedPresets:JComboBox<String> = JComboBox()
 
 	/** People participatecount(Create rated screen) */
-	private lateinit var spinnerCreateRatedMaxPlayers:JSpinner
+	private val spinnerCreateRatedMaxPlayers:JSpinner = JSpinner()
 
 	/** OK button (Create rated screen) */
-	private lateinit var btnCreateRatedOK:JButton
+	private val btnCreateRatedOK:JButton = JButton()
 
 	/** Custom button (Create rated screen) */
-	private lateinit var btnCreateRatedCustom:JButton
+	private val btnCreateRatedCustom:JButton = JButton()
 
 	/** Cancel button (Created rated screen) */
-	private lateinit var btnCreateRatedCancel:JButton
+	private val btnCreateRatedCancel:JButton = JButton()
 
 	/** ルーム名(Create room screen) */
-	private lateinit var txtfldCreateRoomName:JTextField
+	private val txtfldCreateRoomName:JTextField = JTextField()
 
 	/** Game Mode (Create room screen) */
-	private lateinit var comboboxCreateRoomMode:JComboBox<*>
+	private val comboboxCreateRoomMode:JComboBox<String> = JComboBox()
 
 	/** People participatecount(Create room screen) */
-	private lateinit var spinnerCreateRoomMaxPlayers:JSpinner
+	private val spinnerCreateRoomMaxPlayers:JSpinner = JSpinner()
 
 	/** To wait before auto-start time(Create room screen) */
-	private lateinit var spinnerCreateRoomAutoStartSeconds:JSpinner
+	private val spinnerCreateRoomAutoStartSeconds:JSpinner = JSpinner()
 
 	/** Molecular fall velocity(Create room screen) */
-	private lateinit var spinnerCreateRoomGravity:JSpinner
+	private val spinnerCreateRoomGravity:JSpinner = JSpinner()
 
 	/** Denominator-fall velocity(Create room screen) */
-	private lateinit var spinnerCreateRoomDenominator:JSpinner
+	private val spinnerCreateRoomDenominator:JSpinner = JSpinner()
 
 	/** ARE(Create room screen) */
-	private lateinit var spinnerCreateRoomARE:JSpinner
+	private val spinnerCreateRoomARE:JSpinner = JSpinner()
 
 	/** ARE after line clear(Create room screen) */
-	private lateinit var spinnerCreateRoomARELine:JSpinner
+	private val spinnerCreateRoomARELine:JSpinner = JSpinner()
 
 	/** Line clear time(Create room screen) */
-	private lateinit var spinnerCreateRoomLineDelay:JSpinner
+	private val spinnerCreateRoomLineDelay:JSpinner = JSpinner()
 
 	/** Fixation time(Create room screen) */
-	private lateinit var spinnerCreateRoomLockDelay:JSpinner
+	private val spinnerCreateRoomLockDelay:JSpinner = JSpinner()
 
 	/** Horizontal reservoir(Create room screen) */
-	private lateinit var spinnerCreateRoomDAS:JSpinner
+	private val spinnerCreateRoomDAS:JSpinner = JSpinner()
 
 	/** HurryupSeconds before the startcount(Create room screen) */
-	private lateinit var spinnerCreateRoomHurryupSeconds:JSpinner
+	private val spinnerCreateRoomHurryupSeconds:JSpinner = JSpinner()
 
 	/** HurryupTimes afterBlockDo you run up the floor every time you put
 	 * the(Create room screen) */
-	private lateinit var spinnerCreateRoomHurryupInterval:JSpinner
+	private val spinnerCreateRoomHurryupInterval:JSpinner = JSpinner()
 
 	/** MapSetID(Create room screen) */
-	private var spinnerCreateRoomMapSetID:JSpinner? = null
+	private val spinnerCreateRoomMapSetID:JSpinner = JSpinner()
 
 	/** Rate of change of garbage holes */
-	private lateinit var spinnerCreateRoomGarbagePercent:JSpinner
+	private val spinnerCreateRoomGarbagePercent:JSpinner = JSpinner()
 
 	/** Map is enabled(Create room screen) */
-	private lateinit var chkboxCreateRoomUseMap:JCheckBox
+	private val chkboxCreateRoomUseMap:JCheckBox = JCheckBox()
 
 	/** Of all fixed rules(Create room screen) */
-	private lateinit var chkboxCreateRoomRuleLock:JCheckBox
+	private val chkboxCreateRoomRuleLock:JCheckBox = JCheckBox()
 
 	/** Spin bonusType(Create room screen) */
-	private lateinit var comboboxCreateRoomTWISTEnableType:JComboBox<*>
+	private val comboboxCreateRoomTWISTEnableType:JComboBox<String> = JComboBox()
 
 	/** Spin recognition type (4-point, immobile, etc.) */
-	private lateinit var comboboxCreateRoomSpinCheckType:JComboBox<*>
+	private val comboboxCreateRoomSpinCheckType:JComboBox<String> = JComboBox()
 
 	/** Flag for enabling B2B(Create room screen) */
-	private lateinit var chkboxCreateRoomB2B:JCheckBox
+	private val chkboxCreateRoomB2B:JCheckBox = JCheckBox()
 
 	/** Flag for enabling combos(Create room screen) */
-	private lateinit var chkboxCreateRoomCombo:JCheckBox
+	private val chkboxCreateRoomCombo:JCheckBox = JCheckBox()
 
 	/** Allow Rensa/Combo Block */
-	private lateinit var chkboxCreateRoomRensaBlock:JCheckBox
+	private val chkboxCreateRoomRensaBlock:JCheckBox = JCheckBox()
 
 	/** Allow countering */
-	private lateinit var chkboxCreateRoomCounter:JCheckBox
+	private val chkboxCreateRoomCounter:JCheckBox = JCheckBox()
 
 	/** Enable bravo bonus */
-	private lateinit var chkboxCreateRoomBravo:JCheckBox
+	private val chkboxCreateRoomBravo:JCheckBox = JCheckBox()
 
 	/** Allow EZ spins */
-	private lateinit var chkboxCreateRoomTWISTEnableEZ:JCheckBox
+	private val chkboxCreateRoomTWISTEnableEZ:JCheckBox = JCheckBox()
 
 	/** 3If I live more than Attack Reduce the force(Create room screen) */
-	private lateinit var chkboxCreateRoomReduceLineSend:JCheckBox
+	private val chkboxCreateRoomReduceLineSend:JCheckBox = JCheckBox()
 
 	/** Set garbage type */
-	private lateinit var chkboxCreateRoomGarbageChangePerAttack:JCheckBox
+	private val chkboxCreateRoomGarbageChangePerAttack:JCheckBox = JCheckBox()
 
 	/** Set garbage type */
-	private lateinit var chkboxCreateRoomDivideChangeRateByPlayers:JCheckBox
+	private val chkboxCreateRoomDivideChangeRateByPlayers:JCheckBox = JCheckBox()
 
 	/** B2B chunk type */
-	private lateinit var chkboxCreateRoomB2BChunk:JCheckBox
+	private val chkboxCreateRoomB2BChunk:JCheckBox = JCheckBox()
 
 	/** Fragmentarygarbage blockUsing the system(Create room screen) */
-	private lateinit var chkboxCreateRoomUseFractionalGarbage:JCheckBox
+	private val chkboxCreateRoomUseFractionalGarbage:JCheckBox = JCheckBox()
 
 	/** Use Target System (Create room screen) */
-	private lateinit var chkboxCreateRoomIsTarget:JCheckBox
+	private val chkboxCreateRoomIsTarget:JCheckBox = JCheckBox()
 
 	/** Spinner for Targeting time (Create room screen) */
-	private lateinit var spinnerCreateRoomTargetTimer:JSpinner
+	private val spinnerCreateRoomTargetTimer:JSpinner = JSpinner()
 
 	/** TNET2TypeAutomatically start timerI use(Create room screen) */
-	private lateinit var chkboxCreateRoomAutoStartTNET2:JCheckBox
+	private val chkboxCreateRoomAutoStartTNET2:JCheckBox = JCheckBox()
 
 	/** SomeoneCancelWasTimerInvalidation(Create room screen) */
-	private lateinit var chkboxCreateRoomDisableTimerAfterSomeoneCancelled:JCheckBox
+	private val chkboxCreateRoomDisableTimerAfterSomeoneCancelled:JCheckBox = JCheckBox()
 
 	/** Preset number (Create room screen) */
-	private lateinit var spinnerCreateRoomPresetID:JSpinner
+	private val spinnerCreateRoomPresetID:JSpinner = JSpinner()
 
 	/** Preset code (Create room screen) */
-	private lateinit var txtfldCreateRoomPresetCode:JTextField
+	private val txtfldCreateRoomPresetCode:JTextField = JTextField()
 
 	/** OK button(Create room screen) */
-	private lateinit var btnCreateRoomOK:JButton
+	private val btnCreateRoomOK:JButton = JButton()
 
 	/** Participation in a war button(Create room screen) */
-	private lateinit var btnCreateRoomJoin:JButton
+	private val btnCreateRoomJoin:JButton = JButton()
 
 	/** Spectator button(Create room screen) */
-	private lateinit var btnCreateRoomWatch:JButton
+	private val btnCreateRoomWatch:JButton = JButton()
 
 	/** Cancel Button (Create room screen) */
-	private lateinit var btnCreateRoomCancel:JButton
+	private val btnCreateRoomCancel:JButton = JButton()
 
 	/** Game mode label (Create room 1P screen) */
-	private lateinit var labelCreateRoom1PGameMode:JLabel
+	private val labelCreateRoom1PGameMode:JLabel = JLabel()
 
 	/** Game mode listbox (Create room 1P screen) */
-	private lateinit var listboxCreateRoom1PModeList:JList<*>
+	private val listboxCreateRoom1PModeList:JList<String> = JList()
 
 	/** Game mode list data (Create room 1P screen) */
-	private lateinit var listmodelCreateRoom1PModeList:DefaultListModel<String>
+	private var listmodelCreateRoom1PModeList:DefaultListModel<String> = DefaultListModel()
 
 	/** Rule list listbox (Create room 1P screen) */
-	private lateinit var listboxCreateRoom1PRuleList:JList<*>
+	private val listboxCreateRoom1PRuleList:JList<String> = JList()
 
 	/** Rule list list data (Create room 1P screen) */
-	private lateinit var listmodelCreateRoom1PRuleList:DefaultListModel<String>
+	private var listmodelCreateRoom1PRuleList:DefaultListModel<String> = DefaultListModel()
 
 	/** OK button (Create room 1P screen) */
-	private lateinit var btnCreateRoom1POK:JButton
+	private val btnCreateRoom1POK:JButton = JButton()
 
 	/** Cancel button (Create room 1P screen) */
-	private lateinit var btnCreateRoom1PCancel:JButton
+	private val btnCreateRoom1PCancel:JButton = JButton()
 
 	/** Tab (MPRanking screen) */
-	private lateinit var tabMPRanking:JTabbedPane
-
-	/** Column names of multiplayer leaderboard (MPRanking screen) */
-	private lateinit var strMPRankingTableColumnNames:Array<String>
+	private val tabMPRanking:JTabbedPane = JTabbedPane()
 
 	/** Table of multiplayer leaderboard (MPRanking screen) */
-	private lateinit var tableMPRanking:Array<JTable>
+	private val tableMPRanking:Array<JTable> = Array(GameEngine.MAX_GAMESTYLE) {
+		JTable()
+	}
 
 	/** Table data of multiplayer leaderboard (MPRanking screen) */
-	private lateinit var tablemodelMPRanking:Array<DefaultTableModel>
+	private var tablemodelMPRanking:Array<DefaultTableModel> = Array(GameEngine.MAX_GAMESTYLE) {
+		DefaultTableModel(MPRANKING_COLUMNNAMES.map {getUIText(it)}.toTypedArray(), 0)
+	}
 
 	/** OK button (MPRanking screen) */
-	private lateinit var btnMPRankingOK:JButton
+	private val btnMPRankingOK:JButton = JButton()
 
 	/** Tab (Rule change screen) */
-	private lateinit var tabRuleChange:JTabbedPane
+	private val tabRuleChange:JTabbedPane = JTabbedPane()
 
 	/** Rule list listbox (Rule change screen) */
-	private lateinit var listboxRuleChangeRuleList:Array<JList<*>>
+	private var listboxRuleChangeRuleList:Array<JList<String>> = emptyArray()
 
 	/** OK button (Rule change screen) */
-	private lateinit var btnRuleChangeOK:JButton
+	private val btnRuleChangeOK:JButton = JButton()
 
 	/** Cancel button (Rule change screen) */
-	private lateinit var btnRuleChangeCancel:JButton
+	private val btnRuleChangeCancel:JButton = JButton()
 
 	/** Rule entries (Rule change screen) */
-	private lateinit var ruleEntries:LinkedList<RuleEntry>
+	private var ruleEntries:LinkedList<RuleEntry> = LinkedList()
 
 	/** Tuning: A button rotation Combobox */
-	private lateinit var comboboxTuningRotateButtonDefaultRight:JComboBox<*>
+	private var comboboxTuningRotateButtonDefaultRight:JComboBox<String> = JComboBox()
 	/** Tuning: Diagonal move Combobox */
-	private lateinit var comboboxTuningMoveDiagonal:JComboBox<*>
+	private var comboboxTuningMoveDiagonal:JComboBox<String> = JComboBox()
 	/** Tuning: Show Outline Only Combobox */
-	private lateinit var comboboxTuningBlockShowOutlineOnly:JComboBox<*>
+	private var comboboxTuningBlockShowOutlineOnly:JComboBox<String> = JComboBox()
 	/** Tuning: Skin Combobox */
-	private lateinit var comboboxTuningSkin:JComboBox<ComboLabel>
+	private val comboboxTuningSkin:JComboBox<ComboLabel> = JComboBox()
 	/** Tuning: Skin Images */
-	private lateinit var imgTuningBlockSkins:Array<BufferedImage>
+	private var imgTuningBlockSkins:Array<BufferedImage> = Array(0) {BufferedImage(0, 0, 0)}
 	/** Tuning: Outline type combobox */
-	private lateinit var comboboxTuningBlockOutlineType:JComboBox<*>
+	private var comboboxTuningBlockOutlineType:JComboBox<String> = JComboBox()
 	/** Tuning: Minimum DAS */
-	private lateinit var txtfldTuningMinDAS:JTextField
+	private val txtfldTuningMinDAS:JTextField = JTextField()
 	/** Tuning: Maximum DAS */
-	private lateinit var txtfldTuningMaxDAS:JTextField
+	private val txtfldTuningMaxDAS:JTextField = JTextField()
 	/** Tuning: DAS dealy */
-	private lateinit var txtfldTuningDasDelay:JTextField
+	private val txtfldTuningDasDelay:JTextField = JTextField()
 	/** Tuning: Checkbox to enable swapping the roles of up/down buttons
 	 * in-game */
-	private lateinit var chkboxTuningReverseUpDown:JCheckBox
+	private val chkboxTuningReverseUpDown:JCheckBox = JCheckBox()
 
 	/** @return Current ScreenChat log
 	 */
-	val currentChatLogTextPane:JTextPane
+	private val currentChatLogTextPane:JTextPane
 		get() = if(tabLobbyAndRoom.selectedIndex!=0) txtpaneRoomChatLog else txtpaneLobbyChatLog
 
 	/** Get current time as String (for chat log)
 	 * @return Current time as String
 	 */
-	val currentTimeAsString:String
+	private val currentTimeAsString:String
 		get() = SimpleDateFormat("HH:mm:ss").format(GregorianCalendar().time)
 
 	/** Get currenlty selected values set ID
 	 * @return Map set ID
 	 */
-	val currentSelectedMapSetID:Int
-		get() = spinnerCreateRoomMapSetID?.let {it.value as Int} ?: 0
+	private val currentSelectedMapSetID:Int
+		get() = spinnerCreateRoomMapSetID.let {it.value as Int}
 
 	/** Get rule file list (for rule change screen)
 	 * @return Rule file list. null if directory doesn't exist.
 	 */
 	// Sort if not windows
-	val ruleFileList:Array<String>?
+	private val ruleFileList:Array<String>?
 		get() {
 			val dir = File("config/rule")
 
@@ -615,9 +604,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		})
 
 		// Rated-game rule name list
-		listRatedRuleName = Array(GameEngine.MAX_GAMESTYLE) {LinkedList<String>()}
+		listRatedRuleName
 		// Map list
-		mapList = LinkedList()
+		mapList.clear()
 
 		// Rule files
 		val strRuleFileList = ruleFileList
@@ -647,10 +636,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 	/** GUI Initialization */
 	private fun initUI() {
-		contentPaneCardLayout = CardLayout()
 		contentPane.layout = contentPaneCardLayout
-
-		menuBar = Array(SCREENCARD_NAMES.size) {JMenuBar()}
 
 		initServerSelectUI()
 		initLobbyUI()
@@ -681,11 +667,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelNames.add(subpanelNameEntry)
 
 		// *** &#39;Name:&quot;Label
-		val labelNameEntry = JLabel(getUIText("ServerSelect_LabelName"))
-		subpanelNameEntry.add(labelNameEntry, BorderLayout.WEST)
+		subpanelNameEntry.add(JLabel(getUIText("ServerSelect_LabelName")), BorderLayout.WEST)
 
 		// *** Name input Column
-		txtfldPlayerName = JTextField()
 		txtfldPlayerName.componentPopupMenu = TextComponentPopupMenu(txtfldPlayerName)
 		txtfldPlayerName.text = propConfig.getProperty("serverselect.txtfldPlayerName.text", "")
 		subpanelNameEntry.add(txtfldPlayerName, BorderLayout.CENTER)
@@ -695,17 +679,14 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelNames.add(subpanelTeamEntry)
 
 		// *** &#39;Team name:&quot;Label
-		val labelTeamEntry = JLabel(getUIText("ServerSelect_LabelTeam"))
-		subpanelTeamEntry.add(labelTeamEntry, BorderLayout.WEST)
+		subpanelTeamEntry.add(JLabel(getUIText("ServerSelect_LabelTeam")), BorderLayout.WEST)
 
 		// *** Team name input Column
-		txtfldPlayerTeam = JTextField()
 		txtfldPlayerTeam.componentPopupMenu = TextComponentPopupMenu(txtfldPlayerTeam)
 		txtfldPlayerTeam.text = propConfig.getProperty("serverselect.txtfldPlayerTeam.text", "")
 		subpanelTeamEntry.add(txtfldPlayerTeam, BorderLayout.CENTER)
 
 		// * Server selection list box
-		listmodelServerList = DefaultListModel()
 		if(GameManager.isDevBuild) {
 			if(!loadListToDefaultListModel(listmodelServerList, "config/setting/netlobby_serverlist_dev.cfg")) {
 				loadListToDefaultListModel(listmodelServerList, "config/list/netlobby_serverlist_default_dev.lst")
@@ -715,11 +696,12 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			loadListToDefaultListModel(listmodelServerList, "config/list/netlobby_serverlist_default.lst")
 			saveListFromDefaultListModel(listmodelServerList, "config/setting/netlobby_serverlist.cfg")
 		}
-		listboxServerList = JList(listmodelServerList)
-		listboxServerList.componentPopupMenu = ServerSelectListBoxPopupMenu()
-		listboxServerList.addMouseListener(ServerSelectListBoxMouseAdapter())
-		listboxServerList.setSelectedValue(propConfig.getProperty("serverselect.listboxServerList.value", ""), true)
-		val spListboxServerSelect = JScrollPane(listboxServerList)
+		val spListboxServerSelect = JScrollPane(listboxServerList.apply{
+			model = listmodelServerList
+			componentPopupMenu = ServerSelectListBoxPopupMenu()
+			addMouseListener(ServerSelectListBoxMouseAdapter())
+			setSelectedValue(propConfig.getProperty("serverselect.listboxServerList.value", ""), true)
+		})
 		mainpanelServerSelect.add(spListboxServerSelect, BorderLayout.CENTER)
 
 		// * Panel add or remove server
@@ -728,36 +710,36 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		mainpanelServerSelect.add(subpanelServerAdd, BorderLayout.EAST)
 
 		// ** Add Server button
-		val btnServerAdd = JButton(getUIText("ServerSelect_ServerAdd"))
-		btnServerAdd.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnServerAdd.maximumSize.height)
-		btnServerAdd.addActionListener(this)
-		btnServerAdd.actionCommand = "ServerSelect_ServerAdd"
-		btnServerAdd.setMnemonic('A')
-		subpanelServerAdd.add(btnServerAdd)
+		subpanelServerAdd.add(JButton(getUIText("ServerSelect_ServerAdd")).also {
+			it.maximumSize = Dimension(Short.MAX_VALUE.toInt(), it.maximumSize.height)
+			it.addActionListener(this)
+			it.actionCommand = "ServerSelect_ServerAdd"
+			it.setMnemonic('A')
+		})
 
 		// ** Delete server button
-		val btnServerDelete = JButton(getUIText("ServerSelect_ServerDelete"))
-		btnServerDelete.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnServerDelete.maximumSize.height)
-		btnServerDelete.addActionListener(this)
-		btnServerDelete.actionCommand = "ServerSelect_ServerDelete"
-		btnServerDelete.setMnemonic('D')
-		subpanelServerAdd.add(btnServerDelete)
+		subpanelServerAdd.add(JButton(getUIText("ServerSelect_ServerDelete")).also {
+			it.maximumSize = Dimension(Short.MAX_VALUE.toInt(), it.maximumSize.height)
+			it.addActionListener(this)
+			it.actionCommand = "ServerSelect_ServerDelete"
+			it.setMnemonic('D')
+		})
 
 		// ** Monitoring settings button
-		val btnSetObserver = JButton(getUIText("ServerSelect_SetObserver"))
-		btnSetObserver.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnSetObserver.maximumSize.height)
-		btnSetObserver.addActionListener(this)
-		btnSetObserver.actionCommand = "ServerSelect_SetObserver"
-		btnSetObserver.setMnemonic('S')
-		subpanelServerAdd.add(btnSetObserver)
+		subpanelServerAdd.add(JButton(getUIText("ServerSelect_SetObserver")).also {
+			it.maximumSize = Dimension(Short.MAX_VALUE.toInt(), it.maximumSize.height)
+			it.addActionListener(this)
+			it.actionCommand = "ServerSelect_SetObserver"
+			it.setMnemonic('S')
+		})
 
 		// ** Unmonitor button
-		val btnUnsetObserver = JButton(getUIText("ServerSelect_UnsetObserver"))
-		btnUnsetObserver.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnUnsetObserver.maximumSize.height)
-		btnUnsetObserver.addActionListener(this)
-		btnUnsetObserver.actionCommand = "ServerSelect_UnsetObserver"
-		btnUnsetObserver.setMnemonic('U')
-		subpanelServerAdd.add(btnUnsetObserver)
+		subpanelServerAdd.add(JButton(getUIText("ServerSelect_UnsetObserver")).also {
+			it.maximumSize = Dimension(Short.MAX_VALUE.toInt(), it.maximumSize.height)
+			it.addActionListener(this)
+			it.actionCommand = "ServerSelect_UnsetObserver"
+			it.setMnemonic('U')
+		})
 
 		// * Connection button·Exit buttonPanel
 		val subpanelServerSelectButtons = JPanel()
@@ -765,55 +747,57 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		mainpanelServerSelect.add(subpanelServerSelectButtons, BorderLayout.SOUTH)
 
 		// ** Connection button
-		btnServerConnect = JButton(getUIText("ServerSelect_Connect"))
-		btnServerConnect.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnServerConnect.maximumSize.height)
+		btnServerConnect.text = getUIText("ServerSelect_Connect")
+		btnServerConnect.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnServerConnect.maximumSize.height)
 		btnServerConnect.addActionListener(this)
 		btnServerConnect.actionCommand = "ServerSelect_Connect"
 		btnServerConnect.setMnemonic('C')
 		subpanelServerSelectButtons.add(btnServerConnect)
 
 		// ** Exit button
-		val btnServerExit = JButton(getUIText("ServerSelect_Exit"))
-		btnServerExit.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnServerExit.maximumSize.height)
-		btnServerExit.addActionListener(this)
-		btnServerExit.actionCommand = "ServerSelect_Exit"
-		btnServerExit.setMnemonic('X')
-		subpanelServerSelectButtons.add(btnServerExit)
+		subpanelServerSelectButtons.add(JButton(getUIText("ServerSelect_Exit")).also {
+			it.maximumSize = Dimension(Short.MAX_VALUE.toInt(), it.maximumSize.height)
+			it.addActionListener(this)
+			it.actionCommand = "ServerSelect_Exit"
+			it.setMnemonic('X')
+
+		})
 	}
 
 	/** Lobby screen initialization */
 	private fun initLobbyUI() {
-		tabLobbyAndRoom = JTabbedPane()
 		contentPane.add(tabLobbyAndRoom, SCREENCARD_NAMES[SCREENCARD_LOBBY])
 
 		// === Popup Menu ===
 
 		// * Popup Menu
-		popupLobbyOptions = JPopupMenu()
 
 		// ** Rule change
-		itemLobbyMenuRuleChange = JMenuItem(getUIText("Lobby_RuleChange"))
-		itemLobbyMenuRuleChange.addActionListener(this)
-		itemLobbyMenuRuleChange.actionCommand = "Lobby_RuleChange"
-		itemLobbyMenuRuleChange.setMnemonic('R')
-		itemLobbyMenuRuleChange.toolTipText = getUIText("Lobby_RuleChange_Tip")
-		popupLobbyOptions.add(itemLobbyMenuRuleChange)
+		popupLobbyOptions.add(itemLobbyMenuRuleChange.also {
+			it.text = getUIText("Lobby_RuleChange")
+			it.addActionListener(this)
+			it.actionCommand = "Lobby_RuleChange"
+			it.setMnemonic('R')
+			it.toolTipText = getUIText("Lobby_RuleChange_Tip")
+		})
 
 		// ** Team change
-		itemLobbyMenuTeamChange = JMenuItem(getUIText("Lobby_TeamChange"))
-		itemLobbyMenuTeamChange.addActionListener(this)
-		itemLobbyMenuTeamChange.actionCommand = "Lobby_TeamChange"
-		itemLobbyMenuTeamChange.setMnemonic('T')
-		itemLobbyMenuTeamChange.toolTipText = getUIText("Lobby_TeamChange_Tip")
-		popupLobbyOptions.add(itemLobbyMenuTeamChange)
+		popupLobbyOptions.add(itemLobbyMenuTeamChange.also {
+			it.text = getUIText("Lobby_TeamChange")
+			it.addActionListener(this)
+			it.actionCommand = "Lobby_TeamChange"
+			it.setMnemonic('T')
+			it.toolTipText = getUIText("Lobby_TeamChange_Tip")
+		})
 
 		// ** Leaderboard
-		itemLobbyMenuRanking = JMenuItem(getUIText("Lobby_Ranking"))
-		itemLobbyMenuRanking.addActionListener(this)
-		itemLobbyMenuRanking.actionCommand = "Lobby_Ranking"
-		itemLobbyMenuRanking.setMnemonic('K')
-		itemLobbyMenuRanking.toolTipText = getUIText("Lobby_Ranking_Tip")
-		popupLobbyOptions.add(itemLobbyMenuRanking)
+		popupLobbyOptions.add(itemLobbyMenuRanking.also {
+			it.text = getUIText("Lobby_Ranking")
+			it.addActionListener(this)
+			it.actionCommand = "Lobby_Ranking"
+			it.setMnemonic('K')
+			it.toolTipText = getUIText("Lobby_Ranking_Tip")
+		})
 
 		// === Lobby Tab ===
 		val mainpanelLobby = JPanel(BorderLayout())
@@ -822,20 +806,18 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		tabLobbyAndRoom.setMnemonicAt(0, 'Y'.toInt())
 
 		// * Partition line separating the upper and lower
-		splitLobby = JSplitPane(JSplitPane.VERTICAL_SPLIT).apply {
+		mainpanelLobby.add(splitLobby.apply {
+			orientation = JSplitPane.VERTICAL_SPLIT
 			dividerLocation = propConfig.getProperty("lobby.splitLobby.location", 200)
-
-		}
-		mainpanelLobby.add(splitLobby, BorderLayout.CENTER)
+		}, BorderLayout.CENTER)
 
 		// ** Room list(Top)
 		val subpanelRoomList = JPanel(BorderLayout()).apply {
 			minimumSize = Dimension(0, 0)
 		}
-		splitLobby?.topComponent = subpanelRoomList
+		splitLobby.topComponent = subpanelRoomList
 		// *** Top of the screen panel lobby
-		roomListTopBarCardLayout = CardLayout()
-		subpanelRoomListTopBar = JPanel(roomListTopBarCardLayout)
+		subpanelRoomListTopBar.layout = roomListTopBarCardLayout
 		subpanelRoomList.add(subpanelRoomListTopBar, BorderLayout.NORTH)
 
 		// **** Room list buttonKind
@@ -844,52 +826,56 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		//subpanelRoomList.add(subpanelRoomListButtons, BorderLayout.NORTH);
 
 		// ***** TODO:Quick Start button
-		btnRoomListQuickStart = JButton(getUIText("Lobby_QuickStart"))
-		btnRoomListQuickStart.addActionListener(this)
-		btnRoomListQuickStart.actionCommand = "Lobby_QuickStart"
-		btnRoomListQuickStart.setMnemonic('Q')
-		btnRoomListQuickStart.toolTipText = getUIText("Lobby_QuickStart_Tip")
-		btnRoomListQuickStart.isVisible = false
-		subpanelRoomListButtons.add(btnRoomListQuickStart)
+		subpanelRoomListButtons.add(btnRoomListQuickStart.also {
+			it.text = getUIText("Lobby_QuickStart")
+			it.addActionListener(this)
+			it.actionCommand = "Lobby_QuickStart"
+			it.setMnemonic('Q')
+			it.toolTipText = getUIText("Lobby_QuickStart_Tip")
+			it.isVisible = false
+		})
 
 		// ***** Create a Room button
-		btnRoomListRoomCreate = JButton(getUIText("Lobby_RoomCreate"))
-		btnRoomListRoomCreate.addActionListener(this)
-		btnRoomListRoomCreate.actionCommand = "Lobby_RoomCreate"
-		btnRoomListRoomCreate.setMnemonic('N')
-		btnRoomListRoomCreate.toolTipText = getUIText("Lobby_RoomCreate_Tip")
-		subpanelRoomListButtons.add(btnRoomListRoomCreate)
+		subpanelRoomListButtons.add(btnRoomListRoomCreate.also {
+			it.text = getUIText("Lobby_RoomCreate")
+			it.addActionListener(this)
+			it.actionCommand = "Lobby_RoomCreate"
+			it.setMnemonic('N')
+			it.toolTipText = getUIText("Lobby_RoomCreate_Tip")
+		})
 
 		// ***** Create Room (1P) button
-		btnRoomListRoomCreate1P = JButton(getUIText("Lobby_RoomCreate1P"))
-		btnRoomListRoomCreate1P.addActionListener(this)
-		btnRoomListRoomCreate1P.actionCommand = "Lobby_RoomCreate1P"
-		btnRoomListRoomCreate1P.setMnemonic('1')
-		btnRoomListRoomCreate1P.toolTipText = getUIText("Lobby_RoomCreate1P_Tip")
-		subpanelRoomListButtons.add(btnRoomListRoomCreate1P)
+		subpanelRoomListButtons.add(btnRoomListRoomCreate1P.also {
+			it.text = getUIText("Lobby_RoomCreate1P")
+			it.addActionListener(this)
+			it.actionCommand = "Lobby_RoomCreate1P"
+			it.setMnemonic('1')
+			it.toolTipText = getUIText("Lobby_RoomCreate1P_Tip")
+		})
 
 		// ***** Options menu button
-		btnRoomListOptions = JButton(getUIText("Lobby_Options"))
-		btnRoomListOptions.addActionListener(this)
-		btnRoomListOptions.actionCommand = "Lobby_Options"
-		btnRoomListOptions.setMnemonic('O')
-		btnRoomListOptions.toolTipText = getUIText("Lobby_Options_Tip")
-		subpanelRoomListButtons.add(btnRoomListOptions)
+		subpanelRoomListButtons.add(btnRoomListOptions.also {
+			it.text = getUIText("Lobby_Options")
+			it.addActionListener(this)
+			it.actionCommand = "Lobby_Options"
+			it.setMnemonic('O')
+			it.toolTipText = getUIText("Lobby_Options_Tip")
+		})
 
 		// ***** Cut button
-		val btnRoomListDisconnect = JButton(getUIText("Lobby_Disconnect"))
-		btnRoomListDisconnect.addActionListener(this)
-		btnRoomListDisconnect.actionCommand = "Lobby_Disconnect"
-		btnRoomListDisconnect.setMnemonic('L')
-		btnRoomListDisconnect.toolTipText = getUIText("Lobby_Disconnect_Tip")
-		subpanelRoomListButtons.add(btnRoomListDisconnect)
+		subpanelRoomListButtons.add(JButton(getUIText("Lobby_Disconnect")).also {
+			it.addActionListener(this)
+			it.actionCommand = "Lobby_Disconnect"
+			it.setMnemonic('L')
+			it.toolTipText = getUIText("Lobby_Disconnect_Tip")
+		})
 
 		// **** Panel change team
 		val subpanelRoomListTeam = JPanel(BorderLayout())
 		subpanelRoomListTopBar.add(subpanelRoomListTeam, "Team")
 
 		// ***** Team name input Column
-		txtfldRoomListTeam = JTextField()
+		txtfldRoomListTeam
 		subpanelRoomListTeam.add(txtfldRoomListTeam, BorderLayout.CENTER)
 
 		// ***** Team nameChange buttonPanel
@@ -897,23 +883,25 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelRoomListTeam.add(subpanelRoomListTeamButtons, BorderLayout.EAST)
 
 		// ****** Team nameChangeOK
-		val btnRoomListTeamOK = JButton(getUIText("Lobby_TeamChange_OK"))
-		btnRoomListTeamOK.addActionListener(this)
-		btnRoomListTeamOK.actionCommand = "Lobby_TeamChange_OK"
-		btnRoomListTeamOK.setMnemonic('O')
-		subpanelRoomListTeamButtons.add(btnRoomListTeamOK)
+		subpanelRoomListTeamButtons.add(JButton(getUIText("Lobby_TeamChange_OK")).also {
+			it.addActionListener(this)
+			it.actionCommand = "Lobby_TeamChange_OK"
+			it.setMnemonic('O')
+		})
 
 		// ****** Team nameChangeCancel
-		val btnRoomListTeamCancel = JButton(getUIText("Lobby_TeamChange_Cancel"))
-		btnRoomListTeamCancel.addActionListener(this)
-		btnRoomListTeamCancel.actionCommand = "Lobby_TeamChange_Cancel"
-		btnRoomListTeamCancel.setMnemonic('C')
-		subpanelRoomListTeamButtons.add(btnRoomListTeamCancel)
+		subpanelRoomListTeamButtons.add(JButton(getUIText("Lobby_TeamChange_Cancel")).also {
+			it.addActionListener(this)
+			it.actionCommand = "Lobby_TeamChange_Cancel"
+			it.setMnemonic('C')
+		})
 
-		// *** Room list table
-		strTableColumnNames = Array(ROOMTABLE_COLUMNNAMES.size) {getUIText(ROOMTABLE_COLUMNNAMES[it])}
-		tablemodelRoomList = DefaultTableModel(strTableColumnNames, 0)
-		tableRoomList = JTable(tablemodelRoomList).apply {
+		// *** Room list
+
+		/** Room list tableのカラム名(翻訳後) */
+		tablemodelRoomList.setColumnIdentifiers(Vector(ROOMTABLE_COLUMNNAMES.map {getUIText(it)}))
+		tableRoomList.apply {
+			model = tablemodelRoomList
 			setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 			setDefaultEditor(Any::class.java, null)
 			autoResizeMode = JTable.AUTO_RESIZE_OFF
@@ -922,62 +910,58 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			addMouseListener(RoomTableMouseAdapter())
 			addKeyListener(RoomTableKeyAdapter())
 		}
-		val tm = tableRoomList.columnModel
-		tm.getColumn(0).preferredWidth = propConfig.getProperty("tableRoomList.width.id", 35) // ID
-		tm.getColumn(1).preferredWidth = propConfig.getProperty("tableRoomList.width.name", 155) // Name
-		tm.getColumn(2).preferredWidth = propConfig.getProperty("tableRoomList.width.rated", 50) // Rated
-		tm.getColumn(3).preferredWidth = propConfig.getProperty("tableRoomList.width.rulename", 105) // Rule name
-		tm.getColumn(4).preferredWidth = propConfig.getProperty("tableRoomList.width.modename", 105) // Mode name
-		tm.getColumn(5).preferredWidth = propConfig.getProperty("tableRoomList.width.status", 55) // Status
-		tm.getColumn(6).preferredWidth = propConfig.getProperty("tableRoomList.width.players", 65) // Players
-		tm.getColumn(7).preferredWidth = propConfig.getProperty("tableRoomList.width.spectators", 65) // Spectators
-
-		val spTableRoomList = JScrollPane(tableRoomList)
-		subpanelRoomList.add(spTableRoomList, BorderLayout.CENTER)
+		tableRoomList.columnModel.run {
+			getColumn(0).preferredWidth = propConfig.getProperty("tableRoomList.width.id", 35) // ID
+			getColumn(1).preferredWidth = propConfig.getProperty("tableRoomList.width.name", 155) // Name
+			getColumn(2).preferredWidth = propConfig.getProperty("tableRoomList.width.rated", 50) // Rated
+			getColumn(3).preferredWidth = propConfig.getProperty("tableRoomList.width.rulename", 105) // Rule name
+			getColumn(4).preferredWidth = propConfig.getProperty("tableRoomList.width.modename", 105) // Mode name
+			getColumn(5).preferredWidth = propConfig.getProperty("tableRoomList.width.status", 55) // Status
+			getColumn(6).preferredWidth = propConfig.getProperty("tableRoomList.width.players", 65) // Players
+			getColumn(7).preferredWidth = propConfig.getProperty("tableRoomList.width.spectators", 65) // Spectators
+		}
+		subpanelRoomList.add(JScrollPane(tableRoomList), BorderLayout.CENTER)
 
 		// ** Chat(Under)
 		val subpanelLobbyChat = JPanel(BorderLayout()).apply {
 			minimumSize = Dimension(0, 0)
 		}
-		splitLobby?.bottomComponent = subpanelLobbyChat
+		splitLobby.bottomComponent = subpanelLobbyChat
 
 		// *** Chat logAndPlayerPartition line of the list
-		splitLobbyChat = JSplitPane().apply {
-			dividerLocation = propConfig.getProperty("lobby.splitLobbyChat.location", 350)
-		}
+		splitLobbyChat.dividerLocation = propConfig.getProperty("lobby.splitLobbyChat.location", 350)
+
 		subpanelLobbyChat.add(splitLobbyChat, BorderLayout.CENTER)
 
 		// **** Chat log(Lobby screen)
-		txtpaneLobbyChatLog = JTextPane()
 		txtpaneLobbyChatLog.componentPopupMenu = LogPopupMenu(txtpaneLobbyChatLog)
 		txtpaneLobbyChatLog.addKeyListener(LogKeyAdapter())
 		val spTxtpaneLobbyChatLog = JScrollPane(txtpaneLobbyChatLog)
 		spTxtpaneLobbyChatLog.minimumSize = Dimension(0, 0)
-		splitLobbyChat?.leftComponent = spTxtpaneLobbyChatLog
+		splitLobbyChat.leftComponent = spTxtpaneLobbyChatLog
 
 		// **** PlayerList(Lobby screen)
-		listmodelLobbyChatPlayerList = DefaultListModel()
 		listboxLobbyChatPlayerList = JList(listmodelLobbyChatPlayerList)
 		listboxLobbyChatPlayerList.componentPopupMenu = ListBoxPopupMenu(listboxLobbyChatPlayerList)
-		val spListboxLobbyChatPlayerList = JScrollPane(listboxLobbyChatPlayerList)
-		spListboxLobbyChatPlayerList.minimumSize = Dimension(0, 0)
-		splitLobbyChat?.rightComponent = spListboxLobbyChatPlayerList
+		splitLobbyChat.rightComponent = JScrollPane(listboxLobbyChatPlayerList).apply {
+			minimumSize = Dimension(0, 0)
+		}
 
 		// *** Chat input Column panel(Lobby screen)
 		val subpanelLobbyChatInputArea = JPanel(BorderLayout())
 		subpanelLobbyChat.add(subpanelLobbyChatInputArea, BorderLayout.SOUTH)
 
 		// **** Chat input Column(Lobby screen)
-		txtfldLobbyChatInput = JTextField()
 		txtfldLobbyChatInput.componentPopupMenu = TextComponentPopupMenu(txtfldLobbyChatInput)
 		subpanelLobbyChatInputArea.add(txtfldLobbyChatInput, BorderLayout.CENTER)
 
 		// **** Submit chat button(Lobby screen)
-		btnLobbyChatSend = JButton(getUIText("Lobby_ChatSend"))
-		btnLobbyChatSend.addActionListener(this)
-		btnLobbyChatSend.actionCommand = "Lobby_ChatSend"
-		btnLobbyChatSend.setMnemonic('S')
-		subpanelLobbyChatInputArea.add(btnLobbyChatSend, BorderLayout.EAST)
+		subpanelLobbyChatInputArea.add(btnLobbyChatSend.also {
+			it.text = getUIText("Lobby_ChatSend")
+			it.addActionListener(this)
+			it.actionCommand = "Lobby_ChatSend"
+			it.setMnemonic('S')
+		}, BorderLayout.EAST)
 
 		// === Room Tab ===
 		val mainpanelRoom = JPanel(BorderLayout())
@@ -987,19 +971,19 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		tabLobbyAndRoom.setEnabledAt(1, false)
 
 		// * Partition line separating the upper and lower
-		splitRoom = JSplitPane(JSplitPane.VERTICAL_SPLIT).apply {
+
+		mainpanelRoom.add(splitRoom.apply {
+			orientation = JSplitPane.VERTICAL_SPLIT
 			dividerLocation = propConfig.getProperty("room.splitRoom.location", 200)
-		}
-		mainpanelRoom.add(splitRoom, BorderLayout.CENTER)
+		}, BorderLayout.CENTER)
 
 		// ** List of game results(Top)
 		val subpanelRoomTop = JPanel(BorderLayout())
 		subpanelRoomTop.minimumSize = Dimension(0, 0)
-		splitRoom?.topComponent = subpanelRoomTop
+		splitRoom.topComponent = subpanelRoomTop
 
 		// *** Top panel room screen
-		roomTopBarCardLayout = CardLayout()
-		subpanelRoomTopBar = JPanel(roomTopBarCardLayout)
+		subpanelRoomTopBar.layout = roomTopBarCardLayout
 		subpanelRoomTop.add(subpanelRoomTopBar, BorderLayout.NORTH)
 
 		// ****  buttonPanel type
@@ -1007,45 +991,48 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelRoomTopBar.add(subpanelRoomButtons, "Buttons")
 
 		// ***** Withdrawal button
-		val btnRoomButtonsLeave = JButton(getUIText("Room_Leave"))
-		btnRoomButtonsLeave.addActionListener(this)
-		btnRoomButtonsLeave.actionCommand = "Room_Leave"
-		btnRoomButtonsLeave.setMnemonic('L')
-		btnRoomButtonsLeave.toolTipText = getUIText("Room_Leave_Tip")
-		subpanelRoomButtons.add(btnRoomButtonsLeave)
+		subpanelRoomButtons.add(JButton(getUIText("Room_Leave")).also {
+			it.addActionListener(this)
+			it.actionCommand = "Room_Leave"
+			it.setMnemonic('L')
+			it.toolTipText = getUIText("Room_Leave_Tip")
+		})
 
-		// ***** Participation in a war button
-		btnRoomButtonsJoin = JButton(getUIText("Room_Join"))
-		btnRoomButtonsJoin.addActionListener(this)
-		btnRoomButtonsJoin.actionCommand = "Room_Join"
-		btnRoomButtonsJoin.setMnemonic('J')
-		btnRoomButtonsJoin.toolTipText = getUIText("Room_Join_Tip")
-		btnRoomButtonsJoin.isVisible = false
-		subpanelRoomButtons.add(btnRoomButtonsJoin)
+		// ***** Participation in a game button
+		subpanelRoomButtons.add(btnRoomButtonsJoin.also {
+			it.text = getUIText("Room_Join")
+			it.addActionListener(this)
+			it.actionCommand = "Room_Join"
+			it.setMnemonic('J')
+			it.toolTipText = getUIText("Room_Join_Tip")
+			it.isVisible = false
+		})
 
 		// ***** Withdrawal button
-		btnRoomButtonsSitOut = JButton(getUIText("Room_SitOut"))
-		btnRoomButtonsSitOut.addActionListener(this)
-		btnRoomButtonsSitOut.actionCommand = "Room_SitOut"
-		btnRoomButtonsSitOut.setMnemonic('W')
-		btnRoomButtonsSitOut.toolTipText = getUIText("Room_SitOut_Tip")
-		btnRoomButtonsSitOut.isVisible = false
-		subpanelRoomButtons.add(btnRoomButtonsSitOut)
+		subpanelRoomButtons.add(btnRoomButtonsSitOut.also {
+			it.text = getUIText("Room_SitOut")
+			it.addActionListener(this)
+			it.actionCommand = "Room_SitOut"
+			it.setMnemonic('W')
+			it.toolTipText = getUIText("Room_SitOut_Tip")
+			it.isVisible = false
+		})
 
 		// ***** Change team button
-		btnRoomButtonsTeamChange = JButton(getUIText("Room_TeamChange"))
-		btnRoomButtonsTeamChange.addActionListener(this)
-		btnRoomButtonsTeamChange.actionCommand = "Room_TeamChange"
-		btnRoomButtonsTeamChange.setMnemonic('T')
-		btnRoomButtonsTeamChange.toolTipText = getUIText("Room_TeamChange_Tip")
-		subpanelRoomButtons.add(btnRoomButtonsTeamChange)
+		subpanelRoomButtons.add(btnRoomButtonsTeamChange.also {
+			it.text = getUIText("Room_TeamChange")
+			it.addActionListener(this)
+			it.actionCommand = "Room_TeamChange"
+			it.setMnemonic('T')
+			it.toolTipText = getUIText("Room_TeamChange_Tip")
+		})
 
 		// **** Panel change team
 		val subpanelRoomTeam = JPanel(BorderLayout())
 		subpanelRoomTopBar.add(subpanelRoomTeam, "Team")
 
 		// ***** Team name input Column
-		txtfldRoomTeam = JTextField()
+
 		subpanelRoomTeam.add(txtfldRoomTeam, BorderLayout.CENTER)
 
 		// ***** Team nameChange buttonPanel
@@ -1053,129 +1040,127 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelRoomTeam.add(subpanelRoomTeamButtons, BorderLayout.EAST)
 
 		// ****** Team nameChangeOK
-		val btnRoomTeamOK = JButton(getUIText("Room_TeamChange_OK"))
-		btnRoomTeamOK.addActionListener(this)
-		btnRoomTeamOK.actionCommand = "Room_TeamChange_OK"
-		btnRoomTeamOK.setMnemonic('O')
-		subpanelRoomTeamButtons.add(btnRoomTeamOK)
+		subpanelRoomTeamButtons.add(JButton(getUIText("Room_TeamChange_OK")).also {
+			it.addActionListener(this)
+			it.actionCommand = "Room_TeamChange_OK"
+			it.setMnemonic('O')
+		})
 
 		// ****** Team nameChangeCancel
-		val btnRoomTeamCancel = JButton(getUIText("Room_TeamChange_Cancel"))
-		btnRoomTeamCancel.addActionListener(this)
-		btnRoomTeamCancel.actionCommand = "Room_TeamChange_Cancel"
-		btnRoomTeamCancel.setMnemonic('C')
-		subpanelRoomTeamButtons.add(btnRoomTeamCancel)
+		subpanelRoomTeamButtons.add(JButton(getUIText("Room_TeamChange_Cancel")).also {
+			it.addActionListener(this)
+			it.actionCommand = "Room_TeamChange_Cancel"
+			it.setMnemonic('C')
+		})
 
 		// ***** Setting confirmation button
-		btnRoomButtonsViewSetting = JButton(getUIText("Room_ViewSetting"))
-		btnRoomButtonsViewSetting.addActionListener(this)
-		btnRoomButtonsViewSetting.actionCommand = "Room_ViewSetting"
-		btnRoomButtonsViewSetting.setMnemonic('V')
-		btnRoomButtonsViewSetting.toolTipText = getUIText("Room_ViewSetting_Tip")
-		subpanelRoomButtons.add(btnRoomButtonsViewSetting)
+		subpanelRoomButtons.add(btnRoomButtonsViewSetting.also {
+			it.text = getUIText("Room_ViewSetting")
+			it.addActionListener(this)
+			it.actionCommand = "Room_ViewSetting"
+			it.setMnemonic('V')
+			it.toolTipText = getUIText("Room_ViewSetting_Tip")
+		})
 
 		// ***** Leaderboard button
-		btnRoomButtonsRanking = JButton(getUIText("Room_Ranking"))
-		btnRoomButtonsRanking.addActionListener(this)
-		btnRoomButtonsRanking.actionCommand = "Room_Ranking"
-		btnRoomButtonsRanking.setMnemonic('K')
-		btnRoomButtonsRanking.toolTipText = getUIText("Room_Ranking_Tip")
-		btnRoomButtonsRanking.isVisible = false
-		subpanelRoomButtons.add(btnRoomButtonsRanking)
+		subpanelRoomButtons.add(btnRoomButtonsRanking.also {
+			it.text = getUIText("Room_Ranking")
+			it.addActionListener(this)
+			it.actionCommand = "Room_Ranking"
+			it.setMnemonic('K')
+			it.toolTipText = getUIText("Room_Ranking_Tip")
+			it.isVisible = false
+		})
 
 		// *** Game stats area
-		gameStatCardLayout = CardLayout()
-		subpanelGameStat = JPanel(gameStatCardLayout)
+		subpanelGameStat.layout = gameStatCardLayout
 		subpanelRoomTop.add(subpanelGameStat, BorderLayout.CENTER)
 
 		// **** Multiplayer game stats table
-		strGameStatTableColumnNames = Array(STATTABLE_COLUMNNAMES.size) {getUIText(STATTABLE_COLUMNNAMES[it])}
-		tablemodelGameStat = DefaultTableModel(strGameStatTableColumnNames, 0)
-		tableGameStat = JTable(tablemodelGameStat)
-		tableGameStat.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
-		tableGameStat.setDefaultEditor(Any::class.java, null)
-		tableGameStat.autoResizeMode = JTable.AUTO_RESIZE_OFF
-		tableGameStat.tableHeader.reorderingAllowed = false
-		tableGameStat.componentPopupMenu = TablePopupMenu(tableGameStat)
+		tablemodelGameStat.setColumnIdentifiers(Vector(STATTABLE_COLUMNNAMES.map {getUIText(it)}))
+		tableGameStat.apply {
+			model = tablemodelGameStat
+			setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+			setDefaultEditor(Any::class.java, null)
+			autoResizeMode = JTable.AUTO_RESIZE_OFF
+			tableHeader.reorderingAllowed = false
+			componentPopupMenu = TablePopupMenu(tableGameStat)
+		}
 
-		var tm2 = tableGameStat.columnModel
-		tm2.getColumn(0).preferredWidth = propConfig.getProperty("tableGameStat.width.rank", 30) // Rank
-		tm2.getColumn(1).preferredWidth = propConfig.getProperty("tableGameStat.width.name", 100) // Name
-		tm2.getColumn(2).preferredWidth = propConfig.getProperty("tableGameStat.width.attack", 55) // Attack count
-		tm2.getColumn(3).preferredWidth = propConfig.getProperty("tableGameStat.width.apl", 55) // APL
-		tm2.getColumn(4).preferredWidth = propConfig.getProperty("tableGameStat.width.apm", 55) // APM
-		tm2.getColumn(5).preferredWidth = propConfig.getProperty("tableGameStat.width.lines", 55) // Line count
-		tm2.getColumn(6).preferredWidth = propConfig.getProperty("tableGameStat.width.lpm", 55) // LPM
-		tm2.getColumn(7).preferredWidth = propConfig.getProperty("tableGameStat.width.piece", 55) // Piece count
-		tm2.getColumn(8).preferredWidth = propConfig.getProperty("tableGameStat.width.pps", 55) // PPS
-		tm2.getColumn(9).preferredWidth = propConfig.getProperty("tableGameStat.width.time", 65) // Time
-		tm2.getColumn(10).preferredWidth = propConfig.getProperty("tableGameStat.width.ko", 40) // KO
-		tm2.getColumn(11).preferredWidth = propConfig.getProperty("tableGameStat.width.wins", 55) // Win
-		tm2.getColumn(12).preferredWidth = propConfig.getProperty("tableGameStat.width.games", 55) // Games
+		tableGameStat.columnModel.run {
+			getColumn(0).preferredWidth = propConfig.getProperty("tableGameStat.width.rank", 30) // Rank
+			getColumn(1).preferredWidth = propConfig.getProperty("tableGameStat.width.name", 100) // Name
+			getColumn(2).preferredWidth = propConfig.getProperty("tableGameStat.width.attack", 55) // Attack count
+			getColumn(3).preferredWidth = propConfig.getProperty("tableGameStat.width.apl", 55) // APL
+			getColumn(4).preferredWidth = propConfig.getProperty("tableGameStat.width.apm", 55) // APM
+			getColumn(5).preferredWidth = propConfig.getProperty("tableGameStat.width.lines", 55) // Line count
+			getColumn(6).preferredWidth = propConfig.getProperty("tableGameStat.width.lpm", 55) // LPM
+			getColumn(7).preferredWidth = propConfig.getProperty("tableGameStat.width.piece", 55) // Piece count
+			getColumn(8).preferredWidth = propConfig.getProperty("tableGameStat.width.pps", 55) // PPS
+			getColumn(9).preferredWidth = propConfig.getProperty("tableGameStat.width.time", 65) // Time
+			getColumn(10).preferredWidth = propConfig.getProperty("tableGameStat.width.ko", 40) // KO
+			getColumn(11).preferredWidth = propConfig.getProperty("tableGameStat.width.wins", 55) // Win
+			getColumn(12).preferredWidth = propConfig.getProperty("tableGameStat.width.games", 55) // Games
+		}
 
-		val spTableGameStat = JScrollPane(tableGameStat)
-		spTableGameStat.minimumSize = Dimension(0, 0)
-		subpanelGameStat.add(spTableGameStat, "GameStatMP")
+		subpanelGameStat.add(JScrollPane(tableGameStat).apply {
+			minimumSize = Dimension(0, 0)
+		}, "GameStatMP")
 
 		// **** Single player game stats table
-		strGameStatTableColumnNames1P = Array(STATTABLE1P_COLUMNNAMES.size) {
-			getUIText(STATTABLE1P_COLUMNNAMES[it])
-		}
-		tablemodelGameStat1P = DefaultTableModel(strGameStatTableColumnNames1P, 0)
-		tableGameStat1P = JTable(tablemodelGameStat1P)
+		tablemodelGameStat1P.setColumnIdentifiers(Vector(STATTABLE1P_COLUMNNAMES.map {getUIText(it)}))
+		tableGameStat1P.model = tablemodelGameStat1P
 		tableGameStat1P.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 		tableGameStat1P.setDefaultEditor(Any::class.java, null)
 		tableGameStat1P.autoResizeMode = JTable.AUTO_RESIZE_OFF
 		tableGameStat1P.tableHeader.reorderingAllowed = false
 		tableGameStat1P.componentPopupMenu = TablePopupMenu(tableGameStat1P)
 
-		tm2 = tableGameStat1P.columnModel
-		tm2.getColumn(0).preferredWidth = propConfig.getProperty("tableGameStat1P.width.description", 100) // Description
-		tm2.getColumn(1).preferredWidth = propConfig.getProperty("tableGameStat1P.width.value", 100) // Value
+		tableGameStat1P.columnModel.run {
+			getColumn(0).preferredWidth = propConfig.getProperty("tableGameStat1P.width.description", 100) // Description
+			getColumn(1).preferredWidth = propConfig.getProperty("tableGameStat1P.width.value", 100) // Value
+		}
 
-		val spTxtpaneGameStat1P = JScrollPane(tableGameStat1P)
-		spTxtpaneGameStat1P.minimumSize = Dimension(0, 0)
-		subpanelGameStat.add(spTxtpaneGameStat1P, "GameStat1P")
+		subpanelGameStat.add(JScrollPane(tableGameStat1P).apply {
+			minimumSize = Dimension(0, 0)
+		}, "GameStat1P")
 
 		// ** Chat panel(Under)
 		val subpanelRoomChat = JPanel(BorderLayout())
 		subpanelRoomChat.minimumSize = Dimension(0, 0)
-		splitRoom?.bottomComponent = subpanelRoomChat
+		splitRoom.bottomComponent = subpanelRoomChat
 
 		// *** Chat logAndPlayerPartition line of the list(Room screen)
-		splitRoomChat = JSplitPane().apply {
+		subpanelRoomChat.add(splitRoomChat.apply {
 			dividerLocation = propConfig.getProperty("room.splitRoomChat.location", 350)
-		}
-		subpanelRoomChat.add(splitRoomChat, BorderLayout.CENTER)
+		}, BorderLayout.CENTER)
 
 		// **** Chat log(Room screen)
-		txtpaneRoomChatLog = JTextPane()
 		txtpaneRoomChatLog.componentPopupMenu = LogPopupMenu(txtpaneRoomChatLog)
 		txtpaneRoomChatLog.addKeyListener(LogKeyAdapter())
-		val spTxtpaneRoomChatLog = JScrollPane(txtpaneRoomChatLog)
-		spTxtpaneRoomChatLog.minimumSize = Dimension(0, 0)
-		splitRoomChat?.leftComponent = spTxtpaneRoomChatLog
+		splitRoomChat.leftComponent = JScrollPane(txtpaneRoomChatLog).apply {
+			minimumSize = Dimension(0, 0)
+		}
 
 		// **** PlayerList(Room screen)
-		sameRoomPlayerInfoList = LinkedList()
-		listmodelRoomChatPlayerList = DefaultListModel()
-		listboxRoomChatPlayerList = JList(listmodelRoomChatPlayerList)
+		sameRoomPlayerInfoList.clear()
+		listmodelRoomChatPlayerList.clear()
+		listboxRoomChatPlayerList.model = listmodelRoomChatPlayerList
 		listboxRoomChatPlayerList.componentPopupMenu = ListBoxPopupMenu(listboxRoomChatPlayerList)
-		val spListboxRoomChatPlayerList = JScrollPane(listboxRoomChatPlayerList)
-		spListboxRoomChatPlayerList.minimumSize = Dimension(0, 0)
-		splitRoomChat?.rightComponent = spListboxRoomChatPlayerList
+		splitRoomChat.rightComponent = JScrollPane(listboxRoomChatPlayerList).apply {
+			minimumSize = Dimension(0, 0)
+		}
 
 		// *** Chat input Column panel(Room screen)
 		val subpanelRoomChatInputArea = JPanel(BorderLayout())
 		subpanelRoomChat.add(subpanelRoomChatInputArea, BorderLayout.SOUTH)
 
 		// **** Chat input Column(Room screen)
-		txtfldRoomChatInput = JTextField()
 		txtfldRoomChatInput.componentPopupMenu = TextComponentPopupMenu(txtfldRoomChatInput)
 		subpanelRoomChatInputArea.add(txtfldRoomChatInput, BorderLayout.CENTER)
 
 		// **** Submit chat button(Room screen)
-		btnRoomChatSend = JButton(getUIText("Room_ChatSend"))
+		btnRoomChatSend.text = getUIText("Room_ChatSend")
 		btnRoomChatSend.addActionListener(this)
 		btnRoomChatSend.actionCommand = "Room_ChatSend"
 		btnRoomChatSend.setMnemonic('S')
@@ -1198,11 +1183,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelServerAdd.add(subpanelHost)
 
 		// *** Name or &quot;hostIPAddress:&quot;Label
-		val labelHost = JLabel(getUIText("ServerAdd_Host"))
-		subpanelHost.add(labelHost, BorderLayout.WEST)
+		subpanelHost.add(JLabel(getUIText("ServerAdd_Host")), BorderLayout.WEST)
 
 		// *** Host name input Column
-		txtfldServerAddHost = JTextField()
 		txtfldServerAddHost.componentPopupMenu = TextComponentPopupMenu(txtfldServerAddHost)
 		subpanelHost.add(txtfldServerAddHost, BorderLayout.CENTER)
 
@@ -1212,20 +1195,20 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelServerAdd.add(subpanelButtons)
 
 		// *** OK button
-		btnServerAddOK = JButton(getUIText("ServerAdd_OK"))
+		btnServerAddOK.text = getUIText("ServerAdd_OK")
 		btnServerAddOK.addActionListener(this)
 		btnServerAddOK.actionCommand = "ServerAdd_OK"
 		btnServerAddOK.setMnemonic('O')
-		btnServerAddOK.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnServerAddOK.maximumSize.height)
+		btnServerAddOK.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnServerAddOK.maximumSize.height)
 		subpanelButtons.add(btnServerAddOK)
 
 		// *** Cancel button
-		val btnServerAddCancel = JButton(getUIText("ServerAdd_Cancel"))
-		btnServerAddCancel.addActionListener(this)
-		btnServerAddCancel.actionCommand = "ServerAdd_Cancel"
-		btnServerAddCancel.setMnemonic('C')
-		btnServerAddCancel.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnServerAddCancel.maximumSize.height)
-		subpanelButtons.add(btnServerAddCancel)
+		subpanelButtons.add(JButton(getUIText("ServerAdd_Cancel")).also {
+			it.addActionListener(this)
+			it.actionCommand = "ServerAdd_Cancel"
+			it.setMnemonic('C')
+			it.maximumSize = Dimension(Short.MAX_VALUE.toInt(), it.maximumSize.height)
+		})
 	}
 
 	/** Create rated screen card while waiting for presets to arrive from
@@ -1245,20 +1228,19 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRatedWaiting.add(subpanelText, BorderLayout.CENTER)
 
 		// *** "Please wait while preset information is retrieved from the server" label
-		val labelWaiting = JLabel(getUIText("CreateRated_Waiting_Text"))
-		subpanelText.add(labelWaiting, BorderLayout.CENTER)
+		subpanelText.add(JLabel(getUIText("CreateRated_Waiting_Text")), BorderLayout.CENTER)
 
 		// ** Subpanel for cancel button
 		val subpanelButtons = JPanel()
 		mainpanelCreateRatedWaiting.add(subpanelButtons, BorderLayout.SOUTH)
 
 		// *** Cancel Button
-		btnCreateRatedWaitingCancel = JButton(getUIText("CreateRated_Waiting_Cancel"))
+		btnCreateRatedWaitingCancel.text = getUIText("CreateRated_Waiting_Cancel")
 		btnCreateRatedWaitingCancel.addActionListener(this)
 		btnCreateRatedWaitingCancel.actionCommand = "CreateRated_Waiting_Cancel"
 		btnCreateRatedWaitingCancel.setMnemonic('C')
 		btnCreateRatedWaitingCancel.maximumSize =
-			Dimension(java.lang.Short.MAX_VALUE.toInt(), btnCreateRatedWaitingCancel.maximumSize.height)
+			Dimension(Short.MAX_VALUE.toInt(), btnCreateRatedWaitingCancel.maximumSize.height)
 		subpanelButtons.add(btnCreateRatedWaitingCancel, BorderLayout.SOUTH)
 	}
 
@@ -1277,11 +1259,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRated.add(subpanelName)
 
 		// *** "Room Name:" label
-		val labelName = JLabel(getUIText("CreateRated_Name"))
-		subpanelName.add(labelName, BorderLayout.WEST)
+		subpanelName.add(JLabel(getUIText("CreateRated_Name")), BorderLayout.WEST)
 
 		// *** Room name textfield
-		txtfldCreateRatedName = JTextField()
 		txtfldCreateRatedName.componentPopupMenu = TextComponentPopupMenu(txtfldCreateRatedName)
 		txtfldCreateRatedName.toolTipText = getUIText("CreateRated_Name_Tip")
 		subpanelName.add(txtfldCreateRatedName, BorderLayout.CENTER)
@@ -1291,11 +1271,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRated.add(subpanelPresetSelect)
 
 		// *** "Preset:" label
-		val labelWaiting = JLabel(getUIText("CreateRated_Preset"))
-		subpanelPresetSelect.add(labelWaiting, BorderLayout.WEST)
+		subpanelPresetSelect.add(JLabel(getUIText("CreateRated_Preset")), BorderLayout.WEST)
 
 		// *** Presets
-		comboboxCreateRatedPresets = JComboBox(arrayOf("Select..."))
+		comboboxCreateRatedPresets.model = DefaultComboBoxModel(arrayOf("Select..."))
 		comboboxCreateRatedPresets.selectedIndex = propConfig.getProperty("createrated.defaultPreset", 0)
 		comboboxCreateRatedPresets.preferredSize = Dimension(200, 20)
 		comboboxCreateRatedPresets.toolTipText = getUIText("CreateRated_Preset_Tip")
@@ -1306,12 +1285,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRated.add(subpanelMaxPlayers)
 
 		// *** Number of players label
-		val labelMaxPlayers = JLabel(getUIText("CreateRated_MaxPlayers"))
-		subpanelMaxPlayers.add(labelMaxPlayers, BorderLayout.WEST)
+		subpanelMaxPlayers.add(JLabel(getUIText("CreateRated_MaxPlayers")), BorderLayout.WEST)
 
 		// *** Number of players textfield
 		val defaultMaxPlayers = propConfig.getProperty("createrated.defaultMaxPlayers", 6)
-		spinnerCreateRatedMaxPlayers = JSpinner(SpinnerNumberModel(defaultMaxPlayers, 2, 6, 1))
+		spinnerCreateRatedMaxPlayers.model = (SpinnerNumberModel(defaultMaxPlayers, 2, 6, 1))
 		spinnerCreateRatedMaxPlayers.preferredSize = Dimension(200, 20)
 		spinnerCreateRatedMaxPlayers.toolTipText = getUIText("CreateRated_MaxPlayers_Tip")
 		subpanelMaxPlayers.add(spinnerCreateRatedMaxPlayers, BorderLayout.EAST)
@@ -1321,29 +1299,29 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		mainpanelCreateRated.add(subpanelButtons, BorderLayout.SOUTH)
 
 		// *** OK button
-		btnCreateRatedOK = JButton(getUIText("CreateRated_OK"))
+		btnCreateRatedOK.text = getUIText("CreateRated_OK")
 		btnCreateRatedOK.addActionListener(this)
 		btnCreateRatedOK.actionCommand = "CreateRated_OK"
 		btnCreateRatedOK.setMnemonic('O')
-		btnCreateRatedOK.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnCreateRatedOK.maximumSize.height)
+		btnCreateRatedOK.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnCreateRatedOK.maximumSize.height)
 		subpanelButtons.add(btnCreateRatedOK)
 
 		// *** Custom button
-		btnCreateRatedCustom = JButton(getUIText("CreateRated_Custom"))
+		btnCreateRatedCustom.text = getUIText("CreateRated_Custom")
 		btnCreateRatedCustom.addActionListener(this)
 		btnCreateRatedCustom.actionCommand = "CreateRated_Custom"
 		btnCreateRatedCustom.setMnemonic('U')
 		btnCreateRatedCustom.maximumSize =
-			Dimension(java.lang.Short.MAX_VALUE.toInt(), btnCreateRatedCustom.maximumSize.height)
+			Dimension(Short.MAX_VALUE.toInt(), btnCreateRatedCustom.maximumSize.height)
 		subpanelButtons.add(btnCreateRatedCustom)
 
 		// *** Cancel Button
-		btnCreateRatedCancel = JButton(getUIText("CreateRated_Cancel"))
+		btnCreateRatedCancel.text = getUIText("CreateRated_Cancel")
 		btnCreateRatedCancel.addActionListener(this)
 		btnCreateRatedCancel.actionCommand = "CreateRated_Cancel"
 		btnCreateRatedCancel.setMnemonic('C')
 		btnCreateRatedCancel.maximumSize =
-			Dimension(java.lang.Short.MAX_VALUE.toInt(), btnCreateRatedCancel.maximumSize.height)
+			Dimension(Short.MAX_VALUE.toInt(), btnCreateRatedCancel.maximumSize.height)
 		subpanelButtons.add(btnCreateRatedCancel)
 	}
 
@@ -1395,11 +1373,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomMain.add(subpanelName)
 
 		// *** Name &quot;Room:&quot;Label
-		val labelName = JLabel(getUIText("CreateRoom_Name"))
-		subpanelName.add(labelName, BorderLayout.WEST)
+		subpanelName.add(JLabel(getUIText("CreateRoom_Name")), BorderLayout.WEST)
 
 		// *** Room name input Column
-		txtfldCreateRoomName = JTextField()
 		txtfldCreateRoomName.componentPopupMenu = TextComponentPopupMenu(txtfldCreateRoomName)
 		txtfldCreateRoomName.toolTipText = getUIText("CreateRoom_Name_Tip")
 		subpanelName.add(txtfldCreateRoomName, BorderLayout.CENTER)
@@ -1409,13 +1385,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomMain.add(subpanelMode)
 
 		// *** Mode label
-		val labelMode = JLabel(getUIText("CreateRoom_Mode"))
-		subpanelMode.add(labelMode, BorderLayout.WEST)
+		subpanelMode.add(JLabel(getUIText("CreateRoom_Mode")), BorderLayout.WEST)
 
 		// *** Mode Combobox
 		val modelMode = DefaultComboBoxModel<String>()
 		loadModeList(modelMode, "config/list/netlobby_multimode.lst")
-		comboboxCreateRoomMode = JComboBox(modelMode).apply {
+		comboboxCreateRoomMode.apply {
+			model = modelMode
 			preferredSize = Dimension(200, 20)
 			toolTipText = getUIText("CreateRoom_Mode_Tip")
 		}
@@ -1426,12 +1402,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomMain.add(subpanelMaxPlayers)
 
 		// *** Human participation &quot;count:&quot;Label
-		val labelMaxPlayers = JLabel(getUIText("CreateRoom_MaxPlayers"))
-		subpanelMaxPlayers.add(labelMaxPlayers, BorderLayout.WEST)
+		subpanelMaxPlayers.add(JLabel(getUIText("CreateRoom_MaxPlayers")), BorderLayout.WEST)
 
 		// *** People participatecountSelection
 		val defaultMaxPlayers = propConfig.getProperty("createroom.defaultMaxPlayers", 6)
-		spinnerCreateRoomMaxPlayers = JSpinner(SpinnerNumberModel(defaultMaxPlayers, 2, 6, 1))
+		spinnerCreateRoomMaxPlayers.model = SpinnerNumberModel(defaultMaxPlayers, 2, 6, 1)
 		spinnerCreateRoomMaxPlayers.preferredSize = Dimension(200, 20)
 		spinnerCreateRoomMaxPlayers.toolTipText = getUIText("CreateRoom_MaxPlayers_Tip")
 		subpanelMaxPlayers.add(spinnerCreateRoomMaxPlayers, BorderLayout.EAST)
@@ -1441,12 +1416,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomMain.add(subpanelHurryupSeconds)
 
 		// *** &#39;HURRY UPSeconds before the startcount:&quot;Label
-		val labelHurryupSeconds = JLabel(getUIText("CreateRoom_HurryupSeconds"))
-		subpanelHurryupSeconds.add(labelHurryupSeconds, BorderLayout.WEST)
+		subpanelHurryupSeconds.add(JLabel(getUIText("CreateRoom_HurryupSeconds")), BorderLayout.WEST)
 
 		// *** HurryupSecondcount
 		val defaultHurryupSeconds = propConfig.getProperty("createroom.defaultHurryupSeconds", 180)
-		spinnerCreateRoomHurryupSeconds = JSpinner(SpinnerNumberModel(defaultHurryupSeconds, -1, 999, 1))
+		spinnerCreateRoomHurryupSeconds.model = (SpinnerNumberModel(defaultHurryupSeconds, -1, 999, 1))
 		spinnerCreateRoomHurryupSeconds.preferredSize = Dimension(200, 20)
 		spinnerCreateRoomHurryupSeconds.toolTipText = getUIText("CreateRoom_HurryupSeconds_Tip")
 		subpanelHurryupSeconds.add(spinnerCreateRoomHurryupSeconds, BorderLayout.EAST)
@@ -1456,12 +1430,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomMain.add(subpanelHurryupInterval)
 
 		// *** &#39;HURRY UPLater, Interval overcall the floor:&quot;Label
-		val labelHurryupInterval = JLabel(getUIText("CreateRoom_HurryupInterval"))
-		subpanelHurryupInterval.add(labelHurryupInterval, BorderLayout.WEST)
+		subpanelHurryupInterval.add(JLabel(getUIText("CreateRoom_HurryupInterval")), BorderLayout.WEST)
 
 		// *** HurryupInterval
 		val defaultHurryupInterval = propConfig.getProperty("createroom.defaultHurryupInterval", 5)
-		spinnerCreateRoomHurryupInterval = JSpinner(SpinnerNumberModel(defaultHurryupInterval, 1, 99, 1))
+		spinnerCreateRoomHurryupInterval.model = (SpinnerNumberModel(defaultHurryupInterval, 1, 99, 1))
 		spinnerCreateRoomHurryupInterval.preferredSize = Dimension(200, 20)
 		spinnerCreateRoomHurryupInterval.toolTipText = getUIText("CreateRoom_HurryupInterval_Tip")
 		subpanelHurryupInterval.add(spinnerCreateRoomHurryupInterval, BorderLayout.EAST)
@@ -1471,25 +1444,24 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomMain.add(subpanelMapSetID)
 
 		// *** &#39;MapSetID:&quot;Label
-		val labelMapSetID = JLabel(getUIText("CreateRoom_MapSetID"))
-		subpanelMapSetID.add(labelMapSetID, BorderLayout.WEST)
+		subpanelMapSetID.add(JLabel(getUIText("CreateRoom_MapSetID")), BorderLayout.WEST)
 
 		// *** MapSetID
 		val defaultMapSetID = propConfig.getProperty("createroom.defaultMapSetID", 0)
-		spinnerCreateRoomMapSetID = JSpinner(SpinnerNumberModel(defaultMapSetID, 0, 99, 1))
-		spinnerCreateRoomMapSetID!!.preferredSize = Dimension(200, 20)
-		spinnerCreateRoomMapSetID!!.toolTipText = getUIText("CreateRoom_MapSetID_Tip")
-		subpanelMapSetID.add(spinnerCreateRoomMapSetID!!, BorderLayout.EAST)
+		spinnerCreateRoomMapSetID.model = (SpinnerNumberModel(defaultMapSetID, 0, 99, 1))
+		spinnerCreateRoomMapSetID.preferredSize = Dimension(200, 20)
+		spinnerCreateRoomMapSetID.toolTipText = getUIText("CreateRoom_MapSetID_Tip")
+		subpanelMapSetID.add(spinnerCreateRoomMapSetID, BorderLayout.EAST)
 
 		// ** Map is enabled
-		chkboxCreateRoomUseMap = JCheckBox(getUIText("CreateRoom_UseMap"))
+		chkboxCreateRoomUseMap.text = getUIText("CreateRoom_UseMap")
 		chkboxCreateRoomUseMap.setMnemonic('P')
 		chkboxCreateRoomUseMap.isSelected = propConfig.getProperty("createroom.defaultUseMap", false)
 		chkboxCreateRoomUseMap.toolTipText = getUIText("CreateRoom_UseMap_Tip")
 		containerpanelCreateRoomMain.add(chkboxCreateRoomUseMap)
 
 		// ** Of all fixed rules
-		chkboxCreateRoomRuleLock = JCheckBox(getUIText("CreateRoom_RuleLock"))
+		chkboxCreateRoomRuleLock.text = getUIText("CreateRoom_RuleLock")
 		chkboxCreateRoomRuleLock.setMnemonic('L')
 		chkboxCreateRoomRuleLock.isSelected = propConfig.getProperty("createroom.defaultRuleLock", false)
 		chkboxCreateRoomRuleLock.toolTipText = getUIText("CreateRoom_RuleLock_Tip")
@@ -1507,26 +1479,24 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomSpeed.add(subpanelGravity)
 
 		// *** Fall velocity &quot;(Molecule):&quot;Label
-		val labelGravity = JLabel(getUIText("CreateRoom_Gravity"))
-		subpanelGravity.add(labelGravity, BorderLayout.WEST)
+		subpanelGravity.add(JLabel(getUIText("CreateRoom_Gravity")), BorderLayout.WEST)
 
 		// *** Fall velocity(Molecule)
-		val defaultGravity = propConfig.getProperty("createroom.defaultGravity", 1)
-		spinnerCreateRoomGravity = JSpinner(SpinnerNumberModel(defaultGravity, -1, 99999, 1))
-		spinnerCreateRoomGravity.preferredSize = Dimension(200, 20)
-		subpanelGravity.add(spinnerCreateRoomGravity, BorderLayout.EAST)
+		subpanelGravity.add(spinnerCreateRoomGravity.apply {
+			model = (SpinnerNumberModel(propConfig.getProperty("createroom.defaultGravity", 1), -1, 99999, 1))
+			preferredSize = Dimension(200, 20)
+		}, BorderLayout.EAST)
 
 		// ** Fall velocity(Denominator)Panel
 		val subpanelDenominator = JPanel(BorderLayout())
 		containerpanelCreateRoomSpeed.add(subpanelDenominator)
 
 		// *** Fall velocity &quot;(Denominator):&quot;Label
-		val labelDenominator = JLabel(getUIText("CreateRoom_Denominator"))
-		subpanelDenominator.add(labelDenominator, BorderLayout.WEST)
+		subpanelDenominator.add(JLabel(getUIText("CreateRoom_Denominator")), BorderLayout.WEST)
 
 		// *** Fall velocity(Denominator)
 		val defaultDenominator = propConfig.getProperty("createroom.defaultDenominator", 60)
-		spinnerCreateRoomDenominator = JSpinner(SpinnerNumberModel(defaultDenominator, 0, 99999, 1))
+		spinnerCreateRoomDenominator.model = (SpinnerNumberModel(defaultDenominator, 0, 99999, 1))
 		spinnerCreateRoomDenominator.preferredSize = Dimension(200, 20)
 		subpanelDenominator.add(spinnerCreateRoomDenominator, BorderLayout.EAST)
 
@@ -1535,12 +1505,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomSpeed.add(subpanelARE)
 
 		// *** &#39;ARE:&quot;Label
-		val labelARE = JLabel(getUIText("CreateRoom_ARE"))
-		subpanelARE.add(labelARE, BorderLayout.WEST)
+		subpanelARE.add(JLabel(getUIText("CreateRoom_ARE")), BorderLayout.WEST)
 
-		// *** ARE
-		val defaultARE = propConfig.getProperty("createroom.defaultARE", 0)
-		spinnerCreateRoomARE = JSpinner(SpinnerNumberModel(defaultARE, 0, 99, 1))
+		// ***
+		spinnerCreateRoomARE.model = (SpinnerNumberModel(
+			propConfig.getProperty("createroom.defaultARE", 0), 0, 99, 1))
 		spinnerCreateRoomARE.preferredSize = Dimension(200, 20)
 		subpanelARE.add(spinnerCreateRoomARE, BorderLayout.EAST)
 
@@ -1549,12 +1518,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomSpeed.add(subpanelARELine)
 
 		// *** &#39;ARE after line clear:&quot;Label
-		val labelARELine = JLabel(getUIText("CreateRoom_ARELine"))
-		subpanelARELine.add(labelARELine, BorderLayout.WEST)
+		subpanelARELine.add(JLabel(getUIText("CreateRoom_ARELine")), BorderLayout.WEST)
 
 		// *** ARE after line clear
 		val defaultARELine = propConfig.getProperty("createroom.defaultARELine", 0)
-		spinnerCreateRoomARELine = JSpinner(SpinnerNumberModel(defaultARELine, 0, 99, 1))
+		spinnerCreateRoomARELine.model = (SpinnerNumberModel(defaultARELine, 0, 99, 1))
 		spinnerCreateRoomARELine.preferredSize = Dimension(200, 20)
 		subpanelARELine.add(spinnerCreateRoomARELine, BorderLayout.EAST)
 
@@ -1563,12 +1531,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomSpeed.add(subpanelLineDelay)
 
 		// *** &#39;Line clear time:&quot;Label
-		val labelLineDelay = JLabel(getUIText("CreateRoom_LineDelay"))
-		subpanelLineDelay.add(labelLineDelay, BorderLayout.WEST)
+		subpanelLineDelay.add(JLabel(getUIText("CreateRoom_LineDelay")), BorderLayout.WEST)
 
 		// *** Line clear time
 		val defaultLineDelay = propConfig.getProperty("createroom.defaultLineDelay", 0)
-		spinnerCreateRoomLineDelay = JSpinner(SpinnerNumberModel(defaultLineDelay, 0, 99, 1))
+		spinnerCreateRoomLineDelay.model = (SpinnerNumberModel(defaultLineDelay, 0, 99, 1))
 		spinnerCreateRoomLineDelay.preferredSize = Dimension(200, 20)
 		subpanelLineDelay.add(spinnerCreateRoomLineDelay, BorderLayout.EAST)
 
@@ -1577,12 +1544,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomSpeed.add(subpanelLockDelay)
 
 		// *** &quot;Fixed time:&quot;Label
-		val labelLockDelay = JLabel(getUIText("CreateRoom_LockDelay"))
-		subpanelLockDelay.add(labelLockDelay, BorderLayout.WEST)
+		subpanelLockDelay.add(JLabel(getUIText("CreateRoom_LockDelay")), BorderLayout.WEST)
 
 		// *** Fixation time
 		val defaultLockDelay = propConfig.getProperty("createroom.defaultLockDelay", 30)
-		spinnerCreateRoomLockDelay = JSpinner(SpinnerNumberModel(defaultLockDelay, 0, 98, 1))
+		spinnerCreateRoomLockDelay.model = (SpinnerNumberModel(defaultLockDelay, 0, 98, 1))
 		spinnerCreateRoomLockDelay.preferredSize = Dimension(200, 20)
 		subpanelLockDelay.add(spinnerCreateRoomLockDelay, BorderLayout.EAST)
 
@@ -1591,12 +1557,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomSpeed.add(subpanelDAS)
 
 		// *** Horizontal reservoir &quot;:&quot;Label
-		val labelDAS = JLabel(getUIText("CreateRoom_DAS"))
-		subpanelDAS.add(labelDAS, BorderLayout.WEST)
+		subpanelDAS.add(JLabel(getUIText("CreateRoom_DAS")), BorderLayout.WEST)
 
 		// *** Horizontal reservoir
 		val defaultDAS = propConfig.getProperty("createroom.defaultDAS", 11)
-		spinnerCreateRoomDAS = JSpinner(SpinnerNumberModel(defaultDAS, 0, 99, 1))
+		spinnerCreateRoomDAS.model = (SpinnerNumberModel(defaultDAS, 0, 99, 1))
 		spinnerCreateRoomDAS.preferredSize = Dimension(200, 20)
 		subpanelDAS.add(spinnerCreateRoomDAS, BorderLayout.EAST)
 
@@ -1612,14 +1577,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomBonus.add(subpanelTWISTEnableType)
 
 		// *** &quot;Spin bonus:&quot;Label
-		val labelTWISTEnableType = JLabel(getUIText("CreateRoom_TwistEnableType"))
-		subpanelTWISTEnableType.add(labelTWISTEnableType, BorderLayout.WEST)
+		subpanelTWISTEnableType.add(JLabel(getUIText("CreateRoom_TwistEnableType")), BorderLayout.WEST)
 
 		// *** Spin bonus
-		val strSpinBonusNames = arrayOfNulls<String>(COMBOBOX_SPINBONUS_NAMES.size)
-		for(i in strSpinBonusNames.indices)
-			strSpinBonusNames[i] = getUIText(COMBOBOX_SPINBONUS_NAMES[i])
-		comboboxCreateRoomTWISTEnableType = JComboBox(strSpinBonusNames)
+		comboboxCreateRoomTWISTEnableType.model = DefaultComboBoxModel(COMBOBOX_SPINBONUS_NAMES.map {getUIText(it)}.toTypedArray())
 		comboboxCreateRoomTWISTEnableType.selectedIndex = propConfig.getProperty("createroom.defaultTwistEnableType", 2)
 		comboboxCreateRoomTWISTEnableType.preferredSize = Dimension(200, 20)
 		comboboxCreateRoomTWISTEnableType.toolTipText = getUIText("CreateRoom_TwistEnableType_Tip")
@@ -1630,42 +1591,39 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomBonus.add(subpanelSpinCheckType)
 
 		// *** Spin check type label
-		val labelSpinCheckType = JLabel(getUIText("CreateRoom_SpinCheckType"))
-		subpanelSpinCheckType.add(labelSpinCheckType, BorderLayout.WEST)
+		subpanelSpinCheckType.add(JLabel(getUIText("CreateRoom_SpinCheckType")), BorderLayout.WEST)
 
 		// *** Spin check type combobox
-		val strSpinCheckTypeNames = arrayOfNulls<String>(COMBOBOX_SPINCHECKTYPE_NAMES.size)
-		for(i in strSpinCheckTypeNames.indices)
-			strSpinCheckTypeNames[i] = getUIText(COMBOBOX_SPINCHECKTYPE_NAMES[i])
-		comboboxCreateRoomSpinCheckType = JComboBox(strSpinCheckTypeNames)
+		comboboxCreateRoomSpinCheckType.model = DefaultComboBoxModel(
+			COMBOBOX_SPINCHECKTYPE_NAMES.map {getUIText(it)}.toTypedArray())
 		comboboxCreateRoomSpinCheckType.selectedIndex = propConfig.getProperty("createroom.defaultWISTCheckType", 1)
 		comboboxCreateRoomSpinCheckType.preferredSize = Dimension(200, 20)
 		comboboxCreateRoomSpinCheckType.toolTipText = getUIText("CreateRoom_SpinCheckType_Tip")
 		subpanelSpinCheckType.add(comboboxCreateRoomSpinCheckType, BorderLayout.EAST)
 
 		// ** EZ Spin checkbox
-		chkboxCreateRoomTWISTEnableEZ = JCheckBox(getUIText("CreateRoom_TwistEnableEZ"))
+		chkboxCreateRoomTWISTEnableEZ.text = getUIText("CreateRoom_TwistEnableEZ")
 		chkboxCreateRoomTWISTEnableEZ.setMnemonic('E')
 		chkboxCreateRoomTWISTEnableEZ.isSelected = propConfig.getProperty("createroom.defaultTwistEnableEZ", false)
 		chkboxCreateRoomTWISTEnableEZ.toolTipText = getUIText("CreateRoom_TwistEnableEZ_Tip")
 		containerpanelCreateRoomBonus.add(chkboxCreateRoomTWISTEnableEZ)
 
 		// ** Flag for enabling B2B
-		chkboxCreateRoomB2B = JCheckBox(getUIText("CreateRoom_B2B"))
+		chkboxCreateRoomB2B.text = getUIText("CreateRoom_B2B")
 		chkboxCreateRoomB2B.setMnemonic('B')
 		chkboxCreateRoomB2B.isSelected = propConfig.getProperty("createroom.defaultB2B", true)
 		chkboxCreateRoomB2B.toolTipText = getUIText("CreateRoom_B2B_Tip")
 		containerpanelCreateRoomBonus.add(chkboxCreateRoomB2B)
 
 		// ** Flag for enabling combos
-		chkboxCreateRoomCombo = JCheckBox(getUIText("CreateRoom_Combo"))
+		chkboxCreateRoomCombo.text = getUIText("CreateRoom_Combo")
 		chkboxCreateRoomCombo.setMnemonic('M')
 		chkboxCreateRoomCombo.isSelected = propConfig.getProperty("createroom.defaultCombo", true)
 		chkboxCreateRoomCombo.toolTipText = getUIText("CreateRoom_Combo_Tip")
 		containerpanelCreateRoomBonus.add(chkboxCreateRoomCombo)
 
 		// ** Bravo bonus
-		chkboxCreateRoomBravo = JCheckBox(getUIText("CreateRoom_Bravo"))
+		chkboxCreateRoomBravo.text = getUIText("CreateRoom_Bravo")
 		chkboxCreateRoomBravo.setMnemonic('A')
 		chkboxCreateRoomBravo.isSelected = propConfig.getProperty("createroom.defaultBravo", true)
 		chkboxCreateRoomBravo.toolTipText = getUIText("CreateRoom_Bravo_Tip")
@@ -1683,12 +1641,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomGarbage.add(subpanelGarbagePercent)
 
 		// ** Label for garbage change rate
-		val labelGarbagePercent = JLabel(getUIText("CreateRoom_GarbagePercent"))
-		subpanelGarbagePercent.add(labelGarbagePercent, BorderLayout.WEST)
+		subpanelGarbagePercent.add(JLabel(getUIText("CreateRoom_GarbagePercent")), BorderLayout.WEST)
 
 		// ** Spinner for garbage change rate
 		val defaultGarbagePercent = propConfig.getProperty("createroom.defaultGarbagePercent", 90)
-		spinnerCreateRoomGarbagePercent = JSpinner(SpinnerNumberModel(defaultGarbagePercent, 0, 100, 10))
+		spinnerCreateRoomGarbagePercent.model = (SpinnerNumberModel(defaultGarbagePercent, 0, 100, 10))
 		spinnerCreateRoomGarbagePercent.preferredSize = Dimension(200, 20)
 		spinnerCreateRoomGarbagePercent.toolTipText = getUIText("CreateRoom_GarbagePercent_Tip")
 		subpanelGarbagePercent.add(spinnerCreateRoomGarbagePercent, BorderLayout.EAST)
@@ -1698,18 +1655,17 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomGarbage.add(subpanelTargetTimer)
 
 		// ** Label for target timer
-		val labelTargetTimer = JLabel(getUIText("CreateRoom_TargetTimer"))
-		subpanelTargetTimer.add(labelTargetTimer, BorderLayout.WEST)
+		subpanelTargetTimer.add(JLabel(getUIText("CreateRoom_TargetTimer")), BorderLayout.WEST)
 
 		// ** Spinner for target timer
-		val defaultTargetTimer = propConfig.getProperty("createroom.defaultTargetTimer", 60)
-		spinnerCreateRoomTargetTimer = JSpinner(SpinnerNumberModel(defaultTargetTimer, 0, 3600, 1))
-		spinnerCreateRoomTargetTimer.preferredSize = Dimension(200, 20)
-		spinnerCreateRoomTargetTimer.toolTipText = getUIText("CreateRoom_TargetTimer_Tip")
-		subpanelTargetTimer.add(spinnerCreateRoomTargetTimer, BorderLayout.EAST)
+		subpanelTargetTimer.add(spinnerCreateRoomTargetTimer.apply {
+			model = (SpinnerNumberModel(propConfig.getProperty("createroom.defaultTargetTimer", 60), 0, 3600, 1))
+			preferredSize = Dimension(200, 20)
+			toolTipText = getUIText("CreateRoom_TargetTimer_Tip")
+		}, BorderLayout.EAST)
 
 		// ** Set garbage type
-		chkboxCreateRoomGarbageChangePerAttack = JCheckBox(getUIText("CreateRoom_GarbageChangePerAttack"))
+		chkboxCreateRoomGarbageChangePerAttack.text = getUIText("CreateRoom_GarbageChangePerAttack")
 		chkboxCreateRoomGarbageChangePerAttack.setMnemonic('G')
 		chkboxCreateRoomGarbageChangePerAttack.isSelected =
 			propConfig.getProperty("createroom.defaultGarbageChangePerAttack", true)
@@ -1717,50 +1673,55 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomGarbage.add(chkboxCreateRoomGarbageChangePerAttack)
 
 		// ** Divide change rate by live players/teams
-		chkboxCreateRoomDivideChangeRateByPlayers = JCheckBox(getUIText("CreateRoom_DivideChangeRateByPlayers"))
-		chkboxCreateRoomDivideChangeRateByPlayers.isSelected =
-			propConfig.getProperty("createroom.defaultDivideChangeRateByPlayers", false)
-		chkboxCreateRoomDivideChangeRateByPlayers.toolTipText = getUIText("CreateRoom_DivideChangeRateByPlayers_Tip")
-		containerpanelCreateRoomGarbage.add(chkboxCreateRoomDivideChangeRateByPlayers)
+		containerpanelCreateRoomGarbage.add(chkboxCreateRoomDivideChangeRateByPlayers.apply {
+			text = getUIText("CreateRoom_DivideChangeRateByPlayers")
+			isSelected = propConfig.getProperty("createroom.defaultDivideChangeRateByPlayers", false)
+			toolTipText = getUIText("CreateRoom_DivideChangeRateByPlayers_Tip")
+		})
 
 		// ** B2B chunk
-		chkboxCreateRoomB2BChunk = JCheckBox(getUIText("CreateRoom_B2BChunk"))
-		chkboxCreateRoomB2BChunk.setMnemonic('B')
-		chkboxCreateRoomB2BChunk.isSelected = propConfig.getProperty("createroom.defaultB2BChunk", false)
-		chkboxCreateRoomB2BChunk.toolTipText = getUIText("CreateRoom_B2BChunk_Tip")
-		containerpanelCreateRoomGarbage.add(chkboxCreateRoomB2BChunk)
+		containerpanelCreateRoomGarbage.add(chkboxCreateRoomB2BChunk.apply {
+			text = getUIText("CreateRoom_B2BChunk")
+			setMnemonic('B')
+			isSelected = propConfig.getProperty("createroom.defaultB2BChunk", false)
+			toolTipText = getUIText("CreateRoom_B2BChunk_Tip")
+		})
 
 		// ** Rensa/Combo Block
-		chkboxCreateRoomRensaBlock = JCheckBox(getUIText("CreateRoom_RensaBlock"))
-		chkboxCreateRoomRensaBlock.setMnemonic('E')
-		chkboxCreateRoomRensaBlock.isSelected = propConfig.getProperty("createroom.defaultRensaBlock", true)
-		chkboxCreateRoomRensaBlock.toolTipText = getUIText("CreateRoom_RensaBlock_Tip")
-		containerpanelCreateRoomGarbage.add(chkboxCreateRoomRensaBlock)
+		containerpanelCreateRoomGarbage.add(chkboxCreateRoomRensaBlock.apply {
+			text = getUIText("CreateRoom_RensaBlock")
+			setMnemonic('E')
+			isSelected = propConfig.getProperty("createroom.defaultRensaBlock", true)
+			toolTipText = getUIText("CreateRoom_RensaBlock_Tip")
+		})
 
 		// ** Garbage countering
-		chkboxCreateRoomCounter = JCheckBox(getUIText("CreateRoom_Counter"))
-		chkboxCreateRoomCounter.setMnemonic('C')
-		chkboxCreateRoomCounter.isSelected = propConfig.getProperty("createroom.defaultCounter", true)
-		chkboxCreateRoomCounter.toolTipText = getUIText("CreateRoom_Counter_Tip")
-		containerpanelCreateRoomGarbage.add(chkboxCreateRoomCounter)
+
+		containerpanelCreateRoomGarbage.add(chkboxCreateRoomCounter.apply {
+			text = getUIText("CreateRoom_Counter")
+			setMnemonic('C')
+			isSelected = propConfig.getProperty("createroom.defaultCounter", true)
+			toolTipText = getUIText("CreateRoom_Counter_Tip")
+		})
 
 		// ** 3If I live more than Attack Reduce the force
-		chkboxCreateRoomReduceLineSend = JCheckBox(getUIText("CreateRoom_ReduceLineSend"))
-		chkboxCreateRoomReduceLineSend.setMnemonic('R')
-		chkboxCreateRoomReduceLineSend.isSelected = propConfig.getProperty("createroom.defaultReduceLineSend", true)
-		chkboxCreateRoomReduceLineSend.toolTipText = getUIText("CreateRoom_ReduceLineSend_Tip")
-		containerpanelCreateRoomGarbage.add(chkboxCreateRoomReduceLineSend)
+		containerpanelCreateRoomGarbage.add(chkboxCreateRoomReduceLineSend.apply {
+			text = getUIText("CreateRoom_ReduceLineSend")
+			setMnemonic('R')
+			isSelected = propConfig.getProperty("createroom.defaultReduceLineSend", true)
+			toolTipText = getUIText("CreateRoom_ReduceLineSend_Tip")
+		})
 
 		// ** Fragmentarygarbage blockUsing the system
-		chkboxCreateRoomUseFractionalGarbage = JCheckBox(getUIText("CreateRoom_UseFractionalGarbage"))
-		chkboxCreateRoomUseFractionalGarbage.setMnemonic('F')
-		chkboxCreateRoomUseFractionalGarbage.isSelected =
-			propConfig.getProperty("createroom.defaultUseFractionalGarbage", false)
-		chkboxCreateRoomUseFractionalGarbage.toolTipText = getUIText("CreateRoom_UseFractionalGarbage_Tip")
-		containerpanelCreateRoomGarbage.add(chkboxCreateRoomUseFractionalGarbage)
+		containerpanelCreateRoomGarbage.add(chkboxCreateRoomUseFractionalGarbage.apply {
+			text = getUIText("CreateRoom_UseFractionalGarbage")
+			setMnemonic('F')
+			isSelected = propConfig.getProperty("createroom.defaultUseFractionalGarbage", false)
+			toolTipText = getUIText("CreateRoom_UseFractionalGarbage_Tip")
+		})
 
 		// *** Use target system
-		chkboxCreateRoomIsTarget = JCheckBox(getUIText("CreateRoom_IsTarget"))
+		chkboxCreateRoomIsTarget.text = getUIText("CreateRoom_IsTarget")
 		chkboxCreateRoomIsTarget.setMnemonic('T')
 		chkboxCreateRoomIsTarget.isSelected = propConfig.getProperty("createroom.defaultIsTarget", false)
 		chkboxCreateRoomIsTarget.toolTipText = getUIText("CreateRoom_IsTarget_Tip")
@@ -1769,8 +1730,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// misc tab
 
 		// misc panel
-		val containerpanelCreateRoomMisc = JPanel()
-		containerpanelCreateRoomMisc.layout = BoxLayout(containerpanelCreateRoomMisc, BoxLayout.Y_AXIS)
+		val containerpanelCreateRoomMisc = JPanel().apply {
+			layout = BoxLayout(this, BoxLayout.Y_AXIS)
+		}
 		containerpanelCreateRoomMiscOwner.add(containerpanelCreateRoomMisc, BorderLayout.NORTH)
 
 		// ** To wait before auto-start timePanel
@@ -1778,32 +1740,31 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomMisc.add(subpanelAutoStartSeconds)
 
 		// *** To wait before auto-start &quot; time:&quot;Label
-		val labelAutoStartSeconds = JLabel(getUIText("CreateRoom_AutoStartSeconds"))
-		subpanelAutoStartSeconds.add(labelAutoStartSeconds, BorderLayout.WEST)
+		subpanelAutoStartSeconds.add(JLabel(getUIText("CreateRoom_AutoStartSeconds")), BorderLayout.WEST)
 
 		// *** To wait before auto-start time
-		val defaultAutoStartSeconds = propConfig.getProperty("createroom.defaultAutoStartSeconds", 15)
-		spinnerCreateRoomAutoStartSeconds = JSpinner(SpinnerNumberModel(defaultAutoStartSeconds, 0, 999, 1))
-		spinnerCreateRoomAutoStartSeconds.preferredSize = Dimension(200, 20)
-		spinnerCreateRoomAutoStartSeconds.toolTipText = getUIText("CreateRoom_AutoStartSeconds_Tip")
-		subpanelAutoStartSeconds.add(spinnerCreateRoomAutoStartSeconds, BorderLayout.EAST)
+		subpanelAutoStartSeconds.add(spinnerCreateRoomAutoStartSeconds.apply {
+			model = (SpinnerNumberModel(propConfig.getProperty("createroom.defaultAutoStartSeconds", 15),
+				0, 999, 1))
+			preferredSize = Dimension(200, 20)
+			toolTipText = getUIText("CreateRoom_AutoStartSeconds_Tip")
+		}, BorderLayout.EAST)
 
 		// ** TNET2TypeAutomatically start timerI use
-		chkboxCreateRoomAutoStartTNET2 = JCheckBox(getUIText("CreateRoom_AutoStartTNET2"))
-		chkboxCreateRoomAutoStartTNET2.setMnemonic('A')
-		chkboxCreateRoomAutoStartTNET2.isSelected = propConfig.getProperty("createroom.defaultAutoStartTNET2", false)
-		chkboxCreateRoomAutoStartTNET2.toolTipText = getUIText("CreateRoom_AutoStartTNET2_Tip")
-		containerpanelCreateRoomMisc.add(chkboxCreateRoomAutoStartTNET2)
+		containerpanelCreateRoomMisc.add(chkboxCreateRoomAutoStartTNET2.apply {
+			text = getUIText("CreateRoom_AutoStartTNET2")
+			setMnemonic('A')
+			isSelected = propConfig.getProperty("createroom.defaultAutoStartTNET2", false)
+			toolTipText = getUIText("CreateRoom_AutoStartTNET2_Tip")
+		})
 
 		// ** SomeoneCancelWasTimerInvalidation
-		chkboxCreateRoomDisableTimerAfterSomeoneCancelled =
-			JCheckBox(getUIText("CreateRoom_DisableTimerAfterSomeoneCancelled"))
-		chkboxCreateRoomDisableTimerAfterSomeoneCancelled.setMnemonic('D')
-		chkboxCreateRoomDisableTimerAfterSomeoneCancelled.isSelected =
-			propConfig.getProperty("createroom.defaultDisableTimerAfterSomeoneCancelled", false)
-		chkboxCreateRoomDisableTimerAfterSomeoneCancelled.toolTipText =
-			getUIText("CreateRoom_DisableTimerAfterSomeoneCancelled_Tip")
-		containerpanelCreateRoomMisc.add(chkboxCreateRoomDisableTimerAfterSomeoneCancelled)
+		containerpanelCreateRoomMisc.add(chkboxCreateRoomDisableTimerAfterSomeoneCancelled.apply {
+			text = getUIText("CreateRoom_DisableTimerAfterSomeoneCancelled")
+			setMnemonic('D')
+			isSelected = propConfig.getProperty("createroom.defaultDisableTimerAfterSomeoneCancelled", false)
+			toolTipText = getUIText("CreateRoom_DisableTimerAfterSomeoneCancelled_Tip")
+		})
 
 		// Preset tab
 
@@ -1818,12 +1779,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomPreset.add(subpanelPresetID)
 
 		// *** "Preset number:" Label
-		val labelPresetID = JLabel(getUIText("CreateRoom_PresetID"))
-		subpanelPresetID.add(labelPresetID, BorderLayout.WEST)
+		subpanelPresetID.add(JLabel(getUIText("CreateRoom_PresetID")), BorderLayout.WEST)
 
 		// *** Preset number selector
 		val defaultPresetID = propConfig.getProperty("createroom.defaultPresetID", 0)
-		spinnerCreateRoomPresetID = JSpinner(SpinnerNumberModel(defaultPresetID, 0, 999, 1))
+		spinnerCreateRoomPresetID.model = (SpinnerNumberModel(defaultPresetID, 0, 999, 1))
 		spinnerCreateRoomPresetID.preferredSize = Dimension(200, 20)
 		subpanelPresetID.add(spinnerCreateRoomPresetID, BorderLayout.EAST)
 
@@ -1833,7 +1793,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		btnPresetSave.addActionListener(this)
 		btnPresetSave.actionCommand = "CreateRoom_PresetSave"
 		btnPresetSave.setMnemonic('S')
-		btnPresetSave.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnPresetSave.maximumSize.height)
+		btnPresetSave.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnPresetSave.maximumSize.height)
 		containerpanelCreateRoomPreset.add(btnPresetSave)
 
 		// ** Load button
@@ -1842,7 +1802,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		btnPresetLoad.addActionListener(this)
 		btnPresetLoad.actionCommand = "CreateRoom_PresetLoad"
 		btnPresetLoad.setMnemonic('L')
-		btnPresetLoad.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnPresetLoad.maximumSize.height)
+		btnPresetLoad.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnPresetLoad.maximumSize.height)
 		containerpanelCreateRoomPreset.add(btnPresetLoad)
 
 		// ** Preset code panel
@@ -1851,11 +1811,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		containerpanelCreateRoomPreset.add(subpanelPresetCode)
 
 		// *** "Preset code:" Label
-		val labelPresetCode = JLabel(getUIText("CreateRoom_PresetCode"))
-		subpanelPresetCode.add(labelPresetCode, BorderLayout.WEST)
+		subpanelPresetCode.add(JLabel(getUIText("CreateRoom_PresetCode")), BorderLayout.WEST)
 
 		// *** Preset code textfield
-		txtfldCreateRoomPresetCode = JTextField()
 		txtfldCreateRoomPresetCode.componentPopupMenu = TextComponentPopupMenu(txtfldCreateRoomPresetCode)
 		subpanelPresetCode.add(txtfldCreateRoomPresetCode, BorderLayout.CENTER)
 
@@ -1865,7 +1823,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		btnPresetCodeExport.addActionListener(this)
 		btnPresetCodeExport.actionCommand = "CreateRoom_PresetCodeExport"
 		btnPresetCodeExport.setMnemonic('E')
-		btnPresetCodeExport.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnPresetCodeExport.maximumSize.height)
+		btnPresetCodeExport.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnPresetCodeExport.maximumSize.height)
 		containerpanelCreateRoomPreset.add(btnPresetCodeExport)
 
 		// *** Preset code import
@@ -1874,7 +1832,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		btnPresetCodeImport.addActionListener(this)
 		btnPresetCodeImport.actionCommand = "CreateRoom_PresetCodeImport"
 		btnPresetCodeImport.setMnemonic('I')
-		btnPresetCodeImport.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnPresetCodeImport.maximumSize.height)
+		btnPresetCodeImport.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnPresetCodeImport.maximumSize.height)
 		containerpanelCreateRoomPreset.add(btnPresetCodeImport)
 
 		// buttons
@@ -1886,35 +1844,35 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		mainpanelCreateRoom.add(subpanelButtons, BorderLayout.SOUTH)
 
 		// *** OK button
-		btnCreateRoomOK = JButton(getUIText("CreateRoom_OK"))
+		btnCreateRoomOK.text = getUIText("CreateRoom_OK")
 		btnCreateRoomOK.addActionListener(this)
 		btnCreateRoomOK.actionCommand = "CreateRoom_OK"
 		btnCreateRoomOK.setMnemonic('O')
-		btnCreateRoomOK.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnCreateRoomOK.maximumSize.height)
+		btnCreateRoomOK.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnCreateRoomOK.maximumSize.height)
 		subpanelButtons.add(btnCreateRoomOK)
 
 		// *** Participation in a war button
-		btnCreateRoomJoin = JButton(getUIText("CreateRoom_Join"))
+		btnCreateRoomJoin.text = getUIText("CreateRoom_Join")
 		btnCreateRoomJoin.addActionListener(this)
 		btnCreateRoomJoin.actionCommand = "CreateRoom_Join"
 		btnCreateRoomJoin.setMnemonic('J')
-		btnCreateRoomJoin.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnCreateRoomJoin.maximumSize.height)
+		btnCreateRoomJoin.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnCreateRoomJoin.maximumSize.height)
 		subpanelButtons.add(btnCreateRoomJoin)
 
 		// *** Participation in a war button
-		btnCreateRoomWatch = JButton(getUIText("CreateRoom_Watch"))
+		btnCreateRoomWatch.text = getUIText("CreateRoom_Watch")
 		btnCreateRoomWatch.addActionListener(this)
 		btnCreateRoomWatch.actionCommand = "CreateRoom_Watch"
 		btnCreateRoomWatch.setMnemonic('W')
-		btnCreateRoomWatch.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnCreateRoomWatch.maximumSize.height)
+		btnCreateRoomWatch.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnCreateRoomWatch.maximumSize.height)
 		subpanelButtons.add(btnCreateRoomWatch)
 
 		// *** Cancel Button
-		btnCreateRoomCancel = JButton(getUIText("CreateRoom_Cancel"))
+		btnCreateRoomCancel.text = getUIText("CreateRoom_Cancel")
 		btnCreateRoomCancel.addActionListener(this)
 		btnCreateRoomCancel.actionCommand = "CreateRoom_Cancel"
 		btnCreateRoomCancel.setMnemonic('C')
-		btnCreateRoomCancel.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnCreateRoomCancel.maximumSize.height)
+		btnCreateRoomCancel.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnCreateRoomCancel.maximumSize.height)
 		subpanelButtons.add(btnCreateRoomCancel)
 	}
 
@@ -1929,35 +1887,31 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		val pModeList = JPanel(BorderLayout())
 		mainpanelCreateRoom1P.add(pModeList)
 
-		labelCreateRoom1PGameMode = JLabel(getUIText("CreateRoom1P_Mode_Label"))
+		labelCreateRoom1PGameMode.text = getUIText("CreateRoom1P_Mode_Label")
 		pModeList.add(labelCreateRoom1PGameMode, BorderLayout.NORTH)
 
 		// ** Game mode listbox
-		listmodelCreateRoom1PModeList = DefaultListModel()
+		listmodelCreateRoom1PModeList.clear()
 		loadModeList(listmodelCreateRoom1PModeList, "config/list/netlobby_singlemode.lst")
 
-		listboxCreateRoom1PModeList = JList(listmodelCreateRoom1PModeList)
-		listboxCreateRoom1PModeList.addListSelectionListener {e ->
-			val strMode = listboxCreateRoom1PModeList.selectedValue as String
-			labelCreateRoom1PGameMode.text = getModeDesc(strMode)
-		}
-		listboxCreateRoom1PModeList.setSelectedValue(propConfig.getProperty("createroom1p.listboxCreateRoom1PModeList.value", ""), true)
-		val spCreateRoom1PModeList = JScrollPane(listboxCreateRoom1PModeList)
-		pModeList.add(spCreateRoom1PModeList, BorderLayout.CENTER)
+
+		pModeList.add(JScrollPane(listboxCreateRoom1PModeList.apply {
+			model = (listmodelCreateRoom1PModeList)
+			addListSelectionListener {labelCreateRoom1PGameMode.text = getModeDesc(it.toString())}
+			setSelectedValue(propConfig.getProperty("createroom1p.listboxCreateRoom1PModeList.value", ""), true)
+		}), BorderLayout.CENTER)
 
 		// * Rule list panel
 		val pRuleList = JPanel(BorderLayout())
 		mainpanelCreateRoom1P.add(pRuleList)
 
 		// ** "Rule:" label
-		val lCreateRoom1PRuleList = JLabel(getUIText("CreateRoom1P_Rule_Label"))
-		pRuleList.add(lCreateRoom1PRuleList, BorderLayout.NORTH)
+		pRuleList.add(JLabel(getUIText("CreateRoom1P_Rule_Label")), BorderLayout.NORTH)
 
 		// ** Rule list listbox
-		listmodelCreateRoom1PRuleList = DefaultListModel()
-		listboxCreateRoom1PRuleList = JList(listmodelCreateRoom1PRuleList)
-		val spCreateRoom1PRuleList = JScrollPane(listboxCreateRoom1PRuleList)
-		pRuleList.add(spCreateRoom1PRuleList, BorderLayout.CENTER)
+		listmodelCreateRoom1PRuleList.clear()
+		listboxCreateRoom1PRuleList.model = (listmodelCreateRoom1PRuleList)
+		pRuleList.add(JScrollPane(listboxCreateRoom1PRuleList), BorderLayout.CENTER)
 
 		// * Buttons panel
 		val subpanelButtons = JPanel()
@@ -1965,20 +1919,20 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		mainpanelCreateRoom1P.add(subpanelButtons)
 
 		// ** OK button
-		btnCreateRoom1POK = JButton(getUIText("CreateRoom1P_OK"))
+		btnCreateRoom1POK.text = getUIText("CreateRoom1P_OK")
 		btnCreateRoom1POK.addActionListener(this)
 		btnCreateRoom1POK.actionCommand = "CreateRoom1P_OK"
 		btnCreateRoom1POK.setMnemonic('O')
-		btnCreateRoom1POK.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnCreateRoom1POK.maximumSize.height)
+		btnCreateRoom1POK.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnCreateRoom1POK.maximumSize.height)
 		subpanelButtons.add(btnCreateRoom1POK)
 
 		// ** Cancel button
-		btnCreateRoom1PCancel = JButton(getUIText("CreateRoom1P_Cancel"))
+		btnCreateRoom1PCancel.text = getUIText("CreateRoom1P_Cancel")
 		btnCreateRoom1PCancel.addActionListener(this)
 		btnCreateRoom1PCancel.actionCommand = "CreateRoom1P_Cancel"
 		btnCreateRoom1PCancel.setMnemonic('C')
 		btnCreateRoom1PCancel.maximumSize =
-			Dimension(java.lang.Short.MAX_VALUE.toInt(), btnCreateRoom1PCancel.maximumSize.height)
+			Dimension(Short.MAX_VALUE.toInt(), btnCreateRoom1PCancel.maximumSize.height)
 		subpanelButtons.add(btnCreateRoom1PCancel)
 	}
 
@@ -1989,24 +1943,23 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		contentPane.add(mainpanelMPRanking, SCREENCARD_NAMES[SCREENCARD_MPRANKING])
 
 		// * Tab
-		tabMPRanking = JTabbedPane()
 		mainpanelMPRanking.add(tabMPRanking, BorderLayout.CENTER)
 
 		// ** Leaderboard Table
-		strMPRankingTableColumnNames = Array(MPRANKING_COLUMNNAMES.size) {getUIText(MPRANKING_COLUMNNAMES[it])}
 
-		tableMPRanking = Array(GameEngine.MAX_GAMESTYLE) {
-			JTable(tablemodelMPRanking[it]).apply {
+		tablemodelMPRanking
+		tableMPRanking.forEachIndexed {i, it ->
+			it.apply {
+				model = tablemodelMPRanking[i]
 				setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 				setDefaultEditor(Any::class.java, null)
 				autoResizeMode = JTable.AUTO_RESIZE_OFF
 				tableHeader.reorderingAllowed = false
-				componentPopupMenu = TablePopupMenu(tableMPRanking[it])
+				componentPopupMenu = TablePopupMenu(tableMPRanking[i])
 			}
 		}
-		tablemodelMPRanking = Array(GameEngine.MAX_GAMESTYLE) {DefaultTableModel(strMPRankingTableColumnNames, 0)}
 
-		for(i in 0 until GameEngine.MAX_GAMESTYLE) {
+		(0 until GameEngine.MAX_GAMESTYLE).forEach {i ->
 			val tm = tableMPRanking[i].columnModel
 			tm.getColumn(0).preferredWidth = propConfig.getProperty("tableMPRanking.width.rank", 30) // Rank
 			tm.getColumn(1).preferredWidth = propConfig.getProperty("tableMPRanking.width.name", 200) // Name
@@ -2021,11 +1974,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		// * OK Button
-		btnMPRankingOK = JButton(getUIText("MPRanking_OK"))
-		btnMPRankingOK.addActionListener(this)
-		btnMPRankingOK.actionCommand = "MPRanking_OK"
-		btnMPRankingOK.setMnemonic('O')
-		mainpanelMPRanking.add(btnMPRankingOK, BorderLayout.SOUTH)
+
+		mainpanelMPRanking.add(btnMPRankingOK.also {
+			it.text = getUIText("MPRanking_OK")
+			it.addActionListener(this)
+			it.actionCommand = "MPRanking_OK"
+			it.setMnemonic('O')
+		}, BorderLayout.SOUTH)
 	}
 
 	/** Rule change screen initialization */
@@ -2035,14 +1990,12 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		contentPane.add(mainpanelRuleChange, SCREENCARD_NAMES[SCREENCARD_RULECHANGE])
 
 		// * Tab
-		tabRuleChange = JTabbedPane()
 		mainpanelRuleChange.add(tabRuleChange, BorderLayout.CENTER)
 
 		// ** Rule Listboxes
 		listboxRuleChangeRuleList = Array(GameEngine.MAX_GAMESTYLE) {JList(extractRuleListFromRuleEntries(it))}
-		for(i in 0 until GameEngine.MAX_GAMESTYLE) {
-			val spRuleList = JScrollPane(listboxRuleChangeRuleList[i])
-			tabRuleChange.addTab(GameEngine.GAMESTYLE_NAMES[i], spRuleList)
+		GameEngine.GAMESTYLE_NAMES.forEachIndexed {i, it ->
+			tabRuleChange.addTab(it, JScrollPane(listboxRuleChangeRuleList[i]))
 		}
 
 		// ** Tuning Tab
@@ -2056,13 +2009,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pTuningRotateButtonDefaultRight.alignmentX = Component.LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningRotateButtonDefaultRight)
 
-		val lTuningRotateButtonDefaultRight = JLabel(getUIText("GameTuning_RotateButtonDefaultRight_Label"))
-		pTuningRotateButtonDefaultRight.add(lTuningRotateButtonDefaultRight)
+		pTuningRotateButtonDefaultRight.add(JLabel(getUIText("GameTuning_RotateButtonDefaultRight_Label")))
 
-		val strArrayTuningRotateButtonDefaultRight = arrayOfNulls<String>(TUNING_ABUTTON_ROTATE.size)
-		for(i in TUNING_ABUTTON_ROTATE.indices)
-			strArrayTuningRotateButtonDefaultRight[i] = getUIText(TUNING_ABUTTON_ROTATE[i])
-		comboboxTuningRotateButtonDefaultRight = JComboBox(strArrayTuningRotateButtonDefaultRight)
+		comboboxTuningRotateButtonDefaultRight.model = DefaultComboBoxModel(
+			TUNING_ABUTTON_ROTATE.map {getUIText(it)}.toTypedArray())
 		pTuningRotateButtonDefaultRight.add(comboboxTuningRotateButtonDefaultRight)
 
 		// *** Diagonal move
@@ -2070,13 +2020,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pTuningMoveDiagonal.alignmentX = Component.LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningMoveDiagonal)
 
-		val lTuningMoveDiagonal = JLabel(getUIText("GameTuning_MoveDiagonal_Label"))
-		pTuningMoveDiagonal.add(lTuningMoveDiagonal)
-
-		val strArrayTuningMoveDiagonal = arrayOfNulls<String>(TUNING_COMBOBOX_GENERIC.size)
-		for(i in TUNING_COMBOBOX_GENERIC.indices)
-			strArrayTuningMoveDiagonal[i] = getUIText(TUNING_COMBOBOX_GENERIC[i])
-		comboboxTuningMoveDiagonal = JComboBox(strArrayTuningMoveDiagonal)
+		pTuningMoveDiagonal.add(JLabel(getUIText("GameTuning_MoveDiagonal_Label")))
+		comboboxTuningMoveDiagonal.model = DefaultComboBoxModel(TUNING_COMBOBOX_GENERIC.map {getUIText(it)}.toTypedArray())
 		pTuningMoveDiagonal.add(comboboxTuningMoveDiagonal)
 
 		// *** Show Outline Only
@@ -2084,13 +2029,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pTuningBlockShowOutlineOnly.alignmentX = Component.LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningBlockShowOutlineOnly)
 
-		val lTuningBlockShowOutlineOnly = JLabel(getUIText("GameTuning_BlockShowOutlineOnly_Label"))
-		pTuningBlockShowOutlineOnly.add(lTuningBlockShowOutlineOnly)
+		pTuningBlockShowOutlineOnly.add(JLabel(getUIText("GameTuning_BlockShowOutlineOnly_Label")))
 
-		val strArrayTuningBlockShowOutlineOnly = arrayOfNulls<String>(TUNING_COMBOBOX_GENERIC.size)
-		for(i in TUNING_COMBOBOX_GENERIC.indices)
-			strArrayTuningBlockShowOutlineOnly[i] = getUIText(TUNING_COMBOBOX_GENERIC[i])
-		comboboxTuningBlockShowOutlineOnly = JComboBox(strArrayTuningBlockShowOutlineOnly)
+		comboboxTuningBlockShowOutlineOnly.model = DefaultComboBoxModel(TUNING_COMBOBOX_GENERIC.map {getUIText(it)}.toTypedArray())
 		pTuningBlockShowOutlineOnly.add(comboboxTuningBlockShowOutlineOnly)
 
 		// *** Outline Type
@@ -2098,14 +2039,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pTuningOutlineType.alignmentX = Component.LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningOutlineType)
 
-		val lTuningOutlineType = JLabel(getUIText("GameTuning_OutlineType_Label"))
-		pTuningOutlineType.add(lTuningOutlineType)
+		pTuningOutlineType.add(JLabel(getUIText("GameTuning_OutlineType_Label")))
 
-		val strArrayTuningOutlineType = arrayOfNulls<String>(TUNING_OUTLINE_TYPE_NAMES.size)
-		for(i in TUNING_OUTLINE_TYPE_NAMES.indices)
-			strArrayTuningOutlineType[i] = getUIText(TUNING_OUTLINE_TYPE_NAMES[i])
-		val modelTuningOutlineType = DefaultComboBoxModel(strArrayTuningOutlineType)
-		comboboxTuningBlockOutlineType = JComboBox(modelTuningOutlineType)
+		comboboxTuningBlockOutlineType.model = DefaultComboBoxModel(TUNING_OUTLINE_TYPE_NAMES.map {getUIText(it)}.toTypedArray())
 		pTuningOutlineType.add(comboboxTuningBlockOutlineType)
 
 		// *** Skin
@@ -2113,15 +2049,14 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pTuningSkin.alignmentX = Component.LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningSkin)
 
-		val lTuningSkin = JLabel(getUIText("GameTuning_Skin_Label"))
-		pTuningSkin.add(lTuningSkin)
+		pTuningSkin.add(JLabel(getUIText("GameTuning_Skin_Label")))
 
 		val model = DefaultComboBoxModel<ComboLabel>()
 		model.addElement(ComboLabel(getUIText("GameTuning_Skin_Auto")))
 		for(i in imgTuningBlockSkins.indices)
 			model.addElement(ComboLabel("$i", ImageIcon(imgTuningBlockSkins[i])))
 
-		comboboxTuningSkin = JComboBox(model)
+		comboboxTuningSkin.model = model
 		comboboxTuningSkin.renderer = ComboLabelCellRenderer()
 		comboboxTuningSkin.preferredSize = Dimension(190, 30)
 		pTuningSkin.add(comboboxTuningSkin)
@@ -2131,10 +2066,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pTuningMinDAS.alignmentX = Component.LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningMinDAS)
 
-		val lTuningMinDAS = JLabel(getUIText("GameTuning_MinDAS_Label"))
-		pTuningMinDAS.add(lTuningMinDAS)
+		pTuningMinDAS.add(JLabel(getUIText("GameTuning_MinDAS_Label")))
 
-		txtfldTuningMinDAS = JTextField(5)
+		txtfldTuningMinDAS.columns = 5
 		pTuningMinDAS.add(txtfldTuningMinDAS)
 
 		// *** Maximum DAS
@@ -2142,10 +2076,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pTuningMaxDAS.alignmentX = Component.LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningMaxDAS)
 
-		val lTuningMaxDAS = JLabel(getUIText("GameTuning_MaxDAS_Label"))
-		pTuningMaxDAS.add(lTuningMaxDAS)
+		pTuningMaxDAS.add(JLabel(getUIText("GameTuning_MaxDAS_Label")))
 
-		txtfldTuningMaxDAS = JTextField(5)
+		txtfldTuningMaxDAS.columns = 5
 		pTuningMaxDAS.add(txtfldTuningMaxDAS)
 
 		// *** DAS delay
@@ -2153,10 +2086,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pTuningDasDelay.alignmentX = Component.LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningDasDelay)
 
-		val lTuningDasDelay = JLabel(getUIText("GameTuning_DasDelay_Label"))
-		pTuningDasDelay.add(lTuningDasDelay)
+		pTuningDasDelay.add(JLabel(getUIText("GameTuning_DasDelay_Label")))
 
-		txtfldTuningDasDelay = JTextField(5)
+		txtfldTuningDasDelay.columns = 5
 		pTuningDasDelay.add(txtfldTuningDasDelay)
 
 		// *** Reverse Up/Down
@@ -2164,10 +2096,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pTuningReverseUpDown.alignmentX = Component.LEFT_ALIGNMENT
 		subpanelTuning.add(pTuningReverseUpDown)
 
-		val lTuningReverseUpDown = JLabel(getUIText("GameTuning_ReverseUpDown_Label"))
-		pTuningReverseUpDown.add(lTuningReverseUpDown)
-
-		chkboxTuningReverseUpDown = JCheckBox()
+		pTuningReverseUpDown.add(JLabel(getUIText("GameTuning_ReverseUpDown_Label")))
 		pTuningReverseUpDown.add(chkboxTuningReverseUpDown)
 
 		// * Buttons panel
@@ -2176,19 +2105,19 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		mainpanelRuleChange.add(subpanelButtons, BorderLayout.SOUTH)
 
 		// ** OK button
-		btnRuleChangeOK = JButton(getUIText("RuleChange_OK"))
+		btnRuleChangeOK.text = getUIText("RuleChange_OK")
 		btnRuleChangeOK.addActionListener(this)
 		btnRuleChangeOK.actionCommand = "RuleChange_OK"
 		btnRuleChangeOK.setMnemonic('O')
-		btnRuleChangeOK.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnRuleChangeOK.maximumSize.height)
+		btnRuleChangeOK.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnRuleChangeOK.maximumSize.height)
 		subpanelButtons.add(btnRuleChangeOK)
 
 		// ** Cancel button
-		btnRuleChangeCancel = JButton(getUIText("RuleChange_Cancel"))
+		btnRuleChangeCancel.text = getUIText("RuleChange_Cancel")
 		btnRuleChangeCancel.addActionListener(this)
 		btnRuleChangeCancel.actionCommand = "RuleChange_Cancel"
 		btnRuleChangeCancel.setMnemonic('C')
-		btnRuleChangeCancel.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), btnRuleChangeCancel.maximumSize.height)
+		btnRuleChangeCancel.maximumSize = Dimension(Short.MAX_VALUE.toInt(), btnRuleChangeCancel.maximumSize.height)
 		subpanelButtons.add(btnRuleChangeCancel)
 	}
 
@@ -2205,14 +2134,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		imgTuningBlockSkins = Array(numSkins) {i ->
 			val imgBlock = loadImage(getURL("$skindir/graphics/blockskin/normal/n$i.png"))
 			val isSticky = imgBlock!=null&&imgBlock.width>=400&&imgBlock.height>=304
-			if(isSticky)
-				for(j in 0..8)
-					imgTuningBlockSkins[i].graphics.drawImage(imgBlock, j*16, 0, j*16+16, 16, 0, j*16, 16, j*16+16, null)
-			else
-				imgTuningBlockSkins[i].graphics.drawImage(imgBlock, 0, 0, 144, 16, 0, 0, 144, 16, null)
-
-			return@Array BufferedImage(144, 16, BufferedImage.TYPE_INT_RGB)
-
+			return@Array BufferedImage(144, 16, BufferedImage.TYPE_INT_RGB).apply {
+				if(isSticky)
+					for(j in 0..8)
+						graphics.drawImage(imgBlock, j*16, 0, j*16+16, 16, 0, j*16, 16, j*16+16, null)
+				else
+					graphics.drawImage(imgBlock, 0, 0, 144, 16, 0, 0, 144, 16, null)
+			}
 		}
 	}
 
@@ -2278,7 +2206,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Screen switching
 	 * @param cardNumber Card switching destination screen number
 	 */
-	fun changeCurrentScreenCard(cardNumber:Int) {
+	private fun changeCurrentScreenCard(cardNumber:Int) {
 		try {
 			contentPaneCardLayout.show(contentPane, SCREENCARD_NAMES[cardNumber])
 			currentScreenCardNumber = cardNumber
@@ -2333,13 +2261,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param pInfo PlayerInformation
 	 * @return PlayerOfName(Translated symbol trip)
 	 */
-	fun getPlayerNameWithTripCode(pInfo:NetPlayerInfo?):String = convTripCode(pInfo!!.strName)
+	private fun getPlayerNameWithTripCode(pInfo:NetPlayerInfo?):String = convTripCode(pInfo!!.strName)
 
 	/** Convert the symbol trip
 	 * @param s String to be converted(MostName)
 	 * @return The converted string
 	 */
-	fun convTripCode(s:String):String {
+	private fun convTripCode(s:String):String {
 		if(!propLang.getProperty("TripSeparator_EnableConvert", false)) return s
 		var strName = s
 		strName = strName.replace(getUIText("TripSeparator_True"), getUIText("TripSeparator_False"))
@@ -2395,7 +2323,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param str The string to add
 	 * @param fgcolor Letter cint(nullYes)
 	 */
-	fun addSystemChatLogLater(txtpane:JTextPane, str:String?, fgcolor:Color) {
+	private fun addSystemChatLogLater(txtpane:JTextPane, str:String?, fgcolor:Color) {
 		SwingUtilities.invokeLater {addSystemChatLog(txtpane, str, fgcolor)}
 	}
 
@@ -2405,7 +2333,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param calendar Time
 	 * @param str Message
 	 */
-	fun addUserChatLog(txtpane:JTextPane, username:String, calendar:Calendar?, str:String) {
+	private fun addUserChatLog(txtpane:JTextPane, username:String, calendar:Calendar?, str:String) {
 		val sasTime = SimpleAttributeSet()
 		StyleConstants.setForeground(sasTime, Color.gray)
 		val strTime = getTimeAsString(calendar)
@@ -2441,7 +2369,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param calendar Time
 	 * @param str Message
 	 */
-	fun addUserChatLogLater(txtpane:JTextPane, username:String, calendar:Calendar?,
+	private fun addUserChatLogLater(txtpane:JTextPane, username:String, calendar:Calendar?,
 		str:String) {
 		SwingUtilities.invokeLater {addUserChatLog(txtpane, username, calendar, str)}
 	}
@@ -2452,7 +2380,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param calendar Time
 	 * @param str Message
 	 */
-	fun addRecordedUserChatLog(txtpane:JTextPane, username:String, calendar:Calendar?, str:String) {
+	private fun addRecordedUserChatLog(txtpane:JTextPane, username:String, calendar:Calendar?, str:String) {
 		val sasTime = SimpleAttributeSet()
 		StyleConstants.setForeground(sasTime, Color.gray)
 		val strTime = getTimeAsString(calendar, true)
@@ -2492,7 +2420,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param calendar Time
 	 * @param str Message
 	 */
-	fun addRecordedUserChatLogLater(txtpane:JTextPane, username:String, calendar:Calendar?,
+	private fun addRecordedUserChatLogLater(txtpane:JTextPane, username:String, calendar:Calendar?,
 		str:String) {
 		SwingUtilities.invokeLater {addRecordedUserChatLog(txtpane, username, calendar, str)}
 	}
@@ -2502,7 +2430,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param filename Filename
 	 * @return The successtrue
 	 */
-	fun loadListToDefaultListModel(listModel:DefaultListModel<String>, filename:String):Boolean {
+	private fun loadListToDefaultListModel(listModel:DefaultListModel<String>, filename:String):Boolean {
 		try {
 			val `in` = BufferedReader(FileReader(filename))
 			listModel.clear()
@@ -2523,7 +2451,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param filename Filename of mode list
 	 * @return `true` if success
 	 */
-	fun loadModeList(listModel:DefaultListModel<String>, filename:String):Boolean {
+	private fun loadModeList(listModel:DefaultListModel<String>, filename:String):Boolean {
 		try {
 			val `in` = BufferedReader(FileReader(filename))
 			listModel.clear()
@@ -2552,7 +2480,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param filename Filename of mode list
 	 * @return `true` if success
 	 */
-	fun loadModeList(listModel:DefaultComboBoxModel<String>, filename:String):Boolean {
+	private fun loadModeList(listModel:DefaultComboBoxModel<String>, filename:String):Boolean {
 		try {
 			val `in` = BufferedReader(FileReader(filename))
 
@@ -2582,7 +2510,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param filename Filename
 	 * @return The successtrue
 	 */
-	fun saveListFromDefaultListModel(listModel:DefaultListModel<*>, filename:String):Boolean {
+	private fun saveListFromDefaultListModel(listModel:DefaultListModel<*>, filename:String):Boolean {
 		try {
 			val out = PrintWriter(filename)
 			for(i in 0 until listModel.size())
@@ -2600,7 +2528,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Set enabled state of lobby buttons
 	 * @param mode 0=Disable all 1=Full Lobby 2=Inside Room
 	 */
-	fun setLobbyButtonsEnabled(mode:Int) {
+	private fun setLobbyButtonsEnabled(mode:Int) {
 		btnRoomListQuickStart.isEnabled = mode==1
 		btnRoomListRoomCreate.isEnabled = mode==1
 		btnRoomListRoomCreate1P.isEnabled = mode==1
@@ -2616,7 +2544,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Screen Room buttonOf is enabledChange the state
 	 * @param b When true, is enabled, falseInvalid if
 	 */
-	fun setRoomButtonsEnabled(b:Boolean) {
+	private fun setRoomButtonsEnabled(b:Boolean) {
 		btnRoomButtonsTeamChange.isEnabled = b
 		btnRoomButtonsJoin.isEnabled = b
 		btnRoomButtonsSitOut.isEnabled = b
@@ -2629,7 +2557,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Participation in the screen room buttonAnd withdrawal buttonSwitching
 	 * @param b trueWhen the war button, falseWhen the withdrawal buttonShow
 	 */
-	fun setRoomJoinButtonVisible(b:Boolean) {
+	private fun setRoomJoinButtonVisible(b:Boolean) {
 		btnRoomButtonsJoin.isVisible = b
 		btnRoomButtonsJoin.isEnabled = true
 		btnRoomButtonsSitOut.isVisible = !b
@@ -2640,15 +2568,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param r Room Information
 	 * @return Line data
 	 */
-	fun createRoomListRowData(r:NetRoomInfo):Array<String> = arrayOf(
-		r.roomID.toString()
-		, r.strName
-		, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False")
-		, if(r.ruleLock) r.ruleName.toUpperCase() else getUIText("RoomTable_RuleName_Any")
-		, r.strMode
-		, if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting")
-		, r.playerSeatedCount.toString()+"/"+r.maxPlayers
-		, r.spectatorCount.toString())
+	private fun createRoomListRowData(r:NetRoomInfo):Array<String> = arrayOf(
+		r.roomID.toString(), r.strName, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False"),
+		if(r.ruleLock) r.ruleName.toUpperCase() else getUIText("RoomTable_RuleName_Any"), r.strMode,
+		if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting"),
+		r.playerSeatedCount.toString()+"/"+r.maxPlayers, r.spectatorCount.toString())
 
 	/** Entered the room that you specify
 	 * @param roomID RoomID
@@ -2671,7 +2595,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param isDetailMode true=View Detail, false=Create Room
 	 * @param roomInfo Room Information (only used when isDetailMode is true)
 	 */
-	fun setCreateRoomUIType(isDetailMode:Boolean, roomInfo:NetRoomInfo?) {
+	private fun setCreateRoomUIType(isDetailMode:Boolean, roomInfo:NetRoomInfo?) {
 		val r:NetRoomInfo?
 
 		if(isDetailMode) {
@@ -2704,7 +2628,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					das = propConfig.getProperty("createroom.defaultDAS", 11)
 					hurryupSeconds = propConfig.getProperty("createroom.defaultHurryupSeconds", 180)
 					hurryupInterval = propConfig.getProperty("createroom.defaultHurryupInterval", 5)
-					garbagePercent = propConfig.getProperty("createroom.defaultGarbagePercent", 90)
+					messiness = propConfig.getProperty("createroom.defaultGarbagePercent", 90)
 					ruleLock = propConfig.getProperty("createroom.defaultRuleLock", false)
 					twistEnableType = propConfig.getProperty("createroom.defaultTwistEnableType", 2)
 					spinCheckType = propConfig.getProperty("createroom.defaultWISTCheckType", 1)
@@ -2735,7 +2659,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param isDetailMode true=View Detail, false=Create Room
 	 * @param roomInfo Room Information (only used when isDetailMode is true)
 	 */
-	fun setCreateRoom1PUIType(isDetailMode:Boolean, roomInfo:NetRoomInfo?) {
+	private fun setCreateRoom1PUIType(isDetailMode:Boolean, roomInfo:NetRoomInfo?) {
 		val r:NetRoomInfo?
 
 		if(isDetailMode) {
@@ -2793,7 +2717,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/** Lobby screenPlayerList update */
-	fun updateLobbyUserList() {
+	private fun updateLobbyUserList() {
 		val pList = LinkedList(netPlayerClient!!.playerInfoList)
 
 		if(!pList.isEmpty()) {
@@ -2834,7 +2758,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/** Screen RoomPlayerList update */
-	fun updateRoomUserList() {
+	private fun updateRoomUserList() {
 		val roomInfo = netPlayerClient!!.getRoomInfo(netPlayerClient!!.yourPlayerInfo!!.roomID) ?: return
 
 		val pList = LinkedList(netPlayerClient!!.playerInfoList)
@@ -2899,7 +2823,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/** Rule dataTransmission */
-	fun sendMyRuleDataToServer() {
+	private fun sendMyRuleDataToServer() {
 		if(ruleOptPlayer==null) ruleOptPlayer = RuleOptions()
 
 		val prop = CustomProperties()
@@ -2923,55 +2847,51 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		propConfig.setProperty("mainwindow.height", size.height)
 		propConfig.setProperty("mainwindow.x", location.x)
 		propConfig.setProperty("mainwindow.y", location.y)
-		propConfig.setProperty("lobby.splitLobby.location", splitLobby?.dividerLocation ?: 0)
-		propConfig.setProperty("lobby.splitLobbyChat.location", splitLobbyChat?.dividerLocation ?: 0)
-		propConfig.setProperty("room.splitRoom.location", splitRoom?.dividerLocation ?: 0)
-		propConfig.setProperty("room.splitRoomChat.location", splitRoomChat?.dividerLocation ?: 0)
+		propConfig.setProperty("lobby.splitLobby.location", splitLobby.dividerLocation)
+		propConfig.setProperty("lobby.splitLobbyChat.location", splitLobbyChat.dividerLocation)
+		propConfig.setProperty("room.splitRoom.location", splitRoom.dividerLocation)
+		propConfig.setProperty("room.splitRoomChat.location", splitRoomChat.dividerLocation)
 		propConfig.setProperty("serverselect.txtfldPlayerName.text", txtfldPlayerName.text)
 		propConfig.setProperty("serverselect.txtfldPlayerTeam.text", txtfldPlayerTeam.text)
 
-		val listboxServerListSelectedValue = listboxServerList.selectedValue
-		if(listboxServerListSelectedValue!=null&&listboxServerListSelectedValue is String)
-			propConfig.setProperty("serverselect.listboxServerList.value", listboxServerListSelectedValue)
-		else
-			propConfig.setProperty("serverselect.listboxServerList.value", "")
+		propConfig.setProperty("serverselect.listboxServerList.value", listboxServerList.selectedValue?:"")
+		tableRoomList.columnModel.let {
+			propConfig.setProperty("tableRoomList.width.id", it.getColumn(0).width)
+			propConfig.setProperty("tableRoomList.width.name", it.getColumn(1).width)
+			propConfig.setProperty("tableRoomList.width.rated", it.getColumn(2).width)
+			propConfig.setProperty("tableRoomList.width.rulename", it.getColumn(3).width)
+			propConfig.setProperty("tableRoomList.width.modename", it.getColumn(4).width)
+			propConfig.setProperty("tableRoomList.width.status", it.getColumn(5).width)
+			propConfig.setProperty("tableRoomList.width.players", it.getColumn(6).width)
+			propConfig.setProperty("tableRoomList.width.spectators", it.getColumn(7).width)
+		}
 
-		var tm = tableRoomList.columnModel
-		propConfig.setProperty("tableRoomList.width.id", tm.getColumn(0).width)
-		propConfig.setProperty("tableRoomList.width.name", tm.getColumn(1).width)
-		propConfig.setProperty("tableRoomList.width.rated", tm.getColumn(2).width)
-		propConfig.setProperty("tableRoomList.width.rulename", tm.getColumn(3).width)
-		propConfig.setProperty("tableRoomList.width.modename", tm.getColumn(4).width)
-		propConfig.setProperty("tableRoomList.width.status", tm.getColumn(5).width)
-		propConfig.setProperty("tableRoomList.width.players", tm.getColumn(6).width)
-		propConfig.setProperty("tableRoomList.width.spectators", tm.getColumn(7).width)
-
-		tm = tableGameStat.columnModel
-		propConfig.setProperty("tableGameStat.width.rank", tm.getColumn(0).width)
-		propConfig.setProperty("tableGameStat.width.name", tm.getColumn(1).width)
-		propConfig.setProperty("tableGameStat.width.attack", tm.getColumn(2).width)
-		propConfig.setProperty("tableGameStat.width.apl", tm.getColumn(3).width)
-		propConfig.setProperty("tableGameStat.width.apm", tm.getColumn(4).width)
-		propConfig.setProperty("tableGameStat.width.lines", tm.getColumn(5).width)
-		propConfig.setProperty("tableGameStat.width.lpm", tm.getColumn(6).width)
-		propConfig.setProperty("tableGameStat.width.piece", tm.getColumn(7).width)
-		propConfig.setProperty("tableGameStat.width.pps", tm.getColumn(8).width)
-		propConfig.setProperty("tableGameStat.width.time", tm.getColumn(9).width)
-		propConfig.setProperty("tableGameStat.width.ko", tm.getColumn(10).width)
-		propConfig.setProperty("tableGameStat.width.wins", tm.getColumn(11).width)
-		propConfig.setProperty("tableGameStat.width.games", tm.getColumn(12).width)
-
-		tm = tableGameStat1P.columnModel
-		propConfig.setProperty("tableGameStat1P.width.description", tm.getColumn(0).width)
-		propConfig.setProperty("tableGameStat1P.width.value", tm.getColumn(1).width)
-
-		tm = tableMPRanking[0].columnModel
-		propConfig.setProperty("tableMPRanking.width.rank", tm.getColumn(0).width)
-		propConfig.setProperty("tableMPRanking.width.name", tm.getColumn(1).width)
-		propConfig.setProperty("tableMPRanking.width.rating", tm.getColumn(2).width)
-		propConfig.setProperty("tableMPRanking.width.play", tm.getColumn(3).width)
-		propConfig.setProperty("tableMPRanking.width.win", tm.getColumn(4).width)
-
+		tableGameStat.columnModel.let {
+			propConfig.setProperty("tableGameStat.width.rank", it.getColumn(0).width)
+			propConfig.setProperty("tableGameStat.width.name", it.getColumn(1).width)
+			propConfig.setProperty("tableGameStat.width.attack", it.getColumn(2).width)
+			propConfig.setProperty("tableGameStat.width.apl", it.getColumn(3).width)
+			propConfig.setProperty("tableGameStat.width.apm", it.getColumn(4).width)
+			propConfig.setProperty("tableGameStat.width.lines", it.getColumn(5).width)
+			propConfig.setProperty("tableGameStat.width.lpm", it.getColumn(6).width)
+			propConfig.setProperty("tableGameStat.width.piece", it.getColumn(7).width)
+			propConfig.setProperty("tableGameStat.width.pps", it.getColumn(8).width)
+			propConfig.setProperty("tableGameStat.width.time", it.getColumn(9).width)
+			propConfig.setProperty("tableGameStat.width.ko", it.getColumn(10).width)
+			propConfig.setProperty("tableGameStat.width.wins", it.getColumn(11).width)
+			propConfig.setProperty("tableGameStat.width.games", it.getColumn(12).width)
+		}
+		tableGameStat1P.columnModel.let {
+			propConfig.setProperty("tableGameStat1P.width.description", it.getColumn(0).width)
+			propConfig.setProperty("tableGameStat1P.width.value", it.getColumn(1).width)
+		}
+		tableMPRanking[0].columnModel.let {
+			propConfig.setProperty("tableMPRanking.width.rank", it.getColumn(0).width)
+			propConfig.setProperty("tableMPRanking.width.name", it.getColumn(1).width)
+			propConfig.setProperty("tableMPRanking.width.rating", it.getColumn(2).width)
+			propConfig.setProperty("tableMPRanking.width.play", it.getColumn(3).width)
+			propConfig.setProperty("tableMPRanking.width.win", it.getColumn(4).width)
+		}
 		backupRoomInfo?.let {
 			propConfig.setProperty("createroom.defaultMaxPlayers", it.maxPlayers)
 			propConfig.setProperty("createroom.defaultAutoStartSeconds", it.autoStartSeconds)
@@ -2982,7 +2902,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			propConfig.setProperty("createroom.defaultLineDelay", it.lineDelay)
 			propConfig.setProperty("createroom.defaultLockDelay", it.lockDelay)
 			propConfig.setProperty("createroom.defaultDAS", it.das)
-			propConfig.setProperty("createroom.defaultGarbagePercent", it.garbagePercent)
+			propConfig.setProperty("createroom.defaultGarbagePercent", it.messiness)
 			propConfig.setProperty("createroom.defaultTargetTimer", it.targetTimer)
 			propConfig.setProperty("createroom.defaultHurryupSeconds", it.hurryupSeconds)
 			propConfig.setProperty("createroom.defaultHurryupInterval", it.hurryupInterval)
@@ -3003,18 +2923,17 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			propConfig.setProperty("createroom.defaultAutoStartTNET2", it.autoStartTNET2)
 			propConfig.setProperty("createroom.defaultDisableTimerAfterSomeoneCancelled", it.disableTimerAfterSomeoneCancelled)
 			propConfig.setProperty("createroom.defaultUseMap", it.useMap)
-			propConfig.setProperty("createroom.defaultMapSetID", spinnerCreateRoomMapSetID!!.value as Int)
+			propConfig.setProperty("createroom.defaultMapSetID", spinnerCreateRoomMapSetID.value as Int)
 		}
 
 		val listboxCreateRoom1PModeListSelectedValue = listboxCreateRoom1PModeList.selectedValue
-		if(listboxCreateRoom1PModeListSelectedValue!=null&&listboxCreateRoom1PModeListSelectedValue is String)
+		if(listboxCreateRoom1PModeListSelectedValue!=null)
 			propConfig.setProperty("createroom1p.listboxCreateRoom1PModeList.value", listboxCreateRoom1PModeListSelectedValue)
 		else
 			propConfig.setProperty("createroom1p.listboxCreateRoom1PModeList.value", "")
 
 		val listboxCreateRoom1PRuleListSelectedValue = listboxCreateRoom1PRuleList.selectedValue
-		if(listboxCreateRoom1PRuleListSelectedValue!=null&&listboxCreateRoom1PRuleListSelectedValue is String&&
-			listboxCreateRoom1PRuleList.selectedIndex>=1)
+		if(listboxCreateRoom1PRuleListSelectedValue!=null&&listboxCreateRoom1PRuleList.selectedIndex>=1)
 			propConfig.setProperty("createroom1p.listboxCreateRoom1PRuleList.value", listboxCreateRoom1PRuleListSelectedValue)
 		else
 			propConfig.setProperty("createroom1p.listboxCreateRoom1PRuleList.value", "")
@@ -3032,7 +2951,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/** Save global config file */
-	fun saveGlobalConfig() {
+	private fun saveGlobalConfig() {
 		try {
 			val out = FileOutputStream("config/setting/global.cfg")
 			propGlobal.store(out, "NullpoMino Global Config")
@@ -3045,26 +2964,21 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 	/** End processing */
 	fun shutdown() {
-		if(splitLobby!=null) saveConfig()
+		saveConfig()
 
-		if(writerLobbyLog!=null) {
-			writerLobbyLog!!.flush()
-			writerLobbyLog!!.close()
-			writerLobbyLog = null
-		}
-		if(writerRoomLog!=null) {
-			writerRoomLog!!.flush()
-			writerRoomLog!!.close()
-			writerRoomLog = null
-		}
+		writerLobbyLog?.flush()
+		writerLobbyLog?.close()
+		writerLobbyLog = null
+
+		writerRoomLog?.flush()
+		writerRoomLog?.close()
+		writerRoomLog = null
 
 		// Cut
-		if(netPlayerClient!=null) {
-			if(netPlayerClient!!.isConnected) netPlayerClient!!.send("disconnect\n")
-			netPlayerClient!!.threadRunning = false
-			netPlayerClient!!.interrupt()
-			netPlayerClient = null
-		}
+		if(netPlayerClient?.isConnected==true) netPlayerClient?.send("disconnect\n")
+		netPlayerClient?.threadRunning = false
+		netPlayerClient?.interrupt()
+		netPlayerClient = null
 
 		// ListenerCall
 		if(listeners!=null) {
@@ -3072,10 +2986,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				l.netlobbyOnExit(this)
 			listeners = null
 		}
-		if(netDummyMode!=null) {
-			netDummyMode!!.netlobbyOnExit(this)
-			netDummyMode = null
-		}
+		netDummyMode?.netlobbyOnExit(this)
+		netDummyMode = null
 
 		dispose()
 	}
@@ -3108,7 +3020,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			var port = NetBaseClient.DEFAULT_PORT
 			try {
 				val strPort = strServer.substring(portSpliter+1, strServer.length)
-				port = Integer.parseInt(strPort)
+				port = strPort.toInt()
 			} catch(e2:Exception) {
 				log.debug("Failed to get port number; Try to use default port")
 			}
@@ -3143,7 +3055,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			var port = NetBaseClient.DEFAULT_PORT
 			try {
 				val strPort = strServer.substring(portSpliter+1, strServer.length)
-				port = Integer.parseInt(strPort)
+				port = strPort.toInt()
 			} catch(e2:Exception) {
 				log.debug("Failed to get port number; Try to use default port")
 			}
@@ -3174,22 +3086,23 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param roomchat `true` if room chat
 	 * @param strMsg Message to send
 	 */
-	fun sendChat(roomchat:Boolean, strMsg:String) {
+	private fun sendChat(roomchat:Boolean, strMsg:String) {
 		var msg = strMsg
-		if(msg.startsWith("/team")) {
-			msg = msg.replaceFirst("/team".toRegex(), "")
-			msg = msg.trim {it<=' '}
-			netPlayerClient!!.send("changeteam\t${NetUtil.urlEncode(msg)}\n")
-		} else if(roomchat)
-			netPlayerClient!!.send("chat\t${NetUtil.urlEncode(msg)}\n")
-		else
-			netPlayerClient!!.send("lobbychat\t${NetUtil.urlEncode(msg)}\n")
+		when {
+			msg.startsWith("/team") -> {
+				msg = msg.replaceFirst("/team".toRegex(), "")
+				msg = msg.trim {it<=' '}
+				netPlayerClient?.send("changeteam\t${NetUtil.urlEncode(msg)}\n")
+			}
+			roomchat -> netPlayerClient?.send("chat\t${NetUtil.urlEncode(msg)}\n")
+			else -> netPlayerClient?.send("lobbychat\t${NetUtil.urlEncode(msg)}\n")
+		}
 	}
 
 	/** Creates NetRoomInfo from Create Room screen
 	 * @return NetRoomInfo
 	 */
-	fun exportRoomInfoFromCreateRoomScreen():NetRoomInfo? {
+	private fun exportRoomInfoFromCreateRoomScreen():NetRoomInfo? {
 		try {
 			val roomInfo = NetRoomInfo()
 
@@ -3256,7 +3169,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			roomInfo.useFractionalGarbage = useFractionalGarbage
 			roomInfo.garbageChangePerAttack = garbageChangePerAttack
 			roomInfo.divideChangeRateByPlayers = divideChangeRateByPlayers
-			roomInfo.garbagePercent = integerGarbagePercent
+			roomInfo.messiness = integerGarbagePercent
 			roomInfo.b2bChunk = b2bChunk
 			roomInfo.isTarget = isTarget
 			roomInfo.targetTimer = integerTargetTimer
@@ -3272,7 +3185,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Import NetRoomInfo to Create Room screen
 	 * @param r NetRoomInfo
 	 */
-	fun importRoomInfoToCreateRoomScreen(r:NetRoomInfo?) {
+	private fun importRoomInfoToCreateRoomScreen(r:NetRoomInfo?) {
 		if(r!=null) {
 			txtfldCreateRoomName.text = r.strName
 			comboboxCreateRoomMode.selectedIndex = 0
@@ -3288,7 +3201,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			spinnerCreateRoomDAS.value = r.das
 			spinnerCreateRoomHurryupSeconds.value = r.hurryupSeconds
 			spinnerCreateRoomHurryupInterval.value = r.hurryupInterval
-			spinnerCreateRoomGarbagePercent.value = r.garbagePercent
+			spinnerCreateRoomGarbagePercent.value = r.messiness
 			spinnerCreateRoomTargetTimer.value = r.targetTimer
 			chkboxCreateRoomUseMap.isSelected = r.useMap
 			chkboxCreateRoomRuleLock.isSelected = r.ruleLock
@@ -3314,9 +3227,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Create rule entries (for rule change screen)
 	 * @param filelist Rule file list
 	 */
-	fun createRuleEntries(filelist:Array<String>) {
-		ruleEntries = LinkedList()
-
+	private fun createRuleEntries(filelist:Array<String>) {
+		ruleEntries.clear()
 		for(element in filelist) {
 			val entry = RuleEntry()
 
@@ -3346,7 +3258,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun getSubsetEntries(currentStyle:Int):LinkedList<RuleEntry> {
 		val subEntries = LinkedList<RuleEntry>()
-		for(ruleEntry in ruleEntries) if(ruleEntry.style==currentStyle) subEntries.add(ruleEntry)
+		if(ruleEntries.size>0) ruleEntries.forEach {ruleEntry ->
+			if(ruleEntry.style==currentStyle) subEntries.add(ruleEntry)
+		}
 		return subEntries
 	}
 
@@ -3354,7 +3268,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param currentStyle Current style
 	 * @return Rule name + file name list
 	 */
-	fun extractRuleListFromRuleEntries(currentStyle:Int):Array<String> {
+	private fun extractRuleListFromRuleEntries(currentStyle:Int):Array<String> {
 		val subEntries = getSubsetEntries(currentStyle)
 
 		return Array(subEntries.size) {
@@ -3364,7 +3278,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/** Enter rule change screen */
-	fun enterRuleChangeScreen() {
+	private fun enterRuleChangeScreen() {
 		// Set rule selections
 		val strCurrentFileName = Array<String>(GameEngine.MAX_GAMESTYLE) {
 			if(it==0) propGlobal.getProperty(0.toString()+".rulefile", "")
@@ -3619,8 +3533,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				val r = exportRoomInfoFromCreateRoomScreen()
 				backupRoomInfo = r
 
-				var msg:String
-				msg = "roomcreate\t${NetUtil.urlEncode(r!!.strName)}\t"
+				var msg = "roomcreate\t${NetUtil.urlEncode(r!!.strName)}\t"
 				msg += NetUtil.urlEncode(r.exportString())+"\t"
 				msg += NetUtil.urlEncode(r.strMode)+"\t"
 
@@ -3846,7 +3759,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					val currentTime = GregorianCalendar()
 					val month = currentTime.get(Calendar.MONTH)+1
 					val filename =
-						String.format("log/lobby_%04d_%02d_%02d_%02d_%02d_%02d.txt", currentTime.get(Calendar.YEAR), month, currentTime.get(Calendar.DATE), currentTime.get(Calendar.HOUR_OF_DAY), currentTime.get(Calendar.MINUTE), currentTime.get(Calendar.SECOND))
+						String.format("log/lobby_%04d_%02d_%02d_%02d_%02d_%02d.txt", currentTime.get(Calendar.YEAR), month,
+							currentTime.get(Calendar.DATE), currentTime.get(Calendar.HOUR_OF_DAY), currentTime.get(Calendar.MINUTE),
+							currentTime.get(Calendar.SECOND))
 					writerLobbyLog = PrintWriter(filename)
 				} catch(e:Exception) {
 					log.warn("Failed to create lobby log file", e)
@@ -3857,7 +3772,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					val currentTime = GregorianCalendar()
 					val month = currentTime.get(Calendar.MONTH)+1
 					val filename =
-						String.format("log/room_%04d_%02d_%02d_%02d_%02d_%02d.txt", currentTime.get(Calendar.YEAR), month, currentTime.get(Calendar.DATE), currentTime.get(Calendar.HOUR_OF_DAY), currentTime.get(Calendar.MINUTE), currentTime.get(Calendar.SECOND))
+						String.format("log/room_%04d_%02d_%02d_%02d_%02d_%02d.txt", currentTime.get(Calendar.YEAR), month,
+							currentTime.get(Calendar.DATE), currentTime.get(Calendar.HOUR_OF_DAY), currentTime.get(Calendar.MINUTE),
+							currentTime.get(Calendar.SECOND))
 					writerRoomLog = PrintWriter(filename)
 				} catch(e:Exception) {
 					log.warn("Failed to create room log file", e)
@@ -3872,7 +3789,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Successful login
 		if(message[0]=="loginsuccess") {
 			addSystemChatLogLater(txtpaneLobbyChatLog, getUIText("SysMsg_LoginOK"), Color.blue)
-			addSystemChatLogLater(txtpaneLobbyChatLog, getUIText("SysMsg_YourNickname")+convTripCode(NetUtil.urlDecode(message[1])), Color.blue)
+			addSystemChatLogLater(txtpaneLobbyChatLog, getUIText("SysMsg_YourNickname")+convTripCode(NetUtil.urlDecode(message[1])),
+				Color.blue)
 			addSystemChatLogLater(txtpaneLobbyChatLog, getUIText("SysMsg_YourUID")+netPlayerClient!!.playerUID, Color.blue)
 
 			addSystemChatLogLater(txtpaneLobbyChatLog, getUIText("SysMsg_SendRuleDataStart"), Color.blue)
@@ -3939,7 +3857,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Rated-game rule list
 		if(message[0]=="rulelist") {
-			val style = Integer.parseInt(message[1])
+			val style = message[1].toInt()
 
 			if(style<listRatedRuleName.size) {
 				listRatedRuleName[style].clear()
@@ -3960,7 +3878,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					listmodelCreateRoom1PRuleList.addElement(name)
 				}
 
-				listboxCreateRoom1PRuleList.setSelectedValue(propConfig.getProperty("createroom1p.listboxCreateRoom1PRuleList.value", ""), true)
+				listboxCreateRoom1PRuleList.setSelectedValue(
+					propConfig.getProperty("createroom1p.listboxCreateRoom1PRuleList.value", ""), true)
 			}
 		}
 		// PlayerList
@@ -3973,8 +3892,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 				if(message[0]=="playerlogout") {
 					val p = NetPlayerInfo(message[1])
-					val p2 = netPlayerClient!!.yourPlayerInfo
-					if(p!=null&&p2!=null&&p.roomID==p2.roomID) {
+					val p2 = netPlayerClient?.yourPlayerInfo
+					if(p2!=null&&p.roomID==p2.roomID) {
 						val strTemp:String = if(p.strHost.isNotEmpty())
 							String.format(getUIText("SysMsg_LeaveRoomWithHost"), getPlayerNameWithTripCode(p), p.strHost)
 						else
@@ -3986,8 +3905,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// PlayerEntering a room
 		if(message[0]=="playerenter") {
-			val uid = Integer.parseInt(message[1])
-			val pInfo = netPlayerClient!!.getPlayerInfoByUID(uid)
+			val uid = message[1].toInt()
+			val pInfo = netPlayerClient?.getPlayerInfoByUID(uid)
 
 			if(pInfo!=null) {
 				val strTemp:String = if(pInfo.strHost.isNotEmpty())
@@ -3999,8 +3918,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// PlayerWithdrawal
 		if(message[0]=="playerleave") {
-			val uid = Integer.parseInt(message[1])
-			val pInfo = netPlayerClient!!.getPlayerInfoByUID(uid)
+			val uid = message[1].toInt()
+			val pInfo = netPlayerClient?.getPlayerInfoByUID(uid)
 
 			if(pInfo!=null) {
 				val strTemp:String = if(pInfo.strHost.isNotEmpty())
@@ -4012,7 +3931,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Change team
 		if(message[0]=="changeteam") {
-			val uid = Integer.parseInt(message[1])
+			val uid = message[1].toInt()
 			val pInfo = netPlayerClient!!.getPlayerInfoByUID(uid)
 
 			if(pInfo!=null) {
@@ -4030,7 +3949,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Room list
 		if(message[0]=="roomlist") {
-			val size = Integer.parseInt(message[1])
+			val size = message[1].toInt()
 
 			tablemodelRoomList.rowCount = 0
 			for(i in 0 until size) {
@@ -4068,7 +3987,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			for(i in 0 until tablemodelRoomList.rowCount) {
 				val strID = tablemodelRoomList.getValueAt(i, columnID) as String
-				val roomID = Integer.parseInt(strID)
+				val roomID = strID.toInt()
 
 				if(roomID==r.roomID) {
 					val rowData = createRoomListRowData(r)
@@ -4085,7 +4004,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			for(i in 0 until tablemodelRoomList.rowCount) {
 				val strID = tablemodelRoomList.getValueAt(i, columnID) as String
-				val roomID = Integer.parseInt(strID)
+				val roomID = strID.toInt()
 
 				if(roomID==r.roomID) {
 					tablemodelRoomList.removeRow(i)
@@ -4098,9 +4017,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Successfully create and enter Room
 		if(message[0]=="roomcreatesuccess"||message[0]=="roomjoinsuccess") {
-			val roomID = Integer.parseInt(message[1])
-			val seatID = Integer.parseInt(message[2])
-			val queueID = Integer.parseInt(message[3])
+			val roomID = message[1].toInt()
+			val seatID = message[2].toInt()
+			val queueID = message[3].toInt()
 
 			netPlayerClient!!.yourPlayerInfo!!.roomID = roomID
 			netPlayerClient!!.yourPlayerInfo!!.seatID = seatID
@@ -4195,8 +4114,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Lobby chat
 		if(message[0]=="lobbychat") {
-			val uid = Integer.parseInt(message[1])
-			val pInfo = netPlayerClient!!.getPlayerInfoByUID(uid)
+			val uid = message[1].toInt()
+			val pInfo = netPlayerClient?.getPlayerInfoByUID(uid)
 
 			if(pInfo!=null) {
 				val calendar = GeneralUtil.importCalendarString(message[3])
@@ -4206,8 +4125,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Room chat
 		if(message[0]=="chat") {
-			val uid = Integer.parseInt(message[1])
-			val pInfo = netPlayerClient!!.getPlayerInfoByUID(uid)
+			val uid = message[1].toInt()
+			val pInfo = netPlayerClient?.getPlayerInfoByUID(uid)
 
 			if(pInfo!=null) {
 				val calendar = GeneralUtil.importCalendarString(message[3])
@@ -4225,7 +4144,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Participation status change
 		if(message[0]=="changestatus") {
-			val uid = Integer.parseInt(message[2])
+			val uid = message[2].toInt()
 			val pInfo = netPlayerClient!!.getPlayerInfoByUID(uid)
 
 			if(pInfo!=null)
@@ -4265,7 +4184,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Death
 		if(message[0]=="dead") {
-			val uid = Integer.parseInt(message[1])
+			val uid = message[1].toInt()
 			val name = convTripCode(NetUtil.urlDecode(message[2]))
 
 			if(message.size>6) {
@@ -4282,7 +4201,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Game stats (Multiplayer)
 		if(message[0]=="gstat") {
 			val rowdata = arrayOfNulls<String>(13)
-			val myRank = Integer.parseInt(message[4])
+			val myRank = message[4].toInt()
 
 			rowdata[0] = "$myRank" // Rank
 			rowdata[1] = convTripCode(NetUtil.urlDecode(message[3])) // Name
@@ -4293,7 +4212,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			rowdata[6] = message[9] // LPM
 			rowdata[7] = message[10] // Piece count
 			rowdata[8] = message[11] // PPS
-			rowdata[9] = GeneralUtil.getTime(Integer.parseInt(message[12])) //  Time
+			rowdata[9] = GeneralUtil.getTime(message[12].toInt()) //  Time
 			rowdata[10] = message[13] // KO
 			rowdata[11] = message[14] // Win
 			rowdata[12] = message[15] // Games
@@ -4301,7 +4220,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			var insertPos = 0
 			for(i in 0 until tablemodelGameStat.rowCount) {
 				val strRank = tablemodelGameStat.getValueAt(i, 0) as String
-				val rank = Integer.parseInt(strRank)
+				val rank = strRank.toInt()
 
 				if(myRank>rank) insertPos = i+1
 			}
@@ -4347,10 +4266,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			if(message.size>3&&message[3].isNotEmpty()) {
 				var flagTeamWin = false
-				if(message.size>4) flagTeamWin = java.lang.Boolean.parseBoolean(message[4])
+				if(message.size>4) flagTeamWin = message[4].toBoolean()
 
-				val strWinner:String
-				strWinner = if(flagTeamWin)
+				val strWinner:String = if(flagTeamWin)
 					String.format(getUIText("SysMsg_WinnerTeam"), NetUtil.urlDecode(message[3]))
 				else
 					String.format(getUIText("SysMsg_Winner"), convTripCode(NetUtil.urlDecode(message[3])))
@@ -4364,15 +4282,15 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Rating change
 		if(message[0]=="rating") {
 			val strPlayerName = convTripCode(NetUtil.urlDecode(message[3]))
-			val ratingNow = Integer.parseInt(message[4])
-			val ratingChange = Integer.parseInt(message[5])
+			val ratingNow = message[4].toInt()
+			val ratingChange = message[5].toInt()
 			val strTemp = String.format(getUIText("SysMsg_Rating"), strPlayerName, ratingNow, ratingChange)
 			addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color(0, 128, 0))
 		}
 		// Multiplayer Leaderboard
 		if(message[0]=="mpranking") {
-			val style = Integer.parseInt(message[1])
-			val myRank = Integer.parseInt(message[2])
+			val style = message[1].toInt()
+			val myRank = message[2].toInt()
 
 			tablemodelMPRanking[style].rowCount = 0
 
@@ -4382,7 +4300,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			for(element in strPDataA) {
 				val strRankData = element.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 				val strRowData = arrayOfNulls<String>(MPRANKING_COLUMNNAMES.size)
-				val rank = Integer.parseInt(strRankData[0])
+				val rank = strRankData[0].toInt()
 				if(rank==-1)
 					strRowData[0] = "N/A"
 				else
@@ -4408,7 +4326,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Single player replay download
 		if(message[0]=="spdownload") {
-			val sChecksum = java.lang.Long.parseLong(message[1])
+			val sChecksum = message[1].toLong()
 			val checksumObj = Adler32()
 			checksumObj.update(NetUtil.stringToBytes(message[2]))
 
@@ -4477,36 +4395,26 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private inner class TextComponentPopupMenu(field:JTextComponent):JPopupMenu() {
 
 		private val cutAction:Action = object:AbstractAction(getUIText("Popup_Cut")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.cut()
 			}
 		}
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.copy()
 			}
 		}
 		private val pasteAction:Action = object:AbstractAction(getUIText("Popup_Paste")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.paste()
 			}
 		}
 		private val deleteAction:Action = object:AbstractAction(getUIText("Popup_Delete")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.replaceSelection(null)
 			}
 		}
 		private val selectAllAction:Action = object:AbstractAction(getUIText("Popup_SelectAll")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.selectAll()
 			}
@@ -4531,15 +4439,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			super.show(c, x, y)
 		}
 
-		private val serialVersionUID = 1L
-
 	}
 
 	/** Pop-up box for the listMenu */
 	private inner class ListBoxPopupMenu(private val listbox:JList<*>?):JPopupMenu() {
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(e:ActionEvent) {
 				if(listbox==null) return
 				val selectedObj = listbox.selectedValue
@@ -4564,30 +4468,22 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			}
 		}
 
-		private val serialVersionUID = 1L
-
 	}
 
 	/** Pop-up list box for server selectionMenu */
 	private inner class ServerSelectListBoxPopupMenu:JPopupMenu() {
 
 		private val connectAction:Action = object:AbstractAction(getUIText("Popup_ServerSelect_Connect")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(e:ActionEvent) {
 				serverSelectConnectButtonClicked()
 			}
 		}
 		private val deleteAction:Action = object:AbstractAction(getUIText("Popup_ServerSelect_Delete")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(e:ActionEvent) {
 				serverSelectDeleteButtonClicked()
 			}
 		}
 		private val setObserverAction:Action = object:AbstractAction(getUIText("Popup_ServerSelect_SetObserver")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(e:ActionEvent) {
 				serverSelectSetObserverButtonClicked()
 			}
@@ -4604,8 +4500,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			if(listboxServerList.selectedIndex!=-1) super.show(c, x, y)
 		}
 
-		private val serialVersionUID = 1L
-
 	}
 
 	/** For server selection list boxMouseAdapter */
@@ -4619,40 +4513,34 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private inner class RoomTablePopupMenu:JPopupMenu() {
 
 		private val joinAction:Action = object:AbstractAction(getUIText("Popup_RoomTable_Join")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				val row = tableRoomList.selectedRow
 				if(row!=-1) {
 					val columnID = tablemodelRoomList.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
 					val strRoomID = tablemodelRoomList.getValueAt(row, columnID) as String
-					val roomID = Integer.parseInt(strRoomID)
+					val roomID = strRoomID.toInt()
 					joinRoom(roomID, false)
 				}
 			}
 		}
 		private val watchAction:Action = object:AbstractAction(getUIText("Popup_RoomTable_Watch")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				val row = tableRoomList.selectedRow
 				if(row!=-1) {
 					val columnID = tablemodelRoomList.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
 					val strRoomID = tablemodelRoomList.getValueAt(row, columnID) as String
-					val roomID = Integer.parseInt(strRoomID)
+					val roomID = strRoomID.toInt()
 					joinRoom(roomID, true)
 				}
 			}
 		}
 		private val detailAction:Action = object:AbstractAction(getUIText("Popup_RoomTable_Detail")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				val row = tableRoomList.selectedRow
 				if(row!=-1) {
 					val columnID = tablemodelRoomList.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
 					val strRoomID = tablemodelRoomList.getValueAt(row, columnID) as String
-					val roomID = Integer.parseInt(strRoomID)
+					val roomID = strRoomID.toInt()
 					viewRoomDetail(roomID)
 				}
 			}
@@ -4674,8 +4562,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			}
 		}
 
-		private val serialVersionUID = 1L
-
 	}
 
 	/** Room list tableUseMouseAdapter */
@@ -4688,7 +4574,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				if(row!=-1) {
 					val columnID = tablemodelRoomList.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
 					val strRoomID = tablemodelRoomList.getValueAt(row, columnID) as String
-					val roomID = Integer.parseInt(strRoomID)
+					val roomID = strRoomID.toInt()
 					joinRoom(roomID, false)
 				}
 			}
@@ -4707,7 +4593,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				if(row!=-1) {
 					val columnID = tablemodelRoomList.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
 					val strRoomID = tablemodelRoomList.getValueAt(row, columnID) as String
-					val roomID = Integer.parseInt(strRoomID)
+					val roomID = strRoomID.toInt()
 					joinRoom(roomID, false)
 				}
 				e.consume()
@@ -4719,22 +4605,16 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private inner class LogPopupMenu(field:JTextComponent):JPopupMenu() {
 
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.copy()
 			}
 		}
 		private val selectAllAction:Action = object:AbstractAction(getUIText("Popup_SelectAll")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.selectAll()
 			}
 		}
 		private val clearAction:Action = object:AbstractAction(getUIText("Popup_Clear")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.text = null
 			}
@@ -4754,8 +4634,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			selectAllAction.isEnabled = field.isFocusOwner
 			super.show(c, x, y)
 		}
-
-		private val serialVersionUID = 1L
 
 	}
 
@@ -4781,8 +4659,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private inner class TablePopupMenu(table:JTable):JPopupMenu() {
 
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(e:ActionEvent) {
 				val row = table.selectedRow
 
@@ -4817,8 +4693,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			super.show(c, x, y)
 		}
 
-		private val serialVersionUID = 1L
-
 	}
 
 	/** Rule entry for rule change screen */
@@ -4844,7 +4718,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			isOpaque = true
 		}
 
-		override fun getListCellRendererComponent(list:JList<out Any>?, value:Any?, index:Int, isSelected:Boolean, cellHasFocus:Boolean):Component? {
+		override fun getListCellRendererComponent(list:JList<out Any>?, value:Any?, index:Int, isSelected:Boolean,
+			cellHasFocus:Boolean):Component {
 			val data = value as ComboLabel
 			text = data.text
 			icon = data.icon
@@ -4860,8 +4735,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			return this
 		}
 
-		private val serialVersionUID = 1L
-
 	}
 
 	companion object {
@@ -4871,12 +4744,15 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		/** Room-table column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
 		val ROOMTABLE_COLUMNNAMES =
-			arrayOf("RoomTable_ID", "RoomTable_Name", "RoomTable_Rated", "RoomTable_RuleName", "RoomTable_ModeName", "RoomTable_Status", "RoomTable_Players", "RoomTable_Spectators")
+			arrayOf("RoomTable_ID", "RoomTable_Name", "RoomTable_Rated", "RoomTable_RuleName", "RoomTable_ModeName",
+				"RoomTable_Status", "RoomTable_Players", "RoomTable_Spectators")
 
 		/** End-of-game statistics column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
 		val STATTABLE_COLUMNNAMES =
-			arrayOf("StatTable_Rank", "StatTable_Name", "StatTable_Attack", "StatTable_APL", "StatTable_APM", "StatTable_Lines", "StatTable_LPM", "StatTable_Piece", "StatTable_PPS", "StatTable_Time", "StatTable_KO", "StatTable_Wins", "StatTable_Games")
+			arrayOf("StatTable_Rank", "StatTable_Name", "StatTable_Attack", "StatTable_APL", "StatTable_APM", "StatTable_Lines",
+				"StatTable_LPM", "StatTable_Piece", "StatTable_PPS", "StatTable_Time", "StatTable_KO", "StatTable_Wins",
+				"StatTable_Games")
 
 		/** 1P end-of-game statistics column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
@@ -4893,11 +4769,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		/** Tuning: A button rotation (before translation) */
 		val TUNING_ABUTTON_ROTATE =
-			arrayOf("GameTuning_RotateButtonDefaultRight_Auto", "GameTuning_RotateButtonDefaultRight_Left", "GameTuning_RotateButtonDefaultRight_Right")
+			arrayOf("GameTuning_RotateButtonDefaultRight_Auto", "GameTuning_RotateButtonDefaultRight_Left",
+				"GameTuning_RotateButtonDefaultRight_Right")
 
 		/** Tuning: Outline type names (before translation) */
 		val TUNING_OUTLINE_TYPE_NAMES =
-			arrayOf("GameTuning_OutlineType_Auto", "GameTuning_OutlineType_None", "GameTuning_OutlineType_Normal", "GameTuning_OutlineType_Connect", "GameTuning_OutlineType_SameColor")
+			arrayOf("GameTuning_OutlineType_Auto", "GameTuning_OutlineType_None", "GameTuning_OutlineType_Normal",
+				"GameTuning_OutlineType_Connect", "GameTuning_OutlineType_SameColor")
 
 		/** Spin bonus names */
 		val COMBOBOX_SPINBONUS_NAMES = arrayOf("CreateRoom_Twist_Disable", "CreateRoom_Twist_TOnly", "CreateRoom_Twist_All")
@@ -4918,7 +4796,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		/** Names for each screen-card */
 		val SCREENCARD_NAMES =
-			arrayOf("ServerSelect", "Lobby", "ServerAdd", "CreateRatedWaiting", "CreateRated", "CreateRoom", "CreateRoom1P", "MPRanking", "RuleChange")
+			arrayOf("ServerSelect", "Lobby", "ServerAdd", "CreateRatedWaiting", "CreateRated", "CreateRoom", "CreateRoom1P",
+				"MPRanking", "RuleChange")
 
 		/** Log */
 		internal val log = Logger.getLogger(NetLobbyFrame::class.java)
@@ -4932,7 +4811,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			var v = value
 
 			try {
-				v = Integer.parseInt(txtfld.text)
+				v = txtfld.text.toInt()
 			} catch(e:NumberFormatException) {
 			}
 

@@ -72,8 +72,7 @@ open class BasicAI:DummyAI(), Runnable {
 	var thread:Thread? = null
 
 	/* AIOfName */
-	override val name:String
-		get() = "BASIC"
+	override val name:String = "BASIC"
 
 	/** MaximumCompromise levelGet the
 	 * @return MaximumCompromise level
@@ -102,7 +101,7 @@ open class BasicAI:DummyAI(), Runnable {
 	}
 
 	/* End processing */
-	override fun shutdown(engine:GameEngine, playerID:Int) {
+	override fun shutdown() {
 		if(thread?.isAlive==true) {
 			thread?.interrupt()
 			threadRunning = false

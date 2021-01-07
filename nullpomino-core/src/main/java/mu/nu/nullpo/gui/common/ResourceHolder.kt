@@ -1,5 +1,6 @@
 package mu.nu.nullpo.gui.common
 
+import mu.nu.nullpo.game.component.Piece
 import java.util.*
 
 abstract class ResourceHolder {
@@ -29,7 +30,7 @@ abstract class ResourceHolder {
 		"rotate", "wallkick", "initialrotate", "rotfail",
 		"harddrop", "softdrop", "step", "lock",
 		"erase", "linefall", "cheer", "twist", "twister",
-		"combo", "b2b_start", "b2b_combo", "b2b_end",
+		"combo","combo_power", "b2b_start", "b2b_combo", "b2b_end",
 
 		"danger", "dead", "dead_last", "shutter",
 		"gradeup", "levelstop", "levelup", "levelup_section",
@@ -44,7 +45,7 @@ abstract class ResourceHolder {
 				(0..1).flatMap {listOf("start$it", "garbage$it", "crowd$it")},
 				(0..2).flatMap {listOf("decide$it", "erase$it", "firecracker$it")},
 				(0..4).map {"grade$it"}, (0..5).map {"applause$it"},
-				(0..10).map {"piece$it"},
+				Piece.Shape.names.map {"piece_${it.toLowerCase()}"},
 				(1..3).map {"medal$it"},
 				(1..4).map {"line$it"}
 			).flatten())

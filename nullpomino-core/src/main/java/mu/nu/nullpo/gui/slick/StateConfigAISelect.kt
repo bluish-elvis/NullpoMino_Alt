@@ -134,7 +134,7 @@ class StateConfigAISelect:BaseGameState() {
 		val aiObj:AIPlayer
 		try {
 			aiClass = Class.forName(aiPath[it])
-			aiObj = aiClass.newInstance() as AIPlayer
+			aiObj = aiClass.getDeclaredConstructor().newInstance() as AIPlayer
 			return@Array aiObj.name
 		} catch(e:ClassNotFoundException) {
 			log.error("AI class ${aiPath[it]} not found", e)

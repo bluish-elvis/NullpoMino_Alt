@@ -153,8 +153,7 @@ class GrandLightning:AbstractMode() {
 	private var dectemp:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "Grand Lightning"
+	override val name:String = "Grand Lightning"
 	override val gameIntensity:Int = 3
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -202,6 +201,7 @@ class GrandLightning:AbstractMode() {
 
 		engine.twistEnable = true
 		engine.b2bEnable = true
+		engine.splitb2b = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.framecolor = GameEngine.FRAME_COLOR_RED
 		engine.bighalf = true
@@ -467,9 +467,9 @@ class GrandLightning:AbstractMode() {
 
 			// level
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.RED)
-			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
-			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128)
-			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv))
+			receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
+			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
+			receiver.drawScoreNum(engine, playerID, 1, 12, String.format("%3d", nextseclv))
 
 			// Time
 			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", COLOR.RED)
@@ -844,7 +844,7 @@ class GrandLightning:AbstractMode() {
 
 	/* 結果画面 */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${engine.statc[1]+1}/3", COLOR.RED)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 		when(engine.statc[1]) {
 			0 -> {

@@ -106,8 +106,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 	private var xyzzy:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "AVALANCHE VS-BATTLE (RC1)"
+	override val name:String = "AVALANCHE VS-BATTLE (RC1)"
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
@@ -221,44 +220,13 @@ class AvalancheVS:AvalancheVSDummyMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-					0 -> {
-						engine.speed.gravity += change*m
-						if(engine.speed.gravity<-1) engine.speed.gravity = 99999
-						if(engine.speed.gravity>99999) engine.speed.gravity = -1
-					}
-					1 -> {
-						engine.speed.denominator += change*m
-						if(engine.speed.denominator<-1) engine.speed.denominator = 99999
-						if(engine.speed.denominator>99999) engine.speed.denominator = -1
-					}
-					2 -> {
-						engine.speed.are += change
-						if(engine.speed.are<0) engine.speed.are = 99
-						if(engine.speed.are>99) engine.speed.are = 0
-					}
-					3 -> {
-						engine.speed.areLine += change
-						if(engine.speed.areLine<0) engine.speed.areLine = 99
-						if(engine.speed.areLine>99) engine.speed.areLine = 0
-					}
-					4 -> {
-						engine.speed.lineDelay += change
-						if(engine.speed.lineDelay<0) engine.speed.lineDelay = 99
-						if(engine.speed.lineDelay>99) engine.speed.lineDelay = 0
-					}
-					5 -> {
-						if(m>=10)
-							engine.speed.lockDelay += change*10
-						else
-							engine.speed.lockDelay += change
-						if(engine.speed.lockDelay<0) engine.speed.lockDelay = 999
-						if(engine.speed.lockDelay>999) engine.speed.lockDelay = 0
-					}
-					6 -> {
-						engine.speed.das += change
-						if(engine.speed.das<0) engine.speed.das = 99
-						if(engine.speed.das>99) engine.speed.das = 0
-					}
+					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
+					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
+					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
+					3 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
+					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
+					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change*minOf(m, 10), 0, 999)
+					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
 					7 -> {
 						engine.cascadeDelay += change
 						if(engine.cascadeDelay<0) engine.cascadeDelay = 20
@@ -437,18 +405,10 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 					} else
 						mapNumber[playerID] = -1
-					39 -> {
-						bgmno += change
-						if(bgmno<0) bgmno = BGM.count-1
-						if(bgmno>=BGM.count) bgmno = 0
-					}
+					39 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
 					40 -> enableSE[playerID] = !enableSE[playerID]
 					41 -> bigDisplay = !bigDisplay
-					42, 43 -> {
-						presetNumber[playerID] += change
-						if(presetNumber[playerID]<0) presetNumber[playerID] = 99
-						if(presetNumber[playerID]>99) presetNumber[playerID] = 0
-					}
+					42, 43 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change,0,99)
 					45 -> {
 						previewSubset[playerID] += change
 						if(previewSubset[playerID]<0) previewSubset[playerID] = feverMapSubsets[playerID].size-1

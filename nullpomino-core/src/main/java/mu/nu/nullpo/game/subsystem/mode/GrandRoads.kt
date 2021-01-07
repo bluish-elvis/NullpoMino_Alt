@@ -90,8 +90,7 @@ class GrandRoads:NetDummyMode() {
 	private var rankingRollclear:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
 	/** Returns the name of this mode */
-	override val name:String
-		get() = "Grand Roads"
+	override val name:String = "Grand Roads"
 	override val gameIntensity:Int
 		get() = when(goaltype) {
 			GAMETYPE_HIGHSPEED1, GAMETYPE_BASIC -> 1
@@ -128,6 +127,7 @@ class GrandRoads:NetDummyMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
+		engine.splitb2b = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.framecolor = GameEngine.FRAME_COLOR_WHITE
 		engine.bighalf = true
@@ -442,16 +442,15 @@ class GrandRoads:NetDummyMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "Level", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 2, String.format("%02d", engine.statistics.level+1), 2f)
 			receiver.drawScoreNum(engine, playerID, 8, 3, String.format("/%3d", tableGoalLevel[goaltype]))
-			val strLevel = String.format("%3d/%3d", norm, (engine.statistics.level+1)*10)
-			receiver.drawScoreNum(engine, playerID, 0, 4, strLevel)
+			receiver.drawScoreNum(engine, playerID, 0, 4, String.format("%3d/%3d", norm, (engine.statistics.level+1)*10))
 
-			receiver.drawSpeedMeter(engine, playerID, 0, 5, if(engine.speed.gravity<0)
-				40
-			else
-				floor(ln(engine.speed.gravity.toDouble())).toInt()*(engine.speed.denominator/60))
+			receiver.drawSpeedMeter(engine, playerID, 0, 5,
+				if(engine.speed.gravity<0) 40 else floor(
+					ln(engine.speed.gravity.toDouble())).toInt()*(engine.speed.denominator/60), 6)
 
 			receiver.drawScoreFont(engine, playerID, 0, 7, "TIME LIMIT", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 8, GeneralUtil.getTime(levelTimer), levelTimer in 1 until 600&&levelTimer%4==0, 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 8, GeneralUtil.getTime(levelTimer),
+				levelTimer in 1 until 600&&levelTimer%4==0, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 10, "TOTAL TIME", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 11, GeneralUtil.getTime(engine.statistics.time), 2f)
@@ -628,7 +627,7 @@ class GrandRoads:NetDummyMode() {
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		if(!netIsWatch)
-			receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE"+(engine.statc[1]+1)
+			receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE"+(engine.statc[1]+1)
 				+"/3", EventReceiver.COLOR.RED)
 
 		if(engine.statc[1]==0) {
@@ -642,7 +641,8 @@ class GrandRoads:NetDummyMode() {
 			receiver.drawMenuNum(engine, playerID, 0, 2, String.format("%04d", norm), gcolor, 2f)
 			receiver.drawMenuFont(engine, playerID, 6, 3, "Lines", EventReceiver.COLOR.BLUE, .8f)
 
-			drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.LPM, Statistic.TIME, Statistic.PPS, Statistic.PIECE)
+			drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.LPM, Statistic.TIME,
+				Statistic.PPS, Statistic.PIECE)
 			drawResultRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, rankingRank)
 			drawResultNetRank(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[0])
 			drawResultNetRankDaily(engine, playerID, receiver, 18, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -829,28 +829,28 @@ class GrandRoads:NetDummyMode() {
 
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		engine.statistics.lines = Integer.parseInt(message[4])
-		engine.statistics.totalPieceLocked = Integer.parseInt(message[5])
-		engine.statistics.time = Integer.parseInt(message[6])
-		//engine.statistics.lpm = java.lang.Float.parseFloat(message[7])
-		//engine.statistics.pps = java.lang.Float.parseFloat(message[8])
-		goaltype = Integer.parseInt(message[9])
-		engine.gameActive = java.lang.Boolean.parseBoolean(message[10])
-		engine.timerActive = java.lang.Boolean.parseBoolean(message[11])
-		engine.statistics.level = Integer.parseInt(message[12])
-		levelTimer = Integer.parseInt(message[13])
-		levelTimerMax = Integer.parseInt(message[14])
-		rolltime = Integer.parseInt(message[15])
-		norm = Integer.parseInt(message[16])
-		engine.owner.backgroundStatus.bg = Integer.parseInt(message[17])
-		engine.meterValue = Integer.parseInt(message[18])
-		engine.meterColor = Integer.parseInt(message[19])
-		engine.heboHiddenEnable = java.lang.Boolean.parseBoolean(message[20])
-		engine.heboHiddenTimerNow = Integer.parseInt(message[21])
-		engine.heboHiddenTimerMax = Integer.parseInt(message[21])
-		engine.heboHiddenYNow = Integer.parseInt(message[22])
-		engine.heboHiddenYLimit = Integer.parseInt(message[23])
-		engine.lives = Integer.parseInt(message[24])
+		engine.statistics.lines = message[4].toInt()
+		engine.statistics.totalPieceLocked = message[5].toInt()
+		engine.statistics.time = message[6].toInt()
+		//engine.statistics.lpm = message[7].toFloat()
+		//engine.statistics.pps = message[8].toFloat()
+		goaltype = message[9].toInt()
+		engine.gameActive = message[10].toBoolean()
+		engine.timerActive = message[11].toBoolean()
+		engine.statistics.level = message[12].toInt()
+		levelTimer = message[13].toInt()
+		levelTimerMax = message[14].toInt()
+		rolltime = message[15].toInt()
+		norm = message[16].toInt()
+		engine.owner.backgroundStatus.bg = message[17].toInt()
+		engine.meterValue = message[18].toInt()
+		engine.meterColor = message[19].toInt()
+		engine.heboHiddenEnable = message[20].toBoolean()
+		engine.heboHiddenTimerNow = message[21].toInt()
+		engine.heboHiddenTimerMax = message[21].toInt()
+		engine.heboHiddenYNow = message[22].toInt()
+		engine.heboHiddenYLimit = message[23].toInt()
+		engine.lives = message[24].toInt()
 	}
 
 	/** NET: Send end-of-game stats
@@ -885,10 +885,10 @@ class GrandRoads:NetDummyMode() {
 
 	/** NET: Receive game options */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
-		goaltype = Integer.parseInt(message[4])
-		startlevel = Integer.parseInt(message[5])
-		showsectiontime = java.lang.Boolean.parseBoolean(message[6])
-		big = java.lang.Boolean.parseBoolean(message[7])
+		goaltype = message[4].toInt()
+		startlevel = message[5].toInt()
+		showsectiontime = message[6].toBoolean()
+		big = message[7].toBoolean()
 	}
 
 	/** NET: Get goal type */
@@ -958,8 +958,10 @@ class GrandRoads:NetDummyMode() {
 		private val tableLevelTimer =
 			arrayOf(intArrayOf(6400, 6250, 6000, 5750, 5500, 5250, 5000, 4750, 4500, 4250, // NORMAL 000-100
 				4000, 3750, 3500, 3250, 3000), // NORMAL 100-150
-				intArrayOf(4500, 4200, 4100, 3900, 3700, 3500, 3300, 3100, 2900, 2700, 2500, 2350, 2200, 2100, 2000), // HIGH SPEED 1
-				intArrayOf(4000, 3900, 3800, 3700, 3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2500), // HIGH SPEED 2
+				intArrayOf(4500, 4200, 4100, 3900, 3700, 3500, 3300, 3100, 2900, 2700, 2500, 2350, 2200, 2100,
+					2000), // HIGH SPEED 1
+				intArrayOf(4000, 3900, 3800, 3700, 3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700,
+					2500), // HIGH SPEED 2
 				intArrayOf(3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2550, 2400, 2250, 2100, 2000), // ANOTHER
 				intArrayOf(3000, 2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000, 2000, 2000, 2000, 2000), // ANOTHER 2
 				intArrayOf(6400, 6200, 6000, 5800, 5600, 5400, 5200, 5000, 4800, 4600, // NORMAL 000-100
@@ -1070,15 +1072,18 @@ class GrandRoads:NetDummyMode() {
 
 		/** Game type names (short) */
 		private val GAMETYPE_NAME =
-			arrayOf("EASY", "HARD", "20G", "ANOTHER", "EXTREME", "MODERATE", "EXHAUST", "CHALLENGE", "FURTHEST", "FORGOTTEN", "PRIME.01")
+			arrayOf("EASY", "HARD", "20G", "ANOTHER", "EXTREME", "MODERATE", "EXHAUST", "CHALLENGE", "FURTHEST", "FORGOTTEN",
+				"PRIME.01")
 
 		/** Game type names (long) */
 		private val GAMETYPE_NAME_LONG =
-			arrayOf("EASY", "HARD", "20G", "ANOTHER", "EXTREME", "MODERATE", "EXHAUST", "CHALLENGE", "FURTHEST", "FORGOTTEN", "PRIMORDIAL BIT")
+			arrayOf("EASY", "HARD", "20G", "ANOTHER", "EXTREME", "MODERATE", "EXHAUST", "CHALLENGE", "FURTHEST", "FORGOTTEN",
+				"PRIMORDIAL BIT")
 
 		/** HELL-X fade table */
 		private val tableHellXFade =
-			intArrayOf(600, 550, 500, 450, 400, 350, 300, 270, 240, 210, 190, 170, 160, 150, 140, 130, 125, 120, 115, 110, 100, 90, 80, 70, 60, 58, 56, 54, 52, 50)
+			intArrayOf(600, 550, 500, 450, 400, 350, 300, 270, 240, 210, 190, 170, 160, 150, 140, 130, 125, 120, 115, 110, 100,
+				90, 80, 70, 60, 58, 56, 54, 52, 50)
 
 		/** Ending time limit */
 		private const val ROLLTIMELIMIT = 3238

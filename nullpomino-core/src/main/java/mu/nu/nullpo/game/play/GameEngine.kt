@@ -351,6 +351,9 @@ class GameEngine
 	/** B2B enable flag */
 	var b2bEnable:Boolean = false
 
+	/** Does Split trigger B2B flag */
+	var splitb2b:Boolean = false
+
 	/** Combo type */
 	var comboType:Int = 0
 
@@ -773,7 +776,7 @@ class GameEngine
 			owMoveDiagonal = owner.replayProp.getProperty("$playerID.tuning.owMoveDiagonal", -1)
 
 			val tempRand = owner.replayProp.getProperty("$playerID.replay.randSeed", "0")
-			randSeed = java.lang.Long.parseLong(tempRand, 16)
+			randSeed = tempRand.toLong(16)
 			random = Random(randSeed)
 
 		}
@@ -864,6 +867,7 @@ class GameEngine
 		twistminiType = TWISTMINI_TYPE_ROTATECHECK
 		useAllSpinBonus = false
 		b2bEnable = false
+		splitb2b = false
 		comboType = COMBO_TYPE_DISABLE
 
 		blockHidden = -1
@@ -964,7 +968,7 @@ class GameEngine
 		}
 		owner.receiver.playerInit(this, playerID)
 		ai?.also {
-			it.shutdown(this, playerID)
+			it.shutdown()
 			it.init(this, playerID)
 		}
 	}
@@ -973,7 +977,7 @@ class GameEngine
 	fun shutdown() {
 		//log.debug("GameEngine shutdown() playerID:" + playerID);
 
-		ai?.shutdown(this, playerID)
+		ai?.shutdown()
 		/*owner = null
 		ruleopt = null
 		wallkick = null
@@ -1401,11 +1405,11 @@ class GameEngine
 			owner.replayProp.setProperty("name.rule", ruleopt.strRuleName)
 
 			// Local timestamp
-			val currentTime = Calendar.getInstance()
-			val month = currentTime.get(Calendar.MONTH)+1
-			val strDate = String.format("%04d/%02d/%02d", currentTime.get(Calendar.YEAR), month, currentTime.get(Calendar.DATE))
+			val time = Calendar.getInstance()
+			val month = time.get(Calendar.MONTH)+1
+			val strDate = String.format("%04d/%02d/%02d", time.get(Calendar.YEAR), month, time.get(Calendar.DATE))
 			val strTime =
-				String.format("%02d:%02d:%02d", currentTime.get(Calendar.HOUR_OF_DAY), currentTime.get(Calendar.MINUTE), currentTime.get(Calendar.SECOND))
+				String.format("%02d:%02d:%02d", time.get(Calendar.HOUR_OF_DAY), time.get(Calendar.MINUTE), time.get(Calendar.SECOND))
 			owner.replayProp.setProperty("timestamp.date", strDate)
 			owner.replayProp.setProperty("timestamp.time", strTime)
 
@@ -1458,7 +1462,7 @@ class GameEngine
 		gameActive = false
 		timerActive = false
 		isInGame = false
-		ai?.also {it.shutdown(this, playerID)}
+		ai?.also {it.shutdown()}
 	}
 
 	/** ゲーム stateの更新 */
@@ -1660,7 +1664,7 @@ class GameEngine
 			createFieldIfNeeded()
 			if(owner.replayMode) {
 				val tempRand = owner.replayProp.getProperty("$playerID.replay.randSeed", "0")
-				randSeed = java.lang.Long.parseLong(tempRand, 16)
+				randSeed = tempRand.toLong(16)
 				random = Random(randSeed)
 				nextPieceArrayID = IntArray(0)
 				nextPieceArrayObject = emptyArray()
@@ -1679,7 +1683,7 @@ class GameEngine
 			// NEXTピースのオブジェクトを作成
 			if(nextPieceArrayObject.isEmpty()) {
 				nextPieceArrayObject = Array(nextPieceArrayID.size) {
-					Piece(nextPieceArrayID[it]).also {p->
+					Piece(nextPieceArrayID[it]).also {p ->
 						p.direction = ruleopt.pieceDefaultDirection[p.id]
 						if(p.direction>=Piece.DIRECTION_COUNT)
 							p.direction = random.nextInt(Piece.DIRECTION_COUNT)
@@ -1725,7 +1729,9 @@ class GameEngine
 		// NEXTスキップ
 		if(statc[0] in 1 until goEnd&&holdButtonNextSkip&&isHoldOK&&ctrl.isPush(Controller.BUTTON_D)) {
 			playSE("initialhold")
-			holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {it.applyOffsetArray(ruleopt.pieceOffsetX[it.id], ruleopt.pieceOffsetY[it.id])}
+			holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
+				it.applyOffsetArray(ruleopt.pieceOffsetX[it.id], ruleopt.pieceOffsetY[it.id])
+			}
 			nextPieceCount++
 			if(nextPieceCount<0) nextPieceCount = 0
 		}
@@ -1832,7 +1838,9 @@ class GameEngine
 				initialHoldFlag = false
 				holdDisable = true
 			}
-			getNextObject(nextPieceCount)?.let {if(framecolor !in FRAME_SKIN_SG..FRAME_SKIN_GB) playSE("piece${it.id}")}
+			getNextObject(nextPieceCount)?.let {
+				if(framecolor !in FRAME_SKIN_SG..FRAME_SKIN_GB) playSE("piece_${it.type.name.toLowerCase()}")
+			}
 			nowPieceObject?.let {
 				if(!it.offsetApplied)
 					it.applyOffsetArray(ruleopt.pieceOffsetX[it.id], ruleopt.pieceOffsetY[it.id])
@@ -2113,7 +2121,8 @@ class GameEngine
 
 			if(!dasRepeat) {
 				// Hard drop
-				if(ctrl.isPress(up)&&!harddropContinuousUse&&ruleopt.harddropEnable&&(isDiagonalMoveEnabled||!sidemoveflag)&&(ruleopt.moveUpAndDown||!updown)&&nowPieceY<nowPieceBottomY) {
+				if(ctrl.isPress(up)&&!harddropContinuousUse&&ruleopt.harddropEnable&&
+					(isDiagonalMoveEnabled||!sidemoveflag)&&(ruleopt.moveUpAndDown||!updown)&&nowPieceY<nowPieceBottomY) {
 					harddropFall += nowPieceBottomY-nowPieceY
 					fpf = nowPieceBottomY-nowPieceY
 					if(nowPieceY!=nowPieceBottomY) {
@@ -2132,7 +2141,9 @@ class GameEngine
 						extendedRotateCount = 0
 					}
 				}
-				if(ruleopt.softdropEnable&&ctrl.isPress(down)&&!softdropContinuousUse&&(isDiagonalMoveEnabled||!sidemoveflag)&&(ruleopt.moveUpAndDown||!updown)&&
+				if(ruleopt.softdropEnable&&ctrl.isPress(down)&&
+					!softdropContinuousUse&&(isDiagonalMoveEnabled||!sidemoveflag)&&
+					(ruleopt.moveUpAndDown||!updown)&&
 					(!onGroundBeforeMove&&!harddropContinuousUse)) {
 					if(!ruleopt.softdropGravitySpeedLimit||(softDropSpd<speed.denominator)) {// Old Soft Drop codes
 						gcount += softDropSpd.toInt()
@@ -2148,7 +2159,8 @@ class GameEngine
 		if(!ruleopt.softdropGravitySpeedLimit||softDropSpd<1f||
 			!softdropUsed) gcount += speed.gravity // Part of Old Soft Drop
 
-		while((gcount>=speed.denominator||speed.gravity<0)&&nowPieceObject?.checkCollision(nowPieceX, nowPieceY+1, field)==false) {
+		while((gcount>=speed.denominator||speed.gravity<0)&&
+			nowPieceObject?.checkCollision(nowPieceX, nowPieceY+1, field)==false) {
 			if(speed.gravity>=0) gcount -= speed.denominator
 			if(ruleopt.softdropGravitySpeedLimit) gcount -= gcount%speed.denominator
 			nowPieceY++
@@ -2208,7 +2220,8 @@ class GameEngine
 
 				// Soft drop固定
 				if(ruleopt.softdropEnable&&
-					(ruleopt.softdropLock&&it.isPress(down)||it.isPush(down)&&(ruleopt.softdropSurfaceLock||speed.gravity<0)&&!softdropUsed)
+					(ruleopt.softdropLock&&it.isPress(down)||it.isPush(down)&&
+						(ruleopt.softdropSurfaceLock||speed.gravity<0)&&!softdropUsed)
 					&&!softdropContinuousUse&&(isDiagonalMoveEnabled||!sidemoveflag)&&(ruleopt.moveUpAndDown||!updown)) {
 					softdropContinuousUse = true
 					manualLock = true
@@ -2447,7 +2460,7 @@ class GameEngine
 					// B2B bonus
 
 					if(b2bEnable)
-						if(li>=4||split||twist) {
+						if(li>=4||(split&&splitb2b)||twist) {
 							b2bcount++
 
 							if(b2bcount==1) playSE("b2b_start")
@@ -2577,7 +2590,9 @@ class GameEngine
 							statc[6]++
 							return
 						}
-						clearMode==ClearType.LINE&&field.checkLineNoFlag()>0||clearMode==ClearType.COLOR&&field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)>0
+						clearMode==ClearType.LINE&&field.checkLineNoFlag()>0
+							||clearMode==ClearType.COLOR&&
+							field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)>0
 							||clearMode==ClearType.LINE_COLOR&&field.checkLineColor(colorClearSize, false, lineColorDiagonals, gemSameColor)>0
 							||clearMode==ClearType.GEM_COLOR&&field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)>0
 							||(clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)&&field.checkBombOnLine(true)>0 -> {
@@ -3109,16 +3124,19 @@ class GameEngine
 
 		/** Table for cint-block item */
 		val ITEM_COLOR_BRIGHT_TABLE =
-			intArrayOf(10, 10, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0)
+			intArrayOf(10, 10, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0,
+				0, 0, 0, 0, 0)
 
 		/** Default list of block colors to use for random block colors. */
 		val BLOCK_COLORS_DEFAULT =
-			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_ORANGE, Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_CYAN, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_PURPLE)
+			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_ORANGE, Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_GREEN,
+				Block.BLOCK_COLOR_CYAN, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_PURPLE)
 
 		const val HANABI_INTERVAL = 10
 
 		val EXPLOD_SIZE_DEFAULT =
-			arrayOf(intArrayOf(4, 3), intArrayOf(3, 0), intArrayOf(3, 1), intArrayOf(3, 2), intArrayOf(3, 3), intArrayOf(4, 4), intArrayOf(5, 5), intArrayOf(5, 5), intArrayOf(6, 6), intArrayOf(6, 6), intArrayOf(7, 7))
+			arrayOf(intArrayOf(4, 3), intArrayOf(3, 0), intArrayOf(3, 1), intArrayOf(3, 2), intArrayOf(3, 3), intArrayOf(4, 4),
+				intArrayOf(5, 5), intArrayOf(5, 5), intArrayOf(6, 6), intArrayOf(6, 6), intArrayOf(7, 7))
 	}
 
 	/** Constants of main game status */
@@ -3141,13 +3159,7 @@ class GameEngine
 
 			other as ScoreEvent
 
-			if(lines!=other.lines) return false
-			if(split!=other.split) return false
-			if(piece!=other.piece) return false
-			if(twist!=other.twist) return false
-			if(b2b!=other.b2b) return false
-
-			return true
+			return !(lines!=other.lines||split!=other.split||piece!=other.piece||twist!=other.twist||b2b!=other.b2b)
 		}
 
 		override fun hashCode():Int {
@@ -3168,7 +3180,7 @@ class GameEngine
 					Twister.values().getOrNull(twist-1), (i shr 1)%2==1)
 			}
 
-			fun parseInt(i:String):ScoreEvent? = parseInt(Integer.parseInt(i))
+			fun parseInt(i:String):ScoreEvent? = parseInt(i.toInt())
 		}
 	}
 

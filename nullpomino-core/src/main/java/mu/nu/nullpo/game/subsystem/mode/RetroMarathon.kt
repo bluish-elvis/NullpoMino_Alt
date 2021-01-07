@@ -25,7 +25,6 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.RetroMarathon.Companion.GAMETYPE.*
@@ -91,8 +90,7 @@ class RetroMarathon:AbstractMode() {
 	private var rankingLevel:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
 	/** Returns the name of this mode */
-	override val name:String
-		get() = "Retro Marathon.A"
+	override val name:String = "Retro Marathon.A"
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -114,6 +112,7 @@ class RetroMarathon:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
+		engine.splitb2b = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.bighalf = true
 		engine.bigmove = true

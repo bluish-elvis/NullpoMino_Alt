@@ -99,12 +99,10 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	protected var speedIndex:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "AVALANCHE DUMMY"
+	override val name:String = "AVALANCHE DUMMY"
 
 	/* Game style */
-	override val gameStyle:Int
-		get() = GameEngine.GAMESTYLE_AVALANCHE
+	override val gameStyle:Int = GameEngine.GAMESTYLE_AVALANCHE
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {

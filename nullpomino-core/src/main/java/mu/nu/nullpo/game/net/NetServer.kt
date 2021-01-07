@@ -371,14 +371,11 @@ import kotlin.math.pow
 		val socketChannel = key.channel() as SocketChannel
 
 		// Clear out our read buffer so it's ready for new data
-		if(readBuffer==null)
-			readBuffer = ByteBuffer.allocate(BUF_SIZE)
-		else
-			readBuffer!!.clear()
+		if(readBuffer==null) readBuffer = ByteBuffer.allocate(BUF_SIZE)
+		else readBuffer?.clear()
 
 		// Attempt to read off the channel
-		val numRead:Int
-		numRead = socketChannel.read(readBuffer)
+		val numRead:Int = socketChannel.read(readBuffer)
 
 		if(numRead==-1)
 		// Remote entity shut the socket down cleanly. Do the
@@ -633,7 +630,7 @@ import kotlin.math.pow
 	/** Broadcast a message to all players
 	 * @param msg Message to send (String)
 	 */
-	fun broadcast(msg:String) {
+	private fun broadcast(msg:String) {
 		synchronized(channelList) {
 			for(ch in channelList) {
 				val p = playerInfoMap[ch]
@@ -647,7 +644,7 @@ import kotlin.math.pow
 	 * @param msg Message to send (String)
 	 * @param roomID Room ID (-1:Lobby)
 	 */
-	fun broadcast(msg:String, roomID:Int) {
+	private fun broadcast(msg:String, roomID:Int) {
 		synchronized(channelList) {
 			for(ch in channelList) {
 				val p = playerInfoMap[ch]
@@ -663,7 +660,7 @@ import kotlin.math.pow
 	 * @param roomID Room ID (-1:Lobby)
 	 * @param pInfo The player to avoid sending message
 	 */
-	fun broadcast(msg:String, roomID:Int, pInfo:NetPlayerInfo) {
+	private fun broadcast(msg:String, roomID:Int, pInfo:NetPlayerInfo) {
 		synchronized(channelList) {
 			for(ch in channelList) {
 				val p = playerInfoMap[ch]
@@ -676,13 +673,13 @@ import kotlin.math.pow
 	/** Broadcast a message to all observers
 	 * @param msg Message to send (String)
 	 */
-	fun broadcastObserver(msg:String) {
+	private fun broadcastObserver(msg:String) {
 		for(ch in observerList)
 			send(ch, msg)
 	}
 
 	/** Broadcast client count (observers and players) to everyone */
-	fun broadcastUserCountToAll() {
+	private fun broadcastUserCountToAll() {
 		val msg = "observerupdate\t${playerInfoMap.size}\t${observerList.size}\n"
 		broadcast(msg)
 		broadcastObserver(msg)
@@ -692,7 +689,7 @@ import kotlin.math.pow
 	/** Broadcast a message to all admins
 	 * @param msg Message to send (String)
 	 */
-	fun broadcastAdmin(msg:String) {
+	private fun broadcastAdmin(msg:String) {
 		for(ch in adminList)
 			send(ch, msg)
 	}
@@ -701,7 +698,7 @@ import kotlin.math.pow
 	 * @param pInfo Player
 	 * @return SocketChannel (null if not found)
 	 */
-	fun getSocketChannelByPlayer(pInfo:NetPlayerInfo):SocketChannel? {
+	private fun getSocketChannelByPlayer(pInfo:NetPlayerInfo):SocketChannel? {
 		synchronized(channelList) {
 			for(ch in channelList) {
 				val p = playerInfoMap[ch]
@@ -719,7 +716,7 @@ import kotlin.math.pow
 	 * Returns SocketChannel of found player or null.
 	 * @param msg Message to send (String)
 	 */
-	fun findPlayerByMsg(msg:String):SocketChannel? {
+	private fun findPlayerByMsg(msg:String):SocketChannel? {
 		// Added to support temporary private messaging code, but might be useful even so?
 		synchronized(channelList) {
 			var maxLen = 0
@@ -776,7 +773,7 @@ import kotlin.math.pow
 		if(message[0]=="ping") {
 			//ping\t[ID]
 			if(message.size>1) {
-				val id = Integer.parseInt(message[1])
+				val id = message[1].toInt()
 				send(client, "pong\t$id\n")
 			} else
 				send(client, "pong\n")
@@ -797,7 +794,7 @@ import kotlin.math.pow
 
 			// Version check
 			val serverVer = GameManager.versionMajor
-			val clientVer = java.lang.Float.parseFloat(message[1])
+			val clientVer = message[1].toFloat()
 			if(serverVer!=clientVer) {
 				send(client, "observerloginfail\tDIFFERENT_VERSION\t$serverVer\n")
 				//logout(client);
@@ -809,7 +806,7 @@ import kotlin.math.pow
 
 			// Build type check
 			val serverBuildType = GameManager.isDevBuild
-			val clientBuildType = java.lang.Boolean.parseBoolean(message[3])
+			val clientBuildType = message[3].toBoolean()
 			if(serverBuildType!=clientBuildType) {
 				send(client, "observerloginfail\tDIFFERENT_BUILD\t$serverBuildType\n")
 				synchronized(pendingChanges) {
@@ -841,7 +838,7 @@ import kotlin.math.pow
 
 			// Version check
 			val serverVer = GameManager.versionMajor
-			val clientVer = java.lang.Float.parseFloat(message[1])
+			val clientVer = message[1].toFloat()
 			if(serverVer!=clientVer) {
 				send(client, "loginfail\tDIFFERENT_VERSION\t$serverVer\n")
 				//logout(client);
@@ -853,7 +850,7 @@ import kotlin.math.pow
 
 			// Build type check
 			val serverBuildType = GameManager.isDevBuild
-			val clientBuildType = java.lang.Boolean.parseBoolean(message[6])
+			val clientBuildType = message[6].toBoolean()
 			if(serverBuildType!=clientBuildType) {
 				send(client, "observerloginfail\tDIFFERENT_BUILD\t${GameManager.buildTypeString}\n")
 				synchronized(pendingChanges) {
@@ -983,7 +980,7 @@ import kotlin.math.pow
 				val checksumObj = Adler32()
 				checksumObj.update(NetUtil.stringToBytes(strData))
 				val sChecksum = checksumObj.value
-				val cChecksum = java.lang.Long.parseLong(message[1])
+				val cChecksum = message[1].toLong()
 
 				// OK
 				if(sChecksum==cChecksum) {
@@ -1004,7 +1001,7 @@ import kotlin.math.pow
 			//ruleget\t[UID]
 
 			if(pInfo!=null) {
-				val uid = Integer.parseInt(message[1])
+				val uid = message[1].toInt()
 				val p = searchPlayerByUID(uid)
 
 				if(p!=null) {
@@ -1029,7 +1026,7 @@ import kotlin.math.pow
 		// Send rated-game rule data (Server->Client)
 		if(message[0]=="rulegetrated")
 			if(pInfo!=null) {
-				val style = Integer.parseInt(message[1])
+				val style = message[1].toInt()
 				val name = message[2]
 				val rule = getRatedRule(style, name)
 
@@ -1113,7 +1110,7 @@ import kotlin.math.pow
 		if(message[0]=="mpranking") {
 			//mpranking\t[STYLE]
 
-			val style = Integer.parseInt(message[1])
+			val style = message[1].toInt()
 			val myRank = mpRankingIndexOf(style, pInfo)
 
 			val strPData = StringBuilder()
@@ -1182,7 +1179,7 @@ import kotlin.math.pow
 				// Send rule data if rated room
 				if(roomInfo.rated) {
 					val prop = CustomProperties()
-					roomInfo.ruleOpt!!.writeProperty(prop, 0)
+					roomInfo.ruleOpt.writeProperty(prop, 0)
 					val strRuleTemp = prop.encode("RuleData")
 					val strRuleData = NetUtil.compressString(strRuleTemp)
 					send(client, "rulelock\t$strRuleData\n")
@@ -1247,7 +1244,7 @@ import kotlin.math.pow
 				// Send rule data if rule-lock is enabled
 				if(roomInfo.ruleLock) {
 					val prop = CustomProperties()
-					roomInfo.ruleOpt!!.writeProperty(prop, 0)
+					roomInfo.ruleOpt.writeProperty(prop, 0)
 					val strRuleTemp = prop.encode("RuleData")
 					val strRuleData = NetUtil.compressString(strRuleTemp)
 					send(client, "rulelock\t$strRuleData\n")
@@ -1265,14 +1262,14 @@ import kotlin.math.pow
 		}
 		if(message[0]=="ratedroomcreate") {
 			if(pInfo!=null&&pInfo.roomID==-1) {
-				val i = Integer.parseInt(message[3])
+				val i = message[3].toInt()
 				val strPreset = NetUtil.decompressString(ratedInfoList!![i])
 				val roomInfo = NetRoomInfo(strPreset)
 
 				roomInfo.strName = NetUtil.urlDecode(message[1])
 				if(roomInfo.strName.isEmpty()) roomInfo.strName = "No Title"
 
-				roomInfo.maxPlayers = Integer.parseInt(message[2])
+				roomInfo.maxPlayers = message[2].toInt()
 				if(roomInfo.maxPlayers<1) roomInfo.maxPlayers = 1
 				if(roomInfo.maxPlayers>6) roomInfo.maxPlayers = 6
 
@@ -1309,8 +1306,8 @@ import kotlin.math.pow
 			//roomjoin\t[ROOMID]\t[WATCH]
 
 			if(pInfo!=null) {
-				val roomID = Integer.parseInt(message[1])
-				val watch = java.lang.Boolean.parseBoolean(message[2])
+				val roomID = message[1].toInt()
+				val watch = message[2].toBoolean()
 				val prevRoom = getRoomInfo(pInfo.roomID)
 				val newRoom = getRoomInfo(roomID)
 
@@ -1382,7 +1379,7 @@ import kotlin.math.pow
 					// Send rule data if rule-lock is enabled
 					if(newRoom.ruleLock) {
 						val prop = CustomProperties()
-						newRoom.ruleOpt!!.writeProperty(prop, 0)
+						newRoom.ruleOpt.writeProperty(prop, 0)
 						val strRuleTemp = prop.encode("RuleData")
 						val strRuleData = NetUtil.compressString(strRuleTemp)
 						send(client, "rulelock\t$strRuleData\n")
@@ -1436,7 +1433,7 @@ import kotlin.math.pow
 		//changestatus\t[WATCH]
 			if(pInfo!=null&&!pInfo.playing&&pInfo.roomID!=-1) {
 				val roomInfo = getRoomInfo(pInfo.roomID)
-				val watch = java.lang.Boolean.parseBoolean(message[1])
+				val watch = message[1].toBoolean()
 
 				if(!roomInfo!!.singleplayer) {
 					when {
@@ -1491,7 +1488,7 @@ import kotlin.math.pow
 				val seat = roomInfo!!.getPlayerSeatNumber(pInfo)
 
 				if(seat!=-1&&!roomInfo.singleplayer) {
-					pInfo.ready = java.lang.Boolean.parseBoolean(message[1])
+					pInfo.ready = message[1].toBoolean()
 					broadcastPlayerInfoUpdate(pInfo)
 
 					if(!pInfo.ready) roomInfo.isSomeoneCancelled = true
@@ -1533,7 +1530,7 @@ import kotlin.math.pow
 		if(message[0]=="dead")
 			if(pInfo!=null)
 				if(message.size>1) {
-					val koUID = Integer.parseInt(message[1])
+					val koUID = message[1].toInt()
 					val koPlayerInfo = searchPlayerByUID(koUID)
 					playerDead(pInfo, koPlayerInfo)
 				} else
@@ -1547,7 +1544,7 @@ import kotlin.math.pow
 
 				if(roomInfo.playing&&isRace)
 					for(i in message.size-1 downTo 2) {
-						val koUID = Integer.parseInt(message[i])
+						val koUID = message[i].toInt()
 						if(koUID!=pInfo.uid) {
 							val koPlayerInfo = searchPlayerByUID(koUID)
 
@@ -1589,7 +1586,7 @@ import kotlin.math.pow
 				if(!pInfo.isTripUse)
 					broadcast("spsendok\t-1\tfalse\t-1\n", pInfo.roomID)
 				else if(roomInfo!!.singleplayer) {
-					val sChecksum = java.lang.Long.parseLong(message[1])
+					val sChecksum = message[1].toLong()
 					val checksumObj = Adler32()
 					checksumObj.update(NetUtil.stringToBytes(message[2]))
 					log.info("Checksums are: $sChecksum and ${checksumObj.value}")
@@ -1643,8 +1640,8 @@ import kotlin.math.pow
 			//spranking\t[RULE]\t[MODE]\t[GAMETYPE]\t[DAILY]
 			val strRule = NetUtil.urlDecode(message[1])
 			val strMode = NetUtil.urlDecode(message[2])
-			val gameType = Integer.parseInt(message[3])
-			val isDaily = java.lang.Boolean.parseBoolean(message[4])
+			val gameType = message[3].toInt()
+			val isDaily = message[4].toBoolean()
 
 			if(isDaily) if(updateSPDailyRanking()) writeSPRankingToFile()
 
@@ -1699,8 +1696,8 @@ import kotlin.math.pow
 			//spdownload\t[RULE]\t[MODE]\t[GAMETYPE]\t[DAILY]\t[NAME]
 			var strRule = NetUtil.urlDecode(message[1])
 			val strMode = NetUtil.urlDecode(message[2])
-			val gameType = Integer.parseInt(message[3])
-			val isDaily = java.lang.Boolean.parseBoolean(message[4])
+			val gameType = message[3].toInt()
+			val isDaily = message[4].toBoolean()
 			val strName = NetUtil.urlDecode(message[5])
 
 			// Is any rule room?
@@ -1776,7 +1773,7 @@ import kotlin.math.pow
 
 			// Check version
 			val serverVer = GameManager.versionMajor
-			val clientVer = java.lang.Float.parseFloat(message[1])
+			val clientVer = message[1].toFloat()
 			if(serverVer!=clientVer) {
 				val strLogMsg = "$strRemoteAddr has tried to access admin, but client version is different ($clientVer)"
 				log.warn(strLogMsg)
@@ -1785,7 +1782,7 @@ import kotlin.math.pow
 
 			// Build type check
 			val serverBuildType = GameManager.isDevBuild
-			val clientBuildType = java.lang.Boolean.parseBoolean(message[4])
+			val clientBuildType = message[4].toBoolean()
 			if(serverBuildType!=clientBuildType) {
 				val strLogMsg =
 					"$strRemoteAddr has tried to access admin, but build type is different (IsDevBuild:$clientBuildType)"
@@ -1857,7 +1854,7 @@ import kotlin.math.pow
 			val kickCount:Int
 
 			var banLength = -1
-			if(message.size>2) banLength = Integer.parseInt(message[2])
+			if(message.size>2) banLength = message[2].toInt()
 
 			kickCount = ban(message[1], banLength)
 			saveBanList()
@@ -1964,7 +1961,7 @@ import kotlin.math.pow
 		// Room delete
 		if(message[0]=="roomdelete") {
 			// roomdelete\t[ID]
-			val roomID = Integer.parseInt(message[1])
+			val roomID = message[1].toInt()
 			val roomInfo = getRoomInfo(roomID)
 
 			if(roomInfo!=null) {
@@ -2371,14 +2368,14 @@ import kotlin.math.pow
 			if(pInfo.seatID!=-1&&pInfo.playing&&roomInfo.playing) {
 				pInfo.resetPlayState()
 
-				val place = roomInfo.startPlayers-roomInfo.deadCount
+				val place = roomInfo.startPlayers-roomInfo.deaths
 				var msg = "dead\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\t$place\t"
 				msg += if(pKOInfo==null) "${(-1)}\t"
 				else "${pKOInfo.uid}\t${NetUtil.urlEncode(pKOInfo.strName)}"
 				msg += "\n"
 				broadcast(msg, pInfo.roomID)
 
-				roomInfo.deadCount++
+				roomInfo.deaths++
 				roomInfo.playerSeatDead.addFirst(pInfo)
 				gameFinished(roomInfo)
 
@@ -2751,7 +2748,7 @@ import kotlin.math.pow
 						try {
 							var settingID = 0
 							val strTempArray = str.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
-							if(strTempArray.size>1) settingID = Integer.parseInt(strTempArray[1])
+							if(strTempArray.size>1) settingID = strTempArray[1].toInt()
 
 							log.debug("{RuleLoad} StyleID:$style RuleFile:${strTempArray[0]} SettingID:"+settingID)
 
@@ -2808,7 +2805,7 @@ import kotlin.math.pow
 						val strSplit = str.split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 						val strModeName = strSplit[0]
 						var isRace = false
-						if(strSplit.size>1) isRace = java.lang.Boolean.parseBoolean(strSplit[1])
+						if(strSplit.size>1) isRace = strSplit[1].toBoolean()
 
 						mpModeList!![style].add(strModeName)
 						mpModeIsRace!![style].add(isRace)
@@ -2967,16 +2964,15 @@ import kotlin.math.pow
 						val strModeName = strSplit[0]
 						var rankingType = 0
 						var maxGameType = 0
-						if(strSplit.size>1) rankingType = Integer.parseInt(strSplit[1])
-						if(strSplit.size>2) maxGameType = Integer.parseInt(strSplit[2])
+						if(strSplit.size>1) rankingType = strSplit[1].toInt()
+						if(strSplit.size>2) maxGameType = strSplit[2].toInt()
 
 						log.debug("{Mode} Name:$strModeName RankingType:$rankingType MaxGameType:$maxGameType")
 
 						spModeList!![style].add(strModeName)
 
 						for(i in 0 until ruleList!![style].size+1) {
-							val ruleName:String
-							ruleName = if(i<ruleList!![style].size) {
+							val ruleName:String = if(i<ruleList!![style].size) {
 								val ruleOpt = ruleList!![style][i]
 								ruleOpt.strRuleName
 							} else "any"
@@ -3300,7 +3296,7 @@ import kotlin.math.pow
 			if(args.isNotEmpty())
 			// If command-line option is used, change port number to the new one
 				try {
-					port = Integer.parseInt(args[0])
+					port = args[0].toInt()
 				} catch(e:NumberFormatException) {
 				}
 

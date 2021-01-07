@@ -92,10 +92,10 @@ class NetChatMessage:Serializable {
 	 * @param s String array (String[7])
 	 */
 	fun importStringArray(s:Array<String>) {
-		uid = Integer.parseInt(s[0])
+		uid = s[0].toInt()
 		strUserName = NetUtil.urlDecode(s[1])
 		strHost = NetUtil.urlDecode(s[2])
-		roomID = Integer.parseInt(s[3])
+		roomID = s[3].toInt()
 		strRoomName = NetUtil.urlDecode(s[4])
 		timestamp = GeneralUtil.importCalendarString(s[5])
 		strMessage = NetUtil.urlDecode(s[6])

@@ -78,8 +78,7 @@ open class PoochyBot:DummyAI(), Runnable {
 	private var inARE:Boolean = false
 
 	/* AI's name */
-	override val name:String
-		get() = "PoochyBot V1.25"
+	override val name:String = "PoochyBot V1.25"
 
 	/* Called at initialization */
 	override fun init(engine:GameEngine, playerID:Int) {
@@ -114,7 +113,7 @@ open class PoochyBot:DummyAI(), Runnable {
 	}
 
 	/* End processing */
-	override fun shutdown(engine:GameEngine, playerID:Int) {
+	override fun shutdown() {
 		if(thread!=null&&thread!!.isAlive) {
 			thread!!.interrupt()
 			threadRunning = false

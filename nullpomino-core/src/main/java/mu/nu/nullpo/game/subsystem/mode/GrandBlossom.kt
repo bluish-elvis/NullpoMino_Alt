@@ -188,8 +188,7 @@ class GrandBlossom:AbstractMode() {
 	private var dectemp:Int = 0
 
 	/** Mode nameを取得 */
-	override val name:String
-		get() = "Grand Blossom"
+	override val name:String = "Grand Blossom"
 	override val gameIntensity:Int = -1
 	/** Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -258,6 +257,7 @@ class GrandBlossom:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
+		engine.splitb2b = false
 		engine.framecolor = GameEngine.FRAME_COLOR_PINK
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.bighalf = true
@@ -800,7 +800,8 @@ class GrandBlossom:AbstractMode() {
 						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW, scale)
 					receiver.drawScoreFont(engine, playerID, 3, topY+i, getStageName(rankingStage[type][i]), gcolor, scale)
 					receiver.drawScoreNum(engine, playerID, 9, topY+i, "${rankingClearPer[type][i]}%", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[type][i]), i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[type][i]), i==rankingRank,
+						scale)
 				}
 			}
 		} else {
@@ -829,16 +830,9 @@ class GrandBlossom:AbstractMode() {
 
 			//  level
 			receiver.drawScoreFont(engine, playerID, 0, 11, "Level", COLOR.PINK)
-			var tempLevel = speedlevel
-			if(tempLevel<0) tempLevel = 0
-			val strLevel = String.format("%3d", tempLevel)
-			receiver.drawScoreNum(engine, playerID, 0, 12, strLevel)
-
-			var speed = engine.speed.gravity/128
-			if(engine.speed.gravity<0) speed = 40
-			receiver.drawSpeedMeter(engine, playerID, 0, 13, speed)
-
-			receiver.drawScoreNum(engine, playerID, 0, 14, String.format("%3d", nextseclv))
+			receiver.drawScoreNum(engine, playerID, 1, 12, String.format("%3d", maxOf(0, speedlevel)))
+			receiver.drawSpeedMeter(engine, playerID, 0, 13, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
+			receiver.drawScoreNum(engine, playerID, 1, 14, String.format("%3d", nextseclv))
 
 			//  stage Time
 			if(stagetimeStart>0) {
@@ -1128,7 +1122,7 @@ class GrandBlossom:AbstractMode() {
 			engine.statc[1] += if(timeextendStageClearSeconds<30)
 				4
 			else if(timeextendStageClearSeconds<60)
-				 10 else 30
+				10 else 30
 
 			// Time meter
 			var limittimeTemp = limittimeNow+engine.statc[1]
@@ -1190,10 +1184,11 @@ class GrandBlossom:AbstractMode() {
 				COLOR.WHITE)
 
 			receiver.drawMenuFont(engine, playerID, 0, 7, "LIMIT TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, playerID, 1, 8, GeneralUtil.getTime((limittimeNow+engine.statc[1])), if(engine.statc[0]%2==0&&engine.statc[1]<timeextendStageClearSeconds*60)
-				COLOR.ORANGE
-			else
-				COLOR.WHITE)
+			receiver.drawMenuFont(engine, playerID, 1, 8, GeneralUtil.getTime((limittimeNow+engine.statc[1])),
+				if(engine.statc[0]%2==0&&engine.statc[1]<timeextendStageClearSeconds*60)
+					COLOR.ORANGE
+				else
+					COLOR.WHITE)
 
 			receiver.drawMenuFont(engine, playerID, 2, 10, "EXTEND", COLOR.PINK)
 			receiver.drawMenuFont(engine, playerID, 2, 11, "$timeextendStageClearSeconds SEC.")
@@ -1209,10 +1204,11 @@ class GrandBlossom:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 1, 5, "-30 SEC.")
 
 			receiver.drawMenuFont(engine, playerID, 0, 10, "LIMIT TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, playerID, 1, 11, GeneralUtil.getTime((limittimeNow-engine.statc[1])), if(engine.statc[0]%2==0&&engine.statc[1]<30*60)
-				COLOR.RED
-			else
-				COLOR.WHITE)
+			receiver.drawMenuFont(engine, playerID, 1, 11, GeneralUtil.getTime((limittimeNow-engine.statc[1])),
+				if(engine.statc[0]%2==0&&engine.statc[1]<30*60)
+					COLOR.RED
+				else
+					COLOR.WHITE)
 
 			if(trainingType==0) {
 				receiver.drawMenuFont(engine, playerID, 0, 13, "CLEAR PER.", COLOR.PINK)
@@ -1351,7 +1347,7 @@ class GrandBlossom:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${engine.statc[1]+1}/3", COLOR.RED)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 		if(engine.statc[1]==0) {
 			var gcolor = COLOR.WHITE

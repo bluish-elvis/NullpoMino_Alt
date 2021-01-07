@@ -49,13 +49,11 @@ class ToolVSMapEditMode:AbstractMode() {
 	private var nowMapID:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "TOOL-VS MAP EDIT"
+	override val name:String = "TOOL-VS MAP EDIT"
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
 		owner = manager
-		receiver = owner.receiver
 		propMap = CustomProperties()
 		listFields = LinkedList()
 		nowMapSetID = 0

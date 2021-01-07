@@ -246,8 +246,7 @@ class GrandMastery:AbstractMode() {
 	private var dectemp:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "GRAND MASTERY"
+	override val name:String = "GRAND MASTERY"
 	override val gameIntensity:Int = 1
 	/** @return 何らかの試験中ならtrue
 	 */
@@ -333,6 +332,7 @@ class GrandMastery:AbstractMode() {
 		engine.twistEnable = true
 		engine.twistEnableEZ = true
 		engine.b2bEnable = true
+		engine.splitb2b = true
 		engine.framecolor = GameEngine.FRAME_COLOR_SILVER
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.bighalf = true
@@ -766,13 +766,14 @@ class GrandMastery:AbstractMode() {
 			// level
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", if(g20) COLOR.YELLOW else COLOR.BLUE)
 
-			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
-			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4)
+			receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
+			receiver.drawSpeedMeter(engine, playerID, 0, 11,
+				if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4, 4)
 			if(coolcount>0) {
-				receiver.drawScoreFont(engine, playerID, 3, 11, "+")
-				receiver.drawScoreGrade(engine, playerID, 4, 11, String.format("%1d", coolcount))
+				receiver.drawScoreFont(engine, playerID, 4, 11, "+")
+				receiver.drawScoreGrade(engine, playerID, 5, 11, String.format("%1d", coolcount))
 			}
-			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv))
+			receiver.drawScoreNum(engine, playerID, 1, 12, String.format("%3d", nextseclv))
 
 			// Time
 			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", if(g20)
@@ -1388,7 +1389,7 @@ class GrandMastery:AbstractMode() {
 
 			}
 		} else {
-			receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${engine.statc[1]+1}/3", COLOR.RED)
+			receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 			when(engine.statc[1]) {
 				0 -> {

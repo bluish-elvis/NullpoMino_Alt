@@ -160,7 +160,23 @@ open class EventReceiver {
 	 * @param flag Any boolean variable
 	 */
 	fun drawDirectFont(playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawDirectFont(x, y, str, color = if(flag) getPlayerColor(playerID) else COLOR.WHITE, scale = scale)
+		drawDirectFont(x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE, scale)
+
+	fun drawDirectNano(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+		drawFont(x, y, str, FONT.NANO, color, scale, alpha)
+
+	/** [You don't have to override this]
+	 * Draw String to any location.
+	 * If flag is false, it will use white font cint. If flag is true, it will
+	 * use red instead.
+	 * @param playerID Player ID
+	 * @param x X-coordinate
+	 * @param y Y-coordinate
+	 * @param str String to draw
+	 * @param flag Any boolean variable
+	 */
+	fun drawDirectNano(playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
+		drawDirectNano(x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE, scale)
 
 	/** [You don't have to override this]
 	 * Draw Number to any location.
@@ -321,7 +337,8 @@ open class EventReceiver {
 		drawMenu(engine, playerID, x, y, str, FONT.NANO, color, scale)
 
 	fun drawMenuNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawMenuNano(engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE, scale)
+		drawMenuNano(engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE,
+			scale)
 
 	/** [You don't have to override this]
 	 * Draw Grade inside the field.
@@ -501,15 +518,15 @@ open class EventReceiver {
 	 * @param y Y-coordinate
 	 * @param sp Speed (float:0.0~1.0 int:0~40)
 	 */
-	open fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Float) {}
+	open fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Float, len:Float = 3f) {}
 
-	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Int) =
-		drawSpeedMeter(engine, playerID, x, y, sp/40f)
+	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Int, len:Int) =
+		drawSpeedMeter(engine, playerID, x, y, sp/40f, len.toFloat())
 
-	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, g:Int, d:Int) {
+	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, g:Int, d:Int, len:Int) {
 		var s = if(g<=0) 1f else 0f
 		if(g>0&&d>0) s = (sqrt((g.toFloat()/d).toDouble())/sqrt(20.0)).toFloat()
-		drawSpeedMeter(engine, playerID, x, y, s)
+		drawSpeedMeter(engine, playerID, x, y, s, len.toFloat())
 	}
 
 	/** Get maximum length of the meter.

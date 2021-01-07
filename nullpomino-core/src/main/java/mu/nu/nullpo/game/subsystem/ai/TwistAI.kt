@@ -29,8 +29,7 @@ import mu.nu.nullpo.game.play.GameEngine
 
 /** TwisterHaveAI (WIP) */
 class TwistAI:BasicAI() {
-	override val name:String
-		get() = "TWISTER"
+	override val name:String = "TWISTER"
 
 	override fun thinkMain(engine:GameEngine, x:Int, y:Int, rt:Int, rtOld:Int, fld:Field, piece:Piece,
 		nextpiece:Piece?, holdpiece:Piece?, depth:Int):Int {

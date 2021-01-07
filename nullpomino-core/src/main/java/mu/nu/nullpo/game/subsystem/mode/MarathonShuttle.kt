@@ -97,8 +97,7 @@ class MarathonShuttle:NetDummyMode() {
 	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
 	/* Mode name */
-	override val name:String
-		get() = "MARATHON ShuttleRun"
+	override val name:String = "MARATHON ShuttleRun"
 	override val gameIntensity:Int = 1
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -221,6 +220,7 @@ class MarathonShuttle:NetDummyMode() {
 		engine.statistics.level = startlevel
 		engine.statistics.levelDispAdd = 1
 		engine.b2bEnable = true
+		engine.splitb2b = true
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 
 		engine.big = big
@@ -657,9 +657,9 @@ class MarathonShuttle:NetDummyMode() {
 
 	/** NET: Receive game options */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
-		goaltype = Integer.parseInt(message[4])
-		startlevel = Integer.parseInt(message[5])
-		big = java.lang.Boolean.parseBoolean(message[6])
+		goaltype = message[4].toInt()
+		startlevel = message[5].toInt()
+		big = message[6].toBoolean()
 	}
 
 	/** NET: Send various in-game stats (as well as goaltype)
@@ -682,32 +682,32 @@ class MarathonShuttle:NetDummyMode() {
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
 
 		listOf<(String)->Unit>({}, {}, {}, {},
-			{engine.statistics.scoreLine = Integer.parseInt(it)},
-			{engine.statistics.scoreSD = Integer.parseInt(it)},
-			{engine.statistics.scoreHD = Integer.parseInt(it)},
-			{engine.statistics.scoreBonus = Integer.parseInt(it)},
-			{engine.statistics.lines = Integer.parseInt(it)},
-			{engine.statistics.totalPieceLocked = Integer.parseInt(it)},
-			{engine.statistics.time = Integer.parseInt(it)},
-			{goaltype = Integer.parseInt(it)},
-			{engine.gameActive = java.lang.Boolean.parseBoolean(it)},
-			{engine.timerActive = java.lang.Boolean.parseBoolean(it)},
-			{lastscore = Integer.parseInt(it)},
-			{scgettime = Integer.parseInt(it)},
+			{engine.statistics.scoreLine = it.toInt()},
+			{engine.statistics.scoreSD = it.toInt()},
+			{engine.statistics.scoreHD = it.toInt()},
+			{engine.statistics.scoreBonus = it.toInt()},
+			{engine.statistics.lines = it.toInt()},
+			{engine.statistics.totalPieceLocked = it.toInt()},
+			{engine.statistics.time = it.toInt()},
+			{goaltype = it.toInt()},
+			{engine.gameActive = it.toBoolean()},
+			{engine.timerActive = it.toBoolean()},
+			{lastscore = it.toInt()},
+			{scgettime = it.toInt()},
 			{engine.lastevent = GameEngine.ScoreEvent.parseInt(it)},
-			{engine.b2bbuf = Integer.parseInt(it)},
-			{engine.combobuf = Integer.parseInt(it)},
-			{lastgoal = Integer.parseInt(it)},
-			{lasttimebonus = Integer.parseInt(it)},
-			{regretdispframe = Integer.parseInt(it)},
-			{owner.backgroundStatus.bg = Integer.parseInt(it)},
-			{engine.meterValue = Integer.parseInt(it)},
-			{engine.meterColor = Integer.parseInt(it)},
-			{engine.statistics.level = Integer.parseInt(it)},
-			{levelTimer = Integer.parseInt(it)},
-			{totalTimer = Integer.parseInt(it)},
-			{rolltime = Integer.parseInt(it)},
-			{goal = Integer.parseInt(it)}).zip(message).forEach {(x, y) ->
+			{engine.b2bbuf = it.toInt()},
+			{engine.combobuf = it.toInt()},
+			{lastgoal = it.toInt()},
+			{lasttimebonus = it.toInt()},
+			{regretdispframe = it.toInt()},
+			{owner.backgroundStatus.bg = it.toInt()},
+			{engine.meterValue = it.toInt()},
+			{engine.meterColor = it.toInt()},
+			{engine.statistics.level = it.toInt()},
+			{levelTimer = it.toInt()},
+			{totalTimer = it.toInt()},
+			{rolltime = it.toInt()},
+			{goal = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
 

@@ -176,8 +176,8 @@ class NetSPRecord:Serializable {
 		if(s[4].isEmpty()) listCustomStats = LinkedList()
 		else importCustomStats(NetUtil.decompressString(s[4]))
 		strReplayProp = s[5]
-		gameType = Integer.parseInt(s[6])
-		style = Integer.parseInt(s[7])
+		gameType = s[6].toInt()
+		style = s[7].toInt()
 		strTimeStamp = if(s.size>8) s[8] else ""
 	}
 

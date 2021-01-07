@@ -92,8 +92,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 	private var targetTimer:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "NET-VS-BATTLE"
+	override val name:String = "NET-VS-BATTLE"
 
 	override val isVSMode:Boolean
 		get() = true
@@ -344,7 +343,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 			var newHole:Int
 			if(hole==-1) hole = engine.random.nextInt(engine.field!!.width)
 
-			var finalGarbagePercent = netCurrentRoomInfo!!.garbagePercent
+			var finalGarbagePercent = netCurrentRoomInfo!!.messiness
 			if(netCurrentRoomInfo!!.divideChangeRateByPlayers) finalGarbagePercent /= netvsGetNumberOfTeamsAlive()-1
 
 			// Make regular garbage lines appear
@@ -656,7 +655,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 
 	/* Receive stats */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		if(message.size>4) garbage[engine.playerID] = Integer.parseInt(message[4])
+		if(message.size>4) garbage[engine.playerID] = message[4].toInt()
 	}
 
 	/* Send end-of-game stats */
@@ -674,22 +673,22 @@ class NetVSBattleMode:NetDummyVSMode() {
 
 	/* Receive end-of-game stats */
 	override fun netvsRecvEndGameStats(message:Array<String>) {
-		val seatID = Integer.parseInt(message[2])
+		val seatID = message[2].toInt()
 		val playerID = netvsGetPlayerIDbySeatID(seatID)
 
 		if(playerID!=0||netvsIsWatch()) {
 			val engine = owner.engine[playerID]
 
-			val tempGarbageSend = java.lang.Float.parseFloat(message[5])
+			val tempGarbageSend = message[5].toFloat()
 			garbageSent[playerID] = (tempGarbageSend*GARBAGE_DENOMINATOR).toInt()
 
-			playerAPL[playerID] = java.lang.Float.parseFloat(message[6])
-			playerAPM[playerID] = java.lang.Float.parseFloat(message[7])
-			engine.statistics.lines = Integer.parseInt(message[8])
-			//engine.statistics.lpm = java.lang.Float.parseFloat(message[9])
-			engine.statistics.totalPieceLocked = Integer.parseInt(message[10])
-			//engine.statistics.pps = java.lang.Float.parseFloat(message[11])
-			engine.statistics.time = Integer.parseInt(message[12])
+			playerAPL[playerID] = message[6].toFloat()
+			playerAPM[playerID] = message[7].toFloat()
+			engine.statistics.lines = message[8].toInt()
+			//engine.statistics.lpm = message[9].toFloat()
+			engine.statistics.totalPieceLocked = message[10].toInt()
+			//engine.statistics.pps = message[11].toFloat()
+			engine.statistics.time = message[12].toInt()
 
 			netvsPlayerResultReceived[playerID] = true
 		}
@@ -702,10 +701,10 @@ class NetVSBattleMode:NetDummyVSMode() {
 
 		// Dead
 		if(message[0]=="dead") {
-			val seatID = Integer.parseInt(message[3])
+			val seatID = message[3].toInt()
 			val playerID = netvsGetPlayerIDbySeatID(seatID)
 			var koUID = -1
-			if(message.size>5) koUID = Integer.parseInt(message[5])
+			if(message.size>5) koUID = message[5].toInt()
 
 			// Increase KO count
 			if(koUID==netLobby!!.netPlayerClient!!.playerUID) {
@@ -715,8 +714,8 @@ class NetVSBattleMode:NetDummyVSMode() {
 		}
 		// Game messages
 		if(message[0]=="game") {
-			val uid = Integer.parseInt(message[1])
-			val seatID = Integer.parseInt(message[2])
+			val uid = message[1].toInt()
+			val seatID = message[2].toInt()
 			val playerID = netvsGetPlayerIDbySeatID(seatID)
 			//GameEngine engine = owner.engine[playerID];
 
@@ -726,17 +725,17 @@ class NetVSBattleMode:NetDummyVSMode() {
 				var sumPts = 0
 
 				for(i in 0 until ATTACK_CATEGORIES) {
-					pts[i] = Integer.parseInt(message[4+i])
+					pts[i] = message[4+i].toInt()
 					sumPts += pts[i]
 				}
 
-				lastevent[playerID] = Integer.parseInt(message[ATTACK_CATEGORIES+5])
-				lastb2b[playerID] = java.lang.Boolean.parseBoolean(message[ATTACK_CATEGORIES+6])
-				lastcombo[playerID] = Integer.parseInt(message[ATTACK_CATEGORIES+7])
-				garbage[playerID] = Integer.parseInt(message[ATTACK_CATEGORIES+8])
-				lastpiece[playerID] = Integer.parseInt(message[ATTACK_CATEGORIES+9])
+				lastevent[playerID] = message[ATTACK_CATEGORIES+5].toInt()
+				lastb2b[playerID] = message[ATTACK_CATEGORIES+6].toBoolean()
+				lastcombo[playerID] = message[ATTACK_CATEGORIES+7].toInt()
+				garbage[playerID] = message[ATTACK_CATEGORIES+8].toInt()
+				lastpiece[playerID] = message[ATTACK_CATEGORIES+9].toInt()
 				scgettime[playerID] = 0
-				val targetSeatID = Integer.parseInt(message[ATTACK_CATEGORIES+10])
+				val targetSeatID = message[ATTACK_CATEGORIES+10].toInt()
 
 				if(!netvsIsWatch()&&owner.engine[0].timerActive&&sumPts>0&&!netvsIsPractice&&!netvsIsNewcomer&&
 					(targetSeatID==-1||netvsPlayerSeatID[0]==targetSeatID||!netCurrentRoomInfo!!.isTarget)&&

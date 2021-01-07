@@ -25,7 +25,6 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
@@ -147,8 +146,7 @@ class GrandStorm:AbstractMode() {
 	private var dectemp:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "Grand Storm"
+	override val name:String = "Grand Storm"
 	override val gameIntensity:Int = 3
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -193,6 +191,7 @@ class GrandStorm:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = true
+		engine.splitb2b = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.framecolor = GameEngine.FRAME_COLOR_RED
 		engine.bighalf = true
@@ -464,10 +463,10 @@ class GrandStorm:AbstractMode() {
 			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
 			// level
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", engine.statistics.time%3!=0)
-			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%3d", maxOf(engine.statistics.level, 0)),
+			receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)),
 				engine.statistics.time%3!=0)
-			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(engine.statistics.time%3!=0) 40 else 0)
-			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv), engine.statistics.time%3!=0)
+			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(engine.statistics.time%3!=0) 40 else 0, 4)
+			receiver.drawScoreNum(engine, playerID, 1, 12, String.format("%3d", nextseclv), engine.statistics.time%3!=0)
 
 			// Time
 			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", engine.statistics.time%3!=0)
@@ -807,7 +806,7 @@ class GrandStorm:AbstractMode() {
 
 	/* 結果画面 */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${engine.statc[1]+1}/3", COLOR.RED)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 		when(engine.statc[1]) {
 			0 -> {

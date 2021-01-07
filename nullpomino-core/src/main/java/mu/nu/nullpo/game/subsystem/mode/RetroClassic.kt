@@ -83,8 +83,7 @@ class RetroClassic:AbstractMode() {
 	private var maxScoredTime:Int? = null
 
 	/** Returns the name of this mode */
-	override val name:String
-		get() = "Retro Classic .N"
+	override val name:String = "Retro Classic .N"
 
 	override val gameIntensity:Int = -1
 
@@ -108,6 +107,7 @@ class RetroClassic:AbstractMode() {
 		engine.run {
 			twistEnable = false
 			b2bEnable = false
+			splitb2b = false
 			comboType = GameEngine.COMBO_TYPE_DISABLE
 			bighalf = false
 			bigmove = false
@@ -279,7 +279,8 @@ class RetroClassic:AbstractMode() {
 					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1),
 						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW)
 					receiver.drawScoreNum(engine, playerID, 3, 4+i, GeneralUtil.capsInteger(rankingScore[gametype][i], 6), i==rankingRank)
-					receiver.drawScoreNum(engine, playerID, 12, 4+i, GeneralUtil.capsInteger(rankingLines[gametype][i], 3), i==rankingRank)
+					receiver.drawScoreNum(engine, playerID, 12, 4+i, GeneralUtil.capsInteger(rankingLines[gametype][i], 3),
+						i==rankingRank)
 					receiver.drawScore(engine, playerID, 17, 4+i, LEVEL_NAME[rankingLevel[gametype][i]],
 						font = if(rankingLevel[gametype][i]<30) FONT.NUM else FONT.NORMAL, flag = i==rankingRank)
 				}
@@ -303,7 +304,7 @@ class RetroClassic:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 16, "I-Piece Drought", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 17, "$drought / ${maxOf(drought, droughts.maxOrNull() ?: 0)}", 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 17, "$drought / ${maxOf(drought, droughts.max() ?: 0)}", 2f)
 		}
 	}
 
@@ -427,7 +428,7 @@ class RetroClassic:AbstractMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${engine.statc[1]+1}/2", COLOR.ORANGE)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/2", COLOR.ORANGE)
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", COLOR.ORANGE)
 
 		if(engine.statc[1]==0) {
@@ -444,13 +445,11 @@ class RetroClassic:AbstractMode() {
 			drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.TIME, Statistic.LPM)
 			receiver.drawMenuFont(engine, playerID, 0, 7, "I-Droughts", COLOR.BLUE)
 			receiver.drawMenuFont(engine, playerID, 0, 8, "Longest", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, playerID, 0, 8, String.format("%3d", droughts.maxOrNull() ?: 0), 2f)
+			receiver.drawMenuNum(engine, playerID, 0, 8, String.format("%3d", droughts.max() ?: 0), 2f)
 			receiver.drawMenuFont(engine, playerID, 0, 10, "Average", COLOR.BLUE, .8f)
 			receiver.drawMenuNum(engine, playerID, 0, 11, String.format("%3d", droughts.average()), 2f)
-			drawResult(engine, playerID, receiver, 13, COLOR.RED, "Burnouts", String.format("%3d",
-				engine.statistics.run {
-					totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple
-				}))
+			drawResult(engine, playerID, receiver, 13, COLOR.RED, "Burnouts",
+				String.format("%3d", engine.statistics.run {totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple}))
 		}
 	}
 

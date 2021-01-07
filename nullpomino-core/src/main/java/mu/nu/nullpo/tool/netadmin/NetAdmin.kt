@@ -24,64 +24,64 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 	//***** Main GUI elements *****
 	/** Layout manager for main screen */
-	private var contentPaneCardLayout:CardLayout? = null
+	private val contentPaneCardLayout:CardLayout = CardLayout()
 
 	/** Current screen-card number */
 	private var currentScreenCardNumber:Int = 0
 
 	//***** Login screen elements *****
 	/** Login Message label */
-	private var labelLoginMessage:JLabel? = null
+	private val labelLoginMessage:JLabel = JLabel()
 
 	/** Server textbox */
-	private var txtfldServer:JTextField? = null
+	private val txtfldServer:JTextField = JTextField()
 
 	/** Username textbox */
-	private var txtfldUsername:JTextField? = null
+	private val txtfldUsername:JTextField = JTextField()
 
 	/** Password textbox */
-	private var passfldPassword:JPasswordField? = null
+	private val passfldPassword:JPasswordField = JPasswordField()
 
 	/** Remember Username checkbox */
-	private var chkboxRememberUsername:JCheckBox? = null
+	private val chkboxRememberUsername:JCheckBox = JCheckBox()
 
 	/** Remember Password checkbox */
-	private var chkboxRememberPassword:JCheckBox? = null
+	private val chkboxRememberPassword:JCheckBox = JCheckBox()
 
 	/** Login button */
-	private var btnLogin:JButton? = null
+	private val btnLogin:JButton = JButton()
 
 	//***** Room list screen elements *****
 	/** Room list data */
-	private var tablemodelRoomList:DefaultTableModel? = null
+	private val tablemodelRoomList:DefaultTableModel = DefaultTableModel()
 
 	/** Room list table */
-	private var tableRoomList:JTable? = null
+	private val tableRoomList:JTable = JTable()
 
 	//***** Lobby screen elements *****
 	/** Console Log textpane */
-	private var txtpaneConsoleLog:JTextPane? = null
+	private val txtpaneConsoleLog:JTextPane = JTextPane()
 
 	/** Console Command textbox */
-	private var txtfldConsoleCommand:JTextField? = null
+	private val txtfldConsoleCommand:JTextField = JTextField()
 
 	/** Console Command Execute button */
-	private var btnConsoleCommandExecute:JButton? = null
+	private val btnConsoleCommandExecute:JButton = JButton()
 
 	/** Users table data */
-	private var tablemodelUsers:DefaultTableModel? = null
+	private val tablemodelUsers:DefaultTableModel = DefaultTableModel()
 
 	/** Users table component */
-	private var tableUsers:JTable? = null
+	private val tableUsers:JTable = JTable()
 
 	/** MPRanking table data */
-	private var tablemodelMPRanking:Array<DefaultTableModel> = emptyArray()
+	private val tablemodelMPRanking:Array<DefaultTableModel> = Array(GameEngine.MAX_GAMESTYLE) {DefaultTableModel()}
 
 	/** MPRanking table component */
 	private var tableMPRanking:Array<JTable> = emptyArray()
 
 	/** Load/Refresh Ranking button */
-	private var btnRankingLoad:JButton? = null
+	private val btnRankingLoad:JButton = JButton()
 
 	/** Constructor */
 	init {
@@ -150,7 +150,6 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 	/** Init GUI */
 	private fun initUI() {
-		contentPaneCardLayout = CardLayout()
 		contentPane.layout = contentPaneCardLayout
 
 		initLoginUI()
@@ -169,8 +168,8 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		mpLoginOwner.add(mpLogin, BorderLayout.NORTH)
 
 		// * Login Message label
-		labelLoginMessage = JLabel(getUIText("Login_Message_Default"))
-		labelLoginMessage!!.alignmentX = 0f
+		labelLoginMessage.text = getUIText("Login_Message_Default")
+		labelLoginMessage.alignmentX = 0f
 		mpLogin.add(labelLoginMessage)
 
 		// * Server panel
@@ -179,15 +178,15 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		mpLogin.add(spServer)
 
 		// ** Server label
-		val lServer = JLabel(getUIText("Login_Server"))
-		spServer.add(lServer, BorderLayout.WEST)
+		spServer.add(JLabel(getUIText("Login_Server")), BorderLayout.WEST)
 
 		// ** Server textbox
-		txtfldServer = JTextField(30).apply {
+		txtfldServer.apply {
+			columns = 30
 			text = propConfig.getProperty("login.server", "")
 			componentPopupMenu = TextComponentPopupMenu(this)
 		}
-		spServer.add(txtfldServer!!, BorderLayout.EAST)
+		spServer.add(txtfldServer, BorderLayout.EAST)
 
 		// * Username panel
 		val spUsername = JPanel(BorderLayout())
@@ -195,15 +194,15 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		mpLogin.add(spUsername)
 
 		// ** Username label
-		val lUsername = JLabel(getUIText("Login_Username"))
-		spUsername.add(lUsername, BorderLayout.WEST)
+		spUsername.add(JLabel(getUIText("Login_Username")), BorderLayout.WEST)
 
 		// ** Username textbox
-		txtfldUsername = JTextField(30).apply {
+		txtfldUsername.apply {
+			columns = 30
 			text = propConfig.getProperty("login.username", "")
 			componentPopupMenu = TextComponentPopupMenu(this)
 		}
-		spUsername.add(txtfldUsername!!, BorderLayout.EAST)
+		spUsername.add(txtfldUsername, BorderLayout.EAST)
 
 		// * Password panel
 		val spPassword = JPanel(BorderLayout())
@@ -211,26 +210,28 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		mpLogin.add(spPassword)
 
 		// ** Password label
-		val lPassword = JLabel(getUIText("Login_Password"))
-		spPassword.add(lPassword, BorderLayout.WEST)
+		spPassword.add(JLabel(getUIText("Login_Password")), BorderLayout.WEST)
 
 		// ** Password textbox
-		passfldPassword = JPasswordField(30).apply {
+		passfldPassword.apply {
+			columns = 30
 			val strPassword = propConfig.getProperty("login.password", "")
 			if(strPassword.isNotEmpty()) text = NetUtil.decompressString(strPassword)
 			componentPopupMenu = TextComponentPopupMenu(this)
 		}
-		spPassword.add(passfldPassword!!, BorderLayout.EAST)
+		spPassword.add(passfldPassword, BorderLayout.EAST)
 
 		// * Remember Username checkbox
-		chkboxRememberUsername = JCheckBox(getUIText("Login_RememberUsername")) .apply{
+		chkboxRememberUsername.apply {
+			text = getUIText("Login_RememberUsername")
 			isSelected = propConfig.getProperty("login.rememberUsername", false)
 			alignmentX = 0f
 		}
 		mpLogin.add(chkboxRememberUsername)
 
 		// * Remember Password checkbox
-		chkboxRememberPassword = JCheckBox(getUIText("Login_RememberPassword")).apply {
+		chkboxRememberPassword.apply {
+			text = getUIText("Login_RememberPassword")
 			isSelected = propConfig.getProperty("login.rememberPassword", false)
 			alignmentX = 0f
 		}
@@ -244,22 +245,22 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		mpLogin.add(spButtons)
 
 		// ** Login button
-		btnLogin = JButton(getUIText("Login_Login")).also {
+		spButtons.add(btnLogin.also {
+			it.text = getUIText("Login_Login")
 			it.setMnemonic('L')
 			it.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), it.maximumSize.height)
 			it.actionCommand = "Login_Login"
 			it.addActionListener(this)
-		}
-		spButtons.add(btnLogin)
+		})
 
 		// ** Quit button
-		val btnQuit = JButton(getUIText("Login_Quit")).also {
+		spButtons.add(JButton().also {
+			it.text = getUIText("Login_Quit")
 			it.setMnemonic('Q')
 			it.maximumSize = Dimension(java.lang.Short.MAX_VALUE.toInt(), it.maximumSize.height)
 			it.actionCommand = "Login_Quit"
 			it.addActionListener(this)
-		}
-		spButtons.add(btnQuit)
+		})
 	}
 
 	/** Init lobby screen */
@@ -277,7 +278,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		tabLobby.addTab(getUIText("Lobby_Tab_Console"), spConsole)
 
 		// *** Console log textpane
-		txtpaneConsoleLog = JTextPane().apply {
+		txtpaneConsoleLog.apply {
 			componentPopupMenu = LogPopupMenu(this)
 			addKeyListener(LogKeyAdapter())
 		}
@@ -289,13 +290,14 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		spConsole.add(spConsoleCommand, BorderLayout.SOUTH)
 
 		// *** Command textbox
-		txtfldConsoleCommand = JTextField().apply {
+		txtfldConsoleCommand.apply {
 			componentPopupMenu = TextComponentPopupMenu(this)
 			spConsoleCommand.add(this, BorderLayout.CENTER)
 		}
 
 		// *** Command Execute button
-		btnConsoleCommandExecute = JButton(getUIText("Lobby_Console_Execute")).also {
+		btnConsoleCommandExecute.also {
+			it.text = getUIText("Lobby_Console_Execute")
 			it.setMnemonic('E')
 			it.actionCommand = "Lobby_Console_Execute"
 			it.addActionListener(this)
@@ -307,10 +309,9 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		tabLobby.addTab(getUIText("Lobby_Tab_Users"), spUsers)
 
 		// *** Users table
-		val strUsersColumnNames = Array(USERTABLE_COLUMNNAMES.size) {getUIText(USERTABLE_COLUMNNAMES[it])}
-
-		tablemodelUsers = DefaultTableModel(strUsersColumnNames, 0)
-		tableUsers = JTable(tablemodelUsers).apply {
+		tablemodelUsers.setColumnIdentifiers(Vector(USERTABLE_COLUMNNAMES.map {getUIText(it)}))
+		tableUsers.apply {
+			model = tablemodelUsers
 			setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 			setDefaultEditor(Any::class.java, null)
 			autoResizeMode = JTable.AUTO_RESIZE_OFF
@@ -318,17 +319,18 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			componentPopupMenu = UserPopupMenu(this)
 			addMouseListener(object:MouseAdapter() {
 				override fun mouseClicked(e:MouseEvent?) {
-					if(e!!.clickCount>=2) {
-						val rowNumber = tableUsers!!.selectedRow
+					e ?: return
+					if(e.clickCount>=2) {
+						val rowNumber = this@apply.selectedRow
 						if(rowNumber!=-1) {
-							val strIP = tableUsers!!.getValueAt(rowNumber, 0) as String
+							val strIP = getValueAt(rowNumber, 0) as String
 							openBanDialog(strIP)
 						}
 					}
 				}
 			})
 		}
-		val tmUsers = tableUsers!!.columnModel
+		val tmUsers = tableUsers.columnModel
 		tmUsers.getColumn(0).preferredWidth = propConfig.getProperty("tableUsers.width.ip", 90) // IP
 		tmUsers.getColumn(1).preferredWidth = propConfig.getProperty("tableUsers.width.host", 140) // Hostname
 		tmUsers.getColumn(2).preferredWidth = propConfig.getProperty("tableUsers.width.type", 60) // Type
@@ -350,11 +352,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		tabLobby.addTab(getUIText("Lobby_Tab_RoomList"), spRoomList)
 
 		// *** Room list table
-		val strTableColumnNames = arrayOfNulls<String>(ROOMTABLE_COLUMNNAMES.size)
-		for(i in strTableColumnNames.indices)
-			strTableColumnNames[i] = getUIText(ROOMTABLE_COLUMNNAMES[i])
-		tablemodelRoomList = DefaultTableModel(strTableColumnNames, 0)
-		tableRoomList = JTable(tablemodelRoomList).apply {
+
+		tablemodelRoomList.setColumnIdentifiers(Vector(ROOMTABLE_COLUMNNAMES.map {getUIText(it)}))
+		tableRoomList.apply {
+			model = tablemodelRoomList
 			setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 			setDefaultEditor(Any::class.java, null)
 			autoResizeMode = JTable.AUTO_RESIZE_OFF
@@ -362,7 +363,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			componentPopupMenu = RoomTablePopupMenu(this)
 		}
 
-		val tmRooms = tableRoomList!!.columnModel
+		val tmRooms = tableRoomList.columnModel
 		tmRooms.getColumn(0).preferredWidth = propConfig.getProperty("tableRoomList.width.id", 35) // ID
 		tmRooms.getColumn(1).preferredWidth = propConfig.getProperty("tableRoomList.width.name", 155) // Name
 		tmRooms.getColumn(2).preferredWidth = propConfig.getProperty("tableRoomList.width.rated", 50) // Rated
@@ -375,12 +376,9 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		spRoomList.add(spTableRoomList, BorderLayout.CENTER)
 
 		// *** Leaderboard table
-		val strMPRankingColumnNames = Array(MPRANKING_COLUMNNAMES.size) {
-			getUIText(MPRANKING_COLUMNNAMES[it])
+		tablemodelMPRanking.forEach {item ->
+			item.setColumnIdentifiers(Vector(MPRANKING_COLUMNNAMES.map {getUIText(it)}))
 		}
-
-
-		tablemodelMPRanking = Array(GameEngine.MAX_GAMESTYLE) {DefaultTableModel(strMPRankingColumnNames, 0)}
 		tableMPRanking = Array(GameEngine.MAX_GAMESTYLE) {
 			JTable(tablemodelMPRanking[it]).apply {
 				setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
@@ -391,24 +389,25 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			}
 		}
 
-		for(i in 0 until GameEngine.MAX_GAMESTYLE) {
-			val tm = tableMPRanking[i].columnModel
-			tm.getColumn(0).preferredWidth = propConfig.getProperty("tableMPRanking.width.rank", 30) // Rank
-			tm.getColumn(1).preferredWidth = propConfig.getProperty("tableMPRanking.width.name", 200) // Name
-			tm.getColumn(2).preferredWidth = propConfig.getProperty("tableMPRanking.width.rating", 60) // Rating
-			tm.getColumn(3).preferredWidth = propConfig.getProperty("tableMPRanking.width.play", 60) // Play
-			tm.getColumn(4).preferredWidth = propConfig.getProperty("tableMPRanking.width.win", 60) // Win
+		(0 until GameEngine.MAX_GAMESTYLE).forEach {i ->
+			tableMPRanking[i].columnModel.run {
+				getColumn(0).preferredWidth = propConfig.getProperty("tableMPRanking.width.rank", 30) // Rank
+				getColumn(1).preferredWidth = propConfig.getProperty("tableMPRanking.width.name", 200) // Name
+				getColumn(2).preferredWidth = propConfig.getProperty("tableMPRanking.width.rating", 60) // Rating
+				getColumn(3).preferredWidth = propConfig.getProperty("tableMPRanking.width.play", 60) // Play
+				getColumn(4).preferredWidth = propConfig.getProperty("tableMPRanking.width.win", 60) // Win
+			}
 
-			val sMPRanking = JScrollPane(tableMPRanking[i])
-			tabMPRanking.addTab(GameEngine.GAMESTYLE_NAMES[i], sMPRanking)
+			tabMPRanking.addTab(GameEngine.GAMESTYLE_NAMES[i], JScrollPane(tableMPRanking[i]))
 		}
 
 		// *** Load/Refresh Ranking button
-		btnRankingLoad = JButton(getUIText("MPRanking_Button_LoadRanking"))
-		btnRankingLoad!!.setMnemonic('L')
-		btnRankingLoad!!.actionCommand = "MPRanking_Button_LoadRanking"
-		btnRankingLoad!!.addActionListener(this)
-		spMPRanking.add(btnRankingLoad!!, BorderLayout.SOUTH)
+		spMPRanking.add(btnRankingLoad.also {
+			it.text = getUIText("MPRanking_Button_LoadRanking")
+			it.setMnemonic('L')
+			it.actionCommand = "MPRanking_Button_LoadRanking"
+			it.addActionListener(this)
+		}, BorderLayout.SOUTH)
 	}
 
 	/** Save settings */
@@ -418,7 +417,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		propConfig.setProperty("mainwindow.x", location.x)
 		propConfig.setProperty("mainwindow.y", location.y)
 
-		val tmUsers = tableUsers!!.columnModel
+		val tmUsers = tableUsers.columnModel
 		propConfig.setProperty("tableUsers.width.ip", tmUsers.getColumn(0).width)
 		propConfig.setProperty("tableUsers.width.host", tmUsers.getColumn(1).width)
 		propConfig.setProperty("tableUsers.width.type", tmUsers.getColumn(2).width)
@@ -447,7 +446,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	 * @param cardNumber Screen card ID
 	 */
 	private fun changeCurrentScreenCard(cardNumber:Int) {
-		contentPaneCardLayout!!.show(contentPane, SCREENCARD_NAMES[cardNumber])
+		contentPaneCardLayout.show(contentPane, SCREENCARD_NAMES[cardNumber])
 		currentScreenCardNumber = cardNumber
 
 		// Set default button
@@ -464,12 +463,12 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	 * @param b true to enable, false to disable
 	 */
 	private fun setLoginUIEnabled(b:Boolean) {
-		txtfldServer!!.isEnabled = b
-		txtfldUsername!!.isEnabled = b
-		passfldPassword!!.isEnabled = b
-		chkboxRememberUsername!!.isEnabled = b
-		chkboxRememberPassword!!.isEnabled = b
-		btnLogin!!.isEnabled = b
+		txtfldServer.isEnabled = b
+		txtfldUsername.isEnabled = b
+		passfldPassword.isEnabled = b
+		chkboxRememberUsername.isEnabled = b
+		chkboxRememberPassword.isEnabled = b
+		btnLogin.isEnabled = b
 	}
 
 	/** Disconnect from the server */
@@ -516,9 +515,9 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			StyleConstants.setForeground(sas, fgcolor)
 		}
 		try {
-			val doc = txtpaneConsoleLog!!.document
-			str?.let{doc.insertString(doc.length, "$it\n", sas)}
-			txtpaneConsoleLog!!.caretPosition = doc.length
+			val doc = txtpaneConsoleLog.document
+			str?.let {doc.insertString(doc.length, "$it\n", sas)}
+			txtpaneConsoleLog.caretPosition = doc.length
 		} catch(e:Exception) {
 		}
 
@@ -534,17 +533,16 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		addConsoleLog(">$fullCommandLine", Color.blue)
 
 		// help/h/?
-		if(commands[0].equals("help", ignoreCase = true)||commands[0].equals("h", ignoreCase = true)||commands[0].equals("?", ignoreCase = true))
+		if(commands[0].equals("help", ignoreCase = true)||commands[0].equals("h", ignoreCase = true)||commands[0].equals("?",
+				ignoreCase = true))
 			try {
-				val reader:InputStreamReader
-				reader = try {
+				val reader:InputStreamReader = try {
 					InputStreamReader(FileInputStream("config/lang/netadmin_help_${Locale.getDefault().country}.txt"), "UTF-8")
 				} catch(e2:IOException) {
 					InputStreamReader(FileInputStream("config/lang/netadmin_help_default.txt"), "UTF-8")
 				}
 
 				BufferedReader(reader).readLines().forEach {addConsoleLog(it)}
-
 
 				reader.close()
 			} catch(e:IOException) {
@@ -555,12 +553,12 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			val strTemp = GeneralUtil.stringCombine(commands, " ", 1)
 			addConsoleLog(strTemp)
 		} else if(commands[0].equals("cls", ignoreCase = true))
-			txtpaneConsoleLog!!.text = null
+			txtpaneConsoleLog.text = null
 		else if(commands[0].equals("logout", ignoreCase = true)||commands[0].equals("logoff", ignoreCase = true)
 			||commands[0].equals("disconnect", ignoreCase = true)) {
 			addConsoleLog(getUIText("Console_Logout"))
-			labelLoginMessage!!.foreground = Color.black
-			labelLoginMessage!!.text = getUIText("Login_Message_LoggingOut")
+			labelLoginMessage.foreground = Color.black
+			labelLoginMessage.text = getUIText("Login_Message_LoggingOut")
 			logout()
 		} else if(commands[0].equals("quit", ignoreCase = true)||commands[0].equals("exit", ignoreCase = true))
 			shutdown()
@@ -575,30 +573,23 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				sendCommand("announce\t${NetUtil.urlEncode(strTemp)}")
 				addConsoleLog(getUIText("Console_Announce")+strTemp)
 			}
-		} else if(commands[0].equals("myip", ignoreCase = true))
-			addConsoleLog(strMyIP)
-		else if(commands[0].equals("myhost", ignoreCase = true))
-			addConsoleLog(strMyHostname)
-		else if(commands[0].equals("serverip", ignoreCase = true))
-			addConsoleLog(client!!.ip)
-		else if(commands[0].equals("serverhost", ignoreCase = true))
-			addConsoleLog(strServerHost)
-		else if(commands[0].equals("serverport", ignoreCase = true))
-			addConsoleLog("$serverPort")
+		} else if(commands[0].equals("myip", ignoreCase = true)) addConsoleLog(strMyIP)
+		else if(commands[0].equals("myhost", ignoreCase = true)) addConsoleLog(strMyHostname)
+		else if(commands[0].equals("serverip", ignoreCase = true)) addConsoleLog(client!!.ip)
+		else if(commands[0].equals("serverhost", ignoreCase = true)) addConsoleLog(strServerHost)
+		else if(commands[0].equals("serverport", ignoreCase = true)) addConsoleLog("$serverPort")
 		else if(commands[0].equals("version", ignoreCase = true)) {
 			addConsoleLog("Client:"+GameManager.versionString)
 			addConsoleLog("Server:$serverFullVer")
 		} else if(commands[0].equals("bangui", ignoreCase = true)) {
-			if(commands.size>1)
-				openBanDialog(commands[1])
-			else
-				openBanDialog("")
+			if(commands.size>1) openBanDialog(commands[1])
+			else openBanDialog("")
 		} else if(commands[0].equals("ban", ignoreCase = true)) {
 			when {
 				commands.size>2 -> {
 					var banLength = -1
 					try {
-						banLength = Integer.parseInt(commands[2])
+						banLength = commands[2].toInt()
 					} catch(e:NumberFormatException) {
 						addConsoleLog(String.format(getUIText("Console_Ban_InvalidLength"), commands[2]))
 						return
@@ -616,23 +607,16 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		} else if(commands[0].equals("banlist", ignoreCase = true))
 			sendCommand("banlist")
 		else if(commands[0].equals("unban", ignoreCase = true)) {
-			if(commands.size>1)
-				sendCommand("unban\t${commands[1]}")
-			else
-				addConsoleLog(getUIText("Console_UnBan_NoParams"))
+			if(commands.size>1) sendCommand("unban\t${commands[1]}")
+			else addConsoleLog(getUIText("Console_UnBan_NoParams"))
 		} else if(commands[0].equals("playerdelete", ignoreCase = true)||commands[0].equals("pdel", ignoreCase = true)) {
 			val strTemp = GeneralUtil.stringCombine(commands, " ", 1)
-			if(strTemp.isNotEmpty())
-				sendCommand("playerdelete\t$strTemp")
-			else
-				addConsoleLog(getUIText("Console_PlayerDelete_NoParams"))
+			if(strTemp.isNotEmpty()) sendCommand("playerdelete\t$strTemp")
+			else addConsoleLog(getUIText("Console_PlayerDelete_NoParams"))
 		} else if(commands[0].equals("roomdelete", ignoreCase = true)||commands[0].equals("rdel", ignoreCase = true)) {
-			if(commands.size>1)
-				sendCommand("roomdelete\t${commands[1]}")
-			else
-				addConsoleLog(getUIText("Console_RoomDelete_NoParams"))
-		} else
-			addConsoleLog(String.format(getUIText("Console_UnknownCommand"), commands[0]))// roomdelete/rdef
+			if(commands.size>1) sendCommand("roomdelete\t${commands[1]}")
+			else addConsoleLog(getUIText("Console_RoomDelete_NoParams"))
+		} else addConsoleLog(String.format(getUIText("Console_UnknownCommand"), commands[0]))// roomdelete/rdef
 		// playerdelete/pdel
 		// banlist
 		// ban
@@ -664,7 +648,9 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 			if(showMessage)
 				answer =
-					JOptionPane.showConfirmDialog(this, String.format(getUIText("Message_ConfirmBan"), getUIText("BanType$banLength"))+"\n"+strIP, getUIText("Title_ConfirmBan"), JOptionPane.YES_NO_OPTION)
+					JOptionPane.showConfirmDialog(this,
+						String.format(getUIText("Message_ConfirmBan"), getUIText("BanType$banLength"))+"\n"+strIP,
+						getUIText("Title_ConfirmBan"), JOptionPane.YES_NO_OPTION)
 
 			if(answer==JOptionPane.YES_OPTION) sendCommand("ban\t$strIP\t$banLength")
 		}
@@ -711,7 +697,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 		val btnConfirm = JButton(getUIText("Ban_Confirm"))
 		btnConfirm.setMnemonic('O')
-		btnConfirm.addActionListener {e ->
+		btnConfirm.addActionListener {
 			requestBanFromGUI(txtfldBanIP.text, comboboxBanLength.selectedIndex-1, false)
 			dialogBan.dispose()
 		}
@@ -719,7 +705,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 		val btnCancel = JButton(getUIText("Ban_Cancel"))
 		btnCancel.setMnemonic('C')
-		btnCancel.addActionListener {e -> dialogBan.dispose()}
+		btnCancel.addActionListener {dialogBan.dispose()}
 		pButtons.add(btnCancel)
 
 		// Set frame vitals
@@ -736,13 +722,13 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	override fun actionPerformed(e:ActionEvent) {
 		// Login
 		if(e.actionCommand=="Login_Login")
-			if(txtfldUsername!!.text.isNotEmpty()&&passfldPassword!!.password.isNotEmpty()) {
+			if(txtfldUsername.text.isNotEmpty()&&passfldPassword.password.isNotEmpty()) {
 				setLoginUIEnabled(false)
-				labelLoginMessage!!.foreground = Color.black
-				labelLoginMessage!!.text = getUIText("Login_Message_Connecting")
+				labelLoginMessage.foreground = Color.black
+				labelLoginMessage.text = getUIText("Login_Message_Connecting")
 
 				// Get hostname and port number
-				var strHost = txtfldServer!!.text
+				var strHost = txtfldServer.text
 				if(strHost.isEmpty()) strHost = "127.0.0.1"
 				var portSpliter = strHost.indexOf(':')
 				if(portSpliter==-1) portSpliter = strHost.length
@@ -752,7 +738,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				serverPort = NetBaseClient.DEFAULT_PORT
 				try {
 					val strPort = strHost.substring(portSpliter+1, strHost.length)
-					serverPort = Integer.parseInt(strPort)
+					serverPort = strPort.toInt()
 				} catch(e2:Exception) {
 				}
 
@@ -768,14 +754,14 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		if(e.actionCommand=="Login_Quit") shutdown()
 		// Execute console command
 		if(e.actionCommand=="Lobby_Console_Execute") {
-			val commandline = txtfldConsoleCommand!!.text
+			val commandline = txtfldConsoleCommand.text
 			val commands = commandline.split(" ".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 			executeConsoleCommand(commands, commandline)
-			txtfldConsoleCommand!!.text = ""
+			txtfldConsoleCommand.text = ""
 		}
 		// Load/Refresh Ranking
 		if(e.actionCommand=="MPRanking_Button_LoadRanking") {
-			btnRankingLoad!!.isEnabled = false
+			btnRankingLoad.isEnabled = false
 			client!!.send("mpranking\t0\n")
 		}
 	}
@@ -787,16 +773,16 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		// Welcome
 		if(message[0]=="welcome") {
 			//welcome\t[MAJOR VERSION]\t[PLAYERS]\t[OBSERVERS]\t[MINOR VERSION]\t[FULL VERSION]\t[PING INTERVAL]\t[DEV BUILD]
-			labelLoginMessage!!.foreground = Color.black
-			labelLoginMessage!!.text = getUIText("Login_Message_LoggingIn")
+			labelLoginMessage.foreground = Color.black
+			labelLoginMessage.text = getUIText("Login_Message_LoggingIn")
 
 			// Version check
 			val clientMajorVer = GameManager.versionMajor
-			val serverMajorVer = java.lang.Float.parseFloat(message[1])
+			val serverMajorVer = message[1].toFloat()
 
 			if(clientMajorVer!=serverMajorVer) {
-				labelLoginMessage!!.foreground = Color.red
-				labelLoginMessage!!.text = String.format(getUIText("Login_Message_VersionError"), clientMajorVer, serverMajorVer)
+				labelLoginMessage.foreground = Color.red
+				labelLoginMessage.text = String.format(getUIText("Login_Message_VersionError"), clientMajorVer, serverMajorVer)
 				isWantedDisconnect = true
 				logout()
 				return
@@ -804,13 +790,13 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 			// Build type check
 			val clientBuildType = GameManager.isDevBuild
-			val serverBuildType = java.lang.Boolean.parseBoolean(message[7])
+			val serverBuildType = message[7].toBoolean()
 
 			if(clientBuildType!=serverBuildType) {
 				val strClientBuildType = GameManager.getBuildTypeString(clientBuildType)
 				val strServerBuildType = GameManager.getBuildTypeString(serverBuildType)
-				labelLoginMessage!!.foreground = Color.red
-				labelLoginMessage!!.text =
+				labelLoginMessage.foreground = Color.red
+				labelLoginMessage.text =
 					String.format(getUIText("Login_Message_BuildTypeError"), strClientBuildType, strServerBuildType)
 				isWantedDisconnect = true
 				logout()
@@ -821,13 +807,13 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 			// Ping interval
 			val pingInterval:Long =
-				if(message.size>6) java.lang.Long.parseLong(message[6]) else NetBaseClient.PING_INTERVAL
+				if(message.size>6) message[6].toLong() else NetBaseClient.PING_INTERVAL
 			if(pingInterval!=NetBaseClient.PING_INTERVAL) client.startPingTask(pingInterval)
 
 			// Send login message
-			val strUsername = txtfldUsername!!.text
+			val strUsername = txtfldUsername.text
 
-			val rc4 = RC4(passfldPassword!!.password)
+			val rc4 = RC4(passfldPassword.password)
 			val ePassword = rc4.rc4(NetUtil.stringToBytes(strUsername))
 			val b64Password = Base64Coder.encode(ePassword)
 
@@ -841,11 +827,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			isWantedDisconnect = true
 			logout()
 
-			labelLoginMessage!!.foreground = Color.red
-			if(message.size>1&&message[1]=="DISABLE")
-				labelLoginMessage!!.text = getUIText("Login_Message_DisabledError")
-			else
-				labelLoginMessage!!.text = getUIText("Login_Message_LoginError")
+			labelLoginMessage.foreground = Color.red
+
+			labelLoginMessage.text = getUIText(
+				if(message.size>1&&message[1]=="DISABLE") "Login_Message_DisabledError" else "Login_Message_LoginError")
 			return
 		}
 		// Banned
@@ -853,7 +838,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			isWantedDisconnect = true
 			logout()
 
-			labelLoginMessage!!.foreground = Color.red
+			labelLoginMessage.foreground = Color.red
 
 			val cStart = GeneralUtil.importCalendarString(message[1])
 			val cExpire = if(message.size>2&&message[2].isNotEmpty()) GeneralUtil.importCalendarString(message[2]) else null
@@ -864,7 +849,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			else
 				getUIText("Login_Message_Banned_Permanent")
 
-			labelLoginMessage!!.text = String.format(getUIText("Login_Message_Banned"), strStart, strExpire)
+			labelLoginMessage.text = String.format(getUIText("Login_Message_Banned"), strStart, strExpire)
 			return
 		}
 		// Login successful
@@ -872,18 +857,14 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			strMyIP = message[1]
 			strMyHostname = message[2]
 
-			propConfig.setProperty("login.rememberUsername", chkboxRememberUsername!!.isSelected)
-			propConfig.setProperty("login.rememberPassword", chkboxRememberPassword!!.isSelected)
+			propConfig.setProperty("login.rememberUsername", chkboxRememberUsername.isSelected)
+			propConfig.setProperty("login.rememberPassword", chkboxRememberPassword.isSelected)
 
-			propConfig.setProperty("login.server", txtfldServer!!.text)
-			if(chkboxRememberUsername!!.isSelected)
-				propConfig.setProperty("login.username", txtfldUsername!!.text)
-			else
-				propConfig.setProperty("login.username", "")
-			if(chkboxRememberPassword!!.isSelected)
-				propConfig.setProperty("login.password", NetUtil.compressString(String(passfldPassword!!.password)))
-			else
-				propConfig.setProperty("login.password", "")
+			propConfig.setProperty("login.server", txtfldServer.text)
+
+			propConfig.setProperty("login.username", if(chkboxRememberUsername.isSelected) txtfldUsername.text else "")
+			propConfig.setProperty("login.password", if(chkboxRememberPassword.isSelected)
+				NetUtil.compressString(String(passfldPassword.password)) else "")
 
 			addConsoleLog(String.format(getUIText("Console_LoginOK"), strServerHost, serverPort))
 
@@ -891,9 +872,9 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Multiplayer Leaderboard
 		if(message[0]=="mpranking") {
-			btnRankingLoad!!.isEnabled = true
+			btnRankingLoad.isEnabled = true
 
-			val style = Integer.parseInt(message[1])
+			val style = message[1].toInt()
 
 			tablemodelMPRanking[style].rowCount = 0
 
@@ -905,7 +886,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 				if(strRankData.size>=MPRANKING_COLUMNNAMES.size) {
 					val strRowData = arrayOfNulls<String>(MPRANKING_COLUMNNAMES.size)
-					val rank = Integer.parseInt(strRankData[0])
+					val rank = strRankData[0].toInt()
 					if(rank==-1)
 						strRowData[0] = "N/A"
 					else
@@ -920,32 +901,32 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		}
 		// Room List
 		if(message[0]=="roomlist") {
-			val size = Integer.parseInt(message[1])
+			val size = message[1].toInt()
 
-			tablemodelRoomList!!.rowCount = 0
+			tablemodelRoomList.rowCount = 0
 			for(i in 0 until size) {
 				val r = NetRoomInfo(message[2+i])
-				tablemodelRoomList!!.addRow(createRoomListRowData(r))
+				tablemodelRoomList.addRow(createRoomListRowData(r))
 			}
 		}
 		// New room appeared
 		if(message[0]=="roomcreate") {
 			val r = NetRoomInfo(message[1])
-			tablemodelRoomList!!.addRow(createRoomListRowData(r))
+			tablemodelRoomList.addRow(createRoomListRowData(r))
 		}
 		// Room update
 		if(message[0]=="roomupdate") {
 			val r = NetRoomInfo(message[1])
-			val columnID = tablemodelRoomList!!.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
+			val columnID = tablemodelRoomList.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
 
-			for(i in 0 until tablemodelRoomList!!.rowCount) {
-				val strID = tablemodelRoomList!!.getValueAt(i, columnID) as String
-				val roomID = Integer.parseInt(strID)
+			for(i in 0 until tablemodelRoomList.rowCount) {
+				val strID = tablemodelRoomList.getValueAt(i, columnID) as String
+				val roomID = strID.toInt()
 
 				if(roomID==r.roomID) {
 					val rowData = createRoomListRowData(r)
 					for(j in rowData.indices)
-						tablemodelRoomList!!.setValueAt(rowData[j], i, j)
+						tablemodelRoomList.setValueAt(rowData[j], i, j)
 					break
 				}
 			}
@@ -953,14 +934,14 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		// Room delete
 		if(message[0]=="roomdelete") {
 			val r = NetRoomInfo(message[1])
-			val columnID = tablemodelRoomList!!.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
+			val columnID = tablemodelRoomList.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
 
-			for(i in 0 until tablemodelRoomList!!.rowCount) {
-				val strID = tablemodelRoomList!!.getValueAt(i, columnID) as String
-				val roomID = Integer.parseInt(strID)
+			for(i in 0 until tablemodelRoomList.rowCount) {
+				val strID = tablemodelRoomList.getValueAt(i, columnID) as String
+				val roomID = strID.toInt()
 
 				if(roomID==r.roomID) {
-					tablemodelRoomList!!.removeRow(i)
+					tablemodelRoomList.removeRow(i)
 					break
 				}
 			}
@@ -979,13 +960,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	 * @return Row data
 	 */
 	private fun createRoomListRowData(r:NetRoomInfo):Array<String> = arrayOf(
-		r.roomID.toString()
-		, r.strName
-		, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False")
-		, if(r.ruleLock) r.ruleName.toUpperCase() else getUIText("RoomTable_RuleName_Any")
-		, if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting")
-		, r.playerSeatedCount.toString()+"/"+r.maxPlayers
-		, r.spectatorCount.toString())
+		r.roomID.toString(), r.strName, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False"),
+		if(r.ruleLock) r.ruleName.toUpperCase() else getUIText("RoomTable_RuleName_Any"),
+		if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting"),
+		r.playerSeatedCount.toString()+"/"+r.maxPlayers, r.spectatorCount.toString())
 
 	/** When received an admin command result
 	 * @param client NetBaseClient
@@ -997,14 +975,14 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			// Get current selected IP and Type
 			var strSelectedIP:String? = null
 			var strSelectedType:String? = null
-			if(tableUsers!!.selectedRow!=-1) {
-				strSelectedIP = tablemodelUsers!!.getValueAt(tableUsers!!.selectedRow, 0) as String
-				strSelectedType = tablemodelUsers!!.getValueAt(tableUsers!!.selectedRow, 2) as String
+			if(tableUsers.selectedRow!=-1) {
+				strSelectedIP = tablemodelUsers.getValueAt(tableUsers.selectedRow, 0) as String
+				strSelectedType = tablemodelUsers.getValueAt(tableUsers.selectedRow, 2) as String
 			}
-			tableUsers!!.selectionModel.clearSelection()
+			tableUsers.selectionModel.clearSelection()
 
 			// Set number of rows
-			if(tablemodelUsers!!.rowCount>message.size-1) tablemodelUsers!!.rowCount = message.size-1
+			if(tablemodelUsers.rowCount>message.size-1) tablemodelUsers.rowCount = message.size-1
 
 			for(i in 1 until message.size) {
 				val strClientData = message[i].split("\\|".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
@@ -1013,7 +991,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				val strHost = strClientData[1] // Hostname
 
 				// Type of the client
-				val type = Integer.parseInt(strClientData[2])
+				val type = strClientData[2].toInt()
 				var strType = getUIText(USERTABLE_USERTYPES[type])
 				if(strIP==strMyIP&&strHost==strMyHostname&&type==3)
 					strType = "*"+getUIText(USERTABLE_USERTYPES[type])
@@ -1026,7 +1004,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				}
 
 				// Create a row data
-				val strTableData = arrayOfNulls<String>(tablemodelUsers!!.columnCount)
+				val strTableData = arrayOfNulls<String>(tablemodelUsers.columnCount)
 				strTableData[0] = strIP
 				strTableData[1] = strHost
 				strTableData[2] = strType
@@ -1034,27 +1012,27 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 				// Add the row data
 				val rowNumber = i-1
-				val maxRow = tablemodelUsers!!.rowCount
+				val maxRow = tablemodelUsers.rowCount
 				if(rowNumber<maxRow) {
 					// Modify an existing row
 					for(j in strTableData.indices)
-						tablemodelUsers!!.setValueAt(strTableData[j], rowNumber, j)
+						tablemodelUsers.setValueAt(strTableData[j], rowNumber, j)
 
 					// Set selected row
 					if(strSelectedIP!=null&&strSelectedType!=null&&
 						strSelectedIP==strIP&&strSelectedType==strType) {
-						tableUsers!!.selectionModel.setSelectionInterval(rowNumber, rowNumber)
+						tableUsers.selectionModel.setSelectionInterval(rowNumber, rowNumber)
 						strSelectedIP = null
 						strSelectedType = null
 					}
 				} else {
 					// Add an new row
-					tablemodelUsers!!.addRow(strTableData)
+					tablemodelUsers.addRow(strTableData)
 
 					// Set selected row
 					if(strSelectedIP!=null&&strSelectedType!=null&&
 						strSelectedIP==strIP&&strSelectedType==strType) {
-						tableUsers!!.selectionModel.setSelectionInterval(maxRow, maxRow)
+						tableUsers.selectionModel.setSelectionInterval(maxRow, maxRow)
 						strSelectedIP = null
 						strSelectedType = null
 					}
@@ -1077,8 +1055,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 					ban.importString(message[i+1])
 
 					val strBanLength = getUIText("BanType"+ban.banLength)
-					var strDate = ""
-					if(ban.startDate!=null) strDate = GeneralUtil.getCalendarString(ban.startDate)
+					val strDate = GeneralUtil.getCalendarString(ban.startDate)
 
 					addConsoleLog(String.format(getUIText("Console_BanList_Result"), ban.addr, strBanLength, strDate), Color(0, 64, 64))
 				}
@@ -1105,18 +1082,18 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	override fun netOnDisconnect(client:NetBaseClient, ex:Throwable?) {
 		if(isShutdownRequested) {
 			log.info("Server shutdown completed")
-			labelLoginMessage!!.foreground = Color.black
-			labelLoginMessage!!.text = getUIText("Login_Message_Shutdown")
+			labelLoginMessage.foreground = Color.black
+			labelLoginMessage.text = getUIText("Login_Message_Shutdown")
 		} else if(isWantedDisconnect)
 			log.info("Disconnected from the server")
 		else {
-			labelLoginMessage!!.foreground = Color.red
+			labelLoginMessage.foreground = Color.red
 			if(ex==null) {
 				log.warn("ERROR Disconnected! (null)")
-				labelLoginMessage!!.text = String.format(getUIText("Login_Message_UnwantedDisconnect"), "(null)")
+				labelLoginMessage.text = String.format(getUIText("Login_Message_UnwantedDisconnect"), "(null)")
 			} else {
 				log.error("ERROR Disconnected!", ex)
-				labelLoginMessage!!.text = String.format(getUIText("Login_Message_UnwantedDisconnect"), "$ex")
+				labelLoginMessage.text = String.format(getUIText("Login_Message_UnwantedDisconnect"), "$ex")
 			}
 		}
 		logout()
@@ -1126,35 +1103,30 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	private inner class TextComponentPopupMenu(field:JTextComponent):JPopupMenu() {
 
 		private val cutAction:Action = object:AbstractAction(getUIText("Popup_Cut")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				field.cut()
 			}
 		}
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				field.copy()
 			}
 		}
 		private val pasteAction:Action = object:AbstractAction(getUIText("Popup_Paste")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				field.paste()
 			}
 		}
 		private val deleteAction:Action = object:AbstractAction(getUIText("Popup_Delete")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				field.replaceSelection(null)
 			}
 		}
 		private val selectAllAction:Action = object:AbstractAction(getUIText("Popup_SelectAll")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				field.selectAll()
@@ -1180,29 +1152,24 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			super.show(c, x, y)
 		}
 
-		private val serialVersionUID = 1L
-
 	}
 
 	/** Popup menu for console log */
 	private inner class LogPopupMenu(field:JTextComponent):JPopupMenu() {
 
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				field.copy()
 			}
 		}
 		private val selectAllAction:Action = object:AbstractAction(getUIText("Popup_SelectAll")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				field.selectAll()
 			}
 		}
 		private val clearAction:Action = object:AbstractAction(getUIText("Popup_Clear")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				field.text = null
@@ -1224,22 +1191,18 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			super.show(c, x, y)
 		}
 
-			private val serialVersionUID = 1L
-
 	}
 
 	/** Popup menu for users table */
 	private inner class UserPopupMenu(table:JTable):JPopupMenu() {
 
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(e:ActionEvent) {
 				copyTableRowToClipboard(table)
 			}
 		}
 		private val kickAction:Action = object:AbstractAction(getUIText("Popup_Kick")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				val rowNumber = table.selectedRow
@@ -1248,7 +1211,6 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			}
 		}
 		private val banAction:Action = object:AbstractAction(getUIText("Popup_Ban")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				val rowNumber = table.selectedRow
@@ -1273,21 +1235,18 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			super.show(c, x, y)
 		}
 
-		private val serialVersionUID = 1L
 	}
 
 	/** Popup menu for leaderboard table */
 	private inner class MPRankingPopupMenu(table:JTable):JPopupMenu() {
 
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(e:ActionEvent) {
 				copyTableRowToClipboard(table)
 			}
 		}
 		private val deleteAction:Action = object:AbstractAction(getUIText("Popup_Delete")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				val rowNumber = table.selectedRow
@@ -1310,22 +1269,18 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			super.show(c, x, y)
 		}
 
-			private val serialVersionUID = 1L
-
 	}
 
 	/** Popup menu for room list table */
 	private inner class RoomTablePopupMenu(table:JTable):JPopupMenu() {
 
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(e:ActionEvent) {
 				copyTableRowToClipboard(table)
 			}
 		}
 		private val deleteAction:Action = object:AbstractAction(getUIText("Popup_Delete")) {
-			private val serialVersionUID = 1L
 
 			override fun actionPerformed(evt:ActionEvent) {
 				val rowNumber = table.selectedRow
@@ -1396,7 +1351,8 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		/** Room-table column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
 		private val ROOMTABLE_COLUMNNAMES =
-			arrayOf("RoomTable_ID", "RoomTable_Name", "RoomTable_Rated", "RoomTable_RuleName", "RoomTable_Status", "RoomTable_Players", "RoomTable_Spectators")
+			arrayOf("RoomTable_ID", "RoomTable_Name", "RoomTable_Rated", "RoomTable_RuleName", "RoomTable_Status",
+				"RoomTable_Players", "RoomTable_Spectators")
 
 		//***** Variables *****
 		/** Log */
