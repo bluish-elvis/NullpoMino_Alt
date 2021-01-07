@@ -21,7 +21,7 @@ class VSDigRaceMode:AbstractMode() {
 	private var goalLines:IntArray = IntArray(0)
 
 	/** Rate of garbage holes change */
-	private var garbagePercent:IntArray = IntArray(0)
+	private var messiness:IntArray = IntArray(0)
 
 	/** BGM number */
 	private var bgmno:Int = 0
@@ -42,8 +42,7 @@ class VSDigRaceMode:AbstractMode() {
 	private var version:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "VS-DIG RACE"
+	override val name:String = "VS-DIG RACE"
 
 	override val isVSMode:Boolean
 		get() = true
@@ -54,11 +53,8 @@ class VSDigRaceMode:AbstractMode() {
 
 	/* Mode init */
 	override fun modeInit(manager:GameManager) {
-		owner = manager
-		receiver = manager.receiver
-
 		goalLines = IntArray(MAX_PLAYERS)
-		garbagePercent = IntArray(MAX_PLAYERS)
+		messiness = IntArray(MAX_PLAYERS)
 		bgmno = 0
 		enableSE = BooleanArray(MAX_PLAYERS)
 		presetNumber = IntArray(MAX_PLAYERS)
@@ -104,7 +100,7 @@ class VSDigRaceMode:AbstractMode() {
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
 		goalLines[playerID] = prop.getProperty("vsdigrace.goalLines.p$playerID", 18)
-		garbagePercent[playerID] = prop.getProperty("vsdigrace.garbagePercent.p$playerID", 100)
+		messiness[playerID] = prop.getProperty("vsdigrace.garbagePercent.p$playerID", 100)
 		bgmno = prop.getProperty("vsdigrace.bgmno", 0)
 		enableSE[playerID] = prop.getProperty("vsdigrace.enableSE.p$playerID", true)
 		presetNumber[playerID] = prop.getProperty("vsdigrace.presetNumber.p$playerID", 0)
@@ -117,7 +113,7 @@ class VSDigRaceMode:AbstractMode() {
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
 		prop.setProperty("vsdigrace.goalLines.p$playerID", goalLines[playerID])
-		prop.setProperty("vsdigrace.garbagePercent.p$playerID", garbagePercent[playerID])
+		prop.setProperty("vsdigrace.garbagePercent.p$playerID", messiness[playerID])
 		prop.setProperty("vsdigrace.bgmno", bgmno)
 		prop.setProperty("vsdigrace.enableSE.p$playerID", enableSE[playerID])
 		prop.setProperty("vsdigrace.presetNumber.p$playerID", presetNumber[playerID])
@@ -158,62 +154,27 @@ class VSDigRaceMode:AbstractMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-					0 -> {
-						engine.speed.gravity += change*m
-						if(engine.speed.gravity<-1) engine.speed.gravity = 99999
-						if(engine.speed.gravity>99999) engine.speed.gravity = -1
-					}
-					1 -> {
-						engine.speed.denominator += change*m
-						if(engine.speed.denominator<-1) engine.speed.denominator = 99999
-						if(engine.speed.denominator>99999) engine.speed.denominator = -1
-					}
-					2 -> {
-						engine.speed.are += change
-						if(engine.speed.are<0) engine.speed.are = 99
-						if(engine.speed.are>99) engine.speed.are = 0
-					}
-					3 -> {
-						engine.speed.areLine += change
-						if(engine.speed.areLine<0) engine.speed.areLine = 99
-						if(engine.speed.areLine>99) engine.speed.areLine = 0
-					}
-					4 -> {
-						engine.speed.lineDelay += change
-						if(engine.speed.lineDelay<0) engine.speed.lineDelay = 99
-						if(engine.speed.lineDelay>99) engine.speed.lineDelay = 0
-					}
-					5 -> {
-						engine.speed.lockDelay += change
-						if(engine.speed.lockDelay<0) engine.speed.lockDelay = 99
-						if(engine.speed.lockDelay>99) engine.speed.lockDelay = 0
-					}
-					6 -> {
-						engine.speed.das += change
-						if(engine.speed.das<0) engine.speed.das = 99
-						if(engine.speed.das>99) engine.speed.das = 0
-					}
-					7, 8 -> {
-						presetNumber[playerID] += change
-						if(presetNumber[playerID]<0) presetNumber[playerID] = 99
-						if(presetNumber[playerID]>99) presetNumber[playerID] = 0
-					}
+
+					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
+					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
+					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
+					3 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
+					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
+					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
+					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
+					7, 8 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change,0,99)
 					9 -> {
 						goalLines[playerID] += change
 						if(goalLines[playerID]<1) goalLines[playerID] = 18
 						if(goalLines[playerID]>18) goalLines[playerID] = 1
 					}
 					10 -> {
-						garbagePercent[playerID] += change
-						if(garbagePercent[playerID]<0) garbagePercent[playerID] = 100
-						if(garbagePercent[playerID]>100) garbagePercent[playerID] = 0
+						messiness[playerID] += change
+						if(messiness[playerID]<0) messiness[playerID] = 100
+						if(messiness[playerID]>100) messiness[playerID] = 0
 					}
 					11 -> enableSE[playerID] = !enableSE[playerID]
-					12 -> {
-						bgmno += change
-						if(bgmno<0) bgmno = BGM.count-1
-						if(bgmno>=BGM.count) bgmno = 0
-					}
+					12 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
 				}
 			}
 
@@ -264,7 +225,7 @@ class VSDigRaceMode:AbstractMode() {
 				drawMenu(engine, playerID, receiver, 14, EventReceiver.COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
 			} else {
 				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, 9, "GOAL", "${goalLines[playerID]}", "CHANGERATE",
-					"${garbagePercent[playerID]}%", "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
+					"${messiness[playerID]}%", "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 				drawMenu(engine, playerID, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM", "${BGM.values[bgmno]}")
 			}
 		} else
@@ -303,7 +264,7 @@ class VSDigRaceMode:AbstractMode() {
 		var hole:Int = -1
 
 		for(y:Int in h-1 downTo h-goalLines[playerID]) {
-			if(hole==-1||engine.random.nextInt(100)<garbagePercent[playerID]) {
+			if(hole==-1||engine.random.nextInt(100)<messiness[playerID]) {
 				var newhole = -1
 				do
 					newhole = engine.random.nextInt(w)

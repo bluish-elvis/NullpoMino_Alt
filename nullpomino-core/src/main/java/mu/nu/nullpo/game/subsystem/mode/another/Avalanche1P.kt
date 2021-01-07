@@ -65,8 +65,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	private var sprintTarget:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "AVALANCHE 1P (RC2)"
+	override val name:String = "AVALANCHE 1P (RC2)"
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {

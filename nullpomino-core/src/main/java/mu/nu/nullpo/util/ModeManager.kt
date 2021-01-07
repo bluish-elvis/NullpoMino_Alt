@@ -152,7 +152,7 @@ class ModeManager {
 
 			try {
 				modeClass = Class.forName(name)
-				modeObject = modeClass.newInstance() as GameMode
+				modeObject = modeClass.getDeclaredConstructor().newInstance() as GameMode
 				modelist.add(modeObject)
 			} catch(e:ClassNotFoundException) {
 				log.warn("Mode class $name not found", e)
@@ -186,7 +186,7 @@ class ModeManager {
 				val modeObject:GameMode
 				try {
 					modeClass = Class.forName(name)
-					modeObject = modeClass.newInstance() as GameMode
+					modeObject = modeClass.getDeclaredConstructor().newInstance() as GameMode
 					modelist.add(modeObject)
 				} catch(e:ClassNotFoundException) {
 					log.warn("Mode class $name not found", e)

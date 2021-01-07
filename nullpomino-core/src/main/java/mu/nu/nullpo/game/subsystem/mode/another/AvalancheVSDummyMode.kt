@@ -166,8 +166,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected var bigDisplay:Boolean = false
 
 	/* Mode name */
-	override val name:String
-		get() = "AVALANCHE VS DUMMY"
+	override val name:String = "AVALANCHE VS DUMMY"
 
 	override val isVSMode:Boolean
 		get() = true
@@ -177,14 +176,12 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		get() = MAX_PLAYERS
 
 	/* Game style */
-	override val gameStyle:Int
-		get() = GameEngine.GAMESTYLE_AVALANCHE
+	override val gameStyle:Int = GameEngine.GAMESTYLE_AVALANCHE
 	override val gameIntensity:Int = 2
 	/* Mode initialization */
 	@Suppress("RemoveExplicitTypeArguments")
 	override fun modeInit(manager:GameManager) {
 		owner = manager
-		receiver = owner.receiver
 
 		ojamaCounterMode = IntArray(MAX_PLAYERS)
 		ojama = IntArray(MAX_PLAYERS)

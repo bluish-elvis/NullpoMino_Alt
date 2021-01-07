@@ -86,8 +86,7 @@ class SquareMode:AbstractMode() {
 	private var rankingSquares:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
 	/* Returns the name of this mode */
-	override val name:String
-		get() = "SQUARE"
+	override val name:String = "SQUARE"
 	override val gameIntensity:Int = -1
 	/* This function will be called when the game enters the main game
  * screen. */

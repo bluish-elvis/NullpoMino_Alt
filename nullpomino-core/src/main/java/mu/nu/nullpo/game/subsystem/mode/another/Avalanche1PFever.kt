@@ -103,8 +103,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	private var xyzzy:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "AVALANCHE 1P FEVER MARATHON (RC2)"
+	override val name:String = "AVALANCHE 1P FEVER MARATHON (RC2)"
 	override val gameIntensity:Int = 1
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {

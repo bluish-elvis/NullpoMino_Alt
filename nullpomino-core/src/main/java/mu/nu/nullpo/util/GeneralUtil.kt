@@ -253,7 +253,7 @@ object GeneralUtil {
 
 		try {
 			randomizerClass = Class.forName(filename)
-			randomizerObject = randomizerClass.newInstance() as Randomizer
+			randomizerObject = randomizerClass.getDeclaredConstructor().newInstance() as Randomizer
 		} catch(e:Exception) {
 			log.warn("Failed to load Randomizer from $filename", e)
 		}
@@ -271,7 +271,7 @@ object GeneralUtil {
 
 		try {
 			wallkickClass = Class.forName(filename)
-			wallkickObject = wallkickClass.newInstance() as Wallkick
+			wallkickObject = wallkickClass.getDeclaredConstructor().newInstance() as Wallkick
 		} catch(e:Exception) {
 			log.warn("Failed to load Wallkick from $filename", e)
 		}
@@ -289,7 +289,7 @@ object GeneralUtil {
 
 		try {
 			aiClass = Class.forName(filename)
-			aiObject = aiClass.newInstance() as DummyAI
+			aiObject = aiClass.getDeclaredConstructor().newInstance() as DummyAI
 		} catch(e:Exception) {
 			log.warn("Failed to load AIPlayer from $filename", e)
 		}

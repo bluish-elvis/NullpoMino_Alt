@@ -5,8 +5,7 @@ import mu.nu.nullpo.game.component.Piece
 
 class PoochyBotDefensive:PoochyBot() {
 	/* AI's name */
-	override val name:String
-		get() = "${super.name} (Defensive)"
+	override val name:String = "${super.name} (Defensive)"
 
 	/**
 	 * Think routine

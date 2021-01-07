@@ -33,7 +33,7 @@ public class AudioImpl implements Audio{
 		int channels=AL10.alGetBufferi(buffer,AL10.AL_CHANNELS);
 		int freq=AL10.alGetBufferi(buffer,AL10.AL_FREQUENCY);
 		int div=bits/8;
-		int samples=bytes/(div!=0?div:1);
+		int samples=bytes/(div!=0?div:16);
 		length=(samples/(float)freq)/channels;
 	}
 

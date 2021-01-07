@@ -113,8 +113,7 @@ class PhysicianVS:AbstractMode() {
 	private var flash:BooleanArray = BooleanArray(0)
 
 	/* Mode name */
-	override val name:String
-		get() = "PHYSICIAN VS-BATTLE (RC1)"
+	override val name:String = "PHYSICIAN VS-BATTLE (RC1)"
 	override val gameIntensity:Int = 2
 	override val isVSMode:Boolean
 		get() = true
@@ -124,13 +123,11 @@ class PhysicianVS:AbstractMode() {
 		get() = MAX_PLAYERS
 
 	/* Game style */
-	override val gameStyle:Int
-		get() = GameEngine.GAMESTYLE_PHYSICIAN
+	override val gameStyle:Int = GameEngine.GAMESTYLE_PHYSICIAN
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
 		owner = manager
-		receiver = owner.receiver
 
 		//garbage = new int[MAX_PLAYERS];
 		//garbageSent = new int[MAX_PLAYERS];
@@ -321,46 +318,14 @@ class PhysicianVS:AbstractMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-					0 -> {
-						engine.speed.gravity += change*m
-						if(engine.speed.gravity<-1) engine.speed.gravity = 99999
-						if(engine.speed.gravity>99999) engine.speed.gravity = -1
-					}
-					1 -> {
-						engine.speed.denominator += change*m
-						if(engine.speed.denominator<-1) engine.speed.denominator = 99999
-						if(engine.speed.denominator>99999) engine.speed.denominator = -1
-					}
-					2 -> {
-						engine.speed.are += change
-						if(engine.speed.are<0) engine.speed.are = 99
-						if(engine.speed.are>99) engine.speed.are = 0
-					}
-					3 -> {
-						engine.speed.areLine += change
-						if(engine.speed.areLine<0) engine.speed.areLine = 99
-						if(engine.speed.areLine>99) engine.speed.areLine = 0
-					}
-					4 -> {
-						engine.speed.lineDelay += change
-						if(engine.speed.lineDelay<0) engine.speed.lineDelay = 99
-						if(engine.speed.lineDelay>99) engine.speed.lineDelay = 0
-					}
-					5 -> {
-						engine.speed.lockDelay += change
-						if(engine.speed.lockDelay<0) engine.speed.lockDelay = 99
-						if(engine.speed.lockDelay>99) engine.speed.lockDelay = 0
-					}
-					6 -> {
-						engine.speed.das += change
-						if(engine.speed.das<0) engine.speed.das = 99
-						if(engine.speed.das>99) engine.speed.das = 0
-					}
-					7, 8 -> {
-						presetNumber[playerID] += change
-						if(presetNumber[playerID]<0) presetNumber[playerID] = 99
-						if(presetNumber[playerID]>99) presetNumber[playerID] = 0
-					}
+					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
+					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
+					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
+					3 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
+					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
+					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
+					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
+					7, 8 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
 					9 -> {
 						speed[playerID] += change
 						if(speed[playerID]<0) speed[playerID] = 2
@@ -376,11 +341,7 @@ class PhysicianVS:AbstractMode() {
 					}
 					11 -> flash[playerID] = !flash[playerID]
 					12 -> enableSE[playerID] = !enableSE[playerID]
-					13 -> {
-						bgmno += change
-						if(bgmno<0) bgmno = BGM.count-1
-						if(bgmno>=BGM.count) bgmno = 0
-					}
+					13 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
 					14 -> {
 						useMap[playerID] = !useMap[playerID]
 						if(!useMap[playerID]) {

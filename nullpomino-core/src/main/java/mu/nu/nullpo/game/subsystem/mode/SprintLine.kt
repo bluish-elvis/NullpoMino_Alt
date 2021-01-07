@@ -60,8 +60,7 @@ class SprintLine:NetDummyMode() {
 	private var rankingPPS:Array<FloatArray> = Array(GOALTYPE_MAX) {FloatArray(RANKING_MAX)}
 
 	/* Mode name */
-	override val name:String
-		get() = "Lines SprintRace"
+	override val name:String = "Lines SprintRace"
 	override val gameIntensity:Int = 2
 	/* Initialization for each player */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -149,57 +148,22 @@ class SprintLine:NetDummyMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-					0 -> {
-						engine.speed.gravity += change*m
-						if(engine.speed.gravity<-1) engine.speed.gravity = 99999
-						if(engine.speed.gravity>99999) engine.speed.gravity = -1
-					}
-					1 -> {
-						engine.speed.denominator += change*m
-						if(engine.speed.denominator<-1) engine.speed.denominator = 99999
-						if(engine.speed.denominator>99999) engine.speed.denominator = -1
-					}
-					2 -> {
-						engine.speed.are += change
-						if(engine.speed.are<0) engine.speed.are = 99
-						if(engine.speed.are>99) engine.speed.are = 0
-					}
-					3 -> {
-						engine.speed.areLine += change
-						if(engine.speed.areLine<0) engine.speed.areLine = 99
-						if(engine.speed.areLine>99) engine.speed.areLine = 0
-					}
-					4 -> {
-						engine.speed.lineDelay += change
-						if(engine.speed.lineDelay<0) engine.speed.lineDelay = 99
-						if(engine.speed.lineDelay>99) engine.speed.lineDelay = 0
-					}
-					5 -> {
-						engine.speed.lockDelay += change
-						if(engine.speed.lockDelay<0) engine.speed.lockDelay = 99
-						if(engine.speed.lockDelay>99) engine.speed.lockDelay = 0
-					}
-					6 -> {
-						engine.speed.das += change
-						if(engine.speed.das<0) engine.speed.das = 99
-						if(engine.speed.das>99) engine.speed.das = 0
-					}
-					7 -> {
-						bgmno += change
-						if(bgmno<0) bgmno = BGM.count-1
-						if(bgmno>=BGM.count) bgmno = 0
-					}
+
+					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
+					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
+					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
+					3 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
+					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
+					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
+					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
+					7 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
 					8 -> big = !big
 					9 -> {
 						goaltype += change
 						if(goaltype<0) goaltype = 2
 						if(goaltype>2) goaltype = 0
 					}
-					10, 11 -> {
-						presetNumber += change
-						if(presetNumber<0) presetNumber = 99
-						if(presetNumber>99) presetNumber = 0
-					}
+					10, 11 ->presetNumber = rangeCursor(presetNumber+change,0,99)
 				}
 
 				// NET: Signal options change
@@ -472,14 +436,14 @@ class SprintLine:NetDummyMode() {
 
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		engine.statistics.lines = Integer.parseInt(message[4])
-		engine.statistics.totalPieceLocked = Integer.parseInt(message[5])
-		engine.statistics.time = Integer.parseInt(message[6])
-		//engine.statistics.lpm = java.lang.Float.parseFloat(message[7])
-		//engine.statistics.pps = java.lang.Float.parseFloat(message[8])
-		goaltype = Integer.parseInt(message[9])
-		engine.gameActive = java.lang.Boolean.parseBoolean(message[10])
-		engine.timerActive = java.lang.Boolean.parseBoolean(message[11])
+		engine.statistics.lines = message[4].toInt()
+		engine.statistics.totalPieceLocked = message[5].toInt()
+		engine.statistics.time = message[6].toInt()
+		//engine.statistics.lpm = message[7].toFloat()
+		//engine.statistics.pps = message[8].toFloat()
+		goaltype = message[9].toInt()
+		engine.gameActive = message[10].toBoolean()
+		engine.timerActive = message[11].toBoolean()
 
 		// Update meter
 		val remainLines = GOAL_TABLE[goaltype]-engine.statistics.lines
@@ -518,17 +482,17 @@ class SprintLine:NetDummyMode() {
 
 	/** NET: Receive game options */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
-		engine.speed.gravity = Integer.parseInt(message[4])
-		engine.speed.denominator = Integer.parseInt(message[5])
-		engine.speed.are = Integer.parseInt(message[6])
-		engine.speed.areLine = Integer.parseInt(message[7])
-		engine.speed.lineDelay = Integer.parseInt(message[8])
-		engine.speed.lockDelay = Integer.parseInt(message[9])
-		engine.speed.das = Integer.parseInt(message[10])
-		bgmno = Integer.parseInt(message[11])
-		big = java.lang.Boolean.parseBoolean(message[12])
-		goaltype = Integer.parseInt(message[13])
-		presetNumber = Integer.parseInt(message[14])
+		engine.speed.gravity = message[4].toInt()
+		engine.speed.denominator = message[5].toInt()
+		engine.speed.are = message[6].toInt()
+		engine.speed.areLine = message[7].toInt()
+		engine.speed.lineDelay = message[8].toInt()
+		engine.speed.lockDelay = message[9].toInt()
+		engine.speed.das = message[10].toInt()
+		bgmno = message[11].toInt()
+		big = message[12].toBoolean()
+		goaltype = message[13].toInt()
+		presetNumber = message[14].toInt()
 	}
 
 	/** NET: Get goal type */

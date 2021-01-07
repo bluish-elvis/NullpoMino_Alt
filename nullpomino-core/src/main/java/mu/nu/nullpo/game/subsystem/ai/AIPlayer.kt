@@ -43,7 +43,7 @@ interface AIPlayer {
 	 * @param engine The GameEngine that owns this AI
 	 * @param playerID Player ID
 	 */
-	fun shutdown(engine:GameEngine, playerID:Int)
+	fun shutdown()
 
 	/** Set button input states
 	 * @param engine The GameEngine that owns this AI

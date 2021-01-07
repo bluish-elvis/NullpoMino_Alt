@@ -132,8 +132,7 @@ class GrandMountain:AbstractMode() {
 	private val dectemp:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "Grand Mountain"
+	override val name:String = "Grand Mountain"
 	override val gameIntensity:Int = 1
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -177,6 +176,7 @@ class GrandMountain:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
+		engine.splitb2b = false
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.bighalf = true
 		engine.bigmove = true
@@ -423,9 +423,10 @@ class GrandMountain:AbstractMode() {
 			else
 				EventReceiver.COLOR.BLUE)
 
-			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%3d", maxOf(engine.statistics.level, 0)), g20)
-			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4)
-			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv), g20)
+			receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)), g20)
+			receiver.drawSpeedMeter(engine, playerID, 0, 11,
+				if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4, 4)
+			receiver.drawScoreNum(engine, playerID, 1, 12, String.format("%3d", nextseclv), g20)
 
 			// Time
 			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", if(g20)
@@ -736,7 +737,7 @@ class GrandMountain:AbstractMode() {
 
 	/* 結果画面 */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${(engine.statc[1]+1)}/3", EventReceiver.COLOR.RED)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${(engine.statc[1]+1)}/3", EventReceiver.COLOR.RED)
 
 		when(engine.statc[1]) {
 			0 -> {

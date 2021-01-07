@@ -263,8 +263,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	 * @return 画像 data
 	 */
 	private fun loadImage(filename:String):Image {
-		log.debug("Loading image from $filename")
-
+		//log.debug("Loading image from $filename")
 		var img = Image(256, 256)
 		try {
 			img = Image(filename)
@@ -277,7 +276,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	}
 
 	private fun loadSE(name:String) {
-
+		//log.info("LoadSE $name")
 		val fn = "${NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")}/se/$name"
 		val wav = File("$fn.wav").canRead()&&soundManager.load(name, "$fn.wav")
 		if(!wav&&File("$fn.ogg").canRead()) soundManager.load(name, "$fn.ogg")
@@ -304,13 +303,13 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 				val streaming = NullpoMinoSlick.propConfig.getProperty("option.bgmstreaming", true)
 				if(File(filename).canRead()) {
 					this.bgm[bgm.id][idx] = Music(filename, streaming)
-					log.info("Loaded BGM $n:#$idx $sub")
+					//log.info("Loaded BGM $n:#$idx $sub")
 				}
 			} catch(e:Throwable) {
 				if(showErr) log.error("BGM $n:#$idx $sub load failed", e)
 				else log.warn("BGM $n:#$idx $sub load failed")
 			}
-			else log.info("BGM $n:#$idx $sub is already load")
+			//else log.info("BGM $n:#$idx $sub is already load")
 		}
 	}
 

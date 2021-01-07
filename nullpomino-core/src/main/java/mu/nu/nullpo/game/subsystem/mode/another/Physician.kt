@@ -67,12 +67,10 @@ class Physician:AbstractMode() {
 	private var gemsClearedChainTotal:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "PHYSICIAN (RC1)"
+	override val name:String = "PHYSICIAN (RC1)"
 
 	/* Game style */
-	override val gameStyle:Int
-		get() = GameEngine.GAMESTYLE_PHYSICIAN
+	override val gameStyle:Int = GameEngine.GAMESTYLE_PHYSICIAN
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {

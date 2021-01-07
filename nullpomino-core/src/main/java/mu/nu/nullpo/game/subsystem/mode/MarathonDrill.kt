@@ -66,8 +66,7 @@ class MarathonDrill:NetDummyMode() {
 	private var rankingDepth:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
 
 	/* Mode name */
-	override val name:String
-		get() = "Drill Marathon"
+	override val name:String = "Drill Marathon"
 	override val gameIntensity:Int = 1
 	/* Initialization for each player */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -163,16 +162,8 @@ class MarathonDrill:NetDummyMode() {
 						if(startlevel>19) startlevel = 0
 						engine.owner.backgroundStatus.bg = startlevel
 					}
-					3 -> {
-						bgmno += change
-						if(bgmno<-1) bgmno = BGM.count-1
-						if(bgmno>=BGM.count) bgmno = 0
-					}
-					4 -> {
-						engine.speed.das += change
-						if(engine.speed.das<0) engine.speed.das = 99
-						if(engine.speed.das>99) engine.speed.das = 0
-					}
+					3 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					4 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
 				}
 
 				// NET: Signal options change
@@ -232,6 +223,7 @@ class MarathonDrill:NetDummyMode() {
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.statistics.level = startlevel
 		engine.b2bEnable = true
+		engine.splitb2b = true
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.twistAllowKick = true
 		engine.twistEnable = true
@@ -298,7 +290,8 @@ class MarathonDrill:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 5, 12, "${engine.statistics.level+1}", scale = 2f)
 			receiver.drawScoreNum(engine, playerID, 1, 13, "$garbageTotal")
 			receiver.drawSpeedMeter(engine, playerID, 0, 14,
-				garbageTotal%LEVEL_GARBAGE_LINES*1f/(LEVEL_GARBAGE_LINES-1))
+				garbageTotal%LEVEL_GARBAGE_LINES*1f/(LEVEL_GARBAGE_LINES-1),
+				2f)
 			receiver.drawScoreNum(engine, playerID, 1, 15, "$garbageNextLevelLines")
 
 			receiver.drawScoreFont(engine, playerID, 0, 16, "Time", COLOR.BLUE)
@@ -664,22 +657,22 @@ class MarathonDrill:NetDummyMode() {
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
 		listOf<(String)->Unit>({}, {}, {}, {},
-			{engine.statistics.scoreLine = Integer.parseInt(it)},
-			{engine.statistics.scoreBonus = Integer.parseInt(it)},
-			{engine.statistics.lines = Integer.parseInt(it)},
-			{engine.statistics.totalPieceLocked = Integer.parseInt(it)},
-			{engine.statistics.time = Integer.parseInt(it)},
-			{engine.statistics.level = Integer.parseInt(it)},
-			{garbageTimer = Integer.parseInt(it)},
-			{garbageTotal = Integer.parseInt(it)},
-			{garbageDigged = Integer.parseInt(it)},
-			{goaltype = Integer.parseInt(it)},
-			{engine.gameActive = java.lang.Boolean.parseBoolean(it)},
-			{engine.timerActive = java.lang.Boolean.parseBoolean(it)},
-			{lastscore = Integer.parseInt(it)},
-			{scgettime = Integer.parseInt(it)},
-			{engine.owner.backgroundStatus.bg = Integer.parseInt(it)},
-			{garbagePending = Integer.parseInt(it)}).zip(message).forEach {(x, y) ->
+			{engine.statistics.scoreLine = it.toInt()},
+			{engine.statistics.scoreBonus = it.toInt()},
+			{engine.statistics.lines = it.toInt()},
+			{engine.statistics.totalPieceLocked = it.toInt()},
+			{engine.statistics.time = it.toInt()},
+			{engine.statistics.level = it.toInt()},
+			{garbageTimer = it.toInt()},
+			{garbageTotal = it.toInt()},
+			{garbageDigged = it.toInt()},
+			{goaltype = it.toInt()},
+			{engine.gameActive = it.toBoolean()},
+			{engine.timerActive = it.toBoolean()},
+			{lastscore = it.toInt()},
+			{scgettime = it.toInt()},
+			{engine.owner.backgroundStatus.bg = it.toInt()},
+			{garbagePending = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
 
@@ -714,10 +707,10 @@ class MarathonDrill:NetDummyMode() {
 
 	/** NET: Receive game options */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
-		goaltype = Integer.parseInt(message[4])
-		startlevel = Integer.parseInt(message[5])
-		bgmno = Integer.parseInt(message[6])
-		engine.speed.das = Integer.parseInt(message[7])
+		goaltype = message[4].toInt()
+		startlevel = message[5].toInt()
+		bgmno = message[6].toInt()
+		engine.speed.das = message[7].toInt()
 	}
 
 	/** NET: Get goal type */

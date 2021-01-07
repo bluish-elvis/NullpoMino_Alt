@@ -75,8 +75,7 @@ class RetroModern:AbstractMode() {
 	private var rankingTime:Array<IntArray> = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
 
 	/** Returns the name of this mode */
-	override val name:String
-		get() = "Retro Modern.S"
+	override val name:String = "Retro Modern.S"
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -101,6 +100,7 @@ class RetroModern:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
+		engine.splitb2b = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.bighalf = false
 		engine.bigmove = false

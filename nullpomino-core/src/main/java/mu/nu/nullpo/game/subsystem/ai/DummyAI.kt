@@ -52,8 +52,7 @@ open class DummyAI:AIPlayer {
 	/** Did the thinking thread finish successfully? */
 	open var thinkComplete:Boolean = false
 
-	override val name:String
-		get() = "DummyAI"
+	override val name:String = "DummyAI"
 
 	override fun init(engine:GameEngine, playerID:Int) {}
 
@@ -67,7 +66,7 @@ open class DummyAI:AIPlayer {
 
 	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller) {}
 
-	override fun shutdown(engine:GameEngine, playerID:Int) {}
+	override fun shutdown() {}
 
 	override fun renderHint(engine:GameEngine, playerID:Int) {}
 }

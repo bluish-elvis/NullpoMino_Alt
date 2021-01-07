@@ -94,8 +94,7 @@ open class RanksAI:DummyAI(), Runnable {
 	private var allowHold:Boolean = false
 	private var speedLimit:Int = 0
 
-	override val name:String
-		get() = "RANKSAI"
+	override val name:String = "RANKSAI"
 
 	/** Get max think level
 	 * @return Max think level (1 in this AI)
@@ -238,7 +237,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 	}
 
-	override fun shutdown(engine:GameEngine, playerID:Int) {
+	override fun shutdown() {
 		ranks = null
 		if(thread!=null&&thread!!.isAlive) {
 			thread!!.interrupt()

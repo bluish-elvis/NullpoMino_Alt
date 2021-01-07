@@ -80,8 +80,7 @@ class SprintUltra:NetDummyMode() {
 	private var rankingPower:Array<Array<IntArray>> = Array(GOALTYPE_MAX) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
 
 	/* Mode name */
-	override val name:String
-		get() = "ULTRA Score Attack"
+	override val name:String = "ULTRA Score Attack"
 	override val gameIntensity:Int = 2
 
 	/* Initialization */
@@ -174,57 +173,22 @@ class SprintUltra:NetDummyMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-					0 -> {
-						engine.speed.gravity += change*m
-						if(engine.speed.gravity<-1) engine.speed.gravity = 99999
-						if(engine.speed.gravity>99999) engine.speed.gravity = -1
-					}
-					1 -> {
-						engine.speed.denominator += change*m
-						if(engine.speed.denominator<-1) engine.speed.denominator = 99999
-						if(engine.speed.denominator>99999) engine.speed.denominator = -1
-					}
-					2 -> {
-						engine.speed.are += change
-						if(engine.speed.are<0) engine.speed.are = 99
-						if(engine.speed.are>99) engine.speed.are = 0
-					}
-					3 -> {
-						engine.speed.areLine += change
-						if(engine.speed.areLine<0) engine.speed.areLine = 99
-						if(engine.speed.areLine>99) engine.speed.areLine = 0
-					}
-					4 -> {
-						engine.speed.lineDelay += change
-						if(engine.speed.lineDelay<0) engine.speed.lineDelay = 99
-						if(engine.speed.lineDelay>99) engine.speed.lineDelay = 0
-					}
-					5 -> {
-						engine.speed.lockDelay += change
-						if(engine.speed.lockDelay<0) engine.speed.lockDelay = 99
-						if(engine.speed.lockDelay>99) engine.speed.lockDelay = 0
-					}
-					6 -> {
-						engine.speed.das += change
-						if(engine.speed.das<0) engine.speed.das = 99
-						if(engine.speed.das>99) engine.speed.das = 0
-					}
-					7 -> {
-						bgmno += change
-						if(bgmno<0) bgmno = BGM.count-1
-						if(bgmno>=BGM.count) bgmno = 0
-					}
+
+					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
+					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
+					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
+					3 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
+					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
+					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
+					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
+					7 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
 					8 -> big = !big
 					9 -> {
 						goaltype += change
 						if(goaltype<0) goaltype = GOALTYPE_MAX-1
 						if(goaltype>GOALTYPE_MAX-1) goaltype = 0
 					}
-					10, 11 -> {
-						presetNumber += change
-						if(presetNumber<0) presetNumber = 99
-						if(presetNumber>99) presetNumber = 0
-					}
+					10, 11 -> presetNumber = rangeCursor(presetNumber+change,0,99)
 				}
 
 				// NET: Signal options change
@@ -296,6 +260,7 @@ class SprintUltra:NetDummyMode() {
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.big = big
 		engine.b2bEnable = true
+		engine.splitb2b = true
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.meterValue = 320
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
@@ -348,7 +313,7 @@ class SprintUltra:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 7, engine.statistics.lines.toString(), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "SCORE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%-10g", engine.statistics.spm), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%10g", engine.statistics.spm), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "LINE/MIN", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, "${engine.statistics.lpm}", 2f)
@@ -569,23 +534,23 @@ class SprintUltra:NetDummyMode() {
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
 		listOf<(String)->Unit>({}, {}, {}, {},
-			{engine.statistics.scoreLine = Integer.parseInt(it)},
-			{engine.statistics.scoreSD = Integer.parseInt(it)},
-			{engine.statistics.scoreHD = Integer.parseInt(it)},
-			{engine.statistics.scoreBonus = Integer.parseInt(it)},
-			{engine.statistics.lines = Integer.parseInt(it)},
-			{engine.statistics.totalPieceLocked = Integer.parseInt(it)},
-			{engine.statistics.time = Integer.parseInt(it)},
-			{goaltype = Integer.parseInt(it)},
-			{engine.gameActive = java.lang.Boolean.parseBoolean(it)},
-			{engine.timerActive = java.lang.Boolean.parseBoolean(it)},
-			{lastscore = Integer.parseInt(it)},
-			{scgettime = Integer.parseInt(it)},
+			{engine.statistics.scoreLine = it.toInt()},
+			{engine.statistics.scoreSD = it.toInt()},
+			{engine.statistics.scoreHD = it.toInt()},
+			{engine.statistics.scoreBonus = it.toInt()},
+			{engine.statistics.lines = it.toInt()},
+			{engine.statistics.totalPieceLocked = it.toInt()},
+			{engine.statistics.time = it.toInt()},
+			{goaltype = it.toInt()},
+			{engine.gameActive = it.toBoolean()},
+			{engine.timerActive = it.toBoolean()},
+			{lastscore = it.toInt()},
+			{scgettime = it.toInt()},
 			{engine.lastevent = GameEngine.ScoreEvent.parseInt(it)},
-			{lastb2b = java.lang.Boolean.parseBoolean(it)},
-			{lastcombo = Integer.parseInt(it)},
-			{lastpiece = Integer.parseInt(it)},
-			{owner.backgroundStatus.bg = Integer.parseInt(it)}).zip(message).forEach {(x, y) ->
+			{lastb2b = it.toBoolean()},
+			{lastcombo = it.toInt()},
+			{lastpiece = it.toInt()},
+			{owner.backgroundStatus.bg = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
 
@@ -629,17 +594,17 @@ class SprintUltra:NetDummyMode() {
 
 	/** NET: Receive game options */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
-		engine.speed.gravity = Integer.parseInt(message[4])
-		engine.speed.denominator = Integer.parseInt(message[5])
-		engine.speed.are = Integer.parseInt(message[6])
-		engine.speed.areLine = Integer.parseInt(message[7])
-		engine.speed.lineDelay = Integer.parseInt(message[8])
-		engine.speed.lockDelay = Integer.parseInt(message[9])
-		engine.speed.das = Integer.parseInt(message[10])
-		bgmno = Integer.parseInt(message[11])
-		big = java.lang.Boolean.parseBoolean(message[12])
-		goaltype = Integer.parseInt(message[13])
-		presetNumber = Integer.parseInt(message[14])
+		engine.speed.gravity = message[4].toInt()
+		engine.speed.denominator = message[5].toInt()
+		engine.speed.are = message[6].toInt()
+		engine.speed.areLine = message[7].toInt()
+		engine.speed.lineDelay = message[8].toInt()
+		engine.speed.lockDelay = message[9].toInt()
+		engine.speed.das = message[10].toInt()
+		bgmno = message[11].toInt()
+		big = message[12].toBoolean()
+		goaltype = message[13].toInt()
+		presetNumber = message[14].toInt()
 	}
 
 	/** NET: Get goal type */

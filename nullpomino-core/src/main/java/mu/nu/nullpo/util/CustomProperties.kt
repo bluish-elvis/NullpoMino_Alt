@@ -66,7 +66,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Byte):Byte = try {
-		java.lang.Byte.parseByte(getProperty(key, "$defaultValue"))
+		getProperty(key, "$defaultValue").toByte()
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -77,7 +77,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Short):Short = try {
-		java.lang.Short.parseShort(getProperty(key, "$defaultValue"))
+		getProperty(key, "$defaultValue").toShort()
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -88,7 +88,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Int):Int = try {
-		Integer.parseInt(getProperty(key, "$defaultValue"))
+		getProperty(key, "$defaultValue").toInt()
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -99,7 +99,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:IntArray):IntArray = try {
-		getProperty(key, "$defaultValue").split(',').map {Integer.parseInt(it)}.toIntArray()
+		getProperty(key, "$defaultValue").split(',').map {it.toInt()}.toIntArray()
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -113,7 +113,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Long):Long = try {
-		java.lang.Long.parseLong(getProperty(key, "$defaultValue"))
+		getProperty(key, "$defaultValue").toLong()
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -124,7 +124,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Float):Float = try {
-		java.lang.Float.parseFloat(getProperty(key, "$defaultValue"))
+		getProperty(key, "$defaultValue").toFloat()
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -135,7 +135,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Double):Double = try {
-		java.lang.Double.parseDouble(getProperty(key, "$defaultValue"))
+		getProperty(key, "$defaultValue").toDouble()
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
@@ -157,7 +157,7 @@ class CustomProperties:Properties() {
 	 * @return 指定されたキーに対応するboolean型変数 (見つからなかったらdefaultValue）
 	 */
 	fun getProperty(key:String, defaultValue:Boolean):Boolean =
-		java.lang.Boolean.valueOf(getProperty(key, java.lang.Boolean.toString(defaultValue)))
+		getProperty(key, "$defaultValue").toBoolean()
 
 	/** このプロパティセットを文字列に変換する(URLEncoderでエンコード)
 	 * @param comments 識別コメント

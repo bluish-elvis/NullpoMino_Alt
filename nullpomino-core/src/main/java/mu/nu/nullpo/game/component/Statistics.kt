@@ -43,6 +43,9 @@ class Statistics:Serializable {
 	/** Total line count */
 	var lines:Int = 0
 
+	/** Total sent garbage */
+	var attacks:Int = 0
+
 	/** Cleared Garbage Lines */
 	var garbageLines:Int = 0
 	/** Total Cleared block count */
@@ -132,6 +135,13 @@ class Statistics:Serializable {
 	/** 1秒間あたりのピースcount (Pieces Per Second) */
 	val pps:Float get() = if(time>0) totalPieceLocked*60f/time else 0f
 
+	/** 1Linesあたりの攻撃 (Attack Per Lintes) */
+	val apl:Float get() = if(lines>0) attacks.toFloat()/lines.toFloat() else 0f
+	/** 1分間あたりの攻撃 (Attack Per Minutes) */
+	val apm:Float get() = if(time>0) attacks*3600f/time else 0f
+	/** 対戦評価 (VS Score)*/
+	val vs:Float get() = if(time>0) (attacks+garbageLines)*6000f/time else 0f
+
 	/** TAS detection: slowdown rate */
 	var gamerate:Float = 0f
 	/** Longest Avalanche-chain */
@@ -198,6 +208,7 @@ class Statistics:Serializable {
 	fun reset() {
 		scoreReset()
 		lines = 0
+		attacks = 0
 		blocks = 0
 		time = 0
 		level = 0
@@ -243,6 +254,7 @@ class Statistics:Serializable {
 			scoreHD = b.scoreHD
 			scoreBonus = b.scoreBonus
 			lines = b.lines
+			attacks = b.lines
 			blocks = b.blocks
 			time = b.time
 			level = b.level
@@ -275,7 +287,7 @@ class Statistics:Serializable {
 			gamerate = b.gamerate
 			maxChain = b.maxChain
 			rollclear = b.rollclear
-			rollclearHistory=
+			rollclearHistory =
 				b.rollclearHistory
 			garbageLines = b.garbageLines
 
@@ -293,6 +305,7 @@ class Statistics:Serializable {
 			scoreHD += b.scoreHD
 			scoreBonus += b.scoreBonus
 			lines += b.lines
+			attacks += b.attacks
 			blocks += b.blocks
 			time += b.time
 			level += b.level
@@ -341,6 +354,7 @@ class Statistics:Serializable {
 			"$id.statistics.scoreHD" to scoreHD,
 			"$id.statistics.scoreBonus" to scoreBonus,
 			"$id.statistics.lines" to lines,
+			"$id.statistics.attacks" to attacks,
 			"$id.statistics.blocks" to blocks,
 			"$id.statistics.time" to time,
 			"$id.statistics.level" to level,
@@ -388,7 +402,7 @@ class Statistics:Serializable {
 		scoreHD = p.getProperty("$id.statistics.scoreHD", 0)
 		scoreBonus = p.getProperty("$id.statistics.scoreBonus", 0)
 		lines = p.getProperty("$id.statistics.lines", 0)
-		lines = p.getProperty("$id.statistics.blocks", 0)
+		attacks = p.getProperty("$id.statistics.attacks", 0)
 		blocks = p.getProperty("$id.statistics.blocks", 0)
 		time = p.getProperty("$id.statistics.time", 0)
 		level = p.getProperty("$id.statistics.level", 0)
@@ -429,45 +443,45 @@ class Statistics:Serializable {
 	 * @param s String Array (String[42])
 	 */
 	fun importStringArray(s:Array<String>) = listOf<(String)->Unit>(
-		{scoreLine = Integer.parseInt(it)},
-		{scoreSD = Integer.parseInt(it)},
-		{scoreHD = Integer.parseInt(it)},
-		{scoreBonus = Integer.parseInt(it)},
-		{lines = Integer.parseInt(it)},
-		{blocks = Integer.parseInt(it)},
-		{time = Integer.parseInt(it)},
-		{level = Integer.parseInt(it)},
-		{levelDispAdd = Integer.parseInt(it)},
-		{totalPieceLocked = Integer.parseInt(it)},
-		{totalPieceActiveTime = Integer.parseInt(it)},
-		{totalPieceMove = Integer.parseInt(it)},
-		{totalPieceRotate = Integer.parseInt(it)},
-		{totalSingle = Integer.parseInt(it)},
-		{totalDouble = Integer.parseInt(it)},
-		{totalSplitDouble = Integer.parseInt(it)},
-		{totalTriple = Integer.parseInt(it)},
-		{totalSplitTriple = Integer.parseInt(it)},
-		{totalQuadruple = Integer.parseInt(it)},
-		{totalTwistZeroMini = Integer.parseInt(it)},
-		{totalTwistZero = Integer.parseInt(it)},
-		{totalTwistSingleMini = Integer.parseInt(it)},
-		{totalTwistSingle = Integer.parseInt(it)},
-		{totalTwistDoubleMini = Integer.parseInt(it)},
-		{totalTwistDouble = Integer.parseInt(it)},
-		{totalTwistSplitDouble = Integer.parseInt(it)},
-		{totalTwistTriple = Integer.parseInt(it)},
-		{totalTwistSplitTriple = Integer.parseInt(it)},
-		{totalB2BQuad = Integer.parseInt(it)},
-		{totalB2BSplit = Integer.parseInt(it)},
-		{totalB2BTwist = Integer.parseInt(it)},
-		{totalHoldUsed = Integer.parseInt(it)},
-		{maxCombo = Integer.parseInt(it)},
-		{maxB2B = Integer.parseInt(it)},
-		{gamerate = java.lang.Float.parseFloat(it)},
-		{maxChain = Integer.parseInt(it)},
-		{rollclear = Integer.parseInt(it)}).plus(
+		{scoreLine = it.toInt()},
+		{scoreSD = it.toInt()},
+		{scoreHD = it.toInt()},
+		{scoreBonus = it.toInt()},
+		{lines = it.toInt()},
+		{blocks = it.toInt()},
+		{time = it.toInt()},
+		{level = it.toInt()},
+		{levelDispAdd = it.toInt()},
+		{totalPieceLocked = it.toInt()},
+		{totalPieceActiveTime = it.toInt()},
+		{totalPieceMove = it.toInt()},
+		{totalPieceRotate = it.toInt()},
+		{totalSingle = it.toInt()},
+		{totalDouble = it.toInt()},
+		{totalSplitDouble = it.toInt()},
+		{totalTriple = it.toInt()},
+		{totalSplitTriple = it.toInt()},
+		{totalQuadruple = it.toInt()},
+		{totalTwistZeroMini = it.toInt()},
+		{totalTwistZero = it.toInt()},
+		{totalTwistSingleMini = it.toInt()},
+		{totalTwistSingle = it.toInt()},
+		{totalTwistDoubleMini = it.toInt()},
+		{totalTwistDouble = it.toInt()},
+		{totalTwistSplitDouble = it.toInt()},
+		{totalTwistTriple = it.toInt()},
+		{totalTwistSplitTriple = it.toInt()},
+		{totalB2BQuad = it.toInt()},
+		{totalB2BSplit = it.toInt()},
+		{totalB2BTwist = it.toInt()},
+		{totalHoldUsed = it.toInt()},
+		{maxCombo = it.toInt()},
+		{maxB2B = it.toInt()},
+		{gamerate = it.toFloat()},
+		{maxChain = it.toInt()},
+		{rollclear = it.toInt()}).plus(
 		(0 until pieces.size-1).map {i:Int ->
-			{it:String -> pieces[i] = Integer.parseInt(it)}
+			{it:String -> pieces[i] = it.toInt()}
 		}).zip(s).forEach {(m, st) -> m(st)}
 
 	/** Import from String

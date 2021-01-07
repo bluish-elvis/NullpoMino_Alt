@@ -106,8 +106,7 @@ class SprintCombo:NetDummyMode() {
 	private var nextseclines:Int = 0
 
 	/** Returns the name of this mode */
-	override val name:String
-		get() = "REN Sprint"
+	override val name:String = "REN Sprint"
 	override val gameIntensity:Int = 2
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -223,51 +222,15 @@ class SprintCombo:NetDummyMode() {
 						if(ceilingAdjust>10) ceilingAdjust = -10
 						if(ceilingAdjust<-10) ceilingAdjust = 10
 					}
-					4 -> {
-						engine.speed.gravity += change*m
-						if(engine.speed.gravity<-1) engine.speed.gravity = 99999
-						if(engine.speed.gravity>99999) engine.speed.gravity = -1
-					}
-					5 -> {
-						engine.speed.denominator += change*m
-						if(engine.speed.denominator<-1) engine.speed.denominator = 99999
-						if(engine.speed.denominator>99999) engine.speed.denominator = -1
-					}
-					6 -> {
-						engine.speed.are += change
-						if(engine.speed.are<0) engine.speed.are = 99
-						if(engine.speed.are>99) engine.speed.are = 0
-					}
-					7 -> {
-						engine.speed.areLine += change
-						if(engine.speed.areLine<0) engine.speed.areLine = 99
-						if(engine.speed.areLine>99) engine.speed.areLine = 0
-					}
-					8 -> {
-						engine.speed.lineDelay += change
-						if(engine.speed.lineDelay<0) engine.speed.lineDelay = 99
-						if(engine.speed.lineDelay>99) engine.speed.lineDelay = 0
-					}
-					9 -> {
-						engine.speed.lockDelay += change
-						if(engine.speed.lockDelay<0) engine.speed.lockDelay = 99
-						if(engine.speed.lockDelay>99) engine.speed.lockDelay = 0
-					}
-					10 -> {
-						engine.speed.das += change
-						if(engine.speed.das<0) engine.speed.das = 99
-						if(engine.speed.das>99) engine.speed.das = 0
-					}
-					11 -> {
-						bgmno += change
-						if(bgmno<0) bgmno = BGM.count-1
-						if(bgmno>=BGM.count) bgmno = 0
-					}
-					12, 13 -> {
-						presetNumber += change
-						if(presetNumber<0) presetNumber = 99
-						if(presetNumber>99) presetNumber = 0
-					}
+					4 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
+					5 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
+					6 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
+					7 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
+					8 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
+					9 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
+					10 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
+					11 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					12, 13 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
 				}
 
 				// NET: Signal options change
@@ -398,7 +361,9 @@ class SprintCombo:NetDummyMode() {
 			for(y in h-1 downTo h-stackHeight) {
 				for(x in 0 until w)
 					if(x<cx-1||x>cx-2+comboWidth)
-						engine.field!!.setBlock(x, y, Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+						engine.field!!.setBlock(x, y,
+							Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
+								Block.ATTRIBUTE.GARBAGE))
 				stackColour++
 			}
 
@@ -406,7 +371,8 @@ class SprintCombo:NetDummyMode() {
 		if(comboWidth==4)
 			for(i in 0..11)
 				if(SHAPE_TABLE[shapetype][i]==1)
-					engine.field!!.setBlock(i%4, h-1-i/4, Block(SHAPE_COLOUR_TABLE[shapetype], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+					engine.field!!.setBlock(i%4, h-1-i/4,
+						Block(SHAPE_COLOUR_TABLE[shapetype], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
@@ -430,7 +396,8 @@ class SprintCombo:NetDummyMode() {
 					if(rankingCombo[goaltype][gameType][i]==GOAL_TABLE[goaltype]-1)
 						receiver.drawScoreFont(engine, playerID, 2, 4+i, "PERFECT", true)
 					else receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingCombo[goaltype][gameType][i]}", rankingRank==i)
-					receiver.drawScoreNum(engine, playerID, 9, 4+i, GeneralUtil.getTime(rankingTime[goaltype][gameType][i]), rankingRank==i)
+					receiver.drawScoreNum(engine, playerID, 9, 4+i, GeneralUtil.getTime(rankingTime[goaltype][gameType][i]),
+						rankingRank==i)
 				}
 			}
 		} else {
@@ -479,7 +446,9 @@ class SprintCombo:NetDummyMode() {
 				while(tmplines<=lines&&remainStack>0) {
 					for(x in 0 until w)
 						if(x<cx-1||x>cx-2+comboWidth)
-							engine.field!!.setBlock(x, -ceilingAdjust-tmplines, Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+							engine.field!!.setBlock(x, -ceilingAdjust-tmplines,
+								Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
+									Block.ATTRIBUTE.GARBAGE))
 					stackColour++
 					tmplines++
 					remainStack--
@@ -534,7 +503,8 @@ class SprintCombo:NetDummyMode() {
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, Statistic.MAXCOMBO, Statistic.TIME)
-		drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS)
+		drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.LPM,
+			Statistic.PPS)
 		drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -639,23 +609,23 @@ class SprintCombo:NetDummyMode() {
 
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		engine.statistics.lines = Integer.parseInt(message[4])
-		engine.statistics.totalPieceLocked = Integer.parseInt(message[5])
-		engine.statistics.time = Integer.parseInt(message[6])
-		//engine.statistics.lpm = java.lang.Float.parseFloat(message[7])
-		//engine.statistics.pps = java.lang.Float.parseFloat(message[8])
-		goaltype = Integer.parseInt(message[9])
-		engine.gameActive = java.lang.Boolean.parseBoolean(message[10])
-		engine.timerActive = java.lang.Boolean.parseBoolean(message[11])
-		engine.meterColor = Integer.parseInt(message[12])
-		engine.meterValue = Integer.parseInt(message[13])
-		owner.backgroundStatus.bg = Integer.parseInt(message[14])
-		scgettime = Integer.parseInt(message[15])
-		lastb2b = java.lang.Boolean.parseBoolean(message[17])
-		lastcombo = Integer.parseInt(message[18])
-		lastpiece = Integer.parseInt(message[19])
-		engine.statistics.maxCombo = Integer.parseInt(message[20])
-		engine.combo = Integer.parseInt(message[21])
+		engine.statistics.lines = message[4].toInt()
+		engine.statistics.totalPieceLocked = message[5].toInt()
+		engine.statistics.time = message[6].toInt()
+		//engine.statistics.lpm = message[7].toFloat()
+		//engine.statistics.pps = message[8].toFloat()
+		goaltype = message[9].toInt()
+		engine.gameActive = message[10].toBoolean()
+		engine.timerActive = message[11].toBoolean()
+		engine.meterColor = message[12].toInt()
+		engine.meterValue = message[13].toInt()
+		owner.backgroundStatus.bg = message[14].toInt()
+		scgettime = message[15].toInt()
+		lastb2b = message[17].toBoolean()
+		lastcombo = message[18].toInt()
+		lastpiece = message[19].toInt()
+		engine.statistics.maxCombo = message[20].toInt()
+		engine.combo = message[21].toInt()
 	}
 
 	/** NET: Send end-of-game stats
@@ -687,20 +657,20 @@ class SprintCombo:NetDummyMode() {
 
 	/** NET: Receive game options */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
-		engine.speed.gravity = Integer.parseInt(message[4])
-		engine.speed.denominator = Integer.parseInt(message[5])
-		engine.speed.are = Integer.parseInt(message[6])
-		engine.speed.areLine = Integer.parseInt(message[7])
-		engine.speed.lineDelay = Integer.parseInt(message[8])
-		engine.speed.lockDelay = Integer.parseInt(message[9])
-		engine.speed.das = Integer.parseInt(message[10])
-		bgmno = Integer.parseInt(message[11])
-		goaltype = Integer.parseInt(message[12])
-		presetNumber = Integer.parseInt(message[13])
-		shapetype = Integer.parseInt(message[14])
-		comboWidth = Integer.parseInt(message[16])
-		ceilingAdjust = Integer.parseInt(message[17])
-		spawnAboveField = java.lang.Boolean.parseBoolean(message[18])
+		engine.speed.gravity = message[4].toInt()
+		engine.speed.denominator = message[5].toInt()
+		engine.speed.are = message[6].toInt()
+		engine.speed.areLine = message[7].toInt()
+		engine.speed.lineDelay = message[8].toInt()
+		engine.speed.lockDelay = message[9].toInt()
+		engine.speed.das = message[10].toInt()
+		bgmno = message[11].toInt()
+		goaltype = message[12].toInt()
+		presetNumber = message[13].toInt()
+		shapetype = message[14].toInt()
+		comboWidth = message[16].toInt()
+		ceilingAdjust = message[17].toInt()
+		spawnAboveField = message[18].toBoolean()
 	}
 
 	/** NET: Get goal type */
@@ -727,18 +697,28 @@ class SprintCombo:NetDummyMode() {
 		private const val SHAPETYPE_MAX = 9
 
 		/** Names of starting shapes */
-		private val SHAPE_NAME_TABLE = arrayOf("NONE", "LEFT I", "RIGHT I", "LEFT Z", "RIGHT S", "LEFT S", "RIGHT Z", "LEFT J", "RIGHT L")
+		private val SHAPE_NAME_TABLE = arrayOf("NONE", "LEFT I", "RIGHT I", "LEFT Z", "RIGHT S", "LEFT S", "RIGHT Z", "LEFT J",
+			"RIGHT L")
 
 		/** Starting shape table */
-		private val SHAPE_TABLE = arrayOf(intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), intArrayOf(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0), intArrayOf(0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0), intArrayOf(1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0), intArrayOf(0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0), intArrayOf(1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0), intArrayOf(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1))
+		private val SHAPE_TABLE = arrayOf(intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			intArrayOf(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0), intArrayOf(0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0),
+			intArrayOf(1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0), intArrayOf(0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0),
+			intArrayOf(1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0),
+			intArrayOf(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1))
 
 		/** Starting shape colour */
-		private val SHAPE_COLOUR_TABLE:Array<Block.COLOR?> = arrayOf(null, Block.COLOR.CYAN, Block.COLOR.CYAN, Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.GREEN, Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.ORANGE)
+		private val SHAPE_COLOUR_TABLE:Array<Block.COLOR?> = arrayOf(null, Block.COLOR.CYAN, Block.COLOR.CYAN, Block.COLOR.RED,
+			Block.COLOR.GREEN, Block.COLOR.GREEN, Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.ORANGE)
 
 		/** Stack colour order */
-		private val STACK_COLOUR_TABLE:Array<Block.COLOR> = arrayOf(Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW, Block.COLOR.GREEN, Block.COLOR.CYAN, Block.COLOR.BLUE, Block.COLOR.PURPLE)
+		private val STACK_COLOUR_TABLE:Array<Block.COLOR> = arrayOf(Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW,
+			Block.COLOR.GREEN, Block.COLOR.CYAN, Block.COLOR.BLUE, Block.COLOR.PURPLE)
 
 		/** Meter colors for really high combos in Endless */
-		private val METER_COLOUR_TABLE = intArrayOf(GameEngine.METER_COLOR_GREEN, GameEngine.METER_COLOR_YELLOW, GameEngine.METER_COLOR_ORANGE, GameEngine.METER_COLOR_RED, GameEngine.METER_COLOR_PINK, GameEngine.METER_COLOR_PURPLE, GameEngine.METER_COLOR_DARKBLUE, GameEngine.METER_COLOR_BLUE, GameEngine.METER_COLOR_CYAN, GameEngine.METER_COLOR_DARKGREEN)
+		private val METER_COLOUR_TABLE = intArrayOf(GameEngine.METER_COLOR_GREEN, GameEngine.METER_COLOR_YELLOW,
+			GameEngine.METER_COLOR_ORANGE, GameEngine.METER_COLOR_RED, GameEngine.METER_COLOR_PINK, GameEngine.METER_COLOR_PURPLE,
+			GameEngine.METER_COLOR_DARKBLUE, GameEngine.METER_COLOR_BLUE, GameEngine.METER_COLOR_CYAN,
+			GameEngine.METER_COLOR_DARKGREEN)
 	}
 }

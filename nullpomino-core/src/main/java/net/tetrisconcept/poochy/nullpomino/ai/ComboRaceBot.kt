@@ -71,8 +71,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 	private var inARE:Boolean = false
 
 	/* AI's name */
-	override val name:String
-		get() = "Combo Race AI V1.03"
+	override val name:String = "Combo Race AI V1.03"
 
 	/* Called at initialization */
 	override fun init(engine:GameEngine, playerID:Int) {
@@ -99,7 +98,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 	}
 
 	/* End processing */
-	override fun shutdown(engine:GameEngine, playerID:Int) {
+	override fun shutdown() {
 		if(thread!=null&&thread!!.isAlive) {
 			thread!!.interrupt()
 			threadRunning = false

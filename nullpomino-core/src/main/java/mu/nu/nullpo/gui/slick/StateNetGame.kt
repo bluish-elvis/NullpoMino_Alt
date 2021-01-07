@@ -144,13 +144,13 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 			if(!NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep(true)
 		} catch(e:NullPointerException) {
 			try {
-				if(gameManager==null||!gameManager!!.quitFlag) log.error("render NPE", e)
+				if(gameManager==null||gameManager?.quitFlag==false) log.error("render NPE", e)
 			} catch(e2:Throwable) {
 			}
 
 		} catch(e:Exception) {
 			try {
-				if(gameManager==null||!gameManager!!.quitFlag) log.error("render fail", e)
+				if(gameManager==null||gameManager?.quitFlag==false) log.error("render fail", e)
 			} catch(e2:Throwable) {
 			}
 
@@ -184,7 +184,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				gameManager?.also {gameManager ->
 					GameKey.gamekey[0].update(container.input, gameManager.engine.size>0&&gameManager.engine[0].isInGame)
 
-					gameManager.mode?.let {mode->
+					gameManager.mode?.let {mode ->
 						// BGM
 						if(ResourceHolder.bgmPlaying!=gameManager.bgmStatus.bgm) ResourceHolder.bgmStart(gameManager.bgmStatus.bgm)
 						if(ResourceHolder.bgmIsPlaying()) {
@@ -213,7 +213,8 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 					}
 				}
 			// Screenshot button
-			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)||GameKey.gamekey[1].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT))
+			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)||
+				GameKey.gamekey[1].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT))
 				ssflag = true
 
 			// Enter to new mode
@@ -252,80 +253,78 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 	 */
 	private fun enterNewMode(newModeName:String?) {
 		NullpoMinoSlick.loadGlobalConfig() // Reload global config file
-
-		val previousMode = gameManager!!.mode
+		val gm = gameManager ?: return
+		val previousMode = gm.mode
 
 		when(val newModeTemp = if(newModeName==null) NetDummyMode() else NullpoMinoSlick.modeManager.getMode(newModeName)) {
-			null -> log.error("Cannot find a mode:"+newModeName!!)
+			null -> log.error("Cannot find a mode:$newModeName")
 			is NetDummyMode -> {
-				log.info("Enter new mode:"+newModeTemp.id)
+				log.info("Enter new mode:${newModeTemp.id}")
 
 				modeName = newModeTemp.name
+				gm.engine.forEach {it.ai?.shutdown()}
+				previousMode?.netplayUnload(netLobby)
 
-				if(previousMode!=null) {
-					if(gameManager!!.engine[0].ai!=null) gameManager!!.engine[0].ai!!.shutdown(gameManager!!.engine[0], 0)
-					previousMode.netplayUnload(netLobby)
+				gm.mode = newModeTemp
+				gm.init()
+				gm.engine[0].let {
+					// Tuning
+					it.owRotateButtonDefaultRight = NullpoMinoSlick.propGlobal.getProperty(
+						"0.tuning.owRotateButtonDefaultRight", -1)
+					it.owSkin = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owSkin", -1)
+					it.owMinDAS = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owMinDAS", -1)
+					it.owMaxDAS = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owMaxDAS", -1)
+					it.owARR = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owDasDelay", -1)
+					it.owReverseUpDown = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owReverseUpDown", false)
+					it.owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owMoveDiagonal", -1)
+					it.owBlockOutlineType = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owBlockOutlineType", -1)
+					it.owBlockShowOutlineOnly = NullpoMinoSlick.propGlobal.getProperty(
+						"0.tuning.owBlockShowOutlineOnly", -1)
+
+					// Rule
+					val ruleopt:RuleOptions
+					var rulename:String? = NullpoMinoSlick.propGlobal.getProperty("0.rule", "")
+					if((gm.mode?.gameStyle ?: 0)>0)
+						rulename = NullpoMinoSlick.propGlobal.getProperty("0.rule.${gm.mode?.gameStyle}", "")
+					if(rulename!=null&&rulename.isNotEmpty()) {
+						log.info("Load rule options from $rulename")
+						ruleopt = GeneralUtil.loadRule(rulename)
+					} else {
+						log.info("Load rule options from setting file")
+						ruleopt = RuleOptions()
+						ruleopt.readProperty(NullpoMinoSlick.propGlobal, 0)
+					}
+					it.ruleopt = ruleopt
+
+					// Randomizer
+					if(ruleopt.strRandomizer.isNotEmpty())
+						it.randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
+
+					// Wallkick
+					if(ruleopt.strWallkick.isNotEmpty())
+						it.wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
+
+					// AI
+					val aiName = NullpoMinoSlick.propGlobal.getProperty("0.ai", "")
+					if(aiName.isNotEmpty()) {
+						it.ai = GeneralUtil.loadAIPlayer(aiName)
+						it.aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("0.aiMoveDelay", 0)
+						it.aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("0.aiThinkDelay", 0)
+						it.aiUseThread = NullpoMinoSlick.propGlobal.getProperty("0.aiUseThread", true)
+						it.aiShowHint = NullpoMinoSlick.propGlobal.getProperty("0.aiShowHint", false)
+						it.aiPrethink = NullpoMinoSlick.propGlobal.getProperty("0.aiPrethink", false)
+						it.aiShowState = NullpoMinoSlick.propGlobal.getProperty("0.aiShowState", false)
+					}
 				}
-				gameManager!!.mode = newModeTemp
-				gameManager!!.init()
-
-				// Tuning
-				gameManager!!.engine[0].owRotateButtonDefaultRight = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owRotateButtonDefaultRight", -1)
-				gameManager!!.engine[0].owSkin = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owSkin", -1)
-				gameManager!!.engine[0].owMinDAS = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owMinDAS", -1)
-				gameManager!!.engine[0].owMaxDAS = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owMaxDAS", -1)
-				gameManager!!.engine[0].owARR = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owDasDelay", -1)
-				gameManager!!.engine[0].owReverseUpDown = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owReverseUpDown", false)
-				gameManager!!.engine[0].owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owMoveDiagonal", -1)
-				gameManager!!.engine[0].owBlockOutlineType = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owBlockOutlineType", -1)
-				gameManager!!.engine[0].owBlockShowOutlineOnly = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".tuning.owBlockShowOutlineOnly", -1)
-
-				// Rule
-				val ruleopt:RuleOptions
-				var rulename:String? = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".rule", "")
-				if(gameManager!!.mode!!.gameStyle>0)
-					rulename = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".rule."
-						+gameManager!!.mode!!.gameStyle, "")
-				if(rulename!=null&&rulename.isNotEmpty()) {
-					log.info("Load rule options from $rulename")
-					ruleopt = GeneralUtil.loadRule(rulename)
-				} else {
-					log.info("Load rule options from setting file")
-					ruleopt = RuleOptions()
-					ruleopt.readProperty(NullpoMinoSlick.propGlobal, 0)
-				}
-				gameManager!!.engine[0].ruleopt = ruleopt
-
-				// Randomizer
-				if(ruleopt.strRandomizer.isNotEmpty())
-					gameManager!!.engine[0].randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
-
-
-				// Wallkick
-				if(ruleopt.strWallkick.isNotEmpty())
-					gameManager!!.engine[0].wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
-
-
-				// AI
-				val aiName = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".ai", "")
-				if(aiName.isNotEmpty()) {
-					gameManager!!.engine[0].ai = GeneralUtil.loadAIPlayer(aiName)
-					gameManager!!.engine[0].aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".aiMoveDelay", 0)
-					gameManager!!.engine[0].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".aiThinkDelay", 0)
-					gameManager!!.engine[0].aiUseThread = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".aiUseThread", true)
-					gameManager!!.engine[0].aiShowHint = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".aiShowHint", false)
-					gameManager!!.engine[0].aiPrethink = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".aiPrethink", false)
-					gameManager!!.engine[0].aiShowState = NullpoMinoSlick.propGlobal.getProperty(0.toString()+".aiShowState", false)
-				}
-				gameManager!!.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
+				gm.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
 
 				// Initialization for each player
-				for(i in 0 until gameManager!!.players)
-					gameManager!!.engine[i].init()
+				for(i in 0 until gm.players)
+					gm.engine[i].init()
 
 				newModeTemp.netplayInit(netLobby)
 			}
-			else -> log.error("This mode does not support netplay:"+newModeName!!)
+			else -> log.error("This mode does not support netplay:$newModeName")
 		}
 
 		updateTitleBarCaption()
@@ -336,12 +335,13 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 		var strTitle = "NullpoMino Netplay"
 
 		gameManager?.also {
-			if(modeName!=="NET-DUMMY" && it.engine.isNotEmpty())
-				strTitle = "[${if(it.engine[0].isInGame&&!it.replayMode&&!it.replayRerecord)
-					"PLAY" else "MENU"
+			if(modeName!=="NET-DUMMY"&&it.engine.isNotEmpty())
+				strTitle = "[${
+					if(it.engine[0].isInGame&&!it.replayMode&&!it.replayRerecord)
+						"PLAY" else "MENU"
 				}] NullpoMino Netplay - $modeName"
 		}
-		appContainer!!.setTitle(strTitle)
+		appContainer?.setTitle(strTitle)
 	}
 
 	override fun netlobbyOnDisconnect(lobby:NetLobbyFrame, client:NetPlayerClient, ex:Throwable?) {
@@ -349,7 +349,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 	}
 
 	override fun netlobbyOnExit(lobby:NetLobbyFrame) {
-		gameManager?.also{
+		gameManager?.also {
 			if(it.engine.isNotEmpty()) it.engine[0].quitflag = true
 		}
 	}

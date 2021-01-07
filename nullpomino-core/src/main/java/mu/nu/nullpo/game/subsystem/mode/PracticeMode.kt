@@ -86,6 +86,8 @@ class PracticeMode:AbstractMode() {
 	/** Flag for enabling B2B */
 	private var enableB2B:Boolean = false
 
+	private var enableSplitB2B:Boolean = false
+
 	/** ComboType */
 	private var comboType:Int = 0
 
@@ -175,8 +177,7 @@ class PracticeMode:AbstractMode() {
 	private var eraseStyle:Int = 0
 
 	/* Mode name */
-	override val name:String
-		get() = "PRACTICE"
+	override val name:String = "PRACTICE"
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -336,46 +337,14 @@ class PracticeMode:AbstractMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-					0 -> {
-						engine.speed.gravity += change*m
-						if(engine.speed.gravity<-1) engine.speed.gravity = 99999
-						if(engine.speed.gravity>99999) engine.speed.gravity = -1
-					}
-					1 -> {
-						engine.speed.denominator += change*m
-						if(engine.speed.denominator<-1) engine.speed.denominator = 99999
-						if(engine.speed.denominator>99999) engine.speed.denominator = -1
-					}
-					2 -> {
-						engine.speed.are += change
-						if(engine.speed.are<0) engine.speed.are = 99
-						if(engine.speed.are>99) engine.speed.are = 0
-					}
-					3 -> {
-						engine.speed.areLine += change
-						if(engine.speed.areLine<0) engine.speed.areLine = 99
-						if(engine.speed.areLine>99) engine.speed.areLine = 0
-					}
-					4 -> {
-						engine.speed.lineDelay += change
-						if(engine.speed.lineDelay<0) engine.speed.lineDelay = 99
-						if(engine.speed.lineDelay>99) engine.speed.lineDelay = 0
-					}
-					5 -> {
-						engine.speed.lockDelay += change
-						if(engine.speed.lockDelay<0) engine.speed.lockDelay = 99
-						if(engine.speed.lockDelay>99) engine.speed.lockDelay = 0
-					}
-					6 -> {
-						engine.speed.das += change
-						if(engine.speed.das<0) engine.speed.das = 99
-						if(engine.speed.das>99) engine.speed.das = 0
-					}
-					7 -> {
-						bgmno += change
-						if(bgmno<0) bgmno = BGM.count-1
-						if(bgmno>=BGM.count) bgmno = 0
-					}
+					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
+					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
+					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
+					3 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
+					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
+					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
+					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
+					7 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
 					8 -> big = !big
 					9 -> {
 						leveltype += change
@@ -450,11 +419,7 @@ class PracticeMode:AbstractMode() {
 						if(mapNumber<0) mapNumber = 99
 						if(mapNumber>99) mapNumber = 0
 					}
-					44, 45 -> {
-						presetNumber += change
-						if(presetNumber<0) presetNumber = 99
-						if(presetNumber>99) presetNumber = 0
-					}
+					44, 45 -> presetNumber = rangeCursor(presetNumber+change,0,99)
 					46 -> {
 						cascadeStyle += change
 						if(cascadeStyle<0) cascadeStyle = BLOCK_CASCADE_TYPE_STRING.size-1
@@ -571,7 +536,7 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 2, 3, "GRAVITY:", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuNum(engine, playerID, 11, 3, String.format("%5d/", engine.speed.gravity), menuCursor==0)
 			receiver.drawMenuNum(engine, playerID, 16, 3, String.format("%5d", engine.speed.denominator), menuCursor==1)
-			receiver.drawSpeedMeter(engine, playerID, 13, 4, engine.speed.gravity, engine.speed.denominator)
+			receiver.drawSpeedMeter(engine, playerID, 13, 4, engine.speed.gravity, engine.speed.denominator, 3)
 			receiver.drawMenuFont(engine, playerID, 2, 4, "ARE:", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuNum(engine, playerID, 7, 4, String.format("%2d/", engine.speed.are), menuCursor==2)
 			receiver.drawMenuNum(engine, playerID, 11, 4, String.format("%2d", engine.speed.areLine), menuCursor==3)
@@ -580,12 +545,15 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuNum(engine, playerID, 12, 5, String.format("%2d", engine.speed.lineDelay), menuCursor==4)
 			receiver.drawMenuFont(engine, playerID, 15, 5, "DAS:", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuNum(engine, playerID, 20, 5, String.format("%2d", engine.speed.das), menuCursor==6)
-			receiver.drawMenuFont(engine, playerID, 2, 7, String.format("BGM:%2d %s", bgmno, "${BGM.values[bgmno]}".toUpperCase()), menuCursor==7)
+			receiver.drawMenuFont(engine, playerID, 2, 7,
+				String.format("BGM:%2d %s", bgmno, "${BGM.values[bgmno]}".toUpperCase()), menuCursor==7)
 			receiver.drawMenuFont(engine, playerID, 2, 8, "BIG:${GeneralUtil.getONorOFF(big)}", menuCursor==8)
 			receiver.drawMenuFont(engine, playerID, 2, 9, "LEVEL TYPE:${LEVELTYPE_STRING[leveltype]}", menuCursor==9)
-			receiver.drawMenuFont(engine, playerID, 2, 10, "SPIN BONUS:${if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL"}", menuCursor==10)
+			receiver.drawMenuFont(engine, playerID, 2, 10,
+				"SPIN BONUS:${if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL"}", menuCursor==10)
 			receiver.drawMenuFont(engine, playerID, 2, 11, "EZ SPIN:${GeneralUtil.getONorOFF(enableTwistKick)}", menuCursor==11)
-			receiver.drawMenuFont(engine, playerID, 2, 13, "EZ IMMOBILE:${GeneralUtil.getONorOFF(twistEnableEZ)}", menuCursor==13)
+			receiver.drawMenuFont(engine, playerID, 2, 13, "EZ IMMOBILE:${GeneralUtil.getONorOFF(twistEnableEZ)}",
+				menuCursor==13)
 			receiver.drawMenuFont(engine, playerID, 2, 14, "B2B:${GeneralUtil.getONorOFF(enableB2B)}", menuCursor==14)
 			receiver.drawMenuFont(engine, playerID, 2, 15, "COMBO:${COMBOTYPE_STRING[comboType]}", menuCursor==15)
 			receiver.drawMenuFont(engine, playerID, 2, 16, "LEVEL STOP SE:${GeneralUtil.getONorOFF(lvstopse)}", menuCursor==16)
@@ -599,9 +567,12 @@ class PracticeMode:AbstractMode() {
 					else -> "${(goallv+1)} LEVELS"
 				}
 			receiver.drawMenuFont(engine, playerID, 2, 19, "GOAL LEVEL:$strGoalLv", menuCursor==19)
-			receiver.drawMenuFont(engine, playerID, 2, 20, "TIME LIMIT:${if(timelimit==0) "NONE" else GeneralUtil.getTime(timelimit)}", menuCursor==20)
-			receiver.drawMenuFont(engine, playerID, 2, 21, "ROLL LIMIT:${if(rolltimelimit==0) "NONE" else GeneralUtil.getTime(rolltimelimit)}", menuCursor==21)
-			receiver.drawMenuFont(engine, playerID, 2, 22, "TIME LIMIT PER LEVEL:${GeneralUtil.getONorOFF(timelimitResetEveryLevel)}", menuCursor==22)
+			receiver.drawMenuFont(engine, playerID, 2, 20,
+				"TIME LIMIT:${if(timelimit==0) "NONE" else GeneralUtil.getTime(timelimit)}", menuCursor==20)
+			receiver.drawMenuFont(engine, playerID, 2, 21,
+				"ROLL LIMIT:${if(rolltimelimit==0) "NONE" else GeneralUtil.getTime(rolltimelimit)}", menuCursor==21)
+			receiver.drawMenuFont(engine, playerID, 2, 22,
+				"TIME LIMIT PER LEVEL:${GeneralUtil.getONorOFF(timelimitResetEveryLevel)}", menuCursor==22)
 		} else {
 			cx = if(menuCursor in 40..45) 15 else if(menuCursor in 46..49) 16 else cx
 			cy -= if(menuCursor<29) 20 else if(menuCursor<40) 19 else if(menuCursor<=45) 30 else 29
@@ -638,7 +609,8 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 16, 14, "[LOAD PRESET]:$presetNumber", menuCursor==44)
 			receiver.drawMenuFont(engine, playerID, 16, 15, "[SAVE PRESET]:$presetNumber", menuCursor==45)
 
-			receiver.drawMenuFont(engine, playerID, 17, 17, "BLOCK FALL:${BLOCK_CASCADE_TYPE_STRING[cascadeStyle]}", menuCursor==46)
+			receiver.drawMenuFont(engine, playerID, 17, 17, "BLOCK FALL:${BLOCK_CASCADE_TYPE_STRING[cascadeStyle]}",
+				menuCursor==46)
 			receiver.drawMenuFont(engine, playerID, 17, 18, "BLOCK ERASE:${BLOCK_ERASE_TYPE_STRING[eraseStyle]}", menuCursor==47)
 		}
 		if(!owner.replayMode) receiver.drawMenuFont(engine, playerID, cx, cy, "\u0082", EventReceiver.COLOR.RED)
@@ -695,6 +667,8 @@ class PracticeMode:AbstractMode() {
 
 		if(leveltype!=LEVELTYPE_MANIA&&leveltype!=LEVELTYPE_MANIAPLUS) {
 			engine.b2bEnable = enableB2B
+			engine.splitb2b = enableSplitB2B
+
 			engine.comboType = comboType
 			engine.statistics.levelDispAdd = 1
 
@@ -713,6 +687,7 @@ class PracticeMode:AbstractMode() {
 			engine.twistEnable = false
 			engine.twistAllowKick = false
 			engine.b2bEnable = false
+			engine.splitb2b = false
 			engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 			engine.statistics.levelDispAdd = 0
 		}
@@ -817,18 +792,19 @@ class PracticeMode:AbstractMode() {
 			if(timelimit>0) time = timelimitTimer
 			if(time<0) time = 0
 			receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time),
-				if (timelimit>0)getTimeFontColor(time) else EventReceiver.COLOR.WHITE, 2f)
+				if(timelimit>0) getTimeFontColor(time) else EventReceiver.COLOR.WHITE, 2f)
 
 			// Roll Rest time
 			if(engine.gameActive&&engine.ending==2) {
 				var remainTime = rolltimelimit-rolltime
 				if(remainTime<0) remainTime = 0
 				receiver.drawScoreFont(engine, playerID, 0, 20, "ROLL TIME", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 21, GeneralUtil.getTime(remainTime), remainTime>0&&remainTime<10*60, 2f)
+				receiver.drawScoreFont(engine, playerID, 0, 21, GeneralUtil.getTime(remainTime), remainTime>0&&remainTime<10*60,
+					2f)
 			}
 			// 1分間あたり score
 			receiver.drawScoreFont(engine, playerID, 0, 11, "SCORE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%-10g", engine.statistics.spm))
+			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%10f", engine.statistics.spm))
 
 			// 1分間あたりのLines
 			receiver.drawScoreFont(engine, playerID, 0, 14, "LINE/MIN", EventReceiver.COLOR.BLUE)
@@ -837,23 +813,17 @@ class PracticeMode:AbstractMode() {
 			if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
 				//  GrandLevel
 				receiver.drawScoreFont(engine, playerID, 0, 9, "Level", EventReceiver.COLOR.BLUE)
-				var tempLevel = engine.statistics.level
-				if(tempLevel<0) tempLevel = 0
-				val strLevel = String.format("%3d", tempLevel)
-				receiver.drawScoreNum(engine, playerID, 0, 10, strLevel)
-
-				var speed = engine.speed.gravity/128
-				if(engine.speed.gravity<0) speed = 40
-				receiver.drawSpeedMeter(engine, playerID, 0, 11, speed)
-
-				receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%3d", nextseclv))
+				receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(0, engine.statistics.level)))
+				receiver.drawSpeedMeter(engine, playerID, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
+				receiver.drawScoreNum(engine, playerID, 1, 12, String.format("%3d", nextseclv))
 
 				// Roll Rest time
 				if(engine.gameActive&&engine.ending==2) {
 					var remainTime = rolltimelimit-rolltime
 					if(remainTime<0) remainTime = 0
 					receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(remainTime), remainTime>0&&remainTime<10*60, 2f)
+					receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(remainTime), remainTime>0&&remainTime<10*60,
+						2f)
 				}
 			} else if(leveltype!=LEVELTYPE_NONE) {
 				when(leveltype) {
@@ -1007,7 +977,7 @@ class PracticeMode:AbstractMode() {
 	private fun calcScoreMania(engine:GameEngine, lines:Int):Int {
 		// Combo
 		comboValue = if(lines==0) 1
-		else maxOf(1,comboValue+2*lines-2)
+		else maxOf(1, comboValue+2*lines-2)
 
 		if(lines>=1&&engine.ending==0) {
 			// Level up
@@ -1093,7 +1063,6 @@ class PracticeMode:AbstractMode() {
 		}
 		return if(lines>=1) lastscore else 0
 	}
-
 
 	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		var pts = 0
@@ -1266,9 +1235,11 @@ class PracticeMode:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_ADD_DISP, Statistic.TIME, Statistic.SPL, Statistic.SPM, Statistic.LPM)
+		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES,
+			Statistic.LEVEL_ADD_DISP, Statistic.TIME, Statistic.SPL, Statistic.SPM, Statistic.LPM)
 		if(secretGrade>0)
-			drawResult(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, "S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]))
+			drawResult(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, "S. GRADE",
+				String.format("%10s", tableSecretGradeName[secretGrade-1]))
 	}
 
 	/* Called when saving replay */
@@ -1284,7 +1255,6 @@ class PracticeMode:AbstractMode() {
 
 		/** Current version */
 		private const val CURRENT_VERSION = 5
-
 
 		/** ComboGet in point */
 		private val COMBO_GOAL_TABLE = intArrayOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)

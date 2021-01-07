@@ -136,10 +136,10 @@ class NetPlayerClient:NetBaseClient {
 		// 接続完了
 		if(message[0]=="welcome") {
 			//welcome\t[VERSION]\t[PLAYERS]\t[OBSERVERS]\t[VERSION MINOR]\t[VERSION STRING]\t[PING INTERVAL]
-			playerCount = Integer.parseInt(message[2])
-			observerCount = Integer.parseInt(message[3])
+			playerCount = message[2].toInt()
+			observerCount = message[3].toInt()
 
-			val pingInterval:Long = if(message.size>6) java.lang.Long.parseLong(message[6]) else PING_INTERVAL
+			val pingInterval:Long = if(message.size>6) message[6].toLong() else PING_INTERVAL
 			if(pingInterval!=PING_INTERVAL) startPingTask(pingInterval)
 
 			send("login\t${GameManager.versionMajor}\t${NetUtil.urlEncode(playerName)}\t${Locale.getDefault().country}\t${NetUtil.urlEncode(playerTeam)}\n")
@@ -147,20 +147,20 @@ class NetPlayerClient:NetBaseClient {
 		// 人count更新
 		if(message[0]=="observerupdate") {
 			//observerupdate\t[PLAYERS]\t[OBSERVERS]
-			playerCount = Integer.parseInt(message[1])
-			observerCount = Integer.parseInt(message[2])
+			playerCount = message[1].toInt()
+			observerCount = message[2].toInt()
 		}
 		// ログイン成功
 		if(message[0]=="loginsuccess") {
 			//loginsuccess\t[NAME]\t[UID]
 			playerName = NetUtil.urlDecode(message[1])
-			playerUID = Integer.parseInt(message[2])
+			playerUID = message[2].toInt()
 		}
 		// Playerリスト
 		if(message[0]=="playerlist") {
 			//playerlist\t[PLAYERS]\t[PLAYERDATA...]
 
-			val numPlayers = Integer.parseInt(message[1])
+			val numPlayers = message[1].toInt()
 
 			for(i in 0 until numPlayers) {
 				val p = NetPlayerInfo(message[2+i])
@@ -197,7 +197,7 @@ class NetPlayerClient:NetBaseClient {
 		if(message[0]=="roomlist") {
 			//roomlist\t[ROOMS]\t[ROOMDATA...]
 
-			val numRooms = Integer.parseInt(message[1])
+			val numRooms = message[1].toInt()
 
 			for(i in 0 until numRooms) {
 				val r = NetRoomInfo(message[2+i])
@@ -232,7 +232,7 @@ class NetPlayerClient:NetBaseClient {
 		}
 		// 参戦状態変更
 		if(message[0]=="changestatus") {
-			val p = getPlayerInfoByUID(Integer.parseInt(message[2]))
+			val p = getPlayerInfoByUID(message[2].toInt())
 
 			if(p!=null)
 				when {
@@ -242,10 +242,10 @@ class NetPlayerClient:NetBaseClient {
 					}
 					message[1]=="joinqueue" -> {
 						p.seatID = -1
-						p.queueID = Integer.parseInt(message[4])
+						p.queueID = message[4].toInt()
 					}
 					message[1]=="joinseat" -> {
-						p.seatID = Integer.parseInt(message[4])
+						p.seatID = message[4].toInt()
 						p.queueID = -1
 					}
 				}

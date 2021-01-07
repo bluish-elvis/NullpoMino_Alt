@@ -101,8 +101,8 @@ class Field:Serializable {
 	private var explodWidthBig:Int = 0
 	private var explodHeightBig:Int = 0
 
-	val lastLinesTop:Int get() = lastLinesHeight.minOrNull() ?: height
-	val lastLinesBottom:Int get() = lastLinesHeight.maxOrNull() ?: 0
+	val lastLinesTop:Int get() = lastLinesHeight.min() ?: height
+	val lastLinesBottom:Int get() = lastLinesHeight.max() ?: 0
 
 	/** 消えるLinescountを数える
 	 * @return Linescount
@@ -449,7 +449,7 @@ class Field:Serializable {
 				var blkColor = Block.BLOCK_COLOR_NONE
 
 				try {
-					blkColor = Integer.parseInt(mapArray[j])
+					blkColor = mapArray[j].toInt()
 				} catch(e:NumberFormatException) {
 				}
 
@@ -949,25 +949,36 @@ class Field:Serializable {
 		}
 	}
 
-	/** 穴が1箇所だけ開いたgarbage blockを一番下に追加
-	 * @param hole 穴の位置 (-1なら穴なし）
-	 * @param color garbage block cint
-	 * @param skin garbage blockの絵柄
-	 * @param attribute garbage blockの属性
-	 * @param lines 追加するgarbage blockのLinescount
-	 */
-	fun addSingleHoleGarbage(hole:Int, color:Int, skin:Int, attribute:Int, lines:Int) {
-		for(k in 0 until lines) {
-			pushUp(1)
-
-			for(j in 0 until width)
-				if(j!=hole) setBlock(j, heightWithoutHurryupFloor-1, Block().apply {
-					cint = color
-					this.skin = skin
-					aint = attribute
-				})
-
+	fun setSingleHoleLine(hole:Int, y:Int, color:Int, skin:Int) {
+		(0 until width).forEach {j ->
+			if(j!=hole)
+				setBlock(j, y, Block(color, skin,
+					ATTRIBUTE.VISIBLE, ATTRIBUTE.OUTLINE, ATTRIBUTE.GARBAGE,
+					if(j<hole) ATTRIBUTE.CONNECT_LEFT else if(j>hole) ATTRIBUTE.CONNECT_RIGHT else ATTRIBUTE.ERASE))
 		}
+	}
+	/** Add a single hole garbage (Attributes are automatically set)
+	 * @param hole Hole position before add lines
+	 * @param messiness Changing Rate of Hole position
+	 * @param color Color
+	 * @param skin Skin
+	 * @param lines Number of garbage lines to add
+	 * @return last hole position
+	 */
+	fun addRandomHoleGarbage(engine:GameEngine, hole:Int, messiness:Float, color:Int, skin:Int, lines:Int):Int {
+		var x = hole
+		(0 until lines).forEachIndexed {acc, i ->
+			if(i>0) {
+				val rand = engine.random.nextFloat()
+				if(rand<messiness) {
+					val newHole = (rand*width).toInt()
+					x = newHole+if(newHole>=x) 1 else 0
+				}
+			}
+			pushUp(1)
+			setSingleHoleLine(x, heightWithoutHurryupFloor-1, color, skin)
+		}
+		return x
 	}
 
 	/** Add a single hole garbage (Attributes are automatically set)
@@ -976,27 +987,11 @@ class Field:Serializable {
 	 * @param skin Skin
 	 * @param lines Number of garbage lines to add
 	 */
-	fun addSingleHoleGarbage(hole:Int, color:Int, skin:Int, lines:Int) {
-		for(k in 0 until lines) {
+	fun addSingleHoleGarbage(hole:Int, color:Int, skin:Int, lines:Int) =
+		(0 until lines).forEach {
 			pushUp(1)
-
-			val y = heightWithoutHurryupFloor-1
-
-			for(j in 0 until width)
-				if(j!=hole)
-					setBlock(j, y, Block(color, skin,
-						ATTRIBUTE.VISIBLE, ATTRIBUTE.OUTLINE, ATTRIBUTE.GARBAGE))
-
-			// Set connections
-			for(j in 0 until width)
-				if(j!=hole)
-					getBlock(j, y)?.run {
-						if(!getBlockEmpty(j-1, y)) setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
-						if(!getBlockEmpty(j+1, y)) setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
-					}
-
+			setSingleHoleLine(hole, heightWithoutHurryupFloor-1, color, skin)
 		}
-	}
 
 	/** 一番下のLinesの形をコピーしたgarbage blockを一番下に追加
 	 * @param skin garbage blockの絵柄
@@ -1266,7 +1261,8 @@ class Field:Serializable {
 		val my = heightWithoutHurryupFloor
 		var blocks = 0
 		val r =
-			intArrayOf(if(y-h>-hiddenHeight) y-h else -hiddenHeight, if(y+h<my) y+h else my, if(x>w) x-w else 0, if(x+w<width) x+w else width)
+			intArrayOf(if(y-h>-hiddenHeight) y-h else -hiddenHeight, if(y+h<my) y+h else my, if(x>w) x-w else 0,
+				if(x+w<width) x+w else width)
 		for(i in r[0]..r[1])
 			for(j in r[2]..r[3]) {
 				val b = getBlock(j, i) ?: continue
@@ -1555,7 +1551,8 @@ class Field:Serializable {
 							for(l in 0 until width)
 								getBlock(l, k)?.let {bTemp ->
 									getBlock(l, k+1)?.let {bBelow ->
-										if(getCoordAttribute(l, k+1)!=COORD_WALL&&!bTemp.isEmpty&&bBelow.isEmpty&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
+										if(getCoordAttribute(l, k+1)!=COORD_WALL&&!bTemp.isEmpty&&bBelow.isEmpty&&bTemp.getAttribute(
+												ATTRIBUTE.TEMP_MARK)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
 											bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
 											bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL)
 											bTemp.setAttribute(true, ATTRIBUTE.LAST_COMMIT)
@@ -1882,8 +1879,8 @@ class Field:Serializable {
 
 		try {
 			val strSubArray = strArray[j].split("/".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
-			if(strSubArray.isNotEmpty()) blkColor = Integer.parseInt(strSubArray[0], 16)
-			if(strSubArray.size>1) attr = Integer.parseInt(strSubArray[1], 16)
+			if(strSubArray.isNotEmpty()) blkColor = strSubArray[0].toInt(16)
+			if(strSubArray.size>1) attr = strSubArray[1].toInt(16)
 		} catch(e:Exception) {
 		}
 

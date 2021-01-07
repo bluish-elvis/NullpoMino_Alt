@@ -73,6 +73,8 @@ class SprintScore:NetDummyMode() {
 	/** Flag for enabling B2B */
 	private var enableB2B:Boolean = false
 
+	private var enableSplitB2B:Boolean = false
+
 	/** Flag for enabling combos */
 	private var enableCombo:Boolean = false
 
@@ -101,9 +103,9 @@ class SprintScore:NetDummyMode() {
 	private var rankingSPL:Array<DoubleArray> = Array(GOALTYPE_MAX) {DoubleArray(RANKING_MAX)}
 
 	/* Mode name */
-	override val name:String
-		get() = "Score SprintRace"
+	override val name:String = "Score SprintRace"
 	override val gameIntensity:Int = 2
+
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
@@ -204,46 +206,15 @@ class SprintScore:NetDummyMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-					0 -> {
-						engine.speed.gravity += change*m
-						if(engine.speed.gravity<-1) engine.speed.gravity = 99999
-						if(engine.speed.gravity>99999) engine.speed.gravity = -1
-					}
-					1 -> {
-						engine.speed.denominator += change*m
-						if(engine.speed.denominator<-1) engine.speed.denominator = 99999
-						if(engine.speed.denominator>99999) engine.speed.denominator = -1
-					}
-					2 -> {
-						engine.speed.are += change
-						if(engine.speed.are<0) engine.speed.are = 99
-						if(engine.speed.are>99) engine.speed.are = 0
-					}
-					3 -> {
-						engine.speed.areLine += change
-						if(engine.speed.areLine<0) engine.speed.areLine = 99
-						if(engine.speed.areLine>99) engine.speed.areLine = 0
-					}
-					4 -> {
-						engine.speed.lineDelay += change
-						if(engine.speed.lineDelay<0) engine.speed.lineDelay = 99
-						if(engine.speed.lineDelay>99) engine.speed.lineDelay = 0
-					}
-					5 -> {
-						engine.speed.lockDelay += change
-						if(engine.speed.lockDelay<0) engine.speed.lockDelay = 99
-						if(engine.speed.lockDelay>99) engine.speed.lockDelay = 0
-					}
-					6 -> {
-						engine.speed.das += change
-						if(engine.speed.das<0) engine.speed.das = 99
-						if(engine.speed.das>99) engine.speed.das = 0
-					}
-					7 -> {
-						bgmno += change
-						if(bgmno<0) bgmno = BGM.count-1
-						if(bgmno>=BGM.count) bgmno = 0
-					}
+
+					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
+					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
+					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
+					3 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
+					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
+					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
+					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
+					7 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
 					8 -> big = !big
 					9 -> {
 						goaltype += change
@@ -251,7 +222,6 @@ class SprintScore:NetDummyMode() {
 						if(goaltype>GOALTYPE_MAX-1) goaltype = 0
 					}
 					10 -> {
-						//enableTwist = !enableTwist;
 						twistEnableType += change
 						if(twistEnableType<0) twistEnableType = 2
 						if(twistEnableType>2) twistEnableType = 0
@@ -265,11 +235,7 @@ class SprintScore:NetDummyMode() {
 					13 -> twistEnableEZ = !twistEnableEZ
 					14 -> enableB2B = !enableB2B
 					15 -> enableCombo = !enableCombo
-					16, 17 -> {
-						presetNumber += change
-						if(presetNumber<0) presetNumber = 99
-						if(presetNumber>99) presetNumber = 0
-					}
+					16, 17 -> presetNumber = rangeCursor(presetNumber+change,0,99)
 				}
 
 				// NET: Signal options change
@@ -329,12 +295,15 @@ class SprintScore:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
-			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, engine.speed.gravity, engine.speed.denominator, engine.speed.are, engine.speed.areLine, engine.speed.lineDelay, engine.speed.lockDelay, engine.speed.das)
+			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, engine.speed.gravity,
+				engine.speed.denominator, engine.speed.are, engine.speed.areLine, engine.speed.lineDelay, engine.speed.lockDelay,
+				engine.speed.das)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
 			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getOorX(big), "GOAL", String.format("%3dK",
 				GOAL_TABLE[goaltype]/1000))
 
-			drawMenu(engine, playerID, receiver, "SPIN BONUS", if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL",
+			drawMenu(engine, playerID, receiver, "SPIN BONUS",
+				if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL",
 				"EZ SPIN", GeneralUtil.getONorOFF(enableTwistKick),
 				"EZIMMOBILE", GeneralUtil.getONorOFF(twistEnableEZ))
 			drawMenuCompact(engine, playerID, receiver,
@@ -351,15 +320,13 @@ class SprintScore:NetDummyMode() {
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.big = big
 		engine.b2bEnable = enableB2B
-		if(enableCombo)
-			engine.comboType = GameEngine.COMBO_TYPE_NORMAL
-		else
-			engine.comboType = GameEngine.COMBO_TYPE_DISABLE
+		engine.splitb2b = enableSplitB2B
+		engine.comboType = if(enableCombo) GameEngine.COMBO_TYPE_NORMAL
+		else GameEngine.COMBO_TYPE_DISABLE
 
-		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.SILENT
+		owner.bgmStatus.bgm = if(netIsWatch) BGM.SILENT
 		else
-			owner.bgmStatus.bgm = BGM.values[bgmno]
+			BGM.values[bgmno]
 
 		if(version>=1) {
 			engine.twistAllowKick = enableTwistKick
@@ -391,7 +358,8 @@ class SprintScore:NetDummyMode() {
 				receiver.drawScoreFont(engine, playerID, 3, topY-1, "TIME   LINE SCR/LINE", EventReceiver.COLOR.BLUE, scale)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW,
+						scale)
 					receiver.drawScoreNum(engine, playerID, 3,
 						topY+i, GeneralUtil.getTime(rankingTime[goaltype][i]), rankingRank==i, scale)
 					receiver.drawScoreNum(engine, playerID, 12, topY+i,
@@ -417,13 +385,13 @@ class SprintScore:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 7, engine.statistics.lines.toString(), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "SCORE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%-10g", engine.statistics.spm), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 10, String.format("%10f", engine.statistics.spm), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "LINE/MIN", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 13, "${engine.statistics.lpm}", 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "SCORE/LINE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 16, String.format("%-10g", engine.statistics.spl), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 16, String.format("%10f", engine.statistics.spl), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 18, "Time", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 19, GeneralUtil.getTime(engine.statistics.time), 2f)
@@ -494,15 +462,17 @@ class SprintScore:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${(engine.statc[1]+1)}/2", EventReceiver.COLOR.RED)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${(engine.statc[1]+1)}/2", EventReceiver.COLOR.RED)
 
 		if(engine.statc[1]==0) {
-			drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.TIME, Statistic.PIECE)
+			drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES,
+				Statistic.TIME, Statistic.PIECE)
 			drawResultRank(engine, playerID, receiver, 10, EventReceiver.COLOR.BLUE, rankingRank)
 			drawResultNetRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, netRankingRank[0])
 			drawResultNetRankDaily(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[1])
 		} else if(engine.statc[1]==1)
-			drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, Statistic.SPL, Statistic.SPM, Statistic.LPM, Statistic.PPS)
+			drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, Statistic.SPL, Statistic.SPM, Statistic.LPM,
+				Statistic.PPS)
 
 		if(netIsPB) receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
 
@@ -637,21 +607,21 @@ class SprintScore:NetDummyMode() {
 
 	/** NET: Receive various in-game stats (as well as goaltype) */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
-		engine.statistics.scoreLine = Integer.parseInt(message[4])
-		engine.statistics.scoreHD = Integer.parseInt(message[5])
-		engine.statistics.scoreSD = Integer.parseInt(message[6])
-		engine.statistics.scoreBonus = Integer.parseInt(message[7])
-		engine.statistics.lines = Integer.parseInt(message[8])
-		engine.statistics.totalPieceLocked = Integer.parseInt(message[9])
-		engine.statistics.time = Integer.parseInt(message[10])
-		goaltype = Integer.parseInt(message[11])
-		engine.gameActive = java.lang.Boolean.parseBoolean(message[12])
-		engine.timerActive = java.lang.Boolean.parseBoolean(message[13])
-		lastscore = Integer.parseInt(message[14])
-		scgettime = Integer.parseInt(message[15])
-		lastb2b = java.lang.Boolean.parseBoolean(message[16])
-		lastcombo = Integer.parseInt(message[17])
-		lastpiece = Integer.parseInt(message[18])
+		engine.statistics.scoreLine = message[4].toInt()
+		engine.statistics.scoreHD = message[5].toInt()
+		engine.statistics.scoreSD = message[6].toInt()
+		engine.statistics.scoreBonus = message[7].toInt()
+		engine.statistics.lines = message[8].toInt()
+		engine.statistics.totalPieceLocked = message[9].toInt()
+		engine.statistics.time = message[10].toInt()
+		goaltype = message[11].toInt()
+		engine.gameActive = message[12].toBoolean()
+		engine.timerActive = message[13].toBoolean()
+		lastscore = message[14].toInt()
+		scgettime = message[15].toInt()
+		lastb2b = message[16].toBoolean()
+		lastcombo = message[17].toInt()
+		lastpiece = message[18].toInt()
 	}
 
 	/** NET: Send end-of-game stats
@@ -687,23 +657,23 @@ class SprintScore:NetDummyMode() {
 
 	/** NET: Receive game options */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
-		engine.speed.gravity = Integer.parseInt(message[4])
-		engine.speed.denominator = Integer.parseInt(message[5])
-		engine.speed.are = Integer.parseInt(message[6])
-		engine.speed.areLine = Integer.parseInt(message[7])
-		engine.speed.lineDelay = Integer.parseInt(message[8])
-		engine.speed.lockDelay = Integer.parseInt(message[9])
-		engine.speed.das = Integer.parseInt(message[10])
-		bgmno = Integer.parseInt(message[11])
-		big = java.lang.Boolean.parseBoolean(message[12])
-		goaltype = Integer.parseInt(message[13])
-		twistEnableType = Integer.parseInt(message[14])
-		enableTwistKick = java.lang.Boolean.parseBoolean(message[15])
-		enableB2B = java.lang.Boolean.parseBoolean(message[16])
-		enableCombo = java.lang.Boolean.parseBoolean(message[17])
-		presetNumber = Integer.parseInt(message[18])
-		spinCheckType = Integer.parseInt(message[19])
-		twistEnableEZ = java.lang.Boolean.parseBoolean(message[20])
+		engine.speed.gravity = message[4].toInt()
+		engine.speed.denominator = message[5].toInt()
+		engine.speed.are = message[6].toInt()
+		engine.speed.areLine = message[7].toInt()
+		engine.speed.lineDelay = message[8].toInt()
+		engine.speed.lockDelay = message[9].toInt()
+		engine.speed.das = message[10].toInt()
+		bgmno = message[11].toInt()
+		big = message[12].toBoolean()
+		goaltype = message[13].toInt()
+		twistEnableType = message[14].toInt()
+		enableTwistKick = message[15].toBoolean()
+		enableB2B = message[16].toBoolean()
+		enableCombo = message[17].toBoolean()
+		presetNumber = message[18].toInt()
+		spinCheckType = message[19].toInt()
+		twistEnableEZ = message[20].toBoolean()
 	}
 
 	/** NET: Get goal type */

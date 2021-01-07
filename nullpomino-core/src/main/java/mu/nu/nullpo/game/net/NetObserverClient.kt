@@ -67,11 +67,11 @@ class NetObserverClient:NetBaseClient {
 		// 接続完了
 		if(message[0]=="welcome") {
 			//welcome\t[VERSION]\t[PLAYERS]\t[OBSERVERS]\t[VERSION MINOR]\t[VERSION STRING]\t[PING INTERVAL]
-			serverVersion = java.lang.Float.parseFloat(message[1])
-			playerCount = Integer.parseInt(message[2])
-			observerCount = Integer.parseInt(message[3])
+			serverVersion = message[1].toFloat()
+			playerCount = message[2].toInt()
+			observerCount = message[3].toInt()
 
-			val pingInterval:Long = if(message.size>6) java.lang.Long.parseLong(message[6]) else PING_INTERVAL
+			val pingInterval:Long = if(message.size>6) message[6].toLong() else PING_INTERVAL
 			if(pingInterval!=PING_INTERVAL) startPingTask(pingInterval)
 
 			send("observerlogin\t${GameManager.versionMajor}\t${GameManager.isDevBuild}\n")
@@ -79,8 +79,8 @@ class NetObserverClient:NetBaseClient {
 		// 人count更新
 		if(message[0]=="observerupdate") {
 			//observerupdate\t[PLAYERS]\t[OBSERVERS]
-			playerCount = Integer.parseInt(message[1])
-			observerCount = Integer.parseInt(message[2])
+			playerCount = message[1].toInt()
+			observerCount = message[2].toInt()
 		}
 
 		super.processPacket(fullMessage)

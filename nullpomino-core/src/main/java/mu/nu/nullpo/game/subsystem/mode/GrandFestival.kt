@@ -144,8 +144,7 @@ class GrandFestival:AbstractMode() {
 	private var dectemp:Int = 0
 
 	/** Returns the name of this mode */
-	override val name:String
-		get() = "Grand Festival"
+	override val name:String = "Grand Festival"
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -198,6 +197,7 @@ class GrandFestival:AbstractMode() {
 		engine.twistEnableEZ = true
 		engine.twistminiType = GameEngine.TWISTMINI_TYPE_ROTATECHECK
 		engine.b2bEnable = true
+		engine.splitb2b = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.bighalf = false
 		engine.bigmove = false
@@ -332,7 +332,9 @@ class GrandFestival:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(), "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "SHOW SECT.", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(), "FULL GHOST",
+			GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "SHOW SECT.",
+			GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
 	}
 
 	/** This function will be called before the game actually begins (after
@@ -387,16 +389,21 @@ class GrandFestival:AbstractMode() {
 					for(i in 0 until SECTION_MAX) {
 						val temp = i*100
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, String.format("%3d-", temp), sectionIsNewRecord[i])
-						receiver.drawScoreNum(engine, playerID, 5, 3+i, String.format("%4d %6d %s", bestSectionHanabi[i], bestSectionScore[i], GeneralUtil.getTime(bestSectionTime[i])), sectionIsNewRecord[i])
+						receiver.drawScoreNum(engine, playerID, 5, 3+i,
+							String.format("%4d %6d %s", bestSectionHanabi[i], bestSectionScore[i],
+								GeneralUtil.getTime(bestSectionTime[i])), sectionIsNewRecord[i])
 						totalScore += bestSectionScore[i]
 						totalHanabi += bestSectionHanabi[i]
 						totalTime += bestSectionTime[i]
 					}
 					receiver.drawScoreFont(engine, playerID, 0, 5+SECTION_MAX, "TOTAL", COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, 5, 6+SECTION_MAX, String.format("%4d %6d %s", totalHanabi, totalScore, GeneralUtil.getTime(totalTime)))
+					receiver.drawScoreNum(engine, playerID, 5, 6+SECTION_MAX,
+						String.format("%4d %6d %s", totalHanabi, totalScore, GeneralUtil.getTime(totalTime)))
 
 					receiver.drawScoreFont(engine, playerID, 0, 7+SECTION_MAX, "AVERAGE", COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, 5, 8+SECTION_MAX, String.format("%4d %6d %s", totalHanabi/SECTION_MAX, totalScore/SECTION_MAX, GeneralUtil.getTime((totalTime/SECTION_MAX))))
+					receiver.drawScoreNum(engine, playerID, 5, 8+SECTION_MAX,
+						String.format("%4d %6d %s", totalHanabi/SECTION_MAX, totalScore/SECTION_MAX,
+							GeneralUtil.getTime((totalTime/SECTION_MAX))))
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
 				}
@@ -408,20 +415,16 @@ class GrandFestival:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 5, 4, "$hanabi", g20||inthanabi>-100, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.BLUE)
-			var tempLevel = engine.statistics.level
-			if(tempLevel<0) tempLevel = 0
-			val strLevel = String.format("%3d", tempLevel)
-			receiver.drawScoreNum(engine, playerID, 0, 10, strLevel)
-
-			receiver.drawSpeedMeter(engine, playerID, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4)
-			receiver.drawScoreNum(engine, playerID, 0, 12, "300")
+			receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
+			receiver.drawSpeedMeter(engine, playerID, 0, 11,
+				if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4, 4)
+			receiver.drawScoreNum(engine, playerID, 1, 12, "300")
 
 			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			if(engine.gameActive&&engine.ending==2) {
-				var time = ROLLTIMELIMIT-rolltime
-				if(time<0) time = 0
+				val time = maxOf(0, ROLLTIMELIMIT-rolltime)
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", COLOR.BLUE)
 				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
 			}
@@ -439,7 +442,8 @@ class GrandFestival:AbstractMode() {
 						if(temp>=300) {
 							temp = 300
 							receiver.drawScoreFont(engine, playerID, x-1, 4+i, "BONUS", COLOR.BLUE)
-							receiver.drawScoreNum(engine, playerID, x, 5+i, String.format("%4d %d", sectionhanabi[i+1], sectionscore[i+1]))
+							receiver.drawScoreNum(engine, playerID, x, 5+i,
+								String.format("%4d %d", sectionhanabi[i+1], sectionscore[i+1]))
 
 						}
 
@@ -452,7 +456,8 @@ class GrandFestival:AbstractMode() {
 					}
 
 				receiver.drawScoreFont(engine, playerID, x2, 14, "AVERAGE", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, x2, 15, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))), 2f)
+				receiver.drawScoreNum(engine, playerID, x2, 15,
+					GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))), 2f)
 
 			}
 		}
@@ -654,7 +659,7 @@ class GrandFestival:AbstractMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "kn PAGE${engine.statc[1]+1}/3", COLOR.RED)
+		receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 		if(engine.statc[1]==0) {
 			receiver.drawMenuNum(engine, playerID, 0, 2, String.format("%04d", hanabi), 2f)
@@ -663,14 +668,16 @@ class GrandFestival:AbstractMode() {
 			drawResultStats(engine, playerID, receiver, 6, COLOR.BLUE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME)
 			drawResultRank(engine, playerID, receiver, 13, COLOR.BLUE, rankingRank)
 			if(secretGrade>4)
-				drawResult(engine, playerID, receiver, 15, COLOR.BLUE, "S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]))
+				drawResult(engine, playerID, receiver, 15, COLOR.BLUE, "S. GRADE",
+					String.format("%10s", tableSecretGradeName[secretGrade-1]))
 
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "SECTION", COLOR.BLUE)
 			receiver.drawMenuFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
 
 			for(i in sectionscore.indices)
-				receiver.drawMenuNum(engine, playerID, 0, (if(i==SECTION_MAX) 5 else 4)+i, String.format("%4d %d", sectionhanabi[i], sectionscore[i]), sectionIsNewRecord[i])
+				receiver.drawMenuNum(engine, playerID, 0, (if(i==SECTION_MAX) 5 else 4)+i,
+					String.format("%4d %d", sectionhanabi[i], sectionscore[i]), sectionIsNewRecord[i])
 			receiver.drawMenuFont(engine, playerID, 0, 4+SECTION_MAX, "BONUS", COLOR.BLUE)
 
 			receiver.drawMenuFont(engine, playerID, 0, 7+SECTION_MAX, "Time", COLOR.BLUE)
@@ -684,7 +691,8 @@ class GrandFestival:AbstractMode() {
 				receiver.drawMenuNum(engine, playerID, 2, 16, GeneralUtil.getTime(sectionavgtime))
 			}
 		} else if(engine.statc[1]==2)
-			drawResultStats(engine, playerID, receiver, 2, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
+			drawResultStats(engine, playerID, receiver, 2, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE,
+				Statistic.PPS)
 	}
 
 	/** Additional routine for game result screen */
@@ -810,11 +818,13 @@ class GrandFestival:AbstractMode() {
 
 		/** Gravity table (Gravity speed value) */
 		private val tableGravityValue =
-			intArrayOf(4, 5, 6, 8, 10, 12, 16, 32, 48, 64, 4, 5, 6, 8, 12, 32, 48, 80, 112, 128, 144, 16, 48, 80, 112, 144, 176, 192, 208, 224, 240, -1)
+			intArrayOf(4, 5, 6, 8, 10, 12, 16, 32, 48, 64, 4, 5, 6, 8, 12, 32, 48, 80, 112, 128, 144, 16, 48, 80, 112, 144, 176,
+				192, 208, 224, 240, -1)
 
 		/** Gravity table (Gravity change level) */
 		private val tableGravityChangeLevel =
-			intArrayOf(8, 19, 35, 40, 50, 60, 70, 80, 90, 100, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180, 200, 212, 221, 232, 244, 256, 267, 277, 287, 295, 300, 10000)
+			intArrayOf(8, 19, 35, 40, 50, 60, 70, 80, 90, 100, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180, 200, 212, 221,
+				232, 244, 256, 267, 277, 287, 295, 300, 10000)
 
 		/** 段位 pointのCombo bonus */
 		private val tableHanabiComboBonus = doubleArrayOf(1.0, 1.5, 1.9, 2.2, 2.9, 3.5, 3.9, 4.2, 4.5)

@@ -122,8 +122,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	protected var netRankingRollclear:Array<LinkedList<Int>> = emptyArray()
 
 	/* NET: Mode name */
-	override val name:String
-		get() = "NETWORK MODE"
+	override val name:String = "NETWORK MODE"
 
 	/** NET: Netplay Initialization. NetDummyMode will set the lobby's current
 	 * mode to this. */
@@ -154,8 +153,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	@Suppress("RemoveExplicitTypeArguments")
 	override fun modeInit(manager:GameManager) {
 		log.debug("modeInit() on NetDummyMode")
-		owner = manager
-		receiver = manager.receiver
+
 		menuTime = 0
 		netIsNetPlay = false
 		netIsWatch = false
@@ -452,9 +450,9 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		// Replay send complete
 		if(message[0]=="spsendok") {
 			netReplaySendStatus = 2
-			netRankingRank[0] = Integer.parseInt(message[1])
-			netIsPB = java.lang.Boolean.parseBoolean(message[2])
-			netRankingRank[1] = Integer.parseInt(message[3])
+			netRankingRank[0] = message[1].toInt()
+			netIsPB = message[2].toBoolean()
+			netRankingRank[1] = message[3].toInt()
 		}
 		// Netplay Ranking
 		if(message[0]=="spranking") netRecvNetPlayRanking(message)
@@ -469,7 +467,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				// Move cursor
 				if(message[3]=="cursor")
 					if(engine.stat==GameEngine.Status.SETTING) {
-						menuCursor = Integer.parseInt(message[4])
+						menuCursor = message[4].toInt()
 						engine.playSE("cursor")
 					}
 				// Change game options
@@ -671,16 +669,16 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * @param message Message array
 	 */
 	internal fun netRecvPieceMovement(engine:GameEngine, message:Array<String>) {
-		val id = Integer.parseInt(message[4])
+		val id = message[4].toInt()
 
 		if(id>=0) {
-			val pieceX = Integer.parseInt(message[5])
-			val pieceY = Integer.parseInt(message[6])
-			val pieceDir = Integer.parseInt(message[7])
-			//int pieceBottomY = Integer.parseInt(message[8]);
-			val pieceColor = Integer.parseInt(message[9])
-			val pieceSkin = Integer.parseInt(message[10])
-			val pieceBig = message.size>11&&java.lang.Boolean.parseBoolean(message[11])
+			val pieceX = message[5].toInt()
+			val pieceY = message[6].toInt()
+			val pieceDir = message[7].toInt()
+			//int pieceBottomY = message[8].toInt();
+			val pieceColor = message[9].toInt()
+			val pieceSkin = message[10].toInt()
+			val pieceBig = message.size>11&&message[11].toBoolean()
 
 			engine.nowPieceObject = Piece(id).apply {
 				direction = pieceDir
@@ -758,10 +756,10 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				engine.nowPieceObject = null
 				engine.holdDisable = false
 				if(engine.stat==GameEngine.Status.SETTING) engine.stat = GameEngine.Status.MOVE
-				val skin = Integer.parseInt(message[4])
+				val skin = message[4].toInt()
 				netPlayerSkin = skin
 				if(message.size>6) {
-					val isCompressed = java.lang.Boolean.parseBoolean(message[6])
+					val isCompressed = message[6].toBoolean()
 					var strFieldData = message[5]
 					if(isCompressed) strFieldData = NetUtil.decompressString(strFieldData)
 					engine.field!!.attrStringToField(strFieldData, skin)
@@ -772,12 +770,12 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				engine.nowPieceObject = null
 				engine.holdDisable = false
 				if(engine.stat==GameEngine.Status.SETTING) engine.stat = GameEngine.Status.MOVE
-				val skin = Integer.parseInt(message[4])
-				val highestWallY = Integer.parseInt(message[5])
+				val skin = message[4].toInt()
+				val highestWallY = message[5].toInt()
 				netPlayerSkin = skin
 				if(message.size>7) {
 					var strFieldData = message[6]
-					val isCompressed = java.lang.Boolean.parseBoolean(message[7])
+					val isCompressed = message[7].toBoolean()
 					if(isCompressed) strFieldData = NetUtil.decompressString(strFieldData)
 					engine.field!!.stringToField(strFieldData, skin, highestWallY, highestWallY)
 				} else
@@ -821,16 +819,16 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * @param message Message array
 	 */
 	internal fun netRecvNextAndHold(engine:GameEngine, message:Array<String>) {
-		val maxNext = Integer.parseInt(message[4])
+		val maxNext = message[4].toInt()
 		engine.ruleopt.nextDisplay = maxNext
-		engine.holdDisable = java.lang.Boolean.parseBoolean(message[5])
+		engine.holdDisable = message[5].toBoolean()
 
 		for(i in 0 until maxNext+1)
 			if(i+6<message.size) {
 				val strPieceData = message[i+6].split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
-				val pieceID = Integer.parseInt(strPieceData[0])
-				val pieceDirection = Integer.parseInt(strPieceData[1])
-				val pieceColor = Integer.parseInt(strPieceData[2])
+				val pieceID = strPieceData[0].toInt()
+				val pieceDirection = strPieceData[1].toInt()
+				val pieceColor = strPieceData[2].toInt()
 
 				if(i==0) {
 					if(pieceID==Piece.PIECE_NONE)
@@ -1079,11 +1077,11 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		log.debug("$strDebugTemp")
 
 		if(message.size>7) {
-			val isDaily = java.lang.Boolean.parseBoolean(message[4])
+			val isDaily = message[4].toBoolean()
 			val d = if(isDaily) 1 else 0
 
-			netRankingType = Integer.parseInt(message[5])
-			var maxRecords = Integer.parseInt(message[6])
+			netRankingType = message[5].toInt()
+			var maxRecords = message[6].toInt()
 			val arrayRow = message[7].split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 			maxRecords = minOf(maxRecords, arrayRow.size)
 
@@ -1104,53 +1102,53 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 			for(i in 0 until maxRecords) {
 				val arrayData = arrayRow[i].split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
-				netRankingPlace[d].add(Integer.parseInt(arrayData[0]))
+				netRankingPlace[d].add(arrayData[0].toInt())
 				val pName = NetUtil.urlDecode(arrayData[1])
 				netRankingName[d].add(pName)
 				GeneralUtil.importCalendarString(arrayData[2])?.let {netRankingDate[d].add(it)}
-				netRankingGamerate[d].add(java.lang.Float.parseFloat(arrayData[3]))
+				netRankingGamerate[d].add(arrayData[3].toFloat())
 
 				when(netRankingType) {
 					NetSPRecord.RANKINGTYPE_GENERIC_SCORE -> {
-						netRankingScore[d].add(Integer.parseInt(arrayData[4]))
-						netRankingLines[d].add(Integer.parseInt(arrayData[5]))
-						netRankingTime[d].add(Integer.parseInt(arrayData[6]))
+						netRankingScore[d].add(arrayData[4].toInt())
+						netRankingLines[d].add(arrayData[5].toInt())
+						netRankingTime[d].add(arrayData[6].toInt())
 					}
 					NetSPRecord.RANKINGTYPE_GENERIC_TIME -> {
-						netRankingTime[d].add(Integer.parseInt(arrayData[4]))
-						netRankingPiece[d].add(Integer.parseInt(arrayData[5]))
-						netRankingPPS[d].add(java.lang.Float.parseFloat(arrayData[6]))
+						netRankingTime[d].add(arrayData[4].toInt())
+						netRankingPiece[d].add(arrayData[5].toInt())
+						netRankingPPS[d].add(arrayData[6].toFloat())
 					}
 					NetSPRecord.RANKINGTYPE_SCORERACE -> {
-						netRankingTime[d].add(Integer.parseInt(arrayData[4]))
-						netRankingLines[d].add(Integer.parseInt(arrayData[5]))
-						netRankingSPL[d].add(java.lang.Double.parseDouble(arrayData[6]))
+						netRankingTime[d].add(arrayData[4].toInt())
+						netRankingLines[d].add(arrayData[5].toInt())
+						netRankingSPL[d].add(arrayData[6].toDouble())
 					}
 					NetSPRecord.RANKINGTYPE_DIGRACE -> {
-						netRankingTime[d].add(Integer.parseInt(arrayData[4]))
-						netRankingLines[d].add(Integer.parseInt(arrayData[5]))
-						netRankingPiece[d].add(Integer.parseInt(arrayData[6]))
+						netRankingTime[d].add(arrayData[4].toInt())
+						netRankingLines[d].add(arrayData[5].toInt())
+						netRankingPiece[d].add(arrayData[6].toInt())
 					}
 					NetSPRecord.RANKINGTYPE_ULTRA -> {
-						netRankingScore[d].add(Integer.parseInt(arrayData[4]))
-						netRankingLines[d].add(Integer.parseInt(arrayData[5]))
-						netRankingPiece[d].add(Integer.parseInt(arrayData[6]))
+						netRankingScore[d].add(arrayData[4].toInt())
+						netRankingLines[d].add(arrayData[5].toInt())
+						netRankingPiece[d].add(arrayData[6].toInt())
 					}
 					NetSPRecord.RANKINGTYPE_COMBORACE -> {
-						netRankingScore[d].add(Integer.parseInt(arrayData[4]))
-						netRankingTime[d].add(Integer.parseInt(arrayData[5]))
-						netRankingPPS[d].add(java.lang.Float.parseFloat(arrayData[6]))
+						netRankingScore[d].add(arrayData[4].toInt())
+						netRankingTime[d].add(arrayData[5].toInt())
+						netRankingPPS[d].add(arrayData[6].toFloat())
 					}
 					NetSPRecord.RANKINGTYPE_DIGCHALLENGE -> {
-						netRankingScore[d].add(Integer.parseInt(arrayData[4]))
-						netRankingLines[d].add(Integer.parseInt(arrayData[5]))
-						netRankingDepth[d].add(Integer.parseInt(arrayData[6]))
+						netRankingScore[d].add(arrayData[4].toInt())
+						netRankingLines[d].add(arrayData[5].toInt())
+						netRankingDepth[d].add(arrayData[6].toInt())
 					}
 					NetSPRecord.RANKINGTYPE_TIMEATTACK -> {
-						netRankingLines[d].add(Integer.parseInt(arrayData[4]))
-						netRankingTime[d].add(Integer.parseInt(arrayData[5]))
-						netRankingPPS[d].add(java.lang.Float.parseFloat(arrayData[6]))
-						netRankingRollclear[d].add(Integer.parseInt(arrayData[7]))
+						netRankingLines[d].add(arrayData[4].toInt())
+						netRankingTime[d].add(arrayData[5].toInt())
+						netRankingPPS[d].add(arrayData[6].toFloat())
+						netRankingRollclear[d].add(arrayData[7].toInt())
 					}
 					else -> log.error("Unknown ranking type:$netRankingType")
 				}
@@ -1163,7 +1161,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 			netRankingReady[d] = true
 		} else if(message.size>4) {
-			val isDaily = java.lang.Boolean.parseBoolean(message[4])
+			val isDaily = message[4].toBoolean()
 			val d = if(isDaily) 1 else 0
 			netRankingNoDataFlag[d] = true
 			netRankingReady[d] = false

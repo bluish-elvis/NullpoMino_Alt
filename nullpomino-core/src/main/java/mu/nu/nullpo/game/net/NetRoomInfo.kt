@@ -53,6 +53,8 @@ class NetRoomInfo:Serializable {
 	/** Flag for enabling B2B */
 	var b2b = true
 
+	var splitb2b = false
+
 	/** b2b adds as a separate garbage chunk */
 	var b2bChunk:Boolean = false
 
@@ -75,7 +77,7 @@ class NetRoomInfo:Serializable {
 	var ruleName = ""
 
 	/** ルール */
-	var ruleOpt:RuleOptions? = null
+	var ruleOpt:RuleOptions = RuleOptions()
 
 	/** 参加しているNumber of players */
 	var playerSeatedCount = 0
@@ -93,7 +95,7 @@ class NetRoomInfo:Serializable {
 	var startPlayers = 0
 
 	/** 死亡カウント */
-	var deadCount = 0
+	var deaths = 0
 
 	/** Automatically start timerが動いているときはtrue */
 	var autoStartActive = false
@@ -105,7 +107,7 @@ class NetRoomInfo:Serializable {
 	var reduceLineSend = false
 
 	/** Rate of change of garbage holes */
-	var garbagePercent = 100
+	var messiness = 100
 
 	/** Hole change style (false=line true=attack) */
 	var garbageChangePerAttack = true
@@ -287,17 +289,14 @@ class NetRoomInfo:Serializable {
 
 		ruleLock = n.ruleLock
 		ruleName = n.ruleName
-		ruleOpt = if(n.ruleOpt!=null)
-			RuleOptions(n.ruleOpt)
-		else
-			null
+		ruleOpt = RuleOptions(n.ruleOpt)
 
 		playerSeatedCount = n.playerSeatedCount
 		spectatorCount = n.spectatorCount
 		playerListCount = n.playerListCount
 		playing = n.playing
 		startPlayers = n.startPlayers
-		deadCount = n.deadCount
+		deaths = n.deaths
 		autoStartActive = n.autoStartActive
 		isSomeoneCancelled = n.isSomeoneCancelled
 		reduceLineSend = n.reduceLineSend
@@ -309,7 +308,7 @@ class NetRoomInfo:Serializable {
 		mapPrevious = n.mapPrevious
 		useFractionalGarbage = n.useFractionalGarbage
 		garbageChangePerAttack = n.garbageChangePerAttack
-		garbagePercent = n.garbagePercent
+		messiness = n.messiness
 		divideChangeRateByPlayers = n.divideChangeRateByPlayers
 		isTarget = n.isTarget
 		targetTimer = n.targetTimer
@@ -339,50 +338,50 @@ class NetRoomInfo:Serializable {
 	/** Stringの配列から data代入(Playerリスト除く)
 	 * @param rdata Stringの配列(String[43])
 	 */
-	fun importStringArray(rdata:Array<String>) {
-		roomID = Integer.parseInt(rdata[0])
+	private fun importStringArray(rdata:Array<String>) {
+		roomID = rdata[0].toInt()
 		strName = NetUtil.urlDecode(rdata[1])
-		maxPlayers = Integer.parseInt(rdata[2])
-		playerSeatedCount = Integer.parseInt(rdata[3])
-		spectatorCount = Integer.parseInt(rdata[4])
-		playerListCount = Integer.parseInt(rdata[5])
-		playing = java.lang.Boolean.parseBoolean(rdata[6])
-		ruleLock = java.lang.Boolean.parseBoolean(rdata[7])
+		maxPlayers = rdata[2].toInt()
+		playerSeatedCount = rdata[3].toInt()
+		spectatorCount = rdata[4].toInt()
+		playerListCount = rdata[5].toInt()
+		playing = rdata[6].toBoolean()
+		ruleLock = rdata[7].toBoolean()
 		ruleName = NetUtil.urlDecode(rdata[8])
-		autoStartSeconds = Integer.parseInt(rdata[9])
-		gravity = Integer.parseInt(rdata[10])
-		denominator = Integer.parseInt(rdata[11])
-		are = Integer.parseInt(rdata[12])
-		areLine = Integer.parseInt(rdata[13])
-		lineDelay = Integer.parseInt(rdata[14])
-		lockDelay = Integer.parseInt(rdata[15])
-		das = Integer.parseInt(rdata[16])
-		twistEnableType = Integer.parseInt(rdata[17])
-		b2b = java.lang.Boolean.parseBoolean(rdata[18])
-		combo = java.lang.Boolean.parseBoolean(rdata[19])
-		rensaBlock = java.lang.Boolean.parseBoolean(rdata[20])
-		counter = java.lang.Boolean.parseBoolean(rdata[21])
-		bravo = java.lang.Boolean.parseBoolean(rdata[22])
-		reduceLineSend = java.lang.Boolean.parseBoolean(rdata[23])
-		hurryupSeconds = Integer.parseInt(rdata[24])
-		hurryupInterval = Integer.parseInt(rdata[25])
-		autoStartTNET2 = java.lang.Boolean.parseBoolean(rdata[26])
-		disableTimerAfterSomeoneCancelled = java.lang.Boolean.parseBoolean(rdata[27])
-		useMap = java.lang.Boolean.parseBoolean(rdata[28])
-		useFractionalGarbage = java.lang.Boolean.parseBoolean(rdata[29])
-		garbageChangePerAttack = java.lang.Boolean.parseBoolean(rdata[30])
-		garbagePercent = Integer.parseInt(rdata[31])
-		spinCheckType = Integer.parseInt(rdata[32])
-		twistEnableEZ = java.lang.Boolean.parseBoolean(rdata[33])
-		b2bChunk = java.lang.Boolean.parseBoolean(rdata[34])
+		autoStartSeconds = rdata[9].toInt()
+		gravity = rdata[10].toInt()
+		denominator = rdata[11].toInt()
+		are = rdata[12].toInt()
+		areLine = rdata[13].toInt()
+		lineDelay = rdata[14].toInt()
+		lockDelay = rdata[15].toInt()
+		das = rdata[16].toInt()
+		twistEnableType = rdata[17].toInt()
+		b2b = rdata[18].toBoolean()
+		combo = rdata[19].toBoolean()
+		rensaBlock = rdata[20].toBoolean()
+		counter = rdata[21].toBoolean()
+		bravo = rdata[22].toBoolean()
+		reduceLineSend = rdata[23].toBoolean()
+		hurryupSeconds = rdata[24].toInt()
+		hurryupInterval = rdata[25].toInt()
+		autoStartTNET2 = rdata[26].toBoolean()
+		disableTimerAfterSomeoneCancelled = rdata[27].toBoolean()
+		useMap = rdata[28].toBoolean()
+		useFractionalGarbage = rdata[29].toBoolean()
+		garbageChangePerAttack = rdata[30].toBoolean()
+		messiness = rdata[31].toInt()
+		spinCheckType = rdata[32].toInt()
+		twistEnableEZ = rdata[33].toBoolean()
+		b2bChunk = rdata[34].toBoolean()
 		strMode = NetUtil.urlDecode(rdata[35])
-		singleplayer = java.lang.Boolean.parseBoolean(rdata[36])
-		rated = java.lang.Boolean.parseBoolean(rdata[37])
-		customRated = java.lang.Boolean.parseBoolean(rdata[38])
-		style = Integer.parseInt(rdata[39])
-		divideChangeRateByPlayers = java.lang.Boolean.parseBoolean(rdata[40])
-		if(rdata.size>41) isTarget = java.lang.Boolean.parseBoolean(rdata[41])
-		if(rdata.size>42) targetTimer = Integer.parseInt(rdata[42])
+		singleplayer = rdata[36].toBoolean()
+		rated = rdata[37].toBoolean()
+		customRated = rdata[38].toBoolean()
+		style = rdata[39].toInt()
+		divideChangeRateByPlayers = rdata[40].toBoolean()
+		if(rdata.size>41) isTarget = rdata[41].toBoolean()
+		if(rdata.size>42) targetTimer = rdata[42].toInt()
 		//useTankMode = Boolean.parseBoolean(rdata[43]);
 	}
 
@@ -396,47 +395,15 @@ class NetRoomInfo:Serializable {
 	/** Stringの配列に変換(Playerリスト除く)
 	 * @return Stringの配列(String[40])
 	 */
-	fun exportStringArray():Array<String> = arrayOf("$roomID"
-		, NetUtil.urlEncode(strName)
-		, "$maxPlayers"
-		, "$playerSeatedCount"
-		, "$spectatorCount"
-		, "$playerListCount"
-		, java.lang.Boolean.toString(playing)
-		, java.lang.Boolean.toString(ruleLock)
-		, NetUtil.urlEncode(ruleName)
-		, "$autoStartSeconds"
-		, "$gravity"
-		, "$denominator"
-		, "$are"
-		, "$areLine"
-		, "$lineDelay"
-		, "$lockDelay"
-		, "$das"
-		, "$twistEnableType"
-		, java.lang.Boolean.toString(b2b)
-		, java.lang.Boolean.toString(combo)
-		, java.lang.Boolean.toString(rensaBlock)
-		, java.lang.Boolean.toString(counter)
-		, java.lang.Boolean.toString(bravo)
-		, java.lang.Boolean.toString(reduceLineSend)
-		, "$hurryupSeconds"
-		, "$hurryupInterval"
-		, java.lang.Boolean.toString(autoStartTNET2)
-		, java.lang.Boolean.toString(disableTimerAfterSomeoneCancelled)
-		, java.lang.Boolean.toString(useMap)
-		, java.lang.Boolean.toString(useFractionalGarbage)
-		, java.lang.Boolean.toString(garbageChangePerAttack)
-		, "$garbagePercent"
-		, "$spinCheckType"
-		, java.lang.Boolean.toString(twistEnableEZ)
-		, java.lang.Boolean.toString(b2bChunk)
-		, NetUtil.urlEncode(strMode)
-		, java.lang.Boolean.toString(singleplayer)
-		, java.lang.Boolean.toString(rated)
-		, java.lang.Boolean.toString(customRated)
-		, "$style"
-		, java.lang.Boolean.toString(divideChangeRateByPlayers))//rdata[41] = Boolean.toString(useTankMode);
+	private fun exportStringArray():Array<String> =
+		arrayOf("$roomID", NetUtil.urlEncode(strName), "$maxPlayers", "$playerSeatedCount", "$spectatorCount", "$playerListCount",
+			"$playing", "$ruleLock", NetUtil.urlEncode(ruleName), "$autoStartSeconds", "$gravity", "$denominator", "$are", "$areLine",
+			"$lineDelay", "$lockDelay", "$das", "$twistEnableType", "$b2b", "$combo", "$rensaBlock", "$counter", "$bravo",
+			"$reduceLineSend", "$hurryupSeconds", "$hurryupInterval", "$autoStartTNET2", "$disableTimerAfterSomeoneCancelled",
+			"$useMap", "$useFractionalGarbage", "$garbageChangePerAttack", "$messiness", "$spinCheckType", "$twistEnableEZ",
+			"$b2bChunk", NetUtil.urlEncode(strMode), "$singleplayer", "$rated", "$customRated", "$style",
+			"$divideChangeRateByPlayers"//,"$useTankMode"
+		)
 
 	/** Stringに変換(;で区切り)(Playerリスト除く)
 	 * @return String
@@ -470,10 +437,7 @@ class NetRoomInfo:Serializable {
 	 * @param pInfo Player
 	 * @return ゲーム席 number(いないなら-1)
 	 */
-	fun getPlayerSeatNumber(pInfo:NetPlayerInfo):Int {
-		return playerSeat.indices.firstOrNull {playerSeat[it]===pInfo}
-			?: -1
-	}
+	fun getPlayerSeatNumber(pInfo:NetPlayerInfo):Int = playerSeat.indices.firstOrNull {playerSeat[it]===pInfo} ?: -1
 
 	/** @return 順番待ちなしですぐにゲーム席に入れるならtrue
 	 */
@@ -486,13 +450,6 @@ class NetRoomInfo:Serializable {
 	fun joinSeat(pInfo:NetPlayerInfo):Int {
 		if(canJoinSeat()) {
 			exitQueue(pInfo)
-
-			for(i in playerSeat.indices)
-				if(playerSeat[i]==null) {
-					playerSeat[i] = pInfo
-					return i
-				}
-
 			playerSeat.add(pInfo)
 			return playerSeat.size-1
 		}
@@ -549,14 +506,14 @@ class NetRoomInfo:Serializable {
 		playerSeatDead.clear()
 		chatList.clear()
 		startPlayers = playerSeatedCount
-		deadCount = 0
+		deaths = 0
 		autoStartActive = false
 		isSomeoneCancelled = false
 	}
 
 	/** ルーム消去時の処理 */
 	fun delete() {
-		ruleOpt = null
+		ruleOpt.reset()
 		mapList.clear()
 		playerList.clear()
 		playerSeat.clear()
