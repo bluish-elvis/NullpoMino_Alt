@@ -32,9 +32,9 @@ import mu.nu.nullpo.util.GeneralUtil
 /** SQUARE Mode */
 class SquareMode:AbstractMode() {
 
-	val tableGravityChangeScore = intArrayOf(150, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2500, 4000, 5000)
+	private val tableGravityChangeScore = intArrayOf(150, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2500, 4000, 5000)
 
-	val tableGravityValue = intArrayOf(1, 2, 3, 4, 6, 8, 10, 20, 30, 60, 120, 180, 300, -1)
+	private val tableGravityValue = intArrayOf(1, 2, 3, 4, 6, 8, 10, 20, 30, 60, 120, 180, 300, -1)
 
 	/** GameManager object (Manages entire game status) */
 
@@ -260,7 +260,8 @@ class SquareMode:AbstractMode() {
 						0 -> {
 							receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
 							receiver.drawScoreFont(engine, playerID, 9, topY+i, "${rankingSquares[gametype][i]}", i==rankingRank, scale)
-							receiver.drawScoreFont(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
+							receiver.drawScoreFont(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]),
+								i==rankingRank, scale)
 						}
 						1 -> {
 							receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[gametype][i]}", i==rankingRank)
@@ -275,8 +276,10 @@ class SquareMode:AbstractMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 4, "${engine.statistics.score}${if(lastscore==0||scgettime<=0)
-				"(+$lastscore)" else ""}")
+			receiver.drawScoreFont(engine, playerID, 0, 4, "${engine.statistics.score}${
+				if(lastscore==0||scgettime<=0)
+					"(+$lastscore)" else ""
+			}")
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
@@ -474,7 +477,9 @@ class SquareMode:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
-		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score), "LINE", String.format("%10d", engine.statistics.lines), "SQUARE", String.format("%10d", squares), "Time", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
+		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
+			"LINE", String.format("%10d", engine.statistics.lines), "SQUARE", String.format("%10d", squares), "Time",
+			String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 		drawResultRank(engine, playerID, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
 	}
 

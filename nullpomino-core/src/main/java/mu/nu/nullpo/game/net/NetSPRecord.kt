@@ -35,12 +35,7 @@ class NetSPRecord:Serializable {
 	/** Game Style ID */
 	var style:Int = 0
 
-	/** Get replay data as CustomProperties
-	 * @return CustomProperties that contains replay data
-	 */
-	/** Set replay data from CustomProperties
-	 * @param p CustomProperties that contains replay data
-	 */
+	/** Replay data as CustomProperties that contains replay data */
 	var replayProp:CustomProperties
 		get() {
 			val strEncode = NetUtil.decompressString(strReplayProp)
@@ -140,15 +135,10 @@ class NetSPRecord:Serializable {
 	 * @return String Array (String[9])
 	 */
 	fun exportStringArray():Array<String> = arrayOf(
-		NetUtil.urlEncode(strPlayerName)
-		, NetUtil.urlEncode(strModeName)
-		, NetUtil.urlEncode(strRuleName)
-		, if(stats==null) "" else NetUtil.compressString(stats!!.exportString())
-		, if(listCustomStats.isNullOrEmpty()) "" else NetUtil.compressString(exportCustomStats())
-		, strReplayProp
-		, "$gameType"
-		, "$style"
-		, strTimeStamp)
+		NetUtil.urlEncode(strPlayerName), NetUtil.urlEncode(strModeName), NetUtil.urlEncode(strRuleName),
+		if(stats==null) "" else NetUtil.compressString(stats!!.exportString()),
+		if(listCustomStats.isNullOrEmpty()) "" else NetUtil.compressString(exportCustomStats()), strReplayProp, "$gameType",
+		"$style", strTimeStamp)
 
 	/** Export to a String
 	 * @return String (Split by ;)

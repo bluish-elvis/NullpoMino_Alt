@@ -50,7 +50,7 @@
 0.ruleopt.minARELine=-1
 0.ruleopt.lockresetRotate=true
 0.ruleopt.rotateButtonAllowDouble=true
-0.ruleopt.nextDisplay=21
+0.ruleopt.nextDisplay=14
 0.ruleopt.fieldPartialLockoutDeath=false
 0.ruleopt.rotateInitialLimit=false
 0.ruleopt.minARE=-1

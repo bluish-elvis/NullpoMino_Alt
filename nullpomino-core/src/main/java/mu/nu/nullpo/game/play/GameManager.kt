@@ -28,9 +28,7 @@ import mu.nu.nullpo.game.component.BackgroundStatus
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.subsystem.mode.GameMode
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
-import java.util.*
 
 /** GameManager: The container of the game */
 class GameManager
@@ -195,7 +193,7 @@ class GameManager
 		/** Major version */
 		const val versionMajor = 7.70f
 		/** Minor version */
-		const val versionMinor = 2020
+		const val versionMinor = 2021
 
 		/** Development-build flag (false:Release-build true:Dev-build) */
 		const val isDevBuild = true

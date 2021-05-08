@@ -199,11 +199,13 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GAME TYPE", GAMETYPE_NAME[gametype])
 			if(gametype==2)
 				drawMenu(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, 1, "TARGET", "${SPRINT_MAX_SCORE[sprintTarget]}")
-			drawMenu(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, 2, "SCORE TYPE", SCORETYPE_NAME[scoreType], "COLORS", "$numColors", "X COLUMN",
+			drawMenu(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, 2, "SCORE TYPE", SCORETYPE_NAME[scoreType], "COLORS",
+				"$numColors", "X COLUMN",
 				if(dangerColumnDouble)
 					"3 AND 4"
 				else
-					"3 ONLY", "X SHOW", GeneralUtil.getONorOFF(dangerColumnShowX), "CLEAR SIZE", engine.colorClearSize.toString(), "FALL ANIM",
+					"3 ONLY", "X SHOW", GeneralUtil.getONorOFF(dangerColumnShowX), "CLEAR SIZE", engine.colorClearSize.toString(),
+				"FALL ANIM",
 				if(cascadeSlow)
 					"FEVER"
 				else
@@ -215,7 +217,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			if(outlinetype==0) strOutline = "NORMAL"
 			if(outlinetype==1) strOutline = "COLOR"
 			if(outlinetype==2) strOutline = "NONE"
-			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 9, "OUTLINE", strOutline, "SHOW CHAIN", GeneralUtil.getONorOFF(showChains))
+			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 9, "OUTLINE", strOutline, "SHOW CHAIN",
+				GeneralUtil.getONorOFF(showChains))
 
 			receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 2/2", EventReceiver.COLOR.YELLOW)
 		}
@@ -231,7 +234,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		var modeStr = GAMETYPE_NAME[gametype]
 		if(gametype==2) modeStr = "$modeStr ${SPRINT_MAX_SCORE[sprintTarget]/1000}K"
 		receiver.drawScoreFont(engine, playerID, 0, 0, "AVALANCHE ($modeStr)", EventReceiver.COLOR.COBALT)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "(${SCORETYPE_NAME[scoreType]} $numColors COLORS)", EventReceiver.COLOR.COBALT)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "(${SCORETYPE_NAME[scoreType]} $numColors COLORS)",
+			EventReceiver.COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null&&engine.colorClearSize==4) {
@@ -248,11 +252,15 @@ class Avalanche1P:Avalanche1PDummyMode() {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
-							receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[scoreType][numColors-3][gametype][i]}", i==rankingRank, scale)
-							receiver.drawScoreFont(engine, playerID, 14, topY+i, GeneralUtil.getTime(rankingTime[scoreType][numColors-3][gametype][i]), i==rankingRank, scale)
+							receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[scoreType][numColors-3][gametype][i]}",
+								i==rankingRank, scale)
+							receiver.drawScoreFont(engine, playerID, 14, topY+i,
+								GeneralUtil.getTime(rankingTime[scoreType][numColors-3][gametype][i]), i==rankingRank, scale)
 						}
-						1 -> receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[scoreType][numColors-3][gametype][i]}", i==rankingRank)
-						2 -> receiver.drawScoreFont(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[scoreType][numColors-3][gametype][i]), i==rankingRank)
+						1 -> receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[scoreType][numColors-3][gametype][i]}",
+							i==rankingRank)
+						2 -> receiver.drawScoreFont(engine, playerID, 3, 4+i,
+							GeneralUtil.getTime(rankingTime[scoreType][numColors-3][gametype][i]), i==rankingRank)
 					}
 				}
 			}
@@ -472,8 +480,10 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			for(j in 0 until GAMETYPE_MAX)
 				for(colors in 3..5)
 					for(sctype in 0 until SCORETYPE_MAX) {
-						rankingScore[sctype][colors-3][j][i] = prop.getProperty("avalanche.ranking.$ruleName.scoretype$sctype.${colors}colors.$j.score.$i", 0)
-						rankingTime[sctype][colors-3][j][i] = prop.getProperty("avalanche.ranking.$ruleName.scoretype$sctype.${colors}colors.$j.time.$i", -1)
+						rankingScore[sctype][colors-3][j][i] = prop.getProperty(
+							"avalanche.ranking.$ruleName.scoretype$sctype.${colors}colors.$j.score.$i", 0)
+						rankingTime[sctype][colors-3][j][i] = prop.getProperty(
+							"avalanche.ranking.$ruleName.scoretype$sctype.${colors}colors.$j.time.$i", -1)
 					}
 	}
 
@@ -486,8 +496,10 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			for(j in 0 until GAMETYPE_MAX)
 				for(colors in 3..5)
 					for(sctype in 0 until SCORETYPE_MAX) {
-						prop.setProperty("avalanche.ranking.$ruleName.scoretype$sctype.${colors}colors.$j.score.$i", rankingScore[sctype][colors-3][j][i])
-						prop.setProperty("avalanche.ranking.$ruleName.scoretype$sctype.${colors}colors.$j.time.$i", rankingTime[sctype][colors-3][j][i])
+						prop.setProperty("avalanche.ranking.$ruleName.scoretype$sctype.${colors}colors.$j.score.$i",
+							rankingScore[sctype][colors-3][j][i])
+						prop.setProperty("avalanche.ranking.$ruleName.scoretype$sctype.${colors}colors.$j.time.$i",
+							rankingTime[sctype][colors-3][j][i])
 					}
 	}
 

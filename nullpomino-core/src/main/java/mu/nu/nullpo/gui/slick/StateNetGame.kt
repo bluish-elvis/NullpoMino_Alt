@@ -338,7 +338,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 			if(modeName!=="NET-DUMMY"&&it.engine.isNotEmpty())
 				strTitle = "[${
 					if(it.engine[0].isInGame&&!it.replayMode&&!it.replayRerecord)
-						"PLAY" else "MENU"
+						"PLAY" else "Menu"
 				}] NullpoMino Netplay - $modeName"
 		}
 		appContainer?.setTitle(strTitle)

@@ -30,14 +30,14 @@ import kotlin.math.roundToInt
  * @param id BlockピースのID */
 class Piece(
 	/** ID */
-	val id:Int = 0):Serializable {
+	@JvmField val id:Int = 0):Serializable {
 	val type:Shape get() = Shape.values()[id]
 
 	/** Direction */
 	var direction:Int = DIRECTION_UP
 
 	/** BigBlock */
-	var big:Boolean = false
+	@JvmField var big:Boolean = false
 
 	/** Connect blocks in this piece? */
 	var connectBlocks:Boolean = true

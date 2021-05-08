@@ -24,10 +24,10 @@ open class GameKeyDummy
 	var joyBorder:Int = 0
 
 	/** Button input flag and length */
-	protected val inputstate:IntArray
+	protected val inputState:IntArray
 
 	/** Button input flag */
-	protected val pressstate:BooleanArray
+	protected val pressState:BooleanArray
 
 	private val empty get() = IntArray(0)
 
@@ -36,47 +36,47 @@ open class GameKeyDummy
 		keymapNav = Array(MAX_BUTTON) {empty}
 		buttonmap = Array(MAX_BUTTON) {empty}
 		joyBorder = 0
-		inputstate = IntArray(MAX_BUTTON)
-		pressstate = BooleanArray(MAX_BUTTON)
+		inputState = IntArray(MAX_BUTTON)
+		pressState = BooleanArray(MAX_BUTTON)
 	}
 
 	/** Clear button input state */
 	fun clear() {
 		for(i in 0 until MAX_BUTTON)
-			inputstate[i] = 0
+			inputState[i] = 0
 	}
 
 	/** buttonが1 frame だけ押されているか判定
 	 * @param key Button number
 	 * @return 押されていたらtrue
 	 */
-	fun isPushKey(key:Int):Boolean = inputstate[key]==1
+	fun isPushKey(key:Int):Boolean = inputState[key]==1
 
 	/** buttonが押されているか判定
 	 * @param key Button number
 	 * @return 押されていたらtrue
 	 */
-	fun isPressKey(key:Int):Boolean = inputstate[key]>=1
+	fun isPressKey(key:Int):Boolean = inputState[key]>=1
 
 	/** Menu でカーソルが動くかどうか判定
 	 * @param key Button number
 	 * @return カーソルが動くならtrue
 	 */
-	fun isMenuRepeatKey(key:Int):Boolean = (inputstate[key]==1||inputstate[key]>=25&&inputstate[key]%3==0
-		||inputstate[key]>=1&&isPressKey(BUTTON_C))
+	fun isMenuRepeatKey(key:Int):Boolean = (inputState[key]==1||inputState[key]>=25&&inputState[key]%3==0
+		||inputState[key]>=1&&isPressKey(BUTTON_C))
 
 	/** buttonを押している timeを取得
 	 * @param key Button number
 	 * @return buttonを押している time (0なら押してない）
 	 */
-	fun getInputState(key:Int):Int = inputstate[key]
+	fun getInputState(key:Int):Int = inputState[key]
 
 	/** buttonを押している timeを強制変更
 	 * @param key Button number
 	 * @param state buttonを押している time
 	 */
 	fun setInputState(key:Int, state:Int) {
-		inputstate[key] = state
+		inputState[key] = state
 	}
 
 	/** Load settings
@@ -206,7 +206,12 @@ open class GameKeyDummy
 	 * @param ctrl input 状況を伝えるControllerのインスタンス
 	 */
 	fun inputStatusUpdate(ctrl:Controller?) {
-		ctrl?.let {c -> c.buttonPress = BooleanArray(c.buttonPress.size) {i -> isPressKey(i)}}
+		inputState.forEachIndexed {i, v ->
+			if(i<Controller.BUTTON_COUNT) {
+				ctrl?.buttonPress?.set(i, isPressKey(i))
+				ctrl?.buttonTime?.set(i, v-1)
+			}
+		}
 	}
 
 	companion object {
@@ -232,9 +237,9 @@ open class GameKeyDummy
 		/** Max button number */
 		const val MAX_BUTTON = 16
 
-		val DIR_NAME = listOf("UP", "DOWN", "LEFT", "RIGHT")
-		val NAV_KEYS = listOf("SELECT", "CANCEL", "C", "D", "E", "F")
-		val PLAY_KEYS = listOf("CW Spin", "CCW Spin", "CW Spin", "Swap Hold", "180 Spin", "F")
+		private val DIR_NAME = listOf("UP", "DOWN", "LEFT", "RIGHT")
+		private val NAV_KEYS = listOf("SELECT", "CANCEL", "C", "D", "E", "F")
+		private val PLAY_KEYS = listOf("CW Spin", "CCW Spin", "CW Spin", "Swap Hold", "180 Spin", "F")
 		val SYS_KEYS = listOf("AppQuit", "Pause", "BackToMenu", "Retry", "FrameStep", "ScreenShot")
 
 		fun arrayKeyName(isNav:Boolean):List<String> = DIR_NAME+(if(isNav) NAV_KEYS else PLAY_KEYS)+SYS_KEYS

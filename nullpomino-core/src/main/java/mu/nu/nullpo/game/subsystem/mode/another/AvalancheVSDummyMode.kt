@@ -32,7 +32,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import java.util.*
+import kotlin.random.Random
 
 /** AVALANCHE VS DUMMY Mode */
 abstract class AvalancheVSDummyMode:AbstractMode() {
@@ -83,7 +83,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected var fldBackup:Array<Field?> = emptyArray()
 
 	/** MapRan for selectioncount */
-	protected var randMap:Random = Random()
+	protected var randMap:Random = Random.Default
 
 	/** Flag for all clear */
 	protected var zenKeshi:BooleanArray = BooleanArray(MAX_PLAYERS)
@@ -199,7 +199,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		propMap = arrayOfNulls(MAX_PLAYERS)
 		mapMaxNo = IntArray(MAX_PLAYERS)
 		fldBackup = arrayOfNulls(MAX_PLAYERS)
-		randMap = Random()
+		randMap = Random.Default
 
 		zenKeshi = BooleanArray(MAX_PLAYERS)
 		lastscore = IntArray(MAX_PLAYERS)
@@ -569,7 +569,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		var pow = 0
 		if(zenKeshi[playerID]&&zenKeshiType[playerID]==ZENKESHI_MODE_ON) pow += 30
 		//Add ojama
-		var rate = maxOf(1,ojamaRate[playerID])
+		var rate = maxOf(1, ojamaRate[playerID])
 		if(hurryupSeconds[playerID]>0&&engine.statistics.time>hurryupSeconds[playerID])
 			rate = rate shr engine.statistics.time/(hurryupSeconds[playerID]*60)
 		pow += ptsToOjama(engine, playerID, pts, rate)
@@ -655,7 +655,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 				owner.engine[1].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 			}
 		}
 	}
@@ -789,7 +789,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 		/** Block colors */
 		val BLOCK_COLORS =
-			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_PURPLE)
+			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_YELLOW,
+				Block.BLOCK_COLOR_PURPLE)
 
 		/** Fever values files list */
 		val FEVER_MAPS = arrayOf("Fever", "15th", "15thDS", "7", "Compendium")

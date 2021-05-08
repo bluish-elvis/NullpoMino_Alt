@@ -28,12 +28,11 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.LineGravity
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.log4j.Logger
-import java.io.Serializable
-import java.util.*
 import kotlin.math.abs
+import kotlin.random.Random
 
 /** Gamefield */
-class Field:Serializable {
+@kotlinx.serialization.Serializable class Field {
 
 	/** fieldの幅 */
 	var width:Int = DEFAULT_WIDTH; private set
@@ -55,10 +54,10 @@ class Field:Serializable {
 	 * any visible effects outside this function. -Kitaru */
 
 	/** fieldのBlock */
-	private var blockField:Array<Array<Block?>> = Array(height) {arrayOfNulls<Block>(width)}
+	private var blockField:Array<Array<Block?>> = Array(height) {arrayOfNulls(width)}
 
 	/** field上の見えない部分のBlock */
-	private var blockHidden:Array<Array<Block?>> = Array(hiddenHeight) {arrayOfNulls<Block>(width)}
+	private var blockHidden:Array<Array<Block?>> = Array(hiddenHeight) {arrayOfNulls(width)}
 
 	/** Line clear flag */
 	private var lineflagField:BooleanArray = BooleanArray(height)
@@ -101,8 +100,8 @@ class Field:Serializable {
 	private var explodWidthBig:Int = 0
 	private var explodHeightBig:Int = 0
 
-	val lastLinesTop:Int get() = lastLinesHeight.min() ?: height
-	val lastLinesBottom:Int get() = lastLinesHeight.max() ?: 0
+	val lastLinesTop:Int get() = lastLinesHeight.minOrNull() ?: height
+	val lastLinesBottom:Int get() = lastLinesHeight.maxOrNull() ?: 0
 
 	/** 消えるLinescountを数える
 	 * @return Linescount
@@ -121,7 +120,7 @@ class Field:Serializable {
 	val howManyBlocks:Int
 		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
 			.filter {!getLineFlag(it)}
-			.sumBy {getRow(it).count {b -> b?.isEmpty==false}}
+			.sumOf {getRow(it).count {b -> b?.isEmpty==false}}
 
 	/** 左から何個のBlockが並んでいるか調べる
 	 * @return 左から並んでいるBlockの総count
@@ -129,7 +128,7 @@ class Field:Serializable {
 	val howManyBlocksFromLeft:Int
 		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
 			.filter {!getLineFlag(it)}
-			.sumBy {getRow(it).takeWhile {b -> b?.isEmpty==false}.size}
+			.sumOf {getRow(it).takeWhile {b -> b?.isEmpty==false}.size}
 
 	/** 右から何個のBlockが並んでいるか調べる
 	 * @return 右から並んでいるBlockの総count
@@ -137,7 +136,7 @@ class Field:Serializable {
 	val howManyBlocksFromRight:Int
 		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
 			.filter {!getLineFlag(it)}
-			.sumBy {getRow(it).takeLastWhile {b -> b?.isEmpty==false}.size}
+			.sumOf {getRow(it).takeLastWhile {b -> b?.isEmpty==false}.size}
 
 	/** 一番上にあるBlockのY-coordinateを取得
 	 * @return 一番上にあるBlockのY-coordinate
@@ -158,7 +157,7 @@ class Field:Serializable {
 				.firstOrNull {getRow(it).filterNotNull().any {b -> b.getAttribute(ATTRIBUTE.GARBAGE)}} ?: height
 
 	val howManyBlocksCovered:Int
-		get() = (0 until width).sumBy {j ->
+		get() = (0 until width).sumOf {j ->
 			(getHighestBlockY(j) until heightWithoutHurryupFloor)
 				.filter {!getLineFlag(it)}
 				.count {getBlockEmpty(j, it)}
@@ -216,7 +215,7 @@ class Field:Serializable {
 	 * @return 全ての谷の深さを合計したもの
 	 */
 	val totalValleyDepth:Int
-		get() = (0 until width).sumBy {
+		get() = (0 until width).sumOf {
 			val d = getValleyDepth(it)
 			if(d>=2) d else 0
 		}
@@ -251,12 +250,11 @@ class Field:Serializable {
 	 */
 	val secretGrade:Int
 		get() {
-			var holeLoc:Int
 			var rows = 0
 			var rowCheck:Boolean
 
 			for(i in height-1 downTo 1) {
-				holeLoc = -abs(i-height/2)+height/2-1
+				val holeLoc = -abs(i-height/2)+height/2-1
 				if(getBlockEmpty(holeLoc, i)&&!getBlockEmpty(holeLoc, i-1)) {
 					rowCheck = true
 					for(j in 0 until width)
@@ -277,7 +275,7 @@ class Field:Serializable {
 	 */
 	val howManyGems:Int
 		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
-			.sumBy {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
+			.sumOf {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
 
 	/** 宝石Blockがいくつ消えるか取得
 	 * @return 消える宝石Blockのcount
@@ -285,7 +283,7 @@ class Field:Serializable {
 	val howManyGemClears:Int
 		get() = (hiddenHeight*-1 until heightWithoutHurryupFloor)
 			.filter {getLineFlag(it)}
-			.sumBy {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
+			.sumOf {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
 
 	/** Checks for item blocks cleared
 	 * @return A boolean array with true at each index for which an item block
@@ -347,7 +345,7 @@ class Field:Serializable {
 	 * @param h Field height
 	 * @param hh fieldより上の見えない部分の高さ
 	 */
-	constructor(w:Int = DEFAULT_WIDTH, h:Int = DEFAULT_HEIGHT, hh:Int = DEFAULT_HIDDEN_HEIGHT, c:Boolean = false) {
+	@JvmOverloads constructor(w:Int = DEFAULT_WIDTH, h:Int = DEFAULT_HEIGHT, hh:Int = DEFAULT_HIDDEN_HEIGHT, c:Boolean = false) {
 		width = w
 		height = h
 		hiddenHeight = hh
@@ -586,7 +584,7 @@ class Field:Serializable {
 			setLineFlag(i, flag)
 			if(flag) {
 				if(inv) lastLinesSplited = true
-				getRow(i).forEach {
+				for (it in getRow(i)) {
 					it?.setAttribute(true, ATTRIBUTE.ERASE)
 				}
 			} else if(i>=lines.sortedArray().first()) inv = true
@@ -846,10 +844,10 @@ class Field:Serializable {
 	 * @return Twisterで消えるLinescount(Twisterじゃない場合やminimumに満たないLinesなどは0)
 	 */
 	fun getTSlotLineClearAll(big:Boolean, minimum:Int = 0):Int = (0 until width)
-		.sumBy {j ->
+		.sumOf {j ->
 			(0 until heightWithoutHurryupFloor-2)
 				.filter {getLineFlag(it)&&getTSlotLineClear(j, it, big)>=minimum}
-				.sumBy {getTSlotLineClear(j, it, big)}
+				.sumOf {getTSlotLineClear(j, it, big)}
 		}
 
 	/** 一番上にあるBlockのY-coordinateを取得 (X-coordinateを指定できるVersion）
@@ -891,7 +889,7 @@ class Field:Serializable {
 	/** field全体を上にずらす
 	 * @param lines ずらす段count
 	 */
-	@JvmOverloads fun pushUp(lines:Int = 1) {
+	fun pushUp(lines:Int = 1) {
 		for(k in 0 until lines) {
 			for(i in hiddenHeight*-1 until heightWithoutHurryupFloor-1)
 			// Blockを1段下からコピー
@@ -912,7 +910,7 @@ class Field:Serializable {
 	/** field全体を下にずらす
 	 * @param lines ずらす段count
 	 */
-	@JvmOverloads fun pushDown(lines:Int = 1) {
+	fun pushDown(lines:Int = 1) {
 		for(k in 0 until lines) {
 			for(i in heightWithoutHurryupFloor-1 downTo hiddenHeight*-1+1)
 			// Blockを1段上からコピー
@@ -950,7 +948,7 @@ class Field:Serializable {
 	}
 
 	fun setSingleHoleLine(hole:Int, y:Int, color:Int, skin:Int) {
-		(0 until width).forEach {j ->
+		for(j in 0 until width) {
 			if(j!=hole)
 				setBlock(j, y, Block(color, skin,
 					ATTRIBUTE.VISIBLE, ATTRIBUTE.OUTLINE, ATTRIBUTE.GARBAGE,
@@ -967,7 +965,7 @@ class Field:Serializable {
 	 */
 	fun addRandomHoleGarbage(engine:GameEngine, hole:Int, messiness:Float, color:Int, skin:Int, lines:Int):Int {
 		var x = hole
-		(0 until lines).forEachIndexed {acc, i ->
+		for(i in 0 until lines) {
 			if(i>0) {
 				val rand = engine.random.nextFloat()
 				if(rand<messiness) {
@@ -987,12 +985,12 @@ class Field:Serializable {
 	 * @param skin Skin
 	 * @param lines Number of garbage lines to add
 	 */
-	fun addSingleHoleGarbage(hole:Int, color:Int, skin:Int, lines:Int) =
-		(0 until lines).forEach {
+	fun addSingleHoleGarbage(hole:Int, color:Int, skin:Int, lines:Int) {
+		for(it in 0 until lines) {
 			pushUp(1)
 			setSingleHoleLine(hole, heightWithoutHurryupFloor-1, color, skin)
 		}
-
+	}
 	/** 一番下のLinesの形をコピーしたgarbage blockを一番下に追加
 	 * @param skin garbage blockの絵柄
 	 * @param attrs garbage blockの属性
@@ -1056,7 +1054,7 @@ class Field:Serializable {
 						}
 					}
 					if(squareCheck) {
-						//TODO: Gain Big Bomb
+						// TODO: Gain Big Bomb
 					}
 				}
 			}
@@ -1278,7 +1276,7 @@ class Field:Serializable {
 	 * @param gemType 1 = Bomb,2 = Spark
 	 * @return Total number of blocks cleared.
 	 */
-	@JvmOverloads fun clearProceed(gemType:Int = 0):Int {
+	fun clearProceed(gemType:Int = 0):Int {
 		var total = 0
 		var b:Block?
 		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor)
@@ -1393,7 +1391,7 @@ class Field:Serializable {
 	 * clusters
 	 * @return Total number of blocks cleared.
 	 */
-	@JvmOverloads fun gemClearColor(size:Int, garbageClear:Boolean, ignoreHidden:Boolean = false):Int {
+	fun gemClearColor(size:Int, garbageClear:Boolean, ignoreHidden:Boolean = false):Int {
 		val temp = Field(this)
 		var total = 0
 		var b:Block?
@@ -1419,7 +1417,7 @@ class Field:Serializable {
 	 * @param gemSame `true` to check gem blocks
 	 * @return Total number of blocks cleared.
 	 */
-	@JvmOverloads fun clearColor(size:Int, garbageClear:Boolean, gemSame:Boolean, ignoreHidden:Boolean = false):Int {
+	fun clearColor(size:Int, garbageClear:Boolean, gemSame:Boolean, ignoreHidden:Boolean = false):Int {
 		val temp = Field(this)
 		var total = 0
 		for(i in (if(ignoreHidden) 0 else hiddenHeight*-1) until heightWithoutHurryupFloor)
@@ -1737,16 +1735,22 @@ class Field:Serializable {
 	 * @param skin 地面の絵柄
 	 */
 	fun addHurryupFloor(lines:Int, skin:Int) {
-		for(k in 0 until lines) {
-			pushUp(1)
+		if(lines>0)
+			for(k in 0 until lines) {
+				pushUp(1)
 
-			for(j in 0 until width) {
-				val blk = Block(Block.COLOR.WHITE, Block.TYPE.BLOCK, skin,
-					ATTRIBUTE.WALL, ATTRIBUTE.GARBAGE, ATTRIBUTE.VISIBLE)
-				setBlock(j, heightWithoutHurryupFloor-1, blk)
+				for(j in 0 until width) {
+					val blk = Block(Block.COLOR.WHITE, Block.TYPE.BLOCK, skin,
+						ATTRIBUTE.WALL, ATTRIBUTE.GARBAGE, ATTRIBUTE.VISIBLE)
+					setBlock(j, heightWithoutHurryupFloor-1, blk)
+				}
+
+				hurryupFloorLines++
 			}
-
-			hurryupFloorLines++
+		else if(lines<0) {
+			val lines = minOf(lines, hurryupFloorLines)
+			hurryupFloorLines -= lines
+			cutLine(height-1, lines)
 		}
 	}
 
@@ -2075,7 +2079,7 @@ class Field:Serializable {
 		return false
 	}
 
-	@JvmOverloads fun addRandomHoverBlocks(engine:GameEngine, count:Int, colors:IntArray, minY:Int, avoidLines:Boolean,
+	fun addRandomHoverBlocks(engine:GameEngine, count:Int, colors:IntArray, minY:Int, avoidLines:Boolean,
 		flashMode:Boolean = false) {
 		val posRand = Random(engine.random.nextLong())
 		val colorRand = Random(engine.random.nextLong())

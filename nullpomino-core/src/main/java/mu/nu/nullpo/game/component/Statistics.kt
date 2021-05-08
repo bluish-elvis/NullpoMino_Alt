@@ -349,7 +349,7 @@ class Statistics:Serializable {
 	 * @param id 任意のID (Player IDなど）
 	 */
 	fun writeProperty(p:CustomProperties, id:Int) =
-		mapOf<String, Comparable<*>>("$id.statistics.scoreFromLineClear" to scoreLine,
+		mapOf<String, Comparable<*>>("$id.statistics.scoreLine" to scoreLine,
 			"$id.statistics.scoreSD" to scoreSD,
 			"$id.statistics.scoreHD" to scoreHD,
 			"$id.statistics.scoreBonus" to scoreBonus,
@@ -481,7 +481,7 @@ class Statistics:Serializable {
 		{maxChain = it.toInt()},
 		{rollclear = it.toInt()}).plus(
 		(0 until pieces.size-1).map {i:Int ->
-			{it:String -> pieces[i] = it.toInt()}
+			{pieces[i] = it.toInt()}
 		}).zip(s).forEach {(m, st) -> m(st)}
 
 	/** Import from String

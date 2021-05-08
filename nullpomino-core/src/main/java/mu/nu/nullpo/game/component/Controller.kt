@@ -29,16 +29,13 @@ import java.io.Serializable
 class Controller:Serializable {
 
 	/** Buttonを押した状態ならtrue */
-	var buttonPress:BooleanArray = BooleanArray(BUTTON_COUNT)
+	val buttonPress:BooleanArray = BooleanArray(BUTTON_COUNT)
 
 	/** Buttonを押しっぱなしにしている time */
-	var buttonTime:IntArray = IntArray(BUTTON_COUNT)
+	val buttonTime:IntArray = IntArray(BUTTON_COUNT)
 
 	/** button input状態をビット flagで返す
 	 * @return button input状態のビット flag
-	 */
-	/** button input状態をビット flagを元に設定
-	 * @param input button_input状態のビット flag
 	 */
 	var buttonBit:Int
 		get() {
@@ -86,17 +83,14 @@ class Controller:Serializable {
 
 	/** 初期状態に戻す */
 	fun reset() {
-		buttonPress = BooleanArray(BUTTON_COUNT)
-		buttonTime = IntArray(BUTTON_COUNT)
+		clearButtonState()
+		clearButtonTime()
 	}
 
 	/** 他のController stateをコピー
 	 * @param c Copy source
 	 */
 	fun copy(c:Controller) {
-		buttonPress = BooleanArray(BUTTON_COUNT)
-		buttonTime = IntArray(BUTTON_COUNT)
-
 		for(i in 0 until BUTTON_COUNT) {
 			buttonPress[i] = c.buttonPress[i]
 			buttonTime[i] = c.buttonTime[i]
@@ -105,8 +99,7 @@ class Controller:Serializable {
 
 	/** buttonをすべて押していない状態にする */
 	fun clearButtonState() {
-		for(i in 0 until BUTTON_COUNT)
-			buttonPress[i] = false
+		buttonPress.fill(false)
 	}
 
 	/** buttonを1 frame だけ押した状態かどうか判定
@@ -158,16 +151,12 @@ class Controller:Serializable {
 	/** button input timeを更新 */
 	fun updateButtonTime() {
 		for(i in 0 until BUTTON_COUNT)
-			if(buttonPress[i])
-				buttonTime[i]++
-			else
-				buttonTime[i] = 0
+			if(buttonPress[i]) buttonTime[i]++ else buttonTime[i] = 0
 	}
 
 	/** button input状態をリセット */
 	fun clearButtonTime() {
-		for(i in 0 until BUTTON_COUNT)
-			buttonTime[i] = 0
+		buttonTime.fill(0)
 	}
 
 	companion object {
@@ -220,7 +209,3 @@ class Controller:Serializable {
 		const val BUTTON_BIT_F = 512
 	}
 }
-/** Menu でカーソルが動くかどうか判定
- * @param key Button number
- * @return カーソルが動くならtrue
- */

@@ -352,7 +352,7 @@ class GrandFestival:AbstractMode() {
 
 		setSpeed(engine)
 		bgmlv = if(engine.statistics.level<500) 0 else 1
-		owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GM_2(0) else BGM.GM_2(1)
+		owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GrandA(0) else BGM.GrandA(1)
 
 	}
 
@@ -542,7 +542,7 @@ class GrandFestival:AbstractMode() {
 					bonusspeed = 3265/maxOf(1, hanabi)
 					bgmlv++
 					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = BGM.GM_2(1)
+					owner.bgmStatus.bgm = BGM.GrandA(1)
 
 					engine.statistics.level = 300
 					engine.timerActive = false

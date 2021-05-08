@@ -20,9 +20,9 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * POSSIBILITY OF SUCH DAMAGE.*/
 package mu.nu.nullpo.tool.ruleeditor
-
+/*
 import com.sun.javafx.application.ParametersImpl
 import javafx.application.Application
 import javafx.event.EventHandler
@@ -1479,7 +1479,7 @@ class RuleEditorFX:Application() {
 	 * @param r ルール設定
 	 */
 	private fun writeRuleFromUI(r:RuleOptions) {
-		r.strRuleName = txtfldRuleName.text.toUpperCase()
+		r.strRuleName = txtfldRuleName.text.uppercase()
 		r.nextDisplay = getIntTextField(txtfldNextDisplay)
 		r.style = comboboxStyle!!.selectedIndex
 		r.skin = comboboxSkin!!.selectedIndex

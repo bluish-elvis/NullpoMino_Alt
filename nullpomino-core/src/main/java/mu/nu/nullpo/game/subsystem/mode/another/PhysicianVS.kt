@@ -32,7 +32,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import java.util.*
+import kotlin.random.Random
 
 /** PHYSICIAN VS-BATTLE mode (beta) */
 class PhysicianVS:AbstractMode() {
@@ -142,7 +142,7 @@ class PhysicianVS:AbstractMode() {
 		propMap = arrayOfNulls(MAX_PLAYERS)
 		mapMaxNo = IntArray(MAX_PLAYERS)
 		fldBackup = arrayOfNulls(MAX_PLAYERS)
-		randMap = Random()
+		randMap = Random.Default
 
 		lastscore = IntArray(MAX_PLAYERS)
 		//garbageAdd = new int[MAX_PLAYERS];
@@ -341,7 +341,7 @@ class PhysicianVS:AbstractMode() {
 					}
 					11 -> flash[playerID] = !flash[playerID]
 					12 -> enableSE[playerID] = !enableSE[playerID]
-					13 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					13 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					14 -> {
 						useMap[playerID] = !useMap[playerID]
 						if(!useMap[playerID]) {
@@ -429,7 +429,10 @@ class PhysicianVS:AbstractMode() {
 		if(engine.statc[4]==0) {
 			if(menuCursor<9) {
 				initMenu(COLOR.ORANGE, 0)
-				drawMenu(engine, playerID, receiver, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
+				drawMenu(engine, playerID, receiver, "GRAVITY", engine.speed.gravity.toString(), "G-MAX",
+					engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(),
+					"LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS",
+					engine.speed.das.toString())
 				menuColor = COLOR.GREEN
 				drawMenu(engine, playerID, receiver, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
 			} else {
@@ -442,7 +445,8 @@ class PhysicianVS:AbstractMode() {
 				menuColor = COLOR.PINK
 				drawMenu(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]), "BGM", "${BGM.values[bgmno]}")
 				menuColor = COLOR.CYAN
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "${mapSet[playerID]}", "MAP NO.",
+				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET",
+					"${mapSet[playerID]}", "MAP NO.",
 					if(mapNumber[playerID]<0)
 						"RANDOM"
 					else
@@ -603,7 +607,7 @@ class PhysicianVS:AbstractMode() {
 	 */
 	fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity =
-			intArrayOf(6,8,10)[speed[engine.playerID]]*(10+(engine.statistics.totalPieceLocked/10))
+			intArrayOf(6, 8, 10)[speed[engine.playerID]]*(10+(engine.statistics.totalPieceLocked/10))
 		engine.speed.denominator = 3600
 	}
 
@@ -723,7 +727,7 @@ class PhysicianVS:AbstractMode() {
 				owner.engine[1].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 			}
 		}
 	}
@@ -737,7 +741,8 @@ class PhysicianVS:AbstractMode() {
 			else -> receiver.drawMenuFont(engine, playerID, 6, 2, "LOSE", COLOR.WHITE)
 		}
 
-		drawResultStats(engine, playerID, receiver, 3, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS, Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 3, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS,
+			Statistic.TIME)
 		/* float apm = (float)(garbageSent[playerID] * 3600) /
  * (float)(engine.statistics.time);
  * drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.ORANGE,

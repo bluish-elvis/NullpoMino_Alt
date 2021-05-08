@@ -109,7 +109,7 @@ class StateSelectMode:DummyMenuScrollState() {
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		super.enter(container, game)
 		prepareModeList()
-		if(ResourceHolder.bgmPlaying!=BGM.MENU(1)) ResourceHolder.bgmStart(BGM.MENU(1))
+		if(ResourceHolder.bgmPlaying!=BGM.Menu(1)) ResourceHolder.bgmStart(BGM.Menu(1))
 	}
 
 	/* Render screen */
@@ -118,7 +118,7 @@ class StateSelectMode:DummyMenuScrollState() {
 		FontNormal.printFontGrid(1, 1, "Select a Game Mode (${cursor+1}/${list.size})", COLOR.ORANGE)
 		if(!isTopLevel)
 			FontNano.printFont(8, 36,
-				if(strCurrentFolder.isNotEmpty()) ">${strCurrentFolder.toUpperCase()}" else ">[All modes]", COLOR.ORANGE, .5f)
+				if(strCurrentFolder.isNotEmpty()) ">${strCurrentFolder.uppercase()}" else ">[All modes]", COLOR.ORANGE, .5f)
 
 		FontNormal.printTTF(16, 440, getModeDesc(convModeName(list[cursor], false)))
 	}

@@ -90,7 +90,7 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 				else -> {
 					ResourceHolder.soundManager.play("cursor")
 					cursor = newCursor
-					flashY = newCursor-minentry
+					flashY = newCursor-minentry+minChoiceY
 					flashT = 0
 				}
 			}
@@ -101,7 +101,7 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 	private fun drawMenuList(graphics:Graphics) {
 		val maxentry = minOf(minentry+pageHeight-1, list.size)
 
-		(minentry until maxentry).forEachIndexed {y, i ->
+		for((y, i) in (minentry until maxentry).withIndex()) {
 			FontNormal.printFontGrid(2, 3+y, list[i], cursor==i)
 			if(cursor==i) FontNormal.printFontGrid(1, 3+y, "\u0082", COLOR.RAINBOW)
 		}

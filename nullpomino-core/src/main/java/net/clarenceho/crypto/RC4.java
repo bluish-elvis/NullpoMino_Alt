@@ -44,7 +44,7 @@ package net.clarenceho.crypto;
  * responsible for any illegal use of this code.
  * <p>
  * @author Clarence Ho */
-public class RC4{
+@SuppressWarnings("ALL") public class RC4{
 
 	private final byte[] state=new byte[256];
 	private int x;

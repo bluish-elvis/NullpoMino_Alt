@@ -1556,7 +1556,7 @@ open class PoochyBot:DummyAI(), Runnable {
 	 */
 	override fun renderState(engine:GameEngine, playerID:Int) {
 		engine.owner.receiver.run {
-			drawScoreFont(engine, playerID, 19, 39, name.toUpperCase(), COLOR.GREEN, .5f)
+			drawScoreFont(engine, playerID, 19, 39, name.uppercase(), COLOR.GREEN, .5f)
 			drawScoreFont(engine, playerID, 24, 40, "X", COLOR.BLUE, .5f)
 			drawScoreFont(engine, playerID, 27, 40, "Y", COLOR.BLUE, .5f)
 			drawScoreFont(engine, playerID, 30, 40, "RT", COLOR.BLUE, .5f)

@@ -31,7 +31,7 @@ import kotlin.reflect.full.primaryConstructor
 class BGMStatus:Serializable {
 
 	/** Current BGM */
-	var bgm:BGM = BGM.SILENT
+	var bgm:BGM = BGM.Silent
 	var track:Int = 0
 
 	/** 音量 (1f=100%, .5f=50%) */
@@ -57,7 +57,7 @@ class BGMStatus:Serializable {
 		val nums:Int = maxOf(1, nums)
 
 		val name = this::class.simpleName ?: ""
-		val longName:String = if(ln.isEmpty()) name else ln
+		val longName:String = ln.ifEmpty {name}
 		val subName:String = if(sn.isEmpty()) "" else sn[maxOf(minOf(this.idx, minOf(sn.size, nums)-1), 0)]
 		val drawName:String = "#$id-${this.idx} ${name.replace('_', ' ')}"
 		val fullName:String = "$longName $subName"
@@ -65,6 +65,7 @@ class BGMStatus:Serializable {
 
 		override fun equals(other:Any?):Boolean =
 			super.equals(other)||if(other is BGM) id==other.id&&idx==other.idx else false
+
 		operator fun compareTo(o:BGM):Int = if(id==o.id) idx-o.idx else id-o.id
 		override fun hashCode():Int {
 			var result = hidden.hashCode()
@@ -81,32 +82,32 @@ class BGMStatus:Serializable {
 
 		override fun toString():String = fullName
 
+		object Silent:BGM(ln = "Silent")
+		class Generic(idx:Int = 0):BGM(idx, 9, "Guidelines Modes", *Array(6) {"Level:${it+1}"})
+		class Rush(idx:Int = 0):BGM(idx, 3, "Trial Rush", *Array(3) {"Level:${it+1}"})
+		class Extra(idx:Int = 0):BGM(idx, 3, "Extra Modes")
+		class RetroN(idx:Int = 0):BGM(idx, 4, "Retro Classic:N.")
+		class RetroA(idx:Int = 0):BGM(idx, 5, "Retro Marathon:AT")
+		class RetroS(idx:Int = 0):BGM(idx, 8, "Retro Mania:S")
 
-		object SILENT:BGM(ln = "Silent")
-		class GENERIC(idx:Int = 0):BGM(idx, 6, "Guidelines Modes", *Array(6) {"Level:${it+1}"})
-		class RUSH(idx:Int = 0):BGM(idx, 3, "Trial Rush", *Array(3) {"Level:${it+1}"})
-		class EXTRA(idx:Int = 0):BGM(idx, 3, "Extra Modes")
-		class RETRO_N(idx:Int = 0):BGM(idx, 3, "Retro Classic:N.")
-		class RETRO_A(idx:Int = 0):BGM(idx, 5, ln = "Retro Marathon:AT")
-		class RETRO_S(idx:Int = 0):BGM(idx, 3, "Retro Mania:S", "Marathon", "Deadlock", "Modern")
-		class PUZZLE(idx:Int = 0):BGM(idx, 3, "Grand Blossom", "SAKURA", "TOMOYO", "CELBERUS")
-		class GM_1(idx:Int = 0):BGM(idx, 2, "Grand Marathon", "NORMAL", "20G")
-		class GM_2(idx:Int = 0):BGM(idx, 4, "Grand Mania", "NORMAL", "20G 500", "Storm 300/700", "Storm 500/900")
-		class GM_3(idx:Int = 0):BGM(idx, 6, "Grand Mastery",
+		class Puzzle(idx:Int = 0):BGM(idx, 3, "Grand Blossom", "SAKURA", "TOMOYO", "CELBERUS")
+		class GrandM(idx:Int = 0):BGM(idx, 2, "Grand Marathon", "NORMAL", "20G")
+		class GrandA(idx:Int = 0):BGM(idx, 4, "Grand Mania", "NORMAL", "20G 500", "Storm 300/700", "Storm 500/900")
+		class GrandT(idx:Int = 0):BGM(idx, 6, "Grand Mastery",
 			"NORMAL", "20G", "Blitz", "Blitz 500", "Lightning 700", "Lightning 1k")
 
-		class MENU(idx:Int = 0):BGM(idx, true, 8, "Select BGM",
+		class Menu(idx:Int = 0):BGM(idx, true, 8, "Select BGM",
 			"Title Menu/Replay", "Mode Select", "General Config",
-			"Mode Config(Retro/Puzzle)", "Mode Config(Generic)","Mode Config(Unique)",
+			"Mode Config(Retro/Puzzle)", "Mode Config(Generic)", "Mode Config(Unique)",
 			"Mode Config(Trial)", "Mode Config(Grand 20G)")
 
-		class ENDING(idx:Int = 0):BGM(idx, true, 4, "Ending Challenge",
+		class Ending(idx:Int = 0):BGM(idx, true, 4, "Ending Challenge",
 			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)")
 
-		class RESULT(idx:Int = 0):BGM(idx, true, 4, "Play Result",
+		class Result(idx:Int = 0):BGM(idx, true, 4, "Play Result",
 			"Failure", "Done Sprint", "Done Enduro", "Cleared Game")
 
-		class FINALE(idx:Int = 0):BGM(idx, true, 3, "Grand Finale", "Genuine", "Joker", "Further")
+		class Finale(idx:Int = 0):BGM(idx, true, 3, "Grand Finale", "Genuine", "Joker", "Further")
 
 		//operator fun get(index: Int): BGM = if(this.idx)
 		companion object {
@@ -141,7 +142,7 @@ class BGMStatus:Serializable {
 
 	/** Reset to defaults */
 	fun reset() {
-		bgm = BGM.SILENT
+		bgm = BGM.Silent
 		volume = 1f
 		fadesw = false
 	}

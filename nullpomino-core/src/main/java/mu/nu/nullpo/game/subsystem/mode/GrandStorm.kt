@@ -338,7 +338,7 @@ class GrandStorm:AbstractMode() {
 					4 -> {
 						lv500torikan += 60*change
 						if(lv500torikan<0) lv500torikan = 36000
-						if(lv500torikan in 1..12300) lv500torikan = if (change<0) 0 else 12300
+						if(lv500torikan in 1..12300) lv500torikan = if(change<0) 0 else 12300
 						if(lv500torikan>36000) lv500torikan = 0
 					}
 				}
@@ -376,7 +376,9 @@ class GrandStorm:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big), "LV500LIMIT",
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(), "LVSTOPSE",
+			GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG",
+			GeneralUtil.getONorOFF(big), "LV500LIMIT",
 			if(lv500torikan==0)
 				"NONE"
 			else
@@ -433,8 +435,7 @@ class GrandStorm:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime:String
-						strSectionTime = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]))
+						val strSectionTime:String = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -471,7 +472,8 @@ class GrandStorm:AbstractMode() {
 			// Time
 			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", engine.statistics.time%3!=0)
 			if(engine.ending!=2||rolltime/20%2==0)
-				receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), engine.statistics.time%3!=0, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), engine.statistics.time%3!=0,
+					2f)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
@@ -505,14 +507,15 @@ class GrandStorm:AbstractMode() {
 						var strSeparator = "-"
 						if(i==section&&engine.ending==0) strSeparator = "+"
 
-						val strSectionTime:String
-						strSectionTime = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
+						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
 
 				receiver.drawScoreFont(engine, playerID, x2, 14, "AVERAGE", engine.statistics.time%3!=0)
-				receiver.drawScoreNum(engine, playerID, x2, 15, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))), engine.statistics.time%3!=0, 2f)
+				receiver.drawScoreNum(engine, playerID, x2, 15,
+					GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))),
+					engine.statistics.time%3!=0, 2f)
 
 			}
 
@@ -668,7 +671,7 @@ class GrandStorm:AbstractMode() {
 				// ST medal
 				stMedalCheck(engine, levelb/100)
 
-				owner.bgmStatus.bgm = BGM.ENDING(1)
+				owner.bgmStatus.bgm = BGM.Ending(1)
 				// RO medal
 				roMedalCheck(engine)
 			} else if(nextseclv==500&&engine.statistics.level>=500&&lv500torikan>0
@@ -815,10 +818,12 @@ class GrandStorm:AbstractMode() {
 					receiver.drawMenuGrade(engine, playerID, 6, 2, tableGradeName[grade], COLOR.ORANGE, 2f)
 				}
 
-				drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME)
+				drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA,
+					Statistic.TIME)
 				drawResultRank(engine, playerID, receiver, 12, COLOR.BLUE, rankingRank)
 				if(secretGrade>4)
-					drawResult(engine, playerID, receiver, 14, COLOR.BLUE, "S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]))
+					drawResult(engine, playerID, receiver, 14, COLOR.BLUE, "S. GRADE",
+						String.format("%10s", tableSecretGradeName[secretGrade-1]))
 			}
 			1 -> {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "SECTION", COLOR.BLUE)
@@ -855,10 +860,10 @@ class GrandStorm:AbstractMode() {
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = if(engine.ending>0)
 			if(engine.statistics.level<900)
-				BGM.RESULT(2)
+				BGM.Result(2)
 			else
-				BGM.RESULT(3)
-		else BGM.RESULT(0)
+				BGM.Result(3)
+		else BGM.Result(0)
 		// ページ切り替え
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
@@ -998,7 +1003,7 @@ class GrandStorm:AbstractMode() {
 
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(300, 500, 999, -1)
-		private val tableBGM = arrayOf(BGM.GM_2(1), BGM.GM_2(2), BGM.GM_2(3))
+		private val tableBGM = arrayOf(BGM.GrandA(1), BGM.GrandA(2), BGM.GrandA(3))
 
 		/** 段位のName */
 		private val tableGradeName = arrayOf("", "m", "Gm", "GM")

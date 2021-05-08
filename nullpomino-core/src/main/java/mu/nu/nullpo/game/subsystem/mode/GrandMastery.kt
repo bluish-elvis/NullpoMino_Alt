@@ -30,8 +30,8 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
-import java.util.*
 import kotlin.math.*
+import kotlin.random.Random
 
 /** GRADE MANIA 3 Mode */
 class GrandMastery:AbstractMode() {
@@ -595,7 +595,7 @@ class GrandMastery:AbstractMode() {
 				isShowBestSectionTime = false
 
 				sectionscomp = 0
-				val rand = Random()
+				val rand = Random.Default
 				if(!always20g&&!big&&enableexam&&rand.nextInt(EXAM_CHANCE)==0) {
 					setPromotionalGrade()
 					if(promotionalExam>qualifiedGrade) {
@@ -638,7 +638,10 @@ class GrandMastery:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(), "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big), "GRADE DISP", GeneralUtil.getONorOFF(gradedisp), "LV500LIMIT",
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(), "FULL GHOST",
+			GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE",
+			GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG",
+			GeneralUtil.getONorOFF(big), "GRADE DISP", GeneralUtil.getONorOFF(gradedisp), "LV500LIMIT",
 			if(lv500torikan==0)
 				"NONE"
 			else
@@ -715,8 +718,7 @@ class GrandMastery:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime:String
-						strSectionTime = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]))
+						val strSectionTime:String = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i]&&!isAnyExam)
 
@@ -753,7 +755,9 @@ class GrandMastery:AbstractMode() {
 				var index = gradeBasicInternal
 				if(index>tableGradeDecayRate.size-1) index = tableGradeDecayRate.size-1
 				receiver.drawScoreGrade(engine, playerID, 3, 3, getGradeName(index), gradeflash>0&&gradeflash%4==0)
-				receiver.drawScoreNum(engine, playerID, 6, 2, String.format("%02.1f%%", gradeBasicPoint-gradeBasicDecay*1f/tableGradeDecayRate[index]), gradeflash>0&&gradeflash%4==0)
+				receiver.drawScoreNum(engine, playerID, 6, 2,
+					String.format("%02.1f%%", gradeBasicPoint-gradeBasicDecay*1f/tableGradeDecayRate[index]),
+					gradeflash>0&&gradeflash%4==0)
 
 			}
 
@@ -841,7 +845,8 @@ class GrandMastery:AbstractMode() {
 					}
 
 				receiver.drawScoreFont(engine, playerID, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, if(x) 8 else 12, if(x) 12 else 15, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))), 2f)
+				receiver.drawScoreNum(engine, playerID, if(x) 8 else 12, if(x) 12 else 15,
+					GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))), 2f)
 
 			}
 		}
@@ -922,7 +927,7 @@ class GrandMastery:AbstractMode() {
 				engine.blockHiddenAnim = true
 			}
 
-			owner.bgmStatus.bgm = BGM.ENDING(2)
+			owner.bgmStatus.bgm = BGM.Ending(2)
 		}
 
 		return false
@@ -1402,10 +1407,12 @@ class GrandMastery:AbstractMode() {
 					receiver.drawMenuFont(engine, playerID, 0, 3, "GRADE", COLOR.BLUE)
 					receiver.drawMenuGrade(engine, playerID, 6, 2, getGradeName(rgrade), gcolor, 2f)
 
-					drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME)
+					drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA,
+						Statistic.TIME)
 					drawResultRank(engine, playerID, receiver, 12, COLOR.BLUE, rankingRank)
 					if(secretGrade>4)
-						drawResult(engine, playerID, receiver, 15, COLOR.BLUE, "S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]))
+						drawResult(engine, playerID, receiver, 15, COLOR.BLUE, "S. GRADE",
+							String.format("%10s", tableSecretGradeName[secretGrade-1]))
 				}
 				1 -> {
 
@@ -1445,7 +1452,8 @@ class GrandMastery:AbstractMode() {
 						receiver.drawMenuFont(engine, playerID, 0, 5, strRollPointsTotal)
 					}
 
-					drawResultStats(engine, playerID, receiver, 6, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
+					drawResultStats(engine, playerID, receiver, 6, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE,
+						Statistic.PPS)
 					drawResult(engine, playerID, receiver, 15, COLOR.BLUE, "DECORATION", String.format("%d", dectemp))
 				}
 			}
@@ -1464,13 +1472,18 @@ class GrandMastery:AbstractMode() {
 
 			if(promotionFlag) {
 				if(passframe==420)
-					if(grade>=promotionalExam) engine.playSE("excellent")
-					else engine.playSE("regret")
+					if(grade>=promotionalExam) {
+						engine.playSE("excellent")
+						engine.playSE("applause5")
+					} else engine.playSE("regret")
 
 			} else if(demotionFlag)
 				if(passframe==420)
 					if(grade>=qualifiedGrade) engine.playSE("gradeup")
-					else engine.playSE("gamelost")
+					else {
+						engine.playSE("regret")
+						engine.playSE("gamelost")
+					}
 
 			passframe--
 			return true
@@ -1480,10 +1493,10 @@ class GrandMastery:AbstractMode() {
 
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = when {
-			engine.ending==1||engine.ending==2&&rollclear==0 -> BGM.RESULT(2)
-			rollclear>0||promotionFlag&&grade>=promotionalExam -> BGM.RESULT(3)
-			demotionFlag&&grade<=qualifiedGrade -> BGM.RESULT(0)
-			else -> BGM.RESULT(0)
+			engine.ending==1||engine.ending==2&&rollclear==0 -> BGM.Result(2)
+			rollclear>0||promotionFlag&&grade>=promotionalExam -> BGM.Result(3)
+			demotionFlag&&grade<=qualifiedGrade -> BGM.Result(0)
+			else -> BGM.Result(0)
 		}
 
 		// ページ切り替え
@@ -1565,7 +1578,6 @@ class GrandMastery:AbstractMode() {
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
 	fun saveRanking(ruleName:String) {
@@ -1689,10 +1701,12 @@ class GrandMastery:AbstractMode() {
 		private val tableTimeRegret = intArrayOf(6000, 5400, 5100, 4800, 4600, 4400, 4200, 4000, 3800, 3600)
 		/** 落下速度 table */
 		private val tableGravityValue =
-			intArrayOf(4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160, 192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1)
+			intArrayOf(4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160, 192, 224, 256, 512, 768, 1024,
+				1280, 1024, 768, -1)
 		/** 落下速度が変わる level */
 		private val tableGravityChangeLevel =
-			intArrayOf(30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230, 233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000)
+			intArrayOf(30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230, 233, 236, 239, 243, 247, 251, 300, 330,
+				360, 400, 420, 450, 500, 10000)
 
 		/** ARE table */
 		private val tableARE = intArrayOf(25, 24, 23, 22, 21, 20, 18, 15, 11, 8, 6, 5, 4)
@@ -1709,18 +1723,23 @@ class GrandMastery:AbstractMode() {
 		private val tableBGMFadeout = intArrayOf(485, 785, 1185, -1)
 		/** BGM change level */
 		private val tableBGMChange = intArrayOf(500, 800, 1200, -1)
-		private val tableBGM = arrayOf(BGM.GM_3(0), BGM.GM_3(1), BGM.GM_3(2), BGM.GM_3(3))
+		private val tableBGM = arrayOf(BGM.GrandT(0), BGM.GrandT(1), BGM.GrandT(2), BGM.GrandT(3))
 		/** Line clear時に入る段位 point */
 		private val tableGradePoint =
-			arrayOf(intArrayOf(10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2), intArrayOf(20, 20, 20, 18, 16, 15, 13, 10, 11, 11, 12), intArrayOf(40, 36, 33, 30, 27, 24, 20, 18, 17, 16, 15), intArrayOf(50, 47, 44, 40, 40, 38, 36, 34, 32, 31, 30))
+			arrayOf(intArrayOf(10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2), intArrayOf(20, 20, 20, 18, 16, 15, 13, 10, 11, 11, 12),
+				intArrayOf(40, 36, 33, 30, 27, 24, 20, 18, 17, 16, 15), intArrayOf(50, 47, 44, 40, 40, 38, 36, 34, 32, 31, 30))
 		/** 段位 pointのCombo bonus */
 		private val tableGradeComboBonus =
-			arrayOf(floatArrayOf(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f), floatArrayOf(1.0f, 1.2f, 1.2f, 1.4f, 1.4f, 1.4f, 1.4f, 1.5f, 1.5f, 2.0f), floatArrayOf(1.0f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.0f, 2.1f, 2.5f), floatArrayOf(1.0f, 1.5f, 1.8f, 2.0f, 2.2f, 2.3f, 2.4f, 2.5f, 2.6f, 3.0f))
+			arrayOf(floatArrayOf(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f),
+				floatArrayOf(1.0f, 1.2f, 1.2f, 1.4f, 1.4f, 1.4f, 1.4f, 1.5f, 1.5f, 2.0f),
+				floatArrayOf(1.0f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.0f, 2.1f, 2.5f),
+				floatArrayOf(1.0f, 1.5f, 1.8f, 2.0f, 2.2f, 2.3f, 2.4f, 2.5f, 2.6f, 3.0f))
 		/** 実際の段位を上げるのに必要な内部段位 */
 		private val tableGradeChange = intArrayOf(1, 2, 3, 4, 5, 7, 9, 12, 15, 18, 19, 20, 23, 25, 27, 29, 31, -1)
 		/** 段位 pointが1つ減る time */
 		private val tableGradeDecayRate =
-			intArrayOf(125, 100, 80, 50, 48, 47, 45, 44, 43, 42, 41, 40, 36, 33, 30, 28, 26, 24, 22, 20, 19, 18, 17, 16, 15, 15, 14, 14, 13, 13, 11, 10)
+			intArrayOf(125, 100, 80, 50, 48, 47, 45, 44, 43, 42, 41, 40, 36, 33, 30, 28, 26, 24, 22, 20, 19, 18, 17, 16, 15, 15, 14,
+				14, 13, 13, 11, 10)
 
 		// /** 段位のcount */
 		// private static final int GRADE_MAX = 33;

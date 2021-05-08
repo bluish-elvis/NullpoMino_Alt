@@ -25,12 +25,11 @@ package mu.nu.nullpo.game.component
 
 import mu.nu.nullpo.game.component.Block.TYPE.*
 import mu.nu.nullpo.game.play.GameEngine
-import java.io.Serializable
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
 /** Block */
-class Block(
+@kotlinx.serialization.Serializable class Block @JvmOverloads constructor(
 	/** Block color */
 	var color:COLOR? = null,
 	/** Block type */
@@ -38,9 +37,7 @@ class Block(
 	/** Blockの絵柄 */
 	var skin:Int = 0,
 	/** Blockの属性 */
-	vararg attrs:ATTRIBUTE):Serializable {
-	/** Blockの属性 */
-	var aint:Int = attrs.fold(0) {x, y -> x or y.bit}
+	var aint:Int = 0) {
 
 	/** Block color integer */
 	var cint:Int
@@ -86,7 +83,8 @@ class Block(
 			}
 		}
 
-	constructor():this(null, BLOCK, 0)
+	constructor(color:COLOR?, type:TYPE, skin:Int, vararg attrs:ATTRIBUTE):
+		this(color, type, skin, attrs.fold(0) {x, y -> x or y.bit})
 	constructor(color:COLOR?, skin:Int, vararg attrs:ATTRIBUTE):this(color, BLOCK, skin, *attrs)
 	constructor(cint:Int = 0, skin:Int = 0, vararg attrs:ATTRIBUTE):this(null, BLOCK, skin, *attrs) {
 		this.cint = cint
@@ -208,7 +206,7 @@ class Block(
 	 * @param status 変更後 state
 	 */
 	fun setAttribute(status:Boolean, vararg attrs:ATTRIBUTE) {
-		val attr=attrs.fold(0) {x, y -> x or y.bit}
+		val attr = attrs.fold(0) {x, y -> x or y.bit}
 		aint = if(status) aint or attr else aint and attr.inv()
 	}
 
@@ -219,8 +217,8 @@ class Block(
 	/** @return the character representing the color of this block
 	 */
 	fun blockToChar():Char =//'0'-'9','A'-'Z' represent colors 0-35.
-	//Colors beyond that would follow the ASCII table starting at '['.
-		if(cint>=10) ('A'.toInt()+(cint-10)).toChar() else ('0'.toInt()+maxOf(0, cint)).toChar()
+		//Colors beyond that would follow the ASCII table starting at '['.
+		if(cint>=10) ('A'.code+(cint-10)).toChar() else ('0'.code+maxOf(0, cint)).toChar()
 
 	override fun toString():String = "${blockToChar()}"
 

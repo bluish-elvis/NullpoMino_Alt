@@ -499,6 +499,8 @@ A: 名前にトリップが入っていないと記録は保存されません�
   http://logging.apache.org/log4j/1.2/index.html
   Crypt.java (Java-based implementation of the unix crypt(3) command)
   http://www.cacas.org/java/gnu/tools/
+  ModePile
+https://github.com/0xFC963F18DC21/ModePile
 
 ・効果音
   ザ・マッチメイカァズ
@@ -525,6 +527,8 @@ A: 名前にトリップが入っていないと記録は保存されません�
   hebo-MAI
   gif
   virulent
+  0xFC963F18DC21
+  Shots243
   tetrisconcept.net http://www.tetrisconcept.net/
   Hard Drop http://harddrop.com/
    (NullpoMino Topic: http://harddrop.com/forums/index.php?showtopic=2035

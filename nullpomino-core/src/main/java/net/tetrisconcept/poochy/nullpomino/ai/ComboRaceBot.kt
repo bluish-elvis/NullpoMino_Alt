@@ -572,7 +572,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 	private fun createTables(engine:GameEngine) {
 		if(moves!=null) return
 
-		moves = Array(FIELDS.size) {emptyArray<Transition>()}
+		moves = Array(FIELDS.size) {emptyArray()}
 
 		val fldEmpty = Field(4, Field.DEFAULT_HEIGHT, Field.DEFAULT_HIDDEN_HEIGHT)
 		val fldBackup = Field(fldEmpty)
@@ -691,7 +691,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 	 */
 	override fun renderState(engine:GameEngine, playerID:Int) {
 		val r = engine.owner.receiver
-		r.drawScoreFont(engine, playerID, 19, 33, name.toUpperCase(), COLOR.GREEN, .5f)
+		r.drawScoreFont(engine, playerID, 19, 33, name.uppercase(), COLOR.GREEN, .5f)
 		r.drawScoreFont(engine, playerID, 24, 34, "X", COLOR.BLUE, .5f)
 		r.drawScoreFont(engine, playerID, 27, 34, "Y", COLOR.BLUE, .5f)
 		r.drawScoreFont(engine, playerID, 30, 34, "RT", COLOR.BLUE, .5f)
@@ -746,7 +746,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 		var code = -1
 		engine.field?.let{code = fieldToCode(it)}
 		r.drawScoreFont(engine, playerID, 19, 45, "STATE:", COLOR.BLUE, .5f)
-		r.drawScoreFont(engine, playerID, 25, 45, if(code==-1) "---" else Integer.toHexString(code).toUpperCase(), .5f)
+		r.drawScoreFont(engine, playerID, 25, 45, if(code==-1) "---" else Integer.toHexString(code).uppercase(), .5f)
 
 	}
 
@@ -864,7 +864,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 	}
 
 	private class Transition
-	constructor(val x:Int, val rt:Int,val rtSub:Int = 0,val newField:Int,val next:Transition) {
+	constructor(val x:Int, val rt:Int,val rtSub:Int = 0,val newField:Int,val next:Transition?) {
 		constructor(bestX:Int, bestRt:Int, newFld:Int, nxt:Transition):this(bestX,bestRt,0,newFld,nxt)
 	}
 

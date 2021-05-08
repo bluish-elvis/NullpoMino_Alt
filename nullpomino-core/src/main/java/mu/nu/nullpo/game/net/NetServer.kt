@@ -38,9 +38,14 @@ import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.nio.channels.*
 import java.nio.channels.spi.SelectorProvider
-import java.util.*
+import java.util.LinkedList
+import java.util.Calendar
+import java.util.TimeZone
 import java.util.zip.*
+import kotlin.ConcurrentModificationException
+import kotlin.collections.HashMap
 import kotlin.math.pow
+import kotlin.random.Random
 
 /** NullpoMino NetServer<br></br>
  * The code is based on
@@ -76,7 +81,7 @@ import kotlin.math.pow
 	private var roomCount = 0
 
 	/** RNG for values selection */
-	private val rand = Random()
+	private val rand = Random.Default
 
 	/** true if shutdown is requested by the admin */
 	private var shutdownRequested = false
@@ -347,7 +352,7 @@ import kotlin.math.pow
 			log.info("Connection is banned:"+getHostName(socketChannel))
 			val endDate = ban.endDate
 			val strStart = GeneralUtil.exportCalendarString(ban.startDate)
-			val strExpire = if(endDate==null) "" else GeneralUtil.exportCalendarString(endDate)
+			val strExpire = GeneralUtil.exportCalendarString(endDate)
 			send(socketChannel, "banned\t$strStart\t$strExpire\n")
 			synchronized(pendingChanges) {
 				pendingChanges.add(ChangeRequest(socketChannel, ChangeRequest.DISCONNECT, 0))
@@ -592,8 +597,7 @@ import kotlin.math.pow
 
 			// And queue the data we want written
 			synchronized(pendingData) {
-				var queue = (pendingData as Map<SocketChannel, List<ByteBuffer>>).getOrDefault(client, emptyList())
-				queue += ByteBuffer.wrap(bytes)
+				var queue = (pendingData as Map<SocketChannel, List<ByteBuffer>>).getOrDefault(client, emptyList())+ByteBuffer.wrap(bytes)
 			}
 		}
 
@@ -733,7 +737,7 @@ import kotlin.math.pow
 					}
 				}
 				if(len+1<msg.length)
-					if(msg.substring(0, len+1)=="$player "&&len>maxLen) {
+					if(msg.take(len+1)=="$player "&&len>maxLen) {
 						chMatch = ch
 						maxLen = len
 					}
@@ -872,7 +876,7 @@ import kotlin.math.pow
 				val strTripCode = NetUtil.createTripCode(strTripKey, propServer.getProperty("netserver.tripcodemax", 10))
 
 				originalName = if(sharpIndex>0) {
-					val strTemp = originalName.substring(0, sharpIndex)
+					val strTemp = originalName.take(sharpIndex)
 					strTemp.replace('!', '?')+" !"+strTripCode
 				} else
 					"!$strTripCode"
@@ -1057,7 +1061,7 @@ import kotlin.math.pow
 
 				// Begin temporary private message code here
 				var msg = chat.strMessage
-				if(msg.length>5&&msg.substring(0, 5)=="/msg ") {
+				if(msg.length>5&&msg.take(5)=="/msg ") {
 					val ch = findPlayerByMsg(msg.substring(5))
 					if(ch==null)
 						send(pInfo.channel,
@@ -1217,7 +1221,7 @@ import kotlin.math.pow
 
 					val maxMap = strMaps.size
 
-					Collections.addAll(roomInfo.mapList, *strMaps)
+					roomInfo.mapList.addAll(strMaps)
 
 					if(roomInfo.mapList.isEmpty()) {
 						log.debug("Room${roomInfo.roomID}: No maps")

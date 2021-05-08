@@ -33,7 +33,7 @@ import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
-import java.util.*
+import kotlin.random.Random
 
 /** SPF VS-BATTLE mode (Beta) */
 class SPF:AbstractMode() {
@@ -159,7 +159,7 @@ class SPF:AbstractMode() {
 		propMap = arrayOfNulls(MAX_PLAYERS)
 		mapMaxNo = IntArray(MAX_PLAYERS)
 		fldBackup = arrayOfNulls(MAX_PLAYERS)
-		randMap = Random()
+		randMap = Random.Default
 
 		lastscore = IntArray(MAX_PLAYERS)
 		score = IntArray(MAX_PLAYERS)
@@ -170,7 +170,7 @@ class SPF:AbstractMode() {
 
 		dropSet = IntArray(MAX_PLAYERS)
 		dropMap = IntArray(MAX_PLAYERS)
-		dropPattern = Array(MAX_PLAYERS) {emptyArray<IntArray>()}
+		dropPattern = Array(MAX_PLAYERS) {emptyArray()}
 		attackMultiplier = DoubleArray(MAX_PLAYERS)
 		defendMultiplier = DoubleArray(MAX_PLAYERS)
 		diamondPower = IntArray(MAX_PLAYERS)
@@ -297,21 +297,23 @@ class SPF:AbstractMode() {
 
 		pattern?.let {
 			log.debug("Loading drop values preview")
-			engine.createFieldIfNeeded()
-			engine.field!!.reset()
-			var patternCol = 0
-			val maxHeight = engine.field!!.height-1
-			for(x in 0 until engine.field!!.width) {
-				if(patternCol>=it.size) patternCol = 0
-				for(patternRow in it[patternCol].indices) {
-					engine.field!!.setBlockColor(x, maxHeight-patternRow, it[patternCol][patternRow])
-					val blk = engine.field!!.getBlock(x, maxHeight-patternRow)
-					blk!!.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
-					blk.setAttribute(true, Block.ATTRIBUTE.OUTLINE)
+			engine.createFieldIfNeeded().run {
+				reset()
+				var patternCol = 0
+				val maxHeight = height-1
+				for(x in 0 until width) {
+					if(patternCol>=it.size) patternCol = 0
+					for(patternRow in it[patternCol].indices) {
+						setBlockColor(x, maxHeight-patternRow, it[patternCol][patternRow])
+						getBlock(x, maxHeight-patternRow)?.run {
+							setAttribute(true, Block.ATTRIBUTE.VISIBLE)
+							setAttribute(true, Block.ATTRIBUTE.OUTLINE)
+						}
+					}
+					patternCol++
 				}
-				patternCol++
+				setAllSkin(engine.skin)
 			}
-			engine.field?.setAllSkin(engine.skin)
 		} ?: engine.field?.reset()
 	}
 
@@ -396,7 +398,7 @@ class SPF:AbstractMode() {
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
 					7, 8 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
-					9 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					9 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					10 -> {
 						useMap[playerID] = !useMap[playerID]
 						if(!useMap[playerID]) {
@@ -1153,7 +1155,7 @@ class SPF:AbstractMode() {
 				winnerID = -1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
@@ -1162,7 +1164,7 @@ class SPF:AbstractMode() {
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
 				// 2P win
 				winnerID = 1
@@ -1171,7 +1173,7 @@ class SPF:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 			}
 	}
 

@@ -72,7 +72,7 @@ object FontNormal {
 			a = alpha
 		}
 		str.forEachIndexed {i, char ->
-			val stringChar = char.toInt()
+			val stringChar = char.code
 
 			if(stringChar==0x0A) {
 				// New line (\n)

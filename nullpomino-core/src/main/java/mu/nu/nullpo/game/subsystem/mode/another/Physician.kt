@@ -306,7 +306,9 @@ class Physician:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
-		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score), "CLEARED", String.format("%10d", engine.statistics.lines), "Time", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
+		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
+			"CLEARED", String.format("%10d", engine.statistics.lines), "Time",
+			String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 		drawResultRank(engine, playerID, receiver, 9, EventReceiver.COLOR.BLUE, rankingRank)
 	}
 
@@ -410,7 +412,8 @@ class Physician:AbstractMode() {
 		private val BLOCK_COLORS = intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_YELLOW)
 
 		/** Hovering block colors */
-		private val HOVER_BLOCK_COLORS = intArrayOf(Block.BLOCK_COLOR_GEM_RED, Block.BLOCK_COLOR_GEM_BLUE, Block.BLOCK_COLOR_GEM_YELLOW)
+		private val HOVER_BLOCK_COLORS = intArrayOf(Block.BLOCK_COLOR_GEM_RED, Block.BLOCK_COLOR_GEM_BLUE,
+			Block.BLOCK_COLOR_GEM_YELLOW)
 		private val BASE_SPEEDS = intArrayOf(10, 20, 25)
 
 		/** Number of ranking records */

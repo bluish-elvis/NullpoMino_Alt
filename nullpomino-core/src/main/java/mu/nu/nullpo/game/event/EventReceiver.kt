@@ -24,6 +24,7 @@
 package mu.nu.nullpo.game.event
 
 import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.PopupCombo
@@ -31,15 +32,15 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
 import java.io.*
-import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 /** Drawing and event handling EventReceiver */
 open class EventReceiver {
 
-	protected val random = Random()
+	protected val random = Random.Default
 
 	/** Font cint constants */
 	enum class FONT { NORMAL, NANO, NUM, GRADE, GRADE_BIG, MEDAL, TTF; }
@@ -91,7 +92,6 @@ open class EventReceiver {
 
 	/** After Score Gained, to show points.
 	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param pts Number of points last gained
 	 */
 	fun addScore(engine:GameEngine, x:Int, y:Int, pts:Int, color:COLOR = getPlayerColor(engine.playerID)) =
@@ -101,7 +101,6 @@ open class EventReceiver {
 
 	/** After Score Gained, to show combo.
 	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param pts Number of points last gained
 	 */
 	fun addCombo(engine:GameEngine, x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN) =
@@ -120,7 +119,6 @@ open class EventReceiver {
 
 	/** It will be called when a fireworks shoots
 	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 */
 	fun shootFireworks(engine:GameEngine) {
 		val mx = engine.fieldWidth*getBlockSize(engine)
@@ -423,8 +421,7 @@ open class EventReceiver {
 	 * @param color Font cint
 	 * @param scale Font size
 	 */
-	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
-		scale:Float = 1f) =
+	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
 		drawScore(engine, playerID, x, y, str, FONT.NORMAL, color, scale)
 
 	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, scale:Float = 1f) =
@@ -480,8 +477,6 @@ open class EventReceiver {
 		drawScoreTTF(engine, playerID, x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE)
 
 	/** Draw a block
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param color Block cint
@@ -491,9 +486,48 @@ open class EventReceiver {
 	 * @param alpha Alpha-blending
 	 * @param scale Size (.5f, 1f, 2f)
 	 */
-	open fun drawSingleBlock(engine:GameEngine, playerID:Int, x:Int, y:Int, color:Int, skin:Int, bone:Boolean,
-		darkness:Float, alpha:Float, scale:Float) {
+	@JvmOverloads
+	open fun drawBlock(x:Float, y:Float, color:Int, skin:Int, bone:Boolean = false, darkness:Float = 0f, alpha:Float = 1f,
+		scale:Float = 1f, attr:Int = 0, outline:Float = 0f) {
 	}
+
+	@JvmOverloads
+	fun drawBlock(x:Int, y:Int, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float, attr:Int = 0,
+		outline:Float = 0f) =
+		drawBlock(x.toFloat(), y.toFloat(), color, skin, bone, darkness, alpha, scale, attr, outline)
+
+	/** Blockクラスのインスタンスを使用してBlockを描画 (拡大率と暗さ指定可能）
+	 * @param x X-coordinate
+	 * @param y Y-coordinate
+	 * @param block Blockクラスのインスタンス
+	 * @param scale 拡大率
+	 * @param darkness 暗さもしくは明るさ
+	 */
+	@JvmOverloads
+	fun drawBlock(x:Float, y:Float, block:Block, scale:Float = 1f, darkness:Float = block.darkness,
+		alpha:Float = block.alpha, outline:Float = 0f) =
+		drawBlock(x, y, block.drawColor, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE), darkness, alpha, scale,
+			block.aint, outline)
+
+	@JvmOverloads
+	fun drawBlockForceVisible(x:Float, y:Float, blk:Block, scale:Float = 1f) =
+		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE),
+			blk.darkness/2, .5f*blk.alpha+.5f, scale, blk.aint)
+
+	/** Blockピースを描画 (暗さもしくは明るさの指定可能）
+	 * @param x X-coordinate
+	 * @param y Y-coordinate
+	 * @param piece 描画するピース
+	 * @param scale 拡大率
+	 * @param darkness 暗さもしくは明るさ
+	 */
+	@JvmOverloads
+	fun drawPiece(x:Int, y:Int, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f, ow:Float = 0f) =
+		piece.block.forEachIndexed {i, blk ->
+			val ls = scale*if(piece.big) 32 else 16
+			drawBlock(x+(piece.dataX[piece.direction][i].toFloat()*ls), y+(piece.dataY[piece.direction][i].toFloat()*ls),
+				blk, scale, blk.darkness+darkness, blk.alpha*alpha, ow)
+		}
 
 	/** Get key name by button ID
 	 * @param playerID Player ID
@@ -512,18 +546,48 @@ open class EventReceiver {
 		getKeyNameByButtonID(engine.playerID, engine.isInGame, btnID)
 
 	/** Draw speed meter.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
-	 * @param sp Speed (float:0.0~1.0 int:0~40)
+	 * @param sp Speed (float:0.0~1.0)
+	 * @param len Meter Width
 	 */
-	open fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Float, len:Float = 3f) {}
+	open fun drawSpeedMeter(x:Float, y:Float, sp:Float, len:Float) {}
 
-	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Int, len:Int) =
+	/** Draw speed meter.
+	 * @param engine GameEngine
+	 * @param playerID Player ID
+	 * @param x X-coordinate grid
+	 * @param y Y-coordinate grid
+	 * @param sp Speed (float:0.0~1.0 int:0~40)
+	 * @param len Meter Width Grid
+	 */
+	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Float, len:Float = 3f) {
+		val dx1 = scoreX(engine, playerID)+x*BS+maxOf((minOf(len, 1f)*BS)/2, 0f)
+		val dy1 = scoreY(engine, playerID)+y*BS+BS/2f
+		//if(engine.owner.menuOnly) return
+		drawSpeedMeter(dx1, dy1, sp, len)
+	}
+
+	/** Draw speed meter.
+	 * @param engine GameEngine
+	 * @param playerID Player ID
+	 * @param x X-coordinate grid
+	 * @param y Y-coordinate grid
+	 * @param sp Speed (float:0.0~1.0 int:0~40)
+	 * @param len Meter Width Grid
+	 */
+	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Int, len:Int = 3) =
 		drawSpeedMeter(engine, playerID, x, y, sp/40f, len.toFloat())
 
-	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, g:Int, d:Int, len:Int) {
+	/** Draw speed meter.
+	 * @param engine GameEngine
+	 * @param playerID Player ID
+	 * @param x X-coordinate grid
+	 * @param y Y-coordinate grid
+	 * @param g gravity Value
+	 * @param d gravity Denominator
+	 */
+	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, g:Int, d:Int, len:Int = 3) {
 		var s = if(g<=0) 1f else 0f
 		if(g>0&&d>0) s = (sqrt((g.toFloat()/d).toDouble())/sqrt(20.0)).toFloat()
 		drawSpeedMeter(engine, playerID, x, y, s, len.toFloat())
@@ -920,19 +984,15 @@ open class EventReceiver {
 
 	/** It will be called when a block is cleared.
 	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param blk Block
 	 */
-	open fun blockBreak(engine:GameEngine, x:Int, y:Int,
-		blk:Block) {
-	}
+	open fun blockBreak(engine:GameEngine, x:Int, y:Int, blk:Block) {}
 
 	/** It will be called when the game mode is going to calculate score.
 	 * Please note it will be called even if no lines are cleared.
 	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param event Event the score gained
 	 */
 	open fun calcScore(engine:GameEngine, event:GameEngine.ScoreEvent?) {}
@@ -979,7 +1039,7 @@ open class EventReceiver {
 		if(owner.mode?.isNetplayMode!=false) return
 		val folder = "$foldername/${owner.mode?.javaClass?.simpleName ?: ""}"
 		val filename = "$folder/"+
-			GeneralUtil.getReplayFilename(prop.getProperty("name.rule")).toLowerCase(Locale.ROOT)
+			GeneralUtil.getReplayFilename(prop.getProperty("name.rule")).lowercase()
 				.replace("[\\s-]".toRegex(), "_")
 		try {
 			val repfolder = File(folder)

@@ -141,7 +141,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		chkboxNoLoop = Array(num) {JCheckBox()}
 		//TODO:Tab : BGM. : Category
 		BGM.values.forEachIndexed {i, Track ->
-			if(Track!=BGM.SILENT) {
+			if(Track!=BGM.Silent) {
 				val i = i-1
 				val name = "${Track.name}.${Track.idx}"
 				val id = Track.id
@@ -216,7 +216,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		}
 		// ファイル選択ダイアログ
 		fileChooser = JFileChooser().apply {
-			hashmapFileFilters?.forEach {_,filter ->
+			hashmapFileFilters?.forEach {(_, filter) ->
 				addChoosableFileFilter(filter)
 			}
 		}

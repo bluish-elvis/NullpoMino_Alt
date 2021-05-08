@@ -126,14 +126,14 @@ class SprintUltra:NetDummyMode() {
 	 * @param preset Preset number
 	 */
 	private fun loadPreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
-		engine.speed.gravity = prop.getProperty("ultra.gravity.$preset", 4)
+		engine.speed.gravity = prop.getProperty("ultra.gravity.$preset", 1)
 		engine.speed.denominator = prop.getProperty("ultra.denominator.$preset", 256)
-		engine.speed.are = prop.getProperty("ultra.are.$preset", 10)
-		engine.speed.areLine = prop.getProperty("ultra.areLine.$preset", 5)
-		engine.speed.lineDelay = prop.getProperty("ultra. lineDelay.$preset", 20)
+		engine.speed.are = prop.getProperty("ultra.are.$preset", 0)
+		engine.speed.areLine = prop.getProperty("ultra.areLine.$preset", 0)
+		engine.speed.lineDelay = prop.getProperty("ultra. lineDelay.$preset", 0)
 		engine.speed.lockDelay = prop.getProperty("ultra.lockDelay.$preset", 30)
-		engine.speed.das = prop.getProperty("ultra.das.$preset", 14)
-		bgmno = prop.getProperty("ultra.bgmno.$preset", 0)
+		engine.speed.das = prop.getProperty("ultra.das.$preset", 10)
+		bgmno = prop.getProperty("ultra.bgmno.$preset", BGM.values.indexOf(BGM.Rush(0)))
 		big = prop.getProperty("ultra.big.$preset", false)
 		goaltype = prop.getProperty("ultra.goaltype.$preset", 2)
 	}
@@ -181,14 +181,14 @@ class SprintUltra:NetDummyMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					7 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					8 -> big = !big
 					9 -> {
 						goaltype += change
 						if(goaltype<0) goaltype = GOALTYPE_MAX-1
 						if(goaltype>GOALTYPE_MAX-1) goaltype = 0
 					}
-					10, 11 -> presetNumber = rangeCursor(presetNumber+change,0,99)
+					10, 11 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
 				}
 
 				// NET: Signal options change
@@ -245,7 +245,7 @@ class SprintUltra:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
-			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, engine.speed.gravity, engine.speed.denominator, engine.speed.are, engine.speed.areLine, engine.speed.lineDelay, engine.speed.lockDelay, engine.speed.das)
+			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
 			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big), "GOAL", (goaltype+1).toString()+"MIN")
 			if(!engine.owner.replayMode) {
@@ -266,7 +266,7 @@ class SprintUltra:NetDummyMode() {
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 
 		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.SILENT
+			owner.bgmStatus.bgm = BGM.Silent
 		else
 			owner.bgmStatus.bgm = BGM.values[bgmno]
 
@@ -330,10 +330,9 @@ class SprintUltra:NetDummyMode() {
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Line clear bonus
 		val pts = calcScore(engine, lines)
-		var cmb = 0
-		// Combo
-		if(engine.combo>=1&&lines>=1) cmb = engine.combo-1
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
+		// Combo
+		val cmb = if(engine.combo>=1&&lines>=1) engine.combo-1 else 0
 		// Add to score
 		if(pts+cmb+spd>0) {
 			var get = pts*(10+engine.statistics.level)/10+spd
@@ -413,7 +412,8 @@ class SprintUltra:NetDummyMode() {
 		else if(rankingRank[1]!=-1)
 			receiver.drawMenuFont(engine, playerID, 4, 5, String.format("RANK %d", rankingRank[1]+1), EventReceiver.COLOR.ORANGE)
 
-		drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR.BLUE, Statistic.PIECE, Statistic.SPL, Statistic.SPM, Statistic.LPM, Statistic.PPS)
+		drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR.BLUE, Statistic.PIECE, Statistic.SPL, Statistic.SPM,
+			Statistic.LPM, Statistic.PPS)
 
 		drawResultNetRank(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 18, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -462,8 +462,8 @@ class SprintUltra:NetDummyMode() {
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
 	 * @param ruleName Rule name
+	 * @param type Game Type
 	 */
 	fun saveRanking(ruleName:String, type:Int) {
 		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->

@@ -57,7 +57,7 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 	 */
 	private fun getKeyName(key:Int):String {
 		val str = org.lwjgl.input.Keyboard.getKeyName(key)
-		return str?.toUpperCase() ?: "$key"
+		return str?.uppercase() ?: "$key"
 	}
 
 	/* Draw the screen */

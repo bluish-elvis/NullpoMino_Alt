@@ -44,11 +44,11 @@ object FontGrade {
 		var i = 0
 		while(i<str.length) {
 			val color = (if(color==COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
-			var sC = str[i].toInt()
+			var sC = str[i].code
 			var nX = -1
 			var nY = -1
-			if(i<str.length-1) nX = str[i+1].toInt()
-			if(i<str.length-2) nY = str[i+2].toInt()
+			if(i<str.length-1) nX = str[i+1].code
+			if(i<str.length-2) nY = str[i+2].code
 			when(sC) {
 				in 0x31..0x39 -> sC -= 0x31
 				0x53, 0x73 -> // S
@@ -100,10 +100,10 @@ object FontGrade {
 		var i = 0
 		while(i<fontStr.length) {
 			val color = (if(color==COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
-			var sC = fontStr[i].toInt()
+			var sC = fontStr[i].code
 			when(sC) {
 				in 0x31..0x39 -> if(sC==0x31&&i<fontStr.length-1) {
-					val next = fontStr[i+1].toInt()
+					val next = fontStr[i+1].code
 					if(next in 0x30..0x33) {
 						sC = 9+next-0x30
 						i++

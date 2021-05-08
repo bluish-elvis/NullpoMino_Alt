@@ -7,7 +7,7 @@ open class BooleanMenuItem(name:String, displayName:String, color:COLOR, default
 	:AbstractMenuItem<Boolean>(name, displayName, color, defaultValue) {
 
 	override val valueString:String
-		get() = "$value".toUpperCase()
+		get() = "$value".uppercase()
 
 	override fun change(dir:Int, fast:Int) {
 		value = !value

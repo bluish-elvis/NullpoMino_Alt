@@ -157,8 +157,8 @@ class StateConfigRuleSelect:DummyMenuScrollState() {
 		val title = "SELECT ${player+1}P RULE (${cursor+1}/${list.size})"
 		FontNormal.printFontGrid(1, 1, title, COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 25, "CURRENT:${strCurrentRuleName.toUpperCase()}", COLOR.BLUE)
-		FontNormal.printFontGrid(9, 26, strCurrentFileName.toUpperCase(), COLOR.BLUE)
+		FontNormal.printFontGrid(1, 25, "CURRENT:${strCurrentRuleName.uppercase()}", COLOR.BLUE)
+		FontNormal.printFontGrid(9, 26, strCurrentFileName.uppercase(), COLOR.BLUE)
 
 		FontNormal.printFontGrid(1, 28, "A:OK B:CANCEL D:TOGGLE-VIEW", COLOR.GREEN)
 	}

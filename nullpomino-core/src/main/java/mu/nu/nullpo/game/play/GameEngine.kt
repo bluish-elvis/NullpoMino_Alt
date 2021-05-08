@@ -36,6 +36,7 @@ import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.log4j.Logger
 import java.util.*
+import kotlin.random.Random
 
 /** Each player's Game processing */
 @Suppress("MemberVisibilityCanBePrivate")
@@ -82,7 +83,7 @@ class GameEngine
 	var randSeed:Long = 0
 
 	/** Random: Used for creating various randomness */
-	var random:Random = Random()
+	var random:Random = Random.Default
 
 	/** ReplayData: Manages input data for replays */
 	var replayData:ReplayData = ReplayData()
@@ -754,7 +755,7 @@ class GameEngine
 			versionMinor = GameManager.versionMinor
 			versionMinorOld = GameManager.versionMinorOld
 
-			val tempRand = Random()
+			val tempRand = Random.Default
 			randSeed = tempRand.nextLong()
 			if(owSkin==-2) owSkin = tempRand.nextInt(owner.receiver.skinMax)
 
@@ -1441,16 +1442,18 @@ class GameEngine
 	}
 
 	/** fieldをInitialization (まだ存在しない場合） */
-	fun createFieldIfNeeded() {
+	fun createFieldIfNeeded():Field {
 		if(!gameActive&&!owner.replayMode) {
-			val tempRand = Random()
+			val tempRand = Random.Default
 			randSeed = tempRand.nextLong()
 			random = Random(randSeed)
 		}
 		if(fieldWidth<0) fieldWidth = ruleopt.fieldWidth
 		if(fieldHeight<0) fieldHeight = ruleopt.fieldHeight
 		if(fieldHiddenHeight<0) fieldHiddenHeight = ruleopt.fieldHiddenHeight
-		if(field==null) field = Field(fieldWidth, fieldHeight, fieldHiddenHeight, ruleopt.fieldCeiling)
+		val new = Field(fieldWidth, fieldHeight, fieldHiddenHeight, ruleopt.fieldCeiling)
+		if(field==null) field = new
+		return new
 	}
 
 	/** Call this if the game has ended */
@@ -1635,7 +1638,7 @@ class GameEngine
 	private fun statSetting() {
 		//  event 発生
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = BGM.MENU(4+(owner.mode?.gameIntensity ?: 0))
+		owner.bgmStatus.bgm = BGM.Menu(4+(owner.mode?.gameIntensity ?: 0))
 		owner.mode?.also {if(it.onSetting(this, playerID)) return}
 		owner.receiver.onSetting(this, playerID)
 
@@ -1658,7 +1661,7 @@ class GameEngine
 		if(statc[0]==0) {
 
 			if(!readyDone&&!owner.bgmStatus.fadesw&&owner.bgmStatus.bgm.id<0&&
-				owner.bgmStatus.bgm.id !in BGM.FINALE(0).id..BGM.FINALE(2).id)
+				owner.bgmStatus.bgm.id !in BGM.Finale(0).id..BGM.Finale(2).id)
 				owner.bgmStatus.fadesw = true
 			// fieldInitialization
 			createFieldIfNeeded()
@@ -1839,7 +1842,7 @@ class GameEngine
 				holdDisable = true
 			}
 			getNextObject(nextPieceCount)?.let {
-				if(framecolor !in FRAME_SKIN_SG..FRAME_SKIN_GB) playSE("piece_${it.type.name.toLowerCase()}")
+				if(framecolor !in FRAME_SKIN_SG..FRAME_SKIN_GB) playSE("piece_${it.type.name.lowercase(Locale.getDefault())}")
 			}
 			nowPieceObject?.let {
 				if(!it.offsetApplied)
@@ -2615,8 +2618,11 @@ class GameEngine
 			if(!skip) {
 				if(lineGravityType==LineGravity.NATIVE) field?.downFloatingBlocks()
 				field?.run {
-					if(lastLinesBottom>=highestBlockY||lastLinesSplited)
+					if((lastLinesBottom>=highestBlockY&&lineClearing>=3)||lastLinesSplited)
 						playSE("linefall", maxOf(
+							0.8f, 1.2f-lastLinesBottom/3f/fieldHeight), minOf(1f, 0.4f+speed.lineDelay*0.1f))
+					if((lastLinesBottom>=highestBlockY&&lineClearing<=2)||lastLinesSplited)
+						playSE("linefall1", maxOf(
 							0.8f, 1.2f-lastLinesBottom/3f/fieldHeight), minOf(1f, 0.4f+speed.lineDelay*0.1f))
 				}
 
@@ -2718,7 +2724,7 @@ class GameEngine
 
 		if(statc[2]==0) {
 			timerActive = false
-			owner.bgmStatus.bgm = BGM.SILENT
+			owner.bgmStatus.bgm = BGM.Silent
 			playSE("endingstart")
 			statc[2] = 1
 		}
@@ -2800,7 +2806,7 @@ class GameEngine
 				if(topout) playSE("dead_last")
 				gameEnded()
 				blockShowOutlineOnly = false
-				if(owner.players<2) owner.bgmStatus.bgm = BGM.SILENT
+				if(owner.players<2) owner.bgmStatus.bgm = BGM.Silent
 
 				if(field!!.isEmpty) statc[0] = statc[1]
 				else {
@@ -2889,7 +2895,7 @@ class GameEngine
 	private fun statResult() {
 		// Event
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = BGM.RESULT(
+		owner.bgmStatus.bgm = BGM.Result(
 			when {
 				ending==2 -> if(owner.mode?.gameIntensity==1) (if(statistics.time<10800) 1 else 2) else 3
 				ending!=0 -> if(statistics.time<10800) 1 else 2

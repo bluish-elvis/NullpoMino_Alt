@@ -4,19 +4,22 @@ import mu.nu.nullpo.game.component.Piece.Shape
 
 abstract class DistanceWeightRandomizer:Randomizer {
 
-	internal val initWeights = intArrayOf(3, 3, 0, 0, 3, 3, 0, 2, 2, 2, 2)
+	private val initWeights = intArrayOf(3, 3, 0, 0, 3, 3, 0, 2, 2, 2, 2)
 	internal var weights:IntArray = IntArray(pieces.size)
-	internal var cumulative:IntArray= IntArray(pieces.size)
+	private var cumulative:IntArray = IntArray(pieces.size)
 	internal var sum:Int = 0
 	internal var id:Int = 0
 
-	internal var firstPiece = true
+	private var firstPiece = true
 
 	constructor():super()
-
 	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
 
 	init {
+		init()
+	}
+
+	final override fun init() {
 		for(i in pieces.indices)
 			weights[i] = initWeights[pieces[i]]
 	}

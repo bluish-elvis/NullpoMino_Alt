@@ -288,7 +288,6 @@ class GrandFinale:AbstractMode() {
 		}
 	}
 
-
 	/** Main routine for game setup screen */
 	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
 		if(!engine.owner.replayMode) {
@@ -333,7 +332,7 @@ class GrandFinale:AbstractMode() {
 		} else {
 			menuTime++
 			menuCursor = -1
-			owner.bgmStatus.bgm = BGM.FINALE(gametype)
+			owner.bgmStatus.bgm = BGM.Finale(gametype)
 			return menuTime<60
 		}
 
@@ -351,7 +350,7 @@ class GrandFinale:AbstractMode() {
 	/** Ready screen */
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
 
-		owner.bgmStatus.bgm = BGM.FINALE(gametype)
+		owner.bgmStatus.bgm = BGM.Finale(gametype)
 		return false
 	}
 
@@ -382,7 +381,7 @@ class GrandFinale:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
-		receiver.drawScoreFont(engine, playerID, 0, 0, "GRAND FINALE", COLOR.WHITE)
+		receiver.drawScoreFont(engine, playerID, 0, 0, "GRAND Finale", COLOR.WHITE)
 
 		receiver.drawScoreFont(engine, playerID, 0, 1, "b${tableModeName[gametype]}", COLOR.WHITE)
 
@@ -401,8 +400,10 @@ class GrandFinale:AbstractMode() {
 
 						receiver.drawScoreNum(engine, playerID, 0, topY+i, String.format("%02d", i+1), COLOR.YELLOW, scale)
 						receiver.drawScoreGrade(engine, playerID, 3, topY+i, tableGradeName[rankingGrade[gametype][i]], gcolor, scale)
-						receiver.drawScoreNum(engine, playerID, 9, topY+i, String.format("%03d", rankingLevel[gametype][i]), i==rankingRank, scale)
-						receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
+						receiver.drawScoreNum(engine, playerID, 9, topY+i, String.format("%03d", rankingLevel[gametype][i]), i==rankingRank,
+							scale)
+						receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank,
+							scale)
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW SECTION TIME", COLOR.ORANGE)
@@ -415,9 +416,8 @@ class GrandFinale:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime:String
-						strSectionTime =
-							String.format("%3d-%3d %s %3d", temp, temp2, GeneralUtil.getTime(bestSectionTime[gametype][i]), bestSectionLine[gametype][i])
+						val strSectionTime:String = String.format("%3d-%3d %s %3d", temp, temp2,
+							GeneralUtil.getTime(bestSectionTime[gametype][i]), bestSectionLine[gametype][i])
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -493,8 +493,7 @@ class GrandFinale:AbstractMode() {
 						var strSeparator = "-"
 						if(i==section&&engine.ending==0) strSeparator = "+"
 
-						val strSectionTime:String
-						strSectionTime = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
+						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
@@ -522,7 +521,7 @@ class GrandFinale:AbstractMode() {
 		// Ending start
 		if(engine.ending==2&&!rollstarted) {
 			rollstarted = true
-			owner.bgmStatus.bgm = BGM.ENDING(3)
+			owner.bgmStatus.bgm = BGM.Ending(3)
 		}
 
 		return false
@@ -566,7 +565,7 @@ class GrandFinale:AbstractMode() {
 
 		// Combo
 		comboValue = if(lines==0) 1
-		else maxOf(1,comboValue+2*lines-2)
+		else maxOf(1, comboValue+2*lines-2)
 
 		if(lines>=1&&engine.ending==0) {
 			if(gametype==2) {
@@ -633,7 +632,7 @@ class GrandFinale:AbstractMode() {
 						if(lines<=3||engine.split) joker--
 
 					}
-					if(engine.statistics.level<500||joker>0){
+					if(engine.statistics.level<500||joker>0) {
 						engine.statistics.level += lines
 						if(lines>2) engine.statistics.level += lines-2
 					}
@@ -651,7 +650,7 @@ class GrandFinale:AbstractMode() {
 				engine.statistics.level = 999
 				engine.timerActive = false
 				engine.ending = 2
-				owner.bgmStatus.bgm = BGM.ENDING(3)
+				owner.bgmStatus.bgm = BGM.Ending(3)
 				rollclear = 1
 
 				if(gametype==1&&joker>0) grade = 31
@@ -673,7 +672,7 @@ class GrandFinale:AbstractMode() {
 				engine.ending = 1
 				rollclear = 1
 
-				secretGrade = engine.field?.secretGrade?:0
+				secretGrade = engine.field?.secretGrade ?: 0
 				// Section Timeを記録
 				sectionlasttime = sectionTime[levelb/100]
 				sectionscomp++
@@ -726,7 +725,7 @@ class GrandFinale:AbstractMode() {
 			engine.statistics.scoreLine += lastscore
 			levelUp(engine)
 		}
-	return 0
+		return 0
 	}
 
 	/** This function will be called when the game timer updates */
@@ -767,7 +766,7 @@ class GrandFinale:AbstractMode() {
 
 	/** This function will be called when the player tops out */
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.statc[0]==0) secretGrade = engine.field?.secretGrade?:0
+		if(engine.statc[0]==0) secretGrade = engine.field?.secretGrade ?: 0
 		return false
 	}
 
@@ -784,9 +783,11 @@ class GrandFinale:AbstractMode() {
 				receiver.drawMenuGrade(engine, playerID, 6, 2, tableGradeName[grade], gcolor, 2f)
 			}
 
-			drawResultStats(engine, playerID, receiver, 4, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME)
+			drawResultStats(engine, playerID, receiver, 4, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA,
+				Statistic.TIME)
 			if(secretGrade>4)
-				drawResult(engine, playerID, receiver, 14, COLOR.RED, "S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]))
+				drawResult(engine, playerID, receiver, 14, COLOR.RED, "S. GRADE",
+					String.format("%10s", tableSecretGradeName[secretGrade-1]))
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "SECTION", COLOR.RED)
 
@@ -867,7 +868,6 @@ class GrandFinale:AbstractMode() {
 	}
 
 	/** Save the ranking
-	 * @param prop CustomProperties
 	 * @param ruleName Rule name
 	 */
 	fun saveRanking(ruleName:String) {
@@ -881,7 +881,6 @@ class GrandFinale:AbstractMode() {
 				listOf("$j,$ruleName.sectiontime.$i" to bestSectionTime[j][i])
 			}
 		})
-
 
 		//owner.statsProp.setProperty("decoration", decoration)
 		//receiver.saveProperties(owner.statsFile, owner.statsProp)
@@ -948,18 +947,21 @@ class GrandFinale:AbstractMode() {
 
 		/** ARE */
 		private val tableARE =
-			arrayOf(intArrayOf(20, 19, 18, 17, 16, 15, 14, 13, 12, 11), intArrayOf(15, 14, 13, 12, 11, 10, 9, 8, 7, 5), intArrayOf(10, 9, 8, 7, 6, 5, 4, 3, 2, 1))
+			arrayOf(intArrayOf(20, 19, 18, 17, 16, 15, 14, 13, 12, 11), intArrayOf(15, 14, 13, 12, 11, 10, 9, 8, 7, 5),
+				intArrayOf(10, 9, 8, 7, 6, 5, 4, 3, 2, 1))
 
 		/** Lock delay */
 		private val tableLockDelay =
-			arrayOf(intArrayOf(25, 25, 24, 24, 23, 23, 22, 22, 21, 21), intArrayOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21), intArrayOf(22, 22, 21, 21, 20, 20, 19, 18, 17, 16))
+			arrayOf(intArrayOf(25, 25, 24, 24, 23, 23, 22, 22, 21, 21), intArrayOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21),
+				intArrayOf(22, 22, 21, 21, 20, 20, 19, 18, 17, 16))
 
 		private val tableHiddenDelay = intArrayOf(320, 300, 275, 250, 225, 200, 180, 150, 120, 60)
 		/** Mode names */
 		private val tableModeName = arrayOf("GENUINE", "BEST BOWER", "LONGOMINIAD")
 		/** Grade names */
 		private val tableGradeName =
-			arrayOf("", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "m", "m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "mK", "mV", "mO", "M", "MK", "MV", "MO", "MM", "Gm", "GM", "GOD")
+			arrayOf("", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "m", "m1", "m2", "m3", "m4", "m5", "m6", "m7",
+				"m8", "m9", "mK", "mV", "mO", "M", "MK", "MV", "MO", "MM", "Gm", "GM", "GOD")
 
 		/** Secret grade names */
 		private val tableSecretGradeName = arrayOf("M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", //  0～ 8

@@ -21,7 +21,7 @@ class NetServerBan {
 	 * permanent).
 	 * @return the end date or null
 	 */
-	val endDate:Calendar?
+	val endDate:Calendar
 		get() {
 			return (startDate.clone() as Calendar).also {
 				when(banLength) {
@@ -40,13 +40,7 @@ class NetServerBan {
 	 * @return true if the ban is expired.
 	 */
 	val isExpired:Boolean
-		get() {
-			val endDate = endDate
-			return if(endDate==null)
-				false
-			else
-				Calendar.getInstance(TimeZone.getTimeZone("GMT")).after(endDate)
-		}
+		get() = Calendar.getInstance(TimeZone.getTimeZone("GMT")).after(endDate)
 
 	/** Empty Constructor */
 	constructor()
@@ -112,13 +106,8 @@ class NetServerBan {
 	/** Export to String
 	 * @return String
 	 */
-	fun exportString():String {
-		//String strStartDate = exportStartDate();
-		val strTemp = GeneralUtil.exportCalendarString(startDate)
-		var strStartDate = ""
-		if(strTemp!=null) strStartDate = "GMT$strTemp"
-		return "$addr;$banLength;$strStartDate"
-	}
+	fun exportString():String = //String strStartDate = exportStartDate();
+		"$addr;$banLength;GMT${GeneralUtil.exportCalendarString(startDate)}"
 
 	/** Import from String
 	 * @param strInput String
@@ -144,7 +133,3 @@ class NetServerBan {
 		const val BANLENGTH_TOTAL = 7
 	}
 }
-/** Creates a new NetServerBan object representing a permanent ban starting
- * now.
- * @param addr the remote address this NetServerBan affects.
- */

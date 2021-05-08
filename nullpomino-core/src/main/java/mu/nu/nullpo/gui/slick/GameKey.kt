@@ -62,8 +62,8 @@ class GameKey:GameKeyDummy {
 				else -> buttonmap[i].any {ControllerManager.isControllerButton(player, input, it)}
 			}
 
-			if(flag) inputstate[i]++
-			else inputstate[i] = 0
+			if(flag) inputState[i]++
+			else inputState[i] = 0
 		}
 	}
 

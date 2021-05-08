@@ -123,9 +123,6 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		/** Skin description file */
 		internal val propSkins:CustomProperties = CustomProperties()
 
-		/** Screenshot用 */
-		private var ssImage:BufferedImage? = null
-
 		/** Mode 管理 */
 		internal val modeManager:ModeManager = ModeManager()
 
@@ -229,10 +226,10 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		private var prevCalcTime:Long = 0
 
 		/** frame count */
-		var frameCount:Long = 0;private set
+		var frameCount:Long = 0; private set
 
 		/** upTime by frame */
-		var upTimeFrame:Long = 0;private set
+		var upTimeFrame:Long = 0; private set
 
 		/** rainbow counter */
 		val rainbow get() = (upTimeFrame%18).toInt()/2
@@ -603,14 +600,11 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			if(maxfps>0) {
 				var sleepFlag = false
 				val afterTime:Long = System.nanoTime()
-				val timeDiff:Long
-				val sleepTime:Long
-				val sleepTimeInMillis:Long
 
-				timeDiff = afterTime-beforeTime
+				val timeDiff:Long = afterTime-beforeTime
 
-				sleepTime = periodCurrent-timeDiff-overSleepTime
-				sleepTimeInMillis = sleepTime/1000000L
+				val sleepTime:Long = periodCurrent-timeDiff-overSleepTime
+				val sleepTimeInMillis:Long = sleepTime/1000000L
 
 				if(sleepTimeInMillis>=10&&(!alternateFPSPerfectMode||!ingame)) {
 					// If it is possible to use sleep
@@ -632,6 +626,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 						while(System.nanoTime()<perfectFPSDelay+1000000000/altMaxFPS)
 							Thread.yield()
 					else
+						@Suppress("ControlFlowWithEmptyBody")
 						while(System.nanoTime()<perfectFPSDelay+1000000000/altMaxFPS) {
 						}
 					perfectFPSDelay += (1000000000/altMaxFPS).toLong()

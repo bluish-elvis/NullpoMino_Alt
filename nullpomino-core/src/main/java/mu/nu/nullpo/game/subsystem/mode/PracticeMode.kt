@@ -344,7 +344,7 @@ class PracticeMode:AbstractMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					7 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					8 -> big = !big
 					9 -> {
 						leveltype += change
@@ -419,7 +419,7 @@ class PracticeMode:AbstractMode() {
 						if(mapNumber<0) mapNumber = 99
 						if(mapNumber>99) mapNumber = 0
 					}
-					44, 45 -> presetNumber = rangeCursor(presetNumber+change,0,99)
+					44, 45 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
 					46 -> {
 						cascadeStyle += change
 						if(cascadeStyle<0) cascadeStyle = BLOCK_CASCADE_TYPE_STRING.size-1
@@ -546,7 +546,7 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 15, 5, "DAS:", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuNum(engine, playerID, 20, 5, String.format("%2d", engine.speed.das), menuCursor==6)
 			receiver.drawMenuFont(engine, playerID, 2, 7,
-				String.format("BGM:%2d %s", bgmno, "${BGM.values[bgmno]}".toUpperCase()), menuCursor==7)
+				String.format("BGM:%2d %s", bgmno, "${BGM.values[bgmno]}".uppercase()), menuCursor==7)
 			receiver.drawMenuFont(engine, playerID, 2, 8, "BIG:${GeneralUtil.getONorOFF(big)}", menuCursor==8)
 			receiver.drawMenuFont(engine, playerID, 2, 9, "LEVEL TYPE:${LEVELTYPE_STRING[leveltype]}", menuCursor==9)
 			receiver.drawMenuFont(engine, playerID, 2, 10,
@@ -935,7 +935,7 @@ class PracticeMode:AbstractMode() {
 				if(leveltype==LEVELTYPE_MANIA) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 			}
 
-			owner.bgmStatus.bgm = BGM.ENDING(0)
+			owner.bgmStatus.bgm = BGM.Ending(0)
 		}
 
 		return false
@@ -1092,10 +1092,9 @@ class PracticeMode:AbstractMode() {
 	private fun calcScoreNormal(engine:GameEngine, lines:Int):Int {
 		// Line clear bonus
 		val pts = super.calcScore(engine, lines)
-		var cmb = 0
-		// Combo
-		if(engine.combo>=1&&lines>=1) cmb = engine.combo-1
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
+		// Combo
+		val cmb = if(engine.combo>=1&&lines>=1) engine.combo-1 else 0
 		// Add to score
 		if(pts+cmb+spd>0) {
 			var get = pts*(10+engine.statistics.level)/10+spd
@@ -1170,8 +1169,7 @@ class PracticeMode:AbstractMode() {
 
 	/** MeterUpdate the amount of
 	 * @param engine GameEngine
-	 * @param playerID Player number
-	 */
+	 * */
 	private fun setMeter(engine:GameEngine) {
 		if(engine.gameActive&&engine.ending==2) {
 			val remainRollTime = rolltimelimit-rolltime

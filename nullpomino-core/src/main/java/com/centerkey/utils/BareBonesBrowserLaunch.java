@@ -15,7 +15,7 @@ import java.util.Arrays;
  * Author: Dem Pilafian<br>
  * Public Domain Software -- Free to Use as You Like
  * @version 3.1, June 6, 2010 */
-public class BareBonesBrowserLaunch{
+@SuppressWarnings("ALL") public class BareBonesBrowserLaunch{
 
 	static final String[] browsers={"google-chrome","firefox","opera",
 																	"epiphany","konqueror","conkeror","midori","kazehakase","mozilla"};
@@ -45,7 +45,7 @@ public class BareBonesBrowserLaunch{
 					if(browser==null) throw new Exception(Arrays.toString(browsers));
 				}
 			}catch(Exception e){
-				JOptionPane.showMessageDialog(null,errMsg+"\n"+e.toString());
+				JOptionPane.showMessageDialog(null,errMsg+"\n"+e);
 			}
 		}
 	}

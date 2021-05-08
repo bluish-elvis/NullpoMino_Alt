@@ -1,7 +1,6 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 class BagMinusRandomizer:BagRandomizer {
-
 	override val baglen:Int get() = maxOf(0, super.baglen-1)
 	override val bagInit:IntArray
 		get() {
@@ -10,7 +9,5 @@ class BagMinusRandomizer:BagRandomizer {
 		}
 
 	constructor():super()
-
 	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
-
 }

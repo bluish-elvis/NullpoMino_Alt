@@ -271,7 +271,7 @@ open class RanksAI:DummyAI(), Runnable {
 				val nowX = engine.nowPieceX
 				val nowY = engine.nowPieceY
 				val rt = pieceNow!!.direction
-				val fld = engine.field?:return
+				val fld = engine.field ?: return
 				val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 
 				if(bestHold||forceHold) {
@@ -413,7 +413,7 @@ open class RanksAI:DummyAI(), Runnable {
 			pieces[i] = engine.getNextObject(engine.nextPieceCount+i-1)!!.id
 
 		val holdPiece = IntArray(1)
-		holdPiece[0] = engine.holdPieceObject?.id?:-1
+		holdPiece[0] = engine.holdPieceObject?.id ?: -1
 
 		val holdOK = engine.isHoldOK
 

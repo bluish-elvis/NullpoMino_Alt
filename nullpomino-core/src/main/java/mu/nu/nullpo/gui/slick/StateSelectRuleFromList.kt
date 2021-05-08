@@ -103,7 +103,7 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 		}
 
 		var defaultCursor = 0
-		val strLastRule = NullpoMinoSlick.propGlobal.getProperty("lastrule.${strCurrentMode.toLowerCase()}")
+		val strLastRule = NullpoMinoSlick.propGlobal.getProperty("lastrule.${strCurrentMode.lowercase(Locale.getDefault())}")
 		if(strLastRule!=null&&strLastRule.isNotEmpty())
 			for(i in list.indices)
 				if(list[i]==strLastRule) defaultCursor = i
@@ -119,13 +119,13 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 	/* Render screen */
 	override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
 		FontNormal.printFontGrid(1, 1, "Choose your Style (${cursor+1}/${list.size})", COLOR.ORANGE)
-		FontNano.printFont(8, 36, "FOR ${strCurrentMode.toUpperCase()}", COLOR.ORANGE,.5f)
+		FontNano.printFont(8, 36, "FOR ${strCurrentMode.uppercase()}", COLOR.ORANGE,.5f)
 	}
 
 	/* Decide */
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("decide0")
-		NullpoMinoSlick.propGlobal.setProperty("lastrule.${strCurrentMode.toLowerCase()}", if(cursor>=1) list[cursor] else "")
+		NullpoMinoSlick.propGlobal.setProperty("lastrule.${strCurrentMode.lowercase(Locale.getDefault())}", if(cursor>=1) list[cursor] else "")
 		NullpoMinoSlick.saveConfig()
 
 		var strRulePath:String?=null

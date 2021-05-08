@@ -9,7 +9,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import java.util.*
+import kotlin.random.Random
 
 /** VS-DIG RACE mode */
 class VSDigRaceMode:AbstractMode() {
@@ -162,7 +162,7 @@ class VSDigRaceMode:AbstractMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7, 8 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change,0,99)
+					7, 8 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
 					9 -> {
 						goalLines[playerID] += change
 						if(goalLines[playerID]<1) goalLines[playerID] = 18
@@ -174,7 +174,7 @@ class VSDigRaceMode:AbstractMode() {
 						if(messiness[playerID]>100) messiness[playerID] = 0
 					}
 					11 -> enableSE[playerID] = !enableSE[playerID]
-					12 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					12 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 				}
 			}
 
@@ -221,8 +221,12 @@ class VSDigRaceMode:AbstractMode() {
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(engine.statc[4]==0) {
 			if(menuCursor<9) {
-				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
-				drawMenu(engine, playerID, receiver, 14, EventReceiver.COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
+				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(),
+					"G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE",
+					engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY",
+					engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
+				drawMenu(engine, playerID, receiver, 14, EventReceiver.COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE",
+					"${presetNumber[playerID]}")
 			} else {
 				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, 9, "GOAL", "${goalLines[playerID]}", "CHANGERATE",
 					"${messiness[playerID]}%", "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
@@ -422,7 +426,7 @@ class VSDigRaceMode:AbstractMode() {
 				winnerID = -1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
@@ -431,7 +435,7 @@ class VSDigRaceMode:AbstractMode() {
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 				if(!owner.replayMode) winCount[0]++
 			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
 				// 2P win
@@ -441,7 +445,7 @@ class VSDigRaceMode:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 				if(!owner.replayMode) winCount[1]++
 			}
 	}
@@ -454,7 +458,8 @@ class VSDigRaceMode:AbstractMode() {
 			playerID -> receiver.drawMenuFont(engine, playerID, 6, 1, "WIN!", EventReceiver.COLOR.YELLOW)
 			else -> receiver.drawMenuFont(engine, playerID, 6, 1, "LOSE", EventReceiver.COLOR.WHITE)
 		}
-		drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS, Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM,
+			Statistic.PPS, Statistic.TIME)
 	}
 
 	/* Called when saving replay */

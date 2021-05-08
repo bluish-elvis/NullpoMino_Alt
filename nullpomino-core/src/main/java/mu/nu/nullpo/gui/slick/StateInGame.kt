@@ -51,7 +51,7 @@ class StateInGame:BasicGameState() {
 	private var enableframestep = false
 
 	/** Show background flag */
-	private var showbg = true
+	var showbg = true; private set
 
 	/** 倍速Mode */
 	private var fastforward = 0
@@ -114,7 +114,7 @@ class StateInGame:BasicGameState() {
 			it.init()
 
 			// Initialization for each player
-			for(i in 0 until it.players)it.engine[i].let{e->
+			for(i in 0 until it.players) it.engine[i].let {e ->
 				// チューニング設定
 				e.owRotateButtonDefaultRight = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owRotateButtonDefaultRight", -1)
 				e.owSkin = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owSkin", -1)
@@ -237,7 +237,7 @@ class StateInGame:BasicGameState() {
 					pause&&!enableframestep -> "[PAUSE]"
 					it.replayMode -> if(it.replayRerecord) "[RERECORD]" else "[REPLAY]"
 					it.engine[0].isInGame&&!it.replayMode&&!it.replayRerecord -> "[PLAY]"
-					else -> "[MENU]"
+					else -> "[Menu]"
 				}+strTitle
 		}
 		appContainer?.setTitle(strTitle)

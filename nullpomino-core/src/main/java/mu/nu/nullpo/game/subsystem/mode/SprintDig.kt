@@ -106,14 +106,14 @@ class SprintDig:NetDummyMode() {
 	 * @param preset Preset number
 	 */
 	private fun loadPreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
-		engine.speed.gravity = prop.getProperty("digrace.gravity.$preset", 4)
+		engine.speed.gravity = prop.getProperty("digrace.gravity.$preset", 1)
 		engine.speed.denominator = prop.getProperty("digrace.denominator.$preset", 256)
-		engine.speed.are = prop.getProperty("digrace.are.$preset", 10)
-		engine.speed.areLine = prop.getProperty("digrace.areLine.$preset", 5)
-		engine.speed.lineDelay = prop.getProperty("digrace. lineDelay.$preset", 20)
+		engine.speed.are = prop.getProperty("digrace.are.$preset", 0)
+		engine.speed.areLine = prop.getProperty("digrace.areLine.$preset", 0)
+		engine.speed.lineDelay = prop.getProperty("digrace. lineDelay.$preset", 0)
 		engine.speed.lockDelay = prop.getProperty("digrace.lockDelay.$preset", 30)
-		engine.speed.das = prop.getProperty("digrace.das.$preset", 14)
-		bgmno = prop.getProperty("digrace.bgmno.$preset", 0)
+		engine.speed.das = prop.getProperty("digrace.das.$preset", 10)
+		bgmno = prop.getProperty("digrace.bgmno.$preset", BGM.values.indexOf(BGM.Rush(0)))
 		big = prop.getProperty("digrace.big.$preset", false)
 		goaltype = prop.getProperty("digrace.goaltype.$preset", 1)
 	}
@@ -161,13 +161,13 @@ class SprintDig:NetDummyMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					7 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					8 -> {
 						goaltype += change
 						if(goaltype<0) goaltype = 2
 						if(goaltype>2) goaltype = 0
 					}
-					9, 10 -> presetNumber = rangeCursor(presetNumber+change,0,99)
+					9, 10 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
 				}
 
 				// NET: Signal options change
@@ -227,8 +227,7 @@ class SprintDig:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
-			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, engine.speed.gravity, engine.speed.denominator,
-				engine.speed.are, engine.speed.areLine, engine.speed.lineDelay, engine.speed.lockDelay, engine.speed.das)
+			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
 			drawMenuCompact(engine, playerID, receiver, "GOAL", "${GOAL_TABLE[goaltype]}")
 			if(!engine.owner.replayMode) {
@@ -261,7 +260,7 @@ class SprintDig:NetDummyMode() {
 		if(version<=0) engine.big = big
 
 		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.SILENT
+			owner.bgmStatus.bgm = BGM.Silent
 		else
 			owner.bgmStatus.bgm = BGM.values[bgmno]
 	}
@@ -299,7 +298,7 @@ class SprintDig:NetDummyMode() {
 			if(receiver.isStickySkin(engine)&&y!=h-1)
 				for(x:Int in 0 until w)
 					if(x!=hole) {
-						val blk:Block? = engine.field!!.getBlock(x, y)
+						val blk = engine.field!!.getBlock(x, y)
 						if(blk!=null) {
 							if(!engine.field!!.getBlockEmpty(x-1, y)) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
 							if(!engine.field!!.getBlockEmpty(x+1, y))
@@ -402,7 +401,8 @@ class SprintDig:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.TIME, Statistic.LPM, Statistic.PPS)
+		drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.TIME,
+			Statistic.LPM, Statistic.PPS)
 		drawResultRank(engine, playerID, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 13, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 15, EventReceiver.COLOR.BLUE, netRankingRank[1])

@@ -529,9 +529,8 @@ class GrandMania:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime:String
-						strSectionTime =
-							String.format("%3d-%3d %s %d", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]), bestSectionQuads[i])
+						val strSectionTime:String = String.format("%3d-%3d %s %d", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]),
+							bestSectionQuads[i])
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -682,7 +681,7 @@ class GrandMania:AbstractMode() {
 				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 			}
 
-			owner.bgmStatus.bgm = BGM.ENDING(1)
+			owner.bgmStatus.bgm = BGM.Ending(1)
 		}
 
 		return false
@@ -1068,16 +1067,20 @@ class GrandMania:AbstractMode() {
 		var col = COLOR.WHITE
 
 		if(grade>=19) {
-			col = if(engine.statc[0]%4==0)
-				COLOR.YELLOW
-			else if(engine.statc[0]%2==0) col else COLOR.ORANGE
+			col = when {
+				engine.statc[0]%4==0 -> COLOR.YELLOW
+				engine.statc[0]%2==0 -> col
+				else -> COLOR.ORANGE
+			}
 			receiver.drawDirectFont(offsetX+12, offsetY+230, "YOU ARE A", COLOR.WHITE, 1f)
 			receiver.drawDirectFont(offsetX+22, offsetY+250, "GRAND", col, 1.5f)
 			receiver.drawDirectFont(offsetX+12, offsetY+274, "MASTER", col, 1.5f)
 			if(grade==19) {
-				col = if(engine.statc[0]%4==0) COLOR.RED
-				else if(engine.statc[0]%2==0) COLOR.YELLOW
-				else COLOR.ORANGE
+				col = when {
+					engine.statc[0]%4==0 -> COLOR.RED
+					engine.statc[0]%2==0 -> COLOR.YELLOW
+					else -> COLOR.ORANGE
+				}
 				receiver.drawDirectFont(offsetX+20, offsetY+266, "LET'S TRY", COLOR.BLUE, 1f)
 				receiver.drawDirectFont(offsetX+4, offsetY+282, "MORE LINES", col, 1f)
 				receiver.drawDirectFont(offsetX+12, offsetY+292, "IN STEALTH", COLOR.WHITE, 1f)
@@ -1085,16 +1088,20 @@ class GrandMania:AbstractMode() {
 		} else if(grade>=17) {
 			receiver.drawDirectFont(offsetX+44, offsetY+250, "BUT...", COLOR.WHITE, 1f)
 			if(mrollSectiontime&&!mrollFourline) {
-				col = if(engine.statc[0]%4==0) COLOR.RED
-				else if(engine.statc[0]%2==0) COLOR.YELLOW
-				else COLOR.ORANGE
+				col = when {
+					engine.statc[0]%4==0 -> COLOR.RED
+					engine.statc[0]%2==0 -> COLOR.YELLOW
+					else -> COLOR.ORANGE
+				}
 				receiver.drawDirectFont(offsetX+20, offsetY+266, "CHALLENGE", COLOR.BLUE, 1f)
 				receiver.drawDirectFont(offsetX+4, offsetY+282, "MORE QUADS", col, 1f)
 				receiver.drawDirectFont(offsetX+12, offsetY+292, "NEXT TIME", COLOR.WHITE, 1f)
 			} else {
-				col = if(engine.statc[0]%4==0)
-					COLOR.CYAN
-				else if(engine.statc[0]%2==0) col else COLOR.BLUE
+				col = when {
+					engine.statc[0]%4==0 -> COLOR.CYAN
+					engine.statc[0]%2==0 -> col
+					else -> COLOR.BLUE
+				}
 				receiver.drawDirectFont(offsetX+12, offsetY+266, "CHALLENGE", COLOR.BLUE, 1f)
 				receiver.drawDirectFont(offsetX-4, offsetY+282, "MORE FASTER", col, 1f)
 				receiver.drawDirectFont(offsetX+12, offsetY+292, "NEXT TIME", COLOR.WHITE, 1f)
@@ -1108,8 +1115,8 @@ class GrandMania:AbstractMode() {
 
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = if(engine.ending>0)
-			if(rollclear<=1) BGM.RESULT(2) else BGM.RESULT(3)
-		else BGM.RESULT(0)
+			if(rollclear<=1) BGM.Result(2) else BGM.Result(3)
+		else BGM.Result(0)
 		// ページ切り替え
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
@@ -1272,7 +1279,7 @@ class GrandMania:AbstractMode() {
 
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(500, 700, 900, -1)
-		private val tableBGM = arrayOf(BGM.GM_2(0), BGM.GM_2(1), BGM.GM_2(2), BGM.GM_2(3))
+		private val tableBGM = arrayOf(BGM.GrandA(0), BGM.GrandA(1), BGM.GrandA(2), BGM.GrandA(3))
 
 		/** Line clear時に入る段位 point */
 		private val tableGradePoint =

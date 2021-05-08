@@ -70,7 +70,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		ojamaCountdown = IntArray(MAX_PLAYERS)
 		dropSet = IntArray(MAX_PLAYERS)
 		dropMap = IntArray(MAX_PLAYERS)
-		dropPattern = Array(MAX_PLAYERS){emptyArray<IntArray>()}
+		dropPattern = Array(MAX_PLAYERS) {emptyArray()}
 		attackMultiplier = DoubleArray(MAX_PLAYERS)
 		defendMultiplier = DoubleArray(MAX_PLAYERS)
 		countdownDecremented = BooleanArray(MAX_PLAYERS)
@@ -290,9 +290,9 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					} else
 						mapNumber[playerID] = -1
 					27 -> bigDisplay = !bigDisplay
-					28 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					28 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					29 -> enableSE[playerID] = !enableSE[playerID]
-					30, 31 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change,0,99)
+					30, 31 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
 					32 -> {
 						dropSet[playerID] += change
 						if(dropSet[playerID]<0) dropSet[playerID] = DROP_PATTERNS.size-1
@@ -385,11 +385,17 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(engine.statc[4]==0) {
 			if(menuCursor<9) {
-				drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(), "CLEAR DELAY", engine.cascadeClearDelay.toString())
+				drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX",
+					engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(),
+					"LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS",
+					engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(), "CLEAR DELAY",
+					engine.cascadeClearDelay.toString())
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/5", COLOR.YELLOW)
 			} else if(menuCursor<17) {
-				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", "${maxAttack[playerID]}", "MIN CHAIN", "${rensaShibari[playerID]}", "CLEAR SIZE", engine.colorClearSize.toString(), "OJAMA RATE", "${ojamaRate[playerID]}", "HURRYUP",
+				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]],
+					"MAX ATTACK", "${maxAttack[playerID]}", "MIN CHAIN", "${rensaShibari[playerID]}", "CLEAR SIZE",
+					engine.colorClearSize.toString(), "OJAMA RATE", "${ojamaRate[playerID]}", "HURRYUP",
 					if(hurryupSeconds[playerID]==0)
 						"NONE"
 					else
@@ -407,9 +413,10 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					"${ojamaCountdown[playerID]}", "ZENKESHI", ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]])
 				menuColor = if(zenKeshiType[playerID]==ZENKESHI_MODE_FEVER)
 					COLOR.PURPLE else COLOR.WHITE
-				drawMenu(engine, playerID, receiver, "F-MAP SET", FEVER_MAPS[feverMapSet[playerID]].toUpperCase())
+				drawMenu(engine, playerID, receiver, "F-MAP SET", FEVER_MAPS[feverMapSet[playerID]].uppercase())
 				menuColor = COLOR.COBALT
-				drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]], "SHOW CHAIN", CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]],
+				drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]], "SHOW CHAIN",
+					CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]],
 					"FALL ANIM", if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
 				menuColor = COLOR.CYAN
 				drawMenu(engine, playerID, receiver, "CHAINPOWER", if(newChainPower[playerID]) "FEVER" else "CLASSIC")
@@ -417,7 +424,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/5", COLOR.YELLOW)
 			} else if(menuCursor<32) {
 				initMenu(COLOR.PINK, 24)
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "${mapSet[playerID]}",
+				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET",
+					"${mapSet[playerID]}",
 					"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}",
 					"BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
 				menuColor = COLOR.COBALT
@@ -445,7 +453,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					receiver.drawMenuFont(engine, playerID, 3, 3, "$multiplier%", COLOR.GREEN)
 
 				drawMenu(engine, playerID, receiver, 14, COLOR.CYAN, 32, "DROP SET", DROP_SET_NAMES[dropSet[playerID]],
-					"DROP MAP", "${String.format("%2d", dropMap[playerID]+1)}/${String.format("%2d", DROP_PATTERNS[dropSet[playerID]].size)}")
+					"DROP MAP",
+					"${String.format("%2d", dropMap[playerID]+1)}/${String.format("%2d", DROP_PATTERNS[dropSet[playerID]].size)}")
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 5/5", COLOR.YELLOW)
 			}
@@ -548,13 +557,14 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		//Turn cleared ojama into normal blocks
 		for(x in 0 until engine.field!!.width)
 			for(y in -1*engine.field!!.hiddenHeight until engine.field!!.height) {
-				engine.field!!.getBlock(x, y)?.also{b->
-				if(b.getAttribute(Block.ATTRIBUTE.GARBAGE)&&b.hard<4) {
-					b.hard = 0
-					b.cint = b.secondaryColor
-					b.countdown = 0
-					b.setAttribute(false, Block.ATTRIBUTE.GARBAGE)
-				}}
+				engine.field!!.getBlock(x, y)?.also {b ->
+					if(b.getAttribute(Block.ATTRIBUTE.GARBAGE)&&b.hard<4) {
+						b.hard = 0
+						b.cint = b.secondaryColor
+						b.countdown = 0
+						b.setAttribute(false, Block.ATTRIBUTE.GARBAGE)
+					}
+				}
 			}
 		return false
 	}
@@ -628,7 +638,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		saveOtherSetting(engine, owner.replayProp)
 		savePreset(engine, owner.replayProp, -1-playerID, "spf")
 
-		if(useMap[playerID])fldBackup[playerID]?.let{saveMap(it, owner.replayProp, playerID)}
+		if(useMap[playerID]) fldBackup[playerID]?.let {saveMap(it, owner.replayProp, playerID)}
 
 		owner.replayProp.setProperty("avalanchevs.version", version)
 	}
@@ -645,11 +655,147 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		private val DROP_SET_NAMES = arrayOf("CLASSIC", "REMIX", "SWORD", "S-MIRROR", "AVALANCHE", "A-MIRROR")
 
 		private val DROP_PATTERNS =
-			arrayOf(arrayOf(arrayOf(intArrayOf(2, 2, 2, 2), intArrayOf(5, 5, 5, 5), intArrayOf(7, 7, 7, 7), intArrayOf(4, 4, 4, 4)), arrayOf(intArrayOf(2, 2, 4, 4), intArrayOf(2, 2, 4, 4), intArrayOf(5, 5, 2, 2), intArrayOf(5, 5, 2, 2), intArrayOf(7, 7, 5, 5), intArrayOf(7, 7, 5, 5)), arrayOf(intArrayOf(5, 5, 5, 5), intArrayOf(2, 7, 2, 7), intArrayOf(2, 7, 2, 7), intArrayOf(2, 7, 2, 7), intArrayOf(2, 7, 2, 7), intArrayOf(4, 4, 4, 4)), arrayOf(intArrayOf(2, 5, 7, 4)), arrayOf(intArrayOf(7, 7, 4, 4), intArrayOf(4, 4, 7, 7), intArrayOf(2, 2, 5, 5), intArrayOf(2, 2, 5, 5), intArrayOf(4, 4, 7, 7), intArrayOf(7, 7, 4, 4)), arrayOf(intArrayOf(4, 7, 7, 5), intArrayOf(7, 7, 5, 5), intArrayOf(7, 5, 5, 2), intArrayOf(5, 5, 2, 2), intArrayOf(5, 2, 2, 4), intArrayOf(2, 2, 4, 4)), arrayOf(intArrayOf(2, 2, 5, 5), intArrayOf(4, 4, 5, 5), intArrayOf(2, 2, 5, 5), intArrayOf(4, 4, 7, 7), intArrayOf(2, 2, 7, 7), intArrayOf(4, 4, 7, 7)), arrayOf(intArrayOf(5, 5, 5, 5), intArrayOf(2, 2, 7, 7), intArrayOf(2, 2, 7, 7), intArrayOf(7, 7, 2, 2), intArrayOf(7, 7, 2, 2), intArrayOf(4, 4, 4, 4)), arrayOf(intArrayOf(5, 7, 4, 2), intArrayOf(2, 5, 7, 4), intArrayOf(4, 2, 5, 7), intArrayOf(7, 4, 2, 5)), arrayOf(intArrayOf(2, 5, 7, 4), intArrayOf(5, 7, 4, 2), intArrayOf(7, 4, 2, 5), intArrayOf(4, 2, 5, 7)), arrayOf(intArrayOf(2, 2, 2, 2))), arrayOf(arrayOf(intArrayOf(2, 2, 7, 2), intArrayOf(5, 5, 4, 5), intArrayOf(7, 7, 5, 7), intArrayOf(4, 4, 2, 4)), arrayOf(intArrayOf(2, 2, 4, 4), intArrayOf(2, 2, 4, 4), intArrayOf(5, 5, 2, 2), intArrayOf(5, 5, 2, 2), intArrayOf(7, 7, 5, 5), intArrayOf(7, 7, 5, 5)), arrayOf(intArrayOf(5, 5, 4, 4), intArrayOf(2, 7, 2, 7), intArrayOf(2, 7, 2, 7), intArrayOf(2, 7, 2, 7), intArrayOf(2, 7, 2, 7), intArrayOf(4, 4, 5, 5)), arrayOf(intArrayOf(2, 5, 7, 4)), arrayOf(intArrayOf(7, 7, 4, 4), intArrayOf(4, 4, 7, 7), intArrayOf(2, 5, 5, 5), intArrayOf(2, 2, 2, 5), intArrayOf(4, 4, 7, 7), intArrayOf(7, 7, 4, 4)), arrayOf(intArrayOf(7, 7, 7, 7), intArrayOf(5, 7, 4, 2), intArrayOf(7, 4, 2, 5), intArrayOf(4, 2, 5, 7), intArrayOf(2, 5, 7, 4), intArrayOf(5, 5, 5, 5)), arrayOf(intArrayOf(2, 2, 5, 5), intArrayOf(4, 4, 5, 5), intArrayOf(2, 2, 5, 5), intArrayOf(4, 4, 7, 7), intArrayOf(2, 2, 7, 7), intArrayOf(4, 4, 7, 7)), arrayOf(intArrayOf(5, 4, 5, 4), intArrayOf(2, 2, 2, 7), intArrayOf(2, 7, 7, 7), intArrayOf(7, 2, 2, 2), intArrayOf(7, 7, 7, 2), intArrayOf(4, 5, 4, 5)), arrayOf(intArrayOf(5, 7, 4, 2), intArrayOf(2, 5, 7, 4), intArrayOf(4, 2, 5, 7), intArrayOf(7, 4, 2, 5)), arrayOf(intArrayOf(2, 5, 7, 4), intArrayOf(5, 7, 4, 2), intArrayOf(7, 4, 2, 5), intArrayOf(4, 2, 5, 7)), arrayOf(intArrayOf(2, 2, 2, 2))), arrayOf(arrayOf(intArrayOf(2, 5, 5, 5), intArrayOf(5, 2, 2, 5), intArrayOf(5, 5, 2, 2), intArrayOf(4, 4, 7, 7), intArrayOf(4, 7, 7, 4), intArrayOf(7, 4, 4, 4)), arrayOf(intArrayOf(2, 2, 2, 5, 5, 5), intArrayOf(5, 3, 7, 5, 4, 5), intArrayOf(5, 5, 7, 7, 4, 4), intArrayOf(4, 4, 2, 4, 4, 7), intArrayOf(4, 2, 4, 4, 7, 4), intArrayOf(2, 4, 4, 7, 4, 4)), arrayOf(intArrayOf(4, 4, 5, 5, 7, 2), intArrayOf(4, 4, 5, 5, 7, 2), intArrayOf(5, 5, 7, 7, 7, 5), intArrayOf(5, 7, 7, 7, 4, 5), intArrayOf(7, 7, 2, 2, 5, 4), intArrayOf(7, 2, 2, 2, 5, 4)), arrayOf(intArrayOf(2, 2, 5, 4, 2, 7), intArrayOf(2, 7, 4, 5, 7, 2), intArrayOf(2, 7, 4, 4, 7, 7), intArrayOf(2, 7, 5, 5, 2, 2), intArrayOf(2, 7, 5, 4, 2, 7), intArrayOf(7, 7, 4, 5, 7, 2)), arrayOf(intArrayOf(2, 7, 7, 7, 7), intArrayOf(2, 7, 5, 7, 7), intArrayOf(2, 2, 5, 5, 5), intArrayOf(2, 2, 2, 5, 5), intArrayOf(2, 4, 2, 4, 4), intArrayOf(4, 4, 4, 4, 4)), arrayOf(intArrayOf(2, 2, 5, 5), intArrayOf(2, 7, 7, 5), intArrayOf(5, 7, 4, 4), intArrayOf(5, 5, 2, 4), intArrayOf(4, 2, 2, 7), intArrayOf(4, 4, 7, 7)), arrayOf(intArrayOf(2, 2, 5, 5), intArrayOf(2, 2, 5, 5), intArrayOf(5, 5, 7, 7), intArrayOf(5, 5, 7, 7), intArrayOf(7, 7, 4, 4), intArrayOf(7, 7, 4, 4)), arrayOf(intArrayOf(2, 2, 5, 4, 2, 7), intArrayOf(2, 2, 4, 5, 7, 2), intArrayOf(7, 7, 4, 5, 7, 2), intArrayOf(7, 7, 5, 4, 2, 7), intArrayOf(2, 2, 5, 4, 2, 7), intArrayOf(2, 2, 4, 5, 7, 2)), arrayOf(intArrayOf(7, 7, 4, 4, 7, 7), intArrayOf(7, 7, 7, 7, 5, 7), intArrayOf(2, 5, 2, 2, 5, 2), intArrayOf(2, 5, 2, 2, 5, 2), intArrayOf(4, 4, 4, 4, 5, 4), intArrayOf(4, 4, 7, 7, 4, 4)), arrayOf(intArrayOf(2, 5, 5, 5, 5, 4), intArrayOf(5, 2, 5, 5, 4, 4), intArrayOf(2, 2, 2, 2, 2, 2), intArrayOf(7, 7, 7, 7, 7, 7), intArrayOf(4, 7, 4, 4, 5, 5), intArrayOf(7, 4, 4, 4, 4, 5)), arrayOf(intArrayOf(2, 2, 5, 2, 2, 4), intArrayOf(2, 5, 5, 2, 5, 5), intArrayOf(5, 5, 5, 7, 7, 2), intArrayOf(7, 7, 7, 5, 5, 4), intArrayOf(4, 7, 7, 4, 7, 7), intArrayOf(4, 4, 7, 4, 4, 2)), arrayOf(intArrayOf(7, 7, 5, 5, 5, 5), intArrayOf(7, 2, 2, 5, 5, 7), intArrayOf(7, 2, 2, 4, 4, 7), intArrayOf(2, 7, 7, 4, 4, 2), intArrayOf(2, 7, 7, 5, 5, 2), intArrayOf(7, 7, 5, 5, 5, 5)), arrayOf(intArrayOf(7, 7, 5, 5), intArrayOf(7, 2, 5, 2), intArrayOf(5, 5, 5, 2), intArrayOf(4, 4, 4, 2), intArrayOf(7, 2, 4, 2), intArrayOf(7, 7, 4, 4)), arrayOf(intArrayOf(2, 2, 5, 5), intArrayOf(2, 7, 5, 5), intArrayOf(5, 5, 7, 7), intArrayOf(5, 5, 7, 7), intArrayOf(4, 7, 4, 4), intArrayOf(7, 7, 4, 4)), arrayOf(intArrayOf(7, 7, 5, 5, 5), intArrayOf(4, 7, 7, 7, 5), intArrayOf(5, 4, 4, 4, 4), intArrayOf(5, 2, 2, 2, 2), intArrayOf(2, 7, 7, 7, 5), intArrayOf(7, 7, 5, 5, 5)), arrayOf(intArrayOf(2, 2, 4), intArrayOf(2, 2, 2), intArrayOf(7, 7, 7), intArrayOf(7, 7, 7), intArrayOf(5, 5, 5), intArrayOf(5, 5, 4)), arrayOf(intArrayOf(7, 7, 7, 7), intArrayOf(7, 2, 2, 7), intArrayOf(2, 7, 5, 4), intArrayOf(4, 5, 7, 2), intArrayOf(5, 4, 4, 5), intArrayOf(5, 5, 5, 5))), arrayOf(arrayOf(intArrayOf(7, 4, 4, 4), intArrayOf(4, 7, 7, 4), intArrayOf(4, 4, 7, 7), intArrayOf(5, 5, 2, 2), intArrayOf(5, 2, 2, 5), intArrayOf(2, 5, 5, 5)), arrayOf(intArrayOf(2, 4, 4, 7, 4, 4), intArrayOf(4, 2, 4, 4, 7, 4), intArrayOf(4, 4, 2, 4, 4, 7), intArrayOf(5, 5, 7, 7, 4, 4), intArrayOf(5, 3, 7, 5, 4, 5), intArrayOf(2, 2, 2, 5, 5, 5)), arrayOf(intArrayOf(7, 2, 2, 2, 5, 4), intArrayOf(7, 7, 2, 2, 5, 4), intArrayOf(5, 7, 7, 7, 4, 5), intArrayOf(5, 5, 7, 7, 7, 5), intArrayOf(4, 4, 5, 5, 7, 2), intArrayOf(4, 4, 5, 5, 7, 2)), arrayOf(intArrayOf(7, 7, 4, 5, 7, 2), intArrayOf(2, 7, 5, 4, 2, 7), intArrayOf(2, 7, 5, 5, 2, 2), intArrayOf(2, 7, 4, 4, 7, 7), intArrayOf(2, 7, 4, 5, 7, 2), intArrayOf(2, 2, 5, 4, 2, 7)), arrayOf(intArrayOf(4, 4, 4, 4, 4), intArrayOf(2, 4, 2, 4, 4), intArrayOf(2, 2, 2, 5, 5), intArrayOf(2, 2, 5, 5, 5), intArrayOf(2, 7, 5, 7, 7), intArrayOf(2, 7, 7, 7, 7)), arrayOf(intArrayOf(4, 4, 7, 7), intArrayOf(4, 2, 2, 7), intArrayOf(5, 5, 2, 4), intArrayOf(5, 7, 4, 4), intArrayOf(2, 7, 7, 5), intArrayOf(2, 2, 5, 5)), arrayOf(intArrayOf(7, 7, 4, 4), intArrayOf(7, 7, 4, 4), intArrayOf(5, 5, 7, 7), intArrayOf(5, 5, 7, 7), intArrayOf(2, 2, 5, 5), intArrayOf(2, 2, 5, 5)), arrayOf(intArrayOf(2, 2, 4, 5, 7, 2), intArrayOf(2, 2, 5, 4, 2, 7), intArrayOf(7, 7, 5, 4, 2, 7), intArrayOf(7, 7, 4, 5, 7, 2), intArrayOf(2, 2, 4, 5, 7, 2), intArrayOf(2, 2, 5, 4, 2, 7)), arrayOf(intArrayOf(4, 4, 7, 7, 4, 4), intArrayOf(4, 4, 4, 4, 5, 4), intArrayOf(2, 5, 2, 2, 5, 2), intArrayOf(2, 5, 2, 2, 5, 2), intArrayOf(7, 7, 7, 7, 5, 7), intArrayOf(7, 7, 4, 4, 7, 7)), arrayOf(intArrayOf(7, 4, 4, 4, 4, 5), intArrayOf(4, 7, 4, 4, 5, 5), intArrayOf(7, 7, 7, 7, 7, 7), intArrayOf(2, 2, 2, 2, 2, 2), intArrayOf(5, 2, 5, 5, 4, 4), intArrayOf(2, 5, 5, 5, 5, 4)), arrayOf(intArrayOf(4, 4, 7, 4, 4, 2), intArrayOf(4, 7, 7, 4, 7, 7), intArrayOf(7, 7, 7, 5, 5, 4), intArrayOf(5, 5, 5, 7, 7, 2), intArrayOf(2, 5, 5, 2, 5, 5), intArrayOf(2, 2, 5, 2, 2, 4)), arrayOf(intArrayOf(7, 7, 5, 5, 5, 5), intArrayOf(2, 7, 7, 5, 5, 2), intArrayOf(2, 7, 7, 4, 4, 2), intArrayOf(7, 2, 2, 4, 4, 7), intArrayOf(7, 2, 2, 5, 5, 7), intArrayOf(7, 7, 5, 5, 5, 5)), arrayOf(intArrayOf(7, 7, 4, 4), intArrayOf(7, 2, 4, 2), intArrayOf(4, 4, 4, 2), intArrayOf(5, 5, 5, 2), intArrayOf(7, 2, 5, 2), intArrayOf(7, 7, 5, 5)), arrayOf(intArrayOf(7, 7, 4, 4), intArrayOf(4, 7, 4, 4), intArrayOf(5, 5, 7, 7), intArrayOf(5, 5, 7, 7), intArrayOf(2, 7, 5, 5), intArrayOf(2, 2, 5, 5)), arrayOf(intArrayOf(7, 7, 5, 5, 5), intArrayOf(2, 7, 7, 7, 5), intArrayOf(5, 2, 2, 2, 2), intArrayOf(5, 4, 4, 4, 4), intArrayOf(4, 7, 7, 7, 5), intArrayOf(7, 7, 5, 5, 5)), arrayOf(intArrayOf(5, 5, 4), intArrayOf(5, 5, 5), intArrayOf(7, 7, 7), intArrayOf(7, 7, 7), intArrayOf(2, 2, 2), intArrayOf(2, 2, 4)), arrayOf(intArrayOf(5, 5, 5, 5), intArrayOf(5, 4, 4, 5), intArrayOf(4, 5, 7, 2), intArrayOf(2, 7, 5, 4), intArrayOf(7, 2, 2, 7), intArrayOf(7, 7, 7, 7))), arrayOf(arrayOf(intArrayOf(5, 4, 4, 5, 5), intArrayOf(2, 5, 5, 2, 2), intArrayOf(4, 2, 2, 4, 4), intArrayOf(7, 4, 4, 7, 7), intArrayOf(5, 7, 7, 5, 5), intArrayOf(2, 5, 5, 2, 2)), arrayOf(intArrayOf(2, 7, 7, 7, 2), intArrayOf(5, 2, 2, 2, 5), intArrayOf(5, 4, 4, 4, 5), intArrayOf(4, 5, 5, 5, 4), intArrayOf(4, 7, 7, 7, 4), intArrayOf(7, 2, 2, 2, 7)), arrayOf(intArrayOf(2, 2, 5, 5, 5), intArrayOf(5, 7, 7, 2, 2), intArrayOf(7, 7, 2, 2, 5), intArrayOf(5, 4, 4, 7, 7), intArrayOf(4, 4, 7, 7, 5), intArrayOf(5, 5, 5, 4, 4)), arrayOf(intArrayOf(7, 2, 2, 5, 5), intArrayOf(4, 4, 5, 5, 2), intArrayOf(4, 7, 7, 2, 2), intArrayOf(7, 7, 4, 4, 5), intArrayOf(5, 4, 4, 7, 7), intArrayOf(2, 2, 7, 7, 4)), arrayOf(intArrayOf(7, 2, 7, 2, 2), intArrayOf(7, 4, 7, 7, 2), intArrayOf(5, 4, 4, 7, 4), intArrayOf(5, 5, 4, 5, 4), intArrayOf(2, 5, 2, 5, 5), intArrayOf(2, 7, 2, 2, 4)), arrayOf(intArrayOf(5, 5, 4, 2, 2), intArrayOf(5, 4, 4, 2, 7), intArrayOf(4, 2, 2, 7, 7), intArrayOf(4, 2, 7, 5, 5), intArrayOf(2, 7, 7, 5, 4), intArrayOf(7, 5, 5, 4, 4)), arrayOf(intArrayOf(7, 7, 4, 7, 7), intArrayOf(5, 5, 7, 5, 5), intArrayOf(2, 2, 5, 2, 2), intArrayOf(4, 4, 2, 4, 4)), arrayOf(intArrayOf(4, 4, 2, 2, 5), intArrayOf(2, 2, 5, 5, 7), intArrayOf(5, 5, 7, 7, 4), intArrayOf(7, 7, 4, 4, 2)), arrayOf(intArrayOf(5, 5, 5, 2, 4), intArrayOf(7, 7, 7, 5, 2), intArrayOf(4, 4, 4, 7, 5), intArrayOf(2, 2, 2, 4, 7)), arrayOf(intArrayOf(4, 4, 4, 5, 7), intArrayOf(2, 2, 2, 7, 4), intArrayOf(5, 5, 5, 4, 2), intArrayOf(7, 7, 7, 2, 5)), arrayOf(intArrayOf(4, 2, 5, 5, 5), intArrayOf(7, 4, 2, 2, 2), intArrayOf(5, 7, 4, 4, 4), intArrayOf(2, 5, 7, 7, 7))), arrayOf(arrayOf(intArrayOf(2, 5, 5, 2, 2), intArrayOf(5, 7, 7, 5, 5), intArrayOf(7, 4, 4, 7, 7), intArrayOf(4, 2, 2, 4, 4), intArrayOf(2, 5, 5, 2, 2), intArrayOf(5, 4, 4, 5, 5)), arrayOf(intArrayOf(7, 2, 2, 2, 7), intArrayOf(4, 7, 7, 7, 4), intArrayOf(4, 5, 5, 5, 4), intArrayOf(5, 4, 4, 4, 5), intArrayOf(5, 2, 2, 2, 5), intArrayOf(2, 7, 7, 7, 2)), arrayOf(intArrayOf(5, 5, 5, 4, 4), intArrayOf(4, 4, 7, 7, 5), intArrayOf(5, 4, 4, 7, 7), intArrayOf(7, 7, 2, 2, 5), intArrayOf(5, 7, 7, 2, 2), intArrayOf(2, 2, 5, 5, 5)), arrayOf(intArrayOf(2, 2, 7, 7, 4), intArrayOf(5, 4, 4, 7, 7), intArrayOf(7, 7, 4, 4, 5), intArrayOf(4, 7, 7, 2, 2), intArrayOf(4, 4, 5, 5, 2), intArrayOf(7, 2, 2, 5, 5)), arrayOf(intArrayOf(2, 7, 2, 2, 4), intArrayOf(2, 5, 2, 5, 5), intArrayOf(5, 5, 4, 5, 4), intArrayOf(5, 4, 4, 7, 4), intArrayOf(7, 4, 7, 7, 2), intArrayOf(7, 2, 7, 2, 2)), arrayOf(intArrayOf(7, 5, 5, 4, 4), intArrayOf(2, 7, 7, 5, 4), intArrayOf(4, 2, 7, 5, 5), intArrayOf(4, 2, 2, 7, 7), intArrayOf(5, 4, 4, 2, 7), intArrayOf(5, 5, 4, 2, 2)), arrayOf(intArrayOf(5, 5, 7, 5, 5), intArrayOf(7, 7, 4, 7, 7), intArrayOf(4, 4, 2, 4, 4), intArrayOf(2, 2, 5, 2, 2)), arrayOf(intArrayOf(2, 2, 5, 5, 7), intArrayOf(4, 4, 2, 2, 5), intArrayOf(7, 7, 4, 4, 2), intArrayOf(5, 5, 7, 7, 4)), arrayOf(intArrayOf(7, 7, 7, 5, 2), intArrayOf(5, 5, 5, 2, 4), intArrayOf(2, 2, 2, 4, 7), intArrayOf(4, 4, 4, 7, 5)), arrayOf(intArrayOf(2, 2, 2, 7, 4), intArrayOf(4, 4, 4, 5, 7), intArrayOf(7, 7, 7, 2, 5), intArrayOf(5, 5, 5, 4, 2)), arrayOf(intArrayOf(7, 4, 2, 2, 2), intArrayOf(4, 2, 5, 5, 5), intArrayOf(2, 5, 7, 7, 7), intArrayOf(5, 7, 4, 4, 4))))
+			arrayOf(arrayOf(arrayOf(intArrayOf(2, 2, 2, 2), intArrayOf(5, 5, 5, 5), intArrayOf(7, 7, 7, 7), intArrayOf(4, 4, 4, 4)),
+				arrayOf(intArrayOf(2, 2, 4, 4), intArrayOf(2, 2, 4, 4), intArrayOf(5, 5, 2, 2), intArrayOf(5, 5, 2, 2),
+					intArrayOf(7, 7, 5, 5), intArrayOf(7, 7, 5, 5)),
+				arrayOf(intArrayOf(5, 5, 5, 5), intArrayOf(2, 7, 2, 7), intArrayOf(2, 7, 2, 7), intArrayOf(2, 7, 2, 7),
+					intArrayOf(2, 7, 2, 7), intArrayOf(4, 4, 4, 4)), arrayOf(intArrayOf(2, 5, 7, 4)),
+				arrayOf(intArrayOf(7, 7, 4, 4), intArrayOf(4, 4, 7, 7), intArrayOf(2, 2, 5, 5), intArrayOf(2, 2, 5, 5),
+					intArrayOf(4, 4, 7, 7), intArrayOf(7, 7, 4, 4)),
+				arrayOf(intArrayOf(4, 7, 7, 5), intArrayOf(7, 7, 5, 5), intArrayOf(7, 5, 5, 2), intArrayOf(5, 5, 2, 2),
+					intArrayOf(5, 2, 2, 4), intArrayOf(2, 2, 4, 4)),
+				arrayOf(intArrayOf(2, 2, 5, 5), intArrayOf(4, 4, 5, 5), intArrayOf(2, 2, 5, 5), intArrayOf(4, 4, 7, 7),
+					intArrayOf(2, 2, 7, 7), intArrayOf(4, 4, 7, 7)),
+				arrayOf(intArrayOf(5, 5, 5, 5), intArrayOf(2, 2, 7, 7), intArrayOf(2, 2, 7, 7), intArrayOf(7, 7, 2, 2),
+					intArrayOf(7, 7, 2, 2), intArrayOf(4, 4, 4, 4)),
+				arrayOf(intArrayOf(5, 7, 4, 2), intArrayOf(2, 5, 7, 4), intArrayOf(4, 2, 5, 7), intArrayOf(7, 4, 2, 5)),
+				arrayOf(intArrayOf(2, 5, 7, 4), intArrayOf(5, 7, 4, 2), intArrayOf(7, 4, 2, 5), intArrayOf(4, 2, 5, 7)),
+				arrayOf(intArrayOf(2, 2, 2, 2))),
+				arrayOf(arrayOf(intArrayOf(2, 2, 7, 2), intArrayOf(5, 5, 4, 5), intArrayOf(7, 7, 5, 7), intArrayOf(4, 4, 2, 4)),
+					arrayOf(intArrayOf(2, 2, 4, 4), intArrayOf(2, 2, 4, 4), intArrayOf(5, 5, 2, 2), intArrayOf(5, 5, 2, 2),
+						intArrayOf(7, 7, 5, 5), intArrayOf(7, 7, 5, 5)),
+					arrayOf(intArrayOf(5, 5, 4, 4), intArrayOf(2, 7, 2, 7), intArrayOf(2, 7, 2, 7), intArrayOf(2, 7, 2, 7),
+						intArrayOf(2, 7, 2, 7), intArrayOf(4, 4, 5, 5)), arrayOf(intArrayOf(2, 5, 7, 4)),
+					arrayOf(intArrayOf(7, 7, 4, 4), intArrayOf(4, 4, 7, 7), intArrayOf(2, 5, 5, 5), intArrayOf(2, 2, 2, 5),
+						intArrayOf(4, 4, 7, 7), intArrayOf(7, 7, 4, 4)),
+					arrayOf(intArrayOf(7, 7, 7, 7), intArrayOf(5, 7, 4, 2), intArrayOf(7, 4, 2, 5), intArrayOf(4, 2, 5, 7),
+						intArrayOf(2, 5, 7, 4), intArrayOf(5, 5, 5, 5)),
+					arrayOf(intArrayOf(2, 2, 5, 5), intArrayOf(4, 4, 5, 5), intArrayOf(2, 2, 5, 5), intArrayOf(4, 4, 7, 7),
+						intArrayOf(2, 2, 7, 7), intArrayOf(4, 4, 7, 7)),
+					arrayOf(intArrayOf(5, 4, 5, 4), intArrayOf(2, 2, 2, 7), intArrayOf(2, 7, 7, 7), intArrayOf(7, 2, 2, 2),
+						intArrayOf(7, 7, 7, 2), intArrayOf(4, 5, 4, 5)),
+					arrayOf(intArrayOf(5, 7, 4, 2), intArrayOf(2, 5, 7, 4), intArrayOf(4, 2, 5, 7), intArrayOf(7, 4, 2, 5)),
+					arrayOf(intArrayOf(2, 5, 7, 4), intArrayOf(5, 7, 4, 2), intArrayOf(7, 4, 2, 5), intArrayOf(4, 2, 5, 7)),
+					arrayOf(intArrayOf(2, 2, 2, 2))), arrayOf(
+				arrayOf(intArrayOf(2, 5, 5, 5), intArrayOf(5, 2, 2, 5), intArrayOf(5, 5, 2, 2), intArrayOf(4, 4, 7, 7),
+					intArrayOf(4, 7, 7, 4), intArrayOf(7, 4, 4, 4)),
+				arrayOf(intArrayOf(2, 2, 2, 5, 5, 5), intArrayOf(5, 3, 7, 5, 4, 5), intArrayOf(5, 5, 7, 7, 4, 4),
+					intArrayOf(4, 4, 2, 4, 4, 7), intArrayOf(4, 2, 4, 4, 7, 4), intArrayOf(2, 4, 4, 7, 4, 4)),
+				arrayOf(intArrayOf(4, 4, 5, 5, 7, 2), intArrayOf(4, 4, 5, 5, 7, 2), intArrayOf(5, 5, 7, 7, 7, 5),
+					intArrayOf(5, 7, 7, 7, 4, 5), intArrayOf(7, 7, 2, 2, 5, 4), intArrayOf(7, 2, 2, 2, 5, 4)),
+				arrayOf(intArrayOf(2, 2, 5, 4, 2, 7), intArrayOf(2, 7, 4, 5, 7, 2), intArrayOf(2, 7, 4, 4, 7, 7),
+					intArrayOf(2, 7, 5, 5, 2, 2), intArrayOf(2, 7, 5, 4, 2, 7), intArrayOf(7, 7, 4, 5, 7, 2)),
+				arrayOf(intArrayOf(2, 7, 7, 7, 7), intArrayOf(2, 7, 5, 7, 7), intArrayOf(2, 2, 5, 5, 5), intArrayOf(2, 2, 2, 5, 5),
+					intArrayOf(2, 4, 2, 4, 4), intArrayOf(4, 4, 4, 4, 4)),
+				arrayOf(intArrayOf(2, 2, 5, 5), intArrayOf(2, 7, 7, 5), intArrayOf(5, 7, 4, 4), intArrayOf(5, 5, 2, 4),
+					intArrayOf(4, 2, 2, 7), intArrayOf(4, 4, 7, 7)),
+				arrayOf(intArrayOf(2, 2, 5, 5), intArrayOf(2, 2, 5, 5), intArrayOf(5, 5, 7, 7), intArrayOf(5, 5, 7, 7),
+					intArrayOf(7, 7, 4, 4), intArrayOf(7, 7, 4, 4)),
+				arrayOf(intArrayOf(2, 2, 5, 4, 2, 7), intArrayOf(2, 2, 4, 5, 7, 2), intArrayOf(7, 7, 4, 5, 7, 2),
+					intArrayOf(7, 7, 5, 4, 2, 7), intArrayOf(2, 2, 5, 4, 2, 7), intArrayOf(2, 2, 4, 5, 7, 2)),
+				arrayOf(intArrayOf(7, 7, 4, 4, 7, 7), intArrayOf(7, 7, 7, 7, 5, 7), intArrayOf(2, 5, 2, 2, 5, 2),
+					intArrayOf(2, 5, 2, 2, 5, 2), intArrayOf(4, 4, 4, 4, 5, 4), intArrayOf(4, 4, 7, 7, 4, 4)),
+				arrayOf(intArrayOf(2, 5, 5, 5, 5, 4), intArrayOf(5, 2, 5, 5, 4, 4), intArrayOf(2, 2, 2, 2, 2, 2),
+					intArrayOf(7, 7, 7, 7, 7, 7), intArrayOf(4, 7, 4, 4, 5, 5), intArrayOf(7, 4, 4, 4, 4, 5)),
+				arrayOf(intArrayOf(2, 2, 5, 2, 2, 4), intArrayOf(2, 5, 5, 2, 5, 5), intArrayOf(5, 5, 5, 7, 7, 2),
+					intArrayOf(7, 7, 7, 5, 5, 4), intArrayOf(4, 7, 7, 4, 7, 7), intArrayOf(4, 4, 7, 4, 4, 2)),
+				arrayOf(intArrayOf(7, 7, 5, 5, 5, 5), intArrayOf(7, 2, 2, 5, 5, 7), intArrayOf(7, 2, 2, 4, 4, 7),
+					intArrayOf(2, 7, 7, 4, 4, 2), intArrayOf(2, 7, 7, 5, 5, 2), intArrayOf(7, 7, 5, 5, 5, 5)),
+				arrayOf(intArrayOf(7, 7, 5, 5), intArrayOf(7, 2, 5, 2), intArrayOf(5, 5, 5, 2), intArrayOf(4, 4, 4, 2),
+					intArrayOf(7, 2, 4, 2), intArrayOf(7, 7, 4, 4)),
+				arrayOf(intArrayOf(2, 2, 5, 5), intArrayOf(2, 7, 5, 5), intArrayOf(5, 5, 7, 7), intArrayOf(5, 5, 7, 7),
+					intArrayOf(4, 7, 4, 4), intArrayOf(7, 7, 4, 4)),
+				arrayOf(intArrayOf(7, 7, 5, 5, 5), intArrayOf(4, 7, 7, 7, 5), intArrayOf(5, 4, 4, 4, 4), intArrayOf(5, 2, 2, 2, 2),
+					intArrayOf(2, 7, 7, 7, 5), intArrayOf(7, 7, 5, 5, 5)),
+				arrayOf(intArrayOf(2, 2, 4), intArrayOf(2, 2, 2), intArrayOf(7, 7, 7), intArrayOf(7, 7, 7), intArrayOf(5, 5, 5),
+					intArrayOf(5, 5, 4)),
+				arrayOf(intArrayOf(7, 7, 7, 7), intArrayOf(7, 2, 2, 7), intArrayOf(2, 7, 5, 4), intArrayOf(4, 5, 7, 2),
+					intArrayOf(5, 4, 4, 5), intArrayOf(5, 5, 5, 5))), arrayOf(
+				arrayOf(intArrayOf(7, 4, 4, 4), intArrayOf(4, 7, 7, 4), intArrayOf(4, 4, 7, 7), intArrayOf(5, 5, 2, 2),
+					intArrayOf(5, 2, 2, 5), intArrayOf(2, 5, 5, 5)),
+				arrayOf(intArrayOf(2, 4, 4, 7, 4, 4), intArrayOf(4, 2, 4, 4, 7, 4), intArrayOf(4, 4, 2, 4, 4, 7),
+					intArrayOf(5, 5, 7, 7, 4, 4), intArrayOf(5, 3, 7, 5, 4, 5), intArrayOf(2, 2, 2, 5, 5, 5)),
+				arrayOf(intArrayOf(7, 2, 2, 2, 5, 4), intArrayOf(7, 7, 2, 2, 5, 4), intArrayOf(5, 7, 7, 7, 4, 5),
+					intArrayOf(5, 5, 7, 7, 7, 5), intArrayOf(4, 4, 5, 5, 7, 2), intArrayOf(4, 4, 5, 5, 7, 2)),
+				arrayOf(intArrayOf(7, 7, 4, 5, 7, 2), intArrayOf(2, 7, 5, 4, 2, 7), intArrayOf(2, 7, 5, 5, 2, 2),
+					intArrayOf(2, 7, 4, 4, 7, 7), intArrayOf(2, 7, 4, 5, 7, 2), intArrayOf(2, 2, 5, 4, 2, 7)),
+				arrayOf(intArrayOf(4, 4, 4, 4, 4), intArrayOf(2, 4, 2, 4, 4), intArrayOf(2, 2, 2, 5, 5), intArrayOf(2, 2, 5, 5, 5),
+					intArrayOf(2, 7, 5, 7, 7), intArrayOf(2, 7, 7, 7, 7)),
+				arrayOf(intArrayOf(4, 4, 7, 7), intArrayOf(4, 2, 2, 7), intArrayOf(5, 5, 2, 4), intArrayOf(5, 7, 4, 4),
+					intArrayOf(2, 7, 7, 5), intArrayOf(2, 2, 5, 5)),
+				arrayOf(intArrayOf(7, 7, 4, 4), intArrayOf(7, 7, 4, 4), intArrayOf(5, 5, 7, 7), intArrayOf(5, 5, 7, 7),
+					intArrayOf(2, 2, 5, 5), intArrayOf(2, 2, 5, 5)),
+				arrayOf(intArrayOf(2, 2, 4, 5, 7, 2), intArrayOf(2, 2, 5, 4, 2, 7), intArrayOf(7, 7, 5, 4, 2, 7),
+					intArrayOf(7, 7, 4, 5, 7, 2), intArrayOf(2, 2, 4, 5, 7, 2), intArrayOf(2, 2, 5, 4, 2, 7)),
+				arrayOf(intArrayOf(4, 4, 7, 7, 4, 4), intArrayOf(4, 4, 4, 4, 5, 4), intArrayOf(2, 5, 2, 2, 5, 2),
+					intArrayOf(2, 5, 2, 2, 5, 2), intArrayOf(7, 7, 7, 7, 5, 7), intArrayOf(7, 7, 4, 4, 7, 7)),
+				arrayOf(intArrayOf(7, 4, 4, 4, 4, 5), intArrayOf(4, 7, 4, 4, 5, 5), intArrayOf(7, 7, 7, 7, 7, 7),
+					intArrayOf(2, 2, 2, 2, 2, 2), intArrayOf(5, 2, 5, 5, 4, 4), intArrayOf(2, 5, 5, 5, 5, 4)),
+				arrayOf(intArrayOf(4, 4, 7, 4, 4, 2), intArrayOf(4, 7, 7, 4, 7, 7), intArrayOf(7, 7, 7, 5, 5, 4),
+					intArrayOf(5, 5, 5, 7, 7, 2), intArrayOf(2, 5, 5, 2, 5, 5), intArrayOf(2, 2, 5, 2, 2, 4)),
+				arrayOf(intArrayOf(7, 7, 5, 5, 5, 5), intArrayOf(2, 7, 7, 5, 5, 2), intArrayOf(2, 7, 7, 4, 4, 2),
+					intArrayOf(7, 2, 2, 4, 4, 7), intArrayOf(7, 2, 2, 5, 5, 7), intArrayOf(7, 7, 5, 5, 5, 5)),
+				arrayOf(intArrayOf(7, 7, 4, 4), intArrayOf(7, 2, 4, 2), intArrayOf(4, 4, 4, 2), intArrayOf(5, 5, 5, 2),
+					intArrayOf(7, 2, 5, 2), intArrayOf(7, 7, 5, 5)),
+				arrayOf(intArrayOf(7, 7, 4, 4), intArrayOf(4, 7, 4, 4), intArrayOf(5, 5, 7, 7), intArrayOf(5, 5, 7, 7),
+					intArrayOf(2, 7, 5, 5), intArrayOf(2, 2, 5, 5)),
+				arrayOf(intArrayOf(7, 7, 5, 5, 5), intArrayOf(2, 7, 7, 7, 5), intArrayOf(5, 2, 2, 2, 2), intArrayOf(5, 4, 4, 4, 4),
+					intArrayOf(4, 7, 7, 7, 5), intArrayOf(7, 7, 5, 5, 5)),
+				arrayOf(intArrayOf(5, 5, 4), intArrayOf(5, 5, 5), intArrayOf(7, 7, 7), intArrayOf(7, 7, 7), intArrayOf(2, 2, 2),
+					intArrayOf(2, 2, 4)),
+				arrayOf(intArrayOf(5, 5, 5, 5), intArrayOf(5, 4, 4, 5), intArrayOf(4, 5, 7, 2), intArrayOf(2, 7, 5, 4),
+					intArrayOf(7, 2, 2, 7), intArrayOf(7, 7, 7, 7))), arrayOf(
+				arrayOf(intArrayOf(5, 4, 4, 5, 5), intArrayOf(2, 5, 5, 2, 2), intArrayOf(4, 2, 2, 4, 4), intArrayOf(7, 4, 4, 7, 7),
+					intArrayOf(5, 7, 7, 5, 5), intArrayOf(2, 5, 5, 2, 2)),
+				arrayOf(intArrayOf(2, 7, 7, 7, 2), intArrayOf(5, 2, 2, 2, 5), intArrayOf(5, 4, 4, 4, 5), intArrayOf(4, 5, 5, 5, 4),
+					intArrayOf(4, 7, 7, 7, 4), intArrayOf(7, 2, 2, 2, 7)),
+				arrayOf(intArrayOf(2, 2, 5, 5, 5), intArrayOf(5, 7, 7, 2, 2), intArrayOf(7, 7, 2, 2, 5), intArrayOf(5, 4, 4, 7, 7),
+					intArrayOf(4, 4, 7, 7, 5), intArrayOf(5, 5, 5, 4, 4)),
+				arrayOf(intArrayOf(7, 2, 2, 5, 5), intArrayOf(4, 4, 5, 5, 2), intArrayOf(4, 7, 7, 2, 2), intArrayOf(7, 7, 4, 4, 5),
+					intArrayOf(5, 4, 4, 7, 7), intArrayOf(2, 2, 7, 7, 4)),
+				arrayOf(intArrayOf(7, 2, 7, 2, 2), intArrayOf(7, 4, 7, 7, 2), intArrayOf(5, 4, 4, 7, 4), intArrayOf(5, 5, 4, 5, 4),
+					intArrayOf(2, 5, 2, 5, 5), intArrayOf(2, 7, 2, 2, 4)),
+				arrayOf(intArrayOf(5, 5, 4, 2, 2), intArrayOf(5, 4, 4, 2, 7), intArrayOf(4, 2, 2, 7, 7), intArrayOf(4, 2, 7, 5, 5),
+					intArrayOf(2, 7, 7, 5, 4), intArrayOf(7, 5, 5, 4, 4)),
+				arrayOf(intArrayOf(7, 7, 4, 7, 7), intArrayOf(5, 5, 7, 5, 5), intArrayOf(2, 2, 5, 2, 2), intArrayOf(4, 4, 2, 4, 4)),
+				arrayOf(intArrayOf(4, 4, 2, 2, 5), intArrayOf(2, 2, 5, 5, 7), intArrayOf(5, 5, 7, 7, 4), intArrayOf(7, 7, 4, 4, 2)),
+				arrayOf(intArrayOf(5, 5, 5, 2, 4), intArrayOf(7, 7, 7, 5, 2), intArrayOf(4, 4, 4, 7, 5), intArrayOf(2, 2, 2, 4, 7)),
+				arrayOf(intArrayOf(4, 4, 4, 5, 7), intArrayOf(2, 2, 2, 7, 4), intArrayOf(5, 5, 5, 4, 2), intArrayOf(7, 7, 7, 2, 5)),
+				arrayOf(intArrayOf(4, 2, 5, 5, 5), intArrayOf(7, 4, 2, 2, 2), intArrayOf(5, 7, 4, 4, 4), intArrayOf(2, 5, 7, 7, 7))),
+				arrayOf(
+					arrayOf(intArrayOf(2, 5, 5, 2, 2), intArrayOf(5, 7, 7, 5, 5), intArrayOf(7, 4, 4, 7, 7), intArrayOf(4, 2, 2, 4, 4),
+						intArrayOf(2, 5, 5, 2, 2), intArrayOf(5, 4, 4, 5, 5)),
+					arrayOf(intArrayOf(7, 2, 2, 2, 7), intArrayOf(4, 7, 7, 7, 4), intArrayOf(4, 5, 5, 5, 4), intArrayOf(5, 4, 4, 4, 5),
+						intArrayOf(5, 2, 2, 2, 5), intArrayOf(2, 7, 7, 7, 2)),
+					arrayOf(intArrayOf(5, 5, 5, 4, 4), intArrayOf(4, 4, 7, 7, 5), intArrayOf(5, 4, 4, 7, 7), intArrayOf(7, 7, 2, 2, 5),
+						intArrayOf(5, 7, 7, 2, 2), intArrayOf(2, 2, 5, 5, 5)),
+					arrayOf(intArrayOf(2, 2, 7, 7, 4), intArrayOf(5, 4, 4, 7, 7), intArrayOf(7, 7, 4, 4, 5), intArrayOf(4, 7, 7, 2, 2),
+						intArrayOf(4, 4, 5, 5, 2), intArrayOf(7, 2, 2, 5, 5)),
+					arrayOf(intArrayOf(2, 7, 2, 2, 4), intArrayOf(2, 5, 2, 5, 5), intArrayOf(5, 5, 4, 5, 4), intArrayOf(5, 4, 4, 7, 4),
+						intArrayOf(7, 4, 7, 7, 2), intArrayOf(7, 2, 7, 2, 2)),
+					arrayOf(intArrayOf(7, 5, 5, 4, 4), intArrayOf(2, 7, 7, 5, 4), intArrayOf(4, 2, 7, 5, 5), intArrayOf(4, 2, 2, 7, 7),
+						intArrayOf(5, 4, 4, 2, 7), intArrayOf(5, 5, 4, 2, 2)),
+					arrayOf(intArrayOf(5, 5, 7, 5, 5), intArrayOf(7, 7, 4, 7, 7), intArrayOf(4, 4, 2, 4, 4), intArrayOf(2, 2, 5, 2, 2)),
+					arrayOf(intArrayOf(2, 2, 5, 5, 7), intArrayOf(4, 4, 2, 2, 5), intArrayOf(7, 7, 4, 4, 2), intArrayOf(5, 5, 7, 7, 4)),
+					arrayOf(intArrayOf(7, 7, 7, 5, 2), intArrayOf(5, 5, 5, 2, 4), intArrayOf(2, 2, 2, 4, 7), intArrayOf(4, 4, 4, 7, 5)),
+					arrayOf(intArrayOf(2, 2, 2, 7, 4), intArrayOf(4, 4, 4, 5, 7), intArrayOf(7, 7, 7, 2, 5), intArrayOf(5, 5, 5, 4, 2)),
+					arrayOf(intArrayOf(7, 4, 2, 2, 2), intArrayOf(4, 2, 5, 5, 5), intArrayOf(2, 5, 7, 7, 7), intArrayOf(5, 7, 4, 4, 4))))
 		private val DROP_PATTERNS_ATTACK_MULTIPLIERS =
-			arrayOf(doubleArrayOf(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.7, 0.7, 1.0), doubleArrayOf(1.0, 1.2, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.85, 1.0))
+			arrayOf(doubleArrayOf(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.7, 0.7, 1.0),
+				doubleArrayOf(1.0, 1.2, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.85, 1.0))
 		private val DROP_PATTERNS_DEFEND_MULTIPLIERS =
-			arrayOf(doubleArrayOf(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0), doubleArrayOf(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.2, 1.0, 1.0))
+			arrayOf(doubleArrayOf(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
+				doubleArrayOf(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.2, 1.0, 1.0))
 
 		fun getAttackMultiplier(set:Int, map:Int):Double {
 			return try {

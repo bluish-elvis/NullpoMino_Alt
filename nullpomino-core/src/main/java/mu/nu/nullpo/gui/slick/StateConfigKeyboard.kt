@@ -23,7 +23,6 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
@@ -88,7 +87,7 @@ class StateConfigKeyboard:BasicGameState() {
 	 */
 	private fun getKeyName(key:Int):String {
 		val str = org.lwjgl.input.Keyboard.getKeyName(key)
-		return str?.toUpperCase() ?: "$key"
+		return str?.uppercase() ?: "$key"
 	}
 
 	/* Draw the screen */
@@ -109,7 +108,7 @@ class StateConfigKeyboard:BasicGameState() {
 		else
 			FontNormal.printFontGrid(1, 2, "Jinput mode", COLOR.PINK)
 
-		(0 until GameKeyDummy.MAX_BUTTON).forEach {
+		for(it in 0 until GameKeyDummy.MAX_BUTTON) {
 			val flag = keynum==it
 			FontNormal.printFontGrid(2, it+4, GameKeyDummy.arrayKeyName(isNavSetting)[it], flag)
 			FontNormal.printFontGrid(13, it+4, ":", flag)

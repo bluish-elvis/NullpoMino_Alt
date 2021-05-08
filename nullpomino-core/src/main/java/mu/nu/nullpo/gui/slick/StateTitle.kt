@@ -83,7 +83,7 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 				NullpoMinoSlick.saveConfig()
 			}
 		}
-		if(ResourceHolder.bgmPlaying!=BGMStatus.BGM.MENU(0)) ResourceHolder.bgmStart(BGMStatus.BGM.MENU(0))
+		if(ResourceHolder.bgmPlaying!=BGMStatus.BGM.Menu(0)) ResourceHolder.bgmStart(BGMStatus.BGM.Menu(0))
 	}
 
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {

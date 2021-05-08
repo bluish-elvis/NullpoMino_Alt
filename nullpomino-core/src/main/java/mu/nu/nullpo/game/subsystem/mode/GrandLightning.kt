@@ -224,7 +224,6 @@ class GrandLightning:AbstractMode() {
 
 	/** Load settings from property file
 	 * @param prop Property file
-	 * @param strRuleName Rule name
 	 */
 	override fun loadSetting(prop:CustomProperties) {
 		startlevel = prop.getProperty("speedmania2.startlevel", 0)
@@ -241,6 +240,7 @@ class GrandLightning:AbstractMode() {
 		prop.setProperty("speedmania2.big", big)
 		prop.setProperty("speedmania2.gradedisp", gradedisp)
 	}
+
 	private fun saveSetting(prop:CustomProperties, strRuleName:String) {
 		saveSetting(prop)
 		prop.setProperty("speedmania2.torikan.$strRuleName", torikan)
@@ -250,7 +250,7 @@ class GrandLightning:AbstractMode() {
 	 * @param engine GameEngine
 	 */
 	private fun setStartBgmlv(engine:GameEngine) {
-		bgmlv = 0
+		bgmlv = tableBGMChange.count {engine.statistics.level>=it}
 		while(tableBGMChange[bgmlv]!=-1&&engine.statistics.level>=tableBGMChange[bgmlv])
 			bgmlv++
 	}
@@ -375,7 +375,9 @@ class GrandLightning:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.RED, 0, "Level", (startlevel*100).toString(), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big), "LV500LIMIT",
+		drawMenu(engine, playerID, receiver, 0, COLOR.RED, 0, "Level", (startlevel*100).toString(), "LVSTOPSE",
+			GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG",
+			GeneralUtil.getONorOFF(big), "LV500LIMIT",
 			if(torikan==0)
 				"NONE"
 			else
@@ -436,8 +438,7 @@ class GrandLightning:AbstractMode() {
 						val temp = i*100
 						val temp2 = (i+1)*100-1
 
-						val strSectionTime:String
-						strSectionTime = String.format("%4d-%4d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]))
+						val strSectionTime:String = String.format("%4d-%4d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -486,12 +487,11 @@ class GrandLightning:AbstractMode() {
 
 			// REGRET表示
 			if(regretdispframe>0)
-				receiver.drawMenuFont(engine, playerID, 2, 21, "REGRET", if(regretdispframe%4==0)
-					COLOR.YELLOW
-				else if(regretdispframe%4==2)
-					COLOR.RED
-				else
-					COLOR.ORANGE)
+				receiver.drawMenuFont(engine, playerID, 2, 21, "REGRET", when {
+					regretdispframe%4==0 -> COLOR.YELLOW
+					regretdispframe%4==2 -> COLOR.RED
+					else -> COLOR.ORANGE
+				})
 
 			// medal
 			receiver.drawScoreMedal(engine, playerID, 0, 20, "AC", medalAC)
@@ -515,8 +515,7 @@ class GrandLightning:AbstractMode() {
 						var strSeparator = "-"
 						if(i==section&&engine.ending==0) strSeparator = "+"
 
-						val strSectionTime:String
-						strSectionTime = String.format("%4d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
+						val strSectionTime:String = String.format("%4d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, x-1, y+1
 							+i, strSectionTime, sectionIsNewRecord[i], scale)
@@ -524,7 +523,8 @@ class GrandLightning:AbstractMode() {
 					}
 
 				receiver.drawScoreFont(engine, playerID, x2, 17, "AVERAGE", COLOR.RED)
-				receiver.drawScoreNum(engine, playerID, x2, 18, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))), 2f)
+				receiver.drawScoreNum(engine, playerID, x2, 18,
+					GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))), 2f)
 
 			}
 		}
@@ -561,7 +561,7 @@ class GrandLightning:AbstractMode() {
 		if(engine.ending==2&&!rollstarted) {
 			rollstarted = true
 			engine.big = true
-			owner.bgmStatus.bgm = BGM.ENDING(2)
+			owner.bgmStatus.bgm = BGM.Ending(2)
 		}
 
 		return false
@@ -854,10 +854,12 @@ class GrandLightning:AbstractMode() {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "GRADE", COLOR.RED)
 				receiver.drawMenuGrade(engine, playerID, 0, 2, tableGradeName[grade], gcolor, 2f)
 
-				drawResultStats(engine, playerID, receiver, 4, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME)
+				drawResultStats(engine, playerID, receiver, 4, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA,
+					Statistic.TIME)
 				drawResultRank(engine, playerID, receiver, 12, COLOR.RED, rankingRank)
 				if(secretGrade>4)
-					drawResult(engine, playerID, receiver, 14, COLOR.RED, "S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]))
+					drawResult(engine, playerID, receiver, 14, COLOR.RED, "S. GRADE",
+						String.format("%10s", tableSecretGradeName[secretGrade-1]))
 			}
 			1 -> {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "SECTION", COLOR.RED)
@@ -891,9 +893,9 @@ class GrandLightning:AbstractMode() {
 
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = when {
-			engine.ending==0 -> BGM.RESULT(0)
-			engine.ending==2&&rollclear>0 -> BGM.RESULT(3)
-			else -> BGM.RESULT(2)
+			engine.ending==0 -> BGM.Result(0)
+			engine.ending==2&&rollclear>0 -> BGM.Result(3)
+			else -> BGM.Result(2)
 		}
 		// ページ切り替え
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
@@ -958,7 +960,7 @@ class GrandLightning:AbstractMode() {
 				"$ruleName.$i.level" to rankingLevel[i],
 				"$ruleName.$i.time" to rankingTime[i],
 				"$ruleName.$i.clear" to rankingRollclear[i])
-		}+ (0 until SECTION_MAX).flatMap {i ->
+		}+(0 until SECTION_MAX).flatMap {i ->
 			listOf("$ruleName.sectiontime.$i" to bestSectionTime[i])
 		})
 
@@ -1048,10 +1050,10 @@ class GrandLightning:AbstractMode() {
 			intArrayOf(6000, 5800, 5600, 5400, 5200, 5000, 4750, 4500, 4250, 4000, 3750, 3500, 3250, 3000)
 
 		/** BGM fadeout levels */
-		private val tableBGMFadeout = intArrayOf(485, 685, 985, -1)
+		private val tableBGMFadeout = intArrayOf(485, 685, 985)
 		/** BGM change levels */
-		private val tableBGMChange = intArrayOf(500, 700, 1000, -1)
-		private val tableBGM = arrayOf(BGM.GM_3(2), BGM.GM_3(3), BGM.GM_3(4), BGM.GM_3(5))
+		private val tableBGMChange = intArrayOf(500, 700, 1000)
+		private val tableBGM = arrayOf(BGM.GrandT(2), BGM.GrandT(3), BGM.GrandT(4), BGM.GrandT(5))
 		/** 段位のName */
 		private val tableGradeName =
 			arrayOf("1", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13")

@@ -33,7 +33,6 @@ import mu.nu.nullpo.game.subsystem.mode.menu.AbstractMenuItem
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import java.util.*
 
 /** Dummy implementation of game mode. Used as a base of most game modes. */
 abstract class AbstractMode:GameMode {
@@ -428,7 +427,8 @@ abstract class AbstractMode:GameMode {
 		drawMenuCompact(engine, playerID, receiver, *str)
 	}
 
-	protected fun drawGravity(engine:GameEngine, playerID:Int, receiver:EventReceiver, g:Int, d:Int) {
+	protected fun drawGravity(engine:GameEngine, playerID:Int, receiver:EventReceiver,
+		g:Int = engine.speed.gravity, d:Int = engine.speed.denominator) {
 		receiver.drawMenuFont(engine, playerID, 0, menuY, "SPEED", color = menuColor)
 		receiver.drawSpeedMeter(engine, playerID, -13, menuY+1, g, d, 5)
 		for(i in 0..1) {
@@ -441,16 +441,16 @@ abstract class AbstractMode:GameMode {
 		}
 	}
 
-	protected fun drawGravity(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int, g:Int,
-		d:Int) {
+	protected fun drawGravity(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int,
+		g:Int = engine.speed.gravity, d:Int = engine.speed.denominator) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
 		drawGravity(engine, playerID, receiver, g, d)
 	}
 
-	protected fun drawMenuSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int,
-		g:Int, d:Int, are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
+	protected fun drawMenuSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int, g:Int,
+		d:Int, are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
@@ -458,17 +458,27 @@ abstract class AbstractMode:GameMode {
 	}
 
 	protected fun drawMenuSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int,
-		speed:SpeedParam) {
+		speed:SpeedParam = engine.speed, showG:Boolean = true) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
-		drawMenuSpeeds(engine, playerID, receiver, speed.gravity, speed.denominator, speed.are, speed.areLine, speed.lineDelay,
-			speed.lockDelay, speed.das)
+		drawMenuSpeeds(engine, playerID, receiver, speed, showG)
 	}
+
+	protected fun drawMenuSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver, spd:SpeedParam = engine.speed,
+		showG:Boolean = true) =
+		if(showG) drawMenuSpeeds(engine, playerID, receiver, spd.gravity, spd.denominator,
+			spd.are, spd.areLine, spd.lineDelay, spd.lockDelay, spd.das)
+		else drawMenuSpeeds(engine, playerID, receiver, spd.are, spd.areLine, spd.lineDelay, spd.lockDelay, spd.das)
 
 	protected fun drawMenuSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver,
 		g:Int, d:Int, are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
 		drawGravity(engine, playerID, receiver, g, d)
+		drawMenuSpeeds(engine, playerID, receiver, are, aline, lined, lock, das)
+	}
+
+	protected fun drawMenuSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver,
+		are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
 
 		var wait = "ARE"
 		for(i in 0..1) {
@@ -494,6 +504,24 @@ abstract class AbstractMode:GameMode {
 		}
 		receiver.drawMenuFont(engine, playerID, 0, menuY-1, wait, color = menuColor)
 		menuY++
+	}
+
+	protected fun drawScoreSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver,
+		x:Int, y:Int, g:Int = engine.speed.gravity, d:Int = engine.speed.denominator,
+		are:Int = engine.speed.are, aline:Int = engine.speed.areLine, lined:Int = engine.speed.lineDelay,
+		lock:Int = engine.speed.lockDelay, das:Int = engine.speed.das) {
+		receiver.drawSpeedMeter(engine, playerID, x, 0, g, d, 4)
+		receiver.drawMenuNum(engine, playerID, x, y+1, "${g/1.0/d}")
+
+		listOf(are, aline).forEachIndexed {i, it ->
+			receiver.drawScoreNum(engine, playerID, x+4+i*3, y,
+				String.format(if(i==0) "%2d/" else "%2d", if(i==0) are else aline))
+		}
+
+		for(i in 0..2) {
+			receiver.drawScoreNum(engine, playerID, x+8-i*3, y+1,
+				String.format(if(i==1) "%2d+" else "%2d", if(i==0) lined else if(i==1) lock else das))
+		}
 	}
 
 	protected fun drawResult(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, str:String,
@@ -523,11 +551,11 @@ abstract class AbstractMode:GameMode {
 	protected fun drawResultRank(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
 		scale:Float, rank:Int, str:String) {
 		if(rank!=-1) {
-			var postfix = when {
-				rank%10==0&&rank%100!=10 -> "ST"
-				rank%10==1&&rank%100!=11 -> "ND"
-				rank%10==2&&rank%100!=12 -> "RD"
-				else -> "TH"
+			val postfix = when {
+				rank%10==0&&rank%100!=10 -> "st"
+				rank%10==1&&rank%100!=11 -> "nd"
+				rank%10==2&&rank%100!=12 -> "rd"
+				else -> "th"
 			}
 			receiver.drawMenuFont(engine, playerID, 5, y, postfix, color, scale)
 			receiver.drawMenuFont(engine, playerID, 5, y+1, str, color, scale*.8f)

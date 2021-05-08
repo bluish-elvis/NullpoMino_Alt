@@ -10,7 +10,7 @@ abstract class LimitedHistoryRandomizer:Randomizer {
 	internal var id:Int = 0
 	internal var numrolls:Int = 0
 
-	internal var firstPiece:Boolean = true
+	private var firstPiece:Boolean = true
 	internal var strict:Boolean = false
 
 	constructor():super()
@@ -21,9 +21,13 @@ abstract class LimitedHistoryRandomizer:Randomizer {
 		firstPiece = true
 	}
 
+	override fun init() {
+		firstPiece = true
+	}
+
 	override fun next():Int {
 		if(firstPiece&&!isPieceSZOOnly) {
-			pieces.subtract(listOf(Shape.O, Shape.Z, Shape.S).map{it.ordinal}).toList().let {id = it[r.nextInt(it.size)]}
+			pieces.subtract(listOf(Shape.O, Shape.Z, Shape.S).map {it.ordinal}).toList().let {id = it[r.nextInt(it.size)]}
 			firstPiece = false
 		} else if(strict)
 			pieces.subtract(history.toList()).toList().let {id = it[r.nextInt(it.size)]}
@@ -32,7 +36,7 @@ abstract class LimitedHistoryRandomizer:Randomizer {
 			if(history.take(4).none {it==id}) break
 		}
 		if(pieces[id]==Shape.S.ordinal||pieces[id]==Shape.Z.ordinal) {
-			if(id==historySZ)id = if(historySZ==Shape.S.ordinal) Shape.Z.ordinal else Shape.S.ordinal
+			if(id==historySZ) id = if(historySZ==Shape.S.ordinal) Shape.Z.ordinal else Shape.S.ordinal
 			historySZ = id
 		}
 		if(pieces[id]==Shape.J.ordinal||pieces[id]==Shape.L.ordinal) {

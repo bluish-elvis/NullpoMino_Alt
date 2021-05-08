@@ -5,8 +5,7 @@
 		<artifactId>parent</artifactId>
 		<version>2.9.3</version>
 	</parent>
-	<groupId>org.lwjgl.lwjgl</groupId>
-	<artifactId>lwjgl-platform</artifactId>
+ <artifactId>lwjgl-platform</artifactId>
 	<packaging>pom</packaging>
 	<name>Lighweight Java Game Library - Platform</name>
 	<version>2.9.3</version>

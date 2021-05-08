@@ -45,8 +45,6 @@ class NetRoomInfo:Serializable {
 	/** Flag for types of Twisters allowed (0=none, 1=normal, 2=all spin) */
 	var twistEnableType = 1
 
-	var spinCheckType = SPINTYPE_4POINT
-
 	/** Allow EZ-spins in spinCheckType 2 */
 	var twistEnableEZ = false
 
@@ -232,7 +230,7 @@ class NetRoomInfo:Serializable {
 					.forEach {
 						if(teamList.contains(it.strTeam))
 							return true
-						else teamList.add(it.strTeam)
+						teamList.add(it.strTeam)
 					}
 
 			return false
@@ -278,7 +276,6 @@ class NetRoomInfo:Serializable {
 		lockDelay = n.lockDelay
 		das = n.das
 		twistEnableType = n.twistEnableType
-		spinCheckType = n.spinCheckType
 		twistEnableEZ = n.twistEnableEZ
 		b2b = n.b2b
 		b2bChunk = n.b2bChunk
@@ -371,7 +368,6 @@ class NetRoomInfo:Serializable {
 		useFractionalGarbage = rdata[29].toBoolean()
 		garbageChangePerAttack = rdata[30].toBoolean()
 		messiness = rdata[31].toInt()
-		spinCheckType = rdata[32].toInt()
 		twistEnableEZ = rdata[33].toBoolean()
 		b2bChunk = rdata[34].toBoolean()
 		strMode = NetUtil.urlDecode(rdata[35])
@@ -400,7 +396,7 @@ class NetRoomInfo:Serializable {
 			"$playing", "$ruleLock", NetUtil.urlEncode(ruleName), "$autoStartSeconds", "$gravity", "$denominator", "$are", "$areLine",
 			"$lineDelay", "$lockDelay", "$das", "$twistEnableType", "$b2b", "$combo", "$rensaBlock", "$counter", "$bravo",
 			"$reduceLineSend", "$hurryupSeconds", "$hurryupInterval", "$autoStartTNET2", "$disableTimerAfterSomeoneCancelled",
-			"$useMap", "$useFractionalGarbage", "$garbageChangePerAttack", "$messiness", "$spinCheckType", "$twistEnableEZ",
+			"$useMap", "$useFractionalGarbage", "$garbageChangePerAttack", "$messiness", "", "$twistEnableEZ",
 			"$b2bChunk", NetUtil.urlEncode(strMode), "$singleplayer", "$rated", "$customRated", "$style",
 			"$divideChangeRateByPlayers"//,"$useTankMode"
 		)
@@ -491,8 +487,7 @@ class NetRoomInfo:Serializable {
 				.forEach {
 					if(ipList.contains(it.strRealIP))
 						return true
-					else
-						ipList.add(it.strRealIP)
+					ipList.add(it.strRealIP)
 				}
 
 		return false

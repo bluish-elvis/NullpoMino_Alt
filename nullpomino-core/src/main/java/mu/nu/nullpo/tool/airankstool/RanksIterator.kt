@@ -137,9 +137,8 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 			try {
 				val ranksAIDir = File(AIRanksConstants.RANKSAI_DIR)
 				if(!ranksAIDir.exists()) ranksAIDir.mkdirs()
-				val fos:FileOutputStream = FileOutputStream(AIRanksConstants.RANKSAI_DIR+outputFile)
-				val out:ObjectOutputStream
-				out = ObjectOutputStream(fos)
+				val fos = FileOutputStream(AIRanksConstants.RANKSAI_DIR+outputFile)
+				val out = ObjectOutputStream(fos)
 				ranks!!.freeRanksFrom()
 				out.writeObject(ranks)
 				out.close()

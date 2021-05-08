@@ -162,7 +162,7 @@ class MarathonDrill:NetDummyMode() {
 						if(startlevel>19) startlevel = 0
 						engine.owner.backgroundStatus.bg = startlevel
 					}
-					3 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					3 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					4 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
 				}
 
@@ -235,7 +235,7 @@ class MarathonDrill:NetDummyMode() {
 
 		setSpeed(engine)
 
-		owner.bgmStatus.bgm = if(netIsWatch) BGM.SILENT else BGM.values[bgmno]
+		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
 
 	}
 
@@ -387,10 +387,9 @@ class MarathonDrill:NetDummyMode() {
 		val pts = calcPoint(engine, lines)
 		val cln = engine.garbageClearing
 		if(lines>0) {
-			var cmb = 0
 			garbageDigged += cln
 			// Combo
-			if(engine.combo>=1) cmb = engine.combo-1
+			val cmb = if(engine.combo>=1) engine.combo-1 else 0
 			// Add to score
 			var get = pts
 			if(cmb>=1) {
@@ -459,7 +458,7 @@ class MarathonDrill:NetDummyMode() {
 		val w = field.width
 		val h = field.height
 
-		engine.playSE("garbage${if(lines>3)1 else 0}")
+		engine.playSE("garbage${if(lines>3) 1 else 0}")
 
 		if(garbageHole<0) garbageHole = engine.random.nextInt(w)
 
@@ -468,7 +467,8 @@ class MarathonDrill:NetDummyMode() {
 
 			for(x in 0 until w)
 				if(x!=garbageHole)
-					field.setBlock(x, h-1, Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.CONNECT_DOWN))
+					field.setBlock(x, h-1, Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE,
+						Block.ATTRIBUTE.CONNECT_DOWN))
 
 			// Set connections
 			if(receiver.isStickySkin(engine))
@@ -511,7 +511,7 @@ class MarathonDrill:NetDummyMode() {
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = if(engine.statistics.time<10800) BGM.RESULT(1) else BGM.RESULT(2)
+		owner.bgmStatus.bgm = if(engine.statistics.time<10800) BGM.Result(1) else BGM.Result(2)
 
 		return super.onResult(engine, playerID)
 	}
