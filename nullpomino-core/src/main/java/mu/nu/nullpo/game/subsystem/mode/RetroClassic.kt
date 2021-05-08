@@ -250,7 +250,7 @@ class RetroClassic:AbstractMode() {
 		engine.statistics.levelDispAdd = 1
 		engine.big = big
 
-		owner.bgmStatus.bgm = BGM.RETRO_N(0)
+		owner.bgmStatus.bgm = BGM.RetroN((gametype+startlevel)%3)
 		setSpeed(engine)
 	}
 
@@ -304,7 +304,7 @@ class RetroClassic:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 16, "I-Piece Drought", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 17, "$drought / ${maxOf(drought, droughts.max() ?: 0)}", 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 17, "$drought / ${maxOf(drought, droughts.maxOrNull() ?: 0)}", 2f)
 		}
 	}
 
@@ -445,7 +445,7 @@ class RetroClassic:AbstractMode() {
 			drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.TIME, Statistic.LPM)
 			receiver.drawMenuFont(engine, playerID, 0, 7, "I-Droughts", COLOR.BLUE)
 			receiver.drawMenuFont(engine, playerID, 0, 8, "Longest", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, playerID, 0, 8, String.format("%3d", droughts.max() ?: 0), 2f)
+			receiver.drawMenuNum(engine, playerID, 0, 8, String.format("%3d", droughts.maxOrNull() ?: 0), 2f)
 			receiver.drawMenuFont(engine, playerID, 0, 10, "Average", COLOR.BLUE, .8f)
 			receiver.drawMenuNum(engine, playerID, 0, 11, String.format("%3d", droughts.average()), 2f)
 			drawResult(engine, playerID, receiver, 13, COLOR.RED, "Burnouts",

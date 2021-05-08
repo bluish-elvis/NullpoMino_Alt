@@ -32,7 +32,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import java.util.*
+import kotlin.random.Random
 
 /** AVALANCHE VS DIG RACE mode (Release Candidate 1) */
 class AvalancheVSDig:AvalancheVSDummyMode() {
@@ -191,10 +191,10 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 						if(chainDisplayType[playerID]>3) chainDisplayType[playerID] = 0
 					}
 					23 -> cascadeSlow[playerID] = !cascadeSlow[playerID]
-					24 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					24 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					25 -> enableSE[playerID] = !enableSE[playerID]
 					26 -> bigDisplay = !bigDisplay
-					27, 28 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change,0,99)
+					27, 28 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
 				}
 			}
 
@@ -452,7 +452,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 				owner.engine[1].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 			}
 		}
 	}

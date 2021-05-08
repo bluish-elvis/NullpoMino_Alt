@@ -10,7 +10,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.GeneralUtil
 import java.io.IOException
-import java.util.*
+import kotlin.random.Random
 
 /** Special base class for netplay VS modes. Up to 6 players supported. */
 open class NetDummyVSMode:NetDummyMode() {
@@ -139,7 +139,7 @@ open class NetDummyVSMode:NetDummyMode() {
 	/** NET-VS: Mode Initialization */
 	override fun modeInit(manager:GameManager) {
 		super.modeInit(manager)
-		NetDummyMode.log.debug("modeInit() on NetDummyVSMode")
+		log.debug("modeInit() on NetDummyVSMode")
 		netForceSendMovements = true
 		netvsMySeatID = -1
 		netvsNumPlayers = 0
@@ -218,7 +218,7 @@ open class NetDummyVSMode:NetDummyMode() {
 		}
 
 		val pList = netLobby!!.updateSameRoomPlayerInfoList()
-		val teamList = LinkedList<String>()
+		val teamList = mutableListOf<String>()
 
 		for(pInfo in pList)
 			if(pInfo.roomID==netCurrentRoomInfo!!.roomID)
@@ -254,7 +254,7 @@ open class NetDummyVSMode:NetDummyMode() {
 
 	/** NET-VS: When you join the room */
 	override fun netOnJoin(lobby:NetLobbyFrame, client:NetPlayerClient?, roomInfo:NetRoomInfo?) {
-		NetDummyMode.log.debug("netOnJoin() on NetDummyVSMode")
+		log.debug("netOnJoin() on NetDummyVSMode")
 
 		netCurrentRoomInfo = roomInfo
 		netIsNetPlay = true
@@ -270,7 +270,7 @@ open class NetDummyVSMode:NetDummyMode() {
 	/** NET-VS: Initialize various NetPlay variables. Usually called from
 	 * playerInit. */
 	override fun netPlayerInit(engine:GameEngine, playerID:Int) {
-		NetDummyMode.log.debug("netPlayerInit(engine, $playerID) on NetDummyVSMode")
+		log.debug("netPlayerInit(engine, $playerID) on NetDummyVSMode")
 
 		super.netPlayerInit(engine, playerID)
 
@@ -296,11 +296,11 @@ open class NetDummyVSMode:NetDummyMode() {
 
 			when {
 				engine.displaysize==-1 -> {
-					if(name.length>7) name = name.substring(0, 7)+".."
+					if(name.length>7) name = name.take(7)+".."
 					owner.receiver.drawDirectTTF(x, y-16, name, fontcolor)
 				}
 				playerID==0 -> {
-					if(name.length>14) name = name.substring(0, 14)+".."
+					if(name.length>14) name = name.take(14)+".."
 					owner.receiver.drawDirectTTF(x, y-20, name, fontcolor)
 				}
 				else -> owner.receiver.drawDirectTTF(x, y-20, name, fontcolor)
@@ -322,7 +322,8 @@ open class NetDummyVSMode:NetDummyMode() {
 
 	/** NET-VS: Send the current piece's movement to everyone. It won't do
 	 * anything in practice game. */
-	override fun netSendPieceMovement(engine:GameEngine, forceSend:Boolean):Boolean = if(!netvsIsPractice&&engine.playerID==0&&!netIsWatch) super.netSendPieceMovement(engine, forceSend) else false
+	override fun netSendPieceMovement(engine:GameEngine, forceSend:Boolean):Boolean =
+		if(!netvsIsPractice&&engine.playerID==0&&!netIsWatch) super.netSendPieceMovement(engine, forceSend) else false
 
 	/** NET-VS: Set locked rule/Revert to user rule */
 	private fun netvsSetLockedRule() {
@@ -337,7 +338,7 @@ open class NetDummyVSMode:NetDummyMode() {
 					owner.engine[i].wallkick = wallkick
 				}
 			} else
-				NetDummyMode.log.warn("Tried to set locked rule, but rule was not received yet!")
+				log.warn("Tried to set locked rule, but rule was not received yet!")
 		} else if(!netvsIsWatch()) {
 			// Revert rules
 			owner.engine[0].ruleopt.copy(netLobby!!.ruleOptPlayer)
@@ -401,15 +402,19 @@ open class NetDummyVSMode:NetDummyMode() {
 
 			engine.comboType = if(netCurrentRoomInfo!!.combo) GameEngine.COMBO_TYPE_NORMAL else GameEngine.COMBO_TYPE_DISABLE
 
-			if(netCurrentRoomInfo!!.twistEnableType==0) {
-				engine.twistEnable = false
-				engine.useAllSpinBonus = false
-			} else if(netCurrentRoomInfo!!.twistEnableType==1) {
-				engine.twistEnable = true
-				engine.useAllSpinBonus = false
-			} else if(netCurrentRoomInfo!!.twistEnableType==2) {
-				engine.twistEnable = true
-				engine.useAllSpinBonus = true
+			when(netCurrentRoomInfo!!.twistEnableType) {
+				0 -> {
+					engine.twistEnable = false
+					engine.useAllSpinBonus = false
+				}
+				1 -> {
+					engine.twistEnable = true
+					engine.useAllSpinBonus = false
+				}
+				2 -> {
+					engine.twistEnable = true
+					engine.useAllSpinBonus = true
+				}
 			}
 		}
 	}
@@ -446,7 +451,7 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		// Map
 		if(netCurrentRoomInfo!!.useMap&&netLobby!!.mapList.size>0) {
-			if(netvsRandMap==null) netvsRandMap = Random()
+			if(netvsRandMap==null) netvsRandMap = Random.Default
 
 			var map:Int
 			val maxMap = netLobby!!.mapList.size
@@ -480,7 +485,7 @@ open class NetDummyVSMode:NetDummyMode() {
 	 * @return Number of teams alive
 	 */
 	internal fun netvsGetNumberOfTeamsAlive():Int {
-		val listTeamName = LinkedList<String>()
+		val listTeamName = mutableListOf<String>()
 		var noTeamCount = 0
 
 		for(i in 0 until players)
@@ -603,12 +608,12 @@ open class NetDummyVSMode:NetDummyMode() {
 				&&!netvsIsNewcomer)
 				if(!netvsPlayerReady[playerID]) {
 					var strTemp = "A(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
-					if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
+					if(strTemp.length>10) strTemp = strTemp.take(10)
 					owner.receiver.drawMenuFont(engine, playerID, 0, 16, strTemp, COLOR.CYAN)
 					owner.receiver.drawMenuFont(engine, playerID, 1, 17, "READY", COLOR.CYAN)
 				} else {
 					var strTemp = "B(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_B)} KEY):"
-					if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
+					if(strTemp.length>10) strTemp = strTemp.take(10)
 					owner.receiver.drawMenuFont(engine, playerID, 0, 16, strTemp, COLOR.BLUE)
 					owner.receiver.drawMenuFont(engine, playerID, 1, 17, "CANCEL", COLOR.BLUE)
 				}
@@ -616,8 +621,8 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		if(playerID==0&&!netvsIsWatch()&&menuTime>=5) {
 			var strTemp = "F(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
-			if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
-			strTemp = strTemp.toUpperCase()
+			if(strTemp.length>10) strTemp = strTemp.take(10)
+			strTemp = strTemp.uppercase()
 			owner.receiver.drawMenuFont(engine, playerID, 0, 18, strTemp, COLOR.PURPLE)
 			owner.receiver.drawMenuFont(engine, playerID, 1, 19, "PRACTICE", COLOR.PURPLE)
 		}
@@ -651,9 +656,9 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(playerID==0) {
 			// Set BGM
 			if(netvsIsPractice)
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 			else {
-				owner.bgmStatus.bgm = BGM.EXTRA(0)
+				owner.bgmStatus.bgm = BGM.Extra(0)
 				owner.bgmStatus.fadesw = false
 			}
 
@@ -702,21 +707,21 @@ open class NetDummyVSMode:NetDummyMode() {
 		// Automatic start timer
 		if(playerID==0&&netCurrentRoomInfo!=null&&netvsAutoStartTimerActive
 			&&!netvsIsGameActive)
-			if(netvsNumPlayers<=1)
-				netvsAutoStartTimerActive = false
-			else if(netvsAutoStartTimer>0)
-				netvsAutoStartTimer--
-			else {
-				if(!netvsIsWatch()) netLobby!!.netPlayerClient!!.send("autostart\n")
-				netvsAutoStartTimer = 0
-				netvsAutoStartTimerActive = false
+			when {
+				netvsNumPlayers<=1 -> netvsAutoStartTimerActive = false
+				netvsAutoStartTimer>0 -> netvsAutoStartTimer--
+				else -> {
+					if(!netvsIsWatch()) netLobby!!.netPlayerClient!!.send("autostart\n")
+					netvsAutoStartTimer = 0
+					netvsAutoStartTimerActive = false
+				}
 			}
 
 		// End practice mode
 		if(playerID==0&&netvsIsPractice&&netvsIsPracticeExitAllowed&&engine.ctrl.isPush(Controller.BUTTON_F)) {
 			netvsIsPractice = false
 			netvsIsPracticeExitAllowed = false
-			owner.bgmStatus.bgm = BGM.SILENT
+			owner.bgmStatus.bgm = BGM.Silent
 			engine.field!!.reset()
 			engine.gameEnded()
 			engine.stat = GameEngine.Status.SETTING
@@ -760,7 +765,7 @@ open class NetDummyVSMode:NetDummyMode() {
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==0) engine.gameEnded()
 		engine.allowTextRenderByReceiver = false
-		owner.bgmStatus.bgm = BGM.SILENT
+		owner.bgmStatus.bgm = BGM.Silent
 		engine.resetFieldVisible()
 
 		// Practice
@@ -866,7 +871,7 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		if(engine.statc[0]==0) {
 			engine.gameEnded()
-			owner.bgmStatus.bgm = BGM.SILENT
+			owner.bgmStatus.bgm = BGM.Silent
 			engine.resetFieldVisible()
 			engine.playSE("excellent")
 		}
@@ -967,12 +972,12 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(playerID==0&&!netvsIsWatch()) {
 			// Restart/Practice
 			var strTemp = "A(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
-			if(strTemp.length>10) strTemp = strTemp.substring(0, 10)
+			if(strTemp.length>10) strTemp = strTemp.take(10)
 			owner.receiver.drawMenuFont(engine, playerID, 0, 18, strTemp, COLOR.RED)
 			owner.receiver.drawMenuFont(engine, playerID, 1, 19, "RESTART", COLOR.RED)
 
 			var strTempF = "F(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
-			if(strTempF.length>10) strTempF = strTempF.substring(0, 10)
+			if(strTempF.length>10) strTempF = strTempF.take(10)
 			owner.receiver.drawMenuFont(engine, playerID, 0, 20, strTempF, COLOR.PURPLE)
 			if(!netvsIsPractice)
 				owner.receiver.drawMenuFont(engine, playerID, 1, 21, "PRACTICE", COLOR.PURPLE)
@@ -1178,7 +1183,7 @@ open class NetDummyVSMode:NetDummyMode() {
 			if(netvsIsPractice) {
 				netvsIsPractice = false
 				netvsIsPracticeExitAllowed = false
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 				owner.engine[0].gameEnded()
 				owner.engine[0].stat = GameEngine.Status.SETTING
 				owner.engine[0].resetStatc()
@@ -1263,15 +1268,18 @@ open class NetDummyVSMode:NetDummyMode() {
 		/** NET-VS: Numbers of seats numbers corresponding to frames on player's
 		 * screen */
 		private val NETVS_GAME_SEAT_NUMBERS =
-			arrayOf(intArrayOf(0, 1, 2, 3, 4, 5), intArrayOf(1, 0, 2, 3, 4, 5), intArrayOf(1, 2, 0, 3, 4, 5), intArrayOf(1, 2, 3, 0, 4, 5), intArrayOf(1, 2, 3, 4, 0, 5), intArrayOf(1, 2, 3, 4, 5, 0))
+			arrayOf(intArrayOf(0, 1, 2, 3, 4, 5), intArrayOf(1, 0, 2, 3, 4, 5), intArrayOf(1, 2, 0, 3, 4, 5),
+				intArrayOf(1, 2, 3, 0, 4, 5), intArrayOf(1, 2, 3, 4, 0, 5), intArrayOf(1, 2, 3, 4, 5, 0))
 
 		/** NET-VS: Each player's garbage block cint */
 		internal val NETVS_PLAYER_COLOR_BLOCK =
-			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_PURPLE, Block.BLOCK_COLOR_CYAN)
+			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_YELLOW,
+				Block.BLOCK_COLOR_PURPLE, Block.BLOCK_COLOR_CYAN)
 
 		/** NET-VS: Each player's frame cint */
 		private val NETVS_PLAYER_COLOR_FRAME =
-			intArrayOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE, GameEngine.FRAME_COLOR_GREEN, GameEngine.FRAME_COLOR_BRONZE, GameEngine.FRAME_COLOR_PURPLE, GameEngine.FRAME_COLOR_CYAN)
+			intArrayOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE, GameEngine.FRAME_COLOR_GREEN,
+				GameEngine.FRAME_COLOR_BRONZE, GameEngine.FRAME_COLOR_PURPLE, GameEngine.FRAME_COLOR_CYAN)
 
 		/** NET-VS: Team font colors */
 		private val NETVS_TEAM_FONT_COLORS =

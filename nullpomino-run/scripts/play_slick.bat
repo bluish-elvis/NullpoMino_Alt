@@ -1,1 +1,1 @@
-java "-Djava.library.path=lib" -cp "NullpoMino.jar;lib\log4j.jar;lib\slick2d-core.jar;lib\lwjgl.jar;lib\lwjgl-platform-natives-windows.jar;lib\jorbis.jar;lib\jinput.jar;lib\jinput-platform-natives-windows.jar;lib\jutils.jar" mu.nu.nullpo.gui.slick.NullpoMinoSlick
+java "-Djava.library.path=lib" -cp "NullpoMino.jar;lib\log4j.jar;lib\slick2d-core.jar;lib\lwjgl.jar;lib\lwjgl-platform-natives-windows.jar;lib\jorbis.jar;lib\jinput.jar;lib\jinput-platform-natives-windows.jar;lib\jutils.jar;lib/kotlin-stdlib.jar;lib/kotlin-reflect.jar" mu.nu.nullpo.gui.slick.NullpoMinoSlick

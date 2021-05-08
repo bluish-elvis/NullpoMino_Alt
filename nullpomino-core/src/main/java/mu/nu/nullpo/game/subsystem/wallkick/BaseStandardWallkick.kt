@@ -23,7 +23,8 @@ open class BaseStandardWallkick:Wallkick {
 		field:Field, ctrl:Controller?):Array<Array<IntArray>>? = null
 
 	/* Wallkick */
-	@Suppress("UNREACHABLE_CODE") override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
+	@Suppress("UNREACHABLE_CODE") override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
+		piece:Piece,
 		field:Field, ctrl:Controller?):WallkickResult? {
 		getKickTable(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)?.let {kicktable ->
 			for(i in kicktable[rtOld].indices) {

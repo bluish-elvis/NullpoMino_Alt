@@ -221,10 +221,10 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 					}
 					23 -> cascadeSlow[playerID] = !cascadeSlow[playerID]
 					24 -> newChainPower[playerID] = !newChainPower[playerID]
-					25 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					25 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					26 -> enableSE[playerID] = !enableSE[playerID]
 					27 -> bigDisplay = !bigDisplay
-					28, 29 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change,0,99)
+					28, 29 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
 				}
 			}
 
@@ -275,12 +275,18 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 		if(engine.statc[4]==0) {
 			when {
 				menuCursor<9 -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(), "CLEAR DELAY", engine.cascadeClearDelay.toString())
+					drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX",
+						engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE",
+						engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY",
+						engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(),
+						"CLEAR DELAY", engine.cascadeClearDelay.toString())
 
 					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/4", COLOR.YELLOW)
 				}
 				menuCursor<18 -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "ZENKESHI", ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]], "MAX ATTACK", "${maxAttack[playerID]}", "COLORS", "${numColors[playerID]}", "MIN CHAIN", "${rensaShibari[playerID]}", "OJAMA RATE", "${ojamaRate[playerID]}",
+					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "ZENKESHI", ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]],
+						"MAX ATTACK", "${maxAttack[playerID]}", "COLORS", "${numColors[playerID]}", "MIN CHAIN",
+						"${rensaShibari[playerID]}", "OJAMA RATE", "${ojamaRate[playerID]}",
 						"HURRYUP", if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]} SEC",
 						"HARD OJAMA", "${ojamaHard[playerID]}",
 						"X COLUMN", if(dangerColumnDouble[playerID]) "3 AND 4" else "3 ONLY",
@@ -290,7 +296,8 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 				}
 				menuCursor<25 -> {
 					initMenu(COLOR.PURPLE, 18)
-					drawMenu(engine, playerID, receiver, "HANDICAP", "${ojamaHandicap[playerID]}", "F-MAP SET", FEVER_MAPS[feverMapSet[playerID]].toUpperCase(), "STARTCHAIN", "${feverChainStart[playerID]}")
+					drawMenu(engine, playerID, receiver, "HANDICAP", "${ojamaHandicap[playerID]}", "F-MAP SET",
+						FEVER_MAPS[feverMapSet[playerID]].uppercase(), "STARTCHAIN", "${feverChainStart[playerID]}")
 					menuColor = COLOR.COBALT
 					drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]],
 						"SHOW CHAIN", if(chainDisplayType[playerID]==CHAIN_DISPLAY_FEVERSIZE)
@@ -505,7 +512,8 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Chain multipliers */
-		private val FEVER_POWERS = intArrayOf(4, 10, 18, 21, 29, 46, 76, 113, 150, 223, 259, 266, 313, 364, 398, 432, 468, 504, 540, 576, 612, 648, 684, 720 //Arle
+		private val FEVER_POWERS = intArrayOf(4, 10, 18, 21, 29, 46, 76, 113, 150, 223, 259, 266, 313, 364, 398, 432, 468, 504, 540,
+			576, 612, 648, 684, 720 //Arle
 		)
 
 		/** Constants for chain display settings */

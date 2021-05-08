@@ -8,7 +8,7 @@ import org.lwjgl.openal.AL11;
  * @author Kevin Glass
  * @author Nathan Sweet <misc@n4te.com>
  */
-public class AudioImpl implements Audio{
+@SuppressWarnings("ALL") public class AudioImpl implements Audio{
 	/** The store from which this sound was loaded */
 	private SoundStore store;
 	/** The buffer containing the sound */
@@ -33,7 +33,7 @@ public class AudioImpl implements Audio{
 		int channels=AL10.alGetBufferi(buffer,AL10.AL_CHANNELS);
 		int freq=AL10.alGetBufferi(buffer,AL10.AL_FREQUENCY);
 		int div=bits/8;
-		int samples=bytes/(div!=0?div:16);
+		int samples=bytes/(div==0?16:div);
 		length=(samples/(float)freq)/channels;
 	}
 
@@ -120,10 +120,7 @@ public class AudioImpl implements Audio{
 		position=position%length;
 
 		AL10.alSourcef(store.getSource(index),AL11.AL_SEC_OFFSET,position);
-		if(AL10.alGetError()!=0){
-			return false;
-		}
-		return true;
+		return AL10.alGetError()==0;
 	}
 
 	/**

@@ -24,6 +24,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.*
@@ -36,9 +37,9 @@ import kotlin.math.cos
 import kotlin.math.pow
 
 /** ゲームの event 処理と描画処理 (Slick版） */
-internal open class RendererSlick:AbstractRenderer() {
+class RendererSlick:AbstractRenderer() {
 	/** 描画先サーフェイス */
-	private var graphics:Graphics? = null
+	internal var graphics:Graphics? = null
 
 	override var resources:mu.nu.nullpo.gui.common.ResourceHolder?
 		get() = ResourceHolder
@@ -93,40 +94,42 @@ internal open class RendererSlick:AbstractRenderer() {
 	/** スピードMeterを描画
 	 * @param sp ゲージ量(0f~1f)
 	 * @param len ゲージ長さ*/
-	override fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Float, len:Float) {
+	override fun drawSpeedMeter(x:Float, y:Float, sp:Float, len:Float) {
 		val s = if(sp<0) 1f else sp
 		val g = graphics ?: return
-		if(engine.owner.menuOnly) return
 
-		val dx1 = scoreX(engine, playerID)+x*BS+maxOf((minOf(len, 1f)*BS).toInt()/2, 0)
-		val dy1 = scoreY(engine, playerID)+y*BS+BS/2
 		val w = maxOf(1f, len-1)*BS
 
 		g.color = Color.black
-		g.drawRect((dx1-1).toFloat(), (dy1-1).toFloat(), w+1, 3f)
+		g.drawRect((x-1), (y-1), w+1, 3f)
 
 
-		g.color = if(s<0.25f) Color.cyan else if(s<0.5f) Color.green else if(s<0.75f) Color.yellow else if(s<1f) Color.orange
-		else Color.red
-		g.fillRect(dx1.toFloat(), dy1.toFloat(), w, 2f)
+		g.color = when {
+			s<0.25f -> Color.cyan
+			s<0.5f -> Color.green
+			s<0.75f -> Color.yellow
+			s<1f -> Color.orange
+			else -> Color.red
+		}
+		g.fillRect(x, y, w, 2f)
 		if(s<.25f) {
 			g.color = Color.green
-			g.fillRect(dx1.toFloat(), dy1.toFloat(), s*w*4, 2f)
+			g.fillRect(x, y, s*w*4, 2f)
 		}
 		if(s<.5f) {
 			g.color = Color.yellow
-			g.fillRect(dx1.toFloat(), dy1.toFloat(), s*w*2, 2f)
+			g.fillRect(x, y, s*w*2, 2f)
 		}
 		if(s<0.75f) {
 			g.color = Color.orange
-			g.fillRect(dx1.toFloat(), dy1.toFloat(), s*w/.75f, 2f)
+			g.fillRect(x, y, s*w/.75f, 2f)
 		}
 		if(s<1f) {
 			g.color = Color.red
-			g.fillRect(dx1.toFloat(), dy1.toFloat(), s*w, 2f)
+			g.fillRect(x, y, s*w, 2f)
 		} else {
 			g.color = Color.white
-			g.fillRect(dx1.toFloat(), dy1.toFloat(), minOf(1f, s-1)*w, 2f)
+			g.fillRect(x, y, minOf(1f, s-1)*w, 2f)
 		}
 		g.color = Color.white
 	}
@@ -405,8 +408,8 @@ internal open class RendererSlick:AbstractRenderer() {
 					if(y2>=0)
 						if(outlineghost) {
 							val blkTemp = it.block[i]
-							val x3:Float = (x+x2*blksize).toFloat()
-							val y3:Float = (y+y2*blksize).toFloat()
+							val x3:Float = (x+x2*blksize)
+							val y3:Float = (y+y2*blksize)
 							val ls = blksize-1
 
 							var colorID = blkTemp.drawColor
@@ -454,8 +457,8 @@ internal open class RendererSlick:AbstractRenderer() {
 
 					if(outlineghost) {
 						val blkTemp = it.block[i]
-						val x3:Float = (x+x2*blksize).toFloat()
-						val y3:Float = (y+y2*blksize).toFloat()
+						val x3:Float = (x+x2*blksize)
+						val y3:Float = (y+y2*blksize)
 						val ls = blksize*2-1
 
 						var colorID = blkTemp.drawColor
@@ -601,15 +604,9 @@ internal open class RendererSlick:AbstractRenderer() {
 			1 -> 8
 			else -> 4
 		}
-		var width = 10
-		var height = 20
+		val width = engine.field?.width?:Field.DEFAULT_WIDTH
+		val height = engine.field?.height?:Field.DEFAULT_HEIGHT
 		val oX = 0
-
-
-		engine.field?.let {
-			width = it.width
-			height = it.height
-		}
 
 		// Field Background
 		if(fieldbgbright>0)
@@ -931,68 +928,62 @@ internal open class RendererSlick:AbstractRenderer() {
 			val srcy:Int
 			val sq:Int
 
-			when {
-				it is FragAnim
-				->
-					when(it.type) {
-						ANIM.GEM// Gems frag
-						-> {
-							x -= 16
-							y -= 16
-							sq = 64
-							srcx = (it.anim-1)%10*sq
-							srcy = (it.anim-1)/10*sq
-							graphics.drawImage(ResourceHolder.imgPErase[it.color], x, y, x+sq, y+sq, srcx, srcy, srcx+sq, srcy+sq)
-						}
-						ANIM.SPARK // TI Block frag
-						-> {
-							x -= 88
-							y -= 38
-							sq = 192
-							srcx = (it.anim-1)%6*sq
-							srcy = (it.anim-1)/6*sq
-							val flip = (i%3==0)!=(x%3==0)
-							ResourceHolder.imgBreak[it.color][0].draw(
-								if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,
-								srcx, srcy, srcx+sq, srcy+sq)
-						}
-
-						ANIM.BLOCK // TAP Block frag
-						-> {
-							x -= 88
-							y -= 86
-							sq = 192
-							srcx = (it.anim-1)%8*sq
-							srcy = (it.anim-1)/8*sq
-							val flip = (i%3==0)!=(x.toInt()%3==0)
-							ResourceHolder.imgBreak[it.color][1].draw(if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,
-								srcx, srcy, srcx+sq, srcy+sq)
-						}
-						ANIM.HANABI //Fireworks
-						-> {
-							sq = 192
-							x -= sq/2
-							y -= sq/2
-							srcx = (it.anim-1)%6*sq
-							srcy = (it.anim-1)/8*sq
-							ResourceHolder.imgHanabi[it.color].draw(x, y, x+sq, y+sq, srcx, srcy, srcx+sq, srcy+sq)
-						}
+			when(it) {
+				is FragAnim -> when(it.type) {
+					ANIM.GEM// Gems frag
+					-> {
+						x -= 16
+						y -= 16
+						sq = 64
+						srcx = (it.anim-1)%10*sq
+						srcy = (it.anim-1)/10*sq
+						graphics.drawImage(ResourceHolder.imgPErase[it.color], x, y, x+sq, y+sq, srcx, srcy, srcx+sq, srcy+sq)
 					}
-				it is BeamH //Line Cleaned
+					ANIM.SPARK // TI Block frag
+					-> {
+						x -= 88
+						y -= 38
+						sq = 192
+						srcx = (it.anim-1)%6*sq
+						srcy = (it.anim-1)/6*sq
+						val flip = (i%3==0)!=(x%3==0)
+						ResourceHolder.imgBreak[it.color][0].draw(
+							if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,
+							srcx, srcy, srcx+sq, srcy+sq)
+					}
+
+					ANIM.BLOCK // TAP Block frag
+					-> {
+						x -= 88
+						y -= 86
+						sq = 192
+						srcx = (it.anim-1)%8*sq
+						srcy = (it.anim-1)/8*sq
+						val flip = (i%3==0)!=(x%3==0)
+						ResourceHolder.imgBreak[it.color][1].draw(if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,
+							srcx, srcy, srcx+sq, srcy+sq)
+					}
+					ANIM.HANABI //Fireworks
+					-> {
+						sq = 192
+						x -= sq/2
+						y -= sq/2
+						srcx = (it.anim-1)%6*sq
+						srcy = (it.anim-1)/8*sq
+						ResourceHolder.imgHanabi[it.color].draw(x, y, x+sq, y+sq, srcx, srcy, srcx+sq, srcy+sq)
+					}
+				}
+				is BeamH //Line Cleaned
 				-> {
 					srcy = (it.anim/2-1)*8
 					if(it.anim%2==1) graphics.setDrawMode(Graphics.MODE_ADD)
 					ResourceHolder.imgLine[0].draw(x, y, x+it.w, y+it.h, 0, srcy, 80, srcy+8)
 					graphics.setDrawMode(Graphics.MODE_NORMAL)
 				}
-				it is PopupAward ->
-					drawAward(x, y, it.event, it.anim)
-				it is PopupCombo ->
-					drawCombo(x, y, it.pts, it.type)
-				it is PopupPoint ->
-					drawDirectNum(x-(it.pts.toString().length*6), y, "+${it.pts}", COLOR.values()[it.color])
-
-				it is PopupBravo //Field Cleaned
+				is PopupAward -> drawAward(x, y, it.event, it.anim)
+				is PopupCombo -> drawCombo(x, y, it.pts, it.type)
+				is PopupPoint -> drawDirectNum(x-(it.pts.toString().length*6), y, "+${it.pts}", COLOR.values()[it.color])
+				is PopupBravo //Field Cleaned
 				-> {
 					drawDirectFont(x+20, y+204, "BRAVO!", getRainbowColor((it.anim+4)%9), 1.5f)
 					drawDirectFont(x+52, y+236, "PERFECT", getRainbowColor(it.anim%9), 1f)

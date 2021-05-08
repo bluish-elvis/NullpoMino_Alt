@@ -225,9 +225,9 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					} else
 						mapNumber[playerID] = -1
 					29 -> bigDisplay = !bigDisplay
-					30 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					30 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					31 -> enableSE[playerID] = !enableSE[playerID]
-					32, 33 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change,0,99)
+					32, 33 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
 				}
 			}
 
@@ -295,11 +295,17 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(engine.statc[4]==0) {
 			if(menuCursor<9) {
-				drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(), "CLEAR DELAY", engine.cascadeClearDelay.toString())
+				drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX",
+					engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(),
+					"LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS",
+					engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(), "CLEAR DELAY",
+					engine.cascadeClearDelay.toString())
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/4", COLOR.YELLOW)
 			} else if(menuCursor<17) {
-				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]], "MAX ATTACK", "${maxAttack[playerID]}", "COLORS", "${numColors[playerID]}", "MIN CHAIN", "${rensaShibari[playerID]}", "CLEAR SIZE", engine.colorClearSize.toString(), "OJAMA RATE", "${ojamaRate[playerID]}",
+				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]],
+					"MAX ATTACK", "${maxAttack[playerID]}", "COLORS", "${numColors[playerID]}", "MIN CHAIN", "${rensaShibari[playerID]}",
+					"CLEAR SIZE", engine.colorClearSize.toString(), "OJAMA RATE", "${ojamaRate[playerID]}",
 					"HURRYUP", if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]}SEC",
 					"HARD OJAMA", "${ojamaHard[playerID]}")
 
@@ -313,7 +319,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					COLOR.PURPLE
 				else
 					COLOR.WHITE
-				drawMenu(engine, playerID, receiver, "F-MAP SET", FEVER_MAPS[feverMapSet[playerID]].toUpperCase())
+				drawMenu(engine, playerID, receiver, "F-MAP SET", FEVER_MAPS[feverMapSet[playerID]].uppercase())
 				menuColor = COLOR.COBALT
 				drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]],
 					"SHOW CHAIN", CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]],
@@ -324,7 +330,8 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/4", COLOR.YELLOW)
 			} else {
 				initMenu(COLOR.PINK, 26)
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET", "${mapSet[playerID]}",
+				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET",
+					"${mapSet[playerID]}",
 					"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}",
 					"BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
 				menuColor = COLOR.COBALT

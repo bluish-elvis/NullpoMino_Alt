@@ -64,9 +64,6 @@ class SprintScore:NetDummyMode() {
 	/** Flag for enabling wallkick Twisters */
 	private var enableTwistKick:Boolean = false
 
-	/** Spin check type (4Point or Immobile) */
-	private var spinCheckType:Int = 0
-
 	/** Immobile EZ spin */
 	private var twistEnableEZ:Boolean = false
 
@@ -145,18 +142,17 @@ class SprintScore:NetDummyMode() {
 	 * @param preset Preset number
 	 */
 	private fun loadPreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
-		engine.speed.gravity = prop.getProperty("scorerace.gravity.$preset", 4)
+		engine.speed.gravity = prop.getProperty("scorerace.gravity.$preset", 1)
 		engine.speed.denominator = prop.getProperty("scorerace.denominator.$preset", 256)
-		engine.speed.are = prop.getProperty("scorerace.are.$preset", 10)
-		engine.speed.areLine = prop.getProperty("scorerace.areLine.$preset", 5)
-		engine.speed.lineDelay = prop.getProperty("scorerace. lineDelay.$preset", 20)
+		engine.speed.are = prop.getProperty("scorerace.are.$preset", 0)
+		engine.speed.areLine = prop.getProperty("scorerace.areLine.$preset", 0)
+		engine.speed.lineDelay = prop.getProperty("scorerace. lineDelay.$preset", 0)
 		engine.speed.lockDelay = prop.getProperty("scorerace.lockDelay.$preset", 30)
-		engine.speed.das = prop.getProperty("scorerace.das.$preset", 14)
-		bgmno = prop.getProperty("scorerace.bgmno.$preset", 0)
+		engine.speed.das = prop.getProperty("scorerace.das.$preset", 10)
+		bgmno = prop.getProperty("scorerace.bgmno.$preset", BGM.values.indexOf(BGM.Rush(0)))
 		twistEnableType = prop.getProperty("scorerace.twistEnableType.$preset", 1)
 		enableTwist = prop.getProperty("scorerace.enableTwist.$preset", true)
 		enableTwistKick = prop.getProperty("scorerace.enableTwistKick.$preset", true)
-		spinCheckType = prop.getProperty("scorerace.spinCheckType.$preset", 0)
 		twistEnableEZ = prop.getProperty("scorerace.twistEnableEZ.$preset", false)
 		enableB2B = prop.getProperty("scorerace.enableB2B.$preset", true)
 		enableCombo = prop.getProperty("scorerace.enableCombo.$preset", true)
@@ -181,7 +177,6 @@ class SprintScore:NetDummyMode() {
 		prop.setProperty("scorerace.twistEnableType.$preset", twistEnableType)
 		prop.setProperty("scorerace.enableTwist.$preset", enableTwist)
 		prop.setProperty("scorerace.enableTwistKick.$preset", enableTwistKick)
-		prop.setProperty("scorerace.spinCheckType.$preset", spinCheckType)
 		prop.setProperty("scorerace.twistEnableEZ.$preset", twistEnableEZ)
 		prop.setProperty("scorerace.enableB2B.$preset", enableB2B)
 		prop.setProperty("scorerace.enableCombo.$preset", enableCombo)
@@ -196,7 +191,7 @@ class SprintScore:NetDummyMode() {
 			netOnUpdateNetPlayRanking(engine, goaltype)
 		else if(!engine.owner.replayMode) {
 			// Configuration changes
-			val change = updateCursor(engine, 17, playerID)
+			val change = updateCursor(engine, 16, playerID)
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -214,7 +209,7 @@ class SprintScore:NetDummyMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					7 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					8 -> big = !big
 					9 -> {
 						goaltype += change
@@ -227,15 +222,10 @@ class SprintScore:NetDummyMode() {
 						if(twistEnableType>2) twistEnableType = 0
 					}
 					11 -> enableTwistKick = !enableTwistKick
-					12 -> {
-						spinCheckType += change
-						if(spinCheckType<0) spinCheckType = 1
-						if(spinCheckType>1) spinCheckType = 0
-					}
-					13 -> twistEnableEZ = !twistEnableEZ
-					14 -> enableB2B = !enableB2B
-					15 -> enableCombo = !enableCombo
-					16, 17 -> presetNumber = rangeCursor(presetNumber+change,0,99)
+					12 -> twistEnableEZ = !twistEnableEZ
+					13 -> enableB2B = !enableB2B
+					14 -> enableCombo = !enableCombo
+					15, 16 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
 				}
 
 				// NET: Signal options change
@@ -295,9 +285,7 @@ class SprintScore:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
-			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, engine.speed.gravity,
-				engine.speed.denominator, engine.speed.are, engine.speed.areLine, engine.speed.lineDelay, engine.speed.lockDelay,
-				engine.speed.das)
+			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
 			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getOorX(big), "GOAL", String.format("%3dK",
 				GOAL_TABLE[goaltype]/1000))
@@ -324,7 +312,7 @@ class SprintScore:NetDummyMode() {
 		engine.comboType = if(enableCombo) GameEngine.COMBO_TYPE_NORMAL
 		else GameEngine.COMBO_TYPE_DISABLE
 
-		owner.bgmStatus.bgm = if(netIsWatch) BGM.SILENT
+		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent
 		else
 			BGM.values[bgmno]
 
@@ -405,10 +393,9 @@ class SprintScore:NetDummyMode() {
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Line clear bonus
 		val pts = calcScore(engine, lines)
-		var cmb = 0
-		// Combo
-		if(enableCombo&&engine.combo>=1&&lines>=1) cmb = engine.combo-1
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
+		// Combo
+		val cmb = if(engine.combo>=1&&lines>=1) engine.combo-1 else 0
 		// Add to score
 		if(pts+cmb+spd>0) {
 			var get = pts*(10+engine.statistics.level)/10+spd
@@ -650,8 +637,7 @@ class SprintScore:NetDummyMode() {
 		msg += engine.speed.gravity.toString()+"\t${engine.speed.denominator}\t${engine.speed.are}\t"
 		msg += engine.speed.areLine.toString()+"\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
 		msg += engine.speed.das.toString()+"\t$bgmno\t$big\t$goaltype\t$twistEnableType\t"
-		msg += "$enableTwistKick${"\t$enableB2B\t"+enableCombo}\t$presetNumber\t"
-		msg += "$spinCheckType${"\t"+twistEnableEZ}\n"
+		msg += "$enableTwistKick${"\t$enableB2B\t"+enableCombo}\t$presetNumber\t\t$twistEnableEZ\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -672,7 +658,6 @@ class SprintScore:NetDummyMode() {
 		enableB2B = message[16].toBoolean()
 		enableCombo = message[17].toBoolean()
 		presetNumber = message[18].toInt()
-		spinCheckType = message[19].toInt()
 		twistEnableEZ = message[20].toBoolean()
 	}
 

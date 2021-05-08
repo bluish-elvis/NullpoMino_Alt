@@ -8,5 +8,4 @@ class BagQuintHistoryRandomizer:BagRandomizer {
 
 	constructor():super()
 	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
-
 }

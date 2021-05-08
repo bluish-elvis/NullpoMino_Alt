@@ -800,6 +800,10 @@ class RuleOptions:Serializable {
 		p.setProperty("$id.ruleopt.ghost", ghost)
 	}
 
+	/** プロパティセットから読み込み
+	 * @param p プロパティセット
+	 * @param id Player IDまたはPresetID
+	 */
 	@JvmOverloads
 	fun readProperty(p:CustomProperties, id:Int, offset:Boolean = false) {
 		strRuleName = p.getProperty("$id.ruleopt.strRuleName", strRuleName)
@@ -977,7 +981,3 @@ class RuleOptions:Serializable {
 		val PIECEDIRECTION_ARSPRESET = intArrayOf(0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0)
 	}
 }
-/** プロパティセットから読み込み
- * @param p プロパティセット
- * @param id Player IDまたはPresetID
- */

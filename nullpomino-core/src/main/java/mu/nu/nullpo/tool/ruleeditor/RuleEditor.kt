@@ -1468,7 +1468,7 @@ class RuleEditor:JFrame, ActionListener {
 	 * @param r ルール設定
 	 */
 	private fun writeRuleFromUI(r:RuleOptions) {
-		r.strRuleName = txtfldRuleName.text.toUpperCase()
+		r.strRuleName = txtfldRuleName.text.uppercase()
 		r.nextDisplay = getIntTextField(txtfldNextDisplay)
 		r.style = comboboxStyle!!.selectedIndex
 		r.skin = comboboxSkin!!.selectedIndex

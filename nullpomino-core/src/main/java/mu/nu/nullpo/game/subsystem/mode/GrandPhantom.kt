@@ -389,7 +389,9 @@ class GrandPhantom:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.PURPLE, 0, "Level", (startlevel*100).toString(), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.PURPLE, 0, "Level", (startlevel*100).toString(), "LVSTOPSE",
+			GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG",
+			GeneralUtil.getONorOFF(big))
 	}
 
 	/** This function will be called before the game actually begins (after
@@ -444,8 +446,7 @@ class GrandPhantom:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime:String
-						strSectionTime = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]))
+						val strSectionTime:String = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -504,8 +505,7 @@ class GrandPhantom:AbstractMode() {
 						var strSeparator = " "
 						if(i==section&&engine.ending==0) strSeparator = "\u0082"
 
-						val strSectionTime:String
-						strSectionTime = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
+						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
@@ -574,7 +574,7 @@ class GrandPhantom:AbstractMode() {
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		comboValue = if(lines==0) 1
-		else maxOf(1,comboValue+2*lines-2)
+		else maxOf(1, comboValue+2*lines-2)
 
 		var rotateTemp = engine.nowPieceRotateCount
 		if(rotateTemp>4) rotateTemp = 4
@@ -720,7 +720,7 @@ class GrandPhantom:AbstractMode() {
 					owner.bgmStatus.fadesw = false
 					owner.bgmStatus.bgm = tableBGM[bgmlv]
 					engine.playSE("levelup_section")
-				}else engine.playSE("levelup")
+				} else engine.playSE("levelup")
 
 				sectionscomp++
 
@@ -806,10 +806,12 @@ class GrandPhantom:AbstractMode() {
 			val strGrade = String.format("%10s", tableGradeName[grade])
 			receiver.drawMenuFont(engine, playerID, 0, 3, strGrade, gcolor)
 
-			drawResultStats(engine, playerID, receiver, 4, COLOR.PURPLE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME)
+			drawResultStats(engine, playerID, receiver, 4, COLOR.PURPLE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA,
+				Statistic.TIME)
 			drawResultRank(engine, playerID, receiver, 12, COLOR.PURPLE, rankingRank)
 			if(secretGrade>4)
-				drawResult(engine, playerID, receiver, 15, COLOR.PURPLE, "S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]))
+				drawResult(engine, playerID, receiver, 15, COLOR.PURPLE, "S. GRADE",
+					String.format("%10s", tableSecretGradeName[secretGrade-1]))
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "SECTION", COLOR.PURPLE)
 
@@ -823,12 +825,12 @@ class GrandPhantom:AbstractMode() {
 			}
 		} else if(engine.statc[1]==2) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", COLOR.PURPLE)
-			 getMedalFontColor(medalAC)?.let{receiver.drawMenuFont(engine, playerID, 5, 3, "AC",it)}
-			 getMedalFontColor(medalST)?.let{receiver.drawMenuFont(engine, playerID, 8, 3, "ST",it)}
-			 getMedalFontColor(medalSK)?.let{receiver.drawMenuFont(engine, playerID, 5, 4, "SK",it)}
-			 getMedalFontColor(medalRE)?.let{receiver.drawMenuFont(engine, playerID, 8, 4, "RE",it)}
-			 getMedalFontColor(medalRO)?.let{receiver.drawMenuFont(engine, playerID, 5, 5, "SK",it)}
-			 getMedalFontColor(medalCO)?.let{receiver.drawMenuFont(engine, playerID, 8, 5, "CO",it)}
+			getMedalFontColor(medalAC)?.let {receiver.drawMenuFont(engine, playerID, 5, 3, "AC", it)}
+			getMedalFontColor(medalST)?.let {receiver.drawMenuFont(engine, playerID, 8, 3, "ST", it)}
+			getMedalFontColor(medalSK)?.let {receiver.drawMenuFont(engine, playerID, 5, 4, "SK", it)}
+			getMedalFontColor(medalRE)?.let {receiver.drawMenuFont(engine, playerID, 8, 4, "RE", it)}
+			getMedalFontColor(medalRO)?.let {receiver.drawMenuFont(engine, playerID, 5, 5, "SK", it)}
+			getMedalFontColor(medalCO)?.let {receiver.drawMenuFont(engine, playerID, 8, 5, "CO", it)}
 
 			drawResultStats(engine, playerID, receiver, 6, COLOR.PURPLE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
 		}
@@ -899,7 +901,7 @@ class GrandPhantom:AbstractMode() {
 				"$ruleName.$i.level" to rankingLevel[i],
 				"$ruleName.$i.time" to rankingTime[i],
 				"$ruleName.$i.clear" to rankingRollclear[i])
-		}+ (0 until SECTION_MAX).flatMap {i ->
+		}+(0 until SECTION_MAX).flatMap {i ->
 			listOf("$ruleName.sectiontime.$i" to bestSectionTime[i])
 		})
 
@@ -972,7 +974,7 @@ class GrandPhantom:AbstractMode() {
 
 		/** BGM change level */
 		private val tableBGMChange = intArrayOf(300, 500, -1)
-		private val tableBGM = arrayOf(BGM.GM_3(5), BGM.GM_3(4), BGM.GM_3(3), BGM.GM_2(3))
+		private val tableBGM = arrayOf(BGM.GrandT(5), BGM.GrandT(4), BGM.GrandT(3), BGM.GrandA(3))
 		/** Grade names */
 
 		private val tableGradeName = arrayOf("", "m", "MK", "MV", "MO", "MM", "GM")

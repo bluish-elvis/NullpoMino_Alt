@@ -31,7 +31,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import java.util.*
+import kotlin.random.Random
 
 /** VS-BATTLE Mode */
 class VSBattleMode:AbstractMode() {
@@ -50,7 +50,7 @@ class VSBattleMode:AbstractMode() {
 	private var garbageBlocking:BooleanArray = BooleanArray(0)
 
 	/** Has accumulated garbage blockOfcount */
-	private val garbage:IntArray get() = (0 until players).map {p -> garbageEntries[p].sumBy {it.lines}}.toIntArray()
+	private val garbage:IntArray get() = (0 until players).map {p -> garbageEntries[p].sumOf {it.lines}}.toIntArray()
 
 	/** Had sent garbage blockOfcount */
 	private val garbageSent:IntArray get() = owner.engine.map {it.statistics.attacks}.toIntArray()
@@ -125,7 +125,7 @@ class VSBattleMode:AbstractMode() {
 	private var winnerID:Int = 0
 
 	/** I was sent from the enemygarbage blockA list of */
-	private var garbageEntries:Array<LinkedList<GarbageEntry>> = emptyArray()
+	private var garbageEntries:Array<MutableList<GarbageEntry>> = emptyArray()
 
 	/** HurryupAfterBlockI put count */
 	private var hurryupCount:IntArray = IntArray(0)
@@ -185,12 +185,12 @@ class VSBattleMode:AbstractMode() {
 		mapSet = IntArray(MAX_PLAYERS)
 		mapNumber = IntArray(MAX_PLAYERS)
 		presetNumber = IntArray(MAX_PLAYERS)
-		garbageEntries = Array(MAX_PLAYERS) {LinkedList<GarbageEntry>()}
+		garbageEntries = Array(MAX_PLAYERS) {mutableListOf()}
 		hurryupCount = IntArray(MAX_PLAYERS)
 		propMap = arrayOfNulls(MAX_PLAYERS)
 		mapMaxNo = IntArray(MAX_PLAYERS)
 		fldBackup = arrayOfNulls(MAX_PLAYERS)
-		randMap = Random()
+		randMap = Random.Default
 		winCount = IntArray(MAX_PLAYERS)
 		winnerID = -1
 	}
@@ -233,7 +233,7 @@ class VSBattleMode:AbstractMode() {
 		val playerID = engine.playerID
 		bgmno = prop.getProperty("vsbattle.bgmno", 0)
 		garbageType[playerID] = prop.getProperty("vsbattle.garbageType.p$playerID", 0)
-		messiness[playerID] = prop.getProperty("vsbattle.messiness.p$playerID", intArrayOf(90,30))
+		messiness[playerID] = prop.getProperty("vsbattle.messiness.p$playerID", intArrayOf(90, 30))
 		garbageCounter[playerID] = prop.getProperty("vsbattle.garbageCounter.p$playerID", true)
 		garbageBlocking[playerID] = prop.getProperty("vsbattle.garbageBlocking.p$playerID", true)
 		twistEnableType[playerID] = prop.getProperty("vsbattle.twistEnableType.p$playerID", 1)
@@ -337,7 +337,7 @@ class VSBattleMode:AbstractMode() {
 		lastHole[playerID] = -1
 		lastcombo[playerID] = 0
 
-		garbageEntries[playerID] = LinkedList()
+		garbageEntries[playerID].clear()
 
 		hurryupCount[playerID] = 0
 
@@ -494,7 +494,7 @@ class VSBattleMode:AbstractMode() {
 		if(engine.statc[4]==0) {
 			when {
 				menuCursor<9 -> {
-					drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.ORANGE, 0, engine.speed)
+					drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.ORANGE, 0)
 					drawMenu(engine, playerID, receiver, 5, COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE",
 						"${presetNumber[playerID]}")
 				}
@@ -687,8 +687,8 @@ class VSBattleMode:AbstractMode() {
 			// Offset
 			var ofs = 0
 			if(pts>0&&garbage[playerID]>0&&garbageCounter[playerID])
-				while(!garbageEntries[playerID].isEmpty()&&(pts-ofs)>0) {
-					val entry = garbageEntries[playerID].first
+				while(garbageEntries[playerID].isNotEmpty()&&(pts-ofs)>0) {
+					val entry = garbageEntries[playerID].first()
 					val gl = entry.lines
 					if(gl<=(pts-ofs)) {
 						ofs += gl
@@ -743,7 +743,7 @@ class VSBattleMode:AbstractMode() {
 					GarbageStyle.STACK -> false
 					GarbageStyle.FiveLines -> gct<5
 					else -> true
-				}&&!garbageEntries[playerID].isEmpty())
+				}&&garbageEntries[playerID].isNotEmpty())
 		}
 
 		// HURRY UP!
@@ -778,7 +778,7 @@ class VSBattleMode:AbstractMode() {
 					it.gameEnded()
 					it.stopSE("danger")
 				}
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
@@ -789,7 +789,7 @@ class VSBattleMode:AbstractMode() {
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 				if(!owner.replayMode) winCount[0]++
 			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
 				// 2P win
@@ -801,7 +801,7 @@ class VSBattleMode:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 				if(!owner.replayMode) winCount[1]++
 			}
 	}

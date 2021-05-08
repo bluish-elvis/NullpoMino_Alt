@@ -23,10 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.wallkick
 
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.component.*
 
 /** WallOnlyWallkick - fieldの壁しか蹴らないWallkick(すでに置かれているBlockは蹴りません) */
 class WallOnlyWallkick:Wallkick {

@@ -39,10 +39,7 @@ interface AIPlayer {
 	 */
 	fun init(engine:GameEngine, playerID:Int)
 
-	/** End processing
-	 * @param engine The GameEngine that owns this AI
-	 * @param playerID Player ID
-	 */
+	/** End processing */
 	fun shutdown()
 
 	/** Set button input states

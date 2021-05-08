@@ -155,16 +155,10 @@ class GrandRoads:NetDummyMode() {
 	 * @param engine GameEngine object
 	 */
 	private fun setSpeed(engine:GameEngine) {
-		var gravlv:Int
-		var speedlv:Int
-		var timelv:Int
-		var lv = engine.statistics.level
-		if(lv<0) lv = 0
-		// Gravity speed
-		timelv = lv
-		gravlv = timelv
-		speedlv = gravlv
-		if(gravlv>=tableGravity[goaltype].size) gravlv = tableGravity[goaltype].size-1
+		val lv = maxOf(0, engine.statistics.level)
+		val timelv:Int = minOf(lv, tableLevelTimer[goaltype].size-1)
+		val gravlv:Int = minOf(lv, tableGravity[goaltype].size-1)
+
 		engine.speed.gravity = tableGravity[goaltype][gravlv]
 		engine.speed.denominator = tableDenominator[goaltype]
 
@@ -178,7 +172,7 @@ class GrandRoads:NetDummyMode() {
 				engine.speed.das = 15
 			}
 			GAMETYPE_ANOTHER, GAMETYPE_ANOTHER200 -> {
-				if(speedlv>=tableAnother[0].size) speedlv = tableAnother[0].size-1
+				val speedlv = minOf(lv, tableAnother[0].size-1)
 				engine.speed.are = tableAnother[0][speedlv]
 				engine.speed.areLine = tableAnother[0][speedlv]
 				engine.speed.lineDelay = tableAnother[1][speedlv]
@@ -193,7 +187,7 @@ class GrandRoads:NetDummyMode() {
 				engine.speed.das = 7
 			}
 			GAMETYPE_NORMAL200 -> {
-				if(speedlv>=tableNormal200[0].size) speedlv = tableNormal200[0].size-1
+				val speedlv = minOf(lv, tableNormal200[0].size-1)
 				engine.speed.are = tableNormal200[0][speedlv]
 				engine.speed.areLine = tableNormal200[0][speedlv]
 				engine.speed.lineDelay = tableNormal200[1][speedlv]
@@ -201,7 +195,7 @@ class GrandRoads:NetDummyMode() {
 				engine.speed.das = tableNormal200[3][speedlv]
 			}
 			GAMETYPE_BASIC -> {
-				if(speedlv>=tableBasic[0].size) speedlv = tableBasic[0].size-1
+				val speedlv = minOf(lv, tableBasic[0].size-1)
 				engine.speed.are = tableBasic[0][speedlv]
 				engine.speed.areLine = tableBasic[0][speedlv]
 				engine.speed.lineDelay = tableBasic[1][speedlv]
@@ -223,7 +217,7 @@ class GrandRoads:NetDummyMode() {
 				engine.speed.das = 7
 			}
 			GAMETYPE_VOID -> {
-				if(speedlv>=tableVoid[0].size) speedlv = tableVoid[0].size-1
+				val speedlv = minOf(lv, tableVoid[0].size-1)
 				engine.speed.are = tableVoid[0][speedlv]
 				engine.speed.areLine = tableVoid[0][speedlv]
 				engine.speed.lineDelay = tableVoid[1][speedlv]
@@ -243,16 +237,12 @@ class GrandRoads:NetDummyMode() {
  * engine.speed.lineDelay = 10; engine.speed.lockDelay = 30;
  * engine.speed.das = 12; levelTimerMax = levelTimer = 3600 * 3; */
 
-		if(timelv>=tableLevelTimer[goaltype].size) timelv = tableLevelTimer[goaltype].size-1
-		levelTimer = tableLevelTimer[goaltype][timelv]
+		levelTimer = tableLevelTimer[goaltype][timelv]+levelTimer/2
 		levelTimerMax = levelTimer
 		// Block fade for HELL-X
-		if(goaltype==GAMETYPE_HELLX) {
-			var fadelv = engine.statistics.level
-			if(fadelv<0) fadelv = 0
-			if(fadelv>=tableHellXFade.size) fadelv = tableHellXFade.size-1
-			engine.blockHidden = tableHellXFade[fadelv]
-		}
+		if(goaltype==GAMETYPE_HELLX)
+			engine.blockHidden = tableHellXFade[maxOf(0, minOf(lv, tableHellXFade.size-1))]
+
 
 		lastlinetime = levelTimer
 	}
@@ -375,11 +365,10 @@ class GrandRoads:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else
-			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"DIFFICULTY", GAMETYPE_NAME[goaltype],
-				"Level", (startlevel+1).toString(),
-				"SHOW STIME", GeneralUtil.getONorOFF(showsectiontime),
-				"BIG", GeneralUtil.getONorOFF(big))
+			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[goaltype])
+		drawMenuCompact(engine, playerID, receiver, "Level", "${startlevel+1}",
+			"SHOW STIME", GeneralUtil.getONorOFF(showsectiontime, false),
+			"BIG", GeneralUtil.getONorOFF(big))
 	}
 
 	/** Ready screen */
@@ -389,6 +378,7 @@ class GrandRoads:NetDummyMode() {
 			engine.statistics.levelDispAdd = 1
 			engine.big = big
 			norm = startlevel*10
+			levelTimer = 0
 			setSpeed(engine)
 			setStartBgmlv()
 		}
@@ -400,7 +390,7 @@ class GrandRoads:NetDummyMode() {
 	 * (after Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.SILENT
+			owner.bgmStatus.bgm = BGM.Silent
 		else
 			owner.bgmStatus.bgm = tableBGM[goaltype][bgmlv]
 		engine.lives = tableLives[goaltype]
@@ -478,8 +468,7 @@ class GrandRoads:NetDummyMode() {
 						var strSeparator = "-"
 						if(i==engine.statistics.level&&engine.ending==0) strSeparator = "+"
 
-						val strSectionTime:String
-						strSectionTime = String.format("%2d%s%s", i+1, strSeparator, GeneralUtil.getTime(sectionTime[i]))
+						val strSectionTime:String = String.format("%2d%s%s", i+1, strSeparator, GeneralUtil.getTime(sectionTime[i]))
 						receiver.drawScoreNum(engine, playerID, x+1, y+1+i-l, strSectionTime, scale)
 					}
 					i++
@@ -500,7 +489,7 @@ class GrandRoads:NetDummyMode() {
 		// Ending start
 		if(engine.ending==2&&engine.staffrollEnable&&!rollstarted&&!netIsWatch) {
 			rollstarted = true
-			owner.bgmStatus.bgm = BGM.FINALE(2)
+			owner.bgmStatus.bgm = BGM.Finale(2)
 			owner.bgmStatus.fadesw = false
 
 			// VOID ending
@@ -522,8 +511,6 @@ class GrandRoads:NetDummyMode() {
 				levelTimer--
 				if(levelTimer<=600&&levelTimer%60==0) engine.playSE("countdown")
 			} else if(!netIsWatch) {
-				engine.lives = 0
-				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.GAMEOVER
 			}
@@ -563,6 +550,14 @@ class GrandRoads:NetDummyMode() {
 		}
 	}
 
+	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+		if(engine.statc[0]==0) {
+			if(engine.lives>0)
+				setSpeed(engine)
+
+		}
+		return super.onGameOver(engine, playerID)
+	}
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
@@ -674,7 +669,7 @@ class GrandRoads:NetDummyMode() {
 
 	/** Additional routine for game result screen */
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		if(goaltype>=GAMETYPE_HELL&&engine.statistics.rollclear>=1) owner.bgmStatus.bgm = BGM.RESULT(3)
+		if(goaltype>=GAMETYPE_HELL&&engine.statistics.rollclear>=1) owner.bgmStatus.bgm = BGM.Result(3)
 		if(!netIsWatch) {
 			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				engine.statc[1]--
@@ -1042,17 +1037,17 @@ class GrandRoads:NetDummyMode() {
 			10, // HELL
 			10, // HELL-X
 			10)// VOID
-		private val tableBGM = arrayOf(arrayOf(BGM.GM_2(0), BGM.GM_1(0), BGM.EXTRA(1)), // NORMAL
-			arrayOf(BGM.GM_3(0), BGM.EXTRA(0), BGM.GM_2(1)), // HI-SPEED 1
-			arrayOf(BGM.GM_1(1), BGM.GM_2(1), BGM.GM_3(1)), // HI-SPEED 2
-			arrayOf(BGM.GM_3(2), BGM.GM_2(2), BGM.GM_2(3)), // ANOTHER
-			arrayOf(BGM.GM_3(3), BGM.GM_3(4), BGM.GM_3(5)), // ANOTHER2
-			arrayOf(BGM.EXTRA(1), BGM.GM_2(0), BGM.GM_3(0), BGM.EXTRA(0), BGM.GM_3(2)), // NORMAL 200
-			arrayOf(BGM.GM_3(2), BGM.GM_2(2), BGM.GM_3(3), BGM.GM_2(3), BGM.GM_3(4)), // ANOTHER 200
-			arrayOf(BGM.EXTRA(2), BGM.GM_2(0), BGM.GM_1(1), BGM.GM_3(2), BGM.GM_2(3)), // BASIC
-			arrayOf(BGM.FINALE(2)), // HELL
-			arrayOf(BGM.FINALE(0)), // HELL-X
-			arrayOf(BGM.FINALE(1)))// VOID
+		private val tableBGM = arrayOf(arrayOf(BGM.GrandA(0), BGM.GrandM(0), BGM.Extra(1)), // NORMAL
+			arrayOf(BGM.GrandT(0), BGM.Extra(0), BGM.GrandA(1)), // HI-SPEED 1
+			arrayOf(BGM.GrandM(1), BGM.GrandA(1), BGM.GrandT(1)), // HI-SPEED 2
+			arrayOf(BGM.GrandT(2), BGM.GrandA(2), BGM.GrandA(3)), // ANOTHER
+			arrayOf(BGM.GrandT(3), BGM.GrandT(4), BGM.GrandT(5)), // ANOTHER2
+			arrayOf(BGM.Extra(1), BGM.GrandA(0), BGM.GrandT(0), BGM.Extra(0), BGM.GrandT(2)), // NORMAL 200
+			arrayOf(BGM.GrandT(2), BGM.GrandA(2), BGM.GrandT(3), BGM.GrandA(3), BGM.GrandT(4)), // ANOTHER 200
+			arrayOf(BGM.Extra(2), BGM.GrandA(0), BGM.GrandM(1), BGM.GrandT(2), BGM.GrandA(3)), // BASIC
+			arrayOf(BGM.Finale(2)), // HELL
+			arrayOf(BGM.Finale(0)), // HELL-X
+			arrayOf(BGM.Finale(1)))// VOID
 
 		/** Game types */
 		private const val GAMETYPE_NORMAL = 0

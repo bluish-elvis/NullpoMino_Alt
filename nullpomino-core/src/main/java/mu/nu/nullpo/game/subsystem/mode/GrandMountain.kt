@@ -331,7 +331,10 @@ class GrandMountain:AbstractMode() {
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "PATTERN", if(goaltype==GOALTYPE_RANDOM)
 			"RANDOM"
-		else if(goaltype==GOALTYPE_PATTERN) "PATTERN" else "COPY", "Level", (startlevel*100).toString(), "FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
+		else if(goaltype==GOALTYPE_PATTERN) "PATTERN" else "COPY", "Level", (startlevel*100).toString(), "FULL GHOST",
+			GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE",
+			GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG",
+			GeneralUtil.getONorOFF(big))
 	}
 
 	/* Called at game start */
@@ -386,8 +389,8 @@ class GrandMountain:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime:String
-						strSectionTime = String.format("%3d-%3d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i][goaltype]))
+						val strSectionTime:String = String.format("%3d-%3d %s", temp, temp2,
+							GeneralUtil.getTime(bestSectionTime[i][goaltype]))
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -459,8 +462,7 @@ class GrandMountain:AbstractMode() {
 						var strSeparator = "-"
 						if(i==section&&engine.ending==0) strSeparator = "+"
 
-						val strSectionTime:String
-						strSectionTime = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
+						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
 
 						receiver.drawScoreNum(engine, playerID, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
@@ -565,7 +567,8 @@ class GrandMountain:AbstractMode() {
 											field.setBlock(i*2+k, h-1-j,
 												Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 							garbagePos++
-							field.addBottomCopyGarbage(engine.skin, 2, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+							field.addBottomCopyGarbage(engine.skin, 2, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE,
+								Block.ATTRIBUTE.OUTLINE)
 						}
 						GOALTYPE_COPY -> field.addBottomCopyGarbage(engine.skin, 2, Block.ATTRIBUTE.GARBAGE,
 							Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
@@ -588,7 +591,8 @@ class GrandMountain:AbstractMode() {
 							field.pushUp()
 							for(x in 0 until w)
 								if(x!=garbagePos)
-									field.setBlock(x, h-1, Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+									field.setBlock(x, h-1,
+										Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 							// Set connections
 							if(receiver.isStickySkin(engine))
 								for(x in 0 until w)
@@ -605,7 +609,8 @@ class GrandMountain:AbstractMode() {
 							field.pushUp()
 							for(i in tableGarbagePattern[garbagePos].indices)
 								if(tableGarbagePattern[garbagePos][i]!=0)
-									field.setBlock(i, h-1, Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+									field.setBlock(i, h-1,
+										Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 							garbagePos++
 						}
 						GOALTYPE_COPY -> field.addBottomCopyGarbage(engine.skin, 1,
@@ -741,11 +746,13 @@ class GrandMountain:AbstractMode() {
 
 		when(engine.statc[1]) {
 			0 -> {
-				drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME)
+				drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES,
+					Statistic.LEVEL_MANIA, Statistic.TIME)
 				drawResult(engine, playerID, receiver, 10, EventReceiver.COLOR.BLUE, "GARBAGE", String.format("%10d", garbageTotal))
 				drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, rankingRank)
 				if(secretGrade>4)
-					drawResult(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, "S. GRADE", String.format("%10s", tableSecretGradeName[secretGrade-1]))
+					drawResult(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, "S. GRADE",
+						String.format("%10s", tableSecretGradeName[secretGrade-1]))
 			}
 			1 -> {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "SECTION", EventReceiver.COLOR.BLUE)
@@ -759,7 +766,8 @@ class GrandMountain:AbstractMode() {
 					receiver.drawMenuFont(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime))
 				}
 			}
-			2 -> drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
+			2 -> drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR.BLUE, Statistic.LPM, Statistic.SPM,
+				Statistic.PIECE, Statistic.PPS)
 		}
 
 	}
@@ -820,7 +828,6 @@ class GrandMountain:AbstractMode() {
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
 	fun saveRanking(ruleName:String) {
@@ -891,10 +898,12 @@ class GrandMountain:AbstractMode() {
 		private const val GOALTYPE_COPY = 2
 
 		/** 落下速度 table */
-		private val tableGravityValue = intArrayOf(4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160, 192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1)
+		private val tableGravityValue = intArrayOf(4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160,
+			192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1)
 
 		/** 落下速度が変わる level */
-		private val tableGravityChangeLevel = intArrayOf(30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230, 233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000)
+		private val tableGravityChangeLevel = intArrayOf(30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230,
+			233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000)
 
 		/** BGM fadeout levels */
 		private val tableBGMFadeout = intArrayOf(495, 695, 880, -1)
@@ -921,9 +930,27 @@ class GrandMountain:AbstractMode() {
 		private const val DEFAULT_SECTION_TIME = 5400
 
 		/** せり上がりパターン */
-		private val tableGarbagePattern = arrayOf(intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(0, 0, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 0, 0), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(1, 1, 0, 1, 1, 1, 1, 1, 1, 1), intArrayOf(1, 0, 0, 1, 1, 1, 1, 1, 1, 1), intArrayOf(1, 0, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 1, 1, 1, 0, 1, 1), intArrayOf(1, 1, 1, 1, 1, 1, 1, 0, 0, 1), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 0, 1), intArrayOf(1, 1, 1, 1, 0, 0, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 0, 0, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 0, 1, 1, 1, 1, 1), intArrayOf(1, 1, 1, 0, 0, 0, 1, 1, 1, 1))
+		private val tableGarbagePattern = arrayOf(intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+			intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+			intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
+			intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
+			intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(0, 0, 1, 1, 1, 1, 1, 1, 1, 1),
+			intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+			intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 0, 0), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
+			intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(1, 1, 0, 1, 1, 1, 1, 1, 1, 1),
+			intArrayOf(1, 0, 0, 1, 1, 1, 1, 1, 1, 1), intArrayOf(1, 0, 1, 1, 1, 1, 1, 1, 1, 1),
+			intArrayOf(1, 1, 1, 1, 1, 1, 1, 0, 1, 1), intArrayOf(1, 1, 1, 1, 1, 1, 1, 0, 0, 1),
+			intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 0, 1), intArrayOf(1, 1, 1, 1, 0, 0, 1, 1, 1, 1),
+			intArrayOf(1, 1, 1, 1, 0, 0, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 0, 1, 1, 1, 1, 1),
+			intArrayOf(1, 1, 1, 0, 0, 0, 1, 1, 1, 1))
 
 		/** BIG用せり上がりパターン */
-		private val tableGarbagePatternBig = arrayOf(intArrayOf(0, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 0), intArrayOf(0, 0, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1), intArrayOf(1, 1, 1, 0, 0), intArrayOf(1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 0), intArrayOf(1, 1, 0, 1, 1), intArrayOf(1, 0, 0, 1, 1), intArrayOf(1, 0, 1, 1, 1), intArrayOf(1, 1, 0, 1, 1), intArrayOf(1, 1, 0, 0, 1), intArrayOf(1, 1, 1, 0, 1), intArrayOf(1, 0, 0, 1, 1), intArrayOf(1, 0, 0, 1, 1), intArrayOf(1, 1, 0, 1, 1), intArrayOf(1, 0, 0, 0, 1))
+		private val tableGarbagePatternBig = arrayOf(intArrayOf(0, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1),
+			intArrayOf(0, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 0),
+			intArrayOf(1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 0), intArrayOf(0, 0, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1),
+			intArrayOf(0, 1, 1, 1, 1), intArrayOf(1, 1, 1, 0, 0), intArrayOf(1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 0),
+			intArrayOf(1, 1, 0, 1, 1), intArrayOf(1, 0, 0, 1, 1), intArrayOf(1, 0, 1, 1, 1), intArrayOf(1, 1, 0, 1, 1),
+			intArrayOf(1, 1, 0, 0, 1), intArrayOf(1, 1, 1, 0, 1), intArrayOf(1, 0, 0, 1, 1), intArrayOf(1, 0, 0, 1, 1),
+			intArrayOf(1, 1, 0, 1, 1), intArrayOf(1, 0, 0, 0, 1))
 	}
 }

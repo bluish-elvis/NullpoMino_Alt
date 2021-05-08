@@ -145,7 +145,7 @@ open class NetBaseClient:Thread {
 				}
 
 				// If there is an incomplete packet
-				notCompletePacketBuffer = if(packetBuffer.isNotEmpty()) packetBuffer else null
+				notCompletePacketBuffer = packetBuffer.ifEmpty {null}
 			}
 		} catch(e:UnsupportedEncodingException) {
 			throw Error("UTF-8 Not Supported", e)

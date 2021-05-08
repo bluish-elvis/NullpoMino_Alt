@@ -11,7 +11,7 @@ import org.apache.log4j.Logger
 open class ComboRaceSeedSearch:DummyAI() {
 
 	private class Transition
-	constructor(val x:Int, val rt:Int, val rtSub:Int = 0, val newField:Int, val next:Transition) {
+	constructor(val x:Int, val rt:Int, val rtSub:Int = 0, val newField:Int, val next:Transition?) {
 		constructor(x:Int,rt:Int,newField:Int,next:Transition):this(x,rt,0,newField,next)
 	}
 
@@ -189,7 +189,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 
 			val wallkick = StandardWallkick()
 
-			moves = Array(FIELDS.size) {emptyArray<Transition>()}
+			moves = Array(FIELDS.size) {emptyArray()}
 
 			val fldEmpty = Field(4, Field.DEFAULT_HEIGHT, Field.DEFAULT_HIDDEN_HEIGHT)
 			val fldBackup = Field(fldEmpty)

@@ -101,14 +101,14 @@ class SprintLine:NetDummyMode() {
 	 * @param preset Preset number
 	 */
 	private fun loadPreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
-		engine.speed.gravity = prop.getProperty("linerace.gravity.$preset", 4)
+		engine.speed.gravity = prop.getProperty("linerace.gravity.$preset", 1)
 		engine.speed.denominator = prop.getProperty("linerace.denominator.$preset", 256)
-		engine.speed.are = prop.getProperty("linerace.are.$preset", 10)
-		engine.speed.areLine = prop.getProperty("linerace.areLine.$preset", 5)
-		engine.speed.lineDelay = prop.getProperty("linerace. lineDelay.$preset", 20)
+		engine.speed.are = prop.getProperty("linerace.are.$preset", 0)
+		engine.speed.areLine = prop.getProperty("linerace.areLine.$preset", 0)
+		engine.speed.lineDelay = prop.getProperty("linerace. lineDelay.$preset", 0)
 		engine.speed.lockDelay = prop.getProperty("linerace.lockDelay.$preset", 30)
-		engine.speed.das = prop.getProperty("linerace.das.$preset", 14)
-		bgmno = prop.getProperty("linerace.bgmno.$preset", 0)
+		engine.speed.das = prop.getProperty("linerace.das.$preset", 10)
+		bgmno = prop.getProperty("linerace.bgmno.$preset", BGM.values.indexOf(BGM.Rush(0)))
 		big = prop.getProperty("linerace.big.$preset", false)
 		goaltype = prop.getProperty("linerace.goaltype.$preset", 1)
 	}
@@ -156,14 +156,14 @@ class SprintLine:NetDummyMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					7 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					8 -> big = !big
 					9 -> {
 						goaltype += change
 						if(goaltype<0) goaltype = 2
 						if(goaltype>2) goaltype = 0
 					}
-					10, 11 ->presetNumber = rangeCursor(presetNumber+change,0,99)
+					10, 11 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
 				}
 
 				// NET: Signal options change
@@ -222,9 +222,7 @@ class SprintLine:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
-			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				engine.speed.gravity, engine.speed.denominator,
-				engine.speed.are, engine.speed.areLine, engine.speed.lineDelay, engine.speed.lockDelay, engine.speed.das)
+			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
 			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big), "GOAL", "${GOAL_TABLE[goaltype]}")
 			if(!engine.owner.replayMode) {
@@ -239,10 +237,7 @@ class SprintLine:NetDummyMode() {
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.big = big
 
-		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.SILENT
-		else
-			owner.bgmStatus.bgm = BGM.values[bgmno]
+		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
 
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		engine.meterValue = receiver.getMeterMax(engine)
@@ -323,7 +318,8 @@ class SprintLine:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.TIME, Statistic.LPM, Statistic.PPS)
+		drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.TIME,
+			Statistic.LPM, Statistic.PPS)
 		drawResultRank(engine, playerID, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 13, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 15, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -504,7 +500,8 @@ class SprintLine:NetDummyMode() {
 
 	/** NET: It returns true when the current settings doesn't prevent replay
 	 * data from sending. */
-	override fun netIsNetRankingSendOK(engine:GameEngine):Boolean = netIsNetRankingViewOK(engine)&&engine.statistics.lines>=GOAL_TABLE[goaltype]
+	override fun netIsNetRankingSendOK(engine:GameEngine):Boolean =
+		netIsNetRankingViewOK(engine)&&engine.statistics.lines>=GOAL_TABLE[goaltype]
 
 	companion object {
 		/* ----- Main variables ----- */

@@ -84,11 +84,11 @@ class StateConfigJoystickButton:BasicGameState() {
 		FontNormal.printFontGrid(1, 1, "JOYSTICK setting (${player+1}P)", COLOR.ORANGE)
 
 		FontNormal.printFontGrid(1, 3, if(joyNumber<0) "Not Found Joystick" else "Joystick Number:$joyNumber", COLOR.RED)
-		(4 until GameKeyDummy.MAX_BUTTON).forEach {
+		for(it in 4 until GameKeyDummy.MAX_BUTTON) {
 			val flag = keynum==it
 			FontNormal.printFontGrid(2, it+1, GameKeyDummy.arrayKeyName(false)[it], flag)
 			FontNormal.printFontGrid(13, it+1, ":", flag)
-			buttonmap[it].forEachIndexed {i, key -> FontNormal.printFontGrid(15+i*3, it+1, "${key}", flag)}
+			buttonmap[it].forEachIndexed {i, key -> FontNormal.printFontGrid(15+i*3, it+1, "$key", flag)}
 		}
 
 		FontNormal.printFontGrid(14+keypos*3, 1+keynum, "\u0082", COLOR.RAINBOW)

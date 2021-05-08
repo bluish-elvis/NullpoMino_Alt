@@ -51,7 +51,7 @@ internal class StateConfigMainMenu:DummyMenuChooseState() {
 
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		super.enter(container, game)
-		if(ResourceHolder.bgmPlaying!=BGM.MENU(2)) ResourceHolder.bgmStart(BGM.MENU(2))
+		if(ResourceHolder.bgmPlaying!=BGM.Menu(2)) ResourceHolder.bgmStart(BGM.Menu(2))
 	}
 
 	/* Draw the screen */

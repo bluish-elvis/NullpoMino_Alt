@@ -16,7 +16,7 @@ import java.util.HashSet;
  * A wrapped for all keyboard, mouse and controller input
  * @author kevin
  */
-public class Input{
+@SuppressWarnings("ALL") public class Input{
 	/** The controller index to pass to check all controllers */
 	public static final int ANY_CONTROLLER=-1;
 
@@ -752,19 +752,19 @@ public class Input{
 
 	/** Remove all the key listeners from this input */
 	public void removeAllKeyListeners(){
-		allListeners.removeAll(keyListeners);
+		keyListeners.forEach(allListeners::remove);
 		keyListeners.clear();
 	}
 
 	/** Remove all the mouse listeners from this input */
 	public void removeAllMouseListeners(){
-		allListeners.removeAll(mouseListeners);
+		mouseListeners.forEach(allListeners::remove);
 		mouseListeners.clear();
 	}
 
 	/** Remove all the controller listeners from this input */
 	public void removeAllControllerListeners(){
-		allListeners.removeAll(controllerListeners);
+		controllerListeners.forEach(allListeners::remove);
 		controllerListeners.clear();
 	}
 
@@ -1191,7 +1191,7 @@ public class Input{
 	 * A null stream to clear out those horrid errors
 	 * @author kevin
 	 */
-	private class NullOutputStream extends OutputStream{
+	private static class NullOutputStream extends OutputStream{
 		/** @see java.io.OutputStream#write(int) */
 		public void write(int b){
 			// null implemetnation
@@ -1470,22 +1470,13 @@ public class Input{
 			ControllerListener listener=(ControllerListener)listener1;
 			if(listener.isAcceptingInput()){
 				switch(index){
-					case LEFT:
-						listener.controllerLeftPressed(controllerIndex);
-						break;
-					case RIGHT:
-						listener.controllerRightPressed(controllerIndex);
-						break;
-					case UP:
-						listener.controllerUpPressed(controllerIndex);
-						break;
-					case DOWN:
-						listener.controllerDownPressed(controllerIndex);
-						break;
-					default:
+					case LEFT -> listener.controllerLeftPressed(controllerIndex);
+					case RIGHT -> listener.controllerRightPressed(controllerIndex);
+					case UP -> listener.controllerUpPressed(controllerIndex);
+					case DOWN -> listener.controllerDownPressed(controllerIndex);
+					default ->
 						// assume button pressed
 						listener.controllerButtonPressed(controllerIndex,(index-BUTTON1)+1);
-						break;
 				}
 				if(consumed) break;
 			}
@@ -1503,22 +1494,13 @@ public class Input{
 			ControllerListener listener=(ControllerListener)listener1;
 			if(listener.isAcceptingInput()){
 				switch(index){
-					case LEFT:
-						listener.controllerLeftReleased(controllerIndex);
-						break;
-					case RIGHT:
-						listener.controllerRightReleased(controllerIndex);
-						break;
-					case UP:
-						listener.controllerUpReleased(controllerIndex);
-						break;
-					case DOWN:
-						listener.controllerDownReleased(controllerIndex);
-						break;
-					default:
+					case LEFT -> listener.controllerLeftReleased(controllerIndex);
+					case RIGHT -> listener.controllerRightReleased(controllerIndex);
+					case UP -> listener.controllerUpReleased(controllerIndex);
+					case DOWN -> listener.controllerDownReleased(controllerIndex);
+					default ->
 						// assume button release
 						listener.controllerButtonReleased(controllerIndex,(index-BUTTON1)+1);
-						break;
 				}
 				if(consumed) break;
 			}

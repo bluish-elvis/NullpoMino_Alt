@@ -142,17 +142,16 @@ class MarathonPlus:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	private fun setSpeed(engine:GameEngine) {
-		var lv = engine.statistics.level
-		if(lv<0) lv = 0
-		if(lv>=50) {
-			lv -= 50
+		val l = maxOf(0, engine.statistics.level)
+		if(l>=50) {
+			val lv = l-50
 			engine.speed.gravity = -1
 			engine.speed.areLine = 20-lv/10
 			engine.speed.are = engine.speed.areLine
 			engine.speed.lockDelay = 30-lv/20
 			engine.speed.das = 9-lv/32
 		} else {
-			if(lv>=tableSpeed.size) lv = tableSpeed.size-1
+			val lv = minOf(l, tableSpeed.size-1)
 			val g = tableSpeed[lv]
 			if(g==0)
 				engine.speed.gravity = -1
@@ -276,7 +275,7 @@ class MarathonPlus:NetDummyMode() {
 
 		setSpeed(engine)
 		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.SILENT
+			owner.bgmStatus.bgm = BGM.Silent
 		else
 			owner.bgmStatus.bgm = if(startlevel) tableBGM[4][goaltype] else tableBGM[goaltype][0]
 		owner.bgmStatus.fadesw = false
@@ -329,11 +328,13 @@ class MarathonPlus:NetDummyMode() {
 				val remainRollTime = maxOf(0, bonusTimeMax-bonusTime)
 
 				receiver.drawScoreFont(engine, playerID, 0, 11, "BONUS", EventReceiver.COLOR.RED)
-				receiver.drawScoreNum(engine, playerID, 0, 12, GeneralUtil.getTime(remainRollTime), remainRollTime>0&&remainRollTime<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 12, GeneralUtil.getTime(remainRollTime),
+					remainRollTime>0&&remainRollTime<10*60, 2f)
 			} else if(goaltype==3&&!startlevel) {
 				receiver.drawScoreFont(engine, playerID, 0, 11, "BONUS", EventReceiver.COLOR.RED)
 				receiver.drawScoreNum(engine, playerID, 6, 11, GeneralUtil.getTime(bonusTime), bonusTime>0&&bonusTime<10*60)
-				receiver.drawScoreNum(engine, playerID, 0, 12, (bonusTime*(1+engine.lives)*10).toString(), bonusTime>0&&bonusTime<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 12, (bonusTime*(1+engine.lives)*10).toString(), bonusTime>0&&bonusTime<10*60,
+					2f)
 			}
 		}
 		super.renderLast(engine, playerID)
@@ -421,10 +422,9 @@ class MarathonPlus:NetDummyMode() {
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Line clear bonus
 		val pts = calcScore(engine, lines)
-		var cmb = 0
 		var lv = engine.statistics.level
 		// Combo
-		if(engine.combo>=1&&lines>=1) cmb = engine.combo-1
+		val cmb = if(engine.combo>=1&&lines>=1) engine.combo-1 else 0
 
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		// Add to score
@@ -494,7 +494,7 @@ class MarathonPlus:NetDummyMode() {
 						bonusScore = engine.statistics.score*(1+lastlives)/3
 						engine.statistics.scoreBonus += bonusScore
 
-						owner.bgmStatus.bgm = BGM.ENDING(1)
+						owner.bgmStatus.bgm = BGM.Ending(1)
 						engine.ending = 1
 						engine.timerActive = false
 					} else {
@@ -525,7 +525,7 @@ class MarathonPlus:NetDummyMode() {
 
 			}
 		}
-		return if(pts>0)lastscore else 0
+		return if(pts>0) lastscore else 0
 	}
 
 	/* Soft drop */
@@ -621,14 +621,17 @@ class MarathonPlus:NetDummyMode() {
 				drawResult(engine, playerID, receiver, 6, EventReceiver.COLOR.BLUE, "BONUS LINE", bonusLines)
 			else
 				drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR.BLUE, Statistic.LEVEL)
-			drawResult(engine, playerID, receiver, 8, EventReceiver.COLOR.BLUE, "TOTAL TIME", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)), "LV20- TIME", String.format("%10s", GeneralUtil.getTime(
-				(engine.statistics.time-bonusTime).toFloat())), "BONUS TIME", String.format("%10s", GeneralUtil.getTime(bonusTime)))
+			drawResult(engine, playerID, receiver, 8, EventReceiver.COLOR.BLUE, "TOTAL TIME",
+				String.format("%10s", GeneralUtil.getTime(engine.statistics.time)), "LV20- TIME",
+				String.format("%10s", GeneralUtil.getTime(
+					(engine.statistics.time-bonusTime).toFloat())), "BONUS TIME", String.format("%10s", GeneralUtil.getTime(bonusTime)))
 
 			drawResultRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, rankingRank)
 			drawResultNetRank(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[0])
 			drawResultNetRankDaily(engine, playerID, receiver, 18, EventReceiver.COLOR.BLUE, netRankingRank[1])
 		} else
-			drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, Statistic.SPL, Statistic.SPM, Statistic.LPM, Statistic.PPS)
+			drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, Statistic.SPL, Statistic.SPM, Statistic.LPM,
+				Statistic.PPS)
 
 		if(netIsPB) receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
 
@@ -784,7 +787,7 @@ class MarathonPlus:NetDummyMode() {
 			// Bonus level entered
 			if(message[3]=="bonuslevelenter") {
 				engine.meterValue = 0
-				owner.bgmStatus.bgm = BGM.GM_1(1)
+				owner.bgmStatus.bgm = BGM.GrandM(1)
 				engine.timerActive = false
 				engine.ending = 1
 				engine.stat = GameEngine.Status.CUSTOM
@@ -907,12 +910,21 @@ class MarathonPlus:NetDummyMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Fall velocity table (numerators) */
-		private val tableSpeed = intArrayOf(4, 8, 16, 24, 32, 40, 48, 56, 64, 72, //0-9
-			80, 96, 112, 128, 140, 152, 164, 176, 188, 200, //10-19
-			20, 48, 80, 112, 144, 176, 192, 208, 224, 240, //20-29
-			256, 341, 426, 512, 597, 682, 768, 853, 938, 1024, //30-39
-			128, 192, 256, 384, 512, 640, 800, 960, 1120, 1280, //40-49
-			0)
+		private val tableSpeed = intArrayOf(8, 16, 24, 32, 40, 48, 56, 64, 72, 80,
+			96, 104, 112, 128, 144, 152, 160, 192, 224, 256, 64,
+			80, 96, 112, 128, 144, 160, 192, 224, 224, 256,
+			256, 384, 512, 512, 768, 768, 1024, 1024, 1280, 512,
+			512, 768, 1024, 1280, 1536, 1792, 2048, 2304, 2560, -1)
+		private val ARE_TABLE = intArrayOf(15, 15, 15, 15, 14, 14,
+			13, 12, 11, 10, 9, 8, 7, 6, 5, 15)
+		private val LOCK_TABLE = intArrayOf(30, 29, 28, 27, 26, 25,
+			24, 23, 22, 21, 20, 19, 18, 17, 17, 30)
+
+		// Levels for speed changes
+		private val LEVEL_ARE_LOCK_CHANGE = intArrayOf(60, 70, 80, 90, 100,
+			110, 120, 130, 140, 150,
+			160, 170, 180, 190, 200, 10000)
+
 		/*
 * 8 18 30
 * 6,13,21,30,40
@@ -926,11 +938,11 @@ class MarathonPlus:NetDummyMode() {
 		private val tableBGMChange =
 			arrayOf(intArrayOf(100, 150), intArrayOf(80, 180), intArrayOf(130, 300), intArrayOf(140, 280, 350))
 		private val tableBGM =
-			arrayOf(arrayOf(BGM.PUZZLE(0), BGM.GENERIC(1), BGM.GENERIC(2), BGM.GM_1(0)),
-				arrayOf(BGM.GENERIC(0), BGM.PUZZLE(1), BGM.GENERIC(2), BGM.GM_1(1)), //30levels
-				arrayOf(BGM.GENERIC(1), BGM.GM_1(1), BGM.GM_3(1), BGM.GENERIC(4)), //50levels
-				arrayOf(BGM.GENERIC(2), BGM.GENERIC(3), BGM.PUZZLE(2), BGM.GM_3(1), BGM.GENERIC(5)), //200levels
-				arrayOf(BGM.EXTRA(1), BGM.RUSH(0), BGM.RUSH(1), BGM.RUSH(2)))//challenge mode
+			arrayOf(arrayOf(BGM.Generic(0), BGM.Generic(1), BGM.Generic(2), BGM.GrandM(0)),
+				arrayOf(BGM.Puzzle(0), BGM.Generic(2), BGM.Generic(3), BGM.Generic(4)), //30levels
+				arrayOf(BGM.Puzzle(1), BGM.Generic(4), BGM.Generic(5), BGM.Generic(6)), //50levels
+				arrayOf(BGM.Puzzle(2), BGM.Generic(5), BGM.Generic(6), BGM.Generic(7), BGM.Generic(8)), //200levels
+				arrayOf(BGM.Rush(0), BGM.Rush(1), BGM.Rush(2), BGM.Rush(3)))//challenge mode
 
 		/** Ending time */
 		private val ROLLTIMELIMIT = intArrayOf(-1, 5000, 7500, 10000)

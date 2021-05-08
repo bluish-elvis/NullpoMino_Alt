@@ -36,7 +36,7 @@ import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
 import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
-import java.util.*
+import kotlin.random.Random
 
 /** Game Tuning menu state */
 class StateConfigGameTuning:BaseGameState() {
@@ -235,7 +235,7 @@ class StateConfigGameTuning:BaseGameState() {
 					val strButtonF = it.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)
 					val fontY = if(it.receiver.nextDisplayType==2) 1 else 27
 					FontNormal.printFontGrid(1, fontY,
-						"PUSH F BUTTON (ASSIGNED: ${strButtonF.toUpperCase()}) TO EXIT", COLOR.YELLOW)
+						"PUSH F BUTTON (ASSIGNED: ${strButtonF.uppercase()}) TO EXIT", COLOR.YELLOW)
 					val spd = engine.speed
 					val ow = engine.softDropSpd
 					FontNano.printFontGrid(16,13,"${spd.gravity}>$ow/${spd.denominator} ${engine.gcount}")
@@ -259,7 +259,7 @@ class StateConfigGameTuning:BaseGameState() {
 			val skinmax = ResourceHolder.imgNormalBlockList.size
 			sk = when(owSkin) {
 				-1 -> (sk+1)%skinmax
-				-2 -> Random().nextInt(skinmax)
+				-2 -> Random.Default.nextInt(skinmax)
 				else -> owSkin
 			}
 			val imgBlock = ResourceHolder.imgNormalBlockList[sk]
@@ -272,7 +272,7 @@ class StateConfigGameTuning:BaseGameState() {
 			FontNormal.printFontGrid(19, 4, when(owSkin) {
 				-1 -> "AUTO"
 				-2 -> "RANDOM"
-				else -> NullpoMinoSlick.propSkins.getProperty("Skin$owSkin", "").toUpperCase()
+				else -> NullpoMinoSlick.propSkins.getProperty("Skin$owSkin", "").uppercase()
 			}, cursor==1, COLOR.WHITE, if(ResourceHolder.blockStickyFlagList[sk]) COLOR.BLUE else COLOR.RED)
 
 			FontNormal.printFontGrid(2, 5, "min DAS:"+if(owMinDAS==-1) "AUTO" else "$owMinDAS", cursor==2, rainbow = (spdpv/2).toInt())

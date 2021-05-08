@@ -48,7 +48,7 @@ object FontNano {
 		}
 
 		str.forEachIndexed { i, char ->
-			val stringChar = char.toInt()
+			val stringChar = char.code
 
 			if(stringChar==0x0A) {
 				// 改行 (\n）

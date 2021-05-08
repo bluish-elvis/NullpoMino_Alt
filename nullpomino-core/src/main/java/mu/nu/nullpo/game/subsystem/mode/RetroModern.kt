@@ -153,7 +153,13 @@ class RetroModern:AbstractMode() {
 				engine.speed.are = engine.speed.areLine
 				engine.speed.lockDelay = tableLockDelay[gametype][lv]
 
-				engine.speed.lineDelay = if(gametype==4) 30 else if(gametype==0) 57 else 42
+				engine.speed.lineDelay = when(gametype) {
+					0 -> 57
+					1 -> 48
+					2 -> 39
+					3 -> 30
+					else -> 20
+				}
 			}
 			lv==MAX_LEVEL+1 -> {
 				engine.speed.gravity = 1
@@ -231,16 +237,25 @@ class RetroModern:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "Level", "$startlevel", "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "Level", "$startlevel", "BIG",
+			GeneralUtil.getONorOFF(big))
 	}
 
+	private fun setBGM(lv:Int) {
+		owner.bgmStatus.bgm = when(lv) {
+			MAX_LEVEL -> BGM.GrandM(1)
+			MAX_LEVEL+1 -> BGM.Silent
+			MAX_LEVEL+2 -> BGM.Ending(3)
+			else -> BGM.RetroS(tableBGMlevel.count {it<=lv})
+		}
+	}
 	/** This function will be called before the game actually begins (after
 	 * Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		if(engine.ending!=0) return
 		engine.big = big
 		special = true
-		owner.bgmStatus.bgm = tableBGM[startlevel]
+		setBGM(startlevel)
 		setSpeed(engine)
 	}
 
@@ -274,7 +289,8 @@ class RetroModern:AbstractMode() {
 					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 9, topY+i, "${rankingLines[gametype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 12, topY+i, "${rankingLevel[gametype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank,
+						scale)
 				}
 			}
 		} else {
@@ -337,7 +353,7 @@ class RetroModern:AbstractMode() {
 				engine.meterColor = GameEngine.METER_COLOR_LIMIT
 				var bg = levelBG[levelBG.size-1]
 				if(rolltime<=ROLLTIMELIMIT-3600) bg = levelBG[rolltime*MAX_LEVEL/(ROLLTIMELIMIT-3600)]
-				//else owner.bgmStatus.bgm=ENDING(1);
+				//else owner.bgmStatus.bgm=Ending(1);
 
 				if(owner.backgroundStatus.fadebg!=bg) {
 					owner.backgroundStatus.fadebg = bg
@@ -406,7 +422,9 @@ class RetroModern:AbstractMode() {
 				else
 					engine.playSE("levelup")
 
+
 			if(newlevel!=MAX_LEVEL+1) setSpeed(engine)
+
 			if(newlevel<levelBG.size-1) {
 				owner.backgroundStatus.fadecount = 0
 				owner.backgroundStatus.fadebg = levelBG[newlevel]
@@ -414,7 +432,7 @@ class RetroModern:AbstractMode() {
 			}
 			norm = 0
 			engine.meterValue = 0
-			if(newlevel<tableBGM.size) owner.bgmStatus.bgm = tableBGM[newlevel]
+			setBGM(newlevel)
 		}
 		return pts
 	}
@@ -462,7 +480,7 @@ class RetroModern:AbstractMode() {
 				pts *= 10*tableBonusMult[engine.statistics.level]
 				lastscore = pts
 				engine.statistics.scoreBonus += pts
-				receiver.addScore(engine,engine.fieldWidth/2,engine.fieldHeight+1,pts, COLOR.RAINBOW)
+				receiver.addScore(engine, engine.fieldWidth/2, engine.fieldHeight+1, pts, COLOR.RAINBOW)
 			}
 		}
 		return super.lineClearEnd(engine, playerID)
@@ -548,7 +566,8 @@ class RetroModern:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", COLOR.ORANGE)
 
-		drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL,
+			Statistic.TIME)
 		drawResultRank(engine, playerID, receiver, 11, COLOR.BLUE, rankingRank)
 	}
 
@@ -691,10 +710,7 @@ class RetroModern:AbstractMode() {
 			0, 1, 2, 3, 4, 5,
 			6, 7, 8, 9, 14, 19,
 			10, 11, 12, 13, 29, 36)
-		private val tableBGM = arrayOf(
-			BGM.GENERIC(0), BGM.GENERIC(0), BGM.GENERIC(0), BGM.GENERIC(0), BGM.PUZZLE(0), BGM.PUZZLE(0),
-			BGM.GENERIC(1), BGM.GENERIC(1), BGM.GENERIC(2), BGM.GENERIC(2), BGM.GENERIC(2), BGM.GM_2(0),
-			BGM.GM_2(0), BGM.GM_2(1), BGM.GM_2(1), BGM.GM_1(1), BGM.SILENT, BGM.ENDING(3))
+		private val tableBGMlevel = arrayOf(4, 6, 8, 10, 11, 13, 15)
 		/** Name of game types */
 		private val GAMETYPE_NAME = arrayOf("EASY", "NORMAL", "INTENSE", "HARD", "OVERED")
 

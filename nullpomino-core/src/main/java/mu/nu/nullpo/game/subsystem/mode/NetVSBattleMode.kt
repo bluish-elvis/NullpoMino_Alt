@@ -50,7 +50,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 	private var hurryupCount:Int = 0
 
 	/** true if you KO'd player */
-	private var playerKObyYou:BooleanArray=BooleanArray(0)
+	private var playerKObyYou:BooleanArray = BooleanArray(0)
 
 	/** Your KO count */
 	private var currentKO:Int = 0
@@ -62,7 +62,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 	private var lastevent:IntArray = IntArray(0)
 
 	/** true if most recent scoring event was B2B */
-	private var lastb2b:BooleanArray=BooleanArray(0)
+	private var lastb2b:BooleanArray = BooleanArray(0)
 
 	/** Most recent scoring event Combo count */
 	private var lastcombo:IntArray = IntArray(0)
@@ -80,10 +80,10 @@ class NetVSBattleMode:NetDummyVSMode() {
 	private var garbageEntries:LinkedList<GarbageEntry> = LinkedList()
 
 	/** APL (Attack Per Line) */
-	private var playerAPL:FloatArray=FloatArray(0)
+	private var playerAPL:FloatArray = FloatArray(0)
 
 	/** APM (Attack Per Minute) */
-	private var playerAPM:FloatArray=FloatArray(0)
+	private var playerAPM:FloatArray = FloatArray(0)
 
 	/** Target ID (-1:All) */
 	private var targetID:Int = 0
@@ -336,7 +336,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 
 		// Garbage lines appear
 		if((lines==0||!netCurrentRoomInfo!!.rensaBlock)&&totalGarbageLines>=GARBAGE_DENOMINATOR&&!netvsIsPractice) {
-			engine.playSE("garbage${if(totalGarbageLines-GARBAGE_DENOMINATOR>3)1 else 0}")
+			engine.playSE("garbage${if(totalGarbageLines-GARBAGE_DENOMINATOR>3) 1 else 0}")
 
 			var smallGarbageCount = 0
 			var hole = lastHole
@@ -386,7 +386,8 @@ class NetVSBattleMode:NetDummyVSMode() {
 							if(newHole>=hole) newHole++
 							hole = newHole
 						}
-						engine.field!!.addSingleHoleGarbage(hole, Block.BLOCK_COLOR_GRAY, engine.skin, smallGarbageCount/GARBAGE_DENOMINATOR)
+						engine.field!!.addSingleHoleGarbage(hole, Block.BLOCK_COLOR_GRAY, engine.skin,
+							smallGarbageCount/GARBAGE_DENOMINATOR)
 					} else
 						for(i in smallGarbageCount/GARBAGE_DENOMINATOR downTo 1) {
 							if(engine.random.nextInt(100)<finalGarbagePercent) {
@@ -643,7 +644,11 @@ class NetVSBattleMode:NetDummyVSMode() {
 		if(engine.displaysize==-1) scale = .5f
 
 		drawResultScale(engine, playerID, owner.receiver, 2, COLOR.ORANGE, scale, "ATTACK", String.format("%10g",
-			garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR), "LINE", String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked), "ATK/LINE", String.format("%10g", playerAPL[playerID]), "ATTACK/MIN", String.format("%10g", playerAPM[playerID]), "LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps), "Time", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
+			garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR), "LINE", String.format("%10d", engine.statistics.lines), "PIECE",
+			String.format("%10d", engine.statistics.totalPieceLocked), "ATK/LINE", String.format("%10g", playerAPL[playerID]),
+			"ATTACK/MIN", String.format("%10g", playerAPM[playerID]), "LINE/MIN", String.format("%10g", engine.statistics.lpm),
+			"PIECE/SEC", String.format("%10g", engine.statistics.pps), "Time",
+			String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
 	}
 
 	/* Send stats */

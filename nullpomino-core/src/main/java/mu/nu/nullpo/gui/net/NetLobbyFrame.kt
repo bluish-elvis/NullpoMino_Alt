@@ -348,9 +348,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Spin bonusType(Create room screen) */
 	private val comboboxCreateRoomTWISTEnableType:JComboBox<String> = JComboBox()
 
-	/** Spin recognition type (4-point, immobile, etc.) */
-	private val comboboxCreateRoomSpinCheckType:JComboBox<String> = JComboBox()
-
 	/** Flag for enabling B2B(Create room screen) */
 	private val chkboxCreateRoomB2B:JCheckBox = JCheckBox()
 
@@ -513,7 +510,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		get() {
 			val dir = File("config/rule")
 
-			val list = dir.list {dir1, name -> name.endsWith(".rul")}
+			val list = dir.list {_, name -> name.endsWith(".rul")}
 
 			if(!System.getProperty("os.name").startsWith("Windows"))
 				list?.sort()
@@ -696,7 +693,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			loadListToDefaultListModel(listmodelServerList, "config/list/netlobby_serverlist_default.lst")
 			saveListFromDefaultListModel(listmodelServerList, "config/setting/netlobby_serverlist.cfg")
 		}
-		val spListboxServerSelect = JScrollPane(listboxServerList.apply{
+		val spListboxServerSelect = JScrollPane(listboxServerList.apply {
 			model = listmodelServerList
 			componentPopupMenu = ServerSelectListBoxPopupMenu()
 			addMouseListener(ServerSelectListBoxMouseAdapter())
@@ -803,7 +800,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		val mainpanelLobby = JPanel(BorderLayout())
 		//this.getContentPane().add(mainpanelLobby, SCREENCARD_NAMES[SCREENCARD_LOBBY]);
 		tabLobbyAndRoom.addTab(getUIText("Lobby_Tab_Lobby"), mainpanelLobby)
-		tabLobbyAndRoom.setMnemonicAt(0, 'Y'.toInt())
+		tabLobbyAndRoom.setMnemonicAt(0, 'Y'.code)
 
 		// * Partition line separating the upper and lower
 		mainpanelLobby.add(splitLobby.apply {
@@ -967,7 +964,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		val mainpanelRoom = JPanel(BorderLayout())
 		//this.getContentPane().add(mainpanelRoom, SCREENCARD_NAMES[SCREENCARD_ROOM]);
 		tabLobbyAndRoom.addTab(getUIText("Lobby_Tab_NoRoom"), mainpanelRoom)
-		tabLobbyAndRoom.setMnemonicAt(1, 'R'.toInt())
+		tabLobbyAndRoom.setMnemonicAt(1, 'R'.code)
 		tabLobbyAndRoom.setEnabledAt(1, false)
 
 		// * Partition line separating the upper and lower
@@ -1586,21 +1583,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		comboboxCreateRoomTWISTEnableType.toolTipText = getUIText("CreateRoom_TwistEnableType_Tip")
 		subpanelTWISTEnableType.add(comboboxCreateRoomTWISTEnableType, BorderLayout.EAST)
 
-		// ** Spin check type panel
-		val subpanelSpinCheckType = JPanel(BorderLayout())
-		containerpanelCreateRoomBonus.add(subpanelSpinCheckType)
-
-		// *** Spin check type label
-		subpanelSpinCheckType.add(JLabel(getUIText("CreateRoom_SpinCheckType")), BorderLayout.WEST)
-
-		// *** Spin check type combobox
-		comboboxCreateRoomSpinCheckType.model = DefaultComboBoxModel(
-			COMBOBOX_SPINCHECKTYPE_NAMES.map {getUIText(it)}.toTypedArray())
-		comboboxCreateRoomSpinCheckType.selectedIndex = propConfig.getProperty("createroom.defaultWISTCheckType", 1)
-		comboboxCreateRoomSpinCheckType.preferredSize = Dimension(200, 20)
-		comboboxCreateRoomSpinCheckType.toolTipText = getUIText("CreateRoom_SpinCheckType_Tip")
-		subpanelSpinCheckType.add(comboboxCreateRoomSpinCheckType, BorderLayout.EAST)
-
 		// ** EZ Spin checkbox
 		chkboxCreateRoomTWISTEnableEZ.text = getUIText("CreateRoom_TwistEnableEZ")
 		chkboxCreateRoomTWISTEnableEZ.setMnemonic('E')
@@ -1897,7 +1879,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		pModeList.add(JScrollPane(listboxCreateRoom1PModeList.apply {
 			model = (listmodelCreateRoom1PModeList)
-			addListSelectionListener {labelCreateRoom1PGameMode.text = getModeDesc(it.toString())}
+			addListSelectionListener {labelCreateRoom1PGameMode.text = getModeDesc("$it")}
 			setSelectedValue(propConfig.getProperty("createroom1p.listboxCreateRoom1PModeList.value", ""), true)
 		}), BorderLayout.CENTER)
 
@@ -1959,7 +1941,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			}
 		}
 
-		(0 until GameEngine.MAX_GAMESTYLE).forEach {i ->
+		for(i in 0 until GameEngine.MAX_GAMESTYLE) {
 			val tm = tableMPRanking[i].columnModel
 			tm.getColumn(0).preferredWidth = propConfig.getProperty("tableMPRanking.width.rank", 30) // Rank
 			tm.getColumn(1).preferredWidth = propConfig.getProperty("tableMPRanking.width.name", 200) // Name
@@ -2250,7 +2232,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param showDate true to show date
 	 * @return String created from Calendar
 	 */
-	@JvmOverloads fun getTimeAsString(cal:Calendar?, showDate:Boolean = false):String {
+	fun getTimeAsString(cal:Calendar?, showDate:Boolean = false):String {
 		if(cal==null) return if(showDate) "????-??-?? ??:??:??" else "??:??:??"
 		val strFormat = if(showDate) "yyyy-MM-dd HH:mm:ss" else "HH:mm:ss"
 		val dfm = SimpleDateFormat(strFormat)
@@ -2281,7 +2263,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param str The string to add
 	 * @param fgcolor Letter cint(nullYes)
 	 */
-	@JvmOverloads fun addSystemChatLog(txtpane:JTextPane, str:String?, fgcolor:Color? = null) {
+	fun addSystemChatLog(txtpane:JTextPane, str:String?, fgcolor:Color? = null) {
 		val strTime = currentTimeAsString
 
 		var sas:SimpleAttributeSet? = null
@@ -2464,7 +2446,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				} else {
 					// Game mode name
 					val commaIndex = str.indexOf(',')
-					if(commaIndex!=-1) listModel.addElement(str.substring(0, commaIndex))
+					if(commaIndex!=-1) listModel.addElement(str.take(commaIndex))
 				}
 			}
 		} catch(e:IOException) {
@@ -2494,7 +2476,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				} else {
 					// Game mode name
 					val commaIndex = str.indexOf(',')
-					if(commaIndex!=-1) listModel.addElement(str.substring(0, commaIndex))
+					if(commaIndex!=-1) listModel.addElement(str.take(commaIndex))
 				}
 			}
 		} catch(e:IOException) {
@@ -2570,7 +2552,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun createRoomListRowData(r:NetRoomInfo):Array<String> = arrayOf(
 		r.roomID.toString(), r.strName, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False"),
-		if(r.ruleLock) r.ruleName.toUpperCase() else getUIText("RoomTable_RuleName_Any"), r.strMode,
+		if(r.ruleLock) r.ruleName.uppercase() else getUIText("RoomTable_RuleName_Any"), r.strMode,
 		if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting"),
 		r.playerSeatedCount.toString()+"/"+r.maxPlayers, r.spectatorCount.toString())
 
@@ -2631,7 +2613,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					messiness = propConfig.getProperty("createroom.defaultGarbagePercent", 90)
 					ruleLock = propConfig.getProperty("createroom.defaultRuleLock", false)
 					twistEnableType = propConfig.getProperty("createroom.defaultTwistEnableType", 2)
-					spinCheckType = propConfig.getProperty("createroom.defaultWISTCheckType", 1)
 					twistEnableEZ = propConfig.getProperty("createroom.defaultTwistEnableEZ", true)
 					b2b = propConfig.getProperty("createroom.defaultB2B", true)
 					combo = propConfig.getProperty("createroom.defaultCombo", true)
@@ -2854,43 +2835,51 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		propConfig.setProperty("serverselect.txtfldPlayerName.text", txtfldPlayerName.text)
 		propConfig.setProperty("serverselect.txtfldPlayerTeam.text", txtfldPlayerTeam.text)
 
-		propConfig.setProperty("serverselect.listboxServerList.value", listboxServerList.selectedValue?:"")
+		propConfig.setProperty("serverselect.listboxServerList.value", listboxServerList.selectedValue ?: "")
 		tableRoomList.columnModel.let {
-			propConfig.setProperty("tableRoomList.width.id", it.getColumn(0).width)
-			propConfig.setProperty("tableRoomList.width.name", it.getColumn(1).width)
-			propConfig.setProperty("tableRoomList.width.rated", it.getColumn(2).width)
-			propConfig.setProperty("tableRoomList.width.rulename", it.getColumn(3).width)
-			propConfig.setProperty("tableRoomList.width.modename", it.getColumn(4).width)
-			propConfig.setProperty("tableRoomList.width.status", it.getColumn(5).width)
-			propConfig.setProperty("tableRoomList.width.players", it.getColumn(6).width)
-			propConfig.setProperty("tableRoomList.width.spectators", it.getColumn(7).width)
+			if(it.columnCount==8) {
+				propConfig.setProperty("tableRoomList.width.id", it.getColumn(0).width)
+				propConfig.setProperty("tableRoomList.width.name", it.getColumn(1).width)
+				propConfig.setProperty("tableRoomList.width.rated", it.getColumn(2).width)
+				propConfig.setProperty("tableRoomList.width.rulename", it.getColumn(3).width)
+				propConfig.setProperty("tableRoomList.width.modename", it.getColumn(4).width)
+				propConfig.setProperty("tableRoomList.width.status", it.getColumn(5).width)
+				propConfig.setProperty("tableRoomList.width.players", it.getColumn(6).width)
+				propConfig.setProperty("tableRoomList.width.spectators", it.getColumn(7).width)
+			}
 		}
 
 		tableGameStat.columnModel.let {
-			propConfig.setProperty("tableGameStat.width.rank", it.getColumn(0).width)
-			propConfig.setProperty("tableGameStat.width.name", it.getColumn(1).width)
-			propConfig.setProperty("tableGameStat.width.attack", it.getColumn(2).width)
-			propConfig.setProperty("tableGameStat.width.apl", it.getColumn(3).width)
-			propConfig.setProperty("tableGameStat.width.apm", it.getColumn(4).width)
-			propConfig.setProperty("tableGameStat.width.lines", it.getColumn(5).width)
-			propConfig.setProperty("tableGameStat.width.lpm", it.getColumn(6).width)
-			propConfig.setProperty("tableGameStat.width.piece", it.getColumn(7).width)
-			propConfig.setProperty("tableGameStat.width.pps", it.getColumn(8).width)
-			propConfig.setProperty("tableGameStat.width.time", it.getColumn(9).width)
-			propConfig.setProperty("tableGameStat.width.ko", it.getColumn(10).width)
-			propConfig.setProperty("tableGameStat.width.wins", it.getColumn(11).width)
-			propConfig.setProperty("tableGameStat.width.games", it.getColumn(12).width)
+			if(it.columnCount==13) {
+				propConfig.setProperty("tableGameStat.width.rank", it.getColumn(0).width)
+				propConfig.setProperty("tableGameStat.width.name", it.getColumn(1).width)
+				propConfig.setProperty("tableGameStat.width.attack", it.getColumn(2).width)
+				propConfig.setProperty("tableGameStat.width.apl", it.getColumn(3).width)
+				propConfig.setProperty("tableGameStat.width.apm", it.getColumn(4).width)
+				propConfig.setProperty("tableGameStat.width.lines", it.getColumn(5).width)
+				propConfig.setProperty("tableGameStat.width.lpm", it.getColumn(6).width)
+				propConfig.setProperty("tableGameStat.width.piece", it.getColumn(7).width)
+				propConfig.setProperty("tableGameStat.width.pps", it.getColumn(8).width)
+				propConfig.setProperty("tableGameStat.width.time", it.getColumn(9).width)
+				propConfig.setProperty("tableGameStat.width.ko", it.getColumn(10).width)
+				propConfig.setProperty("tableGameStat.width.wins", it.getColumn(11).width)
+				propConfig.setProperty("tableGameStat.width.games", it.getColumn(12).width)
+			}
 		}
 		tableGameStat1P.columnModel.let {
-			propConfig.setProperty("tableGameStat1P.width.description", it.getColumn(0).width)
-			propConfig.setProperty("tableGameStat1P.width.value", it.getColumn(1).width)
+			if(it.columnCount==2) {
+				propConfig.setProperty("tableGameStat1P.width.description", it.getColumn(0).width)
+				propConfig.setProperty("tableGameStat1P.width.value", it.getColumn(1).width)
+			}
 		}
 		tableMPRanking[0].columnModel.let {
-			propConfig.setProperty("tableMPRanking.width.rank", it.getColumn(0).width)
-			propConfig.setProperty("tableMPRanking.width.name", it.getColumn(1).width)
-			propConfig.setProperty("tableMPRanking.width.rating", it.getColumn(2).width)
-			propConfig.setProperty("tableMPRanking.width.play", it.getColumn(3).width)
-			propConfig.setProperty("tableMPRanking.width.win", it.getColumn(4).width)
+			if(it.columnCount==5) {
+				propConfig.setProperty("tableMPRanking.width.rank", it.getColumn(0).width)
+				propConfig.setProperty("tableMPRanking.width.name", it.getColumn(1).width)
+				propConfig.setProperty("tableMPRanking.width.rating", it.getColumn(2).width)
+				propConfig.setProperty("tableMPRanking.width.play", it.getColumn(3).width)
+				propConfig.setProperty("tableMPRanking.width.win", it.getColumn(4).width)
+			}
 		}
 		backupRoomInfo?.let {
 			propConfig.setProperty("createroom.defaultMaxPlayers", it.maxPlayers)
@@ -2908,7 +2897,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			propConfig.setProperty("createroom.defaultHurryupInterval", it.hurryupInterval)
 			propConfig.setProperty("createroom.defaultRuleLock", it.ruleLock)
 			propConfig.setProperty("createroom.defaultTwistEnableType", it.twistEnableType)
-			propConfig.setProperty("createroom.defaultWISTCheckType", it.spinCheckType)
 			propConfig.setProperty("createroom.defaultTwistEnableEZ", it.twistEnableEZ)
 			propConfig.setProperty("createroom.defaultB2B", it.b2b)
 			propConfig.setProperty("createroom.defaultCombo", it.combo)
@@ -3014,7 +3002,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			var portSpliter = strServer.indexOf(":")
 			if(portSpliter==-1) portSpliter = strServer.length
 
-			val strHost = strServer.substring(0, portSpliter)
+			val strHost = strServer.take(portSpliter)
 			log.debug("Host:$strHost")
 
 			var port = NetBaseClient.DEFAULT_PORT
@@ -3049,7 +3037,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			var portSpliter = strServer.indexOf(":")
 			if(portSpliter==-1) portSpliter = strServer.length
 
-			val strHost = strServer.substring(0, portSpliter)
+			val strHost = strServer.take(portSpliter)
 			log.debug("Host:$strHost")
 
 			var port = NetBaseClient.DEFAULT_PORT
@@ -3121,7 +3109,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val integerHurryupInterval = spinnerCreateRoomHurryupInterval.value as Int
 			val rulelock = chkboxCreateRoomRuleLock.isSelected
 			val twistEnableType = comboboxCreateRoomTWISTEnableType.selectedIndex
-			val spinCheckType = comboboxCreateRoomSpinCheckType.selectedIndex
 			val twistEnableEZ = chkboxCreateRoomTWISTEnableEZ.isSelected
 			val b2b = chkboxCreateRoomB2B.isSelected
 			val combo = chkboxCreateRoomCombo.isSelected
@@ -3155,7 +3142,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			roomInfo.hurryupInterval = integerHurryupInterval
 			roomInfo.ruleLock = rulelock
 			roomInfo.twistEnableType = twistEnableType
-			roomInfo.spinCheckType = spinCheckType
 			roomInfo.twistEnableEZ = twistEnableEZ
 			roomInfo.b2b = b2b
 			roomInfo.combo = combo
@@ -3206,7 +3192,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			chkboxCreateRoomUseMap.isSelected = r.useMap
 			chkboxCreateRoomRuleLock.isSelected = r.ruleLock
 			comboboxCreateRoomTWISTEnableType.selectedIndex = r.twistEnableType
-			comboboxCreateRoomSpinCheckType.selectedIndex = r.spinCheckType
 			chkboxCreateRoomTWISTEnableEZ.isSelected = r.twistEnableEZ
 			chkboxCreateRoomB2B.isSelected = r.b2b
 			chkboxCreateRoomCombo.isSelected = r.combo
@@ -3350,7 +3335,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		if(e.actionCommand=="ServerSelect_Exit") shutdown()
 		// Quick Start
 		if(e.actionCommand=="Lobby_QuickStart") {
-			// TODO:Quick Start
+			// TODO: Quick Start
 		}
 		// Create Room 1P
 		if(e.actionCommand=="Lobby_RoomCreate1P") {
@@ -4107,7 +4092,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			mapList.clear()
 
-			val maxMap = strMaps.size
 			Collections.addAll(mapList, *strMaps)
 
 			log.debug("Received ${mapList.size} maps")

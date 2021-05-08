@@ -1,9 +1,7 @@
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.gui.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNano
-import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.newdawn.slick.*
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame

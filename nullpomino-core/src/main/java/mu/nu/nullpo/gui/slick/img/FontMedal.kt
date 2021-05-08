@@ -23,7 +23,6 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.gui.slick.img
 
-import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import org.newdawn.slick.Color
 
@@ -49,7 +48,7 @@ object FontMedal {
 		ResourceHolder.imgFontMedal.draw(x+(1+9*str.length)*scale, y-4*scale, x+(5+9*str.length)*scale, y+20*scale,
 			6f, sy, 10f, sy+24f)
 		for(i in str.indices) {
-			val stringChar = str[i].toInt() - 0x41
+			val stringChar = str[i].code- 0x41
 			if(stringChar in 0x00..0x1B) {// Character output
 				val dx:Float = x+i*9f
 				val sx:Float = stringChar*9f+10f

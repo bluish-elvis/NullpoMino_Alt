@@ -23,15 +23,13 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
-import java.util.LinkedList
-import java.util.Random
+import java.util.*
+import kotlin.random.Random
 
 /** TOOL-VS MAP EDIT */
 class ToolVSMapEditMode:AbstractMode() {
@@ -86,7 +84,7 @@ class ToolVSMapEditMode:AbstractMode() {
 	 * @param setID MapSetID
 	 */
 	private fun loadAllMaps(setID:Int) {
-		propMap = receiver.loadProperties("config/map/vsbattle/$setID.map")?:CustomProperties()
+		propMap = receiver.loadProperties("config/map/vsbattle/$setID.map") ?: CustomProperties()
 
 		listFields!!.clear()
 
@@ -114,7 +112,7 @@ class ToolVSMapEditMode:AbstractMode() {
 	}
 
 	private fun grayToRandomColor(field:Field) {
-		val rand = Random()
+		val rand = Random.Default
 
 		for(i in field.hiddenHeight*-1 until field.height)
 			for(j in 0 until field.width)

@@ -245,7 +245,7 @@ class RetroMarathon:AbstractMode() {
 		engine.big = big
 		engine.statistics.levelDispAdd = 1
 
-		owner.bgmStatus.bgm = BGM.RETRO_A(0)
+		owner.bgmStatus.bgm = BGM.RetroA(0)
 		when(gametype) {
 			PRESSURE -> {
 				engine.statistics.level = 0
@@ -278,7 +278,8 @@ class RetroMarathon:AbstractMode() {
 						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW)
 					receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingScore[gametype.ordinal][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, playerID, 12, 4+i, "${rankingLines[gametype.ordinal][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, playerID, 17, 4+i, String.format("%02d", rankingLevel[gametype.ordinal][i]), i==rankingRank)
+					receiver.drawScoreNum(engine, playerID, 17, 4+i, String.format("%02d", rankingLevel[gametype.ordinal][i]),
+						i==rankingRank)
 				}
 			}
 		} else {
@@ -374,7 +375,7 @@ class RetroMarathon:AbstractMode() {
 			else if(lv>=19) lv = 19
 
 			owner.backgroundStatus.fadebg = lv
-			owner.bgmStatus.bgm = BGM.RETRO_A(maxOf(lv/4, 4))
+			owner.bgmStatus.bgm = BGM.RetroA(maxOf(lv/4, 4))
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}

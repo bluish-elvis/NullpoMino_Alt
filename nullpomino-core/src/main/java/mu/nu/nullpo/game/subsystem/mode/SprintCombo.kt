@@ -23,8 +23,9 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -77,8 +78,8 @@ class SprintCombo:NetDummyMode() {
 	/** Shape type */
 	private var shapetype:Int = 0
 
-	/** Stack colour */
-	private var stackColour:Int = 0
+	/** Stack color */
+	private var stackColor:Int = 0
 
 	/** Width of combo well */
 	private var comboWidth:Int = 0
@@ -123,7 +124,7 @@ class SprintCombo:NetDummyMode() {
 		shapetype = 1
 		presetNumber = 0
 		remainStack = 0
-		stackColour = 0
+		stackColor = 0
 		nextseclines = 10
 
 		rankingRank = -1
@@ -151,14 +152,14 @@ class SprintCombo:NetDummyMode() {
 
 	/** Load the settings */
 	private fun loadPreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
-		engine.speed.gravity = prop.getProperty("comborace.gravity.$preset", 4)
+		engine.speed.gravity = prop.getProperty("comborace.gravity.$preset", 1)
 		engine.speed.denominator = prop.getProperty("comborace.denominator.$preset", 256)
-		engine.speed.are = prop.getProperty("comborace.are.$preset", 10)
-		engine.speed.areLine = prop.getProperty("comborace.areLine.$preset", 5)
-		engine.speed.lineDelay = prop.getProperty("comborace. lineDelay.$preset", 20)
+		engine.speed.are = prop.getProperty("comborace.are.$preset", 0)
+		engine.speed.areLine = prop.getProperty("comborace.areLine.$preset", 0)
+		engine.speed.lineDelay = prop.getProperty("comborace. lineDelay.$preset", 0)
 		engine.speed.lockDelay = prop.getProperty("comborace.lockDelay.$preset", 30)
-		engine.speed.das = prop.getProperty("comborace.das.$preset", 14)
-		bgmno = prop.getProperty("comborace.bgmno.$preset", 0)
+		engine.speed.das = prop.getProperty("comborace.das.$preset", 10)
+		bgmno = prop.getProperty("comborace.bgmno.$preset", BGM.values.indexOf(BGM.Rush(0)))
 		big = prop.getProperty("comborace.big.$preset", false)
 		goaltype = prop.getProperty("comborace.goaltype.$preset", 1)
 		shapetype = prop.getProperty("comborace.shapetype.$preset", 1)
@@ -229,7 +230,7 @@ class SprintCombo:NetDummyMode() {
 					8 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					9 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					10 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					11 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					11 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					12, 13 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
 				}
 
@@ -295,8 +296,7 @@ class SprintCombo:NetDummyMode() {
 			menuColor = EventReceiver.COLOR.BLUE
 			drawMenuCompact(engine, playerID, receiver, "WIDTH", "$comboWidth")
 
-			drawMenuSpeeds(engine, playerID, receiver, engine.speed.gravity, engine.speed.denominator,
-				engine.speed.are, engine.speed.areLine, engine.speed.lineDelay, engine.speed.lockDelay, engine.speed.das)
+			drawMenuSpeeds(engine, playerID, receiver)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
 			if(!engine.owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
@@ -328,7 +328,7 @@ class SprintCombo:NetDummyMode() {
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		if(version<=0) engine.big = big
 		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.SILENT
+			owner.bgmStatus.bgm = BGM.Silent
 		else
 			owner.bgmStatus.bgm = BGM.values[bgmno]
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
@@ -362,9 +362,9 @@ class SprintCombo:NetDummyMode() {
 				for(x in 0 until w)
 					if(x<cx-1||x>cx-2+comboWidth)
 						engine.field!!.setBlock(x, y,
-							Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
+							Block(STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
 								Block.ATTRIBUTE.GARBAGE))
-				stackColour++
+				stackColor++
 			}
 
 		// insert starting shape
@@ -372,7 +372,7 @@ class SprintCombo:NetDummyMode() {
 			for(i in 0..11)
 				if(SHAPE_TABLE[shapetype][i]==1)
 					engine.field!!.setBlock(i%4, h-1-i/4,
-						Block(SHAPE_COLOUR_TABLE[shapetype], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+						Block(SHAPE_COLOR_TABLE[shapetype], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
@@ -447,9 +447,9 @@ class SprintCombo:NetDummyMode() {
 					for(x in 0 until w)
 						if(x<cx-1||x>cx-2+comboWidth)
 							engine.field!!.setBlock(x, -ceilingAdjust-tmplines,
-								Block(STACK_COLOUR_TABLE[stackColour%STACK_COLOUR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
+								Block(STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
 									Block.ATTRIBUTE.GARBAGE))
-					stackColour++
+					stackColor++
 					tmplines++
 					remainStack--
 				}
@@ -458,9 +458,9 @@ class SprintCombo:NetDummyMode() {
 				val meterMax = receiver.getMeterMax(engine)
 				val colorIndex = (engine.statistics.maxCombo-1)/meterMax
 				engine.meterValue = (engine.statistics.maxCombo-1)%meterMax
-				engine.meterColor = METER_COLOUR_TABLE[colorIndex%METER_COLOUR_TABLE.size]
+				engine.meterColor = METER_COLOR_TABLE[colorIndex%METER_COLOR_TABLE.size]
 				engine.meterValueSub = if(colorIndex>0) meterMax else 0
-				engine.meterColorSub = METER_COLOUR_TABLE[maxOf(colorIndex-1, 0)%METER_COLOUR_TABLE.size]
+				engine.meterColorSub = METER_COLOR_TABLE[maxOf(colorIndex-1, 0)%METER_COLOR_TABLE.size]
 			} else {
 				val remainLines = GOAL_TABLE[goaltype]-engine.statistics.lines
 				engine.meterValue = remainLines*receiver.getMeterMax(engine)/GOAL_TABLE[goaltype]
@@ -550,7 +550,7 @@ class SprintCombo:NetDummyMode() {
 
 	/** Save the ranking */
 	fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until GOAL_TABLE.size).flatMap {i ->
+		super.saveRanking(ruleName, (GOAL_TABLE.indices).flatMap {i ->
 			(0 until GAMETYPE_MAX).flatMap {j ->
 				(0 until RANKING_MAX).flatMap {k ->
 					listOf("$ruleName.$i.$j.maxcombo.$k" to rankingCombo[i][j][k],
@@ -707,16 +707,16 @@ class SprintCombo:NetDummyMode() {
 			intArrayOf(1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0),
 			intArrayOf(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1))
 
-		/** Starting shape colour */
-		private val SHAPE_COLOUR_TABLE:Array<Block.COLOR?> = arrayOf(null, Block.COLOR.CYAN, Block.COLOR.CYAN, Block.COLOR.RED,
+		/** Starting shape color */
+		private val SHAPE_COLOR_TABLE:Array<Block.COLOR?> = arrayOf(null, Block.COLOR.CYAN, Block.COLOR.CYAN, Block.COLOR.RED,
 			Block.COLOR.GREEN, Block.COLOR.GREEN, Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.ORANGE)
 
-		/** Stack colour order */
-		private val STACK_COLOUR_TABLE:Array<Block.COLOR> = arrayOf(Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW,
+		/** Stack color order */
+		private val STACK_COLOR_TABLE:Array<Block.COLOR> = arrayOf(Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW,
 			Block.COLOR.GREEN, Block.COLOR.CYAN, Block.COLOR.BLUE, Block.COLOR.PURPLE)
 
 		/** Meter colors for really high combos in Endless */
-		private val METER_COLOUR_TABLE = intArrayOf(GameEngine.METER_COLOR_GREEN, GameEngine.METER_COLOR_YELLOW,
+		private val METER_COLOR_TABLE = intArrayOf(GameEngine.METER_COLOR_GREEN, GameEngine.METER_COLOR_YELLOW,
 			GameEngine.METER_COLOR_ORANGE, GameEngine.METER_COLOR_RED, GameEngine.METER_COLOR_PINK, GameEngine.METER_COLOR_PURPLE,
 			GameEngine.METER_COLOR_DARKBLUE, GameEngine.METER_COLOR_BLUE, GameEngine.METER_COLOR_CYAN,
 			GameEngine.METER_COLOR_DARKGREEN)

@@ -22,7 +22,7 @@ import java.nio.ByteOrder;
  * some cases.
  * @author kevin
  */
-public class OggInputStream extends InputStream implements AudioInputStream{
+@SuppressWarnings("ALL") public class OggInputStream extends InputStream implements AudioInputStream{
 	/** The conversion buffer size */
 	private int convsize=4096*4;
 	/** The buffer used to read OGG file */
@@ -277,9 +277,8 @@ public class OggInputStream extends InputStream implements AudioInputStream{
 
 	/**
 	 * Decode the OGG file as shown in the jogg/jorbis examples
-	 * @throws IOException Indicates a failure to read from the supplied stream
 	 */
-	private void readPCM() throws IOException{
+	private void readPCM(){
 		boolean wrote=false;
 
 		while(true){ // we repeat if the bitstream is chained
@@ -461,7 +460,7 @@ public class OggInputStream extends InputStream implements AudioInputStream{
 	/**
 	 * @see java.io.InputStream#read(byte[],int,int)
 	 */
-	public int read(@NotNull byte[] b,int off,int len) throws IOException{
+	public int read(@NotNull byte[] b,int off,int len){
 		for(int i=0;i<len;i++){
 			try{
 				int value=read();
@@ -493,6 +492,6 @@ public class OggInputStream extends InputStream implements AudioInputStream{
 	/**
 	 * @see java.io.InputStream#close()
 	 */
-	public void close() throws IOException{
+	public void close(){
 	}
 }

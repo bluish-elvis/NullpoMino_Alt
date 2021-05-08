@@ -23,10 +23,7 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.subsystem.wallkick
 
-import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Piece
-import mu.nu.nullpo.game.component.WallkickResult
+import mu.nu.nullpo.game.component.*
 
 /** PhysicianWallkick */
 class PhysicianWallkick:Wallkick {
@@ -38,8 +35,10 @@ class PhysicianWallkick:Wallkick {
 
 		if(!piece.checkCollision(x, y, rtNew, field)) return null
 		when(rtNew) {
-			Piece.DIRECTION_UP, Piece.DIRECTION_DOWN -> if(!piece.checkCollision(x-check, y, rtNew, field)) return WallkickResult(-1*check, 0, rtNew)
-			Piece.DIRECTION_LEFT, Piece.DIRECTION_RIGHT -> if(!piece.checkCollision(x+check, y, rtNew, field)) return WallkickResult(check, 0, rtNew)
+			Piece.DIRECTION_UP, Piece.DIRECTION_DOWN -> if(!piece.checkCollision(x-check, y, rtNew, field)) return WallkickResult(
+				-1*check, 0, rtNew)
+			Piece.DIRECTION_LEFT, Piece.DIRECTION_RIGHT -> if(!piece.checkCollision(x+check, y, rtNew, field)) return WallkickResult(
+				check, 0, rtNew)
 		}
 		return null
 	}

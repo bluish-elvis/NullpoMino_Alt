@@ -47,7 +47,7 @@ object FontNumber {
 			a = alpha
 		}
 		str.forEachIndexed {i, c ->
-			var stringChar = c.toInt()
+			var stringChar = c.code
 			// 文字出力
 			when(stringChar) {
 				0x0A -> {

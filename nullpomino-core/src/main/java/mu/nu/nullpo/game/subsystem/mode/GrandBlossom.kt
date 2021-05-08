@@ -364,7 +364,7 @@ class GrandBlossom:AbstractMode() {
 		field.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
 		limittimeStart = prop.getProperty("$id.gemmania.limittimeStart", 3600*3)
 		stagetimeStart = prop.getProperty("$id.gemmania.stagetimeStart", 3600)
-		stagebgm = prop.getProperty("$id.gemmania.stagebgm", BGM.PUZZLE(0).id)
+		stagebgm = prop.getProperty("$id.gemmania.stagebgm", BGM.Puzzle(0).id)
 		gimmickMirror = prop.getProperty("$id.gemmania.gimmickMirror", 0)
 		gimmickRoll = prop.getProperty("$id.gemmania.gimmickRoll", 0)
 		gimmickBig = prop.getProperty("$id.gemmania.gimmickBig", 0)
@@ -1242,7 +1242,7 @@ class GrandBlossom:AbstractMode() {
 			if(engine.statc[0]==0) {
 				engine.playSE("died")
 				engine.playSE("shutter")
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 
 				engine.timerActive = false
 				engine.blockShowOutlineOnly = false
@@ -1371,12 +1371,11 @@ class GrandBlossom:AbstractMode() {
 				else
 					sectionTime.size) {
 				if(sectionTime[i]!=0)
-					if(sectionTime[i]==-1)
-						receiver.drawMenuNum(engine, playerID, 2, i+y, "FAILED", COLOR.RED)
-					else if(sectionTime[i]==-2)
-						receiver.drawMenuNum(engine, playerID, 2, i+y, "SKIPPED", COLOR.PURPLE)
-					else
-						receiver.drawMenuNum(engine, playerID, 2, i+y, GeneralUtil.getTime(sectionTime[i]))
+					when {
+						sectionTime[i]==-1 -> receiver.drawMenuNum(engine, playerID, 2, i+y, "FAILED", COLOR.RED)
+						sectionTime[i]==-2 -> receiver.drawMenuNum(engine, playerID, 2, i+y, "SKIPPED", COLOR.PURPLE)
+						else -> receiver.drawMenuNum(engine, playerID, 2, i+y, GeneralUtil.getTime(sectionTime[i]))
+					}
 				i++
 			}
 		}

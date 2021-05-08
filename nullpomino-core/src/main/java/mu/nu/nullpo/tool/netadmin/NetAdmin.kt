@@ -389,7 +389,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			}
 		}
 
-		(0 until GameEngine.MAX_GAMESTYLE).forEach {i ->
+		for(i in 0 until GameEngine.MAX_GAMESTYLE) {
 			tableMPRanking[i].columnModel.run {
 				getColumn(0).preferredWidth = propConfig.getProperty("tableMPRanking.width.rank", 30) // Rank
 				getColumn(1).preferredWidth = propConfig.getProperty("tableMPRanking.width.name", 200) // Name
@@ -733,7 +733,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				var portSpliter = strHost.indexOf(':')
 				if(portSpliter==-1) portSpliter = strHost.length
 
-				strServerHost = strHost.substring(0, portSpliter)
+				strServerHost = strHost.take(portSpliter)
 
 				serverPort = NetBaseClient.DEFAULT_PORT
 				try {
@@ -961,7 +961,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun createRoomListRowData(r:NetRoomInfo):Array<String> = arrayOf(
 		r.roomID.toString(), r.strName, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False"),
-		if(r.ruleLock) r.ruleName.toUpperCase() else getUIText("RoomTable_RuleName_Any"),
+		if(r.ruleLock) r.ruleName.uppercase() else getUIText("RoomTable_RuleName_Any"),
 		if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting"),
 		r.playerSeatedCount.toString()+"/"+r.maxPlayers, r.spectatorCount.toString())
 

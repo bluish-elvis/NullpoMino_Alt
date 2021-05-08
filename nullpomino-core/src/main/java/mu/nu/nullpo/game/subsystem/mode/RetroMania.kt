@@ -184,7 +184,8 @@ class RetroMania:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "Level", "$startlevel", "BIG", GeneralUtil.getONorOFF(big), "POWERON", GeneralUtil.getONorOFF(poweron))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "Level", "$startlevel", "BIG",
+			GeneralUtil.getONorOFF(big), "POWERON", GeneralUtil.getONorOFF(poweron))
 	}
 
 	/** Ready */
@@ -220,7 +221,7 @@ class RetroMania:AbstractMode() {
 
 		engine.big = big
 
-		owner.bgmStatus.bgm = BGM.RETRO_S(0)
+		owner.bgmStatus.bgm = BGM.RetroS(0)
 		setSpeed(engine)
 	}
 
@@ -241,7 +242,8 @@ class RetroMania:AbstractMode() {
 						String.format("%2d", i+1), COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 10, topY+i, "${rankingLines[gametype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank,
+						scale)
 				}
 			}
 		} else {
@@ -348,7 +350,8 @@ class RetroMania:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", COLOR.ORANGE)
 
-		drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL,
+			Statistic.TIME)
 		drawResultRank(engine, playerID, receiver, 11, COLOR.BLUE, rankingRank)
 	}
 
@@ -460,7 +463,10 @@ class RetroMania:AbstractMode() {
 
 		/** Gravity table */
 		private val tableDenominator =
-			arrayOf(intArrayOf(48, 32, 24, 18, 14, 12, 10, 8, 6, 4, 12, 10, 8, 6, 4, 2), intArrayOf(48, 24, 18, 15, 12, 10, 8, 6, 4, 2, 10, 8, 6, 4, 2, 1), intArrayOf(40, 20, 16, 12, 10, 8, 6, 4, 2, 1, 10, 8, 6, 4, 2, 1), intArrayOf(30, 15, 12, 10, 8, 6, 4, 2, 1, 1, 8, 6, 4, 2, 1, 1))
+			arrayOf(intArrayOf(48, 32, 24, 18, 14, 12, 10, 8, 6, 4, 12, 10, 8, 6, 4, 2),
+				intArrayOf(48, 24, 18, 15, 12, 10, 8, 6, 4, 2, 10, 8, 6, 4, 2, 1),
+				intArrayOf(40, 20, 16, 12, 10, 8, 6, 4, 2, 1, 10, 8, 6, 4, 2, 1),
+				intArrayOf(30, 15, 12, 10, 8, 6, 4, 2, 1, 1, 8, 6, 4, 2, 1, 1))
 
 		/** Time until auto-level up occers */
 		private val levelTime =

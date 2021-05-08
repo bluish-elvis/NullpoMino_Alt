@@ -7,7 +7,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import java.util.Random
+import kotlin.random.Random
 
 /** VS-LINE RACE Mode */
 class VSLineRaceMode:AbstractMode() {
@@ -51,7 +51,6 @@ class VSLineRaceMode:AbstractMode() {
 
 	/* Mode init */
 	override fun modeInit(manager:GameManager) {
-
 
 		goalLines = IntArray(MAX_PLAYERS)
 		bgmno = 0
@@ -162,7 +161,7 @@ class VSLineRaceMode:AbstractMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7, 8 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change,0,99)
+					7, 8 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
 					9 -> {
 						goalLines[playerID] += change
 						if(goalLines[playerID]<1) goalLines[playerID] = 100
@@ -170,7 +169,7 @@ class VSLineRaceMode:AbstractMode() {
 					}
 					10 -> big[playerID] = !big[playerID]
 					11 -> enableSE[playerID] = !enableSE[playerID]
-					12 -> bgmno = rangeCursor(bgmno+change,0,BGM.count-1)
+					12 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 				}
 			}
 
@@ -215,11 +214,15 @@ class VSLineRaceMode:AbstractMode() {
 	/* Settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(engine.statc[4]==0) {
-			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
+			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(),
+				"G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE",
+				engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY",
+				engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
 			menuColor = EventReceiver.COLOR.GREEN
 			drawMenuCompact(engine, playerID, receiver, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
 			menuColor = EventReceiver.COLOR.CYAN
-			drawMenuCompact(engine, playerID, receiver, "GOAL", "${goalLines[playerID]}", "BIG", GeneralUtil.getONorOFF(big[playerID]), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
+			drawMenuCompact(engine, playerID, receiver, "GOAL", "${goalLines[playerID]}", "BIG",
+				GeneralUtil.getONorOFF(big[playerID]), "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
 			menuColor = EventReceiver.COLOR.PINK
 			drawMenuCompact(engine, playerID, receiver, "BGM", "${BGM.values[bgmno]}")
 		} else
@@ -333,7 +336,7 @@ class VSLineRaceMode:AbstractMode() {
 				winnerID = -1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
@@ -342,7 +345,7 @@ class VSLineRaceMode:AbstractMode() {
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 				if(!owner.replayMode) winCount[0]++
 			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
 				// 2P win
@@ -352,7 +355,7 @@ class VSLineRaceMode:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.SILENT
+				owner.bgmStatus.bgm = BGM.Silent
 				if(!owner.replayMode) winCount[1]++
 			}
 	}
@@ -365,7 +368,8 @@ class VSLineRaceMode:AbstractMode() {
 			playerID -> receiver.drawMenuFont(engine, playerID, 6, 1, "WIN!", EventReceiver.COLOR.YELLOW)
 			else -> receiver.drawMenuFont(engine, playerID, 6, 1, "LOSE", EventReceiver.COLOR.WHITE)
 		}
-		drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS, Statistic.TIME)
+		drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM,
+			Statistic.PPS, Statistic.TIME)
 	}
 
 	/* Called when saving replay */

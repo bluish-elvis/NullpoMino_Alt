@@ -16,6 +16,8 @@
 
 package biz.source_code.base64Coder;
 
+import java.util.Arrays;
+
 /** A Base64 encoder/decoder.
  * <p>
  * This class is used to encode and decode data in Base64 format as described in
@@ -25,7 +27,7 @@ package biz.source_code.base64Coder;
  * "http://www.source-code.biz/base64coder/java/">www.source-code.biz/base64coder/java</a><br>
  * Author: Christian d'Heureuse, Inventec Informatik AG, Zurich, Switzerland<br>
  * Multi-licensed: EPL / LGPL / AL / BSD. */
-public class Base64Coder{
+@SuppressWarnings("ALL") public class Base64Coder{
 
 	// The line separator string of the operating system.
 	private static final String systemLineSeparator=System.getProperty("line.separator");
@@ -49,8 +51,7 @@ public class Base64Coder{
 	private static final byte[] map2=new byte[128];
 
 	static{
-		for(int i=0;i<map2.length;i++)
-			map2[i]=-1;
+		Arrays.fill(map2,(byte)-1);
 		for(int i=0;i<64;i++)
 			map2[map1[i]]=(byte)i;
 	}

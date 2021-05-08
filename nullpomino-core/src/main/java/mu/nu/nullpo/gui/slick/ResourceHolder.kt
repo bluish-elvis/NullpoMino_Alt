@@ -122,7 +122,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	var bgm:Array<Array<Music?>> = emptyArray()
 
 	/** Current BGM number */
-	private var bgmint:Pair<Int, Int> = Pair(0, 0)
+	private var bgmint:Pair<Int, Int> = 0 to 0
 	var bgmPlaying:BGM? = null; private set
 	internal val bGmax:Int get() = imgPlayBG.size
 
@@ -262,8 +262,8 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	 * @param filename Filename
 	 * @return 画像 data
 	 */
-	private fun loadImage(filename:String):Image {
-		//log.debug("Loading image from $filename")
+	fun loadImage(filename:String):Image {
+		log.debug("Loading image from $filename")
 		var img = Image(256, 256)
 		try {
 			img = Image(filename)
@@ -324,7 +324,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		val bgmvolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
 		NullpoMinoSlick.appGameContainer.musicVolume = bgmvolume/256.toFloat()
 
-		if(M!=BGM.SILENT&&M!=bgmPlaying) {
+		if(M!=BGM.Silent&&M!=bgmPlaying) {
 			bgm[x][y]?.also {
 				try {
 					if(NullpoMinoSlick.propMusic.getProperty("music.noloop.${M.name}", false))
@@ -337,7 +337,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 			} ?: loadBGM(M, true)
 
 			bgmPlaying = M
-			bgmint = Pair(x, y)
+			bgmint = x to y
 		}
 	}
 

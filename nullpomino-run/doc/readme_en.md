@@ -592,6 +592,10 @@ Libraries:
     http://java.net/projects/swing-layout/
     License: BSD
 
+    ModePile
+    https://github.com/0xFC963F18DC21/ModePile
+    License: GPL
+
 Sound effects:
 	ザ・マッチメイカァズ (The matchmakers)
 	http://osabisi.sakura.ne.jp/m2/
@@ -622,6 +626,8 @@ Also thanks to:
 	gif
 	virulent
 	slr
+    0xFC963F18DC21
+    Shots243
 	tetrisconcept.net http://www.tetrisconcept.net/
 	 (NullpoMino Topic: http://tetrisconcept.net/forum/showthread.html?t=1381)
 	Hard Drop http://harddrop.com/

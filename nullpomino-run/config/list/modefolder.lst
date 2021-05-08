@@ -2,29 +2,40 @@
 
 #:Popular
 Marathon
+GrandRoads
+MarathonExtreme
 SprintUltra
 SprintLine
-GrandFestival
 PracticeMode
 MarathonDrill
 SprintDig
+GrandFestival
+GrandBlossom
 GrandMania
 GrandMastery
-MarathonExtreme
 GrandStorm
 GrandLightning
-GrandBlossom
 VSBattleMode
 
-:Guidelines & Uniques
+:Guidelines Games
 Marathon
-MarathonExtreme
-MarathonPlus
+SprintLine
+SprintUltra
 MarathonShuttle
+GrandRoads
+VSBattleMode
+ToolVSMapEditMode
+MarathonExtreme
+PracticeMode
+
+:Uniques Variety
+MarathonPlus
 MarathonDrill
+RetroModern
+SprintDig
 PracticeMode
 SquareMode
-VSBattleMode
+MarathonExtreme
 ToolVSMapEditMode
 
 :Retrospective style
@@ -43,15 +54,15 @@ SprintUltra
 :Grand Challenges
 GrandFestival
 GrandMarathon
+GrandRoads
+GrandBlossom
+GrandMountain
 GrandMania
 GrandMastery
 GrandStorm
 GrandLightning
-GrandMountain
 GrandPhantom
 GrandFinale
-GrandRoads
-GrandBlossom
 
 
 :TYPE AVALANCHE

@@ -1,13 +1,15 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 class NintendoRandomizer:Randomizer {
-
-	internal var prev:Int = pieces.size
+	private var prev:Int = pieces.size
 	internal var roll:Int = pieces.size+1
 
 	constructor():super()
-
 	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
+
+	override fun init() {
+		prev = pieces.size
+	}
 
 	override fun next():Int {
 		var id:Int = r.nextInt(roll)

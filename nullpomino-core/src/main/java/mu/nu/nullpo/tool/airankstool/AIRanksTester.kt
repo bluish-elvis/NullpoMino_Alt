@@ -4,7 +4,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.subsystem.ai.RanksAI
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.History4RollsRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
-import java.util.*
+import kotlin.random.Random
 
 class AIRanksTester(private val numTries:Int) {
 	private var randomizer:Randomizer? = null
@@ -16,7 +16,7 @@ class AIRanksTester(private val numTries:Int) {
 		val pieceEnable = BooleanArray(Piece.PIECE_COUNT)
 		for(i in 0 until Piece.PIECE_STANDARD_COUNT)
 			pieceEnable[i] = true
-		val seed = Random().nextLong()
+		val seed = Random.Default.nextLong()
 
 		randomizer = History4RollsRandomizer(pieceEnable, seed).apply {init()}
 

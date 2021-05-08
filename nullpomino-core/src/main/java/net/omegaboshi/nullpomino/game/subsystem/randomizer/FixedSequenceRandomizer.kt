@@ -12,7 +12,7 @@ class FixedSequenceRandomizer:Randomizer {
 	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
 
 	init {
-		val sequence= StringBuffer()
+		val sequence = StringBuffer()
 		val file = File("sequence.txt")
 		val reader = BufferedReader(FileReader(file))
 		try {
@@ -28,9 +28,13 @@ class FixedSequenceRandomizer:Randomizer {
 			}
 
 		}
-		sequenceTranslated = IntArray("$sequence".length){pieceCharToId("$sequence"[it])}
+		sequenceTranslated = IntArray("$sequence".length) {pieceCharToId("$sequence"[it])}
 		println(sequenceTranslated.contentToString())
 
+	}
+
+	override fun init() {
+		id = -1
 	}
 
 	private fun pieceCharToId(c:Char):Int {

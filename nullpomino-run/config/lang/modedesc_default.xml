@@ -15,7 +15,7 @@
  <entry key="SquareMode">Create 4x4 squares to get more points.</entry>
  <entry key="RetroClassic">A classic game that takes you to the nostalgic feeling.</entry>
  <entry key="RetroMarathon">A game based on the classics where efficiency is important.</entry>
- <entry key="RetroMania">A classic game that many Japanese players played like a monkey.</entry>
+ <entry key="RetroMania">A classic game that many Japanese players played like a Monkey.</entry>
  <entry key="RetroModern">Modern Arranged RETRO MANIA. What's waiting beyond the level 15...?</entry>
  <entry key="GrandFestival">Try to score many Points and Fireworks as possible, within level 300.</entry>
  <entry key="GrandBlossom">Erase all gem blocks from the playfield within the time limit.</entry>
@@ -49,11 +49,11 @@
  <!--Same rules apply as mode descriptions, but you'll need to add the "_" prefix.-->
  <entry key="_[ALL_MODES]">This folder contains all available game modes.</entry>
  <entry key="_POPULAR_MODES">This folder contains the Recommended modes.</entry>
- <entry key="_GUIDELINES_MODES">Standard modes Based by TTC Guidelines. Have fun!</entry>
- <entry key="_RETROSPECTIVE_MODES">Nostalgia modes. Let's Enjoy the Near-Original!</entry>
- <entry key="_TIME_TRIAL_MODES">Simple Race modes. Try your best in the short time!</entry>
- <entry key="_GRAND_MANIA_MODES">Grade Recognizing modes. Challenge to be a GrandMaster!</entry>
- <entry key="_MISC_MODES">Not-Categorizable variety modes.</entry>
+ <entry key="_Guidelines_Games">TTC Guidelines Based modes. Recommend for beginners!</entry>
+ <entry key="_Uniques_Variety">Not-Categorizable variety modes. Have fun the twisted play!</entry>
+ <entry key="_Retrospective_style">Nostalgia balanced games. Let's Enjoy the Near-Original!</entry>
+ <entry key="_Trial_Rush">In the Simple and Short Race modes, Challenge for your Record!</entry>
+ <entry key="_Grand_Challenges">Grade Recognizing modes contained. Try your ability!</entry>
  <entry key="_TYPE_AVALANCHE">Connect 4 or more same color blocks to clear them.</entry>
  <entry key="_TYPE_PHYSICIAN">Clear gem blocks by lining up blocks of the same color.</entry>
  <entry key="_TYPE_SPF">Use gems to clear blocks of the same color.</entry>

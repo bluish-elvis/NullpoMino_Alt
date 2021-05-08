@@ -26,7 +26,6 @@ package mu.nu.nullpo.game.net
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.play.GameEngine
 import java.io.Serializable
-import java.lang.Boolean
 import java.nio.channels.SocketChannel
 
 /** Player information */
@@ -175,10 +174,10 @@ class NetPlayerInfo:Serializable {
 		uid = pdata[5].toInt()
 		seatID = pdata[6].toInt()
 		queueID = pdata[7].toInt()
-		ready = Boolean.parseBoolean(pdata[8])
-		playing = Boolean.parseBoolean(pdata[9])
-		connected = Boolean.parseBoolean(pdata[10])
-		isTripUse = Boolean.parseBoolean(pdata[11])
+		ready = pdata[8].toBoolean()
+		playing = (pdata[9]).toBoolean()
+		connected = (pdata[10]).toBoolean()
+		isTripUse = (pdata[11]).toBoolean()
 		rating[0] = pdata[12].toInt()
 		rating[1] = pdata[13].toInt()
 		rating[2] = pdata[14].toInt()
@@ -215,10 +214,10 @@ class NetPlayerInfo:Serializable {
 	, "$uid"
 	, "$seatID"
 	, "$queueID"
-	, Boolean.toString(ready)
-	, Boolean.toString(playing)
-	, Boolean.toString(connected)
-	, Boolean.toString(isTripUse)
+	, "$ready"
+	, "$playing"
+	, "$connected"
+	, "$isTripUse"
 	, "${rating[0]}"
 	, "${rating[1]}"
 	, "${rating[2]}"

@@ -32,7 +32,7 @@ class SoundManager
 /** Constructor
  * @param maxClips 登録できるWAVE file のMaximumcount
  */
-@JvmOverloads constructor(
+constructor(
 	/** 登録できるWAVE file のMaximumcount */
 	private val maxClips:Int = 128) {
 

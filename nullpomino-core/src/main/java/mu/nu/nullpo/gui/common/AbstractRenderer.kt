@@ -63,9 +63,9 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param scale Size (.5f, 1f, 2f)
 	 * @param attr Attribute
 	 */
-	@JvmOverloads
-	protected fun drawBlock(x:Float, y:Float, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float,
-		attr:Int = 0) {
+	/* 1マスBlockを描画 */
+	override fun drawBlock(x:Float, y:Float, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float,
+		attr:Int, outline:Float) {
 		var sk = skin
 
 		if(!doesGraphicsExist()) return
@@ -94,18 +94,18 @@ abstract class AbstractRenderer:EventReceiver() {
 				sy = color
 				if(bone) sy += 9
 			}
-
-
-		drawBlockSpecific(x, y, sx, sy, sk, BS*scale, darkness, alpha)
-	}
-
-	protected fun drawBlock(x:Int, y:Int, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float,
-		attr:Int = 0) = drawBlock(x.toFloat(), y.toFloat(), color, skin, bone, darkness, alpha, scale, attr)
-
-	/* 1マスBlockを描画 */
-	override fun drawSingleBlock(engine:GameEngine, playerID:Int, x:Int, y:Int, color:Int, skin:Int, bone:Boolean,
-		darkness:Float, alpha:Float, scale:Float) {
-		drawBlock(x, y, color, skin, bone, darkness, alpha, scale)
+		val ls = BS*scale
+		drawBlockSpecific(x, y, sx, sy, sk, ls, darkness, alpha)
+		if(outline>0) {
+			if(attr and Block.ATTRIBUTE.CONNECT_UP.bit==0)
+				drawLineSpecific(x, y, x+ls, y, w = outline)
+			if(attr and Block.ATTRIBUTE.CONNECT_DOWN.bit==0)
+				drawLineSpecific(x, y+ls, x+ls, y+ls, w = outline)
+			if(attr and Block.ATTRIBUTE.CONNECT_LEFT.bit==0)
+				drawLineSpecific(x, y, x, y+ls, w = outline)
+			if(attr and Block.ATTRIBUTE.CONNECT_RIGHT.bit==0)
+				drawLineSpecific(x+ls, y, x+ls, y+ls, w = outline)
+		}
 	}
 
 	/* 勲章を描画 */
@@ -145,53 +145,6 @@ abstract class AbstractRenderer:EventReceiver() {
 		}
 	}
 
-	/** Blockクラスのインスタンスを使用してBlockを描画 (拡大率と暗さ指定可能）
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param blk Blockクラスのインスタンス
-	 * @param scale 拡大率
-	 * @param darkness 暗さもしくは明るさ
-	 */
-	protected fun drawBlock(x:Float, y:Float, blk:Block, scale:Float = 1f, darkness:Float = blk.darkness,
-		alpha:Float = blk.alpha) =
-		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), darkness, alpha, scale, blk.aint)
-
-	protected fun drawBlockForceVisible(x:Float, y:Float, blk:Block, scale:Float) =
-		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), blk.darkness, .5f*blk.alpha+.5f, scale, blk.aint)
-
-	/** Blockピースを描画 (暗さもしくは明るさの指定可能）
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param piece 描画するピース
-	 * @param scale 拡大率
-	 * @param darkness 暗さもしくは明るさ
-	 */
-	@JvmOverloads
-	protected fun drawPiece(x:Int, y:Int, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f,
-		ow:Float = 1f) {
-		for(i in 0 until piece.maxBlock) {
-			val ls = 16f*scale
-			val x2 = x+(piece.dataX[piece.direction][i].toFloat()*ls)
-			val y2 = y+(piece.dataY[piece.direction][i].toFloat()*ls)
-
-			val blkTemp = Block(piece.block[i])
-			blkTemp.darkness += darkness
-			blkTemp.alpha *= alpha
-
-			drawBlock(x2, y2, blkTemp, scale)
-			if(ow>0) {
-				if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP))
-					drawLineSpecific(x2, y2, (x2+ls), y2, w = ow)
-				if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN))
-					drawLineSpecific(x2, (y2+ls), (x2+ls), (y2+ls), w = ow)
-				if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT))
-					drawLineSpecific(x2, y2, x2, (y2+ls), w = ow)
-				if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
-					drawLineSpecific((x2+ls), y2, (x2+ls), (y2+ls), w = ow)
-			}
-		}
-	}
-
 	/** Currently working onBlockDraw a piece
 	 * (Y-coordinateThe0MoreBlockDisplay only)
 	 * @param x X-coordinate of base field
@@ -225,10 +178,12 @@ abstract class AbstractRenderer:EventReceiver() {
 						if(y2>it.dataY[it.direction][i]) y2 = it.dataY[it.direction][i]
 					}
 					val b = it.block[i]
-					drawBlock(x+((x2+bx).toFloat()*16f*scale), y+((y2+by-z).toFloat()*16f*scale), b, scale*if(engine.big) 2 else 1, -.1f, .4f)
+					drawBlock(x+((x2+bx).toFloat()*16f*scale), y+((y2+by-z).toFloat()*16f*scale), b,
+						scale*if(engine.big) 2 else 1, -.1f, .4f)
 					i++
 				}
-				if(z==0) drawPiece(x+bx*blksize, y+by*blksize+ys, it, scale*if(engine.big) 2 else 1, ow = 2f)
+				if(z==0) drawPiece(x+bx*blksize, y+by*blksize+ys, it, scale*if(engine.big) 2 else 1,-.25f,
+					ow = if(engine.statc[0]%2==0) 2f else 0f)
 			}
 		}
 	}
@@ -334,7 +289,7 @@ abstract class AbstractRenderer:EventReceiver() {
 						engine.getNextObject(engine.nextPieceCount+i)?.let {piece ->
 							val centerX = (64-(piece.width+1)*16)/2-piece.minimumBlockX*16
 							val centerY = (64-(piece.height+1)*16)/2-piece.minimumBlockY*16
-							drawPiece(x2+centerX, y+48+i*64+centerY, piece, 1f, ow = 0f)
+							drawPiece(x2+centerX, y+48+i*64+centerY, piece, 1f)
 						}
 					}
 				}
@@ -346,7 +301,7 @@ abstract class AbstractRenderer:EventReceiver() {
 						engine.getNextObject(engine.nextPieceCount+i)?.let {
 							val centerX = (32-(it.width+1)*8)/2-it.minimumBlockX*8
 							val centerY = (32-(it.height+1)*8)/2-it.minimumBlockY*8
-							drawPiece(x2+centerX, y+48+i*32+centerY, it, .75f, ow = 0f)
+							drawPiece(x2+centerX, y+48+i*32+centerY, it, .75f)
 						}
 					}
 				}
@@ -359,20 +314,20 @@ abstract class AbstractRenderer:EventReceiver() {
 							//int x2 = x + 4 + ((-1 + (engine.field.getWidth() - piece.getWidth() + 1) / 2) * 16);
 							val x2 = x+4+engine.getSpawnPosX(engine.field, it)*fldBlkSize //Rules with spawn x modified were misaligned.
 							val y2 = y+48-(it.maximumBlockY+1)*16
-							drawPiece(x2, y2, it, ow = 0f)
+							drawPiece(x2, y2, it)
 						}
 					}
 
 					// NEXT2・3
 					for(i in 0 until minOf(2, engine.ruleopt.nextDisplay-1))
 						engine.getNextObject(engine.nextPieceCount+i+1)?.let {
-							drawPiece(x+124+i*40, y+48-(it.maximumBlockY+1)*8, it, .5f, ow = 0f)
+							drawPiece(x+124+i*40, y+48-(it.maximumBlockY+1)*8, it, .5f)
 						}
 
 					// NEXT4～
 					for(i in 0 until engine.ruleopt.nextDisplay-3) engine.getNextObject(engine.nextPieceCount+i+3)?.let {
 						if(showmeter) drawPiece(x+176, y+i*40+88-(it.maximumBlockY+1)*8, it, .5f)
-						else drawPiece(x+168, y+i*40+88-(it.maximumBlockY+1)*8, it, .5f, ow = 0f)
+						else drawPiece(x+168, y+i*40+88-(it.maximumBlockY+1)*8, it, .5f)
 					}
 				}
 			}
@@ -394,8 +349,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				drawFont(x2, y2, str, FONT.NANO, tempColor)
 
 				engine.holdPieceObject?.let {
-					var dark = 0f
-					if(engine.holdDisable) dark = .3f
+					val dark = if(engine.holdDisable) .3f else 0f
 					it.resetOffsetArray()
 					it.setDarkness(0f)
 
@@ -403,14 +357,14 @@ abstract class AbstractRenderer:EventReceiver() {
 						2 -> {
 							val centerX = (64-(it.width+1)*16)/2-it.minimumBlockX*16
 							val centerY = (64-(it.height+1)*16)/2-it.minimumBlockY*16
-							drawPiece(x-64+centerX, y+48+centerY, it, 1f, dark)
+							drawPiece(x-64+centerX, y+48+centerY, it, 1f, dark, ow = 1f)
 						}
 						1 -> {
 							val centerX = (32-(it.width+1)*8)/2-it.minimumBlockX*8
 							val centerY = (32-(it.height+1)*8)/2-it.minimumBlockY*8
-							drawPiece(x2+centerX, y+48+centerY, it, .5f, dark)
+							drawPiece(x2+centerX, y+48+centerY, it, .5f, dark, ow = 1f)
 						}
-						else -> drawPiece(x2, y+48-(it.maximumBlockY+1)*8, it, .5f, dark)
+						else -> drawPiece(x2, y+48-(it.maximumBlockY+1)*8, it, .5f, dark, ow = 1f)
 					}
 				}
 			}
@@ -450,7 +404,7 @@ abstract class AbstractRenderer:EventReceiver() {
 					val vPos = blksize*shadowY-(i+1)*24-8
 
 					if(vPos>=-blksize/2)
-						drawPiece(x+blksize*shadowX+shadowCenter-nextCenter, y+vPos, next, .5f*scale, .1f)
+						drawPiece(x+blksize*shadowX+shadowCenter-nextCenter, y+vPos, next, .5f*scale, .25f, .75f)
 				}
 			}
 		}
@@ -538,8 +492,10 @@ abstract class AbstractRenderer:EventReceiver() {
 				effectlist.add(FragAnim(if(blk.getAttribute(Block.ATTRIBUTE.LAST_COMMIT)) ANIM.SPARK else ANIM.BLOCK,
 					sx, sy, (color-Block.BLOCK_COLOR_GRAY)%resources!!.BLOCK_BREAK_MAX, lineeffectspeed))
 			else if(blk.isGemBlock)
-				effectlist.add(FragAnim(ANIM.GEM, sx, sy, (color-Block.BLOCK_COLOR_GEM_RED)%resources!!.PERASE_MAX, lineeffectspeed))// 宝石Block
-
+				effectlist.add(
+					FragAnim(ANIM.GEM, sx, sy, (color-Block.BLOCK_COLOR_GEM_RED)%resources!!.PERASE_MAX, lineeffectspeed))// 宝石Block
+			//blockParticles.addBlock(engine, receiver, playerID, blk, j, i, 10, 90, li>=4, localRandom)
+			//blockParticles.addBlock(engine, receiver, playerID, blk, j, i, engine.field.width, cY, li, 120)
 		}
 	}
 
@@ -735,7 +691,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	companion object {
 
 		/** Block colorIDに応じてColor Hexを作成
-		 * @param colorID Block colorID
+		 * @param color Block colorID
 		 * @return color Hex
 		 */
 		fun getColorByID(color:Block.COLOR):Int = when(color) {

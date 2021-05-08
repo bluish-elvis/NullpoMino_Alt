@@ -320,7 +320,7 @@ class GrandMarathon:AbstractMode() {
 				isShowBestSectionTime = false
 				sectionscomp = 0
 				bgmlv = if(engine.statistics.level<500) 0 else 1
-				owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GM_1(0) else BGM.GM_1(1)
+				owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
 				return false
 			}
 
@@ -333,7 +333,7 @@ class GrandMarathon:AbstractMode() {
 			menuCursor = -1
 
 			bgmlv = if(engine.statistics.level<500) 0 else 1
-			owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GM_1(0) else BGM.GM_1(1)
+			owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
 			return menuTime<60
 		}
 
@@ -344,7 +344,8 @@ class GrandMarathon:AbstractMode() {
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(),
 			"FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g),
-			"LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
+			"LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG",
+			GeneralUtil.getONorOFF(big))
 	}
 
 	/* Called at game start */
@@ -405,7 +406,8 @@ class GrandMarathon:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime = String.format("%3d-%3d %s %d", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]), bestSectionScore[i])
+						val strSectionTime = String.format("%3d-%3d %s %d", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]),
+							bestSectionScore[i])
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 						totalTime += bestSectionTime[i]
@@ -480,7 +482,8 @@ class GrandMarathon:AbstractMode() {
 						val strSectionTime = StringBuilder()
 						for(l in 0 until i)
 							strSectionTime.append("\n")
-						strSectionTime.append(String.format("%3d%s%s %d\n", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]), sectionscore[i]))
+						strSectionTime.append(
+							String.format("%3d%s%s %d\n", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]), sectionscore[i]))
 						receiver.drawScoreNum(engine, playerID, if(x) 9 else 10, 3, "$strSectionTime", sectionIsNewRecord[i],
 							if(x) .75f else 1f)
 					}
@@ -616,7 +619,7 @@ class GrandMarathon:AbstractMode() {
 						if(engine.statistics.time<tablePier21GradeTime[i]) gmPier = i
 					if(gmPier>3) grade++
 					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = BGM.ENDING(0)
+					owner.bgmStatus.bgm = BGM.Ending(0)
 
 					engine.ending = 2
 				} else {
@@ -647,7 +650,7 @@ class GrandMarathon:AbstractMode() {
 				if(bgmlv==0&&nextseclv==500) {
 					bgmlv++
 					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = BGM.GM_1(1)
+					owner.bgmStatus.bgm = BGM.GrandM(1)
 				}
 
 				nextseclv += 100
@@ -751,10 +754,12 @@ class GrandMarathon:AbstractMode() {
 					receiver.drawMenuFont(engine, playerID, 0, 3, tablePier21GradeName[gmPier], gc)
 				}
 				receiver.drawMenuGrade(engine, playerID, 6, 2, tableGradeName[grade], gc, 2f)
-				drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME)
+				drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA,
+					Statistic.TIME)
 				drawResultRank(engine, playerID, receiver, 13, COLOR.BLUE, rankingRank)
 				if(secretGrade>4)
-					drawResult(engine, playerID, receiver, 15, COLOR.BLUE, "S. GRADE", String.format("%10s", tableGradeName[secretGrade-1]))
+					drawResult(engine, playerID, receiver, 15, COLOR.BLUE, "S. GRADE",
+						String.format("%10s", tableGradeName[secretGrade-1]))
 			}
 			1 -> {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "SECTION", COLOR.BLUE)
@@ -783,9 +788,9 @@ class GrandMarathon:AbstractMode() {
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = when(engine.ending) {
-			0 -> BGM.RESULT(0)
-			2 -> BGM.RESULT(3)
-			else -> BGM.RESULT(2)
+			0 -> BGM.Result(0)
+			2 -> BGM.Result(3)
+			else -> BGM.Result(2)
 
 		}
 
@@ -846,7 +851,6 @@ class GrandMarathon:AbstractMode() {
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
 	fun saveRanking(ruleName:String) {
@@ -917,10 +921,12 @@ class GrandMarathon:AbstractMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** 落下速度 table */
-		private val tableGravityValue = intArrayOf(4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160, 192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1)
+		private val tableGravityValue = intArrayOf(4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160,
+			192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1)
 
 		/** 落下速度が変わる level */
-		private val tableGravityChangeLevel = intArrayOf(30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230, 233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000)
+		private val tableGravityChangeLevel = intArrayOf(30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230,
+			233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000)
 
 		/** ARE table */
 		private val tableARE = intArrayOf(30, 27, 25)
@@ -969,7 +975,8 @@ class GrandMarathon:AbstractMode() {
 		/** GM */
 		private val tablePier21GradeName = arrayOf("CARBON", "STEEL", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
 
-		private val tablePier21GradeColor = arrayOf(COLOR.PURPLE, COLOR.BLUE, COLOR.RED, COLOR.WHITE, COLOR.YELLOW, COLOR.CYAN, COLOR.GREEN)
+		private val tablePier21GradeColor = arrayOf(COLOR.PURPLE, COLOR.BLUE, COLOR.RED, COLOR.WHITE, COLOR.YELLOW, COLOR.CYAN,
+			COLOR.GREEN)
 		/** LV999 roll time */
 		/** Number of entries in rankings */
 		private const val RANKING_MAX = 10

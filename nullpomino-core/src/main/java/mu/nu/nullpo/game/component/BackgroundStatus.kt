@@ -23,10 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE. */
 package mu.nu.nullpo.game.component
 
-import java.io.Serializable
-
 /** BackgroundImage state */
-class BackgroundStatus:Serializable {
+@kotlinx.serialization.Serializable class BackgroundStatus {
 
 	/** Background number */
 	var bg:Int = 0

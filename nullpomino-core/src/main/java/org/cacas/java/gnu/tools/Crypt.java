@@ -14,7 +14,7 @@ package org.cacas.java.gnu.tools;
  * Note: Crypt.class is much smaller when compiled with javac
  * -O ****************************************************************************/
 
-public class Crypt{
+@SuppressWarnings("ALL") public class Crypt{
 	private Crypt(){} // defined so class can't be instantiated.
 
 	private static final int ITERATIONS=16;

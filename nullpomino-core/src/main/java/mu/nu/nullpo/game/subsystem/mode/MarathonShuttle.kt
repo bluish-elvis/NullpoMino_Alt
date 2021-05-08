@@ -145,7 +145,7 @@ class MarathonShuttle:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 			drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0,
-				"GAME TYPE", GAMETYPE_SHORTNAME[goaltype], "Level", (startlevel+1).toString())
+				"GAME TYPE", GAMETYPE_SHORTNAME[goaltype], "Level", "${startlevel+1}")
 
 			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big))
 		}
@@ -238,7 +238,7 @@ class MarathonShuttle:NetDummyMode() {
 		setSpeed(engine)
 
 		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.SILENT
+			owner.bgmStatus.bgm = BGM.Silent
 		else {
 			setStartBgmlv(engine)
 			owner.bgmStatus.bgm = tableBGM[bgmlv]
@@ -362,7 +362,8 @@ class MarathonShuttle:NetDummyMode() {
 				if(remainRollTime<0) remainRollTime = 0
 
 				receiver.drawScoreFont(engine, playerID, 0, 13, "ROLL TIME", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 14, GeneralUtil.getTime(remainRollTime), remainRollTime>0&&remainRollTime<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 14, GeneralUtil.getTime(remainRollTime),
+					remainRollTime>0&&remainRollTime<10*60, 2f)
 			}
 
 			if(regretdispframe>0)
@@ -477,10 +478,9 @@ class MarathonShuttle:NetDummyMode() {
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Line clear bonus
 		val pts = super.calcScore(engine, lines)
-		var cmb = 0
-		// Combo
-		if(engine.combo>=1&&lines>=1) cmb = engine.combo-1
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
+		// Combo
+		val cmb = if(engine.combo>=1&&lines>=1) engine.combo-1 else 0
 		// Add to score
 		if(pts+cmb+spd>0) {
 			var get = pts*(10+engine.statistics.level)/10+spd
@@ -535,7 +535,7 @@ class MarathonShuttle:NetDummyMode() {
 					// Ending (SPECIAL）
 					engine.ending = 2
 					engine.timerActive = false
-					owner.bgmStatus.bgm = BGM.ENDING(0)
+					owner.bgmStatus.bgm = BGM.Ending(0)
 					owner.bgmStatus.fadesw = false
 					engine.playSE("endingstart")
 				} else {
@@ -574,7 +574,7 @@ class MarathonShuttle:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
-		val b = if(engine.statistics.time<10800) BGM.RESULT(1) else BGM.RESULT(2)
+		val b = if(engine.statistics.time<10800) BGM.Result(1) else BGM.Result(2)
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = b
 
@@ -583,7 +583,8 @@ class MarathonShuttle:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME, Statistic.SPL, Statistic.LPM)
+		drawResultStats(engine, playerID, receiver, 0, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL,
+			Statistic.TIME, Statistic.SPL, Statistic.LPM)
 		drawResultRank(engine, playerID, receiver, 12, COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 14, COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 16, COLOR.BLUE, netRankingRank[1])
@@ -730,7 +731,6 @@ class MarathonShuttle:NetDummyMode() {
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
 	fun saveRanking(ruleName:String) {
@@ -808,7 +808,8 @@ class MarathonShuttle:NetDummyMode() {
 
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(5, 8, 15, 17, 19, -1)
-		private val tableBGM = arrayOf(BGM.GENERIC(0), BGM.GENERIC(1), BGM.GENERIC(2), BGM.GENERIC(3), BGM.GENERIC(4), BGM.GENERIC(5))
+		private val tableBGM = arrayOf(BGM.Generic(0), BGM.Generic(1), BGM.Generic(2), BGM.Generic(3), BGM.Generic(4),
+			BGM.Generic(5))
 
 		/** Combo goal table */
 		private val COMBO_GOAL_TABLE = intArrayOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)
@@ -827,7 +828,8 @@ class MarathonShuttle:NetDummyMode() {
 		private const val GAMETYPE_SPECIAL = 4
 
 		/** Game type names */
-		private val GAMETYPE_NAME = arrayOf("15LEVELS TIME TRIAL", "15LEVELS SPEED RUN", "10MINUITES TRIAL", "10MINUTES SURVIVAL", "UNLIMITED ENDURANCE")
+		private val GAMETYPE_NAME = arrayOf("15LEVELS TIME TRIAL", "15LEVELS SPEED RUN", "10MINUITES TRIAL", "10MINUTES SURVIVAL",
+			"UNLIMITED ENDURANCE")
 		private val GAMETYPE_SHORTNAME = arrayOf("15LV T.A.", "15LV S.R.", "10MIN.TRY", "10MIN.SURV", "ULM.ENDURO")
 
 		/** Game type max */

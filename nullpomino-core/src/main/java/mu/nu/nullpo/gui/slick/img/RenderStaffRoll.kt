@@ -10,13 +10,13 @@ object RenderStaffRoll {
 	/** Log */
 	internal val log = Logger.getLogger(RenderStaffRoll::class.java)
 	lateinit var img:Image; private set
-	val BG get() = img.graphics
+	val BG:Graphics get() = img.graphics
 	val height get() = img.height
 
 	private fun cmp(c:Char):Float = when(c) {
 		' ', ':' -> .5f
-		'(',')','.' -> .33f
-		'/','I' -> .25f
+		'(', ')', '.' -> .33f
+		'/', 'I' -> .25f
 		else -> 0f
 	}
 
@@ -33,14 +33,14 @@ object RenderStaffRoll {
 			strList.forEach lit@{line ->
 				line.trim {it<=' '}.let {str ->
 					if(!str.startsWith('#')&&!str.startsWith("//")) { // Commment-line. Ignore it.
-						var dx = img.width/2f-(str.length-str.sumByDouble {cmp(it).toDouble()}.toFloat())*.5f*w
+						var dx = img.width/2f-(str.length-str.sumOf {cmp(it).toDouble()}.toFloat())*.5f*w
 						str.forEachIndexed {i, it ->
 							if(i>0||it!=':') {
 								val fontColor = when(str.first()) {
 									':' -> if(it.isUpperCase()) COLOR.BLUE else COLOR.GREEN
 									else -> if(it.isUpperCase()) COLOR.ORANGE else COLOR.WHITE
 								}
-								val chr = it.toUpperCase().toInt()
+								val chr = it.uppercaseChar().code
 								var sx = (chr-32)%32
 								var sy = (chr-32)/32+fontColor.ordinal*3
 								sx *= 12

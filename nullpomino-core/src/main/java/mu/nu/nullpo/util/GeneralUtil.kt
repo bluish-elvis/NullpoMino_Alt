@@ -321,7 +321,7 @@ object GeneralUtil {
 		"$x".length>digits -> {
 			val y = (1 until digits).fold(x){b,_->b.div(10)}
 			val z = (1 until digits).fold(minOf(y,35)){b,_->b.times(10)}
-			"${('A'.toInt()+minOf(y-10, 25)).toChar()}${if(digits>1) capsInteger(x-z, digits-1) else ""}"
+			"${('A'.code+minOf(y-10, 25)).toChar()}${if(digits>1) capsInteger(x-z, digits-1) else ""}"
 		}
 		digits>0 -> String.format("%0${digits}d", x)
 		else -> ""
