@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,15 +24,18 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.gui.GameKeyDummy
+import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
-import org.newdawn.slick.*
+import mu.nu.nullpo.util.GeneralUtil.getONorOFF
+import org.newdawn.slick.GameContainer
+import org.newdawn.slick.Graphics
+import org.newdawn.slick.SlickException
 import org.newdawn.slick.state.StateBasedGame
 
 /** Joystick 設定メインMenu のステート */
@@ -41,19 +48,19 @@ class StateConfigJoystickMain:BaseGameState() {
 	private var cursor = 0
 
 	/** 使用するJoystick の number */
-	private var joyUseNumber:Int = 0
+	private var joyUseNumber = 0
 
 	/** Joystick direction key が反応する閾値 */
-	private var joyBorder:Int = 0
+	private var joyBorder = 0
 
 	/** アナログスティック無視 */
-	private var joyIgnoreAxis:Boolean = false
+	private var joyIgnoreAxis = false
 
 	/** ハットスイッチ無視 */
-	private var joyIgnorePOV:Boolean = false
+	private var joyIgnorePOV = false
 
 	/** Joystick input method */
-	private var joyMethod:Int = 0
+	private var joyMethod = 0
 
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
@@ -104,8 +111,8 @@ class StateConfigJoystickMain:BaseGameState() {
 		else
 			"$joyUseNumber", cursor==2)
 		FontNormal.printFontGrid(2, 6, "JOYSTICK BORDER:$joyBorder", cursor==3)
-		FontNormal.printFontGrid(2, 7, "AXIS INPUT:"+GeneralUtil.getONorOFF(!joyIgnoreAxis), cursor==4)
-		FontNormal.printFontGrid(2, 8, "POV INPUT:"+GeneralUtil.getONorOFF(!joyIgnorePOV), cursor==5)
+		FontNormal.printFontGrid(2, 7, "AXIS INPUT:"+(!joyIgnoreAxis).getONorOFF(), cursor==4)
+		FontNormal.printFontGrid(2, 8, "POV INPUT:"+(!joyIgnorePOV).getONorOFF(), cursor==5)
 		FontNormal.printFontGrid(2, 9, "JOYSTICK METHOD:"+JOYSTICK_METHOD_STRINGS[joyMethod], cursor==6)
 
 		if(cursor<UI_TEXT.size) FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
@@ -205,6 +212,8 @@ class StateConfigJoystickMain:BaseGameState() {
 
 		/** UI Text identifier Strings */
 		private val UI_TEXT =
-			arrayOf("ConfigJoystickMain_ButtonSetting", "ConfigJoystickMain_InputTest", "ConfigJoystickMain_JoyUseNumber", "ConfigJoystickMain_JoyBorder", "ConfigJoystickMain_JoyIgnoreAxis", "ConfigJoystickMain_JoyIgnorePOV", "ConfigJoystickMain_JoyMethod")
+			arrayOf("ConfigJoystickMain_ButtonSetting", "ConfigJoystickMain_InputTest", "ConfigJoystickMain_JoyUseNumber",
+				"ConfigJoystickMain_JoyBorder", "ConfigJoystickMain_JoyIgnoreAxis", "ConfigJoystickMain_JoyIgnorePOV",
+				"ConfigJoystickMain_JoyMethod")
 	}
 }

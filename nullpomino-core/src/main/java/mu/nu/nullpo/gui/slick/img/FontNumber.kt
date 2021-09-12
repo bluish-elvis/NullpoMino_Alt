@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick.img
 
 import mu.nu.nullpo.game.event.EventReceiver
@@ -40,8 +45,8 @@ object FontNumber {
 	 */
 	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = NullpoMinoSlick.rainbow) {
-		var dx = x
-		var dy = y
+		var dx = x.toFloat()
+		var dy = y.toFloat()
 		val fontBig = scale>=1.5f
 		val filter = Color(Color.white).apply {
 			a = alpha
@@ -52,11 +57,11 @@ object FontNumber {
 			when(stringChar) {
 				0x0A -> {
 					// 改行 (\n）
-					dy += (16*scale).toInt()
-					dx = x
+					dy += 16*scale
+					dx = x.toFloat()
 
 				}
-				0x20 -> dx += (12*scale).toInt()
+				0x20 -> dx += 12*scale
 				0x3f -> stringChar = 0x3b
 				0x2d -> stringChar = 0x3c
 				0x2b -> stringChar = 0x3d
@@ -72,15 +77,13 @@ object FontNumber {
 				if(fontBig) {
 					sx *= 24
 					sy *= 32
-					ResourceHolder.imgNumBig.draw(dx.toFloat(), dy.toFloat(), dx+12*scale, dy+16*scale,
-						sx.toFloat(), sy.toFloat(), (sx+24).toFloat(), (sy+32).toFloat())
+					ResourceHolder.imgNum[1].draw(dx, dy, dx+12*scale, dy+16*scale, sx, sy, sx+24, sy+32, filter)
 				} else {
 					sx *= 12
 					sy *= 16
-					ResourceHolder.imgNum.draw(dx.toFloat(), (dy-1).toFloat(), dx+12*scale, dy+16*scale,
-						sx.toFloat(), sy.toFloat(), (sx+12).toFloat(), (sy+16).toFloat())
+					ResourceHolder.imgNum[0].draw(dx, dy-1, dx+12*scale, dy+16*scale, sx, sy, sx+12, sy+16, filter)
 				}
-				dx = (dx+12*scale).toInt()
+				dx += 12*scale
 			}
 		}
 	}

@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.Block
@@ -28,7 +33,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** AVALANCHE DUMMY Mode */
 abstract class Avalanche1PDummyMode:AbstractMode() {
@@ -38,71 +43,71 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	val tableSpeedValue = intArrayOf(30, 45, 120, 480, -1)
 
 	/** Amount of points earned from most recent clear */
-	protected var lastscore:Int = 0
-	protected var lastmultiplier:Int = 0
+	protected var lastscore = 0
+	protected var lastmultiplier = 0
 
 	/** Elapsed time from last line clear
 	 * (lastscore is displayed to screen until this reaches to 120) */
-	protected var scgettime:Int = 0
+	protected var scgettime = 0
 
 	/** Outline type */
-	protected var outlinetype:Int = 0
+	protected var outlinetype = 0
 
 	/** Flag for all clear */
-	protected var zenKeshi:Boolean = false
+	protected var zenKeshi = false
 
 	/** Amount of garbage sent */
-	protected var garbageSent:Int = 0
-	protected var garbageAdd:Int = 0
+	protected var garbageSent = 0
+	protected var garbageAdd = 0
 
 	/** Number of colors to use */
-	protected var numColors:Int = 0
+	protected var numColors = 0
 
 	/** Time to display last chain */
-	protected var chainDisplay:Int = 0
+	protected var chainDisplay = 0
 
 	/** Number of all clears */
-	protected var zenKeshiCount:Int = 0
+	protected var zenKeshiCount = 0
 
 	/** Score before adding zenkeshi bonus and max chain bonus */
-	protected var scoreBeforeBonus:Int = 0
+	protected var scoreBeforeBonus = 0
 
 	/** Zenkeshi bonus and max chain bonus amounts */
-	protected var zenKeshiBonus:Int = 0
-	protected var maxChainBonus:Int = 0
+	protected var zenKeshiBonus = 0
+	protected var maxChainBonus = 0
 
 	/** Blocks cleared */
-	protected var blocksCleared:Int = 0
+	protected var blocksCleared = 0
 
 	/** Current level */
-	protected var level:Int = 0
+	protected var level = 0
 
 	/** Maximum level */
-	protected val maxLevel:Int = 99
+	protected val maxLevel = 99
 
 	/** Blocks cleared needed to reach next level */
-	protected var toNextLevel:Int = 0
+	protected var toNextLevel = 0
 
 	/** Blocks cleared needed to reach next level */
-	protected val blocksPerLevel:Int = 15
+	protected val blocksPerLevel = 15
 
 	/** True to use slower falling animations, false to use faster */
-	protected var cascadeSlow:Boolean = false
+	protected var cascadeSlow = false
 
 	/** True to use big field display */
-	protected var bigDisplay:Boolean = false
+	protected var bigDisplay = false
 
 	/** 1 ojama is generated per this many points. */
-	protected val ojamaRate:Int = 120
+	protected val ojamaRate = 120
 
 	/** Index of current speed value in table */
-	protected var speedIndex:Int = 0
+	protected var speedIndex = 0
 
 	/* Mode name */
-	override val name:String = "AVALANCHE DUMMY"
+	override val name = "AVALANCHE DUMMY"
 
 	/* Game style */
-	override val gameStyle:Int = GameEngine.GAMESTYLE_AVALANCHE
+	override val gameStyle = GameEngine.GameStyle.AVALANCHE
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -250,10 +255,10 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, avalanche:Int):Int {
-		if(avalanche>0) {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+		if(lines>0) {
 			if(zenKeshi) garbageAdd += 30
-			if(engine.field!!.isEmpty) {
+			if(engine.field.isEmpty) {
 				zenKeshi = true
 				zenKeshiCount++
 				//engine.statistics.score += 2100;
@@ -263,18 +268,18 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 			onClear(engine, playerID)
 			engine.playSE("combo${minOf(engine.chain, 20)}")
 
-			val pts = calcPts(avalanche)
+			val pts = calcPts(lines)
 
-			var multiplier = engine.field!!.colorClearExtraCount
-			if(engine.field!!.colorsCleared>1) multiplier += (engine.field!!.colorsCleared-1)*2
+			var multiplier = engine.field.colorClearExtraCount
+			if(engine.field.colorsCleared>1) multiplier += (engine.field.colorsCleared-1)*2
 
 			multiplier += calcChainMultiplier(engine.chain)
 
 			if(multiplier>999) multiplier = 999
 			if(multiplier<1) multiplier = 1
 
-			blocksCleared += avalanche
-			toNextLevel -= avalanche
+			blocksCleared += lines
+			toNextLevel -= lines
 			if(toNextLevel<=0&&level<maxLevel) {
 				toNextLevel = blocksPerLevel
 				level++
@@ -286,7 +291,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 			val score = pts*multiplier
 			engine.statistics.scoreLine += score
 
-			garbageAdd += calcOjama(score, avalanche, pts, multiplier)
+			garbageAdd += calcOjama(score, lines, pts, multiplier)
 
 			setSpeed(engine)
 			return pts
@@ -342,7 +347,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		receiver.drawMenuFont(engine, playerID, 0, 12, strScore, EventReceiver.COLOR.RED)
 
 		receiver.drawMenuFont(engine, playerID, 0, 13, "Time", EventReceiver.COLOR.BLUE)
-		val strTime = String.format("%10s", GeneralUtil.getTime(engine.statistics.time))
+		val strTime = String.format("%10s", engine.statistics.time.toTimeStr)
 		receiver.drawMenuFont(engine, playerID, 0, 14, strTime)
 	}
 
@@ -354,8 +359,8 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		val CHAIN_POWERS_FEVERTYPE = intArrayOf(4, 12, 24, 32, 48, 96, 160, 240, 320, 400, 500, 600, 700, 800, 900, 999)
 
 		/** Block colors */
-		val BLOCK_COLORS = intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_BLUE,
-			Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_PURPLE)
+		val BLOCK_COLORS = arrayOf(Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.BLUE,
+			Block.COLOR.YELLOW, Block.COLOR.PURPLE)
 
 		/** Fever values files list */
 		val FEVER_MAPS = arrayOf("Fever", "15th", "15thDS", "7", "Poochy7")

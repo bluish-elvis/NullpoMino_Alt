@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick.img
 
 import mu.nu.nullpo.gui.slick.ResourceHolder
@@ -39,21 +44,21 @@ object FontMedal {
 	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = 1f, darkness:Float = 0f) {
 		val filter = Color(Color.white).apply {
 			a = alpha
-		}.darker(maxOf(0f,darkness))
-		val sy:Float = maxOf(0, 4-tier)*24f
+		}.darker(maxOf(0f, darkness))
+		val sy = maxOf(0, 4-tier)*241
 		ResourceHolder.imgFontMedal.draw(x-5*scale, y-4*scale, x-scale, y+20*scale,
-			0f, sy, 4f, sy+24f)
+			0, sy, 4, sy+24, filter)
 		ResourceHolder.imgFontMedal.draw(x-scale, y-4*scale, x+(1+9*str.length)*scale, y+20*scale,
-			4f, sy, 6f, sy+24f)
+			4, sy, 6, sy+24, filter)
 		ResourceHolder.imgFontMedal.draw(x+(1+9*str.length)*scale, y-4*scale, x+(5+9*str.length)*scale, y+20*scale,
-			6f, sy, 10f, sy+24f)
-		for(i in str.indices) {
-			val stringChar = str[i].code- 0x41
+			6, sy, 10, sy+24, filter)
+		str.forEachIndexed {i, c ->
+			val stringChar = c.code-0x41
 			if(stringChar in 0x00..0x1B) {// Character output
-				val dx:Float = x+i*9f
-				val sx:Float = stringChar*9f+10f
+				val dx = x+i*9f
+				val sx = stringChar*9+10
 				ResourceHolder.imgFontMedal.draw(dx, y*scale, dx+9*scale, y+16*scale,
-					sx, sy+4f, sx+9f, sy+20f, filter)
+					sx, sy+4, sx+9, sy+20, filter)
 			}
 		}
 	}
@@ -64,6 +69,6 @@ object FontMedal {
 	 * @param str String
 	 * @param tier Letter cint
 	 */
-	fun printFontGrid(fontX:Int, fontY:Int, str:String, tier:Int= 0, scale:Float = 1f, alpha:Float = 1f, darkness:Float = 0f) =
+	fun printFontGrid(fontX:Int, fontY:Int, str:String, tier:Int = 0, scale:Float = 1f, alpha:Float = 1f, darkness:Float = 0f) =
 		printFont(fontX*16, fontY*16, str, tier, scale, alpha, darkness)
 }

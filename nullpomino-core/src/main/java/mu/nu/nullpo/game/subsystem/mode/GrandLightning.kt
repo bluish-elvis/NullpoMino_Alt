@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -29,7 +34,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
 
 /** SPEED MANIA 2 Mode */
@@ -39,122 +44,122 @@ class GrandLightning:AbstractMode() {
 	// private static final int DEFAULT_SECTION_TIME = 2520;
 
 	/** Next Section の level (これ-1のときに levelストップする) */
-	private var nextseclv:Int = 0
+	private var nextseclv = 0
 
 	/** Levelが増えた flag */
-	private var lvupflag:Boolean = false
+	private var lvupflag = false
 
 	/** 最終結果などに表示される実際の段位 */
-	private var grade:Int = 0
+	private var grade = 0
 
 	/** 段位表示を光らせる残り frame count */
-	private var gradeflash:Int = 0
+	private var gradeflash = 0
 
 	/** Combo bonus */
-	private var comboValue:Int = 0
+	private var comboValue = 0
 
 	/** Most recent increase in score */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** 獲得Render scoreがされる残り time */
-	private var scgettime:Int = 0
+	private var scgettime = 0
 
 	/** Roll 経過 time */
-	private var rolltime:Int = 0
+	private var rolltime = 0
 
 	/** Roll started flag */
-	private var rollstarted:Boolean = false
+	private var rollstarted = false
 
 	/** Roll completely cleared flag */
-	private var rollclear:Int = 0
+	private var rollclear = 0
 
 	/** せり上がりまでのBlockcount */
-	private var garbageCount:Int = 0
+	private var garbageCount = 0
 
 	/** REGRET display time frame count */
-	private var regretdispframe:Int = 0
+	private var regretdispframe = 0
 
 	/** 裏段位 */
-	private var secretGrade:Int = 0
+	private var secretGrade = 0
 
 	/** Current BGM */
-	private var bgmlv:Int = 0
+	private var bgmlv = 0
 
 	/** Section Time */
-	private var sectionTime:IntArray = IntArray(SECTION_MAX)
+	private var sectionTime = IntArray(SECTION_MAX)
 
 	/** 新記録が出たSection はtrue */
-	private var sectionIsNewRecord:BooleanArray = BooleanArray(SECTION_MAX)
+	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
 
 	/** Cleared Section count */
-	private var sectionscomp:Int = 0
+	private var sectionscomp = 0
 
 	/** Average Section Time */
-	private var sectionavgtime:Int = 0
+	private var sectionavgtime = 0
 
 	/** 直前のSection Time */
-	private var sectionlasttime:Int = 0
+	private var sectionlasttime = 0
 
 	/** AC medal 状態 */
-	private var medalAC:Int = 0
+	private var medalAC = 0
 
 	/** ST medal 状態 */
-	private var medalST:Int = 0
+	private var medalST = 0
 
 	/** SK medal 状態 */
-	private var medalSK:Int = 0
+	private var medalSK = 0
 
 	/** CO medal 状態 */
-	private var medalCO:Int = 0
+	private var medalCO = 0
 
 	/** Section Time記録表示中ならtrue */
-	private var isShowBestSectionTime:Boolean = false
+	private var isShowBestSectionTime = false
 
 	/** Level at start */
-	private var startlevel:Int = 0
+	private var startlevel = 0
 
 	/** When true, levelstop sound is enabled */
-	private var lvstopse:Boolean = false
+	private var lvstopse = false
 
 	/** BigMode */
-	private var big:Boolean = false
+	private var big = false
 
 	/** LV500の足切りTime */
-	private var torikan:Int = 0
+	private var torikan = 0
 
 	/** When true, section time display is enabled */
-	private var showsectiontime:Boolean = false
+	private var showsectiontime = false
 
 	/** 段位表示 */
-	private var gradedisp:Boolean = false
+	private var gradedisp = false
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Rankings' 段位 */
-	private var rankingGrade:IntArray = IntArray(RANKING_MAX)
+	private var rankingGrade = IntArray(RANKING_MAX)
 
 	/** Rankings' level */
-	private var rankingLevel:IntArray = IntArray(RANKING_MAX)
+	private var rankingLevel = IntArray(RANKING_MAX)
 
 	/** Rankings' times */
-	private var rankingTime:IntArray = IntArray(RANKING_MAX)
+	private var rankingTime = IntArray(RANKING_MAX)
 
 	/** Rankings' Roll completely cleared flag */
-	private var rankingRollclear:IntArray = IntArray(RANKING_MAX)
+	private var rankingRollclear = IntArray(RANKING_MAX)
 
 	/** Section Time記録 */
-	private var bestSectionTime:IntArray = IntArray(SECTION_MAX)
+	private var bestSectionTime = IntArray(SECTION_MAX)
 
-	private var decoration:Int = 0
-	private var dectemp:Int = 0
+	private var decoration = 0
+	private var dectemp = 0
 
 	/* Mode name */
-	override val name:String = "Grand Lightning"
-	override val gameIntensity:Int = 3
+	override val name = "Grand Lightning"
+	override val gameIntensity = 3
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
@@ -212,8 +217,8 @@ class GrandLightning:AbstractMode() {
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
 			torikan =
-				owner.modeConfig.getProperty("speedmania2.torikan.${engine.ruleopt.strRuleName}",
-					if(engine.ruleopt.lockresetMove) DEFAULT_TORIKAN else DEFAULT_TORIKAN_CLASSIC)
+				owner.modeConfig.getProperty("speedmania2.torikan.${engine.ruleOpt.strRuleName}",
+					if(engine.ruleOpt.lockresetMove) DEFAULT_TORIKAN else DEFAULT_TORIKAN_CLASSIC)
 		} else {
 			version = owner.replayProp.getProperty("speedmania2.version", 0)
 			System.arraycopy(tableTimeRegret, 0, bestSectionTime, 0, SECTION_MAX)
@@ -375,13 +380,9 @@ class GrandLightning:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.RED, 0, "Level", (startlevel*100).toString(), "LVSTOPSE",
-			GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG",
-			GeneralUtil.getONorOFF(big), "LV500LIMIT",
-			if(torikan==0)
-				"NONE"
-			else
-				GeneralUtil.getTime(torikan), "GRADE DISP", GeneralUtil.getONorOFF(gradedisp))
+		drawMenu(engine, playerID, receiver, 0, COLOR.RED, 0, "Level" to (startlevel*100),
+			"LVSTOPSE" to lvstopse, "SHOW STIME" to showsectiontime, "BIG" to big,
+			"LV500LIMIT" to if(torikan==0) "NONE" else torikan.toTimeStr, "GRADE DISP" to gradedisp)
 	}
 
 	/* Called at game start */
@@ -425,7 +426,7 @@ class GrandLightning:AbstractMode() {
 						receiver.drawScoreNum(engine, playerID, 0, topY+i, String.format("%02d", i+1), COLOR.YELLOW, scale)
 						receiver.drawScoreGrade(engine, playerID, 3, topY+i, tableGradeName[rankingGrade[i]], gcolor, scale)
 						receiver.drawScoreNum(engine, playerID, 9, topY+i, String.format("%03d", rankingLevel[i]), i==rankingRank, scale)
-						receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank, scale)
+						receiver.drawScoreNum(engine, playerID, 15, topY+i, rankingTime[i].toTimeStr, i==rankingRank, scale)
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 20, "F:VIEW SECTION TIME", COLOR.GREEN)
@@ -438,7 +439,7 @@ class GrandLightning:AbstractMode() {
 						val temp = i*100
 						val temp2 = (i+1)*100-1
 
-						val strSectionTime:String = String.format("%4d-%4d %s", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]))
+						val strSectionTime:String = String.format("%4d-%4d %s", temp, temp2, bestSectionTime[i].toTimeStr)
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -446,9 +447,9 @@ class GrandLightning:AbstractMode() {
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "TOTAL", COLOR.RED)
-					receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(totalTime), 2f)
+					receiver.drawScoreNum(engine, playerID, 0, 18, totalTime.toTimeStr, 2f)
 					receiver.drawScoreFont(engine, playerID, 9, 17, "AVERAGE", COLOR.RED)
-					receiver.drawScoreNum(engine, playerID, 9, 18, GeneralUtil.getTime((totalTime/SECTION_MAX)), 2f)
+					receiver.drawScoreNum(engine, playerID, 9, 18, (totalTime/SECTION_MAX).toTimeStr, 2f)
 
 					receiver.drawScoreFont(engine, playerID, 0, 20, "F:VIEW RANKING", COLOR.GREEN)
 				}
@@ -475,14 +476,14 @@ class GrandLightning:AbstractMode() {
 			// Time
 			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", COLOR.RED)
 			if((engine.ending!=2) or (rolltime/10%2==0))
-				receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 15, engine.statistics.time.toTimeStr, 2f)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
 				var time = ROLLTIMELIMIT-rolltime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", COLOR.RED)
-				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
 
 			// REGRET表示
@@ -515,7 +516,7 @@ class GrandLightning:AbstractMode() {
 						var strSeparator = "-"
 						if(i==section&&engine.ending==0) strSeparator = "+"
 
-						val strSectionTime:String = String.format("%4d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
+						val strSectionTime:String = String.format("%4d%s%s", temp, strSeparator, sectionTime[i].toTimeStr)
 
 						receiver.drawScoreNum(engine, playerID, x-1, y+1
 							+i, strSectionTime, sectionIsNewRecord[i], scale)
@@ -524,7 +525,7 @@ class GrandLightning:AbstractMode() {
 
 				receiver.drawScoreFont(engine, playerID, x2, 17, "AVERAGE", COLOR.RED)
 				receiver.drawScoreNum(engine, playerID, x2, 18,
-					GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))), 2f)
+					(engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0)).toTimeStr, 2f)
 
 			}
 		}
@@ -551,7 +552,7 @@ class GrandLightning:AbstractMode() {
 			// せり上がり
 			if(garbageCount>=tableGarbage[engine.statistics.level/100]&&tableGarbage[engine.statistics.level/100]!=0) {
 				engine.playSE("garbage0")
-				engine.field!!.addBottomCopyGarbage(engine.skin, 1,
+				engine.field.addBottomCopyGarbage(engine.skin, 1,
 					Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 				garbageCount = 0
 			}
@@ -618,7 +619,7 @@ class GrandLightning:AbstractMode() {
 				}
 
 			// AC medal
-			if(engine.field!!.isEmpty) {
+			if(engine.field.isEmpty) {
 
 				dectemp += lines*25
 				if(lines==3) dectemp += 25
@@ -706,7 +707,7 @@ class GrandLightning:AbstractMode() {
 				engine.staffrollEnable = false
 				engine.ending = 1
 
-				secretGrade = engine.field!!.secretGrade
+				secretGrade = engine.field.secretGrade
 
 				// Section Timeを記録
 				sectionlasttime = sectionTime[levelb/100]
@@ -772,7 +773,7 @@ class GrandLightning:AbstractMode() {
 
 			lastscore = ((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+if(engine.manualLock) 1 else 0)
 				*lines*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
-				+engine.statistics.level/if(engine.twist) 2 else 3)*if(engine.field!!.isEmpty) 2 else 1
+				+engine.statistics.level/if(engine.twist) 2 else 3)*if(engine.field.isEmpty) 2 else 1
 
 			engine.statistics.scoreLine += lastscore
 		}
@@ -805,7 +806,7 @@ class GrandLightning:AbstractMode() {
 
 			// Roll 終了
 			if(rolltime>=ROLLTIMELIMIT) {
-				secretGrade = engine.field!!.secretGrade
+				secretGrade = engine.field.secretGrade
 				rollclear = 2
 				engine.gameEnded()
 				engine.resetStatc()
@@ -822,7 +823,7 @@ class GrandLightning:AbstractMode() {
 	/* Called at game over */
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==0&&engine.gameActive) {
-			secretGrade = engine.field!!.secretGrade
+			secretGrade = engine.field.secretGrade
 
 			val time = engine.statistics.time
 			if(time<6000)
@@ -836,7 +837,7 @@ class GrandLightning:AbstractMode() {
 			// Blockの表示を元に戻す
 			engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
 			// 裏段位
-			secretGrade = engine.field!!.secretGrade
+			secretGrade = engine.field.secretGrade
 			decoration += dectemp+secretGrade
 		}
 		return false
@@ -866,11 +867,11 @@ class GrandLightning:AbstractMode() {
 
 				for(i in sectionTime.indices)
 					if(sectionTime[i]>0)
-						receiver.drawMenuFont(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[i]), sectionIsNewRecord[i])
+						receiver.drawMenuFont(engine, playerID, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
 
 				if(sectionavgtime>0) {
 					receiver.drawMenuFont(engine, playerID, 0, 16, "AVERAGE", COLOR.RED)
-					receiver.drawMenuFont(engine, playerID, 2, 17, GeneralUtil.getTime(sectionavgtime))
+					receiver.drawMenuFont(engine, playerID, 2, 17, sectionavgtime.toTimeStr)
 				}
 			}
 			2 -> {
@@ -919,7 +920,7 @@ class GrandLightning:AbstractMode() {
 
 	/* リプレイ保存 */
 	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(owner.replayProp, engine.ruleopt.strRuleName)
+		saveSetting(owner.replayProp, engine.ruleOpt.strRuleName)
 		owner.replayProp.setProperty("speedmania2.version", version)
 
 		// Update rankings
@@ -928,7 +929,7 @@ class GrandLightning:AbstractMode() {
 			if(medalST==3) updateBestSectionTime()
 
 			if(rankingRank!=-1||medalST==3) {
-				saveRanking(engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -954,7 +955,7 @@ class GrandLightning:AbstractMode() {
 	/** Save rankings to property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(ruleName:String) {
+	private fun saveRanking(ruleName:String) {
 		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
 			listOf("$ruleName.$i.grade" to rankingGrade[i],
 				"$ruleName.$i.level" to rankingLevel[i],
@@ -1067,7 +1068,7 @@ class GrandLightning:AbstractMode() {
 		private const val ROLLTIMELIMIT = 3238
 
 		/** Number of entries in rankings */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of sections */
 		private const val SECTION_MAX = 13

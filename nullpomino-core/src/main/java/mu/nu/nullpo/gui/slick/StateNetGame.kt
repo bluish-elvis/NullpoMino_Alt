@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,20 +24,24 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.net.NetRoomInfo
+import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
-import mu.nu.nullpo.gui.GameKeyDummy
+import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.gui.net.NetLobbyListener
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
-import org.newdawn.slick.*
+import org.newdawn.slick.AppGameContainer
+import org.newdawn.slick.GameContainer
+import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 
@@ -62,10 +70,10 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 	private var appContainer:AppGameContainer? = null
 
 	/** Mode name to enter (null=Exit) */
-	private var strModeToEnter:String = ""
+	private var strModeToEnter = ""
 
 	/** Current game mode name */
-	private var modeName:String = ""
+	private var modeName = ""
 
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
@@ -204,7 +212,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 						if(gameManager.quitFlag) {
 							ResourceHolder.bgmStop()
 							game.enterState(StateTitle.ID)
-							return
+							return@update
 						}
 
 						// Retry button
@@ -256,7 +264,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 		val gm = gameManager ?: return
 		val previousMode = gm.mode
 
-		when(val newModeTemp = if(newModeName==null) NetDummyMode() else NullpoMinoSlick.modeManager.getMode(newModeName)) {
+		when(val newModeTemp = if(newModeName==null) NetDummyMode() else NullpoMinoSlick.modeManager[newModeName]) {
 			null -> log.error("Cannot find a mode:$newModeName")
 			is NetDummyMode -> {
 				log.info("Enter new mode:${newModeTemp.id}")
@@ -275,34 +283,35 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 					it.owMinDAS = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owMinDAS", -1)
 					it.owMaxDAS = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owMaxDAS", -1)
 					it.owARR = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owDasDelay", -1)
+					it.owSDSpd = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owSDSpd", -1)
 					it.owReverseUpDown = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owReverseUpDown", false)
 					it.owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owMoveDiagonal", -1)
 					it.owBlockOutlineType = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owBlockOutlineType", -1)
-					it.owBlockShowOutlineOnly = NullpoMinoSlick.propGlobal.getProperty(
-						"0.tuning.owBlockShowOutlineOnly", -1)
-
+					it.owBlockShowOutlineOnly = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owBlockShowOutlineOnly", -1)
+					it.owDelayCancel = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owDelayCancel", -1)
 					// Rule
-					val ruleopt:RuleOptions
-					var rulename:String? = NullpoMinoSlick.propGlobal.getProperty("0.rule", "")
-					if((gm.mode?.gameStyle ?: 0)>0)
+					val ruleOpt:RuleOptions
+					var rulename:String = NullpoMinoSlick.propGlobal.getProperty("0.rule", "")
+					if(gm.mode?.gameStyle!=GameEngine.GameStyle.TETROMINO)
 						rulename = NullpoMinoSlick.propGlobal.getProperty("0.rule.${gm.mode?.gameStyle}", "")
-					if(rulename!=null&&rulename.isNotEmpty()) {
+					if(rulename.isNotEmpty()) {
 						log.info("Load rule options from $rulename")
-						ruleopt = GeneralUtil.loadRule(rulename)
+						ruleOpt = GeneralUtil.loadRule(rulename)
 					} else {
 						log.info("Load rule options from setting file")
-						ruleopt = RuleOptions()
-						ruleopt.readProperty(NullpoMinoSlick.propGlobal, 0)
+						ruleOpt = RuleOptions().apply {
+							readProperty(NullpoMinoSlick.propGlobal, 0)
+						}
 					}
-					it.ruleopt = ruleopt
+					it.ruleOpt = ruleOpt
 
 					// Randomizer
-					if(ruleopt.strRandomizer.isNotEmpty())
-						it.randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
+					if(ruleOpt.strRandomizer.isNotEmpty())
+						it.randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
 
 					// Wallkick
-					if(ruleopt.strWallkick.isNotEmpty())
-						it.wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
+					if(ruleOpt.strWallkick.isNotEmpty())
+						it.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
 
 					// AI
 					val aiName = NullpoMinoSlick.propGlobal.getProperty("0.ai", "")

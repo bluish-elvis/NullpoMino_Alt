@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,18 +24,22 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.log4j.Logger
 import kotlin.random.Random
 
@@ -39,43 +47,43 @@ import kotlin.random.Random
 class SPF:AbstractMode() {
 
 	/** Has accumulatedojama blockOfcount */
-	private var ojama:IntArray = IntArray(0)
+	private var ojama = IntArray(0)
 
 	/** Had sentojama blockOfcount */
-	private var ojamaSent:IntArray = IntArray(0)
+	private var ojamaSent = IntArray(0)
 
 	/** Time to display the most recent increase in score */
-	private var scgettime:IntArray = IntArray(0)
+	private var scgettime = IntArray(0)
 
 	/** UseBGM */
-	private var bgmno:Int = 0
+	private var bgmno = 0
 
 	/** Big */
 	//private boolean[] big;
 
 	/** Sound effectsON/OFF */
-	private var enableSE:BooleanArray = BooleanArray(0)
+	private var enableSE = BooleanArray(0)
 
 	/** MapUse flag */
-	private var useMap:BooleanArray = BooleanArray(0)
+	private var useMap = BooleanArray(0)
 
 	/** UseMapSet number */
-	private var mapSet:IntArray = IntArray(0)
+	private var mapSet = IntArray(0)
 
 	/** Map number(-1Random in) */
-	private var mapNumber:IntArray = IntArray(0)
+	private var mapNumber = IntArray(0)
 
 	/** Last preset number used */
-	private var presetNumber:IntArray = IntArray(0)
+	private var presetNumber = IntArray(0)
 
 	/** Winner */
-	private var winnerID:Int = 0
+	private var winnerID = 0
 
 	/** MapSets ofProperty file */
 	private var propMap:Array<CustomProperties?> = emptyArray()
 
 	/** MaximumMap number */
-	private var mapMaxNo:IntArray = IntArray(0)
+	private var mapMaxNo = IntArray(0)
 
 	/** For backupfield (MapUsed to save the replay) */
 	private var fldBackup:Array<Field?> = emptyArray()
@@ -84,62 +92,61 @@ class SPF:AbstractMode() {
 	private var randMap:Random? = null
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Amount of points earned from most recent clear */
-	private var lastscore:IntArray = IntArray(0)
+	private var lastscore = IntArray(0)
 
 	/** Score */
-	private var score:IntArray = IntArray(0)
+	private var score = IntArray(0)
 
 	/** Settings for starting countdown for ojama blocks */
-	private var ojamaCountdown:IntArray = IntArray(0)
+	private var ojamaCountdown = IntArray(0)
 
 	/** True if use bigger field display */
-	private var bigDisplay:Boolean = false
+	private var bigDisplay = false
 
 	/** HurryupSeconds before the startcount(0InHurryupNo) */
-	private var hurryupSeconds:IntArray = IntArray(0)
+	private var hurryupSeconds = IntArray(0)
 
 	/** Time to display "ZENKESHI!" */
-	private var zenKeshiDisplay:IntArray = IntArray(0)
+	private var zenKeshiDisplay = IntArray(0)
 
 	/** Time to display "TECH BONUS" */
-	private var techBonusDisplay:IntArray = IntArray(0)
+	private var techBonusDisplay = IntArray(0)
 
 	/** Drop patterns */
 	private var dropPattern:Array<Array<IntArray>> = emptyArray()
 
 	/** Drop values set selected */
-	private var dropSet:IntArray = IntArray(0)
+	private var dropSet = IntArray(0)
 
 	/** Drop values selected */
-	private var dropMap:IntArray = IntArray(0)
+	private var dropMap = IntArray(0)
 
 	/** Drop multipliers */
-	private var attackMultiplier:DoubleArray = DoubleArray(0)
-	private var defendMultiplier:DoubleArray = DoubleArray(0)
+	private var attackMultiplier = DoubleArray(0)
+	private var defendMultiplier = DoubleArray(0)
 
 	/** Rainbow power settings for each player */
-	private var diamondPower:IntArray = IntArray(0)
+	private var diamondPower = IntArray(0)
 
 	/** Frame when squares were last checked */
-	private var lastSquareCheck:IntArray = IntArray(0)
+	private var lastSquareCheck = IntArray(0)
 
 	/** Flag set when counters have been decremented */
-	private var countdownDecremented:BooleanArray = BooleanArray(0)
+	private var countdownDecremented = BooleanArray(0)
 
 	/* Mode name */
-	override val name:String = "SPF VS-BATTLE (BETA)"
-	override val gameIntensity:Int = 2
+	override val name = "SPF VS-BATTLE (BETA)"
+	override val gameIntensity = 2
 	override val isVSMode:Boolean get() = true
 
 	/* Number of players */
 	override val players:Int get() = MAX_PLAYERS
 
 	/* Game style */
-	override val gameStyle:Int = GameEngine.GAMESTYLE_SPF
-
+	override val gameStyle = GameEngine.GameStyle.SPF
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
 		owner = manager
@@ -261,7 +268,7 @@ class SPF:AbstractMode() {
 		//field.readProperty(prop, id);
 		field.stringToField(prop.getProperty("values.$id", ""))
 		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
-		field.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
+		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 	}
 
 	/** MapSave
@@ -288,9 +295,9 @@ class SPF:AbstractMode() {
 		propMap[playerID]?.let {
 			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
-			loadMap(engine.field!!, it, id)
-			engine.field!!.setAllSkin(engine.skin)
-		} ?: engine.field?.reset()
+			loadMap(engine.field, it, id)
+			engine.field.setAllSkin(engine.skin)
+		} ?: engine.field.reset()
 	}
 
 	private fun loadDropMapPreview(engine:GameEngine, playerID:Int, pattern:Array<IntArray>?) {
@@ -314,7 +321,7 @@ class SPF:AbstractMode() {
 				}
 				setAllSkin(engine.skin)
 			}
-		} ?: engine.field?.reset()
+		} ?: engine.field.reset()
 	}
 
 	/* Initialization for each player */
@@ -331,6 +338,7 @@ class SPF:AbstractMode() {
 		for(i in 0 until Piece.PIECE_COUNT)
 			engine.nextPieceEnable[i] = PIECE_ENABLE[i]==1
 		engine.blockColors = BLOCK_COLORS
+		engine.gemRate=0.2f
 		engine.randomBlockColor = true
 		engine.connectBlocks = false
 
@@ -364,7 +372,7 @@ class SPF:AbstractMode() {
 				if(menuCursor<0) {
 					menuCursor = 19
 					loadDropMapPreview(engine, playerID, DROP_PATTERNS[dropSet[playerID]][dropMap[playerID]])
-				} else if(menuCursor==17) engine.field = null
+				} else if(menuCursor==17) engine.field.reset()
 				engine.playSE("cursor")
 			}
 			// Down
@@ -372,7 +380,7 @@ class SPF:AbstractMode() {
 				menuCursor++
 				if(menuCursor>19) {
 					menuCursor = 0
-					engine.field = null
+					engine.field.reset()
 				} else if(menuCursor==18) loadDropMapPreview(engine, playerID, DROP_PATTERNS[dropSet[playerID]][dropMap[playerID]])
 				engine.playSE("cursor")
 			}
@@ -402,7 +410,7 @@ class SPF:AbstractMode() {
 					10 -> {
 						useMap[playerID] = !useMap[playerID]
 						if(!useMap[playerID]) {
-							if(engine.field!=null) engine.field!!.reset()
+							if(engine.field!=null) engine.field.reset()
 						} else
 							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 					}
@@ -464,16 +472,18 @@ class SPF:AbstractMode() {
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
-				if(menuCursor==7)
-					loadPreset(engine, owner.modeConfig, presetNumber[playerID])
-				else if(menuCursor==8) {
-					savePreset(engine, owner.modeConfig, presetNumber[playerID])
-					owner.saveModeConfig()
-				} else {
-					saveOtherSetting(engine, owner.modeConfig)
-					savePreset(engine, owner.modeConfig, -1-playerID)
-					owner.saveModeConfig()
-					engine.statc[4] = 1
+				when(menuCursor) {
+					7 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID])
+					8 -> {
+						savePreset(engine, owner.modeConfig, presetNumber[playerID])
+						owner.saveModeConfig()
+					}
+					else -> {
+						saveOtherSetting(engine, owner.modeConfig)
+						savePreset(engine, owner.modeConfig, -1-playerID)
+						owner.saveModeConfig()
+						engine.statc[4] = 1
+					}
 				}
 			}
 
@@ -523,29 +533,21 @@ class SPF:AbstractMode() {
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(engine.statc[4]==0) {
 			if(menuCursor<9) {
-				initMenu(COLOR.ORANGE, 0)
-				drawMenu(engine, playerID, receiver, "GRAVITY", engine.speed.gravity.toString(), "G-MAX",
-					engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(),
-					"LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS",
-					engine.speed.das.toString())
-				menuColor = COLOR.GREEN
-				drawMenu(engine, playerID, receiver, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
+				drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.ORANGE, 0)
+				drawMenu(engine, playerID, receiver, COLOR.GREEN, "LOAD" to presetNumber[playerID], "SAVE" to presetNumber[playerID])
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/3", COLOR.YELLOW)
 			} else if(menuCursor<18) {
-				initMenu(COLOR.PINK, 9)
-				drawMenu(engine, playerID, receiver, "BGM", "${BGM.values[bgmno]}")
-				menuColor = COLOR.CYAN
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]),
-					"MAP SET", "${mapSet[playerID]}",
-					"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}",
-					"SE", GeneralUtil.getONorOFF(enableSE[playerID]),
-					"HURRYUP", if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]}SEC",
-					"COUNTDOWN", "${ojamaCountdown[playerID]}")
-				menuColor = COLOR.PINK
-				drawMenu(engine, playerID, receiver, "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
-				menuColor = COLOR.CYAN
-				drawMenu(engine, playerID, receiver, "RAINBOW")
-				drawMenu(engine, playerID, receiver, "GEM POWER", RAINBOW_POWER_NAMES[diamondPower[playerID]])
+				drawMenu(engine, playerID, receiver, 0, COLOR.PINK, 9, "BGM" to BGM.values[bgmno])
+
+				drawMenu(engine, playerID, receiver, COLOR.CYAN,
+					"USE MAP" to useMap[playerID], "MAP SET" to mapSet[playerID],
+					"MAP NO." to if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}",
+					"SE" to enableSE[playerID],
+					"HURRYUP" to if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]}SEC",
+					"COUNTDOWN" to ojamaCountdown[playerID])
+				drawMenu(engine, playerID, receiver, COLOR.PINK, "BIG DISP" to bigDisplay)
+				drawMenu(engine, playerID, receiver, COLOR.CYAN, "RAINBOW" to "")
+				drawMenu(engine, playerID, receiver, "GEM POWER" to RAINBOW_POWER_NAMES[diamondPower[playerID]])
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 2/3", COLOR.YELLOW)
 			} else {
@@ -564,8 +566,9 @@ class SPF:AbstractMode() {
 				else
 					receiver.drawMenuFont(engine, playerID, 3, 3, "$multiplier%", COLOR.GREEN)
 
-				drawMenu(engine, playerID, receiver, 14, COLOR.CYAN, 18, "DROP SET", DROP_SET_NAMES[dropSet[playerID]],
-					"DROP MAP", String.format("%2d", dropMap[playerID]+1)+"/"+String.format("%2d", DROP_PATTERNS[dropSet[playerID]].size))
+				drawMenu(engine, playerID, receiver, 14, COLOR.CYAN, 18, "DROP SET" to DROP_SET_NAMES[dropSet[playerID]],
+					"DROP MAP" to String.format("%2d", dropMap[playerID]+1)+"/"+String.format("%2d",
+						DROP_PATTERNS[dropSet[playerID]].size))
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/3", COLOR.YELLOW)
 			}
@@ -589,8 +592,8 @@ class SPF:AbstractMode() {
 			if(useMap[playerID]) {
 				if(owner.replayMode) {
 					engine.createFieldIfNeeded()
-					loadMap(engine.field!!, owner.replayProp, playerID)
-					engine.field!!.setAllSkin(engine.skin)
+					loadMap(engine.field, owner.replayProp, playerID)
+					engine.field.setAllSkin(engine.skin)
 				} else {
 					if(propMap[playerID]==null)
 						propMap[playerID] = receiver.loadProperties("config/map/spf/${mapSet[playerID]}.map")
@@ -599,23 +602,26 @@ class SPF:AbstractMode() {
 
 						if(mapNumber[playerID]<0) {
 							if(playerID==1&&useMap[0]&&mapNumber[0]<0)
-								engine.field!!.copy(owner.engine[0].field)
+								engine.field.copy(owner.engine[0].field)
 							else {
 								val no = if(mapMaxNo[playerID]<1) 0 else randMap!!.nextInt(mapMaxNo[playerID])
-								loadMap(engine.field!!, it, no)
+								loadMap(engine.field, it, no)
 							}
 						} else
-							loadMap(engine.field!!, it, mapNumber[playerID])
+							loadMap(engine.field, it, mapNumber[playerID])
 
-						engine.field!!.setAllSkin(engine.skin)
+						engine.field.setAllSkin(engine.skin)
 						fldBackup[playerID] = Field(engine.field)
 					}
 				}
-			} else if(engine.field!=null) engine.field!!.reset()
+			} else if(engine.field!=null) engine.field.reset()
 		} else if(engine.statc[0]==1&&diamondPower[playerID]>0) {
 			var x = 24
 			while(x<engine.nextPieceArraySize) {
-				engine.nextPieceArrayObject[x]!!.block[1].cint = DIAMOND_COLOR
+				engine.nextPieceArrayObject[x].block[1]?.run {
+					color = Block.COLOR.RAINBOW
+					type = Block.TYPE.GEM
+				}
 				x += 25
 			}
 		}
@@ -645,7 +651,7 @@ class SPF:AbstractMode() {
 		val playerColor = EventReceiver.getPlayerColor(playerID)
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(224, 0, GeneralUtil.getTime(engine.statistics.time))
+		if(playerID==0) receiver.drawDirectFont(224, 0, engine.statistics.time.toTimeStr)
 
 		// Ojama Counter
 		val fontColor = when {
@@ -663,34 +669,30 @@ class SPF:AbstractMode() {
 			receiver.drawDirectFont(fldPosX-28, fldPosY+264, String.format("%8d", score[playerID]), playerColor)
 
 		// Countdown Blocks
-		var b:Block?
-		var blockColor:Int
+		if(engine.gameActive)
+			for(x in 0 until engine.field.width)
+				for(y in 0 until engine.field.height)
+					engine.field.getBlock(x, y)?.let {b ->
+						if(b.countdown>0) {
 
-		if(engine.field!=null&&engine.gameActive)
-			for(x in 0 until engine.field!!.width)
-				for(y in 0 until engine.field!!.height) {
-					b = engine.field!!.getBlock(x, y)
-					if(!b!!.isEmpty&&b.countdown>0) {
-						blockColor = b.secondaryColor
-
-						val textColor = when(blockColor) {
-							Block.BLOCK_COLOR_BLUE -> COLOR.BLUE
-							Block.BLOCK_COLOR_GREEN -> COLOR.GREEN
-							Block.BLOCK_COLOR_RED -> COLOR.RED
-							Block.BLOCK_COLOR_YELLOW -> COLOR.YELLOW
-							else -> COLOR.WHITE
+							val textColor = when(b.secondaryColor) {
+								Block.COLOR.BLUE -> COLOR.BLUE
+								Block.COLOR.GREEN -> COLOR.GREEN
+								Block.COLOR.RED -> COLOR.RED
+								Block.COLOR.YELLOW -> COLOR.YELLOW
+								else -> COLOR.WHITE
+							}
+							if(engine.displaysize==1)
+								receiver.drawMenuFont(engine, playerID, x*2,
+									y*2, b.countdown.toString(), textColor, 2f)
+							else
+								receiver.drawMenuFont(engine, playerID, x, y, b.countdown.toString(), textColor)
 						}
-						if(engine.displaysize==1)
-							receiver.drawMenuFont(engine, playerID, x*2,
-								y*2, b.countdown.toString(), textColor, 2f)
-						else
-							receiver.drawMenuFont(engine, playerID, x, y, b.countdown.toString(), textColor)
 					}
-				}
 
 		// On-screen Texts
 
-		val textHeight = if(engine.displaysize==1) 11 else (engine.field?.height ?: 12)+3
+		val textHeight = if(engine.displaysize==1) 11 else (engine.field.height ?: 12)+3
 		val baseX = if(engine.displaysize==1) 1 else -2
 
 		if(techBonusDisplay[playerID]>0)
@@ -704,13 +706,13 @@ class SPF:AbstractMode() {
 		return false
 	}
 
-	override fun pieceLocked(engine:GameEngine, playerID:Int, avalanche:Int) {
-		engine.field ?: return
+	override fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {
+		engine.field
 		checkAll(engine, playerID)
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, avalanche:Int):Int {
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		val field = engine.field ?: return 0
 		if(field.canCascade()) return 0
 		checkAll(engine, playerID)
@@ -722,29 +724,31 @@ class SPF:AbstractMode() {
 		val height = field.height
 		val hiddenHeight = field.hiddenHeight
 
-		var diamondBreakColor = Block.BLOCK_COLOR_INVALID
+		var diamondBreakColor:Block.COLOR? = null
 		if(diamondPower[playerID]>0) {
 			var y = -1*hiddenHeight
-			while(y<height&&diamondBreakColor==Block.BLOCK_COLOR_INVALID) {
+			while(y<height&&diamondBreakColor==null) {
 
 				var x = 0
-				while(x<width&&diamondBreakColor==Block.BLOCK_COLOR_INVALID) {
-					if(field.getBlockColor(x, y)==DIAMOND_COLOR) {
-						if(engine.displaysize==1) {
-							receiver.blockBreak(engine, 2*x, 2*y, field.getBlock(x, y)!!)
-							receiver.blockBreak(engine, 2*x+1, 2*y, field.getBlock(x, y)!!)
-							receiver.blockBreak(engine, 2*x, 2*y+1, field.getBlock(x, y)!!)
-							receiver.blockBreak(engine, 2*x+1, 2*y+1, field.getBlock(x, y)!!)
-						} else
-							receiver.blockBreak(engine, x, y, field.getBlock(x, y)!!)
+				while(x<width&&diamondBreakColor==null) {
+					field.getBlock(x, y)?.let {
+						if(it.color==Block.COLOR.RAINBOW&&it.type==Block.TYPE.GEM) {
+							if(engine.displaysize==1) {
+								receiver.blockBreak(engine, 2*x, 2*y, it)
+								receiver.blockBreak(engine, 2*x+1, 2*y, it)
+								receiver.blockBreak(engine, 2*x, 2*y+1, it)
+								receiver.blockBreak(engine, 2*x+1, 2*y+1, it)
+							} else
+								receiver.blockBreak(engine, x, y, it)
 
-						field.setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
-						if(y+1>=height) {
-							techBonusDisplay[playerID] = 120
-							engine.statistics.scoreLine += 10000
-							score[playerID] += 10000
-						} else
-							diamondBreakColor = field.getBlockColor(x, y+1, true)
+							field.delBlock(x, y)
+							if(y+1>=height) {
+								techBonusDisplay[playerID] = 120
+								engine.statistics.scoreLine += 10000
+								score[playerID] += 10000
+							} else
+								diamondBreakColor = field.getBlockColor(x, y+1)
+						}
 					}
 					x++
 				}
@@ -757,12 +761,12 @@ class SPF:AbstractMode() {
 		var multiplier:Double
 		var b:Block?
 		//Clear blocks from diamond
-		if(diamondBreakColor>Block.BLOCK_COLOR_NONE) {
+		diamondBreakColor?.let {diamondBreakColor ->
 			field.allClearColor(diamondBreakColor, true, true)
 			for(y in -1*hiddenHeight until height) {
 				multiplier = getRowValue(y)
 				for(x in 0 until width)
-					if(field.getBlockColor(x, y, true)==diamondBreakColor) {
+					if(field.getBlockColor(x, y)==diamondBreakColor) {
 						pts += multiplier*7
 						if(engine.displaysize==1) {
 							receiver.blockBreak(engine, 2*x, 2*y, field.getBlock(x, y)!!)
@@ -771,7 +775,7 @@ class SPF:AbstractMode() {
 							receiver.blockBreak(engine, 2*x+1, 2*y+1, field.getBlock(x, y)!!)
 						} else
 							receiver.blockBreak(engine, x, y, field.getBlock(x, y)!!)
-						field.setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
+						field.delBlock(x, y)
 					}
 			}
 		}
@@ -791,7 +795,7 @@ class SPF:AbstractMode() {
 				if(b.bonusValue>1) add *= b.bonusValue.toDouble()
 				if(b.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
 					add /= 2.0
-					b.secondaryColor = 0
+					b.secondaryColor = Block.COLOR.BLACK
 				}
 				if(engine.displaysize==1) {
 					receiver.blockBreak(engine, 2*x, 2*y, b)
@@ -800,13 +804,13 @@ class SPF:AbstractMode() {
 					receiver.blockBreak(engine, 2*x+1, 2*y+1, b)
 				} else
 					receiver.blockBreak(engine, x, y, b)
-				field.setBlockColor(x, y, Block.BLOCK_COLOR_NONE)
+				field.delBlock(x, y)
 				pts += add
 			}
 		}
 		if(engine.chain>1) pts += (engine.chain-1)*20.0
 
-		if(engine.chain>=1) engine.playSE("combo"+minOf(engine.chain, 20))
+		if(engine.chain>=1) engine.playSE("combo", minOf(2f, 1f+(engine.chain-2)/7f))
 
 		var pow = (pts*attackMultiplier[playerID]/7.0).toInt().toDouble()
 
@@ -843,15 +847,15 @@ class SPF:AbstractMode() {
 		if(countdownDecremented[playerID]) return false
 		countdownDecremented[playerID] = true
 		var result = false
-		for(y in engine.field!!.hiddenHeight*-1 until engine.field!!.height)
-			for(x in 0 until engine.field!!.width) {
-				val b = engine.field!!.getBlock(x, y) ?: continue
+		for(y in engine.field.hiddenHeight*-1 until engine.field.height)
+			for(x in 0 until engine.field.width) {
+				val b = engine.field.getBlock(x, y) ?: continue
 				if(b.countdown>1)
 					b.countdown--
 				else if(b.countdown==1) {
 					b.countdown = 0
 					b.setAttribute(false, Block.ATTRIBUTE.GARBAGE)
-					b.cint = b.secondaryColor
+					b.color = b.secondaryColor
 					result = true
 				}
 			}
@@ -865,42 +869,34 @@ class SPF:AbstractMode() {
 
 		//log.debug("Checking squares.");
 
-		val width = engine.field!!.width
-		val height = engine.field!!.height
-		val hiddenHeight = engine.field!!.hiddenHeight
+		val width = engine.field.width
+		val height = engine.field.height
+		val hiddenHeight = engine.field.hiddenHeight
 
-		var color:Int
-		var b:Block?
-		var minX:Int
-		var minY:Int
-		var maxX:Int
-		var maxY:Int
 		for(x in 0 until width)
 			for(y in -1*hiddenHeight until height) {
-				color = engine.field!!.getBlockColor(x, y)
-				if(color<Block.BLOCK_COLOR_RED||color>Block.BLOCK_COLOR_PURPLE) continue
-				minX = x
-				minY = y
-				maxX = x
-				maxY = y
+				val b = engine.field.getBlock(x, y) ?: continue
+				var color=b.color?:continue
+				if(!color.color||b.type!=Block.TYPE.GEM) continue
+				var minX = x
+				var minY = y
+				var maxX = x
+				var maxY = y
 				var expanded = false
-				b = engine.field!!.getBlock(x, y)
-				if(!b!!.getAttribute(Block.ATTRIBUTE.BROKEN)&&
-					b.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)&&
-					b.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)&&
-					!b.getAttribute(Block.ATTRIBUTE.CONNECT_UP)&&
-					!b.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
+				if(!b.getAttribute(Block.ATTRIBUTE.BROKEN)&&
+					b.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)&&b.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)&&
+					!b.getAttribute(Block.ATTRIBUTE.CONNECT_UP)&&!b.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
 					//Find boundaries of existing gem block
 					maxX++
 					maxY++
 					var test:Block?
 					while(maxX<width) {
-						test = engine.field!!.getBlock(maxX, y)
+						test = engine.field.getBlock(maxX, y)
 						if(test==null) {
 							maxX--
 							break
 						}
-						if(test.cint!=color) {
+						if(test!=b) {
 							maxX--
 							break
 						}
@@ -908,12 +904,12 @@ class SPF:AbstractMode() {
 						maxX++
 					}
 					while(maxY<height) {
-						test = engine.field!!.getBlock(x, maxY)
+						test = engine.field.getBlock(x, maxY)
 						if(test==null) {
 							maxY--
 							break
 						}
-						if(test.cint!=color) {
+						if(test!=b) {
 							maxY--
 							break
 						}
@@ -923,12 +919,12 @@ class SPF:AbstractMode() {
 					log.debug("Pre-existing square found: ($minX, $minY) to ("+
 						maxX+", $maxY)")
 				} else if(b.getAttribute(Block.ATTRIBUTE.BROKEN)&&
-					color==engine.field!!.getBlockColor(x+1, y)&&
-					color==engine.field!!.getBlockColor(x, y+1)&&
-					color==engine.field!!.getBlockColor(x+1, y+1)) {
-					val bR = engine.field!!.getBlock(x+1, y)
-					val bD = engine.field!!.getBlock(x, y+1)
-					val bDR = engine.field!!.getBlock(x+1, y+1)
+					color==engine.field.getBlockColor(x+1, y)&&
+					color==engine.field.getBlockColor(x, y+1)&&
+					color==engine.field.getBlockColor(x+1, y+1)) {
+					val bR = engine.field.getBlock(x+1, y)
+					val bD = engine.field.getBlock(x, y+1)
+					val bDR = engine.field.getBlock(x+1, y+1)
 					if(bR!!.getAttribute(Block.ATTRIBUTE.BROKEN)&&
 						bD!!.getAttribute(Block.ATTRIBUTE.BROKEN)&&
 						bDR!!.getAttribute(Block.ATTRIBUTE.BROKEN)) {
@@ -957,19 +953,19 @@ class SPF:AbstractMode() {
 				done = false
 				while(testY>=-1*hiddenHeight&&!done) {
 					log.debug("Testing to expand up. testY = $testY")
-					if(color!=engine.field!!.getBlockColor(minX, testY)||color!=engine.field!!.getBlockColor(maxX, testY))
+					if(color!=engine.field.getBlockColor(minX, testY)||color!=engine.field.getBlockColor(maxX, testY))
 						break
-					if(engine.field!!.getBlock(minX, testY)!!
-							.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)||engine.field!!.getBlock(maxX, testY)!!
+					if(engine.field.getBlock(minX, testY)!!
+							.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)||engine.field.getBlock(maxX, testY)!!
 							.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
 						break
 					expandHere = true
 					testX = minX
 					while(testX<=maxX&&!done) {
-						if(engine.field!!.getBlockColor(testX, testY)!=color) {
+						if(engine.field.getBlockColor(testX, testY)!=color) {
 							done = true
 							expandHere = false
-						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_UP))
+						} else if(engine.field.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_UP))
 							expandHere = false
 						testX++
 					}
@@ -983,19 +979,19 @@ class SPF:AbstractMode() {
 				testX = minX-1
 				done = false
 				while(testX>=0&&!done) {
-					if(color!=engine.field!!.getBlockColor(testX, minY)||color!=engine.field!!.getBlockColor(testX, maxY))
+					if(color!=engine.field.getBlockColor(testX, minY)||color!=engine.field.getBlockColor(testX, maxY))
 						break
-					if(engine.field!!.getBlock(testX, minY)!!
-							.getAttribute(Block.ATTRIBUTE.CONNECT_UP)||engine.field!!.getBlock(testX, maxY)!!
+					if(engine.field.getBlock(testX, minY)!!
+							.getAttribute(Block.ATTRIBUTE.CONNECT_UP)||engine.field.getBlock(testX, maxY)!!
 							.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN))
 						break
 					expandHere = true
 					testY = minY
 					while(testY<=maxY&&!done) {
-						if(engine.field!!.getBlockColor(testX, testY)!=color) {
+						if(engine.field.getBlockColor(testX, testY)!=color) {
 							done = true
 							expandHere = false
-						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT))
+						} else if(engine.field.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT))
 							expandHere = false
 						testY++
 					}
@@ -1009,19 +1005,19 @@ class SPF:AbstractMode() {
 				testX = maxX+1
 				done = false
 				while(testX<width&&!done) {
-					if(color!=engine.field!!.getBlockColor(testX, minY)||color!=engine.field!!.getBlockColor(testX, maxY))
+					if(color!=engine.field.getBlockColor(testX, minY)||color!=engine.field.getBlockColor(testX, maxY))
 						break
-					if(engine.field!!.getBlock(testX, minY)!!
-							.getAttribute(Block.ATTRIBUTE.CONNECT_UP)||engine.field!!.getBlock(testX, maxY)!!
+					if(engine.field.getBlock(testX, minY)!!
+							.getAttribute(Block.ATTRIBUTE.CONNECT_UP)||engine.field.getBlock(testX, maxY)!!
 							.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN))
 						break
 					expandHere = true
 					testY = minY
 					while(testY<=maxY&&!done) {
-						if(engine.field!!.getBlockColor(testX, testY)!=color) {
+						if(engine.field.getBlockColor(testX, testY)!=color) {
 							done = true
 							expandHere = false
-						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
+						} else if(engine.field.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
 							expandHere = false
 						testY++
 					}
@@ -1035,19 +1031,19 @@ class SPF:AbstractMode() {
 				testY = maxY+1
 				done = false
 				while(testY<height&&!done) {
-					if(color!=engine.field!!.getBlockColor(minX, testY)||color!=engine.field!!.getBlockColor(maxX, testY))
+					if(color!=engine.field.getBlockColor(minX, testY)||color!=engine.field.getBlockColor(maxX, testY))
 						break
-					if(engine.field!!.getBlock(minX, testY)!!
-							.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)||engine.field!!.getBlock(maxX, testY)!!
+					if(engine.field.getBlock(minX, testY)!!
+							.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)||engine.field.getBlock(maxX, testY)!!
 							.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT))
 						break
 					expandHere = true
 					testX = minX
 					while(testX<=maxX&&!done) {
-						if(engine.field!!.getBlockColor(testX, testY)!=color) {
+						if(engine.field.getBlockColor(testX, testY)!=color) {
 							done = true
 							expandHere = false
-						} else if(engine.field!!.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN))
+						} else if(engine.field.getBlock(testX, testY)!!.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN))
 							expandHere = false
 						testX++
 					}
@@ -1067,7 +1063,7 @@ class SPF:AbstractMode() {
 					while(testX<=maxX) {
 						testY = minY
 						while(testY<=maxY) {
-							bTest = engine.field!!.getBlock(testX, testY)
+							bTest = engine.field.getBlock(testX, testY)
 							bTest!!.setAttribute(false, Block.ATTRIBUTE.BROKEN)
 							bTest.setAttribute(testX!=minX, Block.ATTRIBUTE.CONNECT_LEFT)
 							bTest.setAttribute(testY!=maxY, Block.ATTRIBUTE.CONNECT_DOWN)
@@ -1086,13 +1082,13 @@ class SPF:AbstractMode() {
 	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.field==null) return false
 
-		val width = engine.field!!.width
-		val height = engine.field!!.height
-		val hiddenHeight = engine.field!!.hiddenHeight
+		val width = engine.field.width
+		val height = engine.field.height
+		val hiddenHeight = engine.field.hiddenHeight
 
 		for(y in -1*hiddenHeight until height)
 			for(x in 0 until width)
-				if(engine.field!!.getBlockColor(x, y)==DIAMOND_COLOR) {
+				if(engine.field.getBlockColor(x, y)==Block.COLOR.RAINBOW) {
 					calcScore(engine, playerID, 0)
 					return true
 				}
@@ -1104,23 +1100,26 @@ class SPF:AbstractMode() {
 			var enemyID = 0
 			if(playerID==0) enemyID = 1
 
-			val dropRows = minOf((ojama[playerID]+width-1)/width, engine.field!!.getHighestBlockY(3))
+			val dropRows = minOf((ojama[playerID]+width-1)/width, engine.field.getHighestBlockY(3))
 			if(dropRows<=0) return false
 			val drop = minOf(ojama[playerID], width*dropRows)
 			ojama[playerID] -= drop
 			//engine.field.garbageDrop(engine, drop, big[playerID], ojamaHard[playerID], 3);
-			engine.field!!.garbageDrop(engine, drop, false, 0, ojamaCountdown[playerID], 3)
-			engine.field!!.setAllSkin(engine.skin)
+			engine.field.garbageDrop(engine, drop, false, 0, ojamaCountdown[playerID], 3)
+			engine.field.setAllSkin(engine.skin)
 			var patternCol = 0
-			for(x in 0 until engine.field!!.width) {
+			for(x in 0 until engine.field.width) {
 				if(patternCol>=dropPattern[enemyID].size) patternCol = 0
 				var patternRow = 0
 				for(y in dropRows-hiddenHeight downTo -1*hiddenHeight) {
-					val b = engine.field!!.getBlock(x, y)
-					if(b!!.getAttribute(Block.ATTRIBUTE.GARBAGE)&&b.secondaryColor==0) {
-						if(patternRow>=dropPattern[enemyID][patternCol].size) patternRow = 0
-						b.secondaryColor = dropPattern[enemyID][patternCol][patternRow]
-						patternRow++
+					engine.field.getBlock(x, y)?.let {b ->
+						if(b.getAttribute(Block.ATTRIBUTE.GARBAGE)&&!b.secondaryColor.color) {
+							if(patternRow>=dropPattern[enemyID][patternCol].size) patternRow = 0
+							Block.intToColor(dropPattern[enemyID][patternCol][patternRow]).first?.let {
+								b.secondaryColor = it
+							}
+							patternRow++
+						}
 					}
 				}
 				patternCol++
@@ -1135,7 +1134,7 @@ class SPF:AbstractMode() {
 		scgettime[playerID]++
 		if(zenKeshiDisplay[playerID]>0) zenKeshiDisplay[playerID]--
 		var width = 1
-		if(engine.field!=null) width = engine.field!!.width
+		if(engine.field!=null) width = engine.field.width
 		val blockHeight = receiver.getBlockSize(engine)
 		// Rising auctionMeter
 		if(ojama[playerID]*blockHeight/width>engine.meterValue)
@@ -1180,12 +1179,11 @@ class SPF:AbstractMode() {
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "RESULT", COLOR.ORANGE)
-		if(winnerID==-1)
-			receiver.drawMenuFont(engine, playerID, 6, 2, "DRAW", COLOR.GREEN)
-		else if(winnerID==playerID)
-			receiver.drawMenuFont(engine, playerID, 6, 2, "WIN!", COLOR.YELLOW)
-		else
-			receiver.drawMenuFont(engine, playerID, 6, 2, "LOSE", COLOR.WHITE)
+		when(winnerID) {
+			-1 -> receiver.drawMenuFont(engine, playerID, 6, 2, "DRAW", COLOR.GREEN)
+			playerID -> receiver.drawMenuFont(engine, playerID, 6, 2, "WIN!", COLOR.YELLOW)
+			else -> receiver.drawMenuFont(engine, playerID, 6, 2, "LOSE", COLOR.WHITE)
+		}
 
 		val apm = (ojamaSent[playerID]*3600).toFloat()/engine.statistics.time.toFloat()
 		drawResult(engine, playerID, receiver, 3, COLOR.ORANGE, "ATTACK", String.format("%10d", ojamaSent[playerID]))
@@ -1215,17 +1213,13 @@ class SPF:AbstractMode() {
 		private val PIECE_ENABLE = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
 
 		/** Block colors */
-		private val BLOCK_COLORS =
-			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_RED,
-				Block.BLOCK_COLOR_GEM_RED, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_GREEN,
-				Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_GEM_GREEN, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_BLUE,
-				Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_GEM_BLUE, Block.BLOCK_COLOR_YELLOW,
-				Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_YELLOW, Block.BLOCK_COLOR_GEM_YELLOW)
+		private val BLOCK_COLORS = arrayOf(Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.BLUE, Block.COLOR.YELLOW)
+		/*arrayOf(Block.COLOR.RED, Block.COLOR.RED, Block.COLOR.RED, Block.COLOR.RED, Block.COLOR.GEM_RED,
+			Block.COLOR.GREEN, Block.COLOR.GREEN, Block.COLOR.GREEN, Block.COLOR.GREEN, Block.COLOR.GEM_GREEN,
+			Block.COLOR.BLUE, Block.COLOR.BLUE, Block.COLOR.BLUE, Block.COLOR.BLUE, Block.COLOR.GEM_BLUE,
+			Block.COLOR.YELLOW, Block.COLOR.YELLOW, Block.COLOR.YELLOW, Block.COLOR.YELLOW, Block.COLOR.GEM_YELLOW)*/
 
 		private val ROW_VALUES = doubleArrayOf(2.3, 2.2, 2.1, 2.0, 1.9, 1.8, 1.7, 1.6, 1.5, 1.4, 1.3, 1.2, 1.1, 1.0)
-
-		private const val DIAMOND_COLOR = Block.BLOCK_COLOR_GEM_RAINBOW
-
 		/** Number of players */
 		private const val MAX_PLAYERS = 2
 

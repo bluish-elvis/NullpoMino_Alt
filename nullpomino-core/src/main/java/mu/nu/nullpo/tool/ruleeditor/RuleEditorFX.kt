@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,45 +24,25 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.*/
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.tool.ruleeditor
+
 /*
-import com.sun.javafx.application.ParametersImpl
-import javafx.application.Application
-import javafx.event.EventHandler
-import javafx.scene.Scene
-import javafx.scene.control.*
-import javafx.scene.control.Button
-import javafx.scene.control.Dialog
-import javafx.scene.control.TextField
-import javafx.scene.image.Image
-import javafx.scene.layout.VBox
-import javafx.stage.Stage
-import javafx.stage.WindowEvent
-import mu.nu.nullpo.game.component.*
-import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.util.CustomProperties
-import org.apache.log4j.Logger
-import org.apache.log4j.PropertyConfigurator
-import java.io.*
-import java.net.MalformedURLException
-import java.net.URL
-import java.util.*
-import javax.imageio.ImageIO
 
 /** ルールエディター */
-class RuleEditorFX:Application() {
+class RuleEditorFX:Application(null) {
 
 	private var stage:Stage = Stage()
 	private var scene:Scene? = null
 	/** Swing版のSave settings用Property file */
-	val propConfig:CustomProperties = CustomProperties()
+	val propConfig = CustomProperties()
 
 	/** Default language file */
-	private val propLangDefault:CustomProperties = CustomProperties()
+	private val propLangDefault = CustomProperties()
 
 	/** UI翻訳用Property file */
-	private val propLang:CustomProperties = CustomProperties()
+	private val propLang = CustomProperties()
 
 	//----------------------------------------------------------------------
 	/** 今開いているFilename (null:なし) */
@@ -456,7 +440,7 @@ class RuleEditorFX:Application() {
 
 		stage.title = getUIText("Title_RuleEditor")
 
-		var ruleopt = RuleOptions()
+		var ruleOpt = RuleOptions()
 
 		readRuleToUI(RuleOptions())
 		initUI()
@@ -470,11 +454,11 @@ class RuleEditorFX:Application() {
 		init()
 
 
-		var ruleopt = RuleOptions()
+		var ruleOpt = RuleOptions()
 
 		if(filename!=null&&filename.isNotEmpty())
 			try {
-				ruleopt = load(filename)
+				ruleOpt = load(filename)
 				strNowFile = filename
 				stage.title = "${getUIText("Title_RuleEditor")}:$strNowFile"
 			} catch(e:IOException) {
@@ -486,7 +470,7 @@ class RuleEditorFX:Application() {
 				}
 			}
 
-		readRuleToUI(ruleopt)
+		readRuleToUI(ruleOpt)
 
 		stage.show()
 		initUI()
@@ -497,16 +481,15 @@ class RuleEditorFX:Application() {
 		contentPane.layout = BorderLayout()
 
 		// Menuバー --------------------------------------------------
-		val menuBar = JMenuBar()
-		jMenuBar = menuBar
+		val menuBar = MenuBar()
 
 		// ファイルMenu
-		val mFile = JMenu(getUIText("JMenu_File"))
+		val mFile = Menu(getUIText("JMenu_File"))
 		mFile.setMnemonic('F')
 		menuBar.add(mFile)
 
 		// 新規作成
-		mFile.add(JMenuItem(getUIText("JMenuItem_New")).also {
+		mFile.add(MenuItem(getUIText("JMenuItem_New")).also {
 			it.setMnemonic('N')
 			it.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK)
 			it.actionCommand = "New"
@@ -514,7 +497,7 @@ class RuleEditorFX:Application() {
 		})
 
 		// 開く
-		mFile.add(JMenuItem(getUIText("JMenuItem_Open")).also {
+		mFile.add(MenuItem(getUIText("JMenuItem_Open")).also {
 			it.setMnemonic('O')
 			it.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK)
 			it.actionCommand = "Open"
@@ -522,7 +505,7 @@ class RuleEditorFX:Application() {
 		})
 
 		// Up書き保存
-		mFile.add(JMenuItem(getUIText("JMenuItem_Save")).also {
+		mFile.add(MenuItem(getUIText("JMenuItem_Save")).also {
 			it.setMnemonic('S')
 			it.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK)
 			it.actionCommand = "Save"
@@ -530,7 +513,7 @@ class RuleEditorFX:Application() {
 		})
 
 		// Nameを付けて保存
-		mFile.add(JMenuItem(getUIText("JMenuItem_SaveAs")).also {
+		mFile.add(MenuItem(getUIText("JMenuItem_SaveAs")).also {
 			it.setMnemonic('A')
 			it.accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK or InputEvent.ALT_DOWN_MASK)
 			it.actionCommand = "SaveAs"
@@ -538,7 +521,7 @@ class RuleEditorFX:Application() {
 		})
 
 		// 終了
-		mFile.add(JMenuItem(getUIText("JMenuItem_Exit")).also {
+		mFile.add(MenuItem(getUIText("JMenuItem_Exit")).also {
 			it.setMnemonic('X')
 			it.actionCommand = "Exit"
 			it.addActionListener(this)
@@ -553,32 +536,32 @@ class RuleEditorFX:Application() {
 
 		// Rule name
 		txtfldRuleName.prefColumnCount = 15
-		panelBasic.children.addAll(listOf(JPanel().apply {
-			add(JLabel(getUIText("Basic_RuleName")))
+		panelBasic.children.addAll(listOf(Pane().apply {
+			add(Label(getUIText("Basic_RuleName")))
 			add(txtfldRuleName)
 		}))
 
 		// NEXT表示count
-		panelBasic.add(JPanel().apply {
-			add(JLabel(getUIText("Basic_NextDisplay")))
+		panelBasic.add(Pane().apply {
+			add(Label(getUIText("Basic_NextDisplay")))
 			txtfldNextDisplay.prefColumnCount = 5
 			add(txtfldNextDisplay)
 		})
 
 		// Game style
-		val pStyle = JPanel()
-		pStyle.add(JLabel(getUIText("Basic_Style")))
-		comboboxStyle = JComboBox(GameEngine.GAMESTYLE_NAMES).apply {
+		val pStyle = Pane()
+		pStyle.add(Label(getUIText("Basic_Style")))
+		comboboxStyle = ComboBox(GameEngine.GAMESTYLE_NAMES).apply {
 			preferredSize = Dimension(100, 30)
 		}
 		pStyle.add(comboboxStyle)
 		panelBasic.add(pStyle)
 
 		// 絵柄
-		val pSkin = JPanel()
+		val pSkin = Pane()
 		panelBasic.add(pSkin)
 
-		pSkin.add(JLabel(getUIText("Basic_Skin")))
+		pSkin.add(Label(getUIText("Basic_Skin")))
 
 		val model = DefaultComboBoxModel<ComboLabel>()
 		imgBlockSkins?.forEachIndexed {i, it ->
@@ -599,19 +582,19 @@ class RuleEditorFX:Application() {
 		panelBasic.add(chkboxEnterAboveField)
 
 		// 出現予定地が埋まっているときにY-coordinateを上にずらすMaximum count
-		val pEnterMaxDistanceY = JPanel()
+		val pEnterMaxDistanceY = Pane()
 		panelBasic.add(pEnterMaxDistanceY)
 
-		pEnterMaxDistanceY.add(JLabel(getUIText("Basic_EnterMaxDistanceY")))
+		pEnterMaxDistanceY.add(Label(getUIText("Basic_EnterMaxDistanceY")))
 
 		txtfldEnterMaxDistanceY.prefColumnCount = 5
 		pEnterMaxDistanceY.add(txtfldEnterMaxDistanceY)
 
 		// NEXT順生成アルゴリズム
-		val pRandomizer = JPanel()
+		val pRandomizer = Pane()
 		panelBasic.add(pRandomizer)
 
-		pRandomizer.add(JLabel(getUIText("Basic_Randomizer")))
+		pRandomizer.add(Label(getUIText("Basic_Randomizer")))
 
 		vectorRandomizer = getTextFileVector("config/list/randomizer.lst")
 		comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer)).apply {
@@ -627,25 +610,25 @@ class RuleEditorFX:Application() {
 		}*/
 
 		// fieldタブ --------------------------------------------------
-		val panelField = JPanel()
+		val panelField = Pane()
 		panelField.layout = BoxLayout(panelField, BoxLayout.Y_AXIS)
 		tabPane.addTab(getUIText("TabName_Field"), panelField)
 
 		// fieldの幅
-		panelField.add(JPanel().apply {
-			add(JLabel(getUIText("Field_FieldWidth")))
+		panelField.add(Pane().apply {
+			add(Label(getUIText("Field_FieldWidth")))
 			add(txtfldFieldWidth)
 		})
 
 		// Field height
-		panelField.add(JPanel().apply {
-			add(JLabel(getUIText("Field_FieldHeight")))
+		panelField.add(Pane().apply {
+			add(Label(getUIText("Field_FieldHeight")))
 			add(txtfldFieldHeight)
 		})
 
 		// fieldの見えない部分の高さ
-		panelField.add(JPanel().apply {
-			add(JLabel(getUIText("Field_FieldHiddenHeight")))
+		panelField.add(Pane().apply {
+			add(Label(getUIText("Field_FieldHiddenHeight")))
 			add(txtfldFieldHiddenHeight)
 		})
 
@@ -662,7 +645,7 @@ class RuleEditorFX:Application() {
 		panelField.add(chkboxFieldPartialLockoutDeath)
 
 		// ホールドタブ --------------------------------------------------
-		val panelHold = JPanel()
+		val panelHold = Pane()
 		panelHold.layout = BoxLayout(panelHold, BoxLayout.Y_AXIS)
 		tabPane.addTab(getUIText("TabName_Hold"), panelHold)
 
@@ -684,14 +667,14 @@ class RuleEditorFX:Application() {
 
 		// ホールドできる count
 		txtfldHoldLimit.prefColumnCount = 5
-		val pHoldLimit = JPanel().apply {
-			add(JLabel(getUIText("Hold_HoldLimit")))
+		val pHoldLimit = Pane().apply {
+			add(Label(getUIText("Hold_HoldLimit")))
 			add(txtfldHoldLimit)
 		}
 		panelHold.add(pHoldLimit)
 
 		// ドロップタブ --------------------------------------------------
-		val panelDrop = JPanel()
+		val panelDrop = Pane()
 		panelDrop.layout = BoxLayout(panelDrop, BoxLayout.Y_AXIS)
 		tabPane.addTab(getUIText("TabName_Drop"), panelDrop)
 
@@ -732,15 +715,15 @@ class RuleEditorFX:Application() {
 		panelDrop.add(chkboxDropSoftDropGravitySpeedLimit)
 
 		// Soft drop速度
-		val pDropSoftDropSpeed = JPanel()
+		val pDropSoftDropSpeed = Pane()
 		panelDrop.add(pDropSoftDropSpeed)
-		pDropSoftDropSpeed.add(JLabel(getUIText("Drop_SoftDropSpeed")))
+		pDropSoftDropSpeed.add(Label(getUIText("Drop_SoftDropSpeed")))
 
 		txtfldDropSoftDropSpeed.prefColumnCount = 5
 		pDropSoftDropSpeed.add(txtfldDropSoftDropSpeed)
 
 		// rotationタブ --------------------------------------------------
-		val panelRotate = JPanel()
+		val panelRotate = Pane()
 		panelRotate.layout = BoxLayout(panelRotate, BoxLayout.Y_AXIS)
 		tabPane.addTab(getUIText("TabName_Rotate"), panelRotate)
 
@@ -773,18 +756,18 @@ class RuleEditorFX:Application() {
 		panelRotate.add(chkboxRotateButtonAllowDouble)
 
 		// UpDirectionへWallkickできる count
-		val pRotateMaxUpwardWallkick = JPanel()
+		val pRotateMaxUpwardWallkick = Pane()
 		panelRotate.add(pRotateMaxUpwardWallkick)
-		pRotateMaxUpwardWallkick.add(JLabel(getUIText("Rotate_RotateMaxUpwardWallkick")))
+		pRotateMaxUpwardWallkick.add(Label(getUIText("Rotate_RotateMaxUpwardWallkick")))
 
 		txtfldRotateMaxUpwardWallkick.prefColumnCount = 5
 		pRotateMaxUpwardWallkick.add(txtfldRotateMaxUpwardWallkick)
 
 		// Wallkickアルゴリズム
-		val pWallkickSystem = JPanel()
+		val pWallkickSystem = Pane()
 		panelRotate.add(pWallkickSystem)
 
-		pWallkickSystem.add(JLabel(getUIText("Rotate_WallkickSystem")))
+		pWallkickSystem.add(Label(getUIText("Rotate_WallkickSystem")))
 
 		vectorWallkickSystem = getTextFileVector("config/list/wallkick.lst")
 		comboboxWallkickSystem = JComboBox(createShortStringVector(vectorWallkickSystem)).apply {
@@ -801,14 +784,14 @@ class RuleEditorFX:Application() {
 		}
 
 		// 固定 timeタブ --------------------------------------------------
-		val panelLockDelay = JPanel()
+		val panelLockDelay = Pane()
 		panelLockDelay.layout = BoxLayout(panelLockDelay, BoxLayout.Y_AXIS)
 		tabPane.addTab(getUIText("TabName_LockDelay"), panelLockDelay)
 
 		// 最低固定 timeと最高固定 time
-		panelLockDelay.add(JLabel(getUIText("LockDelay_LockDelayMinMax")))
+		panelLockDelay.add(Label(getUIText("LockDelay_LockDelayMinMax")))
 
-		val pLockDelayMinMax = JPanel()
+		val pLockDelayMinMax = Pane()
 		panelLockDelay.add(pLockDelayMinMax)
 
 		txtfldLockDelayMin.prefColumnCount = 5
@@ -837,28 +820,28 @@ class RuleEditorFX:Application() {
 		panelLockDelay.add(chkboxLockDelayLockResetLimitShareCount)
 
 		// 横移動 count制限
-		val pLockDelayLockResetLimitMove = JPanel()
+		val pLockDelayLockResetLimitMove = Pane()
 		panelLockDelay.add(pLockDelayLockResetLimitMove)
-		pLockDelayLockResetLimitMove.add(JLabel(getUIText("LockDelay_LockDelayLockResetLimitMove")))
+		pLockDelayLockResetLimitMove.add(Label(getUIText("LockDelay_LockDelayLockResetLimitMove")))
 
 		txtfldLockDelayLockResetLimitMove.prefColumnCount = 5
 		pLockDelayLockResetLimitMove.add(txtfldLockDelayLockResetLimitMove)
 
 		// rotation count制限
-		val pLockDelayLockResetLimitRotate = JPanel()
+		val pLockDelayLockResetLimitRotate = Pane()
 		panelLockDelay.add(pLockDelayLockResetLimitRotate)
 
-		pLockDelayLockResetLimitRotate.add(JLabel(getUIText("LockDelay_LockDelayLockResetLimitRotate")))
+		pLockDelayLockResetLimitRotate.add(Label(getUIText("LockDelay_LockDelayLockResetLimitRotate")))
 
 		txtfldLockDelayLockResetLimitRotate.prefColumnCount = 5
 		pLockDelayLockResetLimitRotate.add(txtfldLockDelayLockResetLimitRotate)
 
 		// 移動またはrotation count制限が超過した時の設定
-		val pLockDelayLockResetLimitOver = JPanel()
+		val pLockDelayLockResetLimitOver = Pane()
 		pLockDelayLockResetLimitOver.layout = BoxLayout(pLockDelayLockResetLimitOver, BoxLayout.Y_AXIS)
 		panelLockDelay.add(pLockDelayLockResetLimitOver)
 
-		pLockDelayLockResetLimitOver.add(JLabel(getUIText("LockDelay_LockDelayLockResetLimitOver")))
+		pLockDelayLockResetLimitOver.add(Label(getUIText("LockDelay_LockDelayLockResetLimitOver")))
 
 		val gLockDelayLockResetLimitOver = ButtonGroup()
 
@@ -875,14 +858,14 @@ class RuleEditorFX:Application() {
 		gLockDelayLockResetLimitOver.add(radioLockDelayLockResetLimitOverNoWallkick)
 
 		// AREタブ --------------------------------------------------
-		val panelARE = JPanel()
+		val panelARE = Pane()
 		panelARE.layout = BoxLayout(panelARE, BoxLayout.Y_AXIS)
 		tabPane.addTab(getUIText("TabName_ARE"), panelARE)
 
 		// 最低AREと最高ARE
-		panelARE.add(JLabel(getUIText("ARE_MinMax")))
+		panelARE.add(Label(getUIText("ARE_MinMax")))
 
-		val pAREMinMax = JPanel()
+		val pAREMinMax = Pane()
 		panelARE.add(pAREMinMax)
 
 		txtfldAREMin.prefColumnCount = 5
@@ -891,9 +874,9 @@ class RuleEditorFX:Application() {
 		pAREMinMax.add(txtfldAREMax)
 
 		// 最低ARE after line clearと最高ARE after line clear
-		panelARE.add(JLabel(getUIText("ARE_LineMinMax")))
+		panelARE.add(Label(getUIText("ARE_LineMinMax")))
 
-		val pARELineMinMax = JPanel()
+		val pARELineMinMax = Pane()
 		panelARE.add(pARELineMinMax)
 
 		txtfldARELineMin.prefColumnCount = 5
@@ -902,9 +885,9 @@ class RuleEditorFX:Application() {
 		pARELineMinMax.add(txtfldARELineMax)
 
 		// 固定した瞬間に光る frame count
-		panelARE.add(JLabel(getUIText("ARE_LockFlash")))
+		panelARE.add(Label(getUIText("ARE_LockFlash")))
 
-		val pARELockFlash = JPanel()
+		val pARELockFlash = Pane()
 		panelARE.add(pARELockFlash)
 
 		txtfldARELockFlash.prefColumnCount = 5
@@ -931,14 +914,14 @@ class RuleEditorFX:Application() {
 		panelARE.add(chkboxARECancelHold)
 
 		// Line clearタブ --------------------------------------------------
-		val panelLine = JPanel()
+		val panelLine = Pane()
 		panelLine.layout = BoxLayout(panelLine, BoxLayout.Y_AXIS)
 		tabPane.addTab(getUIText("TabName_Line"), panelLine)
 
 		// 最低Line clear timeと最高Line clear time
-		panelLine.add(JLabel(getUIText("Line_MinMax")))
+		panelLine.add(Label(getUIText("Line_MinMax")))
 
-		val pLineMinMax = JPanel()
+		val pLineMinMax = Pane()
 		panelLine.add(pLineMinMax)
 
 		txtfldLineDelayMin.prefColumnCount = 5
@@ -963,14 +946,14 @@ class RuleEditorFX:Application() {
 		panelLine.add(chkboxLineCancelHold)
 
 		// 移動タブ --------------------------------------------------
-		val panelMove = JPanel()
+		val panelMove = Pane()
 		panelMove.layout = BoxLayout(panelMove, BoxLayout.Y_AXIS)
 		tabPane.addTab(getUIText("TabName_Move"), panelMove)
 
 		// 最低横溜め timeと最高横溜め time
-		panelMove.add(JLabel(getUIText("Move_DASMinMax")))
+		panelMove.add(Label(getUIText("Move_DASMinMax")))
 
-		val pMoveDASMinMax = JPanel()
+		val pMoveDASMinMax = Pane()
 		panelMove.add(pMoveDASMinMax)
 
 		txtfldMoveDASMin.prefColumnCount = 5
@@ -979,15 +962,15 @@ class RuleEditorFX:Application() {
 		pMoveDASMinMax.add(txtfldMoveDASMax)
 
 		// 横移動間隔
-		val pMoveDASDelay = JPanel()
+		val pMoveDASDelay = Pane()
 		panelMove.add(pMoveDASDelay)
 
-		pMoveDASDelay.add(JLabel(getUIText("Move_DASDelay1")))
+		pMoveDASDelay.add(Label(getUIText("Move_DASDelay1")))
 
 		txtfldMoveDASDelay.prefColumnCount = 5
 		pMoveDASDelay.add(txtfldMoveDASDelay)
 
-		pMoveDASDelay.add(JLabel(getUIText("Move_DASDelay2")))
+		pMoveDASDelay.add(Label(getUIText("Move_DASDelay2")))
 
 		// ○○のとき横溜め可能
 		chkboxMoveDASInReady.text = getUIText("Move_DASInReady")
@@ -1036,7 +1019,7 @@ class RuleEditorFX:Application() {
 		panelMove.add(chkboxMoveShiftLockEnable)
 
 		// rotationパターン補正タブ ------------------------------------------------
-		val panelPieceOffset = JPanel()
+		val panelPieceOffset = Pane()
 		panelPieceOffset.layout = BoxLayout(panelPieceOffset, BoxLayout.Y_AXIS)
 		tabPane.addTab(getUIText("TabName_PieceOffset"), panelPieceOffset)
 		comboboxPieceOffset = JComboBox(RuleOptions.PIECEOFFSET_NAME.map {getUIText(it)}.toTypedArray()).apply {
@@ -1049,14 +1032,14 @@ class RuleEditorFX:Application() {
 		panelPieceOffset.add(tabPieceOffset)
 
 		// rotationパターン補正(X)タブ --------------------------------------------------
-		val panelPieceOffsetX = JPanel()
+		val panelPieceOffsetX = Pane()
 		panelPieceOffsetX.layout = BoxLayout(panelPieceOffsetX, BoxLayout.Y_AXIS)
 		tabPieceOffset?.addTab(getUIText("TabName_PieceOffsetX"), panelPieceOffsetX)
 
 		val pPieceOffsetX = Array(Piece.PIECE_COUNT) {
-			JPanel().apply {
+			Pane().apply {
 				panelPieceOffsetX.add(this)
-				add(JLabel(getUIText("PieceName$it")))
+				add(Label(getUIText("PieceName$it")))
 			}
 		}
 
@@ -1066,15 +1049,15 @@ class RuleEditorFX:Application() {
 			}
 		}
 		// rotationパターン補正(Y)タブ --------------------------------------------------
-		val panelPieceOffsetY = JPanel().apply {
+		val panelPieceOffsetY = Pane().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
 			tabPieceOffset?.addTab(getUIText("TabName_PieceOffsetY"), this)
 		}
 
 		val pPieceOffsetY = Array(Piece.PIECE_COUNT) {
-			JPanel().apply {
+			Pane().apply {
 				panelPieceOffsetY.add(this)
-				add(JLabel(getUIText("PieceName$it")))
+				add(Label(getUIText("PieceName$it")))
 			}
 		}
 
@@ -1087,7 +1070,7 @@ class RuleEditorFX:Application() {
 		}
 
 		// 出現位置補正タブ ------------------------------------------------
-		val panelPieceSpawn = JPanel().apply {
+		val panelPieceSpawn = Pane().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
 			tabPane.addTab(getUIText("TabName_PieceSpawn"), this)
 		}
@@ -1096,13 +1079,13 @@ class RuleEditorFX:Application() {
 		panelPieceSpawn.add(tabPieceSpawn)
 
 		// 出現位置補正(X)タブ --------------------------------------------------
-		val panelPieceSpawnX = JPanel()
+		val panelPieceSpawnX = Pane()
 		panelPieceSpawnX.layout = BoxLayout(panelPieceSpawnX, BoxLayout.Y_AXIS)
 		tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnX"), panelPieceSpawnX)
 
 		val pPieceSpawnX = Array(Piece.PIECE_COUNT) {
-			JPanel().apply {
-				add(JLabel(getUIText("PieceName$it")))
+			Pane().apply {
+				add(Label(getUIText("PieceName$it")))
 			}
 		}
 
@@ -1116,15 +1099,15 @@ class RuleEditorFX:Application() {
 		}
 
 		// 出現位置補正(Y)タブ --------------------------------------------------
-		val panelPieceSpawnY = JPanel().apply {
+		val panelPieceSpawnY = Pane().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
 			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnY"), this)
 		}
 
 		val pPieceSpawnY = Array(Piece.PIECE_COUNT) {
-			JPanel().apply {
+			Pane().apply {
 				panelPieceSpawnY.add(this)
-				add(JLabel(getUIText("PieceName$it")))
+				add(Label(getUIText("PieceName$it")))
 			}
 		}
 
@@ -1137,15 +1120,15 @@ class RuleEditorFX:Application() {
 		}
 
 		// Big時出現位置補正(X)タブ --------------------------------------------------
-		val panelPieceSpawnBigX = JPanel().apply {
+		val panelPieceSpawnBigX = Pane().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
 			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnBigX"), this)
 		}
 
 		val pPieceSpawnBigX = Array(Piece.PIECE_COUNT) {
-			JPanel().apply {
+			Pane().apply {
 				panelPieceSpawnBigX.add(this)
-				add(JLabel(getUIText("PieceName$it")))
+				add(Label(getUIText("PieceName$it")))
 			}
 		}
 
@@ -1155,15 +1138,15 @@ class RuleEditorFX:Application() {
 			}
 		}
 		// Big時出現位置補正(Y)タブ --------------------------------------------------
-		val panelPieceSpawnBigY = JPanel().apply {
+		val panelPieceSpawnBigY = Pane().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
 			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnBigY"), this)
 		}
 
 		val pPieceSpawnBigY = Array(Piece.PIECE_COUNT) {
-			JPanel().apply {
+			Pane().apply {
 				panelPieceSpawnBigY.add(this)
-				add(JLabel(getUIText("PieceName$it")))
+				add(Label(getUIText("PieceName$it")))
 			}
 		}
 
@@ -1174,15 +1157,15 @@ class RuleEditorFX:Application() {
 		}
 
 		// 色設定タブ --------------------------------------------------
-		val panelPieceColor = JPanel().apply {
+		val panelPieceColor = Pane().apply {
 			layout = BoxLayout(this, BoxLayout.X_AXIS)
 			tabPane.addTab(getUIText("TabName_PieceColor"), this)
 		}
 
-		val strColorNames = Array(Block.BLOCK_COLOR_COUNT-1) {getUIText("ColorName$it")}
+		val strColorNames = Array(Block.COLOR.COUNT-1) {getUIText("ColorName$it")}
 
 		val pColorRow = Array(2) {
-			JPanel().apply {
+			Pane().apply {
 				layout = BoxLayout(this, BoxLayout.Y_AXIS)
 				panelPieceColor.add(this)
 			}
@@ -1201,9 +1184,9 @@ class RuleEditorFX:Application() {
 		}
 
 		val pPieceColor = Array(Piece.PIECE_COUNT) {
-			JPanel().apply {
+			Pane().apply {
 				pColorRow[0].add(this)
-				add(JLabel(getUIText("PieceName$it")))
+				add(Label(getUIText("PieceName$it")))
 			}
 		}
 		comboboxPieceColor = Array(Piece.PIECE_COUNT) {i ->
@@ -1215,12 +1198,12 @@ class RuleEditorFX:Application() {
 		}
 
 		// 初期Direction設定タブ --------------------------------------------------
-		val panelPieceDirection = JPanel()
+		val panelPieceDirection = Pane()
 		panelPieceDirection.layout = BoxLayout(panelPieceDirection, BoxLayout.X_AXIS)
 		tabPane.addTab(getUIText("TabName_PieceDirection"), panelPieceDirection)
 
 		val pDirectRow = Array(2) {
-			JPanel().apply {
+			Pane().apply {
 				this@apply.layout = BoxLayout(this, BoxLayout.Y_AXIS)
 				panelPieceDirection.add(this)
 			}
@@ -1242,9 +1225,9 @@ class RuleEditorFX:Application() {
 		}
 
 		val pPieceDirection = Array(Piece.PIECE_COUNT) {
-			JPanel().apply {
+			Pane().apply {
 				pDirectRow[0].add(this)
-				add(JLabel(getUIText("PieceName$it")))
+				add(Label(getUIText("PieceName$it")))
 			}
 		}
 
@@ -1260,14 +1243,14 @@ class RuleEditorFX:Application() {
 
 	/** Block画像を読み込み */
 	private fun loadBlockSkins() {
-		val skindir = propConfig.getProperty("custom.skin.directory", "res")
+		val skinDir = propConfig.getProperty("custom.skin.directory", "res")
 
 		var numBlocks = 0
-		while(File("$skindir/graphics/blockskin/normal/n$numBlocks.png").canRead()) numBlocks++
+		while(File("$skinDir/graphics/blockskin/normal/n$numBlocks.png").canRead()) numBlocks++
 		log.debug("$numBlocks block skins found")
 
 		imgBlockSkins = Array(numBlocks) {i ->
-			val imgBlock = loadImage(getURL("$skindir/graphics/blockskin/normal/n$i.png"))
+			val imgBlock = loadImage(getURL("$skinDir/graphics/blockskin/normal/n$i.png"))
 			val isSticky = imgBlock!=null&&imgBlock.width>=400&&imgBlock.height>=304
 
 			BufferedImage(144, 16, BufferedImage.TYPE_INT_RGB).apply {
@@ -1453,7 +1436,7 @@ class RuleEditorFX:Application() {
 		chkboxMoveDASInEndingStart.isSelected = r.dasInEndingStart
 		chkboxMoveDASChargeOnBlockedMove.isSelected = r.dasChargeOnBlockedMove
 		chkboxMoveDASStoreChargeOnNeutral.isSelected = r.dasStoreChargeOnNeutral
-		chkboxMoveDASRedirectInDelay.isSelected = r.dasRedirectInARE
+		chkboxMoveDASRedirectInDelay.isSelected = r.dasRedirectInDelay
 		chkboxMoveFirstFrame.isSelected = r.moveFirstFrame
 		chkboxMoveDiagonal.isSelected = r.moveDiagonal
 		chkboxMoveUpAndDown.isSelected = r.moveUpAndDown
@@ -1576,7 +1559,7 @@ class RuleEditorFX:Application() {
 		r.dasInEndingStart = chkboxMoveDASInEndingStart.isSelected
 		r.dasChargeOnBlockedMove = chkboxMoveDASChargeOnBlockedMove.isSelected
 		r.dasStoreChargeOnNeutral = chkboxMoveDASStoreChargeOnNeutral.isSelected
-		r.dasRedirectInARE = chkboxMoveDASRedirectInDelay.isSelected
+		r.dasRedirectInDelay = chkboxMoveDASRedirectInDelay.isSelected
 		r.moveFirstFrame = chkboxMoveFirstFrame.isSelected
 		r.moveDiagonal = chkboxMoveDiagonal.isSelected
 		r.moveUpAndDown = chkboxMoveUpAndDown.isSelected
@@ -1604,13 +1587,13 @@ class RuleEditorFX:Application() {
 	 */
 	@Throws(IOException::class)
 	fun save(filename:String) {
-		val ruleopt = RuleOptions()
-		writeRuleFromUI(ruleopt)
+		val ruleOpt = RuleOptions()
+		writeRuleFromUI(ruleOpt)
 
 		val prop = CustomProperties()
-		ruleopt.writeProperty(prop, 0)
+		ruleOpt.writeProperty(prop, 0)
 
-		val out = FileOutputStream(filename)
+		val out = GZIPOutputStream(FileOutputStream(filename))
 		prop.store(out, "NullpoMino RuleData")
 		out.close()
 
@@ -1626,16 +1609,16 @@ class RuleEditorFX:Application() {
 	fun load(filename:String):RuleOptions {
 		val prop = CustomProperties()
 
-		val `in` = FileInputStream(filename)
+		val `in` = GZIPInputStream(FileInputStream(filename))
 		prop.load(`in`)
 		`in`.close()
 
-		val ruleopt = RuleOptions()
-		ruleopt.readProperty(prop, 0, true)
+		val ruleOpt = RuleOptions()
+		ruleOpt.readProperty(prop, 0, true)
 
 		log.debug("Loaded rule file from $filename")
 
-		return ruleopt
+		return ruleOpt
 	}
 
 	/** 翻訳後のUIの文字列を取得
@@ -1675,13 +1658,13 @@ class RuleEditorFX:Application() {
 
 				if(c.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
 					val file = c.selectedFile
-					var ruleopt = RuleOptions()
+					var ruleOpt = RuleOptions()
 
 					strNowFile = file.path
 					title = "${getUIText("Title_RuleEditor")}:$strNowFile"
 
 					try {
-						ruleopt = load(file.path)
+						ruleOpt = load(file.path)
 					} catch(e2:IOException) {
 						log.error("Failed to load rule data from $strNowFile", e2)
 						JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e2",
@@ -1689,7 +1672,7 @@ class RuleEditorFX:Application() {
 						return
 					}
 
-					readRuleToUI(ruleopt)
+					readRuleToUI(ruleOpt)
 				}
 			}
 			"Save" -> {
@@ -1798,7 +1781,7 @@ class RuleEditorFX:Application() {
 
 	/** 画像表示ComboボックスのListCellRenderer<br></br>
 	 * [出典](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */
-	private inner class ComboLabelCellRenderer:JLabel(), ListCellRenderer<Any> {
+	private inner class ComboLabelCellRenderer:Label(), ListCellRenderer<Any> {
 		fun getListCellRendererComponent(list:JList<out Nothing>?, value:Nothing?, index:Int, isSelected:Boolean,
 			cellHasFocus:Boolean):Component {
 			TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -1808,7 +1791,7 @@ class RuleEditorFX:Application() {
 			isOpaque = true
 		}
 
-		override fun getListCellRendererComponent(list:JList<*>, value:Any, index:Int, isSelected:Boolean,
+		override fun getListCellRendererComponent(list:ListView<*>, value:Any, index:Int, isSelected:Boolean,
 			cellHasFocus:Boolean):Component {
 			val data = value as ComboLabel
 			text = data.text

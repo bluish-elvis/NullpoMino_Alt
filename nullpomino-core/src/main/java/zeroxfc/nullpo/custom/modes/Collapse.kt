@@ -1,0 +1,1307 @@
+/*
+ * Copyright (c) 2021-2021,
+ * This library class was created by 0xFC963F18DC21 / Shots243
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
+ *
+ * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+ *
+ * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ *
+ * Repository: https://github.com/Shots243/ModePile
+ *
+ * When using this library in a mode / library pack of your own, the following
+ * conditions must be satisfied:
+ *     - This license must remain visible at the top of the document, unmodified.
+ *     - You are allowed to use this library for any modding purpose.
+ *         - If this is the case, the Library Creator must be credited somewhere.
+ *             - Source comments only are fine, but in a README is recommended.
+ *     - Modification of this library is allowed, but only in the condition that a
+ *       pull request is made to merge the changes to the repository.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package zeroxfc.nullpo.custom.modes
+
+import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.AbstractMode
+import mu.nu.nullpo.gui.slick.MouseInput
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick
+import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
+import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.getONorOFF
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import zeroxfc.nullpo.custom.libs.Interpolation
+import zeroxfc.nullpo.custom.libs.ProfileProperties
+import zeroxfc.nullpo.custom.libs.SideWaveText
+import zeroxfc.nullpo.custom.libs.WeightedRandomizer
+import kotlin.math.pow
+import kotlin.math.sqrt
+import kotlin.random.Random
+
+class Collapse:AbstractMode() {
+	private var enableBombs = false
+	private var rankingScore:Array<IntArray> = emptyArray()
+	private var rankingLevel:Array<IntArray> = emptyArray()
+	private var bScore = 0
+	private var rankingRank = 0
+	private var difficulty = 0
+	private var linesLeft = 0
+	private var bgm = 0
+	private var cursorX = 0
+	private var cursorY = 0
+	private var fieldX = 0
+	private var fieldY = 0
+	private var holderType = 0
+	private var spawnTimer = 0
+	private var spawnTimerLimit = 0
+	private var wRandomEngine:WeightedRandomizer = WeightedRandomizer(intArrayOf(), 0L)
+	private var wRandomEngineBomb:WeightedRandomizer = WeightedRandomizer(intArrayOf(), 0L)
+	private var sTextArr:MutableList<SideWaveText> = mutableListOf()
+	private var nextBlocks:MutableList<Block> = mutableListOf()
+	private var localState = 0
+	private var localRandom:Random = Random.Default
+	private var force = false
+	private var lineSpawn = 0
+	private var lastScore = 0
+	private var scoreToDisplay = 0
+	private var scGetTime = 0
+	private var multiplier = 0.0
+	private var acTime = 0
+	private var playerProperties:ProfileProperties = ProfileProperties(EventReceiver.COLOR.ORANGE)
+	private var rankingScorePlayer:Array<IntArray> = emptyArray()
+	private var rankingLevelPlayer:Array<IntArray> = emptyArray()
+	private var rankingRankPlayer = 0
+	private var showPlayerStats = false
+	/*
+     * ------ MAIN METHODS ------
+     */
+	override val name:String = "COLLAPSE"
+
+	override fun playerInit(engine:GameEngine, playerID:Int) {
+		rankingScorePlayer = Array(MAX_DIFFICULTIES) {IntArray(MAX_RANKING)}
+		rankingLevelPlayer = Array(MAX_DIFFICULTIES) {IntArray(MAX_RANKING)}
+		rankingRankPlayer = -1
+		enableBombs = false
+		rankingScore = Array(MAX_DIFFICULTIES) {IntArray(MAX_RANKING)}
+		rankingLevel = Array(MAX_DIFFICULTIES) {IntArray(MAX_RANKING)}
+		rankingRank = -1
+		difficulty = 0
+		linesLeft = 0
+		bgm = 0
+		cursorX = 0
+		cursorY = 0
+		fieldX = -1
+		fieldY = -1
+		wRandomEngine = WeightedRandomizer(intArrayOf(), 0L)
+		wRandomEngineBomb = WeightedRandomizer(intArrayOf(), 0L)
+		localRandom = Random.Default
+		localState = -1
+		force = false
+		bScore = 0
+		lineSpawn = 0
+		lastScore = 0
+		scoreToDisplay = 0
+		scGetTime = 0
+		multiplier = 1.0
+		acTime = -1
+		resetSTextArr()
+		spawnTimer = 0
+		spawnTimerLimit = 0
+		nextBlocks.clear()
+		resetBlockArray()
+		val mainClass:String = ResourceHolderCustomAssetExtension.mainClassName
+		holderType = when {
+			mainClass.contains("Slick") -> HOLDER_SLICK
+			mainClass.contains("Swing") -> HOLDER_SWING
+			mainClass.contains("SDL") -> HOLDER_SDL
+			else -> -1
+		}
+		engine.framecolor = GameEngine.FRAME_COLOR_BRONZE
+		loadSetting(owner.modeConfig)
+		loadRanking(owner.modeConfig)
+		if(playerProperties.isLoggedIn) {
+			loadSettingPlayer(playerProperties)
+			loadRankingPlayer(playerProperties)
+		}
+	}
+
+	private fun resetSTextArr() {
+		sTextArr.clear()
+	}
+
+	private fun updateSTextArr() {
+		sTextArr.removeAll {it.lifeTime>=SideWaveText.MaxLifeTime}
+		sTextArr.forEach {it.update()}
+	}
+
+	private fun addSText(score:Int, big:Boolean, largeClear:Boolean) {
+		val str = "$score"
+		val offsetX = -1*(str.length*if(big) 32 else 16/2)
+		var offsetY = -8
+		if(big) {
+			offsetY *= 2
+		}
+		sTextArr.add(SideWaveText(cursorX+offsetX, cursorY+offsetY, 1.5,
+			if(!largeClear) 0.0 else if(big) 24.0 else 16.0, str, big, largeClear))
+	}
+
+	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+		// Menu
+		if(!engine.owner.replayMode) {
+			// Configuration changes
+			val change:Int = updateCursor(engine, 2, playerID)
+			if(change!=0) {
+				engine.playSE("change")
+				when(engine.statc[2]) {
+					0 -> {
+						difficulty += change
+						if(difficulty<0) difficulty = MAX_DIFFICULTIES-1
+						if(difficulty>=MAX_DIFFICULTIES) difficulty = 0
+					}
+					1 -> enableBombs = !enableBombs
+					2 -> {
+						bgm += change
+						if(bgm<0) bgm = 15
+						if(bgm>15) bgm = 0
+					}
+				}
+			}
+
+			// Confirm
+			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_A)&&engine.statc[3]>=5) {
+				engine.playSE("decide")
+				if(playerProperties.isLoggedIn) {
+					saveSettingPlayer(playerProperties)
+					playerProperties.saveProfileConfig()
+				} else {
+					saveSetting(owner.modeConfig)
+					owner.saveModeConfig()
+				}
+				return false
+			}
+
+			// Cancel
+			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_B)) {
+				engine.quitflag = true
+				playerProperties = ProfileProperties(EventReceiver.COLOR.ORANGE)
+			}
+
+			// New acc
+			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_E)&&engine.ai==null) {
+				playerProperties = ProfileProperties(EventReceiver.COLOR.ORANGE)
+				engine.playSE("decide")
+				engine.stat = GameEngine.Status.CUSTOM
+				engine.resetStatc()
+				return true
+			}
+			engine.statc[3]++
+		} else {
+			engine.statc[3]++
+			engine.statc[2] = -1
+			return engine.statc[3]<60
+		}
+		return true
+	}
+
+	override fun renderSetting(engine:GameEngine, playerID:Int) {
+		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.RED, 0,
+			"DIFFICULTY" to DIFFICULTY_NAMES[difficulty])
+		drawMenu(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, 1,
+			"BOMBS" to enableBombs.getONorOFF(),
+			"BGM" to "$bgm")
+	}
+
+	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+		// 横溜め
+		if(engine.ruleOpt.dasInReady&&engine.gameActive) engine.padRepeat() else if(engine.ruleOpt.dasRedirectInDelay) {
+			engine.dasRedirect()
+		}
+
+		// Initialization
+		if(engine.statc[0]==0) {
+			engine.ruleOpt.fieldWidth = 12
+			engine.ruleOpt.fieldHeight = 16
+			engine.ruleOpt.fieldHiddenHeight = 1
+			engine.statistics.level = 0
+			resetSTextArr()
+			cursorX = 0
+			cursorY = 0
+			fieldX = -1
+			fieldY = -1
+			localState = -1
+			force = false
+			lastScore = 0
+			scoreToDisplay = 0
+			localRandom = Random(engine.randSeed-1L)
+			wRandomEngine = WeightedRandomizer(tableColorWeights[0], engine.randSeed)
+			wRandomEngineBomb = WeightedRandomizer(tableBombColorWeights[0], engine.randSeed+1)
+			levelUp(engine, playerID, true)
+			engine.fieldWidth = engine.ruleOpt.fieldWidth
+			engine.fieldHeight = engine.ruleOpt.fieldHeight
+			engine.fieldHiddenHeight = engine.ruleOpt.fieldHiddenHeight
+			engine.field = mu.nu.nullpo.game.component.Field(engine.fieldWidth, engine.fieldHeight, engine.fieldHiddenHeight,
+				engine.ruleOpt.fieldCeiling)
+			engine.field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+			if(!engine.readyDone) {
+				//  button input状態リセット
+				engine.ctrl.reset()
+				// ゲーム中 flagON
+				engine.gameActive = true
+				engine.gameStarted = true
+				engine.isInGame = true
+			}
+		}
+
+		// READY音
+		if(engine.statc[0]==engine.readyStart) engine.playSE("ready")
+
+		// GO音
+		if(engine.statc[0]==engine.goStart) engine.playSE("go")
+
+		// 開始
+		if(engine.statc[0]>=engine.goEnd) {
+			if(!engine.readyDone) engine.owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+			engine.owner.mode?.startGame(engine, playerID)
+			engine.owner.receiver.startGame(engine, playerID)
+			engine.stat = GameEngine.Status.CUSTOM
+			for(i in 0 until lineSpawn) {
+				while(nextEmpty<engine.fieldWidth) {
+					val temp = if(linesLeft<=1) Block.COLOR.WHITE else tableColors[wRandomEngine.nextInt()]
+					nextBlocks.add(Block(temp, engine.skin).apply {
+						setAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+					})
+				}
+				incrementField(engine)
+				resetBlockArray()
+			}
+			engine.playSE("garbage")
+			localState = LOCALSTATE_INGAME
+			engine.resetStatc()
+			if(!engine.readyDone) {
+				engine.startTime = System.nanoTime()
+				//startTime = System.nanoTime()/1000000L;
+			}
+			engine.readyDone = true
+			return true
+		}
+		engine.statc[0]++
+		return true
+	}
+
+	override fun startGame(engine:GameEngine, playerID:Int) {
+		engine.owner.bgmStatus.bgm = BGMStatus.BGM.values[bgm]
+	}
+
+	override fun onCustom(engine:GameEngine, playerID:Int):Boolean {
+//		if (engine.ctrl.isPush(Controller.BUTTON_D)) {
+//			engine.resetStatc();
+//			engine.gameEnded();
+//
+//			engine.stat = GameEngine.Status.EXCELLENT;
+//			engine.ending = 1;
+//			engine.rainbowAnimate = false;
+//			return false;
+//		}  // DEBUG CODE.
+		return if(engine.gameActive) {
+			parseMouse(engine, playerID)
+			if(!engine.rainbowAnimate) engine.rainbowAnimate = true
+			var incrementTime = false
+			when(localState) {
+				LOCALSTATE_INGAME -> {
+					if(!engine.timerActive) engine.timerActive = true
+					incrementTime = stateInGame(engine, playerID)
+				}
+				LOCALSTATE_TRANSITION -> {
+					if(engine.timerActive) engine.timerActive = false
+					incrementTime = stateTransition(engine, playerID)
+				}
+				else -> {
+				}
+			}
+			if(engine.ending!=0) {
+				engine.timerActive = false
+			}
+			if(incrementTime) engine.statc[0]++
+			true
+		} else {
+			showPlayerStats = false
+			engine.isInGame = true
+			val s:Boolean = playerProperties.loginScreen.updateScreen(engine, playerID)
+			if(playerProperties.isLoggedIn) {
+				loadRankingPlayer(playerProperties)
+				loadSettingPlayer(playerProperties)
+			}
+			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
+			true
+		}
+	}
+	// DONE: Make the rest of the gamemode work.
+	private fun clearSquares(engine:GameEngine) {
+		var score = 0
+		var squares = 0
+		var fromBomb = false
+		engine.field.getBlock(fieldX, fieldY)?.let {
+			if(it.color?.color==true) {
+				squares = getSquares(engine, fieldX, fieldY)
+				if(squares>=3) {
+					score = getClearScore(engine, squares)
+					for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
+						engine.field.getBlock(x, y)?.let {
+							if(it.getAttribute(Block.ATTRIBUTE.TEMP_MARK)) it.setAttribute(true, Block.ATTRIBUTE.ERASE)
+						}
+					engine.playSE("erase${if(squares>=12) 1 else 0}")
+				} else {
+					engine.playSE("rotfail")
+					for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
+						engine.field.getBlock(x, y)?.setAttribute(false, Block.ATTRIBUTE.TEMP_MARK)
+				}
+			} else if(it.type==Block.TYPE.GEM) {
+				fromBomb = true
+				if(it.color?.color==true) {
+					val c = it.color
+					for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
+						engine.field.getBlock(x, y)?.let {
+							if(it.color==c&&it.type==Block.TYPE.BLOCK) {
+								it.setAttribute(true, Block.ATTRIBUTE.ERASE)
+								squares++
+							}
+						}
+					score = (getClearScore(engine, squares)*0.75).toInt()
+				} else {
+					squares = 0
+					for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
+						engine.field.getBlock(x, y)?.let {
+							if(isCoordWithinRadius(fieldX, fieldY, x, y, 4.5)) {
+								it.setAttribute(true, Block.ATTRIBUTE.ERASE)
+								squares++
+							}
+						}
+					score = (getClearScore(engine, squares)*0.5).toInt()
+				}
+				explode(engine)
+				engine.playSE("erase2")
+			} else {
+				engine.playSE("rotfail")
+			}
+		}
+		if(score>0) {
+			score *= multiplier.toInt()
+			if(squares>=6) addSText(score, fromBomb, squares>=12)
+			setNewLowerScore(engine)
+			if(engine.field.isEmpty) {
+				acTime = 0
+				engine.playSE("bravo")
+				engine.statistics.scoreBonus += 100000*Math.pow(1.025, engine.statistics.level.toDouble()).toInt()
+			}
+			engine.statistics.scoreLine += score
+		}
+	}
+
+	private fun stateInGame(engine:GameEngine, playerID:Int):Boolean {
+		if(holderType!=HOLDER_SWING) {
+			if(fieldX!=-1) {
+				if(!engine.field.getBlockEmpty(fieldX, fieldY)) {
+					clearSquares(engine)
+				}
+			}
+		} else {
+			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_A)) {
+				if(!engine.field.getBlockEmpty(fieldX, fieldY)) {
+					clearSquares(engine)
+				}
+			}
+		}
+		var brk = 0
+		if(bScore>0) bScore = 0
+		for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
+			engine.field.getBlock(x, y)?.let {
+				if(it.getAttribute(Block.ATTRIBUTE.ERASE)) {
+					val blk = it
+					engine.field.delBlock(x, y)
+					receiver.blockBreak(engine, x, y, blk)
+					brk++
+				}
+			}
+		if(brk>0) {
+			if(engine.field.freeFall()) engine.playSE("step") else engine.playSE("lock")
+			for(i in 0..5) bringColumnsCloser(engine)
+		}
+		spawnTimer++
+		if(spawnTimer>=spawnTimerLimit) {
+			spawnTimer = 0 // -= spawnTimerLimit
+			val index = nextEmpty
+			if(index!=-1) {
+				val coeff = localRandom.nextDouble()
+				var temp = -1
+				if(coeff<=bombChance*(if(engine.field.highestBlockY<4) 3.0 else 1.0)&&enableBombs&&linesLeft!=1) {
+					temp = wRandomEngineBomb.nextInt()
+					nextBlocks.add(Block(tableColors[temp], Block.TYPE.GEM, engine.skin).apply {
+						setAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+					})
+				} else {
+					temp = wRandomEngine.nextInt()
+					var bone = false
+					if(temp==wRandomEngine.max&&wRandomEngine.max==5) bone = true
+					if(linesLeft==1) {
+						temp = 5
+					}
+					nextBlocks.add(Block(tableColors[temp], engine.skin).apply {
+						setAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+						setAttribute(bone, Block.ATTRIBUTE.BONE)
+					})
+				}
+			} else {
+				if(linesLeft>0) linesLeft--
+				val proportion = linesLeft.toDouble()/tableLevelLine[engine.statistics.level]
+				if(linesLeft>=0) {
+					engine.meterValue = (proportion*receiver.getMeterMax(engine)).toInt()
+					engine.meterColor = GameEngine.METER_COLOR_RED
+					if(proportion<=0.75f) engine.meterColor = GameEngine.METER_COLOR_ORANGE
+					if(proportion<=0.5f) engine.meterColor = GameEngine.METER_COLOR_YELLOW
+					if(proportion<=0.25f) engine.meterColor = GameEngine.METER_COLOR_GREEN
+				} else {
+					engine.meterValue = receiver.getMeterMax(engine)
+					engine.meterColor = GameEngine.METER_COLOR_GREEN
+				}
+				if(linesLeft!=0) {
+					engine.playSE("garbage")
+					incrementField(engine)
+				}
+				resetBlockArray()
+				if(linesLeft==3) {
+					engine.playSE("levelstop")
+				}
+				multiplier = midgameSpeedSet(engine)
+				if(spawnTimer==0&&engine.field.highestBlockY<=2&&engine.field.highestBlockY>=0) {
+					engine.playSE("danger")
+				}
+			}
+		} else if(force&&!nextFull) {
+			spawnTimer = 0
+			force = false
+			while(!nextFull) {
+				val index = nextEmpty
+				val coeff = localRandom.nextDouble()
+				var temp = -1
+				if(coeff<=bombChance*(if(engine.field.highestBlockY<4) 3.0 else 1.0)&&enableBombs&&linesLeft!=1) {
+					temp = wRandomEngineBomb.nextInt()
+					if(linesLeft==1) {
+						temp = 5
+					}
+					nextBlocks.add(Block(tableColors[temp], Block.TYPE.GEM, engine.skin).apply {
+						setAttribute(true, Block.ATTRIBUTE.OUTLINE, Block.ATTRIBUTE.VISIBLE)
+					})
+				} else {
+					temp = wRandomEngine.nextInt()
+					var bone = false
+					if(temp==wRandomEngine.max&&wRandomEngine.max==5) bone = true
+					if(linesLeft==1) {
+						temp = 5
+					}
+					nextBlocks.add(Block(tableColors[temp], engine.skin).apply {
+						setAttribute(true, Block.ATTRIBUTE.OUTLINE, Block.ATTRIBUTE.VISIBLE)
+						setAttribute(bone, Block.ATTRIBUTE.BONE)
+					})
+				}
+			}
+		}
+		if(linesLeft==0) {
+			engine.resetStatc()
+			localState = LOCALSTATE_TRANSITION
+			return false
+		}
+		if(engine.field.highestBlockY<0) {
+			if(engine.statistics.level<19) {
+				engine.stat = GameEngine.Status.GAMEOVER
+				engine.resetStatc()
+				engine.gameEnded()
+				engine.rainbowAnimate = false
+			} else {
+				engine.stat = GameEngine.Status.EXCELLENT
+				engine.resetStatc()
+				engine.gameEnded()
+				engine.ending = 1
+				engine.rainbowAnimate = false
+			}
+		}
+		return false
+	}
+
+	private fun stateTransition(engine:GameEngine, playerID:Int):Boolean {
+		if(engine.statc[0]>180+16*3) {
+			levelUp(engine, playerID, false)
+			resetBlockArray()
+			engine.resetStatc()
+			for(i in 0 until lineSpawn) {
+				while(!nextFull) {
+					val index = nextEmpty
+					val temp = wRandomEngine.nextInt()
+					val bone = (temp==wRandomEngine.max&&wRandomEngine.max==5)
+
+					nextBlocks.add(Block(if(linesLeft>1) tableColors[temp] else Block.COLOR.WHITE, engine.skin).apply {
+						setAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+						setAttribute(bone, Block.ATTRIBUTE.BONE)
+					})
+				}
+				incrementField(engine)
+				resetBlockArray()
+			}
+			engine.playSE("go")
+			engine.playSE("rise")
+			localState = LOCALSTATE_INGAME
+			return false
+		} else if(engine.statc[0]>0) {
+			val f:Int = engine.statc[0]-60
+			if(f%3==0&&f>=0&&15-f/3>=-1) {
+				val y = 15-f/3
+				for(x in 0 until engine.field.width)
+					engine.field.delBlock(x, y)?.let {receiver.blockBreak(engine, x, y, it)}
+
+			}
+			if(engine.statc[0]==120+16*3) engine.playSE("ready")
+		} else {
+			engine.playSE("stageclear")
+			bScore = getLevelClearBonus(engine)
+			setNewLowerScore(engine)
+			engine.statistics.scoreBonus += bScore
+		}
+		return true
+	}
+
+	private val nextFull:Boolean get() = nextBlocks.size>=FIELD_WIDTH
+	private val nextEmpty:Int
+		get() = if(nextFull) -1 else nextBlocks.size
+
+	private fun getSquares(engine:GameEngine, x:Int, y:Int):Int =
+		engine.field.getBlock(x, y)?.color?.let {flagSquares(engine, 0, x, y, it)} ?: 0
+
+	private fun flagSquares(engine:GameEngine, counter:Int, x:Int, y:Int, color:Block.COLOR):Int {
+		if(x in 0..11&&y in 0..15) {
+			engine.field.getBlock(x, y)?.let {
+				if(it.color==color&&it.type==Block.TYPE.BLOCK) {
+					it.setAttribute(true, Block.ATTRIBUTE.TEMP_MARK)
+					return@flagSquares counter+1+flagSquares(engine, counter, x+1, y, color)+
+						flagSquares(engine, counter, x-1, y, color)+
+						flagSquares(engine, counter, x, y+1, color)+
+						flagSquares(engine, counter, x, y-1, color)
+				}
+			}
+		}
+		return 0
+	}
+
+	private fun resetBlockArray() {
+		nextBlocks.clear()
+	}
+
+	private fun incrementField(engine:GameEngine) {
+		for(y in -1 until engine.field.height-1) {
+			for(x in 0 until engine.field.width) {
+				engine.field.getBlock(x, y)?.copy(engine.field.getBlock(x, y+1))
+			}
+		}
+		for(x in 0 until engine.field.width) {
+			engine.field.getBlock(x, engine.field.height-1)?.copy(nextBlocks[x])
+		}
+	}
+
+	private fun bringColumnsCloser(engine:GameEngine) {
+		for(x in 5 downTo 1) {
+			var empty = true
+			for(y in 0 until engine.field.height) {
+				if(!engine.field.getBlockEmpty(x, y)) {
+					empty = false
+					break
+				}
+			}
+			if(empty) {
+				for(x2 in x downTo 1)
+					for(y in 0 until engine.field.height) engine.field.getBlock(x2, y)?.copy(engine.field.getBlock(x2-1, y))
+				for(y in 0 until engine.field.height) engine.field.delBlock(0, y)
+			}
+		}
+		for(x in 6..10) {
+			var empty = true
+			for(y in 0 until engine.field.height) {
+				if(!engine.field.getBlockEmpty(x, y)) {
+					empty = false
+					break
+				}
+			}
+			if(empty) {
+				for(x2 in x..10) for(y in 0 until engine.field.height) engine.field.getBlock(x2, y)
+					?.copy(engine.field.getBlock(x2+1, y))
+				for(y in 0 until engine.field.height) engine.field.delBlock(11, y)
+			}
+		}
+	}
+
+	private fun levelUp(engine:GameEngine, playerID:Int, beginning:Boolean) {
+		if(!beginning) engine.statistics.level++
+		owner.backgroundStatus.bg = engine.statistics.level%20
+		val effectiveLevel:Int = engine.statistics.level
+		spawnTimer = 0
+		resetBlockArray()
+		lineSpawn = tableLevelStartLines[effectiveLevel]
+		linesLeft = tableLevelLine[effectiveLevel]
+		if(holderType==HOLDER_SWING) {
+			fieldX = 0
+			fieldY = 15
+		}
+		force = false
+		var result = 0
+		var `is` = 0
+		while(true) {
+			if(tableLevelWeightShift[`is`+1]>=effectiveLevel) {
+				result = `is`
+				break
+			}
+			`is`++
+		}
+		multiplier = 0.75
+		wRandomEngine.setWeights(tableColorWeights[result])
+		wRandomEngineBomb.setWeights(tableBombColorWeights[result])
+		when(difficulty) {
+			0 -> spawnTimerLimit = (tableSpawnSpeedEasy[effectiveLevel]*1.5).toInt()
+			1 -> spawnTimerLimit = (tableSpawnSpeedNormal[effectiveLevel]*1.5).toInt()
+			2 -> spawnTimerLimit = (tableSpawnSpeedHard[effectiveLevel]*1.5).toInt()
+		}
+	}
+
+	private fun midgameSpeedSet(engine:GameEngine):Double {
+		return if(linesLeft>=maxSpeedLine) {
+			val effectiveLevel:Int = engine.statistics.level
+			val fraction = 0.75+0.75*((linesLeft-maxSpeedLine).toDouble()/(tableLevelLine[effectiveLevel]-maxSpeedLine))
+			var rawSpeed = 1.0
+			when(difficulty) {
+				0 -> rawSpeed = fraction*tableSpawnSpeedEasy[effectiveLevel]
+				1 -> rawSpeed = fraction*tableSpawnSpeedNormal[effectiveLevel]
+				2 -> rawSpeed = fraction*tableSpawnSpeedHard[effectiveLevel]
+			}
+			val mod = rawSpeed%1
+			spawnTimerLimit = if(mod>0) (rawSpeed+1).toInt() else rawSpeed.toInt()
+			0.75-(fraction-1.5)
+		} else if(linesLeft>=0) {
+			1.5
+		} else {
+			val effectiveLevel:Int = engine.statistics.level
+			var rawSpeed = 1.0
+			when(difficulty) {
+				0 -> rawSpeed = 0.75*tableSpawnSpeedEasy[effectiveLevel]
+				1 -> rawSpeed = 0.75*tableSpawnSpeedNormal[effectiveLevel]
+				2 -> rawSpeed = 0.75*tableSpawnSpeedHard[effectiveLevel]
+			}
+			val mod = rawSpeed%1
+			spawnTimerLimit = if(mod>0) (rawSpeed+1).toInt() else rawSpeed.toInt()
+			1.5
+		}
+	}
+
+	private fun parseMouse(engine:GameEngine, playerID:Int) {
+		// XXX: SWING DOES NOT SUPPORT MOUSE INPUT. FALL BACK TO KEYBOARD INPUT.
+		var changeX = 0
+		var changeY = 0
+		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_LEFT)) {
+			changeX += -1
+		}
+		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_RIGHT)) {
+			changeX += 1
+		}
+		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_UP)) {
+			changeY += -1
+		}
+		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_DOWN)) {
+			changeY += 1
+		}
+		fieldX += changeX
+		fieldY += changeY
+		if(changeX!=0||changeY!=0) engine.playSE("change")
+		if(fieldX<0) fieldX = 11
+		if(fieldX>11) fieldX = 0
+		if(fieldY<0) fieldY = 15
+		if(fieldY>15) fieldY = 0
+		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_B)&&localState==LOCALSTATE_INGAME) force = true
+		when(holderType) {
+			HOLDER_SLICK -> {
+				MouseInput.update(NullpoMinoSlick.appGameContainer.input)
+				cursorX = MouseInput.mouseX
+				cursorY = MouseInput.mouseY
+				if(MouseInput.isMouseClicked) {
+					fieldX = (cursorX-4-receiver.fieldX(engine, playerID))/16
+					fieldY = (cursorY-52-receiver.fieldY(engine, playerID))/16
+				} else {
+					fieldX = -1
+					fieldY = -1
+				}
+			}
+			/*HOLDER_SDL -> {
+				try {
+					MouseInputSDL.update()
+				} catch(e:java.lang.Exception) {
+					// DO NOTHING
+				}
+				cursorX = MouseInputSDL.mouseX
+				cursorY = MouseInputSDL.mouseY
+				if(MouseInputSDL.isMouseClicked) {
+					fieldX = (cursorX-4-receiver.fieldX(engine, playerID))/16
+					fieldY = (cursorY-52-receiver.fieldY(engine, playerID))/16
+				} else {
+					fieldX = -1
+					fieldY = -1
+				}
+			}
+			else -> { }*/
+		}
+		if(fieldX<0||fieldX>11||fieldY<0||fieldY>15) {
+			if(holderType!=HOLDER_SWING) {
+				if(fieldY==17&&localState==LOCALSTATE_INGAME) force = true
+				fieldX = -1
+				fieldY = -1
+			}
+		} else {
+			if(holderType!=HOLDER_SWING) {
+				force = false
+			}
+		}
+	}
+
+	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+		if(engine.lives<=0) {
+			// もう復活できないとき
+			if(engine.statc[0]==0) {
+				engine.gameEnded()
+				engine.blockShowOutlineOnly = false
+				if(owner.players<2) owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+				if(engine.field.isEmpty) {
+					engine.statc[0] = engine.field.height+1
+				} else {
+					engine.resetFieldVisible()
+				}
+			}
+			if(engine.statc[0]<engine.field.height+1) {
+				for(i in 0 until engine.field.width) {
+					engine.field.getBlock(i, engine.field.height-engine.statc[0])?.let {blk ->
+						if(!blk.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
+							blk.color = Block.COLOR.BLACK
+							blk.setAttribute(true, Block.ATTRIBUTE.GARBAGE)
+						}
+						blk.darkness = 0.3f
+						blk.elapsedFrames = -1
+					}
+
+				}
+				engine.statc[0]++
+			} else if(engine.statc[0]==engine.field.height+1) {
+				engine.playSE("gameover")
+				engine.statc[0]++
+			} else if(engine.statc[0]<engine.field.height+1+180) {
+				if(engine.statc[0]>=engine.field.height+1+60&&engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_A)) {
+					engine.statc[0] = engine.field.height+1+180
+				}
+				engine.statc[0]++
+			} else {
+				if(enableBombs) updateRanking(engine.statistics.score, difficulty, engine.statistics.level+1)
+				if(rankingRank!=-1) saveRanking(owner.modeConfig)
+				if(rankingRankPlayer!=-1&&playerProperties.isLoggedIn) {
+					saveRankingPlayer(playerProperties)
+					playerProperties.saveProfileConfig()
+				}
+				owner.saveModeConfig()
+				for(i in 0 until owner.players) {
+					if(i==playerID||engine.gameoverAll) {
+						owner.engine[i].field.reset()
+						owner.engine[i].resetStatc()
+						owner.engine[i].stat = GameEngine.Status.RESULT
+					}
+				}
+			}
+		} else {
+			// 復活できるとき
+			if(engine.statc[0]==0) {
+				engine.blockShowOutlineOnly = false
+				engine.playSE("died")
+				engine.resetFieldVisible()
+				for(i in engine.field.hiddenHeight*-1 until engine.field.height)
+					for(j in 0 until engine.field.width)
+						engine.field.getBlock(j, i)?.let {it.color = Block.COLOR.BLACK}
+
+
+				engine.statc[0] = 1
+			}
+			if(!engine.field.isEmpty) {
+				engine.field.pushDown()
+			} else if(engine.statc[1]<engine.are) {
+				engine.statc[1]++
+			} else {
+				engine.lives--
+				engine.resetStatc()
+				engine.stat = GameEngine.Status.CUSTOM
+			}
+		}
+		return true
+	}
+
+	private fun incrementScore(engine:GameEngine) {
+		scoreToDisplay = Interpolation.sineStep(lastScore.toDouble(), engine.statistics.score.toDouble(), scGetTime/60.0).toInt()
+	}
+
+	private fun setNewLowerScore(engine:GameEngine) {
+		lastScore = engine.statistics.score
+		scGetTime = 0
+	}
+
+	override fun onLast(engine:GameEngine, playerID:Int) {
+		if(scGetTime<60&&!engine.lagStop) scGetTime++
+		if(!engine.lagStop) {
+			updateSTextArr()
+			if(acTime in 0..119) acTime++ else acTime = -1
+		}
+		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
+			// Show rank
+			if(engine.ctrl.isPush(
+					mu.nu.nullpo.game.component.Controller.BUTTON_F)&&playerProperties.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
+				showPlayerStats = !showPlayerStats
+				engine.playSE("change")
+			}
+		}
+		if(engine.quitflag) {
+			playerProperties = ProfileProperties(EventReceiver.COLOR.ORANGE)
+		}
+	}
+
+	override fun renderLast(engine:GameEngine, playerID:Int) {
+		if(owner.menuOnly) return
+		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.ORANGE)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "("+DIFFICULTY_NAMES[difficulty]+" DIFFICULTY)",
+			EventReceiver.COLOR.ORANGE)
+		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
+			if(!owner.replayMode&&enableBombs&&engine.ai==null) {
+				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
+				val topY = if(receiver.nextDisplayType==2) 6 else 4
+				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE    LEVEL", EventReceiver.COLOR.BLUE, scale)
+				if(showPlayerStats) {
+					for(i in 0 until MAX_RANKING) {
+						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW,
+							scale)
+						receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScorePlayer[difficulty][i]}",
+							i==rankingRankPlayer, scale)
+						receiver.drawScoreFont(engine, playerID, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}",
+							i==rankingRankPlayer, scale)
+					}
+					receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+1, "PLAYER SCORES",
+						EventReceiver.COLOR.BLUE)
+					receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+2, playerProperties.nameDisplay,
+						EventReceiver.COLOR.WHITE, 2f)
+					receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN",
+						EventReceiver.COLOR.GREEN)
+				} else {
+					for(i in 0 until MAX_RANKING) {
+						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW,
+							scale)
+						receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank, scale)
+						receiver.drawScoreFont(engine, playerID, 12, topY+i, "${rankingLevel[difficulty][i]}", i==rankingRank, scale)
+					}
+					receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+1, "LOCAL SCORES",
+						EventReceiver.COLOR.BLUE)
+					if(!playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+2,
+						"(NOT LOGGED IN)\n(E:LOG IN)")
+					if(playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+5,
+						"F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
+				}
+			}
+		} else if(!engine.gameActive&&engine.stat===GameEngine.Status.CUSTOM) {
+			playerProperties.loginScreen.renderScreen(receiver, engine, playerID)
+		} else {
+			if(!engine.lagStop) incrementScore(engine)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 4, "$scoreToDisplay")
+			receiver.drawScoreFont(engine, playerID, 0, 6, "LEVEL", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 7, (engine.statistics.level+1).toString())
+			if(linesLeft>=0) {
+				receiver.drawScoreFont(engine, playerID, 0, 9, "LINES LEFT", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 0, 10, "$linesLeft")
+			}
+			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 13, engine.statistics.time.toTimeStr)
+			if(playerProperties.isLoggedIn) {
+				receiver.drawScoreFont(engine, playerID, 0, 15, "PLAYER", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 0, 16, playerProperties.nameDisplay, EventReceiver.COLOR.WHITE, 2f)
+			}
+			sTextArr.forEach {
+				val x=it.location[0]
+				val y=it.location[1]
+				val scale:Float
+				val rs:Float
+				val baseScale:Float = if(it.big) 2f else 1f
+				val baseDim = if(it.big) 32.0 else 16.0
+				if(it.lifeTime<24) {
+					scale = baseScale
+					rs = 1f
+				} else {
+					scale = baseScale-baseScale*((it.lifeTime-24).toFloat()/96)
+					rs = 1-(it.lifeTime-24).toFloat()/96
+				}
+				var nOffX = 0
+				var nOffY = 0
+				if(rs<1) {
+					nOffX = ((baseDim*it.text.length-baseDim*it.text.length*rs)/2).toInt()
+					nOffY = ((baseDim-baseDim*rs)/2).toInt()
+				}
+				if(it.lifeTime/2%2==0&&it.largeClear) {
+					receiver.drawDirectFont(x+nOffX, y+nOffY, it.text, EventReceiver.COLOR.YELLOW, scale)
+				} else {
+					receiver.drawDirectFont(x+nOffX, y+nOffY, it.text, EventReceiver.COLOR.ORANGE, scale)
+				}
+			}
+			receiver.drawMenuFont(engine, playerID, fieldX, fieldY, "f", EventReceiver.COLOR.YELLOW)
+
+			if(localState==LOCALSTATE_TRANSITION) {
+				val s = "$bScore"
+				val l = s.length
+				val offset = (12-l)/2
+				receiver.drawMenuFont(engine, playerID, 2, 6, "LEVEL UP",
+					if(engine.statc[0]/2%2==0) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE)
+				receiver.drawMenuFont(engine, playerID, 0, 8, "BONUS POINTS", EventReceiver.COLOR.YELLOW)
+				receiver.drawMenuFont(engine, playerID, offset, 9, s)
+			}
+
+//			receiver.drawScoreFont(engine, playerID, 0, 15, "MOUSE COORDS", EventReceiver.COLOR.BLUE);
+//			receiver.drawScoreFont(engine, playerID, 0, 16, "(" + cursorX + ", " + cursorY + ")");
+//
+//			receiver.drawScoreFont(engine, playerID, 0, 18, "FIELD CELL CLICKED", EventReceiver.COLOR.BLUE);
+//			receiver.drawScoreFont(engine, playerID, 0, 19, "(" + fieldX + ", " + fieldY + ")");
+			if(localState==LOCALSTATE_INGAME) {
+				val fx:Int = receiver.fieldX(engine, playerID)+4
+				val fy:Int = receiver.fieldY(engine, playerID)+52+17*16
+				nextBlocks.forEachIndexed {i, it ->
+					receiver.drawBlock(fx+i*16, fy, it.drawColor, engine.skin, it.getAttribute(Block.ATTRIBUTE.BONE), 0f, 1f, 1f)
+				}
+				val s:String = "${(100000*1.025.pow(engine.statistics.level)).toInt()}"
+				val l = s.length
+				val offset = (12-l)/2
+				if(acTime in 0..119) {
+					receiver.drawMenuFont(engine, playerID, 1, 6, "ALL CLEAR!",
+						if(engine.statistics.time/2%2==0) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE)
+					receiver.drawMenuFont(engine, playerID, 0, 8, "BONUS POINTS", EventReceiver.COLOR.YELLOW)
+					receiver.drawMenuFont(engine, playerID, offset, 9, s)
+				}
+			}
+		}
+	}
+
+	override fun renderResult(engine:GameEngine, playerID:Int) {
+		receiver.drawMenuFont(engine, playerID, 0, 0, "SCORE", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, playerID, 0, 1, java.lang.String.format("%12s", engine.statistics.score))
+		receiver.drawMenuFont(engine, playerID, 0, 2, "LEVEL", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, playerID, 0, 3, String.format("%12s", engine.statistics.level+1))
+		receiver.drawMenuFont(engine, playerID, 0, 4, "TIME", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, playerID, 0, 5, String.format("%12s", engine.statistics.time.toTimeStr))
+	}
+	/**
+	 * Load settings from property file
+	 *
+	 * @param prop Property file
+	 */
+	override fun loadSetting(prop:CustomProperties) {
+		enableBombs = prop.getProperty("collapse.enableBombs", true)
+		difficulty = prop.getProperty("collapse.difficulty", 1)
+		bgm = prop.getProperty("collapse.bgm", 0)
+	}
+	/**
+	 * Save settings to property file
+	 *
+	 * @param prop Property file
+	 */
+	override fun saveSetting(prop:CustomProperties) {
+		prop.setProperty<Boolean>("collapse.enableBombs", enableBombs)
+		prop.setProperty<Int>("collapse.difficulty", difficulty)
+		prop.setProperty<Int>("collapse.bgm", bgm)
+	}
+	/**
+	 * Load settings from property file
+	 *
+	 * @param prop Property file
+	 */
+	private fun loadSettingPlayer(prop:ProfileProperties?) {
+		if(prop?.isLoggedIn!=true) return
+		enableBombs = prop.getProperty("collapse.enableBombs", true)
+		difficulty = prop.getProperty("collapse.difficulty", 1)
+		bgm = prop.getProperty("collapse.bgm", 0)
+	}
+	/**
+	 * Save settings to property file
+	 *
+	 * @param prop Property file
+	 */
+	private fun saveSettingPlayer(prop:ProfileProperties) {
+		if(!prop.isLoggedIn) return
+		prop.setProperty("collapse.enableBombs", enableBombs)
+		prop.setProperty("collapse.difficulty", difficulty)
+		prop.setProperty("collapse.bgm", bgm)
+	}
+	/**
+	 * Read rankings from property file
+	 *
+	 * @param prop Property file
+	 */
+	private fun loadRanking(prop:CustomProperties) {
+		for(i in 0 until MAX_RANKING) {
+			for(j in 0 until MAX_DIFFICULTIES) {
+				rankingScore[j][i] = prop.getProperty("collapse.ranking.$j.score.$i", 0)
+				rankingLevel[j][i] = prop.getProperty("collapse.ranking.$j.level.$i", 0)
+			}
+		}
+	}
+	/**
+	 * Save rankings to property file
+	 *
+	 * @param prop Property file
+	 */
+	private fun saveRanking(prop:CustomProperties) {
+		for(i in 0 until MAX_RANKING) {
+			for(j in 0 until MAX_DIFFICULTIES) {
+				prop.setProperty<Int>("collapse.ranking.$j.score.$i", rankingScore[j][i])
+				prop.setProperty<Int>("collapse.ranking.$j.level.$i", rankingLevel[j][i])
+			}
+		}
+	}
+	/**
+	 * Read rankings from property file
+	 *
+	 * @param prop Property file
+	 */
+	private fun loadRankingPlayer(prop:ProfileProperties) {
+		if(!prop.isLoggedIn) return
+		for(i in 0 until MAX_RANKING) {
+			for(j in 0 until MAX_DIFFICULTIES) {
+				rankingScorePlayer[j][i] = prop.getProperty("collapse.ranking.$j.score.$i", 0)
+				rankingLevelPlayer[j][i] = prop.getProperty("collapse.ranking.$j.level.$i", 0)
+			}
+		}
+	}
+/*
+	 * why do i even make stuff like this
+	 * people just keep asking "why?" or just straight up calling it useless (even if they don't explicitly say it)
+	 * nobody's gonna look at this and think "wow this code is cool", they usually only see the surface level end product
+	 * eh, whatever. might as well carry on to satiate my own wants for these modes and libraries
+	 * screw everyone else
+	 * i'll just make this for myself first, others later
+	 * this isn't even original anyway, just piggybacking off an existing engine and other games for concepts
+	 * you got people saying "your workflow is shit, your computer's OS is shit and you should be ashamed, you got people saying the sites you use are shit and you should feel bad" like
+	 * what the hell do i do
+	 * i just want to use my computer and develop shit for mostly fun
+	 * nothing i do in my own time when i'm not interacting with you is hurting you
+	 * ...fucking elitists...
+	 * why the absolute FUCK do you care so much about what i do?
+	 * where i source information about a game which has no official source (a game's speed difficulty ffs) does not hurt you in any way.
+	 * okay then mr. "I'm-right-you're-wrong-fuck-you-and-your-choices".
+	 * i'll go fuck off now so you don't have to deal with my shit.
+	 * poison the well before i even get to make a point will you.
+	 * fuck off
+	 */
+	/**
+	 * Save rankings to property file
+	 *
+	 * @param prop Property file
+	 */
+	private fun saveRankingPlayer(prop:ProfileProperties) {
+		if(!prop.isLoggedIn) return
+		for(i in 0 until MAX_RANKING) {
+			for(j in 0 until MAX_DIFFICULTIES) {
+				prop.setProperty("collapse.ranking.$j.score.$i", rankingScorePlayer[j][i])
+				prop.setProperty("collapse.ranking.$j.level.$i", rankingLevelPlayer[j][i])
+			}
+		}
+	}
+	/**
+	 * Update rankings
+	 *
+	 * @param sc Score
+	 */
+	private fun updateRanking(sc:Int, type:Int, lv:Int) {
+		rankingRank = checkRanking(sc, lv, type)
+		if(rankingRank!=-1) {
+			// Shift down ranking entries
+			for(i in MAX_RANKING-1 downTo rankingRank+1) {
+				rankingScore[type][i] = rankingScore[type][i-1]
+				rankingLevel[type][i] = rankingLevel[type][i-1]
+			}
+
+			// Add new data
+			rankingScore[type][rankingRank] = sc
+			rankingLevel[type][rankingRank] = lv
+		}
+		if(playerProperties.isLoggedIn) {
+			rankingRankPlayer = checkRankingPlayer(sc, lv, type)
+			if(rankingRankPlayer!=-1) {
+				// Shift down ranking entries
+				for(i in MAX_RANKING-1 downTo rankingRankPlayer+1) {
+					rankingScorePlayer[type][i] = rankingScorePlayer[type][i-1]
+					rankingLevelPlayer[type][i] = rankingLevelPlayer[type][i-1]
+				}
+
+				// Add new data
+				rankingScorePlayer[type][rankingRankPlayer] = sc
+				rankingLevelPlayer[type][rankingRankPlayer] = lv
+			}
+		}
+	}
+	/**
+	 * Calculate ranking position
+	 *
+	 * @param sc Score
+	 * @return Position (-1 if unranked)
+	 */
+	private fun checkRanking(sc:Int, lv:Int, type:Int):Int {
+		for(i in 0 until MAX_RANKING) {
+			if(sc>rankingScore[type][i]) {
+				return i
+			} else if(sc==rankingScore[type][i]&&lv<rankingLevel[type][i]) {
+				return i
+			}
+		}
+		return -1
+	}
+	/**
+	 * Calculate ranking position
+	 *
+	 * @param sc Score
+	 * @return Position (-1 if unranked)
+	 */
+	private fun checkRankingPlayer(sc:Int, lv:Int, type:Int):Int {
+		for(i in 0 until MAX_RANKING) {
+			if(sc>rankingScorePlayer[type][i]) return i
+			else if(sc==rankingScorePlayer[type][i]&&lv<rankingLevelPlayer[type][i]) return i
+		}
+		return -1
+	}
+	/*
+		 * ------ MODE-SPECIFIC PRIVATE METHODS ------
+		 */
+	private fun getClearScore(engine:GameEngine, squares:Int):Int =
+		(18*squares*(squares.toDouble()/4)*((engine.statistics.level+1).toDouble()/3)*
+			1.015.pow(squares.toDouble())).toInt()
+
+	private fun getLevelClearBonus(engine:GameEngine):Int {
+		val h:Int = engine.field.height
+		val w:Int = engine.field.width
+		var s = 0
+		for(y in 0 until h)
+			for(x in 0 until w)
+				if(engine.field.getBlock(x, y)==null)
+					s++
+
+
+		return getClearScore(engine, s)/48
+	}
+	/**
+	 * Checks if a coordinate is within a certain radius.
+	 *
+	 * @param x      X-coordinate of circle's centre.
+	 * @param y      Y-coordinate of circle's centre.
+	 * @param xTest  X-coordinate of test square.
+	 * @param yTest  Y-coordinate of test square.
+	 * @param radius The testing radius
+	 * @return The result of the check. true: within. false: not within.
+	 */
+	private fun isCoordWithinRadius(x:Int, y:Int, xTest:Int, yTest:Int,
+		radius:Double):Boolean {
+		val dX = xTest-x
+		val dY = yTest-y
+		val distance = sqrt((dX*dX+dY*dY).toDouble())
+		return distance<=radius
+	}
+
+	private fun explode(engine:GameEngine) {
+		engine.playSE("bomb")
+	}
+
+	companion object {
+		// Hey, have any of you played any of the Super Collapse games?
+		// Field Dimensions: 12 x 16; 1 Hidden Height
+		//
+		// DONE: Create a weighted Randomizer for the blocks.
+		// DONE: Do the centre-direction column gravity thing... somehow.
+		// DONE: Implement mouse control if you can.
+		// DONE: Implement flying score popups.
+		private val tableColors = arrayOf(
+			Block.COLOR.RED,
+			Block.COLOR.BLUE,
+			Block.COLOR.YELLOW,
+			Block.COLOR.GREEN,
+			Block.COLOR.ORANGE,
+			Block.COLOR.WHITE // Set as Silver blocks for silver blocks, movable but only break by super bombs
+			// .// Use Gray Bombs for super bombs, as will be shown as rainbow gems.
+		)
+		private val tableColorWeights = arrayOf(intArrayOf(1, 1, 1, 0, 0, 0), intArrayOf(160, 160, 160, 0, 0, 1),
+			intArrayOf(160, 160, 160, 80, 0, 2), intArrayOf(160, 160, 160, 120, 0, 3), intArrayOf(160, 160, 160, 160, 0, 4),
+			intArrayOf(192, 192, 192, 192, 96, 11), intArrayOf(204, 204, 204, 204, 204, 18))
+		private val tableBombColorWeights = arrayOf(intArrayOf(0, 0, 0, 0, 0, 1), intArrayOf(5, 5, 5, 0, 0, 15),
+			intArrayOf(4, 4, 4, 4, 0, 16), intArrayOf(4, 4, 4, 4, 0, 16), intArrayOf(4, 4, 4, 4, 0, 16),
+			intArrayOf(8, 8, 8, 8, 8, 40), intArrayOf(8, 8, 8, 8, 8, 40))
+		private val tableLevelWeightShift = intArrayOf(
+			0, 3, 6, 9, 12, 15, 18, 10000
+		)
+		private val tableLevelStartLines = intArrayOf(
+			3, 4, 4, 5, 5, 5,
+			6, 6, 6, 7, 7, 7,
+			8, 8, 8, 9, 9, 9,
+			10, 10, 10
+		) // MAX: 2.5 row/s
+		private val tableSpawnSpeedNormal = intArrayOf(
+			15, 15, 15, 14, 14, 13,
+			13, 12, 12, 11, 11, 10,
+			10, 9, 8, 7, 6, 5,
+			4, 3, 2
+		) // MAX: 2.5 row/s
+		private val tableSpawnSpeedEasy = intArrayOf(
+			20, 19, 18, 17, 16, 15,
+			14, 13, 12, 12, 11, 11,
+			10, 10, 9, 9, 8, 8,
+			7, 6, 5
+		) // MAX: 1 row/s
+		private val tableSpawnSpeedHard = intArrayOf(
+			12, 12, 12, 12, 11, 11,
+			11, 10, 10, 9, 8, 7,
+			6, 5, 4, 4, 3, 3,
+			2, 2, 1
+		) // MAX: 5 row/s
+		private val tableLevelLine = intArrayOf(
+			20, 30, 40, 50, 60, 70,
+			80, 90, 100, 120, 140, 160,
+			180, 200, 240, 280, 320, 360,
+			400, -1
+		)
+
+		private const val FIELD_WIDTH = 12
+		private const val FIELD_HEIGHT = 16
+		private const val FIELD_HIDDEN_HEIGHT = 1
+		private const val bombChance = 0.01
+		private const val MAX_RANKING = 10
+		private const val MAX_DIFFICULTIES = 3
+		private val DIFFICULTY_NAMES = arrayOf("EASY", "NORMAL", "HARD")
+		private const val maxSpeedLine = 8
+		private const val HOLDER_SLICK = 0
+		private const val HOLDER_SWING = 1
+		private const val HOLDER_SDL = 2
+		private const val LOCALSTATE_INGAME = 0
+		private const val LOCALSTATE_TRANSITION = 1
+	}
+}

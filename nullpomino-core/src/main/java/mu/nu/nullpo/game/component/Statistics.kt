@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.component
 
 import mu.nu.nullpo.util.CustomProperties
@@ -32,92 +37,94 @@ class Statistics:Serializable {
 	/** Total score */
 	val score:Int get() = scoreLine+scoreHD+scoreSD+scoreBonus
 	/** Line clear score */
-	var scoreLine:Int = 0
+	var scoreLine = 0
 	/** Soft drop score */
-	var scoreSD:Int = 0
+	var scoreSD = 0
 	/** Hard drop score */
-	var scoreHD:Int = 0
+	var scoreHD = 0
 	/** その他の方法で手に入れたScore */
-	var scoreBonus:Int = 0
+	var scoreBonus = 0
 
 	/** Total line count */
-	var lines:Int = 0
+	var lines = 0
 
 	/** Total sent garbage */
-	var attacks:Int = 0
+	var attacks = 0
 
 	/** Cleared Garbage Lines */
-	var garbageLines:Int = 0
+	var garbageLines = 0
 	/** Total Cleared block count */
-	var blocks:Int = 0
+	var blocks = 0
 
 	/** 経過 time */
-	var time:Int = 0
+	var time = 0
 
 	/** Level */
-	var level:Int = 0
+	var level = 0
 
 	/** Levelの表示に加算する数値 (表示 levelが内部の値と異なる場合に使用) */
-	var levelDispAdd:Int = 0
+	var levelDispAdd = 0
 
 	/** 置いたピースのcount */
-	var totalPieceLocked:Int = 0
+	var totalPieceLocked = 0
 
 	/** ピースを操作していた合計 time */
-	var totalPieceActiveTime:Int = 0
+	var totalPieceActiveTime = 0
 
 	/** ピースを移動させた合計 count */
-	var totalPieceMove:Int = 0
+	var totalPieceMove = 0
 
 	/** ピースをrotationさせた合計 count */
-	var totalPieceRotate:Int = 0
+	var totalPieceRotate = 0
 
 	/** 1-line clear count */
-	var totalSingle:Int = 0
+	var totalSingle = 0
 	/** 2-line clear count */
-	var totalDouble:Int = 0
+	var totalDouble = 0
 	/** Split 2-line clear count */
-	var totalSplitDouble:Int = 0
+	var totalSplitDouble = 0
 	/** 3-line clear count */
-	var totalTriple:Int = 0
+	var totalTriple = 0
 	/** One-Two-3-line clear count */
-	var totalSplitTriple:Int = 0
+	var totalSplitTriple = 0
 	/** 4-line clear count */
-	var totalQuadruple:Int = 0
+	var totalQuadruple = 0
 
 	/** Twister but no-line (with wallkick) count */
-	var totalTwistZeroMini:Int = 0
+	var totalTwistZeroMini = 0
 	/** Twister but no-line (without wallkick) count */
-	var totalTwistZero:Int = 0
+	var totalTwistZero = 0
 	/** Twister 1-line (with wallkick) count */
-	var totalTwistSingleMini:Int = 0
+	var totalTwistSingleMini = 0
 	/** Twister 1-line (without wallkick) count */
-	var totalTwistSingle:Int = 0
+	var totalTwistSingle = 0
 	/** Twister 2-line (with wallkick) count */
-	var totalTwistDoubleMini:Int = 0
+	var totalTwistDoubleMini = 0
 	/** Twister 2-line (without wallkick) count */
-	var totalTwistDouble:Int = 0
+	var totalTwistDouble = 0
 	/** Twister Split 2-line count */
-	var totalTwistSplitDouble:Int = 0
+	var totalTwistSplitDouble = 0
 	/** Twister 3 line count */
-	var totalTwistTriple:Int = 0
+	var totalTwistTriple = 0
 	/** Twister One-Two-3-line count */
-	var totalTwistSplitTriple:Int = 0
+	var totalTwistSplitTriple = 0
 
 	/** Back to Back 4-line clear count */
-	var totalB2BQuad:Int = 0
+	var totalB2BQuad = 0
 	/** Back to Back Split clear count */
-	var totalB2BSplit:Int = 0
+	var totalB2BSplit = 0
 	/** Back to Back Twister clear count */
-	var totalB2BTwist:Int = 0
+	var totalB2BTwist = 0
 
 	/** Hold use count */
-	var totalHoldUsed:Int = 0
+	var totalHoldUsed = 0
 
 	/** Longest combo */
-	var maxCombo:Int = 0
+	var maxCombo = 0
+	/** Longest Avalanche-chain */
+	var maxChain = 0
 	/** Longest Back to Back Chain */
-	var maxB2B:Int = 0
+	var maxB2B = 0
 
 	/** 1Linesあたりの得点 (Score Per Line) */
 	val spl:Double get() = if(lines>0) score.toDouble()/lines.toDouble() else 0.0
@@ -143,12 +150,10 @@ class Statistics:Serializable {
 	val vs:Float get() = if(time>0) (attacks+garbageLines)*6000f/time else 0f
 
 	/** TAS detection: slowdown rate */
-	var gamerate:Float = 0f
-	/** Longest Avalanche-chain */
-	var maxChain:Int = 0
+	var gamerate = 0f
 
 	/** Roll cleared flag (0=Not Reached 1=Reached 2=Fully Survived) */
-	var rollclear:Int = 0
+	var rollclear = 0
 		set(it) {
 			if(field==it||!(0..2).contains(it)) return
 			when(it) {
@@ -162,15 +167,16 @@ class Statistics:Serializable {
 			rollclearHistory = rollclearHistory.plus(it).takeLast(historyMax).toIntArray()
 		}
 	/** Roll cleared history */
-	var rollclearHistory:IntArray = IntArray(historyMax)
+	var rollclearHistory = IntArray(historyMax)
 
 	/** Roll Reached Count */
-	var rollReached:Int = 0
+	var rollReached = 0
 	/** Roll Survived Count */
-	var rollSurvived:Int = 0
+	var rollSurvived = 0
 
-	var pieces:IntArray = IntArray(Piece.PIECE_COUNT)
+	var pieces = IntArray(Piece.PIECE_COUNT)
 
+	var randSeed:Long = 0L
 	/** Constructor */
 	constructor() {
 		reset()
@@ -242,6 +248,7 @@ class Statistics:Serializable {
 		rollclear = 0
 
 		pieces = IntArray(Piece.PIECE_COUNT)
+		randSeed = 0L
 	}
 
 	/** 他のStatisticsの値をコピー
@@ -292,6 +299,7 @@ class Statistics:Serializable {
 			garbageLines = b.garbageLines
 
 			pieces = b.pieces
+			randSeed = b.randSeed
 		} ?: reset()
 	}
 
@@ -341,6 +349,7 @@ class Statistics:Serializable {
 			garbageLines += b.garbageLines
 
 			pieces = pieces.mapIndexed {it, i -> it+b.pieces[i]}.toIntArray()
+			randSeed = b.randSeed
 		}
 	}
 
@@ -349,7 +358,8 @@ class Statistics:Serializable {
 	 * @param id 任意のID (Player IDなど）
 	 */
 	fun writeProperty(p:CustomProperties, id:Int) =
-		mapOf<String, Comparable<*>>("$id.statistics.scoreLine" to scoreLine,
+		mapOf<String, Comparable<*>>(
+			"$id.statistics.scoreLine" to scoreLine,
 			"$id.statistics.scoreSD" to scoreSD,
 			"$id.statistics.scoreHD" to scoreHD,
 			"$id.statistics.scoreBonus" to scoreBonus,
@@ -386,7 +396,9 @@ class Statistics:Serializable {
 			"$id.statistics.maxB2B" to maxB2B,
 			"$id.statistics.gamerate" to gamerate,
 			"$id.statistics.maxChain" to maxChain,
-			"$id.statistics.rollclear" to rollclear).plus((0 until pieces.size-1).associate {
+			"$id.statistics.rollclear" to rollclear,
+			"$id.statistics.randSeed" to randSeed,
+		).plus((0 until pieces.size-1).associate {
 			"$id.statistics.pieces.$it" to pieces[it]
 		}).forEach {(key, it) ->
 			p.setProperty(key, it)
@@ -435,6 +447,7 @@ class Statistics:Serializable {
 		gamerate = p.getProperty("$id.statistics.gamerate", 0f)
 		maxChain = p.getProperty("$id.statistics.maxChain", 0)
 		rollclear = p.getProperty("$id.statistics.rollclear", 0)
+		randSeed = p.getProperty("$id.statistics.randSeed", 0L)
 		for(i in 0 until pieces.size-1)
 			pieces[i] = p.getProperty("$id.statistics.pieces.$i", 0)
 	}
@@ -479,7 +492,8 @@ class Statistics:Serializable {
 		{maxB2B = it.toInt()},
 		{gamerate = it.toFloat()},
 		{maxChain = it.toInt()},
-		{rollclear = it.toInt()}).plus(
+		{rollclear = it.toInt()},
+		{randSeed = it.toLong()}).plus(
 		(0 until pieces.size-1).map {i:Int ->
 			{pieces[i] = it.toInt()}
 		}).zip(s).forEach {(m, st) -> m(st)}
@@ -500,7 +514,7 @@ class Statistics:Serializable {
 		"$totalSplitDouble", "$totalTriple", "$totalSplitTriple", "$totalQuadruple", "$totalTwistZeroMini", "$totalTwistZero",
 		"$totalTwistSingleMini", "$totalTwistSingle", "$totalTwistDoubleMini", "$totalTwistDouble", "$totalTwistSplitDouble",
 		"$totalTwistTriple", "$totalTwistSplitTriple", "$totalB2BQuad", "$totalB2BSplit", "$totalB2BTwist", "$totalHoldUsed",
-		"$maxCombo", "$maxB2B", "$gamerate", "$maxChain", "$rollclear")+(pieces.map {"$it"})
+		"$maxCombo", "$maxB2B", "$gamerate", "$maxChain", "$rollclear", "$randSeed")+(pieces.map {"$it"})
 
 	/** Export to String
 	 * @return String (Split by ;)

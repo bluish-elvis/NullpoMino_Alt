@@ -1,10 +1,39 @@
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** NET-VS-DIG RACE mode */
 class NetVSDigRaceMode:NetDummyVSMode() {
@@ -12,13 +41,13 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	private var goalLines:Int = 0 // TODO: Add option to change this
 
 	/** Number of garbage lines left */
-	private var playerRemainLines:IntArray = IntArray(NETVS_MAX_PLAYERS)
+	private var playerRemainLines = IntArray(NETVS_MAX_PLAYERS)
 
 	/** Number of gems available at the start of the game (for values game) */
-	private var playerStartGems:IntArray = IntArray(NETVS_MAX_PLAYERS)
+	private var playerStartGems = IntArray(NETVS_MAX_PLAYERS)
 
 	/* Mode name */
-	override val name:String = "NET-VS-DIG RACE"
+	override val name = "NET-VS-DIG RACE"
 
 	/* Mode init */
 	override fun modeInit(manager:GameManager) {
@@ -46,43 +75,39 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	 * @param playerID Player ID
 	 */
 	private fun fillGarbage(engine:GameEngine, playerID:Int) {
-		val w = engine.field!!.width
-		val h = engine.field!!.height
+		val field = engine.field
+		val w = field.width
+		val h = field.height
 		var hole = -1
 		var skin = engine.skin
 		if(playerID!=0||netvsIsWatch()) skin = netvsPlayerSkin[playerID]
 		if(skin<0) skin = 0
 
 		for(y in h-1 downTo h-goalLines) {
-			if(hole==-1||engine.random.nextInt(100)<netCurrentRoomInfo!!.messiness) {
-				var newhole = -1
-				do
-					newhole = engine.random.nextInt(w)
-				while(newhole==hole)
-				hole = newhole
-			}
+			if(hole==-1||engine.random.nextInt(100)<netCurrentRoomInfo!!.messiness)
+				hole = engine.random.nextInt(w-1).let {it+if(it==hole) 1 else 0}
 
 			var prevColor = -1
 			for(x in 0 until w)
 				if(x!=hole) {
-					var color = Block.BLOCK_COLOR_GRAY
+					var color = Block.COLOR_WHITE
 					if(y==h-1) {
 						do
-							color = Block.BLOCK_COLOR_GEM_RED+engine.random.nextInt(7)
+							color = Block.COLOR_GEM_RED+engine.random.nextInt(7)
 						while(color==prevColor)
 						prevColor = color
 					}
-					engine.field!!.setBlock(x, y, Block(color, skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+					field.setBlock(x, y, Block(color, skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 				}
 
 			// Set connections
 			if(y!=h-1)
 				for(x in 0 until w)
 					if(x!=hole) {
-						val blk = engine.field!!.getBlock(x, y)
+						val blk = field.getBlock(x, y)
 						if(blk!=null) {
-							if(!engine.field!!.getBlockEmpty(x-1, y)) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
-							if(!engine.field!!.getBlockEmpty(x+1, y))
+							if(!field.getBlockEmpty(x-1, y)) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+							if(!field.getBlockEmpty(x+1, y))
 								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 						}
 					}
@@ -95,17 +120,17 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	 * @return Number of garbage lines left
 	 */
 	private fun getRemainGarbageLines(engine:GameEngine?, playerID:Int):Int {
-		if(engine?.field==null) return -1
+		val field = engine?.field ?: return -1
 
-		val w = engine.field!!.width
-		val h = engine.field!!.height
+		val w = field.width
+		val h = field.height
 		var lines = 0
 		var hasGemBlock = false
 
 		for(y in h-1 downTo h-goalLines)
-			if(!engine.field!!.getLineFlag(y))
+			if(!field.getLineFlag(y))
 				for(x in 0 until w) {
-					val blk = engine.field!!.getBlock(x, y)
+					val blk = field.getBlock(x, y)
 
 					if(blk!=null&&blk.isGemBlock) hasGemBlock = true
 					if(blk!=null&&blk.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
@@ -123,15 +148,11 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	 * @param playerID Player ID
 	 */
 	private fun turnAllBlocksToGem(engine:GameEngine, playerID:Int) {
-		val w = engine.field!!.width
-		val h = engine.field!!.height
+		val field = engine.field
 
-		for(y in engine.field!!.highestBlockY until h)
-			for(x in 0 until w) {
-				val blk = engine.field!!.getBlock(x, y)
-				if(blk!=null&&blk.cint>=Block.BLOCK_COLOR_RED&&blk.cint<=Block.BLOCK_COLOR_PURPLE)
-					blk.cint = Block.BLOCK_COLOR_GEM_RED+blk.cint-2
-			}
+		for(y in field.highestBlockY until field.height)
+			for(x in 0 until field.width) field.getBlock(x, y)?.type = Block.TYPE.GEM
+
 	}
 
 	/* Ready */
@@ -153,7 +174,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 				// Map game
 				engine.createFieldIfNeeded()
 				turnAllBlocksToGem(engine, playerID)
-				playerStartGems[playerID] = engine.field!!.howManyGems
+				playerStartGems[playerID] = engine.field.howManyGems
 				playerRemainLines[playerID] = playerStartGems[playerID]
 				engine.meterValue = owner.receiver.getMeterMax(engine)
 				engine.meterColor = GameEngine.METER_COLOR_GREEN
@@ -176,7 +197,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 				&&owner.engine[i].field!=null)
 				if(playerRemainLines[playerID]>playerRemainLines[i])
 					place++
-				else if(playerRemainLines[playerID]==playerRemainLines[i]&&engine.field!!.highestBlockY<owner.engine[i].field!!.highestBlockY)
+				else if(playerRemainLines[playerID]==playerRemainLines[i]&&engine.field.highestBlockY<owner.engine[i].field.highestBlockY)
 					place++
 
 		return place
@@ -199,7 +220,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 			if(remainLines<=4) engine.meterColor = GameEngine.METER_COLOR_RED
 		} else if(engine.field!=null&&playerStartGems[playerID]>0) {
 			// Map game
-			remainLines = engine.field!!.howManyGems-engine.field!!.howManyGemClears
+			remainLines = engine.field.howManyGems-engine.field.howManyGemClears
 			engine.meterValue = remainLines*owner.receiver.getMeterMax(engine)/playerStartGems[playerID]
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			if(remainLines<=playerStartGems[playerID]/2) engine.meterColor = GameEngine.METER_COLOR_YELLOW
@@ -213,7 +234,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 			if(netCurrentRoomInfo==null||!netCurrentRoomInfo!!.useMap)
 				playerRemainLines[playerID] = getRemainGarbageLines(engine, playerID)
 			else if(engine.field!=null)
-				playerRemainLines[playerID] = engine.field!!.howManyGems-engine.field!!.howManyGemClears
+				playerRemainLines[playerID] = engine.field.howManyGems-engine.field.howManyGemClears
 			updateMeter(engine)
 
 			// Game Completed
@@ -320,7 +341,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 		drawResultScale(engine, playerID, owner.receiver, 2, EventReceiver.COLOR.ORANGE, scale, "LINE",
 			String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
 			"LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps),
-			"Time", String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
+			"Time", String.format("%10s", engine.statistics.time.toTimeStr))
 	}
 
 	/* Send stats */
@@ -346,10 +367,10 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 		val playerID = engine.playerID
 		var msg = "gstat\t"
 		msg += "${netvsPlayerPlace[playerID]}\t"
-		msg += 0.toString()+"\t${0}\t${0}\t"
+		msg += "0\t0\t0\t"
 		msg += "${engine.statistics.lines}\t${engine.statistics.lpm}\t"
-		msg += engine.statistics.totalPieceLocked.toString()+"\t${engine.statistics.pps}\t"
-		msg += "$netvsPlayTimer${"\t${0}\t"+netvsPlayerWinCount[playerID]}\t"+netvsPlayerPlayCount[playerID]
+		msg += "${engine.statistics.totalPieceLocked}\t${engine.statistics.pps}\t"
+		msg += "$netvsPlayTimer\t0\t${netvsPlayerWinCount[playerID]}\t${netvsPlayerPlayCount[playerID]}"
 		msg += "\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}

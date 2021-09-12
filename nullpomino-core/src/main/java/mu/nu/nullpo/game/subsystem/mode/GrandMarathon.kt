@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -28,117 +33,119 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
-import kotlin.math.*
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.ln
 
 /** GRAND MANIA Mode */
 class GrandMarathon:AbstractMode() {
 
 	/** Current 落下速度の number (tableGravityChangeLevelの levelに到達するたびに1つ増える) */
-	private var gravityindex:Int = 0
+	private var gravityindex = 0
 
 	/** Next Section の level (これ-1のときに levelストップする) */
-	private var nextseclv:Int = 0
+	private var nextseclv = 0
 
 	/** Levelが増えた flag */
-	private var lvupflag:Boolean = false
+	private var lvupflag = false
 
 	/** 段位 */
-	private var grade:Int = 0
-	private var gmPier:Int = 0
+	private var grade = 0
+	private var gmPier = 0
 
 	/** 最後に段位が上がった time */
-	private var lastGradeTime:Int = 0
+	private var lastGradeTime = 0
 
 	/** Combo bonus */
-	private var comboValue:Int = 0
+	private var comboValue = 0
 
 	/** Most recent increase in score */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** 獲得Render scoreがされる残り time */
-	private var scgettime:Int = 0
+	private var scgettime = 0
 
 	/** Roll 経過 time */
-	private var rolltime:Int = 0
+	private var rolltime = 0
 
 	/** LV300到達時に段位が規定数以上だったらtrueになる */
-	private var gm300:Boolean = false
+	private var gm300 = false
 
 	/** LV500到達時に段位が規定数以上＆Timeが規定以下だったらtrueになる */
-	private var gm500:Boolean = false
+	private var gm500 = false
 
 	/** 裏段位 */
-	private var secretGrade:Int = 0
+	private var secretGrade = 0
 
 	/** Current BGM */
-	private var bgmlv:Int = 0
+	private var bgmlv = 0
 
 	/** 段位表示を光らせる残り frame count */
-	private var gradeflash:Int = 0
+	private var gradeflash = 0
 
 	/** Section Time */
-	private var sectionTime:IntArray = IntArray(SECTION_MAX)
-	private var sectionscore:IntArray = IntArray(SECTION_MAX)
+	private var sectionTime = IntArray(SECTION_MAX)
+	private var sectionscore = IntArray(SECTION_MAX)
 
 	/** Section Time記録 */
-	private var bestSectionTime:IntArray = IntArray(SECTION_MAX)
-	private var bestSectionScore:IntArray = IntArray(SECTION_MAX)
+	private var bestSectionTime = IntArray(SECTION_MAX)
+	private var bestSectionScore = IntArray(SECTION_MAX)
 
 	/** 新記録が出たSection はtrue */
-	private var sectionIsNewRecord:BooleanArray = BooleanArray(SECTION_MAX)
+	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
 
 	/** どこかのSection で新記録を出すとtrue */
 	private val sectionAnyNewRecord:Boolean get() = sectionIsNewRecord.any {true}
 
 	/** Cleared Section count */
-	private var sectionscomp:Int = 0
+	private var sectionscomp = 0
 
 	/** Average Section Time */
-	private var sectionavgtime:Int = 0
+	private var sectionavgtime = 0
 
 	/** Section Time記録表示中ならtrue */
-	private var isShowBestSectionTime:Boolean = false
+	private var isShowBestSectionTime = false
 
 	/** Level at start */
-	private var startlevel:Int = 0
+	private var startlevel = 0
 
 	/** When true, always ghost ON */
-	private var alwaysghost:Boolean = false
+	private var alwaysghost = false
 
 	/** When true, always 20G */
-	private var always20g:Boolean = false
+	private var always20g = false
 
 	/** When true, levelstop sound is enabled */
-	private var lvstopse:Boolean = false
+	private var lvstopse = false
 
 	/** BigMode */
-	private var big:Boolean = false
+	private var big = false
 
 	/** When true, section time display is enabled */
-	private var showsectiontime:Boolean = false
+	private var showsectiontime = false
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Rankings' 段位 */
-	private var rankingGrade:IntArray = IntArray(RANKING_MAX)
+	private var rankingGrade = IntArray(RANKING_MAX)
 
 	/** Rankings' level */
-	private var rankingLevel:IntArray = IntArray(RANKING_MAX)
+	private var rankingLevel = IntArray(RANKING_MAX)
 
 	/** Rankings' times */
-	private var rankingTime:IntArray = IntArray(RANKING_MAX)
+	private var rankingTime = IntArray(RANKING_MAX)
 
-	private var medalAC:Int = 0
-	private var decoration:Int = 0
-	private var dectemp:Int = 0
+	private var medalAC = 0
+	private var decoration = 0
+	private var dectemp = 0
 
 	/* Mode name */
-	override val name:String = "GRAND MARATHON"
+	override val name = "GRAND MARATHON"
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -200,7 +207,7 @@ class GrandMarathon:AbstractMode() {
 			owner.replayProp.getProperty("grademania1.version", 0)
 		} else {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			CURRENT_VERSION
 		}
 
@@ -342,10 +349,8 @@ class GrandMarathon:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(),
-			"FULL GHOST", GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g),
-			"LVSTOPSE", GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG",
-			GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level" to (startlevel*100), "FULL GHOST" to alwaysghost,
+			"FULL 20G" to always20g, "LVSTOPSE" to lvstopse, "SHOW STIME" to showsectiontime, "BIG" to big)
 	}
 
 	/* Called at game start */
@@ -392,7 +397,7 @@ class GrandMarathon:AbstractMode() {
 						}
 						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
 							receiver.drawScoreGrade(engine, playerID, 3, 3+i, tableGradeName[rankingGrade[i]], gc)
-						receiver.drawScoreNum(engine, playerID, 7, 3+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank)
+						receiver.drawScoreNum(engine, playerID, 7, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
 						receiver.drawScoreNum(engine, playerID, 15, 3+i, String.format("%03d", rankingLevel[i]), i==rankingRank)
 					}
 
@@ -406,7 +411,7 @@ class GrandMarathon:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime = String.format("%3d-%3d %s %d", temp, temp2, GeneralUtil.getTime(bestSectionTime[i]),
+						val strSectionTime = String.format("%3d-%3d %s %d", temp, temp2, bestSectionTime[i].toTimeStr,
 							bestSectionScore[i])
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
@@ -414,11 +419,11 @@ class GrandMarathon:AbstractMode() {
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 14, "TOTAL", color = COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(totalTime), 2f)
+					receiver.drawScoreNum(engine, playerID, 0, 15, totalTime.toTimeStr, 2f)
 					receiver.drawScoreFont(engine, playerID, if(receiver.nextDisplayType==2)
 						0 else 12, if(receiver.nextDisplayType==2) 18 else 14, "AVERAGE", color = COLOR.BLUE)
 					receiver.drawScoreNum(engine, playerID, if(receiver.nextDisplayType==2)
-						0 else 12, if(receiver.nextDisplayType==2) 19 else 15, GeneralUtil.getTime((totalTime/SECTION_MAX)), scale = 2f)
+						0 else 12, if(receiver.nextDisplayType==2) 19 else 15, (totalTime/SECTION_MAX).toTimeStr, scale = 2f)
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW RANKING", color = COLOR.GREEN)
 				}
@@ -457,13 +462,13 @@ class GrandMarathon:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 14, "Time",
 				if(g20) if(gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE)
 			if(engine.ending!=2||rolltime/30%2==0)
-				receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), g20, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 15, engine.statistics.time.toTimeStr, g20, 2f)
 
 			if(engine.gameActive&&engine.ending==2) {
 				var time = ROLLTIMELIMIT-rolltime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
 
 			// Section Time
@@ -483,14 +488,14 @@ class GrandMarathon:AbstractMode() {
 						for(l in 0 until i)
 							strSectionTime.append("\n")
 						strSectionTime.append(
-							String.format("%3d%s%s %d\n", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]), sectionscore[i]))
+							String.format("%3d%s%s %d\n", temp, strSeparator, sectionTime[i].toTimeStr, sectionscore[i]))
 						receiver.drawScoreNum(engine, playerID, if(x) 9 else 10, 3, "$strSectionTime", sectionIsNewRecord[i],
 							if(x) .75f else 1f)
 					}
 
 				receiver.drawScoreFont(engine, playerID, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", COLOR.BLUE)
 				receiver.drawScoreNum(engine, playerID, if(x) 8 else 12, if(x) 12 else 15,
-					GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))), scale = 2f)
+					(engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0)).toTimeStr, scale = 2f)
 
 			}
 			// medal
@@ -558,7 +563,7 @@ class GrandMarathon:AbstractMode() {
 			if(engine.manualLock) manuallock = 1
 
 			var bravo = 1
-			if(engine.field!!.isEmpty) {
+			if(engine.field.isEmpty) {
 				bravo = 4
 
 				dectemp += lines*25
@@ -699,7 +704,7 @@ class GrandMarathon:AbstractMode() {
 	/* Called at game over */
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==0) {
-			secretGrade = engine.field!!.secretGrade
+			secretGrade = engine.field.secretGrade
 			val time = engine.statistics.time
 			if(grade>=18)
 				for(i in 1 until tablePier21GradeTime.size)
@@ -766,11 +771,11 @@ class GrandMarathon:AbstractMode() {
 
 				for(i in sectionTime.indices)
 					if(sectionTime[i]>0)
-						receiver.drawMenuNum(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[i]), sectionIsNewRecord[i])
+						receiver.drawMenuNum(engine, playerID, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
 
 				if(sectionavgtime>0) {
 					receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", COLOR.BLUE)
-					receiver.drawMenuNum(engine, playerID, 0, 15, GeneralUtil.getTime(sectionavgtime), 1.7f)
+					receiver.drawMenuNum(engine, playerID, 0, 15, sectionavgtime.toTimeStr, 1.7f)
 				}
 			}
 			2 -> {
@@ -827,7 +832,7 @@ class GrandMarathon:AbstractMode() {
 			if(sectionAnyNewRecord) updateBestSectionTime()
 
 			if(rankingRank!=-1||sectionAnyNewRecord) {
-				saveRanking(engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -853,7 +858,7 @@ class GrandMarathon:AbstractMode() {
 	/** Save rankings to property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(ruleName:String) {
+	private fun saveRanking(ruleName:String) {
 		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
 			listOf("$ruleName.$i.grade" to rankingGrade[i],
 				"$ruleName.$i.level" to rankingLevel[i],
@@ -979,7 +984,7 @@ class GrandMarathon:AbstractMode() {
 			COLOR.GREEN)
 		/** LV999 roll time */
 		/** Number of entries in rankings */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of sections */
 		private const val SECTION_MAX = 10

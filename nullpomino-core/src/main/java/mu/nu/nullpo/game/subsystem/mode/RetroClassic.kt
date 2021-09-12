@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,55 +24,59 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.EventReceiver.FONT
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.NintendoRandomizer
 
 /** RETRO CLASSIC mode (Based from NES, Original from NullpoUE build 010210 by Zircean) */
 class RetroClassic:AbstractMode() {
 
 	/** Amount of points you just get from line clears */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** Elapsed time from last line clear (lastscore is displayed to screen
 	 * until this reaches to 120) */
-	private var scgettime:Int = 0
+	private var scgettime = 0
 
 	/** Selected game type */
-	private var gametype:Int = 0
+	private var gametype = 0
 
 	/** Selected starting level */
-	private var startlevel:Int = 0
+	private var startlevel = 0
 
 	/** Selected garbage height */
-	private var startheight:Int = 0
+	private var startheight = 0
 
 	/** Used for soft drop scoring */
-	private var softdropscore:Int = 0
+	private var softdropscore = 0
 
 	/** Used for hard drop scoring */
-	private var harddropscore:Int = 0
+	private var harddropscore = 0
 
 	/** Next level lines */
-	private var levellines:Int = 0
+	private var levellines = 0
 
 	/** Big mode on/off */
-	private var big:Boolean = false
+	private var big = false
 
 	/** Max interval of I-piece */
-	private var drought:Int = 0
+	private var drought = 0
 	private val droughts:MutableList<Int> = mutableListOf()
 
 	/** Your place on leaderboard (-1: out of rank) */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Score records */
 	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
@@ -83,9 +91,9 @@ class RetroClassic:AbstractMode() {
 	private var maxScoredTime:Int? = null
 
 	/** Returns the name of this mode */
-	override val name:String = "Retro Classic .N"
+	override val name = "Retro Classic .N"
 
-	override val gameIntensity:Int = -1
+	override val gameIntensity = -1
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -120,10 +128,11 @@ class RetroClassic:AbstractMode() {
 			owMaxDAS = -1
 			owARR = 6
 			owSDSpd = 1
+			owDelayCancel = 0
 		}
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 		} else loadSetting(owner.replayProp)
 
 		engine.owner.backgroundStatus.bg = startlevel
@@ -211,15 +220,15 @@ class RetroClassic:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "GAME TYPE", GAMETYPE_NAME[gametype],
-			"Level", LEVEL_NAME[startlevel], "HEIGHT", "$startheight", "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype],
+			"Level" to LEVEL_NAME[startlevel], "HEIGHT" to startheight, "BIG" to big)
 	}
 
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==0) {
 			engine.run {
 				randomizer = NintendoRandomizer()
-				ruleopt.run {
+				ruleOpt.run {
 					rotateInitial = false
 					lockresetMove = false
 					softdropLock = true
@@ -230,9 +239,7 @@ class RetroClassic:AbstractMode() {
 					dasInReady = false
 					dasChargeOnBlockedMove = true
 					dasStoreChargeOnNeutral = true
-					dasRedirectInARE = true
-					areCancelMove = false
-					areCancelRotate = false
+					dasRedirectInDelay = true
 				}
 			}
 
@@ -301,7 +308,7 @@ class RetroClassic:AbstractMode() {
 				if(engine.statistics.level<30) FONT.NUM else FONT.NORMAL, scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.time.toTimeStr, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 16, "I-Piece Drought", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 17, "$drought / ${maxOf(drought, droughts.maxOrNull() ?: 0)}", 2f)
@@ -463,7 +470,7 @@ class RetroClassic:AbstractMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.level, gametype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -495,24 +502,25 @@ class RetroClassic:AbstractMode() {
 	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
-			for(gametypeIndex in 0 until RANKING_TYPE) {
-				rankingScore[gametypeIndex][i] = prop.getProperty("retromarathon.ranking.$ruleName.$gametypeIndex.score.$i", 0)
-				rankingLines[gametypeIndex][i] = prop.getProperty("retromarathon.ranking.$ruleName.$gametypeIndex.lines.$i", 0)
-				rankingLevel[gametypeIndex][i] = prop.getProperty("retromarathon.ranking.$ruleName.$gametypeIndex.level.$i", 0)
+			for(type in 0 until RANKING_TYPE) {
+				rankingScore[type][i] = prop.getProperty("$ruleName.$type.score.$i", 0)
+				rankingLines[type][i] = prop.getProperty("$ruleName.$type.lines.$i", 0)
+				rankingLevel[type][i] = prop.getProperty("$ruleName.$type.level.$i", 0)
 			}
 	}
 
 	/** Save the ranking
-	 * @param prop CustomProperties
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(gametypeIndex in 0 until RANKING_TYPE) {
-				prop.setProperty("retromarathon.ranking.$ruleName.$gametypeIndex.score.$i", rankingScore[gametypeIndex][i])
-				prop.setProperty("retromarathon.ranking.$ruleName.$gametypeIndex.lines.$i", rankingLines[gametypeIndex][i])
-				prop.setProperty("retromarathon.ranking.$ruleName.$gametypeIndex.level.$i", rankingLevel[gametypeIndex][i])
+	private fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf(
+					"$ruleName.$j.score.$i" to rankingScore[j][i],
+					"$ruleName.$j.lines.$i" to rankingLines[j][i],
+					"$ruleName.$j.level.$i" to rankingLevel[j][i])
 			}
+		})
 	}
 
 	/** Update the ranking
@@ -561,14 +569,14 @@ class RetroClassic:AbstractMode() {
 	 * @param height Garbage height level number
 	 */
 	private fun fillGarbage(engine:GameEngine, height:Int) {
-		val h = engine.field!!.height
+		val h = engine.field.height
 		val startHeight = h-1
 		var f:Float
 		for(y in startHeight downTo h-tableGarbageHeight[height])
-			for(x in 0 until engine.field!!.width) {
+			for(x in 0 until engine.field.width) {
 				f = engine.random.nextFloat()
 				if(f<0.5)
-					engine.field!!.setBlock(x, y, Block((f*14).toInt()+2, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+					engine.field.setBlock(x, y, Block((f*14).toInt()+2, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 			}
 	}
 
@@ -618,7 +626,7 @@ class RetroClassic:AbstractMode() {
 		private val GAMETYPE_NAME = arrayOf("A-TYPE", "B+TYPE", "C#TYPE")
 
 		/** Number of ranking records */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private const val RANKING_TYPE = 3

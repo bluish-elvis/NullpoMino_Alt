@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,18 +24,23 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.gui.GameKeyDummy
+import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import org.apache.log4j.Logger
-import org.newdawn.slick.*
+import org.newdawn.slick.AppGameContainer
+import org.newdawn.slick.GameContainer
+import org.newdawn.slick.Graphics
+import org.newdawn.slick.SlickException
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 
@@ -72,7 +81,7 @@ class StateInGame:BasicGameState() {
 	private var prevInGameFlag = false
 
 	/** Current game mode name */
-	private var modeName:String = ""
+	private var modeName = ""
 
 	/** Fetch this state's ID */
 	override fun getID():Int = ID
@@ -105,7 +114,7 @@ class StateInGame:BasicGameState() {
 			it.receiver.setGraphics(appContainer!!.graphics)
 
 			modeName = NullpoMinoSlick.propGlobal.getProperty("name.mode", "")
-			val modeObj = NullpoMinoSlick.modeManager.getMode(modeName)
+			val modeObj = NullpoMinoSlick.modeManager[modeName]
 			if(modeObj==null)
 				log.error("Couldn't find mode:$modeName")
 			else
@@ -126,34 +135,34 @@ class StateInGame:BasicGameState() {
 				e.owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMoveDiagonal", -1)
 				e.owBlockOutlineType = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owBlockOutlineType", -1)
 				e.owBlockShowOutlineOnly = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owBlockShowOutlineOnly", -1)
+				e.owDelayCancel = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owDelayCancel", -1)
 
 				// ルール
-				val ruleopt:RuleOptions
+				val ruleOpt:RuleOptions
 				var rulename = strRulePath
 				if(rulename==null) {
 					rulename = NullpoMinoSlick.propGlobal.getProperty("$i.rule", "")
-					if(it.mode!!.gameStyle>0)
-						rulename = NullpoMinoSlick.propGlobal.getProperty("$i"+".rule."
-							+it.mode!!.gameStyle, "")
+					if(it.mode?.gameStyle!=GameEngine.GameStyle.TETROMINO)
+						rulename = NullpoMinoSlick.propGlobal.getProperty("$i.rule.${it.mode!!.gameStyle.ordinal}", "")
 				}
 				if(rulename!=null&&rulename.isNotEmpty()) {
 					log.info("Load rule options from $rulename")
-					ruleopt = GeneralUtil.loadRule(rulename)
+					ruleOpt = GeneralUtil.loadRule(rulename)
 				} else {
 					log.info("Load rule options from setting file")
-					ruleopt = RuleOptions()
-					ruleopt.readProperty(NullpoMinoSlick.propGlobal, i)
+					ruleOpt = RuleOptions()
+					ruleOpt.readProperty(NullpoMinoSlick.propGlobal, i)
 				}
-				e.ruleopt = ruleopt
+				e.ruleOpt = ruleOpt
 
 				// NEXT順生成アルゴリズム
-				if(ruleopt.strRandomizer.isNotEmpty()) {
-					e.randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
+				if(ruleOpt.strRandomizer.isNotEmpty()) {
+					e.randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
 				}
 
 				// Wallkick
-				if(ruleopt.strWallkick.isNotEmpty()) {
-					e.wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
+				if(ruleOpt.strWallkick.isNotEmpty()) {
+					e.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
 				}
 
 				// AI
@@ -189,7 +198,7 @@ class StateInGame:BasicGameState() {
 
 			// Mode
 			modeName = prop.getProperty("name.mode", "")
-			val modeObj = NullpoMinoSlick.modeManager.getMode(modeName)
+			val modeObj = NullpoMinoSlick.modeManager[modeName]
 			if(modeObj==null) log.error("Couldn't find mode:$modeName")
 			else it.mode = modeObj
 
@@ -198,15 +207,15 @@ class StateInGame:BasicGameState() {
 			// Initialization for each player
 			for(i in 0 until it.players) {
 				// ルール
-				val ruleopt = RuleOptions()
-				ruleopt.readProperty(prop, i)
-				it.engine[i].ruleopt = ruleopt
+				val ruleOpt = RuleOptions()
+				ruleOpt.readProperty(prop, i)
+				it.engine[i].ruleOpt = ruleOpt
 
 				// NEXT順生成アルゴリズム
-				if(ruleopt.strRandomizer.isNotEmpty()) it.engine[i].randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
+				if(ruleOpt.strRandomizer.isNotEmpty()) it.engine[i].randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
 
 				// Wallkick
-				if(ruleopt.strWallkick.isNotEmpty()) it.engine[i].wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
+				if(ruleOpt.strWallkick.isNotEmpty()) it.engine[i].wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
 
 				// AI (リプレイ追記用）
 				val aiName = NullpoMinoSlick.propGlobal.getProperty("$i.ai", "")
@@ -396,7 +405,7 @@ class StateInGame:BasicGameState() {
 				pause = false
 				pauseFrame = 5
 				GameKey.gamekey[0].clear()
-				ResourceHolder.bgmResume()
+				ResourceHolder.bgmPause()
 				updateTitleBarCaption()
 			}// Unpause by cancel key
 		}// Pause menu
@@ -455,7 +464,7 @@ class StateInGame:BasicGameState() {
 			if(it.quitFlag||GameKey.gamekey.any {it.isPushKey(GameKeyDummy.BUTTON_GIVEUP)}) {
 				ResourceHolder.bgmStop()
 				game.enterState(StateTitle.ID)
-				return
+				return@update
 			}
 		}
 

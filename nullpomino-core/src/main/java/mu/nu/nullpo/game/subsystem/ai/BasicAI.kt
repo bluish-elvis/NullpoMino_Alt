@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.ai
 
 import mu.nu.nullpo.game.component.Controller
@@ -35,19 +40,19 @@ import kotlin.math.abs
 open class BasicAI:DummyAI(), Runnable {
 
 	/** After that I was groundedX-coordinate */
-	var bestXSub:Int = 0
+	var bestXSub = 0
 
 	/** After that I was groundedY-coordinate */
-	var bestYSub:Int = 0
+	var bestYSub = 0
 
 	/** After that I was groundedDirection(-1: None) */
-	var bestRtSub:Int = 0
+	var bestRtSub = 0
 
 	/** The best moveEvaluation score */
-	var bestPts:Int = 0
+	var bestPts = 0
 
 	/** Delay the move for changecount */
-	var delay:Int = 0
+	var delay = 0
 
 	/** The GameEngine that owns this AI */
 	lateinit var gEngine:GameEngine
@@ -56,23 +61,23 @@ open class BasicAI:DummyAI(), Runnable {
 	var gManager:GameManager? = null
 
 	/** When true,To threadThink routineInstructing the execution of the */
-	var thinkRequest:Boolean = false
+	var thinkRequest = false
 
-	/** true when thread is executing the think routine. */
-	var thinking:Boolean = false
+	/** True when thread is executing the think routine. */
+	var thinking = false
 
 	/** To stop a thread time */
-	var thinkDelay:Int = 0
+	var thinkDelay = 0
 
 	/** When true,Running thread */
 	@Volatile
-	var threadRunning:Boolean = false
+	var threadRunning = false
 
 	/** Thread for executing the think routine */
 	var thread:Thread? = null
 
 	/* AIOfName */
-	override val name:String = "BASIC"
+	override val name = "BASIC"
 
 	/** MaximumCompromise levelGet the
 	 * @return MaximumCompromise level
@@ -134,7 +139,7 @@ open class BasicAI:DummyAI(), Runnable {
 			val nowX = engine.nowPieceX
 			val nowY = engine.nowPieceY
 			val rt = pieceNow!!.direction
-			val fld = engine.field ?: return
+			val fld = engine.field
 			val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 
 			if((bestHold||forceHold)&&engine.isHoldOK)
@@ -146,13 +151,13 @@ open class BasicAI:DummyAI(), Runnable {
 					val lrot = engine.getRotateDirection(-1)
 					val rrot = engine.getRotateDirection(1)
 
-					if(abs(rt-bestRt)==2&&engine.ruleopt.rotateButtonAllowDouble
+					if(abs(rt-bestRt)==2&&engine.ruleOpt.rotateButtonAllowDouble
 						&&!ctrl.isPress(Controller.BUTTON_E))
 						input = input or Controller.BUTTON_BIT_E
-					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleopt.rotateButtonAllowReverse&&
+					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse&&
 						!engine.isRotateButtonDefaultRight&&bestRt==rrot)
 						input = input or Controller.BUTTON_BIT_B
-					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleopt.rotateButtonAllowReverse&&
+					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse&&
 						engine.isRotateButtonDefaultRight&&bestRt==lrot)
 						input = input or Controller.BUTTON_BIT_B
 					else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
@@ -191,12 +196,12 @@ open class BasicAI:DummyAI(), Runnable {
 					} else if(nowX==bestX&&rt==bestRt)
 					// Funnel
 						if(bestRtSub==-1&&bestX==bestXSub) {
-							if(engine.ruleopt.harddropEnable&&!ctrl.isPress(Controller.BUTTON_UP))
+							if(engine.ruleOpt.harddropEnable&&!ctrl.isPress(Controller.BUTTON_UP))
 								input = input or Controller.BUTTON_BIT_UP
-							else if(engine.ruleopt.softdropEnable||engine.ruleopt.softdropLock) input = input or Controller.BUTTON_BIT_DOWN
-						} else if(engine.ruleopt.harddropEnable&&!engine.ruleopt.harddropLock&&!ctrl.isPress(Controller.BUTTON_UP))
+							else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock) input = input or Controller.BUTTON_BIT_DOWN
+						} else if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock&&!ctrl.isPress(Controller.BUTTON_UP))
 							input = input or Controller.BUTTON_BIT_UP
-						else if(engine.ruleopt.softdropEnable&&!engine.ruleopt.softdropLock) input = input or Controller.BUTTON_BIT_DOWN
+						else if(engine.ruleOpt.softdropEnable&&!engine.ruleOpt.softdropLock) input = input or Controller.BUTTON_BIT_DOWN
 				}//thinkCurrentPieceNo++;
 				//System.out.println("rethink c:" + thinkCurrentPieceNo + " l:" + thinkLastPieceNo);
 			}
@@ -233,13 +238,13 @@ open class BasicAI:DummyAI(), Runnable {
 		val pieceNext = engine.getNextObject(engine.nextPieceCount)
 		if(pieceHold==null) holdEmpty = true
 		if(engine.field==null) return
-		val fld = Field(engine.field!!)
+		val fld = Field(engine.field)
 
 		for(depth in 0 until maxThinkDepth) {
 			for(rt in 0 until Piece.DIRECTION_COUNT) {
 				// Peace for now
-				val minX = pieceNow!!.getMostMovableLeft(nowX, nowY, rt, engine.field!!)
-				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field!!)
+				val minX = pieceNow!!.getMostMovableLeft(nowX, nowY, rt, engine.field)
+				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)
 
 				for(x in minX..maxX) {
 					fld.copy(engine.field)
@@ -296,7 +301,7 @@ open class BasicAI:DummyAI(), Runnable {
 							}
 
 							// Leftrotation
-							if(!engine.isRotateButtonDefaultRight||engine.ruleopt.rotateButtonAllowReverse) {
+							if(!engine.isRotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
 								val rot = pieceNow.getRotateDirection(-1, rt)
 								var newX = x
 								var newY = y
@@ -305,8 +310,8 @@ open class BasicAI:DummyAI(), Runnable {
 
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleopt.rotateWallkick) {
-									val allowUpward = engine.ruleopt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick
+								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+									val allowUpward = engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
 									val kick = engine.wallkick!!.executeWallkick(x, y, -1, rt, rot, allowUpward, pieceNow, fld, null)
 
 									if(kick!=null) {
@@ -329,7 +334,7 @@ open class BasicAI:DummyAI(), Runnable {
 							}
 
 							// Rightrotation
-							if(engine.isRotateButtonDefaultRight||engine.ruleopt.rotateButtonAllowReverse) {
+							if(engine.isRotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
 								val rot = pieceNow.getRotateDirection(1, rt)
 								var newX = x
 								var newY = y
@@ -338,8 +343,8 @@ open class BasicAI:DummyAI(), Runnable {
 
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleopt.rotateWallkick) {
-									val allowUpward = engine.ruleopt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick
+								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+									val allowUpward = engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
 									val kick = engine.wallkick!!.executeWallkick(x, y, 1, rt, rot, allowUpward, pieceNow, fld, null)
 
 									if(kick!=null) {
@@ -362,7 +367,7 @@ open class BasicAI:DummyAI(), Runnable {
 							}
 
 							// 180-degree rotation
-							if(engine.ruleopt.rotateButtonAllowDouble) {
+							if(engine.ruleOpt.rotateButtonAllowDouble) {
 								val rot = pieceNow.getRotateDirection(2, rt)
 								var newX = x
 								var newY = y
@@ -371,8 +376,8 @@ open class BasicAI:DummyAI(), Runnable {
 
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleopt.rotateWallkick) {
-									val allowUpward = engine.ruleopt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick
+								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+									val allowUpward = engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
 									val kick = engine.wallkick!!.executeWallkick(x, y, 2, rt, rot, allowUpward, pieceNow, fld, null)
 
 									if(kick!=null) {

@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -29,44 +34,45 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
 
 /** RETRO MODERN mode (Based from NAOMI, build by Venom_Nhelv 20180131-2020 */
 class RetroModern:AbstractMode() {
-	private var totalnorma:Int = 0
+	private var totalnorma = 0
 
 	/** Amount of points you just get from line clears */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** Elapsed time from last line clear (lastscore is displayed to screen
 	 * until this reaches to 120) */
-	private var scgettime:Int = 0
-	private var sc:Int = 0
+	private var scgettime = 0
+	private var sc = 0
 
 	/** Selected game type */
-	private var gametype:Int = 0
+	private var gametype = 0
 
 	/** Selected starting level */
-	private var startlevel:Int = 0
+	private var startlevel = 0
 
 	/** Ending Level timer */
-	private var rolltime:Int = 0
+	private var rolltime = 0
 
 	/** Amount of lines cleared (It will be reset when the level increases) */
-	private var norm:Int = 0
+	private var norm = 0
 
-	private var lineslot:IntArray = IntArray(3)
-	private var linecount:Int = 0
+	private var lineslot = IntArray(3)
+	private var linecount = 0
 
-	private var special:Boolean = false
+	private var special = false
 	/** Big mode on/off */
-	private var big:Boolean = false
+	private var big = false
 
 	/** Version of this mode */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Your place on leaderboard (-1: out of rank) */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Ranking records */
 	private var rankingScore:Array<IntArray> = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
@@ -75,7 +81,7 @@ class RetroModern:AbstractMode() {
 	private var rankingTime:Array<IntArray> = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
 
 	/** Returns the name of this mode */
-	override val name:String = "Retro Modern.S"
+	override val name = "Retro Modern.S"
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -130,14 +136,14 @@ class RetroModern:AbstractMode() {
 	private fun setSpeed(engine:GameEngine) {
 		var lv = engine.statistics.level
 
-		engine.ruleopt.lockresetMove = gametype==4
-		engine.ruleopt.lockresetRotate = gametype==4
-		engine.ruleopt.lockresetWallkick = gametype==4
-		engine.ruleopt.lockresetFall = true
-		engine.ruleopt.softdropLock = true
-		engine.ruleopt.softdropMultiplyNativeSpeed = false
-		engine.ruleopt.softdropGravitySpeedLimit = true
-		engine.ruleopt.softdropSpeed = 1f
+		engine.ruleOpt.lockresetMove = gametype==4
+		engine.ruleOpt.lockresetRotate = gametype==4
+		engine.ruleOpt.lockresetWallkick = gametype==4
+		engine.ruleOpt.lockresetFall = true
+		engine.ruleOpt.softdropLock = true
+		engine.ruleOpt.softdropMultiplyNativeSpeed = false
+		engine.ruleOpt.softdropGravitySpeedLimit = true
+		engine.ruleOpt.softdropSpeed = 1f
 		engine.owSDSpd = -1
 		if(lv<0) lv = 0
 		when {
@@ -237,8 +243,8 @@ class RetroModern:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "Level", "$startlevel", "BIG",
-			GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startlevel,
+			"BIG" to big)
 	}
 
 	private fun setBGM(lv:Int) {
@@ -287,9 +293,9 @@ class RetroModern:AbstractMode() {
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 9, topY+i, "${rankingLines[gametype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 12, topY+i, "${rankingLevel[gametype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank,
+					receiver.drawScoreNum(engine, playerID, 9, topY+i, String.format("%3d",rankingLines[gametype][i]), i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 12, topY+i, String.format("%2d",rankingLevel[gametype][i]), i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 16, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank,
 						scale)
 				}
 			}
@@ -315,13 +321,13 @@ class RetroModern:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 5, 10, String.format("%02d.%02d", engine.statistics.level, lvdem), scale = 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 11, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 12, GeneralUtil.getTime(engine.statistics.time), scale = 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 12, engine.statistics.time.toTimeStr, scale = 2f)
 
 			// Roll 残り time
 			if(rolltime>0) {
 				val time = ROLLTIMELIMIT-rolltime
 				receiver.drawScoreFont(engine, playerID, 0, 15, "FLASH BACK", COLOR.CYAN)
-				receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 16, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
 
 		}
@@ -387,7 +393,7 @@ class RetroModern:AbstractMode() {
 		else if(lines==3)
 			pts = (if(engine.split) 55 else 45)*mult // Triple
 		else if(lines>=4) pts = 100*mult // Four
-		if(lines>0&&engine.field!!.isEmpty)
+		if(lines>0&&engine.field.isEmpty)
 		// Perfect clear bonus
 			pts = 2000*tableBonusMult[engine.statistics.level]
 		// Add score
@@ -397,7 +403,7 @@ class RetroModern:AbstractMode() {
 		}
 		if(engine.manualLock) {
 			scgettime++
-			if(engine.ruleopt.harddropLock) engine.statistics.scoreHD++
+			if(engine.ruleOpt.harddropLock) engine.statistics.scoreHD++
 			else engine.statistics.scoreSD++
 		}
 		if(lines>0) {
@@ -503,7 +509,7 @@ class RetroModern:AbstractMode() {
 		if(time) {
 			engine.ending = 2
 			engine.resetStatc()
-			engine.field!!.reset()
+			engine.field.reset()
 			engine.nowPieceObject = null
 			engine.stat = GameEngine.Status.CUSTOM
 		}
@@ -581,7 +587,7 @@ class RetroModern:AbstractMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.level, engine.statistics.time, gametype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -606,24 +612,26 @@ class RetroModern:AbstractMode() {
 	/** Load the ranking */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
-			for(gametypeIndex in 0 until GAMETYPE_MAX) {
-				rankingScore[gametypeIndex][i] = prop.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.score.$i", 0)
-				rankingLevel[gametypeIndex][i] = prop.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.level.$i", 0)
-				rankingLines[gametypeIndex][i] = prop.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.lines.$i", 0)
-				rankingTime[gametypeIndex][i] = prop.getProperty("retromodern.ranking.$ruleName.$gametypeIndex.time.$i", 0)
+			for(type in 0 until GAMETYPE_MAX) {
+				rankingScore[type][i] = prop.getProperty("$ruleName.$type.score.$i", 0)
+				rankingLevel[type][i] = prop.getProperty("$ruleName.$type.level.$i", 0)
+				rankingLines[type][i] = prop.getProperty("$ruleName.$type.lines.$i", 0)
+				rankingTime[type][i] = prop.getProperty("$ruleName.$type.time.$i", 0)
 
 			}
 	}
 
 	/** Save the ranking */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(gametypeIndex in 0 until GAMETYPE_MAX) {
-				prop.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.score.$i", rankingScore[gametypeIndex][i])
-				prop.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.level.$i", rankingLevel[gametypeIndex][i])
-				prop.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.lines.$i", rankingLines[gametypeIndex][i])
-				prop.setProperty("retromodern.ranking.$ruleName.$gametypeIndex.time.$i", rankingTime[gametypeIndex][i])
+	private fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until GAMETYPE_MAX).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf(
+					"$ruleName.$j.score.$i" to rankingScore[j][i],
+					"$ruleName.$j.lines.$i" to rankingLines[j][i],
+					"$ruleName.$j.level.$i" to rankingLevel[j][i],
+					"$ruleName.$j.time.$i" to rankingTime[j][i])
 			}
+		})
 	}
 
 	/** Update the ranking */
@@ -651,12 +659,9 @@ class RetroModern:AbstractMode() {
 	 * (-1: Out of rank) */
 	private fun checkRanking(sc:Int, lv:Int, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(sc>rankingScore[type][i])
-				return i
-			else if(sc==rankingScore[type][i]&&lv>rankingLines[type][i])
-				return i
-			else if(sc==rankingScore[type][i]&&lv==rankingLines[type][i]&&li>rankingLines[type][i])
-				return i
+			if(sc>rankingScore[type][i]) return i
+			else if(sc==rankingScore[type][i]&&lv>rankingLines[type][i]) return i
+			else if(sc==rankingScore[type][i]&&lv==rankingLines[type][i]&&li>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
 
 		return -1
@@ -718,7 +723,7 @@ class RetroModern:AbstractMode() {
 		private const val GAMETYPE_MAX = 5
 
 		/** Number of ranking records */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** LV17 roll time */
 		private const val ROLLTIMELIMIT = 12000

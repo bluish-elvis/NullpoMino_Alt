@@ -32,7 +32,8 @@
  */
 package zeroxfc.nullpo.custom.libs
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.RendererExtension
@@ -62,7 +63,7 @@ class ExamSpinner {
 			big = true
 			setSkin(0)
 			direction = 0
-			setColor(Block.BLOCK_COLOR_YELLOW)
+			setColor(Block.COLOR.YELLOW)
 		}
 		private val log = Logger.getLogger(ExamSpinner::class.java)
 
@@ -72,13 +73,14 @@ class ExamSpinner {
 	private val selectedOutcome:Int
 	private val close:Boolean
 	private val custom:Boolean
-	private val locations:IntArray
+	private val locations:IntArray = endXs.clone()
 	private var customHolder:ResourceHolderCustomAssetExtension? = null
 	private var header:String? = null
 	private var subheading:String? = null
 	private var possibilities:Array<String> = emptyArray()
 	private var clickedBefore = false
 	private var lifeTime = 0
+
 	/**
 	 * Create a new promo exam graphic.
 	 *
@@ -90,12 +92,14 @@ class ExamSpinner {
 		var gradeText = gradeText
 		custom = false
 		if(gradeText==null) gradeText = "UNDEFINED"
-		customHolder = ResourceHolderCustomAssetExtension()
-		customHolder!!.loadImage("res/graphics/examResultText.png", "default")
+		customHolder = ResourceHolderCustomAssetExtension().apply {
+			loadImage("res/graphics/examResultText.png", "default")
+		}
 		log.debug("Non-custom ExamSpinner object created.")
 		this.gradeText = gradeText
 		this.selectedOutcome = selectedOutcome
 		this.close = close
+
 	}
 	/**
 	 * Creates a custom spinner. Make sure to fill in all fields. Note: use lowercase "\n" for newlines.
@@ -221,7 +225,7 @@ class ExamSpinner {
 					}
 				} else {
 					if(lifeTime==spinDuration+120) {
-						val blk = Block(Block.BLOCK_COLOR_YELLOW)
+						val blk = Block(Block.COLOR.YELLOW)
 						for(y in 13..17) {
 							for(x in 3..7) {
 								val x2 = x*16+baseX
@@ -306,7 +310,7 @@ class ExamSpinner {
 					}
 				} else {
 					if(lifeTime==spinDuration+120) {
-						val blk = Block(Block.BLOCK_COLOR_YELLOW)
+						val blk = Block(Block.COLOR.YELLOW)
 						for(y in 13..17) {
 							for(x in 3..7) {
 								val x2 = x*16+baseX
@@ -390,11 +394,4 @@ class ExamSpinner {
 		}
 	}
 
-	init {
-		lifeTime = 0
-
-		// locations = endXs;
-		locations = endXs.clone()
-		clickedBefore = false
-	}
 }

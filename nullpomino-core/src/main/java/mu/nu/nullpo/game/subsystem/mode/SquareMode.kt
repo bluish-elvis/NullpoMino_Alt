@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,14 +24,17 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** SQUARE Mode */
 class SquareMode:AbstractMode() {
@@ -43,38 +50,38 @@ class SquareMode:AbstractMode() {
 
 	/** Current gravity number (When the point reaches tableGravityChangeScore's
 	 * value, this variable will increase) */
-	private var gravityindex:Int = 0
+	private var gravityindex = 0
 
 	/** Amount of points you just get from line clears */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** Elapsed time from last line clear (lastscore is displayed to screen
 	 * until this reaches to 120) */
-	private var scgettime:Int = 0
+	private var scgettime = 0
 
 	/** Number of squares created */
-	private var squares:Int = 0
+	private var squares = 0
 
 	/** Selected game type */
-	private var gametype:Int = 0
+	private var gametype = 0
 
 	/** Outline type */
-	private var outlinetype:Int = 0
+	private var outlinetype = 0
 
 	/** Type of spins allowed (0=off 1=t-only 2=all) */
-	private var twistEnableType:Int = 0
+	private var twistEnableType = 0
 
 	/** Use TNT64 avalanche (native+cascade) */
-	private var tntAvalanche:Boolean = false
+	private var tntAvalanche = false
 
 	/** Grayout broken blocks */
-	private var grayoutEnable:Int = 0
+	private var grayoutEnable = 0
 
 	/** Version number */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Your place on leaderboard (-1: out of rank) */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Score records */
 	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
@@ -86,7 +93,7 @@ class SquareMode:AbstractMode() {
 	private var rankingSquares:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
 	/* Returns the name of this mode */
-	override val name:String = "SQUARE"
+	override val name = "SQUARE"
 	override val gameIntensity:Int = -1
 	/* This function will be called when the game enters the main game
  * screen. */
@@ -107,7 +114,7 @@ class SquareMode:AbstractMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else
 			loadSetting(owner.replayProp)
@@ -199,11 +206,11 @@ class SquareMode:AbstractMode() {
 		if(grayoutEnable==0) grayoutStr = "OFF"
 		if(grayoutEnable==1) grayoutStr = "SPIN ONLY"
 		if(grayoutEnable==2) grayoutStr = "ALL"
-		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GAME TYPE", GAMETYPE_NAME[gametype],
-			"OUTLINE", strOutline,
-			"SPIN BONUS", if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL",
-			"AVALANCHE", if(tntAvalanche) "TNT" else "WORLDS",
-			"GRAYOUT", grayoutStr)
+		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype],
+			"OUTLINE" to strOutline,
+			"SPIN BONUS" to if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL",
+			"AVALANCHE" to if(tntAvalanche) "TNT" else "WORLDS",
+			"GRAYOUT" to grayoutStr)
 	}
 
 	/* This function will be called before the game actually begins (after
@@ -215,13 +222,13 @@ class SquareMode:AbstractMode() {
 		if(outlinetype==1) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_CONNECT
 		if(outlinetype==2) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 
-		if(twistEnableType==0)
-			engine.twistEnable = false
-		else if(twistEnableType==1)
-			engine.twistEnable = true
-		else {
-			engine.twistEnable = true
-			engine.useAllSpinBonus = true
+		when(twistEnableType) {
+			0 -> engine.twistEnable = false
+			1 -> engine.twistEnable = true
+			else -> {
+				engine.twistEnable = true
+				engine.useAllSpinBonus = true
+			}
 		}
 
 		engine.speed.are = 30
@@ -260,7 +267,7 @@ class SquareMode:AbstractMode() {
 						0 -> {
 							receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
 							receiver.drawScoreFont(engine, playerID, 9, topY+i, "${rankingSquares[gametype][i]}", i==rankingRank, scale)
-							receiver.drawScoreFont(engine, playerID, 16, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]),
+							receiver.drawScoreFont(engine, playerID, 16, topY+i, rankingTime[gametype][i].toTimeStr,
 								i==rankingRank, scale)
 						}
 						1 -> {
@@ -268,7 +275,7 @@ class SquareMode:AbstractMode() {
 							receiver.drawScoreFont(engine, playerID, 9, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
 						}
 						2 -> {
-							receiver.drawScoreFont(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank)
+							receiver.drawScoreFont(engine, playerID, 3, 4+i, rankingTime[gametype][i].toTimeStr, i==rankingRank)
 							receiver.drawScoreFont(engine, playerID, 12, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
 						}
 					}
@@ -292,10 +299,10 @@ class SquareMode:AbstractMode() {
 				// Ultra timer
 				var time = ULTRA_MAX_TIME-engine.statistics.time
 				if(time<0) time = 0
-				receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(time), getTimeFontColor(time))
+				receiver.drawScoreFont(engine, playerID, 0, 13, time.toTimeStr, getTimeFontColor(time))
 			} else
 			// Normal timer
-				receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time))
+				receiver.drawScoreFont(engine, playerID, 0, 13, engine.statistics.time.toTimeStr)
 		}
 	}
 
@@ -347,7 +354,7 @@ class SquareMode:AbstractMode() {
 
 	/* Line clear */
 	override fun onLineClear(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.statc[0]==1) if(grayoutEnable==2) grayoutBrokenBlocks(engine.field!!)
+		if(engine.statc[0]==1) if(grayoutEnable==2) grayoutBrokenBlocks(engine.field)
 		return false
 	}
 
@@ -356,11 +363,12 @@ class SquareMode:AbstractMode() {
 	 */
 	private fun grayoutBrokenBlocks(field:Field) {
 		for(i in field.hiddenHeight*-1 until field.heightWithoutHurryupFloor)
-			for(j in 0 until field.width) {
-				val blk = field.getBlock(j, i)
-				if(blk!=null&&!blk.isEmpty&&blk.getAttribute(Block.ATTRIBUTE.BROKEN))
-					blk.cint = Block.BLOCK_COLOR_GRAY
-			}
+			for(j in 0 until field.width)
+				field.getBlock(j, i)?.run {
+					if(!isEmpty&&getAttribute(Block.ATTRIBUTE.BROKEN))
+						color = Block.COLOR.WHITE
+				}
+
 	}
 
 	/* Calculates line-clear score
@@ -376,11 +384,11 @@ class SquareMode:AbstractMode() {
 
 		if(lines>0) {
 			engine.lineGravityType = GameEngine.LineGravity.NATIVE
-			if(engine.field!!.isEmpty) engine.playSE("bravo")
+			if(engine.field.isEmpty) engine.playSE("bravo")
 
 			if(lines>3) pts = 3+(lines-3)*2
 
-			val squareClears = engine.field!!.howManySquareClears
+			val squareClears = engine.field.howManySquareClears
 			pts += 10*squareClears[0]+5*squareClears[1]
 
 			lastscore = pts
@@ -399,7 +407,7 @@ class SquareMode:AbstractMode() {
 	 */
 	private fun avalanche(engine:GameEngine, playerID:Int, lines:Int) {
 		val field = engine.field
-		field!!.setAllAttribute(false, Block.ATTRIBUTE.ANTIGRAVITY)
+		field.setAllAttribute(false, Block.ATTRIBUTE.ANTIGRAVITY)
 
 		val hiddenHeight = field.hiddenHeight
 		val height = field.height
@@ -421,31 +429,26 @@ class SquareMode:AbstractMode() {
 		for(y in hiddenHeight*-1 until height)
 			if(affectY[y+hiddenHeight])
 				for(x in 0 until field.width) {
-					val blk = field.getBlock(x, y)
-					if(blk!=null&&!blk.isEmpty) {
+					field.getBlock(x, y)?.run {
 						// Change each affected block to broken and garbage, and break connections.
-						blk.setAttribute(true, Block.ATTRIBUTE.GARBAGE)
-						blk.setAttribute(true, Block.ATTRIBUTE.BROKEN)
-						blk.setAttribute(false, Block.ATTRIBUTE.CONNECT_UP)
-						blk.setAttribute(false, Block.ATTRIBUTE.CONNECT_DOWN)
-						blk.setAttribute(false, Block.ATTRIBUTE.CONNECT_LEFT)
-						blk.setAttribute(false, Block.ATTRIBUTE.CONNECT_RIGHT)
-						if(grayoutEnable!=0) blk.cint = Block.BLOCK_COLOR_GRAY
+						setAttribute(true, Block.ATTRIBUTE.GARBAGE)
+						setAttribute(true, Block.ATTRIBUTE.BROKEN)
+						setAttribute(false, Block.ATTRIBUTE.CONNECT_UP)
+						setAttribute(false, Block.ATTRIBUTE.CONNECT_DOWN)
+						setAttribute(false, Block.ATTRIBUTE.CONNECT_LEFT)
+						setAttribute(false, Block.ATTRIBUTE.CONNECT_RIGHT)
+						if(grayoutEnable!=0) color = Block.COLOR.WHITE
 					}
 				}
 			else if(tntAvalanche)
 			// Set anti-gravity when TNT avalanche is used
 				for(x in 0 until field.width) {
-					field.getBlock(x, y)?.also {
-						if(!it.isEmpty) it.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
-					}
-					field.getBlock(x, y-1)?.also {
-						if(!it.isEmpty) it.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
-					}
+					field.getBlock(x, y)?.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
+					field.getBlock(x, y-1)?.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
 				}
 		// Reset line flags
 		for(y in -1*hiddenHeight until height)
-			engine.field!!.setLineFlag(y, false)
+			engine.field.setLineFlag(y, false)
 		// Set cascade flag
 		engine.lineGravityType = GameEngine.LineGravity.CASCADE
 	}
@@ -454,7 +457,7 @@ class SquareMode:AbstractMode() {
 	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.lineGravityType==GameEngine.LineGravity.CASCADE&&engine.lineGravityTotalLines>0&&tntAvalanche) {
 			val field = engine.field
-			for(i in field!!.heightWithoutHurryupFloor-1 downTo field.hiddenHeight*-1)
+			for(i in field.heightWithoutHurryupFloor-1 downTo field.hiddenHeight*-1)
 				if(field.isEmptyLine(i)) {
 					field.cutLine(i, 1)
 					engine.lineGravityTotalLines--
@@ -466,7 +469,7 @@ class SquareMode:AbstractMode() {
 
 	/* Check for squares when piece locks */
 	override fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {
-		val sq = engine.field!!.checkForSquares()
+		val sq = engine.field.checkForSquares()
 		squares += sq[0]+sq[1]
 		if(sq[0]==0&&sq[1]>0)
 			engine.playSE("square_s")
@@ -479,7 +482,7 @@ class SquareMode:AbstractMode() {
 
 		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
 			"LINE", String.format("%10d", engine.statistics.lines), "SQUARE", String.format("%10d", squares), "Time",
-			String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
+			String.format("%10s", engine.statistics.time.toTimeStr))
 		drawResultRank(engine, playerID, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
 	}
 
@@ -493,7 +496,7 @@ class SquareMode:AbstractMode() {
 			updateRanking(engine.statistics.score, engine.statistics.time, squares, gametype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -533,23 +536,23 @@ class SquareMode:AbstractMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in 0 until GAMETYPE_MAX) {
-				rankingScore[j][i] = prop.getProperty("square.ranking.$ruleName.$j.score.$i", 0)
-				rankingTime[j][i] = prop.getProperty("square.ranking.$ruleName.$j.time.$i", -1)
-				rankingSquares[j][i] = prop.getProperty("square.ranking.$ruleName.$j.squares.$i", 0)
+				rankingScore[j][i] = prop.getProperty("$ruleName.$j.score.$i", 0)
+				rankingTime[j][i] = prop.getProperty("$ruleName.$j.time.$i", -1)
+				rankingSquares[j][i] = prop.getProperty("$ruleName.$j.squares.$i", 0)
 			}
 	}
 
 	/** Save the ranking to CustomProperties
-	 * @param prop CustomProperties to write
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(j in 0 until GAMETYPE_MAX) {
-				prop.setProperty("square.ranking.$ruleName.$j.score.$i", rankingScore[j][i])
-				prop.setProperty("square.ranking.$ruleName.$j.time.$i", rankingTime[j][i])
-				prop.setProperty("square.ranking.$ruleName.$j.squares.$i", rankingSquares[j][i])
+	private fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until GAMETYPE_MAX).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf("$ruleName.$j.score.$i" to rankingScore[j][i],
+					"$ruleName.$j.time.$i" to rankingTime[j][i],
+					"$ruleName.$j.squares.$i" to rankingSquares[j][i])
 			}
+		})
 	}
 
 	/** Update the ranking
@@ -612,7 +615,7 @@ class SquareMode:AbstractMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Number of ranking records */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private const val RANKING_TYPE = 3

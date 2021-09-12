@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,34 +24,38 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Block.COLOR
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
-import java.util.*
+import java.util.LinkedList
 import kotlin.random.Random
 
 /** TOOL-VS MAP EDIT */
 class ToolVSMapEditMode:AbstractMode() {
 
 	/** Map dataI went into theProperty file */
-	private var propMap:CustomProperties = CustomProperties()
+	private var propMap = CustomProperties()
 
 	/** Current MapAll contained in the filefield data */
 	private var listFields:LinkedList<Field>? = null
 
 	/** Current MapSetID */
-	private var nowMapSetID:Int = 0
+	private var nowMapSetID = 0
 
 	/** Current MapID */
-	private var nowMapID:Int = 0
+	private var nowMapID = 0
 
 	/* Mode name */
-	override val name:String = "TOOL-VS MAP EDIT"
+	override val name = "TOOL-VS MAP EDIT"
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
@@ -67,7 +75,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		//field.readProperty(prop, id);
 		field.stringToField(prop.getProperty("values.$id", ""))
 		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
-		field.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
+		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 	}
 
 	/** MapSave
@@ -115,15 +123,17 @@ class ToolVSMapEditMode:AbstractMode() {
 		val rand = Random.Default
 
 		for(i in field.hiddenHeight*-1 until field.height)
-			for(j in 0 until field.width)
-				if(field.getBlockColor(j, i)==Block.BLOCK_COLOR_GRAY) {
-					var color:Int
+			for(j in 0 until field.width) {
+				val col=field.getBlockColor(j, i)
+				if(col==Block.COLOR.BLACK||col==Block.COLOR.WHITE) {
+					var color:COLOR
 					do
-						color = rand.nextInt(Block.BLOCK_COLOR_COUNT-2)+2
+						color = COLOR.colors()[rand.nextInt(COLOR.COLOR_NUM)]
 					while(color==field.getBlockColor(j-1, i)||color==field.getBlockColor(j+1, i)||
 						color==field.getBlockColor(j, i-1)||color==field.getBlockColor(j, i-1))
 					field.setBlockColor(j, i, color)
 				}
+			}
 	}
 
 	/* Initialization for each player */
@@ -166,10 +176,10 @@ class ToolVSMapEditMode:AbstractMode() {
 				engine.enterFieldEdit()
 			else if(menuCursor==1)
 			// WHITE->?
-				grayToRandomColor(engine.field!!)
+				grayToRandomColor(engine.field)
 			else if(menuCursor==2)
 			// CLEAR
-				engine.field!!.reset()
+				engine.field.reset()
 			else if(menuCursor==3) {
 				// SAVE
 				if(nowMapID>=0&&nowMapID<listFields!!.size)
@@ -179,10 +189,10 @@ class ToolVSMapEditMode:AbstractMode() {
 			} else if(menuCursor==4) {
 				// LOAD
 				if(nowMapID>=0&&nowMapID<listFields!!.size) {
-					engine.field!!.copy(listFields!![nowMapID])
-					engine.field!!.setAllSkin(engine.skin)
+					engine.field.copy(listFields!![nowMapID])
+					engine.field.setAllSkin(engine.skin)
 				} else
-					engine.field!!.reset()
+					engine.field.reset()
 			} else if(menuCursor==5) {
 				// DELETE
 				if(nowMapID>=0&&nowMapID<listFields!!.size) {
@@ -196,7 +206,7 @@ class ToolVSMapEditMode:AbstractMode() {
 				// READ
 				loadAllMaps(nowMapSetID)
 				nowMapID = 0
-				engine.field!!.reset()
+				engine.field.reset()
 			}
 		}
 

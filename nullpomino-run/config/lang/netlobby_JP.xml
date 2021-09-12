@@ -109,8 +109,8 @@
 <entry key="StatTable1P_Value">値</entry>
 
 <!--RoomUserList status name-->
-<entry key="RoomUserList_Playing"> <ゲーム中></entry>
-<entry key="RoomUserList_Ready"> <準備完了></entry>
+<entry key="RoomUserList_Playing"> &lt;ゲーム中&gt;</entry>
+<entry key="RoomUserList_Ready"> &lt;準備完了&gt;</entry>
 
 <!--Server Add screen elements-->
 <entry key="ServerAdd_Host">ホスト名またはIPアドレス:ポート番号</entry>
@@ -284,7 +284,7 @@
 <entry key="SysMsg_LoginFail">*** ログインに失敗しました 原因:</entry>
 <entry key="SysMsg_LoginFailDifferentVersion">*** サーバーとバージョンが違うため接続できませんでした(クライアント:%s, サーバー:%s)</entry>
 <entry key="SysMsg_LoginFailDifferentBuild">*** サーバーとビルドタイプが異なるため接続できませんでした(クライアント:%s, サーバー:%s)</entry>
-<entry key="SysMsg_Banned">*** あなたはアク禁になりました(期間:%s～%s)</entry>
+<entry key="SysMsg_Banned">*** サーバーからアクセス拒否されています(期間:%s～%s)</entry>
 <entry key="SysMsg_Banned_Permanent">無期限</entry>
 <entry key="SysMsg_EnterRoom">*** %sさんが入室しました</entry>
 <entry key="SysMsg_LeaveRoom">*** %sさんが退出しました</entry>

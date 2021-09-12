@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.net
 
 import mu.nu.nullpo.game.component.RuleOptions
@@ -30,6 +35,8 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.strDateTime
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.log4j.Logger
 import org.apache.log4j.PropertyConfigurator
 import java.awt.*
@@ -42,11 +49,14 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.zip.Adler32
+import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
-import javax.swing.text.*
+import javax.swing.text.JTextComponent
+import javax.swing.text.SimpleAttributeSet
+import javax.swing.text.StyleConstants
 
 /** NullpoMino NetLobby */
 /** Constructor */
@@ -71,31 +81,31 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	var netDummyMode:NetDummyMode? = null
 
 	/** Property file for lobby settings */
-	private val propConfig:CustomProperties = CustomProperties()
+	private val propConfig = CustomProperties()
 
 	/** Property file for global settings */
-	private val propGlobal:CustomProperties = CustomProperties()
+	private val propGlobal = CustomProperties()
 
 	/** Property file for swing settings */
-	private val propSwingConfig:CustomProperties = CustomProperties()
+	private val propSwingConfig = CustomProperties()
 
 	/** Property file for observer ("Watch") settings */
-	private val propObserver:CustomProperties = CustomProperties()
+	private val propObserver = CustomProperties()
 
 	/** Default game mode description file */
-	private val propDefaultModeDesc:CustomProperties = CustomProperties()
+	private val propDefaultModeDesc = CustomProperties()
 
 	/** Game mode description file */
-	private val propModeDesc:CustomProperties = CustomProperties()
+	private val propModeDesc = CustomProperties()
 
 	/** Default language file */
-	private val propLangDefault:CustomProperties = CustomProperties()
+	private val propLangDefault = CustomProperties()
 
 	/** Property file for GUI translations */
-	private val propLang:CustomProperties = CustomProperties()
+	private val propLang = CustomProperties()
 
 	/** Current screen-card number */
-	private var currentScreenCardNumber:Int = 0
+	private var currentScreenCardNumber = 0
 
 	/** Current room ID (for View Detail) */
 	private var currentViewDetailRoomID = -1
@@ -151,13 +161,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Lobby popup menu (Lobby screen) */
 	private val popupLobbyOptions:JPopupMenu = JPopupMenu()
 
-	/** Rule change menu item (Lobby screen) */
+	/** Rule change menu inum (Lobby screen) */
 	private val itemLobbyMenuRuleChange:JMenuItem = JMenuItem()
 
-	/** Team change menu item (Lobby screen) */
+	/** Team change menu inum (Lobby screen) */
 	private val itemLobbyMenuTeamChange:JMenuItem = JMenuItem()
 
-	/** Leaderboard menu item (Lobby screen) */
+	/** Leaderboard menu inum (Lobby screen) */
 	private val itemLobbyMenuRanking:JMenuItem = JMenuItem()
 
 	/** Quick Start button(Lobby screen) */
@@ -2554,7 +2564,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		r.roomID.toString(), r.strName, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False"),
 		if(r.ruleLock) r.ruleName.uppercase() else getUIText("RoomTable_RuleName_Any"), r.strMode,
 		if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting"),
-		r.playerSeatedCount.toString()+"/"+r.maxPlayers, r.spectatorCount.toString())
+		"${r.playerSeatedCount}/${r.maxPlayers}", r.spectatorCount.toString())
 
 	/** Entered the room that you specify
 	 * @param roomID RoomID
@@ -2781,7 +2791,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					if(pInfo.seatID>=0&&pInfo.seatID<roomInfo.maxPlayers)
 						listmodelRoomChatPlayerList.set(pInfo.seatID, "[${(pInfo.seatID+1)}] "+name)
 					else if(pInfo.queueID!=-1)
-						listmodelRoomChatPlayerList.addElement((pInfo.queueID+1).toString()+". "+name)
+						listmodelRoomChatPlayerList.addElement("${(pInfo.queueID+1)}. $name")
 					else
 						listmodelRoomChatPlayerList.addElement(name)
 				}
@@ -3223,11 +3233,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			val prop = CustomProperties()
 			try {
-				val `in` = FileInputStream("config/rule/$element")
+				val `in` = GZIPInputStream(FileInputStream("config/rule/$element"))
 				prop.load(`in`)
 				`in`.close()
-				entry.rulename = prop.getProperty("0.ruleopt.strRuleName", "")
-				entry.style = prop.getProperty("0.ruleopt.style", 0)
+				entry.rulename = prop.getProperty("0.ruleOpt.strRuleName", "")
+				entry.style = prop.getProperty("0.ruleOpt.style", 0)
 			} catch(e:Exception) {
 				entry.rulename = ""
 				entry.style = -1
@@ -3266,7 +3276,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private fun enterRuleChangeScreen() {
 		// Set rule selections
 		val strCurrentFileName = Array<String>(GameEngine.MAX_GAMESTYLE) {
-			if(it==0) propGlobal.getProperty(0.toString()+".rulefile", "")
+			if(it==0) propGlobal.getProperty("0.rulefile", "")
 			else propGlobal.getProperty("0.rulefile.$it", "")
 		}
 
@@ -3277,21 +3287,21 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		// Tuning
-		val owRotateButtonDefaultRight = propGlobal.getProperty(0.toString()+".tuning.owRotateButtonDefaultRight", -1)+1
+		val owRotateButtonDefaultRight = propGlobal.getProperty("0.tuning.owRotateButtonDefaultRight", -1)+1
 		comboboxTuningRotateButtonDefaultRight.selectedIndex = owRotateButtonDefaultRight
-		val owMoveDiagonal = propGlobal.getProperty(0.toString()+".tuning.owMoveDiagonal", -1)+1
+		val owMoveDiagonal = propGlobal.getProperty("0.tuning.owMoveDiagonal", -1)+1
 		comboboxTuningMoveDiagonal.selectedIndex = owMoveDiagonal
-		val owBlockShowOutlineOnly = propGlobal.getProperty(0.toString()+".tuning.owBlockShowOutlineOnly", -1)+1
+		val owBlockShowOutlineOnly = propGlobal.getProperty("0.tuning.owBlockShowOutlineOnly", -1)+1
 		comboboxTuningBlockShowOutlineOnly.selectedIndex = owBlockShowOutlineOnly
-		val owSkin = propGlobal.getProperty(0.toString()+".tuning.owSkin", -1)+1
+		val owSkin = propGlobal.getProperty("0.tuning.owSkin", -1)+1
 		comboboxTuningSkin.selectedIndex = owSkin
-		val owBlockOutlineType = propGlobal.getProperty(0.toString()+".tuning.owBlockOutlineType", -1)+1
+		val owBlockOutlineType = propGlobal.getProperty("0.tuning.owBlockOutlineType", -1)+1
 		comboboxTuningBlockOutlineType.selectedIndex = owBlockOutlineType
 
-		txtfldTuningMinDAS.text = propGlobal.getProperty(0.toString()+".tuning.owMinDAS", "-1")
-		txtfldTuningMaxDAS.text = propGlobal.getProperty(0.toString()+".tuning.owMaxDAS", "-1")
-		txtfldTuningDasDelay.text = propGlobal.getProperty(0.toString()+".tuning.owDasDelay", "-1")
-		chkboxTuningReverseUpDown.isSelected = propGlobal.getProperty(0.toString()+".tuning.owReverseUpDown", false)
+		txtfldTuningMinDAS.text = propGlobal.getProperty("0.tuning.owMinDAS", "-1")
+		txtfldTuningMaxDAS.text = propGlobal.getProperty("0.tuning.owMaxDAS", "-1")
+		txtfldTuningDasDelay.text = propGlobal.getProperty("0.tuning.owDasDelay", "-1")
+		chkboxTuningReverseUpDown.isSelected = propGlobal.getProperty("0.tuning.owReverseUpDown", false)
 
 		// Change screen
 		changeCurrentScreenCard(SCREENCARD_RULECHANGE)
@@ -3651,7 +3661,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// OK button (Rule change)
 		if(e.actionCommand=="RuleChange_OK") {
 			// Set rules
-			val strPrevTetrominoRuleFilename = propGlobal.getProperty(0.toString()+".rule", "")
+			val strPrevTetrominoRuleFilename = propGlobal.getProperty("0.rule", "")
 
 			for(i in 0 until GameEngine.MAX_GAMESTYLE) {
 				val id = listboxRuleChangeRuleList[i].selectedIndex
@@ -3661,13 +3671,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 				if(i==0) {
 					if(id>=0) {
-						propGlobal.setProperty(0.toString()+".rule", entry!!.filepath)
-						propGlobal.setProperty(0.toString()+".rulefile", entry.filename)
-						propGlobal.setProperty(0.toString()+".rulename", entry.rulename)
+						propGlobal.setProperty("0.rule", entry!!.filepath)
+						propGlobal.setProperty("0.rulefile", entry.filename)
+						propGlobal.setProperty("0.rulename", entry.rulename)
 					} else {
-						propGlobal.setProperty(0.toString()+".rule", "")
-						propGlobal.setProperty(0.toString()+".rulefile", "")
-						propGlobal.setProperty(0.toString()+".rulename", "")
+						propGlobal.setProperty("0.rule", "")
+						propGlobal.setProperty("0.rulefile", "")
+						propGlobal.setProperty("0.rulename", "")
 					}
 				} else if(id>=0) {
 					propGlobal.setProperty("0.rule.$i", entry!!.filepath)
@@ -3682,45 +3692,47 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			// Tuning
 			val owRotateButtonDefaultRight = comboboxTuningRotateButtonDefaultRight.selectedIndex-1
-			propGlobal.setProperty(0.toString()+".tuning.owRotateButtonDefaultRight", owRotateButtonDefaultRight)
+			propGlobal.setProperty("0.tuning.owRotateButtonDefaultRight", owRotateButtonDefaultRight)
 
 			val owMoveDiagonal = comboboxTuningMoveDiagonal.selectedIndex-1
-			propGlobal.setProperty(0.toString()+".tuning.owMoveDiagonal", owMoveDiagonal)
+			propGlobal.setProperty("0.tuning.owMoveDiagonal", owMoveDiagonal)
 
 			val owBlockShowOutlineOnly = comboboxTuningBlockShowOutlineOnly.selectedIndex-1
-			propGlobal.setProperty(0.toString()+".tuning.owBlockShowOutlineOnly", owBlockShowOutlineOnly)
+			propGlobal.setProperty("0.tuning.owBlockShowOutlineOnly", owBlockShowOutlineOnly)
 
 			val owSkin = comboboxTuningSkin.selectedIndex-1
-			propGlobal.setProperty(0.toString()+".tuning.owSkin", owSkin)
+			propGlobal.setProperty("0.tuning.owSkin", owSkin)
 
 			val owBlockOutlineType = comboboxTuningBlockOutlineType.selectedIndex-1
-			propGlobal.setProperty(0.toString()+".tuning.owBlockOutlineType", owBlockOutlineType)
+			propGlobal.setProperty("0.tuning.owBlockOutlineType", owBlockOutlineType)
 
 			val owMinDAS = getIntTextField(-1, txtfldTuningMinDAS)
-			propGlobal.setProperty(0.toString()+".tuning.owMinDAS", owMinDAS)
+			propGlobal.setProperty("0.tuning.owMinDAS", owMinDAS)
 			val owMaxDAS = getIntTextField(-1, txtfldTuningMaxDAS)
-			propGlobal.setProperty(0.toString()+".tuning.owMaxDAS", owMaxDAS)
+			propGlobal.setProperty("0.tuning.owMaxDAS", owMaxDAS)
 			val owDasDelay = getIntTextField(-1, txtfldTuningDasDelay)
-			propGlobal.setProperty(0.toString()+".tuning.owDasDelay", owDasDelay)
+			propGlobal.setProperty("0.tuning.owDasDelay", owDasDelay)
 			val owReverseUpDown = chkboxTuningReverseUpDown.isSelected
-			propGlobal.setProperty(0.toString()+".tuning.owReverseUpDown", owReverseUpDown)
+			propGlobal.setProperty("0.tuning.owReverseUpDown", owReverseUpDown)
 
 			// Save
 			saveGlobalConfig()
 
 			// Load rule
-			val strFileName = propGlobal.getProperty(0.toString()+".rule", "")
+			val strFileName = propGlobal.getProperty("0.rule", "")
 			if(strPrevTetrominoRuleFilename!=strFileName) {
-				val propRule = CustomProperties()
-				try {
-					val `in` = FileInputStream(strFileName)
-					propRule.load(`in`)
-					`in`.close()
-				} catch(e2:Exception) {
+				val propRule = CustomProperties().apply {
+					try {
+						val `in` = GZIPInputStream(FileInputStream(strFileName))
+						load(`in`)
+						`in`.close()
+					} catch(e2:Exception) {
+					}
 				}
 
-				ruleOptPlayer = RuleOptions()
-				ruleOptPlayer!!.readProperty(propRule, 0)
+				ruleOptPlayer = RuleOptions()?.apply {
+					readProperty(propRule, 0)
+				}
 
 				// Send rule
 				if(netPlayerClient!=null&&netPlayerClient!!.isConnected) sendMyRuleDataToServer()
@@ -3810,8 +3822,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val cStart = GeneralUtil.importCalendarString(message[1])
 			val cExpire = if(message.size>2&&message[2].isNotEmpty()) GeneralUtil.importCalendarString(message[2]) else null
 
-			val strStart = if(cStart!=null) GeneralUtil.getCalendarString(cStart) else "???"
-			val strExpire = if(cExpire!=null) GeneralUtil.getCalendarString(cExpire) else getUIText("SysMsg_Banned_Permanent")
+			val strStart = cStart?.strDateTime ?: "???"
+			val strExpire = cExpire?.strDateTime ?: getUIText("SysMsg_Banned_Permanent")
 
 			addSystemChatLogLater(txtpaneLobbyChatLog, String.format(getUIText("SysMsg_Banned"), strStart, strExpire), Color.red)
 		}
@@ -4196,7 +4208,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			rowdata[6] = message[9] // LPM
 			rowdata[7] = message[10] // Piece count
 			rowdata[8] = message[11] // PPS
-			rowdata[9] = GeneralUtil.getTime(message[12].toInt()) //  Time
+			rowdata[9] = message[12].toInt().toTimeStr //  Time
 			rowdata[10] = message[13] // KO
 			rowdata[11] = message[14] // Win
 			rowdata[12] = message[15] // Games
@@ -4622,7 +4634,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/** Display field for logKeyAdapter */
-	private inner class LogKeyAdapter:KeyAdapter() {
+	private class LogKeyAdapter:KeyAdapter() {
 		override fun keyPressed(e:KeyEvent?) {
 			if(e!!.keyCode!=KeyEvent.VK_UP&&e.keyCode!=KeyEvent.VK_DOWN&&
 				e.keyCode!=KeyEvent.VK_LEFT&&e.keyCode!=KeyEvent.VK_RIGHT&&
@@ -4680,20 +4692,20 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/** Rule entry for rule change screen */
-	private inner class RuleEntry {
+	private class RuleEntry {
 		/** File name */
-		var filename:String = ""
+		var filename = ""
 		/** File path */
-		var filepath:String = ""
+		var filepath = ""
 		/** Rule name */
-		var rulename:String = ""
+		var rulename = ""
 		/** Game style */
-		var style:Int = 0
+		var style = 0
 	}
 
 	/** Each label of Image Combobox<br></br>
 	 * [Source](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */
-	private inner class ComboLabel constructor(var text:String = "", var icon:Icon? = null)
+	private class ComboLabel constructor(var text:String = "", var icon:Icon? = null)
 
 	/** ListCellRenderer for Image Combobox<br></br>
 	 * [Source](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */

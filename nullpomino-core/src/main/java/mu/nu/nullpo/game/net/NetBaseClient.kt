@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.net
 
 import org.apache.log4j.Logger
@@ -28,18 +33,20 @@ import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.net.Socket
 import java.nio.charset.StandardCharsets
-import java.util.*
+import java.util.LinkedList
+import java.util.Timer
+import java.util.TimerTask
 
 /** Client(Basic part) */
 open class NetBaseClient:Thread {
 
-	/** trueThread moves between */
+	/** True if Thread moves between */
 	@Volatile
-	var threadRunning:Boolean = false
+	var threadRunning = false
 
 	/** Regular always While you are connectedtrue */
 	@Volatile
-	var connectedFlag:Boolean = false
+	var connectedFlag = false
 
 	/** Socket for connection */
 	protected var socket:Socket? = null
@@ -53,13 +60,13 @@ open class NetBaseClient:Thread {
 	/** Destination port number */
 	/** @return Destination port number
 	 */
-	var port:Int = 0
+	var port = 0
 		protected set
 
 	/** IP address */
 	/** @return Server's IP address
 	 */
-	var ip:String = ""
+	var ip = ""
 		protected set
 
 	/** Previous incomplete packet */
@@ -69,7 +76,7 @@ open class NetBaseClient:Thread {
 	protected val listeners = LinkedList<NetMessageListener>()
 
 	/** pingHit count(From serverpongReset When a message is received) */
-	protected var pingCount:Int = 0
+	protected var pingCount = 0
 
 	/** Ping task */
 	protected lateinit var taskPing:TimerTask
@@ -295,7 +302,7 @@ open class NetBaseClient:Thread {
 		const val BUF_SIZE = 2048
 
 		/** Default ping interval (1000=1s) */
-		const val PING_INTERVAL:Long = 5*1000
+		const val PING_INTERVAL = 5L*1000
 
 		/** This countOnlypingIf there is no reaction even hit the automatic
 		 * disconnection */

@@ -284,7 +284,7 @@
 <entry key="SysMsg_LoginFail">*** LOGIN FAILED! Reason:</entry>
 <entry key="SysMsg_LoginFailDifferentVersion">*** Login failed because the server version is different (Client:%s, Server:%s)</entry>
 <entry key="SysMsg_LoginFailDifferentBuild">*** Login failed because the build type of server is different (Client:%s, Server:%s)</entry>
-<entry key="SysMsg_Banned">*** YOU ARE BANNED!! (%s - %s)</entry>
+<entry key="SysMsg_Banned">*** Your entry has been Denied (%s - %s)</entry>
 <entry key="SysMsg_Banned_Permanent">Permanent</entry>
 <entry key="SysMsg_EnterRoom">*** %s has entered the room</entry>
 <entry key="SysMsg_LeaveRoom">*** %s left the room</entry>
@@ -299,7 +299,7 @@
 <entry key="SysMsg_StatusChange_Queue">*** %s joined the queue</entry>
 <entry key="SysMsg_StatusChange_Joined">*** %s joined the game</entry>
 <entry key="SysMsg_DisconnectedOK">*** DISCONNECTED</entry>
-<entry key="SysMsg_DisconnectedError">*** ERROR DISCONNECTED!</entry>
+<entry key="SysMsg_DisconnectedError">*** DISCONNECTED by ERROR!</entry>
 <entry key="SysMsg_GameStart">*** Game has started</entry>
 <entry key="SysMsg_GameEnd">*** Game has ended</entry>
 <entry key="SysMsg_Winner">*** %s has won the match</entry>

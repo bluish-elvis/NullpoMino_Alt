@@ -1,3 +1,39 @@
+/*
+ * Copyright (c) 2021-2021,
+ * This library class was created by 0xFC963F18DC21 / Shots243
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
+ *
+ * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+ *
+ * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ *
+ * Repository: https://github.com/Shots243/ModePile
+ *
+ * When using this library in a mode / library pack of your own, the following
+ * conditions must be satisfied:
+ *     - This license must remain visible at the top of the document, unmodified.
+ *     - You are allowed to use this library for any modding purpose.
+ *         - If this is the case, the Library Creator must be credited somewhere.
+ *             - Source comments only are fine, but in a README is recommended.
+ *     - Modification of this library is allowed, but only in the condition that a
+ *       pull request is made to merge the changes to the repository.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package zeroxfc.nullpo.custom.modes
 
 import mu.nu.nullpo.game.component.BGMStatus
@@ -6,9 +42,14 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.RendererExtension
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
-import zeroxfc.nullpo.custom.libs.*
-import kotlin.math.*
+import mu.nu.nullpo.util.GeneralUtil.getONorOFF
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import zeroxfc.nullpo.custom.libs.GameTextUtilities
+import zeroxfc.nullpo.custom.libs.Interpolation
+import zeroxfc.nullpo.custom.libs.ProfileProperties
+import zeroxfc.nullpo.custom.libs.ShakingText
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.random.Random
 
 class Deltatris:MarathonModeBase() {
@@ -29,7 +70,7 @@ class Deltatris:MarathonModeBase() {
 	private var rankingScorePlayer:Array<IntArray> = emptyArray()
 	private var rankingTimePlayer:Array<IntArray> = emptyArray()
 	private var rankingLinesPlayer:Array<IntArray> = emptyArray()
-	private var PLAYER_NAME:String = ""
+	private var PLAYER_NAME = ""
 	/**
 	 * The good hard drop effect
 	 */
@@ -39,7 +80,7 @@ class Deltatris:MarathonModeBase() {
 	 *
 	 * @return Mode name
 	 */
-	override val name:String get() = "DELTATRIS"
+	override val name:String get() = "DeltaTris"
 	// help me i forgot how to make modes
 	/*
      * Initialization
@@ -69,10 +110,10 @@ class Deltatris:MarathonModeBase() {
 		netPlayerInit(engine, playerID)
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
 			if(playerProperties.isLoggedIn) {
 				loadSettingPlayer(playerProperties)
-				loadRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+				loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 			}
 			version = CURRENT_VERSION
 			PLAYER_NAME = ""
@@ -97,7 +138,7 @@ class Deltatris:MarathonModeBase() {
 		if(percentage>1.0) percentage = 1.0
 		if(engine.speed.gravity<GRAVITY_DENOMINATOR*20) {
 			grav *= GRAVITY_MULTIPLIERS[difficulty]
-			grav = min(grav, (GRAVITY_DENOMINATOR*20).toDouble())
+			grav = minOf(grav, GRAVITY_DENOMINATOR*20.0)
 		}
 		engine.speed.gravity = grav.toInt()
 		engine.speed.are = ceil(
@@ -196,7 +237,7 @@ class Deltatris:MarathonModeBase() {
 	}
 
 	private val difficultyName:String
-		private get() = when(difficulty) {
+		get() = when(difficulty) {
 			DIFFICULTY_EASY -> "EASY"
 			DIFFICULTY_NORMAL -> "NORMAL"
 			DIFFICULTY_HARD -> "HARD"
@@ -216,16 +257,13 @@ class Deltatris:MarathonModeBase() {
 				if(twistEnableType==1) strtwistEnable = "T-ONLY"
 				if(twistEnableType==2) strtwistEnable = "ALL"
 			} else {
-				strtwistEnable = GeneralUtil.getONorOFF(enableTSpin)
+				strtwistEnable = enableTSpin.getONorOFF()
 			}
-			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"DIFFICULTY", difficultyName,
-				"SPIN BONUS", strtwistEnable,
-				"EZ SPIN", GeneralUtil.getONorOFF(enableTSpinKick),
-				"EZIMMOBILE", GeneralUtil.getONorOFF(twistEnableEZ),
-				"B2B", GeneralUtil.getONorOFF(enableB2B),
-				"COMBO", GeneralUtil.getONorOFF(enableCombo),
-				"BIG", GeneralUtil.getONorOFF(big))
+			drawMenu(
+				engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
+				"DIFFICULTY" to difficultyName,
+				"SPIN BONUS" to strtwistEnable, "EZ SPIN" to enableTSpinKick, "EZIMMOBILE" to twistEnableEZ, "B2B" to enableB2B,
+				"COMBO" to enableCombo, "BIG" to big)
 		}
 	}
 
@@ -234,7 +272,7 @@ class Deltatris:MarathonModeBase() {
 		engine.isInGame = true
 		val s:Boolean = playerProperties.loginScreen.updateScreen(engine, playerID)
 		if(playerProperties.isLoggedIn) {
-			loadRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+			loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 			loadSettingPlayer(playerProperties)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
@@ -262,13 +300,13 @@ class Deltatris:MarathonModeBase() {
 		engine.big = big
 		if(version>=2) {
 			engine.twistAllowKick = enableTSpinKick
-			if(twistEnableType==0) {
-				engine.twistEnable = false
-			} else if(twistEnableType==1) {
-				engine.twistEnable = true
-			} else {
-				engine.twistEnable = true
-				engine.useAllSpinBonus = true
+			when(twistEnableType) {
+				0 -> engine.twistEnable = false
+				1 -> engine.twistEnable = true
+				else -> {
+					engine.twistEnable = true
+					engine.useAllSpinBonus = true
+				}
 			}
 		} else {
 			engine.twistEnable = enableTSpin
@@ -283,7 +321,7 @@ class Deltatris:MarathonModeBase() {
 
 	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]>engine.speed.lockDelay*3) {
-			multiplier = max(1.0, multiplier*0.99225)
+			multiplier = maxOf(1.0, multiplier*0.99225)
 		}
 		return false
 	}
@@ -306,8 +344,8 @@ class Deltatris:MarathonModeBase() {
 							i==rankingRankPlayer, scale)
 						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLinesPlayer[difficulty][i]}",
 							i==rankingRankPlayer, scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, GeneralUtil.getTime(
-							rankingTimePlayer[difficulty][i]), i==rankingRankPlayer, scale)
+						receiver.drawScoreFont(engine, playerID, 15, topY+i,
+							rankingTimePlayer[difficulty][i].toTimeStr, i==rankingRankPlayer, scale)
 					}
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE)
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2, playerProperties.nameDisplay,
@@ -319,7 +357,7 @@ class Deltatris:MarathonModeBase() {
 						receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank, scale)
 						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLines[difficulty][i]}", i==rankingRank,
 							scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[difficulty][i]),
+						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTime[difficulty][i].toTimeStr,
 							i==rankingRank, scale)
 					}
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE)
@@ -356,9 +394,9 @@ class Deltatris:MarathonModeBase() {
 				if(engine.stat===GameEngine.Status.MOVE&&engine.statc[0]>engine.speed.lockDelay*3) EventReceiver.COLOR.RED else if(mScale>1) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.WHITE,
 				mScale)
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 7, engine.statistics.lines.toString()+"")
+			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
 			receiver.drawScoreFont(engine, playerID, 0, 9, "TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 10, GeneralUtil.getTime(engine.statistics.time))
+			receiver.drawScoreFont(engine, playerID, 0, 10, engine.statistics.time.toTimeStr)
 			receiver.drawScoreFont(engine, playerID, 0, 12, "MULTIPLIER", EventReceiver.COLOR.GREEN)
 			receiver.drawScoreFont(engine, playerID, 0, 17, "SPEED", EventReceiver.COLOR.RED)
 			if(playerProperties.isLoggedIn||PLAYER_NAME.isNotEmpty()) {
@@ -368,7 +406,7 @@ class Deltatris:MarathonModeBase() {
 			}
 			receiver.drawSpeedMeter(engine, playerID, 0, 18,
 				when {
-					engine.statistics.totalPieceLocked<PIECES_MAX[difficulty] -> min(1.0,
+					engine.statistics.totalPieceLocked<PIECES_MAX[difficulty] -> minOf(1.0,
 						engine.statistics.totalPieceLocked/PIECES_MAX[difficulty]
 							.toDouble()).toFloat()
 					engine.statistics.time/12%2==0 -> 1f
@@ -396,7 +434,7 @@ class Deltatris:MarathonModeBase() {
      */
 	override fun onLast(engine:GameEngine, playerID:Int) {
 		scgettime++
-		mScale = max(1f, mScale*0.98f)
+		mScale = maxOf(1f, mScale*0.98f)
 
 		// Meter
 		engine.meterValue = (multiplier/20.0*receiver.getMeterMax(engine)).toInt()
@@ -452,11 +490,11 @@ class Deltatris:MarathonModeBase() {
 		}
 
 		// All clear
-		if(lines>=1&&engine.field?.isEmpty==true) {
+		if(lines>=1&&engine.field.isEmpty) {
 			multiplier += 2.0
 			mScale += 0.5f
 		}
-		multiplier = min(MULTIPLIER_MAXIMUM, multiplier)
+		multiplier = minOf(MULTIPLIER_MAXIMUM, multiplier)
 
 		// Add to score
 		if(pts+cmb+spd>0) {
@@ -476,7 +514,7 @@ class Deltatris:MarathonModeBase() {
 			scgettime += (spd*multiplier).toInt()
 		}
 		// BGM fade-out effects and BGM changes
-		val pieces = min(
+		val pieces = minOf(
 			PIECES_MAX[difficulty]+PIECES_MAX[difficulty]/20, engine.statistics.totalPieceLocked)
 		val lastLevel:Int = engine.statistics.level
 
@@ -489,7 +527,7 @@ class Deltatris:MarathonModeBase() {
 //		}
 
 		// Level up
-		engine.statistics.level = min(19, pieces/(PIECES_MAX[difficulty]/20))
+		engine.statistics.level = minOf(19, pieces/(PIECES_MAX[difficulty]/20))
 		val levelDec = pieces.toDouble()/(PIECES_MAX[difficulty].toDouble()/20.0)
 		if(levelDec-levelDec.toInt()>=0.8&&pieces<PIECES_MAX[difficulty]) {
 			if(engine.statistics.level==3||engine.statistics.level==7||engine.statistics.level==11||engine.statistics.level==15||engine.statistics.level==19) owner.bgmStatus.fadesw = true
@@ -583,11 +621,11 @@ class Deltatris:MarathonModeBase() {
 				prop.setProperty("deltatris.playerName", playerProperties.nameDisplay)
 			}
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 			if(rankingRankPlayer!=-1&&playerProperties.isLoggedIn) {
-				saveRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+				saveRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 				playerProperties.saveProfileConfig()
 			}
 		}

@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.Statistics
@@ -28,19 +33,22 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.log4j.Logger
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
-import java.io.*
+import java.io.File
+import java.io.FileFilter
+import java.io.FileInputStream
+import java.io.IOException
 import java.nio.file.Paths
 import java.util.zip.GZIPInputStream
 
 /** リプレイ選択画面のステート */
 class StateReplaySelect:DummyMenuScrollState() {
-	private var strCurrentFolder:String = ""
-	private var strPrevFolder:String = ""
+	private var strCurrentFolder = ""
+	private var strPrevFolder = ""
 	private var fileList:Array<File> = emptyArray()
 
 	/** Mode name */
@@ -78,7 +86,7 @@ class StateReplaySelect:DummyMenuScrollState() {
 			strCurrentFolder = mode
 			d += strCurrentFolder
 			try {
-				strPrevFolder = Paths.get(strCurrentFolder).parent.normalize().toString()
+				strPrevFolder = "${Paths.get(strCurrentFolder).parent.normalize()}"
 			} catch(e:Exception) {
 				strPrevFolder = ""
 				strCurrentFolder = strPrevFolder
@@ -127,13 +135,14 @@ class StateReplaySelect:DummyMenuScrollState() {
 		statsList[cursor]?.let {
 			FontNormal.printFontGrid(1, 24, "MODE:${modenameList[cursor]} RULE:${rulenameList[cursor]}", COLOR.CYAN)
 			FontNormal.printFontGrid(1, 25, "SCORE:${it.score} LINE:${it.lines}", COLOR.CYAN)
-			FontNormal.printFontGrid(1, 26, "LEVEL:${it.level+it.levelDispAdd} TIME:${GeneralUtil.getTime(it.time)}", COLOR.CYAN)
-			FontNormal.printFontGrid(1, 27, "GAME RATE:${if(it.gamerate==0f) "UNKNOWN" else (100*it.gamerate).toString()+"%"}", COLOR.CYAN)
+			FontNormal.printFontGrid(1, 26, "LEVEL:${it.level+it.levelDispAdd} TIME:${it.time.toTimeStr}", COLOR.CYAN)
+			FontNormal.printFontGrid(1, 27, "GAME RATE:${if(it.gamerate==0f) "UNKNOWN" else "${100*it.gamerate}%"}", COLOR.CYAN)
+			FontNano.printFontGrid(1, 28, "SEED:${it.randSeed}", COLOR.CYAN)
 		}
 	}
 
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
-		if(list.isNullOrEmpty()) return false
+		if(list.isEmpty()) return false
 		ResourceHolder.soundManager.play("decide0")
 		if(statsList[cursor]==null) {
 			getReplayFileList((strCurrentFolder)+File.separator+list[cursor])

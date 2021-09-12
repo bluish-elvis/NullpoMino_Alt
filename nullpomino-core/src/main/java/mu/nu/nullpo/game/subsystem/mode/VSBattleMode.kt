@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,34 +24,37 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
 
 /** VS-BATTLE Mode */
 class VSBattleMode:AbstractMode() {
 
 	/** garbage blockType of */
-	private var garbageType:IntArray = IntArray(0)
+	private var garbageType = IntArray(0)
 	private val garbageStyle get() = garbageType.map {GarbageStyle.values()[it]}
 
 	/** Rate of change of garbage holes */
 	private var messiness:Array<IntArray> = Array(0) {IntArray(0)}
 
 	/** Allow garbage countering */
-	private var garbageCounter:BooleanArray = BooleanArray(0)
+	private var garbageCounter = BooleanArray(0)
 
 	/** Allow garbage blocking */
-	private var garbageBlocking:BooleanArray = BooleanArray(0)
+	private var garbageBlocking = BooleanArray(0)
 
 	/** Has accumulated garbage blockOfcount */
 	private val garbage:IntArray get() = (0 until players).map {p -> garbageEntries[p].sumOf {it.lines}}.toIntArray()
@@ -62,79 +69,79 @@ class VSBattleMode:AbstractMode() {
 	private val score:FloatArray get() = owner.engine.map {it.statistics.vs}.toFloatArray()
 
 	/** Had guard garbage blockOfcount */
-	private var garbageGuard:IntArray = IntArray(0)
+	private var garbageGuard = IntArray(0)
 
 	/** Last garbage hole position */
-	private var lastHole:IntArray = IntArray(0)
+	private var lastHole = IntArray(0)
 
 	/** Most recent scoring eventInCombocount */
-	private var lastcombo:IntArray = IntArray(0)
+	private var lastcombo = IntArray(0)
 
 	/** Most recent scoring eventPeace inID */
-	private var lastpiece:IntArray = IntArray(0)
+	private var lastpiece = IntArray(0)
 
 	/** UseBGM */
-	private var bgmno:Int = 0
+	private var bgmno = 0
 
 	/** Flag for types of Twisters allowed (0=none, 1=normal, 2=all spin) */
-	private var twistEnableType:IntArray = IntArray(0)
+	private var twistEnableType = IntArray(0)
 
 	/** Old flag for allowing Twisters */
-	private var enableTwist:BooleanArray = BooleanArray(0)
+	private var enableTwist = BooleanArray(0)
 
 	/** Immobile EZ spin */
-	private var twistEnableEZ:BooleanArray = BooleanArray(0)
+	private var twistEnableEZ = BooleanArray(0)
 
 	/** B2B Type (0=OFF 1=ON 2=ON+Separated-garbage) */
-	private var b2bType:IntArray = IntArray(0)
+	private var b2bType = IntArray(0)
 
 	/** Flag for Split chains b2b */
-	private var splitb2b:BooleanArray = BooleanArray(0)
+	private var splitb2b = BooleanArray(0)
 
 	/** Flag for enabling combos */
-	private var enableCombo:BooleanArray = BooleanArray(0)
+	private var enableCombo = BooleanArray(0)
 
 	/** Big */
-	private var big:BooleanArray = BooleanArray(0)
+	private var big = BooleanArray(0)
 
 	/** Sound effects ON/OFF */
-	private var enableSE:BooleanArray = BooleanArray(0)
+	private var enableSE = BooleanArray(0)
 
 	/** HurryupSeconds before the startcount(-1InHurryupNo) */
-	private var hurryupSeconds:IntArray = IntArray(0)
+	private var hurryupSeconds = IntArray(0)
 
 	/** HurryupTimes afterBlockDo you run up the floor every time you put the */
-	private var hurryupInterval:IntArray = IntArray(0)
+	private var hurryupInterval = IntArray(0)
 
 	/** MapUse flag */
-	private var useMap:BooleanArray = BooleanArray(0)
+	private var useMap = BooleanArray(0)
 
 	/** UseMapSet number */
-	private var mapSet:IntArray = IntArray(0)
+	private var mapSet = IntArray(0)
 
 	/** Map number(-1Random in) */
-	private var mapNumber:IntArray = IntArray(0)
+	private var mapNumber = IntArray(0)
 
 	/** Last preset number used */
-	private var presetNumber:IntArray = IntArray(0)
+	private var presetNumber = IntArray(0)
 
 	/** True if display detailed stats */
-	private var showStats:Boolean = false
+	private var showStats = false
 
 	/** Winner */
-	private var winnerID:Int = 0
+	private var winnerID = 0
 
 	/** I was sent from the enemygarbage blockA list of */
 	private var garbageEntries:Array<MutableList<GarbageEntry>> = emptyArray()
 
 	/** HurryupAfterBlockI put count */
-	private var hurryupCount:IntArray = IntArray(0)
+	private var hurryupCount = IntArray(0)
 
 	/** MapSets ofProperty file */
 	private var propMap:Array<CustomProperties?> = emptyArray()
 
 	/** MaximumMap number */
-	private var mapMaxNo:IntArray = IntArray(0)
+	private var mapMaxNo = IntArray(0)
 
 	/** For backupfield (MapUsed to save the replay) */
 	private var fldBackup:Array<Field?> = emptyArray()
@@ -143,13 +150,13 @@ class VSBattleMode:AbstractMode() {
 	private var randMap:Random? = null
 
 	/** Win count for each player */
-	private var winCount:IntArray = IntArray(0)
+	private var winCount = IntArray(0)
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/* Mode name */
-	override val name:String = "VS:Face to Face"
+	override val name = "VS:Face to Face"
 
 	override val isVSMode:Boolean
 		get() = true
@@ -290,7 +297,7 @@ class VSBattleMode:AbstractMode() {
 		//field.readProperty(prop, id);
 		field.stringToField(prop.getProperty("values.$id", ""))
 		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
-		field.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
+		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 	}
 
 	/** MapSave
@@ -318,9 +325,9 @@ class VSBattleMode:AbstractMode() {
 		propMap[playerID]?.let {
 			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
-			loadMap(engine.field!!, it, id)
-			engine.field!!.setAllSkin(engine.skin)
-		} ?: engine.field?.reset()
+			loadMap(engine.field, it, id)
+			engine.field.setAllSkin(engine.skin)
+		} ?: engine.field.reset()
 	}
 
 	/* Initialization for each player */
@@ -331,8 +338,8 @@ class VSBattleMode:AbstractMode() {
 		}
 
 		engine.framecolor = PLAYER_COLOR_FRAME[playerID]
-		engine.ruleopt.lockresetLimitMove = engine.ruleopt.lockresetLimitMove.let {if(it<0) 30 else minOf(it, 30)}
-		engine.ruleopt.lockresetLimitRotate = engine.ruleopt.lockresetLimitRotate.let {if(it<0) 20 else minOf(it, 20)}
+		engine.ruleOpt.lockresetLimitMove = engine.ruleOpt.lockresetLimitMove.let {if(it<0) 30 else minOf(it, 30)}
+		engine.ruleOpt.lockresetLimitRotate = engine.ruleOpt.lockresetLimitRotate.let {if(it<0) 20 else minOf(it, 20)}
 		garbageSent[playerID] = 0
 		lastHole[playerID] = -1
 		lastcombo[playerID] = 0
@@ -410,7 +417,7 @@ class VSBattleMode:AbstractMode() {
 					25 -> {
 						useMap[playerID] = !useMap[playerID]
 						if(!useMap[playerID]) {
-							if(engine.field!=null) engine.field!!.reset()
+							if(engine.field!=null) engine.field.reset()
 						} else
 							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 					}
@@ -495,38 +502,32 @@ class VSBattleMode:AbstractMode() {
 			when {
 				menuCursor<9 -> {
 					drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.ORANGE, 0)
-					drawMenu(engine, playerID, receiver, 5, COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE",
-						"${presetNumber[playerID]}")
+					drawMenu(engine, playerID, receiver, 5, COLOR.GREEN, 7, "LOAD" to presetNumber[playerID],
+						"SAVE" to presetNumber[playerID])
 				}
 				menuCursor<18 -> {
 					val strTWISTEnable = listOf("OFF", "T-ONLY", "ALL")[twistEnableType[playerID]]
 					val strB2BType = listOf("OFF", "ON", "SEPARATE")[b2bType[playerID]]
 
-					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "GARBAGE", garbageStyle[playerID].name)
+					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "GARBAGE" to garbageStyle[playerID].name)
 					receiver.drawMenuFont(engine, playerID, 0, 2, "Messiness", COLOR.YELLOW)
 					messiness[playerID].map {"$it%"}.forEachIndexed {i, it ->
 						val f = menuCursor==(10+i)&&!engine.owner.replayMode
 						receiver.drawMenuFont(engine, playerID, 5*i+if(f) 1 else 0, 3, "\u0082$it", f)
 					}
-					drawMenu(engine, playerID, receiver, 4, COLOR.CYAN, 11, "COUNTERING",
-						GeneralUtil.getONorOFF(garbageCounter[playerID]),
-						"BLOCKING", GeneralUtil.getONorOFF(garbageBlocking[playerID]), "SPIN BONUS", strTWISTEnable,
-						"EZIMMOBILE", GeneralUtil.getONorOFF(twistEnableEZ[playerID]),
-						"B2B", strB2BType,
-						"B2B SPLIT", GeneralUtil.getONorOFF(enableCombo[playerID]),
-						"COMBO", GeneralUtil.getONorOFF(enableCombo[playerID]))
+					drawMenu(engine, playerID, receiver, 4, COLOR.CYAN, 11, "COUNTERING" to garbageCounter[playerID],
+						"BLOCKING" to garbageBlocking[playerID], "SPIN BONUS" to strTWISTEnable, "EZIMMOBILE" to twistEnableEZ[playerID],
+						"B2B" to strB2BType, "B2B SPLIT" to enableCombo[playerID], "COMBO" to enableCombo[playerID])
 				}
 				else -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 18, "BIG", GeneralUtil.getONorOFF(big[playerID]),
-						"SE", GeneralUtil.getONorOFF(enableSE[playerID]),
-						"HURRYUP",
-						if(hurryupSeconds[playerID]==-1) "NONE" else "${hurryupSeconds[playerID]}SEC",
-						"INTERVAL", "${hurryupInterval[playerID]}")
-					drawMenu(engine, playerID, receiver, 8, COLOR.PINK, 22, "BGM", "${BGM.values[bgmno]}",
-						"SHOW STATS", GeneralUtil.getONorOFF(showStats))
-					drawMenu(engine, playerID, receiver, 12, COLOR.CYAN, 24, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]),
-						"MAP SET", "${mapSet[playerID]}",
-						"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}")
+					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 18, "BIG" to big[playerID],
+						"SE" to enableSE[playerID],
+						"HURRYUP" to if(hurryupSeconds[playerID]==-1) "NONE" else "${hurryupSeconds[playerID]}SEC",
+						"INTERVAL" to hurryupInterval[playerID])
+					drawMenu(engine, playerID, receiver, 8, COLOR.PINK, 22, "BGM" to BGM.values[bgmno], "SHOW STATS" to showStats)
+					drawMenu(engine, playerID, receiver, 12, COLOR.CYAN, 24, "USE MAP" to useMap[playerID],
+						"MAP SET" to mapSet[playerID],
+						"MAP NO." to if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}")
 				}
 			}
 		} else
@@ -541,8 +542,8 @@ class VSBattleMode:AbstractMode() {
 				if(useMap[playerID]) {
 					if(owner.replayMode) {
 						engine.createFieldIfNeeded()
-						loadMap(engine.field!!, owner.replayProp, playerID)
-						engine.field!!.setAllSkin(engine.skin)
+						loadMap(engine.field, owner.replayProp, playerID)
+						engine.field.setAllSkin(engine.skin)
 					} else {
 						if(propMap[playerID]==null)
 							propMap[playerID] = receiver.loadProperties("config/map/vsbattle/${mapSet[playerID]}.map")
@@ -552,19 +553,19 @@ class VSBattleMode:AbstractMode() {
 
 							if(mapNumber[playerID]<0) {
 								if(playerID==1&&useMap[0]&&mapNumber[0]<0)
-									engine.field!!.copy(owner.engine[0].field)
+									engine.field.copy(owner.engine[0].field)
 								else {
 									val no = if(mapMaxNo[playerID]<1) 0 else randMap!!.nextInt(mapMaxNo[playerID])
-									loadMap(engine.field!!, it, no)
+									loadMap(engine.field, it, no)
 								}
 							} else
-								loadMap(engine.field!!, it, mapNumber[playerID])
+								loadMap(engine.field, it, mapNumber[playerID])
 
-							engine.field!!.setAllSkin(engine.skin)
+							engine.field.setAllSkin(engine.skin)
 							fldBackup[playerID] = Field(engine.field)
 						}
 					}
-				} else engine.field?.reset()
+				} else engine.field.reset()
 
 		return false
 	}
@@ -604,7 +605,7 @@ class VSBattleMode:AbstractMode() {
 		fun col(it:Int) = EventReceiver.getPlayerColor(it)
 		// Status display
 		if(playerID==0) {
-			receiver.drawDirectNum(232, 16, GeneralUtil.getTime(engine.statistics.time), scale = 2f)
+			receiver.drawDirectNum(232, 16, engine.statistics.time.toTimeStr, scale = 2f)
 
 			if(hurryupSeconds[playerID]>=0&&engine.timerActive&&
 				engine.statistics.time>=hurryupSeconds[playerID]*60&&engine.statistics.time<(hurryupSeconds[playerID]+5)*60)
@@ -679,7 +680,7 @@ class VSBattleMode:AbstractMode() {
 			}
 
 			// gem block attack
-			pts += engine.field!!.howManyGemClears
+			pts += engine.field.howManyGemClears
 
 			engine.statistics.attacks += pts
 			lastpiece[playerID] = engine.nowPieceObject!!.id
@@ -720,8 +721,8 @@ class VSBattleMode:AbstractMode() {
 					if(it.lines>0) {
 						val garbageColor = PLAYER_COLOR_BLOCK[it.playerID]
 						val l = minOf(it.lines,
-							if(garbageStyle[playerID]==GarbageStyle.FiveLines) 5-gct else (engine.field?.height ?: 20)/2)
-						val w = engine.field?.width ?: 10
+							if(garbageStyle[playerID]==GarbageStyle.FiveLines) 5-gct else engine.field.height/2)
+						val w = engine.field.width
 						var hole = lastHole[playerID]
 						if(hole==-1||messiness[playerID][0]==10) hole = engine.random.nextInt(w)
 						else {
@@ -732,7 +733,7 @@ class VSBattleMode:AbstractMode() {
 							}
 						}
 
-						engine.field?.addRandomHoleGarbage(engine, hole, messiness[playerID][1]/100f, garbageColor, engine.skin, l)
+						engine.field.addRandomHoleGarbage(engine, hole, messiness[playerID][1]/100f, garbageColor, engine.skin, l)
 						gct += l
 						it.lines -= l
 						lastHole[playerID] = hole
@@ -751,7 +752,7 @@ class VSBattleMode:AbstractMode() {
 			if(engine.statistics.time>=hurryupSeconds[playerID]*60) {
 				hurryupCount[playerID]++
 
-				if(hurryupCount[playerID]%hurryupInterval[playerID]==0) engine.field!!.addHurryupFloor(1, engine.skin)
+				if(hurryupCount[playerID]%hurryupInterval[playerID]==0) engine.field.addHurryupFloor(1, engine.skin)
 			} else hurryupCount[playerID] = hurryupInterval[playerID]-1
 
 		return pts
@@ -847,7 +848,7 @@ class VSBattleMode:AbstractMode() {
 		}
 
 		/** Each player's garbage block cint */
-		private val PLAYER_COLOR_BLOCK = intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE)
+		private val PLAYER_COLOR_BLOCK = arrayOf(Block.COLOR.RED, Block.COLOR.BLUE)
 
 		/** Each player's frame cint */
 		private val PLAYER_COLOR_FRAME = intArrayOf(GameEngine.FRAME_COLOR_GREEN, GameEngine.FRAME_COLOR_BLUE)

@@ -1,14 +1,53 @@
+/*
+ * Copyright (c) 2021-2021,
+ * This library class was created by 0xFC963F18DC21 / Shots243
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
+ *
+ * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+ *
+ * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ *
+ * Repository: https://github.com/Shots243/ModePile
+ *
+ * When using this library in a mode / library pack of your own, the following
+ * conditions must be satisfied:
+ *     - This license must remain visible at the top of the document, unmodified.
+ *     - You are allowed to use this library for any modding purpose.
+ *         - If this is the case, the Library Creator must be credited somewhere.
+ *             - Source comments only are fine, but in a README is recommended.
+ *     - Modification of this library is allowed, but only in the condition that a
+ *       pull request is made to merge the changes to the repository.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.particles.BlockParticleCollection
-import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
-import mu.nu.nullpo.gui.slick.img.bg.*
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
-import zeroxfc.nullpo.custom.libs.*
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import zeroxfc.nullpo.custom.libs.FlyInOutText
+import zeroxfc.nullpo.custom.libs.ProfileProperties
+import zeroxfc.nullpo.custom.libs.backgroundtypes.AnimatedBackgroundHook
+import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundDiagonalRipple
+import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundVerticalBars
 import kotlin.random.Random
 
 class Joker:MarathonModeBase() {
@@ -21,9 +60,9 @@ class Joker:MarathonModeBase() {
 	// starting stock
 	private var startingStock = 0
 	// Ranking stuff
-	private var rankingLevel:IntArray = intArrayOf()
-	private var rankingTime:IntArray = intArrayOf()
-	private var rankingLines:IntArray = intArrayOf()
+	private var rankingLevel = intArrayOf()
+	private var rankingTime = intArrayOf()
+	private var rankingLines = intArrayOf()
 	// time score
 	private var timeScore = 0
 	// Local randomiser
@@ -36,25 +75,27 @@ class Joker:MarathonModeBase() {
 	private var warningText:FlyInOutText? = null
 	private var warningTextSecondLine:FlyInOutText? = null
 	// Custom asset variables
-	private val customHolder:ResourceHolderCustomAssetExtension = ResourceHolderCustomAssetExtension()
+	//private val customHolder:ResourceHolderCustomAssetExtension = ResourceHolderCustomAssetExtension()
 	private var efficiency = 0f
 	private var efficiencyGrade = 0
 	// PROFILE
 	private val playerProperties:ProfileProperties = ProfileProperties(headerColor)
 	private var showPlayerStats = false
 	private var rankingRankPlayer = 0
-	private var rankingLevelPlayer:IntArray = intArrayOf()
-	private var rankingTimePlayer:IntArray = intArrayOf()
-	private var rankingLinesPlayer:IntArray = intArrayOf()
-	private var PLAYER_NAME:String = ""
+	private var rankingLevelPlayer = intArrayOf()
+	private var rankingTimePlayer = intArrayOf()
+	private var rankingLinesPlayer = intArrayOf()
+	private var PLAYER_NAME = ""
 	// Last amount of lines cleared;
 	private var lastLine = 0
 	// Animated backgrounds
 	private var useAnimBG = false
-	private var ANIMATED_BACKGROUNDS:Array<AnimatedBackgroundHook> = arrayOf(
-		BackgroundVerticalBars(18, 60, 160, 1f, 4f, false),
-		BackgroundDiagonalRipple(19, 8, 8, 60, 1f, 2f, false, false)
-	)
+	private val ANIMATED_BACKGROUNDS:Array<AnimatedBackgroundHook> by lazy {
+		arrayOf(
+			BackgroundVerticalBars(18, 60, 160, 1f, 4f, false),
+			BackgroundDiagonalRipple(19, 8, 8, 60, 1f, 2f, false, false)
+		)
+	}
 
 	override val name:String
 		get() = "JOKER"
@@ -62,10 +103,9 @@ class Joker:MarathonModeBase() {
      * Initialization
      */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
-
+super.playerInit(engine, playerID)
 		efficiency = 0f
 		efficiencyGrade = 0
-		owner = engine.owner
 		lastscore = 0
 		scgettime = 0
 		lineClearAnimType = 0
@@ -91,10 +131,10 @@ class Joker:MarathonModeBase() {
 		netPlayerInit(engine, playerID)
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
 			if(playerProperties.isLoggedIn) {
 				loadSettingPlayer(playerProperties)
-				loadRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+				loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 			}
 			version = CURRENT_VERSION
 			PLAYER_NAME = ""
@@ -123,7 +163,7 @@ class Joker:MarathonModeBase() {
 		engine.bigmove = true
 
 		// 92 x 96
-		customHolder.loadImage("res/graphics/efficiency_grades.png", "grades")
+		//customHolder.loadImage("res/graphics/efficiency_grades.png", "grades")
 	}
 	/**
 	 * Set the gravity rate
@@ -141,7 +181,7 @@ class Joker:MarathonModeBase() {
 	}
 
 	private fun calculateEfficiencyGrade(engine:GameEngine) {
-		efficiency = engine.statistics.lines as Float/((engine.statistics.level-50)*4)
+		efficiency = engine.statistics.lines.toFloat()/((engine.statistics.level-50)*4)
 		for(i in GRADE_BOUNDARIES.indices) {
 			if(efficiency>=GRADE_BOUNDARIES[i]) efficiencyGrade = i
 		}
@@ -226,22 +266,17 @@ class Joker:MarathonModeBase() {
      * Render the settings screen
      */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		var lc = ""
-		when(lineClearAnimType) {
-			0 -> lc = "DTET"
-			1 -> lc = "TGM"
+		val lc = when(lineClearAnimType) {
+			0 -> "DTET"
+			1 -> "TGM"
+			else -> ""
 		}
 		if(netIsNetRankingDisplayMode) {
 			// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		} else {
-			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.RED, 0,
-				"ST. STOCK", "$startingStock")
-			drawMenu(
-				engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, 1,
-				"BIG", GeneralUtil.getONorOFF(big),
-				"LINE ANIM.", lc,
-			)
+			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.RED, 0, "ST. STOCK" to startingStock)
+			drawMenu(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, 1, "BIG" to big, "LINE ANIM." to lc)
 		}
 	}
 
@@ -269,16 +304,16 @@ class Joker:MarathonModeBase() {
      */
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.statistics.levelDispAdd = 0
-		engine.ruleopt.areCancelHold = true
-		engine.ruleopt.areCancelMove = true
-		engine.ruleopt.areCancelRotate = true
-		engine.ruleopt.harddropEnable = true
-		engine.ruleopt.softdropSurfaceLock = true
-		engine.ruleopt.softdropEnable = true
+		engine.ruleOpt.areCancelHold = true
+		engine.ruleOpt.areCancelMove = true
+		engine.ruleOpt.areCancelRotate = true
+		engine.ruleOpt.harddropEnable = true
+		engine.ruleOpt.softdropSurfaceLock = true
+		engine.ruleOpt.softdropEnable = true
 		shouldUseTimer = true
 		engine.speed.lineDelay = 0
 		lastLine = 0
-		engine.ruleopt.rotateButtonAllowDouble = true
+		engine.ruleOpt.rotateButtonAllowDouble = true
 		engine.ghost = false
 		engine.big = big
 
@@ -292,7 +327,7 @@ class Joker:MarathonModeBase() {
 		engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
 		engine.bighalf = true
 		engine.bigmove = true
-		blockParticles = BlockParticleCollection(engine.field?.let {(it.height+it.hiddenHeight)*it.width*2} ?: 0, lineClearAnimType)
+		blockParticles = BlockParticleCollection(engine.field.let {(it.height+it.hiddenHeight)*it.width*2}, lineClearAnimType)
 		localRandom = Random(engine.randSeed)
 
 		// l = STARTING_LIVES + lifeOffset + 1;
@@ -333,8 +368,7 @@ class Joker:MarathonModeBase() {
 							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale)
 						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLinesPlayer[i]}", i==rankingRankPlayer,
 							scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, GeneralUtil.getTime(
-							rankingTimePlayer[i]), i==rankingRankPlayer, scale)
+						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTimePlayer[i].toTimeStr, i==rankingRankPlayer, scale)
 					}
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE)
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2, playerProperties.nameDisplay,
@@ -348,8 +382,7 @@ class Joker:MarathonModeBase() {
 							if(s.length>6&&receiver.nextDisplayType!=2) (topY+i)*2 else topY+i, s, i==rankingRank,
 							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale)
 						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLines[i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, GeneralUtil.getTime(
-							rankingTime[i]), i==rankingRank, scale)
+						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTime[i].toTimeStr, i==rankingRank, scale)
 					}
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE)
 					if(!playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2,
@@ -362,12 +395,12 @@ class Joker:MarathonModeBase() {
 			playerProperties.loginScreen.renderScreen(receiver, engine, playerID)
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "TIME", EventReceiver.COLOR.BLUE)
-			val strScore:String = GeneralUtil.getTime(timeScore)+"(+"+GeneralUtil.getTime(engine.statistics.time-timeScore)+")"
+			val strScore = "${timeScore.toTimeStr}(+${(engine.statistics.time-timeScore).toTimeStr})"
 			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 7, engine.statistics.lines.toString()+"")
+			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 10, engine.statistics.level.toString())
+			receiver.drawScoreFont(engine, playerID, 0, 10, "${engine.statistics.level}")
 			var b = ""
 			if(scgettime<120&&lastLine!=0) {
 				if(lastLine>=4&&engine.statistics.level<=200) {
@@ -389,7 +422,7 @@ class Joker:MarathonModeBase() {
 			}
 			if(shouldUseTimer) {
 				receiver.drawMenuFont(engine, playerID, 0, 21, "TIME LIMIT", EventReceiver.COLOR.RED)
-				receiver.drawMenuFont(engine, playerID, 1, 22, GeneralUtil.getTime(mainTimer), mainTimer<=600&&mainTimer/2%2==0)
+				receiver.drawMenuFont(engine, playerID, 1, 22, mainTimer.toTimeStr, mainTimer<=600&&mainTimer/2%2==0)
 			}
 
 			blockParticles?.drawAll(engine, receiver, playerID)
@@ -418,7 +451,7 @@ class Joker:MarathonModeBase() {
 		engine.isInGame = true
 		val s:Boolean = playerProperties.loginScreen.updateScreen(engine, playerID)
 		if(playerProperties.isLoggedIn) {
-			loadRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+			loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 			loadSettingPlayer(playerProperties)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
@@ -501,7 +534,7 @@ class Joker:MarathonModeBase() {
 		engine.checkDropContinuousUse()
 
 		// 横溜め
-		if(engine.ruleopt.dasInLineClear) engine.padRepeat() else if(engine.ruleopt.dasRedirectInARE) {
+		if(engine.ruleOpt.dasInLineClear) engine.padRepeat() else if(engine.ruleOpt.dasRedirectInDelay) {
 			engine.dasRedirect()
 		}
 
@@ -647,19 +680,19 @@ class Joker:MarathonModeBase() {
 		// Linesを1段落とす
 		if(engine.lineGravityType===GameEngine.LINE_GRAVITY_NATIVE&&
 			engine.lineDelay>=engine.lineClearing-1&&engine.statc.get(
-				0)>=engine.lineDelay-(engine.lineClearing-1)&&engine.ruleopt.lineFallAnim) {
+				0)>=engine.lineDelay-(engine.lineClearing-1)&&engine.ruleOpt.lineFallAnim) {
 			engine.field.downFloatingBlocksSingleLine()
 		}
 
 		// Line delay cancel check
 		engine.delayCancelMoveLeft = engine.ctrl.isPush(Controller.BUTTON_LEFT)
 		engine.delayCancelMoveRight = engine.ctrl.isPush(Controller.BUTTON_RIGHT)
-		val moveCancel = engine.ruleopt.lineCancelMove&&(engine.ctrl.isPush(engine.up)||
+		val moveCancel = engine.ruleOpt.lineCancelMove&&(engine.ctrl.isPush(engine.up)||
 			engine.ctrl.isPush(engine.down)||engine.delayCancelMoveLeft||engine.delayCancelMoveRight)
-		val rotateCancel = engine.ruleopt.lineCancelRotate&&(engine.ctrl.isPush(Controller.BUTTON_A)||
+		val rotateCancel = engine.ruleOpt.lineCancelRotate&&(engine.ctrl.isPush(Controller.BUTTON_A)||
 			engine.ctrl.isPush(Controller.BUTTON_B)||engine.ctrl.isPush(Controller.BUTTON_C)||
 			engine.ctrl.isPush(Controller.BUTTON_E))
-		val holdCancel = engine.ruleopt.lineCancelHold&&engine.ctrl.isPush(Controller.BUTTON_D)
+		val holdCancel = engine.ruleOpt.lineCancelHold&&engine.ctrl.isPush(Controller.BUTTON_D)
 		engine.delayCancel = moveCancel||rotateCancel||holdCancel
 		if(engine.statc.get(0)<engine.lineDelay&&engine.delayCancel) {
 			engine.statc.get(0) = engine.lineDelay
@@ -812,14 +845,14 @@ class Joker:MarathonModeBase() {
 			Statistic.LINES, Statistic.LEVEL, Statistic.LPM)
 		drawResultRank(engine, playerID, receiver, 15, EventReceiver.COLOR.BLUE, rankingRank)
 		receiver.drawMenuFont(engine, playerID, 0, 6, "TIME SCORE", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, playerID, 0, 7, String.format("%10s", GeneralUtil.getTime(timeScore)))
+		receiver.drawMenuFont(engine, playerID, 0, 7, String.format("%10s", timeScore.toTimeStr))
 		receiver.drawMenuFont(engine, playerID, 0, 8, "EFFICIENCY", EventReceiver.COLOR.BLUE)
 		receiver.drawMenuFont(engine, playerID, 0, 9, String.format("%10s", String.format("%.2f", efficiency*100)+"%"))
 		if(engine.statistics.level>=300) {
 			receiver.drawMenuFont(engine, playerID, 0, 10, "GRADE", EventReceiver.COLOR.BLUE)
 			val dX:Int = 4+receiver.fieldX(engine, playerID)+3*16
 			val dY:Int = 52+receiver.fieldY(engine, playerID)+(11.5*16).toInt()
-			customHolder.drawImage("grades", dX, dY, 64*efficiencyGrade, 0, 64, 48, 255, 255, 255, 255, 1.0f)
+			//customHolder.drawImage("grades", dX, dY, 64*efficiencyGrade, 0, 64, 48, 255, 255, 255, 255, 1.0f)
 		}
 		drawResultNetRank(engine, playerID, receiver, 10, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -850,11 +883,11 @@ class Joker:MarathonModeBase() {
 				prop.setProperty("joker.playerName", playerProperties.nameDisplay)
 			}
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 			if(rankingRankPlayer!=-1&&playerProperties.isLoggedIn) {
-				saveRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+				saveRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 				playerProperties.saveProfileConfig()
 			}
 		}

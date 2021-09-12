@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,20 +24,22 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
-import mu.nu.nullpo.gui.GameKeyDummy
+import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import org.apache.log4j.Logger
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
-import java.io.*
-import java.util.*
+import java.io.BufferedReader
+import java.io.FileReader
+import java.io.IOException
 
 /** AI config screen state */
 class StateConfigAISelect:BaseGameState() {
@@ -48,7 +54,7 @@ class StateConfigAISelect:BaseGameState() {
 	private var aiNameList:Array<String> = emptyArray()
 
 	/** Current AIのクラス */
-	private var currentAI:String = ""
+	private var currentAI = ""
 
 	/** AIのID */
 	private var aiID = 0
@@ -129,7 +135,7 @@ class StateConfigAISelect:BaseGameState() {
 	 * @param aiPath AIのクラスのリスト
 	 * @return AIのName一覧
 	 */
-	fun loadAINames(aiPath:Array<String>):Array<String> = Array(aiPath.size){
+	fun loadAINames(aiPath:Array<String>):Array<String> = Array(aiPath.size) {
 		val aiClass:Class<*>
 		val aiObj:AIPlayer
 		try {
@@ -150,7 +156,7 @@ class StateConfigAISelect:BaseGameState() {
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
 		// Menu
-		FontNormal.printFontGrid(1, 1, (player+1).toString()+"P AI setting", COLOR.ORANGE)
+		FontNormal.printFontGrid(1, 1, "${(player+1)}P AI setting", COLOR.ORANGE)
 
 		FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RAINBOW)
 
@@ -158,10 +164,10 @@ class StateConfigAISelect:BaseGameState() {
 		FontNormal.printFontGrid(2, 3, "AI type:$aiName", cursor==0)
 		FontNormal.printFontGrid(2, 4, "AI move delay:$aiMoveDelay", cursor==1)
 		FontNormal.printFontGrid(2, 5, "AI think delay:$aiThinkDelay", cursor==2)
-		FontNormal.printFontGrid(2, 6, "AI use thread:"+GeneralUtil.getONorOFF(aiUseThread), cursor==3)
-		FontNormal.printFontGrid(2, 7, "AI show hint:"+GeneralUtil.getONorOFF(aiShowHint), cursor==4)
-		FontNormal.printFontGrid(2, 8, "AI pre-think:"+GeneralUtil.getONorOFF(aiPrethink), cursor==5)
-		FontNormal.printFontGrid(2, 9, "AI show info:"+GeneralUtil.getONorOFF(aiShowState), cursor==6)
+		FontNormal.printFontGrid(2, 6, "AI use thread:"+aiUseThread.getONorOFF(), cursor==3)
+		FontNormal.printFontGrid(2, 7, "AI show hint:"+aiShowHint.getONorOFF(), cursor==4)
+		FontNormal.printFontGrid(2, 8, "AI pre-think:"+aiPrethink.getONorOFF(), cursor==5)
+		FontNormal.printFontGrid(2, 9, "AI show info:"+aiShowState.getONorOFF(), cursor==6)
 
 		FontNormal.printFontGrid(1, 28, "A:OK B:CANCEL", COLOR.GREEN)
 	}
@@ -219,7 +225,7 @@ class StateConfigAISelect:BaseGameState() {
 			ResourceHolder.soundManager.play("decide1")
 
 
-			NullpoMinoSlick.propGlobal.setProperty("$player.ai", if(aiID>=0)aiPathList[aiID] else "")
+			NullpoMinoSlick.propGlobal.setProperty("$player.ai", if(aiID>=0) aiPathList[aiID] else "")
 			NullpoMinoSlick.propGlobal.setProperty("$player.aiMoveDelay", aiMoveDelay)
 			NullpoMinoSlick.propGlobal.setProperty("$player.aiThinkDelay", aiThinkDelay)
 			NullpoMinoSlick.propGlobal.setProperty("$player.aiUseThread", aiUseThread)

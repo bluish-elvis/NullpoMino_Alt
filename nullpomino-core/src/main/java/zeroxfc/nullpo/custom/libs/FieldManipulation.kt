@@ -32,18 +32,18 @@
  */
 package zeroxfc.nullpo.custom.libs
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.component.Field
-import java.util.*
+import java.util.Random
 import kotlin.math.roundToLong
 
 /**
- * Fixed flip field method (180° Field item).
+ * Fixed flip field method (180° Field inum).
  *
  */
-fun Field.flipVerticalFix() {
+fun Field.flipVertical() {
 	val field2 = Field(this)
 	var yMin = highestBlockY-hiddenHeight
 	var yMax = hiddenHeight+height-1
@@ -60,7 +60,7 @@ fun Field.flipVerticalFix() {
  * Negates all the blocks in the field up to the current stack height.
  *
  */
-fun Field.negaFieldFix() {
+fun Field.negaField() {
 	for(y in highestBlockY until height) for(x in 0 until width) {
 		if(getBlockEmpty(x, y)) garbageDropPlace(x, y, false, 0) // TODO: Set color
 		else setBlock(x, y, null)
@@ -70,7 +70,7 @@ fun Field.negaFieldFix() {
  * Mirrors the current field. Essentially the same as horizontal flip.
  *
  */
-fun Field.mirrorFix() {
+fun Field.mirror() {
 	var temp:Block?
 	var y = highestBlockY
 	while(y<height) {
@@ -90,7 +90,7 @@ fun Field.mirrorFix() {
  * Fixed delete upper half of field method.
  *
  */
-fun Field.delUpperFix() {
+fun Field.delUpper() {
 	val rows = ((height-highestBlockY)/2.0).roundToLong().toInt()
 	// I think this rounds up.
 	val g = highestBlockY
@@ -102,63 +102,18 @@ fun Field.delUpperFix() {
  * @param colors Colors to erase
  * @return int[]; Amount of blocks of each color erased
  */
-fun Field.delColors(colors:IntArray):IntArray {
-	val results = IntArray(colors.size)
-	for(i in colors.indices) {
-		results[i] = delColor(colors[i])
-	}
-	return results
-}
+fun Field.delColors(colors:Array<Block.COLOR>):IntArray = colors.map {delColor(it)}.toIntArray()
 /**
  * Deletes all blocks of a certain color on a field.
  *
  * @param color Color to erase
  * @return int; Amount of blocks erased
  */
-fun Field.delColor(color:Int):Int {
+fun Field.delColor(color:Block.COLOR):Int {
 	var erased = 0
-	for(y in -1*hiddenHeight until height) {
-		for(x in 0 until width) {
-			val c = getBlockColor(x, y)
-			if(c==color) {
-				getBlock(x, y)?.color = null
-				erased++
-			}
-		}
-	}
+	for(y in -1*hiddenHeight until height) for(x in 0 until width) if(getBlockColor(x, y)==color)
+		if(delBlock(x, y)!=null) erased++
 	return erased
-}
-/**
- * Erases a mino in every filled line on a field.
- *
- * @param random Random instance to use
- */
-fun Field.shotgunField(random:Random) {
-	for(y in hiddenHeight*-1 until height) {
-		var allEmpty = true
-		val spaces = ArrayList<Int>()
-		for(x in 0 until width) {
-			val blk = getBlock(x, y)
-			if(blk!=null) {
-				if(blk.color!=null) {
-					allEmpty = false
-					spaces.add(x)
-				}
-			}
-		}
-		if(!allEmpty) {
-			while(true) {
-				val x = spaces[random.nextInt(spaces.size)]
-				val blk = getBlock(x, y)
-				if(blk!=null) {
-					if(blk.color!=null) {
-						blk.color = null
-						break
-					}
-				}
-			}
-		}
-	}
 }
 /**
  * Erases a mino in every filled line on a field. Displays the blockbreak effect.
@@ -167,26 +122,21 @@ fun Field.shotgunField(random:Random) {
  * @param engine   Current GameEngine
  * @param random   Random instance to use
  */
-fun Field.shotgunField(receiver:EventReceiver, engine:GameEngine, random:Random) {
+fun Field.shotgunField(random:Random, receiver:EventReceiver? = null, engine:GameEngine? = null) {
 	for(y in hiddenHeight*-1 until height) {
-		var allEmpty = true
-		val spaces = ArrayList<Int>()
-		for(x in 0 until width) {
-			getBlock(x, y)?.let {blk ->
-				if(blk.color!=null) {
-					allEmpty = false
-					spaces.add(x)
-				}
-			}
+		val spaces = (0 until width).mapNotNull {x ->
+			getBlock(x, y)?.let {x}
 		}
+		val allEmpty = spaces.isEmpty()
+
 		if(!allEmpty) {
 			while(true) {
 				val x = spaces[random.nextInt(spaces.size)]
 				if(getBlock(x, y)?.let {blk ->
-						if(blk.color!=null) {
-							receiver.blockBreak(engine, x, y, blk)
-							setBlock(x, y, null)
-						}
+						if(blk.color!=null)
+							engine?.let {receiver?.blockBreak(it, x, y, blk)}
+
+						delBlock(x, y)
 						false
 					}!=false) break
 			}
@@ -217,7 +167,7 @@ fun Field.shuffleColumns(ArrayRandomizer:ArrayRandomizer) {
 	val nf = Field(this)
 	for(i in columns.indices) {
 		for(y in -1*nf.hiddenHeight until nf.height) {
-			nf.getBlock(i, y)!!.copy(getBlock(columns[i], y))
+			nf.getBlock(i, y)?.copy(getBlock(columns[i], y))
 		}
 	}
 	copy(nf)
@@ -507,7 +457,7 @@ val Field.fullHeight:Int get() = hiddenHeight+height
  * @return Number of empty spaces inside (including in hidden height)
  */
 val Field.getNumberOfEmptySpaces:Int
-	get() = (hiddenHeight*-1 until heightWithoutHurryupFloor).sumOf{
+	get() = (hiddenHeight*-1 until heightWithoutHurryupFloor).sumOf {
 		getRow(it).count {b -> b?.isEmpty ?: true||getLineFlag(it)}
 	}
 /**

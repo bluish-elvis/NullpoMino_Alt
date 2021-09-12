@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,13 +24,15 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick.img
 
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
+import org.newdawn.slick.Color
 
 /** 普通の文字列の表示クラス */
 object FontGrade {
@@ -38,8 +44,11 @@ object FontGrade {
 	 * @param color 文字色
 	 * @param scale 拡大率
 	 */
-	fun printBigFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f,
+	fun printBigFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = NullpoMinoSlick.rainbow) {
+		val filter = Color(Color.white).apply {
+			a = alpha
+		}
 		var dx = x
 		var i = 0
 		while(i<str.length) {
@@ -79,8 +88,8 @@ object FontGrade {
 				val sz = if(sC<=15) 48 else if(sC>=40) 128 else 64
 				val sx = (if(sC<16) sC else (sC-16)%12)*sz
 				val sy = ((if(sC>=16) if(sC>=28) if(sC>=40) 3 else 2 else 1 else 0)+color*4)*48
-				ResourceHolder.imgGradeBig.draw(dx-4*scale, y-4*scale, dx+sz*scale, y+48*scale,
-					sx.toFloat(), sy.toFloat(), (sx+sz).toFloat(), (sy+48).toFloat())
+				ResourceHolder.imgGrade[1].draw(dx-4*scale, y-4*scale, dx+sz*scale, y+48*scale,
+					sx, sy, sx+sz, sy+48, filter)
 				(sz*scale).toInt()
 			} else (24*scale).toInt()
 			i++
@@ -94,8 +103,11 @@ object FontGrade {
 	 * @param color 文字色
 	 * @param scale 拡大率
 	 */
-	fun printMiniFont(fX:Int, fY:Int, fontStr:String, color:COLOR = COLOR.WHITE, scale:Float = 1f,
+	fun printMiniFont(fX:Int, fY:Int, fontStr:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = NullpoMinoSlick.rainbow) {
+		val filter = Color(Color.white).apply {
+			a = alpha
+		}
 		var dx = fX
 		var i = 0
 		while(i<fontStr.length) {
@@ -121,8 +133,8 @@ object FontGrade {
 			if(sC in 0..19) { // 文字出力
 				val sx = sC%10*32
 				val sy = (sC/10+color*2)*32
-				ResourceHolder.imgGrade.draw(dx-2*scale, fY-2*scale, dx+32*scale, fY+32*scale,
-					sx.toFloat(), sy.toFloat(), (sx+32).toFloat(), (sy+32).toFloat())
+				ResourceHolder.imgGrade[0].draw(dx-2*scale, fY-2*scale, dx+32*scale, fY+32*scale,
+					sx, sy, sx+32, sy+32, filter)
 				dx += (32*scale).toInt()
 			}
 			i++

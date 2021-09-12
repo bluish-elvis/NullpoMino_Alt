@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,164 +24,169 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.getONorOFF
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.log4j.Logger
 
 /** PRACTICE Mode */
 class PracticeMode:AbstractMode() {
 
-	private var levelTimer:Int = 0
-	private var lastlineTime:Int = 0
+	private var levelTimer = 0
+	private var lastlineTime = 0
 	/** Level upRemaining until point */
-	private var goal:Int = 0
+	private var goal = 0
 
 	/** I got just before point */
-	private var lastgoal:Int = 0
+	private var lastgoal = 0
 
 	/** Most recent increase in score */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** Time to display the most recent increase in score */
-	private var scgettime:Int = 0
-	private var sc:Int = 0
-	private var sum:Int = 0
+	private var scgettime = 0
+	private var sc = 0
+	private var sum = 0
 
 	/** Most recent scoring eventInB2BIf it&#39;s the casetrue */
-	private var lastb2b:Boolean = false
+	private var lastb2b = false
 
 	/** Most recent scoring eventInCombocount */
-	private var lastcombo:Int = 0
+	private var lastcombo = 0
 
 	/** Most recent scoring eventPeace inID */
-	private var lastpiece:Int = 0
+	private var lastpiece = 0
 
 	/** EndingThe rest of the time */
-	private var rolltime:Int = 0
+	private var rolltime = 0
 
 	/** EndingStart flag */
-	private var rollstarted:Boolean = false
+	private var rollstarted = false
 
 	/** Dan back */
-	private var secretGrade:Int = 0
+	private var secretGrade = 0
 
 	/** BGM number */
-	private var bgmno:Int = 0
+	private var bgmno = 0
 
 	/** Flag for types of Twisters allowed (0=none, 1=normal, 2=all spin) */
-	private var twistEnableType:Int = 0
+	private var twistEnableType = 0
 
 	/** Old flag for allowing Twisters */
-	private var enableTwist:Boolean = false
+	private var enableTwist = false
 
 	/** Flag for enabling wallkick Twisters */
-	private var enableTwistKick:Boolean = false
+	private var enableTwistKick = false
 
 	/** Immobile EZ spin */
-	private var twistEnableEZ:Boolean = false
+	private var twistEnableEZ = false
 
 	/** Flag for enabling B2B */
-	private var enableB2B:Boolean = false
+	private var enableB2B = false
 
-	private var enableSplitB2B:Boolean = false
+	private var enableSplitB2B = false
 
 	/** ComboType */
-	private var comboType:Int = 0
+	private var comboType = 0
 
 	/** Big */
-	private var big:Boolean = false
+	private var big = false
 
 	/** BigLateral movement of the unit when */
-	private var bigmove:Boolean = false
+	private var bigmove = false
 
 	/** BigWhenLinescountHalf */
-	private var bighalf:Boolean = false
+	private var bighalf = false
 
 	/** LevelType */
-	private var leveltype:Int = 0
+	private var leveltype = 0
 
 	/** Preset number */
-	private var presetNumber:Int = 0
+	private var presetNumber = 0
 
 	/** Map number */
-	private var mapNumber:Int = 0
+	private var mapNumber = 0
 
 	/** Current version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Next Section Of level (This-1At levelStop) */
-	private var nextseclv:Int = 0
+	private var nextseclv = 0
 
 	/** LevelHas increased flag */
-	private var lvupflag:Boolean = false
+	private var lvupflag = false
 
 	/** Combo bonus */
-	private var comboValue:Int = 0
+	private var comboValue = 0
 
 	/** Hard drop bonus */
-	private var harddropBonus:Int = 0
+	private var harddropBonus = 0
 
 	/** levelstop sound */
-	private var lvstopse:Boolean = false
+	private var lvstopse = false
 
 	/** Become clear level */
-	private var goallv:Int = 0
+	private var goallv = 0
 
 	/** Limit time (0:No) */
-	private var timelimit:Int = 0
+	private var timelimit = 0
 
 	/** Ending time (0:No) */
-	private var rolltimelimit:Int = 0
+	private var rolltimelimit = 0
 
 	/** Arrangement of the pieces can appear */
-	private var pieceEnable:BooleanArray = BooleanArray(0)
+	private var pieceEnable = BooleanArray(0)
 
 	/** MapUse flag */
-	private var useMap:Boolean = false
+	private var useMap = false
 
 	/** For backupfield (MapUsed to save the replay) */
 	private var fldBackup:Field? = null
 
 	/** Rest time */
-	private var timelimitTimer:Int = 0
+	private var timelimitTimer = 0
 
 	/** Level upLimit for each timeReset */
-	private var timelimitResetEveryLevel:Boolean = false
+	private var timelimitResetEveryLevel = false
 
 	/** BoneBlockI use */
-	private var bone:Boolean = false
+	private var bone = false
 
 	/** Number of frames before placed blocks disappear (-1:Disable) */
-	private var blockHidden:Int = 0
+	private var blockHidden = 0
 
 	/** Use alpha-blending for blockHidden */
-	private var blockHiddenAnim:Boolean = false
+	private var blockHiddenAnim = false
 
 	/** Outline type */
-	private var blockOutlineType:Int = 0
+	private var blockOutlineType = 0
 
 	/** Show outline only flag.
 	 * If enabled it does not show actual image of blocks. */
-	private var blockShowOutlineOnly:Boolean = false
+	private var blockShowOutlineOnly = false
 
 	/** Hebo hidden level (0=None) */
-	private var heboHiddenLevel:Int = 0
+	private var heboHiddenLevel = 0
 
 	/** Cascade Style */
-	private var cascadeStyle:Int = 0
+	private var cascadeStyle = 0
 
 	/** How to Erasing Block */
-	private var eraseStyle:Int = 0
+	private var eraseStyle = 0
 
 	/* Mode name */
-	override val name:String = "PRACTICE"
+	override val name = "PRACTICE"
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -308,7 +317,7 @@ class PracticeMode:AbstractMode() {
 		field.reset()
 		field.readProperty(prop, id)
 		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
-		field.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
+		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 	}
 
 	/** MapSave
@@ -446,18 +455,18 @@ class PracticeMode:AbstractMode() {
 				} else if(menuCursor==42) {
 					// Map読み込み
 					engine.createFieldIfNeeded()
-					engine.field!!.reset()
+					engine.field.reset()
 
 					val prop = receiver.loadProperties("config/map/practice/$mapNumber.map")
 					if(prop!=null) {
-						loadMap(engine.field!!, prop, 0)
-						engine.field!!.setAllSkin(engine.skin)
+						loadMap(engine.field, prop, 0)
+						engine.field.setAllSkin(engine.skin)
 					}
 				} else if(menuCursor==43) {
 					// Map保存
 					if(engine.field!=null) {
 						val prop = CustomProperties()
-						saveMap(engine.field!!, prop, 0)
+						saveMap(engine.field, prop, 0)
 						receiver.saveProperties("config/map/practice/$mapNumber.map", prop)
 					}
 				} else if(menuCursor==44)
@@ -474,12 +483,12 @@ class PracticeMode:AbstractMode() {
 					savePreset(engine, owner.modeConfig, -1)
 					owner.saveModeConfig()
 
-					if(useMap&&(engine.field==null||engine.field!!.isEmpty)) {
+					if(useMap&&(engine.field==null||engine.field.isEmpty)) {
 						val prop = receiver.loadProperties("config/map/practice/$mapNumber.map")
 						if(prop!=null) {
 							engine.createFieldIfNeeded()
-							loadMap(engine.field!!, prop, 0)
-							engine.field!!.setAllSkin(engine.skin)
+							loadMap(engine.field, prop, 0)
+							engine.field.setAllSkin(engine.skin)
 						} else
 							useMap = false
 					}
@@ -547,18 +556,18 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuNum(engine, playerID, 20, 5, String.format("%2d", engine.speed.das), menuCursor==6)
 			receiver.drawMenuFont(engine, playerID, 2, 7,
 				String.format("BGM:%2d %s", bgmno, "${BGM.values[bgmno]}".uppercase()), menuCursor==7)
-			receiver.drawMenuFont(engine, playerID, 2, 8, "BIG:${GeneralUtil.getONorOFF(big)}", menuCursor==8)
+			receiver.drawMenuFont(engine, playerID, 2, 8, "BIG:${big.getONorOFF()}", menuCursor==8)
 			receiver.drawMenuFont(engine, playerID, 2, 9, "LEVEL TYPE:${LEVELTYPE_STRING[leveltype]}", menuCursor==9)
 			receiver.drawMenuFont(engine, playerID, 2, 10,
 				"SPIN BONUS:${if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL"}", menuCursor==10)
-			receiver.drawMenuFont(engine, playerID, 2, 11, "EZ SPIN:${GeneralUtil.getONorOFF(enableTwistKick)}", menuCursor==11)
-			receiver.drawMenuFont(engine, playerID, 2, 13, "EZ IMMOBILE:${GeneralUtil.getONorOFF(twistEnableEZ)}",
+			receiver.drawMenuFont(engine, playerID, 2, 11, "EZ SPIN:${enableTwistKick.getONorOFF()}", menuCursor==11)
+			receiver.drawMenuFont(engine, playerID, 2, 13, "EZ IMMOBILE:${twistEnableEZ.getONorOFF()}",
 				menuCursor==13)
-			receiver.drawMenuFont(engine, playerID, 2, 14, "B2B:${GeneralUtil.getONorOFF(enableB2B)}", menuCursor==14)
+			receiver.drawMenuFont(engine, playerID, 2, 14, "B2B:${enableB2B.getONorOFF()}", menuCursor==14)
 			receiver.drawMenuFont(engine, playerID, 2, 15, "COMBO:${COMBOTYPE_STRING[comboType]}", menuCursor==15)
-			receiver.drawMenuFont(engine, playerID, 2, 16, "LEVEL STOP SE:${GeneralUtil.getONorOFF(lvstopse)}", menuCursor==16)
+			receiver.drawMenuFont(engine, playerID, 2, 16, "LEVEL STOP SE:${lvstopse.getONorOFF()}", menuCursor==16)
 			receiver.drawMenuFont(engine, playerID, 2, 17, "BIG MOVE:${if(bigmove) "2 CELLS" else "1 CELL"}", menuCursor==17)
-			receiver.drawMenuFont(engine, playerID, 2, 18, "BIG HALF:${GeneralUtil.getONorOFF(bighalf)}", menuCursor==18)
+			receiver.drawMenuFont(engine, playerID, 2, 18, "BIG HALF:${bighalf.getONorOFF()}", menuCursor==18)
 			var strGoalLv = "ENDLESS"
 			if(goallv>=0)
 				strGoalLv = when(leveltype) {
@@ -568,41 +577,41 @@ class PracticeMode:AbstractMode() {
 				}
 			receiver.drawMenuFont(engine, playerID, 2, 19, "GOAL LEVEL:$strGoalLv", menuCursor==19)
 			receiver.drawMenuFont(engine, playerID, 2, 20,
-				"TIME LIMIT:${if(timelimit==0) "NONE" else GeneralUtil.getTime(timelimit)}", menuCursor==20)
+				"TIME LIMIT:${if(timelimit==0) "NONE" else timelimit.toTimeStr}", menuCursor==20)
 			receiver.drawMenuFont(engine, playerID, 2, 21,
-				"ROLL LIMIT:${if(rolltimelimit==0) "NONE" else GeneralUtil.getTime(rolltimelimit)}", menuCursor==21)
+				"ROLL LIMIT:${if(rolltimelimit==0) "NONE" else rolltimelimit.toTimeStr}", menuCursor==21)
 			receiver.drawMenuFont(engine, playerID, 2, 22,
-				"TIME LIMIT PER LEVEL:${GeneralUtil.getONorOFF(timelimitResetEveryLevel)}", menuCursor==22)
+				"TIME LIMIT PER LEVEL:${timelimitResetEveryLevel.getONorOFF()}", menuCursor==22)
 		} else {
 			cx = if(menuCursor in 40..45) 15 else if(menuCursor in 46..49) 16 else cx
 			cy -= if(menuCursor<29) 20 else if(menuCursor<40) 19 else if(menuCursor<=45) 30 else 29
 
-			receiver.drawMenuFont(engine, playerID, 2, 3, "USE BONE BLOCKS:${GeneralUtil.getONorOFF(bone)}", menuCursor==23)
+			receiver.drawMenuFont(engine, playerID, 2, 3, "USE BONE BLOCKS:${bone.getONorOFF()}", menuCursor==23)
 			var strHiddenFrames = "NONE"
-			if(blockHidden==-2) strHiddenFrames = "LOCK FLASH (${engine.ruleopt.lockflash}F)"
+			if(blockHidden==-2) strHiddenFrames = "LOCK FLASH (${engine.ruleOpt.lockflash}F)"
 			if(blockHidden>=0) strHiddenFrames = String.format("%d (%.2f SEC.)", blockHidden, blockHidden/60f)
 			receiver.drawMenuFont(engine, playerID, 2, 4,
 				"BLOCK HIDDEN FRAMES:$strHiddenFrames", menuCursor==24)
 			receiver.drawMenuFont(engine, playerID, 2, 5,
-				"BLOCK HIDDEN ANIM:${GeneralUtil.getONorOFF(blockHiddenAnim)}", menuCursor==25)
+				"BLOCK HIDDEN ANIM:${blockHiddenAnim.getONorOFF()}", menuCursor==25)
 			receiver.drawMenuFont(engine, playerID, 2, 6,
 				"BLOCK OUTLINE TYPE:${BLOCK_OUTLINE_TYPE_STRING[blockOutlineType]}", menuCursor==26)
 			receiver.drawMenuFont(engine, playerID, 2, 7,
-				"BLOCK OUTLINE ONLY:${GeneralUtil.getONorOFF(blockShowOutlineOnly)}", menuCursor==27)
+				"BLOCK OUTLINE ONLY:${blockShowOutlineOnly.getONorOFF()}", menuCursor==27)
 			receiver.drawMenuFont(engine, playerID, 2, 8,
 				"HEBO HIDDEN:${if(heboHiddenLevel==0) "NONE" else "LV$heboHiddenLevel"}", menuCursor==28)
-			receiver.drawMenuFont(engine, playerID, 2, 10, "PIECE I:${GeneralUtil.getONorOFF(pieceEnable[0])}", menuCursor==29)
-			receiver.drawMenuFont(engine, playerID, 2, 11, "PIECE L:${GeneralUtil.getONorOFF(pieceEnable[1])}", menuCursor==30)
-			receiver.drawMenuFont(engine, playerID, 2, 12, "PIECE O:${GeneralUtil.getONorOFF(pieceEnable[2])}", menuCursor==31)
-			receiver.drawMenuFont(engine, playerID, 2, 13, "PIECE Z:${GeneralUtil.getONorOFF(pieceEnable[3])}", menuCursor==32)
-			receiver.drawMenuFont(engine, playerID, 2, 14, "PIECE T:${GeneralUtil.getONorOFF(pieceEnable[4])}", menuCursor==33)
-			receiver.drawMenuFont(engine, playerID, 2, 15, "PIECE J:${GeneralUtil.getONorOFF(pieceEnable[5])}", menuCursor==34)
-			receiver.drawMenuFont(engine, playerID, 2, 16, "PIECE S:${GeneralUtil.getONorOFF(pieceEnable[6])}", menuCursor==35)
-			receiver.drawMenuFont(engine, playerID, 2, 17, "PIECE I1:${GeneralUtil.getONorOFF(pieceEnable[7])}", menuCursor==36)
-			receiver.drawMenuFont(engine, playerID, 2, 18, "PIECE I2:${GeneralUtil.getONorOFF(pieceEnable[8])}", menuCursor==37)
-			receiver.drawMenuFont(engine, playerID, 2, 19, "PIECE I3:${GeneralUtil.getONorOFF(pieceEnable[9])}", menuCursor==38)
-			receiver.drawMenuFont(engine, playerID, 2, 20, "PIECE L3:${GeneralUtil.getONorOFF(pieceEnable[10])}", menuCursor==39)
-			receiver.drawMenuFont(engine, playerID, 16, 10, "USE MAP:${GeneralUtil.getONorOFF(useMap)}", menuCursor==40)
+			receiver.drawMenuFont(engine, playerID, 2, 10, "PIECE I:${pieceEnable[0].getONorOFF()}", menuCursor==29)
+			receiver.drawMenuFont(engine, playerID, 2, 11, "PIECE L:${pieceEnable[1].getONorOFF()}", menuCursor==30)
+			receiver.drawMenuFont(engine, playerID, 2, 12, "PIECE O:${pieceEnable[2].getONorOFF()}", menuCursor==31)
+			receiver.drawMenuFont(engine, playerID, 2, 13, "PIECE Z:${pieceEnable[3].getONorOFF()}", menuCursor==32)
+			receiver.drawMenuFont(engine, playerID, 2, 14, "PIECE T:${pieceEnable[4].getONorOFF()}", menuCursor==33)
+			receiver.drawMenuFont(engine, playerID, 2, 15, "PIECE J:${pieceEnable[5].getONorOFF()}", menuCursor==34)
+			receiver.drawMenuFont(engine, playerID, 2, 16, "PIECE S:${pieceEnable[6].getONorOFF()}", menuCursor==35)
+			receiver.drawMenuFont(engine, playerID, 2, 17, "PIECE I1:${pieceEnable[7].getONorOFF()}", menuCursor==36)
+			receiver.drawMenuFont(engine, playerID, 2, 18, "PIECE I2:${pieceEnable[8].getONorOFF()}", menuCursor==37)
+			receiver.drawMenuFont(engine, playerID, 2, 19, "PIECE I3:${pieceEnable[9].getONorOFF()}", menuCursor==38)
+			receiver.drawMenuFont(engine, playerID, 2, 20, "PIECE L3:${pieceEnable[10].getONorOFF()}", menuCursor==39)
+			receiver.drawMenuFont(engine, playerID, 16, 10, "USE MAP:${useMap.getONorOFF()}", menuCursor==40)
 			receiver.drawMenuFont(engine, playerID, 16, 11, "[EDIT FIELD MAP]", menuCursor==41)
 			receiver.drawMenuFont(engine, playerID, 16, 12, "[LOAD FIELD MAP]:$mapNumber", menuCursor==42)
 			receiver.drawMenuFont(engine, playerID, 16, 13, "[SAVE FIELD MAP]:$mapNumber", menuCursor==43)
@@ -634,15 +643,15 @@ class PracticeMode:AbstractMode() {
 					if(owner.replayMode) {
 						log.debug("Loading values data from replay data")
 						engine.createFieldIfNeeded()
-						loadMap(engine.field!!, owner.replayProp, 0)
-						engine.field!!.setAllSkin(engine.skin)
+						loadMap(engine.field, owner.replayProp, 0)
+						engine.field.setAllSkin(engine.skin)
 					} else {
 						log.debug("Backup values data")
 						fldBackup = Field(engine.field)
 					}
 				} else if(engine.field!=null) {
 					log.debug("Use no values, reseting field")
-					engine.field!!.reset()
+					engine.field.reset()
 				} else
 					log.debug("Use no values")
 		}
@@ -694,7 +703,7 @@ class PracticeMode:AbstractMode() {
 
 		// Hidden
 		if(blockHidden==-2)
-			engine.blockHidden = engine.ruleopt.lockflash
+			engine.blockHidden = engine.ruleOpt.lockflash
 		else
 			engine.blockHidden = blockHidden
 		engine.blockHiddenAnim = blockHiddenAnim
@@ -791,7 +800,7 @@ class PracticeMode:AbstractMode() {
 			var time = engine.statistics.time
 			if(timelimit>0) time = timelimitTimer
 			if(time<0) time = 0
-			receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time),
+			receiver.drawScoreNum(engine, playerID, 0, 18, time.toTimeStr,
 				if(timelimit>0) getTimeFontColor(time) else EventReceiver.COLOR.WHITE, 2f)
 
 			// Roll Rest time
@@ -799,7 +808,7 @@ class PracticeMode:AbstractMode() {
 				var remainTime = rolltimelimit-rolltime
 				if(remainTime<0) remainTime = 0
 				receiver.drawScoreFont(engine, playerID, 0, 20, "ROLL TIME", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 21, GeneralUtil.getTime(remainTime), remainTime>0&&remainTime<10*60,
+				receiver.drawScoreFont(engine, playerID, 0, 21, remainTime.toTimeStr, remainTime>0&&remainTime<10*60,
 					2f)
 			}
 			// 1分間あたり score
@@ -822,7 +831,7 @@ class PracticeMode:AbstractMode() {
 					var remainTime = rolltimelimit-rolltime
 					if(remainTime<0) remainTime = 0
 					receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(remainTime), remainTime>0&&remainTime<10*60,
+					receiver.drawScoreNum(engine, playerID, 0, 18, remainTime.toTimeStr, remainTime>0&&remainTime<10*60,
 						2f)
 				}
 			} else if(leveltype!=LEVELTYPE_NONE) {
@@ -902,7 +911,7 @@ class PracticeMode:AbstractMode() {
 
 	/* Called at game over */
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.statc[0]==0&&engine.gameActive) secretGrade = engine.field!!.secretGrade
+		if(engine.statc[0]==0&&engine.gameActive) secretGrade = engine.field.secretGrade
 		return false
 	}
 
@@ -999,7 +1008,7 @@ class PracticeMode:AbstractMode() {
 				engine.timerActive = false
 				if(rolltimelimit==0) {
 					engine.gameEnded()
-					secretGrade = engine.field!!.secretGrade
+					secretGrade = engine.field.secretGrade
 				} else {
 					engine.staffrollEnable = true
 					engine.staffrollEnableStatistics = false
@@ -1029,7 +1038,7 @@ class PracticeMode:AbstractMode() {
 				if(engine.manualLock) manuallock = 1
 
 				var bravo = 1
-				if(engine.field!!.isEmpty) {
+				if(engine.field.isEmpty) {
 					bravo = 4
 				}
 
@@ -1044,7 +1053,7 @@ class PracticeMode:AbstractMode() {
 				if(engine.manualLock) manuallock = 1
 
 				var bravo = 1
-				if(engine.field!!.isEmpty) bravo = 2
+				if(engine.field.isEmpty) bravo = 2
 
 				var speedBonus = engine.lockDelay-engine.statc[0]
 				if(speedBonus<0) speedBonus = 0
@@ -1084,7 +1093,7 @@ class PracticeMode:AbstractMode() {
 			pts = if(engine.split) if(engine.b2b) 7 else 6 else 5 // 3列
 		else if(lines>=4) pts = if(engine.b2b) 12 else 8
 		// All clear
-		if(lines>=1&&engine.field!!.isEmpty) pts += 18
+		if(lines>=1&&engine.field.isEmpty) pts += 18
 
 		return pts
 	}
@@ -1154,7 +1163,7 @@ class PracticeMode:AbstractMode() {
 			if(rolltimelimit==0) {
 				engine.ending = 1
 				engine.gameEnded()
-				secretGrade = engine.field!!.secretGrade
+				secretGrade = engine.field.secretGrade
 			} else {
 				engine.ending = 2
 				engine.staffrollEnable = true

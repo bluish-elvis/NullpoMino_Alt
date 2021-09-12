@@ -58,7 +58,7 @@ class FlyInOutText(  // String to draw
 	// Should it flash?
 	private val flash:Boolean = flashOnLand
 	// Lifetime variable
-	private var currentLifetime:Int = 0
+	private var currentLifetime = 0
 	fun draw(engine:GameEngine?, receiver:EventReceiver, playerID:Int) {
 		for(i in letterPositions.indices.reversed()) {
 			for(j in 0 until letterPositions[i].size) {

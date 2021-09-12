@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,18 +24,23 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.NetLobbyFrame
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
-import java.util.*
+import java.util.LinkedList
+import java.util.Locale
+import java.util.Objects
 import kotlin.math.abs
 
 /** NET-VS-BATTLE Mode */
@@ -40,59 +49,59 @@ class NetVSBattleMode:NetDummyVSMode() {
 	/** Column number of hole in most recent garbage line */
 	private var lastHole = -1
 
-	/** true if Hurry Up has been started */
-	private var hurryupStarted:Boolean = false
+	/** True if Hurry Up has been started */
+	private var hurryupStarted = false
 
 	/** Number of frames left to show "HURRY UP!" text */
-	private var hurryupShowFrames:Int = 0
+	private var hurryupShowFrames = 0
 
 	/** Number of pieces placed after Hurry Up has started */
-	private var hurryupCount:Int = 0
+	private var hurryupCount = 0
 
-	/** true if you KO'd player */
-	private var playerKObyYou:BooleanArray = BooleanArray(0)
+	/** True if you KO'd player */
+	private var playerKObyYou = BooleanArray(0)
 
 	/** Your KO count */
-	private var currentKO:Int = 0
+	private var currentKO = 0
 
 	/** Time to display the most recent increase in score */
-	private var scgettime:IntArray = IntArray(0)
+	private var scgettime = IntArray(0)
 
 	/** Most recent scoring event type */
-	private var lastevent:IntArray = IntArray(0)
+	private var lastevent = IntArray(0)
 
-	/** true if most recent scoring event was B2B */
-	private var lastb2b:BooleanArray = BooleanArray(0)
+	/** True if most recent scoring event was B2B */
+	private var lastb2b = BooleanArray(0)
 
 	/** Most recent scoring event Combo count */
-	private var lastcombo:IntArray = IntArray(0)
+	private var lastcombo = IntArray(0)
 
 	/** Most recent scoring event piece type */
-	private var lastpiece:IntArray = IntArray(0)
+	private var lastpiece = IntArray(0)
 
 	/** Count of garbage lines send */
-	private var garbageSent:IntArray = IntArray(0)
+	private var garbageSent = IntArray(0)
 
 	/** Amount of garbage in garbage queue */
-	private var garbage:IntArray = IntArray(0)
+	private var garbage = IntArray(0)
 
 	/** Recieved garbage entries */
 	private var garbageEntries:LinkedList<GarbageEntry> = LinkedList()
 
 	/** APL (Attack Per Line) */
-	private var playerAPL:FloatArray = FloatArray(0)
+	private var playerAPL = FloatArray(0)
 
 	/** APM (Attack Per Minute) */
-	private var playerAPM:FloatArray = FloatArray(0)
+	private var playerAPM = FloatArray(0)
 
 	/** Target ID (-1:All) */
-	private var targetID:Int = 0
+	private var targetID = 0
 
 	/** Target Timer */
-	private var targetTimer:Int = 0
+	private var targetTimer = 0
 
 	/* Mode name */
-	override val name:String = "NET-VS-BATTLE"
+	override val name = "NET-VS-BATTLE"
 
 	override val isVSMode:Boolean
 		get() = true
@@ -157,10 +166,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 			targetID = -1
 			targetTimer = 0
 
-			if(garbageEntries==null)
-				garbageEntries = LinkedList()
-			else
-				garbageEntries.clear()
+			garbageEntries.clear()
 		}
 
 		playerKObyYou[playerID] = false
@@ -281,11 +287,11 @@ class NetVSBattleMode:NetDummyVSMode() {
 			}
 
 			// All clear (Bravo)
-			if(lines>=1&&engine.field!!.isEmpty&&netCurrentRoomInfo!!.bravo)
+			if(lines>=1&&engine.field.isEmpty&&netCurrentRoomInfo!!.bravo)
 				pts[ATTACK_CATEGORY_BRAVO] += 6
 
 			// Gem block attack
-			pts[ATTACK_CATEGORY_GEM] += engine.field!!.howManyGemClears
+			pts[ATTACK_CATEGORY_GEM] += engine.field.howManyGemClears
 
 			lastpiece[playerID] = engine.nowPieceObject!!.id
 
@@ -341,7 +347,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 			var smallGarbageCount = 0
 			var hole = lastHole
 			var newHole:Int
-			if(hole==-1) hole = engine.random.nextInt(engine.field!!.width)
+			if(hole==-1) hole = engine.random.nextInt(engine.field.width)
 
 			var finalGarbagePercent = netCurrentRoomInfo!!.messiness
 			if(netCurrentRoomInfo!!.divideChangeRateByPlayers) finalGarbagePercent /= netvsGetNumberOfTeamsAlive()-1
@@ -353,24 +359,24 @@ class NetVSBattleMode:NetDummyVSMode() {
 
 				if(garbageEntry.lines/GARBAGE_DENOMINATOR>0) {
 					val seatFrom = netvsPlayerSeatID[garbageEntry.playerID]
-					val garbageColor = if(seatFrom<0) Block.BLOCK_COLOR_GRAY else NETVS_PLAYER_COLOR_BLOCK[seatFrom]
+					val garbageColor = if(seatFrom<0) Block.COLOR.WHITE else NETVS_PLAYER_COLOR_BLOCK[seatFrom]
 					netvsLastAttackerUID = garbageEntry.uid
 					if(netCurrentRoomInfo!!.garbageChangePerAttack) {
 						if(engine.random.nextInt(100)<finalGarbagePercent) {
-							newHole = engine.random.nextInt(engine.field!!.width-1)
+							newHole = engine.random.nextInt(engine.field.width-1)
 							if(newHole>=hole) newHole++
 							hole = newHole
 						}
-						engine.field!!.addSingleHoleGarbage(hole, garbageColor, engine.skin, garbageEntry.lines/GARBAGE_DENOMINATOR)
+						engine.field.addSingleHoleGarbage(hole, garbageColor, engine.skin, garbageEntry.lines/GARBAGE_DENOMINATOR)
 					} else
 						for(i in garbageEntry.lines/GARBAGE_DENOMINATOR downTo 1) {
 							if(engine.random.nextInt(100)<finalGarbagePercent) {
-								newHole = engine.random.nextInt(engine.field!!.width-1)
+								newHole = engine.random.nextInt(engine.field.width-1)
 								if(newHole>=hole) newHole++
 								hole = newHole
 							}
 
-							engine.field!!.addSingleHoleGarbage(hole, garbageColor, engine.skin, 1)
+							engine.field.addSingleHoleGarbage(hole, garbageColor, engine.skin, 1)
 						}
 				}
 			}
@@ -382,21 +388,21 @@ class NetVSBattleMode:NetDummyVSMode() {
 
 					if(netCurrentRoomInfo!!.garbageChangePerAttack) {
 						if(engine.random.nextInt(100)<finalGarbagePercent) {
-							newHole = engine.random.nextInt(engine.field!!.width-1)
+							newHole = engine.random.nextInt(engine.field.width-1)
 							if(newHole>=hole) newHole++
 							hole = newHole
 						}
-						engine.field!!.addSingleHoleGarbage(hole, Block.BLOCK_COLOR_GRAY, engine.skin,
+						engine.field.addSingleHoleGarbage(hole, Block.COLOR.WHITE, engine.skin,
 							smallGarbageCount/GARBAGE_DENOMINATOR)
 					} else
 						for(i in smallGarbageCount/GARBAGE_DENOMINATOR downTo 1) {
 							if(engine.random.nextInt(100)<finalGarbagePercent) {
-								newHole = engine.random.nextInt(engine.field!!.width-1)
+								newHole = engine.random.nextInt(engine.field.width-1)
 								if(newHole>=hole) newHole++
 								hole = newHole
 							}
 
-							engine.field!!.addSingleHoleGarbage(hole, Block.BLOCK_COLOR_GRAY, engine.skin, 1)
+							engine.field.addSingleHoleGarbage(hole, Block.COLOR.WHITE, engine.skin, 1)
 						}
 				}
 
@@ -415,7 +421,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 			if(hurryupStarted) {
 				hurryupCount++
 
-				if(hurryupCount%netCurrentRoomInfo!!.hurryupInterval==0) engine.field!!.addHurryupFloor(1, engine.skin)
+				if(hurryupCount%netCurrentRoomInfo!!.hurryupInterval==0) engine.field.addHurryupFloor(1, engine.skin)
 			} else
 				hurryupCount = netCurrentRoomInfo!!.hurryupInterval-1
 		return 0
@@ -581,7 +587,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 					}
 
 					if(lastcombo[playerID]>=2)
-						owner.receiver.drawMenuFont(engine, playerID, 2, 22, (lastcombo[playerID]-1).toString()+"COMBO", COLOR.CYAN)
+						owner.receiver.drawMenuFont(engine, playerID, 2, 22, "${(lastcombo[playerID]-1)}COMBO", COLOR.CYAN)
 				} else {
 					var x2 = 8
 					if(Objects.requireNonNull(netCurrentRoomInfo)!!.useFractionalGarbage&&garbage[playerID]>0) x2 = 0
@@ -621,7 +627,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 					}
 
 					if(lastcombo[playerID]>=2)
-						owner.receiver.drawDirectFont(x+4+16, y+176, ((lastcombo[playerID]-1).toString()+"COMBO"), COLOR.CYAN, .5f)
+						owner.receiver.drawDirectFont(x+4+16, y+176, ("${(lastcombo[playerID]-1)}COMBO"), COLOR.CYAN, .5f)
 				}
 			} else if(!netvsIsPractice||playerID!=0) {
 				val strTemp = "${netvsPlayerWinCount[playerID]}/${netvsPlayerPlayCount[playerID]}"
@@ -648,7 +654,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 			String.format("%10d", engine.statistics.totalPieceLocked), "ATK/LINE", String.format("%10g", playerAPL[playerID]),
 			"ATTACK/MIN", String.format("%10g", playerAPM[playerID]), "LINE/MIN", String.format("%10g", engine.statistics.lpm),
 			"PIECE/SEC", String.format("%10g", engine.statistics.pps), "Time",
-			String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
+			String.format("%10s", engine.statistics.time.toTimeStr))
 	}
 
 	/* Send stats */
@@ -668,9 +674,9 @@ class NetVSBattleMode:NetDummyVSMode() {
 		val playerID = engine.playerID
 		var msg = "gstat\t"
 		msg += "${netvsPlayerPlace[playerID]}\t"
-		msg += (garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR).toString()+"\t${playerAPL[playerID]}\t${playerAPM[playerID]}\t"
+		msg += "${(garbageSent[playerID].toFloat()/GARBAGE_DENOMINATOR)}\t${playerAPL[playerID]}\t${playerAPM[playerID]}\t"
 		msg += "${engine.statistics.lines}\t${engine.statistics.lpm}\t"
-		msg += engine.statistics.totalPieceLocked.toString()+"\t${engine.statistics.pps}\t"
+		msg += "${engine.statistics.totalPieceLocked}\t${engine.statistics.pps}\t"
 		msg += "$netvsPlayTimer${"\t$currentKO\t"+netvsPlayerWinCount[playerID]}\t"+netvsPlayerPlayCount[playerID]
 		msg += "\n"
 		netLobby!!.netPlayerClient!!.send(msg)
@@ -773,12 +779,12 @@ class NetVSBattleMode:NetDummyVSMode() {
 	}
 
 	/** Garbage data */
-	private inner class GarbageEntry {
+	private class GarbageEntry {
 		/** Number of garbage lines */
-		var lines:Int = 0
+		var lines = 0
 
 		/** Sender's playerID */
-		var playerID:Int = 0
+		var playerID = 0
 
 		/** Sender's UID */
 		var uid = 0

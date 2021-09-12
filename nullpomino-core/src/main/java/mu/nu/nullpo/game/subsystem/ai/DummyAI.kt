@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.ai
 
 import mu.nu.nullpo.game.component.Controller
@@ -29,30 +34,30 @@ import mu.nu.nullpo.game.play.GameEngine
 /** DummyAI - Base class for AI players */
 open class DummyAI:AIPlayer {
 	/** ホールド使用予定 */
-	var bestHold:Boolean = false
+	var bestHold = false
 
 	/** Plan to putX-coordinate */
-	var bestX:Int = 0
+	var bestX = 0
 
 	/** Plan to putY-coordinate */
-	var bestY:Int = 0
+	var bestY = 0
 
 	/** Plan to putDirection */
-	var bestRt:Int = 0
+	var bestRt = 0
 
 	/** Hold Force */
-	var forceHold:Boolean = false
+	var forceHold = false
 
 	/** Current piece number */
-	var thinkCurrentPieceNo:Int = 0
+	var thinkCurrentPieceNo = 0
 
 	/** Peace of thoughts is finished number */
-	var thinkLastPieceNo:Int = 0
+	var thinkLastPieceNo = 0
 
 	/** Did the thinking thread finish successfully? */
-	open var thinkComplete:Boolean = false
+	open var thinkComplete = false
 
-	override val name:String = "DummyAI"
+	override val name = "DummyAI"
 
 	override fun init(engine:GameEngine, playerID:Int) {}
 

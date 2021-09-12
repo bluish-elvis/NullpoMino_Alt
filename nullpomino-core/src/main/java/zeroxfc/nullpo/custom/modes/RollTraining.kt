@@ -1,20 +1,56 @@
+/*
+ * Copyright (c) 2021-2021,
+ * This library class was created by 0xFC963F18DC21 / Shots243
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
+ *
+ * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+ *
+ * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ *
+ * Repository: https://github.com/Shots243/ModePile
+ *
+ * When using this library in a mode / library pack of your own, the following
+ * conditions must be satisfied:
+ *     - This license must remain visible at the top of the document, unmodified.
+ *     - You are allowed to use this library for any modding purpose.
+ *         - If this is the case, the Library Creator must be credited somewhere.
+ *             - Source comments only are fine, but in a README is recommended.
+ *     - Modification of this library is allowed, but only in the condition that a
+ *       pull request is made to merge the changes to the repository.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil.getONorOFF
-import mu.nu.nullpo.util.GeneralUtil.getTime
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.ProfileProperties
-import kotlin.math.max
 
 class RollTraining:MarathonModeBase() {
 	companion object {
 		/**
 		 * Number of entries in rankings
 		 */
-		const val RANKING_MAX = 10
+		const val RANKING_MAX = 13
 		/**
 		 * Number of ranking types
 		 */
@@ -81,7 +117,7 @@ class RollTraining:MarathonModeBase() {
 	private var rankingTimePlayer:Array<IntArray> = emptyArray()
 	private var rankingRankPlayer = 0
 	private var showPlayerStats = false
-	private var PLAYER_NAME:String = ""
+	private var PLAYER_NAME = ""
 	private val rankIndex:Int
 		get() {
 			var raw = usedSpeed
@@ -126,10 +162,10 @@ class RollTraining:MarathonModeBase() {
 		netPlayerInit(engine, playerID)
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
 			if(playerProperties.isLoggedIn) {
 				loadSettingPlayer(playerProperties)
-				loadRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+				loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 			}
 			version = CURRENT_VERSION
 			PLAYER_NAME = ""
@@ -239,10 +275,10 @@ class RollTraining:MarathonModeBase() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		} else {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"TYPE", if(usedSpeed==SPEED_TAP) "TAP" else "TI",
-				"M-ROLL", getONorOFF(useMRoll),
-				"ENDLESS", getONorOFF(endless),
-				"BACKGROUND", "$startlevel")
+				"TYPE" to if(usedSpeed==SPEED_TAP) "TAP" else "TI",
+				"M-ROLL" to useMRoll,
+				"ENDLESS" to endless,
+				"BACKGROUND" to startlevel)
 		}
 	}
 	/*
@@ -266,7 +302,7 @@ class RollTraining:MarathonModeBase() {
 		engine.twistEnableEZ = twistEnableEZ
 		setSpeed(engine)
 		timer = TIME_LIMITS[usedSpeed]
-		engine.blockHidden = if(useMRoll) engine.ruleopt.lockflash else FADING_FRAMES
+		engine.blockHidden = if(useMRoll) engine.ruleOpt.lockflash else FADING_FRAMES
 		engine.blockHiddenAnim = !useMRoll
 		engine.blockOutlineType = if(useMRoll) GameEngine.BLOCK_OUTLINE_NORMAL else GameEngine.BLOCK_OUTLINE_NONE
 		owner.bgmStatus.bgm = BGMStatus.BGM.Ending(if(usedSpeed==SPEED_TAP) 1 else 2)
@@ -280,7 +316,7 @@ class RollTraining:MarathonModeBase() {
 		engine.isInGame = true
 		val s = playerProperties.loginScreen.updateScreen(engine, playerID)
 		if(playerProperties.isLoggedIn) {
-			loadRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+			loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 			loadSettingPlayer(playerProperties)
 			engine.owner.backgroundStatus.bg = startlevel
 		}
@@ -321,8 +357,8 @@ class RollTraining:MarathonModeBase() {
 						receiver.drawScoreFont(engine, playerID, 3, topY+i, gText, color, scale)
 						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLinesPlayer[rankIndex][i]}",
 							i==rankingRankPlayer, scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, getTime(
-							rankingTimePlayer[rankIndex][i]), i==rankingRankPlayer, scale)
+						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTimePlayer[rankIndex][i].toTimeStr,
+							i==rankingRankPlayer, scale)
 						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE)
 						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2, playerProperties.nameDisplay,
 							EventReceiver.COLOR.WHITE, 2f)
@@ -348,7 +384,7 @@ class RollTraining:MarathonModeBase() {
 						}
 						receiver.drawScoreGrade(engine, playerID, 3, topY+i, gText, color, scale)
 						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLines[rankIndex][i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, getTime(rankingTime[rankIndex][i]), i==rankingRank, scale)
+						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTime[rankIndex][i].toTimeStr, i==rankingRank, scale)
 						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE)
 						if(!playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2,
 							"(NOT LOGGED IN)\n(E:LOG IN)")
@@ -372,12 +408,12 @@ class RollTraining:MarathonModeBase() {
 			}
 			receiver.drawScoreGrade(engine, playerID, 0, 4, grade, gc)
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 7, engine.statistics.lines.toString()+"")
+			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
 			receiver.drawScoreFont(engine, playerID, 0, 9, "TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 10, getTime(engine.statistics.time))
+			receiver.drawScoreFont(engine, playerID, 0, 10, engine.statistics.time.toTimeStr)
 			if(!endless) {
 				receiver.drawScoreFont(engine, playerID, 0, 12, "REMAINING", EventReceiver.COLOR.YELLOW)
-				receiver.drawScoreFont(engine, playerID, 0, 13, getTime(max(timer, 0)), (timer<=600&&timer/2%2==0))
+				receiver.drawScoreFont(engine, playerID, 0, 13, maxOf(timer, 0).toTimeStr, (timer<=600&&timer/2%2==0))
 			}
 			if(playerProperties.isLoggedIn||PLAYER_NAME.isNotEmpty()) {
 				receiver.drawScoreFont(engine, playerID, 0, if(endless) 12 else 15, "PLAYER", EventReceiver.COLOR.BLUE)
@@ -426,8 +462,8 @@ class RollTraining:MarathonModeBase() {
 		var lt = timer
 		if(lt<0) lt = 0
 		val factor = lt.toDouble()/TIME_LIMITS[usedSpeed].toDouble()
-		if(!endless) engine.meterValue = (factor*receiver.getMeterMax(
-			engine)).toInt() else engine.meterValue = receiver.getMeterMax(engine)
+		if(!endless) engine.meterValue = (factor*receiver.getMeterMax(engine)).toInt()
+		else engine.meterValue = receiver.getMeterMax(engine)
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		if(factor>=0.25&&!endless) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 		if(factor>=0.5&&!endless) engine.meterColor = GameEngine.METER_COLOR_ORANGE
@@ -512,11 +548,11 @@ class RollTraining:MarathonModeBase() {
 				prop.setProperty("rollTraining.playerName", playerProperties.nameDisplay)
 			}
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 			if(rankingRankPlayer!=-1&&playerProperties.isLoggedIn) {
-				saveRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+				saveRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 				playerProperties.saveProfileConfig()
 			}
 		}
@@ -666,7 +702,7 @@ class RollTraining:MarathonModeBase() {
 	}
 
 	private fun getClear(type:Int, time:Int, lines:Int):Int =
-		if(!useMRoll||type and 1==1) if(time>=TIME_LIMITS[type and 1]) 1 else 0 else if(lines>=32) 1 else 0
+		if(!useMRoll||type and 1>0) if(time>=TIME_LIMITS[type and 1]) 1 else 0 else if(lines>=32) 1 else 0
 	/**
 	 * Calculate ranking position
 	 *

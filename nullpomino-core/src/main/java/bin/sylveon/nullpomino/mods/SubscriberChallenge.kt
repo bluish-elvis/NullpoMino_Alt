@@ -1,0 +1,707 @@
+/*
+ * Copyright (c) 2021-2021,
+ * This library class was created by 0xFC963F18DC21 / Shots243
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
+ *
+ * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+ *
+ * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ *
+ * Repository: https://github.com/Shots243/ModePile
+ *
+ * When using this library in a mode / library pack of your own, the following
+ * conditions must be satisfied:
+ *     - This license must remain visible at the top of the document, unmodified.
+ *     - You are allowed to use this library for any modding purpose.
+ *         - If this is the case, the Library Creator must be credited somewhere.
+ *             - Source comments only are fine, but in a README is recommended.
+ *     - Modification of this library is allowed, but only in the condition that a
+ *       pull request is made to merge the changes to the repository.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+    Copyright (c) 2010, NullNoname
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+        * Redistributions of source code must retain the above copyright
+          notice, this list of conditions and the following disclaimer.
+        * Redistributions in binary form must reproduce the above copyright
+          notice, this list of conditions and the following disclaimer in the
+          documentation and/or other materials provided with the distribution.
+        * Neither the name of NullNoname nor the names of its
+          contributors may be used to endorse or promote products derived from
+          this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
+ */
+package bin.sylveon.nullpomino.mods
+
+import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.net.NetUtil
+import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Status
+import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
+import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import zeroxfc.nullpo.custom.libs.Interpolation
+import zeroxfc.nullpo.custom.libs.backgroundtypes.AnimatedBackgroundHook
+import kotlin.random.Random
+
+/**
+ * SUBSCRIBER CHALLENGE Mode
+ * Author ry00001
+ *
+ * Someone take IDEA away from me.
+ */
+class SubscriberChallenge:NetDummyMode() {
+	/** Most recent increase in score  */
+	var lastscore:Int = 0
+	private var sc = 0
+	private var sum = 0
+	/** Time to display the most recent increase in score  */
+	var scgettime:Int = 0
+	/** Most recent scoring event type  */
+	var lastevent:Int = 0
+	/** True if most recent scoring event is a B2B  */
+	var lastb2b:Boolean = false
+	/** Combo count for most recent scoring event  */
+	var lastcombo:Int = 0
+	/** Piece ID for most recent scoring event  */
+	var lastpiece:Int = 0
+	/** Current BGM  */
+	var bgmlv:Int = 0
+	/** Level at start time  */
+	var startlevel:Int = 0
+	/** Flag for types of T-Spins allowed (0=none, 1=normal, 2=all spin)  */
+	var tspinEnableType:Int = 0
+	/** Old flag for allowing T-Spins  */
+	var enableTSpin:Boolean = false
+	/** BRO! YOU JUST POSTED T-SPIN! YOU ARE GOING TO GAIN SUBSCRIBER!*/
+	var subscriber:Int = 0
+	var subscriberRNG:Random = Random.Default
+
+	var lastValue:Int = 0
+	/** Game type  */
+	var goaltype:Int = 0
+	/** Big  */
+	var big:Boolean = false
+	/** Version  */
+	var version:Int = 0
+	/** Current round's ranking rank  */
+	var rankingRank:Int = 0
+	/** Rankings' scores  */
+	private var rankingScore = emptyArray<IntArray>()
+	/** Rankings' line counts  */
+	private var rankingLines = emptyArray<IntArray>()
+	/** Rankings' times  */
+	private var rankingTime = emptyArray<IntArray>()
+	/*
+	 * Mode name
+	 */
+	override val name:String = "SUBSCRIBER CHALLENGE"
+
+	/*
+	 * Initialization
+	 */
+	override fun playerInit(engine:GameEngine, playerID:Int) {
+		super.playerInit(engine, playerID)
+		lastscore = 0
+		scgettime = 0
+		lastb2b = false
+		lastcombo = 0
+		lastpiece = 0
+		bgmlv = 0
+		sum = 0
+		lastValue = 0
+		scgettime = 120
+		subscriber = 0
+		lastValue = 0
+		rankingRank = -1
+		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		netPlayerInit(engine, playerID)
+		if(!owner.replayMode) {
+			loadSetting(owner.modeConfig)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
+			version = CURRENT_VERSION
+		} else {
+			loadSetting(owner.replayProp)
+			if((version==0)&&(owner.replayProp.getProperty("subscriberchallenge.endless", false))) goaltype = 2
+
+			// NET: Load name
+			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
+		}
+		engine.owner.backgroundStatus.bg = startlevel
+		engine.framecolor = GameEngine.FRAME_COLOR_GREEN
+	}
+	/**
+	 * Set the gravity rate
+	 * @param engine GameEngine
+	 */
+	fun setSpeed(engine:GameEngine) {
+		var lv:Int = engine.statistics.level
+		if(lv<0) lv = 0
+		if(lv>=tableGravity.size) lv = tableGravity.size-1
+		engine.speed.gravity = tableGravity[lv]
+		engine.speed.denominator = tableDenominator[lv]
+	}
+	/*
+	 * Called at settings screen
+	 */
+	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+		// NET: Net Ranking
+		if(netIsNetRankingDisplayMode) {
+			netOnUpdateNetPlayRanking(engine, goaltype)
+		} else if(!engine.owner.replayMode) {
+			// Configuration changes
+			val change:Int = updateCursor(engine, 8, playerID)
+			if(change!=0) {
+				engine.playSE("change")
+				when(engine.statc[2]) {
+					0 -> {
+						startlevel += change
+						if(tableGameClearLines[goaltype]>=0) {
+							if(startlevel<0) startlevel = (tableGameClearLines[goaltype]-1)/10
+							if(startlevel>(tableGameClearLines[goaltype]-1)/10) startlevel = 0
+						} else {
+							if(startlevel<0) startlevel = 19
+							if(startlevel>19) startlevel = 0
+						}
+						engine.owner.backgroundStatus.bg = startlevel
+					}
+					1 -> {
+						goaltype += change
+						if(goaltype<0) goaltype = GAMETYPE_MAX-1
+						if(goaltype>GAMETYPE_MAX-1) goaltype = 0
+						if((startlevel>(tableGameClearLines[goaltype]-1)/10)&&(tableGameClearLines[goaltype]>=0)) {
+							startlevel = (tableGameClearLines[goaltype]-1)/10
+							engine.owner.backgroundStatus.bg = startlevel
+						}
+					}
+					2 -> big = !big
+				}
+
+				// NET: Signal options change
+				if(netIsNetPlay&&(netNumSpectators>0)) {
+					netSendOptions(engine)
+				}
+			}
+
+			// Confirm
+			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_A)&&(engine.statc.get(3)>=5)) {
+				engine.playSE("decide")
+				saveSetting(owner.modeConfig)
+				owner.saveModeConfig()
+
+				// NET: Signal start of the game
+				if(netIsNetPlay) netLobby?.netPlayerClient?.send("start1p\n")
+				return false
+			}
+
+			// Cancel
+			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_B)&&!netIsNetPlay) {
+				engine.quitflag = true
+			}
+
+			// NET: Netplay Ranking
+			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_D)&&netIsNetPlay&&(startlevel==0)&&!big&&(
+					engine.ai==null)) {
+				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
+			}
+			engine.statc[3]++
+		} else {
+			engine.statc[3]++
+			engine.statc[2] = -1
+			if(engine.statc.get(3)>=60) {
+				return false
+			}
+		}
+		return true
+	}
+	/*
+	 * Render the settings screen
+	 */
+	override fun renderSetting(engine:GameEngine, playerID:Int) {
+		if(netIsNetRankingDisplayMode) {
+			// NET: Netplay Ranking
+			netOnRenderNetPlayRanking(engine, playerID, receiver)
+		} else {
+			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
+				"GOAL" to if(tableGameClearLines[goaltype]<=0) "ENDLESS" else "${tableGameClearLines[goaltype]} LINES")
+			drawMenuCompact(engine, playerID, receiver, "Level" to startlevel+1)
+			drawMenuSpeeds(engine, playerID, receiver, 4, EventReceiver.COLOR.WHITE, 10)
+			drawMenuCompact(engine, playerID, receiver, 9, EventReceiver.COLOR.BLUE, 2, "BIG" to big)
+		}
+	}
+	/*
+	 * Called for initialization during "Ready" screen
+	 */
+	override fun startGame(engine:GameEngine, playerID:Int) {
+		engine.statistics.level = startlevel
+		scgettime = 120
+		lastValue = 0
+		engine.statistics.levelDispAdd = 1
+		engine.b2bEnable = true
+		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
+		engine.big = big
+		engine.twistEnable = true
+		engine.useAllSpinBonus = true
+		engine.twistEnableEZ = true
+		setSpeed(engine)
+		owner.bgmStatus.bgm = if(netIsWatch) BGMStatus.BGM.Silent else BGMStatus.BGM.Generic(bgmlv)
+	}
+	/*
+	 * Render score
+	 */
+	override fun renderLast(engine:GameEngine, playerID:Int) {
+		if(owner.menuOnly) return
+		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.GREEN)
+		receiver.drawScoreFont(engine, playerID, 0, 1,
+			if(tableGameClearLines[goaltype]==-1) "(Endless Run)" else "(${tableGameClearLines[goaltype]} Lines run)",
+			EventReceiver.COLOR.GREEN)
+		if((engine.stat==Status.SETTING)||((engine.stat==Status.RESULT)&&!owner.replayMode)) {
+			if(!owner.replayMode&&!big&&(engine.ai==null)) {
+				val scale:Float = if((receiver.nextDisplayType==2)) 0.5f else 1.0f
+				val topY:Int = if((receiver.nextDisplayType==2)) 6 else 4
+				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
+				for(i in 0 until RANKING_MAX) {
+					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[goaltype][i]}", (i==rankingRank), scale)
+					receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLines[goaltype][i]}", (i==rankingRank), scale)
+					receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTime[goaltype][i].toTimeStr, i==rankingRank, scale)
+				}
+			}
+		} else {
+			receiver.drawScoreFont(engine, playerID, 0, 3, "SUBSCRIBER", EventReceiver.COLOR.BLUE)
+			val a = "${
+				if(subscriber!=lastValue) Interpolation.lerp(lastValue, subscriber, scgettime/120.0) else subscriber
+			}${if(subscriber-lastValue!=0) "(${if(subscriber-lastValue>0) "+" else ""}${subscriber-lastValue})" else ""}"
+
+			receiver.drawScoreFont(engine, playerID, 0, 4, a, ((subscriber-lastValue)>0))
+
+			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
+			if((engine.statistics.level>=19)&&(tableGameClearLines[goaltype]<0)) receiver.drawScoreFont(engine, playerID, 0, 7,
+				"${engine.statistics.lines}") else receiver.drawScoreFont(
+				engine, playerID, 0, 7, "${engine.statistics.lines}/${(engine.statistics.level+1)*10}")
+			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 10, "${engine.statistics.level+1}")
+			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 13, engine.statistics.time.toTimeStr)
+		}
+
+		// NET: Number of spectators
+		netDrawSpectatorsCount(engine, 0, 18)
+		// NET: All number of players
+		if(playerID==players-1) {
+			netDrawAllPlayersCount()
+			netDrawGameRate(engine)
+		}
+		// NET: Player name (It may also appear in offline replay)
+		netDrawPlayerName(engine)
+	}
+	/*
+	 * Called after every frame
+	 */
+	override fun onLast(engine:GameEngine, playerID:Int) {
+		scgettime++
+		if(engine.gameStarted&&(engine.stat==Status.ARE||engine.stat==Status.LINECLEAR))
+			for(i in 0 until engine.field.width) for(j in engine.field.hiddenHeight*-1 until engine.field.height)
+				engine.field.getBlock(i, j)?.let {
+					it.skin = (++it.skin)%skinCount
+				}
+	}
+
+	val skinCount:Int
+		get() {
+			return when(AnimatedBackgroundHook.resourceHook) {
+				AnimatedBackgroundHook.HOLDER_SLICK -> mu.nu.nullpo.gui.slick.ResourceHolder.imgNormalBlockList.size
+				//AnimatedBackgroundHook.HOLDER_SWING -> return ResourceHolderSwing.imgNormalBlockList.size()
+				//AnimatedBackgroundHook.HOLDER_SDL -> return ResourceHolderSDL.imgNormalBlockList.size()
+				else -> 0
+			}
+		}
+	/*
+	 * Calculate score
+	 */
+	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+		// Line clear bonus
+		var sub = 0
+		if(lines>0) lastValue = subscriber
+		val pts = calcScore(engine, lines)
+		val cmb = if(engine.combo>=1&&lines>=1) engine.combo-1 else 0
+		// Combo
+		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
+		// Add to score
+		if(pts+cmb+spd>0) {
+			var get = pts*(10+engine.statistics.level)/10+spd
+			if(cmb>=1) {
+				var b = sum*(1+cmb)/2
+				sum += get
+				b = sum*(2+cmb)/2-b
+				get = b
+			} else
+				sum = get
+			if(pts>0) lastscore = get
+			if(lines>=1) engine.statistics.scoreLine += get
+			else engine.statistics.scoreBonus += get
+		}
+		if(engine.twist) {
+			// T-Spin 0 lines
+			if((lines==0)&&(!engine.twistez)) {
+				sub += subscriberRNG.nextInt(100)
+			} else if(engine.twistez&&(lines>0)) {
+				sub += subscriberRNG.nextInt(100*lines)+100*lines
+			} else if(lines==1) {
+				if(engine.twistmini) {
+					sub += subscriberRNG.nextInt(200)+3000
+				} else {
+					sub += subscriberRNG.nextInt(700)+6000
+				}
+			} else if(lines==2) {
+				sub += subscriberRNG.nextInt(2300)+6000
+			} else if(lines>=3) {
+				sub += subscriberRNG.nextInt(5000)+9000
+			}
+		} else {
+			if(lines==1) {
+				sub += subscriberRNG.nextInt(600)-300
+			} else if(lines==2) {
+				sub += subscriberRNG.nextInt(600)-150
+			} else if(lines==3) {
+				sub += subscriberRNG.nextInt(600)
+			} else if(lines>=4) {
+				sub += subscriberRNG.nextInt(2300)+6000
+			}
+		}
+		lastb2b = engine.b2b
+
+		// Combo
+		if(engine.combo>=1&&lines>=1) {
+			sub += subscriberRNG.nextInt(1000*engine.combo)+100*engine.combo-100
+			lastcombo = engine.combo
+		}
+
+		// All clear
+		if(lines>=1&&engine.field.isEmpty) {
+			engine.playSE("bravo")
+			sub += subscriberRNG.nextInt(500)+10000
+		}
+
+		// Add to score
+		if(pts>0) {
+			lastscore = pts
+			lastpiece = engine.nowPieceObject?.id ?: 0
+			scgettime = 0
+			if(lines>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
+		}
+		subscriber += sub
+		// BGM fade-out effects and BGM changes
+		if(tableBGMChange[bgmlv]!=-1) {
+			if(engine.statistics.lines>=tableBGMChange[bgmlv]-5) owner.bgmStatus.fadesw = true
+			if((engine.statistics.lines>=tableBGMChange[bgmlv])&&
+				((engine.statistics.lines<tableGameClearLines[goaltype])||(tableGameClearLines[goaltype]<0))) {
+				bgmlv++
+				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmlv)
+				owner.bgmStatus.fadesw = false
+			}
+		}
+
+		// Meter
+		engine.meterValue = ((engine.statistics.lines%10)*receiver.getMeterMax(engine))/9
+		engine.meterColor = GameEngine.METER_COLOR_GREEN
+		if(engine.statistics.lines%10>=4) engine.meterColor = GameEngine.METER_COLOR_YELLOW
+		if(engine.statistics.lines%10>=6) engine.meterColor = GameEngine.METER_COLOR_ORANGE
+		if(engine.statistics.lines%10>=8) engine.meterColor = GameEngine.METER_COLOR_RED
+		if((engine.statistics.lines>=tableGameClearLines[goaltype])&&(tableGameClearLines[goaltype]>=0)) {
+			// Ending
+			engine.ending = 1
+			engine.gameEnded()
+		} else if((engine.statistics.lines>=(engine.statistics.level+1)*10)&&(engine.statistics.level<19)) {
+			// Level up
+			engine.statistics.level++
+			owner.backgroundStatus.fadesw = true
+			owner.backgroundStatus.fadecount = 0
+			owner.backgroundStatus.fadebg = engine.statistics.level
+			setSpeed(engine)
+			engine.playSE("levelup")
+		}
+		return sub
+	}
+	/*
+	 * Soft drop
+	 */
+	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+		engine.statistics.scoreSD += fall
+	}
+	/*
+	 * Hard drop
+	 */
+	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+		engine.statistics.scoreHD += fall*2
+	}
+
+	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+		subscriber -= subscriberRNG.nextInt(maxOf(1, tableGameClearLines[goaltype]-engine.statistics.lines))
+		return super.onGameOver(engine, playerID)
+	}
+	/*
+	 * Render results screen
+	 */
+	override fun renderResult(engine:GameEngine, playerID:Int) {
+		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE,
+			Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME, Statistic.SPL, Statistic.LPM)
+		drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, rankingRank)
+		drawResultNetRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[0])
+		drawResultNetRankDaily(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[1])
+		if(netIsPB) {
+			receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
+		}
+		if(netIsNetPlay&&(netReplaySendStatus==1)) {
+			receiver.drawMenuFont(engine, playerID, 0, 22, "SENDING...", EventReceiver.COLOR.PINK)
+		} else if(netIsNetPlay&&!netIsWatch&&(netReplaySendStatus==2)) {
+			receiver.drawMenuFont(engine, playerID, 1, 22, "A: RETRY", EventReceiver.COLOR.RED)
+		}
+	}
+	/*
+	 * Called when saving replay
+	 */
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
+		saveSetting(prop)
+
+		// NET: Save name
+		if(!netPlayerName.isNullOrEmpty()) {
+			prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
+		}
+
+		// Update rankings
+		if(!owner.replayMode&&!big&&engine.ai==null) {
+			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goaltype)
+			if(rankingRank!=-1) {
+				saveRanking(engine.ruleOpt.strRuleName)
+				owner.saveModeConfig()
+			}
+		}
+	}
+	/**
+	 * Load settings from property file
+	 * @param prop Property file
+	 */
+	override fun loadSetting(prop:CustomProperties) {
+		startlevel = prop.getProperty("subscriberchallenge.startlevel", 0)
+		tspinEnableType = prop.getProperty("subscriberchallenge.tspinEnableType", 1)
+		enableTSpin = prop.getProperty("subscriberchallenge.enableTSpin", true)
+		goaltype = prop.getProperty("subscriberchallenge.gametype", 0)
+		big = prop.getProperty("subscriberchallenge.big", false)
+		version = prop.getProperty("subscriberchallenge.version", 0)
+	}
+	/**
+	 * Save settings to property file
+	 * @param prop Property file
+	 */
+	override fun saveSetting(prop:CustomProperties) {
+		prop.setProperty("subscriberchallenge.startlevel", startlevel)
+		prop.setProperty("subscriberchallenge.tspinEnableType", tspinEnableType)
+		prop.setProperty("subscriberchallenge.enableTSpin", enableTSpin)
+		prop.setProperty("subscriberchallenge.gametype", goaltype)
+		prop.setProperty("subscriberchallenge.big", big)
+		prop.setProperty("subscriberchallenge.version", version)
+	}
+	/**
+	 * Read rankings from property file
+	 * @param prop Property file
+	 * @param ruleName Rule name
+	 */
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
+		for(i in 0 until RANKING_MAX)
+			for(j in 0 until GAMETYPE_MAX) {
+				rankingScore[j][i] = prop.getProperty("$ruleName.$j.score.$i", 0)
+				rankingLines[j][i] = prop.getProperty("$ruleName.$j.lines.$i", 0)
+				rankingTime[j][i] = prop.getProperty("$ruleName.$j.time.$i", 0)
+			}
+
+	}
+	/**
+	 * Save rankings to property file
+	 * @param ruleName Rule name
+	 */
+	private fun saveRanking(ruleName:String) =
+		super.saveRanking(ruleName, (0 until GAMETYPE_MAX).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf(
+					"$ruleName.$j.score.$i" to rankingScore[j][i],
+					"$ruleName.$j.lines.$i" to rankingLines[j][i],
+					"$ruleName.$j.time.$i" to rankingTime[j][i])
+			}
+		})
+	/**
+	 * Update rankings
+	 * @param sc Score
+	 * @param li Lines
+	 * @param time Time
+	 */
+	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int) {
+		rankingRank = checkRanking(sc, li, time, type)
+		if(rankingRank!=-1) {
+			// Shift down ranking entries
+			for(i in RANKING_MAX-1 downTo rankingRank+1) {
+				rankingScore[type][i] = rankingScore[type][i-1]
+				rankingLines[type][i] = rankingLines[type][i-1]
+				rankingTime[type][i] = rankingTime[type][i-1]
+			}
+
+			// Add new data
+			rankingScore[type][rankingRank] = sc
+			rankingLines[type][rankingRank] = li
+			rankingTime[type][rankingRank] = time
+		}
+	}
+	/**
+	 * Calculate ranking position
+	 * @param sc Score
+	 * @param li Lines
+	 * @param time Time
+	 * @return Position (-1 if unranked)
+	 */
+	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
+		for(i in 0 until RANKING_MAX) {
+			if(sc>rankingScore[type][i]) {
+				return i
+			} else if((sc==rankingScore[type][i])&&(li>rankingLines[type][i])) {
+				return i
+			} else if((sc==rankingScore[type][i])&&(li==rankingLines[type][i])&&(time<rankingTime[type][i])) {
+				return i
+			}
+		}
+		return -1
+	}
+	/**
+	 * NET: Send various in-game stats (as well as goaltype)
+	 * @param engine GameEngine
+	 */
+	override fun netSendStats(engine:GameEngine) {
+		val bg:Int = if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+		val msg = "game\tstats\t"+
+			"${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"+
+			"${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"+
+			"${engine.statistics.time}\t${engine.statistics.level}\t${engine.statistics.lpm}\t${engine.statistics.spl}\t"+
+			"$goaltype\t${engine.gameActive}\t${engine.timerActive}\t$lastscore\t$scgettime\t"+
+			"$subscriber\t$lastb2b\t$lastcombo\t$lastpiece\t$bg\n"
+		netLobby?.netPlayerClient?.send(msg)
+	}
+	/**
+	 * NET: Receive various in-game stats (as well as goaltype)
+	 */
+	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+		engine.statistics.scoreLine = message[4].toInt()
+		engine.statistics.scoreSD = message[5].toInt()
+		engine.statistics.scoreHD = message[6].toInt()
+		engine.statistics.scoreBonus = message[7].toInt()
+		engine.statistics.lines = message[8].toInt()
+		engine.statistics.totalPieceLocked = message[9].toInt()
+		engine.statistics.time = message[10].toInt()
+		engine.statistics.level = message[11].toInt()
+		goaltype = message[12].toInt()
+		engine.gameActive = message[13].toBoolean()
+		engine.timerActive = message[14].toBoolean()
+		subscriber = message[15].toInt()
+		scgettime = message[16].toInt()
+		lastevent = message[17].toInt()
+		lastb2b = message[18].toBoolean()
+		lastcombo = message[19].toInt()
+		lastpiece = message[20].toInt()
+		engine.owner.backgroundStatus.bg = message[21].toInt()
+
+		// Meter
+		engine.meterValue = ((engine.statistics.lines%10)*receiver.getMeterMax(engine))/9
+		engine.meterColor = GameEngine.METER_COLOR_GREEN
+		if(engine.statistics.lines%10>=4) engine.meterColor = GameEngine.METER_COLOR_YELLOW
+		if(engine.statistics.lines%10>=6) engine.meterColor = GameEngine.METER_COLOR_ORANGE
+		if(engine.statistics.lines%10>=8) engine.meterColor = GameEngine.METER_COLOR_RED
+	}
+	/**
+	 * NET: Send end-of-game stats
+	 * @param engine GameEngine
+	 */
+	override fun netSendEndGameStats(engine:GameEngine) {
+		val subMsg:String = "SCORE;${engine.statistics.score}\tLINE;${engine.statistics.lines}\t"+
+			"LEVEL;${engine.statistics.level+engine.statistics.levelDispAdd}\t"+
+			"TIME;${engine.statistics.time.toTimeStr}\t"+
+			"SCORE/LINE;${engine.statistics.spl}\tLINE/MIN;${engine.statistics.lpm}"
+		netLobby?.netPlayerClient?.send("gstat1p\t${NetUtil.urlEncode(subMsg)}\n")
+
+	}
+	/**
+	 * NET: Send game options to all spectators
+	 * @param engine GameEngine
+	 */
+	override fun netSendOptions(engine:GameEngine) {
+		val msg:String = "game\toption\t$startlevel\t$tspinEnableType\t$goaltype\t$big\n"
+		netLobby?.netPlayerClient?.send(msg)
+	}
+	/**
+	 * NET: Receive game options
+	 */
+	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+		startlevel = message[4].toInt()
+		tspinEnableType = message[5].toInt()
+		goaltype = message[6].toInt()
+		big = message[7].toBoolean()
+	}
+	/**
+	 * NET: Get goal type
+	 */
+	override fun netGetGoalType():Int = goaltype
+	/**
+	 * NET: It returns true when the current settings doesn't prevent leaderboard screen from showing.
+	 */
+	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = ((startlevel==0)&&(!big)&&(engine.ai==null))
+
+	companion object {
+		/** Current version  */
+		val CURRENT_VERSION:Int = 2
+		/** Fall velocity table (numerators)  */
+		val tableGravity:IntArray = intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
+		/** Fall velocity table (denominators)  */
+		val tableDenominator:IntArray = intArrayOf(63, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
+		/** Line counts when BGM changes occur  */
+		val tableBGMChange:IntArray = intArrayOf(50, 100, 150, 200, -1)
+		/** Line counts when game ending occurs  */
+		val tableGameClearLines:IntArray = intArrayOf(150, 200, -1)
+		/** Number of entries in rankings  */
+		val RANKING_MAX:Int = 10
+		/** Number of ranking types  */
+		val RANKING_TYPE:Int = 3
+		/** Number of game types  */
+		val GAMETYPE_MAX:Int = 3
+	}
+}

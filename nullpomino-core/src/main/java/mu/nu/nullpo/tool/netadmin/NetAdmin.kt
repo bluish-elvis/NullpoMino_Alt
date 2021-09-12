@@ -1,3 +1,32 @@
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package mu.nu.nullpo.tool.netadmin
 
 import biz.source_code.base64Coder.Base64Coder
@@ -6,6 +35,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.strDateTime
 import net.clarenceho.crypto.RC4
 import org.apache.log4j.Logger
 import org.apache.log4j.PropertyConfigurator
@@ -13,10 +43,13 @@ import java.awt.*
 import java.awt.datatransfer.StringSelection
 import java.awt.event.*
 import java.io.*
-import java.util.*
+import java.util.Locale
+import java.util.Vector
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
-import javax.swing.text.*
+import javax.swing.text.JTextComponent
+import javax.swing.text.SimpleAttributeSet
+import javax.swing.text.StyleConstants
 import kotlin.system.exitProcess
 
 /** NetAdmin - NetServer admin tool */
@@ -27,7 +60,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	private val contentPaneCardLayout:CardLayout = CardLayout()
 
 	/** Current screen-card number */
-	private var currentScreenCardNumber:Int = 0
+	private var currentScreenCardNumber = 0
 
 	//***** Login screen elements *****
 	/** Login Message label */
@@ -843,11 +876,8 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			val cStart = GeneralUtil.importCalendarString(message[1])
 			val cExpire = if(message.size>2&&message[2].isNotEmpty()) GeneralUtil.importCalendarString(message[2]) else null
 
-			val strStart = if(cStart!=null) GeneralUtil.getCalendarString(cStart) else "???"
-			val strExpire = if(cExpire!=null)
-				GeneralUtil.getCalendarString(cExpire)
-			else
-				getUIText("Login_Message_Banned_Permanent")
+			val strStart = cStart?.strDateTime ?: "???"
+			val strExpire = cExpire?.strDateTime ?: getUIText("Login_Message_Banned_Permanent")
 
 			labelLoginMessage.text = String.format(getUIText("Login_Message_Banned"), strStart, strExpire)
 			return
@@ -963,7 +993,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		r.roomID.toString(), r.strName, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False"),
 		if(r.ruleLock) r.ruleName.uppercase() else getUIText("RoomTable_RuleName_Any"),
 		if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting"),
-		r.playerSeatedCount.toString()+"/"+r.maxPlayers, r.spectatorCount.toString())
+		"${r.playerSeatedCount}/${r.maxPlayers}", "${r.spectatorCount}")
 
 	/** When received an admin command result
 	 * @param client NetBaseClient
@@ -1055,7 +1085,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 					ban.importString(message[i+1])
 
 					val strBanLength = getUIText("BanType"+ban.banLength)
-					val strDate = GeneralUtil.getCalendarString(ban.startDate)
+					val strDate = ban.startDate.strDateTime
 
 					addConsoleLog(String.format(getUIText("Console_BanList_Result"), ban.addr, strBanLength, strDate), Color(0, 64, 64))
 				}
@@ -1100,7 +1130,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/** Popup menu for text components */
-	private inner class TextComponentPopupMenu(field:JTextComponent):JPopupMenu() {
+	private class TextComponentPopupMenu(field:JTextComponent):JPopupMenu() {
 
 		private val cutAction:Action = object:AbstractAction(getUIText("Popup_Cut")) {
 
@@ -1155,7 +1185,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/** Popup menu for console log */
-	private inner class LogPopupMenu(field:JTextComponent):JPopupMenu() {
+	private class LogPopupMenu(field:JTextComponent):JPopupMenu() {
 
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
 
@@ -1306,7 +1336,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/** KeyAdapter for console log */
-	private inner class LogKeyAdapter:KeyAdapter() {
+	private class LogKeyAdapter:KeyAdapter() {
 		override fun keyPressed(e:KeyEvent?) {
 			if(e!!.keyCode!=KeyEvent.VK_UP&&e.keyCode!=KeyEvent.VK_DOWN&&
 				e.keyCode!=KeyEvent.VK_LEFT&&e.keyCode!=KeyEvent.VK_RIGHT&&
@@ -1359,38 +1389,38 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		internal val log = Logger.getLogger(NetAdmin::class.java)
 
 		/** ServerAdmin properties */
-		private val propConfig:CustomProperties = CustomProperties()
+		private val propConfig = CustomProperties()
 
 		/** Default language file */
-		private val propLangDefault:CustomProperties = CustomProperties()
+		private val propLangDefault = CustomProperties()
 
 		/** Property file for GUI translations */
-		private val propLang:CustomProperties = CustomProperties()
+		private val propLang = CustomProperties()
 
 		/** NetBaseClient */
 		private var client:NetBaseClient? = null
 
-		/** true if disconnection is intended (If false, it will display error
+		/** True if disconnection is intended (If false, it will display error
 		 * message) */
-		private var isWantedDisconnect:Boolean = false
+		private var isWantedDisconnect = false
 
-		/** true if server shutdown is requested */
-		private var isShutdownRequested:Boolean = false
+		/** True if server shutdown is requested */
+		private var isShutdownRequested = false
 
 		/** Hostname of the server */
-		private var strServerHost:String = ""
+		private var strServerHost = ""
 
 		/** Port-number of the server */
-		private var serverPort:Int = 0
+		private var serverPort = 0
 
 		/** Your IP */
-		private var strMyIP:String = ""
+		private var strMyIP = ""
 
 		/** Your Hostname */
-		private var strMyHostname:String = ""
+		private var strMyHostname = ""
 
 		/** Server's version */
-		private var serverFullVer:String = ""
+		private var serverFullVer = ""
 
 		/** Get translated GUI text
 		 * @param str String

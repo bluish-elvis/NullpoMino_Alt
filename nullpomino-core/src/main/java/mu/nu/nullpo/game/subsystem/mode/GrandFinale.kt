@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -28,98 +33,98 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** FINAL mode (Original from NullpoUE build 010210 by Zircean) */
 class GrandFinale:AbstractMode() {
 
-	private var gametype:Int = 0
-	private var joker:Int = 0
-	private var stacks:Int = 0
+	private var gametype = 0
+	private var joker = 0
+	private var stacks = 0
 
 	/** Next section level */
-	private var nextseclv:Int = 0
+	private var nextseclv = 0
 
 	/** Level up flag (Set to true when the level increases) */
-	private var lvupflag:Boolean = false
+	private var lvupflag = false
 
 	/** Elapsed ending time */
-	private var rolltime:Int = 0
+	private var rolltime = 0
 
 	/** Ending started flag */
-	private var rollstarted:Boolean = false
+	private var rollstarted = false
 
 	/** Grade */
-	private var grade:Int = 0
-	private var gradeinternal:Int = 0
+	private var grade = 0
+	private var gradeinternal = 0
 
 	/** Remaining frames of flashing grade display */
-	private var gradeflash:Int = 0
+	private var gradeflash = 0
 
 	/** Used by combo scoring */
-	private var comboValue:Int = 0
+	private var comboValue = 0
 
 	/** Amount of points you just get from line clears */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** Game completed flag (0=Died before Lv999 1=Died during credits roll
 	 * 2=Survived credits roll */
-	private var rollclear:Int = 0
+	private var rollclear = 0
 
 	/** Secret Grade */
-	private var secretGrade:Int = 0
+	private var secretGrade = 0
 
 	/** Section Time */
-	private var sectionTime:IntArray = IntArray(SECTION_MAX)
-	private var sectionLine:IntArray = IntArray(SECTION_MAX)
+	private var sectionTime = IntArray(SECTION_MAX)
+	private var sectionLine = IntArray(SECTION_MAX)
 
 	/** This will be true if the player achieves new section time record in
 	 * specific section */
-	private var sectionIsNewRecord:BooleanArray = BooleanArray(SECTION_MAX)
+	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
 
 	/** Amount of sections completed */
-	private var sectionscomp:Int = 0
+	private var sectionscomp = 0
 
 	/** Average section time */
-	private var sectionavgtime:Int = 0
+	private var sectionavgtime = 0
 
 	/** Current section time */
-	private var sectionlasttime:Int = 0
+	private var sectionlasttime = 0
 
 	/** AC medal */
-	private var medalAC:Int = 0
+	private var medalAC = 0
 
 	/** ST medal */
-	private var medalST:Int = 0
+	private var medalST = 0
 
 	/** SK medal */
-	private var medalSK:Int = 0
+	private var medalSK = 0
 
 	/** CO medal */
-	private var medalCO:Int = 0
+	private var medalCO = 0
 
 	/** false:Leaderboard, true:Section time record (Push F in settings screen
 	 * to
 	 * flip it) */
-	private var isShowBestSectionTime:Boolean = false
+	private var isShowBestSectionTime = false
 
 	/** Selected start level */
-	private var startlevel:Int = 0
+	private var startlevel = 0
 
 	/** Level stop sound */
-	private var lvstopse:Boolean = false
+	private var lvstopse = false
 
 	/** Big mode ON/OFF */
-	private var big:Boolean = false
+	private var big = false
 
 	/** Show section time */
-	private var showsectiontime:Boolean = false
+	private var showsectiontime = false
 
 	/** Version of this mode */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Your place on leaderboard (-1: out of rank) */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Grade records */
 	private var rankingGrade:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
@@ -138,8 +143,8 @@ class GrandFinale:AbstractMode() {
 	private var bestSectionLine:Array<IntArray> = Array(RANKING_TYPE) {IntArray(SECTION_MAX)}
 
 	/** Returns the name of this mode */
-	override val name:String = "Grand Finale"
-	override val gameIntensity:Int = 3
+	override val name = "Grand Finale"
+	override val gameIntensity = 3
 	/** This function will be called when the game enters the main game
 	 * screen. */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -192,7 +197,7 @@ class GrandFinale:AbstractMode() {
 
 		version = if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -243,11 +248,11 @@ class GrandFinale:AbstractMode() {
 			engine.speed.areLine = 0
 			engine.speed.lineDelay = tableARE[gametype][section]
 			engine.speed.lockDelay = tableLockDelay[gametype][section]
-			if(!engine.ruleopt.lockresetMove&&!engine.ruleopt.lockresetRotate) engine.speed.lockDelay++
+			if(!engine.ruleOpt.lockresetMove&&!engine.ruleOpt.lockresetRotate) engine.speed.lockDelay++
 			engine.speed.das = 8-gametype*2
 			if(gametype==0) {
 				engine.blockHidden = tableHiddenDelay[section]
-				if(engine.blockHidden<engine.ruleopt.lockflash) engine.blockHidden = engine.ruleopt.lockflash
+				if(engine.blockHidden<engine.ruleOpt.lockflash) engine.blockHidden = engine.ruleOpt.lockflash
 			} else
 				engine.blockHidden = -1
 
@@ -342,9 +347,7 @@ class GrandFinale:AbstractMode() {
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		drawMenu(engine, playerID, receiver, 0, COLOR.RED, 0,
-			"COURSE", tableModeName[gametype],
-			"LVSTOPSE", GeneralUtil.getONorOFF(lvstopse),
-			"SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
+			"COURSE" to tableModeName[gametype], "LVSTOPSE" to lvstopse, "SHOW STIME" to showsectiontime, "BIG" to big)
 	}
 
 	/** Ready screen */
@@ -402,7 +405,7 @@ class GrandFinale:AbstractMode() {
 						receiver.drawScoreGrade(engine, playerID, 3, topY+i, tableGradeName[rankingGrade[gametype][i]], gcolor, scale)
 						receiver.drawScoreNum(engine, playerID, 9, topY+i, String.format("%03d", rankingLevel[gametype][i]), i==rankingRank,
 							scale)
-						receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank,
+						receiver.drawScoreNum(engine, playerID, 15, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank,
 							scale)
 					}
 
@@ -417,7 +420,7 @@ class GrandFinale:AbstractMode() {
 						val temp2 = minOf((i+1)*100-1, 999)
 
 						val strSectionTime:String = String.format("%3d-%3d %s %3d", temp, temp2,
-							GeneralUtil.getTime(bestSectionTime[gametype][i]), bestSectionLine[gametype][i])
+							bestSectionTime[gametype][i].toTimeStr, bestSectionLine[gametype][i])
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -425,9 +428,9 @@ class GrandFinale:AbstractMode() {
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 14, "TOTAL", COLOR.RED)
-					receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(totalTime), 2f)
+					receiver.drawScoreNum(engine, playerID, 0, 15, totalTime.toTimeStr, 2f)
 					receiver.drawScoreFont(engine, playerID, 9, 14, "AVERAGE", COLOR.RED)
-					receiver.drawScoreNum(engine, playerID, 9, 15, GeneralUtil.getTime(totalTime*1f/SECTION_MAX), 2f)
+					receiver.drawScoreNum(engine, playerID, 9, 15, (totalTime*1f/SECTION_MAX).toTimeStr, 2f)
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW RANKING", COLOR.ORANGE)
 				}
@@ -440,7 +443,7 @@ class GrandFinale:AbstractMode() {
 			// Time
 			receiver.drawScoreFont(engine, playerID, 0, 4, "Time", color)
 			if((engine.ending!=2) or (rolltime/10%2==0))
-				receiver.drawScoreNum(engine, playerID, 0, 5, GeneralUtil.getTime(engine.statistics.time), 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 5, engine.statistics.time.toTimeStr, 2f)
 			// Level
 			receiver.drawScoreFont(engine, playerID, 0, 8, "Level", color)
 			receiver.drawScoreNum(engine, playerID, 0, 9, String.format("%3d", maxOf(engine.statistics.level, 0)))
@@ -468,7 +471,7 @@ class GrandFinale:AbstractMode() {
 				var time = ROLLTIMELIMIT-rolltime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", COLOR.RED)
-				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
 
 			// Medals
@@ -493,13 +496,13 @@ class GrandFinale:AbstractMode() {
 						var strSeparator = "-"
 						if(i==section&&engine.ending==0) strSeparator = "+"
 
-						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
+						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, sectionTime[i].toTimeStr)
 
 						receiver.drawScoreNum(engine, playerID, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
 
 				receiver.drawScoreFont(engine, playerID, x2, 17, "AVERAGE", COLOR.RED)
-				receiver.drawScoreNum(engine, playerID, x2, 18, GeneralUtil.getTime((engine.statistics.time/(sectionscomp+1))), 2f)
+				receiver.drawScoreNum(engine, playerID, x2, 18, (engine.statistics.time/(sectionscomp+1)).toTimeStr, 2f)
 			}
 		}
 	}
@@ -592,7 +595,7 @@ class GrandFinale:AbstractMode() {
 				}
 			}
 			// AC medal
-			if(engine.field?.isEmpty==true)
+			if(engine.field.isEmpty)
 				if(medalAC<3) {
 					engine.playSE("medal${++medalAC}")
 				}
@@ -672,7 +675,7 @@ class GrandFinale:AbstractMode() {
 				engine.ending = 1
 				rollclear = 1
 
-				secretGrade = engine.field?.secretGrade ?: 0
+				secretGrade = engine.field.secretGrade
 				// Section Timeを記録
 				sectionlasttime = sectionTime[levelb/100]
 				sectionscomp++
@@ -720,7 +723,7 @@ class GrandFinale:AbstractMode() {
 			val section = levelb/100
 			if(section>=0&&section<sectionTime.size) sectionLine[levelb/100] += if(gametype==1) if(lines>=4) 1 else 0 else lines
 			lastscore = (((levelb+lines)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*lines*comboValue+
-				maxOf(0, engine.lockDelay-engine.lockDelayNow)+engine.statistics.level/2)*if(engine.field!!.isEmpty) 2 else 1
+				maxOf(0, engine.lockDelay-engine.lockDelayNow)+engine.statistics.level/2)*if(engine.field.isEmpty) 2 else 1
 
 			engine.statistics.scoreLine += lastscore
 			levelUp(engine)
@@ -766,7 +769,7 @@ class GrandFinale:AbstractMode() {
 
 	/** This function will be called when the player tops out */
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.statc[0]==0) secretGrade = engine.field?.secretGrade ?: 0
+		if(engine.statc[0]==0) secretGrade = engine.field.secretGrade
 		return false
 	}
 
@@ -793,11 +796,11 @@ class GrandFinale:AbstractMode() {
 
 			for(i in sectionTime.indices)
 				if(sectionTime[i]>0)
-					receiver.drawMenuFont(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[i]), sectionIsNewRecord[i])
+					receiver.drawMenuFont(engine, playerID, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
 
 			if(sectionavgtime>0) {
 				receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", COLOR.RED)
-				receiver.drawMenuNum(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime))
+				receiver.drawMenuNum(engine, playerID, 2, 15, sectionavgtime.toTimeStr)
 			}
 		} else if(engine.statc[1]==2) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", COLOR.RED)
@@ -844,7 +847,7 @@ class GrandFinale:AbstractMode() {
 			if(medalST==3) updateBestSectionTime(gametype)
 
 			if(rankingRank!=-1||medalST==3) {
-				saveRanking(engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -870,7 +873,7 @@ class GrandFinale:AbstractMode() {
 	/** Save the ranking
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(ruleName:String) {
+	private fun saveRanking(ruleName:String) {
 		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf("$j.$ruleName.$i.grade" to rankingGrade[j][i],
@@ -973,7 +976,7 @@ class GrandFinale:AbstractMode() {
 		private const val ROLLTIMELIMIT = 12000
 
 		/** Number of ranking records */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 		/** Number of ranking types */
 		private const val RANKING_TYPE = 3
 

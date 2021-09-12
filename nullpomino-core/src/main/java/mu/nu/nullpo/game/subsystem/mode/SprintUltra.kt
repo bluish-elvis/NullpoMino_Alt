@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -29,46 +34,46 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
 
 /** ULTRA Mode */
 class SprintUltra:NetDummyMode() {
 
 	/** Most recent increase in score */
-	private var lastscore:Int = 0
-	private var sum:Int = 0
-	private var pow:Int = 0
+	private var lastscore = 0
+	private var sum = 0
+	private var pow = 0
 
 	/** Time to display the most recent increase in score */
-	private var scgettime:Int = 0
+	private var scgettime = 0
 
 	/** Most recent scoring event b2b */
-	private var lastb2b:Boolean = false
+	private var lastb2b = false
 
 	/** Most recent scoring event combo count */
-	private var lastcombo:Int = 0
+	private var lastcombo = 0
 
 	/** Most recent scoring event piece ID */
-	private var lastpiece:Int = 0
+	private var lastpiece = 0
 
 	/** BGM number */
-	private var bgmno:Int = 0
+	private var bgmno = 0
 
 	/** Big */
-	private var big:Boolean = false
+	private var big = false
 
 	/** Time limit type */
-	private var goaltype:Int = 0
+	private var goaltype = 0
 
 	/** Last preset number used */
-	private var presetNumber:Int = 0
+	private var presetNumber = 0
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:IntArray = IntArray(0)
+	private var rankingRank = IntArray(0)
 
 	/** Rankings' scores */
 	private var rankingScore:Array<Array<IntArray>> = Array(GOALTYPE_MAX) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
@@ -80,8 +85,8 @@ class SprintUltra:NetDummyMode() {
 	private var rankingPower:Array<Array<IntArray>> = Array(GOALTYPE_MAX) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
 
 	/* Mode name */
-	override val name:String = "ULTRA Score Attack"
-	override val gameIntensity:Int = 2
+	override val name = "ULTRA Score Attack"
+	override val gameIntensity = 2
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -109,7 +114,7 @@ class SprintUltra:NetDummyMode() {
 		if(!engine.owner.replayMode) {
 			presetNumber = engine.owner.modeConfig.getProperty("ultra.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			presetNumber = 0
@@ -247,10 +252,10 @@ class SprintUltra:NetDummyMode() {
 		else {
 			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
-			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big), "GOAL", (goaltype+1).toString()+"MIN")
+			drawMenuCompact(engine, playerID, receiver, "BIG" to big, "GOAL" to "${(goaltype+1)}MIN")
 			if(!engine.owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
-				drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber", "SAVE", "$presetNumber")
+				drawMenuCompact(engine, playerID, receiver, "LOAD" to presetNumber, "SAVE" to presetNumber)
 			}
 		}
 	}
@@ -320,7 +325,7 @@ class SprintUltra:NetDummyMode() {
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "Time", EventReceiver.COLOR.BLUE)
 			val time = maxOf(0, (goaltype+1)*3600-engine.statistics.time)
-			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(time), getTimeFontColor(time), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 16, time.toTimeStr, getTimeFontColor(time), 2f)
 		}
 
 		super.renderLast(engine, playerID)
@@ -441,7 +446,7 @@ class SprintUltra:NetDummyMode() {
 			updateRanking(type, engine.statistics.score, engine.statistics.lines)
 
 			if(rankingRank[0]!=-1||rankingRank[1]!=-1) {
-				saveRanking(engine.ruleopt.strRuleName, type)
+				saveRanking(engine.ruleOpt.strRuleName, type)
 				owner.saveModeConfig()
 			}
 		}
@@ -465,7 +470,7 @@ class SprintUltra:NetDummyMode() {
 	 * @param ruleName Rule name
 	 * @param type Game Type
 	 */
-	fun saveRanking(ruleName:String, type:Int) {
+	private fun saveRanking(ruleName:String, type:Int) {
 		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf("$ruleName.$type.$i.score" to rankingScore[type][j][i],

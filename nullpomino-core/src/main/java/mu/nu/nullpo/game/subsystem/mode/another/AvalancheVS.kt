@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -31,82 +36,82 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
 
 /** AVALANCHE VS-BATTLE mode (Release Candidate 1) */
 class AvalancheVS:AvalancheVSDummyMode() {
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Fever points needed to enter Fever Mode */
-	private var feverThreshold:IntArray = IntArray(0)
+	private var feverThreshold = IntArray(0)
 
 	/** Fever points */
-	private var feverPoints:IntArray = IntArray(0)
+	private var feverPoints = IntArray(0)
 
 	/** Fever time */
-	private var feverTime:IntArray = IntArray(0)
+	private var feverTime = IntArray(0)
 
 	/** Minimum and maximum fever time */
-	private var feverTimeMin:IntArray = IntArray(0)
-	private var feverTimeMax:IntArray = IntArray(0)
+	private var feverTimeMin = IntArray(0)
+	private var feverTimeMax = IntArray(0)
 
 	/** Flag set to true when player is in Fever Mode */
-	private var inFever:BooleanArray = BooleanArray(0)
+	private var inFever = BooleanArray(0)
 
 	/** Backup fields for Fever Mode */
-	private var feverBackupField:Array<Field?> = emptyArray()
+	private var feverBackupField:Array<Field> = emptyArray()
 
 	/** Time added to limit */
-	private var feverTimeLimitAdd:IntArray = IntArray(0)
+	private var feverTimeLimitAdd = IntArray(0)
 
 	/** Time to display added time */
-	private var feverTimeLimitAddDisplay:IntArray = IntArray(0)
+	private var feverTimeLimitAddDisplay = IntArray(0)
 
 	/** Second ojama counter for Fever Mode */
-	private var ojamaFever:IntArray = IntArray(0)
+	private var ojamaFever = IntArray(0)
 
 	/** Set to true when opponent starts chain while in Fever Mode */
-	private var ojamaAddToFever:BooleanArray = BooleanArray(0)
+	private var ojamaAddToFever = BooleanArray(0)
 
 	/** Chain levels for Fever Mode */
-	private var feverChain:IntArray = IntArray(0)
+	private var feverChain = IntArray(0)
 
 	/** Criteria to add a fever point */
-	private var feverPointCriteria:IntArray = IntArray(0)
+	private var feverPointCriteria = IntArray(0)
 
 	/** Criteria to add 1 second of fever time */
-	private var feverTimeCriteria:IntArray = IntArray(0)
+	private var feverTimeCriteria = IntArray(0)
 
 	/** Fever power multiplier */
-	private var feverPower:IntArray = IntArray(0)
+	private var feverPower = IntArray(0)
 
 	/** Initial fever chain */
-	private var feverChainStart:IntArray = IntArray(0)
+	private var feverChainStart = IntArray(0)
 
 	/** True to show fever points as meter, false to show numerical counts */
-	private var feverShowMeter:BooleanArray = BooleanArray(0)
+	private var feverShowMeter = BooleanArray(0)
 
 	/** True to show ojama on meter, false to show fever points */
-	private var ojamaMeter:BooleanArray = BooleanArray(0)
+	private var ojamaMeter = BooleanArray(0)
 
 	/** Zenkeshi preset chain size */
-	private var zenKeshiChain:IntArray = IntArray(0)
+	private var zenKeshiChain = IntArray(0)
 
 	/** Zenkeshi ojama bonus */
-	private var zenKeshiOjama:IntArray = IntArray(0)
+	private var zenKeshiOjama = IntArray(0)
 
 	/** Indices for values previews */
-	private var previewChain:IntArray = IntArray(0)
-	private var previewSubset:IntArray = IntArray(0)
+	private var previewChain = IntArray(0)
+	private var previewSubset = IntArray(0)
 
 	/** ??? */
-	private var xyzzy:Int = 0
+	private var xyzzy = 0
 
 	/* Mode name */
-	override val name:String = "AVALANCHE VS-BATTLE (RC1)"
+	override val name = "AVALANCHE VS-BATTLE (RC1)"
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
@@ -117,7 +122,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 		feverTimeMin = IntArray(MAX_PLAYERS)
 		feverTimeMax = IntArray(MAX_PLAYERS)
 		inFever = BooleanArray(MAX_PLAYERS)
-		feverBackupField = arrayOfNulls(MAX_PLAYERS)
+		feverBackupField = Array(MAX_PLAYERS) {manager.engine[it].field}
 		feverTimeLimitAdd = IntArray(MAX_PLAYERS)
 		feverTimeLimitAddDisplay = IntArray(MAX_PLAYERS)
 		ojamaFever = IntArray(MAX_PLAYERS)
@@ -192,7 +197,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 		feverTimeLimitAdd[playerID] = 0
 		feverTimeLimitAddDisplay[playerID] = 0
 		inFever[playerID] = false
-		feverBackupField[playerID] = null
+		feverBackupField[playerID].reset()
 
 		version = if(!engine.owner.replayMode) {
 			loadOtherSetting(engine, engine.owner.modeConfig)
@@ -385,7 +390,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 					36 -> {
 						useMap[playerID] = !useMap[playerID]
 						if(!useMap[playerID]) {
-							if(engine.field!=null) engine.field!!.reset()
+							if(engine.field!=null) engine.field.reset()
 						} else
 							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 					}
@@ -516,81 +521,70 @@ class AvalancheVS:AvalancheVSDummyMode() {
 		if(engine.statc[4]==0) {
 			when {
 				menuCursor<9 -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX",
-						engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE",
-						engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY",
-						engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(),
-						"CLEAR DELAY", engine.cascadeClearDelay.toString())
+					drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.ORANGE, 0)
+					drawMenu(engine, playerID, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
 
 					receiver.drawMenuFont(engine, playerID, 0, 21, "PAGE 1/5", COLOR.YELLOW)
 				}
 				menuCursor<17 -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]],
-						"MAX ATTACK", "${maxAttack[playerID]}", "COLORS", "${numColors[playerID]}", "MIN CHAIN",
-						"${rensaShibari[playerID]}", "CLEAR SIZE", engine.colorClearSize.toString(), "OJAMA RATE", "${ojamaRate[playerID]}",
-						"HURRYUP",
-						if(hurryupSeconds[playerID]==0)
-							"NONE"
-						else "${hurryupSeconds[playerID]}SEC", "CHAINPOWER", if(newChainPower[playerID]) "FEVER" else "CLASSIC")
+					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER" to OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]],
+						"MAX ATTACK" to maxAttack[playerID], "COLORS" to numColors[playerID],
+						"MIN CHAIN" to rensaShibari[playerID], "CLEAR SIZE" to engine.colorClearSize, "OJAMA RATE" to ojamaRate[playerID],
+						"HURRYUP" to if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]}SEC",
+						"CHAINPOWER" to if(newChainPower[playerID]) "FEVER" else "CLASSIC")
 
 					receiver.drawMenuFont(engine, playerID, 0, 21, "PAGE 2/5", COLOR.YELLOW)
 				}
 				menuCursor<26 -> {
-					initMenu(COLOR.COBALT, 17)
-					drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]], "SHOW CHAIN",
-						CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]], "FALL ANIM",
-						if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
-					menuColor = COLOR.CYAN
-					drawMenu(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big[playerID]))
+					drawMenu(engine, playerID, receiver, 0, COLOR.COBALT, 17, "OUTLINE" to OUTLINE_TYPE_NAMES[outlineType[playerID]],
+						"SHOW CHAIN" to CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]],
+						"FALL ANIM" to if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
+					drawMenu(engine, playerID, receiver, COLOR.CYAN, "BIG" to big[playerID])
 					if(big[playerID]) menuColor = COLOR.WHITE
-					drawMenu(engine, playerID, receiver, "HARD OJAMA", "${ojamaHard[playerID]}",
-						"X COLUMN", if(dangerColumnDouble[playerID]) "3 AND 4" else "3 ONLY",
-						"X SHOW", GeneralUtil.getONorOFF(dangerColumnShowX[playerID]), "ZENKESHI",
-						ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]])
+					drawMenu(engine, playerID, receiver, "HARD OJAMA" to ojamaHard[playerID],
+						"X COLUMN" to if(dangerColumnDouble[playerID]) "3 AND 4" else "3 ONLY",
+						"X SHOW" to dangerColumnShowX[playerID],
+						"ZENKESHI" to ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]])
 					if(zenKeshiType[playerID]==ZENKESHI_MODE_OFF) menuColor = COLOR.WHITE
-					drawMenu(engine, playerID, receiver, "ZK-BONUS", if(zenKeshiType[playerID]==ZENKESHI_MODE_FEVER)
-						"${zenKeshiChain[playerID]} CHAIN" else "${zenKeshiOjama[playerID]} OJAMA")
+					drawMenu(engine, playerID, receiver, "ZK-BONUS" to
+						if(zenKeshiType[playerID]==ZENKESHI_MODE_FEVER) "${zenKeshiChain[playerID]} CHAIN" else "${zenKeshiOjama[playerID]} OJAMA")
 					receiver.drawMenuFont(engine, playerID, 0, 21, "PAGE 3/5", COLOR.YELLOW)
 				}
 				menuCursor<36 -> {
-					initMenu(if(big[playerID]) COLOR.WHITE else COLOR.PURPLE, 26)
-					drawMenu(engine, playerID, receiver, "FEVER", if(feverThreshold[playerID]==0)
-						"NONE" else "${feverThreshold[playerID]} PTS")
+					drawMenu(engine, playerID, receiver, 0, if(big[playerID]) COLOR.WHITE else COLOR.PURPLE, 26,
+						"FEVER" to if(feverThreshold[playerID]==0)
+							"NONE" else "${feverThreshold[playerID]} PTS")
 					if(feverThreshold[playerID]==0&&zenKeshiType[playerID]!=ZENKESHI_MODE_FEVER)
 						menuColor = COLOR.WHITE
-					drawMenu(engine, playerID, receiver, "F-MAP SET", FEVER_MAPS[feverMapSet[playerID]].uppercase())
+					drawMenu(engine, playerID, receiver, "F-MAP SET" to FEVER_MAPS[feverMapSet[playerID]].uppercase())
 					if(feverThreshold[playerID]==0) menuColor = COLOR.WHITE
-					drawMenu(engine, playerID, receiver, "F-MIN TIME", "${feverTimeMin[playerID]} SEC", "F-MAX TIME",
-						"${feverTimeMax[playerID]} SEC",
-						"F-DISPLAY", if(feverShowMeter[playerID]) "METER" else "COUNT",
-						"F-ADDPOINT", FEVER_POINT_CRITERIA_NAMES[feverPointCriteria[playerID]],
-						"F-ADDTIME", FEVER_TIME_CRITERIA_NAMES[feverTimeCriteria[playerID]],
-						"F-POWER", "${feverPower[playerID]*10}%", "F-1STCHAIN", "${feverChainStart[playerID]}",
-						"SIDE METER", if(ojamaMeter[playerID]||feverThreshold[playerID]==0) "OJAMA" else "FEVER")
+					drawMenu(engine, playerID, receiver, "F-MIN TIME" to "${feverTimeMin[playerID]} SEC",
+						"F-MAX TIME" to "${feverTimeMax[playerID]} SEC",
+						"F-DISPLAY" to if(feverShowMeter[playerID]) "METER" else "COUNT",
+						"F-ADDPOINT" to FEVER_POINT_CRITERIA_NAMES[feverPointCriteria[playerID]],
+						"F-ADDTIME" to FEVER_TIME_CRITERIA_NAMES[feverTimeCriteria[playerID]],
+						"F-POWER" to "${feverPower[playerID]*10}%", "F-1STCHAIN" to "${feverChainStart[playerID]}",
+						"SIDE METER" to if(ojamaMeter[playerID]||feverThreshold[playerID]==0) "OJAMA" else "FEVER")
 
 					receiver.drawMenuFont(engine, playerID, 0, 21, "PAGE 4/5", COLOR.YELLOW)
 				}
-				menuCursor<44 -> {
-					initMenu(COLOR.PINK, 36)
-					drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET",
-						"${mapSet[playerID]}",
-						"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}")
-					menuColor = COLOR.COBALT
-					drawMenu(engine, playerID, receiver, "BGM", "${BGM.values[bgmno]}")
-					menuColor = COLOR.YELLOW
-					drawMenu(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
-					menuColor = COLOR.COBALT
-					drawMenu(engine, playerID, receiver, "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
-					menuColor = COLOR.GREEN
-					drawMenu(engine, playerID, receiver, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
+				menuCursor<44
+				-> {
+					drawMenu(engine, playerID, receiver, 0, COLOR.PINK, 36,
+						"USE MAP" to useMap[playerID], "MAP SET" to mapSet[playerID],
+						"MAP NO." to if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}")
+					drawMenu(engine, playerID, receiver, COLOR.COBALT, "BGM" to BGM.values[bgmno])
+					drawMenu(engine, playerID, receiver, COLOR.YELLOW, "SE" to enableSE[playerID])
+					drawMenu(engine, playerID, receiver, COLOR.COBALT, "BIG DISP" to bigDisplay)
+					drawMenu(engine, playerID, receiver, COLOR.GREEN, "LOAD" to presetNumber[playerID], "SAVE" to presetNumber[playerID])
 
 					receiver.drawMenuFont(engine, playerID, 0, 21, "PAGE 5/5", COLOR.YELLOW)
 				}
 				else -> {
 					receiver.drawMenuFont(engine, playerID, 0, 13, "MAP PREVIEW", COLOR.YELLOW)
 					receiver.drawMenuFont(engine, playerID, 0, 14, "A:DISPLAY", COLOR.GREEN)
-					drawMenu(engine, playerID, receiver, 15, COLOR.BLUE, 44, "F-MAP SET", FEVER_MAPS[feverMapSet[playerID]].uppercase(),
-						"SUBSET", feverMapSubsets[playerID][previewSubset[playerID]].uppercase(), "CHAIN", "${previewChain[playerID]}")
+					drawMenu(engine, playerID, receiver, 15, COLOR.BLUE, 44, "F-MAP SET" to FEVER_MAPS[feverMapSet[playerID]].uppercase(),
+						"SUBSET" to feverMapSubsets[playerID][previewSubset[playerID]].uppercase(), "CHAIN" to previewChain[playerID])
 				}
 			}
 		} else
@@ -626,7 +620,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 		val playerColor = EventReceiver.getPlayerColor(playerID)
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(224, 8, GeneralUtil.getTime(engine.statistics.time))
+		if(playerID==0) receiver.drawDirectFont(224, 8, engine.statistics.time.toTimeStr)
 
 		// Ojama Counter
 		var fontColor = COLOR.WHITE
@@ -732,7 +726,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			val strFeverTimer = String.format("%02d", (feverTime[playerID]+59)/60)
 
 			for(i in 0..1)
-				if(engine.field==null||engine.field!!.getBlockEmpty(2+i, 0))
+				if(engine.field==null||engine.field.getBlockEmpty(2+i, 0))
 					if(engine.displaysize==1)
 						receiver.drawMenuFont(engine, playerID, 4+i*2, 0, "${strFeverTimer[i]}",
 							if(feverTime[playerID]<360) COLOR.RED else COLOR.WHITE, 2f)
@@ -811,7 +805,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			}
 		}
 		ojamaAdd[enemyID] += maxOf(0, ojamaSend)
-		if(countered&&feverPointCriteria[playerID]!=FEVER_POINT_CRITERIA_CLEAR||engine.field!!.garbageCleared>0&&feverPointCriteria[playerID]!=FEVER_POINT_CRITERIA_COUNTER) {
+		if(countered&&feverPointCriteria[playerID]!=FEVER_POINT_CRITERIA_CLEAR||engine.field.garbageCleared>0&&feverPointCriteria[playerID]!=FEVER_POINT_CRITERIA_COUNTER) {
 			if(feverThreshold[playerID]>0&&feverThreshold[playerID]>feverPoints[playerID]) feverPoints[playerID]++
 			if(feverThreshold[enemyID]>0&&feverTimeCriteria[enemyID]==FEVER_TIME_CRITERIA_COUNTER&&!inFever[enemyID]) {
 				feverTime[enemyID] = minOf(feverTime[enemyID]+60, feverTimeMax[enemyID]*60)
@@ -873,9 +867,10 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			inFever[playerID] = false
 			feverTime[playerID] = feverTimeMin[playerID]*60
 			feverPoints[playerID] = 0
+
 			engine.field = feverBackupField[playerID]
-			if(engine.field!=null&&ojamaMeter[playerID])
-				engine.meterValue = ojama[playerID]*receiver.getBlockSize(engine)/engine.field!!.width
+			if(ojamaMeter[playerID])
+				engine.meterValue = ojama[playerID]*receiver.getBlockSize(engine)/engine.field.width
 			ojama[playerID] += ojamaFever[playerID]
 			ojamaFever[playerID] = 0
 			ojamaAddToFever[playerID] = false
@@ -887,8 +882,8 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			val drop = minOf(ojamaNow, maxAttack[playerID])
 			if(inFever[playerID]) ojamaFever[playerID] -= drop
 			else ojama[playerID] -= drop
-			engine.field!!.garbageDrop(engine, drop, false, ojamaHard[playerID])
-			engine.field!!.setAllSkin(engine.skin)
+			engine.field.garbageDrop(engine, drop, false, ojamaHard[playerID])
+			engine.field.setAllSkin(engine.skin)
 			return true
 		}
 		//Check for game over
@@ -898,7 +893,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			engine.playSE("levelup")
 			inFever[playerID] = true
 			feverBackupField[playerID] = engine.field
-			engine.field = null
+			engine.field .reset()
 			loadFeverMap(engine, playerID, feverChain[playerID])
 			if(!ojamaMeter[playerID]) engine.meterValue = 0
 		}

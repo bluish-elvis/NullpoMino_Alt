@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.net
 
 import biz.source_code.base64Coder.Base64Coder
@@ -29,6 +34,8 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.strDateTime
+import mu.nu.nullpo.util.GeneralUtil.strGMT
 import net.clarenceho.crypto.RC4
 import org.apache.log4j.Logger
 import org.apache.log4j.PropertyConfigurator
@@ -38,12 +45,12 @@ import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.nio.channels.*
 import java.nio.channels.spi.SelectorProvider
-import java.util.LinkedList
 import java.util.Calendar
+import java.util.LinkedList
 import java.util.TimeZone
-import java.util.zip.*
-import kotlin.ConcurrentModificationException
-import kotlin.collections.HashMap
+import java.util.zip.Adler32
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import kotlin.math.pow
 import kotlin.random.Random
 
@@ -83,11 +90,11 @@ import kotlin.random.Random
 	/** RNG for values selection */
 	private val rand = Random.Default
 
-	/** true if shutdown is requested by the admin */
+	/** Set true if shutdown is requested by the admin */
 	private var shutdownRequested = false
 
 	/** The port to listen on */
-	private var port:Int = 0
+	private var port = 0
 
 	/** The channel on which we'll accept connections */
 	private var serverChannel:ServerSocketChannel? = null
@@ -238,7 +245,7 @@ import kotlin.random.Random
 		try {
 			selector = initSelector()
 		} catch(e:IOException) {
-			log.fatal("Failed to startup the server", e)
+			log.fatal("Failed to boot the server", e)
 			return
 		}
 
@@ -312,13 +319,13 @@ import kotlin.random.Random
 
 					}
 				} catch(e:ConcurrentModificationException) {
-					log.debug("ConcurrentModificationException on server mainloop", e)
+					log.debug("ConcurrentModificationException on the server mainloop", e)
 				}
 
 			} catch(e:IOException) {
-				log.fatal("IOException on server mainloop", e)
+				log.fatal("IOException on the server mainloop", e)
 			} catch(e:Throwable) {
-				log.fatal("Non-IOException throwed on server mainloop", e)
+				log.fatal("Non-IOException throwed on the server mainloop", e)
 			}
 
 		log.warn("Server Shutdown!")
@@ -351,8 +358,8 @@ import kotlin.random.Random
 			// Banned
 			log.info("Connection is banned:"+getHostName(socketChannel))
 			val endDate = ban.endDate
-			val strStart = GeneralUtil.exportCalendarString(ban.startDate)
-			val strExpire = GeneralUtil.exportCalendarString(endDate)
+			val strStart = ban.startDate.strGMT
+			val strExpire = endDate.strGMT
 			send(socketChannel, "banned\t$strStart\t$strExpire\n")
 			synchronized(pendingChanges) {
 				pendingChanges.add(ChangeRequest(socketChannel, ChangeRequest.DISCONNECT, 0))
@@ -597,7 +604,9 @@ import kotlin.random.Random
 
 			// And queue the data we want written
 			synchronized(pendingData) {
-				var queue = (pendingData as Map<SocketChannel, List<ByteBuffer>>).getOrDefault(client, emptyList())+ByteBuffer.wrap(bytes)
+				val queue = (pendingData as Map<SocketChannel, List<ByteBuffer>>).getOrDefault(client, emptyList())+ByteBuffer.wrap(
+					bytes)
+				log.info(queue)
 			}
 		}
 
@@ -707,7 +716,7 @@ import kotlin.random.Random
 			for(ch in channelList) {
 				val p = playerInfoMap[ch]
 
-				if(p!=null&&p.uid==pInfo.uid) return ch
+				if(p!=null&&p.uid==pInfo.uid) return@getSocketChannelByPlayer ch
 			}
 		}
 		return null
@@ -742,7 +751,7 @@ import kotlin.random.Random
 						maxLen = len
 					}
 			}
-			return chMatch
+			return@findPlayerByMsg chMatch
 		}
 	}
 
@@ -954,7 +963,7 @@ import kotlin.random.Random
 			while(lobbyChatList!!.size>maxLobbyChatHistory) lobbyChatList!!.removeFirst()
 			for(chat in lobbyChatList!!)
 				send(client,
-					"lobbychath\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t"
+					"lobbychath\t${NetUtil.urlEncode(chat.strUserName)}\t${chat.timestamp!!.strGMT}\t"
 						+NetUtil.urlEncode(chat.strMessage)+"\n")
 
 			return
@@ -1065,7 +1074,9 @@ import kotlin.random.Random
 					val ch = findPlayerByMsg(msg.substring(5))
 					if(ch==null)
 						send(pInfo.channel,
-							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode("(private) Cannot find user")}\n")
+							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
+								chat.timestamp!!.strGMT
+							}\t${NetUtil.urlEncode("(private) Cannot find user")}\n")
 					else {
 						var playerName = ""
 						var len = 0
@@ -1076,9 +1087,13 @@ import kotlin.random.Random
 						}
 						msg = chat.strMessage.substring(len+6)
 						send(pInfo.channel,
-							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode("-> *"+playerName.substring(0, len)+"* "+msg)}\n")
+							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
+								chat.timestamp!!.strGMT
+							}\t${NetUtil.urlEncode("-> *"+playerName.substring(0, len)+"* "+msg)}\n")
 						send(ch,
-							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode("(private) $msg")}\n")
+							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
+								chat.timestamp!!.strGMT
+							}\t${NetUtil.urlEncode("(private) $msg")}\n")
 
 					}
 				} else {
@@ -1088,7 +1103,9 @@ import kotlin.random.Random
 					while(lobbyChatList!!.size>maxLobbyChatHistory) lobbyChatList!!.removeFirst()
 					saveLobbyChatHistory()
 
-					broadcast("lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode(chat.strMessage)}\n")
+					broadcast("lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
+						chat.timestamp!!.strGMT
+					}\t${NetUtil.urlEncode(chat.strMessage)}\n")
 				}
 			}
 			return
@@ -1105,7 +1122,9 @@ import kotlin.random.Random
 					roomInfo.chatList.add(chat)
 					while(roomInfo.chatList.size>maxRoomChatHistory) roomInfo.chatList.removeFirst()
 
-					broadcast("chat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode(chat.strMessage)}\n", pInfo.roomID)
+					broadcast("chat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
+						chat.timestamp!!.strGMT
+					}\t${NetUtil.urlEncode(chat.strMessage)}\n", pInfo.roomID)
 				}
 			}
 			return
@@ -1130,7 +1149,7 @@ import kotlin.random.Random
 					.append(";").append(p.playCount[style]).append(";").append(p.winCount[style]).append("\t")
 			}
 			if(myRank==-1&&pInfo!=null) {
-				strPData.append((-1).toString()+";").append(NetUtil.urlEncode(pInfo.strName)).append(";")
+				strPData.append("${(-1)};").append(NetUtil.urlEncode(pInfo.strName)).append(";")
 					.append(pInfo.rating[style]).append(";").append(pInfo.playCount[style]).append(";").append(pInfo.winCount[style])
 					.append("\t")
 			}
@@ -1219,7 +1238,7 @@ import kotlin.random.Random
 					val strDecompressed = NetUtil.decompressString(message[4])
 					val strMaps = strDecompressed.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 
-					val maxMap = strMaps.size
+//					val maxMap = strMaps.size
 
 					roomInfo.mapList.addAll(strMaps)
 
@@ -1301,7 +1320,8 @@ import kotlin.random.Random
 				broadcastRoomInfoUpdate(roomInfo, "roomcreate")
 				send(client, "roomcreatesuccess\t${roomInfo.roomID}\t${pInfo.seatID}\t-1\n")
 
-				log.info("NewRatedRoom ID:${roomInfo.roomID} Title:${roomInfo.strName} RuleLock:${roomInfo.ruleLock} Map:${roomInfo.useMap} Mode:${roomInfo.strMode}")
+				log.info(
+					"NewRatedRoom ID:${roomInfo.roomID} Title:${roomInfo.strName} RuleLock:${roomInfo.ruleLock} Map:${roomInfo.useMap} Mode:${roomInfo.strMode}")
 			}
 			return
 		}
@@ -1411,7 +1431,9 @@ import kotlin.random.Random
 					// Send chat history
 					for(chat in newRoom.chatList)
 						send(client,
-							"chath\t${NetUtil.urlEncode(chat.strUserName)}\t${GeneralUtil.exportCalendarString(chat.timestamp!!)}\t${NetUtil.urlEncode(chat.strMessage)}\n")
+							"chath\t${NetUtil.urlEncode(chat.strUserName)}\t${
+								chat.timestamp!!.strGMT
+							}\t${NetUtil.urlEncode(chat.strMessage)}\n")
 				} else
 				// No such a room
 					send(client, "roomjoinfail\n")
@@ -1429,7 +1451,8 @@ import kotlin.random.Random
 					pInfo.strTeam = strTeam
 					broadcastPlayerInfoUpdate(pInfo)
 
-					broadcast("changeteam\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${NetUtil.urlEncode(pInfo.strTeam)}\n", pInfo.roomID)
+					broadcast("changeteam\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${NetUtil.urlEncode(pInfo.strTeam)}\n",
+						pInfo.roomID)
 				}
 			}
 		// Change Player/Spectator status
@@ -1450,7 +1473,8 @@ import kotlin.random.Random
 							pInfo.seatID = -1
 							pInfo.queueID = -1
 							//send(client, "changestatus\twatchonly\t-1\n");
-							broadcast("changestatus\twatchonly\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t$prevSeatID\n", pInfo.roomID)
+							broadcast("changestatus\twatchonly\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t$prevSeatID\n",
+								pInfo.roomID)
 
 							joinAllQueuePlayers(roomInfo) // Let the queue-player to join
 						} // Change to player
@@ -1459,14 +1483,16 @@ import kotlin.random.Random
 							pInfo.queueID = -1
 							pInfo.ready = false
 							//send(client, "changestatus\tjoinseat\t" + pInfo.seatID + "\n");
-							broadcast("changestatus\tjoinseat\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\n", pInfo.roomID)
+							broadcast("changestatus\tjoinseat\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\n",
+								pInfo.roomID)
 						}
 						else -> {
 							pInfo.seatID = -1
 							pInfo.queueID = roomInfo.joinQueue(pInfo)
 							pInfo.ready = false
 							//send(client, "changestatus\tjoinqueue\t" + pInfo.queueID + "\n");
-							broadcast("changestatus\tjoinqueue\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.queueID}\n", pInfo.roomID)
+							broadcast("changestatus\tjoinqueue\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.queueID}\n",
+								pInfo.roomID)
 						}
 					}
 					broadcastPlayerInfoUpdate(pInfo)
@@ -1603,7 +1629,7 @@ import kotlin.random.Random
 						record.strModeName = roomInfo.strMode
 						record.strRuleName = rule
 						record.style = roomInfo.style
-						record.strTimeStamp = GeneralUtil.exportCalendarString()
+						record.strTimeStamp = GeneralUtil.nowGMT
 
 						val gamerate = record.stats!!.gamerate*100f
 
@@ -1641,7 +1667,7 @@ import kotlin.random.Random
 			}
 		// Single player leaderboard
 		if(message[0]=="spranking") {
-			//spranking\t[RULE]\t[MODE]\t[GAMETYPE]\t[DAILY]
+			//spranking\t[RULE]\t[MODE]\t[Course]\t[DAILY]
 			val strRule = NetUtil.urlDecode(message[1])
 			val strMode = NetUtil.urlDecode(message[2])
 			val gameType = message[3].toInt()
@@ -1678,7 +1704,7 @@ import kotlin.random.Random
 						if(maxRecord>0) strRow += ","
 
 						maxRecord++
-						strRow += (-1).toString()+",${NetUtil.urlEncode(record.strPlayerName)},"
+						strRow += "${(-1)},${NetUtil.urlEncode(record.strPlayerName)},"
 						strRow += record.strTimeStamp+",${record.stats!!.gamerate},"
 						strRow += record.getStatRow(ranking.rankingType)
 
@@ -1697,7 +1723,7 @@ import kotlin.random.Random
 		}
 		// Single player replay download
 		if(message[0]=="spdownload") {
-			//spdownload\t[RULE]\t[MODE]\t[GAMETYPE]\t[DAILY]\t[NAME]
+			//spdownload\t[RULE]\t[MODE]\t[Course]\t[DAILY]\t[NAME]
 			var strRule = NetUtil.urlDecode(message[1])
 			val strMode = NetUtil.urlDecode(message[2])
 			val gameType = message[3].toInt()
@@ -2236,8 +2262,10 @@ import kotlin.random.Random
 							val wp = roomInfo.playerSeatDead[w]
 							val lp = roomInfo.playerSeatDead[l]
 
-							wp.rating[style] += (rankDelta(wp.playCount[style], wp.rating[style].toDouble(), lp.rating[style].toDouble(), 1.0)/(n-1)).toInt()
-							lp.rating[style] += (rankDelta(lp.playCount[style], lp.rating[style].toDouble(), wp.rating[style].toDouble(), 0.0)/(n-1)).toInt()
+							wp.rating[style] += (rankDelta(wp.playCount[style], wp.rating[style].toDouble(), lp.rating[style].toDouble(),
+								1.0)/(n-1)).toInt()
+							lp.rating[style] += (rankDelta(lp.playCount[style], lp.rating[style].toDouble(), wp.rating[style].toDouble(),
+								0.0)/(n-1)).toInt()
 
 							if(wp.rating[style]<ratingMin) wp.rating[style] = ratingMin
 							if(lp.rating[style]<ratingMin) lp.rating[style] = ratingMin
@@ -2322,7 +2350,7 @@ import kotlin.random.Random
 	 * @param command Command
 	 */
 	private fun broadcastPlayerInfoUpdate(pInfo:NetPlayerInfo, command:String = "playerupdate") {
-		broadcast("command$\t${pInfo.exportString()}\n")
+		broadcast("$command \t${pInfo.exportString()}\n")
 	}
 
 	/** Get NetPlayerInfo by player's name
@@ -2595,69 +2623,69 @@ import kotlin.random.Random
 		const val DEFAULT_MAX_ROOMCHAT_HISTORY = 10
 
 		/** Server config file */
-		private var propServer:CustomProperties = CustomProperties()
+		private var propServer = CustomProperties()
 
 		/** Server Rated presets file */
-		private var propPresets:CustomProperties = CustomProperties()
+		private var propPresets = CustomProperties()
 
 		/** Properties of player data list (mainly for rating) */
-		private var propPlayerData:CustomProperties = CustomProperties()
+		private var propPlayerData = CustomProperties()
 
 		/** Properties of multiplayer leaderboard */
-		private var propMPRanking:CustomProperties = CustomProperties()
+		private var propMPRanking = CustomProperties()
 
 		/** Properties of single player all-time leaderboard */
-		private var propSPRankingAlltime:CustomProperties = CustomProperties()
+		private var propSPRankingAlltime = CustomProperties()
 
 		/** Properties of single player daily leaderboard */
-		private var propSPRankingDaily:CustomProperties = CustomProperties()
+		private var propSPRankingDaily = CustomProperties()
 
 		/** Properties of single player personal best */
-		private var propSPPersonalBest:CustomProperties = CustomProperties()
+		private var propSPPersonalBest = CustomProperties()
 
 		/** True to allow hostname display (If false, it will display IP only) */
-		private var allowDNSAccess:Boolean = false
+		private var allowDNSAccess = false
 
 		/** Timeout time (0=Disable) */
-		private var timeoutTime:Long = 0
+		private var timeoutTime = 0L
 
 		/** Client's ping interval */
-		private var clientPingInterval:Long = 0
+		private var clientPingInterval = 0L
 
 		/** Default rating */
-		private var ratingDefault:Int = 0
+		private var ratingDefault = 0
 
 		/** The maximum possible adjustment per game. (K-value) */
 		private var ratingNormalMaxDiff:Double = 0.toDouble()
 
 		/** After playing this number of games, the rating logic will take account
 		 * of number of games played. */
-		private var ratingProvisionalGames:Int = 0
+		private var ratingProvisionalGames = 0
 
 		/** Min/Max range of rating */
-		private var ratingMin:Int = 0
-		private var ratingMax:Int = 0
+		private var ratingMin = 0
+		private var ratingMax = 0
 
 		/** Allow same IP player for rating change */
-		private var ratingAllowSameIP:Boolean = false
+		private var ratingAllowSameIP = false
 
 		/** Max entry of multiplayer leaderboard */
-		private var maxMPRanking:Int = 0
+		private var maxMPRanking = 0
 
 		/** Max entry of singleplayer leaderboard */
-		private var maxSPRanking:Int = 0
+		private var maxSPRanking = 0
 
 		/** TimeZone of daily single player leaderboard */
 		private var spDailyTimeZone:String? = null
 
 		/** Minimum game rate of single player leaderboard */
-		private var spMinGameRate:Float = 0f
+		private var spMinGameRate = 0f
 
 		/** Max entry of lobby chat history */
-		private var maxLobbyChatHistory:Int = 0
+		private var maxLobbyChatHistory = 0
 
 		/** Max entry of room chat history */
-		private var maxRoomChatHistory:Int = 0
+		private var maxRoomChatHistory = 0
 
 		/** Rated room info presets (compressed NetRoomInfo Strings) */
 		private var ratedInfoList:LinkedList<String>? = null
@@ -2756,7 +2784,7 @@ import kotlin.random.Random
 
 							log.debug("{RuleLoad} StyleID:$style RuleFile:${strTempArray[0]} SettingID:"+settingID)
 
-							val `in` = FileInputStream(strTempArray[0])
+							val `in` = GZIPInputStream(FileInputStream(strTempArray[0]))
 							val prop = CustomProperties()
 							prop.load(`in`)
 							`in`.close()
@@ -3054,10 +3082,10 @@ import kotlin.random.Random
 			val oldLastUpdate = spDailyLastUpdate
 
 			spDailyLastUpdate = c
-			propSPRankingDaily.setProperty("daily.lastupdate", GeneralUtil.exportCalendarString(spDailyLastUpdate!!))
+			propSPRankingDaily.setProperty("daily.lastupdate", spDailyLastUpdate!!.strGMT)
 
-			if(oldLastUpdate!=null) log.debug("SP daily ranking previous-update:"+GeneralUtil.getCalendarString(oldLastUpdate))
-			log.debug("SP daily ranking last-update:"+GeneralUtil.getCalendarString(c))
+			if(oldLastUpdate!=null) log.debug("SP daily ranking previous-update:"+oldLastUpdate.strDateTime)
+			log.debug("SP daily ranking last-update:"+c.strDateTime)
 
 			if(oldLastUpdate==null||c.get(Calendar.DATE)==oldLastUpdate.get(Calendar.DATE)) return false
 
@@ -3287,7 +3315,7 @@ import kotlin.random.Random
 			// Load server config file
 			propServer = CustomProperties()
 			try {
-				val `in` = FileInputStream(servcfg)
+				val `in` = GZIPInputStream(FileInputStream(servcfg))
 				propServer.load(`in`)
 				`in`.close()
 			} catch(e:IOException) {

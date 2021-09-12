@@ -1,3 +1,32 @@
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -8,41 +37,41 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
 
 /** VS-DIG RACE mode */
 class VSDigRaceMode:AbstractMode() {
 
 	/** Each player's frame cint */
-	private val PLAYER_COLOR_FRAME = intArrayOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
+	private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 
 	/** Number of garbage lines to clear */
-	private var goalLines:IntArray = IntArray(0)
+	private var goalLines = IntArray(0)
 
 	/** Rate of garbage holes change */
-	private var messiness:IntArray = IntArray(0)
+	private var messiness = IntArray(0)
 
 	/** BGM number */
-	private var bgmno:Int = 0
+	private var bgmno = 0
 
 	/** Sound effects ON/OFF */
-	private var enableSE:BooleanArray = BooleanArray(0)
+	private var enableSE = BooleanArray(0)
 
 	/** Last preset number used */
-	private var presetNumber:IntArray = IntArray(0)
+	private var presetNumber = IntArray(0)
 
 	/** Winner player ID */
-	private var winnerID:Int = 0
+	private var winnerID = 0
 
 	/** Win count for each player */
-	private var winCount:IntArray = IntArray(0)
+	private var winCount = IntArray(0)
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/* Mode name */
-	override val name:String = "VS-DIG RACE"
+	override val name = "VS-DIG RACE"
 
 	override val isVSMode:Boolean
 		get() = true
@@ -182,16 +211,18 @@ class VSDigRaceMode:AbstractMode() {
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
-				if(menuCursor==7)
-					loadPreset(engine, owner.modeConfig, presetNumber[playerID])
-				else if(menuCursor==8) {
-					savePreset(engine, owner.modeConfig, presetNumber[playerID])
-					owner.saveModeConfig()
-				} else {
-					saveOtherSetting(engine, owner.modeConfig)
-					savePreset(engine, owner.modeConfig, -1-playerID)
-					owner.saveModeConfig()
-					engine.statc[4] = 1
+				when(menuCursor) {
+					7 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID])
+					8 -> {
+						savePreset(engine, owner.modeConfig, presetNumber[playerID])
+						owner.saveModeConfig()
+					}
+					else -> {
+						saveOtherSetting(engine, owner.modeConfig)
+						savePreset(engine, owner.modeConfig, -1-playerID)
+						owner.saveModeConfig()
+						engine.statc[4] = 1
+					}
 				}
 			}
 
@@ -221,16 +252,13 @@ class VSDigRaceMode:AbstractMode() {
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(engine.statc[4]==0) {
 			if(menuCursor<9) {
-				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(),
-					"G-MAX", engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE",
-					engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY",
-					engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString())
-				drawMenu(engine, playerID, receiver, 14, EventReceiver.COLOR.GREEN, 7, "LOAD", "${presetNumber[playerID]}", "SAVE",
-					"${presetNumber[playerID]}")
+				drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0)
+				drawMenu(engine, playerID, receiver, 14, EventReceiver.COLOR.GREEN, 7, "LOAD" to presetNumber[playerID],
+					"SAVE" to presetNumber[playerID])
 			} else {
-				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, 9, "GOAL", "${goalLines[playerID]}", "CHANGERATE",
-					"${messiness[playerID]}%", "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
-				drawMenu(engine, playerID, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM", "${BGM.values[bgmno]}")
+				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, 9, "GOAL" to goalLines[playerID],
+					"CHANGERATE" to "${messiness[playerID]}%", "SE" to enableSE[playerID])
+				drawMenu(engine, playerID, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM" to BGM.values[bgmno])
 			}
 		} else
 			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
@@ -263,8 +291,8 @@ class VSDigRaceMode:AbstractMode() {
 	 * @param engine GameEngine
 	 */
 	private fun fillGarbage(engine:GameEngine, playerID:Int) {
-		val w:Int = engine.field!!.width
-		val h:Int = engine.field!!.height
+		val w:Int = engine.field.width
+		val h:Int = engine.field.height
 		var hole:Int = -1
 
 		for(y:Int in h-1 downTo h-goalLines[playerID]) {
@@ -286,17 +314,17 @@ class VSDigRaceMode:AbstractMode() {
 						while(color==prevColor)
 						prevColor = color
 					}
-					engine.field!!.setBlock(x, y, Block(color, if(y==h-1) Block.TYPE.BLOCK else Block.TYPE.GEM,
+					engine.field.setBlock(x, y, Block(color, if(y==h-1) Block.TYPE.BLOCK else Block.TYPE.GEM,
 						engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 				}
 			// Set connections
 			if(receiver.isStickySkin(engine)&&y!=h-1)
 				for(x:Int in 0 until w)
 					if(x!=hole) {
-						val blk = engine.field!!.getBlock(x, y)
+						val blk = engine.field.getBlock(x, y)
 						if(blk!=null) {
-							if(!engine.field!!.getBlockEmpty(x-1, y)) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
-							if(!engine.field!!.getBlockEmpty(x+1, y))
+							if(!engine.field.getBlockEmpty(x-1, y)) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+							if(!engine.field.getBlockEmpty(x+1, y))
 								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 						}
 					}
@@ -306,15 +334,15 @@ class VSDigRaceMode:AbstractMode() {
 	private fun getRemainGarbageLines(engine:GameEngine?, playerID:Int):Int {
 		if(engine?.field==null) return -1
 
-		val w:Int = engine.field!!.width
-		val h:Int = engine.field!!.height
-		var lines:Int = 0
+		val w:Int = engine.field.width
+		val h:Int = engine.field.height
+		var lines = 0
 		var hasGemBlock = false
 
 		for(y:Int in h-1 downTo h-goalLines[playerID])
-			if(!engine.field!!.getLineFlag(y))
+			if(!engine.field.getLineFlag(y))
 				for(x:Int in 0 until w) {
-					val blk = engine.field!!.getBlock(x, y)
+					val blk = engine.field.getBlock(x, y)
 
 					if(blk!=null&&blk.isGemBlock) hasGemBlock = true
 					if(blk!=null&&blk.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
@@ -366,7 +394,7 @@ class VSDigRaceMode:AbstractMode() {
 		else if(remainLines>enemyRemainLines) receiver.drawMenuFont(engine, playerID, -2, 22, "2ND", EventReceiver.COLOR.WHITE)
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(256, 16, GeneralUtil.getTime(engine.statistics.time))
+		if(playerID==0) receiver.drawDirectFont(256, 16, engine.statistics.time.toTimeStr)
 
 		// Normal layout
 		if(owner.receiver.nextDisplayType!=2&&playerID==0) {

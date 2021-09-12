@@ -1,23 +1,62 @@
 /*
+ * Copyright (c) 2021-2021,
+ * This library class was created by 0xFC963F18DC21 / Shots243
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
+ *
+ * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+ *
+ * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ *
+ * Repository: https://github.com/Shots243/ModePile
+ *
+ * When using this library in a mode / library pack of your own, the following
+ * conditions must be satisfied:
+ *     - This license must remain visible at the top of the document, unmodified.
+ *     - You are allowed to use this library for any modding purpose.
+ *         - If this is the case, the Library Creator must be credited somewhere.
+ *             - Source comments only are fine, but in a README is recommended.
+ *     - Modification of this library is allowed, but only in the condition that a
+ *       pull request is made to merge the changes to the repository.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
  * COLOR POWER mode
  * - Marathon, but with powers given by breaking enough blocks of a certain color.
  * - Enjoy rainbows!
  */
 package zeroxfc.nullpo.custom.modes
 
-import mu.nu.nullpo.game.component.*
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.component.BGMStatus
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.RendererExtension
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
-import zeroxfc.nullpo.custom.libs.*
+import mu.nu.nullpo.util.GeneralUtil.getONorOFF
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import zeroxfc.nullpo.custom.libs.Interpolation
+import zeroxfc.nullpo.custom.libs.ProfileProperties
 import kotlin.random.Random
 
 class ColorPower:MarathonModeBase() {
 	var l = 0
 	// Power meter values
-	private var meterValues:IntArray = intArrayOf()
+	private var meterValues = intArrayOf()
 	// Custom status timer
 	private var customTimer = 0
 	// Current active power
@@ -33,9 +72,9 @@ class ColorPower:MarathonModeBase() {
 	// Randomizer for non-rulebound mode
 	private var nonRuleboundRandomiser:Random? = null
 	// Color history
-	private var colorHistory:IntArray = intArrayOf()
+	private var colorHistory = intArrayOf()
 	// engine dif
-	private var defaultColors:IntArray = intArrayOf()
+	private var defaultColors = intArrayOf()
 	// Hm
 	private var preset = false
 	// LastScore
@@ -55,7 +94,7 @@ class ColorPower:MarathonModeBase() {
 	/**
 	 * Player profile
 	 */
-	private val playerProperties:ProfileProperties = ProfileProperties(EventReceiver.COLOR.GREEN)
+	private val playerProperties:ProfileProperties = ProfileProperties(COLOR.GREEN)
 	/**
 	 * Player rank
 	 */
@@ -77,7 +116,7 @@ class ColorPower:MarathonModeBase() {
 	 * The good hard drop effect
 	 */
 	private var pCoordList:MutableList<IntArray>? = null
-	private var PLAYER_NAME:String = ""
+	private var PLAYER_NAME = ""
 	// Mode Name
 	override val name:String
 		get() = "COLOR POWER"
@@ -85,10 +124,7 @@ class ColorPower:MarathonModeBase() {
      * Initialization
      */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
-		owner = engine.owner
-		lastscore = 0
-		scgettime = 0
-		bgmlv = 0
+		super.playerInit(engine, playerID)
 		l = -1
 		defaultColors = intArrayOf()
 		pCoordList = ArrayList()
@@ -110,16 +146,16 @@ class ColorPower:MarathonModeBase() {
 		rankingLinesPlayer = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
 		rankingTimePlayer = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
 		rankingRank = -1
-		rankingScore = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
-		rankingLines = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
-		rankingTime = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
+//		rankingScore = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
+//		rankingLines = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
+//		rankingTime = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
 		netPlayerInit(engine, playerID)
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
 			if(playerProperties.isLoggedIn) {
 				loadSettingPlayer(playerProperties)
-				loadRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+				loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 			}
 			PLAYER_NAME = ""
 			version = CURRENT_VERSION
@@ -242,7 +278,7 @@ class ColorPower:MarathonModeBase() {
 				if(!flag) break
 			}
 			appendToHistory(v)
-			engine.getNextObject(engine.nextPieceCount+engine.ruleopt.nextDisplay-1)?.setColor(v)
+			engine.getNextObject(engine.nextPieceCount+engine.ruleOpt.nextDisplay-1)?.setColor(v)
 		} else {
 			for(i in 0 until engine.nextPieceArrayObject.size) {
 				var v = -1
@@ -258,7 +294,7 @@ class ColorPower:MarathonModeBase() {
 					if(!flag) break
 				}
 				appendToHistory(v)
-				engine.nextPieceArrayObject[i]?.setColor(v)
+				engine.nextPieceArrayObject[i].setColor(v)
 			}
 		}
 	}
@@ -276,31 +312,25 @@ class ColorPower:MarathonModeBase() {
 				if(twistEnableType==1) strtwistEnable = "T-ONLY"
 				if(twistEnableType==2) strtwistEnable = "ALL"
 			} else {
-				strtwistEnable = GeneralUtil.getONorOFF(enableTSpin)
+				strtwistEnable = enableTSpin.getONorOFF()
 			}
-			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"LEVEL", "${startlevel+1}",
-				"SPIN BONUS", strtwistEnable,
-				"EZ SPIN", GeneralUtil.getONorOFF(enableTSpinKick),
-				"EZIMMOBILE", GeneralUtil.getONorOFF(twistEnableEZ),
-				"B2B", GeneralUtil.getONorOFF(enableB2B),
-				"COMBO", GeneralUtil.getONorOFF(enableCombo),
-				"GOAL", if(goaltype==2) "ENDLESS" else "${tableGameClearLines[goaltype]}"+" LINES",
-				"BIG", GeneralUtil.getONorOFF(big))
-			drawMenu(engine, playerID, receiver, 18, EventReceiver.COLOR.RED, 9,
-				"RULEBOUND", GeneralUtil.getONorOFF(ruleboundMode))
+			drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0,
+				"LEVEL" to startlevel+1, "SPIN BONUS" to strtwistEnable, "EZ SPIN" to enableTSpinKick, "EZIMMOBILE" to twistEnableEZ,
+				"B2B" to enableB2B, "COMBO" to enableCombo,
+				"GOAL" to if(goaltype==2) "ENDLESS" else "${tableGameClearLines[goaltype]} LINES", "BIG" to big)
+			drawMenu(engine, playerID, receiver, 18, COLOR.RED, 9, "RULEBOUND" to ruleboundMode)
 		}
 	}
 
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==1) {
-			if(defaultColors==null) defaultColors = engine.ruleopt.pieceColor
+			if(defaultColors==null) defaultColors = engine.ruleOpt.pieceColor
 			nonRuleboundRandomiser = Random(engine.randSeed)
 			colorHistory = intArrayOf(621, 621, 621, 621)
 			if(!ruleboundMode) {
 				randomizeColors(engine, false)
 			} else {
-				engine.ruleopt.pieceColor = defaultColors
+				engine.ruleOpt.pieceColor = defaultColors
 			}
 		}
 		return false
@@ -320,13 +350,13 @@ class ColorPower:MarathonModeBase() {
 		engine.big = big
 		if(version>=2) {
 			engine.twistAllowKick = enableTSpinKick
-			if(twistEnableType==0) {
-				engine.twistEnable = false
-			} else if(twistEnableType==1) {
-				engine.twistEnable = true
-			} else {
-				engine.twistEnable = true
-				engine.useAllSpinBonus = true
+			when(twistEnableType) {
+				0 -> engine.twistEnable = false
+				1 -> engine.twistEnable = true
+				else -> {
+					engine.twistEnable = true
+					engine.useAllSpinBonus = true
+				}
 			}
 		} else {
 			engine.twistEnable = enableTSpin
@@ -414,57 +444,57 @@ class ColorPower:MarathonModeBase() {
      */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, playerID, 0, 0, (if(ruleboundMode) "RULEBOUND " else "")+name, EventReceiver.COLOR.GREEN)
+		receiver.drawScoreFont(engine, playerID, 0, 0, (if(ruleboundMode) "RULEBOUND " else "")+name, COLOR.GREEN)
 		if(tableGameClearLines[goaltype]==-1) {
-			receiver.drawScoreFont(engine, playerID, 0, 1, "(ENDLESS GAME)", EventReceiver.COLOR.GREEN)
+			receiver.drawScoreFont(engine, playerID, 0, 1, "(Endless run)", COLOR.GREEN)
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 1, "("+tableGameClearLines[goaltype]+" LINES GAME)",
-				EventReceiver.COLOR.GREEN)
+			receiver.drawScoreFont(engine, playerID, 0, 1, "("+tableGameClearLines[goaltype]+" Lines run)",
+				COLOR.GREEN)
 		}
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE, scale)
 				if(showPlayerStats) {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 						val s = "${rankingScorePlayer[if(ruleboundMode) 1 else 0][goaltype][i]}"
 						receiver.drawScoreFont(engine, playerID, if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
 							if(s.length>6&&receiver.nextDisplayType!=2) (topY+i)*2 else topY+i, s, i==rankingRankPlayer,
 							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale)
 						receiver.drawScoreFont(engine, playerID, 10, topY+i,
 							"${rankingLinesPlayer[if(ruleboundMode) 1 else 0][goaltype][i]}", i==rankingRankPlayer, scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, GeneralUtil.getTime(
-							rankingTimePlayer[if(ruleboundMode) 1 else 0][goaltype][i]), i==rankingRankPlayer, scale)
+						receiver.drawScoreFont(engine, playerID, 15, topY+i,
+							rankingTimePlayer[if(ruleboundMode) 1 else 0][goaltype][i].toTimeStr, i==rankingRankPlayer, scale)
 					}
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE)
+					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2, playerProperties.nameDisplay,
-						EventReceiver.COLOR.WHITE, 2f)
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
+						COLOR.WHITE, 2f)
+					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 						val s = "${rankingScore[if(ruleboundMode) 1 else 0][goaltype][i]}"
 						receiver.drawScoreFont(engine, playerID, if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
 							if(s.length>6&&receiver.nextDisplayType!=2) (topY+i)*2 else topY+i, s, i==rankingRank,
 							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale)
 						receiver.drawScoreFont(engine, playerID, 10, topY+i,
 							"${rankingLines[if(ruleboundMode) 1 else 0][goaltype][i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, GeneralUtil.getTime(
-							rankingTime[if(ruleboundMode) 1 else 0][goaltype][i]), i==rankingRank, scale)
+						receiver.drawScoreFont(engine, playerID, 15, topY+i,
+							rankingTime[if(ruleboundMode) 1 else 0][goaltype][i].toTimeStr, i==rankingRank, scale)
 					}
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE)
+					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
 					if(!playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2,
 						"(NOT LOGGED IN)\n(E:LOG IN)")
 					if(playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5,
-						"F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
+						"F:SWITCH RANK SCREEN", COLOR.GREEN)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM&&!engine.gameActive) {
 			playerProperties.loginScreen.renderScreen(receiver, engine, playerID)
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", COLOR.BLUE)
 			val strScore:String = if(lastscore==0||scgettime>=120)
 				engine.statistics.score.toString()
 			else
@@ -474,14 +504,14 @@ class ColorPower:MarathonModeBase() {
 				}(+$lastscore)"
 
 			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
-			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", COLOR.BLUE)
 			if(engine.statistics.level>=19&&tableGameClearLines[goaltype]<0) receiver.drawScoreFont(engine, playerID, 0, 7,
-				engine.statistics.lines.toString()+"") else receiver.drawScoreFont(engine, playerID, 0, 7,
-				engine.statistics.lines.toString()+"/"+(engine.statistics.level+1)*10)
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", EventReceiver.COLOR.BLUE)
+				"${engine.statistics.lines}") else receiver.drawScoreFont(engine, playerID, 0, 7,
+				"${engine.statistics.lines}/${(engine.statistics.level+1)*10}")
+			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 10, (engine.statistics.level+1).toString())
-			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time))
+			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 13, engine.statistics.time.toTimeStr)
 
 			// Power-up progess
 			var scale = 1f
@@ -490,7 +520,7 @@ class ColorPower:MarathonModeBase() {
 				scale = 0.5f
 				base = 24
 			}
-			receiver.drawScoreFont(engine, playerID, (10/scale).toInt(), (base/scale).toInt(), "POWER-UPS", EventReceiver.COLOR.PINK,
+			receiver.drawScoreFont(engine, playerID, (10/scale).toInt(), (base/scale).toInt(), "POWER-UPS", COLOR.PINK,
 				scale)
 			receiver.drawScoreFont(engine, playerID, (10/scale).toInt(), (base+1/scale).toInt(),
 				"  GREY:"+String.format("%d/%d", meterValues[0], POWER_METER_MAX), POWERUP_TEXT_COLORS[0], scale)
@@ -508,15 +538,15 @@ class ColorPower:MarathonModeBase() {
 				"  BLUE:"+String.format("%d/%d", meterValues[6], POWER_METER_MAX), POWERUP_TEXT_COLORS[6], scale)
 			receiver.drawScoreFont(engine, playerID, (10/scale).toInt(), (base+8/scale).toInt(),
 				"PURPLE:"+String.format("%d/%d", meterValues[7], POWER_METER_MAX), POWERUP_TEXT_COLORS[7], scale)
-			receiver.drawScoreFont(engine, playerID, 0, 15, "MULTI.", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 15, "MULTI.", COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 16, "$scoreMultiplier"+"X")
-			receiver.drawScoreFont(engine, playerID, 0, 18, "LIVES", EventReceiver.COLOR.GREEN)
+			receiver.drawScoreFont(engine, playerID, 0, 18, "LIVES", COLOR.GREEN)
 			receiver.drawScoreFont(engine, playerID, 0, 19,
-				if(engine.stat!==GameEngine.Status.GAMEOVER) (engine.lives+1).toString()+"/5" else "$l/5")
+				if(engine.stat!==GameEngine.Status.GAMEOVER) "${(engine.lives+1)}/5" else "$l/5")
 			if(playerProperties.isLoggedIn||PLAYER_NAME.isNotEmpty()) {
-				receiver.drawScoreFont(engine, playerID, 0, 21, "PLAYER", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 0, 21, "PLAYER", COLOR.BLUE)
 				receiver.drawScoreFont(engine, playerID, 0, 22, if(owner.replayMode) PLAYER_NAME else playerProperties.nameDisplay,
-					EventReceiver.COLOR.WHITE, 2f)
+					COLOR.WHITE, 2f)
 			}
 			engine.nowPieceObject?.let {cPiece ->
 				val baseX:Int = receiver.fieldX(engine, playerID)+4
@@ -529,7 +559,7 @@ class ColorPower:MarathonModeBase() {
 					}
 				}
 			}
-			engine.field?.let {
+			engine.field.let {
 				if(engine.stat===GameEngine.Status.CUSTOM&&customTimer<120&&!(currentActivePower==0&&engine.lives>=4)) {
 					val offset = (10-POWERUP_NAMES[currentActivePower].length)/2
 					receiver.drawMenuFont(engine, playerID, offset, it.height/2, POWERUP_NAMES[currentActivePower],
@@ -537,9 +567,9 @@ class ColorPower:MarathonModeBase() {
 					receiver.drawMenuFont(engine, playerID, 0, it.height/2+1, "ACTIVATED!")
 				} else if(currentActivePower==0&&customTimer<120&&engine.stat===GameEngine.Status.CUSTOM&&engine.lives>=4) {
 					val offset = (10-"SMALL SCORE BONUS".length)/2
-					receiver.drawMenuFont(engine, playerID, 0, it.height/2-1, "LIVES FULL!", EventReceiver.COLOR.PINK)
+					receiver.drawMenuFont(engine, playerID, 0, it.height/2-1, "LIVES FULL!", COLOR.PINK)
 					receiver.drawMenuFont(engine, playerID, offset, it.height/2+1, "SMALL SCORE BONUS",
-						EventReceiver.COLOR.PINK)
+						COLOR.PINK)
 					receiver.drawMenuFont(engine, playerID, 0, it.height/2+2, "ACTIVATED!")
 				}
 			}
@@ -609,7 +639,7 @@ class ColorPower:MarathonModeBase() {
 //			appendToHistory(v);
 //			
 //			try {
-//				engine.nextPieceArrayObject[engine.nextPieceCount + engine.ruleopt.nextDisplay - 1].setColor(v + 1);
+//				engine.nextPieceArrayObject[engine.nextPieceCount + engine.ruleOpt.nextDisplay - 1].setColor(v + 1);
 //			} catch (IndexOutOfBoundsException e) {
 //				// DO NOTHING
 //			}
@@ -644,7 +674,7 @@ class ColorPower:MarathonModeBase() {
 				currentModified = -1
 				currentActivePower = 1
 				return true
-			} else if(customTimer==120) engine.field?.let {
+			} else if(customTimer==120) engine.field.let {
 				when(currentActivePower) {
 					POWERUP_EXTRALIFE -> if(engine.lives<4) {
 						engine.lives++
@@ -699,7 +729,7 @@ class ColorPower:MarathonModeBase() {
 						engine.playSE("linefall")
 					}
 					POWERUP_TOPCLEAR -> if(!it.isEmpty) {
-						it.delUpperFix()
+						it.delUpper()
 						it.clearLine()
 						var i = 0
 						while(i<it.height) {
@@ -742,7 +772,7 @@ class ColorPower:MarathonModeBase() {
 			engine.isInGame = true
 			val s:Boolean = playerProperties.loginScreen.updateScreen(engine, playerID)
 			if(playerProperties.isLoggedIn) {
-				loadRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+				loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 				loadSettingPlayer(playerProperties)
 			}
 			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
@@ -757,7 +787,7 @@ class ColorPower:MarathonModeBase() {
 		if(!ruleboundMode) {
 			randomizeColors(engine, true)
 		} else {
-			engine.ruleopt.pieceColor = defaultColors
+			engine.ruleOpt.pieceColor = defaultColors
 		}
 
 		// Line clear bonus
@@ -841,11 +871,11 @@ class ColorPower:MarathonModeBase() {
 				prop.setProperty("colorpower.playerName", playerProperties.nameDisplay)
 			}
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 			if(rankingRankPlayer!=-1&&playerProperties.isLoggedIn) {
-				saveRankingPlayer(playerProperties, engine.ruleopt.strRuleName)
+				saveRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
 				playerProperties.saveProfileConfig()
 			}
 		}
@@ -946,6 +976,7 @@ class ColorPower:MarathonModeBase() {
 	 * @param ruleName Rule name
 	 */
 	private fun saveRanking(prop:CustomProperties, ruleName:String) {
+
 		for(h in 0..1) {
 			for(i in 0 until RANKING_MAX) {
 				for(j in 0 until GAMETYPE_MAX) {
@@ -1114,13 +1145,13 @@ class ColorPower:MarathonModeBase() {
 		private const val POWERUP_SCOREBONUS = 7
 		// Power-up text colors
 		private val POWERUP_TEXT_COLORS = arrayOf(
-			EventReceiver.COLOR.WHITE,
-			EventReceiver.COLOR.RED,
-			EventReceiver.COLOR.ORANGE,
-			EventReceiver.COLOR.YELLOW,
-			EventReceiver.COLOR.GREEN,
-			EventReceiver.COLOR.CYAN,
-			EventReceiver.COLOR.COBALT,
-			EventReceiver.COLOR.PURPLE)
+			COLOR.WHITE,
+			COLOR.RED,
+			COLOR.ORANGE,
+			COLOR.YELLOW,
+			COLOR.GREEN,
+			COLOR.CYAN,
+			COLOR.COBALT,
+			COLOR.PURPLE)
 	}
 }

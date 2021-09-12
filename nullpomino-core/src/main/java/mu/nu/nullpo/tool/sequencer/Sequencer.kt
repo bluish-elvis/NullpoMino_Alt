@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.tool.sequencer
 
 import mu.nu.nullpo.game.component.Piece
@@ -28,10 +33,17 @@ import mu.nu.nullpo.util.CustomProperties
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.log4j.Logger
 import org.apache.log4j.PropertyConfigurator
-import java.awt.*
-import java.awt.event.*
+import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.GridLayout
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+import java.awt.event.InputEvent
+import java.awt.event.KeyEvent
 import java.io.*
-import java.util.*
+import java.util.Locale
+import java.util.Vector
+import java.util.zip.GZIPInputStream
 import javax.swing.*
 import javax.swing.filechooser.FileFilter
 
@@ -40,13 +52,13 @@ import javax.swing.filechooser.FileFilter
 class Sequencer:JFrame(), ActionListener {
 
 	/** Config File */
-	val propConfig:CustomProperties = CustomProperties()
+	val propConfig = CustomProperties()
 
 	/** Default language file */
-	private val propLangDefault:CustomProperties = CustomProperties()
+	private val propLangDefault = CustomProperties()
 
 	/** UI Language File */
-	private val propLang:CustomProperties = CustomProperties()
+	private val propLang = CustomProperties()
 
 	//----------------------------------------------------------------------
 	/** Rand-seed textfield */
@@ -75,10 +87,10 @@ class Sequencer:JFrame(), ActionListener {
 
 	//----------------------------------------------------------------------
 	/** Generated Sequence */
-	private var sequence:IntArray = IntArray(0)
+	private var sequence = IntArray(0)
 
 	/** Enabled Pieces */
-	private var nextPieceEnable:BooleanArray = BooleanArray(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
+	private var nextPieceEnable = BooleanArray(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
 
 	/** Constructor */
 	init {
@@ -317,8 +329,8 @@ class Sequencer:JFrame(), ActionListener {
 	}
 
 	private fun readReplayToUI(prop:CustomProperties, playerID:Int) {
-		txtfldSeed.text = prop.getProperty("$playerID.replay.randSeed", "0").toLong(16).toString()
-		comboboxRandomizer?.selectedItem = createShortString(prop.getProperty("$playerID.ruleopt.strRandomizer", null))
+		txtfldSeed.text = prop.getProperty("$playerID.replay.randSeed", 16L).toString()
+		comboboxRandomizer?.selectedItem = createShortString(prop.getProperty("$playerID.ruleOpt.strRandomizer", null))
 	}
 
 	@Throws(IOException::class)
@@ -326,7 +338,7 @@ class Sequencer:JFrame(), ActionListener {
 		log.info("Loading replay file from $filename")
 		val prop = CustomProperties()
 
-		val `in` = FileInputStream(filename)
+		val `in` = GZIPInputStream(FileInputStream(filename))
 		prop.load(`in`)
 		`in`.close()
 
