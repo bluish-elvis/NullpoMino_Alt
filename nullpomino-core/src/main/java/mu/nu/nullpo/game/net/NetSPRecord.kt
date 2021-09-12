@@ -1,21 +1,51 @@
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package mu.nu.nullpo.game.net
 
 import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.util.CustomProperties
 import java.io.Serializable
-import java.util.*
+import java.util.Collections
+import java.util.LinkedList
 
 /** Single player mode record */
 class NetSPRecord:Serializable {
 
 	/** Player Name */
-	var strPlayerName:String = ""
+	var strPlayerName = ""
 
 	/** Game Mode Name */
-	var strModeName:String = ""
+	var strModeName = ""
 
 	/** Rule Name */
-	var strRuleName:String = ""
+	var strRuleName = ""
 
 	/** Main Stats */
 	var stats:Statistics? = null
@@ -24,16 +54,16 @@ class NetSPRecord:Serializable {
 	var listCustomStats:LinkedList<String> = LinkedList()
 
 	/** Replay data (Compressed) */
-	var strReplayProp:String = ""
+	var strReplayProp = ""
 
 	/** Time stamp (GMT) */
-	var strTimeStamp:String = ""
+	var strTimeStamp = ""
 
 	/** Game Type ID */
-	var gameType:Int = 0
+	var gameType = 0
 
 	/** Game Style ID */
-	var style:Int = 0
+	var style = 0
 
 	/** Replay data as CustomProperties that contains replay data */
 	var replayProp:CustomProperties
@@ -137,7 +167,7 @@ class NetSPRecord:Serializable {
 	fun exportStringArray():Array<String> = arrayOf(
 		NetUtil.urlEncode(strPlayerName), NetUtil.urlEncode(strModeName), NetUtil.urlEncode(strRuleName),
 		if(stats==null) "" else NetUtil.compressString(stats!!.exportString()),
-		if(listCustomStats.isNullOrEmpty()) "" else NetUtil.compressString(exportCustomStats()), strReplayProp, "$gameType",
+		if(listCustomStats.isEmpty()) "" else NetUtil.compressString(exportCustomStats()), strReplayProp, "$gameType",
 		"$style", strTimeStamp)
 
 	/** Export to a String
@@ -235,46 +265,29 @@ class NetSPRecord:Serializable {
 			if(type!=RANKINGTYPE_GENERIC_SCORE) {
 				when(type) {
 					RANKINGTYPE_GENERIC_TIME -> {
-						strRow += it.time.toString()+","
-						strRow += it.totalPieceLocked.toString()+","
-						strRow += it.pps
+						strRow += "${it.time},${it.totalPieceLocked},${it.pps}"
 					}
 					RANKINGTYPE_SCORERACE -> {
-						strRow += it.time.toString()+","
-						strRow += it.lines.toString()+","
-						strRow += it.spl
+						strRow += "${it.time},${it.lines},${it.spl}"
 					}
 					RANKINGTYPE_DIGRACE -> {
-						strRow += it.time.toString()+","
-						strRow += it.lines.toString()+","
-						strRow += it.totalPieceLocked
+						strRow += "${it.time},${it.lines},${it.totalPieceLocked}"
 					}
 					RANKINGTYPE_ULTRA -> {
-						strRow += it.score.toString()+","
-						strRow += it.lines.toString()+","
-						strRow += it.totalPieceLocked
+						strRow += "${it.score},${it.lines},${it.totalPieceLocked}"
 					}
 					RANKINGTYPE_COMBORACE -> {
-						strRow += it.maxCombo.toString()+","
-						strRow += it.time.toString()+","
-						strRow += it.pps
+						strRow += "${it.maxCombo},${it.time},${it.pps}"
 					}
 					RANKINGTYPE_DIGCHALLENGE -> {
-						strRow += it.score.toString()+","
-						strRow += it.lines.toString()+","
-						strRow += it.time
+						strRow += "${it.score},${it.lines},${it.time}"
 					}
 					RANKINGTYPE_TIMEATTACK -> {
-						strRow += it.lines.toString()+","
-						strRow += it.time.toString()+","
-						strRow += it.pps.toString()+","
-						strRow += it.rollclear
+						strRow += "${it.lines},${it.time},${it.pps},${it.rollclear}"
 					}
 				}
 			} else {
-				strRow += it.score.toString()+","
-				strRow += it.lines.toString()+","
-				strRow += it.time
+				strRow += "${it.score},${it.lines},${it.time}"
 			}
 		}
 		return strRow
@@ -304,72 +317,81 @@ class NetSPRecord:Serializable {
 			val s1 = r1.stats
 			val s2 = r2.stats
 
-			if(type==RANKINGTYPE_GENERIC_SCORE) {
-				return if(s1!!.score>s2!!.score)
-					true
-				else if(s1.score==s2.score&&s1.lines>s2.lines)
-					true
-				else
-					s1.score==s2.score&&s1.lines==s2.lines&&s1.time<s2.time
-			} else if(type==RANKINGTYPE_GENERIC_TIME) {
-				return if(s1!!.time<s2!!.time)
-					true
-				else if(s1.time==s2.time&&s1.totalPieceLocked<s2.totalPieceLocked)
-					true
-				else
-					s1.time==s2.time&&s1.totalPieceLocked==s2.totalPieceLocked&&s1.pps>s2.pps
-			} else if(type==RANKINGTYPE_SCORERACE) {
-				return if(s1!!.time<s2!!.time)
-					true
-				else if(s1.time==s2.time&&s1.lines<s2.lines)
-					true
-				else
-					s1.time==s2.time&&s1.lines==s2.lines&&s1.spl>s2.spl
-			} else if(type==RANKINGTYPE_DIGRACE) {
-				return if(s1!!.time<s2!!.time)
-					true
-				else if(s1.time==s2.time&&s1.lines<s2.lines)
-					true
-				else
-					s1.time==s2.time&&s1.lines==s2.lines&&s1.totalPieceLocked<s2.totalPieceLocked
-			} else if(type==RANKINGTYPE_ULTRA) {
-				return if(s1!!.score>s2!!.score)
-					true
-				else if(s1.score==s2.score&&s1.lines>s2.lines)
-					true
-				else
-					s1.score==s2.score&&s1.lines==s2.lines&&s1.totalPieceLocked<s2.totalPieceLocked
-			} else if(type==RANKINGTYPE_COMBORACE) {
-				return if(s1!!.maxCombo>s2!!.maxCombo)
-					true
-				else if(s1.maxCombo==s2.maxCombo&&s1.time<s2.time)
-					true
-				else
-					s1.maxCombo==s2.maxCombo&&s1.time==s2.time&&s1.pps>s2.pps
-			} else if(type==RANKINGTYPE_DIGCHALLENGE) {
-				return if(s1!!.score>s2!!.score)
-					true
-				else if(s1.score==s2.score&&s1.lines>s2.lines)
-					true
-				else
-					s1.score==s2.score&&s1.lines==s2.lines&&s1.time>s2.time
-			} else if(type==RANKINGTYPE_TIMEATTACK) {
-				// Cap the line count at 150 or 200
-				val maxLines = if(r1.gameType>=5) 200 else 150
-				val l1 = minOf(s1!!.lines, maxLines)
-				val l2 = minOf(s2!!.lines, maxLines)
+			when(type) {
+				RANKINGTYPE_GENERIC_SCORE -> {
+					return if(s1!!.score>s2!!.score)
+						true
+					else if(s1.score==s2.score&&s1.lines>s2.lines)
+						true
+					else
+						s1.score==s2.score&&s1.lines==s2.lines&&s1.time<s2.time
+				}
+				RANKINGTYPE_GENERIC_TIME -> {
+					return if(s1!!.time<s2!!.time)
+						true
+					else if(s1.time==s2.time&&s1.totalPieceLocked<s2.totalPieceLocked)
+						true
+					else
+						s1.time==s2.time&&s1.totalPieceLocked==s2.totalPieceLocked&&s1.pps>s2.pps
+				}
+				RANKINGTYPE_SCORERACE -> {
+					return if(s1!!.time<s2!!.time)
+						true
+					else if(s1.time==s2.time&&s1.lines<s2.lines)
+						true
+					else
+						s1.time==s2.time&&s1.lines==s2.lines&&s1.spl>s2.spl
+				}
+				RANKINGTYPE_DIGRACE -> {
+					return if(s1!!.time<s2!!.time)
+						true
+					else if(s1.time==s2.time&&s1.lines<s2.lines)
+						true
+					else
+						s1.time==s2.time&&s1.lines==s2.lines&&s1.totalPieceLocked<s2.totalPieceLocked
+				}
+				RANKINGTYPE_ULTRA -> {
+					return if(s1!!.score>s2!!.score)
+						true
+					else if(s1.score==s2.score&&s1.lines>s2.lines)
+						true
+					else
+						s1.score==s2.score&&s1.lines==s2.lines&&s1.totalPieceLocked<s2.totalPieceLocked
+				}
+				RANKINGTYPE_COMBORACE -> {
+					return if(s1!!.maxCombo>s2!!.maxCombo)
+						true
+					else if(s1.maxCombo==s2.maxCombo&&s1.time<s2.time)
+						true
+					else
+						s1.maxCombo==s2.maxCombo&&s1.time==s2.time&&s1.pps>s2.pps
+				}
+				RANKINGTYPE_DIGCHALLENGE -> {
+					return if(s1!!.score>s2!!.score)
+						true
+					else if(s1.score==s2.score&&s1.lines>s2.lines)
+						true
+					else
+						s1.score==s2.score&&s1.lines==s2.lines&&s1.time>s2.time
+				}
+				RANKINGTYPE_TIMEATTACK -> {
+					// Cap the line count at 150 or 200
+					val maxLines = if(r1.gameType>=5) 200 else 150
+					val l1 = minOf(s1!!.lines, maxLines)
+					val l2 = minOf(s2!!.lines, maxLines)
 
-				return if(s1.rollclear>s2.rollclear)
-					true
-				else if(s1.rollclear==s2.rollclear&&l1>l2)
-					true
-				else if(s1.rollclear==s2.rollclear&&l1==l2&&s1.time<s2.time)
-					true
-				else
-					s1.rollclear==s2.rollclear&&l1==l2&&s1.time==s2.time&&s1.pps>s2.pps
+					return if(s1.rollclear>s2.rollclear)
+						true
+					else if(s1.rollclear==s2.rollclear&&l1>l2)
+						true
+					else if(s1.rollclear==s2.rollclear&&l1==l2&&s1.time<s2.time)
+						true
+					else
+						s1.rollclear==s2.rollclear&&l1==l2&&s1.time==s2.time&&s1.pps>s2.pps
+				}
+				else -> return false
 			}
 
-			return false
 		}
 	}
 }

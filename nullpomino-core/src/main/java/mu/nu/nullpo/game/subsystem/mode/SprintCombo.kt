@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -30,7 +35,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** COMBO RACE Mode */
 class SprintCombo:NetDummyMode() {
@@ -40,34 +45,34 @@ class SprintCombo:NetDummyMode() {
 
 	/** Elapsed time from last line clear (lastscore is displayed to screen
 	 * until this reaches to 120) */
-	private var scgettime:Int = 0
+	private var scgettime = 0
 
 	/** Most recent scoring eventInB2BIf it&#39;s the casetrue */
-	private var lastb2b:Boolean = false
+	private var lastb2b = false
 
 	/** Most recent scoring eventInCombocount */
-	private var lastcombo:Int = 0
+	private var lastcombo = 0
 
 	/** Most recent scoring eventPeace inID */
-	private var lastpiece:Int = 0
+	private var lastpiece = 0
 
 	/** BGM number */
-	private var bgmno:Int = 0
+	private var bgmno = 0
 
 	/** Big */
-	private var big:Boolean = false
+	private var big = false
 
 	/** HindranceLinescount type (0=5,1=10,2=18) */
-	private var goaltype:Int = 0
+	private var goaltype = 0
 
 	/** Current version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Last preset number used */
-	private var presetNumber:Int = 0
+	private var presetNumber = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Rankings' times */
 	private var rankingTime:Array<Array<IntArray>> = Array(GOAL_TABLE.size) {Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}}
@@ -76,13 +81,13 @@ class SprintCombo:NetDummyMode() {
 	private var rankingCombo:Array<Array<IntArray>> = Array(GOAL_TABLE.size) {Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}}
 
 	/** Shape type */
-	private var shapetype:Int = 0
+	private var shapetype = 0
 
 	/** Stack color */
-	private var stackColor:Int = 0
+	private var stackColor = 0
 
 	/** Width of combo well */
-	private var comboWidth:Int = 0
+	private var comboWidth = 0
 
 	/** */
 	private val gameType:Int
@@ -94,21 +99,21 @@ class SprintCombo:NetDummyMode() {
 
 	/** Height difference between ceiling and stack (negative number lowers the
 	 * stack height) */
-	private var ceilingAdjust:Int = 0
+	private var ceilingAdjust = 0
 
 	/** Piece spawns above field if true */
-	private var spawnAboveField:Boolean = false
+	private var spawnAboveField = false
 
 	/** Number of remaining stack lines that need to be added when lines are
 	 * cleared */
-	private var remainStack:Int = 0
+	private var remainStack = 0
 
 	/** Next section lines */
-	private var nextseclines:Int = 0
+	private var nextseclines = 0
 
 	/** Returns the name of this mode */
-	override val name:String = "REN Sprint"
-	override val gameIntensity:Int = 2
+	override val name = "REN Sprint"
+	override val gameIntensity = 2
 	/** This function will be called when the game enters the main game
 	 * screen. */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -139,7 +144,7 @@ class SprintCombo:NetDummyMode() {
 			version = CURRENT_VERSION
 			presetNumber = engine.owner.modeConfig.getProperty("comborace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 		} else {
 			version = engine.owner.replayProp.getProperty("comborace.version", 0)
 			presetNumber = 0
@@ -289,18 +294,18 @@ class SprintCombo:NetDummyMode() {
 		else {
 
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"GOAL", if(GOAL_TABLE[goaltype]==-1) "ENDLESS" else "${GOAL_TABLE[goaltype]}")
+				"GOAL" to if(GOAL_TABLE[goaltype]==-1) "ENDLESS" else GOAL_TABLE[goaltype])
 			drawMenu(engine, playerID, receiver, 2,
 				if(comboWidth==4) EventReceiver.COLOR.BLUE else EventReceiver.COLOR.WHITE,
-				1, "STARTSHAPE", SHAPE_NAME_TABLE[shapetype])
+				1, "STARTSHAPE" to SHAPE_NAME_TABLE[shapetype])
 			menuColor = EventReceiver.COLOR.BLUE
-			drawMenuCompact(engine, playerID, receiver, "WIDTH", "$comboWidth")
+			drawMenuCompact(engine, playerID, receiver, "WIDTH" to comboWidth)
 
 			drawMenuSpeeds(engine, playerID, receiver)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
 			if(!engine.owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
-				drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber", "SAVE", "$presetNumber")
+				drawMenuCompact(engine, playerID, receiver, "LOAD" to presetNumber, "SAVE" to presetNumber)
 			}
 		}
 	}
@@ -334,7 +339,7 @@ class SprintCombo:NetDummyMode() {
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.twistEnable = true
 		engine.twistAllowKick = true
-		engine.ruleopt.pieceEnterAboveField = spawnAboveField
+		engine.ruleOpt.pieceEnterAboveField = spawnAboveField
 	}
 
 	/** Fill the playfield with stack
@@ -342,8 +347,8 @@ class SprintCombo:NetDummyMode() {
 	 * @param height Stack height level number
 	 */
 	private fun fillStack(engine:GameEngine, height:Int) {
-		val w = engine.field!!.width
-		val h = engine.field!!.height
+		val w = engine.field.width
+		val h = engine.field.height
 		val stackHeight:Int
 		val cx = w-comboWidth/2-1
 		/* set initial stack height and remaining stack lines
@@ -361,7 +366,7 @@ class SprintCombo:NetDummyMode() {
 			for(y in h-1 downTo h-stackHeight) {
 				for(x in 0 until w)
 					if(x<cx-1||x>cx-2+comboWidth)
-						engine.field!!.setBlock(x, y,
+						engine.field.setBlock(x, y,
 							Block(STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
 								Block.ATTRIBUTE.GARBAGE))
 				stackColor++
@@ -371,7 +376,7 @@ class SprintCombo:NetDummyMode() {
 		if(comboWidth==4)
 			for(i in 0..11)
 				if(SHAPE_TABLE[shapetype][i]==1)
-					engine.field!!.setBlock(i%4, h-1-i/4,
+					engine.field.setBlock(i%4, h-1-i/4,
 						Block(SHAPE_COLOR_TABLE[shapetype], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 	}
 
@@ -381,7 +386,7 @@ class SprintCombo:NetDummyMode() {
 
 		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.RED)
 		if(GOAL_TABLE[goaltype]==-1)
-			receiver.drawScoreFont(engine, playerID, 0, 1, "(ENDLESS GAME)", EventReceiver.COLOR.WHITE)
+			receiver.drawScoreFont(engine, playerID, 0, 1, "(Endless run)", EventReceiver.COLOR.WHITE)
 		else
 			receiver.drawScoreFont(engine, playerID, 0, 1, "("+(GOAL_TABLE[goaltype]-1)
 				+"CHAIN Challenge)", EventReceiver.COLOR.WHITE)
@@ -396,8 +401,7 @@ class SprintCombo:NetDummyMode() {
 					if(rankingCombo[goaltype][gameType][i]==GOAL_TABLE[goaltype]-1)
 						receiver.drawScoreFont(engine, playerID, 2, 4+i, "PERFECT", true)
 					else receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingCombo[goaltype][gameType][i]}", rankingRank==i)
-					receiver.drawScoreNum(engine, playerID, 9, 4+i, GeneralUtil.getTime(rankingTime[goaltype][gameType][i]),
-						rankingRank==i)
+					receiver.drawScoreNum(engine, playerID, 9, 4+i, rankingTime[goaltype][gameType][i].toTimeStr, rankingRank==i)
 				}
 			}
 		} else {
@@ -415,8 +419,8 @@ class SprintCombo:NetDummyMode() {
 
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "Time", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(scgettime), 2f)
-			receiver.drawScoreNano(engine, playerID, 0, 17, GeneralUtil.getTime(engine.statistics.time))
+			receiver.drawScoreNum(engine, playerID, 0, 16, scgettime.toTimeStr, 2f)
+			receiver.drawScoreNano(engine, playerID, 0, 17, engine.statistics.time.toTimeStr)
 		}
 
 		super.renderLast(engine, playerID)
@@ -438,7 +442,7 @@ class SprintCombo:NetDummyMode() {
 			lastpiece = engine.nowPieceObject!!.id
 
 			// add any remaining stack lines
-			val w = engine.field!!.width
+			val w = engine.field.width
 			if(w>comboWidth) {
 				if(GOAL_TABLE[goaltype]==-1) remainStack = Integer.MAX_VALUE
 				val cx = w-comboWidth/2-1
@@ -446,7 +450,7 @@ class SprintCombo:NetDummyMode() {
 				while(tmplines<=lines&&remainStack>0) {
 					for(x in 0 until w)
 						if(x<cx-1||x>cx-2+comboWidth)
-							engine.field!!.setBlock(x, -ceilingAdjust-tmplines,
+							engine.field.setBlock(x, -ceilingAdjust-tmplines,
 								Block(STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
 									Block.ATTRIBUTE.GARBAGE))
 					stackColor++
@@ -532,7 +536,7 @@ class SprintCombo:NetDummyMode() {
 			updateRanking(engine.statistics.maxCombo, if(engine.ending==0) -1 else engine.statistics.time)
 
 			if(rankingRank!=-1) {
-				saveRanking(engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -549,7 +553,7 @@ class SprintCombo:NetDummyMode() {
 	}
 
 	/** Save the ranking */
-	fun saveRanking(ruleName:String) {
+	private fun saveRanking(ruleName:String) {
 		super.saveRanking(ruleName, (GOAL_TABLE.indices).flatMap {i ->
 			(0 until GAMETYPE_MAX).flatMap {j ->
 				(0 until RANKING_MAX).flatMap {k ->
@@ -598,12 +602,12 @@ class SprintCombo:NetDummyMode() {
 		var msg = "game\tstats\t"
 		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
 		msg += "${engine.statistics.time}\t${engine.statistics.lpm}\t"
-		msg += engine.statistics.pps.toString()+"\t$goaltype\t"
-		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
-		msg += engine.meterColor.toString()+"\t${engine.meterValue}\t"
+		msg += "${engine.statistics.pps}\t$goaltype\t"
+		msg += "${engine.gameActive}\t${engine.timerActive}\t"
+		msg += "${engine.meterColor}\t${engine.meterValue}\t"
 		msg += "$bg"+"\t"
 		msg += "$scgettime${"\t\t$lastb2b\t$lastcombo\t"+lastpiece}\t"
-		msg += engine.statistics.maxCombo.toString()+"\t${engine.combo}\n"
+		msg += "${engine.statistics.maxCombo}\t${engine.combo}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
@@ -634,7 +638,7 @@ class SprintCombo:NetDummyMode() {
 	override fun netSendEndGameStats(engine:GameEngine) {
 		var subMsg = ""
 		subMsg += "MAX COMBO;${(engine.statistics.maxCombo-1)}\t"
-		subMsg += "TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
+		subMsg += "TIME;${engine.statistics.time.toTimeStr}\t"
 		subMsg += "LINE;${engine.statistics.lines}\t"
 		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
 		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
@@ -648,9 +652,9 @@ class SprintCombo:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += engine.speed.gravity.toString()+"\t${engine.speed.denominator}\t${engine.speed.are}\t"
-		msg += engine.speed.areLine.toString()+"\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
-		msg += engine.speed.das.toString()+"\t$bgmno\t$goaltype\t$presetNumber\t"
+		msg += "${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"
+		msg += "${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
+		msg += "${engine.speed.das}\t$bgmno\t$goaltype\t$presetNumber\t"
 		msg += "$shapetype${"\t\t$comboWidth\t$ceilingAdjust\t"+spawnAboveField}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
@@ -685,7 +689,7 @@ class SprintCombo:NetDummyMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Number of ranking records */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private const val GAMETYPE_MAX = 3

@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.component
 
 import java.io.Serializable
@@ -37,10 +42,10 @@ class Piece(
 	var direction:Int = DIRECTION_UP
 
 	/** BigBlock */
-	@JvmField var big:Boolean = false
+	@JvmField var big = false
 
 	/** Connect blocks in this piece? */
-	var connectBlocks:Boolean = true
+	var connectBlocks = true
 
 	/** 相対X位置 (4Direction×nBlock) */
 	var dataX:Array<IntArray> = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
@@ -52,13 +57,13 @@ class Piece(
 	var block:Array<Block> = Array(maxBlock) {Block()}
 
 	/** 相対X位置と相対Y位置がオリジナル stateからずらされているならtrue */
-	var offsetApplied:Boolean = false
+	var offsetApplied = false
 
 	/** 相対X位置のずれ幅 */
-	var dataOffsetX:IntArray = IntArray(DIRECTION_COUNT)
+	var dataOffsetX = IntArray(DIRECTION_COUNT)
 
 	/** 相対Y位置のずれ幅 */
-	var dataOffsetY:IntArray = IntArray(DIRECTION_COUNT)
+	var dataOffsetY = IntArray(DIRECTION_COUNT)
 
 /*dataX = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
 	dataY = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
@@ -215,98 +220,79 @@ class Piece(
 	/** すべてのBlock stateをbと同じに設定
 	 * @param b 設定するBlock
 	 */
-	fun setBlock(b:Block) {
-		for(element in block)
-			element.copy(b)
-	}
+	fun setBlock(b:Block) = block.forEach {it.copy(b)}
 
 	/** すべてのBlock colorを変更
 	 * @param color 色
 	 */
-	fun setColor(color:Int) {
-		for(aBlock in block) aBlock.cint = color
-	}
+	fun setColor(color:Block.COLOR) = block.forEach {it.color = color}
+
+	/** すべてのBlock colorを変更
+	 * @param color 色
+	 */
+	fun setColor(color:Int) = block.forEach {it.cint = color}
 
 	/** Changes the colors of the blocks individually; allows one piece to have
 	 * blocks of multiple colors
 	 * @param color Array with each cell specifying a cint of a block
 	 */
-	fun setColor(color:IntArray) {
-		val length = minOf(block.size, color.size)
-		for(i in 0 until length)
-			block[i].cint = color[i]
-	}
+	fun setColor(color:Array<Block.COLOR>) = block.forEachIndexed {i, it -> it.color = color[i%color.size]}
 
-	/** Sets all blocks to an item block
-	 * @param item ID number of the item
+	/** Changes the colors of the blocks individually; allows one piece to have
+	 * blocks of multiple colors
+	 * @param color Array with each cell specifying a cint of a block
 	 */
-	fun setItem(item:Int) {
-		for(aBlock in block) aBlock.item = item
-	}
+	fun setColor(color:IntArray) = block.forEachIndexed {i, it -> it.cint = color[i%color.size]}
+
+	/** Sets all blocks to an inum block
+	 * @param item ID number of the inum
+	 */
+	fun setItem(item:Int) = block.forEach {it.inum = item}
 
 	/** Sets the items of the blocks individually; allows one piece to have
-	 * different item settings for each block
+	 * different inum settings for each block
 	 * @param item Array with each element specifying a cint of a block
 	 */
-	fun setItem(item:IntArray) {
-		val length = minOf(block.size, item.size)
-		for(i in 0 until length)
-			block[i].item = item[i]
-	}
+	fun setItem(item:IntArray) = block.forEachIndexed {i, it -> it.inum = item[i%item.size]}
 
 	/** Sets all blocks' hard count
 	 * @param hard Hard count
 	 */
-	fun setHard(hard:Int) {
-		for(aBlock in block) aBlock.hard = hard
-	}
+	fun setHard(hard:Int) = block.forEach {it.hard = hard}
 
 	/** Sets the hard counts of the blocks individually; allows one piece to
 	 * have
 	 * different hard count settings for each block
 	 * @param hard Array with each element specifying a hard count of a block
 	 */
-	fun setHard(hard:IntArray) {
-		val length = minOf(block.size, hard.size)
-		for(i in 0 until length)
-			block[i].hard = hard[i]
-	}
+	fun setHard(hard:IntArray) = block.forEachIndexed {i, it -> it.hard = hard[i%hard.size]}
 
 	/** すべてのBlockの模様を変更
 	 * @param skin 模様
 	 */
-	fun setSkin(skin:Int) {
-		for(aBlock in block) aBlock.skin = skin
-	}
+	fun setSkin(skin:Int) = block.forEach {it.skin = skin}
 
 	/** すべてのBlockの経過 frame を変更
 	 * @param elapsedFrames 固定してから経過した frame count
 	 */
-	fun setElapsedFrames(elapsedFrames:Int) {
-		for(aBlock in block) aBlock.elapsedFrames = elapsedFrames
-	}
+	fun setElapsedFrames(elapsedFrames:Int) = block.forEach {it.elapsedFrames = elapsedFrames}
 
 	/** すべてのBlockの暗さまたは明るさを変更
 	 * @param darkness 暗さまたは明るさ (0.03だったら3%暗く, -0.05だったら5%明るい）
 	 */
-	fun setDarkness(darkness:Float) {
-		for(aBlock in block) aBlock.darkness = darkness
-	}
+	fun setDarkness(darkness:Float) = block.forEach {it.darkness = darkness}
 
 	/** すべてのBlockの透明度を変更
 	 * @param alpha 透明度 (1fで不透明, 0.0fで完全に透明）
 	 */
-	fun setAlpha(alpha:Float) {
-		for(aBlock in block) aBlock.alpha = alpha
-	}
+	fun setAlpha(alpha:Float) = block.forEach {it.alpha = alpha}
 
 	/** すべてのBlockの属性を設定
 	 * @param attrs 変更したい属性
 	 * @param status 変更後 state
 	 */
-	fun setAttribute(status:Boolean, vararg attrs:Block.ATTRIBUTE) {
-		for(element in block)
-			element.setAttribute(status, *attrs)
+	fun setAttribute(status:Boolean, vararg attrs:Block.ATTRIBUTE) = block.forEach {
+		it.setAttribute(status, *attrs)
 	}
 
 	/** 相対X位置と相対Y位置をずらす
@@ -577,15 +563,15 @@ class Piece(
 	fun checkCollision(x:Int, y:Int, rt:Int = direction, fld:Field?):Boolean {
 		fld?.let {
 			// Bigでは専用処理
-			if(big) return checkCollisionBig(x, y, rt, it)
+			if(big) return@checkCollision checkCollisionBig(x, y, rt, it)
 
 			for(i in 0 until maxBlock) {
 				val x2 = x+dataX[rt][i]
 				val y2 = y+dataY[rt][i]
 
 				if((x2>=it.width||y2>=it.height||it.getCoordAttribute(x2, y2)==Field.COORD_WALL)
-					||(it.getCoordAttribute(x2, y2)!=Field.COORD_VANISH&&it.getBlockColor(x2, y2)!=Block.BLOCK_COLOR_NONE))
-					return true
+					||(it.getCoordAttribute(x2, y2)!=Field.COORD_VANISH&&!it.getBlockEmpty(x2, y2)))
+					return@checkCollision true
 			}
 		}
 		return false
@@ -610,7 +596,7 @@ class Piece(
 					val y3 = y2+l
 
 					if((x3>=fld.width||y3>=fld.height||fld.getCoordAttribute(x3, y3)==Field.COORD_WALL)
-						||(fld.getCoordAttribute(x3, y3)!=Field.COORD_VANISH&&fld.getBlockColor(x3, y3)!=Block.BLOCK_COLOR_NONE))
+						||(fld.getCoordAttribute(x3, y3)!=Field.COORD_VANISH&&fld.getBlockEmpty(x3, y3)))
 						return true
 				}
 		}
@@ -663,8 +649,9 @@ class Piece(
 	 * @return 移動可能なもっとも右の位置
 	 */
 	fun getMostMovableRight(nowX:Int, nowY:Int, rt:Int, fld:Field?):Int {
+		if(fld!=null) return nowX
 		var x = nowX
-		while(fld!=null&&!checkCollision(x+1, nowY, rt, fld))
+		while(!checkCollision(x+1, nowY, rt, fld))
 			x++
 		return x
 	}
@@ -842,7 +829,7 @@ class Piece(
 
 		companion object {
 			val names:List<String> get() = values().map {it.name}
-			fun name(id:Int):String = if(id>=0&&id<=values().size) values()[id].name else "?"
+			fun name(id:Int):String = values().getOrNull(id)?.name ?: "?"
 		}
 	}
 

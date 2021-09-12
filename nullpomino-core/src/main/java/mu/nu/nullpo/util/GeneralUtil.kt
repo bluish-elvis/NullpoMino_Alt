@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.util
 
 import mu.nu.nullpo.game.component.Piece
@@ -32,147 +37,145 @@ import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.log4j.Logger
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
-import java.util.*
-
-fun Boolean.toInt() = if(this) 1 else 0
+import java.util.Calendar
+import java.util.TimeZone
+import java.util.zip.GZIPInputStream
 
 /** Generic static utils */
 object GeneralUtil {
 	/** Log */
 	internal val log = Logger.getLogger(GeneralUtil::class.java)
+	@Suppress("UNCHECKED_CAST")
+	fun <T:Any?> flattenList(nestList:Collection<*>, flatList:MutableList<T> = mutableListOf()):List<T> {
+		for(e in nestList)
+			if(e is Collection<*>)
+			// using unchecked cast here as can't check for instance of 'erased' generic type
+				flattenList(e as List<T>, flatList)
+			else
+				flatList.add(e as T)
+
+		return flatList.toList()
+	}
 
 	/** Fetches the filename for a replay
 	 * @return Replay's filename
 	 */
 	val replayFilename:String
-		get() = getReplayFilename("")
+		get() = "".toReplayFilename
 
-	/** Converts play time into a String
-	 * @param t Play time
+	val String.toReplayFilename:String
+		get() {
+			val c = Calendar.getInstance()
+			val dfm = SimpleDateFormat("yyyyMMddHHmm_")
+			return "${dfm.format(c.time)}$this.rep"
+		}
+
+	fun Boolean.toInt() = if(this) 1 else 0
+
+	/** Convert as play time into a String
 	 * @return String for play time
 	 */
-	fun getTime(t:Float):String = if(t<0) "--:--.--" else String.format("%02d:%02d.%02d", t.toInt()/3600, t.toInt()/60%60, (t%60*5f/3f).toInt())
-	fun getTime(t:Int):String = getTime(t.toFloat())
+	val Float.toTimeStr
+		get() =
+			if(this<0) "--:--.--" else String.format("%02d:%02d.%02d", this.toInt()/3600, this.toInt()/60%60, (this%60*5f/3f).toInt())
+	@Deprecated("Float extended", ReplaceWith("t.toTimeStr", "mu.nu.nullpo.util.GeneralUtil.getTime"))
+	fun getTime(t:Float):String = t.toTimeStr
+
+	val Int.toTimeStr
+		get() =
+			if(this<0) "--:--.--" else String.format("%02d:%02d.%02d", this/3600, this/60%60, (this%60*5f/3f).toInt())
+	@Deprecated("Int extended", ReplaceWith("t.toTimeStr", "mu.nu.nullpo.util.GeneralUtil.getTime"))
+	fun getTime(t:Int):String = t.toTimeStr
+
 	/** Returns ON if b is true, OFF if b is false
-	 * @param b Boolean variable to be checked
 	 * @return ON if b is true, OFF if b is false
 	 */
-
 	@JvmOverloads
-	fun getONorOFF(b:Boolean, islong:Boolean = false):String = if(b)  "\u0083 ${if(islong)"ENABLE" else "ON"}" else "\u0085 ${if(islong) "DISABLE" else "OFF"}"
+	fun Boolean.getONorOFF(islong:Boolean = false):String =
+		if(this) "\u0083 ${if(islong) "ENABLE" else "ON"}" else "\u0085 ${if(islong) "DISABLE" else "OFF"}"
 
 	/** Returns ○ if b is true, × if b is false
-	 * @param b Boolean variable to be checked
 	 * @return ○ if b is true, × if b is false
 	 */
-	fun getOorX(b:Boolean):String = if(b) "\u0083" else "\u0085"
+	val Boolean.getOX:String get() = if(this) "\u0083" else "\u0085"
 
-	fun getReplayFilename(name:String):String {
-		val c = Calendar.getInstance()
-		val dfm = SimpleDateFormat("yyyyMMddHHmm_")
-		return "${dfm.format(c.time)}$name.rep"
-	}
+	@Deprecated("Bool extended", ReplaceWith("b.getOX", "mu.nu.nullpo.util.GeneralUtil.getOX"))
+	fun getOX(b:Boolean) = b.getOX
 
 	/** Get date and time from a Calendar
-	 * @param c Calendar
 	 * @return Date and Time String
 	 */
-	fun getCalendarString(c:Calendar):String {
-		val dfm = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-		return dfm.format(c.time)
-	}
+	val Calendar.strDateTime:String get() = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(time)
 
 	/** Get date and time from a Calendar with specific TimeZone
-	 * @param c Calendar
 	 * @param z TimeZone
 	 * @return Date and Time String
 	 */
-	fun getCalendarString(c:Calendar, z:TimeZone):String {
-		val dfm = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-		dfm.timeZone = z
-		return dfm.format(c.time)
-	}
+	fun Calendar.strDateTime(z:TimeZone):String = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+		.apply {timeZone = z}.format(this)
 
 	/** Get date from a Calendar
-	 * @param c Calendar
 	 * @return Date String
 	 */
-	fun getCalendarStringDate(c:Calendar):String {
-		val dfm = SimpleDateFormat("yyyy-MM-dd")
-		return dfm.format(c.time)
-	}
+	val Calendar.strDate:String get() = SimpleDateFormat("yyyy-MM-dd").format(time)
 
 	/** Get date from a Calendar with specific TimeZone
-	 * @param c Calendar
 	 * @param z TimeZone
 	 * @return Date String
 	 */
-	fun getCalendarStringDate(c:Calendar, z:TimeZone):String {
-		val dfm = SimpleDateFormat("yyyy-MM-dd")
-		dfm.timeZone = z
-		return dfm.format(c.time)
-	}
+	fun Calendar.strDate(z:TimeZone):String = SimpleDateFormat("yyyy-MM-dd").apply {timeZone = z}.format(this)
 
 	/** Get time from a Calendar
-	 * @param c Calendar
 	 * @return Time String
 	 */
-	fun getCalendarStringTime(c:Calendar):String {
-		val dfm = SimpleDateFormat("HH:mm:ss")
-		return dfm.format(c.time)
-	}
+	val Calendar.strTime:String get() = SimpleDateFormat("HH:mm:ss").format(time)
 
 	/** Get time from a Calendar with specific TimeZone
-	 * @param c Calendar
 	 * @param z TimeZone
 	 * @return Time String
 	 */
-	fun getCalendarStringTime(c:Calendar, z:TimeZone):String {
-		val dfm = SimpleDateFormat("HH:mm:ss")
-		dfm.timeZone = z
-		return dfm.format(c.time)
-	}
+	fun Calendar.strTime(z:TimeZone):String = SimpleDateFormat("HH:mm:ss").apply {timeZone = z}.format(this)
 
-	/** Export a Calendar to a String for saving/sending. TimeZone is always
-	 * GMT. Time is based on current time.
+	/** Export a Calendar to a String for saving/sending.
+	 * TimeZone is always GMT. Time is based on current time.
 	 * @return Calendar String (Each field is separated with a hyphen '-')
 	 */
-	fun exportCalendarString():String {
-		val c = Calendar.getInstance(TimeZone.getTimeZone("GMT"))
-		return exportCalendarString(c)
-	}
+	val nowGMT get() = Calendar.getInstance(TimeZone.getTimeZone("GMT")).strDateTime
+	@Deprecated("extended", ReplaceWith("nowGMT"))
+	fun exportCalendarString():String = nowGMT
 
-	/** Export a Calendar to a String for saving/sending. TimeZone is always
-	 * GMT.
-	 * @param c Calendar
+	/** Export a Calendar to a String for saving/sending.
+	 * TimeZone is always GMT.
 	 * @return Calendar String (Each field is separated with a hyphen '-')
 	 */
-	fun exportCalendarString(c:Calendar):String {
-		val dfm = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss")
-		dfm.timeZone = TimeZone.getTimeZone("GMT")
-		return dfm.format(c.time)
-	}
+	val Calendar.strGMT:String
+		get() = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").apply {timeZone = TimeZone.getTimeZone("GMT")}
+			.format(time)
+
+	fun exportCalendarString(c:Calendar):String = c.strGMT
 
 	/** Create a Calendar by using a String that came from exportCalendarString.
 	 * TimeZone is always GMT.
-	 * @param s String (Each field is separated with a hyphen '-')
+	 * @sample String (Each field is separated with a hyphen '-')
 	 * @return Calendar (null if fails)
 	 */
-	fun importCalendarString(s:String):Calendar? {
-		val dfm = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss")
-		dfm.timeZone = TimeZone.getTimeZone("GMT")
+	val String.GMTtoDate:Calendar?
+		get() {
+			val dfm = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").apply {timeZone = TimeZone.getTimeZone("GMT")}
 
-		val c = Calendar.getInstance(TimeZone.getTimeZone("GMT"))
+			val c = Calendar.getInstance(TimeZone.getTimeZone("GMT"))
 
-		try {
-			val date = dfm.parse(s)
-			c.time = date
-		} catch(e:Exception) {
-			return null
+			try {
+				val date = dfm.parse(this)
+				c.time = date
+			} catch(e:Exception) {
+				return null
+			}
+
+			return c
 		}
 
-		return c
-	}
+	fun importCalendarString(s:String):Calendar? = s.GMTtoDate
 
 	/** Get the number of piece types can appear
 	 * @param pieceEnable Piece enable flags
@@ -230,17 +233,17 @@ object GeneralUtil {
 		val prop = CustomProperties()
 
 		try {
-			val `in` = FileInputStream(filename)
+			val `in` = GZIPInputStream(FileInputStream(filename))
 			prop.load(`in`)
 			`in`.close()
 		} catch(e:Exception) {
 			log.warn("Failed to load rule from $filename", e)
 		}
 
-		val ruleopt = RuleOptions()
-		ruleopt.readProperty(prop, 0)
+		val ruleOpt = RuleOptions()
+		ruleOpt.readProperty(prop, 0)
 
-		return ruleopt
+		return ruleOpt
 	}
 
 	/** Load Randomizer
@@ -303,8 +306,7 @@ object GeneralUtil {
 	 * @param startIndex First element which will be combined
 	 * @return Combined string
 	 */
-	fun stringCombine(strings:Array<String>, separator:String,
-		startIndex:Int):String {
+	fun stringCombine(strings:Array<String>, separator:String, startIndex:Int):String {
 		val res = StringBuilder()
 		for(i in startIndex until strings.size) {
 			res.append(strings[i])
@@ -317,14 +319,48 @@ object GeneralUtil {
 
 	fun capsInteger(x:Int, digits:Int):String = when {
 		digits<=0 -> ""
-		x<=0 -> (1 until digits).fold("0"){b,_-> "${b}0"}
+		x<=0 -> (1 until digits).fold("0") {b, _ -> "${b}0"}
 		"$x".length>digits -> {
-			val y = (1 until digits).fold(x){b,_->b.div(10)}
-			val z = (1 until digits).fold(minOf(y,35)){b,_->b.times(10)}
+			val y = (1 until digits).fold(x) {b, _ -> b.div(10)}
+			val z = (1 until digits).fold(minOf(y, 35)) {b, _ -> b.times(10)}
 			"${('A'.code+minOf(y-10, 25)).toChar()}${if(digits>1) capsInteger(x-z, digits-1) else ""}"
 		}
 		digits>0 -> String.format("%0${digits}d", x)
 		else -> ""
 	}
+	/**'0'-'9','A'-'Z' represent colors 0-36.
+	 * Colors beyond that would follow the ASCII table starting at '['.
+	 * */
+	val Int.toAlphaNum:Char
+		get() = when(this) {
+			in 0..9 -> ('0'.code+maxOf(0, this))
+			in 10..36 -> ('A'.code+(this-10))
+			else -> ('a'.code+(this-37))
+		}.toChar()
 
+	/**
+	 *
+	With a radix of 36, the digits encompass '0'-'9','A'-'Z'.
+	With a radix higher than 36, we can also have characters 'a'-'z' represent digits.
+
+	Given the current implementation of other functions, I assumed that
+	if we needed additional BLOCK_COLOR values, it would follow from 'Z'->'['
+	in the ASCII chart.
+	 */
+	val Char.aNum:Int
+		get() = when {
+			code>='0'.code -> code-'0'.code
+			code>='A'.code -> code-'A'.code
+			else -> code-'a'.code
+		}
+
+	/**
+	 * Returns a list containing all elements that are not `null`.
+	 */
+	fun <T:Any> Collection<T?>.filterNotNullIndexed():List<IndexedValue<T>> = this.mapIndexedNotNull{i,it->it?.let{IndexedValue(i,it)}}
+
+	/**
+	 * Returns a list containing all elements that are not `null`.
+	 */
+	fun <T:Any> Array<T?>.filterNotNullIndexed():List<IndexedValue<T>> = this.mapIndexedNotNull{i,it->it?.let{IndexedValue(i,it)}}
 }

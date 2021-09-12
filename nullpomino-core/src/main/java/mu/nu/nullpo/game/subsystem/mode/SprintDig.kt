@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -31,29 +36,29 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.log4j.Logger
 
 /** DIG RACE Mode */
 class SprintDig:NetDummyMode() {
 
 	/** BGM number */
-	private var bgmno:Int = 0
+	private var bgmno = 0
 
 	/** Big (leftover from old versions) */
-	private var big:Boolean = false
+	private var big = false
 
 	/** Goal type (0=5 garbages, 1=10 garbages, 2=18 garbages) */
-	private var goaltype:Int = 0
+	private var goaltype = 0
 
 	/** Current version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Last preset number used */
-	private var presetNumber:Int = 0
+	private var presetNumber = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Rankings' times */
 	private var rankingTime:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
@@ -65,8 +70,8 @@ class SprintDig:NetDummyMode() {
 	private var rankingPiece:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
 
 	/* Mode name */
-	override val name:String = "Digging Sprint"
-	override val gameIntensity:Int = 2
+	override val name = "Digging Sprint"
+	override val gameIntensity = 2
 	/* Initialization for each player */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
@@ -89,7 +94,7 @@ class SprintDig:NetDummyMode() {
 			version = CURRENT_VERSION
 			presetNumber = engine.owner.modeConfig.getProperty("digrace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 		} else {
 			version = engine.owner.replayProp.getProperty("digrace.version", 0)
 			presetNumber = 0
@@ -229,10 +234,10 @@ class SprintDig:NetDummyMode() {
 		else {
 			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
-			drawMenuCompact(engine, playerID, receiver, "GOAL", "${GOAL_TABLE[goaltype]}")
+			drawMenuCompact(engine, playerID, receiver, "GOAL" to GOAL_TABLE[goaltype])
 			if(!engine.owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
-				drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber", "SAVE", "$presetNumber")
+				drawMenuCompact(engine, playerID, receiver, "LOAD" to presetNumber, "SAVE" to presetNumber)
 			}
 		}
 	}
@@ -270,8 +275,8 @@ class SprintDig:NetDummyMode() {
 	 * @param height Garbage height level number
 	 */
 	private fun fillGarbage(engine:GameEngine, height:Int) {
-		val w:Int = engine.field!!.width
-		val h:Int = engine.field!!.height
+		val w:Int = engine.field.width
+		val h:Int = engine.field.height
 		var hole:Int = -1
 
 		for(y:Int in h-1 downTo h-GOAL_TABLE[height]) {
@@ -290,7 +295,7 @@ class SprintDig:NetDummyMode() {
 						while(color==prevColor)
 						prevColor = color
 					}
-					engine.field!!.setBlock(x, y, Block(color, if(y==h-1) Block.TYPE.BLOCK else Block.TYPE.GEM,
+					engine.field.setBlock(x, y, Block(color, if(y==h-1) Block.TYPE.BLOCK else Block.TYPE.GEM,
 						engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
 				}
 
@@ -298,10 +303,10 @@ class SprintDig:NetDummyMode() {
 			if(receiver.isStickySkin(engine)&&y!=h-1)
 				for(x:Int in 0 until w)
 					if(x!=hole) {
-						val blk = engine.field!!.getBlock(x, y)
+						val blk = engine.field.getBlock(x, y)
 						if(blk!=null) {
-							if(!engine.field!!.getBlockEmpty(x-1, y)) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
-							if(!engine.field!!.getBlockEmpty(x+1, y))
+							if(!engine.field.getBlockEmpty(x-1, y)) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+							if(!engine.field.getBlockEmpty(x+1, y))
 								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 						}
 					}
@@ -311,14 +316,14 @@ class SprintDig:NetDummyMode() {
 	private fun getRemainGarbageLines(engine:GameEngine?, height:Int):Int {
 		if(engine?.field==null) return -1
 
-		val w = engine.field!!.width
-		val h = engine.field!!.height
+		val w = engine.field.width
+		val h = engine.field.height
 		var lines = 0
 
 		for(y in h-1 downTo h-GOAL_TABLE[height])
-			if(!engine.field!!.getLineFlag(y))
+			if(!engine.field.getLineFlag(y))
 				for(x in 0 until w) {
-					val blk = engine.field!!.getBlock(x, y)
+					val blk = engine.field.getBlock(x, y)
 
 					if(blk!=null&&blk.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
 						lines++
@@ -335,7 +340,7 @@ class SprintDig:NetDummyMode() {
 
 		receiver.drawScoreFont(engine, playerID, 0, 0, "DIG RACE", EventReceiver.COLOR.GREEN)
 		receiver.drawScoreFont(engine, playerID, 0, 1, "("+GOAL_TABLE[goaltype]
-			+" GARBAGE GAME)", EventReceiver.COLOR.GREEN)
+			+" garbages run)", EventReceiver.COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null&&!netIsWatch) {
@@ -345,7 +350,7 @@ class SprintDig:NetDummyMode() {
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1),
 						if(rankingRank==i) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 4+i, GeneralUtil.getTime(rankingTime[goaltype][i]), rankingRank==i)
+					receiver.drawScoreNum(engine, playerID, 3, 4+i, rankingTime[goaltype][i].toTimeStr, rankingRank==i)
 					receiver.drawScoreNum(engine, playerID, 12, 4+i, "${rankingLines[goaltype][i]}", rankingRank==i)
 					receiver.drawScoreNum(engine, playerID, 17, 4+i, "${rankingPiece[goaltype][i]}", rankingRank==i)
 				}
@@ -363,19 +368,19 @@ class SprintDig:NetDummyMode() {
 				receiver.drawMenuNum(engine, playerID, 5-maxOf(minOf(1, strLines.length), 3), 21, strLines, fontcolor, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 3, "LINE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 4, engine.statistics.lines.toString())
+			receiver.drawScoreNum(engine, playerID, 0, 4, "${engine.statistics.lines}")
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "PIECE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 7, engine.statistics.totalPieceLocked.toString())
+			receiver.drawScoreNum(engine, playerID, 0, 7, "${engine.statistics.totalPieceLocked}")
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LINE/MIN", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.lpm}")
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "PIECE/SEC", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.pps.toString())
+			receiver.drawScoreNum(engine, playerID, 0, 13, "${engine.statistics.pps}")
 
 			receiver.drawScoreFont(engine, playerID, 0, 15, "Time", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 16, GeneralUtil.getTime(engine.statistics.time))
+			receiver.drawScoreNum(engine, playerID, 0, 16, engine.statistics.time.toTimeStr)
 		}
 
 		super.renderLast(engine, playerID)
@@ -429,7 +434,7 @@ class SprintDig:NetDummyMode() {
 			updateRanking(engine.statistics.time, engine.statistics.lines, engine.statistics.totalPieceLocked)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -442,23 +447,23 @@ class SprintDig:NetDummyMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until GOALTYPE_MAX)
 			for(j in 0 until RANKING_MAX) {
-				rankingTime[i][j] = prop.getProperty("digrace.ranking.$ruleName.$i.time.$j", -1)
-				rankingLines[i][j] = prop.getProperty("digrace.ranking.$ruleName.$i.lines.$j", 0)
-				rankingPiece[i][j] = prop.getProperty("digrace.ranking.$ruleName.$i.piece.$j", 0)
+				rankingTime[i][j] = prop.getProperty("$ruleName.$i.time.$j", -1)
+				rankingLines[i][j] = prop.getProperty("$ruleName.$i.lines.$j", 0)
+				rankingPiece[i][j] = prop.getProperty("$ruleName.$i.piece.$j", 0)
 			}
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until GOALTYPE_MAX)
-			for(j in 0 until RANKING_MAX) {
-				prop.setProperty("digrace.ranking.$ruleName.$i.time.$j", rankingTime[i][j])
-				prop.setProperty("digrace.ranking.$ruleName.$i.lines.$j", rankingLines[i][j])
-				prop.setProperty("digrace.ranking.$ruleName.$i.piece.$j", rankingPiece[i][j])
+	private fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until GOALTYPE_MAX).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf("$ruleName.$j.time.$i" to rankingTime[j][i],
+					"$ruleName.$j.lines.$i" to rankingLines[j][i],
+					"$ruleName.$j.piece.$i" to rankingPiece[j][i])
 			}
+		})
 	}
 
 	/** Update rankings
@@ -508,9 +513,9 @@ class SprintDig:NetDummyMode() {
 		var msg = "game\tstats\t"
 		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
 		msg += "${engine.statistics.time}\t${engine.statistics.lpm}\t"
-		msg += engine.statistics.pps.toString()+"\t$goaltype\t"
-		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
-		msg += engine.meterColor.toString()+"\t"+engine.meterValue
+		msg += "${engine.statistics.pps}\t$goaltype\t"
+		msg += "${engine.gameActive}\t${engine.timerActive}\t"
+		msg += "${engine.meterColor}\t${engine.meterValue}"
 		msg += "\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
@@ -537,7 +542,7 @@ class SprintDig:NetDummyMode() {
 		subMsg += "GARBAGE;${(GOAL_TABLE[goaltype]-getRemainGarbageLines(engine, goaltype))}/${GOAL_TABLE[goaltype]}\t"
 		subMsg += "LINE;${engine.statistics.lines}\t"
 		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
-		subMsg += "TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
+		subMsg += "TIME;${engine.statistics.time.toTimeStr}\t"
 		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
 		subMsg += "PIECE/SEC;${engine.statistics.pps}\t"
 
@@ -550,9 +555,9 @@ class SprintDig:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += engine.speed.gravity.toString()+"\t${engine.speed.denominator}\t${engine.speed.are}\t"
-		msg += engine.speed.areLine.toString()+"\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
-		msg += engine.speed.das.toString()+"\t$bgmno\t$goaltype\t"+presetNumber
+		msg += "${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"
+		msg += "${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
+		msg += "${engine.speed.das}\t$bgmno\t$goaltype\t$presetNumber"
 		msg += "\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
@@ -592,7 +597,7 @@ class SprintDig:NetDummyMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Number of entries in rankings */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of goal type */
 		private const val GOALTYPE_MAX = 3

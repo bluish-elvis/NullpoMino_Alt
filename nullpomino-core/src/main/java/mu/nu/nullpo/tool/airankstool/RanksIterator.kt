@@ -1,3 +1,32 @@
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package mu.nu.nullpo.tool.airankstool
 
 import java.awt.BorderLayout
@@ -14,7 +43,7 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 
 	private var ranks:Ranks? = null
 	private var ranksFrom:Ranks? = null
-	private var iteration:Int = 0
+	private var iteration = 0
 
 	private val progressLabel:JLabel
 	private val progressBar:JProgressBar
@@ -24,7 +53,7 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 
 	internal inner class OneIteration(private val totalParts:Int, private var ranks:Ranks?):SwingWorker<Void, String>() {
 		private var ranksIteratorPart:Array<RanksIteratorPart> = emptyArray()
-		private var cancelled:Boolean = false
+		private var cancelled = false
 
 		init {
 			cancelled = false
@@ -67,7 +96,7 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 	}
 
 	internal inner class AllIterations(private val totalParts:Int, private val ranksIterator:RanksIterator, private val inputFile:String):SwingWorker<Void, String>() {
-		var cancelled:Boolean = false
+		var cancelled = false
 
 		init {
 			cancelled = false

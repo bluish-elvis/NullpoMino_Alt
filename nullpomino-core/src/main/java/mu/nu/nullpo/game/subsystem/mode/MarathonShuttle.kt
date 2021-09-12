@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -29,63 +34,63 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
 
 /** TECHNICIAN Mode */
 class MarathonShuttle:NetDummyMode() {
 
 	/** Number of Goal-points remaining */
-	private var goal:Int = 0
-	private var goalmax:Int = 0
+	private var goal = 0
+	private var goalmax = 0
 
 	/** Level timer */
-	private var levelTimer:Int = 0
-	private var lastlineTime:Int = 0
+	private var levelTimer = 0
+	private var lastlineTime = 0
 
-	/** true if level timer runs out */
-	private var levelTimeOut:Boolean = false
+	/** True if level timer runs out */
+	private var levelTimeOut = false
 
 	/** Master time limit */
-	private var totalTimer:Int = 0
+	private var totalTimer = 0
 
 	/** Ending time */
-	private var rolltime:Int = 0
+	private var rolltime = 0
 
 	/** Most recent increase in goal-points */
-	private var lastgoal:Int = 0
+	private var lastgoal = 0
 
 	/** Most recent increase in score */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** Most recent increase in time limit */
-	private var lasttimebonus:Int = 0
+	private var lasttimebonus = 0
 
 	/** Time to display the most recent increase in score */
-	private var scgettime:Int = 0
-	private var sc:Int = 0
-	private var sum:Int = 0
+	private var scgettime = 0
+	private var sc = 0
+	private var sum = 0
 
 	/** REGRET display time frame count */
-	private var regretdispframe:Int = 0
+	private var regretdispframe = 0
 
 	/** Current BGM */
-	private var bgmlv:Int = 0
+	private var bgmlv = 0
 
 	/** Game type */
-	private var goaltype:Int = 0
+	private var goaltype = 0
 
 	/** Level at start time */
-	private var startlevel:Int = 0
+	private var startlevel = 0
 
 	/** Big */
-	private var big:Boolean = false
+	private var big = false
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Rankings' scores */
 	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
@@ -97,8 +102,8 @@ class MarathonShuttle:NetDummyMode() {
 	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
 	/* Mode name */
-	override val name:String = "MARATHON ShuttleRun"
-	override val gameIntensity:Int = 1
+	override val name = "MARATHON ShuttleRun"
+	override val gameIntensity = 1
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
@@ -125,7 +130,7 @@ class MarathonShuttle:NetDummyMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -145,9 +150,9 @@ class MarathonShuttle:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 			drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0,
-				"GAME TYPE", GAMETYPE_SHORTNAME[goaltype], "Level", "${startlevel+1}")
+				"GAME TYPE" to GAMETYPE_SHORTNAME[goaltype], "Level" to startlevel+1)
 
-			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big))
+			drawMenuCompact(engine, playerID, receiver, "BIG" to big)
 		}
 	}
 
@@ -293,8 +298,7 @@ class MarathonShuttle:NetDummyMode() {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[goaltype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 11, topY+i, "${rankingLines[goaltype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 16,
-						topY+i, GeneralUtil.getTime(rankingTime[goaltype][i]), i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 16, topY+i, rankingTime[goaltype][i].toTimeStr, i==rankingRank, scale)
 				}
 			}
 		} else {
@@ -322,7 +326,7 @@ class MarathonShuttle:NetDummyMode() {
 			if(goaltype==GAMETYPE_SPECIAL) {
 				// LEVEL TIME
 				receiver.drawScoreFont(engine, playerID, 0, 6, "LIMIT", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 7, GeneralUtil.getTime(remainLevelTime), fontcolorLevelTime, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 7, remainLevelTime.toTimeStr, fontcolorLevelTime, 2f)
 				// +30sec
 				if(lasttimebonus>0&&scget&&engine.ending==0)
 					receiver.drawScoreFont(engine, playerID, 6, 6,
@@ -332,7 +336,7 @@ class MarathonShuttle:NetDummyMode() {
 				receiver.drawScoreFont(engine, playerID, 0, 6, "BONUS", COLOR.BLUE)
 				val levelBonus = maxOf(0, (TIMELIMIT_LEVEL-levelTimer)*(engine.statistics.level+1))
 				receiver.drawScoreNum(engine, playerID, 0, 7, "$levelBonus", fontcolorLevelTime, 2f)
-				receiver.drawScoreNum(engine, playerID, 6, 6, GeneralUtil.getTime(remainLevelTime), fontcolorLevelTime)
+				receiver.drawScoreNum(engine, playerID, 6, 6, remainLevelTime.toTimeStr, fontcolorLevelTime)
 			}
 			// LEVEL
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.BLUE)
@@ -354,7 +358,7 @@ class MarathonShuttle:NetDummyMode() {
 				else
 					COLOR.WHITE
 			}
-			receiver.drawScoreNum(engine, playerID, 0, 11, GeneralUtil.getTime(totaltime), fontcolorTotalTime, 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 11, totaltime.toTimeStr, fontcolorTotalTime, 2f)
 
 			// Ending time
 			if(engine.gameActive&&(engine.ending==2||rolltime>0)) {
@@ -362,7 +366,7 @@ class MarathonShuttle:NetDummyMode() {
 				if(remainRollTime<0) remainRollTime = 0
 
 				receiver.drawScoreFont(engine, playerID, 0, 13, "ROLL TIME", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 14, GeneralUtil.getTime(remainRollTime),
+				receiver.drawScoreNum(engine, playerID, 0, 14, remainRollTime.toTimeStr,
 					remainRollTime>0&&remainRollTime<10*60, 2f)
 			}
 
@@ -606,9 +610,9 @@ class MarathonShuttle:NetDummyMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until RANKING_TYPE) {
-				rankingScore[gametypeIndex][i] = prop.getProperty("technician.ranking.$ruleName.$gametypeIndex.score.$i", 0)
-				rankingLines[gametypeIndex][i] = prop.getProperty("technician.ranking.$ruleName.$gametypeIndex.lines.$i", 0)
-				rankingTime[gametypeIndex][i] = prop.getProperty("technician.ranking.$ruleName.$gametypeIndex.time.$i", 0)
+				rankingScore[gametypeIndex][i] = prop.getProperty("$ruleName.$gametypeIndex.score.$i", 0)
+				rankingLines[gametypeIndex][i] = prop.getProperty("$ruleName.$gametypeIndex.lines.$i", 0)
+				rankingTime[gametypeIndex][i] = prop.getProperty("$ruleName.$gametypeIndex.time.$i", 0)
 			}
 
 	}
@@ -722,7 +726,7 @@ class MarathonShuttle:NetDummyMode() {
 		subMsg += "SCORE;${engine.statistics.score}\t"
 		subMsg += "LINE;${engine.statistics.lines}\t"
 		subMsg += "LEVEL;${(engine.statistics.level+engine.statistics.levelDispAdd)}\t"
-		subMsg += "TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
+		subMsg += "TIME;${engine.statistics.time.toTimeStr}\t"
 		subMsg += "SCORE/LINE;${engine.statistics.spl}\t"
 		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
 
@@ -733,13 +737,13 @@ class MarathonShuttle:NetDummyMode() {
 	/** Save rankings to property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(ruleName:String) {
+	private fun saveRanking(ruleName:String) {
 		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf(
-					"technician.ranking.$ruleName.$j.score.$i" to rankingScore[j][i],
-					"technician.ranking.$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"technician.ranking.$ruleName.$j.time.$i" to rankingTime[j][i])
+					"$ruleName.$j.score.$i" to rankingScore[j][i],
+					"$ruleName.$j.lines.$i" to rankingLines[j][i],
+					"$ruleName.$j.time.$i" to rankingTime[j][i])
 			}
 		})
 	}
@@ -756,7 +760,7 @@ class MarathonShuttle:NetDummyMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goaltype)
 
 			if(rankingRank!=-1) {
-				saveRanking(engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -815,7 +819,7 @@ class MarathonShuttle:NetDummyMode() {
 		private val COMBO_GOAL_TABLE = intArrayOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)
 
 		/** Number of entries in rankings */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private const val RANKING_TYPE = 5

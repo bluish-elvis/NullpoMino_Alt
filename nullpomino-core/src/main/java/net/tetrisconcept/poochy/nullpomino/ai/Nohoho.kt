@@ -1,6 +1,37 @@
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package net.tetrisconcept.poochy.nullpomino.ai
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
@@ -15,19 +46,19 @@ import kotlin.math.abs
 class Nohoho:DummyAI(), Runnable {
 
 	/** After that I was groundedX-coordinate */
-	private var bestXSub:Int = 0
+	private var bestXSub = 0
 
 	/** After that I was groundedY-coordinate */
-	private var bestYSub:Int = 0
+	private var bestYSub = 0
 
 	/** After that I was groundedDirection(-1: None) */
-	private var bestRtSub:Int = 0
+	private var bestRtSub = 0
 
 	/** The best moveEvaluation score */
-	private var bestPts:Int = 0
+	private var bestPts = 0
 
 	/** Delay the move for changecount */
-	var delay:Int = 0
+	var delay = 0
 
 	/** The GameEngine that owns this AI */
 	private lateinit var gEngine:GameEngine
@@ -38,41 +69,41 @@ class Nohoho:DummyAI(), Runnable {
 	/** When true,To threadThink routineInstructing the execution of the */
 	private lateinit var thinkRequest:ThinkRequestMutex
 
-	/** true when thread is executing the think routine. */
-	private var thinking:Boolean = false
+	/** True when thread is executing the think routine. */
+	private var thinking = false
 
 	/** To stop a thread time */
-	private var thinkDelay:Int = 0
+	private var thinkDelay = 0
 
 	/** When true,Running thread */
-	@Volatile var threadRunning:Boolean = false
+	@Volatile var threadRunning = false
 
 	/** Thread for executing the think routine */
 	var thread:Thread? = null
 
 	/** Number of frames for which piece has been stuck */
-	private var stuckDelay:Int = 0
+	private var stuckDelay = 0
 
 	/** Status of last frame */
-	private var lastInput:Int = 0
-	private var lastX:Int = 0
-	private var lastY:Int = 0
-	private var lastRt:Int = 0
+	private var lastInput = 0
+	private var lastX = 0
+	private var lastY = 0
+	private var lastRt = 0
 	/** Number of consecutive frames with same piece status */
-	private var sameStatusTime:Int = 0
+	private var sameStatusTime = 0
 	/** DAS charge status. -1 = left, 0 = none, 1 = right */
-	private var setDAS:Int = 0
+	private var setDAS = 0
 	/** Last input if done in ARE */
-	private var inputARE:Int = 0
+	private var inputARE = 0
 	/** Did the thinking thread finish successfully? */
-	override var thinkComplete:Boolean = false
+	override var thinkComplete = false
 	/** Did the thinking thread find a possible position? */
-	private var thinkSuccess:Boolean = false
+	private var thinkSuccess = false
 	/** Was the game in ARE as of the last frame? */
-	private var inARE:Boolean = false
+	private var inARE = false
 
 	/* AI's name */
-	override val name:String = "Avalanche-R V0.01"
+	override val name = "Avalanche-R V0.01"
 
 	/* Called at initialization */
 	override fun init(engine:GameEngine, playerID:Int) {
@@ -153,7 +184,7 @@ class Nohoho:DummyAI(), Runnable {
 			val nowY = engine.nowPieceY
 			val rt = pieceNow.direction
 			val fld = engine.field
-			val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld!!)
+			val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 
 			var moveDir = 0 //-1 = left,  1 = right
 			var rotateDir = 0 //-1 = left,  1 = right
@@ -162,7 +193,8 @@ class Nohoho:DummyAI(), Runnable {
 
 			//If stuck, rethink.
 			if(pieceTouchGround&&rt==bestRt&&
-				(pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field!!)<bestX||pieceNow.getMostMovableLeft(nowX, nowY, rt, engine.field!!)>bestX))
+				(pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)<bestX||pieceNow.getMostMovableLeft(nowX, nowY, rt,
+					engine.field)>bestX))
 				stuckDelay++
 			else
 				stuckDelay = 0
@@ -201,13 +233,13 @@ class Nohoho:DummyAI(), Runnable {
 					val rrot = engine.getRotateDirection(1)
 					if(DEBUG_ALL) log.debug("lrot = $lrot, rrot = $rrot")
 
-					if(best180&&engine.ruleopt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E))
+					if(best180&&engine.ruleOpt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E))
 						input = input or Controller.BUTTON_BIT_E
 					else if(bestRt==rrot)
 						rotateDir = 1
 					else if(bestRt==lrot)
 						rotateDir = -1
-					else if(engine.ruleopt.rotateButtonAllowReverse&&best180&&rt and 1==1) {
+					else if(engine.ruleOpt.rotateButtonAllowReverse&&best180&&rt and 1>0) {
 						rotateDir = if(rrot==Piece.DIRECTION_UP)
 							1
 						else
@@ -252,14 +284,14 @@ class Nohoho:DummyAI(), Runnable {
 						setDAS = 0
 						// Funnel
 						if(bestRtSub==-1&&bestX==bestXSub) {
-							if(pieceTouchGround&&engine.ruleopt.softdropLock)
+							if(pieceTouchGround&&engine.ruleOpt.softdropLock)
 								drop = -1
-							else if(engine.ruleopt.harddropEnable)
+							else if(engine.ruleOpt.harddropEnable)
 								drop = 1
-							else if(engine.ruleopt.softdropEnable||engine.ruleopt.softdropLock) drop = -1
-						} else if(engine.ruleopt.harddropEnable&&!engine.ruleopt.harddropLock)
+							else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock) drop = -1
+						} else if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock)
 							drop = 1
-						else if(engine.ruleopt.softdropEnable&&!engine.ruleopt.softdropLock) drop = -1
+						else if(engine.ruleOpt.softdropEnable&&!engine.ruleOpt.softdropLock) drop = -1
 					}
 				}
 			}
@@ -274,14 +306,14 @@ class Nohoho:DummyAI(), Runnable {
 			else if(drop==-1) input = input or Controller.BUTTON_BIT_DOWN
 
 			if(rotateDir!=0)
-				if(engine.ruleopt.rotateButtonAllowDouble&&
+				if(engine.ruleOpt.rotateButtonAllowDouble&&
 					rotateDir==2&&!ctrl.isPress(Controller.BUTTON_E))
 					input = input or Controller.BUTTON_BIT_E
-				else if(engine.ruleopt.rotateButtonAllowReverse&&
-					!engine.ruleopt.rotateButtonDefaultRight&&rotateDir==1) {
+				else if(engine.ruleOpt.rotateButtonAllowReverse&&
+					!engine.ruleOpt.rotateButtonDefaultRight&&rotateDir==1) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
-				} else if(engine.ruleopt.rotateButtonAllowReverse&&
-					engine.ruleopt.rotateButtonDefaultRight&&rotateDir==-1) {
+				} else if(engine.ruleOpt.rotateButtonAllowReverse&&
+					engine.ruleOpt.rotateButtonDefaultRight&&rotateDir==-1) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
 				} else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
 			if(setDAS!=moveDir) setDAS = 0
@@ -322,7 +354,7 @@ class Nohoho:DummyAI(), Runnable {
 		thinkSuccess = false
 
 		engine.createFieldIfNeeded()
-		val fld = Field(engine.field!!)
+		val fld = Field(engine.field)
 		var pieceNow = engine.nowPieceObject
 		var pieceHold = engine.holdPieceObject
 		val holdOK = engine.isHoldOK
@@ -362,7 +394,7 @@ class Nohoho:DummyAI(), Runnable {
 				5
 			for(rt in 0 until Piece.DIRECTION_COUNT) {
 				x = maxX-pieceNow.maximumBlockX
-				fld.copy(engine.field!!)
+				fld.copy(engine.field)
 				var y = pieceNow.getBottom(x, nowY, rt, fld)
 
 				if(!pieceNow.checkCollision(x, y, rt, fld)) {
@@ -383,7 +415,7 @@ class Nohoho:DummyAI(), Runnable {
 				}
 				if(holdOK&&pieceHold!=null) {
 					x = maxX-pieceHold.maximumBlockX
-					fld.copy(engine.field!!)
+					fld.copy(engine.field)
 					y = pieceHold.getBottom(x, nowY, rt, fld)
 
 					if(!pieceHold.checkCollision(x, y, rt, fld)) {
@@ -406,10 +438,10 @@ class Nohoho:DummyAI(), Runnable {
 			}
 		} else
 			for(rt in 0 until Piece.DIRECTION_COUNT) {
-				val minX = pieceNow.getMostMovableLeft(nowX, nowY, rt, engine.field!!)
-				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field!!)
+				val minX = pieceNow.getMostMovableLeft(nowX, nowY, rt, engine.field)
+				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)
 				for(x in minX..maxX) {
-					fld.copy(engine.field!!)
+					fld.copy(engine.field)
 					val y = pieceNow.getBottom(x, nowY, rt, fld)
 
 					if(!pieceNow.checkCollision(x, y, rt, fld)) {
@@ -435,11 +467,11 @@ class Nohoho:DummyAI(), Runnable {
 				if(holdOK)pieceHold?.also{
 					val spawnX = engine.getSpawnPosX(engine.field, it)
 					val spawnY = engine.getSpawnPosY(it)
-					val minHoldX = it.getMostMovableLeft(spawnX, spawnY, rt, engine.field!!)
-					val maxHoldX = it.getMostMovableRight(spawnX, spawnY, rt, engine.field!!)
+					val minHoldX = it.getMostMovableLeft(spawnX, spawnY, rt, engine.field)
+					val maxHoldX = it.getMostMovableRight(spawnX, spawnY, rt, engine.field)
 
 					for(x in minHoldX..maxHoldX) {
-						fld.copy(engine.field!!)
+						fld.copy(engine.field)
 						val y = it.getBottom(x, spawnY, rt, fld)
 
 						if(!it.checkCollision(x, y, rt, fld)) {
@@ -509,7 +541,7 @@ class Nohoho:DummyAI(), Runnable {
 				clear==2 -> pts++
 			}
 
-			clear = if(rt and 1==1) {
+			clear = if(rt and 1>0) {
 				pts++
 				fld.clearColor(maxX, maxY+1, true, true, false, true)
 			} else
@@ -606,7 +638,7 @@ class Nohoho:DummyAI(), Runnable {
 
 	//Wrapper for think requests
 	private class ThinkRequestMutex:java.lang.Object() {
-		var active:Boolean = false
+		var active = false
 
 		init {
 			active = false
@@ -630,7 +662,7 @@ class Nohoho:DummyAI(), Runnable {
 		fun checkOffset(p:Piece?, engine:GameEngine):Piece {
 			val result = Piece(p!!)
 			result.big = engine.big
-			if(!p.offsetApplied) result.applyOffsetArray(engine.ruleopt.pieceOffsetX[p.id], engine.ruleopt.pieceOffsetY[p.id])
+			if(!p.offsetApplied) result.applyOffsetArray(engine.ruleOpt.pieceOffsetX[p.id], engine.ruleOpt.pieceOffsetY[p.id])
 			return result
 		}
 

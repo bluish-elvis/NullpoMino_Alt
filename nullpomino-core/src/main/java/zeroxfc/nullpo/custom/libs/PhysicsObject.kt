@@ -49,19 +49,20 @@ class PhysicsObject @JvmOverloads constructor(var position:DoubleVector = Double
 	/**
 	 * Object "Health". Set to -1 to make indestructible.
 	 */
-	private var collisionsToDestroy:Int = -1, private var blockSizeX:Int = 1, private var blockSizeY:Int = 1, private var anchorPoint:Int = 0,
+	private var collisionsToDestroy:Int = -1, private var blockSizeX:Int = 1, private var blockSizeY:Int = 1,
+	private var anchorPoint:Int = 0,
 	var color:Int = 1):Cloneable {
 	/**
 	 * Property identitifiers. Is set automatically during constructions but can be overridden by external methods.
 	 *
 	 *
-	 * PROPERTY_Static is default true if the object cannot move.
-	 * PROPERTY_Collision is default true if the object can collide with other objects.
-	 * PROPERTY_Destructible is default true if the object can be destroyed.
+	 * isStatic is default true if the object cannot move.
+	 * canCollide is default true if the object can collide with other objects.
+	 * isDestructible is default true if the object can be destroyed.
 	 */
-	private var PROPERTY_Static:Boolean
-	var PROPERTY_Collision:Boolean
-	private var PROPERTY_Destructible:Boolean
+	private var isStatic:Boolean
+	private var canCollide:Boolean
+	private var isDestructible:Boolean
 	var bounces = 0
 	/**
 	 * Gets the object's physics bounding box. (Top-Left and Bottom-Right coordinate).
@@ -132,7 +133,7 @@ class PhysicsObject @JvmOverloads constructor(var position:DoubleVector = Double
 	 * Do one movement tick.
 	 */
 	fun move() {
-		if(!PROPERTY_Static) position = DoubleVector.plus(position, velocity)
+		if(!isStatic) position = DoubleVector.plus(position, velocity)
 	}
 	/**
 	 * Do one movement tick, separated into multiple subticks in order to not merge into / pass through an object.
@@ -142,7 +143,7 @@ class PhysicsObject @JvmOverloads constructor(var position:DoubleVector = Double
 	 * @return Did the object collide at all?
 	 */
 	fun move(subticks:Int, obstacles:ArrayList<PhysicsObject>, retract:Boolean):Boolean {
-		if(PROPERTY_Static) return false
+		if(isStatic) return false
 		val v:DoubleVector = DoubleVector.div(velocity, subticks.toDouble())
 		for(i in 0 until subticks) {
 			if(retract) position = DoubleVector.plus(position, v)
@@ -163,7 +164,7 @@ class PhysicsObject @JvmOverloads constructor(var position:DoubleVector = Double
 	 * @return Did the object collide at all?
 	 */
 	fun move(subticks:Int, obstacles:Array<PhysicsObject>, retract:Boolean):Boolean {
-		if(PROPERTY_Static) return false
+		if(isStatic) return false
 		val v:DoubleVector = DoubleVector.div(velocity, subticks.toDouble())
 		for(i in 0 until subticks) {
 			position = DoubleVector.plus(position, v)
@@ -180,7 +181,7 @@ class PhysicsObject @JvmOverloads constructor(var position:DoubleVector = Double
 	 * Do one movement tick with a custom velocity.
 	 */
 	fun move(velocity:DoubleVector) {
-		if(!PROPERTY_Static) position = DoubleVector.plus(position, velocity)
+		if(!isStatic) position = DoubleVector.plus(position, velocity)
 	}
 	/**
 	 * Clones the current PhysicsObject instance.
@@ -198,9 +199,9 @@ class PhysicsObject @JvmOverloads constructor(var position:DoubleVector = Double
 			clone.blockSizeY = blockSizeY
 			clone.anchorPoint = anchorPoint
 			clone.color = color
-			clone.PROPERTY_Static = PROPERTY_Static
-			clone.PROPERTY_Destructible = PROPERTY_Destructible
-			clone.PROPERTY_Collision = PROPERTY_Collision
+			clone.isStatic = isStatic
+			clone.isDestructible = isDestructible
+			clone.canCollide = canCollide
 			clone
 		} catch(e:Exception) {
 			// Empty, but log error.
@@ -211,19 +212,19 @@ class PhysicsObject @JvmOverloads constructor(var position:DoubleVector = Double
 	/**
 	 * Copies another PhysicsObject instance's fields to this instance.
 	 *
-	 * @param object PhysicsObject to use fields from.
+	 * @param obj PhysicsObject to use fields from.
 	 */
-	fun copy(`object`:PhysicsObject) {
-		position = `object`.position
-		velocity = `object`.velocity
-		collisionsToDestroy = `object`.collisionsToDestroy
-		blockSizeX = `object`.blockSizeX
-		blockSizeY = `object`.blockSizeY
-		anchorPoint = `object`.anchorPoint
-		color = `object`.color
-		PROPERTY_Static = `object`.PROPERTY_Static
-		PROPERTY_Destructible = `object`.PROPERTY_Destructible
-		PROPERTY_Collision = `object`.PROPERTY_Collision
+	fun copy(obj:PhysicsObject) {
+		position = obj.position
+		velocity = obj.velocity
+		collisionsToDestroy = obj.collisionsToDestroy
+		blockSizeX = obj.blockSizeX
+		blockSizeY = obj.blockSizeY
+		anchorPoint = obj.anchorPoint
+		color = obj.color
+		isStatic = obj.isStatic
+		isDestructible = obj.isDestructible
+		canCollide = obj.canCollide
 	}
 
 	companion object {
@@ -263,8 +264,8 @@ class PhysicsObject @JvmOverloads constructor(var position:DoubleVector = Double
 		 * @return Boolean that says if the instances are intersecting.
 		 */
 		fun checkCollision(a:PhysicsObject, b:PhysicsObject):Boolean {
-			if(!a.PROPERTY_Collision) return false
-			if(!b.PROPERTY_Collision) return false
+			if(!a.canCollide) return false
+			if(!b.canCollide) return false
 			val bboxA = a.boundingBox
 			val aMinX = bboxA[0][0]
 			val aMinY = bboxA[0][1]
@@ -288,11 +289,9 @@ class PhysicsObject @JvmOverloads constructor(var position:DoubleVector = Double
 		 * @param vertical `true` if using a vertical mirror line. `false` if using a horizontal mirror line.
 		 */
 		fun reflectVelocity(vector:DoubleVector, vertical:Boolean) {
-			if(vertical) {
-				vector.y = vector.y*-1
-			} else {
-				vector.x = vector.x*-1
-			}
+			if(vertical) vector.y = vector.y*-1
+			else vector.x = vector.x*-1
+
 		}
 		/**
 		 * Conducts a flat-surface reflection.
@@ -302,18 +301,16 @@ class PhysicsObject @JvmOverloads constructor(var position:DoubleVector = Double
 		 * @param restitution The amount of "bounce". Use a value between 0 and 1.
 		 */
 		fun reflectVelocityWithRestitution(vector:DoubleVector, vertical:Boolean, restitution:Double) {
-			if(vertical) {
-				vector.y = vector.y*-1
-			} else {
-				vector.x = vector.x*-1
-			}
+			if(vertical) vector.y = vector.y*-1
+			else vector.x = vector.x*-1
+
 			vector.magnitude = vector.magnitude*restitution
 		}
 	}
 
 	init {
-		PROPERTY_Static = velocity.magnitude==0.0
-		PROPERTY_Destructible = collisionsToDestroy>0
-		PROPERTY_Collision = true
+		isStatic = velocity.magnitude==0.0
+		isDestructible = collisionsToDestroy>0
+		canCollide = true
 	}
 }

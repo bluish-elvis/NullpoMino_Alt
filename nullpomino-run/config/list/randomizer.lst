@@ -5,7 +5,7 @@ net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.BagBonusBagRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.BagDoublesRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.BagQuintHistoryRandomizer
-net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNonuplesRandomizer
+net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNonupleRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.BagMinusTwoRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.History4RollsRandomizer
@@ -17,4 +17,5 @@ net.omegaboshi.nullpomino.game.subsystem.randomizer.DistanceLinearWeightRandomiz
 net.omegaboshi.nullpomino.game.subsystem.randomizer.DistanceQuadWeightRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.DistanceExpWeightRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.FixedSequenceRandomizer
-
+zeroxfc.nullpo.custom.random.DroughtedPieceBiasRandomizer
+zeroxfc.nullpo.custom.random.TerrorInstinctRandomizer

@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,22 +24,29 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.UpdateChecker
-import mu.nu.nullpo.gui.slick.img.*
+import mu.nu.nullpo.gui.slick.img.FontMedal
+import mu.nu.nullpo.gui.slick.img.FontNano
+import mu.nu.nullpo.gui.slick.img.FontNormal
+import mu.nu.nullpo.gui.slick.img.RenderStaffRoll
 import org.apache.log4j.Logger
-import org.newdawn.slick.*
+import org.newdawn.slick.AppGameContainer
+import org.newdawn.slick.Color
+import org.newdawn.slick.GameContainer
+import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** Title screen state */
 class StateTitle internal constructor():DummyMenuChooseState() {
 
-	/** true when new version is already checked */
+	/** True when new version is already checked */
 	private var isNewVersionChecked = false
 	override val numChoice:Int get() = CHOICES.size
 	private var rollY = 0f
@@ -135,17 +146,11 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		const val ID = 1
 
 		/** Strings for menu choices */
-		private val CHOICES = arrayOf("Game Start", "Watch Replay",
-			"Online Game",
-			"Configurations", "Exit")
-		private val CHOICEID = intArrayOf(StateSelectMode.ID, StateReplaySelect.ID,
-			StateNetGame.ID,
-			StateConfigMainMenu.ID, -1)
+		private val CHOICES = arrayOf("Game Start", "Watch Replay", "Online Game", "Configurations", "Exit")
+		private val CHOICEID = intArrayOf(StateSelectMode.ID, StateReplaySelect.ID, StateNetGame.ID, StateConfigMainMenu.ID, -1)
 
 		/** UI Text identifier Strings */
-		private val UI_TEXT = arrayOf("Title_Start", "Title_Replay",
-			"Title_NetPlay",
-			"Title_Config", "Title_Exit")
+		private val UI_TEXT = arrayOf("Title_Start", "Title_Replay", "Title_NetPlay", "Title_Config", "Title_Exit")
 
 		/** Log */
 		internal var log = Logger.getLogger(StateTitle::class.java)

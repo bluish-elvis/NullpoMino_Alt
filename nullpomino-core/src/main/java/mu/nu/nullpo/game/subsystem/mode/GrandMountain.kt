@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -29,95 +34,97 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
-import kotlin.math.*
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.ln
 
 /** GARBAGE MANIA Mode */
 class GrandMountain:AbstractMode() {
 
 	/** Current 落下速度の number (tableGravityChangeLevelの levelに到達するたびに1つ増える) */
-	private var gravityindex:Int = 0
+	private var gravityindex = 0
 
 	/** Next Section の level (これ-1のときに levelストップする) */
-	private var nextseclv:Int = 0
+	private var nextseclv = 0
 
 	/** Levelが増えた flag */
-	private var lvupflag:Boolean = false
+	private var lvupflag = false
 
 	/** Hard dropした段count */
-	private var harddropBonus:Int = 0
+	private var harddropBonus = 0
 
 	/** Combo bonus */
-	private var comboValue:Int = 0
+	private var comboValue = 0
 
 	/** Most recent increase in score */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** 獲得Render scoreがされる残り time */
-	private var scgettime:Int = 0
+	private var scgettime = 0
 
 	/** Roll 経過 time */
-	private var rolltime:Int = 0
+	private var rolltime = 0
 
 	/** 裏段位 */
-	private var secretGrade:Int = 0
+	private var secretGrade = 0
 
 	/** Current BGM */
-	private var bgmlv:Int = 0
+	private var bgmlv = 0
 
 	/** Section Time */
-	private var sectionTime:IntArray = IntArray(SECTION_MAX)
+	private var sectionTime = IntArray(SECTION_MAX)
 
 	/** 新記録が出たSection はtrue */
-	private var sectionIsNewRecord:BooleanArray = BooleanArray(SECTION_MAX)
+	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
 
 	/** どこかのSection で新記録を出すとtrue */
-	private var sectionAnyNewRecord:Boolean = false
+	private var sectionAnyNewRecord = false
 
 	/** Cleared Section count */
-	private var sectionscomp:Int = 0
+	private var sectionscomp = 0
 
 	/** Average Section Time */
-	private var sectionavgtime:Int = 0
+	private var sectionavgtime = 0
 
 	/** せり上がりパターン number */
-	private var garbagePos:Int = 0
+	private var garbagePos = 0
 
 	/** せり上がり usage counter (Linesを消さないと+1) */
-	private var garbageCount:Int = 0
+	private var garbageCount = 0
 
 	/** せり上がりした count */
-	private var garbageTotal:Int = 0
+	private var garbageTotal = 0
 
 	/** Section Time記録表示中ならtrue */
-	private var isShowBestSectionTime:Boolean = false
+	private var isShowBestSectionTime = false
 
 	/** せり上がりパターンの種類 (0=RANDOM 1=TGM+ 2=TA SHIRASE) */
-	private var goaltype:Int = 0
+	private var goaltype = 0
 
 	/** Level at start */
-	private var startlevel:Int = 0
+	private var startlevel = 0
 
 	/** When true, always ghost ON */
-	private var alwaysghost:Boolean = false
+	private var alwaysghost = false
 
 	/** When true, always 20G */
-	private var always20g:Boolean = false
+	private var always20g = false
 
 	/** When true, levelstop sound is enabled */
-	private var lvstopse:Boolean = false
+	private var lvstopse = false
 
 	/** BigMode */
-	private var big:Boolean = false
+	private var big = false
 
 	/** When true, section time display is enabled */
-	private var showsectiontime:Boolean = false
+	private var showsectiontime = false
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Rankings' level */
 	private var rankingLevel:Array<IntArray> = Array(RANKING_MAX) {IntArray(GOALTYPE_MAX)}
@@ -128,12 +135,12 @@ class GrandMountain:AbstractMode() {
 	/** Section Time記録 */
 	private var bestSectionTime:Array<IntArray> = Array(SECTION_MAX) {IntArray(GOALTYPE_MAX)}
 
-	private val decoration:Int = 0
-	private val dectemp:Int = 0
+	private val decoration = 0
+	private val dectemp = 0
 
 	/* Mode name */
-	override val name:String = "Grand Mountain"
-	override val gameIntensity:Int = 1
+	override val name = "Grand Mountain"
+	override val gameIntensity = 1
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
@@ -185,7 +192,7 @@ class GrandMountain:AbstractMode() {
 
 		version = if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -329,21 +336,24 @@ class GrandMountain:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "PATTERN", if(goaltype==GOALTYPE_RANDOM)
-			"RANDOM"
-		else if(goaltype==GOALTYPE_PATTERN) "PATTERN" else "COPY", "Level", (startlevel*100).toString(), "FULL GHOST",
-			GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "LVSTOPSE",
-			GeneralUtil.getONorOFF(lvstopse), "SHOW STIME", GeneralUtil.getONorOFF(showsectiontime), "BIG",
-			GeneralUtil.getONorOFF(big))
+		drawMenu(
+			engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
+			"PATTERN" to when(goaltype) {
+				GOALTYPE_RANDOM -> "RANDOM"
+				GOALTYPE_PATTERN -> "PATTERN"
+				else -> "COPY"
+			},
+			"Level" to (startlevel*100),
+			"FULL GHOST" to alwaysghost, "FULL 20G" to always20g, "LVSTOPSE" to lvstopse, "SHOW STIME" to showsectiontime,
+			"BIG" to big,
+		)
 	}
 
 	/* Called at game start */
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.statistics.level = startlevel*100
 
-		nextseclv = engine.statistics.level+100
-		if(engine.statistics.level<0) nextseclv = 100
-		if(engine.statistics.level>=900) nextseclv = 999
+		nextseclv = maxOf(100, minOf(engine.statistics.level+100, 999))
 
 		owner.backgroundStatus.bg = engine.statistics.level/100
 
@@ -351,9 +361,9 @@ class GrandMountain:AbstractMode() {
 		engine.big = big
 		if(goaltype==GOALTYPE_RANDOM)
 			garbagePos = if(big)
-				engine.random.nextInt(engine.field!!.width/2)
+				engine.random.nextInt(engine.field.width/2)
 			else
-				engine.random.nextInt(engine.field!!.width)
+				engine.random.nextInt(engine.field.width)
 		setSpeed(engine)
 		setStartBgmlv(engine)
 		owner.bgmStatus.bgm = BGM.values[bgmlv]
@@ -376,7 +386,7 @@ class GrandMountain:AbstractMode() {
 						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1),
 							if(rankingRank==i) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.YELLOW)
 						receiver.drawScoreNum(engine, playerID, 3, 3+i, "${rankingLevel[i][goaltype]}", i==rankingRank)
-						receiver.drawScoreNum(engine, playerID, 9, 3+i, GeneralUtil.getTime(rankingTime[i][goaltype]), i==rankingRank)
+						receiver.drawScoreNum(engine, playerID, 9, 3+i, rankingTime[i][goaltype].toTimeStr, i==rankingRank)
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW SECTION TIME", EventReceiver.COLOR.GREEN)
@@ -390,7 +400,7 @@ class GrandMountain:AbstractMode() {
 						val temp2 = minOf((i+1)*100-1, 999)
 
 						val strSectionTime:String = String.format("%3d-%3d %s", temp, temp2,
-							GeneralUtil.getTime(bestSectionTime[i][goaltype]))
+							bestSectionTime[i][goaltype].toTimeStr)
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -398,9 +408,9 @@ class GrandMountain:AbstractMode() {
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 14, "TOTAL", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(totalTime))
+					receiver.drawScoreNum(engine, playerID, 0, 15, totalTime.toTimeStr)
 					receiver.drawScoreFont(engine, playerID, 9, 14, "AVERAGE", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, 9, 15, GeneralUtil.getTime((totalTime/SECTION_MAX)))
+					receiver.drawScoreNum(engine, playerID, 9, 15, (totalTime/SECTION_MAX).toTimeStr)
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW RANKING", EventReceiver.COLOR.GREEN)
 				}
@@ -437,14 +447,14 @@ class GrandMountain:AbstractMode() {
 			else
 				EventReceiver.COLOR.BLUE)
 			if(engine.ending!=2||rolltime/20%2==0)
-				receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), g20, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 15, engine.statistics.time.toTimeStr, g20, 2f)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
 				var time = ROLLTIMELIMIT-rolltime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
 
 			// Section Time
@@ -462,14 +472,14 @@ class GrandMountain:AbstractMode() {
 						var strSeparator = "-"
 						if(i==section&&engine.ending==0) strSeparator = "+"
 
-						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, GeneralUtil.getTime(sectionTime[i]))
+						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, sectionTime[i].toTimeStr)
 
 						receiver.drawScoreNum(engine, playerID, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
 
 				if(sectionavgtime>0) {
 					receiver.drawScoreFont(engine, playerID, x2, 14, "AVERAGE", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, x2, 15, GeneralUtil.getTime(sectionavgtime), 2f)
+					receiver.drawScoreNum(engine, playerID, x2, 15, sectionavgtime.toTimeStr, 2f)
 				}
 			}
 		}
@@ -542,7 +552,7 @@ class GrandMountain:AbstractMode() {
 				engine.playSE("garbage0")
 
 				val field = engine.field
-				val w = field!!.width
+				val w = field.width
 				val h = field.height
 				if(big&&version>=3) {
 					when(goaltype) {
@@ -640,7 +650,7 @@ class GrandMountain:AbstractMode() {
 			// Level up
 			val levelb = engine.statistics.level
 			var ls = lines
-			ls += engine.field!!.howManyGarbageLineClears
+			ls += engine.field.howManyGarbageLineClears
 			engine.statistics.level += ls
 			levelUp(engine)
 
@@ -681,7 +691,7 @@ class GrandMountain:AbstractMode() {
 
 			// Calculate score
 			var bravo = 1
-			if(engine.field!!.isEmpty) bravo = 4
+			if(engine.field.isEmpty) bravo = 4
 
 			lastscore = ((levelb+ls)/4+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)*ls*comboValue*bravo+
 				engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7
@@ -735,7 +745,7 @@ class GrandMountain:AbstractMode() {
 
 	/* Called at game over */
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.statc[0]==0) secretGrade = engine.field!!.secretGrade
+		if(engine.statc[0]==0) secretGrade = engine.field.secretGrade
 
 		return false
 	}
@@ -759,11 +769,11 @@ class GrandMountain:AbstractMode() {
 
 				for(i in sectionTime.indices)
 					if(sectionTime[i]>0)
-						receiver.drawMenuFont(engine, playerID, 2, 3+i, GeneralUtil.getTime(sectionTime[i]), sectionIsNewRecord[i])
+						receiver.drawMenuFont(engine, playerID, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
 
 				if(sectionavgtime>0) {
 					receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", EventReceiver.COLOR.BLUE)
-					receiver.drawMenuFont(engine, playerID, 2, 15, GeneralUtil.getTime(sectionavgtime))
+					receiver.drawMenuFont(engine, playerID, 2, 15, sectionavgtime.toTimeStr)
 				}
 			}
 			2 -> drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR.BLUE, Statistic.LPM, Statistic.SPM,
@@ -805,7 +815,7 @@ class GrandMountain:AbstractMode() {
 			if(sectionAnyNewRecord) updateBestSectionTime(goaltype)
 
 			if(rankingRank!=-1||sectionAnyNewRecord) {
-				saveRanking(engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -830,8 +840,7 @@ class GrandMountain:AbstractMode() {
 	/** Save rankings to property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(ruleName:String) {
-
+	private fun saveRanking(ruleName:String) {
 		super.saveRanking(ruleName, (0 until GOALTYPE_MAX).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf("$ruleName.$i.level" to rankingLevel[j][j],
@@ -921,7 +930,7 @@ class GrandMountain:AbstractMode() {
 		private const val ROLLTIMELIMIT = 2024
 
 		/** Number of entries in rankings */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of sections */
 		private const val SECTION_MAX = 10

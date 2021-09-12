@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,15 +24,18 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** PHYSICIAN mode (beta) */
 class Physician:AbstractMode() {
@@ -39,38 +46,38 @@ class Physician:AbstractMode() {
 	 * for drawing the fonts.) */
 
 	/** Amount of points you just get from line clears */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** Elapsed time from last line clear (lastscore is displayed to screen
 	 * until this reaches to 120) */
-	private var scgettime:Int = 0
+	private var scgettime = 0
 
 	/** Version number */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Rankings' line counts */
-	private var rankingScore:IntArray = IntArray(RANKING_MAX)
+	private var rankingScore = IntArray(RANKING_MAX)
 
 	/** Rankings' times */
-	private var rankingTime:IntArray = IntArray(RANKING_MAX)
+	private var rankingTime = IntArray(RANKING_MAX)
 
 	/** Number of initial gem blocks */
-	private var hoverBlocks:Int = 0
+	private var hoverBlocks = 0
 
 	/** Speed mode */
-	private var speed:Int = 0
+	private var speed = 0
 
 	/** Number gem blocks cleared in current chain */
-	private var gemsClearedChainTotal:Int = 0
+	private var gemsClearedChainTotal = 0
 
 	/* Mode name */
-	override val name:String = "PHYSICIAN (RC1)"
+	override val name = "PHYSICIAN (RC1)"
 
 	/* Game style */
-	override val gameStyle:Int = GameEngine.GAMESTYLE_PHYSICIAN
+	override val gameStyle = GameEngine.GameStyle.PHYSICIAN
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -85,7 +92,7 @@ class Physician:AbstractMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else
 			loadSetting(owner.replayProp)
@@ -168,7 +175,7 @@ class Physician:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GEMS", "$hoverBlocks", "SPEED", SPEED_NAME[speed])
+		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GEMS" to hoverBlocks, "SPEED" to SPEED_NAME[speed])
 	}
 
 	/* Called for initialization during "Ready" screen */
@@ -192,7 +199,7 @@ class Physician:AbstractMode() {
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreFont(engine, playerID, 0, 4+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
 					receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[i]}", i==rankingRank)
-					receiver.drawScoreFont(engine, playerID, 10, 4+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank)
+					receiver.drawScoreFont(engine, playerID, 10, 4+i, rankingTime[i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
@@ -204,32 +211,32 @@ class Physician:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "REST", EventReceiver.COLOR.BLUE)
-			if(engine.field!=null) {
-				receiver.drawScoreFont(engine, playerID, 0, 7, engine.field!!.howManyGems.toString())
-				var red = 0
-				var yellow = 0
-				var blue = 0
-				for(y in 0 until engine.field!!.height)
-					for(x in 0 until engine.field!!.width) {
-						val blockColor = engine.field!!.getBlockColor(x, y)
-						if(blockColor==Block.BLOCK_COLOR_GEM_BLUE)
-							blue++
-						else if(blockColor==Block.BLOCK_COLOR_GEM_RED)
-							red++
-						else if(blockColor==Block.BLOCK_COLOR_GEM_YELLOW) yellow++
+			receiver.drawScoreFont(engine, playerID, 0, 7, engine.field.howManyGems.toString())
+
+			var red = 0
+			var yellow = 0
+			var blue = 0
+			for(y in 0 until engine.field.height)
+				for(x in 0 until engine.field.width) {
+					engine.field.getBlock(x, y)?.run {
+						if(type==Block.TYPE.GEM) when(color) {
+							Block.COLOR.BLUE -> blue++
+							Block.COLOR.RED -> red++
+							Block.COLOR.YELLOW -> yellow++
+						}
 					}
-				receiver.drawScoreFont(engine, playerID, 0, 8, "(")
-				receiver.drawScoreFont(engine, playerID, 1, 8, String.format("%2d", red), EventReceiver.COLOR.RED)
-				receiver.drawScoreFont(engine, playerID, 4, 8, String.format("%2d", yellow), EventReceiver.COLOR.YELLOW)
-				receiver.drawScoreFont(engine, playerID, 7, 8, String.format("%2d", blue), EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 9, 8, ")")
-			}
+				}
+			receiver.drawScoreFont(engine, playerID, 0, 8, "(")
+			receiver.drawScoreFont(engine, playerID, 1, 8, String.format("%2d", red), EventReceiver.COLOR.RED)
+			receiver.drawScoreFont(engine, playerID, 4, 8, String.format("%2d", yellow), EventReceiver.COLOR.YELLOW)
+			receiver.drawScoreFont(engine, playerID, 7, 8, String.format("%2d", blue), EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 9, 8, ")")
 
 			receiver.drawScoreFont(engine, playerID, 0, 10, "SPEED", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 11, SPEED_NAME[speed], SPEED_COLOR[speed])
 
 			receiver.drawScoreFont(engine, playerID, 0, 13, "Time", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 14, GeneralUtil.getTime(engine.statistics.time))
+			receiver.drawScoreFont(engine, playerID, 0, 14, engine.statistics.time.toTimeStr)
 		}
 	}
 
@@ -238,12 +245,13 @@ class Physician:AbstractMode() {
 		if(hoverBlocks>0&&engine.statc[0]==0) {
 			engine.createFieldIfNeeded()
 			var minY = 6
-			if(hoverBlocks>=80)
-				minY = 3
-			else if(hoverBlocks>=72)
-				minY = 4
-			else if(hoverBlocks>=64) minY = 5
-			engine.field!!.addRandomHoverBlocks(engine, hoverBlocks, HOVER_BLOCK_COLORS, minY, true)
+			when {
+				hoverBlocks>=80 -> minY = 3
+				hoverBlocks>=72 -> minY = 4
+				hoverBlocks>=64 -> minY = 5
+			}
+
+			engine.field.addRandomHoverBlocks(engine, hoverBlocks, HOVER_BLOCK_COLORS, minY, true)
 			engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_CONNECT
 		}
 		return false
@@ -255,16 +263,14 @@ class Physician:AbstractMode() {
 
 		if(engine.field==null) return
 
-		val rest = engine.field!!.howManyGems
+		val rest = engine.field.howManyGems
 		engine.meterValue = rest*receiver.getMeterMax(engine)/hoverBlocks
-		if(rest<=3)
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-		else if(rest<hoverBlocks shr 2)
-			engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		else if(rest<hoverBlocks shr 1)
-			engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		else
-			engine.meterColor = GameEngine.METER_COLOR_RED
+		engine.meterColor = when {
+			rest<=3 -> GameEngine.METER_COLOR_GREEN
+			rest<hoverBlocks shr 2 -> GameEngine.METER_COLOR_YELLOW
+			rest<hoverBlocks shr 1 -> GameEngine.METER_COLOR_ORANGE
+			else -> GameEngine.METER_COLOR_RED
+		}
 
 		if(rest==0&&engine.timerActive) {
 			engine.gameEnded()
@@ -276,7 +282,7 @@ class Physician:AbstractMode() {
 
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
-		var gemsCleared = engine.field!!.gemsCleared
+		var gemsCleared = engine.field.gemsCleared
 		if(gemsCleared>0&&lines>0) {
 			var pts = 0
 			while(gemsCleared>0&&gemsClearedChainTotal<5) {
@@ -308,7 +314,7 @@ class Physician:AbstractMode() {
 
 		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
 			"CLEARED", String.format("%10d", engine.statistics.lines), "Time",
-			String.format("%10s", GeneralUtil.getTime(engine.statistics.time)))
+			String.format("%10s", engine.statistics.time.toTimeStr))
 		drawResultRank(engine, playerID, receiver, 9, EventReceiver.COLOR.BLUE, rankingRank)
 	}
 
@@ -321,7 +327,7 @@ class Physician:AbstractMode() {
 			updateRanking(engine.statistics.score, engine.statistics.time)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -351,20 +357,22 @@ class Physician:AbstractMode() {
 	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			rankingScore[i] = prop.getProperty("physician.ranking.$ruleName.$i.score", 0)
-			rankingTime[i] = prop.getProperty("physician.ranking.$ruleName.$i.time", -1)
+			rankingScore[i] = prop.getProperty("$ruleName.$i.score", 0)
+			rankingTime[i] = prop.getProperty("$ruleName.$i.time", -1)
 		}
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			prop.setProperty("physician.ranking.$ruleName.$i.score", rankingScore[i])
-			prop.setProperty("physician.ranking.$ruleName.$i.time", rankingTime[i])
-		}
+	private fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName,
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf(
+					"$ruleName.$i.score" to rankingScore[i],
+					"$ruleName.$i.time" to rankingTime[i],
+				)
+			})
 	}
 
 	/** Update rankings
@@ -409,15 +417,16 @@ class Physician:AbstractMode() {
 		private val PIECE_ENABLE = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
 
 		/** Block colors */
-		private val BLOCK_COLORS = intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_YELLOW)
+		private val BLOCK_COLORS = arrayOf(Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.YELLOW)
+		//.map {it to Block.TYPE.BLOCK}.toTypedArray()
 
+		private val TAB_BLOCK_COLORS = BLOCK_COLORS.map {it to Block.TYPE.BLOCK}.toTypedArray()
 		/** Hovering block colors */
-		private val HOVER_BLOCK_COLORS = intArrayOf(Block.BLOCK_COLOR_GEM_RED, Block.BLOCK_COLOR_GEM_BLUE,
-			Block.BLOCK_COLOR_GEM_YELLOW)
+		private val HOVER_BLOCK_COLORS = BLOCK_COLORS.map {it to Block.TYPE.GEM}.toTypedArray()
 		private val BASE_SPEEDS = intArrayOf(10, 20, 25)
 
 		/** Number of ranking records */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Names of speed settings */
 		private val SPEED_NAME = arrayOf("LOW", "MED", "HI")

@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.event
 
 import mu.nu.nullpo.game.component.Block
@@ -29,9 +34,12 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.PopupCombo
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toReplayFilename
 import org.apache.log4j.Logger
-import java.io.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.math.sqrt
@@ -49,19 +57,22 @@ open class EventReceiver {
 	enum class COLOR { WHITE, BLUE, RED, PINK, GREEN, YELLOW, CYAN, ORANGE, PURPLE, COBALT, RAINBOW; }
 
 	/** Background display */
-	protected var showbg:Boolean = false
+	protected var showbg = false
 
 	/** Show meter */
-	protected var showmeter:Boolean = false
+	protected var showMeter = false
+
+	/** Show ARE meter */
+	protected var showSpeed = false
 
 	/** Outline ghost piece */
-	protected var outlineghost:Boolean = false
+	protected var outlineghost = false
 
 	/** Piece previews on sides */
-	protected var sidenext:Boolean = false
+	protected var sidenext = false
 
 	/** Use bigger side previews */
-	protected var bigsidenext:Boolean = false
+	protected var bigsidenext = false
 
 	/** Is TTF font available?
 	 * @return true if you can use TTF font routines.
@@ -107,7 +118,7 @@ open class EventReceiver {
 		addCombo(fieldX(engine)+x*getBlockSize(engine), fieldY(engine)+y*getBlockSize(engine),
 			pts, type, -(x+2)*getBlockSize(engine)+18)
 
-	/** It will be called when a fireworks shoots.
+	/** It will be called when a fireworks shoot.
 	 * @param engine GameEngine
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -117,7 +128,7 @@ open class EventReceiver {
 		playSE("firecracker"+(random.nextInt(2)+1))
 	}
 
-	/** It will be called when a fireworks shoots
+	/** It will be called when a fireworks shoot
 	 * @param engine GameEngine
 	 */
 	fun shootFireworks(engine:GameEngine) {
@@ -125,7 +136,7 @@ open class EventReceiver {
 		val my = engine.fieldHeight*8
 		val x = fieldX(engine)+random.nextInt(mx)
 		var y = fieldY(engine)+random.nextInt(my)+50
-		engine.field?.let {if(my<it.highestBlockY) y += my}
+		if(my<engine.field.highestBlockY) y += my
 		shootFireworks(engine, x, y, COLOR.values()[random.nextInt(7)])
 	}
 
@@ -504,8 +515,8 @@ open class EventReceiver {
 	 * @param darkness 暗さもしくは明るさ
 	 */
 	@JvmOverloads
-	fun drawBlock(x:Float, y:Float, block:Block, scale:Float = 1f, darkness:Float = block.darkness,
-		alpha:Float = block.alpha, outline:Float = 0f) =
+	fun drawBlock(x:Float, y:Float, block:Block, darkness:Float = block.darkness, alpha:Float = block.alpha,
+		scale:Float = 1f, outline:Float = 0f) =
 		drawBlock(x, y, block.drawColor, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE), darkness, alpha, scale,
 			block.aint, outline)
 
@@ -526,7 +537,7 @@ open class EventReceiver {
 		piece.block.forEachIndexed {i, blk ->
 			val ls = scale*if(piece.big) 32 else 16
 			drawBlock(x+(piece.dataX[piece.direction][i].toFloat()*ls), y+(piece.dataY[piece.direction][i].toFloat()*ls),
-				blk, scale, blk.darkness+darkness, blk.alpha*alpha, ow)
+				blk, blk.darkness+darkness, blk.alpha*alpha, scale, ow)
 		}
 
 	/** Get key name by button ID
@@ -597,7 +608,7 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 * @return Maximum length of the meter
 	 */
-	fun getMeterMax(engine:GameEngine):Int = if(!showmeter) 0 else engine.fieldHeight*getBlockSize(engine)
+	fun getMeterMax(engine:GameEngine):Int = if(!showMeter) 0 else engine.fieldHeight*getBlockSize(engine)
 
 	/** Draw Decorations at score pos
 	 * @param engine GameEngine
@@ -687,11 +698,13 @@ open class EventReceiver {
 	 */
 	fun fieldX(engine:GameEngine, playerID:Int = engine.playerID):Int {
 		engine.owner.mode?.let {
-			return if(nextDisplayType==2) NEW_FIELD_OFFSET_X_BSP[it.gameStyle][engine.displaysize+1][playerID]
-			else NEW_FIELD_OFFSET_X[it.gameStyle][engine.displaysize+1][playerID]
+			return@fieldX fieldXOffset(engine)+if(nextDisplayType==2)
+				NEW_FIELD_OFFSET_X_BSP[it.gameStyle.ordinal][engine.displaysize+1][playerID]
+			else NEW_FIELD_OFFSET_X[it.gameStyle.ordinal][engine.displaysize+1][playerID]
 		} ?: return 0
 	}
 
+	fun fieldXOffset(engine:GameEngine):Int = maxOf(0, getBlockSize(engine)*(10-engine.field.width)/2)
 	/** Get Y position of field
 	 * @param engine GameEngine
 	 * @param playerID Player ID
@@ -699,8 +712,8 @@ open class EventReceiver {
 	 */
 	fun fieldY(engine:GameEngine, playerID:Int = engine.playerID):Int {
 		engine.owner.mode?.let {
-			return if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[it.gameStyle][engine.displaysize+1][playerID]
-			else NEW_FIELD_OFFSET_Y[it.gameStyle][engine.displaysize+1][playerID]
+			return@fieldY if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[it.gameStyle.ordinal][engine.displaysize+1][playerID]
+			else NEW_FIELD_OFFSET_Y[it.gameStyle.ordinal][engine.displaysize+1][playerID]
 		} ?: return 0
 	}
 
@@ -710,7 +723,7 @@ open class EventReceiver {
 	 * @return X position of score display area
 	 */
 	fun scoreX(engine:GameEngine, playerID:Int):Int =
-		fieldX(engine, playerID)+(if(nextDisplayType==2) 256 else 216)+if(engine.displaysize==1) 32 else 0
+		fieldX(engine, playerID)-fieldXOffset(engine)+(if(nextDisplayType==2) 256 else 216)+if(engine.displaysize==1) 32 else 0
 
 	/** Get Y position of score display area
 	 * @param engine GameEngine
@@ -849,7 +862,7 @@ open class EventReceiver {
 	 */
 	open fun onLineClear(engine:GameEngine, playerID:Int) {}
 
-	/** It will be called during the ARE.
+	/** It will be called during the "ARE".
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
@@ -921,7 +934,7 @@ open class EventReceiver {
 	 */
 	open fun renderMove(engine:GameEngine, playerID:Int) {}
 
-	/** It will be called during the ARE. (For rendering)
+	/** It will be called during the "ARE". (For rendering)
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
@@ -990,6 +1003,8 @@ open class EventReceiver {
 	 */
 	open fun blockBreak(engine:GameEngine, x:Int, y:Int, blk:Block) {}
 
+	@Deprecated("playerID noEffect", ReplaceWith("blockBreak(engine,x,y,blk)"))
+	fun blockBreak(engine:GameEngine, playerID:Int = engine.playerID, x:Int, y:Int, blk:Block) = blockBreak(engine, x, y, blk)
 	/** It will be called when the game mode is going to calculate score.
 	 * Please note it will be called even if no lines are cleared.
 	 * @param engine GameEngine
@@ -1032,14 +1047,14 @@ open class EventReceiver {
 
 	/** Called when saving replay (This is main body)
 	 * @param owner GameManager
-	 * @param prop CustomProperties where the replay is going to stored
+	 * @param prop CustomProperties where the replay is going to store
 	 * @param foldername Replay folder name
 	 */
 	open fun saveReplay(owner:GameManager, prop:CustomProperties, foldername:String = "replay") {
 		if(owner.mode?.isNetplayMode!=false) return
 		val folder = "$foldername/${owner.mode?.javaClass?.simpleName ?: ""}"
 		val filename = "$folder/"+
-			GeneralUtil.getReplayFilename(prop.getProperty("name.rule")).lowercase()
+			prop.getProperty("name.rule").lowercase().toReplayFilename
 				.replace("[\\s-]".toRegex(), "_")
 		try {
 			val repfolder = File(folder)
@@ -1087,6 +1102,27 @@ open class EventReceiver {
 			else -> COLOR.values().let {it.getOrElse((playerID-5)%it.size) {COLOR.WHITE}}
 		}
 
+		fun getBlockColor(engine:GameEngine, piece:Piece.Shape):COLOR =
+			getBlockColor(Block.intToColor(engine.ruleOpt.pieceColor[piece.ordinal]))
+
+		fun getBlockColor(it:Pair<Block.COLOR?, Block.TYPE>):COLOR = getBlockColor(it.first, it.second)
+		fun getBlockColor(color:Block.COLOR?, type:Block.TYPE? = Block.TYPE.BLOCK):COLOR = when(type) {
+			Block.TYPE.SQUARE_GOLD -> COLOR.YELLOW
+			Block.TYPE.SQUARE_SILVER -> COLOR.BLUE
+			else -> when(color) {
+				Block.COLOR.BLACK -> COLOR.WHITE
+				Block.COLOR.WHITE -> COLOR.WHITE
+				Block.COLOR.RED -> COLOR.RED
+				Block.COLOR.ORANGE -> COLOR.ORANGE
+				Block.COLOR.YELLOW -> COLOR.YELLOW
+				Block.COLOR.GREEN -> COLOR.GREEN
+				Block.COLOR.CYAN -> COLOR.CYAN
+				Block.COLOR.BLUE -> if(type==Block.TYPE.GEM) COLOR.BLUE else COLOR.COBALT
+				Block.COLOR.PURPLE -> if(type==Block.TYPE.GEM) COLOR.PINK else COLOR.PURPLE
+				Block.COLOR.RAINBOW -> COLOR.RAINBOW
+				else -> COLOR.WHITE
+			}
+		}
 		/** Field X position */
 		val NEW_FIELD_OFFSET_X = arrayOf(arrayOf(// TETROMINO
 			intArrayOf(119, 247, 375, 503, 247, 375), // Small

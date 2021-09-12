@@ -1,14 +1,46 @@
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.net.*
+import mu.nu.nullpo.game.net.NetPlayerClient
+import mu.nu.nullpo.game.net.NetPlayerInfo
+import mu.nu.nullpo.game.net.NetRoomInfo
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
 import kotlin.random.Random
 
@@ -17,46 +49,46 @@ open class NetDummyVSMode:NetDummyMode() {
 
 	/* -------------------- Variables -------------------- */
 	/** NET-VS: Local player's seat ID (-1:Spectator) */
-	private var netvsMySeatID:Int = 0
+	private var netvsMySeatID = 0
 
 	/** NET-VS: Number of players */
-	private var netvsNumPlayers:Int = 0
+	private var netvsNumPlayers = 0
 
 	/** NET-VS: Number of players in current game */
-	private var netvsNumNowPlayers:Int = 0
+	private var netvsNumNowPlayers = 0
 
 	/** NET-VS: Number of players still alive in current game */
-	internal var netvsNumAlivePlayers:Int = 0
+	internal var netvsNumAlivePlayers = 0
 
 	/** NET-VS: Player exist flag */
-	internal var netvsPlayerExist:BooleanArray = BooleanArray(0)
+	internal var netvsPlayerExist = BooleanArray(0)
 
 	/** NET-VS: Player ready flag */
-	private var netvsPlayerReady:BooleanArray = BooleanArray(0)
+	private var netvsPlayerReady = BooleanArray(0)
 
 	/** NET-VS: Player dead flag */
-	internal var netvsPlayerDead:BooleanArray = BooleanArray(0)
+	internal var netvsPlayerDead = BooleanArray(0)
 
 	/** NET-VS: Player active flag (false if newcomer) */
-	private var netvsPlayerActive:BooleanArray = BooleanArray(0)
+	private var netvsPlayerActive = BooleanArray(0)
 
 	/** NET-VS: Player's Seat ID array (-1:No Player) */
-	internal var netvsPlayerSeatID:IntArray = IntArray(0)
+	internal var netvsPlayerSeatID = IntArray(0)
 
 	/** NET-VS: Player's UID array (-1:No Player) */
-	internal var netvsPlayerUID:IntArray = IntArray(0)
+	internal var netvsPlayerUID = IntArray(0)
 
 	/** NET-VS: Player's place */
-	internal var netvsPlayerPlace:IntArray = IntArray(0)
+	internal var netvsPlayerPlace = IntArray(0)
 
 	/** NET-VS: Player's win count */
-	internal var netvsPlayerWinCount:IntArray = IntArray(0)
+	internal var netvsPlayerWinCount = IntArray(0)
 
 	/** NET-VS: Player's game count */
-	internal var netvsPlayerPlayCount:IntArray = IntArray(0)
+	internal var netvsPlayerPlayCount = IntArray(0)
 
 	/** NET-VS: Player's team colors */
-	private var netvsPlayerTeamColor:IntArray = IntArray(0)
+	private var netvsPlayerTeamColor = IntArray(0)
 
 	/** NET-VS: Player names */
 	private var netvsPlayerName:Array<String> = emptyArray()
@@ -65,65 +97,65 @@ open class NetDummyVSMode:NetDummyMode() {
 	private var netvsPlayerTeam:Array<String> = emptyArray()
 
 	/** NET-VS: Player's skins */
-	internal var netvsPlayerSkin:IntArray = IntArray(0)
+	internal var netvsPlayerSkin = IntArray(0)
 
 	/** NET-VS: true if it's ready to show player's result */
-	internal var netvsPlayerResultReceived:BooleanArray = BooleanArray(0)
+	internal var netvsPlayerResultReceived = BooleanArray(0)
 
 	/** NET-VS: true if automatic start timer is activated */
-	private var netvsAutoStartTimerActive:Boolean = false
+	private var netvsAutoStartTimerActive = false
 
 	/** NET-VS: Time left until the game starts automatically */
-	private var netvsAutoStartTimer:Int = 0
+	private var netvsAutoStartTimer = 0
 
 	/** NET-VS: true if room game is in progress */
-	internal var netvsIsGameActive:Boolean = false
+	internal var netvsIsGameActive = false
 
 	/** NET-VS: true if room game is finished */
-	private var netvsIsGameFinished:Boolean = false
+	private var netvsIsGameFinished = false
 
 	/** NET-VS: true if waiting for ready status change */
-	private var netvsIsReadyChangePending:Boolean = false
+	private var netvsIsReadyChangePending = false
 
 	/** NET-VS: true if waiting for dead status change */
-	private var netvsIsDeadPending:Boolean = false
+	private var netvsIsDeadPending = false
 
 	/** NET-VS: true if local player joined game in progress */
-	internal var netvsIsNewcomer:Boolean = false
+	internal var netvsIsNewcomer = false
 
 	/** NET-VS: Elapsed timer active flag */
-	internal var netvsPlayTimerActive:Boolean = false
+	internal var netvsPlayTimerActive = false
 
 	/** NET-VS: Elapsed time */
-	internal var netvsPlayTimer:Int = 0
+	internal var netvsPlayTimer = 0
 
 	/** NET-VS: true if practice mode */
-	internal var netvsIsPractice:Boolean = false
+	internal var netvsIsPractice = false
 
 	/** NET-VS: true if can exit from practice game */
-	internal var netvsIsPracticeExitAllowed:Boolean = false
+	internal var netvsIsPracticeExitAllowed = false
 
 	/** NET-VS: How long current piece is active */
-	private var netvsPieceMoveTimer:Int = 0
+	private var netvsPieceMoveTimer = 0
 
 	/** NET-VS: Time before forced piece lock */
-	private var netvsPieceMoveTimerMax:Int = 0
+	private var netvsPieceMoveTimerMax = 0
 
 	/** NET-VS: Map number to use */
-	private var netvsMapNo:Int = 0
+	private var netvsMapNo = 0
 
 	/** NET-VS: Random for selecting values in Practice mode */
 	private var netvsRandMap:Random? = null
 
 	/** NET-VS: Practice mode last used values number */
-	private var netvsMapPreviousPracticeMap:Int = 0
+	private var netvsMapPreviousPracticeMap = 0
 
 	/** NET-VS: UID of player who attacked local player last (-1: Suicide or
 	 * Unknown) */
-	internal var netvsLastAttackerUID:Int = 0
+	internal var netvsLastAttackerUID = 0
 
 	/* Mode Name */
-	override val name:String = "NET-VS-DUMMY"
+	override val name = "NET-VS-DUMMY"
 
 	override val isVSMode:Boolean
 		get() = true
@@ -333,7 +365,7 @@ open class NetDummyVSMode:NetDummyMode() {
 				val randomizer = GeneralUtil.loadRandomizer(netLobby!!.ruleOptLock!!.strRandomizer)
 				val wallkick = GeneralUtil.loadWallkick(netLobby!!.ruleOptLock!!.strWallkick)
 				for(i in 0 until players) {
-					owner.engine[i].ruleopt.copy(netLobby!!.ruleOptLock)
+					owner.engine[i].ruleOpt.copy(netLobby!!.ruleOptLock)
 					owner.engine[i].randomizer = randomizer
 					owner.engine[i].wallkick = wallkick
 				}
@@ -341,9 +373,9 @@ open class NetDummyVSMode:NetDummyMode() {
 				log.warn("Tried to set locked rule, but rule was not received yet!")
 		} else if(!netvsIsWatch()) {
 			// Revert rules
-			owner.engine[0].ruleopt.copy(netLobby!!.ruleOptPlayer)
-			owner.engine[0].randomizer = GeneralUtil.loadRandomizer(owner.engine[0].ruleopt.strRandomizer)
-			owner.engine[0].wallkick = GeneralUtil.loadWallkick(owner.engine[0].ruleopt.strWallkick)
+			owner.engine[0].ruleOpt.copy(netLobby!!.ruleOptPlayer)
+			owner.engine[0].randomizer = GeneralUtil.loadRandomizer(owner.engine[0].ruleOpt.strRandomizer)
+			owner.engine[0].wallkick = GeneralUtil.loadWallkick(owner.engine[0].ruleOpt.strWallkick)
 		}
 	}
 
@@ -461,10 +493,10 @@ open class NetDummyVSMode:NetDummyMode() {
 			netvsMapPreviousPracticeMap = map
 
 			engine.createFieldIfNeeded()
-			engine.field!!.stringToField(netLobby!!.mapList[map])
-			engine.field!!.setAllSkin(engine.skin)
-			engine.field!!.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
-			engine.field!!.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
+			engine.field.stringToField(netLobby!!.mapList[map])
+			engine.field.setAllSkin(engine.skin)
+			engine.field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+			engine.field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 		}
 	}
 
@@ -578,12 +610,12 @@ open class NetDummyVSMode:NetDummyMode() {
 					engine.statc[5]++
 					if(engine.statc[5]>=netLobby!!.mapList.size) engine.statc[5] = 0
 					engine.createFieldIfNeeded()
-					engine.field!!.stringToField(netLobby!!.mapList[engine.statc[5]])
-					engine.field!!.setAllSkin(engine.skin)
-					engine.field!!.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
-					engine.field!!.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
+					engine.field.stringToField(netLobby!!.mapList[engine.statc[5]])
+					engine.field.setAllSkin(engine.skin)
+					engine.field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+					engine.field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 				}
-			} else if(engine.field!=null&&!engine.field!!.isEmpty) engine.field!!.reset()
+			} else if(engine.field!=null&&!engine.field.isEmpty) engine.field.reset()
 
 		menuTime++
 
@@ -634,14 +666,14 @@ open class NetDummyVSMode:NetDummyMode() {
 		// Map
 			if(netCurrentRoomInfo!!.useMap&&netvsMapNo<netLobby!!.mapList.size&&!netvsIsPractice) {
 				engine.createFieldIfNeeded()
-				engine.field!!.stringToField(netLobby!!.mapList[netvsMapNo])
+				engine.field.stringToField(netLobby!!.mapList[netvsMapNo])
 				if(playerID==0&&!netvsIsWatch())
-					engine.field!!.setAllSkin(engine.skin)
+					engine.field.setAllSkin(engine.skin)
 				else if(netCurrentRoomInfo!!.ruleLock&&netLobby!!.ruleOptLock!=null)
-					engine.field!!.setAllSkin(netLobby!!.ruleOptLock!!.skin)
-				else if(netvsPlayerSkin[playerID]>=0) engine.field!!.setAllSkin(netvsPlayerSkin[playerID])
-				engine.field!!.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
-				engine.field!!.setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
+					engine.field.setAllSkin(netLobby!!.ruleOptLock!!.skin)
+				else if(netvsPlayerSkin[playerID]>=0) engine.field.setAllSkin(netvsPlayerSkin[playerID])
+				engine.field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+				engine.field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 			}
 
 		if(netvsIsPractice&&engine.statc[0]>=10) netvsIsPracticeExitAllowed = true
@@ -722,7 +754,7 @@ open class NetDummyVSMode:NetDummyMode() {
 			netvsIsPractice = false
 			netvsIsPracticeExitAllowed = false
 			owner.bgmStatus.bgm = BGM.Silent
-			engine.field!!.reset()
+			engine.field.reset()
 			engine.gameEnded()
 			engine.stat = GameEngine.Status.SETTING
 			engine.resetStatc()
@@ -745,10 +777,10 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		// Elapsed time
 		if(playerID==0) {
-			owner.receiver.drawDirectFont(256, 16, GeneralUtil.getTime(netvsPlayTimer))
+			owner.receiver.drawDirectFont(256, 16, netvsPlayTimer.toTimeStr)
 
 			if(netvsIsPractice)
-				owner.receiver.drawDirectFont(256, 32, GeneralUtil.getTime(engine.statistics.time),
+				owner.receiver.drawDirectFont(256, 32, engine.statistics.time.toTimeStr,
 					COLOR.PURPLE)
 		}
 
@@ -756,7 +788,7 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(playerID==0&&netCurrentRoomInfo!=null&&netvsAutoStartTimerActive
 			&&!netvsIsGameActive)
 			owner.receiver.drawDirectFont(496, 16,
-				GeneralUtil.getTime(netvsAutoStartTimer),
+				netvsAutoStartTimer.toTimeStr,
 				if(netCurrentRoomInfo!!.autoStartTNET2) COLOR.RED else COLOR.YELLOW)
 
 	}
@@ -770,10 +802,10 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		// Practice
 		if(playerID==0&&netvsIsPractice)
-			return if(engine.statc[0]<engine.field!!.height+1)
+			return if(engine.statc[0]<engine.field.height+1)
 				false
 			else {
-				engine.field!!.reset()
+				engine.field.reset()
 				engine.stat = GameEngine.Status.RESULT
 				engine.resetStatc()
 				true
@@ -799,7 +831,7 @@ open class NetDummyVSMode:NetDummyMode() {
 				engine.resetStatc()
 				return true
 			}
-			return engine.statc[0]>=engine.field!!.height+1&&!netvsPlayerResultReceived[playerID]
+			return engine.statc[0]>=engine.field.height+1&&!netvsPlayerResultReceived[playerID]
 		}
 
 		return true
@@ -876,11 +908,11 @@ open class NetDummyVSMode:NetDummyMode() {
 			engine.playSE("excellent")
 		}
 
-		if(engine.statc[0]>=120&&engine.ctrl.isPush(Controller.BUTTON_A)) engine.statc[0] = engine.field!!.height+1+180
+		if(engine.statc[0]>=120&&engine.ctrl.isPush(Controller.BUTTON_A)) engine.statc[0] = engine.field.height+1+180
 
-		if(engine.statc[0]>=engine.field!!.height+1+180) {
+		if(engine.statc[0]>=engine.field.height+1+180) {
 			if(!netvsIsGameActive&&netvsPlayerResultReceived[playerID]) {
-				if(engine.field!=null) engine.field!!.reset()
+				if(engine.field!=null) engine.field.reset()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.RESULT
 			}
@@ -1047,7 +1079,7 @@ open class NetDummyVSMode:NetDummyMode() {
 				owner.engine[0].stat = GameEngine.Status.SETTING
 
 				for(i in 0 until players) {
-					if(owner.engine[i].field!=null) owner.engine[i].field!!.reset()
+					if(owner.engine[i].field!=null) owner.engine[i].field.reset()
 					owner.engine[i].nowPieceObject = null
 
 					if(owner.engine[i].stat==GameEngine.Status.NOTHING||!netvsIsGameActive)
@@ -1273,8 +1305,8 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		/** NET-VS: Each player's garbage block cint */
 		internal val NETVS_PLAYER_COLOR_BLOCK =
-			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_YELLOW,
-				Block.BLOCK_COLOR_PURPLE, Block.BLOCK_COLOR_CYAN)
+			arrayOf(Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.GREEN, Block.COLOR.YELLOW,
+				Block.COLOR.PURPLE, Block.COLOR.CYAN)
 
 		/** NET-VS: Each player's frame cint */
 		private val NETVS_PLAYER_COLOR_FRAME =

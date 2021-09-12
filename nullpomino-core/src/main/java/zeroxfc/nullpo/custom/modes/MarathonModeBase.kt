@@ -1,4 +1,40 @@
 /*
+ * Copyright (c) 2021-2021,
+ * This library class was created by 0xFC963F18DC21 / Shots243
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
+ *
+ * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+ *
+ * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ *
+ * Repository: https://github.com/Shots243/ModePile
+ *
+ * When using this library in a mode / library pack of your own, the following
+ * conditions must be satisfied:
+ *     - This license must remain visible at the top of the document, unmodified.
+ *     - You are allowed to use this library for any modding purpose.
+ *         - If this is the case, the Library Creator must be credited somewhere.
+ *             - Source comments only are fine, but in a README is recommended.
+ *     - Modification of this library is allowed, but only in the condition that a
+ *       pull request is made to merge the changes to the repository.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
     Copyright (c) 2010, NullNoname
     All rights reserved.
 
@@ -25,7 +61,7 @@
     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
     ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
     POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 package zeroxfc.nullpo.custom.modes
 
 import mu.nu.nullpo.game.component.BGMStatus
@@ -36,7 +72,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
-import mu.nu.nullpo.util.GeneralUtil.getTime
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /**
  * MARATHON Mode
@@ -51,8 +87,8 @@ open class MarathonModeBase:NetDummyMode() {
 	 */
 	@JvmField var scgettime = 0
 
-	protected var sc:Int = 0
-	protected var sum:Int = 0
+	protected var sc = 0
+	protected var sum = 0
 	/**
 	 * Current BGM
 	 */
@@ -116,7 +152,7 @@ open class MarathonModeBase:NetDummyMode() {
      * Initialization
      */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
-		owner = engine.owner
+		super.playerInit(engine, playerID)
 		lastscore = 0
 		scgettime = 0
 		bgmlv = 0
@@ -125,9 +161,9 @@ open class MarathonModeBase:NetDummyMode() {
 		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		netPlayerInit(engine, playerID)
-		if(!owner.replayMode) {
+		/*if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+			loadRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -137,7 +173,7 @@ open class MarathonModeBase:NetDummyMode() {
 			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
 		engine.owner.backgroundStatus.bg = startlevel
-		engine.framecolor = GameEngine.FRAME_COLOR_GREEN
+		engine.framecolor = GameEngine.FRAME_COLOR_GREEN*/
 	}
 	/**
 	 * Set the gravity rate
@@ -150,6 +186,9 @@ open class MarathonModeBase:NetDummyMode() {
 		if(lv>=tableGravity.size) lv = tableGravity.size-1
 		engine.speed.gravity = tableGravity[lv]
 		engine.speed.denominator = tableDenominator[lv]
+		engine.speed.are = 10
+		engine.speed.areLine = 6
+		engine.speed.lineDelay = 10
 	}
 	/*
      * Called at settings screen
@@ -245,17 +284,13 @@ open class MarathonModeBase:NetDummyMode() {
 				if(twistEnableType==1) strtwistEnable = "T-ONLY"
 				if(twistEnableType==2) strtwistEnable = "ALL"
 			} else {
-				strtwistEnable = getONorOFF(enableTSpin)
+				strtwistEnable = enableTSpin.getONorOFF()
 			}
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"LEVEL", "${startlevel+1}",
-				"SPIN BONUS", strtwistEnable,
-				"EZ SPIN", getONorOFF(enableTSpinKick),
-				"EZIMMOBILE", getONorOFF(twistEnableEZ),
-				"B2B", getONorOFF(enableB2B),
-				"COMBO", getONorOFF(enableCombo),
-				"GOAL", if(goaltype==2) "ENDLESS" else "${tableGameClearLines[goaltype]}"+" LINES",
-				"BIG", getONorOFF(big))
+				"LEVEL" to startlevel+1, "SPIN BONUS" to strtwistEnable, "EZ SPIN" to enableTSpinKick,
+				"EZIMMOBILE" to twistEnableEZ, "B2B" to enableB2B, "COMBO" to enableCombo,
+				"GOAL" to if(goaltype==2) "ENDLESS" else "${tableGameClearLines[goaltype]}"+" LINES",
+				"BIG" to big)
 		}
 	}
 	/*
@@ -356,7 +391,7 @@ open class MarathonModeBase:NetDummyMode() {
 		if(!owner.replayMode&&!big&&engine.ai==null) {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goaltype)
 			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleopt.strRuleName)
+				saveRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -481,7 +516,7 @@ open class MarathonModeBase:NetDummyMode() {
 		msg += "${engine.statistics.time}\t${engine.statistics.level}\t"
 		msg += "$goaltype\t${engine.gameActive}\t${engine.timerActive}\t"
 		msg += "$lastscore\t$scgettime\t${engine.lastevent}\t${engine.b2bbuf}\t${engine.combobuf}\t$bg\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Receive various in-game stats (as well as goaltype) */
@@ -521,12 +556,12 @@ open class MarathonModeBase:NetDummyMode() {
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
 		var subMsg = ""
-		subMsg += "SCORE;"+engine.statistics.score.toString()+"\t"
-		subMsg += "LINE;"+engine.statistics.lines+"\t"
-		subMsg += "LEVEL;"+(engine.statistics.level+engine.statistics.levelDispAdd)+"\t"
-		subMsg += "TIME;"+getTime(engine.statistics.time)+"\t"
-		subMsg += "SCORE/LINE;"+engine.statistics.spl.toString()+"\t"
-		subMsg += "LINE/MIN;"+engine.statistics.lpm.toString()+"\t"
+		subMsg += "SCORE;${engine.statistics.score}\t"
+		subMsg += "LINE;${engine.statistics.lines}\t"
+		subMsg += "LEVEL;${engine.statistics.level+engine.statistics.levelDispAdd}\t"
+		subMsg += "TIME;${engine.statistics.time.toTimeStr}\t"
+		subMsg += "SCORE/LINE;${engine.statistics.spl}\t"
+		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
 		val msg = """
 			 	gstat1p	${urlEncode(subMsg)}
 			 	
@@ -591,7 +626,7 @@ open class MarathonModeBase:NetDummyMode() {
 		/**
 		 * Number of entries in rankings
 		 */
-		const val RANKING_MAX = 10
+		const val RANKING_MAX = 13
 		/**
 		 * Number of ranking types
 		 */
@@ -600,21 +635,5 @@ open class MarathonModeBase:NetDummyMode() {
 		 * Number of game types
 		 */
 		const val GAMETYPE_MAX = 3
-		/**
-		 * Most recent scoring event type constants
-		 */
-		const val EVENT_NONE = 0
-		const val EVENT_SINGLE = 1
-		const val EVENT_DOUBLE = 2
-		const val EVENT_TRIPLE = 3
-		const val EVENT_FOUR = 4
-		const val EVENT_TSPIN_ZERO_MINI = 5
-		const val EVENT_TSPIN_ZERO = 6
-		const val EVENT_TSPIN_SINGLE_MINI = 7
-		const val EVENT_TSPIN_SINGLE = 8
-		const val EVENT_TSPIN_DOUBLE_MINI = 9
-		const val EVENT_TSPIN_DOUBLE = 10
-		const val EVENT_TSPIN_TRIPLE = 11
-		const val EVENT_TSPIN_EZ = 12
 	}
 }

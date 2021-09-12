@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -31,39 +36,39 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** AVALANCHE-SPF VS-BATTLE mode (Release Candidate 1) */
 class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Settings for starting countdown for ojama blocks */
-	private var ojamaCountdown:IntArray = IntArray(MAX_PLAYERS)
+	private var ojamaCountdown = IntArray(MAX_PLAYERS)
 
 	/** Drop patterns */
 	private var dropPattern:Array<Array<IntArray>> = emptyArray()
 
 	/** Drop values set selected */
-	private var dropSet:IntArray = IntArray(MAX_PLAYERS)
+	private var dropSet = IntArray(MAX_PLAYERS)
 
 	/** Drop values selected */
-	private var dropMap:IntArray = IntArray(MAX_PLAYERS)
+	private var dropMap = IntArray(MAX_PLAYERS)
 
 	/** Drop multipliers */
-	private var attackMultiplier:DoubleArray = DoubleArray(MAX_PLAYERS)
-	private var defendMultiplier:DoubleArray = DoubleArray(MAX_PLAYERS)
+	private var attackMultiplier = DoubleArray(MAX_PLAYERS)
+	private var defendMultiplier = DoubleArray(MAX_PLAYERS)
 
 	/** Flag set when counters have been decremented */
-	private var countdownDecremented:BooleanArray = BooleanArray(MAX_PLAYERS)
+	private var countdownDecremented = BooleanArray(MAX_PLAYERS)
 
 	/** Flag set when cleared ojama have been turned into normal blocks */
-	private var ojamaChecked:BooleanArray = BooleanArray(MAX_PLAYERS)
+	private var ojamaChecked = BooleanArray(MAX_PLAYERS)
 
 	/* Mode name */
-	override val name:String = "AVALANCHE-SPF VS-BATTLE (BETA)"
-	override val gameIntensity:Int = 1
+	override val name = "AVALANCHE-SPF VS-BATTLE (BETA)"
+	override val gameIntensity = 1
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
 		super.modeInit(manager)
@@ -105,23 +110,23 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 	private fun loadDropMapPreview(engine:GameEngine, playerID:Int, pattern:Array<IntArray>?) {
 		if(pattern==null&&engine.field!=null)
-			engine.field!!.reset()
+			engine.field.reset()
 		else if(pattern!=null) {
 			engine.createFieldIfNeeded()
-			engine.field!!.reset()
+			engine.field.reset()
 			var patternCol = 0
-			val maxHeight = engine.field!!.height-1
-			for(x in 0 until engine.field!!.width) {
+			val maxHeight = engine.field.height-1
+			for(x in 0 until engine.field.width) {
 				if(patternCol>=pattern.size) patternCol = 0
 				for(patternRow in pattern[patternCol].indices) {
-					engine.field!!.setBlockColor(x, maxHeight-patternRow, pattern[patternCol][patternRow])
-					val blk = engine.field!!.getBlock(x, maxHeight-patternRow)
+					engine.field.setBlockColor(x, maxHeight-patternRow, pattern[patternCol][patternRow])
+					val blk = engine.field.getBlock(x, maxHeight-patternRow)
 					blk!!.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
 					blk.setAttribute(true, Block.ATTRIBUTE.OUTLINE)
 				}
 				patternCol++
 			}
-			engine.field!!.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.skin)
 		}
 	}
 
@@ -155,7 +160,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				if(menuCursor<0) {
 					menuCursor = 33
 					loadDropMapPreview(engine, playerID, DROP_PATTERNS[dropSet[playerID]][dropMap[playerID]])
-				} else if(menuCursor==31) engine.field = null
+				} else if(menuCursor==31) engine.field.reset()
 				engine.playSE("cursor")
 			}
 			// Down
@@ -163,7 +168,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				menuCursor++
 				if(menuCursor>33) {
 					menuCursor = 0
-					engine.field = null
+					engine.field.reset()
 				} else if(menuCursor==32) loadDropMapPreview(engine, playerID, DROP_PATTERNS[dropSet[playerID]][dropMap[playerID]])
 				engine.playSE("cursor")
 			}
@@ -269,7 +274,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					24 -> {
 						useMap[playerID] = !useMap[playerID]
 						if(!useMap[playerID]) {
-							if(engine.field!=null) engine.field!!.reset()
+							if(engine.field!=null) engine.field.reset()
 						} else
 							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 					}
@@ -313,16 +318,18 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
-				if(menuCursor==30)
-					loadPreset(engine, owner.modeConfig, presetNumber[playerID], "spf")
-				else if(menuCursor==31) {
-					savePreset(engine, owner.modeConfig, presetNumber[playerID], "spf")
-					owner.saveModeConfig()
-				} else {
-					saveOtherSetting(engine, owner.modeConfig)
-					savePreset(engine, owner.modeConfig, -1-playerID, "spf")
-					owner.saveModeConfig()
-					engine.statc[4] = 1
+				when(menuCursor) {
+					30 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID], "spf")
+					31 -> {
+						savePreset(engine, owner.modeConfig, presetNumber[playerID], "spf")
+						owner.saveModeConfig()
+					}
+					else -> {
+						saveOtherSetting(engine, owner.modeConfig)
+						savePreset(engine, owner.modeConfig, -1-playerID, "spf")
+						owner.saveModeConfig()
+						engine.statc[4] = 1
+					}
 				}
 			}
 
@@ -385,63 +392,49 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(engine.statc[4]==0) {
 			if(menuCursor<9) {
-				drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX",
-					engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE", engine.speed.areLine.toString(),
-					"LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY", engine.speed.lockDelay.toString(), "DAS",
-					engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(), "CLEAR DELAY",
-					engine.cascadeClearDelay.toString())
+				drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.ORANGE, 0)
+				drawMenu(engine, playerID, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/5", COLOR.YELLOW)
 			} else if(menuCursor<17) {
-				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER", OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]],
-					"MAX ATTACK", "${maxAttack[playerID]}", "MIN CHAIN", "${rensaShibari[playerID]}", "CLEAR SIZE",
-					engine.colorClearSize.toString(), "OJAMA RATE", "${ojamaRate[playerID]}", "HURRYUP",
-					if(hurryupSeconds[playerID]==0)
-						"NONE"
-					else
-						"${hurryupSeconds[playerID]}SEC", "X COLUMN", if(dangerColumnDouble[playerID])
-					"3 AND 4"
-				else
-					"3 ONLY", "X SHOW", GeneralUtil.getONorOFF(dangerColumnShowX[playerID]))
+				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "COUNTER" to OJAMA_COUNTER_STRING[ojamaCounterMode[playerID]],
+					"MAX ATTACK" to maxAttack[playerID], "MIN CHAIN" to rensaShibari[playerID], "CLEAR SIZE" to
+					engine.colorClearSize.toString(), "OJAMA RATE" to ojamaRate[playerID], "HURRYUP" to
+					if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]}SEC",
+					"X COLUMN" to if(dangerColumnDouble[playerID]) "3 AND 4" else "3 ONLY", "X SHOW" to dangerColumnShowX[playerID])
+
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 2/5", COLOR.YELLOW)
 			} else if(menuCursor<24) {
-				initMenu(COLOR.CYAN, 17)
-				drawMenu(engine, playerID, receiver, "COUNTDOWN", if(ojamaCountdown[playerID]==10)
-					"NONE"
-				else
-					"${ojamaCountdown[playerID]}", "ZENKESHI", ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]])
-				menuColor = if(zenKeshiType[playerID]==ZENKESHI_MODE_FEVER)
-					COLOR.PURPLE else COLOR.WHITE
-				drawMenu(engine, playerID, receiver, "F-MAP SET", FEVER_MAPS[feverMapSet[playerID]].uppercase())
-				menuColor = COLOR.COBALT
-				drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]], "SHOW CHAIN",
-					CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]],
-					"FALL ANIM", if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
-				menuColor = COLOR.CYAN
-				drawMenu(engine, playerID, receiver, "CHAINPOWER", if(newChainPower[playerID]) "FEVER" else "CLASSIC")
+				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 17,
+					"COUNTDOWN" to if(ojamaCountdown[playerID]==10) "NONE" else "${ojamaCountdown[playerID]}",
+					"ZENKESHI" to ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]])
+				drawMenu(engine, playerID, receiver, if(zenKeshiType[playerID]==ZENKESHI_MODE_FEVER) COLOR.PURPLE else COLOR.WHITE,
+					"F-MAP SET" to FEVER_MAPS[feverMapSet[playerID]].uppercase())
+
+				drawMenu(engine, playerID, receiver, COLOR.COBALT, "OUTLINE" to OUTLINE_TYPE_NAMES[outlineType[playerID]],
+					"SHOW CHAIN" to CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]],
+					"FALL ANIM" to if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
+
+				drawMenu(engine, playerID, receiver, COLOR.CYAN, "CHAINPOWER" to if(newChainPower[playerID]) "FEVER" else "CLASSIC")
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/5", COLOR.YELLOW)
 			} else if(menuCursor<32) {
-				initMenu(COLOR.PINK, 24)
-				drawMenu(engine, playerID, receiver, "USE MAP", GeneralUtil.getONorOFF(useMap[playerID]), "MAP SET",
-					"${mapSet[playerID]}",
-					"MAP NO.", if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}",
-					"BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
-				menuColor = COLOR.COBALT
-				drawMenu(engine, playerID, receiver, "BGM", "${BGM.values[bgmno]}", "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
-				menuColor = COLOR.GREEN
-				drawMenu(engine, playerID, receiver, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
+				initMenu()
+				drawMenu(engine, playerID, receiver, 0, COLOR.PINK, 24, "USE MAP" to useMap[playerID], "MAP SET" to mapSet[playerID],
+					"MAP NO." to if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}",
+					"BIG DISP" to bigDisplay)
+
+				drawMenu(engine, playerID, receiver, COLOR.COBALT, "BGM" to BGM.values[bgmno], "SE" to enableSE[playerID])
+
+				drawMenu(engine, playerID, receiver, COLOR.GREEN, "LOAD" to presetNumber[playerID], "SAVE" to presetNumber[playerID])
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 4/5", COLOR.YELLOW)
 			} else {
 				receiver.drawMenuFont(engine, playerID, 0, 0, "ATTACK", COLOR.CYAN)
 				var multiplier = (100*getAttackMultiplier(dropSet[playerID], dropMap[playerID])).toInt()
 				if(multiplier>=100)
-					receiver.drawMenuFont(engine, playerID, 2, 1, "$multiplier%", if(multiplier==100)
-						COLOR.YELLOW
-					else
-						COLOR.GREEN)
+					receiver.drawMenuFont(engine, playerID, 2, 1, "$multiplier%", if(multiplier==100) COLOR.YELLOW else COLOR.GREEN)
 				else
 					receiver.drawMenuFont(engine, playerID, 3, 1, "$multiplier%", COLOR.RED)
 				receiver.drawMenuFont(engine, playerID, 0, 2, "DEFEND", COLOR.CYAN)
@@ -452,9 +445,10 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				else
 					receiver.drawMenuFont(engine, playerID, 3, 3, "$multiplier%", COLOR.GREEN)
 
-				drawMenu(engine, playerID, receiver, 14, COLOR.CYAN, 32, "DROP SET", DROP_SET_NAMES[dropSet[playerID]],
-					"DROP MAP",
-					"${String.format("%2d", dropMap[playerID]+1)}/${String.format("%2d", DROP_PATTERNS[dropSet[playerID]].size)}")
+				drawMenu(engine, playerID, receiver, 14, COLOR.CYAN, 32, "DROP SET" to DROP_SET_NAMES[dropSet[playerID]],
+					"DROP MAP" to "${String.format("%2d", dropMap[playerID]+1)}/${
+						String.format("%2d", DROP_PATTERNS[dropSet[playerID]].size)
+					}")
 
 				receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 5/5", COLOR.YELLOW)
 			}
@@ -485,7 +479,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		val playerColor = EventReceiver.getPlayerColor(playerID)
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(224, 8, GeneralUtil.getTime(engine.statistics.time))
+		if(playerID==0) receiver.drawDirectFont(224, 8, engine.statistics.time.toTimeStr)
 
 		// Ojama Counter
 		var fontColor = COLOR.WHITE
@@ -517,29 +511,28 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		if(!owner.engine[playerID].gameActive) return
 
 		// Countdown Blocks
-		var b:Block?
-		var blockColor:Int
-		val d = if(engine.displaysize==1) 2 else 1
-		var str:String
-		if(engine.field!=null&&engine.stat!=GameEngine.Status.RESULT&&engine.gameStarted)
-			for(x in 0 until engine.field!!.width)
-				for(y in 0 until engine.field!!.height) {
-					b = engine.field!!.getBlock(x, y)
-					if(!b!!.isEmpty&&b.countdown>0) {
-						blockColor = b.secondaryColor
 
-						val textColor:COLOR =
-							when(blockColor) {
-								Block.BLOCK_COLOR_BLUE -> COLOR.BLUE
-								Block.BLOCK_COLOR_GREEN -> COLOR.GREEN
-								Block.BLOCK_COLOR_RED -> COLOR.RED
-								Block.BLOCK_COLOR_YELLOW -> COLOR.YELLOW
-								else -> COLOR.WHITE
-							}
-						str = if(b.countdown>=10) "\u0084" else b.countdown.toString()
-						receiver.drawMenuFont(engine, playerID, x*d, y*d, str, textColor, 1f*d)
+		val d = if(engine.displaysize==1) 2 else 1
+		if(engine.stat!=GameEngine.Status.RESULT&&engine.gameStarted)
+			for(x in 0 until engine.field.width)
+				for(y in 0 until engine.field.height)
+					engine.field.getBlock(x, y)?.let {b ->
+						if(!b.isEmpty&&b.countdown>0) {
+							val blockColor = b.color
+
+							val textColor:COLOR =
+								when(blockColor) {
+									Block.COLOR.BLUE -> COLOR.BLUE
+									Block.COLOR.GREEN -> COLOR.GREEN
+									Block.COLOR.RED -> COLOR.RED
+									Block.COLOR.YELLOW -> COLOR.YELLOW
+									else -> COLOR.WHITE
+								}
+							receiver.drawMenuFont(engine, playerID, x*d, y*d, if(b.countdown>=10) "\u0084" else "${b.countdown}", textColor,
+								1f*d)
+						}
 					}
-				}
+
 
 		super.renderLast(engine, playerID)
 	}
@@ -555,17 +548,16 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 		ojamaChecked[playerID] = true
 		//Turn cleared ojama into normal blocks
-		for(x in 0 until engine.field!!.width)
-			for(y in -1*engine.field!!.hiddenHeight until engine.field!!.height) {
-				engine.field!!.getBlock(x, y)?.also {b ->
+		for(x in 0 until engine.field.width)
+			for(y in -1*engine.field.hiddenHeight until engine.field.height)
+				engine.field.getBlock(x, y)?.also {b ->
 					if(b.getAttribute(Block.ATTRIBUTE.GARBAGE)&&b.hard<4) {
 						b.hard = 0
-						b.cint = b.secondaryColor
+						b.color = b.secondaryColor
 						b.countdown = 0
 						b.setAttribute(false, Block.ATTRIBUTE.GARBAGE)
 					}
 				}
-			}
 		return false
 	}
 
@@ -588,15 +580,15 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		//Decrement countdowns
 		if(ojamaCountdown[playerID]!=10&&!countdownDecremented[playerID]) {
 			countdownDecremented[playerID] = true
-			for(y in engine.field!!.hiddenHeight*-1 until engine.field!!.height)
-				for(x in 0 until engine.field!!.width) {
-					val b = engine.field!!.getBlock(x, y) ?: continue
+			for(y in engine.field.hiddenHeight*-1 until engine.field.height)
+				for(x in 0 until engine.field.width) {
+					val b = engine.field.getBlock(x, y) ?: continue
 					if(b.countdown>1) b.countdown--
 					else if(b.countdown==1) {
 						b.countdown = 0
 						b.hard = 0
 						b.setAttribute(false, Block.ATTRIBUTE.GARBAGE)
-						b.cint = b.secondaryColor
+						b.color = b.secondaryColor
 						result = true
 					}
 				}
@@ -605,22 +597,25 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		//Drop garbage if needed.
 		if(ojama[playerID]>0&&!ojamaDrop[playerID]&&(!cleared[playerID]||ojamaCounterMode[playerID]!=OJAMA_COUNTER_FEVER)) {
 			ojamaDrop[playerID] = true
-			val width = engine.field!!.width
-			val hiddenHeight = engine.field!!.hiddenHeight
+			val width = engine.field.width
+			val hiddenHeight = engine.field.hiddenHeight
 			val drop = minOf(ojama[playerID], maxAttack[playerID])
 			ojama[playerID] -= drop
-			engine.field!!.garbageDrop(engine, drop, false, 4, ojamaCountdown[playerID])
-			engine.field!!.setAllSkin(engine.skin)
+			engine.field.garbageDrop(engine, drop, false, 4, ojamaCountdown[playerID])
+			engine.field.setAllSkin(engine.skin)
 			var patternCol = 0
-			for(x in 0 until engine.field!!.width) {
+			for(x in 0 until engine.field.width) {
 				if(patternCol>=dropPattern[enemyID].size) patternCol = 0
 				var patternRow = 0
 				for(y in (drop+width-1)/width-hiddenHeight downTo -1*hiddenHeight) {
-					val b = engine.field!!.getBlock(x, y)
-					if(b!!.getAttribute(Block.ATTRIBUTE.GARBAGE)&&b.secondaryColor==0) {
-						if(patternRow>=dropPattern[enemyID][patternCol].size) patternRow = 0
-						b.secondaryColor = dropPattern[enemyID][patternCol][patternRow]
-						patternRow++
+					engine.field.getBlock(x, y)?.let {b ->
+						if(b.getAttribute(Block.ATTRIBUTE.GARBAGE)&&!b.secondaryColor.color) {
+							if(patternRow>=dropPattern[enemyID][patternCol].size) patternRow = 0
+							Block.intToColor(dropPattern[enemyID][patternCol][patternRow]).first?.let {
+								b.secondaryColor = it
+							}
+							patternRow++
+						}
 					}
 				}
 				patternCol++
@@ -628,7 +623,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			return true
 		}
 		//Check for game over
-		if(!engine.field!!.getBlockEmpty(2, 0)||dangerColumnDouble[playerID]&&!engine.field!!.getBlockEmpty(3, 0))
+		if(!engine.field.getBlockEmpty(2, 0)||dangerColumnDouble[playerID]&&!engine.field.getBlockEmpty(3, 0))
 			engine.stat = GameEngine.Status.GAMEOVER
 		return false
 	}
@@ -649,7 +644,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 		/** Block colors */
 		private val BLOCK_COLORS =
-			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_YELLOW)
+			arrayOf(Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.BLUE, Block.COLOR.YELLOW)
 
 		/** Names of drop values sets */
 		private val DROP_SET_NAMES = arrayOf("CLASSIC", "REMIX", "SWORD", "S-MIRROR", "AVALANCHE", "A-MIRROR")

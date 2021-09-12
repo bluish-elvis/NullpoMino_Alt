@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,19 +24,21 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
 import kotlin.math.ceil
 
@@ -40,65 +46,70 @@ import kotlin.math.ceil
 class MarathonPlus:NetDummyMode() {
 
 	/** Most recent increase in score */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** Time to display the most recent increase in score */
-	private var scgettime:Int = 0
-	private var sc:Int = 0
-	private var sum:Int = 0
-	private var lastlinetime:Int = 0
+	private var scgettime = 0
+	private var sc = 0
+	private var sum = 0
+	private var lastlinetime = 0
 
 	/** Current BGM */
-	private var bgmlv:Int = 0
+	private var bgmlv = 0
 
 	/** Game type */
-	private var goaltype:Int = 0
+	private var goaltype = 0
+	/** Speed Difficulty */
+	private var turbo = 0
 
 	/** Bonus level line count */
-	private var bonusLines:Int = 0
+	private var bonusLines = 0
 
 	/** Bonus level piece count */
-	private var bonusPieceCount:Int = 0
+	private var bonusPieceCount = 0
 
 	/** Bonus level remaining flash time */
-	private var bonusFlashNow:Int = 0
+	private var bonusFlashNow = 0
 
 	/** Bonus level time */
-	private var bonusTime:Int = 0
-	private var bonusTimeMax:Int = 0
+	private var bonusTime = 0
+	private var bonusTimeMax = 0
 
 	/** Bonus score from life */
-	private var bonusScore:Int = 0
-	private var lastlives:Int = 0
+	private var bonusScore = 0
+	private var lastlives = 0
 
 	/** Level at start time */
-	private var startlevel:Boolean = false
+	private var startlevel = false
 
 	/** lines per level */
-	private var norm:Int = 0
-	private var nextsec:Int = 0
+	private var norm = 0
+	private var nextsec = 0
 
 	/** Big */
-	private var big:Boolean = false
+	private var big = false
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Rankings' scores */
-	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-	private var rankingLives:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-	private var rankingLines:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private var rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private var rankingLives = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private var rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private var rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
+	private var ruleOptOrg = RuleOptions()
 	/* Mode name */
-	override val name:String = "Marathon+ ScoreAttack"
-	override val gameIntensity:Int = 1
+	override val name = "Marathon+ ScoreAttack"
+	override val gameIntensity = 1
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
+		if(ruleOptOrg.strRuleName.isEmpty()&&ruleOptOrg.strWallkick.isEmpty())
+			ruleOptOrg = engine.ruleOpt
 		lastlives = 0
 		bonusScore = lastlives
 		lastscore = bonusScore
@@ -123,7 +134,7 @@ class MarathonPlus:NetDummyMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -144,32 +155,36 @@ class MarathonPlus:NetDummyMode() {
 	private fun setSpeed(engine:GameEngine) {
 		val l = maxOf(0, engine.statistics.level)
 		if(l>=50) {
-			val lv = l-50
+			val lv = if(l>=200&&turbo==0) 50 else l-50
 			engine.speed.gravity = -1
-			engine.speed.areLine = 20-lv/10
-			engine.speed.are = engine.speed.areLine
-			engine.speed.lockDelay = 30-lv/20
+			engine.speed.are = 15-lv/10
+			engine.speed.areLine = engine.speed.are
+			engine.speed.lockDelay = if(turbo==0) 30-lv/20 else 25-lv/25
 			engine.speed.das = 9-lv/32
 		} else {
-			val lv = minOf(l, tableSpeed.size-1)
-			val g = tableSpeed[lv]
-			if(g==0)
-				engine.speed.gravity = -1
-			else {
-				engine.speed.gravity = if(g>0) g else -g
-				engine.speed.denominator = if(g>=0) 256 else 1
+			val lv = minOf(l, tableSpeed[turbo].size-1)
+			val g = tableSpeed[turbo][lv]
+			engine.speed.gravity = when {
+				g>0 -> g
+				g==0 -> -1
+				else -> -g
 			}
-			engine.speed.areLine = 24-goaltype-lv/10
-			engine.speed.are = engine.speed.areLine
-			engine.speed.lockDelay = 50-lv/2
-			engine.speed.das = 14-lv/10
+			engine.speed.denominator = if(g>=0) tableDenominator[minOf(turbo, tableDenominator.size-1)] else 1
+
+			engine.speed.are = when(turbo) {
+				0 -> 24-goaltype-lv/10
+				else -> 20-goaltype-lv/maxOf(10, goaltype*10)
+			}
+
+			engine.speed.areLine = engine.speed.are
+			engine.speed.lockDelay = when(turbo) {
+				0 -> 50-lv/2
+				else -> 30-lv/10
+			}
+			engine.speed.das = if(turbo==0) 14-lv/10 else 12-lv/20
+
 		}
-		when(goaltype) {
-			0 -> engine.speed.lineDelay = 12
-			1 -> engine.speed.lineDelay = 24
-			2 -> engine.speed.lineDelay = 16
-			3 -> engine.speed.lineDelay = engine.ruleopt.lockflash
-		}
+		engine.speed.lineDelay = tableLineDelay[turbo][goaltype]
 	}
 
 	/* Called at settings screen */
@@ -179,7 +194,7 @@ class MarathonPlus:NetDummyMode() {
 			netOnUpdateNetPlayRanking(engine, netGetGoalType())
 		else if(!engine.owner.replayMode) {
 			// Configuration changes
-			val change = updateCursor(engine, 2)
+			val change = updateCursor(engine, 3)
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -193,10 +208,15 @@ class MarathonPlus:NetDummyMode() {
 						engine.owner.backgroundStatus.bg = 0
 					}
 					1 -> {
+						turbo += change
+						if(turbo<0) turbo = TURBO_MAX-1
+						if(turbo>TURBO_MAX-1) turbo = 0
+					}
+					2 -> {
 						startlevel = !startlevel
 						engine.owner.backgroundStatus.bg = if(startlevel) 36 else 0
 					}
-					2 -> big = !big
+					3 -> big = !big
 				}
 
 				// NET: Signal options change
@@ -241,9 +261,10 @@ class MarathonPlus:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"GOAL", "${tableGameClearLevel[goaltype]} LEVEL", "CHALLENGE", GeneralUtil.getONorOFF(startlevel))
-
-			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getONorOFF(big))
+				"GOAL" to "${tableGameClearLevel[goaltype]} LEVEL")
+			receiver.drawMenuNano(engine, playerID, 1, 2, "${tableGameClearLines[goaltype]} LINES")
+			drawMenuCompact(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, 1,
+				"TURBO" to turbo, "TRIAL" to startlevel, "BIG" to big)
 
 		}
 	}
@@ -257,27 +278,36 @@ class MarathonPlus:NetDummyMode() {
 	/* Called for initialization after "Ready" screen */
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		//if(!engine.readyDone){
-		if(startlevel) engine.statistics.level = tableGameClearLevel[goaltype]
-		else nextsec = tableNorma[goaltype][0]
-		engine.b2bEnable = true
-		engine.splitb2b = true
-		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
-		engine.big = big
+		engine.run {
+			if(startlevel) statistics.level = tableGameClearLevel[goaltype]
+			else nextsec = tableNorma[goaltype][0]
 
-		engine.twistAllowKick = true
-		engine.twistEnable = true
-		engine.useAllSpinBonus = true
-		engine.twistEnableEZ = true
+			b2bEnable = true
+			splitb2b = true
+			comboType = GameEngine.COMBO_TYPE_NORMAL
+			big = this@MarathonPlus.big
 
-		engine.lives = if(goaltype==0||startlevel) 2 else 4
+			twistAllowKick = true
+			twistEnable = true
+			useAllSpinBonus = true
+			twistEnableEZ = true
 
-		engine.staffrollEnable = startlevel&&goaltype>0
-
+			lives = if(goaltype==0||startlevel) 2 else 4
+			ruleOpt = ruleOptOrg
+			if(goaltype>0) {
+				if(goaltype==1)
+					owSDSpd = 5
+				ruleOpt.softdropEnable = goaltype==1
+				ruleOpt.softdropLock = goaltype==1
+				ruleOpt.softdropSurfaceLock = goaltype>1
+				ruleOpt.harddropEnable = goaltype>1
+				if(goaltype==3)owDelayCancel = 7
+			}
+			staffrollEnable = startlevel&&goaltype>0
+		}
 		setSpeed(engine)
-		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.Silent
-		else
-			owner.bgmStatus.bgm = if(startlevel) tableBGM[4][goaltype] else tableBGM[goaltype][0]
+		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent
+		else if(startlevel) tableBGM[4][goaltype] else tableBGM[goaltype][0]
 		owner.bgmStatus.fadesw = false
 		if(goaltype==3) bonusTime = 10800
 		bonusTimeMax = ROLLTIMELIMIT[goaltype]
@@ -288,21 +318,21 @@ class MarathonPlus:NetDummyMode() {
 		if(owner.menuOnly) return
 
 		receiver.drawScoreFont(engine, playerID, 0, 0, "MARATHON +", EventReceiver.COLOR.GREEN)
-		if(startlevel)
-			if(goaltype!=0) receiver.drawScoreFont(engine, playerID, 0, 1, "(TIME ATTACK MODE)", EventReceiver.COLOR.GREEN)
+		if(goaltype!=0) receiver.drawScoreFont(engine, playerID, 0, 1,
+			if(startlevel) "(TIME ATTACK MODE)" else "(SCORE ATTACK MODE)", EventReceiver.COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE   LINE TIME", EventReceiver.COLOR.BLUE, scale)
-				val gametype = goaltype+if(startlevel) GAMETYPE_MAX else 0
+				val gametype = typeSerial(goaltype, turbo, startlevel)
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 11, topY+i, "${rankingLines[gametype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 16, topY+i,
-						GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank, scale)
+						rankingTime[gametype][i].toTimeStr, i==rankingRank, scale)
 				}
 			}
 		} else {
@@ -321,18 +351,18 @@ class MarathonPlus:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 5, "$sc", scget, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 7, "Level", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 5, 7, "$level"+"/"+tableGameClearLevel[goaltype], 2f)
+			receiver.drawScoreNum(engine, playerID, 5, 7, "$level/"+tableGameClearLevel[goaltype], 2f)
 			receiver.drawScoreFont(engine, playerID, 0, 8, "Time", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 9, GeneralUtil.getTime(engine.statistics.time), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 9, engine.statistics.time.toTimeStr, 2f)
 			if(engine.ending==2) {
 				val remainRollTime = maxOf(0, bonusTimeMax-bonusTime)
 
 				receiver.drawScoreFont(engine, playerID, 0, 11, "BONUS", EventReceiver.COLOR.RED)
-				receiver.drawScoreNum(engine, playerID, 0, 12, GeneralUtil.getTime(remainRollTime),
+				receiver.drawScoreNum(engine, playerID, 0, 12, remainRollTime.toTimeStr,
 					remainRollTime>0&&remainRollTime<10*60, 2f)
 			} else if(goaltype==3&&!startlevel) {
 				receiver.drawScoreFont(engine, playerID, 0, 11, "BONUS", EventReceiver.COLOR.RED)
-				receiver.drawScoreNum(engine, playerID, 6, 11, GeneralUtil.getTime(bonusTime), bonusTime>0&&bonusTime<10*60)
+				receiver.drawScoreNum(engine, playerID, 6, 11, bonusTime.toTimeStr, bonusTime>0&&bonusTime<10*60)
 				receiver.drawScoreNum(engine, playerID, 0, 12, (bonusTime*(1+engine.lives)*10).toString(), bonusTime>0&&bonusTime<10*60,
 					2f)
 			}
@@ -405,16 +435,17 @@ class MarathonPlus:NetDummyMode() {
 		if(bonusFlashNow>0) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
 		else {
 			engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
-
-			for(i in 0 until engine.field!!.height)
-				for(j in 0 until engine.field!!.width) {
-					engine.field!!.getBlock(j, i)?.apply {
-						if(color!=null) {
-							setAttribute(false, Block.ATTRIBUTE.VISIBLE)
-							setAttribute(goaltype>0, Block.ATTRIBUTE.OUTLINE)
+			engine.field.let {field ->
+				for(i in 0 until field.height)
+					for(j in 0 until field.width)
+						field.getBlock(j, i)?.apply {
+							if(color!=null) {
+								setAttribute(false, Block.ATTRIBUTE.VISIBLE)
+								setAttribute(goaltype>0, Block.ATTRIBUTE.OUTLINE)
+							}
 						}
-					}
-				}
+
+			}
 		}
 	}
 
@@ -621,10 +652,10 @@ class MarathonPlus:NetDummyMode() {
 				drawResult(engine, playerID, receiver, 6, EventReceiver.COLOR.BLUE, "BONUS LINE", bonusLines)
 			else
 				drawResultStats(engine, playerID, receiver, 6, EventReceiver.COLOR.BLUE, Statistic.LEVEL)
-			drawResult(engine, playerID, receiver, 8, EventReceiver.COLOR.BLUE, "TOTAL TIME",
-				String.format("%10s", GeneralUtil.getTime(engine.statistics.time)), "LV20- TIME",
-				String.format("%10s", GeneralUtil.getTime(
-					(engine.statistics.time-bonusTime).toFloat())), "BONUS TIME", String.format("%10s", GeneralUtil.getTime(bonusTime)))
+			drawResult(engine, playerID, receiver, 8, EventReceiver.COLOR.BLUE,
+				"TOTAL TIME", String.format("%10s", engine.statistics.time.toTimeStr),
+				"LV20- TIME", String.format("%10s", (engine.statistics.time-bonusTime).toTimeStr),
+				"BONUS TIME", String.format("%10s", bonusTime.toTimeStr))
 
 			drawResultRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, rankingRank)
 			drawResultNetRank(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[0])
@@ -669,13 +700,10 @@ class MarathonPlus:NetDummyMode() {
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.lives, engine.statistics.time,
-				goaltype+if(startlevel)
-					GAMETYPE_MAX
-				else
-					0)
+				typeSerial(goaltype, turbo, startlevel))
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -708,25 +736,26 @@ class MarathonPlus:NetDummyMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in 0 until RANKING_TYPE) {
-				rankingScore[j][i] = prop.getProperty("marathonplus.ranking.$ruleName.$j.score.$i", 0)
-				rankingLines[j][i] = prop.getProperty("marathonplus.ranking.$ruleName.$j.lines.$i", 0)
-				rankingLives[j][i] = prop.getProperty("marathonplus.ranking.$ruleName.$j.lives.$i", 0)
-				rankingTime[j][i] = prop.getProperty("marathonplus.ranking.$ruleName.$j.time.$i", 359999)
+				rankingScore[j][i] = prop.getProperty("$ruleName.$j.score.$i", 0)
+				rankingLines[j][i] = prop.getProperty("$ruleName.$j.lines.$i", 0)
+				rankingLives[j][i] = prop.getProperty("$ruleName.$j.lives.$i", 0)
+				rankingTime[j][i] = prop.getProperty("$ruleName.$j.time.$i", 359999)
 			}
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(j in 0 until RANKING_TYPE) {
-				prop.setProperty("marathonplus.ranking.$ruleName.$j.score.$i", rankingScore[j][i])
-				prop.setProperty("marathonplus.ranking.$ruleName.$j.lines.$i", rankingLines[j][i])
-				prop.setProperty("marathonplus.ranking.$ruleName.$j.lives.$i", rankingLives[j][i])
-				prop.setProperty("marathonplus.ranking.$ruleName.$j.time.$i", rankingTime[j][i])
+	private fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf(
+					"$ruleName.$j.score.$i" to rankingScore[j][i],
+					"$ruleName.$j.lines.$i" to rankingLines[j][i],
+					"$ruleName.$j.lives.$i" to rankingLives[j][i],
+					"$ruleName.$j.time.$i" to rankingTime[j][i])
 			}
+		})
 	}
 
 	/** Update rankings
@@ -867,13 +896,10 @@ class MarathonPlus:NetDummyMode() {
 		subMsg += "SCORE;${engine.statistics.score}\t"
 		subMsg += "LINE;${engine.statistics.lines}\t"
 		subMsg += "BONUS LINE;$bonusLines\t"
-		subMsg += if(engine.statistics.level>=20)
-			"LEVEL;BONUS\t"
-		else
-			"LEVEL;${(engine.statistics.level+engine.statistics.levelDispAdd)}\t"
-		subMsg += "TOTAL TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
-		subMsg += "LV20- TIME;${GeneralUtil.getTime((engine.statistics.time-bonusTime))}\t"
-		subMsg += "BONUS TIME;${GeneralUtil.getTime(bonusTime)}\t"
+		subMsg += "LEVEL;${(engine.statistics.level+engine.statistics.levelDispAdd)}\t"
+		subMsg += "TOTAL TIME;${engine.statistics.time.toTimeStr}\t"
+		subMsg += "LV20- TIME;${(engine.statistics.time-bonusTime).toTimeStr}\t"
+		subMsg += "BONUS TIME;${bonusTime.toTimeStr}\t"
 		subMsg += "SCORE/LINE;${engine.statistics.spl}\t"
 		subMsg += "SCORE/MIN;${engine.statistics.spm}\t"
 		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
@@ -910,11 +936,22 @@ class MarathonPlus:NetDummyMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Fall velocity table (numerators) */
-		private val tableSpeed = intArrayOf(8, 16, 24, 32, 40, 48, 56, 64, 72, 80,
-			96, 104, 112, 128, 144, 152, 160, 192, 224, 256, 64,
-			80, 96, 112, 128, 144, 160, 192, 224, 224, 256,
-			256, 384, 512, 512, 768, 768, 1024, 1024, 1280, 512,
-			512, 768, 1024, 1280, 1536, 1792, 2048, 2304, 2560, -1)
+		private val tableSpeed = arrayOf(
+			intArrayOf(
+				5, 8, 10, 12, 16, 20, 24, 30, 36, 42,
+				48, 54, 60, 66, 72, 80, 88, 96, 108, 120,
+				48, 60, 75, 90, 105, 120, 140, 160, 180, 200,
+				240, 280, 320, 360, 420, 480, 600, 720, 840, 960,
+				240, 320, 480, 640, 800, 960, 1200, 1440, 1920, 2400, -1),
+			intArrayOf(
+				1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+				11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+				8, 10, 12, 14, 16, 18, 20, 24, 28, 30,
+				32, 40, 48, 64, 80, 96, 112, 128, 114, 160,
+				64, 80, 96, 128, 160, 192, 224, 256, 288, 320, -1)
+		)
+		private val tableDenominator = intArrayOf(240, 32)
+		private val tableLineDelay = arrayOf(intArrayOf(12, 24, 16, 0), intArrayOf(6, 18, 8, 0))
 		private val ARE_TABLE = intArrayOf(15, 15, 15, 15, 14, 14,
 			13, 12, 11, 10, 9, 8, 7, 6, 5, 15)
 		private val LOCK_TABLE = intArrayOf(30, 29, 28, 27, 26, 25,
@@ -949,14 +986,19 @@ class MarathonPlus:NetDummyMode() {
 
 		/** Line counts when game ending occurs */
 		private val tableGameClearLevel = intArrayOf(20, 30, 50, 200)
+		private val tableGameClearLines = tableGameClearLevel.mapIndexed {i, l ->
+			tableNorma[i].sumOf {it*10}+tableNorma[i].last {true}*(l-tableNorma[i].size*10)
+		}.toIntArray()
+		/** Number of game types */
+		private val GAMETYPE_MAX = tableGameClearLevel.size
+
+		private val TURBO_MAX = tableSpeed.size
 
 		/** Number of entries in rankings */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
-		private const val RANKING_TYPE = 8
-
-		/** Number of game types */
-		private const val GAMETYPE_MAX = 4
+		private val RANKING_TYPE = GAMETYPE_MAX*TURBO_MAX*2
+		private fun typeSerial(type:Int, turbo:Int, startlevel:Boolean):Int = type*TURBO_MAX*2+turbo*2+if(startlevel) 1 else 0
 	}
 }

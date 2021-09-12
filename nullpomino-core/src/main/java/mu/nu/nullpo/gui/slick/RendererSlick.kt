@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,19 +24,25 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.gui.common.*
+import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.BeamH
+import mu.nu.nullpo.gui.common.EffectObject
+import mu.nu.nullpo.gui.common.FragAnim
 import mu.nu.nullpo.gui.common.FragAnim.ANIM
 import mu.nu.nullpo.gui.slick.img.*
 import mu.nu.nullpo.util.CustomProperties
 import org.lwjgl.input.Keyboard
-import org.newdawn.slick.*
+import org.newdawn.slick.Color
+import org.newdawn.slick.Graphics
+import org.newdawn.slick.Image
 import kotlin.math.cos
 import kotlin.math.pow
 
@@ -41,16 +51,14 @@ class RendererSlick:AbstractRenderer() {
 	/** 描画先サーフェイス */
 	internal var graphics:Graphics? = null
 
-	override var resources:mu.nu.nullpo.gui.common.ResourceHolder?
-		get() = ResourceHolder
-		set(value) {}
+	override val resources = ResourceHolder
 
 	/* TTF使用可能 */
 	override val isTTFSupport:Boolean
-		get() = ResourceHolder.ttfFont!=null
+		get() = resources.ttfFont!=null
 
 	override val skinMax:Int
-		get() = ResourceHolder.imgBigBlockList.size
+		get() = resources.imgBigBlockList.size
 
 	/** Constructor */
 	init {
@@ -63,7 +71,8 @@ class RendererSlick:AbstractRenderer() {
 		if(bright>255) bright = 255
 		fieldbgbright = bright/255.toFloat()
 		showfieldbggrid = NullpoMinoSlick.propConfig.getProperty("option.showfieldbggrid", true)
-		showmeter = NullpoMinoSlick.propConfig.getProperty("option.showmeter", true)
+		showMeter = NullpoMinoSlick.propConfig.getProperty("option.showmeter", true)
+		showSpeed = NullpoMinoSlick.propConfig.getProperty("option.showmeter", true)
 		darknextarea = NullpoMinoSlick.propConfig.getProperty("option.darknextarea", true)
 		nextshadow = NullpoMinoSlick.propConfig.getProperty("option.nextshadow", false)
 		lineeffectspeed = NullpoMinoSlick.propConfig.getProperty("option.lineeffectspeed", 0)
@@ -80,8 +89,8 @@ class RendererSlick:AbstractRenderer() {
 			FONT.NANO -> FontNano.printFont(x, y, str, color, scale, alpha)
 			FONT.NUM -> FontNumber.printFont(x, y, str, color, scale, alpha)
 			FONT.TTF -> FontNormal.printTTF(x, y, str, color, alpha)
-			FONT.GRADE -> if(scale>=5f/3f) FontGrade.printBigFont(x, y, str, color, scale/3f)
-			else FontGrade.printMiniFont(x, y, str, color, scale/2f)
+			FONT.GRADE -> if(scale>=5f/3f) FontGrade.printBigFont(x, y, str, color, scale/3f, alpha)
+			else FontGrade.printMiniFont(x, y, str, color, scale/2f, alpha)
 			else -> FontNormal.printFont(x, y, str, color, scale, alpha)
 		}
 	}
@@ -153,21 +162,21 @@ class RendererSlick:AbstractRenderer() {
 
 	/* Is the skin sticky? */
 	override fun isStickySkin(skin:Int):Boolean {
-		return (skin>=0&&skin<ResourceHolder.blockStickyFlagList.size
-			&&ResourceHolder.blockStickyFlagList[skin])
+		return (skin>=0&&skin<resources.blockStickyFlagList.size
+			&&resources.blockStickyFlagList[skin])
 	}
 
 	/* Sound effects再生 */
 	override fun playSE(name:String, freq:Float, vol:Float) {
-		ResourceHolder.soundManager.play(name, false, freq, vol)
+		resources.soundManager.play(name, false, freq, vol)
 	}
 
 	override fun loopSE(name:String, freq:Float, vol:Float) {
-		ResourceHolder.soundManager.play(name, true, freq, vol)
+		resources.soundManager.play(name, true, freq, vol)
 	}
 
 	override fun stopSE(name:String) {
-		ResourceHolder.soundManager.stop(name)
+		resources.soundManager.stop(name)
 	}
 
 	/* 描画先のサーフェイスを設定 */
@@ -185,10 +194,10 @@ class RendererSlick:AbstractRenderer() {
 	override fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int, size:Float, darkness:Float, alpha:Float) {
 		val g = graphics ?: return
 		val img:Image = when {
-			size*2<=BS -> ResourceHolder.imgSmallBlockList[sk]
-			size>=BS*2 -> ResourceHolder.imgBigBlockList[sk]
-			else -> ResourceHolder.imgNormalBlockList[sk]
-		}
+			size*2<=BS -> resources.imgSmallBlockList[sk]
+			size>=BS*2 -> resources.imgBigBlockList[sk]
+			else -> resources.imgNormalBlockList[sk]
+		}.res
 		val si = when {
 			size*2<=BS -> BS/2
 			size>=BS*2 -> BS*2
@@ -214,66 +223,35 @@ class RendererSlick:AbstractRenderer() {
 
 	override fun drawLineSpecific(x:Float, y:Float, sx:Float, sy:Float, color:Int, alpha:Float, w:Float) {
 		val g = graphics ?: return
+		val lw = g.lineWidth
 		g.lineWidth = w
 		g.color = Color(color).apply {a = alpha}
 		g.drawLine(x, y, sx, sy)
-		g.lineWidth = 1f
+		g.lineWidth = lw
 	}
 
-	override fun drawOutlineSpecific(i:Int, j:Int, x:Int, y:Int, blksize:Int, blk:Block, outlineType:Int) {
-		//TODO:("Not yet implemented")
+	override fun drawRectSpecific(x:Float, y:Float, w:Float, h:Float, color:Int, alpha:Float, bold:Float) {
+		if(w>0f) {
+			val g = graphics ?: return
+			val c = g.color
+			g.color = Color(color).apply {a = alpha}
+			val lw = g.lineWidth
+			g.lineWidth = bold
+			g.drawRect(x-bold/2f, y-bold/2f, w+bold/2f, h+bold/2f)
+			g.color = c
+			g.lineWidth = lw
+		}
+	}
+
+	override fun fillRectSpecific(x:Float, y:Float, w:Float, h:Float, color:Int, alpha:Float) {
 		val g = graphics ?: return
-		/*blk.let {
-
-					val x2 = x+it.dataX[it.direction][i]
-					val y2 = y+it.dataY[it.direction][i]
-
-					if(y2>=0) {
-						val blkTemp = it.block[i]
-						val x3:Float = (x+x2*blksize).toFloat()
-						val y3:Float = (y+y2*blksize).toFloat()
-						val ls = blksize-1
-
-						var colorID = blkTemp.drawColor
-						if(blkTemp.getAttribute(Block.ATTRIBUTE.BONE)) colorID = -1
-						var color = getColorByID(colorID)
-						if(showbg) color.a = .5f
-						else color = color.darker(.5f)
-						g.color = color
-						g.fillRect(x3, y3, blksize.toFloat(), blksize.toFloat())
-						g.color = Color.white
-
-						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) {
-							g.drawLine(x3, y3, (x3+ls), y3)
-							g.drawLine(x3, (y3+1), (x3+ls), (y3+1))
-						}
-						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) {
-							g.drawLine(x3, (y3+ls), (x3+ls), (y3+ls))
-							g.drawLine(x3, (y3-1+ls), (x3+ls), (y3-1+ls))
-						}
-						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
-							g.drawLine(x3, y3, x3, (y3+ls))
-							g.drawLine((x3+1), y3, (x3+1), (y3+ls))
-						}
-						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) {
-							g.drawLine((x3+ls), y3, (x3+ls), (y3+ls))
-							g.drawLine((x3-1+ls), y3, (x3-1+ls), (y3+ls))
-						}
-						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_UP))
-							g.fillRect(x3, y3, 2f, 2f)
-						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_DOWN))
-							g.fillRect(x3, (y3+blksize-2), 2f, 2f)
-						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_UP))
-							g.fillRect((x3+blksize-2), y3, 2f, 2f)
-						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
-							g.fillRect((x3+blksize-2), (y3+blksize-2), 2f, 2f)
-					}
-				}*/
+		g.color = Color(color).apply {a = alpha}
+		g.fillRect(x, y, w, h)
 	}
 
 	override fun drawBadgesSpecific(x:Float, y:Float, type:Int, scale:Float) {
 		val b = FontBadge(type)
-		graphics?.drawImage(ResourceHolder.imgBadges,
+		graphics?.drawImage(resources.imgBadges,
 			x, y, x+b.w*scale, y+b.h*scale,
 			b.sx.toFloat(), b.sy.toFloat(), (b.sx+b.w).toFloat(), (b.sy+b.h).toFloat())
 	}
@@ -446,10 +424,11 @@ class RendererSlick:AbstractRenderer() {
 							if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
 								g.fillRect((x3+blksize-2), (y3+blksize-2), 2f, 2f)
 						} else {
-							val blkTemp = Block(it.block[i])
-							blkTemp.darkness = .3f
-							if(engine.nowPieceColorOverride>=0) blkTemp.cint = engine.nowPieceColorOverride
-							drawBlock(x+x2*blksize, y+y2*blksize, blkTemp, scale)
+							val blkTemp = Block(it.block[i]).apply {
+								darkness = .3f
+								engine.nowPieceColorOverride?.let {color = it}
+							}
+							drawBlock(x+x2*blksize, y+y2*blksize, blkTemp, scale = scale)
 						}
 				} else {
 					val x2 = engine.nowPieceX+it.dataX[it.direction][i]*2
@@ -495,10 +474,11 @@ class RendererSlick:AbstractRenderer() {
 						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
 							g.fillRect((x3+blksize*2-2), (y3+blksize*2-2), 2f, 2f)
 					} else {
-						val blkTemp = Block(it.block[i])
-						blkTemp.darkness = .3f
-						if(engine.nowPieceColorOverride>=0) blkTemp.cint = engine.nowPieceColorOverride
-						drawBlock(x+x2*blksize, y+y2*blksize, blkTemp, scale*2f)
+						val blkTemp = Block(it.block[i]).apply {
+							darkness = .3f
+							engine.nowPieceColorOverride?.let {color = it}
+						}
+						drawBlock(x+x2*blksize, y+y2*blksize, blkTemp, scale = scale*2f)
 					}
 				}
 		}
@@ -595,7 +575,7 @@ class RendererSlick:AbstractRenderer() {
 	 * @param y Y-coordinate
 	 * @param engine GameEngineのインスタンス
 	 */
-	private fun drawFrame(x:Int, y:Int, engine:GameEngine, displaysize:Int) {
+	override fun drawFrame(x:Int, y:Int, engine:GameEngine, displaysize:Int) {
 		val graphics = graphics ?: return
 		val size = when(displaysize) {
 			-1 -> {
@@ -604,8 +584,8 @@ class RendererSlick:AbstractRenderer() {
 			1 -> 8
 			else -> 4
 		}
-		val width = engine.field?.width?:Field.DEFAULT_WIDTH
-		val height = engine.field?.height?:Field.DEFAULT_HEIGHT
+		val width = engine.field.width ?: Field.DEFAULT_WIDTH
+		val height = engine.field.height ?: Field.DEFAULT_HEIGHT
 		val oX = 0
 
 		// Field Background
@@ -614,11 +594,12 @@ class RendererSlick:AbstractRenderer() {
 				val filter = Color(Color.white)
 				filter.a = fieldbgbright
 
-				var img = ResourceHolder.imgFieldbg2
-				if(displaysize==-1) img = ResourceHolder.imgFieldbg2Small
-				if(displaysize==1) img = ResourceHolder.imgFieldbg2Big
+				var img = resources.imgFieldBG[1]
+				if(displaysize==-1) img = resources.imgFieldBG[0]
+				if(displaysize==1) img = resources.imgFieldBG[2]
 
-				graphics.drawImage(img, x+4, y+4, x+4+width*size*4, y+4+height*size*4, 0, 0, (width*size*4), (height*size
+				graphics.drawImage(img, x+4, y+4, x+4+width*size*4, y+4+height*size*4,
+					0, 0, (width*size*4), (height*size
 					*4), filter)
 			} else if(showbg) {
 				val filter = Color(Color.black)
@@ -627,368 +608,89 @@ class RendererSlick:AbstractRenderer() {
 				graphics.fillRect((x+4), (y+4), (width*size*4), (height*size*4))
 				graphics.color = Color.white
 			}
-		//graphics.drawImage(RenderStaffRoll.BG, x+4, y+4, x+4+width*size*4, y+4+height*size*4, 0, 0, width*size*4, height*size*4);
-		// Upと下
-
-		var tmpX = x
-		var tmpY = y
-		val s = size*4
-		var maxWidth = width*s
-		var maxHeight = height*size*4
-		// NEXT area background
-		if(showbg&&darknextarea) {
-			val filter = Color(Color.black)
-			graphics.color = filter
-
-			when(nextDisplayType) {
-				2 -> {//side big
-					val x2 = x+s+width*s
-					val maxNext = if(engine.isNextVisible) engine.ruleopt.nextDisplay else 0
-
-					// HOLD area
-					if(engine.ruleopt.holdEnable&&engine.isHoldVisible) {
-						graphics.fillRect(x-64, y, 64, 48)
-						for(i in 8 downTo 0) {
-							val filter2 = Color(Color.black)
-							filter2.a = i.toFloat()/8f
-							graphics.color = filter2
-							graphics.lineWidth = 1f
-							graphics.drawRect(x-64-i, y-i, 65+i, 48+i*2)
-						}
-					}
-					// NEXT area
-					if(maxNext>0) {
-						graphics.fillRect(x2, y+8, 64, 64*maxNext-16)
-						for(i in 8 downTo 0) {
-							val filter2 = Color(Color.black)
-							filter2.a = i.toFloat()/8f
-							graphics.color = filter2
-							graphics.lineWidth = 1f
-							graphics.drawRect(x2-1, y+8-i, 65+i, 64*maxNext-16+i*2)
-						}
-					}
-				}
-				1 -> {//side small
-					val x2 = x+s+width*s
-					val maxNext = if(engine.isNextVisible) engine.ruleopt.nextDisplay else 0
-
-					// HOLD area
-					if(engine.ruleopt.holdEnable&&engine.isHoldVisible) {
-						graphics.fillRect(x-32, y, 32, 64)
-						for(i in 8 downTo 0) {
-							val filter2 = Color(Color.black)
-							filter2.a = 1-i.toFloat()/8f
-							graphics.color = filter2
-							graphics.lineWidth = 1f
-							graphics.drawRect(x-32-i, y-i, 33+i, 64+i*2)
-						}
-					}
-
-					// NEXT area
-					if(maxNext>0) {
-						graphics.fillRect(x2, y+8, 32, 32*maxNext-16)
-						for(i in 8 downTo 0) {
-							val filter2 = Color(Color.black)
-							filter2.a = 1-i.toFloat()/8f
-							graphics.color = filter2
-							graphics.lineWidth = 1F
-							graphics.drawRect(x2-1, y+8-i, 33+i, 32*maxNext-16+i*2)
-						}
-					}
-				}
-				else -> {
-					val w = width*s+15
-
-					graphics.fillRect(x+20, y, w-40, -48)
-
-					for(i in 20 downTo 0) {
-						val filter2 = Color(Color.black)
-						filter2.a = 1-i.toFloat()/20f
-						graphics.color = filter2
-						graphics.lineWidth = 1f
-						graphics.drawRect(x+20-i, y, w-40+i*2, -48-i)
-					}
-				}
-			}
-
-			graphics.color = Color.white
-		}
-
-		when(engine.framecolor) {
-			GameEngine.FRAME_SKIN_GB -> {
-				graphics.color = Color.gray
-				graphics.fillRect((x+4), (y+4), (width*size*4), (height*size*4))
-				val fi = ResourceHolder.imgFrameOld[0]
-				tmpX -= 12
-				for(i in 0..height) {
-
-					tmpY = y+i*s+4
-					graphics.drawImage(fi, tmpX, tmpY, (tmpX+s), (tmpY+s), 0, 0, 16, 16)
-					graphics.drawImage(fi, (tmpX+maxWidth+s), tmpY, (tmpX+maxWidth+s*2), (tmpY+s), 0, 0, 16, 16)
-					if(i==height)
-						for(z in 1..width)
-							graphics.drawImage(fi, (tmpX+z*s), tmpY, (tmpX+(z+1)*s), (tmpY+s), 0, 0, 16, 16)
-				}
-			}
-			GameEngine.FRAME_SKIN_SG -> {
-				graphics.color = Color.black
-				graphics.fillRect((x+4), (y+4), (width*size*4), (height*size*4))
-
-				val fi = ResourceHolder.imgFrameOld[1]
-				maxWidth += s*2
-				tmpX -= 12
-				tmpY -= 12
-				graphics.drawImage(fi, tmpX, tmpY, tmpX+maxWidth/2, tmpY+(height+2)*s, 0, 0, 96, 352)
-				graphics.drawImage(fi, tmpX+maxWidth, tmpY, tmpX+maxWidth/2, tmpY+(height+2)*s, 0, 0, 96, 352)
-			}
-			GameEngine.FRAME_SKIN_HEBO -> {
-				val fi = ResourceHolder.imgFrameOld[2]
-
-				graphics.drawImage(fi, tmpX, tmpY, (tmpX+s), (tmpY+s), 0, 0, 16, 16)
-				tmpX += 16+(width+2)*s
-				graphics.drawImage(fi, tmpX, tmpY, (tmpX), (tmpY+s), 32, 0, 48, 16)
-				tmpX = x
-				tmpY += 16
-				graphics.drawImage(fi, tmpX, tmpY, (tmpX+16), (tmpY+height*s), 0, 15, 16, 1)
-				graphics.drawImage(fi, (tmpX+maxWidth), tmpY, (tmpX+16), (tmpY+height*s), 0, 15, 16, 1)
-			}
-			else -> {
-				if(showmeter) maxWidth += 8
-				val fi = ResourceHolder.imgFrame[engine.framecolor]
-				tmpX = x+4
-				tmpY = y
-				graphics.drawImage(fi, tmpX, tmpY, (tmpX+maxWidth), (tmpY+4), (oX+4), 0, (oX+4+4), 4)
-				tmpY = y+height*size*4+4
-				graphics.drawImage(fi, tmpX, tmpY, (tmpX+maxWidth), (tmpY+4), (oX+4), 8, (oX+4+4), (8+4))
-
-				// 左と右
-				tmpX = x
-				tmpY = y+4
-				graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+height*size*4), oX, 4, (oX+4), (4+4))
-
-				tmpX = x+width*size*4+if(showmeter) 12 else 4
-				graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+height*size*4), (oX+8), 4, (oX+8+4), 4+4)
-
-				// 左上
-				tmpX = x
-				tmpY = y
-				graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), oX, 0, (oX+4), 4)
-
-				// 左下
-				tmpX = x
-				tmpY = y+height*size*4+4
-				graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), oX, 8, (oX+4), (8+4))
-
-				if(showmeter) {
-					// MeterONのときの右上
-					tmpX = x+width*size*4+12
-					tmpY = y
-					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+8), 0, (oX+8+4), 4)
-
-					// MeterONのときの右下
-					tmpX = x+width*size*4+12
-					tmpY = y+height*size*4+4
-					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+8), 8, (oX+8+4), (8+4))
-
-					// 右Meterの枠
-					tmpX = x+width*size*4+4
-					tmpY = y+4
-					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+height*size*4), (oX+12), 4, (oX+12+4), (4+4))
-
-					tmpX = x+width*size*4+4
-					tmpY = y
-					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+12), 0, (oX+12+4), 4)
-
-					tmpX = x+width*size*4+4
-					tmpY = y+height*size*4+4
-					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+12), 8, (oX+12+4), (8+4))
-
-				} else {
-					// MeterOFFのときの右上
-					tmpX = x+width*size*4+4
-					tmpY = y
-					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+8), 0, (oX+8+4), 4)
-
-					// MeterOFFのときの右下
-					tmpX = x+width*size*4+4
-					tmpY = y+height*size*4+4
-					graphics.drawImage(fi, tmpX, tmpY, (tmpX+4), (tmpY+4), (oX+8), 8, (oX+8+4), (8+4))
-				}
-			}
-		}
-		if(showmeter) {
-
-			// 右Meter
-			if(engine.meterValueSub>0||engine.meterValue>0)
-				maxHeight -= maxOf(engine.meterValue, engine.meterValueSub)
-
-			tmpX = x+width*size*4+8
-			tmpY = y+4
-
-			if(maxHeight>0) {
-				graphics.color = Color.black
-				graphics.fillRect(tmpX, tmpY, 4, maxHeight)
-				graphics.color = Color.white
-			}
-
-			if(engine.meterValueSub>maxOf(engine.meterValue, 0)) {
-				var value = engine.meterValueSub
-				if(value>height*size*4) value = height*size*4
-
-				if(value>0) {
-					tmpX = x+width*size*4+8
-					tmpY = y+height*size*4+3-(value-1)
-
-					graphics.color = getMeterColorAsColor(engine.meterColorSub, value, maxHeight)
-					graphics.fillRect(tmpX, tmpY, 4, value)
-					graphics.color = Color.white
-				}
-			}
-			if(engine.meterValue>0) {
-				var value = engine.meterValue
-				if(value>height*size*4) value = height*size*4
-
-				if(value>0) {
-					tmpX = x+width*size*4+8
-					tmpY = y+height*size*4+3-(value-1)
-
-					graphics.color = getMeterColorAsColor(engine.meterColor, value, maxHeight)
-					graphics.fillRect(tmpX, tmpY, 4, value)
-					graphics.color = Color.white
-				}
-			}
-		}
+		RenderStaffRoll.draw(x+width/2f, y.toFloat(), 0f, height.toFloat(), Color(200, 233, 255, 200))
+		super.drawFrame(x, y, engine, displaysize)
 
 	}
 
-	/** 各 frame 最初の描画処理
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	override fun renderFirst(engine:GameEngine, playerID:Int) {
+	override fun drawBG(engine:GameEngine) {
 		val graphics = graphics ?: return
+		if(engine.owner.menuOnly) {
+			graphics.color = Color.white
+			graphics.drawImage(resources.imgMenuBG[1], 0f, 0f)
+		} else {
+			val bgmax = resources.backgroundMax
+			var bg = engine.owner.backgroundStatus.bg%bgmax
+			if(engine.owner.backgroundStatus.fadesw&&!heavyeffect) bg = engine.owner.backgroundStatus.fadebg
 
-		if(engine.playerID==0)
-			if(engine.owner.menuOnly) {
+			if(bg in 0 until bgmax&&showbg) {
 				graphics.color = Color.white
-				graphics.drawImage(ResourceHolder.imgMenuBG[1], 0f, 0f)
-			} else {
-				val bgmax = ResourceHolder.bGmax
-				var bg = engine.owner.backgroundStatus.bg%bgmax
-				if(engine.owner.backgroundStatus.fadesw&&!heavyeffect) bg = engine.owner.backgroundStatus.fadebg
-
-				if(bg in 0 until bgmax&&showbg) {
-					graphics.color = Color.white
-					val bgi = ResourceHolder.imgPlayBG[bg]
-					if(heavyeffect) {
-						val sc = (1-cos(bgi.rotation/Math.PI.pow(3.0))/Math.PI).toFloat()*1024f/minOf(bgi.width, bgi.height)
-						val cx = bgi.width/2*sc
-						val cy = bgi.height/2*sc
-						bgi.setCenterOfRotation(cx, cy)
-						bgi.rotate(0.04f)
-						bgi.draw(320-cx, 240-cy, sc)
-						if(engine.owner.backgroundStatus.fadesw) {
-							val filter = Color(Color.black)
-							filter.a = if(!engine.owner.backgroundStatus.fadestat)
-								engine.owner.backgroundStatus.fadecount.toFloat()/100
-							else
-								(100-engine.owner.backgroundStatus.fadecount).toFloat()/100
-							graphics.color = filter
-							graphics.fillRect(0, 0, 640, 480)
-						}
-					} else {
-						bgi.rotation = 0f
-						graphics.drawImage(bgi, 0, 0, 640, 480, 0, 0, bgi.width, bgi.height)
+				val bgi = resources.imgPlayBG[bg].res
+				if(heavyeffect) {
+					val sc = (1-cos(bgi.rotation/Math.PI.pow(3.0))/Math.PI).toFloat()*1024f/minOf(bgi.width, bgi.height)
+					val cx = bgi.width/2*sc
+					val cy = bgi.height/2*sc
+					bgi.setCenterOfRotation(cx, cy)
+					bgi.rotate(0.04f)
+					bgi.draw(320-cx, 240-cy, sc)
+					if(engine.owner.backgroundStatus.fadesw) {
+						val filter = Color(Color.black)
+						filter.a = if(!engine.owner.backgroundStatus.fadestat)
+							engine.owner.backgroundStatus.fadecount.toFloat()/100
+						else
+							(100-engine.owner.backgroundStatus.fadecount).toFloat()/100
+						graphics.color = filter
+						graphics.fillRect(0, 0, 640, 480)
 					}
+				} else {
+					bgi.rotation = 0f
+					graphics.drawImage(bgi, 0, 0, 640, 480, 0, 0, bgi.width, bgi.height)
 				}
 			}
-		// NEXTなど
-		if(!engine.owner.menuOnly&&engine.isVisible) {
-			val offsetX = fieldX(engine, playerID)
-			val offsetY = fieldY(engine, playerID)
-
-			if(engine.displaysize!=-1) {
-				drawFrame(offsetX, offsetY+48, engine, engine.displaysize)
-				drawNext(offsetX, offsetY, engine)
-				drawField(offsetX+4, offsetY+52, engine, engine.displaysize)
-			} else {
-				drawFrame(offsetX, offsetY, engine, -1)
-				drawField(offsetX+4, offsetY+4, engine, -1)
-			}
 		}
+	}
+
+	fun FragAnim.draw(x:Float, y:Float, x2:Float, y2:Float, srcx:Float, srcy:Float, srcx2:Float, srcy2:Float) {
+		when(type) {
+			ANIM.BLOCK -> resources.imgBreak[color][1]
+			ANIM.SPARK -> resources.imgBreak[color][0]
+			ANIM.GEM -> resources.imgPErase[color]
+			ANIM.HANABI -> resources.imgHanabi[color]
+		}.draw(x, y, x2, y2, srcx, srcy, srcx2, srcy2)
 	}
 
 	/** Render effects */
-	override fun effectRender() {
+	override fun drawEffectSpecific(i:Int, it:EffectObject) {
 		val graphics = graphics ?: return
-		effectlist.forEachIndexed {i, it ->
-			var x = it.x.toInt()
-			var y = it.y.toInt()
-			val srcx:Int
-			val srcy:Int
-			val sq:Int
 
-			when(it) {
-				is FragAnim -> when(it.type) {
-					ANIM.GEM// Gems frag
-					-> {
-						x -= 16
-						y -= 16
-						sq = 64
-						srcx = (it.anim-1)%10*sq
-						srcy = (it.anim-1)/10*sq
-						graphics.drawImage(ResourceHolder.imgPErase[it.color], x, y, x+sq, y+sq, srcx, srcy, srcx+sq, srcy+sq)
-					}
-					ANIM.SPARK // TI Block frag
-					-> {
-						x -= 88
-						y -= 38
-						sq = 192
-						srcx = (it.anim-1)%6*sq
-						srcy = (it.anim-1)/6*sq
-						val flip = (i%3==0)!=(x%3==0)
-						ResourceHolder.imgBreak[it.color][0].draw(
-							if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,
-							srcx, srcy, srcx+sq, srcy+sq)
-					}
-
-					ANIM.BLOCK // TAP Block frag
-					-> {
-						x -= 88
-						y -= 86
-						sq = 192
-						srcx = (it.anim-1)%8*sq
-						srcy = (it.anim-1)/8*sq
-						val flip = (i%3==0)!=(x%3==0)
-						ResourceHolder.imgBreak[it.color][1].draw(if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,
-							srcx, srcy, srcx+sq, srcy+sq)
-					}
-					ANIM.HANABI //Fireworks
-					-> {
-						sq = 192
-						x -= sq/2
-						y -= sq/2
-						srcx = (it.anim-1)%6*sq
-						srcy = (it.anim-1)/8*sq
-						ResourceHolder.imgHanabi[it.color].draw(x, y, x+sq, y+sq, srcx, srcy, srcx+sq, srcy+sq)
-					}
-				}
-				is BeamH //Line Cleaned
-				-> {
-					srcy = (it.anim/2-1)*8
-					if(it.anim%2==1) graphics.setDrawMode(Graphics.MODE_ADD)
-					ResourceHolder.imgLine[0].draw(x, y, x+it.w, y+it.h, 0, srcy, 80, srcy+8)
-					graphics.setDrawMode(Graphics.MODE_NORMAL)
-				}
-				is PopupAward -> drawAward(x, y, it.event, it.anim)
-				is PopupCombo -> drawCombo(x, y, it.pts, it.type)
-				is PopupPoint -> drawDirectNum(x-(it.pts.toString().length*6), y, "+${it.pts}", COLOR.values()[it.color])
-				is PopupBravo //Field Cleaned
-				-> {
-					drawDirectFont(x+20, y+204, "BRAVO!", getRainbowColor((it.anim+4)%9), 1.5f)
-					drawDirectFont(x+52, y+236, "PERFECT", getRainbowColor(it.anim%9), 1f)
-				}
+		when(it) {
+			is FragAnim -> {
+				val flip = (i%2==0)!=(i%10==0)
+				when(it.type) {
+					ANIM.GEM
+						// Gems frag
+					-> resources.imgPErase[it.color]
+					// TI Block frag
+					ANIM.SPARK
+					-> resources.imgBreak[it.color][0]
+					// TAP Block frag
+					ANIM.BLOCK
+					-> resources.imgBreak[it.color][1]
+					//Fireworks
+					ANIM.HANABI
+					-> resources.imgHanabi[it.color]
+				}.draw(if(flip) it.dx2 else it.dx, it.dy, if(flip) it.dx else it.dx2, it.dy2,
+					it.srcx, it.srcy, it.srcx2, it.srcy2)
 			}
+			is BeamH //Line Cleaned
+			-> {
+				//if(it.anim%2==1)
+				graphics.setDrawMode(Graphics.MODE_ADD)
+				resources.imgLine[0].draw(it.x, it.y, it.dx2, it.dy2, it.srcx, it.srcy, it.srcx2, it.srcy2)
+				graphics.setDrawMode(Graphics.MODE_NORMAL)
+			}
+			else -> super.drawEffectSpecific(i, it)
+
 		}
 	}
 
@@ -999,45 +701,20 @@ class RendererSlick:AbstractRenderer() {
 		 * @return Slick用Colorオブジェクト
 		 */
 		fun getColorByID(colorID:Int):Color = when(colorID) {
-			Block.BLOCK_COLOR_GRAY -> Color(Color.gray)
-			Block.BLOCK_COLOR_RED -> Color(Color.red)
-			Block.BLOCK_COLOR_ORANGE -> Color(Color.orange)
-			Block.BLOCK_COLOR_YELLOW -> Color(Color.yellow)
-			Block.BLOCK_COLOR_GREEN -> Color(Color.green)
-			Block.BLOCK_COLOR_CYAN -> Color(Color.cyan)
-			Block.BLOCK_COLOR_BLUE -> Color(Color.blue)
-			Block.BLOCK_COLOR_PURPLE -> Color(Color.magenta)
+			Block.COLOR_WHITE -> Color(Color.gray)
+			Block.COLOR_RED -> Color(Color.red)
+			Block.COLOR_ORANGE -> Color(Color.orange)
+			Block.COLOR_YELLOW -> Color(Color.yellow)
+			Block.COLOR_GREEN -> Color(Color.green)
+			Block.COLOR_CYAN -> Color(Color.cyan)
+			Block.COLOR_BLUE -> Color(Color.blue)
+			Block.COLOR_PURPLE -> Color(Color.magenta)
 			else -> Color(Color.black)
 		}
 
-		fun getColorByID(color:Block.COLOR):Color = when(color) {
-			Block.COLOR.WHITE -> Color(Color.gray)
-			Block.COLOR.RED -> Color(Color.red)
-			Block.COLOR.ORANGE -> Color(Color.orange)
-			Block.COLOR.YELLOW -> Color(Color.yellow)
-			Block.COLOR.GREEN -> Color(Color.green)
-			Block.COLOR.CYAN -> Color(Color.cyan)
-			Block.COLOR.BLUE -> Color(Color.blue)
-			Block.COLOR.PURPLE -> Color(Color.magenta)
-			else -> Color(Color.black)
-		}
+		fun getColorByID(color:Block.COLOR):Color = getColorByID(Block.colorNumber(color, Block.TYPE.BLOCK))
 
-		fun getMeterColorAsColor(meterColor:Int, value:Int, max:Int):Color {
-			var color = Color(0, 0, 0)
-			when(meterColor) {
-				GameEngine.METER_COLOR_LEVEL -> {
-					color.r = maxOf(0f, minOf((value*3f-max)/max, 1f))
-					color.g = maxOf(0f, minOf((max-value)*3f/max, 1f))
-					color.b = maxOf(0f, minOf((max-value*3f)/max, 1f))
-				}
-				GameEngine.METER_COLOR_LIMIT -> {//red<yellow<green<cyan
-					color.r = maxOf(0f, minOf((max*2f-value*3f)/max, 1f))
-					color.g = value*3f/max
-					color.b = maxOf(0f, minOf((value*3f-max*2f)/max, 1f))
-				}
-				else -> color = Color(meterColor)
-			}
-			return color
-		}
+		fun getMeterColorAsColor(meterColor:Int, value:Int, max:Int):Color =
+			Color(AbstractRenderer.getMeterColorAsColor(meterColor, value, max))
 	}
 }

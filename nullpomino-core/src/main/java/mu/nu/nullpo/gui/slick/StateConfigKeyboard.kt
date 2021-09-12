@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,14 +24,17 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.gui.GameKeyDummy
+import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
-import mu.nu.nullpo.util.GeneralUtil
-import org.newdawn.slick.*
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import org.newdawn.slick.GameContainer
+import org.newdawn.slick.Graphics
+import org.newdawn.slick.Input
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 
@@ -37,24 +44,24 @@ class StateConfigKeyboard:BasicGameState() {
 	/** Player number */
 	var player = 0
 
-	/** true if navigation key setting mode */
+	/** True if navigation key setting mode */
 	var isNavSetting = false
 
 	/** StateBasedGame */
 	private lateinit var gameObj:StateBasedGame
 
-	/** true if no key is pressed now (for JInput mode) */
-	private var noPressedKey:Boolean = false
+	/** True if no key is pressed now (for JInput mode) */
+	private var noPressedKey = false
 
 	/** Number of button currently being configured */
-	private var keynum:Int = 0
-	private var keypos:Int = 0
+	private var keynum = 0
+	private var keypos = 0
 
 	/** Frame counter */
-	private var frame:Int = 0
+	private var frame = 0
 
 	/** Nunber of frames left in key-set mode */
-	private var keyConfigRestFrame:Int = 0
+	private var keyConfigRestFrame = 0
 
 	/** Button settings */
 	private var keymap:Array<IntArray> = Array(NUM_KEYS) {IntArray(MAX_KEYS) {0}}
@@ -120,7 +127,7 @@ class StateConfigKeyboard:BasicGameState() {
 
 		if(frame>=KEYACCEPTFRAME)
 			when {
-				keyConfigRestFrame>0 -> FontNormal.printFontGrid(1, 22, "PUSH KEY... "+GeneralUtil.getTime(keyConfigRestFrame), COLOR.PINK)
+				keyConfigRestFrame>0 -> FontNormal.printFontGrid(1, 22, "PUSH KEY... "+keyConfigRestFrame.toTimeStr, COLOR.PINK)
 				keynum<NUM_KEYS -> {
 					FontNormal.printFontGrid(1, 22, "<\u008B\u008E>:   MOVE CURSOR", COLOR.GREEN)
 					FontNormal.printFontGrid(1, 23, "ENTER:     SET KEY", COLOR.GREEN)

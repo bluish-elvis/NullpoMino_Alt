@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -28,8 +33,10 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
-import kotlin.math.*
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.ln
 
 /** SCORE ATTACK mode (Original from NullpoUE build 121909 by Zircean) */
 class GrandFestival:AbstractMode() {
@@ -41,110 +48,110 @@ class GrandFestival:AbstractMode() {
 
 	/** Current gravity index number (Increases when the level reaches to
 	 * certain value that defined in tableGravityChangeLevel) */
-	private var gravityindex:Int = 0
+	private var gravityindex = 0
 
 	/** Next section level */
-	private var nextseclv:Int = 0
+	private var nextseclv = 0
 
 	/** Level up flag (Set to true when the level increases) */
-	private var lvupflag:Boolean = false
+	private var lvupflag = false
 
 	/** Used by Hard-drop scoring */
-	private var harddropBonus:Int = 0
+	private var harddropBonus = 0
 
 	/** Used by combo scoring */
-	private var comboValue:Int = 0
+	private var comboValue = 0
 
 	/** Amount of points you just get from line clears */
-	private var lastscore:Int = 0
-	private var hanabi:Int = 0
-	private var temphanabi:Int = 0
-	private var inthanabi:Int = 0
-	private var bonusspeed:Int = 0
-	private var bonusint:Int = 0
-	private var halfminline:Int = 0
-	private var halfminbonus:Boolean = false
+	private var lastscore = 0
+	private var hanabi = 0
+	private var temphanabi = 0
+	private var inthanabi = 0
+	private var bonusspeed = 0
+	private var bonusint = 0
+	private var halfminline = 0
+	private var halfminbonus = false
 
 	/** Elapsed time from last line clear */
-	private var lastlinetime:Int = 0
+	private var lastlinetime = 0
 
 	/** Elapsed time from last piece spawns */
-	private var lastspawntime:Int = 0
+	private var lastspawntime = 0
 
-	private var scgettime:Int = 0
+	private var scgettime = 0
 
 	/** Remaining ending time limit */
-	private var rolltime:Int = 0
+	private var rolltime = 0
 
 	/** Secret Grade */
-	private var secretGrade:Int = 0
+	private var secretGrade = 0
 
 	/** Current BGM number */
-	private var bgmlv:Int = 0
+	private var bgmlv = 0
 
 	/** Section Record */
-	private var sectionhanabi:IntArray = IntArray(SECTION_MAX+1)
-	private var sectionscore:IntArray = IntArray(SECTION_MAX+1)
-	private var sectionTime:IntArray = IntArray(SECTION_MAX+1)
+	private var sectionhanabi = IntArray(SECTION_MAX+1)
+	private var sectionscore = IntArray(SECTION_MAX+1)
+	private var sectionTime = IntArray(SECTION_MAX+1)
 
 	/** This will be true if the player achieves new section time record in
 	 * specific section */
-	private var sectionIsNewRecord:BooleanArray = BooleanArray(SECTION_MAX)
+	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
 
 	/** This will be true if the player achieves new section time record
 	 * somewhere */
-	private var sectionAnyNewRecord:Boolean = false
+	private var sectionAnyNewRecord = false
 
 	/** Amount of sections completed */
-	private var sectionscomp:Int = 0
+	private var sectionscomp = 0
 
 	/** Average section time */
-	private var sectionavgtime:Int = 0
+	private var sectionavgtime = 0
 
 	/** false:Leaderboard, true:Section time record (Push F in settings screen
 	 * to
 	 * flip it) */
-	private var isShowBestSectionTime:Boolean = false
+	private var isShowBestSectionTime = false
 
 	/** Selected start level */
-	private var startlevel:Int = 0
+	private var startlevel = 0
 
 	/** Always show ghost */
-	private var alwaysghost:Boolean = false
+	private var alwaysghost = false
 
 	/** Always 20G */
-	private var always20g:Boolean = false
+	private var always20g = false
 
 	/** Big Mode */
-	private var big:Boolean = false
+	private var big = false
 
 	/** Show section time */
-	private var showsectiontime:Boolean = false
+	private var showsectiontime = false
 
 	/** Version of this mode */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Your place on leaderboard (-1: out of rank) */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Score records */
-	private var rankingScore:IntArray = IntArray(RANKING_MAX)
-	private var rankingHanabi:IntArray = IntArray(RANKING_MAX)
-	private var bestSectionScore:IntArray = IntArray(RANKING_MAX)
-	private var bestSectionHanabi:IntArray = IntArray(RANKING_MAX)
-	private var bestSectionTime:IntArray = IntArray(RANKING_MAX)
+	private var rankingScore = IntArray(RANKING_MAX)
+	private var rankingHanabi = IntArray(RANKING_MAX)
+	private var bestSectionScore = IntArray(RANKING_MAX)
+	private var bestSectionHanabi = IntArray(RANKING_MAX)
+	private var bestSectionTime = IntArray(RANKING_MAX)
 
 	/** Level records */
-	private var rankingLevel:IntArray = IntArray(RANKING_MAX)
+	private var rankingLevel = IntArray(RANKING_MAX)
 
 	/** Time records */
-	private var rankingTime:IntArray = IntArray(RANKING_MAX)
+	private var rankingTime = IntArray(RANKING_MAX)
 
-	private var decoration:Int = 0
-	private var dectemp:Int = 0
+	private var decoration = 0
+	private var dectemp = 0
 
 	/** Returns the name of this mode */
-	override val name:String = "Grand Festival"
+	override val name = "Grand Festival"
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -211,7 +218,7 @@ class GrandFestival:AbstractMode() {
 
 		version = if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -332,9 +339,8 @@ class GrandFestival:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level", (startlevel*100).toString(), "FULL GHOST",
-			GeneralUtil.getONorOFF(alwaysghost), "20G MODE", GeneralUtil.getONorOFF(always20g), "SHOW SECT.",
-			GeneralUtil.getONorOFF(showsectiontime), "BIG", GeneralUtil.getONorOFF(big))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level" to (startlevel*100),
+			"FULL GHOST" to alwaysghost, "FULL 20G" to always20g, "SHOW STIME" to showsectiontime, "BIG" to big)
 	}
 
 	/** This function will be called before the game actually begins (after
@@ -375,7 +381,7 @@ class GrandFestival:AbstractMode() {
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, String.format("%2d", i+1), COLOR.YELLOW)
 						receiver.drawScoreNum(engine, playerID, 2, 3+i, "${rankingHanabi[i]}", i==rankingRank)
 						receiver.drawScoreNum(engine, playerID, 6, 3+i, "${rankingScore[i]}", i==rankingRank)
-						receiver.drawScoreNum(engine, playerID, 13, 3+i, GeneralUtil.getTime(rankingTime[i]), i==rankingRank)
+						receiver.drawScoreNum(engine, playerID, 13, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
 					}
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
@@ -391,19 +397,19 @@ class GrandFestival:AbstractMode() {
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, String.format("%3d-", temp), sectionIsNewRecord[i])
 						receiver.drawScoreNum(engine, playerID, 5, 3+i,
 							String.format("%4d %6d %s", bestSectionHanabi[i], bestSectionScore[i],
-								GeneralUtil.getTime(bestSectionTime[i])), sectionIsNewRecord[i])
+								bestSectionTime[i].toTimeStr), sectionIsNewRecord[i])
 						totalScore += bestSectionScore[i]
 						totalHanabi += bestSectionHanabi[i]
 						totalTime += bestSectionTime[i]
 					}
 					receiver.drawScoreFont(engine, playerID, 0, 5+SECTION_MAX, "TOTAL", COLOR.BLUE)
 					receiver.drawScoreNum(engine, playerID, 5, 6+SECTION_MAX,
-						String.format("%4d %6d %s", totalHanabi, totalScore, GeneralUtil.getTime(totalTime)))
+						String.format("%4d %6d %s", totalHanabi, totalScore, totalTime.toTimeStr))
 
 					receiver.drawScoreFont(engine, playerID, 0, 7+SECTION_MAX, "AVERAGE", COLOR.BLUE)
 					receiver.drawScoreNum(engine, playerID, 5, 8+SECTION_MAX,
 						String.format("%4d %6d %s", totalHanabi/SECTION_MAX, totalScore/SECTION_MAX,
-							GeneralUtil.getTime((totalTime/SECTION_MAX))))
+							(totalTime/SECTION_MAX).toTimeStr))
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
 				}
@@ -421,12 +427,12 @@ class GrandFestival:AbstractMode() {
 			receiver.drawScoreNum(engine, playerID, 1, 12, "300")
 
 			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 15, GeneralUtil.getTime(engine.statistics.time), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 15, engine.statistics.time.toTimeStr, 2f)
 
 			if(engine.gameActive&&engine.ending==2) {
 				val time = maxOf(0, ROLLTIMELIMIT-rolltime)
 				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 18, GeneralUtil.getTime(time), time>0&&time<10*60, 2f)
+				receiver.drawScoreNum(engine, playerID, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
 
 			// Section time
@@ -457,7 +463,7 @@ class GrandFestival:AbstractMode() {
 
 				receiver.drawScoreFont(engine, playerID, x2, 14, "AVERAGE", COLOR.BLUE)
 				receiver.drawScoreNum(engine, playerID, x2, 15,
-					GeneralUtil.getTime((engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0))), 2f)
+					(engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0)).toTimeStr, 2f)
 
 			}
 		}
@@ -558,10 +564,10 @@ class GrandFestival:AbstractMode() {
 			lastscore = 6*
 				((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
 					*lines
-					*comboValue*if(engine.field!!.isEmpty) 4 else 1)
+					*comboValue*if(engine.field.isEmpty) 4 else 1)
 					+engine.statistics.level/(if(engine.twist) 2 else 3)+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			// AC medal
-			if(engine.field!!.isEmpty) {
+			if(engine.field.isEmpty) {
 
 				dectemp += lines*25
 				if(lines==3) dectemp += 25
@@ -646,7 +652,7 @@ class GrandFestival:AbstractMode() {
 	/** This function will be called when the player tops out */
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==0) {
-			secretGrade = engine.field!!.secretGrade
+			secretGrade = engine.field.secretGrade
 			inthanabi = 0
 			temphanabi = inthanabi
 			if(engine.ending==2) {
@@ -683,12 +689,11 @@ class GrandFestival:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 0, 7+SECTION_MAX, "Time", COLOR.BLUE)
 			for(i in sectionTime.indices)
 				if(sectionTime[i]>0)
-					receiver.drawMenuNum(engine, playerID, 2, 8+SECTION_MAX
-						+i, GeneralUtil.getTime(sectionTime[i]))
+					receiver.drawMenuNum(engine, playerID, 2, 8+SECTION_MAX+i, sectionTime[i].toTimeStr)
 
 			if(sectionavgtime>0) {
 				receiver.drawMenuFont(engine, playerID, 0, 15, "AVERAGE", COLOR.BLUE)
-				receiver.drawMenuNum(engine, playerID, 2, 16, GeneralUtil.getTime(sectionavgtime))
+				receiver.drawMenuNum(engine, playerID, 2, 16, sectionavgtime.toTimeStr)
 			}
 		} else if(engine.statc[1]==2)
 			drawResultStats(engine, playerID, receiver, 2, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE,
@@ -727,7 +732,7 @@ class GrandFestival:AbstractMode() {
 			if(sectionAnyNewRecord) updateBestSectionTime()
 
 			if(rankingRank!=-1||sectionAnyNewRecord) {
-				saveRanking(engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 			owner.modeConfig.setProperty("decoration", decoration)
@@ -737,10 +742,10 @@ class GrandFestival:AbstractMode() {
 	/** Load the ranking */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
-			rankingScore[i] = prop.getProperty("scoreattack.ranking.$ruleName.$i.score", 0)
-			rankingHanabi[i] = prop.getProperty("scoreattack.ranking.$ruleName.hanabi.$i", 0)
-			rankingLevel[i] = prop.getProperty("scoreattack.ranking.$ruleName.$i.level", 0)
-			rankingTime[i] = prop.getProperty("scoreattack.ranking.$ruleName.$i.time", 0)
+			rankingScore[i] = prop.getProperty("$ruleName.$i.score", 0)
+			rankingHanabi[i] = prop.getProperty("$ruleName.hanabi.$i", 0)
+			rankingLevel[i] = prop.getProperty("$ruleName.$i.level", 0)
+			rankingTime[i] = prop.getProperty("$ruleName.$i.time", 0)
 		}
 		for(i in 0 until SECTION_MAX) {
 			bestSectionHanabi[i] = prop.getProperty("$ruleName.sectionhanabi.$i", 0)
@@ -752,7 +757,7 @@ class GrandFestival:AbstractMode() {
 	}
 
 	/** Save the ranking */
-	fun saveRanking(ruleName:String) {
+	private fun saveRanking(ruleName:String) {
 		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
 			listOf("$ruleName.$i.score" to rankingScore[i],
 				"$ruleName.$i.hanabi" to rankingHanabi[i],
@@ -833,7 +838,7 @@ class GrandFestival:AbstractMode() {
 		private const val ROLLTIMELIMIT = 3265
 
 		/** Number of hiscore records */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Secret grade names */
 		private val tableSecretGradeName = arrayOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", // 0-8

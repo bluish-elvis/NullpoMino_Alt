@@ -1,3 +1,32 @@
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package net.tetrisconcept.poochy.nullpomino.ai
 
 import mu.nu.nullpo.game.component.Field
@@ -12,7 +41,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 
 	private class Transition
 	constructor(val x:Int, val rt:Int, val rtSub:Int = 0, val newField:Int, val next:Transition?) {
-		constructor(x:Int,rt:Int,newField:Int,next:Transition):this(x,rt,0,newField,next)
+		constructor(x:Int, rt:Int, newField:Int, next:Transition):this(x, rt, 0, newField, next)
 	}
 
 	companion object {
@@ -24,7 +53,8 @@ open class ComboRaceSeedSearch:DummyAI() {
 		 * combo
 		 */
 		private val FIELDS =
-			intArrayOf(0x7, 0xB, 0xD, 0xE, 0x13, 0x15, 0x16, 0x19, 0x1A, 0x1C, 0x23, 0x29, 0x31, 0x32, 0x49, 0x4C, 0x61, 0x68, 0x83, 0x85, 0x86, 0x89, 0x8A, 0x8C, 0xC4, 0xC8, 0x111, 0x888)
+			intArrayOf(0x7, 0xB, 0xD, 0xE, 0x13, 0x15, 0x16, 0x19, 0x1A, 0x1C, 0x23, 0x29, 0x31, 0x32, 0x49, 0x4C, 0x61, 0x68, 0x83,
+				0x85, 0x86, 0x89, 0x8A, 0x8C, 0xC4, 0xC8, 0x111, 0x888)
 
 		/** Number of pieces to think ahead */
 		private const val MAX_THINK_DEPTH = 6
@@ -36,11 +66,11 @@ open class ComboRaceSeedSearch:DummyAI() {
 
 		private val pieceScores = intArrayOf(28, 18, 10, 9, 18, 18, 9)
 		private var moves:Array<Array<Transition>> = emptyArray()
-		private var nextQueueIDs:IntArray = IntArray(MAX_THINK_DEPTH)
-		private var queue:IntArray = IntArray(QUEUE_SIZE)
-		private var bestHold:Boolean = false
-		private var bestPts:Int = 0
-		private var bestNext:Int = 0
+		private var nextQueueIDs = IntArray(MAX_THINK_DEPTH)
+		private var queue = IntArray(QUEUE_SIZE)
+		private var bestHold = false
+		private var bestPts = 0
+		private var bestNext = 0
 
 		@JvmStatic fun main(args:Array<String>) {
 			//long start = System.currentTimeMillis();
@@ -56,7 +86,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 			for(i in 0 until Piece.PIECE_STANDARD_COUNT)
 				nextPieceEnable[i] = true
 			var rand = BagNoSZORandomizer()
-			rand.setPieceEnable(nextPieceEnable)
+			rand.setState(nextPieceEnable)
 
 			for(seed in 0L until java.lang.Long.MAX_VALUE) {
 				fld = 0x13
@@ -179,7 +209,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 		fun checkOffset(p:Piece, engine:GameEngine):Piece {
 			val result = Piece(p)
 			result.big = engine.big
-			if(!p.offsetApplied) result.applyOffsetArray(engine.ruleopt.pieceOffsetX[p.id], engine.ruleopt.pieceOffsetY[p.id])
+			if(!p.offsetApplied) result.applyOffsetArray(engine.ruleOpt.pieceOffsetX[p.id], engine.ruleOpt.pieceOffsetY[p.id])
 			return result
 		}
 
@@ -242,7 +272,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 
 							if(piece.checkCollision(x, y, rot, fldTemp)) {
 
-								wallkick.executeWallkick(x, y, -1, rt, rot, true, piece, fldTemp, null!!)?.let {kick ->
+								wallkick.executeWallkick(x, y, -1, rt, rot, true, piece, fldTemp, null)?.let {kick ->
 									newX = x+kick.offsetX
 									newY = piece.getBottom(newX, y+kick.offsetY, rot, fldTemp)
 								}
@@ -267,7 +297,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 							fldTemp.copy(fldBackup)
 
 							if(piece.checkCollision(x, y, rot, fldTemp)) {
-								wallkick.executeWallkick(x, y, 1, rt, rot, true, piece, fldTemp, null!!)?.let {kick ->
+								wallkick.executeWallkick(x, y, 1, rt, rot, true, piece, fldTemp, null)?.let {kick ->
 									newX = x+kick.offsetX
 									newY = piece.getBottom(newX, y+kick.offsetY, rot, fldTemp)
 								}
@@ -306,7 +336,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 			for(y in height-3 until height)
 				for(x in 0..3) {
 					result = result.shl(1)
-					if(!field.getBlockEmptyF(x+valleyX, y)) result++
+					if(!field.getBlockEmpty(x+valleyX, y, false)) result++
 				}
 			return result
 		}

@@ -34,7 +34,10 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGMStatus
 import org.apache.log4j.Logger
-import org.newdawn.slick.*
+import org.newdawn.slick.Color
+import org.newdawn.slick.Graphics
+import org.newdawn.slick.Image
+import org.newdawn.slick.Music
 
 /**
  * Creates a new custom resource holder.
@@ -53,7 +56,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 	 * @param name     Identifier name
 	 */
 	fun loadImage(filePath:String, name:String) {
-		slickImages[name] = ResourceHolder.loadImage(filePath)
+		slickImages[name] = ResourceImageSlick(filePath).apply {load()}.res
 	}
 
 	/**
@@ -72,6 +75,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 	 * @return int[] { width, height } (both in pixels).
 	 */
 	fun getImageDimensions(name:String):IntArray = intArrayOf(slickImages[name]?.width ?: 0, slickImages[name]?.height ?: 0)
+
 	/**
 	 * Puts image in the holder at name.
 	 *
@@ -81,6 +85,19 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 		image ?: return
 		try {
 			slickImages[name] = image
+		} catch(e:Exception) {
+			log.error("Unable to insert image $image at $name")
+		}
+	}
+	/**
+	 * Puts image in the holder at name.
+	 *
+	 * @param name Image name
+	 */
+	fun putImageAt(image:ResourceImageSlick?, name:String) {
+		image ?: return
+		try {
+			putImageAt(image.res, name)
 		} catch(e:Exception) {
 			log.error("Unable to insert image $image at $name")
 		}
@@ -243,10 +260,10 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 		val green:String = lc.substring(2, 4)
 		val blue:String = lc.substring(4, 6)
 		if(lc.length==8) alpha = lc.substring(6, 8)
-		val r:Int = red.toInt(16)
-		val g:Int = green.toInt(16)
-		val b:Int = blue.toInt(16)
-		val a:Int = alpha.toInt(16)
+		val r = red.toInt(16)
+		val g = green.toInt(16)
+		val b = blue.toInt(16)
+		val a = alpha.toInt(16)
 		drawImage(name, x, y, srcX, srcY, srcSizeX, srcSizeY, r, g, b, a, scale)
 	}
 /*
@@ -258,7 +275,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 	 */
 	fun loadNewBGMAppend(filename:String?, noLoop:Boolean, showerr:Boolean) {
 		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
-		val no:Int = BGMStatus.BGM.all.size+1
+		val no = BGMStatus.BGM.all.size+1
 		val newArr = arrayOfNulls<Music>(no)
 		var i = 0
 		while(i<ResourceHolder.bgm.size) {

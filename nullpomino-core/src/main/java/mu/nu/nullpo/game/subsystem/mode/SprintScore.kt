@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -29,7 +34,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.log4j.Logger
 import kotlin.math.ceil
 
@@ -37,58 +42,58 @@ import kotlin.math.ceil
 class SprintScore:NetDummyMode() {
 
 	/** Most recent increase in score */
-	private var lastscore:Int = 0
-	private var sum:Int = 0
+	private var lastscore = 0
+	private var sum = 0
 
 	/** Time to display the most recent increase in score */
-	private var scgettime:Int = 0
+	private var scgettime = 0
 
 	/** Most recent scoring event b2b */
-	private var lastb2b:Boolean = false
+	private var lastb2b = false
 
 	/** Most recent scoring event combo count */
-	private var lastcombo:Int = 0
+	private var lastcombo = 0
 
 	/** Most recent scoring event piece ID */
-	private var lastpiece:Int = 0
+	private var lastpiece = 0
 
 	/** BGM number */
-	private var bgmno:Int = 0
+	private var bgmno = 0
 
 	/** Flag for types of Twisters allowed (0=none, 1=normal, 2=all spin) */
-	private var twistEnableType:Int = 0
+	private var twistEnableType = 0
 
 	/** Old flag for allowing Twisters */
-	private var enableTwist:Boolean = false
+	private var enableTwist = false
 
 	/** Flag for enabling wallkick Twisters */
-	private var enableTwistKick:Boolean = false
+	private var enableTwistKick = false
 
 	/** Immobile EZ spin */
-	private var twistEnableEZ:Boolean = false
+	private var twistEnableEZ = false
 
 	/** Flag for enabling B2B */
-	private var enableB2B:Boolean = false
+	private var enableB2B = false
 
-	private var enableSplitB2B:Boolean = false
+	private var enableSplitB2B = false
 
 	/** Flag for enabling combos */
-	private var enableCombo:Boolean = false
+	private var enableCombo = false
 
 	/** Big */
-	private var big:Boolean = false
+	private var big = false
 
 	/** Goal score type */
-	private var goaltype:Int = 0
+	private var goaltype = 0
 
 	/** Last preset number used */
-	private var presetNumber:Int = 0
+	private var presetNumber = 0
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Rankings' times */
 	private var rankingTime:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
@@ -100,8 +105,8 @@ class SprintScore:NetDummyMode() {
 	private var rankingSPL:Array<DoubleArray> = Array(GOALTYPE_MAX) {DoubleArray(RANKING_MAX)}
 
 	/* Mode name */
-	override val name:String = "Score SprintRace"
-	override val gameIntensity:Int = 2
+	override val name = "Score SprintRace"
+	override val gameIntensity = 2
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -125,7 +130,7 @@ class SprintScore:NetDummyMode() {
 		if(!engine.owner.replayMode) {
 			presetNumber = engine.owner.modeConfig.getProperty("scorerace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			presetNumber = 0
@@ -287,18 +292,17 @@ class SprintScore:NetDummyMode() {
 		else {
 			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0)
 			drawMenuBGM(engine, playerID, receiver, bgmno)
-			drawMenuCompact(engine, playerID, receiver, "BIG", GeneralUtil.getOorX(big), "GOAL", String.format("%3dK",
-				GOAL_TABLE[goaltype]/1000))
+			drawMenuCompact(engine, playerID, receiver, "BIG" to big,
+				"GOAL" to String.format("%3dK", GOAL_TABLE[goaltype]/1000))
 
-			drawMenu(engine, playerID, receiver, "SPIN BONUS",
-				if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL",
-				"EZ SPIN", GeneralUtil.getONorOFF(enableTwistKick),
-				"EZIMMOBILE", GeneralUtil.getONorOFF(twistEnableEZ))
+			drawMenu(engine, playerID, receiver,
+				"SPIN BONUS" to if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL",
+				"EZ SPIN" to enableTwistKick, "EZIMMOBILE" to twistEnableEZ)
 			drawMenuCompact(engine, playerID, receiver,
-				"B2B", GeneralUtil.getONorOFF(enableB2B), "COMBO", GeneralUtil.getONorOFF(enableCombo))
+				"B2B" to enableB2B, "COMBO" to enableCombo)
 			if(!engine.owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
-				drawMenuCompact(engine, playerID, receiver, "LOAD", "$presetNumber", "SAVE", "$presetNumber")
+				drawMenuCompact(engine, playerID, receiver, "LOAD" to presetNumber, "SAVE" to presetNumber)
 			}
 		}
 	}
@@ -313,8 +317,7 @@ class SprintScore:NetDummyMode() {
 		else GameEngine.COMBO_TYPE_DISABLE
 
 		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent
-		else
-			BGM.values[bgmno]
+		else BGM.values[bgmno]
 
 		if(version>=1) {
 			engine.twistAllowKick = enableTwistKick
@@ -337,7 +340,7 @@ class SprintScore:NetDummyMode() {
 		if(owner.menuOnly) return
 
 		receiver.drawScoreFont(engine, playerID, 0, 0, "SCORE RACE", EventReceiver.COLOR.RED)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "(${GOAL_TABLE[goaltype]} PTS GAME)", EventReceiver.COLOR.RED)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "(${GOAL_TABLE[goaltype]} points run)", EventReceiver.COLOR.RED)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&!netIsWatch) {
@@ -349,7 +352,7 @@ class SprintScore:NetDummyMode() {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW,
 						scale)
 					receiver.drawScoreNum(engine, playerID, 3,
-						topY+i, GeneralUtil.getTime(rankingTime[goaltype][i]), rankingRank==i, scale)
+						topY+i, rankingTime[goaltype][i].toTimeStr, rankingRank==i, scale)
 					receiver.drawScoreNum(engine, playerID, 12, topY+i,
 						"${rankingLines[goaltype][i]}", rankingRank==i, scale)
 					receiver.drawScoreNum(engine, playerID, 17, topY+i,
@@ -382,7 +385,7 @@ class SprintScore:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 16, String.format("%10f", engine.statistics.spl), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 18, "Time", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 19, GeneralUtil.getTime(engine.statistics.time), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 19, engine.statistics.time.toTimeStr, 2f)
 
 		}
 
@@ -500,7 +503,7 @@ class SprintScore:NetDummyMode() {
 			updateRanking(engine.statistics.time, engine.statistics.lines, engine.statistics.spl)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -513,28 +516,28 @@ class SprintScore:NetDummyMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until GOALTYPE_MAX)
 			for(j in 0 until RANKING_MAX) {
-				rankingTime[i][j] = prop.getProperty("scorerace.ranking.$ruleName.$i.time.$j", -1)
-				rankingLines[i][j] = prop.getProperty("scorerace.ranking.$ruleName.$i.lines.$j", 0)
+				rankingTime[i][j] = prop.getProperty("$ruleName.$i.time.$j", -1)
+				rankingLines[i][j] = prop.getProperty("$ruleName.$i.lines.$j", 0)
 
 				if(rankingLines[i][j]>0) {
 					val defaultSPL = GOAL_TABLE[i].toDouble()/rankingLines[i][j].toDouble()
-					rankingSPL[i][j] = prop.getProperty("scorerace.ranking.$ruleName.$i.spl.$j", defaultSPL)
+					rankingSPL[i][j] = prop.getProperty("$ruleName.$i.spl.$j", defaultSPL)
 				} else
 					rankingSPL[i][j] = 0.0
 			}
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until GOALTYPE_MAX)
-			for(j in 0 until RANKING_MAX) {
-				prop.setProperty("scorerace.ranking.$ruleName.$i.time.$j", rankingTime[i][j])
-				prop.setProperty("scorerace.ranking.$ruleName.$i.lines.$j", rankingLines[i][j])
-				prop.setProperty("scorerace.ranking.$ruleName.$i.spl.$j", rankingSPL[i][j])
+	private fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until GOALTYPE_MAX).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf("$ruleName.$j.time.$i" to rankingTime[j][i],
+					"$ruleName.$j.lines.$i" to rankingLines[j][i],
+					"$ruleName.$j.spl.$i" to rankingSPL[j][i])
 			}
+		})
 	}
 
 	/** Update rankings
@@ -587,7 +590,7 @@ class SprintScore:NetDummyMode() {
 		msg += "${engine.statistics.scoreLine}\t${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"
 		msg += "${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t"
 		msg += "${engine.statistics.lpm}\t${engine.statistics.spl}\t$goaltype\t"
-		msg += engine.gameActive.toString()+"\t${engine.timerActive}\t"
+		msg += "${engine.gameActive}\t${engine.timerActive}\t"
 		msg += "$lastscore\t$scgettime\t$lastb2b\t$lastcombo\t$lastpiece\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
@@ -618,7 +621,7 @@ class SprintScore:NetDummyMode() {
 		var subMsg = ""
 		subMsg += "SCORE;${engine.statistics.score}/${GOAL_TABLE[goaltype]}\t"
 		subMsg += "LINE;${engine.statistics.lines}\t"
-		subMsg += "TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
+		subMsg += "TIME;${engine.statistics.time.toTimeStr}\t"
 		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
 		subMsg += "SCORE/LINE;${engine.statistics.spl}\t"
 		subMsg += "SCORE/MIN;${engine.statistics.spm}\t"
@@ -634,9 +637,9 @@ class SprintScore:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		var msg = "game\toption\t"
-		msg += engine.speed.gravity.toString()+"\t${engine.speed.denominator}\t${engine.speed.are}\t"
-		msg += engine.speed.areLine.toString()+"\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
-		msg += engine.speed.das.toString()+"\t$bgmno\t$big\t$goaltype\t$twistEnableType\t"
+		msg += "${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"
+		msg += "${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
+		msg += "${engine.speed.das}\t$bgmno\t$big\t$goaltype\t$twistEnableType\t"
 		msg += "$enableTwistKick${"\t$enableB2B\t"+enableCombo}\t$presetNumber\t\t$twistEnableEZ\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
@@ -679,7 +682,7 @@ class SprintScore:NetDummyMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Number of entries in rankings */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Goal score type */
 		private const val GOALTYPE_MAX = 3

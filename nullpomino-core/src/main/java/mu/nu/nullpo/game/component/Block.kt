@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,11 +24,14 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.component
 
 import mu.nu.nullpo.game.component.Block.TYPE.*
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.util.GeneralUtil.aNum
+import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
@@ -39,63 +46,41 @@ import kotlin.math.roundToInt
 	/** Blockの属性 */
 	var aint:Int = 0) {
 
-	/** Block color integer */
+	/** Block color integer for processing */
 	var cint:Int
-		get() = if(color==COLOR.RAINBOW) {
-			if(type==GEM) BLOCK_COLOR_GEM_RAINBOW
-			else BLOCK_COLOR_RAINBOW
-		} else {
-			val ci:Int = (color?.ordinal ?: 0)
-			when(type) {
-				BLOCK -> if(color==COLOR.BLACK&&getAttribute(ATTRIBUTE.BONE)) BLOCK_COLOR_GRAY
-				else ci
-				GEM -> if(color==COLOR.BLACK||color==COLOR.WHITE) {
-					BLOCK_COLOR_GEM_RAINBOW
-				} else ci+BLOCK_COLOR_GEM_RED-BLOCK_COLOR_RED
-				SQUARE_SILVER -> ci+BLOCK_COLOR_SQUARE_SILVER_1
-				SQUARE_GOLD -> ci+BLOCK_COLOR_SQUARE_GOLD_1
-			}
-		}
+		get() = colorNumber(color, type, getAttribute(ATTRIBUTE.BONE), item)
 		set(v) {
-			color = when(v) {
-				in BLOCK_COLOR_GRAY..BLOCK_COLOR_PURPLE -> {
-					type = BLOCK;COLOR.values()[v]
-				}
-				BLOCK_COLOR_RAINBOW -> {
-					type = BLOCK;COLOR.RAINBOW
-				}
-				in BLOCK_COLOR_GEM_RED..BLOCK_COLOR_GEM_PURPLE -> {
-					type = GEM
-					COLOR.values()[v-BLOCK_COLOR_GEM_RED]
-				}
-				BLOCK_COLOR_GEM_RAINBOW -> {
-					type = GEM;COLOR.RAINBOW
-				}
-				in BLOCK_COLOR_SQUARE_SILVER_1..BLOCK_COLOR_SQUARE_SILVER_9 -> {
-					type = SQUARE_SILVER
-					COLOR.values()[v-BLOCK_COLOR_SQUARE_SILVER_1]
-				}
-				in BLOCK_COLOR_SQUARE_GOLD_1..BLOCK_COLOR_SQUARE_GOLD_9 -> {
-					type = SQUARE_GOLD
-					COLOR.values()[v-BLOCK_COLOR_SQUARE_GOLD_1]
-				}
-				else -> null
+			intToColor(v).let {
+				color = it.first
+				type = it.second
 			}
 		}
 
-	constructor(color:COLOR?, type:TYPE, skin:Int, vararg attrs:ATTRIBUTE):
+	/** Block color integer for Rendering */
+	val drawColor:Int
+		get() = when(cint) {
+			COLOR_GEM_RAINBOW -> COLOR_GEM_RED+rainbowPhase/3
+			COLOR_RAINBOW -> COLOR_RED+rainbowPhase/3
+			else -> cint
+		}
+
+	constructor(color:COLOR?, type:TYPE, skin:Int = 0, vararg attrs:ATTRIBUTE):
 		this(color, type, skin, attrs.fold(0) {x, y -> x or y.bit})
+
 	constructor(color:COLOR?, skin:Int, vararg attrs:ATTRIBUTE):this(color, BLOCK, skin, *attrs)
-	constructor(cint:Int = 0, skin:Int = 0, vararg attrs:ATTRIBUTE):this(null, BLOCK, skin, *attrs) {
-		this.cint = cint
-	}
+	constructor(mode:Pair<COLOR?, TYPE>, skin:Int = 0, vararg attrs:ATTRIBUTE):this(mode.first, mode.second, skin, *attrs)
+	constructor(cint:Int = 0, skin:Int = 0, vararg attrs:ATTRIBUTE):this(intToColor(cint).first, skin, *attrs)
+	constructor(char:Char, skin:Int = 0, vararg attrs:ATTRIBUTE):this(char.aNum, skin, *attrs)
+
+	override operator fun equals(other:Any?):Boolean = other is Block?&&color==other?.color&&type==other?.type
+
 	//val aset:Set<ATTRIBUTE> get() = aint.values{it.bit}.sum()
 
 	/** 固定してから経過した frame count */
-	var elapsedFrames:Int = 0
+	var elapsedFrames = 0
 
 	/** Blockの暗さ, または明るさ (0.03だったら3%暗く, -0.05だったら5%明るい) */
-	var darkness:Float = 0f
+	var darkness = 0f
 
 	/** 透明度 (1fで不透明, 0.0fで完全に透明) */
 	var alpha:Float = 1f
@@ -103,20 +88,26 @@ import kotlin.math.roundToInt
 	/** ゲームが始まってから何番目に置いたBlockか (負countだったら初期配置やgarbage block) */
 	var pieceNum:Int = -1; private set
 
+	/** アイテム enum */
+	var item:ITEM? = null
 	/** アイテム number */
-	var item:Int = 0
+	var inum
+		get() = item?.let {it.ordinal+1} ?: 0
+		set(value) {
+			item = if(value in 1..ITEM.values().size) ITEM.values()[value-1] else null
+		}
 
 	/** Number of extra clears required before block is erased */
-	var hard:Int = 0
+	var hard = 0
 
 	/** Counter for blocks that count down before some effect occurs */
-	var countdown:Int = 0
+	var countdown = 0
 
 	/** Color to turn into when garbage block turns into a regular block */
-	var secondaryColor:Int = 0
+	var secondaryColor = COLOR.BLACK
 
 	/** Bonus value awarded when cleared */
-	var bonusValue:Int = 0
+	var bonusValue = 0
 
 	/** このBlockが空白かどうか判定
 	 * @return このBlockが空白だったらtrue
@@ -143,13 +134,6 @@ import kotlin.math.roundToInt
 	 */
 	val isNormalBlock:Boolean get() = type===BLOCK
 
-	val drawColor:Int
-		get() = when(cint) {
-			BLOCK_COLOR_GEM_RAINBOW -> BLOCK_COLOR_GEM_RED+rainbowPhase/3
-			BLOCK_COLOR_RAINBOW -> BLOCK_COLOR_RED+rainbowPhase/3
-			else -> cint
-		}
-
 	/** 設定をReset to defaults */
 	fun reset(del:Boolean = false) {
 		if(del) color = null
@@ -160,10 +144,10 @@ import kotlin.math.roundToInt
 		darkness = 0f
 		alpha = 1f
 		pieceNum = -1
-		item = 0
+		inum = 0
 		hard = 0
 		countdown = 0
-		secondaryColor = 0
+		secondaryColor = COLOR.BLACK
 		bonusValue = 0
 	}
 
@@ -187,7 +171,7 @@ import kotlin.math.roundToInt
 			darkness = b.darkness
 			alpha = b.alpha
 			pieceNum = b.pieceNum
-			item = b.item
+			inum = b.inum
 			hard = b.hard
 			countdown = b.countdown
 			secondaryColor = b.secondaryColor
@@ -199,7 +183,7 @@ import kotlin.math.roundToInt
 	 * @param attr 調べたい属性
 	 * @return 指定した属性がすべてセットされている場合はtrue
 	 */
-	fun getAttribute(vararg attr:ATTRIBUTE):Boolean = (aint and attr.fold(0) {x, y -> x or y.bit})!=0
+	fun getAttribute(vararg attr:ATTRIBUTE):Boolean = (aint and attr.fold(0) {x, y -> x or y.bit})>0
 
 	/** 属性を変更する
 	 * @param attrs 変更したい属性
@@ -216,25 +200,52 @@ import kotlin.math.roundToInt
 
 	/** @return the character representing the color of this block
 	 */
-	fun blockToChar():Char =//'0'-'9','A'-'Z' represent colors 0-35.
-		//Colors beyond that would follow the ASCII table starting at '['.
-		if(cint>=10) ('A'.code+(cint-10)).toChar() else ('0'.code+maxOf(0, cint)).toChar()
+	fun toChar():Char = cint.toAlphaNum
 
-	override fun toString():String = "${blockToChar()}"
+	override fun toString():String = "${toChar()}"
 
-	enum class TYPE { BLOCK, GEM, SQUARE_GOLD, SQUARE_SILVER }
-	enum class COLOR {
-		BLACK, WHITE, RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, RAINBOW;
+	enum class TYPE(val pos:Byte = 0) { BLOCK, GEM, SQUARE_GOLD, SQUARE_SILVER, ITEM }
+	enum class COLOR(val color:Boolean = true) {
+		BLACK(false), WHITE(false), RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, RAINBOW(false);
 
-		val type:TYPE = when {
-			name.contains("GEM_") -> GEM
-			name.contains("SQUARE_SILVER") -> SQUARE_SILVER
-			name.contains("SQUARE_GOLD") -> SQUARE_GOLD
-			else -> BLOCK
+		companion object {
+			/** 通常のBlock colorのMaximum count */
+			val COUNT = values().size
+			/** 宝石になりうるBlock colorのMaximum count */
+			val COLOR_NUM = values().count {it.color}
+			val ALL_COLOR_NUM = COUNT+COLOR_NUM
+			fun colors() = values().filter {it.color}.toTypedArray()
 		}
+
 	}
 
-	enum class ITEM { RANDOM }
+	enum class ITEM(val color:Block.COLOR = Block.COLOR.RED, val showName:String? = null) {
+		MIRROR, ROLL_ROLL, DEATH, XRAY, COLOR, LOCK_SPIN, HIDE_NEXT, MAGNET, FREEZE, LOCK_HOLD,
+		TURN_HORIZ, SPEED, ALL_I, TURN_VERT, REMOTE, DARK,
+		DEL_TOP(Block.COLOR.BLUE, "ERASE UpHALF"),
+		DEL_BOTTOM(Block.COLOR.BLUE, "ERASE DownHALF"),
+		DEL_EVEN(Block.COLOR.BLUE, "ERASE EvEn"),
+		TRANSFORM, LASER, NEGA, SHOTGUN, EXCHANGE, HARD_MINO, SHUFFLE,
+		/**
+		 * */
+		RANDOM(Block.COLOR.RAINBOW, "RANDOMIZER"),
+		FREE_FALL(Block.COLOR.GREEN, "Free Fall"),
+		MOVE_LEFT(Block.COLOR.BLUE),
+		MOVE_RIGHT(Block.COLOR.BLUE),
+		TURN_180,
+		LASER_16T,
+		REFLECT,
+		DOUBLE_RISE,
+		ALL_CLEAR,
+		MISS,
+		COPY_FIELD,
+		FAKE_NEXT,
+		BONE_BLOCK,
+		SPOT_LIGHT,
+		SPIN_FIELD
+
+	}
+
 	enum class ATTRIBUTE {
 		/** Block表示あり */
 		VISIBLE,
@@ -251,10 +262,10 @@ import kotlin.math.roundToInt
 		/** 右のBlockと繋がっている */
 		CONNECT_RIGHT,
 		/** 自分で置いたBlock */
-		SELFPLACED,
+		SELF_PLACED,
 		/** 壊れたピースの一部分 */
 		BROKEN,
-		/** ojama block */
+		/** Ojama block */
 		GARBAGE,
 		/** 壁 */
 		WALL,
@@ -269,7 +280,7 @@ import kotlin.math.roundToInt
 		/** Last commit flag -- block was part of last placement or cascade */
 		LAST_COMMIT,
 		/** Ignore block connections (for Avalanche modes) */
-		IGNORE_BLOCKLINK;
+		IGNORE_LINK;
 
 		val bit:Int get() = 2.0.pow(ordinal).roundToInt()
 
@@ -280,121 +291,99 @@ import kotlin.math.roundToInt
 		private const val serialVersionUID = -7126899262733374545L
 
 		/** Block colorの定数 */
-		const val BLOCK_COLOR_INVALID = -1
-		const val BLOCK_COLOR_NONE = 0
-		const val BLOCK_COLOR_GRAY = 1
-		const val BLOCK_COLOR_RED = 2
-		const val BLOCK_COLOR_ORANGE = 3
-		const val BLOCK_COLOR_YELLOW = 4
-		const val BLOCK_COLOR_GREEN = 5
-		const val BLOCK_COLOR_CYAN = 6
-		const val BLOCK_COLOR_BLUE = 7
-		const val BLOCK_COLOR_PURPLE = 8
-		const val BLOCK_COLOR_GEM_RED = 9
-		const val BLOCK_COLOR_GEM_ORANGE = 10
-		const val BLOCK_COLOR_GEM_YELLOW = 11
-		const val BLOCK_COLOR_GEM_GREEN = 12
-		const val BLOCK_COLOR_GEM_CYAN = 13
-		const val BLOCK_COLOR_GEM_BLUE = 14
-		const val BLOCK_COLOR_GEM_PURPLE = 15
-		const val BLOCK_COLOR_SQUARE_GOLD_1 = 16
-		const val BLOCK_COLOR_SQUARE_GOLD_2 = 17
-		const val BLOCK_COLOR_SQUARE_GOLD_3 = 18
-		const val BLOCK_COLOR_SQUARE_GOLD_4 = 19
-		const val BLOCK_COLOR_SQUARE_GOLD_5 = 20
-		const val BLOCK_COLOR_SQUARE_GOLD_6 = 21
-		const val BLOCK_COLOR_SQUARE_GOLD_7 = 22
-		const val BLOCK_COLOR_SQUARE_GOLD_8 = 23
-		const val BLOCK_COLOR_SQUARE_GOLD_9 = 24
-		const val BLOCK_COLOR_SQUARE_SILVER_1 = 25
-		const val BLOCK_COLOR_SQUARE_SILVER_2 = 26
-		const val BLOCK_COLOR_SQUARE_SILVER_3 = 27
-		const val BLOCK_COLOR_SQUARE_SILVER_4 = 28
-		const val BLOCK_COLOR_SQUARE_SILVER_5 = 29
-		const val BLOCK_COLOR_SQUARE_SILVER_6 = 30
-		const val BLOCK_COLOR_SQUARE_SILVER_7 = 31
-		const val BLOCK_COLOR_SQUARE_SILVER_8 = 32
-		const val BLOCK_COLOR_SQUARE_SILVER_9 = 33
-		const val BLOCK_COLOR_RAINBOW = 34
-		const val BLOCK_COLOR_GEM_RAINBOW = 35
+		const val COLOR_INVALID = -2
+		const val COLOR_NONE = -1
+		const val COLOR_BLACK = 0
+		const val COLOR_WHITE = 1
+		const val COLOR_RED = 2
+		const val COLOR_ORANGE = 3
+		const val COLOR_YELLOW = 4
+		const val COLOR_GREEN = 5
+		const val COLOR_CYAN = 6
+		const val COLOR_BLUE = 7
+		const val COLOR_PURPLE = 8
+		const val COLOR_GEM_RED = 9
+		const val COLOR_GEM_ORANGE = 10
+		const val COLOR_GEM_YELLOW = 11
+		const val COLOR_GEM_GREEN = 12
+		const val COLOR_GEM_CYAN = 13
+		const val COLOR_GEM_BLUE = 14
+		const val COLOR_GEM_PURPLE = 15
+		const val COLOR_SQUARE_GOLD_1 = 16
+		const val COLOR_SQUARE_GOLD_2 = 17
+		const val COLOR_SQUARE_GOLD_3 = 18
+		const val COLOR_SQUARE_GOLD_4 = 19
+		const val COLOR_SQUARE_GOLD_5 = 20
+		const val COLOR_SQUARE_GOLD_6 = 21
+		const val COLOR_SQUARE_GOLD_7 = 22
+		const val COLOR_SQUARE_GOLD_8 = 23
+		const val COLOR_SQUARE_GOLD_9 = 24
+		const val COLOR_SQUARE_SILVER_1 = 25
+		const val COLOR_SQUARE_SILVER_2 = 26
+		const val COLOR_SQUARE_SILVER_3 = 27
+		const val COLOR_SQUARE_SILVER_4 = 28
+		const val COLOR_SQUARE_SILVER_5 = 29
+		const val COLOR_SQUARE_SILVER_6 = 30
+		const val COLOR_SQUARE_SILVER_7 = 31
+		const val COLOR_SQUARE_SILVER_8 = 32
+		const val COLOR_SQUARE_SILVER_9 = 33
+		const val COLOR_RAINBOW = 34
+		const val COLOR_GEM_RAINBOW = 35
 
 		val MAX_ITEM get() = ITEM.values().size
 
-		/** 通常のBlock colorのMaximumcount */
-		val BLOCK_COLOR_COUNT get() = COLOR.values().count {it.type==BLOCK}
+		@Deprecated("moved", ReplaceWith("Block.COLOR.COUNT"))
+		val COLOR_COUNT
+			get() = COLOR.COUNT
 
-		/** 通常＋宝石Block colorのMaximumcount */
-		val BLOCK_COLOR_EXT_COUNT get() = COLOR.values().count {it.type==BLOCK||it.type==GEM}
-
-		/** Block表示あり */
-		const val BLOCK_ATTRIBUTE_VISIBLE = 1
-
-		/** 枠線表示あり */
-		const val BLOCK_ATTRIBUTE_OUTLINE = 2
-
-		/** 骨Block */
-		const val BLOCK_ATTRIBUTE_BONE = 4
-
-		/** 上のBlockと繋がっている */
-		const val BLOCK_ATTRIBUTE_CONNECT_UP = 8
-
-		/** 下のBlockと繋がっている */
-		const val BLOCK_ATTRIBUTE_CONNECT_DOWN = 16
-
-		/** 左のBlockと繋がっている */
-		const val BLOCK_ATTRIBUTE_CONNECT_LEFT = 32
-
-		/** 右のBlockと繋がっている */
-		const val BLOCK_ATTRIBUTE_CONNECT_RIGHT = 64
-
-		/** 自分で置いたBlock */
-		const val BLOCK_ATTRIBUTE_SELFPLACED = 128
-
-		/** 壊れたピースの一部分 */
-		const val BLOCK_ATTRIBUTE_BROKEN = 256
-
-		/** ojama block */
-		const val BLOCK_ATTRIBUTE_GARBAGE = 512
-
-		/** 壁 */
-		const val BLOCK_ATTRIBUTE_WALL = 1024
-
-		/** 消える予定のBlock */
-		const val BLOCK_ATTRIBUTE_ERASE = 2048
-
-		/** Temporary mark for block linking check algorithm */
-		const val BLOCK_ATTRIBUTE_TEMP_MARK = 4096
-
-		/** "Block has fallen" flag for cascade gravity */
-		const val BLOCK_ATTRIBUTE_CASCADE_FALL = 8192
-
-		/** Anti-gravity flag (The block will not fall by gravity) */
-		const val BLOCK_ATTRIBUTE_ANTIGRAVITY = 16384
-
-		/** Last commit flag -- block was part of last placement or cascade */
-		const val BLOCK_ATTRIBUTE_LAST_COMMIT = 32768
-
-		/** Ignore block connections (for Avalanche modes) */
-		const val BLOCK_ATTRIBUTE_IGNORE_BLOCKLINK = 65536
+		@Deprecated("moved", ReplaceWith("Block.COLOR.ALL_COLOR_NUM"))
+		val COLOR_EXT_COUNT
+			get() = COLOR.ALL_COLOR_NUM
 
 		/** Color-shift phase for rainbow blocks */
 		var rainbowPhase = 0
 
-		/** @param c A character representing a block
-		 * @return The int representing the block's color
-		 */
-		fun charToBlockColor(c:Char):Int {
-			var blkColor:Int = Character.digit(c, 36)
+		fun colorNumber(color:COLOR?, type:TYPE, isBone:Boolean = false, item:ITEM? = null):Int =
+			if(color==COLOR.RAINBOW) {
+				if(type==GEM) COLOR_GEM_RAINBOW
+				else COLOR_RAINBOW
+			} else {
+				val ci:Int = (color?.ordinal ?: 0)
+				when(type) {
+					BLOCK -> if(color==COLOR.BLACK&&isBone) COLOR_WHITE
+					else ci
+					GEM -> if(color?.color!=true) {
+						COLOR_GEM_RAINBOW
+					} else ci+COLOR_GEM_RED-COLOR_RED
+					SQUARE_SILVER -> ci+COLOR_SQUARE_SILVER_1
+					SQUARE_GOLD -> ci+COLOR_SQUARE_GOLD_1
+					ITEM -> item?.color?.ordinal ?: 0
+				}
+			}
 
-			//With a radix of 36, the digits encompass '0'-'9','A'-'Z'.
-			//With a radix higher than 36, we can also have characters 'a'-'z' represent digits.
-
-			//Given the current implementation of other functions, I assumed that
-			//if we needed additional BLOCK_COLOR values, it would follow from 'Z'->'['
-			//in the ASCII chart.
-			if(blkColor==-1) blkColor = c-'['+36
-			return blkColor
+		fun intToColor(v:Int):Pair<COLOR?, TYPE> = when(v) {
+			in COLOR_WHITE..COLOR_PURPLE -> {
+				COLOR.values()[v] to BLOCK
+			}
+			COLOR_RAINBOW -> {
+				COLOR.RAINBOW to BLOCK
+			}
+			in COLOR_GEM_RED..COLOR_GEM_PURPLE -> {
+				COLOR.values()[v-COLOR_GEM_RED] to GEM
+			}
+			COLOR_GEM_RAINBOW -> {
+				COLOR.RAINBOW to GEM
+			}
+			in COLOR_SQUARE_SILVER_1..COLOR_SQUARE_SILVER_9 -> {
+				COLOR.values()[v-COLOR_SQUARE_SILVER_1] to SQUARE_SILVER
+			}
+			in COLOR_SQUARE_GOLD_1..COLOR_SQUARE_GOLD_9 -> {
+				COLOR.values()[v-COLOR_SQUARE_GOLD_1] to SQUARE_GOLD
+			}
+			else -> null to BLOCK
 		}
+
+		fun charToColorNum(c:Char):Int = c.aNum
 
 		fun updateRainbowPhase(time:Int) {
 			rainbowPhase = time%21
@@ -407,8 +396,8 @@ import kotlin.math.roundToInt
 
 		//@Deprecated("enumed : COLOR.ungem",level=DeprecationLevel.WARNING)
 		fun gemToNormalColor(color:Int):Int = when(color) {
-			in BLOCK_COLOR_GEM_RED..BLOCK_COLOR_GEM_PURPLE -> color-7
-			BLOCK_COLOR_GEM_RAINBOW -> BLOCK_COLOR_RAINBOW
+			in COLOR_GEM_RED..COLOR_GEM_PURPLE -> color-7
+			COLOR_GEM_RAINBOW -> COLOR_RAINBOW
 			else -> color
 		}
 	}

@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,21 +24,28 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.PreviewMode
-import mu.nu.nullpo.gui.GameKeyDummy
+import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.getOX
 import org.apache.log4j.Logger
-import org.newdawn.slick.*
+import org.newdawn.slick.AppGameContainer
+import org.newdawn.slick.GameContainer
+import org.newdawn.slick.Graphics
+import org.newdawn.slick.SlickException
 import org.newdawn.slick.state.StateBasedGame
 import kotlin.random.Random
 
@@ -45,7 +56,7 @@ class StateConfigGameTuning:BaseGameState() {
 	var player = 0
 
 	/** Preview flag */
-	private var isPreview:Boolean = false
+	private var isPreview = false
 
 	/** AppGameContainer (Used by preview) */
 	private lateinit var appContainer:AppGameContainer
@@ -57,36 +68,36 @@ class StateConfigGameTuning:BaseGameState() {
 	private var cursor = 0
 
 	/** A button rotation -1=Auto 0=Always CCW 1=Always CW */
-	private var owRotateButtonDefaultRight:Int = 0
+	private var owRotateButtonDefaultRight = 0
 
 	/** Block Skin -1=Auto 0 or above=Fixed */
-	private var owSkin:Int = 0
+	private var owSkin = 0
 
 	/** Min/Max DAS -1=Auto 0 or above=Fixed */
-	private var owMinDAS:Int = 0
-	private var owMaxDAS:Int = 0
+	private var owMinDAS = 0
+	private var owMaxDAS = 0
 
 	/** DAS Repeat Rate -1=Auto 0 or above=Fixed */
-	private var owDASRate:Int = 0
+	private var owDASRate = 0
 
 	/** SoftDrop Speed -1=Auto =Fixed Factor above 6=Always x5-20 Speed */
-	private var owSDSpd:Int = 0
+	private var owSDSpd = 0
 
 	/** Reverse the roles of up/down keys in-game */
-	private var owReverseUpDown:Boolean = false
+	private var owReverseUpDown = false
 
 	/** Diagonal move (-1=Auto 0=Disable 1=Enable) */
-	private var owMoveDiagonal:Int = 0
+	private var owMoveDiagonal = 0
 
 	/** Outline type (-1:Auto 0orAbove:Fixed) */
-	private var owBlockOutlineType:Int = 0
+	private var owBlockOutlineType = 0
 
 	/** Show outline only flag (-1:Auto 0:Always Normal 1:Always Outline Only) */
-	private var owBlockShowOutlineOnly:Int = 0
+	private var owBlockShowOutlineOnly = 0
 
-	private var sk:Int = 0
+	private var sk = 0
 
-	private var spdpv:Float = 0f
+	private var spdpv = 0f
 
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
@@ -170,28 +181,28 @@ class StateConfigGameTuning:BaseGameState() {
 				it.engine[i].owBlockShowOutlineOnly = owBlockShowOutlineOnly
 				it.engine[i].lives = 99
 				// Rule
-				val ruleopt:RuleOptions
-				var rulename:String? = NullpoMinoSlick.propGlobal.getProperty("$i.rule", "")
-				if(it.mode!!.gameStyle>0)
+				val ruleOpt:RuleOptions
+				var rulename:String = NullpoMinoSlick.propGlobal.getProperty("$i.rule", "")
+				if(it.mode!!.gameStyle!=GameEngine.GameStyle.TETROMINO)
 					rulename = NullpoMinoSlick.propGlobal.getProperty("$i"+".rule."
-						+it.mode!!.gameStyle, "")
+						+it.mode!!.gameStyle.ordinal, "")
 				if(rulename!=null&&rulename.isNotEmpty()) {
 					log.info("Load rule options from $rulename")
-					ruleopt = GeneralUtil.loadRule(rulename)
+					ruleOpt = GeneralUtil.loadRule(rulename)
 				} else {
 					log.info("Load rule options from setting file")
-					ruleopt = RuleOptions()
-					ruleopt.readProperty(NullpoMinoSlick.propGlobal, i)
+					ruleOpt = RuleOptions()
+					ruleOpt.readProperty(NullpoMinoSlick.propGlobal, i)
 				}
-				it.engine[i].ruleopt = ruleopt
+				it.engine[i].ruleOpt = ruleOpt
 
 				// Randomizer
-				if(ruleopt.strRandomizer.isNotEmpty())
-					it.engine[i].randomizer = GeneralUtil.loadRandomizer(ruleopt.strRandomizer)
+				if(ruleOpt.strRandomizer.isNotEmpty())
+					it.engine[i].randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
 
 				// Wallkick
-				if(ruleopt.strWallkick.isNotEmpty())
-					it.engine[i].wallkick = GeneralUtil.loadWallkick(ruleopt.strWallkick)
+				if(ruleOpt.strWallkick.isNotEmpty())
+					it.engine[i].wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
 
 				// AI
 				val aiName = NullpoMinoSlick.propGlobal.getProperty("$i.ai", "")
@@ -280,7 +291,7 @@ class StateConfigGameTuning:BaseGameState() {
 			FontNormal.printFontGrid(2, 7, "DAS delay:"+if(owDASRate==-1) "AUTO" else "$owDASRate", cursor==4, rainbow = (spdpv/2).toInt())
 			FontNormal.printFontGrid(2, 8, "SoftDrop Speed:"+if(owSDSpd==-1) "AUTO" else
 				if(owSDSpd<SDS_FIXED.size) "${SDS_FIXED[owSDSpd]}G" else "*${owSDSpd-SDS_FIXED.size+5}", cursor==5, rainbow = (spdpv/4).toInt())
-			FontNormal.printFontGrid(2, 9, "Reverse UP/DOWN:"+GeneralUtil.getOorX(owReverseUpDown), cursor==6)
+			FontNormal.printFontGrid(2, 9, "Reverse UP/DOWN:"+owReverseUpDown.getOX, cursor==6)
 
 			if(owMoveDiagonal==-1) strTemp = "AUTO"
 			if(owMoveDiagonal==0) strTemp = "\u0085"

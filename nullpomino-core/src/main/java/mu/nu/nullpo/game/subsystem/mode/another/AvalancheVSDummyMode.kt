@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,64 +24,67 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode.another
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
 
 /** AVALANCHE VS DUMMY Mode */
 abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	/** Rule settings for countering ojama not yet dropped */
-	protected var ojamaCounterMode:IntArray = IntArray(MAX_PLAYERS)
+	protected var ojamaCounterMode = IntArray(MAX_PLAYERS)
 
 	/** Has accumulatedojama blockOfcount */
-	protected var ojama:IntArray = IntArray(MAX_PLAYERS)
+	protected var ojama = IntArray(MAX_PLAYERS)
 
 	/** Had sentojama blockOfcount */
-	protected var ojamaSent:IntArray = IntArray(MAX_PLAYERS)
+	protected var ojamaSent = IntArray(MAX_PLAYERS)
 
 	/** Time to display the most recent increase in score */
-	protected var scgettime:IntArray = IntArray(MAX_PLAYERS)
+	protected var scgettime = IntArray(MAX_PLAYERS)
 
 	/** UseBGM */
-	protected var bgmno:Int = 0
+	protected var bgmno = 0
 
 	/** Big */
-	protected var big:BooleanArray = BooleanArray(MAX_PLAYERS)
+	protected var big = BooleanArray(MAX_PLAYERS)
 
 	/** Sound effectsON/OFF */
-	protected var enableSE:BooleanArray = BooleanArray(MAX_PLAYERS)
+	protected var enableSE = BooleanArray(MAX_PLAYERS)
 
 	/** MapUse flag */
-	protected var useMap:BooleanArray = BooleanArray(MAX_PLAYERS)
+	protected var useMap = BooleanArray(MAX_PLAYERS)
 
 	/** UseMapSet number */
-	protected var mapSet:IntArray = IntArray(MAX_PLAYERS)
+	protected var mapSet = IntArray(MAX_PLAYERS)
 
 	/** Map number(-1Random in) */
-	protected var mapNumber:IntArray = IntArray(MAX_PLAYERS)
+	protected var mapNumber = IntArray(MAX_PLAYERS)
 
 	/** Last preset number used */
-	protected var presetNumber:IntArray = IntArray(MAX_PLAYERS)
+	protected var presetNumber = IntArray(MAX_PLAYERS)
 
 	/** Winner */
-	protected var winnerID:Int = 0
+	protected var winnerID = 0
 
 	/** MapSets ofProperty file */
 	protected var propMap:Array<CustomProperties?> = emptyArray()
 
 	/** MaximumMap number */
-	protected var mapMaxNo:IntArray = IntArray(MAX_PLAYERS)
+	protected var mapMaxNo = IntArray(MAX_PLAYERS)
 
 	/** For backupfield (MapUsed to save the replay) */
 	protected var fldBackup:Array<Field?> = emptyArray()
@@ -86,50 +93,50 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected var randMap:Random = Random.Default
 
 	/** Flag for all clear */
-	protected var zenKeshi:BooleanArray = BooleanArray(MAX_PLAYERS)
+	protected var zenKeshi = BooleanArray(MAX_PLAYERS)
 
 	/** Amount of points earned from most recent clear */
-	protected var lastscore:IntArray = IntArray(MAX_PLAYERS)
-	protected var lastmultiplier:IntArray = IntArray(MAX_PLAYERS)
+	protected var lastscore = IntArray(MAX_PLAYERS)
+	protected var lastmultiplier = IntArray(MAX_PLAYERS)
 
 	/** Amount of ojama added in current chain */
-	protected var ojamaAdd:IntArray = IntArray(MAX_PLAYERS)
+	protected var ojamaAdd = IntArray(MAX_PLAYERS)
 
 	/** Score */
-	protected var score:IntArray = IntArray(MAX_PLAYERS)
+	protected var score = IntArray(MAX_PLAYERS)
 
 	/** Max amount of ojama dropped at once */
-	protected var maxAttack:IntArray = IntArray(MAX_PLAYERS)
+	protected var maxAttack = IntArray(MAX_PLAYERS)
 
 	/** Number of colors to use */
-	protected var numColors:IntArray = IntArray(MAX_PLAYERS)
+	protected var numColors = IntArray(MAX_PLAYERS)
 
 	/** Minimum chain count needed to send ojama */
-	protected var rensaShibari:IntArray = IntArray(MAX_PLAYERS)
+	protected var rensaShibari = IntArray(MAX_PLAYERS)
 
 	/** Denominator for score-to-ojama conversion */
-	protected var ojamaRate:IntArray = IntArray(MAX_PLAYERS)
+	protected var ojamaRate = IntArray(MAX_PLAYERS)
 
 	/** Settings for hard ojama blocks */
-	protected var ojamaHard:IntArray = IntArray(MAX_PLAYERS)
+	protected var ojamaHard = IntArray(MAX_PLAYERS)
 
 	/** HurryupSeconds before the startcount(0InHurryupNo) */
-	protected var hurryupSeconds:IntArray = IntArray(MAX_PLAYERS)
+	protected var hurryupSeconds = IntArray(MAX_PLAYERS)
 
 	/** Set to true when last drop resulted in a clear */
-	protected var cleared:BooleanArray = BooleanArray(MAX_PLAYERS)
+	protected var cleared = BooleanArray(MAX_PLAYERS)
 
 	/** Set to true when dropping ojama blocks */
-	protected var ojamaDrop:BooleanArray = BooleanArray(MAX_PLAYERS)
+	protected var ojamaDrop = BooleanArray(MAX_PLAYERS)
 
 	/** Time to display "ZENKESHI!" */
-	protected var zenKeshiDisplay:IntArray = IntArray(MAX_PLAYERS)
+	protected var zenKeshiDisplay = IntArray(MAX_PLAYERS)
 
 	/** Zenkeshi reward type */
-	protected var zenKeshiType:IntArray = IntArray(MAX_PLAYERS)
+	protected var zenKeshiType = IntArray(MAX_PLAYERS)
 
 	/** Selected fever values set file */
-	protected var feverMapSet:IntArray = IntArray(MAX_PLAYERS)
+	protected var feverMapSet = IntArray(MAX_PLAYERS)
 
 	/** Selected fever values set file's subset list */
 	protected var feverMapSubsets:Array<Array<String>> = emptyArray()
@@ -138,35 +145,35 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected var propFeverMap:Array<CustomProperties?> = emptyArray()
 
 	/** Chain level boundaries for Fever Mode */
-	protected var feverChainMin:IntArray = IntArray(MAX_PLAYERS)
-	protected var feverChainMax:IntArray = IntArray(MAX_PLAYERS)
+	protected var feverChainMin = IntArray(MAX_PLAYERS)
+	protected var feverChainMax = IntArray(MAX_PLAYERS)
 
 	/** Selected outline type */
-	protected var outlineType:IntArray = IntArray(MAX_PLAYERS)
+	protected var outlineType = IntArray(MAX_PLAYERS)
 
 	/** If true, both columns 3 and 4 are danger columns */
-	protected var dangerColumnDouble:BooleanArray = BooleanArray(MAX_PLAYERS)
+	protected var dangerColumnDouble = BooleanArray(MAX_PLAYERS)
 
 	/** If true, red X's appear at tops of danger columns */
-	protected var dangerColumnShowX:BooleanArray = BooleanArray(MAX_PLAYERS)
+	protected var dangerColumnShowX = BooleanArray(MAX_PLAYERS)
 
 	/** Time to display last chain */
-	protected var chainDisplay:IntArray = IntArray(MAX_PLAYERS)
+	protected var chainDisplay = IntArray(MAX_PLAYERS)
 
 	/** Type of chain display */
-	protected var chainDisplayType:IntArray = IntArray(MAX_PLAYERS)
+	protected var chainDisplayType = IntArray(MAX_PLAYERS)
 
 	/** True to use new (Fever) chain powers */
-	protected var newChainPower:BooleanArray = BooleanArray(MAX_PLAYERS)
+	protected var newChainPower = BooleanArray(MAX_PLAYERS)
 
 	/** True to use slower falling animations, false to use faster */
-	protected var cascadeSlow:BooleanArray = BooleanArray(MAX_PLAYERS)
+	protected var cascadeSlow = BooleanArray(MAX_PLAYERS)
 
 	/** True to use big field display */
-	protected var bigDisplay:Boolean = false
+	protected var bigDisplay = false
 
 	/* Mode name */
-	override val name:String = "AVALANCHE VS DUMMY"
+	override val name = "AVALANCHE VS DUMMY"
 
 	override val isVSMode:Boolean
 		get() = true
@@ -176,8 +183,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		get() = MAX_PLAYERS
 
 	/* Game style */
-	override val gameStyle:Int = GameEngine.GAMESTYLE_AVALANCHE
-	override val gameIntensity:Int = 2
+	override val gameStyle = GameEngine.GameStyle.AVALANCHE
+	override val gameIntensity = 2
 	/* Mode initialization */
 	@Suppress("RemoveExplicitTypeArguments")
 	override fun modeInit(manager:GameManager) {
@@ -343,7 +350,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			//field.readProperty(prop, id);
 			stringToField(prop?.getProperty("values.$id", "") ?: "")
 			setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
-			setAllAttribute(false, Block.ATTRIBUTE.SELFPLACED)
+			setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 		}
 	}
 
@@ -370,12 +377,12 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		}
 
 		if(propMap[playerID].isNullOrEmpty()&&engine.field!=null)
-			engine.field!!.reset()
+			engine.field.reset()
 		else propMap[playerID]?.let {
 			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
 			loadMap(engine.field, it, id)
-			engine.field!!.setAllSkin(engine.skin)
+			engine.field.setAllSkin(engine.skin)
 		}
 	}
 
@@ -438,7 +445,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		if(big[playerID]) {
 			engine.fieldHeight = 6
 			engine.fieldWidth = 3
-			engine.field = null
+			engine.field.reset()
 			engine.colorClearSize = 3
 			engine.displaysize = 1
 			engine.createFieldIfNeeded()
@@ -451,7 +458,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			if(owner.replayMode) {
 				engine.createFieldIfNeeded()
 				loadMap(engine.field, owner.replayProp, playerID)
-				engine.field?.setAllSkin(engine.skin)
+				engine.field.setAllSkin(engine.skin)
 			} else {
 				if(propMap[playerID].isNullOrEmpty())
 					propMap[playerID] = receiver.loadProperties("config/map/avalanche/${mapSet[playerID]}.map")
@@ -461,7 +468,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 					if(mapNumber[playerID]<0) {
 						if(playerID==1&&useMap[0]&&mapNumber[0]<0)
-							engine.field?.copy(owner.engine[0].field)
+							engine.field.copy(owner.engine[0].field)
 						else {
 							val no = if(mapMaxNo[playerID]<1) 0 else randMap.nextInt(mapMaxNo[playerID])
 							loadMap(engine.field, it, no)
@@ -469,11 +476,11 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 					} else
 						loadMap(engine.field, it, mapNumber[playerID])
 
-					engine.field?.setAllSkin(engine.skin)
+					engine.field.setAllSkin(engine.skin)
 					fldBackup[playerID] = Field(engine.field)
 				}
 			}
-		} else engine.field?.reset()
+		} else engine.field.reset()
 		return false
 	}
 
@@ -511,9 +518,9 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 			val pts = calcPts(engine, playerID, avalanche)
 
-			var multiplier = engine.field!!.colorClearExtraCount
+			var multiplier = engine.field.colorClearExtraCount
 			if(big[playerID]) multiplier = multiplier shr 2
-			if(engine.field!!.colorsCleared>1) multiplier += (engine.field!!.colorsCleared-1)*2
+			if(engine.field.colorsCleared>1) multiplier += (engine.field.colorsCleared-1)*2
 
 			multiplier += calcChainMultiplier(engine, playerID, engine.chain)
 
@@ -528,14 +535,14 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 			val pow = if(engine.chain>=rensaShibari[playerID]) addOjama(engine, playerID, ptsTotal) else 0
 
-			if(engine.field!!.isEmpty) {
+			if(engine.field.isEmpty) {
 				zenKeshi[playerID] = true
 				engine.statistics.scoreBonus += 2100
 				score[playerID] += 2100
 			} else
 				zenKeshi[playerID] = false
 			return pow
-		} else if(!engine.field!!.canCascade()) cleared[playerID] = false
+		} else if(!engine.field.canCascade()) cleared[playerID] = false
 		return 0
 	}
 
@@ -600,8 +607,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected fun gameOverCheck(engine:GameEngine, playerID:Int) {
 		if(engine.field==null) return
 		if(big[playerID]) {
-			if(!engine.field!!.getBlockEmpty(1, 0)) engine.stat = GameEngine.Status.GAMEOVER
-		} else if(!engine.field!!.getBlockEmpty(2, 0)||dangerColumnDouble[playerID]&&!engine.field!!.getBlockEmpty(3, 0))
+			if(!engine.field.getBlockEmpty(1, 0)) engine.stat = GameEngine.Status.GAMEOVER
+		} else if(!engine.field.getBlockEmpty(2, 0)||dangerColumnDouble[playerID]&&!engine.field.getBlockEmpty(3, 0))
 			engine.stat = GameEngine.Status.GAMEOVER
 	}
 
@@ -611,7 +618,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	protected fun loadFeverMap(engine:GameEngine, playerID:Int, rand:Random?, chain:Int, subset:Int) {
 		engine.createFieldIfNeeded()
-		engine.field?.run {
+		engine.field.run {
 			reset()
 			stringToField(propFeverMap[playerID]?.getProperty(
 				"${feverMapSubsets[playerID][subset]}.${numColors[playerID]}colors.${chain}chain") ?: "")
@@ -667,7 +674,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	protected open fun updateOjamaMeter(engine:GameEngine, playerID:Int) {
 		var width = 6
-		if(engine.field!=null) width = engine.field!!.width
+		if(engine.field!=null) width = engine.field.width
 		val blockHeight = receiver.getBlockSize(engine)
 		// Rising auctionMeter
 		val value = ojama[playerID]*blockHeight/width
@@ -685,7 +692,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		if(!owner.engine[playerID].gameActive) return
 
-		val textHeight = if(engine.displaysize==1) 11 else (engine.field?.height ?: 12)+1
+		val textHeight = if(engine.displaysize==1) 11 else engine.field.height+1
 
 		val baseX = if(engine.displaysize==1) 1 else -2
 
@@ -713,7 +720,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		val baseX = if(big[playerID]) 1 else 2
 
 		for(i in 0 until if(dangerColumnDouble[playerID]&&!big[playerID]) 2 else 1)
-			if(engine.field==null||engine.field!!.getBlockEmpty(baseX+i, 0))
+			if(engine.field==null||engine.field.getBlockEmpty(baseX+i, 0))
 				when {
 					big[playerID] -> receiver.drawMenuFont(engine, playerID, 2, 0, "\u0085", COLOR.RED, 2f)
 					engine.displaysize==1 -> receiver.drawMenuFont(engine, playerID, 4+i*2, 0, "\u0085", COLOR.RED, 2f)
@@ -723,9 +730,9 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	protected fun drawHardOjama(engine:GameEngine, playerID:Int) {
 		if(engine.field!=null)
-			for(x in 0 until engine.field!!.width)
-				for(y in 0 until engine.field!!.height) {
-					val hard = engine.field!!.getBlock(x, y)!!.hard
+			for(x in 0 until engine.field.width)
+				for(y in 0 until engine.field.height) {
+					val hard = engine.field.getBlock(x, y)!!.hard
 					if(hard>0)
 						if(engine.displaysize==1) receiver.drawMenuFont(engine, playerID, x*2, y*2, "$hard", COLOR.YELLOW, 2f)
 						else receiver.drawMenuFont(engine, playerID, x, y, "$hard", COLOR.YELLOW)
@@ -772,7 +779,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			else -> receiver.drawMenuFont(engine, playerID, 6, 2, "LOSE", COLOR.WHITE)
 		}
 
-		val apm = (ojamaSent[playerID]*3600).toFloat()/engine.statistics.time.toFloat()
+		val apm = ojamaSent[playerID]*3600f/engine.statistics.time
 		drawResult(engine, playerID, receiver, 3, COLOR.ORANGE,
 			"ATTACK", String.format("%10d", ojamaSent[playerID]),
 			"CLEARED", String.format("%10d", engine.statistics.lines),
@@ -780,7 +787,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			"PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
 			"ATTACK/MIN", String.format("%10g", apm),
 			"PIECE/SEC", String.format("%10g", engine.statistics.pps),
-			"Time", String.format("%10s", GeneralUtil.getTime(owner.engine[0].statistics.time)))
+			"Time", String.format("%10s", owner.engine[0].statistics.time.toTimeStr))
 	}
 
 	companion object {
@@ -789,8 +796,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 		/** Block colors */
 		val BLOCK_COLORS =
-			intArrayOf(Block.BLOCK_COLOR_RED, Block.BLOCK_COLOR_GREEN, Block.BLOCK_COLOR_BLUE, Block.BLOCK_COLOR_YELLOW,
-				Block.BLOCK_COLOR_PURPLE)
+			arrayOf(Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.BLUE, Block.COLOR.YELLOW,
+				Block.COLOR.PURPLE)
 
 		/** Fever values files list */
 		val FEVER_MAPS = arrayOf("Fever", "15th", "15thDS", "7", "Compendium")

@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.component
 
 import mu.nu.nullpo.util.CustomProperties
@@ -30,18 +35,18 @@ import java.io.Serializable
 class RuleOptions:Serializable {
 
 	/** このルールのName */
-	var strRuleName:String = ""
+	var strRuleName = ""
 
 	/** 使用するWallkickアルゴリズムのクラス名 (空文字列ならWallkickしない) */
-	var strWallkick:String = ""
+	var strWallkick = ""
 
 	/** 使用する出現順補正アルゴリズムのクラス名 (空文字列なら完全ランダム) */
-	var strRandomizer:String = ""
+	var strRandomizer = ""
 
 	/** Game Style */
-	var style:Int = 0
+	var style = 0
 
-	var pieceOffset:Int = 0
+	var pieceOffset = 0
 	/** Blockピースのrotationパターンのcoordinate補正 (11ピース×4Direction) */
 	var pieceOffsetX:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
 	var pieceOffsetY:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
@@ -59,239 +64,239 @@ class RuleOptions:Serializable {
 	var pieceSpawnYBig:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
 
 	/** Blockピース cint */
-	var pieceColor:IntArray = IntArray(Piece.PIECE_COUNT)
+	var pieceColor = IntArray(Piece.PIECE_COUNT)
 
 	/** Blockピースの初期Direction */
-	var pieceDefaultDirection:IntArray = IntArray(Piece.PIECE_COUNT)
+	var pieceDefaultDirection = IntArray(Piece.PIECE_COUNT)
 
 	/** fieldより上から出現 */
-	var pieceEnterAboveField:Boolean = false
+	var pieceEnterAboveField = false
 
 	/** 出現予定地が埋まっているときにY-coordinateを上にずらすMaximum count */
-	var pieceEnterMaxDistanceY:Int = 0
+	var pieceEnterMaxDistanceY = 0
 
 	/** fieldの幅 */
-	var fieldWidth:Int = 0
+	var fieldWidth = 0
 
 	/** Field height */
-	var fieldHeight:Int = 0
+	var fieldHeight = 0
 
 	/** fieldより上の見えない部分の高さ */
-	var fieldHiddenHeight:Int = 0
+	var fieldHiddenHeight = 0
 
 	/** fieldの天井の有無 */
-	var fieldCeiling:Boolean = false
+	var fieldCeiling = false
 
 	/** field枠内に置けなかったら死ぬかどうか */
-	var fieldLockoutDeath:Boolean = false
+	var fieldLockoutDeath = false
 
 	/** field枠外にはみ出しただけで死ぬかどうか */
-	var fieldPartialLockoutDeath:Boolean = false
+	var fieldPartialLockoutDeath = false
 
 	/** NEXTのcount */
-	var nextDisplay:Int = 0
+	var nextDisplay = 0
 
 	/** ホールド使用可否 */
-	var holdEnable:Boolean = false
+	var holdEnable = false
 
 	/** 先行ホールド */
-	var holdInitial:Boolean = false
+	var holdInitial = false
 
 	/** 先行ホールド連続使用不可 */
-	var holdInitialLimit:Boolean = false
+	var holdInitialLimit = false
 
 	/** ホールドを使ったときにBlockピースの向きを初期状態に戻す */
-	var holdResetDirection:Boolean = false
+	var holdResetDirection = false
 
 	/** ホールドできる count (-1:無制限) */
-	var holdLimit:Int = 0
+	var holdLimit = 0
 
 	/** Hard drop使用可否 */
-	var harddropEnable:Boolean = false
+	var harddropEnable = false
 
 	/** Hard drop即固定 */
-	var harddropLock:Boolean = false
+	var harddropLock = false
 
 	/** Hard drop連続使用不可 */
-	var harddropLimit:Boolean = false
+	var harddropLimit = false
 
 	/** Soft drop使用可否 */
-	var softdropEnable:Boolean = false
+	var softdropEnable = false
 
 	/** Soft drop即固定 */
-	var softdropLock:Boolean = false
+	var softdropLock = false
 
 	/** Soft drop連続使用不可 */
-	var softdropLimit:Boolean = false
+	var softdropLimit = false
 
 	/** 接地状態でSoft dropすると即固定 (falseだと20Gのみ) */
-	var softdropSurfaceLock:Boolean = false
+	var softdropSurfaceLock = false
 
 	/** Soft drop速度 (1f=1G, .5f=0.5G) */
-	var softdropSpeed:Float = 0f
+	var softdropSpeed = 0f
 
 	/** Soft drop速度を通常速度×n倍にする */
-	var softdropMultiplyNativeSpeed:Boolean = false
+	var softdropMultiplyNativeSpeed = false
 
 	/** Soft drop速度を通常速度に影響させない */
-	var softdropGravitySpeedLimit:Boolean = false
+	var softdropGravitySpeedLimit = false
 
 	/** 先行rotation */
-	var rotateInitial:Boolean = false
+	var rotateInitial = false
 
 	/** 先行rotation連続使用不可 */
-	var rotateInitialLimit:Boolean = false
+	var rotateInitialLimit = false
 
 	/** Wallkick */
-	var rotateWallkick:Boolean = false
+	var rotateWallkick = false
 
 	/** 先行rotationでもWallkickする */
-	var rotateInitialWallkick:Boolean = false
+	var rotateInitialWallkick = false
 
 	/** 上DirectionへのWallkickができる count (-1:無限) */
-	var rotateMaxUpwardWallkick:Int = 0
+	var rotateMaxUpwardWallkick = 0
 
 	/** falseなら左が正rotation, When true,右が正rotation */
-	var rotateButtonDefaultRight:Boolean = false
+	var rotateButtonDefaultRight = false
 
 	/** 逆rotationを許可 (falseなら正rotationと同じ) */
-	var rotateButtonAllowReverse:Boolean = false
+	var rotateButtonAllowReverse = false
 
 	/** 180-degree rotationを許可 (falseなら正rotationと同じ) */
-	var rotateButtonAllowDouble:Boolean = false
+	var rotateButtonAllowDouble = false
 
 	/** 落下で固定 timeリセット */
-	var lockresetFall:Boolean = false
+	var lockresetFall = false
 
 	/** 移動で固定 timeリセット */
-	var lockresetMove:Boolean = false
+	var lockresetMove = false
 
 	/** rotationで固定 timeリセット */
-	var lockresetRotate:Boolean = false
+	var lockresetRotate = false
 
 	/** Lock delay reset on wallkick */
-	var lockresetWallkick:Boolean = false
+	var lockresetWallkick = false
 
 	/** 横移動 count制限 (-1:無限) */
-	var lockresetLimitMove:Int = 0
+	var lockresetLimitMove = 0
 
 	/** rotation count制限 (-1:無限) */
-	var lockresetLimitRotate:Int = 0
+	var lockresetLimitRotate = 0
 
 	/** 横移動 counterとrotation counterを共有 (横移動 counterだけ使う) */
-	var lockresetLimitShareCount:Boolean = false
+	var lockresetLimitShareCount = false
 
 	/** 横移動 counterかrotation counterが超過したときの処理
 	 * (LOCKRESET_LIMIT_OVER_で始まる定数を使う) */
-	var lockresetLimitOver:Int = 0
+	var lockresetLimitOver = 0
 
 	/** 固定した瞬間光る frame count */
-	var lockflash:Int = 0
+	var lockflash = 0
 
 	/** Blockが光る専用 frame を入れる */
-	var lockflashOnlyFrame:Boolean = false
+	var lockflashOnlyFrame = false
 
 	/** Line clear前にBlockが光る frame を入れる */
-	var lockflashBeforeLineClear:Boolean = false
+	var lockflashBeforeLineClear = false
 
 	/** ARE cancel on move */
-	var areCancelMove:Boolean = false
+	var areCancelMove = false
 
 	/** ARE cancel on rotate */
-	var areCancelRotate:Boolean = false
+	var areCancelRotate = false
 
 	/** ARE cancel on hold */
-	var areCancelHold:Boolean = false
+	var areCancelHold = false
 
 	/** 最小/MaximumARE (-1:指定なし) */
-	var minARE:Int = 0
-	var maxARE:Int = 0
+	var minARE = 0
+	var maxARE = 0
 
 	/** 最小/MaximumARE after line clear (-1:指定なし) */
-	var minARELine:Int = 0
-	var maxARELine:Int = 0
+	var minARELine = 0
+	var maxARELine = 0
 
 	/** 最小/MaximumLine clear time (-1:指定なし) */
-	var minLineDelay:Int = 0
-	var maxLineDelay:Int = 0
+	var minLineDelay = 0
+	var maxLineDelay = 0
 
 	/** 最小/Maximum固定 time (-1:指定なし) */
-	var minLockDelay:Int = 0
-	var maxLockDelay:Int = 0
+	var minLockDelay = 0
+	var maxLockDelay = 0
 
 	/** 最小/Maximum横溜め time (-1:指定なし) */
-	var minDAS:Int = 0
-	var maxDAS:Int = 0
+	var minDAS = 0
+	var maxDAS = 0
 
 	/** 横移動間隔 */
-	var dasARR:Int = 0
+	var dasARR = 0
 
-	var shiftLockEnable:Boolean = false
+	var shiftLockEnable = false
 
 	/** Ready画面で横溜め可能 */
-	var dasInReady:Boolean = false
+	var dasInReady = false
 
 	/** 最初の frame で横溜め可能 */
-	var dasInMoveFirstFrame:Boolean = false
+	var dasInMoveFirstFrame = false
 
 	/** Blockが光った瞬間に横溜め可能 */
-	var dasInLockFlash:Boolean = false
+	var dasInLockFlash = false
 
 	/** Line clear中に横溜め可能 */
-	var dasInLineClear:Boolean = false
+	var dasInLineClear = false
 
 	/** ARE中に横溜め可能 */
-	var dasInARE:Boolean = false
+	var dasInARE = false
 
 	/** AREの最後の frame で横溜め可能 */
-	var dasInARELastFrame:Boolean = false
+	var dasInARELastFrame = false
 
 	/** Ending突入画面で横溜め可能 */
-	var dasInEndingStart:Boolean = false
+	var dasInEndingStart = false
 
 	/** Charge DAS on blocked move */
-	var dasChargeOnBlockedMove:Boolean = false
+	var dasChargeOnBlockedMove = false
 
 	/** Leave DAS charge alone when left/right are not held -- useful with
 	 * dasRedirectInDelay
 	 */
-	var dasStoreChargeOnNeutral:Boolean = false
+	var dasStoreChargeOnNeutral = false
 
 	/** Allow direction changes during ARE delay without zeroing DAS charge */
-	var dasRedirectInARE:Boolean = false
+	var dasRedirectInDelay = false
 
 	/** 最初の frame で移動可能 */
-	var moveFirstFrame:Boolean = false
+	var moveFirstFrame = false
 
 	/** 斜め移動 */
-	var moveDiagonal:Boolean = false
+	var moveDiagonal = false
 
 	/** 上下同時押し許可 */
-	var moveUpAndDown:Boolean = false
+	var moveUpAndDown = false
 
 	/** 左右同時押し許可 */
-	var moveLeftAndRightAllow:Boolean = false
+	var moveLeftAndRightAllow = false
 
 	/** 左右同時押ししたときに前の frame の input Directionを優先する (左を押しながら右を押すと右を無視して左を優先) */
-	var moveLeftAndRightUsePreviousInput:Boolean = false
+	var moveLeftAndRightUsePreviousInput = false
 
 	/** Line clear後に上のBlockが1段ずつ落ちるアニメーションを表示 */
-	var lineFallAnim:Boolean = false
+	var lineFallAnim = false
 
 	/** Line delay cancel on move */
-	var lineCancelMove:Boolean = false
+	var lineCancelMove = false
 
 	/** Line delay cancel on rotate */
-	var lineCancelRotate:Boolean = false
+	var lineCancelRotate = false
 
 	/** Line delay cancel on hold */
-	var lineCancelHold:Boolean = false
+	var lineCancelHold = false
 
 	/** Blockの絵柄 */
-	var skin:Int = 0
+	var skin = 0
 
 	/** ghost の有無 (falseならMode 側でghost を is enabledにしていても非表示) */
-	var ghost:Boolean = false
+	var ghost = false
 
 	/** Constructor */
 	constructor() {
@@ -321,17 +326,17 @@ class RuleOptions:Serializable {
 		pieceSpawnYBig = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
 
 		pieceColor = IntArray(Piece.PIECE_COUNT)
-		pieceColor[Piece.PIECE_I] = Block.BLOCK_COLOR_GRAY
-		pieceColor[Piece.PIECE_L] = Block.BLOCK_COLOR_GRAY
-		pieceColor[Piece.PIECE_O] = Block.BLOCK_COLOR_GRAY
-		pieceColor[Piece.PIECE_Z] = Block.BLOCK_COLOR_GRAY
-		pieceColor[Piece.PIECE_T] = Block.BLOCK_COLOR_GRAY
-		pieceColor[Piece.PIECE_J] = Block.BLOCK_COLOR_GRAY
-		pieceColor[Piece.PIECE_S] = Block.BLOCK_COLOR_GRAY
-		pieceColor[Piece.PIECE_I1] = Block.BLOCK_COLOR_PURPLE
-		pieceColor[Piece.PIECE_I2] = Block.BLOCK_COLOR_BLUE
-		pieceColor[Piece.PIECE_I3] = Block.BLOCK_COLOR_GREEN
-		pieceColor[Piece.PIECE_L3] = Block.BLOCK_COLOR_ORANGE
+		pieceColor[Piece.PIECE_I] = Block.COLOR_WHITE
+		pieceColor[Piece.PIECE_L] = Block.COLOR_WHITE
+		pieceColor[Piece.PIECE_O] = Block.COLOR_WHITE
+		pieceColor[Piece.PIECE_Z] = Block.COLOR_WHITE
+		pieceColor[Piece.PIECE_T] = Block.COLOR_WHITE
+		pieceColor[Piece.PIECE_J] = Block.COLOR_WHITE
+		pieceColor[Piece.PIECE_S] = Block.COLOR_WHITE
+		pieceColor[Piece.PIECE_I1] = Block.COLOR_PURPLE
+		pieceColor[Piece.PIECE_I2] = Block.COLOR_BLUE
+		pieceColor[Piece.PIECE_I3] = Block.COLOR_GREEN
+		pieceColor[Piece.PIECE_L3] = Block.COLOR_ORANGE
 
 		pieceDefaultDirection = IntArray(Piece.PIECE_COUNT)
 		pieceEnterAboveField = true
@@ -413,7 +418,7 @@ class RuleOptions:Serializable {
 		dasInEndingStart = true
 		dasChargeOnBlockedMove = false
 		dasStoreChargeOnNeutral = false
-		dasRedirectInARE = false
+		dasRedirectInDelay = false
 
 		moveFirstFrame = true
 		moveDiagonal = true
@@ -540,7 +545,7 @@ class RuleOptions:Serializable {
 		dasInEndingStart = o.dasInEndingStart
 		dasChargeOnBlockedMove = o.dasChargeOnBlockedMove
 		dasStoreChargeOnNeutral = o.dasStoreChargeOnNeutral
-		dasRedirectInARE = o.dasRedirectInARE
+		dasRedirectInDelay = o.dasRedirectInDelay
 
 		moveFirstFrame = o.moveFirstFrame
 		moveDiagonal = o.moveDiagonal
@@ -663,7 +668,7 @@ class RuleOptions:Serializable {
 		if(dasInEndingStart!=r.dasInEndingStart) return false
 		if(dasChargeOnBlockedMove!=r.dasChargeOnBlockedMove) return false
 		if(dasStoreChargeOnNeutral!=r.dasStoreChargeOnNeutral) return false
-		if(dasRedirectInARE!=r.dasRedirectInARE) return false
+		if(dasRedirectInDelay!=r.dasRedirectInDelay) return false
 
 		if(moveFirstFrame!=r.moveFirstFrame) return false
 		if(moveDiagonal!=r.moveDiagonal) return false
@@ -684,120 +689,120 @@ class RuleOptions:Serializable {
 	 * @param id Player IDまたはPresetID
 	 */
 	fun writeProperty(p:CustomProperties, id:Int) {
-		p.setProperty("$id.ruleopt.strRuleName", strRuleName)
-		p.setProperty("$id.ruleopt.strWallkick", strWallkick)
-		p.setProperty("$id.ruleopt.strRandomizer", strRandomizer)
+		p.setProperty("$id.ruleOpt.strRuleName", strRuleName)
+		p.setProperty("$id.ruleOpt.strWallkick", strWallkick)
+		p.setProperty("$id.ruleOpt.strRandomizer", strRandomizer)
 
-		p.setProperty("$id.ruleopt.style", style)
-		p.setProperty("$id.ruleopt.pieceOffset", pieceOffset)
+		p.setProperty("$id.ruleOpt.style", style)
+		p.setProperty("$id.ruleOpt.pieceOffset", pieceOffset)
 
 		for(i in 0 until Piece.PIECE_COUNT) {
 			if(pieceOffset==PIECEOFFSET_ASSIGN)
 				for(j in 0 until Piece.DIRECTION_COUNT) {
-					p.setProperty("$id.ruleopt.pieceOffsetX.$i.$j", pieceOffsetX[i][j])
-					p.setProperty("$id.ruleopt.pieceOffsetY.$i.$j", pieceOffsetY[i][j])
-					p.setProperty("$id.ruleopt.pieceSpawnX.$i.$j", pieceSpawnX[i][j])
-					p.setProperty("$id.ruleopt.pieceSpawnY.$i.$j", pieceSpawnY[i][j])
-					p.setProperty("$id.ruleopt.pieceSpawnXBig.$i.$j", pieceSpawnXBig[i][j])
-					p.setProperty("$id.ruleopt.pieceSpawnYBig.$i.$j", pieceSpawnYBig[i][j])
+					p.setProperty("$id.ruleOpt.pieceOffsetX.$i.$j", pieceOffsetX[i][j])
+					p.setProperty("$id.ruleOpt.pieceOffsetY.$i.$j", pieceOffsetY[i][j])
+					p.setProperty("$id.ruleOpt.pieceSpawnX.$i.$j", pieceSpawnX[i][j])
+					p.setProperty("$id.ruleOpt.pieceSpawnY.$i.$j", pieceSpawnY[i][j])
+					p.setProperty("$id.ruleOpt.pieceSpawnXBig.$i.$j", pieceSpawnXBig[i][j])
+					p.setProperty("$id.ruleOpt.pieceSpawnYBig.$i.$j", pieceSpawnYBig[i][j])
 				}
-			p.setProperty("$id.ruleopt.pieceColor.$i", pieceColor[i])
-			p.setProperty("$id.ruleopt.pieceDefaultDirection.$i", pieceDefaultDirection[i])
+			p.setProperty("$id.ruleOpt.pieceColor.$i", pieceColor[i])
+			p.setProperty("$id.ruleOpt.pieceDefaultDirection.$i", pieceDefaultDirection[i])
 		}
-		p.setProperty("$id.ruleopt.pieceEnterAboveField", pieceEnterAboveField)
-		p.setProperty("$id.ruleopt.pieceEnterMaxDistanceY", pieceEnterMaxDistanceY)
+		p.setProperty("$id.ruleOpt.pieceEnterAboveField", pieceEnterAboveField)
+		p.setProperty("$id.ruleOpt.pieceEnterMaxDistanceY", pieceEnterMaxDistanceY)
 
-		p.setProperty("$id.ruleopt.fieldWidth", fieldWidth)
-		p.setProperty("$id.ruleopt.fieldHeight", fieldHeight)
-		p.setProperty("$id.ruleopt.fieldHiddenHeight", fieldHiddenHeight)
-		p.setProperty("$id.ruleopt.fieldCeiling", fieldCeiling)
-		p.setProperty("$id.ruleopt.fieldLockoutDeath", fieldLockoutDeath)
-		p.setProperty("$id.ruleopt.fieldPartialLockoutDeath", fieldPartialLockoutDeath)
+		p.setProperty("$id.ruleOpt.fieldWidth", fieldWidth)
+		p.setProperty("$id.ruleOpt.fieldHeight", fieldHeight)
+		p.setProperty("$id.ruleOpt.fieldHiddenHeight", fieldHiddenHeight)
+		p.setProperty("$id.ruleOpt.fieldCeiling", fieldCeiling)
+		p.setProperty("$id.ruleOpt.fieldLockoutDeath", fieldLockoutDeath)
+		p.setProperty("$id.ruleOpt.fieldPartialLockoutDeath", fieldPartialLockoutDeath)
 
-		p.setProperty("$id.ruleopt.nextDisplay", nextDisplay)
+		p.setProperty("$id.ruleOpt.nextDisplay", nextDisplay)
 
-		p.setProperty("$id.ruleopt.holdEnable", holdEnable)
-		p.setProperty("$id.ruleopt.holdInitial", holdInitial)
-		p.setProperty("$id.ruleopt.holdInitialLimit", holdInitialLimit)
-		p.setProperty("$id.ruleopt.holdResetDirection", holdResetDirection)
-		p.setProperty("$id.ruleopt.holdLimit", holdLimit)
+		p.setProperty("$id.ruleOpt.holdEnable", holdEnable)
+		p.setProperty("$id.ruleOpt.holdInitial", holdInitial)
+		p.setProperty("$id.ruleOpt.holdInitialLimit", holdInitialLimit)
+		p.setProperty("$id.ruleOpt.holdResetDirection", holdResetDirection)
+		p.setProperty("$id.ruleOpt.holdLimit", holdLimit)
 
-		p.setProperty("$id.ruleopt.harddropEnable", harddropEnable)
-		p.setProperty("$id.ruleopt.harddropLock", harddropLock)
-		p.setProperty("$id.ruleopt.harddropLimit", harddropLimit)
+		p.setProperty("$id.ruleOpt.harddropEnable", harddropEnable)
+		p.setProperty("$id.ruleOpt.harddropLock", harddropLock)
+		p.setProperty("$id.ruleOpt.harddropLimit", harddropLimit)
 
-		p.setProperty("$id.ruleopt.softdropEnable", softdropEnable)
-		p.setProperty("$id.ruleopt.softdropLock", softdropLock)
-		p.setProperty("$id.ruleopt.softdropLimit", softdropLimit)
-		p.setProperty("$id.ruleopt.softdropSurfaceLock", softdropSurfaceLock)
-		p.setProperty("$id.ruleopt.softdropSpeed", softdropSpeed)
-		p.setProperty("$id.ruleopt.softdropMultiplyNativeSpeed", softdropMultiplyNativeSpeed)
-		p.setProperty("$id.ruleopt.softdropGravitySpeedLimit", softdropGravitySpeedLimit)
+		p.setProperty("$id.ruleOpt.softdropEnable", softdropEnable)
+		p.setProperty("$id.ruleOpt.softdropLock", softdropLock)
+		p.setProperty("$id.ruleOpt.softdropLimit", softdropLimit)
+		p.setProperty("$id.ruleOpt.softdropSurfaceLock", softdropSurfaceLock)
+		p.setProperty("$id.ruleOpt.softdropSpeed", softdropSpeed)
+		p.setProperty("$id.ruleOpt.softdropMultiplyNativeSpeed", softdropMultiplyNativeSpeed)
+		p.setProperty("$id.ruleOpt.softdropGravitySpeedLimit", softdropGravitySpeedLimit)
 
-		p.setProperty("$id.ruleopt.rotateInitial", rotateInitial)
-		p.setProperty("$id.ruleopt.rotateInitialLimit", rotateInitialLimit)
-		p.setProperty("$id.ruleopt.rotateWallkick", rotateWallkick)
-		p.setProperty("$id.ruleopt.rotateInitialWallkick", rotateInitialWallkick)
-		p.setProperty("$id.ruleopt.rotateMaxUpwardWallkick", rotateMaxUpwardWallkick)
-		p.setProperty("$id.ruleopt.rotateButtonDefaultRight", rotateButtonDefaultRight)
-		p.setProperty("$id.ruleopt.rotateButtonAllowReverse", rotateButtonAllowReverse)
-		p.setProperty("$id.ruleopt.rotateButtonAllowDouble", rotateButtonAllowDouble)
+		p.setProperty("$id.ruleOpt.rotateInitial", rotateInitial)
+		p.setProperty("$id.ruleOpt.rotateInitialLimit", rotateInitialLimit)
+		p.setProperty("$id.ruleOpt.rotateWallkick", rotateWallkick)
+		p.setProperty("$id.ruleOpt.rotateInitialWallkick", rotateInitialWallkick)
+		p.setProperty("$id.ruleOpt.rotateMaxUpwardWallkick", rotateMaxUpwardWallkick)
+		p.setProperty("$id.ruleOpt.rotateButtonDefaultRight", rotateButtonDefaultRight)
+		p.setProperty("$id.ruleOpt.rotateButtonAllowReverse", rotateButtonAllowReverse)
+		p.setProperty("$id.ruleOpt.rotateButtonAllowDouble", rotateButtonAllowDouble)
 
-		p.setProperty("$id.ruleopt.lockresetFall", lockresetFall)
-		p.setProperty("$id.ruleopt.lockresetMove", lockresetMove)
-		p.setProperty("$id.ruleopt.lockresetRotate", lockresetRotate)
-		p.setProperty("$id.ruleopt.lockresetWallkick", lockresetWallkick)
-		p.setProperty("$id.ruleopt.lockresetLimitMove", lockresetLimitMove)
-		p.setProperty("$id.ruleopt.lockresetLimitRotate", lockresetLimitRotate)
-		p.setProperty("$id.ruleopt.lockresetLimitShareCount", lockresetLimitShareCount)
-		p.setProperty("$id.ruleopt.lockresetLimitOver", lockresetLimitOver)
+		p.setProperty("$id.ruleOpt.lockresetFall", lockresetFall)
+		p.setProperty("$id.ruleOpt.lockresetMove", lockresetMove)
+		p.setProperty("$id.ruleOpt.lockresetRotate", lockresetRotate)
+		p.setProperty("$id.ruleOpt.lockresetWallkick", lockresetWallkick)
+		p.setProperty("$id.ruleOpt.lockresetLimitMove", lockresetLimitMove)
+		p.setProperty("$id.ruleOpt.lockresetLimitRotate", lockresetLimitRotate)
+		p.setProperty("$id.ruleOpt.lockresetLimitShareCount", lockresetLimitShareCount)
+		p.setProperty("$id.ruleOpt.lockresetLimitOver", lockresetLimitOver)
 
-		p.setProperty("$id.ruleopt.lockflash", lockflash)
-		p.setProperty("$id.ruleopt.lockflashOnlyFrame", lockflashOnlyFrame)
-		p.setProperty("$id.ruleopt.lockflashBeforeLineClear", lockflashBeforeLineClear)
-		p.setProperty("$id.ruleopt.areCancelMove", areCancelMove)
-		p.setProperty("$id.ruleopt.areCancelRotate", areCancelRotate)
-		p.setProperty("$id.ruleopt.areCancelHold", areCancelHold)
+		p.setProperty("$id.ruleOpt.lockflash", lockflash)
+		p.setProperty("$id.ruleOpt.lockflashOnlyFrame", lockflashOnlyFrame)
+		p.setProperty("$id.ruleOpt.lockflashBeforeLineClear", lockflashBeforeLineClear)
+		p.setProperty("$id.ruleOpt.areCancelMove", areCancelMove)
+		p.setProperty("$id.ruleOpt.areCancelRotate", areCancelRotate)
+		p.setProperty("$id.ruleOpt.areCancelHold", areCancelHold)
 
-		p.setProperty("$id.ruleopt.minARE", minARE)
-		p.setProperty("$id.ruleopt.maxARE", maxARE)
-		p.setProperty("$id.ruleopt.minARELine", minARELine)
-		p.setProperty("$id.ruleopt.maxARELine", maxARELine)
-		p.setProperty("$id.ruleopt.minLineDelay", minLineDelay)
-		p.setProperty("$id.ruleopt.maxLineDelay", maxLineDelay)
-		p.setProperty("$id.ruleopt.minLockDelay", minLockDelay)
-		p.setProperty("$id.ruleopt.maxLockDelay", maxLockDelay)
-		p.setProperty("$id.ruleopt.minDAS", minDAS)
-		p.setProperty("$id.ruleopt.maxDAS", maxDAS)
+		p.setProperty("$id.ruleOpt.minARE", minARE)
+		p.setProperty("$id.ruleOpt.maxARE", maxARE)
+		p.setProperty("$id.ruleOpt.minARELine", minARELine)
+		p.setProperty("$id.ruleOpt.maxARELine", maxARELine)
+		p.setProperty("$id.ruleOpt.minLineDelay", minLineDelay)
+		p.setProperty("$id.ruleOpt.maxLineDelay", maxLineDelay)
+		p.setProperty("$id.ruleOpt.minLockDelay", minLockDelay)
+		p.setProperty("$id.ruleOpt.maxLockDelay", maxLockDelay)
+		p.setProperty("$id.ruleOpt.minDAS", minDAS)
+		p.setProperty("$id.ruleOpt.maxDAS", maxDAS)
 
-		p.setProperty("$id.ruleopt.dasDelay", dasARR)
+		p.setProperty("$id.ruleOpt.dasDelay", dasARR)
 
-		p.setProperty("$id.ruleopt.shiftLockEnable", shiftLockEnable)
+		p.setProperty("$id.ruleOpt.shiftLockEnable", shiftLockEnable)
 
-		p.setProperty("$id.ruleopt.dasInReady", dasInReady)
-		p.setProperty("$id.ruleopt.dasInMoveFirstFrame", dasInMoveFirstFrame)
-		p.setProperty("$id.ruleopt.dasInLockFlash", dasInLockFlash)
-		p.setProperty("$id.ruleopt.dasInLineClear", dasInLineClear)
-		p.setProperty("$id.ruleopt.dasInARE", dasInARE)
-		p.setProperty("$id.ruleopt.dasInARELastFrame", dasInARELastFrame)
-		p.setProperty("$id.ruleopt.dasInEndingStart", dasInEndingStart)
-		p.setProperty("$id.ruleopt.dasOnBlockedMove", dasChargeOnBlockedMove)
-		p.setProperty("$id.ruleopt.dasStoreChargeOnNeutral", dasStoreChargeOnNeutral)
-		p.setProperty("$id.ruleopt.dasRedirectInARE", dasRedirectInARE)
+		p.setProperty("$id.ruleOpt.dasInReady", dasInReady)
+		p.setProperty("$id.ruleOpt.dasInMoveFirstFrame", dasInMoveFirstFrame)
+		p.setProperty("$id.ruleOpt.dasInLockFlash", dasInLockFlash)
+		p.setProperty("$id.ruleOpt.dasInLineClear", dasInLineClear)
+		p.setProperty("$id.ruleOpt.dasInARE", dasInARE)
+		p.setProperty("$id.ruleOpt.dasInARELastFrame", dasInARELastFrame)
+		p.setProperty("$id.ruleOpt.dasInEndingStart", dasInEndingStart)
+		p.setProperty("$id.ruleOpt.dasOnBlockedMove", dasChargeOnBlockedMove)
+		p.setProperty("$id.ruleOpt.dasStoreChargeOnNeutral", dasStoreChargeOnNeutral)
+		p.setProperty("$id.ruleOpt.dasRedirectInDelay", dasRedirectInDelay)
 
-		p.setProperty("$id.ruleopt.moveFirstFrame", moveFirstFrame)
-		p.setProperty("$id.ruleopt.moveDiagonal", moveDiagonal)
-		p.setProperty("$id.ruleopt.moveUpAndDown", moveUpAndDown)
-		p.setProperty("$id.ruleopt.moveLeftAndRightAllow", moveLeftAndRightAllow)
-		p.setProperty("$id.ruleopt.moveLeftAndRightUsePreviousInput", moveLeftAndRightUsePreviousInput)
+		p.setProperty("$id.ruleOpt.moveFirstFrame", moveFirstFrame)
+		p.setProperty("$id.ruleOpt.moveDiagonal", moveDiagonal)
+		p.setProperty("$id.ruleOpt.moveUpAndDown", moveUpAndDown)
+		p.setProperty("$id.ruleOpt.moveLeftAndRightAllow", moveLeftAndRightAllow)
+		p.setProperty("$id.ruleOpt.moveLeftAndRightUsePreviousInput", moveLeftAndRightUsePreviousInput)
 
-		p.setProperty("$id.ruleopt.lineFallAnim", lineFallAnim)
-		p.setProperty("$id.ruleopt.lineCancelMove", lineCancelMove)
-		p.setProperty("$id.ruleopt.lineCancelRotate", lineCancelRotate)
-		p.setProperty("$id.ruleopt.lineCancelHold", lineCancelHold)
+		p.setProperty("$id.ruleOpt.lineFallAnim", lineFallAnim)
+		p.setProperty("$id.ruleOpt.lineCancelMove", lineCancelMove)
+		p.setProperty("$id.ruleOpt.lineCancelRotate", lineCancelRotate)
+		p.setProperty("$id.ruleOpt.lineCancelHold", lineCancelHold)
 
-		p.setProperty("$id.ruleopt.skin", skin)
-		p.setProperty("$id.ruleopt.ghost", ghost)
+		p.setProperty("$id.ruleOpt.skin", skin)
+		p.setProperty("$id.ruleOpt.ghost", ghost)
 	}
 
 	/** プロパティセットから読み込み
@@ -806,12 +811,12 @@ class RuleOptions:Serializable {
 	 */
 	@JvmOverloads
 	fun readProperty(p:CustomProperties, id:Int, offset:Boolean = false) {
-		strRuleName = p.getProperty("$id.ruleopt.strRuleName", strRuleName)
-		strWallkick = p.getProperty("$id.ruleopt.strWallkick", strWallkick)
-		strRandomizer = p.getProperty("$id.ruleopt.strRandomizer", strRandomizer)
+		strRuleName = p.getProperty("$id.ruleOpt.strRuleName", strRuleName)
+		strWallkick = p.getProperty("$id.ruleOpt.strWallkick", strWallkick)
+		strRandomizer = p.getProperty("$id.ruleOpt.strRandomizer", strRandomizer)
 
-		style = p.getProperty("$id.ruleopt.style", 0)
-		pieceOffset = p.getProperty("$id.ruleopt.pieceOffset", PIECEOFFSET_NONE)
+		style = p.getProperty("$id.ruleOpt.style", 0)
+		pieceOffset = p.getProperty("$id.ruleOpt.pieceOffset", PIECEOFFSET_NONE)
 		for(i in 0 until Piece.PIECE_COUNT) {
 			for(j in 0 until Piece.DIRECTION_COUNT)
 				when(if(offset) PIECEOFFSET_ASSIGN else pieceOffset) {
@@ -839,111 +844,111 @@ class RuleOptions:Serializable {
 						pieceSpawnX[i][j] = pieceSpawnY[i][j]
 					}
 					PIECEOFFSET_ASSIGN -> {
-						pieceOffsetX[i][j] = p.getProperty("$id.ruleopt.pieceOffsetX.$i.$j", pieceOffsetX[i][j])
-						pieceOffsetY[i][j] = p.getProperty("$id.ruleopt.pieceOffsetY.$i.$j", pieceOffsetY[i][j])
-						pieceSpawnX[i][j] = p.getProperty("$id.ruleopt.pieceSpawnX.$i.$j", pieceSpawnX[i][j])
-						pieceSpawnY[i][j] = p.getProperty("$id.ruleopt.pieceSpawnY.$i.$j", pieceSpawnY[i][j])
-						pieceSpawnXBig[i][j] = p.getProperty("$id.ruleopt.pieceSpawnXBig.$i.$j", pieceSpawnXBig[i][j])
-						pieceSpawnYBig[i][j] = p.getProperty("$id.ruleopt.pieceSpawnYBig.$i.$j", pieceSpawnYBig[i][j])
+						pieceOffsetX[i][j] = p.getProperty("$id.ruleOpt.pieceOffsetX.$i.$j", pieceOffsetX[i][j])
+						pieceOffsetY[i][j] = p.getProperty("$id.ruleOpt.pieceOffsetY.$i.$j", pieceOffsetY[i][j])
+						pieceSpawnX[i][j] = p.getProperty("$id.ruleOpt.pieceSpawnX.$i.$j", pieceSpawnX[i][j])
+						pieceSpawnY[i][j] = p.getProperty("$id.ruleOpt.pieceSpawnY.$i.$j", pieceSpawnY[i][j])
+						pieceSpawnXBig[i][j] = p.getProperty("$id.ruleOpt.pieceSpawnXBig.$i.$j", pieceSpawnXBig[i][j])
+						pieceSpawnYBig[i][j] = p.getProperty("$id.ruleOpt.pieceSpawnYBig.$i.$j", pieceSpawnYBig[i][j])
 					}
 				}
 
-			pieceColor[i] = p.getProperty("$id.ruleopt.pieceColor.$i", pieceColor[i])
-			pieceDefaultDirection[i] = p.getProperty("$id.ruleopt.pieceDefaultDirection.$i", pieceDefaultDirection[i])
+			pieceColor[i] = p.getProperty("$id.ruleOpt.pieceColor.$i", pieceColor[i])
+			pieceDefaultDirection[i] = p.getProperty("$id.ruleOpt.pieceDefaultDirection.$i", pieceDefaultDirection[i])
 		}
-		pieceEnterAboveField = p.getProperty("$id.ruleopt.pieceEnterAboveField", pieceEnterAboveField)
-		pieceEnterMaxDistanceY = p.getProperty("$id.ruleopt.pieceEnterMaxDistanceY", pieceEnterMaxDistanceY)
+		pieceEnterAboveField = p.getProperty("$id.ruleOpt.pieceEnterAboveField", pieceEnterAboveField)
+		pieceEnterMaxDistanceY = p.getProperty("$id.ruleOpt.pieceEnterMaxDistanceY", pieceEnterMaxDistanceY)
 
-		fieldWidth = p.getProperty("$id.ruleopt.fieldWidth", fieldWidth)
-		fieldHeight = p.getProperty("$id.ruleopt.fieldHeight", fieldHeight)
-		fieldHiddenHeight = p.getProperty("$id.ruleopt.fieldHiddenHeight", fieldHiddenHeight)
-		fieldCeiling = p.getProperty("$id.ruleopt.fieldCeiling", fieldCeiling)
-		fieldLockoutDeath = p.getProperty("$id.ruleopt.fieldLockoutDeath", fieldLockoutDeath)
-		fieldPartialLockoutDeath = p.getProperty("$id.ruleopt.fieldPartialLockoutDeath", fieldPartialLockoutDeath)
+		fieldWidth = p.getProperty("$id.ruleOpt.fieldWidth", fieldWidth)
+		fieldHeight = p.getProperty("$id.ruleOpt.fieldHeight", fieldHeight)
+		fieldHiddenHeight = p.getProperty("$id.ruleOpt.fieldHiddenHeight", fieldHiddenHeight)
+		fieldCeiling = p.getProperty("$id.ruleOpt.fieldCeiling", fieldCeiling)
+		fieldLockoutDeath = p.getProperty("$id.ruleOpt.fieldLockoutDeath", fieldLockoutDeath)
+		fieldPartialLockoutDeath = p.getProperty("$id.ruleOpt.fieldPartialLockoutDeath", fieldPartialLockoutDeath)
 
-		nextDisplay = p.getProperty("$id.ruleopt.nextDisplay", nextDisplay)
+		nextDisplay = p.getProperty("$id.ruleOpt.nextDisplay", nextDisplay)
 
-		holdEnable = p.getProperty("$id.ruleopt.holdEnable", holdEnable)
-		holdInitial = p.getProperty("$id.ruleopt.holdInitial", holdInitial)
-		holdInitialLimit = p.getProperty("$id.ruleopt.holdInitialLimit", holdInitialLimit)
-		holdResetDirection = p.getProperty("$id.ruleopt.holdResetDirection", holdResetDirection)
-		holdLimit = p.getProperty("$id.ruleopt.holdLimit", holdLimit)
+		holdEnable = p.getProperty("$id.ruleOpt.holdEnable", holdEnable)
+		holdInitial = p.getProperty("$id.ruleOpt.holdInitial", holdInitial)
+		holdInitialLimit = p.getProperty("$id.ruleOpt.holdInitialLimit", holdInitialLimit)
+		holdResetDirection = p.getProperty("$id.ruleOpt.holdResetDirection", holdResetDirection)
+		holdLimit = p.getProperty("$id.ruleOpt.holdLimit", holdLimit)
 
-		harddropEnable = p.getProperty("$id.ruleopt.harddropEnable", harddropEnable)
-		harddropLock = p.getProperty("$id.ruleopt.harddropLock", harddropLock)
-		harddropLimit = p.getProperty("$id.ruleopt.harddropLimit", harddropLimit)
+		harddropEnable = p.getProperty("$id.ruleOpt.harddropEnable", harddropEnable)
+		harddropLock = p.getProperty("$id.ruleOpt.harddropLock", harddropLock)
+		harddropLimit = p.getProperty("$id.ruleOpt.harddropLimit", harddropLimit)
 
-		softdropEnable = p.getProperty("$id.ruleopt.softdropEnable", softdropEnable)
-		softdropLock = p.getProperty("$id.ruleopt.softdropLock", softdropLock)
-		softdropLimit = p.getProperty("$id.ruleopt.softdropLimit", softdropLimit)
-		softdropSurfaceLock = p.getProperty("$id.ruleopt.softdropSurfaceLock", softdropSurfaceLock)
-		softdropSpeed = p.getProperty("$id.ruleopt.softdropSpeed", softdropSpeed)
-		softdropMultiplyNativeSpeed = p.getProperty("$id.ruleopt.softdropMultiplyNativeSpeed", softdropMultiplyNativeSpeed)
-		softdropGravitySpeedLimit = p.getProperty("$id.ruleopt.softdropGravitySpeedLimit", softdropGravitySpeedLimit)
+		softdropEnable = p.getProperty("$id.ruleOpt.softdropEnable", softdropEnable)
+		softdropLock = p.getProperty("$id.ruleOpt.softdropLock", softdropLock)
+		softdropLimit = p.getProperty("$id.ruleOpt.softdropLimit", softdropLimit)
+		softdropSurfaceLock = p.getProperty("$id.ruleOpt.softdropSurfaceLock", softdropSurfaceLock)
+		softdropSpeed = p.getProperty("$id.ruleOpt.softdropSpeed", softdropSpeed)
+		softdropMultiplyNativeSpeed = p.getProperty("$id.ruleOpt.softdropMultiplyNativeSpeed", softdropMultiplyNativeSpeed)
+		softdropGravitySpeedLimit = p.getProperty("$id.ruleOpt.softdropGravitySpeedLimit", softdropGravitySpeedLimit)
 
-		rotateInitial = p.getProperty("$id.ruleopt.rotateInitial", rotateInitial)
-		rotateInitialLimit = p.getProperty("$id.ruleopt.rotateInitialLimit", rotateInitialLimit)
-		rotateWallkick = p.getProperty("$id.ruleopt.rotateWallkick", rotateWallkick)
-		rotateInitialWallkick = p.getProperty("$id.ruleopt.rotateInitialWallkick", rotateInitialWallkick)
-		rotateMaxUpwardWallkick = p.getProperty("$id.ruleopt.rotateMaxUpwardWallkick", rotateMaxUpwardWallkick)
-		rotateButtonDefaultRight = p.getProperty("$id.ruleopt.rotateButtonDefaultRight", rotateButtonDefaultRight)
-		rotateButtonAllowReverse = p.getProperty("$id.ruleopt.rotateButtonAllowReverse", rotateButtonAllowReverse)
-		rotateButtonAllowDouble = p.getProperty("$id.ruleopt.rotateButtonAllowDouble", rotateButtonAllowDouble)
+		rotateInitial = p.getProperty("$id.ruleOpt.rotateInitial", rotateInitial)
+		rotateInitialLimit = p.getProperty("$id.ruleOpt.rotateInitialLimit", rotateInitialLimit)
+		rotateWallkick = p.getProperty("$id.ruleOpt.rotateWallkick", rotateWallkick)
+		rotateInitialWallkick = p.getProperty("$id.ruleOpt.rotateInitialWallkick", rotateInitialWallkick)
+		rotateMaxUpwardWallkick = p.getProperty("$id.ruleOpt.rotateMaxUpwardWallkick", rotateMaxUpwardWallkick)
+		rotateButtonDefaultRight = p.getProperty("$id.ruleOpt.rotateButtonDefaultRight", rotateButtonDefaultRight)
+		rotateButtonAllowReverse = p.getProperty("$id.ruleOpt.rotateButtonAllowReverse", rotateButtonAllowReverse)
+		rotateButtonAllowDouble = p.getProperty("$id.ruleOpt.rotateButtonAllowDouble", rotateButtonAllowDouble)
 
-		lockresetFall = p.getProperty("$id.ruleopt.lockresetFall", lockresetFall)
-		lockresetMove = p.getProperty("$id.ruleopt.lockresetMove", lockresetMove)
-		lockresetRotate = p.getProperty("$id.ruleopt.lockresetRotate", lockresetRotate)
-		lockresetWallkick = p.getProperty("$id.ruleopt.lockresetWallkick", lockresetWallkick)
-		lockresetLimitMove = p.getProperty("$id.ruleopt.lockresetLimitMove", lockresetLimitMove)
-		lockresetLimitRotate = p.getProperty("$id.ruleopt.lockresetLimitRotate", lockresetLimitRotate)
-		lockresetLimitShareCount = p.getProperty("$id.ruleopt.lockresetLimitShareCount", lockresetLimitShareCount)
-		lockresetLimitOver = p.getProperty("$id.ruleopt.lockresetLimitOver", lockresetLimitOver)
+		lockresetFall = p.getProperty("$id.ruleOpt.lockresetFall", lockresetFall)
+		lockresetMove = p.getProperty("$id.ruleOpt.lockresetMove", lockresetMove)
+		lockresetRotate = p.getProperty("$id.ruleOpt.lockresetRotate", lockresetRotate)
+		lockresetWallkick = p.getProperty("$id.ruleOpt.lockresetWallkick", lockresetWallkick)
+		lockresetLimitMove = p.getProperty("$id.ruleOpt.lockresetLimitMove", lockresetLimitMove)
+		lockresetLimitRotate = p.getProperty("$id.ruleOpt.lockresetLimitRotate", lockresetLimitRotate)
+		lockresetLimitShareCount = p.getProperty("$id.ruleOpt.lockresetLimitShareCount", lockresetLimitShareCount)
+		lockresetLimitOver = p.getProperty("$id.ruleOpt.lockresetLimitOver", lockresetLimitOver)
 
-		lockflash = p.getProperty("$id.ruleopt.lockflash", lockflash)
-		lockflashOnlyFrame = p.getProperty("$id.ruleopt.lockflashOnlyFrame", lockflashOnlyFrame)
-		lockflashBeforeLineClear = p.getProperty("$id.ruleopt.lockflashBeforeLineClear", lockflashBeforeLineClear)
-		areCancelMove = p.getProperty("$id.ruleopt.areCancelMove", areCancelMove)
-		areCancelRotate = p.getProperty("$id.ruleopt.areCancelRotate", areCancelRotate)
-		areCancelHold = p.getProperty("$id.ruleopt.areCancelHold", areCancelHold)
+		lockflash = p.getProperty("$id.ruleOpt.lockflash", lockflash)
+		lockflashOnlyFrame = p.getProperty("$id.ruleOpt.lockflashOnlyFrame", lockflashOnlyFrame)
+		lockflashBeforeLineClear = p.getProperty("$id.ruleOpt.lockflashBeforeLineClear", lockflashBeforeLineClear)
+		areCancelMove = p.getProperty("$id.ruleOpt.areCancelMove", areCancelMove)
+		areCancelRotate = p.getProperty("$id.ruleOpt.areCancelRotate", areCancelRotate)
+		areCancelHold = p.getProperty("$id.ruleOpt.areCancelHold", areCancelHold)
 
-		minARE = p.getProperty("$id.ruleopt.minARE", minARE)
-		maxARE = p.getProperty("$id.ruleopt.maxARE", maxARE)
-		minARELine = p.getProperty("$id.ruleopt.minARELine", minARELine)
-		maxARELine = p.getProperty("$id.ruleopt.maxARELine", maxARELine)
-		minLineDelay = p.getProperty("$id.ruleopt.minLineDelay", minLineDelay)
-		maxLineDelay = p.getProperty("$id.ruleopt.maxLineDelay", maxLineDelay)
-		minLockDelay = p.getProperty("$id.ruleopt.minLockDelay", minLockDelay)
-		maxLockDelay = p.getProperty("$id.ruleopt.maxLockDelay", maxLockDelay)
-		minDAS = p.getProperty("$id.ruleopt.minDAS", minDAS)
-		maxDAS = p.getProperty("$id.ruleopt.maxDAS", maxDAS)
+		minARE = p.getProperty("$id.ruleOpt.minARE", minARE)
+		maxARE = p.getProperty("$id.ruleOpt.maxARE", maxARE)
+		minARELine = p.getProperty("$id.ruleOpt.minARELine", minARELine)
+		maxARELine = p.getProperty("$id.ruleOpt.maxARELine", maxARELine)
+		minLineDelay = p.getProperty("$id.ruleOpt.minLineDelay", minLineDelay)
+		maxLineDelay = p.getProperty("$id.ruleOpt.maxLineDelay", maxLineDelay)
+		minLockDelay = p.getProperty("$id.ruleOpt.minLockDelay", minLockDelay)
+		maxLockDelay = p.getProperty("$id.ruleOpt.maxLockDelay", maxLockDelay)
+		minDAS = p.getProperty("$id.ruleOpt.minDAS", minDAS)
+		maxDAS = p.getProperty("$id.ruleOpt.maxDAS", maxDAS)
 
-		dasARR = p.getProperty("$id.ruleopt.dasDelay", dasARR)
-		shiftLockEnable = p.getProperty("$id.ruleopt.shiftLockEnable", shiftLockEnable)
+		dasARR = p.getProperty("$id.ruleOpt.dasDelay", dasARR)
+		shiftLockEnable = p.getProperty("$id.ruleOpt.shiftLockEnable", shiftLockEnable)
 
-		dasInReady = p.getProperty("$id.ruleopt.dasInReady", dasInReady)
-		dasInMoveFirstFrame = p.getProperty("$id.ruleopt.dasInMoveFirstFrame", dasInMoveFirstFrame)
-		dasInLockFlash = p.getProperty("$id.ruleopt.dasInLockFlash", dasInLockFlash)
-		dasInLineClear = p.getProperty("$id.ruleopt.dasInLineClear", dasInLineClear)
-		dasInARE = p.getProperty("$id.ruleopt.dasInARE", dasInARE)
-		dasInARELastFrame = p.getProperty("$id.ruleopt.dasInARELastFrame", dasInARELastFrame)
-		dasInEndingStart = p.getProperty("$id.ruleopt.dasInEndingStart", dasInEndingStart)
-		dasChargeOnBlockedMove = p.getProperty("$id.ruleopt.dasOnBlockedMove", dasChargeOnBlockedMove)
-		dasStoreChargeOnNeutral = p.getProperty("$id.ruleopt.dasStoreChargeOnNeutral", dasStoreChargeOnNeutral)
-		dasRedirectInARE = p.getProperty("$id.ruleopt.dasRedirectInARE", dasRedirectInARE)
+		dasInReady = p.getProperty("$id.ruleOpt.dasInReady", dasInReady)
+		dasInMoveFirstFrame = p.getProperty("$id.ruleOpt.dasInMoveFirstFrame", dasInMoveFirstFrame)
+		dasInLockFlash = p.getProperty("$id.ruleOpt.dasInLockFlash", dasInLockFlash)
+		dasInLineClear = p.getProperty("$id.ruleOpt.dasInLineClear", dasInLineClear)
+		dasInARE = p.getProperty("$id.ruleOpt.dasInARE", dasInARE)
+		dasInARELastFrame = p.getProperty("$id.ruleOpt.dasInARELastFrame", dasInARELastFrame)
+		dasInEndingStart = p.getProperty("$id.ruleOpt.dasInEndingStart", dasInEndingStart)
+		dasChargeOnBlockedMove = p.getProperty("$id.ruleOpt.dasOnBlockedMove", dasChargeOnBlockedMove)
+		dasStoreChargeOnNeutral = p.getProperty("$id.ruleOpt.dasStoreChargeOnNeutral", dasStoreChargeOnNeutral)
+		dasRedirectInDelay = p.getProperty("$id.ruleOpt.dasRedirectInDelay", dasRedirectInDelay)
 
-		moveFirstFrame = p.getProperty("$id.ruleopt.moveFirstFrame", moveFirstFrame)
-		moveDiagonal = p.getProperty("$id.ruleopt.moveDiagonal", moveDiagonal)
-		moveUpAndDown = p.getProperty("$id.ruleopt.moveUpAndDown", moveUpAndDown)
-		moveLeftAndRightAllow = p.getProperty("$id.ruleopt.moveLeftAndRightAllow", moveLeftAndRightAllow)
-		moveLeftAndRightUsePreviousInput = p.getProperty("$id.ruleopt.moveLeftAndRightUsePreviousInput", moveLeftAndRightUsePreviousInput)
+		moveFirstFrame = p.getProperty("$id.ruleOpt.moveFirstFrame", moveFirstFrame)
+		moveDiagonal = p.getProperty("$id.ruleOpt.moveDiagonal", moveDiagonal)
+		moveUpAndDown = p.getProperty("$id.ruleOpt.moveUpAndDown", moveUpAndDown)
+		moveLeftAndRightAllow = p.getProperty("$id.ruleOpt.moveLeftAndRightAllow", moveLeftAndRightAllow)
+		moveLeftAndRightUsePreviousInput = p.getProperty("$id.ruleOpt.moveLeftAndRightUsePreviousInput", moveLeftAndRightUsePreviousInput)
 
-		lineFallAnim = p.getProperty("$id.ruleopt.lineFallAnim", lineFallAnim)
-		lineCancelMove = p.getProperty("$id.ruleopt.lineCancelMove", lineCancelMove)
-		lineCancelRotate = p.getProperty("$id.ruleopt.lineCancelRotate", lineCancelRotate)
-		lineCancelHold = p.getProperty("$id.ruleopt.lineCancelHold", lineCancelHold)
+		lineFallAnim = p.getProperty("$id.ruleOpt.lineFallAnim", lineFallAnim)
+		lineCancelMove = p.getProperty("$id.ruleOpt.lineCancelMove", lineCancelMove)
+		lineCancelRotate = p.getProperty("$id.ruleOpt.lineCancelRotate", lineCancelRotate)
+		lineCancelHold = p.getProperty("$id.ruleOpt.lineCancelHold", lineCancelHold)
 
-		skin = p.getProperty("$id.ruleopt.skin", skin)
-		ghost = p.getProperty("$id.ruleopt.ghost", ghost)
+		skin = p.getProperty("$id.ruleOpt.skin", skin)
+		ghost = p.getProperty("$id.ruleOpt.ghost", ghost)
 	}
 
 	companion object {

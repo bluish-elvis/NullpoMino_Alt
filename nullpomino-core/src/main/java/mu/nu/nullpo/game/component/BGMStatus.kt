@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.component
 
 import java.io.Serializable
@@ -32,7 +37,7 @@ class BGMStatus:Serializable {
 
 	/** Current BGM */
 	var bgm:BGM = BGM.Silent
-	var track:Int = 0
+	var track = 0
 
 	/** 音量 (1f=100%, .5f=50%) */
 	var volume:Float = 1f
@@ -45,22 +50,24 @@ class BGMStatus:Serializable {
 		}
 
 	/** BGM fadeout速度 */
-	var fadespd:Float = 0f
+	var fadespd = 0f
 
 	/** 音楽の定数 */
 	sealed class BGM(idx:Int = 0, val hidden:Boolean = false, nums:Int = 1, ln:String = "",
 		vararg sn:String = emptyArray()) {
 		constructor(idx:Int, nums:Int, ln:String, vararg sn:String):this(idx, false, nums, ln, *sn)
+		constructor(idx:Int, ln:String, vararg sn:String):this(idx, false, sn.size, ln, *sn)
+		constructor(idx:Int, hidden:Boolean, ln:String, vararg sn:String):this(idx, hidden, sn.size, ln, *sn)
 
 		val id:Int = BGM::class.java.declaredClasses.indexOfFirst {it==this::class.java}
 		val idx:Int = minOf(maxOf(0, idx), nums-1)
-		val nums:Int = maxOf(1, nums)
+		val nums = maxOf(1, nums, sn.size)
 
 		val name = this::class.simpleName ?: ""
 		val longName:String = ln.ifEmpty {name}
 		val subName:String = if(sn.isEmpty()) "" else sn[maxOf(minOf(this.idx, minOf(sn.size, nums)-1), 0)]
-		val drawName:String = "#$id-${this.idx} ${name.replace('_', ' ')}"
-		val fullName:String = "$longName $subName"
+		val drawName = "#$id-${this.idx} ${name.replace('_', ' ')}"
+		val fullName = "$longName $subName"
 		//var filename:Array<String> = Array(maxOf(1, nums)) {""}
 
 		override fun equals(other:Any?):Boolean =
@@ -83,31 +90,31 @@ class BGMStatus:Serializable {
 		override fun toString():String = fullName
 
 		object Silent:BGM(ln = "Silent")
-		class Generic(idx:Int = 0):BGM(idx, 9, "Guidelines Modes", *Array(6) {"Level:${it+1}"})
-		class Rush(idx:Int = 0):BGM(idx, 3, "Trial Rush", *Array(3) {"Level:${it+1}"})
+		class Generic(idx:Int = 0):BGM(idx, "Guidelines Modes", *Array(9) {"Level:${it+1}"})
+		class Rush(idx:Int = 0):BGM(idx, "Trial Rush", *Array(3) {"Level:${it+1}"})
 		class Extra(idx:Int = 0):BGM(idx, 3, "Extra Modes")
 		class RetroN(idx:Int = 0):BGM(idx, 4, "Retro Classic:N.")
 		class RetroA(idx:Int = 0):BGM(idx, 5, "Retro Marathon:AT")
 		class RetroS(idx:Int = 0):BGM(idx, 8, "Retro Mania:S")
 
-		class Puzzle(idx:Int = 0):BGM(idx, 3, "Grand Blossom", "SAKURA", "TOMOYO", "CELBERUS")
-		class GrandM(idx:Int = 0):BGM(idx, 2, "Grand Marathon", "NORMAL", "20G")
-		class GrandA(idx:Int = 0):BGM(idx, 4, "Grand Mania", "NORMAL", "20G 500", "Storm 300/700", "Storm 500/900")
-		class GrandT(idx:Int = 0):BGM(idx, 6, "Grand Mastery",
+		class Puzzle(idx:Int = 0):BGM(idx, "Grand Blossom", "SAKURA", "TOMOYO", "CELBERUS")
+		class GrandM(idx:Int = 0):BGM(idx, "Grand Marathon", "NORMAL", "20G")
+		class GrandA(idx:Int = 0):BGM(idx, "Grand Mania", "NORMAL", "20G 500", "Storm 300/700", "Storm 500/900")
+		class GrandT(idx:Int = 0):BGM(idx, "Grand Mastery",
 			"NORMAL", "20G", "Blitz", "Blitz 500", "Lightning 700", "Lightning 1k")
 
-		class Menu(idx:Int = 0):BGM(idx, true, 8, "Select BGM",
+		class Menu(idx:Int = 0):BGM(idx, true, "Select BGM",
 			"Title Menu/Replay", "Mode Select", "General Config",
 			"Mode Config(Retro/Puzzle)", "Mode Config(Generic)", "Mode Config(Unique)",
 			"Mode Config(Trial)", "Mode Config(Grand 20G)")
 
-		class Ending(idx:Int = 0):BGM(idx, true, 4, "Ending Challenge",
+		class Ending(idx:Int = 0):BGM(idx, true, "Ending Challenge",
 			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)")
 
-		class Result(idx:Int = 0):BGM(idx, true, 4, "Play Result",
+		class Result(idx:Int = 0):BGM(idx, true, "Play Result",
 			"Failure", "Done Sprint", "Done Enduro", "Cleared Game")
 
-		class Finale(idx:Int = 0):BGM(idx, true, 3, "Grand Finale", "Genuine", "Joker", "Further")
+		class Finale(idx:Int = 0):BGM(idx, true, "Grand Finale", "Genuine", "Joker", "Further")
 
 		//operator fun get(index: Int): BGM = if(this.idx)
 		companion object {

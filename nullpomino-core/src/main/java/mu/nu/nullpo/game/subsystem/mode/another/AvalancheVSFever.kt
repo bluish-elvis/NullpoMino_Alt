@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -30,31 +35,31 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** AVALANCHE VS FEVER MARATHON mode (Release Candidate 1) */
 class AvalancheVSFever:AvalancheVSDummyMode() {
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Second ojama counter for Fever Mode */
-	private var ojamaHandicapLeft:IntArray = IntArray(0)
+	private var ojamaHandicapLeft = IntArray(0)
 
 	/** Chain levels for Fever Mode */
-	private var feverChain:IntArray = IntArray(0)
+	private var feverChain = IntArray(0)
 
 	/** Ojama handicap to start with */
-	private var ojamaHandicap:IntArray = IntArray(0)
+	private var ojamaHandicap = IntArray(0)
 
 	/** Fever chain count when last chain hit occurred */
-	private var feverChainDisplay:IntArray = IntArray(0)
+	private var feverChainDisplay = IntArray(0)
 
 	/** Chain size for first fever setup */
-	private var feverChainStart:IntArray = IntArray(0)
+	private var feverChainStart = IntArray(0)
 
 	/* Mode name */
-	override val name:String = "AVALANCHE VS FEVER MARATHON (RC1)"
+	override val name = "AVALANCHE VS FEVER MARATHON (RC1)"
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
@@ -232,16 +237,18 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
 
-				if(menuCursor==28)
-					loadPreset(engine, owner.modeConfig, presetNumber[playerID], "fever")
-				else if(menuCursor==29) {
-					savePreset(engine, owner.modeConfig, presetNumber[playerID], "fever")
-					owner.saveModeConfig()
-				} else {
-					saveOtherSetting(engine, owner.modeConfig)
-					savePreset(engine, owner.modeConfig, -1-playerID, "fever")
-					owner.saveModeConfig()
-					engine.statc[4] = 1
+				when(menuCursor) {
+					28 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID], "fever")
+					29 -> {
+						savePreset(engine, owner.modeConfig, presetNumber[playerID], "fever")
+						owner.saveModeConfig()
+					}
+					else -> {
+						saveOtherSetting(engine, owner.modeConfig)
+						savePreset(engine, owner.modeConfig, -1-playerID, "fever")
+						owner.saveModeConfig()
+						engine.statc[4] = 1
+					}
 				}
 			}
 
@@ -275,48 +282,39 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 		if(engine.statc[4]==0) {
 			when {
 				menuCursor<9 -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.ORANGE, 0, "GRAVITY", engine.speed.gravity.toString(), "G-MAX",
-						engine.speed.denominator.toString(), "ARE", engine.speed.are.toString(), "ARE LINE",
-						engine.speed.areLine.toString(), "LINE DELAY", engine.speed.lineDelay.toString(), "LOCK DELAY",
-						engine.speed.lockDelay.toString(), "DAS", engine.speed.das.toString(), "FALL DELAY", engine.cascadeDelay.toString(),
-						"CLEAR DELAY", engine.cascadeClearDelay.toString())
+					drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.ORANGE, 0)
+					drawMenu(engine, playerID, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
 
 					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/4", COLOR.YELLOW)
 				}
 				menuCursor<18 -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "ZENKESHI", ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]],
-						"MAX ATTACK", "${maxAttack[playerID]}", "COLORS", "${numColors[playerID]}", "MIN CHAIN",
-						"${rensaShibari[playerID]}", "OJAMA RATE", "${ojamaRate[playerID]}",
-						"HURRYUP", if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]} SEC",
-						"HARD OJAMA", "${ojamaHard[playerID]}",
-						"X COLUMN", if(dangerColumnDouble[playerID]) "3 AND 4" else "3 ONLY",
-						"X SHOW", GeneralUtil.getONorOFF(dangerColumnShowX[playerID]))
+					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "ZENKESHI" to ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]],
+						"MAX ATTACK" to maxAttack[playerID], "COLORS" to numColors[playerID],
+						"MIN CHAIN" to "${rensaShibari[playerID]}", "OJAMA RATE" to ojamaRate[playerID],
+						"HURRYUP" to if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]} SEC",
+						"HARD OJAMA" to ojamaHard[playerID],
+						"X COLUMN" to if(dangerColumnDouble[playerID]) "3 AND 4" else "3 ONLY",
+						"X SHOW" to dangerColumnShowX[playerID])
 
 					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 2/4", COLOR.YELLOW)
 				}
 				menuCursor<25 -> {
-					initMenu(COLOR.PURPLE, 18)
-					drawMenu(engine, playerID, receiver, "HANDICAP", "${ojamaHandicap[playerID]}", "F-MAP SET",
-						FEVER_MAPS[feverMapSet[playerID]].uppercase(), "STARTCHAIN", "${feverChainStart[playerID]}")
-					menuColor = COLOR.COBALT
-					drawMenu(engine, playerID, receiver, "OUTLINE", OUTLINE_TYPE_NAMES[outlineType[playerID]],
-						"SHOW CHAIN", if(chainDisplayType[playerID]==CHAIN_DISPLAY_FEVERSIZE)
-						"FEVERSIZE" else CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]],
-						"FALL ANIM", if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
-					menuColor = COLOR.CYAN
-					drawMenu(engine, playerID, receiver, "CHAINPOWER", if(newChainPower[playerID]) "FEVER" else "CLASSIC")
+					drawMenu(engine, playerID, receiver, 0, COLOR.PURPLE, 18, "HANDICAP" to ojamaHandicap[playerID],
+						"F-MAP SET" to FEVER_MAPS[feverMapSet[playerID]].uppercase(), "STARTCHAIN" to feverChainStart[playerID])
+
+					drawMenu(engine, playerID, receiver, COLOR.COBALT, "OUTLINE" to OUTLINE_TYPE_NAMES[outlineType[playerID]],
+						"SHOW CHAIN" to if(chainDisplayType[playerID]==CHAIN_DISPLAY_FEVERSIZE) "FEVERSIZE" else CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]],
+						"FALL ANIM" to if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
+
+					drawMenu(engine, playerID, receiver, COLOR.CYAN, "CHAINPOWER" to if(newChainPower[playerID]) "FEVER" else "CLASSIC")
 
 					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/4", COLOR.YELLOW)
 				}
 				else -> {
-					initMenu(COLOR.PINK, 25)
-					drawMenu(engine, playerID, receiver, "BGM", "${BGM.values[bgmno]}")
-					menuColor = COLOR.YELLOW
-					drawMenu(engine, playerID, receiver, "SE", GeneralUtil.getONorOFF(enableSE[playerID]))
-					menuColor = COLOR.PINK
-					drawMenu(engine, playerID, receiver, "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
-					menuColor = COLOR.GREEN
-					drawMenu(engine, playerID, receiver, "LOAD", "${presetNumber[playerID]}", "SAVE", "${presetNumber[playerID]}")
+					drawMenu(engine, playerID, receiver, 0, COLOR.PINK, 25, "BGM" to BGM.values[bgmno])
+					drawMenu(engine, playerID, receiver, COLOR.YELLOW, "SE" to enableSE[playerID])
+					drawMenu(engine, playerID, receiver, COLOR.PINK, "BIG DISP" to bigDisplay)
+					drawMenu(engine, playerID, receiver, COLOR.GREEN, "LOAD" to presetNumber[playerID], "SAVE" to presetNumber[playerID])
 
 					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 4/4", COLOR.YELLOW)
 				}
@@ -329,7 +327,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 		super.readyInit(engine, playerID)
 		ojamaHandicapLeft[playerID] = ojamaHandicap[playerID]
 		feverChain[playerID] = feverChainStart[playerID]
-		if(engine.field!=null) engine.field!!.reset()
+		if(engine.field!=null) engine.field.reset()
 		loadMapSetFever(engine, playerID, feverMapSet[playerID], true)
 		return false
 	}
@@ -352,7 +350,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 		val playerColor = EventReceiver.getPlayerColor(playerID)
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(224, 8, GeneralUtil.getTime(engine.statistics.time))
+		if(playerID==0) receiver.drawDirectFont(224, 8, engine.statistics.time.toTimeStr)
 
 		// Ojama Counter
 		var fontColor = COLOR.WHITE
@@ -484,8 +482,8 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 			ojamaDrop[playerID] = true
 			val drop = minOf(ojama[playerID], maxAttack[playerID])
 			ojama[playerID] -= drop
-			engine.field!!.garbageDrop(engine, drop, false, ojamaHard[playerID])
-			engine.field!!.setAllSkin(engine.skin)
+			engine.field.garbageDrop(engine, drop, false, ojamaHard[playerID])
+			engine.field.setAllSkin(engine.skin)
 			return true
 		}
 		//Check for game over

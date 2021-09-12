@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,21 +24,33 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.tool.ruleeditor
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.log4j.Logger
 import org.apache.log4j.PropertyConfigurator
-import java.awt.*
-import java.awt.event.*
+import java.awt.BorderLayout
+import java.awt.Color
+import java.awt.Component
+import java.awt.Dimension
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+import java.awt.event.InputEvent
+import java.awt.event.KeyEvent
 import java.awt.image.BufferedImage
 import java.io.*
 import java.net.MalformedURLException
 import java.net.URL
-import java.util.*
+import java.util.Locale
+import java.util.Vector
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.filechooser.FileFilter
@@ -43,13 +59,13 @@ import javax.swing.filechooser.FileFilter
 class RuleEditor:JFrame, ActionListener {
 
 	/** Swing版のSave settings用Property file */
-	val propConfig:CustomProperties = CustomProperties()
+	val propConfig = CustomProperties()
 
 	/** Default language file */
-	private val propLangDefault:CustomProperties = CustomProperties()
+	private val propLangDefault = CustomProperties()
 
 	/** UI翻訳用Property file */
-	private val propLang:CustomProperties = CustomProperties()
+	private val propLang = CustomProperties()
 
 	//----------------------------------------------------------------------
 	/** 今開いているFilename (null:なし) */
@@ -417,11 +433,11 @@ class RuleEditor:JFrame, ActionListener {
 
 		init()
 
-		var ruleopt = RuleOptions()
+		var ruleOpt = RuleOptions()
 
 		if(filename!=null&&filename.isNotEmpty())
 			try {
-				ruleopt = load(filename)
+				ruleOpt = load(filename)
 				strNowFile = filename
 				title = "${getUIText("Title_RuleEditor")}:$strNowFile"
 			} catch(e:IOException) {
@@ -430,7 +446,7 @@ class RuleEditor:JFrame, ActionListener {
 					getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
 			}
 
-		readRuleToUI(ruleopt)
+		readRuleToUI(ruleOpt)
 
 		isVisible = true
 	}
@@ -1168,7 +1184,7 @@ class RuleEditor:JFrame, ActionListener {
 			tabPane.addTab(getUIText("TabName_PieceColor"), this)
 		}
 
-		val strColorNames = Array(Block.BLOCK_COLOR_COUNT-1) {getUIText("ColorName$it")}
+		val strColorNames = Array(Block.COLOR.COUNT-1) {getUIText("ColorName$it")}
 
 		val pColorRow = Array(2) {
 			JPanel().apply {
@@ -1442,7 +1458,7 @@ class RuleEditor:JFrame, ActionListener {
 		chkboxMoveDASInEndingStart.isSelected = r.dasInEndingStart
 		chkboxMoveDASChargeOnBlockedMove.isSelected = r.dasChargeOnBlockedMove
 		chkboxMoveDASStoreChargeOnNeutral.isSelected = r.dasStoreChargeOnNeutral
-		chkboxMoveDASRedirectInDelay.isSelected = r.dasRedirectInARE
+		chkboxMoveDASRedirectInDelay.isSelected = r.dasRedirectInDelay
 		chkboxMoveFirstFrame.isSelected = r.moveFirstFrame
 		chkboxMoveDiagonal.isSelected = r.moveDiagonal
 		chkboxMoveUpAndDown.isSelected = r.moveUpAndDown
@@ -1565,7 +1581,7 @@ class RuleEditor:JFrame, ActionListener {
 		r.dasInEndingStart = chkboxMoveDASInEndingStart.isSelected
 		r.dasChargeOnBlockedMove = chkboxMoveDASChargeOnBlockedMove.isSelected
 		r.dasStoreChargeOnNeutral = chkboxMoveDASStoreChargeOnNeutral.isSelected
-		r.dasRedirectInARE = chkboxMoveDASRedirectInDelay.isSelected
+		r.dasRedirectInDelay = chkboxMoveDASRedirectInDelay.isSelected
 		r.moveFirstFrame = chkboxMoveFirstFrame.isSelected
 		r.moveDiagonal = chkboxMoveDiagonal.isSelected
 		r.moveUpAndDown = chkboxMoveUpAndDown.isSelected
@@ -1593,13 +1609,13 @@ class RuleEditor:JFrame, ActionListener {
 	 */
 	@Throws(IOException::class)
 	fun save(filename:String) {
-		val ruleopt = RuleOptions()
-		writeRuleFromUI(ruleopt)
+		val ruleOpt = RuleOptions()
+		writeRuleFromUI(ruleOpt)
 
 		val prop = CustomProperties()
-		ruleopt.writeProperty(prop, 0)
+		ruleOpt.writeProperty(prop, 0)
 
-		val out = FileOutputStream(filename)
+		val out = GZIPOutputStream(FileOutputStream(filename))
 		prop.store(out, "NullpoMino RuleData")
 		out.close()
 
@@ -1615,16 +1631,16 @@ class RuleEditor:JFrame, ActionListener {
 	fun load(filename:String):RuleOptions {
 		val prop = CustomProperties()
 
-		val `in` = FileInputStream(filename)
+		val `in` = GZIPInputStream(FileInputStream(filename))
 		prop.load(`in`)
 		`in`.close()
 
-		val ruleopt = RuleOptions()
-		ruleopt.readProperty(prop, 0, true)
+		val ruleOpt = RuleOptions()
+		ruleOpt.readProperty(prop, 0, true)
 
 		log.debug("Loaded rule file from $filename")
 
-		return ruleopt
+		return ruleOpt
 	}
 
 	/** 翻訳後のUIの文字列を取得
@@ -1664,13 +1680,13 @@ class RuleEditor:JFrame, ActionListener {
 
 				if(c.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
 					val file = c.selectedFile
-					var ruleopt = RuleOptions()
+					var ruleOpt = RuleOptions()
 
 					strNowFile = file.path
 					title = "${getUIText("Title_RuleEditor")}:$strNowFile"
 
 					try {
-						ruleopt = load(file.path)
+						ruleOpt = load(file.path)
 					} catch(e2:IOException) {
 						log.error("Failed to load rule data from ${strNowFile!!}", e2)
 						JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e2",
@@ -1678,7 +1694,7 @@ class RuleEditor:JFrame, ActionListener {
 						return
 					}
 
-					readRuleToUI(ruleopt)
+					readRuleToUI(ruleOpt)
 				}
 			}
 			"Save" -> {
@@ -1780,7 +1796,7 @@ class RuleEditor:JFrame, ActionListener {
 
 	/** 画像表示Comboボックスの項目<br></br>
 	 * [出典](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */
-	private inner class ComboLabel(
+	private class ComboLabel(
 		var text:String = "",
 		var icon:Icon? = null
 	)

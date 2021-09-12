@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -39,7 +44,8 @@ import java.awt.image.BufferedImage
 import java.io.*
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 
@@ -97,31 +103,31 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		internal val log = Logger.getLogger(NullpoMinoSlick::class.java)
 
 		/** Save settings用Property file */
-		var propConfig:CustomProperties = CustomProperties()
+		var propConfig = CustomProperties()
 
 		/** Save settings用Property file (全Version共通) */
-		var propGlobal:CustomProperties = CustomProperties()
+		var propGlobal = CustomProperties()
 
 		/** 音楽リストProperty file */
-		internal val propMusic:CustomProperties = CustomProperties()
+		internal val propMusic = CustomProperties()
 
 		/** Observer機能用Property file */
-		private val propObserver:CustomProperties = CustomProperties()
+		private val propObserver = CustomProperties()
 
 		/** Default language file */
-		private val propLangDefault:CustomProperties = CustomProperties()
+		private val propLangDefault = CustomProperties()
 
 		/** 言語ファイル */
-		private val propLang:CustomProperties = CustomProperties()
+		private val propLang = CustomProperties()
 
 		/** Default game mode description file */
-		internal val propDefaultModeDesc:CustomProperties = CustomProperties()
+		internal val propDefaultModeDesc = CustomProperties()
 
 		/** Game mode description file */
-		internal val propModeDesc:CustomProperties = CustomProperties()
+		internal val propModeDesc = CustomProperties()
 
 		/** Skin description file */
-		internal val propSkins:CustomProperties = CustomProperties()
+		internal val propSkins = CustomProperties()
 
 		/** Mode 管理 */
 		internal val modeManager:ModeManager = ModeManager()
@@ -190,46 +196,46 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		internal lateinit var stateSelectModeFolder:StateSelectModeFolder
 
 		/** Timing of alternate FPS sleep (false=render true=update) */
-		internal var alternateFPSTiming:Boolean = false
+		internal var alternateFPSTiming = false
 
 		/** Allow dynamic adjust of target FPS (as seen in Swing version) */
-		private var alternateFPSDynamicAdjust:Boolean = false
+		private var alternateFPSDynamicAdjust = false
 
 		/** Perfect FPS mode (more accurate, eats more CPU) */
-		private var alternateFPSPerfectMode:Boolean = false
+		private var alternateFPSPerfectMode = false
 
 		/** Execute Thread.yield() during Perfect FPS mode */
-		private var alternateFPSPerfectYield:Boolean = false
+		private var alternateFPSPerfectYield = false
 
 		/** Target FPS */
-		internal var altMaxFPS:Int = 0
+		internal var altMaxFPS = 0
 
 		/** Current max FPS */
-		private var altMaxFPSCurrent:Int = 0
+		private var altMaxFPSCurrent = 0
 
 		/** Used for FPS calculation */
-		private var periodCurrent:Long = 0
+		private var periodCurrent:Long = 0L
 
 		/** FPS維持用 */
-		private var beforeTime:Long = 0
+		private var beforeTime = 0L
 
 		/** FPS維持用 */
-		private var overSleepTime:Long = 0
+		private var overSleepTime = 0L
 
 		/** FPS維持用 */
-		private var noDelays:Int = 0
+		private var noDelays = 0
 
 		/** FPS計算用 */
-		private var calcInterval:Long = 0
+		private var calcInterval = 0L
 
 		/** FPS計算用 */
-		private var prevCalcTime:Long = 0
+		private var prevCalcTime = 0L
 
 		/** frame count */
-		var frameCount:Long = 0; private set
+		var frameCount = 0L; private set
 
 		/** upTime by frame */
-		var upTimeFrame:Long = 0; private set
+		var upTimeFrame = 0L; private set
 
 		/** rainbow counter */
 		val rainbow get() = (upTimeFrame%18).toInt()/2
@@ -241,17 +247,17 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		private val df = DecimalFormat("0.0")
 
 		/** Used by perfect fps mode */
-		private var perfectFPSDelay:Long = 0
+		private var perfectFPSDelay = 0L
 
 		/** Observerクライアント */
 		private var netObserverClient:NetObserverClient? = null
 
-		/** true if read keyboard input from JInput */
-		internal var useJInputKeyboard:Boolean = false
+		/** True if read keyboard input from JInput */
+		internal var useJInputKeyboard = false
 
-		/** true to use safer texture loading
+		/** True to use safer texture loading
 		 * (Use BigImage instead of regular Image) */
-		internal var useBigImageTextureLoad:Boolean = false
+		internal var useBigImageTextureLoad = false
 
 		/** メイン関数
 		 * @param args プログラムに渡されたコマンドLines引数

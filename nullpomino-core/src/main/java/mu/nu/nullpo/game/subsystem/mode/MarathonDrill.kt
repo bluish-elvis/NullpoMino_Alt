@@ -1,3 +1,32 @@
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -7,54 +36,54 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** DIG CHALLENGE mode */
 class MarathonDrill:NetDummyMode() {
 
 	/** Most recent increase in score */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** Time to display the most recent increase in score */
-	private var scgettime:Int = 0
-	private var sum:Int = 0
+	private var scgettime = 0
+	private var sum = 0
 
 	/** Previous garbage hole */
-	private var garbageHole:Int = 0
-	private var garbageHistory:IntArray = IntArray(7) {0}
+	private var garbageHole = 0
+	private var garbageHistory = IntArray(7) {0}
 
 	/** Garbage timer */
-	private var garbageTimer:Int = 0
+	private var garbageTimer = 0
 
 	/** Garbage Height */
 	private var garbageHeight:Int = GARBAGE_BOTTOM
 
 	/** Number of total garbage lines digged */
-	private var garbageDigged:Int = 0
+	private var garbageDigged = 0
 
 	/** Number of total garbage lines rised */
-	private var garbageTotal:Int = 0
+	private var garbageTotal = 0
 
 	/** Number of garbage lines needed for next level */
-	private var garbageNextLevelLines:Int = 0
+	private var garbageNextLevelLines = 0
 
 	/** Number of garbage lines waiting to appear (Normal type) */
-	private var garbagePending:Int = 0
+	private var garbagePending = 0
 
 	/** Game type */
-	private var goaltype:Int = 0
+	private var goaltype = 0
 
 	/** Level at the start of the game */
-	private var startlevel:Int = 0
+	private var startlevel = 0
 
 	/** BGM number */
-	private var bgmno:Int = 0
+	private var bgmno = 0
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Rankings' scores */
 	private var rankingScore:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
@@ -66,8 +95,8 @@ class MarathonDrill:NetDummyMode() {
 	private var rankingDepth:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
 
 	/* Mode name */
-	override val name:String = "Drill Marathon"
-	override val gameIntensity:Int = 1
+	override val name = "Drill Marathon"
+	override val gameIntensity = 1
 	/* Initialization for each player */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		rankingScore = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
@@ -96,7 +125,7 @@ class MarathonDrill:NetDummyMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -210,10 +239,10 @@ class MarathonDrill:NetDummyMode() {
 			// NET: Netplay Ranking
 				netOnRenderNetPlayRanking(engine, playerID, it)
 			else {
-				drawMenu(engine, playerID, it, 0, COLOR.BLUE, 0, "GAME TYPE", if(goaltype==0) "NORMAL" else "REALTIME")
-				drawMenuCompact(engine, playerID, it, "HEIGHT", "$garbageHeight", "Level", "${startlevel+1}")
+				drawMenu(engine, playerID, it, 0, COLOR.BLUE, 0, "GAME TYPE" to if(goaltype==0) "NORMAL" else "REALTIME")
+				drawMenuCompact(engine, playerID, it, "HEIGHT" to garbageHeight, "Level" to startlevel+1)
 				drawMenuBGM(engine, playerID, it, bgmno)
-				drawMenuCompact(engine, playerID, it, "DAS", "${engine.speed.das}")
+				drawMenuCompact(engine, playerID, it, "DAS" to engine.speed.das)
 			}
 		}
 	}
@@ -295,7 +324,7 @@ class MarathonDrill:NetDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 1, 15, "$garbageNextLevelLines")
 
 			receiver.drawScoreFont(engine, playerID, 0, 16, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 17, GeneralUtil.getTime(engine.statistics.time), scale = 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 17, engine.statistics.time.toTimeStr, scale = 2f)
 
 			if(garbagePending>0) {
 				val fontColor = when {
@@ -321,7 +350,7 @@ class MarathonDrill:NetDummyMode() {
 			// Update meter
 			updateMeter(engine)
 			if(!netIsWatch) {
-				engine.field?.let {
+				engine.field.let {
 					// Add pending garbage (Normal)
 					while(garbageTimer>=maxTime) {
 						garbagePending++
@@ -421,7 +450,7 @@ class MarathonDrill:NetDummyMode() {
 			}
 		}
 
-		engine.field?.let {
+		engine.field.let {
 			garbageTimer -= (it.howManyBlocks+it.howManyBlocksCovered+it.howManyHoles+it.howManyLidAboveHoles)/(it.width-1)
 			val gh = garbageHeight-(it.height-it.highestGarbageBlockY)
 			if(gh>0) if(goaltype==GOALTYPE_NORMAL) garbagePending = maxOf(garbagePending, gh)
@@ -454,7 +483,7 @@ class MarathonDrill:NetDummyMode() {
 	 */
 	private fun addGarbage(engine:GameEngine, lines:Int = 1, change:Boolean = true) {
 		// Add garbages
-		val field = engine.field ?: return
+		val field = engine.field
 		val w = field.width
 		val h = field.height
 
@@ -545,7 +574,7 @@ class MarathonDrill:NetDummyMode() {
 		if(!owner.replayMode&&startlevel==0&&engine.ai==null) {
 
 			if(updateRanking(engine.statistics.score, engine.statistics.lines, garbageDigged, goaltype)!=-1) {
-				saveRanking(goaltype, engine.ruleopt.strRuleName)
+				saveRanking(goaltype, engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -690,7 +719,7 @@ class MarathonDrill:NetDummyMode() {
 		subMsg += "GARBAGE;$garbageDigged\t"
 		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
 		subMsg += "LEVEL;${engine.statistics.level+engine.statistics.levelDispAdd}\t"
-		subMsg += "TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
+		subMsg += "TIME;${engine.statistics.time.toTimeStr}\t"
 
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
@@ -728,13 +757,13 @@ class MarathonDrill:NetDummyMode() {
 		private const val GOALTYPE_MAX = 2
 
 		/** Number of entries in rankings */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of garbage lines for each level */
 		private const val LEVEL_GARBAGE_LINES = 10
 
 		/** Goal type constants */
-		enum class gametime { NORMAL, REALTIME }
+		enum class Type { NORMAL, REALTIME }
 
 		private const val GOALTYPE_NORMAL = 0
 		private const val GOALTYPE_REALTIME = 1

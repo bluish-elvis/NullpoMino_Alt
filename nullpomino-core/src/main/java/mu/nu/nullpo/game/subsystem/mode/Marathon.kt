@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -29,34 +34,34 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
 
 /** MARATHON Mode */
 class Marathon:NetDummyMode() {
 
 	/** Most recent increase in score */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** Time to display the most recent increase in score */
-	private var scgettime:Int = 0
-	private var sc:Int = 0
-	private var sum:Int = 0
+	private var scgettime = 0
+	private var sc = 0
+	private var sum = 0
 
 	/** Current BGM */
-	private var bgmlv:Int = 0
+	private var bgmlv = 0
 
 	/** Level at start time */
-	private var startlevel:Int = 0
+	private var startlevel = 0
 
 	/** Game type */
-	private var goaltype:Int = 0
+	private var goaltype = 0
 
 	/** Big */
-	private var big:Boolean = false
+	private var big = false
 
 	/** Version */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Current round's ranking rank */
 	private var rankingRank:Int = -1
@@ -71,7 +76,7 @@ class Marathon:NetDummyMode() {
 	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
 	/* Mode name */
-	override val name:String = "Marathon"
+	override val name = "Marathon"
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -90,7 +95,7 @@ class Marathon:NetDummyMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			loadSetting(owner.replayProp)
@@ -203,10 +208,10 @@ class Marathon:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"GOAL", if(tableGameClearLines[goaltype]<=0) "ENDLESS" else "${tableGameClearLines[goaltype]} LINES")
-			drawMenuCompact(engine, playerID, receiver, "Level", "${startlevel+1}")
-			drawMenuSpeeds(engine, playerID, receiver, 5, EventReceiver.COLOR.BLUE, 10)
-			drawMenuCompact(engine, playerID, receiver, 10, EventReceiver.COLOR.BLUE, 2, "BIG", GeneralUtil.getONorOFF(big))
+				"GOAL" to if(tableGameClearLines[goaltype]<=0) "ENDLESS" else "${tableGameClearLines[goaltype]} LINES")
+			drawMenuCompact(engine, playerID, receiver, "Level" to startlevel+1)
+			drawMenuSpeeds(engine, playerID, receiver, 4, EventReceiver.COLOR.WHITE, 10)
+			drawMenuCompact(engine, playerID, receiver, 9, EventReceiver.COLOR.BLUE, 2, "BIG" to big)
 		}
 	}
 
@@ -249,8 +254,7 @@ class Marathon:NetDummyMode() {
 						scale)
 					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[goaltype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(engine, playerID, 10, topY+i, "${rankingLines[goaltype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 15, topY+i,
-						GeneralUtil.getTime(rankingTime[goaltype][i]), i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 15, topY+i, rankingTime[goaltype][i].toTimeStr, i==rankingRank, scale)
 				}
 			}
 		} else {
@@ -269,7 +273,7 @@ class Marathon:NetDummyMode() {
 				if(engine.statistics.level>=19&&tableGameClearLines[goaltype]<0) 1f else engine.statistics.lines%10*0.1f+1f), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Time", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, GeneralUtil.getTime(engine.statistics.time), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 10, engine.statistics.time.toTimeStr, 2f)
 		}
 
 		super.renderLast(engine, playerID)
@@ -385,7 +389,7 @@ class Marathon:NetDummyMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goaltype)
 
 			if(rankingRank!=-1) {
-				saveRanking(engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -428,7 +432,7 @@ class Marathon:NetDummyMode() {
 	/** Save rankings to property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(ruleName:String) {
+	private fun saveRanking(ruleName:String) {
 		super.saveRanking(ruleName, (0 until GOALTYPE_MAX).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf(
@@ -533,7 +537,7 @@ class Marathon:NetDummyMode() {
 		subMsg += "SCORE;${engine.statistics.score}\t"
 		subMsg += "LINE;${engine.statistics.lines}\t"
 		subMsg += "LEVEL;${engine.statistics.level+engine.statistics.levelDispAdd}\t"
-		subMsg += "TIME;${GeneralUtil.getTime(engine.statistics.time)}\t"
+		subMsg += "TIME;${engine.statistics.time.toTimeStr}\t"
 		subMsg += "SCORE/LINE;${engine.statistics.spl}\t"
 		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
 
@@ -574,14 +578,15 @@ class Marathon:NetDummyMode() {
 		private val tableDenominator = intArrayOf(60, 95, 37, 85, 64, 110, 34, 97, 169, 100, 67, 5, 1, 2, 1, 1, 1, 2, 1, 1)
 
 		/** Line counts when BGM changes occur */
-		private val tableBGMChange = arrayOf(intArrayOf(30, 60, 90, 120), intArrayOf(20, 40, 60, 80, 100, 110, 140, 170),
+		private val tableBGMChange = arrayOf(intArrayOf(30, 60, 90, 120),
+			intArrayOf( 30,  60,  90, 120, 140, 160, 180),
 			intArrayOf(110, 220, 330, 440, 550, 660, 770, 880))
 
 		/** Line counts when game ending occurs */
 		private val tableGameClearLines = intArrayOf(150, 200, 999)
 
 		/** Number of entries in rankings */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private val RANKING_TYPE = tableGameClearLines.size

@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.Block
@@ -28,83 +33,83 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
 
 /** AVALANCHE FEVER MARATHON mode (Release Candidate 2) */
 class Avalanche1PFever:Avalanche1PDummyMode() {
 
 	/** Selected game type */
-	private var mapSet:Int = 0
+	private var mapSet = 0
 
 	/** Version number */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Current round's ranking rank */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Rankings' line counts */
-	private var rankingScore:Array<Array<IntArray>>? = null
+	private var rankingScore:Array<Array<IntArray>> = emptyArray()
 
 	/** Rankings' times */
-	private var rankingTime:Array<Array<IntArray>>? = null
+	private var rankingTime:Array<Array<IntArray>> = emptyArray()
 
 	/** Flag for all clear */
-	private var zenKeshiDisplay:Int = 0
+	private var zenKeshiDisplay = 0
 
 	/** Time limit left */
-	private var timeLimit:Int = 0
+	private var timeLimit = 0
 
 	/** Time added to limit */
-	private var timeLimitAdd:Int = 0
+	private var timeLimitAdd = 0
 
 	/** Time to display added time */
-	private var timeLimitAddDisplay:Int = 0
+	private var timeLimitAddDisplay = 0
 
 	/** Fever values CustomProperties */
-	private var propFeverMap:CustomProperties = CustomProperties()
+	private var propFeverMap = CustomProperties()
 
 	/** Chain levels for Fever Mode */
-	private var feverChain:Int = 0
+	private var feverChain = 0
 
 	/** Chain level boundaries for Fever Mode */
-	private var feverChainMin:Int = 0
-	private var feverChainMax:Int = 0
+	private var feverChainMin = 0
+	private var feverChainMax = 0
 
 	/** Flag set to true when last piece caused a clear */
-	private var cleared:Boolean = false
+	private var cleared = false
 
 	/** List of subsets in selected values */
 	private var mapSubsets:Array<String>? = null
 
 	/** Fever chain count when last chain hit occurred */
-	private var feverChainDisplay:Int = 0
+	private var feverChainDisplay = 0
 
 	/** Type of chain display */
-	private var chainDisplayType:Int = 0
+	private var chainDisplayType = 0
 
 	/** Number of boards played */
-	private var boardsPlayed:Int = 0
+	private var boardsPlayed = 0
 
 	/** Level at start of chain */
-	private var chainLevelMultiplier:Int = 0
+	private var chainLevelMultiplier = 0
 
 	/** Fast-forward settings for debug use */
-	private var fastenable:Int = 0
+	private var fastenable = 0
 
 	/** Flag set when fast-forward is enabled */
-	private var fastinuse:Boolean = false
+	private var fastinuse = false
 
 	/** Indices for values previews */
-	private var previewChain:Int = 0
-	private var previewSubset:Int = 0
+	private var previewChain = 0
+	private var previewSubset = 0
 
 	/** ??? */
-	private var xyzzy:Int = 0
+	private var xyzzy = 0
 
 	/* Mode name */
-	override val name:String = "AVALANCHE 1P FEVER MARATHON (RC2)"
-	override val gameIntensity:Int = 1
+	override val name = "AVALANCHE 1P FEVER MARATHON (RC2)"
+	override val gameIntensity = 1
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
@@ -133,7 +138,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else
 			loadSetting(owner.replayProp)
@@ -273,20 +278,21 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		if(menuCursor<=5) {
-			var strOutline = ""
-			if(outlinetype==0) strOutline = "NORMAL"
-			if(outlinetype==1) strOutline = "COLOR"
-			if(outlinetype==2) strOutline = "NONE"
+			val strOutline = when(outlinetype) {
+				1 -> "COLOR"
+				2 -> "NONE"
+				else -> "NORMAL"
+			}
 
-			initMenu(0, EventReceiver.COLOR.BLUE, 0)
-			drawMenu(engine, playerID, receiver, "MAP SET", FEVER_MAPS[mapSet].uppercase(), "OUTLINE", strOutline, "COLORS",
-				"$numColors", "SHOW CHAIN", CHAIN_DISPLAY_NAMES[chainDisplayType], "BIG DISP", GeneralUtil.getONorOFF(bigDisplay))
-			if(xyzzy==573) drawMenu(engine, playerID, receiver, "FAST", FAST_NAMES[fastenable])
+			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "MAP SET" to FEVER_MAPS[mapSet].uppercase(),
+				"OUTLINE" to strOutline, "COLORS" to numColors,
+				"SHOW CHAIN" to CHAIN_DISPLAY_NAMES[chainDisplayType], "BIG DISP" to bigDisplay)
+			if(xyzzy==573) drawMenu(engine, playerID, receiver, "FAST" to FAST_NAMES[fastenable])
 		} else {
 			receiver.drawMenuFont(engine, playerID, 0, 13, "MAP PREVIEW", EventReceiver.COLOR.YELLOW)
 			receiver.drawMenuFont(engine, playerID, 0, 14, "A:DISPLAY", EventReceiver.COLOR.GREEN)
-			drawMenu(engine, playerID, receiver, 15, EventReceiver.COLOR.BLUE, 6, "MAP SET", FEVER_MAPS[mapSet].uppercase(), "SUBSET",
-				mapSubsets!![previewSubset].uppercase(), "CHAIN", "$previewChain")
+			drawMenu(engine, playerID, receiver, 15, EventReceiver.COLOR.BLUE, 6, "MAP SET" to FEVER_MAPS[mapSet].uppercase(),
+				"SUBSET" to mapSubsets!![previewSubset].uppercase(), "CHAIN" to previewChain)
 		}
 	}
 
@@ -305,9 +311,9 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
-					receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore!![numColors-3][mapSet][i]}", i==rankingRank,
+					receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[numColors-3][mapSet][i]}", i==rankingRank,
 						scale)
-					receiver.drawScoreNum(engine, playerID, 14, topY+i, GeneralUtil.getTime(rankingTime!![numColors-3][mapSet][i]),
+					receiver.drawScoreNum(engine, playerID, 14, topY+i, rankingTime[numColors-3][mapSet][i].toTimeStr,
 						i==rankingRank, scale)
 				}
 			}
@@ -322,11 +328,11 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			receiver.drawScoreNum(engine, playerID, 0, 7, "$level")
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Time Limit", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, GeneralUtil.getTime(timeLimit), 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 10, timeLimit.toTimeStr, 2f)
 			if(timeLimitAddDisplay>0) receiver.drawScoreFont(engine, playerID, 0, 14, "(+${timeLimitAdd/60} SEC.)")
 
 			receiver.drawScoreFont(engine, playerID, 0, 12, "Played", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time))
+			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.time.toTimeStr)
 
 			receiver.drawScoreFont(engine, playerID, 11, 6, "Boards #", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 11, 7, "$boardsPlayed")
@@ -351,7 +357,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 			if(!engine.gameActive) return
 
-			val textHeight = if(engine.displaysize==1) 11 else (engine.field?.height ?: 12)+1
+			val textHeight = if(engine.displaysize==1) 11 else engine.field.height+1
 
 			val baseX = if(engine.displaysize==1) 1 else 0
 			if(engine.chain>0&&chainDisplay>0&&chainDisplayType!=0) {
@@ -377,7 +383,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		val strFeverTimer = String.format("%02d", (timeLimit+59)/60)
 
 		for(i in 0..1)
-			if(engine.field==null||engine.field!!.getBlockEmpty(2+i, 0))
+			if(engine.field==null||engine.field.getBlockEmpty(2+i, 0))
 				if(engine.displaysize==1)
 					receiver.drawMenuFont(engine, playerID, 4+i*2, 0, "${strFeverTimer[i]}",
 						if(timeLimit<360) EventReceiver.COLOR.RED else EventReceiver.COLOR.WHITE, 2f)
@@ -473,7 +479,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 				loadFeverMap(engine, feverChain)
 			}
 		} else if(engine.field!=null)
-			if(!engine.field!!.getBlockEmpty(2, 0)||!engine.field!!.getBlockEmpty(3, 0)) {
+			if(!engine.field.getBlockEmpty(2, 0)||!engine.field.getBlockEmpty(3, 0)) {
 				engine.stat = GameEngine.Status.GAMEOVER
 				engine.gameEnded()
 				engine.resetStatc()
@@ -514,7 +520,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		receiver.drawMenuFont(engine, playerID, 0, 12, strScore, EventReceiver.COLOR.RED)
 
 		receiver.drawMenuFont(engine, playerID, 0, 13, "Time", EventReceiver.COLOR.BLUE)
-		val strTime = String.format("%10s", GeneralUtil.getTime(engine.statistics.time))
+		val strTime = String.format("%10s", engine.statistics.time.toTimeStr)
 		receiver.drawMenuNum(engine, playerID, 0, 14, strTime)
 
 		if(rankingRank!=-1) {
@@ -533,7 +539,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			updateRanking(engine.statistics.score, engine.statistics.time, mapSet, numColors)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -579,12 +585,12 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 	private fun loadFeverMap(engine:GameEngine, rand:Random, chain:Int, subset:Int) {
 		engine.createFieldIfNeeded()
-		engine.field!!.reset()
-		engine.field!!.stringToField(propFeverMap.getProperty("${mapSubsets!![subset]}.${numColors}colors.${chain}chain"))
-		engine.field!!.setBlockLinkByColor()
-		engine.field!!.setAllAttribute(false, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.ANTIGRAVITY)
-		engine.field!!.setAllSkin(engine.skin)
-		engine.field!!.shuffleColors(BLOCK_COLORS, numColors, rand)
+		engine.field.reset()
+		engine.field.stringToField(propFeverMap.getProperty("${mapSubsets!![subset]}.${numColors}colors.${chain}chain"))
+		engine.field.setBlockLinkByColor()
+		engine.field.setAllAttribute(false, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.ANTIGRAVITY)
+		engine.field.setAllSkin(engine.skin)
+		engine.field.shuffleColors(BLOCK_COLORS, numColors, rand)
 	}
 
 	/** Read rankings from property file
@@ -594,27 +600,26 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in FEVER_MAPS.indices)
-				for(colors in 3..5) {
-					rankingScore!![colors-3][j][i] = prop.getProperty(
-						"avalanchefever.ranking.$ruleName.${colors}colors.${FEVER_MAPS[j]}.score.$i", 0)
-					rankingTime!![colors-3][j][i] = prop.getProperty(
-						"avalanchefever.ranking.$ruleName.${colors}colors.${FEVER_MAPS[j]}.time.$i", -1)
+				for(c in 3..5) {
+					rankingScore[c-3][j][i] = prop.getProperty(
+						"$ruleName.$c.${FEVER_MAPS[j]}.score.$i", 0)
+					rankingTime[c-3][j][i] = prop.getProperty(
+						"$ruleName.$c.${FEVER_MAPS[j]}.time.$i", -1)
 				}
 	}
 
 	/** Save rankings to property file
-	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(j in FEVER_MAPS.indices)
-				for(colors in 3..5) {
-					prop.setProperty("avalanchefever.ranking.$ruleName.${colors}colors.${FEVER_MAPS[j]}.score.$i",
-						rankingScore!![colors-3][j][i])
-					prop.setProperty("avalanchefever.ranking.$ruleName.${colors}colors.${FEVER_MAPS[j]}.time.$i",
-						rankingTime!![colors-3][j][i])
+	private fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (3..5).flatMap {c ->
+			FEVER_MAPS.indices.flatMap {j ->
+				(0 until RANKING_MAX).flatMap {i ->
+					listOf("$ruleName.$c.$j.score.$i" to rankingScore[c-3][j][i],
+						"$ruleName.$c.$j.time.$i" to rankingTime[c-3][j][i])
 				}
+			}
+		})
 	}
 
 	/** Update rankings
@@ -627,13 +632,13 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
 			for(i in RANKING_MAX-1 downTo rankingRank+1) {
-				rankingScore!![colors-3][type][i] = rankingScore!![colors-3][type][i-1]
-				rankingTime!![colors-3][type][i] = rankingTime!![colors-3][type][i-1]
+				rankingScore[colors-3][type][i] = rankingScore[colors-3][type][i-1]
+				rankingTime[colors-3][type][i] = rankingTime[colors-3][type][i-1]
 			}
 
 			// Add new data
-			rankingScore!![colors-3][type][rankingRank] = sc
-			rankingTime!![colors-3][type][rankingRank] = time
+			rankingScore[colors-3][type][rankingRank] = sc
+			rankingTime[colors-3][type][rankingRank] = time
 		}
 	}
 
@@ -644,9 +649,9 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	 */
 	private fun checkRanking(sc:Int, time:Int, type:Int, colors:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(sc>rankingScore!![colors-3][type][i])
+			if(sc>rankingScore[colors-3][type][i])
 				return i
-			else if(sc==rankingScore!![colors-3][type][i]&&time<rankingTime!![colors-3][type][i]) return i
+			else if(sc==rankingScore[colors-3][type][i]&&time<rankingTime[colors-3][type][i]) return i
 
 		return -1
 	}
@@ -663,7 +668,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		private val CHAIN_DISPLAY_NAMES = arrayOf("OFF", "YELLOW", "SIZE")
 
 		/** Number of ranking records */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Time limit */
 		private const val TIME_LIMIT = 3600

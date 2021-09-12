@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
@@ -29,40 +34,41 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** RETRO MANIA mode (Based System16, Original from NullpoUE build 121909 by Zircean) */
 class RetroMania:AbstractMode() {
 
 	/** Amount of points you just get from line clears */
-	private var lastscore:Int = 0
+	private var lastscore = 0
 
 	/** Elapsed time from last line clear (lastscore is displayed to screen
 	 * until this reaches to 120) */
-	private var scgettime:Int = 0
+	private var scgettime = 0
 
 	/** Selected game type */
-	private var gametype:Int = 0
+	private var gametype = 0
 
 	/** Selected starting level */
-	private var startlevel:Int = 0
+	private var startlevel = 0
 
 	/** Level timer */
-	private var levelTimer:Int = 0
+	private var levelTimer = 0
 
 	/** Amount of lines cleared (It will be reset when the level increases) */
-	private var linesAfterLastLevelUp:Int = 0
+	private var linesAfterLastLevelUp = 0
 
 	/** Big mode on/off */
-	private var big:Boolean = false
+	private var big = false
 
 	/** Poweron Pattern on/off */
-	private var poweron:Boolean = false
+	private var poweron = false
 
 	/** Version of this mode */
-	private var version:Int = 0
+	private var version = 0
 
 	/** Your place on leaderboard (-1: out of rank) */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 
 	/** Score records */
 	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
@@ -70,11 +76,21 @@ class RetroMania:AbstractMode() {
 	/** Line records */
 	private var rankingLines:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
+	/** Line records */
+	private var rankingLevel:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+
 	/** Time records */
 	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
+	/** Score 999,999 Reached time */
+	private var maxScoreTime = -1
+	/** 99 Lines Reached time */
+	private var maxLinesTime = -1
+	/** Level 99 Reached time */
+	private var maxLevelTime = -1
+
 	/** Returns the name of this mode */
-	override val name:String = "Retro Mania .S"
+	override val name = "Retro Mania .S"
 
 	override val gameIntensity:Int = -1
 
@@ -86,10 +102,14 @@ class RetroMania:AbstractMode() {
 		scgettime = 0
 		levelTimer = 0
 		linesAfterLastLevelUp = 0
+		maxScoreTime = -1
+		maxLinesTime = -1
+		maxLevelTime = -1
 
 		rankingRank = -1
 		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingLevel = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
 		engine.twistEnable = false
@@ -108,13 +128,13 @@ class RetroMania:AbstractMode() {
 		engine.owMaxDAS = -1
 		engine.owARR = 1
 		engine.owSDSpd = 2
+		engine.owDelayCancel = 0
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleopt.strRuleName)
+			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
-		} else
-			loadSetting(owner.replayProp)
+		} else loadSetting(owner.replayProp)
 
 		engine.owner.backgroundStatus.bg = startlevel/2
 		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
@@ -184,15 +204,15 @@ class RetroMania:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY", GAMETYPE_NAME[gametype], "Level", "$startlevel", "BIG",
-			GeneralUtil.getONorOFF(big), "POWERON", GeneralUtil.getONorOFF(poweron))
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startlevel,
+			"BIG" to big, "POWERON" to poweron)
 	}
 
 	/** Ready */
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==0) {
 
-			engine.ruleopt.run {
+			engine.ruleOpt.run {
 				lockresetMove = false
 				lockresetRotate = false
 				lockresetWallkick = false
@@ -204,8 +224,6 @@ class RetroMania:AbstractMode() {
 				holdEnable = false
 				dasInARE = false
 				dasInReady = false
-				areCancelMove = false
-				areCancelRotate = false
 			}
 			if(poweron)
 				engine.nextPieceArrayID = GeneralUtil.createNextPieceArrayFromNumberString(STRING_POWERON_PATTERN)
@@ -235,37 +253,41 @@ class RetroMania:AbstractMode() {
 			if(!owner.replayMode&&!big&&startlevel==0&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE LINE LV TIME", COLOR.BLUE, scale)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreNum(engine, playerID, 0, topY+i,
-						String.format("%2d", i+1), COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 10, topY+i, "${rankingLines[gametype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 15, topY+i, GeneralUtil.getTime(rankingTime[gametype][i]), i==rankingRank,
+					receiver.drawScoreGrade(engine, playerID, 0, topY+i, "${i+1}", COLOR.YELLOW)
+					receiver.drawScoreNum(engine, playerID, 2, topY+i,
+						if(rankingScore[gametype][i]>=0) String.format("%6d", rankingScore[gametype][i])
+						else rankingScore[gametype][i].toTimeStr, i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 8, topY+i,
+						if(rankingLines[gametype][i]>=0) String.format("%3d", rankingLines[gametype][i])
+						else rankingLines[gametype][i].toTimeStr, i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 11, topY+i,
+						if(rankingLevel[gametype][i]>=0) String.format("%2d", rankingLevel[gametype][i])
+						else rankingLevel[gametype][i].toTimeStr, i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 15, topY+i,
+						rankingTime[gametype][i].toTimeStr, i==rankingRank,
 						scale)
 				}
 			}
 		} else {
 			// Game statistics
-			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
-			val strScore:String = if(lastscore==0||scgettime>=120)
-				"${engine.statistics.score}"
-			else
-				"${engine.statistics.score}(+$lastscore)"
-			receiver.drawScoreNum(engine, playerID, 0, 4, strScore, 2f)
+			receiver.drawScoreFont(engine, playerID, 1, 3, "SCORE", COLOR.CYAN)
+			receiver.drawScoreFont(engine, playerID, 0, 4, String.format("%6d", engine.statistics.score), COLOR.CYAN)
 
-			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 7, engine.statistics.lines.toString(), 2f)
+			receiver.drawScoreFont(engine, playerID, 1, 6, "LINES", COLOR.CYAN)
+			receiver.drawScoreFont(engine, playerID, 0, 7, String.format("%6d", engine.statistics.lines), COLOR.CYAN)
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.level}", 2f)
+			receiver.drawScoreFont(engine, playerID, 1, 9, "LEVEL", COLOR.CYAN)
+			receiver.drawScoreFont(engine, playerID, 0, 10, String.format("%6d", engine.statistics.level), COLOR.CYAN)
 
-			receiver.drawScoreFont(engine, playerID, 0, 12, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 13, GeneralUtil.getTime(engine.statistics.time), 2f)
+			receiver.drawScoreFont(engine, playerID, 0, 13, "Time", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 14, engine.statistics.time.toTimeStr, COLOR.BLUE)
 
-			//receiver.drawScore(engine, playerID, 0, 15, String.valueOf(linesAfterLastLevelUp));
-			//receiver.drawScore(engine, playerID, 0, 16, GeneralUtil.getTime(levelTime[minOf(engine.statistics.level,15)] - levelTimer));
+			receiver.drawScoreNano(engine, playerID, 0, 31, "${4-linesAfterLastLevelUp} LINES TO GO", COLOR.CYAN, .5f)
+			receiver.drawScoreNano(engine, playerID, 0, 32,
+				"OR "+(levelTime[minOf(engine.statistics.level, 15)]-levelTimer).toTimeStr, COLOR.CYAN, .5f)
 		}
 	}
 
@@ -273,50 +295,62 @@ class RetroMania:AbstractMode() {
 	override fun onLast(engine:GameEngine, playerID:Int) {
 		scgettime++
 		if(engine.timerActive) levelTimer++
+		// Update the meter
+		engine.meterValue = levelTimer*receiver.getMeterMax(engine)/levelTime[minOf(engine.statistics.level, 15)]
+		+linesAfterLastLevelUp%4*receiver.getMeterMax(engine)/6
 
-		// Max-out score, lines, and level
-		if(version>=2) {
-			if(engine.statistics.score>MAX_SCORE) engine.statistics.scoreBonus = engine.statistics.score-MAX_SCORE
-			if(engine.statistics.lines>MAX_LINES) engine.statistics.lines = MAX_LINES
-			if(engine.statistics.level>MAX_LEVEL) engine.statistics.level = MAX_LEVEL
-		}
 	}
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Determines line-clear bonus
-		var pts = 0
-		val mult = minOf(engine.statistics.level/2+1, 5)
-		when {
-			lines==1 -> pts += 100*mult // Single
-			lines==2 -> pts += 400*mult // Double
-			lines==3 -> pts += 900*mult // Triple
-			lines>=4 -> pts += 2000*mult // Quadruple
-		}
-
-		// Perfect clear bonus
-		if(engine.field!!.isEmpty) pts *= 10
+		val pts = minOf(engine.statistics.level/2+1, 5)*when {
+			lines==1 -> 100 // Single
+			lines==2 -> 400 // Double
+			lines==3 -> 900 // Triple
+			lines>=4 -> 2000 // Quadruple
+			else -> 0
+		}*if(engine.field.isEmpty) 10 else 1  // Perfect clear bonus
 
 		// Add score
 		if(pts>0) {
 			lastscore = pts
 			scgettime = 0
 			engine.statistics.scoreLine += pts
+			// Max-out score, lines, and level
+			if(version>=2) {
+
+				if(engine.statistics.score>MAX_SCORE) {
+					engine.statistics.scoreBonus = MAX_SCORE-engine.statistics.scoreLine-engine.statistics.scoreSD-engine.statistics.scoreHD
+					if(maxScoreTime<0) {
+						maxScoreTime = engine.statistics.time
+						engine.playSE("endingstart")
+					}
+				}
+				if(engine.statistics.lines>MAX_LINES) {
+					engine.statistics.lines = MAX_LINES
+					if(maxLevelTime<0) {
+
+						engine.playSE("grade4")
+						maxLinesTime = engine.statistics.time
+					}
+				}
+			}
 		}
 
 		// Add lines
 		linesAfterLastLevelUp += lines
 
-		// Update the meter
-		engine.meterValue = linesAfterLastLevelUp%4*receiver.getMeterMax(engine)/3
-		engine.meterColor = GameEngine.METER_COLOR_GREEN
-		if(linesAfterLastLevelUp>=1) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		if(linesAfterLastLevelUp>=2) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		if(linesAfterLastLevelUp>=3) engine.meterColor = GameEngine.METER_COLOR_RED
+		engine.meterColor = when {
+			linesAfterLastLevelUp>=1 -> GameEngine.METER_COLOR_YELLOW
+			linesAfterLastLevelUp>=2 -> GameEngine.METER_COLOR_ORANGE
+			linesAfterLastLevelUp>=3 -> GameEngine.METER_COLOR_RED
+			else -> GameEngine.METER_COLOR_GREEN
+		}
 
 		// Level up
-		if(linesAfterLastLevelUp>=4||levelTimer>=levelTime[minOf(engine.statistics.level, 15)]&&lines==0) {
+		if(linesAfterLastLevelUp>=4||levelTimer>=levelTime[minOf(engine.statistics.level, 15)]&&lines==0||engine.field.isEmpty) {
 			engine.statistics.level++
 
 			owner.backgroundStatus.fadecount = 0
@@ -330,7 +364,14 @@ class RetroMania:AbstractMode() {
 			engine.meterValue = 0
 
 			setSpeed(engine)
-			engine.playSE("levelup")
+			if(engine.statistics.level>=MAX_LEVEL) {
+				engine.statistics.level = MAX_LEVEL
+				if(maxLevelTime<0) {
+					maxLevelTime = engine.statistics.time
+					engine.playSE("levelup_section")
+				}
+			} else engine.playSE("levelup")
+
 		}
 		return pts
 	}
@@ -362,10 +403,14 @@ class RetroMania:AbstractMode() {
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, gametype)
+			updateRanking(
+				if(engine.statistics.score>=MAX_SCORE) -maxScoreTime else engine.statistics.score,
+				if(engine.statistics.lines>=MAX_LINES) -maxLinesTime else engine.statistics.lines,
+				if(engine.statistics.level>=MAX_LEVEL) -maxLevelTime else engine.statistics.level,
+				engine.statistics.time, gametype)
 
 			if(rankingRank!=-1) {
-				saveRanking(owner.recordProp, engine.ruleopt.strRuleName)
+				saveRanking(engine.ruleOpt.strRuleName)
 				owner.saveModeConfig()
 			}
 		}
@@ -392,54 +437,61 @@ class RetroMania:AbstractMode() {
 	/** Load the ranking */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
-			for(gametypeIndex in 0 until RANKING_TYPE) {
-				rankingScore[gametypeIndex][i] = prop.getProperty("retromania.ranking.$ruleName.$gametypeIndex.score.$i", 0)
-				rankingLines[gametypeIndex][i] = prop.getProperty("retromania.ranking.$ruleName.$gametypeIndex.lines.$i", 0)
-				rankingTime[gametypeIndex][i] = prop.getProperty("retromania.ranking.$ruleName.$gametypeIndex.time.$i", 0)
+			for(type in 0 until RANKING_TYPE) {
+				rankingScore[type][i] = prop.getProperty("$ruleName.$type.score.$i", 0)
+				rankingLines[type][i] = prop.getProperty("$ruleName.$type.lines.$i", 0)
+				rankingLevel[type][i] = prop.getProperty("$ruleName.$type.level.$i", 0)
+				rankingTime[type][i] = prop.getProperty("$ruleName.$type.time.$i", 0)
 
-				if(rankingScore[gametypeIndex][i]>MAX_SCORE) rankingScore[gametypeIndex][i] = MAX_SCORE
-				if(rankingLines[gametypeIndex][i]>MAX_LINES) rankingLines[gametypeIndex][i] = MAX_LINES
+				if(rankingScore[type][i]>MAX_SCORE) rankingScore[type][i] = MAX_SCORE
+				if(rankingLines[type][i]>MAX_LINES) rankingLines[type][i] = MAX_LINES
+				if(rankingLevel[type][i]>MAX_LEVEL) rankingLevel[type][i] = MAX_LEVEL
 			}
 	}
 
 	/** Save the ranking */
-	private fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(gametypeIndex in 0 until RANKING_TYPE) {
-				prop.setProperty("retromania.ranking.$ruleName.$gametypeIndex.score.$i", rankingScore[gametypeIndex][i])
-				prop.setProperty("retromania.ranking.$ruleName.$gametypeIndex.lines.$i", rankingLines[gametypeIndex][i])
-				prop.setProperty("retromania.ranking.$ruleName.$gametypeIndex.time.$i", rankingTime[gametypeIndex][i])
+	private fun saveRanking(ruleName:String) {
+		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
+			(0 until RANKING_MAX).flatMap {i ->
+				listOf(
+					"$ruleName.$j.score.$i" to rankingScore[j][i],
+					"$ruleName.$j.lines.$i" to rankingLines[j][i],
+					"$ruleName.$j.level.$i" to rankingLevel[j][i],
+					"$ruleName.$j.time.$i" to rankingTime[j][i])
 			}
+		})
 	}
 
 	/** Update the ranking */
-	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int) {
-		rankingRank = checkRanking(sc, li, time, type)
+	private fun updateRanking(sc:Int, li:Int, lv:Int, time:Int, type:Int) {
+		rankingRank = checkRanking(sc, li, lv, time, type)
 
 		if(rankingRank!=-1) {
 			// Shift the old records
 			for(i in RANKING_MAX-1 downTo rankingRank+1) {
 				rankingScore[type][i] = rankingScore[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
+				rankingLevel[type][i] = rankingLevel[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
 			}
 
 			// Insert a new record
 			rankingScore[type][rankingRank] = sc
 			rankingLines[type][rankingRank] = li
+			rankingLevel[type][rankingRank] = lv
 			rankingTime[type][rankingRank] = time
 		}
 	}
 
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
-	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Int, li:Int, lv:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(sc>rankingScore[type][i])
-				return i
-			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i])
-				return i
-			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
+			if(if(sc<0) sc<rankingScore[type][i] else sc>rankingScore[type][i]) return i
+			else if(sc==rankingScore[type][i]&&if(li<0) li<rankingLines[type][i] else li>rankingLines[type][i]) return i
+			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&
+				if(lv<0) lv<rankingLevel[type][i] else lv>rankingLevel[type][i]) return i
+			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&lv==rankingLevel[type][i]&&time<rankingTime[type][i]) return i
 
 		return -1
 	}
@@ -476,10 +528,10 @@ class RetroMania:AbstractMode() {
 		private val GAMETYPE_NAME = arrayOf("EASY", "NORMAL", "HARD", "HARDEST")
 
 		/** Number of game type */
-		private const val GAMETYPE_MAX = 4
+		private val GAMETYPE_MAX = tableDenominator.size
 
 		/** Number of ranking records */
-		private const val RANKING_MAX = 10
+		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
 		private const val RANKING_TYPE = 4

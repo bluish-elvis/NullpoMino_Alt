@@ -55,7 +55,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	/**
 	 * Profile cfg file
 	 */
-	private val propProfile:CustomProperties = CustomProperties()
+	private val propProfile = CustomProperties()
 	/**
 	 * Get profile name.
 	 *
@@ -64,9 +64,10 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	/**
 	 * Username
 	 */
-	var nameDisplay:String = ""
+	var nameDisplay = ""
 		private set
-	private var nameProp:String = ""
+
+	private var nameProp = ""
 	/**
 	 * Get login status.
 	 *
@@ -118,7 +119,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	private fun testPasswordCrash(name:String, buttonPresses:IntArray):Boolean {
 		val nCap = getStorageName(name)
 		var crash = false
-		var number:Long = 0
+		var number = 0L
 		while(testUsernameTaken(name, number)) {
 			if(!propProfile.getProperty("$PREFIX_NAME$nCap.$number", false)) return false
 			crash = true
@@ -149,7 +150,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 			return false // If username does not exist, fail login.
 		}
 		var login = false
-		var number:Long = 0
+		var number = 0L
 		while(testUsernameTaken(nCap, number)) {
 			val pass = propProfile.getProperty("$PREFIX_PASS$nCap.$number", 0)
 			for(i in buttonPresses.indices) {
@@ -182,7 +183,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	private fun createAccount(name:String, buttonPresses:IntArray):Boolean {
 		val nCap = getStorageName(name)
 		val nCapDisplay = name.uppercase()
-		var number:Long = 0
+		var number = 0L
 		while(testUsernameTaken(nCap, number)) {
 			log.warn("Creation of $nCapDisplay $number failed. Name and number taken.")
 			number++
@@ -513,20 +514,23 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 				}
 				engine.statc[1]++
 			} else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				val s = getCharAt(currentChar)
-				if(s=="p") {
-					if(nameEntry.isNotEmpty()) nameEntry = nameEntry.substring(0, nameEntry.length-1)
-					engine.playSE("change")
-					currentChar = 0
-				} else if(s=="q") {
-					if(nameEntry.length<3) nameEntry = String.format("%-3s", nameEntry)
-					engine.playSE("decide")
-					currentChar = 0
-					customState = CUSTOM_STATE_PASSWORD_INPUT
-					engine.resetStatc()
-				} else {
-					nameEntry += s
-					engine.playSE("decide")
+				when(val s = getCharAt(currentChar)) {
+					"p" -> {
+						if(nameEntry.isNotEmpty()) nameEntry = nameEntry.substring(0, nameEntry.length-1)
+						engine.playSE("change")
+						currentChar = 0
+					}
+					"q" -> {
+						if(nameEntry.length<3) nameEntry = String.format("%-3s", nameEntry)
+						engine.playSE("decide")
+						currentChar = 0
+						customState = CUSTOM_STATE_PASSWORD_INPUT
+						engine.resetStatc()
+					}
+					else -> {
+						nameEntry += s
+						engine.playSE("decide")
+					}
 				}
 			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) {
 				if(nameEntry.isNotEmpty()) {
@@ -730,9 +734,8 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 		 * @return Character at index
 		 */
 		fun getCharAt(index:Int):String {
-			var index = index
-			index = MathHelper.pythonModulo(index, ENTRY_CHARS.length)
-			return ENTRY_CHARS.substring(index, index+1)
+			val i = MathHelper.pythonModulo(index, ENTRY_CHARS.length)
+			return ENTRY_CHARS.substring(i, i+1)
 		}
 		/**
 		 * Test two button sequences to see if they are the same and each contain 6 presses.<br></br>

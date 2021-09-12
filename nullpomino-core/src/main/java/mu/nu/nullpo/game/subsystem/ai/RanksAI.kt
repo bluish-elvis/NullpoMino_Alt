@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.subsystem.ai
 
 import mu.nu.nullpo.game.component.Controller
@@ -31,7 +36,10 @@ import mu.nu.nullpo.tool.airankstool.AIRanksConstants
 import mu.nu.nullpo.tool.airankstool.Ranks
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.log4j.Logger
-import java.io.*
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.ObjectInputStream
 import kotlin.math.abs
 
 open class RanksAI:DummyAI(), Runnable {
@@ -44,57 +52,57 @@ open class RanksAI:DummyAI(), Runnable {
 
 	//public int bestRt;
 
-	var bestXSub:Int = 0
+	var bestXSub = 0
 
-	var bestYSub:Int = 0
+	var bestYSub = 0
 
-	var bestRtSub:Int = 0
+	var bestRtSub = 0
 
-	var bestPts:Int = 0
+	var bestPts = 0
 
 	//public boolean forceHold;
 
-	var delay:Int = 0
+	var delay = 0
 
 	lateinit var gEngine:GameEngine
 
 	var gManager:GameManager? = null
 
-	var thinkRequest:Boolean = false
+	var thinkRequest = false
 
-	var thinking:Boolean = false
+	var thinking = false
 
-	var thinkDelay:Int = 0
+	var thinkDelay = 0
 
 	//public int thinkCurrentPieceNo;
 
 	//public int thinkLastPieceNo;
 
 	@Volatile
-	var threadRunning:Boolean = false
+	var threadRunning = false
 
 	var thread:Thread? = null
 
 	private var ranks:Ranks? = null
-	private var skipNextFrame:Boolean = false
+	private var skipNextFrame = false
 
-	private var currentHeightMin:Int = 0
-	private var currentHeightMax:Int = 0
+	private var currentHeightMin = 0
+	private var currentHeightMax = 0
 	private var previewsMax = 2
 
-	private var heights:IntArray = IntArray(0)
+	private var heights = IntArray(0)
 	private var bestScore:Score = Score()
 	/** Tells other classes if the fictitious game is over
 	 * @return true if fictitious game is over
 	 */
-	var isGameOver:Boolean = false
+	var isGameOver = false
 		private set
-	private var plannedToUseIPiece:Boolean = false
+	private var plannedToUseIPiece = false
 	private var currentRanksFile:String? = ""
-	private var allowHold:Boolean = false
-	private var speedLimit:Int = 0
+	private var allowHold = false
+	private var speedLimit = 0
 
-	override val name:String = "RANKSAI"
+	override val name = "RANKSAI"
 
 	/** Get max think level
 	 * @return Max think level (1 in this AI)
@@ -104,28 +112,29 @@ open class RanksAI:DummyAI(), Runnable {
 
 	inner class Score {
 
-		var rankStacking:Float = 0f
-		var distanceToSet:Int = 0
-		var iPieceUsedInTheStack:Boolean = false
+		var rankStacking = 0f
+		var distanceToSet = 0
+		var iPieceUsedInTheStack = false
 
 		init {
 
 			rankStacking = 0f
-			distanceToSet = ranks!!.stackWidth*20
+			distanceToSet = (ranks?.stackWidth ?: 0)*20
 		}
 
 		override fun toString():String = " Rank Stacking : $rankStacking distance to set :$distanceToSet"
 
 		fun computeScore(heights:IntArray) {
+			val ranks = ranks ?: return
 			distanceToSet = 0
-			val surface = IntArray(ranks!!.stackWidth-1)
-			val maxJump = ranks!!.maxJump
+			val surface = IntArray(ranks.stackWidth-1)
+			val maxJump = ranks.maxJump
 			var nbstep = 0
-			val correctedSteepStep = 0
-			val indexSteepStep = 0
-			val isCliff = true
+//			val correctedSteepStep = 0
+//			val indexSteepStep = 0
+//			val isCliff = true
 
-			for(i in 0 until ranks!!.stackWidth-1) {
+			for(i in 0 until ranks.stackWidth-1) {
 				var diff = heights[i+1]-heights[i]
 
 				if(diff>maxJump) {
@@ -148,9 +157,9 @@ open class RanksAI:DummyAI(), Runnable {
 			}
 			log.debug("new surface =${surface.contentToString()}")
 
-			val surfaceNb = ranks!!.encode(surface)
+			val surfaceNb = ranks.encode(surface)
 
-			rankStacking = ranks!!.getRankValue(surfaceNb).toFloat()
+			rankStacking = ranks.getRankValue(surfaceNb).toFloat()
 			if(previewsMax>0&&distanceToSet>0) rankStacking = 0f
 
 		}
@@ -271,7 +280,7 @@ open class RanksAI:DummyAI(), Runnable {
 				val nowX = engine.nowPieceX
 				val nowY = engine.nowPieceY
 				val rt = pieceNow!!.direction
-				val fld = engine.field ?: return
+				val fld = engine.field
 				val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 
 				if(bestHold||forceHold) {
@@ -282,13 +291,13 @@ open class RanksAI:DummyAI(), Runnable {
 						val lrot = engine.getRotateDirection(-1)
 						val rrot = engine.getRotateDirection(1)
 
-						if(abs(rt-bestRt)==2&&engine.ruleopt.rotateButtonAllowDouble
+						if(abs(rt-bestRt)==2&&engine.ruleOpt.rotateButtonAllowDouble
 							&&!ctrl.isPress(Controller.BUTTON_E))
 							input = input or Controller.BUTTON_BIT_E
-						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleopt.rotateButtonAllowReverse&&
+						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse&&
 							!engine.isRotateButtonDefaultRight&&bestRt==rrot)
 							input = input or Controller.BUTTON_BIT_B
-						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleopt.rotateButtonAllowReverse&&
+						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse&&
 							engine.isRotateButtonDefaultRight&&bestRt==lrot)
 							input = input or Controller.BUTTON_BIT_B
 						else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
@@ -326,14 +335,14 @@ open class RanksAI:DummyAI(), Runnable {
 									input = input or Controller.BUTTON_BIT_RIGHT
 							} else if(nowX==bestX&&rt==bestRt)
 								if(bestRtSub==-1&&bestX==bestXSub) {
-									if(engine.ruleopt.harddropEnable&&!ctrl.isPress(Controller.BUTTON_UP))
+									if(engine.ruleOpt.harddropEnable&&!ctrl.isPress(Controller.BUTTON_UP))
 										input = input or Controller.BUTTON_BIT_UP
-									else if(engine.ruleopt.softdropEnable||engine.ruleopt.softdropLock)
+									else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock)
 										input = input or Controller.BUTTON_BIT_DOWN
-								} else if(engine.ruleopt.harddropEnable&&!engine.ruleopt.harddropLock
+								} else if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock
 									&&!ctrl.isPress(Controller.BUTTON_UP))
 									input = input or Controller.BUTTON_BIT_UP
-								else if(engine.ruleopt.softdropEnable&&!engine.ruleopt.softdropLock)
+								else if(engine.ruleOpt.softdropEnable&&!engine.ruleOpt.softdropLock)
 									input = input or Controller.BUTTON_BIT_DOWN
 						}
 					} else
@@ -404,7 +413,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 		// Initialization of the heights array
 		for(i in 0 until ranks!!.stackWidth)
-			heights[i] = engine.field!!.height-engine.field!!.getHighestBlockY(i)
+			heights[i] = engine.field.height-engine.field.getHighestBlockY(i)
 
 		// Initialization of the pieces array (contains the current piece and the next pieces)
 		val pieces = IntArray(engine.nextPieceArraySize)
@@ -417,7 +426,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 		val holdOK = engine.isHoldOK
 
-		allowHold = allowHold and engine.ruleopt.holdEnable
+		allowHold = allowHold and engine.ruleOpt.holdEnable
 
 		// Call the main method (that actually does the work, on the heights and pieces
 		thinkBestPosition(heights, pieces, holdPiece, holdOK)

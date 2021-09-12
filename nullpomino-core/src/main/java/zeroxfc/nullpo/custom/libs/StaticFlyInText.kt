@@ -60,7 +60,7 @@ class StaticFlyInText(private val mainString:String  // String to draw
 	// Randomizer for start pos
 	private val positionRandomizer:Random = Random(seed)
 	// Lifetime variable
-	private var currentLifetime:Int = 0
+	private var currentLifetime = 0
 	/**
 	 * Updates the position and lifetime of this object.
 	 */

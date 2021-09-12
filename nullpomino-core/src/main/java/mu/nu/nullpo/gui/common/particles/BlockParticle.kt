@@ -32,7 +32,7 @@
  */
 package mu.nu.nullpo.gui.common.particles
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import zeroxfc.nullpo.custom.libs.DoubleVector
@@ -54,8 +54,7 @@ class BlockParticle @JvmOverloads constructor(
 	// Size
 	private var size:Float = 1f
 	// Current time alive
-	var currentLifetime:Int = 0
-		private set
+	var currentLifetime = 0; private set
 
 	/**
 	 * Creates a block particle.
@@ -94,18 +93,16 @@ class BlockParticle @JvmOverloads constructor(
 	fun draw(engine:GameEngine, receiver:EventReceiver?, playerID:Int, animType:Int) {
 		if(engine.displaysize!=-1) {
 			if(animType==BlockParticleCollection.ANIMATION_TGM) {
-				receiver?.drawBlock(position.x
-					.toInt()+((if(engine.displaysize==0) 2 else 4)*size).toInt(), position.y.toInt()+if(engine.displaysize==0) 2 else 4,
-					objectTexture.drawColor, objectTexture.skin,
-					objectTexture.getAttribute(Block.ATTRIBUTE.BONE), 0.5f,
-					1f, (if(engine.displaysize==0) 1f else 2f)*size)
+				receiver?.drawBlock((position.x+((if(engine.displaysize==0) 2 else 4)*size)).toFloat(),
+					(position.y+if(engine.displaysize==0) 2 else 4).toFloat(),
+					objectTexture, 0.5f, 1f, (if(engine.displaysize==0) 1f else 2f)*size)
 				//				receiver.drawSingleBlock(engine, playerID,
 //		                (int)position.getX() + ((engine.displaysize == 0) ? 2 : 4), (int)position.getY() + ((engine.displaysize == 0) ? 2 : 4),
 //		                objectTexture.color, objectTexture.skin,
 //		                objectTexture.getAttribute(Block.ATTRIBUTE.BONE), 0.5f, 1f,
 //		                (engine.displaysize == 0) ? 1f : 2f);
 			}
-			receiver?.drawBlock(position.x.toInt(), position.y.toInt(), objectTexture.drawColor, objectTexture.skin,
+			receiver?.drawBlock(position.x.toFloat(), position.y.toFloat(), objectTexture.drawColor, objectTexture.skin,
 				objectTexture.getAttribute(Block.ATTRIBUTE.BONE), if(isFlashing&&currentLifetime/2%2==0) -0.8f else 0f,
 				if(animType==BlockParticleCollection.ANIMATION_DTET) 0.667f else 1f, (if(engine.displaysize==0) 1f else 2f)*size)
 			//			receiver.drawSingleBlock(engine, playerID,

@@ -1,110 +1,139 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2021-2021, NullNoname
+  ~ Kotlin converted and modified by Venom=Nhelv
+  ~ All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~     * Redistributions of source code must retain the above copyright
+  ~       notice, this list of conditions and the following disclaimer.
+  ~     * Redistributions in binary form must reproduce the above copyright
+  ~       notice, this list of conditions and the following disclaimer in the
+  ~       documentation and/or other materials provided with the distribution.
+  ~     * Neither the name of NullNoname nor the names of its
+  ~       contributors may be used to endorse or promote products derived from
+  ~       this software without specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  ~ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  ~ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ~ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  ~ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  ~ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  ~ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  ~ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  ~ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ~ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  ~ POSSIBILITY OF SUCH DAMAGE.
+  -->
+
 <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.example.org/Nullpomino"
-				xmlns:tns="http://www.example.org/Nullpomino" elementFormDefault="qualified">
+        xmlns:tns="http://www.example.org/Nullpomino" elementFormDefault="qualified">
 
-	<element name="NullpominoMenu" type="tns:MenuType"/>
+ <element name="NullpominoMenu" type="tns:MenuType"/>
 
 
-	<complexType name="MenuType">
-		<sequence>
-			<element name="title" type="string"
-							 minOccurs="0">
-			</element>
-			<element name="subTitle" type="string"
-							 minOccurs="0">
-			</element>
-			<element name="MenuItem" type="tns:MenuItemType"
-							 maxOccurs="unbounded" minOccurs="0">
-			</element>
-			<element name="backgroundImage" type="string" minOccurs="0"/>
-		</sequence>
-	</complexType>
+ <complexType name="MenuType">
+  <sequence>
+   <element name="title" type="string"
+            minOccurs="0">
+   </element>
+   <element name="subTitle" type="string"
+            minOccurs="0">
+   </element>
+   <element name="MenuItem" type="tns:MenuItemType"
+            maxOccurs="unbounded" minOccurs="0">
+   </element>
+   <element name="backgroundImage" type="string" minOccurs="0"/>
+  </sequence>
+ </complexType>
 
-	<complexType name="MenuItemType">
-		<sequence>
-			<element name="name" type="string"
-			>
-			</element>
-			<element name="description" type="string" minOccurs="0"/>
-		</sequence>
-	</complexType>
+ <complexType name="MenuItemType">
+  <sequence>
+   <element name="name" type="string"
+   >
+   </element>
+   <element name="description" type="string" minOccurs="0"/>
+  </sequence>
+ </complexType>
 
-	<complexType name="NumericMenuItemType">
-		<complexContent>
-			<extension base="tns:MenuItemType">
-				<sequence>
-					<element name="minValue" type="string" minOccurs="0"/>
-					<element name="maxValue" type="string" minOccurs="0"/>
-					<element name="step" type="string" minOccurs="0"/>
-				</sequence>
-			</extension>
-		</complexContent>
-	</complexType>
+ <complexType name="NumericMenuItemType">
+  <complexContent>
+   <extension base="tns:MenuItemType">
+    <sequence>
+     <element name="minValue" type="string" minOccurs="0"/>
+     <element name="maxValue" type="string" minOccurs="0"/>
+     <element name="step" type="string" minOccurs="0"/>
+    </sequence>
+   </extension>
+  </complexContent>
+ </complexType>
 
-	<complexType name="ToggleMenuItemType">
-		<complexContent>
-			<extension base="tns:MenuItemType">
-			</extension>
-		</complexContent>
-	</complexType>
+ <complexType name="ToggleMenuItemType">
+  <complexContent>
+   <extension base="tns:MenuItemType">
+   </extension>
+  </complexContent>
+ </complexType>
 
-	<complexType name="MenuMenuItemType">
-		<complexContent>
-			<extension base="tns:MenuItemType">
-				<sequence>
-					<element name="menu" type="tns:MenuType"/>
-				</sequence>
-			</extension>
-		</complexContent>
-	</complexType>
+ <complexType name="MenuMenuItemType">
+  <complexContent>
+   <extension base="tns:MenuItemType">
+    <sequence>
+     <element name="menu" type="tns:MenuType"/>
+    </sequence>
+   </extension>
+  </complexContent>
+ </complexType>
 
-	<complexType name="AlphaMenuItemType">
-		<complexContent>
-			<extension base="tns:MenuItemType">
-				<sequence>
-					<element name="item" type="string" maxOccurs="unbounded"/>
-				</sequence>
-			</extension>
-		</complexContent>
-	</complexType>
+ <complexType name="AlphaMenuItemType">
+  <complexContent>
+   <extension base="tns:MenuItemType">
+    <sequence>
+     <element name="item" type="string" maxOccurs="unbounded"/>
+    </sequence>
+   </extension>
+  </complexContent>
+ </complexType>
 
-	<complexType name="ConfigMenuType">
-		<complexContent>
-			<extension base="tns:MenuType">
-				<sequence>
-					<element name="configPropertyFile" type="string"/>
-				</sequence>
-			</extension>
-		</complexContent>
-	</complexType>
+ <complexType name="ConfigMenuType">
+  <complexContent>
+   <extension base="tns:MenuType">
+    <sequence>
+     <element name="configPropertyFile" type="string"/>
+    </sequence>
+   </extension>
+  </complexContent>
+ </complexType>
 
-	<complexType name="ExitMenuItemType">
-		<complexContent>
-			<extension base="tns:MenuItemType"/>
-		</complexContent>
-	</complexType>
+ <complexType name="ExitMenuItemType">
+  <complexContent>
+   <extension base="tns:MenuItemType"/>
+  </complexContent>
+ </complexType>
 
-	<complexType name="ModeMenuItemType">
-		<complexContent>
-			<extension base="tns:MenuItemType">
-				<sequence>
-					<element name="modeName" type="string"/>
-				</sequence>
-			</extension>
-		</complexContent>
-	</complexType>
+ <complexType name="ModeMenuItemType">
+  <complexContent>
+   <extension base="tns:MenuItemType">
+    <sequence>
+     <element name="modeName" type="string"/>
+    </sequence>
+   </extension>
+  </complexContent>
+ </complexType>
 
-	<complexType name="SelectionMenuType">
-		<complexContent>
-			<extension base="tns:MenuType"/>
-		</complexContent>
-	</complexType>
+ <complexType name="SelectionMenuType">
+  <complexContent>
+   <extension base="tns:MenuType"/>
+  </complexContent>
+ </complexType>
 
-	<complexType name="ReplaySelectionMenuType">
-		<complexContent>
-			<extension base="tns:SelectionMenuType">
-				<attribute name="replayFolder" type="string"/>
-			</extension>
-		</complexContent>
-	</complexType>
+ <complexType name="ReplaySelectionMenuType">
+  <complexContent>
+   <extension base="tns:SelectionMenuType">
+    <attribute name="replayFolder" type="string"/>
+   </extension>
+  </complexContent>
+ </complexType>
 </schema>

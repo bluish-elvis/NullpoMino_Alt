@@ -35,10 +35,9 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.EffectObject
-import mu.nu.nullpo.gui.slick.*
 import org.apache.log4j.Logger
-import java.lang.reflect.Field
 import kotlin.math.max
 
 object RendererExtension {
@@ -120,30 +119,13 @@ object RendererExtension {
 	 * @param color      Effect color
 	 */
 	private fun addBlockBreakEffect(receiver:EventReceiver?, effectType:Int, x:Int, y:Int, color:Int) {
-		if(receiver==null) return
-		val local:Class<*> = RendererSlick::class.java
-		val effectList:Field
-		val list:ArrayList<EffectExtra>
-		val show:Boolean = NullpoMinoSlick.propConfig.getProperty("option.showlineeffect", true)
+		if(receiver==null || receiver !is AbstractRenderer) return
+		val local:Class<*> = AbstractRenderer::class.java
 
 		try {
-			if(show) {
-				effectList = local.getDeclaredField("effectlist")
-				effectList.isAccessible = true
-
-				/*
-                 * This should not return anything other than ArrayList<EffectObject>,
-                 * as verified in the source code (see RendererSlick.java, RendererSwing.java
-                 * and RendererSDL.java).
-                 *
-                 * Use @SuppressWarnings("unchecked").
-                 */
-				list = effectList[receiver] as ArrayList<EffectExtra>
-				list.add(EffectExtra(effectType, x, y, color))
-				effectList[receiver] = list
-			}
+		(receiver as AbstractRenderer).effects
 		} catch(e:Exception) {
-			if(DEBUG) log.error("Failed to extract, modify and place back effectList.")
+			if(DEBUG) log.error("Failed to extract, modify and place back effects.")
 		}
 	}
 

@@ -1,15 +1,19 @@
-/* Copyright (c) 2010, NullNoname
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- * Neither the name of NullNoname nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -20,7 +24,8 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE. */
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package mu.nu.nullpo.game.component
 
 import java.io.Serializable
@@ -29,10 +34,10 @@ import java.io.Serializable
 class Controller:Serializable {
 
 	/** Buttonを押した状態ならtrue */
-	val buttonPress:BooleanArray = BooleanArray(BUTTON_COUNT)
+	val buttonPress = MutableList(BUTTON_COUNT){false}
 
 	/** Buttonを押しっぱなしにしている time */
-	val buttonTime:IntArray = IntArray(BUTTON_COUNT)
+	val buttonTime = MutableList(BUTTON_COUNT){0}
 
 	/** button input状態をビット flagで返す
 	 * @return button input状態のビット flag
@@ -57,16 +62,16 @@ class Controller:Serializable {
 		set(input) {
 			clearButtonState()
 
-			if(input and BUTTON_BIT_UP!=0) buttonPress[BUTTON_UP] = true
-			if(input and BUTTON_BIT_DOWN!=0) buttonPress[BUTTON_DOWN] = true
-			if(input and BUTTON_BIT_LEFT!=0) buttonPress[BUTTON_LEFT] = true
-			if(input and BUTTON_BIT_RIGHT!=0) buttonPress[BUTTON_RIGHT] = true
-			if(input and BUTTON_BIT_A!=0) buttonPress[BUTTON_A] = true
-			if(input and BUTTON_BIT_B!=0) buttonPress[BUTTON_B] = true
-			if(input and BUTTON_BIT_C!=0) buttonPress[BUTTON_C] = true
-			if(input and BUTTON_BIT_D!=0) buttonPress[BUTTON_D] = true
-			if(input and BUTTON_BIT_E!=0) buttonPress[BUTTON_E] = true
-			if(input and BUTTON_BIT_F!=0) buttonPress[BUTTON_F] = true
+			if(input and BUTTON_BIT_UP>0) buttonPress[BUTTON_UP] = true
+			if(input and BUTTON_BIT_DOWN>0) buttonPress[BUTTON_DOWN] = true
+			if(input and BUTTON_BIT_LEFT>0) buttonPress[BUTTON_LEFT] = true
+			if(input and BUTTON_BIT_RIGHT>0) buttonPress[BUTTON_RIGHT] = true
+			if(input and BUTTON_BIT_A>0) buttonPress[BUTTON_A] = true
+			if(input and BUTTON_BIT_B>0) buttonPress[BUTTON_B] = true
+			if(input and BUTTON_BIT_C>0) buttonPress[BUTTON_C] = true
+			if(input and BUTTON_BIT_D>0) buttonPress[BUTTON_D] = true
+			if(input and BUTTON_BIT_E>0) buttonPress[BUTTON_E] = true
+			if(input and BUTTON_BIT_F>0) buttonPress[BUTTON_F] = true
 		}
 
 	/** Constructor */
@@ -113,6 +118,8 @@ class Controller:Serializable {
 	 * @return buttonを押している状態ならtrue
 	 */
 	fun isPress(btn:Int):Boolean = buttonTime[btn]>=1
+	fun isPressAll(vararg btn:Int):Boolean = btn.all {isPress(it)}
+	fun isPressAny(vararg btn:Int):Boolean = btn.any {isPress(it)}
 
 	/** Menu でカーソルが動くかどうか判定
 	 * @param key Button number
@@ -190,7 +197,7 @@ class Controller:Serializable {
 		/** E (180-degree rotation) button */
 		const val BUTTON_E = 8
 
-		/** F (Use item, staff roll fast-forward, etc.) button */
+		/** F (Use inum, staff roll fast-forward, etc.) button */
 		const val BUTTON_F = 9
 
 		/** Number of buttons */

@@ -1,11 +1,42 @@
+/*
+ * Copyright (c) 2010-2021, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package net.tetrisconcept.poochy.nullpomino.ai
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.getOX
 import org.apache.log4j.Logger
 import kotlin.math.abs
 
@@ -17,19 +48,19 @@ import kotlin.math.abs
 open class PoochyBot:DummyAI(), Runnable {
 
 	/** After that I was groundedX-coordinate */
-	private var bestXSub:Int = 0
+	private var bestXSub = 0
 
 	/** After that I was groundedY-coordinate */
-	private var bestYSub:Int = 0
+	private var bestYSub = 0
 
 	/** After that I was groundedDirection(-1: None) */
-	private var bestRtSub:Int = 0
+	private var bestRtSub = 0
 
 	/** The best moveEvaluation score */
-	private var bestPts:Int = 0
+	private var bestPts = 0
 
-	/** Delay the move for changecount */
-	var delay:Int = 0
+	/** Delay the move for change Count */
+	var delay = 0
 
 	/** The GameEngine that owns this AI */
 	private lateinit var gEngine:GameEngine
@@ -40,32 +71,32 @@ open class PoochyBot:DummyAI(), Runnable {
 	/** When true,To threadThink routineInstructing the execution of the */
 	private var thinkRequest:ThinkRequestMutex = ThinkRequestMutex()
 
-	/** true when thread is executing the think routine. */
-	private var thinking:Boolean = false
+	/** True when thread is executing the think routine. */
+	private var thinking = false
 
 	/** To stop a thread time */
-	private var thinkDelay:Int = 0
+	private var thinkDelay = 0
 
 	/** When true,Running thread */
-	@Volatile var threadRunning:Boolean = false
+	@Volatile var threadRunning = false
 
 	/** Thread for executing the think routine */
 	var thread:Thread? = null
 
 	/** Number of frames for which piece has been stuck */
-	private var stuckDelay:Int = 0
+	private var stuckDelay = 0
 
 	/** Status of last frame */
-	private var lastInput:Int = 0
-	private var lastX:Int = 0
-	private var lastY:Int = 0
-	private var lastRt:Int = 0
+	private var lastInput = 0
+	private var lastX = 0
+	private var lastY = 0
+	private var lastRt = 0
 	/** Number of consecutive frames with same piece status */
-	private var sameStatusTime:Int = 0
+	private var sameStatusTime = 0
 	/** DAS charge status. -1 = left, 0 = none, 1 = right */
-	private var setDAS:Int = 0
+	private var setDAS = 0
 	/** Last input if done in ARE */
-	private var inputARE:Int = 0
+	private var inputARE = 0
 	/** Wait extra frames at low speeds? */
 	//protected static final boolean DELAY_DROP_ON = false;
 	/** # of extra frames to wait */
@@ -73,12 +104,12 @@ open class PoochyBot:DummyAI(), Runnable {
 	/** Number of frames waited */
 	//protected int dropDelay;
 	/** Did the thinking thread find a possible position? */
-	private var thinkSuccess:Boolean = false
+	private var thinkSuccess = false
 	/** Was the game in ARE as of the last frame? */
-	private var inARE:Boolean = false
+	private var inARE = false
 
 	/* AI's name */
-	override val name:String = "PoochyBot V1.25"
+	override val name = "PoochyBot V1.25"
 
 	/* Called at initialization */
 	override fun init(engine:GameEngine, playerID:Int) {
@@ -102,10 +133,11 @@ open class PoochyBot:DummyAI(), Runnable {
 		thinkSuccess = false
 		inARE = false
 
-		if((thread==null||!thread!!.isAlive)&&engine.aiUseThread) {
-			thread = Thread(this, "AI_$playerID")
-			thread!!.isDaemon = true
-			thread!!.start()
+		if(thread?.isAlive!=true&&engine.aiUseThread) {
+			thread = Thread(this, "AI_$playerID").apply {
+				isDaemon = true
+				start()
+			}
 			thinkDelay = engine.aiThinkDelay
 			thinkCurrentPieceNo = 0
 			thinkLastPieceNo = 0
@@ -114,8 +146,8 @@ open class PoochyBot:DummyAI(), Runnable {
 
 	/* End processing */
 	override fun shutdown() {
-		if(thread!=null&&thread!!.isAlive) {
-			thread!!.interrupt()
+		if(thread?.isAlive==true) {
+			thread?.interrupt()
 			threadRunning = false
 			thread = null
 		}
@@ -194,7 +226,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			val nowY = engine.nowPieceY
 			val rt = pieceNow.direction
 			val fld = engine.field
-			val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld!!)
+			val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 			val nowType = pieceNow.id
 			val width = fld.width
 
@@ -206,7 +238,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			//SpeedParam speed = engine.speed;
 			//boolean lowSpeed = speed.gravity < speed.denominator;
 			val canFloorKick =
-				engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick||engine.ruleopt.rotateMaxUpwardWallkick<0
+				engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick||engine.ruleOpt.rotateMaxUpwardWallkick<0
 
 			//If stuck, rethink.
 			/* if ((nowX < bestX && pieceNow.checkCollision(nowX+1, nowY, rt,
@@ -237,13 +269,15 @@ open class PoochyBot:DummyAI(), Runnable {
 				if(DEBUG_ALL) log.debug("Needs rethink - L or J piece is stuck!")
 				thinkRequest.newRequest()
 			}
-			if(nowType==Piece.PIECE_O&&(bestX<nowX&&pieceNow.checkCollision(nowX-1, nowY, rt, fld)||bestX<nowX&&pieceNow.checkCollision(nowX-1, nowY, rt, fld))) {
+			if(nowType==Piece.PIECE_O&&(bestX<nowX&&pieceNow.checkCollision(nowX-1, nowY, rt,
+					fld)||bestX<nowX&&pieceNow.checkCollision(nowX-1, nowY, rt, fld))) {
 				thinkComplete = false
 				if(DEBUG_ALL) log.debug("Needs rethink - O piece is stuck!")
 				thinkRequest.newRequest()
 			}
 			if(pieceTouchGround&&rt==bestRt&&
-				(pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field!!)<bestX||pieceNow.getMostMovableLeft(nowX, nowY, rt, engine.field!!)>bestX))
+				(pieceNow.getMostMovableRight(nowX, nowY, rt, fld)<bestX||pieceNow.getMostMovableLeft(nowX, nowY, rt,
+					fld)>bestX))
 				stuckDelay++
 			else
 				stuckDelay = 0
@@ -296,7 +330,7 @@ open class PoochyBot:DummyAI(), Runnable {
 						if(pieceNow.checkCollision(nowX+1, nowY, fld))
 							if(rt and 1==0&&(canFloorKick||!pieceNow.checkCollision(nowX, nowY, (rt+1)%4, fld)))
 								rotateI = true
-							else if(rt and 1==1&&canFloorKick)
+							else if(rt and 1>0&&canFloorKick)
 								rotateI = true
 							else if(engine.isHoldOK&&!ctrl.isPress(Controller.BUTTON_D)) {
 								if(DEBUG_ALL) log.debug("Stuck I piece - use hold")
@@ -310,7 +344,7 @@ open class PoochyBot:DummyAI(), Runnable {
 						if(pieceNow.checkCollision(nowX-1, nowY, fld))
 							if(rt and 1==0&&(canFloorKick||!pieceNow.checkCollision(nowX, nowY, (rt+1)%4, fld)))
 								rotateI = true
-							else if(rt and 1==1&&!pieceNow.checkCollision(nowX-1, nowY, (rt+1)%4, fld)&&
+							else if(rt and 1>0&&!pieceNow.checkCollision(nowX-1, nowY, (rt+1)%4, fld)&&
 								canFloorKick)
 								rotateI = true
 							else if(engine.isHoldOK&&!ctrl.isPress(Controller.BUTTON_D)) {
@@ -328,33 +362,34 @@ open class PoochyBot:DummyAI(), Runnable {
 					if(rotateI) rotateDir = hypRtDir
 				} else if(rt!=bestRt&&(xDiff<=1||
 						bestX==0&&nowX==2&&nowType==Piece.PIECE_I||
-						(nowX<bestX&&pieceNow.checkCollision(nowX+1, nowY, rt, fld)||nowX>bestX&&pieceNow.checkCollision(nowX-1, nowY, rt, fld))&&
-						!(pieceNow.maximumBlockX+nowX==width-2&&rt and 1==1)&&
+						(nowX<bestX&&pieceNow.checkCollision(nowX+1, nowY, rt, fld)||
+							nowX>bestX&&pieceNow.checkCollision(nowX-1, nowY, rt, fld))&&
+						!(pieceNow.maximumBlockX+nowX==width-2&&rt and 1>0)&&
 						!(pieceNow.minimumBlockY+nowY==2&&pieceTouchGround&&rt and 1==0&&nowType!=Piece.PIECE_I))) {
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
 
-					val lrot = engine.getRotateDirection(-1)
-					val rrot = engine.getRotateDirection(1)
-					if(DEBUG_ALL) log.debug("lrot = $lrot, rrot = $rrot")
+					val lRot = engine.getRotateDirection(-1)
+					val rRot = engine.getRotateDirection(1)
+					if(DEBUG_ALL) log.debug("lrot = $lRot, rrot = $rRot")
 
-					if(best180&&engine.ruleopt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E))
+					if(best180&&engine.ruleOpt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E))
 						input = input or Controller.BUTTON_BIT_E
-					else if(bestRt==rrot)
+					else if(bestRt==rRot)
 						rotateDir = 1
-					else if(bestRt==lrot)
+					else if(bestRt==lRot)
 						rotateDir = -1
-					else if(engine.ruleopt.rotateButtonAllowReverse&&best180&&rt and 1==1) {
-						rotateDir = if(rrot==Piece.DIRECTION_UP)
+					else if(engine.ruleOpt.rotateButtonAllowReverse&&best180&&rt and 1>0) {
+						rotateDir = if(rRot==Piece.DIRECTION_UP)
 							1
 						else
 							-1
 					} else
 						rotateDir = 1
-				} else if(rt!=Piece.DIRECTION_UP&&xDiff>1&&engine.ruleopt.rotateButtonAllowReverse&&
+				} else if(rt!=Piece.DIRECTION_UP&&xDiff>1&&engine.ruleOpt.rotateButtonAllowReverse&&
 					(nowType==Piece.PIECE_L||nowType==Piece.PIECE_J
 						||nowType==Piece.PIECE_T))
 					if(rt==Piece.DIRECTION_DOWN) {
-						if(engine.ruleopt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E))
+						if(engine.ruleOpt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E))
 							input = input or Controller.BUTTON_BIT_E
 						else if(nowType==Piece.PIECE_L)
 							rotateDir = -1
@@ -384,7 +419,7 @@ open class PoochyBot:DummyAI(), Runnable {
 					// If you are able to reach
 					if(nowX==bestX&&pieceTouchGround)
 						if(rt==bestRt) {
-							// Groundrotation
+							// Ground rotation
 							if(bestRtSub!=-1) {
 								bestRt = bestRtSub
 								bestRtSub = -1
@@ -394,13 +429,13 @@ open class PoochyBot:DummyAI(), Runnable {
 								bestX = bestXSub
 								bestY = bestYSub
 							}
-						} else if(nowType==Piece.PIECE_I&&rt and 1==1&&
-							nowX+pieceNow.maximumBlockX==width-2&&(fld.highestBlockY<=4||fld.getHighestBlockY(width-2)-fld.getHighestBlockY(width-1)>=4)) {
+						} else if(nowType==Piece.PIECE_I&&rt and 1>0&&
+							nowX+pieceNow.maximumBlockX==width-2&&(fld.highestBlockY<=4||fld.getHighestBlockY(width-2)-fld.getHighestBlockY(
+								width-1)>=4)) {
 							bestRt = rt
 							bestX += 1
 						}
-					/* //Move left if need to move left, or if at rightmost
-					 * position and can move left.
+					/* //Move left if they need to move left, or if at rightmost position and can move left.
 					 * if (pieceTouchGround && pieceNow.id != Piece.PIECE_I &&
 					 * nowX+pieceNow.getMaximumBlockX() == width-1 &&
 					 * !pieceNow.checkCollision(nowX-1, nowY, fld))
@@ -419,14 +454,14 @@ open class PoochyBot:DummyAI(), Runnable {
 						setDAS = 0
 						// Funnel
 						if(bestRtSub==-1&&bestX==bestXSub) {
-							if(pieceTouchGround&&engine.ruleopt.softdropLock)
+							if(pieceTouchGround&&engine.ruleOpt.softdropLock)
 								drop = -1
-							else if(engine.ruleopt.harddropEnable)
+							else if(engine.ruleOpt.harddropEnable)
 								drop = 1
-							else if(engine.ruleopt.softdropEnable||engine.ruleopt.softdropLock) drop = -1
-						} else if(engine.ruleopt.harddropEnable&&!engine.ruleopt.harddropLock)
+							else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock) drop = -1
+						} else if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock)
 							drop = 1
-						else if(engine.ruleopt.softdropEnable&&!engine.ruleopt.softdropLock) drop = -1
+						else if(engine.ruleOpt.softdropEnable&&!engine.ruleOpt.softdropLock) drop = -1
 					}
 				}
 			}
@@ -485,7 +520,7 @@ open class PoochyBot:DummyAI(), Runnable {
 					rotateDir = 1
 					moveDir = 1
 				}
-			} else if(rotateDir!=0&&moveDir!=0&&pieceTouchGround&&rt and 1==1
+			} else if(rotateDir!=0&&moveDir!=0&&pieceTouchGround&&rt and 1>0
 				&&(nowType==Piece.PIECE_J||nowType==Piece.PIECE_L)
 				&&!pieceNow.checkCollision(nowX+moveDir, nowY+1, rt, fld)) {
 				if(DEBUG_ALL) log.debug("Delaying move on L or J piece to avoid getting stuck.")
@@ -496,7 +531,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				if(DEBUG_ALL) log.debug("Piece seems to be stuck due to unintentional synchro - trying intentional desync.")
 				moveDir = 0
 			}
-			if(moveDir==-1&&minBlockX==1&&nowType==Piece.PIECE_I&&rt and 1==1
+			if(moveDir==-1&&minBlockX==1&&nowType==Piece.PIECE_I&&rt and 1>0
 				&&pieceNow.checkCollision(nowX-1, nowY, rt, fld)) {
 				val depthNow = fld.getHighestBlockY(minBlockX)
 				val depthLeft = fld.getHighestBlockY(minBlockX-1)
@@ -515,7 +550,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			 * rotateDir = -1;
 			 * else if ((rt+2)%4 == bestRt)
 			 * {
-			 * if(engine.ruleopt.rotateButtonAllowDouble)
+			 * if(engine.ruleOpt.rotateButtonAllowDouble)
 			 * rotateDir = 2;
 			 * else if (rt == 3)
 			 * rotateDir = -1;
@@ -557,15 +592,15 @@ open class PoochyBot:DummyAI(), Runnable {
 
 			if(rotateDir!=0) {
 				val defaultRotateRight =
-					engine.owRotateButtonDefaultRight==1||engine.owRotateButtonDefaultRight==-1&&engine.ruleopt.rotateButtonDefaultRight
+					engine.owRotateButtonDefaultRight==1||engine.owRotateButtonDefaultRight==-1&&engine.ruleOpt.rotateButtonDefaultRight
 
-				if(engine.ruleopt.rotateButtonAllowDouble&&
+				if(engine.ruleOpt.rotateButtonAllowDouble&&
 					rotateDir==2&&!ctrl.isPress(Controller.BUTTON_E))
 					input = input or Controller.BUTTON_BIT_E
-				else if(engine.ruleopt.rotateButtonAllowReverse&&
+				else if(engine.ruleOpt.rotateButtonAllowReverse&&
 					!defaultRotateRight&&rotateDir==1) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
-				} else if(engine.ruleopt.rotateButtonAllowReverse&&
+				} else if(engine.ruleOpt.rotateButtonAllowReverse&&
 					defaultRotateRight&&rotateDir==-1) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
 				} else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
@@ -618,24 +653,26 @@ open class PoochyBot:DummyAI(), Runnable {
 		val spawnX = engine.getSpawnPosX(fld, p)
 		val speed = engine.speed
 		val gravityHigh = speed.gravity>speed.denominator
-		val width = fld!!.width
+		val width = fld.width
 		val midColumnX = width/2-1
 		return when {
 			abs(spawnX-bestX)==1 ->
-				if(bestRt==1) if(engine.ruleopt.rotateButtonDefaultRight) Controller.BUTTON_BIT_A else Controller.BUTTON_BIT_B
-			 else if(bestRt==3) if(engine.ruleopt.rotateButtonDefaultRight) Controller.BUTTON_BIT_B else Controller.BUTTON_BIT_A
-			else 0
+				if(bestRt==1) if(engine.ruleOpt.rotateButtonDefaultRight) Controller.BUTTON_BIT_A else Controller.BUTTON_BIT_B
+				else if(bestRt==3) if(engine.ruleOpt.rotateButtonDefaultRight) Controller.BUTTON_BIT_B else Controller.BUTTON_BIT_A
+				else 0
 
 			nextType==Piece.PIECE_L ->
-				if(gravityHigh&&fld.getHighestBlockY(midColumnX-1)<minOf(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX+1)))
-				0 else if(engine.ruleopt.rotateButtonDefaultRight) Controller.BUTTON_BIT_B else Controller.BUTTON_BIT_A
+				if(gravityHigh&&fld.getHighestBlockY(midColumnX-1)<minOf(fld.getHighestBlockY(midColumnX),
+						fld.getHighestBlockY(midColumnX+1)))
+					0 else if(engine.ruleOpt.rotateButtonDefaultRight) Controller.BUTTON_BIT_B else Controller.BUTTON_BIT_A
 			nextType==Piece.PIECE_J -> {
-				if(gravityHigh&&fld.getHighestBlockY(midColumnX+1)<minOf(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX-1)))
-					0 else if(engine.ruleopt.rotateButtonDefaultRight) Controller.BUTTON_BIT_A else Controller.BUTTON_BIT_B
+				if(gravityHigh&&fld.getHighestBlockY(midColumnX+1)<minOf(fld.getHighestBlockY(midColumnX),
+						fld.getHighestBlockY(midColumnX-1)))
+					0 else if(engine.ruleOpt.rotateButtonDefaultRight) Controller.BUTTON_BIT_A else Controller.BUTTON_BIT_B
 			}
 			/* else if (nextType == Piece.PIECE_I)
 			 * return Controller.BUTTON_BIT_A; */
-			else ->0
+			else -> 0
 		}
 		/* else if (nextType == Piece.PIECE_I)
 		 * return Controller.BUTTON_BIT_A; */
@@ -659,9 +696,8 @@ open class PoochyBot:DummyAI(), Runnable {
 		thinkSuccess = false
 
 		val fld:Field = if(engine.stat===GameEngine.Status.READY)
-			Field(engine.fieldWidth, engine.fieldHeight, engine.fieldHiddenHeight, engine.ruleopt.fieldCeiling)
-		else
-			Field(engine.field)
+			Field(engine.fieldWidth, engine.fieldHeight, engine.fieldHiddenHeight, engine.ruleOpt.fieldCeiling)
+		else Field(engine.field)
 		var pieceNow = engine.nowPieceObject
 		var pieceHold = engine.holdPieceObject
 		/* Piece pieceNow = null;
@@ -677,7 +713,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			pieceNow = engine.getNextObjectCopy(engine.nextPieceCount)
 			nowX = engine.getSpawnPosX(fld, pieceNow)
 			nowY = engine.getSpawnPosY(pieceNow)
-			nowRt = engine.ruleopt.pieceDefaultDirection[pieceNow!!.id]
+			nowRt = engine.ruleOpt.pieceDefaultDirection[pieceNow!!.id]
 			if(pieceHold==null) pieceHold = engine.getNextObjectCopy(engine.nextPieceCount+1)
 		} else {
 			nowX = engine.nowPieceX
@@ -689,15 +725,15 @@ open class PoochyBot:DummyAI(), Runnable {
 		pieceHold = checkOffset(pieceHold, engine)
 		if(pieceHold.id==pieceNow.id) pieceHold = null
 		/* if (!pieceNow.offsetApplied)
-		 * pieceNow.applyOffsetArray(engine.ruleopt.pieceOffsetX[pieceNow.id],
-		 * engine.ruleopt.pieceOffsetY[pieceNow.id]);
+		 * pieceNow.applyOffsetArray(engine.ruleOpt.pieceOffsetX[pieceNow.id],
+		 * engine.ruleOpt.pieceOffsetY[pieceNow.id]);
 		 * if (!pieceHold.offsetApplied)
-		 * pieceHold.applyOffsetArray(engine.ruleopt.pieceOffsetX[pieceHold.id],
-		 * engine.ruleopt.pieceOffsetY[pieceHold.id]); */
+		 * pieceHold.applyOffsetArray(engine.ruleOpt.pieceOffsetX[pieceHold.id],
+		 * engine.ruleOpt.pieceOffsetY[pieceHold.id]); */
 		val holdOK = engine.isHoldOK
 
 		val canFloorKick =
-			engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick||engine.ruleopt.rotateMaxUpwardWallkick<0
+			engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick||engine.ruleOpt.rotateMaxUpwardWallkick<0
 		val canFloorKickI = pieceNow.id==Piece.PIECE_I&&nowRt and 1==0&&canFloorKick
 		var canFloorKickT = pieceNow.id==Piece.PIECE_T&&nowRt!=Piece.DIRECTION_UP&&canFloorKick
 		if(canFloorKickT&&!pieceNow.checkCollision(nowX, nowY, Piece.DIRECTION_UP, fld))
@@ -719,14 +755,16 @@ open class PoochyBot:DummyAI(), Runnable {
 			 * dirCount = 1; */
 			for(rt in 0 until Piece.DIRECTION_COUNT) {
 				var tempY = nowY
-				if(canFloorKickI&&rt and 1==1)
+				if(canFloorKickI&&rt and 1>0)
 					tempY -= 2
 				else if(canFloorKickT&&rt==Piece.DIRECTION_UP) tempY--
 
 				val minX =
-					maxOf(mostMovableX(nowX, tempY, -1, engine, fld, pieceNow, rt), pieceNow.getMostMovableLeft(nowX, tempY, rt, engine.field!!))
+					maxOf(mostMovableX(nowX, tempY, -1, engine, fld, pieceNow, rt),
+						pieceNow.getMostMovableLeft(nowX, tempY, rt, engine.field))
 				val maxX =
-					minOf(mostMovableX(nowX, tempY, 1, engine, fld, pieceNow, rt), pieceNow.getMostMovableRight(nowX, tempY, rt, engine.field!!))
+					minOf(mostMovableX(nowX, tempY, 1, engine, fld, pieceNow, rt),
+						pieceNow.getMostMovableRight(nowX, tempY, rt, engine.field))
 				var spawnOK = true
 				if(engine.stat===GameEngine.Status.ARE) {
 					val spawnX = engine.getSpawnPosX(fld, pieceNow)
@@ -736,7 +774,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				run {
 					var x = minX
 					while(x<=maxX&&spawnOK) {
-						fld.copy(engine.field!!)
+						fld.copy(engine.field)
 						val y = pieceNow.getBottom(x, tempY, rt, fld)
 
 						if(!pieceNow.checkCollision(x, y, rt, fld)) {
@@ -758,7 +796,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							//Check regardless
 							//if((depth > 0) || (bestPts <= 10) || (pieceNow.id == Piece.PIECE_T)) {
 							// Left shift
-							fld.copy(engine.field!!)
+							fld.copy(engine.field)
 							if(!pieceNow.checkCollision(x-move, y, rt, fld)&&pieceNow.checkCollision(x-move, y-1, rt, fld)) {
 								pts = thinkMain(x-move, y, rt, -1, fld, pieceNow, depth)
 
@@ -777,7 +815,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Right shift
-							fld.copy(engine.field!!)
+							fld.copy(engine.field)
 							if(!pieceNow.checkCollision(x+move, y, rt, fld)&&pieceNow.checkCollision(x+1, y-move, rt, fld)) {
 								pts = thinkMain(x+move, y, rt, -1, fld, pieceNow, depth)
 
@@ -796,19 +834,19 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Left rotation
-							if(!engine.ruleopt.rotateButtonDefaultRight||engine.ruleopt.rotateButtonAllowReverse) {
+							if(!engine.ruleOpt.rotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
 								val rot = pieceNow.getRotateDirection(-1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field!!)
+								fld.copy(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(x, y, rot, rt, fld, pieceNow, depth)
-								else if(engine.wallkick!=null&&engine.ruleopt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
 									val allowUpward =
-										engine.ruleopt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick
-									engine.wallkick!!.executeWallkick(x, y, -1, rt, rot, allowUpward, pieceNow, fld, null)?.let{kick->
+										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+									engine.wallkick!!.executeWallkick(x, y, -1, rt, rot, allowUpward, pieceNow, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceNow, depth)
@@ -830,19 +868,19 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Right rotation
-							if(engine.ruleopt.rotateButtonDefaultRight||engine.ruleopt.rotateButtonAllowReverse) {
+							if(engine.ruleOpt.rotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
 								val rot = pieceNow.getRotateDirection(1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field!!)
+								fld.copy(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(x, y, rot, rt, fld, pieceNow, depth)
-								else if(engine.wallkick!=null&&engine.ruleopt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
 									val allowUpward =
-										engine.ruleopt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick
-									engine.wallkick!!.executeWallkick(x, y, 1, rt, rot, allowUpward, pieceNow, fld, null)?.let{kick->
+										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+									engine.wallkick!!.executeWallkick(x, y, 1, rt, rot, allowUpward, pieceNow, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceNow, depth)
@@ -864,19 +902,19 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// 180-degree rotation
-							if(engine.ruleopt.rotateButtonAllowDouble) {
+							if(engine.ruleOpt.rotateButtonAllowDouble) {
 								val rot = pieceNow.getRotateDirection(2, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field!!)
+								fld.copy(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(x, y, rot, rt, fld, pieceNow, depth)
-								else if(engine.wallkick!=null&&engine.ruleopt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
 									val allowUpward =
-										engine.ruleopt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick
-									engine.wallkick!!.executeWallkick(x, y, 2, rt, rot, allowUpward, pieceNow, fld, null)?.let{kick->
+										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+									engine.wallkick!!.executeWallkick(x, y, 2, rt, rot, allowUpward, pieceNow, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceNow, depth)
@@ -907,28 +945,29 @@ open class PoochyBot:DummyAI(), Runnable {
 					val spawnX = engine.getSpawnPosX(engine.field, pieceHold)
 					val spawnY = engine.getSpawnPosY(pieceHold)
 					val minHoldX =
-						maxOf(mostMovableX(spawnX, spawnY, -1, engine, engine.field, pieceHold, rt), pieceHold.getMostMovableLeft(spawnX, spawnY, rt, engine.field!!))
+						maxOf(mostMovableX(spawnX, spawnY, -1, engine, engine.field, pieceHold, rt),
+							pieceHold.getMostMovableLeft(spawnX, spawnY, rt, engine.field))
 					val maxHoldX =
-						minOf(mostMovableX(spawnX, spawnY, 1, engine, engine.field, pieceHold, rt), pieceHold.getMostMovableRight(spawnX, spawnY, rt, engine.field!!))
+						minOf(mostMovableX(spawnX, spawnY, 1, engine, engine.field, pieceHold, rt),
+							pieceHold.getMostMovableRight(spawnX, spawnY, rt, engine.field))
 
 					//Bonus for holding an I piece, penalty for holding an S or Z.
 					val holdType = pieceHold.id
 					var holdPts = 0
-					if(holdType==Piece.PIECE_I)
-						holdPts -= 30
-					else if(holdType==Piece.PIECE_S||holdType==Piece.PIECE_Z)
-						holdPts += 30
-					else if(holdType==Piece.PIECE_O) holdPts += 10
-					val nowType = pieceNow.id
-					if(nowType==Piece.PIECE_I)
-						holdPts += 30
-					else if(nowType==Piece.PIECE_S||nowType==Piece.PIECE_Z)
-						holdPts -= 30
-					else if(nowType==Piece.PIECE_O) holdPts -= 10
+					when(holdType) {
+						Piece.PIECE_I -> holdPts -= 30
+						Piece.PIECE_S, Piece.PIECE_Z -> holdPts += 30
+						Piece.PIECE_O -> holdPts += 10
+					}
+					when(pieceNow.id) {
+						Piece.PIECE_I -> holdPts += 30
+						Piece.PIECE_S, Piece.PIECE_Z -> holdPts -= 30
+						Piece.PIECE_O -> holdPts -= 10
+					}
 
 					var x = minHoldX
 					while(x<=maxHoldX) {
-						fld.copy(engine.field!!)
+						fld.copy(engine.field)
 						val y = pieceHold.getBottom(x, spawnY, rt, fld)
 
 						if(!pieceHold.checkCollision(x, y, rt, fld)) {
@@ -950,7 +989,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							//Check regardless
 							//if((depth > 0) || (bestPts <= 10) || (pieceHold.id == Piece.PIECE_T)) {
 							// Left shift
-							fld.copy(engine.field!!)
+							fld.copy(engine.field)
 							if(!pieceHold.checkCollision(x-move, y, rt, fld)&&pieceHold.checkCollision(x-move, y-1, rt, fld)) {
 								pts = thinkMain(x-move, y, rt, -1, fld, pieceHold, depth)
 								if(pts>Integer.MIN_VALUE+30) pts += holdPts
@@ -969,7 +1008,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Right shift
-							fld.copy(engine.field!!)
+							fld.copy(engine.field)
 							if(!pieceHold.checkCollision(x+move, y, rt, fld)&&pieceHold.checkCollision(x+move, y-1, rt, fld)) {
 								pts = thinkMain(x+move, y, rt, -1, fld, pieceHold, depth)
 								if(pts>Integer.MIN_VALUE+30) pts += holdPts
@@ -988,19 +1027,19 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Left rotation
-							if(!engine.ruleopt.rotateButtonDefaultRight||engine.ruleopt.rotateButtonAllowReverse) {
+							if(!engine.ruleOpt.rotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
 								val rot = pieceHold.getRotateDirection(-1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field!!)
+								fld.copy(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceHold.checkCollision(x, y, rot, fld))
 									pts = thinkMain(x, y, rot, rt, fld, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleopt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
 									val allowUpward =
-										engine.ruleopt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick
-									engine.wallkick!!.executeWallkick(x, y, -1, rt, rot, allowUpward, pieceHold, fld, null)?.let{kick->
+										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+									engine.wallkick!!.executeWallkick(x, y, -1, rt, rot, allowUpward, pieceHold, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceHold, depth)
@@ -1022,19 +1061,19 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Right rotation
-							if(engine.ruleopt.rotateButtonDefaultRight||engine.ruleopt.rotateButtonAllowReverse) {
+							if(engine.ruleOpt.rotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
 								val rot = pieceHold.getRotateDirection(1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field!!)
+								fld.copy(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceHold.checkCollision(x, y, rot, fld))
 									pts = thinkMain(x, y, rot, rt, fld, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleopt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
 									val allowUpward =
-										engine.ruleopt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick
-									engine.wallkick!!.executeWallkick(x, y, 1, rt, rot, allowUpward, pieceHold, fld, null)?.let{kick->
+										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+									engine.wallkick!!.executeWallkick(x, y, 1, rt, rot, allowUpward, pieceHold, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceHold, depth)
@@ -1056,19 +1095,19 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// 180-degree rotation
-							if(engine.ruleopt.rotateButtonAllowDouble) {
+							if(engine.ruleOpt.rotateButtonAllowDouble) {
 								val rot = pieceHold.getRotateDirection(2, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field!!)
+								fld.copy(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceHold.checkCollision(x, y, rot, fld))
 									pts = thinkMain(x, y, rot, rt, fld, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleopt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
 									val allowUpward =
-										engine.ruleopt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick
-									engine.wallkick!!.executeWallkick(x, y, 2, rt, rot, allowUpward, pieceHold, fld, null)?.let{kick->
+										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+									engine.wallkick!!.executeWallkick(x, y, 2, rt, rot, allowUpward, pieceHold, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceHold, depth)
@@ -1199,8 +1238,8 @@ open class PoochyBot:DummyAI(), Runnable {
 		}
 
 		// All clear
-		val allclear = fld.isEmpty
-		if(allclear) pts += 500000
+		val allClear = fld.isEmpty
+		if(allClear) pts += 500000
 
 		// Field height (after clears)
 		val heightAfter = fld.highestBlockY
@@ -1264,7 +1303,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			if(lines>=4) pts += 1000000
 		}
 
-		if(lines<4&&!allclear) {
+		if(lines<4&&!allClear) {
 			// Number of holes and valleys needing an I piece (after placement)
 			//int lidAfter = fld.getHowManyLidAboveHoles();
 
@@ -1484,8 +1523,8 @@ open class PoochyBot:DummyAI(), Runnable {
 		}
 		if(piece.id==Piece.PIECE_I&&dir>0) return piece.getMostMovableRight(testX, testY, rt, fld!!)
 		var floorKickOK = false
-		if((piece.id==Piece.PIECE_I||piece.id==Piece.PIECE_T)&&(engine.nowUpwardWallkickCount<engine.ruleopt.rotateMaxUpwardWallkick
-				||engine.ruleopt.rotateMaxUpwardWallkick<0||
+		if((piece.id==Piece.PIECE_I||piece.id==Piece.PIECE_T)&&(engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+				||engine.ruleOpt.rotateMaxUpwardWallkick<0||
 				engine.stat===GameEngine.Status.ARE))
 			floorKickOK = true
 		testY = piece.getBottom(testX, testY, testRt, fld!!)
@@ -1525,7 +1564,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				if(DEBUG_ALL)
 					log.debug("mostMovableX($x, $y, "+dir+
 						", piece ${Piece.Shape.names[piece.id]}, $rt) = "+testX)
-				if(piece.id==Piece.PIECE_I&&testX<0&&rt and 1==1) {
+				if(piece.id==Piece.PIECE_I&&testX<0&&rt and 1>0) {
 					val height1 = fld.getHighestBlockY(1)
 					if(height1<fld.getHighestBlockY(2)&&height1<fld.getHighestBlockY(3)+2)
 						return 0
@@ -1580,9 +1619,9 @@ open class PoochyBot:DummyAI(), Runnable {
 			drawScoreFont(engine, playerID, 19, 44, "MOVE SCORE:", COLOR.BLUE, .5f)
 			drawScoreFont(engine, playerID, 31, 44, "$bestPts", bestPts<=0, .5f)
 			drawScoreFont(engine, playerID, 19, 45, "THINK ACTIVE:", COLOR.BLUE, .5f)
-			drawScoreFont(engine, playerID, 32, 45, GeneralUtil.getOorX(thinking), .5f)
+			drawScoreFont(engine, playerID, 32, 45, thinking.getOX, .5f)
 			drawScoreFont(engine, playerID, 19, 46, "IN ARE:", COLOR.BLUE, .5f)
-			drawScoreFont(engine, playerID, 26, 46, GeneralUtil.getOorX(inARE), .5f)
+			drawScoreFont(engine, playerID, 26, 46, inARE.getOX, .5f)
 		}
 
 	}
@@ -1630,7 +1669,7 @@ open class PoochyBot:DummyAI(), Runnable {
 
 	//Wrapper for think requests
 	private class ThinkRequestMutex:java.lang.Object() {
-		var active:Boolean = false
+		var active = false
 
 		init {
 			active = false
@@ -1655,7 +1694,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			val result = Piece(p!!)
 			result.big = engine.big
 			if(!p.offsetApplied)
-				result.applyOffsetArray(engine.ruleopt.pieceOffsetX[p.id], engine.ruleopt.pieceOffsetY[p.id])
+				result.applyOffsetArray(engine.ruleOpt.pieceOffsetX[p.id], engine.ruleOpt.pieceOffsetY[p.id])
 			return result
 		}
 
