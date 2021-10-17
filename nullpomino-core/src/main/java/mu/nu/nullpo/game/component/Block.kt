@@ -68,8 +68,10 @@ import kotlin.math.roundToInt
 		this(color, type, skin, attrs.fold(0) {x, y -> x or y.bit})
 
 	constructor(color:COLOR?, skin:Int, vararg attrs:ATTRIBUTE):this(color, BLOCK, skin, *attrs)
+	constructor(mode:Pair<COLOR?, TYPE>, skin:Int = 0, aint:Int):this(mode.first, mode.second, skin, aint)
 	constructor(mode:Pair<COLOR?, TYPE>, skin:Int = 0, vararg attrs:ATTRIBUTE):this(mode.first, mode.second, skin, *attrs)
-	constructor(cint:Int = 0, skin:Int = 0, vararg attrs:ATTRIBUTE):this(intToColor(cint).first, skin, *attrs)
+	constructor(cint:Int = 0, skin:Int = 0, aint:Int):this(intToColor(cint), skin, aint)
+	constructor(cint:Int = 0, skin:Int = 0, vararg attrs:ATTRIBUTE):this(intToColor(cint), skin, *attrs)
 	constructor(char:Char, skin:Int = 0, vararg attrs:ATTRIBUTE):this(char.aNum, skin, *attrs)
 
 	override operator fun equals(other:Any?):Boolean = other is Block?&&color==other?.color&&type==other?.type
@@ -197,6 +199,8 @@ import kotlin.math.roundToInt
 	fun setAttribute(status:Boolean, attr:Int) {
 		aint = if(status) aint or attr else aint and attr.inv()
 	}
+
+	fun setAttribute(attr:Int, status:Boolean) = setAttribute(status, attr)
 
 	/** @return the character representing the color of this block
 	 */

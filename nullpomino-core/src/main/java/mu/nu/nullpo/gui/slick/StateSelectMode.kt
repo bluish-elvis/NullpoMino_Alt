@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
+import mu.nu.nullpo.gui.slick.img.FontTTF
 import org.apache.log4j.Logger
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
@@ -114,7 +115,7 @@ class StateSelectMode:DummyMenuScrollState() {
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		super.enter(container, game)
 		prepareModeList()
-		if(ResourceHolder.bgmPlaying!=BGM.Menu(1)) ResourceHolder.bgmStart(BGM.Menu(1))
+		if(ResourceHolder.bgmPlaying!=BGM.Menu(0)) ResourceHolder.bgmStart(BGM.Menu(0))
 	}
 
 	/* Render screen */
@@ -125,7 +126,7 @@ class StateSelectMode:DummyMenuScrollState() {
 			FontNano.printFont(8, 36,
 				if(strCurrentFolder.isNotEmpty()) ">${strCurrentFolder.uppercase()}" else ">[All modes]", COLOR.ORANGE, .5f)
 
-		FontNormal.printTTF(16, 440, getModeDesc(convModeName(list[cursor], false)))
+		FontTTF.print(16, 440, getModeDesc(convModeName(list[cursor], false)))
 	}
 
 	/* Decide */

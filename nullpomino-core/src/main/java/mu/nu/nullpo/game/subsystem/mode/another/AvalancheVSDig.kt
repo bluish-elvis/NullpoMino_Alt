@@ -57,10 +57,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		handicapRows = IntArray(MAX_PLAYERS)
 	}
 
-	/** Load settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to read from
-	 */
+	/** Load settings into [engine] from [prop] not related to speeds */
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		super.loadOtherSetting(engine, prop, "digrace")
 		val playerID = engine.playerID
@@ -69,10 +66,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		handicapRows[playerID] = prop.getProperty("avalanchevsdigrace.ojamaHandicap.p$playerID", 6)
 	}
 
-	/** Save settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to save to
-	 */
+	/** Save settings from [engine] into [prop] not related to speeds */
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		super.saveOtherSetting(engine, prop, "digrace")
 		val playerID = engine.playerID
@@ -368,8 +362,8 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 
 		// Score
 		var strScoreMultiplier = ""
-		if(lastscore[playerID]!=0&&lastmultiplier[playerID]!=0&&scgettime[playerID]>0)
-			strScoreMultiplier = "(${lastscore[playerID]}e${lastmultiplier[playerID]})"
+		if(lastscores[playerID]!=0&&lastmultiplier[playerID]!=0&&scgettime[playerID]>0)
+			strScoreMultiplier = "(${lastscores[playerID]}e${lastmultiplier[playerID]})"
 
 		if(engine.displaysize==1) {
 			receiver.drawDirectFont(fldPosX+4, fldPosY+440, String.format("%12d", score[playerID]), playerColor)
@@ -414,6 +408,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		if(scgettime[playerID]>0) scgettime[playerID]--
 		if(chainDisplay[playerID]>0) chainDisplay[playerID]--
 
@@ -422,10 +417,10 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 		// Settlement
 		if(playerID==1&&owner.engine[0].gameActive) {
 			var p1Lose = owner.engine[0].stat==GameEngine.Status.GAMEOVER
-			if(!p1Lose&&owner.engine[1].field!=null&&owner.engine[1].stat!=GameEngine.Status.READY)
+			if(!p1Lose&&owner.engine[1].stat!=GameEngine.Status.READY)
 				p1Lose = owner.engine[1].field.howManyGems==0
 			var p2Lose = owner.engine[1].stat==GameEngine.Status.GAMEOVER
-			if(!p2Lose&&owner.engine[0].field!=null&&owner.engine[0].stat!=GameEngine.Status.READY)
+			if(!p2Lose&&owner.engine[0].stat!=GameEngine.Status.READY)
 				p2Lose = owner.engine[0].field.howManyGems==0
 			if(p1Lose&&p2Lose) {
 				// Draw
@@ -456,11 +451,12 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		saveOtherSetting(engine, owner.replayProp)
 		savePreset(engine, owner.replayProp, -1-playerID, "digrace")
 
 		owner.replayProp.setProperty("avalanchevsdigrace.version", version)
+		return false
 	}
 
 	companion object {

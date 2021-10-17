@@ -33,6 +33,8 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block.ITEM.*
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
+import mu.nu.nullpo.game.event.ScoreEvent.Twister
 import mu.nu.nullpo.game.play.GameEngine.MeterColor.*
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
@@ -42,6 +44,7 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.log4j.Logger
+import zeroxfc.nullpo.custom.libs.ProfileProperties
 import java.util.Calendar
 import java.util.Locale
 import kotlin.random.Random
@@ -56,7 +59,7 @@ class GameEngine
  * @param wallkick Wallkickシステム
  * @param randomizer Blockピースの出現順の生成アルゴリズム
  */
-(
+	(
 	/** GameManager: Owner of this GameEngine */
 	val owner:GameManager,
 	/** Player ID (0=1P) */
@@ -80,12 +83,13 @@ class GameEngine
 	val statistics:Statistics = Statistics()
 
 	/** SpeedParam: Parameters of game speed
-	 * (Gravity, ARE, Line clear delay, etc) */
+	 * (Gravity, ARE, Line clear delay, etc.) */
 	val speed:SpeedParam = SpeedParam()
 
 	/** Gravity counter (The piece falls when this reaches
-	 * to the value of speed.denominator) */
-	var gcount = 0; private set
+	 * to the value of speed denominator) */
+	var gcount = 0
+		private set
 
 	/** The first random-seed */
 	var randSeed = 0L
@@ -247,6 +251,9 @@ class GameEngine
 
 	/** In the middle of an instant DAS loop */
 	var dasInstant = false
+
+	/** Wall pushing DAS for preventing movefail sounds */
+	var dasWall = false
 
 	/** Disallow shift while locking key is pressed */
 	var shiftLock = 0
@@ -422,9 +429,9 @@ class GameEngine
 	var kickused = false
 
 	/** Field size (-1:Default) */
-	var fieldWidth = 0
-	var fieldHeight = 0
-	var fieldHiddenHeight = 0
+	var fieldWidth = -1
+	var fieldHeight = -1
+	var fieldHiddenHeight = -1
 
 	/** Ending mode (0:During the normal game) */
 	var ending = 0
@@ -510,7 +517,7 @@ class GameEngine
 	var holdButtonNextSkip = false
 
 	/** Allow default text rendering
-	 * (such as "READY", "GO!", "GAME OVER",etc) */
+	 * (such as "READY", "GO!", "GAME OVER",etc.) */
 	var allowTextRenderByReceiver = false
 
 	/** RollRoll (Auto rotation) enable flag */
@@ -628,6 +635,19 @@ class GameEngine
 	var inthanabi = 0
 
 	var explodSize:Array<IntArray> = EXPLOD_SIZE_DEFAULT
+
+	internal val playerProp by lazy {
+		ProfileProperties(
+			when(owner.mode?.gameIntensity) {
+				-1 -> EventReceiver.COLOR.PINK
+				1 -> EventReceiver.COLOR.GREEN
+				2 -> EventReceiver.COLOR.YELLOW
+				3 -> EventReceiver.COLOR.RED
+				else -> EventReceiver.COLOR.BLUE
+			}
+		)
+	}
+	internal var playerName = ""
 
 	/** Current AREの値を取得 (ルール設定も考慮）
 	 * @return Current ARE
@@ -769,8 +789,10 @@ class GameEngine
 		field.reset()
 		statistics.reset()
 		speed.reset()
+		playerProp.reset()
 		gcount = 0
-		owner.receiver.loadProperties(owner.recorder(ruleOpt.strRuleName))?.let {owner.recordProp = it}
+		owner.recordProp.load(owner.recorder(ruleOpt.strRuleName))
+
 		replayData = ReplayData()
 
 		if(!owner.replayMode) {
@@ -989,8 +1011,10 @@ class GameEngine
 			it.playerInit(this, playerID)
 			if(owner.replayMode) it.loadReplay(this, playerID, owner.replayProp)
 			else it.loadRanking(owner.recordProp, ruleOpt.strRuleName)
+			if(playerProp.isLoggedIn) it.loadRankingPlayer(playerProp, ruleOpt.strRuleName)
 
 		}
+		playerName = if(owner.replayMode) owner.replayProp.getProperty("$playerID.playerName", "") else ""
 		owner.receiver.playerInit(this, playerID)
 		ai?.also {
 			it.shutdown()
@@ -1107,7 +1131,10 @@ class GameEngine
 	/** 横溜め処理 */
 	fun padRepeat() {
 		if(moveDirection!=0) dasCount++
-		else if(!ruleOpt.dasStoreChargeOnNeutral) dasCount = 0
+		else {
+			dasWall = false
+			if(!ruleOpt.dasStoreChargeOnNeutral) dasCount = 0
+		}
 		dasDirection = moveDirection
 	}
 
@@ -1131,7 +1158,8 @@ class GameEngine
 		val m = if(p.big) 2 else 1
 		var res:Twister? = null
 		if(p.checkCollision(x, y-m, f)&&p.checkCollision(x+m, y, f)
-			&&p.checkCollision(x-m, y, f)) {
+			&&p.checkCollision(x-m, y, f)
+		) {
 			res = Twister.IMMOBILE
 			val copyField = Field().apply {copy(f)}
 			p.placeToField(x, y, copyField)
@@ -1179,30 +1207,30 @@ class GameEngine
 			else if((twistminiType==TWISTMINI_TYPE_ROTATECHECK
 					&&p.checkCollision(x, y, getRotateDirection(-1), f)
 					&&p.checkCollision(x, y, getRotateDirection(1), f))
-				||(twistminiType==TWISTMINI_TYPE_WALLKICKFLAG&&kickused)) res = Twister.POINT_MINI
+				||(twistminiType==TWISTMINI_TYPE_WALLKICKFLAG&&kickused)
+			) res = Twister.POINT_MINI
 
 		} else {
 			val offsetX = ruleOpt.pieceOffsetX[p.id][p.direction]
 			val offsetY = ruleOpt.pieceOffsetY[p.id][p.direction]
 			if(!p.big)
 				for(i in 0 until Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction].size/2) {
-					var isHighSpot1 = false
-					var isHighSpot2 = false
-					var isLowSpot1 = false
-					var isLowSpot2 = false
-
-					if(!f.getBlockEmpty(x+Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction][i*2]+offsetX,
-							y+Piece.SPINBONUSDATA_HIGH_Y[p.id][p.direction][i*2]+offsetY, false))
-						isHighSpot1 = true
-					if(!f.getBlockEmpty(x+Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction][i*2+1]+offsetX,
-							y+Piece.SPINBONUSDATA_HIGH_Y[p.id][p.direction][i*2+1]+offsetY, false))
-						isHighSpot2 = true
-					if(!f.getBlockEmpty(x+Piece.SPINBONUSDATA_LOW_X[p.id][p.direction][i*2]+offsetX,
-							y+Piece.SPINBONUSDATA_LOW_Y[p.id][p.direction][i*2]+offsetY, false))
-						isLowSpot1 = true
-					if(!f.getBlockEmpty(x+Piece.SPINBONUSDATA_LOW_X[p.id][p.direction][i*2+1]+offsetX,
-							y+Piece.SPINBONUSDATA_LOW_Y[p.id][p.direction][i*2+1]+offsetY, false))
-						isLowSpot2 = true
+					val isHighSpot1 = (!f.getBlockEmpty(
+						x+Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction][i*2]+offsetX,
+						y+Piece.SPINBONUSDATA_HIGH_Y[p.id][p.direction][i*2]+offsetY, false
+					))
+					val isHighSpot2 = (!f.getBlockEmpty(
+						x+Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction][i*2+1]+offsetX,
+						y+Piece.SPINBONUSDATA_HIGH_Y[p.id][p.direction][i*2+1]+offsetY, false
+					))
+					val isLowSpot1 = (!f.getBlockEmpty(
+						x+Piece.SPINBONUSDATA_LOW_X[p.id][p.direction][i*2]+offsetX,
+						y+Piece.SPINBONUSDATA_LOW_Y[p.id][p.direction][i*2]+offsetY, false
+					))
+					val isLowSpot2 = (!f.getBlockEmpty(
+						x+Piece.SPINBONUSDATA_LOW_X[p.id][p.direction][i*2+1]+offsetX,
+						y+Piece.SPINBONUSDATA_LOW_Y[p.id][p.direction][i*2+1]+offsetY, false
+					))
 
 					//log.debug(isHighSpot1 + "," + isHighSpot2 + "," + isLowSpot1 + "," + isLowSpot2);
 
@@ -1254,6 +1282,8 @@ class GameEngine
 		}
 		return x
 	}
+
+	fun getSpawnPosX(piece:Piece?):Int = getSpawnPosX(field, piece)
 
 	/** ピースが出現するY-coordinateを取得
 	 * @param piece Piece
@@ -1438,6 +1468,8 @@ class GameEngine
 			// GMT timestamp
 			owner.replayProp.setProperty("timestamp.gmt", GeneralUtil.nowGMT)
 		}
+		if(playerProp.isLoggedIn)
+			owner.replayProp.setProperty("$playerID.playerName", playerProp.nameDisplay)
 
 		owner.replayProp.setProperty("$playerID.tuning.owRotateButtonDefaultRight", owRotateButtonDefaultRight)
 		owner.replayProp.setProperty("$playerID.tuning.owSkin", owSkin)
@@ -1449,7 +1481,18 @@ class GameEngine
 		owner.replayProp.setProperty("$playerID.tuning.owMoveDiagonal", owMoveDiagonal)
 		owner.replayProp.setProperty("$playerID.tuning.owDelayCancel", owDelayCancel)
 
-		owner.mode?.saveReplay(this, playerID, owner.replayProp)
+		owner.mode?.let {
+			it.saveSetting(owner.replayProp, ruleOpt.strRuleName, playerID)
+			owner.saveModeConfig()
+			if(it.saveReplay(this, playerID, owner.replayProp)) {
+				it.saveRanking()
+				owner.recordProp.save()
+				if(playerProp.isLoggedIn) {
+					it.saveRankingPlayer(playerProp)
+					playerProp.saveProfileConfig()
+				}
+			}
+		}
 	}
 
 	/** fieldエディット画面に入る処理 */
@@ -1470,7 +1513,8 @@ class GameEngine
 		if(fieldHeight<0) fieldHeight = ruleOpt.fieldHeight
 		if(fieldHiddenHeight<0) fieldHiddenHeight = ruleOpt.fieldHiddenHeight
 		if(field.width==fieldWidth&&field.height==fieldHeight&&field.hiddenHeight==fieldHiddenHeight&&
-			field.ceiling==ruleOpt.fieldCeiling) return field
+			field.ceiling==ruleOpt.fieldCeiling
+		) return field
 
 		/*if(!gameActive&&!owner.replayMode) {
 			val tempRand = Random.Default
@@ -1536,6 +1580,7 @@ class GameEngine
 		if(!lagStop)
 			when(stat) {
 				Status.SETTING -> statSetting()
+				Status.PROFILE -> statProfile()
 				Status.READY -> statReady()
 				Status.MOVE -> {
 					dasRepeat = true
@@ -1597,6 +1642,10 @@ class GameEngine
 			Status.SETTING -> {
 				owner.mode?.renderSetting(this, playerID)
 				owner.receiver.renderSetting(this, playerID)
+			}
+			Status.PROFILE -> {
+				owner.mode?.renderProfile(this, playerID)
+				owner.receiver.renderProfile(this, playerID)
 			}
 			Status.READY -> {
 				owner.mode?.renderReady(this, playerID)
@@ -1668,8 +1717,27 @@ class GameEngine
 		owner.mode?.also {if(it.onSetting(this, playerID)) return@statSetting}
 		owner.receiver.onSetting(this, playerID)
 
-		// Mode側が何もしない場合はReady画面へ移動
+		// Mode側が何もしない・決定したことでfalseを返した場合はReady画面へ移動
 		stat = Status.READY
+		if(playerProp.isLoggedIn) {
+			owner.mode?.saveSetting(playerProp.propProfile)
+			playerProp.saveProfileConfig()
+		}
+		owner.mode?.saveSetting(owner.modeConfig, ruleOpt.strRuleName, playerID)
+		owner.saveModeConfig()
+
+		resetStatc()
+	}
+
+	/** 開始前の名前入力画面のときの処理 */
+	private fun statProfile() {
+		//  event 発生
+		owner.mode?.also {if(it.onProfile(this, playerID)) return@statProfile}
+		owner.receiver.onProfile(this, playerID)
+
+		if(playerProp.loginScreen.updateScreen(this, playerID)) return
+		// Mode側が何もしない場合は設定画面へ戻る
+		stat = Status.SETTING
 		resetStatc()
 	}
 
@@ -1687,7 +1755,8 @@ class GameEngine
 		if(statc[0]==0) {
 
 			if(!readyDone&&!owner.bgmStatus.fadesw&&owner.bgmStatus.bgm.id<0&&
-				owner.bgmStatus.bgm.id !in BGM.Finale(0).id..BGM.Finale(2).id)
+				owner.bgmStatus.bgm.id !in BGM.Finale(0).id..BGM.Finale(2).id
+			)
 				owner.bgmStatus.fadesw = true
 			// fieldInitialization
 			createFieldIfNeeded()
@@ -1796,7 +1865,10 @@ class GameEngine
 		if(statc[0]>0||ruleOpt.dasInMoveFirstFrame)
 			if(dasDirection!=moveDirection) {
 				dasDirection = moveDirection
-				if(!(dasDirection==0&&ruleOpt.dasStoreChargeOnNeutral)) dasCount = 0
+				if(!(dasDirection==0&&ruleOpt.dasStoreChargeOnNeutral)) {
+					dasWall = false
+					dasCount = 0
+				}
 			}
 
 		// 出現時の処理
@@ -1939,40 +2011,40 @@ class GameEngine
 
 				// rotation
 				val onGroundBeforeRotate = it.checkCollision(nowPieceX, nowPieceY+1, field)
-				var move = 0
+				var spin = 0
 				var rotated = false
 
 				if(initialRotateDirection!=0) {
-					move = initialRotateDirection
+					spin = initialRotateDirection
 					initialRotateLastDirection = initialRotateDirection
 					initialRotateContinuousUse = true
 					playSE("initialrotate")
 				} else if(statc[0]>0||ruleOpt.moveFirstFrame) {
-					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) move = 1 // Roll Roll
+					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) spin = 1 // Roll Roll
 
 					//  button input
 					ctrl.let {
 						when {
-							it.isPush(Controller.BUTTON_A)||it.isPush(Controller.BUTTON_C) -> move = -1
-							it.isPush(Controller.BUTTON_B) -> move = 1
-							it.isPush(Controller.BUTTON_E) -> move = 2
+							it.isPush(Controller.BUTTON_A)||it.isPush(Controller.BUTTON_C) -> spin = -1
+							it.isPush(Controller.BUTTON_B) -> spin = 1
+							it.isPush(Controller.BUTTON_E) -> spin = 2
 						}
 					}
 
-					if(move!=0) {
-						initialRotateLastDirection = move
+					if(spin!=0) {
+						initialRotateLastDirection = spin
 						initialRotateContinuousUse = true
 					}
 				}
 
-				if(!ruleOpt.rotateButtonAllowDouble&&move==2) move = -1
-				if(!ruleOpt.rotateButtonAllowReverse&&move==1) move = -1
-				if(isRotateButtonDefaultRight&&move!=2) move *= -1
+				if(!ruleOpt.rotateButtonAllowDouble&&spin==2) spin = -1
+				if(!ruleOpt.rotateButtonAllowReverse&&spin==1) spin = -1
+				if(isRotateButtonDefaultRight&&spin!=2) spin *= -1
 
 				it.also {piece ->
-					if(move!=0) {
+					if(spin!=0) {
 						// Direction after rotationを決める
-						var rt = getRotateDirection(move)
+						var rt = getRotateDirection(spin)
 
 						// rotationできるか判定
 						if(!piece.checkCollision(nowPieceX, nowPieceY, rt, field)) {
@@ -1982,11 +2054,12 @@ class GameEngine
 							piece.direction = rt
 							piece.updateConnectData()
 						} else if(ruleOpt.rotateWallkick&&wallkick!=null&&(initialRotateDirection==0||ruleOpt.rotateInitialWallkick)
-							&&(ruleOpt.lockresetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK||!isRotateCountExceed)) {
+							&&(ruleOpt.lockresetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK||!isRotateCountExceed)
+						) {
 							// Wallkickを試みる
 							val allowUpward = ruleOpt.rotateMaxUpwardWallkick<0||nowUpwardWallkickCount<ruleOpt.rotateMaxUpwardWallkick
 
-							wallkick?.executeWallkick(nowPieceX, nowPieceY, move, piece.direction, rt, allowUpward, piece, field, ctrl)
+							wallkick?.executeWallkick(nowPieceX, nowPieceY, spin, piece.direction, rt, allowUpward, piece, field, ctrl)
 								?.let {kick ->
 									rotated = true
 									kickused = true
@@ -2092,7 +2165,7 @@ class GameEngine
 				if(statc[0]==0&&delayCancel) {
 					if(delayCancelMoveLeft) move = -1
 					if(delayCancelMoveRight) move = 1
-					dasCount += das/2
+					dasCount = das/2
 					// delayCancel = false;
 					delayCancelMoveLeft = false
 					delayCancelMoveRight = false
@@ -2116,7 +2189,8 @@ class GameEngine
 									nowPieceX += move
 
 									if(dasDelay==0&&dasCount>0&&
-										!it.checkCollision(nowPieceX+move, nowPieceY, field)) {
+										!it.checkCollision(nowPieceX+move, nowPieceY, field)
+									) {
 										if(!dasInstant) playSE("move")
 										dasRepeat = true
 										dasInstant = true
@@ -2140,7 +2214,10 @@ class GameEngine
 									if(!dasInstant) playSE("move")
 
 								} else {
-									playSE("movefail")
+									if(!dasWall) {
+										playSE("movefail")
+										dasWall = true
+									}
 									if(ruleOpt.dasChargeOnBlockedMove) {
 										dasCount = das
 										dasSpeedCount = dasDelay
@@ -2153,12 +2230,13 @@ class GameEngine
 				if(!dasRepeat) {
 					// Hard drop
 					if(ctrl.isPress(up)&&!harddropContinuousUse&&ruleOpt.harddropEnable&&
-						(isDiagonalMoveEnabled||!sidemoveflag)&&(ruleOpt.moveUpAndDown||!updown)&&nowPieceY<nowPieceBottomY) {
+						(isDiagonalMoveEnabled||!sidemoveflag)&&(ruleOpt.moveUpAndDown||!updown)&&nowPieceY<nowPieceBottomY
+					) {
 						harddropFall += nowPieceBottomY-nowPieceY
 						fpf = nowPieceBottomY-nowPieceY
 						if(nowPieceY!=nowPieceBottomY) {
 							nowPieceY = nowPieceBottomY
-							playSE("harddrop")
+							playSE("harddrop", maxOf(.75f, minOf(1f, fpf*2f/field.height)))
 						}
 						harddropContinuousUse = !ruleOpt.harddropLock
 						owner.mode?.afterHardDropFall(this, playerID, harddropFall)
@@ -2175,7 +2253,8 @@ class GameEngine
 					if(ruleOpt.softdropEnable&&ctrl.isPress(down)&&
 						!softdropContinuousUse&&(isDiagonalMoveEnabled||!sidemoveflag)&&
 						(ruleOpt.moveUpAndDown||!updown)&&
-						(!onGroundBeforeMove&&!harddropContinuousUse)) {
+						(!onGroundBeforeMove&&!harddropContinuousUse)
+					) {
 						if(!ruleOpt.softdropGravitySpeedLimit||(softDropSpd<speed.denominator)) {// Old Soft Drop codes
 							gcount += softDropSpd.toInt()
 							softDropUsed = true
@@ -2183,12 +2262,14 @@ class GameEngine
 							gcount = softDropSpd.toInt()
 							softDropUsed = true
 						}
-					} else if(!ruleOpt.softdropGravitySpeedLimit&&softDropUsed) gcount = 0 // This prevents soft drop from adding to the gravity speed.
+					} else if(!ruleOpt.softdropGravitySpeedLimit&&softDropUsed) gcount =
+						0 // This prevents soft drop from adding to the gravity speed.
 				}
 				if(ending==0||staffrollEnableStatistics) statistics.totalPieceActiveTime++
 			}
 			if(!ruleOpt.softdropGravitySpeedLimit||softDropSpd<1f||
-				!softDropUsed) gcount += speed.gravity // Part of Old Soft Drop
+				!softDropUsed
+			) gcount += speed.gravity // Part of Old Soft Drop
 
 			while((gcount>=speed.denominator||speed.gravity<0)&&!it.checkCollision(nowPieceX, nowPieceY+1, field)) {
 				if(speed.gravity>=0) gcount -= speed.denominator
@@ -2242,7 +2323,8 @@ class GameEngine
 				ctrl.let {
 					if(ruleOpt.harddropEnable&&!harddropContinuousUse&&
 						it.isPress(up)&&ruleOpt.harddropLock&&
-						(isDiagonalMoveEnabled||!sidemoveflag)&&(ruleOpt.moveUpAndDown||!updown)) {
+						(isDiagonalMoveEnabled||!sidemoveflag)&&(ruleOpt.moveUpAndDown||!updown)
+					) {
 						harddropContinuousUse = true
 						manualLock = true
 						instantLock = true
@@ -2252,7 +2334,8 @@ class GameEngine
 					if(ruleOpt.softdropEnable&&
 						(ruleOpt.softdropLock&&it.isPress(down)||it.isPush(down)&&
 							(ruleOpt.softdropSurfaceLock||speed.gravity<0)&&!softDropUsed)
-						&&!softdropContinuousUse&&(isDiagonalMoveEnabled||!sidemoveflag)&&(ruleOpt.moveUpAndDown||!updown)) {
+						&&!softdropContinuousUse&&(isDiagonalMoveEnabled||!sidemoveflag)&&(ruleOpt.moveUpAndDown||!updown)
+					) {
 						softdropContinuousUse = true
 						manualLock = true
 						instantLock = true
@@ -2460,11 +2543,13 @@ class GameEngine
 
 					if(li>0) {
 						playSE("erase")
-						playSE(when {
-							li>=(if(twist) 3 else 4) -> "erase2"
-							li>=(if(twist||combo>=1) 2 else 3) -> "erase1"
-							else -> "erase0"
-						}, vol = if(li>=(if(twist) 3 else 4)) .7f else 1f)
+						playSE(
+							when {
+								li>=(if(twist) 2 else if(combo>=1) 3 else 4) -> "erase2"
+								li>=(if(twist) 1 else 2) -> "erase1"
+								else -> "erase0"
+							}
+						)
 						lastlines = field.lastLinesHeight
 						lastline = field.lastLinesBottom
 						playSE("line${maxOf(1, minOf(li, 4))}")
@@ -2587,7 +2672,8 @@ class GameEngine
 
 		// Linesを1段落とす
 		if(lineGravityType==LineGravity.NATIVE&&lineDelay>=lineClearing-1&&statc[0]>=lineDelay-(lineClearing-1)
-			&&ruleOpt.lineFallAnim)
+			&&ruleOpt.lineFallAnim
+		)
 			field.downFloatingBlocksSingleLine()
 
 		// Line delay cancel check
@@ -2628,7 +2714,10 @@ class GameEngine
 						clearMode==ClearType.LINE&&field.checkLineNoFlag()>0
 							||clearMode==ClearType.COLOR&&
 							field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)>0
-							||clearMode==ClearType.LINE_COLOR&&field.checkLineColor(colorClearSize, false, lineColorDiagonals, gemSameColor)>0
+							||clearMode==ClearType.LINE_COLOR&&field.checkLineColor(
+							colorClearSize, false, lineColorDiagonals,
+							gemSameColor
+						)>0
 							||clearMode==ClearType.GEM_COLOR&&field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)>0
 							||(clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)&&field.checkBombOnLine(true)>0 -> {
 							twistType = null
@@ -2651,11 +2740,17 @@ class GameEngine
 				if(lineGravityType==LineGravity.NATIVE) field.downFloatingBlocks()
 				field.run {
 					if((lastLinesBottom>=highestBlockY&&lineClearing>=3)||lastLinesSplited)
-						playSE("linefall", maxOf(
-							0.8f, 1.2f-lastLinesBottom/3f/fieldHeight), minOf(1f, 0.4f+speed.lineDelay*0.1f))
+						playSE(
+							"linefall", maxOf(
+								0.8f, 1.2f-lastLinesBottom/3f/fieldHeight
+							), minOf(1f, 0.4f+speed.lineDelay*0.1f)
+						)
 					if((lastLinesBottom>=highestBlockY&&lineClearing<=2)||lastLinesSplited)
-						playSE("linefall1", maxOf(
-							0.8f, 1.2f-lastLinesBottom/3f/fieldHeight), minOf(1f, 0.4f+speed.lineDelay*0.1f))
+						playSE(
+							"linefall1", maxOf(
+								0.8f, 1.2f-lastLinesBottom/3f/fieldHeight
+							), minOf(1f, 0.4f+speed.lineDelay*0.1f)
+						)
 				}
 
 				field.lineColorsCleared = IntArray(0)
@@ -2931,7 +3026,8 @@ class GameEngine
 				ending==2 -> if(owner.mode?.gameIntensity==1) (if(statistics.time<10800) 1 else 2) else 3
 				ending!=0 -> if(statistics.time<10800) 1 else 2
 				else -> 0
-			})
+			}
+		)
 
 		owner.mode?.also {if(it.onResult(this, playerID)) return@statResult}
 		owner.receiver.onResult(this, playerID)
@@ -2943,7 +3039,7 @@ class GameEngine
 
 		// Cursor movement
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)||ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) {
-			statc[0] = if(statc[0]==0) 1 else 0
+			statc[0] = (statc[0]==0).toInt()
 			playSE("cursor")
 		}
 
@@ -3004,8 +3100,10 @@ class GameEngine
 			if(ctrl.isPress(Controller.BUTTON_A)&&fldeditFrames>10)
 				try {
 					if(field.getBlock(fldeditX, fldeditY)?.cint!=fldeditColor) {
-						field.setBlock(fldeditX, fldeditY,
-							Block(fldeditColor, skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE))
+						field.setBlock(
+							fldeditX, fldeditY,
+							Block(fldeditColor, skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+						)
 						playSE("change")
 					}
 				} catch(e:Exception) {
@@ -3102,7 +3200,7 @@ class GameEngine
 
 	/** Constants of main game status */
 	enum class Status {
-		NOTHING, SETTING, READY, MOVE, LOCKFLASH, LINECLEAR, ARE, ENDINGSTART, CUSTOM, EXCELLENT, GAMEOVER, RESULT,
+		NOTHING, SETTING, PROFILE, READY, MOVE, LOCKFLASH, LINECLEAR, ARE, ENDINGSTART, CUSTOM, EXCELLENT, GAMEOVER, RESULT,
 		FIELDEDIT, INTERRUPTITEM
 	}
 
@@ -3119,12 +3217,6 @@ class GameEngine
 	/** Clear mode settings */
 	enum class ClearType {
 		LINE, COLOR, LINE_COLOR, GEM_COLOR, LINE_GEM_BOMB, LINE_GEM_SPARK
-	}
-
-	enum class Twister {
-		IMMOBILE_EZ, IMMOBILE_MINI, POINT_MINI, IMMOBILE, POINT;
-
-		val isMini:Boolean get() = this==POINT_MINI||this==IMMOBILE_MINI
 	}
 
 	enum class MeterColor(val color:Int) {
@@ -3213,53 +3305,25 @@ class GameEngine
 
 		/** Table for cint-block inum */
 		val ITEM_COLOR_BRIGHT_TABLE =
-			intArrayOf(10, 10, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0,
-				0, 0, 0, 0, 0)
+			intArrayOf(
+				10, 10, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0,
+				0, 0, 0, 0, 0
+			)
 
 		/** Default list of block colors to use for random block colors. */
 		val BLOCK_COLORS_DEFAULT =
-			arrayOf(Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW, Block.COLOR.GREEN,
-				Block.COLOR.CYAN, Block.COLOR.BLUE, Block.COLOR.PURPLE)
+			arrayOf(
+				Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW, Block.COLOR.GREEN,
+				Block.COLOR.CYAN, Block.COLOR.BLUE, Block.COLOR.PURPLE
+			)
 
 		const val HANABI_INTERVAL = 10
 
 		val EXPLOD_SIZE_DEFAULT =
-			arrayOf(intArrayOf(4, 3), intArrayOf(3, 0), intArrayOf(3, 1), intArrayOf(3, 2), intArrayOf(3, 3), intArrayOf(4, 4),
-				intArrayOf(5, 5), intArrayOf(5, 5), intArrayOf(6, 6), intArrayOf(6, 6), intArrayOf(7, 7))
-	}
-
-	data class ScoreEvent(val lines:Int = 0, val split:Boolean = false, val piece:Piece? = null, val twist:Twister? = null,
-		val b2b:Boolean = false) {
-
-		override fun equals(other:Any?):Boolean {
-			if(this===other) return true
-			if(javaClass!=other?.javaClass) return false
-
-			other as ScoreEvent
-
-			return !(lines!=other.lines||split!=other.split||piece!=other.piece||twist!=other.twist||b2b!=other.b2b)
-		}
-
-		override fun hashCode():Int {
-			var result = piece.hashCode()
-			result = (Twister.values().size+1)*result+1+(twist?.ordinal ?: -1)
-			result = 10*result+minOf(maxOf(0, lines), 9)
-			result = 4*result+split.toInt()+b2b.toInt()*2
-			return result
-		}
-
-		companion object {
-			fun parseInt(i:Int):ScoreEvent? = if(i<0) null
-			else {
-				val lines = (i shr 2)%10
-				val twist = (i shr 2)/10%(Twister.values().size+1)
-				val piece = (i shr 2)/10/(Twister.values().size+1)%Piece.Shape.values().size
-				ScoreEvent(lines, i%2==1, if(piece<=0) null else Piece(piece-1).apply {},
-					Twister.values().getOrNull(twist-1), (i shr 1)%2==1)
-			}
-
-			fun parseInt(i:String):ScoreEvent? = parseInt(i.toInt())
-		}
+			arrayOf(
+				intArrayOf(4, 3), intArrayOf(3, 0), intArrayOf(3, 1), intArrayOf(3, 2), intArrayOf(3, 3), intArrayOf(4, 4),
+				intArrayOf(5, 5), intArrayOf(5, 5), intArrayOf(6, 6), intArrayOf(6, 6), intArrayOf(7, 7)
+			)
 	}
 
 }

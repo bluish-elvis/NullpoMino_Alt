@@ -108,9 +108,7 @@ open class GameKeyDummy
 		inputState[key] = state
 	}
 
-	/** Load settings
-	 * @param prop Property file to read from
-	 */
+	/** Load settings from [prop] */
 	open fun loadConfig(prop:CustomProperties) {
 		// Keyboard - ingame
 		keymap[BUTTON_UP] = prop.getProperty("key.p$player.up", empty)
@@ -169,9 +167,7 @@ open class GameKeyDummy
 		joyBorder = prop.getProperty("joyBorder.p$player", 0)
 	}
 
-	/** Save settings
-	 * @param prop Property file to save to
-	 */
+	/** Save settings to [prop] */
 	fun saveConfig(prop:CustomProperties) {
 		// Keyboard - ingame
 		prop.setProperty("key.p$player.up", keymap[BUTTON_UP])

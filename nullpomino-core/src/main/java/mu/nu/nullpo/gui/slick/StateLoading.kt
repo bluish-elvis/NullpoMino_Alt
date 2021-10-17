@@ -62,7 +62,7 @@ class StateLoading:BasicGameState() {
 
 		if(NullpoMinoSlick.propConfig.getProperty("option.se", true))
 			try {
-				val clip = Sound("$skindir/se/welcome.ogg")
+				val clip = Sound("$skindir/jingle/welcome.ogg")
 				clip.play()
 				loadBG = Image("$skindir/graphics/${ResourceHolder.imgTitleBG.name}.png")
 				container?.graphics?.drawImage(loadBG, 0f, 0f)

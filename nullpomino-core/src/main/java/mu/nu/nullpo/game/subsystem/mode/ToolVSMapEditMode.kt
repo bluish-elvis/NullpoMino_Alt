@@ -66,10 +66,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		nowMapID = 0
 	}
 
-	/** MapRead
-	 * @param field field
-	 * @param prop Property file to read from
-	 */
+	/** MapRead into #[id]:[field] from [prop] */
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		//field.readProperty(prop, id);
@@ -78,11 +75,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 	}
 
-	/** MapSave
-	 * @param field field
-	 * @param prop Property file to save to
-	 * @param id AnyID
-	 */
+	/** MapSave from #[id]:[field] into [prop] */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		//field.writeProperty(prop, id);
 		prop.setProperty("values.$id", field.fieldToString())
@@ -116,7 +109,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		for(i in 0 until maxMap)
 			saveMap(listFields!![i], propMap, i)
 
-		receiver.saveProperties("config/map/vsbattle/$setID.map", propMap)
+		propMap.save("config/map/vsbattle/$setID.map")
 	}
 
 	private fun grayToRandomColor(field:Field) {

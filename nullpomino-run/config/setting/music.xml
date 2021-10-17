@@ -3,8 +3,8 @@
 <properties>
  <comment>NullpoMino Music List</comment>
 
- <entry key="music.filename.Menu.0">res/bgm/beats/cbr_menu2.ogg</entry>
- <entry key="music.filename.Menu.1">res/bgm/beats/cbr_menu1.ogg</entry>
+ <entry key="music.filename.Menu.0">res/bgm/beats/cbr_menu1.ogg</entry>
+ <entry key="music.filename.Menu.1">res/bgm/beats/cbr_menu2.ogg</entry>
  <entry key="music.filename.Menu.2">res/bgm/beats/cbr_menu3.ogg</entry>
  <entry key="music.filename.Menu.3">res/bgm/beats/xx_collon0.ogg</entry>
  <entry key="music.filename.Menu.4">res/bgm/beats/cbr_prepare1.ogg</entry>

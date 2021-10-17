@@ -32,6 +32,8 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
@@ -53,13 +55,6 @@ class GrandPhantom:AbstractMode() {
 
 	/** Used by combo scoring */
 	private var comboValue = 0
-
-	/** Amount of points you just get from line clears */
-	private var lastscore = 0
-
-	/** Elapsed time from last line clear
-	 * (lastscore is displayed to screen until this reaches to 120) */
-	private var scgettime = 0
 
 	/** Secret Grade */
 	private var secretGrade = 0
@@ -127,16 +122,17 @@ class GrandPhantom:AbstractMode() {
 	private var isShowBestSectionTime = false
 
 	/** Selected start level */
-	private var startlevel = 0
+	private var startLevel = 0
 
 	/** Enable/Disable level stop sfx */
-	private var lvstopse = false
+	private var secAlert = false
 
-	/** Big mode */
-	private var big = false
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** Show section time */
-	private var showsectiontime = false
+	private var showST = false
 
 	/** Version of this mode */
 	private var version = 0
@@ -162,6 +158,9 @@ class GrandPhantom:AbstractMode() {
 	/** Returns the name of this mode */
 	override val name = "Grand Phantom"
 	override val gameIntensity = 3
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollclear" to rankingRollclear,
+			"section.time" to bestSectionTime)
 	/** This function will be called when the game enters
 	 * the main game screen. */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -173,7 +172,6 @@ class GrandPhantom:AbstractMode() {
 		gradeflash = 0
 		comboValue = 0
 		lastscore = 0
-		scgettime = 0
 		rolltime = 0
 		rollclear = 0
 		rollstarted = false
@@ -193,10 +191,10 @@ class GrandPhantom:AbstractMode() {
 		recoveryFlag = false
 		rotateCount = 0
 		isShowBestSectionTime = false
-		startlevel = 0
-		lvstopse = false
+		startLevel = 0
+		secAlert = false
 		big = false
-		showsectiontime = true
+		showST = true
 
 		rankingRank = -1
 		rankingGrade = IntArray(RANKING_MAX)
@@ -216,32 +214,29 @@ class GrandPhantom:AbstractMode() {
 		engine.staffrollNoDeath = false
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			for(i in 0 until SECTION_MAX)
 				bestSectionTime[i] = DEFAULT_SECTION_TIME
-			loadSetting(owner.replayProp)
 			version = owner.replayProp.getProperty("phantommania.version", 0)
 		}
 
-		owner.backgroundStatus.bg = startlevel
+		owner.backgroundStatus.bg = startLevel
 	}
 
 	/** Load the settings */
-	override fun loadSetting(prop:CustomProperties) {
-		startlevel = prop.getProperty("phantommania.startlevel", 0)
-		lvstopse = prop.getProperty("phantommania.lvstopse", true)
-		showsectiontime = prop.getProperty("phantommania.showsectiontime", true)
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		startLevel = prop.getProperty("phantommania.startLevel", 0)
+		secAlert = prop.getProperty("phantommania.lvstopse", true)
+		showST = prop.getProperty("phantommania.showsectiontime", true)
 		big = prop.getProperty("phantommania.big", false)
 	}
 
 	/** Save the settings */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("phantommania.startlevel", startlevel)
-		prop.setProperty("phantommania.lvstopse", lvstopse)
-		prop.setProperty("phantommania.showsectiontime", showsectiontime)
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		prop.setProperty("phantommania.startLevel", startLevel)
+		prop.setProperty("phantommania.lvstopse", secAlert)
+		prop.setProperty("phantommania.showsectiontime", showST)
 		prop.setProperty("phantommania.big", big)
 	}
 
@@ -302,7 +297,7 @@ class GrandPhantom:AbstractMode() {
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
 			var temp = 0
-			for(i in startlevel until startlevel+sectionscomp)
+			for(i in startLevel until startLevel+sectionscomp)
 				temp += sectionTime[i]
 			sectionavgtime = temp/sectionscomp
 		} else
@@ -351,13 +346,13 @@ class GrandPhantom:AbstractMode() {
 
 				when(menuCursor) {
 					0 -> {
-						startlevel += change
-						if(startlevel<0) startlevel = 9
-						if(startlevel>9) startlevel = 0
-						owner.backgroundStatus.bg = startlevel
+						startLevel += change
+						if(startLevel<0) startLevel = 9
+						if(startLevel>9) startLevel = 0
+						owner.backgroundStatus.bg = startLevel
 					}
-					1 -> lvstopse = !lvstopse
-					2 -> showsectiontime = !showsectiontime
+					1 -> secAlert = !secAlert
+					2 -> showST = !showST
 					3 -> big = !big
 				}
 			}
@@ -371,8 +366,6 @@ class GrandPhantom:AbstractMode() {
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				isShowBestSectionTime = false
 				sectionscomp = 0
 				return false
@@ -394,14 +387,14 @@ class GrandPhantom:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.PURPLE, 0, "Level" to startlevel*100, "LVSTOPSE" to lvstopse,
-			"SHOW STIME" to showsectiontime, "BIG" to big)
+		drawMenu(engine, playerID, receiver, 0, COLOR.PURPLE, 0, "Level" to startLevel*100, "LVSTOPSE" to secAlert,
+			"SHOW STIME" to showST, "BIG" to big)
 	}
 
 	/** This function will be called before the game actually begins (after
 	 * Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine, playerID:Int) {
-		engine.statistics.level = startlevel*100
+		engine.statistics.level = startLevel*100
 
 		nextseclv = engine.statistics.level+100
 		if(engine.statistics.level<0) nextseclv = 100
@@ -422,7 +415,7 @@ class GrandPhantom:AbstractMode() {
 		receiver.drawScoreFont(engine, playerID, 0, 0, "PHANTOM MANIA", COLOR.WHITE)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null)
+			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Leaderboard
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
@@ -469,8 +462,7 @@ class GrandPhantom:AbstractMode() {
 
 			// Score
 			receiver.drawScoreFont(engine, playerID, 0, 5, "Score", COLOR.PURPLE)
-			receiver.drawScoreNum(engine, playerID, 0, 6, "$scgettime"+"\n"+lastscore)
-			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
+			receiver.drawScoreNum(engine, playerID, 0, 6, "$scDisp"+"\n"+lastscore)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.PURPLE)
 			receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
@@ -494,7 +486,7 @@ class GrandPhantom:AbstractMode() {
 			receiver.drawScoreMedal(engine, playerID, 0, 22, "RO", medalRO)
 			receiver.drawScoreMedal(engine, playerID, 3, 22, "CO", medalCO)
 
-			if(showsectiontime&&sectionTime.isNotEmpty()) {
+			if(showST&&sectionTime.isNotEmpty()) {
 				val x = if(receiver.nextDisplayType==2) 8 else 12
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
 
@@ -525,7 +517,7 @@ class GrandPhantom:AbstractMode() {
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 
@@ -552,7 +544,7 @@ class GrandPhantom:AbstractMode() {
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 			lvupflag = true
@@ -738,7 +730,7 @@ class GrandPhantom:AbstractMode() {
 
 				if(nextseclv==300||nextseclv==700) roMedalCheck(engine)
 
-				if(startlevel==0)
+				if(startLevel==0)
 					for(i in 0 until tableGradeLevel.size-1)
 						if(engine.statistics.level>=tableGradeLevel[i]) {
 							grade = i
@@ -747,7 +739,7 @@ class GrandPhantom:AbstractMode() {
 
 				nextseclv += 100
 				if(nextseclv>999) nextseclv = 999
-			} else if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 
 			lastscore = ((((levelb+lines)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*lines*comboValue
 				*if(engine.field.isEmpty) 4 else 1)
@@ -760,6 +752,7 @@ class GrandPhantom:AbstractMode() {
 
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		if(gradeflash>0) gradeflash--
 		setHeboHidden(engine)
 		if(engine.timerActive&&engine.ending==0) {
@@ -864,25 +857,21 @@ class GrandPhantom:AbstractMode() {
 
 	/** This function will be called when the replay data is going to be
 	 * saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(owner.replayProp)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(owner.replayProp, engine)
 		owner.replayProp.setProperty("phantommania.version", version)
 
-		if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null) {
+		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
+//			owner.statsProp.setProperty("decoration", decoration)
 			updateRanking(grade, engine.statistics.level, engine.statistics.time, rollclear)
 			if(medalST==3) updateBestSectionTime()
 
-			if(rankingRank!=-1||medalST==3) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1||medalST==3) return true
+
 		}
+		return false
 	}
 
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
 			rankingGrade[i] = prop.getProperty("$ruleName.$i.grade", 0)
@@ -893,14 +882,11 @@ class GrandPhantom:AbstractMode() {
 		for(i in 0 until SECTION_MAX)
 			bestSectionTime[i] = prop.getProperty("$ruleName.$i.sectiontime", bestSectionTime[i])
 
-//		decoration = owner.statsProp.getProperty("decoration", 0)
 	}
 
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
+	/** Save rankings of [ruleName] to [prop] */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
+		super.saveRanking((0 until RANKING_MAX).flatMap {i ->
 			listOf("$ruleName.$i.grade" to rankingGrade[i],
 				"$ruleName.$i.level" to rankingLevel[i],
 				"$ruleName.$i.time" to rankingTime[i],
@@ -909,8 +895,6 @@ class GrandPhantom:AbstractMode() {
 			listOf("$ruleName.sectiontime.$i" to bestSectionTime[i])
 		})
 
-//		owner.statsProp.setProperty("decoration", decoration)
-//		receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update the ranking */

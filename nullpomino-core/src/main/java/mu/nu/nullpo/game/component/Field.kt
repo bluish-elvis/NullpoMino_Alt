@@ -33,6 +33,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.LineGravity
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.filterNotNullIndexed
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import org.apache.log4j.Logger
 import kotlin.math.abs
 import kotlin.math.roundToLong
@@ -1027,7 +1028,7 @@ import kotlin.random.Random
 				val rand = engine.random.nextFloat()
 				if(rand<messiness) {
 					val newHole = (rand*width).toInt()
-					x = newHole+if(newHole>=x) 1 else 0
+					x = newHole+(newHole>=x).toInt()
 				}
 			}
 			pushUp(1)

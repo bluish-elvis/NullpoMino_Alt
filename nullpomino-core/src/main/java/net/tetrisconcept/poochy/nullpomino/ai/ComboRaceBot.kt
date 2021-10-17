@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.util.GeneralUtil.getOX
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import org.apache.log4j.Logger
 import kotlin.math.abs
 
@@ -472,7 +473,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 			t = moves!![state][pieceHold.id]
 
 			while(t!=null) {
-				val pts = thinkMain(engine, t.newField, pieceNow.id, if(holdBoxEmpty) 1 else 0)
+				val pts = thinkMain(engine, t.newField, pieceNow.id, holdBoxEmpty.toInt())
 
 				if(pts>bestPts) {
 					bestPts = pts

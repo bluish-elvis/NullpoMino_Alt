@@ -47,8 +47,6 @@ import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import zeroxfc.nullpo.custom.libs.Interpolation
-import zeroxfc.nullpo.custom.libs.ProfileProperties
 import zeroxfc.nullpo.custom.libs.SideWaveText
 import zeroxfc.nullpo.custom.libs.WeightedRandomizer
 import kotlin.math.pow
@@ -79,16 +77,22 @@ class Collapse:AbstractMode() {
 	private var localRandom:Random = Random.Default
 	private var force = false
 	private var lineSpawn = 0
-	private var lastScore = 0
-	private var scoreToDisplay = 0
-	private var scGetTime = 0
 	private var multiplier = 0.0
 	private var acTime = 0
-	private var playerProperties:ProfileProperties = ProfileProperties(EventReceiver.COLOR.ORANGE)
 	private var rankingScorePlayer:Array<IntArray> = emptyArray()
 	private var rankingLevelPlayer:Array<IntArray> = emptyArray()
 	private var rankingRankPlayer = 0
-	private var showPlayerStats = false
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf(
+			*((rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLevel.mapIndexed {a, x -> "$a.level" to x}).toTypedArray())
+		)
+	override val rankPersMap:Map<String, IntArray>
+		get() = mapOf(
+			*((rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLevelPlayer.mapIndexed {a, x -> "$a.level" to x}).toTypedArray())
+		)
+
 	/*
      * ------ MAIN METHODS ------
      */
@@ -116,9 +120,6 @@ class Collapse:AbstractMode() {
 		force = false
 		bScore = 0
 		lineSpawn = 0
-		lastScore = 0
-		scoreToDisplay = 0
-		scGetTime = 0
 		multiplier = 1.0
 		acTime = -1
 		resetSTextArr()
@@ -134,12 +135,7 @@ class Collapse:AbstractMode() {
 			else -> -1
 		}
 		engine.framecolor = GameEngine.FRAME_COLOR_BRONZE
-		loadSetting(owner.modeConfig)
-		loadRanking(owner.modeConfig)
-		if(playerProperties.isLoggedIn) {
-			loadSettingPlayer(playerProperties)
-			loadRankingPlayer(playerProperties)
-		}
+
 	}
 
 	private fun resetSTextArr() {
@@ -158,8 +154,12 @@ class Collapse:AbstractMode() {
 		if(big) {
 			offsetY *= 2
 		}
-		sTextArr.add(SideWaveText(cursorX+offsetX, cursorY+offsetY, 1.5,
-			if(!largeClear) 0.0 else if(big) 24.0 else 16.0, str, big, largeClear))
+		sTextArr.add(
+			SideWaveText(
+				cursorX+offsetX, cursorY+offsetY, 1.5,
+				if(!largeClear) 0.0 else if(big) 24.0 else 16.0, str, big, largeClear
+			)
+		)
 	}
 
 	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
@@ -187,25 +187,16 @@ class Collapse:AbstractMode() {
 			// Confirm
 			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_A)&&engine.statc[3]>=5) {
 				engine.playSE("decide")
-				if(playerProperties.isLoggedIn) {
-					saveSettingPlayer(playerProperties)
-					playerProperties.saveProfileConfig()
-				} else {
-					saveSetting(owner.modeConfig)
-					owner.saveModeConfig()
-				}
 				return false
 			}
 
 			// Cancel
 			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_B)) {
 				engine.quitflag = true
-				playerProperties = ProfileProperties(EventReceiver.COLOR.ORANGE)
 			}
 
 			// New acc
 			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_E)&&engine.ai==null) {
-				playerProperties = ProfileProperties(EventReceiver.COLOR.ORANGE)
 				engine.playSE("decide")
 				engine.stat = GameEngine.Status.CUSTOM
 				engine.resetStatc()
@@ -221,11 +212,15 @@ class Collapse:AbstractMode() {
 	}
 
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.RED, 0,
-			"DIFFICULTY" to DIFFICULTY_NAMES[difficulty])
-		drawMenu(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, 1,
+		drawMenu(
+			engine, playerID, receiver, 0, EventReceiver.COLOR.RED, 0,
+			"DIFFICULTY" to DIFFICULTY_NAMES[difficulty]
+		)
+		drawMenu(
+			engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, 1,
 			"BOMBS" to enableBombs.getONorOFF(),
-			"BGM" to "$bgm")
+			"BGM" to "$bgm"
+		)
 	}
 
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
@@ -247,17 +242,17 @@ class Collapse:AbstractMode() {
 			fieldY = -1
 			localState = -1
 			force = false
-			lastScore = 0
-			scoreToDisplay = 0
 			localRandom = Random(engine.randSeed-1L)
 			wRandomEngine = WeightedRandomizer(tableColorWeights[0], engine.randSeed)
 			wRandomEngineBomb = WeightedRandomizer(tableBombColorWeights[0], engine.randSeed+1)
-			levelUp(engine, playerID, true)
+			levelUp(engine, true)
 			engine.fieldWidth = engine.ruleOpt.fieldWidth
 			engine.fieldHeight = engine.ruleOpt.fieldHeight
 			engine.fieldHiddenHeight = engine.ruleOpt.fieldHiddenHeight
-			engine.field = mu.nu.nullpo.game.component.Field(engine.fieldWidth, engine.fieldHeight, engine.fieldHiddenHeight,
-				engine.ruleOpt.fieldCeiling)
+			engine.field = mu.nu.nullpo.game.component.Field(
+				engine.fieldWidth, engine.fieldHeight, engine.fieldHiddenHeight,
+				engine.ruleOpt.fieldCeiling
+			)
 			engine.field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 			if(!engine.readyDone) {
 				//  button input状態リセット
@@ -326,7 +321,7 @@ class Collapse:AbstractMode() {
 			when(localState) {
 				LOCALSTATE_INGAME -> {
 					if(!engine.timerActive) engine.timerActive = true
-					incrementTime = stateInGame(engine, playerID)
+					incrementTime = stateInGame(engine)
 				}
 				LOCALSTATE_TRANSITION -> {
 					if(engine.timerActive) engine.timerActive = false
@@ -343,10 +338,10 @@ class Collapse:AbstractMode() {
 		} else {
 			showPlayerStats = false
 			engine.isInGame = true
-			val s:Boolean = playerProperties.loginScreen.updateScreen(engine, playerID)
-			if(playerProperties.isLoggedIn) {
-				loadRankingPlayer(playerProperties)
-				loadSettingPlayer(playerProperties)
+			engine.playerProp.loginScreen.updateScreen(engine, playerID)
+			if(engine.playerProp.isLoggedIn) {
+				loadRankingPlayer(engine.playerProp)
+				loadSetting(engine.playerProp.propProfile, engine)
 			}
 			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 			true
@@ -408,13 +403,13 @@ class Collapse:AbstractMode() {
 			if(engine.field.isEmpty) {
 				acTime = 0
 				engine.playSE("bravo")
-				engine.statistics.scoreBonus += 100000*Math.pow(1.025, engine.statistics.level.toDouble()).toInt()
+				engine.statistics.scoreBonus += 100000*1.025.pow(engine.statistics.level.toDouble()).toInt()
 			}
 			engine.statistics.scoreLine += score
 		}
 	}
 
-	private fun stateInGame(engine:GameEngine, playerID:Int):Boolean {
+	private fun stateInGame(engine:GameEngine):Boolean {
 		if(holderType!=HOLDER_SWING) {
 			if(fieldX!=-1) {
 				if(!engine.field.getBlockEmpty(fieldX, fieldY)) {
@@ -499,7 +494,7 @@ class Collapse:AbstractMode() {
 			while(!nextFull) {
 				val index = nextEmpty
 				val coeff = localRandom.nextDouble()
-				var temp = -1
+				var temp:Int
 				if(coeff<=bombChance*(if(engine.field.highestBlockY<4) 3.0 else 1.0)&&enableBombs&&linesLeft!=1) {
 					temp = wRandomEngineBomb.nextInt()
 					if(linesLeft==1) {
@@ -546,7 +541,7 @@ class Collapse:AbstractMode() {
 
 	private fun stateTransition(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]>180+16*3) {
-			levelUp(engine, playerID, false)
+			levelUp(engine, false)
 			resetBlockArray()
 			engine.resetStatc()
 			for(i in 0 until lineSpawn) {
@@ -653,7 +648,7 @@ class Collapse:AbstractMode() {
 		}
 	}
 
-	private fun levelUp(engine:GameEngine, playerID:Int, beginning:Boolean) {
+	private fun levelUp(engine:GameEngine, beginning:Boolean) {
 		if(!beginning) engine.statistics.level++
 		owner.backgroundStatus.bg = engine.statistics.level%20
 		val effectiveLevel:Int = engine.statistics.level
@@ -817,12 +812,13 @@ class Collapse:AbstractMode() {
 				}
 				engine.statc[0]++
 			} else {
-				if(enableBombs) updateRanking(engine.statistics.score, difficulty, engine.statistics.level+1)
-				if(rankingRank!=-1) saveRanking(owner.modeConfig)
-				if(rankingRankPlayer!=-1&&playerProperties.isLoggedIn) {
-					saveRankingPlayer(playerProperties)
-					playerProperties.saveProfileConfig()
-				}
+				if(enableBombs) updateRanking(
+					engine.statistics.score, difficulty, engine.statistics.level+1,
+					engine.playerProp.isLoggedIn
+				)
+				if(rankingRank!=-1) saveRanking()
+				if(rankingRankPlayer!=-1) saveRankingPlayer(engine.playerProp)
+
 				owner.saveModeConfig()
 				for(i in 0 until owner.players) {
 					if(i==playerID||engine.gameoverAll) {
@@ -858,17 +854,12 @@ class Collapse:AbstractMode() {
 		return true
 	}
 
-	private fun incrementScore(engine:GameEngine) {
-		scoreToDisplay = Interpolation.sineStep(lastScore.toDouble(), engine.statistics.score.toDouble(), scGetTime/60.0).toInt()
-	}
-
 	private fun setNewLowerScore(engine:GameEngine) {
-		lastScore = engine.statistics.score
-		scGetTime = 0
+		lastscore = engine.statistics.score
 	}
 
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		if(scGetTime<60&&!engine.lagStop) scGetTime++
+		super.onLast(engine, playerID)
 		if(!engine.lagStop) {
 			updateSTextArr()
 			if(acTime in 0..119) acTime++ else acTime = -1
@@ -876,21 +867,22 @@ class Collapse:AbstractMode() {
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(
-					mu.nu.nullpo.game.component.Controller.BUTTON_F)&&playerProperties.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
+					mu.nu.nullpo.game.component.Controller.BUTTON_F
+				)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM
+			) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")
 			}
-		}
-		if(engine.quitflag) {
-			playerProperties = ProfileProperties(EventReceiver.COLOR.ORANGE)
 		}
 	}
 
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		if(owner.menuOnly) return
 		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.ORANGE)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "("+DIFFICULTY_NAMES[difficulty]+" DIFFICULTY)",
-			EventReceiver.COLOR.ORANGE)
+		receiver.drawScoreFont(
+			engine, playerID, 0, 1, "("+DIFFICULTY_NAMES[difficulty]+" DIFFICULTY)",
+			EventReceiver.COLOR.ORANGE
+		)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&enableBombs&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
@@ -898,40 +890,59 @@ class Collapse:AbstractMode() {
 				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE    LEVEL", EventReceiver.COLOR.BLUE, scale)
 				if(showPlayerStats) {
 					for(i in 0 until MAX_RANKING) {
-						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW,
-							scale)
-						receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScorePlayer[difficulty][i]}",
-							i==rankingRankPlayer, scale)
-						receiver.drawScoreFont(engine, playerID, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}",
-							i==rankingRankPlayer, scale)
+						receiver.drawScoreFont(
+							engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW,
+							scale
+						)
+						receiver.drawScoreFont(
+							engine, playerID, 3, topY+i, "${rankingScorePlayer[difficulty][i]}",
+							i==rankingRankPlayer, scale
+						)
+						receiver.drawScoreFont(
+							engine, playerID, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}",
+							i==rankingRankPlayer, scale
+						)
 					}
-					receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+1, "PLAYER SCORES",
-						EventReceiver.COLOR.BLUE)
-					receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+2, playerProperties.nameDisplay,
-						EventReceiver.COLOR.WHITE, 2f)
-					receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN",
-						EventReceiver.COLOR.GREEN)
+					receiver.drawScoreFont(
+						engine, playerID, 0, topY+MAX_RANKING+1, "PLAYER SCORES",
+						EventReceiver.COLOR.BLUE
+					)
+					receiver.drawScoreFont(
+						engine, playerID, 0, topY+MAX_RANKING+2, engine.playerProp.nameDisplay,
+						EventReceiver.COLOR.WHITE, 2f
+					)
+					receiver.drawScoreFont(
+						engine, playerID, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN",
+						EventReceiver.COLOR.GREEN
+					)
 				} else {
 					for(i in 0 until MAX_RANKING) {
-						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW,
-							scale)
+						receiver.drawScoreFont(
+							engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW,
+							scale
+						)
 						receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank, scale)
 						receiver.drawScoreFont(engine, playerID, 12, topY+i, "${rankingLevel[difficulty][i]}", i==rankingRank, scale)
 					}
-					receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+1, "LOCAL SCORES",
-						EventReceiver.COLOR.BLUE)
-					if(!playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+2,
-						"(NOT LOGGED IN)\n(E:LOG IN)")
-					if(playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+MAX_RANKING+5,
-						"F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
+					receiver.drawScoreFont(
+						engine, playerID, 0, topY+MAX_RANKING+1, "LOCAL SCORES",
+						EventReceiver.COLOR.BLUE
+					)
+					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
+						engine, playerID, 0, topY+MAX_RANKING+2,
+						"(NOT LOGGED IN)\n(E:LOG IN)"
+					)
+					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
+						engine, playerID, 0, topY+MAX_RANKING+5,
+						"F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN
+					)
 				}
 			}
 		} else if(!engine.gameActive&&engine.stat===GameEngine.Status.CUSTOM) {
-			playerProperties.loginScreen.renderScreen(receiver, engine, playerID)
+			engine.playerProp.loginScreen.renderScreen(receiver, engine, playerID)
 		} else {
-			if(!engine.lagStop) incrementScore(engine)
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 4, "$scoreToDisplay")
+			receiver.drawScoreFont(engine, playerID, 0, 4, "$scDisp")
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LEVEL", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 7, (engine.statistics.level+1).toString())
 			if(linesLeft>=0) {
@@ -940,13 +951,13 @@ class Collapse:AbstractMode() {
 			}
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 13, engine.statistics.time.toTimeStr)
-			if(playerProperties.isLoggedIn) {
+			if(engine.playerProp.isLoggedIn) {
 				receiver.drawScoreFont(engine, playerID, 0, 15, "PLAYER", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 16, playerProperties.nameDisplay, EventReceiver.COLOR.WHITE, 2f)
+				receiver.drawScoreFont(engine, playerID, 0, 16, engine.playerProp.nameDisplay, EventReceiver.COLOR.WHITE, 2f)
 			}
 			sTextArr.forEach {
-				val x=it.location[0]
-				val y=it.location[1]
+				val x = it.location[0]
+				val y = it.location[1]
 				val scale:Float
 				val rs:Float
 				val baseScale:Float = if(it.big) 2f else 1f
@@ -976,8 +987,10 @@ class Collapse:AbstractMode() {
 				val s = "$bScore"
 				val l = s.length
 				val offset = (12-l)/2
-				receiver.drawMenuFont(engine, playerID, 2, 6, "LEVEL UP",
-					if(engine.statc[0]/2%2==0) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE)
+				receiver.drawMenuFont(
+					engine, playerID, 2, 6, "LEVEL UP",
+					if(engine.statc[0]/2%2==0) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE
+				)
 				receiver.drawMenuFont(engine, playerID, 0, 8, "BONUS POINTS", EventReceiver.COLOR.YELLOW)
 				receiver.drawMenuFont(engine, playerID, offset, 9, s)
 			}
@@ -997,8 +1010,10 @@ class Collapse:AbstractMode() {
 				val l = s.length
 				val offset = (12-l)/2
 				if(acTime in 0..119) {
-					receiver.drawMenuFont(engine, playerID, 1, 6, "ALL CLEAR!",
-						if(engine.statistics.time/2%2==0) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE)
+					receiver.drawMenuFont(
+						engine, playerID, 1, 6, "ALL CLEAR!",
+						if(engine.statistics.time/2%2==0) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE
+					)
 					receiver.drawMenuFont(engine, playerID, 0, 8, "BONUS POINTS", EventReceiver.COLOR.YELLOW)
 					receiver.drawMenuFont(engine, playerID, offset, 9, s)
 				}
@@ -1015,86 +1030,24 @@ class Collapse:AbstractMode() {
 		receiver.drawMenuFont(engine, playerID, 0, 5, String.format("%12s", engine.statistics.time.toTimeStr))
 	}
 	/**
-	 * Load settings from property file
+	 * Load settings from [prop]
 	 *
 	 * @param prop Property file
 	 */
-	override fun loadSetting(prop:CustomProperties) {
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		enableBombs = prop.getProperty("collapse.enableBombs", true)
 		difficulty = prop.getProperty("collapse.difficulty", 1)
 		bgm = prop.getProperty("collapse.bgm", 0)
 	}
 	/**
-	 * Save settings to property file
+	 * Save settings to [prop]
 	 *
 	 * @param prop Property file
 	 */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty<Boolean>("collapse.enableBombs", enableBombs)
-		prop.setProperty<Int>("collapse.difficulty", difficulty)
-		prop.setProperty<Int>("collapse.bgm", bgm)
-	}
-	/**
-	 * Load settings from property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun loadSettingPlayer(prop:ProfileProperties?) {
-		if(prop?.isLoggedIn!=true) return
-		enableBombs = prop.getProperty("collapse.enableBombs", true)
-		difficulty = prop.getProperty("collapse.difficulty", 1)
-		bgm = prop.getProperty("collapse.bgm", 0)
-	}
-	/**
-	 * Save settings to property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun saveSettingPlayer(prop:ProfileProperties) {
-		if(!prop.isLoggedIn) return
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("collapse.enableBombs", enableBombs)
 		prop.setProperty("collapse.difficulty", difficulty)
 		prop.setProperty("collapse.bgm", bgm)
-	}
-	/**
-	 * Read rankings from property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun loadRanking(prop:CustomProperties) {
-		for(i in 0 until MAX_RANKING) {
-			for(j in 0 until MAX_DIFFICULTIES) {
-				rankingScore[j][i] = prop.getProperty("collapse.ranking.$j.score.$i", 0)
-				rankingLevel[j][i] = prop.getProperty("collapse.ranking.$j.level.$i", 0)
-			}
-		}
-	}
-	/**
-	 * Save rankings to property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun saveRanking(prop:CustomProperties) {
-		for(i in 0 until MAX_RANKING) {
-			for(j in 0 until MAX_DIFFICULTIES) {
-				prop.setProperty<Int>("collapse.ranking.$j.score.$i", rankingScore[j][i])
-				prop.setProperty<Int>("collapse.ranking.$j.level.$i", rankingLevel[j][i])
-			}
-		}
-	}
-	/**
-	 * Read rankings from property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun loadRankingPlayer(prop:ProfileProperties) {
-		if(!prop.isLoggedIn) return
-		for(i in 0 until MAX_RANKING) {
-			for(j in 0 until MAX_DIFFICULTIES) {
-				rankingScorePlayer[j][i] = prop.getProperty("collapse.ranking.$j.score.$i", 0)
-				rankingLevelPlayer[j][i] = prop.getProperty("collapse.ranking.$j.level.$i", 0)
-			}
-		}
 	}
 /*
 	 * why do i even make stuff like this
@@ -1116,26 +1069,13 @@ class Collapse:AbstractMode() {
 	 * poison the well before i even get to make a point will you.
 	 * fuck off
 	 */
-	/**
-	 * Save rankings to property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun saveRankingPlayer(prop:ProfileProperties) {
-		if(!prop.isLoggedIn) return
-		for(i in 0 until MAX_RANKING) {
-			for(j in 0 until MAX_DIFFICULTIES) {
-				prop.setProperty("collapse.ranking.$j.score.$i", rankingScorePlayer[j][i])
-				prop.setProperty("collapse.ranking.$j.level.$i", rankingLevelPlayer[j][i])
-			}
-		}
-	}
+
 	/**
 	 * Update rankings
 	 *
 	 * @param sc Score
 	 */
-	private fun updateRanking(sc:Int, type:Int, lv:Int) {
+	private fun updateRanking(sc:Int, type:Int, lv:Int, isLoggedIn:Boolean) {
 		rankingRank = checkRanking(sc, lv, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -1148,7 +1088,7 @@ class Collapse:AbstractMode() {
 			rankingScore[type][rankingRank] = sc
 			rankingLevel[type][rankingRank] = lv
 		}
-		if(playerProperties.isLoggedIn) {
+		if(isLoggedIn) {
 			rankingRankPlayer = checkRankingPlayer(sc, lv, type)
 			if(rankingRankPlayer!=-1) {
 				// Shift down ranking entries
@@ -1161,7 +1101,7 @@ class Collapse:AbstractMode() {
 				rankingScorePlayer[type][rankingRankPlayer] = sc
 				rankingLevelPlayer[type][rankingRankPlayer] = lv
 			}
-		}
+		} else rankingRankPlayer = -1
 	}
 	/**
 	 * Calculate ranking position
@@ -1221,8 +1161,10 @@ class Collapse:AbstractMode() {
 	 * @param radius The testing radius
 	 * @return The result of the check. true: within. false: not within.
 	 */
-	private fun isCoordWithinRadius(x:Int, y:Int, xTest:Int, yTest:Int,
-		radius:Double):Boolean {
+	private fun isCoordWithinRadius(
+		x:Int, y:Int, xTest:Int, yTest:Int,
+		radius:Double
+	):Boolean {
 		val dX = xTest-x
 		val dY = yTest-y
 		val distance = sqrt((dX*dX+dY*dY).toDouble())
@@ -1250,12 +1192,16 @@ class Collapse:AbstractMode() {
 			Block.COLOR.WHITE // Set as Silver blocks for silver blocks, movable but only break by super bombs
 			// .// Use Gray Bombs for super bombs, as will be shown as rainbow gems.
 		)
-		private val tableColorWeights = arrayOf(intArrayOf(1, 1, 1, 0, 0, 0), intArrayOf(160, 160, 160, 0, 0, 1),
+		private val tableColorWeights = arrayOf(
+			intArrayOf(1, 1, 1, 0, 0, 0), intArrayOf(160, 160, 160, 0, 0, 1),
 			intArrayOf(160, 160, 160, 80, 0, 2), intArrayOf(160, 160, 160, 120, 0, 3), intArrayOf(160, 160, 160, 160, 0, 4),
-			intArrayOf(192, 192, 192, 192, 96, 11), intArrayOf(204, 204, 204, 204, 204, 18))
-		private val tableBombColorWeights = arrayOf(intArrayOf(0, 0, 0, 0, 0, 1), intArrayOf(5, 5, 5, 0, 0, 15),
+			intArrayOf(192, 192, 192, 192, 96, 11), intArrayOf(204, 204, 204, 204, 204, 18)
+		)
+		private val tableBombColorWeights = arrayOf(
+			intArrayOf(0, 0, 0, 0, 0, 1), intArrayOf(5, 5, 5, 0, 0, 15),
 			intArrayOf(4, 4, 4, 4, 0, 16), intArrayOf(4, 4, 4, 4, 0, 16), intArrayOf(4, 4, 4, 4, 0, 16),
-			intArrayOf(8, 8, 8, 8, 8, 40), intArrayOf(8, 8, 8, 8, 8, 40))
+			intArrayOf(8, 8, 8, 8, 8, 40), intArrayOf(8, 8, 8, 8, 8, 40)
+		)
 		private val tableLevelWeightShift = intArrayOf(
 			0, 3, 6, 9, 12, 15, 18, 10000
 		)

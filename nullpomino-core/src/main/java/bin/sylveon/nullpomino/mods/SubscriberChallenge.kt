@@ -34,34 +34,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
-    Copyright (c) 2010, NullNoname
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-        * Redistributions of source code must retain the above copyright
-          notice, this list of conditions and the following disclaimer.
-        * Redistributions in binary form must reproduce the above copyright
-          notice, this list of conditions and the following disclaimer in the
-          documentation and/or other materials provided with the distribution.
-        * Neither the name of NullNoname nor the names of its
-          contributors may be used to endorse or promote products derived from
-          this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
- */
 package bin.sylveon.nullpomino.mods
 
 import mu.nu.nullpo.game.component.BGMStatus
@@ -70,7 +42,9 @@ import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.Interpolation
 import zeroxfc.nullpo.custom.libs.backgroundtypes.AnimatedBackgroundHook
@@ -83,66 +57,65 @@ import kotlin.random.Random
  * Someone take IDEA away from me.
  */
 class SubscriberChallenge:NetDummyMode() {
-	/** Most recent increase in score  */
-	var lastscore:Int = 0
-	private var sc = 0
-	private var sum = 0
-	/** Time to display the most recent increase in score  */
-	var scgettime:Int = 0
 	/** Most recent scoring event type  */
-	var lastevent:Int = 0
+	private var lastevent:Int = 0
 	/** True if most recent scoring event is a B2B  */
-	var lastb2b:Boolean = false
+	private var lastb2b:Boolean = false
 	/** Combo count for most recent scoring event  */
-	var lastcombo:Int = 0
+	private var lastcombo:Int = 0
 	/** Piece ID for most recent scoring event  */
-	var lastpiece:Int = 0
+	private var lastpiece:Int = 0
 	/** Current BGM  */
-	var bgmlv:Int = 0
+	private var bgmlv:Int = 0
+	private val itemLv = LevelMenuItem("startLevel", "Level", EventReceiver.COLOR.BLUE, 0, 0..19)
 	/** Level at start time  */
-	var startlevel:Int = 0
-	/** Flag for types of T-Spins allowed (0=none, 1=normal, 2=all spin)  */
-	var tspinEnableType:Int = 0
-	/** Old flag for allowing T-Spins  */
-	var enableTSpin:Boolean = false
-	/** BRO! YOU JUST POSTED T-SPIN! YOU ARE GOING TO GAIN SUBSCRIBER!*/
-	var subscriber:Int = 0
-	var subscriberRNG:Random = Random.Default
+	private var startLevel:Int by DelegateMenuItem(itemLv)
 
-	var lastValue:Int = 0
+	private val itemMode = StringsMenuItem("goaltype", "GOAL", EventReceiver.COLOR.BLUE, 0,
+		Array(GAMETYPE_MAX) {if(tableGameClearLines[it]<=0) "ENDLESS" else "${tableGameClearLines[it]} LINES"})
 	/** Game type  */
-	var goaltype:Int = 0
-	/** Big  */
-	var big:Boolean = false
+	private var goaltype:Int by DelegateMenuItem(itemMode)
+
+	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
+
+	/** BRO! YOU JUST POSTED T-SPIN! YOU ARE GOING TO GAIN SUBSCRIBER!*/
+	private var subscriber:Int = 0
+	private var subscriberRNG:Random = Random.Default
+
+	private var lastValue:Int = 0
 	/** Version  */
-	var version:Int = 0
+	private var version:Int = 0
 	/** Current round's ranking rank  */
-	var rankingRank:Int = 0
+	private var rankingRank:Int = 0
 	/** Rankings' scores  */
 	private var rankingScore = emptyArray<IntArray>()
 	/** Rankings' line counts  */
 	private var rankingLines = emptyArray<IntArray>()
 	/** Rankings' times  */
 	private var rankingTime = emptyArray<IntArray>()
+
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf(*(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray()
+		)
 	/*
 	 * Mode name
 	 */
 	override val name:String = "SUBSCRIBER CHALLENGE"
 
-	/*
-	 * Initialization
-	 */
+	// Initialization
+	override val menu = MenuList("subscriberchallenge", itemMode, itemLv, itemBig)
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
 		lastscore = 0
-		scgettime = 0
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
 		bgmlv = 0
-		sum = 0
 		lastValue = 0
-		scgettime = 120
 		subscriber = 0
 		lastValue = 0
 		rankingRank = -1
@@ -151,17 +124,14 @@ class SubscriberChallenge:NetDummyMode() {
 		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		netPlayerInit(engine, playerID)
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
-			loadSetting(owner.replayProp)
 			if((version==0)&&(owner.replayProp.getProperty("subscriberchallenge.endless", false))) goaltype = 2
 
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
-		engine.owner.backgroundStatus.bg = startlevel
+		engine.owner.backgroundStatus.bg = startLevel
 		engine.framecolor = GameEngine.FRAME_COLOR_GREEN
 	}
 	/**
@@ -189,23 +159,23 @@ class SubscriberChallenge:NetDummyMode() {
 				engine.playSE("change")
 				when(engine.statc[2]) {
 					0 -> {
-						startlevel += change
+						startLevel += change
 						if(tableGameClearLines[goaltype]>=0) {
-							if(startlevel<0) startlevel = (tableGameClearLines[goaltype]-1)/10
-							if(startlevel>(tableGameClearLines[goaltype]-1)/10) startlevel = 0
+							if(startLevel<0) startLevel = (tableGameClearLines[goaltype]-1)/10
+							if(startLevel>(tableGameClearLines[goaltype]-1)/10) startLevel = 0
 						} else {
-							if(startlevel<0) startlevel = 19
-							if(startlevel>19) startlevel = 0
+							if(startLevel<0) startLevel = 19
+							if(startLevel>19) startLevel = 0
 						}
-						engine.owner.backgroundStatus.bg = startlevel
+						engine.owner.backgroundStatus.bg = startLevel
 					}
 					1 -> {
 						goaltype += change
 						if(goaltype<0) goaltype = GAMETYPE_MAX-1
 						if(goaltype>GAMETYPE_MAX-1) goaltype = 0
-						if((startlevel>(tableGameClearLines[goaltype]-1)/10)&&(tableGameClearLines[goaltype]>=0)) {
-							startlevel = (tableGameClearLines[goaltype]-1)/10
-							engine.owner.backgroundStatus.bg = startlevel
+						if((startLevel>(tableGameClearLines[goaltype]-1)/10)&&(tableGameClearLines[goaltype]>=0)) {
+							startLevel = (tableGameClearLines[goaltype]-1)/10
+							engine.owner.backgroundStatus.bg = startLevel
 						}
 					}
 					2 -> big = !big
@@ -220,8 +190,6 @@ class SubscriberChallenge:NetDummyMode() {
 			// Confirm
 			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_A)&&(engine.statc.get(3)>=5)) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 
 				// NET: Signal start of the game
 				if(netIsNetPlay) netLobby?.netPlayerClient?.send("start1p\n")
@@ -234,8 +202,9 @@ class SubscriberChallenge:NetDummyMode() {
 			}
 
 			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_D)&&netIsNetPlay&&(startlevel==0)&&!big&&(
-					engine.ai==null)) {
+			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_D)&&netIsNetPlay&&(startLevel==0)&&!big&&(
+					engine.ai==null)
+			) {
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 			}
 			engine.statc[3]++
@@ -256,9 +225,10 @@ class SubscriberChallenge:NetDummyMode() {
 			// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		} else {
-			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"GOAL" to if(tableGameClearLines[goaltype]<=0) "ENDLESS" else "${tableGameClearLines[goaltype]} LINES")
-			drawMenuCompact(engine, playerID, receiver, "Level" to startlevel+1)
+			drawMenu(
+				engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
+			)
+			drawMenuCompact(engine, playerID, receiver, "Level" to startLevel+1)
 			drawMenuSpeeds(engine, playerID, receiver, 4, EventReceiver.COLOR.WHITE, 10)
 			drawMenuCompact(engine, playerID, receiver, 9, EventReceiver.COLOR.BLUE, 2, "BIG" to big)
 		}
@@ -267,8 +237,7 @@ class SubscriberChallenge:NetDummyMode() {
 	 * Called for initialization during "Ready" screen
 	 */
 	override fun startGame(engine:GameEngine, playerID:Int) {
-		engine.statistics.level = startlevel
-		scgettime = 120
+		engine.statistics.level = startLevel
 		lastValue = 0
 		engine.statistics.levelDispAdd = 1
 		engine.b2bEnable = true
@@ -286,9 +255,11 @@ class SubscriberChallenge:NetDummyMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		if(owner.menuOnly) return
 		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.GREEN)
-		receiver.drawScoreFont(engine, playerID, 0, 1,
+		receiver.drawScoreFont(
+			engine, playerID, 0, 1,
 			if(tableGameClearLines[goaltype]==-1) "(Endless Run)" else "(${tableGameClearLines[goaltype]} Lines run)",
-			EventReceiver.COLOR.GREEN)
+			EventReceiver.COLOR.GREEN
+		)
 		if((engine.stat==Status.SETTING)||((engine.stat==Status.RESULT)&&!owner.replayMode)) {
 			if(!owner.replayMode&&!big&&(engine.ai==null)) {
 				val scale:Float = if((receiver.nextDisplayType==2)) 0.5f else 1.0f
@@ -304,15 +275,18 @@ class SubscriberChallenge:NetDummyMode() {
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "SUBSCRIBER", EventReceiver.COLOR.BLUE)
 			val a = "${
-				if(subscriber!=lastValue) Interpolation.lerp(lastValue, subscriber, scgettime/120.0) else subscriber
+				if(subscriber!=lastValue) Interpolation.lerp(lastValue, subscriber, scDisp/120.0) else subscriber
 			}${if(subscriber-lastValue!=0) "(${if(subscriber-lastValue>0) "+" else ""}${subscriber-lastValue})" else ""}"
 
 			receiver.drawScoreFont(engine, playerID, 0, 4, a, ((subscriber-lastValue)>0))
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
-			if((engine.statistics.level>=19)&&(tableGameClearLines[goaltype]<0)) receiver.drawScoreFont(engine, playerID, 0, 7,
-				"${engine.statistics.lines}") else receiver.drawScoreFont(
-				engine, playerID, 0, 7, "${engine.statistics.lines}/${(engine.statistics.level+1)*10}")
+			if((engine.statistics.level>=19)&&(tableGameClearLines[goaltype]<0)) receiver.drawScoreFont(
+				engine, playerID, 0, 7,
+				"${engine.statistics.lines}"
+			) else receiver.drawScoreFont(
+				engine, playerID, 0, 7, "${engine.statistics.lines}/${(engine.statistics.level+1)*10}"
+			)
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 10, "${engine.statistics.level+1}")
 			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
@@ -333,7 +307,7 @@ class SubscriberChallenge:NetDummyMode() {
 	 * Called after every frame
 	 */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		scgettime++
+		super.onLast(engine, playerID)
 		if(engine.gameStarted&&(engine.stat==Status.ARE||engine.stat==Status.LINECLEAR))
 			for(i in 0 until engine.field.width) for(j in engine.field.hiddenHeight*-1 until engine.field.height)
 				engine.field.getBlock(i, j)?.let {
@@ -357,20 +331,14 @@ class SubscriberChallenge:NetDummyMode() {
 		// Line clear bonus
 		var sub = 0
 		if(lines>0) lastValue = subscriber
-		val pts = calcScore(engine, lines)
+		val pts = calcScoreBase(engine, lines)
 		val cmb = if(engine.combo>=1&&lines>=1) engine.combo-1 else 0
 		// Combo
-		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
+		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+engine.manualLock.toInt()
 		// Add to score
 		if(pts+cmb+spd>0) {
-			var get = pts*(10+engine.statistics.level)/10+spd
-			if(cmb>=1) {
-				var b = sum*(1+cmb)/2
-				sum += get
-				b = sum*(2+cmb)/2-b
-				get = b
-			} else
-				sum = get
+			val get = calcScoreCombo(pts, cmb, engine.statistics.level, spd)
+
 			if(pts>0) lastscore = get
 			if(lines>=1) engine.statistics.scoreLine += get
 			else engine.statistics.scoreBonus += get
@@ -421,7 +389,6 @@ class SubscriberChallenge:NetDummyMode() {
 		if(pts>0) {
 			lastscore = pts
 			lastpiece = engine.nowPieceObject?.id ?: 0
-			scgettime = 0
 			if(lines>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
 		}
 		subscriber += sub
@@ -429,7 +396,8 @@ class SubscriberChallenge:NetDummyMode() {
 		if(tableBGMChange[bgmlv]!=-1) {
 			if(engine.statistics.lines>=tableBGMChange[bgmlv]-5) owner.bgmStatus.fadesw = true
 			if((engine.statistics.lines>=tableBGMChange[bgmlv])&&
-				((engine.statistics.lines<tableGameClearLines[goaltype])||(tableGameClearLines[goaltype]<0))) {
+				((engine.statistics.lines<tableGameClearLines[goaltype])||(tableGameClearLines[goaltype]<0))
+			) {
 				bgmlv++
 				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmlv)
 				owner.bgmStatus.fadesw = false
@@ -478,8 +446,10 @@ class SubscriberChallenge:NetDummyMode() {
 	 * Render results screen
 	 */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE,
-			Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME, Statistic.SPL, Statistic.LPM)
+		drawResultStats(
+			engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE,
+			Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME, Statistic.SPL, Statistic.LPM
+		)
 		drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -495,81 +465,56 @@ class SubscriberChallenge:NetDummyMode() {
 	/*
 	 * Called when saving replay
 	 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
-
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		// NET: Save name
-		if(!netPlayerName.isNullOrEmpty()) {
-			prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
-		}
+		if(!netPlayerName.isNullOrEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goaltype)
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goaltype)!=-1) return true
 		}
+		return false
 	}
-	/**
-	 * Load settings from property file
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
-		startlevel = prop.getProperty("subscriberchallenge.startlevel", 0)
+	/*override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		startLevel = prop.getProperty("subscriberchallenge.startLevel", 0)
 		tspinEnableType = prop.getProperty("subscriberchallenge.tspinEnableType", 1)
 		enableTSpin = prop.getProperty("subscriberchallenge.enableTSpin", true)
 		goaltype = prop.getProperty("subscriberchallenge.gametype", 0)
 		big = prop.getProperty("subscriberchallenge.big", false)
 		version = prop.getProperty("subscriberchallenge.version", 0)
-	}
-	/**
-	 * Save settings to property file
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("subscriberchallenge.startlevel", startlevel)
-		prop.setProperty("subscriberchallenge.tspinEnableType", tspinEnableType)
-		prop.setProperty("subscriberchallenge.enableTSpin", enableTSpin)
-		prop.setProperty("subscriberchallenge.gametype", goaltype)
-		prop.setProperty("subscriberchallenge.big", big)
-		prop.setProperty("subscriberchallenge.version", version)
-	}
-	/**
-	 * Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
+	}*/
+//	override val rankMap:Map<String, Array<Comparable<*>>> =
+//		mapOf("score" to rankingScore[0], "lines" to rankingLines[0], "time" to rankingTime[0])
+	/*(0 until GAMETYPE_MAX).map {"$it."}.keysToMap {
+
+})*/
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in 0 until GAMETYPE_MAX) {
-				rankingScore[j][i] = prop.getProperty("$ruleName.$j.score.$i", 0)
-				rankingLines[j][i] = prop.getProperty("$ruleName.$j.lines.$i", 0)
-				rankingTime[j][i] = prop.getProperty("$ruleName.$j.time.$i", 0)
+				rankingScore[j][i] = owner.recordProp.getProperty("$ruleName.$j.score.$i", 0)
+				rankingLines[j][i] = owner.recordProp.getProperty("$ruleName.$j.lines.$i", 0)
+				rankingTime[j][i] = owner.recordProp.getProperty("$ruleName.$j.time.$i", 0)
 			}
 
 	}
-	/**
-	 * Save rankings to property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRanking(ruleName:String) =
-		super.saveRanking(ruleName, (0 until GAMETYPE_MAX).flatMap {j ->
-			(0 until RANKING_MAX).flatMap {i ->
-				listOf(
-					"$ruleName.$j.score.$i" to rankingScore[j][i],
-					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.time.$i" to rankingTime[j][i])
-			}
-		})
+	/** Save rankings of [ruleName] to [prop] */
+	private fun saveRanking(ruleName:String) = super.saveRanking((0 until GAMETYPE_MAX).flatMap {j ->
+		(0 until RANKING_MAX).flatMap {i ->
+			listOf(
+				"$ruleName.$j.score.$i" to rankingScore[j][i],
+				"$ruleName.$j.lines.$i" to rankingLines[j][i],
+				"$ruleName.$j.time.$i" to rankingTime[j][i]
+			)
+		}
+	}
+	)
 	/**
 	 * Update rankings
 	 * @param sc Score
 	 * @param li Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int) {
+	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int):Int {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -584,6 +529,7 @@ class SubscriberChallenge:NetDummyMode() {
 			rankingLines[type][rankingRank] = li
 			rankingTime[type][rankingRank] = time
 		}
+		return rankingRank
 	}
 	/**
 	 * Calculate ranking position
@@ -609,12 +555,13 @@ class SubscriberChallenge:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendStats(engine:GameEngine) {
-		val bg:Int = if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+		val bg:Int =
+			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
 		val msg = "game\tstats\t"+
 			"${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"+
 			"${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"+
 			"${engine.statistics.time}\t${engine.statistics.level}\t${engine.statistics.lpm}\t${engine.statistics.spl}\t"+
-			"$goaltype\t${engine.gameActive}\t${engine.timerActive}\t$lastscore\t$scgettime\t"+
+			"$goaltype\t${engine.gameActive}\t${engine.timerActive}\t$lastscore\t$scDisp\t"+
 			"$subscriber\t$lastb2b\t$lastcombo\t$lastpiece\t$bg\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
@@ -634,7 +581,7 @@ class SubscriberChallenge:NetDummyMode() {
 		engine.gameActive = message[13].toBoolean()
 		engine.timerActive = message[14].toBoolean()
 		subscriber = message[15].toInt()
-		scgettime = message[16].toInt()
+//		scDisp = message[16].toInt()
 		lastevent = message[17].toInt()
 		lastb2b = message[18].toBoolean()
 		lastcombo = message[19].toInt()
@@ -665,17 +612,16 @@ class SubscriberChallenge:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendOptions(engine:GameEngine) {
-		val msg:String = "game\toption\t$startlevel\t$tspinEnableType\t$goaltype\t$big\n"
+		val msg:String = "game\toption\t$startLevel\t$goaltype\t$big\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
 	/**
 	 * NET: Receive game options
 	 */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
-		startlevel = message[4].toInt()
-		tspinEnableType = message[5].toInt()
-		goaltype = message[6].toInt()
-		big = message[7].toBoolean()
+		startLevel = message[4].toInt()
+		goaltype = message[5].toInt()
+		big = message[6].toBoolean()
 	}
 	/**
 	 * NET: Get goal type
@@ -684,7 +630,7 @@ class SubscriberChallenge:NetDummyMode() {
 	/**
 	 * NET: It returns true when the current settings doesn't prevent leaderboard screen from showing.
 	 */
-	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = ((startlevel==0)&&(!big)&&(engine.ai==null))
+	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = ((startLevel==0)&&(!big)&&(engine.ai==null))
 
 	companion object {
 		/** Current version  */

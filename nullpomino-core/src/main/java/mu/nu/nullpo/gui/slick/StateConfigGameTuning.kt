@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.subsystem.mode.PreviewMode
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
+import mu.nu.nullpo.gui.slick.img.FontTTF
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.getOX
@@ -309,7 +310,7 @@ class StateConfigGameTuning:BaseGameState() {
 			FontNano.printFontGrid(13, 13, "HOTKEY : D BUTTON")
 
 			if(cursor>=0&&cursor<UI_TEXT.size)
-				FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
+				FontTTF.print(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
 		}
 	}
 

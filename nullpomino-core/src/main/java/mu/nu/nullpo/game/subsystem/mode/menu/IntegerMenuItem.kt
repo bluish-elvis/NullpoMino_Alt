@@ -32,23 +32,55 @@ package mu.nu.nullpo.game.subsystem.mode.menu
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.util.CustomProperties
 
-open class IntegerMenuItem(name:String, displayName:String, color:COLOR, defaultValue:Int, val min:Int, val max:Int)
-	:AbstractMenuItem<Int>(name, displayName, color, defaultValue) {
+open class IntegerMenuItem(name:String, displayName:String, color:COLOR, defaultValue:Int, val range:IntRange,
+	compact:Boolean = false, perRule:Boolean = false)
+	:AbstractMenuItem<Int>(name, displayName, color, defaultValue, compact, perRule), Comparable<Int> {
+	constructor(name:String, displayName:String, color:COLOR, defaultValue:Int, min:Int, max:Int,
+		compact:Boolean = false, perRule:Boolean = false):
+		this(name, displayName, color, defaultValue, min..max, compact, perRule)
+
+	val min get() = range.first
+	val max get() = range.last
+
+	override fun equals(other:Any?):Boolean = if(other is Int) value==other else super.equals(other)
+	override operator fun compareTo(y:Int) = value.compareTo(y)
+	operator fun plus(y:Int) = value+y
+	operator fun Int.plus(y:IntegerMenuItem) = y.plus(value)
+	operator fun plusAssign(y:Int) = change(y)
+	operator fun minus(y:Int) = value-y
+	operator fun minusAssign(y:Int) = change(-y)
+	operator fun times(y:Int) = value*y
+	operator fun div(y:Int) = value/y
+	operator fun rem(y:Int) = value%y
+	infix fun until(to:Int):IntRange = value.until(to)
+	operator fun rangeTo(to:Int):IntRange = value.rangeTo(to)
 
 	override val valueString:String
 		get() = "$value"
 
-	override fun change(dir:Int, fast:Int) {
-		value += dir
-		if(value<min) value = max
-		if(value>max) value = min
+	override fun change(dir:Int, fast:Int, cur:Int) {
+		value += dir*when(fast) {
+			1 -> minOf(5, max/200)
+			2 -> minOf(10, max/100)
+			else -> 1
+		}
+		if(value<range.first) value = max
+		if(value>range.last) value = min
 	}
 
-	override fun save(playerID:Int, prop:CustomProperties, modeName:String) {
-		prop.setProperty("$modeName.$name${if(playerID<0) "" else ".p$playerID"}", value)
+	override fun load(prop:CustomProperties, propName:String) {
+		value = prop.getProperty(propName, DEFAULT_VALUE)
 	}
 
-	override fun load(playerID:Int, prop:CustomProperties, modeName:String) {
-		value = prop.getProperty("$modeName.$name${if(playerID<0) "" else ".p$playerID"}", DEFAULT_VALUE)
+	override fun save(prop:CustomProperties, propName:String) {
+		prop.setProperty(propName, value)
 	}
+
+	override fun hashCode():Int {
+		var result = value
+		result = 31*result+min
+		result = 31*result+max
+		return result
+	}
+
 }

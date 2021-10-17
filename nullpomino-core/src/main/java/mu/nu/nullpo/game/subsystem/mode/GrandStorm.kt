@@ -32,7 +32,9 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
 
@@ -48,11 +50,6 @@ class GrandStorm:AbstractMode() {
 	/** Combo bonus */
 	private var comboValue = 0
 
-	/** Most recent increase in score */
-	private var lastscore = 0
-
-	/** 獲得Render scoreがされる残り time */
-	private var scgettime = 0
 
 	/** Roll 経過 time */
 	private var rolltime = 0
@@ -114,20 +111,25 @@ class GrandStorm:AbstractMode() {
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
 
+	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, true, true)
 	/** Level at start */
-	private var startlevel = 0
-
-	/** When true, levelstop sound is enabled */
-	private var lvstopse = false
-
-	/** BigMode */
-	private var big = false
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
 	/** LV500の足切りTime */
-	private var lv500torikan = 0
+	private val itemQualify = TimeMenuItem("lv500torikan", "QUALIFY", COLOR.BLUE, 12300, 0.. 36000)
+	private var qualify:Int by DelegateMenuItem(itemQualify)
 
+	private val itemAlert = BooleanMenuItem("lvstopse", "Sect.ALERT", COLOR.BLUE, true)
+	/** When true, levelstop sound is enabled */
+	private var secAlert:Boolean by DelegateMenuItem(itemAlert)
+
+	private val itemST = BooleanMenuItem("showsectiontime", "SHOW STIME", COLOR.BLUE, true)
 	/** When true, section time display is enabled */
-	private var showsectiontime = false
+	private var showST:Boolean by DelegateMenuItem(itemST)
+
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** Version */
 	private var version = 0
@@ -154,6 +156,11 @@ class GrandStorm:AbstractMode() {
 	override val name = "Grand Storm"
 	override val gameIntensity = 3
 	/* Initialization */
+	override val menu:MenuList = MenuList("speedmania1", itemLevel, itemQualify, itemAlert, itemST, itemBig)
+
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "section.time" to bestSectionTime)
+
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
 		menuTime = 0
@@ -161,7 +168,6 @@ class GrandStorm:AbstractMode() {
 		lvupflag = true
 		comboValue = 0
 		lastscore = 0
-		scgettime = 0
 		rolltime = 0
 		rollstarted = false
 		bgmlv = 0
@@ -182,10 +188,10 @@ class GrandStorm:AbstractMode() {
 		recoveryFlag = false
 		rotateCount = 0
 		isShowBestSectionTime = false
-		startlevel = 0
-		lvstopse = false
+		startLevel = 0
+		secAlert = false
 		big = false
-		lv500torikan = 12300
+		qualify = 12300
 		decoration = 0
 		dectemp = 0
 		rankingRank = -1
@@ -205,40 +211,14 @@ class GrandStorm:AbstractMode() {
 		engine.staffrollNoDeath = true
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
 		} else {
 			for(i in 0 until SECTION_MAX)
 				bestSectionTime[i] = DEFAULT_SECTION_TIME
-
-			loadSetting(owner.replayProp)
 			version = owner.replayProp.getProperty("speedmania.version", 0)
 		}
 
-		owner.backgroundStatus.bg = startlevel
-	}
-
-	/** Load settings from property file
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
-		startlevel = prop.getProperty("speedmania.startlevel", 0)
-		lvstopse = prop.getProperty("speedmania.lvstopse", true)
-		showsectiontime = prop.getProperty("speedmania.showsectiontime", true)
-		big = prop.getProperty("speedmania.big", false)
-		lv500torikan = prop.getProperty("speedmania.lv500torikan", 18000)
-	}
-
-	/** Save settings to property file
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("speedmania.startlevel", startlevel)
-		prop.setProperty("speedmania.lvstopse", lvstopse)
-		prop.setProperty("speedmania.showsectiontime", showsectiontime)
-		prop.setProperty("speedmania.big", big)
-		prop.setProperty("speedmania.lv500torikan", lv500torikan)
+		owner.backgroundStatus.bg = startLevel
 	}
 
 	/** Set BGM at start of game
@@ -269,7 +249,7 @@ class GrandStorm:AbstractMode() {
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
 			var temp = 0
-			for(i in startlevel until startlevel+sectionscomp)
+			for(i in startLevel until startLevel+sectionscomp)
 				if(i>=0&&i<sectionTime.size) temp += sectionTime[i]
 			sectionavgtime = temp/sectionscomp
 		} else
@@ -325,29 +305,10 @@ class GrandStorm:AbstractMode() {
 		// Menu
 		if(!engine.owner.replayMode) {
 			// Configuration changes
-			val change = updateCursor(engine, 4)
+			updateMenu(engine)
 
-			if(change!=0) {
-				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						startlevel += change
-						if(startlevel<0) startlevel = 9
-						if(startlevel>9) startlevel = 0
-						owner.backgroundStatus.bg = startlevel
-					}
-					1 -> lvstopse = !lvstopse
-					2 -> showsectiontime = !showsectiontime
-					3 -> big = !big
-					4 -> {
-						lv500torikan += 60*change
-						if(lv500torikan<0) lv500torikan = 36000
-						if(lv500torikan in 1..12300) lv500torikan = if(change<0) 0 else 12300
-						if(lv500torikan>36000) lv500torikan = 0
-					}
-				}
-			}
+			if(qualify<0) qualify = 36000
+			if(qualify in 1..12300||qualify>36000) qualify = 0
 
 			// section time display切替
 			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
@@ -358,8 +319,6 @@ class GrandStorm:AbstractMode() {
 			// 決定
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				isShowBestSectionTime = false
 				sectionscomp = 0
 				return false
@@ -381,14 +340,14 @@ class GrandStorm:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level" to (startlevel*100), "LVSTOPSE" to lvstopse,
-			"SHOW STIME" to showsectiontime, "BIG" to big,
-			"LV500LIMIT" to if(lv500torikan==0) "NONE" else lv500torikan.toTimeStr)
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level" to (startLevel*100), "LVSTOPSE" to secAlert,
+			"SHOW STIME" to showST, "BIG" to big,
+			"LV500LIMIT" to if(qualify==0) "NONE" else qualify.toTimeStr)
 	}
 
 	/* Called at game start */
 	override fun startGame(engine:GameEngine, playerID:Int) {
-		engine.statistics.level = startlevel*100
+		engine.statistics.level = startLevel*100
 
 		nextseclv = engine.statistics.level+100
 		if(engine.statistics.level<0) nextseclv = 100
@@ -411,7 +370,7 @@ class GrandStorm:AbstractMode() {
 		receiver.drawScoreBadges(engine, playerID, 0, -3, 100, decoration)
 		receiver.drawScoreBadges(engine, playerID, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null)
+			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
 					val scale = if(receiver.nextDisplayType==2) .5f else 1f
@@ -461,8 +420,7 @@ class GrandStorm:AbstractMode() {
 			// Score
 			receiver.drawScoreFont(engine, playerID, 0, 6, "Score", engine.statistics.time%3!=0)
 			receiver.drawScoreNum(engine, playerID, 5, 6, "+$lastscore", engine.statistics.time%3!=0)
-			receiver.drawScoreNum(engine, playerID, 0, 7, "$scgettime", engine.statistics.time%3!=0, 2f)
-			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
+			receiver.drawScoreNum(engine, playerID, 0, 7, "$scDisp", engine.statistics.time%3!=0, 2f)
 			// level
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", engine.statistics.time%3!=0)
 			receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)),
@@ -493,7 +451,7 @@ class GrandStorm:AbstractMode() {
 			receiver.drawScoreMedal(engine, playerID, 3, 22, "CO", medalCO)
 
 			// Section Time
-			if(showsectiontime&&sectionTime.isNotEmpty()) {
+			if(showST&&sectionTime.isNotEmpty()) {
 				val x = if(receiver.nextDisplayType==2) 8 else 12
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
 
@@ -515,7 +473,7 @@ class GrandStorm:AbstractMode() {
 
 				receiver.drawScoreFont(engine, playerID, x2, 14, "AVERAGE", engine.statistics.time%3!=0)
 				receiver.drawScoreNum(engine, playerID, x2, 15,
-					(engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0)).toTimeStr,
+					(engine.statistics.time/(sectionscomp+(engine.ending==0).toInt())).toTimeStr,
 					engine.statistics.time%3!=0, 2f)
 
 			}
@@ -530,7 +488,7 @@ class GrandStorm:AbstractMode() {
 			// Level up
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 
@@ -549,7 +507,7 @@ class GrandStorm:AbstractMode() {
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 			lvupflag = true
@@ -675,8 +633,8 @@ class GrandStorm:AbstractMode() {
 				owner.bgmStatus.bgm = BGM.Ending(1)
 				// RO medal
 				roMedalCheck(engine)
-			} else if(nextseclv==500&&engine.statistics.level>=500&&lv500torikan>0
-				&&engine.statistics.time>lv500torikan) {
+			} else if(nextseclv==500&&engine.statistics.level>=500&&qualify>0
+				&&engine.statistics.time>qualify) {
 				// level500とりカン
 				engine.playSE("endingstart")
 				engine.statistics.level = 500
@@ -733,7 +691,7 @@ class GrandStorm:AbstractMode() {
 				// Update level for next section
 				nextseclv += 100
 				if(nextseclv>999) nextseclv = 999
-			} else if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 
 			// Calculate score
 
@@ -748,6 +706,7 @@ class GrandStorm:AbstractMode() {
 
 	/* 各 frame の終わりの処理 */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		// 段位上昇時のフラッシュ
 		if(gradeflash>0) gradeflash--
 
@@ -762,9 +721,7 @@ class GrandStorm:AbstractMode() {
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
 			rolltime += if(version>=1&&engine.ctrl.isPress(Controller.BUTTON_F))
-				5
-			else
-				1
+				5 else 1
 
 			// Time meter
 			val remainRollTime = ROLLTIMELIMIT-rolltime
@@ -886,26 +843,20 @@ class GrandStorm:AbstractMode() {
 	}
 
 	/* リプレイ保存 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(owner.replayProp)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		owner.replayProp.setProperty("speedmania.version", version)
 
 		// Update rankings
-		if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null) {
+		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
+			owner.statsProp.setProperty("decoration", decoration)
 			updateRanking(grade, engine.statistics.level, engine.statistics.time)
 			if(medalST==3) updateBestSectionTime()
 
-			if(rankingRank!=-1||medalST==3) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1||medalST==3) return true
 		}
+		return false
 	}
 
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
 			rankingGrade[i] = prop.getProperty("$ruleName.$i.grade", 0)
@@ -918,11 +869,9 @@ class GrandStorm:AbstractMode() {
 		decoration = owner.statsProp.getProperty("decoration", 0)
 	}
 
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
+	/** Save rankings of [ruleName] to [prop] */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
+		super.saveRanking((0 until RANKING_MAX).flatMap {i ->
 			listOf("$ruleName.$i.grade" to rankingGrade[i],
 				"$ruleName.$i.level" to rankingLevel[i],
 				"$ruleName.$i.time" to rankingTime[i])
@@ -930,8 +879,6 @@ class GrandStorm:AbstractMode() {
 			listOf("$ruleName.sectiontime.$i" to bestSectionTime[i])
 		})
 
-		owner.statsProp.setProperty("decoration", decoration)
-		receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update rankings

@@ -31,22 +31,37 @@ package mu.nu.nullpo.game.subsystem.mode.menu
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.getONorOFF
+import mu.nu.nullpo.util.GeneralUtil.getOX
 
-open class BooleanMenuItem(name:String, displayName:String, color:COLOR, defaultValue:Boolean)
-	:AbstractMenuItem<Boolean>(name, displayName, color, defaultValue) {
+open class BooleanMenuItem(name:String, label:String, color:COLOR, defaultValue:Boolean, compact:Boolean = label.length<8,
+	perRule:Boolean = false)
+	:AbstractMenuItem<Boolean>(name, label, color, defaultValue, compact, perRule), Comparable<Boolean> {
+	override fun compareTo(other:Boolean):Int = value.compareTo(other)
+
+	override fun equals(other:Any?) = if(other is Boolean) value==other else super.equals(other)
+	operator fun not() = value.not()
+
+	infix fun and(to:Boolean) = value.and(to)
+	infix fun Boolean.and(to:BooleanMenuItem) = this.and(to.value)
+	infix fun or(to:Boolean) = value.or(to)
+	infix fun Boolean.or(to:BooleanMenuItem) = this.or(to.value)
+	infix fun xor(to:Boolean) = value.xor(to)
 
 	override val valueString:String
-		get() = "$value".uppercase()
+		get() = if(compact&&label.length>=6) value.getOX else value.getONorOFF()
 
-	override fun change(dir:Int, fast:Int) {
+	override fun change(dir:Int, fast:Int, cur:Int) {
 		value = !value
 	}
 
-	override fun save(playerID:Int, prop:CustomProperties, modeName:String) {
-		prop.setProperty("$modeName.$name${if(playerID<0) "" else ".p$playerID"}", value)
+	override fun load(prop:CustomProperties, propName:String) {
+		value = prop.getProperty(propName, DEFAULT_VALUE)
 	}
 
-	override fun load(playerID:Int, prop:CustomProperties, modeName:String) {
-		value = prop.getProperty("$modeName.$name${if(playerID<0) "" else ".p$playerID"}", DEFAULT_VALUE)
+	override fun save(prop:CustomProperties, propName:String) {
+		prop.setProperty(propName, value)
 	}
+
+	override fun hashCode():Int = javaClass.hashCode()
 }

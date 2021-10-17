@@ -185,9 +185,7 @@ class StateInGame:BasicGameState() {
 		updateTitleBarCaption()
 	}
 
-	/** リプレイを読み込んで再生
-	 * @param prop リプレイ dataの入ったプロパティセット
-	 */
+	/** リプレイ[prop]を読み込んで再生 */
 	fun startReplayGame(prop:CustomProperties) {
 		gameManager = GameManager(RendererSlick()).also {
 			it.replayMode = true

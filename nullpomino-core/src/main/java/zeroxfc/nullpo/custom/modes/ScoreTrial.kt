@@ -45,8 +45,6 @@ import mu.nu.nullpo.gui.slick.RendererExtension
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.FlyInOutText
-import zeroxfc.nullpo.custom.libs.ProfileProperties
-import kotlin.math.ceil
 import kotlin.random.Random
 
 class ScoreTrial:MarathonModeBase() {
@@ -85,9 +83,6 @@ class ScoreTrial:MarathonModeBase() {
 	private var pCoordList:ArrayList<IntArray>? = null
 	private var o = false
 	private var l = 0
-	private val playerProperties:ProfileProperties = ProfileProperties(headerColor)
-	private var showPlayerStats = false
-	private var PLAYER_NAME = ""
 	private var rankingRankPlayer = 0
 	private var rankingScorePlayer:Array<IntArray> = emptyArray()
 	private var rankingLinesPlayer:Array<IntArray> = emptyArray()
@@ -99,9 +94,8 @@ class ScoreTrial:MarathonModeBase() {
      * Initialization
      */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
-		owner = engine.owner
+		super.playerInit(engine, playerID)
 		lastscore = 0
-		scgettime = 0
 		bgmlv = 0
 		lifeOffset = 0
 		o = false
@@ -121,7 +115,7 @@ class ScoreTrial:MarathonModeBase() {
 		rankingScore = Array(MAX_DIFFICULTIES) {IntArray(RANKING_MAX)}
 		rankingLines = Array(MAX_DIFFICULTIES) {IntArray(RANKING_MAX)}
 		rankingTime = Array(MAX_DIFFICULTIES) {IntArray(RANKING_MAX)}
-		playerProperties.reset()
+		engine.playerProp.reset()
 		showPlayerStats = false
 
 		rankingRankPlayer = -1
@@ -130,23 +124,14 @@ class ScoreTrial:MarathonModeBase() {
 		rankingTimePlayer = Array(MAX_DIFFICULTIES) {IntArray(RANKING_MAX)}
 		netPlayerInit(engine, playerID)
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
-			if(playerProperties.isLoggedIn) {
-				loadSettingPlayer(playerProperties)
-				loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-			}
-			PLAYER_NAME = ""
 			version = CURRENT_VERSION
 		} else {
-			loadSetting(owner.replayProp)
 			if(version==0&&owner.replayProp.getProperty("scoretrial.endless", false)) goaltype = 2
-			PLAYER_NAME = owner.replayProp.getProperty("scoretrial.playerName", "")
 
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
-		engine.owner.backgroundStatus.bg = startlevel
+		engine.owner.backgroundStatus.bg = startLevel
 		engine.framecolor = GameEngine.FRAME_COLOR_GRAY
 		engine.twistEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
@@ -218,13 +203,6 @@ class ScoreTrial:MarathonModeBase() {
 			// Confirm
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
 				engine.playSE("decide")
-				if(playerProperties.isLoggedIn) {
-					saveSettingPlayer(playerProperties)
-					playerProperties.saveProfileConfig()
-				} else {
-					saveSetting(owner.modeConfig)
-					owner.saveModeConfig()
-				}
 
 				// NET: Signal start of the game
 				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
@@ -234,12 +212,12 @@ class ScoreTrial:MarathonModeBase() {
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
 				engine.quitflag = true
-				playerProperties.reset()
+				engine.playerProp.reset()
 			}
 
 			// New acc
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null&&!netIsNetPlay) {
-				playerProperties.reset()
+				engine.playerProp.reset()
 				engine.playSE("decide")
 				engine.stat = GameEngine.Status.CUSTOM
 				engine.resetStatc()
@@ -247,7 +225,7 @@ class ScoreTrial:MarathonModeBase() {
 			}
 
 			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startlevel==0&&!big&&engine.ai==null) {
+			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 			}
 			engine.statc[3]++
@@ -296,7 +274,7 @@ class ScoreTrial:MarathonModeBase() {
      * Called for initialization during "Ready" screen
      */
 	override fun startGame(engine:GameEngine, playerID:Int) {
-		engine.statistics.level = startlevel
+		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 0
 		when(difficultySelected) {
 			0 -> {
@@ -354,17 +332,15 @@ class ScoreTrial:MarathonModeBase() {
 	override fun onCustom(engine:GameEngine, playerID:Int):Boolean {
 		showPlayerStats = false
 		engine.isInGame = true
-		val s:Boolean = playerProperties.loginScreen.updateScreen(engine, playerID)
-		if(playerProperties.isLoggedIn) {
-			loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-			loadSettingPlayer(playerProperties)
+		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine, playerID)
+		if(engine.playerProp.isLoggedIn) {
+			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
+			loadSetting(engine.playerProp.propProfile, engine)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s
 	}
-	/*
-     * Render score
-     */
+	// Render score
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		if(owner.menuOnly) return
 		receiver.drawScoreFont(engine, playerID, 0, 0, name, COLOR.GREEN)
@@ -378,49 +354,66 @@ class ScoreTrial:MarathonModeBase() {
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 						val s = "${rankingScorePlayer[difficultySelected][i]}"
-						receiver.drawScoreFont(engine, playerID, if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
+						receiver.drawScoreFont(
+							engine, playerID, if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
 							if(s.length>6&&receiver.nextDisplayType!=2) (topY+i)*2 else topY+i, s, i==rankingRankPlayer,
-							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale)
-						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLinesPlayer[difficultySelected][i]}",
-							i==rankingRankPlayer, scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTimePlayer[difficultySelected][i].toTimeStr,
-							i==rankingRankPlayer, scale)
+							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale
+						)
+						receiver.drawScoreFont(
+							engine, playerID, 10, topY+i, "${rankingLinesPlayer[difficultySelected][i]}",
+							i==rankingRankPlayer, scale
+						)
+						receiver.drawScoreFont(
+							engine, playerID, 15, topY+i, rankingTimePlayer[difficultySelected][i].toTimeStr,
+							i==rankingRankPlayer, scale
+						)
 					}
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2, playerProperties.nameDisplay,
-						COLOR.WHITE, 2f)
+					receiver.drawScoreFont(
+						engine, playerID, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay,
+						COLOR.WHITE, 2f
+					)
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 						val s = "${rankingScore[difficultySelected][i]}"
-						receiver.drawScoreFont(engine, playerID, if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
+						receiver.drawScoreFont(
+							engine, playerID, if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
 							if(s.length>6&&receiver.nextDisplayType!=2) (topY+i)*2 else topY+i, s, i==rankingRank,
-							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale)
-						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLines[difficultySelected][i]}",
-							i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTime[difficultySelected][i].toTimeStr,
-							i==rankingRank, scale)
+							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale
+						)
+						receiver.drawScoreFont(
+							engine, playerID, 10, topY+i, "${rankingLines[difficultySelected][i]}",
+							i==rankingRank, scale
+						)
+						receiver.drawScoreFont(
+							engine, playerID, 15, topY+i, rankingTime[difficultySelected][i].toTimeStr,
+							i==rankingRank, scale
+						)
 					}
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
-					if(!playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2,
-						"(NOT LOGGED IN)\n(E:LOG IN)")
-					if(playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5,
-						"F:SWITCH RANK SCREEN", COLOR.GREEN)
+					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
+						engine, playerID, 0, topY+RANKING_MAX+2,
+						"(NOT LOGGED IN)\n(E:LOG IN)"
+					)
+					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
+						engine, playerID, 0, topY+RANKING_MAX+5,
+						"F:SWITCH RANK SCREEN", COLOR.GREEN
+					)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
-			playerProperties.loginScreen.renderScreen(receiver, engine, playerID)
+			engine.playerProp.loginScreen.renderScreen(receiver, engine, playerID)
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "LINE", COLOR.BLUE)
 
 			receiver.drawScoreNum(engine, playerID, 5, 2, String.format("%3d/%3d", engine.statistics.lines, goalLine), 2f)
-			val scget:Boolean = scgettime<engine.statistics.score
+			val scget:Boolean = scDisp<engine.statistics.score
 			receiver.drawScoreFont(engine, playerID, 0, 4, "Score", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 4, "+$lastscore")
-			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/24.0).toInt()
-			sc += ceil(((scgettime-sc)/10f).toDouble()).toInt()
-			receiver.drawScoreNum(engine, playerID, 0, 5, "$sc", scget, 2f)
+
+			receiver.drawScoreNum(engine, playerID, 0, 5, "$scDisp", scget, 2f)
 			if(!o) {
 				l = engine.lives+1
 			}
@@ -431,10 +424,13 @@ class ScoreTrial:MarathonModeBase() {
 			receiver.drawScoreFont(engine, playerID, 0, 13, "${engine.statistics.level}")
 			receiver.drawScoreFont(engine, playerID, 0, 15, "TIME", COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 16, engine.statistics.time.toTimeStr)
-			if(playerProperties.isLoggedIn||PLAYER_NAME.isNotEmpty()) {
+			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
 				receiver.drawScoreFont(engine, playerID, 11, 6, "PLAYER", COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 11, 7, if(owner.replayMode) PLAYER_NAME else playerProperties.nameDisplay,
-					COLOR.WHITE, 2f)
+				receiver.drawScoreFont(
+					engine, playerID, 11, 7,
+					if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
+					COLOR.WHITE, 2f
+				)
 			}
 
 			if(shouldUseTimer) {
@@ -462,7 +458,7 @@ class ScoreTrial:MarathonModeBase() {
      * Called after every frame
      */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		scgettime++
+		super.onLast(engine, playerID)
 		if(engine.gameStarted&&engine.ending==0) {
 			if(engine.stat===GameEngine.Status.ARE&&difficultySelected==2) {
 				engine.dasCount = engine.speed.das
@@ -492,18 +488,19 @@ class ScoreTrial:MarathonModeBase() {
 				} else {
 					// Ending
 					var baseBonus:Int = engine.statistics.score
-					baseBonus *= ((engine.lives+1) as Float/(livesStartedWith+1)).toInt()
+					baseBonus *= ((engine.lives+1).toFloat()/(livesStartedWith+1)).toInt()
 					engine.statistics.scoreBonus += baseBonus
 					lastscore = baseBonus
 					o = true
 					l = engine.lives+1
-					scgettime = 0
 					if(engine.lives==STARTING_LIVES+lifeOffset) {
 						val destinationX = 192
 						val destinationY = 224
-						congratulationsText = FlyInOutText("PERFECT!", destinationX, destinationY, 15, 90, 15,
+						congratulationsText = FlyInOutText(
+							"PERFECT!", destinationX, destinationY, 15, 90, 15,
 							arrayOf(COLOR.GREEN, COLOR.CYAN), 2.0f, engine.randSeed+engine.statistics.time,
-							true)
+							true
+						)
 						engine.playSE("cool")
 					}
 					engine.lives = 0
@@ -529,13 +526,13 @@ class ScoreTrial:MarathonModeBase() {
 		}
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
-			if(engine.ctrl.isPush(Controller.BUTTON_F)&&playerProperties.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")
 			}
 		}
 		if(engine.quitflag) {
-			playerProperties.reset()
+			engine.playerProp.reset()
 		}
 	}
 
@@ -562,29 +559,40 @@ class ScoreTrial:MarathonModeBase() {
 				val destinationY:Int = receiver.scoreY(engine, playerID)+20*if(engine.displaysize==0) 16 else 32
 				var colors = arrayOf(COLOR.COBALT)
 				if(engine.combo>=4) colors = arrayOf(COLOR.BLUE, COLOR.COBALT)
-				if(engine.combo>=8) colors = arrayOf(COLOR.CYAN, COLOR.BLUE,
-					COLOR.COBALT)
-				if(engine.combo>=11) colors = arrayOf(COLOR.YELLOW, COLOR.ORANGE,
-					COLOR.RED)
-				comboTextNumber = FlyInOutText("${(engine.combo-1)} COMBO", destinationX, destinationY, 15, 60, 15, colors,
-					1.0f, engine.randSeed+engine.statistics.time, engine.combo>=8)
-				if(engine.combo==4) comboTextAward = FlyInOutText("GOOD!", destinationX,
+				if(engine.combo>=8) colors = arrayOf(
+					COLOR.CYAN, COLOR.BLUE,
+					COLOR.COBALT
+				)
+				if(engine.combo>=11) colors = arrayOf(
+					COLOR.YELLOW, COLOR.ORANGE,
+					COLOR.RED
+				)
+				comboTextNumber = FlyInOutText(
+					"${(engine.combo-1)} COMBO", destinationX, destinationY, 15, 60, 15, colors,
+					1.0f, engine.randSeed+engine.statistics.time, engine.combo>=8
+				)
+				if(engine.combo==4) comboTextAward = FlyInOutText(
+					"GOOD!", destinationX,
 					destinationY+if(engine.displaysize==0) 16 else 32, 15, 60, 15, arrayOf(COLOR.YELLOW), 1.0f,
-					engine.randSeed+engine.statistics.time, engine.combo>=8)
-				if(engine.combo==8) comboTextAward = FlyInOutText("AWESOME!", destinationX,
+					engine.randSeed+engine.statistics.time, engine.combo>=8
+				)
+				if(engine.combo==8) comboTextAward = FlyInOutText(
+					"AWESOME!", destinationX,
 					destinationY+if(engine.displaysize==0) 16 else 32, 15, 60, 15, arrayOf(COLOR.GREEN), 1.0f,
-					engine.randSeed+engine.statistics.time, engine.combo>=8)
-				if(engine.combo==11) comboTextAward = FlyInOutText("UNREAL!", destinationX,
+					engine.randSeed+engine.statistics.time, engine.combo>=8
+				)
+				if(engine.combo==11) comboTextAward = FlyInOutText(
+					"UNREAL!", destinationX,
 					destinationY+if(engine.displaysize==0) 16 else 32, 15, 60, 15,
 					arrayOf(COLOR.ORANGE, COLOR.RED), 1.0f, engine.randSeed+engine.statistics.time,
-					engine.combo>=8)
+					engine.combo>=8
+				)
 			}
 
 			// Add to score
 			if(pts>0) {
 				scoreBeforeIncrease = engine.statistics.score
 				lastscore = pts
-				scgettime = 0
 				if(lines>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
 			}
 		}
@@ -600,9 +608,11 @@ class ScoreTrial:MarathonModeBase() {
 				engine.playSE("endingstart")
 				val destinationX:Int = receiver.scoreX(engine, playerID)
 				val destinationY:Int = receiver.scoreY(engine, playerID)+18*if(engine.displaysize==0) 16 else 32
-				congratulationsText = FlyInOutText("WELL DONE!", destinationX, destinationY, 30, 120, 30,
+				congratulationsText = FlyInOutText(
+					"WELL DONE!", destinationX, destinationY, 30, 120, 30,
 					arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED), 1.0f,
-					engine.randSeed+engine.statistics.time, false)
+					engine.randSeed+engine.statistics.time, false
+				)
 			}
 			mainTimer += LEVEL_TIMEBONUS
 			if(mainTimer>TIMER_MAX) mainTimer = TIMER_MAX
@@ -629,9 +639,11 @@ class ScoreTrial:MarathonModeBase() {
 					engine.playSE("endingstart")
 					val destinationX:Int = receiver.scoreX(engine, playerID)
 					val destinationY:Int = receiver.scoreY(engine, playerID)+18*if(engine.displaysize==0) 16 else 32
-					congratulationsText = FlyInOutText("WELL DONE!", destinationX, destinationY, 30, 120, 30,
+					congratulationsText = FlyInOutText(
+						"WELL DONE!", destinationX, destinationY, 30, 120, 30,
 						arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED), 1.0f,
-						engine.randSeed+engine.statistics.time, false)
+						engine.randSeed+engine.statistics.time, false
+					)
 				}
 				if(difficultySelected==2) {
 					mainTimer += LEVEL_TIMEBONUS
@@ -651,7 +663,7 @@ class ScoreTrial:MarathonModeBase() {
 	}
 
 	override fun onFirst(engine:GameEngine, playerID:Int) {
-		pCoordList!!.clear()
+		pCoordList?.clear()
 	}
 	/*
      * Hard drop
@@ -683,8 +695,7 @@ class ScoreTrial:MarathonModeBase() {
 	/*
      * Called when saving replay
      */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
@@ -693,133 +704,12 @@ class ScoreTrial:MarathonModeBase() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null&&lifeOffset==0) {
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, difficultySelected)
-			if(playerProperties.isLoggedIn) {
-				prop.setProperty("scoretrial.playerName", playerProperties.nameDisplay)
-			}
-			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
-			if(rankingRankPlayer!=-1&&playerProperties.isLoggedIn) {
-				saveRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-				playerProperties.saveProfileConfig()
-			}
+			return updateRanking(
+				engine.statistics.score, engine.statistics.lines, engine.statistics.time, difficultySelected,
+				engine.playerProp.isLoggedIn
+			)
 		}
-	}
-	/**
-	 * Load settings from property file
-	 *
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
-		startlevel = prop.getProperty("scoretrial.startlevel", 0)
-		big = prop.getProperty("scoretrial.big", false)
-		lifeOffset = prop.getProperty("scoretrial.extralives", 0)
-		version = prop.getProperty("scoretrial.version", 0)
-		lineClearAnimType = prop.getProperty("scoretrial.lcat", 0)
-		difficultySelected = prop.getProperty("scoretrial.difficulty", 0)
-	}
-	/**
-	 * Save settings to property file
-	 *
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("scoretrial.startlevel", startlevel)
-		prop.setProperty("scoretrial.big", big)
-		prop.setProperty("scoretrial.extralives", lifeOffset)
-		prop.setProperty("scoretrial.version", version)
-		prop.setProperty("scoretrial.lcat", lineClearAnimType)
-		prop.setProperty("scoretrial.difficulty", difficultySelected)
-	}
-	/**
-	 * Load settings from property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun loadSettingPlayer(prop:ProfileProperties?) {
-		if(prop?.isLoggedIn!=true) return
-		startlevel = prop.getProperty("scoretrial.startlevel", 0)
-		big = prop.getProperty("scoretrial.big", false)
-		lifeOffset = prop.getProperty("scoretrial.extralives", 0)
-		lineClearAnimType = prop.getProperty("scoretrial.lcat", 0)
-		difficultySelected = prop.getProperty("scoretrial.difficulty", 0)
-	}
-	/**
-	 * Save settings to property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun saveSettingPlayer(prop:ProfileProperties) {
-		if(!prop.isLoggedIn) return
-		prop.setProperty("scoretrial.startlevel", startlevel)
-		prop.setProperty("scoretrial.big", big)
-		prop.setProperty("scoretrial.extralives", lifeOffset)
-		prop.setProperty("scoretrial.lcat", lineClearAnimType)
-		prop.setProperty("scoretrial.difficulty", difficultySelected)
-	}
-	/**
-	 * Read rankings from property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(j in 0 until MAX_DIFFICULTIES) {
-			for(i in 0 until RANKING_MAX) {
-				rankingScore[j][i] = prop.getProperty("scoretrial.ranking.$ruleName.$j.score.$i", 0)
-				rankingLines[j][i] = prop.getProperty("scoretrial.ranking.$ruleName.$j.lines.$i", 0)
-				rankingTime[j][i] = prop.getProperty("scoretrial.ranking.$ruleName.$j.time.$i", 0)
-			}
-		}
-	}
-	/**
-	 * Save rankings to property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(j in 0 until MAX_DIFFICULTIES) {
-			for(i in 0 until RANKING_MAX) {
-				prop.setProperty("scoretrial.ranking.$ruleName.$j.score.$i", rankingScore[j][i])
-				prop.setProperty("scoretrial.ranking.$ruleName.$j.lines.$i", rankingLines[j][i])
-				prop.setProperty("scoretrial.ranking.$ruleName.$j.time.$i", rankingTime[j][i])
-			}
-		}
-	}
-	/**
-	 * Read rankings from property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun loadRankingPlayer(prop:ProfileProperties?, ruleName:String) {
-		if(prop?.isLoggedIn!=true) return
-		for(j in 0 until MAX_DIFFICULTIES) {
-			for(i in 0 until RANKING_MAX) {
-				rankingScorePlayer[j][i] = prop.getProperty("scoretrial.ranking.$ruleName.$j.score.$i", 0)
-				rankingLinesPlayer[j][i] = prop.getProperty("scoretrial.ranking.$ruleName.$j.lines.$i", 0)
-				rankingTimePlayer[j][i] = prop.getProperty("scoretrial.ranking.$ruleName.$j.time.$i", 0)
-			}
-		}
-	}
-	/**
-	 * Save rankings to property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRankingPlayer(prop:ProfileProperties?, ruleName:String) {
-		if(prop?.isLoggedIn!=true) return
-		for(j in 0 until MAX_DIFFICULTIES) {
-			for(i in 0 until RANKING_MAX) {
-				prop.setProperty("scoretrial.ranking.$ruleName.$j.score.$i", rankingScorePlayer[j][i])
-				prop.setProperty("scoretrial.ranking.$ruleName.$j.lines.$i", rankingLinesPlayer[j][i])
-				prop.setProperty("scoretrial.ranking.$ruleName.$j.time.$i", rankingTimePlayer[j][i])
-			}
-		}
+		return false
 	}
 	/**
 	 * Update rankings
@@ -828,7 +718,7 @@ class ScoreTrial:MarathonModeBase() {
 	 * @param li   Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, li:Int, time:Int, diff:Int) {
+	private fun updateRanking(sc:Int, li:Int, time:Int, diff:Int, isLogin:Boolean):Boolean {
 		rankingRank = checkRanking(sc, li, time, diff)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -843,7 +733,7 @@ class ScoreTrial:MarathonModeBase() {
 			rankingLines[diff][rankingRank] = li
 			rankingTime[diff][rankingRank] = time
 		}
-		if(playerProperties.isLoggedIn) {
+		if(isLogin) {
 			rankingRankPlayer = checkRankingPlayer(sc, li, time, diff)
 			if(rankingRank!=-1) {
 				// Shift down ranking entries
@@ -858,7 +748,8 @@ class ScoreTrial:MarathonModeBase() {
 				rankingLinesPlayer[diff][rankingRankPlayer] = li
 				rankingTimePlayer[diff][rankingRankPlayer] = time
 			}
-		}
+		} else rankingRankPlayer = -1
+		return rankingRank!=-1||rankingRankPlayer!=-1
 	}
 	/**
 	 * Calculate ranking position
@@ -869,15 +760,10 @@ class ScoreTrial:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Int, li:Int, time:Int, diff:Int):Int {
-		for(i in 0 until RANKING_MAX) {
-			if(sc>rankingScore[diff][i]) {
-				return i
-			} else if(sc==rankingScore[diff][i]&&li>rankingLines[diff][i]) {
-				return i
-			} else if(sc==rankingScore[diff][i]&&li==rankingLines[diff][i]&&time<rankingTime[diff][i]) {
-				return i
-			}
-		}
+		for(i in 0 until RANKING_MAX)
+			if(sc>rankingScore[diff][i]) return i
+			else if(sc==rankingScore[diff][i]&&li>rankingLines[diff][i]) return i
+			else if(sc==rankingScore[diff][i]&&li==rankingLines[diff][i]&&time<rankingTime[diff][i]) return i
 		return -1
 	}
 	/**
@@ -898,21 +784,29 @@ class ScoreTrial:MarathonModeBase() {
 
 	companion object {
 		// Speed tables
-		private val GRAVITY_TABLE = intArrayOf(8, 16, 24, 32, 40, 48, 56, 64, 72, 80,
+		private val GRAVITY_TABLE = intArrayOf(
+			8, 16, 24, 32, 40, 48, 56, 64, 72, 80,
 			96, 104, 112, 128, 144, 152, 160, 192, 224, 256, 64,
 			80, 96, 112, 128, 144, 160, 192, 224, 224, 256,
 			256, 384, 512, 512, 768, 768, 1024, 1024, 1280, 512,
-			512, 768, 1024, 1280, 1536, 1792, 2048, 2304, 2560, -1)
-		private val ARE_TABLE = intArrayOf(15, 15, 15, 15, 14, 14,
+			512, 768, 1024, 1280, 1536, 1792, 2048, 2304, 2560, -1
+		)
+		private val ARE_TABLE = intArrayOf(
+			15, 15, 15, 15, 14, 14,
 			13, 12, 11, 10, 9,
-			8, 7, 6, 5, 15)
-		private val LOCK_TABLE = intArrayOf(30, 29, 28, 27, 26, 25,
+			8, 7, 6, 5, 15
+		)
+		private val LOCK_TABLE = intArrayOf(
+			30, 29, 28, 27, 26, 25,
 			24, 23, 22, 21, 20,
-			19, 18, 17, 17, 30)
+			19, 18, 17, 17, 30
+		)
 		// Levels for speed changes
-		private val LEVEL_ARE_LOCK_CHANGE = intArrayOf(60, 70, 80, 90, 100,
+		private val LEVEL_ARE_LOCK_CHANGE = intArrayOf(
+			60, 70, 80, 90, 100,
 			110, 120, 130, 140, 150,
-			160, 170, 180, 190, 200, 10000)
+			160, 170, 180, 190, 200, 10000
+		)
 		// Timer constants
 		private const val STARTING_TIMER = 7200
 		private const val HARD_50_TIMER = 16200
@@ -940,13 +834,18 @@ class ScoreTrial:MarathonModeBase() {
 		private val headerColor = COLOR.PINK
 		private val tableBGM =
 			arrayOf(
-				arrayOf(BGMStatus.BGM.Generic(0), BGMStatus.BGM.Puzzle(1), BGMStatus.BGM.Generic(2),
-					BGMStatus.BGM.GrandM(1)), //30levels
-				arrayOf(BGMStatus.BGM.Generic(1), BGMStatus.BGM.GrandM(1), BGMStatus.BGM.GrandT(1),
-					BGMStatus.BGM.Generic(4)), //50levels
+				arrayOf(
+					BGMStatus.BGM.Generic(0), BGMStatus.BGM.Puzzle(1), BGMStatus.BGM.Generic(2),
+					BGMStatus.BGM.GrandM(1)
+				), //30levels
+				arrayOf(
+					BGMStatus.BGM.Generic(1), BGMStatus.BGM.GrandM(1), BGMStatus.BGM.GrandT(1),
+					BGMStatus.BGM.Generic(4)
+				), //50levels
 				arrayOf(
 					BGMStatus.BGM.Generic(2), BGMStatus.BGM.Generic(3), BGMStatus.BGM.Puzzle(2), BGMStatus.BGM.GrandT(1),
-					BGMStatus.BGM.Generic(5)), //200levels
+					BGMStatus.BGM.Generic(5)
+				), //200levels
 			)
 	}
 }

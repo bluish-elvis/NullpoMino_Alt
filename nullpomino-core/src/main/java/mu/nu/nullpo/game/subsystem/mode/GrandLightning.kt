@@ -33,7 +33,9 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
 
@@ -57,12 +59,6 @@ class GrandLightning:AbstractMode() {
 
 	/** Combo bonus */
 	private var comboValue = 0
-
-	/** Most recent increase in score */
-	private var lastscore = 0
-
-	/** 獲得Render scoreがされる残り time */
-	private var scgettime = 0
 
 	/** Roll 経過 time */
 	private var rolltime = 0
@@ -115,20 +111,25 @@ class GrandLightning:AbstractMode() {
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
 
+	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, true, true)
 	/** Level at start */
-	private var startlevel = 0
-
-	/** When true, levelstop sound is enabled */
-	private var lvstopse = false
-
-	/** BigMode */
-	private var big = false
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
 	/** LV500の足切りTime */
-	private var torikan = 0
+	private val itemQualify = TimeMenuItem("lv500torikan", "QUALIFY", COLOR.BLUE, 12300, 0.. 36000)
+	private var qualify:Int by DelegateMenuItem(itemQualify)
 
+	private val itemAlert = BooleanMenuItem("lvstopse", "Sect.ALERT", COLOR.BLUE, true)
+	/** When true, levelstop sound is enabled */
+	private var secAlert:Boolean by DelegateMenuItem(itemAlert)
+
+	private val itemST = BooleanMenuItem("showsectiontime", "SHOW STIME", COLOR.BLUE, true)
 	/** When true, section time display is enabled */
-	private var showsectiontime = false
+	private var showST:Boolean by DelegateMenuItem(itemST)
+
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** 段位表示 */
 	private var gradedisp = false
@@ -161,6 +162,12 @@ class GrandLightning:AbstractMode() {
 	override val name = "Grand Lightning"
 	override val gameIntensity = 3
 	/* Initialization */
+	override val menu:MenuList = MenuList("speedmania2", itemLevel, itemQualify, itemAlert, itemST, itemBig)
+
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollclear" to rankingRollclear,
+		"section.time" to bestSectionTime)
+
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
 		menuTime = 0
@@ -170,7 +177,6 @@ class GrandLightning:AbstractMode() {
 		gradeflash = 0
 		comboValue = 0
 		lastscore = 0
-		scgettime = 0
 		rolltime = 0
 		rollstarted = false
 		rollclear = 0
@@ -188,11 +194,11 @@ class GrandLightning:AbstractMode() {
 		medalSK = 0
 		medalCO = 0
 		isShowBestSectionTime = false
-		startlevel = 0
-		lvstopse = false
+		startLevel = 0
+		secAlert = false
 		big = false
-		torikan = DEFAULT_TORIKAN
-		showsectiontime = false
+		qualify = DEFAULT_TORIKAN
+		showST = false
 		gradedisp = false
 		decoration = 0
 		dectemp = 0
@@ -216,7 +222,7 @@ class GrandLightning:AbstractMode() {
 
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
-			torikan =
+			qualify =
 				owner.modeConfig.getProperty("speedmania2.torikan.${engine.ruleOpt.strRuleName}",
 					if(engine.ruleOpt.lockresetMove) DEFAULT_TORIKAN else DEFAULT_TORIKAN_CLASSIC)
 		} else {
@@ -224,32 +230,29 @@ class GrandLightning:AbstractMode() {
 			System.arraycopy(tableTimeRegret, 0, bestSectionTime, 0, SECTION_MAX)
 		}
 
-		owner.backgroundStatus.bg = 20+startlevel
+		owner.backgroundStatus.bg = 20+startLevel
 	}
 
-	/** Load settings from property file
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
-		startlevel = prop.getProperty("speedmania2.startlevel", 0)
-		lvstopse = prop.getProperty("speedmania2.lvstopse", true)
-		showsectiontime = prop.getProperty("speedmania2.showsectiontime", true)
+	/*
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		startLevel = prop.getProperty("speedmania2.startLevel", 0)
+		secAlert = prop.getProperty("speedmania2.lvstopse", true)
+		showST = prop.getProperty("speedmania2.showsectiontime", true)
 		big = prop.getProperty("speedmania2.big", false)
 		gradedisp = prop.getProperty("speedmania2.gradedisp", false)
 	}
 
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("speedmania2.startlevel", startlevel)
-		prop.setProperty("speedmania2.lvstopse", lvstopse)
-		prop.setProperty("speedmania2.showsectiontime", showsectiontime)
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		prop.setProperty("speedmania2.startLevel", startLevel)
+		prop.setProperty("speedmania2.lvstopse", secAlert)
+		prop.setProperty("speedmania2.showsectiontime", showST)
 		prop.setProperty("speedmania2.big", big)
 		prop.setProperty("speedmania2.gradedisp", gradedisp)
 	}
-
 	private fun saveSetting(prop:CustomProperties, strRuleName:String) {
 		saveSetting(prop)
-		prop.setProperty("speedmania2.torikan.$strRuleName", torikan)
-	}
+		prop.setProperty("speedmania2.torikan.$strRuleName", qualify)
+	}*/
 
 	/** Set BGM at start of game
 	 * @param engine GameEngine
@@ -279,7 +282,7 @@ class GrandLightning:AbstractMode() {
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
 			var temp = 0
-			for(i in startlevel until startlevel+sectionscomp)
+			for(i in startLevel until startLevel+sectionscomp)
 				if(i>=0&&i<sectionTime.size) temp += sectionTime[i]
 			sectionavgtime = temp/sectionscomp
 		} else
@@ -330,18 +333,18 @@ class GrandLightning:AbstractMode() {
 
 				when(menuCursor) {
 					0 -> {
-						startlevel += change
-						if(startlevel<0) startlevel = 12
-						if(startlevel>12) startlevel = 0
-						owner.backgroundStatus.bg = 20+startlevel
+						startLevel += change
+						if(startLevel<0) startLevel = 12
+						if(startLevel>12) startLevel = 0
+						owner.backgroundStatus.bg = 20+startLevel
 					}
-					1 -> lvstopse = !lvstopse
-					2 -> showsectiontime = !showsectiontime
+					1 -> secAlert = !secAlert
+					2 -> showST = !showST
 					3 -> big = !big
 					4 -> {
-						torikan += 60*change
-						if(torikan<0) torikan = 72000
-						if(torikan>72000) torikan = 0
+						qualify += 60*change
+						if(qualify<0) qualify = 72000
+						if(qualify>72000) qualify = 0
 					}
 					5 -> gradedisp = !gradedisp
 				}
@@ -356,8 +359,6 @@ class GrandLightning:AbstractMode() {
 			// 決定
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 
 				sectionscomp = 0
 
@@ -380,14 +381,14 @@ class GrandLightning:AbstractMode() {
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.RED, 0, "Level" to (startlevel*100),
-			"LVSTOPSE" to lvstopse, "SHOW STIME" to showsectiontime, "BIG" to big,
-			"LV500LIMIT" to if(torikan==0) "NONE" else torikan.toTimeStr, "GRADE DISP" to gradedisp)
+		drawMenu(engine, playerID, receiver, 0, COLOR.RED, 0, "Level" to (startLevel*100),
+			"LVSTOPSE" to secAlert, "SHOW STIME" to showST, "BIG" to big,
+			"LV500LIMIT" to if(qualify==0) "NONE" else qualify.toTimeStr, "GRADE DISP" to gradedisp)
 	}
 
 	/* Called at game start */
 	override fun startGame(engine:GameEngine, playerID:Int) {
-		engine.statistics.level = startlevel*100
+		engine.statistics.level = startLevel*100
 
 		nextseclv = engine.statistics.level+100
 		if(engine.statistics.level<0) nextseclv = 100
@@ -411,7 +412,7 @@ class GrandLightning:AbstractMode() {
 		receiver.drawScoreBadges(engine, playerID, 0, -3, 100, decoration)
 		receiver.drawScoreBadges(engine, playerID, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null)
+			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
 					val scale = if(receiver.nextDisplayType==2) .5f else 1f
@@ -462,9 +463,7 @@ class GrandLightning:AbstractMode() {
 				// Score
 				receiver.drawScoreFont(engine, playerID, 0, 6, "Score", COLOR.RED)
 				receiver.drawScoreNum(engine, playerID, 5, 6, "+$lastscore")
-				receiver.drawScoreNum(engine, playerID, 0, 7, "$scgettime", 2f)
-				if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble())
-					.toInt()
+				receiver.drawScoreNum(engine, playerID, 0, 7, "$scDisp", 2f)
 			}
 
 			// level
@@ -500,7 +499,7 @@ class GrandLightning:AbstractMode() {
 			receiver.drawScoreMedal(engine, playerID, 0, 21, "SK", medalSK)
 			receiver.drawScoreMedal(engine, playerID, 3, 21, "CO", medalCO)
 			// Section Time
-			if(showsectiontime&&sectionTime.isNotEmpty()) {
+			if(showST&&sectionTime.isNotEmpty()) {
 				val y = if(receiver.nextDisplayType==2) 4 else 2
 				val x = if(receiver.nextDisplayType==2) 20 else 12
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
@@ -525,7 +524,7 @@ class GrandLightning:AbstractMode() {
 
 				receiver.drawScoreFont(engine, playerID, x2, 17, "AVERAGE", COLOR.RED)
 				receiver.drawScoreNum(engine, playerID, x2, 18,
-					(engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0)).toTimeStr, 2f)
+					(engine.statistics.time/(sectionscomp+(engine.ending==0).toInt())).toTimeStr, 2f)
 
 			}
 		}
@@ -538,7 +537,7 @@ class GrandLightning:AbstractMode() {
 			// Level up
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 		}
@@ -574,7 +573,7 @@ class GrandLightning:AbstractMode() {
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 			lvupflag = true
@@ -696,7 +695,7 @@ class GrandLightning:AbstractMode() {
 					if(grade>13) grade = 13
 					gradeflash = 180
 				}
-			} else if(nextseclv==500&&engine.statistics.level>=500&&torikan>0&&engine.statistics.time>torikan||nextseclv==1000&&engine.statistics.level>=1000&&torikan>0&&engine.statistics.time>torikan*2) {
+			} else if(nextseclv==500&&engine.statistics.level>=500&&qualify>0&&engine.statistics.time>qualify||nextseclv==1000&&engine.statistics.level>=1000&&qualify>0&&engine.statistics.time>qualify*2) {
 				// level500/1000とりカン
 				engine.playSE("endingstart")
 
@@ -767,11 +766,11 @@ class GrandLightning:AbstractMode() {
 					if(grade>13) grade = 13
 					gradeflash = 180
 				}
-			} else if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 
 			// Calculate score
 
-			lastscore = ((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+if(engine.manualLock) 1 else 0)
+			lastscore = ((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+engine.manualLock.toInt())
 				*lines*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
 				+engine.statistics.level/if(engine.twist) 2 else 3)*if(engine.field.isEmpty) 2 else 1
 
@@ -782,6 +781,7 @@ class GrandLightning:AbstractMode() {
 
 	/* 各 frame の終わりの処理 */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		// 段位上昇時のフラッシュ
 		if(gradeflash>0) gradeflash--
 
@@ -919,26 +919,20 @@ class GrandLightning:AbstractMode() {
 	}
 
 	/* リプレイ保存 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(owner.replayProp, engine.ruleOpt.strRuleName)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		owner.replayProp.setProperty("speedmania2.version", version)
 
 		// Update rankings
-		if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null) {
+		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
+			owner.statsProp.setProperty("decoration", decoration)
 			updateRanking(grade, engine.statistics.level, engine.statistics.time, rollclear)
 			if(medalST==3) updateBestSectionTime()
 
-			if(rankingRank!=-1||medalST==3) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1||medalST==3) return true
 		}
+		return false
 	}
 
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
 			rankingGrade[i] = prop.getProperty("$ruleName.$i.grade", 0)
@@ -948,15 +942,11 @@ class GrandLightning:AbstractMode() {
 		}
 		for(i in 0 until SECTION_MAX)
 			bestSectionTime[i] = prop.getProperty("$ruleName.$i.sectiontime", tableTimeRegret[i])
-
-		decoration = owner.statsProp.getProperty("decoration", 0)
 	}
 
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
+	/** Save rankings of [ruleName] to [prop] */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
+		super.saveRanking((0 until RANKING_MAX).flatMap {i ->
 			listOf("$ruleName.$i.grade" to rankingGrade[i],
 				"$ruleName.$i.level" to rankingLevel[i],
 				"$ruleName.$i.time" to rankingTime[i],
@@ -964,9 +954,6 @@ class GrandLightning:AbstractMode() {
 		}+(0 until SECTION_MAX).flatMap {i ->
 			listOf("$ruleName.sectiontime.$i" to bestSectionTime[i])
 		})
-
-		owner.statsProp.setProperty("decoration", decoration)
-		receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update rankings

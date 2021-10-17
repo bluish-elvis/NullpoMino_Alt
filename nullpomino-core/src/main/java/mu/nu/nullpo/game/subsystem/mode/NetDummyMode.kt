@@ -32,6 +32,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.*
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -305,7 +306,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				netSendField(engine)
 				netSendNextAndHold(engine)
 				netSendStats(engine)
-				netLobby!!.netPlayerClient!!.send("game\tending\n")
+				netLobby?.netPlayerClient?.send("game\tending\n")
 			}
 		return false
 	}
@@ -318,7 +319,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				netSendField(engine)
 				netSendNextAndHold(engine)
 				netSendStats(engine)
-				netLobby!!.netPlayerClient!!.send("game\texcellent\n")
+				netLobby?.netPlayerClient?.send("game\texcellent\n")
 			}
 		return false
 	}
@@ -336,10 +337,10 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 						netSendStats(engine)
 					}
 					netSendEndGameStats(engine)
-					netLobby!!.netPlayerClient!!.send("dead\t-1\n")
+					netLobby?.netPlayerClient?.send("dead\t-1\n")
 				} else if(engine.statc[0]>=engine.field.height+1+180)
 				// To results screen
-					netLobby!!.netPlayerClient!!.send("game\tresultsscreen\n")
+					netLobby?.netPlayerClient?.send("game\tresultsscreen\n")
 			} else if(engine.statc[0]<engine.field.height+1+180)
 				return false
 			else {
@@ -375,7 +376,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&!netIsWatch&&netReplaySendStatus==2) {
 				engine.playSE("decide")
 				if(netNumSpectators>0||netForceSendMovements) {
-					netLobby!!.netPlayerClient!!.send("game\tretry\n")
+					netLobby?.netPlayerClient?.send("game\tretry\n")
 					netSendOptions(engine)
 				}
 				owner.reset()
@@ -387,6 +388,11 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		return false
 	}
 
+	override fun renderSetting(engine:GameEngine, playerID:Int) {
+		// NET: Netplay Ranking
+		if(netIsNetRankingDisplayMode) netOnRenderNetPlayRanking(engine, playerID, receiver)
+		else super.renderSetting(engine, playerID)
+	}
 	/** NET: Render something such as HUD. NetDummyMode will render the number
 	 * of players to bottom-right of the screen. */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
@@ -412,7 +418,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		// NET: Signal cursor change
 		if((engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)||engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN))&&
 			netIsNetPlay&&(netNumSpectators>0||netForceSendMovements))
-			netLobby!!.netPlayerClient!!.send("game\tcursor\t$menuCursor\n")
+			netLobby?.netPlayerClient?.send("game\tcursor\t$menuCursor\n")
 
 		return change
 	}
@@ -421,7 +427,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	override fun netplayOnRetryKey(engine:GameEngine, playerID:Int) {
 		if(netIsNetPlay&&!netIsWatch) {
 			owner.reset()
-			netLobby!!.netPlayerClient!!.send("reset1p\n")
+			netLobby?.netPlayerClient?.send("reset1p\n")
 			netSendOptions(engine)
 		}
 	}
@@ -495,7 +501,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		if(message[0]=="game")
 			if(netIsWatch) {
 				val engine = owner.engine[0]
-				if(engine.field==null) engine.field = Field()
+//				if(engine.field==null) engine.field = Field()
 
 				// Move cursor
 				if(message[3]=="cursor")
@@ -547,7 +553,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		try {
 			for(i in owner.engine.indices)
 				owner.engine[i].quitflag = true
-		} catch(e:Exception) {
+		} catch(_:Exception) {
 		}
 
 	}
@@ -562,7 +568,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 		netCurrentRoomInfo = roomInfo
 		netIsNetPlay = true
-		netIsWatch = netLobby!!.netPlayerClient!!.yourPlayerInfo!!.seatID==-1
+		netIsWatch = netLobby?.netPlayerClient?.yourPlayerInfo?.seatID==-1
 		netNumSpectators = 0
 		netUpdatePlayerExist()
 
@@ -579,7 +585,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			owner.engine[0].ruleOpt.copy(it)
 			owner.engine[0].randomizer = randomizer
 			owner.engine[0].wallkick = wallkick
-			loadRanking(owner.recordProp, owner.engine[0].ruleOpt.strRuleName)
+
 		}
 	}
 
@@ -601,12 +607,12 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	fun netDrawAllPlayersCount() {
 		netLobby?.netPlayerClient?.let {
 			if(it.isConnected) {
-				var fontcolor = COLOR.BLUE
-				if(it.observerCount>0) fontcolor = COLOR.GREEN
-				if(it.playerCount>1) fontcolor = COLOR.RED
-				val strObserverInfo = String.format("%d/%d", it.observerCount, it.playerCount)
-				val strObserverString = String.format("%40s", strObserverInfo)
-				owner.receiver.drawDirectFont(0, 480-16, strObserverString, fontcolor)
+				owner.receiver.drawDirectFont(0, 480-16,
+					String.format("%40s", String.format("%d/%d", it.observerCount, it.playerCount)), when {
+					it.playerCount>1 -> COLOR.RED
+					it.observerCount>0 -> COLOR.GREEN
+					else -> COLOR.BLUE
+				})
 			}
 		}
 	}
@@ -623,14 +629,12 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				(engine.replayTimer/(0.00000006*(nowtime-engine.startTime))).toFloat()
 			}
 
-			val strTemp = String.format("%.0f%%", gamerate*100f)
-			val strTemp2 = String.format("%40s", strTemp)
-
-			var fontcolor = COLOR.BLUE
-			if(gamerate<1f) fontcolor = COLOR.YELLOW
-			if(gamerate<.9f) fontcolor = COLOR.ORANGE
-			if(gamerate<.8f) fontcolor = COLOR.RED
-			owner.receiver.drawDirectFont(0, 480-32, strTemp2, fontcolor)
+			owner.receiver.drawDirectFont(0, 480-32, String.format("%40s", String.format("%.0f%%", gamerate*100f)), when {
+				gamerate<.8f -> COLOR.RED
+				gamerate<.9f -> COLOR.ORANGE
+				gamerate<1f -> COLOR.YELLOW
+				else -> COLOR.BLUE
+			})
 		}
 	}
 
@@ -684,13 +688,13 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 				val x = netPrevPieceX+it.dataOffsetX[netPrevPieceDir]
 				val y = netPrevPieceY+it.dataOffsetY[netPrevPieceDir]
-				netLobby!!.netPlayerClient!!.send(
+				netLobby?.netPlayerClient?.send(
 					"game\tpiece\t$netPrevPieceID\t$x\t$y\t$netPrevPieceDir\t${engine.nowPieceBottomY}\t${engine.ruleOpt.pieceColor[netPrevPieceID]}\t${engine.skin}\t${it.big}\n")
 				return@netSendPieceMovement true
 			}
 		} ?: if(netPrevPieceID!=Piece.PIECE_NONE||engine.manualLock) {
 			netPrevPieceID = Piece.PIECE_NONE
-			netLobby!!.netPlayerClient!!.send(
+			netLobby?.netPlayerClient?.send(
 				"game\tpiece\t$netPrevPieceID\t$netPrevPieceX\t$netPrevPieceY\t$netPrevPieceDir\t0\t${engine.skin}\tfalse\n")
 			return true
 		}
@@ -759,7 +763,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				isCompressed = true
 			}
 
-			netLobby!!.netPlayerClient!!.send("game\tfieldattr\t${engine.skin}\t$strFieldData\t$isCompressed\n")
+			netLobby?.netPlayerClient?.send("game\tfieldattr\t${engine.skin}\t$strFieldData\t$isCompressed\n")
 		} else {
 			// Send without attributes
 			val strSrcFieldData = engine.field.fieldToString()
@@ -775,7 +779,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				isCompressed = true
 			}
 
-			netLobby!!.netPlayerClient!!.send(
+			netLobby?.netPlayerClient?.send(
 				"game\tfield\t${engine.skin}\t${engine.field.heightWithoutHurryupFloor}\t$strFieldData\t$isCompressed\n")
 		}
 	}
@@ -846,7 +850,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		}
 
 		msg.append("\n")
-		netLobby!!.netPlayerClient!!.send("$msg")
+		netLobby?.netPlayerClient?.send("$msg")
 	}
 
 	/** NET: Receive next and hold piece informations
@@ -920,7 +924,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 					engine.playSE("decide")
 
-					netLobby!!.netPlayerClient!!.send("spdownload\t${NetUtil.urlEncode(netCurrentRoomInfo!!.ruleName)}\t${
+					netLobby?.netPlayerClient?.send("spdownload\t${NetUtil.urlEncode(netCurrentRoomInfo!!.ruleName)}\t${
 						NetUtil.urlEncode(id)
 					}\t$goaltype\t${netRankingView!=0}\t${NetUtil.urlEncode(netRankingName[d][netRankingCursor[d]])}\n")
 					netIsNetRankingDisplayMode = false
@@ -1259,7 +1263,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			{engine.statistics.level = it.toInt()},
 			{engine.gameActive = it.toBoolean()},
 			{engine.timerActive = it.toBoolean()},
-			{engine.lastevent = GameEngine.ScoreEvent.parseInt(it)},
+			{engine.lastevent = ScoreEvent.parseInt(it)},
 			{engine.b2bbuf = it.toInt()},
 			{engine.combobuf = it.toInt()},
 			{engine.owner.backgroundStatus.bg = it.toInt()}).zip(message).forEach {(x, y) ->
@@ -1320,7 +1324,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			checksumObj.update(NetUtil.stringToBytes(strData))
 			val sChecksum = checksumObj.value
 
-			netLobby!!.netPlayerClient!!.send("spsend\t$sChecksum\t$strData\n")
+			netLobby?.netPlayerClient?.send("spsend\t$sChecksum\t$strData\n")
 		} else
 			netReplaySendStatus = 2
 	}

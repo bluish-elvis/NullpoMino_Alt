@@ -88,60 +88,16 @@ class RendererSlick:AbstractRenderer() {
 		when(font) {
 			FONT.NANO -> FontNano.printFont(x, y, str, color, scale, alpha)
 			FONT.NUM -> FontNumber.printFont(x, y, str, color, scale, alpha)
-			FONT.TTF -> FontNormal.printTTF(x, y, str, color, alpha)
-			FONT.GRADE -> if(scale>=5f/3f) FontGrade.printBigFont(x, y, str, color, scale/3f, alpha)
-			else FontGrade.printMiniFont(x, y, str, color, scale/2f, alpha)
+			FONT.TTF -> printTTFSpecific(x, y, str, color, alpha)
+			FONT.GRADE -> FontGrade.printFont(x, y, str, color, scale, alpha)
 			else -> FontNormal.printFont(x, y, str, color, scale, alpha)
 		}
 	}
 
 	override fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, alpha:Float) =
-		FontNormal.printTTF(x, y, str, color, alpha)
+		FontTTF.print(x, y, str, color, alpha)
 
 	override fun doesGraphicsExist():Boolean = graphics!=null
-
-	/** スピードMeterを描画
-	 * @param sp ゲージ量(0f~1f)
-	 * @param len ゲージ長さ*/
-	override fun drawSpeedMeter(x:Float, y:Float, sp:Float, len:Float) {
-		val s = if(sp<0) 1f else sp
-		val g = graphics ?: return
-
-		val w = maxOf(1f, len-1)*BS
-
-		g.color = Color.black
-		g.drawRect((x-1), (y-1), w+1, 3f)
-
-
-		g.color = when {
-			s<0.25f -> Color.cyan
-			s<0.5f -> Color.green
-			s<0.75f -> Color.yellow
-			s<1f -> Color.orange
-			else -> Color.red
-		}
-		g.fillRect(x, y, w, 2f)
-		if(s<.25f) {
-			g.color = Color.green
-			g.fillRect(x, y, s*w*4, 2f)
-		}
-		if(s<.5f) {
-			g.color = Color.yellow
-			g.fillRect(x, y, s*w*2, 2f)
-		}
-		if(s<0.75f) {
-			g.color = Color.orange
-			g.fillRect(x, y, s*w/.75f, 2f)
-		}
-		if(s<1f) {
-			g.color = Color.red
-			g.fillRect(x, y, s*w, 2f)
-		} else {
-			g.color = Color.white
-			g.fillRect(x, y, minOf(1f, s-1)*w, 2f)
-		}
-		g.color = Color.white
-	}
 
 	/* 勲章を描画 */
 	override fun drawMedal(x:Int, y:Int, str:String, tier:Int, scale:Float) {
@@ -251,9 +207,11 @@ class RendererSlick:AbstractRenderer() {
 
 	override fun drawBadgesSpecific(x:Float, y:Float, type:Int, scale:Float) {
 		val b = FontBadge(type)
-		graphics?.drawImage(resources.imgBadges,
+		graphics?.drawImage(
+			resources.imgBadges,
 			x, y, x+b.w*scale, y+b.h*scale,
-			b.sx.toFloat(), b.sy.toFloat(), (b.sx+b.w).toFloat(), (b.sy+b.h).toFloat())
+			b.sx.toFloat(), b.sy.toFloat(), (b.sx+b.w).toFloat(), (b.sy+b.h).toFloat()
+		)
 	}
 
 	override fun drawFieldSpecific(x:Int, y:Int, width:Int, viewHeight:Int, blksize:Int, scale:Float, outlineType:Int) {
@@ -367,13 +325,7 @@ class RendererSlick:AbstractRenderer() {
 		}*/
 	}
 
-	/** 現在操作中のBlockピースのghost を描画
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param engine GameEngineのインスタンス
-	 * @param scale 表示倍率
-	 */
-	override fun drawGhostPiece(x:Float, y:Float, engine:GameEngine, scale:Float) {
+	/*verride fun drawGhostPiece(x:Float, y:Float, engine:GameEngine, scale:Float) {
 		val g = graphics ?: return
 		val blksize = (BS*scale).toInt()
 
@@ -568,7 +520,7 @@ class RendererSlick:AbstractRenderer() {
 						g.fillRect((x3+blksize*2-2), (y3+blksize*2-2), 2f, 2f)
 				}
 		}
-	}
+	}*/
 
 	/** Field frameを描画
 	 * @param x X-coordinate
@@ -586,7 +538,7 @@ class RendererSlick:AbstractRenderer() {
 		}
 		val width = engine.field.width ?: Field.DEFAULT_WIDTH
 		val height = engine.field.height ?: Field.DEFAULT_HEIGHT
-		val oX = 0
+//		val oX = 0
 
 		// Field Background
 		if(fieldbgbright>0)
@@ -598,9 +550,11 @@ class RendererSlick:AbstractRenderer() {
 				if(displaysize==-1) img = resources.imgFieldBG[0]
 				if(displaysize==1) img = resources.imgFieldBG[2]
 
-				graphics.drawImage(img, x+4, y+4, x+4+width*size*4, y+4+height*size*4,
+				graphics.drawImage(
+					img, x+4, y+4, x+4+width*size*4, y+4+height*size*4,
 					0, 0, (width*size*4), (height*size
-					*4), filter)
+						*4), filter
+				)
 			} else if(showbg) {
 				val filter = Color(Color.black)
 				filter.a = fieldbgbright
@@ -667,20 +621,18 @@ class RendererSlick:AbstractRenderer() {
 			is FragAnim -> {
 				val flip = (i%2==0)!=(i%10==0)
 				when(it.type) {
-					ANIM.GEM
-						// Gems frag
-					-> resources.imgPErase[it.color]
+					// Gems frag
+					ANIM.GEM -> resources.imgPErase[it.color]
 					// TI Block frag
-					ANIM.SPARK
-					-> resources.imgBreak[it.color][0]
+					ANIM.SPARK -> resources.imgBreak[it.color][0]
 					// TAP Block frag
-					ANIM.BLOCK
-					-> resources.imgBreak[it.color][1]
+					ANIM.BLOCK -> resources.imgBreak[it.color][1]
 					//Fireworks
-					ANIM.HANABI
-					-> resources.imgHanabi[it.color]
-				}.draw(if(flip) it.dx2 else it.dx, it.dy, if(flip) it.dx else it.dx2, it.dy2,
-					it.srcx, it.srcy, it.srcx2, it.srcy2)
+					ANIM.HANABI -> resources.imgHanabi[it.color]
+				}.draw(
+					if(flip) it.dx2 else it.dx, it.dy, if(flip) it.dx else it.dx2, it.dy2,
+					it.srcx, it.srcy, it.srcx2, it.srcy2
+				)
 			}
 			is BeamH //Line Cleaned
 			-> {

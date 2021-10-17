@@ -31,6 +31,7 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
+import mu.nu.nullpo.gui.slick.img.FontTTF
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getOX
 import org.newdawn.slick.GameContainer
@@ -185,7 +186,7 @@ class StateConfigGeneral:BaseGameState() {
 		alternateFPSPerfectMode = prop.getProperty("option.alternateFPSPerfectMode", false)
 		alternateFPSPerfectYield = prop.getProperty("option.alternateFPSPerfectYield", false)
 
-		screenSizeType = 4 // Default to 640x480
+		screenSizeType = 5 // Default to 800x600
 		val sWidth = prop.getProperty("option.screenwidth", -1)
 		val sHeight = prop.getProperty("option.screenheight", -1)
 		for(i in SCREENSIZE_TABLE.indices)
@@ -311,7 +312,7 @@ class StateConfigGeneral:BaseGameState() {
 		}// Slick Options
 		// Advanced Options
 
-		if(cursor>=0&&cursor<UI_TEXT.size) FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
+		if(cursor>=0&&cursor<UI_TEXT.size) FontTTF.print(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
 	}
 
 	/* Update game state */

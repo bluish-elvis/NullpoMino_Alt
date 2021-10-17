@@ -52,13 +52,6 @@ class SquareMode:AbstractMode() {
 	 * value, this variable will increase) */
 	private var gravityindex = 0
 
-	/** Amount of points you just get from line clears */
-	private var lastscore = 0
-
-	/** Elapsed time from last line clear (lastscore is displayed to screen
-	 * until this reaches to 120) */
-	private var scgettime = 0
-
 	/** Number of squares created */
 	private var squares = 0
 
@@ -100,7 +93,6 @@ class SquareMode:AbstractMode() {
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
 		lastscore = 0
-		scgettime = 0
 		squares = 0
 
 		outlinetype = 0
@@ -113,11 +105,11 @@ class SquareMode:AbstractMode() {
 		rankingSquares = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
+			loadSetting(owner.modeConfig, engine)
+
 			version = CURRENT_VERSION
 		} else
-			loadSetting(owner.replayProp)
+			loadSetting(owner.replayProp, engine)
 
 		engine.framecolor = GameEngine.FRAME_COLOR_PURPLE
 	}
@@ -177,8 +169,6 @@ class SquareMode:AbstractMode() {
 			// A button (confirm)
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				return false
 			}
 
@@ -206,11 +196,13 @@ class SquareMode:AbstractMode() {
 		if(grayoutEnable==0) grayoutStr = "OFF"
 		if(grayoutEnable==1) grayoutStr = "SPIN ONLY"
 		if(grayoutEnable==2) grayoutStr = "ALL"
-		drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype],
+		drawMenu(
+			engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype],
 			"OUTLINE" to strOutline,
 			"SPIN BONUS" to if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL",
 			"AVALANCHE" to if(tntAvalanche) "TNT" else "WORLDS",
-			"GRAYOUT" to grayoutStr)
+			"GRAYOUT" to grayoutStr
+		)
 	}
 
 	/* This function will be called before the game actually begins (after
@@ -267,8 +259,10 @@ class SquareMode:AbstractMode() {
 						0 -> {
 							receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
 							receiver.drawScoreFont(engine, playerID, 9, topY+i, "${rankingSquares[gametype][i]}", i==rankingRank, scale)
-							receiver.drawScoreFont(engine, playerID, 16, topY+i, rankingTime[gametype][i].toTimeStr,
-								i==rankingRank, scale)
+							receiver.drawScoreFont(
+								engine, playerID, 16, topY+i, rankingTime[gametype][i].toTimeStr,
+								i==rankingRank, scale
+							)
 						}
 						1 -> {
 							receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[gametype][i]}", i==rankingRank)
@@ -283,10 +277,7 @@ class SquareMode:AbstractMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 4, "${engine.statistics.score}${
-				if(lastscore==0||scgettime<=0)
-					"(+$lastscore)" else ""
-			}")
+			receiver.drawScoreFont(engine, playerID, 0, 4, "${engine.statistics.score}(+$lastscore)")
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
@@ -308,7 +299,7 @@ class SquareMode:AbstractMode() {
 
 	/* This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		if(scgettime>0) scgettime--
+		super.onLast(engine, playerID)
 
 		if(gametype==1) {
 			val remainTime = ULTRA_MAX_TIME-engine.statistics.time
@@ -321,7 +312,8 @@ class SquareMode:AbstractMode() {
 
 			// Countdown
 			if(remainTime>0&&remainTime<=10*60&&engine.statistics.time%60==0
-				&&engine.timerActive)
+				&&engine.timerActive
+			)
 				engine.playSE("countdown")
 
 			// BGM fadeout
@@ -375,7 +367,7 @@ class SquareMode:AbstractMode() {
  * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		if(lines>0&&engine.twist) {
-			avalanche(engine, playerID, lines)
+			avalanche(engine, lines)
 			return 0
 		}
 
@@ -392,7 +384,6 @@ class SquareMode:AbstractMode() {
 			pts += 10*squareClears[0]+5*squareClears[1]
 
 			lastscore = pts
-			scgettime = 120
 			engine.statistics.scoreLine += pts
 			setSpeed(engine)
 			return pts
@@ -402,10 +393,9 @@ class SquareMode:AbstractMode() {
 
 	/** Spin avalanche routine.
 	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param lines Number of lines cleared
 	 */
-	private fun avalanche(engine:GameEngine, playerID:Int, lines:Int) {
+	private fun avalanche(engine:GameEngine, lines:Int) {
 		val field = engine.field
 		field.setAllAttribute(false, Block.ATTRIBUTE.ANTIGRAVITY)
 
@@ -480,32 +470,30 @@ class SquareMode:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
-		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
+		drawResult(
+			engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
 			"LINE", String.format("%10d", engine.statistics.lines), "SQUARE", String.format("%10d", squares), "Time",
-			String.format("%10s", engine.statistics.time.toTimeStr))
+			String.format("%10s", engine.statistics.time.toTimeStr)
+		)
 		drawResultRank(engine, playerID, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
 	}
 
 	/* This function will be called when the replay data is going to be saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(prop, engine)
 		prop.setProperty("square.squares", squares)
 
 		// Update the ranking
 		if(!owner.replayMode&&engine.ai==null) {
 			updateRanking(engine.statistics.score, engine.statistics.time, squares, gametype)
 
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1) return true
 		}
+		return false
 	}
 
-	/** Load the settings from CustomProperties
-	 * @param prop CustomProperties to read
-	 */
-	override fun loadSetting(prop:CustomProperties) {
+	/** Load the settings from [prop] */
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		gametype = prop.getProperty("square.gametype", 0)
 		outlinetype = prop.getProperty("square.outlinetype", 0)
 		twistEnableType = prop.getProperty("square.twistEnableType", 2)
@@ -520,7 +508,7 @@ class SquareMode:AbstractMode() {
 	/** Save the settings to CustomProperties
 	 * @param prop CustomProperties to write
 	 */
-	override fun saveSetting(prop:CustomProperties) {
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("square.gametype", gametype)
 		prop.setProperty("square.outlinetype", outlinetype)
 		prop.setProperty("square.twistEnableType", twistEnableType)
@@ -546,11 +534,13 @@ class SquareMode:AbstractMode() {
 	 * @param ruleName Rule name
 	 */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until GAMETYPE_MAX).flatMap {j ->
+		super.saveRanking((0 until GAMETYPE_MAX).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
-				listOf("$ruleName.$j.score.$i" to rankingScore[j][i],
+				listOf(
+					"$ruleName.$j.score.$i" to rankingScore[j][i],
 					"$ruleName.$j.time.$i" to rankingTime[j][i],
-					"$ruleName.$j.squares.$i" to rankingSquares[j][i])
+					"$ruleName.$j.squares.$i" to rankingSquares[j][i]
+				)
 			}
 		})
 	}

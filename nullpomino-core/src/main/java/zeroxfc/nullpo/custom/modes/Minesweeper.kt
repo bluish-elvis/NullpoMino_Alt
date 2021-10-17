@@ -69,8 +69,6 @@ class Minesweeper:AbstractMode() {
 	private var timeLimit = 0
 	private var currentLimit = 0
 	private var numberOfCover = 0
-	private val playerProperties:ProfileProperties = ProfileProperties(headerColor)
-	private var PLAYER_NAME = ""
 	override val name:String get() = "MineSweeper"
 
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -95,13 +93,9 @@ class Minesweeper:AbstractMode() {
 		engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_SAMECOLOR
 		mainGrid = GameGrid()
 		blockGrid = emptyArray()
-		PLAYER_NAME = if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			""
-		} else {
-			loadSetting(owner.replayProp)
-			owner.replayProp.getProperty("minesweeper.playerName", "")
-		}
+		if(!owner.replayMode) loadSetting(owner.modeConfig, engine)
+		else loadSetting(owner.replayProp, engine)
+
 		engine.owner.backgroundStatus.bg = bg
 	}
 
@@ -153,11 +147,11 @@ class Minesweeper:AbstractMode() {
 			// Confirm
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
 				engine.playSE("decide")
-				if(playerProperties.isLoggedIn) {
-					saveSettingPlayer(playerProperties)
-					playerProperties.saveProfileConfig()
+				if(engine.playerProp.isLoggedIn) {
+					saveSettingPlayer(engine.playerProp)
+					engine.playerProp.saveProfileConfig()
 				} else {
-					saveSetting(owner.modeConfig)
+					saveSetting(owner.modeConfig, engine)
 					owner.saveModeConfig()
 				}
 				return false
@@ -194,8 +188,9 @@ class Minesweeper:AbstractMode() {
 	}
 
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		if(engine.quitflag) {
-			playerProperties.reset()
+			engine.playerProp.reset()
 		}
 	}
 
@@ -548,9 +543,9 @@ class Minesweeper:AbstractMode() {
 			engine.statc[0]++
 		} else {
 			engine.isInGame = true
-			val s:Boolean = playerProperties.loginScreen.updateScreen(engine, playerID)
-			if(playerProperties.isLoggedIn) {
-				loadSettingPlayer(playerProperties)
+			val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine, playerID)
+			if(engine.playerProp.isLoggedIn) {
+				loadSetting(engine.playerProp.propProfile)
 			}
 			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		}
@@ -599,15 +594,15 @@ class Minesweeper:AbstractMode() {
 		receiver.drawScoreFont(engine, playerID, ix, 1, "("+(length*height*(minePercentage/100f)).toInt()+" MINES)",
 			COLOR.BLUE)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(playerProperties.isLoggedIn) {
+			if(engine.playerProp.isLoggedIn) {
 				receiver.drawScoreFont(engine, playerID, ix, 3, "PLAYER", COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, ix, 4, playerProperties.nameDisplay, COLOR.WHITE, 2f)
+				receiver.drawScoreFont(engine, playerID, ix, 4, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
 			} else {
 				receiver.drawScoreFont(engine, playerID, ix, 3, "LOGIN STATUS", COLOR.BLUE)
-				if(!playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, ix, 4, "(NOT LOGGED IN)\n(E:LOG IN)")
+				if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(engine, playerID, ix, 4, "(NOT LOGGED IN)\n(E:LOG IN)")
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM&&!engine.gameActive) {
-			playerProperties.loginScreen.renderScreen(receiver, engine, playerID)
+			engine.playerProp.loginScreen.renderScreen(receiver, engine, playerID)
 		} else {
 			receiver.drawScoreFont(engine, playerID, ix, 3, "TIME", COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, ix, 4, engine.statistics.time.toTimeStr)
@@ -694,9 +689,10 @@ class Minesweeper:AbstractMode() {
 						"n", COLOR.YELLOW)
 				}
 			}
-			if(playerProperties.isLoggedIn||PLAYER_NAME.isNotEmpty()) {
+			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
 				receiver.drawScoreFont(engine, playerID, 0, 20, "PLAYER", COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 21, if(owner.replayMode) PLAYER_NAME else playerProperties.nameDisplay,
+				receiver.drawScoreFont(engine, playerID, 0, 21,
+					if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
 					COLOR.WHITE, 2f)
 			}
 		}
@@ -715,18 +711,19 @@ class Minesweeper:AbstractMode() {
 	/*
 		 * Called when saving replay
 		 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		if(!owner.replayMode) {
-			owner.saveModeConfig()
+			saveSetting(prop, engine)
+
 		}
+		return false
 	}
 	/**
-	 * Load settings from property file
+	 * Load settings from [prop]
 	 *
 	 * @param prop Property file
 	 */
-	override fun loadSetting(prop:CustomProperties) {
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		length = prop.getProperty("minesweeper.length", 15)
 		height = prop.getProperty("minesweeper.height", 15)
 		minePercentage = prop.getProperty("minesweeper.minePercentage", 15f)
@@ -735,11 +732,11 @@ class Minesweeper:AbstractMode() {
 		timeLimit = prop.getProperty("minesweeper.timeLimit", 0)
 	}
 	/**
-	 * Save settings to property file
+	 * Save settings to [prop]
 	 *
 	 * @param prop Property file
 	 */
-	override fun saveSetting(prop:CustomProperties) {
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("minesweeper.length", length)
 		prop.setProperty("minesweeper.height", height)
 		prop.setProperty("minesweeper.minePercentage", minePercentage)
@@ -748,7 +745,7 @@ class Minesweeper:AbstractMode() {
 		prop.setProperty("minesweeper.timeLimit", timeLimit)
 	}
 	/**
-	 * Load settings from property file
+	 * Load settings from [prop]
 	 *
 	 * @param prop Property file
 	 */
@@ -761,7 +758,7 @@ class Minesweeper:AbstractMode() {
 		timeLimit = prop.getProperty("minesweeper.timeLimit", 0)
 	}
 	/**
-	 * Save settings to property file
+	 * Save settings to [prop]
 	 *
 	 * @param prop Property file
 	 */

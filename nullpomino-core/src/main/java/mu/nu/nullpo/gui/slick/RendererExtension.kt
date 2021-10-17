@@ -98,7 +98,7 @@ object RendererExtension {
 		receiver?.drawPiece(x-offsetX, y-offsetY, piece, scale, darkness)
 	}
 	/**
-	 * Add block break effect at custom location given
+	 * Add [blk]'s break effect at custom location given
 	 *
 	 * @param receiver Current renderer in game
 	 * @param x        X-Coordinate of top left corner of 16x16 block

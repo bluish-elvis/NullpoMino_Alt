@@ -86,11 +86,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		rankingTime = Array(SCORETYPE_MAX) {Array(3) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}}
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
-		} else
-			loadSetting(owner.replayProp)
+		}
 	}
 
 	/** Set the gravity rate
@@ -176,8 +173,6 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			// 決定
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				return false
 			}
 
@@ -263,9 +258,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
-			val strScore:String = if(lastscore==0||lastmultiplier==0||scgettime<=0)
-				"${engine.statistics.score}"
-			else "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
+			val strScore = "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
 			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "Level", COLOR.BLUE)
@@ -320,7 +313,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		if(scgettime>0) scgettime--
+		super.onLast(engine, playerID)
 		if(chainDisplay>0) chainDisplay--
 
 		if(gametype==1) {
@@ -420,24 +413,11 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean =
+		!owner.replayMode&&engine.ai==null&&engine.colorClearSize==4&&
+			updateRanking(engine.statistics.score, engine.statistics.time, gametype, scoreType, numColors)!=-1
 
-		// Update rankings
-		if(!owner.replayMode&&engine.ai==null&&engine.colorClearSize==4) {
-			updateRanking(engine.statistics.score, engine.statistics.time, gametype, scoreType, numColors)
-
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
-		}
-	}
-
-	/** Load settings from property file
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		gametype = prop.getProperty("avalanche.gametype", 0)
 		sprintTarget = prop.getProperty("avalanche.sprintTarget", 0)
 		scoreType = prop.getProperty("avalanche.scoreType", 0)
@@ -451,10 +431,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		bigDisplay = prop.getProperty("avalanche.bigDisplay", false)
 	}
 
-	/** Save settings to property file
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("avalanche.gametype", gametype)
 		prop.setProperty("avalanche.sprintTarget", sprintTarget)
 		prop.setProperty("avalanche.scoreType", scoreType)
@@ -468,10 +445,6 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		prop.setProperty("avalanche.bigDisplay", bigDisplay)
 	}
 
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in 0 until GAMETYPE_MAX)
@@ -484,16 +457,14 @@ class Avalanche1P:Avalanche1PDummyMode() {
 					}
 	}
 
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (3..5).flatMap {c ->
+	/** Save rankings of [ruleName] to [prop] */
+	override fun saveRanking() {
+		super.saveRanking((3..5).flatMap {c ->
 			(0 until SCORETYPE_MAX).flatMap {s ->
 				(0 until GAMETYPE_MAX).flatMap {j ->
 					(0 until RANKING_MAX).flatMap {i ->
-						listOf("$ruleName.$s.$c.$j.score.$i" to rankingScore[s][c-3][j][i],
-							"$ruleName.$s.$c.$j.time.$i" to rankingTime[s][c-3][j][i])
+						listOf("$s.$c.$j.score.$i" to rankingScore[s][c-3][j][i],
+							"$s.$c.$j.time.$i" to rankingTime[s][c-3][j][i])
 					}
 				}
 			}
@@ -503,7 +474,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	/** Update rankings
 	 * @param sc Score
 	 */
-	private fun updateRanking(sc:Int, time:Int, type:Int, sctype:Int, colors:Int) {
+	private fun updateRanking(sc:Int, time:Int, type:Int, sctype:Int, colors:Int):Int {
 		rankingRank = checkRanking(sc, time, type, sctype, colors)
 
 		if(rankingRank!=-1) {
@@ -517,6 +488,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			rankingScore[sctype][colors-3][type][rankingRank] = sc
 			rankingTime[sctype][colors-3][type][rankingRank] = time
 		}
+		return rankingRank
 	}
 
 	/** Calculate ranking position

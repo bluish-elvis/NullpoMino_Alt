@@ -42,25 +42,24 @@ class GameManager
 	/** EventReceiver: Manages various events, and renders everything to the screen */
 	val receiver:EventReceiver = EventReceiver()) {
 
-
-	/** Properties used by statistics */
-	var statsProp = CustomProperties()
-	val statsFile get() = "scores/stats"
-
 	/** Game Mode */
 	var mode:GameMode? = null
 
 	/** Properties used by game mode */
-	var modeConfig = CustomProperties()
+	var modeConfig = CustomProperties(cfgMode)
 
 	val cfgMode get() = "config/setting/mode/${mode?.id ?: "_common"}.cfg"
 
+	/** Properties used by statistics */
+	var statsProp = CustomProperties(statsFile)
+	val statsFile get() = "scores/stats"
+
 	/** Properties for Records game mode */
-	var recordProp = CustomProperties()
+	var recordProp = CustomProperties(recorder)
 
 	val recorder get() = recorder()
 	fun recorder(ruleName:String? = null):String =
-		"scores/${mode?.id ?: ""}${ruleName?.let {"_$it"}?:""}.rec"
+		"scores/${ruleName?.let {"$it/"} ?: ""}${mode?.id ?: ""}.rec"
 	//fun recorder():String = "scores/${mode?.name ?: "mode"}.rec"
 
 	/** Properties for replay file */
@@ -130,8 +129,8 @@ class GameManager
 
 		var players = 1
 		mode?.let {
-			receiver.loadProperties(cfgMode)?.let {modeConfig = it}
-			receiver.loadProperties(statsFile)?.let {statsProp = it}
+			modeConfig.load(cfgMode)
+			statsProp.load(statsFile)
 			it.modeInit(this)
 			players = it.players
 		}
@@ -141,7 +140,7 @@ class GameManager
 
 	/** Save properties to "config/setting/mode.cfg"
 	 */
-	fun saveModeConfig() = receiver.saveProperties(cfgMode, modeConfig)
+	fun saveModeConfig() = modeConfig.save(cfgMode)
 
 	/** Reset the game */
 	fun reset() {

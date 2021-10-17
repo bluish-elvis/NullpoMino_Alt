@@ -137,11 +137,8 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		previewSubset = 0
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 			version = CURRENT_VERSION
-		} else
-			loadSetting(owner.replayProp)
+		}
 	}
 
 	public override fun readyInit(engine:GameEngine, playerID:Int):Boolean {
@@ -247,8 +244,6 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 				} else if(menuTime>=5) {
 					// 決定
 					engine.playSE("decide")
-					saveSetting(owner.modeConfig)
-					owner.saveModeConfig()
 					return false
 				}
 
@@ -319,9 +314,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-			val strScore:String = if(lastscore==0||lastmultiplier==0||scgettime<=0)
-				"${engine.statistics.score}"
-			else "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
+			val strScore:String = "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
 			receiver.drawScoreNum(engine, playerID, 0, 4, strScore, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "Level", EventReceiver.COLOR.BLUE)
@@ -400,7 +393,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		if(scgettime>0) scgettime--
+		super.onLast(engine, playerID)
 
 		if(engine.timerActive) {
 			if(chainDisplay>0) chainDisplay--
@@ -500,7 +493,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
 		receiver.drawMenuFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-		val strScoreBefore = String.format("%10d", scoreBeforeBonus)
+		val strScoreBefore = String.format("%10d", scoreBeforeBonus(engine.statistics))
 		receiver.drawMenuNum(engine, playerID, 0, 4, strScoreBefore, EventReceiver.COLOR.GREEN)
 
 		receiver.drawMenuFont(engine, playerID, 0, 5, "Clean Bonus", EventReceiver.COLOR.BLUE)
@@ -531,24 +524,10 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean = (!owner.replayMode&&engine.ai==null
+		&&updateRanking(engine.statistics.score, engine.statistics.time, mapSet, numColors)!=-1)
 
-		// Update rankings
-		if(!owner.replayMode&&engine.ai==null) {
-			updateRanking(engine.statistics.score, engine.statistics.time, mapSet, numColors)
-
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
-		}
-	}
-
-	/** Load settings from property file
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		mapSet = prop.getProperty("avalanchefever.gametype", 0)
 		outlinetype = prop.getProperty("avalanchefever.outlinetype", 0)
 		numColors = prop.getProperty("avalanchefever.numcolors", 4)
@@ -557,10 +536,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		bigDisplay = prop.getProperty("avalanchefever.bigDisplay", false)
 	}
 
-	/** Save settings to property file
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("avalanchefever.gametype", mapSet)
 		prop.setProperty("avalanchefever.outlinetype", outlinetype)
 		prop.setProperty("avalanchefever.numcolors", numColors)
@@ -570,8 +546,8 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	}
 
 	private fun loadMapSetFever(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
-		if(propFeverMap==null||forceReload) {
-			receiver.loadProperties("config/map/avalanche/${FEVER_MAPS[id]}Endless.map")?.let {propFeverMap = it}
+		if(forceReload) {
+			propFeverMap.load("config/map/avalanche/${FEVER_MAPS[id]}Endless.map")
 			feverChainMin = propFeverMap.getProperty("minChain", 3)
 			feverChainMax = propFeverMap.getProperty("maxChain", 15)
 			val subsets = propFeverMap.getProperty("sets")
@@ -593,10 +569,6 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		engine.field.shuffleColors(BLOCK_COLORS, numColors, rand)
 	}
 
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(j in FEVER_MAPS.indices)
@@ -608,11 +580,9 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 				}
 	}
 
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
+	/** Save rankings of [ruleName] to [prop] */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (3..5).flatMap {c ->
+		super.saveRanking((3..5).flatMap {c ->
 			FEVER_MAPS.indices.flatMap {j ->
 				(0 until RANKING_MAX).flatMap {i ->
 					listOf("$ruleName.$c.$j.score.$i" to rankingScore[c-3][j][i],
@@ -626,7 +596,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	 * @param sc Score
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, time:Int, type:Int, colors:Int) {
+	private fun updateRanking(sc:Int, time:Int, type:Int, colors:Int):Int {
 		rankingRank = checkRanking(sc, time, type, colors)
 
 		if(rankingRank!=-1) {
@@ -640,6 +610,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			rankingScore[colors-3][type][rankingRank] = sc
 			rankingTime[colors-3][type][rankingRank] = time
 		}
+		return rankingRank
 	}
 
 	/** Calculate ranking position

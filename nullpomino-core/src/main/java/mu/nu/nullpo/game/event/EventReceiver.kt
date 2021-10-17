@@ -573,7 +573,7 @@ open class EventReceiver {
 	 * @param len Meter Width Grid
 	 */
 	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Float, len:Float = 3f) {
-		val dx1 = scoreX(engine, playerID)+x*BS+maxOf((minOf(len, 1f)*BS)/2, 0f)
+		val dx1 = scoreX(engine, playerID)+x*BS+maxOf(minOf(len, BS/2f), 0f)
 		val dy1 = scoreY(engine, playerID)+y*BS+BS/2f
 		//if(engine.owner.menuOnly) return
 		drawSpeedMeter(dx1, dy1, sp, len)
@@ -757,7 +757,7 @@ open class EventReceiver {
 	 */
 	open fun setGraphics(g:Any) {}
 
-	/** Load any properties from any location.
+	/** Load CustomProperties from [filename].
 	 * @param filename Filename
 	 * @return Properties you specified, or null if the file doesn't exist.
 	 */
@@ -777,19 +777,16 @@ open class EventReceiver {
 		return prop
 	}
 
-	/** Save any properties to any location.
-	 * @param filename Filename
-	 * @param prop Properties you want to save
+	/** Save [prop] to [filename].
 	 * @return true if success
 	 */
-	fun saveProperties(filename:String, prop:CustomProperties):Boolean {
+	@Deprecated("Use from CustomProperties", ReplaceWith("prop.save(filename)"))
+	fun saveProperties(prop:CustomProperties, filename:String = prop.fileName):Boolean {
 		try {
-			val repfolder = File(filename).parentFile
-			if(!repfolder.exists())
-				if(repfolder.mkdirs())
-					log.info("Created folder: ${repfolder.name}")
-				else
-					log.info("Couldn't create folder at ${repfolder.name}")
+			val repFolder = File(filename).parentFile
+			if(!repFolder.exists())
+				if(repFolder.mkdirs()) log.info("Created folder: ${repFolder.name}")
+				else log.info("Couldn't create folder at ${repFolder.name}")
 			val out = GZIPOutputStream(FileOutputStream(filename))
 			prop.store(out, "NullpoMino Custom Property File")
 			log.debug("Saving custom property file to $filename")
@@ -837,6 +834,12 @@ open class EventReceiver {
 	 * @param playerID Player ID
 	 */
 	open fun onSetting(engine:GameEngine, playerID:Int) {}
+
+	/** It will be called at the settings screen.
+	 * @param engine GameEngine
+	 * @param playerID Player ID
+	 */
+	open fun onProfile(engine:GameEngine, playerID:Int) {}
 
 	/** It will be called during the "Ready->Go" screen.
 	 * @param engine GameEngine
@@ -922,6 +925,13 @@ open class EventReceiver {
 	 */
 	open fun renderSetting(engine:GameEngine, playerID:Int) {}
 
+	/** It will be called at the settings screen. (For rendering)
+	 * @param engine GameEngine
+	 * @param playerID Player ID
+	 */
+	open fun renderProfile(engine:GameEngine, playerID:Int) {
+		engine.playerProp.loginScreen.renderScreen(this, engine, playerID)
+	}
 	/** It will be called during the "Ready->Go" screen. (For rendering)
 	 * @param engine GameEngine
 	 * @param playerID Player ID
@@ -1010,7 +1020,7 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 * @param event Event the score gained
 	 */
-	open fun calcScore(engine:GameEngine, event:GameEngine.ScoreEvent?) {}
+	open fun calcScore(engine:GameEngine, event:ScoreEvent?) {}
 
 	/** After Soft Drop is used
 	 * @param engine GameEngine
@@ -1045,9 +1055,8 @@ open class EventReceiver {
 	 */
 	open fun lineClearEnd(engine:GameEngine, playerID:Int) {}
 
-	/** Called when saving replay (This is main body)
+	/** Called when saving replay into [prop]
 	 * @param owner GameManager
-	 * @param prop CustomProperties where the replay is going to store
 	 * @param foldername Replay folder name
 	 */
 	open fun saveReplay(owner:GameManager, prop:CustomProperties, foldername:String = "replay") {
@@ -1057,9 +1066,9 @@ open class EventReceiver {
 			prop.getProperty("name.rule").lowercase().toReplayFilename
 				.replace("[\\s-]".toRegex(), "_")
 		try {
-			val repfolder = File(folder)
-			if(!repfolder.exists())
-				if(repfolder.mkdirs()) log.info("Created replay folder: $folder")
+			val repFolder = File(folder)
+			if(!repFolder.exists())
+				if(repFolder.mkdirs()) log.info("Created replay folder: $folder")
 				else log.error("Couldn't create replay folder at $folder")
 
 			val out = GZIPOutputStream(FileOutputStream(filename))

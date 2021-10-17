@@ -32,6 +32,8 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
@@ -62,8 +64,6 @@ class GrandFestival:AbstractMode() {
 	/** Used by combo scoring */
 	private var comboValue = 0
 
-	/** Amount of points you just get from line clears */
-	private var lastscore = 0
 	private var hanabi = 0
 	private var temphanabi = 0
 	private var inthanabi = 0
@@ -77,8 +77,6 @@ class GrandFestival:AbstractMode() {
 
 	/** Elapsed time from last piece spawns */
 	private var lastspawntime = 0
-
-	private var scgettime = 0
 
 	/** Remaining ending time limit */
 	private var rolltime = 0
@@ -114,7 +112,7 @@ class GrandFestival:AbstractMode() {
 	private var isShowBestSectionTime = false
 
 	/** Selected start level */
-	private var startlevel = 0
+	private var startLevel = 0
 
 	/** Always show ghost */
 	private var alwaysghost = false
@@ -122,11 +120,12 @@ class GrandFestival:AbstractMode() {
 	/** Always 20G */
 	private var always20g = false
 
-	/** Big Mode */
-	private var big = false
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** Show section time */
-	private var showsectiontime = false
+	private var showST = false
 
 	/** Version of this mode */
 	private var version = 0
@@ -137,9 +136,6 @@ class GrandFestival:AbstractMode() {
 	/** Score records */
 	private var rankingScore = IntArray(RANKING_MAX)
 	private var rankingHanabi = IntArray(RANKING_MAX)
-	private var bestSectionScore = IntArray(RANKING_MAX)
-	private var bestSectionHanabi = IntArray(RANKING_MAX)
-	private var bestSectionTime = IntArray(RANKING_MAX)
 
 	/** Level records */
 	private var rankingLevel = IntArray(RANKING_MAX)
@@ -147,12 +143,19 @@ class GrandFestival:AbstractMode() {
 	/** Time records */
 	private var rankingTime = IntArray(RANKING_MAX)
 
+	private var bestSectionScore = IntArray(RANKING_MAX)
+	private var bestSectionHanabi = IntArray(RANKING_MAX)
+	private var bestSectionTime = IntArray(RANKING_MAX)
 	private var decoration = 0
 	private var dectemp = 0
 
 	/** Returns the name of this mode */
 	override val name = "Grand Festival"
 
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf(
+			"score" to rankingScore, "level" to rankingLevel, "time" to rankingTime, "hanabi" to rankingHanabi,
+			"section.score" to bestSectionScore, "section.hanabi" to bestSectionHanabi, "section.time" to bestSectionTime)
 	/** This function will be called when the game enters the main game
 	 * screen. */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -162,8 +165,7 @@ class GrandFestival:AbstractMode() {
 		nextseclv = 0
 		lvupflag = true
 		comboValue = 0
-		scgettime = 0
-		lastscore = scgettime
+		lastscore = scDisp
 		bonusint = 0
 		bonusspeed = bonusint
 		temphanabi = bonusspeed
@@ -182,11 +184,11 @@ class GrandFestival:AbstractMode() {
 		sectionavgtime = 0
 		sectionscomp = sectionavgtime
 		isShowBestSectionTime = false
-		startlevel = 0
+		startLevel = 0
 		big = false
 		always20g = big
 		alwaysghost = always20g
-		showsectiontime = true
+		showST = true
 
 		decoration = 0
 		dectemp = 0
@@ -216,34 +218,26 @@ class GrandFestival:AbstractMode() {
 		engine.speed.lockDelay = 30
 		engine.speed.das = 15
 
-		version = if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
-			CURRENT_VERSION
-		} else {
-			loadSetting(owner.replayProp)
-			owner.replayProp.getProperty("scoreattack.version", 0)
-		}
+		version = (if(!owner.replayMode) CURRENT_VERSION else owner.replayProp.getProperty("scoreattack.version", 0))
 
-		owner.backgroundStatus.bg = startlevel
+		owner.backgroundStatus.bg = startLevel
 	}
 
-	/** Load the settings */
-	override fun loadSetting(prop:CustomProperties) {
-		startlevel = prop.getProperty("scoreattack.startlevel", 0)
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		startLevel = prop.getProperty("scoreattack.startLevel", 0)
 		alwaysghost = prop.getProperty("scoreattack.alwaysghost", true)
 		always20g = prop.getProperty("scoreattack.always20g", false)
-		showsectiontime = prop.getProperty("scoreattack.showsectiontime", true)
+		showST = prop.getProperty("scoreattack.showsectiontime", true)
 		big = prop.getProperty("scoreattack.big", false)
 		version = prop.getProperty("scoreattack.version", 0)
 	}
 
 	/** Save the settings */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("scoreattack.startlevel", startlevel)
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		prop.setProperty("scoreattack.startLevel", startLevel)
 		prop.setProperty("scoreattack.alwaysghost", alwaysghost)
 		prop.setProperty("scoreattack.always20g", always20g)
-		prop.setProperty("scoreattack.showsectiontime", showsectiontime)
+		prop.setProperty("scoreattack.showsectiontime", showST)
 		prop.setProperty("scoreattack.big", big)
 		prop.setProperty("scoreattack.version", version)
 	}
@@ -265,7 +259,7 @@ class GrandFestival:AbstractMode() {
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
 			var temp = 0
-			for(i in startlevel until startlevel+sectionscomp)
+			for(i in startLevel until startLevel+sectionscomp)
 				temp += sectionTime[i]
 			sectionavgtime = temp/sectionscomp
 		} else
@@ -293,14 +287,14 @@ class GrandFestival:AbstractMode() {
 
 				when(menuCursor) {
 					0 -> {
-						startlevel += change
-						if(startlevel<0) startlevel = 2
-						if(startlevel>2) startlevel = 0
-						owner.backgroundStatus.bg = startlevel
+						startLevel += change
+						if(startLevel<0) startLevel = 2
+						if(startLevel>2) startLevel = 0
+						owner.backgroundStatus.bg = startLevel
 					}
 					1 -> alwaysghost = !alwaysghost
 					2 -> always20g = !always20g
-					3 -> showsectiontime = !showsectiontime
+					3 -> showST = !showST
 					4 -> big = !big
 				}
 			}
@@ -315,8 +309,6 @@ class GrandFestival:AbstractMode() {
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				isShowBestSectionTime = false
 				sectionscomp = 0
 				return false
@@ -339,14 +331,14 @@ class GrandFestival:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level" to (startlevel*100),
-			"FULL GHOST" to alwaysghost, "FULL 20G" to always20g, "SHOW STIME" to showsectiontime, "BIG" to big)
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level" to (startLevel*100),
+			"FULL GHOST" to alwaysghost, "FULL 20G" to always20g, "SHOW STIME" to showST, "BIG" to big)
 	}
 
 	/** This function will be called before the game actually begins (after
 	 * Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine, playerID:Int) {
-		engine.statistics.level = startlevel*100
+		engine.statistics.level = startLevel*100
 
 		nextseclv = engine.statistics.level+100
 		if(engine.statistics.level<0) nextseclv = 100
@@ -371,7 +363,7 @@ class GrandFestival:AbstractMode() {
 		receiver.drawScoreBadges(engine, playerID, 0, -3, 100, decoration)
 		receiver.drawScoreBadges(engine, playerID, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(!owner.replayMode&&startlevel==0&&!big&&!always20g
+			if(!owner.replayMode&&startLevel==0&&!big&&!always20g
 				&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Score Leaderboard
@@ -416,8 +408,7 @@ class GrandFestival:AbstractMode() {
 		} else {
 			val g20 = engine.speed.gravity<0&&rolltime%2==0
 			receiver.drawScoreFont(engine, playerID, 0, 5, "Score", COLOR.BLUE)
-			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
-			receiver.drawScoreNum(engine, playerID, 0, 6, "$scgettime", g20, 2f)
+			receiver.drawScoreNum(engine, playerID, 0, 6, "$scDisp", g20, 2f)
 			receiver.drawScoreNum(engine, playerID, 5, 4, "$hanabi", g20||inthanabi>-100, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.BLUE)
@@ -436,7 +427,7 @@ class GrandFestival:AbstractMode() {
 			}
 
 			// Section time
-			if(showsectiontime&&sectionTime.isNotEmpty()) {
+			if(showST&&sectionTime.isNotEmpty()) {
 				val x = if(receiver.nextDisplayType==2) 8 else 12
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
 
@@ -599,6 +590,7 @@ class GrandFestival:AbstractMode() {
 
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		if(lastlinetime<100) lastlinetime++
 		if(inthanabi>-100) inthanabi--
 		if(temphanabi>0&&inthanabi<=0) {
@@ -724,54 +716,15 @@ class GrandFestival:AbstractMode() {
 
 	/** This function will be called when the replay data is going to be
 	 * saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
-
-		if(!owner.replayMode&&startlevel==0&&!always20g&&!big&&engine.ai==null) {
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
+			owner.statsProp.setProperty("decoration", decoration)
 			updateRanking(engine.statistics.score, hanabi, engine.statistics.level, engine.statistics.time)
 			if(sectionAnyNewRecord) updateBestSectionTime()
 
-			if(rankingRank!=-1||sectionAnyNewRecord) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
-			owner.modeConfig.setProperty("decoration", decoration)
+			if(rankingRank!=-1||sectionAnyNewRecord) return true
 		}
-	}
-
-	/** Load the ranking */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			rankingScore[i] = prop.getProperty("$ruleName.$i.score", 0)
-			rankingHanabi[i] = prop.getProperty("$ruleName.hanabi.$i", 0)
-			rankingLevel[i] = prop.getProperty("$ruleName.$i.level", 0)
-			rankingTime[i] = prop.getProperty("$ruleName.$i.time", 0)
-		}
-		for(i in 0 until SECTION_MAX) {
-			bestSectionHanabi[i] = prop.getProperty("$ruleName.sectionhanabi.$i", 0)
-			bestSectionScore[i] = prop.getProperty("$ruleName.sectionscore.$i", 0)
-			bestSectionTime[i] = prop.getProperty("$ruleName.sectiontime.$i",
-				if(i==SECTION_MAX-1) ROLLTIMELIMIT else DEFAULT_SECTION_TIME)
-		}
-		decoration = owner.statsProp.getProperty("decoration", 0)
-	}
-
-	/** Save the ranking */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
-			listOf("$ruleName.$i.score" to rankingScore[i],
-				"$ruleName.$i.hanabi" to rankingHanabi[i],
-				"$ruleName.$i.level" to rankingLevel[i],
-				"$ruleName.$i.time" to rankingTime[i])
-		}+(0 until SECTION_MAX).flatMap {i ->
-			listOf(
-				"$ruleName.sectionscore.$i" to bestSectionScore[i],
-				"$ruleName.sectionhanabi.$i" to bestSectionHanabi[i],
-				"$ruleName.sectiontime.$i" to bestSectionTime[i])
-		})
-
-		owner.statsProp.setProperty("decoration", decoration)
-		receiver.saveProperties(owner.statsFile, owner.statsProp)
+		return false
 	}
 
 	/** Update the ranking */

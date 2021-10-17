@@ -30,7 +30,7 @@ package mu.nu.nullpo.gui.common
 
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.gui.common.FragAnim.ANIM.*
 
 /** 各種エフェクト state */
@@ -179,7 +179,7 @@ class PopupCombo(x:Int, y:Int, val pts:Int, val type:CHAIN, val ex:Int = 0):Effe
 	}
 }
 
-class PopupAward(x:Int, y:Int, val event:GameEngine.ScoreEvent, val moveTime:Int, val ex:Int = 0):EffectObject(x, y) {
+class PopupAward(x:Int, y:Int, val event:ScoreEvent, val moveTime:Int, val ex:Int = 0):EffectObject(x, y) {
 	val ox = x
 	val alpha get() = minOf(1f, 3f-anim/22f)
 	override fun update() {

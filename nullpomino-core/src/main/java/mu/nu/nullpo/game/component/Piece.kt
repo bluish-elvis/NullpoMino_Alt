@@ -33,9 +33,23 @@ import kotlin.math.roundToInt
 
 /** Blockピース
  * @param id BlockピースのID */
-class Piece(
+class Piece(id:Int = 0):Serializable {
 	/** ID */
-	@JvmField val id:Int = 0):Serializable {
+	var id:Int = id
+		set(value) {
+			field = value
+			direction = DIRECTION_UP
+			big = false
+			offsetApplied = false
+			connectBlocks = true
+			dataX = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
+			dataY = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
+			block = Array(maxBlock) {Block()}
+			dataOffsetX = IntArray(DIRECTION_COUNT)
+			dataOffsetY = IntArray(DIRECTION_COUNT)
+
+			resetOffsetArray()
+		}
 	val type:Shape get() = Shape.values()[id]
 
 	/** Direction */
@@ -204,7 +218,8 @@ class Piece(
 	/** Blockピースの dataを他のPieceからコピー
 	 * @param p Copy source
 	 */
-	fun copy(p:Piece) {
+	fun copy(p:Piece, keep:Boolean = false) {
+		if(keep) id = p.id
 		direction = p.direction
 		big = p.big
 		offsetApplied = p.offsetApplied
@@ -570,7 +585,8 @@ class Piece(
 				val y2 = y+dataY[rt][i]
 
 				if((x2>=it.width||y2>=it.height||it.getCoordAttribute(x2, y2)==Field.COORD_WALL)
-					||(it.getCoordAttribute(x2, y2)!=Field.COORD_VANISH&&!it.getBlockEmpty(x2, y2)))
+					||(it.getCoordAttribute(x2, y2)!=Field.COORD_VANISH&&!it.getBlockEmpty(x2, y2))
+				)
 					return@checkCollision true
 			}
 		}
@@ -596,7 +612,8 @@ class Piece(
 					val y3 = y2+l
 
 					if((x3>=fld.width||y3>=fld.height||fld.getCoordAttribute(x3, y3)==Field.COORD_WALL)
-						||(fld.getCoordAttribute(x3, y3)!=Field.COORD_VANISH&&fld.getBlockEmpty(x3, y3)))
+						||(fld.getCoordAttribute(x3, y3)!=Field.COORD_VANISH&&fld.getBlockEmpty(x3, y3))
+					)
 						return true
 				}
 		}
@@ -613,9 +630,7 @@ class Piece(
 	 */
 	fun getBottom(x:Int, y:Int, rt:Int, fld:Field?):Int {
 		var y2 = y
-
 		while(!checkCollision(x, y2, rt, fld)) y2++
-
 		return y2-1
 	}
 
@@ -722,7 +737,8 @@ class Piece(
 
 		/** default のBlockピースの data (X-coordinate) */
 		val DEFAULT_PIECE_DATA_X =
-			arrayOf(arrayOf(intArrayOf(0, 1, 2, 3), intArrayOf(2, 2, 2, 2), intArrayOf(3, 2, 1, 0), intArrayOf(1, 1, 1, 1)), // I
+			arrayOf(
+				arrayOf(intArrayOf(0, 1, 2, 3), intArrayOf(2, 2, 2, 2), intArrayOf(3, 2, 1, 0), intArrayOf(1, 1, 1, 1)), // I
 				arrayOf(intArrayOf(2, 2, 1, 0), intArrayOf(2, 1, 1, 1), intArrayOf(0, 0, 1, 2), intArrayOf(0, 1, 1, 1)), // L
 				arrayOf(intArrayOf(0, 1, 1, 0), intArrayOf(1, 1, 0, 0), intArrayOf(1, 0, 0, 1), intArrayOf(0, 0, 1, 1)), // O
 				arrayOf(intArrayOf(0, 1, 1, 2), intArrayOf(2, 2, 1, 1), intArrayOf(2, 1, 1, 0), intArrayOf(0, 0, 1, 1)), // Z
@@ -732,11 +748,13 @@ class Piece(
 				arrayOf(intArrayOf(0), intArrayOf(0), intArrayOf(0), intArrayOf(0)), // I1
 				arrayOf(intArrayOf(0, 1), intArrayOf(1, 1), intArrayOf(1, 0), intArrayOf(0, 0)), // I2
 				arrayOf(intArrayOf(0, 1, 2), intArrayOf(1, 1, 1), intArrayOf(2, 1, 0), intArrayOf(1, 1, 1)), // I3
-				arrayOf(intArrayOf(1, 0, 0), intArrayOf(0, 0, 1), intArrayOf(0, 1, 1), intArrayOf(1, 1, 0)))// L3
+				arrayOf(intArrayOf(1, 0, 0), intArrayOf(0, 0, 1), intArrayOf(0, 1, 1), intArrayOf(1, 1, 0))
+			)// L3
 
 		/** default のBlockピースの data (Y-coordinate) */
 		val DEFAULT_PIECE_DATA_Y =
-			arrayOf(arrayOf(intArrayOf(1, 1, 1, 1), intArrayOf(0, 1, 2, 3), intArrayOf(2, 2, 2, 2), intArrayOf(3, 2, 1, 0)), // I
+			arrayOf(
+				arrayOf(intArrayOf(1, 1, 1, 1), intArrayOf(0, 1, 2, 3), intArrayOf(2, 2, 2, 2), intArrayOf(3, 2, 1, 0)), // I
 				arrayOf(intArrayOf(0, 1, 1, 1), intArrayOf(2, 2, 1, 0), intArrayOf(2, 1, 1, 1), intArrayOf(0, 0, 1, 2)), // L
 				arrayOf(intArrayOf(0, 0, 1, 1), intArrayOf(0, 1, 1, 0), intArrayOf(1, 1, 0, 0), intArrayOf(1, 0, 0, 1)), // O
 				arrayOf(intArrayOf(0, 0, 1, 1), intArrayOf(0, 1, 1, 2), intArrayOf(2, 2, 1, 1), intArrayOf(2, 1, 1, 0)), // Z
@@ -746,11 +764,13 @@ class Piece(
 				arrayOf(intArrayOf(0), intArrayOf(0), intArrayOf(0), intArrayOf(0)), // I1
 				arrayOf(intArrayOf(0, 0), intArrayOf(0, 1), intArrayOf(1, 1), intArrayOf(1, 0)), // I2
 				arrayOf(intArrayOf(1, 1, 1), intArrayOf(0, 1, 2), intArrayOf(1, 1, 1), intArrayOf(2, 1, 0)), // I3
-				arrayOf(intArrayOf(1, 1, 0), intArrayOf(1, 0, 0), intArrayOf(0, 0, 1), intArrayOf(0, 1, 1)))// L3
+				arrayOf(intArrayOf(1, 1, 0), intArrayOf(1, 0, 0), intArrayOf(0, 0, 1), intArrayOf(0, 1, 1))
+			)// L3
 
 		/** 新スピン bonus用座標 dataA(X-coordinate) */
 		val SPINBONUSDATA_HIGH_X =
-			arrayOf(arrayOf(intArrayOf(1, 2, 2, 1), intArrayOf(1, 3, 1, 3), intArrayOf(1, 2, 2, 1), intArrayOf(0, 2, 0, 2)), // I
+			arrayOf(
+				arrayOf(intArrayOf(1, 2, 2, 1), intArrayOf(1, 3, 1, 3), intArrayOf(1, 2, 2, 1), intArrayOf(0, 2, 0, 2)), // I
 				arrayOf(intArrayOf(1, 0), intArrayOf(2, 2), intArrayOf(1, 2), intArrayOf(0, 0)), // L
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // O
 				arrayOf(intArrayOf(2, 0), intArrayOf(2, 1), intArrayOf(0, 2), intArrayOf(0, 1)), // Z
@@ -760,11 +780,13 @@ class Piece(
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I1
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I2
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I3
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()))// L3
+				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf())
+			)// L3
 
 		/** 新スピン bonus用座標 dataA(Y-coordinate) */
 		val SPINBONUSDATA_HIGH_Y =
-			arrayOf(arrayOf(intArrayOf(0, 2, 0, 2), intArrayOf(1, 2, 2, 1), intArrayOf(1, 3, 1, 3), intArrayOf(1, 2, 2, 1)), // I
+			arrayOf(
+				arrayOf(intArrayOf(0, 2, 0, 2), intArrayOf(1, 2, 2, 1), intArrayOf(1, 3, 1, 3), intArrayOf(1, 2, 2, 1)), // I
 				arrayOf(intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(2, 2), intArrayOf(1, 2)), // L
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // O
 				arrayOf(intArrayOf(0, 1), intArrayOf(2, 0), intArrayOf(2, 1), intArrayOf(0, 2)), // Z
@@ -774,11 +796,13 @@ class Piece(
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I1
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I2
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I3
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()))// L3
+				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf())
+			)// L3
 
 		/** 新スピン bonus用座標 dataB(X-coordinate) */
 		val SPINBONUSDATA_LOW_X =
-			arrayOf(arrayOf(intArrayOf(-1, 4, -1, 4), intArrayOf(2, 2, 2, 2), intArrayOf(-1, 4, -1, 4), intArrayOf(1, 1, 1, 1)), // I
+			arrayOf(
+				arrayOf(intArrayOf(-1, 4, -1, 4), intArrayOf(2, 2, 2, 2), intArrayOf(-1, 4, -1, 4), intArrayOf(1, 1, 1, 1)), // I
 				arrayOf(intArrayOf(2, 0), intArrayOf(0, 0), intArrayOf(0, 2), intArrayOf(2, 2)), // L
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // O
 				arrayOf(intArrayOf(-1, 3), intArrayOf(2, 1), intArrayOf(3, -1), intArrayOf(0, 1)), // Z
@@ -788,11 +812,13 @@ class Piece(
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I1
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I2
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I3
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()))// L3
+				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf())
+			)// L3
 
 		/** 新スピン bonus用座標 dataB(Y-coordinate) */
 		val SPINBONUSDATA_LOW_Y =
-			arrayOf(arrayOf(intArrayOf(1, 1, 1, 1), intArrayOf(-1, 4, -1, 4), intArrayOf(2, 2, 2, 2), intArrayOf(-1, 4, -1, 4)), // I
+			arrayOf(
+				arrayOf(intArrayOf(1, 1, 1, 1), intArrayOf(-1, 4, -1, 4), intArrayOf(2, 2, 2, 2), intArrayOf(-1, 4, -1, 4)), // I
 				arrayOf(intArrayOf(2, 2), intArrayOf(2, 0), intArrayOf(0, 0), intArrayOf(0, 3)), // L
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // O
 				arrayOf(intArrayOf(0, 1), intArrayOf(-1, 3), intArrayOf(2, 1), intArrayOf(3, -1)), // Z
@@ -802,7 +828,8 @@ class Piece(
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I1
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I2
 				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I3
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()))// L3
+				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf())
+			)// L3
 
 		/** Directionの定数 */
 		const val DIRECTION_UP = 0

@@ -32,15 +32,19 @@ package mu.nu.nullpo.game.subsystem.mode.menu
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
-class TimeMenuItem constructor(name:String, displayName:String, color:COLOR, defaultValue:Int, min:Int, max:Int,
+class TimeMenuItem constructor(name:String, displayName:String, color:COLOR, defaultValue:Int, range:IntRange,
 	val increment:Int = 60)
-	:IntegerMenuItem(name, displayName, color, defaultValue, min, max) {
+	:IntegerMenuItem(name, displayName, color, defaultValue, range, false, true) {
 
 	override val valueString:String
 		get() = value.toTimeStr
 
-	override fun change(dir:Int, fast:Int) {
-		val delta = dir*increment
+	override fun change(dir:Int, fast:Int, cur:Int) {
+		val delta = dir*increment*when(fast) {
+			1 -> 10
+			2 -> 60
+			else -> 1
+		}
 		value += delta
 		if(value<min) value = max
 		if(value>max) value = min

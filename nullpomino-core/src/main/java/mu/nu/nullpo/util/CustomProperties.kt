@@ -28,19 +28,60 @@
  */
 package mu.nu.nullpo.util
 
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.UnsupportedEncodingException
+import mu.nu.nullpo.game.event.EventReceiver
+import java.io.*
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Enumeration
 import java.util.Properties
 import java.util.Vector
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 
 /** String以外も格納できるプロパティセット */
-class CustomProperties:Properties() {
+class CustomProperties(name:String = ""):Properties() {
+	var fileName = name
+		private set
+	/** Load from [file].
+	 * @param file Filename
+	 * @return This Properties you specified, or null if the file doesn't exist.
+	 */
+	fun load(file:String = fileName):CustomProperties? {
+		fileName = file
+		EventReceiver.log.debug(" $file")
+		try {
+			val file = GZIPInputStream(FileInputStream(file))
+			load(file)
+			file.close()
 
+		} catch(e:IOException) {
+			EventReceiver.log.debug("Failed to load custom property file from $file", e)
+			return null
+		}
+
+		return this
+	}
+
+	/** Save to [file].
+	 * @return true if success
+	 */
+	fun save(file:String = fileName):Boolean {
+		try {
+			val repFolder = File(file).parentFile
+			if(!repFolder.exists())
+				if(repFolder.mkdirs()) EventReceiver.log.info("Created folder: ${repFolder.name}")
+				else EventReceiver.log.error("Couldn't create folder at ${repFolder.name}")
+			val out = GZIPOutputStream(FileOutputStream(file))
+			store(out, "NullpoMino Custom Property File")
+			EventReceiver.log.debug("Saving custom property file to $file")
+			out.close()
+		} catch(e:IOException) {
+			EventReceiver.log.debug("Failed to save custom property file to $file", e)
+			return false
+		}
+		return true
+	}
 	@Synchronized
 	override fun keys():Enumeration<Any> {
 		val keysEnum = super.keys()
@@ -57,8 +98,9 @@ class CustomProperties:Properties() {
 	 * @param value keyに対応する変数
 	 * @return プロパティリストの指定されたキーの前の値。それがない場合は null
 	 */
+	@Suppress("UNCHECKED_CAST")
 	@Synchronized
-	fun <T:Comparable<T>> setProperty(key:String, value:Comparable<T>):Any? = when(value) {
+	fun <T:Comparable<T>> setProperty(key:String, value:Comparable<T>):T? = when(value) {
 		is Byte -> setProperty(key, "$value")
 		is Int -> setProperty(key, "$value")
 		is Long -> setProperty(key, "$value")
@@ -67,7 +109,7 @@ class CustomProperties:Properties() {
 		is Char -> setProperty(key, "$value")
 		is Boolean -> setProperty(key, "$value")
 		else -> setProperty(key, "$value")
-	}
+	} as T?
 
 	/** byte型のプロパティを取得
 	 * @param key キー

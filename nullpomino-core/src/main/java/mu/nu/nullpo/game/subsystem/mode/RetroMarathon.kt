@@ -33,6 +33,8 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.RetroMarathon.Companion.GAMETYPE.*
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -45,18 +47,11 @@ class RetroMarathon:AbstractMode() {
 	/** EventReceiver object (This receives many game events, can also be used
 	 * for drawing the fonts.) */
 
-	/** Amount of points you just get from line clears */
-	private var lastscore = 0
-
-	/** Elapsed time from last line clear (lastscore is displayed to screen
-	 * until this reaches to 120) */
-	private var scgettime = 0
-
 	/** Selected game type */
 	private var gametype:GAMETYPE = RACE200
 
 	/** Selected starting level */
-	private var startlevel = 0
+	private var startLevel = 0
 
 	/** Used for soft drop scoring */
 	private var softdropscore = 0
@@ -77,8 +72,9 @@ class RetroMarathon:AbstractMode() {
 	/** Next level lines */
 	private var levellines = 0
 
-	/** Big mode on/off */
-	private var big = false
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** Version of this mode */
 	private var version = 0
@@ -103,7 +99,6 @@ class RetroMarathon:AbstractMode() {
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
 		lastscore = 0
-		scgettime = 0
 		softdropscore = 0
 		harddropscore = 0
 		levellines = 0
@@ -135,14 +130,9 @@ class RetroMarathon:AbstractMode() {
 		engine.ruleOpt.softdropGravitySpeedLimit = false
 		engine.ruleOpt.softdropSpeed = .5f
 		engine.owSDSpd = -1
-		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
-			version = CURRENT_VERSION
-		} else
-			loadSetting(owner.replayProp)
+		if(!owner.replayMode) version = CURRENT_VERSION
 
-		engine.owner.backgroundStatus.bg = if(gametype==PRESSURE) 0 else startlevel
+		engine.owner.backgroundStatus.bg = if(gametype==PRESSURE) 0 else startLevel
 		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
 		engine.framecolor = GameEngine.FRAME_COLOR_GRAY
 	}
@@ -196,13 +186,13 @@ class RetroMarathon:AbstractMode() {
 							values().last() -> values().first()
 							else -> values()[gametype.ordinal+change]
 						}
-						engine.owner.backgroundStatus.bg = if(gametype==PRESSURE) 0 else startlevel
+						engine.owner.backgroundStatus.bg = if(gametype==PRESSURE) 0 else startLevel
 					}
 					1 -> {
-						startlevel += change
-						if(startlevel<0) startlevel = 19
-						if(startlevel>19) startlevel = 0
-						engine.owner.backgroundStatus.bg = startlevel
+						startLevel += change
+						if(startLevel<0) startLevel = 19
+						if(startLevel>19) startLevel = 0
+						engine.owner.backgroundStatus.bg = startLevel
 					}
 					2 -> big = !big
 				}
@@ -211,8 +201,6 @@ class RetroMarathon:AbstractMode() {
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				return false
 			}
 
@@ -239,7 +227,7 @@ class RetroMarathon:AbstractMode() {
 		receiver.drawMenuFont(engine, playerID, 1, 1, gametype.name, menuCursor==0)
 		if(gametype!=ENDLESS) {
 			receiver.drawMenuFont(engine, playerID, 0, 2, "Level", COLOR.BLUE)
-			receiver.drawMenuFont(engine, playerID, 1, 3, String.format("%02d", startlevel), menuCursor==1)
+			receiver.drawMenuFont(engine, playerID, 1, 3, String.format("%02d", startLevel), menuCursor==1)
 		}
 		receiver.drawMenuFont(engine, playerID, 0, 4, "BIG", COLOR.BLUE)
 		receiver.drawMenuFont(engine, playerID, 1, 5, big.getONorOFF(), menuCursor==2)
@@ -258,12 +246,12 @@ class RetroMarathon:AbstractMode() {
 				levellines = 5
 			}
 			RACE200 -> {
-				engine.statistics.level = startlevel
-				levellines = 10*minOf(startlevel+1, 10)
+				engine.statistics.level = startLevel
+				levellines = 10*minOf(startLevel+1, 10)
 			}
 			ENDLESS -> {
-				engine.statistics.level = startlevel
-				levellines = if(startlevel<=9) (startlevel+1)*10 else (startlevel+11)*5
+				engine.statistics.level = startLevel
+				levellines = if(startLevel<=9) (startLevel+1)*10 else (startLevel+11)*5
 			}
 		}
 
@@ -280,21 +268,22 @@ class RetroMarathon:AbstractMode() {
 				receiver.drawScoreFont(engine, playerID, 3, 3, "SCORE    LINE LV.", COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1),
-						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW)
+					receiver.drawScoreGrade(
+						engine, playerID, 0, 4+i, String.format("%2d", i+1),
+						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+					)
 					receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingScore[gametype.ordinal][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, playerID, 12, 4+i, "${rankingLines[gametype.ordinal][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, playerID, 17, 4+i, String.format("%02d", rankingLevel[gametype.ordinal][i]),
-						i==rankingRank)
+					receiver.drawScoreNum(
+						engine, playerID, 17, 4+i, String.format("%02d", rankingLevel[gametype.ordinal][i]),
+						i==rankingRank
+					)
 				}
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
-			val strScore:String = if(lastscore==0||scgettime>=120)
-				"${engine.statistics.score}"
-			else
-				"${engine.statistics.score} (+$lastscore)"
-			receiver.drawScoreNum(engine, playerID, 0, 4, strScore, 2f)
+			receiver.drawScoreFont(engine, playerID, 6, 3, "(+$lastscore)")
+			receiver.drawScoreNum(engine, playerID, 0, 4, "$scDisp", 2f)
 
 			val strLine = "$loons"
 
@@ -309,13 +298,6 @@ class RetroMarathon:AbstractMode() {
 		}
 	}
 
-	/** This function will be called when the game timer updates */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		scgettime++
-	}
-
-	/** Calculates line-clear score
-	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		softdropscore /= 2
 		engine.statistics.scoreSD += softdropscore
@@ -359,7 +341,6 @@ class RetroMarathon:AbstractMode() {
 		if(pts>0) {
 			actions++
 			lastscore = pts
-			scgettime = 0
 			engine.statistics.scoreLine += pts
 		}
 
@@ -396,7 +377,7 @@ class RetroMarathon:AbstractMode() {
 				3 -> engine.meterColor = GameEngine.METER_COLOR_YELLOW
 				else -> engine.meterColor = GameEngine.METER_COLOR_GREEN
 			}
-		} else if(engine.statistics.level==startlevel&&startlevel!=0) {
+		} else if(engine.statistics.level==startLevel&&startLevel!=0) {
 			engine.meterValue = loons*receiver.getMeterMax(engine)/(levellines-1)
 			when {
 				togo<=5 -> engine.meterColor = GameEngine.METER_COLOR_RED
@@ -446,26 +427,22 @@ class RetroMarathon:AbstractMode() {
 
 	/** This function will be called when the replay data is going to be
 	 * saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(prop, engine)
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
 			updateRanking(engine.statistics.score, loons, engine.statistics.level, gametype)
 
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1) return true
 		}
+		return false
 	}
 
-	/** Load the settings
-	 * @param prop CustomProperties
-	 */
-	override fun loadSetting(prop:CustomProperties) {
+	/** Load the settings from [prop] */
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		gametype = values()[prop.getProperty("retromastery.gametype", 0)]
-		startlevel = prop.getProperty("retromastery.startlevel", 0)
+		startLevel = prop.getProperty("retromastery.startLevel", 0)
 		big = prop.getProperty("retromastery.big", false)
 		version = prop.getProperty("retromastery.version", 0)
 	}
@@ -473,9 +450,9 @@ class RetroMarathon:AbstractMode() {
 	/** Save the settings
 	 * @param prop CustomProperties
 	 */
-	override fun saveSetting(prop:CustomProperties) {
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("retromastery.gametype", gametype.ordinal)
-		prop.setProperty("retromastery.startlevel", startlevel)
+		prop.setProperty("retromastery.startLevel", startLevel)
 		prop.setProperty("retromastery.big", big)
 		prop.setProperty("retromastery.version", version)
 	}
@@ -497,11 +474,13 @@ class RetroMarathon:AbstractMode() {
 	 * @param ruleName Rule name
 	 */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
+		super.saveRanking((0 until RANKING_TYPE).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
-				listOf("$ruleName.$j.score.$i" to rankingScore[j][i],
+				listOf(
+					"$ruleName.$j.score.$i" to rankingScore[j][i],
 					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.level.$i" to rankingLevel[j][i])
+					"$ruleName.$j.level.$i" to rankingLevel[j][i]
+				)
 			}
 		})
 	}
@@ -559,7 +538,8 @@ class RetroMarathon:AbstractMode() {
 			48, 40, 32, 27, 22, 18, 15, 12, 10, 8, // 00
 			7, 6, 11, 5, 9, 4, 7, 3, 11, 10, // 10
 			9, 8, 15, 14, 13, 12, 11, 10, 9, 8, // 20
-			1)
+			1
+		)
 
 		/** Gravity table */
 		private val tableGravity = intArrayOf(
@@ -567,7 +547,8 @@ class RetroMarathon:AbstractMode() {
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 00
 			1, 1, 2, 1, 2, 1, 2, 1, 4, 4, // 10
 			4, 4, 8, 8, 8, 8, 8, 8, 8, 8, // 20
-			1)
+			1
+		)
 
 		/** Lock delay table */
 		private val tableLockDelay = intArrayOf(
@@ -575,7 +556,8 @@ class RetroMarathon:AbstractMode() {
 			60, 52, 45, 39, 34, 30, 27, 24, 22, 20, // 00
 			19, 18, 17, 16, 15, 14, 13, 12, 11, 10, // 10
 			9, 8, 8, 8, 8, 7, 7, 7, 7, 7, // 20
-			6)
+			6
+		)
 
 		/** Game type name */
 		private enum class GAMETYPE {

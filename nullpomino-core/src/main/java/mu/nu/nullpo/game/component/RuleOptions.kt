@@ -108,7 +108,7 @@ class RuleOptions:Serializable {
 	/** ホールドを使ったときにBlockピースの向きを初期状態に戻す */
 	var holdResetDirection = false
 
-	/** ホールドできる count (-1:無制限) */
+	/** ゲーム毎にホールドできる総数 (-1:無制限) */
 	var holdLimit = 0
 
 	/** Hard drop使用可否 */

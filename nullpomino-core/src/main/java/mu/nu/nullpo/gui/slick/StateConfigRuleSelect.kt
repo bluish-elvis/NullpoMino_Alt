@@ -125,7 +125,7 @@ class StateConfigRuleSelect:DummyMenuScrollState() {
 	 * @return Rule name list
 	 */
 	private fun extractRuleNameListFromRuleEntries():Array<String> =
-		Array(ruleEntries.size){ruleEntries[it].rulename}
+		Array(ruleEntries.size) {ruleEntries[it].rulename}
 
 	/** Get rule file name list as String[]
 	 * @return Rule name list
@@ -136,7 +136,7 @@ class StateConfigRuleSelect:DummyMenuScrollState() {
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		super.enter(container, game)
-		strFileList = ruleFileList?: emptyArray()
+		strFileList = ruleFileList ?: emptyArray()
 		createRuleEntries(strFileList, style)
 		strRuleNameList = extractRuleNameListFromRuleEntries()
 		strRuleFileList = extractFileNameListFromRuleEntries()
@@ -163,8 +163,8 @@ class StateConfigRuleSelect:DummyMenuScrollState() {
 		val title = "SELECT ${player+1}P RULE (${cursor+1}/${list.size})"
 		FontNormal.printFontGrid(1, 1, title, COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 25, "CURRENT:${strCurrentRuleName.uppercase()}", COLOR.BLUE)
-		FontNormal.printFontGrid(9, 26, strCurrentFileName.uppercase(), COLOR.BLUE)
+		FontNormal.printFontGrid(1, 25, "CURRENT:${strCurrentRuleName}", COLOR.BLUE)
+		FontNormal.printFontGrid(9, 26, strCurrentFileName, COLOR.BLUE)
 
 		FontNormal.printFontGrid(1, 28, "A:OK B:CANCEL D:TOGGLE-VIEW", COLOR.GREEN)
 	}

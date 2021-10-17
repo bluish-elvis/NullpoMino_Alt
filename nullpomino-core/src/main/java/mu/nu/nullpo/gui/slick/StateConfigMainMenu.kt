@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
+import mu.nu.nullpo.gui.slick.img.FontTTF
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
@@ -75,7 +76,7 @@ internal class StateConfigMainMenu:DummyMenuChooseState() {
 				if(player==0) COLOR.BLUE else COLOR.RED)
 		}
 
-		FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText("ConfigMainMenu_${CHOICES[cursor].second}"))
+		FontTTF.print(16, 432, NullpoMinoSlick.getUIText("ConfigMainMenu_${CHOICES[cursor].second}"))
 	}
 
 	override fun onChange(container:GameContainer, game:StateBasedGame, delta:Int, change:Int) {

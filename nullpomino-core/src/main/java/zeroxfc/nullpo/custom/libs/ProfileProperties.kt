@@ -32,15 +32,19 @@
  */
 package zeroxfc.nullpo.custom.libs
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.Companion.NAME_END
+import mu.nu.nullpo.gui.common.BaseFont.Companion.NAME_REV
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.log4j.Logger
+import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.*
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.security.SecureRandom
-import java.util.*
+import java.util.Locale
 
 /**
  * Create a new profile loader. Use this constructor in a mode.
@@ -48,17 +52,11 @@ import java.util.*
  * @param colorHeading Color of heading. Use values from [EventReceiver] class.
  */
 class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COLOR = EventReceiver.COLOR.CYAN) {
-	/**
-	 * Login screen
-	 */
+	/** Login screen */
 	val loginScreen:LoginScreen
-	/**
-	 * Profile cfg file
-	 */
-	private val propProfile = CustomProperties()
-	/**
-	 * Get profile name.
-	 *
+	/** Profile cfg file */
+	val propProfile = CustomProperties("config/setting/profile.cfg")
+	/** Get profile name.
 	 * @return Profile name
 	 */
 	/**
@@ -68,9 +66,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 		private set
 
 	private var nameProp = ""
-	/**
-	 * Get login status.
-	 *
+	/** Get login status.
 	 * @return Login status
 	 */
 	/**
@@ -78,9 +74,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	 */
 	var isLoggedIn:Boolean
 		private set
-	/**
-	 * Gets the internal property version of a name.
-	 *
+	/** Gets the internal property version of a name.
 	 * @param name Raw name
 	 * @return Property name
 	 */
@@ -211,13 +205,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	 * @param def  Default value
 	 * @return Value of property. Returns `def` if undefined or not logged in.
 	 */
-	fun getProperty(path:String, def:Byte):Byte {
-		return if(isLoggedIn) {
-			propProfile.getProperty("$nameProp.$path", def)
-		} else {
-			def
-		}
-	}
+	fun getProperty(path:String, def:Byte):Byte = if(isLoggedIn) propProfile.getProperty("$nameProp.$path", def) else def
 	/**
 	 * Gets a `short` property.
 	 *
@@ -225,13 +213,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	 * @param def  Default value
 	 * @return Value of property. Returns `def` if undefined or not logged in.
 	 */
-	fun getProperty(path:String, def:Short):Short {
-		return if(isLoggedIn) {
-			propProfile.getProperty("$nameProp.$path", def)
-		} else {
-			def
-		}
-	}
+	fun getProperty(path:String, def:Short):Short = if(isLoggedIn) propProfile.getProperty("$nameProp.$path", def) else def
 	/**
 	 * Gets an `int` property.
 	 *
@@ -239,13 +221,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	 * @param def  Default value
 	 * @return Value of property. Returns `def` if undefined or not logged in.
 	 */
-	fun getProperty(path:String, def:Int):Int {
-		return if(isLoggedIn) {
-			propProfile.getProperty("$nameProp.$path", def)
-		} else {
-			def
-		}
-	}
+	fun getProperty(path:String, def:Int):Int = if(isLoggedIn) propProfile.getProperty("$nameProp.$path", def) else def
 	/**
 	 * Gets a `long` property.
 	 *
@@ -253,13 +229,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	 * @param def  Default value
 	 * @return Value of property. Returns `def` if undefined or not logged in.
 	 */
-	fun getProperty(path:String, def:Long):Long {
-		return if(isLoggedIn) {
-			propProfile.getProperty("$nameProp.$path", def)
-		} else {
-			def
-		}
-	}
+	fun getProperty(path:String, def:Long):Long = if(isLoggedIn) propProfile.getProperty("$nameProp.$path", def) else def
 	/**
 	 * Gets a `float` property.
 	 *
@@ -267,13 +237,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	 * @param def  Default value
 	 * @return Value of property. Returns `def` if undefined or not logged in.
 	 */
-	fun getProperty(path:String, def:Float):Float {
-		return if(isLoggedIn) {
-			propProfile.getProperty("$nameProp.$path", def)
-		} else {
-			def
-		}
-	}
+	fun getProperty(path:String, def:Float):Float = if(isLoggedIn) propProfile.getProperty("$nameProp.$path", def) else def
 	/**
 	 * Gets a `double` property.
 	 *
@@ -281,13 +245,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	 * @param def  Default value
 	 * @return Value of property. Returns `def` if undefined or not logged in.
 	 */
-	fun getProperty(path:String, def:Double):Double {
-		return if(isLoggedIn) {
-			propProfile.getProperty("$nameProp.$path", def)
-		} else {
-			def
-		}
-	}
+	fun getProperty(path:String, def:Double):Double = if(isLoggedIn) propProfile.getProperty("$nameProp.$path", def) else def
 	/**
 	 * Gets a `char` property.
 	 *
@@ -402,14 +360,12 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	/**
 	 * Save properties to "config/setting/profile.cfg"
 	 */
-	fun saveProfileConfig() {
-		try {
-			val out = FileOutputStream("config/setting/profile.cfg")
-			propProfile.store(out, "NullpoMino Player Profile Config")
-			out.close()
-		} catch(e:IOException) {
-			log.error("Failed to save mode config", e)
-		}
+	fun saveProfileConfig():Boolean = try {
+		propProfile.save("config/setting/profile.cfg")
+		true
+	} catch(e:IOException) {
+		log.error("Failed to save mode config", e)
+		false
 	}
 
 	fun reset() {
@@ -426,13 +382,13 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	class LoginScreen @JvmOverloads internal constructor(private val playerProperties:ProfileProperties,
 		private val colorHeading:EventReceiver.COLOR = EventReceiver.COLOR.CYAN) {
 		private var nameEntry = ""
-		private var buttonPresses:IntArray
-		private var secondButtonPresses:IntArray
-		private var currentChar:Int
-		private var customState:Int
-		private var login:Boolean
-		private var signup:Boolean
-		private var success:Boolean
+		private var buttonPresses = IntArray(6)
+		private var secondButtonPresses = IntArray(6)
+		private var currentChar = 0
+		private var state = Init
+		private var login = false
+		private var signup = false
+		private var success = false
 		/**
 		 * Updates the screen data. Used for inputting data into the parent `ProfileProperty` instance.
 		 *
@@ -441,14 +397,12 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 		 * @return True to override onCustom routine
 		 */
 		fun updateScreen(engine:GameEngine, playerID:Int):Boolean {
-			var update = false
-			when(customState) {
-				CUSTOM_STATE_INITIAL_SCREEN -> update = onInitialScreen(engine, playerID)
-				CUSTOM_STATE_NAME_INPUT -> update = onNameInput(engine, playerID)
-				CUSTOM_STATE_PASSWORD_INPUT -> update = onPasswordInput(engine, playerID)
-				CUSTOM_STATE_IS_SUCCESS_SCREEN -> update = onSuccessScreen(engine, playerID)
-				else -> {
-				}
+			val update = when(state) {
+				Init -> onInitialScreen(engine, playerID)
+				Name -> onNameInput(engine, playerID)
+				Pin -> onPasswordInput(engine, playerID)
+				Result -> onSuccessScreen(engine, playerID)
+				else -> return false
 			}
 			if(update) engine.statc[0]++
 			return true
@@ -470,14 +424,14 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 			when {
 				engine.ctrl.isPush(Controller.BUTTON_A) -> {
 					login = true
-					customState = CUSTOM_STATE_NAME_INPUT
+					state = Name
 					engine.playSE("decide")
 					engine.resetStatc()
 					return false
 				}
 				engine.ctrl.isPush(Controller.BUTTON_B) -> {
 					signup = true
-					customState = CUSTOM_STATE_NAME_INPUT
+					state = Name
 					engine.playSE("decide")
 					engine.resetStatc()
 					return false
@@ -501,53 +455,76 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
              * E - go back
              */
 			if(nameEntry.length==3) currentChar = ENTRY_CHARS.length-1
-			if(engine.ctrl.isPress(Controller.BUTTON_RIGHT)) {
-				if(engine.statc[1]%6==0) {
-					engine.playSE("change")
-					currentChar++
-				}
-				engine.statc[1]++
-			} else if(engine.ctrl.isPress(Controller.BUTTON_LEFT)) {
-				if(engine.statc[1]%6==0) {
-					engine.playSE("change")
-					currentChar--
-				}
-				engine.statc[1]++
-			} else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				when(val s = getCharAt(currentChar)) {
-					"p" -> {
-						if(nameEntry.isNotEmpty()) nameEntry = nameEntry.substring(0, nameEntry.length-1)
+			when {
+				engine.ctrl.isPress(Controller.BUTTON_RIGHT) -> {
+					if(engine.statc[1]%6==0) {
 						engine.playSE("change")
-						currentChar = 0
+						currentChar++
 					}
-					"q" -> {
-						if(nameEntry.length<3) nameEntry = String.format("%-3s", nameEntry)
-						engine.playSE("decide")
-						currentChar = 0
-						customState = CUSTOM_STATE_PASSWORD_INPUT
-						engine.resetStatc()
+					engine.statc[1]++
+				}
+				engine.ctrl.isPress(Controller.BUTTON_LEFT) -> {
+					if(engine.statc[1]%6==0) {
+						engine.playSE("change")
+						currentChar--
 					}
-					else -> {
-						nameEntry += s
-						engine.playSE("decide")
+					engine.statc[1]++
+				}
+				engine.ctrl.isPress(Controller.BUTTON_DOWN) -> {
+					if(engine.statc[1]%10==0) {
+						engine.playSE("change")
+						currentChar += 10
+					}
+					engine.statc[1]++
+				}
+				engine.ctrl.isPress(Controller.BUTTON_UP) -> {
+					if(engine.statc[1]%6==0) {
+						engine.playSE("change")
+						currentChar -= 10
+					}
+					engine.statc[1]++
+				}
+				engine.ctrl.isPush(Controller.BUTTON_A) -> {
+					when(val s = getCharAt(currentChar)) {
+						"p" -> {
+							if(nameEntry.isNotEmpty()) nameEntry = nameEntry.substring(0, nameEntry.length-1)
+							engine.playSE("change")
+							currentChar = 0
+						}
+						"q" -> {
+							if(nameEntry.length<3) nameEntry = String.format("%-3s", nameEntry)
+							engine.playSE("decide")
+							currentChar = 0
+							state = Pin
+							engine.resetStatc()
+						}
+						else -> {
+							nameEntry += s
+							engine.playSE("decide")
+						}
 					}
 				}
-			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) {
-				if(nameEntry.isNotEmpty()) {
-					currentChar = ENTRY_CHARS.indexOf(nameEntry[nameEntry.length-1])
-					nameEntry = nameEntry.substring(0, nameEntry.length-1)
+				engine.ctrl.isPush(Controller.BUTTON_B) -> {
+					if(nameEntry.isNotEmpty()) {
+						currentChar = ENTRY_CHARS.indexOf(nameEntry[nameEntry.length-1])
+						nameEntry = nameEntry.substring(0, nameEntry.length-1)
+					}
+					engine.playSE("change")
 				}
-				engine.playSE("change")
-			} else if(engine.ctrl.isPush(Controller.BUTTON_E)) {
-				login = false
-				signup = false
-				customState = CUSTOM_STATE_INITIAL_SCREEN
-				engine.playSE("decide")
-				engine.resetStatc()
-				return false
-			} else {
-				engine.statc[1] = 0
+				engine.ctrl.isPush(Controller.BUTTON_E) -> {
+					login = false
+					signup = false
+					state = Init
+					engine.playSE("decide")
+					engine.resetStatc()
+					return false
+				}
+				else -> {
+					engine.statc[1] = 0
+				}
 			}
+			while(currentChar>=ENTRY_CHARS.length) currentChar -= ENTRY_CHARS.length
+			while(currentChar<0) currentChar += ENTRY_CHARS.length
 			return true
 		}
 
@@ -575,7 +552,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 				}
 				engine.ctrl.isPush(Controller.BUTTON_E) -> {
 					nameEntry = ""
-					customState = CUSTOM_STATE_NAME_INPUT
+					state = Name
 					engine.playSE("decide")
 					engine.resetStatc()
 					return false
@@ -593,7 +570,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 					if(adequate) success = playerProperties.createAccount(nameEntry, buttonPresses)
 				}
 				if(success) engine.playSE("decide") else engine.playSE("regret")
-				customState = CUSTOM_STATE_IS_SUCCESS_SCREEN
+				state = Result
 				engine.resetStatc()
 				return false
 			}
@@ -606,7 +583,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 
 		private fun onSuccessScreen(engine:GameEngine, playerID:Int):Boolean {
 			if(engine.statc[0]>=180) {
-				if(success) engine.stat = GameEngine.Status.SETTING else customState = CUSTOM_STATE_INITIAL_SCREEN
+				if(success) engine.stat = GameEngine.Status.SETTING else state = Init
 				engine.resetStatc()
 				return false
 			}
@@ -620,89 +597,67 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 		 * @param playerID Player ID
 		 */
 		fun renderScreen(receiver:EventReceiver, engine:GameEngine, playerID:Int) {
-			when(customState) {
-				CUSTOM_STATE_INITIAL_SCREEN -> {
+			when(state) {
+				Init -> {
 					// region INITIAL SCREEN
 					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 0,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "PLAYER", colorHeading,
-						2f)
+						GameTextUtilities.ALIGN_TOP_MIDDLE, "Player", colorHeading, 2f)
 					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 2,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "DATA", colorHeading,
-						2f)
-					receiver.drawMenuFont(engine, playerID, 0, 8, "A: LOG IN", EventReceiver.COLOR.YELLOW)
-					receiver.drawMenuFont(engine, playerID, 0, 9, "B: SIGN UP", EventReceiver.COLOR.YELLOW)
-					receiver.drawMenuFont(engine, playerID, 0, 11, "E: GUEST PLAY", EventReceiver.COLOR.YELLOW)
-					receiver.drawMenuFont(engine, playerID, 0, 18, "SELECT NEXT\nACTION.")
+						GameTextUtilities.ALIGN_TOP_MIDDLE, "Data", colorHeading, 2f)
+					receiver.drawMenuFont(engine, playerID, 0, 8, "A: Login ", EventReceiver.COLOR.YELLOW)
+					receiver.drawMenuFont(engine, playerID, 0, 9, "B: New SignUp", EventReceiver.COLOR.YELLOW)
+					receiver.drawMenuFont(engine, playerID, 0, 11, "E: Play as Guest", EventReceiver.COLOR.YELLOW)
+					receiver.drawMenuNano(engine, playerID, 0, 18, "SELECT NEXT ACTION.", scale = .75f)
 				}
-				CUSTOM_STATE_NAME_INPUT -> {
+				Name -> {
 					// region NAME INPUT
 					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 0,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "NAME", colorHeading,
-						2f)
+						GameTextUtilities.ALIGN_TOP_MIDDLE, "Name", colorHeading, 2f)
 					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 2,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "ENTRY", colorHeading,
-						2f)
+						GameTextUtilities.ALIGN_TOP_MIDDLE, "Entry", colorHeading, 2f)
 					receiver.drawMenuFont(engine, playerID, 2, 8, nameEntry, scale = 2f)
-					var c = EventReceiver.COLOR.WHITE
-					if(engine.statc[0]/6%2==0) c = EventReceiver.COLOR.YELLOW
+					val c = if(engine.statc[0]/6%2==0) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.WHITE
 					receiver.drawMenuFont(engine, playerID, 2+nameEntry.length*2, 8, getCharAt(currentChar), c, 2f)
-					receiver.drawMenuFont(engine, playerID, 0, 18, "ENTER ACCOUNT\nNAME.")
+					ENTRY_CHARS.forEachIndexed {i, c ->
+						receiver.drawMenuFont(engine, playerID, i%10, 11+i/10, "$c", i==currentChar)
+					}
+					receiver.drawMenuFont(engine, playerID, 0, 18, "Input Your ID name.", scale = .75f)
+
 				}
-				CUSTOM_STATE_PASSWORD_INPUT -> {
+				Pin -> {
 					// region PASSWORD INPUT
 					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 0,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "PASS", colorHeading,
-						2f)
-					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 2,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "ENTRY", colorHeading,
-						2f)
+						GameTextUtilities.ALIGN_TOP_MIDDLE, "Pass Phrase", colorHeading, .75f)
 					receiver.drawMenuFont(engine, playerID, 2, 8, nameEntry, scale = 2f)
 					var x = 0
 					while(x<6) {
-						var chr = "c"
-						if(x<engine.statc[1]) chr = "d" else if(x==engine.statc[1]&&engine.statc[0]/2%2==0) chr = "d"
+						val chr = if(x<engine.statc[1]||x==engine.statc[1]&&engine.statc[0]/2%2==0) BaseFont.CIRCLE_S else BaseFont.CIRCLE_L
 						receiver.drawMenuFont(engine, playerID, x+2, 12, chr, colorHeading)
 						x++
 					}
-					if(signup&&engine.statc[2]==1) receiver.drawMenuFont(engine, playerID, 0, 18,
-						"REENTER ACCOUNT\nPASSWORD.") else receiver.drawMenuFont(engine, playerID, 0, 18, "ENTER ACCOUNT\nPASSWORD.")
+					receiver.drawMenuNano(engine, playerID, 0, 18,
+						if(signup&&engine.statc[2]==1) "Input your PIN again" else "Input your PIN code")
+					receiver.drawMenuNano(engine, playerID, 0, 9, "With your ABCD Buttons")
+
 				}
-				CUSTOM_STATE_IS_SUCCESS_SCREEN -> {
+				Result -> {
 					// region SUCCESS SCREEN
-					var s = "ERROR"
-					if(success) s = "OK"
-					var col:EventReceiver.COLOR = EventReceiver.COLOR.WHITE
-					if(engine.statc[0]/6%2==0) {
-						col = if(success) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.RED
-					}
+					val s = if(success) "OK" else "ERROR"
+					val col = if(engine.statc[0]/6%2==0)
+						if(success) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.RED
+					else EventReceiver.COLOR.WHITE
+
 					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 9,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, s, col,
-						2f)
-				}
-				else -> {
+						GameTextUtilities.ALIGN_TOP_MIDDLE, s, col, 2f)
 				}
 			}
 		}
 
 		companion object {
-			/**
-			 * Screen states
-			 */
-			private const val CUSTOM_STATE_INITIAL_SCREEN = 0
-			private const val CUSTOM_STATE_NAME_INPUT = 1
-			private const val CUSTOM_STATE_PASSWORD_INPUT = 2
-			private const val CUSTOM_STATE_IS_SUCCESS_SCREEN = 3
+			/** Screen states */
+			enum class State { Init, Name, Pin, Result }
 		}
 
-		init {
-			buttonPresses = IntArray(6)
-			secondButtonPresses = IntArray(6)
-			currentChar = 0
-			customState = CUSTOM_STATE_INITIAL_SCREEN
-			login = false
-			signup = false
-			success = false
-		}
 	}
 
 	companion object {
@@ -717,7 +672,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 		 * Valid characters in a name selector:<br></br>
 		 * Please note that "p" is backspace and "q" is end entry.
 		 */
-		const val ENTRY_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?!. pq"
+		const val ENTRY_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?!. ${NAME_REV}${NAME_END}"
 		/**
 		 * Debug logger
 		 */
@@ -757,9 +712,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 
 	init {
 		try {
-			val `in` = FileInputStream("config/setting/profile.cfg")
-			propProfile.load(`in`)
-			`in`.close()
+			propProfile.load()
 			log.info("Profile file \"config/setting/profile.cfg\" loaded and ready.")
 		} catch(e:IOException) {
 			if(e is FileNotFoundException) {

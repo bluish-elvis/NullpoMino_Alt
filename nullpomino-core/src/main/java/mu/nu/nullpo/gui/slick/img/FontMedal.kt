@@ -28,47 +28,21 @@
  */
 package mu.nu.nullpo.gui.slick.img
 
+import mu.nu.nullpo.gui.common.BaseFontMedal
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import org.newdawn.slick.Color
 
 /** 普通の文字列の表示クラス */
-object FontMedal {
-
-	/** 文字列を描画
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str 文字列
-	 * @param tier 文字色
-	 * @param scale 拡大率
-	 */
-	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = 1f, darkness:Float = 0f) {
+object FontMedal:BaseFontMedal() {
+	override fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float, alpha:Float, darkness:Float) {
 		val filter = Color(Color.white).apply {
 			a = alpha
 		}.darker(maxOf(0f, darkness))
-		val sy = maxOf(0, 4-tier)*241
-		ResourceHolder.imgFontMedal.draw(x-5*scale, y-4*scale, x-scale, y+20*scale,
-			0, sy, 4, sy+24, filter)
-		ResourceHolder.imgFontMedal.draw(x-scale, y-4*scale, x+(1+9*str.length)*scale, y+20*scale,
-			4, sy, 6, sy+24, filter)
-		ResourceHolder.imgFontMedal.draw(x+(1+9*str.length)*scale, y-4*scale, x+(5+9*str.length)*scale, y+20*scale,
-			6, sy, 10, sy+24, filter)
-		str.forEachIndexed {i, c ->
-			val stringChar = c.code-0x41
-			if(stringChar in 0x00..0x1B) {// Character output
-				val dx = x+i*9f
-				val sx = stringChar*9+10
-				ResourceHolder.imgFontMedal.draw(dx, y*scale, dx+9*scale, y+16*scale,
-					sx, sy+4, sx+9, sy+20, filter)
-			}
+		processTxt(x.toFloat(), y.toFloat(), str, tier,
+			scale) {dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
+			ResourceHolder.imgFontMedal.draw(dx, dy, w, h, sx, sy, sw, sh, filter)
 		}
 	}
 
-	/** Draws the string (16x16Grid units)
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param str String
-	 * @param tier Letter cint
-	 */
-	fun printFontGrid(fontX:Int, fontY:Int, str:String, tier:Int = 0, scale:Float = 1f, alpha:Float = 1f, darkness:Float = 0f) =
-		printFont(fontX*16, fontY*16, str, tier, scale, alpha, darkness)
 }

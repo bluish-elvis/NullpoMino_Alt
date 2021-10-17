@@ -34,6 +34,8 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -43,8 +45,7 @@ class SprintCombo:NetDummyMode() {
 	/** EventReceiver object (This receives many game events, can also be used
 	 * for drawing the fonts.) */
 
-	/** Elapsed time from last line clear (lastscore is displayed to screen
-	 * until this reaches to 120) */
+	/** Elapsed time from last line clear */
 	private var scgettime = 0
 
 	/** Most recent scoring eventInB2BIf it&#39;s the casetrue */
@@ -59,8 +60,9 @@ class SprintCombo:NetDummyMode() {
 	/** BGM number */
 	private var bgmno = 0
 
-	/** Big */
-	private var big = false
+	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** HindranceLinescount type (0=5,1=10,2=18) */
 	private var goaltype = 0
@@ -144,7 +146,7 @@ class SprintCombo:NetDummyMode() {
 			version = CURRENT_VERSION
 			presetNumber = engine.owner.modeConfig.getProperty("comborace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
+
 		} else {
 			version = engine.owner.replayProp.getProperty("comborace.version", 0)
 			presetNumber = 0
@@ -272,7 +274,8 @@ class SprintCombo:NetDummyMode() {
 
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay
-				&&netIsNetRankingViewOK(engine))
+				&&netIsNetRankingViewOK(engine)
+			)
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 
 			menuTime++
@@ -293,11 +296,15 @@ class SprintCombo:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 
-			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"GOAL" to if(GOAL_TABLE[goaltype]==-1) "ENDLESS" else GOAL_TABLE[goaltype])
-			drawMenu(engine, playerID, receiver, 2,
+			drawMenu(
+				engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
+				"GOAL" to if(GOAL_TABLE[goaltype]==-1) "ENDLESS" else GOAL_TABLE[goaltype]
+			)
+			drawMenu(
+				engine, playerID, receiver, 2,
 				if(comboWidth==4) EventReceiver.COLOR.BLUE else EventReceiver.COLOR.WHITE,
-				1, "STARTSHAPE" to SHAPE_NAME_TABLE[shapetype])
+				1, "STARTSHAPE" to SHAPE_NAME_TABLE[shapetype]
+			)
 			menuColor = EventReceiver.COLOR.BLUE
 			drawMenuCompact(engine, playerID, receiver, "WIDTH" to comboWidth)
 
@@ -366,9 +373,13 @@ class SprintCombo:NetDummyMode() {
 			for(y in h-1 downTo h-stackHeight) {
 				for(x in 0 until w)
 					if(x<cx-1||x>cx-2+comboWidth)
-						engine.field.setBlock(x, y,
-							Block(STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
-								Block.ATTRIBUTE.GARBAGE))
+						engine.field.setBlock(
+							x, y,
+							Block(
+								STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
+								Block.ATTRIBUTE.GARBAGE
+							)
+						)
 				stackColor++
 			}
 
@@ -376,8 +387,10 @@ class SprintCombo:NetDummyMode() {
 		if(comboWidth==4)
 			for(i in 0..11)
 				if(SHAPE_TABLE[shapetype][i]==1)
-					engine.field.setBlock(i%4, h-1-i/4,
-						Block(SHAPE_COLOR_TABLE[shapetype], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+					engine.field.setBlock(
+						i%4, h-1-i/4,
+						Block(SHAPE_COLOR_TABLE[shapetype], engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE)
+					)
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
@@ -388,16 +401,20 @@ class SprintCombo:NetDummyMode() {
 		if(GOAL_TABLE[goaltype]==-1)
 			receiver.drawScoreFont(engine, playerID, 0, 1, "(Endless run)", EventReceiver.COLOR.WHITE)
 		else
-			receiver.drawScoreFont(engine, playerID, 0, 1, "("+(GOAL_TABLE[goaltype]-1)
-				+"CHAIN Challenge)", EventReceiver.COLOR.WHITE)
+			receiver.drawScoreFont(
+				engine, playerID, 0, 1, "("+(GOAL_TABLE[goaltype]-1)
+					+"CHAIN Challenge)", EventReceiver.COLOR.WHITE
+			)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScoreFont(engine, playerID, 3, 3, "RECORD", EventReceiver.COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1),
-						if(rankingRank==i) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.YELLOW)
+					receiver.drawScoreGrade(
+						engine, playerID, 0, 4+i, String.format("%2d", i+1),
+						if(rankingRank==i) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.YELLOW
+					)
 					if(rankingCombo[goaltype][gameType][i]==GOAL_TABLE[goaltype]-1)
 						receiver.drawScoreFont(engine, playerID, 2, 4+i, "PERFECT", true)
 					else receiver.drawScoreNum(engine, playerID, 3, 4+i, "${rankingCombo[goaltype][gameType][i]}", rankingRank==i)
@@ -407,12 +424,16 @@ class SprintCombo:NetDummyMode() {
 		} else {
 
 			receiver.drawScoreFont(engine, playerID, 0, 3, "Longest Chain", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 4, "${engine.statistics.maxCombo}",
-				engine.statistics.maxCombo>0&&engine.combo-1==engine.statistics.maxCombo, 2f)
+			receiver.drawScoreNum(
+				engine, playerID, 0, 4, "${engine.statistics.maxCombo}",
+				engine.statistics.maxCombo>0&&engine.combo-1==engine.statistics.maxCombo, 2f
+			)
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "Lines", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 7, "${engine.statistics.lines}",
-				engine.statistics.lines==engine.statistics.totalPieceLocked, 2f)
+			receiver.drawScoreNum(
+				engine, playerID, 0, 7, "${engine.statistics.lines}",
+				engine.statistics.lines==engine.statistics.totalPieceLocked, 2f
+			)
 
 			receiver.drawScoreFont(engine, playerID, 0, 9, "PIECE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.totalPieceLocked}", 2f)
@@ -431,8 +452,6 @@ class SprintCombo:NetDummyMode() {
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		//  Attack
 		if(lines>0) {
-			scgettime = 0
-
 			// B2B
 			lastb2b = engine.b2b
 
@@ -450,9 +469,13 @@ class SprintCombo:NetDummyMode() {
 				while(tmplines<=lines&&remainStack>0) {
 					for(x in 0 until w)
 						if(x<cx-1||x>cx-2+comboWidth)
-							engine.field.setBlock(x, -ceilingAdjust-tmplines,
-								Block(STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
-									Block.ATTRIBUTE.GARBAGE))
+							engine.field.setBlock(
+								x, -ceilingAdjust-tmplines,
+								Block(
+									STACK_COLOR_TABLE[stackColor%STACK_COLOR_TABLE.size], engine.skin, Block.ATTRIBUTE.VISIBLE,
+									Block.ATTRIBUTE.GARBAGE
+								)
+							)
 					stackColor++
 					tmplines++
 					remainStack--
@@ -499,16 +522,13 @@ class SprintCombo:NetDummyMode() {
 		return 0
 	}
 
-	/** This function will be called when the game timer updates */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-
-	}
-
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, Statistic.MAXCOMBO, Statistic.TIME)
-		drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.LPM,
-			Statistic.PPS)
+		drawResultStats(
+			engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.LINES, Statistic.PIECE, Statistic.LPM,
+			Statistic.PPS
+		)
 		drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -518,13 +538,13 @@ class SprintCombo:NetDummyMode() {
 		if(netIsNetPlay&&netReplaySendStatus==1)
 			receiver.drawMenuFont(engine, playerID, 0, 19, "SENDING...", EventReceiver.COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch
-			&&netReplaySendStatus==2)
+			&&netReplaySendStatus==2
+		)
 			receiver.drawMenuFont(engine, playerID, 1, 19, "A: RETRY", EventReceiver.COLOR.RED)
 	}
 
-	/** This function will be called when the replay data is going to be
-	 * saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
+	/** This function will be called when the replay data is going to be saved */
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		engine.owner.replayProp.setProperty("comborace.version", version)
 		savePreset(engine, engine.owner.replayProp, -1)
 
@@ -535,11 +555,9 @@ class SprintCombo:NetDummyMode() {
 		if(!owner.replayMode&&!big&&engine.ai==null) {
 			updateRanking(engine.statistics.maxCombo, if(engine.ending==0) -1 else engine.statistics.time)
 
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1) return true
 		}
+		return false
 	}
 
 	/** Load the ranking */
@@ -554,11 +572,13 @@ class SprintCombo:NetDummyMode() {
 
 	/** Save the ranking */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (GOAL_TABLE.indices).flatMap {i ->
+		super.saveRanking((GOAL_TABLE.indices).flatMap {i ->
 			(0 until GAMETYPE_MAX).flatMap {j ->
 				(0 until RANKING_MAX).flatMap {k ->
-					listOf("$ruleName.$i.$j.maxcombo.$k" to rankingCombo[i][j][k],
-						"$ruleName.$i.$j.time.$k" to rankingTime[i][j][k])
+					listOf(
+						"$ruleName.$i.$j.maxcombo.$k" to rankingCombo[i][j][k],
+						"$ruleName.$i.$j.time.$k" to rankingTime[i][j][k]
+					)
 				}
 			}
 		})
@@ -588,15 +608,14 @@ class SprintCombo:NetDummyMode() {
 			if(combo>rankingCombo[goaltype][gameType][i])
 				return i
 			else if(combo==rankingCombo[goaltype][gameType][i]&&time>=0&&
-				(time<rankingTime[goaltype][gameType][i]||rankingTime[goaltype][gameType][i]==-1))
+				(time<rankingTime[goaltype][gameType][i]||rankingTime[goaltype][gameType][i]==-1)
+			)
 				return i
 
 		return -1
 	}
 
-	/** NET: Send various in-game stats (as well as goaltype)
-	 * @param engine GameEngine
-	 */
+	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
 		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
@@ -611,7 +630,7 @@ class SprintCombo:NetDummyMode() {
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
-	/** NET: Receive various in-game stats (as well as goaltype) */
+	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
 		engine.statistics.lines = message[4].toInt()
 		engine.statistics.totalPieceLocked = message[5].toInt()
@@ -701,28 +720,38 @@ class SprintCombo:NetDummyMode() {
 		private const val SHAPETYPE_MAX = 9
 
 		/** Names of starting shapes */
-		private val SHAPE_NAME_TABLE = arrayOf("NONE", "LEFT I", "RIGHT I", "LEFT Z", "RIGHT S", "LEFT S", "RIGHT Z", "LEFT J",
-			"RIGHT L")
+		private val SHAPE_NAME_TABLE = arrayOf(
+			"NONE", "LEFT I", "RIGHT I", "LEFT Z", "RIGHT S", "LEFT S", "RIGHT Z", "LEFT J",
+			"RIGHT L"
+		)
 
 		/** Starting shape table */
-		private val SHAPE_TABLE = arrayOf(intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+		private val SHAPE_TABLE = arrayOf(
+			intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 			intArrayOf(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0), intArrayOf(0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0),
 			intArrayOf(1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0), intArrayOf(0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0),
 			intArrayOf(1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0),
-			intArrayOf(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1))
+			intArrayOf(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+		)
 
 		/** Starting shape color */
-		private val SHAPE_COLOR_TABLE:Array<Block.COLOR?> = arrayOf(null, Block.COLOR.CYAN, Block.COLOR.CYAN, Block.COLOR.RED,
-			Block.COLOR.GREEN, Block.COLOR.GREEN, Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.ORANGE)
+		private val SHAPE_COLOR_TABLE:Array<Block.COLOR?> = arrayOf(
+			null, Block.COLOR.CYAN, Block.COLOR.CYAN, Block.COLOR.RED,
+			Block.COLOR.GREEN, Block.COLOR.GREEN, Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.ORANGE
+		)
 
 		/** Stack color order */
-		private val STACK_COLOR_TABLE:Array<Block.COLOR> = arrayOf(Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW,
-			Block.COLOR.GREEN, Block.COLOR.CYAN, Block.COLOR.BLUE, Block.COLOR.PURPLE)
+		private val STACK_COLOR_TABLE:Array<Block.COLOR> = arrayOf(
+			Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW,
+			Block.COLOR.GREEN, Block.COLOR.CYAN, Block.COLOR.BLUE, Block.COLOR.PURPLE
+		)
 
 		/** Meter colors for really high combos in Endless */
-		private val METER_COLOR_TABLE = intArrayOf(GameEngine.METER_COLOR_GREEN, GameEngine.METER_COLOR_YELLOW,
+		private val METER_COLOR_TABLE = intArrayOf(
+			GameEngine.METER_COLOR_GREEN, GameEngine.METER_COLOR_YELLOW,
 			GameEngine.METER_COLOR_ORANGE, GameEngine.METER_COLOR_RED, GameEngine.METER_COLOR_PINK, GameEngine.METER_COLOR_PURPLE,
 			GameEngine.METER_COLOR_DARKBLUE, GameEngine.METER_COLOR_BLUE, GameEngine.METER_COLOR_CYAN,
-			GameEngine.METER_COLOR_DARKGREEN)
+			GameEngine.METER_COLOR_DARKGREEN
+		)
 	}
 }

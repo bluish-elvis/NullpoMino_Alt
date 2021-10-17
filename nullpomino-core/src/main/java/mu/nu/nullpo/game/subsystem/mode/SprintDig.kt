@@ -35,6 +35,8 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.log4j.Logger
@@ -45,8 +47,9 @@ class SprintDig:NetDummyMode() {
 	/** BGM number */
 	private var bgmno = 0
 
-	/** Big (leftover from old versions) */
-	private var big = false
+	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** Goal type (0=5 garbages, 1=10 garbages, 2=18 garbages) */
 	private var goaltype = 0
@@ -94,7 +97,7 @@ class SprintDig:NetDummyMode() {
 			version = CURRENT_VERSION
 			presetNumber = engine.owner.modeConfig.getProperty("digrace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
+
 		} else {
 			version = engine.owner.replayProp.getProperty("digrace.version", 0)
 			presetNumber = 0
@@ -422,7 +425,7 @@ class SprintDig:NetDummyMode() {
 	}
 
 	/* Save replay file */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		engine.owner.replayProp.setProperty("digrace.version", version)
 		savePreset(engine, engine.owner.replayProp, -1)
 
@@ -433,17 +436,12 @@ class SprintDig:NetDummyMode() {
 		if(!owner.replayMode&&getRemainGarbageLines(engine, goaltype)==0&&engine.ending!=0&&engine.ai==null&&!netIsWatch) {
 			updateRanking(engine.statistics.time, engine.statistics.lines, engine.statistics.totalPieceLocked)
 
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1) return true
 		}
-	}
 
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
+		return false	}
+
+
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until GOALTYPE_MAX)
 			for(j in 0 until RANKING_MAX) {
@@ -453,11 +451,9 @@ class SprintDig:NetDummyMode() {
 			}
 	}
 
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
+	/** Save rankings of [ruleName] to [prop] */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until GOALTYPE_MAX).flatMap {j ->
+		super.saveRanking((0 until GOALTYPE_MAX).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf("$ruleName.$j.time.$i" to rankingTime[j][i],
 					"$ruleName.$j.lines.$i" to rankingLines[j][i],
@@ -506,9 +502,7 @@ class SprintDig:NetDummyMode() {
 		return -1
 	}
 
-	/** NET: Send various in-game stats (as well as goaltype)
-	 * @param engine GameEngine
-	 */
+	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
 		var msg = "game\tstats\t"
 		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
@@ -520,7 +514,7 @@ class SprintDig:NetDummyMode() {
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
-	/** NET: Receive various in-game stats (as well as goaltype) */
+	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
 		engine.statistics.lines = message[4].toInt()
 		engine.statistics.totalPieceLocked = message[5].toInt()

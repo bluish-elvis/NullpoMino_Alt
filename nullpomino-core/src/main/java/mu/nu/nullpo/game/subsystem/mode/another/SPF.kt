@@ -95,7 +95,7 @@ class SPF:AbstractMode() {
 	private var version = 0
 
 	/** Amount of points earned from most recent clear */
-	private var lastscore = IntArray(0)
+	private var lastscores = IntArray(0)
 
 	/** Score */
 	private var score = IntArray(0)
@@ -168,7 +168,7 @@ class SPF:AbstractMode() {
 		fldBackup = arrayOfNulls(MAX_PLAYERS)
 		randMap = Random.Default
 
-		lastscore = IntArray(MAX_PLAYERS)
+		lastscores = IntArray(MAX_PLAYERS)
 		score = IntArray(MAX_PLAYERS)
 		ojamaCountdown = IntArray(MAX_PLAYERS)
 
@@ -217,10 +217,7 @@ class SPF:AbstractMode() {
 		prop.setProperty("spfvs.das.$preset", engine.speed.das)
 	}
 
-	/** Load settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to read from
-	 */
+	/** Load settings into [engine] from [prop] not related to speeds */
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
 		bgmno = prop.getProperty("spfvs.bgmno", 0)
@@ -238,10 +235,7 @@ class SPF:AbstractMode() {
 		diamondPower[playerID] = prop.getProperty("spfvs.rainbowPower.p$playerID", 2)
 	}
 
-	/** Save settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to save to
-	 */
+	/** Save settings from [engine] into [prop] not related to speeds */
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
 		prop.setProperty("spfvs.bgmno", bgmno)
@@ -259,10 +253,7 @@ class SPF:AbstractMode() {
 		prop.setProperty("spfvs.rainbowPower.p$playerID", diamondPower[playerID])
 	}
 
-	/** MapRead
-	 * @param field field
-	 * @param prop Property file to read from
-	 */
+	/** MapRead into #[id]:[field] from [prop] */
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		//field.readProperty(prop, id);
@@ -271,11 +262,7 @@ class SPF:AbstractMode() {
 		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 	}
 
-	/** MapSave
-	 * @param field field
-	 * @param prop Property file to save to
-	 * @param id AnyID
-	 */
+	/** MapSave from #[id]:[field] into [prop] */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		//field.writeProperty(prop, id);
 		prop.setProperty("values.$id", field.fieldToString())
@@ -338,7 +325,7 @@ class SPF:AbstractMode() {
 		for(i in 0 until Piece.PIECE_COUNT)
 			engine.nextPieceEnable[i] = PIECE_ENABLE[i]==1
 		engine.blockColors = BLOCK_COLORS
-		engine.gemRate=0.2f
+		engine.gemRate = 0.2f
 		engine.randomBlockColor = true
 		engine.connectBlocks = false
 
@@ -821,9 +808,9 @@ class SPF:AbstractMode() {
 			score[playerID] += 1000
 		}
 
-		lastscore[playerID] = pts.toInt()*10
+		lastscores[playerID] = pts.toInt()*10
 		scgettime[playerID] = 120
-		score[playerID] += lastscore[playerID]
+		score[playerID] += lastscores[playerID]
 
 		if(hurryupSeconds[playerID]>0&&engine.statistics.time>hurryupSeconds[playerID])
 			pow *= (1 shl engine.statistics.time/(hurryupSeconds[playerID]*60)).toDouble()
@@ -876,7 +863,7 @@ class SPF:AbstractMode() {
 		for(x in 0 until width)
 			for(y in -1*hiddenHeight until height) {
 				val b = engine.field.getBlock(x, y) ?: continue
-				var color=b.color?:continue
+				var color = b.color ?: continue
 				if(!color.color||b.type!=Block.TYPE.GEM) continue
 				var minX = x
 				var minY = y
@@ -1131,6 +1118,7 @@ class SPF:AbstractMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		scgettime[playerID]++
 		if(zenKeshiDisplay[playerID]>0) zenKeshiDisplay[playerID]--
 		var width = 1
@@ -1193,13 +1181,14 @@ class SPF:AbstractMode() {
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		saveOtherSetting(engine, owner.replayProp)
 		savePreset(engine, owner.replayProp, -1-playerID)
 
 		if(useMap[playerID]) fldBackup[playerID]?.let {saveMap(it, owner.replayProp, playerID)}
 
 		owner.replayProp.setProperty("spfvs.version", version)
+		return false
 	}
 
 	companion object {

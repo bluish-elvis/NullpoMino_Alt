@@ -1,15 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
  <modelVersion>4.0.0</modelVersion>
+ <groupId>mu.nu.nullpo</groupId>
  <artifactId>nullpomino-core</artifactId>
  <version>7.7.2021</version>
  <properties>
   <lwjgl.version>2.9.3</lwjgl.version>
-  <kotlin.version>1.5.21</kotlin.version>
-  <java.version>15</java.version>
-  <serialization.version>1.2.2</serialization.version>
+  <kotlin.version>1.5.31</kotlin.version>
+  <java.version>16</java.version>
+  <serialization.version>1.3.0</serialization.version>
+  <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
  </properties>
-
+ <packaging>jar</packaging>
 
  <build>
   <plugins>
@@ -42,17 +44,18 @@
      <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
       <artifactId>kotlin-maven-serialization</artifactId>
-      <version>1.5.0-RC</version>
+      <version>${kotlin.version}</version>
      </dependency>
     </dependencies>
    </plugin>
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.8.1</version>
     <configuration>
      <source>${java.version}</source>
      <target>${java.version}</target>
-     <encoding>UTF-8</encoding>
+     <!--     <encoding>UTF-8</encoding>-->
     </configuration>
     <executions>
      <execution>
@@ -71,17 +74,29 @@
      </execution>
     </executions>
    </plugin>
+   <plugin>
+    <artifactId>maven-assembly-plugin</artifactId>
+    <executions>
+     <execution>
+      <id>jar-with-dependencies</id>
+      <phase>package</phase>
+      <goals>
+       <goal>single</goal>
+      </goals>
+      <configuration>
+       <descriptorRefs>
+        <descriptorRef>jar-with-dependencies</descriptorRef>
+       </descriptorRefs>
+       <appendAssemblyId>false</appendAssemblyId>
+      </configuration>
+     </execution>
+    </executions>
+   </plugin>
   </plugins>
  </build>
- <parent>
-  <groupId>mu.nu.nullpo</groupId>
-  <artifactId>nullpomino-parent</artifactId>
-  <version>7.7.2021</version>
-  <relativePath>../nullpomino-parent</relativePath>
- </parent>
 
  <dependencies>
-  <dependency>
+  <!--<dependency>
    <groupId>org.openjfx</groupId>
    <artifactId>javafx-swing</artifactId>
    <version>16</version>
@@ -90,7 +105,7 @@
    <groupId>org.openjfx</groupId>
    <artifactId>javafx-controls</artifactId>
    <version>16</version>
-  </dependency>
+  </dependency>-->
   <dependency>
    <groupId>javax.jnlp</groupId>
    <artifactId>jnlp-api</artifactId>
@@ -132,6 +147,13 @@
    <artifactId>jinput</artifactId>
    <version>2.0.9</version>
   </dependency>
+  <dependency>
+   <groupId>net.java.jinput</groupId>
+   <artifactId>jinput-platform</artifactId>
+   <version>2.0.7</version>
+   <type>pom</type>
+  </dependency>
+
   <dependency>
    <groupId>log4j</groupId>
    <artifactId>log4j</artifactId>
@@ -176,7 +198,7 @@
    <artifactId>jmh-core</artifactId>
    <version>1.33</version>
   </dependency>
- -->
+  -->
  </dependencies>
 
  <repositories>
