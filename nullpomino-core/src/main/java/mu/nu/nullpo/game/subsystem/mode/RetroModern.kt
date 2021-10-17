@@ -32,6 +32,8 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -41,19 +43,11 @@ import kotlin.math.ceil
 class RetroModern:AbstractMode() {
 	private var totalnorma = 0
 
-	/** Amount of points you just get from line clears */
-	private var lastscore = 0
-
-	/** Elapsed time from last line clear (lastscore is displayed to screen
-	 * until this reaches to 120) */
-	private var scgettime = 0
-	private var sc = 0
-
 	/** Selected game type */
 	private var gametype = 0
 
 	/** Selected starting level */
-	private var startlevel = 0
+	private var startLevel = 0
 
 	/** Ending Level timer */
 	private var rolltime = 0
@@ -65,8 +59,10 @@ class RetroModern:AbstractMode() {
 	private var linecount = 0
 
 	private var special = false
-	/** Big mode on/off */
-	private var big = false
+
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** Version of this mode */
 	private var version = 0
@@ -88,8 +84,6 @@ class RetroModern:AbstractMode() {
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
 		lastscore = 0
-		sc = 0
-		scgettime = sc
 		rolltime = 0
 		norm = 0
 		menuTime = 0
@@ -124,9 +118,9 @@ class RetroModern:AbstractMode() {
 
 			version = CURRENT_VERSION
 		} else
-			loadSetting(owner.replayProp)
-		if(startlevel>15) startlevel = 15
-		engine.owner.backgroundStatus.bg = levelBG[startlevel]
+			loadSetting(owner.replayProp, engine)
+		if(startLevel>15) startLevel = 15
+		engine.owner.backgroundStatus.bg = levelBG[startLevel]
 		engine.framecolor = GameEngine.FRAME_SKIN_HEBO
 	}
 
@@ -210,10 +204,10 @@ class RetroModern:AbstractMode() {
 						if(gametype>GAMETYPE_MAX-1) gametype = 0
 					}
 					1 -> {
-						startlevel += change
-						if(startlevel<0) startlevel = 15
-						if(startlevel>15) startlevel = 0
-						engine.owner.backgroundStatus.bg = levelBG[startlevel]
+						startLevel += change
+						if(startLevel<0) startLevel = 15
+						if(startLevel>15) startLevel = 0
+						engine.owner.backgroundStatus.bg = levelBG[startLevel]
 					}
 					2 -> big = !big
 				}
@@ -222,8 +216,6 @@ class RetroModern:AbstractMode() {
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				return false
 			}
 
@@ -243,7 +235,7 @@ class RetroModern:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startlevel,
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startLevel,
 			"BIG" to big)
 	}
 
@@ -261,7 +253,7 @@ class RetroModern:AbstractMode() {
 		if(engine.ending!=0) return
 		engine.big = big
 		special = true
-		setBGM(startlevel)
+		setBGM(startLevel)
 		setSpeed(engine)
 	}
 
@@ -270,8 +262,8 @@ class RetroModern:AbstractMode() {
 		if(engine.statc[0]==0)
 			if(engine.ending==0) {
 				engine.framecolor = if(gametype==4) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_WHITE
-				totalnorma = MAX_LINES-startlevel*16
-				engine.statistics.level = startlevel
+				totalnorma = MAX_LINES-startLevel*16
+				engine.statistics.level = startLevel
 			} else
 				engine.nextPieceArrayID = GeneralUtil.createNextPieceArrayFromNumberString(STRING_POWERON_PATTERN)
 
@@ -285,7 +277,7 @@ class RetroModern:AbstractMode() {
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
-			if(!owner.replayMode&&!big&&startlevel==0&&engine.ai==null) {
+			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE LV LINE TIME", color = COLOR.BLUE, scale = scale)
@@ -293,8 +285,10 @@ class RetroModern:AbstractMode() {
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 9, topY+i, String.format("%3d",rankingLines[gametype][i]), i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 12, topY+i, String.format("%2d",rankingLevel[gametype][i]), i==rankingRank, scale)
+					receiver.drawScoreNum(engine, playerID, 9, topY+i, String.format("%3d", rankingLines[gametype][i]), i==rankingRank,
+						scale)
+					receiver.drawScoreNum(engine, playerID, 12, topY+i, String.format("%2d", rankingLevel[gametype][i]), i==rankingRank,
+						scale)
 					receiver.drawScoreNum(engine, playerID, 16, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank,
 						scale)
 				}
@@ -303,10 +297,8 @@ class RetroModern:AbstractMode() {
 			// Game statistics
 			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 3, "+$lastscore")
-			val scget = scgettime<engine.statistics.score
-			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/24.0).toInt()
-			sc += ceil(((scgettime-sc)/10f).toDouble()).toInt()
-			receiver.drawScoreNum(engine, playerID, 0, 4, "$sc", scget, 2f)
+			val scget = scDisp<engine.statistics.score
+			receiver.drawScoreNum(engine, playerID, 0, 4, "$scDisp", scget, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 7, "LINE", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 0, 8, String.format("%03d/%03d", engine.statistics.lines, totalnorma), scale = 2f)
@@ -335,6 +327,7 @@ class RetroModern:AbstractMode() {
 
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		if(special&&(engine.ctrl.isPress(Controller.BUTTON_B)||engine.ctrl.isPress(Controller.BUTTON_E))) special = false
 		// Update the meter
 		if(engine.ending==0) {
@@ -402,7 +395,7 @@ class RetroModern:AbstractMode() {
 			engine.statistics.scoreLine += pts
 		}
 		if(engine.manualLock) {
-			scgettime++
+			scDisp++
 			if(engine.ruleOpt.harddropLock) engine.statistics.scoreHD++
 			else engine.statistics.scoreSD++
 		}
@@ -495,13 +488,13 @@ class RetroModern:AbstractMode() {
 	/** This function will be called when soft-drop is used */
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
 		engine.statistics.scoreSD += fall
-		scgettime += fall
+		scDisp += fall
 	}
 
 	/** This function will be called when hard-drop is used */
 	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
 		engine.statistics.scoreHD += fall
-		scgettime += fall
+		scDisp += fall
 	}
 
 	override fun onEndingStart(engine:GameEngine, playerID:Int):Boolean {
@@ -579,31 +572,29 @@ class RetroModern:AbstractMode() {
 
 	/** This function will be called when the replay data is going to be
 	 * saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(prop, engine)
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.level, engine.statistics.time, gametype)
 
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1) return true
 		}
+		return false
 	}
 
 	/** Load the settings */
-	override fun loadSetting(prop:CustomProperties) {
-		startlevel = prop.getProperty("retromodern.startlevel", 0)
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		startLevel = prop.getProperty("retromodern.startLevel", 0)
 		gametype = prop.getProperty("retromodern.gametype", 0)
 		big = prop.getProperty("retromodern.big", false)
 		version = prop.getProperty("retromodern.version", 0)
 	}
 
 	/** Save the settings */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("retromodern.startlevel", startlevel)
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		prop.setProperty("retromodern.startLevel", startLevel)
 		prop.setProperty("retromodern.gametype", gametype)
 		prop.setProperty("retromodern.big", big)
 		prop.setProperty("retromodern.version", version)
@@ -623,7 +614,7 @@ class RetroModern:AbstractMode() {
 
 	/** Save the ranking */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until GAMETYPE_MAX).flatMap {j ->
+		super.saveRanking((0 until GAMETYPE_MAX).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf(
 					"$ruleName.$j.score.$i" to rankingScore[j][i],

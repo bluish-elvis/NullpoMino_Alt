@@ -991,7 +991,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun createRoomListRowData(r:NetRoomInfo):Array<String> = arrayOf(
 		r.roomID.toString(), r.strName, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False"),
-		if(r.ruleLock) r.ruleName.uppercase() else getUIText("RoomTable_RuleName_Any"),
+		if(r.ruleLock) r.ruleName.toUpperCase() else getUIText("RoomTable_RuleName_Any"),
 		if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting"),
 		"${r.playerSeatedCount}/${r.maxPlayers}", "${r.spectatorCount}")
 

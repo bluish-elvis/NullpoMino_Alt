@@ -160,10 +160,10 @@ class GrandBlossom:AbstractMode() {
 	private var always20g = false
 
 	/** When true, levelstop sound is enabled */
-	private var lvstopse = false
+	private var secAlert = false
 
 	/** When true, section time display is enabled */
-	private var showsectiontime = false
+	private var showST = false
 
 	/** NEXTをランダムにする */
 	private var randomnext = false
@@ -198,6 +198,7 @@ class GrandBlossom:AbstractMode() {
 	/** Mode nameを取得 */
 	override val name = "Grand Blossom"
 	override val gameIntensity:Int = -1
+
 	/** Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		log.debug("playerInit called")
@@ -251,8 +252,8 @@ class GrandBlossom:AbstractMode() {
 		stageset = -1
 		alwaysghost = false
 		always20g = false
-		lvstopse = true
-		showsectiontime = false
+		secAlert = true
+		showST = false
 		randomnext = false
 		trainingType = 0
 		startnextc = 0
@@ -338,13 +339,13 @@ class GrandBlossom:AbstractMode() {
 	 * @param id stage セット number(-1で default )
 	 */
 	private fun loadStageSet(id:Int) {
-		propStageSet = if(id>=0) {
+		propStageSet.load(if(id>=0) {
 			log.debug("Loading stage set from custom set #$id")
-			receiver.loadProperties("config/map/gemmania/custom$id.map")
+			"config/map/gemmania/custom$id.map"
 		} else {
 			log.debug("Loading stage set from default set")
-			receiver.loadProperties("config/map/gemmania/default.map")
-		} ?: CustomProperties()
+			"config/map/gemmania/default.map"
+		})
 	}
 
 	/** stage セットを保存
@@ -354,17 +355,14 @@ class GrandBlossom:AbstractMode() {
 		if(!owner.replayMode)
 			if(id>=0) {
 				log.debug("Saving stage set to custom set #$id")
-				receiver.saveProperties("config/map/gemmania/custom$id.map", propStageSet)
+				propStageSet.save("config/map/gemmania/custom$id.map")
 			} else {
 				log.debug("Saving stage set to default set")
-				receiver.saveProperties("config/map/gemmania/default.map", propStageSet)
+				propStageSet.save("config/map/gemmania/default.map")
 			}
 	}
 
-	/** Map読み込み
-	 * @param field field
-	 * @param prop Property file to read from
-	 */
+	/** MapRead into #[id]:[field] from [prop] */
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		field.readProperty(prop, id)
@@ -380,11 +378,7 @@ class GrandBlossom:AbstractMode() {
 		gimmickColor = prop.getProperty("$id.gemmania.gimmickColor", 0)
 	}
 
-	/** Map保存
-	 * @param field field
-	 * @param prop Property file to save to
-	 * @param id 任意のID
-	 */
+	/** MapSave from #[id]:[field] into [prop] */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		field.writeProperty(prop, id)
 		prop.setProperty("$id.gemmania.limittimeStart", limittimeStart)
@@ -397,31 +391,25 @@ class GrandBlossom:AbstractMode() {
 		prop.setProperty("$id.gemmania.gimmickColor", gimmickColor)
 	}
 
-	/** Load settings from property file
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		startstage = prop.getProperty("gemmania.startstage", 0)
 		stageset = prop.getProperty("gemmania.stageset", -1)
 		alwaysghost = prop.getProperty("gemmania.alwaysghost", true)
 		always20g = prop.getProperty("gemmania.always20g", false)
-		lvstopse = prop.getProperty("gemmania.lvstopse", true)
-		showsectiontime = prop.getProperty("gemmania.showsectiontime", true)
+		secAlert = prop.getProperty("gemmania.lvstopse", true)
+		showST = prop.getProperty("gemmania.showsectiontime", true)
 		randomnext = prop.getProperty("gemmania.randomnext", false)
 		trainingType = prop.getProperty("gemmania.trainingType", 0)
 		startnextc = prop.getProperty("gemmania.startnextc", 0)
 	}
 
-	/** Save settings to property file
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("gemmania.startstage", startstage)
 		prop.setProperty("gemmania.stageset", stageset)
 		prop.setProperty("gemmania.alwaysghost", alwaysghost)
 		prop.setProperty("gemmania.always20g", always20g)
-		prop.setProperty("gemmania.lvstopse", lvstopse)
-		prop.setProperty("gemmania.showsectiontime", showsectiontime)
+		prop.setProperty("gemmania.lvstopse", secAlert)
+		prop.setProperty("gemmania.showsectiontime", showST)
 		prop.setProperty("gemmania.randomnext", randomnext)
 		prop.setProperty("gemmania.trainingType", trainingType)
 		prop.setProperty("gemmania.startnextc", startnextc)
@@ -648,8 +636,8 @@ class GrandBlossom:AbstractMode() {
 					}
 					2 -> alwaysghost = !alwaysghost
 					3 -> always20g = !always20g
-					4 -> lvstopse = !lvstopse
-					5 -> showsectiontime = !showsectiontime
+					4 -> secAlert = !secAlert
+					5 -> showST = !showST
 					6 -> randomnext = !randomnext
 					7 -> {
 						trainingType += change
@@ -667,8 +655,6 @@ class GrandBlossom:AbstractMode() {
 			// 決定
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				return false
 			}
 
@@ -728,7 +714,7 @@ class GrandBlossom:AbstractMode() {
 				drawMenu(engine, playerID, receiver, 0, COLOR.PINK, 0, "STAGE NO." to getStageName(startstage),
 					"STAGE SET" to if(stageset<0) "DEFAULT" else "EDIT $stageset",
 					"FULL GHOST" to alwaysghost, "FULL 20G" to always20g,
-					"LVSTOPSE" to lvstopse, "SHOW STIME" to showsectiontime,
+					"LVSTOPSE" to secAlert, "SHOW STIME" to showST,
 					"RANDOM" to randomnext, "TRAINING" to strTrainingType, "NEXT COUNT" to startnextc)
 			}
 		}
@@ -865,7 +851,7 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// Section Time
-			if(showsectiontime&&sectionTime.isNotEmpty()) {
+			if(showST&&sectionTime.isNotEmpty()) {
 				val y = if(receiver.nextDisplayType==2) 4 else 2
 				val x = if(receiver.nextDisplayType==2) 22 else 12
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
@@ -900,6 +886,7 @@ class GrandBlossom:AbstractMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		if(timeextendDisp>0) timeextendDisp--
 
 		if(engine.gameActive&&engine.timerActive&&engine.ctrl.isPress(Controller.BUTTON_F)) {
@@ -957,7 +944,7 @@ class GrandBlossom:AbstractMode() {
 			// Level up
 			if(speedlevel<nextseclv-1) {
 				speedlevel++
-				if(speedlevel==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(speedlevel==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			setSpeed(engine)
 		}
@@ -998,7 +985,7 @@ class GrandBlossom:AbstractMode() {
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
 			if(speedlevel<nextseclv-1) {
 				speedlevel++
-				if(speedlevel==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(speedlevel==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			setSpeed(engine)
 			lvupflag = true
@@ -1045,7 +1032,7 @@ class GrandBlossom:AbstractMode() {
 
 				// Update level for next section
 				nextseclv += 100
-			} else if(speedlevel==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+			} else if(speedlevel==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			return gemClears
 		}
 		return 0
@@ -1388,8 +1375,7 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* リプレイ保存 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		prop.setProperty("gemmania.version", version)
 		prop.setProperty("gemmania.result.stage", stage)
 		prop.setProperty("gemmania.result.clearper", clearper)
@@ -1399,23 +1385,15 @@ class GrandBlossom:AbstractMode() {
 		engine.statistics.levelDispAdd = 1
 		engine.statistics.scoreBonus = clearper
 		engine.statistics.writeProperty(prop, playerID)
-
-		// Update rankings
-		if(!owner.replayMode&&startstage==0&&trainingType==0&&
-			startnextc==0&&stageset<0&&!always20g&&engine.ai==null) {
-			updateRanking(if(randomnext) 1 else 0, stage, clearper, engine.statistics.time, allclear)
-
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+		if(!owner.replayMode) {
+			owner.statsProp.setProperty("decoration", decoration)
+			owner.statsProp.save(owner.statsFile)
 		}
+		// Update rankings
+		return (!owner.replayMode&&startstage==0&&trainingType==0&&startnextc==0&&stageset<0&&!always20g&&engine.ai==null&&
+			updateRanking(if(randomnext) 1 else 0, stage, clearper, engine.statistics.time, allclear)!=-1)
 	}
 
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(type in 0 until RANKING_TYPE)
 			for(i in 0 until RANKING_MAX) {
@@ -1427,11 +1405,9 @@ class GrandBlossom:AbstractMode() {
 		decoration = owner.statsProp.getProperty("decoration", 0)
 	}
 
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
+	/** Save rankings of [ruleName] to [prop] */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
+		super.saveRanking((0 until RANKING_TYPE).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf("$j.$ruleName.$i.stage" to rankingStage[j][i],
 					"$j.$ruleName.$i.clear" to rankingClearPer[j][i],
@@ -1440,8 +1416,6 @@ class GrandBlossom:AbstractMode() {
 			}
 		})
 
-		owner.statsProp.setProperty("decoration", decoration)
-		receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update rankings
@@ -1451,7 +1425,7 @@ class GrandBlossom:AbstractMode() {
 	 * @param time Time
 	 * @param clear 完全クリア flag
 	 */
-	private fun updateRanking(type:Int, stg:Int, clper:Int, time:Int, clear:Int) {
+	private fun updateRanking(type:Int, stg:Int, clper:Int, time:Int, clear:Int):Int {
 		rankingRank = checkRanking(type, stg, clper, time, clear)
 
 		if(rankingRank!=-1) {
@@ -1469,6 +1443,7 @@ class GrandBlossom:AbstractMode() {
 			rankingTime[type][rankingRank] = time
 			rankingAllClear[type][rankingRank] = clear
 		}
+		return rankingRank
 	}
 
 	/** Calculate ranking position
@@ -1481,15 +1456,11 @@ class GrandBlossom:AbstractMode() {
 	 */
 	private fun checkRanking(type:Int, stg:Int, clper:Int, time:Int, clear:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(clear>rankingAllClear[type][i])
-				return i
-			else if(clear==rankingAllClear[type][i]&&stg>rankingStage[type][i])
-				return i
-			else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&clper>rankingClearPer[type][i])
-				return i
+			if(clear>rankingAllClear[type][i]) return i
+			else if(clear==rankingAllClear[type][i]&&stg>rankingStage[type][i]) return i
+			else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&clper>rankingClearPer[type][i]) return i
 			else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&clper==rankingClearPer[type][i]&&
-				time<rankingTime[type][i])
-				return i
+				time<rankingTime[type][i]) return i
 
 		return -1
 	}

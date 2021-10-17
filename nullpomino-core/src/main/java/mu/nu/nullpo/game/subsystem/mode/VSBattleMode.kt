@@ -202,9 +202,8 @@ class VSBattleMode:AbstractMode() {
 		winnerID = -1
 	}
 
-	/** Read speed presets
+	/** Read speed presets from [prop]
 	 * @param engine GameEngine
-	 * @param prop Property file to read from
 	 * @param preset Preset number
 	 */
 	private fun loadPreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
@@ -217,9 +216,8 @@ class VSBattleMode:AbstractMode() {
 		engine.speed.das = prop.getProperty("vsbattle.das.$preset", 14)
 	}
 
-	/** Save speed presets
+	/** Save speed presets into [prop]
 	 * @param engine GameEngine
-	 * @param prop Property file to save to
 	 * @param preset Preset number
 	 */
 	private fun savePreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
@@ -232,10 +230,7 @@ class VSBattleMode:AbstractMode() {
 		prop.setProperty("vsbattle.das.$preset", engine.speed.das)
 	}
 
-	/** Load settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to read from
-	 */
+	/** Load settings into [engine] from [prop] not related to speeds */
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
 		bgmno = prop.getProperty("vsbattle.bgmno", 0)
@@ -260,10 +255,7 @@ class VSBattleMode:AbstractMode() {
 		showStats = prop.getProperty("vsbattle.showStats", true)
 	}
 
-	/** Save settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to save to
-	 */
+	/** Save settings from [engine] into [prop] not related to speeds */
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
 		prop.setProperty("vsbattle.bgmno", bgmno)
@@ -288,10 +280,7 @@ class VSBattleMode:AbstractMode() {
 		prop.setProperty("vsbattle.showStats", showStats)
 	}
 
-	/** MapRead
-	 * @param field field
-	 * @param prop Property file to read from
-	 */
+	/** MapRead into #[id]:[field] from [prop] */
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		//field.readProperty(prop, id);
@@ -300,11 +289,7 @@ class VSBattleMode:AbstractMode() {
 		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 	}
 
-	/** MapSave
-	 * @param field field
-	 * @param prop Property file to save to
-	 * @param id AnyID
-	 */
+	/** MapSave from #[id]:[field] into [prop] */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		//field.writeProperty(prop, id);
 		prop.setProperty("values.$id", field.fieldToString())
@@ -760,6 +745,7 @@ class VSBattleMode:AbstractMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		// HURRY UP!
 		if(playerID==0&&engine.timerActive&&hurryupSeconds[playerID]>=0&&engine.statistics.time==hurryupSeconds[playerID]*60)
 			engine.playSE("hurryup")
@@ -820,13 +806,14 @@ class VSBattleMode:AbstractMode() {
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		saveOtherSetting(engine, owner.replayProp)
 		savePreset(engine, owner.replayProp, -1-playerID)
 
 		if(useMap[playerID]) fldBackup[playerID]?.let {saveMap(it, owner.replayProp, playerID)}
 
 		owner.replayProp.setProperty("vsbattle.version", version)
+		return false
 	}
 
 	/** sent from the enemygarbage blockOf data

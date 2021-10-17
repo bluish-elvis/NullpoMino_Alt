@@ -40,13 +40,14 @@ import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.gui.slick.RendererExtension
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.GameTextUtilities
 import zeroxfc.nullpo.custom.libs.Interpolation
-import zeroxfc.nullpo.custom.libs.ProfileProperties
 import zeroxfc.nullpo.custom.libs.ShakingText
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -54,7 +55,9 @@ import kotlin.random.Random
 
 class Deltatris:MarathonModeBase() {
 	private var stext:ShakingText = ShakingText()
-	private var difficulty = 0
+
+	override val itemMode = StringsMenuItem("difficulty", "Difficulty", EventReceiver.COLOR.RED, 1, difficultyName)
+	private var difficulty:Int by DelegateMenuItem(itemMode)
 	private var multiplier = 1.0
 	private var grav = 0.0
 	private var mScale = 1.0f
@@ -64,13 +67,10 @@ class Deltatris:MarathonModeBase() {
 	private var rankingTime:Array<IntArray> = emptyArray()
 	private var rankingLines:Array<IntArray> = emptyArray()
 	// PROFILE
-	private val playerProperties:ProfileProperties = ProfileProperties(headerColor)
-	private var showPlayerStats = false
 	private var rankingRankPlayer = 0
 	private var rankingScorePlayer:Array<IntArray> = emptyArray()
 	private var rankingTimePlayer:Array<IntArray> = emptyArray()
 	private var rankingLinesPlayer:Array<IntArray> = emptyArray()
-	private var PLAYER_NAME = ""
 	/**
 	 * The good hard drop effect
 	 */
@@ -82,13 +82,23 @@ class Deltatris:MarathonModeBase() {
 	 */
 	override val name:String get() = "DeltaTris"
 	// help me i forgot how to make modes
-	/*
-     * Initialization
-     */
+	// Initialization
+	override val menu:MenuList = MenuList("deltatris", itemMode, itemBig)
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf(
+			*((rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
+		)
+	override val rankPersMap:Map<String, IntArray>
+		get() = mapOf(*((rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}+
+			rankingLinesPlayer.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
+		)
+
 	override fun playerInit(engine:GameEngine, playerID:Int) {
-		owner = engine.owner
+		super.playerInit(engine, playerID)
 		lastscore = 0
-		scgettime = 0
 		bgmlv = 0
 		multiplier = 1.0
 		mScale = 1.0f
@@ -99,7 +109,7 @@ class Deltatris:MarathonModeBase() {
 		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		playerProperties.reset()
+		engine.playerProp.reset()
 		showPlayerStats = false
 
 		rankingRankPlayer = -1
@@ -108,20 +118,8 @@ class Deltatris:MarathonModeBase() {
 		rankingTimePlayer = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		pCoordList = ArrayList()
 		netPlayerInit(engine, playerID)
-		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
-			if(playerProperties.isLoggedIn) {
-				loadSettingPlayer(playerProperties)
-				loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-			}
-			version = CURRENT_VERSION
-			PLAYER_NAME = ""
-		} else {
-			loadSetting(owner.replayProp)
+		if(!owner.replayMode) version = CURRENT_VERSION else {
 			if(version==0&&owner.replayProp.getProperty("deltatris.endless", false)) goaltype = 2
-			PLAYER_NAME = owner.replayProp.getProperty("deltatris.playerName", "")
-
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
@@ -142,17 +140,30 @@ class Deltatris:MarathonModeBase() {
 		}
 		engine.speed.gravity = grav.toInt()
 		engine.speed.are = ceil(
-			Interpolation.lerp(START_ARE.toDouble(), END_ARE[difficulty].toDouble(), percentage)).toInt()
+			Interpolation.lerp(START_ARE.toDouble(), END_ARE[difficulty].toDouble(), percentage)
+		).toInt()
 		engine.speed.areLine = ceil(
-			Interpolation.lerp(START_LINE_ARE.toDouble(), END_LINE_ARE[difficulty].toDouble(),
-				percentage)).toInt()
-		engine.speed.lineDelay = ceil(Interpolation.smoothStep(START_LINE_DELAY.toDouble(),
-			END_LINE_DELAY[difficulty].toDouble(), percentage)).toInt()
+			Interpolation.lerp(
+				START_LINE_ARE.toDouble(), END_LINE_ARE[difficulty].toDouble(),
+				percentage
+			)
+		).toInt()
+		engine.speed.lineDelay = ceil(
+			Interpolation.smoothStep(
+				START_LINE_DELAY.toDouble(),
+				END_LINE_DELAY[difficulty].toDouble(), percentage
+			)
+		).toInt()
 		engine.speed.das = floor(
-			Interpolation.smoothStep(START_DAS.toDouble(), END_DAS[difficulty].toDouble(), percentage))
+			Interpolation.smoothStep(START_DAS.toDouble(), END_DAS[difficulty].toDouble(), percentage)
+		)
 			.toInt()
-		engine.speed.lockDelay = ceil(Interpolation.smoothStep(START_LOCK_DELAY.toDouble(),
-			END_LOCK_DELAY[difficulty].toDouble(), percentage)).toInt()
+		engine.speed.lockDelay = ceil(
+			Interpolation.smoothStep(
+				START_LOCK_DELAY.toDouble(),
+				END_LOCK_DELAY[difficulty].toDouble(), percentage
+			)
+		).toInt()
 		engine.speed.denominator = GRAVITY_DENOMINATOR
 	}
 	/*
@@ -164,28 +175,8 @@ class Deltatris:MarathonModeBase() {
 			netOnUpdateNetPlayRanking(engine, goaltype)
 		} else if(!engine.owner.replayMode) {
 			// Configuration changes
-			val change = updateCursor(engine, 6, playerID)
+			val change = updateMenu(engine)
 			if(change!=0) {
-				engine.playSE("change")
-				when(engine.statc[2]) {
-					0 -> {
-						difficulty += change
-						if(difficulty<0) difficulty = DIFFICULTIES-1
-						if(difficulty>=DIFFICULTIES) difficulty = 0
-					}
-					1 -> {
-						//enableTSpin = !enableTSpin;
-						twistEnableType += change
-						if(twistEnableType<0) twistEnableType = 2
-						if(twistEnableType>2) twistEnableType = 0
-					}
-					2 -> enableTSpinKick = !enableTSpinKick
-					3 -> twistEnableEZ = !twistEnableEZ
-					4 -> enableB2B = !enableB2B
-					5 -> enableCombo = !enableCombo
-					6 -> big = !big
-				}
-
 				// NET: Signal options change
 				if(netIsNetPlay&&netNumSpectators>0) {
 					netSendOptions(engine)
@@ -195,14 +186,6 @@ class Deltatris:MarathonModeBase() {
 			// Confirm
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
 				engine.playSE("decide")
-				if(playerProperties.isLoggedIn) {
-					saveSettingPlayer(playerProperties)
-					playerProperties.saveProfileConfig()
-				} else {
-					saveSetting(owner.modeConfig)
-					owner.saveModeConfig()
-				}
-
 				// NET: Signal start of the game
 				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
 				return false
@@ -211,12 +194,12 @@ class Deltatris:MarathonModeBase() {
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
 				engine.quitflag = true
-				playerProperties.reset()
+				engine.playerProp.reset()
 			}
 
 			// New acc
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null&&!netIsNetPlay) {
-				playerProperties.reset()
+				engine.playerProp.reset()
 				engine.playSE("decide")
 				engine.stat = GameEngine.Status.CUSTOM
 				engine.resetStatc()
@@ -224,7 +207,7 @@ class Deltatris:MarathonModeBase() {
 			}
 
 			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startlevel==0&&!big&&engine.ai==null) {
+			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 			}
 			engine.statc[3]++
@@ -236,44 +219,13 @@ class Deltatris:MarathonModeBase() {
 		return true
 	}
 
-	private val difficultyName:String
-		get() = when(difficulty) {
-			DIFFICULTY_EASY -> "EASY"
-			DIFFICULTY_NORMAL -> "NORMAL"
-			DIFFICULTY_HARD -> "HARD"
-			else -> "N/A"
-		}
-	/*
-     * Render the settings screen
-     */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		if(netIsNetRankingDisplayMode) {
-			// NET: Netplay Ranking
-			netOnRenderNetPlayRanking(engine, playerID, receiver)
-		} else {
-			var strtwistEnable = ""
-			if(version>=2) {
-				if(twistEnableType==0) strtwistEnable = "OFF"
-				if(twistEnableType==1) strtwistEnable = "T-ONLY"
-				if(twistEnableType==2) strtwistEnable = "ALL"
-			} else {
-				strtwistEnable = enableTSpin.getONorOFF()
-			}
-			drawMenu(
-				engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"DIFFICULTY" to difficultyName,
-				"SPIN BONUS" to strtwistEnable, "EZ SPIN" to enableTSpinKick, "EZIMMOBILE" to twistEnableEZ, "B2B" to enableB2B,
-				"COMBO" to enableCombo, "BIG" to big)
-		}
-	}
-
 	override fun onCustom(engine:GameEngine, playerID:Int):Boolean {
 		showPlayerStats = false
 		engine.isInGame = true
-		val s:Boolean = playerProperties.loginScreen.updateScreen(engine, playerID)
-		if(playerProperties.isLoggedIn) {
-			loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-			loadSettingPlayer(playerProperties)
+		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine, playerID)
+		if(engine.playerProp.isLoggedIn) {
+			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
+			loadSetting(engine.playerProp.propProfile)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s
@@ -288,30 +240,16 @@ class Deltatris:MarathonModeBase() {
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.statistics.level = 0
 		engine.statistics.levelDispAdd = 1
-		engine.b2bEnable = enableB2B
+		engine.b2bEnable = true
 		scorebefore = 0
 		stext = ShakingText(Random(engine.randSeed))
 		multiplier = MULTIPLIER_MINIMUM
-		if(enableCombo) {
-			engine.comboType = GameEngine.COMBO_TYPE_NORMAL
-		} else {
-			engine.comboType = GameEngine.COMBO_TYPE_DISABLE
-		}
+		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.big = big
-		if(version>=2) {
-			engine.twistAllowKick = enableTSpinKick
-			when(twistEnableType) {
-				0 -> engine.twistEnable = false
-				1 -> engine.twistEnable = true
-				else -> {
-					engine.twistEnable = true
-					engine.useAllSpinBonus = true
-				}
-			}
-		} else {
-			engine.twistEnable = enableTSpin
-		}
-		engine.twistEnableEZ = twistEnableEZ
+		engine.twistAllowKick = true
+		engine.twistEnable = true
+		engine.useAllSpinBonus = true
+		engine.twistEnableEZ = true
 		setSpeed(engine)
 		grav = START_GRAVITY.toDouble()
 		if(netIsWatch) {
@@ -331,7 +269,10 @@ class Deltatris:MarathonModeBase() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		if(owner.menuOnly) return
 		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.RED)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "($difficultyName DIFFICULTY)", EventReceiver.COLOR.RED)
+		receiver.drawScoreFont(
+			engine, playerID, 0, 1, "(${Companion.difficultyName[difficulty]} DIFFICULTY)",
+			EventReceiver.COLOR.RED
+		)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
@@ -340,35 +281,51 @@ class Deltatris:MarathonModeBase() {
 				if(showPlayerStats) {
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
-						receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScorePlayer[difficulty][i]}",
-							i==rankingRankPlayer, scale)
-						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLinesPlayer[difficulty][i]}",
-							i==rankingRankPlayer, scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i,
-							rankingTimePlayer[difficulty][i].toTimeStr, i==rankingRankPlayer, scale)
+						receiver.drawScoreFont(
+							engine, playerID, 3, topY+i, "${rankingScorePlayer[difficulty][i]}",
+							i==rankingRankPlayer, scale
+						)
+						receiver.drawScoreFont(
+							engine, playerID, 10, topY+i, "${rankingLinesPlayer[difficulty][i]}",
+							i==rankingRankPlayer, scale
+						)
+						receiver.drawScoreFont(
+							engine, playerID, 15, topY+i,
+							rankingTimePlayer[difficulty][i].toTimeStr, i==rankingRankPlayer, scale
+						)
 					}
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2, playerProperties.nameDisplay,
-						EventReceiver.COLOR.WHITE, 2f)
+					receiver.drawScoreFont(
+						engine, playerID, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay,
+						EventReceiver.COLOR.WHITE, 2f
+					)
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
 				} else {
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
 						receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLines[difficulty][i]}", i==rankingRank,
-							scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTime[difficulty][i].toTimeStr,
-							i==rankingRank, scale)
+						receiver.drawScoreFont(
+							engine, playerID, 10, topY+i, "${rankingLines[difficulty][i]}", i==rankingRank,
+							scale
+						)
+						receiver.drawScoreFont(
+							engine, playerID, 15, topY+i, rankingTime[difficulty][i].toTimeStr,
+							i==rankingRank, scale
+						)
 					}
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE)
-					if(!playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2,
-						"(NOT LOGGED IN)\n(E:LOG IN)")
-					if(playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5,
-						"F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
+					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
+						engine, playerID, 0, topY+RANKING_MAX+2,
+						"(NOT LOGGED IN)\n(E:LOG IN)"
+					)
+					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
+						engine, playerID, 0, topY+RANKING_MAX+5,
+						"F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN
+					)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
-			playerProperties.loginScreen.renderScreen(receiver, engine, playerID)
+			engine.playerProp.loginScreen.renderScreen(receiver, engine, playerID)
 		} else {
 			val baseX:Int = receiver.fieldX(engine, playerID)+4
 			val baseY:Int = receiver.fieldY(engine, playerID)+52
@@ -381,41 +338,50 @@ class Deltatris:MarathonModeBase() {
 			}
 			receiver.drawScoreFont(engine, playerID, 0, 4, "Score", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 4, "+$lastscore")
-			val scget = scgettime<engine.statistics.score
-			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/24.0).toInt()
-			sc += ceil(((scgettime-sc)/10f).toDouble()).toInt()
-			receiver.drawScoreNum(engine, playerID, 0, 5, "$sc", scget, 2f)
+			val scget = scDisp<engine.statistics.score
+			receiver.drawScoreNum(engine, playerID, 0, 5, "$scDisp", scget, 2f)
 
 			val rix:Int = receiver.scoreX(engine, playerID)
 			val riy:Int = receiver.scoreY(engine, playerID)+13*16
-			GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, rix, riy,
+			GameTextUtilities.drawDirectTextAlign(
+				receiver, engine, playerID, rix, riy,
 				GameTextUtilities.ALIGN_TOP_LEFT,
 				String.format("%.2f", multiplier)+"X",
 				if(engine.stat===GameEngine.Status.MOVE&&engine.statc[0]>engine.speed.lockDelay*3) EventReceiver.COLOR.RED else if(mScale>1) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.WHITE,
-				mScale)
+				mScale
+			)
 			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
 			receiver.drawScoreFont(engine, playerID, 0, 9, "TIME", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 10, engine.statistics.time.toTimeStr)
 			receiver.drawScoreFont(engine, playerID, 0, 12, "MULTIPLIER", EventReceiver.COLOR.GREEN)
 			receiver.drawScoreFont(engine, playerID, 0, 17, "SPEED", EventReceiver.COLOR.RED)
-			if(playerProperties.isLoggedIn||PLAYER_NAME.isNotEmpty()) {
+			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
 				receiver.drawScoreFont(engine, playerID, 8, 17, "PLAYER", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 8, 18, if(owner.replayMode) PLAYER_NAME else playerProperties.nameDisplay,
-					EventReceiver.COLOR.WHITE, 2f)
+				receiver.drawScoreFont(
+					engine, playerID, 8, 18,
+					if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
+					EventReceiver.COLOR.WHITE, 2f
+				)
 			}
-			receiver.drawSpeedMeter(engine, playerID, 0, 18,
+			receiver.drawSpeedMeter(
+				engine, playerID, 0, 18,
 				when {
-					engine.statistics.totalPieceLocked<PIECES_MAX[difficulty] -> minOf(1.0,
+					engine.statistics.totalPieceLocked<PIECES_MAX[difficulty] -> minOf(
+						1.0,
 						engine.statistics.totalPieceLocked/PIECES_MAX[difficulty]
-							.toDouble()).toFloat()
+							.toDouble()
+					).toFloat()
 					engine.statistics.time/12%2==0 -> 1f
 					else -> 0f
 				},
-				2f)
+				2f
+			)
 			if(engine.statistics.totalPieceLocked>=PIECES_MAX[difficulty]) {
-				stext.drawScoreText(receiver, engine, playerID, 0, 20, 4, 2, "MAXIMUM VELOCITY",
-					if(engine.statistics.time/3%3==0) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.YELLOW, 1.25f)
+				stext.drawScoreText(
+					receiver, engine, playerID, 0, 20, 4, 2, "MAXIMUM VELOCITY",
+					if(engine.statistics.time/3%3==0) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.YELLOW, 1.25f
+				)
 			}
 		}
 
@@ -433,7 +399,7 @@ class Deltatris:MarathonModeBase() {
      * Called after every frame
      */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		scgettime++
+		super.onLast(engine, playerID)
 		mScale = maxOf(1f, mScale*0.98f)
 
 		// Meter
@@ -444,7 +410,7 @@ class Deltatris:MarathonModeBase() {
 		if(multiplier<5) engine.meterColor = GameEngine.METER_COLOR_RED
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
-			if(engine.ctrl.isPush(Controller.BUTTON_F)&&playerProperties.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")
 			}
@@ -455,7 +421,7 @@ class Deltatris:MarathonModeBase() {
      */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Line clear bonus
-		val pts = calcScore(engine, lines)
+		val pts = calcScoreBase(engine, lines)
 		var get = 0
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		// Combo
@@ -484,7 +450,7 @@ class Deltatris:MarathonModeBase() {
 		}
 
 		// Combo
-		if(enableCombo&&engine.combo>=1&&lines>=1) {
+		if(engine.combo>=1&&lines>=1) {
 			multiplier += engine.combo*MULTIPLIER_COMBO
 			mScale += engine.combo*0.1f
 		}
@@ -498,24 +464,18 @@ class Deltatris:MarathonModeBase() {
 
 		// Add to score
 		if(pts+cmb+spd>0) {
-			get = pts*(10+engine.statistics.level)/10+spd
-			if(cmb>=1) {
-				var b = sum*(1+cmb)/2
-				sum += get
-				b = sum*(2+cmb)/2-b
-				get = b
-			} else
-				sum = get
+			get = calcScoreCombo(pts, cmb, engine.statistics.level, spd)
 			get = (get*multiplier).toInt()
 			if(pts>0) lastscore = get
 
 			if(lines>=1) engine.statistics.scoreLine += get
 			else engine.statistics.scoreBonus += get
-			scgettime += (spd*multiplier).toInt()
+			scDisp += (spd*multiplier).toInt()
 		}
 		// BGM fade-out effects and BGM changes
 		val pieces = minOf(
-			PIECES_MAX[difficulty]+PIECES_MAX[difficulty]/20, engine.statistics.totalPieceLocked)
+			PIECES_MAX[difficulty]+PIECES_MAX[difficulty]/20, engine.statistics.totalPieceLocked
+		)
 		val lastLevel:Int = engine.statistics.level
 
 //		if ((pieces - (PIECES_MAX[difficulty] / 20)) % (PIECES_MAX[difficulty] / 5) >= ((PIECES_MAX[difficulty] / 5) - 10) && engine.statistics.totalPieceLocked - (PIECES_MAX[difficulty] / 20) <= PIECES_MAX[difficulty]) {
@@ -530,7 +490,8 @@ class Deltatris:MarathonModeBase() {
 		engine.statistics.level = minOf(19, pieces/(PIECES_MAX[difficulty]/20))
 		val levelDec = pieces.toDouble()/(PIECES_MAX[difficulty].toDouble()/20.0)
 		if(levelDec-levelDec.toInt()>=0.8&&pieces<PIECES_MAX[difficulty]) {
-			if(engine.statistics.level==3||engine.statistics.level==7||engine.statistics.level==11||engine.statistics.level==15||engine.statistics.level==19) owner.bgmStatus.fadesw = true
+			if(engine.statistics.level==3||engine.statistics.level==7||engine.statistics.level==11||engine.statistics.level==15||engine.statistics.level==19) owner.bgmStatus.fadesw =
+				true
 		}
 		if(engine.statistics.level>lastLevel) {
 			owner.backgroundStatus.fadesw = true
@@ -589,8 +550,10 @@ class Deltatris:MarathonModeBase() {
      * Render results screen
      */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE,
-			Statistic.SCORE, Statistic.LINES, Statistic.TIME, Statistic.SPL, Statistic.LPM)
+		drawResultStats(
+			engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE,
+			Statistic.SCORE, Statistic.LINES, Statistic.TIME, Statistic.SPL, Statistic.LPM
+		)
 		drawResultRank(engine, playerID, receiver, 10, EventReceiver.COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[1])
@@ -606,8 +569,7 @@ class Deltatris:MarathonModeBase() {
 	/*
      * Called when saving replay
      */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
@@ -616,144 +578,14 @@ class Deltatris:MarathonModeBase() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, difficulty)
-			if(playerProperties.isLoggedIn) {
-				prop.setProperty("deltatris.playerName", playerProperties.nameDisplay)
-			}
-			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
-			if(rankingRankPlayer!=-1&&playerProperties.isLoggedIn) {
-				saveRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-				playerProperties.saveProfileConfig()
-			}
+			if(updateRanking(
+					engine.statistics.score, engine.statistics.lines, engine.statistics.time, difficulty,
+					engine.playerProp.isLoggedIn
+				)
+			) return true
+
 		}
-	}
-	/**
-	 * Load settings from property file
-	 *
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
-		twistEnableType = prop.getProperty("deltatris.twistEnableType", 1)
-		enableTSpin = prop.getProperty("deltatris.enableTSpin", true)
-		enableTSpinKick = prop.getProperty("deltatris.enableTSpinKick", true)
-		twistEnableEZ = prop.getProperty("deltatris.twistEnableEZ", false)
-		enableB2B = prop.getProperty("deltatris.enableB2B", true)
-		enableCombo = prop.getProperty("deltatris.enableCombo", true)
-		difficulty = prop.getProperty("deltatris.difficulty", 1)
-		big = prop.getProperty("deltatris.big", false)
-		version = prop.getProperty("deltatris.version", 0)
-	}
-	/**
-	 * Save settings to property file
-	 *
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("deltatris.twistEnableType", twistEnableType)
-		prop.setProperty("deltatris.enableTSpin", enableTSpin)
-		prop.setProperty("deltatris.enableTSpinKick", enableTSpinKick)
-		prop.setProperty("deltatris.twistEnableEZ", twistEnableEZ)
-		prop.setProperty("deltatris.enableB2B", enableB2B)
-		prop.setProperty("deltatris.enableCombo", enableCombo)
-		prop.setProperty("deltatris.difficulty", difficulty)
-		prop.setProperty("deltatris.big", big)
-		prop.setProperty("deltatris.version", version)
-	}
-	/**
-	 * Load settings from property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun loadSettingPlayer(prop:ProfileProperties) {
-		twistEnableType = prop.getProperty("deltatris.twistEnableType", 1)
-		enableTSpin = prop.getProperty("deltatris.enableTSpin", true)
-		enableTSpinKick = prop.getProperty("deltatris.enableTSpinKick", true)
-		twistEnableEZ = prop.getProperty("deltatris.twistEnableEZ", false)
-		enableB2B = prop.getProperty("deltatris.enableB2B", true)
-		enableCombo = prop.getProperty("deltatris.enableCombo", true)
-		difficulty = prop.getProperty("deltatris.difficulty", 1)
-		big = prop.getProperty("deltatris.big", false)
-	}
-	/**
-	 * Save settings to property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun saveSettingPlayer(prop:ProfileProperties) {
-		prop.setProperty("deltatris.twistEnableType", twistEnableType)
-		prop.setProperty("deltatris.enableTSpin", enableTSpin)
-		prop.setProperty("deltatris.enableTSpinKick", enableTSpinKick)
-		prop.setProperty("deltatris.twistEnableEZ", twistEnableEZ)
-		prop.setProperty("deltatris.enableB2B", enableB2B)
-		prop.setProperty("deltatris.enableCombo", enableCombo)
-		prop.setProperty("deltatris.difficulty", difficulty)
-		prop.setProperty("deltatris.big", big)
-		prop.setProperty("deltatris.version", version)
-	}
-	/**
-	 * Read rankings from property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			for(j in 0 until GAMETYPE_MAX) {
-				rankingScore[j][i] = prop.getProperty("deltatris.ranking.$ruleName.$j.score.$i", 0)
-				rankingLines[j][i] = prop.getProperty("deltatris.ranking.$ruleName.$j.lines.$i", 0)
-				rankingTime[j][i] = prop.getProperty("deltatris.ranking.$ruleName.$j.time.$i", 0)
-			}
-		}
-	}
-	/**
-	 * Save rankings to property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			for(j in 0 until GAMETYPE_MAX) {
-				prop.setProperty("deltatris.ranking.$ruleName.$j.score.$i", rankingScore[j][i])
-				prop.setProperty("deltatris.ranking.$ruleName.$j.lines.$i", rankingLines[j][i])
-				prop.setProperty("deltatris.ranking.$ruleName.$j.time.$i", rankingTime[j][i])
-			}
-		}
-	}
-	/**
-	 * Read rankings from property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun loadRankingPlayer(prop:ProfileProperties?, ruleName:String) {
-		if(prop?.isLoggedIn!=true) return
-		for(i in 0 until RANKING_MAX) {
-			for(j in 0 until GAMETYPE_MAX) {
-				rankingScorePlayer[j][i] = prop.getProperty("deltatris.ranking.$ruleName.$j.score.$i", 0)
-				rankingLinesPlayer[j][i] = prop.getProperty("deltatris.ranking.$ruleName.$j.lines.$i", 0)
-				rankingTimePlayer[j][i] = prop.getProperty("deltatris.ranking.$ruleName.$j.time.$i", 0)
-			}
-		}
-	}
-	/**
-	 * Save rankings to property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRankingPlayer(prop:ProfileProperties?, ruleName:String) {
-		if(prop?.isLoggedIn!=true) return
-		for(i in 0 until RANKING_MAX) {
-			for(j in 0 until GAMETYPE_MAX) {
-				prop.setProperty("deltatris.ranking.$ruleName.$j.score.$i", rankingScorePlayer[j][i])
-				prop.setProperty("deltatris.ranking.$ruleName.$j.lines.$i", rankingLinesPlayer[j][i])
-				prop.setProperty("deltatris.ranking.$ruleName.$j.time.$i", rankingTimePlayer[j][i])
-			}
-		}
+		return false
 	}
 	/**
 	 * Update rankings
@@ -762,7 +594,7 @@ class Deltatris:MarathonModeBase() {
 	 * @param li   Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int) {
+	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int, isLoggedIn:Boolean):Boolean {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -777,7 +609,7 @@ class Deltatris:MarathonModeBase() {
 			rankingLines[type][rankingRank] = li
 			rankingTime[type][rankingRank] = time
 		}
-		if(playerProperties.isLoggedIn) {
+		if(isLoggedIn) {
 			rankingRankPlayer = checkRankingPlayer(sc, li, time, type)
 			if(rankingRankPlayer!=-1) {
 				// Shift down ranking entries
@@ -792,7 +624,8 @@ class Deltatris:MarathonModeBase() {
 				rankingLinesPlayer[type][rankingRankPlayer] = li
 				rankingTimePlayer[type][rankingRankPlayer] = time
 			}
-		}
+		} else rankingRankPlayer = -1
+		return rankingRank!=-1||rankingRankPlayer!=-1
 	}
 	/**
 	 * Calculate ranking position
@@ -803,15 +636,9 @@ class Deltatris:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX) {
-			if(sc>rankingScore[type][i]) {
-				return i
-			} else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) {
-				return i
-			} else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) {
-				return i
-			}
-		}
+		for(i in 0 until RANKING_MAX) if(sc>rankingScore[type][i]) return i
+		else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
+		else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
 		return -1
 	}
 	/**
@@ -823,15 +650,9 @@ class Deltatris:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Int, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX) {
-			if(sc>rankingScorePlayer[type][i]) {
-				return i
-			} else if(sc==rankingScorePlayer[type][i]&&li>rankingLinesPlayer[type][i]) {
-				return i
-			} else if(sc==rankingScorePlayer[type][i]&&li==rankingLinesPlayer[type][i]&&time<rankingTimePlayer[type][i]) {
-				return i
-			}
-		}
+		for(i in 0 until RANKING_MAX) if(sc>rankingScorePlayer[type][i]) return i
+		else if(sc==rankingScorePlayer[type][i]&&li>rankingLinesPlayer[type][i]) return i
+		else if(sc==rankingScorePlayer[type][i]&&li==rankingLinesPlayer[type][i]&&time<rankingTimePlayer[type][i]) return i
 		return -1
 	}
 
@@ -884,6 +705,7 @@ class Deltatris:MarathonModeBase() {
 		/**
 		 * Difficulties
 		 */
+		private val difficultyName = arrayOf("EASY", "NORMAL", "HARD")
 		private const val DIFFICULTIES = 3
 		private const val DIFFICULTY_EASY = 0
 		private const val DIFFICULTY_NORMAL = 1

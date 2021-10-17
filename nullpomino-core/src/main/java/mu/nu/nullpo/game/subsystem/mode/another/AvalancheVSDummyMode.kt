@@ -96,7 +96,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected var zenKeshi = BooleanArray(MAX_PLAYERS)
 
 	/** Amount of points earned from most recent clear */
-	protected var lastscore = IntArray(MAX_PLAYERS)
+	protected var lastscores = IntArray(MAX_PLAYERS)
 	protected var lastmultiplier = IntArray(MAX_PLAYERS)
 
 	/** Amount of ojama added in current chain */
@@ -209,7 +209,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		randMap = Random.Default
 
 		zenKeshi = BooleanArray(MAX_PLAYERS)
-		lastscore = IntArray(MAX_PLAYERS)
+		lastscores = IntArray(MAX_PLAYERS)
 		lastmultiplier = IntArray(MAX_PLAYERS)
 		ojamaAdd = IntArray(MAX_PLAYERS)
 		score = IntArray(MAX_PLAYERS)
@@ -274,11 +274,10 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		prop.setProperty("avalanchevs$name.clearDelay.$preset", engine.cascadeClearDelay)
 	}
 
-	/** Load settings not related to speeds
+	/** Load settings from [prop] not related to speeds
 	 * Note: Subclasses need to load ojamaRate and ojamaHard, since default
 	 * values vary.
 	 * @param engine GameEngine
-	 * @param prop Property file to read from
 	 */
 	protected fun loadOtherSetting(engine:GameEngine, prop:CustomProperties, name:String) {
 		val playerID = engine.playerID
@@ -308,10 +307,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			loadMapSetFever(engine, playerID, feverMapSet[playerID], true)
 	}
 
-	/** Save settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to save to
-	 */
+	/** Save settings from [engine] into [prop] not related to speeds */
 	protected fun saveOtherSetting(engine:GameEngine, prop:CustomProperties, name:String) {
 		val playerID = engine.playerID
 		prop.setProperty("avalanchevs$name.bgmno", bgmno)
@@ -340,10 +336,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		prop.setProperty("avalanchevs$name.clearSize.p$playerID", engine.colorClearSize)
 	}
 
-	/** MapRead
-	 * @param field field
-	 * @param prop Property file to read from
-	 */
+	/** MapRead into #[id]:[field] from [prop] */
 	protected fun loadMap(field:Field?, prop:CustomProperties?, id:Int) {
 		field?.run {
 			reset()
@@ -354,11 +347,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		}
 	}
 
-	/** MapSave
-	 * @param field field
-	 * @param prop Property file to save to
-	 * @param id AnyID
-	 */
+	/** MapSave from #[id]:[field] into [prop] */
 	protected fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		//field.writeProperty(prop, id);
 		prop.setProperty("values.$id", field.fieldToString())
@@ -527,7 +516,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			if(multiplier>999) multiplier = 999
 			if(multiplier<1) multiplier = 1
 
-			lastscore[playerID] = pts
+			lastscores[playerID] = pts
 			lastmultiplier[playerID] = multiplier
 			scgettime[playerID] = 25
 			val ptsTotal = pts*multiplier
@@ -631,6 +620,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		if(scgettime[playerID]>0) scgettime[playerID]--
 		if(zenKeshiDisplay[playerID]>0) zenKeshiDisplay[playerID]--
 		if(chainDisplay[playerID]>0) chainDisplay[playerID]--
@@ -744,13 +734,13 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		receiver.drawScoreFont(engine, playerID, x, y, "Score", headerColor)
 		y++
 		receiver.drawScoreFont(engine, playerID, x, y, "1P: ", COLOR.RED)
-		if(scgettime[0]>0&&lastscore[0]>0&&lastmultiplier[0]>0)
-			receiver.drawScoreFont(engine, playerID, x+4, y, "+${lastscore[0]}e${lastmultiplier[0]}", COLOR.RED)
+		if(scgettime[0]>0&&lastscores[0]>0&&lastmultiplier[0]>0)
+			receiver.drawScoreFont(engine, playerID, x+4, y, "+${lastscores[0]}e${lastmultiplier[0]}", COLOR.RED)
 		else receiver.drawScoreFont(engine, playerID, x+4, y, "${score[0]}", COLOR.RED)
 		y++
 		receiver.drawScoreFont(engine, playerID, x, y, "2P: ", COLOR.BLUE)
-		if(scgettime[1]>0&&lastscore[1]>0&&lastmultiplier[1]>0)
-			receiver.drawScoreFont(engine, playerID, x+4, y, "+${lastscore[1]}e${lastmultiplier[1]}", COLOR.BLUE)
+		if(scgettime[1]>0&&lastscores[1]>0&&lastmultiplier[1]>0)
+			receiver.drawScoreFont(engine, playerID, x+4, y, "+${lastscores[1]}e${lastmultiplier[1]}", COLOR.BLUE)
 		else receiver.drawScoreFont(engine, playerID, x+4, y, "${score[1]}", COLOR.BLUE)
 	}
 

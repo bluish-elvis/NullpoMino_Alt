@@ -22,7 +22,6 @@ fabric.properties
 markdown-navigator.xml
 markdown-navigator/
 modules.xml
-nullpomino_alt.iml
 
 ### Java template
 # Compiled class file
@@ -126,3 +125,6 @@ $RECYCLE.BIN/
 # Ignore Gradle build output directory
 build
 **/target*/
+
+/.settings/
+/target/

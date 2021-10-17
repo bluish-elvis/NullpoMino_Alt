@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="app_RuleEditor" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="temurin-16" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <envs>
+      <env name="MAVEN_OPTS" value="-Djava.library.path=target/natives" />
+    </envs>
+    <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
+    <option name="MAIN_CLASS_NAME" value="mu.nu.nullpo.tool.ruleeditor.RuleEditor" />
+    <module name="nullpomino-core" />
+    <option name="VM_PARAMETERS" value="-Djava.library.path=lib -XX:MaxMetaspaceSize=128m -Dfile.encoding=windows-31j" />
+    <option name="WORKING_DIRECTORY" value="$ProjectFileDir$/target/install" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

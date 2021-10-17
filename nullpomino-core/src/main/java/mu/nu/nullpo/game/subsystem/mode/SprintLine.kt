@@ -33,6 +33,8 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.log4j.Logger
@@ -43,8 +45,9 @@ class SprintLine:NetDummyMode() {
 	/** BGM number */
 	private var bgmno = 0
 
-	/** Big */
-	private var big = false
+	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** Target line count type (0=20,1=40,2=100) */
 	private var goaltype = 0
@@ -62,12 +65,21 @@ class SprintLine:NetDummyMode() {
 	private var rankingPiece:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
 
 	/** Rankings' PPS values */
-	private var rankingPPS:Array<FloatArray> = Array(GOALTYPE_MAX) {FloatArray(RANKING_MAX)}
+	private val rankingPPS:Array<FloatArray>
+		get() = Array(GOALTYPE_MAX) {x ->
+			FloatArray(RANKING_MAX) {y -> rankingPiece[x][y]*60f/rankingTime[x][y]}
+		}
 
 	/* Mode name */
 	override val name = "Lines SprintRace"
 	override val gameIntensity = 2
 	/* Initialization for each player */
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf(*(
+			(rankingTime.mapIndexed {i, a -> "$i.time" to a}+
+				rankingPiece.mapIndexed {i, a -> "$i.piece" to a}).toTypedArray()
+			))
+
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		log.debug("playerInit")
 
@@ -81,7 +93,7 @@ class SprintLine:NetDummyMode() {
 		rankingRank = -1
 		rankingTime = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
 		rankingPiece = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingPPS = Array(GOALTYPE_MAX) {FloatArray(RANKING_MAX)}
+//		rankingPPS = Array(GOALTYPE_MAX) {FloatArray(RANKING_MAX)}
 
 		engine.framecolor = GameEngine.FRAME_COLOR_RED
 
@@ -90,7 +102,6 @@ class SprintLine:NetDummyMode() {
 		if(!engine.owner.replayMode) {
 			presetNumber = engine.owner.modeConfig.getProperty("linerace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
 		} else {
 			presetNumber = 0
 			loadPreset(engine, engine.owner.replayProp, -1)
@@ -149,8 +160,8 @@ class SprintLine:NetDummyMode() {
 				engine.playSE("change")
 
 				var m = 1
-				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
+				if(engine.ctrl.isPress(Controller.BUTTON_C)) m = 100
+				if(engine.ctrl.isPress(Controller.BUTTON_D)) m = 1000
 
 				when(menuCursor) {
 
@@ -238,7 +249,7 @@ class SprintLine:NetDummyMode() {
 	}
 
 	/* This function will be called before the game actually begins (after
- * Ready&Go screen disappears) */
+	* Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.big = big
 
@@ -273,9 +284,9 @@ class SprintLine:NetDummyMode() {
 			receiver.drawMenuNano(engine, playerID, 6, 21, "LINES\nTO GO", EventReceiver.COLOR.BLUE)
 			val remainLines = maxOf(0, GOAL_TABLE[goaltype]-engine.statistics.lines)
 			val fontcolor = when(remainLines) {
-				in 1..30 -> EventReceiver.COLOR.YELLOW
-				in 1..20 -> EventReceiver.COLOR.ORANGE
 				in 1..10 -> EventReceiver.COLOR.RED
+				in 1..20 -> EventReceiver.COLOR.ORANGE
+				in 1..30 -> EventReceiver.COLOR.YELLOW
 				else -> EventReceiver.COLOR.WHITE
 			}
 			receiver.drawScoreNum(engine, playerID, 0, 4, "$remainLines", fontcolor)
@@ -334,7 +345,7 @@ class SprintLine:NetDummyMode() {
 	}
 
 	/* Save replay file */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		savePreset(engine, engine.owner.replayProp, -1)
 
 		// NET: Save name
@@ -344,37 +355,17 @@ class SprintLine:NetDummyMode() {
 		if(!owner.replayMode&&engine.statistics.lines>=GOAL_TABLE[goaltype]&&!big&&engine.ai==null&&!netIsWatch) {
 			updateRanking(engine.statistics.time, engine.statistics.totalPieceLocked, engine.statistics.pps)
 
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1) return true
 		}
+
+		return false
 	}
 
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until GOALTYPE_MAX)
-			for(j in 0 until RANKING_MAX) {
-				rankingTime[i][j] = prop.getProperty("$ruleName.$i.time.$j", -1)
-				rankingPiece[i][j] = prop.getProperty("$ruleName.$i.piece.$j", 0)
-				rankingPPS[i][j] = rankingPiece[i][j]*60f/rankingTime[i][j]
-			}
-	}
-
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until GOALTYPE_MAX).flatMap {j ->
-			(0 until RANKING_MAX).flatMap {i ->
-				listOf("$ruleName.$j.time.$i" to rankingTime[j][i],
-					"$ruleName.$j.piece.$i" to rankingPiece[j][i])
-			}
-		})
-	}
+/*override fun loadRanking(prop:CustomProperties, ruleName:String) {
+	super.loadRanking(prop, ruleName)
+	for(i in 0 until GOALTYPE_MAX)
+		for(j in 0 until RANKING_MAX) rankingPPS[i][j] = rankingPiece[i][j]*60f/rankingTime[i][j]
+}*/
 
 	/** Update rankings
 	 * @param time Time
@@ -405,20 +396,14 @@ class SprintLine:NetDummyMode() {
 	 */
 	private fun checkRanking(time:Int, piece:Int, pps:Float):Int {
 		for(i in 0 until RANKING_MAX)
-			if(time<rankingTime[goaltype][i]||rankingTime[goaltype][i]<0)
-				return i
-			else if(time==rankingTime[goaltype][i]&&(piece<rankingPiece[goaltype][i]||rankingPiece[goaltype][i]==0))
-				return i
-			else if(time==rankingTime[goaltype][i]&&piece==rankingPiece[goaltype][i]
-				&&pps>rankingPPS[goaltype][i])
-				return i
+			if(time<rankingTime[goaltype][i]||rankingTime[goaltype][i]<=0) return i
+			else if(time==rankingTime[goaltype][i]&&(piece<rankingPiece[goaltype][i]||rankingPiece[goaltype][i]==0)) return i
+			else if(time==rankingTime[goaltype][i]&&piece==rankingPiece[goaltype][i]&&pps>rankingPPS[goaltype][i]) return i
 
 		return -1
 	}
 
-	/** NET: Send various in-game stats (as well as goaltype)
-	 * @param engine GameEngine
-	 */
+	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
 		var msg = "game\tstats\t"
 		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
@@ -429,7 +414,7 @@ class SprintLine:NetDummyMode() {
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
-	/** NET: Receive various in-game stats (as well as goaltype) */
+	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
 		engine.statistics.lines = message[4].toInt()
 		engine.statistics.totalPieceLocked = message[5].toInt()

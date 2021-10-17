@@ -45,13 +45,6 @@ class Physician:AbstractMode() {
 	/** EventReceiver object (This receives many game events, can also be used
 	 * for drawing the fonts.) */
 
-	/** Amount of points you just get from line clears */
-	private var lastscore = 0
-
-	/** Elapsed time from last line clear (lastscore is displayed to screen
-	 * until this reaches to 120) */
-	private var scgettime = 0
-
 	/** Version number */
 	private var version = 0
 
@@ -83,7 +76,6 @@ class Physician:AbstractMode() {
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
 		lastscore = 0
-		scgettime = 0
 		gemsClearedChainTotal = 0
 
 		rankingRank = -1
@@ -91,11 +83,11 @@ class Physician:AbstractMode() {
 		rankingTime = IntArray(RANKING_MAX)
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
+			loadSetting(owner.modeConfig, engine)
+
 			version = CURRENT_VERSION
 		} else
-			loadSetting(owner.replayProp)
+			loadSetting(owner.replayProp, engine)
 
 		engine.framecolor = GameEngine.FRAME_COLOR_PURPLE
 		engine.clearMode = GameEngine.ClearType.LINE_COLOR
@@ -154,8 +146,6 @@ class Physician:AbstractMode() {
 			// 決定
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				return false
 			}
 
@@ -204,11 +194,8 @@ class Physician:AbstractMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-			val strScore:String = if(lastscore==0||scgettime<=0)
-				"${engine.statistics.score}"
-			else
-				"${engine.statistics.score}(+$lastscore)"
-			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
+			receiver.drawScoreFont(engine, playerID, 6, 3, "(+$lastscore)")
+			receiver.drawScoreFont(engine, playerID, 0, 4, "$scDisp")
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "REST", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 7, engine.field.howManyGems.toString())
@@ -259,7 +246,7 @@ class Physician:AbstractMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		if(scgettime>0) scgettime--
+		super.onLast(engine, playerID)
 
 		if(engine.field==null) return
 
@@ -294,7 +281,6 @@ class Physician:AbstractMode() {
 			pts *= (speed+1)*100
 			gemsClearedChainTotal += gemsCleared
 			lastscore = pts
-			scgettime = 120
 			engine.statistics.scoreLine += pts
 			engine.playSE("gem")
 			setSpeed(engine)
@@ -312,49 +298,39 @@ class Physician:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
-		drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
+		drawResult(
+			engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
 			"CLEARED", String.format("%10d", engine.statistics.lines), "Time",
-			String.format("%10s", engine.statistics.time.toTimeStr))
+			String.format("%10s", engine.statistics.time.toTimeStr)
+		)
 		drawResultRank(engine, playerID, receiver, 9, EventReceiver.COLOR.BLUE, rankingRank)
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(prop, engine)
 
 		// Update rankings
 		if(!owner.replayMode&&engine.ai==null) {
 			updateRanking(engine.statistics.score, engine.statistics.time)
 
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1) return true
 		}
+		return false
 	}
 
-	/** Load settings from property file
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		hoverBlocks = prop.getProperty("physician.hoverBlocks", 40)
 		speed = prop.getProperty("physician.speed", 1)
 		version = prop.getProperty("physician.version", 0)
 	}
 
-	/** Save settings to property file
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("physician.hoverBlocks", hoverBlocks)
 		prop.setProperty("physician.speed", speed)
 		prop.setProperty("physician.version", version)
 	}
 
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX) {
 			rankingScore[i] = prop.getProperty("$ruleName.$i.score", 0)
@@ -362,17 +338,14 @@ class Physician:AbstractMode() {
 		}
 	}
 
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
+	/** Save rankings of [ruleName] to [prop] */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName,
-			(0 until RANKING_MAX).flatMap {i ->
-				listOf(
-					"$ruleName.$i.score" to rankingScore[i],
-					"$ruleName.$i.time" to rankingTime[i],
-				)
-			})
+		super.saveRanking((0 until RANKING_MAX).flatMap {i ->
+			listOf(
+				"$ruleName.$i.score" to rankingScore[i],
+				"$ruleName.$i.time" to rankingTime[i],
+			)
+		})
 	}
 
 	/** Update rankings

@@ -34,6 +34,7 @@ import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.floor
@@ -71,26 +72,30 @@ class GrandRoads:NetDummyMode() {
 	/** Average section time */
 	private var sectionavgtime = 0
 
+	private val itemMode = StringsMenuItem("goaltype", "DIFFICULTY", EventReceiver.COLOR.BLUE, 0,
+		Course.values().map {it.showName}.toTypedArray())
 	/** Game type */
-	private var goaltype = 0
-		set(value) {
-			field = value%Course.values().size
-		}
+	private var goaltype:Int by DelegateMenuItem(itemMode)
 	private var nowCourse
 		get() = Course.values()[maxOf(0, goaltype%Course.values().size)] ?: Course.EASY
 		set(value) {
 			goaltype = Course.values().indexOfFirst {it==value}
 		}
 
+	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", EventReceiver.COLOR.RED, 0,
+		0..(Course.values().map {it.goalLevel}.maxOrNull() ?: 0), true, true)
 	/** Selected starting level */
-	private var startlevel = 0
+	private var startLevel = 0
 
-	/** Big mode on/off */
-	private var big = false
+	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
+	private val itemST = BooleanMenuItem("showsectiontime", "SHOW STIME", EventReceiver.COLOR.BLUE, true)
 	/** Show section time */
-	private var showsectiontime = false
+	private var showST = false
 
+	override val menu:MenuList = MenuList("timeattack", itemMode, itemLevel, itemST, itemBig)
 	/** Version of this mode */
 	private var version = 0
 
@@ -112,6 +117,12 @@ class GrandRoads:NetDummyMode() {
 			Course.XTREME, Course.HELL, Course.HIDE, Course.VOID -> 3
 			else -> 0
 		}
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf(*((
+			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingLifes.mapIndexed {a, x -> "$a.lfes" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
+				rankingRollclear.mapIndexed {a, x -> "$a.rollclear" to x}).toTypedArray()))
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -120,7 +131,7 @@ class GrandRoads:NetDummyMode() {
 		menuTime = 0
 		norm = 0
 		goaltype = 0
-		startlevel = 0
+		startLevel = 0
 		rolltime = 0
 		lastlinetime = 0
 		rollstarted = false
@@ -128,7 +139,7 @@ class GrandRoads:NetDummyMode() {
 		sectionscomp = 0
 		sectionavgtime = 0
 		big = false
-		showsectiontime = true
+		showST = true
 
 		rankingRank = -1
 		rankingLines = Array(COURSE_MAX) {IntArray(RANKING_MAX)}
@@ -147,19 +158,11 @@ class GrandRoads:NetDummyMode() {
 		engine.staffrollNoDeath = false
 
 		netPlayerInit(engine, playerID)
+		// NET: Load name
+		if(!owner.replayMode) version = CURRENT_VERSION else netPlayerName = engine.owner.replayProp.getProperty(
+			"$playerID.net.netPlayerName", "")
 
-		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
-			version = CURRENT_VERSION
-		} else {
-			loadSetting(owner.replayProp)
-
-			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
-		}
-
-		engine.owner.backgroundStatus.bg = startlevel
+		engine.owner.backgroundStatus.bg = startLevel
 	}
 
 	/** Set the gravity speed and some other things
@@ -309,26 +312,9 @@ class GrandRoads:NetDummyMode() {
 			if(change!=0) {
 				engine.playSE("change")
 
-				when(menuCursor) {
-					0 -> {
-						goaltype += change
-						if(goaltype<0) goaltype = COURSE_MAX-1
-						if(goaltype>COURSE_MAX-1) goaltype = 0
-						if(startlevel>nowCourse.goalLevel-1) startlevel = nowCourse.goalLevel-1
-						engine.owner.backgroundStatus.bg = startlevel
-						setSpeed(engine)
-					}
-					1 -> {
-						startlevel += change
-						if(startlevel<0) startlevel = nowCourse.goalLevel-1
-						if(startlevel>nowCourse.goalLevel-1) startlevel = 0
-						engine.owner.backgroundStatus.bg = startlevel
-						setSpeed(engine)
-					}
-					2 -> showsectiontime = !showsectiontime
-					3 -> big = !big
-				}
-
+				if(startLevel>nowCourse.goalLevel-1) startLevel = nowCourse.goalLevel-1
+				engine.owner.backgroundStatus.bg = startLevel
+				setSpeed(engine)
 				// NET: Signal options change
 				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
 			}
@@ -336,8 +322,6 @@ class GrandRoads:NetDummyMode() {
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 
 				// NET: Signal start of the game
 				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
@@ -364,25 +348,13 @@ class GrandRoads:NetDummyMode() {
 		return true
 	}
 
-	/** Renders game setup screen */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		if(netIsNetRankingDisplayMode)
-		// NET: Netplay Ranking
-			netOnRenderNetPlayRanking(engine, playerID, receiver)
-		else
-			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "DIFFICULTY" to nowCourse.showName)
-		drawMenuCompact(engine, playerID, receiver, "Level" to startlevel+1)
-		drawMenuSpeeds(engine, playerID, receiver, 4, EventReceiver.COLOR.WHITE, 10)
-		drawMenuCompact(engine, playerID, receiver, 9, EventReceiver.COLOR.BLUE, 2, "SHOW STIME" to showsectiontime, "BIG" to big)
-	}
-
 	/** Ready screen */
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==0) {
-			engine.statistics.level = startlevel
+			engine.statistics.level = startLevel
 			engine.statistics.levelDispAdd = 1
 			engine.big = big
-			norm = startlevel*10
+			norm = startLevel*10
 			levelTimer = 0
 			setSpeed(engine)
 			setStartBgmlv()
@@ -412,7 +384,7 @@ class GrandRoads:NetDummyMode() {
 		//receiver.drawScoreBadges(engine, playerID,0,-3,100,decoration);
 		//receiver.drawScoreBadges(engine, playerID,5,-4,100,dectemp);
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null&&!netIsWatch) {
+			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null&&!netIsWatch) {
 				receiver.drawScoreFont(engine, playerID, 8, 3, "Time", EventReceiver.COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
@@ -456,7 +428,7 @@ class GrandRoads:NetDummyMode() {
 			}
 
 			// Section time
-			if(showsectiontime&&sectionTime.isNotEmpty()&&!netIsWatch) {
+			if(showST&&sectionTime.isNotEmpty()&&!netIsWatch) {
 				val x = if(receiver.nextDisplayType==2) 25 else 12
 				val y = if(receiver.nextDisplayType==2) 4 else 2
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
@@ -505,6 +477,7 @@ class GrandRoads:NetDummyMode() {
 
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		// Level timer
 		if(engine.timerActive&&engine.ending==0)
 			if(levelTimer>0) {
@@ -636,7 +609,7 @@ class GrandRoads:NetDummyMode() {
 			receiver.drawMenuNum(engine, playerID, 0, 2, String.format("%04d", norm), gcolor, 2f)
 			receiver.drawMenuFont(engine, playerID, 6, 3, "Lines", EventReceiver.COLOR.BLUE, .8f)
 
-			drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.LPM, Statistic.TIME,
+			drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, AbstractMode.Statistic.LPM, Statistic.TIME,
 				Statistic.PPS, Statistic.PIECE)
 			drawResultRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, rankingRank)
 			drawResultNetRank(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[0])
@@ -688,41 +661,37 @@ class GrandRoads:NetDummyMode() {
 
 	/** This function will be called when the replay data is going to be
 	 * saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(prop, engine)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
 
-		if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null) {
+		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
 			updateRanking(engine.lives, norm, engine.statistics.time, goaltype, engine.statistics.rollclear)
 
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1) return true
 		}
+		return false
 	}
 
-	/** Load the settings
-	 * @param prop CustomProperties
-	 */
-	override fun loadSetting(prop:CustomProperties) {
+	/** Load the settings from [prop] */
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		goaltype = prop.getProperty("timeattack.gametype", 0)
-		startlevel = prop.getProperty("timeattack.startlevel", 0)
+		startLevel = prop.getProperty("timeattack.startLevel", 0)
 		big = prop.getProperty("timeattack.big", false)
-		showsectiontime = prop.getProperty("timeattack.showsectiontime", true)
+		showST = prop.getProperty("timeattack.showsectiontime", true)
 		version = prop.getProperty("timeattack.version", 0)
 	}
 
 	/** Save the settings
 	 * @param prop CustomProperties
 	 */
-	override fun saveSetting(prop:CustomProperties) {
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("timeattack.gametype", goaltype)
-		prop.setProperty("timeattack.startlevel", startlevel)
+		prop.setProperty("timeattack.startLevel", startLevel)
 		prop.setProperty("timeattack.big", big)
-		prop.setProperty("timeattack.showsectiontime", showsectiontime)
+		prop.setProperty("timeattack.showsectiontime", showST)
 		prop.setProperty("timeattack.version", version)
 	}
 
@@ -744,7 +713,7 @@ class GrandRoads:NetDummyMode() {
 	 * @param ruleName Rule name
 	 */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until COURSE_MAX).flatMap {j ->
+		super.saveRanking((0 until COURSE_MAX).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf("$j.$ruleName.$i.lines" to rankingLines[j][i],
 					"$j.$ruleName.$i.lifes" to rankingLifes[j][i],
@@ -798,9 +767,7 @@ class GrandRoads:NetDummyMode() {
 		return -1
 	}
 
-	/** NET: Send various in-game stats (as well as goaltype)
-	 * @param engine GameEngine
-	 */
+	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
 		val bg = if(engine.owner.backgroundStatus.fadesw)
 			engine.owner.backgroundStatus.fadebg
@@ -818,7 +785,7 @@ class GrandRoads:NetDummyMode() {
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
-	/** NET: Receive various in-game stats (as well as goaltype) */
+	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
 		engine.statistics.lines = message[4].toInt()
 		engine.statistics.totalPieceLocked = message[5].toInt()
@@ -870,15 +837,15 @@ class GrandRoads:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		val msg = "game\toption\t"+
-			"$goaltype\t$startlevel\t$showsectiontime\t$big\n"
+			"$goaltype\t$startLevel\t$showST\t$big\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Receive game options */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
 		goaltype = message[4].toInt()
-		startlevel = message[5].toInt()
-		showsectiontime = message[6].toBoolean()
+		startLevel = message[5].toInt()
+		showST = message[6].toBoolean()
 		big = message[7].toBoolean()
 	}
 
@@ -887,7 +854,7 @@ class GrandRoads:NetDummyMode() {
 
 	/** NET: It returns true when the current settings don't prevent
 	 * leaderboard screen from showing. */
-	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = startlevel==0&&!big&&engine.ai==null
+	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = startLevel==0&&!big&&engine.ai==null
 
 	companion object {
 		/** Current version of this mode */

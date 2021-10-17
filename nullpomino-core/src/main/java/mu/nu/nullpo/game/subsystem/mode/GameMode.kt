@@ -31,8 +31,10 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
+import zeroxfc.nullpo.custom.libs.ProfileProperties
 
 /** Game mode interface */
 interface GameMode {
@@ -72,6 +74,15 @@ interface GameMode {
 	 */
 	val isVSMode:Boolean
 
+	/** State of Setting menu */
+	val menu:MenuList
+
+	/** Mapping of Ranking Properties
+	 * "" to Score
+	 */
+	val rankMap:Map<String, IntArray>
+	val rankPersMap:Map<String, IntArray>
+
 	/** Initialization of game mode. Executed before the game screen appears.
 	 * @param manager GameManager that owns this mode
 	 */
@@ -109,6 +120,13 @@ interface GameMode {
 	 */
 	fun onSetting(engine:GameEngine, playerID:Int):Boolean
 
+	/** Profile screen.
+	 * @param engine GameEngine
+	 * @param playerID Player ID
+	 * @return true if you don't want to start the game yet. false if settings
+	 * are done.
+	 */
+	fun onProfile(engine:GameEngine, playerID:Int):Boolean
 	/** Ready->Go screen.
 	 * @param engine GameEngine
 	 * @param playerID Player ID
@@ -204,6 +222,12 @@ interface GameMode {
 	 * @param playerID Player ID
 	 */
 	fun renderSetting(engine:GameEngine, playerID:Int)
+
+	/** Render profile screen.
+	 * @param engine GameEngine
+	 * @param playerID Player ID
+	 */
+	fun renderProfile(engine:GameEngine, playerID:Int)
 
 	/** Render Ready->Go screen.
 	 * @param engine GameEngine
@@ -330,24 +354,44 @@ interface GameMode {
 	 */
 	fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean
 
-	/** Read rankings from property file.
+	fun loadSetting(prop:CustomProperties, ruleName:String = "", playerID:Int = -1)
+
+	fun loadSetting(prop:CustomProperties, engine:GameEngine) =
+		loadSetting(prop, engine.ruleOpt.strRuleName, engine.playerID)
+
+	fun loadSetting(prof:ProfileProperties, engine:GameEngine) =
+		if(prof.isLoggedIn) loadSetting(prof.propProfile, engine.ruleOpt.strRuleName, engine.playerID)
+		else Unit
+
+	/** Read rankings from [prop].
 	 *  This is used in playerInit or from netOnJoin.
-	 * @param prop Property file
 	 * @param ruleName Rule name
 	 */
-	fun loadRanking(prop:CustomProperties, ruleName:String)
+	fun loadRanking(prop:CustomProperties, ruleName:String = "")
 
-	/** Called when saving replay
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param prop CustomProperties of replay file (You can write additional settings here)
+	/** Read rankings from [prop].
+	 *  This is used in playerInit or from netOnJoin.
+	 * @param ruleName Rule name
 	 */
-	fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties)
+	fun loadRankingPlayer(prof:ProfileProperties, ruleName:String = "")
 
-	/** Called when a replay file is loaded
+	fun saveSetting(prop:CustomProperties, ruleName:String = "", playerID:Int = -1)
+
+	fun saveSetting(prop:CustomProperties, engine:GameEngine) =
+		saveSetting(prop, engine.ruleOpt.strRuleName, engine.playerID)
+
+	fun saveRanking()
+	fun saveRankingPlayer(prof:ProfileProperties)
+
+	/** Called when saving replay to [prop]
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @param prop CustomProperties of replay file (You can read additional settings here)
+	 */
+	fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean
+
+	/** Called when a replay file is loaded from [prop]
+	 * @param engine GameEngine
+	 * @param playerID Player ID
 	 */
 	fun loadReplay(engine:GameEngine, playerID:Int, prop:CustomProperties)
 

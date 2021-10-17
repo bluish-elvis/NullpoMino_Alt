@@ -40,11 +40,11 @@ import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.AbstractRenderer.FontBadge.Companion.b
 import mu.nu.nullpo.gui.common.particles.BlockParticleCollection
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.FlyInOutText
-import zeroxfc.nullpo.custom.libs.ProfileProperties
 import zeroxfc.nullpo.custom.libs.backgroundtypes.AnimatedBackgroundHook
 import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundDiagonalRipple
 import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundVerticalBars
@@ -79,13 +79,10 @@ class Joker:MarathonModeBase() {
 	private var efficiency = 0f
 	private var efficiencyGrade = 0
 	// PROFILE
-	private val playerProperties:ProfileProperties = ProfileProperties(headerColor)
-	private var showPlayerStats = false
 	private var rankingRankPlayer = 0
 	private var rankingLevelPlayer = intArrayOf()
 	private var rankingTimePlayer = intArrayOf()
 	private var rankingLinesPlayer = intArrayOf()
-	private var PLAYER_NAME = ""
 	// Last amount of lines cleared;
 	private var lastLine = 0
 	// Animated backgrounds
@@ -103,11 +100,10 @@ class Joker:MarathonModeBase() {
      * Initialization
      */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
-super.playerInit(engine, playerID)
+		super.playerInit(engine, playerID)
 		efficiency = 0f
 		efficiencyGrade = 0
 		lastscore = 0
-		scgettime = 0
 		lineClearAnimType = 0
 		shouldUseTimer = false
 		stock = 0
@@ -121,7 +117,7 @@ super.playerInit(engine, playerID)
 		rankingLevel = IntArray(RANKING_MAX)
 		rankingLines = IntArray(RANKING_MAX)
 		rankingTime = IntArray(RANKING_MAX)
-		playerProperties.reset()
+		engine.playerProp.reset()
 		showPlayerStats = false
 
 		rankingRankPlayer = -1
@@ -130,21 +126,13 @@ super.playerInit(engine, playerID)
 		rankingTimePlayer = IntArray(RANKING_MAX)
 		netPlayerInit(engine, playerID)
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
-			if(playerProperties.isLoggedIn) {
-				loadSettingPlayer(playerProperties)
-				loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-			}
+
 			version = CURRENT_VERSION
-			PLAYER_NAME = ""
 		} else {
-			loadSetting(owner.replayProp)
 			if(version==0&&owner.replayProp.getProperty("joker.endless", false)) goaltype = 2
 
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
-			PLAYER_NAME = owner.replayProp.getProperty("joker.playerName", "")
 		}
 		engine.owner.backgroundStatus.bg = 18
 		engine.framecolor = GameEngine.FRAME_COLOR_PURPLE
@@ -222,14 +210,6 @@ super.playerInit(engine, playerID)
 			// Confirm
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
 				engine.playSE("decide")
-				if(playerProperties.isLoggedIn) {
-					saveSettingPlayer(playerProperties)
-					playerProperties.saveProfileConfig()
-				} else {
-					saveSetting(owner.modeConfig)
-					owner.saveModeConfig()
-				}
-
 				// NET: Signal start of the game
 				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
 				return false
@@ -238,20 +218,19 @@ super.playerInit(engine, playerID)
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
 				engine.quitflag = true
-				playerProperties.reset()
 			}
 
 			// New acc
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null&&!netIsNetPlay) {
-				playerProperties.reset()
+				engine.playerProp.reset()
 				engine.playSE("decide")
-				engine.stat = GameEngine.Status.CUSTOM
+				engine.stat = GameEngine.Status.PROFILE
 				engine.resetStatc()
 				return true
 			}
 
 			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startlevel==0&&!big&&engine.ai==null) {
+			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 			}
 			engine.statc[3]++
@@ -363,36 +342,48 @@ super.playerInit(engine, playerID)
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
 						val s = "${rankingLevelPlayer[i]}"
-						receiver.drawScoreFont(engine, playerID, if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
+						receiver.drawScoreFont(
+							engine, playerID, if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
 							if(s.length>6&&receiver.nextDisplayType!=2) (topY+i)*2 else topY+i, s, i==rankingRankPlayer,
-							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale)
-						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLinesPlayer[i]}", i==rankingRankPlayer,
-							scale)
+							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale
+						)
+						receiver.drawScoreFont(
+							engine, playerID, 10, topY+i, "${rankingLinesPlayer[i]}", i==rankingRankPlayer,
+							scale
+						)
 						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTimePlayer[i].toTimeStr, i==rankingRankPlayer, scale)
 					}
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2, playerProperties.nameDisplay,
-						EventReceiver.COLOR.WHITE, 2f)
+					receiver.drawScoreFont(
+						engine, playerID, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay,
+						EventReceiver.COLOR.WHITE, 2f
+					)
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
 				} else {
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
 						val s = "${rankingLevel[i]}"
-						receiver.drawScoreFont(engine, playerID, if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
+						receiver.drawScoreFont(
+							engine, playerID, if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
 							if(s.length>6&&receiver.nextDisplayType!=2) (topY+i)*2 else topY+i, s, i==rankingRank,
-							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale)
+							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale
+						)
 						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLines[i]}", i==rankingRank, scale)
 						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTime[i].toTimeStr, i==rankingRank, scale)
 					}
 					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE)
-					if(!playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2,
-						"(NOT LOGGED IN)\n(E:LOG IN)")
-					if(playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5,
-						"F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
+					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
+						engine, playerID, 0, topY+RANKING_MAX+2,
+						"(NOT LOGGED IN)\n(E:LOG IN)"
+					)
+					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
+						engine, playerID, 0, topY+RANKING_MAX+5,
+						"F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN
+					)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
-			playerProperties.loginScreen.renderScreen(receiver, engine, playerID)
+			engine.playerProp.loginScreen.renderScreen(receiver, engine, playerID)
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "TIME", EventReceiver.COLOR.BLUE)
 			val strScore = "${timeScore.toTimeStr}(+${(engine.statistics.time-timeScore).toTimeStr})"
@@ -401,24 +392,22 @@ super.playerInit(engine, playerID)
 			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
 			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 10, "${engine.statistics.level}")
-			var b = ""
-			if(scgettime<120&&lastLine!=0) {
-				if(lastLine>=4&&engine.statistics.level<=200) {
-					b = "(+1)"
-				} else if(engine.statistics.level>200&&lastLine<4) {
-					b = "(-1)"
-				}
-			}
+
 			receiver.drawScoreFont(engine, playerID, 0, 12, "STOCK", EventReceiver.COLOR.GREEN)
 			receiver.drawScoreFont(engine, playerID, 0, 13, "$stock"+b, (stock<=2))
 			receiver.drawScoreFont(engine, playerID, 0, 15, "EFFICIENCY", EventReceiver.COLOR.GREEN)
-			receiver.drawScoreNum(engine, playerID, 0, 16, String.format("%.2f", efficiency*100)+"%",
-				if(engine.statistics.level>=300) EventReceiver.COLOR.PINK else EventReceiver.COLOR.WHITE)
+			receiver.drawScoreNum(
+				engine, playerID, 0, 16, String.format("%.2f", efficiency*100)+"%",
+				if(engine.statistics.level>=300) EventReceiver.COLOR.PINK else EventReceiver.COLOR.WHITE
+			)
 
-			if(playerProperties.isLoggedIn||PLAYER_NAME.isNotEmpty()) {
+			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
 				receiver.drawScoreFont(engine, playerID, 0, 18, "PLAYER", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 19, if(owner.replayMode) PLAYER_NAME else playerProperties.nameDisplay,
-					EventReceiver.COLOR.WHITE, 2f)
+				receiver.drawScoreFont(
+					engine, playerID, 0, 19,
+					if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
+					EventReceiver.COLOR.WHITE, 2f
+				)
 			}
 			if(shouldUseTimer) {
 				receiver.drawMenuFont(engine, playerID, 0, 21, "TIME LIMIT", EventReceiver.COLOR.RED)
@@ -449,10 +438,10 @@ super.playerInit(engine, playerID)
 	override fun onCustom(engine:GameEngine, playerID:Int):Boolean {
 		showPlayerStats = false
 		engine.isInGame = true
-		val s:Boolean = playerProperties.loginScreen.updateScreen(engine, playerID)
-		if(playerProperties.isLoggedIn) {
-			loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-			loadSettingPlayer(playerProperties)
+		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine, playerID)
+		if(engine.playerProp.isLoggedIn) {
+			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
+			loadSetting(engine.playerProp.propProfile)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s
@@ -461,7 +450,7 @@ super.playerInit(engine, playerID)
      * Called after every frame
      */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		scgettime++
+		super.onLast(engine, playerID)
 		if(useAnimBG&&engine.owner.backgroundStatus.bg<0) {
 			ANIMATED_BACKGROUNDS[engine.owner.backgroundStatus.bg+2].update()
 		}
@@ -518,13 +507,13 @@ super.playerInit(engine, playerID)
 		}
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
-			if(engine.ctrl.isPush(Controller.BUTTON_F)&&playerProperties.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")
 			}
 		}
 		if(engine.quitflag) {
-			playerProperties.reset()
+			engine.playerProp.reset()
 		}
 	}
 
@@ -770,6 +759,7 @@ super.playerInit(engine, playerID)
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
 		// Line clear bonus
 		// if (linesUsed > 4) linesUsed = 4;
+		var res = 0
 		if(lines>0) {
 			val pts:Int = engine.statistics.time-timeScore
 
@@ -777,7 +767,6 @@ super.playerInit(engine, playerID)
 			if(pts>0) {
 				// scoreBeforeIncrease = engine.statistics.score;
 				lastscore = pts
-				scgettime = 0
 				timeScore += pts
 				lastLine = lines
 			}
@@ -796,11 +785,15 @@ super.playerInit(engine, playerID)
 				val destinationX:Int = receiver.scoreX(engine, playerID)
 				val destinationY:Int = receiver.scoreY(engine, playerID)+18*if(engine.displaysize==0) 16 else 32
 				val colors = arrayOf(EventReceiver.COLOR.PINK, EventReceiver.COLOR.RED, EventReceiver.COLOR.PURPLE)
-				warningText = FlyInOutText("WARNING: NON-TETRISES", destinationX, destinationY, 9, 162, 9, colors, 1.0f,
-					engine.randSeed+engine.statistics.time, true)
-				warningTextSecondLine = FlyInOutText("REDUCE STOCK!", destinationX+4*if(engine.displaysize==0) 16 else 32,
+				warningText = FlyInOutText(
+					"WARNING: NON-TETRISES", destinationX, destinationY, 9, 162, 9, colors, 1.0f,
+					engine.randSeed+engine.statistics.time, true
+				)
+				warningTextSecondLine = FlyInOutText(
+					"REDUCE STOCK!", destinationX+4*if(engine.displaysize==0) 16 else 32,
 					destinationY+if(engine.displaysize==0) 16 else 32, 9, 162, 9, colors, 1.0f, engine.randSeed+engine.statistics.time,
-					true)
+					true
+				)
 			}
 			if(engine.statistics.level<200) {
 				mainTimer += LEVEL_TIMEBONUS
@@ -811,23 +804,31 @@ super.playerInit(engine, playerID)
 				val destinationX:Int = receiver.scoreX(engine, playerID)
 				val destinationY:Int = receiver.scoreY(engine, playerID)+18*if(engine.displaysize==0) 16 else 32
 				val colors = arrayOf(EventReceiver.COLOR.YELLOW, EventReceiver.COLOR.ORANGE, EventReceiver.COLOR.RED)
-				warningText = FlyInOutText("CONGRATULATIONS!", destinationX, destinationY, 15, 120, 15, colors, 1.0f,
-					engine.randSeed+engine.statistics.time, true)
+				warningText = FlyInOutText(
+					"CONGRATULATIONS!", destinationX, destinationY, 15, 120, 15, colors, 1.0f,
+					engine.randSeed+engine.statistics.time, true
+				)
 			}
 			if(lines<4) {
 				if(engine.statistics.level>200) {
+					res--
 					stock--
 					if(stock<=2) {
 						if(stock>=0) engine.playSE("danger")
 						val destinationX:Int = receiver.scoreX(engine, playerID)
 						val destinationY:Int = receiver.scoreY(engine, playerID)+18*if(engine.displaysize==0) 16 else 32
 						val colors = arrayOf(EventReceiver.COLOR.RED, EventReceiver.COLOR.PURPLE)
-						warningText = FlyInOutText(if(stock>=0) "WARNING: STOCK LOW!" else "STOCK DEPLETED!", destinationX, destinationY,
-							15, 60, 15, colors, 1.0f, engine.randSeed+engine.statistics.time, stock>=0)
+						warningText = FlyInOutText(
+							if(stock>=0) "WARNING: STOCK LOW!" else "STOCK DEPLETED!", destinationX, destinationY,
+							15, 60, 15, colors, 1.0f, engine.randSeed+engine.statistics.time, stock>=0
+						)
 					}
 				}
 			} else {
-				if(engine.statistics.level<=200) stock++
+				if(engine.statistics.level<=200) {
+					stock++
+					res++
+				}
 			}
 			if(engine.statistics.level<=300) {
 				calculateEfficiencyGrade(engine)
@@ -835,14 +836,16 @@ super.playerInit(engine, playerID)
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}
-		return 0
+		return res
 	}
 	/*
      * Render results screen
      */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE,
-			Statistic.LINES, Statistic.LEVEL, Statistic.LPM)
+		drawResultStats(
+			engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE,
+			Statistic.LINES, Statistic.LEVEL, Statistic.LPM
+		)
 		drawResultRank(engine, playerID, receiver, 15, EventReceiver.COLOR.BLUE, rankingRank)
 		receiver.drawMenuFont(engine, playerID, 0, 6, "TIME SCORE", EventReceiver.COLOR.BLUE)
 		receiver.drawMenuFont(engine, playerID, 0, 7, String.format("%10s", timeScore.toTimeStr))
@@ -868,8 +871,8 @@ super.playerInit(engine, playerID)
 	/*
      * Called when saving replay
      */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(prop, engine)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
@@ -878,125 +881,9 @@ super.playerInit(engine, playerID)
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null&&startingStock==0) {
-			updateRanking(engine.statistics.level, engine.statistics.lines, timeScore)
-			if(playerProperties.isLoggedIn) {
-				prop.setProperty("joker.playerName", playerProperties.nameDisplay)
-			}
-			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
-			if(rankingRankPlayer!=-1&&playerProperties.isLoggedIn) {
-				saveRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-				playerProperties.saveProfileConfig()
-			}
+			return updateRanking(engine.statistics.level, engine.statistics.lines, timeScore, engine.playerProp.isLoggedIn)
 		}
-	}
-	/**
-	 * Load settings from property file
-	 *
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
-		startlevel = prop.getProperty("joker.startlevel", 0)
-		big = prop.getProperty("joker.big", false)
-		startingStock = prop.getProperty("joker.extrastock", 0)
-		version = prop.getProperty("joker.version", 0)
-		lineClearAnimType = prop.getProperty("joker.lcat", 0)
-		useAnimBG = prop.getProperty("joker.animatedBG", false)
-	}
-	/**
-	 * Save settings to property file
-	 *
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("joker.startlevel", startlevel)
-		prop.setProperty("joker.big", big)
-		prop.setProperty("joker.extrastock", startingStock)
-		prop.setProperty("joker.version", version)
-		prop.setProperty("joker.lcat", lineClearAnimType)
-		prop.setProperty("joker.animatedBG", useAnimBG)
-	}
-	/**
-	 * Load settings from property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun loadSettingPlayer(prop:ProfileProperties?) {
-		if(prop?.isLoggedIn!=true) return
-		startlevel = prop.getProperty("joker.startlevel", 0)
-		big = prop.getProperty("joker.big", false)
-		startingStock = prop.getProperty("joker.extrastock", 0)
-		lineClearAnimType = prop.getProperty("joker.lcat", 0)
-		useAnimBG = prop.getProperty("joker.animatedBG", false)
-	}
-	/**
-	 * Save settings to property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun saveSettingPlayer(prop:ProfileProperties) {
-		if(!prop.isLoggedIn) return
-		prop.setProperty("joker.startlevel", startlevel)
-		prop.setProperty("joker.big", big)
-		prop.setProperty("joker.extrastock", startingStock)
-		prop.setProperty("joker.lcat", lineClearAnimType)
-		prop.setProperty("joker.animatedBG", useAnimBG)
-	}
-	/**
-	 * Read rankings from property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			rankingLevel[i] = prop.getProperty("joker.ranking.$ruleName.level.$i", 0)
-			rankingLines[i] = prop.getProperty("joker.ranking.$ruleName.lines.$i", 0)
-			rankingTime[i] = prop.getProperty("joker.ranking.$ruleName.time.$i", 0)
-		}
-	}
-	/**
-	 * Save rankings to property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			prop.setProperty("joker.ranking.$ruleName.level.$i", rankingLevel[i])
-			prop.setProperty("joker.ranking.$ruleName.lines.$i", rankingLines[i])
-			prop.setProperty("joker.ranking.$ruleName.time.$i", rankingTime[i])
-		}
-	}
-	/**
-	 * Read rankings from property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun loadRankingPlayer(prop:ProfileProperties?, ruleName:String) {
-		if(prop?.isLoggedIn!=true) return
-		for(i in 0 until RANKING_MAX) {
-			rankingLevelPlayer[i] = prop.getProperty("joker.ranking.$ruleName.level.$i", 0)
-			rankingLinesPlayer[i] = prop.getProperty("joker.ranking.$ruleName.lines.$i", 0)
-			rankingTimePlayer[i] = prop.getProperty("joker.ranking.$ruleName.time.$i", 0)
-		}
-	}
-	/**
-	 * Save rankings to property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRankingPlayer(prop:ProfileProperties?, ruleName:String) {
-		if(prop?.isLoggedIn!=true) return
-		for(i in 0 until RANKING_MAX) {
-			prop.setProperty("joker.ranking.$ruleName.level.$i", rankingLevelPlayer[i])
-			prop.setProperty("joker.ranking.$ruleName.lines.$i", rankingLinesPlayer[i])
-			prop.setProperty("joker.ranking.$ruleName.time.$i", rankingTimePlayer[i])
-		}
+		return false
 	}
 	/**
 	 * Update rankings
@@ -1004,7 +891,7 @@ super.playerInit(engine, playerID)
 	 * @param li   Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(lv:Int, li:Int, time:Int) {
+	private fun updateRanking(lv:Int, li:Int, time:Int, isLoggedIn:Boolean):Boolean {
 		rankingRank = checkRanking(lv, li, time)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -1019,7 +906,7 @@ super.playerInit(engine, playerID)
 			rankingLines[rankingRank] = li
 			rankingTime[rankingRank] = time
 		}
-		if(playerProperties.isLoggedIn) {
+		if(isLoggedIn) {
 			rankingRankPlayer = checkRankingPlayer(lv, li, time)
 			if(rankingRankPlayer!=-1) {
 				// Shift down ranking entries
@@ -1034,7 +921,8 @@ super.playerInit(engine, playerID)
 				rankingLinesPlayer[rankingRankPlayer] = li
 				rankingTimePlayer[rankingRankPlayer] = time
 			}
-		}
+		} else rankingRankPlayer = -1
+		return rankingRank!=-1||rankingRankPlayer!=-1
 	}
 	/**
 	 * Calculate ranking position
@@ -1077,23 +965,29 @@ super.playerInit(engine, playerID)
 
 	companion object {
 		// Speed Tables
-		private val ARE_TABLE = intArrayOf(15, 15, 15, 15, 14, 14,
+		private val ARE_TABLE = intArrayOf(
+			15, 15, 15, 15, 14, 14,
 			13, 12, 11, 10, 9,
 			8, 7, 6, 5, 15,
 			13, 10, 10, 9, 9,
-			8, 8, 7, 6, 5)
-		private val LOCK_TABLE = intArrayOf(30, 29, 28, 27, 26, 25,
+			8, 8, 7, 6, 5
+		)
+		private val LOCK_TABLE = intArrayOf(
+			30, 29, 28, 27, 26, 25,
 			24, 23, 22, 21, 20,
 			19, 18, 17, 17, 30,
 			27, 25, 23, 21, 20,
-			19, 18, 17, 16, 15)
+			19, 18, 17, 16, 15
+		)
 		// Levels for speed changes
-		private val LEVEL_ARE_LOCK_CHANGE = intArrayOf(60, 70, 80, 90, 100,
+		private val LEVEL_ARE_LOCK_CHANGE = intArrayOf(
+			60, 70, 80, 90, 100,
 			110, 120, 130, 140, 150,
 			160, 170, 180, 190, 200,
 			210, 220, 230, 240, 250,
 			260, 270, 280, 290, 300,
-			2000000000)
+			2000000000
+		)
 		// Timer constants
 		private const val STARTING_TIMER = 7200
 		private const val LEVEL_TIMEBONUS = 900

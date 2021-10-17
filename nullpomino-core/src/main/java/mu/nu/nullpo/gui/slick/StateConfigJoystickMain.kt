@@ -31,6 +31,7 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
+import mu.nu.nullpo.gui.slick.img.FontTTF
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import org.newdawn.slick.GameContainer
@@ -115,7 +116,7 @@ class StateConfigJoystickMain:BaseGameState() {
 		FontNormal.printFontGrid(2, 8, "POV INPUT:"+(!joyIgnorePOV).getONorOFF(), cursor==5)
 		FontNormal.printFontGrid(2, 9, "JOYSTICK METHOD:"+JOYSTICK_METHOD_STRINGS[joyMethod], cursor==6)
 
-		if(cursor<UI_TEXT.size) FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
+		if(cursor<UI_TEXT.size) FontTTF.print(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
 	}
 
 	/* Update game state */

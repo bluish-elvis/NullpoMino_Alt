@@ -33,6 +33,8 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
@@ -56,12 +58,6 @@ class GrandMountain:AbstractMode() {
 
 	/** Combo bonus */
 	private var comboValue = 0
-
-	/** Most recent increase in score */
-	private var lastscore = 0
-
-	/** 獲得Render scoreがされる残り time */
-	private var scgettime = 0
 
 	/** Roll 経過 time */
 	private var rolltime = 0
@@ -103,7 +99,7 @@ class GrandMountain:AbstractMode() {
 	private var goaltype = 0
 
 	/** Level at start */
-	private var startlevel = 0
+	private var startLevel = 0
 
 	/** When true, always ghost ON */
 	private var alwaysghost = false
@@ -112,13 +108,14 @@ class GrandMountain:AbstractMode() {
 	private var always20g = false
 
 	/** When true, levelstop sound is enabled */
-	private var lvstopse = false
+	private var secAlert = false
 
+	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
 	/** BigMode */
-	private var big = false
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** When true, section time display is enabled */
-	private var showsectiontime = false
+	private var showST = false
 
 	/** Version */
 	private var version = 0
@@ -141,6 +138,11 @@ class GrandMountain:AbstractMode() {
 	/* Mode name */
 	override val name = "Grand Mountain"
 	override val gameIntensity = 1
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf(*((rankingLevel.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x}+
+			bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}).toTypedArray()))
+
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
@@ -151,7 +153,6 @@ class GrandMountain:AbstractMode() {
 		harddropBonus = 0
 		comboValue = 0
 		lastscore = 0
-		scgettime = 0
 		rolltime = 0
 		secretGrade = 0
 		bgmlv = 0
@@ -164,10 +165,10 @@ class GrandMountain:AbstractMode() {
 		garbageCount = 0
 		garbageTotal = 0
 		isShowBestSectionTime = false
-		startlevel = 0
+		startLevel = 0
 		alwaysghost = false
 		always20g = false
-		lvstopse = false
+		secAlert = false
 		big = false
 
 		rankingRank = -1
@@ -190,41 +191,30 @@ class GrandMountain:AbstractMode() {
 		engine.staffrollEnable = true
 		engine.staffrollNoDeath = true
 
-		version = if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
-			CURRENT_VERSION
-		} else {
-			loadSetting(owner.replayProp)
-			owner.replayProp.getProperty("garbagemania.version", 0)
-		}
+		version = if(!owner.replayMode) CURRENT_VERSION
+		else owner.replayProp.getProperty("garbagemania.version", 0)
 
-		owner.backgroundStatus.bg = startlevel
+
+		owner.backgroundStatus.bg = startLevel
 	}
 
-	/** Load settings from property file
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		goaltype = prop.getProperty("garbagemania.goaltype", GOALTYPE_PATTERN)
-		startlevel = prop.getProperty("garbagemania.startlevel", 0)
+		startLevel = prop.getProperty("garbagemania.startLevel", 0)
 		alwaysghost = prop.getProperty("garbagemania.alwaysghost", true)
 		always20g = prop.getProperty("garbagemania.always20g", false)
-		lvstopse = prop.getProperty("garbagemania.lvstopse", true)
-		showsectiontime = prop.getProperty("garbagemania.showsectiontime", true)
+		secAlert = prop.getProperty("garbagemania.lvstopse", true)
+		showST = prop.getProperty("garbagemania.showsectiontime", true)
 		big = prop.getProperty("garbagemania.big", false)
 	}
 
-	/** Save settings to property file
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("garbagemania.goaltype", goaltype)
-		prop.setProperty("garbagemania.startlevel", startlevel)
+		prop.setProperty("garbagemania.startLevel", startLevel)
 		prop.setProperty("garbagemania.alwaysghost", alwaysghost)
 		prop.setProperty("garbagemania.always20g", always20g)
-		prop.setProperty("garbagemania.lvstopse", lvstopse)
-		prop.setProperty("garbagemania.showsectiontime", showsectiontime)
+		prop.setProperty("garbagemania.lvstopse", secAlert)
+		prop.setProperty("garbagemania.showsectiontime", showST)
 		prop.setProperty("garbagemania.big", big)
 	}
 
@@ -254,7 +244,7 @@ class GrandMountain:AbstractMode() {
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
 			var temp = 0
-			for(i in startlevel until startlevel+sectionscomp)
+			for(i in startLevel until startLevel+sectionscomp)
 				if(i>=0&&i<sectionTime.size) temp += sectionTime[i]
 
 			sectionavgtime = temp/sectionscomp
@@ -291,15 +281,15 @@ class GrandMountain:AbstractMode() {
 						if(goaltype>GOALTYPE_MAX-1) goaltype = 0
 					}
 					1 -> {
-						startlevel += change
-						if(startlevel<0) startlevel = 9
-						if(startlevel>9) startlevel = 0
-						owner.backgroundStatus.bg = startlevel
+						startLevel += change
+						if(startLevel<0) startLevel = 9
+						if(startLevel>9) startLevel = 0
+						owner.backgroundStatus.bg = startLevel
 					}
 					2 -> alwaysghost = !alwaysghost
 					3 -> always20g = !always20g
-					4 -> lvstopse = !lvstopse
-					5 -> showsectiontime = !showsectiontime
+					4 -> secAlert = !secAlert
+					5 -> showST = !showST
 					6 -> big = !big
 				}
 			}
@@ -313,8 +303,6 @@ class GrandMountain:AbstractMode() {
 			// 決定
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				isShowBestSectionTime = false
 				sectionscomp = 0
 				return false
@@ -343,15 +331,15 @@ class GrandMountain:AbstractMode() {
 				GOALTYPE_PATTERN -> "PATTERN"
 				else -> "COPY"
 			},
-			"Level" to (startlevel*100),
-			"FULL GHOST" to alwaysghost, "FULL 20G" to always20g, "LVSTOPSE" to lvstopse, "SHOW STIME" to showsectiontime,
+			"Level" to (startLevel*100),
+			"FULL GHOST" to alwaysghost, "FULL 20G" to always20g, "LVSTOPSE" to secAlert, "SHOW STIME" to showST,
 			"BIG" to big,
 		)
 	}
 
 	/* Called at game start */
 	override fun startGame(engine:GameEngine, playerID:Int) {
-		engine.statistics.level = startlevel*100
+		engine.statistics.level = startLevel*100
 
 		nextseclv = maxOf(100, minOf(engine.statistics.level+100, 999))
 
@@ -376,7 +364,7 @@ class GrandMountain:AbstractMode() {
 		receiver.drawScoreBadges(engine, playerID, 0, -3, 100, decoration)
 		receiver.drawScoreBadges(engine, playerID, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(!owner.replayMode&&startlevel==0&&!big&&!always20g
+			if(!owner.replayMode&&startLevel==0&&!big&&!always20g
 				&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
@@ -426,9 +414,7 @@ class GrandMountain:AbstractMode() {
 			else
 				EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 6, "+$lastscore", g20)
-			receiver.drawScoreNum(engine, playerID, 0, 7, "$scgettime", g20, 2f)
-			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble())
-				.toInt()
+			receiver.drawScoreNum(engine, playerID, 0, 7, "$scDisp", g20, 2f)
 
 			// level
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", if(g20)
@@ -458,7 +444,7 @@ class GrandMountain:AbstractMode() {
 			}
 
 			// Section Time
-			if(showsectiontime&&sectionTime.isNotEmpty()) {
+			if(showST&&sectionTime.isNotEmpty()) {
 				val x = if(receiver.nextDisplayType==2) 8 else 12
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
 
@@ -492,7 +478,7 @@ class GrandMountain:AbstractMode() {
 			// Level up
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 
@@ -510,7 +496,7 @@ class GrandMountain:AbstractMode() {
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 			lvupflag = true
@@ -687,7 +673,7 @@ class GrandMountain:AbstractMode() {
 				// Update level for next section
 				nextseclv += 100
 				if(nextseclv>999) nextseclv = 999
-			} else if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 
 			// Calculate score
 			var bravo = 1
@@ -708,8 +694,7 @@ class GrandMountain:AbstractMode() {
 
 	/* 各 frame の終わりの処理 */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		// 獲得Render score
-		if(scgettime>0) scgettime--
+		super.onLast(engine, playerID)
 
 		// Section Time増加
 		if(engine.timerActive&&engine.ending==0) {
@@ -805,26 +790,20 @@ class GrandMountain:AbstractMode() {
 	}
 
 	/* リプレイ保存 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(owner.replayProp)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(owner.replayProp, engine)
 		owner.replayProp.setProperty("garbagemania.version", version)
 
 		// Update rankings
-		if(!owner.replayMode&&startlevel==0&&!always20g&&!big&&engine.ai==null) {
+		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
 			updateRanking(engine.statistics.level, engine.statistics.time, goaltype)
 			if(sectionAnyNewRecord) updateBestSectionTime(goaltype)
 
-			if(rankingRank!=-1||sectionAnyNewRecord) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1||sectionAnyNewRecord) return true
 		}
+		return false
 	}
 
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(j in 0 until GOALTYPE_MAX) {
 			for(i in 0 until RANKING_MAX) {
@@ -837,11 +816,9 @@ class GrandMountain:AbstractMode() {
 		}
 	}
 
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
+	/** Save rankings of [ruleName] to [prop] */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until GOALTYPE_MAX).flatMap {j ->
+		super.saveRanking((0 until GOALTYPE_MAX).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf("$ruleName.$i.level" to rankingLevel[j][j],
 					"$ruleName.$i.time" to rankingTime[j][j])
@@ -849,9 +826,6 @@ class GrandMountain:AbstractMode() {
 				listOf("$ruleName.sectiontime.$i" to bestSectionTime[i][j])
 			}
 		})
-
-//		owner.statsProp.setProperty("decoration", decoration)
-//		receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update rankings

@@ -32,10 +32,7 @@ import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.UpdateChecker
-import mu.nu.nullpo.gui.slick.img.FontMedal
-import mu.nu.nullpo.gui.slick.img.FontNano
-import mu.nu.nullpo.gui.slick.img.FontNormal
-import mu.nu.nullpo.gui.slick.img.RenderStaffRoll
+import mu.nu.nullpo.gui.slick.img.*
 import org.apache.log4j.Logger
 import org.newdawn.slick.AppGameContainer
 import org.newdawn.slick.Color
@@ -117,7 +114,7 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		FontMedal.printFont(600, 432, "ALT", 2)
 		renderChoices(2, minChoiceY, CHOICES)
 
-		FontNormal.printTTF(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
+		FontTTF.print(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
 
 		FontNano.printFont(300, 0, "$rollY")
 		FontNano.printFont(300, 10, "${container.screenHeight*RenderStaffRoll.img.textureHeight}")
@@ -127,7 +124,7 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		if(UpdateChecker.isNewVersionAvailable(GameManager.versionMajor, GameManager.versionMinor)) {
 			val strTemp = String.format(NullpoMinoSlick.getUIText("Title_NewVersion"),
 				UpdateChecker.latestVersionFullString, UpdateChecker.strReleaseDate)
-			FontNormal.printTTF(16, 416, strTemp)
+			FontTTF.print(16, 416, strTemp)
 		}
 	}
 

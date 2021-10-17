@@ -39,25 +39,20 @@ package zeroxfc.nullpo.custom.modes
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.SpeedParam
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.ProfileProperties
 
 class RollTraining:MarathonModeBase() {
 	companion object {
-		/**
-		 * Number of entries in rankings
-		 */
+		/** Number of entries in rankings*/
 		const val RANKING_MAX = 13
-		/**
-		 * Number of ranking types
-		 */
+		/** Number of ranking types*/
 		const val RANKING_TYPE = 8
-		/**
-		 * Number of game types
-		 */
+		/** Number of game types*/
 		const val GAMETYPE_MAX = 8
 		private const val SPEED_TAP = 0
 		private const val SPEED_TI = 1
@@ -65,22 +60,22 @@ class RollTraining:MarathonModeBase() {
 		private val SPEED_SETTINGS = arrayOf(
 			SpeedParam(), SpeedParam()
 		)
-		/**
-		 * Note: M-roll uses the lock flash values.
-		 */
+		/** Note: M-roll uses the lock flash values. */
 		private const val FADING_FRAMES = 300
-		private val GRADE_INCREASES = arrayOf(doubleArrayOf(
-			0.04, 0.08, 0.12, 0.26
-		), doubleArrayOf(
-			0.1, 0.2, 0.3, 1.0
-		))
+		private val GRADE_INCREASES = arrayOf(
+			doubleArrayOf(
+				0.04, 0.08, 0.12, 0.26
+			), doubleArrayOf(
+				0.1, 0.2, 0.3, 1.0
+			)
+		)
 		private val CLEAR_GRADE_BONUS = doubleArrayOf(
 			0.5, 1.6
 		)
 		private val TIME_LIMITS = intArrayOf(
 			3694, 3238
 		)
-		private val HEADER:EventReceiver.COLOR = EventReceiver.COLOR.RED
+		private val HEADER:COLOR = COLOR.RED
 
 		init {
 			// TAP settings
@@ -101,23 +96,25 @@ class RollTraining:MarathonModeBase() {
 		}
 	}
 
-	private var rankingGrade:Array<DoubleArray> = emptyArray()
+	private var rankingGrade:Array<IntArray> = emptyArray()
 	private var rankingLines:Array<IntArray> = emptyArray()
 	private var rankingTime:Array<IntArray> = emptyArray()
-	private var useMRoll = false
-	private var usedSpeed = 0
-	private var endless = false
+
+	private val itemHide = BooleanMenuItem("useMRoll", "Stealth", COLOR.RED, false)
+	private var useMRoll:Boolean by DelegateMenuItem(itemHide)
+	override val itemMode:IntegerMenuItem = StringsMenuItem("usedSpeed", "TYPE", COLOR.BLUE, SPEED_TI, arrayOf("TAP", "TI"), true)
+	private var usedSpeed:Int by DelegateMenuItem(itemMode)
+	private val itemGoal = BooleanMenuItem("endless", "ENDLESS", COLOR.BLUE, false)
+	private var endless:Boolean by DelegateMenuItem(itemGoal)
+
 	private var tiGrade = 0.0
 	private var tapGrade = 0.0
 	private var lastGrade = 0
 	private var timer = 0
-	private val playerProperties:ProfileProperties = ProfileProperties(HEADER)
-	private var rankingGradePlayer:Array<DoubleArray> = emptyArray()
+	private var rankingGradePlayer:Array<IntArray> = emptyArray()
 	private var rankingLinesPlayer:Array<IntArray> = emptyArray()
 	private var rankingTimePlayer:Array<IntArray> = emptyArray()
 	private var rankingRankPlayer = 0
-	private var showPlayerStats = false
-	private var PLAYER_NAME = ""
 	private val rankIndex:Int
 		get() {
 			var raw = usedSpeed
@@ -125,18 +122,25 @@ class RollTraining:MarathonModeBase() {
 			if(!useMRoll) raw += 4
 			return raw
 		}
-	/*
-     * Mode name
-     */
-	override val name:String
-		get() = "ROLL TRAINING"
-	/*
-     * Initialization
-     */
+	//      Mode name
+	override val name:String = "ROLL TRAINING"
+	override val menu = MenuList("rolltraining", itemMode, itemHide, itemGoal, itemLevel)
+	//     * Initialization
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf(*((rankingGrade.mapIndexed {a, x -> "$a.grade" to x}+
+			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
+		)
+	override val rankPersMap:Map<String, IntArray>
+		get() = mapOf(*((rankingGradePlayer.mapIndexed {a, x -> "$a.grade" to x}+
+			rankingLinesPlayer.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
+		)
+
 	override fun playerInit(engine:GameEngine, playerID:Int) {
-		owner = engine.owner
+		super.playerInit(engine, playerID)
 		showPlayerStats = false
-		playerProperties.reset()
+		engine.playerProp.reset()
 
 		useMRoll = true
 		usedSpeed = SPEED_TAP
@@ -146,38 +150,23 @@ class RollTraining:MarathonModeBase() {
 		timer = 0
 		lastGrade = 0
 		rankingRank = -1
-		rankingGrade = Array(RANKING_TYPE) {DoubleArray(RANKING_MAX)}
+		rankingGrade = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingRankPlayer = -1
-		rankingGradePlayer = Array(RANKING_TYPE) {DoubleArray(RANKING_MAX)}
+		rankingGradePlayer = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingLinesPlayer = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingTimePlayer = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		showPlayerStats = false
-		enableB2B = true
-		enableCombo = false
-		enableTSpin = false
-		twistEnableEZ = false
 		big = false
 		netPlayerInit(engine, playerID)
-		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
-			if(playerProperties.isLoggedIn) {
-				loadSettingPlayer(playerProperties)
-				loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-			}
-			version = CURRENT_VERSION
-			PLAYER_NAME = ""
-		} else {
-			loadSetting(owner.replayProp)
+		if(!owner.replayMode) version = CURRENT_VERSION else {
 			if(owner.replayProp.getProperty("rollTraining.endless", false)) goaltype = 2
-			PLAYER_NAME = owner.replayProp.getProperty("rollTraining.playerName", "")
 
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
-		engine.owner.backgroundStatus.bg = startlevel
+		engine.owner.backgroundStatus.bg = startLevel
 		engine.framecolor = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
 	}
 	/**
@@ -197,25 +186,10 @@ class RollTraining:MarathonModeBase() {
 			netOnUpdateNetPlayRanking(engine, goaltype)
 		} else if(!engine.owner.replayMode) {
 			// Configuration changes
-			val change = updateCursor(engine, 3, playerID)
+			val change = updateMenu(engine)
 			if(change!=0) {
-				engine.playSE("change")
-				when(engine.statc[2]) {
-					0 -> {
-						usedSpeed += change
-						if(usedSpeed>=SPEED_SETTING_COUNT) usedSpeed = 0 else if(usedSpeed<0) usedSpeed = SPEED_SETTING_COUNT-1
-						engine.framecolor = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
-					}
-					1 -> useMRoll = !useMRoll
-					2 -> endless = !endless
-					3 -> {
-						startlevel += change
-						if(startlevel>19) startlevel = 0 else if(startlevel<0) startlevel = 19
-						engine.owner.backgroundStatus.bg = startlevel
-					}
-					else -> {
-					}
-				}
+				engine.framecolor = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
+				engine.owner.backgroundStatus.bg = startLevel
 
 				// NET: Signal options change
 				if(netIsNetPlay&&netNumSpectators>0) {
@@ -226,28 +200,20 @@ class RollTraining:MarathonModeBase() {
 			// Confirm
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
 				engine.playSE("decide")
-				if(playerProperties.isLoggedIn) {
-					saveSettingPlayer(playerProperties)
-					playerProperties.saveProfileConfig()
-				} else {
-					saveSetting(owner.modeConfig)
-					owner.saveModeConfig()
-				}
-
 				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
+				if(netIsNetPlay) netLobby?.netPlayerClient?.send("start1p\n")
 				return false
 			}
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
 				engine.quitflag = true
-				playerProperties.reset()
+				engine.playerProp.reset()
 			}
 
 			// New acc
 			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null) {
-				playerProperties.reset()
+				engine.playerProp.reset()
 				engine.playSE("decide")
 				engine.stat = GameEngine.Status.CUSTOM
 				engine.resetStatc()
@@ -255,7 +221,7 @@ class RollTraining:MarathonModeBase() {
 			}
 
 			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startlevel==0&&!big&&engine.ai==null) {
+			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 			}
 			engine.statc[3]++
@@ -266,40 +232,19 @@ class RollTraining:MarathonModeBase() {
 		}
 		return true
 	}
-	/*
-     * Render the settings screen
-     */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		if(netIsNetRankingDisplayMode) {
-			// NET: Netplay Ranking
-			netOnRenderNetPlayRanking(engine, playerID, receiver)
-		} else {
-			drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"TYPE" to if(usedSpeed==SPEED_TAP) "TAP" else "TI",
-				"M-ROLL" to useMRoll,
-				"ENDLESS" to endless,
-				"BACKGROUND" to startlevel)
-		}
-	}
+
 	/*
      * Called for initialization during "Ready" screen
      */
 	override fun startGame(engine:GameEngine, playerID:Int) {
 		engine.statistics.level = 0
-		engine.b2bEnable = enableB2B
-		if(enableCombo) engine.comboType = GameEngine.COMBO_TYPE_NORMAL else engine.comboType = GameEngine.COMBO_TYPE_DISABLE
+		engine.b2bEnable = true
+		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.big = big
-		engine.twistAllowKick = enableTSpinKick
-		when(twistEnableType) {
-			0 -> engine.twistEnable = false
-			1 -> engine.twistEnable = true
-			else -> {
-				engine.twistEnable = true
-				engine.useAllSpinBonus = true
-			}
-		}
-
-		engine.twistEnableEZ = twistEnableEZ
+		engine.twistAllowKick = true
+		engine.twistEnable = true
+		engine.useAllSpinBonus = true
+		engine.twistEnableEZ = true
 		setSpeed(engine)
 		timer = TIME_LIMITS[usedSpeed]
 		engine.blockHidden = if(useMRoll) engine.ruleOpt.lockflash else FADING_FRAMES
@@ -314,11 +259,11 @@ class RollTraining:MarathonModeBase() {
 	override fun onCustom(engine:GameEngine, playerID:Int):Boolean {
 		showPlayerStats = false
 		engine.isInGame = true
-		val s = playerProperties.loginScreen.updateScreen(engine, playerID)
-		if(playerProperties.isLoggedIn) {
-			loadRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-			loadSettingPlayer(playerProperties)
-			engine.owner.backgroundStatus.bg = startlevel
+		val s = engine.playerProp.loginScreen.updateScreen(engine, playerID)
+		if(engine.playerProp.isLoggedIn) {
+			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
+			loadSetting(engine.playerProp.propProfile, engine)
+			engine.owner.backgroundStatus.bg = startLevel
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s
@@ -328,25 +273,25 @@ class RollTraining:MarathonModeBase() {
 		 */
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.RED)
+		receiver.drawScoreFont(engine, playerID, 0, 0, name, COLOR.RED)
 		val sb = StringBuilder("(")
 		if(endless) sb.append("ENDLESS ")
 		if(usedSpeed==SPEED_TAP) sb.append("TAP ") else sb.append("TI ")
 		if(useMRoll) sb.append("M-") else sb.append("FADING ")
 		sb.append("ROLL)")
-		receiver.drawScoreFont(engine, playerID, 0, 1, "$sb", EventReceiver.COLOR.RED)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "$sb", COLOR.RED)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				if(showPlayerStats) {
 					val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 					val topY = if(receiver.nextDisplayType==2) 6 else 4
-					receiver.drawScoreFont(engine, playerID, 3, topY-1, "GRADE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
+					receiver.drawScoreFont(engine, playerID, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE, scale)
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
-						val color = if(rankingRankPlayer==i) EventReceiver.COLOR.RED else {
+						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+						val color = if(rankingRankPlayer==i) COLOR.RED else {
 							if(usedSpeed==SPEED_TAP) {
-								if(!useMRoll&&rankingTimePlayer[rankIndex][i]>=TIME_LIMITS[0]||useMRoll&&rankingLinesPlayer[rankIndex][i]>=32) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.GREEN
-							} else if(rankingTimePlayer[rankIndex][i]>=TIME_LIMITS[1]) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.GREEN
+								if(!useMRoll&&rankingTimePlayer[rankIndex][i]>=TIME_LIMITS[0]||useMRoll&&rankingLinesPlayer[rankIndex][i]>=32) COLOR.ORANGE else COLOR.GREEN
+							} else if(rankingTimePlayer[rankIndex][i]>=TIME_LIMITS[1]) COLOR.ORANGE else COLOR.GREEN
 
 						}
 						val gText:String = if(usedSpeed==SPEED_TAP) {
@@ -355,26 +300,32 @@ class RollTraining:MarathonModeBase() {
 							"+"+String.format("%.2f", rankingGradePlayer[rankIndex][i])
 						}
 						receiver.drawScoreFont(engine, playerID, 3, topY+i, gText, color, scale)
-						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLinesPlayer[rankIndex][i]}",
-							i==rankingRankPlayer, scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTimePlayer[rankIndex][i].toTimeStr,
-							i==rankingRankPlayer, scale)
-						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE)
-						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2, playerProperties.nameDisplay,
-							EventReceiver.COLOR.WHITE, 2f)
-						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
+						receiver.drawScoreFont(
+							engine, playerID, 10, topY+i, "${rankingLinesPlayer[rankIndex][i]}",
+							i==rankingRankPlayer, scale
+						)
+						receiver.drawScoreFont(
+							engine, playerID, 15, topY+i, rankingTimePlayer[rankIndex][i].toTimeStr,
+							i==rankingRankPlayer, scale
+						)
+						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
+						receiver.drawScoreFont(
+							engine, playerID, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay,
+							COLOR.WHITE, 2f
+						)
+						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 					}
 				} else {
 					val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 					val topY = if(receiver.nextDisplayType==2) 6 else 4
-					receiver.drawScoreFont(engine, playerID, 3, topY-1, "GRADE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
+					receiver.drawScoreFont(engine, playerID, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE, scale)
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
-						val color = if(rankingRank==i) EventReceiver.COLOR.RED else {
+						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+						val color = if(rankingRank==i) COLOR.RED else {
 							if(usedSpeed==SPEED_TAP) {
-								if(!useMRoll&&rankingTime[rankIndex][i]>=TIME_LIMITS[0]||useMRoll&&rankingLines[rankIndex][i]>=32) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.GREEN
+								if(!useMRoll&&rankingTime[rankIndex][i]>=TIME_LIMITS[0]||useMRoll&&rankingLines[rankIndex][i]>=32) COLOR.ORANGE else COLOR.GREEN
 							} else {
-								if(rankingTime[rankIndex][i]>=TIME_LIMITS[1]) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.GREEN
+								if(rankingTime[rankIndex][i]>=TIME_LIMITS[1]) COLOR.ORANGE else COLOR.GREEN
 							}
 						}
 						val gText:String = if(usedSpeed==SPEED_TAP) {
@@ -385,40 +336,47 @@ class RollTraining:MarathonModeBase() {
 						receiver.drawScoreGrade(engine, playerID, 3, topY+i, gText, color, scale)
 						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLines[rankIndex][i]}", i==rankingRank, scale)
 						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTime[rankIndex][i].toTimeStr, i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE)
-						if(!playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+2,
-							"(NOT LOGGED IN)\n(E:LOG IN)")
-						if(playerProperties.isLoggedIn) receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5,
-							"F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
+						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
+						if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
+							engine, playerID, 0, topY+RANKING_MAX+2,
+							"(NOT LOGGED IN)\n(E:LOG IN)"
+						)
+						if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
+							engine, playerID, 0, topY+RANKING_MAX+5,
+							"F:SWITCH RANK SCREEN", COLOR.GREEN
+						)
 					}
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
-			playerProperties.loginScreen.renderScreen(receiver, engine, playerID)
+			engine.playerProp.loginScreen.renderScreen(receiver, engine, playerID)
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, if(usedSpeed==SPEED_TAP) "GRADE" else "BONUS", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, if(usedSpeed==SPEED_TAP) "GRADE" else "BONUS", COLOR.BLUE)
 			val grade:String
-			val gc:EventReceiver.COLOR
+			val gc:COLOR
 			if(usedSpeed==SPEED_TAP) {
 				grade = if(!useMRoll) "S9" else if(tapGrade>=1.0) "GM" else "M"
-				gc = if(!useMRoll&&engine.statistics.time>=TIME_LIMITS[0]||useMRoll&&engine.statistics.lines>=32) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.GREEN
+				gc =
+					if(!useMRoll&&engine.statistics.time>=TIME_LIMITS[0]||useMRoll&&engine.statistics.lines>=32) COLOR.ORANGE else COLOR.GREEN
 			} else {
 				grade = "+"+String.format("%.2f", tiGrade)
-				gc = if(engine.statistics.time>=TIME_LIMITS[1]) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.GREEN
+				gc = if(engine.statistics.time>=TIME_LIMITS[1]) COLOR.ORANGE else COLOR.GREEN
 			}
 			receiver.drawScoreGrade(engine, playerID, 0, 4, grade, gc)
-			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
-			receiver.drawScoreFont(engine, playerID, 0, 9, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 9, "TIME", COLOR.BLUE)
 			receiver.drawScoreFont(engine, playerID, 0, 10, engine.statistics.time.toTimeStr)
 			if(!endless) {
-				receiver.drawScoreFont(engine, playerID, 0, 12, "REMAINING", EventReceiver.COLOR.YELLOW)
+				receiver.drawScoreFont(engine, playerID, 0, 12, "REMAINING", COLOR.YELLOW)
 				receiver.drawScoreFont(engine, playerID, 0, 13, maxOf(timer, 0).toTimeStr, (timer<=600&&timer/2%2==0))
 			}
-			if(playerProperties.isLoggedIn||PLAYER_NAME.isNotEmpty()) {
-				receiver.drawScoreFont(engine, playerID, 0, if(endless) 12 else 15, "PLAYER", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, if(endless) 13 else 16,
-					if(owner.replayMode) PLAYER_NAME else playerProperties.nameDisplay, EventReceiver.COLOR.WHITE, 2f)
+			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
+				receiver.drawScoreFont(engine, playerID, 0, if(endless) 12 else 15, "PLAYER", COLOR.BLUE)
+				receiver.drawScoreFont(
+					engine, playerID, 0, if(endless) 13 else 16,
+					if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay, COLOR.WHITE, 2f
+				)
 			}
 		}
 
@@ -440,6 +398,7 @@ class RollTraining:MarathonModeBase() {
 		 * Called after every frame
 		 */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		if(engine.timerActive) {
 			if(timer==0) {
 				if(usedSpeed==SPEED_TI) tiGrade += CLEAR_GRADE_BONUS[if(useMRoll) 1 else 0] else {
@@ -470,13 +429,13 @@ class RollTraining:MarathonModeBase() {
 		if(factor>=0.75&&!endless) engine.meterColor = GameEngine.METER_COLOR_RED
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
-			if(engine.ctrl.isPush(Controller.BUTTON_F)&&playerProperties.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
 				showPlayerStats = !showPlayerStats
 				engine.playSE("change")
 			}
 		}
 		if(engine.quitflag) {
-			playerProperties.reset()
+			engine.playerProp.reset()
 		}
 	}
 	/*
@@ -512,29 +471,32 @@ class RollTraining:MarathonModeBase() {
 		else "+"+String.format("%.2f", tiGrade)
 		val gc =
 			if(if(usedSpeed==SPEED_TAP) !useMRoll&&engine.statistics.time>=TIME_LIMITS[0]||useMRoll&&engine.statistics.lines>=32
-				else engine.statistics.time>=TIME_LIMITS[1]) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.GREEN
+				else engine.statistics.time>=TIME_LIMITS[1]
+			) COLOR.ORANGE else COLOR.GREEN
 
-		receiver.drawMenuFont(engine, playerID, 0, 0, if(usedSpeed==SPEED_TAP) "GRADE" else "BONUS", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, playerID, 0, 0, if(usedSpeed==SPEED_TAP) "GRADE" else "BONUS", COLOR.BLUE)
 		receiver.drawMenuFont(engine, playerID, 0, 1, String.format("%10s", grade), gc)
-		drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE,
-			Statistic.LINES, Statistic.TIME, Statistic.LPM)
-		drawResultRank(engine, playerID, receiver, 8, EventReceiver.COLOR.BLUE, rankingRank)
-		drawResultNetRank(engine, playerID, receiver, 10, EventReceiver.COLOR.BLUE, netRankingRank[0])
-		drawResultNetRankDaily(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, netRankingRank[1])
+		drawResultStats(
+			engine, playerID, receiver, 2, COLOR.BLUE,
+			Statistic.LINES, Statistic.TIME, Statistic.LPM
+		)
+		drawResultRank(engine, playerID, receiver, 8, COLOR.BLUE, rankingRank)
+		drawResultNetRank(engine, playerID, receiver, 10, COLOR.BLUE, netRankingRank[0])
+		drawResultNetRankDaily(engine, playerID, receiver, 12, COLOR.BLUE, netRankingRank[1])
 		if(netIsPB) {
-			receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
+			receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", COLOR.ORANGE)
 		}
 		if(netIsNetPlay&&netReplaySendStatus==1) {
-			receiver.drawMenuFont(engine, playerID, 0, 22, "SENDING...", EventReceiver.COLOR.PINK)
+			receiver.drawMenuFont(engine, playerID, 0, 22, "SENDING...", COLOR.PINK)
 		} else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2) {
-			receiver.drawMenuFont(engine, playerID, 1, 22, "A: RETRY", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, playerID, 1, 22, "A: RETRY", COLOR.RED)
 		}
 	}
 	/*
 		 * Called when saving replay
 		 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(prop, engine)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
@@ -543,123 +505,46 @@ class RollTraining:MarathonModeBase() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(if(usedSpeed==SPEED_TAP) tapGrade else tiGrade, engine.statistics.lines, engine.statistics.time, rankIndex)
-			if(playerProperties.isLoggedIn) {
-				prop.setProperty("rollTraining.playerName", playerProperties.nameDisplay)
-			}
-			if(rankingRank!=-1) {
-				saveRanking(owner.modeConfig, engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
-			if(rankingRankPlayer!=-1&&playerProperties.isLoggedIn) {
-				saveRankingPlayer(playerProperties, engine.ruleOpt.strRuleName)
-				playerProperties.saveProfileConfig()
-			}
+			return updateRanking(
+				((if(usedSpeed==SPEED_TAP) tapGrade else tiGrade)*100).toInt(),
+				engine.statistics.lines, engine.statistics.time, rankIndex, engine.playerProp.isLoggedIn
+			)
+
 		}
+		return false
 	}
 	/**
-	 * Load settings from property file
+	 * Load settings from [prop]
 	 *
 	 * @param prop Property file
 	 */
-	override fun loadSetting(prop:CustomProperties) {
-		startlevel = prop.getProperty("rollTraining.startlevel", 0)
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		startLevel = prop.getProperty("rollTraining.startLevel", 0)
 		usedSpeed = prop.getProperty("rollTraining.usedSpeed", SPEED_TI)
 		useMRoll = prop.getProperty("rollTraining.useMRoll", true)
 		endless = prop.getProperty("rollTraining.endlessMode", false)
 	}
 	/**
-	 * Save settings to property file
+	 * Save settings to [prop]
 	 *
 	 * @param prop Property file
 	 */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("rollTraining.startlevel", startlevel)
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		prop.setProperty("rollTraining.startLevel", startLevel)
 		prop.setProperty("rollTraining.usedSpeed", usedSpeed)
 		prop.setProperty("rollTraining.useMRoll", useMRoll)
 		prop.setProperty("rollTraining.endlessMode", endless)
 	}
 	/**
-	 * Load settings from property file
-	 *
-	 * @param prop Property file
-	 */
-	private fun loadSettingPlayer(prop:ProfileProperties?) {
-		startlevel = prop!!.getProperty("rollTraining.startlevel", 0)
-		usedSpeed = prop.getProperty("rollTraining.usedSpeed", SPEED_TI)
-		useMRoll = prop.getProperty("rollTraining.useMRoll", true)
-		endless = prop.getProperty("rollTraining.endlessMode", false)
-	}
-	/**
-	 * Save settings to property file
+	 * Save settings to [prop]
 	 *
 	 * @param prop Property file
 	 */
 	private fun saveSettingPlayer(prop:ProfileProperties?) {
-		prop!!.setProperty("rollTraining.startlevel", startlevel)
-		prop.setProperty("rollTraining.usedSpeed", usedSpeed)
-		prop.setProperty("rollTraining.useMRoll", useMRoll)
-		prop.setProperty("rollTraining.endlessMode", endless)
-	}
-	/**
-	 * Read rankings from property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			for(j in 0 until GAMETYPE_MAX) {
-				rankingGrade[j][i] = prop.getProperty("rollTraining.ranking.$ruleName.$j.grade.$i", 0.0)
-				rankingLines[j][i] = prop.getProperty("rollTraining.ranking.$ruleName.$j.lines.$i", 0)
-				rankingTime[j][i] = prop.getProperty("rollTraining.ranking.$ruleName.$j.time.$i", 0)
-			}
-		}
-	}
-	/**
-	 * Save rankings to property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			for(j in 0 until GAMETYPE_MAX) {
-				prop.setProperty("rollTraining.ranking.$ruleName.$j.grade.$i", rankingGrade[j][i])
-				prop.setProperty("rollTraining.ranking.$ruleName.$j.lines.$i", rankingLines[j][i])
-				prop.setProperty("rollTraining.ranking.$ruleName.$j.time.$i", rankingTime[j][i])
-			}
-		}
-	}
-	/**
-	 * Read rankings from property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun loadRankingPlayer(prop:ProfileProperties?, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			for(j in 0 until GAMETYPE_MAX) {
-				rankingGradePlayer[j][i] = prop!!.getProperty("rollTraining.ranking.$ruleName.$j.grade.$i", 0.0)
-				rankingLinesPlayer[j][i] = prop.getProperty("rollTraining.ranking.$ruleName.$j.lines.$i", 0)
-				rankingTimePlayer[j][i] = prop.getProperty("rollTraining.ranking.$ruleName.$j.time.$i", 0)
-			}
-		}
-	}
-	/**
-	 * Save rankings to property file
-	 *
-	 * @param prop     Property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRankingPlayer(prop:ProfileProperties?, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			for(j in 0 until GAMETYPE_MAX) {
-				prop!!.setProperty("rollTraining.ranking.$ruleName.$j.grade.$i", rankingGradePlayer[j][i])
-				prop.setProperty("rollTraining.ranking.$ruleName.$j.lines.$i", rankingLinesPlayer[j][i])
-				prop.setProperty("rollTraining.ranking.$ruleName.$j.time.$i", rankingTimePlayer[j][i])
-			}
-		}
+		prop?.setProperty("rollTraining.startLevel", startLevel)
+		prop?.setProperty("rollTraining.usedSpeed", usedSpeed)
+		prop?.setProperty("rollTraining.useMRoll", useMRoll)
+		prop?.setProperty("rollTraining.endlessMode", endless)
 	}
 	/**
 	 * Update rankings
@@ -668,7 +553,7 @@ class RollTraining:MarathonModeBase() {
 	 * @param li   Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Double, li:Int, time:Int, type:Int) {
+	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int, isLoggedIn:Boolean):Boolean {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -683,7 +568,7 @@ class RollTraining:MarathonModeBase() {
 			rankingLines[type][rankingRank] = li
 			rankingTime[type][rankingRank] = time
 		}
-		if(playerProperties.isLoggedIn) {
+		if(isLoggedIn) {
 			rankingRankPlayer = checkRankingPlayer(sc, li, time, type)
 			if(rankingRankPlayer!=-1) {
 				// Shift down ranking entries
@@ -698,7 +583,8 @@ class RollTraining:MarathonModeBase() {
 				rankingLinesPlayer[type][rankingRankPlayer] = li
 				rankingTimePlayer[type][rankingRankPlayer] = time
 			}
-		}
+		} else rankingRankPlayer = -1
+		return rankingRank!=-1||rankingRankPlayer!=-1
 	}
 
 	private fun getClear(type:Int, time:Int, lines:Int):Int =
@@ -711,18 +597,27 @@ class RollTraining:MarathonModeBase() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Double, li:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
 			if(getClear(type, time, li)>getClear(type, rankingTime[type][i], rankingLines[type][i])) {
 				return i
-			} else if(getClear(type, time, li)==getClear(type, rankingTime[type][i],
-					rankingLines[type][i])&&sc>rankingGrade[type][i]) {
+			} else if(getClear(type, time, li)==getClear(
+					type, rankingTime[type][i],
+					rankingLines[type][i]
+				)&&sc>rankingGrade[type][i]
+			) {
 				return i
-			} else if(getClear(type, time, li)==getClear(type, rankingTime[type][i],
-					rankingLines[type][i])&&sc==rankingGrade[type][i]&&time>rankingTime[type][i]) {
+			} else if(getClear(type, time, li)==getClear(
+					type, rankingTime[type][i],
+					rankingLines[type][i]
+				)&&sc==rankingGrade[type][i]&&time>rankingTime[type][i]
+			) {
 				return i
-			} else if(getClear(type, time, li)==getClear(type, rankingTime[type][i],
-					rankingLines[type][i])&&sc==rankingGrade[type][i]&&time==rankingTime[type][i]&&li>rankingLines[type][i]) {
+			} else if(getClear(type, time, li)==getClear(
+					type, rankingTime[type][i],
+					rankingLines[type][i]
+				)&&sc==rankingGrade[type][i]&&time==rankingTime[type][i]&&li>rankingLines[type][i]
+			) {
 				return i
 			}
 		}
@@ -736,18 +631,27 @@ class RollTraining:MarathonModeBase() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRankingPlayer(sc:Double, li:Int, time:Int, type:Int):Int {
+	private fun checkRankingPlayer(sc:Int, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
 			if(getClear(type, time, li)>getClear(type, rankingTimePlayer[type][i], rankingLinesPlayer[type][i])) {
 				return i
-			} else if(getClear(type, time, li)==getClear(type, rankingTimePlayer[type][i],
-					rankingLinesPlayer[type][i])&&sc>rankingGradePlayer[type][i]) {
+			} else if(getClear(type, time, li)==getClear(
+					type, rankingTimePlayer[type][i],
+					rankingLinesPlayer[type][i]
+				)&&sc>rankingGradePlayer[type][i]
+			) {
 				return i
-			} else if(getClear(type, time, li)==getClear(type, rankingTimePlayer[type][i],
-					rankingLinesPlayer[type][i])&&sc==rankingGradePlayer[type][i]&&time>rankingTimePlayer[type][i]) {
+			} else if(getClear(type, time, li)==getClear(
+					type, rankingTimePlayer[type][i],
+					rankingLinesPlayer[type][i]
+				)&&sc==rankingGradePlayer[type][i]&&time>rankingTimePlayer[type][i]
+			) {
 				return i
-			} else if(getClear(type, time, li)==getClear(type, rankingTimePlayer[type][i],
-					rankingLinesPlayer[type][i])&&sc==rankingGradePlayer[type][i]&&time==rankingTimePlayer[type][i]&&li>rankingLinesPlayer[type][i]) {
+			} else if(getClear(type, time, li)==getClear(
+					type, rankingTimePlayer[type][i],
+					rankingLinesPlayer[type][i]
+				)&&sc==rankingGradePlayer[type][i]&&time==rankingTimePlayer[type][i]&&li>rankingLinesPlayer[type][i]
+			) {
 				return i
 			}
 		}

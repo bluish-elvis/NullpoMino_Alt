@@ -82,10 +82,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		ojamaChecked = BooleanArray(MAX_PLAYERS)
 	}
 
-	/** Load settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to read from
-	 */
+	/** Load settings into [engine] from [prop] not related to speeds */
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		super.loadOtherSetting(engine, prop, "spf")
 		val playerID = engine.playerID
@@ -96,10 +93,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		dropMap[playerID] = prop.getProperty("avalanchevsspf.dropMap.p$playerID", 0)
 	}
 
-	/** Save settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to save to
-	 */
+	/** Save settings from [engine] into [prop] not related to speeds */
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		super.saveOtherSetting(engine, prop, "spf")
 		val playerID = engine.playerID
@@ -494,8 +488,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 		// Score
 		var strScoreMultiplier = ""
-		if(lastscore[playerID]!=0&&lastmultiplier[playerID]!=0&&scgettime[playerID]>0)
-			strScoreMultiplier = "(${lastscore[playerID]}e${lastmultiplier[playerID]})"
+		if(lastscores[playerID]!=0&&lastmultiplier[playerID]!=0&&scgettime[playerID]>0)
+			strScoreMultiplier = "(${lastscores[playerID]}e${lastmultiplier[playerID]})"
 
 		if(engine.displaysize==1) {
 			receiver.drawDirectFont(fldPosX+4, fldPosY+440, String.format("%12d", score[playerID]), playerColor)
@@ -629,13 +623,14 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		saveOtherSetting(engine, owner.replayProp)
 		savePreset(engine, owner.replayProp, -1-playerID, "spf")
 
 		if(useMap[playerID]) fldBackup[playerID]?.let {saveMap(it, owner.replayProp, playerID)}
 
 		owner.replayProp.setProperty("avalanchevs.version", version)
+		return false
 	}
 
 	companion object {

@@ -528,7 +528,7 @@ import java.util.HashSet;
 	public static final int KEY_RALT=KEY_RMENU;
 
 	/** Control index */
-	private static final int LEFT=0,RIGHT=1,UP=2,DOWN=3;
+	private static final int LEFT=0, RIGHT=1, UP=2, DOWN=3;
 	/** Control index */
 	private static final int BUTTON1=4, BUTTON2=5, BUTTON3=6, BUTTON4=7,
 		BUTTON5=8, BUTTON6=9, BUTTON7=10, BUTTON8=11, BUTTON9=12, BUTTON10=13;
@@ -1036,7 +1036,7 @@ import java.util.HashSet;
 	 * @return True if the controller is pressed to the left
 	 */
 	public boolean isControllerLeft(int controller){
-		if(controller >= getControllerCount())
+		if(controller>=getControllerCount())
 			return false;
 
 		if(controller==ANY_CONTROLLER){
@@ -1056,7 +1056,7 @@ import java.util.HashSet;
 	 * @return True if the controller is pressed to the right
 	 */
 	public boolean isControllerRight(int controller){
-		if(controller >= getControllerCount()) return false;
+		if(controller>=getControllerCount()) return false;
 
 		if(controller==ANY_CONTROLLER){
 			for(int i=0;i<controllers.size();i++)
@@ -1075,7 +1075,7 @@ import java.util.HashSet;
 	 * @return True if the controller is pressed to the up
 	 */
 	public boolean isControllerUp(int controller){
-		if(controller >= getControllerCount()) return false;
+		if(controller>=getControllerCount()) return false;
 
 		if(controller==ANY_CONTROLLER){
 			for(int i=0;i<controllers.size();i++)
@@ -1093,7 +1093,7 @@ import java.util.HashSet;
 	 * @return True if the controller is pressed to the down
 	 */
 	public boolean isControllerDown(int controller){
-		if(controller >= getControllerCount()) return false;
+		if(controller>=getControllerCount()) return false;
 
 		if(controller==ANY_CONTROLLER){
 			for(int i=0;i<controllers.size();i++)
@@ -1114,7 +1114,7 @@ import java.util.HashSet;
 	 * @return True if the button is pressed
 	 */
 	public boolean isButtonPressed(int index,int controller){
-		if(controller >= getControllerCount()) return false;
+		if(controller>=getControllerCount()) return false;
 
 		if(controller==ANY_CONTROLLER){
 			for(int i=0;i<controllers.size();i++)
@@ -1168,7 +1168,7 @@ import java.util.HashSet;
 			for(int i=0;i<count;i++){
 				Controller controller=Controllers.getController(i);
 
-				if((controller.getButtonCount() >= 3)&&(controller.getButtonCount()<MAX_BUTTONS)) controllers.add(controller);
+				if((controller.getButtonCount()>=3)&&(controller.getButtonCount()<MAX_BUTTONS)) controllers.add(controller);
 			}
 
 			Log.info("Found "+controllers.size()+" controllers");
@@ -1303,7 +1303,7 @@ import java.util.HashSet;
 			}
 		}
 
-		while(Mouse.next()) if(Mouse.getEventButton() >= 0) if(Mouse.getEventButtonState()){
+		while(Mouse.next()) if(Mouse.getEventButton()>=0) if(Mouse.getEventButtonState()){
 			consumed=false;
 			mousePressed[Mouse.getEventButton()]=true;
 
@@ -1430,10 +1430,9 @@ import java.util.HashSet;
 	/**
 	 * Enable key repeat for this input context. This will cause keyPressed to get called repeatedly
 	 * at a set interval while the key is pressed
-	 * @param initial The interval before key repreating starts after a key press
-	 * @param interval The interval between key repeats in ms
-	 * @deprecated
+	 * @deprecated parameter deleted
 	 */
+	@Deprecated
 	public void enableKeyRepeat(int initial,int interval){
 		Keyboard.enableRepeatEvents(true);
 	}
@@ -1525,7 +1524,7 @@ import java.util.HashSet;
 				return isControllerDown(controllerIndex);
 		}
 
-		if(index >= BUTTON1) return isButtonPressed((index-BUTTON1),controllerIndex);
+		if(index>=BUTTON1) return isButtonPressed((index-BUTTON1),controllerIndex);
 
 		throw new RuntimeException("Unknown control index");
 	}

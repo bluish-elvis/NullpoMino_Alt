@@ -5,17 +5,10 @@
 # config/rule/test1.rul   <- Rule filename.
 
 :TETROMINO
-config/rule/Classic3.rul
-config/rule/ClassicEasyA.rul
-config/rule/ClassicEasyB.rul
-config/rule/Standard.rul
-config/rule/StandardHard128.rul
-config/rule/StandardHard.rul
-config/rule/StandardExp.rul
-config/rule/StandardFast.rul
-config/rule/StandardFastB.rul
-config/rule/StandardPlus.rul
-config/rule/StandardZero.rul
+config/rule/Global.rul
+config/rule/Global-adv.rul
+config/rule/DTET.rul
+config/rule/DTET-bas.rul
 
 :AVALANCHE
 config/rule/Avalanche.rul

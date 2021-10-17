@@ -32,7 +32,10 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** FINAL mode (Original from NullpoUE build 010210 by Zircean) */
@@ -63,9 +66,6 @@ class GrandFinale:AbstractMode() {
 
 	/** Used by combo scoring */
 	private var comboValue = 0
-
-	/** Amount of points you just get from line clears */
-	private var lastscore = 0
 
 	/** Game completed flag (0=Died before Lv999 1=Died during credits roll
 	 * 2=Survived credits roll */
@@ -109,16 +109,17 @@ class GrandFinale:AbstractMode() {
 	private var isShowBestSectionTime = false
 
 	/** Selected start level */
-	private var startlevel = 0
+	private var startLevel = 0
 
 	/** Level stop sound */
-	private var lvstopse = false
+	private var secAlert = false
 
-	/** Big mode ON/OFF */
-	private var big = false
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** Show section time */
-	private var showsectiontime = false
+	private var showST = false
 
 	/** Version of this mode */
 	private var version = 0
@@ -145,6 +146,7 @@ class GrandFinale:AbstractMode() {
 	/** Returns the name of this mode */
 	override val name = "Grand Finale"
 	override val gameIntensity = 3
+
 	/** This function will be called when the game enters the main game
 	 * screen. */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -172,8 +174,8 @@ class GrandFinale:AbstractMode() {
 		medalSK = 0
 		medalCO = 0
 		isShowBestSectionTime = false
-		startlevel = 0
-		lvstopse = false
+		startLevel = 0
+		secAlert = false
 		big = false
 		menuTime = 0
 
@@ -195,37 +197,24 @@ class GrandFinale:AbstractMode() {
 		engine.staffrollEnable = true
 		engine.staffrollNoDeath = true
 
-		version = if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
-			CURRENT_VERSION
-		} else {
-			loadSetting(owner.replayProp)
-			owner.replayProp.getProperty("final.version", 0)
-		}
+		version = (if(!owner.replayMode) CURRENT_VERSION else owner.replayProp.getProperty("final.version", 0))
 
-		owner.backgroundStatus.bg = 30+startlevel
+		owner.backgroundStatus.bg = 30+startLevel
 	}
 
-	/** Load the settings
-	 * @param prop CustomProperties
-	 */
-	override fun loadSetting(prop:CustomProperties) {
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		gametype = prop.getProperty("final.gametype", 0)
-		startlevel = prop.getProperty("final.startlevel", 0)
-		lvstopse = prop.getProperty("final.lvstopse", true)
-		showsectiontime = prop.getProperty("final.showsectiontime", true)
+		startLevel = prop.getProperty("final.startLevel", 0)
+		secAlert = prop.getProperty("final.lvstopse", true)
+		showST = prop.getProperty("final.showsectiontime", true)
 		big = prop.getProperty("final.big", false)
 	}
 
-	/** Save the settings
-	 * @param prop CustomProperties
-	 */
-	override fun saveSetting(prop:CustomProperties) {
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("final.gametype", gametype)
-		prop.setProperty("final.startlevel", startlevel)
-		prop.setProperty("final.lvstopse", lvstopse)
-		prop.setProperty("final.showsectiontime", showsectiontime)
+		prop.setProperty("final.startLevel", startLevel)
+		prop.setProperty("final.lvstopse", secAlert)
+		prop.setProperty("final.showsectiontime", showST)
 		prop.setProperty("final.big", big)
 	}
 
@@ -264,7 +253,7 @@ class GrandFinale:AbstractMode() {
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
 			var temp = 0
-			for(i in startlevel until startlevel+sectionscomp)
+			for(i in startLevel until startLevel+sectionscomp)
 				if(i>=0&&i<sectionTime.size) temp += sectionTime[i]
 			sectionavgtime = temp/sectionscomp
 		} else
@@ -308,8 +297,8 @@ class GrandFinale:AbstractMode() {
 						if(gametype<0) gametype = 2
 						if(gametype>2) gametype = 0
 					}
-					1 -> lvstopse = !lvstopse
-					2 -> showsectiontime = !showsectiontime
+					1 -> secAlert = !secAlert
+					2 -> showST = !showST
 					3 -> big = !big
 				}
 			}
@@ -323,8 +312,6 @@ class GrandFinale:AbstractMode() {
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				return false
 			}
 
@@ -347,7 +334,7 @@ class GrandFinale:AbstractMode() {
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		drawMenu(engine, playerID, receiver, 0, COLOR.RED, 0,
-			"COURSE" to tableModeName[gametype], "LVSTOPSE" to lvstopse, "SHOW STIME" to showsectiontime, "BIG" to big)
+			"COURSE" to tableModeName[gametype], "LVSTOPSE" to secAlert, "SHOW STIME" to showST, "BIG" to big)
 	}
 
 	/** Ready screen */
@@ -363,7 +350,7 @@ class GrandFinale:AbstractMode() {
 		if(gametype==2)
 			engine.statistics.level = 0
 		else {
-			engine.statistics.level = startlevel*100
+			engine.statistics.level = startLevel*100
 
 			nextseclv = engine.statistics.level+100
 			if(engine.statistics.level<0) nextseclv = 100
@@ -389,7 +376,7 @@ class GrandFinale:AbstractMode() {
 		receiver.drawScoreFont(engine, playerID, 0, 1, "b${tableModeName[gametype]}", COLOR.WHITE)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null)
+			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Leaderboard
 					val scale = if(receiver.nextDisplayType==2) .5f else 1f
@@ -481,7 +468,7 @@ class GrandFinale:AbstractMode() {
 			receiver.drawScoreMedal(engine, playerID, 3, 21, "CO", medalCO)
 
 			// Section Time
-			if(showsectiontime&&sectionTime.isNotEmpty()) {
+			if(showST&&sectionTime.isNotEmpty()) {
 				val x = if(receiver.nextDisplayType==2) 8 else 12
 				val x2 = if(receiver.nextDisplayType==2) 9 else 12
 
@@ -515,7 +502,7 @@ class GrandFinale:AbstractMode() {
 			if(gametype==1&&engine.statistics.level>=500&&stacks<40) stacks++
 			if(isLeveledPerBlock(engine.statistics.level)) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 		}
@@ -537,7 +524,7 @@ class GrandFinale:AbstractMode() {
 			if(gametype==1&&engine.statistics.level>=500&&stacks<40) stacks++
 			if(isLeveledPerBlock(engine.statistics.level)) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 			lvupflag = true
@@ -716,13 +703,13 @@ class GrandFinale:AbstractMode() {
 				// Update next section level
 				nextseclv += 100
 				if(nextseclv>999) nextseclv = 999
-			} else if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 
 			// Add score
 
 			val section = levelb/100
-			if(section>=0&&section<sectionTime.size) sectionLine[levelb/100] += if(gametype==1) if(lines>=4) 1 else 0 else lines
-			lastscore = (((levelb+lines)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*lines*comboValue+
+			if(section>=0&&section<sectionTime.size) sectionLine[levelb/100] += if(gametype==1) (lines>=4).toInt() else lines
+			lastscore = (((levelb+lines)/4+engine.softdropFall+engine.manualLock.toInt())*lines*comboValue+
 				maxOf(0, engine.lockDelay-engine.lockDelayNow)+engine.statistics.level/2)*if(engine.field.isEmpty) 2 else 1
 
 			engine.statistics.scoreLine += lastscore
@@ -733,6 +720,7 @@ class GrandFinale:AbstractMode() {
 
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		// Grade up flash
 		if(gradeflash>0) gradeflash--
 
@@ -837,20 +825,18 @@ class GrandFinale:AbstractMode() {
 
 	/** This function will be called when the replay data is going to be
 	 * saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(owner.replayProp)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(owner.replayProp, engine)
 		owner.replayProp.setProperty("final.version", version)
 
 		// Updates leaderboard and best section time records
-		if(!owner.replayMode&&startlevel==0&&!big&&engine.ai==null) {
+		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
 			updateRanking(gametype, grade, engine.statistics.level, engine.statistics.time, rollclear)
 			if(medalST==3) updateBestSectionTime(gametype)
 
-			if(rankingRank!=-1||medalST==3) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1||medalST==3) return true
 		}
+		return false
 	}
 
 	/** Load the ranking
@@ -874,7 +860,7 @@ class GrandFinale:AbstractMode() {
 	 * @param ruleName Rule name
 	 */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
+		super.saveRanking((0 until RANKING_TYPE).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf("$j.$ruleName.$i.grade" to rankingGrade[j][i],
 					"$j.$ruleName.$i.level" to rankingLevel[j][i],
@@ -884,9 +870,6 @@ class GrandFinale:AbstractMode() {
 				listOf("$j,$ruleName.sectiontime.$i" to bestSectionTime[j][i])
 			}
 		})
-
-		//owner.statsProp.setProperty("decoration", decoration)
-		//receiver.saveProperties(owner.statsFile, owner.statsProp)
 	}
 
 	/** Update the ranking

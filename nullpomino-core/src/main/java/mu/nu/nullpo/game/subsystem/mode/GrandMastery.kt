@@ -32,12 +32,15 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.log4j.Logger
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.ln
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /** GRADE MANIA 3 Mode */
@@ -81,12 +84,6 @@ class GrandMastery:AbstractMode() {
 
 	/** Combo bonus */
 	private var comboValue = 0
-
-	/** Most recent increase in score */
-	private var lastscore = 0
-
-	/** 獲得Render scoreがされる残り time */
-	private var scgettime = 0
 
 	/** このSection でCOOLを出すとtrue */
 	private var cool = false
@@ -174,33 +171,44 @@ class GrandMastery:AbstractMode() {
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
 
+	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, true, true)
 	/** Level at start */
-	private var startlevel = 0
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
+	private val itemGhost = BooleanMenuItem("alwaysghost", "FULL GHOST", COLOR.BLUE, false)
 	/** When true, always ghost ON */
-	private var alwaysghost = false
+	private var alwaysghost:Boolean by DelegateMenuItem(itemGhost)
 
+	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.BLUE, false)
 	/** When true, always 20G */
-	private var always20g = false
+	private var always20g:Boolean by DelegateMenuItem(item20g)
 
+	private val itemAlert = BooleanMenuItem("lvstopse", "Sect.ALERT", COLOR.BLUE, true)
 	/** When true, levelstop sound is enabled */
-	private var lvstopse = false
+	private var secAlert:Boolean by DelegateMenuItem(itemAlert)
 
-	/** BigMode */
-	private var big = false
-
+	private val itemST = BooleanMenuItem("showsectiontime", "SHOW STIME", COLOR.BLUE, true)
 	/** When true, section time display is enabled */
-	private var showsectiontime = false
+	private var showST:Boolean by DelegateMenuItem(itemST)
 
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
+
+	private var itemGrade = BooleanMenuItem("showgrade", "SHOW GRADE", COLOR.BLUE, false)
 	/** 段位表示 */
-	private var gradedisp = false
+	private var gradedisp:Boolean by DelegateMenuItem(itemGrade)
 
+	private var itemQualify = TimeMenuItem("lv500torikan", "Lv500 Qualify", COLOR.BLUE, 25200, 0.. 72000)
 	/** LV500の足切りTime */
-	private var lv500torikan = 0
+	private var lv500torikan:Int by DelegateMenuItem(itemQualify)
 
+	private var itemExam = BooleanMenuItem("enableexam", "EXAMINATION", COLOR.YELLOW, true)
 	/** 昇格・降格試験 is enabled */
-	private var enableexam = false
+	private var enableexam:Boolean by DelegateMenuItem(itemExam)
 
+	override val menu:MenuList
+		get() = MenuList("grademania3", itemGhost, itemAlert, itemST, itemGrade, itemExam, itemLevel, item20g, itemBig)
 	/** Version */
 	private var version = 0
 
@@ -224,6 +232,21 @@ class GrandMastery:AbstractMode() {
 
 	/** 段位履歴 (昇格・降格試験用) */
 	private var gradeHistory = IntArray(0)
+
+	var examRecord:IntArray = intArrayOf(0, 0)
+		get() = intArrayOf(qualifiedGrade, demotionPoints)
+		set(value) {
+			field[0] = value[0]
+			qualifiedGrade = value[0]
+			field[1] = value[1]
+			demotionPoints = value[1]
+		}
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollclear" to rankingRollclear,
+			"section.time" to bestSectionTime, "exam.history" to gradeHistory, "exam.record" to examRecord)
+	/*override val rankPersMap:Map<String, IntArray>
+		get() = mapOf("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollclear" to rankingRollclear,
+			"section.time" to bestSectionTime, "exam.history" to gradeHistory, "exam.record" to examRecord)*/
 
 	/** 昇格試験の目標段位 */
 	private var promotionalExam = 0
@@ -277,7 +300,6 @@ class GrandMastery:AbstractMode() {
 		harddropBonus = 0
 		comboValue = 0
 		lastscore = 0
-		scgettime = 0
 		cool = false
 		coolcount = 0
 		previouscool = false
@@ -303,31 +325,31 @@ class GrandMastery:AbstractMode() {
 		rollPoints = 0f
 		rollPointsTotal = 0f
 		medalCO = 0
-		medalSK = medalCO
-		medalST = medalSK
-		medalAC = medalST
+		medalSK = 0
+		medalST = 0
+		medalAC = 0
 		isShowBestSectionTime = false
-		startlevel = 0
+		startLevel = 0
 		alwaysghost = false
 		always20g = false
-		lvstopse = false
+		secAlert = false
 		big = false
 		gradedisp = false
 		lv500torikan = 25200
 		enableexam = true
 
 		demotionPoints = 0
-		qualifiedGrade = demotionPoints
-		promotionalExam = qualifiedGrade
+		qualifiedGrade = 0
+		promotionalExam = 0
 		passframe = 0
-		readyframe = passframe
+		readyframe = 0
 		gradeHistory = IntArray(GRADE_HISTORY_SIZE)
 		demotionFlag = false
-		promotionFlag = demotionFlag
+		promotionFlag = false
 		demotionExamGrade = 0
 
 		dectemp = 0
-		decoration = dectemp
+		decoration = 0
 
 		rankingRank = -1
 		rankingGrade = IntArray(RANKING_MAX)
@@ -348,11 +370,11 @@ class GrandMastery:AbstractMode() {
 		engine.staffrollNoDeath = false
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
+			loadSetting(owner.modeConfig, engine)
+
 			version = CURRENT_VERSION
 		} else {
-			loadSetting(owner.replayProp)
+			loadSetting(owner.replayProp, engine)
 			version = owner.replayProp.getProperty("grademania3.version", 0)
 
 			System.arraycopy(tableTimeRegret, 0, bestSectionTime, 0, SECTION_MAX)
@@ -380,37 +402,7 @@ class GrandMastery:AbstractMode() {
 			}
 		}
 
-		owner.backgroundStatus.bg = 20+startlevel
-	}
-
-	/** Load settings from property file
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
-		startlevel = prop.getProperty("grademania3.startlevel", 0)
-		alwaysghost = prop.getProperty("grademania3.alwaysghost", true)
-		always20g = prop.getProperty("grademania3.always20g", false)
-		lvstopse = prop.getProperty("grademania3.lvstopse", true)
-		showsectiontime = prop.getProperty("grademania3.showsectiontime", true)
-		big = prop.getProperty("grademania3.big", false)
-		gradedisp = prop.getProperty("grademania3.gradedisp", false)
-		lv500torikan = prop.getProperty("grademania3.lv500torikan", 25200)
-		enableexam = prop.getProperty("grademania3.enableexam", true)
-	}
-
-	/** Save settings to property file
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("grademania3.startlevel", startlevel)
-		prop.setProperty("grademania3.alwaysghost", alwaysghost)
-		prop.setProperty("grademania3.always20g", always20g)
-		prop.setProperty("grademania3.lvstopse", lvstopse)
-		prop.setProperty("grademania3.showsectiontime", showsectiontime)
-		prop.setProperty("grademania3.big", big)
-		prop.setProperty("grademania3.gradedisp", gradedisp)
-		prop.setProperty("grademania3.lv500torikan", lv500torikan)
-		prop.setProperty("grademania3.enableexam", enableexam)
+		owner.backgroundStatus.bg = 20+startLevel
 	}
 
 	/** Set BGM at start of game
@@ -455,7 +447,7 @@ class GrandMastery:AbstractMode() {
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
 			var temp = 0
-			for(i in startlevel until startlevel+sectionscomp)
+			for(i in startLevel until startLevel+sectionscomp)
 				if(i>=0&&i<sectionTime.size) temp += sectionTime[i]
 
 			sectionavgtime = temp/sectionscomp
@@ -503,7 +495,7 @@ class GrandMastery:AbstractMode() {
 		if(engine.statistics.level%100>=70&&!coolchecked) {
 			val section = engine.statistics.level/100
 
-			if(sectionTime[section]<=tableTimeCool[section]&&(!previouscool||previouscool&&sectionTime[section]<=coolprevtime+120)) {
+			if(sectionTime[section]<=tableTimeCool[section]&&(!previouscool||sectionTime[section]<=coolprevtime+120)) {
 				cool = true
 				coolsection[section] = true
 			} else
@@ -557,34 +549,12 @@ class GrandMastery:AbstractMode() {
 		// Menu
 		if(!engine.owner.replayMode) {
 			// Configuration changes
-			val change = updateCursor(engine, 8)
+			val change = updateMenu(engine)
 
 			if(change!=0) {
-				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						startlevel += change
-						if(startlevel<0) startlevel = 9
-						if(startlevel>9) startlevel = 0
-						owner.backgroundStatus.bg = 20+startlevel
-					}
-					1 -> alwaysghost = !alwaysghost
-					2 -> always20g = !always20g
-					3 -> lvstopse = !lvstopse
-					4 -> showsectiontime = !showsectiontime
-					5 -> big = !big
-					6 -> gradedisp = !gradedisp
-					7 -> {
-						lv500torikan += if(engine.ctrl.isPress(Controller.BUTTON_E))
-							3600*change
-						else
-							60*change
-						if(lv500torikan<0) lv500torikan = 72000
-						if(lv500torikan>72000) lv500torikan = 0
-					}
-					8 -> enableexam = !enableexam
-				}
+				owner.backgroundStatus.bg = 20+startLevel
+				engine.statistics.level = startLevel*100
+				setSpeed(engine)
 			}
 
 			// section time display切替
@@ -596,8 +566,6 @@ class GrandMastery:AbstractMode() {
 			// 決定
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 
 				isShowBestSectionTime = false
 
@@ -643,16 +611,9 @@ class GrandMastery:AbstractMode() {
 		return true
 	}
 
-	/* Render the settings screen */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level" to startlevel*100, "FULL GHOST" to alwaysghost,
-			"FULL 20G" to always20g, "LVSTOPSE" to lvstopse, "SHOW STIME" to showsectiontime, "BIG" to big, "GRADE DISP" to gradedisp,
-			"LV500LIMIT" to if(lv500torikan==0) "NONE" else lv500torikan.toTimeStr, "EXAM" to enableexam)
-	}
-
 	/* Called at game start */
 	override fun startGame(engine:GameEngine, playerID:Int) {
-		engine.statistics.level = startlevel*100
+		engine.statistics.level = startLevel*100
 
 		dectemp = 0
 		nextseclv = engine.statistics.level+100
@@ -678,7 +639,7 @@ class GrandMastery:AbstractMode() {
 		receiver.drawScoreBadges(engine, playerID, 0, -3, 100, decoration)
 		receiver.drawScoreBadges(engine, playerID, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(startlevel==0&&!big&&!always20g&&!owner.replayMode&&engine.ai==null)
+			if(startLevel==0&&!big&&!always20g&&!owner.replayMode&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
 
@@ -696,12 +657,12 @@ class GrandMastery:AbstractMode() {
 						receiver.drawScoreNum(engine, playerID, 15, 3+i, String.format("%03d", rankingLevel[i]), i==rankingRank)
 					}
 
-					receiver.drawScoreFont(engine, playerID, 0, 14, "QUALIFY CANDIDATE", COLOR.YELLOW)
+					receiver.drawScoreNano(engine, playerID, 0, 18, "NEXT QUALIFY PREDICATE", COLOR.YELLOW)
 					if(promotionalExam>qualifiedGrade) {
-						receiver.drawScoreFont(engine, playerID, 4, 15, "\u0082")
-						receiver.drawScoreGrade(engine, playerID, 5, 15, getGradeName(promotionalExam), scale = 1.67f)
+						receiver.drawScoreFont(engine, playerID, 4, 19, "\u0082")
+						receiver.drawScoreGrade(engine, playerID, 5, 19, getGradeName(promotionalExam), scale = 1.67f)
 					}
-					receiver.drawScoreGrade(engine, playerID, 0, 15, getGradeName(qualifiedGrade), scale = 2f)
+					receiver.drawScoreGrade(engine, playerID, 0, 19, getGradeName(qualifiedGrade), scale = 2f)
 
 					for(i in 0 until GRADE_HISTORY_SIZE)
 						if(gradeHistory[i]>=0)
@@ -766,8 +727,7 @@ class GrandMastery:AbstractMode() {
 			// Score
 			receiver.drawScoreFont(engine, playerID, 0, 5, "Score", if(g20) COLOR.YELLOW else COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 5, "+$lastscore")
-			receiver.drawScoreNum(engine, playerID, 0, 6, "$scgettime", 2f)
-			if(scgettime<engine.statistics.score) scgettime += ceil(((engine.statistics.score-scgettime)/10f).toDouble()).toInt()
+			receiver.drawScoreNum(engine, playerID, 0, 6, "$scDisp", 2f)
 
 			// level
 			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", if(g20) COLOR.YELLOW else COLOR.BLUE)
@@ -807,8 +767,8 @@ class GrandMastery:AbstractMode() {
 			else if(cooldispframe>0)
 			// COOL表示
 				receiver.drawMenuFont(engine, playerID, 2, 21, "COOL!!", when {
-					cooldispframe%2==0 -> COLOR.GREEN
 					cooldispframe%4==0 -> COLOR.BLUE
+					cooldispframe%2==0 -> COLOR.GREEN
 					else -> COLOR.CYAN
 				})
 
@@ -819,7 +779,7 @@ class GrandMastery:AbstractMode() {
 			receiver.drawScoreMedal(engine, playerID, 3, 21, "CO", medalCO)
 
 			// Section Time
-			if(showsectiontime&&sectionTime.isNotEmpty()) {
+			if(showST&&sectionTime.isNotEmpty()) {
 				val x = receiver.nextDisplayType==2
 				receiver.drawScoreFont(engine, playerID, if(x) 8 else 10, 2, "SECTION TIME", COLOR.BLUE)
 
@@ -848,7 +808,7 @@ class GrandMastery:AbstractMode() {
 
 				receiver.drawScoreFont(engine, playerID, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", COLOR.BLUE)
 				receiver.drawScoreNum(engine, playerID, if(x) 8 else 12, if(x) 12 else 15,
-					(engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0)).toTimeStr, 2f)
+					(engine.statistics.time/(sectionscomp+(engine.ending==0).toInt())).toTimeStr, 2f)
 
 			}
 		}
@@ -893,7 +853,7 @@ class GrandMastery:AbstractMode() {
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
 				internalLevel++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 
@@ -942,7 +902,7 @@ class GrandMastery:AbstractMode() {
 			if(engine.statistics.level<nextseclv-1) {
 				engine.statistics.level++
 				internalLevel++
-				if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 			lvupflag = true
@@ -1183,7 +1143,7 @@ class GrandMastery:AbstractMode() {
 				// Update level for next section
 				nextseclv += 100
 				if(nextseclv>999) nextseclv = 999
-			} else if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 
 			// Calculate score
 
@@ -1231,6 +1191,7 @@ class GrandMastery:AbstractMode() {
 
 	/* 各 frame の終わりの処理 */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		// 段位上昇時のフラッシュ
 		if(gradeflash>0) gradeflash--
 
@@ -1325,8 +1286,7 @@ class GrandMastery:AbstractMode() {
 					engine.temphanabi += 24
 				}
 				if(demotionFlag&&grade<demotionExamGrade) {
-					qualifiedGrade = demotionExamGrade-1
-					if(qualifiedGrade<0) qualifiedGrade = 0
+					qualifiedGrade = maxOf(0, demotionExamGrade-1)
 					dectemp -= 10
 				}
 
@@ -1524,8 +1484,7 @@ class GrandMastery:AbstractMode() {
 	}
 
 	/* リプレイ保存 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(owner.replayProp)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		owner.replayProp.setProperty("result.grade.name", getGradeName(grade))
 		owner.replayProp.setProperty("result.grade.number", grade)
 		owner.replayProp.setProperty("grademania3.version", version)
@@ -1534,7 +1493,8 @@ class GrandMastery:AbstractMode() {
 		owner.replayProp.setProperty("grademania3.demotionExamGrade", demotionExamGrade)
 
 		// Update rankings
-		if(!owner.replayMode&&startlevel==0&&!always20g&&!big&&engine.ai==null) {
+		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
+			owner.statsProp.setProperty("decoration", decoration)
 			var rgrade = grade
 			if(enableexam&&rgrade>=32&&qualifiedGrade<32) rgrade = 31
 			// if(!enableexam || !isAnyExam())
@@ -1546,57 +1506,10 @@ class GrandMastery:AbstractMode() {
 
 			if(medalST==3&&!isAnyExam) updateBestSectionTime()
 
-			if(rankingRank!=-1||enableexam||medalST==3) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
-			owner.modeConfig.setProperty("decoration", decoration)
+			if(rankingRank!=-1||enableexam||medalST==3) return true
+
 		}
-	}
-
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-
-		for(i in 0 until RANKING_MAX) {
-			rankingGrade[i] = prop.getProperty("$ruleName.$i.grade", 0)
-			rankingLevel[i] = prop.getProperty("$ruleName.$i.level", 0)
-			rankingTime[i] = prop.getProperty("$ruleName.$i.time", 0)
-			rankingRollclear[i] = prop.getProperty("$ruleName.$i.clear", 0)
-		}
-		for(i in 0 until SECTION_MAX)
-			bestSectionTime[i] = prop.getProperty("$ruleName.sectionTime.$i", tableTimeRegret[i])
-
-		for(i in 0 until GRADE_HISTORY_SIZE)
-			gradeHistory[i] = prop.getProperty("$ruleName.gradehistory.$i", -1)
-
-		qualifiedGrade = prop.getProperty("$ruleName.qualified", 0)
-		demotionPoints = prop.getProperty("$ruleName.demopoint", 0)
-		decoration = owner.statsProp.getProperty("decoration", 0)
-
-		setPromotionalGrade()
-	}
-
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until RANKING_MAX).flatMap {i ->
-			listOf("$ruleName.$i.grade" to rankingGrade[i],
-				"$ruleName.$i.level" to rankingLevel[i],
-				"$ruleName.$i.time" to rankingTime[i],
-				"$ruleName.$i.clear" to rankingRollclear[i])
-		}+(0 until SECTION_MAX).flatMap {i ->
-			listOf("$ruleName.sectiontime.$i" to bestSectionTime[i])
-		}+(0 until GRADE_HISTORY_SIZE).flatMap {i ->
-			listOf("$ruleName.gradehistory.$i" to gradeHistory[i])
-		}+listOf("$ruleName.qualified" to qualifiedGrade,
-			"$ruleName.demotion" to demotionPoints))
-
-		owner.statsProp.setProperty("decoration", decoration)
-		receiver.saveProperties(owner.statsFile, owner.statsProp)
+		return false
 	}
 
 	/** Update rankings
@@ -1632,15 +1545,10 @@ class GrandMastery:AbstractMode() {
 	 */
 	private fun checkRanking(gr:Int, lv:Int, time:Int, clear:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(gr>rankingGrade[i])
-				return i
-			else if(gr==rankingGrade[i]&&clear>rankingRollclear[i])
-				return i
-			else if(gr==rankingGrade[i]&&clear==rankingRollclear[i]&&lv>rankingLevel[i])
-				return i
-			else if(gr==rankingGrade[i]&&clear==rankingRollclear[i]&&lv==rankingLevel[i]
-				&&time<rankingTime[i])
-				return i
+			if(gr>rankingGrade[i]) return i
+			else if(gr==rankingGrade[i]&&clear>rankingRollclear[i]) return i
+			else if(gr==rankingGrade[i]&&clear==rankingRollclear[i]&&lv>rankingLevel[i]) return i
+			else if(gr==rankingGrade[i]&&clear==rankingRollclear[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
 
 		return -1
 	}
@@ -1664,23 +1572,10 @@ class GrandMastery:AbstractMode() {
 
 	/** 昇格試験の目標段位を設定 */
 	private fun setPromotionalGrade() {
-		var gradesOver = 0
-		var highgrade = 0
-
-		for(j in 0 until GRADE_HISTORY_SIZE)
-			if(gradeHistory[j]>qualifiedGrade) {
-				gradesOver++
-				highgrade += gradeHistory[j]
-
-			}
-		if(gradesOver>3) {
-			promotionalExam = highgrade/gradesOver
-			if(qualifiedGrade<31&&promotionalExam==32) promotionalExam = 31
-
-			return
+		promotionalExam = gradeHistory.filter {it>qualifiedGrade}.let {
+			if(it.size>3) minOf(if(qualifiedGrade<31) 31 else 32, it.average().roundToInt())
+			else qualifiedGrade
 		}
-		promotionalExam = qualifiedGrade
-
 	}
 
 	/** Update best section time records */

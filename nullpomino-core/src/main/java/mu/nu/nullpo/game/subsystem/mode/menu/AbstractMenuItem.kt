@@ -29,23 +29,56 @@
 
 package mu.nu.nullpo.game.subsystem.mode.menu
 
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.EventReceiver.FONT
+import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 
-abstract class AbstractMenuItem<T>(val name:String, val displayName:String, val color:COLOR,
-	val DEFAULT_VALUE:T) {
+abstract class AbstractMenuItem<T>(val name:String, val label:String, val color:COLOR, val DEFAULT_VALUE:T,
+	val compact:Boolean = false, val perRule:Boolean = false) {
 	var value:T = DEFAULT_VALUE
 
-	abstract val valueString:String
-
+	open val valueString:String get() = "$value"
+	open val colMax:Int = 1
+	open val showHeight:Int = if(compact) 1 else 2
 	/** Change the aint.
 	 * @param dir Direction pressed: -1 = left, 1 = right.
 	 * If 0, update without changing any settings.
-	 * @param fast 0 by default, +1 if E held, +2 if F held.
+	 * @param fast 0 by default, +1 if C(Alt.R.Spin) held, +2 if D(Swap) held.
 	 */
-	abstract fun change(dir:Int, fast:Int)
+	abstract fun change(dir:Int, fast:Int = 0, cur:Int = 0)
 
-	abstract fun save(playerID:Int, prop:CustomProperties, modeName:String)
+	fun propName(propName:String, ruleName:String, playerID:Int) =
+		"$propName.$name${if(perRule&&ruleName.isNotEmpty()) ".$ruleName" else if(playerID>=0) ".p$playerID" else ""}"
 
-	abstract fun load(playerID:Int, prop:CustomProperties, modeName:String)
+	abstract fun load(prop:CustomProperties, propName:String)
+	abstract fun save(prop:CustomProperties, propName:String)
+
+	/**
+	 * Draw Menu
+	 * @param engine GameEngine
+	 * @param playerID Int
+	 * @param receiver EventReceiver
+	 * @param y Int
+	 * @param focus if Cursor selected 0, false=recommend -1
+	 * @return Int
+	 */
+	open fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int = -1) {
+		if(compact&&label.length<6) {
+			receiver.drawMenuFont(engine, playerID, 1, y, "${label}:", color = color)
+			if(focus==0) receiver.drawMenuFont(engine, playerID, 0, y, "\u0082", true)
+			receiver.drawMenu(engine, playerID, label.length+2, y, valueString, if(value is Number) FONT.NUM else FONT.NORMAL,
+				if(focus==0) COLOR.RAINBOW else COLOR.WHITE)
+		} else {
+			receiver.drawMenuFont(engine, playerID, 0, y, label, color = color)
+			if(focus==0) receiver.drawMenuFont(engine, playerID, 0, y+1, "\u0082", true)
+			receiver.drawMenu(engine, playerID, 1, y+1, valueString, if(value is Number) FONT.NUM else FONT.NORMAL,
+				if(focus==0) COLOR.RAINBOW else COLOR.WHITE)
+		}
+	}
+
+	fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Boolean) =
+		draw(engine, playerID, receiver, y, if(focus) 0 else -1)
+
 }

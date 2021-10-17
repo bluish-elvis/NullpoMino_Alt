@@ -28,71 +28,25 @@
  */
 package mu.nu.nullpo.gui.slick.img
 
-import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.common.BaseFontNano
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import org.newdawn.slick.Color
 
 /** 普通の文字列の表示クラス */
-object FontNano {
-	const val w = 12
-	const val h = 14
-	/** 文字列を描画
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str 文字列
-	 * @param color 文字色
-	 * @param scale 拡大率
-	 */
-	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
-		rainbow:Int = NullpoMinoSlick.rainbow) {
-		var dx = x.toFloat()
-		var dy = y.toFloat()
+object FontNano:BaseFontNano() {
+	override val rainbowCount:Int get() = NullpoMinoSlick.rainbow
+
+	override fun printFont(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) {
 		val filter = Color(Color.white).apply {
 			a = alpha
 		}
-
-		str.forEachIndexed {i, char ->
-			val stringChar = char.code
-
-			if(stringChar==0x0A) {
-				// 改行 (\n）
-				dy = (dy+16*scale)
-				dx = x.toFloat()
-			} else {// 文字出力
-				val col = (if(color==COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
-				val c = stringChar-32// Character output
-				val sx = (c%32)*w
-				val sy = (c/32+col*3)*h
-				ResourceHolder.imgFontNano.draw(dx, dy, dx+w*scale, dy+h*scale, sx, sy, sx+w, sy+h, filter)
-
-				dx += w*scale
-			}
+		processTxt(x.toFloat(), y.toFloat(), str, color, scale,
+			rainbow) {_:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int ->
+			ResourceHolder.imgFontNano.draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, filter)
 		}
+
 	}
-
-	/** Draws the string (16x16Grid units)
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @param fontColor Letter cint
-	 */
-	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, fontColor:COLOR = COLOR.WHITE, scale:Float = 1f,
-		alpha:Float = 1f) =
-		printFont(fontX*16, fontY*16, fontStr, fontColor, scale, alpha)
-
-	/** flagThefalseIf it&#39;s the casefontColorTrue cint, trueIf it&#39;s the
-	 * casefontColorTrue colorDraws the string in (16x16Grid units)
-	 * @param fontX X-coordinate
-	 * @param fontY Y-coordinate
-	 * @param fontStr String
-	 * @param flag Conditional expression
-	 * @param fontColorFalse flagThefalseText cint in the case of
-	 * @param fontColorTrue flagThetrueText cint in the case of
-	 */
-	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, flag:Boolean,
-		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RED, alpha:Float = 1f) =
-		printFont(fontX*16, fontY*16, fontStr, color = if(flag) fontColorTrue else fontColorFalse, alpha = alpha)
 }
 

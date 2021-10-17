@@ -94,7 +94,7 @@ class PhysicianVS:AbstractMode() {
 	//private boolean[] zenKeshi;
 
 	/** Amount of points earned from most recent clear */
-	private var lastscore = IntArray(0)
+	private var lastscores = IntArray(0)
 
 	/** Amount of garbage added in current chain */
 	//private int[] garbageAdd;
@@ -152,7 +152,7 @@ class PhysicianVS:AbstractMode() {
 		fldBackup = arrayOfNulls(MAX_PLAYERS)
 		randMap = Random.Default
 
-		lastscore = IntArray(MAX_PLAYERS)
+		lastscores = IntArray(MAX_PLAYERS)
 		//garbageAdd = new int[MAX_PLAYERS];
 		score = IntArray(MAX_PLAYERS)
 		hoverBlocks = IntArray(MAX_PLAYERS)
@@ -195,10 +195,7 @@ class PhysicianVS:AbstractMode() {
 		prop.setProperty("physicianvs.das.$preset", engine.speed.das)
 	}
 
-	/** Load settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to read from
-	 */
+	/** Load settings into [engine] from [prop] not related to speeds */
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
 		bgmno = prop.getProperty("physicianvs.bgmno", 0)
@@ -212,10 +209,7 @@ class PhysicianVS:AbstractMode() {
 		flash[playerID] = prop.getProperty("physicianvs.flash.p$playerID", false)
 	}
 
-	/** Save settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to save to
-	 */
+	/** Save settings from [engine] into [prop] not related to speeds */
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
 		prop.setProperty("physicianvs.bgmno", bgmno)
@@ -229,10 +223,7 @@ class PhysicianVS:AbstractMode() {
 		prop.setProperty("physicianvs.flash.p$playerID", flash[playerID])
 	}
 
-	/** MapRead
-	 * @param field field
-	 * @param prop Property file to read from
-	 */
+	/** MapRead into #[id]:[field] from [prop] */
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		//field.readProperty(prop, id);
@@ -241,11 +232,7 @@ class PhysicianVS:AbstractMode() {
 		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 	}
 
-	/** MapSave
-	 * @param field field
-	 * @param prop Property file to save to
-	 * @param id AnyID
-	 */
+	/** MapSave from #[id]:[field] into [prop] */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		//field.writeProperty(prop, id);
 		prop.setProperty("values.$id", field.fieldToString())
@@ -580,7 +567,7 @@ class PhysicianVS:AbstractMode() {
 			if(gemsClearedChainTotal[playerID]>=5) pts += gemsCleared shl 5
 			pts *= (speed[playerID]+1)*100
 			gemsClearedChainTotal[playerID] += gemsCleared
-			lastscore[playerID] = pts
+			lastscores[playerID] = pts
 			scgettime[playerID] = 120
 			engine.statistics.scoreLine += pts
 			score[playerID] += pts
@@ -663,6 +650,7 @@ class PhysicianVS:AbstractMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		scgettime[playerID]++
 
 		val rest = engine.field.howManyGems
@@ -734,13 +722,14 @@ class PhysicianVS:AbstractMode() {
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		saveOtherSetting(engine, owner.replayProp)
 		savePreset(engine, owner.replayProp, -1-playerID)
 
 		if(useMap[playerID]) fldBackup[playerID]?.let {saveMap(it, owner.replayProp, playerID)}
 
 		owner.replayProp.setProperty("physicianvs.version", version)
+		return false
 	}
 
 	companion object {

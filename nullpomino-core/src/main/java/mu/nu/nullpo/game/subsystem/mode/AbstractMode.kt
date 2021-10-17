@@ -37,168 +37,232 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.game.subsystem.mode.menu.AbstractMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.getOX
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import zeroxfc.nullpo.custom.libs.ProfileProperties
+import kotlin.math.ceil
 
 /** Dummy implementation of game mode. Used as a base of most game modes. */
 abstract class AbstractMode:GameMode {
+	final override val id:String
+		get() = this::class.simpleName ?: "noName"
 
 	/** GameManager that owns this mode */
 	protected var owner = GameManager()
 
 	/** Drawing and event handling EventReceiver */
 	protected val receiver:EventReceiver get() = owner.receiver
-
-	/** Current state of menu for drawMenu */
-	protected var statcMenu = 0
+	//abstract
+	override val rankMap:Map<String, IntArray> = emptyMap()
+	override val rankPersMap:Map<String, IntArray> = emptyMap()
 	protected var menuColor = COLOR.WHITE
-	protected var menuY = 0
-
-	protected val menu:ArrayList<AbstractMenuItem<*>>
-
+	/*abstract */override val menu:MenuList = MenuList(id)
+	protected var statcMenu
+		get() = menu.statcMenu
+		set(x) {
+			menu.statcMenu = x
+		}
+	protected var menuY
+		get() = menu.menuY
+		set(x) {
+			menu.menuY = x
+		}
 	/** Name of mode in properties file */
-	protected val propName:String
-
+	protected open val propName:String = ""
 	/** Position of cursor in menu */
-	protected var menuCursor = 0
-
+	protected var menuCursor
+		get() = menu.menuCursor
+		set(x) {
+			menu.menuCursor = x
+		}
 	/** Number of frames spent in menu */
 	protected var menuTime = 0
-
-	final override val id:String
-		get() = this::class.simpleName ?: "noName"
-
 	override val name = this::class.simpleName ?: "No Name"
-
 	override val players:Int
 		get() = 1
-
 	override val gameStyle = GameEngine.GameStyle.TETROMINO
-
 	override val gameIntensity = 0
-
 	override val isNetplayMode = false
-
 	override val isVSMode = false
-
-	/** Total score */
-	enum class Statistic {
-		SCORE, ATTACKS, LINES, TIME, VS,
-		LEVEL, LEVEL_MANIA, PIECE,
-		MAXCOMBO, MAXB2B, SPL, SPM, SPS,
-		LPM, LPS, PPM, PPS, APL, APM,
-		MAXCHAIN, LEVEL_ADD_DISP
-	}
+	/** Show Player profile */
+	protected var showPlayerStats = false
+	protected val playerProperties:List<ProfileProperties> = owner.engine.map {it.playerProp}
 
 	init {
-		statcMenu = 0
-		menuCursor = 0
 		menuTime = 0
 		menuColor = COLOR.WHITE
-		menuY = 0
-		menu = ArrayList()
-		propName = "dummy"
 	}
 
-	protected open fun loadSetting(prop:CustomProperties) {
-		for(item in menu)
-			item.load(-1, prop, propName)
+	protected fun playerProperties(playerID:Int):ProfileProperties = owner.engine[playerID].playerProp
+
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) =
+		menu.load(prop, ruleName, if(players<=1) -1 else playerID)
+
+	fun loadSetting(engine:GameEngine) = loadSetting(owner.modeConfig, engine)
+
+	@Deprecated("Set Parameter from GameEngine", ReplaceWith("loadSetting(prop, engine)"))
+	protected fun loadSetting(prop:CustomProperties) = loadSetting(prop, owner.engine.first())
+
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		menu.save(prop, ruleName, if(players<=1) -1 else playerID)
+		owner.saveModeConfig()
 	}
 
-	protected open fun saveSetting(prop:CustomProperties) {
-		for(item in menu)
-			item.save(-1, prop, propName)
+	@Deprecated("Set Parameter from GameEngine", ReplaceWith("saveSetting(prop, engine)"))
+	fun saveSetting(prop:CustomProperties) = saveSetting(prop, owner.engine.first())
+
+	/** Read rankings from [owner.recordProp]
+	 * This should be called from Only GameEngine */
+	override fun loadRanking(prop:CustomProperties, ruleName:String) {
+		rankMap.forEach {rec ->
+			rec.value.forEachIndexed {i, _ ->
+				rec.value[i] = prop.getProperty("${rec.key}.$i", rec.value[i])
+			}
+		}
 	}
 
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {}
-
-	internal fun <T:Comparable<T>> saveRanking(ruleName:String, map:List<Pair<String, Comparable<T>>>) =
-		saveRanking(ruleName, map.toMap())
-
-	internal fun <T:Comparable<T>> saveRanking(ruleName:String, map:Map<String, Comparable<T>>) {
+	override fun loadRankingPlayer(prof:ProfileProperties, ruleName:String) {
+		if(prof.isLoggedIn) {
+			rankPersMap.forEach {rec ->
+				rec.value.forEachIndexed {i, _ ->
+					rec.value[i] = prof.propProfile.getProperty("$id.${rec.key}.$i", rec.value[i])
+				}
+			}
+		}
+	}
+	/** Save rankings [map] of [ruleName] to [prop] */
+	internal fun <T:Comparable<T>> saveRanking(map:List<Pair<String, Comparable<T>>>) =
+		saveRanking(map.toMap())
+	/** Save rankings [map] of [ruleName] to [prop] */
+	internal fun <T:Comparable<T>> saveRanking(map:Map<String, Comparable<T>>) {
 		map.forEach {(key, it) ->
 			owner.recordProp.setProperty(key, it)
 		}
-		receiver.saveProperties(owner.recorder(ruleName), owner.recordProp)
+	}
+
+	override fun saveRanking() {
+		rankMap.forEach {(key, value) ->
+			value.forEachIndexed {i, rec -> owner.recordProp.setProperty("$key.$i", rec)}
+		}
+	}
+
+	override fun saveRankingPlayer(prof:ProfileProperties) {
+		if(prof.isLoggedIn) {
+			rankPersMap.forEach {rec ->
+				rec.value.forEachIndexed {i, v ->
+					prof.propProfile.setProperty("$id.${rec.key}.$i", v)
+				}
+			}
+
+		}
 	}
 
 	override fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {}
-
 	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean = false
-
 	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {}
-
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {}
-
 	override fun blockBreak(engine:GameEngine, playerID:Int, x:Int, y:Int, blk:Block) {}
 	override fun lineClear(gameEngine:GameEngine, playerID:Int, i:Int) {}
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int = 0
 	override fun fieldEditExit(engine:GameEngine, playerID:Int) {}
-
 	override fun loadReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {}
-
 	override fun modeInit(manager:GameManager) {
 		menuTime = 0
 	}
 
 	override fun onARE(engine:GameEngine, playerID:Int):Boolean = false
-
 	override fun onCustom(engine:GameEngine, playerID:Int):Boolean = false
-
 	override fun onEndingStart(engine:GameEngine, playerID:Int):Boolean = false
-
 	override fun onExcellent(engine:GameEngine, playerID:Int):Boolean = false
-
 	override fun onFirst(engine:GameEngine, playerID:Int) {}
-
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean = false
-
-	override fun onLast(engine:GameEngine, playerID:Int) {}
+	/** This function will be called when the game timer updates */
+	override fun onLast(engine:GameEngine, playerID:Int) {
+		if(scDisp<engine.statistics.score && !engine.lagStop) scDisp += ceil(((engine.statistics.score-scDisp)/10f).toDouble()).toInt()
+	}
 
 	override fun onLineClear(engine:GameEngine, playerID:Int):Boolean = false
-
-	/**
-	 * Scoring
+	/** Calculates line-clear score
+	 * (This function will be called even if no lines are cleared)
 	 * @param engine GameEngine
 	 * @param lines Cleared line
-	 */
+	 * */
 	open fun calcScore(engine:GameEngine, lines:Int):Int {
+		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
+		val get = calcScoreCombo(
+			calcScoreBase(engine, lines),
+			if(engine.combo>=1&&lines>=1) engine.combo-1 else 0,
+			engine.statistics.level,
+			spd
+		)
+		if(lines>=1) engine.statistics.scoreLine += get
+		else engine.statistics.scoreBonus += get
+		scDisp += minOf(get, spd)
+		lastscore = get
+		return get
+	}
+
+	var renSum = 0; private set
+
+	/** Time to display the most recent increase in score */
+	var scDisp = 0//; private set
+
+	/** Most recent increase in score */
+	var lastscore = 0
+
+	/** Scoring */
+	fun calcScoreBase(engine:GameEngine, lines:Int):Int {
 		val pts = when {
 			engine.twist -> when {
-				lines<=0&&!engine.twistez -> if(engine.twistmini) 5 else 7// Twister 0 lines
+				lines<=0&&!engine.twistez -> if(engine.twistmini) 5 else 8// Twister 0 lines
 				engine.twistez -> (if(engine.b2b) 11+lines else 0)+when(lines) {
 					1 -> 20
 					2 -> 40
-					else -> lines*30+10
+					else -> lines*25
 				}
 // Immobile Spin
-				lines==1 -> if(engine.twistmini) (if(engine.b2b) 32 else 24)
-				else if(engine.b2b) 45 else 32// Twister 1 line
-				lines==2 -> if(engine.twistmini&&engine.useAllSpinBonus) (if(engine.b2b) 75 else 50)
-				else if(engine.b2b) 100 else 72// Twister 2 lines
-				lines==3 -> if(engine.b2b) 125 else 100// Twister 3 lines
-				else -> if(engine.b2b) 175 else 135// 180Twister Quads
+				lines==1 -> if(engine.twistmini) (if(engine.b2b) 32 else 24)//Mini Twister 1 lines
+				else if(engine.b2b) 75 else 50// Twister 1 line
+				lines==2 -> if(engine.twistmini&&engine.useAllSpinBonus) (if(engine.b2b) 100 else 75)//Mini Twister 2 lines
+				else if(engine.b2b) 128 else 100// Twister 2 lines
+				lines==3 -> if(engine.b2b) 210 else 175// Twister 3 lines
+				else -> if(engine.b2b) 256 else 192// 180Twister Quads
 			}
-			lines==1 -> 10 // Single
-			lines==2 -> if(engine.split) (if(engine.b2b) 64 else 48) else 36 // Double
-			lines==3 -> if(engine.split) (if(engine.b2b) 128 else 102) else 81 // Triple
-			lines>=4 -> if(engine.b2b) 256 else 192 // Quads
+			lines==1 -> 16 // Single
+			lines==2 -> if(engine.split) (if(engine.b2b) 77 else 64) else 48 // Double
+			lines==3 -> if(engine.split) (if(engine.b2b) 128 else 102) else 85 // Triple
+			lines>=4 -> if(engine.b2b) 192 else 160 // Quads
 			else -> 0
 		}
 		// All clear
-
-		return if(lines>=1&&engine.field.isEmpty) pts*170/7+2048 else pts*10
+		val btb = if(engine.b2b) 99+engine.b2bcount else 100
+		return if(lines>=1&&engine.field.isEmpty) pts*(1000+btb*7)/70+2048 else pts*btb/10
 	}
+
+	fun calcScoreCombo(pts:Int, cmb:Int, lv:Int, spd:Int):Int =
+		// Add to score
+		if(pts+cmb>0) {
+			val mul = if(lv>40) 55+lv/10 else 10+lv
+			val get = pts*mul/10+spd
+			if(cmb>=1) {
+				val b = renSum*(4+cmb)/5
+				renSum += get
+				renSum = renSum*(5+cmb)/5-b
+			} else
+				renSum = get
+			renSum
+		} else 0
 
 	/**Tetris World Style Goal*/
 	open fun calcPoint(engine:GameEngine, lines:Int):Int = when {
 		engine.twist -> when {
 			lines<=0&&!engine.twistez -> 1 // Twister 0 lines
-			engine.twistez&&lines>0 -> lines*2+(if(engine.b2b) 1 else 0) // Immobile EZ Spin
+			engine.twistez&&lines>0 -> lines*2+(engine.b2b.toInt()) // Immobile EZ Spin
 			lines==1 -> if(engine.twistmini) if(engine.b2b) 3 else 2
 			else if(engine.b2b) 5 else 3 // Twister 1 line
 			lines==2 -> if(engine.twistmini&&engine.useAllSpinBonus) (if(engine.b2b) 6 else 4)
@@ -218,56 +282,77 @@ abstract class AbstractMode:GameMode {
 	}+if(lines>=1&&engine.field.isEmpty) 18 else 0 // All clear
 
 	/**VS Attack lines*/
-	fun calcPower(engine:GameEngine, lines:Int):Int = maxOf(if(lines==1) (engine.combo+1)/4 else 0, (when {
-		engine.twist -> (if(engine.lasteventshape==Piece.Shape.T) lines*2 else lines+1)
-		engine.twistez -> lines+if(engine.lasteventshape==Piece.Shape.T) 0 else -1
-		lines<=3 -> lines-1
-		else -> lines
-	}+if(engine.b2b) when(engine.b2bcount) {
-		in 0..2 -> 1
-		in 3..7 -> 2
-		in 8..22 -> 3
-		in 24..66 -> 4
-		else -> 5
-	} else 0)*(3+engine.combo)/4)+if(lines>=1&&engine.field.isEmpty) 10 else 0
+	fun calcPower(engine:GameEngine, lines:Int):Int = maxOf(
+		if(lines==1) (engine.combo+1)/4 else 0, (when {
+			engine.twist -> (if(engine.lasteventshape==Piece.Shape.T) lines*2 else lines+1)
+			engine.twistez -> lines+if(engine.lasteventshape==Piece.Shape.T) 0 else -1
+			lines<=3 -> lines-1
+			else -> lines
+		}+if(engine.b2b) when(engine.b2bcount) {
+			in 0..2 -> 1
+			in 3..7 -> 2
+			in 8..22 -> 3
+			in 24..66 -> 4
+			else -> 5
+		} else 0)*(3+engine.combo)/4
+	)+if(lines>=1&&engine.field.isEmpty) 10 else 0
 
 	override fun onLockFlash(engine:GameEngine, playerID:Int):Boolean = false
-
 	override fun onMove(engine:GameEngine, playerID:Int):Boolean = false
-
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
 		menuTime = 0
 		return false
 	}
 
 	override fun onResult(engine:GameEngine, playerID:Int):Boolean = false
+	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+		// Menu
+		if(!engine.owner.replayMode) {
 
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean = false
+			// Configuration changes
+			val change = updateCursor(engine, 5)
+			updateMenu(engine)
+
+			// 決定
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+				engine.playSE("decide")
+				saveSetting(owner.modeConfig, engine)
+				owner.saveModeConfig()
+				return false
+			}
+			// Cancel
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+
+			menuTime++
+		} else {
+			menuTime++
+			menuCursor = -1
+			return menuTime<60
+		}
+		return true
+	}
+
+	override fun onProfile(engine:GameEngine, playerID:Int):Boolean {
+		showPlayerStats = false
+		return false
+	}
 
 	override fun onFieldEdit(engine:GameEngine, playerID:Int):Boolean = false
-
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		owner = engine.owner
 		menuTime = 0
-		loadSetting(if(owner.replayMode) owner.replayProp else owner.modeConfig)
+		scDisp = 0
+		loadSetting(if(owner.replayMode) owner.replayProp else owner.modeConfig, engine.ruleOpt.strRuleName, playerID)
 	}
 
 	override fun renderARE(engine:GameEngine, playerID:Int) {}
-
 	override fun renderCustom(engine:GameEngine, playerID:Int) {}
-
 	override fun renderEndingStart(engine:GameEngine, playerID:Int) {}
-
 	override fun renderExcellent(engine:GameEngine, playerID:Int) {}
-
 	override fun renderFirst(engine:GameEngine, playerID:Int) {}
-
 	override fun renderGameOver(engine:GameEngine, playerID:Int) {}
-
 	override fun renderLast(engine:GameEngine, playerID:Int) {}
-
 	override fun renderLineClear(engine:GameEngine, playerID:Int) {}
-
 	/** medal の文字色を取得
 	 * @param medalColor medal 状態
 	 * @return medal の文字色
@@ -288,42 +373,22 @@ abstract class AbstractMode:GameMode {
 	}
 
 	override fun renderLockFlash(engine:GameEngine, playerID:Int) {}
-
 	override fun renderMove(engine:GameEngine, playerID:Int) {}
-
 	override fun renderReady(engine:GameEngine, playerID:Int) {}
-
 	override fun renderResult(engine:GameEngine, playerID:Int) {}
-
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
 		//TODO: Custom page breaks
-		var menuItem:AbstractMenuItem<*>
-		val pageNum = menuCursor/10
-		val pageStart = pageNum*10
-		val endPage = minOf(menu.size, pageStart+10)
-		for(i in pageStart until endPage) {
-			menuItem = menu[i]
-			receiver.drawMenuFont(engine, playerID, 0, i shl 1, menuItem.displayName, menuItem.color)
-			if(menuCursor==i&&!engine.owner.replayMode)
-				receiver.drawMenuFont(engine, playerID, 0, (i shl 1)+1,
-					"b${menuItem.valueString}", true)
-			else
-				receiver.drawMenuFont(engine, playerID, 1, (i shl 1)+1, menuItem.valueString)
-		}
+
+		menu.drawMenu(engine, playerID, receiver, 0)
 	}
 
-	override fun renderFieldEdit(engine:GameEngine, playerID:Int) = Unit
-
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) = Unit
-
-	override fun startGame(engine:GameEngine, playerID:Int) = Unit
-
-	override fun netplayInit(obj:NetLobbyFrame) = Unit
-
-	override fun netplayUnload(obj:NetLobbyFrame) = Unit
-
-	override fun netplayOnRetryKey(engine:GameEngine, playerID:Int) = Unit
-
+	override fun renderProfile(engine:GameEngine, playerID:Int) {}
+	override fun renderFieldEdit(engine:GameEngine, playerID:Int) {}
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean = false
+	override fun startGame(engine:GameEngine, playerID:Int) {}
+	override fun netplayInit(obj:NetLobbyFrame) {}
+	override fun netplayUnload(obj:NetLobbyFrame) {}
+	override fun netplayOnRetryKey(engine:GameEngine, playerID:Int) {}
 	/** Update menu cursor
 	 * @param engine GameEngine
 	 * @param maxCursor Max value of cursor position
@@ -331,7 +396,6 @@ abstract class AbstractMode:GameMode {
 	 * otherwise
 	 */
 	protected fun updateCursor(engine:GameEngine, maxCursor:Int):Int = updateCursor(engine, maxCursor, 0)
-
 	/** Update menu cursor
 	 * @param engine GameEngine
 	 * @param maxCursor Max value of cursor position
@@ -359,17 +423,12 @@ abstract class AbstractMode:GameMode {
 	}
 
 	protected fun rangeCursor(x:Int, min:Int, max:Int):Int = if(x>max) min else if(x<min) max else x
-
-	protected fun updateMenu(engine:GameEngine) {
-		// Configuration changes
-		val change = updateCursor(engine, menu.size-1)
-
-		if(change!=0) {
+	// Configuration changes
+	protected fun updateMenu(engine:GameEngine):Int = updateCursor(engine, menu.size-1).apply {
+		if(this!=0) {
 			engine.playSE("change")
-			var fast = 0
-			if(engine.ctrl.isPush(Controller.BUTTON_E)) fast++
-			if(engine.ctrl.isPush(Controller.BUTTON_F)) fast += 2
-			menu[menuCursor].change(change, fast)
+			val fast = engine.ctrl.isPush(Controller.BUTTON_C).toInt()+engine.ctrl.isPush(Controller.BUTTON_D).toInt()*2
+			menu.change(menuCursor, this, fast)
 		}
 	}
 
@@ -380,7 +439,7 @@ abstract class AbstractMode:GameMode {
 	}
 
 	protected fun drawMenu(engine:GameEngine, playerID:Int, receiver:EventReceiver, vararg value:Pair<String, Any>) {
-		for(it in value) {
+		value.forEachIndexed {y, it ->
 			val str = it.second.let {
 				when(it) {
 					is String -> it
@@ -388,26 +447,28 @@ abstract class AbstractMode:GameMode {
 					else -> "$it"
 				}
 			}
-			receiver.drawMenuFont(engine, playerID, 0, menuY, it.first, color = menuColor)
-			menuY++
+			receiver.drawMenuFont(engine, playerID, 0, menuY+y*2, it.first, color = menuColor)
 			if(menuCursor==statcMenu&&!engine.owner.replayMode)
-				receiver.drawMenuFont(engine, playerID, 0, menuY, "\u0082${str}", true)
-			else receiver.drawMenuFont(engine, playerID, 1, menuY, str)
-
-			statcMenu++
-
-			menuY++
+				receiver.drawMenuFont(engine, playerID, 0, menuY+1+y*2, "\u0082${str}", true)
+			else receiver.drawMenuFont(engine, playerID, 1, menuY+1+y*2, str)
 		}
+
+		statcMenu += value.size
+		menuY += value.size*2
 	}
 
-	protected fun drawMenu(engine:GameEngine, playerID:Int, receiver:EventReceiver, color:COLOR = menuColor,
-		vararg value:Pair<String, Any>) {
+	protected fun drawMenu(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, color:COLOR = menuColor,
+		vararg value:Pair<String, Any>
+	) {
 		menuColor = color
 		drawMenu(engine, playerID, receiver, *value)
 	}
 
-	protected fun drawMenu(engine:GameEngine, playerID:Int, receiver:EventReceiver,
-		y:Int = menuY, color:COLOR = menuColor, statc:Int = statcMenu, vararg value:Pair<String, Any>) {
+	protected fun drawMenu(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver,
+		y:Int = menuY, color:COLOR = menuColor, statc:Int = statcMenu, vararg value:Pair<String, Any>
+	) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
@@ -446,22 +507,28 @@ abstract class AbstractMode:GameMode {
 		}
 	}
 
-	protected fun drawMenuCompact(engine:GameEngine, playerID:Int, receiver:EventReceiver,
-		color:COLOR = menuColor, vararg value:Pair<String, Any>) {
+	protected fun drawMenuCompact(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver,
+		color:COLOR = menuColor, vararg value:Pair<String, Any>
+	) {
 		menuColor = color
 		drawMenuCompact(engine, playerID, receiver, *value)
 	}
 
-	protected fun drawMenuCompact(engine:GameEngine, playerID:Int, receiver:EventReceiver,
-		y:Int = menuY, color:COLOR = menuColor, statc:Int = statcMenu, vararg value:Pair<String, Any>) {
+	protected fun drawMenuCompact(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver,
+		y:Int = menuY, color:COLOR = menuColor, statc:Int = statcMenu, vararg value:Pair<String, Any>
+	) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
 		drawMenuCompact(engine, playerID, receiver, *value)
 	}
 
-	protected fun drawGravity(engine:GameEngine, playerID:Int, receiver:EventReceiver,
-		g:Int = engine.speed.gravity, d:Int = engine.speed.denominator) {
+	protected fun drawGravity(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver,
+		g:Int = engine.speed.gravity, d:Int = engine.speed.denominator
+	) {
 		receiver.drawMenuFont(engine, playerID, 0, menuY, "SPEED", color = menuColor)
 		receiver.drawSpeedMeter(engine, playerID, -13, menuY+1, g, d, 5)
 		for(i in 0..1) {
@@ -474,52 +541,68 @@ abstract class AbstractMode:GameMode {
 		}
 	}
 
-	protected fun drawGravity(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int,
-		g:Int = engine.speed.gravity, d:Int = engine.speed.denominator) {
+	protected fun drawGravity(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int,
+		g:Int = engine.speed.gravity, d:Int = engine.speed.denominator
+	) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
 		drawGravity(engine, playerID, receiver, g, d)
 	}
 
-	protected fun drawMenuSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int, g:Int,
-		d:Int, are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
+	protected fun drawMenuSpeeds(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int, g:Int,
+		d:Int, are:Int, aline:Int, lined:Int, lock:Int, das:Int
+	) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
 		drawMenuSpeeds(engine, playerID, receiver, g, d, are, aline, lined, lock, das)
 	}
 
-	protected fun drawMenuSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int,
-		speed:SpeedParam = engine.speed, showG:Boolean = true) {
+	protected fun drawMenuSpeeds(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, statc:Int,
+		speed:SpeedParam = engine.speed, showG:Boolean = true
+	) {
 		menuY = y
 		menuColor = color
 		statcMenu = statc
 		drawMenuSpeeds(engine, playerID, receiver, speed, showG)
 	}
 
-	protected fun drawMenuSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver, spd:SpeedParam = engine.speed,
-		showG:Boolean = true) =
-		if(showG) drawMenuSpeeds(engine, playerID, receiver, spd.gravity, spd.denominator,
-			spd.are, spd.areLine, spd.lineDelay, spd.lockDelay, spd.das)
+	protected fun drawMenuSpeeds(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, spd:SpeedParam = engine.speed,
+		showG:Boolean = true
+	) =
+		if(showG) drawMenuSpeeds(
+			engine, playerID, receiver, spd.gravity, spd.denominator,
+			spd.are, spd.areLine, spd.lineDelay, spd.lockDelay, spd.das
+		)
 		else drawMenuSpeeds(engine, playerID, receiver, spd.are, spd.areLine, spd.lineDelay, spd.lockDelay, spd.das)
 
-	protected fun drawMenuSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver,
-		g:Int, d:Int, are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
+	protected fun drawMenuSpeeds(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver,
+		g:Int, d:Int, are:Int, aline:Int, lined:Int, lock:Int, das:Int
+	) {
 		drawGravity(engine, playerID, receiver, g, d)
 		drawMenuSpeeds(engine, playerID, receiver, are, aline, lined, lock, das)
 	}
 
-	protected fun drawMenuSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver,
-		are:Int, aline:Int, lined:Int, lock:Int, das:Int) {
+	protected fun drawMenuSpeeds(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver,
+		are:Int, aline:Int, lined:Int, lock:Int, das:Int
+	) {
 
 		for(i in 0..1) {
 			val cur = menuCursor==statcMenu&&!engine.owner.replayMode
 			val show = if(i==0) "ARE" to are else "LINE" to aline
 			if(cur) receiver.drawMenuFont(engine, playerID, 3+i*3, menuY, "\u0082", true)
 
-			receiver.drawMenuNum(engine, playerID, 4+i*3, menuY,
-				String.format(if(i==0) "%2d/" else "%2d", show.second), cur)
+			receiver.drawMenuNum(
+				engine, playerID, 4+i*3, menuY,
+				String.format(if(i==0) "%2d/" else "%2d", show.second), cur
+			)
 			receiver.drawMenuNano(engine, playerID, 6+i*6, menuY*2+1, show.first, menuColor, .5f)
 			statcMenu++
 		}
@@ -533,8 +616,10 @@ abstract class AbstractMode:GameMode {
 			}
 			if(cur) receiver.drawMenuFont(engine, playerID, 7-i*3, menuY, "\u0082", true)
 
-			receiver.drawMenuNum(engine, playerID, 8-i*3, menuY,
-				String.format(if(i==1) "%2d+" else "%2d", show.second), cur)
+			receiver.drawMenuNum(
+				engine, playerID, 8-i*3, menuY,
+				String.format(if(i==1) "%2d+" else "%2d", show.second), cur
+			)
 			receiver.drawMenuNano(engine, playerID, 14-i*6, menuY*2+1, show.first, menuColor, .5f)
 			statcMenu++
 		}
@@ -543,50 +628,68 @@ abstract class AbstractMode:GameMode {
 		menuY++
 	}
 
-	protected fun drawScoreSpeeds(engine:GameEngine, playerID:Int, receiver:EventReceiver,
+	protected fun drawScoreSpeeds(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver,
 		x:Int, y:Int, g:Int = engine.speed.gravity, d:Int = engine.speed.denominator,
 		are:Int = engine.speed.are, aline:Int = engine.speed.areLine, lined:Int = engine.speed.lineDelay,
-		lock:Int = engine.speed.lockDelay, das:Int = engine.speed.das) {
+		lock:Int = engine.speed.lockDelay, das:Int = engine.speed.das
+	) {
 		receiver.drawSpeedMeter(engine, playerID, x, 0, g, d, 4)
 		receiver.drawMenuNum(engine, playerID, x, y+1, "${g/1.0/d}")
 
 		listOf(are, aline).forEachIndexed {i, _ ->
-			receiver.drawScoreNum(engine, playerID, x+4+i*3, y,
-				String.format(if(i==0) "%2d/" else "%2d", if(i==0) are else aline))
+			receiver.drawScoreNum(
+				engine, playerID, x+4+i*3, y,
+				String.format(if(i==0) "%2d/" else "%2d", if(i==0) are else aline)
+			)
 		}
 
 		for(i in 0..2) {
-			receiver.drawScoreNum(engine, playerID, x+8-i*3, y+1,
-				String.format(if(i==1) "%2d+" else "%2d", if(i==0) lined else if(i==1) lock else das))
+			receiver.drawScoreNum(
+				engine, playerID, x+8-i*3, y+1,
+				String.format(if(i==1) "%2d+" else "%2d", if(i==0) lined else if(i==1) lock else das)
+			)
 		}
 	}
 
-	protected fun drawResult(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, str:String,
-		num:Int) {
+	protected fun drawResult(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, str:String,
+		num:Int
+	) {
 		receiver.drawMenuFont(engine, playerID, 0, y, str, color = color)
 		receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13d", num), color = COLOR.WHITE)
 	}
 
-	protected fun drawResult(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, str:String,
-		num:Float) {
+	protected fun drawResult(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, str:String,
+		num:Float
+	) {
 		receiver.drawMenuFont(engine, playerID, 0, y, str, color = color)
 		receiver.drawMenuNum(engine, playerID, 0, y+1, String.format("%13g", num), color = COLOR.WHITE)
 	}
 
-	protected fun drawResult(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
-		vararg str:String) =
+	protected fun drawResult(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
+		vararg str:String
+	) =
 		drawResultScale(engine, playerID, receiver, y, color, 1f, *str)
 
-	protected fun drawResultScale(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int,
+	protected fun drawResultScale(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int,
 		color:COLOR = COLOR.WHITE, scale:Float,
-		vararg str:String) {
+		vararg str:String
+	) {
 		for(i in str.indices)
-			receiver.drawMenuFont(engine, playerID, 0, y+i, str[i],
-				if(i and 1==0) color else COLOR.WHITE, scale)
+			receiver.drawMenuFont(
+				engine, playerID, 0, y+i, str[i],
+				if(i and 1==0) color else COLOR.WHITE, scale
+			)
 	}
 
-	protected fun drawResultRank(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
-		scale:Float, rank:Int, str:String) {
+	protected fun drawResultRank(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
+		scale:Float, rank:Int, str:String
+	) {
 		if(rank!=-1) {
 			val postfix = when {
 				rank%10==0&&rank%100!=10 -> "st"
@@ -607,8 +710,9 @@ abstract class AbstractMode:GameMode {
 		drawResultRankScale(engine, playerID, receiver, y, color, 1f, rank)
 	}
 
-	protected fun drawResultRankScale(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
-		scale:Float, rank:Int) {
+	protected fun drawResultRankScale(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int
+	) {
 		drawResultRank(engine, playerID, receiver, y, color, scale, rank, "RANK")
 	}
 
@@ -616,28 +720,35 @@ abstract class AbstractMode:GameMode {
 		drawResultNetRankScale(engine, playerID, receiver, y, color, 1f, rank)
 	}
 
-	protected fun drawResultNetRankScale(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
-		scale:Float, rank:Int) {
+	protected fun drawResultNetRankScale(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int
+	) {
 		drawResultRank(engine, playerID, receiver, y, color, scale, rank, "ONLINE")
 	}
 
-	protected fun drawResultNetRankDaily(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
-		rank:Int) {
+	protected fun drawResultNetRankDaily(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, rank:Int
+	) {
 		drawResultNetRankDailyScale(engine, playerID, receiver, y, color, 1f, rank)
 	}
 
-	protected fun drawResultNetRankDailyScale(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
-		scale:Float, rank:Int) {
+	protected fun drawResultNetRankDailyScale(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int
+	) {
 		drawResultRank(engine, playerID, receiver, y, color, scale, rank, "OF DAILY")
 	}
 
-	protected fun drawResultStats(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
-		vararg stats:Statistic) {
+	protected fun drawResultStats(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, color:COLOR,
+		vararg stats:Statistic
+	) {
 		drawResultStatsScale(engine, playerID, receiver, y, color, 1f, *stats)
 	}
 
-	protected fun drawResultStatsScale(engine:GameEngine, playerID:Int, receiver:EventReceiver, startY:Int, color:COLOR,
-		scale:Float, vararg stats:Statistic) {
+	protected fun drawResultStatsScale(
+		engine:GameEngine, playerID:Int, receiver:EventReceiver, startY:Int, color:COLOR,
+		scale:Float, vararg stats:Statistic
+	) {
 		var y = startY
 		for(stat in stats) {
 			when(stat) {
@@ -652,8 +763,10 @@ abstract class AbstractMode:GameMode {
 				}
 				Statistic.TIME -> {
 					receiver.drawMenuFont(engine, playerID, 0, y, "Elapsed Time", color, scale*.8f)
-					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%8s", engine.statistics.time.toTimeStr),
-						scale = scale*1.7f)
+					receiver.drawMenuNum(
+						engine, playerID, 0, y, String.format("%8s", engine.statistics.time.toTimeStr),
+						scale = scale*1.7f
+					)
 				}
 				Statistic.LEVEL -> {
 					receiver.drawMenuFont(engine, playerID, 0, y+1, "Level", color, scale)
@@ -661,8 +774,10 @@ abstract class AbstractMode:GameMode {
 				}
 				Statistic.LEVEL_ADD_DISP -> {
 					receiver.drawMenuFont(engine, playerID, 0, y, "Level", color, scale)
-					receiver.drawMenuNum(engine, playerID, 0, y+1,
-						String.format("%10d", engine.statistics.level+engine.statistics.levelDispAdd), scale = scale)
+					receiver.drawMenuNum(
+						engine, playerID, 0, y+1,
+						String.format("%10d", engine.statistics.level+engine.statistics.levelDispAdd), scale = scale
+					)
 				}
 				Statistic.LEVEL_MANIA -> {
 					receiver.drawMenuFont(engine, playerID, 0, y+1, "Level", color, scale)
@@ -674,8 +789,10 @@ abstract class AbstractMode:GameMode {
 					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%4d", engine.statistics.lines), scale = scale*2f)
 				}
 				Statistic.PIECE -> {
-					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%4d", engine.statistics.totalPieceLocked),
-						scale = scale*2f)
+					receiver.drawMenuNum(
+						engine, playerID, 0, y, String.format("%4d", engine.statistics.totalPieceLocked),
+						scale = scale*2f
+					)
 					receiver.drawMenuFont(engine, playerID, 6, y, "Pieces", color, scale*.8f)
 					receiver.drawMenuFont(engine, playerID, 6, y+1, "set", color, scale*.8f)
 				}
@@ -694,8 +811,10 @@ abstract class AbstractMode:GameMode {
 					receiver.drawMenuFont(engine, playerID, 0, y, "Longest", color, scale*.8f)
 					receiver.drawMenuFont(engine, playerID, 6, y, "Chain", color, scale*.8f)
 					receiver.drawMenuFont(engine, playerID, 6, y+1, "HITS", color, scale)
-					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%4d", engine.statistics.maxChain-1),
-						scale = scale*2f)
+					receiver.drawMenuNum(
+						engine, playerID, 0, y, String.format("%4d", engine.statistics.maxChain-1),
+						scale = scale*2f
+					)
 				}
 				Statistic.SPL -> {
 					receiver.drawMenuFont(engine, playerID, 0, y, "Score/Line", color, scale)
@@ -723,8 +842,10 @@ abstract class AbstractMode:GameMode {
 				}
 				Statistic.PPS -> {
 					receiver.drawMenuFont(engine, playerID, 5, y, "Pieces", color, scale*.8f)
-					receiver.drawMenuNum(engine, playerID, 0, y, String.format("%4d", engine.statistics.totalPieceLocked),
-						scale = scale*1.5f)
+					receiver.drawMenuNum(
+						engine, playerID, 0, y, String.format("%4d", engine.statistics.totalPieceLocked),
+						scale = scale*1.5f
+					)
 					receiver.drawMenuFont(engine, playerID, 0, y+1, "/sec", color, scale)
 					receiver.drawMenuNum(engine, playerID, 4, y+1, String.format("%8f", engine.statistics.pps), scale = scale)
 				}
@@ -744,7 +865,6 @@ abstract class AbstractMode:GameMode {
 			y += 2
 		}
 	}
-
 	/** Default method to render controller input display
 	 * @param engine GameEngine
 	 * @param playerID Player ID
@@ -753,7 +873,10 @@ abstract class AbstractMode:GameMode {
 		val receiver = engine.owner.receiver
 		val y = 25-players+playerID
 
-		receiver.drawScoreFont(engine, 0, -9, y, "${(playerID+1)}P INPUT:${engine.ctrl.buttonBit}", EventReceiver.getPlayerColor(playerID))
+		receiver.drawScoreFont(
+			engine, 0, -9, y, "${(playerID+1)}P INPUT:${engine.ctrl.buttonBit}",
+			EventReceiver.getPlayerColor(playerID)
+		)
 		val ctrl = engine.ctrl
 		if(ctrl.isPress(Controller.BUTTON_LEFT)) receiver.drawScoreFont(engine, 0, 0, y, "<")
 		if(ctrl.isPress(Controller.BUTTON_DOWN)) receiver.drawScoreFont(engine, 0, 1, y, "\u008e")
@@ -765,6 +888,14 @@ abstract class AbstractMode:GameMode {
 		if(ctrl.isPress(Controller.BUTTON_D)) receiver.drawScoreFont(engine, 0, 7, y, "D")
 		if(ctrl.isPress(Controller.BUTTON_E)) receiver.drawScoreFont(engine, 0, 8, y, "E")
 		if(ctrl.isPress(Controller.BUTTON_F)) receiver.drawScoreFont(engine, 0, 9, y, "F")
+	}
+	/** Total score */
+	enum class Statistic {
+		SCORE, ATTACKS, LINES, TIME, VS,
+		LEVEL, LEVEL_MANIA, PIECE,
+		MAXCOMBO, MAXB2B, SPL, SPM, SPS,
+		LPM, LPS, PPM, PPS, APL, APM,
+		MAXCHAIN, LEVEL_ADD_DISP
 	}
 
 }

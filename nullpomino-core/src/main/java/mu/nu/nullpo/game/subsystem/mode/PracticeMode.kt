@@ -35,6 +35,8 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -50,14 +52,6 @@ class PracticeMode:AbstractMode() {
 
 	/** I got just before point */
 	private var lastgoal = 0
-
-	/** Most recent increase in score */
-	private var lastscore = 0
-
-	/** Time to display the most recent increase in score */
-	private var scgettime = 0
-	private var sc = 0
-	private var sum = 0
 
 	/** Most recent scoring eventInB2BIf it&#39;s the casetrue */
 	private var lastb2b = false
@@ -100,8 +94,9 @@ class PracticeMode:AbstractMode() {
 	/** ComboType */
 	private var comboType = 0
 
-	/** Big */
-	private var big = false
+	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** BigLateral movement of the unit when */
 	private var bigmove = false
@@ -134,7 +129,7 @@ class PracticeMode:AbstractMode() {
 	private var harddropBonus = 0
 
 	/** levelstop sound */
-	private var lvstopse = false
+	private var secAlert = false
 
 	/** Become clear level */
 	private var goallv = 0
@@ -196,7 +191,7 @@ class PracticeMode:AbstractMode() {
 		goal = 0
 		lastgoal = 0
 		lastscore = 0
-		scgettime = 0
+		scDisp = 0
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
@@ -249,7 +244,7 @@ class PracticeMode:AbstractMode() {
 		bigmove = prop.getProperty("practice.bigmove.$preset", true)
 		bighalf = prop.getProperty("practice.bighalf.$preset", true)
 		leveltype = prop.getProperty("practice.leveltype.$preset", LEVELTYPE_NONE)
-		lvstopse = prop.getProperty("practice.lvstopse.$preset", true)
+		secAlert = prop.getProperty("practice.lvstopse.$preset", true)
 		goallv = prop.getProperty("practice.goallv.$preset", -1)
 		timelimit = prop.getProperty("practice.timelimit.$preset", 0)
 		rolltimelimit = prop.getProperty("practice.rolltimelimit.$preset", 0)
@@ -291,7 +286,7 @@ class PracticeMode:AbstractMode() {
 		prop.setProperty("practice.bigmove.$preset", bigmove)
 		prop.setProperty("practice.bighalf.$preset", bighalf)
 		prop.setProperty("practice.leveltype.$preset", leveltype)
-		prop.setProperty("practice.lvstopse.$preset", lvstopse)
+		prop.setProperty("practice.lvstopse.$preset", secAlert)
 		prop.setProperty("practice.goallv.$preset", goallv)
 		prop.setProperty("practice.timelimit.$preset", timelimit)
 		prop.setProperty("practice.rolltimelimit.$preset", rolltimelimit)
@@ -309,10 +304,7 @@ class PracticeMode:AbstractMode() {
 		prop.setProperty("practice.eraseStyle.$preset", eraseStyle)
 	}
 
-	/** MapRead
-	 * @param field field
-	 * @param prop Property file to read from
-	 */
+	/** MapRead into #[id]:[field] from [prop] */
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		field.readProperty(prop, id)
@@ -320,11 +312,7 @@ class PracticeMode:AbstractMode() {
 		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 	}
 
-	/** MapSave
-	 * @param field field
-	 * @param prop Property file to save to
-	 * @param id AnyID
-	 */
+	/** MapSave from #[id]:[field] into [prop] */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		field.writeProperty(prop, id)
 	}
@@ -374,7 +362,7 @@ class PracticeMode:AbstractMode() {
 						if(comboType<0) comboType = 2
 						if(comboType>2) comboType = 0
 					}
-					16 -> lvstopse = !lvstopse
+					16 -> secAlert = !secAlert
 					17 -> bigmove = !bigmove
 					18 -> bighalf = !bighalf
 					19 -> {
@@ -464,11 +452,9 @@ class PracticeMode:AbstractMode() {
 					}
 				} else if(menuCursor==43) {
 					// Map保存
-					if(engine.field!=null) {
-						val prop = CustomProperties()
-						saveMap(engine.field, prop, 0)
-						receiver.saveProperties("config/map/practice/$mapNumber.map", prop)
-					}
+					val prop = CustomProperties("config/map/practice/$mapNumber.map")
+					saveMap(engine.field, prop, 0)
+					prop.save()
 				} else if(menuCursor==44)
 				// Preset読み込み
 					loadPreset(engine, owner.modeConfig, presetNumber)
@@ -554,18 +540,24 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuNum(engine, playerID, 12, 5, String.format("%2d", engine.speed.lineDelay), menuCursor==4)
 			receiver.drawMenuFont(engine, playerID, 15, 5, "DAS:", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuNum(engine, playerID, 20, 5, String.format("%2d", engine.speed.das), menuCursor==6)
-			receiver.drawMenuFont(engine, playerID, 2, 7,
-				String.format("BGM:%2d %s", bgmno, "${BGM.values[bgmno]}".uppercase()), menuCursor==7)
+			receiver.drawMenuFont(
+				engine, playerID, 2, 7,
+				String.format("BGM:%2d %s", bgmno, "${BGM.values[bgmno]}".uppercase()), menuCursor==7
+			)
 			receiver.drawMenuFont(engine, playerID, 2, 8, "BIG:${big.getONorOFF()}", menuCursor==8)
 			receiver.drawMenuFont(engine, playerID, 2, 9, "LEVEL TYPE:${LEVELTYPE_STRING[leveltype]}", menuCursor==9)
-			receiver.drawMenuFont(engine, playerID, 2, 10,
-				"SPIN BONUS:${if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL"}", menuCursor==10)
+			receiver.drawMenuFont(
+				engine, playerID, 2, 10,
+				"SPIN BONUS:${if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL"}", menuCursor==10
+			)
 			receiver.drawMenuFont(engine, playerID, 2, 11, "EZ SPIN:${enableTwistKick.getONorOFF()}", menuCursor==11)
-			receiver.drawMenuFont(engine, playerID, 2, 13, "EZ IMMOBILE:${twistEnableEZ.getONorOFF()}",
-				menuCursor==13)
+			receiver.drawMenuFont(
+				engine, playerID, 2, 13, "EZ IMMOBILE:${twistEnableEZ.getONorOFF()}",
+				menuCursor==13
+			)
 			receiver.drawMenuFont(engine, playerID, 2, 14, "B2B:${enableB2B.getONorOFF()}", menuCursor==14)
 			receiver.drawMenuFont(engine, playerID, 2, 15, "COMBO:${COMBOTYPE_STRING[comboType]}", menuCursor==15)
-			receiver.drawMenuFont(engine, playerID, 2, 16, "LEVEL STOP SE:${lvstopse.getONorOFF()}", menuCursor==16)
+			receiver.drawMenuFont(engine, playerID, 2, 16, "LEVEL STOP SE:${secAlert.getONorOFF()}", menuCursor==16)
 			receiver.drawMenuFont(engine, playerID, 2, 17, "BIG MOVE:${if(bigmove) "2 CELLS" else "1 CELL"}", menuCursor==17)
 			receiver.drawMenuFont(engine, playerID, 2, 18, "BIG HALF:${bighalf.getONorOFF()}", menuCursor==18)
 			var strGoalLv = "ENDLESS"
@@ -576,12 +568,18 @@ class PracticeMode:AbstractMode() {
 					else -> "${(goallv+1)} LEVELS"
 				}
 			receiver.drawMenuFont(engine, playerID, 2, 19, "GOAL LEVEL:$strGoalLv", menuCursor==19)
-			receiver.drawMenuFont(engine, playerID, 2, 20,
-				"TIME LIMIT:${if(timelimit==0) "NONE" else timelimit.toTimeStr}", menuCursor==20)
-			receiver.drawMenuFont(engine, playerID, 2, 21,
-				"ROLL LIMIT:${if(rolltimelimit==0) "NONE" else rolltimelimit.toTimeStr}", menuCursor==21)
-			receiver.drawMenuFont(engine, playerID, 2, 22,
-				"TIME LIMIT PER LEVEL:${timelimitResetEveryLevel.getONorOFF()}", menuCursor==22)
+			receiver.drawMenuFont(
+				engine, playerID, 2, 20,
+				"TIME LIMIT:${if(timelimit==0) "NONE" else timelimit.toTimeStr}", menuCursor==20
+			)
+			receiver.drawMenuFont(
+				engine, playerID, 2, 21,
+				"ROLL LIMIT:${if(rolltimelimit==0) "NONE" else rolltimelimit.toTimeStr}", menuCursor==21
+			)
+			receiver.drawMenuFont(
+				engine, playerID, 2, 22,
+				"TIME LIMIT PER LEVEL:${timelimitResetEveryLevel.getONorOFF()}", menuCursor==22
+			)
 		} else {
 			cx = if(menuCursor in 40..45) 15 else if(menuCursor in 46..49) 16 else cx
 			cy -= if(menuCursor<29) 20 else if(menuCursor<40) 19 else if(menuCursor<=45) 30 else 29
@@ -590,16 +588,26 @@ class PracticeMode:AbstractMode() {
 			var strHiddenFrames = "NONE"
 			if(blockHidden==-2) strHiddenFrames = "LOCK FLASH (${engine.ruleOpt.lockflash}F)"
 			if(blockHidden>=0) strHiddenFrames = String.format("%d (%.2f SEC.)", blockHidden, blockHidden/60f)
-			receiver.drawMenuFont(engine, playerID, 2, 4,
-				"BLOCK HIDDEN FRAMES:$strHiddenFrames", menuCursor==24)
-			receiver.drawMenuFont(engine, playerID, 2, 5,
-				"BLOCK HIDDEN ANIM:${blockHiddenAnim.getONorOFF()}", menuCursor==25)
-			receiver.drawMenuFont(engine, playerID, 2, 6,
-				"BLOCK OUTLINE TYPE:${BLOCK_OUTLINE_TYPE_STRING[blockOutlineType]}", menuCursor==26)
-			receiver.drawMenuFont(engine, playerID, 2, 7,
-				"BLOCK OUTLINE ONLY:${blockShowOutlineOnly.getONorOFF()}", menuCursor==27)
-			receiver.drawMenuFont(engine, playerID, 2, 8,
-				"HEBO HIDDEN:${if(heboHiddenLevel==0) "NONE" else "LV$heboHiddenLevel"}", menuCursor==28)
+			receiver.drawMenuFont(
+				engine, playerID, 2, 4,
+				"BLOCK HIDDEN FRAMES:$strHiddenFrames", menuCursor==24
+			)
+			receiver.drawMenuFont(
+				engine, playerID, 2, 5,
+				"BLOCK HIDDEN ANIM:${blockHiddenAnim.getONorOFF()}", menuCursor==25
+			)
+			receiver.drawMenuFont(
+				engine, playerID, 2, 6,
+				"BLOCK OUTLINE TYPE:${BLOCK_OUTLINE_TYPE_STRING[blockOutlineType]}", menuCursor==26
+			)
+			receiver.drawMenuFont(
+				engine, playerID, 2, 7,
+				"BLOCK OUTLINE ONLY:${blockShowOutlineOnly.getONorOFF()}", menuCursor==27
+			)
+			receiver.drawMenuFont(
+				engine, playerID, 2, 8,
+				"HEBO HIDDEN:${if(heboHiddenLevel==0) "NONE" else "LV$heboHiddenLevel"}", menuCursor==28
+			)
 			receiver.drawMenuFont(engine, playerID, 2, 10, "PIECE I:${pieceEnable[0].getONorOFF()}", menuCursor==29)
 			receiver.drawMenuFont(engine, playerID, 2, 11, "PIECE L:${pieceEnable[1].getONorOFF()}", menuCursor==30)
 			receiver.drawMenuFont(engine, playerID, 2, 12, "PIECE O:${pieceEnable[2].getONorOFF()}", menuCursor==31)
@@ -618,8 +626,10 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuFont(engine, playerID, 16, 14, "[LOAD PRESET]:$presetNumber", menuCursor==44)
 			receiver.drawMenuFont(engine, playerID, 16, 15, "[SAVE PRESET]:$presetNumber", menuCursor==45)
 
-			receiver.drawMenuFont(engine, playerID, 17, 17, "BLOCK FALL:${BLOCK_CASCADE_TYPE_STRING[cascadeStyle]}",
-				menuCursor==46)
+			receiver.drawMenuFont(
+				engine, playerID, 17, 17, "BLOCK FALL:${BLOCK_CASCADE_TYPE_STRING[cascadeStyle]}",
+				menuCursor==46
+			)
 			receiver.drawMenuFont(engine, playerID, 17, 18, "BLOCK ERASE:${BLOCK_ERASE_TYPE_STRING[eraseStyle]}", menuCursor==47)
 		}
 		if(!owner.replayMode) receiver.drawMenuFont(engine, playerID, cx, cy, "\u0082", EventReceiver.COLOR.RED)
@@ -791,8 +801,7 @@ class PracticeMode:AbstractMode() {
 			// Score
 			receiver.drawScoreFont(engine, playerID, 0, 5, "Score", EventReceiver.COLOR.BLUE)
 
-			if(lastscore>0&&scgettime<120)
-				receiver.drawScoreNum(engine, playerID, 6, 5, "+$lastscore")
+			receiver.drawScoreNum(engine, playerID, 6, 5, "+$lastscore")
 			receiver.drawScoreNum(engine, playerID, 0, 6, "${engine.statistics.score}", 2f)
 
 			// Time
@@ -800,16 +809,20 @@ class PracticeMode:AbstractMode() {
 			var time = engine.statistics.time
 			if(timelimit>0) time = timelimitTimer
 			if(time<0) time = 0
-			receiver.drawScoreNum(engine, playerID, 0, 18, time.toTimeStr,
-				if(timelimit>0) getTimeFontColor(time) else EventReceiver.COLOR.WHITE, 2f)
+			receiver.drawScoreNum(
+				engine, playerID, 0, 18, time.toTimeStr,
+				if(timelimit>0) getTimeFontColor(time) else EventReceiver.COLOR.WHITE, 2f
+			)
 
 			// Roll Rest time
 			if(engine.gameActive&&engine.ending==2) {
 				var remainTime = rolltimelimit-rolltime
 				if(remainTime<0) remainTime = 0
 				receiver.drawScoreFont(engine, playerID, 0, 20, "ROLL TIME", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 21, remainTime.toTimeStr, remainTime>0&&remainTime<10*60,
-					2f)
+				receiver.drawScoreFont(
+					engine, playerID, 0, 21, remainTime.toTimeStr, remainTime>0&&remainTime<10*60,
+					2f
+				)
 			}
 			// 1分間あたり score
 			receiver.drawScoreFont(engine, playerID, 0, 11, "SCORE/MIN", EventReceiver.COLOR.BLUE)
@@ -831,8 +844,10 @@ class PracticeMode:AbstractMode() {
 					var remainTime = rolltimelimit-rolltime
 					if(remainTime<0) remainTime = 0
 					receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, 0, 18, remainTime.toTimeStr, remainTime>0&&remainTime<10*60,
-						2f)
+					receiver.drawScoreNum(
+						engine, playerID, 0, 18, remainTime.toTimeStr, remainTime>0&&remainTime<10*60,
+						2f
+					)
 				}
 			} else if(leveltype!=LEVELTYPE_NONE) {
 				when(leveltype) {
@@ -840,7 +855,7 @@ class PracticeMode:AbstractMode() {
 						// ゴール
 						receiver.drawScoreFont(engine, playerID, 0, 5, "GOAL", EventReceiver.COLOR.BLUE)
 						var strGoal = "$goal"
-						if(lastgoal!=0&&scgettime<120&&engine.ending==0) strGoal += "(-$lastgoal)"
+						if(lastgoal!=0&&engine.ending==0) strGoal += "(-$lastgoal)"
 						receiver.drawScoreFont(engine, playerID, 0, 6, strGoal)
 					}
 					LEVELTYPE_10LINES -> {
@@ -864,7 +879,7 @@ class PracticeMode:AbstractMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		scgettime++
+		super.onLast(engine, playerID)
 
 		if(engine.gameActive&&engine.timerActive)
 		// Hebo Hidden
@@ -896,12 +911,14 @@ class PracticeMode:AbstractMode() {
 
 			// 10Seconds before the countdown
 			if(timelimit>0&&timelimitTimer<=10*60&&timelimitTimer%60==0
-				&&engine.timerActive)
+				&&engine.timerActive
+			)
 				engine.playSE("countdown")
 
 			// 5Of seconds beforeBGM fadeout
 			if(timelimit>0&&timelimitTimer<=5*60&&!timelimitResetEveryLevel
-				&&engine.timerActive)
+				&&engine.timerActive
+			)
 				owner.bgmStatus.fadesw = true
 		}
 
@@ -923,7 +940,7 @@ class PracticeMode:AbstractMode() {
 				// Level up
 				if(engine.statistics.level<nextseclv-1) {
 					engine.statistics.level++
-					if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+					if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 					setMeter(engine)
 				}
 
@@ -955,10 +972,11 @@ class PracticeMode:AbstractMode() {
 		// Last frame
 		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
 			if(engine.ending==0
-				&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
+				&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag
+			) {
 				if(engine.statistics.level<nextseclv-1) {
 					engine.statistics.level++
-					if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+					if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 					setMeter(engine)
 				}
 				lvupflag = true
@@ -1030,7 +1048,7 @@ class PracticeMode:AbstractMode() {
 
 				// Limit timeReset
 				if(timelimitResetEveryLevel&&timelimit>0) timelimitTimer = timelimit
-			} else if(engine.statistics.level==nextseclv-1&&lvstopse) engine.playSE("levelstop")
+			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 
 			// Calculate score
 			if(leveltype==LEVELTYPE_MANIA) {
@@ -1066,37 +1084,14 @@ class PracticeMode:AbstractMode() {
 				lastscore /= 7+3*engine.chain
 			}
 			engine.statistics.scoreLine += lastscore
-			scgettime = 0
 
 			setMeter(engine)
 		}
 		return if(lines>=1) lastscore else 0
 	}
 
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		var pts = 0
-		if(engine.twist) {
-			if(lines==0&&!engine.twistez)
-				pts = if(engine.twistmini) 1 else 4// Twister 0 lines
-			else if(engine.twistez&&lines>0)
-				pts = lines*2+(if(engine.b2b) 1 else 0)// Immobile EZ Spin
-			else if(lines==1)
-				pts += if(engine.twistmini) if(engine.b2b) 3 else 2 else if(engine.b2b) 5 else 3// Twister 1 line
-			else if(lines==2)
-				pts += if(engine.twistmini&&engine.useAllSpinBonus) if(engine.b2b) 6 else 4 else if(engine.b2b) 10 else 7// Twister 2 lines
-			else if(lines>=3) pts += if(engine.b2b) 13 else 9// Twister 3 lines
-		} else if(lines==1)
-			pts = 1 // 1列
-		else if(lines==2)
-			pts = if(engine.split) 4 else 3 // 2列
-		else if(lines==3)
-			pts = if(engine.split) if(engine.b2b) 7 else 6 else 5 // 3列
-		else if(lines>=4) pts = if(engine.b2b) 12 else 8
-		// All clear
-		if(lines>=1&&engine.field.isEmpty) pts += 18
+	override fun calcScore(engine:GameEngine, lines:Int):Int = calcPower(engine, lines)
 
-		return pts
-	}
 	/** levelTypesMANIAWhen a non-systemCalculate score */
 	private fun calcScoreNormal(engine:GameEngine, lines:Int):Int {
 		// Line clear bonus
@@ -1106,18 +1101,11 @@ class PracticeMode:AbstractMode() {
 		val cmb = if(engine.combo>=1&&lines>=1) engine.combo-1 else 0
 		// Add to score
 		if(pts+cmb+spd>0) {
-			var get = pts*(10+engine.statistics.level)/10+spd
-			if(cmb>=1) {
-				var b = sum*(1+cmb)/2
-				sum += get
-				b = sum*(2+cmb)/2-b
-				get = b
-			} else
-				sum = get
+			val get = calcScoreCombo(pts, cmb, engine.statistics.level, spd)
 			if(pts>0) lastscore = get
 			if(lines>=1) engine.statistics.scoreLine += get
 			else engine.statistics.scoreBonus += get
-			scgettime += spd
+			scDisp += spd
 
 			var cmbindex = engine.combo-1
 			if(cmbindex<0) cmbindex = 0
@@ -1242,18 +1230,23 @@ class PracticeMode:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES,
-			Statistic.LEVEL_ADD_DISP, Statistic.TIME, Statistic.SPL, Statistic.SPM, Statistic.LPM)
+		drawResultStats(
+			engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES,
+			Statistic.LEVEL_ADD_DISP, Statistic.TIME, Statistic.SPL, Statistic.SPM, Statistic.LPM
+		)
 		if(secretGrade>0)
-			drawResult(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, "S. GRADE",
-				String.format("%10s", tableSecretGradeName[secretGrade-1]))
+			drawResult(
+				engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, "S. GRADE",
+				String.format("%10s", tableSecretGradeName[secretGrade-1])
+			)
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		engine.owner.replayProp.setProperty("practice.version", version)
 		if(useMap&&fldBackup!=null) saveMap(fldBackup!!, prop, 0)
 		savePreset(engine, engine.owner.replayProp, -1)
+		return false
 	}
 
 	companion object {
@@ -1275,7 +1268,8 @@ class PracticeMode:AbstractMode() {
 		private const val LEVELTYPE_MAX = 5
 
 		/** Dan&#39;s backName */
-		private val tableSecretGradeName = arrayOf("9", "8", "7", "6", "5", "4", "3", "2", "1", //  0~ 8
+		private val tableSecretGradeName = arrayOf(
+			"9", "8", "7", "6", "5", "4", "3", "2", "1", //  0~ 8
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", //  9~17
 			"GM" // 18
 		)

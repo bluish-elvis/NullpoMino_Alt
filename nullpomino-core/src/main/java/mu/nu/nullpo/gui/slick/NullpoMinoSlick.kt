@@ -518,22 +518,24 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			appGameContainer.setVSync(propConfig.getProperty("option.vsync", true))
 			appGameContainer.alwaysRender = !alternateFPSTiming
 
-			val sevolume = propConfig.getProperty("option.sevolume", 128)
-			appGameContainer.soundVolume = sevolume/128.toFloat()
 
-			ControllerManager.method = propConfig.getProperty("option.joymethod", ControllerManager.CONTROLLER_METHOD_NONE)
-			ControllerManager.controllerID[0] = propConfig.getProperty("joyUseNumber.p0", -1)
-			ControllerManager.controllerID[1] = propConfig.getProperty("joyUseNumber.p1", -1)
-			var joyBorder = propConfig.getProperty("joyBorder.p0", 0)
-			ControllerManager.border[0] = joyBorder/32768.toFloat()
-			joyBorder = propConfig.getProperty("joyBorder.p1", 0)
-			ControllerManager.border[1] = joyBorder/32768.toFloat()
-			ControllerManager.ignoreAxis[0] = propConfig.getProperty("joyIgnoreAxis.p0", false)
-			ControllerManager.ignoreAxis[1] = propConfig.getProperty("joyIgnoreAxis.p1", false)
-			ControllerManager.ignorePOV[0] = propConfig.getProperty("joyIgnorePOV.p0", false)
-			ControllerManager.ignorePOV[1] = propConfig.getProperty("joyIgnorePOV.p1", false)
+			appGameContainer.soundVolume = propConfig.getProperty("option.sevolume", 128)/128f
 
+			ControllerManager.run {
+				method = propConfig.getProperty("option.joymethod", ControllerManager.CONTROLLER_METHOD_NONE)
+				controllerID[0] = propConfig.getProperty("joyUseNumber.p0", -1)
+				controllerID[1] = propConfig.getProperty("joyUseNumber.p1", -1)
+				var joyBorder = propConfig.getProperty("joyBorder.p0", 0)
+				border[0] = joyBorder/32768.toFloat()
+				joyBorder = propConfig.getProperty("joyBorder.p1", 0)
+				border[1] = joyBorder/32768.toFloat()
+				ignoreAxis[0] = propConfig.getProperty("joyIgnoreAxis.p0", false)
+				ignoreAxis[1] = propConfig.getProperty("joyIgnoreAxis.p1", false)
+				ignorePOV[0] = propConfig.getProperty("joyIgnorePOV.p0", false)
+				ignorePOV[1] = propConfig.getProperty("joyIgnorePOV.p1", false)
+			}
 			// useJInputKeyboard = propConfig.getProperty("option.useJInputKeyboard", true);
+
 		}
 
 		/** Screenshot保存

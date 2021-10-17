@@ -28,6 +28,7 @@
  */
 package mu.nu.nullpo.gui.slick
 
+import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.net.NetRoomInfo
@@ -111,6 +112,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 		// Mode initialization
 		enterNewMode(null)
 
+		if(ResourceHolder.bgmPlaying!=BGM.Menu(1)) ResourceHolder.bgmStart(BGM.Menu(1))
 		// Lobby start
 		netLobby.init()
 		netLobby.isVisible = true

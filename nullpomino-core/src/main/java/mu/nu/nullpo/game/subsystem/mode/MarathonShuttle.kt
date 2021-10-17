@@ -31,8 +31,10 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.ceil
@@ -60,9 +62,6 @@ class MarathonShuttle:NetDummyMode() {
 	/** Most recent increase in goal-points */
 	private var lastgoal = 0
 
-	/** Most recent increase in score */
-	private var lastscore = 0
-
 	/** Most recent increase in time limit */
 	private var lasttimebonus = 0
 
@@ -77,15 +76,20 @@ class MarathonShuttle:NetDummyMode() {
 	/** Current BGM */
 	private var bgmlv = 0
 
+	private val itemMode = StringsMenuItem("goaltype", "TYPE", COLOR.BLUE, 0,
+		GAMETYPE_SHORTNAME)
 	/** Game type */
-	private var goaltype = 0
+	private var goaltype:Int by DelegateMenuItem(itemMode)
 
-	/** Level at start time */
-	private var startlevel = 0
+	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.RED, 0, 0..19, false, true)
+	/** Level at start */
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	/** Big */
-	private var big = false
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
+	/** BigMode */
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
+	override val menu = MenuList("technician", itemMode, itemLevel, itemBig)
 	/** Version */
 	private var version = 0
 
@@ -101,6 +105,11 @@ class MarathonShuttle:NetDummyMode() {
 	/** Rankings' times */
 	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
+	override val rankMap:Map<String, IntArray>
+		get() = mapOf(*(
+			(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray()))
 	/* Mode name */
 	override val name = "MARATHON ShuttleRun"
 	override val gameIntensity = 1
@@ -129,16 +138,16 @@ class MarathonShuttle:NetDummyMode() {
 		netPlayerInit(engine, playerID)
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
+			loadSetting(owner.modeConfig, engine)
+
 			version = CURRENT_VERSION
 		} else {
-			loadSetting(owner.replayProp)
+			loadSetting(owner.replayProp, engine)
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
 		}
 
-		engine.owner.backgroundStatus.bg = startlevel
+		engine.owner.backgroundStatus.bg = startLevel
 		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
 		engine.framecolor = GameEngine.FRAME_COLOR_WHITE
 	}
@@ -150,7 +159,7 @@ class MarathonShuttle:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
 			drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0,
-				"GAME TYPE" to GAMETYPE_SHORTNAME[goaltype], "Level" to startlevel+1)
+				"GAME TYPE" to GAMETYPE_SHORTNAME[goaltype], "Level" to startLevel+1)
 
 			drawMenuCompact(engine, playerID, receiver, "BIG" to big)
 		}
@@ -163,27 +172,14 @@ class MarathonShuttle:NetDummyMode() {
 			netOnUpdateNetPlayRanking(engine, goaltype)
 		else if(!engine.owner.replayMode) {
 			// Configuration changes
-			val change = updateCursor(engine, 2)
+			val change = updateMenu(engine)
 
 			if(change!=0) {
 				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						goaltype += change
-						if(goaltype<0) goaltype = GAMETYPE_MAX-1
-						if(goaltype>GAMETYPE_MAX-1) goaltype = 0
-					}
-					1 -> {
-						startlevel += change
-						if(startlevel<0) startlevel = 29
-						if(startlevel>29) startlevel = 0
-						engine.owner.backgroundStatus.bg = startlevel
-						if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
-					}
-					2 -> big = !big
-				}
-
+				engine.owner.backgroundStatus.bg = minOf(19, startLevel)
+				engine.statistics.level = startLevel
+				engine.statistics.levelDispAdd = 1
+				setSpeed(engine)
 				// NET: Signal options change
 				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
 			}
@@ -191,8 +187,6 @@ class MarathonShuttle:NetDummyMode() {
 			// Confirm
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 
 				// NET: Signal start of the game
 				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
@@ -222,7 +216,7 @@ class MarathonShuttle:NetDummyMode() {
 
 	/* Called for initialization during "Ready" screen */
 	override fun startGame(engine:GameEngine, playerID:Int) {
-		engine.statistics.level = startlevel
+		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 1
 		engine.b2bEnable = true
 		engine.splitb2b = true
@@ -289,7 +283,7 @@ class MarathonShuttle:NetDummyMode() {
 			+")", COLOR.WHITE)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(!owner.replayMode&&!big&&startlevel==0&&engine.ai==null) {
+			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE   LINE TIME", COLOR.BLUE, scale)
@@ -385,6 +379,7 @@ class MarathonShuttle:NetDummyMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 
 		if(regretdispframe>0) regretdispframe--
 
@@ -603,10 +598,6 @@ class MarathonShuttle:NetDummyMode() {
 
 	}
 
-	/** Read rankings from property file
-	 * @param prop Property file
-	 * @param ruleName Rule name
-	 */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		for(i in 0 until RANKING_MAX)
 			for(gametypeIndex in 0 until RANKING_TYPE) {
@@ -617,16 +608,6 @@ class MarathonShuttle:NetDummyMode() {
 
 	}
 
-	/** Load settings from property file
-	 * @param prop Property file
-	 */
-	override fun loadSetting(prop:CustomProperties) {
-		goaltype = prop.getProperty("technician.gametype", 0)
-		startlevel = prop.getProperty("technician.startlevel", 0)
-		big = prop.getProperty("technician.big", false)
-		version = prop.getProperty("technician.version", 0)
-	}
-
 	/** Calculate ranking position
 	 * @param sc Score
 	 * @param li Lines
@@ -635,10 +616,8 @@ class MarathonShuttle:NetDummyMode() {
 	 */
 	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(sc>rankingScore[type][i])
-				return i
-			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i])
-				return i
+			if(sc>rankingScore[type][i]) return i
+			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
 
 		return -1
@@ -649,27 +628,24 @@ class MarathonShuttle:NetDummyMode() {
 
 	/** NET: It returns true when the current settings doesn't prevent
 	 * leaderboard screen from showing. */
-	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = !big&&engine.ai==null&&startlevel==0
+	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = !big&&engine.ai==null&&startLevel==0
 
 	/** NET: Send game options to all spectators
 	 * @param engine GameEngine
 	 */
 	override fun netSendOptions(engine:GameEngine) {
-		var msg = "game\toption\t"
-		msg += "$goaltype\t$startlevel\t$big\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		val msg = "game\toption\t$goaltype\t$startLevel\t$big\n"
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Receive game options */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
 		goaltype = message[4].toInt()
-		startlevel = message[5].toInt()
+		startLevel = message[5].toInt()
 		big = message[6].toBoolean()
 	}
 
-	/** NET: Send various in-game stats (as well as goaltype)
-	 * @param engine GameEngine
-	 */
+	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
 		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
 		var msg = "game\tstats\t"
@@ -683,7 +659,7 @@ class MarathonShuttle:NetDummyMode() {
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
-	/** NET: Receive various in-game stats (as well as goaltype) */
+	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
 
 		listOf<(String)->Unit>({}, {}, {}, {},
@@ -699,7 +675,7 @@ class MarathonShuttle:NetDummyMode() {
 			{engine.timerActive = it.toBoolean()},
 			{lastscore = it.toInt()},
 			{scgettime = it.toInt()},
-			{engine.lastevent = GameEngine.ScoreEvent.parseInt(it)},
+			{engine.lastevent = ScoreEvent.parseInt(it)},
 			{engine.b2bbuf = it.toInt()},
 			{engine.combobuf = it.toInt()},
 			{lastgoal = it.toInt()},
@@ -734,11 +710,9 @@ class MarathonShuttle:NetDummyMode() {
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
-	/** Save rankings to property file
-	 * @param ruleName Rule name
-	 */
+	/** Save rankings of [ruleName] to [prop] */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
+		super.saveRanking((0 until RANKING_TYPE).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf(
 					"$ruleName.$j.score.$i" to rankingScore[j][i],
@@ -749,31 +723,19 @@ class MarathonShuttle:NetDummyMode() {
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(prop, engine)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
 
 		// Update rankings
-		if(!owner.replayMode&&!big&&engine.ai==null&&startlevel==0) {
+		if(!owner.replayMode&&!big&&engine.ai==null&&startLevel==0) {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goaltype)
 
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1) return true
 		}
-	}
-
-	/** Save settings to property file
-	 * @param prop Property file
-	 */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("technician.gametype", goaltype)
-		prop.setProperty("technician.startlevel", startlevel)
-		prop.setProperty("technician.big", big)
-		prop.setProperty("technician.version", version)
+		return false
 	}
 
 	/** Update rankings

@@ -30,6 +30,7 @@ package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
@@ -42,13 +43,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 
 	val tableSpeedValue = intArrayOf(30, 45, 120, 480, -1)
 
-	/** Amount of points earned from most recent clear */
-	protected var lastscore = 0
 	protected var lastmultiplier = 0
-
-	/** Elapsed time from last line clear
-	 * (lastscore is displayed to screen until this reaches to 120) */
-	protected var scgettime = 0
 
 	/** Outline type */
 	protected var outlinetype = 0
@@ -70,7 +65,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	protected var zenKeshiCount = 0
 
 	/** Score before adding zenkeshi bonus and max chain bonus */
-	protected var scoreBeforeBonus = 0
+	protected fun scoreBeforeBonus(st:Statistics):Int = st.scoreLine+st.scoreSD+st.scoreHD
 
 	/** Zenkeshi bonus and max chain bonus amounts */
 	protected var zenKeshiBonus = 0
@@ -114,7 +109,6 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		super.playerInit(engine, playerID)
 		lastscore = 0
 		lastmultiplier = 0
-		scgettime = 0
 
 		speedIndex = 0
 		outlinetype = 0
@@ -126,7 +120,6 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 
 		zenKeshiCount = 0
 		engine.statistics.maxChain = 0
-		scoreBeforeBonus = 0
 		zenKeshiBonus = 0
 		maxChainBonus = 0
 		blocksCleared = 0
@@ -191,7 +184,6 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 
 		zenKeshiCount = 0
 		engine.statistics.maxChain = 0
-		scoreBeforeBonus = 0
 		zenKeshiBonus = 0
 		maxChainBonus = 0
 		blocksCleared = 0
@@ -223,7 +215,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 
 	/* Called after every frame */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		if(scgettime>0) scgettime--
+		super.onLast(engine, playerID)
 		if(chainDisplay>0) chainDisplay--
 	}
 
@@ -234,7 +226,6 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	}
 
 	protected open fun addBonus(engine:GameEngine, playerID:Int) {
-		scoreBeforeBonus = engine.statistics.score
 		zenKeshiBonus = when {
 			numColors>=5 -> zenKeshiCount*zenKeshiCount*1000
 			numColors==4 -> zenKeshiCount*(zenKeshiCount+1)*500
@@ -287,7 +278,6 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 
 			lastscore = pts
 			lastmultiplier = multiplier
-			scgettime = 120
 			val score = pts*multiplier
 			engine.statistics.scoreLine += score
 
@@ -329,7 +319,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
 		receiver.drawMenuFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-		val strScoreBefore = String.format("%10d", scoreBeforeBonus)
+		val strScoreBefore = String.format("%10d", scoreBeforeBonus(engine.statistics))
 		receiver.drawMenuFont(engine, playerID, 0, 4, strScoreBefore, EventReceiver.COLOR.GREEN)
 
 		receiver.drawMenuFont(engine, playerID, 0, 5, "ZENKESHI", EventReceiver.COLOR.BLUE)
@@ -359,8 +349,10 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		val CHAIN_POWERS_FEVERTYPE = intArrayOf(4, 12, 24, 32, 48, 96, 160, 240, 320, 400, 500, 600, 700, 800, 900, 999)
 
 		/** Block colors */
-		val BLOCK_COLORS = arrayOf(Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.BLUE,
-			Block.COLOR.YELLOW, Block.COLOR.PURPLE)
+		val BLOCK_COLORS = arrayOf(
+			Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.BLUE,
+			Block.COLOR.YELLOW, Block.COLOR.PURPLE
+		)
 
 		/** Fever values files list */
 		val FEVER_MAPS = arrayOf("Fever", "15th", "15thDS", "7", "Poochy7")

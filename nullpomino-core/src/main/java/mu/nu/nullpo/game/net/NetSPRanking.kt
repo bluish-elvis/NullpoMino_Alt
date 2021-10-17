@@ -217,9 +217,7 @@ class NetSPRanking:Serializable {
 		return if(rank>=maxRecords) -1 else rank
 	}
 
-	/** Write to a CustomProperties
-	 * @param prop CustomProperties
-	 */
+	/** Write CustomProperties to [prop] */
 	fun writeProperty(prop:CustomProperties) {
 		val strKey = "spranking.$strRuleName.$strModeName.$gameType."
 		prop.setProperty(strKey+"numRecords", listRecord.size)
@@ -231,9 +229,7 @@ class NetSPRanking:Serializable {
 		}
 	}
 
-	/** Read from a CustomProperties
-	 * @param prop CustomProperties
-	 */
+	/** Read CustomProperties from [prop] */
 	fun readProperty(prop:CustomProperties) {
 		val strKey = "spranking.$strRuleName.$strModeName.$gameType."
 		var numRecords = prop.getProperty(strKey+"numRecords", 0)

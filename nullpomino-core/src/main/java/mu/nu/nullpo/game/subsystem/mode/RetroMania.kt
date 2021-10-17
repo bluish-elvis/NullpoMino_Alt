@@ -32,6 +32,8 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -39,18 +41,11 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 /** RETRO MANIA mode (Based System16, Original from NullpoUE build 121909 by Zircean) */
 class RetroMania:AbstractMode() {
 
-	/** Amount of points you just get from line clears */
-	private var lastscore = 0
-
-	/** Elapsed time from last line clear (lastscore is displayed to screen
-	 * until this reaches to 120) */
-	private var scgettime = 0
-
 	/** Selected game type */
 	private var gametype = 0
 
 	/** Selected starting level */
-	private var startlevel = 0
+	private var startLevel = 0
 
 	/** Level timer */
 	private var levelTimer = 0
@@ -99,7 +94,6 @@ class RetroMania:AbstractMode() {
 	override fun playerInit(engine:GameEngine, playerID:Int) {
 		super.playerInit(engine, playerID)
 		lastscore = 0
-		scgettime = 0
 		levelTimer = 0
 		linesAfterLastLevelUp = 0
 		maxScoreTime = -1
@@ -130,13 +124,8 @@ class RetroMania:AbstractMode() {
 		engine.owSDSpd = 2
 		engine.owDelayCancel = 0
 
-		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig)
-			loadRanking(owner.recordProp, engine.ruleOpt.strRuleName)
-			version = CURRENT_VERSION
-		} else loadSetting(owner.replayProp)
-
-		engine.owner.backgroundStatus.bg = startlevel/2
+		if(!owner.replayMode) version = CURRENT_VERSION
+		engine.owner.backgroundStatus.bg = startLevel/2
 		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
 		engine.framecolor = GameEngine.FRAME_SKIN_SG
 	}
@@ -170,10 +159,10 @@ class RetroMania:AbstractMode() {
 						if(gametype>GAMETYPE_MAX-1) gametype = 0
 					}
 					1 -> {
-						startlevel += change
-						if(startlevel<0) startlevel = 15
-						if(startlevel>15) startlevel = 0
-						engine.owner.backgroundStatus.bg = startlevel/2
+						startLevel += change
+						if(startLevel<0) startLevel = 15
+						if(startLevel>15) startLevel = 0
+						engine.owner.backgroundStatus.bg = startLevel/2
 					}
 					2 -> big = !big
 					3 -> poweron = !poweron
@@ -183,8 +172,6 @@ class RetroMania:AbstractMode() {
 			// Check for A button, when pressed this will begin the game
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig)
-				owner.saveModeConfig()
 				return false
 			}
 
@@ -204,7 +191,7 @@ class RetroMania:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startlevel,
+		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startLevel,
 			"BIG" to big, "POWERON" to poweron)
 	}
 
@@ -234,7 +221,7 @@ class RetroMania:AbstractMode() {
 	/** This function will be called before the game actually begins (after
 	 * Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine, playerID:Int) {
-		engine.statistics.level = startlevel
+		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 1
 
 		engine.big = big
@@ -250,7 +237,7 @@ class RetroMania:AbstractMode() {
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
-			if(!owner.replayMode&&!big&&startlevel==0&&engine.ai==null) {
+			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE LINE LV TIME", COLOR.BLUE, scale)
@@ -274,7 +261,7 @@ class RetroMania:AbstractMode() {
 		} else {
 			// Game statistics
 			receiver.drawScoreFont(engine, playerID, 1, 3, "SCORE", COLOR.CYAN)
-			receiver.drawScoreFont(engine, playerID, 0, 4, String.format("%6d", engine.statistics.score), COLOR.CYAN)
+			receiver.drawScoreFont(engine, playerID, 0, 4, String.format("%6d", scDisp), COLOR.CYAN)
 
 			receiver.drawScoreFont(engine, playerID, 1, 6, "LINES", COLOR.CYAN)
 			receiver.drawScoreFont(engine, playerID, 0, 7, String.format("%6d", engine.statistics.lines), COLOR.CYAN)
@@ -293,7 +280,7 @@ class RetroMania:AbstractMode() {
 
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		scgettime++
+		super.onLast(engine, playerID)
 		if(engine.timerActive) levelTimer++
 		// Update the meter
 		engine.meterValue = levelTimer*receiver.getMeterMax(engine)/levelTime[minOf(engine.statistics.level, 15)]
@@ -316,7 +303,6 @@ class RetroMania:AbstractMode() {
 		// Add score
 		if(pts>0) {
 			lastscore = pts
-			scgettime = 0
 			engine.statistics.scoreLine += pts
 			// Max-out score, lines, and level
 			if(version>=2) {
@@ -398,8 +384,8 @@ class RetroMania:AbstractMode() {
 
 	/** This function will be called when the replay data is going to be
 	 * saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
-		saveSetting(prop)
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+		saveSetting(prop, engine)
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -409,16 +395,14 @@ class RetroMania:AbstractMode() {
 				if(engine.statistics.level>=MAX_LEVEL) -maxLevelTime else engine.statistics.level,
 				engine.statistics.time, gametype)
 
-			if(rankingRank!=-1) {
-				saveRanking(engine.ruleOpt.strRuleName)
-				owner.saveModeConfig()
-			}
+			if(rankingRank!=-1) return true
 		}
+		return false
 	}
 
 	/** Load the settings */
-	override fun loadSetting(prop:CustomProperties) {
-		startlevel = prop.getProperty("retromania.startlevel", 0)
+	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		startLevel = prop.getProperty("retromania.startLevel", 0)
 		gametype = prop.getProperty("retromania.gametype", 0)
 		big = prop.getProperty("retromania.big", false)
 		poweron = prop.getProperty("retromania.poweron", false)
@@ -426,8 +410,8 @@ class RetroMania:AbstractMode() {
 	}
 
 	/** Save the settings */
-	override fun saveSetting(prop:CustomProperties) {
-		prop.setProperty("retromania.startlevel", startlevel)
+	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+		prop.setProperty("retromania.startLevel", startLevel)
 		prop.setProperty("retromania.gametype", gametype)
 		prop.setProperty("retromania.big", big)
 		prop.setProperty("retromania.poweron", poweron)
@@ -451,7 +435,7 @@ class RetroMania:AbstractMode() {
 
 	/** Save the ranking */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking(ruleName, (0 until RANKING_TYPE).flatMap {j ->
+		super.saveRanking((0 until RANKING_TYPE).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf(
 					"$ruleName.$j.score.$i" to rankingScore[j][i],

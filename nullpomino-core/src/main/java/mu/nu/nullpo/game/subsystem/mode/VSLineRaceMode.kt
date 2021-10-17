@@ -122,10 +122,7 @@ class VSLineRaceMode:AbstractMode() {
 		prop.setProperty("vslinerace.das.$preset", engine.speed.das)
 	}
 
-	/** Load settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to read from
-	 */
+	/** Load settings into [engine] from [prop] not related to speeds */
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
 		goalLines[playerID] = prop.getProperty("vslinerace.goalLines.p$playerID", 40)
@@ -135,10 +132,7 @@ class VSLineRaceMode:AbstractMode() {
 		presetNumber[playerID] = prop.getProperty("vslinerace.presetNumber.p$playerID", 0)
 	}
 
-	/** Save settings not related to speeds
-	 * @param engine GameEngine
-	 * @param prop Property file to save to
-	 */
+	/** Save settings from [engine] into [prop] not related to speeds */
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
 		prop.setProperty("vslinerace.goalLines.p$playerID", goalLines[playerID])
@@ -358,6 +352,7 @@ class VSLineRaceMode:AbstractMode() {
 	}
 
 	override fun onLast(engine:GameEngine, playerID:Int) {
+		super.onLast(engine, playerID)
 		// Game End
 		if(playerID==1&&owner.engine[0].gameActive)
 			if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
@@ -402,10 +397,11 @@ class VSLineRaceMode:AbstractMode() {
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties) {
+	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
 		saveOtherSetting(engine, owner.replayProp)
 		savePreset(engine, owner.replayProp, -1-playerID)
 		owner.replayProp.setProperty("vslinerace.version", version)
+		return false
 	}
 
 	companion object {

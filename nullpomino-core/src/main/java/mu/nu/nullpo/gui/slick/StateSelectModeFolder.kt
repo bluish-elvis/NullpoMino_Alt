@@ -31,6 +31,7 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.img.FontNormal
+import mu.nu.nullpo.gui.slick.img.FontTTF
 import org.apache.log4j.Logger
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
@@ -80,7 +81,7 @@ class StateSelectModeFolder:DummyMenuScrollState() {
 	/* Render screen */
 	override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
 		FontNormal.printFontGrid(1, 1, "Pick a Modes Folder (${cursor+1}/${list.size})", COLOR.ORANGE)
-		FontNormal.printTTF(16, 440, getFolderDesc(list[cursor]))
+		FontTTF.print(16, 440, getFolderDesc(list[cursor]))
 	}
 
 	/* Decide */

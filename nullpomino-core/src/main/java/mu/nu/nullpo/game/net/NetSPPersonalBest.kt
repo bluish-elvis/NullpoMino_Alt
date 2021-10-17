@@ -130,9 +130,7 @@ class NetSPPersonalBest:Serializable {
 		return true
 	}
 
-	/** Write to a CustomProperties
-	 * @param prop CustomProperties
-	 */
+	/** Write CustomProperties to [prop] */
 	fun writeProperty(prop:CustomProperties) {
 		val strKey = "sppersonal.$strPlayerName."
 		prop.setProperty(strKey+"numRecords", listRecord.size)
@@ -144,9 +142,7 @@ class NetSPPersonalBest:Serializable {
 		}
 	}
 
-	/** Read from a CustomProperties
-	 * @param prop CustomProperties
-	 */
+	/** Read CustomProperties from [prop] */
 	fun readProperty(prop:CustomProperties) {
 		val strKey = "sppersonal.$strPlayerName."
 		val numRecords = prop.getProperty(strKey+"numRecords", 0)
