@@ -1815,14 +1815,14 @@ class RuleEditorFX:Application(null) {
 		private const val serialVersionUID = 1L
 
 		/** Log */
-		internal val log = Logger.getLogger(RuleEditorFX::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** メイン関数
 		 * @param args コマンドLines引数
 		 */
 		@JvmStatic
 		fun main(args:Array<String>) {
-			PropertyConfigurator.configure("config/etc/log.cfg")
+			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")
 			log.debug("RuleEditor start")
 
 			launch(RuleEditorFX::class.java, *args)

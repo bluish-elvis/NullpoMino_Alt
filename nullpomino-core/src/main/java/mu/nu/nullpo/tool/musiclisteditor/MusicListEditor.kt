@@ -30,8 +30,7 @@ package mu.nu.nullpo.tool.musiclisteditor
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.util.CustomProperties
-import org.apache.log4j.Logger
-import org.apache.log4j.PropertyConfigurator
+import org.apache.logging.log4j.LogManager
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
@@ -405,14 +404,14 @@ class MusicListEditor:JFrame(), ActionListener {
 		private const val serialVersionUID = -6480034324392568869L
 
 		/** Log */
-		internal val log = Logger.getLogger(MusicListEditor::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** メイン関数
 		 * @param args コマンドLines引数
 		 */
 		@JvmStatic
 		fun main(args:Array<String>) {
-			PropertyConfigurator.configure("config/etc/log.cfg")
+			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")
 			log.debug("MusicListEditor start")
 			MusicListEditor()
 		}

@@ -35,7 +35,7 @@ package zeroxfc.nullpo.custom.libs.backgroundtypes
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import kotlin.math.abs
 
 abstract class AnimatedBackgroundHook {
@@ -112,7 +112,7 @@ abstract class AnimatedBackgroundHook {
 		 * ResourceHolder--- types
 		 */
 		const val HOLDER_SLICK = 0
-		internal val log:Logger = Logger.getLogger(AnimatedBackgroundHook::class.java)
+		internal val log = LogManager.getLogger()
 		private var LAST_BG = -1
 		private var LAST_FADE_BG = -1
 		/**

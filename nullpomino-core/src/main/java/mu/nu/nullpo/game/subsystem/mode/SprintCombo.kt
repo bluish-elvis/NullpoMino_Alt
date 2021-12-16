@@ -54,7 +54,7 @@ class SprintCombo:NetDummyMode() {
 	/** Most recent scoring eventInCombocount */
 	private var lastcombo = 0
 
-	/** Most recent scoring eventPeace inID */
+	/** Most recent scoring eventPiece inID */
 	private var lastpiece = 0
 
 	/** BGM number */

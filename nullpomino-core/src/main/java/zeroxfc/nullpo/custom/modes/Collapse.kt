@@ -1006,7 +1006,7 @@ class Collapse:AbstractMode() {
 				nextBlocks.forEachIndexed {i, it ->
 					receiver.drawBlock(fx+i*16, fy, it.drawColor, engine.skin, it.getAttribute(Block.ATTRIBUTE.BONE), 0f, 1f, 1f)
 				}
-				val s:String = "${(100000*1.025.pow(engine.statistics.level)).toInt()}"
+				val s = "${(100000*1.025.pow(engine.statistics.level)).toInt()}"
 				val l = s.length
 				val offset = (12-l)/2
 				if(acTime in 0..119) {

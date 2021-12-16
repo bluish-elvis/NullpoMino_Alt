@@ -33,10 +33,22 @@ import mu.nu.nullpo.game.play.GameEngine
 
 /** AIInterface */
 interface AIPlayer {
-	/** NameGet the
-	 * @return AIOfName
-	 */
 	val name:String
+
+	/** Did the thinking thread finish successfully? */
+	var thinkComplete:Boolean
+	/** Current piece number */
+	var thinkCurrentPieceNo:Int
+	/** Piece of thoughts is finished number */
+	var thinkLastPieceNo:Int
+	/** ホールド使用予定 */
+	var bestHold:Boolean
+	/** Plan to putX-coordinate */
+	var bestX:Int
+	/** Plan to putY-coordinate */
+	var bestY:Int
+	/** Plan to putDirection */
+	var bestRt:Int
 
 	/** Called at initialization
 	 * @param engine The GameEngine that owns this AI
@@ -52,7 +64,7 @@ interface AIPlayer {
 	 * @param playerID Player ID
 	 * @param ctrl Button inputState management class
 	 */
-	fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller)
+	fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int
 
 	/** Called at the start of each frame
 	 * @param engine The GameEngine that owns this AI

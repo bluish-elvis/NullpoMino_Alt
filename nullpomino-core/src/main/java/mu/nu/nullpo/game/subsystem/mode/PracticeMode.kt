@@ -40,7 +40,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /** PRACTICE Mode */
 class PracticeMode:AbstractMode() {
@@ -59,7 +59,7 @@ class PracticeMode:AbstractMode() {
 	/** Most recent scoring eventInCombocount */
 	private var lastcombo = 0
 
-	/** Most recent scoring eventPeace inID */
+	/** Most recent scoring eventPiece inID */
 	private var lastpiece = 0
 
 	/** EndingThe rest of the time */
@@ -1251,7 +1251,7 @@ class PracticeMode:AbstractMode() {
 
 	companion object {
 		/** Log */
-		internal val log = Logger.getLogger(PracticeMode::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** Current version */
 		private const val CURRENT_VERSION = 5

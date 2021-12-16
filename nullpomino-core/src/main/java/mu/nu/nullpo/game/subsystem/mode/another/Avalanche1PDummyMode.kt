@@ -33,6 +33,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -102,7 +103,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	override val name = "AVALANCHE DUMMY"
 
 	/* Game style */
-	override val gameStyle = GameEngine.GameStyle.AVALANCHE
+	override val gameStyle = GameStyle.AVALANCHE
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {

@@ -28,7 +28,7 @@
  */
 package mu.nu.nullpo.gui.net
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.URL
@@ -42,31 +42,24 @@ class UpdateChecker:Runnable {
 	override fun run() {
 		// 開始
 		status = STATUS_LOADING
-		if(listeners!=null)
-			for(l in listeners)
-				l.onUpdateCheckerStart()
+		listeners.forEach {it.onUpdateCheckerStart()}
 
 		// 更新 check
-		status = if(checkUpdate())
-			STATUS_COMPLETE
-		else
-			STATUS_ERROR
+		status = if(checkUpdate()) STATUS_COMPLETE else STATUS_ERROR
 
 		// 終了
-		if(listeners!=null)
-			for(l in listeners)
-				l.onUpdateCheckerEnd(status)
+		listeners.forEach {it.onUpdateCheckerEnd(status)}
 	}
 
 	companion object {
 		/** Log */
-		internal val log = Logger.getLogger(UpdateChecker::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** default のXMLのURL */
 		/* TODO: Find an actual place to put the NullpoUpdate.xml file, possible
 * on github pages. For now, just use the v7.5.0 file as a classpath
 * resource. */
-		val DEFAULT_XML_URL = UpdateChecker::class.java.getResource("NullpoUpdate.xml").toString()
+		val DEFAULT_XML_URL = UpdateChecker::class.java.getResource("NullpoUpdate.xml")?.path ?: ""
 
 		/** 状態の定数 */
 		const val STATUS_INACTIVE = 0
@@ -219,7 +212,7 @@ class UpdateChecker:Runnable {
 						val strTemp = strSplit[strSplit.size-1]
 						try {
 							resultVersion = strTemp.toInt()
-						} catch(e:NumberFormatException) {
+						} catch(_:NumberFormatException) {
 						}
 
 					}
@@ -252,13 +245,11 @@ class UpdateChecker:Runnable {
 		 * @param strURL 最新版の情報が入ったXMLファイルのURL(nullまたは空文字列にすると default 値を使う)
 		 */
 		fun startCheckForUpdates(strURL:String?) {
-			strURLofXML = if(strURL==null||strURL.isEmpty())
-				DEFAULT_XML_URL
-			else
-				strURL
-			thread = Thread(UpdateChecker())
-			thread!!.isDaemon = true
-			thread!!.start()
+			strURLofXML = if(strURL==null||strURL.isEmpty()) DEFAULT_XML_URL else strURL
+			thread = Thread(UpdateChecker()).apply {
+				isDaemon = true
+				start()
+			}
 		}
 
 		/** @return スレッドが動作中(読み込み中)ならtrue
@@ -275,7 +266,6 @@ class UpdateChecker:Runnable {
 		 * @param l 追加する event リスナー
 		 */
 		fun addListener(l:UpdateCheckerListener) {
-			if(listeners==null) listeners = LinkedList()
 			if(listeners.contains(l)) return
 			listeners.add(l)
 		}
@@ -284,6 +274,6 @@ class UpdateChecker:Runnable {
 		 * @param l 削除する event リスナー
 		 * @return 削除されたらtrue, 最初から登録されていなかったらfalse
 		 */
-		fun removeListener(l:UpdateCheckerListener):Boolean = if(listeners==null) false else listeners.remove(l)
+		fun removeListener(l:UpdateCheckerListener):Boolean = listeners.remove(l)
 	}
 }

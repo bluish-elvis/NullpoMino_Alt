@@ -441,7 +441,7 @@ class Joker:MarathonModeBase() {
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine, playerID)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
-			loadSetting(engine.playerProp.propProfile)
+			loadSetting(engine.playerProp.propProfile, engine)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s

@@ -33,6 +33,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -70,7 +71,7 @@ class Physician:AbstractMode() {
 	override val name = "PHYSICIAN (RC1)"
 
 	/* Game style */
-	override val gameStyle = GameEngine.GameStyle.PHYSICIAN
+	override val gameStyle = GameStyle.PHYSICIAN
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine, playerID:Int) {
@@ -338,7 +339,7 @@ class Physician:AbstractMode() {
 		}
 	}
 
-	/** Save rankings of [ruleName] to [prop] */
+	/** Save rankings of [ruleName] to owner.recordProp */
 	private fun saveRanking(ruleName:String) {
 		super.saveRanking((0 until RANKING_MAX).flatMap {i ->
 			listOf(

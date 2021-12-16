@@ -29,7 +29,7 @@
 package mu.nu.nullpo.game.net
 
 import mu.nu.nullpo.game.play.GameManager
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.util.LinkedList
 import java.util.Locale
@@ -296,6 +296,6 @@ class NetPlayerClient:NetBaseClient {
 
 	companion object {
 		/** Log */
-		internal val log = Logger.getLogger(NetPlayerClient::class.java)
+		internal val log = LogManager.getLogger()
 	}
 }

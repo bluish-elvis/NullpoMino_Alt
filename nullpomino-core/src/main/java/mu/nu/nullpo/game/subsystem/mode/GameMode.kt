@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
@@ -56,7 +57,7 @@ interface GameMode {
 	/** Get game style.
 	 * @return Game style of this mode (0:Tetromino, 1:Avalanche, 2:Physician, 3:SPF)
 	 */
-	val gameStyle:GameEngine.GameStyle
+	val gameStyle:GameStyle
 
 	/** Get game intensity.
 	 * @return Game genre of this mode (-1:Retro/Puzzle, 0: Generic/Guideline,
@@ -369,7 +370,7 @@ interface GameMode {
 	 */
 	fun loadRanking(prop:CustomProperties, ruleName:String = "")
 
-	/** Read rankings from [prop].
+	/** Read rankings from [prof].
 	 *  This is used in playerInit or from netOnJoin.
 	 * @param ruleName Rule name
 	 */

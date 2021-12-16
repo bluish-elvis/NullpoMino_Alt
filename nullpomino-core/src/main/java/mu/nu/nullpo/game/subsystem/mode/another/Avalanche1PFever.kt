@@ -314,7 +314,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-			val strScore:String = "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
+			val strScore = "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
 			receiver.drawScoreNum(engine, playerID, 0, 4, strScore, 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 6, "Level", EventReceiver.COLOR.BLUE)
@@ -580,7 +580,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 				}
 	}
 
-	/** Save rankings of [ruleName] to [prop] */
+	/** Save rankings to owner.recordProp */
 	private fun saveRanking(ruleName:String) {
 		super.saveRanking((3..5).flatMap {c ->
 			FEVER_MAPS.indices.flatMap {j ->

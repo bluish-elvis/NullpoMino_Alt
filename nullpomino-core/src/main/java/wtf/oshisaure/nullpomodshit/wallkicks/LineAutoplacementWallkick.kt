@@ -35,7 +35,5 @@ class LineAutoplacementWallkick:Wallkick {
 		return null
 	}
 
-	private fun checkCollisionKick(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		return true
-	}
+	private fun checkCollisionKick(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Boolean = true
 }

@@ -48,7 +48,7 @@ import kotlin.math.sin
  * @param big         Should it be double size?
  * @param largeClear  Should it flash and actually wave?
  */
-class SideWaveText(x:Int, y:Int, frequency:Double, offsetWidth:Double, val text:String, big:Boolean, largeclear:Boolean) {
+class SideWaveText(x:Int, y:Int, frequency:Double, offsetWidth:Double, val text:String, big:Boolean, largeClear:Boolean) {
 	private val offsetMax:Double
 	private val sinFrequency:Double
 	val big:Boolean
@@ -113,7 +113,7 @@ class SideWaveText(x:Int, y:Int, frequency:Double, offsetWidth:Double, val text:
 		sinFrequency = frequency
 		offsetMax = offsetWidth
 		this.big = big
-		largeClear = largeclear
+		this.largeClear = largeClear
 		xOffset = 0.0
 		lifeTime = 0
 	}

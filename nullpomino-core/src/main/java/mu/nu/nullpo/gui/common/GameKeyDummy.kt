@@ -38,7 +38,8 @@ open class GameKeyDummy
  */
 @JvmOverloads protected constructor(
 	/** Player ID */
-	val player:Int = 0) {
+	val player:Int = 0
+) {
 
 	/** Key code (ingame) */
 	val keymap:Array<IntArray>
@@ -231,10 +232,11 @@ open class GameKeyDummy
 	 * @param ctrl input 状況を伝えるControllerのインスタンス
 	 */
 	fun inputStatusUpdate(ctrl:Controller?) {
+		val c = ctrl ?: return
+		c.setButtonBit(inputState.mapIndexed {i, b -> if(b>0) (1 shl i) else 0}.sum())
 		inputState.forEachIndexed {i, v ->
 			if(i<Controller.BUTTON_COUNT) {
-				ctrl?.buttonPress?.set(i, isPressKey(i))
-				ctrl?.buttonTime?.set(i, v-1)
+				c.buttonTime[i] = v-1
 			}
 		}
 	}
@@ -265,7 +267,7 @@ open class GameKeyDummy
 		private val DIR_NAME = listOf("UP", "DOWN", "LEFT", "RIGHT")
 		private val NAV_KEYS = listOf("SELECT", "CANCEL", "C", "D", "E", "F")
 		private val PLAY_KEYS = listOf("CW Spin", "CCW Spin", "CW Spin", "Swap Hold", "180 Spin", "F")
-		val SYS_KEYS = listOf("AppQuit", "Pause", "BackToMenu", "Retry", "FrameStep", "ScreenShot")
+		private val SYS_KEYS = listOf("AppQuit", "Pause", "BackToMenu", "Retry", "FrameStep", "ScreenShot")
 
 		fun arrayKeyName(isNav:Boolean):List<String> = DIR_NAME+(if(isNav) NAV_KEYS else PLAY_KEYS)+SYS_KEYS
 		fun isNavKey(key:Int):Boolean =//return (key >= BUTTON_NAV_UP) && (key <= BUTTON_NAV_CANCEL);

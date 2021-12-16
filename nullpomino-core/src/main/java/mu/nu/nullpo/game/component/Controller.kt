@@ -34,45 +34,15 @@ import java.io.Serializable
 class Controller:Serializable {
 
 	/** Buttonを押した状態ならtrue */
-	val buttonPress = MutableList(BUTTON_COUNT){false}
+	val buttonPress = MutableList(BUTTON_COUNT) {false}
 
 	/** Buttonを押しっぱなしにしている time */
-	val buttonTime = MutableList(BUTTON_COUNT){0}
+	val buttonTime = MutableList(BUTTON_COUNT) {0}
 
 	/** button input状態をビット flagで返す
-	 * @return button input状態のビット flag
 	 */
-	var buttonBit:Int
-		get() {
-			var input = 0
-
-			if(buttonPress[BUTTON_UP]) input = input or BUTTON_BIT_UP
-			if(buttonPress[BUTTON_DOWN]) input = input or BUTTON_BIT_DOWN
-			if(buttonPress[BUTTON_LEFT]) input = input or BUTTON_BIT_LEFT
-			if(buttonPress[BUTTON_RIGHT]) input = input or BUTTON_BIT_RIGHT
-			if(buttonPress[BUTTON_A]) input = input or BUTTON_BIT_A
-			if(buttonPress[BUTTON_B]) input = input or BUTTON_BIT_B
-			if(buttonPress[BUTTON_C]) input = input or BUTTON_BIT_C
-			if(buttonPress[BUTTON_D]) input = input or BUTTON_BIT_D
-			if(buttonPress[BUTTON_E]) input = input or BUTTON_BIT_E
-			if(buttonPress[BUTTON_F]) input = input or BUTTON_BIT_F
-
-			return input
-		}
-		set(input) {
-			clearButtonState()
-
-			if(input and BUTTON_BIT_UP>0) buttonPress[BUTTON_UP] = true
-			if(input and BUTTON_BIT_DOWN>0) buttonPress[BUTTON_DOWN] = true
-			if(input and BUTTON_BIT_LEFT>0) buttonPress[BUTTON_LEFT] = true
-			if(input and BUTTON_BIT_RIGHT>0) buttonPress[BUTTON_RIGHT] = true
-			if(input and BUTTON_BIT_A>0) buttonPress[BUTTON_A] = true
-			if(input and BUTTON_BIT_B>0) buttonPress[BUTTON_B] = true
-			if(input and BUTTON_BIT_C>0) buttonPress[BUTTON_C] = true
-			if(input and BUTTON_BIT_D>0) buttonPress[BUTTON_D] = true
-			if(input and BUTTON_BIT_E>0) buttonPress[BUTTON_E] = true
-			if(input and BUTTON_BIT_F>0) buttonPress[BUTTON_F] = true
-		}
+	val buttonBit:Int
+		get() = buttonPress.mapIndexed {i, b -> if(b) (1 shl i) else 0}.sum()
 
 	/** Constructor */
 	constructor() {
@@ -103,7 +73,7 @@ class Controller:Serializable {
 	}
 
 	/** buttonをすべて押していない状態にする */
-	fun clearButtonState() {
+	private fun clearButtonState() {
 		buttonPress.fill(false)
 	}
 
@@ -155,6 +125,10 @@ class Controller:Serializable {
 		if(key>=0&&key<buttonPress.size) buttonPress[key] = pressed
 	}
 
+	fun setButtonBit(input:Int) {
+		buttonPress.forEachIndexed {i, _ -> setButtonState(i, input and (1 shl i)>0)}
+	}
+
 	/** button input timeを更新 */
 	fun updateButtonTime() {
 		for(i in 0 until BUTTON_COUNT)
@@ -162,7 +136,7 @@ class Controller:Serializable {
 	}
 
 	/** button input状態をリセット */
-	fun clearButtonTime() {
+	private fun clearButtonTime() {
 		buttonTime.fill(0)
 	}
 

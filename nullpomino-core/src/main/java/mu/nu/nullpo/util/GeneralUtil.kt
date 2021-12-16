@@ -30,11 +30,11 @@ package mu.nu.nullpo.util
 
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.RuleOptions
-import mu.nu.nullpo.game.subsystem.ai.DummyAI
+import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -44,7 +44,7 @@ import java.util.zip.GZIPInputStream
 /** Generic static utils */
 object GeneralUtil {
 	/** Log */
-	internal val log = Logger.getLogger(GeneralUtil::class.java)
+	internal val log = LogManager.getLogger()
 	@Suppress("UNCHECKED_CAST")
 	fun <T:Any?> flattenList(nestList:Collection<*>, flatList:MutableList<T> = mutableListOf()):List<T> {
 		for(e in nestList)
@@ -225,6 +225,22 @@ object GeneralUtil {
 		return nextArray
 	}
 
+	/*fun <T:Any?> Class<T>.resource(path:String, fallback:String? = null):String {
+		try {
+			val f = File(path)
+			val originLog = File((this::class.java.getResource(f.name)?.path ?: "").toString())
+			if(!f.parentFile.exists()) f.parentFile.mkdirs()
+			else if(f.isDirectory) f.deleteRecursively()
+			if(!f.exists()) {
+				originLog.copyTo(f)
+				log.warn("regenerated $path")
+			}
+		} catch(e:Exception) {
+			log.error("resource error about $path", e)
+		}
+		path
+	}*/
+
 	/** Load rule file
 	 * @param filename Filename
 	 * @return RuleOptions
@@ -286,13 +302,13 @@ object GeneralUtil {
 	 * @param filename Classpath of the AI
 	 * @return The instance of AI (null if something fails)
 	 */
-	fun loadAIPlayer(filename:String):DummyAI? {
+	fun loadAIPlayer(filename:String):AIPlayer? {
 		val aiClass:Class<*>
-		var aiObject:DummyAI? = null
+		var aiObject:AIPlayer? = null
 
 		try {
 			aiClass = Class.forName(filename)
-			aiObject = aiClass.getDeclaredConstructor().newInstance() as DummyAI
+			aiObject = aiClass.getDeclaredConstructor().newInstance() as AIPlayer
 		} catch(e:Exception) {
 			log.warn("Failed to load AIPlayer from $filename", e)
 		}
@@ -339,7 +355,6 @@ object GeneralUtil {
 		}.toChar()
 
 	/**
-	 *
 	With a radix of 36, the digits encompass '0'-'9','A'-'Z'.
 	With a radix higher than 36, we can also have characters 'a'-'z' represent digits.
 
@@ -354,13 +369,11 @@ object GeneralUtil {
 			else -> code-'a'.code
 		}
 
-	/**
-	 * Returns a list containing all elements that are not `null`.
-	 */
-	fun <T:Any> Collection<T?>.filterNotNullIndexed():List<IndexedValue<T>> = this.mapIndexedNotNull{i,it->it?.let{IndexedValue(i,it)}}
+	/** Returns a list containing all elements that are not `null`.*/
+	fun <T:Any> Collection<T?>.filterNotNullIndexed():List<IndexedValue<T>> =
+		this.mapIndexedNotNull {i, it -> it?.let {IndexedValue(i, it)}}
 
-	/**
-	 * Returns a list containing all elements that are not `null`.
-	 */
-	fun <T:Any> Array<T?>.filterNotNullIndexed():List<IndexedValue<T>> = this.mapIndexedNotNull{i,it->it?.let{IndexedValue(i,it)}}
+	/** Returns a list containing all elements that are not `null`.*/
+	fun <T:Any> Array<T?>.filterNotNullIndexed():List<IndexedValue<T>> =
+		this.mapIndexedNotNull {i, it -> it?.let {IndexedValue(i, it)}}
 }

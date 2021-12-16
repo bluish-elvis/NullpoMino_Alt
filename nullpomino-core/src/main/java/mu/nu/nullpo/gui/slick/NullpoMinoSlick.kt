@@ -34,8 +34,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.ModeManager
-import org.apache.log4j.Logger
-import org.apache.log4j.PropertyConfigurator
+import org.apache.logging.log4j.LogManager
 import org.lwjgl.opengl.Display
 import org.newdawn.slick.*
 import org.newdawn.slick.state.StateBasedGame
@@ -99,8 +98,9 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 	}
 
 	companion object {
+
 		/** Log */
-		internal val log = Logger.getLogger(NullpoMinoSlick::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** Save settings用Property file */
 		var propConfig = CustomProperties()
@@ -264,17 +264,16 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		 */
 		@JvmStatic
 		fun main(args:Array<String>) {
-
-			PropertyConfigurator.configure("config/etc/log_slick.cfg")
-			Log.setLogSystem(LogSystemLog4j())
+			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")
+			Log.setLogSystem(SlickLog4j())
 			log.info("NullpoMinoSlick Start")
-
+			log.info(NullpoMinoSlick::class.java.getResource("/log4j2.xml")?.path?:"")
 			// 設定ファイル読み込み
 			try {
 				val `in` = FileInputStream("config/setting/slick.xml")
 				propConfig.loadFromXML(`in`)
 				`in`.close()
-			} catch(e:IOException) {
+			} catch(_:IOException) {
 			}
 
 			loadGlobalConfig()
@@ -282,7 +281,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				val `in` = FileInputStream("config/setting/music.xml")
 				propMusic.loadFromXML(`in`)
 				`in`.close()
-			} catch(e:IOException) {
+			} catch(_:IOException) {
 			}
 
 			// 言語ファイル読み込み
@@ -302,7 +301,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				val out = FileOutputStream("config/lang/slick_${Locale.getDefault().country}.xml")
 				propLang.storeToXML(out, "Slick language file - "+Locale.getDefault().displayCountry)
 				out.close()
-			} catch(e:IOException) {
+			} catch(_:IOException) {
 			}
 
 			// Game mode description
@@ -317,7 +316,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				val `in` = FileInputStream("config/lang/modedesc_${Locale.getDefault().country}.xml")
 				propModeDesc.loadFromXML(`in`)
 				`in`.close()
-			} catch(e:IOException) {
+			} catch(_:IOException) {
 			}
 
 			// 設定ファイル読み込み
@@ -325,7 +324,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				val `in` = FileInputStream("config/lang/blockskin.xml")
 				propSkins.loadFromXML(`in`)
 				`in`.close()
-			} catch(e:IOException) {
+			} catch(_:IOException) {
 			}
 
 			// Mode読み込み
@@ -358,7 +357,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 							propGlobal.setProperty("$pl.rulefile.$i", propDefaultRule.getProperty("default.rulefile.$i", ""))
 							propGlobal.setProperty("$pl.rulename.$i", propDefaultRule.getProperty("default.rulename.$i", ""))
 						}
-			} catch(e:Exception) {
+			} catch(_:Exception) {
 			}
 
 			// Command line options
@@ -389,7 +388,8 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 				// LWJGL Load failed! Do the file of LWJGL exist?
 				val fileLWJGL:File = if(!System.getProperty("os.arch").contains("64")&&System.getProperty("os.name")
-						.contains("Windows"))
+						.contains("Windows")
+				)
 					File("lib/lwjgl.dll")
 				else if(System.getProperty("os.arch").contains("64")&&System.getProperty("os.name").contains("Windows"))
 					File("lib/lwjgl64.dll")
@@ -495,7 +495,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				val `in` = FileInputStream("config/setting/global.xml")
 				propGlobal.loadFromXML(`in`)
 				`in`.close()
-			} catch(e:IOException) {
+			} catch(_:IOException) {
 			}
 
 		}
@@ -522,7 +522,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			appGameContainer.soundVolume = propConfig.getProperty("option.sevolume", 128)/128f
 
 			ControllerManager.run {
-				method = propConfig.getProperty("option.joymethod", ControllerManager.CONTROLLER_METHOD_NONE)
+				method = propConfig.getProperty("option.joymethod", CONTROLLER_METHOD_NONE)
 				controllerID[0] = propConfig.getProperty("joyUseNumber.p0", -1)
 				controllerID[1] = propConfig.getProperty("joyUseNumber.p1", -1)
 				var joyBorder = propConfig.getProperty("joyBorder.p0", 0)
@@ -619,7 +619,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 					if(maxfps>0)
 						try {
 							Thread.sleep(sleepTimeInMillis)
-						} catch(e:InterruptedException) {
+						} catch(_:InterruptedException) {
 						}
 
 					// sleep() oversleep
@@ -722,7 +722,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				val `in` = FileInputStream("config/setting/netobserver.xml")
 				propObserver.loadFromXML(`in`)
 				`in`.close()
-			} catch(e:IOException) {
+			} catch(_:IOException) {
 			}
 
 			if(!propObserver.getProperty("observer.enable", false)) return

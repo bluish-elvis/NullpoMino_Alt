@@ -29,7 +29,7 @@
 package mu.nu.nullpo.util
 
 import mu.nu.nullpo.game.subsystem.mode.GameMode
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.io.BufferedReader
 import java.io.IOException
 
@@ -197,6 +197,6 @@ class ModeManager {
 
 	companion object {
 		/** Log */
-		private val log = Logger.getLogger(ModeManager::class.java)
+		private val log = LogManager.getLogger()
 	}
 }

@@ -110,7 +110,7 @@
 <entry key="Login_Message_BuildTypeError">サーバーとビルドタイプが異なります(クライアント:%s, サーバー:%s)</entry>
 <entry key="Login_Message_DisabledError">このサーバーでは管理機能が無効に設定されています。</entry>
 <entry key="Login_Message_LoginError">ログインに失敗しました。ユーザー名かパスワードを確認してください。</entry>
-<entry key="Login_Message_Banned">あなたはアク禁になりました(期間:%s～%s)</entry>
+<entry key="Login_Message_Banned">このサーバーには接続できません。 期間:%s～%s</entry>
 <entry key="Login_Message_Banned_Permanent">無期限</entry>
 <entry key="Login_Message_UnwantedDisconnect">切断されました (%s)</entry>
 <entry key="Login_Message_LoggingOut">サーバーから正常にログアウトしました。</entry>

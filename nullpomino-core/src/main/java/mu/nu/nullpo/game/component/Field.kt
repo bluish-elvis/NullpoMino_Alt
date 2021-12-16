@@ -34,7 +34,7 @@ import mu.nu.nullpo.game.play.GameEngine.LineGravity
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.filterNotNullIndexed
 import mu.nu.nullpo.util.GeneralUtil.toInt
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import kotlin.math.abs
 import kotlin.math.roundToLong
 import kotlin.random.Random
@@ -435,7 +435,7 @@ import kotlin.random.Random
 			val mapStr = StringBuilder()
 
 			for(j in 0 until width) {
-				mapStr.append("${getBlock(j, i)?.toChar()?:'_'}")
+				mapStr.append("${getBlock(j, i)?.toChar() ?: '_'}")
 				if(j<width-1) mapStr.append(",")
 			}
 
@@ -454,7 +454,7 @@ import kotlin.random.Random
 
 			for(j in mapArray.indices) {
 				val blkColor = try {
-					 mapArray[j].toInt()
+					mapArray[j].toInt()
 				} catch(e:NumberFormatException) {
 					-1
 				}
@@ -535,7 +535,7 @@ import kotlin.random.Random
 	else null
 
 	fun Array<Block?>.delBlock(x:Int) {
-		if(x in 0 until size) this[x] = null
+		if(x in indices) this[x] = null
 	}
 
 	/** 指定した座標にあるBlock colorを取得
@@ -570,9 +570,9 @@ import kotlin.random.Random
 	 * @param c 色 to タイプ
 	 * @return true if successful, false if failed
 	 */
-	fun setBlockColor(x:Int, y:Int, c:Pair<Block.COLOR,Block.TYPE>):Boolean =
+	fun setBlockColor(x:Int, y:Int, c:Pair<Block.COLOR, Block.TYPE>):Boolean =
 		if(getCoordVaild(x, y))
-			if(getBlock(x, y)?.also {it.color = c.first;it.type = c.second}==null) setBlock(x, y, Block(c.first,c.second)) else true
+			if(getBlock(x, y)?.also {it.color = c.first;it.type = c.second}==null) setBlock(x, y, Block(c.first, c.second)) else true
 		else false
 	/** 指定した座標にあるBlock colorを変更
 	 * @param x X-coordinate
@@ -581,7 +581,7 @@ import kotlin.random.Random
 	 * @return true if successful, false if failed
 	 */
 	fun setBlockColor(x:Int, y:Int, c:Int):Boolean =
-		if(c<0) delBlock(x,y)!=null else if(getCoordVaild(x, y))
+		if(c<0) delBlock(x, y)!=null else if(getCoordVaild(x, y))
 			if(getBlock(x, y)?.also {it.cint = c}==null&&c>=1) setBlock(x, y, Block(c)) else true
 		else false
 
@@ -612,7 +612,7 @@ import kotlin.random.Random
 	 * @param y Y-coordinate
 	 * @return 指定した座標にあるBlockが空白ならtrue (指定した座標が範囲外の場合はfalse）
 	 */
-	@Deprecated("overloaded",ReplaceWith("getBlockEmpty(x,y,false)"))
+	@Deprecated("overloaded", ReplaceWith("getBlockEmpty(x,y,false)"))
 	fun getBlockEmptyF(x:Int, y:Int):Boolean = getBlockEmpty(x, y, false)
 
 	/** Line clear flagを設定
@@ -676,11 +676,11 @@ import kotlin.random.Random
 		val lines = checkLinesNoFlag()
 		// field内
 		lines.forEach {y ->
-			getRow(y).filterNotNullIndexed().forEach {(x,b)->
-					if(b.hard>0) {
-						b.hard--
-						setLineFlag(y, false)
-					} else delBlock(x, y)
+			getRow(y).filterNotNullIndexed().forEach {(x, b) ->
+				if(b.hard>0) {
+					b.hard--
+					setLineFlag(y, false)
+				} else delBlock(x, y)
 			}
 			// 消えたLinesの上下のBlockの結合を解除
 			getRow(y+1).filterNotNullIndexed().forEach {(j, blk) ->
@@ -754,6 +754,8 @@ import kotlin.random.Random
 	 */
 	fun isEmptyLine(y:Int):Boolean = (0 until width).all {getBlockEmpty(it, y)}
 
+	@Deprecated("renamed",ReplaceWith("isTwistSpot(x, y, big)"))
+	fun isTSpinSpot(x:Int, y:Int, big:Boolean):Boolean = isTwistSpot(x, y, big)
 	/** Twisterになる地形だったらtrue
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -938,7 +940,8 @@ import kotlin.random.Random
 		for(i in highest until heightWithoutHurryupFloor)
 			if(!getLineFlag(i))
 				if((!getBlockEmpty(x-1, i, false)||x<=0)&&getBlockEmpty(x, i, false)
-					&&(!getBlockEmpty(x+1, i, false)||x>=width-1))
+					&&(!getBlockEmpty(x+1, i, false)||x>=width-1)
+				)
 					depth++
 
 		return depth
@@ -1008,9 +1011,13 @@ import kotlin.random.Random
 	fun setSingleHoleLine(hole:Int, y:Int, color:Block.COLOR, skin:Int) {
 		for(j in 0 until width)
 			if(j!=hole)
-				setBlock(j, y, Block(color, skin,
-					ATTRIBUTE.VISIBLE, ATTRIBUTE.OUTLINE, ATTRIBUTE.GARBAGE,
-					if(j<hole) ATTRIBUTE.CONNECT_LEFT else if(j>hole) ATTRIBUTE.CONNECT_RIGHT else ATTRIBUTE.ERASE))
+				setBlock(
+					j, y, Block(
+						color, skin,
+						ATTRIBUTE.VISIBLE, ATTRIBUTE.OUTLINE, ATTRIBUTE.GARBAGE,
+						if(j<hole) ATTRIBUTE.CONNECT_LEFT else if(j>hole) ATTRIBUTE.CONNECT_RIGHT else ATTRIBUTE.ERASE
+					)
+				)
 
 	}
 	/** Add a single hole garbage (Attributes are automatically set)
@@ -1105,7 +1112,8 @@ import kotlin.random.Random
 						for(k in 1..4) {
 							val blk = getBlock(j+1, i)
 							if(blk==null||blk.isEmpty||!blk.isGemBlock||
-								blk.cint==Block.COLOR_GEM_RAINBOW) {
+								blk.cint==Block.COLOR_GEM_RAINBOW
+							) {
 								squareCheck = false
 								break
 							}
@@ -1162,7 +1170,8 @@ import kotlin.random.Random
 								||l==0&&blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)
 								||l==3&&blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)
 								||k==0&&blk.getAttribute(ATTRIBUTE.CONNECT_UP)
-								||k==3&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
+								||k==3&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)
+							) {
 								squareCheck = false
 								break
 							}
@@ -1207,7 +1216,8 @@ import kotlin.random.Random
 								||l==0&&blk.getAttribute(ATTRIBUTE.CONNECT_LEFT)
 								||l==3&&blk.getAttribute(ATTRIBUTE.CONNECT_RIGHT)
 								||k==0&&blk.getAttribute(ATTRIBUTE.CONNECT_UP)
-								||k==3&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)) {
+								||k==3&&blk.getAttribute(ATTRIBUTE.CONNECT_DOWN)
+							) {
 								squareCheck = false
 								break
 							}
@@ -1317,8 +1327,10 @@ import kotlin.random.Random
 		val my = heightWithoutHurryupFloor
 		var blocks = 0
 		val r =
-			intArrayOf(if(y-h>-hiddenHeight) y-h else -hiddenHeight, if(y+h<my) y+h else my, if(x>w) x-w else 0,
-				if(x+w<width) x+w else width)
+			intArrayOf(
+				if(y-h>-hiddenHeight) y-h else -hiddenHeight, if(y+h<my) y+h else my, if(x>w) x-w else 0,
+				if(x+w<width) x+w else width
+			)
 		for(i in r[0]..r[1])
 			for(j in r[2]..r[3]) {
 				val b = getBlock(j, i) ?: continue
@@ -1373,8 +1385,8 @@ import kotlin.random.Random
 					}
 
 					if(gemType!=0&&b.isGemBlock&&b.cint!=Block.COLOR_GEM_RAINBOW)
-					setBlockColor(j, i, Block.COLOR_GEM_RAINBOW)
-					else delBlock(j,i)
+						setBlockColor(j, i, Block.COLOR_GEM_RAINBOW)
+					else delBlock(j, i)
 				}
 			}
 		return total
@@ -1511,15 +1523,18 @@ import kotlin.random.Random
 	 * parameter of BLOCK_COLOR_NONE or BLOCK_COLOR_INVALID may cause an
 	 * infinite loop and crash the game. This check is handled by the above
 	 * public method to avoid redundant checks. */
-	private fun clearColor(x:Int, y:Int, targetColor:Int, flag:Boolean, garbageClear:Boolean, gemSame:Boolean,
-		ignoreHidden:Boolean):Int {
+	private fun clearColor(
+		x:Int, y:Int, targetColor:Int, flag:Boolean, garbageClear:Boolean, gemSame:Boolean,
+		ignoreHidden:Boolean
+	):Int {
 		if(ignoreHidden&&y<0) return 0
 		val blockColor = getBlockColor(x, y, gemSame)
 		if(blockColor==Block.COLOR_INVALID||blockColor==Block.COLOR_NONE) return 0
 		getBlock(x, y)?.also {b ->
 			if(flag&&b.getAttribute(ATTRIBUTE.ERASE)) return@clearColor 0
 			if(garbageClear&&b.getAttribute(ATTRIBUTE.GARBAGE)
-				&&!b.getAttribute(ATTRIBUTE.WALL))
+				&&!b.getAttribute(ATTRIBUTE.WALL)
+			)
 				when {
 					flag -> {
 						b.setAttribute(true, ATTRIBUTE.ERASE)
@@ -1589,11 +1604,13 @@ import kotlin.random.Random
 						for(l in 0 until width) {
 							getBlock(l, k)?.let {
 								if(!it.isEmpty&&it.getAttribute(ATTRIBUTE.TEMP_MARK)
-									&&!it.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
+									&&!it.getAttribute(ATTRIBUTE.CASCADE_FALL)
+								) {
 									val bBelow = getBlock(l, k+1)
 
 									if(getCoordAttribute(l, k+1)==COORD_WALL||(bBelow!=null&&!bBelow.isEmpty
-											&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK)))
+											&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK))
+									)
 										fall = false
 
 								}
@@ -1607,7 +1624,9 @@ import kotlin.random.Random
 								getBlock(l, k)?.let {bTemp ->
 									getBlock(l, k+1)?.let {bBelow ->
 										if(getCoordAttribute(l, k+1)!=COORD_WALL&&!bTemp.isEmpty&&bBelow.isEmpty&&bTemp.getAttribute(
-												ATTRIBUTE.TEMP_MARK)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
+												ATTRIBUTE.TEMP_MARK
+											)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)
+										) {
 											bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
 											bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL)
 											bTemp.setAttribute(true, ATTRIBUTE.LAST_COMMIT)
@@ -1640,39 +1659,41 @@ import kotlin.random.Random
 
 		for(i in -hiddenHeight until heightWithoutHurryupFloor)
 			for(j in 0 until width) {
-				getBlock(j, i)?.let{blk->
-				if(!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
-					var fall = true
-					checkBlockLink(j, i)
+				getBlock(j, i)?.let {blk ->
+					if(!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
+						var fall = true
+						checkBlockLink(j, i)
 
-					for(k in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
-						for(l in 0 until width) getBlock(l, k)?.let{bTemp->
-						if(bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
-							getBlock(l, k+1)?.let {bBelow->
-								if(getCoordAttribute(l, k+1)==COORD_WALL||!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK))
-									fall = false
-							}
-						}}
-
-					if(fall) {
-						result = true
 						for(k in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
-							for(l in 0 until width) {
-								val bTemp = getBlock(l, k)
-								val bBelow = getBlock(l, k+1)
-
-								if(getCoordAttribute(l, k+1)!=COORD_WALL&&bTemp!=null&&!bTemp.isEmpty&&bBelow!=null
-									&&bBelow.isEmpty
-									&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)
-									&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
-									bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
-									bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL, ATTRIBUTE.LAST_COMMIT)
-									setBlock(l, k+1, bTemp)
-									setBlock(l, k, Block())
+							for(l in 0 until width) getBlock(l, k)?.let {bTemp ->
+								if(bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
+									getBlock(l, k+1)?.let {bBelow ->
+										if(getCoordAttribute(l, k+1)==COORD_WALL||!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK))
+											fall = false
+									}
 								}
 							}
+
+						if(fall) {
+							result = true
+							for(k in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
+								for(l in 0 until width) {
+									val bTemp = getBlock(l, k)
+									val bBelow = getBlock(l, k+1)
+
+									if(getCoordAttribute(l, k+1)!=COORD_WALL&&bTemp!=null&&!bTemp.isEmpty&&bBelow!=null
+										&&bBelow.isEmpty
+										&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)
+										&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)
+									) {
+										bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
+										bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL, ATTRIBUTE.LAST_COMMIT)
+										setBlock(l, k+1, bTemp)
+										setBlock(l, k, Block())
+									}
+								}
+						}
 					}
-				}
 				}
 			}
 
@@ -1791,8 +1812,10 @@ import kotlin.random.Random
 				pushUp(1)
 
 				for(j in 0 until width) {
-					val blk = Block(Block.COLOR.BLACK, Block.TYPE.BLOCK, skin,
-						ATTRIBUTE.WALL, ATTRIBUTE.GARBAGE, ATTRIBUTE.VISIBLE)
+					val blk = Block(
+						Block.COLOR.BLACK, Block.TYPE.BLOCK, skin,
+						ATTRIBUTE.WALL, ATTRIBUTE.GARBAGE, ATTRIBUTE.VISIBLE
+					)
 					setBlock(j, heightWithoutHurryupFloor-1, blk)
 				}
 
@@ -1847,17 +1870,17 @@ import kotlin.random.Random
 			 * character outside the row string is referenced, default to an
 			 * empty block by ignoring the exception. */
 			try {
-			row[j] = Block(str[j], skin).apply {
-				elapsedFrames = -1
-				setAttribute(true, ATTRIBUTE.VISIBLE)
-				setAttribute(true, ATTRIBUTE.OUTLINE)
+				row[j] = Block(str[j], skin).apply {
+					elapsedFrames = -1
+					setAttribute(true, ATTRIBUTE.VISIBLE)
+					setAttribute(true, ATTRIBUTE.OUTLINE)
 
-				if(isGarbage)
-				// not only sport one hole (i.e. TGM garbage)
-					setAttribute(true, ATTRIBUTE.GARBAGE)
-				if(isWall) setAttribute(true, ATTRIBUTE.WALL)
-			}
-			} catch(e:Exception) {
+					if(isGarbage)
+					// not only sport one hole (i.e. TGM garbage)
+						setAttribute(true, ATTRIBUTE.GARBAGE)
+					if(isWall) setAttribute(true, ATTRIBUTE.WALL)
+				}
+			} catch(_:Exception) {
 			}
 		}
 
@@ -1871,8 +1894,10 @@ import kotlin.random.Random
 	 * @param highestWallY 最も高いHurryupBlockの位置
 	 */
 	@JvmOverloads
-	fun stringToField(str:String, skin:Int = 0, highestGarbageY:Int = Integer.MAX_VALUE,
-		highestWallY:Int = Integer.MAX_VALUE) {
+	fun stringToField(
+		str:String, skin:Int = 0, highestGarbageY:Int = Integer.MAX_VALUE,
+		highestWallY:Int = Integer.MAX_VALUE
+	) {
 		for(i in -1 until height) {
 			val index = (height-1-i)*width
 			/* Much like NullNoname's try/catch from the old stringToField that
@@ -1931,7 +1956,7 @@ import kotlin.random.Random
 			val strSubArray = strArray[j].split("/".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 			if(strSubArray.isNotEmpty()) blkColor = strSubArray[0].toInt(16)
 			if(strSubArray.size>1) attr = strSubArray[1].toInt(16)
-		} catch(e:Exception) {
+		} catch(_:Exception) {
 		}
 
 		Block(blkColor, skin).apply {
@@ -1975,10 +2000,12 @@ import kotlin.random.Random
 			for(j in 0 until width) {
 				val blk = getBlock(j, i)
 
-				str.append(when {
-					blk?.color==null -> "."
-					else -> "${blk.cint}"
-				})
+				str.append(
+					when(blk?.color) {
+						null -> "."
+						else -> "${blk.cint}"
+					}
+				)
 			}
 
 			str.append("\n")
@@ -2020,8 +2047,10 @@ import kotlin.random.Random
 	}
 
 	@JvmOverloads
-	fun garbageDrop(engine:GameEngine, drop:Int, big:Boolean, hard:Int = 0, countdown:Int = 0, avoidColumn:Int = -1,
-		color:Int = Block.COLOR_WHITE) {
+	fun garbageDrop(
+		engine:GameEngine, drop:Int, big:Boolean, hard:Int = 0, countdown:Int = 0, avoidColumn:Int = -1,
+		color:Int = Block.COLOR_WHITE
+	) {
 		var d = drop
 		var y = -1*hiddenHeight
 		var actualWidth = width
@@ -2069,8 +2098,10 @@ import kotlin.random.Random
 	}
 
 	@JvmOverloads
-	fun garbageDropPlace(x:Int, y:Int, big:Boolean, hard:Int, color:Int = Block.COLOR_WHITE,
-		countdown:Int = 0):Boolean {
+	fun garbageDropPlace(
+		x:Int, y:Int, big:Boolean, hard:Int, color:Int = Block.COLOR_WHITE,
+		countdown:Int = 0
+	):Boolean {
 		val b = getBlock(x, y) ?: return false
 		if(big) {
 			garbageDropPlace(x+1, y, false, hard)
@@ -2111,11 +2142,13 @@ import kotlin.random.Random
 							val bTemp = getBlock(l, k)
 
 							if(bTemp!=null&&!bTemp.isEmpty&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)
-								&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
+								&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)
+							) {
 								val bBelow = getBlock(l, k+1)
 
 								if(getCoordAttribute(l, k+1)==COORD_WALL||(bBelow!=null&&!bBelow.isEmpty
-										&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK)))
+										&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK))
+								)
 									fall = false
 							}
 						}
@@ -2127,8 +2160,10 @@ import kotlin.random.Random
 	}
 
 	/** mainly for Physician, generate random maps */
-	fun addRandomHoverBlocks(engine:GameEngine, count:Int, colors:Array<Pair<Block.COLOR, Block.TYPE>>,
-		minY:Int, avoidLines:Boolean, flashMode:Boolean = false) {
+	fun addRandomHoverBlocks(
+		engine:GameEngine, count:Int, colors:Array<Pair<Block.COLOR, Block.TYPE>>,
+		minY:Int, avoidLines:Boolean, flashMode:Boolean = false
+	) {
 		val posRand = Random(engine.random.nextLong())
 		val colorRand = Random(engine.random.nextLong())
 		val placeHeight = height-minY
@@ -2137,12 +2172,12 @@ import kotlin.random.Random
 		for(i in colorCounts.indices)
 			colorCounts[i] = 0
 
-		val placeBlock = Array(width) {BooleanArray(placeHeight){count>=(placeSize shr 1)} }
+		val placeBlock = Array(width) {BooleanArray(placeHeight) {count>=(placeSize shr 1)}}
 		if(count<placeSize shr 1) {
 			var i = 0
 			while(i<count) {
-			val	x = posRand.nextInt(width)
-			val 	y = posRand.nextInt(placeHeight)
+				val x = posRand.nextInt(width)
+				val y = posRand.nextInt(placeHeight)
 				if(!getBlockEmpty(x, y+minY)) i--
 				else placeBlock[x][y] = true
 
@@ -2159,13 +2194,15 @@ import kotlin.random.Random
 			}
 		}
 
-		placeBlock.forEachIndexed{x,a->a.forEachIndexed{y,b->
-			if(b) {
-				val blockColor = (x+y+colorRand.nextInt(colors.size))%colors.size
-				colorCounts[blockColor]++
-				addHoverBlock(x, y+minY, colors[blockColor])
+		placeBlock.forEachIndexed {x, a ->
+			a.forEachIndexed {y, b ->
+				if(b) {
+					val blockColor = (x+y+colorRand.nextInt(colors.size))%colors.size
+					colorCounts[blockColor]++
+					addHoverBlock(x, y+minY, colors[blockColor])
+				}
 			}
-		}}
+		}
 
 		if(!avoidLines||colors.size==1) return
 		var colorUp:Block.COLOR?
@@ -2179,10 +2216,10 @@ import kotlin.random.Random
 					val blockColor = getBlockColor(x, y)
 					if(blockColor!=colorUp&&blockColor!=colorLeft) continue
 
-					cIndex=colors.indexOfFirst{it.first==blockColor}
+					cIndex = colors.indexOfFirst {it.first==blockColor}
 
 					if(cIndex!=-1) {
-					val colors=colors.map{it.first}
+						val colors = colors.map {it.first}
 						if(colors.size==2) {
 							if(colors[0]==colorUp&&colors[1]!=colorLeft||colors[0]==colorLeft&&colors[1]!=colorUp) {
 								colorCounts[1]++
@@ -2222,18 +2259,20 @@ import kotlin.random.Random
 			for(y in minY until height)
 				for(x in 0 until width) {
 					val blockColor = getBlockColor(x, y)
-					fill = getBlock(x,y)==null
+					fill = getBlock(x, y)==null
 					cIndex = -1
 					if(!fill) {
 						if(!placeBlock[x][y-minY]) continue
-						cIndex=colors.indexOfFirst{it.first==blockColor}
+						cIndex = colors.indexOfFirst {it.first==blockColor}
 						if(cIndex==-1) continue
 						if(colorCounts[cIndex]<=maxCount) continue
 					}
 					for(i in colorCounts.indices)
 						canSwitch[i] = colorCounts[i]<maxCount
-					listOf(getBlockColor(x, y-2), getBlockColor(x, y+2),
-						getBlockColor(x-2, y), getBlockColor(x+2, y)).forEach {
+					listOf(
+						getBlockColor(x, y-2), getBlockColor(x, y+2),
+						getBlockColor(x-2, y), getBlockColor(x+2, y)
+					).forEach {
 						for(i in colors.indices)
 							if(colors[i].first==it) {
 								canSwitch[i] = false
@@ -2300,7 +2339,7 @@ import kotlin.random.Random
 			for(i in colors.indices)
 				if(colors[i].first==blockColor) {
 					if(gemNeeded[i]) {
-						getBlock(x, y)?.type=Block.TYPE.GEM
+						getBlock(x, y)?.type = Block.TYPE.GEM
 						gemNeeded[i] = false
 					}
 					break
@@ -2310,13 +2349,13 @@ import kotlin.random.Random
 		}
 	}
 
-	fun addHoverBlock(x:Int, y:Int, mode:Pair<Block.COLOR, Block.TYPE>, skin:Int=0):Boolean = setBlock(x, y,
-		Block(mode,skin, ATTRIBUTE.ANTIGRAVITY, ATTRIBUTE.BROKEN, ATTRIBUTE.VISIBLE).apply {
-			setAttribute(false, ATTRIBUTE.GARBAGE, ATTRIBUTE.ERASE,
-				ATTRIBUTE.CONNECT_UP, ATTRIBUTE.CONNECT_DOWN, ATTRIBUTE.CONNECT_LEFT, ATTRIBUTE.CONNECT_RIGHT)
+	fun addHoverBlock(x:Int, y:Int, mode:Pair<Block.COLOR, Block.TYPE>, skin:Int = 0):Boolean = setBlock(x, y,
+		Block(mode, skin, ATTRIBUTE.ANTIGRAVITY, ATTRIBUTE.BROKEN, ATTRIBUTE.VISIBLE).apply {
+			setAttribute(
+				false, ATTRIBUTE.GARBAGE, ATTRIBUTE.ERASE,
+				ATTRIBUTE.CONNECT_UP, ATTRIBUTE.CONNECT_DOWN, ATTRIBUTE.CONNECT_LEFT, ATTRIBUTE.CONNECT_RIGHT
+			)
 		})
-
-
 
 	fun shuffleColors(blockColors:Array<Block.COLOR>, numColors:Int, rand:Random) {
 		var bC = blockColors
@@ -2335,7 +2374,7 @@ import kotlin.random.Random
 		}
 		for(x in 0 until width)
 			for(y in 0 until height) {
-				var temp = getBlockColor(x, y,false)-1
+				var temp = getBlockColor(x, y, false)-1
 				if(numColors==3&&temp>=3) temp--
 				if(temp in 0 until maxX) setBlockColor(x, y, bC[temp])
 			}
@@ -2492,7 +2531,7 @@ import kotlin.random.Random
 
 	companion object {
 		/** Log */
-		internal var log = Logger.getLogger(Field::class.java)
+		internal var log = LogManager.getLogger()
 
 		/** Serial version ID */
 		private const val serialVersionUID = 7745183278794213487L

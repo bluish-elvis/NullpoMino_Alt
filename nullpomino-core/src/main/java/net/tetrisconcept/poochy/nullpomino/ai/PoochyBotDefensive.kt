@@ -69,11 +69,10 @@ class PoochyBotDefensive:PoochyBot() {
 		val depthsBefore = getColumnDepths(fld)
 		var deepestY = -1
 		//int deepestX = -1;
-		for(i in 0 until width-1)
-			if(depthsBefore[i]>deepestY) {
-				deepestY = depthsBefore[i]
-				//deepestX = i;
-			}
+		for(i in 0 until width-1) if(depthsBefore[i]>deepestY) {
+			deepestY = depthsBefore[i]
+			//deepestX = i;
+		}
 
 		//Find valleys that need an I, J, or L.
 		var needIValleyBefore = 0
@@ -98,10 +97,8 @@ class PoochyBotDefensive:PoochyBot() {
 				}
 			}
 			if(diff%4==2) {
-				if(left>right)
-					needLValleyBefore += 2
-				else if(left<right)
-					needJValleyBefore += 2
+				if(left>right) needLValleyBefore += 2
+				else if(left<right) needJValleyBefore += 2
 				else {
 					needJValleyBefore++
 					needLValleyBefore++
@@ -138,8 +135,7 @@ class PoochyBotDefensive:PoochyBot() {
 
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
-			if(DEBUG_ALL)
-				log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.id}, $depth). pts = 0 (Cannot place piece)")
+			if(DEBUG_ALL) log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.id}, $depth). pts = 0 (Cannot place piece)")
 			return Integer.MIN_VALUE
 		}
 
@@ -171,12 +167,10 @@ class PoochyBotDefensive:PoochyBot() {
 
 		//Bonus points for filling in valley with an I piece
 		var valleyBonus = 0
-		if(valley==3&&xMax<width-1)
-			valleyBonus = 40000
+		if(valley==3&&xMax<width-1) valleyBonus = 40000
 		else if(valley>=4) valleyBonus = 400000
 		if(xMax==0) valleyBonus *= 2
-		if(valley>0)
-			if(DEBUG_ALL) log.debug("I piece xMax = $xMax, valley depth = $valley, valley bonus = $valleyBonus")
+		if(valley>0) if(DEBUG_ALL) log.debug("I piece xMax = $xMax, valley depth = $valley, valley bonus = $valleyBonus")
 		pts += valleyBonus
 
 		//Points for line clears
@@ -219,10 +213,8 @@ class PoochyBotDefensive:PoochyBot() {
 					}
 				}
 				if(diff%4==2) {
-					if(left>right)
-						needLValleyAfter += 2
-					else if(left<right)
-						needJValleyAfter += 2
+					if(left>right) needLValleyAfter += 2
+					else if(left<right) needJValleyAfter += 2
 					else {
 						needJValleyAfter++
 						needLValleyAfter++
@@ -296,21 +288,18 @@ class PoochyBotDefensive:PoochyBot() {
 			pts += if(d>=0) 5 else d
 
 			// Add points for reducing the height
-			if(heightBefore<heightAfter)
-				pts += (heightAfter-heightBefore)*20
+			if(heightBefore<heightAfter) pts += (heightAfter-heightBefore)*20
 			else if(heightBefore>heightAfter) pts -= (heightBefore-heightAfter)*4// Demerits for increase in height
 
 			//Penalty for dangerous placements
 			if(heightAfter<2) {
 				val spawnMinX = width/2-2
 				val spawnMaxX = width/2+1
-				for(i in spawnMinX..spawnMaxX)
-					if(depthsAfter[i]<2&&depthsAfter[i]<depthsBefore[i]) pts -= 2000000*(depthsBefore[i]-depthsAfter[i])
+				for(i in spawnMinX..spawnMaxX) if(depthsAfter[i]<2&&depthsAfter[i]<depthsBefore[i]) pts -= 2000000*(depthsBefore[i]-depthsAfter[i])
 				if(heightBefore>=2&&depth==0) pts -= 2000000*(heightBefore-heightAfter)
 			}
 		}
-		if(DEBUG_ALL)
-			log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.id}, $depth). pts = $pts")
+		if(DEBUG_ALL) log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.type.name}, $depth). pts = $pts")
 		return pts
 	}
 }

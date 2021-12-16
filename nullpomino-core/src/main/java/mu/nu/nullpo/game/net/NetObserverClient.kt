@@ -29,7 +29,7 @@
 package mu.nu.nullpo.game.net
 
 import mu.nu.nullpo.game.play.GameManager
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.io.IOException
 
 /** クライアント(Observer用) */
@@ -93,6 +93,6 @@ class NetObserverClient:NetBaseClient {
 
 	companion object {
 		/** Log */
-		internal val log = Logger.getLogger(NetObserverClient::class.java)
+		internal val log = LogManager.getLogger()
 	}
 }

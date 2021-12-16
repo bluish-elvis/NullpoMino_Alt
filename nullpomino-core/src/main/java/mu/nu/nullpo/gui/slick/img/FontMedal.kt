@@ -29,20 +29,15 @@
 package mu.nu.nullpo.gui.slick.img
 
 import mu.nu.nullpo.gui.common.BaseFontMedal
-import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import org.newdawn.slick.Color
 
 /** 普通の文字列の表示クラス */
 object FontMedal:BaseFontMedal() {
-	override fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float, alpha:Float, darkness:Float) {
-		val filter = Color(Color.white).apply {
-			a = alpha
-		}.darker(maxOf(0f, darkness))
-		processTxt(x.toFloat(), y.toFloat(), str, tier,
-			scale) {dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
-			ResourceHolder.imgFontMedal.draw(dx, dy, w, h, sx, sy, sw, sh, filter)
+	override fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float, alpha:Float, darkness:Float) =
+		processTxt(x.toFloat(), y.toFloat(), str, tier, scale)
+		{dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
+			ResourceHolder.imgFontMedal.draw(dx, dy, w, h, sx, sy, sw, sh, Color(1f, 1f, 1f, alpha).darker(maxOf(0f, darkness)))
 		}
-	}
 
 }

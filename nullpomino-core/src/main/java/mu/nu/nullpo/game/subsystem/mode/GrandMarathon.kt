@@ -39,7 +39,6 @@ import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.ln
 
@@ -234,8 +233,8 @@ class GrandMarathon:AbstractMode() {
 	 */
 	private fun setSpeed(engine:GameEngine) {
 		if(always20g) engine.speed.gravity = -1
-		else
-			engine.speed.gravity = tableGravityValue[(tableGravityChangeLevel.indexOfFirst {engine.statistics.level<=it}).let {if(it<0) tableGravityChangeLevel.size-1 else it}]
+		else engine.speed.gravity =
+			tableGravityValue[(tableGravityChangeLevel.indexOfFirst {engine.statistics.level<=it}).let {if(it<0) tableGravityChangeLevel.size-1 else it}]
 
 		var section = if(engine.statistics.level<300) 0 else if(engine.statistics.level<500) 1 else 2
 		if(section>tableARE.size-1) section = tableARE.size-1
@@ -355,8 +354,10 @@ class GrandMarathon:AbstractMode() {
 					receiver.drawScoreFont(engine, playerID, 3, 2, "GRADE TIME LEVEL", COLOR.BLUE)
 
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreGrade(engine, playerID, 0, 3+i, String.format("%2d", i+1),
-							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW)
+						receiver.drawScoreGrade(
+							engine, playerID, 0, 3+i, String.format("%2d", i+1),
+							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+						)
 						var gc = if(i==rankingRank)
 							if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE
 						else COLOR.WHITE
@@ -382,8 +383,10 @@ class GrandMarathon:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime = String.format("%3d-%3d %s %d", temp, temp2, bestSectionTime[i].toTimeStr,
-							bestSectionScore[i])
+						val strSectionTime = String.format(
+							"%3d-%3d %s %d", temp, temp2, bestSectionTime[i].toTimeStr,
+							bestSectionScore[i]
+						)
 
 						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 						totalTime += bestSectionTime[i]
@@ -391,45 +394,65 @@ class GrandMarathon:AbstractMode() {
 
 					receiver.drawScoreFont(engine, playerID, 0, 14, "TOTAL", color = COLOR.BLUE)
 					receiver.drawScoreNum(engine, playerID, 0, 15, totalTime.toTimeStr, 2f)
-					receiver.drawScoreFont(engine, playerID, if(receiver.nextDisplayType==2)
-						0 else 12, if(receiver.nextDisplayType==2) 18 else 14, "AVERAGE", color = COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, if(receiver.nextDisplayType==2)
-						0 else 12, if(receiver.nextDisplayType==2) 19 else 15, (totalTime/SECTION_MAX).toTimeStr, scale = 2f)
+					receiver.drawScoreFont(
+						engine, playerID, if(receiver.nextDisplayType==2)
+							0 else 12, if(receiver.nextDisplayType==2) 18 else 14, "AVERAGE", color = COLOR.BLUE
+					)
+					receiver.drawScoreNum(
+						engine, playerID, if(receiver.nextDisplayType==2)
+							0 else 12, if(receiver.nextDisplayType==2) 19 else 15, (totalTime/SECTION_MAX).toTimeStr, scale = 2f
+					)
 
 					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW RANKING", color = COLOR.GREEN)
 				}
 		} else {
 			val g20 = engine.speed.gravity<0&&(engine.statistics.time/2%2==0||engine.ending>0)
-			receiver.drawScoreFont(engine, playerID, 0, 2, "GRADE",
-				color = if(g20 or (gradeflash>0&&gradeflash%4==0)) if(gm300) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE)
-			receiver.drawScoreGrade(engine, playerID, 5, 2, tableGradeName[grade],
+			receiver.drawScoreFont(
+				engine, playerID, 0, 2, "GRADE",
+				color = if(g20 or (gradeflash>0&&gradeflash%4==0)) if(gm300) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
+			)
+			receiver.drawScoreGrade(
+				engine, playerID, 5, 2, tableGradeName[grade],
 				color = if(gradeflash>0&&gradeflash%(if(grade>=18) 2 else 4)==0)
-					(if(grade>=18) tablePier21GradeColor[gmPier] else COLOR.YELLOW) else COLOR.WHITE, scale = 2f)
+					(if(grade>=18) tablePier21GradeColor[gmPier] else COLOR.YELLOW) else COLOR.WHITE, scale = 2f
+			)
 
 			if(grade<17) {
-				receiver.drawScoreNano(engine, playerID, 0, 3*2+1, "NEXT AT",
-					if(g20 or (gradeflash>0&&gradeflash%4==0)) if(gm300) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE, .5f)
+				receiver.drawScoreNano(
+					engine, playerID, 0, 3*2+1, "NEXT AT",
+					if(g20 or (gradeflash>0&&gradeflash%4==0)) if(gm300) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE, .5f
+				)
 				receiver.drawScoreNum(engine, playerID, 0, 4, "${tableGradeScore[grade]}")
 			}
 
 			// 段位上昇時のフラッシュ
 			if(gradeflash>0) gradeflash--
 
-			receiver.drawScoreFont(engine, playerID, 0, 5, "Score",
-				color = if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE)
+			receiver.drawScoreFont(
+				engine, playerID, 0, 5, "Score",
+				color = if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
+			)
 			receiver.drawScoreNum(engine, playerID, 5, 5, "+$lastscore", if(g20) COLOR.YELLOW else COLOR.WHITE)
-			receiver.drawScoreNum(engine, playerID, 0, 6, "$scDisp",
-				if(g20) COLOR.YELLOW else COLOR.WHITE, 2f)
+			receiver.drawScoreNum(
+				engine, playerID, 0, 6, "$scDisp",
+				if(g20) COLOR.YELLOW else COLOR.WHITE, 2f
+			)
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "Level",
-				if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE)
+			receiver.drawScoreFont(
+				engine, playerID, 0, 9, "Level",
+				if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
+			)
 			receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)), g20)
-			receiver.drawSpeedMeter(engine, playerID, 0, 11,
-				if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4, 4)
+			receiver.drawSpeedMeter(
+				engine, playerID, 0, 11,
+				if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4, 4
+			)
 			receiver.drawScoreNum(engine, playerID, 1, 12, String.format("%3d", nextseclv), g20)
 
-			receiver.drawScoreFont(engine, playerID, 0, 14, "Time",
-				if(g20) if(gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE)
+			receiver.drawScoreFont(
+				engine, playerID, 0, 14, "Time",
+				if(g20) if(gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
+			)
 			if(engine.ending!=2||rolltime/30%2==0)
 				receiver.drawScoreNum(engine, playerID, 0, 15, engine.statistics.time.toTimeStr, g20, 2f)
 
@@ -457,14 +480,19 @@ class GrandMarathon:AbstractMode() {
 						for(l in 0 until i)
 							strSectionTime.append("\n")
 						strSectionTime.append(
-							String.format("%3d%s%s %d\n", temp, strSeparator, sectionTime[i].toTimeStr, sectionscore[i]))
-						receiver.drawScoreNum(engine, playerID, if(x) 9 else 10, 3, "$strSectionTime", sectionIsNewRecord[i],
-							if(x) .75f else 1f)
+							String.format("%3d%s%s %d\n", temp, strSeparator, sectionTime[i].toTimeStr, sectionscore[i])
+						)
+						receiver.drawScoreNum(
+							engine, playerID, if(x) 9 else 10, 3, "$strSectionTime", sectionIsNewRecord[i],
+							if(x) .75f else 1f
+						)
 					}
 
 				receiver.drawScoreFont(engine, playerID, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, if(x) 8 else 12, if(x) 12 else 15,
-					(engine.statistics.time/(sectionscomp+(engine.ending==0).toInt())).toTimeStr, scale = 2f)
+				receiver.drawScoreNum(
+					engine, playerID, if(x) 8 else 12, if(x) 12 else 15,
+					(engine.statistics.time/(sectionscomp+(engine.ending==0).toInt())).toTimeStr, scale = 2f
+				)
 
 			}
 			// medal
@@ -544,8 +572,9 @@ class GrandMarathon:AbstractMode() {
 				}
 			}
 
-			lastscore = (((engine.statistics.level+lines)/(if(engine.b2b) 4 else 3)+engine.softdropFall+engine.harddropFall+manuallock)
-				*lines*comboValue*bravo)
+			lastscore =
+				(((engine.statistics.level+lines)/(if(engine.b2b) 4 else 3)+engine.softdropFall+engine.harddropFall+manuallock)
+					*lines*comboValue*bravo)
 			sectionscore[sectionscomp] += lastscore
 			engine.statistics.scoreLine += lastscore
 
@@ -581,7 +610,8 @@ class GrandMarathon:AbstractMode() {
 				stNewRecordCheck(sectionscomp-1)
 
 				if(engine.statistics.time<=GM_999_TIME_REQUIRE&&engine.statistics.score>=tableGradeScore[17]&&gm300
-					&&gm500) {
+					&&gm500
+				) {
 					engine.playSE("applause5")
 					engine.playSE("endingstart")
 					engine.playSE("grade4")
@@ -730,12 +760,16 @@ class GrandMarathon:AbstractMode() {
 					receiver.drawMenuFont(engine, playerID, 0, 3, tablePier21GradeName[gmPier], gc)
 				}
 				receiver.drawMenuGrade(engine, playerID, 6, 2, tableGradeName[grade], gc, 2f)
-				drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA,
-					Statistic.TIME)
+				drawResultStats(
+					engine, playerID, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA,
+					Statistic.TIME
+				)
 				drawResultRank(engine, playerID, receiver, 13, COLOR.BLUE, rankingRank)
 				if(secretGrade>4)
-					drawResult(engine, playerID, receiver, 15, COLOR.BLUE, "S. GRADE",
-						String.format("%10s", tableGradeName[secretGrade-1]))
+					drawResult(
+						engine, playerID, receiver, 15, COLOR.BLUE, "S. GRADE",
+						String.format("%10s", tableGradeName[secretGrade-1])
+					)
 			}
 			1 -> {
 				receiver.drawMenuFont(engine, playerID, 0, 2, "SECTION", COLOR.BLUE)
@@ -861,12 +895,16 @@ class GrandMarathon:AbstractMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** 落下速度 table */
-		private val tableGravityValue = intArrayOf(4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160,
-			192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1)
+		private val tableGravityValue = intArrayOf(
+			4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160,
+			192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1
+		)
 
 		/** 落下速度が変わる level */
-		private val tableGravityChangeLevel = intArrayOf(30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230,
-			233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000)
+		private val tableGravityChangeLevel = intArrayOf(
+			30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230,
+			233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000
+		)
 
 		/** ARE table */
 		private val tableARE = intArrayOf(30, 27, 25)
@@ -881,13 +919,15 @@ class GrandMarathon:AbstractMode() {
 		private val tableDAS = intArrayOf(16, 15, 14)
 
 		/** 段位上昇に必要なScore */
-		private val tableGradeScore = intArrayOf(500, 1000, 1500, 2500, 3500, 5000, 8000, 12000, // 8～1
+		private val tableGradeScore = intArrayOf(
+			500, 1000, 1500, 2500, 3500, 5000, 8000, 12000, // 8～1
 			16000, 22000, 30000, 40000, 52000, 66000, 82000, 100000, 123456, // S1～S9
 			131072 // GM
 		)
 
 		/** 段位のName */
-		private val tableGradeName = arrayOf("9", "8", "7", "6", "5", "4", "3", "2", "1", // 0～8
+		private val tableGradeName = arrayOf(
+			"9", "8", "7", "6", "5", "4", "3", "2", "1", // 0～8
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", // 9～17
 			"Gm", "GM" // 18
 		)
@@ -915,8 +955,10 @@ class GrandMarathon:AbstractMode() {
 		/** GM */
 		private val tablePier21GradeName = arrayOf("CARBON", "STEEL", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
 
-		private val tablePier21GradeColor = arrayOf(COLOR.PURPLE, COLOR.BLUE, COLOR.RED, COLOR.WHITE, COLOR.YELLOW, COLOR.CYAN,
-			COLOR.GREEN)
+		private val tablePier21GradeColor = arrayOf(
+			COLOR.PURPLE, COLOR.BLUE, COLOR.RED, COLOR.WHITE, COLOR.YELLOW, COLOR.CYAN,
+			COLOR.GREEN
+		)
 		/** LV999 roll time */
 		/** Number of entries in rankings */
 		private const val RANKING_MAX = 13

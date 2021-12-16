@@ -33,7 +33,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.UpdateChecker
 import mu.nu.nullpo.gui.slick.img.*
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
 import org.newdawn.slick.Color
 import org.newdawn.slick.GameContainer
@@ -150,6 +150,6 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		private val UI_TEXT = arrayOf("Title_Start", "Title_Replay", "Title_NetPlay", "Title_Config", "Title_Exit")
 
 		/** Log */
-		internal var log = Logger.getLogger(StateTitle::class.java)
+		internal var log = LogManager.getLogger()
 	}
 }

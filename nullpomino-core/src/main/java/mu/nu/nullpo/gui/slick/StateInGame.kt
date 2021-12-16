@@ -30,13 +30,13 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
@@ -108,17 +108,13 @@ class StateInGame:BasicGameState() {
 	 */
 	@JvmOverloads
 	fun startNewGame(strRulePath:String? = null) {
-		gameManager = GameManager(RendererSlick()).also {
+		modeName = NullpoMinoSlick.propGlobal.getProperty("name.mode", "")
+		val modeObj = NullpoMinoSlick.modeManager[modeName]
+		if(modeObj==null) log.error("Couldn't find mode:$modeName")
+		gameManager = GameManager(RendererSlick(), modeObj).also {
 			pause = false
 
 			it.receiver.setGraphics(appContainer!!.graphics)
-
-			modeName = NullpoMinoSlick.propGlobal.getProperty("name.mode", "")
-			val modeObj = NullpoMinoSlick.modeManager[modeName]
-			if(modeObj==null)
-				log.error("Couldn't find mode:$modeName")
-			else
-				it.mode = modeObj
 
 			it.init()
 
@@ -142,7 +138,7 @@ class StateInGame:BasicGameState() {
 				var rulename = strRulePath
 				if(rulename==null) {
 					rulename = NullpoMinoSlick.propGlobal.getProperty("$i.rule", "")
-					if(it.mode?.gameStyle!=GameEngine.GameStyle.TETROMINO)
+					if(it.mode?.gameStyle!=GameStyle.TETROMINO)
 						rulename = NullpoMinoSlick.propGlobal.getProperty("$i.rule.${it.mode!!.gameStyle.ordinal}", "")
 				}
 				if(rulename!=null&&rulename.isNotEmpty()) {
@@ -187,18 +183,17 @@ class StateInGame:BasicGameState() {
 
 	/** リプレイ[prop]を読み込んで再生 */
 	fun startReplayGame(prop:CustomProperties) {
-		gameManager = GameManager(RendererSlick()).also {
+
+		// Mode
+		modeName = prop.getProperty("name.mode", "")
+		val modeObj = NullpoMinoSlick.modeManager[modeName]
+		if(modeObj==null) log.error("Couldn't find mode:$modeName")
+		gameManager = GameManager(RendererSlick(), modeObj).also {
 			it.replayMode = true
 			it.replayProp = prop
 			pause = false
 
 			it.receiver.setGraphics(appContainer!!.graphics)
-
-			// Mode
-			modeName = prop.getProperty("name.mode", "")
-			val modeObj = NullpoMinoSlick.modeManager[modeName]
-			if(modeObj==null) log.error("Couldn't find mode:$modeName")
-			else it.mode = modeObj
 
 			it.init()
 
@@ -320,7 +315,8 @@ class StateInGame:BasicGameState() {
 		ResourceHolder.ttfFont?.loadGlyphs()
 		// Update key input states
 		GameKey.gamekey.forEachIndexed {i, it ->
-			it.update(container.input,
+			it.update(
+				container.input,
 				(!pause||enableframestep)&&i<(gameManager?.engine?.size ?: 0)&&gameManager?.engine?.get(i)?.isInGame==true
 			)
 		}
@@ -446,7 +442,7 @@ class StateInGame:BasicGameState() {
 			// ゲームの処理を実行
 			if(!pause||GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_FRAMESTEP)&&enableframestep) {
 				for(i in 0 until minOf(it.players, GameKey.gamekey.size))
-					if(!it.replayMode||it.replayRerecord||!it.engine[i].gameActive)
+					if(!it.engine[i].gameActive||((it.engine[i].ai==null||it.engine[i].aiShowHint)&&(!it.replayMode||it.replayRerecord)))
 						GameKey.gamekey[i].inputStatusUpdate(it.engine[i].ctrl)
 
 				for(i in 0..fastforward) gameManager?.updateAll()
@@ -484,6 +480,6 @@ class StateInGame:BasicGameState() {
 		const val ID = 2
 
 		/** Log */
-		internal val log = Logger.getLogger(StateInGame::class.java)
+		internal val log = LogManager.getLogger()
 	}
 }

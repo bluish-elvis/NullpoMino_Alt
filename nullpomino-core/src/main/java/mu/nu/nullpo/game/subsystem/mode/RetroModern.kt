@@ -37,7 +37,6 @@ import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import kotlin.math.ceil
 
 /** RETRO MODERN mode (Based from NAOMI, build by Venom_Nhelv 20180131-2020 */
 class RetroModern:AbstractMode() {
@@ -261,7 +260,7 @@ class RetroModern:AbstractMode() {
 	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
 		if(engine.statc[0]==0)
 			if(engine.ending==0) {
-				engine.framecolor = if(gametype==4) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_WHITE
+//				engine.framecolor = if(gametype==4) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_WHITE
 				totalnorma = MAX_LINES-startLevel*16
 				engine.statistics.level = startLevel
 			} else

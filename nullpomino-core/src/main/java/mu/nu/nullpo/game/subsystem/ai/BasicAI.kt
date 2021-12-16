@@ -32,58 +32,20 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.GameManager
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import kotlin.math.abs
 
 /** CommonAI */
 open class BasicAI:DummyAI(), Runnable {
 
-	/** After that I was groundedX-coordinate */
-	var bestXSub = 0
-
-	/** After that I was groundedY-coordinate */
-	var bestYSub = 0
-
-	/** After that I was groundedDirection(-1: None) */
-	var bestRtSub = 0
-
-	/** The best moveEvaluation score */
-	var bestPts = 0
-
-	/** Delay the move for changecount */
-	var delay = 0
-
-	/** The GameEngine that owns this AI */
-	lateinit var gEngine:GameEngine
-
-	/** The GameManager that owns this AI */
-	var gManager:GameManager? = null
-
-	/** When true,To threadThink routineInstructing the execution of the */
-	var thinkRequest = false
-
-	/** True when thread is executing the think routine. */
-	var thinking = false
-
-	/** To stop a thread time */
-	var thinkDelay = 0
-
-	/** When true,Running thread */
-	@Volatile
-	var threadRunning = false
-
-	/** Thread for executing the think routine */
-	var thread:Thread? = null
-
 	/* AIOfName */
 	override val name = "BASIC"
 
-	/** MaximumCompromise levelGet the
-	 * @return MaximumCompromise level
-	 */
+	/** MaximumCompromise level */
 	val maxThinkDepth:Int
 		get() = 2
+	/** When true,To threadThink routineInstructing the execution of the  */
+	protected var thinkRequest = false
 
 	/* Called at initialization */
 	override fun init(engine:GameEngine, playerID:Int) {
@@ -105,15 +67,6 @@ open class BasicAI:DummyAI(), Runnable {
 		}
 	}
 
-	/* End processing */
-	override fun shutdown() {
-		if(thread?.isAlive==true) {
-			thread?.interrupt()
-			threadRunning = false
-			thread = null
-		}
-	}
-
 	/* Called whenever a new piece is spawned */
 	override fun newPiece(engine:GameEngine, playerID:Int) {
 		if(!engine.aiUseThread)
@@ -131,14 +84,15 @@ open class BasicAI:DummyAI(), Runnable {
 	override fun onLast(engine:GameEngine, playerID:Int) {}
 
 	/* Set button input states */
-	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller) {
+	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int {
 		if(engine.nowPieceObject!=null&&engine.stat==GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0&&
-			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)) {
+			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
+		) {
 			var input = 0 //  button input data
-			val pieceNow = engine.nowPieceObject
+			val pieceNow = engine.nowPieceObject!!
 			val nowX = engine.nowPieceX
 			val nowY = engine.nowPieceY
-			val rt = pieceNow!!.direction
+			val rt = pieceNow.direction
 			val fld = engine.field
 			val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 
@@ -151,14 +105,11 @@ open class BasicAI:DummyAI(), Runnable {
 					val lrot = engine.getRotateDirection(-1)
 					val rrot = engine.getRotateDirection(1)
 
-					if(abs(rt-bestRt)==2&&engine.ruleOpt.rotateButtonAllowDouble
-						&&!ctrl.isPress(Controller.BUTTON_E))
+					if(abs(rt-bestRt)==2&&engine.ruleOpt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E))
 						input = input or Controller.BUTTON_BIT_E
 					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse&&
-						!engine.isRotateButtonDefaultRight&&bestRt==rrot)
-						input = input or Controller.BUTTON_BIT_B
-					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse&&
-						engine.isRotateButtonDefaultRight&&bestRt==lrot)
+						((!engine.isRotateButtonDefaultRight&&bestRt==rrot)||engine.isRotateButtonDefaultRight&&bestRt==lrot)
+					)
 						input = input or Controller.BUTTON_BIT_B
 					else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
 				}
@@ -186,14 +137,15 @@ open class BasicAI:DummyAI(), Runnable {
 						}
 					}
 
-					if(nowX>bestX) {
-						// Left
-						if(!ctrl.isPress(Controller.BUTTON_LEFT)||engine.aiMoveDelay>=0) input = input or Controller.BUTTON_BIT_LEFT
-					} else if(nowX<bestX) {
-						// Right
-						if(!ctrl.isPress(Controller.BUTTON_RIGHT)||engine.aiMoveDelay>=0)
-							input = input or Controller.BUTTON_BIT_RIGHT
-					} else if(nowX==bestX&&rt==bestRt)
+					// Left
+					if(nowX>bestX) if(!ctrl.isPress(Controller.BUTTON_LEFT)||engine.aiMoveDelay>=0)
+						input = input or Controller.BUTTON_BIT_LEFT
+
+					// Right
+					if(nowX<bestX) if(!ctrl.isPress(Controller.BUTTON_RIGHT)||engine.aiMoveDelay>=0)
+						input = input or Controller.BUTTON_BIT_RIGHT
+
+					if(nowX==bestX&&rt==bestRt)
 					// Funnel
 						if(bestRtSub==-1&&bestX==bestXSub) {
 							if(engine.ruleOpt.harddropEnable&&!ctrl.isPress(Controller.BUTTON_UP))
@@ -207,11 +159,10 @@ open class BasicAI:DummyAI(), Runnable {
 			}
 
 			delay = 0
-			ctrl.buttonBit = input
-		} else {
-			delay++
-			ctrl.buttonBit = 0
+			return input
 		}
+		delay++
+		return 0
 	}
 
 	/** Search for the best choice
@@ -242,7 +193,7 @@ open class BasicAI:DummyAI(), Runnable {
 
 		for(depth in 0 until maxThinkDepth) {
 			for(rt in 0 until Piece.DIRECTION_COUNT) {
-				// Peace for now
+				// Piece for now
 				val minX = pieceNow!!.getMostMovableLeft(nowX, nowY, rt, engine.field)
 				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)
 
@@ -265,7 +216,7 @@ open class BasicAI:DummyAI(), Runnable {
 							bestPts = pts
 						}
 
-						if(depth>0||bestPts<=10||pieceNow.id==Piece.PIECE_T) {
+						if(depth>0||bestPts<=10||pieceNow.type==Piece.Shape.T) {
 							// Left shift
 							fld.copy(engine.field)
 							if(!pieceNow.checkCollision(x-1, y, rt, fld)&&pieceNow.checkCollision(x-1, y-1, rt, fld)) {
@@ -311,7 +262,8 @@ open class BasicAI:DummyAI(), Runnable {
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
 								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
-									val allowUpward = engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+									val allowUpward =
+										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
 									val kick = engine.wallkick!!.executeWallkick(x, y, -1, rt, rot, allowUpward, pieceNow, fld, null)
 
 									if(kick!=null) {
@@ -344,7 +296,8 @@ open class BasicAI:DummyAI(), Runnable {
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
 								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
-									val allowUpward = engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+									val allowUpward =
+										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
 									val kick = engine.wallkick!!.executeWallkick(x, y, 1, rt, rot, allowUpward, pieceNow, fld, null)
 
 									if(kick!=null) {
@@ -377,7 +330,8 @@ open class BasicAI:DummyAI(), Runnable {
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
 								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
-									val allowUpward = engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+									val allowUpward =
+										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
 									val kick = engine.wallkick!!.executeWallkick(x, y, 2, rt, rot, allowUpward, pieceNow, fld, null)
 
 									if(kick!=null) {
@@ -403,7 +357,7 @@ open class BasicAI:DummyAI(), Runnable {
 				}
 
 				if(pieceHold==null) pieceHold = engine.getNextObject(engine.nextPieceCount)
-				// Hold Peace
+				// Hold Piece
 				if(holdOK&&pieceHold!=null&&depth==0) {
 					val spawnX = engine.getSpawnPosX(engine.field, pieceHold)
 					val spawnY = engine.getSpawnPosY(pieceHold)
@@ -449,13 +403,15 @@ open class BasicAI:DummyAI(), Runnable {
 	 * @param rtOld Direction before rotation (-1: None)
 	 * @param fld Field (Can be modified without problems)
 	 * @param piece Piece
-	 * @param nextpiece NEXTPeace
-	 * @param holdpiece HOLDPeace(nullMay be)
+	 * @param nextpiece NEXTPiece
+	 * @param holdpiece HOLDPiece(nullMay be)
 	 * @param depth Compromise level (ranges from 0 through getMaxThinkDepth-1)
 	 * @return Evaluation score
 	 */
-	open fun thinkMain(engine:GameEngine, x:Int, y:Int, rt:Int, rtOld:Int, fld:Field, piece:Piece, nextpiece:Piece?,
-		holdpiece:Piece?, depth:Int):Int {
+	open fun thinkMain(
+		engine:GameEngine, x:Int, y:Int, rt:Int, rtOld:Int, fld:Field, piece:Piece, nextpiece:Piece?,
+		holdpiece:Piece?, depth:Int
+	):Int {
 		var pts = 0
 
 		// Add points for being adjacent to other blocks
@@ -471,7 +427,7 @@ open class BasicAI:DummyAI(), Runnable {
 		val heightBefore = fld.highestBlockY
 		// Twister flag
 		var twist = false
-		if(piece.id==Piece.PIECE_T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) twist = true
+		if(piece.type==Piece.Shape.T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) twist = true
 
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) return 0
@@ -525,23 +481,14 @@ open class BasicAI:DummyAI(), Runnable {
 				if(depth==0) return 0
 			} else if(holeAfter<holeBefore)
 			// Add points for reduction in number of holes
-				pts += if(!danger)
-					(holeBefore-holeAfter)*5
-				else
-					(holeBefore-holeAfter)*10
+				pts += (holeBefore-holeAfter)*if(!danger) 5 else 10
 
 			if(lidAfter>lidBefore) {
 				// Is riding on top of the holeBlockIncreasing the deduction
-				pts -= if(!danger)
-					(lidAfter-lidBefore)*10
-				else
-					(lidAfter-lidBefore)*20
+				pts -= (lidAfter-lidBefore)*if(!danger) 10 else 20
 			} else if(lidAfter<lidBefore)
 			// Add points for reduction in number blocks above holes
-				pts += if(!danger)
-					(lidBefore-lidAfter)*10
-				else
-					(lidBefore-lidAfter)*20
+				pts += (lidBefore-lidAfter)*if(!danger) 10 else 20
 
 			if(twist&&lines>=1)
 			// Twister bonus
@@ -553,17 +500,11 @@ open class BasicAI:DummyAI(), Runnable {
 				if(depth==0) return 0
 			} else if(needIValleyAfter<needIValleyBefore)
 			// Add points for reduction in number of holes
-				pts += if(depth==0&&!danger)
-					(needIValleyBefore-needIValleyAfter)*10
-				else
-					(needIValleyBefore-needIValleyAfter)*20
+				pts += (needIValleyBefore-needIValleyAfter)*if(depth==0&&!danger) 10 else 20
 
 			if(heightBefore<heightAfter) {
 				// Add points for reducing the height
-				pts += if(depth==0&&!danger)
-					(heightAfter-heightBefore)*10
-				else
-					(heightAfter-heightBefore)*20
+				pts += (heightAfter-heightBefore)*if(depth==0&&!danger) 10 else 20
 			} else if(heightBefore>heightAfter)
 			// Demerits for increase in height
 				if(depth>0||danger) pts -= (heightBefore-heightAfter)*4
@@ -608,6 +549,6 @@ open class BasicAI:DummyAI(), Runnable {
 
 	companion object {
 		/** Log */
-		internal val log = Logger.getLogger(BasicAI::class.java)
+		internal val log = LogManager.getLogger()
 	}
 }

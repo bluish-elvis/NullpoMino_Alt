@@ -31,11 +31,10 @@ package mu.nu.nullpo.game.subsystem.ai
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.tool.airankstool.AIRanksConstants
 import mu.nu.nullpo.tool.airankstool.Ranks
 import mu.nu.nullpo.util.CustomProperties
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -43,45 +42,6 @@ import java.io.ObjectInputStream
 import kotlin.math.abs
 
 open class RanksAI:DummyAI(), Runnable {
-
-	//public boolean bestHold;
-
-	//public int bestX;
-
-	//public int bestY;
-
-	//public int bestRt;
-
-	var bestXSub = 0
-
-	var bestYSub = 0
-
-	var bestRtSub = 0
-
-	var bestPts = 0
-
-	//public boolean forceHold;
-
-	var delay = 0
-
-	lateinit var gEngine:GameEngine
-
-	var gManager:GameManager? = null
-
-	var thinkRequest = false
-
-	var thinking = false
-
-	var thinkDelay = 0
-
-	//public int thinkCurrentPieceNo;
-
-	//public int thinkLastPieceNo;
-
-	@Volatile
-	var threadRunning = false
-
-	var thread:Thread? = null
 
 	private var ranks:Ranks? = null
 	private var skipNextFrame = false
@@ -109,7 +69,8 @@ open class RanksAI:DummyAI(), Runnable {
 	 */
 	val maxThinkDepth:Int
 		get() = 1
-
+	/** When true,To threadThink routineInstructing the execution of the  */
+	protected var thinkRequest = false
 	inner class Score {
 
 		var rankStacking = 0f
@@ -187,7 +148,7 @@ open class RanksAI:DummyAI(), Runnable {
 			val `in` = FileInputStream(AIRanksConstants.RANKSAI_CONFIG_FILE)
 			propRanksAI.load(`in`)
 			`in`.close()
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		val file = propRanksAI.getProperty("ranksai.file")
@@ -246,13 +207,9 @@ open class RanksAI:DummyAI(), Runnable {
 
 	}
 
-	override fun shutdown() {
+	final override fun shutdown() {
 		ranks = null
-		if(thread!=null&&thread!!.isAlive) {
-			thread!!.interrupt()
-			threadRunning = false
-			thread = null
-		}
+		super.shutdown()
 	}
 
 	override fun newPiece(engine:GameEngine, playerID:Int) {
@@ -268,18 +225,19 @@ open class RanksAI:DummyAI(), Runnable {
 
 	override fun onLast(engine:GameEngine, playerID:Int) {}
 
-	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller) {
+	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int {
 
 		if(engine.nowPieceObject!=null&&engine.stat==GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0&&
-			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)) {
+			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
+		) {
 			val totalPieceLocked = engine.statistics.totalPieceLocked+1
 			val tpm = (totalPieceLocked*3600f).toInt()/engine.statistics.time
 			if(tpm<=speedLimit||speedLimit<=0) {
 				var input = 0
-				val pieceNow = engine.nowPieceObject
+				val pieceNow = engine.nowPieceObject!!
 				val nowX = engine.nowPieceX
 				val nowY = engine.nowPieceY
-				val rt = pieceNow!!.direction
+				val rt = pieceNow.direction
 				val fld = engine.field
 				val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 
@@ -292,13 +250,16 @@ open class RanksAI:DummyAI(), Runnable {
 						val rrot = engine.getRotateDirection(1)
 
 						if(abs(rt-bestRt)==2&&engine.ruleOpt.rotateButtonAllowDouble
-							&&!ctrl.isPress(Controller.BUTTON_E))
+							&&!ctrl.isPress(Controller.BUTTON_E)
+						)
 							input = input or Controller.BUTTON_BIT_E
 						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse&&
-							!engine.isRotateButtonDefaultRight&&bestRt==rrot)
+							!engine.isRotateButtonDefaultRight&&bestRt==rrot
+						)
 							input = input or Controller.BUTTON_BIT_B
 						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse&&
-							engine.isRotateButtonDefaultRight&&bestRt==lrot)
+							engine.isRotateButtonDefaultRight&&bestRt==lrot
+						)
 							input = input or Controller.BUTTON_BIT_B
 						else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
 					}
@@ -339,8 +300,7 @@ open class RanksAI:DummyAI(), Runnable {
 										input = input or Controller.BUTTON_BIT_UP
 									else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock)
 										input = input or Controller.BUTTON_BIT_DOWN
-								} else if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock
-									&&!ctrl.isPress(Controller.BUTTON_UP))
+								} else if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock&&!ctrl.isPress(Controller.BUTTON_UP))
 									input = input or Controller.BUTTON_BIT_UP
 								else if(engine.ruleOpt.softdropEnable&&!engine.ruleOpt.softdropLock)
 									input = input or Controller.BUTTON_BIT_DOWN
@@ -350,12 +310,11 @@ open class RanksAI:DummyAI(), Runnable {
 				}
 
 				delay = 0
-				ctrl.buttonBit = input
+				return input
 			}
-		} else {
-			delay++
-			ctrl.buttonBit = 0
 		}
+		delay++
+		return 0
 	}
 
 	/** Plays a fictitious move (ie not rendering it on the screen) for use in
@@ -750,7 +709,6 @@ open class RanksAI:DummyAI(), Runnable {
 		return score
 
 	}
-
 	/* Thread routine for this AI */
 	override fun run() {
 		log.info("RanksAI: Thread start")
@@ -787,7 +745,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 	companion object {
 
-		internal val log = Logger.getLogger(RanksAI::class.java)
+		internal val log = LogManager.getLogger()
 
 		private const val THRESHOLD_FORCE_4LINES = 8
 	}

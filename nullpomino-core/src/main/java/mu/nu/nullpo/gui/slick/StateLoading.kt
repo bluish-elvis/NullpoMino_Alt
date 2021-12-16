@@ -29,7 +29,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.play.GameManager
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.*
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
@@ -170,6 +170,6 @@ class StateLoading:BasicGameState() {
 		/** This state's ID */
 		const val ID = 0
 		/** Log */
-		internal val log = Logger.getLogger(StateLoading::class.java)
+		internal val log = LogManager.getLogger()
 	}
 }

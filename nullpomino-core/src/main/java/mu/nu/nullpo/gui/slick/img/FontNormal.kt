@@ -45,14 +45,10 @@ object FontNormal:BaseFontNormal() {
 	 * @param color Letter cint
 	 * @param scale Enlargement factor
 	 */
-	override fun printFont(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) {
-		val filter = Color(Color.white).apply {
-			a = alpha
+	override fun printFont(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
+		processTxt(x.toFloat(), y.toFloat(), str, color, scale, rainbow)
+		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
+			ResourceHolder.imgFont[i].draw(dx, dy, dx+sw*s, dy+sh*s, sx, sy, sx+sw, sy+sh, alpha)
 		}
-		processTxt(x.toFloat(), y.toFloat(), str, color, scale,
-			rainbow) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
-			ResourceHolder.imgFont[i].draw(dx, dy, dx+sw*s, dy+sh*s, sx, sy, sx+sw, sy+sh, filter)
-		}
-	}
 
 }

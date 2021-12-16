@@ -32,8 +32,8 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.PreviewMode
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNano
@@ -42,7 +42,7 @@ import mu.nu.nullpo.gui.slick.img.FontTTF
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.getOX
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
@@ -159,10 +159,9 @@ class StateConfigGameTuning:BaseGameState() {
 
 	/** Start the preview game */
 	private fun startPreviewGame() {
-		gameManager = GameManager(RendererSlick()).also {
+		gameManager = GameManager(RendererSlick(),PreviewMode()).also {
 			it.receiver.setGraphics(appContainer.graphics)
 
-			it.mode = PreviewMode()
 			it.init()
 
 			it.backgroundStatus.bg = -1 // Force no BG
@@ -183,11 +182,10 @@ class StateConfigGameTuning:BaseGameState() {
 				it.engine[i].lives = 99
 				// Rule
 				val ruleOpt:RuleOptions
-				var rulename:String = NullpoMinoSlick.propGlobal.getProperty("$i.rule", "")
-				if(it.mode!!.gameStyle!=GameEngine.GameStyle.TETROMINO)
-					rulename = NullpoMinoSlick.propGlobal.getProperty("$i"+".rule."
-						+it.mode!!.gameStyle.ordinal, "")
-				if(rulename!=null&&rulename.isNotEmpty()) {
+				val rulename = NullpoMinoSlick.propGlobal.getProperty(
+					if(it.mode?.gameStyle==GameStyle.TETROMINO)"$i.rule" else "$i.rule.${it.mode!!.gameStyle.ordinal}", "")
+
+				if(rulename.isNotEmpty()) {
 					log.info("Load rule options from $rulename")
 					ruleOpt = GeneralUtil.loadRule(rulename)
 				} else {
@@ -488,7 +486,7 @@ class StateConfigGameTuning:BaseGameState() {
 			arrayOf("GameTuning_RotateButtonDefaultRight", "GameTuning_Skin", "GameTuning_MinDAS", "GameTuning_MaxDAS", "GameTuning_DasDelay", "GameTuning_ReverseUpDown", "GameTuning_MoveDiagonal", "GameTuning_BlockOutlineType", "GameTuning_BlockShowOutlineOnly", "GameTuning_Preview")
 
 		/** Log */
-		internal val log = Logger.getLogger(StateConfigGameTuning::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** Outline type names */
 		private val OUTLINE_TYPE_NAMES = arrayOf("AUTO", "NONE", "NORMAL", "CONNECT", "SAMECOLOR")

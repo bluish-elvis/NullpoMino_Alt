@@ -357,8 +357,7 @@ class RetroMarathon:AbstractMode() {
 
 			var lv = engine.statistics.level
 
-			if(lv<0)
-				lv = 0
+			if(lv<0) lv = 0
 			else if(lv>=19) lv = 19
 
 			owner.backgroundStatus.fadebg = lv

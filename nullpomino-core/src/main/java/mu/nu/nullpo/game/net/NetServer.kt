@@ -37,8 +37,7 @@ import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.strDateTime
 import mu.nu.nullpo.util.GeneralUtil.strGMT
 import net.clarenceho.crypto.RC4
-import org.apache.log4j.Logger
-import org.apache.log4j.PropertyConfigurator
+import org.apache.logging.log4j.LogManager
 import org.cacas.java.gnu.tools.Crypt
 import java.io.*
 import java.net.InetSocketAddress
@@ -2587,7 +2586,7 @@ import kotlin.random.Random
 
 	companion object {
 		/** Log */
-		internal val log = Logger.getLogger(NetServer::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** Default port number */
 		const val DEFAULT_PORT = 9200
@@ -3306,7 +3305,7 @@ import kotlin.random.Random
 		 */
 		@JvmStatic fun main(args:Array<String>) {
 			// Init log system (should be first!)
-			PropertyConfigurator.configure("config/etc/log_server.cfg")
+			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")
 
 			// get netserver.cfg file path from 2nd command-line argument, if specified
 			var servcfg = "config/etc/netserver.cfg" // default location

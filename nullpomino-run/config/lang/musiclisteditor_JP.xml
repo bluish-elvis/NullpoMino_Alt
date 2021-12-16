@@ -29,7 +29,7 @@
 <entry key="MusicListEditor_LabelMusic15">#15 (その他4)</entry>
 
 <!--Buttons-->
-<entry key="MusicListEditor_NoLoop_Tip">これにチェックを入れると曲がループしなくなります</entry>
+<entry key="MusicListEditor_NoLoop_Tip">チェックを入れると曲がループしなくなります</entry>
 <entry key="MusicListEditor_OpenFileDialog">...</entry>
 <entry key="MusicListEditor_OpenFileDialog_Tip">ファイル選択ダイアログを開きます</entry>
 <entry key="MusicListEditor_Clear">×</entry>

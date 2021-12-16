@@ -38,7 +38,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.RendererExtension
 import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 class ExamSpinner {
 	companion object {
@@ -65,7 +65,7 @@ class ExamSpinner {
 			direction = 0
 			setColor(Block.COLOR.YELLOW)
 		}
-		private val log = Logger.getLogger(ExamSpinner::class.java)
+		private val log = LogManager.getLogger()
 
 	}
 

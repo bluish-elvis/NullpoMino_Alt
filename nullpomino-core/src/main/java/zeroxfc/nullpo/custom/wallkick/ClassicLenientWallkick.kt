@@ -61,7 +61,7 @@ class ClassicLenientWallkick:Wallkick {
 		ctrl:Controller?):WallkickResult? {
 		var x2:Int
 		var y2:Int
-		val wallkick = if(piece.id==Piece.PIECE_I) I_WALLKICK else BASE_WALLKICK
+		val wallkick = if(piece.type==Piece.Shape.I) I_WALLKICK else BASE_WALLKICK
 		for(i in wallkick.indices) {
 			x2 = if(rtDir<0||rtDir==2) {
 				wallkick[i][0]

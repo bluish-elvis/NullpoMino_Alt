@@ -35,8 +35,10 @@ import mu.nu.nullpo.game.event.EventReceiver.FONT
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 
-abstract class AbstractMenuItem<T>(val name:String, val label:String, val color:COLOR, val DEFAULT_VALUE:T,
-	val compact:Boolean = false, val perRule:Boolean = false) {
+abstract class AbstractMenuItem<T>(
+	val name:String, val label:String, val color:COLOR, val DEFAULT_VALUE:T,
+	val compact:Boolean = false, val perRule:Boolean = false
+) {
 	var value:T = DEFAULT_VALUE
 
 	open val valueString:String get() = "$value"
@@ -68,13 +70,17 @@ abstract class AbstractMenuItem<T>(val name:String, val label:String, val color:
 		if(compact&&label.length<6) {
 			receiver.drawMenuFont(engine, playerID, 1, y, "${label}:", color = color)
 			if(focus==0) receiver.drawMenuFont(engine, playerID, 0, y, "\u0082", true)
-			receiver.drawMenu(engine, playerID, label.length+2, y, valueString, if(value is Number) FONT.NUM else FONT.NORMAL,
-				if(focus==0) COLOR.RAINBOW else COLOR.WHITE)
+			receiver.drawMenu(
+				engine, playerID, label.length+2, y, valueString, if(valueString.all {it.isDigit()}) FONT.NUM else FONT.NORMAL,
+				if(focus==0) COLOR.RAINBOW else COLOR.WHITE
+			)
 		} else {
 			receiver.drawMenuFont(engine, playerID, 0, y, label, color = color)
 			if(focus==0) receiver.drawMenuFont(engine, playerID, 0, y+1, "\u0082", true)
-			receiver.drawMenu(engine, playerID, 1, y+1, valueString, if(value is Number) FONT.NUM else FONT.NORMAL,
-				if(focus==0) COLOR.RAINBOW else COLOR.WHITE)
+			receiver.drawMenu(
+				engine, playerID, 1, y+1, valueString, if(valueString.all {it.isDigit()}) FONT.NUM else FONT.NORMAL,
+				if(focus==0) COLOR.RAINBOW else COLOR.WHITE
+			)
 		}
 	}
 

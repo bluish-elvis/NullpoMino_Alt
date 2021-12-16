@@ -457,7 +457,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 					}
 	}
 
-	/** Save rankings of [ruleName] to [prop] */
+	/** Save rankings to owner.recordProp */
 	override fun saveRanking() {
 		super.saveRanking((3..5).flatMap {c ->
 			(0 until SCORETYPE_MAX).flatMap {s ->

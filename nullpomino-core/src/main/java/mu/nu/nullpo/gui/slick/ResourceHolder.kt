@@ -29,6 +29,8 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.newdawn.slick.Music
 import org.newdawn.slick.UnicodeFont
 import org.newdawn.slick.font.effects.ColorEffect
@@ -40,6 +42,7 @@ import java.io.File
 /** 画像や音声の管理をするクラス */
 object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 
+	override val log:Logger = LogManager.getLogger()
 	override val skinDir:String by lazy {NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")}
 
 //	override val backgroundMax get() = imgPlayBG.size
@@ -121,8 +124,10 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	/** 画像や音声を読み込み */
 	fun load() {
 		try {
-			loadImg(NullpoMinoSlick.propConfig.getProperty("option.showbg", true),
-				NullpoMinoSlick.propConfig.getProperty("option.showlineeffect", true))
+			loadImg(
+				NullpoMinoSlick.propConfig.getProperty("option.showbg", true),
+				NullpoMinoSlick.propConfig.getProperty("option.showlineeffect", true)
+			)
 
 		} catch(e:Throwable) {
 			log.error("Resource load failed", e)

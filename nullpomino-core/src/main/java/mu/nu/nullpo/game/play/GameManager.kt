@@ -33,17 +33,15 @@ import mu.nu.nullpo.game.component.BackgroundStatus
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.subsystem.mode.GameMode
 import mu.nu.nullpo.util.CustomProperties
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /** GameManager: The container of the game */
-class GameManager
-/** Default constructor */
-(
+class GameManager(
 	/** EventReceiver: Manages various events, and renders everything to the screen */
-	val receiver:EventReceiver = EventReceiver()) {
-
+	val receiver:EventReceiver = EventReceiver(),
 	/** Game Mode */
 	var mode:GameMode? = null
+) {
 
 	/** Properties used by game mode */
 	var modeConfig = CustomProperties(cfgMode)
@@ -192,7 +190,7 @@ class GameManager
 
 	companion object {
 		/** Log (Apache log4j) */
-		internal val log = Logger.getLogger(GameManager::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** Major version */
 		const val versionMajor = 7.70f

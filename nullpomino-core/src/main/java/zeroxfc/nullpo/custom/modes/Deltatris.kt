@@ -225,7 +225,7 @@ class Deltatris:MarathonModeBase() {
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine, playerID)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
-			loadSetting(engine.playerProp.propProfile)
+			loadSetting(engine.playerProp.propProfile, engine)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s
@@ -270,7 +270,7 @@ class Deltatris:MarathonModeBase() {
 		if(owner.menuOnly) return
 		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.RED)
 		receiver.drawScoreFont(
-			engine, playerID, 0, 1, "(${Companion.difficultyName[difficulty]} DIFFICULTY)",
+			engine, playerID, 0, 1, "(${difficultyName[difficulty]} DIFFICULTY)",
 			EventReceiver.COLOR.RED
 		)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {

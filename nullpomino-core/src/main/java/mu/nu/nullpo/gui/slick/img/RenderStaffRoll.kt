@@ -32,7 +32,7 @@ package mu.nu.nullpo.gui.slick.img
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import mu.nu.nullpo.gui.slick.drawImage
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.Image
@@ -42,7 +42,7 @@ import java.io.IOException
 
 object RenderStaffRoll {
 	/** Log */
-	internal val log = Logger.getLogger(RenderStaffRoll::class.java)
+	internal val log = LogManager.getLogger()
 	lateinit var img:Image; private set
 	val BG:Graphics get() = img.graphics
 	val height get() = img.height
@@ -99,4 +99,3 @@ object RenderStaffRoll {
 		img.draw(x, y, x+img.width.toFloat(), y+h, 0f, sy, img.width.toFloat(), sy+h, filter)
 
 }
-

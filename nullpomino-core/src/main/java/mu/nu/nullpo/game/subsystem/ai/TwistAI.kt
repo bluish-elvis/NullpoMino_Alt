@@ -53,7 +53,7 @@ class TwistAI:BasicAI() {
 		val heightBefore = fld.highestBlockY
 		// Twister flag
 		var twist = false
-		if(piece.id==Piece.PIECE_T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) twist = true
+		if(piece.type==Piece.Shape.T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) twist = true
 		// TwisterHolecount (before placement)
 		val tslotBefore:Int = fld.getTSlotLineClearAll(false)
 		//if( (nextpiece.id == Piece.PIECE_T) || ((holdpiece != null) && (holdpiece.id == Piece.PIECE_T)) ) {
@@ -116,7 +116,7 @@ class TwistAI:BasicAI() {
 				newtslot = true
 
 				// HoldTBe sure to give
-				if(nextpiece!!.id!=Piece.PIECE_T&&holdpiece!=null&&holdpiece.id==Piece.PIECE_T) forceHold = true
+				if(nextpiece!!.id!=Piece.PIECE_T&&holdpiece!=null&&holdpiece.type==Piece.Shape.T) forceHold = true
 			} else if(tslotAfter<tslotBefore&&!twist&&!danger)
 			// TwisterBreaking holeNG
 				return 0

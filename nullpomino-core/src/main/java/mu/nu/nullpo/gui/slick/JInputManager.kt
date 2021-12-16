@@ -33,13 +33,13 @@ import net.java.games.input.Component
 import net.java.games.input.Controller
 import net.java.games.input.ControllerEnvironment
 import net.java.games.input.Keyboard
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.Input
 
 /** JInput keyboard input manager */
 object JInputManager {
 	/** Logger */
-	internal val log = Logger.getLogger(JInputManager::class.java)
+	internal val log = LogManager.getLogger()
 
 	/** Number of keycodes found in Slick */
 	const val MAX_SLICK_KEY = 224

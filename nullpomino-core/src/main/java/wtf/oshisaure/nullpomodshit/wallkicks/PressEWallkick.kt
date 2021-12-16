@@ -6,7 +6,7 @@ package wtf.oshisaure.nullpomodshit.wallkicks
 
 import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 class PressEWallkick:Wallkick {
 	override fun executeWallkick(
@@ -64,6 +64,6 @@ class PressEWallkick:Wallkick {
 	}
 
 	companion object {
-		var log = Logger.getLogger(PressEWallkick::class.java)
+		var log = LogManager.getLogger()
 	}
 }

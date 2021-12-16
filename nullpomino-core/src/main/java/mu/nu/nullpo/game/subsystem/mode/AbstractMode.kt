@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
@@ -85,7 +86,7 @@ abstract class AbstractMode:GameMode {
 	override val name = this::class.simpleName ?: "No Name"
 	override val players:Int
 		get() = 1
-	override val gameStyle = GameEngine.GameStyle.TETROMINO
+	override val gameStyle = GameStyle.TETROMINO
 	override val gameIntensity = 0
 	override val isNetplayMode = false
 	override val isVSMode = false
@@ -116,7 +117,7 @@ abstract class AbstractMode:GameMode {
 	@Deprecated("Set Parameter from GameEngine", ReplaceWith("saveSetting(prop, engine)"))
 	fun saveSetting(prop:CustomProperties) = saveSetting(prop, owner.engine.first())
 
-	/** Read rankings from [owner.recordProp]
+	/** Read rankings from [prop]
 	 * This should be called from Only GameEngine */
 	override fun loadRanking(prop:CustomProperties, ruleName:String) {
 		rankMap.forEach {rec ->
@@ -183,7 +184,7 @@ abstract class AbstractMode:GameMode {
 	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean = false
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine, playerID:Int) {
-		if(scDisp<engine.statistics.score && !engine.lagStop) scDisp += ceil(((engine.statistics.score-scDisp)/10f).toDouble()).toInt()
+		if(scDisp<engine.statistics.score&&!engine.lagStop) scDisp += ceil(((engine.statistics.score-scDisp)/10f).toDouble()).toInt()
 	}
 
 	override fun onLineClear(engine:GameEngine, playerID:Int):Boolean = false
@@ -395,7 +396,7 @@ abstract class AbstractMode:GameMode {
 	 * @return -1 if Left key is pressed, 1 if Right key is pressed, 0
 	 * otherwise
 	 */
-	protected fun updateCursor(engine:GameEngine, maxCursor:Int):Int = updateCursor(engine, maxCursor, 0)
+	protected fun updateCursor(engine:GameEngine, maxCursor:Int):Int = updateCursor(engine, maxCursor, engine.playerID)
 	/** Update menu cursor
 	 * @param engine GameEngine
 	 * @param maxCursor Max value of cursor position
@@ -448,7 +449,7 @@ abstract class AbstractMode:GameMode {
 				}
 			}
 			receiver.drawMenuFont(engine, playerID, 0, menuY+y*2, it.first, color = menuColor)
-			if(menuCursor==statcMenu&&!engine.owner.replayMode)
+			if(menuCursor==statcMenu+y&&!engine.owner.replayMode)
 				receiver.drawMenuFont(engine, playerID, 0, menuY+1+y*2, "\u0082${str}", true)
 			else receiver.drawMenuFont(engine, playerID, 1, menuY+1+y*2, str)
 		}
@@ -871,23 +872,21 @@ abstract class AbstractMode:GameMode {
 	 */
 	override fun renderInput(engine:GameEngine, playerID:Int) {
 		val receiver = engine.owner.receiver
-		val y = 25-players+playerID
-
-		receiver.drawScoreFont(
-			engine, 0, -9, y, "${(playerID+1)}P INPUT:${engine.ctrl.buttonBit}",
-			EventReceiver.getPlayerColor(playerID)
-		)
+		val x = 170*(playerID+1)-110
+		val y = 464
+		val col = EventReceiver.getPlayerColor(playerID)
 		val ctrl = engine.ctrl
-		if(ctrl.isPress(Controller.BUTTON_LEFT)) receiver.drawScoreFont(engine, 0, 0, y, "<")
-		if(ctrl.isPress(Controller.BUTTON_DOWN)) receiver.drawScoreFont(engine, 0, 1, y, "\u008e")
-		if(ctrl.isPress(Controller.BUTTON_UP)) receiver.drawScoreFont(engine, 0, 2, y, "\u008b")
-		if(ctrl.isPress(Controller.BUTTON_RIGHT)) receiver.drawScoreFont(engine, 0, 3, y, ">")
-		if(ctrl.isPress(Controller.BUTTON_A)) receiver.drawScoreFont(engine, 0, 4, y, "A")
-		if(ctrl.isPress(Controller.BUTTON_B)) receiver.drawScoreFont(engine, 0, 5, y, "B")
-		if(ctrl.isPress(Controller.BUTTON_C)) receiver.drawScoreFont(engine, 0, 6, y, "C")
-		if(ctrl.isPress(Controller.BUTTON_D)) receiver.drawScoreFont(engine, 0, 7, y, "D")
-		if(ctrl.isPress(Controller.BUTTON_E)) receiver.drawScoreFont(engine, 0, 8, y, "E")
-		if(ctrl.isPress(Controller.BUTTON_F)) receiver.drawScoreFont(engine, 0, 9, y, "F")
+		receiver.drawDirectFont(x+0*16, y, "<", if(ctrl.isPress(Controller.BUTTON_LEFT)) col else COLOR.WHITE,1f)
+		receiver.drawDirectFont(x+1*16, y, "\u008e", if(ctrl.isPress(Controller.BUTTON_DOWN)) col else COLOR.WHITE)
+		receiver.drawDirectFont(x+2*16, y, "\u008b", if(ctrl.isPress(Controller.BUTTON_UP)) col else COLOR.WHITE)
+		receiver.drawDirectFont(x+3*16, y, ">", if(ctrl.isPress(Controller.BUTTON_RIGHT)) col else COLOR.WHITE)
+		receiver.drawDirectFont(x+4*16, y, "A", if(ctrl.isPress(Controller.BUTTON_A)) col else COLOR.WHITE)
+		receiver.drawDirectFont(x+5*16, y, "B", if(ctrl.isPress(Controller.BUTTON_B)) col else COLOR.WHITE)
+		receiver.drawDirectFont(x+6*16, y, "C", if(ctrl.isPress(Controller.BUTTON_C)) col else COLOR.WHITE)
+		receiver.drawDirectFont(x+7*16, y, "D", if(ctrl.isPress(Controller.BUTTON_D)) col else COLOR.WHITE)
+		receiver.drawDirectFont(x+8*16, y, "E", if(ctrl.isPress(Controller.BUTTON_E)) col else COLOR.WHITE)
+		receiver.drawDirectFont(x+9*16, y, "F", if(ctrl.isPress(Controller.BUTTON_F)) col else COLOR.WHITE)
+		receiver.drawDirectNano(x, y, String.format("%1dP:%04d", playerID+1, engine.ctrl.buttonBit), col, 0.5f)
 	}
 	/** Total score */
 	enum class Statistic {

@@ -63,7 +63,7 @@ package mu.nu.nullpo.gui.common.particles
 
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.gui.slick.BufferedPrimitiveDrawingHook
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 abstract class ParticleEmitterBase {
 	/**
@@ -129,6 +129,6 @@ abstract class ParticleEmitterBase {
 		/**
 		 * Debug logger
 		 */
-		internal val log:Logger = Logger.getLogger(ParticleEmitterBase::class.java)
+		internal val log = LogManager.getLogger()
 	}
 }

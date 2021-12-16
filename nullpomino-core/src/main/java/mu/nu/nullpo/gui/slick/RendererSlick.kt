@@ -29,8 +29,8 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_GRADE
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BeamH
@@ -43,6 +43,7 @@ import org.lwjgl.input.Keyboard
 import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.Image
+import org.newdawn.slick.geom.Polygon
 import kotlin.math.cos
 import kotlin.math.pow
 
@@ -159,9 +160,7 @@ class RendererSlick:AbstractRenderer() {
 			size>=BS*2 -> BS*2
 			else -> BS
 		}
-		val filter = Color(Color.white).apply {
-			a = alpha
-		}.darker(maxOf(0f, darkness))
+		val filter = Color(1f, 1f, 1f, alpha).darker(maxOf(0f, darkness))
 
 		val imageWidth = img.width
 		if(sx>=imageWidth&&imageWidth!=-1) return
@@ -170,9 +169,7 @@ class RendererSlick:AbstractRenderer() {
 		g.drawImage(img, x, y, (x+size), (y+size), sx*si.toFloat(), sy*si.toFloat(), (sx+1f)*si, (sy+1f)*si, filter)
 
 		if(darkness<0) {
-			val brightfilter = Color(Color.white)
-			brightfilter.a = -darkness
-			g.color = brightfilter
+			g.color = Color(1f, 1f, 1f, -darkness)
 			g.fillRect(x, y, size, size)
 		}
 	}
@@ -201,8 +198,10 @@ class RendererSlick:AbstractRenderer() {
 
 	override fun fillRectSpecific(x:Float, y:Float, w:Float, h:Float, color:Int, alpha:Float) {
 		val g = graphics ?: return
+		val c = g.color
 		g.color = Color(color).apply {a = alpha}
 		g.fillRect(x, y, w, h)
+		g.color = c
 	}
 
 	override fun drawBadgesSpecific(x:Float, y:Float, type:Int, scale:Float) {
@@ -527,44 +526,56 @@ class RendererSlick:AbstractRenderer() {
 	 * @param y Y-coordinate
 	 * @param engine GameEngineのインスタンス
 	 */
-	override fun drawFrame(x:Int, y:Int, engine:GameEngine, displaysize:Int) {
-		val graphics = graphics ?: return
+	override fun drawFrameSpecific(x:Int, y:Int, engine:GameEngine, displaysize:Int) {
+		val g = graphics ?: return
 		val size = when(displaysize) {
-			-1 -> {
-				2
-			}
+			-1 -> 2
 			1 -> 8
 			else -> 4
 		}
-		val width = engine.field.width ?: Field.DEFAULT_WIDTH
-		val height = engine.field.height ?: Field.DEFAULT_HEIGHT
+		val width = engine.field.width//?: Field.DEFAULT_WIDTH
+		val height = engine.field.height//?: Field.DEFAULT_HEIGHT
 //		val oX = 0
 
-		// Field Background
-		if(fieldbgbright>0)
-			if(width<=10&&height<=20) {
-				val filter = Color(Color.white)
-				filter.a = fieldbgbright
-
-				var img = resources.imgFieldBG[1]
-				if(displaysize==-1) img = resources.imgFieldBG[0]
-				if(displaysize==1) img = resources.imgFieldBG[2]
-
-				graphics.drawImage(
-					img, x+4, y+4, x+4+width*size*4, y+4+height*size*4,
-					0, 0, (width*size*4), (height*size
-						*4), filter
-				)
-			} else if(showbg) {
-				val filter = Color(Color.black)
-				filter.a = fieldbgbright
-				graphics.color = filter
-				graphics.fillRect((x+4), (y+4), (width*size*4), (height*size*4))
-				graphics.color = Color.white
-			}
 		RenderStaffRoll.draw(x+width/2f, y.toFloat(), 0f, height.toFloat(), Color(200, 233, 255, 200))
-		super.drawFrame(x, y, engine, displaysize)
 
+
+		if(engine.framecolor>=0) {
+			val fi = resources.imgFrame[engine.framecolor].res
+
+			val lX = x+4f
+			val rX = lX+width*BS
+			val tY = y+4f
+			val bY = tY+height*BS
+
+			//top edge
+//			g.drawImage(fi, fi.height.toFloat()+1, 0f)
+			fi.getSubImage(16, 0, 16, 32).also {
+				it.setCenterOfRotation(0f, 0f)
+				it.rotation = -90f
+				it.draw(lX-BS, tY, BS.toFloat(),rX-lX+BS*2f)
+			}
+			//bottom edge
+			fi.getSubImage(48, 96, 16, 32).also {
+				it.setCenterOfRotation(0f, 0f)
+				it.rotation = -90f
+				it.draw(lX-BS, bY+BS, BS.toFloat(),rX-lX+BS*2f)
+			}
+			//left edge
+			g.texture(
+				Polygon(floatArrayOf(lX-BS, tY-BS, lX, tY, lX, bY, lX-BS, bY+BS)),
+				fi.getSubImage(16, 0, 16, 32),
+				1f, 1f, true
+			)
+			//right edge
+			g.texture(
+				Polygon(floatArrayOf(rX+BS, tY-BS, rX, tY, rX, bY, rX+BS, bY+BS)),
+				fi.getSubImage(16, 96, 16, 32),
+				1f, 1f, true
+			)
+		}else if(engine.framecolor==FRAME_SKIN_GRADE){
+			val fi = resources.imgFrameOld[3]
+		}
 	}
 
 	override fun drawBG(engine:GameEngine) {

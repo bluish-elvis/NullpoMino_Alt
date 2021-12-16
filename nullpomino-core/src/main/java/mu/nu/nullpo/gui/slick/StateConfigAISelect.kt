@@ -33,7 +33,7 @@ import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
@@ -253,6 +253,6 @@ class StateConfigAISelect:BaseGameState() {
 		const val MAX_AI_IN_ONE_PAGE = 20
 
 		/** Log */
-		internal val log = Logger.getLogger(StateConfigAISelect::class.java)
+		internal val log = LogManager.getLogger()
 	}
 }

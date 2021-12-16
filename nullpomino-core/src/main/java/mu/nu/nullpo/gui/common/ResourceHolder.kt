@@ -35,13 +35,28 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.gui.common.ResourceImage.ResourceImageStr
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import mu.nu.nullpo.util.GeneralUtil.flattenList
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.Logger
 import java.io.File
 import java.io.FileFilter
 
 abstract class ResourceHolder {
 	/** log */
-	internal val log = Logger.getLogger(ResourceHolder::class.java)
+	abstract val log:Logger
+
+	val logConf = "config/etc/log.xml"
+
+	init {
+		try {
+			val originLog = File(ResourceHolder::class.java.getResource("/log4j2.xml").toString())
+			val f = File(logConf)
+			if(!f.parentFile.exists()) f.parentFile.mkdirs()
+			else if(f.isDirectory) f.deleteRecursively()
+			if(!f.exists()) originLog.copyTo(f)
+		} catch(e:Exception) {
+			log.error("Logfile init", e)
+		}
+	}
+
 	fun getBlockIsSticky(skin:Int):Boolean = skin in 0 until imgBlockListSize&&blockStickyFlagList[skin]
 
 	protected val filterImg = FileFilter {it.isImage}
@@ -118,16 +133,20 @@ abstract class ResourceHolder {
 	}
 
 	internal open val imgFrameOld:List<ResourceImage<*>> =
-		listOf("gb", "sa", "hebo").map {ResourceImageStr("frames/$it")}
+		listOf("gb", "sa", "hebo","grade").map {ResourceImageStr("frames/$it")}
 
 	/** Field background */
 	internal open val imgFieldBG:List<ResourceImage<*>> =
 		listOf("_small", "", "_big").map {ResourceImageStr("fieldbg2$it")}
 	//public static Image imgFieldbg;
 
-	internal open val imgFrags:List<ResourceImage<*>> = listOf("brk_halo", "brk_tail","fw_part").map {ResourceImageStr("effects/frag_$it")}
+	internal open val imgFrags:List<ResourceImage<*>> =
+		listOf("brk_halo", "brk_tail", "fw_part").map {ResourceImageStr("effects/frag_$it")}
 
-	internal open val imgItemAnims:List<ResourceImage<*>> = listOf("mirr", "roll","big","xray","col","dark","morph","nega","shot","excg","hard","reve").map {ResourceImageStr("effects/frag_$it")}
+	internal open val imgItemAnims:List<ResourceImage<*>> =
+		listOf("mirr", "roll", "big", "xray", "col", "dark", "morph", "nega", "shot", "excg", "hard", "reve").map {
+			ResourceImageStr("effects/frag_$it")
+		}
 	/** Beam animation during line clears */
 	internal open val imgLine:List<ResourceImage<*>> = listOf("h", "v").map {ResourceImageStr("effects/del_$it")}
 	/** Block spatter animation during line clears */
@@ -183,9 +202,13 @@ abstract class ResourceHolder {
 		listOf(ResourceHolder.imgNormalBlockList, ResourceHolder.imgSmallBlockList, ResourceHolder.imgBigBlockList).flatten()
 			.forEach {it.load()}
 
-		flattenList<ResourceImage<*>>(listOf(imgBadges, imgFont, imgFontNano, imgNum, imgGrade, imgFontMedal, imgCursor,
-			imgFrame, imgFrameOld, imgFieldBG, imgLine, imgTitleBG, imgLogo, imgLogoSmall,
-			imgMenuBG, imgPlayBG)).forEach {it.load()}
+		flattenList<ResourceImage<*>>(
+			listOf(
+				imgBadges, imgFont, imgFontNano, imgNum, imgGrade, imgFontMedal, imgCursor,
+				imgFrame, imgFrameOld, imgFieldBG, imgLine, imgTitleBG, imgLogo, imgLogoSmall,
+				imgMenuBG, imgPlayBG
+			)
+		).forEach {it.load()}
 
 		if(back) loadBackgroundImages()
 		if(frags) loadLineClearEffectImages()
@@ -202,12 +225,15 @@ abstract class ResourceHolder {
 	}
 
 	internal val jingles = arrayListOf("gamelost", "gamewon").also {a ->
-		a.addAll(listOf(
-			(0..2).map {"excellent$it"},
-		).flatten())
+		a.addAll(
+			listOf(
+				(0..2).map {"excellent$it"},
+			).flatten()
+		)
 	}
 
-	internal val seList = arrayListOf("cursor", "change", "decide", "cancel", "pause",
+	internal val seList = arrayListOf(
+		"cursor", "change", "decide", "cancel", "pause",
 		"hold", "initialhold", "holdfail", "move", "movefail",
 		"rotate", "wallkick", "initialrotate", "rotfail",
 		"harddrop", "softdrop", "step", "lock",
@@ -221,7 +247,8 @@ abstract class ResourceHolder {
 
 		"countdown", "hurryup", "timeout",
 		"stageclear", "stagefail", "matchend",
-		"gem", "bomb", "square_s", "square_g")
+		"gem", "bomb", "square_s", "square_g"
+	)
 		.also {a ->
 			a.addAll(listOf(
 				(0..1).flatMap {listOf("start$it", "garbage$it", "crowd$it")},

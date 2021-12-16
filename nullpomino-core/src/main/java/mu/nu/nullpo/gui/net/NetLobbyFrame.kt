@@ -32,13 +32,13 @@ import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.net.*
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.strDateTime
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import org.apache.log4j.Logger
-import org.apache.log4j.PropertyConfigurator
+import org.apache.logging.log4j.LogManager
 import java.awt.*
 import java.awt.datatransfer.StringSelection
 import java.awt.event.*
@@ -267,7 +267,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Being in the same roomPlayerReturns a list(The update does not)
 	 * @return Being in the same roomPlayerList
 	 */
-	@Suppress("MemberVisibilityCanBePrivate") val sameRoomPlayerInfoList:LinkedList<NetPlayerInfo> = LinkedList()
+	val sameRoomPlayerInfoList:LinkedList<NetPlayerInfo> = LinkedList()
 
 	/** Chat input Column(Room screen) */
 	private val txtfldRoomChatInput:JTextField = JTextField()
@@ -535,7 +535,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val `in` = FileInputStream("config/setting/netlobby.cfg")
 			propConfig.load(`in`)
 			`in`.close()
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		// Load global settings
@@ -543,7 +543,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val `in` = FileInputStream("config/setting/global.cfg")
 			propGlobal.load(`in`)
 			`in`.close()
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		// SwingRead version of the configuration file
@@ -551,7 +551,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val `in` = FileInputStream("config/setting/swing.cfg")
 			propSwingConfig.load(`in`)
 			`in`.close()
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		// ObserverFunction read configuration file
@@ -559,7 +559,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val `in` = FileInputStream("config/setting/netobserver.cfg")
 			propObserver.load(`in`)
 			`in`.close()
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		// Game mode description
@@ -575,7 +575,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val `in` = FileInputStream("config/lang/modedesc_${Locale.getDefault().country}.xml")
 			propModeDesc.load(`in`)
 			`in`.close()
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		// Read language file
@@ -591,7 +591,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val `in` = FileInputStream("config/lang/netlobby_${Locale.getDefault().country}.xml")
 			propLang.load(`in`)
 			`in`.close()
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		// Look&FeelSetting
@@ -1348,7 +1348,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		val containerpanelCreateRoomMainOwner = JPanel(BorderLayout())
 		tabbedPane.addTab(getUIText("CreateRoom_Tab_Main"), containerpanelCreateRoomMainOwner)
 
-		// * Speed ​​setting panel(Stretching for prevention)
+		// * Speed setting panel(Stretching for prevention)
 		val containerpanelCreateRoomSpeedOwner = JPanel(BorderLayout())
 		tabbedPane.addTab(getUIText("CreateRoom_Tab_Speed"), containerpanelCreateRoomSpeedOwner)
 
@@ -1370,7 +1370,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// general tab
 
-		// * Speed ​​setting panel(Body)
+		// * Speed setting panel(Body)
 		val containerpanelCreateRoomMain = JPanel()
 		containerpanelCreateRoomMain.layout = BoxLayout(containerpanelCreateRoomMain, BoxLayout.Y_AXIS)
 		containerpanelCreateRoomMainOwner.add(containerpanelCreateRoomMain, BorderLayout.NORTH)
@@ -1476,7 +1476,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// speed tab
 
-		// * Speed ​​setting panel(Body)
+		// * Speed setting panel(Body)
 		val containerpanelCreateRoomSpeed = JPanel()
 		containerpanelCreateRoomSpeed.layout = BoxLayout(containerpanelCreateRoomSpeed, BoxLayout.Y_AXIS)
 		containerpanelCreateRoomSpeedOwner.add(containerpanelCreateRoomSpeed, BorderLayout.NORTH)
@@ -1962,7 +1962,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val spMPRanking = JScrollPane(tableMPRanking[i])
 			tabMPRanking.addTab(GameEngine.GAMESTYLE_NAMES[i], spMPRanking)
 
-			if(i!=GameEngine.GAMESTYLE_TETROMINO) tabMPRanking.setEnabledAt(i, false) // TODO: Add non-tetromino leaderboard
+			if(i!=GameStyle.TETROMINO.ordinal) tabMPRanking.setEnabledAt(i, false) // TODO: Add non-tetromino leaderboard
 		}
 
 		// * OK Button
@@ -2295,7 +2295,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				writerLobbyLog!!.println("[$strTime] $str")
 				writerLobbyLog!!.flush()
 			}
-		} catch(e:Exception) {
+		} catch(_:Exception) {
 		}
 
 	}
@@ -2350,7 +2350,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				writerLobbyLog!!.println("[$strTime]<$username> $str")
 				writerLobbyLog!!.flush()
 			}
-		} catch(e:Exception) {
+		} catch(_:Exception) {
 		}
 
 	}
@@ -2401,7 +2401,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				writerLobbyLog!!.println("[$strTime]<$username> $str")
 				writerLobbyLog!!.flush()
 			}
-		} catch(e:Exception) {
+		} catch(_:Exception) {
 		}
 
 	}
@@ -3726,11 +3726,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 						val `in` = GZIPInputStream(FileInputStream(strFileName))
 						load(`in`)
 						`in`.close()
-					} catch(e2:Exception) {
+					} catch(_:Exception) {
 					}
 				}
 
-				ruleOptPlayer = RuleOptions()?.apply {
+				ruleOptPlayer = RuleOptions().apply {
 					readProperty(propRule, 0)
 				}
 
@@ -4796,7 +4796,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				"MPRanking", "RuleChange")
 
 		/** Log */
-		internal val log = Logger.getLogger(NetLobbyFrame::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** Get int value from JTextField
 		 * @param value Default Value (used if convertion fails)
@@ -4818,7 +4818,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		 * @param args CommandLinesArgumentcount
 		 */
 		@JvmStatic fun main(args:Array<String>) {
-			PropertyConfigurator.configure("config/etc/log.cfg")
+			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")
 			val frame = NetLobbyFrame()
 			frame.init()
 			frame.isVisible = true

@@ -35,7 +35,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.game.subsystem.wallkick.StandardWallkick
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNoSZORandomizer
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 open class ComboRaceSeedSearch:DummyAI() {
 
@@ -46,7 +46,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 
 	companion object {
 		/** Log (Apache log4j) */
-		internal var log = Logger.getLogger(ComboRaceSeedSearch::class.java)
+		internal var log = LogManager.getLogger()
 
 		/**
 		 * List of field state codes which are possible to sustain a stable
@@ -316,7 +316,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 							}
 						}
 
-						if(piece.id==Piece.PIECE_O) break
+						if(piece.type==Piece.Shape.O) break
 					}
 				}
 			}

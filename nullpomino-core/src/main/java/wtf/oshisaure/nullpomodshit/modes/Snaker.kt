@@ -107,7 +107,7 @@ class Snaker:AbstractMode() {
 		val oldhead = engine.field.getBlock(snakepositionsX[snakelength-1], snakepositionsY[snakelength-1])
 		var headattr = 1
 		engine.field.setBlock(oldtailX, oldtailY, Block())
-		var i:Int = 1
+		var i = 1
 		while(i<snakelength) {
 			snakepositionsX[i-1] = snakepositionsX[i]
 			++i
@@ -150,7 +150,7 @@ class Snaker:AbstractMode() {
 	private fun moveForwardAndCatch(engine:GameEngine) {
 		val newpositionsX = IntArray(snakelength+1)
 		val newpositionsY = IntArray(snakelength+1)
-		var oldheadX:Int = 0
+		var oldheadX = 0
 		while(oldheadX<snakelength) {
 			newpositionsX[oldheadX] = snakepositionsX[oldheadX]
 			newpositionsY[oldheadX] = snakepositionsY[oldheadX]
@@ -163,7 +163,7 @@ class Snaker:AbstractMode() {
 		val newheadX = newpositionsX[snakelength]
 		val newheadY = newpositionsY[snakelength]
 		val oldhead = engine.field.getBlock(oldheadX, oldheadY)
-		val newhead:Block = Block(5, engine.skin, 1)
+		val newhead = Block(5, engine.skin, 1)
 		when(orientation) {
 			0 -> {
 				newhead.setAttribute(16, true)

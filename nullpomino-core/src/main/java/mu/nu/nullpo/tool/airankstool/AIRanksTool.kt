@@ -30,7 +30,7 @@
 package mu.nu.nullpo.tool.airankstool
 
 import mu.nu.nullpo.util.CustomProperties
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.jdesktop.layout.GroupLayout
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
@@ -494,7 +494,7 @@ class AIRanksTool:JFrame(), ActionListener {
 	companion object {
 		private const val serialVersionUID = 1L
 		/** Log */
-		internal val log = Logger.getLogger(AIRanksConstants::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** Default language file */
 		private val propLangDefault = CustomProperties()
