@@ -44,8 +44,8 @@ class ClassicPlusWallkick:Wallkick {
 
 		// 通常のWallkick (I以外）
 		if(piece.id!=Piece.PIECE_I)
-			if(checkCollisionKick(piece, x, y, rtNew, field)||piece.id==Piece.PIECE_I2
-				||piece.id==Piece.PIECE_L3) {
+			if(checkCollisionKick(piece, x, y, rtNew, field)||piece.type==Piece.Shape.I2
+				||piece.type==Piece.Shape.L3) {
 				var temp = 0
 
 				if(!piece.checkCollision(x-1-check, y, rtNew, field)) temp = -1-check
@@ -55,13 +55,13 @@ class ClassicPlusWallkick:Wallkick {
 			}
 
 		// Tの脱出
-		if(piece.id==Piece.PIECE_T&&allowUpward&&rtNew==Piece.DIRECTION_UP)
+		if(piece.type==Piece.Shape.T&&allowUpward&&rtNew==Piece.DIRECTION_UP)
 			if(!piece.checkCollision(x, y-1
 					-check, rtNew, field))
 				return WallkickResult(0, -1-check, rtNew)
 
 		// IのWallkick
-		if(piece.id==Piece.PIECE_I&&(rtNew==Piece.DIRECTION_UP||rtNew==Piece.DIRECTION_DOWN))
+		if(piece.type==Piece.Shape.I&&(rtNew==Piece.DIRECTION_UP||rtNew==Piece.DIRECTION_DOWN))
 			for(i in check..check*2) {
 				var temp = 0
 
@@ -75,7 +75,7 @@ class ClassicPlusWallkick:Wallkick {
 			}
 
 		// Iの床蹴り (接地している場合のみ）
-		if(piece.id==Piece.PIECE_I&&allowUpward&&(rtNew==Piece.DIRECTION_LEFT||rtNew==Piece.DIRECTION_RIGHT)&&
+		if(piece.type==Piece.Shape.I&&allowUpward&&(rtNew==Piece.DIRECTION_LEFT||rtNew==Piece.DIRECTION_RIGHT)&&
 			piece.checkCollision(x, y+1, field))
 
 			for(i in check..check*2) {

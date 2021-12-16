@@ -62,7 +62,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.Graphics
 import zeroxfc.nullpo.custom.libs.RenderCommand
 import zeroxfc.nullpo.custom.libs.RenderCommand.RenderType.Arc
@@ -170,6 +170,6 @@ class BufferedPrimitiveDrawingHook {
 		/**
 		 * Error logger
 		 */
-		private val log = Logger.getLogger(BufferedPrimitiveDrawingHook::class.java)
+		private val log = LogManager.getLogger()
 	}
 }

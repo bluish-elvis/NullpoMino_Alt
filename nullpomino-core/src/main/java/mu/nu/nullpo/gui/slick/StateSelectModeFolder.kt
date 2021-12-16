@@ -32,7 +32,7 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.gui.slick.img.FontTTF
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
@@ -104,7 +104,7 @@ class StateSelectModeFolder:DummyMenuScrollState() {
 
 	companion object {
 		/** Log */
-		internal val log = Logger.getLogger(StateSelectModeFolder::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** This state's ID */
 		const val ID = 19

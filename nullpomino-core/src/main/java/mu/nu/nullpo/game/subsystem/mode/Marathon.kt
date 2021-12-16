@@ -302,7 +302,7 @@ class Marathon:NetDummyMode() {
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		// Add to score
 		if(pts+cmb+spd>0) {
-			var get = calcScoreCombo(pts, cmb, engine.statistics.level, spd)
+			val get = calcScoreCombo(pts, cmb, engine.statistics.level, spd)
 
 			if(pts>0) lastscore = get
 			if(lines>=1) engine.statistics.scoreLine += get

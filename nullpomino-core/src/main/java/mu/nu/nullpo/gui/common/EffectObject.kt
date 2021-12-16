@@ -152,7 +152,7 @@ class PopupPoint(x:Int, y:Int, val pts:Int, private val c:Int):EffectObject(x, y
 	val alpha get() = minOf(1f, 2f-anim/36f)
 	override fun update() {
 		y += vel.y
-		vel.y = maxOf(0.2f, 0.5f-anim*0.03f)
+		vel.y = minOf(0.2f, -0.5f+anim*0.03f)
 		anim++
 		if(anim>=72) isExpired = true
 	}

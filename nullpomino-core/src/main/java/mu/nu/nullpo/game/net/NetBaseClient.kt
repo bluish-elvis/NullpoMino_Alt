@@ -28,7 +28,7 @@
  */
 package mu.nu.nullpo.game.net
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.net.Socket
@@ -293,7 +293,7 @@ open class NetBaseClient:Thread {
 
 	companion object {
 		/** Log */
-		internal val log = Logger.getLogger(NetBaseClient::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** default Port of number */
 		const val DEFAULT_PORT = 9200

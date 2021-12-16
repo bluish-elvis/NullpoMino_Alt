@@ -3,19 +3,19 @@
 <properties>
  <comment>Game mode description language file - Japanese</comment>
 
- <entry key="Marathon">一定ライン消すごとにレベルが上がる、初心者向けの標準モードです。</entry>
- <entry key="MarathonPlus">幅広い難易度に対応したMARATHONモードです。指定したレベルに到達すると…？</entry>
- <entry key="MarathonShuttle">高得点な消し方でレベルアップしやすい、中級者向けのモードです。</entry>
- <entry key="MarathonExtreme">ブロックの落下速度がすごく早い上級者向けの標準モードです。</entry>
- <entry key="SprintLine">どれだけ早く規定ライン数を消せるか競うタイムアタックモードです。</entry>
- <entry key="SprintScore">どれだけ早く規定スコアに到達できるかを競うタイムアタックモードです。</entry>
- <entry key="SprintDig">どれだけ早くすべての邪魔ブロックを消せるか競うタイムアタックモードです。</entry>
- <entry key="SprintCombo">規定ライン数を消すまでに最大で何コンボできるかを競います。</entry>
- <entry key="SprintUltra">制限時間内でのスコアとライン数を競うスコアアタックモードです。</entry>
- <entry key="SquareMode">縦4x横4のサイズの正方形を作って消していくモードです。</entry>
- <entry key="RetroClassic">初期海外版に近いスタイルで遊ぶモードです。</entry>
- <entry key="RetroMarathon">上級者向けのRETRO CLASSICモードです。無駄な消し方をしないことが鍵です。</entry>
- <entry key="RetroMania">初期日本版の懐かしくシンプルなスタイルで遊べます。</entry>
+ <entry key="Marathon">10ライン消すごとに落下速度とスコアが上がる、初心者向けの標準モードです。</entry>
+ <entry key="MarathonPlus">幅広い難易度に対応したMARATHONモードです。指定レベルに到達すると…？</entry>
+ <entry key="MarathonShuttle">高得点な消し方をするほどレベルアップしやすい、中級者向けのモードです。</entry>
+ <entry key="MarathonExtreme">落下速度は最初から最速！その他の速度も徐々に加速する上級者向けモードです。</entry>
+ <entry key="SprintLine">規定ライン数を消し切る時間を測るモードです。</entry>
+ <entry key="SprintScore">規定スコアを稼ぐまでの時間を測るモードです。</entry>
+ <entry key="SprintDig">すべての邪魔ブロックを消しきるまでの時間を測るモードです。</entry>
+ <entry key="SprintCombo">規定ライン数を消すまでに繋いだ最大コンボ数を競うモードです。</entry>
+ <entry key="SprintUltra">制限時間内に稼いだ得点とライン数を競うスコアアタックモードです。</entry>
+ <entry key="SquareMode">縦4x横4のサイズの正方形を作ると高得点になる特殊モードです。</entry>
+ <entry key="RetroClassic">国際的に実装された初期仕様モードです。無駄のない空中操作と積み消しが重要。</entry>
+ <entry key="RetroMarathon">より確実に４列消しを決めるのが重要となる、初期仕様モードです。</entry>
+ <entry key="RetroMania">日本で実装された、シンプルなエンドレスモードです。</entry>
  <entry key="RetroModern">現代風にアレンジされたRETRO MANIAです。レベル15の先に待つものとは…？</entry>
  <entry key="GrandFestival">LV300までに稼いだ得点と花火を競うモードです。初心者向け。</entry>
  <entry key="GrandMarathon">初級者向けの段位認定モードです。LV999までに稼いだ得点で判定されます。</entry>
@@ -24,37 +24,37 @@
  <entry key="GrandMountain">時々灰色のブロックが下からせり上がってくるモードです。</entry>
  <entry key="GrandBlossom">配置された宝石ブロックを時間内に消すモードです。ギミックに注意！</entry>
  <entry key="GrandRoads">一定時間内に150ラインまたは200ライン消すことが目的のモードです。</entry>
- <entry key="GrandStorm">最初から高速状態の上級者向け段位認定モードです。一定時間内のLv500突破を目指せ！</entry>
- <entry key="GrandLightning">高速落下状態でさらに難易度が上がり続けます。LV999を超えた先には…？</entry>
+ <entry key="GrandStorm">最速落下から更に加速する、上級者向け段位認定モードです。一定時間内のLv500突破を目指せ！</entry>
+ <entry key="GrandLightning">最速落下からの加速以外でも難易度が上がり続けます。LV999を超えた先には…？</entry>
  <entry key="GrandPhantom">高速状態のまま、置いたブロックが見えなくなっていくモードです。</entry>
- <entry key="GrandFinale">究極のテクニックと速度が求められる最終領域に突入します。</entry>
+ <entry key="GrandFinale">究極のテクニックと速度が求められるモードです。</entry>
  <entry key="PracticeMode">好きな速度を設定して練習ができるモードです。</entry>
  <entry key="ToolVSMapEditMode">VS-BATTLEとネットプレイで使用できるマップを作成できるモードです。</entry>
- <entry key="VSBattleMode">人間またはコンピュータと対戦するモードです。</entry>
- <entry key="VS-LINE_RACE">相手より先に規定ライン数を消すモードです。</entry>
- <entry key="VS-DIG_RACE">相手より先にすべての邪魔ブロックを消すモードです。</entry>
- <entry key="Avalanche1P">ひたすらブロックを消し続けるモードです。</entry>
- <entry key="Avalanche1PFever">一番長い連鎖ができると思うところにブロックを置いていくモードです。</entry>
- <entry key="AvalancheVS">AVALANCHE 1Pモードと似たルールで対戦します。</entry>
- <entry key="AvalancheVSFever">AVALANCHE 1P FEVER MARATHONモードと似たルールで対戦します。</entry>
+ <entry key="VSBattleMode">1対1の対戦モード。まとめ消しやTwistで相手のフィールドをせり上げましょう。</entry>
+ <entry key="VSLineRaceMode">相手より先に規定ライン数を消す競争モードです。</entry>
+ <entry key="VSDigRaceMode">相手より先にすべての邪魔ブロックを消す競争モードです。</entry>
+ <entry key="Avalanche1P">落下速度が上がる中、ひたすらブロックを消し続けるエンドレスモードです。</entry>
+ <entry key="Avalanche1PFever">一番長い連鎖ができると思うところにブロックを置いていくスコアアタックモードです。</entry>
+ <entry key="AvalancheVS">AVALANCHEの対戦モードです。大きい連鎖を作り、一気に邪魔ブロックを降らせましょう。</entry>
+ <entry key="AvalancheVSFever">用意された連鎖の形を次々と消し、相手と競争するモードです。</entry>
  <entry key="AvalancheVSDig">相手より先に宝石ブロックを消すことが目的のモードです。</entry>
  <entry key="AvalancheVSBomb">連鎖すると相手に爆弾ブロックを送ることができます。</entry>
  <entry key="AvalancheVSSPF">連鎖すると相手に決まったパターンのブロックが落下します。</entry>
  <entry key="Physician">フィールドに配置された宝石ブロックをすべて消していきます。</entry>
- <entry key="PhysicianVS">PHYSICIANモードのルールで対戦します。</entry>
- <entry key="SPF_VS-BATTLE_lBETAr">通常ブロックを好きなだけ繋げて、宝石ブロックを使ってそれを消します。</entry>
+ <entry key="PhysicianVS">相手より先にすべての宝石ブロックを消す対戦モードです。</entry>
+ <entry key="SPF">通常ブロックの塊を宝石ブロックで消すことで、相手にブロックを積み上げる対戦モードです。</entry>
  <entry key="[MORE...]">他のモードはこの中にあります。</entry>
 
  <!--Folder descriptions.-->
  <!--Same rules apply as mode descriptions, but you'll need to add the "_" prefix.-->
  <entry key="_[ALL_MODES]">すべてのモードを表示します。</entry>
  <entry key="_POPULAR_MODES">オススメの人気モードが入っています。</entry>
- <entry key="_Guidelines_Games">ガイドライン標準的なモードが入っています。まずはここから。</entry>
+ <entry key="_Guidelines_Games">ガイドラインの標準的なモードが入っています。まずはここから。</entry>
  <entry key="_Uniques_Variety">一歩進んだモードが入っています。ちょっと変わったやりこみも…</entry>
- <entry key="_Retrospective_style">初期ゲームのルールに近づけたモードです。なつかしのゲーム風。</entry>
+ <entry key="_Retrospective_style">初期実装の仕様に近づけたモードです。なつかしのゲーム風。</entry>
  <entry key="_Trial_Rush">短時間で成績を競うモードがプレイできます。記録更新を目指しましょう！</entry>
  <entry key="_Grand_Challenges">中時間で成績を競う段位認定モードなどが入っています。限界に挑戦！</entry>
- <entry key="_TYPE_AVALANCHE">同じ色のブロックを縦か横に4つ以上繋げて消していくゲームです。</entry>
- <entry key="_TYPE_PHYSICIAN">同じ色のブロックを一直線に4つ以上繋げて消していくゲームです。</entry>
+ <entry key="_TYPE_AVALANCHE">同じ色のブロックを一直線に繋げて消していくゲームです。</entry>
+ <entry key="_TYPE_PHYSICIAN">同じ色のブロックを4つ以上隣接させて消していくゲームです。</entry>
  <entry key="_TYPE_SPF">通常ブロックを好きなだけ繋げて、宝石ブロックを使ってそれを消します。</entry>
 </properties>

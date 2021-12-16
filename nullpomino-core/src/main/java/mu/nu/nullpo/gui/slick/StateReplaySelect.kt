@@ -34,7 +34,7 @@ import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
@@ -181,6 +181,6 @@ class StateReplaySelect:DummyMenuScrollState() {
 		const val PAGE_HEIGHT = 20
 
 		/** Log */
-		internal val log = Logger.getLogger(StateReplaySelect::class.java)
+		internal val log = LogManager.getLogger()
 	}
 }

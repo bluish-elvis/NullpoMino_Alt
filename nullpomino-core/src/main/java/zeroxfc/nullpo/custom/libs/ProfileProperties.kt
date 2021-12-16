@@ -39,7 +39,7 @@ import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.Companion.NAME_END
 import mu.nu.nullpo.gui.common.BaseFont.Companion.NAME_REV
 import mu.nu.nullpo.util.CustomProperties
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.*
 import java.io.*
 import java.nio.charset.StandardCharsets
@@ -53,27 +53,44 @@ import java.util.Locale
  */
 class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COLOR = EventReceiver.COLOR.CYAN) {
 	/** Login screen */
-	val loginScreen:LoginScreen
+	val loginScreen = LoginScreen(this, colorHeading)
 	/** Profile cfg file */
 	val propProfile = CustomProperties("config/setting/profile.cfg")
 	/** Get profile name.
 	 * @return Profile name
 	 */
-	/**
-	 * Username
-	 */
+	/** Username */
 	var nameDisplay = ""
 		private set
 
 	private var nameProp = ""
-	/** Get login status.
-	 * @return Login status
-	 */
-	/**
-	 * Is it logged in
-	 */
-	var isLoggedIn:Boolean
+	/** Is it logged in */
+	var isLoggedIn = false
 		private set
+	init {
+		try {
+			propProfile.load()
+			log.info("Profile file \"config/setting/profile.cfg\" loaded and ready.")
+		} catch(e:IOException) {
+			if(e is FileNotFoundException) {
+				log.error("Profile file \"config/setting/profile.cfg\" not found. Creating new.\n", e)
+				val fileWriter:Writer
+				val outputWriter:BufferedWriter
+				try {
+					fileWriter = OutputStreamWriter(FileOutputStream("config/setting/profile.cfg"), StandardCharsets.UTF_8)
+					outputWriter = BufferedWriter(fileWriter)
+					outputWriter.write('\u0000'.code)
+					outputWriter.close()
+					fileWriter.close()
+					log.info("Blank profile file \"config/setting/profile.cfg\" created.\n", e)
+				} catch(e2:Exception) {
+					log.error("Profile file creation failed.\n", e2)
+				}
+			} else {
+				log.error("Profile file \"config/setting/profile.cfg\" is not loadable.\n", e)
+			}
+		}
+	}
 	/** Gets the internal property version of a name.
 	 * @param name Raw name
 	 * @return Property name
@@ -379,8 +396,10 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	 * @param playerProperties `ProfileProperties` instance that is using this login screen.
 	 * @param colorHeading    Text color. Get from [EventReceiver] class.
 	 */
-	class LoginScreen @JvmOverloads internal constructor(private val playerProperties:ProfileProperties,
-		private val colorHeading:EventReceiver.COLOR = EventReceiver.COLOR.CYAN) {
+	class LoginScreen @JvmOverloads internal constructor(
+		private val playerProperties:ProfileProperties,
+		private val colorHeading:EventReceiver.COLOR = EventReceiver.COLOR.CYAN
+	) {
 		private var nameEntry = ""
 		private var buttonPresses = IntArray(6)
 		private var secondButtonPresses = IntArray(6)
@@ -531,22 +550,26 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 		private fun onPasswordInput(engine:GameEngine, playerID:Int):Boolean {
 			when {
 				engine.ctrl.isPush(Controller.BUTTON_A) -> {
-					if(engine.statc[2]==0) buttonPresses[engine.statc[1]] = VALUE_BT_A else secondButtonPresses[engine.statc[1]] = VALUE_BT_A
+					if(engine.statc[2]==0) buttonPresses[engine.statc[1]] = VALUE_BT_A else secondButtonPresses[engine.statc[1]] =
+						VALUE_BT_A
 					engine.playSE("change")
 					engine.statc[1]++
 				}
 				engine.ctrl.isPush(Controller.BUTTON_B) -> {
-					if(engine.statc[2]==0) buttonPresses[engine.statc[1]] = VALUE_BT_B else secondButtonPresses[engine.statc[1]] = VALUE_BT_B
+					if(engine.statc[2]==0) buttonPresses[engine.statc[1]] = VALUE_BT_B else secondButtonPresses[engine.statc[1]] =
+						VALUE_BT_B
 					engine.playSE("change")
 					engine.statc[1]++
 				}
 				engine.ctrl.isPush(Controller.BUTTON_C) -> {
-					if(engine.statc[2]==0) buttonPresses[engine.statc[1]] = VALUE_BT_C else secondButtonPresses[engine.statc[1]] = VALUE_BT_C
+					if(engine.statc[2]==0) buttonPresses[engine.statc[1]] = VALUE_BT_C else secondButtonPresses[engine.statc[1]] =
+						VALUE_BT_C
 					engine.playSE("change")
 					engine.statc[1]++
 				}
 				engine.ctrl.isPush(Controller.BUTTON_D) -> {
-					if(engine.statc[2]==0) buttonPresses[engine.statc[1]] = VALUE_BT_D else secondButtonPresses[engine.statc[1]] = VALUE_BT_D
+					if(engine.statc[2]==0) buttonPresses[engine.statc[1]] = VALUE_BT_D else secondButtonPresses[engine.statc[1]] =
+						VALUE_BT_D
 					engine.playSE("change")
 					engine.statc[1]++
 				}
@@ -565,8 +588,10 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 				if(login&&!signup) {
 					success = playerProperties.attemptLogIn(nameEntry, buttonPresses)
 				} else if(signup) {
-					val adequate = isAdequate(buttonPresses, secondButtonPresses)&&!playerProperties.testPasswordCrash(nameEntry,
-						buttonPresses)
+					val adequate = isAdequate(buttonPresses, secondButtonPresses)&&!playerProperties.testPasswordCrash(
+						nameEntry,
+						buttonPresses
+					)
 					if(adequate) success = playerProperties.createAccount(nameEntry, buttonPresses)
 				}
 				if(success) engine.playSE("decide") else engine.playSE("regret")
@@ -600,10 +625,14 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 			when(state) {
 				Init -> {
 					// region INITIAL SCREEN
-					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 0,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "Player", colorHeading, 2f)
-					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 2,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "Data", colorHeading, 2f)
+					GameTextUtilities.drawMenuTextAlign(
+						receiver, engine, playerID, 5, 0,
+						GameTextUtilities.ALIGN_TOP_MIDDLE, "Player", colorHeading, 2f
+					)
+					GameTextUtilities.drawMenuTextAlign(
+						receiver, engine, playerID, 5, 2,
+						GameTextUtilities.ALIGN_TOP_MIDDLE, "Data", colorHeading, 2f
+					)
 					receiver.drawMenuFont(engine, playerID, 0, 8, "A: Login ", EventReceiver.COLOR.YELLOW)
 					receiver.drawMenuFont(engine, playerID, 0, 9, "B: New SignUp", EventReceiver.COLOR.YELLOW)
 					receiver.drawMenuFont(engine, playerID, 0, 11, "E: Play as Guest", EventReceiver.COLOR.YELLOW)
@@ -611,10 +640,14 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 				}
 				Name -> {
 					// region NAME INPUT
-					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 0,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "Name", colorHeading, 2f)
-					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 2,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "Entry", colorHeading, 2f)
+					GameTextUtilities.drawMenuTextAlign(
+						receiver, engine, playerID, 5, 0,
+						GameTextUtilities.ALIGN_TOP_MIDDLE, "Name", colorHeading, 2f
+					)
+					GameTextUtilities.drawMenuTextAlign(
+						receiver, engine, playerID, 5, 2,
+						GameTextUtilities.ALIGN_TOP_MIDDLE, "Entry", colorHeading, 2f
+					)
 					receiver.drawMenuFont(engine, playerID, 2, 8, nameEntry, scale = 2f)
 					val c = if(engine.statc[0]/6%2==0) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.WHITE
 					receiver.drawMenuFont(engine, playerID, 2+nameEntry.length*2, 8, getCharAt(currentChar), c, 2f)
@@ -626,8 +659,10 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 				}
 				Pin -> {
 					// region PASSWORD INPUT
-					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 0,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "Pass Phrase", colorHeading, .75f)
+					GameTextUtilities.drawMenuTextAlign(
+						receiver, engine, playerID, 5, 0,
+						GameTextUtilities.ALIGN_TOP_MIDDLE, "Pass Phrase", colorHeading, .75f
+					)
 					receiver.drawMenuFont(engine, playerID, 2, 8, nameEntry, scale = 2f)
 					var x = 0
 					while(x<6) {
@@ -635,8 +670,10 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 						receiver.drawMenuFont(engine, playerID, x+2, 12, chr, colorHeading)
 						x++
 					}
-					receiver.drawMenuNano(engine, playerID, 0, 18,
-						if(signup&&engine.statc[2]==1) "Input your PIN again" else "Input your PIN code")
+					receiver.drawMenuNano(
+						engine, playerID, 0, 18,
+						if(signup&&engine.statc[2]==1) "Input your PIN again" else "Input your PIN code"
+					)
 					receiver.drawMenuNano(engine, playerID, 0, 9, "With your ABCD Buttons")
 
 				}
@@ -647,8 +684,10 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 						if(success) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.RED
 					else EventReceiver.COLOR.WHITE
 
-					GameTextUtilities.drawMenuTextAlign(receiver, engine, playerID, 5, 9,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, s, col, 2f)
+					GameTextUtilities.drawMenuTextAlign(
+						receiver, engine, playerID, 5, 9,
+						GameTextUtilities.ALIGN_TOP_MIDDLE, s, col, 2f
+					)
 				}
 			}
 		}
@@ -676,7 +715,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 		/**
 		 * Debug logger
 		 */
-		private val log = Logger.getLogger(ProfileProperties::class.java)
+		private val log = LogManager.getLogger()
 		/**
 		 * Profile prefixes.
 		 */
@@ -710,32 +749,4 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 		}
 	}
 
-	init {
-		try {
-			propProfile.load()
-			log.info("Profile file \"config/setting/profile.cfg\" loaded and ready.")
-		} catch(e:IOException) {
-			if(e is FileNotFoundException) {
-				log.error("Profile file \"config/setting/profile.cfg\" not found. Creating new.\n", e)
-				val fileWriter:Writer
-				val outputWriter:BufferedWriter
-				try {
-					fileWriter = OutputStreamWriter(FileOutputStream("config/setting/profile.cfg"), StandardCharsets.UTF_8)
-					outputWriter = BufferedWriter(fileWriter)
-					outputWriter.write('\u0000'.code)
-					outputWriter.close()
-					fileWriter.close()
-					log.info("Blank profile file \"config/setting/profile.cfg\" created.\n", e)
-				} catch(e2:Exception) {
-					log.error("Profile file creation failed.\n", e2)
-				}
-			} else {
-				log.error("Profile file \"config/setting/profile.cfg\" is not loadable.\n", e)
-			}
-		}
-		nameDisplay = ""
-		nameProp = ""
-		isLoggedIn = false
-		loginScreen = LoginScreen(this, colorHeading)
-	}
 }

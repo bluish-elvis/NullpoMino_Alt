@@ -9,7 +9,7 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 class ClassicRecoveryOnFailWallkick:Wallkick {
 	override fun executeWallkick(
@@ -106,6 +106,6 @@ class ClassicRecoveryOnFailWallkick:Wallkick {
 	}
 
 	companion object {
-		var log = Logger.getLogger(ClassicRecoveryOnFailWallkick::class.java)
+		var log = LogManager.getLogger()
 	}
 }

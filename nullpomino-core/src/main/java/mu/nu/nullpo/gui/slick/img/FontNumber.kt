@@ -32,19 +32,15 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.BaseFontNumber
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
-import org.newdawn.slick.Color
 
 /** 普通の文字列の表示クラス */
 object FontNumber:BaseFontNumber() {
 	override val rainbowCount:Int get() = NullpoMinoSlick.rainbow
 
-	override fun printFont(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) {
-		val filter = Color(Color.white).apply {a = alpha}
-		processTxt(x.toFloat(), y.toFloat(), str, color, scale,
-			rainbow) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int ->
-			ResourceHolder.imgNum[i].draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, filter)
+	override fun printFont(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
+		processTxt(x.toFloat(), y.toFloat(), str, color, scale, rainbow)
+		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int ->
+			ResourceHolder.imgNum[i].draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, alpha)
 		}
-
-	}
 
 }

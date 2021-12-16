@@ -33,8 +33,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
-import org.apache.log4j.Logger
-import org.apache.log4j.PropertyConfigurator
+import org.apache.logging.log4j.LogManager
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
@@ -1837,20 +1836,18 @@ class RuleEditor:JFrame, ActionListener {
 		private const val serialVersionUID = 1L
 
 		/** Log */
-		internal val log = Logger.getLogger(RuleEditor::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** メイン関数
 		 * @param args コマンドLines引数
 		 */
 		@JvmStatic
 		fun main(args:Array<String>) {
-			PropertyConfigurator.configure("config/etc/log.cfg")
+			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")
 			log.debug("RuleEditor start")
 
-			if(args.isNotEmpty())
-				RuleEditor(args[0])
-			else
-				RuleEditor()
+			if(args.isNotEmpty()) RuleEditor(args[0])
+			else RuleEditor()
 		}
 	}
 }

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn">
+ <Filter type="ThresholdFilter" level="trace"/>
+ <Properties>
+  <Property name="layout_file">%d{yy-MM-dd HH:mm:ss.SSS}|%t|%-5p|%c|%marker|%m%n</Property>
+ </Properties>
+ <Appenders>
+  <Console name="STDOUT" target="SYSTEM_OUT">
+   <PatternLayout pattern="%d{HH:mm:ss.SSS} [%-5p:%t] %c{1}:%marker: %m%n"/>
+  </Console>
+  <RollingFile name="common" fileName="log/game.log" filePattern="log/game-%d{yyyy-MM-dd}-%i.log.gz">
+   <PatternLayout pattern="${layout_file}"/>
+   <Policies>
+    <OnStartupTriggeringPolicy/>
+    <SizeBasedTriggeringPolicy size="8 MB"/>
+    <TimeBasedTriggeringPolicy/>
+   </Policies>
+   <DefaultRolloverStrategy max="8" compressionLevel="9"/>
+  </RollingFile>
+  <RollingFile name="slick" fileName="log/game_slick.log" filePattern="log/game_slick-%d{yyyy-MM-dd}-%i.log.gz">
+   <PatternLayout pattern="${layout_file}"/>
+   <Policies>
+    <OnStartupTriggeringPolicy/>
+    <SizeBasedTriggeringPolicy size="8 MB"/>
+    <TimeBasedTriggeringPolicy/>
+   </Policies>
+   <DefaultRolloverStrategy max="8" compressionLevel="9"/>
+  </RollingFile>
+  <RollingFile name="server" fileName="log/server.log" filePattern="log/server-%d{yyyy-MM-dd}-%i.log.gz">
+   <PatternLayout pattern="${layout_file}"/>
+   <Policies>
+    <OnStartupTriggeringPolicy/>
+    <SizeBasedTriggeringPolicy size="5 MB"/>
+    <TimeBasedTriggeringPolicy/>
+   </Policies>
+   <DefaultRolloverStrategy max="10" compressionLevel="9"/>
+  </RollingFile>
+  <RollingFile name="tools" fileName="log/tools.log" filePattern="log/tools-%d{yyyy-MM-dd}-%i.log.gz">
+   <PatternLayout pattern="${layout_file}"/>
+   <Policies>
+    <OnStartupTriggeringPolicy/>
+    <SizeBasedTriggeringPolicy size="8 MB"/>
+    <TimeBasedTriggeringPolicy/>
+   </Policies>
+   <DefaultRolloverStrategy max="4" compressionLevel="9"/>
+  </RollingFile>
+ </Appenders>
+ <Loggers>
+  <Logger name="mu.nu.nullpo.gui.slick" level="debug">
+   <AppenderRef ref="slick"/>
+  </Logger>
+  <Logger name="mu.nu.nullpo.gui.net" level="debug">
+   <AppenderRef ref="server"/>
+  </Logger>
+  <Logger name="mu.nu.nullpo.tool" level="debug">
+   <AppenderRef ref="tools"/>
+  </Logger>
+  <Root level="trace">
+   <AppenderRef ref="STDOUT"/>
+  </Root>
+ </Loggers>
+</Configuration>

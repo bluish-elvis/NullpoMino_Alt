@@ -131,7 +131,7 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 		// int[] imgDim = customHolder.getImageDimensions(imageName);
 
 		// if (holderType == HOLDER_SLICK) {
-		// 	differences = new int[] { (int)Math.min(imgDim[0] * ns, imgDim[1] * ns) - 640, (int)Math.min(imgDim[0] * ns, imgDim[1] * ns) - 480 };
+		// 	differences = new int[] { (int)minOf(imgDim[0] * ns, imgDim[1] * ns) - 640, (int)minOf(imgDim[0] * ns, imgDim[1] * ns) - 480 };
 		// } else {
 		val differences = intArrayOf((imgDim[0]*ns-640).toInt(), (imgDim[1]*ns-480).toInt())
 		// }

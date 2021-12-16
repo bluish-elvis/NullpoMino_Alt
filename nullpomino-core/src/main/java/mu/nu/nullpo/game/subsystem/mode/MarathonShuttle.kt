@@ -76,8 +76,10 @@ class MarathonShuttle:NetDummyMode() {
 	/** Current BGM */
 	private var bgmlv = 0
 
-	private val itemMode = StringsMenuItem("goaltype", "TYPE", COLOR.BLUE, 0,
-		GAMETYPE_SHORTNAME)
+	private val itemMode = StringsMenuItem(
+		"goaltype", "TYPE", COLOR.BLUE, 0,
+		GAMETYPE_SHORTNAME
+	)
 	/** Game type */
 	private var goaltype:Int by DelegateMenuItem(itemMode)
 
@@ -106,10 +108,12 @@ class MarathonShuttle:NetDummyMode() {
 	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 
 	override val rankMap:Map<String, IntArray>
-		get() = mapOf(*(
-			(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray()))
+		get() = mapOf(
+			*(
+				(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+					rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+					rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
+		)
 	/* Mode name */
 	override val name = "MARATHON ShuttleRun"
 	override val gameIntensity = 1
@@ -158,8 +162,10 @@ class MarathonShuttle:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
-			drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0,
-				"GAME TYPE" to GAMETYPE_SHORTNAME[goaltype], "Level" to startLevel+1)
+			drawMenu(
+				engine, playerID, receiver, 0, COLOR.BLUE, 0,
+				"GAME TYPE" to GAMETYPE_SHORTNAME[goaltype], "Level" to startLevel+1
+			)
 
 			drawMenuCompact(engine, playerID, receiver, "BIG" to big)
 		}
@@ -199,7 +205,8 @@ class MarathonShuttle:NetDummyMode() {
 
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay
-				&&netIsNetRankingViewOK(engine))
+				&&netIsNetRankingViewOK(engine)
+			)
 				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
 
 			menuTime++
@@ -279,8 +286,10 @@ class MarathonShuttle:NetDummyMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, playerID, 0, 0, "SHUTTLE RUN\n("+GAMETYPE_NAME[goaltype]
-			+")", COLOR.WHITE)
+		receiver.drawScoreFont(
+			engine, playerID, 0, 0, "SHUTTLE RUN\n("+GAMETYPE_NAME[goaltype]
+				+")", COLOR.WHITE
+		)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
@@ -323,8 +332,10 @@ class MarathonShuttle:NetDummyMode() {
 				receiver.drawScoreNum(engine, playerID, 0, 7, remainLevelTime.toTimeStr, fontcolorLevelTime, 2f)
 				// +30sec
 				if(lasttimebonus>0&&scget&&engine.ending==0)
-					receiver.drawScoreFont(engine, playerID, 6, 6,
-						String.format("+%3.2fSEC.", lasttimebonus/60.0f), COLOR.YELLOW)
+					receiver.drawScoreFont(
+						engine, playerID, 6, 6,
+						String.format("+%3.2fSEC.", lasttimebonus/60.0f), COLOR.YELLOW
+					)
 			} else {
 				// LEVEL BONUS
 				receiver.drawScoreFont(engine, playerID, 0, 6, "BONUS", COLOR.BLUE)
@@ -360,17 +371,21 @@ class MarathonShuttle:NetDummyMode() {
 				if(remainRollTime<0) remainRollTime = 0
 
 				receiver.drawScoreFont(engine, playerID, 0, 13, "ROLL TIME", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 14, remainRollTime.toTimeStr,
-					remainRollTime>0&&remainRollTime<10*60, 2f)
+				receiver.drawScoreNum(
+					engine, playerID, 0, 14, remainRollTime.toTimeStr,
+					remainRollTime>0&&remainRollTime<10*60, 2f
+				)
 			}
 
 			if(regretdispframe>0)
 			// REGRET
-				receiver.drawMenuFont(engine, playerID, 2, 21, "REGRET", when {
-					regretdispframe%4==0 -> COLOR.YELLOW
-					regretdispframe%4==2 -> COLOR.RED
-					else -> COLOR.ORANGE
-				})
+				receiver.drawMenuFont(
+					engine, playerID, 2, 21, "REGRET", when {
+						regretdispframe%4==0 -> COLOR.YELLOW
+						regretdispframe%4==2 -> COLOR.RED
+						else -> COLOR.ORANGE
+					}
+				)
 
 		}
 
@@ -582,8 +597,10 @@ class MarathonShuttle:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine, playerID:Int) {
-		drawResultStats(engine, playerID, receiver, 0, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL,
-			Statistic.TIME, Statistic.SPL, Statistic.LPM)
+		drawResultStats(
+			engine, playerID, receiver, 0, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL,
+			Statistic.TIME, Statistic.SPL, Statistic.LPM
+		)
 		drawResultRank(engine, playerID, receiver, 12, COLOR.BLUE, rankingRank)
 		drawResultNetRank(engine, playerID, receiver, 14, COLOR.BLUE, netRankingRank[0])
 		drawResultNetRankDaily(engine, playerID, receiver, 16, COLOR.BLUE, netRankingRank[1])
@@ -593,7 +610,8 @@ class MarathonShuttle:NetDummyMode() {
 		if(netIsNetPlay&&netReplaySendStatus==1)
 			receiver.drawMenuFont(engine, playerID, 0, 19, "SENDING...", COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch
-			&&netReplaySendStatus==2)
+			&&netReplaySendStatus==2
+		)
 			receiver.drawMenuFont(engine, playerID, 1, 19, "A: RETRY", COLOR.RED)
 
 	}
@@ -698,26 +716,26 @@ class MarathonShuttle:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
-		var subMsg = ""
-		subMsg += "SCORE;${engine.statistics.score}\t"
-		subMsg += "LINE;${engine.statistics.lines}\t"
-		subMsg += "LEVEL;${(engine.statistics.level+engine.statistics.levelDispAdd)}\t"
-		subMsg += "TIME;${engine.statistics.time.toTimeStr}\t"
-		subMsg += "SCORE/LINE;${engine.statistics.spl}\t"
-		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
+		val subMsg = "SCORE;${engine.statistics.score}\t"+
+			"LINE;${engine.statistics.lines}\t"+
+			"LEVEL;${(engine.statistics.level+engine.statistics.levelDispAdd)}\t"+
+			"TIME;${engine.statistics.time.toTimeStr}\t"+
+			"SCORE/LINE;${engine.statistics.spl}\t"+
+			"LINE/MIN;${engine.statistics.lpm}\t"
 
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
-	/** Save rankings of [ruleName] to [prop] */
+	/** Save rankings of [ruleName] to owner.recordProp */
 	private fun saveRanking(ruleName:String) {
 		super.saveRanking((0 until RANKING_TYPE).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
 				listOf(
 					"$ruleName.$j.score.$i" to rankingScore[j][i],
 					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.time.$i" to rankingTime[j][i])
+					"$ruleName.$j.time.$i" to rankingTime[j][i]
+				)
 			}
 		})
 	}
@@ -727,7 +745,7 @@ class MarathonShuttle:NetDummyMode() {
 		saveSetting(prop, engine)
 
 		// NET: Save name
-		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
+		if(!netPlayerName.isNullOrEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null&&startLevel==0) {
@@ -774,8 +792,10 @@ class MarathonShuttle:NetDummyMode() {
 
 		/** BGM change levels */
 		private val tableBGMChange = intArrayOf(5, 8, 15, 17, 19, -1)
-		private val tableBGM = arrayOf(BGM.Generic(0), BGM.Generic(1), BGM.Generic(2), BGM.Generic(3), BGM.Generic(4),
-			BGM.Generic(5))
+		private val tableBGM = arrayOf(
+			BGM.Generic(0), BGM.Generic(1), BGM.Generic(2), BGM.Generic(3), BGM.Generic(4),
+			BGM.Generic(5)
+		)
 
 		/** Combo goal table */
 		private val COMBO_GOAL_TABLE = intArrayOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)
@@ -794,8 +814,10 @@ class MarathonShuttle:NetDummyMode() {
 		private const val GAMETYPE_SPECIAL = 4
 
 		/** Game type names */
-		private val GAMETYPE_NAME = arrayOf("15LEVELS TIME TRIAL", "15LEVELS SPEED RUN", "10MINUITES TRIAL", "10MINUTES SURVIVAL",
-			"UNLIMITED ENDURANCE")
+		private val GAMETYPE_NAME = arrayOf(
+			"15LEVELS TIME TRIAL", "15LEVELS SPEED RUN", "10MINUITES TRIAL", "10MINUTES SURVIVAL",
+			"UNLIMITED ENDURANCE"
+		)
 		private val GAMETYPE_SHORTNAME = arrayOf("15LV T.A.", "15LV S.R.", "10MIN.TRY", "10MIN.SURV", "ULM.ENDURO")
 
 		/** Game type max */

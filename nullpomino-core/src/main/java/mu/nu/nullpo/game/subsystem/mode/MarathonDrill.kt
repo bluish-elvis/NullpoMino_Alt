@@ -419,7 +419,7 @@ class MarathonDrill:NetDummyMode() {
 
 			get += cln*100
 			// Decrease waiting garbage
-			garbageTimer -= maxOf(0, 30-cmb*7)+calcPower(engine, lines)*10
+			garbageTimer -= maxOf(0, 60-engine.statistics.level*2-cmb*7)+calcPower(engine, lines)*20
 			if(goaltype==GOALTYPE_NORMAL)
 				while(garbagePending>0&&garbageTimer<0) {
 					garbageTimer += getGarbageMaxTime(engine.statistics.level)
@@ -466,6 +466,8 @@ class MarathonDrill:NetDummyMode() {
 	private fun getGarbageMaxTime(lv:Int):Int =
 		GARBAGE_TIMER_TABLE[goaltype][minOf(lv, GARBAGE_TIMER_TABLE[goaltype].size-1)]
 
+	private fun getGarbageMessRate(lv:Int):Float =
+		GARBAGE_MESSINESS_TABLE[goaltype][minOf(lv, GARBAGE_MESSINESS_TABLE[goaltype].size-1)]/100f
 	/** Add garbage line(s)
 	 * @param engine GameEngine
 	 * @param lines Number of garbage lines to add
@@ -478,7 +480,8 @@ class MarathonDrill:NetDummyMode() {
 
 		engine.playSE("garbage${if(lines>3) 1 else 0}")
 
-		if(garbageHole<0) garbageHole = engine.random.nextInt(w)
+		if(garbageHole<0||engine.random.nextFloat()<getGarbageMessRate(engine.statistics.level))
+			garbageHole = engine.random.nextInt(w)
 
 		for(i in 0 until lines) {
 			field.pushUp()
@@ -644,10 +647,8 @@ class MarathonDrill:NetDummyMode() {
 	 */
 	private fun checkRanking(sc:Int, li:Int, dep:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(sc>rankingScore[type][i])
-				return i
-			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i])
-				return i
+			if(sc>rankingScore[type][i]) return i
+			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&dep>rankingDepth[type][i]) return i
 
 		return -1
@@ -762,8 +763,12 @@ class MarathonDrill:NetDummyMode() {
 
 		/** Garbage speed table */
 		private val GARBAGE_TIMER_TABLE = arrayOf(
-			intArrayOf(255, 250, 245, 240, 235, 230, 225, 220, 215, 210, 205, 200, 190, 180, 170, 165, 160, 150, 140, 120), // Normal
-			intArrayOf(300, 290, 280, 270, 260, 250, 240, 230, 220, 210, 200, 190, 185, 180, 175, 170, 165, 160, 155, 150)
-		)// Realtime
+			intArrayOf(360, 340, 320, 310, 300, 290, 280, 270, 260, 250, 240, 230, 220, 210, 200, 190, 180, 170, 160, 150), // Normal
+			intArrayOf(420, 410, 400, 385, 370, 350, 330, 305, 280, 265, 240, 230, 220, 210, 205, 200, 195, 190, 185, 180)// Realtime
+		)
+		private val GARBAGE_MESSINESS_TABLE = arrayOf(
+			intArrayOf(20, 22, 25, 27, 30, 32, 35, 37, 40, 43, 46, 50, 55, 60, 65, 70, 75, 80, 85, 90), // Normal
+			intArrayOf(20, 25, 30, 32, 35, 37, 40, 45, 50, 52, 55, 57, 60, 62, 64, 66, 68, 70, 72, 75), // Realtime
+		)
 	}
 }

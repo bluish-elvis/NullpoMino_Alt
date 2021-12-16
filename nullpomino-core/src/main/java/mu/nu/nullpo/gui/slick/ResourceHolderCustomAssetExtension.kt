@@ -33,7 +33,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGMStatus
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.Image
@@ -409,7 +409,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 	}*/
 
 	companion object {
-		private val log = Logger.getLogger(ResourceHolderCustomAssetExtension::class.java)
+		private val log = LogManager.getLogger()
 		private var bgmPrevious:BGMStatus.BGM = BGMStatus.BGM.Silent// Thread-safe code used for when more threads are being used.
 		// Warning: slower.
 		/**

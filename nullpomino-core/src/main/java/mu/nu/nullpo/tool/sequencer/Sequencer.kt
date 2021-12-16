@@ -31,8 +31,7 @@ package mu.nu.nullpo.tool.sequencer
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.util.CustomProperties
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
-import org.apache.log4j.Logger
-import org.apache.log4j.PropertyConfigurator
+import org.apache.logging.log4j.LogManager
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.GridLayout
@@ -515,11 +514,11 @@ class Sequencer:JFrame(), ActionListener {
 		private const val serialVersionUID = 1L
 
 		/** Log */
-		internal val log = Logger.getLogger(Sequencer::class.java)
+		internal val log = LogManager.getLogger()
 
 		@JvmStatic
 		fun main(args:Array<String>) {
-			PropertyConfigurator.configure("config/etc/log.cfg")
+			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")
 			log.debug("Sequencer start")
 			Sequencer()
 		}

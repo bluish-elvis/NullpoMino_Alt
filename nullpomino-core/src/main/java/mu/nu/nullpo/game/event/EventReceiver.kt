@@ -35,7 +35,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.PopupCombo
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toReplayFilename
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -285,6 +285,9 @@ open class EventReceiver {
 	fun drawMenuFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
 		scale:Float = 1f) =
 		drawMenu(engine, playerID, x, y, str, FONT.NORMAL, color, scale)
+
+	fun drawMenuFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, scale:Float = 1f) =
+		drawMenu(engine, playerID, x, y, str, FONT.NORMAL, scale = scale)
 
 	/** [You don't have to override this]
 	 * Draw String inside the field.
@@ -1086,7 +1089,7 @@ open class EventReceiver {
 		const val BS = 16
 
 		/** Log */
-		internal val log = Logger.getLogger(EventReceiver::class.java)
+		internal val log = LogManager.getLogger()
 
 		fun getRainbowColor(i:Int):COLOR = when(i%9) {
 			0 -> COLOR.RED
@@ -1132,6 +1135,7 @@ open class EventReceiver {
 				else -> COLOR.WHITE
 			}
 		}
+
 		/** Field X position */
 		val NEW_FIELD_OFFSET_X = arrayOf(arrayOf(// TETROMINO
 			intArrayOf(119, 247, 375, 503, 247, 375), // Small

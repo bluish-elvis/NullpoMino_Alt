@@ -14,7 +14,7 @@
 <entry key="History4RollsRandomizer">直近4個までと同じピースは4回再抽選されます。</entry>
 <entry key="History6RollsRandomizer">直近4個までと同じピースは6回再抽選されます。</entry>
 <entry key="StrictHistoryRandomizer">直近4個までと同じピースは重複出現しなくなります。</entry>
-<entry key="NintendoRandomizer">２連続で同じピースが出なくなります。</entry>
+<entry key="NintendoRandomizer">同じピースが２連続で出なくなります。</entry>
 <entry key="GameBoyRandomizer">出現したピースに応じて、次に抽選されるピースの範囲が変動します。</entry>
 <entry key="DistanceLinearWeightRandomizer">出現していないピースの出現率が少しずつ増していきます。</entry>
 <entry key="DistanceQuadWeightRandomizer">出現していないピースの出現率が加速度的に増していきます。</entry>

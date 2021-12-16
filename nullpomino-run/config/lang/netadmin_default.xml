@@ -109,10 +109,10 @@
 <entry key="Login_Message_VersionError">Server version is different (Client:%f, Server:%f)</entry>
 <entry key="Login_Message_BuildTypeError">Build type of the server is different (Client:%s, Server:%s)</entry>
 <entry key="Login_Message_DisabledError">Admin feature is disabled in this server.</entry>
-<entry key="Login_Message_LoginError">OH NO! Login failed! Check your username and password.</entry>
-<entry key="Login_Message_Banned">YOU ARE BANNED!! (%s - %s)</entry>
+<entry key="Login_Message_LoginError">Login failed. Check your username and password.</entry>
+<entry key="Login_Message_Banned">Server Refused (%s - %s)</entry>
 <entry key="Login_Message_Banned_Permanent">Permanent</entry>
-<entry key="Login_Message_UnwantedDisconnect">ERROR Disconnected! Reason: %s</entry>
+<entry key="Login_Message_UnwantedDisconnect">Disconnected by error. Reason: %s</entry>
 <entry key="Login_Message_LoggingOut">Successfully logged-out from the server.</entry>
 <entry key="Login_Message_Shutdown">Server shutdown completed.</entry>
 

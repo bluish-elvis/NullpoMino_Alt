@@ -9,7 +9,7 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 class PressFToFillTheScreenWallkick:Wallkick {
 	override fun executeWallkick(
@@ -63,6 +63,6 @@ class PressFToFillTheScreenWallkick:Wallkick {
 		x>=fld.width||y>=fld.height||fld.getCoordAttribute(x, y)==3||fld.getCoordAttribute(x, y)!=2&&fld.getBlockColor(x, y)!=null
 
 	companion object {
-		var log = Logger.getLogger(PressFToFillTheScreenWallkick::class.java)
+		var log = LogManager.getLogger()
 	}
 }

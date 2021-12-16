@@ -41,7 +41,7 @@ import mu.nu.nullpo.gui.net.NetLobbyListener
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.strDateTime
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.util.Calendar
 import java.util.LinkedList
@@ -1357,6 +1357,6 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 	companion object {
 		/** Log (Declared in NetDummyMode) */
-		internal val log = Logger.getLogger(NetDummyMode::class.java)
+		internal val log = LogManager.getLogger()
 	}
 }

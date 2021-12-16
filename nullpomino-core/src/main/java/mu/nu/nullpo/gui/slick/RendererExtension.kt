@@ -37,7 +37,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.EffectObject
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import kotlin.math.max
 
 object RendererExtension {
@@ -61,7 +61,7 @@ object RendererExtension {
 	/**
 	 * Debug logger
 	 */
-	private val log = Logger.getLogger(RendererExtension::class.java)
+	private val log = LogManager.getLogger()
 	/**
 	 * Run class in debug mode?
 	 */
@@ -123,7 +123,7 @@ object RendererExtension {
 		val local:Class<*> = AbstractRenderer::class.java
 
 		try {
-		(receiver as AbstractRenderer).effects
+		receiver.effects
 		} catch(e:Exception) {
 			if(DEBUG) log.error("Failed to extract, modify and place back effects.")
 		}

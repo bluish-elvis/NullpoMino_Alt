@@ -37,7 +37,6 @@ import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import kotlin.math.ceil
 
 /** SPEED MANIA 2 Mode */
 class GrandLightning:AbstractMode() {
@@ -944,7 +943,7 @@ class GrandLightning:AbstractMode() {
 			bestSectionTime[i] = prop.getProperty("$ruleName.$i.sectiontime", tableTimeRegret[i])
 	}
 
-	/** Save rankings of [ruleName] to [prop] */
+	/** Save rankings of [ruleName] to owner.recordProp */
 	private fun saveRanking(ruleName:String) {
 		super.saveRanking((0 until RANKING_MAX).flatMap {i ->
 			listOf("$ruleName.$i.grade" to rankingGrade[i],

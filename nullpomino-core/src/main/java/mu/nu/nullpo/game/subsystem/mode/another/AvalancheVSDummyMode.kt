@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -183,7 +184,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		get() = MAX_PLAYERS
 
 	/* Game style */
-	override val gameStyle = GameEngine.GameStyle.AVALANCHE
+	override val gameStyle = GameStyle.AVALANCHE
 	override val gameIntensity = 2
 	/* Mode initialization */
 	@Suppress("RemoveExplicitTypeArguments")

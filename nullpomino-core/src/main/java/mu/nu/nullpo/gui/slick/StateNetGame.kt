@@ -32,14 +32,14 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.net.NetRoomInfo
-import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.gui.net.NetLobbyListener
 import mu.nu.nullpo.util.GeneralUtil
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
@@ -224,7 +224,8 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				}
 			// Screenshot button
 			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)||
-				GameKey.gamekey[1].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT))
+				GameKey.gamekey[1].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)
+			)
 				ssflag = true
 
 			// Enter to new mode
@@ -280,7 +281,8 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				gm.engine[0].let {
 					// Tuning
 					it.owRotateButtonDefaultRight = NullpoMinoSlick.propGlobal.getProperty(
-						"0.tuning.owRotateButtonDefaultRight", -1)
+						"0.tuning.owRotateButtonDefaultRight", -1
+					)
 					it.owSkin = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owSkin", -1)
 					it.owMinDAS = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owMinDAS", -1)
 					it.owMaxDAS = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owMaxDAS", -1)
@@ -293,15 +295,15 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 					it.owDelayCancel = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owDelayCancel", -1)
 					// Rule
 					val ruleOpt:RuleOptions
-					var rulename:String = NullpoMinoSlick.propGlobal.getProperty("0.rule", "")
-					if(gm.mode?.gameStyle!=GameEngine.GameStyle.TETROMINO)
-						rulename = NullpoMinoSlick.propGlobal.getProperty("0.rule.${gm.mode?.gameStyle}", "")
-					if(rulename.isNotEmpty()) {
+					val rulename = NullpoMinoSlick.propGlobal.getProperty(
+						if(gm.mode?.gameStyle==GameStyle.TETROMINO) "0.rule" else "0.rule.${gm.mode?.gameStyle}", ""
+					)
+					ruleOpt = if(rulename.isNotEmpty()) {
 						log.info("Load rule options from $rulename")
-						ruleOpt = GeneralUtil.loadRule(rulename)
+						GeneralUtil.loadRule(rulename)
 					} else {
 						log.info("Load rule options from setting file")
-						ruleOpt = RuleOptions().apply {
+						RuleOptions().apply {
 							readProperty(NullpoMinoSlick.propGlobal, 0)
 						}
 					}
@@ -383,7 +385,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 	companion object {
 		/** Log */
-		internal val log = Logger.getLogger(StateNetGame::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** This state's ID */
 		const val ID = 11

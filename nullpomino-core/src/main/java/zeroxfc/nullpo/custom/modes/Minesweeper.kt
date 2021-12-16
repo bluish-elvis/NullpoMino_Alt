@@ -47,7 +47,6 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.ProfileProperties
 import zeroxfc.nullpo.custom.modes.objects.minesweeper.GameGrid
-import kotlin.math.min
 import kotlin.random.Random
 
 class Minesweeper:AbstractMode() {
@@ -219,8 +218,8 @@ class Minesweeper:AbstractMode() {
 			firstClick = true
 			localRand = Random(engine.randSeed)
 			mainGrid = GameGrid(length, height, minePercentage, engine.randSeed)
-			engine.ruleOpt.fieldWidth = min(length, MAX_DIM)
-			engine.ruleOpt.fieldHeight = min(height, MAX_DIM)
+			engine.ruleOpt.fieldWidth = minOf(length, MAX_DIM)
+			engine.ruleOpt.fieldHeight = minOf(height, MAX_DIM)
 			engine.ruleOpt.fieldHiddenHeight = 0
 			engine.fieldWidth = engine.ruleOpt.fieldWidth
 			engine.fieldHeight = engine.ruleOpt.fieldHeight
@@ -545,7 +544,7 @@ class Minesweeper:AbstractMode() {
 			engine.isInGame = true
 			val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine, playerID)
 			if(engine.playerProp.isLoggedIn) {
-				loadSetting(engine.playerProp.propProfile)
+				loadSetting(engine.playerProp.propProfile, engine)
 			}
 			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		}

@@ -100,107 +100,67 @@ class Piece(id:Int = 0):Serializable {
 	 * @return ピースの幅
 	 */
 	val width:Int
-		get() {
-			var max = dataX[direction][0]
-			var min = dataX[direction][0]
+		get() = maximumBlockX-minimumBlockX
+	/*{
+		var max = dataX[direction][0]
+		var min = dataX[direction][0]
 
-			for(j in 1 until maxBlock) {
-				val bx = dataX[direction][j]
+		for(j in 1 until maxBlock) {
+			val bx = dataX[direction][j]
 
-				max = maxOf(bx, max)
-				min = minOf(bx, min)
-			}
-
-			var wide = 1
-			if(big) wide = 2
-
-			return (max-min)*wide
+			max = maxOf(bx, max)
+			min = minOf(bx, min)
 		}
+
+		var wide = 1
+		if(big) wide = 2
+
+		return (max-min)*wide
+		}*/
 	val centerX:Int get() = (width/2f).roundToInt()
 	/** ピースの高さを取得
 	 * @return ピースの高さ
 	 */
 	val height:Int
-		get() {
-			var max = dataY[direction][0]
-			var min = dataY[direction][0]
+		get() = maximumBlockY-minimumBlockY
+	/*{
+	var max = dataY[direction][0]
+	var min = dataY[direction][0]
 
-			for(j in 1 until maxBlock) {
-				val by = dataY[direction][j]
+	for(j in 1 until maxBlock) {
+		val by = dataY[direction][j]
 
-				max = maxOf(by, max)
-				min = minOf(by, min)
-			}
+		max = maxOf(by, max)
+		min = minOf(by, min)
+	}
 
-			var wide = 1
-			if(big) wide = 2
-
-			return (max-min)*wide
-		}
+	var wide = 1
+	if(big) wide = 2
+}*/
 
 	/** テトラミノの最も高いBlockのX-coordinateを取得
 	 * @return テトラミノの最も高いBlockのX-coordinate
 	 */
 	val minimumBlockX:Int
-		get() {
-			var min = dataX[direction][0]
-
-			for(j in 1 until maxBlock) {
-				val by = dataX[direction][j]
-
-				min = minOf(by, min)
-			}
-
-			return min*if(big) 2 else 1
-		}
+		get() = (dataX[direction].minOrNull() ?: 0)*if(big) 2 else 1
 
 	/** テトラミノの最も低いBlockのX-coordinateを取得
 	 * @return テトラミノの最も低いBlockのX-coordinate
 	 */
 	val maximumBlockX:Int
-		get() {
-			var max = dataX[direction][0]
-
-			for(j in 1 until maxBlock) {
-				val by = dataX[direction][j]
-
-				max = maxOf(by, max)
-			}
-
-			return max*if(big) 2 else 1
-		}
+		get() = (dataX[direction].maxOrNull() ?: 0)*if(big) 2 else 1
 
 	/** テトラミノの最も高いBlockのY-coordinateを取得
 	 * @return テトラミノの最も高いBlockのY-coordinate
 	 */
 	val minimumBlockY:Int
-		get() {
-			var min = dataY[direction][0]
-
-			for(j in 1 until maxBlock) {
-				val by = dataY[direction][j]
-
-				min = minOf(by, min)
-			}
-
-			return min*if(big) 2 else 1
-		}
+		get() = (dataY[direction].minOrNull() ?: 0)*if(big) 2 else 1
 
 	/** テトラミノの最も低いBlockのY-coordinateを取得
 	 * @return テトラミノの最も低いBlockのY-coordinate
 	 */
 	val maximumBlockY:Int
-		get() {
-			var max = dataY[direction][0]
-
-			for(j in 1 until maxBlock) {
-				val by = dataY[direction][j]
-
-				max = maxOf(by, max)
-			}
-
-			return max*if(big) 2 else 1
-		}
+		get() = (dataY[direction].maxOrNull() ?: 0)*if(big) 2 else 1
 
 	init {
 		resetOffsetArray()
@@ -628,7 +588,7 @@ class Piece(id:Int = 0):Serializable {
 	 * @param fld field
 	 * @return ピースをそのまま落とした場合のY-coordinate
 	 */
-	fun getBottom(x:Int, y:Int, rt:Int, fld:Field?):Int {
+	fun getBottom(x:Int, y:Int, rt:Int, fld:Field):Int {
 		var y2 = y
 		while(!checkCollision(x, y2, rt, fld)) y2++
 		return y2-1
@@ -640,7 +600,7 @@ class Piece(id:Int = 0):Serializable {
 	 * @param fld field
 	 * @return ピースをそのまま落とした場合のY-coordinate
 	 */
-	fun getBottom(x:Int, y:Int, fld:Field?):Int = getBottom(x, y, direction, fld)
+	fun getBottom(x:Int, y:Int, fld:Field):Int = getBottom(x, y, direction, fld)
 
 	/** 現在位置からどこまで左に移動できるかを判定
 	 * @param nowX 現在X位置
@@ -649,9 +609,9 @@ class Piece(id:Int = 0):Serializable {
 	 * @param fld field
 	 * @return 移動可能なもっとも左の位置
 	 */
-	fun getMostMovableLeft(nowX:Int, nowY:Int, rt:Int, fld:Field?):Int {
+	fun getMostMovableLeft(nowX:Int, nowY:Int, rt:Int, fld:Field):Int {
 		var x = nowX
-		while(fld!=null&&!checkCollision(x-1, nowY, rt, fld))
+		while(!checkCollision(x-1, nowY, rt, fld))
 			x--
 		return x
 	}
@@ -663,8 +623,7 @@ class Piece(id:Int = 0):Serializable {
 	 * @param fld field
 	 * @return 移動可能なもっとも右の位置
 	 */
-	fun getMostMovableRight(nowX:Int, nowY:Int, rt:Int, fld:Field?):Int {
-		if(fld!=null) return nowX
+	fun getMostMovableRight(nowX:Int, nowY:Int, rt:Int, fld:Field):Int {
 		var x = nowX
 		while(!checkCollision(x+1, nowY, rt, fld))
 			x++

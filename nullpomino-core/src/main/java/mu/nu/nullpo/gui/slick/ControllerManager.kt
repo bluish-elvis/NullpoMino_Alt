@@ -28,7 +28,7 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.lwjgl.input.Controller
 import org.lwjgl.input.Controllers
 import org.newdawn.slick.Input
@@ -36,7 +36,7 @@ import org.newdawn.slick.Input
 /** Joystick 関連の処理 */
 object ControllerManager {
 	/** Log */
-	internal val log = Logger.getLogger(ControllerManager::class.java)
+	internal val log = LogManager.getLogger()
 
 	/** 最小/Maximum buttoncount */
 	const val MIN_BUTTONS = 3

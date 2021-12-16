@@ -30,7 +30,6 @@
 package mu.nu.nullpo.gui.common
 
 import mu.nu.nullpo.game.event.EventReceiver
-import mu.nu.nullpo.gui.slick.ResourceHolder
 import java.util.Locale
 
 abstract class BaseFontNano:BaseFont {
@@ -40,8 +39,8 @@ abstract class BaseFontNano:BaseFont {
 	abstract override val rainbowCount:Int
 	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, rainbow:Int,
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) {
-		var dx = x.toFloat()
-		var dy = y.toFloat()
+		var dx = x
+		var dy = y
 
 		str.uppercase(Locale.getDefault()).forEachIndexed {i, char ->
 			val stringChar = char.code
@@ -49,7 +48,7 @@ abstract class BaseFontNano:BaseFont {
 			if(stringChar==0x0A) {
 				// 改行 (\n）
 				dy = (dy+16*scale)
-				dx = x.toFloat()
+				dx = x
 			} else {// 文字出力
 				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
 				val c = stringChar-32// Character output

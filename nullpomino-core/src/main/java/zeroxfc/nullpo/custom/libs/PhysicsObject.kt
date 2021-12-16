@@ -34,7 +34,7 @@ package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /**
  * PhysicsObject
@@ -254,7 +254,7 @@ class PhysicsObject @JvmOverloads constructor(var position:DoubleVector = Double
 		const val ANCHOR_POINT_LL = 6
 		const val ANCHOR_POINT_LM = 7
 		const val ANCHOR_POINT_LR = 8
-		private val log = Logger.getLogger(PhysicsObject::class.java)
+		private val log = LogManager.getLogger()
 		/**
 		 * Checks if two PhysicsObject instances are intersecting each other.
 		 * If either instance has collisions disabled,

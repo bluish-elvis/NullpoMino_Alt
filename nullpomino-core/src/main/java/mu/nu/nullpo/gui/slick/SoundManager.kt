@@ -28,7 +28,7 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.Sound
 
 /** Sound effectsマネージャ */
@@ -85,6 +85,6 @@ constructor(
 
 	companion object {
 		/** Log */
-		internal val log = Logger.getLogger(SoundManager::class.java)
+		internal val log = LogManager.getLogger()
 	}
 }

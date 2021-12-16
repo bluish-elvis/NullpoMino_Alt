@@ -33,7 +33,6 @@ import java.io.Serializable
 
 /** Scoreなどの情報 */
 class Statistics:Serializable {
-
 	/** Total score */
 	val score:Int get() = scoreLine+scoreHD+scoreSD+scoreBonus
 	/** Line clear score */
@@ -535,4 +534,3 @@ class Statistics:Serializable {
 		const val historyMax = 100
 	}
 }
-

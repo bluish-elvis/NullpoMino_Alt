@@ -235,7 +235,7 @@ class ColorPower:MarathonModeBase() {
 			var v = -1
 			for(j in 0..7) {
 				var flag = false
-				v = nonRuleboundRandomiser!!.nextInt(8)+1
+				v = nonRuleboundRandomiser.nextInt(8)+1
 				for(elem in colorHistory) {
 					if(elem==v) {
 						flag = true
@@ -251,7 +251,7 @@ class ColorPower:MarathonModeBase() {
 				var v = -1
 				for(j in 0..7) {
 					var flag = false
-					v = nonRuleboundRandomiser!!.nextInt(8)+1
+					v = nonRuleboundRandomiser.nextInt(8)+1
 					for(elem in colorHistory) {
 						if(elem==v) {
 							flag = true
@@ -600,7 +600,7 @@ class ColorPower:MarathonModeBase() {
 //			int v = -1;
 //			for (int j = 0; j < 8; j++) {
 //				boolean flag = false;
-//				
+//
 //				 v = nonRuleboundRandomiser.nextInt(POWERUP_NAMES.length);
 //				 for (int elem : colorHistory) {
 //					if (elem == v) {
@@ -611,13 +611,13 @@ class ColorPower:MarathonModeBase() {
 //				 if (!flag) break;
 //			}
 //			appendToHistory(v);
-//			
+//
 //			try {
 //				engine.nextPieceArrayObject[engine.nextPieceCount + engine.ruleOpt.nextDisplay - 1].setColor(v + 1);
 //			} catch (IndexOutOfBoundsException e) {
 //				// DO NOTHING
 //			}
-//			
+//
 //			preset = true;
 //		}
 		if(engine.statc[0]==0&&!ruleboundMode&&preset&&!engine.holdDisable) {
@@ -743,7 +743,7 @@ class ColorPower:MarathonModeBase() {
 			val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine, playerID)
 			if(engine.playerProp.isLoggedIn) {
 				loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
-				loadSetting(engine.playerProp.propProfile)
+				loadSetting(engine.playerProp.propProfile, engine)
 			}
 			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		}

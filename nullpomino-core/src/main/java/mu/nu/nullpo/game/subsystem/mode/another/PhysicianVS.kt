@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -131,7 +132,7 @@ class PhysicianVS:AbstractMode() {
 		get() = MAX_PLAYERS
 
 	/* Game style */
-	override val gameStyle = GameEngine.GameStyle.PHYSICIAN
+	override val gameStyle = GameStyle.PHYSICIAN
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {

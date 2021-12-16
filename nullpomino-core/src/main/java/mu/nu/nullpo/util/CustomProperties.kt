@@ -51,10 +51,13 @@ class CustomProperties(name:String = ""):Properties() {
 		fileName = file
 		EventReceiver.log.debug(" $file")
 		try {
-			val file = GZIPInputStream(FileInputStream(file))
-			load(file)
-			file.close()
+			val f = GZIPInputStream(FileInputStream(file))
+			load(f)
+			f.close()
 
+		} catch(e:FileNotFoundException) {
+			EventReceiver.log.debug("Not found custom property file: $file")
+			return null
 		} catch(e:IOException) {
 			EventReceiver.log.debug("Failed to load custom property file from $file", e)
 			return null
@@ -155,8 +158,8 @@ class CustomProperties(name:String = ""):Properties() {
 		defaultValue
 	}
 
-	fun setProperty(key:String, value:IntArray):Any =
-		setProperty(key, value.joinToString(separator = ","))
+	fun setProperty(key:String, value:IntArray):Any? =
+		setProperty(key, value.joinToString(","))
 
 	/** long型のプロパティを取得
 	 * @param key キー

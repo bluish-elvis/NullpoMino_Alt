@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2021, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -26,44 +26,10 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package mu.nu.nullpo.gui.slick
 
-import org.apache.log4j.Logger
-import org.newdawn.slick.util.LogSystem
+package mu.nu.nullpo.game.play
 
-/** Slickのシステムログをlog4jに渡す */
-class LogSystemLog4j:LogSystem {
-
-	override fun debug(message:String) {
-		log.debug(message)
-	}
-
-	override fun error(e:Throwable) {
-		log.error("", e)
-	}
-
-	override fun error(message:String) {
-		log.error(message)
-	}
-
-	override fun error(message:String, e:Throwable) {
-		log.error(message, e)
-	}
-
-	override fun info(message:String) {
-		log.info(message)
-	}
-
-	override fun warn(message:String) {
-		log.warn(message)
-	}
-
-	override fun warn(message:String, e:Throwable) {
-		log.warn(message, e)
-	}
-
-	companion object {
-		/** Log */
-		internal val log = Logger.getLogger("Slick")
-	}
+/** Game style names */
+enum class GameStyle {
+	TETROMINO, AVALANCHE, PHYSICIAN, SPF
 }

@@ -31,7 +31,7 @@ package mu.nu.nullpo.game.net
 
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.strGMT
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.io.Serializable
 import java.util.Calendar
 
@@ -181,6 +181,6 @@ class NetChatMessage:Serializable {
 		private const val serialVersionUID = 1L
 
 		/** Log */
-		internal val log = Logger.getLogger(NetChatMessage::class.java)
+		internal val log = LogManager.getLogger()
 	}
 }

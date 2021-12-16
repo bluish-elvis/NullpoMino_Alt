@@ -28,7 +28,6 @@
  */
 package mu.nu.nullpo.game.component
 
-import mu.nu.nullpo.game.component.Block.TYPE.*
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.GeneralUtil.aNum
 import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
@@ -40,11 +39,12 @@ import kotlin.math.roundToInt
 	/** Block color */
 	var color:COLOR? = null,
 	/** Block type */
-	var type:TYPE = BLOCK,
+	var type:TYPE = TYPE.BLOCK,
 	/** Blockの絵柄 */
 	var skin:Int = 0,
 	/** Blockの属性 */
-	var aint:Int = 0) {
+	var aint:Int = 0
+) {
 
 	/** Block color integer for processing */
 	var cint:Int
@@ -67,7 +67,7 @@ import kotlin.math.roundToInt
 	constructor(color:COLOR?, type:TYPE, skin:Int = 0, vararg attrs:ATTRIBUTE):
 		this(color, type, skin, attrs.fold(0) {x, y -> x or y.bit})
 
-	constructor(color:COLOR?, skin:Int, vararg attrs:ATTRIBUTE):this(color, BLOCK, skin, *attrs)
+	constructor(color:COLOR?, skin:Int, vararg attrs:ATTRIBUTE):this(color, TYPE.BLOCK, skin, *attrs)
 	constructor(mode:Pair<COLOR?, TYPE>, skin:Int = 0, aint:Int):this(mode.first, mode.second, skin, aint)
 	constructor(mode:Pair<COLOR?, TYPE>, skin:Int = 0, vararg attrs:ATTRIBUTE):this(mode.first, mode.second, skin, *attrs)
 	constructor(cint:Int = 0, skin:Int = 0, aint:Int):this(intToColor(cint), skin, aint)
@@ -119,27 +119,27 @@ import kotlin.math.roundToInt
 	/** このBlockが宝石Blockかどうか判定
 	 * @return このBlockが宝石Blockだったらtrue
 	 */
-	val isGemBlock:Boolean get() = type===GEM
+	val isGemBlock:Boolean get() = type===TYPE.GEM
 
 	/** Checks to see if `this` is a gold square block
 	 * @return `true` if the block is a gold square block
 	 */
-	val isGoldSquareBlock:Boolean get() = type===SQUARE_GOLD
+	val isGoldSquareBlock:Boolean get() = type===TYPE.SQUARE_GOLD
 
 	/** Checks to see if `this` is a silver square block
 	 * @return `true` if the block is a silver square block
 	 */
-	val isSilverSquareBlock:Boolean get() = type===SQUARE_SILVER
+	val isSilverSquareBlock:Boolean get() = type===TYPE.SQUARE_SILVER
 
 	/** Checks to see if `this` is a normal block (gray to purple)
 	 * @return `true` if the block is a normal block
 	 */
-	val isNormalBlock:Boolean get() = type===BLOCK
+	val isNormalBlock:Boolean get() = type===TYPE.BLOCK
 
 	/** 設定をReset to defaults */
 	fun reset(del:Boolean = false) {
 		if(del) color = null
-		type = BLOCK
+		type = TYPE.BLOCK
 		skin = 0
 		aint = 0
 		elapsedFrames = 0
@@ -156,7 +156,7 @@ import kotlin.math.roundToInt
 	/** Copy constructor
 	 * @param b Copy source
 	 */
-	constructor(b:Block?):this(b?.color, b?.type ?: BLOCK, b?.skin ?: 0) {
+	constructor(b:Block?):this(b?.color, b?.type ?: TYPE.BLOCK, b?.skin ?: 0) {
 		copy(b)
 	}
 
@@ -207,6 +207,22 @@ import kotlin.math.roundToInt
 	fun toChar():Char = cint.toAlphaNum
 
 	override fun toString():String = "${toChar()}"
+	override fun hashCode():Int {
+		var result = color?.hashCode() ?: 0
+		result = 31*result+type.hashCode()
+		result = 31*result+skin
+		result = 31*result+aint
+		result = 31*result+elapsedFrames
+		result = 31*result+darkness.hashCode()
+		result = 31*result+alpha.hashCode()
+		result = 31*result+pieceNum
+		result = 31*result+(item?.hashCode() ?: 0)
+		result = 31*result+hard
+		result = 31*result+countdown
+		result = 31*result+secondaryColor.hashCode()
+		result = 31*result+bonusValue
+		return result
+	}
 
 	enum class TYPE(val pos:Byte = 0) { BLOCK, GEM, SQUARE_GOLD, SQUARE_SILVER, ITEM }
 	enum class COLOR(val color:Boolean = true) {
@@ -349,42 +365,42 @@ import kotlin.math.roundToInt
 
 		fun colorNumber(color:COLOR?, type:TYPE, isBone:Boolean = false, item:ITEM? = null):Int =
 			if(color==COLOR.RAINBOW) {
-				if(type==GEM) COLOR_GEM_RAINBOW
+				if(type==TYPE.GEM) COLOR_GEM_RAINBOW
 				else COLOR_RAINBOW
 			} else {
 				val ci:Int = (color?.ordinal ?: 0)
 				when(type) {
-					BLOCK -> if(color==COLOR.BLACK&&isBone) COLOR_WHITE
+					TYPE.BLOCK -> if(color==COLOR.BLACK&&isBone) COLOR_WHITE
 					else ci
-					GEM -> if(color?.color!=true) {
+					TYPE.GEM -> if(color?.color!=true) {
 						COLOR_GEM_RAINBOW
 					} else ci+COLOR_GEM_RED-COLOR_RED
-					SQUARE_SILVER -> ci+COLOR_SQUARE_SILVER_1
-					SQUARE_GOLD -> ci+COLOR_SQUARE_GOLD_1
-					ITEM -> item?.color?.ordinal ?: 0
+					TYPE.SQUARE_SILVER -> ci+COLOR_SQUARE_SILVER_1
+					TYPE.SQUARE_GOLD -> ci+COLOR_SQUARE_GOLD_1
+					TYPE.ITEM -> item?.color?.ordinal ?: 0
 				}
 			}
 
 		fun intToColor(v:Int):Pair<COLOR?, TYPE> = when(v) {
 			in COLOR_WHITE..COLOR_PURPLE -> {
-				COLOR.values()[v] to BLOCK
+				COLOR.values()[v] to TYPE.BLOCK
 			}
 			COLOR_RAINBOW -> {
-				COLOR.RAINBOW to BLOCK
+				COLOR.RAINBOW to TYPE.BLOCK
 			}
 			in COLOR_GEM_RED..COLOR_GEM_PURPLE -> {
-				COLOR.values()[v-COLOR_GEM_RED] to GEM
+				COLOR.values()[v-COLOR_GEM_RED] to TYPE.GEM
 			}
 			COLOR_GEM_RAINBOW -> {
-				COLOR.RAINBOW to GEM
+				COLOR.RAINBOW to TYPE.GEM
 			}
 			in COLOR_SQUARE_SILVER_1..COLOR_SQUARE_SILVER_9 -> {
-				COLOR.values()[v-COLOR_SQUARE_SILVER_1] to SQUARE_SILVER
+				COLOR.values()[v-COLOR_SQUARE_SILVER_1] to TYPE.SQUARE_SILVER
 			}
 			in COLOR_SQUARE_GOLD_1..COLOR_SQUARE_GOLD_9 -> {
-				COLOR.values()[v-COLOR_SQUARE_GOLD_1] to SQUARE_GOLD
+				COLOR.values()[v-COLOR_SQUARE_GOLD_1] to TYPE.SQUARE_GOLD
 			}
-			else -> null to BLOCK
+			else -> null to TYPE.BLOCK
 		}
 
 		fun charToColorNum(c:Char):Int = c.aNum

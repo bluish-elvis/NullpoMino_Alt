@@ -19,6 +19,9 @@
  </modules>
 
  <properties>
+  <kotlin.version>1.6.10</kotlin.version>
+  <java.version>17</java.version>
+  <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
   <!--suppress UnresolvedMavenProperty -->
   <loc>${maven-parent.baseDir}/target/install</loc>
 
@@ -162,11 +165,11 @@
         <fileset>
          <directory>${loc}/lib/META-INF</directory>
         </fileset>
-        <!--<fileset>
+        <fileset>
          <useDefaultExcludes>true</useDefaultExcludes>
          <directory>${project.basedir}/nullpomino-core/target</directory>
          <includes>**/*</includes>
-        </fileset>-->
+        </fileset>
         <fileset>
          <useDefaultExcludes>true</useDefaultExcludes>
          <directory>${project.basedir}/nullpomino-run/target</directory>

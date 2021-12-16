@@ -37,8 +37,7 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.strDateTime
 import net.clarenceho.crypto.RC4
-import org.apache.log4j.Logger
-import org.apache.log4j.PropertyConfigurator
+import org.apache.logging.log4j.LogManager
 import java.awt.*
 import java.awt.datatransfer.StringSelection
 import java.awt.event.*
@@ -991,7 +990,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun createRoomListRowData(r:NetRoomInfo):Array<String> = arrayOf(
 		r.roomID.toString(), r.strName, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False"),
-		if(r.ruleLock) r.ruleName.toUpperCase() else getUIText("RoomTable_RuleName_Any"),
+		if(r.ruleLock) r.ruleName.uppercase(Locale.getDefault()) else getUIText("RoomTable_RuleName_Any"),
 		if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting"),
 		"${r.playerSeatedCount}/${r.maxPlayers}", "${r.spectatorCount}")
 
@@ -1386,7 +1385,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 		//***** Variables *****
 		/** Log */
-		internal val log = Logger.getLogger(NetAdmin::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** ServerAdmin properties */
 		private val propConfig = CustomProperties()
@@ -1455,7 +1454,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		 */
 		@JvmStatic
 		fun main(args:Array<String>) {
-			PropertyConfigurator.configure("config/etc/log.cfg")
+			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")
 			NetAdmin()
 		}
 	}

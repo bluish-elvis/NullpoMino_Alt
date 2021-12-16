@@ -36,7 +36,6 @@ import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import kotlin.math.ceil
 
 /** PHANTOM MANIA mode (Original from NullpoUE build 121909 by Zircean) */
 class GrandPhantom:AbstractMode() {
@@ -884,7 +883,7 @@ class GrandPhantom:AbstractMode() {
 
 	}
 
-	/** Save rankings of [ruleName] to [prop] */
+	/** Save rankings of [ruleName] to owner.recordProp */
 	private fun saveRanking(ruleName:String) {
 		super.saveRanking((0 until RANKING_MAX).flatMap {i ->
 			listOf("$ruleName.$i.grade" to rankingGrade[i],

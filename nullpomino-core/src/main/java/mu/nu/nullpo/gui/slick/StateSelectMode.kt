@@ -33,7 +33,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.gui.slick.img.FontTTF
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
@@ -162,7 +162,7 @@ class StateSelectMode:DummyMenuScrollState() {
 
 	companion object {
 		/** Logger */
-		internal var log = Logger.getLogger(StateSelectMode::class.java)
+		internal var log = LogManager.getLogger()
 
 		/** This state's ID */
 		const val ID = 3

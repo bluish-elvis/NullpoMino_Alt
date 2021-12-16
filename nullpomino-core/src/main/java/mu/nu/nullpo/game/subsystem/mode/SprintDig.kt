@@ -39,7 +39,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /** DIG RACE Mode */
 class SprintDig:NetDummyMode() {
@@ -451,7 +451,7 @@ class SprintDig:NetDummyMode() {
 			}
 	}
 
-	/** Save rankings of [ruleName] to [prop] */
+	/** Save rankings of [ruleName] to owner.recordProp */
 	private fun saveRanking(ruleName:String) {
 		super.saveRanking((0 until GOALTYPE_MAX).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->
@@ -585,7 +585,7 @@ class SprintDig:NetDummyMode() {
 	companion object {
 		/* ----- Main variables ----- */
 		/** Logger */
-		internal var log = Logger.getLogger(SprintDig::class.java)
+		internal var log = LogManager.getLogger()
 
 		/** Current version */
 		private const val CURRENT_VERSION = 1

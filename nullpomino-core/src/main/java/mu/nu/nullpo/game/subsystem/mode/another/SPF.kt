@@ -37,10 +37,11 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import kotlin.random.Random
 
 /** SPF VS-BATTLE mode (Beta) */
@@ -146,7 +147,7 @@ class SPF:AbstractMode() {
 	override val players:Int get() = MAX_PLAYERS
 
 	/* Game style */
-	override val gameStyle = GameEngine.GameStyle.SPF
+	override val gameStyle = GameStyle.SPF
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
 		owner = manager
@@ -605,7 +606,7 @@ class SPF:AbstractMode() {
 		} else if(engine.statc[0]==1&&diamondPower[playerID]>0) {
 			var x = 24
 			while(x<engine.nextPieceArraySize) {
-				engine.nextPieceArrayObject[x].block[1]?.run {
+				engine.nextPieceArrayObject[x].block[1].run {
 					color = Block.COLOR.RAINBOW
 					type = Block.TYPE.GEM
 				}
@@ -679,7 +680,7 @@ class SPF:AbstractMode() {
 
 		// On-screen Texts
 
-		val textHeight = if(engine.displaysize==1) 11 else (engine.field.height ?: 12)+3
+		val textHeight = if(engine.displaysize==1) 11 else engine.field.height+3
 		val baseX = if(engine.displaysize==1) 1 else -2
 
 		if(techBonusDisplay[playerID]>0)
@@ -700,7 +701,7 @@ class SPF:AbstractMode() {
 
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
-		val field = engine.field ?: return 0
+		val field = engine.field
 		if(field.canCascade()) return 0
 		checkAll(engine, playerID)
 
@@ -863,7 +864,7 @@ class SPF:AbstractMode() {
 		for(x in 0 until width)
 			for(y in -1*hiddenHeight until height) {
 				val b = engine.field.getBlock(x, y) ?: continue
-				var color = b.color ?: continue
+				val color = b.color ?: continue
 				if(!color.color||b.type!=Block.TYPE.GEM) continue
 				var minX = x
 				var minY = y
@@ -1193,7 +1194,7 @@ class SPF:AbstractMode() {
 
 	companion object {
 		/** Log (Apache log4j) */
-		internal val log = Logger.getLogger(SPF::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** Current version */
 		private const val CURRENT_VERSION = 0

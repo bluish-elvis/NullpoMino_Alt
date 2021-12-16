@@ -557,7 +557,7 @@ class MarathonZone:NetDummyMode() {
 			rankingTime[j][i] = prop.getProperty("$ruleName.$j.time.$i", 0)
 		}
 	}
-	/** Save rankings of [ruleName] to [prop] */
+	/** Save rankings of [ruleName] to owner.recordProp */
 	private fun saveRanking(ruleName:String) =
 		super.saveRanking((0 until GAMETYPE_MAX).flatMap {j ->
 			(0 until RANKING_MAX).flatMap {i ->

@@ -54,12 +54,14 @@ class ResourceImageSlick(override val name:String):ResourceImage<Image> {
 		}
 	}
 
-	override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float) =
-		res.draw(x, y, x2, y2, srcX, srcY, srcX2, srcY2)
+	override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float) =
+		res.draw(x, y, x2, y2, srcX, srcY, srcX2, srcY2, Color(1f, 1f, 1f, alpha))
 
 	fun draw(x:Int, y:Int, x2:Int, y2:Int, srcX:Int, srcY:Int, srcX2:Int, srcY2:Int, filter:Color) =
-		draw(x.toFloat(), y.toFloat(), x2.toFloat(), y2.toFloat(),
-			srcX.toFloat(), srcY.toFloat(), srcX2.toFloat(), srcY2.toFloat(), filter)
+		draw(
+			x.toFloat(), y.toFloat(), x2.toFloat(), y2.toFloat(),
+			srcX.toFloat(), srcY.toFloat(), srcX2.toFloat(), srcY2.toFloat(), filter
+		)
 
 	fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Int, srcY:Int, srcX2:Int, srcY2:Int, filter:Color) =
 		draw(x, y, x2, y2, srcX.toFloat(), srcY.toFloat(), srcX2.toFloat(), srcY2.toFloat(), filter)
@@ -67,7 +69,6 @@ class ResourceImageSlick(override val name:String):ResourceImage<Image> {
 	fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, filter:Color) =
 		res.draw(x, y, x2, y2, srcX, srcY, srcX2, srcY2, filter)
 
-	fun draw() = res.draw()
 /*
 	fun draw(x:Float, y:Float) = res.draw(x, y)
 	fun draw(x:Float, y:Float, filter:Color) = res.draw(x, y, filter)

@@ -43,8 +43,8 @@ class ClassicWallkick:Wallkick {
 
 		// 通常のWallkick (I以外）
 		if(piece.id!=Piece.PIECE_I)
-			if(checkCollisionKick(piece, x, y, rtNew, field)||piece.id==Piece.PIECE_I2
-				||piece.id==Piece.PIECE_L3) {
+			if(checkCollisionKick(piece, x, y, rtNew, field)||piece.type==Piece.Shape.I2
+				||piece.type==Piece.Shape.L3) {
 				var temp = 0
 
 				if(!piece.checkCollision(x-1-check, y, rtNew, field)) temp = -1-check

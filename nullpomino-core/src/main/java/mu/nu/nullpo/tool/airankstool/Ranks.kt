@@ -30,12 +30,12 @@
 package mu.nu.nullpo.tool.airankstool
 
 import mu.nu.nullpo.game.component.Piece
-import java.io.Serializable
 import java.util.Arrays
 import kotlin.math.abs
 import kotlin.math.pow
 
-class Ranks:Serializable {
+@kotlinx.serialization.Serializable
+class Ranks {
 	private val ranks:IntArray
 
 	val stackWidth:Int
@@ -339,7 +339,8 @@ class Ranks:Serializable {
 		private const val serialVersionUID = 1L
 
 		//Number of different orientations a piece can have (this is used to save computing time)
-		val PIECES_NUM_ROTATIONS = intArrayOf(2, // I
+		val PIECES_NUM_ROTATIONS = intArrayOf(
+			2, // I
 			4, // L
 			1, // O
 			2, // Z
@@ -352,7 +353,8 @@ class Ranks:Serializable {
 			4 // L3
 		)
 
-		val PIECES_LEFTMOSTS = arrayOf(intArrayOf(0, 2, 0, 1), // I
+		val PIECES_LEFTMOSTS = arrayOf(
+			intArrayOf(0, 2, 0, 1), // I
 			intArrayOf(0, 1, 0, 0), // L
 			intArrayOf(0, 0, 0, 0), // O
 			intArrayOf(0, 1, 0, 0), // Z
@@ -364,7 +366,8 @@ class Ranks:Serializable {
 			intArrayOf(0, 1, 0, 1), // I3
 			intArrayOf(0, 0, 0, 0) // L3
 		)
-		val PIECES_RIGHTMOSTS = arrayOf(intArrayOf(3, 2, 3, 1), //I
+		val PIECES_RIGHTMOSTS = arrayOf(
+			intArrayOf(3, 2, 3, 1), //I
 			intArrayOf(2, 2, 2, 1), //L
 			intArrayOf(1, 1, 1, 1), //O
 			intArrayOf(2, 2, 2, 1), //Z
@@ -374,9 +377,11 @@ class Ranks:Serializable {
 			intArrayOf(0, 0, 0, 0), //I1
 			intArrayOf(1, 1, 1, 0), //I2
 			intArrayOf(2, 1, 2, 1), //I3
-			intArrayOf(1, 1, 1, 1))//L3
+			intArrayOf(1, 1, 1, 1)
+		)//L3
 
-		val PIECES_WIDTHS = arrayOf(intArrayOf(4, 1, 4, 1), //I
+		val PIECES_WIDTHS = arrayOf(
+			intArrayOf(4, 1, 4, 1), //I
 			intArrayOf(3, 2, 3, 2), //L
 			intArrayOf(2, 2, 2, 2), //O
 			intArrayOf(3, 2, 3, 2), //Z
@@ -389,7 +394,8 @@ class Ranks:Serializable {
 			intArrayOf(2, 2, 2, 2) //L3
 		)
 
-		val PIECES_HEIGHTS = arrayOf(arrayOf(intArrayOf(1, 1, 1, 1), intArrayOf(4), intArrayOf(1, 1, 1, 1), intArrayOf(4)), //I
+		val PIECES_HEIGHTS = arrayOf(
+			arrayOf(intArrayOf(1, 1, 1, 1), intArrayOf(4), intArrayOf(1, 1, 1, 1), intArrayOf(4)), //I
 			arrayOf(intArrayOf(1, 1, 2), intArrayOf(3, 1), intArrayOf(2, 1, 1), intArrayOf(1, 3)), //L
 			arrayOf(intArrayOf(2, 2), intArrayOf(2, 2), intArrayOf(2, 2), intArrayOf(2, 2)), //O
 			arrayOf(intArrayOf(1, 2, 1), intArrayOf(2, 2), intArrayOf(1, 2, 1), intArrayOf(2, 2)), //Z
@@ -401,7 +407,8 @@ class Ranks:Serializable {
 			arrayOf(intArrayOf(1, 1, 1), intArrayOf(3), intArrayOf(1, 1, 1), intArrayOf(3)), //I3
 			arrayOf(intArrayOf(2, 1), intArrayOf(2, 1), intArrayOf(1, 2), intArrayOf(1, 2)) //L3
 		)
-		val PIECES_LOWESTS = arrayOf(arrayOf(intArrayOf(1, 1, 1, 1), intArrayOf(3), intArrayOf(2, 2, 2, 2), intArrayOf(3)), //I
+		val PIECES_LOWESTS = arrayOf(
+			arrayOf(intArrayOf(1, 1, 1, 1), intArrayOf(3), intArrayOf(2, 2, 2, 2), intArrayOf(3)), //I
 			arrayOf(intArrayOf(1, 1, 1), intArrayOf(2, 2), intArrayOf(2, 1, 1), intArrayOf(0, 2)), //L
 			arrayOf(intArrayOf(1, 1), intArrayOf(1, 1), intArrayOf(1, 1), intArrayOf(1, 1)), //O
 			arrayOf(intArrayOf(0, 1, 1), intArrayOf(2, 1), intArrayOf(1, 2, 2), intArrayOf(2, 1)), //Z

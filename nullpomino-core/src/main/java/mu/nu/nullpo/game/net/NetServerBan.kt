@@ -32,7 +32,7 @@ package mu.nu.nullpo.game.net
 import biz.source_code.base64Coder.Base64Coder
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.strGMT
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
@@ -150,7 +150,7 @@ class NetServerBan {
 	}
 
 	companion object {
-		internal val log = Logger.getLogger(NetServerBan::class.java)
+		internal val log = LogManager.getLogger()
 
 		const val BANLENGTH_1HOUR = 0
 		const val BANLENGTH_6HOURS = 1

@@ -118,7 +118,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		for(i in field.hiddenHeight*-1 until field.height)
 			for(j in 0 until field.width) {
 				val col=field.getBlockColor(j, i)
-				if(col==Block.COLOR.BLACK||col==Block.COLOR.WHITE) {
+				if(col==COLOR.BLACK||col==COLOR.WHITE) {
 					var color:COLOR
 					do
 						color = COLOR.colors()[rand.nextInt(COLOR.COLOR_NUM)]

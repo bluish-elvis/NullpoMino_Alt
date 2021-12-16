@@ -12,5 +12,5 @@ import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 
 class HWallkick:Wallkick {
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field,
-		ctrl:Controller?):WallkickResult? = WallkickResult(0, 0, rtNew)
+		ctrl:Controller?):WallkickResult = WallkickResult(0, 0, rtNew)
 }

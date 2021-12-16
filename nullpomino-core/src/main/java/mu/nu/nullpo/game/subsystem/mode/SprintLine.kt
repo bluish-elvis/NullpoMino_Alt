@@ -37,7 +37,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 
 /** LINE RACE Mode */
 class SprintLine:NetDummyMode() {
@@ -490,7 +490,7 @@ class SprintLine:NetDummyMode() {
 	companion object {
 		/* ----- Main variables ----- */
 		/** Logger */
-		internal val log = Logger.getLogger(SprintLine::class.java)
+		internal val log = LogManager.getLogger()
 
 		/** Number of entries in rankings */
 		private const val RANKING_MAX = 13

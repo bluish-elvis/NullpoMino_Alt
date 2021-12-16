@@ -60,7 +60,7 @@ class DTETPlusWallkick:DTETWallkick() {
 		var check = 0
 		if(piece.big) check = 1
 		// IのWallkick
-		if(piece.id==Piece.PIECE_I&&(rtNew==Piece.DIRECTION_UP||rtNew==Piece.DIRECTION_DOWN))
+		if(piece.type==Piece.Shape.I&&(rtNew==Piece.DIRECTION_UP||rtNew==Piece.DIRECTION_DOWN))
 			for(i in check..check*2) {
 				var temp = 0
 
@@ -73,7 +73,7 @@ class DTETPlusWallkick:DTETWallkick() {
 				if(temp!=0) return WallkickResult(temp, 0, rtNew)
 			}
 		// Iの床蹴り (接地している場合のみ）
-		if(piece.id==Piece.PIECE_I&&allowUpward&&(rtNew==Piece.DIRECTION_LEFT||rtNew==Piece.DIRECTION_RIGHT)&&
+		if(piece.type==Piece.Shape.I&&allowUpward&&(rtNew==Piece.DIRECTION_LEFT||rtNew==Piece.DIRECTION_RIGHT)&&
 			piece.checkCollision(x, y+1, field))
 
 			for(i in check..check*2) {

@@ -33,9 +33,8 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
-import org.apache.log4j.Logger
+import org.apache.logging.log4j.LogManager
 import kotlin.math.abs
 
 /**
@@ -45,42 +44,8 @@ import kotlin.math.abs
  */
 class Nohoho:DummyAI(), Runnable {
 
-	/** After that I was groundedX-coordinate */
-	private var bestXSub = 0
-
-	/** After that I was groundedY-coordinate */
-	private var bestYSub = 0
-
-	/** After that I was groundedDirection(-1: None) */
-	private var bestRtSub = 0
-
-	/** The best moveEvaluation score */
-	private var bestPts = 0
-
-	/** Delay the move for changecount */
-	var delay = 0
-
-	/** The GameEngine that owns this AI */
-	private lateinit var gEngine:GameEngine
-
-	/** The GameManager that owns this AI */
-	private var gManager:GameManager? = null
-
 	/** When true,To threadThink routineInstructing the execution of the */
-	private lateinit var thinkRequest:ThinkRequestMutex
-
-	/** True when thread is executing the think routine. */
-	private var thinking = false
-
-	/** To stop a thread time */
-	private var thinkDelay = 0
-
-	/** When true,Running thread */
-	@Volatile var threadRunning = false
-
-	/** Thread for executing the think routine */
-	var thread:Thread? = null
-
+	private var thinkRequest = ThinkRequestMutex()
 	/** Number of frames for which piece has been stuck */
 	private var stuckDelay = 0
 
@@ -136,19 +101,11 @@ class Nohoho:DummyAI(), Runnable {
 		}
 	}
 
-	/* End processing */
-	override fun shutdown() {
-		if(thread!=null&&thread!!.isAlive) {
-			thread!!.interrupt()
-			threadRunning = false
-			thread = null
-		}
-	}
 
 	/* Called whenever a new piece is spawned */
 	override fun newPiece(engine:GameEngine, playerID:Int) {
 		if(!engine.aiUseThread)
-			thinkBestPosition(engine, playerID)
+			thinkBestPosition(engine)
 		else if(!thinking&&!thinkComplete||!engine.aiPrethink||engine.aiShowHint) {
 			thinkRequest.newRequest()
 			thinkCurrentPieceNo++
@@ -173,13 +130,14 @@ class Nohoho:DummyAI(), Runnable {
 	override fun onLast(engine:GameEngine, playerID:Int) {}
 
 	/* Set button input states */
-	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller) {
+	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int {
 		if(engine.nowPieceObject!=null&&engine.stat===GameEngine.Status.MOVE&&
 			delay>=engine.aiMoveDelay&&engine.statc[0]>0&&
-			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)) {
+			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
+		) {
 			inputARE = 0
 			var input = 0 // Button input data
-			val pieceNow = checkOffset(engine.nowPieceObject, engine)
+			val pieceNow = checkOffset(engine.nowPieceObject!!, engine)
 			val nowX = engine.nowPieceX
 			val nowY = engine.nowPieceY
 			val rt = pieceNow.direction
@@ -193,8 +151,11 @@ class Nohoho:DummyAI(), Runnable {
 
 			//If stuck, rethink.
 			if(pieceTouchGround&&rt==bestRt&&
-				(pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)<bestX||pieceNow.getMostMovableLeft(nowX, nowY, rt,
-					engine.field)>bestX))
+				(pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)<bestX||pieceNow.getMostMovableLeft(
+					nowX, nowY, rt,
+					engine.field
+				)>bestX)
+			)
 				stuckDelay++
 			else
 				stuckDelay = 0
@@ -222,10 +183,12 @@ class Nohoho:DummyAI(), Runnable {
 				input = input or Controller.BUTTON_BIT_D
 			else {
 				if(DEBUG_ALL)
-					log.debug("bestX = $bestX, nowX = "+nowX+
-						", bestY = $bestY, nowY = "+nowY+
-						", bestRt = $bestRt, rt = "+rt+
-						", bestXSub = $bestXSub, bestYSub = $bestYSub, bestRtSub = "+bestRtSub)
+					log.debug(
+						"bestX = $bestX, nowX = "+nowX+
+							", bestY = $bestY, nowY = "+nowY+
+							", bestRt = $bestRt, rt = "+rt+
+							", bestXSub = $bestXSub, bestYSub = $bestYSub, bestRtSub = "+bestRtSub
+					)
 				// Rotation
 				val best180 = abs(rt-bestRt)==2
 				if(rt!=bestRt) {
@@ -275,19 +238,15 @@ class Nohoho:DummyAI(), Runnable {
 								bestY = bestYSub
 							}
 						}
-					if(nowX>bestX)
-						moveDir = -1
-					else if(nowX<bestX)
-						moveDir = 1
+					if(nowX>bestX) moveDir = -1
+					else if(nowX<bestX) moveDir = 1
 					else if(nowX==bestX&&rt==bestRt) {
 						moveDir = 0
 						setDAS = 0
 						// Funnel
 						if(bestRtSub==-1&&bestX==bestXSub) {
-							if(pieceTouchGround&&engine.ruleOpt.softdropLock)
-								drop = -1
-							else if(engine.ruleOpt.harddropEnable)
-								drop = 1
+							if(pieceTouchGround&&engine.ruleOpt.softdropLock) drop = -1
+							else if(engine.ruleOpt.harddropEnable) drop = 1
 							else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock) drop = -1
 						} else if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock)
 							drop = 1
@@ -306,14 +265,13 @@ class Nohoho:DummyAI(), Runnable {
 			else if(drop==-1) input = input or Controller.BUTTON_BIT_DOWN
 
 			if(rotateDir!=0)
-				if(engine.ruleOpt.rotateButtonAllowDouble&&
-					rotateDir==2&&!ctrl.isPress(Controller.BUTTON_E))
+				if(engine.ruleOpt.rotateButtonAllowDouble&&rotateDir==2&&!ctrl.isPress(Controller.BUTTON_E))
 					input = input or Controller.BUTTON_BIT_E
-				else if(engine.ruleOpt.rotateButtonAllowReverse&&
-					!engine.ruleOpt.rotateButtonDefaultRight&&rotateDir==1) {
+				else if(engine.ruleOpt.rotateButtonAllowReverse&&!engine.ruleOpt.rotateButtonDefaultRight&&rotateDir==1) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
 				} else if(engine.ruleOpt.rotateButtonAllowReverse&&
-					engine.ruleOpt.rotateButtonDefaultRight&&rotateDir==-1) {
+					engine.ruleOpt.rotateButtonDefaultRight&&rotateDir==-1
+				) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
 				} else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
 			if(setDAS!=moveDir) setDAS = 0
@@ -324,24 +282,21 @@ class Nohoho:DummyAI(), Runnable {
 			lastRt = rt
 
 			if(DEBUG_ALL)
-				log.debug("Input = $input, moveDir = $moveDir, rotateDir = "+rotateDir+
-					", sync = $sync, drop = $drop, setDAS = "+setDAS)
+				log.debug("Input = $input, moveDir = $moveDir, rotateDir = $rotateDir, sync = $sync, drop = $drop, setDAS = $setDAS")
 
 			delay = 0
-			ctrl.buttonBit = input
-		} else {
-			//dropDelay = 0;
-			delay++
-			ctrl.buttonBit = inputARE
+			return input
 		}
+		//dropDelay = 0;
+		delay++
+		return inputARE
 	}
 
 	/**
 	 * Search for the best choice
 	 * @param engine The GameEngine that owns this AI
-	 * @param playerID Player ID
 	 */
-	private fun thinkBestPosition(engine:GameEngine, playerID:Int) {
+	private fun thinkBestPosition(engine:GameEngine) {
 		if(DEBUG_ALL) log.debug("thinkBestPosition called, inARE = $inARE, piece: ")
 		bestHold = false
 		bestX = 0
@@ -361,7 +316,7 @@ class Nohoho:DummyAI(), Runnable {
 		val nowX:Int
 		val nowY:Int
 		if(inARE||pieceNow==null) {
-			pieceNow = engine.getNextObjectCopy(engine.nextPieceCount)
+			pieceNow = engine.getNextObjectCopy(engine.nextPieceCount) ?: return
 			nowX = engine.getSpawnPosX(fld, pieceNow)
 			nowY = engine.getSpawnPosY(pieceNow)
 			if(holdOK&&pieceHold==null) pieceHold = engine.getNextObjectCopy(engine.nextPieceCount+1)
@@ -372,7 +327,7 @@ class Nohoho:DummyAI(), Runnable {
 		}
 		pieceNow = checkOffset(pieceNow, engine)
 		if(holdOK&&pieceHold==null) {
-			pieceHold = checkOffset(pieceHold, engine)
+			pieceHold = checkOffset(pieceNow, engine)
 			if(pieceHold.id==pieceNow.id) pieceHold = null
 		}
 
@@ -384,14 +339,12 @@ class Nohoho:DummyAI(), Runnable {
 
 		if(defcon>=4) {
 			var x:Int
-			val maxX:Int = if(depths[3]<=0)
-				2
-			else if(depths[4]<=0)
-				3
-			else if(depths[5]<=0)
-				4
-			else
-				5
+			val maxX:Int = when {
+				depths[3]<=0 -> 2
+				depths[4]<=0 -> 3
+				depths[5]<=0 -> 4
+				else -> 5
+			}
 			for(rt in 0 until Piece.DIRECTION_COUNT) {
 				x = maxX-pieceNow.maximumBlockX
 				fld.copy(engine.field)
@@ -464,7 +417,7 @@ class Nohoho:DummyAI(), Runnable {
 				}
 
 				// Hold piece
-				if(holdOK)pieceHold?.also{
+				if(holdOK) pieceHold?.also {
 					val spawnX = engine.getSpawnPosX(engine.field, it)
 					val spawnY = engine.getSpawnPosY(it)
 					val minHoldX = it.getMostMovableLeft(spawnX, spawnY, rt, engine.field)
@@ -518,8 +471,9 @@ class Nohoho:DummyAI(), Runnable {
 		// Place the piece
 		if(!piece.placeToField(x, y, rt, fld)) {
 			if(DEBUG_ALL)
-				log.debug("End of thinkMain($x, $y, $rt, "+rtOld+
-					", fld, piece ${piece.id}, $defcon). pts = MIN_VALUE (Cannot place piece)")
+				log.debug(
+					"End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.type.name}, $defcon). pts = MIN_VALUE (Cannot place piece)"
+				)
 			return Integer.MIN_VALUE
 		}
 
@@ -529,8 +483,9 @@ class Nohoho:DummyAI(), Runnable {
 			val maxX = piece.maximumBlockX+x
 			if(maxX<2) {
 				if(DEBUG_ALL)
-					log.debug("End of thinkMain($x, $y, $rt, $rtOld, fld, piece "
-						+piece.id+", $defcon). pts = MIN_VALUE (Invalid location/defcon combination)")
+					log.debug(
+						"End of thinkMain($x, $y, $rt, $rtOld, fld, piece ${piece.type.name}, $defcon). pts = MIN_VALUE (Invalid location/defcon combination)"
+					)
 				return Integer.MIN_VALUE
 			}
 			val maxY = fld.getHighestBlockY(maxX)
@@ -544,12 +499,9 @@ class Nohoho:DummyAI(), Runnable {
 			clear = if(rt and 1>0) {
 				pts++
 				fld.clearColor(maxX, maxY+1, true, true, false, true)
-			} else
-				fld.clearColor(maxX-1, fld.getHighestBlockY(maxX-1), true, true, false, true)
-			if(clear>=4)
-				pts += if(defcon==5) -4 else 4
-			else if(clear==3)
-				pts += 2
+			} else fld.clearColor(maxX-1, fld.getHighestBlockY(maxX-1), true, true, false, true)
+			if(clear>=4) pts += if(defcon==5) -4 else 4
+			else if(clear==3) pts += 2
 			else if(clear==2) pts++
 		}
 
@@ -560,12 +512,9 @@ class Nohoho:DummyAI(), Runnable {
 			if(clear<=0)
 				break
 			else if(defcon<=4)
-				if(chain==0)
-					pts += clear
-				else if(chain==2)
-					pts += clear shl 3
-				else if(chain==3)
-					pts += clear shl 4
+				if(chain==0) pts += clear
+				else if(chain==2) pts += clear shl 3
+				else if(chain==3) pts += clear shl 4
 				else if(chain>=4) pts += clear*32*(chain-3)
 			fld.freeFall()
 			chain++
@@ -578,21 +527,17 @@ class Nohoho:DummyAI(), Runnable {
 		if(allclear) pts += 1000
 
 		if(DEBUG_ALL)
-			log.debug("End of thinkMain($x, $y, $rt, "+rtOld+
-				", fld, piece ${piece.id}, $defcon). pts = "+pts)
+			log.debug(
+				"End of thinkMain($x, $y, $rt, "+rtOld+
+					", fld, piece ${piece.id}, $defcon). pts = "+pts
+			)
 		return pts
 	}
 
 	private fun logBest(caseNum:Int) {
-		log.debug("New best position found (Case "+caseNum+
-			"): bestHold = "+bestHold+
-			", bestX = "+bestX+
-			", bestY = "+bestY+
-			", bestRt = "+bestRt+
-			", bestXSub = "+bestXSub+
-			", bestYSub = "+bestYSub+
-			", bestRtSub = "+bestRtSub+
-			", bestPts = "+bestPts)
+		log.debug(
+			"New best position found (Case $caseNum): bestHold = $bestHold, bestPos = ($bestX, $bestY, $bestRt), bestPosSub = ($bestXSub, $bestYSub, $bestRtSub), bestPts = $bestPts"
+		)
 	}
 
 	/* Processing of the thread */
@@ -613,7 +558,7 @@ class Nohoho:DummyAI(), Runnable {
 				thinkRequest.active = false
 				thinking = true
 				try {
-					thinkBestPosition(gEngine, gEngine.playerID)
+					thinkBestPosition(gEngine)
 					thinkComplete = true
 					log.debug("Nohoho: thinkBestPosition completed successfully")
 				} catch(e:Throwable) {
@@ -637,12 +582,8 @@ class Nohoho:DummyAI(), Runnable {
 	}
 
 	//Wrapper for think requests
-	private class ThinkRequestMutex:java.lang.Object() {
+	private class ThinkRequestMutex:Object() {
 		var active = false
-
-		init {
-			active = false
-		}
 
 		@Synchronized fun newRequest() {
 			active = true
@@ -652,15 +593,15 @@ class Nohoho:DummyAI(), Runnable {
 
 	companion object {
 		/** Log */
-		internal val log = Logger.getLogger(Nohoho::class.java)
+		internal val log = LogManager.getLogger()
 		/** MaximumCompromise level */
 		private const val MAX_THINK_DEPTH = 2
 		/** Set to true to print debug information */
 		private const val DEBUG_ALL = true
 
 		//private static final int[][] HI_PENALTY = {{6, 2}, {7, 6}, {6, 2}, {1, 0}};
-		fun checkOffset(p:Piece?, engine:GameEngine):Piece {
-			val result = Piece(p!!)
+		fun checkOffset(p:Piece, engine:GameEngine):Piece {
+			val result = Piece(p)
 			result.big = engine.big
 			if(!p.offsetApplied) result.applyOffsetArray(engine.ruleOpt.pieceOffsetX[p.id], engine.ruleOpt.pieceOffsetY[p.id])
 			return result

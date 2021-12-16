@@ -42,7 +42,6 @@ import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
-import kotlin.math.ceil
 
 /** MARATHON+ Mode */
 class MarathonPlus:NetDummyMode() {
@@ -272,7 +271,7 @@ class MarathonPlus:NetDummyMode() {
 				ruleOpt.softdropLock = goaltype==1
 				ruleOpt.softdropSurfaceLock = goaltype>1
 				ruleOpt.harddropEnable = goaltype>1
-				if(goaltype==3) owDelayCancel = 7
+				owDelayCancel = if(goaltype==3) 7 else -1
 			}
 			staffrollEnable = startLevel&&goaltype>0
 		}
