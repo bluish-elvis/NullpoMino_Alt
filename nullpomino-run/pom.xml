@@ -14,6 +14,14 @@
     <directory>doc</directory>
     <targetPath>doc</targetPath>
    </resource>
+
+   <resource>
+    <directory>../</directory>
+    <includes>
+     <include>README.md</include>
+    </includes>
+    <targetPath>doc</targetPath>
+   </resource>
    <resource>
     <directory>lib</directory>
     <targetPath>lib</targetPath>

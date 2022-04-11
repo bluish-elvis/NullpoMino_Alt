@@ -9,7 +9,6 @@
 <entry key="option.bgm">true</entry>
 <entry key="option.maxfps">60</entry>
 <entry key="button.p0.pause">-1</entry>
-<entry key="option.screenheight">480</entry>
 <entry key="option.showInput">true</entry>
 <entry key="button.p0.f">-1</entry>
 <entry key="button.p0.e">-1</entry>
@@ -76,7 +75,6 @@
 <entry key="option.bgmvolume">25</entry>
 <entry key="option.darknextarea">true</entry>
 <entry key="option.smoothfall">true</entry>
-<entry key="option.screenwidth">640</entry>
 <entry key="option.showfieldbggrid">true</entry>
 <entry key="key.p0.down">208</entry>
 <entry key="option.showLocus">true</entry>
