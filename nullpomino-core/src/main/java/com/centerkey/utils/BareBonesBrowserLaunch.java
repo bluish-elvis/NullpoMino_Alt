@@ -15,7 +15,7 @@ import java.util.Arrays;
  * Author: Dem Pilafian<br>
  * Public Domain Software -- Free to Use as You Like
  * @version 3.1, June 6, 2010 */
-@SuppressWarnings("ALL") public class BareBonesBrowserLaunch{
+public class BareBonesBrowserLaunch{
 
 	static final String[] browsers={"google-chrome","firefox","opera",
 																	"epiphany","konqueror","conkeror","midori","kazehakase","mozilla"};
