@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -43,7 +43,7 @@ abstract class AbstractMenuItem<T>(
 
 	open val valueString:String get() = "$value"
 	open val colMax:Int = 1
-	open val showHeight:Int = if(compact) 1 else 2
+	open val showHeight:Int get() = if(compact) 1 else 2
 	/** Change the aint.
 	 * @param dir Direction pressed: -1 = left, 1 = right.
 	 * If 0, update without changing any settings.
@@ -67,7 +67,7 @@ abstract class AbstractMenuItem<T>(
 	 * @return Int
 	 */
 	open fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int = -1) {
-		if(compact&&label.length<6) {
+		if(compact&&(label+valueString).length<=8) {
 			receiver.drawMenuFont(engine, playerID, 1, y, "${label}:", color = color)
 			if(focus==0) receiver.drawMenuFont(engine, playerID, 0, y, "\u0082", true)
 			receiver.drawMenu(

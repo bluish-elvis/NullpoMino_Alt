@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -28,6 +28,7 @@
  */
 package mu.nu.nullpo.gui.slick
 
+import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
@@ -334,6 +335,7 @@ class StateInGame:BasicGameState() {
 			if(!pause) {
 				if(gameManager?.isGameActive==true&&pauseFrame<=0) {
 					ResourceHolder.soundManager.play("pause")
+					if(!ResourceHolder.bgmIsLooping) ResourceHolder.bgmPause()
 					pause = true
 					cursor = 0
 				}
@@ -432,7 +434,7 @@ class StateInGame:BasicGameState() {
 			// BGM
 			if(ResourceHolder.bgmPlaying!=it.bgmStatus.bgm&&!it.bgmStatus.fadesw)
 				ResourceHolder.bgmStart(it.bgmStatus.bgm)
-			if(ResourceHolder.bgmIsPlaying()) {
+			if(ResourceHolder.bgmIsPlaying) {
 				val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
 				val newvolume = maxOf(0f, minOf(it.bgmStatus.volume*basevolume/128f, 1f))
 				container.musicVolume = newvolume

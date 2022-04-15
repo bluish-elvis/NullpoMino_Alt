@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -525,55 +525,61 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param y Y-coordinate
 	 * @param engine GameEngineのインスタンス
 	 */
-	protected fun drawNext(x:Int, y:Int, engine:GameEngine) {
+	private fun drawNext(x:Int, y:Int, engine:GameEngine) {
 		val fldWidth = engine.fieldWidth+1
 		val fldBlkSize = getBlockSize(engine)
-		if(engine.isNextVisible) {
+		if(engine.isNextVisible&&engine.ruleOpt.nextDisplay>=1) {
+			val pid = engine.nextPieceCount
 			drawFont(x+60, y, "NEXT", FONT.NANO, COLOR.ORANGE)
-			engine.getNextObject(engine.nextPieceCount)?.let {
+			drawFont(x, y, "${engine.nextPieceArraySize}", FONT.NANO, COLOR.ORANGE, .5f)
+			engine.getNextObject(pid)?.let {
 				//int x2 = x + 4 + ((-1 + (engine.field.getWidth() - piece.getWidth() + 1) / 2) * 16);
 				val x2 = x+4+engine.getSpawnPosX(engine.field, it)*fldBlkSize //Rules with spawn x modified were misaligned.
 				val y2 = y+4+nextHeight+engine.getSpawnPosY(engine.field, it)*fldBlkSize
 				drawPiece(x2, y2, it)
+				drawFont(x+60, y+16, "$pid", FONT.NANO, if(pid%7==0) COLOR.YELLOW else COLOR.WHITE, .75f)
 				if(engine.ruleOpt.fieldCeiling||!engine.ruleOpt.pieceEnterAboveField)
 					drawPieceOutline(x2, y2, it, 1f, .5f)
 			}
-			when(nextDisplayType) {
-				2 -> if(engine.ruleOpt.nextDisplay>=1) {
+			if(engine.ruleOpt.nextDisplay>1) when(nextDisplayType) {
+				2 -> {
 					val x2 = x+8+fldWidth*fldBlkSize
 					drawFont(x2+16, y+40, "NEXT", FONT.NANO, COLOR.ORANGE)
 					for(i in 0 until engine.ruleOpt.nextDisplay) {
-						engine.getNextObject(engine.nextPieceCount+i)?.let {piece ->
-							val centerX = (64-(piece.width+1)*16)/2-piece.minimumBlockX*16
-							val centerY = (64-(piece.height+1)*16)/2-piece.minimumBlockY*16
-							drawPiece(x2+centerX, y+48+i*64+centerY, piece, 1f)
+						engine.getNextObject(pid+i)?.let {
+							val centerX = (64-(it.width+1)*16)/2-it.minimumBlockX*16
+							val centerY = (64-(it.height+1)*16)/2-it.minimumBlockY*16
+							drawPiece(x2+centerX, y+48+i*64+centerY, it, 1f)
+							(pid+i+1).let {n -> if(n%7==0) drawFont(x2, y+48+i*6, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
 						}
 					}
 				}
-				1 -> if(engine.ruleOpt.nextDisplay>=1) {
+				1 -> {
 					val x2 = x+8+fldWidth*fldBlkSize
 					drawFont(x2, y+40, "NEXT", FONT.NANO, COLOR.ORANGE)
 					for(i in 0 until engine.ruleOpt.nextDisplay) {
-						engine.getNextObject(engine.nextPieceCount+i)?.let {
+						engine.getNextObject(pid+i)?.let {
 							val centerX = (32-(it.width+1)*8)/2-it.minimumBlockX*8
 							val centerY = (32-(it.height+1)*8)/2-it.minimumBlockY*8
 							drawPiece(x2+centerX, y+48+i*32+centerY, it, .75f)
+							(pid+i+1).let {n -> if(n%7==0) drawFont(x2, y+48+i*6, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
 						}
 					}
 				}
 				else -> {
-					// NEXT1
-					if(engine.ruleOpt.nextDisplay>=2) {
-						// NEXT2・3
-						for(i in 0 until minOf(2, engine.ruleOpt.nextDisplay-1))
-							engine.getNextObject(engine.nextPieceCount+i+1)?.let {
-								drawPiece(x+124+i*40, y+48-(it.maximumBlockY+1)*8, it, .5f)
-							}
-					}
-					// NEXT4～
-					for(i in 0 until engine.ruleOpt.nextDisplay-3) engine.getNextObject(engine.nextPieceCount+i+3)?.let {
-						if(showMeter) drawPiece(x+176, y+i*40+88-(it.maximumBlockY+1)*8, it, .5f)
-						else drawPiece(x+168, y+i*40+88-(it.maximumBlockY+1)*8, it, .5f)
+					// NEXT1~3
+					for(i in 0 until minOf(2, engine.ruleOpt.nextDisplay-1))
+						engine.getNextObject(pid+i+1)?.let {
+							drawPiece(x+124+i*40, y+48-(it.maximumBlockY+1)*8, it, .5f)
+							(pid+i+1).let {n -> if(n%7==0) drawFont(x+124+i*40, y+48, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
+						}
+
+					if(engine.ruleOpt.nextDisplay>=4) {
+						// NEXT4~
+						for(i in 0 until engine.ruleOpt.nextDisplay-3) engine.getNextObject(pid+i+3)?.let {
+							drawPiece(x+182, y+i*40+88-(it.maximumBlockY+1)*8, it, .5f)
+							(pid+i+3).let {n -> if(n%7==0) drawFont(x+182, y+i*40+88, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
+						}
 					}
 				}
 			}
@@ -593,7 +599,7 @@ abstract class AbstractRenderer:EventReceiver() {
 					if(!engine.holdDisable&&holdRemain>0&&holdRemain<=10)
 						tempColor = if(holdRemain<=5) COLOR.RED else COLOR.YELLOW
 				}
-				drawFont(x2, y2, str, FONT.NANO, tempColor)
+				drawFont(x2, y2, str, FONT.NANO, tempColor, .75f)
 
 				engine.holdPieceObject?.let {
 					val dark = if(engine.holdDisable) .3f else 0f

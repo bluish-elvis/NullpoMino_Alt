@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -53,8 +53,10 @@ class BGMStatus:Serializable {
 	var fadespd = 0f
 
 	/** 音楽の定数 */
-	sealed class BGM(idx:Int = 0, val hidden:Boolean = false, nums:Int = 1, ln:String = "",
-		vararg sn:String = emptyArray()) {
+	sealed class BGM(
+		idx:Int = 0, val hidden:Boolean = false, nums:Int = 1, ln:String = "",
+		vararg sn:String = emptyArray()
+	) {
 		constructor(idx:Int, nums:Int, ln:String, vararg sn:String):this(idx, false, nums, ln, *sn)
 		constructor(idx:Int, ln:String, vararg sn:String):this(idx, false, sn.size, ln, *sn)
 		constructor(idx:Int, hidden:Boolean, ln:String, vararg sn:String):this(idx, hidden, sn.size, ln, *sn)
@@ -100,21 +102,30 @@ class BGMStatus:Serializable {
 		class Puzzle(idx:Int = 0):BGM(idx, "Grand Blossom", "SAKURA", "TOMOYO", "CELBERUS")
 		class GrandM(idx:Int = 0):BGM(idx, "Grand Marathon", "NORMAL", "20G")
 		class GrandA(idx:Int = 0):BGM(idx, "Grand Mania", "NORMAL", "20G 500", "Storm 300/700", "Storm 500/900")
-		class GrandT(idx:Int = 0):BGM(idx, "Grand Mastery",
-			"NORMAL", "20G", "Blitz", "Blitz 500", "Lightning 700", "Lightning 1k")
+		class GrandT(idx:Int = 0):BGM(
+			idx, "Grand Mastery",
+			"NORMAL", "20G", "Blitz", "Blitz 500", "Lightning 700", "Lightning 1k"
+		)
 
-		class Menu(idx:Int = 0):BGM(idx, true, "Select BGM",
+		class Menu(idx:Int = 0):BGM(
+			idx, true, "Select BGM",
 			"Title Menu/Replay", "Mode Select", "General Config",
 			"Mode Config(Retro/Puzzle)", "Mode Config(Generic)", "Mode Config(Unique)",
-			"Mode Config(Trial)", "Mode Config(Grand 20G)")
+			"Mode Config(Trial)", "Mode Config(Grand 20G)"
+		)
 
-		class Ending(idx:Int = 0):BGM(idx, true, "Ending Challenge",
-			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)")
+		class Ending(idx:Int = 0):BGM(
+			idx, true, "Ending Challenge",
+			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)"
+		)
 
-		class Result(idx:Int = 0):BGM(idx, true, "Play Result",
-			"Failure", "Done Sprint", "Done Enduro", "Cleared Game")
+		class Result(idx:Int = 0):BGM(
+			idx, true, "Play Result",
+			"Failure", "Done Sprint", "Done Enduro", "Cleared Game"
+		)
 
 		class Finale(idx:Int = 0):BGM(idx, true, "Grand Finale", "Genuine", "Joker", "Further")
+		class Blitz(idx:Int = 0):BGM(idx, true, "Blitz", "3-min", "5-min")
 
 		//operator fun get(index: Int): BGM = if(this.idx)
 		companion object {

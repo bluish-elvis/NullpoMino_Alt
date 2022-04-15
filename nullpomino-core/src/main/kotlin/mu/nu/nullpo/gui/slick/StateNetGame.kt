@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -197,7 +197,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 					gameManager.mode?.let {mode ->
 						// BGM
 						if(ResourceHolder.bgmPlaying!=gameManager.bgmStatus.bgm) ResourceHolder.bgmStart(gameManager.bgmStatus.bgm)
-						if(ResourceHolder.bgmIsPlaying()) {
+						if(ResourceHolder.bgmIsPlaying) {
 							val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
 							val basevolume2 = basevolume/128.toFloat()
 							var newvolume = gameManager.bgmStatus.volume*basevolume2

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.ScoreEvent.Twister
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 import mu.nu.nullpo.gui.common.PopupCombo.CHAIN
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
@@ -454,10 +455,10 @@ class GameEngine(
 	/** Diagonal move (-1=Auto 0=Disable 1=Enable) */
 	var owMoveDiagonal:Int = -1
 	/** Outline type (-1:Auto 0orAbove:Fixed) */
-	var owBlockOutlineType = 0
+	var owBlockOutlineType = -1
 	/** Show outline only flag
 	 * (-1:Auto 0:Always Normal 1:Always Outline Only) */
-	var owBlockShowOutlineOnly = 0
+	var owBlockShowOutlineOnly = -1
 	/** ARE Canceling
 	 * (-1:Rule 1:Move 2:Rotate 4:Hold)*/
 	var owDelayCancel = -1
@@ -658,6 +659,8 @@ class GameEngine(
 			owReverseUpDown = owner.replayProp.getProperty("$playerID.tuning.owReverseUpDown", false)
 			owMoveDiagonal = owner.replayProp.getProperty("$playerID.tuning.owMoveDiagonal", -1)
 			owDelayCancel = owner.replayProp.getProperty("$playerID.tuning.owDelayCancel", -1)
+			owBlockOutlineType = owner.replayProp.getProperty("$playerID.tuning.owBlockOutlineType", -1)
+			owBlockShowOutlineOnly = owner.replayProp.getProperty("$playerID.tuning.owBlockShowOutlineOnly", -1)
 
 			randSeed = owner.replayProp.getProperty("$playerID.replay.randSeed", 16L)
 			random = Random(randSeed)
@@ -884,8 +887,12 @@ class GameEngine(
 
 	/** NEXTピース[c]番目のオブジェクトを取得*/
 	fun getNextObject(c:Int):Piece? {
-		if(nextPieceArrayObject.isEmpty()) return null
-		return nextPieceArrayObject[c%nextPieceArrayObject.size]
+		try {
+			if(nextPieceArrayObject.isEmpty()) return null
+			return nextPieceArrayObject[c%nextPieceArrayObject.size]
+		} catch(_:Exception) {
+			return null
+		}
 	}
 	/** NEXTピース[c]番目のオブジェクトコピーを取得*/
 	fun getNextObjectCopy(c:Int):Piece? = getNextObject(c)?.let {Piece(it)}
@@ -948,7 +955,7 @@ class GameEngine(
 	 * @param p Current p object
 	 * @param f Field object
 	 */
-	fun checkTwisted(x:Int, y:Int, p:Piece?, f:Field?):Twister? {
+	private fun checkTwisted(x:Int, y:Int, p:Piece?, f:Field?):Twister? {
 		p ?: return null
 		f ?: return null
 		if(!twistAllowKick&&kickused) return null
@@ -1013,7 +1020,7 @@ class GameEngine(
 		return res
 	}
 
-	fun setTWIST(x:Int, y:Int, p:Piece?, f:Field?) {
+	private fun setTwist(x:Int, y:Int, p:Piece?, f:Field?) {
 		twistType = null
 		if(p==null||f==null||p.type!=Piece.Shape.T)
 			return
@@ -1027,7 +1034,7 @@ class GameEngine(
 	 * @param p Current Blockピース
 	 * @param f field
 	 */
-	fun setAllSpin(x:Int, y:Int, p:Piece?, f:Field?) {
+	private fun setAllSpin(x:Int, y:Int, p:Piece?, f:Field?) {
 		twistType = null
 
 		if((!twistAllowKick&&kickused)||p==null||f==null) return
@@ -1101,7 +1108,7 @@ class GameEngine(
 	}
 
 	/** 先行rotationと先行ホールドの処理 */
-	fun initialRotate() {
+	private fun initialRotate() {
 		initialRotateDirection = 0
 		initialHoldFlag = false
 
@@ -1256,6 +1263,9 @@ class GameEngine(
 		owner.replayProp.setProperty("$playerID.tuning.owReverseUpDown", owReverseUpDown)
 		owner.replayProp.setProperty("$playerID.tuning.owMoveDiagonal", owMoveDiagonal)
 		owner.replayProp.setProperty("$playerID.tuning.owDelayCancel", owDelayCancel)
+
+		owner.replayProp.setProperty("$playerID.tuning.owBlockOutlineType", owBlockOutlineType)
+		owner.replayProp.setProperty("$playerID.tuning.owBlockShowOutlineOnly", owBlockShowOutlineOnly)
 
 		owner.mode?.let {
 			it.saveSetting(owner.replayProp, ruleOpt.strRuleName, playerID)
@@ -1667,8 +1677,7 @@ class GameEngine(
 						nextPieceCount++
 						if(nextPieceCount<0) nextPieceCount = 0
 
-						if(bone)
-							getNextObject(nextPieceCount+ruleOpt.nextDisplay-1)?.setAttribute(true, Block.ATTRIBUTE.BONE)
+						getNextObject(nextPieceCount+ruleOpt.nextDisplay-1)?.setAttribute(bone, Block.ATTRIBUTE.BONE)
 
 						nowPieceObject = getNextObjectCopy(nextPieceCount)
 						nextPieceCount++
@@ -1757,7 +1766,11 @@ class GameEngine(
 			kickused = false
 			twistType = null
 
-			getNextObject(nextPieceCount+ruleOpt.nextDisplay-1)?.setAttribute(bone, Block.ATTRIBUTE.BONE)
+			getNextObject(nextPieceCount+ruleOpt.nextDisplay-1)?.run {
+				setDarkness(0f)
+				setAttribute(bone, Block.ATTRIBUTE.BONE)
+				updateConnectData()
+			}
 
 			if(ending==0) timerActive = true
 			if(!owner.replayMode||owner.replayRerecord) ai?.newPiece(this, playerID)
@@ -2124,7 +2137,7 @@ class GameEngine(
 					// Twister判定
 					if(lastmove==LastMove.ROTATE_GROUND&&twistEnable)
 						if(useAllSpinBonus) setAllSpin(nowPieceX, nowPieceY, it, field)
-						else setTWIST(nowPieceX, nowPieceY, it, field)
+						else setTwist(nowPieceX, nowPieceY, it, field)
 
 					it.setAttribute(true, Block.ATTRIBUTE.SELF_PLACED)
 
@@ -2998,6 +3011,7 @@ class GameEngine(
 		const val FRAME_COLOR_BLUE = 8
 		const val FRAME_COLOR_GRAY = 9
 		const val FRAME_COLOR_YELLOW = 11
+		const val FRAME_COLOR_ALL = 15
 		const val FRAME_SKIN_GB = -1
 		const val FRAME_SKIN_SG = -2
 		const val FRAME_SKIN_HEBO = -3

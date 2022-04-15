@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -47,6 +47,8 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.ProfileProperties
 import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.ln1p
 
 /** Dummy implementation of game mode. Used as a base of most game modes. */
 abstract class AbstractMode:GameMode {
@@ -288,21 +290,25 @@ abstract class AbstractMode:GameMode {
 		else -> 3
 	}+if(lines>=1&&engine.field.isEmpty) 18 else 0 // All clear
 
-	/**VS Attack lines*/
-	fun calcPower(engine:GameEngine, lines:Int):Int = maxOf(
-		if(lines==1) (engine.combo+1)/4 else 0, (when {
+	/**VS Attack lines based tetr.io garbaging by osk, g3ner1c*/
+	fun calcPower(engine:GameEngine, lines:Int):Int = if(lines<=0) 0 else
+		(when {
 			engine.twist -> (if(engine.lasteventshape==Piece.Shape.T) lines*2 else lines+1)
-			engine.twistez -> lines+if(engine.lasteventshape==Piece.Shape.T) 0 else -1
-			lines<=3 -> lines-1
+			lines<=3 -> maxOf(0, lines-1)
 			else -> lines
 		}+if(engine.b2b) when(engine.b2bcount) {
-			in 0..2 -> 1
+			in -9..0 -> 0
+			in 1..2 -> 1
 			in 3..7 -> 2
 			in 8..22 -> 3
-			in 24..66 -> 4
-			else -> 5
-		} else 0)*(3+engine.combo)/4
-	)+if(lines>=1&&engine.field.isEmpty) 10 else 0
+			in 23..66 -> 4
+			in 24..184 -> 5
+			in 185..503 -> 6
+			in 504..1369 -> 7
+			else -> 8
+		} else 0
+			).let {if(it<=0) floor(ln1p(engine.combo*1.25)).toInt() else engine.combo*it/4+it}+
+			if(lines>=1&&engine.field.isEmpty) 10 else 0
 
 	override fun onLockFlash(engine:GameEngine, playerID:Int):Boolean = false
 	override fun onMove(engine:GameEngine, playerID:Int):Boolean = false

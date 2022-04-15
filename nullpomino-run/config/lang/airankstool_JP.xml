@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<comment>AIRanksTool language file - Japanese</comment>
+ <comment>AIRanksTool language file - Japanese</comment>
 
-<!--Main window (AIRanksTool)-->
-<entry key="Main_Title">AI Ranks Tool</entry>
-<!--Generation Tab-->
-<entry key="Main_Generation_Tab_Title">生成</entry>
-<entry key="Main_Input_Label">読込元ファイル名</entry>
-<entry key="Main_Input_Tip">地形表示ボタンを押したときに読み込む定石ファイルを指定します(新規ファイルの場合は最初から定石を計算します)</entry>
-<entry key="Main_New_File_Text">新規ファイル</entry>
-<entry key="Main_Output_Label">保存先ファイル名</entry>
-<entry key="Main_Output_Tip">開始ボタンを押したときの定石ファイルの保存先を指定します</entry>
-<entry key="Main_Iterations_Label">繰り返し数 (Number of iterations)</entry>
-<entry key="Main_Iterations_Tip">繰り返し数を設定します (Number of iterations to run over the ranks in input file)</entry>
-<entry key="Main_Go_Label">開始(G)</entry>
-<entry key="Main_Go_Tip">定石ファイルの作成を開始します</entry>
-<entry key="Main_Bests_Label">ベスト地形表示(B)</entry>
-<entry key="Main_Bests_Tip">定石ファイルの中の最も良いランクが付けられた地形を表示します</entry>
-<entry key="Main_Worsts_Label">悪い地形表示(W)</entry>
-<entry key="Main_Worsts_Tip">定石ファイルの中の最も悪いランクが付けられた地形を表示します</entry>
+ <!--Main window (AIRanksTool)-->
+ <entry key="Main_Title">AI Ranks Tool</entry>
+ <!--Generation Tab-->
+ <entry key="Main_Generation_Tab_Title">生成</entry>
+ <entry key="Main_Input_Label">読込元ファイル名</entry>
+ <entry key="Main_Input_Tip">地形表示ボタンを押したときに読み込む定石ファイルを指定します(新規ファイルの場合は最初から定石を計算します)</entry>
+ <entry key="Main_New_File_Text">新規ファイル</entry>
+ <entry key="Main_Output_Label">保存先ファイル名</entry>
+ <entry key="Main_Output_Tip">開始ボタンを押したときの定石ファイルの保存先を指定します</entry>
+ <entry key="Main_Iterations_Label">繰り返し数 (Number of iterations)</entry>
+ <entry key="Main_Iterations_Tip">繰り返し数を設定します (Number of iterations to run over the ranks in input file)</entry>
+ <entry key="Main_Go_Label">開始(G)</entry>
+ <entry key="Main_Go_Tip">定石ファイルの作成を開始します</entry>
+ <entry key="Main_Bests_Label">ベスト地形表示(B)</entry>
+ <entry key="Main_Bests_Tip">定石ファイルの中の最も良いランクが付けられた地形を表示します</entry>
+ <entry key="Main_Worsts_Label">悪い地形表示(W)</entry>
+ <entry key="Main_Worsts_Tip">定石ファイルの中の最も悪いランクが付けられた地形を表示します</entry>
 
-<!--AI Config Tab-->
-<entry key="Main_AI_Config_Tab_Title">AI設定</entry>
-<entry key="Main_Ranks_File_Used_Label">使用する定石ファイル</entry>
-<entry key="Main_Ranks_File_Used_Tooltip">RanksAIから使用される定石ファイルを指定します</entry>
+ <!--AI Config Tab-->
+ <entry key="Main_AI_Config_Tab_Title">AI設定</entry>
+ <entry key="Main_Ranks_File_Used_Label">使用する定石ファイル</entry>
+ <entry key="Main_Ranks_File_Used_Tooltip">RanksAIから使用される定石ファイルを指定します</entry>
 
-<entry key="Main_Num_Previews_Label">考慮するNEXTピース数</entry>
-<entry key="Main_Num_Previews_Tip">考慮する最大NEXTピース数を指定します</entry>
+ <entry key="Main_Num_Previews_Label">考慮するNEXTピース数</entry>
+ <entry key="Main_Num_Previews_Tip">考慮する最大NEXTピース数を指定します</entry>
 
-<entry key="Main_Allow_Hold">ホールドを考慮する</entry>
-<entry key="Main_Allow_Hold_Tip">ホールドの使用を考慮します</entry>
+ <entry key="Main_Allow_Hold">ホールドを考慮する</entry>
+ <entry key="Main_Allow_Hold_Tip">ホールドの使用を考慮します</entry>
 
-<entry key="Main_Speed_Limit_Label">速度制限(TPM)</entry>
-<entry key="Main_Speed_Limit_Tip">AIの動作速度制限をTPMで指定します</entry>
+ <entry key="Main_Speed_Limit_Label">速度制限(TPM)</entry>
+ <entry key="Main_Speed_Limit_Tip">AIの動作速度制限をTPMで指定します</entry>
 
-<entry key="Main_Set_Default_Label">デフォルトにする</entry>
-<entry key="Main_Set_Default_Tip">現在の設定をデフォルトにします</entry>
+ <entry key="Main_Set_Default_Label">デフォルトにする</entry>
+ <entry key="Main_Set_Default_Tip">現在の設定をデフォルトにします</entry>
 
-<!--Progress window (RanksIterator)-->
-<entry key="Progress_Message">計算中...</entry>
-<entry key="Progress_Note">NEXTピース:%d(%d%%)/%d- トータル:%d%%</entry>
-<entry key="Progress_Note_Save_File">ファイルを保存中...</entry>
-<entry key="Progress_Note_Load_File">ファイルを読み込み中...</entry>
-<entry key="Progress_Cancel_Button">キャンセル</entry>
+ <!--Progress window (RanksIterator)-->
+ <entry key="Progress_Message">計算中...</entry>
+ <entry key="Progress_Note">NEXTピース:%d(%d%%)/%d- トータル:%d%%</entry>
+ <entry key="Progress_Note_Save_File">ファイルを保存中...</entry>
+ <entry key="Progress_Note_Load_File">ファイルを読み込み中...</entry>
+ <entry key="Progress_Cancel_Button">キャンセル</entry>
 
-<!--Result window (RanksResult)-->
-<entry key="Result_Title">地形表示</entry>
-<entry key="Result_Progress_Message">ランクの並び替え中...</entry>
-<entry key="Result_Progress_Note">%d%%完了</entry>
-<entry key="Result_Score">得点:</entry>
-<entry key="Result_Next">次へ(N)</entry>
-<entry key="Result_Previous">前へ(P)</entry>
+ <!--Result window (RanksResult)-->
+ <entry key="Result_Title">地形表示</entry>
+ <entry key="Result_Progress_Message">ランクの並び替え中...</entry>
+ <entry key="Result_Progress_Note">%d%%完了</entry>
+ <entry key="Result_Score">得点:</entry>
+ <entry key="Result_Next">次へ(N)</entry>
+ <entry key="Result_Previous">前へ(P)</entry>
 </properties>

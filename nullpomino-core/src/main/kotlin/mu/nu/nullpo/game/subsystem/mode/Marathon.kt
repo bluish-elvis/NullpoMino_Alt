@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.*
+import mu.nu.nullpo.gui.common.ResourceHolder
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -143,32 +144,15 @@ class Marathon:NetDummyMode() {
 			if(change!=0) {
 				engine.playSE("change")
 
-				when(menuCursor) {
-					0 -> {
-						goaltype += change
-						if(goaltype<0) goaltype = GOALTYPE_MAX-1
-						if(goaltype>GOALTYPE_MAX-1) goaltype = 0
-
-						if(startLevel>(tableGameClearLines[goaltype]-1)/10&&tableGameClearLines[goaltype]>=0) {
-							startLevel = (tableGameClearLines[goaltype]-1)/10
-							engine.owner.backgroundStatus.bg = startLevel
-						}
-					}
-					1 -> {
-						startLevel += change
-						if(tableGameClearLines[goaltype]>=0) {
-							if(startLevel<0) startLevel = (tableGameClearLines[goaltype]-1)/10
-							if(startLevel>(tableGameClearLines[goaltype]-1)/10) startLevel = 0
-						} else {
-							if(startLevel<0) startLevel = 19
-							if(startLevel>19) startLevel = 0
-						}
-						engine.owner.backgroundStatus.bg = startLevel
-						engine.statistics.level = startLevel
-						setSpeed(engine)
-					}
-					2 -> big = !big
+				if(startLevel>(tableGameClearLines[goaltype]-1)/10&&tableGameClearLines[goaltype]>=0) {
+					startLevel = (tableGameClearLines[goaltype]-1)/10
+					engine.owner.backgroundStatus.bg = startLevel
 				}
+
+				engine.owner.backgroundStatus.bg = startLevel
+				engine.statistics.level = startLevel
+				engine.framecolor = (1+startLevel)%GameEngine.FRAME_COLOR_ALL
+				setSpeed(engine)
 
 				// NET: Signal options change
 				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
@@ -236,6 +220,7 @@ class Marathon:NetDummyMode() {
 		setSpeed(engine)
 
 		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent else BGM.Generic(bgmlv)
+		engine.framecolor = (1+startLevel)%GameEngine.FRAME_COLOR_ALL
 	}
 
 	/* Render score */
@@ -267,7 +252,7 @@ class Marathon:NetDummyMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "LINE", COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Lines", COLOR.BLUE)
 			receiver.drawScoreNum(engine, playerID, 5, 2, engine.statistics.lines.toString(), 2f)
 
 			receiver.drawScoreFont(engine, playerID, 0, 4, "Score", COLOR.BLUE)
@@ -332,7 +317,7 @@ class Marathon:NetDummyMode() {
 		} else if(engine.statistics.lines>=(engine.statistics.level+1)*10&&engine.statistics.level<tableGameClearLines[goaltype]/10) {
 			// Level up
 			engine.statistics.level++
-
+			engine.framecolor = (1+engine.statistics.level)%GameEngine.FRAME_COLOR_ALL
 			owner.backgroundStatus.fadesw = true
 			owner.backgroundStatus.fadecount = 0
 			owner.backgroundStatus.fadebg = engine.statistics.level

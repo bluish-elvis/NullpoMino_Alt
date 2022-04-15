@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -548,18 +548,19 @@ class RendererSlick:AbstractRenderer() {
 			val tY = y+4f
 			val bY = tY+height*BS
 
+			g.color = Color.white
 			//top edge
 //			g.drawImage(fi, fi.height.toFloat()+1, 0f)
 			fi.getSubImage(16, 0, 16, 32).also {
 				it.setCenterOfRotation(0f, 0f)
 				it.rotation = -90f
-				it.draw(lX-BS, tY, BS.toFloat(),rX-lX+BS*2f)
+				it.draw(lX-BS, tY, BS.toFloat(), rX-lX+BS*2f)
 			}
 			//bottom edge
 			fi.getSubImage(48, 96, 16, 32).also {
 				it.setCenterOfRotation(0f, 0f)
 				it.rotation = -90f
-				it.draw(lX-BS, bY+BS, BS.toFloat(),rX-lX+BS*2f)
+				it.draw(lX-BS, bY+BS, BS.toFloat(), rX-lX+BS*2f)
 			}
 			//left edge
 			g.texture(
@@ -573,7 +574,7 @@ class RendererSlick:AbstractRenderer() {
 				fi.getSubImage(16, 96, 16, 32),
 				1f, 1f, true
 			)
-		}else if(engine.framecolor==FRAME_SKIN_GRADE){
+		} else if(engine.framecolor==FRAME_SKIN_GRADE) {
 			val fi = resources.imgFrameOld[3]
 		}
 	}

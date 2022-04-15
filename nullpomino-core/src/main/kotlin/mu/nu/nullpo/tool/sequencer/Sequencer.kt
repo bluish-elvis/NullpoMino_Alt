@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -114,8 +114,7 @@ class Sequencer:JFrame(), ActionListener {
 		}
 
 		try {
-			FileInputStream(
-				"config/lang/sequencer_${Locale.getDefault().country}.xml").let {
+			FileInputStream("config/lang/sequencer_${Locale.getDefault().country}.xml").let {
 				propLang.loadFromXML(it)
 				it.close()
 			}
@@ -282,13 +281,15 @@ class Sequencer:JFrame(), ActionListener {
 
 		// Sequence
 		contentPane.add(
-			JScrollPane(txtareaSequence.apply {
-				rows = 10
-				columns = 37
-				lineWrap = true
-				isEditable = false
-			}, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
+			JScrollPane(
+				txtareaSequence.apply {
+					rows = 10
+					columns = 37
+					lineWrap = true
+					isEditable = false
+				}, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+			)
 		)
 
 	}
@@ -356,10 +357,9 @@ class Sequencer:JFrame(), ActionListener {
 
 	/** Get translated text from UI Language file
 	 * @param str Text
-	 * @return Translated text (If translated text is NOT available, it will
-	 * return str itself)
+	 * @return Translated text (If translated text is NOT available, it will return str itself)
 	 */
-	fun getUIText(str:String):String = propLang.getProperty(str) ?: propLangDefault.getProperty(str, str) ?: ""
+	private fun getUIText(str:String):String = propLang.getProperty(str, propLangDefault.getProperty(str, str)) ?: ""
 
 	/** Get int value from a JTextField
 	 * @param txtfld JTextField
@@ -431,8 +431,10 @@ class Sequencer:JFrame(), ActionListener {
 					prop = load(file.path)
 				} catch(e2:IOException) {
 					log.error("Failed to load replay data", e2)
-					JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e2", getUIText("Title_FileLoadFailed"),
-						JOptionPane.ERROR_MESSAGE)
+					JOptionPane.showMessageDialog(
+						this, "${getUIText("Message_FileLoadFailed")}\n$e2", getUIText("Title_FileLoadFailed"),
+						JOptionPane.ERROR_MESSAGE
+					)
 					return
 				}
 
@@ -454,8 +456,10 @@ class Sequencer:JFrame(), ActionListener {
 					save(filename)
 				} catch(e2:Exception) {
 					log.error("Failed to save sequence data", e2)
-					JOptionPane.showMessageDialog(this, "${getUIText("Message_FileSaveFailed")}\n$e2",
-						getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
+					JOptionPane.showMessageDialog(
+						this, "${getUIText("Message_FileSaveFailed")}\n$e2",
+						getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
+					)
 					return
 				}
 

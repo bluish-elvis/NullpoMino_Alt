@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -38,7 +38,8 @@ import java.util.Collections
 import javax.swing.*
 import kotlin.math.pow
 
-class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRanks:Int, ascendant:Boolean):JDialog(parent, true), ActionListener, PropertyChangeListener {
+class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRanks:Int, ascendant:Boolean,
+	private val getUIText:(String)->String):JDialog(parent, true), ActionListener, PropertyChangeListener {
 
 	private var surfaceComponent:SurfaceComponent? = null
 	private var surfaceComponentMirrored:SurfaceComponent? = null
@@ -51,8 +52,8 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 	private var currentSurface = 0
 	private var currentSurfaceMirrored = 0
 	private var indexSurface = 0
-	private val maxJump:Int get() =ranks?.maxJump?:0
-	private val stackWidth:Int get() = ranks?.stackWidth?:0
+	private val maxJump:Int get() = ranks?.maxJump ?: 0
+	private val stackWidth:Int get() = ranks?.stackWidth ?: 0
 
 	private val factorCompare:Int
 	private val task:Task
@@ -110,10 +111,11 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 			}
 			surfaceRankBestsList.sort()
 
-			surfaceRanksBests = Array(bestNRanks){surfaceRankBestsList[it]}
-			surfaceRanksBestsMirrored = Array(bestNRanks){
+			surfaceRanksBests = Array(bestNRanks) {surfaceRankBestsList[it]}
+			surfaceRanksBestsMirrored = Array(bestNRanks) {
 				val mirroredSurface = getMirroredSurface(surfaceRankBestsList[it].surface)
-				SurfaceRank(mirroredSurface, ranks!!.getRankValue(mirroredSurface))}
+				SurfaceRank(mirroredSurface, ranks!!.getRankValue(mirroredSurface))
+			}
 
 			ranks = null
 
@@ -122,7 +124,7 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 
 		public override fun done() {
 
-			title = AIRanksTool.getUIText("Result_Title")
+			title = getUIText("Result_Title")
 			initUI()
 			pack()
 			isVisible = true
@@ -135,7 +137,7 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 		defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
 
 		factorCompare = if(ascendant) -1 else 1
-		progressMonitor = ProgressMonitor(parent, AIRanksTool.getUIText("Result_Progress_Message"), "", 0, 100)
+		progressMonitor = ProgressMonitor(parent, getUIText("Result_Progress_Message"), "", 0, 100)
 		progressMonitor.setProgress(0)
 		task = Task()
 		task.addPropertyChangeListener(this)
@@ -165,17 +167,17 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 		currentSurface = surfaceRanksBests!![indexSurface].surface
 
 		surfaceComponent = SurfaceComponent(maxJump, stackWidth, currentSurface)
-		labelScore = JLabel(AIRanksTool.getUIText("Result_Score")+surfaceRanksBests!![indexSurface].rank)
+		labelScore = JLabel(getUIText("Result_Score")+surfaceRanksBests!![indexSurface].rank)
 
 		currentSurfaceMirrored = surfaceRanksBestsMirrored!![indexSurface].surface
 		surfaceComponentMirrored = SurfaceComponent(maxJump, stackWidth, currentSurfaceMirrored)
-		labelScoreMirrored = JLabel(AIRanksTool.getUIText("Result_Score")+surfaceRanksBestsMirrored!![indexSurface].rank)
+		labelScoreMirrored = JLabel(getUIText("Result_Score")+surfaceRanksBestsMirrored!![indexSurface].rank)
 
-		buttonNext = JButton(AIRanksTool.getUIText("Result_Next"))
+		buttonNext = JButton(getUIText("Result_Next"))
 		buttonNext!!.actionCommand = "next"
 		buttonNext!!.addActionListener(this)
 		buttonNext!!.setMnemonic('N')
-		buttonPrevious = JButton(AIRanksTool.getUIText("Result_Previous"))
+		buttonPrevious = JButton(getUIText("Result_Previous"))
 		buttonPrevious!!.actionCommand = "previous "
 		buttonPrevious!!.isEnabled = false
 		buttonPrevious!!.addActionListener(this)
@@ -211,11 +213,11 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 				indexSurface++
 				currentSurface = surfaceRanksBests!![indexSurface].surface
 				surfaceComponent!!.setSurface(currentSurface)
-				labelScore!!.text = AIRanksTool.getUIText("Result_Score")+surfaceRanksBests!![indexSurface].rank
+				labelScore!!.text = getUIText("Result_Score")+surfaceRanksBests!![indexSurface].rank
 
 				currentSurfaceMirrored = surfaceRanksBestsMirrored!![indexSurface].surface
 				surfaceComponentMirrored!!.setSurface(currentSurfaceMirrored)
-				labelScoreMirrored!!.text = AIRanksTool.getUIText("Result_Score")+surfaceRanksBestsMirrored!![indexSurface].rank
+				labelScoreMirrored!!.text = getUIText("Result_Score")+surfaceRanksBestsMirrored!![indexSurface].rank
 
 				if(indexSurface>0) buttonPrevious!!.isEnabled = true
 				if(indexSurface==bestNRanks-1) buttonNext!!.isEnabled = false
@@ -226,11 +228,11 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 			indexSurface--
 			currentSurface = surfaceRanksBests!![indexSurface].surface
 			surfaceComponent!!.setSurface(currentSurface)
-			labelScore!!.text = AIRanksTool.getUIText("Result_Score")+surfaceRanksBests!![indexSurface].rank
+			labelScore!!.text = getUIText("Result_Score")+surfaceRanksBests!![indexSurface].rank
 
 			currentSurfaceMirrored = getMirroredSurface(currentSurface)
 			surfaceComponentMirrored!!.setSurface(currentSurfaceMirrored)
-			labelScoreMirrored!!.text = AIRanksTool.getUIText("Result_Score")+surfaceRanksBestsMirrored!![indexSurface].rank
+			labelScoreMirrored!!.text = getUIText("Result_Score")+surfaceRanksBestsMirrored!![indexSurface].rank
 
 			if(indexSurface<bestNRanks-1) buttonNext!!.isEnabled = true
 			if(indexSurface==0) buttonPrevious!!.isEnabled = false
@@ -243,7 +245,7 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 		if("progress"==evt.propertyName) {
 			val progress = evt.newValue as Int
 			progressMonitor.setProgress(progress)
-			val message = String.format(AIRanksTool.getUIText("Result_Progress_Note"), progress)
+			val message = String.format(getUIText("Result_Progress_Note"), progress)
 			progressMonitor.note = message
 		}
 

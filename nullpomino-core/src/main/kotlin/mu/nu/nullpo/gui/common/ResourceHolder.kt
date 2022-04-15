@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -43,7 +43,7 @@ abstract class ResourceHolder {
 	/** log */
 	abstract val log:Logger
 
-	val logConf = "config/etc/log.xml"
+	private val logConf = "config/etc/log.xml"
 
 	init {
 		try {
@@ -126,14 +126,14 @@ abstract class ResourceHolder {
 
 	/** Field frame */
 	internal open val imgFrame:List<ResourceImage<*>> by lazy {
-		File("$skinDir/graphics/frames/").listFiles(FileFilter {it.isImage&&it.nameWithoutExtension.all {it.isDigit()}})
+		File("$skinDir/graphics/frames/").listFiles(FileFilter {it.isImage&&it.nameWithoutExtension.all {i -> i.isDigit()}})
 			?.sortedWith(nameSort)?.map {
 				ResourceImageStr("frames/"+it.nameWithoutExtension)
 			} ?: emptyList()
 	}
 
 	internal open val imgFrameOld:List<ResourceImage<*>> =
-		listOf("gb", "sa", "hebo","grade").map {ResourceImageStr("frames/$it")}
+		listOf("gb", "sa", "hebo", "grade").map {ResourceImageStr("frames/$it")}
 
 	/** Field background */
 	internal open val imgFieldBG:List<ResourceImage<*>> =
