@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -565,7 +565,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Game mode description
 		try {
 			val `in` = FileInputStream("config/lang/modedesc_default.xml")
-			propDefaultModeDesc.load(`in`)
+			propDefaultModeDesc.loadFromXML(`in`)
 			`in`.close()
 		} catch(e:IOException) {
 			log.error("Couldn't load default mode description file", e)
@@ -573,7 +573,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		try {
 			val `in` = FileInputStream("config/lang/modedesc_${Locale.getDefault().country}.xml")
-			propModeDesc.load(`in`)
+			propModeDesc.loadFromXML(`in`)
 			`in`.close()
 		} catch(_:IOException) {
 		}
@@ -581,7 +581,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Read language file
 		try {
 			val `in` = FileInputStream("config/lang/netlobby_default.xml")
-			propLangDefault.load(`in`)
+			propLangDefault.loadFromXML(`in`)
 			`in`.close()
 		} catch(e:Exception) {
 			log.error("Couldn't load default UI language file", e)
@@ -589,7 +589,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		try {
 			val `in` = FileInputStream("config/lang/netlobby_${Locale.getDefault().country}.xml")
-			propLang.load(`in`)
+			propLang.loadFromXML(`in`)
 			`in`.close()
 		} catch(_:IOException) {
 		}
@@ -1516,7 +1516,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// ***
 		spinnerCreateRoomARE.model = (SpinnerNumberModel(
-			propConfig.getProperty("createroom.defaultARE", 0), 0, 99, 1))
+			propConfig.getProperty("createroom.defaultARE", 0), 0, 99, 1
+		))
 		spinnerCreateRoomARE.preferredSize = Dimension(200, 20)
 		subpanelARE.add(spinnerCreateRoomARE, BorderLayout.EAST)
 
@@ -1736,8 +1737,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// *** To wait before auto-start time
 		subpanelAutoStartSeconds.add(spinnerCreateRoomAutoStartSeconds.apply {
-			model = (SpinnerNumberModel(propConfig.getProperty("createroom.defaultAutoStartSeconds", 15),
-				0, 999, 1))
+			model = (SpinnerNumberModel(
+				propConfig.getProperty("createroom.defaultAutoStartSeconds", 15),
+				0, 999, 1
+			))
 			preferredSize = Dimension(200, 20)
 			toolTipText = getUIText("CreateRoom_AutoStartSeconds_Tip")
 		}, BorderLayout.EAST)
@@ -2004,7 +2007,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pTuningRotateButtonDefaultRight.add(JLabel(getUIText("GameTuning_RotateButtonDefaultRight_Label")))
 
 		comboboxTuningRotateButtonDefaultRight.model = DefaultComboBoxModel(
-			TUNING_ABUTTON_ROTATE.map {getUIText(it)}.toTypedArray())
+			TUNING_ABUTTON_ROTATE.map {getUIText(it)}.toTypedArray()
+		)
 		pTuningRotateButtonDefaultRight.add(comboboxTuningRotateButtonDefaultRight)
 
 		// *** Diagonal move
@@ -2564,7 +2568,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		r.roomID.toString(), r.strName, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False"),
 		if(r.ruleLock) r.ruleName.uppercase() else getUIText("RoomTable_RuleName_Any"), r.strMode,
 		if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting"),
-		"${r.playerSeatedCount}/${r.maxPlayers}", r.spectatorCount.toString())
+		"${r.playerSeatedCount}/${r.maxPlayers}", r.spectatorCount.toString()
+	)
 
 	/** Entered the room that you specify
 	 * @param roomID RoomID
@@ -2995,8 +3000,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		val index = listboxServerList.selectedIndex
 		if(index!=-1) {
 			val server = listboxServerList.selectedValue as String
-			val answer = JOptionPane.showConfirmDialog(this, getUIText("MessageBody_ServerDelete")+"\n"
-				+server, getUIText("MessageTitle_ServerDelete"), JOptionPane.YES_NO_OPTION)
+			val answer = JOptionPane.showConfirmDialog(
+				this, getUIText("MessageBody_ServerDelete")+"\n"
+					+server, getUIText("MessageTitle_ServerDelete"), JOptionPane.YES_NO_OPTION
+			)
 			if(answer==JOptionPane.YES_OPTION) {
 				listmodelServerList.remove(index)
 				saveListFromDefaultListModel(listmodelServerList, "config/setting/netlobby_serverlist.cfg")
@@ -3060,8 +3067,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			log.debug("Port:$port")
 
-			val answer = JOptionPane.showConfirmDialog(this, getUIText("MessageBody_SetObserver")+"\n"
-				+strServer, getUIText("MessageTitle_SetObserver"), JOptionPane.YES_NO_OPTION)
+			val answer = JOptionPane.showConfirmDialog(
+				this, getUIText("MessageBody_SetObserver")+"\n"
+					+strServer, getUIText("MessageTitle_SetObserver"), JOptionPane.YES_NO_OPTION
+			)
 
 			if(answer==JOptionPane.YES_OPTION) {
 				propObserver.setProperty("observer.enable", true)
@@ -3756,9 +3765,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					val currentTime = GregorianCalendar()
 					val month = currentTime.get(Calendar.MONTH)+1
 					val filename =
-						String.format("log/lobby_%04d_%02d_%02d_%02d_%02d_%02d.txt", currentTime.get(Calendar.YEAR), month,
+						String.format(
+							"log/lobby_%04d_%02d_%02d_%02d_%02d_%02d.txt", currentTime.get(Calendar.YEAR), month,
 							currentTime.get(Calendar.DATE), currentTime.get(Calendar.HOUR_OF_DAY), currentTime.get(Calendar.MINUTE),
-							currentTime.get(Calendar.SECOND))
+							currentTime.get(Calendar.SECOND)
+						)
 					writerLobbyLog = PrintWriter(filename)
 				} catch(e:Exception) {
 					log.warn("Failed to create lobby log file", e)
@@ -3769,9 +3780,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					val currentTime = GregorianCalendar()
 					val month = currentTime.get(Calendar.MONTH)+1
 					val filename =
-						String.format("log/room_%04d_%02d_%02d_%02d_%02d_%02d.txt", currentTime.get(Calendar.YEAR), month,
+						String.format(
+							"log/room_%04d_%02d_%02d_%02d_%02d_%02d.txt", currentTime.get(Calendar.YEAR), month,
 							currentTime.get(Calendar.DATE), currentTime.get(Calendar.HOUR_OF_DAY), currentTime.get(Calendar.MINUTE),
-							currentTime.get(Calendar.SECOND))
+							currentTime.get(Calendar.SECOND)
+						)
 					writerRoomLog = PrintWriter(filename)
 				} catch(e:Exception) {
 					log.warn("Failed to create room log file", e)
@@ -3786,8 +3799,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Successful login
 		if(message[0]=="loginsuccess") {
 			addSystemChatLogLater(txtpaneLobbyChatLog, getUIText("SysMsg_LoginOK"), Color.blue)
-			addSystemChatLogLater(txtpaneLobbyChatLog, getUIText("SysMsg_YourNickname")+convTripCode(NetUtil.urlDecode(message[1])),
-				Color.blue)
+			addSystemChatLogLater(
+				txtpaneLobbyChatLog, getUIText("SysMsg_YourNickname")+convTripCode(NetUtil.urlDecode(message[1])),
+				Color.blue
+			)
 			addSystemChatLogLater(txtpaneLobbyChatLog, getUIText("SysMsg_YourUID")+netPlayerClient!!.playerUID, Color.blue)
 
 			addSystemChatLogLater(txtpaneLobbyChatLog, getUIText("SysMsg_SendRuleDataStart"), Color.blue)
@@ -3876,7 +3891,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				}
 
 				listboxCreateRoom1PRuleList.setSelectedValue(
-					propConfig.getProperty("createroom1p.listboxCreateRoom1PRuleList.value", ""), true)
+					propConfig.getProperty("createroom1p.listboxCreateRoom1PRuleList.value", ""), true
+				)
 			}
 		}
 		// PlayerList
@@ -4250,8 +4266,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				tablemodelGameStat1P.addRow(strTempArray)
 
 				if(writerRoomLog!=null&&strTempArray.size>1)
-					writerRoomLog!!.print(" ${strTempArray[0]}:"+strTempArray[1]
-						+"\n")
+					writerRoomLog!!.print(
+						" ${strTempArray[0]}:"+strTempArray[1]
+							+"\n"
+					)
 			}
 
 			if(writerRoomLog!=null) writerRoomLog!!.flush()
@@ -4358,8 +4376,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		if(ex!=null) {
-			addSystemChatLogLater(currentChatLogTextPane, getUIText("SysMsg_DisconnectedError")+"\n"
-				+ex.localizedMessage, Color.red)
+			addSystemChatLogLater(
+				currentChatLogTextPane, getUIText("SysMsg_DisconnectedError")+"\n"
+					+ex.localizedMessage, Color.red
+			)
 			log.info("Server Disconnected", ex)
 		} else {
 			addSystemChatLogLater(currentChatLogTextPane, getUIText("SysMsg_DisconnectedOK"), Color(128, 0, 0))
@@ -4740,15 +4760,19 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		/** Room-table column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
 		val ROOMTABLE_COLUMNNAMES =
-			arrayOf("RoomTable_ID", "RoomTable_Name", "RoomTable_Rated", "RoomTable_RuleName", "RoomTable_ModeName",
-				"RoomTable_Status", "RoomTable_Players", "RoomTable_Spectators")
+			arrayOf(
+				"RoomTable_ID", "RoomTable_Name", "RoomTable_Rated", "RoomTable_RuleName", "RoomTable_ModeName",
+				"RoomTable_Status", "RoomTable_Players", "RoomTable_Spectators"
+			)
 
 		/** End-of-game statistics column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
 		val STATTABLE_COLUMNNAMES =
-			arrayOf("StatTable_Rank", "StatTable_Name", "StatTable_Attack", "StatTable_APL", "StatTable_APM", "StatTable_Lines",
+			arrayOf(
+				"StatTable_Rank", "StatTable_Name", "StatTable_Attack", "StatTable_APL", "StatTable_APM", "StatTable_Lines",
 				"StatTable_LPM", "StatTable_Piece", "StatTable_PPS", "StatTable_Time", "StatTable_KO", "StatTable_Wins",
-				"StatTable_Games")
+				"StatTable_Games"
+			)
 
 		/** 1P end-of-game statistics column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
@@ -4765,13 +4789,17 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		/** Tuning: A button rotation (before translation) */
 		val TUNING_ABUTTON_ROTATE =
-			arrayOf("GameTuning_RotateButtonDefaultRight_Auto", "GameTuning_RotateButtonDefaultRight_Left",
-				"GameTuning_RotateButtonDefaultRight_Right")
+			arrayOf(
+				"GameTuning_RotateButtonDefaultRight_Auto", "GameTuning_RotateButtonDefaultRight_Left",
+				"GameTuning_RotateButtonDefaultRight_Right"
+			)
 
 		/** Tuning: Outline type names (before translation) */
 		val TUNING_OUTLINE_TYPE_NAMES =
-			arrayOf("GameTuning_OutlineType_Auto", "GameTuning_OutlineType_None", "GameTuning_OutlineType_Normal",
-				"GameTuning_OutlineType_Connect", "GameTuning_OutlineType_SameColor")
+			arrayOf(
+				"GameTuning_OutlineType_Auto", "GameTuning_OutlineType_None", "GameTuning_OutlineType_Normal",
+				"GameTuning_OutlineType_Connect", "GameTuning_OutlineType_SameColor"
+			)
 
 		/** Spin bonus names */
 		val COMBOBOX_SPINBONUS_NAMES = arrayOf("CreateRoom_Twist_Disable", "CreateRoom_Twist_TOnly", "CreateRoom_Twist_All")
@@ -4792,8 +4820,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		/** Names for each screen-card */
 		val SCREENCARD_NAMES =
-			arrayOf("ServerSelect", "Lobby", "ServerAdd", "CreateRatedWaiting", "CreateRated", "CreateRoom", "CreateRoom1P",
-				"MPRanking", "RuleChange")
+			arrayOf(
+				"ServerSelect", "Lobby", "ServerAdd", "CreateRatedWaiting", "CreateRated", "CreateRoom", "CreateRoom1P",
+				"MPRanking", "RuleChange"
+			)
 
 		/** Log */
 		internal val log = LogManager.getLogger()

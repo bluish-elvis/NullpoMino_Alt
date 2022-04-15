@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -96,7 +96,7 @@ import kotlin.math.roundToInt
 	var inum
 		get() = item?.let {it.ordinal+1} ?: 0
 		set(value) {
-			item = if(value in 1..ITEM.values().size) ITEM.values()[value-1] else null
+			item = if(value in 1..items.size) items[value-1] else null
 		}
 
 	/** Number of extra clears required before block is erased */
@@ -191,15 +191,14 @@ import kotlin.math.roundToInt
 	 * @param attrs 変更したい属性
 	 * @param status 変更後 state
 	 */
-	fun setAttribute(status:Boolean, vararg attrs:ATTRIBUTE) {
-		val attr = attrs.fold(0) {x, y -> x or y.bit}
-		aint = if(status) aint or attr else aint and attr.inv()
-	}
+	fun setAttribute(status:Boolean, vararg attrs:ATTRIBUTE) =
+		setAttribute(status, attrs.fold(0) {x, y -> x or y.bit})
 
 	fun setAttribute(status:Boolean, attr:Int) {
 		aint = if(status) aint or attr else aint and attr.inv()
 	}
 
+	@Deprecated("Argument Swapped", ReplaceWith("setAttribute(status, attr)"))
 	fun setAttribute(attr:Int, status:Boolean) = setAttribute(status, attr)
 
 	/** @return the character representing the color of this block
@@ -302,14 +301,14 @@ import kotlin.math.roundToInt
 		/** Ignore block connections (for Avalanche modes) */
 		IGNORE_LINK;
 
-		val bit:Int get() = 2.0.pow(ordinal).roundToInt()
+		val bit:Int get() = 1 shl ordinal
 
 	}
 
 	companion object {
 		/** Serial version ID */
 		private const val serialVersionUID = -7126899262733374545L
-
+		private val items = Block.ITEM.values()
 		/** Block colorの定数 */
 		const val COLOR_INVALID = -2
 		const val COLOR_NONE = -1
@@ -350,7 +349,7 @@ import kotlin.math.roundToInt
 		const val COLOR_RAINBOW = 34
 		const val COLOR_GEM_RAINBOW = 35
 
-		val MAX_ITEM get() = ITEM.values().size
+		val MAX_ITEM get() = items.size
 
 		@Deprecated("moved", ReplaceWith("Block.COLOR.COUNT"))
 		val COLOR_COUNT

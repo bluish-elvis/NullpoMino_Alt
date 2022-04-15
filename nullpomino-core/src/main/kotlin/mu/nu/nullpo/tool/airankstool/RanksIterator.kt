@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -39,7 +39,9 @@ import java.io.*
 import java.util.concurrent.ExecutionException
 import javax.swing.*
 
-class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:String, private val numIterations:Int):JDialog(parent, AIRanksTool.getUIText("Progress_Message")), PropertyChangeListener, ActionListener {
+class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:String, private val numIterations:Int,
+	private val getUIText:(String)->String):
+	JDialog(parent, getUIText("Progress_Message")), PropertyChangeListener, ActionListener {
 
 	private var ranks:Ranks? = null
 	private var ranksFrom:Ranks? = null
@@ -95,7 +97,8 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 
 	}
 
-	internal inner class AllIterations(private val totalParts:Int, private val ranksIterator:RanksIterator, private val inputFile:String):SwingWorker<Void, String>() {
+	internal inner class AllIterations(private val totalParts:Int, private val ranksIterator:RanksIterator,
+		private val inputFile:String):SwingWorker<Void, String>() {
 		var cancelled = false
 
 		init {
@@ -105,7 +108,7 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 		}
 
 		public override fun doInBackground():Void? {
-			progressLabel.text = AIRanksTool.getUIText("Progress_Note_Load_File")
+			progressLabel.text = getUIText("Progress_Note_Load_File")
 
 			val fis:FileInputStream
 			val `in`:ObjectInputStream
@@ -161,7 +164,7 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 
 			}
 			//System.out.println("save file !");
-			progressLabel.text = AIRanksTool.getUIText("Progress_Note_Save_File")
+			progressLabel.text = getUIText("Progress_Note_Save_File")
 
 			try {
 				val ranksAIDir = File(AIRanksConstants.RANKSAI_DIR)
@@ -201,12 +204,12 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 	init {
 		defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
 
-		progressLabel = JLabel(String.format(AIRanksTool.getUIText("Progress_Note"), 1, 0, numIterations, 0))
-		val message = String.format(AIRanksTool.getUIText("Progress_Note"), 100, 100, 100, 100)
+		progressLabel = JLabel(String.format(getUIText("Progress_Note"), 1, 0, numIterations, 0))
+		val message = String.format(getUIText("Progress_Note"), 100, 100, 100, 100)
 		progressLabel.text = message
 
 		progressBar = JProgressBar(0, 100)
-		cancelButton = JButton(AIRanksTool.getUIText("Progress_Cancel_Button"))
+		cancelButton = JButton(getUIText("Progress_Cancel_Button"))
 		cancelButton.actionCommand = "cancel"
 		cancelButton.addActionListener(this)
 		val mainPane = JPanel(BorderLayout())
@@ -237,7 +240,7 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 			progressBar.value = totalCompletion
 
 			val message =
-				String.format(AIRanksTool.getUIText("Progress_Note"), iteration+1, ranks!!.completionPercentage, numIterations, totalCompletion)
+				String.format(getUIText("Progress_Note"), iteration+1, ranks!!.completionPercentage, numIterations, totalCompletion)
 			progressLabel.text = message
 
 		}

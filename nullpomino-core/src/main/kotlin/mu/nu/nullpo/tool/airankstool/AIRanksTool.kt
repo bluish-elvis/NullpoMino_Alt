@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -29,6 +29,7 @@
 
 package mu.nu.nullpo.tool.airankstool
 
+import mu.nu.nullpo.tool.sequencer.Sequencer
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
 import org.jdesktop.layout.GroupLayout
@@ -43,6 +44,20 @@ import javax.swing.*
 
 class AIRanksTool:JFrame(), ActionListener {
 
+	/** Config File */
+	val propConfig = CustomProperties()
+
+	/** Default language file */
+	private val propLangDefault = CustomProperties()
+	/** Primary language file */
+	private val propLang = CustomProperties()
+
+	/** Get translated text from UI Language file
+	 * @param str Text
+	 * @return Translated text (If translated text is NOT available, it will return str itself)
+	 */
+	private fun getUIText(str:String):String = propLang.getProperty(str, propLangDefault.getProperty(str, str)) ?: ""
+
 	/** UI */
 
 	//****************************
@@ -51,7 +66,7 @@ class AIRanksTool:JFrame(), ActionListener {
 
 	// Input File
 	private var inputFileLabel:JLabel? = null
-	private var inputFileComboBox:JComboBox<Any>? = null
+	private var inputFileComboBox:JComboBox<String>? = null
 
 	// Output File
 	private var outputFileLabel:JLabel? = null
@@ -59,7 +74,6 @@ class AIRanksTool:JFrame(), ActionListener {
 
 	//Number of Iterations
 	private var numIterationsLabel:JLabel? = null
-	private var spinModel:SpinnerNumberModel? = null
 	private var numIterationsSpinner:JSpinner? = null
 
 	// Generation Button
@@ -77,11 +91,10 @@ class AIRanksTool:JFrame(), ActionListener {
 
 	//Ranks File Used
 	private var ranksFileUsedLabel:JLabel? = null
-	private var ranksFileUsedComboBox:JComboBox<Any>? = null
+	private var ranksFileUsedComboBox:JComboBox<String>? = null
 
 	//Number of previews Used
 	private var numPreviewsLabel:JLabel? = null
-	private var numPreviewsSpinModel:SpinnerNumberModel? = null
 	private var numPreviewsSpinner:JSpinner? = null
 
 	//Allow Hold or not
@@ -112,6 +125,43 @@ class AIRanksTool:JFrame(), ActionListener {
 
 	init {
 
+		// Load config file
+		try {
+			FileInputStream("config/setting/swing.xml").let {
+				propConfig.loadFromXML(it)
+				it.close()
+			}
+		} catch(e:IOException) {
+		}
+
+		// Set Look&Feel
+		if(propConfig.getProperty("option.usenativelookandfeel", true))
+			try {
+				UIManager.getInstalledLookAndFeels()
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
+			} catch(e:Exception) {
+				Sequencer.log.warn("Failed to set native look&feel", e)
+			}
+
+		// Load language files
+		try {
+			FileInputStream("config/lang/airankstool_default.xml").let {
+				propLangDefault.loadFromXML(it)
+				it.close()
+			}
+		} catch(e:IOException) {
+			System.err.println("Couldn't load default UI language file")
+			e.printStackTrace()
+		}
+		try {
+			FileInputStream("config/lang/airankstool_${Locale.getDefault().country}.xml").let {
+				propLang.loadFromXML(it)
+				it.close()
+			}
+		} catch(e:IOException) {
+			System.err.println("Couldn't load ${Locale.getDefault().country} UI language file")
+		}
+
 		title = getUIText("Main_Title")
 		defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE
 		initUI()
@@ -129,6 +179,7 @@ class AIRanksTool:JFrame(), ActionListener {
 			propRanksAI.load(`in`)
 			`in`.close()
 		} catch(e:IOException) {
+			System.err.println("load failed: ${AIRanksConstants.RANKSAI_CONFIG_FILE}")
 		}
 
 		//Ranks File used
@@ -180,26 +231,28 @@ class AIRanksTool:JFrame(), ActionListener {
 		ranksList[0] = newFileText
 
 		// Creates the combo box
-		inputFileComboBox = JComboBox(ranksList)
-		inputFileComboBox!!.selectedIndex = fileIndex+1
-		inputFileComboBox!!.toolTipText = getUIText("Main_Input_Tip")
-		inputFileComboBox!!.actionCommand = "input"
-		inputFileComboBox!!.addActionListener(this)
+		inputFileComboBox = JComboBox(ranksList).also {
+			it.selectedIndex = fileIndex+1
+			it.toolTipText = getUIText("Main_Input_Tip")
+			it.actionCommand = "input"
+			it.addActionListener(this)
+		}
 
 		// Output File
 		outputFileLabel = JLabel(getUIText("Main_Output_Label"))
-		outputFileField = JTextField(AIRanksConstants.DEFAULT_RANKS_FILE)
-		outputFileField!!.columns = 20
-		if(inputFileComboBox!!.selectedIndex>0) {
-			outputFileField!!.text = inputFileComboBox!!.selectedItem as String
+		outputFileField = JTextField(AIRanksConstants.DEFAULT_RANKS_FILE).apply {
+			columns = 20
+			if((inputFileComboBox?.selectedIndex ?: 0)>0) {
+				text = inputFileComboBox!!.selectedItem as String
+			}
+			toolTipText = getUIText("Main_Output_Tip")
 		}
-		outputFileField!!.toolTipText = getUIText("Main_Output_Tip")
 
 		//Number of iterations to run
 		numIterationsLabel = JLabel(getUIText("Main_Iterations_Label"))
-		spinModel = SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1)
-		numIterationsSpinner = JSpinner(spinModel!!)
-		numIterationsSpinner!!.toolTipText = getUIText("Main_Iterations_Tip")
+		numIterationsSpinner = JSpinner(SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1)).apply {
+			toolTipText = getUIText("Main_Iterations_Tip")
+		}
 
 		//Go button (starts the generation)
 		goButton = JButton(getUIText("Main_Go_Label")).also {
@@ -232,32 +285,19 @@ class AIRanksTool:JFrame(), ActionListener {
 		//Ranks File Used
 		ranksFileUsedLabel = JLabel(getUIText("Main_Ranks_File_Used_Label"))
 
-		if(fileIndex>=0) {
-			ranksFileUsedComboBox = JComboBox(children!!)
 
-			ranksFileUsedComboBox!!.setSelectedIndex(fileIndex)
-		} else {
-
-			if(children==null||children.isEmpty()) {
-				val list = arrayOf(" ")
-				ranksFileUsedComboBox = JComboBox(list)
-			}
-
-			ranksFileUsedComboBox!!.setSelectedIndex(0)
-
+		ranksFileUsedComboBox = JComboBox(children ?: arrayOf(" ")).also {
+			it.selectedIndex = maxOf(0, fileIndex)
+			it.toolTipText = getUIText("Main_Ranks_File_Used_Tooltip")
+			it.actionCommand = "input2"
+			it.addActionListener(this)
 		}
-		ranksFileUsedComboBox!!.toolTipText = getUIText("Main_Ranks_File_Used_Tooltip")
-		ranksFileUsedComboBox!!.actionCommand = "input2"
-		ranksFileUsedComboBox!!.addActionListener(this)
-
 		//Number of previews to use
 		numPreviewsLabel = JLabel(getUIText("Main_Num_Previews_Label"))
-		numPreviewsSpinModel = SpinnerNumberModel(2, 0, Integer.MAX_VALUE, 1)
-		numPreviewsSpinner = JSpinner(numPreviewsSpinModel!!)
-		if(numPreviews>=0) {
-			numPreviewsSpinner!!.value = numPreviews
+		numPreviewsSpinner = JSpinner(javax.swing.SpinnerNumberModel(2, 0, Integer.MAX_VALUE, 1)).apply {
+			value = maxOf(0, numPreviews)
+			toolTipText = getUIText("Main_Num_Previews_Tip")
 		}
-		numPreviewsSpinner!!.toolTipText = getUIText("Main_Num_Previews_Tip")
 
 		//Switch to allow hold
 		allowHoldLabel = JLabel(getUIText("Main_Allow_Hold"))
@@ -289,40 +329,36 @@ class AIRanksTool:JFrame(), ActionListener {
 		formPane.layout = layout
 		layout.autocreateGaps = true
 		layout.autocreateContainerGaps = true
-		val hGroup = layout.createSequentialGroup()
+		layout.horizontalGroup = layout.createSequentialGroup().also {hGroup ->
 
-		val labelsPg = layout.createParallelGroup()
-		labelsPg.add(inputFileLabel)
-		labelsPg.add(outputFileLabel)
-		labelsPg.add(numIterationsLabel)
-		hGroup.add(labelsPg)
+			hGroup.add(layout.createParallelGroup().also {labelsPg ->
+				labelsPg.add(inputFileLabel)
+				labelsPg.add(outputFileLabel)
+				labelsPg.add(numIterationsLabel)
+			})
 
-		val fieldsPg = layout.createParallelGroup()
-		fieldsPg.add(inputFileComboBox)
-		fieldsPg.add(outputFileField)
-		fieldsPg.add(numIterationsSpinner)
-		hGroup.add(fieldsPg)
+			hGroup.add(layout.createParallelGroup().also {fieldsPg ->
+				fieldsPg.add(inputFileComboBox)
+				fieldsPg.add(outputFileField)
+				fieldsPg.add(numIterationsSpinner)
+			})
+		}
 
-		layout.horizontalGroup = hGroup
-
-		val vGroup = layout.createSequentialGroup()
-
-		vGroup.add(layout.createParallelGroup(GroupLayout.BASELINE).add(inputFileLabel).add(inputFileComboBox))
-		vGroup.add(layout.createParallelGroup(GroupLayout.BASELINE).add(outputFileLabel).add(outputFileField))
-		vGroup.add(layout.createParallelGroup(GroupLayout.BASELINE).add(numIterationsLabel).add(numIterationsSpinner))
-
-		layout.verticalGroup = vGroup
-
-		val buttonsPane = JPanel()
-		buttonsPane.add(goButton)
-		buttonsPane.add(viewBestsButton)
-		buttonsPane.add(viewWorstsButton)
-
-		val pane1 = JPanel(BorderLayout())
-
-		pane1.border = BorderFactory.createEmptyBorder(20, 20, 20, 20)
-		pane1.add(formPane, BorderLayout.CENTER)
-		pane1.add(buttonsPane, BorderLayout.SOUTH)
+		layout.verticalGroup = layout.createSequentialGroup().also {vGroup ->
+			vGroup.add(layout.createParallelGroup(GroupLayout.BASELINE).add(inputFileLabel).add(inputFileComboBox))
+			vGroup.add(layout.createParallelGroup(GroupLayout.BASELINE).add(outputFileLabel).add(outputFileField))
+			vGroup.add(layout.createParallelGroup(GroupLayout.BASELINE).add(numIterationsLabel).add(numIterationsSpinner))
+		}
+		val buttonsPane = JPanel().apply {
+			add(goButton)
+			add(viewBestsButton)
+			add(viewWorstsButton)
+		}
+		val pane1 = JPanel(BorderLayout()).apply {
+			border = BorderFactory.createEmptyBorder(20, 20, 20, 20)
+			add(formPane, BorderLayout.CENTER)
+			add(buttonsPane, BorderLayout.SOUTH)
+		}
 
 		// Tab 2
 
@@ -331,46 +367,43 @@ class AIRanksTool:JFrame(), ActionListener {
 		formPane2.layout = layout2
 		layout2.autocreateGaps = true
 		layout2.autocreateContainerGaps = true
-		val hGroup2 = layout2.createSequentialGroup()
 
-		val labelsPg2 = layout2.createParallelGroup()
-		labelsPg2.add(ranksFileUsedLabel)
-		labelsPg2.add(numPreviewsLabel)
-		labelsPg2.add(allowHoldLabel)
-		labelsPg2.add(speedLimitLabel)
-		hGroup2.add(labelsPg2)
+		layout2.horizontalGroup = layout2.createSequentialGroup().also {
+			it.add(layout2.createParallelGroup().apply {
+				add(ranksFileUsedLabel)
+				add(numPreviewsLabel)
+				add(allowHoldLabel)
+				add(speedLimitLabel)
+			})
+			it.add(layout2.createParallelGroup().apply {
+				add(ranksFileUsedComboBox)
+				add(numPreviewsSpinner)
+				add(allowHoldCheckBox)
+				add(speedLimitField)
+			})
+		}
 
-		val fieldsPg2 = layout2.createParallelGroup()
-		fieldsPg2.add(ranksFileUsedComboBox)
-		fieldsPg2.add(numPreviewsSpinner)
-		fieldsPg2.add(allowHoldCheckBox)
-		fieldsPg2.add(speedLimitField)
-		hGroup2.add(fieldsPg2)
+		layout2.verticalGroup = layout2.createSequentialGroup().apply {
+			add(layout2.createParallelGroup(GroupLayout.BASELINE).add(ranksFileUsedLabel).add(ranksFileUsedComboBox))
+			add(layout2.createParallelGroup(GroupLayout.BASELINE).add(numPreviewsLabel).add(numPreviewsSpinner))
+			add(layout2.createParallelGroup(GroupLayout.BASELINE).add(allowHoldLabel).add(allowHoldCheckBox))
+			add(layout2.createParallelGroup(GroupLayout.BASELINE).add(speedLimitLabel).add(speedLimitField))
+		}
 
-		layout2.horizontalGroup = hGroup2
-
-		val vGroup2 = layout2.createSequentialGroup()
-
-		vGroup2.add(layout2.createParallelGroup(GroupLayout.BASELINE).add(ranksFileUsedLabel).add(ranksFileUsedComboBox))
-		vGroup2.add(layout2.createParallelGroup(GroupLayout.BASELINE).add(numPreviewsLabel).add(numPreviewsSpinner))
-		vGroup2.add(layout2.createParallelGroup(GroupLayout.BASELINE).add(allowHoldLabel).add(allowHoldCheckBox))
-		vGroup2.add(layout2.createParallelGroup(GroupLayout.BASELINE).add(speedLimitLabel).add(speedLimitField))
-		layout2.verticalGroup = vGroup2
-
-		val buttonsPane2 = JPanel()
-		buttonsPane2.add(saveAIConfigButton)
-
-		val pane2 = JPanel(BorderLayout())
-
-		pane2.border = BorderFactory.createEmptyBorder(20, 20, 20, 20)
-		pane2.add(formPane2, BorderLayout.CENTER)
-		pane2.add(buttonsPane2, BorderLayout.SOUTH)
-
+		val buttonsPane2 = JPanel().apply {
+			add(saveAIConfigButton)
+		}
+		val pane2 = JPanel(BorderLayout()).apply {
+			border = BorderFactory.createEmptyBorder(20, 20, 20, 20)
+			add(formPane2, BorderLayout.CENTER)
+			add(buttonsPane2, BorderLayout.SOUTH)
+		}
 		//Tab 3
 
-		tabbedPane = JTabbedPane()
-		tabbedPane!!.addTab(getUIText("Main_Generation_Tab_Title"), pane1)
-		tabbedPane!!.addTab(getUIText("Main_AI_Config_Tab_Title"), pane2)
+		tabbedPane = JTabbedPane().apply {
+			addTab(getUIText("Main_Generation_Tab_Title"), pane1)
+			addTab(getUIText("Main_AI_Config_Tab_Title"), pane2)
+		}
 		add(tabbedPane)
 	}
 
@@ -383,7 +416,7 @@ class AIRanksTool:JFrame(), ActionListener {
 			val outputFile = outputFileField!!.text
 			goButton!!.isEnabled = false
 
-			val ranksIterator = RanksIterator(this, inputFile, outputFile, numIterationsSpinner!!.value as Int)
+			val ranksIterator = RanksIterator(this, inputFile, outputFile, numIterationsSpinner!!.value as Int) {getUIText(it)}
 
 			ranksIterator.addWindowListener(object:WindowAdapter() {
 
@@ -441,7 +474,7 @@ class AIRanksTool:JFrame(), ActionListener {
 
 				}
 
-				val results = RanksResult(this, ranks!!, 100, "worsts"==e.actionCommand)
+				val results = RanksResult(this, ranks!!, 100, "worsts"==e.actionCommand) {getUIText(it)}
 				results.addWindowListener(object:WindowAdapter() {
 
 					override fun windowClosed(e:WindowEvent?) {
@@ -496,31 +529,8 @@ class AIRanksTool:JFrame(), ActionListener {
 		/** Log */
 		internal val log = LogManager.getLogger()
 
-		/** Default language file */
-		private val propLangDefault = CustomProperties()
-		/** Primary language file */
-		private val propLang = CustomProperties()
-
-		fun getUIText(str:String):String = propLang.getProperty(str) ?: propLangDefault.getProperty(str, str) ?: str
-
 		@JvmStatic
 		fun main(args:Array<String>) {
-			// Load language files
-			try {
-				val `in` = FileInputStream("config/lang/airankstool_default.xml")
-				propLangDefault.load(`in`)
-				`in`.close()
-			} catch(e:IOException) {
-				System.err.println("Couldn't load default UI language file")
-				e.printStackTrace()
-			}
-
-			try {
-				val `in` = FileInputStream("config/lang/airankstool_${Locale.getDefault().country}.xml")
-				propLang.load(`in`)
-				`in`.close()
-			} catch(e:IOException) {
-			}
 
 			// Start
 			AIRanksTool()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -184,6 +184,7 @@ class Piece(id:Int = 0):Serializable {
 		big = p.big
 		offsetApplied = p.offsetApplied
 		connectBlocks = p.connectBlocks
+		block = Array(p.maxBlock) {Block(p.block[it])}
 
 		dataX = p.dataX.clone()
 		dataY = p.dataY.clone()

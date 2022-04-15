@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -35,7 +35,7 @@ import kotlin.math.abs
 import kotlin.math.pow
 
 @kotlinx.serialization.Serializable
-class Ranks {
+class Ranks:java.io.Serializable {
 	private val ranks:IntArray
 
 	val stackWidth:Int

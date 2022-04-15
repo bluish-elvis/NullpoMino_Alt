@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -133,7 +133,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		// Load language files
 		try {
 			val `in` = FileInputStream("config/lang/netadmin_default.xml")
-			propLangDefault.load(`in`)
+			propLangDefault.loadFromXML(`in`)
 			`in`.close()
 		} catch(e:IOException) {
 			log.error("Failed to load default UI language file", e)
@@ -141,7 +141,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 		try {
 			val `in` = FileInputStream("config/lang/netadmin_${Locale.getDefault().country}.xml")
-			propLang.load(`in`)
+			propLang.loadFromXML(`in`)
 			`in`.close()
 		} catch(e:IOException) {
 		}
@@ -565,8 +565,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		addConsoleLog(">$fullCommandLine", Color.blue)
 
 		// help/h/?
-		if(commands[0].equals("help", ignoreCase = true)||commands[0].equals("h", ignoreCase = true)||commands[0].equals("?",
-				ignoreCase = true))
+		if(commands[0].equals("help", ignoreCase = true)||commands[0].equals("h", ignoreCase = true)||commands[0].equals(
+				"?",
+				ignoreCase = true
+			))
 			try {
 				val reader:InputStreamReader = try {
 					InputStreamReader(FileInputStream("config/lang/netadmin_help_${Locale.getDefault().country}.txt"), "UTF-8")
@@ -671,8 +673,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			var answer = JOptionPane.YES_OPTION
 
 			if(showMessage)
-				answer = JOptionPane.showConfirmDialog(this, getUIText("Message_ConfirmKick")+"\n"
-					+strIP, getUIText("Title_ConfirmKick"), JOptionPane.YES_NO_OPTION)
+				answer = JOptionPane.showConfirmDialog(
+					this, getUIText("Message_ConfirmKick")+"\n"
+						+strIP, getUIText("Title_ConfirmKick"), JOptionPane.YES_NO_OPTION
+				)
 
 			if(answer==JOptionPane.YES_OPTION) sendCommand("ban\t$strIP")
 		} else {
@@ -680,9 +684,11 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 			if(showMessage)
 				answer =
-					JOptionPane.showConfirmDialog(this,
+					JOptionPane.showConfirmDialog(
+						this,
 						String.format(getUIText("Message_ConfirmBan"), getUIText("BanType$banLength"))+"\n"+strIP,
-						getUIText("Title_ConfirmBan"), JOptionPane.YES_NO_OPTION)
+						getUIText("Title_ConfirmBan"), JOptionPane.YES_NO_OPTION
+					)
 
 			if(answer==JOptionPane.YES_OPTION) sendCommand("ban\t$strIP\t$banLength")
 		}
@@ -862,7 +868,8 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			labelLoginMessage.foreground = Color.red
 
 			labelLoginMessage.text = getUIText(
-				if(message.size>1&&message[1]=="DISABLE") "Login_Message_DisabledError" else "Login_Message_LoginError")
+				if(message.size>1&&message[1]=="DISABLE") "Login_Message_DisabledError" else "Login_Message_LoginError"
+			)
 			return
 		}
 		// Banned
@@ -892,8 +899,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			propConfig.setProperty("login.server", txtfldServer.text)
 
 			propConfig.setProperty("login.username", if(chkboxRememberUsername.isSelected) txtfldUsername.text else "")
-			propConfig.setProperty("login.password", if(chkboxRememberPassword.isSelected)
-				NetUtil.compressString(String(passfldPassword.password)) else "")
+			propConfig.setProperty(
+				"login.password", if(chkboxRememberPassword.isSelected)
+					NetUtil.compressString(String(passfldPassword.password)) else ""
+			)
 
 			addConsoleLog(String.format(getUIText("Console_LoginOK"), strServerHost, serverPort))
 
@@ -992,7 +1001,8 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		r.roomID.toString(), r.strName, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False"),
 		if(r.ruleLock) r.ruleName.uppercase(Locale.getDefault()) else getUIText("RoomTable_RuleName_Any"),
 		if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting"),
-		"${r.playerSeatedCount}/${r.maxPlayers}", "${r.spectatorCount}")
+		"${r.playerSeatedCount}/${r.maxPlayers}", "${r.spectatorCount}"
+	)
 
 	/** When received an admin command result
 	 * @param client NetBaseClient
@@ -1380,8 +1390,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		/** Room-table column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
 		private val ROOMTABLE_COLUMNNAMES =
-			arrayOf("RoomTable_ID", "RoomTable_Name", "RoomTable_Rated", "RoomTable_RuleName", "RoomTable_Status",
-				"RoomTable_Players", "RoomTable_Spectators")
+			arrayOf(
+				"RoomTable_ID", "RoomTable_Name", "RoomTable_Rated", "RoomTable_RuleName", "RoomTable_Status",
+				"RoomTable_Players", "RoomTable_Spectators"
+			)
 
 		//***** Variables *****
 		/** Log */

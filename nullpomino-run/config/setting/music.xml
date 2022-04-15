@@ -74,6 +74,9 @@
  <entry key="music.filename.Finale.2">res/bgm/beats/finale_siva.ogg</entry>
  <entry key="music.filename.Ending.3">res/bgm/fb_kaerezunochi.ogg</entry>
 
+ <entry key="music.filename.Blitz.0">res/bgm/blitz/blitz3_octo.ogg</entry>
+ <entry key="music.filename.Blitz.1">res/bgm/blitz/bztwist_blitz5.ogg</entry>
+
  <entry key="music.filename.Result.0">res/bgm/beats/cbr_result2.ogg</entry>
  <entry key="music.filename.Result.1">res/bgm/beats/xx_collon1.ogg</entry>
  <entry key="music.filename.Result.2">res/bgm/beats/cbr_result1.ogg</entry>
@@ -120,4 +123,7 @@
  <entry key="music.noloop.Rush.0">false</entry>
  <entry key="music.noloop.Rush.1">false</entry>
  <entry key="music.noloop.Rush.2">false</entry>
+ <entry key="music.noloop.Blitz.0">true</entry>
+ <entry key="music.noloop.Blitz.1">true</entry>
+
 </properties>

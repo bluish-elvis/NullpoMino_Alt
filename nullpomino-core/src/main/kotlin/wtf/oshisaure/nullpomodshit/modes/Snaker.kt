@@ -1,3 +1,39 @@
+/*
+ * Copyright (c) 2022,
+ * This library class was created by 0xFC963F18DC21 / Shots243
+ * It is part of an extension library for the game NullpoMino (copyright 2022)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
+ *
+ * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+ *
+ * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ *
+ * Repository: https://github.com/Shots243/ModePile
+ *
+ * When using this library in a mode / library pack of your own, the following
+ * conditions must be satisfied:
+ *     - This license must remain visible at the top of the document, unmodified.
+ *     - You are allowed to use this library for any modding purpose.
+ *         - If this is the case, the Library Creator must be credited somewhere.
+ *             - Source comments only are fine, but in a README is recommended.
+ *     - Modification of this library is allowed, but only in the condition that a
+ *       pull request is made to merge the changes to the repository.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package wtf.oshisaure.nullpomodshit.modes
 
 import mu.nu.nullpo.game.component.Block
@@ -121,30 +157,32 @@ class Snaker:AbstractMode() {
 			0 -> {
 				snakepositionsY[snakelength-1]--
 				headattr = headattr or 16
-				oldhead?.setAttribute(8, true)
+				oldhead?.setAttribute(true, 8)
 			}
 			1 -> {
 				snakepositionsX[snakelength-1]++
 				headattr = headattr or 32
-				oldhead?.setAttribute(64, true)
+				oldhead?.setAttribute(true, 64)
 			}
 			2 -> {
 				snakepositionsY[snakelength-1]++
 				headattr = headattr or 8
-				oldhead?.setAttribute(16, true)
+				oldhead?.setAttribute(true, 16)
 			}
 			3 -> {
 				snakepositionsX[snakelength-1]--
 				headattr = headattr or 64
-				oldhead?.setAttribute(32, true)
+				oldhead?.setAttribute(true, 32)
 			}
 		}
-		engine.field.setBlock(snakepositionsX[snakelength-1],
-			snakepositionsY[snakelength-1], Block(5, engine.skin, headattr))
-		if(oldtailX>newtailX) newtail?.setAttribute(64, false)
-		if(oldtailX<newtailX) newtail?.setAttribute(32, false)
-		if(oldtailY>newtailY) newtail?.setAttribute(16, false)
-		if(oldtailY<newtailY) newtail?.setAttribute(8, false)
+		engine.field.setBlock(
+			snakepositionsX[snakelength-1],
+			snakepositionsY[snakelength-1], Block(5, engine.skin, headattr)
+		)
+		if(oldtailX>newtailX) newtail?.setAttribute(false, 64)
+		if(oldtailX<newtailX) newtail?.setAttribute(false, 32)
+		if(oldtailY>newtailY) newtail?.setAttribute(false, 16)
+		if(oldtailY<newtailY) newtail?.setAttribute(false, 8)
 	}
 
 	private fun moveForwardAndCatch(engine:GameEngine) {
@@ -166,20 +204,20 @@ class Snaker:AbstractMode() {
 		val newhead = Block(5, engine.skin, 1)
 		when(orientation) {
 			0 -> {
-				newhead.setAttribute(16, true)
-				oldhead?.setAttribute(8, true)
+				newhead.setAttribute(true, 16)
+				oldhead?.setAttribute(true, 8)
 			}
 			1 -> {
-				newhead.setAttribute(32, true)
-				oldhead?.setAttribute(64, true)
+				newhead.setAttribute(true, 32)
+				oldhead?.setAttribute(true, 64)
 			}
 			2 -> {
-				newhead.setAttribute(8, true)
-				oldhead?.setAttribute(16, true)
+				newhead.setAttribute(true, 8)
+				oldhead?.setAttribute(true, 16)
 			}
 			3 -> {
-				newhead.setAttribute(64, true)
-				oldhead?.setAttribute(32, true)
+				newhead.setAttribute(true, 64)
+				oldhead?.setAttribute(true, 32)
 			}
 		}
 		engine.field.setBlock(newheadX, newheadY, newhead)

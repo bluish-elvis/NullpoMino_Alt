@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -115,7 +115,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	var soundManager:SoundManager = SoundManager()
 
 	/** BGM */
-	var bgm:Array<Array<Music?>> = emptyArray()
+	var bgm:Array<Array<Pair<Music?, Boolean>>> = emptyArray()
 
 	/** Current BGM number */
 	private var bgmint:Pair<Int, Int> = 0 to 0
@@ -157,7 +157,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		}
 
 		// 音楽
-		bgm = BGM.all.map {arrayOfNulls<Music?>(it.size)}.toTypedArray()
+		bgm = BGM.all.map {Array<Pair<Music?, Boolean>>(it.size) {null to false}}.toTypedArray()
 		bgmPlaying = null
 
 		if(NullpoMinoSlick.propConfig.getProperty("option.bgmpreload", false))
@@ -200,7 +200,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		bgm.id
 		this.bgm[bgm.id].forEachIndexed {idx, b ->
 			val sub = bgm.subName
-			if(b==null) try {
+			if(b.first==null) try {
 				val filename = NullpoMinoSlick.propMusic.getProperty("music.filename.$name.$idx", null)
 				if(filename.isNullOrEmpty()) {
 					log.info("BGM $n:#$idx $sub not available")
@@ -209,7 +209,8 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 
 				val streaming = NullpoMinoSlick.propConfig.getProperty("option.bgmstreaming", true)
 				if(File(filename).canRead()) {
-					this.bgm[bgm.id][idx] = Music(filename, streaming)
+					this.bgm[bgm.id][idx] =
+						Music(filename, streaming) to NullpoMinoSlick.propMusic.getProperty("music.noloop.${bgm.name}.${bgm.idx}", false)
 					//log.info("Loaded BGM $n:#$idx $sub")
 				}
 			} catch(e:Throwable) {
@@ -232,11 +233,9 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		NullpoMinoSlick.appGameContainer.musicVolume = bgmvolume/256.toFloat()
 
 		if(M!=BGM.Silent&&M!=bgmPlaying) {
-			bgm[x][y]?.also {
+			bgm[x][y].first?.also {
 				try {
-					if(NullpoMinoSlick.propMusic.getProperty("music.noloop.${M.name}", false))
-						it.play()
-					else it.loop()
+					if(bgm[x][y].second) it.play() else it.loop()
 					log.info("Play BGM $x:$y ${M.longName}")
 				} catch(e:Throwable) {
 					log.error("Failed to play BGM $x:$y ${M.longName}", e)
@@ -250,36 +249,33 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 
 	/** Current BGMを一時停止 */
 	internal fun bgmPause() {
-		if(bgmPlaying!=null) bgm[bgmint.first][bgmint.second]?.pause()
+		if(bgmPlaying!=null) bgm[bgmint.first][bgmint.second].first?.pause()
 	}
 
 	/** 一時停止中のBGMを再開 */
 	internal fun bgmResume() {
-		if(bgmPlaying!=null) bgm[bgmint.first][bgmint.second]?.resume()
+		if(bgmPlaying!=null) bgm[bgmint.first][bgmint.second].first?.resume()
 	}
 
 	/** BGM再生中かどうか
 	 * @return 再生中ならtrue
 	 */
-	internal fun bgmIsPlaying():Boolean = bgmPlaying!=null&&(bgm[bgmint.first][bgmint.second]?.playing() ?: false)
+	internal val bgmIsPlaying:Boolean get() = bgmPlaying!=null&&(bgm[bgmint.first][bgmint.second].first?.playing() ?: false)
+
+	internal val bgmIsLooping:Boolean get() = bgmPlaying!=null&&bgm[bgmint.first][bgmint.second].second
 
 	/** BGMを停止 */
 	internal fun bgmStop() {
-		bgm.forEach {
-			it.forEach {m ->
-				m?.pause()
-				m?.stop()
-			}
-			bgmPlaying = null
-		}
+		bgm.flatMap {m -> m.mapNotNull {it.first}}.filter {it.playing()}.forEach {it.stop()}
+		bgmPlaying = null
 	}
 
 	/** 全てのBGMをメモリから解放 */
 	internal fun bgmUnloadAll() {
 		bgm.forEachIndexed {x, a ->
-			a.forEachIndexed {y, b ->
-				b?.stop()
-				if(!NullpoMinoSlick.propConfig.getProperty("option.bgmpreload", false)) bgm[x][y] = null
+			a.mapNotNull {it.first}.forEachIndexed {y, b ->
+				b.stop()
+				if(!NullpoMinoSlick.propConfig.getProperty("option.bgmpreload", false)) bgm[x][y] = null to false
 			}
 		}
 
