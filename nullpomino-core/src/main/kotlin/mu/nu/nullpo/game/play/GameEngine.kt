@@ -363,13 +363,13 @@ class GameEngine(
 	/** Ghost piece flag */
 	var ghost = false
 
-	/** Amount of meter */
+	/** Amount of meter 0-100 */
 	var meterValue = 0
 
 	/** Color of meter */
 	var meterColor = 0
 
-	/** Amount of meter (layer 2) */
+	/** Amount of meter 0-100(layer 2) */
 	var meterValueSub = 0
 
 	/** Color of meter (layer 2) */

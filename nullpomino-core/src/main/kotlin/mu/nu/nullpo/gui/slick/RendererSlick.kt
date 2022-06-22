@@ -679,6 +679,6 @@ class RendererSlick:AbstractRenderer() {
 		fun getColorByID(color:Block.COLOR):Color = getColorByID(Block.colorNumber(color, Block.TYPE.BLOCK))
 
 		fun getMeterColorAsColor(meterColor:Int, value:Int, max:Int):Color =
-			Color(AbstractRenderer.getMeterColorAsColor(meterColor, value, max))
+			Color(AbstractRenderer.getMeterColorHex(meterColor, value, max))
 	}
 }

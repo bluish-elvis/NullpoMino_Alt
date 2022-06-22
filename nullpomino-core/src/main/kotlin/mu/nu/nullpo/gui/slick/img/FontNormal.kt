@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -32,7 +32,6 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.BaseFontNormal
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
-import org.newdawn.slick.Color
 
 /** Normal display class string */
 object FontNormal:BaseFontNormal() {
@@ -46,9 +45,9 @@ object FontNormal:BaseFontNormal() {
 	 * @param scale Enlargement factor
 	 */
 	override fun printFont(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
-		processTxt(x.toFloat(), y.toFloat(), str, color, scale, rainbow)
-		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
-			ResourceHolder.imgFont[i].draw(dx, dy, dx+sw*s, dy+sh*s, sx, sy, sx+sw, sy+sh, alpha)
+		processTxt(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
+		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
+			ResourceHolder.imgFont[i].draw(dx, dy, dx+sw*s, dy+sh*s, sx, sy, sx+sw, sy+sh, a)
 		}
 
 }

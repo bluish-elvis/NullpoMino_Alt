@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -721,7 +721,8 @@ class GrandPhantom:AbstractMode() {
 					owner.bgmStatus.fadesw = false
 					owner.bgmStatus.bgm = tableBGM[bgmlv]
 					engine.playSE("levelup_section")
-				} else engine.playSE("levelup")
+				}
+				engine.playSE("levelup")
 
 				sectionscomp++
 

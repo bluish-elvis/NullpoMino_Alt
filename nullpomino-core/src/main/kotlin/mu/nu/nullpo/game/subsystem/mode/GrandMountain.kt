@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -135,9 +135,10 @@ class GrandMountain:AbstractMode() {
 	override val name = "Grand Mountain"
 	override val gameIntensity = 1
 	override val rankMap:Map<String, IntArray>
-		get() = mapOf(*((rankingLevel.mapIndexed {a, x -> "$a.lines" to x}+
-			rankingTime.mapIndexed {a, x -> "$a.time" to x}+
-			bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}).toTypedArray())
+		get() = mapOf(
+			*((rankingLevel.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
+				bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}).toTypedArray())
 		)
 
 	/* Initialization */
@@ -227,7 +228,7 @@ class GrandMountain:AbstractMode() {
 	 * @param engine GameEngine
 	 */
 	private fun setSpeed(engine:GameEngine) {
-		engine.speed.gravity =if(always20g)  -1
+		engine.speed.gravity = if(always20g) -1
 		else tableGravityValue[tableGravityChangeLevel.indexOfLast {it<=engine.statistics.level}
 			.let {if(it<0) tableGravityChangeLevel.size-1 else it}]
 
@@ -689,7 +690,8 @@ class GrandMountain:AbstractMode() {
 					owner.bgmStatus.fadesw = false
 					owner.bgmStatus.bgm = BGM.values[bgmlv]
 					engine.playSE("levelup_section")
-				} else engine.playSE("levelup")
+				}
+				engine.playSE("levelup")
 
 				// Update level for next section
 				nextseclv += 100

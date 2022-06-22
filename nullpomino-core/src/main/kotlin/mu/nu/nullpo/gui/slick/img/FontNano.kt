@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -39,9 +39,10 @@ object FontNano:BaseFontNano() {
 	override val rainbowCount:Int get() = NullpoMinoSlick.rainbow
 
 	override fun printFont(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) {
-		processTxt(x.toFloat(), y.toFloat(), str, color, scale,
-			rainbow) {_:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int ->
-			ResourceHolder.imgFontNano.draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, Color(1f,1f,1f,alpha))
+		processTxt(
+			x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow
+		) {_:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int, a:Float ->
+			ResourceHolder.imgFontNano.draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, Color(1f, 1f, 1f, a))
 		}
 
 	}

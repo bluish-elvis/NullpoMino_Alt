@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -32,14 +32,14 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.BaseFontGrade
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
-import org.newdawn.slick.Color
 
 /** 普通の文字列の表示クラス */
 object FontGrade:BaseFontGrade() {
 	override val rainbowCount:Int get() = NullpoMinoSlick.rainbow
 	override fun printFont(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
-		processTxt(x.toFloat(), y.toFloat(), str, color, scale,
-			rainbow) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
-			ResourceHolder.imgGrade[i].draw(dx, dy, dx+sw*s, dy+sh*s, sx, sy, sx+sw, sy+sh, alpha)
+		processTxt(
+			x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow,
+		) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float ->
+			ResourceHolder.imgGrade[i].draw(dx, dy, dx+sw*s, dy+sh*s, sx, sy, sx+sw, sy+sh, a)
 		}
 }

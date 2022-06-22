@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021, NullNoname
+ * Copyright (c) 2021-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -35,26 +35,26 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 abstract class BaseFontNormal:BaseFont {
 	abstract override val rainbowCount:Int
 
-	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) {
+	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
+		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
 		var dx = x
 		var dy = y
 		str.forEachIndexed {i, char ->
-			val stringChar = char.code
 
-			if(stringChar==0x0A) {
+			if(char.code==0x0A) {
 				// New line (\n)
 				dy += 16*scale
 				dx = x
 			} else {
-				val c = stringChar-32// Character output
+				val c = if(char.code==0x20) 96 else char.code-32// Character output
+				val a = if(char.code==0x20) alpha/3f else alpha
 				val fontColor = (if(color==COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
-				val dy = dy+if(char.isLowerCase()) 3f*scale else 0f
+				val wy = dy+if(char.isLowerCase()) 3f*scale else 0f
 
 				when {
-					scale<=.5f -> draw(0, dx, dy, scale*2, c%32*8, (c/32+fontColor*4)*8, 8, 8)
-					scale>=(5f/3f) -> draw(2, dx, dy, scale/2, c%32*32, (c/32+fontColor*4)*32, 32, 32)
-					else -> draw(1, dx, dy, scale, c%32*16, (c/32+fontColor*4)*16, 16, 16)
+					scale<=.5f -> draw(0, dx, wy, scale*2, c%32*8, (c/32+fontColor*4)*8, 8, 8, a)
+					scale>=(5f/3f) -> draw(2, dx, wy, scale/2, c%32*32, (c/32+fontColor*4)*32, 32, 32, a)
+					else -> draw(1, dx, wy, scale, c%32*16, (c/32+fontColor*4)*16, 16, 16, a)
 
 				}
 				dx += 16*scale

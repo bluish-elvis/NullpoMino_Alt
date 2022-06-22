@@ -296,7 +296,7 @@ abstract class AbstractMode:GameMode {
 			engine.twist -> (if(engine.lasteventshape==Piece.Shape.T) lines*2 else lines+1)
 			lines<=3 -> maxOf(0, lines-1)
 			else -> lines
-		}+if(engine.b2b) when(engine.b2bcount) {
+		}+if(engine.b2b) when(engine.b2bcount-1) {
 			in -9..0 -> 0
 			in 1..2 -> 1
 			in 3..7 -> 2

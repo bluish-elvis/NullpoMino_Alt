@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -236,7 +236,8 @@ class GrandMarathon:AbstractMode() {
 		else tableGravityValue[(tableGravityChangeLevel.indexOfFirst {engine.statistics.level<=it}).let {if(it<0) tableGravityChangeLevel.size-1 else it}]
 
 		val section = minOf(
-			tableARE.size-1,if(engine.statistics.level<300) 0 else if(engine.statistics.level<500) 1 else 2)
+			tableARE.size-1, if(engine.statistics.level<300) 0 else if(engine.statistics.level<500) 1 else 2
+		)
 		engine.speed.das = tableDAS[section]
 
 		if(engine.statistics.time>=54000) {
@@ -645,7 +646,8 @@ class GrandMarathon:AbstractMode() {
 					gm500 = true
 					engine.playSE("cool")
 				}
-				engine.playSE(if(nextseclv==300||nextseclv==500) "levelup_section" else "levelup")
+				if(nextseclv==300||nextseclv==500) engine.playSE("levelup_section")
+				engine.playSE("levelup")
 
 				sectionscomp++
 				setAverageSectionTime()

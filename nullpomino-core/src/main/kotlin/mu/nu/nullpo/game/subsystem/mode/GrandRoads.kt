@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -594,7 +594,8 @@ class GrandRoads:NetDummyMode() {
 					owner.bgmStatus.bgm = nowCourse.BGMlist[bgmlv]
 					owner.bgmStatus.fadesw = false
 				}
-				engine.playSE(if(bgmChanged) "levelup_section" else "levelup")
+				if(bgmChanged) engine.playSE("levelup_section")
+				engine.playSE("levelup")
 				engine.statistics.level++
 
 				owner.backgroundStatus.fadesw = true

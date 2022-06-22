@@ -305,23 +305,19 @@ abstract class AbstractRenderer:EventReceiver() {
 
 		if(showMeter) {
 			// 右Meter
-			val mH = maxHeight+if(engine.meterValueSub>0||engine.meterValue>0)
-				-maxOf(engine.meterValue, engine.meterValueSub) else 0
-
+			val mainH = engine.meterValue
+			val subH = engine.meterValueSub
+			val maxH = maxHeight
 			tmpX = x+fieldW*s+8
 			tmpY = y+4
 
-			if(mH>0) drawRect(tmpX, tmpY, 4, mH, 0)
+			drawRect(tmpX, tmpY, 4, maxH, 0)
 
-			val value = minOf(engine.meterValueSub, fieldH*s)
-			if(value>0) {
-
-				if(engine.meterValueSub>maxOf(engine.meterValue, 0)) {
-					drawRect(tmpX, y+fieldH*s+3-(value-1), 4, value, getMeterColorAsColor(engine.meterColorSub, value, mH))
-				}
-				if(engine.meterValue>0) {
-					drawRect(tmpX, y+fieldH*s+3-(value-1), 4, value, getMeterColorAsColor(engine.meterColor, value, mH))
-				}
+			if(engine.meterValue>0) {
+				drawRect(
+					tmpX, tmpY+maxHeight-mainH, 4, maxHeight,
+					getMeterColorHex(engine.meterColor, engine.meterValue, maxH), 1f
+				)
 			}
 		}
 		if(true) {
@@ -545,24 +541,24 @@ abstract class AbstractRenderer:EventReceiver() {
 				2 -> {
 					val x2 = x+8+fldWidth*fldBlkSize
 					drawFont(x2+16, y+40, "NEXT", FONT.NANO, COLOR.ORANGE)
-					for(i in 0 until engine.ruleOpt.nextDisplay) {
+					for(i in 0 until minOf(engine.ruleOpt.nextDisplay, 7)) {
 						engine.getNextObject(pid+i)?.let {
 							val centerX = (64-(it.width+1)*16)/2-it.minimumBlockX*16
 							val centerY = (64-(it.height+1)*16)/2-it.minimumBlockY*16
 							drawPiece(x2+centerX, y+48+i*64+centerY, it, 1f)
-							(pid+i+1).let {n -> if(n%7==0) drawFont(x2, y+48+i*6, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
+							(pid+i+1).let {n -> if(n%7==0) drawFont(x2, y+48+i*64, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
 						}
 					}
 				}
 				1 -> {
 					val x2 = x+8+fldWidth*fldBlkSize
 					drawFont(x2, y+40, "NEXT", FONT.NANO, COLOR.ORANGE)
-					for(i in 0 until engine.ruleOpt.nextDisplay) {
+					for(i in 0 until minOf(engine.ruleOpt.nextDisplay, 14)) {
 						engine.getNextObject(pid+i)?.let {
 							val centerX = (32-(it.width+1)*8)/2-it.minimumBlockX*8
 							val centerY = (32-(it.height+1)*8)/2-it.minimumBlockY*8
 							drawPiece(x2+centerX, y+48+i*32+centerY, it, .75f)
-							(pid+i+1).let {n -> if(n%7==0) drawFont(x2, y+48+i*6, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
+							(pid+i+1).let {n -> if(n%7==0) drawFont(x2, y+48+i*32, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
 						}
 					}
 				}
@@ -1023,7 +1019,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		drawLineSpecific(x.toFloat(), y.toFloat(), sx.toFloat(), sy.toFloat(), color, alpha, w.toFloat())
 
 	/** draw and Fill Rectangle */
-	protected fun drawRect(
+	private fun drawRect(
 		x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f,
 		outlineW:Float = 0f, outlineColor:Int = 0x000000
 	) {
@@ -1033,7 +1029,7 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	}
 
-	protected fun drawRect(
+	private fun drawRect(
 		x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, outlineW:Int = 0,
 		outlineColor:Int = 0x000000
 	) =
@@ -1045,12 +1041,12 @@ abstract class AbstractRenderer:EventReceiver() {
 		bold:Float = 1f
 	)
 
-	protected fun drawRectSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
+	private fun drawRectSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
 		drawRectSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha, bold.toFloat())
 	/** Fiil Rectangle Solid*/
 	protected abstract fun fillRectSpecific(x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f)
 
-	protected fun fillRectSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f) =
+	private fun fillRectSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f) =
 		fillRectSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha)
 
 	/**
@@ -1198,24 +1194,24 @@ abstract class AbstractRenderer:EventReceiver() {
 		 * @return color Hex
 		 */
 		fun getColorByID(color:Block.COLOR?):Int = getColorByID(getBlockColor(color))
-		fun getMeterColorAsColor(meterColor:Int, value:Int, max:Int):Int {
-			var r = 0
-			var g = 0
-			var b = 0
+		fun getMeterColorHex(meterColor:Int, value:Int, max:Int):Int {
+			var r = meterColor/65536
+			var g = meterColor/256%256
+			var b = meterColor%256
 			when(meterColor) {
 				GameEngine.METER_COLOR_LEVEL -> {
-					r = (maxOf(0f, minOf((value*3f-max)/max, 1f))*255).toInt()
-					g = (maxOf(0f, minOf((max-value)*3f/max, 1f))*255).toInt()
-					b = (maxOf(0f, minOf((max-value*3f)/max, 1f))*255).toInt()
+					r = (maxOf(0f, 255*minOf((value*3f-max)/max, 1f))).toInt()
+					g = (maxOf(0f, 255*minOf((max-value)*3f/max, 1f))).toInt()
+					b = (maxOf(0f, 255*minOf((max-value*3f)/max, 1f))).toInt()
 				}
 				GameEngine.METER_COLOR_LIMIT -> {//red<yellow<green<cyan
-					r = (maxOf(0f, minOf((max*2f-value*3f)/max, 1f))*255).toInt()
-					g = (minOf(value*3f/max, 1f)*255).toInt()
-					b = (maxOf(0f, minOf((value*3f-max*2f)/max, 1f))*255).toInt()
+					r = (maxOf(0f, 255*minOf((max*2f-value*3f)/max, 1f))).toInt()
+					g = (maxOf(0f, 255*minOf(value*3f/max, 1f))).toInt()
+					b = (maxOf(0f, 255*minOf((value*3f-max*2f)/max, 1f))).toInt()
 				}
 				else -> return meterColor
 			}
-			return r*0x10000+g*0x100+b
+			return r*65536+g*256+b
 		}
 
 		const val nextHeight = 48

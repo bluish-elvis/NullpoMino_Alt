@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -186,8 +186,10 @@ class RetroMania:AbstractMode() {
 
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startLevel,
-			"BIG" to big, "POWERON" to poweron)
+		drawMenu(
+			engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startLevel,
+			"BIG" to big, "POWERON" to poweron
+		)
 	}
 
 	/** Ready */
@@ -240,18 +242,26 @@ class RetroMania:AbstractMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, playerID, 0, topY+i, "${i+1}", COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 2, topY+i,
+					receiver.drawScoreNum(
+						engine, playerID, 2, topY+i,
 						if(rankingScore[gametype][i]>=0) String.format("%6d", rankingScore[gametype][i])
-						else rankingScore[gametype][i].toTimeStr, i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 8, topY+i,
+						else rankingScore[gametype][i].toTimeStr, i==rankingRank, scale
+					)
+					receiver.drawScoreNum(
+						engine, playerID, 8, topY+i,
 						if(rankingLines[gametype][i]>=0) String.format("%3d", rankingLines[gametype][i])
-						else rankingLines[gametype][i].toTimeStr, i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 11, topY+i,
+						else rankingLines[gametype][i].toTimeStr, i==rankingRank, scale
+					)
+					receiver.drawScoreNum(
+						engine, playerID, 11, topY+i,
 						if(rankingLevel[gametype][i]>=0) String.format("%2d", rankingLevel[gametype][i])
-						else rankingLevel[gametype][i].toTimeStr, i==rankingRank, scale)
-					receiver.drawScoreNum(engine, playerID, 15, topY+i,
+						else rankingLevel[gametype][i].toTimeStr, i==rankingRank, scale
+					)
+					receiver.drawScoreNum(
+						engine, playerID, 15, topY+i,
 						rankingTime[gametype][i].toTimeStr, i==rankingRank,
-						scale)
+						scale
+					)
 				}
 			}
 		} else {
@@ -269,8 +279,10 @@ class RetroMania:AbstractMode() {
 			receiver.drawScoreFont(engine, playerID, 0, 14, engine.statistics.time.toTimeStr, COLOR.BLUE)
 
 			receiver.drawScoreNano(engine, playerID, 0, 31, "${4-linesAfterLastLevelUp} LINES TO GO", COLOR.CYAN, .5f)
-			receiver.drawScoreNano(engine, playerID, 0, 32,
-				"OR "+(levelTime[minOf(engine.statistics.level, 15)]-levelTimer).toTimeStr, COLOR.CYAN, .5f)
+			receiver.drawScoreNano(
+				engine, playerID, 0, 32,
+				"OR "+(levelTime[minOf(engine.statistics.level, 15)]-levelTimer).toTimeStr, COLOR.CYAN, .5f
+			)
 		}
 	}
 
@@ -304,7 +316,8 @@ class RetroMania:AbstractMode() {
 			if(version>=2) {
 
 				if(engine.statistics.score>MAX_SCORE) {
-					engine.statistics.scoreBonus = MAX_SCORE-engine.statistics.scoreLine-engine.statistics.scoreSD-engine.statistics.scoreHD
+					engine.statistics.scoreBonus =
+						MAX_SCORE-engine.statistics.scoreLine-engine.statistics.scoreSD-engine.statistics.scoreHD
 					if(maxScoreTime<0) {
 						maxScoreTime = engine.statistics.time
 						engine.playSE("endingstart")
@@ -352,7 +365,8 @@ class RetroMania:AbstractMode() {
 					maxLevelTime = engine.statistics.time
 					engine.playSE("levelup_section")
 				}
-			} else engine.playSE("levelup")
+			}
+			engine.playSE("levelup")
 
 		}
 		return pts
@@ -373,8 +387,10 @@ class RetroMania:AbstractMode() {
 	override fun renderResult(engine:GameEngine, playerID:Int) {
 		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", COLOR.ORANGE)
 
-		drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL,
-			Statistic.TIME)
+		drawResultStats(
+			engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL,
+			Statistic.TIME
+		)
 		drawResultRank(engine, playerID, receiver, 11, COLOR.BLUE, rankingRank)
 	}
 
@@ -389,7 +405,8 @@ class RetroMania:AbstractMode() {
 				if(engine.statistics.score>=MAX_SCORE) -maxScoreTime else engine.statistics.score,
 				if(engine.statistics.lines>=MAX_LINES) -maxLinesTime else engine.statistics.lines,
 				if(engine.statistics.level>=MAX_LEVEL) -maxLevelTime else engine.statistics.level,
-				engine.statistics.time, gametype)
+				engine.statistics.time, gametype
+			)
 
 			if(rankingRank!=-1) return true
 		}
@@ -437,7 +454,8 @@ class RetroMania:AbstractMode() {
 					"$ruleName.$j.score.$i" to rankingScore[j][i],
 					"$ruleName.$j.lines.$i" to rankingLines[j][i],
 					"$ruleName.$j.level.$i" to rankingLevel[j][i],
-					"$ruleName.$j.time.$i" to rankingTime[j][i])
+					"$ruleName.$j.time.$i" to rankingTime[j][i]
+				)
 			}
 		})
 	}
@@ -495,10 +513,12 @@ class RetroMania:AbstractMode() {
 
 		/** Gravity table */
 		private val tableDenominator =
-			arrayOf(intArrayOf(48, 32, 24, 18, 14, 12, 10, 8, 6, 4, 12, 10, 8, 6, 4, 2),
+			arrayOf(
+				intArrayOf(48, 32, 24, 18, 14, 12, 10, 8, 6, 4, 12, 10, 8, 6, 4, 2),
 				intArrayOf(48, 24, 18, 15, 12, 10, 8, 6, 4, 2, 10, 8, 6, 4, 2, 1),
 				intArrayOf(40, 20, 16, 12, 10, 8, 6, 4, 2, 1, 10, 8, 6, 4, 2, 1),
-				intArrayOf(30, 15, 12, 10, 8, 6, 4, 2, 1, 1, 8, 6, 4, 2, 1, 1))
+				intArrayOf(30, 15, 12, 10, 8, 6, 4, 2, 1, 1, 8, 6, 4, 2, 1, 1)
+			)
 
 		/** Time until auto-level up occers */
 		private val levelTime =
