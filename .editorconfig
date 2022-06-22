@@ -7,7 +7,7 @@ insert_final_newline=true
 max_line_length=128
 tab_width=2
 trim_trailing_whitespace=true
-ij_continuation_indent_size=8
+ij_continuation_indent_size=2
 ij_formatter_off_tag=@formatter:off
 ij_formatter_on_tag=@formatter:on
 ij_formatter_tags_enabled=false
@@ -276,8 +276,8 @@ indent_size=1
 tab_width=1
 ij_xml_indent_size=1
 ij_xml_tab_width=1
-ij_continuation_indent_size=2
-ij_xml_continuation_indent_size=2
+ij_continuation_indent_size=1
+ij_xml_continuation_indent_size=1
 ij_visual_guides=none
 ij_xml_align_attributes=true
 ij_xml_align_text=false
@@ -299,8 +299,6 @@ ij_xml_text_wrap=normal
 ij_xml_use_custom_settings=false
 
 [{*.bash,*.sh,*.zsh}]
-ij_shell_indent_size=2
-ij_shell_tab_width=2
 ij_visual_guides=none
 ij_shell_binary_ops_start_line=false
 ij_shell_keep_column_alignment_padding=false
@@ -312,7 +310,6 @@ ij_shell_use_unix_line_separator=true
 [{*.gradle.kts,*.kt,*.kts,*.main.kts,*.space.kts}]
 indent_style=tab
 ij_kotlin_indent_size=2
-ij_continuation_indent_size=2
 ij_kotlin_tab_width=2
 ij_kotlin_continuation_indent_size=2
 ij_visual_guides=none
@@ -332,7 +329,7 @@ ij_kotlin_block_comment_add_space=false
 ij_kotlin_block_comment_at_first_column=true
 ij_kotlin_call_parameters_new_line_after_left_paren=false
 ij_kotlin_call_parameters_right_paren_on_new_line=false
-ij_kotlin_call_parameters_wrap=normal
+ij_kotlin_call_parameters_wrap=off
 ij_kotlin_catch_on_new_line=false
 ij_kotlin_class_annotation_wrap=normal
 ij_kotlin_code_style_defaults=KOTLIN_OFFICIAL
@@ -363,10 +360,10 @@ ij_kotlin_line_comment_add_space=false
 ij_kotlin_line_comment_add_space_on_reformat=false
 ij_kotlin_line_comment_at_first_column=true
 ij_kotlin_method_annotation_wrap=normal
-ij_kotlin_method_call_chain_wrap=normal
+ij_kotlin_method_call_chain_wrap=off
 ij_kotlin_method_parameters_new_line_after_left_paren=false
 ij_kotlin_method_parameters_right_paren_on_new_line=false
-ij_kotlin_method_parameters_wrap=normal
+ij_kotlin_method_parameters_wrap=off
 ij_kotlin_name_count_to_use_star_import=5
 ij_kotlin_name_count_to_use_star_import_for_members=4
 ij_kotlin_packages_to_use_import_on_demand=kotlinx.android.synthetic.**,io.ktor.**
@@ -413,8 +410,6 @@ ij_json_spaces_within_brackets=false
 ij_json_wrap_long_lines=false
 
 [{*.markdown,*.md}]
-indent_size=2
-tab_width=2
 ij_continuation_indent_size=2
 ij_visual_guides=none
 ij_markdown_force_one_space_after_blockquote_symbol=true
@@ -434,6 +429,8 @@ ij_markdown_wrap_text_if_long=true
 ij_markdown_wrap_text_inside_blockquotes=true
 
 [{*.py,*.pyw}]
+ij_python_indent_size=2
+ij_python_tab_width=2
 ij_visual_guides=none
 ij_python_align_collections_and_comprehensions=true
 ij_python_align_multiline_imports=true

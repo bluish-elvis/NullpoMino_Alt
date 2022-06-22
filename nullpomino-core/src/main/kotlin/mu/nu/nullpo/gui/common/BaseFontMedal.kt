@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, NullNoname
+ * Copyright (c) 2021-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -48,10 +48,8 @@ abstract class BaseFontMedal {
 		val by = y-h/2f*(1-scale)
 
 		draw(bx-pl*scale, by-pt*scale, bx, by+mb*scale, 0, sy, 4, sy+h)
-		draw(bx-scale, by-pt*scale, bx+(1+ww)*scale, by+mb*scale,
-			4, sy, 6, sy+h)
-		draw(bx+(1+ww)*scale, by-pt*scale, bx+(5+ww)*scale, by+mb*scale,
-			6, sy, 10, sy+h)
+		draw(bx-scale, by-pt*scale, bx+(1+ww)*scale, by+mb*scale, 4, sy, 6, sy+h)
+		draw(bx+(1+ww)*scale, by-pt*scale, bx+(5+ww)*scale, by+mb*scale, 6, sy, 10, sy+h)
 		str.forEachIndexed {i, c ->
 			val stringChar = c.code-0x41
 			if(stringChar in 0x00..0x1B) {// Character output
@@ -69,7 +67,8 @@ abstract class BaseFontMedal {
 	 * @param tier 文字色
 	 * @param scale 拡大率
 	 */
-	abstract fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = 1f, darkness:Float = 0f)
+	abstract fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
+		darkness:Float = 0f)
 
 	/** 文字列を描画
 	 * @param x X-coordinate
@@ -78,6 +77,6 @@ abstract class BaseFontMedal {
 	 * @param tier 文字色
 	 * @param scale 拡大率
 	 */
-	fun printFontGrid(x:Int, y:Int, str:String, tier:Int = 0, scale:Float = 1f, alpha:Float = 1f, darkness:Float = 0f) =
-		FontMedal.printFont(x*16, y*16, str, tier, scale, alpha, darkness)
+	fun printFontGrid(x:Int, y:Int, str:String, tier:Int = 0, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
+		darkness:Float = 0f) = FontMedal.printFont(x*16, y*16, str, tier, scale, alpha, darkness)
 }

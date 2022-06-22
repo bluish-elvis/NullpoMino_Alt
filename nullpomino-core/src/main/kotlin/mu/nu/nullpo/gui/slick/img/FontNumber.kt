@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -38,9 +38,9 @@ object FontNumber:BaseFontNumber() {
 	override val rainbowCount:Int get() = NullpoMinoSlick.rainbow
 
 	override fun printFont(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
-		processTxt(x.toFloat(), y.toFloat(), str, color, scale, rainbow)
-		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int ->
-			ResourceHolder.imgNum[i].draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, alpha)
+		processTxt(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
+		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int, a:Float ->
+			ResourceHolder.imgNum[i].draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, a)
 		}
 
 }

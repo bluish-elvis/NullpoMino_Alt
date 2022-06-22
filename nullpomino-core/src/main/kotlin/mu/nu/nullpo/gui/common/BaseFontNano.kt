@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, NullNoname
+ * Copyright (c) 2021-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -37,8 +37,9 @@ abstract class BaseFontNano:BaseFont {
 	val w = 12
 	val h = 14
 	abstract override val rainbowCount:Int
-	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) {
+	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float,
+		rainbow:Int,
+		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
 		var dx = x
 		var dy = y
 
@@ -55,7 +56,7 @@ abstract class BaseFontNano:BaseFont {
 				val sx = (c%32)*w
 				val sy = (c/32+col*3)*h
 
-				draw(0,dx,dy,scale,sx,sy,w,h)
+				draw(0, dx, dy, scale, sx, sy, w, h, alpha)
 				dx += w*scale
 			}
 		}

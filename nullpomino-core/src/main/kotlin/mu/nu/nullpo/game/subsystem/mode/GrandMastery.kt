@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -427,7 +427,7 @@ class GrandMastery:AbstractMode() {
 			engine.speed.lockDelay = 13
 			engine.speed.das = 5
 		} else {
-			val section = minOf(tableARE.size-1,internalLevel/100)
+			val section = minOf(tableARE.size-1, internalLevel/100)
 			engine.speed.are = tableARE[section]
 			engine.speed.areLine = tableARELine[section]
 			engine.speed.lineDelay = tableLineDelay[section]
@@ -1124,7 +1124,8 @@ class GrandMastery:AbstractMode() {
 					owner.bgmStatus.fadesw = false
 					owner.bgmStatus.bgm = tableBGM[bgmlv]
 					engine.playSE("levelup_section")
-				} else engine.playSE("levelup")
+				}
+				engine.playSE("levelup")
 
 				// Section Timeを記録
 				sectionlasttime = sectionTime[levelb/100]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, NullNoname
+ * Copyright (c) 2021-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -33,52 +33,53 @@ import mu.nu.nullpo.game.event.EventReceiver
 
 abstract class BaseFontGrade:BaseFont {
 
-	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) =
+	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float,
+		rainbow:Int,
+		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) =
 		if(scale>=5f/3f) {
 			//processBigFont
 			var dx = x
 			var i = 0
 			while(i<str.length) {
 				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
-				var sC = str[i].code
+				var cd = str[i].code
 				var nX = -1
 				var nY = -1
 				if(i<str.length-1) nX = str[i+1].code
 				if(i<str.length-2) nY = str[i+2].code
-				when(sC) {
-					in 0x31..0x39 -> sC -= 0x31
+				when(cd) {
+					in 0x31..0x39 -> cd -= 0x31
 					0x53, 0x73 -> // S
 						if(nX in 0x31..0x39) {
 							if(nX==0x31&&nY>=0x30&&nY<=0x33) {
-								sC = 25+nY-0x30
+								cd = 25+nY-0x30
 								i++
-							} else sC = 16+nX-0x31
+							} else cd = 16+nX-0x31
 							i++
-						} else sC = 9
+						} else cd = 9
 					0x6D, 0x4D ->//m|M
 						if(nX in 0x31..0x39) {
-							sC = 29+nX-0x31
+							cd = 29+nX-0x31
 							i++
-						} else sC = if(sC==0x6D) 10 else 14
-					0x4B, 0x6B -> sC = 11//K
-					0x56, 0x76 -> sC = 12//V
-					0x4F, 0x6F -> sC = 13//O
+						} else cd = if(cd==0x6D) 10 else 14
+					0x4B, 0x6B -> cd = 11//K
+					0x56, 0x76 -> cd = 12//V
+					0x4F, 0x6F -> cd = 13//O
 					0x47, 67 -> //G
-						sC = if(nX==0x6D||nX==0x4D) {
+						cd = if(nX==0x6D||nX==0x4D) {
 							i++
 							if(nX==0x6D) 38 else 39
 						} else 15
-					else -> sC = -1
+					else -> cd = -1
 				}
-				dx += if(sC in 0..41) { // 文字出力
+				dx += if(cd in 0..41) { // 文字出力
 
-					val sz = if(sC<=15) 48 else if(sC>=40) 128 else 64
-					val sx = (if(sC<16) sC else (sC-16)%12)*sz
-					val sy = ((if(sC>=16) if(sC>=28) if(sC>=40) 3 else 2 else 1 else 0)+col*4)*48
-					val scale = scale/2
-					draw(1, dx-4*scale, y-4*scale, scale, sx, sy, sz, 48)
-					(sz*scale).toInt()
+					val sz = if(cd<=15) 48 else if(cd>=40) 128 else 64
+					val sx = (if(cd<16) cd else (cd-16)%12)*sz
+					val sy = ((if(cd>=16) if(cd>=28) if(cd>=40) 3 else 2 else 1 else 0)+col*4)*48
+					val sc = scale/2
+					draw(1, dx-4*sc, y-4*sc, sc, sx, sy, sz, 48, alpha)
+					(sz*sc).toInt()
 				} else (24*scale).toInt()
 				i++
 			}
@@ -88,30 +89,30 @@ abstract class BaseFontGrade:BaseFont {
 			var i = 0
 			while(i<str.length) {
 				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
-				var sC = str[i].code
-				when(sC) {
-					in 0x31..0x39 -> if(sC==0x31&&i<str.length-1) {
+				var cd = str[i].code
+				when(cd) {
+					in 0x31..0x39 -> if(cd==0x31&&i<str.length-1) {
 						val next = str[i+1].code
 						if(next in 0x30..0x33) {
-							sC = 9+next-0x30
+							cd = 9+next-0x30
 							i++
 						}
-					} else sC -= 0x31
-					0x53, 0x73 -> sC = 13//S
-					0x6D -> sC = 14//m
-					0x4B, 0x6B -> sC = 15//K
-					0x56, 0x76 -> sC = 16//V
-					0x4F, 0x6F -> sC = 17//O
-					0x4D -> sC = 18//M
-					0x47, 67 -> sC = 19//G
-					else -> sC = -1
+					} else cd -= 0x31
+					0x53, 0x73 -> cd = 13//S
+					0x6D -> cd = 14//m
+					0x4B, 0x6B -> cd = 15//K
+					0x56, 0x76 -> cd = 16//V
+					0x4F, 0x6F -> cd = 17//O
+					0x4D -> cd = 18//M
+					0x47, 67 -> cd = 19//G
+					else -> cd = -1
 				}
-				if(sC in 0..19) { // 文字出力
-					val sx = sC%10*32
-					val sy = (sC/10+col*2)*32
-					val scale = scale/2
-					draw(0, dx-2*scale, y-2*scale, scale, sx, sy, 32, 32)
-					dx += (32*scale).toInt()
+				if(cd in 0..19) { // 文字出力
+					val sx = cd%10*32
+					val sy = (cd/10+col*2)*32
+					val sc = scale/2
+					draw(0, dx-2*sc, y-2*sc, sc, sx, sy, 32, 32, alpha)
+					dx += (32*sc).toInt()
 				}
 				i++
 			}

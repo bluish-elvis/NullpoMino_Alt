@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -115,8 +115,10 @@ open class EventReceiver {
 	 * @param pts Number of points last gained
 	 */
 	fun addCombo(engine:GameEngine, x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN) =
-		addCombo(fieldX(engine)+x*getBlockSize(engine), fieldY(engine)+y*getBlockSize(engine),
-			pts, type, -(x+2)*getBlockSize(engine)+18)
+		addCombo(
+			fieldX(engine)+x*getBlockSize(engine), fieldY(engine)+y*getBlockSize(engine),
+			pts, type, -(x+2)*getBlockSize(engine)+18
+		)
 
 	/** It will be called when a fireworks shoot.
 	 * @param engine GameEngine
@@ -349,8 +351,10 @@ open class EventReceiver {
 		drawMenu(engine, playerID, x, y, str, FONT.NANO, color, scale)
 
 	fun drawMenuNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawMenuNano(engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE,
-			scale)
+		drawMenuNano(
+			engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE,
+			scale
+		)
 
 	/** [You don't have to override this]
 	 * Draw Grade inside the field.
@@ -520,13 +524,17 @@ open class EventReceiver {
 	@JvmOverloads
 	fun drawBlock(x:Float, y:Float, block:Block, darkness:Float = block.darkness, alpha:Float = block.alpha,
 		scale:Float = 1f, outline:Float = 0f) =
-		drawBlock(x, y, block.drawColor, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE), darkness, alpha, scale,
-			block.aint, outline)
+		drawBlock(
+			x, y, block.drawColor, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE), darkness, alpha, scale,
+			block.aint, outline
+		)
 
 	@JvmOverloads
 	fun drawBlockForceVisible(x:Float, y:Float, blk:Block, scale:Float = 1f) =
-		drawBlock(x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE),
-			blk.darkness/2, .5f*blk.alpha+.5f, scale, blk.aint)
+		drawBlock(
+			x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE),
+			blk.darkness/2, .5f*blk.alpha+.5f, scale, blk.aint
+		)
 
 	/** Blockピースを描画 (暗さもしくは明るさの指定可能）
 	 * @param x X-coordinate
@@ -539,8 +547,10 @@ open class EventReceiver {
 	fun drawPiece(x:Int, y:Int, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f, ow:Float = 0f) =
 		piece.block.forEachIndexed {i, blk ->
 			val ls = scale*if(piece.big) 32 else 16
-			drawBlock(x+(piece.dataX[piece.direction][i].toFloat()*ls), y+(piece.dataY[piece.direction][i].toFloat()*ls),
-				blk, blk.darkness+darkness, blk.alpha*alpha, scale, ow)
+			drawBlock(
+				x+(piece.dataX[piece.direction][i].toFloat()*ls), y+(piece.dataY[piece.direction][i].toFloat()*ls),
+				blk, blk.darkness+darkness, blk.alpha*alpha, scale, ow
+			)
 		}
 
 	/** Get key name by button ID
@@ -611,7 +621,7 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 * @return Maximum length of the meter
 	 */
-	fun getMeterMax(engine:GameEngine):Int = if(!showMeter) 0 else engine.fieldHeight*getBlockSize(engine)
+	fun getMeterMax(engine:GameEngine):Int = if(!showMeter) 0 else engine.field.height*getBlockSize(engine)
 
 	/** Draw Decorations at score pos
 	 * @param engine GameEngine
@@ -733,7 +743,7 @@ open class EventReceiver {
 	 * @param playerID Player ID
 	 * @return Y position of score display area
 	 */
-	fun scoreY(engine:GameEngine, playerID:Int):Int = fieldY(engine, playerID)+48
+	fun scoreY(engine:GameEngine, playerID:Int):Int = fieldY(engine, playerID)
 
 	/** Check if the skin is sticky type
 	 * @param skin Skin ID
@@ -1137,79 +1147,99 @@ open class EventReceiver {
 		}
 
 		/** Field X position */
-		val NEW_FIELD_OFFSET_X = arrayOf(arrayOf(// TETROMINO
-			intArrayOf(119, 247, 375, 503, 247, 375), // Small
-			intArrayOf(32, 432, 432, 432, 432, 432), // Normal
-			intArrayOf(16, 416, 416, 416, 416, 416))// Big
+		val NEW_FIELD_OFFSET_X = arrayOf(
+			arrayOf(// TETROMINO
+				intArrayOf(119, 247, 375, 503, 247, 375), // Small
+				intArrayOf(32, 432, 432, 432, 432, 432), // Normal
+				intArrayOf(16, 416, 416, 416, 416, 416)
+			)// Big
 			, arrayOf(// AVALANCHE
-			intArrayOf(119, 247, 375, 503, 247, 375), // Small
-			intArrayOf(32, 432, 432, 432, 432, 432), // Normal
-			intArrayOf(16, 352, 352, 352, 352, 352))// Big
+				intArrayOf(119, 247, 375, 503, 247, 375), // Small
+				intArrayOf(32, 432, 432, 432, 432, 432), // Normal
+				intArrayOf(16, 352, 352, 352, 352, 352)
+			)// Big
 			, arrayOf(// PHYSICIAN
-			intArrayOf(119, 247, 375, 503, 247, 375), // Small
-			intArrayOf(32, 432, 432, 432, 432, 432), // Normal
-			intArrayOf(16, 416, 416, 416, 416, 416))// Big
+				intArrayOf(119, 247, 375, 503, 247, 375), // Small
+				intArrayOf(32, 432, 432, 432, 432, 432), // Normal
+				intArrayOf(16, 416, 416, 416, 416, 416)
+			)// Big
 			, arrayOf(// SPF
-			intArrayOf(119, 247, 375, 503, 247, 375), // Small
-			intArrayOf(32, 432, 432, 432, 432, 432), // Normal
-			intArrayOf(16, 352, 352, 352, 352, 352))// Big
+				intArrayOf(119, 247, 375, 503, 247, 375), // Small
+				intArrayOf(32, 432, 432, 432, 432, 432), // Normal
+				intArrayOf(16, 352, 352, 352, 352, 352)
+			)// Big
 		)
 
 		/** Field Y position */
-		val NEW_FIELD_OFFSET_Y = arrayOf(arrayOf(// TETROMINO
-			intArrayOf(80, 80, 80, 80, 286, 286), // Small
-			intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-			intArrayOf(8, 8, 8, 8, 8, 8))// Big
+		val NEW_FIELD_OFFSET_Y = arrayOf(
+			arrayOf(// TETROMINO
+				intArrayOf(80, 80, 80, 80, 286, 286), // Small
+				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
+				intArrayOf(8, 8, 8, 8, 8, 8)
+			)// Big
 			, arrayOf(// AVALANCHE
-			intArrayOf(80, 80, 80, 80, 286, 286), // Small
-			intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-			intArrayOf(8, 8, 8, 8, 8, 8))// Big
+				intArrayOf(80, 80, 80, 80, 286, 286), // Small
+				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
+				intArrayOf(8, 8, 8, 8, 8, 8)
+			)// Big
 			, arrayOf(// PHYSICIAN
-			intArrayOf(80, 80, 80, 80, 286, 286), // Small
-			intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-			intArrayOf(8, 8, 8, 8, 8, 8))// Big
+				intArrayOf(80, 80, 80, 80, 286, 286), // Small
+				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
+				intArrayOf(8, 8, 8, 8, 8, 8)
+			)// Big
 			, arrayOf(// SPF
-			intArrayOf(80, 80, 80, 80, 286, 286), // Small
-			intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-			intArrayOf(-8, -8, -8, -8, -8, -8))// Big
+				intArrayOf(80, 80, 80, 80, 286, 286), // Small
+				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
+				intArrayOf(-8, -8, -8, -8, -8, -8)
+			)// Big
 		)
 
 		/** Field X position (Big side preview) */
-		val NEW_FIELD_OFFSET_X_BSP = arrayOf(arrayOf(// TETROMINO
-			intArrayOf(208, 320, 432, 544, 320, 432), // Small
-			intArrayOf(64, 400, 400, 400, 400, 400), // Normal
-			intArrayOf(16, 352, 352, 352, 352, 352))// Big
+		val NEW_FIELD_OFFSET_X_BSP = arrayOf(
+			arrayOf(// TETROMINO
+				intArrayOf(208, 320, 432, 544, 320, 432), // Small
+				intArrayOf(64, 400, 400, 400, 400, 400), // Normal
+				intArrayOf(16, 352, 352, 352, 352, 352)
+			)// Big
 			, arrayOf(// AVALANCHE
-			intArrayOf(208, 320, 432, 544, 320, 432), // Small
-			intArrayOf(64, 400, 400, 400, 400, 400), // Normal
-			intArrayOf(16, 352, 352, 352, 352, 352))// Big
+				intArrayOf(208, 320, 432, 544, 320, 432), // Small
+				intArrayOf(64, 400, 400, 400, 400, 400), // Normal
+				intArrayOf(16, 352, 352, 352, 352, 352)
+			)// Big
 			, arrayOf(// PHYSICIAN
-			intArrayOf(208, 320, 432, 544, 320, 432), // Small
-			intArrayOf(64, 400, 400, 400, 400, 400), // Normal
-			intArrayOf(16, 352, 352, 352, 352, 352))// Big
+				intArrayOf(208, 320, 432, 544, 320, 432), // Small
+				intArrayOf(64, 400, 400, 400, 400, 400), // Normal
+				intArrayOf(16, 352, 352, 352, 352, 352)
+			)// Big
 			, arrayOf(// SPF
-			intArrayOf(208, 320, 432, 544, 320, 432), // Small
-			intArrayOf(64, 400, 400, 400, 400, 400), // Normal
-			intArrayOf(16, 352, 352, 352, 352, 352))// Big
+				intArrayOf(208, 320, 432, 544, 320, 432), // Small
+				intArrayOf(64, 400, 400, 400, 400, 400), // Normal
+				intArrayOf(16, 352, 352, 352, 352, 352)
+			)// Big
 		)
 
 		/** Field Y position (Big side preview) */
-		val NEW_FIELD_OFFSET_Y_BSP = arrayOf(arrayOf(// TETROMINO
-			intArrayOf(80, 80, 80, 80, 286, 286), // Small
-			intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-			intArrayOf(8, 8, 8, 8, 8, 8))// Big
+		val NEW_FIELD_OFFSET_Y_BSP = arrayOf(
+			arrayOf(// TETROMINO
+				intArrayOf(80, 80, 80, 80, 286, 286), // Small
+				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
+				intArrayOf(8, 8, 8, 8, 8, 8)
+			)// Big
 			, arrayOf(// AVALANCHE
-			intArrayOf(80, 80, 80, 80, 286, 286), // Small
-			intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-			intArrayOf(8, 8, 8, 8, 8, 8))// Big
+				intArrayOf(80, 80, 80, 80, 286, 286), // Small
+				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
+				intArrayOf(8, 8, 8, 8, 8, 8)
+			)// Big
 			, arrayOf(// PHYSICIAN
-			intArrayOf(80, 80, 80, 80, 286, 286), // Small
-			intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-			intArrayOf(8, 8, 8, 8, 8, 8))// Big
+				intArrayOf(80, 80, 80, 80, 286, 286), // Small
+				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
+				intArrayOf(8, 8, 8, 8, 8, 8)
+			)// Big
 			, arrayOf(// SPF
-			intArrayOf(80, 80, 80, 80, 286, 286), // Small
-			intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-			intArrayOf(-16, -16, -16, -16, -16, -16))// Big
+				intArrayOf(80, 80, 80, 80, 286, 286), // Small
+				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
+				intArrayOf(-16, -16, -16, -16, -16, -16)
+			)// Big
 		)
 
 	}

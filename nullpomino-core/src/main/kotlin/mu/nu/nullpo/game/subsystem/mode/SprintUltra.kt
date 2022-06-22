@@ -30,7 +30,7 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -55,12 +55,12 @@ class SprintUltra:NetDummyMode() {
 	/** Most recent scoring event piece ID */
 	private var lastpiece = 0
 
-	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	private val itemGoal = StringsMenuItem(
-		"goaltype", "Length", EventReceiver.COLOR.BLUE,
+		"goaltype", "Length", COLOR.BLUE,
 		0, tableLength.map {"$it Min"}.toTypedArray()
 	)
 	/** Time limit type */
@@ -256,10 +256,10 @@ class SprintUltra:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, playerID, receiver)
 		else {
-			drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0)
+			drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.BLUE, 0)
 			drawMenuCompact(engine, playerID, receiver, "BIG" to big, "Length" to "${tableLength[goaltype]} Min")
 			if(!engine.owner.replayMode) {
-				menuColor = EventReceiver.COLOR.GREEN
+				menuColor = COLOR.GREEN
 				drawMenuCompact(engine, playerID, receiver, "LOAD" to presetNumber, "SAVE" to presetNumber)
 			}
 		}
@@ -287,91 +287,91 @@ class SprintUltra:NetDummyMode() {
 	override fun renderLast(engine:GameEngine, playerID:Int) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, playerID, 0, -3, name, EventReceiver.COLOR.CYAN)
-		receiver.drawScoreFont(engine, playerID, 0, -2, "(${(tableLength[goaltype])} Minutes sprint)", EventReceiver.COLOR.CYAN)
+		receiver.drawScoreFont(engine, playerID, 0, 0, name, COLOR.CYAN)
+		receiver.drawScoreFont(engine, playerID, 0, 1, "(${(tableLength[goaltype])} Minutes sprint)", COLOR.CYAN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				receiver.drawScoreFont(engine, playerID, 0, 0, "Score RANKING", EventReceiver.COLOR.GREEN)
-				receiver.drawScoreFont(engine, playerID, 3, 1, "Score Power Lines", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 0, 3, "Score RANKING", COLOR.GREEN)
+				receiver.drawScoreFont(engine, playerID, 1, 4, "Score Power Lines", COLOR.BLUE)
 
 				for(i in 0 until minOf(RANKING_MAX, 12)) {
-					receiver.drawScoreGrade(engine, playerID, 0, 2+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
+					receiver.drawScoreGrade(engine, playerID, 0, 5+i, String.format("%2d", i+1), COLOR.YELLOW)
 					receiver.drawScoreNum(
-						engine, playerID, 3, 2+i, String.format("%7d", rankingScore[0][goaltype][i]),
+						engine, playerID, 1, 5+i, String.format("%7d", rankingScore[0][goaltype][i]),
 						i==rankingRank[0]
 					)
 					receiver.drawScoreNum(
-						engine, playerID, 9, 2+i, String.format("%5d", rankingPower[0][goaltype][i]),
+						engine, playerID, 8, 5+i, String.format("%5d", rankingPower[0][goaltype][i]),
 						i==rankingRank[0]
 					)
 					receiver.drawScoreNum(
-						engine, playerID, 15, 2+i, String.format("%5d", rankingLines[0][goaltype][i]),
+						engine, playerID, 14, 5+i, String.format("%5d", rankingLines[0][goaltype][i]),
 						i==rankingRank[0]
 					)
 				}
 
-				receiver.drawScoreFont(engine, playerID, 0, 8, "Power RANKING", EventReceiver.COLOR.GREEN)
-				receiver.drawScoreFont(engine, playerID, 3, 9, "Power Score Lines", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 0, 11, "Power RANKING", COLOR.GREEN)
+				receiver.drawScoreFont(engine, playerID, 1, 12, "Power Score Lines", COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, 10+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
+					receiver.drawScoreGrade(engine, playerID, 0, 13+i, String.format("%2d", i+1), COLOR.YELLOW)
 					receiver.drawScoreNum(
-						engine, playerID, 3, 10+i, String.format("%5d", rankingPower[1][goaltype][i]),
+						engine, playerID, 2, 13+i, String.format("%5d", rankingPower[1][goaltype][i]),
 						i==rankingRank[1]
 					)
 					receiver.drawScoreNum(
-						engine, playerID, 9, 10+i, String.format("%7d", rankingScore[1][goaltype][i]),
+						engine, playerID, 7, 13+i, String.format("%7d", rankingScore[1][goaltype][i]),
 						i==rankingRank[1]
 					)
 					receiver.drawScoreNum(
-						engine, playerID, 15, 10+i, String.format("%5d", rankingLines[1][goaltype][i]),
+						engine, playerID, 14, 13+i, String.format("%5d", rankingLines[1][goaltype][i]),
 						i==rankingRank[1]
 					)
 				}
 
-				receiver.drawScoreFont(engine, playerID, 0, 16, "Lines RANKING", EventReceiver.COLOR.GREEN)
-				receiver.drawScoreFont(engine, playerID, 3, 17, "Lines Score Power", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, playerID, 0, 19, "Lines RANKING", COLOR.GREEN)
+				receiver.drawScoreFont(engine, playerID, 1, 20, "Lines Score Power", COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, 18+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
+					receiver.drawScoreGrade(engine, playerID, 0, 21+i, String.format("%2d", i+1), COLOR.YELLOW)
 					receiver.drawScoreNum(
-						engine, playerID, 3, 18+i, String.format("%5d", rankingLines[2][goaltype][i]),
-						i==rankingRank[1]
+						engine, playerID, 2, 21+i, String.format("%5d", rankingLines[2][goaltype][i]),
+						i==rankingRank[2]
 					)
 					receiver.drawScoreNum(
-						engine, playerID, 9, 18+i, String.format("%7d", rankingScore[2][goaltype][i]),
-						i==rankingRank[1]
+						engine, playerID, 7, 21+i, String.format("%7d", rankingScore[2][goaltype][i]),
+						i==rankingRank[2]
 					)
 					receiver.drawScoreNum(
-						engine, playerID, 15, 18+i, String.format("%5d", rankingPower[2][goaltype][i]),
-						i==rankingRank[1]
+						engine, playerID, 14, 21+i, String.format("%5d", rankingPower[2][goaltype][i]),
+						i==rankingRank[2]
 					)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 5, 3, "+$lastscore")
-			receiver.drawScoreNum(engine, playerID, 0, 4, "$scDisp", scDisp<engine.statistics.score, 2f)
+			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
+			receiver.drawScoreNum(engine, playerID, 5, 3, "+${String.format("%6d", lastscore)}")
+			receiver.drawScoreNum(engine, playerID, 0, 4, String.format("%7d", scDisp), scDisp<engine.statistics.score, 2f)
 
-
-			receiver.drawScoreFont(engine, playerID, 0, 6, "Spike", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 7, "${engine.statistics.attacks}", 2f)
-
-			receiver.drawScoreFont(engine, playerID, 0, 9, "Lines", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 5, 8, "${engine.statistics.lines}", 2f)
-
-			receiver.drawScoreFont(engine, playerID, 0, 10, "SCORE/MIN", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 10, 3, "/min", COLOR.BLUE)
 			receiver.drawScoreNum(
-				engine, playerID, 0, 11, String.format("%7g", engine.statistics.spm),
-				scDisp<engine.statistics.score, 2f
+				engine, playerID, 10, 4, String.format("%7g", engine.statistics.spm),
+				scDisp<engine.statistics.score, 1.5f
 			)
 
-			receiver.drawScoreFont(engine, playerID, 0, 13, "LINE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 14, "${engine.statistics.lpm}", 2f)
+			receiver.drawScoreFont(engine, playerID, 0, 6, "Spike", COLOR.BLUE)
+			receiver.drawScoreNum(engine, playerID, 0, 7, String.format("%5d", engine.statistics.attacks), 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 15, "Time", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, playerID, 3, 9, "Lines", COLOR.BLUE)
+			receiver.drawScoreNum(engine, playerID, 8, 8, "${engine.statistics.lines}", 2f)
+
+			receiver.drawScoreFont(engine, playerID, 4, 10, "/min", COLOR.BLUE)
+			receiver.drawScoreNum(engine, playerID, 8, 10, "${engine.statistics.lpm}", 1.5f)
+
+			receiver.drawScoreFont(engine, playerID, 0, 14, "Time", COLOR.BLUE)
 			val time = maxOf(0, (tableLength[goaltype])*3600-engine.statistics.time)
+			receiver.drawSpeedMeter(engine, playerID, 0, 15, engine.statistics.time/(tableLength[goaltype]*3600f), 12f)
 			receiver.drawScoreNum(engine, playerID, 0, 16, time.toTimeStr, getTimeFontColor(time), 2f)
 		}
 
@@ -401,11 +401,13 @@ class SprintUltra:NetDummyMode() {
 	/* Soft drop */
 	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
 		engine.statistics.scoreSD += fall
+		scDisp += fall
 	}
 
 	/* Hard drop */
 	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
 		engine.statistics.scoreHD += fall*2
+		scDisp += fall*2
 	}
 
 	/* Each frame Processing at the end of */
@@ -473,46 +475,46 @@ class SprintUltra:NetDummyMode() {
 			0,
 			0,
 			"${BaseFont.UP_L}${BaseFont.DOWN_L} PAGE${engine.statc[1]+1}/2",
-			EventReceiver.COLOR.RED
+			COLOR.RED
 		)
-		if(rankingRank[0]==0) receiver.drawMenuFont(engine, playerID, 0, 3, "NEW RECORD", EventReceiver.COLOR.ORANGE)
+		if(rankingRank[0]==0) receiver.drawMenuFont(engine, playerID, 0, 3, "NEW RECORD", COLOR.ORANGE)
 		else if(rankingRank[0]!=-1)
-			receiver.drawMenuFont(engine, playerID, 4, 3, String.format("RANK %d", rankingRank[0]+1), EventReceiver.COLOR.ORANGE)
-		if(rankingRank[1]==0) receiver.drawMenuFont(engine, playerID, 0, 6, "NEW RECORD", EventReceiver.COLOR.ORANGE)
+			receiver.drawMenuFont(engine, playerID, 4, 3, String.format("RANK %d", rankingRank[0]+1), COLOR.ORANGE)
+		if(rankingRank[1]==0) receiver.drawMenuFont(engine, playerID, 0, 6, "NEW RECORD", COLOR.ORANGE)
 		else if(rankingRank[1]!=-1)
-			receiver.drawMenuFont(engine, playerID, 4, 6, String.format("RANK %d", rankingRank[1]+1), EventReceiver.COLOR.ORANGE)
-		if(rankingRank[2]==0) receiver.drawMenuFont(engine, playerID, 0, 9, "NEW RECORD", EventReceiver.COLOR.ORANGE)
+			receiver.drawMenuFont(engine, playerID, 4, 6, String.format("RANK %d", rankingRank[1]+1), COLOR.ORANGE)
+		if(rankingRank[2]==0) receiver.drawMenuFont(engine, playerID, 0, 9, "NEW RECORD", COLOR.ORANGE)
 		else if(rankingRank[2]!=-1)
-			receiver.drawMenuFont(engine, playerID, 4, 9, String.format("RANK %d", rankingRank[2]+1), EventReceiver.COLOR.ORANGE)
+			receiver.drawMenuFont(engine, playerID, 4, 9, String.format("RANK %d", rankingRank[2]+1), COLOR.ORANGE)
 
 		when(engine.statc[1]) {
 			0 -> {
-				drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR.BLUE, Statistic.SCORE)
-				drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.ATTACKS)
-				drawResultStats(engine, playerID, receiver, 7, EventReceiver.COLOR.BLUE, Statistic.LINES)
+				drawResultStats(engine, playerID, receiver, 1, COLOR.BLUE, Statistic.SCORE)
+				drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, Statistic.ATTACKS)
+				drawResultStats(engine, playerID, receiver, 7, COLOR.BLUE, Statistic.LINES)
 				drawResultStats(
-					engine, playerID, receiver, 10, EventReceiver.COLOR.BLUE, Statistic.PPS, Statistic.VS
+					engine, playerID, receiver, 10, COLOR.BLUE, Statistic.PPS, Statistic.VS
 				)
 			}
 			1 -> {
-				drawResultStats(engine, playerID, receiver, 1, EventReceiver.COLOR.BLUE, Statistic.SPM)
-				drawResultStats(engine, playerID, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.APM)
-				drawResultStats(engine, playerID, receiver, 7, EventReceiver.COLOR.BLUE, Statistic.LPM)
+				drawResultStats(engine, playerID, receiver, 1, COLOR.BLUE, Statistic.SPM)
+				drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, Statistic.APM)
+				drawResultStats(engine, playerID, receiver, 7, COLOR.BLUE, Statistic.LPM)
 
-				drawResultStats(engine, playerID, receiver, 10, EventReceiver.COLOR.BLUE, Statistic.SPL, Statistic.APL)
+				drawResultStats(engine, playerID, receiver, 10, COLOR.BLUE, Statistic.SPL, Statistic.APL)
 			}
 		}
-		drawResultNetRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[0])
-		drawResultNetRankDaily(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[1])
+		drawResultNetRank(engine, playerID, receiver, 14, COLOR.BLUE, netRankingRank[0])
+		drawResultNetRankDaily(engine, playerID, receiver, 16, COLOR.BLUE, netRankingRank[1])
 
-		if(netIsPB) receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
+		if(netIsPB) receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", COLOR.ORANGE)
 
 		if(netIsNetPlay&&netReplaySendStatus==1)
-			receiver.drawMenuFont(engine, playerID, 0, 22, "SENDING...", EventReceiver.COLOR.PINK)
+			receiver.drawMenuFont(engine, playerID, 0, 22, "SENDING...", COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch
 			&&netReplaySendStatus==2
 		)
-			receiver.drawMenuFont(engine, playerID, 1, 22, "A: RETRY", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, playerID, 1, 22, "A: RETRY", COLOR.RED)
 	}
 
 	/* Called when saving replay */

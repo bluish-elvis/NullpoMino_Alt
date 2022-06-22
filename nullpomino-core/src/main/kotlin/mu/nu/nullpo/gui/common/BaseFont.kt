@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2021, NullNoname
+ * Copyright (c) 2021-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -56,8 +56,8 @@ interface BaseFont {
 
 	val rainbowCount:Int
 
-	fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit)
+	fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
+		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit)
 	/** Draws the string
 	 * @param x X-coordinate
 	 * @param y Y-coordinate

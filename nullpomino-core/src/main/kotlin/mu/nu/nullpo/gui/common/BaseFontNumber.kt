@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, NullNoname
+ * Copyright (c) 2021-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -33,43 +33,40 @@ import mu.nu.nullpo.game.event.EventReceiver
 
 abstract class BaseFontNumber:BaseFont {
 	abstract override val rainbowCount:Int
-	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) {
+	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int,
+		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
 		var dx = x
 		var dy = y
 		val fontBig = scale>=1.5f
 		str.forEachIndexed {i, c ->
-			var stringChar = c.code
 			// 文字出力
-			when(stringChar) {
-				0x0A -> {
-					// 改行 (\n）
-					dy += 16*scale
-					dx = x
-
+			val stringChar = c.code.let {
+				when(it) {
+					0x0A -> {
+						// 改行 (\n）
+						dy += 16*scale
+						dx = x
+						0
+					}
+					0x20 -> 0x30//dx += 12*scale
+					0x3f -> 0x3b
+					0x2d -> 0x3c
+					0x2b -> 0x3d
+					0x2f -> 0x3e
+					0x2e -> 0x3f
+					0x25 -> 0x40
+					in 0x30..0x40 -> it
+					else -> 0
 				}
-				0x20 -> dx += 12*scale
-				0x3f -> stringChar = 0x3b
-				0x2d -> stringChar = 0x3c
-				0x2b -> stringChar = 0x3d
-				0x2f -> stringChar = 0x3e
-				0x2e -> stringChar = 0x3f
-				0x25 -> stringChar = 0x40
 			}
 
 			if(stringChar in 0x30..0x40) { // 文字出力
-				var sx = (stringChar-48)%32
-				var sy = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
+				val sx = if(c.code==0x20) 0 else (stringChar-48)%16
+				val sy = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
+				val a = if(c.code==0x20) alpha*.4f else alpha
+				if(fontBig) draw(1, dx, dy, scale/2, sx*24, sy*32, 24, 32, a)
+				else draw(0, dx, dy-1, scale, sx*12, sy*16, 12, 16, a)
 
-				if(fontBig) {
-					sx *= 24
-					sy *= 32
-					draw(1, dx, dy, scale/2, sx, sy, 24, 32)
-				} else {
-					sx *= 12
-					sy *= 16
-					draw(0, dx, dy-1, scale, sx, sy, 12, 16)
-				}
 				dx += 12*scale
 			}
 		}
