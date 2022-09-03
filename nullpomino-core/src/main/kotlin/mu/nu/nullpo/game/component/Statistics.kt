@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -73,8 +73,8 @@ class Statistics:Serializable {
 	/** ピースを移動させた合計 count */
 	var totalPieceMove = 0
 
-	/** ピースをrotationさせた合計 count */
-	var totalPieceRotate = 0
+	/** ピースを回転させた合計 count */
+	var totalPieceSpin = 0
 
 	/** 1-line clear count */
 	var totalSingle = 0
@@ -185,7 +185,7 @@ class Statistics:Serializable {
 	 * @param s Copy source
 	 */
 	constructor(s:Statistics?) {
-		copy(s)
+		replace(s)
 	}
 
 	/** Constructor that imports data from a String Array
@@ -221,7 +221,7 @@ class Statistics:Serializable {
 		totalPieceLocked = 0
 		totalPieceActiveTime = 0
 		totalPieceMove = 0
-		totalPieceRotate = 0
+		totalPieceSpin = 0
 		totalSingle = 0
 		totalDouble = 0
 		totalSplitDouble = 0
@@ -250,10 +250,8 @@ class Statistics:Serializable {
 		randSeed = 0L
 	}
 
-	/** 他のStatisticsの値をコピー
-	 * @param s Copy source
-	 */
-	fun copy(s:Statistics?) {
+	/** 設定を[s]からコピー */
+	fun replace(s:Statistics?) {
 		s?.let {b ->
 			scoreLine = b.scoreLine
 			scoreSD = b.scoreSD
@@ -268,7 +266,7 @@ class Statistics:Serializable {
 			totalPieceLocked = b.totalPieceLocked
 			totalPieceActiveTime = b.totalPieceActiveTime
 			totalPieceMove = b.totalPieceMove
-			totalPieceRotate = b.totalPieceRotate
+			totalPieceSpin = b.totalPieceSpin
 			totalHoldUsed = b.totalHoldUsed
 			totalSingle = b.totalSingle
 			totalDouble = b.totalDouble
@@ -320,7 +318,7 @@ class Statistics:Serializable {
 			totalPieceLocked += b.totalPieceLocked
 			totalPieceActiveTime += b.totalPieceActiveTime
 			totalPieceMove += b.totalPieceMove
-			totalPieceRotate += b.totalPieceRotate
+			totalPieceSpin += b.totalPieceSpin
 			totalHoldUsed += b.totalHoldUsed
 			totalSingle += b.totalSingle
 			totalDouble += b.totalDouble
@@ -371,7 +369,7 @@ class Statistics:Serializable {
 			"$id.statistics.totalPieceLocked" to totalPieceLocked,
 			"$id.statistics.totalPieceActiveTime" to totalPieceActiveTime,
 			"$id.statistics.totalPieceMove" to totalPieceMove,
-			"$id.statistics.totalPieceRotate" to totalPieceRotate,
+			"$id.statistics.totalPieceRotate" to totalPieceSpin,
 			"$id.statistics.totalSingle" to totalSingle,
 			"$id.statistics.totalDouble" to totalDouble,
 			"$id.statistics.totalSplitDouble" to totalSplitDouble,
@@ -421,7 +419,7 @@ class Statistics:Serializable {
 		totalPieceLocked = p.getProperty("$id.statistics.totalPieceLocked", 0)
 		totalPieceActiveTime = p.getProperty("$id.statistics.totalPieceActiveTime", 0)
 		totalPieceMove = p.getProperty("$id.statistics.totalPieceMove", 0)
-		totalPieceRotate = p.getProperty("$id.statistics.totalPieceRotate", 0)
+		totalPieceSpin = p.getProperty("$id.statistics.totalPieceRotate", 0)
 		totalSingle = p.getProperty("$id.statistics.totalSingle", 0)
 		totalDouble = p.getProperty("$id.statistics.totalDouble", 0)
 		totalSplitDouble = p.getProperty("$id.statistics.totalSplitDouble", 0)
@@ -467,7 +465,7 @@ class Statistics:Serializable {
 		{totalPieceLocked = it.toInt()},
 		{totalPieceActiveTime = it.toInt()},
 		{totalPieceMove = it.toInt()},
-		{totalPieceRotate = it.toInt()},
+		{totalPieceSpin = it.toInt()},
 		{totalSingle = it.toInt()},
 		{totalDouble = it.toInt()},
 		{totalSplitDouble = it.toInt()},
@@ -509,11 +507,12 @@ class Statistics:Serializable {
 	 */
 	fun exportStringArray():Array<String> = arrayOf(
 		"$scoreLine", "$scoreSD", "$scoreHD", "$scoreBonus", "$lines", "$blocks", "$time", "$level", "$levelDispAdd",
-		"$totalPieceLocked", "$totalPieceActiveTime", "$totalPieceMove", "$totalPieceRotate", "$totalSingle", "$totalDouble",
+		"$totalPieceLocked", "$totalPieceActiveTime", "$totalPieceMove", "$totalPieceSpin", "$totalSingle", "$totalDouble",
 		"$totalSplitDouble", "$totalTriple", "$totalSplitTriple", "$totalQuadruple", "$totalTwistZeroMini", "$totalTwistZero",
 		"$totalTwistSingleMini", "$totalTwistSingle", "$totalTwistDoubleMini", "$totalTwistDouble", "$totalTwistSplitDouble",
 		"$totalTwistTriple", "$totalTwistSplitTriple", "$totalB2BQuad", "$totalB2BSplit", "$totalB2BTwist", "$totalHoldUsed",
-		"$maxCombo", "$maxB2B", "$gamerate", "$maxChain", "$rollclear", "$randSeed")+(pieces.map {"$it"})
+		"$maxCombo", "$maxB2B", "$gamerate", "$maxChain", "$rollclear", "$randSeed"
+	)+(pieces.map {"$it"})
 
 	/** Export to String
 	 * @return String (Split by ;)

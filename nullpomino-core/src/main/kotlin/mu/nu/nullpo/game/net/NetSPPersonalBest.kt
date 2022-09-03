@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -51,7 +51,7 @@ class NetSPPersonalBest:Serializable {
 	 * @param s Source
 	 */
 	constructor(s:NetSPPersonalBest) {
-		copy(s)
+		replace(s)
 	}
 
 	/** Constructor that imports data from a String Array
@@ -74,10 +74,8 @@ class NetSPPersonalBest:Serializable {
 		listRecord = LinkedList()
 	}
 
-	/** Copy from other NetSPPersonalBest
-	 * @param s Source
-	 */
-	fun copy(s:NetSPPersonalBest) {
+	/** Copy from [s] other NetSPPersonalBest*/
+	fun replace(s:NetSPPersonalBest) {
 		strPlayerName = s.strPlayerName
 		listRecord = LinkedList()
 		for(i in s.listRecord.indices)
@@ -120,7 +118,7 @@ class NetSPPersonalBest:Serializable {
 		if(r2!=null) {
 			if(r1.compare(rtype, r2))
 			// Replace with a new record
-				r2.copy(r1)
+				r2.replace(r1)
 			else
 				return false
 		} else
@@ -188,8 +186,9 @@ class NetSPPersonalBest:Serializable {
 	 * @return String Array (String[2])
 	 */
 	fun exportStringArray():Array<String> =
-		arrayOf(NetUtil.urlEncode(strPlayerName)
-		,exportListRecord())
+		arrayOf(
+			NetUtil.urlEncode(strPlayerName), exportListRecord()
+		)
 
 	/** Export to a String
 	 * @return String (Split by ;)

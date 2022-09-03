@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -177,21 +177,20 @@ class PracticeMode:AbstractMode() {
 	/** Cascade Style */
 	private var cascadeStyle = 0
 
-	/** How to Erasing Block */
+	/** How to erase Block */
 	private var eraseStyle = 0
 
 	/* Mode name */
 	override val name = "PRACTICE"
 
 	/* Initialization */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
+	override fun playerInit(engine:GameEngine) {
 		log.debug("playerInit called")
 
-		super.playerInit(engine, playerID)
+		super.playerInit(engine)
 		goal = 0
 		lastgoal = 0
 		lastscore = 0
-		scDisp = 0
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
@@ -205,7 +204,7 @@ class PracticeMode:AbstractMode() {
 		pieceEnable = BooleanArray(Piece.PIECE_COUNT)
 		fldBackup = null
 		timelimitTimer = 0
-		engine.framecolor = GameEngine.FRAME_COLOR_BRONZE
+		engine.frameColor = GameEngine.FRAME_COLOR_BRONZE
 
 		if(!engine.owner.replayMode) {
 			version = CURRENT_VERSION
@@ -318,7 +317,7 @@ class PracticeMode:AbstractMode() {
 	}
 
 	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
 		if(!engine.owner.replayMode) {
 			owner.menuOnly = true
@@ -433,7 +432,7 @@ class PracticeMode:AbstractMode() {
 			}
 
 			// 決定
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 
 				if(menuCursor==41) {
@@ -485,9 +484,8 @@ class PracticeMode:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
-			menuTime++
 		} else {
 			owner.menuOnly = true
 
@@ -505,13 +503,13 @@ class PracticeMode:AbstractMode() {
 	}
 
 	/* Setting screen drawing */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 1, 1, "PRACTICE MODE SETTINGS", EventReceiver.COLOR.ORANGE)
+	override fun renderSetting(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 1, 1, "PRACTICE MODE SETTINGS", EventReceiver.COLOR.ORANGE)
 
 		if(!engine.owner.replayMode)
-			receiver.drawMenuFont(engine, playerID, 1, 27, "A:START B:EXIT C+<>:FAST CHANGE", EventReceiver.COLOR.CYAN)
+			receiver.drawMenuFont(engine, 1, 27, "A:START B:EXIT C+<>:FAST CHANGE", EventReceiver.COLOR.CYAN)
 		else
-			receiver.drawMenuFont(engine, playerID, 1, 27, "F:SKIP", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, 1, 27, "F:SKIP", EventReceiver.COLOR.RED)
 
 		var cx = 1
 		var cy = menuCursor
@@ -528,38 +526,37 @@ class PracticeMode:AbstractMode() {
 			}
 			cy = if(menuCursor<=1) 3 else if(menuCursor<=3) 4 else if(menuCursor<=6) 5 else cy
 
-			receiver.drawMenuFont(engine, playerID, 2, 3, "GRAVITY:", EventReceiver.COLOR.BLUE)
-			receiver.drawMenuNum(engine, playerID, 11, 3, String.format("%5d/", engine.speed.gravity), menuCursor==0)
-			receiver.drawMenuNum(engine, playerID, 16, 3, String.format("%5d", engine.speed.denominator), menuCursor==1)
-			receiver.drawSpeedMeter(engine, playerID, 13, 4, engine.speed.gravity, engine.speed.denominator, 3)
-			receiver.drawMenuFont(engine, playerID, 2, 4, "ARE:", EventReceiver.COLOR.BLUE)
-			receiver.drawMenuNum(engine, playerID, 7, 4, String.format("%2d/", engine.speed.are), menuCursor==2)
-			receiver.drawMenuNum(engine, playerID, 11, 4, String.format("%2d", engine.speed.areLine), menuCursor==3)
-			receiver.drawMenuFont(engine, playerID, 2, 5, "DELAY:", EventReceiver.COLOR.BLUE)
-			receiver.drawMenuNum(engine, playerID, 9, 5, String.format("%2d+", engine.speed.lockDelay), menuCursor==5)
-			receiver.drawMenuNum(engine, playerID, 12, 5, String.format("%2d", engine.speed.lineDelay), menuCursor==4)
-			receiver.drawMenuFont(engine, playerID, 15, 5, "DAS:", EventReceiver.COLOR.BLUE)
-			receiver.drawMenuNum(engine, playerID, 20, 5, String.format("%2d", engine.speed.das), menuCursor==6)
+			receiver.drawMenuFont(engine, 2, 3, "GRAVITY:", EventReceiver.COLOR.BLUE)
+			receiver.drawMenuNum(engine, 11, 3, String.format("%5d/", engine.speed.gravity), menuCursor==0)
+			receiver.drawMenuNum(engine, 16, 3, String.format("%5d", engine.speed.denominator), menuCursor==1)
+			receiver.drawScoreSpeed(engine, 13, 4, engine.speed.gravity, engine.speed.denominator, 3)
+			receiver.drawMenuFont(engine, 2, 4, "ARE:", EventReceiver.COLOR.BLUE)
+			receiver.drawMenuNum(engine, 7, 4, String.format("%2d/", engine.speed.are), menuCursor==2)
+			receiver.drawMenuNum(engine, 11, 4, String.format("%2d", engine.speed.areLine), menuCursor==3)
+			receiver.drawMenuFont(engine, 2, 5, "DELAY:", EventReceiver.COLOR.BLUE)
+			receiver.drawMenuNum(engine, 9, 5, String.format("%2d+", engine.speed.lockDelay), menuCursor==5)
+			receiver.drawMenuNum(engine, 12, 5, String.format("%2d", engine.speed.lineDelay), menuCursor==4)
+			receiver.drawMenuFont(engine, 15, 5, "DAS:", EventReceiver.COLOR.BLUE)
+			receiver.drawMenuNum(engine, 20, 5, String.format("%2d", engine.speed.das), menuCursor==6)
 			receiver.drawMenuFont(
-				engine, playerID, 2, 7,
-				String.format("BGM:%2d %s", bgmno, "${BGM.values[bgmno]}".uppercase()), menuCursor==7
+				engine, 2, 7, String.format("BGM:%2d %s", bgmno, "${BGM.values[bgmno]}".uppercase()),
+				menuCursor==7
 			)
-			receiver.drawMenuFont(engine, playerID, 2, 8, "BIG:${big.getONorOFF()}", menuCursor==8)
-			receiver.drawMenuFont(engine, playerID, 2, 9, "LEVEL TYPE:${LEVELTYPE_STRING[leveltype]}", menuCursor==9)
+			receiver.drawMenuFont(engine, 2, 8, "BIG:${big.getONorOFF()}", menuCursor==8)
+			receiver.drawMenuFont(engine, 2, 9, "LEVEL TYPE:${LEVELTYPE_STRING[leveltype]}", menuCursor==9)
 			receiver.drawMenuFont(
-				engine, playerID, 2, 10,
-				"SPIN BONUS:${if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL"}", menuCursor==10
+				engine, 2, 10, "SPIN BONUS:${if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL"}",
+				menuCursor==10
 			)
-			receiver.drawMenuFont(engine, playerID, 2, 11, "EZ SPIN:${enableTwistKick.getONorOFF()}", menuCursor==11)
+			receiver.drawMenuFont(engine, 2, 11, "EZ SPIN:${enableTwistKick.getONorOFF()}", menuCursor==11)
 			receiver.drawMenuFont(
-				engine, playerID, 2, 13, "EZ IMMOBILE:${twistEnableEZ.getONorOFF()}",
-				menuCursor==13
+				engine, 2, 13, "EZ IMMOBILE:${twistEnableEZ.getONorOFF()}", menuCursor==13
 			)
-			receiver.drawMenuFont(engine, playerID, 2, 14, "B2B:${enableB2B.getONorOFF()}", menuCursor==14)
-			receiver.drawMenuFont(engine, playerID, 2, 15, "COMBO:${COMBOTYPE_STRING[comboType]}", menuCursor==15)
-			receiver.drawMenuFont(engine, playerID, 2, 16, "LEVEL STOP SE:${secAlert.getONorOFF()}", menuCursor==16)
-			receiver.drawMenuFont(engine, playerID, 2, 17, "BIG MOVE:${if(bigmove) "2 CELLS" else "1 CELL"}", menuCursor==17)
-			receiver.drawMenuFont(engine, playerID, 2, 18, "BIG HALF:${bighalf.getONorOFF()}", menuCursor==18)
+			receiver.drawMenuFont(engine, 2, 14, "B2B:${enableB2B.getONorOFF()}", menuCursor==14)
+			receiver.drawMenuFont(engine, 2, 15, "COMBO:${COMBOTYPE_STRING[comboType]}", menuCursor==15)
+			receiver.drawMenuFont(engine, 2, 16, "LEVEL STOP SE:${secAlert.getONorOFF()}", menuCursor==16)
+			receiver.drawMenuFont(engine, 2, 17, "BIG MOVE:${if(bigmove) "2 CELLS" else "1 CELL"}", menuCursor==17)
+			receiver.drawMenuFont(engine, 2, 18, "BIG HALF:${bighalf.getONorOFF()}", menuCursor==18)
 			var strGoalLv = "ENDLESS"
 			if(goallv>=0)
 				strGoalLv = when(leveltype) {
@@ -567,76 +564,75 @@ class PracticeMode:AbstractMode() {
 					LEVELTYPE_NONE -> "${(goallv+1)} LINES"
 					else -> "${(goallv+1)} LEVELS"
 				}
-			receiver.drawMenuFont(engine, playerID, 2, 19, "GOAL LEVEL:$strGoalLv", menuCursor==19)
+			receiver.drawMenuFont(engine, 2, 19, "GOAL LEVEL:$strGoalLv", menuCursor==19)
 			receiver.drawMenuFont(
-				engine, playerID, 2, 20,
-				"TIME LIMIT:${if(timelimit==0) "NONE" else timelimit.toTimeStr}", menuCursor==20
+				engine, 2, 20, "TIME LIMIT:${if(timelimit==0) "NONE" else timelimit.toTimeStr}",
+				menuCursor==20
 			)
 			receiver.drawMenuFont(
-				engine, playerID, 2, 21,
-				"ROLL LIMIT:${if(rolltimelimit==0) "NONE" else rolltimelimit.toTimeStr}", menuCursor==21
+				engine, 2, 21, "ROLL LIMIT:${if(rolltimelimit==0) "NONE" else rolltimelimit.toTimeStr}",
+				menuCursor==21
 			)
 			receiver.drawMenuFont(
-				engine, playerID, 2, 22,
-				"TIME LIMIT PER LEVEL:${timelimitResetEveryLevel.getONorOFF()}", menuCursor==22
+				engine, 2, 22, "TIME LIMIT PER LEVEL:${timelimitResetEveryLevel.getONorOFF()}",
+				menuCursor==22
 			)
 		} else {
 			cx = if(menuCursor in 40..45) 15 else if(menuCursor in 46..49) 16 else cx
 			cy -= if(menuCursor<29) 20 else if(menuCursor<40) 19 else if(menuCursor<=45) 30 else 29
 
-			receiver.drawMenuFont(engine, playerID, 2, 3, "USE BONE BLOCKS:${bone.getONorOFF()}", menuCursor==23)
+			receiver.drawMenuFont(engine, 2, 3, "USE BONE BLOCKS:${bone.getONorOFF()}", menuCursor==23)
 			var strHiddenFrames = "NONE"
-			if(blockHidden==-2) strHiddenFrames = "LOCK FLASH (${engine.ruleOpt.lockflash}F)"
+			if(blockHidden==-2) strHiddenFrames = "LOCK FLASH (${engine.ruleOpt.lockFlash}F)"
 			if(blockHidden>=0) strHiddenFrames = String.format("%d (%.2f SEC.)", blockHidden, blockHidden/60f)
 			receiver.drawMenuFont(
-				engine, playerID, 2, 4,
-				"BLOCK HIDDEN FRAMES:$strHiddenFrames", menuCursor==24
+				engine, 2, 4, "BLOCK HIDDEN FRAMES:$strHiddenFrames",
+				menuCursor==24
 			)
 			receiver.drawMenuFont(
-				engine, playerID, 2, 5,
-				"BLOCK HIDDEN ANIM:${blockHiddenAnim.getONorOFF()}", menuCursor==25
+				engine, 2, 5, "BLOCK HIDDEN ANIM:${blockHiddenAnim.getONorOFF()}",
+				menuCursor==25
 			)
 			receiver.drawMenuFont(
-				engine, playerID, 2, 6,
-				"BLOCK OUTLINE TYPE:${BLOCK_OUTLINE_TYPE_STRING[blockOutlineType]}", menuCursor==26
+				engine, 2, 6, "BLOCK OUTLINE TYPE:${BLOCK_OUTLINE_TYPE_STRING[blockOutlineType]}",
+				menuCursor==26
 			)
 			receiver.drawMenuFont(
-				engine, playerID, 2, 7,
-				"BLOCK OUTLINE ONLY:${blockShowOutlineOnly.getONorOFF()}", menuCursor==27
+				engine, 2, 7, "BLOCK OUTLINE ONLY:${blockShowOutlineOnly.getONorOFF()}",
+				menuCursor==27
 			)
 			receiver.drawMenuFont(
-				engine, playerID, 2, 8,
-				"HEBO HIDDEN:${if(heboHiddenLevel==0) "NONE" else "LV$heboHiddenLevel"}", menuCursor==28
+				engine, 2, 8, "HEBO HIDDEN:${if(heboHiddenLevel==0) "NONE" else "LV$heboHiddenLevel"}",
+				menuCursor==28
 			)
-			receiver.drawMenuFont(engine, playerID, 2, 10, "PIECE I:${pieceEnable[0].getONorOFF()}", menuCursor==29)
-			receiver.drawMenuFont(engine, playerID, 2, 11, "PIECE L:${pieceEnable[1].getONorOFF()}", menuCursor==30)
-			receiver.drawMenuFont(engine, playerID, 2, 12, "PIECE O:${pieceEnable[2].getONorOFF()}", menuCursor==31)
-			receiver.drawMenuFont(engine, playerID, 2, 13, "PIECE Z:${pieceEnable[3].getONorOFF()}", menuCursor==32)
-			receiver.drawMenuFont(engine, playerID, 2, 14, "PIECE T:${pieceEnable[4].getONorOFF()}", menuCursor==33)
-			receiver.drawMenuFont(engine, playerID, 2, 15, "PIECE J:${pieceEnable[5].getONorOFF()}", menuCursor==34)
-			receiver.drawMenuFont(engine, playerID, 2, 16, "PIECE S:${pieceEnable[6].getONorOFF()}", menuCursor==35)
-			receiver.drawMenuFont(engine, playerID, 2, 17, "PIECE I1:${pieceEnable[7].getONorOFF()}", menuCursor==36)
-			receiver.drawMenuFont(engine, playerID, 2, 18, "PIECE I2:${pieceEnable[8].getONorOFF()}", menuCursor==37)
-			receiver.drawMenuFont(engine, playerID, 2, 19, "PIECE I3:${pieceEnable[9].getONorOFF()}", menuCursor==38)
-			receiver.drawMenuFont(engine, playerID, 2, 20, "PIECE L3:${pieceEnable[10].getONorOFF()}", menuCursor==39)
-			receiver.drawMenuFont(engine, playerID, 16, 10, "USE MAP:${useMap.getONorOFF()}", menuCursor==40)
-			receiver.drawMenuFont(engine, playerID, 16, 11, "[EDIT FIELD MAP]", menuCursor==41)
-			receiver.drawMenuFont(engine, playerID, 16, 12, "[LOAD FIELD MAP]:$mapNumber", menuCursor==42)
-			receiver.drawMenuFont(engine, playerID, 16, 13, "[SAVE FIELD MAP]:$mapNumber", menuCursor==43)
-			receiver.drawMenuFont(engine, playerID, 16, 14, "[LOAD PRESET]:$presetNumber", menuCursor==44)
-			receiver.drawMenuFont(engine, playerID, 16, 15, "[SAVE PRESET]:$presetNumber", menuCursor==45)
+			receiver.drawMenuFont(engine, 2, 10, "PIECE I:${pieceEnable[0].getONorOFF()}", menuCursor==29)
+			receiver.drawMenuFont(engine, 2, 11, "PIECE L:${pieceEnable[1].getONorOFF()}", menuCursor==30)
+			receiver.drawMenuFont(engine, 2, 12, "PIECE O:${pieceEnable[2].getONorOFF()}", menuCursor==31)
+			receiver.drawMenuFont(engine, 2, 13, "PIECE Z:${pieceEnable[3].getONorOFF()}", menuCursor==32)
+			receiver.drawMenuFont(engine, 2, 14, "PIECE T:${pieceEnable[4].getONorOFF()}", menuCursor==33)
+			receiver.drawMenuFont(engine, 2, 15, "PIECE J:${pieceEnable[5].getONorOFF()}", menuCursor==34)
+			receiver.drawMenuFont(engine, 2, 16, "PIECE S:${pieceEnable[6].getONorOFF()}", menuCursor==35)
+			receiver.drawMenuFont(engine, 2, 17, "PIECE I1:${pieceEnable[7].getONorOFF()}", menuCursor==36)
+			receiver.drawMenuFont(engine, 2, 18, "PIECE I2:${pieceEnable[8].getONorOFF()}", menuCursor==37)
+			receiver.drawMenuFont(engine, 2, 19, "PIECE I3:${pieceEnable[9].getONorOFF()}", menuCursor==38)
+			receiver.drawMenuFont(engine, 2, 20, "PIECE L3:${pieceEnable[10].getONorOFF()}", menuCursor==39)
+			receiver.drawMenuFont(engine, 16, 10, "USE MAP:${useMap.getONorOFF()}", menuCursor==40)
+			receiver.drawMenuFont(engine, 16, 11, "[EDIT FIELD MAP]", menuCursor==41)
+			receiver.drawMenuFont(engine, 16, 12, "[LOAD FIELD MAP]:$mapNumber", menuCursor==42)
+			receiver.drawMenuFont(engine, 16, 13, "[SAVE FIELD MAP]:$mapNumber", menuCursor==43)
+			receiver.drawMenuFont(engine, 16, 14, "[LOAD PRESET]:$presetNumber", menuCursor==44)
+			receiver.drawMenuFont(engine, 16, 15, "[SAVE PRESET]:$presetNumber", menuCursor==45)
 
 			receiver.drawMenuFont(
-				engine, playerID, 17, 17, "BLOCK FALL:${BLOCK_CASCADE_TYPE_STRING[cascadeStyle]}",
-				menuCursor==46
+				engine, 17, 17, "BLOCK FALL:${BLOCK_CASCADE_TYPE_STRING[cascadeStyle]}", menuCursor==46
 			)
-			receiver.drawMenuFont(engine, playerID, 17, 18, "BLOCK ERASE:${BLOCK_ERASE_TYPE_STRING[eraseStyle]}", menuCursor==47)
+			receiver.drawMenuFont(engine, 17, 18, "BLOCK ERASE:${BLOCK_ERASE_TYPE_STRING[eraseStyle]}", menuCursor==47)
 		}
-		if(!owner.replayMode) receiver.drawMenuFont(engine, playerID, cx, cy, "\u0082", EventReceiver.COLOR.RED)
+		if(!owner.replayMode) receiver.drawMenuFont(engine, cx, cy, "\u0082", EventReceiver.COLOR.RED)
 	}
 
 	/* Called for initialization during Ready (before initialization) */
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			//  timeLimit setting
 			if(timelimit>0) timelimitTimer = timelimit
@@ -679,14 +675,14 @@ class PracticeMode:AbstractMode() {
 	}
 
 	/* ReadyAt the time ofCalled at initialization (Start gameJust before) */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.big = big
-		engine.bigmove = bigmove
-		engine.bighalf = bighalf
+		engine.bigMove = bigmove
+		engine.bigHalf = bighalf
 
 		if(leveltype!=LEVELTYPE_MANIA&&leveltype!=LEVELTYPE_MANIAPLUS) {
 			engine.b2bEnable = enableB2B
-			engine.splitb2b = enableSplitB2B
+			engine.splitB2B = enableSplitB2B
 
 			engine.comboType = comboType
 			engine.statistics.levelDispAdd = 1
@@ -706,14 +702,14 @@ class PracticeMode:AbstractMode() {
 			engine.twistEnable = false
 			engine.twistAllowKick = false
 			engine.b2bEnable = false
-			engine.splitb2b = false
+			engine.splitB2B = false
 			engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 			engine.statistics.levelDispAdd = 0
 		}
 
 		// Hidden
 		if(blockHidden==-2)
-			engine.blockHidden = engine.ruleOpt.lockflash
+			engine.blockHidden = engine.ruleOpt.lockFlash
 		else
 			engine.blockHidden = blockHidden
 		engine.blockHiddenAnim = blockHiddenAnim
@@ -726,7 +722,7 @@ class PracticeMode:AbstractMode() {
 
 		goal = 5*(engine.statistics.level+1)
 
-		engine.meterValue = 0
+		engine.meterValue = 0f
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		setMeter(engine)
 	}
@@ -773,17 +769,17 @@ class PracticeMode:AbstractMode() {
 	}
 
 	/* Render score */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		receiver.drawScoreFont(engine, playerID, 0, 0, "PRACTICE", EventReceiver.COLOR.YELLOW)
+	override fun renderLast(engine:GameEngine) {
+		receiver.drawScoreFont(engine, 0, 0, "PRACTICE", EventReceiver.COLOR.YELLOW)
 
 		// fieldエディットのとき
 		if(engine.stat==GameEngine.Status.FIELDEDIT) {
 
 			// 座標
-			receiver.drawScoreFont(engine, playerID, 0, 2, "X POS", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 3, "${engine.fldeditX}")
-			receiver.drawScoreFont(engine, playerID, 0, 4, "Y POS", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 5, "${engine.fldeditY}")
+			receiver.drawScoreFont(engine, 0, 2, "X POS", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 3, "${engine.mapEditX}")
+			receiver.drawScoreFont(engine, 0, 4, "Y POS", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 5, "${engine.mapEditY}")
 
 			// Put your field-checking algorithm test codes here
 			/* if(engine.field != null) {
@@ -799,87 +795,85 @@ class PracticeMode:AbstractMode() {
 
 		} else {
 			// Score
-			receiver.drawScoreFont(engine, playerID, 0, 5, "Score", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 5, "Score", EventReceiver.COLOR.BLUE)
 
-			receiver.drawScoreNum(engine, playerID, 6, 5, "+$lastscore")
-			receiver.drawScoreNum(engine, playerID, 0, 6, "${engine.statistics.score}", 2f)
+			receiver.drawScoreNum(engine, 6, 5, "+$lastscore")
+			receiver.drawScoreNum(engine, 0, 6, "${engine.statistics.score}", 2f)
 
 			// Time
-			receiver.drawScoreFont(engine, playerID, 0, 17, "Time", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 17, "Time", EventReceiver.COLOR.BLUE)
 			var time = engine.statistics.time
 			if(timelimit>0) time = timelimitTimer
 			if(time<0) time = 0
 			receiver.drawScoreNum(
-				engine, playerID, 0, 18, time.toTimeStr,
-				if(timelimit>0) getTimeFontColor(time) else EventReceiver.COLOR.WHITE, 2f
+				engine, 0, 18, time.toTimeStr, if(timelimit>0) getTimeFontColor(time) else EventReceiver.COLOR.WHITE,
+				2f
 			)
 
 			// Roll Rest time
 			if(engine.gameActive&&engine.ending==2) {
 				var remainTime = rolltimelimit-rolltime
 				if(remainTime<0) remainTime = 0
-				receiver.drawScoreFont(engine, playerID, 0, 20, "ROLL TIME", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 20, "ROLL TIME", EventReceiver.COLOR.BLUE)
 				receiver.drawScoreFont(
-					engine, playerID, 0, 21, remainTime.toTimeStr, remainTime>0&&remainTime<10*60,
-					2f
+					engine, 0, 21, remainTime.toTimeStr, remainTime>0&&remainTime<10*60, 2f
 				)
 			}
 			// 1分間あたり score
-			receiver.drawScoreFont(engine, playerID, 0, 11, "SCORE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 12, String.format("%10f", engine.statistics.spm))
+			receiver.drawScoreFont(engine, 0, 11, "SCORE/MIN", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 12, String.format("%10f", engine.statistics.spm))
 
 			// 1分間あたりのLines
-			receiver.drawScoreFont(engine, playerID, 0, 14, "LINE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 15, "${engine.statistics.lpm}")
+			receiver.drawScoreFont(engine, 0, 14, "LINE/MIN", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 15, "${engine.statistics.lpm}")
 
 			if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
 				//  GrandLevel
-				receiver.drawScoreFont(engine, playerID, 0, 9, "Level", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(0, engine.statistics.level)))
-				receiver.drawSpeedMeter(engine, playerID, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
-				receiver.drawScoreNum(engine, playerID, 1, 12, String.format("%3d", nextseclv))
+				receiver.drawScoreFont(engine, 0, 9, "Level", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(0, engine.statistics.level)))
+				receiver.drawScoreSpeed(engine, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
+				receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextseclv))
 
 				// Roll Rest time
 				if(engine.gameActive&&engine.ending==2) {
 					var remainTime = rolltimelimit-rolltime
 					if(remainTime<0) remainTime = 0
-					receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", EventReceiver.COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", EventReceiver.COLOR.BLUE)
 					receiver.drawScoreNum(
-						engine, playerID, 0, 18, remainTime.toTimeStr, remainTime>0&&remainTime<10*60,
-						2f
+						engine, 0, 18, remainTime.toTimeStr, remainTime>0&&remainTime<10*60, 2f
 					)
 				}
 			} else if(leveltype!=LEVELTYPE_NONE) {
 				when(leveltype) {
 					LEVELTYPE_POINTS -> {
 						// ゴール
-						receiver.drawScoreFont(engine, playerID, 0, 5, "GOAL", EventReceiver.COLOR.BLUE)
+						receiver.drawScoreFont(engine, 0, 5, "GOAL", EventReceiver.COLOR.BLUE)
 						var strGoal = "$goal"
 						if(lastgoal!=0&&engine.ending==0) strGoal += "(-$lastgoal)"
-						receiver.drawScoreFont(engine, playerID, 0, 6, strGoal)
+						receiver.drawScoreFont(engine, 0, 6, strGoal)
 					}
 					LEVELTYPE_10LINES -> {
 						// Lines( levelタイプが10LINESのとき)
-						receiver.drawScoreFont(engine, playerID, 0, 5, "LINE", EventReceiver.COLOR.BLUE)
-						receiver.drawScoreNum(engine, playerID, 0, 6, "${engine.statistics.lines}/${(engine.statistics.level+1)*10}")
+						receiver.drawScoreFont(engine, 0, 5, "LINE", EventReceiver.COLOR.BLUE)
+						receiver.drawScoreNum(engine, 0, 6, "${engine.statistics.lines}/${(engine.statistics.level+1)*10}")
 					}
 					else -> {
 						// Lines( levelタイプがNONEのとき)
-						receiver.drawScoreFont(engine, playerID, 0, 5, "LINE", EventReceiver.COLOR.BLUE)
-						receiver.drawScoreNum(engine, playerID, 0, 6, engine.statistics.lines.toString())
+						receiver.drawScoreFont(engine, 0, 5, "LINE", EventReceiver.COLOR.BLUE)
+						receiver.drawScoreNum(engine, 0, 6, engine.statistics.lines.toString())
 					}
 				}
 
-				receiver.drawScoreFont(engine, playerID, 0, 8, "Level", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 9, (engine.statistics.level+1).toString())
+				receiver.drawScoreFont(engine, 0, 8, "Level", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreNum(engine, 0, 9, (engine.statistics.level+1).toString())
 			}
 
 		}
 	}
 
 	/* Called after every frame */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 
 		if(engine.gameActive&&engine.timerActive)
 		// Hebo Hidden
@@ -927,13 +921,13 @@ class PracticeMode:AbstractMode() {
 	}
 
 	/* Called at game over */
-	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+	override fun onGameOver(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0&&engine.gameActive) secretGrade = engine.field.secretGrade
 		return false
 	}
 
 	/* Processing on the move */
-	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
+	override fun onMove(engine:GameEngine):Boolean {
 		// Occurrence new piece
 		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
 			if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
@@ -968,7 +962,7 @@ class PracticeMode:AbstractMode() {
 	}
 
 	/* AREProcessing during */
-	override fun onARE(engine:GameEngine, playerID:Int):Boolean {
+	override fun onARE(engine:GameEngine):Boolean {
 		// Last frame
 		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
 			if(engine.ending==0
@@ -986,18 +980,16 @@ class PracticeMode:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		// Decrease Hebo Hidden
 		if(engine.heboHiddenEnable&&lines>0) {
 			engine.heboHiddenTimerNow = 0
 			engine.heboHiddenYNow -= lines
 			if(engine.heboHiddenYNow<0) engine.heboHiddenYNow = 0
 		}
-
+		engine.statistics.attacks += calcPower(engine, lines)
 		return if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
-			calcScoreMania(engine, lines)
-		else
-			calcScoreNormal(engine, lines)
+			calcScoreMania(engine, lines) else calcScoreNormal(engine, lines)
 	}
 
 	/** levelTypesMANIAAt the time ofCalculate score */
@@ -1090,27 +1082,13 @@ class PracticeMode:AbstractMode() {
 		return if(lines>=1) lastscore else 0
 	}
 
-	override fun calcScore(engine:GameEngine, lines:Int):Int = calcPower(engine, lines)
-
 	/** levelTypesMANIAWhen a non-systemCalculate score */
 	private fun calcScoreNormal(engine:GameEngine, lines:Int):Int {
 		// Line clear bonus
 		val pts = super.calcScore(engine, lines)
-		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
-		// Combo
-		val cmb = if(engine.combo>=1&&lines>=1) engine.combo-1 else 0
 		// Add to score
-		if(pts+cmb+spd>0) {
-			val get = calcScoreCombo(pts, cmb, engine.statistics.level, spd)
-			if(pts>0) lastscore = get
-			if(lines>=1) engine.statistics.scoreLine += get
-			else engine.statistics.scoreBonus += get
-			scDisp += spd
-
-			var cmbindex = engine.combo-1
-			if(cmbindex<0) cmbindex = 0
-			if(cmbindex>=COMBO_GOAL_TABLE.size) cmbindex = COMBO_GOAL_TABLE.size-1
-			lastgoal = calcPoint(engine, lines)+COMBO_GOAL_TABLE[cmbindex]
+		if(leveltype==LEVELTYPE_POINTS) {
+			lastgoal = calcPoint(engine, lines)
 			goal -= lastgoal
 			lastlineTime = levelTimer
 			if(goal<=0) goal = 0
@@ -1170,57 +1148,39 @@ class PracticeMode:AbstractMode() {
 	private fun setMeter(engine:GameEngine) {
 		if(engine.gameActive&&engine.ending==2) {
 			val remainRollTime = rolltimelimit-rolltime
-			engine.meterValue = remainRollTime*receiver.getMeterMax(engine)/rolltimelimit
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(remainRollTime<=30*60) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(remainRollTime<=20*60) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(remainRollTime<=10*60) engine.meterColor = GameEngine.METER_COLOR_RED
+			engine.meterValue = remainRollTime*1f/rolltimelimit
+			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		} else if(timelimit>0) {
 			val remainTime = timelimitTimer
-			engine.meterValue = remainTime*receiver.getMeterMax(engine)/timelimit
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(remainTime<=30*60) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(remainTime<=20*60) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(remainTime<=10*60) engine.meterColor = GameEngine.METER_COLOR_RED
+			engine.meterValue = remainTime*1f/timelimit
+			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 		} else if(leveltype==LEVELTYPE_10LINES) {
-			engine.meterValue = engine.statistics.lines%10*receiver.getMeterMax(engine)/9
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(engine.statistics.lines%10>=4) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(engine.statistics.lines%10>=6) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(engine.statistics.lines%10>=8) engine.meterColor = GameEngine.METER_COLOR_RED
+			engine.meterValue = engine.statistics.lines%10*1f/9f
+			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		} else if(leveltype==LEVELTYPE_POINTS) {
-			engine.meterValue = goal*receiver.getMeterMax(engine)/(5*(engine.statistics.level+1))
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(engine.meterValue<=receiver.getMeterMax(engine)/2) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(engine.meterValue<=receiver.getMeterMax(engine)/3) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(engine.meterValue<=receiver.getMeterMax(engine)/4) engine.meterColor = GameEngine.METER_COLOR_RED
+			engine.meterValue = goal/(5f*(engine.statistics.level+1))
+			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		} else if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
-			engine.meterValue = engine.statistics.level%100*receiver.getMeterMax(engine)/99
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(engine.statistics.level%100>=50) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(engine.statistics.level%100>=80) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(engine.statistics.level==nextseclv-1) engine.meterColor = GameEngine.METER_COLOR_RED
+			engine.meterValue = engine.statistics.level%100/99f
+			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		} else if(leveltype==LEVELTYPE_NONE&&goallv!=-1) {
-			engine.meterValue = engine.statistics.lines*receiver.getMeterMax(engine)/(goallv+1)
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(engine.meterValue>=receiver.getMeterMax(engine)/10) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(engine.meterValue>=receiver.getMeterMax(engine)/5) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(engine.meterValue>=receiver.getMeterMax(engine)/2) engine.meterColor = GameEngine.METER_COLOR_RED
+			engine.meterValue = engine.statistics.lines/(goallv+1f)
+			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		}
 
-		if(engine.meterValue<0) engine.meterValue = 0
-		if(engine.meterValue>receiver.getMeterMax(engine)) engine.meterValue = receiver.getMeterMax(engine)
+		if(engine.meterValue<0) engine.meterValue = 0f
+		if(engine.meterValue>receiver.getMeterMax(engine)) engine.meterValue = 1f
 	}
 
 	/* Soft drop */
-	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		if(leveltype!=LEVELTYPE_MANIA&&leveltype!=LEVELTYPE_MANIAPLUS) {
 			engine.statistics.scoreSD += fall
 		}
 	}
 
 	/* Hard drop */
-	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
 			if(fall*2>harddropBonus) harddropBonus = fall*2
 		} else {
@@ -1229,20 +1189,20 @@ class PracticeMode:AbstractMode() {
 	}
 
 	/* Render results screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
+	override fun renderResult(engine:GameEngine) {
 		drawResultStats(
-			engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES,
-			Statistic.LEVEL_ADD_DISP, Statistic.TIME, Statistic.SPL, Statistic.SPM, Statistic.LPM
+			engine, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_ADD_DISP,
+			Statistic.TIME, Statistic.SPL, Statistic.SPM, Statistic.LPM
 		)
 		if(secretGrade>0)
 			drawResult(
-				engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, "S. GRADE",
+				engine, receiver, 14, EventReceiver.COLOR.BLUE, "S. GRADE",
 				String.format("%10s", tableSecretGradeName[secretGrade-1])
 			)
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		engine.owner.replayProp.setProperty("practice.version", version)
 		if(useMap&&fldBackup!=null) saveMap(fldBackup!!, prop, 0)
 		savePreset(engine, engine.owner.replayProp, -1)

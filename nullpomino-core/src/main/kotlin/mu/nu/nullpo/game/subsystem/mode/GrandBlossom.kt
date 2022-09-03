@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -174,7 +174,7 @@ class GrandBlossom:AbstractMode() {
 	/** Version */
 	private var version = 0
 
-	/** Current round's ranking rank */
+	/** Current round's ranking position */
 	private var rankingRank = 0
 
 	/** Rankings' stage reached */
@@ -205,11 +205,10 @@ class GrandBlossom:AbstractMode() {
 	override val gameIntensity:Int = -1
 
 	/** Initialization */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
+	override fun playerInit(engine:GameEngine) {
 		log.debug("playerInit called")
 
-		super.playerInit(engine, playerID)
-		menuTime = 0
+		super.playerInit(engine)
 		rest = 0
 		stage = 0
 		laststage = MAX_STAGE_NORMAL-1
@@ -270,11 +269,11 @@ class GrandBlossom:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
-		engine.splitb2b = false
-		engine.framecolor = GameEngine.FRAME_COLOR_PINK
+		engine.splitB2B = false
+		engine.frameColor = GameEngine.FRAME_COLOR_PINK
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
-		engine.bighalf = true
-		engine.bigmove = false
+		engine.bigHalf = true
+		engine.bigMove = false
 		engine.staffrollEnable = false
 		engine.holdButtonNextSkip = true
 
@@ -425,8 +424,8 @@ class GrandBlossom:AbstractMode() {
 	 */
 	private fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = if(always20g) -1
-		else tableGravityValue[tableGravityChangeLevel.indexOfLast {it<=engine.statistics.level}
-			.let {if(it<0) tableGravityChangeLevel.size-1 else it}]
+		else tableGravityValue[tableGravityChangeLevel.indexOfFirst {it>=engine.statistics.level}
+			.let {if(it<0) tableGravityChangeLevel.lastIndex else it}]
 
 
 		engine.speed.are = 23
@@ -469,7 +468,7 @@ class GrandBlossom:AbstractMode() {
 		if(stageNumber>=MAX_STAGE_NORMAL) "EX"+(stageNumber+1-MAX_STAGE_NORMAL) else ""+(stageNumber+1)
 
 	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// エディットMenu  メイン画面
 		if(editModeScreen==1) {
 			// Configuration changes
@@ -495,7 +494,7 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// 決定
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 
 				when(menuCursor) {
@@ -521,7 +520,6 @@ class GrandBlossom:AbstractMode() {
 				menuTime = 0
 			}
 
-			menuTime++
 		} else if(editModeScreen==2) {
 			// Up
 			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
@@ -575,7 +573,7 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// 決定
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 
 				if(menuCursor==0) {
@@ -585,16 +583,12 @@ class GrandBlossom:AbstractMode() {
 				editModeScreen = 1
 				menuCursor = 0
 				menuTime = 0
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)&&menuTime>=5) {
+			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) {
+				// Cancel
 				editModeScreen = 1
 				menuCursor = 0
 				menuTime = 0
 			}
-
-			menuTime++
 		} else if(!engine.owner.replayMode) {
 			// Up
 			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
@@ -655,13 +649,13 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// 決定
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				return false
 			}
 
 			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
 			// エディット
 			if(engine.ctrl.isPush(Controller.BUTTON_D)) {
@@ -676,7 +670,6 @@ class GrandBlossom:AbstractMode() {
 				menuTime = 0
 			}
 
-			menuTime++
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -690,26 +683,26 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* Render the settings screen */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		when(editModeScreen) {
 			1 -> {
 				drawMenu(
-					engine, playerID, receiver, 0, COLOR.GREEN, 0, "STAGE EDIT" to "[PUSH A]",
-					"LOAD STAGE" to "[${getStageName(startstage)}]", "SAVE STAGE" to "[${getStageName(startstage)}]",
-					"LOAD" to "[SET $stageset]", "SAVE" to "[SET $stageset]"
+					engine, receiver, 0, COLOR.GREEN, 0, "STAGE EDIT" to "[PUSH A]", "LOAD STAGE" to "[${getStageName(startstage)}]",
+					"SAVE STAGE" to "[${getStageName(startstage)}]", "LOAD" to "[SET $stageset]",
+					"SAVE" to "[SET $stageset]"
 				)
 
-				receiver.drawMenuFont(engine, playerID, 0, 19, "EXIT-> D+E", COLOR.ORANGE)
+				receiver.drawMenuFont(engine, 0, 19, "EXIT-> D+E", COLOR.ORANGE)
 			}
 			// エディットMenu   stage 画面
 			2 -> drawMenu(
-				engine, playerID, receiver, 0, COLOR.GREEN, 0, "MAP EDIT" to "[PUSH A]",
-				"STAGE TIME" to stagetimeStart.toTimeStr, "LIMIT TIME" to limittimeStart.toTimeStr,
-				"BGM" to stagebgm, "MIRROR" to if(gimmickMirror==0) "OFF" else gimmickMirror
+				engine, receiver, 0, COLOR.GREEN, 0, "MAP EDIT" to "[PUSH A]", "STAGE TIME" to stagetimeStart.toTimeStr,
+				"LIMIT TIME" to limittimeStart.toTimeStr, "BGM" to stagebgm,
+				"MIRROR" to if(gimmickMirror==0) "OFF" else gimmickMirror
 			)
 			else -> {
 				// 普通のMenu
-				if(!engine.owner.replayMode) receiver.drawMenuFont(engine, playerID, 0, 19, "D:EDIT", COLOR.ORANGE)
+				if(!engine.owner.replayMode) receiver.drawMenuFont(engine, 0, 19, "D:EDIT", COLOR.ORANGE)
 
 				val strTrainingType = when(trainingType) {
 					1 -> "ON"
@@ -718,18 +711,27 @@ class GrandBlossom:AbstractMode() {
 				}
 
 				drawMenu(
-					engine, playerID, receiver, 0, COLOR.PINK, 0, "STAGE NO." to getStageName(startstage),
+					engine,
+					receiver,
+					0,
+					COLOR.PINK,
+					0,
+					"STAGE NO." to getStageName(startstage),
 					"STAGE SET" to if(stageset<0) "DEFAULT" else "EDIT $stageset",
-					"FULL GHOST" to alwaysghost, "FULL 20G" to always20g,
-					"LVSTOPSE" to secAlert, "SHOW STIME" to showST,
-					"RANDOM" to randomnext, "TRAINING" to strTrainingType, "NEXT COUNT" to startnextc
+					"FULL GHOST" to alwaysghost,
+					"FULL 20G" to always20g,
+					"LVSTOPSE" to secAlert,
+					"SHOW STIME" to showST,
+					"RANDOM" to randomnext,
+					"TRAINING" to strTrainingType,
+					"NEXT COUNT" to startnextc
 				)
 			}
 		}
 	}
 
 	/* Ready画面の処理 */
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			if(!engine.readyDone) {
 				loadStageSet(stageset)
@@ -749,25 +751,25 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* Ready画面の描画処理 */
-	override fun renderReady(engine:GameEngine, playerID:Int) {
+	override fun renderReady(engine:GameEngine) {
 		if(engine.statc[0]>=engine.readyStart) {
 			// トレーニング
-			if(trainingType!=0) receiver.drawMenuFont(engine, playerID, 1, 5, "TRAINING", COLOR.GREEN)
+			if(trainingType!=0) receiver.drawMenuFont(engine, 1, 5, "TRAINING", COLOR.GREEN)
 
 			// STAGE XX
 			if(stage>=MAX_STAGE_NORMAL) {
-				receiver.drawMenuFont(engine, playerID, 0, 7, "EX STAGE ", COLOR.GREEN)
-				receiver.drawMenuFont(engine, playerID, 9, 7, "${stage+1-MAX_STAGE_NORMAL}")
+				receiver.drawMenuFont(engine, 0, 7, "EX STAGE ", COLOR.GREEN)
+				receiver.drawMenuFont(engine, 9, 7, "${stage+1-MAX_STAGE_NORMAL}")
 			} else {
-				receiver.drawMenuFont(engine, playerID, 1, 7, "STAGE", COLOR.GREEN)
+				receiver.drawMenuFont(engine, 1, 7, "STAGE", COLOR.GREEN)
 				val strStage = String.format("%2s", getStageName(stage))
-				receiver.drawMenuFont(engine, playerID, 7, 7, strStage)
+				receiver.drawMenuFont(engine, 7, 7, strStage)
 			}
 		}
 	}
 
 	/* Called at game start(2回目以降のReadyも含む) */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		// X-RAY開始
 		if(gimmickXRay>0) engine.itemXRayEnable = true
 		// カラー開始
@@ -779,23 +781,23 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* Render score */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		receiver.drawScoreFont(
-			engine, playerID, 0, 0, "GRAND BLOSSOM"+if(randomnext)
+			engine, 0, 0, "GRAND BLOSSOM"+if(randomnext)
 				" (RANDOM)"
 			else
 				"", COLOR.RED
 		)
 
-		receiver.drawScoreFont(engine, playerID, -1, -4*2, "DECORATION", scale = .5f)
-		receiver.drawScoreBadges(engine, playerID, 0, -3, 100, decoration)
-		receiver.drawScoreBadges(engine, playerID, 5, -4, 100, dectemp)
+		receiver.drawScoreFont(engine, -1, -4*2, "DECORATION", scale = .5f)
+		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(startstage==0&&!always20g&&trainingType==0&&startnextc==0&&stageset<0&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 5 else 3
 
-				receiver.drawScoreFont(engine, playerID, 3, topY-1, "STAGE CLEAR TIME", COLOR.PINK, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "STAGE CLEAR TIME", COLOR.PINK, scale)
 				val type = if(randomnext) 1 else 0
 
 				for(i in 0 until RANKING_MAX) {
@@ -804,67 +806,66 @@ class GrandBlossom:AbstractMode() {
 					if(rankingAllClear[type][i]==2) gcolor = COLOR.ORANGE
 
 					receiver.drawScoreGrade(
-						engine, playerID, 0, topY+i, String.format("%2d", i+1),
-						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW, scale
-					)
-					receiver.drawScoreFont(engine, playerID, 3, topY+i, getStageName(rankingStage[type][i]), gcolor, scale)
-					receiver.drawScoreNum(engine, playerID, 9, topY+i, "${rankingClearPer[type][i]}%", i==rankingRank, scale)
-					receiver.drawScoreNum(
-						engine, playerID, 15, topY+i, rankingTime[type][i].toTimeStr, i==rankingRank,
+						engine, 0, topY+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW,
 						scale
+					)
+					receiver.drawScoreFont(engine, 3, topY+i, getStageName(rankingStage[type][i]), gcolor, scale)
+					receiver.drawScoreNum(engine, 9, topY+i, "${rankingClearPer[type][i]}%", i==rankingRank, scale)
+					receiver.drawScoreNum(
+						engine, 15, topY+i, rankingTime[type][i].toTimeStr, i==rankingRank, scale
 					)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 2, "STAGE", COLOR.PINK)
-			receiver.drawScoreFont(engine, playerID, 0, 3, getStageName(stage))
+			receiver.drawScoreFont(engine, 0, 2, "STAGE", COLOR.PINK)
+			receiver.drawScoreFont(engine, 0, 3, getStageName(stage))
 			if(gimmickMirror>0)
-				receiver.drawScoreFont(engine, playerID, 0, 4, "MIRROR", COLOR.RED)
+				receiver.drawScoreFont(engine, 0, 4, "MIRROR", COLOR.RED)
 			else if(gimmickRoll>0)
-				receiver.drawScoreFont(engine, playerID, 0, 4, "ROLL ROLL", COLOR.RED)
+				receiver.drawScoreFont(engine, 0, 4, "ROLL ROLL", COLOR.RED)
 			else if(gimmickBig>0)
-				receiver.drawScoreFont(engine, playerID, 0, 4, "DEATH BLOCK", COLOR.RED)
+				receiver.drawScoreFont(engine, 0, 4, "DEATH BLOCK", COLOR.RED)
 			else if(gimmickXRay>0)
-				receiver.drawScoreFont(engine, playerID, 0, 4, "X-RAY", COLOR.RED)
-			else if(gimmickColor>0) receiver.drawScoreFont(engine, playerID, 0, 4, "COLOR", COLOR.RED)
+				receiver.drawScoreFont(engine, 0, 4, "X-RAY", COLOR.RED)
+			else if(gimmickColor>0) receiver.drawScoreFont(engine, 0, 4, "COLOR", COLOR.RED)
 
-			receiver.drawScoreFont(engine, playerID, 0, 5, "REST", COLOR.PINK)
-			receiver.drawScoreNum(engine, playerID, 0, 6, "$rest")
+			receiver.drawScoreFont(engine, 0, 5, "REST", COLOR.PINK)
+			receiver.drawScoreNum(engine, 0, 6, "$rest")
 
 			if(trainingType==0) {
-				receiver.drawScoreFont(engine, playerID, 0, 8, "CLEAR", COLOR.PINK)
-				receiver.drawScoreNum(engine, playerID, 0, 9, "$clearper%")
+				receiver.drawScoreFont(engine, 0, 8, "CLEAR", COLOR.PINK)
+				receiver.drawScoreNum(engine, 0, 9, "$clearper%")
 			} else {
-				receiver.drawScoreFont(engine, playerID, 0, 8, "BEST TIME", COLOR.PINK)
-				receiver.drawScoreNum(engine, playerID, 0, 9, trainingBestTime.toTimeStr)
+				receiver.drawScoreFont(engine, 0, 8, "BEST TIME", COLOR.PINK)
+				receiver.drawScoreNum(engine, 0, 9, trainingBestTime.toTimeStr)
 			}
 
 			//  level
-			receiver.drawScoreFont(engine, playerID, 0, 11, "Level", COLOR.PINK)
-			receiver.drawScoreNum(engine, playerID, 1, 12, String.format("%3d", maxOf(0, speedlevel)))
-			receiver.drawSpeedMeter(engine, playerID, 0, 13, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
-			receiver.drawScoreNum(engine, playerID, 1, 14, String.format("%3d", nextseclv))
+			receiver.drawScoreFont(engine, 0, 11, "Level", COLOR.PINK)
+			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", maxOf(0, speedlevel)))
+			receiver.drawScoreSpeed(engine, 0, 13, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
+			receiver.drawScoreNum(engine, 1, 14, String.format("%3d", nextseclv))
 
 			//  stage Time
 			if(stagetimeStart>0) {
-				receiver.drawScoreFont(engine, playerID, 0, 16, "STAGE TIME", COLOR.PINK)
+				receiver.drawScoreFont(engine, 0, 16, "STAGE TIME", COLOR.PINK)
 				receiver.drawScoreNum(
-					engine, playerID, 0, 17, stagetimeNow.toTimeStr, engine.timerActive
+					engine, 0, 17, stagetimeNow.toTimeStr, engine.timerActive
 						&&stagetimeNow<600&&stagetimeNow%4==0, 2f
 				)
 			}
 
 			// Time limit
 			if(limittimeStart>0) {
-				receiver.drawScoreFont(engine, playerID, 0, 19, "LIMIT TIME", COLOR.PINK)
+				receiver.drawScoreFont(engine, 0, 19, "LIMIT TIME", COLOR.PINK)
 				if(timeextendDisp>0)
 					receiver.drawScoreNum(
-						engine, playerID, 0, 22, "+$timeextendSeconds", engine.timerActive&&limittimeNow<600
+						engine, 0, 22, "+$timeextendSeconds", engine.timerActive&&limittimeNow<600
 							&&limittimeNow%4==0
 					)
 
 				receiver.drawScoreNum(
-					engine, playerID, 0, 20, limittimeNow.toTimeStr, engine.timerActive
+					engine, 0, 20, limittimeNow.toTimeStr, engine.timerActive
 						&&limittimeNow<600
 						&&limittimeNow%4==0, 2f
 				)
@@ -876,7 +877,7 @@ class GrandBlossom:AbstractMode() {
 				val x = if(receiver.nextDisplayType==2) 22 else 12
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 
-				receiver.drawScoreFont(engine, playerID, x, y, "SECTION TIME", COLOR.PINK, scale)
+				receiver.drawScoreFont(engine, x, y, "SECTION TIME", COLOR.PINK, scale)
 
 				for(i in sectionTime.indices)
 					if(sectionTime[i]!=0) {
@@ -890,23 +891,23 @@ class GrandBlossom:AbstractMode() {
 
 						val pos = i-maxOf(stage-14, 0)
 
-						if(pos>=0) receiver.drawScoreFont(engine, playerID, x, y+1+pos, strSectionTime, scale = scale)
+						if(pos>=0) receiver.drawScoreFont(engine, x, y+1+pos, strSectionTime, scale = scale)
 					}
 
 				if(receiver.nextDisplayType==2) {
-					receiver.drawScoreFont(engine, playerID, 11, 19, "TOTAL", COLOR.PINK)
-					receiver.drawScoreNum(engine, playerID, 11, 20, engine.statistics.time.toTimeStr, 2f)
+					receiver.drawScoreFont(engine, 11, 19, "TOTAL", COLOR.PINK)
+					receiver.drawScoreNum(engine, 11, 20, engine.statistics.time.toTimeStr, 2f)
 				} else {
-					receiver.drawScoreFont(engine, playerID, 12, 19, "TOTAL TIME", COLOR.PINK)
-					receiver.drawScoreNum(engine, playerID, 12, 20, engine.statistics.time.toTimeStr, 2f)
+					receiver.drawScoreFont(engine, 12, 19, "TOTAL TIME", COLOR.PINK)
+					receiver.drawScoreNum(engine, 12, 20, engine.statistics.time.toTimeStr, 2f)
 				}
 			}
 		}
 	}
 
 	/* Called after every frame */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 		if(timeextendDisp>0) timeextendDisp--
 
 		if(engine.gameActive&&engine.timerActive&&engine.ctrl.isPress(Controller.BUTTON_F)) {
@@ -935,10 +936,7 @@ class GrandBlossom:AbstractMode() {
 			limittimeNow--
 
 			// Time meter
-			if(limittimeNow>=limittimeStart)
-				engine.meterValue = receiver.getMeterMax(engine)
-			else
-				engine.meterValue = limittimeNow*receiver.getMeterMax(engine)/limittimeStart
+			engine.meterValue = minOf(1f, limittimeNow*1f/limittimeStart)
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
 			if(limittimeNow>0&&limittimeNow<=10*60&&limittimeNow%60==0)
@@ -959,7 +957,7 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* 移動中の処理 */
-	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
+	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
 			// Level up
@@ -1001,7 +999,7 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* ARE中の処理 */
-	override fun onARE(engine:GameEngine, playerID:Int):Boolean {
+	override fun onARE(engine:GameEngine):Boolean {
 		// 最後の frame
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
 			if(speedlevel<nextseclv-1) {
@@ -1016,7 +1014,7 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		// 実際に消えるLinescount(Big時半分にならない)
 		val realLines = engine.field.lines
 
@@ -1060,14 +1058,14 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* Line clear処理が終わったときの処理 */
-	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
+	override fun lineClearEnd(engine:GameEngine):Boolean {
 		checkStageEnd(engine)
 
 		return false
 	}
 
 	/* Blockピースが固定されたときの処理(calcScoreの直後) */
-	override fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun pieceLocked(engine:GameEngine, lines:Int) {
 		// 固定 count+1
 		thisStageTotalPieceLockCount++
 
@@ -1080,7 +1078,7 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/** stage 終了画面の描画 */
-	override fun onCustom(engine:GameEngine, playerID:Int):Boolean {
+	override fun onCustom(engine:GameEngine):Boolean {
 		// 最初の frame の処理
 		if(engine.statc[0]==0) {
 			// Sound effects
@@ -1147,10 +1145,7 @@ class GrandBlossom:AbstractMode() {
 			var limittimeTemp = limittimeNow+engine.statc[1]
 			if(skipflag) limittimeTemp = limittimeNow-engine.statc[1]
 
-			if(limittimeTemp>=limittimeStart)
-				engine.meterValue = receiver.getMeterMax(engine)
-			else
-				engine.meterValue = limittimeTemp*receiver.getMeterMax(engine)/limittimeStart
+			engine.meterValue = minOf(1f, limittimeTemp*1f/limittimeStart)
 
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 		}
@@ -1187,78 +1182,83 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/** stage 終了画面の描画 */
-	override fun renderCustom(engine:GameEngine, playerID:Int) {
+	override fun renderCustom(engine:GameEngine) {
 		if(engine.statc[0]<1) return
 
 		// STAGE XX
-		receiver.drawMenuFont(engine, playerID, 1, 2, "STAGE", COLOR.GREEN)
+		receiver.drawMenuFont(engine, 1, 2, "STAGE", COLOR.GREEN)
 		val strStage = String.format("%2s", getStageName(stage))
-		receiver.drawMenuFont(engine, playerID, 7, 2, strStage)
+		receiver.drawMenuFont(engine, 7, 2, strStage)
 
 		if(clearflag) {
 			// クリア
 			receiver.drawMenuFont(
-				engine, playerID, 2, 4, "CLEAR!", if(engine.statc[0]%2==0)
+				engine, 2, 4, "CLEAR!", if(engine.statc[0]%2==0)
 					COLOR.ORANGE
 				else
 					COLOR.WHITE
 			)
 
-			receiver.drawMenuFont(engine, playerID, 0, 7, "LIMIT TIME", COLOR.PINK)
+			receiver.drawMenuFont(engine, 0, 7, "LIMIT TIME", COLOR.PINK)
 			receiver.drawMenuFont(
-				engine, playerID, 1, 8, (limittimeNow+engine.statc[1]).toTimeStr,
+				engine,
+				1,
+				8,
+				(limittimeNow+engine.statc[1]).toTimeStr,
 				if(engine.statc[0]%2==0&&engine.statc[1]<timeextendStageClearSeconds*60) COLOR.ORANGE else COLOR.WHITE
 			)
 
-			receiver.drawMenuFont(engine, playerID, 2, 10, "EXTEND", COLOR.PINK)
-			receiver.drawMenuFont(engine, playerID, 2, 11, "$timeextendStageClearSeconds SEC.")
+			receiver.drawMenuFont(engine, 2, 10, "EXTEND", COLOR.PINK)
+			receiver.drawMenuFont(engine, 2, 11, "$timeextendStageClearSeconds SEC.")
 
-			receiver.drawMenuFont(engine, playerID, 0, 13, "CLEAR TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, playerID, 1, 14, cleartime.toTimeStr)
+			receiver.drawMenuFont(engine, 0, 13, "CLEAR TIME", COLOR.PINK)
+			receiver.drawMenuFont(engine, 1, 14, cleartime.toTimeStr)
 
-			receiver.drawMenuFont(engine, playerID, 0, 16, "TOTAL TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, playerID, 1, 17, engine.statistics.time.toTimeStr)
+			receiver.drawMenuFont(engine, 0, 16, "TOTAL TIME", COLOR.PINK)
+			receiver.drawMenuFont(engine, 1, 17, engine.statistics.time.toTimeStr)
 		} else if(skipflag) {
 			// スキップ
-			receiver.drawMenuFont(engine, playerID, 1, 4, "SKIPPED")
+			receiver.drawMenuFont(engine, 1, 4, "SKIPPED")
 			receiver.drawMenuFont(
-				engine, playerID, 1, 5, "-30 SEC.",
-				if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED
+				engine, 1, 5, "-30 SEC.", if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED
 			)
 
-			receiver.drawMenuFont(engine, playerID, 0, 10, "LIMIT TIME", COLOR.PINK)
+			receiver.drawMenuFont(engine, 0, 10, "LIMIT TIME", COLOR.PINK)
 			receiver.drawMenuFont(
-				engine, playerID, 1, 11, (limittimeNow-engine.statc[1]).toTimeStr,
+				engine,
+				1,
+				11,
+				(limittimeNow-engine.statc[1]).toTimeStr,
 				if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.RED else COLOR.WHITE
 			)
 
 			if(trainingType==0) {
-				receiver.drawMenuFont(engine, playerID, 0, 13, "CLEAR PER.", COLOR.PINK)
-				receiver.drawMenuFont(engine, playerID, 3, 14, "$clearper%")
+				receiver.drawMenuFont(engine, 0, 13, "CLEAR PER.", COLOR.PINK)
+				receiver.drawMenuFont(engine, 3, 14, "$clearper%")
 			}
 
-			receiver.drawMenuFont(engine, playerID, 0, 16, "TOTAL TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, playerID, 1, 17, engine.statistics.time.toTimeStr)
+			receiver.drawMenuFont(engine, 0, 16, "TOTAL TIME", COLOR.PINK)
+			receiver.drawMenuFont(engine, 1, 17, engine.statistics.time.toTimeStr)
 		} else if(stagetimeNow<=0&&stagetimeStart>0) {
 			// Timeアップ
-			receiver.drawMenuFont(engine, playerID, 1, 0, "TIME OVER")
-			receiver.drawMenuFont(engine, playerID, 1, 5, "TRY NEXT")
+			receiver.drawMenuFont(engine, 1, 0, "TIME OVER")
+			receiver.drawMenuFont(engine, 1, 5, "TRY NEXT")
 
-			receiver.drawMenuFont(engine, playerID, 0, 10, "LIMIT TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, playerID, 1, 11, limittimeNow.toTimeStr)
+			receiver.drawMenuFont(engine, 0, 10, "LIMIT TIME", COLOR.PINK)
+			receiver.drawMenuFont(engine, 1, 11, limittimeNow.toTimeStr)
 
 			if(trainingType==0) {
-				receiver.drawMenuFont(engine, playerID, 0, 13, "CLEAR PER.", COLOR.PINK)
-				receiver.drawMenuFont(engine, playerID, 3, 14, "$clearper%")
+				receiver.drawMenuFont(engine, 0, 13, "CLEAR PER.", COLOR.PINK)
+				receiver.drawMenuFont(engine, 3, 14, "$clearper%")
 			}
 
-			receiver.drawMenuFont(engine, playerID, 0, 16, "TOTAL TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, playerID, 1, 17, engine.statistics.time.toTimeStr)
+			receiver.drawMenuFont(engine, 0, 16, "TOTAL TIME", COLOR.PINK)
+			receiver.drawMenuFont(engine, 1, 17, engine.statistics.time.toTimeStr)
 		}
 	}
 
 	/* Called at game over(主にコンティニュー画面) */
-	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+	override fun onGameOver(engine:GameEngine):Boolean {
 		// コンティニュー画面
 		if(engine.ending==0&&!noContinue) {
 			if(engine.statc[0]==0) {
@@ -1331,28 +1331,28 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* game over時の描画処理(主にコンティニュー画面) */
-	override fun renderGameOver(engine:GameEngine, playerID:Int) {
+	override fun renderGameOver(engine:GameEngine) {
 		if(engine.ending==0&&!noContinue)
 			if(engine.statc[0]>=engine.field.height+1&&engine.statc[0]<engine.field.height+1+600) {
-				receiver.drawMenuFont(engine, playerID, 1, 7, "CONTINUE?", COLOR.PINK)
+				receiver.drawMenuFont(engine, 1, 7, "CONTINUE?", COLOR.PINK)
 
-				receiver.drawMenuFont(engine, playerID, 3, 9+engine.statc[1]*2, "\u0082", COLOR.RED)
-				receiver.drawMenuFont(engine, playerID, 4, 9, "YES", engine.statc[1]==0)
-				receiver.drawMenuFont(engine, playerID, 4, 11, "NO", engine.statc[1]==1)
+				receiver.drawMenuFont(engine, 3, 9+engine.statc[1]*2, "\u0082", COLOR.RED)
+				receiver.drawMenuFont(engine, 4, 9, "YES", engine.statc[1]==0)
+				receiver.drawMenuFont(engine, 4, 11, "NO", engine.statc[1]==1)
 
 				val t = engine.field.height+1+600-engine.statc[0]
-				receiver.drawMenuFont(engine, playerID, 2, 13, "TIME ${(t-1)/60}", COLOR.GREEN)
+				receiver.drawMenuFont(engine, 2, 13, "TIME ${(t-1)/60}", COLOR.GREEN)
 
-				receiver.drawMenuFont(engine, playerID, 0, 16, "TOTAL TIME", COLOR.PINK)
-				receiver.drawMenuFont(engine, playerID, 1, 17, engine.statistics.time.toTimeStr)
+				receiver.drawMenuFont(engine, 0, 16, "TOTAL TIME", COLOR.PINK)
+				receiver.drawMenuFont(engine, 1, 17, engine.statistics.time.toTimeStr)
 
-				if(trainingType==0) receiver.drawMenuFont(engine, playerID, 0, 18, "+2 MINUTES", COLOR.RED)
+				if(trainingType==0) receiver.drawMenuFont(engine, 0, 18, "+2 MINUTES", COLOR.RED)
 			}
 
 	}
 
 	/* 結果画面の処理 */
-	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
+	override fun onResult(engine:GameEngine):Boolean {
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
@@ -1368,23 +1368,23 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* Render results screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 		if(engine.statc[1]==0) {
 			var gcolor = COLOR.WHITE
 			if(allclear==1) gcolor = COLOR.GREEN
 			if(allclear==2) gcolor = COLOR.ORANGE
 
-			receiver.drawMenuFont(engine, playerID, 0, 2, "STAGE", COLOR.PINK)
+			receiver.drawMenuFont(engine, 0, 2, "STAGE", COLOR.PINK)
 			val strStage = String.format("%10s", getStageName(stage))
-			receiver.drawMenuFont(engine, playerID, 0, 3, strStage, gcolor)
+			receiver.drawMenuFont(engine, 0, 3, strStage, gcolor)
 
-			drawResult(engine, playerID, receiver, 4, COLOR.PINK, "CLEAR", String.format("%9d%%", clearper))
-			drawResultStats(engine, playerID, receiver, 6, COLOR.PINK, Statistic.LINES, Statistic.PIECE, Statistic.TIME)
-			drawResultRank(engine, playerID, receiver, 12, COLOR.PINK, rankingRank)
+			drawResult(engine, receiver, 4, COLOR.PINK, "CLEAR", String.format("%9d%%", clearper))
+			drawResultStats(engine, receiver, 6, COLOR.PINK, Statistic.LINES, Statistic.PIECE, Statistic.TIME)
+			drawResultRank(engine, receiver, 12, COLOR.PINK, rankingRank)
 		} else {
-			receiver.drawMenuFont(engine, playerID, 0, 2, "SECTION${engine.statc[1]}/2", COLOR.PINK)
+			receiver.drawMenuFont(engine, 0, 2, "SECTION${engine.statc[1]}/2", COLOR.PINK)
 
 			var i = if(engine.statc[1]==1) 0 else 15
 			val y = if(engine.statc[1]==1) 3 else -12
@@ -1395,9 +1395,9 @@ class GrandBlossom:AbstractMode() {
 			) {
 				if(sectionTime[i]!=0)
 					when {
-						sectionTime[i]==-1 -> receiver.drawMenuNum(engine, playerID, 2, i+y, "FAILED", COLOR.RED)
-						sectionTime[i]==-2 -> receiver.drawMenuNum(engine, playerID, 2, i+y, "SKIPPED", COLOR.PURPLE)
-						else -> receiver.drawMenuNum(engine, playerID, 2, i+y, sectionTime[i].toTimeStr)
+						sectionTime[i]==-1 -> receiver.drawMenuNum(engine, 2, i+y, "FAILED", COLOR.RED)
+						sectionTime[i]==-2 -> receiver.drawMenuNum(engine, 2, i+y, "SKIPPED", COLOR.PURPLE)
+						else -> receiver.drawMenuNum(engine, 2, i+y, sectionTime[i].toTimeStr)
 					}
 				i++
 			}
@@ -1405,7 +1405,7 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* リプレイ保存 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		prop.setProperty("gemmania.version", version)
 		prop.setProperty("gemmania.result.stage", stage)
 		prop.setProperty("gemmania.result.clearper", clearper)
@@ -1414,7 +1414,7 @@ class GrandBlossom:AbstractMode() {
 		engine.statistics.level = stage
 		engine.statistics.levelDispAdd = 1
 		engine.statistics.scoreBonus = clearper
-		engine.statistics.writeProperty(prop, playerID)
+		engine.statistics.writeProperty(prop, engine.playerID)
 		if(!owner.replayMode) {
 			owner.statsProp.setProperty("decoration", decoration)
 			owner.statsProp.save(owner.statsFile)

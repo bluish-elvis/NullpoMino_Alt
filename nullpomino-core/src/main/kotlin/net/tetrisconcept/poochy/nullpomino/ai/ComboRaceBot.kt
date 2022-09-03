@@ -1,3 +1,32 @@
+/*
+ * Copyright (c) 2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package net.tetrisconcept.poochy.nullpomino.ai
 
 import mu.nu.nullpo.game.component.Controller
@@ -45,7 +74,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 		thinkSuccess = false
 		inARE = false
 		if((thread==null||!thread!!.isAlive)&&engine.aiUseThread) {
-			thread = Thread(this, "AI_$playerID")
+			thread = Thread(this, "AI_${engine.playerID}")
 			thread!!.isDaemon = true
 			thread!!.start()
 			thinkDelay = engine.aiThinkDelay
@@ -57,7 +86,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 	override fun newPiece(engine:GameEngine, playerID:Int) {
 		if(!engine.aiUseThread) {
 			thinkBestPosition(engine)
-		} else if(!thinking&&!thinkComplete||!engine.aiPrethink||engine.aiShowHint
+		} else if(!thinking&&!thinkComplete||!engine.aiPreThink||engine.aiShowHint
 			||engine.are<=0||engine.areLine<=0
 		) {
 			thinkCurrentPieceNo++
@@ -69,7 +98,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 	override fun onFirst(engine:GameEngine, playerID:Int) {
 		inputARE = 0
 		val newInARE = engine.stat===GameEngine.Status.ARE
-		if(engine.aiPrethink&&engine.are>0&&engine.areLine>0
+		if(engine.aiPreThink&&engine.are>0&&engine.areLine>0
 			&&(newInARE&&!inARE||!thinking&&!thinkSuccess)
 		) {
 			if(DEBUG_ALL) log.debug("Begin pre-think of next piece.")
@@ -124,7 +153,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 			val nowType = pieceNow.id
 			//int width = fld.getWidth();
 			var moveDir = 0 //-1 = left,  1 = right
-			var rotateDir = 0 //-1 = left,  1 = right
+			var spinDir = 0 //-1 = left,  1 = right
 			var drop = 0 //1 = up, -1 = down
 			if(bestHold&&thinkComplete&&engine.isHoldOK) {
 				// Hold
@@ -144,7 +173,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 				printPieceAndDirection(nowType, rt)
 				// Rotation
 				/*
-				//Rotate iff near destination or stuck
+				//Spin iff near destination or stuck
 				int xDiff = Math.abs(nowX - bestX);
 				if (bestX < nowX && nowType == Piece.PIECE_I &&
 						rt == Piece.DIRECTION_DOWN && bestRt != rt)
@@ -158,11 +187,11 @@ class ComboRaceBot:DummyAI(), Runnable {
 				*/if(rt!=bestRt) {
 					val best180 = abs(rt-bestRt)==2
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
-					val lrot = engine.getRotateDirection(-1)
-					val rrot = engine.getRotateDirection(1)
+					val lrot = engine.getSpinDirection(-1)
+					val rrot = engine.getSpinDirection(1)
 					if(DEBUG_ALL) log.debug("lrot = $lrot, rrot = $rrot")
-					rotateDir =
-						if(best180&&(engine.ruleOpt.rotateButtonAllowDouble)&&!ctrl.isPress(Controller.BUTTON_E)) 2 else if(bestRt==rrot) 1 else if(bestRt==lrot) -1 else if(engine.ruleOpt.rotateButtonAllowReverse&&best180&&((rt and 1)==1)) {
+					spinDir =
+						if(best180&&(engine.ruleOpt.spinDoubleKey)&&!ctrl.isPress(Controller.BUTTON_E)) 2 else if(bestRt==rrot) 1 else if(bestRt==lrot) -1 else if(engine.ruleOpt.spinReverseKey&&best180&&((rt and 1)==1)) {
 							if(rrot==Piece.DIRECTION_UP) 1 else -1
 						} else 1
 				}
@@ -186,8 +215,8 @@ class ComboRaceBot:DummyAI(), Runnable {
 						if(rt==bestRt) {
 							// Groundrotation
 							if(bestRtSub!=0&&movestate==0) {
-								bestRt = pieceNow.getRotateDirection(bestRtSub, bestRt)
-								rotateDir = bestRtSub
+								bestRt = pieceNow.getSpinDirection(bestRtSub, bestRt)
+								spinDir = bestRtSub
 								bestRtSub = 0
 								movestate = 1
 							}
@@ -197,43 +226,32 @@ class ComboRaceBot:DummyAI(), Runnable {
 						moveDir = 0
 						// Funnel
 						if(bestRtSub==0) {
-							if(pieceTouchGround&&engine.ruleOpt.softdropLock) drop = -1 else if(engine.ruleOpt.harddropEnable) drop =
-								1 else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock) drop = -1
+							if(pieceTouchGround&&engine.ruleOpt.softdropLock) drop = -1
+							else if(engine.ruleOpt.harddropEnable) drop = 1
+							else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock) drop = -1
 						} else {
-							if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock) drop =
-								1 else if(engine.ruleOpt.softdropEnable&&!engine.ruleOpt.softdropLock) drop = -1
+							if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock) drop = 1
+							else if(engine.ruleOpt.softdropEnable&&!engine.ruleOpt.softdropLock) drop = -1
 						}
 					} else if(nowX>bestX) moveDir = -1 else if(nowX<bestX) moveDir = 1
 				}
 			}
 			//Convert parameters to input
-			if(moveDir==-1&&!ctrl.isPress(Controller.BUTTON_LEFT)) input =
-				input or Controller.BUTTON_BIT_LEFT else if(moveDir==1&&!ctrl.isPress(
-					Controller.BUTTON_RIGHT
-				)
-			) input = input or Controller.BUTTON_BIT_RIGHT
-			if(drop==1&&!ctrl.isPress(Controller.BUTTON_UP)) input = input or Controller.BUTTON_BIT_UP else if(drop==-1) input =
-				input or Controller.BUTTON_BIT_DOWN
-			if(rotateDir!=0) {
-				val defaultRotateRight = (engine.owRotateButtonDefaultRight==1||
-					(engine.owRotateButtonDefaultRight==-1&&
-						engine.ruleOpt.rotateButtonDefaultRight))
-				if(engine.ruleOpt.rotateButtonAllowDouble&&(
-						rotateDir==2)&&!ctrl.isPress(Controller.BUTTON_E)
-				) input = input or Controller.BUTTON_BIT_E else if((engine.ruleOpt.rotateButtonAllowReverse&&
-						!defaultRotateRight&&(rotateDir==1))
-				) {
+			if(moveDir==-1&&!ctrl.isPress(Controller.BUTTON_LEFT)) input = input or Controller.BUTTON_BIT_LEFT
+			else if(moveDir==1&&!ctrl.isPress(Controller.BUTTON_RIGHT)) input = input or Controller.BUTTON_BIT_RIGHT
+			if(drop==1&&!ctrl.isPress(Controller.BUTTON_UP)) input = input or Controller.BUTTON_BIT_UP
+			else if(drop==-1) input = input or Controller.BUTTON_BIT_DOWN
+			if(spinDir!=0) {
+				val spinRight = (engine.owSpinDirection==1||(engine.owSpinDirection==-1&&engine.ruleOpt.spinToRight))
+				if(engine.ruleOpt.spinDoubleKey&&(spinDir==2)&&!ctrl.isPress(Controller.BUTTON_E))
+					input = input or Controller.BUTTON_BIT_E
+				else if((engine.ruleOpt.spinReverseKey&&!spinRight&&(spinDir==1))) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
-				} else if((engine.ruleOpt.rotateButtonAllowReverse&&
-						defaultRotateRight&&(rotateDir==-1))
-				) {
+				} else if((engine.ruleOpt.spinReverseKey&&spinRight&&(spinDir==-1))) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
 				} else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
 			}
-			if(DEBUG_ALL) log.debug(
-				("Input = "+input+", moveDir = "+moveDir+", rotateDir = "+rotateDir+
-					", drop = "+drop)
-			)
+			if(DEBUG_ALL) log.debug("Input = $input, moveDir = $moveDir, spinDir = $spinDir, drop = $drop")
 			delay = 0
 			return (input)
 		}
@@ -242,13 +260,16 @@ class ComboRaceBot:DummyAI(), Runnable {
 	}
 
 	private fun printPieceAndDirection(pieceType:Int, rt:Int) {
-		var result = "Piece ${pieceType}, direction "
-		when(rt) {
-			Piece.DIRECTION_LEFT -> result += "left"
-			Piece.DIRECTION_DOWN -> result += "down"
-			Piece.DIRECTION_UP -> result += "up"
-			Piece.DIRECTION_RIGHT -> result += "right"
-		}
+		val result = "Piece ${pieceType}, direction ${
+			when(rt) {
+				Piece.DIRECTION_LEFT -> "left"
+				Piece.DIRECTION_DOWN -> "down"
+				Piece.DIRECTION_UP -> "up"
+				Piece.DIRECTION_RIGHT -> "right"
+				else -> ""
+			}
+		}"
+
 		if(DEBUG_ALL) log.debug(result)
 	}
 	/*
@@ -266,14 +287,14 @@ class ComboRaceBot:DummyAI(), Runnable {
 		{
 			if (bestRt == 1)
 			{
-				if (engine.ruleOpt.rotateButtonDefaultRight)
+				if (engine.ruleOpt.spinButtonDefaultRight)
 					return Controller.BUTTON_BIT_A;
 				else
 					return Controller.BUTTON_BIT_B;
 			}
 			else if (bestRt == 3)
 			{
-				if (engine.ruleOpt.rotateButtonDefaultRight)
+				if (engine.ruleOpt.spinButtonDefaultRight)
 					return Controller.BUTTON_BIT_B;
 				else
 					return Controller.BUTTON_BIT_A;
@@ -284,7 +305,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 			if (gravityHigh && fld.getHighestBlockY(midColumnX-1) <
 					minOf(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX+1)))
 				return 0;
-			else if (engine.ruleOpt.rotateButtonDefaultRight)
+			else if (engine.ruleOpt.spinButtonDefaultRight)
 				return Controller.BUTTON_BIT_B;
 			else
 				return Controller.BUTTON_BIT_A;
@@ -294,7 +315,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 			if (gravityHigh && fld.getHighestBlockY(midColumnX+1) <
 					minOf(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX-1)))
 				return 0;
-			if (engine.ruleOpt.rotateButtonDefaultRight)
+			if (engine.ruleOpt.spinButtonDefaultRight)
 				return Controller.BUTTON_BIT_A;
 			else
 				return Controller.BUTTON_BIT_B;
@@ -327,9 +348,8 @@ class ComboRaceBot:DummyAI(), Runnable {
 			pieceNow = engine.getNextObjectCopy(nextIndex)
 			nextIndex++
 		}
-		if(holdBoxEmpty) pieceHold = engine.getNextObjectCopy(nextIndex) else if(holdBoxEmpty) pieceHold = engine.getNextObjectCopy(
-			engine.nextPieceCount
-		)
+		if(holdBoxEmpty) pieceHold = engine.getNextObjectCopy(nextIndex)
+		else if(holdBoxEmpty) pieceHold = engine.getNextObjectCopy(engine.nextPieceCount)
 		pieceNow = checkOffset(pieceNow, engine)
 		pieceHold = checkOffset(pieceHold, engine)
 		val holdOK = engine.isHoldOK
@@ -380,11 +400,11 @@ class ComboRaceBot:DummyAI(), Runnable {
 			if(bestRtSub!=0) {
 				val newRt = (bestRt+bestRtSub+Piece.DIRECTION_COUNT)%Piece.DIRECTION_COUNT
 				if((pieceTemp.checkCollision(bestX, bestY, newRt, fld)&&(engine.wallkick!=null)&&
-						(engine.ruleOpt.rotateWallkick))
+						(engine.ruleOpt.spinWallkick))
 				) {
 					val kick = engine.wallkick!!.executeWallkick(
 						bestX, bestY, -1, bestRt, newRt,
-						(engine.ruleOpt.rotateMaxUpwardWallkick!=0), (pieceTemp), fld, null
+						(engine.ruleOpt.spinWallkickMaxRise!=0), (pieceTemp), fld, null
 					)
 					if(kick!=null) {
 						bestX += kick.offsetX
@@ -477,7 +497,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 		val pieces = Array(7) {p -> checkOffset(Piece(p), engine).apply {setColor(1)}}
 		var count = 0
 		for(i in FIELDS.indices) {
-			fldBackup.copy(fldEmpty)
+			fldBackup.replace(fldEmpty)
 			var code = FIELDS[i].toInt()
 			for(y in Field.DEFAULT_HEIGHT-1 downTo (Field.DEFAULT_HEIGHT-4)+1) for(x in 3 downTo 0) {
 				if((code and 1)==1) fldBackup.setBlockColor(x, y, 1)
@@ -491,7 +511,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 					for(x in minX..maxX) {
 						val y = pieces[p].getBottom(x, 0, rt, fldBackup)
 						if((p==Piece.PIECE_L)||(p==Piece.PIECE_T)||(p==Piece.PIECE_J)||(rt<2)) {
-							fldTemp.copy(fldBackup)
+							fldTemp.replace(fldBackup)
 							pieces[p].placeToField(x, y, rt, fldTemp)
 							if(fldTemp.checkLine()==1) {
 								fldTemp.clearLine()
@@ -509,17 +529,17 @@ class ComboRaceBot:DummyAI(), Runnable {
 						}
 
 						// Left rotation
-						if(!engine.ruleOpt.rotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-							val rot = pieces[p].getRotateDirection(-1, rt)
+						if(!engine.ruleOpt.spinToRight||engine.ruleOpt.spinReverseKey) {
+							val rot = pieces[p].getSpinDirection(-1, rt)
 							var newX = x
 							var newY = y
-							fldTemp.copy(fldBackup)
+							fldTemp.replace(fldBackup)
 							if((pieces[p].checkCollision(x, y, rot, fldTemp)&&(engine.wallkick!=null)&&
-									(engine.ruleOpt.rotateWallkick))
+									(engine.ruleOpt.spinWallkick))
 							) {
 								val kick = engine.wallkick!!.executeWallkick(
 									x, y, -1, rt, rot,
-									(engine.ruleOpt.rotateMaxUpwardWallkick!=0), (pieces[p]), fldTemp, null
+									(engine.ruleOpt.spinWallkickMaxRise!=0), (pieces[p]), fldTemp, null
 								)
 								if(kick!=null) {
 									newX = x+kick.offsetX
@@ -546,17 +566,17 @@ class ComboRaceBot:DummyAI(), Runnable {
 						}
 
 						// Right rotation
-						if(engine.ruleOpt.rotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-							val rot = pieces[p].getRotateDirection(1, rt)
+						if(engine.ruleOpt.spinToRight||engine.ruleOpt.spinReverseKey) {
+							val rot = pieces[p].getSpinDirection(1, rt)
 							var newX = x
 							var newY = y
-							fldTemp.copy(fldBackup)
+							fldTemp.replace(fldBackup)
 							if((pieces[p].checkCollision(x, y, rot, fldTemp)&&(engine.wallkick!=null)&&
-									(engine.ruleOpt.rotateWallkick))
+									(engine.ruleOpt.spinWallkick))
 							) {
 								val kick = engine.wallkick!!.executeWallkick(
 									x, y, 1, rt, rot,
-									(engine.ruleOpt.rotateMaxUpwardWallkick!=0), (pieces[p]), fldTemp, null
+									(engine.ruleOpt.spinWallkickMaxRise!=0), (pieces[p]), fldTemp, null
 								)
 								if(kick!=null) {
 									newX = x+kick.offsetX
@@ -589,44 +609,44 @@ class ComboRaceBot:DummyAI(), Runnable {
 		log.debug("Transition table created. Total entries: $count")
 		//TODO: PageRank scores for each state
 	}
+
 	override fun renderState(engine:GameEngine, playerID:Int) {
 		super.renderState(engine, playerID)
 		engine.owner.receiver.run {
-			drawMenuFont(engine, playerID, 0, 7, "THINK REQUEST:", EventReceiver.COLOR.BLUE, .5f)
-			drawMenuFont(engine, playerID, 14, 7, (thinkRequest?.active ?: false).getOX, .5f)
+			drawMenuFont(engine, 0, 7, "THINK REQUEST:", EventReceiver.COLOR.BLUE, .5f)
+			drawMenuFont(engine, 14, 7, (thinkRequest?.active ?: false).getOX, .5f)
 			drawMenuFont(
-				engine, playerID, 0, 8, "THINK SUCCESS:",
-				if(thinkSuccess) EventReceiver.COLOR.BLUE else EventReceiver.COLOR.RED, .5f
+				engine, 0, 8, "THINK SUCCESS:", if(thinkSuccess) EventReceiver.COLOR.BLUE else EventReceiver.COLOR.RED,
+				.5f
 			)
-			drawMenuFont(engine, playerID, 14, 8, thinkSuccess.getOX, !thinkSuccess, .5f)
-			drawMenuFont(engine, playerID, 0, 9, "THINK COMPLETE:", EventReceiver.COLOR.BLUE, .5f)
-			drawMenuFont(engine, playerID, 15, 9, thinkComplete.getOX, .5f)
-			drawMenuFont(engine, playerID, 0, 10, "IN ARE:", EventReceiver.COLOR.BLUE, .5f)
-			drawMenuFont(engine, playerID, 7, 10, inARE.getOX, .5f)
-			drawMenuFont(engine, playerID, 0, 11, "QUEUE:", EventReceiver.COLOR.BLUE, .5f)
+			drawMenuFont(engine, 14, 8, thinkSuccess.getOX, !thinkSuccess, .5f)
+			drawMenuFont(engine, 0, 9, "THINK COMPLETE:", EventReceiver.COLOR.BLUE, .5f)
+			drawMenuFont(engine, 15, 9, thinkComplete.getOX, .5f)
+			drawMenuFont(engine, 0, 10, "IN ARE:", EventReceiver.COLOR.BLUE, .5f)
+			drawMenuFont(engine, 7, 10, inARE.getOX, .5f)
+			drawMenuFont(engine, 0, 11, "QUEUE:", EventReceiver.COLOR.BLUE, .5f)
 			var color = EventReceiver.COLOR.GREEN
 			for(i in nextQueueIDs.indices) {
 				if(i>=bestPts/1000&&color!=EventReceiver.COLOR.RED) color =
 					if(i<nextQueueIDs.size-1&&thinkComplete) EventReceiver.COLOR.RED else EventReceiver.COLOR.YELLOW
-				drawMenuFont(engine, playerID, 6+i, 11, Piece.Shape.names[nextQueueIDs[i]], color, .5f)
+				drawMenuFont(engine, 6+i, 11, Piece.Shape.names[nextQueueIDs[i]], color, .5f)
 			}
 			val code = fieldToCode(engine.field)
-			drawMenuFont(engine, playerID, 0, 12, "STATE:", EventReceiver.COLOR.BLUE, .5f)
+			drawMenuFont(engine, 0, 12, "STATE:", EventReceiver.COLOR.BLUE, .5f)
 			drawMenuFont(
-				engine, playerID, 6, 12, if(code.toInt()==-1) "---" else
-					"#${fieldToIndex(engine.field)}:${Integer.toHexString(code.toInt()).uppercase()}",
-				.5f
+				engine, 6, 12, if(code.toInt()==-1) "---" else
+					"#${fieldToIndex(engine.field)}:${Integer.toHexString(code.toInt()).uppercase()}", .5f
 			)
 		}
 	}
 
 	override fun renderHint(engine:GameEngine, playerID:Int) {
 		val r = engine.owner.receiver
-		r.drawScoreFont(engine, playerID, 10, 3, "AI HINT MOVE:", EventReceiver.COLOR.GREEN)
+		r.drawScoreFont(engine, 10, 3, "AI HINT MOVE:", EventReceiver.COLOR.GREEN)
 		if(bestPts>0&&(thinkComplete||(((thinkCurrentPieceNo>0)
 				&&(thinkCurrentPieceNo<=thinkLastPieceNo))))
 		) {
-			if(bestHold&&thinkComplete&&engine.isHoldOK) r.drawScoreFont(engine, playerID, 10, 4, "HOLD") else {
+			if(bestHold&&thinkComplete&&engine.isHoldOK) r.drawScoreFont(engine, 10, 4, "HOLD") else {
 				val pieceNow = engine.nowPieceObject
 				val fld:Field = engine.field
 				if(pieceNow==null) return
@@ -635,42 +655,41 @@ class ComboRaceBot:DummyAI(), Runnable {
 				val rt = pieceNow.direction
 				val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 				if(pieceTouchGround&&(nowX==bestX)&&(nowY==bestY)&&(rt==bestRt)) return else if(pieceTouchGround&&(nowX==bestXSub)&&(nowY==bestYSub)&&(rt==bestRtSub)) {
-					var rotateDir = 0 //-1 = left,  1 = right, 2 = 180
+
 					val best180 = abs(rt-bestRt)==2
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
-					val lrot = engine.getRotateDirection(-1)
-					val rrot = engine.getRotateDirection(1)
+					val lrot = engine.getSpinDirection(-1)
+					val rrot = engine.getSpinDirection(1)
 					if(DEBUG_ALL) log.debug("lrot = $lrot, rrot = $rrot")
-					rotateDir =
-						if(best180&&(engine.ruleOpt.rotateButtonAllowDouble)) 2 else if(bestRt==rrot) 1 else if(bestRt==lrot) -1 else if(engine.ruleOpt.rotateButtonAllowReverse&&best180&&((rt and 1)==1)) {
+					val spinDir =
+						if(best180&&(engine.ruleOpt.spinDoubleKey)) 2 else if(bestRt==rrot) 1 else if(bestRt==lrot) -1 else if(engine.ruleOpt.spinReverseKey&&best180&&((rt and 1)==1)) {
 							if(rrot==Piece.DIRECTION_UP) 1 else -1
 						} else 1
-					when(rotateDir) {
-						-1 -> r.drawScoreFont(engine, playerID, 10, 4, "ROTATE LEFT")
-						1 -> r.drawScoreFont(engine, playerID, 10, 4, "ROTATE RIGHT")
-						2 -> r.drawScoreFont(engine, playerID, 10, 4, "ROTATE 180")
+					when(spinDir) {
+						-1 -> r.drawScoreFont(engine, 10, 4, "SPIN LEFT")
+						1 -> r.drawScoreFont(engine, 10, 4, "SPIN RIGHT")
+						2 -> r.drawScoreFont(engine, 10, 4, "SPIN 180")
 					}
 					return
 				}
 				var moveDir = 0 //-1 = left,  1 = right
-				var rotateDir = 0 //-1 = left,  1 = right, 2 = 180
 				var drop = 0 //1 = up, -1 = down
 				var writeY = 4
 				if(rt!=bestRtSub) {
 					val best180 = abs(rt-bestRtSub)==2
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
-					val lrot = engine.getRotateDirection(-1)
-					val rrot = engine.getRotateDirection(1)
+					val lrot = engine.getSpinDirection(-1)
+					val rrot = engine.getSpinDirection(1)
 					if(DEBUG_ALL) log.debug("lrot = $lrot, rrot = $rrot")
-					rotateDir =
-						if(best180&&(engine.ruleOpt.rotateButtonAllowDouble)) 2 else if(bestRtSub==rrot) 1 else if(bestRtSub==lrot) -1
-						else if(engine.ruleOpt.rotateButtonAllowReverse&&best180&&((rt and 1)==1)) {
+					val spinDir =//-1 = left,  1 = right, 2 = 180
+						if(best180&&(engine.ruleOpt.spinDoubleKey)) 2 else if(bestRtSub==rrot) 1 else if(bestRtSub==lrot) -1
+						else if(engine.ruleOpt.spinReverseKey&&best180&&((rt and 1)==1)) {
 							if(rrot==Piece.DIRECTION_UP) 1 else -1
 						} else 1
-					when(rotateDir) {
-						-1 -> r.drawScoreFont(engine, playerID, 10, writeY, "ROTATE LEFT")
-						1 -> r.drawScoreFont(engine, playerID, 10, writeY, "ROTATE RIGHT")
-						2 -> r.drawScoreFont(engine, playerID, 10, writeY, "ROTATE 180")
+					when(spinDir) {
+						-1 -> r.drawScoreFont(engine, 10, writeY, "SPIN LEFT")
+						1 -> r.drawScoreFont(engine, 10, writeY, "SPIN RIGHT")
+						2 -> r.drawScoreFont(engine, 10, writeY, "SPIN 180")
 					}
 					writeY++
 				}
@@ -693,22 +712,21 @@ class ComboRaceBot:DummyAI(), Runnable {
 						moveDir = 0
 						// Funnel
 						if(bestRtSub==bestRt) {
-							if(pieceTouchGround&&engine.ruleOpt.softdropLock) drop = -1 else if(engine.ruleOpt.harddropEnable) drop =
-								1 else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock) drop = -1
+							if(pieceTouchGround&&engine.ruleOpt.softdropLock) drop = -1
+							else if(engine.ruleOpt.harddropEnable) drop = 1
+							else if(engine.ruleOpt.softdropEnable||engine.ruleOpt.softdropLock) drop = -1
 						} else {
-							if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock) drop =
-								1 else if(engine.ruleOpt.softdropEnable&&!engine.ruleOpt.softdropLock) drop = -1
+							if(engine.ruleOpt.harddropEnable&&!engine.ruleOpt.harddropLock) drop = 1
+							else if(engine.ruleOpt.softdropEnable&&!engine.ruleOpt.softdropLock) drop = -1
 						}
 					} else if(nowX>bestXSub) moveDir = -1 else if(nowX<bestXSub) moveDir = 1
 				}
 				if(moveDir!=0) {
-					if(moveDir==-1) r.drawScoreFont(engine, playerID, 10, writeY, "MOVE LEFT") else
-						if(moveDir==1) r.drawScoreFont(engine, playerID, 10, writeY, "MOVE RIGHT")
+					r.drawScoreFont(engine, 10, writeY, if(moveDir==-1) "MOVE LEFT" else "MOVE RIGHT")
 					writeY++
 				}
 				if(drop!=0) {
-					if(drop==-1) r.drawScoreFont(engine, playerID, 10, writeY, "SOFT DROP") else
-						if(drop==1) r.drawScoreFont(engine, playerID, 10, writeY, "HARD DROP")
+					r.drawScoreFont(engine, 10, writeY, if(drop==-1) "SOFT DROP" else "HARD DROP")
 					writeY++
 				}
 			}
@@ -738,7 +756,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 
 	companion object {
 		/** Log  */
-		var log = Logger.getLogger(ComboRaceBot::class.java)
+		var log:Logger = Logger.getLogger(ComboRaceBot::class.java)
 		/** List of field state codes which are possible to sustain a stable combo  */
 		private val FIELDS = shortArrayOf(
 			0x7, 0xB, 0xD, 0xE,

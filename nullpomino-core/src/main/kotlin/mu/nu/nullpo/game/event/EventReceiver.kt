@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.gui.common.PopupCombo
+import mu.nu.nullpo.gui.common.fx.PopupCombo
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toReplayFilename
 import org.apache.logging.log4j.LogManager
@@ -54,10 +54,16 @@ open class EventReceiver {
 	enum class FONT { NORMAL, NANO, NUM, GRADE, GRADE_BIG, MEDAL, TTF; }
 
 	/** Font cint constants */
-	enum class COLOR { WHITE, BLUE, RED, PINK, GREEN, YELLOW, CYAN, ORANGE, PURPLE, COBALT, RAINBOW; }
+	enum class COLOR {
+		WHITE, BLUE, RED, PINK, GREEN, YELLOW, CYAN, ORANGE, PURPLE, COBALT, RAINBOW;
+
+		companion object {
+			val all = COLOR.values()
+		}
+	}
 
 	/** Background display */
-	protected var showbg = false
+	protected var showBg = false
 
 	/** Show meter */
 	protected var showMeter = false
@@ -66,13 +72,13 @@ open class EventReceiver {
 	protected var showSpeed = false
 
 	/** Outline ghost piece */
-	protected var outlineghost = false
+	protected var outlineGhost = false
 
 	/** Piece previews on sides */
-	protected var sidenext = false
+	protected var sideNext = false
 
 	/** Use bigger side previews */
-	protected var bigsidenext = false
+	protected var bigSideNext = false
 
 	/** Is TTF font available?
 	 * @return true if you can use TTF font routines.
@@ -84,20 +90,66 @@ open class EventReceiver {
 	 * @return 0=Above 1=Side Small 2=Side Big
 	 */
 	val nextDisplayType:Int
-		get() = if(sidenext) if(bigsidenext) 2 else 1 else 0
+		get() = if(sideNext) if(bigSideNext) 2 else 1 else 0
 
-	/** Get Number of Block Skins
-	 * @return int blockskins
-	 */
+	/** Get Number of Block Skins */
 	open val skinMax:Int
 		get() = 0
 
-	/** It will be called when a line is cleared.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param y Y-coordinate
-	 */
-	open fun lineClear(engine:GameEngine, playerID:Int, y:Int) {}
+	/** @return X position of field */
+	fun fieldX(e:GameEngine) = e.fX
+	/** @return X position of field */
+	val GameEngine.fX
+		get() = if(owner.menuOnly) 0 else owner.mode?.let {m ->
+			fieldXOffset+if(nextDisplayType==2) NEW_FIELD_OFFSET_X_BSP[m.gameStyle.ordinal][displaySize+1].let {
+				it[minOf(it.lastIndex, playerID)]
+			}
+			else NEW_FIELD_OFFSET_X[m.gameStyle.ordinal][displaySize+1].let {
+				it[minOf(it.lastIndex, playerID)]+if(nextDisplayType==1) blockSize else 0
+			}
+
+		} ?: 0
+
+	/** @return Left Margin of field for Centering w/width<10 */
+	val GameEngine.fieldXOffset get() = maxOf(0, blockSize*(10-field.width)/2)
+
+	/** @return Y position of field*/
+	fun fieldY(e:GameEngine) = e.fY
+	/** @return Y position of field*/
+	val GameEngine.fY
+		get() = if(owner.menuOnly) 0 else owner.mode?.let {m ->
+			if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal][displaySize+1].let {it[minOf(it.lastIndex, playerID)]}
+			else NEW_FIELD_OFFSET_Y[m.gameStyle.ordinal][displaySize+1].let {it[minOf(it.lastIndex, playerID)]}+
+				if(nextDisplayType==0) nextHeight else 0
+		} ?: 0
+
+	/**  @return Maximum length of the meter*/
+	@Deprecated("meterValue is now 0f~1f")
+	fun getMeterMax(e:GameEngine) = if(!showMeter) 0 else e.field.height*e.blockSize
+
+	/** @return X position of score display area*/
+	fun scoreX(e:GameEngine) = e.sX
+	/** @return X position of score display area*/
+	val GameEngine.sX
+		get() = (if(owner.menuOnly) 0 else
+			owner.mode?.let {m ->
+				fieldXOffset+if(nextDisplayType==2) NEW_FIELD_OFFSET_X_BSP[m.gameStyle.ordinal][displaySize+1].let {
+					it[minOf(it.lastIndex, playerID)]
+				}
+				else NEW_FIELD_OFFSET_X[m.gameStyle.ordinal][displaySize+1].let {it[minOf(it.lastIndex, playerID)]}
+			} ?: 0)+fieldXOffset+blockSize*(field.width+3+nextDisplayType)
+
+	/** @return Y position of score display area */
+	fun scoreY(e:GameEngine) = e.sY
+	/** @return Y position of score display area */
+	val GameEngine.sY
+		get() = if(owner.menuOnly) 0 else owner.mode?.let {m ->
+			if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal][displaySize+1][playerID]
+			else NEW_FIELD_OFFSET_Y[m.gameStyle.ordinal][displaySize+1][0]
+		} ?: 0
+
+	/** It will be called when a line is cleared.*/
+	open fun lineClear(engine:GameEngine, y:Collection<Int>) {}
 
 	open fun addScore(x:Int, y:Int, pts:Int, color:COLOR) {}
 
@@ -106,7 +158,7 @@ open class EventReceiver {
 	 * @param pts Number of points last gained
 	 */
 	fun addScore(engine:GameEngine, x:Int, y:Int, pts:Int, color:COLOR = getPlayerColor(engine.playerID)) =
-		addScore(fieldX(engine)+x*getBlockSize(engine), fieldY(engine)+y*getBlockSize(engine), pts, color)
+		addScore(engine.fX+x*engine.blockSize, engine.fY+y*engine.blockSize, pts, color)
 
 	open fun addCombo(x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN, ex:Int) {}
 
@@ -114,11 +166,9 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 * @param pts Number of points last gained
 	 */
-	fun addCombo(engine:GameEngine, x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN) =
-		addCombo(
-			fieldX(engine)+x*getBlockSize(engine), fieldY(engine)+y*getBlockSize(engine),
-			pts, type, -(x+2)*getBlockSize(engine)+18
-		)
+	fun addCombo(engine:GameEngine, x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN) = addCombo(
+		engine.fX+x*engine.blockSize, engine.fY+y*engine.blockSize, pts, type, -(x+2)*engine.blockSize+18
+	)
 
 	/** It will be called when a fireworks shoot.
 	 * @param engine GameEngine
@@ -134,12 +184,12 @@ open class EventReceiver {
 	 * @param engine GameEngine
 	 */
 	fun shootFireworks(engine:GameEngine) {
-		val mx = engine.fieldWidth*getBlockSize(engine)
+		val mx = engine.fieldWidth*engine.blockSize
 		val my = engine.fieldHeight*8
-		val x = fieldX(engine)+random.nextInt(mx)
-		var y = fieldY(engine)+random.nextInt(my)+50
+		val x = engine.fX+random.nextInt(mx)
+		var y = engine.fY+random.nextInt(my)+50
 		if(my<engine.field.highestBlockY) y += my
-		shootFireworks(engine, x, y, COLOR.values()[random.nextInt(7)])
+		shootFireworks(engine, x, y, COLOR.all[random.nextInt(7)])
 	}
 
 	open fun bravo(engine:GameEngine) {
@@ -153,8 +203,7 @@ open class EventReceiver {
 	 * @param color Font cint
 	 * @param scale Font size (.5f, 1f, 2f)
 	 */
-	open fun drawFont(x:Int, y:Int, str:String, font:FONT = FONT.NORMAL,
-		color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) {
+	open fun drawFont(x:Int, y:Int, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) {
 	}
 
 	fun drawDirectFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
@@ -261,10 +310,8 @@ open class EventReceiver {
 	fun drawDirectTTF(playerID:Int, x:Int, y:Int, str:String, flag:Boolean) {
 		drawDirectTTF(x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE)
 	}
-
 	/** Draw String inside the field.
 	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param str String to draw
@@ -272,227 +319,255 @@ open class EventReceiver {
 	 * @param color Font cint
 	 * @param scale Font size (.5f, 1f, 2f)
 	 */
-	fun drawMenu(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String,
-		font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
+	fun drawMenu(engine:GameEngine, x:Float, y:Float, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
 		val s = if(scale<=.5f) BS/2 else BS
 		var sx = x*s
 		var sy = y*s
 		if(!engine.owner.menuOnly) {
-			sx += fieldX(engine, playerID)+4
-			sy += fieldY(engine, playerID)+52
+			sx += engine.fX
+			sy += engine.fY
 		}
-		drawFont(sx, sy, str, font, color, scale)
+		drawFont(sx.toInt(), sy.toInt(), str, font, color, scale)
 	}
+	/** Draw String inside the field.*/
+	fun drawMenu(engine:GameEngine, x:Int, y:Int, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawMenu(engine, x.toFloat(), y.toFloat(), str, font, color, scale)
 
-	fun drawMenuFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
-		scale:Float = 1f) =
-		drawMenu(engine, playerID, x, y, str, FONT.NORMAL, color, scale)
+	fun drawMenuFont(engine:GameEngine, x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawMenu(engine, x, y, str, FONT.NORMAL, color, scale)
 
-	fun drawMenuFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, scale:Float = 1f) =
-		drawMenu(engine, playerID, x, y, str, FONT.NORMAL, scale = scale)
+	fun drawMenuFont(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawMenu(engine, x, y, str, FONT.NORMAL, color, scale)
+
+	fun drawMenuFont(engine:GameEngine, x:Int, y:Int, str:String, scale:Float = 1f) =
+		drawMenu(engine, x, y, str, FONT.NORMAL, scale = scale)
 
 	/** [You don't have to override this]
 	 * Draw String inside the field.
-	 * If flag is false, it will use white font cint.
-	 * If flag is true, it will use red or blue instead.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str String to draw
-	 * @param flag Any boolean variable
-	 * @param scale Font size
-	 */
-	fun drawMenuFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawMenuFont(engine, playerID, x, y, str, color = if(flag) getPlayerColor(playerID) else COLOR.WHITE, scale = scale)
+	 * If [flag] is false, it will use white font cint.
+	 * If [flag] is true, it will use red or blue instead.*/
+	fun drawMenuFont(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
+		drawMenuFont(engine, x, y, str, color = if(flag) getPlayerColor(engine.playerID) else COLOR.WHITE, scale = scale)
+
+	/** [You don't have to override this]
+	 * Draw Number inside the field.*/
+	fun drawMenuNum(engine:GameEngine, x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawMenu(engine, x, y, str, FONT.NUM, color, scale)
+
+	/** [You don't have to override this]
+	 * Draw Number inside the field.*/
+	fun drawMenuNum(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawMenu(engine, x, y, str, FONT.NUM, color, scale)
+
+	/** [You don't have to override this]
+	 * Draw Number inside the field.*/
+	fun drawMenuNum(engine:GameEngine, x:Int, y:Int, str:String, scale:Float = 1f) =
+		drawMenu(engine, x, y, str, FONT.NUM, scale = scale)
 
 	/** [You don't have to override this]
 	 * Draw Number inside the field.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str String to draw
-	 * @param color Font cint
-	 * @param scale Font size
-	 */
-	fun drawMenuNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
-		drawMenu(engine, playerID, x, y, str, FONT.NUM, color, scale)
+	 * If [flag] is false, it will use white font cint.
+	 * If [flag] is true, it will use red or blue instead.*/
+	fun drawMenuNum(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
+		drawMenuNum(engine, x, y, str, if(flag) getPlayerColor(engine.playerID) else COLOR.WHITE, scale)
+
+	/** @see drawMenu*/
+	fun drawMenuNano(engine:GameEngine, x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawMenu(engine, x, y, str, FONT.NANO, color, scale)
+
+	/** @see drawMenu*/
+	fun drawMenuNano(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawMenu(engine, x, y, str, FONT.NANO, color, scale)
 
 	/** [You don't have to override this]
-	 * Draw Number inside the field.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str String to draw
-	 * @param scale Font size
-	 */
-	fun drawMenuNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, scale:Float = 1f) =
-		drawMenu(engine, playerID, x, y, str, FONT.NUM, scale = scale)
+	 * Draw Small Font inside the field.
+	 * If [flag] is false, it will use white font cint.
+	 * If [flag] is true, it will use red or blue instead.*/
+	fun drawMenuNano(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) = drawMenuNano(
+		engine, x, y, str, if(flag) if(engine.playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE, scale
+	)
 
 	/** [You don't have to override this]
-	 * Draw Number inside the field.
-	 * If flag is false, it will use white font cint.
-	 * If flag is true, it will use red or blue instead.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str String to draw
-	 * @param flag Any boolean variable
-	 * @param scale Font size
-	 */
-	fun drawMenuNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawMenuNum(engine, playerID, x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE, scale)
+	 * Draw Grade inside the field.*/
+	fun drawMenuGrade(engine:GameEngine, x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawMenu(engine, x, y, str, FONT.GRADE, color, scale)
 
-	fun drawMenuNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
-		scale:Float = 1f) =
-		drawMenu(engine, playerID, x, y, str, FONT.NANO, color, scale)
-
-	fun drawMenuNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawMenuNano(
-			engine, playerID, x, y, str, if(flag) if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE,
-			scale
-		)
+	/** [You don't have to override this]
+	 * Draw Grade inside the field.*/
+	fun drawMenuGrade(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawMenu(engine, x, y, str, FONT.GRADE, color, scale)
 
 	/** [You don't have to override this]
 	 * Draw Grade inside the field.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str String to draw
-	 * @param color Font cint
-	 * @param scale Font size
-	 */
-	fun drawMenuGrade(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
-		scale:Float = 1f) =
-		drawMenu(engine, playerID, x, y, str, FONT.GRADE, color, scale)
+	 * If [flag] is false, it will use white font cint.
+	 * If [flag] is true, it will use red or blue instead.*/
+	fun drawMenuGrade(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
+		drawMenuGrade(engine, x, y, str, if(flag) getPlayerColor(engine.playerID) else COLOR.WHITE, scale)
 
 	/** [You don't have to override this]
-	 * Draw Grade inside the field.
-	 * If flag is false, it will use white font cint.
-	 * If flag is true, it will use red or blue instead.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str String to draw
-	 * @param flag Any boolean variable
-	 * @param scale Font size
-	 */
-	fun drawMenuGrade(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawMenuGrade(engine, playerID, x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE, scale)
+	 * Draw String inside the field.*/
+	fun drawMenuTTF(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE) =
+		drawMenu(engine, x, y, str, font = FONT.TTF, color = color)
 
 	/** [You don't have to override this]
 	 * Draw String inside the field.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str String to draw
-	 * @param color Font cint
-	 */
-	fun drawMenuTTF(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE) =
-		drawMenu(engine, playerID, x, y, str, font = FONT.TTF, color = color)
+	 * If [flag] is false, it will use white font cint.
+	 * If [flag] is true, it will use red or blue instead.*/
+	fun drawMenuTTF(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean) =
+		drawMenuTTF(engine, x, y, str, if(flag) getPlayerColor(engine.playerID) else COLOR.WHITE)
 
-	/** [You don't have to override this]
-	 * Draw String inside the field.
-	 * If flag is false, it will use white font cint.
-	 * If flag is true, it will use red or blue instead.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str String to draw
-	 * @param flag Any boolean variable
-	 */
-	fun drawMenuTTF(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean) =
-		drawMenuTTF(engine, playerID, x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE)
-
-	/** Draw String to score display area.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str String to draw
-	 * @param color Font cint
-	 * @param scale Font size (.5f, 1f, 2f)
-	 */
-	fun drawScore(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String,
-		font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
+	/** Draw String to score display area.*/
+	fun drawScore(engine:GameEngine, x:Int, y:Int, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
 		if(engine.owner.menuOnly) return
 		val s = if(scale<=.5f) BS/2 else BS
-		drawFont(scoreX(engine, playerID)+x*s, scoreY(engine, playerID)+y*s, str, font, color, scale)
+		drawFont(engine.sX+x*s, engine.sY+y*s, str, font, color, scale)
 	}
 
 	/** [You don't have to override this]
-	 * Draw String to score display area.
-	 * If flag is false, it will use white font cint. If flag is true, it will
-	 * use red instead.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str String to draw
-	 * @param color Font cint
-	 * @param scale Font size
-	 */
-	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
-		drawScore(engine, playerID, x, y, str, FONT.NORMAL, color, scale)
+	 *  Draw String to score display area. */
+	fun drawScoreFont(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawScore(engine, x, y, str, FONT.NORMAL, color, scale)
 
-	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, scale:Float = 1f) =
-		drawScore(engine, playerID, x, y, str, FONT.NORMAL, scale = scale)
+	/** [You don't have to override this]
+	 *  Draw String to score display area. */
+	fun drawScoreFont(engine:GameEngine, x:Int, y:Int, str:String, scale:Float = 1f) =
+		drawScore(engine, x, y, str, FONT.NORMAL, scale = scale)
 
 	/** [You don't have to override this]
 	 * Draw String to score display area.
-	 * If flag is false, it will use white font cint. If flag is true, it will
-	 * use red instead.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
+	 * If [flag] is false, it will use white font cint.
+	 * If [flag] is true, it will use rainbow instead.*/
+	fun drawScore(engine:GameEngine, x:Int, y:Int, str:String, font:FONT = FONT.NORMAL, flag:Boolean, scale:Float = 1f) =
+		drawScore(engine, x, y, str, font, color = if(flag) COLOR.RAINBOW else COLOR.WHITE, scale = scale)
+
+	fun drawScoreFont(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
+		drawScore(engine, x, y, str, FONT.NORMAL, flag = flag, scale = scale)
+
+	fun drawScoreNum(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawScore(engine, x, y, str, FONT.NUM, color, scale)
+
+	fun drawScoreNum(engine:GameEngine, x:Int, y:Int, str:String, scale:Float = 1f) =
+		drawScore(engine, x, y, str, FONT.NUM, scale = scale)
+
+	fun drawScoreNum(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
+		drawScoreNum(engine, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale)
+
+	fun drawScoreNano(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawScore(engine, x, y, str, FONT.NANO, color, scale)
+
+	fun drawScoreNano(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
+		drawScoreNano(engine, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale)
+
+	fun drawScoreGrade(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) =
+		drawScore(engine, x, y, str, FONT.GRADE, color, scale)
+
+	fun drawScoreGrade(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
+		drawScoreGrade(engine, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale)
+
+	fun drawScoreTTF(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE) =
+		drawScore(engine, x, y, str, FONT.TTF, color)
+
+	fun drawScoreTTF(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean) =
+		drawScoreTTF(engine, x, y, str, if(flag) getPlayerColor(engine.playerID) else COLOR.WHITE)
+
+	/** Draw speed meter.
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
-	 * @param str String to draw
-	 * @param flag Any boolean variable
-	 * @param scale Font size
+	 * @param sp Speed (float:0.0~1.0)
+	 * @param len Meter Width Grid
 	 */
-	fun drawScore(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, font:FONT = FONT.NORMAL, flag:Boolean,
-		scale:Float = 1f) =
-		drawScore(engine, playerID, x, y, str, font, color = if(flag) COLOR.RAINBOW else COLOR.WHITE, scale = scale)
+	open fun drawSpeedMeter(x:Float, y:Float, sp:Float, len:Float) {}
 
-	fun drawScoreFont(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawScore(engine, playerID, x, y, str, FONT.NORMAL, flag = flag, scale = scale)
+	private fun gravityMeter(g:Int, d:Int) = if(g<=0||d<=0) 1f else (sqrt((g.toFloat()/d).toDouble())/sqrt(20.0)).toFloat()
 
-	fun drawScoreNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
-		scale:Float = 1f) =
-		drawScore(engine, playerID, x, y, str, FONT.NUM, color, scale)
+	/** Draw speed meter on Field Area.
+	 * @param x X-coordinate grid
+	 * @param y Y-coordinate grid
+	 * @param sp Speed (float:0.0~1.0 int:0~40)
+	 * @param len Meter Width Grid
+	 */
+	fun drawMenuSpeed(engine:GameEngine, x:Int, y:Int, sp:Float, len:Float = 3f) {
+		var sx = x*BS+maxOf(minOf(len, BS/2f), 0f)
+		var sy = y*BS.toFloat()
+		if(!engine.owner.menuOnly) {
+			sx += engine.fX
+			sy += engine.fY
+		}
+		drawSpeedMeter(sx, sy, sp, len)
+	}
 
-	fun drawScoreNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, scale:Float = 1f) =
-		drawScore(engine, playerID, x, y, str, FONT.NUM, scale = scale)
+	/** Draw speed meter on Field.
+	 * @param x X-coordinate grid
+	 * @param y Y-coordinate grid
+	 * @param g gravity Value
+	 * @param d gravity Denominator
+	 * @param len Meter Width Grid
+	 */
+	fun drawMenuSpeed(engine:GameEngine, x:Int, y:Int, g:Int, d:Int, len:Int = 3) =
+		drawMenuSpeed(engine, x, y, gravityMeter(g, d), len.toFloat())
 
-	fun drawScoreNum(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawScoreNum(engine, playerID, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale)
+	/** Draw speed meter on Score Area.
+	 * @param x X-coordinate grid
+	 * @param y Y-coordinate grid
+	 * @param sp Speed (float:0.0~1.0 int:0~40)
+	 * @param len Meter Width Grid
+	 */
+	fun drawScoreSpeed(engine:GameEngine, x:Int, y:Int, sp:Float, len:Float = 3f) {
+		val dx1 = engine.sX+x*BS+maxOf(minOf(len, BS/2f), 0f)
+		val dy1 = engine.sY+y*BS+BS/2f
+		//if(engine.owner.menuOnly) return
+		drawSpeedMeter(dx1, dy1, sp, len)
+	}
+	/** Draw speed meter on Score Area.
+	 * @param x X-coordinate grid
+	 * @param y Y-coordinate grid
+	 * @param sp Speed (float:0.0~1.0 int:0~40)
+	 * @param len Meter Width Grid
+	 */
+	fun drawScoreSpeed(engine:GameEngine, x:Int, y:Int, sp:Int, len:Int = 3) = drawScoreSpeed(engine, x, y, sp/40f, len.toFloat())
 
-	fun drawScoreNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
-		scale:Float = 1f) =
-		drawScore(engine, playerID, x, y, str, FONT.NANO, color, scale)
+	/** Draw speed meter on Score Area.
+	 * @param x X-coordinate grid
+	 * @param y Y-coordinate grid
+	 * @param g gravity Value
+	 * @param d gravity Denominator
+	 */
+	fun drawScoreSpeed(engine:GameEngine, x:Int, y:Int, g:Int, d:Int, len:Int = 3) =
+		drawScoreSpeed(engine, x, y, gravityMeter(g, d), len.toFloat())
 
-	fun drawScoreNano(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawScoreNano(engine, playerID, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale)
+	/** Draw Decorations*/
+	open fun drawBadges(x:Int, y:Int, width:Int = 0, nums:Int, scale:Float = 1f) {}
 
-	fun drawScoreGrade(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE,
-		scale:Float = 1f) =
-		drawScore(engine, playerID, x, y, str, FONT.GRADE, color, scale)
+	/** Draw Decorations at score pos*/
+	fun drawScoreBadges(engine:GameEngine, x:Int, y:Int, width:Int, nums:Int, scale:Float = 1f) =
+		drawBadges(engine.sX+x*BS, engine.sY+y*BS, width, nums, scale)
 
-	fun drawScoreGrade(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
-		drawScoreGrade(engine, playerID, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale)
+	/** Draw Decorations at in-field pos*/
+	fun drawMenuBadges(engine:GameEngine, x:Int, y:Int, nums:Int, scale:Float = 1f) {
 
-	fun drawScoreTTF(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE) =
-		drawScore(engine, playerID, x, y, str, FONT.TTF, color)
+		drawBadges(x*BS+engine.fX, y*BS+engine.fY, BS*10, nums, scale)
+	}
 
-	fun drawScoreTTF(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, flag:Boolean) =
-		drawScoreTTF(engine, playerID, x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE)
+	/** Draw Medal
+	 * @param x X-coordinate
+	 * @param y Y-coordinate
+	 * @param tier medal Tier
+	 * @param scale size
+	 */
+	open fun drawMedal(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {}
+
+	/** Draw Medal at score pos
+	 * @param tier color
+	 */
+	fun drawScoreMedal(engine:GameEngine, x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) =
+		drawMedal(engine.sX+x*BS, engine.sY+y*BS, str, tier, scale)
+
+	/** Draw Medal at menu pos
+	 * @param tier color
+	 */
+	fun drawMenuMedal(engine:GameEngine, x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {
+		drawMedal(x*BS+engine.fX, y*BS+engine.fY, str, tier, scale)
+	}
 
 	/** Draw a block
 	 * @param x X-coordinate
@@ -505,13 +580,11 @@ open class EventReceiver {
 	 * @param scale Size (.5f, 1f, 2f)
 	 */
 	@JvmOverloads
-	open fun drawBlock(x:Float, y:Float, color:Int, skin:Int, bone:Boolean = false, darkness:Float = 0f, alpha:Float = 1f,
-		scale:Float = 1f, attr:Int = 0, outline:Float = 0f) {
+	open fun drawBlock(x:Float, y:Float, color:Int, skin:Int, bone:Boolean = false, darkness:Float = 0f, alpha:Float = 1f, scale:Float = 1f, attr:Int = 0, outline:Float = 0f) {
 	}
 
 	@JvmOverloads
-	fun drawBlock(x:Int, y:Int, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float, attr:Int = 0,
-		outline:Float = 0f) =
+	fun drawBlock(x:Int, y:Int, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float, attr:Int = 0, outline:Float = 0f) =
 		drawBlock(x.toFloat(), y.toFloat(), color, skin, bone, darkness, alpha, scale, attr, outline)
 
 	/** Blockクラスのインスタンスを使用してBlockを描画 (拡大率と暗さ指定可能）
@@ -522,19 +595,14 @@ open class EventReceiver {
 	 * @param darkness 暗さもしくは明るさ
 	 */
 	@JvmOverloads
-	fun drawBlock(x:Float, y:Float, block:Block, darkness:Float = block.darkness, alpha:Float = block.alpha,
-		scale:Float = 1f, outline:Float = 0f) =
+	fun drawBlock(x:Float, y:Float, block:Block, darkness:Float = block.darkness, alpha:Float = block.alpha, scale:Float = 1f, outline:Float = 0f) =
 		drawBlock(
-			x, y, block.drawColor, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE), darkness, alpha, scale,
-			block.aint, outline
+			x, y, block.drawColor, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE), darkness, alpha, scale, block.aint, outline
 		)
 
-	@JvmOverloads
-	fun drawBlockForceVisible(x:Float, y:Float, blk:Block, scale:Float = 1f) =
-		drawBlock(
-			x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE),
-			blk.darkness/2, .5f*blk.alpha+.5f, scale, blk.aint
-		)
+	@JvmOverloads fun drawBlockForceVisible(x:Float, y:Float, blk:Block, scale:Float = 1f) = drawBlock(
+		x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), blk.darkness/2, .5f*blk.alpha+.5f, scale, blk.aint
+	)
 
 	/** Blockピースを描画 (暗さもしくは明るさの指定可能）
 	 * @param x X-coordinate
@@ -569,182 +637,6 @@ open class EventReceiver {
 	open fun getKeyNameByButtonID(engine:GameEngine, btnID:Int):String =
 		getKeyNameByButtonID(engine.playerID, engine.isInGame, btnID)
 
-	/** Draw speed meter.
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param sp Speed (float:0.0~1.0)
-	 * @param len Meter Width
-	 */
-	open fun drawSpeedMeter(x:Float, y:Float, sp:Float, len:Float) {}
-
-	/** Draw speed meter.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate grid
-	 * @param y Y-coordinate grid
-	 * @param sp Speed (float:0.0~1.0 int:0~40)
-	 * @param len Meter Width Grid
-	 */
-	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Float, len:Float = 3f) {
-		val dx1 = scoreX(engine, playerID)+x*BS+maxOf(minOf(len, BS/2f), 0f)
-		val dy1 = scoreY(engine, playerID)+y*BS+BS/2f
-		//if(engine.owner.menuOnly) return
-		drawSpeedMeter(dx1, dy1, sp, len)
-	}
-
-	/** Draw speed meter.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate grid
-	 * @param y Y-coordinate grid
-	 * @param sp Speed (float:0.0~1.0 int:0~40)
-	 * @param len Meter Width Grid
-	 */
-	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, sp:Int, len:Int = 3) =
-		drawSpeedMeter(engine, playerID, x, y, sp/40f, len.toFloat())
-
-	/** Draw speed meter.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate grid
-	 * @param y Y-coordinate grid
-	 * @param g gravity Value
-	 * @param d gravity Denominator
-	 */
-	fun drawSpeedMeter(engine:GameEngine, playerID:Int, x:Int, y:Int, g:Int, d:Int, len:Int = 3) {
-		var s = if(g<=0) 1f else 0f
-		if(g>0&&d>0) s = (sqrt((g.toFloat()/d).toDouble())/sqrt(20.0)).toFloat()
-		drawSpeedMeter(engine, playerID, x, y, s, len.toFloat())
-	}
-
-	/** Get maximum length of the meter.
-	 * @param engine GameEngine
-	 * @return Maximum length of the meter
-	 */
-	fun getMeterMax(engine:GameEngine):Int = if(!showMeter) 0 else engine.field.height*getBlockSize(engine)
-
-	/** Draw Decorations at score pos
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param scale size
-	 */
-	fun drawScoreBadges(engine:GameEngine, playerID:Int, x:Int, y:Int, width:Int, nums:Int,
-		scale:Float = 1f) =
-		drawBadges(scoreX(engine, playerID)+x*BS, scoreY(engine, playerID)+y*BS, width, nums, scale)
-
-	/** Draw Decorations at menu pos
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param scale size
-	 */
-	fun drawMenuBadges(engine:GameEngine, playerID:Int, x:Int, y:Int, nums:Int, scale:Float = 1f) {
-		var sx = x*BS
-		var sy = y*BS
-		if(!engine.owner.menuOnly) {
-			sx += fieldX(engine, playerID)+4
-			sy += fieldY(engine, playerID)+52
-		}
-		drawBadges(sx, sy, BS*10, nums, scale)
-	}
-
-	/** Draw Decorations
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param width linebreak width
-	 * @param scale size
-	 */
-	open fun drawBadges(x:Int, y:Int, width:Int = 0, nums:Int, scale:Float = 1f) {}
-
-	/** Draw Medal at score pos
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param scale size
-	 */
-	fun drawScoreMedal(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) =
-		drawMedal(scoreX(engine, playerID)+x*BS, scoreY(engine, playerID)+y*BS, str, tier, scale)
-
-	/** Draw Medal at menu pos
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param scale size
-	 */
-	fun drawMenuMedal(engine:GameEngine, playerID:Int, x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {
-		var sx = x*BS
-		var sy = y*BS
-		if(!engine.owner.menuOnly) {
-			sx += fieldX(engine, playerID)+4
-			sy += fieldY(engine, playerID)+52
-		}
-		drawMedal(sx, sy, str, tier, scale)
-	}
-
-	/** Draw Medal
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param tier medal Tier
-	 * @param scale size
-	 */
-	open fun drawMedal(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {}
-
-	/** Get width and Height of block image.
-	 * @param engine GameEngine
-	 * @return Width of block image
-	 */
-	fun getBlockSize(engine:GameEngine):Int = when(engine.displaysize) {
-		-1 -> BS/2
-		1 -> BS*2
-		else -> BS
-	}
-
-	/** Get X position of field
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @return X position of field
-	 */
-	fun fieldX(engine:GameEngine, playerID:Int = engine.playerID):Int {
-		engine.owner.mode?.let {
-			return@fieldX fieldXOffset(engine)+if(nextDisplayType==2)
-				NEW_FIELD_OFFSET_X_BSP[it.gameStyle.ordinal][engine.displaysize+1][playerID]
-			else NEW_FIELD_OFFSET_X[it.gameStyle.ordinal][engine.displaysize+1][playerID]
-		} ?: return 0
-	}
-
-	fun fieldXOffset(engine:GameEngine):Int = maxOf(0, getBlockSize(engine)*(10-engine.field.width)/2)
-	/** Get Y position of field
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @return Y position of field
-	 */
-	fun fieldY(engine:GameEngine, playerID:Int = engine.playerID):Int {
-		engine.owner.mode?.let {
-			return@fieldY if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[it.gameStyle.ordinal][engine.displaysize+1][playerID]
-			else NEW_FIELD_OFFSET_Y[it.gameStyle.ordinal][engine.displaysize+1][playerID]
-		} ?: return 0
-	}
-
-	/** Get X position of score display area
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @return X position of score display area
-	 */
-	fun scoreX(engine:GameEngine, playerID:Int):Int =
-		fieldX(engine, playerID)-fieldXOffset(engine)+(if(nextDisplayType==2) 256 else 216)+if(engine.displaysize==1) 32 else 0
-
-	/** Get Y position of score display area
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @return Y position of score display area
-	 */
-	fun scoreY(engine:GameEngine, playerID:Int):Int = fieldY(engine, playerID)
-
 	/** Check if the skin is sticky type
 	 * @param skin Skin ID
 	 * @return true if the skin is sticky type
@@ -768,7 +660,7 @@ open class EventReceiver {
 	/** Set Graphics context
 	 * @param g Graphics context
 	 */
-	open fun setGraphics(g:Any) {}
+	open fun setGraphics(g:Any?) {}
 
 	/** Load CustomProperties from [filename].
 	 * @param filename Filename
@@ -797,9 +689,8 @@ open class EventReceiver {
 	fun saveProperties(prop:CustomProperties, filename:String = prop.fileName):Boolean {
 		try {
 			val repFolder = File(filename).parentFile
-			if(!repFolder.exists())
-				if(repFolder.mkdirs()) log.info("Created folder: ${repFolder.name}")
-				else log.info("Couldn't create folder at ${repFolder.name}")
+			if(!repFolder.exists()) if(repFolder.mkdirs()) log.info("Created folder: ${repFolder.name}")
+			else log.info("Couldn't create folder at ${repFolder.name}")
 			val out = GZIPOutputStream(FileOutputStream(filename))
 			prop.store(out, "NullpoMino Custom Property File")
 			log.debug("Saving custom property file to $filename")
@@ -817,217 +708,119 @@ open class EventReceiver {
 	 */
 	open fun modeInit(manager:GameManager) {}
 
-	/** It will be called at the end of initialization for each player.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun playerInit(engine:GameEngine, playerID:Int) {}
+	/** It will be called at the end of initialization for each player.*/
+	open fun playerInit(engine:GameEngine) {}
 
-	/** It will be called when Ready->Go is about to end, before first piece
-	 * appears.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun startGame(engine:GameEngine, playerID:Int) {}
+	/** It will be called when Ready->Go is about to end, before first piece appears.*/
+	open fun startGame(engine:GameEngine) {}
 
-	/** It will be called at the start of each frame.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onFirst(engine:GameEngine, playerID:Int) {}
+	/** It will be called at the start of each frame.*/
+	open fun onFirst(engine:GameEngine) {}
 
-	/** It will be called at the end of each frame.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onLast(engine:GameEngine, playerID:Int) {}
+	/** It will be called at the end of each frame.*/
+	open fun onLast(engine:GameEngine) {}
 
-	/** It will be called at the settings screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onSetting(engine:GameEngine, playerID:Int) {}
+	/** It will be called at the settings screen.*/
+	open fun onSetting(engine:GameEngine) {}
 
-	/** It will be called at the settings screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onProfile(engine:GameEngine, playerID:Int) {}
+	/** It will be called at the settings screen.*/
+	open fun onProfile(engine:GameEngine) {}
 
-	/** It will be called during the "Ready->Go" screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onReady(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "Ready->Go" screen.*/
+	open fun onReady(engine:GameEngine) {}
 
-	/** It will be called during the piece movement.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onMove(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the piece movement.*/
+	open fun onMove(engine:GameEngine) {}
 
-	/** It will be called during the "Lock flash".
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onLockFlash(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "Lock flash".*/
+	open fun onLockFlash(engine:GameEngine) {}
 
-	/** It will be called during the line clear.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onLineClear(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the line clear.*/
+	open fun onLineClear(engine:GameEngine) {}
 
-	/** It will be called during the "ARE".
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onARE(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "ARE".*/
+	open fun onARE(engine:GameEngine) {}
 
-	/** It will be called during the "Ending start" screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onEndingStart(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "Ending start" screen.*/
+	open fun onEndingStart(engine:GameEngine) {}
 
-	/** It will be called during the "Custom" screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onCustom(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "Custom" screen.*/
+	open fun onCustom(engine:GameEngine) {}
 
-	/** It will be called during the "EXCELLENT!" screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onExcellent(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "EXCELLENT!" screen.*/
+	open fun onExcellent(engine:GameEngine) {}
 
-	/** It will be called during the Game Over screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onGameOver(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the Game Over screen.*/
+	open fun onGameOver(engine:GameEngine) {}
 
-	/** It will be called during the end-of-game stats screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onResult(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the end-of-game stats screen.*/
+	open fun onResult(engine:GameEngine) {}
 
-	/** It will be called during the field editor screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun onFieldEdit(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the field editor screen.*/
+	open fun onFieldEdit(engine:GameEngine) {}
 
-	/** It will be called at the start of each frame. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderFirst(engine:GameEngine, playerID:Int) {}
+	/** It will be called at the start of each frame. (For rendering)*/
+	open fun renderFirst(engine:GameEngine) {}
 
-	/** It will be called at the end of each frame. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderLast(engine:GameEngine, playerID:Int) {}
+	/** It will be called at the end of each frame. (For rendering)*/
+	open fun renderLast(engine:GameEngine) {}
 
-	/** It will be called at the settings screen. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderSetting(engine:GameEngine, playerID:Int) {}
+	/** It will be called at the settings screen. (For rendering)*/
+	open fun renderSetting(engine:GameEngine) {}
 
-	/** It will be called at the settings screen. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderProfile(engine:GameEngine, playerID:Int) {
-		engine.playerProp.loginScreen.renderScreen(this, engine, playerID)
+	/** It will be called at the settings screen. (For rendering)*/
+	open fun renderProfile(engine:GameEngine) {
+		engine.playerProp.loginScreen.renderScreen(this, engine)
 	}
-	/** It will be called during the "Ready->Go" screen. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderReady(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "Ready->Go" screen. (For rendering)*/
+	open fun renderReady(engine:GameEngine) {}
 
-	/** It will be called during the piece movement. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderMove(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the piece movement. (For rendering)*/
+	open fun renderMove(engine:GameEngine) {}
 
-	/** It will be called during the "ARE". (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderARE(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "ARE". (For rendering)*/
+	open fun renderARE(engine:GameEngine) {}
 
-	/** It will be called during the "Ending start" screen. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderEndingStart(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "Ending start" screen. (For rendering)*/
+	open fun renderEndingStart(engine:GameEngine) {}
 
-	/** It will be called during the "Custom" screen. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderCustom(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "Custom" screen. (For rendering)*/
+	open fun renderCustom(engine:GameEngine) {}
 
-	/** It will be called during the "EXCELLENT!" screen. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderExcellent(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "EXCELLENT!" screen. (For rendering)*/
+	open fun renderExcellent(engine:GameEngine) {}
 
-	/** It will be called during the Game Over screen. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderGameOver(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the Game Over screen. (For rendering)*/
+	open fun renderGameOver(engine:GameEngine) {}
 
-	/** It will be called during the end-of-game stats screen. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderResult(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the end-of-game stats screen. (For rendering)*/
+	open fun renderResult(engine:GameEngine) {}
 
-	/** It will be called during the field editor screen. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderFieldEdit(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the field editor screen. (For rendering)*/
+	open fun renderFieldEdit(engine:GameEngine) {}
 
-	/** It will be called if the player's input is being displayed. (For
-	 * rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderInput(engine:GameEngine, playerID:Int) {}
+	/** It will be called if the player's input is being displayed. (For rendering)*/
+	open fun renderInput(engine:GameEngine) {}
 
-	/** It will be called during the line clear. (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderLineClear(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the line clear. (For rendering)*/
+	open fun renderLineClear(engine:GameEngine) {}
 
-	/** It will be called during the "Lock flash". (For rendering)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun renderLockFlash(engine:GameEngine, playerID:Int) {}
+	/** It will be called during the "Lock flash". (For rendering)*/
+	open fun renderLockFlash(engine:GameEngine) {}
 
-	/** It will be called when a block is cleared.
+	/** It will be called before blocks are destroyed.
 	 * @param engine GameEngine
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param blk Block
+	 * @param blks Indexed Iterable (listOf(y:listOf(x:Block))
 	 */
-	open fun blockBreak(engine:GameEngine, x:Int, y:Int, blk:Block) {}
+	open fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {}
+	/** It will be called before a block is destroyed.
+	 * @param engine GameEngine
+	 * @param blks Indexed Iterable (listOf(y:listOf(x:Block))
+	 * @param x X-coordinate grid
+	 * @param y Y-coordinate grid
+	 */
+	fun blockBreak(engine:GameEngine, x:Int, y:Int, blk:Block) = blockBreak(engine, mapOf(y to mapOf(x to blk)))
 
-	@Deprecated("playerID noEffect", ReplaceWith("blockBreak(engine,x,y,blk)"))
-	fun blockBreak(engine:GameEngine, playerID:Int = engine.playerID, x:Int, y:Int, blk:Block) = blockBreak(engine, x, y, blk)
 	/** It will be called when the game mode is going to calculate score.
 	 * Please note it will be called even if no lines are cleared.
 	 * @param engine GameEngine
@@ -1037,36 +830,27 @@ open class EventReceiver {
 
 	/** After Soft Drop is used
 	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param fall Number of rows the piece falled by Soft Drop
+	 * @param fall Number of rows the piece fell by Soft Drop
 	 */
-	open fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {}
+	open fun afterSoftDropFall(engine:GameEngine, fall:Int) {}
 
 	/** After Hard Drop is used
 	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param fall Number of rows the piece falled by Hard Drop
+	 * @param fall Number of rows the piece fell by Hard Drop
 	 */
-	open fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {}
+	open fun afterHardDropFall(engine:GameEngine, fall:Int) {}
 
-	/** It will be called when the player exit the field editor.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun fieldEditExit(engine:GameEngine, playerID:Int) {}
+	/** It will be called when the player exit the field editor.*/
+	open fun fieldEditExit(engine:GameEngine) {}
 
 	/** It will be called when the piece has locked. (after calcScore)
 	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param lines Number of lines to be cleared (can be 0)
 	 */
-	open fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {}
+	open fun pieceLocked(engine:GameEngine, lines:Int) {}
 
-	/** It will be called at the end of line-clear phase.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	open fun lineClearEnd(engine:GameEngine, playerID:Int) {}
+	/** It will be called at the end of line-clear phase.*/
+	open fun lineClearEnd(engine:GameEngine) {}
 
 	/** Called when saving replay into [prop]
 	 * @param owner GameManager
@@ -1075,14 +859,11 @@ open class EventReceiver {
 	open fun saveReplay(owner:GameManager, prop:CustomProperties, foldername:String = "replay") {
 		if(owner.mode?.isNetplayMode!=false) return
 		val folder = "$foldername/${owner.mode?.javaClass?.simpleName ?: ""}"
-		val filename = "$folder/"+
-			prop.getProperty("name.rule").lowercase().toReplayFilename
-				.replace("[\\s-]".toRegex(), "_")
+		val filename = "$folder/"+prop.getProperty("name.rule").lowercase().toReplayFilename.replace("[\\s-]".toRegex(), "_")
 		try {
 			val repFolder = File(folder)
-			if(!repFolder.exists())
-				if(repFolder.mkdirs()) log.info("Created replay folder: $folder")
-				else log.error("Couldn't create replay folder at $folder")
+			if(!repFolder.exists()) if(repFolder.mkdirs()) log.info("Created replay folder: $folder")
+			else log.error("Couldn't create replay folder at $folder")
 
 			val out = GZIPOutputStream(FileOutputStream(filename))
 			prop.store(out, "NullpoMino Replay")
@@ -1097,7 +878,17 @@ open class EventReceiver {
 	companion object {
 		/** cell and block size(block,font) */
 		const val BS = 16
-
+		/** @return Width&Height of block image*/
+		fun getBlockSize(displaySize:Int):Int = when(displaySize) {
+			-1 -> BS/2
+			1 -> BS*2
+			else -> BS
+		}
+		/** @return Width&Height of block image*/
+		fun getBlockSize(e:GameEngine) = getBlockSize(e.displaySize)
+		/** @return Width&Height of block image*/
+		@get:JvmName("blockSize")
+		val GameEngine.blockSize get() = getBlockSize(displaySize)
 		/** Log */
 		internal val log = LogManager.getLogger()
 
@@ -1121,7 +912,7 @@ open class EventReceiver {
 			3 -> COLOR.PURPLE
 			4 -> COLOR.ORANGE
 			5 -> COLOR.WHITE
-			else -> COLOR.values().let {it.getOrElse((playerID-5)%it.size) {COLOR.WHITE}}
+			else -> COLOR.all.let {it.getOrElse((playerID-5)%it.size) {COLOR.WHITE}}
 		}
 
 		fun getBlockColor(engine:GameEngine, piece:Piece.Shape):COLOR =
@@ -1149,99 +940,100 @@ open class EventReceiver {
 		/** Field X position */
 		val NEW_FIELD_OFFSET_X = arrayOf(
 			arrayOf(// TETROMINO
-				intArrayOf(119, 247, 375, 503, 247, 375), // Small
-				intArrayOf(32, 432, 432, 432, 432, 432), // Normal
-				intArrayOf(16, 416, 416, 416, 416, 416)
+				intArrayOf(119, 247, 375, 503, 247, 375, 375), // Small
+				intArrayOf(32, 432, 432, 432, 432, 432, 432), // Normal
+				intArrayOf(16, 416, 416, 416, 416, 416, 416)
 			)// Big
 			, arrayOf(// AVALANCHE
-				intArrayOf(119, 247, 375, 503, 247, 375), // Small
-				intArrayOf(32, 432, 432, 432, 432, 432), // Normal
-				intArrayOf(16, 352, 352, 352, 352, 352)
+				intArrayOf(119, 247, 375, 503, 247, 375, 375), // Small
+				intArrayOf(32, 432, 432, 432, 432, 432, 432), // Normal
+				intArrayOf(16, 352, 352, 352, 352, 352, 352)
 			)// Big
 			, arrayOf(// PHYSICIAN
-				intArrayOf(119, 247, 375, 503, 247, 375), // Small
-				intArrayOf(32, 432, 432, 432, 432, 432), // Normal
-				intArrayOf(16, 416, 416, 416, 416, 416)
+				intArrayOf(119, 247, 375, 503, 247, 375, 375), // Small
+				intArrayOf(32, 432, 432, 432, 432, 432, 432), // Normal
+				intArrayOf(16, 416, 416, 416, 416, 416, 416)
 			)// Big
 			, arrayOf(// SPF
-				intArrayOf(119, 247, 375, 503, 247, 375), // Small
-				intArrayOf(32, 432, 432, 432, 432, 432), // Normal
-				intArrayOf(16, 352, 352, 352, 352, 352)
+				intArrayOf(119, 247, 375, 503, 247, 375, 375), // Small
+				intArrayOf(32, 432, 432, 432, 432, 432, 432), // Normal
+				intArrayOf(16, 352, 352, 352, 352, 352, 416)
 			)// Big
 		)
 
 		/** Field Y position */
 		val NEW_FIELD_OFFSET_Y = arrayOf(
 			arrayOf(// TETROMINO
-				intArrayOf(80, 80, 80, 80, 286, 286), // Small
-				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-				intArrayOf(8, 8, 8, 8, 8, 8)
+				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
+				intArrayOf(32), // Normal
+				intArrayOf(8)
 			)// Big
 			, arrayOf(// AVALANCHE
-				intArrayOf(80, 80, 80, 80, 286, 286), // Small
-				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-				intArrayOf(8, 8, 8, 8, 8, 8)
+				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
+				intArrayOf(32), // Normal
+				intArrayOf(8)
 			)// Big
 			, arrayOf(// PHYSICIAN
-				intArrayOf(80, 80, 80, 80, 286, 286), // Small
-				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-				intArrayOf(8, 8, 8, 8, 8, 8)
+				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
+				intArrayOf(32), // Normal
+				intArrayOf(8)
 			)// Big
 			, arrayOf(// SPF
-				intArrayOf(80, 80, 80, 80, 286, 286), // Small
-				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-				intArrayOf(-8, -8, -8, -8, -8, -8)
+				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
+				intArrayOf(32), // Normal
+				intArrayOf(8)
 			)// Big
 		)
+
+		const val nextHeight = 48
 
 		/** Field X position (Big side preview) */
 		val NEW_FIELD_OFFSET_X_BSP = arrayOf(
 			arrayOf(// TETROMINO
-				intArrayOf(208, 320, 432, 544, 320, 432), // Small
-				intArrayOf(64, 400, 400, 400, 400, 400), // Normal
-				intArrayOf(16, 352, 352, 352, 352, 352)
+				intArrayOf(208, 320, 432, 544, 320, 432, 544), // Small
+				intArrayOf(64, 400), // Normal
+				intArrayOf(16, 352)
 			)// Big
 			, arrayOf(// AVALANCHE
-				intArrayOf(208, 320, 432, 544, 320, 432), // Small
-				intArrayOf(64, 400, 400, 400, 400, 400), // Normal
-				intArrayOf(16, 352, 352, 352, 352, 352)
+				intArrayOf(208, 320, 432, 544, 320, 432, 544), // Small
+				intArrayOf(64, 400), // Normal
+				intArrayOf(16, 352)
 			)// Big
 			, arrayOf(// PHYSICIAN
-				intArrayOf(208, 320, 432, 544, 320, 432), // Small
-				intArrayOf(64, 400, 400, 400, 400, 400), // Normal
-				intArrayOf(16, 352, 352, 352, 352, 352)
+				intArrayOf(208, 320, 432, 544, 320, 432, 544), // Small
+				intArrayOf(64, 400), // Normal
+				intArrayOf(16, 352)
 			)// Big
 			, arrayOf(// SPF
-				intArrayOf(208, 320, 432, 544, 320, 432), // Small
-				intArrayOf(64, 400, 400, 400, 400, 400), // Normal
-				intArrayOf(16, 352, 352, 352, 352, 352)
+				intArrayOf(208, 320, 432, 544, 320, 432, 544), // Small
+				intArrayOf(64, 400), // Normal
+				intArrayOf(16, 352)
 			)// Big
 		)
 
 		/** Field Y position (Big side preview) */
 		val NEW_FIELD_OFFSET_Y_BSP = arrayOf(
 			arrayOf(// TETROMINO
-				intArrayOf(80, 80, 80, 80, 286, 286), // Small
-				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-				intArrayOf(8, 8, 8, 8, 8, 8)
+				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
+				intArrayOf(32), // Normal
+				intArrayOf(8)
 			)// Big
 			, arrayOf(// AVALANCHE
-				intArrayOf(80, 80, 80, 80, 286, 286), // Small
-				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-				intArrayOf(8, 8, 8, 8, 8, 8)
+				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
+				intArrayOf(32), // Normal
+				intArrayOf(8)
 			)// Big
 			, arrayOf(// PHYSICIAN
-				intArrayOf(80, 80, 80, 80, 286, 286), // Small
-				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-				intArrayOf(8, 8, 8, 8, 8, 8)
+				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
+				intArrayOf(32), // Normal
+				intArrayOf(8)
 			)// Big
 			, arrayOf(// SPF
-				intArrayOf(80, 80, 80, 80, 286, 286), // Small
-				intArrayOf(32, 32, 32, 32, 32, 32), // Normal
-				intArrayOf(-16, -16, -16, -16, -16, -16)
+				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
+				intArrayOf(32), // Normal
+				intArrayOf(8)
 			)// Big
 		)
 
 	}
-
 }

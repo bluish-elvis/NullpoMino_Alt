@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -46,15 +46,15 @@ open class LevelMenuItem(name:String, displayName:String, color:COLOR, defaultVa
 
 	override fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int) {
 		super.draw(engine, playerID, receiver, y, focus)
-		if(!compact) receiver.drawSpeedMeter(engine, playerID, -8, y, (value-min)*1f/max, 5f)
+		if(!compact) receiver.drawMenuSpeed(engine, 5, y, (value-min)*1f/max, 5f)
 		val spd = engine.speed
 		if(showG) {
 			val g = spd.gravity
 			val d = spd.denominator
-			receiver.drawMenuFont(engine, playerID, 0, y+2, "SPEED", color = COLOR.WHITE)
-			receiver.drawSpeedMeter(engine, playerID, -13, y+3, g, d, 5)
-			receiver.drawMenuNum(engine, playerID, 6, y+2, String.format("%5d", g))
-			receiver.drawMenuNum(engine, playerID, 6, y+3, String.format("%5d", d))
+			receiver.drawMenuFont(engine, 0, y+2, "SPEED", color = COLOR.WHITE)
+			receiver.drawMenuSpeed(engine, 5, y+3, g, d, 5)
+			receiver.drawMenuNum(engine, 6, y+2, String.format("%5d", g))
+			receiver.drawMenuNum(engine, 6, y+3, String.format("%5d", d))
 		}
 		if(showD) {
 			val y = y+if(showG) 4 else 2
@@ -62,8 +62,8 @@ open class LevelMenuItem(name:String, displayName:String, color:COLOR, defaultVa
 			for(i in 0..1) {
 				val show = if(i==0) "ARE" to spd.are else "LINE" to spd.areLine
 
-				receiver.drawMenuNum(engine, playerID, 4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", show.second))
-				receiver.drawMenuNano(engine, playerID, 6+i*5, y*2+1, show.first, color, .5f)
+				receiver.drawMenuNum(engine, 4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", show.second))
+				receiver.drawMenuNano(engine, 6+i*5, y*2+1, show.first, color, .5f)
 			}
 			for(i in 0..2) {
 				val show = when(i) {
@@ -71,10 +71,10 @@ open class LevelMenuItem(name:String, displayName:String, color:COLOR, defaultVa
 					1 -> "LOCK" to spd.lockDelay
 					else -> "DAS" to spd.das
 				}
-				receiver.drawMenuNum(engine, playerID, 8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", show.second))
-				receiver.drawMenuNano(engine, playerID, 14-i*6, y*2+2, show.first, color, .5f)
+				receiver.drawMenuNum(engine, 8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", show.second))
+				receiver.drawMenuNano(engine, 14-i*6, y*2+2, show.first, color, .5f)
 			}
-			receiver.drawMenuNano(engine, playerID, 0, y*2, "DELAYS", color, .5f)
+			receiver.drawMenuNano(engine, 0, y*2, "DELAYS", color, .5f)
 		}
 	}
 

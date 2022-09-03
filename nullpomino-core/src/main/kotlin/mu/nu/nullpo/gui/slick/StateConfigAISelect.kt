@@ -70,7 +70,7 @@ class StateConfigAISelect:BaseGameState() {
 
 	private var aiShowHint = false
 
-	private var aiPrethink = false
+	private var aiPreThink = false
 
 	private var aiShowState = false
 
@@ -100,7 +100,7 @@ class StateConfigAISelect:BaseGameState() {
 		aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$player.aiThinkDelay", 0)
 		aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$player.aiUseThread", true)
 		aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$player.aiShowHint", false)
-		aiPrethink = NullpoMinoSlick.propGlobal.getProperty("$player.aiPrethink", false)
+		aiPreThink = NullpoMinoSlick.propGlobal.getProperty("$player.aiPreThink", false)
 		aiShowState = NullpoMinoSlick.propGlobal.getProperty("$player.aiShowState", false)
 
 		aiID = -1
@@ -166,7 +166,7 @@ class StateConfigAISelect:BaseGameState() {
 		FontNormal.printFontGrid(2, 5, "AI think delay:$aiThinkDelay", cursor==2)
 		FontNormal.printFontGrid(2, 6, "AI use thread:"+aiUseThread.getONorOFF(), cursor==3)
 		FontNormal.printFontGrid(2, 7, "AI show hint:"+aiShowHint.getONorOFF(), cursor==4)
-		FontNormal.printFontGrid(2, 8, "AI pre-think:"+aiPrethink.getONorOFF(), cursor==5)
+		FontNormal.printFontGrid(2, 8, "AI pre-think:"+aiPreThink.getONorOFF(), cursor==5)
 		FontNormal.printFontGrid(2, 9, "AI show info:"+aiShowState.getONorOFF(), cursor==6)
 
 		FontNormal.printFontGrid(1, 28, "A:OK B:CANCEL", COLOR.GREEN)
@@ -215,7 +215,7 @@ class StateConfigAISelect:BaseGameState() {
 				}
 				3 -> aiUseThread = !aiUseThread
 				4 -> aiShowHint = !aiShowHint
-				5 -> aiPrethink = !aiPrethink
+				5 -> aiPreThink = !aiPreThink
 				6 -> aiShowState = !aiShowState
 			}
 		}
@@ -230,7 +230,7 @@ class StateConfigAISelect:BaseGameState() {
 			NullpoMinoSlick.propGlobal.setProperty("$player.aiThinkDelay", aiThinkDelay)
 			NullpoMinoSlick.propGlobal.setProperty("$player.aiUseThread", aiUseThread)
 			NullpoMinoSlick.propGlobal.setProperty("$player.aiShowHint", aiShowHint)
-			NullpoMinoSlick.propGlobal.setProperty("$player.aiPrethink", aiPrethink)
+			NullpoMinoSlick.propGlobal.setProperty("$player.aiPreThink", aiPreThink)
 			NullpoMinoSlick.propGlobal.setProperty("$player.aiShowState", aiShowState)
 			NullpoMinoSlick.saveConfig()
 

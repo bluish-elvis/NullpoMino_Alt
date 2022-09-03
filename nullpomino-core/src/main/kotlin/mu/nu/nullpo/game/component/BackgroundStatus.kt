@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -51,11 +51,9 @@ package mu.nu.nullpo.game.component
 		reset()
 	}
 
-	/** Copy constructor
-	 * @param b Copy source
-	 */
+	/** Copy constructor settings from [b] */
 	constructor(b:BackgroundStatus) {
-		copy(b)
+		replace(b)
 	}
 
 	/** Reset to defaults */
@@ -67,10 +65,8 @@ package mu.nu.nullpo.game.component
 		fadebg = 0
 	}
 
-	/** Copy from a different BackgroundStatus
-	 * @param b Copy source
-	 */
-	fun copy(b:BackgroundStatus) {
+	/** copy settings from [b] */
+	fun replace(b:BackgroundStatus) {
 		bg = b.bg
 		fadesw = b.fadesw
 		fadestat = b.fadestat

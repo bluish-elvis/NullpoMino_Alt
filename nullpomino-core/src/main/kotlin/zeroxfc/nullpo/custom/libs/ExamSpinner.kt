@@ -45,9 +45,11 @@ class ExamSpinner {
 		/**
 		 * Default asset coordinates and sizes.
 		 */
-		private val SOURCE_DETAILS = arrayOf(arrayOf(intArrayOf(0, 0), intArrayOf(128, 32)),
+		private val SOURCE_DETAILS = arrayOf(
+			arrayOf(intArrayOf(0, 0), intArrayOf(128, 32)),
 			arrayOf(intArrayOf(0, 32), intArrayOf(128, 32)), arrayOf(intArrayOf(32, 64), intArrayOf(64, 32)),
-			arrayOf(intArrayOf(0, 64), intArrayOf(96, 32)))
+			arrayOf(intArrayOf(0, 64), intArrayOf(96, 32))
+		)
 		private val startXs = intArrayOf(
 			0, 80, 160, 240 // P F P F
 		)
@@ -84,7 +86,7 @@ class ExamSpinner {
 	/**
 	 * Create a new promo exam graphic.
 	 *
-	 * @param gradeText       What grade to display
+	 * @param gradeText       What grades to display
 	 * @param selectedOutcome 0 = pass, 1 = fail
 	 * @param close           Was it a close one?
 	 */
@@ -140,9 +142,9 @@ class ExamSpinner {
 	 * @param playerID Current Player ID (0 = 1P)
 	 * @param flag     Yellow text?
 	 */
-	@JvmOverloads fun draw(receiver:EventReceiver, engine:GameEngine, playerID:Int, flag:Boolean = lifeTime/2%2==0) {
-		val baseX:Int = receiver.fieldX(engine, playerID)+4
-		val baseY:Int = receiver.fieldY(engine, playerID)+52
+	@JvmOverloads fun draw(receiver:EventReceiver, engine:GameEngine, flag:Boolean = lifeTime/2%2==0) {
+		val baseX:Int = receiver.fieldX(engine)+4
+		val baseY:Int = receiver.fieldY(engine)+52
 		val size = 16
 		HUGE_O.setSkin(engine.skin)
 		var b = 255
@@ -160,24 +162,30 @@ class ExamSpinner {
 			// region MAIN HEADING
 			val HBX = baseX+80
 			for(i in splitHeadingText.indices) {
-				GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, HBX, baseY+size*i, GameTextUtilities.ALIGN_TOP_MIDDLE,
-					splitHeadingText[i], color, 1f)
+				GameTextUtilities.drawDirectTextAlign(
+					receiver, HBX, baseY+size*i, GameTextUtilities.ALIGN_TOP_MIDDLE, splitHeadingText[i], color,
+					1f
+				)
 			}
 			// endregion MAIN HEADING
 
 			// region SUBHEADING
 			val SHBY = baseY+size*4
 			for(i in splitSubheadingText.indices) {
-				GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, HBX, SHBY+size*i, GameTextUtilities.ALIGN_TOP_MIDDLE,
-					splitSubheadingText[i], color, 1f)
+				GameTextUtilities.drawDirectTextAlign(
+					receiver, HBX, SHBY+size*i, GameTextUtilities.ALIGN_TOP_MIDDLE, splitSubheadingText[i], color,
+					1f
+				)
 			}
 			// endregion SUBHEADING
 
 			// region GRADE
 			val GBY = baseY+size*9
 			for(i in splitGradeText.indices) {
-				GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, HBX, GBY+size*i, GameTextUtilities.ALIGN_TOP_MIDDLE,
-					splitGradeText[i], color, if(splitGradeText.size==1) 2f else 1f)
+				GameTextUtilities.drawDirectTextAlign(
+					receiver, HBX, GBY+size*i, GameTextUtilities.ALIGN_TOP_MIDDLE, splitGradeText[i], color,
+					if(splitGradeText.size==1) 2f else 1f
+				)
 			}
 			// endregion GRADE
 			val PBY = baseY+size*16
@@ -185,38 +193,48 @@ class ExamSpinner {
 				if(lifeTime<spinDuration) {
 					// Pass1
 					for(i in 0 until splitPossibilityText[0].size) {
-						if(locations[0]%320<=160) GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, baseX+locations[0]%320,
-							PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-							splitPossibilityText[0][i], color, 1f)
+						if(locations[0]%320<=160) GameTextUtilities.drawDirectTextAlign(
+							receiver, baseX+locations[0]%320, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
+							splitPossibilityText[0][i], color,
+							1f
+						)
 					}
 
 					// Fail1
 					for(i in 0 until splitPossibilityText[1].size) {
-						if(locations[1]%320<=160) GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, baseX+locations[1]%320,
-							PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-							splitPossibilityText[1][i], EventReceiver.COLOR.COBALT, 1f)
+						if(locations[1]%320<=160) GameTextUtilities.drawDirectTextAlign(
+							receiver, baseX+locations[1]%320, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
+							splitPossibilityText[1][i], EventReceiver.COLOR.COBALT,
+							1f
+						)
 					}
 
 					// Pass1
 					for(i in 0 until splitPossibilityText[0].size) {
-						if(locations[2]%320<=160) GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, baseX+locations[2]%320,
-							PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-							splitPossibilityText[0][i], color, 1f)
+						if(locations[2]%320<=160) GameTextUtilities.drawDirectTextAlign(
+							receiver, baseX+locations[2]%320, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
+							splitPossibilityText[0][i], color,
+							1f
+						)
 					}
 
 					// Fail1
 					for(i in 0 until splitPossibilityText[1].size) {
-						if(locations[3]%320<=160) GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, baseX+locations[3]%320,
-							PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-							splitPossibilityText[1][i], EventReceiver.COLOR.COBALT, 1f)
+						if(locations[3]%320<=160) GameTextUtilities.drawDirectTextAlign(
+							receiver, baseX+locations[3]%320, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
+							splitPossibilityText[1][i], EventReceiver.COLOR.COBALT,
+							1f
+						)
 					}
 				} else if(lifeTime<spinDuration+120) {
 					val offset = lifeTime%3-1
 					// FailShake
 					for(i in 0 until splitPossibilityText[1].size) {
-						GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, HBX+offset, PBY+size*i,
-							GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-							splitPossibilityText[1][i], EventReceiver.COLOR.COBALT, 1f)
+						GameTextUtilities.drawDirectTextAlign(
+							receiver, HBX+offset, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[1][i],
+							EventReceiver.COLOR.COBALT,
+							1f
+						)
 					}
 					if(lifeTime>=spinDuration+112&&selectedOutcome==0) {
 						val height = (lifeTime-spinDuration-113)*2-1
@@ -237,15 +255,19 @@ class ExamSpinner {
 					if(selectedOutcome==0) {
 						// PASS
 						for(i in 0 until splitPossibilityText[0].size) {
-							GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, HBX, PBY+size*i,
-								GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-								splitPossibilityText[0][i], color, 1f)
+							GameTextUtilities.drawDirectTextAlign(
+								receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[0][i],
+								color,
+								1f
+							)
 						}
 					} else {
 						for(i in 0 until splitPossibilityText[1].size) {
-							GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, HBX, PBY+size*i,
-								GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-								splitPossibilityText[1][i], EventReceiver.COLOR.COBALT, 1f)
+							GameTextUtilities.drawDirectTextAlign(
+								receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[1][i],
+								EventReceiver.COLOR.COBALT,
+								1f
+							)
 						}
 					}
 				}
@@ -253,15 +275,19 @@ class ExamSpinner {
 				if(selectedOutcome==0) {
 					// PASS
 					for(i in 0 until splitPossibilityText[0].size) {
-						GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, HBX, PBY+size*i,
-							GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-							splitPossibilityText[0][i], color, 1f)
+						GameTextUtilities.drawDirectTextAlign(
+							receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[0][i],
+							color,
+							1f
+						)
 					}
 				} else {
 					for(i in 0 until splitPossibilityText[1].size) {
-						GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, HBX, PBY+size*i,
-							GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-							splitPossibilityText[1][i], EventReceiver.COLOR.COBALT, 1f)
+						GameTextUtilities.drawDirectTextAlign(
+							receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[1][i],
+							EventReceiver.COLOR.COBALT,
+							1f
+						)
 					}
 				}
 			}
@@ -275,34 +301,48 @@ class ExamSpinner {
 				val alpha = Interpolation.sineStep(0.0, 255.0, diff.toDouble()/80.0).toInt()
 				alphas[i] = alpha
 			}
-			customHolder!!.drawImage("default", baseX+80-SOURCE_DETAILS[0][1][0]/2, baseY, SOURCE_DETAILS[0][1][0],
+			customHolder!!.drawImage(
+				"default", baseX+80-SOURCE_DETAILS[0][1][0]/2, baseY, SOURCE_DETAILS[0][1][0],
 				SOURCE_DETAILS[0][1][1], SOURCE_DETAILS[0][0][0], SOURCE_DETAILS[0][0][1], SOURCE_DETAILS[0][1][0],
-				SOURCE_DETAILS[0][1][1], 255, 255, b, 255)
-			customHolder!!.drawImage("default", baseX+80-SOURCE_DETAILS[1][1][0]/2, baseY+size*4, SOURCE_DETAILS[1][1][0],
+				SOURCE_DETAILS[0][1][1], 255, 255, b, 255
+			)
+			customHolder!!.drawImage(
+				"default", baseX+80-SOURCE_DETAILS[1][1][0]/2, baseY+size*4, SOURCE_DETAILS[1][1][0],
 				SOURCE_DETAILS[1][1][1], SOURCE_DETAILS[1][0][0], SOURCE_DETAILS[1][0][1], SOURCE_DETAILS[1][1][0],
-				SOURCE_DETAILS[1][1][1], 255, 255, b, 255)
-			receiver.drawMenuFont(engine, playerID, 5-gradeText.length, 9, gradeText, color, 2.0f)
+				SOURCE_DETAILS[1][1][1], 255, 255, b, 255
+			)
+			receiver.drawMenuFont(engine, 5-gradeText.length, 9, gradeText, color, 2.0f)
 
 			// NEW CODE GOES HERE.
 			if(close) {
 				if(lifeTime<spinDuration) {
-					customHolder!!.drawImage("default", baseX+locations[0]%320-SOURCE_DETAILS[2][1][0]/2, baseY+size*14,
+					customHolder!!.drawImage(
+						"default", baseX+locations[0]%320-SOURCE_DETAILS[2][1][0]/2, baseY+size*14,
 						SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], SOURCE_DETAILS[2][0][0], SOURCE_DETAILS[2][0][1],
-						SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], 255, 255, b, alphas[0])
-					customHolder!!.drawImage("default", baseX+locations[1]%320-SOURCE_DETAILS[3][1][0]/2, baseY+size*14,
+						SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], 255, 255, b, alphas[0]
+					)
+					customHolder!!.drawImage(
+						"default", baseX+locations[1]%320-SOURCE_DETAILS[3][1][0]/2, baseY+size*14,
 						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], SOURCE_DETAILS[3][0][0], SOURCE_DETAILS[3][0][1],
-						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], 80, 80, 160, alphas[1])
-					customHolder!!.drawImage("default", baseX+locations[2]%320-SOURCE_DETAILS[2][1][0]/2, baseY+size*14,
+						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], 80, 80, 160, alphas[1]
+					)
+					customHolder!!.drawImage(
+						"default", baseX+locations[2]%320-SOURCE_DETAILS[2][1][0]/2, baseY+size*14,
 						SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], SOURCE_DETAILS[2][0][0], SOURCE_DETAILS[2][0][1],
-						SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], 255, 255, b, alphas[2])
-					customHolder!!.drawImage("default", baseX+locations[3]%320-SOURCE_DETAILS[3][1][0]/2, baseY+size*14,
+						SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], 255, 255, b, alphas[2]
+					)
+					customHolder!!.drawImage(
+						"default", baseX+locations[3]%320-SOURCE_DETAILS[3][1][0]/2, baseY+size*14,
 						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], SOURCE_DETAILS[3][0][0], SOURCE_DETAILS[3][0][1],
-						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], 80, 80, 160, alphas[3])
+						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], 80, 80, 160, alphas[3]
+					)
 				} else if(lifeTime<spinDuration+120) {
 					val offset = lifeTime%3-1
-					customHolder!!.drawImage("default", baseX+80+offset-SOURCE_DETAILS[3][1][0]/2, baseY+size*14,
+					customHolder!!.drawImage(
+						"default", baseX+80+offset-SOURCE_DETAILS[3][1][0]/2, baseY+size*14,
 						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], SOURCE_DETAILS[3][0][0], SOURCE_DETAILS[3][0][1],
-						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], 80, 80, 160, 255)
+						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], 80, 80, 160, 255
+					)
 					if(lifeTime>=spinDuration+112) {
 						val height = (lifeTime-spinDuration-113)*2-1
 						val width = 3
@@ -321,25 +361,33 @@ class ExamSpinner {
 					}
 					if(selectedOutcome==0) {
 						// PASS
-						customHolder!!.drawImage("default", baseX+80-SOURCE_DETAILS[2][1][0]/2, baseY+size*14,
+						customHolder!!.drawImage(
+							"default", baseX+80-SOURCE_DETAILS[2][1][0]/2, baseY+size*14,
 							SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], SOURCE_DETAILS[2][0][0], SOURCE_DETAILS[2][0][1],
-							SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], 255, 255, b, 255)
+							SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], 255, 255, b, 255
+						)
 					} else {
-						customHolder!!.drawImage("default", baseX+80-SOURCE_DETAILS[3][1][0]/2, baseY+size*14,
+						customHolder!!.drawImage(
+							"default", baseX+80-SOURCE_DETAILS[3][1][0]/2, baseY+size*14,
 							SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], SOURCE_DETAILS[3][0][0], SOURCE_DETAILS[3][0][1],
-							SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], 80, 80, 160, 255)
+							SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], 80, 80, 160, 255
+						)
 					}
 				}
 			} else if(lifeTime>=60) {
 				if(selectedOutcome==0) {
 					// PASS
-					customHolder!!.drawImage("default", baseX+80-SOURCE_DETAILS[2][1][0]/2, baseY+size*14,
+					customHolder!!.drawImage(
+						"default", baseX+80-SOURCE_DETAILS[2][1][0]/2, baseY+size*14,
 						SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], SOURCE_DETAILS[2][0][0], SOURCE_DETAILS[2][0][1],
-						SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], 255, 255, b, 255)
+						SOURCE_DETAILS[2][1][0], SOURCE_DETAILS[2][1][1], 255, 255, b, 255
+					)
 				} else {
-					customHolder!!.drawImage("default", baseX+80-SOURCE_DETAILS[3][1][0]/2, baseY+size*14,
+					customHolder!!.drawImage(
+						"default", baseX+80-SOURCE_DETAILS[3][1][0]/2, baseY+size*14,
 						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], SOURCE_DETAILS[3][0][0], SOURCE_DETAILS[3][0][1],
-						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], 80, 80, 160, 255)
+						SOURCE_DETAILS[3][1][0], SOURCE_DETAILS[3][1][1], 80, 80, 160, 255
+					)
 				}
 			}
 		}
@@ -372,7 +420,8 @@ class ExamSpinner {
 			// sb.append("[");
 			for(i in locations.indices) {
 				val res = Interpolation.smoothStep(
-					endXs[i].toDouble(), startXs[i].toDouble(), 64.0, j)
+					endXs[i].toDouble(), startXs[i].toDouble(), j, 64.0
+				)
 				// sb.append(res).append(", ");
 				locations[i] = res.toInt()
 			}

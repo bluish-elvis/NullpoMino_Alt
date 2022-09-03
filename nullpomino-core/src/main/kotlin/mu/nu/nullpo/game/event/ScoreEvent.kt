@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, NullNoname
+ * Copyright (c) 2021-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -46,7 +46,7 @@ data class ScoreEvent(val lines:Int = 0, val split:Boolean = false, val piece:Pi
 
 	override fun hashCode():Int {
 		var result = piece.hashCode()
-		result = (Twister.values().size+1)*result+1+(twist?.ordinal ?: -1)
+		result = (Twister.all.size+1)*result+1+(twist?.ordinal ?: -1)
 		result = 10*result+minOf(maxOf(0, lines), 9)
 		result = 4*result+split.toInt()+b2b.toInt()*2
 		return result
@@ -56,11 +56,11 @@ data class ScoreEvent(val lines:Int = 0, val split:Boolean = false, val piece:Pi
 		fun parseInt(i:Int):ScoreEvent? = if(i<0) null
 		else {
 			val lines = (i shr 2)%10
-			val twist = (i shr 2)/10%(Twister.values().size+1)
-			val piece = (i shr 2)/10/(Twister.values().size+1)%Piece.Shape.values().size
+			val twist = (i shr 2)/10%(Twister.all.size+1)
+			val piece = (i shr 2)/10/(Twister.all.size+1)%Piece.Shape.all.size
 			ScoreEvent(
 				lines, i%2==1, if(piece<=0) null else Piece(piece-1).apply {},
-				Twister.values().getOrNull(twist-1), (i shr 1)%2==1
+				Twister.all.getOrNull(twist-1), (i shr 1)%2==1
 			)
 		}
 
@@ -71,5 +71,9 @@ data class ScoreEvent(val lines:Int = 0, val split:Boolean = false, val piece:Pi
 		IMMOBILE_EZ, IMMOBILE_MINI, POINT_MINI, IMMOBILE, POINT;
 
 		val isMini:Boolean get() = this==POINT_MINI||this==IMMOBILE_MINI
+
+		companion object {
+			val all = Twister.values()
+		}
 	}
 }

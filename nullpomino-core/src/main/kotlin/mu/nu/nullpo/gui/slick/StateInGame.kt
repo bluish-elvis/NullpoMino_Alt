@@ -28,7 +28,6 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
@@ -122,7 +121,7 @@ class StateInGame:BasicGameState() {
 			// Initialization for each player
 			for(i in 0 until it.players) it.engine[i].let {e ->
 				// チューニング設定
-				e.owRotateButtonDefaultRight = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owRotateButtonDefaultRight", -1)
+				e.owSpinDirection = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owRotateButtonDefaultRight", -1)
 				e.owSkin = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owSkin", -1)
 				e.owMinDAS = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMinDAS", -1)
 				e.owMaxDAS = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMaxDAS", -1)
@@ -142,7 +141,7 @@ class StateInGame:BasicGameState() {
 					if(it.mode?.gameStyle!=GameStyle.TETROMINO)
 						rulename = NullpoMinoSlick.propGlobal.getProperty("$i.rule.${it.mode!!.gameStyle.ordinal}", "")
 				}
-				if(rulename!=null&&rulename.isNotEmpty()) {
+				if(!rulename.isNullOrEmpty()) {
 					log.info("Load rule options from $rulename")
 					ruleOpt = GeneralUtil.loadRule(rulename)
 				} else {
@@ -170,7 +169,7 @@ class StateInGame:BasicGameState() {
 					e.aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
 					e.aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
 					e.aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
-					e.aiPrethink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPrethink", false)
+					e.aiPreThink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPreThink", false)
 					e.aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
 				}
 				it.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
@@ -219,7 +218,7 @@ class StateInGame:BasicGameState() {
 					it.engine[i].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
 					it.engine[i].aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
 					it.engine[i].aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
-					it.engine[i].aiPrethink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPrethink", false)
+					it.engine[i].aiPreThink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPreThink", false)
 					it.engine[i].aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
 				}
 				it.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
@@ -271,8 +270,8 @@ class StateInGame:BasicGameState() {
 			it.renderAll()
 
 			if(it.engine.isNotEmpty()) {
-				val offsetX = it.receiver.fieldX(it.engine[0], 0)
-				val offsetY = it.receiver.fieldY(it.engine[0], 0)
+				val offsetX = it.receiver.fieldX(it.engine[0])
+				val offsetY = it.receiver.fieldY(it.engine[0])
 
 				// Pause menu
 				if(pause&&!enableframestep&&!pauseMessageHide) {
@@ -285,7 +284,7 @@ class StateInGame:BasicGameState() {
 						FontNormal.printFont(offsetX+28, offsetY+236, "RERECORD", cursor==3)
 				}
 
-				// Fast forward
+				// Fast-forward
 				if(fastforward!=0)
 					FontNormal.printFont(offsetX, offsetY+376, "e${fastforward+1}", COLOR.ORANGE)
 				if(it.replayShowInvisible)
@@ -411,41 +410,41 @@ class StateInGame:BasicGameState() {
 		pauseMessageHide = GameKey.gamekey[0].isPressKey(GameKeyDummy.BUTTON_C)
 
 
-		gameManager?.let {
-			if(it.replayMode&&!it.replayRerecord&&it.engine[0].gameActive) {
+		gameManager?.let {m ->
+			if(m.replayMode&&!m.replayRerecord&&m.engine[0].gameActive) {
 				// Replay speed
 				if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) if(fastforward>0) fastforward--
 				if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) if(fastforward<98) fastforward++
 
 				// Replay re-record
 				if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_D)) {
-					it.replayRerecord = true
+					m.replayRerecord = true
 					ResourceHolder.soundManager.play("twist")
 					cursor = 0
 				}
 				// Show invisible blocks during replays
 				if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_E)) {
-					it.replayShowInvisible = !it.replayShowInvisible
+					m.replayShowInvisible = !m.replayShowInvisible
 					ResourceHolder.soundManager.play("twist")
 					cursor = 0
 				}
 			} else fastforward = 0
 
 			// BGM
-			if(ResourceHolder.bgmPlaying!=it.bgmStatus.bgm&&!it.bgmStatus.fadesw)
-				ResourceHolder.bgmStart(it.bgmStatus.bgm)
+			if(ResourceHolder.bgmPlaying!=m.bgmStatus.bgm&&!m.bgmStatus.fadesw)
+				ResourceHolder.bgmStart(m.bgmStatus.bgm)
 			if(ResourceHolder.bgmIsPlaying) {
 				val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
-				val newvolume = maxOf(0f, minOf(it.bgmStatus.volume*basevolume/128f, 1f))
+				val newvolume = maxOf(0f, minOf(m.bgmStatus.volume*basevolume/128f, 1f))
 				container.musicVolume = newvolume
 				if(newvolume<=0f) ResourceHolder.bgmStop()
 			}
 
 			// ゲームの処理を実行
 			if(!pause||GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_FRAMESTEP)&&enableframestep) {
-				for(i in 0 until minOf(it.players, GameKey.gamekey.size))
-					if(!it.engine[i].gameActive||((it.engine[i].ai==null||it.engine[i].aiShowHint)&&(!it.replayMode||it.replayRerecord)))
-						GameKey.gamekey[i].inputStatusUpdate(it.engine[i].ctrl)
+				for(i in 0 until minOf(m.players, GameKey.gamekey.size))
+					if(!m.engine[i].gameActive||((m.engine[i].ai==null||m.engine[i].aiShowHint)&&(!m.replayMode||m.replayRerecord)))
+						GameKey.gamekey[i].inputStatusUpdate(m.engine[i].ctrl)
 
 				for(i in 0..fastforward) gameManager?.updateAll()
 			}
@@ -453,11 +452,11 @@ class StateInGame:BasicGameState() {
 			if(GameKey.gamekey.any {it.isPushKey(GameKeyDummy.BUTTON_RETRY)}) {
 				ResourceHolder.bgmStop()
 				pause = false
-				it.reset()
+				m.reset()
 			}
 
 			// Return to title
-			if(it.quitFlag||GameKey.gamekey.any {it.isPushKey(GameKeyDummy.BUTTON_GIVEUP)}) {
+			if(m.quitFlag||GameKey.gamekey.any {it.isPushKey(GameKeyDummy.BUTTON_GIVEUP)}) {
 				ResourceHolder.bgmStop()
 				game.enterState(StateTitle.ID)
 				return@update

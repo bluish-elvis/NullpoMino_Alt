@@ -37,7 +37,11 @@ import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
-import java.io.*
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileReader
+import java.io.IOException
 import java.util.Locale
 import java.util.zip.GZIPInputStream
 
@@ -143,8 +147,10 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 	/* Decide */
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("decide0")
-		NullpoMinoSlick.propGlobal.setProperty("lastrule.${strCurrentMode.lowercase(Locale.getDefault())}",
-			if(list[cursor]==STR_FB) list[cursor] else "")
+		NullpoMinoSlick.propGlobal.setProperty(
+			"lastrule.${strCurrentMode.lowercase(Locale.getDefault())}",
+			if(list[cursor]==STR_FB) list[cursor] else ""
+		)
 		NullpoMinoSlick.saveConfig()
 
 		val strRulePath = if(list[cursor]==STR_FB) null else (entryRules.listPath+modeRules.listPath)[cursor]

@@ -36,7 +36,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.EffectObject
+import mu.nu.nullpo.gui.common.fx.FragAnim
 import org.apache.logging.log4j.LogManager
 import kotlin.math.max
 
@@ -119,19 +119,21 @@ object RendererExtension {
 	 * @param color      Effect color
 	 */
 	private fun addBlockBreakEffect(receiver:EventReceiver?, effectType:Int, x:Int, y:Int, color:Int) {
-		if(receiver==null || receiver !is AbstractRenderer) return
+		if(receiver==null||receiver !is AbstractRenderer) return
 		val local:Class<*> = AbstractRenderer::class.java
 
 		try {
-		receiver.effects
+			receiver.effects.add(
+				FragAnim(
+					when(effectType) {
+						1 -> FragAnim.ANIM.SPARK
+						2 -> FragAnim.ANIM.GEM
+						else -> FragAnim.ANIM.BLOCK
+					}, x, y, color
+				)
+			)
 		} catch(e:Exception) {
 			if(DEBUG) log.error("Failed to extract, modify and place back effects.")
 		}
-	}
-
-	class EffectExtra(val effectType:Int, x:Int, y:Int, val color:Int):EffectObject(x = x, y = y) {
-		override fun update() {
-		}
-
 	}
 }

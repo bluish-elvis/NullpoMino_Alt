@@ -33,6 +33,7 @@
 package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import kotlin.random.Random
 
@@ -41,16 +42,17 @@ object GameTextUtilities {
 	 * Rainbow color order
 	 */
 	private val RAINBOW_ORDER = arrayOf(
-		EventReceiver.COLOR.RED,
-		EventReceiver.COLOR.ORANGE,
-		EventReceiver.COLOR.YELLOW,
-		EventReceiver.COLOR.WHITE,
-		EventReceiver.COLOR.GREEN,
-		EventReceiver.COLOR.CYAN,
-		EventReceiver.COLOR.BLUE,
-		EventReceiver.COLOR.COBALT,
-		EventReceiver.COLOR.PURPLE,
-		EventReceiver.COLOR.PINK)
+		COLOR.RED,
+		COLOR.ORANGE,
+		COLOR.YELLOW,
+		COLOR.WHITE,
+		COLOR.GREEN,
+		COLOR.CYAN,
+		COLOR.BLUE,
+		COLOR.COBALT,
+		COLOR.PURPLE,
+		COLOR.PINK
+	)
 	/**
 	 * Text alignment option
 	 */
@@ -175,8 +177,7 @@ object GameTextUtilities {
 	 * @param color     Color of string
 	 * @param scale     Scale of string
 	 */
-	fun drawDirectTextAlign(receiver:EventReceiver, engine:GameEngine, playerID:Int, x:Int, y:Int, alignment:Int, str:String,
-		color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE, scale:Float = 1f) {
+	fun drawDirectTextAlign(receiver:EventReceiver, x:Int, y:Int, alignment:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
 		val offsetX:Int = when(alignment) {
 			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> (8*str.length*scale).toInt()
 			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> (16*str.length*scale).toInt()
@@ -194,7 +195,6 @@ object GameTextUtilities {
 	 *
 	 * @param receiver  EventReceiver used to draw
 	 * @param engine    Current GameEngine
-	 * @param playerID  Player ID (1P = 0)
 	 * @param x         X coordinate of top-left corner of text
 	 * @param y         Y coordinate of top-left corner of text
 	 * @param alignment Alignment of string relative to string's area
@@ -202,8 +202,8 @@ object GameTextUtilities {
 	 * @param color     Color of string
 	 * @param scale     Scale of string
 	 */
-	fun drawScoreTextAlign(receiver:EventReceiver, engine:GameEngine, playerID:Int, x:Int, y:Int, alignment:Int, str:String,
-		color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE, scale:Float = 1f) {
+	fun drawScoreTextAlign(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, alignment:Int, str:String, color:COLOR = COLOR.WHITE,
+		scale:Float = 1f) {
 		val offsetX:Int = when(alignment) {
 			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> str.length/2
 			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> str.length
@@ -214,14 +214,13 @@ object GameTextUtilities {
 			ALIGN_BOTTOM_LEFT, ALIGN_BOTTOM_MIDDLE, ALIGN_BOTTOM_RIGHT -> (scale*1).toInt()
 			else -> 0
 		}
-		receiver.drawScoreFont(engine, playerID, x-offsetX, y-offsetY, str, color, scale)
+		receiver.drawScoreFont(engine, x-offsetX, y-offsetY, str, color, scale)
 	}
 	/**
 	 * Draws an aligned string using `drawMenuFont`.
 	 *
 	 * @param receiver  EventReceiver used to draw
 	 * @param engine    Current GameEngine
-	 * @param playerID  Player ID (1P = 0)
 	 * @param x         X coordinate of top-left corner of text
 	 * @param y         Y coordinate of top-left corner of text
 	 * @param alignment Alignment of string relative to string's area
@@ -229,15 +228,15 @@ object GameTextUtilities {
 	 * @param color     Color of string
 	 * @param scale     Scale of string
 	 */
-	fun drawMenuTextAlign(receiver:EventReceiver, engine:GameEngine, playerID:Int, x:Int, y:Int, alignment:Int, str:String?,
-		color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE, scale:Float = 1f) {
+	fun drawMenuTextAlign(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, alignment:Int, str:String?, color:COLOR = COLOR.WHITE,
+		scale:Float = 1f) {
 		str ?: return
 		val offsetX:Int = when(alignment) {
 			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> (str.length*scale/2).toInt()
 			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> (str.length*scale).toInt()
 			else -> 0
 		}
-		receiver.drawMenuFont(engine, playerID, x-offsetX, y, str, color, scale)
+		receiver.drawMenuFont(engine, x-offsetX, y, str, color, scale)
 	}
 	/**
 	 * Draws a rainbow string using `drawDirectFont`.
@@ -251,7 +250,7 @@ object GameTextUtilities {
 	 * @param reverse     Reverse order or not
 	 */
 	@JvmOverloads fun drawRainbowDirectString(receiver:EventReceiver, x:Int, y:Int, str:String,
-		startColor:EventReceiver.COLOR, scale:Float, reverse:Boolean = false) {
+		startColor:COLOR, scale:Float, reverse:Boolean = false) {
 		var offset = 0
 		for(i in str.indices) {
 			if(str[i]==' ') {
@@ -281,8 +280,10 @@ object GameTextUtilities {
 			if(str[i]==' ') {
 				offset++
 			} else {
-				receiver.drawDirectFont(x+(i*16*scale).toInt(), y, str.substring(i, i+1),
-					RAINBOW_ORDER[randomEngine.nextInt(RAINBOW_COLORS)])
+				receiver.drawDirectFont(
+					x+(i*16*scale).toInt(), y, str.substring(i, i+1),
+					RAINBOW_ORDER[randomEngine.nextInt(RAINBOW_COLORS)]
+				)
 			}
 		}
 	}
@@ -298,15 +299,18 @@ object GameTextUtilities {
 	 * @param randomEngine Random instance to use
 	 * @param scale        Scale of text
 	 */
-	fun drawRandomRainbowScoreString(receiver:EventReceiver, engine:GameEngine, playerID:Int, x:Int, y:Int, str:String,
-		randomEngine:Random, scale:Float) {
+	fun drawRandomRainbowScoreString(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, str:String, randomEngine:Random,
+		scale:Float) {
 		var offset = 0
 		for(i in str.indices) {
 			if(str[i]==' ') {
 				offset++
 			} else {
-				receiver.drawScoreFont(engine, playerID, x+i, y, str.substring(i, i+1), RAINBOW_ORDER[randomEngine.nextInt(
-					RAINBOW_COLORS)])
+				receiver.drawScoreFont(
+					engine, x+i, y, str.substring(i, i+1), RAINBOW_ORDER[randomEngine.nextInt(
+						RAINBOW_COLORS
+					)]
+				)
 			}
 		}
 	}
@@ -322,15 +326,18 @@ object GameTextUtilities {
 	 * @param randomEngine Random instance to use
 	 * @param scale        Scale of text
 	 */
-	fun drawRandomRainbowMenuString(receiver:EventReceiver, engine:GameEngine, playerID:Int, x:Int, y:Int, str:String,
-		randomEngine:Random, scale:Float) {
+	fun drawRandomRainbowMenuString(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, str:String, randomEngine:Random,
+		scale:Float) {
 		var offset = 0
 		for(i in str.indices) {
 			if(str[i]==' ') {
 				offset++
 			} else {
-				receiver.drawMenuFont(engine, playerID, x+i, y, str.substring(i, i+1), RAINBOW_ORDER[randomEngine.nextInt(
-					RAINBOW_COLORS)])
+				receiver.drawMenuFont(
+					engine, x+i, y, str.substring(i, i+1), RAINBOW_ORDER[randomEngine.nextInt(
+						RAINBOW_COLORS
+					)]
+				)
 			}
 		}
 	}
@@ -353,15 +360,17 @@ object GameTextUtilities {
 	 * @param destinationY Y of destination (uses drawDirectFont(...)).
 	 * @param scale        Text scale (0.5f, 1.0f, 2.0f).
 	 */
-	fun drawMixedColorDirectString(receiver:EventReceiver, engine:GameEngine, playerID:Int, stringData:Array<String>,
-		colorData:Array<EventReceiver.COLOR>, destinationX:Int, destinationY:Int, scale:Float) {
+	fun drawMixedColorDirectString(receiver:EventReceiver, stringData:Array<String>, colorData:Array<COLOR>, destinationX:Int,
+		destinationY:Int, scale:Float) {
 		if(stringData.size!=colorData.size||stringData.isEmpty()) return
 		var counterX = 0
 		var counterY = 0
 		for(i in stringData.indices) {
-			if(colorData[i]!=EventReceiver.COLOR.RAINBOW) {
-				receiver.drawDirectFont(destinationX+(counterX*16*scale).toInt(),
-					destinationY+(counterY*16*scale).toInt(), stringData[i], colorData[i], scale)
+			if(colorData[i]!=COLOR.RAINBOW) {
+				receiver.drawDirectFont(
+					destinationX+(counterX*16*scale).toInt(),
+					destinationY+(counterY*16*scale).toInt(), stringData[i], colorData[i], scale
+				)
 				counterX += stringData[i].length
 			} else {
 				counterX = 0
@@ -386,14 +395,16 @@ object GameTextUtilities {
 	 * @param destinationY Y of destination (uses drawScoreFont(...)).
 	 * @param scale        Text scale (0.5f, 1.0f, 2.0f).
 	 */
-	fun drawMixedColorScoreString(receiver:EventReceiver, engine:GameEngine, playerID:Int, stringData:Array<String>,
-		colorData:Array<EventReceiver.COLOR>, destinationX:Int, destinationY:Int, scale:Float) {
+	fun drawMixedColorScoreString(receiver:EventReceiver, engine:GameEngine, stringData:Array<String>, colorData:Array<COLOR>,
+		destinationX:Int, destinationY:Int, scale:Float) {
 		if(stringData.size!=colorData.size||stringData.isEmpty()) return
 		var counterX = 0
 		val counterY = 0
 		for(i in stringData.indices) {
-			receiver.drawScoreFont(engine, playerID, destinationX+counterX, destinationY+counterY,
-				stringData[i], colorData[i], scale)
+			receiver.drawScoreFont(
+				engine, destinationX+counterX, destinationY+counterY, stringData[i],
+				colorData[i], scale
+			)
 			counterX += stringData[i].length
 		}
 	}
@@ -414,87 +425,91 @@ object GameTextUtilities {
 	 * @param destinationY Y of destination (uses drawMenuFont(...)).
 	 * @param scale        Text scale (0.5f, 1.0f, 2.0f).
 	 */
-	fun drawMixedColorMenuString(receiver:EventReceiver, engine:GameEngine, playerID:Int, stringData:Array<String>,
-		colorData:Array<EventReceiver.COLOR>, destinationX:Int, destinationY:Int, scale:Float) {
+	fun drawMixedColorMenuString(receiver:EventReceiver, engine:GameEngine, stringData:Array<String>, colorData:Array<COLOR>,
+		destinationX:Int, destinationY:Int, scale:Float) {
 		if(stringData.size!=colorData.size||stringData.isEmpty()) return
 		var counterX = 0
 		val counterY = 0
 		for(i in stringData.indices) {
-			receiver.drawMenuFont(engine, playerID, destinationX+counterX, destinationY+counterY,
-				stringData[i], colorData[i], scale)
+			receiver.drawMenuFont(
+				engine, destinationX+counterX, destinationY+counterY, stringData[i],
+				colorData[i], scale
+			)
 			counterX += stringData[i].length
 		}
 	}
 //endregion Mixed Color Text
 // region Color Alternator Text
-/**
- * Draws an alternating-color string to a location using `drawDirectFont`.
- *
- * @param engine     GameEngine to draw with.
- * @param playerID   Player to draw next to (0 = 1P).
- * @param string     Text.
- * @param colorData int[] containing color data.
- * @param offset     Start offset of color array.
- * @param x          X of destination (uses drawDirectFont(...)).
- * @param y          Y of destination (uses drawDirectFont(...)).
- * @param scale      Text scale (0.5f, 1.0f, 2.0f).
- */
-fun drawAlternatorColorDirectString(receiver:EventReceiver, engine:GameEngine, playerID:Int, string:String,
-	colorData:Array<EventReceiver.COLOR>, offset:Int, x:Int, y:Int, scale:Float) {
-	var offset = offset
-	if(colorData.isEmpty()) return
-	offset %= colorData.size
-	if(offset<0) offset += colorData.size
-	for(i in string.indices) {
-		receiver.drawDirectFont(x+(16*i*scale).toInt(), y, string.substring(i, i+1),
-			colorData[(offset+i)%colorData.size], scale)
-	}
-}
-/**
- * Draws an alternating-color string to a location using `drawScoreFont`.
- *
- * @param engine     GameEngine to draw with.
- * @param playerID   Player to draw next to (0 = 1P).
- * @param string     Text.
- * @param colorData int[] containing color data.
- * @param offset     Start offset of color array.
- * @param x          X of destination (uses drawScoreFont(...)).
- * @param y          Y of destination (uses drawScoreFont(...)).
- * @param scale      Text scale (0.5f, 1.0f, 2.0f).
- */
-fun drawAlternatorColorScoreString(receiver:EventReceiver, engine:GameEngine, playerID:Int, string:String,
-	colorData:Array<EventReceiver.COLOR>, offset:Int, x:Int, y:Int, scale:Float) {
-	var offset = offset
-	if(colorData.isEmpty()) return
-	offset %= colorData.size
-	if(offset<0) offset += colorData.size
-	for(i in string.indices) {
-		receiver.drawScoreFont(engine, playerID, x, y, string.substring(i, i+1), colorData[(offset+i)%colorData.size], scale)
-	}
-
 	/**
-	 * Draws an alternating-color string to a location using `drawMenuFont`.
+	 * Draws an alternating-color string to a location using `drawDirectFont`.
 	 *
 	 * @param engine     GameEngine to draw with.
 	 * @param playerID   Player to draw next to (0 = 1P).
 	 * @param string     Text.
 	 * @param colorData int[] containing color data.
 	 * @param offset     Start offset of color array.
-	 * @param x          X of destination (uses drawMenuFont(...)).
-	 * @param y          Y of destination (uses drawMenuFont(...)).
+	 * @param x          X of destination (uses drawDirectFont(...)).
+	 * @param y          Y of destination (uses drawDirectFont(...)).
 	 * @param scale      Text scale (0.5f, 1.0f, 2.0f).
 	 */
-	fun drawAlternatorColorMenuString(receiver:EventReceiver, engine:GameEngine, playerID:Int, string:String,
-		colorData:Array<EventReceiver.COLOR>, offset:Int, x:Int, y:Int, scale:Float) {
+	fun drawAlternatorColorDirectString(receiver:EventReceiver, string:String, colorData:Array<COLOR>, offset:Int,
+		x:Int, y:Int, scale:Float) {
 		var offset = offset
 		if(colorData.isEmpty()) return
 		offset %= colorData.size
 		if(offset<0) offset += colorData.size
 		for(i in string.indices) {
-			receiver.drawScoreFont(engine, playerID, x, y, string.substring(i, i+1), colorData[(offset+i)%colorData.size], scale)
+			receiver.drawDirectFont(
+				x+(16*i*scale).toInt(), y, string.substring(i, i+1),
+				colorData[(offset+i)%colorData.size], scale
+			)
+		}
+	}
+	/**
+	 * Draws an alternating-color string to a location using `drawScoreFont`.
+	 *
+	 * @param engine     GameEngine to draw with.
+	 * @param playerID   Player to draw next to (0 = 1P).
+	 * @param string     Text.
+	 * @param colorData int[] containing color data.
+	 * @param offset     Start offset of color array.
+	 * @param x          X of destination (uses drawScoreFont(...)).
+	 * @param y          Y of destination (uses drawScoreFont(...)).
+	 * @param scale      Text scale (0.5f, 1.0f, 2.0f).
+	 */
+	fun drawAlternatorColorScoreString(receiver:EventReceiver, engine:GameEngine, string:String, colorData:Array<COLOR>,
+		offset:Int, x:Int, y:Int, scale:Float) {
+		var offset = offset
+		if(colorData.isEmpty()) return
+		offset %= colorData.size
+		if(offset<0) offset += colorData.size
+		for(i in string.indices) {
+			receiver.drawScoreFont(engine, x, y, string.substring(i, i+1), colorData[(offset+i)%colorData.size], scale)
 		}
 
-	}
+		/**
+		 * Draws an alternating-color string to a location using `drawMenuFont`.
+		 *
+		 * @param engine     GameEngine to draw with.
+		 * @param playerID   Player to draw next to (0 = 1P).
+		 * @param string     Text.
+		 * @param colorData int[] containing color data.
+		 * @param offset     Start offset of color array.
+		 * @param x          X of destination (uses drawMenuFont(...)).
+		 * @param y          Y of destination (uses drawMenuFont(...)).
+		 * @param scale      Text scale (0.5f, 1.0f, 2.0f).
+		 */
+		fun drawAlternatorColorMenuString(receiver:EventReceiver, engine:GameEngine, string:String, colorData:Array<COLOR>,
+			offset:Int, x:Int, y:Int, scale:Float) {
+			var offset = offset
+			if(colorData.isEmpty()) return
+			offset %= colorData.size
+			if(offset<0) offset += colorData.size
+			for(i in string.indices) {
+				receiver.drawScoreFont(engine, x, y, string.substring(i, i+1), colorData[(offset+i)%colorData.size], scale)
+			}
+
+		}
 // endregion Color Alternator Text
-}
+	}
 }

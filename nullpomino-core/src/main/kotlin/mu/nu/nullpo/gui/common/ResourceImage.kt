@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,30 +37,31 @@ interface ResourceImage<T> {
 
 	/** 画像読み込み*/
 	fun load()
-	fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float = 1f)
-	fun draw() = draw(0, 0, width, height, 0, 0, width, height)
-	fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Int, srcY:Int, srcX2:Int, srcY2:Int, alpha:Float = 1f) =
-		draw(x, y, x2, y2, srcX.toFloat(), srcY.toFloat(), srcX2.toFloat(), srcY2.toFloat(), alpha)
+	fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float = 1f,
+		color:Triple<Float, Float, Float> = Triple(1f, 1f, 1f))
 
-	fun draw(x:Int, y:Int, x2:Int, y2:Int, srcX:Int, srcY:Int, srcX2:Int, srcY2:Int, alpha:Float = 1f) =
-		draw(
-			x.toFloat(),
-			y.toFloat(),
-			x2.toFloat(),
-			y2.toFloat(),
-			srcX.toFloat(),
-			srcY.toFloat(),
-			srcX2.toFloat(),
-			srcY2.toFloat(),
-			alpha
-		)
+	fun draw() = draw(0, 0, width, height, 0, 0, width, height)
+
+	fun draw(x:Float, y:Float, x2:Float, y2:Float, alpha:Float = 1f, color:Triple<Float, Float, Float> = Triple(1f, 1f, 1f)) =
+		draw(x, y, x2, y2, 0, 0, width, height, alpha, color)
+
+	fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Int, srcY:Int, srcX2:Int, srcY2:Int, alpha:Float = 1f,
+		color:Triple<Float, Float, Float> = Triple(1f, 1f, 1f)) =
+		draw(x, y, x2, y2, srcX.toFloat(), srcY.toFloat(), srcX2.toFloat(), srcY2.toFloat(), alpha, color)
+
+	fun draw(x:Int, y:Int, x2:Int, y2:Int, srcX:Int, srcY:Int, srcX2:Int, srcY2:Int, alpha:Float = 1f) = draw(
+		x.toFloat(), y.toFloat(), x2.toFloat(), y2.toFloat(),
+		srcX.toFloat(), srcY.toFloat(), srcX2.toFloat(), srcY2.toFloat(), alpha
+	)
 
 	val width:Int
 	val height:Int
 
 	class ResourceImageStr(override val name:String):ResourceImage<String> {
 		override var res:String = "graphics/$name.png"
-		override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float) {}
+		override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float, color:Triple<Float, Float, Float>) {
+		}
+
 		override fun load() {}
 		override val width:Int = 0
 		override val height:Int = 0

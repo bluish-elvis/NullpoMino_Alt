@@ -1,6 +1,5 @@
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
-import kotlin.jvm.JvmStatic
 import java.text.DecimalFormat
 import java.util.Arrays
 

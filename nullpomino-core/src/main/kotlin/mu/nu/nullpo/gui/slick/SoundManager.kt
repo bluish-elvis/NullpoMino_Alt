@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -41,9 +41,9 @@ constructor(
 	private val maxClips:Int = 128) {
 
 	/** WAVE file data (Name-> data本体) */
-	private val clipMap:HashMap<String, Sound> = HashMap(maxClips)
+	private val clipMap:MutableMap<String, Sound> = mutableMapOf()
 	/** 登録されたWAVE file count */
-	private val counter = 0
+	private val counter get() = clipMap.size
 
 	/** Load WAVE file
 	 * @param name 登録名

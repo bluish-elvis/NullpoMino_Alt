@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2021-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -39,6 +39,7 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 	val menus = items.foldIndexed(emptyList<Pair<Int, Int>>()) {id, list, item ->
 		list+List(item.colMax) {id to it}
 	}
+	/** map of [items] drawed Y-coordinate grids*/
 	val locs = items.fold(emptyList<Int>()) {buf, it -> buf+((buf.lastOrNull() ?: 0)+it.showHeight)}
 	val size get() = items.size
 	operator fun get(index:Int) = items[index]
@@ -53,6 +54,7 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 	}
 
 	private fun locPage(page:Int, height:Int) = locs.indexOfFirst {it>=page*height}.let {if(it<0) locs.size else it}
+
 	fun drawMenu(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int = menuY, cur:Int = menuCursor) =
 		drawMenu(engine, playerID, receiver, y, page = locs[cur]/engine.field.height)
 
@@ -60,8 +62,10 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 		var menuY = y
 		val range = locPage(page, engine.field.height)+offset until locPage(page+1, engine.field.height)+offset
 		items.slice(range).forEachIndexed {i, it ->
-			it.draw(engine, playerID, receiver, menuY,
-				if(menus[menuCursor].first!=i||engine.owner.replayMode) -1 else menus[menuCursor].second)
+			it.draw(
+				engine, playerID, receiver, menuY,
+				if(menus[menuCursor].first!=i||engine.owner.replayMode) -1 else menus[menuCursor].second
+			)
 			menuY += it.showHeight
 			statcMenu += if(it is SpeedPresets) (if(it.showG) 2 else 0+if(it.showD) 5 else 0) else 1
 		}

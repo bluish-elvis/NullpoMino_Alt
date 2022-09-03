@@ -53,8 +53,10 @@ open class ComboRaceSeedSearch:DummyAI() {
 		 * combo
 		 */
 		private val FIELDS =
-			intArrayOf(0x7, 0xB, 0xD, 0xE, 0x13, 0x15, 0x16, 0x19, 0x1A, 0x1C, 0x23, 0x29, 0x31, 0x32, 0x49, 0x4C, 0x61, 0x68, 0x83,
-				0x85, 0x86, 0x89, 0x8A, 0x8C, 0xC4, 0xC8, 0x111, 0x888)
+			intArrayOf(
+				0x7, 0xB, 0xD, 0xE, 0x13, 0x15, 0x16, 0x19, 0x1A, 0x1C, 0x23, 0x29, 0x31, 0x32, 0x49, 0x4C, 0x61, 0x68, 0x83,
+				0x85, 0x86, 0x89, 0x8A, 0x8C, 0xC4, 0xC8, 0x111, 0x888
+			)
 
 		/** Number of pieces to think ahead */
 		private const val MAX_THINK_DEPTH = 6
@@ -117,8 +119,10 @@ open class ComboRaceSeedSearch:DummyAI() {
 				if(result>bestResult) {
 					bestSeed = seed
 					bestResult = result
-					println("New best result: seed = "+bestSeed.toString(16)
-						+", result = "+bestResult)
+					println(
+						"New best result: seed = "+bestSeed.toString(16)
+							+", result = "+bestResult
+					)
 				}
 			}
 		}
@@ -232,7 +236,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 			var count = 0
 
 			for(i in FIELDS.indices) {
-				fldBackup.copy(fldEmpty)
+				fldBackup.replace(fldEmpty)
 				var code = FIELDS[i]
 
 				for(y in Field.DEFAULT_HEIGHT-1 downTo Field.DEFAULT_HEIGHT-4+1)
@@ -250,7 +254,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 						for(x in minX..maxX) {
 							val y = piece.getBottom(x, 0, rt, fldBackup)
 							if(p==Piece.PIECE_L||p==Piece.PIECE_T||p==Piece.PIECE_J||rt<2) {
-								fldTemp.copy(fldBackup)
+								fldTemp.replace(fldBackup)
 								piece.placeToField(x, y, rt, fldTemp)
 								if(fldTemp.checkLine()==1) {
 									fldTemp.clearLine()
@@ -265,10 +269,10 @@ open class ComboRaceSeedSearch:DummyAI() {
 							}
 
 							// Left rotation
-							var rot = piece.getRotateDirection(-1, rt)
+							var rot = piece.getSpinDirection(-1, rt)
 							var newX = x
 							var newY = y
-							fldTemp.copy(fldBackup)
+							fldTemp.replace(fldBackup)
 
 							if(piece.checkCollision(x, y, rot, fldTemp)) {
 
@@ -291,10 +295,10 @@ open class ComboRaceSeedSearch:DummyAI() {
 							}
 
 							// Right rotation
-							rot = piece.getRotateDirection(1, rt)
+							rot = piece.getSpinDirection(1, rt)
 							newX = x
 							newY = y
-							fldTemp.copy(fldBackup)
+							fldTemp.replace(fldBackup)
 
 							if(piece.checkCollision(x, y, rot, fldTemp)) {
 								wallkick.executeWallkick(x, y, 1, rt, rot, true, piece, fldTemp, null)?.let {kick ->

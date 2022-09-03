@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -269,7 +269,7 @@ class NetRoomInfo:Serializable {
 	 * @param n Copy source
 	 */
 	constructor(n:NetRoomInfo) {
-		copy(n)
+		replace(n)
 	}
 
 	/** Stringの配列から data代入するConstructor
@@ -286,10 +286,8 @@ class NetRoomInfo:Serializable {
 		importString(str)
 	}
 
-	/** 他のNetRoomInfoからコピー
-	 * @param n Copy source
-	 */
-	fun copy(n:NetRoomInfo) {
+	/** 他のNetRoomInfo[n]からコピー*/
+	fun replace(n:NetRoomInfo) {
 		roomID = n.roomID
 		strName = n.strName
 		maxPlayers = n.maxPlayers
@@ -418,7 +416,8 @@ class NetRoomInfo:Serializable {
 	 * @return Stringの配列(String[40])
 	 */
 	private fun exportStringArray():Array<String> =
-		arrayOf("$roomID", NetUtil.urlEncode(strName), "$maxPlayers", "$playerSeatedCount", "$spectatorCount", "$playerListCount",
+		arrayOf(
+			"$roomID", NetUtil.urlEncode(strName), "$maxPlayers", "$playerSeatedCount", "$spectatorCount", "$playerListCount",
 			"$playing", "$ruleLock", NetUtil.urlEncode(ruleName), "$autoStartSeconds", "$gravity", "$denominator", "$are", "$areLine",
 			"$lineDelay", "$lockDelay", "$das", "$twistEnableType", "$b2b", "$combo", "$rensaBlock", "$counter", "$bravo",
 			"$reduceLineSend", "$hurryupSeconds", "$hurryupInterval", "$autoStartTNET2", "$disableTimerAfterSomeoneCancelled",

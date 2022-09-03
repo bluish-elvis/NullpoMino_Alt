@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -71,6 +71,7 @@ open class RanksAI:DummyAI(), Runnable {
 		get() = 1
 	/** When true,To threadThink routineInstructing the execution of the  */
 	protected var thinkRequest = false
+
 	inner class Score {
 
 		var rankStacking = 0f
@@ -197,7 +198,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 		//Starts the thread
 		if((thread==null||!thread!!.isAlive)&&engine.aiUseThread) {
-			thread = Thread(this, "AI_$playerID")
+			thread = Thread(this, "AI_${engine.playerID}")
 			thread!!.isDaemon = true
 			thread!!.start()
 			thinkDelay = engine.aiThinkDelay
@@ -246,19 +247,19 @@ open class RanksAI:DummyAI(), Runnable {
 				} else {
 
 					if(rt!=bestRt) {
-						val lrot = engine.getRotateDirection(-1)
-						val rrot = engine.getRotateDirection(1)
+						val lrot = engine.getSpinDirection(-1)
+						val rrot = engine.getSpinDirection(1)
 
-						if(abs(rt-bestRt)==2&&engine.ruleOpt.rotateButtonAllowDouble
+						if(abs(rt-bestRt)==2&&engine.ruleOpt.spinDoubleKey
 							&&!ctrl.isPress(Controller.BUTTON_E)
 						)
 							input = input or Controller.BUTTON_BIT_E
-						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse&&
-							!engine.isRotateButtonDefaultRight&&bestRt==rrot
+						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey&&
+							!engine.spinDirection&&bestRt==rrot
 						)
 							input = input or Controller.BUTTON_BIT_B
-						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse&&
-							engine.isRotateButtonDefaultRight&&bestRt==lrot
+						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey&&
+							engine.spinDirection&&bestRt==lrot
 						)
 							input = input or Controller.BUTTON_BIT_B
 						else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
@@ -564,7 +565,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 		log.debug("piece id : ${pieces[0]} rot : $rt x :$x surface :${surface.contentToString()}")
 
-		//Boolean value representing the fact that the current piece is the I piece, vertical, and in the rightmost column.
+		//Boolean value representing the fact that the current piece is the I-piece, vertical, and in the rightmost column.
 		val isVerticalIRightMost = pieces[0]==Piece.PIECE_I&&(rt==1||rt==3)&&x==9
 
 		// Either we are going to score a 4-Line or we have to check that the piece fits the surface
@@ -615,7 +616,7 @@ open class RanksAI:DummyAI(), Runnable {
 				holdPiece2[0] = holdPiece[0]
 
 				val numPreviews2 = numPreviews-1
-				// If current piece is I Piece,  and minimum height is greater 4 and maximum height is greater than threshold, force the 4-Line
+				// If current piece is I-piece,  and minimum height is greater 4 and maximum height is greater than threshold, force the 4-Line
 				if(pieceNow==Piece.PIECE_I&&heightMin>=THRESHOLD_FORCE_4LINES&&heightMin>=4 /* &
 				 * &
 				 * !

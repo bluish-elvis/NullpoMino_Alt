@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -76,11 +76,13 @@ class StateSelectMode:DummyMenuScrollState() {
 
 		// Set cursor postion
 
-		cursor = getIDbyName(when {
-			isTopLevel -> NullpoMinoSlick.propGlobal.getProperty("name.mode.toplevel", null)
-			strCurrentFolder.isNotEmpty() -> NullpoMinoSlick.propGlobal.getProperty("name.mode.$strCurrentFolder", null)
-			else -> NullpoMinoSlick.propGlobal.getProperty("name.mode", null)
-		})
+		cursor = getIDbyName(
+			when {
+				isTopLevel -> NullpoMinoSlick.propGlobal.getProperty("name.mode.toplevel", null)
+				strCurrentFolder.isNotEmpty() -> NullpoMinoSlick.propGlobal.getProperty("name.mode.$strCurrentFolder", null)
+				else -> NullpoMinoSlick.propGlobal.getProperty("name.mode", null)
+			}
+		)
 		if(cursor<0) cursor = 0
 		if(cursor>list.size-1) cursor = list.size-1
 	}
@@ -123,8 +125,10 @@ class StateSelectMode:DummyMenuScrollState() {
 
 		FontNormal.printFontGrid(1, 1, "Select a Game Mode (${cursor+1}/${list.size})", COLOR.ORANGE)
 		if(!isTopLevel)
-			FontNano.printFont(8, 36,
-				if(strCurrentFolder.isNotEmpty()) ">${strCurrentFolder.uppercase()}" else ">[All modes]", COLOR.ORANGE, .5f)
+			FontNano.printFont(
+				8, 36,
+				if(strCurrentFolder.isNotEmpty()) ">${strCurrentFolder.uppercase()}" else ">[All modes]", COLOR.ORANGE, .5f
+			)
 
 		FontTTF.print(16, 440, getModeDesc(convModeName(list[cursor], false)))
 	}

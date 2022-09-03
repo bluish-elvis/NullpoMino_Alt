@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -219,7 +219,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 						// Retry button
 						if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_RETRY))
-							mode.netplayOnRetryKey(gameManager.engine[0], 0)
+							mode.netplayOnRetryKey(gameManager.engine[0])
 					}
 				}
 			// Screenshot button
@@ -280,7 +280,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				gm.init()
 				gm.engine[0].let {
 					// Tuning
-					it.owRotateButtonDefaultRight = NullpoMinoSlick.propGlobal.getProperty(
+					it.owSpinDirection = NullpoMinoSlick.propGlobal.getProperty(
 						"0.tuning.owRotateButtonDefaultRight", -1
 					)
 					it.owSkin = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owSkin", -1)
@@ -325,7 +325,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 						it.aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("0.aiThinkDelay", 0)
 						it.aiUseThread = NullpoMinoSlick.propGlobal.getProperty("0.aiUseThread", true)
 						it.aiShowHint = NullpoMinoSlick.propGlobal.getProperty("0.aiShowHint", false)
-						it.aiPrethink = NullpoMinoSlick.propGlobal.getProperty("0.aiPrethink", false)
+						it.aiPreThink = NullpoMinoSlick.propGlobal.getProperty("0.aiPreThink", false)
 						it.aiShowState = NullpoMinoSlick.propGlobal.getProperty("0.aiShowState", false)
 					}
 				}
@@ -363,7 +363,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 	override fun netlobbyOnExit(lobby:NetLobbyFrame) {
 		gameManager?.also {
-			if(it.engine.isNotEmpty()) it.engine[0].quitflag = true
+			if(it.engine.isNotEmpty()) it.engine[0].quitFlag = true
 		}
 	}
 

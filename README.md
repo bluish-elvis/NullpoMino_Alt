@@ -1,4 +1,4 @@
-# NullpoMino ～ぬるぽミノ～ Version 7.7.Alt
+# NullpoMino_Alt ～ぬるぽミノ改～ Version 7.7.20xx
 
 ## これって何？
 
@@ -9,6 +9,8 @@ Kotlin/JVMでリメイクしたものです。 現状Slick版のみです。
 
 動作にはJava Runtime Environmentが必要です。http://www.java.com/ja/download/
 また、OpenGLに対応したビデオカードが必要です。
+
+IntelliJやmavenなどからビルドする場合のSDKはEclipse Temurin推奨です。
 
 ### Windows
 
@@ -142,7 +144,8 @@ java -cp bin:NullpoMino.jar:lib/log4j-1.2.15.jar:lib/slick.jar:lib/lwjgl.jar:lib
 
 ### 【ゲームルール】
 
-選んだゲームルールに応じて操作性やブロックの見た目が変わります。 CONFIGの中にある「[RULE SELECT]」から使用するルールを変更できます。 付属のルールエディタを使うと独自のルールを作成できます。 NEXT順生成アルゴリズム：
+選んだゲームルールに応じて操作性やブロックの見た目が変わります。 CONFIGの中にある「[RULE SELECT]」から使用するルールを変更できます。 付属のルールエディタを使うと独自のルールを作成できます。
+NEXT順生成アルゴリズム：
 
 - BagRandomizer: ７種全てのブロックで１巡していく。 一番最初にSZOが出ないバージョンや、１巡中のブロックが＋１、－１、×２、×９になるバージョンも有る。
 - HistoryRandomizer: 一番最初にSZOが出ないほか、一度出たブロックは最小でも4ブロックの間は出にくくなる。
@@ -240,8 +243,8 @@ java -cp bin:NullpoMino.jar:lib/log4j-1.2.15.jar:lib/slick.jar:lib/lwjgl.jar:lib
   一定時間内にレベル500を突破すると、何かが起こり始めます。
 - Grand Phanthom Grand Stormモードと似ていますが、このモードでは置いたブロックが徐々に見えなくなっていきます。\
   フィールドの地形を記憶することが重要となります。
-- Grand Finale 超高速、かつ過酷な条件下でプレイするモードです。\
-  Grand LightningとGrand Phantom、Grand Roadsを完全クリアしたプレイヤー向けです。
+- Grand Finale 過酷な条件下でプレイするモードです。\
+  Grand LightningとGrand PhantomまたはGrand Roadsを完全クリアしたプレイヤー向けです。
 - Grand Roads できるだけ速く150ラインまたは200ライン消すことが目的のモードです。\
   10ライン消すたびにレベルが上がりますが、制限時間内にレベルアップしないとゲームオーバーです。
   - 150ラインタイプ(右に行くほど難しい):
@@ -269,13 +272,13 @@ java -cp bin:NullpoMino.jar:lib/log4j-1.2.15.jar:lib/slick.jar:lib/lwjgl.jar:lib
 
 - AVALANCHE 1P (RC1)
   - 同じ色のブロックを縦か横に4つ以上繋げて消していくモードです。途中で折れ曲がっていてもOKですが、斜めにはくっつきません。
-  - 空中に浮いたブロックは全て重力に従って落下します。これを利用して連鎖を決めれば高得点が入ります。
+  - 空中に浮いたブロックは全て隙間を残さずに落下します。これを利用して連鎖を決めれば高得点が入ります。
   - 選べるゲームタイプはSQUAREモードと同じです。
   - まともにプレイする場合は「AVALANCHE」ルールを使用してください。
 
 - AVALANCHE 1P FEVER MARATHON (RC1)
-  - あらかじめ簡単に連鎖できるように組まれたブロック）が積まれた状態でゲームが始まります。\ 一番長い連鎖ができると思うところにブロックを置いて、連鎖をスタートさせてください。
-  - 連鎖終了後、新しい連鎖のタネが出現します。うまく連鎖できれば、次に出現する連鎖のタネが大きくなり、制限時間も増えます。
+  - あらかじめ簡単に連鎖できるように組まれたブロックが積まれた状態でゲームが始まります。\ 一番長い連鎖ができると思うところにブロックを置いて、連鎖をスタートさせてください。
+  - 一回分の連鎖が終了すると、フィールドは新しい連鎖のタネに移ります。うまく連鎖できれば、次に出現する連鎖のタネが大きくなり、制限時間も増えます。
   - まともにプレイする場合は「AVALANCHE」ルールを使用してください。
 
 - AVALANCHE VS-BATTLE (RC1)\
@@ -294,11 +297,11 @@ java -cp bin:NullpoMino.jar:lib/log4j-1.2.15.jar:lib/slick.jar:lib/lwjgl.jar:lib
 
 - PHYSICIAN (RC1)
   - 上から落ちてくる3色の通常ブロックを使い、あらかじめフィールド内に置かれている宝石ブロックをすべて消していくモードです。
-  - ブロックは縦か横に4つ以上同じ色を並べると消えます。
+  - ブロックは縦か横の直線で4つ以上同じ色を並べると消えます。
   - まともにプレイする場合は「PHYSICIAN」ルールを使用してください。
 
 - PHYSICIAN VS-BATTLE (RC1)
-  - PHYSICIANモードのルールで対戦します。 相手がゲームオーバーになるか、先にウイルスを全て消すと勝利です。
+  - PHYSICIANモードのルールで対戦します。 相手がゲームオーバーになるか、先に宝石ブロックを全て消すと勝利です。
   - まともにプレイする場合は「PHYSICIAN」ルールを使用してください。
 
 - SPF VS-BATTLE (BETA)
@@ -392,10 +395,12 @@ java -cp NullpoMino.jar:lib/log4j-1.2.15.jar mu.nu.nullpo.game.net.NetServer [�
 ### FAQ
 
 Q: Slick版でジョイスティックが動かない\
-A: GENERAL CONFIG画面の"JOYSTICK METHOD"の設定をLWGJLに変えて、JOYSTICK SETTING画面の設定をいろいろ弄ってください。 Slick版のジョイスティックサポートはSDL版ほど良くないです。
+A: GENERAL CONFIG画面の"JOYSTICK METHOD"の設定をLWGJLに変えて、JOYSTICK SETTING画面の設定をいろいろ弄ってください。
+Slick版のジョイスティックサポートはSDL版ほど良くないです。
 
 Q: ネットプレイでレートや1人プレイの記録が保存されない\
-A: 名前にトリップが入っていないと記録は保存されません。 トリップをつけるには、名前の後ろにシャープ記号（# ）とパスワードを入れてください。 （例えば、名前欄に"ABCDEF# nullpomino"と入れて接続すると"ABCDEF
+A: 名前にトリップが入っていないと記録は保存されません。 トリップをつけるには、名前の後ろにシャープ記号（# ）とパスワードを入れてください。 （例えば、名前欄に"ABCDEF# nullpomino"
+と入れて接続すると"ABCDEF
 ◆gN6kJVofq6"になります)
 
 # TODO

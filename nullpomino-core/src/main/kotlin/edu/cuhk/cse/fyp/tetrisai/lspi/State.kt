@@ -1,3 +1,32 @@
+/*
+ * Copyright (c) 2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
 import java.awt.Color
@@ -169,12 +198,12 @@ open class State {
 				sent += rowsCleared*2
 				if(b2b) sent += 1 else b2b = true
 			} else if(rowsCleared==4) {
-					sent += 4
-					if(b2b) sent += 1 else b2b = true
-				} else {
-					b2b = false
-					if(rowsCleared==2) sent++ else if(rowsCleared==3) sent += 2
-				}
+				sent += 4
+				if(b2b) sent += 1 else b2b = true
+			} else {
+				b2b = false
+				if(rowsCleared==2) sent++ else if(rowsCleared==3) sent += 2
+			}
 
 			// perfect clear
 			var perfectClear = true
@@ -264,7 +293,7 @@ open class State {
 		}
 
 		//pick a new piece
-		if(!doublePlayer && this !is FutureState) nextPiece = randomPiece()
+		if(!doublePlayer&&this !is FutureState) nextPiece = randomPiece()
 		return valid
 	}
 
@@ -377,6 +406,6 @@ open class State {
 				arrayOf(intArrayOf(2, 2, 1), intArrayOf(2, 3))
 			)
 
-		val brickCol = Color.gray
+		val brickCol:Color = Color.gray
 	}
 }

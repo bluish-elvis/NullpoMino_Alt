@@ -1,3 +1,39 @@
+/*
+ * Copyright (c) 2022-2022,
+ * This library class was created by 0xFC963F18DC21 / Shots243
+ * It is part of an extension library for the game NullpoMino (copyright 2022-2022)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
+ *
+ * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+ *
+ * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ *
+ * Original Repository: https://github.com/Shots243/ModePile
+ *
+ * When using this library in a mode / library pack of your own, the following
+ * conditions must be satisfied:
+ *     - This license must remain visible at the top of the document, unmodified.
+ *     - You are allowed to use this library for any modding purpose.
+ *         - If this is the case, the Library Creator must be credited somewhere.
+ *             - Source comments only are fine, but in a README is recommended.
+ *     - Modification of this library is allowed, but only in the condition that a
+ *       pull request is made to merge the changes to the repository.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package wtf.oshisaure.nullpomodshit.modes
 
 import mu.nu.nullpo.game.component.BGMStatus
@@ -36,19 +72,19 @@ class MarathonZone:NetDummyMode() {
 	/** Combo count for most recent scoring event  */
 	private var lastcombo = 0
 	/** Current BGM  */
-	private var bgmlv = 0
+	private var bgmLv = 0
 
 	private val itemLevel = LevelMenuItem("startlevel", "Level", EventReceiver.COLOR.BLUE, 0, 0..19)
 	/** Level at start time  */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val itemMode = StringsMenuItem("goaltype", "GOAL", EventReceiver.COLOR.BLUE, 0,
+	private val itemMode = StringsMenuItem("goalType", "GOAL", EventReceiver.COLOR.BLUE, 0,
 		Array(GAMETYPE_MAX) {if(tableGameClearLines[it]<0) "ENDLESS" else "${tableGameClearLines[it]} LINES"})
 	/** Game type  */
-	private var goaltype:Int by DelegateMenuItem(itemMode)
+	private var goalType:Int by DelegateMenuItem(itemMode)
 	/** Version  */
 	private var version = 0
-	/** Current round's ranking rank  */
+	/** Current round's ranking position  */
 	private var rankingRank = 0
 	/** Rankings' scores  */
 	private var rankingScore = emptyArray<IntArray>()
@@ -91,11 +127,11 @@ class MarathonZone:NetDummyMode() {
 		lastzonebonus = getZoneBonus3(lastzonelines, engine.statistics.level+1)
 		engine.statistics.scoreBonus += lastzonebonus
 		inzone = false
-		engine.framecolor = GameEngine.FRAME_COLOR_CYAN
+		engine.frameColor = GameEngine.FRAME_COLOR_CYAN
 		setSpeed(engine)
 		engine.playSE("applause${maxOf(lastzonelines/5, 20)}")
 		engine.playSE("cool")
-		if((engine.statistics.lines>=tableGameClearLines[goaltype])&&(tableGameClearLines[goaltype]>=0)) {
+		if((engine.statistics.lines>=tableGameClearLines[goalType])&&(tableGameClearLines[goalType]>=0)) {
 			// Ending
 			engine.ending = 1
 			engine.gameEnded()
@@ -112,12 +148,12 @@ class MarathonZone:NetDummyMode() {
 	override val menu:MenuList
 		get() = MenuList("marathonzone")
 
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 		lastscore = 0
 		lastb2b = false
 		lastcombo = 0
-		bgmlv = 0
+		bgmLv = 0
 		lastzonegain = 0
 		lastzonelines = 0
 		lastzonebonus = 0
@@ -129,18 +165,18 @@ class MarathonZone:NetDummyMode() {
 		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		netPlayerInit(engine, playerID)
+		netPlayerInit(engine)
 		if(!owner.replayMode) {
 
 			version = CURRENT_VERSION
 		} else {
-			if(version==0&&owner.replayProp.getProperty("marathonzone.endless", false)) goaltype = 2
+			if(version==0&&owner.replayProp.getProperty("marathonzone.endless", false)) goalType = 2
 
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
+			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.backgroundStatus.bg = startLevel
-		engine.framecolor = GameEngine.FRAME_COLOR_CYAN
+		engine.frameColor = GameEngine.FRAME_COLOR_CYAN
 	}
 	/**
 	 * Set the gravity rate
@@ -159,10 +195,10 @@ class MarathonZone:NetDummyMode() {
 	/*
 	 * Called at settings screen
 	 */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode) {
-			netOnUpdateNetPlayRanking(engine, goaltype)
+			netOnUpdateNetPlayRanking(engine, goalType)
 		} else if(!engine.owner.replayMode) {
 			// Configuration changes
 			val change = updateMenu(engine)
@@ -187,14 +223,14 @@ class MarathonZone:NetDummyMode() {
 
 			// Cancel
 			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_B)&&!netIsNetPlay) {
-				engine.quitflag = true
+				engine.quitFlag = true
 			}
 
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_D)&&netIsNetPlay&&(startLevel==0)&&(
 					engine.ai==null)
 			) {
-				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
+				netEnterNetPlayRankingScreen(goalType)
 			}
 			engine.statc[3]++
 		} else {
@@ -209,21 +245,20 @@ class MarathonZone:NetDummyMode() {
 	/*
 	 * Render the settings screen
 	 */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		if(netIsNetRankingDisplayMode) {
 			// NET: Netplay Ranking
-			netOnRenderNetPlayRanking(engine, playerID, receiver)
+			netOnRenderNetPlayRanking(engine, receiver)
 		} else {
 			drawMenu(
-				engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0,
-				"LEVEL" to (startLevel+1),
+				engine, receiver, 0, EventReceiver.COLOR.BLUE, 0, "LEVEL" to (startLevel+1),
 			)
 		}
 	}
 	/*
 	 * Called for initialization during "Ready" screen
 	 */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 1
 		engine.b2bEnable = true
@@ -239,51 +274,50 @@ class MarathonZone:NetDummyMode() {
 		if(netIsWatch) {
 			owner.bgmStatus.bgm = BGMStatus.BGM.Silent
 		} else
-			owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmlv)
+			owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmLv)
 	}
 	/*
 	 * Render score
 	 */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 		val titlecolor = if(inzone) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.CYAN
 		val hudcolor = if(inzone) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.BLUE
-		receiver.drawScoreFont(engine, playerID, 0, 0, "ZONE MARATHON", titlecolor)
+		receiver.drawScoreFont(engine, 0, 0, "ZONE MARATHON", titlecolor)
 		receiver.drawScoreFont(
-			engine, playerID, 0, 1,
-			if(tableGameClearLines[goaltype]==-1) "(Endless run)" else "(${tableGameClearLines[goaltype]} Lines run)", titlecolor
+			engine, 0, 1, if(tableGameClearLines[goalType]==-1) "(Endless run)" else "(${tableGameClearLines[goalType]} Lines run)",
+			titlecolor
 		)
 		if((engine.stat===GameEngine.Status.SETTING)||((engine.stat===GameEngine.Status.RESULT)&&(!owner.replayMode))) {
 			if((!owner.replayMode)&&(engine.ai==null)) {
 				val scale:Float = if((receiver.nextDisplayType==2)) 0.5f else 1.0f
 				val topY = if((receiver.nextDisplayType==2)) 6 else 4
-				receiver.drawScoreFont(engine, playerID, 2, topY-1, "SCORE    LINE TIME", hudcolor, scale)
+				receiver.drawScoreFont(engine, 2, topY-1, "SCORE    LINE TIME", hudcolor, scale)
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, -1, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, playerID, 2, topY+i, "${rankingScore[goaltype][i]}", (i==rankingRank), scale)
-					receiver.drawScoreNum(engine, playerID, 11, topY+i, "${rankingLines[goaltype][i]}", (i==rankingRank), scale)
+					receiver.drawScoreGrade(engine, -1, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[goalType][i]}", (i==rankingRank), scale)
+					receiver.drawScoreNum(engine, 11, topY+i, "${rankingLines[goalType][i]}", (i==rankingRank), scale)
 					receiver.drawScoreNum(
-						engine, playerID, 16, topY+i, rankingTime[goaltype][i].toTimeStr,
-						(i==rankingRank), scale
+						engine, 16, topY+i, rankingTime[goalType][i].toTimeStr, (i==rankingRank),
+						scale
 					)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", hudcolor)
+			receiver.drawScoreFont(engine, 0, 3, "SCORE", hudcolor)
 			val strScore = "${engine.statistics.score}(+$lastscore)"
 
-			receiver.drawScoreNum(engine, playerID, 0, 4, strScore)
-			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", hudcolor)
+			receiver.drawScoreNum(engine, 0, 4, strScore)
+			receiver.drawScoreFont(engine, 0, 6, "LINE", hudcolor)
 			receiver.drawScoreNum(
-				engine, playerID, 0, 7,
-				if(engine.statistics.level>=19&&tableGameClearLines[goaltype]<0) "${engine.statistics.lines}" else
+				engine, 0, 7, if(engine.statistics.level>=19&&tableGameClearLines[goalType]<0) "${engine.statistics.lines}" else
 					"${engine.statistics.lines}/${(engine.statistics.level+1)*24}"
 			)
-			receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", hudcolor)
-			receiver.drawScoreNum(engine, playerID, 0, 10, "${engine.statistics.level+1}")
-			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", hudcolor)
-			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.time.toTimeStr)
-			receiver.drawScoreFont(engine, playerID, 0, 15, "ZONE", hudcolor)
+			receiver.drawScoreFont(engine, 0, 9, "LEVEL", hudcolor)
+			receiver.drawScoreNum(engine, 0, 10, "${engine.statistics.level+1}")
+			receiver.drawScoreFont(engine, 0, 12, "TIME", hudcolor)
+			receiver.drawScoreNum(engine, 0, 13, engine.statistics.time.toTimeStr)
+			receiver.drawScoreFont(engine, 0, 15, "ZONE", hudcolor)
 			val colZone = when {
 				inzone -> EventReceiver.COLOR.RAINBOW
 				zoneframes<maxzonetime/4 -> EventReceiver.COLOR.RED
@@ -292,17 +326,16 @@ class MarathonZone:NetDummyMode() {
 				else -> EventReceiver.COLOR.GREEN
 			}
 
-			receiver.drawScoreNum(engine, playerID, 0, 16, "$zoneframes", colZone)
+			receiver.drawScoreNum(engine, 0, 16, "$zoneframes", colZone)
 			receiver.drawScoreNum(
-				engine, playerID, 0, 17, zoneframes.toTimeStr, colZone
+				engine, 0, 17, zoneframes.toTimeStr, colZone
 			)
 			if(zonedisplayframes<180&&lastzonelines>0) {
 				val linetxt = String.format("%2d", lastzonelines)+" LINES!"
 				val pointtxt = "+$lastzonebonus PTS."
-				receiver.drawMenuFont(engine, playerID, 1, engine.field.height/2, linetxt, (zonedisplayframes%2)==0)
+				receiver.drawMenuFont(engine, 1, engine.field.height/2, linetxt, (zonedisplayframes%2)==0)
 				receiver.drawMenuFont(
-					engine, playerID, 6-(pointtxt.length/2+1), engine.field.height/2+1, pointtxt,
-					(zonedisplayframes%2)==0
+					engine, 6-(pointtxt.length/2+1), engine.field.height/2+1, pointtxt, (zonedisplayframes%2)==0
 				)
 			}
 		}
@@ -310,7 +343,7 @@ class MarathonZone:NetDummyMode() {
 		// NET: Number of spectators
 		netDrawSpectatorsCount(engine, 0, 18)
 		// NET: All number of players
-		if(playerID==players-1) {
+		if(engine.playerID==players-1) {
 			netDrawAllPlayersCount()
 			netDrawGameRate(engine)
 		}
@@ -318,11 +351,11 @@ class MarathonZone:NetDummyMode() {
 		netDrawPlayerName(engine)
 	}
 
-	override fun onFirst(engine:GameEngine, playerID:Int) {
+	override fun onFirst(engine:GameEngine) {
 		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_F)&&(zoneframes>maxzonetime/4)&&!inzone) {
 			inzone = true
 			lastzonelines = 0
-			engine.framecolor = GameEngine.FRAME_COLOR_YELLOW
+			engine.frameColor = GameEngine.FRAME_COLOR_YELLOW
 			engine.playSE("medal")
 		}
 		if(inzone) {
@@ -333,10 +366,10 @@ class MarathonZone:NetDummyMode() {
 	/*
 	 * Called after every frame
 	 */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 		// Meter
-		engine.meterValue = (zoneframes*receiver.getMeterMax(engine))/maxzonetime
+		engine.meterValue = (zoneframes*1f)/maxzonetime
 		engine.meterColor = if(inzone) GameEngine.METER_COLOR_YELLOW else GameEngine.METER_COLOR_GREEN
 		zonedisplayframes++
 		zonegaintimer++
@@ -352,12 +385,12 @@ class MarathonZone:NetDummyMode() {
 		}
 	}
 
-	override fun onARE(engine:GameEngine, playerID:Int):Boolean {
+	override fun onARE(engine:GameEngine):Boolean {
 		if(inzone&&zoneframes<=0) endZone(engine)
-		return super.onARE(engine, playerID)
+		return super.onARE(engine)
 	}
 
-	override fun onLineClear(engine:GameEngine, playerID:Int):Boolean {
+	override fun onLineClear(engine:GameEngine):Boolean {
 		//return inzone;
 		if(inzone) {
 			/*
@@ -368,8 +401,8 @@ class MarathonZone:NetDummyMode() {
 						Block blk = engine.field.getBlock(j, i);
 
 						if(blk != null) {
-							if(owner.mode != null) owner.mode.blockBreak(engine, playerID, j, i, blk);
-							owner.receiver.blockBreak(engine, playerID, j, i, blk);
+							if(owner.mode != null) owner.mode.blockBreak(engine, engine.playerID, j, i, blk);
+							owner.receiver.blockBreak(engine, engine.playerID, j, i, blk);
 						}
 					}
 				}
@@ -394,7 +427,7 @@ class MarathonZone:NetDummyMode() {
 				else engine.playSE("combo", minOf(2f, 1f+(newlines-1)/10f))
 			}
 			lastzonelines = newlines
-			engine.owner.mode?.calcScore(engine, playerID, newlines)
+			engine.owner.mode?.calcScore(engine, newlines)
 			engine.owner.receiver.calcScore(engine, null)
 			engine.statc[0] = 0
 			engine.statc[1] = engine.are
@@ -407,7 +440,7 @@ class MarathonZone:NetDummyMode() {
 	/*
 	 * Calculate score
 	 */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		// Zone timer bonus
 		if(!inzone&&lines>0) {
 			lastzonegain = lines*lines*6
@@ -419,10 +452,10 @@ class MarathonZone:NetDummyMode() {
 		var pts = 0
 		if(engine.twist) {
 			when {
-				lines==0&&!engine.twistez -> pts += if(engine.twistmini) 10 else 40
-				engine.twistez&&(lines>0) -> pts += if(engine.b2b) 18 else 12
-				lines==1 -> pts += if(engine.twistmini) (if(engine.b2b) 30 else 20) else (if(engine.b2b) 120 else 80)
-				lines==2 -> pts += if(engine.twistmini&&engine.useAllSpinBonus) (if(engine.b2b) 60 else 40) else (if(engine.b2b) 180 else 120)
+				lines==0&&!engine.twistEZ -> pts += if(engine.twistMini) 10 else 40
+				engine.twistEZ&&(lines>0) -> pts += if(engine.b2b) 18 else 12
+				lines==1 -> pts += if(engine.twistMini) (if(engine.b2b) 30 else 20) else (if(engine.b2b) 120 else 80)
+				lines==2 -> pts += if(engine.twistMini&&engine.useAllSpinBonus) (if(engine.b2b) 60 else 40) else (if(engine.b2b) 180 else 120)
 				lines>=3 -> pts += if(engine.b2b) 240 else 160
 			}
 		} else {
@@ -436,8 +469,8 @@ class MarathonZone:NetDummyMode() {
 		lastb2b = engine.b2b
 
 		// Combo
-		if(engine.combo>=1&&lines>=1) {
-			pts += ((engine.combo-1)*5)
+		if(engine.combo>0&&lines>=1) {
+			pts += ((engine.combo)*5)
 			lastcombo = engine.combo
 		}
 
@@ -455,17 +488,17 @@ class MarathonZone:NetDummyMode() {
 		}
 
 		// BGM fade-out effects and BGM changes
-		if(tableBGMChange[bgmlv]!=-1) {
-			if(engine.statistics.lines>=tableBGMChange[bgmlv]-5) owner.bgmStatus.fadesw = true
-			if(engine.statistics.lines>=tableBGMChange[bgmlv]&&
-				(engine.statistics.lines<tableGameClearLines[goaltype]||tableGameClearLines[goaltype]<0)
+		if(tableBGMChange[bgmLv]!=-1) {
+			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.bgmStatus.fadesw = true
+			if(engine.statistics.lines>=tableBGMChange[bgmLv]&&
+				(engine.statistics.lines<tableGameClearLines[goalType]||tableGameClearLines[goalType]<0)
 			) {
-				bgmlv++
-				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmlv)
+				bgmLv++
+				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmLv)
 				owner.bgmStatus.fadesw = false
 			}
 		}
-		if(engine.statistics.lines>=tableGameClearLines[goaltype]&&tableGameClearLines[goaltype]>=0) {
+		if(engine.statistics.lines>=tableGameClearLines[goalType]&&tableGameClearLines[goalType]>=0) {
 			// Ending
 			engine.ending = 1
 			engine.gameEnded()
@@ -482,7 +515,7 @@ class MarathonZone:NetDummyMode() {
 		return pts
 	}
 
-	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+	override fun onGameOver(engine:GameEngine):Boolean {
 		if(inzone) {
 			endZone(engine)
 			engine.resetStatc()
@@ -494,59 +527,59 @@ class MarathonZone:NetDummyMode() {
 	/*
 	 * Soft drop
 	 */
-	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreSD += fall
 	}
 	/*
 	 * Hard drop
 	 */
-	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += fall*2
 	}
 	/*
 	 * Render results screen
 	 */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
+	override fun renderResult(engine:GameEngine) {
 		drawResultStats(
-			engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE,
-			Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME, Statistic.SPL, Statistic.LPM
+			engine, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE,
+			Statistic.LINES, Statistic.LEVEL, Statistic.TIME, Statistic.SPL, Statistic.LPM
 		)
-		drawResultRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, rankingRank)
-		drawResultNetRank(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[0])
-		drawResultNetRankDaily(engine, playerID, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[1])
+		drawResultRank(engine, receiver, 12, EventReceiver.COLOR.BLUE, rankingRank)
+		drawResultNetRank(engine, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[0])
+		drawResultNetRankDaily(engine, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[1])
 		if(netIsPB) {
-			receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
+			receiver.drawMenuFont(engine, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
 		}
 		if(netIsNetPlay&&(netReplaySendStatus==1)) {
-			receiver.drawMenuFont(engine, playerID, 0, 22, "SENDING...", EventReceiver.COLOR.PINK)
+			receiver.drawMenuFont(engine, 0, 22, "SENDING...", EventReceiver.COLOR.PINK)
 		} else if(netIsNetPlay&&!netIsWatch&&(netReplaySendStatus==2)) {
-			receiver.drawMenuFont(engine, playerID, 1, 22, "A: RETRY", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", EventReceiver.COLOR.RED)
 		}
 	}
 	/*
 	 * Called when saving replay
 	 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(prop, engine)
 
 		// NET: Save name
-		if(!netPlayerName.isNullOrEmpty()) prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
+		if(!netPlayerName.isNullOrEmpty()) prop.setProperty("${engine.playerID}.net.netPlayerName", netPlayerName)
 
 		// Update rankings
 		return (!owner.replayMode&&engine.ai==null&&
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goaltype)!=-1)
+			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goalType)!=-1)
 
 	}
 	/** Load settings from [prop] */
 	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		startLevel = prop.getProperty("marathonzone.startLevel", 0)
-		goaltype = prop.getProperty("marathonzone.gametype", 0)
+		goalType = prop.getProperty("marathonzone.gametype", 0)
 		version = prop.getProperty("marathonzone.version", 0)
 	}
 	/** Save settings to [prop] */
 	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("marathonzone.startLevel", startLevel)
-		prop.setProperty("marathonzone.gametype", goaltype)
+		prop.setProperty("marathonzone.gametype", goalType)
 		prop.setProperty("marathonzone.version", version)
 	}
 
@@ -612,7 +645,7 @@ class MarathonZone:NetDummyMode() {
 		val msg = "game\tstats\t"+
 			"${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"+
 			"${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t${engine.statistics.level}\t"+
-			"$goaltype\t${engine.gameActive}\t${engine.timerActive}\t"+
+			"$goalType\t${engine.gameActive}\t${engine.timerActive}\t"+
 			"$lastscore\t$scDisp\t$lastb2b\t$lastcombo\t"+
 			"$bg\n"
 		netLobby?.netPlayerClient?.send(msg)
@@ -627,7 +660,7 @@ class MarathonZone:NetDummyMode() {
 		engine.statistics.totalPieceLocked = message[9].toInt()
 		engine.statistics.time = message[10].toInt()
 		engine.statistics.level = message[11].toInt()
-		goaltype = message[12].toInt()
+		goalType = message[12].toInt()
 		engine.gameActive = message[13].toBoolean()
 		engine.timerActive = message[14].toBoolean()
 		lastscore = message[15].toInt()
@@ -637,11 +670,8 @@ class MarathonZone:NetDummyMode() {
 		engine.owner.backgroundStatus.bg = message[19].toInt()
 
 		// Meter
-		engine.meterValue = ((engine.statistics.lines%10)*receiver.getMeterMax(engine))/9
-		engine.meterColor = GameEngine.METER_COLOR_GREEN
-		if(engine.statistics.lines%10>=4) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		if(engine.statistics.lines%10>=6) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		if(engine.statistics.lines%10>=8) engine.meterColor = GameEngine.METER_COLOR_RED
+		engine.meterValue = (engine.statistics.lines%10)/9f
+		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 	}
 	/**
 	 * NET: Send end-of-game stats
@@ -663,7 +693,7 @@ class MarathonZone:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendOptions(engine:GameEngine) {
-		val msg = "game\toption\t$startLevel\t$goaltype\n"
+		val msg = "game\toption\t$startLevel\t$goalType\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
 	/**
@@ -671,14 +701,14 @@ class MarathonZone:NetDummyMode() {
 	 */
 	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
 		startLevel = message[4].toInt()
-		goaltype = message[5].toInt()
+		goalType = message[5].toInt()
 	}
 	/**
 	 * NET: Get goal type
 	 */
-	override fun netGetGoalType():Int = goaltype
+	override fun netGetGoalType():Int = goalType
 	/**
-	 * NET: It returns true when the current settings doesn't prevent leaderboard screen from showing.
+	 * NET: It returns true when the current settings don't prevent leaderboard screen from showing.
 	 */
 	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = ((startLevel==0)&&(engine.ai==null))
 

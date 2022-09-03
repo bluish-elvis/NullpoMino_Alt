@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,17 +33,20 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_GRADE
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.BeamH
-import mu.nu.nullpo.gui.common.EffectObject
-import mu.nu.nullpo.gui.common.FragAnim
-import mu.nu.nullpo.gui.common.FragAnim.ANIM
-import mu.nu.nullpo.gui.slick.img.*
+import mu.nu.nullpo.gui.slick.img.FontGrade
+import mu.nu.nullpo.gui.slick.img.FontMedal
+import mu.nu.nullpo.gui.slick.img.FontNano
+import mu.nu.nullpo.gui.slick.img.FontNormal
+import mu.nu.nullpo.gui.slick.img.FontNumber
+import mu.nu.nullpo.gui.slick.img.FontTTF
+import mu.nu.nullpo.gui.slick.img.RenderStaffRoll
 import mu.nu.nullpo.util.CustomProperties
 import org.lwjgl.input.Keyboard
 import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.Image
 import org.newdawn.slick.geom.Polygon
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.pow
 
@@ -63,7 +66,7 @@ class RendererSlick:AbstractRenderer() {
 
 	/** Constructor */
 	init {
-		showbg = NullpoMinoSlick.propConfig.getProperty("option.showbg", true)
+		showBg = NullpoMinoSlick.propConfig.getProperty("option.showbg", true)
 		showlineeffect = NullpoMinoSlick.propConfig.getProperty("option.showlineeffect", true)
 		heavyeffect = NullpoMinoSlick.propConfig.getProperty("option.heavyeffect", false)
 		var bright = NullpoMinoSlick.propConfig.getProperty("option.fieldbgbright", 64)*2
@@ -77,26 +80,33 @@ class RendererSlick:AbstractRenderer() {
 		darknextarea = NullpoMinoSlick.propConfig.getProperty("option.darknextarea", true)
 		nextshadow = NullpoMinoSlick.propConfig.getProperty("option.nextshadow", false)
 		lineeffectspeed = NullpoMinoSlick.propConfig.getProperty("option.lineeffectspeed", 0)
-		outlineghost = NullpoMinoSlick.propConfig.getProperty("option.outlineghost", false)
-		sidenext = NullpoMinoSlick.propConfig.getProperty("option.sidenext", false)
-		bigsidenext = NullpoMinoSlick.propConfig.getProperty("option.bigsidenext", false)
+		outlineGhost = NullpoMinoSlick.propConfig.getProperty("option.outlineghost", false)
+		sideNext = NullpoMinoSlick.propConfig.getProperty("option.sidenext", false)
+		bigSideNext = NullpoMinoSlick.propConfig.getProperty("option.bigsidenext", false)
 		smoothfall = NullpoMinoSlick.propConfig.getProperty("option.smoothfall", false)
 		showLocus = NullpoMinoSlick.propConfig.getProperty("option.showLocus", false)
 		showCenter = NullpoMinoSlick.propConfig.getProperty("option.showCenter", false)
+	}
+
+	override fun drawBlendAdd(unit:()->Unit) {
+		val g = graphics ?: return super.drawBlendAdd(unit)
+		g.setDrawMode(Graphics.MODE_ADD)
+		unit()
+		g.setDrawMode(Graphics.MODE_NORMAL)
 	}
 
 	override fun printFontSpecific(x:Int, y:Int, str:String, font:FONT, color:COLOR, scale:Float, alpha:Float) {
 		when(font) {
 			FONT.NANO -> FontNano.printFont(x, y, str, color, scale, alpha)
 			FONT.NUM -> FontNumber.printFont(x, y, str, color, scale, alpha)
-			FONT.TTF -> printTTFSpecific(x, y, str, color, alpha)
+			FONT.TTF -> printTTFSpecific(x, y, str, color, scale, alpha)
 			FONT.GRADE -> FontGrade.printFont(x, y, str, color, scale, alpha)
 			else -> FontNormal.printFont(x, y, str, color, scale, alpha)
 		}
 	}
 
-	override fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, alpha:Float) =
-		FontTTF.print(x, y, str, color, alpha)
+	override fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, size:Int, alpha:Float) =
+		FontTTF.print(x, y, str, color, alpha, size)
 
 	override fun doesGraphicsExist():Boolean = graphics!=null
 
@@ -137,7 +147,7 @@ class RendererSlick:AbstractRenderer() {
 	}
 
 	/* 描画先のサーフェイスを設定 */
-	override fun setGraphics(g:Any) {
+	override fun setGraphics(g:Any?) {
 		if(g is Graphics) graphics = g
 	}
 
@@ -160,7 +170,7 @@ class RendererSlick:AbstractRenderer() {
 			size>=BS*2 -> BS*2
 			else -> BS
 		}
-		val filter = Color(1f, 1f, 1f, alpha).darker(maxOf(0f, darkness))
+		val filter = (minOf(1f, maxOf(0f, 1f-darkness))).let {brit -> Color(brit, brit, brit, alpha)}
 
 		val imageWidth = img.width
 		if(sx>=imageWidth&&imageWidth!=-1) return
@@ -204,6 +214,27 @@ class RendererSlick:AbstractRenderer() {
 		g.color = c
 	}
 
+	override fun drawOvalSpecific(x:Float, y:Float, w:Float, h:Float, color:Int, alpha:Float, bold:Float) {
+		if(w>0f) {
+			val g = graphics ?: return
+			val c = g.color
+			g.color = Color(color).apply {a = alpha}
+			val lw = g.lineWidth
+			g.lineWidth = bold
+			g.drawOval(x-bold/2f, y-bold/2f, w+bold/2f, h+bold/2f)
+			g.color = c
+			g.lineWidth = lw
+		}
+	}
+
+	override fun fillOvalSpecific(x:Float, y:Float, w:Float, h:Float, color:Int, alpha:Float) {
+		val g = graphics ?: return
+		val c = g.color
+		g.color = Color(color).apply {a = alpha}
+		g.fillOval(x, y, w, h)
+		g.color = c
+	}
+
 	override fun drawBadgesSpecific(x:Float, y:Float, type:Int, scale:Float) {
 		val b = FontBadge(type)
 		graphics?.drawImage(
@@ -217,111 +248,111 @@ class RendererSlick:AbstractRenderer() {
 		//TODO:("Not yet implemented")
 
 		val g = graphics ?: return
-		val blksize = (BS*scale).toInt()
-/*
-		engine.nowPieceObject?.let {
-			for(i in 0 until it.maxBlock)
-				if(!it.big) {
-					val x2 = engine.nowPieceX+it.dataX[it.direction][i]
-					val y2 = engine.nowPieceBottomY+it.dataY[it.direction][i]
+//		val blksize = (BS*scale).toInt()
+		/*
+				engine.nowPieceObject?.let {
+					for(i in 0 until it.maxBlock)
+						if(!it.big) {
+							val x2 = engine.nowPieceX+it.dataX[it.direction][i]
+							val y2 = engine.nowPieceBottomY+it.dataY[it.direction][i]
 
-					if(y2>=0)
-						if(outlineghost) {
-							val blkTemp = it.block[i]
-							val x3:Float = (x+x2*blksize).toFloat()
-							val y3:Float = (y+y2*blksize).toFloat()
-							val ls = blksize-1
+							if(y2>=0)
+								if(outlineghost) {
+									val blkTemp = it.block[i]
+									val x3:Float = (x+x2*blksize).toFloat()
+									val y3:Float = (y+y2*blksize).toFloat()
+									val ls = blksize-1
 
-							var colorID = blkTemp.drawColor
-							if(blkTemp.getAttribute(Block.ATTRIBUTE.BONE)) colorID = -1
-							var color = getColorByID(colorID)
-							if(showbg) color.a = .5f
-							else color = color.darker(.5f)
-							g.color = color
-							g.fillRect(x3, y3, blksize.toFloat(), blksize.toFloat())
-							g.color = Color.white
+									var colorID = blkTemp.drawColor
+									if(blkTemp.getAttribute(Block.ATTRIBUTE.BONE)) colorID = -1
+									var color = getColorByID(colorID)
+									if(showBg) color.a = .5f
+									else color = color.darker(.5f)
+									g.color = color
+									g.fillRect(x3, y3, blksize.toFloat(), blksize.toFloat())
+									g.color = Color.white
 
-							if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) {
-								g.drawLine(x3, y3, (x3+ls), y3)
-								g.drawLine(x3, (y3+1), (x3+ls), (y3+1))
-							}
-							if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) {
-								g.drawLine(x3, (y3+ls), (x3+ls), (y3+ls))
-								g.drawLine(x3, (y3-1+ls), (x3+ls), (y3-1+ls))
-							}
-							if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
-								g.drawLine(x3, y3, x3, (y3+ls))
-								g.drawLine((x3+1), y3, (x3+1), (y3+ls))
-							}
-							if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) {
-								g.drawLine((x3+ls), y3, (x3+ls), (y3+ls))
-								g.drawLine((x3-1+ls), y3, (x3-1+ls), (y3+ls))
-							}
-							if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_UP))
-								g.fillRect(x3, y3, 2f, 2f)
-							if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_DOWN))
-								g.fillRect(x3, (y3+blksize-2), 2f, 2f)
-							if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_UP))
-								g.fillRect((x3+blksize-2), y3, 2f, 2f)
-							if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
-								g.fillRect((x3+blksize-2), (y3+blksize-2), 2f, 2f)
+									if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) {
+										g.drawLine(x3, y3, (x3+ls), y3)
+										g.drawLine(x3, (y3+1), (x3+ls), (y3+1))
+									}
+									if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) {
+										g.drawLine(x3, (y3+ls), (x3+ls), (y3+ls))
+										g.drawLine(x3, (y3-1+ls), (x3+ls), (y3-1+ls))
+									}
+									if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
+										g.drawLine(x3, y3, x3, (y3+ls))
+										g.drawLine((x3+1), y3, (x3+1), (y3+ls))
+									}
+									if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) {
+										g.drawLine((x3+ls), y3, (x3+ls), (y3+ls))
+										g.drawLine((x3-1+ls), y3, (x3-1+ls), (y3+ls))
+									}
+									if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_UP))
+										g.fillRect(x3, y3, 2f, 2f)
+									if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_DOWN))
+										g.fillRect(x3, (y3+blksize-2), 2f, 2f)
+									if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_UP))
+										g.fillRect((x3+blksize-2), y3, 2f, 2f)
+									if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
+										g.fillRect((x3+blksize-2), (y3+blksize-2), 2f, 2f)
+								} else {
+									val blkTemp = Block(it.block[i])
+									blkTemp.darkness = .3f
+									if(engine.nowPieceColorOverride>=0) blkTemp.cint = engine.nowPieceColorOverride
+									drawBlock(x+x2*blksize, y+y2*blksize, blkTemp, scale)
+								}
 						} else {
-							val blkTemp = Block(it.block[i])
-							blkTemp.darkness = .3f
-							if(engine.nowPieceColorOverride>=0) blkTemp.cint = engine.nowPieceColorOverride
-							drawBlock(x+x2*blksize, y+y2*blksize, blkTemp, scale)
-						}
-				} else {
-					val x2 = engine.nowPieceX+it.dataX[it.direction][i]*2
-					val y2 = engine.nowPieceBottomY+it.dataY[it.direction][i]*2
+							val x2 = engine.nowPieceX+it.dataX[it.direction][i]*2
+							val y2 = engine.nowPieceBottomY+it.dataY[it.direction][i]*2
 
-					if(outlineghost) {
-						val blkTemp = it.block[i]
-						val x3:Float = (x+x2*blksize).toFloat()
-						val y3:Float = (y+y2*blksize).toFloat()
-						val ls = blksize*2-1
+							if(outlineghost) {
+								val blkTemp = it.block[i]
+								val x3:Float = (x+x2*blksize).toFloat()
+								val y3:Float = (y+y2*blksize).toFloat()
+								val ls = blksize*2-1
 
-						var colorID = blkTemp.drawColor
-						if(blkTemp.getAttribute(Block.ATTRIBUTE.BONE)) colorID = -1
-						var color = getColorByID(colorID)
-						if(showbg) color.a = .5f
-						else color = color.darker(.5f)
-						g.color = color
-						g.fillRect(x3, y3, (blksize*2).toFloat(), (blksize*2).toFloat())
-						g.color = Color.white
+								var colorID = blkTemp.drawColor
+								if(blkTemp.getAttribute(Block.ATTRIBUTE.BONE)) colorID = -1
+								var color = getColorByID(colorID)
+								if(showBg) color.a = .5f
+								else color = color.darker(.5f)
+								g.color = color
+								g.fillRect(x3, y3, (blksize*2).toFloat(), (blksize*2).toFloat())
+								g.color = Color.white
 
-						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) {
-							g.drawLine(x3, y3, (x3+ls), y3)
-							g.drawLine(x3, (y3+1), (x3+ls), (y3+1))
+								if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) {
+									g.drawLine(x3, y3, (x3+ls), y3)
+									g.drawLine(x3, (y3+1), (x3+ls), (y3+1))
+								}
+								if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) {
+									g.drawLine(x3, (y3+ls), (x3+ls), (y3+ls))
+									g.drawLine(x3, (y3-1+ls), (x3+ls), (y3-1+ls))
+								}
+								if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
+									g.drawLine(x3, y3, x3, (y3+ls))
+									g.drawLine((x3+1), y3, (x3+1), (y3+ls))
+								}
+								if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) {
+									g.drawLine((x3+ls), y3, (x3+ls), (y3+ls))
+									g.drawLine((x3-1+ls), y3, (x3-1+ls), (y3+ls))
+								}
+								if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_UP))
+									g.fillRect(x3, y3, 2f, 2f)
+								if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_DOWN))
+									g.fillRect(x3, (y3+blksize*2-2), 2f, 2f)
+								if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_UP))
+									g.fillRect((x3+blksize*2-2), y3, 2f, 2f)
+								if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
+									g.fillRect((x3+blksize*2-2), (y3+blksize*2-2), 2f, 2f)
+							} else {
+								val blkTemp = Block(it.block[i])
+								blkTemp.darkness = .3f
+								if(engine.nowPieceColorOverride>=0) blkTemp.cint = engine.nowPieceColorOverride
+								drawBlock(x+x2*blksize, y+y2*blksize, blkTemp, scale*2f)
+							}
 						}
-						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) {
-							g.drawLine(x3, (y3+ls), (x3+ls), (y3+ls))
-							g.drawLine(x3, (y3-1+ls), (x3+ls), (y3-1+ls))
-						}
-						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) {
-							g.drawLine(x3, y3, x3, (y3+ls))
-							g.drawLine((x3+1), y3, (x3+1), (y3+ls))
-						}
-						if(!blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) {
-							g.drawLine((x3+ls), y3, (x3+ls), (y3+ls))
-							g.drawLine((x3-1+ls), y3, (x3-1+ls), (y3+ls))
-						}
-						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_UP))
-							g.fillRect(x3, y3, 2f, 2f)
-						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_DOWN))
-							g.fillRect(x3, (y3+blksize*2-2), 2f, 2f)
-						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_UP))
-							g.fillRect((x3+blksize*2-2), y3, 2f, 2f)
-						if(blkTemp.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT, Block.ATTRIBUTE.CONNECT_DOWN))
-							g.fillRect((x3+blksize*2-2), (y3+blksize*2-2), 2f, 2f)
-					} else {
-						val blkTemp = Block(it.block[i])
-						blkTemp.darkness = .3f
-						if(engine.nowPieceColorOverride>=0) blkTemp.cint = engine.nowPieceColorOverride
-						drawBlock(x+x2*blksize, y+y2*blksize, blkTemp, scale*2f)
-					}
-				}
-		}*/
+				}*/
 	}
 
 	/*verride fun drawGhostPiece(x:Float, y:Float, engine:GameEngine, scale:Float) {
@@ -344,7 +375,7 @@ class RendererSlick:AbstractRenderer() {
 							var colorID = blkTemp.drawColor
 							if(blkTemp.getAttribute(Block.ATTRIBUTE.BONE)) colorID = -1
 							var color = getColorByID(colorID)
-							if(showbg) color.a = .5f
+							if(showBg) color.a = .5f
 							else color = color.darker(.5f)
 							g.color = color
 							g.fillRect(x3, y3, blksize.toFloat(), blksize.toFloat())
@@ -394,7 +425,7 @@ class RendererSlick:AbstractRenderer() {
 						var colorID = blkTemp.drawColor
 						if(blkTemp.getAttribute(Block.ATTRIBUTE.BONE)) colorID = -1
 						var color = getColorByID(colorID)
-						if(showbg) color.a = .5f
+						if(showBg) color.a = .5f
 						else color = color.darker(.5f)
 						g.color = color
 						g.fillRect(x3, y3, (blksize*2).toFloat(), (blksize*2).toFloat())
@@ -487,7 +518,7 @@ class RendererSlick:AbstractRenderer() {
 					var colorID = blkTemp.drawColor
 					if(blkTemp.getAttribute(Block.ATTRIBUTE.BONE)) colorID = -1
 					var color = getColorByID(colorID)
-					if(showbg) color.a = .5f
+					if(showBg) color.a = .5f
 					else color = color.darker(.5f)
 					g.color = color
 					//graphics.fillRect(x3, y3, blksize * 2, blksize * 2);
@@ -526,13 +557,9 @@ class RendererSlick:AbstractRenderer() {
 	 * @param y Y-coordinate
 	 * @param engine GameEngineのインスタンス
 	 */
-	override fun drawFrameSpecific(x:Int, y:Int, engine:GameEngine, displaysize:Int) {
+	override fun drawFrameSpecific(x:Int, y:Int, engine:GameEngine) {
 		val g = graphics ?: return
-		val size = when(displaysize) {
-			-1 -> 2
-			1 -> 8
-			else -> 4
-		}
+		val size = engine.blockSize
 		val width = engine.field.width//?: Field.DEFAULT_WIDTH
 		val height = engine.field.height//?: Field.DEFAULT_HEIGHT
 //		val oX = 0
@@ -540,13 +567,13 @@ class RendererSlick:AbstractRenderer() {
 		RenderStaffRoll.draw(x+width/2f, y.toFloat(), 0f, height.toFloat(), Color(200, 233, 255, 200))
 
 
-		if(engine.framecolor>=0) {
-			val fi = resources.imgFrame[engine.framecolor].res
+		if(engine.frameColor>=0) {
+			val fi = resources.imgFrame[engine.frameColor].res
 
-			val lX = x+4f
-			val rX = lX+width*BS
-			val tY = y+4f
-			val bY = tY+height*BS
+			val lX = x.toFloat()
+			val rX = lX+width*size
+			val tY = y.toFloat()
+			val bY = tY+height*size
 
 			g.color = Color.white
 			//top edge
@@ -554,27 +581,27 @@ class RendererSlick:AbstractRenderer() {
 			fi.getSubImage(16, 0, 16, 32).also {
 				it.setCenterOfRotation(0f, 0f)
 				it.rotation = -90f
-				it.draw(lX-BS, tY, BS.toFloat(), rX-lX+BS*2f)
+				it.draw(lX-size, tY, size.toFloat(), rX-lX+size*2f)
 			}
 			//bottom edge
 			fi.getSubImage(48, 96, 16, 32).also {
 				it.setCenterOfRotation(0f, 0f)
 				it.rotation = -90f
-				it.draw(lX-BS, bY+BS, BS.toFloat(), rX-lX+BS*2f)
+				it.draw(lX-size, bY+size, size.toFloat(), rX-lX+size*2f)
 			}
 			//left edge
 			g.texture(
-				Polygon(floatArrayOf(lX-BS, tY-BS, lX, tY, lX, bY, lX-BS, bY+BS)),
+				Polygon(floatArrayOf(lX-size, tY-size, lX, tY, lX, bY, lX-size, bY+size)),
 				fi.getSubImage(16, 0, 16, 32),
 				1f, 1f, true
 			)
 			//right edge
 			g.texture(
-				Polygon(floatArrayOf(rX+BS, tY-BS, rX, tY, rX, bY, rX+BS, bY+BS)),
+				Polygon(floatArrayOf(rX+size, tY-size, rX, tY, rX, bY, rX+size, bY+size)),
 				fi.getSubImage(16, 96, 16, 32),
 				1f, 1f, true
 			)
-		} else if(engine.framecolor==FRAME_SKIN_GRADE) {
+		} else if(engine.frameColor==FRAME_SKIN_GRADE) {
 			val fi = resources.imgFrameOld[3]
 		}
 	}
@@ -589,11 +616,11 @@ class RendererSlick:AbstractRenderer() {
 			var bg = engine.owner.backgroundStatus.bg%bgmax
 			if(engine.owner.backgroundStatus.fadesw&&!heavyeffect) bg = engine.owner.backgroundStatus.fadebg
 
-			if(bg in 0 until bgmax&&showbg) {
+			if(bg in 0 until bgmax&&showBg) {
 				graphics.color = Color.white
 				val bgi = resources.imgPlayBG[bg].res
 				if(heavyeffect) {
-					val sc = (1-cos(bgi.rotation/Math.PI.pow(3.0))/Math.PI).toFloat()*1024f/minOf(bgi.width, bgi.height)
+					val sc = (1-cos(bgi.rotation/PI.pow(3.0))/PI).toFloat()*1024f/minOf(bgi.width, bgi.height)
 					val cx = bgi.width/2*sc
 					val cy = bgi.height/2*sc
 					bgi.setCenterOfRotation(cx, cy)
@@ -616,47 +643,36 @@ class RendererSlick:AbstractRenderer() {
 		}
 	}
 
-	fun FragAnim.draw(x:Float, y:Float, x2:Float, y2:Float, srcx:Float, srcy:Float, srcx2:Float, srcy2:Float) {
-		when(type) {
-			ANIM.BLOCK -> resources.imgBreak[color][1]
-			ANIM.SPARK -> resources.imgBreak[color][0]
-			ANIM.GEM -> resources.imgPErase[color]
-			ANIM.HANABI -> resources.imgHanabi[color]
-		}.draw(x, y, x2, y2, srcx, srcy, srcx2, srcy2)
-	}
+	/*override fun effectRender() {
+	_	effects.forEachIndexed {i, it ->
+			when(it) {
 
-	/** Render effects */
-	override fun drawEffectSpecific(i:Int, it:EffectObject) {
-		val graphics = graphics ?: return
-
-		when(it) {
-			is FragAnim -> {
-				val flip = (i%2==0)!=(i%10==0)
-				when(it.type) {
-					// Gems frag
-					ANIM.GEM -> resources.imgPErase[it.color]
-					// TI Block frag
-					ANIM.SPARK -> resources.imgBreak[it.color][0]
-					// TAP Block frag
-					ANIM.BLOCK -> resources.imgBreak[it.color][1]
-					//Fireworks
-					ANIM.HANABI -> resources.imgHanabi[it.color]
-				}.draw(
-					if(flip) it.dx2 else it.dx, it.dy, if(flip) it.dx else it.dx2, it.dy2,
-					it.srcx, it.srcy, it.srcx2, it.srcy2
-				)
+				is Particle -> {
+					val g = graphics ?: return it.draw(i, this)
+					when(it.shape) {
+						Particle.ParticleShape.ARect -> {
+							g.setDrawMode(Graphics.MODE_ADD)
+							drawRect(
+								it.pos.x-it.uw/2, it.pos.y-it.uh/2, it.uw, it.uh,
+								it.ur*0x10000+it.ug*0x100+it.ub, it.ua/255f, 0f
+							)
+							g.setDrawMode(Graphics.MODE_NORMAL)
+						}
+						Particle.ParticleShape.AOval -> {
+							g.setDrawMode(Graphics.MODE_ADD)
+							drawOval(
+								it.pos.x-it.uw/2, it.pos.y-it.uh/2, it.uw, it.uh,
+								it.ur*0x10000+it.ug*0x100+it.ub, it.ua/255f, 0f
+							)
+							g.setDrawMode(Graphics.MODE_NORMAL)
+						}
+						else -> it.draw(i, this)
+					}
+				}
+				else -> it.draw(i, this)
 			}
-			is BeamH //Line Cleaned
-			-> {
-				//if(it.anim%2==1)
-				graphics.setDrawMode(Graphics.MODE_ADD)
-				resources.imgLine[0].draw(it.x, it.y, it.dx2, it.dy2, it.srcx, it.srcy, it.srcx2, it.srcy2)
-				graphics.setDrawMode(Graphics.MODE_NORMAL)
-			}
-			else -> super.drawEffectSpecific(i, it)
-
 		}
-	}
+	}*/
 
 	companion object {
 
@@ -678,7 +694,7 @@ class RendererSlick:AbstractRenderer() {
 
 		fun getColorByID(color:Block.COLOR):Color = getColorByID(Block.colorNumber(color, Block.TYPE.BLOCK))
 
-		fun getMeterColorAsColor(meterColor:Int, value:Int, max:Int):Color =
-			Color(AbstractRenderer.getMeterColorHex(meterColor, value, max))
+		fun getMeterColorAsColor(meterColor:Int, value:Float):Color =
+			Color(getMeterColorHex(meterColor, value)).apply {a = 1f}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -46,7 +46,7 @@ class ReplayData:Serializable {
 	 * @param r Copy source
 	 */
 	constructor(r:ReplayData) {
-		copy(r)
+		replace(r)
 	}
 
 	/** Reset to defaults */
@@ -54,10 +54,8 @@ class ReplayData:Serializable {
 		inputDataArray.clear()
 	}
 
-	/** 他のReplayDataからコピー
-	 * @param r Copy source
-	 */
-	fun copy(r:ReplayData) {
+	/** 設定を[r]からコピー */
+	fun replace(r:ReplayData) {
 		reset()
 		r.inputDataArray.forEachIndexed {i, it ->
 			inputDataArray.add(i, it)
@@ -70,10 +68,8 @@ class ReplayData:Serializable {
 	 * @param frame frame (経過 time）
 	 */
 	fun setInputData(input:Int, frame:Int) {
-		if(frame<0||frame>=inputDataArray.size)
-			inputDataArray.add(input)
-		else
-			inputDataArray[frame] = input
+		if(frame<0||frame>=inputDataArray.size) inputDataArray.add(input)
+		else inputDataArray[frame] = input
 	}
 
 	/** button input状況を取得

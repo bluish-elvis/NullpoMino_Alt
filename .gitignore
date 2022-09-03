@@ -8,6 +8,7 @@ cmake-build-*/
 *.iws
 # IntelliJ
 out/
+*.iml
 # mpeltonen/sbt-idea plugin
 .idea/
 .idea_modules/
@@ -48,6 +49,7 @@ modules.xml
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
 ### Linux template
 *~
 
@@ -62,6 +64,7 @@ hs_err_pid*
 
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
+
 ### macOS template
 # General
 .DS_Store
@@ -119,12 +122,22 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
 # Ignore Gradle project-specific cache directory
 .gradle
-
 # Ignore Gradle build output directory
-build
+**/build/
 **/target*/
+!src/**/build/
+# Ignore Gradle GUI config
+gradle-app.setting
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+# Avoid ignore Gradle wrappper properties
+!gradle-wrapper.properties
+
+# Cache of project
+.gradletasknamecache
 
 /.settings/
 /target/

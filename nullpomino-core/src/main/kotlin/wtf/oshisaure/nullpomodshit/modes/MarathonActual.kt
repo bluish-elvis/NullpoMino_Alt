@@ -5,7 +5,7 @@
 package wtf.oshisaure.nullpomodshit.modes
 
 import mu.nu.nullpo.game.component.BGMStatus
-import mu.nu.nullpo.game.event.EventReceiver.*
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -19,7 +19,7 @@ class MarathonActual:AbstractMode() {
 	private var lastb2b = false
 	private var lastcombo = 0
 	private var lastpiece = 0
-	private var bgmlv = 0
+	private var bgmLv = 0
 
 	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.RED, 0, 0..19, false, true)
 	/** Level at start */
@@ -40,20 +40,20 @@ class MarathonActual:AbstractMode() {
 	override val name:String = "ACTUAL MARATHON"
 	override val menu = MenuList("actualmarathon", itemLevel, itemBig)
 
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 		lastscore = 0
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
-		bgmlv = 0
+		bgmLv = 0
 		totalLength = 0
 		rankingRank = -1
 		if(!owner.replayMode) {
 			version = 1
 		}
 		engine.owner.backgroundStatus.bg = 0
-		engine.framecolor = 0
+		engine.frameColor = 0
 	}
 
 	fun setSpeed(engine:GameEngine) {
@@ -61,14 +61,14 @@ class MarathonActual:AbstractMode() {
 		engine.speed.denominator = 1
 	}
 
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		if(!engine.owner.replayMode) {
 			val change:Int = this.updateMenu(engine)
 			if(engine.ctrl.isPush(4)&&engine.statc[3]>=5) {
 				engine.playSE("decide")
 				return false
 			}
-			if(engine.ctrl.isPush(5)) engine.quitflag = true
+			if(engine.ctrl.isPush(5)) engine.quitFlag = true
 			engine.statc[3]++
 		} else {
 			engine.statc[3]++
@@ -78,7 +78,7 @@ class MarathonActual:AbstractMode() {
 		return true
 	}
 
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 1
 		engine.b2bEnable = true
@@ -94,42 +94,42 @@ class MarathonActual:AbstractMode() {
 		setSpeed(engine)
 	}
 
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		if(!owner.menuOnly) {
-			receiver.drawScoreFont(engine, playerID, 0, 0, "ACTUAL MARATHON", 4f)
+			receiver.drawScoreFont(engine, 0, 0, "ACTUAL MARATHON", 4f)
 			var topY:Int
 			if(engine.gameActive) {
-				receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", 1f)
+				receiver.drawScoreFont(engine, 0, 3, "SCORE", 1f)
 				val strScore:String = if(lastscore!=0&&scDisp<120)
 					"${engine.statistics.score}(+$lastscore)" else "${engine.statistics.score}(+$lastscore)"
-				receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
-				receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", 1f)
-				receiver.drawScoreFont(engine, playerID, 0, 7, engine.statistics.lines.toString())
-				receiver.drawScoreFont(engine, playerID, 0, 9, "LEVEL", 1f)
-				receiver.drawScoreFont(engine, playerID, 0, 10, (engine.statistics.level+1).toString())
+				receiver.drawScoreFont(engine, 0, 4, strScore)
+				receiver.drawScoreFont(engine, 0, 6, "LINE", 1f)
+				receiver.drawScoreFont(engine, 0, 7, engine.statistics.lines.toString())
+				receiver.drawScoreFont(engine, 0, 9, "LEVEL", 1f)
+				receiver.drawScoreFont(engine, 0, 10, (engine.statistics.level+1).toString())
 				topY = totalLength
 				if(engine.stat==GameEngine.Status.MOVE&&engine.nowPieceObject!=null) {
 					topY += engine.nowPieceY-engine.getSpawnPosY(engine.nowPieceObject)
 				}
-				receiver.drawScoreFont(engine, playerID, 0, 12, "DISTANCE LEFT", 1f)
-				receiver.drawScoreFont(engine, playerID, 0, 13, ('ꓓ'.code-topY).toString())
-				receiver.drawScoreFont(engine, playerID, 0, 15, "TIME", 1f)
-				receiver.drawScoreFont(engine, playerID, 0, 16, engine.statistics.time.toTimeStr)
+				receiver.drawScoreFont(engine, 0, 12, "DISTANCE LEFT", 1f)
+				receiver.drawScoreFont(engine, 0, 13, ('ꓓ'.code-topY).toString())
+				receiver.drawScoreFont(engine, 0, 15, "TIME", 1f)
+				receiver.drawScoreFont(engine, 0, 16, engine.statistics.time.toTimeStr)
 			} else if(!owner.replayMode&&!big&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 				topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, playerID, 3, topY-1, "TIME     PIECE PPS", COLOR.BLUE, scale = scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "TIME     PIECE PPS", COLOR.BLUE, scale = scale)
 				for(i in 0..9) {
-					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale = scale)
-					receiver.drawScoreFont(engine, playerID, 3, topY+i, rankingTime[i].toTimeStr, rankingRank==i, scale)
-					receiver.drawScoreFont(engine, playerID, 12, topY+i, "${rankingPieces[i]}", rankingRank==i, scale)
-					 receiver.drawScoreFont(engine, playerID, 18, topY+i, String.format("%.5g", rankingPPS[i]), rankingRank==i, scale)
+					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale = scale)
+					receiver.drawScoreFont(engine, 3, topY+i, rankingTime[i].toTimeStr, rankingRank==i, scale)
+					receiver.drawScoreFont(engine, 12, topY+i, "${rankingPieces[i]}", rankingRank==i, scale)
+					receiver.drawScoreFont(engine, 18, topY+i, String.format("%.5g", rankingPPS[i]), rankingRank==i, scale)
 				}
 			}
 		}
 	}
 
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		val dist = engine.nowPieceY-engine.getSpawnPosY(engine.nowPieceObject)
 		totalLength += dist
 		engine.statistics.scoreBonus += dist
@@ -140,21 +140,18 @@ class MarathonActual:AbstractMode() {
 			if(lines>=1) engine.statistics.scoreLine += pts
 			else engine.statistics.scoreBonus += pts
 		}
-		if(TABLE_BGM_CHANGE[bgmlv]!=-1) {
-			if(totalLength>=TABLE_BGM_CHANGE[bgmlv]-50) {
+		if(TABLE_BGM_CHANGE[bgmLv]!=-1) {
+			if(totalLength>=TABLE_BGM_CHANGE[bgmLv]-50) {
 				owner.bgmStatus.fadesw = true
 			}
-			if(totalLength>=TABLE_BGM_CHANGE[bgmlv]&&totalLength<MARATHON_LENGTH) {
-				++bgmlv
-				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmlv)
+			if(totalLength>=TABLE_BGM_CHANGE[bgmLv]&&totalLength<MARATHON_LENGTH) {
+				++bgmLv
+				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmLv)
 				owner.bgmStatus.fadesw = false
 			}
 		}
-		engine.meterValue = totalLength%LEVEL_LENGTH*receiver.getMeterMax(engine)/LEVEL_LENGTH
-		engine.meterColor = if(totalLength%LEVEL_LENGTH%10>=LEVEL_LENGTH*1/4) 2
-		else if(totalLength%LEVEL_LENGTH%10>=LEVEL_LENGTH*2/4) 1
-		else if(totalLength%LEVEL_LENGTH%10>=LEVEL_LENGTH*3/4) 0
-		else 3
+		engine.meterValue = totalLength%LEVEL_LENGTH*1f/LEVEL_LENGTH
+		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		if(totalLength>=MARATHON_LENGTH) {
 			engine.ending = 1
 			engine.gameEnded()
@@ -170,20 +167,20 @@ class MarathonActual:AbstractMode() {
 		return dist+pts
 	}
 
-	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreSD += fall*2
 	}
 
-	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += fall*5
 	}
 
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		this.drawResultStats(engine, playerID, receiver, 0, COLOR.BLUE, Statistic.TIME, Statistic.PIECE, Statistic.PPM)
-		this.drawResultRank(engine, playerID, receiver, 12, COLOR.BLUE, rankingRank)
+	override fun renderResult(engine:GameEngine) {
+		this.drawResultStats(engine, receiver, 0, COLOR.BLUE, Statistic.TIME, Statistic.PIECE, Statistic.PPM)
+		this.drawResultRank(engine, receiver, 12, COLOR.BLUE, rankingRank)
 	}
 
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		if(!owner.replayMode&&!big&&engine.ai==null) {
 			updateRanking(engine.statistics.pps, engine.statistics.totalPieceLocked, engine.statistics.time)
 			return (rankingRank!=-1)

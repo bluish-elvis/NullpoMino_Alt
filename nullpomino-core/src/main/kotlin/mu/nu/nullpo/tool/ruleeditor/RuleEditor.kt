@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -43,7 +43,12 @@ import java.awt.event.ActionListener
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.awt.image.BufferedImage
-import java.io.*
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.FileReader
+import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.Locale
@@ -51,7 +56,30 @@ import java.util.Vector
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
-import javax.swing.*
+import javax.swing.BoxLayout
+import javax.swing.ButtonGroup
+import javax.swing.DefaultComboBoxModel
+import javax.swing.Icon
+import javax.swing.ImageIcon
+import javax.swing.JButton
+import javax.swing.JCheckBox
+import javax.swing.JComboBox
+import javax.swing.JFileChooser
+import javax.swing.JFrame
+import javax.swing.JLabel
+import javax.swing.JList
+import javax.swing.JMenu
+import javax.swing.JMenuBar
+import javax.swing.JMenuItem
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.JRadioButton
+import javax.swing.JTabbedPane
+import javax.swing.JTextField
+import javax.swing.KeyStroke
+import javax.swing.ListCellRenderer
+import javax.swing.UIManager
+import javax.swing.WindowConstants
 import javax.swing.filechooser.FileFilter
 
 /** ルールエディター */
@@ -182,28 +210,28 @@ class RuleEditor:JFrame, ActionListener {
 	/* rotation設定パネル */
 
 	/** 先行rotation */
-	private val chkboxRotateInitial:JCheckBox = JCheckBox()
+	private val chkboxSpinInitial:JCheckBox = JCheckBox()
 
 	/** 先行rotation連続使用不可 */
-	private val chkboxRotateInitialLimit:JCheckBox = JCheckBox()
+	private val chkboxSpinInitialLimit:JCheckBox = JCheckBox()
 
 	/** Wallkick */
-	private val chkboxRotateWallkick:JCheckBox = JCheckBox()
+	private val chkboxSpinWallkick:JCheckBox = JCheckBox()
 
 	/** 先行rotationでもWallkickする */
-	private val chkboxRotateInitialWallkick:JCheckBox = JCheckBox()
+	private val chkboxSpinInitialWallkick:JCheckBox = JCheckBox()
 
 	/** 上DirectionへのWallkickができる count (-1:無限) */
-	private val txtfldRotateMaxUpwardWallkick:JTextField = JTextField("", 5)
+	private val txtfldSpinWallkickRise:JTextField = JTextField("", 5)
 
 	/** falseなら左が正rotation, When true,右が正rotation */
-	private val chkboxRotateButtonDefaultRight:JCheckBox = JCheckBox()
+	private val chkboxSpinToRight:JCheckBox = JCheckBox()
 
 	/** 逆rotationを許可 (falseなら正rotationと同じ) */
-	private val chkboxRotateButtonAllowReverse:JCheckBox = JCheckBox()
+	private val chkboxSpinReverseKey:JCheckBox = JCheckBox()
 
-	/** 2rotationを許可 (falseなら正rotationと同じ) */
-	private val chkboxRotateButtonAllowDouble:JCheckBox = JCheckBox()
+	/** 180rotationを許可 (falseなら正rotationと同じ) */
+	private val chkboxSpinDoubleKey:JCheckBox = JCheckBox()
 
 	/** Wallkickアルゴリズム */
 	private var comboboxWallkickSystem:JComboBox<*>? = null
@@ -230,7 +258,7 @@ class RuleEditor:JFrame, ActionListener {
 	private val chkboxLockDelayLockResetMove:JCheckBox = JCheckBox()
 
 	/** rotationで固定 timeリセット */
-	private val chkboxLockDelayLockResetRotate:JCheckBox = JCheckBox()
+	private val chkboxLockDelayLockResetSpin:JCheckBox = JCheckBox()
 
 	/** Lock delay reset by wallkick */
 	private val chkboxLockDelayLockResetWallkick:JCheckBox = JCheckBox()
@@ -242,7 +270,7 @@ class RuleEditor:JFrame, ActionListener {
 	private val txtfldLockDelayLockResetLimitMove:JTextField = JTextField("", 5)
 
 	/** rotation count制限 */
-	private val txtfldLockDelayLockResetLimitRotate:JTextField = JTextField("", 5)
+	private val txtfldLockDelayLockResetLimitSpin:JTextField = JTextField("", 5)
 
 	/** 横移動 counterかrotation counterが超過したら固定 timeリセットを無効にする */
 	private var radioLockDelayLockResetLimitOverNoReset:JRadioButton? = null
@@ -280,8 +308,8 @@ class RuleEditor:JFrame, ActionListener {
 	/** ARE cancel on move checkbox */
 	private val chkboxARECancelMove:JCheckBox = JCheckBox()
 
-	/** ARE cancel on rotate checkbox */
-	private val chkboxARECancelRotate:JCheckBox = JCheckBox()
+	/** ARE cancel on spin checkbox */
+	private val chkboxARECancelSpin:JCheckBox = JCheckBox()
 
 	/** ARE cancel on hold checkbox */
 	private val chkboxARECancelHold:JCheckBox = JCheckBox()
@@ -301,8 +329,8 @@ class RuleEditor:JFrame, ActionListener {
 	/** Line delay cancel on move checkbox */
 	private val chkboxLineCancelMove:JCheckBox = JCheckBox()
 
-	/** Line delay cancel on rotate checkbox */
-	private val chkboxLineCancelRotate:JCheckBox = JCheckBox()
+	/** Line delay cancel on spin checkbox */
+	private val chkboxLineCancelSpin:JCheckBox = JCheckBox()
 
 	/** Line delay cancel on hold checkbox */
 	private val chkboxLineCancelHold:JCheckBox = JCheckBox()
@@ -434,15 +462,17 @@ class RuleEditor:JFrame, ActionListener {
 
 		var ruleOpt = RuleOptions()
 
-		if(filename!=null&&filename.isNotEmpty())
+		if(!filename.isNullOrEmpty())
 			try {
 				ruleOpt = load(filename)
 				strNowFile = filename
 				title = "${getUIText("Title_RuleEditor")}:$strNowFile"
 			} catch(e:IOException) {
 				log.error("Failed to load rule data from $filename", e)
-				JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e",
-					getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
+				JOptionPane.showMessageDialog(
+					this, "${getUIText("Message_FileLoadFailed")}\n$e",
+					getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE
+				)
 			}
 
 		readRuleToUI(ruleOpt)
@@ -745,49 +775,49 @@ class RuleEditor:JFrame, ActionListener {
 		pDropSoftDropSpeed.add(txtfldDropSoftDropSpeed)
 
 		// rotationタブ --------------------------------------------------
-		val panelRotate = JPanel()
-		panelRotate.layout = BoxLayout(panelRotate, BoxLayout.Y_AXIS)
-		tabPane.addTab(getUIText("TabName_Rotate"), panelRotate)
+		val panelSpin = JPanel()
+		panelSpin.layout = BoxLayout(panelSpin, BoxLayout.Y_AXIS)
+		tabPane.addTab(getUIText("TabName_Rotate"), panelSpin)
 
 		// 先行rotation
-		chkboxRotateInitial.text = (getUIText("Rotate_RotateInitial"))
-		panelRotate.add(chkboxRotateInitial)
+		chkboxSpinInitial.text = (getUIText("Rotate_RotateInitial"))
+		panelSpin.add(chkboxSpinInitial)
 
 		// 先行rotation連続使用不可
-		chkboxRotateInitialLimit.text = (getUIText("Rotate_RotateInitialLimit"))
-		panelRotate.add(chkboxRotateInitialLimit)
+		chkboxSpinInitialLimit.text = (getUIText("Rotate_RotateInitialLimit"))
+		panelSpin.add(chkboxSpinInitialLimit)
 
 		// Wallkick
-		chkboxRotateWallkick.text = (getUIText("Rotate_RotateWallkick"))
-		panelRotate.add(chkboxRotateWallkick)
+		chkboxSpinWallkick.text = (getUIText("Rotate_RotateWallkick"))
+		panelSpin.add(chkboxSpinWallkick)
 
 		// 先行rotationでもWallkickする
-		chkboxRotateInitialWallkick.text = (getUIText("Rotate_RotateInitialWallkick"))
-		panelRotate.add(chkboxRotateInitialWallkick)
+		chkboxSpinInitialWallkick.text = (getUIText("Rotate_RotateInitialWallkick"))
+		panelSpin.add(chkboxSpinInitialWallkick)
 
 		// Aで右rotation
-		chkboxRotateButtonDefaultRight.text = (getUIText("Rotate_RotateButtonDefaultRight"))
-		panelRotate.add(chkboxRotateButtonDefaultRight)
+		chkboxSpinToRight.text = (getUIText("Rotate_RotateButtonDefaultRight"))
+		panelSpin.add(chkboxSpinToRight)
 
 		// 逆rotation許可
-		chkboxRotateButtonAllowReverse.text = (getUIText("Rotate_RotateButtonAllowReverse"))
-		panelRotate.add(chkboxRotateButtonAllowReverse)
+		chkboxSpinReverseKey.text = (getUIText("Rotate_RotateButtonAllowReverse"))
+		panelSpin.add(chkboxSpinReverseKey)
 
 		// 2rotation許可
-		chkboxRotateButtonAllowDouble.text = (getUIText("Rotate_RotateButtonAllowDouble"))
-		panelRotate.add(chkboxRotateButtonAllowDouble)
+		chkboxSpinDoubleKey.text = (getUIText("Rotate_RotateButtonAllowDouble"))
+		panelSpin.add(chkboxSpinDoubleKey)
 
 		// UpDirectionへWallkickできる count
-		val pRotateMaxUpwardWallkick = JPanel()
-		panelRotate.add(pRotateMaxUpwardWallkick)
-		pRotateMaxUpwardWallkick.add(JLabel(getUIText("Rotate_RotateMaxUpwardWallkick")))
+		val pSpinMaxUpwardWallkick = JPanel()
+		panelSpin.add(pSpinMaxUpwardWallkick)
+		pSpinMaxUpwardWallkick.add(JLabel(getUIText("Rotate_RotateMaxUpwardWallkick")))
 
-		txtfldRotateMaxUpwardWallkick.columns = (5)
-		pRotateMaxUpwardWallkick.add(txtfldRotateMaxUpwardWallkick)
+		txtfldSpinWallkickRise.columns = (5)
+		pSpinMaxUpwardWallkick.add(txtfldSpinWallkickRise)
 
 		// Wallkickアルゴリズム
 		val pWallkickSystem = JPanel()
-		panelRotate.add(pWallkickSystem)
+		panelSpin.add(pWallkickSystem)
 
 		pWallkickSystem.add(JLabel(getUIText("Rotate_WallkickSystem")))
 
@@ -829,8 +859,8 @@ class RuleEditor:JFrame, ActionListener {
 		panelLockDelay.add(chkboxLockDelayLockResetMove)
 
 		// rotationで固定 timeリセット
-		chkboxLockDelayLockResetRotate.text = (getUIText("LockDelay_LockResetRotate"))
-		panelLockDelay.add(chkboxLockDelayLockResetRotate)
+		chkboxLockDelayLockResetSpin.text = (getUIText("LockDelay_LockResetRotate"))
+		panelLockDelay.add(chkboxLockDelayLockResetSpin)
 
 		// Lock delay reset by wallkick
 		chkboxLockDelayLockResetWallkick.text = (getUIText("LockDelay_LockResetWallkick"))
@@ -849,13 +879,13 @@ class RuleEditor:JFrame, ActionListener {
 		pLockDelayLockResetLimitMove.add(txtfldLockDelayLockResetLimitMove)
 
 		// rotation count制限
-		val pLockDelayLockResetLimitRotate = JPanel()
-		panelLockDelay.add(pLockDelayLockResetLimitRotate)
+		val pLockDelayLockResetLimitSpin = JPanel()
+		panelLockDelay.add(pLockDelayLockResetLimitSpin)
 
-		pLockDelayLockResetLimitRotate.add(JLabel(getUIText("LockDelay_LockDelayLockResetLimitRotate")))
+		pLockDelayLockResetLimitSpin.add(JLabel(getUIText("LockDelay_LockDelayLockResetLimitRotate")))
 
-		txtfldLockDelayLockResetLimitRotate.columns = 5
-		pLockDelayLockResetLimitRotate.add(txtfldLockDelayLockResetLimitRotate)
+		txtfldLockDelayLockResetLimitSpin.columns = 5
+		pLockDelayLockResetLimitSpin.add(txtfldLockDelayLockResetLimitSpin)
 
 		// 移動またはrotation count制限が超過した時の設定
 		val pLockDelayLockResetLimitOver = JPanel()
@@ -927,8 +957,8 @@ class RuleEditor:JFrame, ActionListener {
 		panelARE.add(chkboxARECancelMove)
 
 		// ARE cancel on move
-		chkboxARECancelRotate.text = (getUIText("ARE_CancelRotate"))
-		panelARE.add(chkboxARECancelRotate)
+		chkboxARECancelSpin.text = (getUIText("ARE_CancelRotate"))
+		panelARE.add(chkboxARECancelSpin)
 
 		// ARE cancel on move
 		chkboxARECancelHold.text = (getUIText("ARE_CancelHold"))
@@ -958,9 +988,9 @@ class RuleEditor:JFrame, ActionListener {
 		chkboxLineCancelMove.text = (getUIText("Line_CancelMove"))
 		panelLine.add(chkboxLineCancelMove)
 
-		// Line delay cancel on rotate
-		chkboxLineCancelRotate.text = (getUIText("Line_CancelRotate"))
-		panelLine.add(chkboxLineCancelRotate)
+		// Line delay cancel on spin
+		chkboxLineCancelSpin.text = (getUIText("Line_CancelRotate"))
+		panelLine.add(chkboxLineCancelSpin)
 
 		// Line delay cancel on hold
 		chkboxLineCancelHold.text = (getUIText("Line_CancelHold"))
@@ -1403,25 +1433,25 @@ class RuleEditor:JFrame, ActionListener {
 		chkboxDropSoftDropMultiplyNativeSpeed.isSelected = r.softdropMultiplyNativeSpeed
 		chkboxDropSoftDropGravitySpeedLimit.isSelected = r.softdropGravitySpeedLimit
 
-		chkboxRotateInitial.isSelected = r.rotateInitial
-		chkboxRotateInitialLimit.isSelected = r.rotateInitialLimit
-		chkboxRotateWallkick.isSelected = r.rotateWallkick
-		chkboxRotateInitialWallkick.isSelected = r.rotateInitialWallkick
-		txtfldRotateMaxUpwardWallkick.text = r.rotateMaxUpwardWallkick.toString()
-		chkboxRotateButtonDefaultRight.isSelected = r.rotateButtonDefaultRight
-		chkboxRotateButtonAllowReverse.isSelected = r.rotateButtonAllowReverse
-		chkboxRotateButtonAllowDouble.isSelected = r.rotateButtonAllowDouble
+		chkboxSpinInitial.isSelected = r.spinInitial
+		chkboxSpinInitialLimit.isSelected = r.spinInitialLimit
+		chkboxSpinWallkick.isSelected = r.spinWallkick
+		chkboxSpinInitialWallkick.isSelected = r.spinInitialWallkick
+		txtfldSpinWallkickRise.text = r.spinWallkickMaxRise.toString()
+		chkboxSpinToRight.isSelected = r.spinToRight
+		chkboxSpinReverseKey.isSelected = r.spinReverseKey
+		chkboxSpinDoubleKey.isSelected = r.spinDoubleKey
 		comboboxWallkickSystem?.selectedIndex = vectorWallkickSystem?.indexOf(r.strWallkick) ?: 0
 		txtfldLockDelayMin.text = r.minLockDelay.toString()
 		txtfldLockDelayMax.text = r.maxLockDelay.toString()
-		chkboxLockDelayLockResetFall.isSelected = r.lockresetFall
-		chkboxLockDelayLockResetMove.isSelected = r.lockresetMove
-		chkboxLockDelayLockResetRotate.isSelected = r.lockresetRotate
-		chkboxLockDelayLockResetWallkick.isSelected = r.lockresetWallkick
-		chkboxLockDelayLockResetLimitShareCount.isSelected = r.lockresetLimitShareCount
-		txtfldLockDelayLockResetLimitMove.text = r.lockresetLimitMove.toString()
-		txtfldLockDelayLockResetLimitRotate.text = r.lockresetLimitRotate.toString()
-		when(r.lockresetLimitOver) {
+		chkboxLockDelayLockResetFall.isSelected = r.lockResetFall
+		chkboxLockDelayLockResetMove.isSelected = r.lockResetMove
+		chkboxLockDelayLockResetSpin.isSelected = r.lockResetSpin
+		chkboxLockDelayLockResetWallkick.isSelected = r.lockResetWallkick
+		chkboxLockDelayLockResetLimitShareCount.isSelected = r.lockResetLimitShareCount
+		txtfldLockDelayLockResetLimitMove.text = r.lockResetMoveLimit.toString()
+		txtfldLockDelayLockResetLimitSpin.text = r.lockResetSpinLimit.toString()
+		when(r.lockResetLimitOver) {
 			RuleOptions.LOCKRESET_LIMIT_OVER_NORESET -> radioLockDelayLockResetLimitOverNoReset?.isSelected = true
 			RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT -> radioLockDelayLockResetLimitOverInstant?.isSelected = true
 			RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK -> radioLockDelayLockResetLimitOverNoWallkick?.isSelected = true
@@ -1431,18 +1461,18 @@ class RuleEditor:JFrame, ActionListener {
 		txtfldAREMax.text = r.maxARE.toString()
 		txtfldARELineMin.text = r.minARELine.toString()
 		txtfldARELineMax.text = r.maxARELine.toString()
-		txtfldARELockFlash.text = r.lockflash.toString()
-		chkboxARELockFlashOnlyFrame.isSelected = r.lockflashOnlyFrame
-		chkboxARELockFlashBeforeLineClear.isSelected = r.lockflashBeforeLineClear
+		txtfldARELockFlash.text = r.lockFlash.toString()
+		chkboxARELockFlashOnlyFrame.isSelected = r.lockFlashOnlyFrame
+		chkboxARELockFlashBeforeLineClear.isSelected = r.lockFlashBeforeLineClear
 		chkboxARECancelMove.isSelected = r.areCancelMove
-		chkboxARECancelRotate.isSelected = r.areCancelRotate
+		chkboxARECancelSpin.isSelected = r.areCancelSpin
 		chkboxARECancelHold.isSelected = r.areCancelHold
 
 		txtfldLineDelayMin.text = r.minLineDelay.toString()
 		txtfldLineDelayMax.text = r.maxLineDelay.toString()
 		chkboxLineFallAnim.isSelected = r.lineFallAnim
 		chkboxLineCancelMove.isSelected = r.lineCancelMove
-		chkboxLineCancelRotate.isSelected = r.lineCancelRotate
+		chkboxLineCancelSpin.isSelected = r.lineCancelSpin
 		chkboxLineCancelHold.isSelected = r.lineCancelHold
 
 		txtfldMoveDASMin.text = r.minDAS.toString()
@@ -1520,14 +1550,14 @@ class RuleEditor:JFrame, ActionListener {
 		r.softdropMultiplyNativeSpeed = chkboxDropSoftDropMultiplyNativeSpeed.isSelected
 		r.softdropGravitySpeedLimit = chkboxDropSoftDropGravitySpeedLimit.isSelected
 
-		r.rotateInitial = chkboxRotateInitial.isSelected
-		r.rotateInitialLimit = chkboxRotateInitialLimit.isSelected
-		r.rotateWallkick = chkboxRotateWallkick.isSelected
-		r.rotateInitialWallkick = chkboxRotateInitialWallkick.isSelected
-		r.rotateMaxUpwardWallkick = getIntTextField(txtfldRotateMaxUpwardWallkick)
-		r.rotateButtonDefaultRight = chkboxRotateButtonDefaultRight.isSelected
-		r.rotateButtonAllowReverse = chkboxRotateButtonAllowReverse.isSelected
-		r.rotateButtonAllowDouble = chkboxRotateButtonAllowDouble.isSelected
+		r.spinInitial = chkboxSpinInitial.isSelected
+		r.spinInitialLimit = chkboxSpinInitialLimit.isSelected
+		r.spinWallkick = chkboxSpinWallkick.isSelected
+		r.spinInitialWallkick = chkboxSpinInitialWallkick.isSelected
+		r.spinWallkickMaxRise = getIntTextField(txtfldSpinWallkickRise)
+		r.spinToRight = chkboxSpinToRight.isSelected
+		r.spinReverseKey = chkboxSpinReverseKey.isSelected
+		r.spinDoubleKey = chkboxSpinDoubleKey.isSelected
 		val indexWallkick = comboboxWallkickSystem!!.selectedIndex
 		if(indexWallkick>=0)
 			r.strWallkick = vectorWallkickSystem!![indexWallkick]
@@ -1536,36 +1566,36 @@ class RuleEditor:JFrame, ActionListener {
 
 		r.minLockDelay = getIntTextField(txtfldLockDelayMin)
 		r.maxLockDelay = getIntTextField(txtfldLockDelayMax)
-		r.lockresetFall = chkboxLockDelayLockResetFall.isSelected
-		r.lockresetMove = chkboxLockDelayLockResetMove.isSelected
-		r.lockresetRotate = chkboxLockDelayLockResetRotate.isSelected
-		r.lockresetWallkick = chkboxLockDelayLockResetWallkick.isSelected
-		r.lockresetLimitShareCount = chkboxLockDelayLockResetLimitShareCount.isSelected
-		r.lockresetLimitMove = getIntTextField(txtfldLockDelayLockResetLimitMove)
-		r.lockresetLimitRotate = getIntTextField(txtfldLockDelayLockResetLimitRotate)
+		r.lockResetFall = chkboxLockDelayLockResetFall.isSelected
+		r.lockResetMove = chkboxLockDelayLockResetMove.isSelected
+		r.lockResetSpin = chkboxLockDelayLockResetSpin.isSelected
+		r.lockResetWallkick = chkboxLockDelayLockResetWallkick.isSelected
+		r.lockResetLimitShareCount = chkboxLockDelayLockResetLimitShareCount.isSelected
+		r.lockResetMoveLimit = getIntTextField(txtfldLockDelayLockResetLimitMove)
+		r.lockResetSpinLimit = getIntTextField(txtfldLockDelayLockResetLimitSpin)
 		if(radioLockDelayLockResetLimitOverNoReset!!.isSelected)
-			r.lockresetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NORESET
+			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NORESET
 		if(radioLockDelayLockResetLimitOverInstant!!.isSelected)
-			r.lockresetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT
+			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT
 		if(radioLockDelayLockResetLimitOverNoWallkick!!.isSelected)
-			r.lockresetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK
+			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK
 
 		r.minARE = getIntTextField(txtfldAREMin)
 		r.maxARE = getIntTextField(txtfldAREMax)
 		r.minARELine = getIntTextField(txtfldARELineMin)
 		r.maxARELine = getIntTextField(txtfldARELineMax)
-		r.lockflash = getIntTextField(txtfldARELockFlash)
-		r.lockflashOnlyFrame = chkboxARELockFlashOnlyFrame.isSelected
-		r.lockflashBeforeLineClear = chkboxARELockFlashBeforeLineClear.isSelected
+		r.lockFlash = getIntTextField(txtfldARELockFlash)
+		r.lockFlashOnlyFrame = chkboxARELockFlashOnlyFrame.isSelected
+		r.lockFlashBeforeLineClear = chkboxARELockFlashBeforeLineClear.isSelected
 		r.areCancelMove = chkboxARECancelMove.isSelected
-		r.areCancelRotate = chkboxARECancelRotate.isSelected
+		r.areCancelSpin = chkboxARECancelSpin.isSelected
 		r.areCancelHold = chkboxARECancelHold.isSelected
 
 		r.minLineDelay = getIntTextField(txtfldLineDelayMin)
 		r.maxLineDelay = getIntTextField(txtfldLineDelayMax)
 		r.lineFallAnim = chkboxLineFallAnim.isSelected
 		r.lineCancelMove = chkboxLineCancelMove.isSelected
-		r.lineCancelRotate = chkboxLineCancelRotate.isSelected
+		r.lineCancelSpin = chkboxLineCancelSpin.isSelected
 		r.lineCancelHold = chkboxLineCancelHold.isSelected
 
 		r.minDAS = getIntTextField(txtfldMoveDASMin)
@@ -1674,7 +1704,7 @@ class RuleEditor:JFrame, ActionListener {
 			}
 			"Open" -> {
 				// 開く
-				c = JFileChooser(System.getProperty("user.dir")+"/config/rule")
+				c = JFileChooser("${System.getProperty("user.dir")}/config/rule")
 				c.fileFilter = FileFilterRUL()
 
 				if(c.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
@@ -1688,8 +1718,10 @@ class RuleEditor:JFrame, ActionListener {
 						ruleOpt = load(file.path)
 					} catch(e2:IOException) {
 						log.error("Failed to load rule data from ${strNowFile!!}", e2)
-						JOptionPane.showMessageDialog(this, "${getUIText("Message_FileLoadFailed")}\n$e2",
-							getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE)
+						JOptionPane.showMessageDialog(
+							this, "${getUIText("Message_FileLoadFailed")}\n$e2",
+							getUIText("Title_FileLoadFailed"), JOptionPane.ERROR_MESSAGE
+						)
 						return
 					}
 
@@ -1702,8 +1734,10 @@ class RuleEditor:JFrame, ActionListener {
 						save(strNowFile!!)
 					} catch(e2:IOException) {
 						log.error("Failed to save rule data to ${strNowFile!!}", e2)
-						JOptionPane.showMessageDialog(this, "${getUIText("Message_FileSaveFailed")}\n$e2",
-							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
+						JOptionPane.showMessageDialog(
+							this, "${getUIText("Message_FileSaveFailed")}\n$e2",
+							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
+						)
 					}
 
 				} else {
@@ -1720,8 +1754,10 @@ class RuleEditor:JFrame, ActionListener {
 							save(filename)
 						} catch(e2:Exception) {
 							log.error("Failed to save rule data to $filename", e2)
-							JOptionPane.showMessageDialog(this, "${getUIText("Message_FileSaveFailed")}\n$e2",
-								getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
+							JOptionPane.showMessageDialog(
+								this, "${getUIText("Message_FileSaveFailed")}\n$e2",
+								getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
+							)
 							return
 						}
 
@@ -1741,8 +1777,10 @@ class RuleEditor:JFrame, ActionListener {
 						save(filename)
 					} catch(e2:Exception) {
 						log.error("Failed to save rule data to $filename", e2)
-						JOptionPane.showMessageDialog(this, "${getUIText("Message_FileSaveFailed")}\n$e2",
-							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
+						JOptionPane.showMessageDialog(
+							this, "${getUIText("Message_FileSaveFailed")}\n$e2",
+							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
+						)
 						return
 					}
 

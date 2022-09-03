@@ -44,7 +44,7 @@ abstract class AbstractMenuItem<T>(
 	open val valueString:String get() = "$value"
 	open val colMax:Int = 1
 	open val showHeight:Int get() = if(compact) 1 else 2
-	/** Change the aint.
+	/** Change the value.
 	 * @param dir Direction pressed: -1 = left, 1 = right.
 	 * If 0, update without changing any settings.
 	 * @param fast 0 by default, +1 if C(Alt.R.Spin) held, +2 if D(Swap) held.
@@ -68,17 +68,25 @@ abstract class AbstractMenuItem<T>(
 	 */
 	open fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int = -1) {
 		if(compact&&(label+valueString).length<=8) {
-			receiver.drawMenuFont(engine, playerID, 1, y, "${label}:", color = color)
-			if(focus==0) receiver.drawMenuFont(engine, playerID, 0, y, "\u0082", true)
+			receiver.drawMenuFont(engine, 1, y, "${label}:", color = color)
+			if(focus==0) receiver.drawMenuFont(engine, 0, y, "\u0082", true)
 			receiver.drawMenu(
-				engine, playerID, label.length+2, y, valueString, if(valueString.all {it.isDigit()}) FONT.NUM else FONT.NORMAL,
+				engine,
+				label.length+2,
+				y,
+				valueString,
+				if(valueString.all {it.isDigit()}) FONT.NUM else FONT.NORMAL,
 				if(focus==0) COLOR.RAINBOW else COLOR.WHITE
 			)
 		} else {
-			receiver.drawMenuFont(engine, playerID, 0, y, label, color = color)
-			if(focus==0) receiver.drawMenuFont(engine, playerID, 0, y+1, "\u0082", true)
+			receiver.drawMenuFont(engine, 0, y, label, color = color)
+			if(focus==0) receiver.drawMenuFont(engine, 0, y+1, "\u0082", true)
 			receiver.drawMenu(
-				engine, playerID, 1, y+1, valueString, if(valueString.all {it.isDigit()}) FONT.NUM else FONT.NORMAL,
+				engine,
+				1,
+				y+1,
+				valueString,
+				if(valueString.all {it.isDigit()}) FONT.NUM else FONT.NORMAL,
 				if(focus==0) COLOR.RAINBOW else COLOR.WHITE
 			)
 		}

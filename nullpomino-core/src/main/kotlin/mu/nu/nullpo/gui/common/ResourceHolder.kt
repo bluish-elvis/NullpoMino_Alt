@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,21 +33,21 @@ import com.davekoelle.AlphaNumComparator
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.gui.common.ResourceImage.ResourceImageStr
-import mu.nu.nullpo.gui.slick.ResourceHolder
 import mu.nu.nullpo.util.GeneralUtil.flattenList
+import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File
 import java.io.FileFilter
 
 abstract class ResourceHolder {
 	/** log */
-	abstract val log:Logger
+	val log:Logger = LogManager.getLogger()
 
 	private val logConf = "config/etc/log.xml"
 
 	init {
 		try {
-			val originLog = File(ResourceHolder::class.java.getResource("/log4j2.xml").toString())
+			val originLog = File(ResourceHolder::class.java.getResource("/log4j2.xml")!!.toString())
 			val f = File(logConf)
 			if(!f.parentFile.exists()) f.parentFile.mkdirs()
 			else if(f.isDirectory) f.deleteRecursively()
@@ -132,6 +132,7 @@ abstract class ResourceHolder {
 			} ?: emptyList()
 	}
 
+	/** Field frame for retro mode */
 	internal open val imgFrameOld:List<ResourceImage<*>> =
 		listOf("gb", "sa", "hebo", "grade").map {ResourceImageStr("frames/$it")}
 
@@ -140,16 +141,18 @@ abstract class ResourceHolder {
 		listOf("_small", "", "_big").map {ResourceImageStr("fieldbg2$it")}
 	//public static Image imgFieldbg;
 
+	/**Particles sprite*/
 	internal open val imgFrags:List<ResourceImage<*>> =
 		listOf("brk_halo", "brk_tail", "fw_part").map {ResourceImageStr("effects/frag_$it")}
 
+	/**Item Spritesheets*/
 	internal open val imgItemAnims:List<ResourceImage<*>> =
 		listOf("mirr", "roll", "big", "xray", "col", "dark", "morph", "nega", "shot", "excg", "hard", "reve").map {
 			ResourceImageStr("effects/frag_$it")
 		}
-	/** Beam animation during line clears */
+	/** Beam Spritesheets for line clears */
 	internal open val imgLine:List<ResourceImage<*>> = listOf("h", "v").map {ResourceImageStr("effects/del_$it")}
-	/** Block spatter animation during line clears */
+	/** Block spatter Spritesheets for line clears */
 	internal open val imgBreak:List<List<ResourceImage<*>>> = List(blockBreakMax) {i ->
 		List(blockBreakSegments) {
 			ResourceImageStr("effects/break${i}_$it")
@@ -183,23 +186,16 @@ abstract class ResourceHolder {
 	val backgroundMax get() = imgPlayBG.size
 
 	fun loadImg(back:Boolean, frags:Boolean) {
-		log.info("Loading Image from ${ResourceHolder.skinDir}")
+		log.info("Loading Image from $skinDir")
 
-		val nestList:List<Any> = listOf(
-			listOf(1),
-			2,
-			listOf(listOf(3, 4), 5),
-			listOf(listOf(listOf<Int>())),
-			listOf(listOf(listOf(6))),
-			7,
-			8,
-			listOf<Int>()
+		/*val nestList:List<Any> = listOf(
+			listOf(1), 2, listOf(listOf(3, 4), 5), listOf(listOf(listOf<Int>())), listOf(listOf(listOf(6))), 7,	8,listOf<Int>()
 		)
-		log.debug(flattenList<Int>(nestList))
+		log.debug(flattenList<Int>(nestList))*/
 
 		// Blocks
-		log.debug("${ResourceHolder.imgNormalBlockList.size} block skins found")
-		listOf(ResourceHolder.imgNormalBlockList, ResourceHolder.imgSmallBlockList, ResourceHolder.imgBigBlockList).flatten()
+		log.debug("${imgNormalBlockList.size} block skins found")
+		listOf(imgNormalBlockList, imgSmallBlockList, imgBigBlockList).flatten()
 			.forEach {it.load()}
 
 		flattenList<ResourceImage<*>>(
@@ -221,18 +217,12 @@ abstract class ResourceHolder {
 
 	/** Load line clear effect images. */
 	internal fun loadLineClearEffectImages() {
-		flattenList<ResourceImage<*>>(listOf(imgBreak, imgPErase, imgHanabi)).forEach {it.load()}
+		flattenList<ResourceImage<*>>(listOf(imgBreak, imgPErase, imgHanabi, imgFrags)).forEach {it.load()}
 	}
 
-	internal val jingles = arrayListOf("gamelost", "gamewon").also {a ->
-		a.addAll(
-			listOf(
-				(0..2).map {"excellent$it"},
-			).flatten()
-		)
-	}
+	internal val jingles = setOf("gamelost", "gamewon", *setOf((0..2).map {"excellent$it"}).flatten().toTypedArray())
 
-	internal val seList = arrayListOf(
+	internal val soundSet = setOf(
 		"cursor", "change", "decide", "cancel", "pause",
 		"hold", "initialhold", "holdfail", "move", "movefail",
 		"rotate", "wallkick", "initialrotate", "rotfail",
@@ -241,23 +231,21 @@ abstract class ResourceHolder {
 		"combo", "combo_pow", "b2b_start", "b2b_combo", "b2b_end",
 
 		"danger", "dead", "dead_last", "shutter",
-		"gradeup", "levelstop", "levelup", "levelup_section",
+		"levelstop", "levelup", "levelup_section",
 		"endingstart", "excellent",
 		"bravo", "cool", "regret",
 
 		"countdown", "hurryup", "timeout",
 		"stageclear", "stagefail", "matchend",
-		"gem", "bomb", "square_s", "square_g"
+		"gem", "bomb", "square_s", "square_g",
+		*setOf(
+			(0..1).flatMap {setOf("start$it", "garbage$it", "crowd$it")},
+			(0..2).flatMap {setOf("decide$it", "erase$it", "firecracker$it")},
+			(0..4).map {"grade$it"}, (0..5).map {"applause$it"},
+			Piece.Shape.names.map {"piece_${it.lowercase()}"},
+			(1..3).map {"medal$it"},
+			(1..4).map {"line$it"}
+		).flatten().toTypedArray()
 	)
-		.also {a ->
-			a.addAll(listOf(
-				(0..1).flatMap {listOf("start$it", "garbage$it", "crowd$it")},
-				(0..2).flatMap {listOf("decide$it", "erase$it", "firecracker$it")},
-				(0..4).map {"grade$it"}, (0..5).map {"applause$it"},
-				Piece.Shape.names.map {"piece_${it.lowercase()}"},
-				(1..3).map {"medal$it"},
-				(1..4).map {"line$it"}
-			).flatten())
-		}
 
 }

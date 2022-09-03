@@ -519,7 +519,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		}
 	}
 
-	/** Shutdown this program */
+	/** shut down this program */
 	fun shutdown() {
 		logout()
 		saveConfig()
@@ -657,7 +657,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		// bangui
 		// myip
 		// announce
-		// quit/exit/shutdown
+		// quit/exit/shut down
 		// cls
 	}
 
@@ -667,7 +667,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	 * @param showMessage true if display a confirm dialog
 	 */
 	private fun requestBanFromGUI(strIP:String?, banLength:Int, showMessage:Boolean) {
-		if(strIP==null||strIP.isEmpty()) return
+		if(strIP.isNullOrEmpty()) return
 
 		if(banLength==-1) {
 			var answer = JOptionPane.YES_OPTION
@@ -1065,7 +1065,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 						strSelectedType = null
 					}
 				} else {
-					// Add an new row
+					// Add a new row
 					tablemodelUsers.addRow(strTableData)
 
 					// Set selected row
@@ -1415,7 +1415,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		 * message) */
 		private var isWantedDisconnect = false
 
-		/** True if server shutdown is requested */
+		/** True if server shut down is requested */
 		private var isShutdownRequested = false
 
 		/** Hostname of the server */

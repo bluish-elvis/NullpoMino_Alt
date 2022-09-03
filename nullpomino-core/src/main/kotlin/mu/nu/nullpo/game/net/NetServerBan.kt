@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -65,8 +65,7 @@ class NetServerBan {
 			}
 		}
 
-	/** Returns a boolean representing whether or not this NetServerBan is
-	 * expired.
+	/** Returns a boolean representing whether this NetServerBan is expired.
 	 * @return true if the ban is expired.
 	 */
 	val isExpired:Boolean

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -66,14 +66,16 @@ internal class StateConfigMainMenu:DummyMenuChooseState() {
 		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
 		// Menu
-		FontNormal.printFontGrid(1, 1, "OPTIONS", player==0, COLOR.ORANGE , COLOR.CYAN)
+		FontNormal.printFontGrid(1, 1, "OPTIONS", player==0, COLOR.ORANGE, COLOR.CYAN)
 		FontNano.printFontGrid(8, 1, "FOR ${player+1}P", COLOR.ORANGE)
 
 		FontNormal.printFontGrid(1, 3+cursor, "\u0082", player==0, COLOR.RED, COLOR.BLUE)
 
 		CHOICES.forEachIndexed {i, it ->
-			FontNormal.printFontGrid(2, 3+i, "[${it.first}]", cursor==i, COLOR.WHITE,
-				if(player==0) COLOR.BLUE else COLOR.RED)
+			FontNormal.printFontGrid(
+				2, 3+i, "[${it.first}]", cursor==i, COLOR.WHITE,
+				if(player==0) COLOR.BLUE else COLOR.RED
+			)
 		}
 
 		FontTTF.print(16, 432, NullpoMinoSlick.getUIText("ConfigMainMenu_${CHOICES[cursor].second}"))
@@ -135,13 +137,15 @@ internal class StateConfigMainMenu:DummyMenuChooseState() {
 
 		/** Text identifier Strings */
 		private val CHOICES =
-			arrayOf("General Settings" to "General",
+			arrayOf(
+				"General Settings" to "General",
 				"RULE Select" to "Rule", "Tweaks Handling" to "GameTuning",
 				"AI Setting" to "AI",
 				"In-Game Keyboard Assign" to "Keyboard",
 				"Keyboard Assign" to "KeyboardNavi",
 				"RESET Keyboard Assign" to "KeyboardReset",
-				"Joystick SETTING" to "Joystick")
+				"Joystick SETTING" to "Joystick"
+			)
 
 	}
 }

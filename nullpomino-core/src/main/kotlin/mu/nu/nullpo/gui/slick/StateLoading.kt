@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -30,7 +30,11 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.play.GameManager
 import org.apache.logging.log4j.LogManager
-import org.newdawn.slick.*
+import org.newdawn.slick.AppGameContainer
+import org.newdawn.slick.GameContainer
+import org.newdawn.slick.Graphics
+import org.newdawn.slick.Image
+import org.newdawn.slick.Sound
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 
@@ -154,8 +158,8 @@ class StateLoading:BasicGameState() {
 			3 -> {
 				ResourceHolder.let {
 					try {
-						listOf(it.imgFont, it.imgNum).flatten().forEach {
-							it.draw()
+						listOf(it.imgFont, it.imgNum).flatten().forEach {i ->
+							i.draw()
 						}
 						it.imgFontNano.draw()
 					} catch(e:Exception) {

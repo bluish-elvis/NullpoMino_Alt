@@ -8,14 +8,14 @@
 AppId={{92421394-0936-4142-B3BD-400D24E8D662}
 AppName=NullpoMino_Alt
 AppVersion=7.7.2021
-;AppVerName=NullpoMino-Alt 7.7.2021
+;AppVerName=NullpoMino-Alt 7.7.2022
 AppPublisher=NullNoname
 AppPublisherURL=http://code.google.com/p/nullpomino/
 AppSupportURL=http://code.google.com/p/nullpomino/
 AppUpdatesURL=http://code.google.com/p/nullpomino/
 DefaultDirName={sd}\NullpoMino
 DefaultGroupName=NullpoMino
-OutputBaseFilename=Nullpomino_7.7.2021
+OutputBaseFilename=Nullpomino_7.7.2022
 Compression=lzma
 SolidCompression=yes
 ; DisableProgramGroupPage=yes
@@ -34,10 +34,9 @@ Source: "C:\Users\Wojtek\Tymczasowe\npm\*"; DestDir: "{app}"; Flags: ignoreversi
 
 [Icons]
 Name: "{group}\NullpoMino"; Filename: "{app}\NullpoMino.exe"
-Name: "{group}\README (English)"; Filename: "{app}\readme_en.txt"; Languages: english 
+Name: "{group}\README (English)"; Filename: "{app}\readme_en.txt"; Languages: english
 Name: "{group}\README (Japanese)"; Filename: "{app}\readme_jp.txt"; Languages: japanese
 Name: "{commondesktop}\NullpoMino"; Filename: "{app}\NullpoMino.exe"; Tasks: extraicons
 
 [Run]
 Filename: "{app}\NullpoMino.exe"; Description: "{cm:LaunchProgram,NullpoMino}"; Flags: nowait postinstall skipifsilent
-

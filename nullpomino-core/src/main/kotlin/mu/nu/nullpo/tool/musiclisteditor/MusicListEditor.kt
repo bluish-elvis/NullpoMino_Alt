@@ -41,7 +41,21 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Locale
-import javax.swing.*
+import javax.swing.AbstractAction
+import javax.swing.Action
+import javax.swing.BoxLayout
+import javax.swing.JButton
+import javax.swing.JCheckBox
+import javax.swing.JFileChooser
+import javax.swing.JFrame
+import javax.swing.JLabel
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.JPopupMenu
+import javax.swing.JTabbedPane
+import javax.swing.JTextField
+import javax.swing.UIManager
+import javax.swing.WindowConstants
 
 /** MusicListEditor (音楽リスト編集ツール) */
 class MusicListEditor:JFrame(), ActionListener {
@@ -100,7 +114,8 @@ class MusicListEditor:JFrame(), ActionListener {
 
 		try {
 			val `in` = FileInputStream(
-				"config/lang/musiclisteditor_${Locale.getDefault().country}.xml")
+				"config/lang/musiclisteditor_${Locale.getDefault().country}.xml"
+			)
 			propLang.loadFromXML(`in`)
 			`in`.close()
 		} catch(e:IOException) {
@@ -327,9 +342,11 @@ class MusicListEditor:JFrame(), ActionListener {
 				saveMusicList(prop)
 
 			} catch(e2:IOException) {
-				JOptionPane.showMessageDialog(this,
+				JOptionPane.showMessageDialog(
+					this,
 					getUIText("Message_FileSaveFailed")+"\n"+e2.localizedMessage,
-					getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
+					getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
+				)
 			}
 
 			dispose()

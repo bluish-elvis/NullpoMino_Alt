@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,19 +28,14 @@
  */
 package mu.nu.nullpo.gui.slick.img
 
-import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.BaseFontNumber
+import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 
 /** 普通の文字列の表示クラス */
 object FontNumber:BaseFontNumber() {
 	override val rainbowCount:Int get() = NullpoMinoSlick.rainbow
-
-	override fun printFont(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
-		processTxt(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
-		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int, a:Float ->
-			ResourceHolder.imgNum[i].draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, a)
-		}
+	override fun getImg(i:Int):ResourceImage<*> = ResourceHolder.imgNum[i]
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -50,10 +50,9 @@ abstract class BaseGameState:BasicGameState() {
 
 	}
 
-	/** Draw the screen. BaseGameState will do the common things (such as
-	 * Framerate Cap or Screen Shot) here.
-	 * Your code will be in renderImpl, unless if you want do something
-	 * special. */
+	/** Draw the screen. BaseGameState will do the common things here.
+	 *  (such as Framerate Cap or Screen Shot)
+	 * Your code will be in renderImpl, unless if you want to do something special. */
 	override fun render(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Lost the focus
 		if(!container.hasFocus()) {
@@ -78,10 +77,9 @@ abstract class BaseGameState:BasicGameState() {
 		if(!NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep()
 	}
 
-	/** Update the game. BaseGameState will do the common things (such as
-	 * Framerate Cap or Screen Shot) here.
-	 * Your code will be in updateImpl, unless if you want do something
-	 * special. */
+	/** Update the game. BaseGameState will do the common things here.
+	 *  (such as Framerate Cap or Screen Shot)
+	 * Your code will be in updateImpl, unless if you want to do something special. */
 	@Throws(SlickException::class)
 	override fun update(container:GameContainer, game:StateBasedGame, delta:Int) {
 		// Lost the focus
@@ -104,8 +102,7 @@ abstract class BaseGameState:BasicGameState() {
 		if(NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep()
 	}
 
-	/** Draw the screen. Your code will be here, unless if you want do something
-	 * special.
+	/** Draw the screen. Your code will be here, unless if you want to do something special.
 	 * @param container GameContainer
 	 * @param game StateBasedGame
 	 * @param g Graphics
@@ -124,8 +121,7 @@ abstract class BaseGameState:BasicGameState() {
 		}
 	}
 
-	/** Update the game. Your code will be here, unless if you want do something
-	 * special.
+	/** Update the game. Your code will be here, unless if you want to do something special.
 	 * @param container GameContainer
 	 * @param game StateBasedGame
 	 * @param delta Time passed since the last execution

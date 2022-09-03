@@ -82,29 +82,29 @@ open class DummyAI:AIPlayer, Runnable {
 
 	override fun renderState(engine:GameEngine, playerID:Int) {
 		engine.owner.receiver.run {
-			drawMenuFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.GREEN, 0.5f)
-			drawMenuFont(engine, playerID, 5, 1, "X", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, playerID, 8, 1, "Y", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, playerID, 11, 1, "RT", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, playerID, 0, 2, "BEST:", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, playerID, 5, 2, "$bestX", 0.5f)
-			drawMenuFont(engine, playerID, 8, 2, "$bestY", 0.5f)
-			drawMenuFont(engine, playerID, 11, 2, "$bestRt", 0.5f)
-			drawMenuFont(engine, playerID, 0, 3, "SUB:", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, playerID, 5, 3, "$bestXSub", 0.5f)
-			drawMenuFont(engine, playerID, 8, 3, "$bestYSub", 0.5f)
-			drawMenuFont(engine, playerID, 11, 3, "$bestRtSub", 0.5f)
-			drawMenuFont(engine, playerID, 0, 4, "NOW:", EventReceiver.COLOR.BLUE, 0.5f)
+			drawMenuFont(engine, 0, 0, name, EventReceiver.COLOR.GREEN, 0.5f)
+			drawMenuFont(engine, 5, 1, "X", EventReceiver.COLOR.BLUE, 0.5f)
+			drawMenuFont(engine, 8, 1, "Y", EventReceiver.COLOR.BLUE, 0.5f)
+			drawMenuFont(engine, 11, 1, "RT", EventReceiver.COLOR.BLUE, 0.5f)
+			drawMenuFont(engine, 0, 2, "BEST:", EventReceiver.COLOR.BLUE, 0.5f)
+			drawMenuFont(engine, 5, 2, "$bestX", 0.5f)
+			drawMenuFont(engine, 8, 2, "$bestY", 0.5f)
+			drawMenuFont(engine, 11, 2, "$bestRt", 0.5f)
+			drawMenuFont(engine, 0, 3, "SUB:", EventReceiver.COLOR.BLUE, 0.5f)
+			drawMenuFont(engine, 5, 3, "$bestXSub", 0.5f)
+			drawMenuFont(engine, 8, 3, "$bestYSub", 0.5f)
+			drawMenuFont(engine, 11, 3, "$bestRtSub", 0.5f)
+			drawMenuFont(engine, 0, 4, "NOW:", EventReceiver.COLOR.BLUE, 0.5f)
 			if(engine.nowPieceObject==null)
-				drawMenuFont(engine, playerID, 5, 4, "-- -- --", 0.5f) else {
-				drawMenuFont(engine, playerID, 5, 4, "${engine.nowPieceX}", 0.5f)
-				drawMenuFont(engine, playerID, 8, 4, "${engine.nowPieceY}", 0.5f)
-				drawMenuFont(engine, playerID, 11, 4, "${engine.nowPieceObject?.direction ?: "--"}", 0.5f)
+				drawMenuFont(engine, 5, 4, "-- -- --", 0.5f) else {
+				drawMenuFont(engine, 5, 4, "${engine.nowPieceX}", 0.5f)
+				drawMenuFont(engine, 8, 4, "${engine.nowPieceY}", 0.5f)
+				drawMenuFont(engine, 11, 4, "${engine.nowPieceObject?.direction ?: "--"}", 0.5f)
 			}
-			drawMenuFont(engine, playerID, 0, 5, "MOVE SCORE:", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, playerID, 13, 5, "$bestPts", bestPts<=0, 0.5f)
-			drawMenuFont(engine, playerID, 0, 6, "THINK ACTIVE:", EventReceiver.COLOR.BLUE, 0.5f)
-			drawMenuFont(engine, playerID, 15, 6, thinking.getOX, 0.5f)
+			drawMenuFont(engine, 0, 5, "MOVE SCORE:", EventReceiver.COLOR.BLUE, 0.5f)
+			drawMenuFont(engine, 13, 5, "$bestPts", bestPts<=0, 0.5f)
+			drawMenuFont(engine, 0, 6, "THINK ACTIVE:", EventReceiver.COLOR.BLUE, 0.5f)
+			drawMenuFont(engine, 15, 6, thinking.getOX, 0.5f)
 		}
 	}
 

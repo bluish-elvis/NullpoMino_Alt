@@ -61,7 +61,7 @@ class PoochyBotDefensive:PoochyBot() {
 		val xMin = piece.minimumBlockX+x
 		val xMax = piece.maximumBlockX+x
 
-		// Number of holes and valleys needing an I piece (before placement)
+		// Number of holes and valleys needing an I-piece (before placement)
 		val holeBefore = fld.howManyHoles
 		//int lidBefore = fld.getHowManyLidAboveHoles();
 
@@ -119,7 +119,7 @@ class PoochyBotDefensive:PoochyBot() {
 			twist = true
 		}
 
-		//Does move fill in valley with an I piece?
+		//Does move fill in valley with an I-piece?
 		var valley = 0
 		if(piece.id==Piece.PIECE_I) {
 			if(xMin==xMax&&0<=xMin&&xMin<width) {
@@ -165,7 +165,7 @@ class PoochyBotDefensive:PoochyBot() {
 
 		val holeAfter = fld.howManyHoles
 
-		//Bonus points for filling in valley with an I piece
+		//Bonus points for filling in valley with an I-piece
 		var valleyBonus = 0
 		if(valley==3&&xMax<width-1) valleyBonus = 40000
 		else if(valley>=4) valleyBonus = 400000
@@ -187,7 +187,7 @@ class PoochyBotDefensive:PoochyBot() {
 		}
 
 		if(lines<4&&!allclear) {
-			// Number of holes and valleys needing an I piece (after placement)
+			// Number of holes and valleys needing an I-piece (after placement)
 			//int lidAfter = fld.getHowManyLidAboveHoles();
 
 			//Find valleys that need an I, J, or L.

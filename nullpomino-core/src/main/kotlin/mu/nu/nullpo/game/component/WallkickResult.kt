@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -36,7 +36,7 @@ data class WallkickResult(
 	val offsetX:Int = 0,
 	/** Y-coordinate補正量 */
 	val offsetY:Int = 0,
-	/** rotation後のピースのDirection */
+	/** 回転後のピースのDirection */
 	val direction:Int = 0):Serializable {
 	/** 上DirectionへのWallkickかどうか判定
 	 * @return 上DirectionへのWallkickのとき (offsetY < 0のとき）にtrue

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -129,8 +129,10 @@ class StateReplaySelect:DummyMenuScrollState() {
 
 	override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
 		FontNormal.printFontGrid(1, 1, "SELECT REPLAY FILE (${cursor+1}/${list.size})", COLOR.ORANGE)
-		if(strCurrentFolder.isNotEmpty()) FontNano.printFont(8, 36,
-			">${strCurrentFolder.replace(File.separatorChar, 'b')}", COLOR.ORANGE)
+		if(strCurrentFolder.isNotEmpty()) FontNano.printFont(
+			8, 36,
+			">${strCurrentFolder.replace(File.separatorChar, 'b')}", COLOR.ORANGE
+		)
 
 		statsList[cursor]?.let {
 			FontNormal.printFontGrid(1, 24, "MODE:${modenameList[cursor]} RULE:${rulenameList[cursor]}", COLOR.CYAN)
@@ -145,13 +147,16 @@ class StateReplaySelect:DummyMenuScrollState() {
 		if(list.isEmpty()) return false
 		ResourceHolder.soundManager.play("decide0")
 		if(statsList[cursor]==null) {
-			getReplayFileList((strCurrentFolder)+File.separator+list[cursor])
+			getReplayFileList("$strCurrentFolder${File.separator}${list[cursor]}")
 		} else {
 			val prop = CustomProperties()
 
 			try {
-				val `in` = GZIPInputStream(FileInputStream(
-					"${NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", "replay")}${strCurrentFolder}/${list[cursor]}"))
+				val `in` = GZIPInputStream(
+					FileInputStream(
+						"${NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", "replay")}${strCurrentFolder}/${list[cursor]}"
+					)
+				)
 				prop.load(`in`)
 				`in`.close()
 			} catch(e:IOException) {

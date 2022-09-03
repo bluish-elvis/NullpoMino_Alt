@@ -50,7 +50,7 @@ class Piece(id:Int = 0):Serializable {
 
 			resetOffsetArray()
 		}
-	val type:Shape get() = Shape.values()[id]
+	val type:Shape get() = Shape.all[id]
 
 	/** Direction */
 	var direction:Int = DIRECTION_UP
@@ -79,11 +79,11 @@ class Piece(id:Int = 0):Serializable {
 	/** 相対Y位置のずれ幅 */
 	var dataOffsetY = IntArray(DIRECTION_COUNT)
 
-/*dataX = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
-	dataY = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
-	block = Array(maxBlock) {Block()}
-	dataOffsetX = IntArray(DIRECTION_COUNT)
-	dataOffsetY = IntArray(DIRECTION_COUNT)*/
+	/*dataX = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
+		dataY = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
+		block = Array(maxBlock) {Block()}
+		dataOffsetX = IntArray(DIRECTION_COUNT)
+		dataOffsetY = IntArray(DIRECTION_COUNT)*/
 	/** 1つのピースに含まれるBlockのcountを取得
 	 * @return 1つのピースに含まれるBlockのcount
 	 */
@@ -171,14 +171,14 @@ class Piece(id:Int = 0):Serializable {
 	 * @param p Copy source
 	 */
 	constructor(p:Piece):this(p.id) {
-		copy(p)
+		replace(p)
 		updateConnectData()
 	}
 
-	/** Blockピースの dataを他のPieceからコピー
-	 * @param p Copy source
+	/** Blockピースの dataを[p]からコピー
+	 * @param keep idを保持
 	 */
-	fun copy(p:Piece, keep:Boolean = false) {
+	fun replace(p:Piece, keep:Boolean = false) {
 		if(keep) id = p.id
 		direction = p.direction
 		big = p.big
@@ -196,7 +196,7 @@ class Piece(id:Int = 0):Serializable {
 	/** すべてのBlock stateをbと同じに設定
 	 * @param b 設定するBlock
 	 */
-	fun setBlock(b:Block) = block.forEach {it.copy(b)}
+	fun setBlock(b:Block) = block.forEach {it.replace(b)}
 
 	/** すべてのBlock colorを変更
 	 * @param color 色
@@ -631,11 +631,11 @@ class Piece(id:Int = 0):Serializable {
 		return x
 	}
 
-	/** rotation buttonを押したあとのピースのDirectionを取得
-	 * @param move rotationDirection (-1:左 1:右 2:180度）
-	 * @return rotation buttonを押したあとのピースのDirection
+	/** spin buttonを押したあとのピースのDirectionを取得
+	 * @param move spinDirection (-1:左 1:右 2:180度）
+	 * @return spin buttonを押したあとのピースのDirection
 	 */
-	fun getRotateDirection(move:Int):Int {
+	fun getSpinDirection(move:Int):Int {
 		var rt = direction+move
 
 		if(move==2) {
@@ -649,12 +649,12 @@ class Piece(id:Int = 0):Serializable {
 		return rt
 	}
 
-	/** rotation buttonを押したあとのピースのDirectionを取得
-	 * @param move rotationDirection (-1:左 1:右 2:180度）
+	/** spin buttonを押したあとのピースのDirectionを取得
+	 * @param move spinDirection (-1:左 1:右 2:180度）
 	 * @param dir 元のDirection
-	 * @return rotation buttonを押したあとのピースのDirection
+	 * @return spin buttonを押したあとのピースのDirection
 	 */
-	fun getRotateDirection(move:Int, dir:Int):Int {
+	fun getSpinDirection(move:Int, dir:Int):Int {
 		var rt = dir+move
 
 		if(move==2) {
@@ -687,13 +687,13 @@ class Piece(id:Int = 0):Serializable {
 
 		/** BlockピースのName */
 		@Deprecated("This will be enumed", ReplaceWith("Shape.names", "mu.nu.nullpo.game.component.Shape"))
-		val PIECE_NAMES = Shape.values().map {it.name}.toTypedArray()
+		val PIECE_NAMES = Shape.names.toTypedArray()
 
 		/** 通常のBlockピースのIDのMaximumcount */
 		const val PIECE_STANDARD_COUNT = 7
 
 		/** BlockピースのIDのMaximumcount */
-		val PIECE_COUNT get() = Shape.values().size// = 11
+		val PIECE_COUNT get() = Shape.all.size// = 11
 
 		/** default のBlockピースの data (X-coordinate) */
 		val DEFAULT_PIECE_DATA_X =
@@ -815,8 +815,9 @@ class Piece(id:Int = 0):Serializable {
 		I, L, O, Z, T, J, S, I1, I2, I3, L3;
 
 		companion object {
-			val names:List<String> get() = values().map {it.name}
-			fun name(id:Int):String = values().getOrNull(id)?.name ?: "?"
+			val all = values()
+			val names:List<String> get() = all.map {it.name}
+			fun name(id:Int):String = all.getOrNull(id)?.name ?: "?"
 		}
 	}
 

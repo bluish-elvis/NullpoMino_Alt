@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2021,
+ * Copyright (c) 2021-2022,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -38,6 +38,7 @@ package zeroxfc.nullpo.custom.modes
 
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
@@ -98,7 +99,7 @@ class Collapse:AbstractMode() {
      */
 	override val name:String = "COLLAPSE"
 
-	override fun playerInit(engine:GameEngine, playerID:Int) {
+	override fun playerInit(engine:GameEngine) {
 		rankingScorePlayer = Array(MAX_DIFFICULTIES) {IntArray(MAX_RANKING)}
 		rankingLevelPlayer = Array(MAX_DIFFICULTIES) {IntArray(MAX_RANKING)}
 		rankingRankPlayer = -1
@@ -130,11 +131,9 @@ class Collapse:AbstractMode() {
 		val mainClass:String = ResourceHolderCustomAssetExtension.mainClassName
 		holderType = when {
 			mainClass.contains("Slick") -> HOLDER_SLICK
-			mainClass.contains("Swing") -> HOLDER_SWING
-			mainClass.contains("SDL") -> HOLDER_SDL
 			else -> -1
 		}
-		engine.framecolor = GameEngine.FRAME_COLOR_BRONZE
+		engine.frameColor = GameEngine.FRAME_COLOR_BRONZE
 
 	}
 
@@ -156,17 +155,17 @@ class Collapse:AbstractMode() {
 		}
 		sTextArr.add(
 			SideWaveText(
-				cursorX+offsetX, cursorY+offsetY, 1.5,
-				if(!largeClear) 0.0 else if(big) 24.0 else 16.0, str, big, largeClear
+				cursorX+offsetX, cursorY+offsetY, 1.5f,
+				if(!largeClear) 0f else if(big) 24f else 16f, str, big, largeClear
 			)
 		)
 	}
 
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
 		if(!engine.owner.replayMode) {
 			// Configuration changes
-			val change:Int = updateCursor(engine, 2, playerID)
+			val change:Int = updateCursor(engine, 2)
 			if(change!=0) {
 				engine.playSE("change")
 				when(engine.statc[2]) {
@@ -185,18 +184,18 @@ class Collapse:AbstractMode() {
 			}
 
 			// Confirm
-			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_A)&&engine.statc[3]>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
 				engine.playSE("decide")
 				return false
 			}
 
 			// Cancel
-			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_B)) {
-				engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) {
+				engine.quitFlag = true
 			}
 
 			// New acc
-			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_E)&&engine.ai==null) {
+			if(engine.ctrl.isPush(Controller.BUTTON_E)&&engine.ai==null) {
 				engine.playSE("decide")
 				engine.stat = GameEngine.Status.CUSTOM
 				engine.resetStatc()
@@ -211,19 +210,17 @@ class Collapse:AbstractMode() {
 		return true
 	}
 
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		drawMenu(
-			engine, playerID, receiver, 0, EventReceiver.COLOR.RED, 0,
-			"DIFFICULTY" to DIFFICULTY_NAMES[difficulty]
+			engine, receiver, 0, EventReceiver.COLOR.RED, 0, "DIFFICULTY" to DIFFICULTY_NAMES[difficulty]
 		)
 		drawMenu(
-			engine, playerID, receiver, 2, EventReceiver.COLOR.BLUE, 1,
-			"BOMBS" to enableBombs.getONorOFF(),
+			engine, receiver, 2, EventReceiver.COLOR.BLUE, 1, "BOMBS" to enableBombs.getONorOFF(),
 			"BGM" to "$bgm"
 		)
 	}
 
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
 		// 横溜め
 		if(engine.ruleOpt.dasInReady&&engine.gameActive) engine.padRepeat() else if(engine.ruleOpt.dasRedirectInDelay) {
 			engine.dasRedirect()
@@ -246,13 +243,8 @@ class Collapse:AbstractMode() {
 			wRandomEngine = WeightedRandomizer(tableColorWeights[0], engine.randSeed)
 			wRandomEngineBomb = WeightedRandomizer(tableBombColorWeights[0], engine.randSeed+1)
 			levelUp(engine, true)
-			engine.fieldWidth = engine.ruleOpt.fieldWidth
-			engine.fieldHeight = engine.ruleOpt.fieldHeight
-			engine.fieldHiddenHeight = engine.ruleOpt.fieldHiddenHeight
-			engine.field = mu.nu.nullpo.game.component.Field(
-				engine.fieldWidth, engine.fieldHeight, engine.fieldHiddenHeight,
-				engine.ruleOpt.fieldCeiling
-			)
+			engine.field.reset()
+			engine.createFieldIfNeeded()
 			engine.field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 			if(!engine.readyDone) {
 				//  button input状態リセット
@@ -273,8 +265,8 @@ class Collapse:AbstractMode() {
 		// 開始
 		if(engine.statc[0]>=engine.goEnd) {
 			if(!engine.readyDone) engine.owner.bgmStatus.bgm = BGMStatus.BGM.Silent
-			engine.owner.mode?.startGame(engine, playerID)
-			engine.owner.receiver.startGame(engine, playerID)
+			startGame(engine)
+			engine.owner.receiver.startGame(engine)
 			engine.stat = GameEngine.Status.CUSTOM
 			for(i in 0 until lineSpawn) {
 				while(nextEmpty<engine.fieldWidth) {
@@ -300,11 +292,11 @@ class Collapse:AbstractMode() {
 		return true
 	}
 
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.owner.bgmStatus.bgm = BGMStatus.BGM.values[bgm]
 	}
 
-	override fun onCustom(engine:GameEngine, playerID:Int):Boolean {
+	override fun onCustom(engine:GameEngine):Boolean {
 //		if (engine.ctrl.isPush(Controller.BUTTON_D)) {
 //			engine.resetStatc();
 //			engine.gameEnded();
@@ -315,7 +307,7 @@ class Collapse:AbstractMode() {
 //			return false;
 //		}  // DEBUG CODE.
 		return if(engine.gameActive) {
-			parseMouse(engine, playerID)
+			parseMouse(engine)
 			if(!engine.rainbowAnimate) engine.rainbowAnimate = true
 			var incrementTime = false
 			when(localState) {
@@ -325,7 +317,7 @@ class Collapse:AbstractMode() {
 				}
 				LOCALSTATE_TRANSITION -> {
 					if(engine.timerActive) engine.timerActive = false
-					incrementTime = stateTransition(engine, playerID)
+					incrementTime = stateTransition(engine)
 				}
 				else -> {
 				}
@@ -338,7 +330,7 @@ class Collapse:AbstractMode() {
 		} else {
 			showPlayerStats = false
 			engine.isInGame = true
-			engine.playerProp.loginScreen.updateScreen(engine, playerID)
+			engine.playerProp.loginScreen.updateScreen(engine)
 			if(engine.playerProp.isLoggedIn) {
 				loadRankingPlayer(engine.playerProp)
 				loadSetting(engine.playerProp.propProfile, engine)
@@ -352,8 +344,8 @@ class Collapse:AbstractMode() {
 		var score = 0
 		var squares = 0
 		var fromBomb = false
-		engine.field.getBlock(fieldX, fieldY)?.let {
-			if(it.color?.color==true) {
+		engine.field.getBlock(fieldX, fieldY)?.let {b ->
+			if(b.color?.color==true) {
 				squares = getSquares(engine, fieldX, fieldY)
 				if(squares>=3) {
 					score = getClearScore(engine, squares)
@@ -367,10 +359,10 @@ class Collapse:AbstractMode() {
 					for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
 						engine.field.getBlock(x, y)?.setAttribute(false, Block.ATTRIBUTE.TEMP_MARK)
 				}
-			} else if(it.type==Block.TYPE.GEM) {
+			} else if(b.type==Block.TYPE.GEM) {
 				fromBomb = true
-				if(it.color?.color==true) {
-					val c = it.color
+				if(b.color?.color==true) {
+					val c = b.color
 					for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
 						engine.field.getBlock(x, y)?.let {
 							if(it.color==c&&it.type==Block.TYPE.BLOCK) {
@@ -410,30 +402,17 @@ class Collapse:AbstractMode() {
 	}
 
 	private fun stateInGame(engine:GameEngine):Boolean {
-		if(holderType!=HOLDER_SWING) {
-			if(fieldX!=-1) {
-				if(!engine.field.getBlockEmpty(fieldX, fieldY)) {
-					clearSquares(engine)
-				}
-			}
-		} else {
-			if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_A)) {
-				if(!engine.field.getBlockEmpty(fieldX, fieldY)) {
-					clearSquares(engine)
-				}
-			}
-		}
-		var brk = 0
+		if(fieldX!=-1)
+			if(!engine.field.getBlockEmpty(fieldX, fieldY))
+				clearSquares(engine)
+
+
+
 		if(bScore>0) bScore = 0
-		for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
-			engine.field.getBlock(x, y)?.let {
-				if(it.getAttribute(Block.ATTRIBUTE.ERASE)) {
-					val blk = it
-					engine.field.delBlock(x, y)
-					receiver.blockBreak(engine, x, y, blk)
-					brk++
-				}
-			}
+		val all = engine.field.findBlocks(false) {it.getAttribute(Block.ATTRIBUTE.ERASE)}
+		engine.field.delBlocks(all).let {receiver.blockBreak(engine, it)}
+		val brk = all.values.sumOf {it.size}
+
 		if(brk>0) {
 			if(engine.field.freeFall()) engine.playSE("step") else engine.playSE("lock")
 			for(i in 0..5) bringColumnsCloser(engine)
@@ -465,16 +444,9 @@ class Collapse:AbstractMode() {
 			} else {
 				if(linesLeft>0) linesLeft--
 				val proportion = linesLeft.toDouble()/tableLevelLine[engine.statistics.level]
-				if(linesLeft>=0) {
-					engine.meterValue = (proportion*receiver.getMeterMax(engine)).toInt()
-					engine.meterColor = GameEngine.METER_COLOR_RED
-					if(proportion<=0.75f) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-					if(proportion<=0.5f) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-					if(proportion<=0.25f) engine.meterColor = GameEngine.METER_COLOR_GREEN
-				} else {
-					engine.meterValue = receiver.getMeterMax(engine)
-					engine.meterColor = GameEngine.METER_COLOR_GREEN
-				}
+				engine.meterColor = GameEngine.METER_COLOR_LEVEL
+				engine.meterValue =
+					if(linesLeft>=0) proportion.toFloat() else 1f
 				if(linesLeft!=0) {
 					engine.playSE("garbage")
 					incrementField(engine)
@@ -539,7 +511,7 @@ class Collapse:AbstractMode() {
 		return false
 	}
 
-	private fun stateTransition(engine:GameEngine, playerID:Int):Boolean {
+	private fun stateTransition(engine:GameEngine):Boolean {
 		if(engine.statc[0]>180+16*3) {
 			levelUp(engine, false)
 			resetBlockArray()
@@ -609,42 +581,24 @@ class Collapse:AbstractMode() {
 	private fun incrementField(engine:GameEngine) {
 		for(y in -1 until engine.field.height-1) {
 			for(x in 0 until engine.field.width) {
-				engine.field.getBlock(x, y)?.copy(engine.field.getBlock(x, y+1))
+				engine.field.getBlock(x, y)?.replace(engine.field.getBlock(x, y+1))
 			}
 		}
 		for(x in 0 until engine.field.width) {
-			engine.field.getBlock(x, engine.field.height-1)?.copy(nextBlocks[x])
+			engine.field.getBlock(x, engine.field.height-1)?.replace(nextBlocks[x])
 		}
 	}
 
 	private fun bringColumnsCloser(engine:GameEngine) {
-		for(x in 5 downTo 1) {
-			var empty = true
-			for(y in 0 until engine.field.height) {
-				if(!engine.field.getBlockEmpty(x, y)) {
-					empty = false
-					break
-				}
-			}
-			if(empty) {
-				for(x2 in x downTo 1)
-					for(y in 0 until engine.field.height) engine.field.getBlock(x2, y)?.copy(engine.field.getBlock(x2-1, y))
-				for(y in 0 until engine.field.height) engine.field.delBlock(0, y)
-			}
+		for(x in 5 downTo 1) if((0 until engine.field.height).all {y -> engine.field.getBlockEmpty(x, y)}) {
+			for(x2 in x downTo 1)
+				for(y in 0 until engine.field.height) engine.field.getBlock(x2, y)?.replace(engine.field.getBlock(x2-1, y))
+			for(y in 0 until engine.field.height) engine.field.delBlock(0, y)
 		}
-		for(x in 6..10) {
-			var empty = true
-			for(y in 0 until engine.field.height) {
-				if(!engine.field.getBlockEmpty(x, y)) {
-					empty = false
-					break
-				}
-			}
-			if(empty) {
-				for(x2 in x..10) for(y in 0 until engine.field.height) engine.field.getBlock(x2, y)
-					?.copy(engine.field.getBlock(x2+1, y))
-				for(y in 0 until engine.field.height) engine.field.delBlock(11, y)
-			}
+		for(x in 6..10) if((0 until engine.field.height).all {y -> engine.field.getBlockEmpty(x, y)}) {
+			for(x2 in x..10) for(y in 0 until engine.field.height) engine.field.getBlock(x2, y)
+				?.replace(engine.field.getBlock(x2+1, y))
+			for(y in 0 until engine.field.height) engine.field.delBlock(11, y)
 		}
 	}
 
@@ -656,10 +610,6 @@ class Collapse:AbstractMode() {
 		resetBlockArray()
 		lineSpawn = tableLevelStartLines[effectiveLevel]
 		linesLeft = tableLevelLine[effectiveLevel]
-		if(holderType==HOLDER_SWING) {
-			fieldX = 0
-			fieldY = 15
-		}
 		force = false
 		var result = 0
 		var `is` = 0
@@ -709,22 +659,14 @@ class Collapse:AbstractMode() {
 		}
 	}
 
-	private fun parseMouse(engine:GameEngine, playerID:Int) {
+	private fun parseMouse(engine:GameEngine) {
 		// XXX: SWING DOES NOT SUPPORT MOUSE INPUT. FALL BACK TO KEYBOARD INPUT.
 		var changeX = 0
 		var changeY = 0
-		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_LEFT)) {
-			changeX += -1
-		}
-		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_RIGHT)) {
-			changeX += 1
-		}
-		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_UP)) {
-			changeY += -1
-		}
-		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_DOWN)) {
-			changeY += 1
-		}
+		if(engine.ctrl.isPush(Controller.BUTTON_LEFT)) changeX--
+		if(engine.ctrl.isPush(Controller.BUTTON_RIGHT)) changeX++
+		if(engine.ctrl.isPush(Controller.BUTTON_UP)) changeY--
+		if(engine.ctrl.isPush(Controller.BUTTON_DOWN)) changeY++
 		fieldX += changeX
 		fieldY += changeY
 		if(changeX!=0||changeY!=0) engine.playSE("change")
@@ -732,15 +674,15 @@ class Collapse:AbstractMode() {
 		if(fieldX>11) fieldX = 0
 		if(fieldY<0) fieldY = 15
 		if(fieldY>15) fieldY = 0
-		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_B)&&localState==LOCALSTATE_INGAME) force = true
+		if(engine.ctrl.isPush(Controller.BUTTON_B)&&localState==LOCALSTATE_INGAME) force = true
 		when(holderType) {
 			HOLDER_SLICK -> {
 				MouseInput.update(NullpoMinoSlick.appGameContainer.input)
 				cursorX = MouseInput.mouseX
 				cursorY = MouseInput.mouseY
 				if(MouseInput.isMouseClicked) {
-					fieldX = (cursorX-4-receiver.fieldX(engine, playerID))/16
-					fieldY = (cursorY-52-receiver.fieldY(engine, playerID))/16
+					fieldX = (cursorX-4-receiver.fieldX(engine))/16
+					fieldY = (cursorY-52-receiver.fieldY(engine))/16
 				} else {
 					fieldX = -1
 					fieldY = -1
@@ -765,19 +707,15 @@ class Collapse:AbstractMode() {
 			else -> { }*/
 		}
 		if(fieldX<0||fieldX>11||fieldY<0||fieldY>15) {
-			if(holderType!=HOLDER_SWING) {
-				if(fieldY==17&&localState==LOCALSTATE_INGAME) force = true
-				fieldX = -1
-				fieldY = -1
-			}
+			if(fieldY==17&&localState==LOCALSTATE_INGAME) force = true
+			fieldX = -1
+			fieldY = -1
 		} else {
-			if(holderType!=HOLDER_SWING) {
-				force = false
-			}
+			force = false
 		}
 	}
 
-	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+	override fun onGameOver(engine:GameEngine):Boolean {
 		if(engine.lives<=0) {
 			// もう復活できないとき
 			if(engine.statc[0]==0) {
@@ -807,7 +745,7 @@ class Collapse:AbstractMode() {
 				engine.playSE("gameover")
 				engine.statc[0]++
 			} else if(engine.statc[0]<engine.field.height+1+180) {
-				if(engine.statc[0]>=engine.field.height+1+60&&engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_A)) {
+				if(engine.statc[0]>=engine.field.height+1+60&&engine.ctrl.isPush(Controller.BUTTON_A)) {
 					engine.statc[0] = engine.field.height+1+180
 				}
 				engine.statc[0]++
@@ -821,7 +759,7 @@ class Collapse:AbstractMode() {
 
 				owner.saveModeConfig()
 				for(i in 0 until owner.players) {
-					if(i==playerID||engine.gameoverAll) {
+					if(i==engine.playerID||engine.dieAll) {
 						owner.engine[i].field.reset()
 						owner.engine[i].resetStatc()
 						owner.engine[i].stat = GameEngine.Status.RESULT
@@ -858,8 +796,8 @@ class Collapse:AbstractMode() {
 		lastscore = engine.statistics.score
 	}
 
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 		if(!engine.lagStop) {
 			updateSTextArr()
 			if(acTime in 0..119) acTime++ else acTime = -1
@@ -867,7 +805,7 @@ class Collapse:AbstractMode() {
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(
-					mu.nu.nullpo.game.component.Controller.BUTTON_F
+					Controller.BUTTON_F
 				)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM
 			) {
 				showPlayerStats = !showPlayerStats
@@ -876,84 +814,77 @@ class Collapse:AbstractMode() {
 		}
 	}
 
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.ORANGE)
+		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.ORANGE)
 		receiver.drawScoreFont(
-			engine, playerID, 0, 1, "("+DIFFICULTY_NAMES[difficulty]+" DIFFICULTY)",
-			EventReceiver.COLOR.ORANGE
+			engine, 0, 1, "("+DIFFICULTY_NAMES[difficulty]+" DIFFICULTY)", EventReceiver.COLOR.ORANGE
 		)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&enableBombs&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE    LEVEL", EventReceiver.COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE    LEVEL", EventReceiver.COLOR.BLUE, scale)
 				if(showPlayerStats) {
 					for(i in 0 until MAX_RANKING) {
 						receiver.drawScoreFont(
-							engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW,
+							engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale
+						)
+						receiver.drawScoreFont(
+							engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", i==rankingRankPlayer,
 							scale
 						)
 						receiver.drawScoreFont(
-							engine, playerID, 3, topY+i, "${rankingScorePlayer[difficulty][i]}",
-							i==rankingRankPlayer, scale
-						)
-						receiver.drawScoreFont(
-							engine, playerID, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}",
-							i==rankingRankPlayer, scale
+							engine, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}", i==rankingRankPlayer,
+							scale
 						)
 					}
 					receiver.drawScoreFont(
-						engine, playerID, 0, topY+MAX_RANKING+1, "PLAYER SCORES",
-						EventReceiver.COLOR.BLUE
+						engine, 0, topY+MAX_RANKING+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE
 					)
 					receiver.drawScoreFont(
-						engine, playerID, 0, topY+MAX_RANKING+2, engine.playerProp.nameDisplay,
-						EventReceiver.COLOR.WHITE, 2f
+						engine, 0, topY+MAX_RANKING+2, engine.playerProp.nameDisplay, EventReceiver.COLOR.WHITE,
+						2f
 					)
 					receiver.drawScoreFont(
-						engine, playerID, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN",
-						EventReceiver.COLOR.GREEN
+						engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN
 					)
 				} else {
 					for(i in 0 until MAX_RANKING) {
 						receiver.drawScoreFont(
-							engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW,
-							scale
+							engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale
 						)
-						receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 12, topY+i, "${rankingLevel[difficulty][i]}", i==rankingRank, scale)
+						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank, scale)
+						receiver.drawScoreFont(engine, 12, topY+i, "${rankingLevel[difficulty][i]}", i==rankingRank, scale)
 					}
 					receiver.drawScoreFont(
-						engine, playerID, 0, topY+MAX_RANKING+1, "LOCAL SCORES",
-						EventReceiver.COLOR.BLUE
+						engine, 0, topY+MAX_RANKING+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE
 					)
 					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, playerID, 0, topY+MAX_RANKING+2,
-						"(NOT LOGGED IN)\n(E:LOG IN)"
+						engine, 0, topY+MAX_RANKING+2, "(NOT LOGGED IN)\n(E:LOG IN)"
 					)
 					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, playerID, 0, topY+MAX_RANKING+5,
-						"F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN
+						engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN",
+						EventReceiver.COLOR.GREEN
 					)
 				}
 			}
 		} else if(!engine.gameActive&&engine.stat===GameEngine.Status.CUSTOM) {
-			engine.playerProp.loginScreen.renderScreen(receiver, engine, playerID)
+			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 4, "$scDisp")
-			receiver.drawScoreFont(engine, playerID, 0, 6, "LEVEL", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 7, (engine.statistics.level+1).toString())
+			receiver.drawScoreFont(engine, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 4, "$scDisp")
+			receiver.drawScoreFont(engine, 0, 6, "LEVEL", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 7, (engine.statistics.level+1).toString())
 			if(linesLeft>=0) {
-				receiver.drawScoreFont(engine, playerID, 0, 9, "LINES LEFT", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 10, "$linesLeft")
+				receiver.drawScoreFont(engine, 0, 9, "LINES LEFT", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 10, "$linesLeft")
 			}
-			receiver.drawScoreFont(engine, playerID, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 13, engine.statistics.time.toTimeStr)
+			receiver.drawScoreFont(engine, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 13, engine.statistics.time.toTimeStr)
 			if(engine.playerProp.isLoggedIn) {
-				receiver.drawScoreFont(engine, playerID, 0, 15, "PLAYER", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 16, engine.playerProp.nameDisplay, EventReceiver.COLOR.WHITE, 2f)
+				receiver.drawScoreFont(engine, 0, 15, "PLAYER", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 16, engine.playerProp.nameDisplay, EventReceiver.COLOR.WHITE, 2f)
 			}
 			sTextArr.forEach {
 				val x = it.location[0]
@@ -981,18 +912,17 @@ class Collapse:AbstractMode() {
 					receiver.drawDirectFont(x+nOffX, y+nOffY, it.text, EventReceiver.COLOR.ORANGE, scale)
 				}
 			}
-			receiver.drawMenuFont(engine, playerID, fieldX, fieldY, "f", EventReceiver.COLOR.YELLOW)
+			receiver.drawMenuFont(engine, fieldX, fieldY, "f", EventReceiver.COLOR.YELLOW)
 
 			if(localState==LOCALSTATE_TRANSITION) {
 				val s = "$bScore"
 				val l = s.length
 				val offset = (12-l)/2
 				receiver.drawMenuFont(
-					engine, playerID, 2, 6, "LEVEL UP",
-					if(engine.statc[0]/2%2==0) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE
+					engine, 2, 6, "LEVEL UP", if(engine.statc[0]/2%2==0) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE
 				)
-				receiver.drawMenuFont(engine, playerID, 0, 8, "BONUS POINTS", EventReceiver.COLOR.YELLOW)
-				receiver.drawMenuFont(engine, playerID, offset, 9, s)
+				receiver.drawMenuFont(engine, 0, 8, "BONUS POINTS", EventReceiver.COLOR.YELLOW)
+				receiver.drawMenuFont(engine, offset, 9, s)
 			}
 
 //			receiver.drawScoreFont(engine, playerID, 0, 15, "MOUSE COORDS", EventReceiver.COLOR.BLUE);
@@ -1001,8 +931,8 @@ class Collapse:AbstractMode() {
 //			receiver.drawScoreFont(engine, playerID, 0, 18, "FIELD CELL CLICKED", EventReceiver.COLOR.BLUE);
 //			receiver.drawScoreFont(engine, playerID, 0, 19, "(" + fieldX + ", " + fieldY + ")");
 			if(localState==LOCALSTATE_INGAME) {
-				val fx:Int = receiver.fieldX(engine, playerID)+4
-				val fy:Int = receiver.fieldY(engine, playerID)+52+17*16
+				val fx:Int = receiver.fieldX(engine)+4
+				val fy:Int = receiver.fieldY(engine)+52+17*16
 				nextBlocks.forEachIndexed {i, it ->
 					receiver.drawBlock(fx+i*16, fy, it.drawColor, engine.skin, it.getAttribute(Block.ATTRIBUTE.BONE), 0f, 1f, 1f)
 				}
@@ -1011,23 +941,26 @@ class Collapse:AbstractMode() {
 				val offset = (12-l)/2
 				if(acTime in 0..119) {
 					receiver.drawMenuFont(
-						engine, playerID, 1, 6, "ALL CLEAR!",
+						engine,
+						1,
+						6,
+						"ALL CLEAR!",
 						if(engine.statistics.time/2%2==0) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE
 					)
-					receiver.drawMenuFont(engine, playerID, 0, 8, "BONUS POINTS", EventReceiver.COLOR.YELLOW)
-					receiver.drawMenuFont(engine, playerID, offset, 9, s)
+					receiver.drawMenuFont(engine, 0, 8, "BONUS POINTS", EventReceiver.COLOR.YELLOW)
+					receiver.drawMenuFont(engine, offset, 9, s)
 				}
 			}
 		}
 	}
 
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "SCORE", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, playerID, 0, 1, java.lang.String.format("%12s", engine.statistics.score))
-		receiver.drawMenuFont(engine, playerID, 0, 2, "LEVEL", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, playerID, 0, 3, String.format("%12s", engine.statistics.level+1))
-		receiver.drawMenuFont(engine, playerID, 0, 4, "TIME", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, playerID, 0, 5, String.format("%12s", engine.statistics.time.toTimeStr))
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 0, "SCORE", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 1, java.lang.String.format("%12s", engine.statistics.score))
+		receiver.drawMenuFont(engine, 0, 2, "LEVEL", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 3, String.format("%12s", engine.statistics.level+1))
+		receiver.drawMenuFont(engine, 0, 4, "TIME", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 5, String.format("%12s", engine.statistics.time.toTimeStr))
 	}
 	/**
 	 * Load settings from [prop]
@@ -1049,26 +982,26 @@ class Collapse:AbstractMode() {
 		prop.setProperty("collapse.difficulty", difficulty)
 		prop.setProperty("collapse.bgm", bgm)
 	}
-/*
-	 * why do i even make stuff like this
-	 * people just keep asking "why?" or just straight up calling it useless (even if they don't explicitly say it)
-	 * nobody's gonna look at this and think "wow this code is cool", they usually only see the surface level end product
-	 * eh, whatever. might as well carry on to satiate my own wants for these modes and libraries
-	 * screw everyone else
-	 * i'll just make this for myself first, others later
-	 * this isn't even original anyway, just piggybacking off an existing engine and other games for concepts
-	 * you got people saying "your workflow is shit, your computer's OS is shit and you should be ashamed, you got people saying the sites you use are shit and you should feel bad" like
-	 * what the hell do i do
-	 * i just want to use my computer and develop shit for mostly fun
-	 * nothing i do in my own time when i'm not interacting with you is hurting you
-	 * ...fucking elitists...
-	 * why the absolute FUCK do you care so much about what i do?
-	 * where i source information about a game which has no official source (a game's speed difficulty ffs) does not hurt you in any way.
-	 * okay then mr. "I'm-right-you're-wrong-fuck-you-and-your-choices".
-	 * i'll go fuck off now so you don't have to deal with my shit.
-	 * poison the well before i even get to make a point will you.
-	 * fuck off
-	 */
+	/*
+		 * why do I even make stuff like this
+		 * people just keep asking "why?" or just straight up calling it useless (even if they don't explicitly say it)
+		 * nobody's going to look at this and think "wow this code is cool", they usually only see the surface level end product
+		 * eh, whatever. might as well carry on to satiate my own wants for these modes and libraries
+		 * screw everyone else
+		 * I'll just make this for myself first, others later
+		 * this isn't even original anyway, just piggybacking off an existing engine and other games for concepts
+		 * you got people saying "your workflow is shit, your computer's OS is shit and you should be ashamed, you got people saying the sites you use are shit and you should feel bad" like
+		 * what the hell do I do
+		 * I just want to use my computer and develop shit for mostly fun
+		 * nothing I do in my own time when i'm not interacting with you is hurting you
+		 * ...fucking elitists...
+		 * why the absolute FUCK do you care so much about what I do?
+		 * where I source information about a game which has no official source (a game's speed difficulty ffs) does not hurt you in any way.
+		 * okay then mr. "I'm-right-you're-wrong-fuck-you-and-your-choices".
+		 * I'll go fuck off now, so you don't have to deal with my shit.
+		 * poison the well before I even get to make a point will you.
+		 * fuck off
+		 */
 
 	/**
 	 * Update rankings
@@ -1136,18 +1069,13 @@ class Collapse:AbstractMode() {
 		 * ------ MODE-SPECIFIC PRIVATE METHODS ------
 		 */
 	private fun getClearScore(engine:GameEngine, squares:Int):Int =
-		(18*squares*(squares.toDouble()/4)*((engine.statistics.level+1).toDouble()/3)*
+		(18*squares*(squares/4.0)*((engine.statistics.level+1)/3.0)*
 			1.015.pow(squares.toDouble())).toInt()
 
 	private fun getLevelClearBonus(engine:GameEngine):Int {
 		val h:Int = engine.field.height
 		val w:Int = engine.field.width
-		var s = 0
-		for(y in 0 until h)
-			for(x in 0 until w)
-				if(engine.field.getBlock(x, y)==null)
-					s++
-
+		val s = maxOf(0, h*w-engine.field.howManyBlocks)
 
 		return getClearScore(engine, s)/48
 	}
@@ -1245,8 +1173,6 @@ class Collapse:AbstractMode() {
 		private val DIFFICULTY_NAMES = arrayOf("EASY", "NORMAL", "HARD")
 		private const val maxSpeedLine = 8
 		private const val HOLDER_SLICK = 0
-		private const val HOLDER_SWING = 1
-		private const val HOLDER_SDL = 2
 		private const val LOCALSTATE_INGAME = 0
 		private const val LOCALSTATE_TRANSITION = 1
 	}

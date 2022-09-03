@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -259,9 +259,11 @@ class StateConfigGeneral:BaseGameState() {
 		when {
 			cursor<=18 -> {
 				FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: APPERANCE (1/3)", COLOR.ORANGE)
-				FontNormal.printFontGrid(1,
+				FontNormal.printFontGrid(
+					1,
 					(if(cursor<=4) 3 else if(cursor<=8) 4 else if(cursor<=11) 5 else if(cursor<=14) 6 else 7)+cursor, "\u0082",
-					COLOR.RAINBOW)
+					COLOR.RAINBOW
+				)
 
 				FontNormal.printFontGrid(2, 3, "Sound Effects:"+se.getOX, cursor==0)
 				FontNormal.printFontGrid(2, 4, "BGM:"+bgm.getOX, cursor==1)
@@ -307,8 +309,10 @@ class StateConfigGeneral:BaseGameState() {
 				FontNormal.printFontGrid(2, 4, "VSYNC:"+vsync.getOX, cursor==26)
 				FontNormal.printFontGrid(2, 5, "FPS SLEEP TIMING:"+if(alternateFPSTiming) "UPDATE" else "RENDER", cursor==27)
 				FontNormal.printFontGrid(2, 6, "FPS DYNAMIC ADJUST:"+alternateFPSDynamicAdjust.getOX, cursor==28)
-				FontNormal.printFontGrid(2, 7,
-					"SCREEN SIZE:${SCREENSIZE_TABLE[screenSizeType][0]}${BaseFont.CROSS}"+SCREENSIZE_TABLE[screenSizeType][1], cursor==29)
+				FontNormal.printFontGrid(
+					2, 7,
+					"SCREEN SIZE:${SCREENSIZE_TABLE[screenSizeType][0]}${BaseFont.CROSS}"+SCREENSIZE_TABLE[screenSizeType][1], cursor==29
+				)
 			}
 		}// Slick Options
 		// Advanced Options
@@ -431,7 +435,8 @@ class StateConfigGeneral:BaseGameState() {
 
 		/** UI Text identifier Strings */
 		private val UI_TEXT =
-			arrayOf("ConfigGeneral_SE", "ConfigGeneral_BGM", "ConfigGeneral_BGMPreload", "ConfigGeneral_SEVolume",
+			arrayOf(
+				"ConfigGeneral_SE", "ConfigGeneral_BGM", "ConfigGeneral_BGMPreload", "ConfigGeneral_SEVolume",
 				"ConfigGeneral_BGMVolume", "ConfigGeneral_Background", "ConfigGeneral_UseBackgroundFade",
 				"ConfigGeneral_ShowFieldBGGrid", "ConfigGeneral_FieldBGBright", "ConfigGeneral_ShowLineEffect",
 				"ConfigGeneral_LineEffectSpeed", "ConfigGeneral_ShowMeter", "ConfigGeneral_DarkNextArea", "ConfigGeneral_NextShadow",
@@ -439,14 +444,17 @@ class StateConfigGeneral:BaseGameState() {
 				"ConfigGeneral_ShowInput", "ConfigGeneral_Fullscreen", "ConfigGeneral_ShowFPS", "ConfigGeneral_MaxFPS",
 				"ConfigGeneral_FrameStep", "ConfigGeneral_AlternateFPSPerfectMode", "ConfigGeneral_AlternateFPSPerfectYield",
 				"ConfigGeneral_BGMStreaming", "ConfigGeneral_VSync", "ConfigGeneral_AlternateFPSTiming",
-				"ConfigGeneral_AlternateFPSDynamicAdjust", "ConfigGeneral_ScreenSizeType")
+				"ConfigGeneral_AlternateFPSDynamicAdjust", "ConfigGeneral_ScreenSizeType"
+			)
 
 		/** Piece preview type options */
 		private val NEXTTYPE_OPTIONS = arrayOf("TOP", "SIDE(SMALL)", "SIDE(BIG)")
 
 		/** Screen size table */
 		private val SCREENSIZE_TABLE =
-			arrayOf(intArrayOf(320, 240), intArrayOf(400, 300), intArrayOf(480, 360), intArrayOf(512, 384), intArrayOf(640, 480),
-				intArrayOf(800, 600), intArrayOf(1024, 768), intArrayOf(1152, 864), intArrayOf(1280, 960))
+			arrayOf(
+				intArrayOf(320, 240), intArrayOf(400, 300), intArrayOf(480, 360), intArrayOf(512, 384), intArrayOf(640, 480),
+				intArrayOf(800, 600), intArrayOf(1024, 768), intArrayOf(1152, 864), intArrayOf(1280, 960)
+			)
 	}
 }

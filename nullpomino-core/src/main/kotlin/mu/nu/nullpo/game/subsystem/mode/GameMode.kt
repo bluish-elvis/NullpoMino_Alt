@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,46 +40,35 @@ import zeroxfc.nullpo.custom.libs.ProfileProperties
 /** Game mode interface */
 interface GameMode {
 
-	/** Get mode identifier.
-	 * @return Mode identifier
-	 */
+	/** @return Mode identifier */
 	val id:String
-	/** Get mode name.
-	 * @return Mode name
-	 */
+	/**  @return Mode name*/
 	val name:String
 
-	/** Get (max) number of players.
-	 * @return Number of players
-	 */
+	/**  @return Maximum number of players*/
 	val players:Int
 
-	/** Get game style.
-	 * @return Game style of this mode (0:Tetromino, 1:Avalanche, 2:Physician, 3:SPF)
-	 */
+	/** @return Game style of this mode (0:Tetromino, 1:Avalanche, 2:Physician, 3:SPF)*/
 	val gameStyle:GameStyle
 
-	/** Get game intensity.
-	 * @return Game genre of this mode (-1:Retro/Puzzle, 0: Generic/Guideline,
+	/** @return Game genre of this mode
+	 *  (-1:Retro/Puzzle, 0: Generic/Guideline,
 	 *  1: Various Unique, 2:Rush Trial, 3:Grand 20G Challenge)
 	 */
 	val gameIntensity:Int
 
-	/** Is netplay-only mode?
-	 * @return true if this is netplay-only mode.
-	 */
+	/**  @return true if this is netplay-only mode.*/
 	val isNetplayMode:Boolean
 
-	/** Is VS mode?
-	 * @return true if this is a multiplayer mode.
-	 */
+	/**  @return true if this is a multiplayer mode.*/
 	val isVSMode:Boolean
 
 	/** State of Setting menu */
 	val menu:MenuList
 
 	/** Mapping of Ranking Properties
-	 * "" to Score
+	 * = mapOf(String to [Score])
+	 * @sample Marathon.rankMap
 	 */
 	val rankMap:Map<String, IntArray>
 	val rankPersMap:Map<String, IntArray>
@@ -89,271 +78,167 @@ interface GameMode {
 	 */
 	fun modeInit(manager:GameManager)
 
-	/** Initialization for each player.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun playerInit(engine:GameEngine, playerID:Int)
+	/** Initialization for each player. */
+	fun playerInit(engine:GameEngine)
 
-	/** Executed after Ready->Go, before the first piece appears.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun startGame(engine:GameEngine, playerID:Int)
+	/** Executed after Ready->Go, before the first piece appears. */
+	fun startGame(engine:GameEngine)
 
-	/** Executed at the start of each frame.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun onFirst(engine:GameEngine, playerID:Int)
+	/** Executed at the start of each frame.*/
+	fun onFirst(engine:GameEngine)
 
-	/** Executed at the end of each frame. You can update your own timers here.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun onLast(engine:GameEngine, playerID:Int)
+	/** Executed at the end of each frame. You can update your own timers here.*/
+	fun onLast(engine:GameEngine)
 
 	/** Settings screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @return true if you don't want to start the game yet. false if settings
-	 * are done.
+	 * @return true if you don't want to start the game yet. false if settings are done.
 	 */
-	fun onSetting(engine:GameEngine, playerID:Int):Boolean
+	fun onSetting(engine:GameEngine):Boolean
 
 	/** Profile screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @return true if you don't want to start the game yet. false if settings
-	 * are done.
+	 * @return true if you don't want to start the game yet. false if settings are done.
 	 */
-	fun onProfile(engine:GameEngine, playerID:Int):Boolean
+	fun onProfile(engine:GameEngine):Boolean
 	/** Ready->Go screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
-	fun onReady(engine:GameEngine, playerID:Int):Boolean
+	fun onReady(engine:GameEngine):Boolean
 
 	/** Piece movement screen.
-	 * This is where the player can move/rotate/drop the current piece.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
+	 * This is where the player can move/spin/drop the current piece.
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
-	fun onMove(engine:GameEngine, playerID:Int):Boolean
+	fun onMove(engine:GameEngine):Boolean
 
 	/** "Lock flash" screen. Certain rules may skip this screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
-	fun onLockFlash(engine:GameEngine, playerID:Int):Boolean
+	fun onLockFlash(engine:GameEngine):Boolean
 
 	/** During line clear.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
-	fun onLineClear(engine:GameEngine, playerID:Int):Boolean
+	fun onLineClear(engine:GameEngine):Boolean
 
 	/** During ARE.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
-	fun onARE(engine:GameEngine, playerID:Int):Boolean
+	fun onARE(engine:GameEngine):Boolean
 
 	/** During ending-start sequence.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
-	fun onEndingStart(engine:GameEngine, playerID:Int):Boolean
+	fun onEndingStart(engine:GameEngine):Boolean
 
 	/** "Custom" screen. Any game mode can use this screen freely.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return This is ignored.
 	 */
-	fun onCustom(engine:GameEngine, playerID:Int):Boolean
+	fun onCustom(engine:GameEngine):Boolean
 
 	/** "Excellent!" screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
-	fun onExcellent(engine:GameEngine, playerID:Int):Boolean
+	fun onExcellent(engine:GameEngine):Boolean
 
 	/** "Game Over" screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
-	fun onGameOver(engine:GameEngine, playerID:Int):Boolean
+	fun onGameOver(engine:GameEngine):Boolean
 
 	/** End-of-game results screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
-	fun onResult(engine:GameEngine, playerID:Int):Boolean
+	fun onResult(engine:GameEngine):Boolean
 
 	/** Field editor screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
-	fun onFieldEdit(engine:GameEngine, playerID:Int):Boolean
+	fun onFieldEdit(engine:GameEngine):Boolean
 
-	/** Executed at the start of each frame.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderFirst(engine:GameEngine, playerID:Int)
+	/** Executed at the start of each frame.*/
+	fun renderFirst(engine:GameEngine)
 
-	/** Executed at the end of each frame. You can render HUD here.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderLast(engine:GameEngine, playerID:Int)
+	/** Executed at the end of each frame.
+	 *  You can render HUD here.*/
+	fun renderLast(engine:GameEngine)
 
-	/** Render settings screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderSetting(engine:GameEngine, playerID:Int)
+	/** Render settings screen.*/
+	fun renderSetting(engine:GameEngine)
 
-	/** Render profile screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderProfile(engine:GameEngine, playerID:Int)
+	/** Render profile screen.*/
+	fun renderProfile(engine:GameEngine)
 
-	/** Render Ready->Go screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderReady(engine:GameEngine, playerID:Int)
+	/** Render Ready->Go screen.*/
+	fun renderReady(engine:GameEngine)
 
-	/** Render piece movement screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderMove(engine:GameEngine, playerID:Int)
+	/** Render piece movement screen.*/
+	fun renderMove(engine:GameEngine)
 
-	/** Render "Lock flash" screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderLockFlash(engine:GameEngine, playerID:Int)
+	/** Render "Lock flash" screen.*/
+	fun renderLockFlash(engine:GameEngine)
 
-	/** Render line clear screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderLineClear(engine:GameEngine, playerID:Int)
+	/** Render line clear screen.*/
+	fun renderLineClear(engine:GameEngine)
 
-	/** Render ARE screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderARE(engine:GameEngine, playerID:Int)
+	/** Render ARE screen.*/
+	fun renderARE(engine:GameEngine)
 
-	/** Render "ending start sequence" screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderEndingStart(engine:GameEngine, playerID:Int)
+	/** Render "ending start sequence" screen.*/
+	fun renderEndingStart(engine:GameEngine)
 
-	/** Render "Custom" screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderCustom(engine:GameEngine, playerID:Int)
+	/** Render "Custom" screen. */
+	fun renderCustom(engine:GameEngine)
 
-	/** Render "Excellent!" screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderExcellent(engine:GameEngine, playerID:Int)
+	/** Render "Excellent!" screen. */
+	fun renderExcellent(engine:GameEngine)
 
-	/** Render "Game Over" screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderGameOver(engine:GameEngine, playerID:Int)
+	/** Render "Game Over" screen. */
+	fun renderGameOver(engine:GameEngine)
 
-	/** Render results screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderResult(engine:GameEngine, playerID:Int)
+	/** Render results screen. */
+	fun renderResult(engine:GameEngine)
 
-	/** Render field editor screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderFieldEdit(engine:GameEngine, playerID:Int)
+	/** Render field editor screen. */
+	fun renderFieldEdit(engine:GameEngine)
 
-	/** Render player input.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun renderInput(engine:GameEngine, playerID:Int)
+	/** Render player input. */
+	fun renderInput(engine:GameEngine)
 
 	/** Executed when a block gets destroyed in line-clear screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
 	 * @param blk Block
 	 */
-	fun blockBreak(engine:GameEngine, playerID:Int, x:Int, y:Int, blk:Block)
+	fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>)
 
-	fun lineClear(gameEngine:GameEngine, playerID:Int, i:Int)
+	fun lineClear(gameEngine:GameEngine, i:Collection<Int>)
 
 	/** Calculate score. Executed before pieceLocked.
-	 *  Please note this event will be called even if no lines are cleared!
-	 * @param engine GameEngine
-	 * @param playerID Player ID
+	 *  Please note this event will be called even If no lines are cleared!
 	 * @param lines Number of lines. Can be zero.
 	 */
-	fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int
+	fun calcScore(engine:GameEngine, lines:Int):Int
 
 	/** After soft drop is used
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param fall Number of rows
 	 */
-	fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int)
+	fun afterSoftDropFall(engine:GameEngine, fall:Int)
 
 	/** After hard drop is used
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param fall Number of rows
 	 */
-	fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int)
+	fun afterHardDropFall(engine:GameEngine, fall:Int)
 
-	/** Executed after the player exits field-editor screen.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun fieldEditExit(engine:GameEngine, playerID:Int)
+	/** Executed after the player exits field-editor screen. */
+	fun fieldEditExit(engine:GameEngine)
 
-	/** When the current piece locked (Executed befotre calcScore)
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param lines Number of lines. Can be zero.
+	/** When the current piece locked (Executed before calcScore)
+	 *  @param lines Number of lines. Can be zero.
 	 */
-	fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int)
+	fun pieceLocked(engine:GameEngine, lines:Int)
 
 	/** When line clear ends
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
-	fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean
+	fun lineClearEnd(engine:GameEngine):Boolean
 
 	fun loadSetting(prop:CustomProperties, ruleName:String = "", playerID:Int = -1)
 
@@ -384,17 +269,11 @@ interface GameMode {
 	fun saveRanking()
 	fun saveRankingPlayer(prof:ProfileProperties)
 
-	/** Called when saving replay to [prop]
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean
+	/** Called when saving replay to [prop] */
+	fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean
 
-	/** Called when a replay file is loaded from [prop]
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun loadReplay(engine:GameEngine, playerID:Int, prop:CustomProperties)
+	/** Called when a replay file is loaded from [prop] */
+	fun loadReplay(engine:GameEngine, prop:CustomProperties)
 
 	/** Initialization for netplay.
 	 * @param obj Any object (Currently NetLobbyFrame)
@@ -406,9 +285,6 @@ interface GameMode {
 	 */
 	fun netplayUnload(obj:NetLobbyFrame)
 
-	/** Called when retry key is pressed during netplay
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	fun netplayOnRetryKey(engine:GameEngine, playerID:Int)
+	/** Called when retry key is pressed during netplay */
+	fun netplayOnRetryKey(engine:GameEngine)
 }

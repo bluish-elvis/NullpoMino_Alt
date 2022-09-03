@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2021-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,30 +29,26 @@
 
 package mu.nu.nullpo.gui.slick.img
 
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.BaseFontTTF
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import org.newdawn.slick.Color
 
-object FontTTF:BaseFontTTF{
-	/** TTF font Drawing a string using the
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param str String
-	 * @param color Letter cint
-	 */
-	override fun print(x:Int, y:Int, str:String, color:EventReceiver.COLOR, alpha:Float) {
-		ResourceHolder.ttfFont?.drawString(x.toFloat(), y.toFloat(), str, when(color) {
-			EventReceiver.COLOR.BLUE -> Color(0, 0, 255)
-			EventReceiver.COLOR.RED -> Color(255, 0, 0)
-			EventReceiver.COLOR.PINK -> Color(255, 128, 128)
-			EventReceiver.COLOR.GREEN -> Color(0, 255, 0)
-			EventReceiver.COLOR.YELLOW -> Color(255, 255, 0)
-			EventReceiver.COLOR.CYAN -> Color(0, 255, 255)
-			EventReceiver.COLOR.ORANGE -> Color(255, 128, 0)
-			EventReceiver.COLOR.PURPLE -> Color(255, 0, 255)
-			EventReceiver.COLOR.COBALT -> Color(0, 0, 128)
-			else -> Color(255, 255, 255)
-		}.apply {a = alpha})
+object FontTTF:BaseFontTTF {
+	override fun print(x:Int, y:Int, str:String, color:COLOR, alpha:Float, size:Int) {
+		ResourceHolder.ttfFont?.let {
+			it.drawString(x.toFloat(), y.toFloat(), str, when(color) {
+				COLOR.BLUE -> Color(0, 0, 255)
+				COLOR.RED -> Color(255, 0, 0)
+				COLOR.PINK -> Color(255, 128, 128)
+				COLOR.GREEN -> Color(0, 255, 0)
+				COLOR.YELLOW -> Color(255, 255, 0)
+				COLOR.CYAN -> Color(0, 255, 255)
+				COLOR.ORANGE -> Color(255, 128, 0)
+				COLOR.PURPLE -> Color(255, 0, 255)
+				COLOR.COBALT -> Color(0, 0, 128)
+				else -> Color(255, 255, 255)
+			}.apply {a = alpha})
+		}
 	}
 }

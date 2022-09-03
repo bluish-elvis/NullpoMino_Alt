@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -100,7 +100,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		inARE = false
 
 		if(thread?.isAlive!=true&&engine.aiUseThread) {
-			thread = Thread(this, "AI_$playerID").apply {
+			thread = Thread(this, "AI_${engine.playerID}").apply {
 				isDaemon = true
 				start()
 			}
@@ -113,7 +113,7 @@ open class PoochyBot:DummyAI(), Runnable {
 	/* Called whenever a new piece is spawned */
 	override fun newPiece(engine:GameEngine, playerID:Int) {
 		if(!engine.aiUseThread) thinkBestPosition(engine)
-		else if(!thinking&&!thinkComplete||!engine.aiPrethink||engine.aiShowHint||engine.speed.are<=0||engine.speed.areLine<=0) {
+		else if(!thinking&&!thinkComplete||!engine.aiPreThink||engine.aiShowHint||engine.speed.are<=0||engine.speed.areLine<=0) {
 			thinkComplete = false
 			//thinkCurrentPieceNo++;
 			thinkRequest.newRequest()
@@ -124,7 +124,7 @@ open class PoochyBot:DummyAI(), Runnable {
 	override fun onFirst(engine:GameEngine, playerID:Int) {
 		inputARE = 0
 		val newInARE = engine.stat===GameEngine.Status.ARE
-		if(engine.aiPrethink&&engine.speed.are>0&&engine.speed.areLine>0&&(newInARE&&!inARE||!thinking&&!thinkSuccess)) {
+		if(engine.aiPreThink&&engine.speed.are>0&&engine.speed.areLine>0&&(newInARE&&!inARE||!thinking&&!thinkSuccess)) {
 			if(DEBUG_ALL) log.debug("Begin pre-think of next piece.")
 			thinkComplete = false
 			thinkRequest.newRequest()
@@ -180,14 +180,14 @@ open class PoochyBot:DummyAI(), Runnable {
 			val width = fld.width
 
 			var moveDir = 0 //-1 = left,  1 = right
-			var rotateDir = 0 //-1 = left,  1 = right
+			var spinDir = 0 //-1 = left,  1 = right
 			var drop = 0 //1 = up, -1 = down
-			var sync = false //true = delay either rotate or movement for synchro move if needed.
+			var sync = false //true = delay either spin or movement for synchro move if needed.
 
 			//SpeedParam speed = engine.speed;
 			//boolean lowSpeed = speed.gravity < speed.denominator;
 			val canFloorKick =
-				engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick||engine.ruleOpt.rotateMaxUpwardWallkick<0
+				engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise||engine.ruleOpt.spinWallkickMaxRise<0
 
 			//If stuck, rethink.
 			/* if ((nowX < bestX && pieceNow.checkCollision(nowX+1, nowY, rt,
@@ -242,7 +242,7 @@ open class PoochyBot:DummyAI(), Runnable {
 					thinkRequest.newRequest()
 				}
 			}
-			if(engine.nowPieceRotateCount>=8) {
+			if(engine.nowPieceSpinCount>=8) {
 				thinkComplete = false
 				if(DEBUG_ALL) log.debug("Needs rethink - piece is stuck, too many rotations!")
 				thinkRequest.newRequest()
@@ -258,21 +258,20 @@ open class PoochyBot:DummyAI(), Runnable {
 					"bestX = $bestX, nowX = $nowX, bestY = $bestY, nowY = $nowY, bestRt = $bestRt, rt = $rt, bestXSub = $bestXSub, bestYSub = $bestYSub, bestRtSub = $bestRtSub"
 				)
 				printPieceAndDirection(nowType, rt)
-				// Rotation
-				//Rotate iff near destination or stuck
+				//Spin if near destination or stuck
 				var xDiff = abs(nowX-bestX)
 				if(bestX<nowX&&nowType==Piece.Shape.I&&rt==Piece.DIRECTION_DOWN&&bestRt!=rt) xDiff--
 				val best180 = abs(rt-bestRt)==2
-				//Special movements for I piece
+				//Special movements for I-piece
 				if(nowType==Piece.Shape.I) {
 					var hypRtDir = 1
-					var rotateI = false
+					var spinI = false
 					if((rt+3)%4==bestRt) hypRtDir = -1
 					if(nowX<bestX) {
 						moveDir = 1
 						if(pieceNow.checkCollision(nowX+1, nowY, fld))
-							if(rt and 1==0&&(canFloorKick||!pieceNow.checkCollision(nowX, nowY, (rt+1)%4, fld))) rotateI = true
-							else if(rt and 1>0&&canFloorKick) rotateI = true
+							if(rt and 1==0&&(canFloorKick||!pieceNow.checkCollision(nowX, nowY, (rt+1)%4, fld))) spinI = true
+							else if(rt and 1>0&&canFloorKick) spinI = true
 							else if(engine.isHoldOK&&!ctrl.isPress(Controller.BUTTON_D)) {
 								if(DEBUG_ALL) log.debug("Stuck I piece - use hold")
 								input = input or Controller.BUTTON_BIT_D
@@ -283,8 +282,8 @@ open class PoochyBot:DummyAI(), Runnable {
 					} else if(nowX>bestX) {
 						moveDir = -1
 						if(pieceNow.checkCollision(nowX-1, nowY, fld))
-							if(rt and 1==0&&(canFloorKick||!pieceNow.checkCollision(nowX, nowY, (rt+1)%4, fld))) rotateI = true
-							else if(rt and 1>0&&!pieceNow.checkCollision(nowX-1, nowY, (rt+1)%4, fld)&&canFloorKick) rotateI = true
+							if(rt and 1==0&&(canFloorKick||!pieceNow.checkCollision(nowX, nowY, (rt+1)%4, fld))) spinI = true
+							else if(rt and 1>0&&!pieceNow.checkCollision(nowX-1, nowY, (rt+1)%4, fld)&&canFloorKick) spinI = true
 							else if(engine.isHoldOK&&!ctrl.isPress(Controller.BUTTON_D)) {
 								if(DEBUG_ALL) log.debug("Stuck I piece - use hold")
 								input = input or Controller.BUTTON_BIT_D
@@ -293,8 +292,8 @@ open class PoochyBot:DummyAI(), Runnable {
 								if(holdPiece!=null) input = input or calcIRS(holdPiece, engine)
 							}
 					} else if(rt!=bestRt) if(best180) bestRt = (bestRt+2)%4
-					else rotateI = true
-					if(rotateI) rotateDir = hypRtDir
+					else spinI = true
+					if(spinI) spinDir = hypRtDir
 				} else if(rt!=bestRt&&(xDiff<=1||bestX==0&&nowX==2&&nowType==Piece.Shape.I||
 						(nowX<bestX&&pieceNow.checkCollision(nowX+1, nowY, rt, fld)||
 							nowX>bestX&&pieceNow.checkCollision(nowX-1, nowY, rt, fld))&&
@@ -303,29 +302,29 @@ open class PoochyBot:DummyAI(), Runnable {
 				) {
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
 
-					val lRot = engine.getRotateDirection(-1)
-					val rRot = engine.getRotateDirection(1)
+					val lRot = engine.getSpinDirection(-1)
+					val rRot = engine.getSpinDirection(1)
 					if(DEBUG_ALL) log.debug("lrot = $lRot, rrot = $rRot")
 
-					if(best180&&engine.ruleOpt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E))
+					if(best180&&engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E))
 						input = input or Controller.BUTTON_BIT_E
-					else if(bestRt==rRot) rotateDir = 1
-					else if(bestRt==lRot) rotateDir = -1
-					else if(engine.ruleOpt.rotateButtonAllowReverse&&best180&&rt and 1>0) {
-						rotateDir = if(rRot==Piece.DIRECTION_UP) 1
+					else if(bestRt==rRot) spinDir = 1
+					else if(bestRt==lRot) spinDir = -1
+					else if(engine.ruleOpt.spinReverseKey&&best180&&rt and 1>0) {
+						spinDir = if(rRot==Piece.DIRECTION_UP) 1
 						else -1
-					} else rotateDir = 1
-				} else if(rt!=Piece.DIRECTION_UP&&xDiff>1&&engine.ruleOpt.rotateButtonAllowReverse
+					} else spinDir = 1
+				} else if(rt!=Piece.DIRECTION_UP&&xDiff>1&&engine.ruleOpt.spinReverseKey
 					&&(nowType==Piece.Shape.L||nowType==Piece.Shape.J||nowType==Piece.Shape.T)
 				) if(rt==Piece.DIRECTION_DOWN) {
-					if(engine.ruleOpt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E))
+					if(engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E))
 						input = input or Controller.BUTTON_BIT_E
-					else if(nowType==Piece.Shape.L) rotateDir = -1
-					else if(nowType==Piece.Shape.J) rotateDir = 1
-					else if(nowType==Piece.Shape.T) if(nowX>bestX) rotateDir = -1
-					else if(nowX<bestX) rotateDir = 1
-				} else if(rt==Piece.DIRECTION_RIGHT) rotateDir = -1
-				else if(rt==Piece.DIRECTION_LEFT) rotateDir = 1//Try to keep flat side down on L, J, or T piece.
+					else if(nowType==Piece.Shape.L) spinDir = -1
+					else if(nowType==Piece.Shape.J) spinDir = 1
+					else if(nowType==Piece.Shape.T) if(nowX>bestX) spinDir = -1
+					else if(nowX<bestX) spinDir = 1
+				} else if(rt==Piece.DIRECTION_RIGHT) spinDir = -1
+				else if(rt==Piece.DIRECTION_LEFT) spinDir = 1//Try to keep flat side down on L, J, or T piece.
 
 				// Whether reachable position
 				val minX = pieceNow.getMostMovableLeft(nowX, nowY, rt, fld)
@@ -391,12 +390,12 @@ open class PoochyBot:DummyAI(), Runnable {
 			val maxBlockX = nowX+pieceNow.maximumBlockX
 			val minBlockXDepth = fld.getHighestBlockY(minBlockX)
 			val maxBlockXDepth = fld.getHighestBlockY(maxBlockX)
-			if(nowType==Piece.Shape.L&&minBlockXDepth<maxBlockXDepth&&pieceTouchGround&&rt==Piece.DIRECTION_DOWN&&rotateDir==-1&&maxBlockX<width-1) {
+			if(nowType==Piece.Shape.L&&minBlockXDepth<maxBlockXDepth&&pieceTouchGround&&rt==Piece.DIRECTION_DOWN&&spinDir==-1&&maxBlockX<width-1) {
 				if(bestX==nowX+1) moveDir = 1
 				else if(bestX<nowX) {
 					if(DEBUG_ALL) log.debug("Delaying rotation on L piece to avoid getting stuck. (Case 1)")
 					sync = false
-					rotateDir = 0
+					spinDir = 0
 					moveDir = 1
 				} else if(bestX>nowX) {
 					/* if (minBlockXDepth == fld.getHighestBlockY(minBlockX-1))
@@ -411,15 +410,15 @@ open class PoochyBot:DummyAI(), Runnable {
 					  else */
 					if(DEBUG_ALL) log.debug("Attempting synchro move on L piece to avoid getting stuck.")
 					sync = true
-					rotateDir = -1
+					spinDir = -1
 					moveDir = -1
 				}
-			} else if(nowType==Piece.Shape.J&&minBlockXDepth>maxBlockXDepth&&pieceTouchGround&&rt==Piece.DIRECTION_DOWN&&rotateDir==1&&minBlockX>0) {
+			} else if(nowType==Piece.Shape.J&&minBlockXDepth>maxBlockXDepth&&pieceTouchGround&&rt==Piece.DIRECTION_DOWN&&spinDir==1&&minBlockX>0) {
 				if(bestX==nowX-1) moveDir = -1
 				else if(bestX>nowX) {
 					if(DEBUG_ALL) log.debug("Delaying rotation on J piece to avoid getting stuck. (Case 1)")
 					sync = false
-					rotateDir = 0
+					spinDir = 0
 					moveDir = -1
 				} else if(bestX<nowX) {
 					/* if (maxBlockXDepth == fld.getHighestBlockY(maxBlockX+1))
@@ -434,21 +433,17 @@ open class PoochyBot:DummyAI(), Runnable {
 					  else */
 					if(DEBUG_ALL) log.debug("Attempting synchro move on J piece to avoid getting stuck.")
 					sync = true
-					rotateDir = 1
+					spinDir = 1
 					moveDir = 1
 				}
-			} else if(rotateDir!=0&&moveDir!=0&&pieceTouchGround&&rt and 1>0&&(nowType==Piece.Shape.J||nowType==Piece.Shape.L)&&!pieceNow.checkCollision(
-					nowX+moveDir,
-					nowY+1,
-					rt,
-					fld
-				)
+			} else if(spinDir!=0&&moveDir!=0&&pieceTouchGround&&rt and 1>0&&(nowType==Piece.Shape.J||nowType==Piece.Shape.L)
+				&&!pieceNow.checkCollision(nowX+moveDir, nowY+1, rt, fld)
 			) {
 				if(DEBUG_ALL) log.debug("Delaying move on L or J piece to avoid getting stuck.")
 				sync = false
 				moveDir = 0
 			}
-			if(engine.nowPieceRotateCount>=5&&rotateDir!=0&&moveDir!=0&&!sync) {
+			if(engine.nowPieceSpinCount>=5&&spinDir!=0&&moveDir!=0&&!sync) {
 				if(DEBUG_ALL) log.debug("Piece seems to be stuck due to unintentional synchro - trying intentional desync.")
 				moveDir = 0
 			}
@@ -458,7 +453,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				if(depthNow>depthLeft&&depthNow-depthLeft<2) if(!pieceNow.checkCollision(nowX+1, nowY, rt, fld)) moveDir = 1
 				else if(engine.isHoldOK&&!ctrl.isPress(Controller.BUTTON_D)) input = input or Controller.BUTTON_BIT_D
 			}
-			/* //Catch bug where it fails to rotate J piece
+			/* //Catch bug where it fails to spin J piece
 			 * if (moveDir == 0 && rotateDir == 0 & drop == 0)
 			 * {
 			 * if ((rt+1)%4 == bestRt)
@@ -467,7 +462,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			 * rotateDir = -1;
 			 * else if ((rt+2)%4 == bestRt)
 			 * {
-			 * if(engine.ruleOpt.rotateButtonAllowDouble)
+			 * if(engine.ruleOpt.spinButtonAllowDouble)
 			 * rotateDir = 2;
 			 * else if (rt == 3)
 			 * rotateDir = -1;
@@ -504,15 +499,14 @@ open class PoochyBot:DummyAI(), Runnable {
 			if(drop==1&&!ctrl.isPress(Controller.BUTTON_UP)) input = input or Controller.BUTTON_BIT_UP
 			else if(drop==-1) input = input or Controller.BUTTON_BIT_DOWN
 
-			if(rotateDir!=0) {
-				val defaultRotateRight =
-					engine.owRotateButtonDefaultRight==1||engine.owRotateButtonDefaultRight==-1&&engine.ruleOpt.rotateButtonDefaultRight
+			if(spinDir!=0) {
+				val spinRight = engine.owSpinDirection==1||engine.owSpinDirection==-1&&engine.ruleOpt.spinToRight
 
-				if(engine.ruleOpt.rotateButtonAllowDouble&&rotateDir==2&&!ctrl.isPress(Controller.BUTTON_E))
+				if(engine.ruleOpt.spinDoubleKey&&spinDir==2&&!ctrl.isPress(Controller.BUTTON_E))
 					input = input or Controller.BUTTON_BIT_E
-				else if(engine.ruleOpt.rotateButtonAllowReverse&&!defaultRotateRight&&rotateDir==1) {
+				else if(engine.ruleOpt.spinReverseKey&&!spinRight&&spinDir==1) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
-				} else if(engine.ruleOpt.rotateButtonAllowReverse&&defaultRotateRight&&rotateDir==-1) {
+				} else if(engine.ruleOpt.spinReverseKey&&spinRight&&spinDir==-1) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
 				} else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
 			}
@@ -532,9 +526,8 @@ open class PoochyBot:DummyAI(), Runnable {
 			lastY = nowY
 			lastRt = rt
 
-			if(DEBUG_ALL) log.debug(
-				"Input = $input, moveDir = $moveDir, rotateDir = $rotateDir, sync = $sync, drop = $drop, setDAS = $setDAS"
-			)
+			if(DEBUG_ALL)
+				log.debug("Input = $input, moveDir = $moveDir, spinDir = $spinDir, sync = $sync, drop = $drop, setDAS = $setDAS")
 
 			delay = 0
 			return input
@@ -542,7 +535,6 @@ open class PoochyBot:DummyAI(), Runnable {
 		//dropDelay = 0;
 		delay++
 		return inputARE
-		return 0
 	}
 
 	private fun printPieceAndDirection(pieceType:Piece.Shape, rt:Int) {
@@ -567,19 +559,19 @@ open class PoochyBot:DummyAI(), Runnable {
 		val width = fld.width
 		val midColumnX = width/2-1
 		return when {
-			abs(spawnX-bestX)==1 -> if(bestRt==1) if(engine.ruleOpt.rotateButtonDefaultRight) Controller.BUTTON_BIT_A else Controller.BUTTON_BIT_B
-			else if(bestRt==3) if(engine.ruleOpt.rotateButtonDefaultRight) Controller.BUTTON_BIT_B else Controller.BUTTON_BIT_A
-			else 0
+			abs(spawnX-bestX)==1 ->
+				if(bestRt==1) if(engine.ruleOpt.spinToRight) Controller.BUTTON_BIT_A else Controller.BUTTON_BIT_B
+				else if(bestRt==3) if(engine.ruleOpt.spinToRight) Controller.BUTTON_BIT_B else Controller.BUTTON_BIT_A
+				else 0
 
-			nextType==Piece.Shape.L -> if(gravityHigh&&fld.getHighestBlockY(midColumnX-1)<minOf(
-					fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX+1)
-				)
-			) 0 else if(engine.ruleOpt.rotateButtonDefaultRight) Controller.BUTTON_BIT_B else Controller.BUTTON_BIT_A
+			nextType==Piece.Shape.L ->
+				if(gravityHigh&&fld.getHighestBlockY(midColumnX-1)<
+					minOf(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX+1))) 0
+				else if(engine.ruleOpt.spinToRight) Controller.BUTTON_BIT_B else Controller.BUTTON_BIT_A
 			nextType==Piece.Shape.J -> {
-				if(gravityHigh&&fld.getHighestBlockY(midColumnX+1)<minOf(
-						fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX-1)
-					)
-				) 0 else if(engine.ruleOpt.rotateButtonDefaultRight) Controller.BUTTON_BIT_A else Controller.BUTTON_BIT_B
+				if(gravityHigh&&fld.getHighestBlockY(midColumnX+1)<
+					minOf(fld.getHighestBlockY(midColumnX), fld.getHighestBlockY(midColumnX-1))) 0
+				else if(engine.ruleOpt.spinToRight) Controller.BUTTON_BIT_A else Controller.BUTTON_BIT_B
 			}
 			/* else if (nextType == Piece.Shape.I)
 			 * return Controller.BUTTON_BIT_A; */
@@ -638,7 +630,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		val holdOK = engine.isHoldOK
 
 		val canFloorKick =
-			engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick||engine.ruleOpt.rotateMaxUpwardWallkick<0
+			engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise||engine.ruleOpt.spinWallkickMaxRise<0
 		val canFloorKickI = pieceNow.type==Piece.Shape.I&&nowRt and 1==0&&canFloorKick
 		var canFloorKickT = pieceNow.type==Piece.Shape.T&&nowRt!=Piece.DIRECTION_UP&&canFloorKick
 		if(canFloorKickT&&!pieceNow.checkCollision(nowX, nowY, Piece.DIRECTION_UP, fld)) canFloorKickT = false
@@ -677,7 +669,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				run {
 					var x = minX
 					while(x<=maxX&&spawnOK) {
-						fld.copy(engine.field)
+						fld.replace(engine.field)
 						val y = pieceNow.getBottom(x, tempY, rt, fld)
 
 						if(!pieceNow.checkCollision(x, y, rt, fld)) {
@@ -699,7 +691,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							//Check regardless
 							//if((depth > 0) || (bestPts <= 10) || (pieceNow.id == Piece.Shape.T)) {
 							// Left shift
-							fld.copy(engine.field)
+							fld.replace(engine.field)
 							if(!pieceNow.checkCollision(x-move, y, rt, fld)&&pieceNow.checkCollision(x-move, y-1, rt, fld)) {
 								pts = thinkMain(x-move, y, rt, -1, fld, pieceNow, depth)
 
@@ -718,7 +710,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Right shift
-							fld.copy(engine.field)
+							fld.replace(engine.field)
 							if(!pieceNow.checkCollision(x+move, y, rt, fld)&&pieceNow.checkCollision(x+1, y-move, rt, fld)) {
 								pts = thinkMain(x+move, y, rt, -1, fld, pieceNow, depth)
 
@@ -737,17 +729,17 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Left rotation
-							if(!engine.ruleOpt.rotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-								val rot = pieceNow.getRotateDirection(-1, rt)
+							if(!engine.ruleOpt.spinToRight||engine.ruleOpt.spinReverseKey) {
+								val rot = pieceNow.getSpinDirection(-1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceNow.checkCollision(x, y, rot, fld)) pts = thinkMain(x, y, rot, rt, fld, pieceNow, depth)
-								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
-										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
 									engine.wallkick!!.executeWallkick(x, y, -1, rt, rot, allowUpward, pieceNow, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
@@ -770,17 +762,17 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Right rotation
-							if(engine.ruleOpt.rotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-								val rot = pieceNow.getRotateDirection(1, rt)
+							if(engine.ruleOpt.spinToRight||engine.ruleOpt.spinReverseKey) {
+								val rot = pieceNow.getSpinDirection(1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceNow.checkCollision(x, y, rot, fld)) pts = thinkMain(x, y, rot, rt, fld, pieceNow, depth)
-								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
-										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
 									engine.wallkick!!.executeWallkick(x, y, 1, rt, rot, allowUpward, pieceNow, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
@@ -803,17 +795,17 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// 180-degree rotation
-							if(engine.ruleOpt.rotateButtonAllowDouble) {
-								val rot = pieceNow.getRotateDirection(2, rt)
+							if(engine.ruleOpt.spinDoubleKey) {
+								val rot = pieceNow.getSpinDirection(2, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceNow.checkCollision(x, y, rot, fld)) pts = thinkMain(x, y, rot, rt, fld, pieceNow, depth)
-								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
-										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
 									engine.wallkick!!.executeWallkick(x, y, 2, rt, rot, allowUpward, pieceNow, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
@@ -853,7 +845,7 @@ open class PoochyBot:DummyAI(), Runnable {
 						pieceHold.getMostMovableRight(spawnX, spawnY, rt, engine.field)
 					)
 
-					//Bonus for holding an I piece, penalty for holding an S or Z.
+					//Bonus for holding an I-piece, penalty for holding an S or Z.
 					val holdPts = when(pieceHold.type) {
 						Piece.Shape.I -> -30
 						Piece.Shape.S, Piece.Shape.Z -> 30
@@ -868,7 +860,7 @@ open class PoochyBot:DummyAI(), Runnable {
 
 					var x = minHoldX
 					while(x<=maxHoldX) {
-						fld.copy(engine.field)
+						fld.replace(engine.field)
 						val y = pieceHold.getBottom(x, spawnY, rt, fld)
 
 						if(!pieceHold.checkCollision(x, y, rt, fld)) {
@@ -890,7 +882,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							//Check regardless
 							//if((depth > 0) || (bestPts <= 10) || (pieceHold.id == Piece.Shape.T)) {
 							// Left shift
-							fld.copy(engine.field)
+							fld.replace(engine.field)
 							if(!pieceHold.checkCollision(x-move, y, rt, fld)&&pieceHold.checkCollision(x-move, y-1, rt, fld)) {
 								pts = thinkMain(x-move, y, rt, -1, fld, pieceHold, depth)
 								if(pts>Integer.MIN_VALUE+30) pts += holdPts
@@ -909,7 +901,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Right shift
-							fld.copy(engine.field)
+							fld.replace(engine.field)
 							if(!pieceHold.checkCollision(x+move, y, rt, fld)&&pieceHold.checkCollision(x+move, y-1, rt, fld)) {
 								pts = thinkMain(x+move, y, rt, -1, fld, pieceHold, depth)
 								if(pts>Integer.MIN_VALUE+30) pts += holdPts
@@ -928,17 +920,17 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Left rotation
-							if(!engine.ruleOpt.rotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-								val rot = pieceHold.getRotateDirection(-1, rt)
+							if(!engine.ruleOpt.spinToRight||engine.ruleOpt.spinReverseKey) {
+								val rot = pieceHold.getSpinDirection(-1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceHold.checkCollision(x, y, rot, fld)) pts = thinkMain(x, y, rot, rt, fld, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
-										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
 									engine.wallkick!!.executeWallkick(x, y, -1, rt, rot, allowUpward, pieceHold, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
@@ -961,17 +953,17 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// Right rotation
-							if(engine.ruleOpt.rotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-								val rot = pieceHold.getRotateDirection(1, rt)
+							if(engine.ruleOpt.spinToRight||engine.ruleOpt.spinReverseKey) {
+								val rot = pieceHold.getSpinDirection(1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceHold.checkCollision(x, y, rot, fld)) pts = thinkMain(x, y, rot, rt, fld, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
-										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
 									engine.wallkick!!.executeWallkick(x, y, 1, rt, rot, allowUpward, pieceHold, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
@@ -994,17 +986,17 @@ open class PoochyBot:DummyAI(), Runnable {
 							}
 
 							// 180-degree rotation
-							if(engine.ruleOpt.rotateButtonAllowDouble) {
-								val rot = pieceHold.getRotateDirection(2, rt)
+							if(engine.ruleOpt.spinDoubleKey) {
+								val rot = pieceHold.getSpinDirection(2, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = Integer.MIN_VALUE
 
 								if(!pieceHold.checkCollision(x, y, rot, fld)) pts = thinkMain(x, y, rot, rt, fld, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
-										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
 									engine.wallkick!!.executeWallkick(x, y, 2, rt, rot, allowUpward, pieceHold, fld, null)?.let {kick ->
 										newX = x+kick.offsetX
 										newY = y+kick.offsetY
@@ -1074,7 +1066,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		val xMin = piece.minimumBlockX+x
 		val xMax = piece.maximumBlockX+x
 
-		// Number of holes and valleys needing an I piece (before placement)
+		// Number of holes and valleys needing an I-piece (before placement)
 		val holeBefore = fld.howManyHoles
 		//int lidBefore = fld.getHowManyLidAboveHoles();
 
@@ -1103,7 +1095,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		var twist = false
 		if(piece.type==Piece.Shape.T&&rtOld!=-1&&fld.isTwistSpot(x, y, piece.big)) twist = true
 
-		//Does move fill in valley with an I piece?
+		//Does move fill in valley with an I-piece?
 		var valley = 0
 		if(piece.type==Piece.Shape.I) if(xMin==xMax&&0<=xMin&&xMin<width) {
 			//if (DEBUG_ALL) log.debug("actualX = " + xMin);
@@ -1153,13 +1145,13 @@ open class PoochyBot:DummyAI(), Runnable {
 		val rColPenalty = 1000
 		/* if (danger)
 		 * rColPenalty = 100; */
-		//Apply score penalty if I piece would overflow canyon,
+		//Apply score penalty if I-piece would overflow canyon,
 		//unless it would also uncover a hole.
 		if(!big&&piece.type==Piece.Shape.I&&holeBefore<=holeAfter&&xMax==width-1) {
 			val rValleyDepth = depthsAfter[width-1-move]-depthsAfter[width-1]
 			if(rValleyDepth>0) pts -= (rValleyDepth+1)*rColPenalty
 		}
-		//Bonus points for filling in valley with an I piece
+		//Bonus points for filling in valley with an I-piece
 		var valleyBonus = 0
 		if(valley==3&&xMax<width-1) valleyBonus = 40000
 		else if(valley>=4) valleyBonus = 400000
@@ -1191,7 +1183,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		}
 
 		if(lines<4&&!allClear) {
-			// Number of holes and valleys needing an I piece (after placement)
+			// Number of holes and valleys needing an I-piece (after placement)
 			//int lidAfter = fld.getHowManyLidAboveHoles();
 
 			//Find valleys that need an I, J, or L.
@@ -1227,7 +1219,7 @@ open class PoochyBot:DummyAI(), Runnable {
 					if(fld.getBlockEmpty(width-1, testY)) holeAfterRCol++
 					testY++
 				}
-				//Apply score penalty if non-I piece would plug up canyon
+				//Apply score penalty if non-I-piece would plug up canyon
 				val deltaRColHoles = holeAfterRCol-holeBeforeRCol
 				pts -= deltaRColHoles*rColPenalty
 			}
@@ -1376,8 +1368,8 @@ open class PoochyBot:DummyAI(), Runnable {
 		if(piece.type==Piece.Shape.I&&dir>0) return piece.getMostMovableRight(testX, testY, rt, fld!!)
 		var floorKickOK = false
 		if((piece.type==Piece.Shape.I||piece.type==Piece.Shape.T)&&
-			(engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick||
-				engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.stat===GameEngine.Status.ARE)
+			(engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise||
+				engine.ruleOpt.spinWallkickMaxRise<0||engine.stat===GameEngine.Status.ARE)
 		)
 			floorKickOK = true
 		testY = piece.getBottom(testX, testY, testRt, fld!!)
@@ -1436,8 +1428,8 @@ open class PoochyBot:DummyAI(), Runnable {
 	override fun renderState(engine:GameEngine, playerID:Int) {
 		super.renderState(engine, playerID)
 		engine.owner.receiver.run {
-			drawMenuFont(engine, playerID, 0, 7, "IN ARE:", COLOR.BLUE, .5f)
-			drawMenuFont(engine, playerID, 7, 7, inARE.getOX, .5f)
+			drawMenuFont(engine, 0, 7, "IN ARE:", COLOR.BLUE, .5f)
+			drawMenuFont(engine, 7, 7, inARE.getOX, .5f)
 		}
 	}
 
@@ -1461,7 +1453,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				try {
 					thinkBestPosition(gEngine)
 					thinkComplete = true
-					if(DEBUG_ALL)log.debug("PoochyBot: thinkBestPosition completed successfully")
+					if(DEBUG_ALL) log.debug("PoochyBot: thinkBestPosition completed successfully")
 				} catch(e:Throwable) {
 					log.debug("PoochyBot: thinkBestPosition Failed", e)
 				}
@@ -1551,7 +1543,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		/**
 		 * @param fld Field
 		 * @param x X coord
-		 * @return Y coord of highest block
+		 * @return Y coord of the highest block
 		 */
 		@Deprecated(
 			"Workaround for the bug in Field.getHighestBlockY(int).\n"+"\t  The bug has since been fixed as of NullpoMino v6.5, so\n"+"\t  fld.getHighestBlockY(x) should be equivalent."

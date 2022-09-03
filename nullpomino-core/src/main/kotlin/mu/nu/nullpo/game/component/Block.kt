@@ -31,8 +31,6 @@ package mu.nu.nullpo.game.component
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.GeneralUtil.aNum
 import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
-import kotlin.math.pow
-import kotlin.math.roundToInt
 
 /** Block */
 @kotlinx.serialization.Serializable class Block @JvmOverloads constructor(
@@ -157,13 +155,11 @@ import kotlin.math.roundToInt
 	 * @param b Copy source
 	 */
 	constructor(b:Block?):this(b?.color, b?.type ?: TYPE.BLOCK, b?.skin ?: 0) {
-		copy(b)
+		replace(b)
 	}
 
-	/** 設定を他のBlockからコピー
-	 * @param b Copy source
-	 */
-	fun copy(b:Block?) {
+	/** 設定を[b]からコピー */
+	fun replace(b:Block?) {
 		b?.let {
 			color = b.color
 			type = b.type
@@ -228,12 +224,13 @@ import kotlin.math.roundToInt
 		BLACK(false), WHITE(false), RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, RAINBOW(false);
 
 		companion object {
+			val all = values()
 			/** 通常のBlock colorのMaximum count */
-			val COUNT = values().size
+			val COUNT = all.size
 			/** 宝石になりうるBlock colorのMaximum count */
-			val COLOR_NUM = values().count {it.color}
+			val COLOR_NUM = all.count {it.color}
 			val ALL_COLOR_NUM = COUNT+COLOR_NUM
-			fun colors() = values().filter {it.color}.toTypedArray()
+			fun colors() = all.filter {it.color}.toTypedArray()
 		}
 
 	}
@@ -294,7 +291,7 @@ import kotlin.math.roundToInt
 		TEMP_MARK,
 		/** "Block has fallen" flag for cascade gravity */
 		CASCADE_FALL,
-		/** Anti-gravity flag (The block will not fall by gravity) */
+		/** Antigravity flag (The block will not fall by gravity) */
 		ANTIGRAVITY,
 		/** Last commit flag -- block was part of last placement or cascade */
 		LAST_COMMIT,
@@ -382,22 +379,22 @@ import kotlin.math.roundToInt
 
 		fun intToColor(v:Int):Pair<COLOR?, TYPE> = when(v) {
 			in COLOR_WHITE..COLOR_PURPLE -> {
-				COLOR.values()[v] to TYPE.BLOCK
+				COLOR.all[v] to TYPE.BLOCK
 			}
 			COLOR_RAINBOW -> {
 				COLOR.RAINBOW to TYPE.BLOCK
 			}
 			in COLOR_GEM_RED..COLOR_GEM_PURPLE -> {
-				COLOR.values()[v-COLOR_GEM_RED] to TYPE.GEM
+				COLOR.all[v-COLOR_GEM_RED] to TYPE.GEM
 			}
 			COLOR_GEM_RAINBOW -> {
 				COLOR.RAINBOW to TYPE.GEM
 			}
 			in COLOR_SQUARE_SILVER_1..COLOR_SQUARE_SILVER_9 -> {
-				COLOR.values()[v-COLOR_SQUARE_SILVER_1] to TYPE.SQUARE_SILVER
+				COLOR.all[v-COLOR_SQUARE_SILVER_1] to TYPE.SQUARE_SILVER
 			}
 			in COLOR_SQUARE_GOLD_1..COLOR_SQUARE_GOLD_9 -> {
-				COLOR.values()[v-COLOR_SQUARE_GOLD_1] to TYPE.SQUARE_GOLD
+				COLOR.all[v-COLOR_SQUARE_GOLD_1] to TYPE.SQUARE_GOLD
 			}
 			else -> null to TYPE.BLOCK
 		}

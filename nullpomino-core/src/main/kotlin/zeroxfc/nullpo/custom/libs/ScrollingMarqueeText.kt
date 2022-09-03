@@ -33,14 +33,12 @@
 package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
-import mu.nu.nullpo.game.play.GameEngine
 
 class ScrollingMarqueeText(  // Strings that make up the headings
 	headings:Array<String>,   // Strings that fill the info under the headings
 	texts:Array<String>,   // Main color
 	private val headingColor:EventReceiver.COLOR,   // Text color
-	private val textColor:EventReceiver.COLOR)
-{
+	private val textColor:EventReceiver.COLOR) {
 	// Whole string
 	private var mainHeadingString = ""
 	// Whole text string
@@ -55,13 +53,19 @@ class ScrollingMarqueeText(  // Strings that make up the headings
 	 * @param size     Size of text to draw with
 	 * @param progress Progress of the roll (0: start, 1: end)
 	 */
-	fun drawAtY(engine:GameEngine?, receiver:EventReceiver, playerID:Int, y:Double, size:Int, progress:Double) {
-		val mainOffset1 = (40*SIZES[size]/SCALES_FLOAT[size]).toInt()-(progress*(40*SIZES[size]+(mainHeadingString.length+EXCESS_LENGTH)*SIZES[size])).toInt()
-		val mainOffset2 = (40*SIZES[size]/SCALES_FLOAT[size]).toInt()-(progress*(40*SIZES[size]+(mainTextString.length+EXCESS_LENGTH)*SIZES[size])).toInt()
-		receiver.drawDirectFont(mainOffset1, (y*SIZES[size]).toInt(),
-			mainHeadingString, headingColor, SCALES_FLOAT[size])
-		receiver.drawDirectFont(mainOffset2, (y*SIZES[size]).toInt(),
-			mainTextString, textColor, SCALES_FLOAT[size])
+	fun drawAtY(receiver:EventReceiver, y:Double, size:Int, progress:Double) {
+		val mainOffset1 =
+			(40*SIZES[size]/SCALES_FLOAT[size]).toInt()-(progress*(40*SIZES[size]+(mainHeadingString.length+EXCESS_LENGTH)*SIZES[size])).toInt()
+		val mainOffset2 =
+			(40*SIZES[size]/SCALES_FLOAT[size]).toInt()-(progress*(40*SIZES[size]+(mainTextString.length+EXCESS_LENGTH)*SIZES[size])).toInt()
+		receiver.drawDirectFont(
+			mainOffset1, (y*SIZES[size]).toInt(),
+			mainHeadingString, headingColor, SCALES_FLOAT[size]
+		)
+		receiver.drawDirectFont(
+			mainOffset2, (y*SIZES[size]).toInt(),
+			mainTextString, textColor, SCALES_FLOAT[size]
+		)
 	}
 
 	companion object {
@@ -84,9 +88,15 @@ class ScrollingMarqueeText(  // Strings that make up the headings
 		val mTS = StringBuilder(mainTextString)
 		for(i in headings.indices) {
 			mHS.append(String(CharArray(headings[i].length)).replace("\u0000", " ")).append(" ").append(
-				texts[i]).append(if(i<headings.size-1) " / " else "")
-			mTS.append(headings[i]).append(" ").append(String(CharArray(
-				texts[i].length)).replace("\u0000", " ")).append(if(i<headings.size-1) " / " else "")
+				texts[i]
+			).append(if(i<headings.size-1) " / " else "")
+			mTS.append(headings[i]).append(" ").append(
+				String(
+					CharArray(
+						texts[i].length
+					)
+				).replace("\u0000", " ")
+			).append(if(i<headings.size-1) " / " else "")
 		}
 		mainHeadingString = "$mHS"
 		mainTextString = "$mTS"

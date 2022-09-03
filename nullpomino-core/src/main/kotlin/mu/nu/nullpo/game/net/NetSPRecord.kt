@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -87,7 +87,7 @@ class NetSPRecord:Serializable {
 	 * @param s Source
 	 */
 	constructor(s:NetSPRecord) {
-		copy(s)
+		replace(s)
 	}
 
 	/** Constructor that imports data from a String Array
@@ -117,10 +117,8 @@ class NetSPRecord:Serializable {
 		style = 0
 	}
 
-	/** Copy from other NetSPRecord
-	 * @param s Source
-	 */
-	fun copy(s:NetSPRecord) {
+	/** Copy from [s] other NetSPRecord*/
+	fun replace(s:NetSPRecord) {
 		strPlayerName = s.strPlayerName
 		strModeName = s.strModeName
 		strRuleName = s.strRuleName
@@ -155,7 +153,7 @@ class NetSPRecord:Serializable {
 	 */
 	fun importCustomStats(s:String?) {
 		listCustomStats.clear()
-		if(s==null||s.isEmpty()) return
+		if(s.isNullOrEmpty()) return
 
 		val array = s.split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
 		Collections.addAll(listCustomStats, *array)
@@ -168,7 +166,8 @@ class NetSPRecord:Serializable {
 		NetUtil.urlEncode(strPlayerName), NetUtil.urlEncode(strModeName), NetUtil.urlEncode(strRuleName),
 		if(stats==null) "" else NetUtil.compressString(stats!!.exportString()),
 		if(listCustomStats.isEmpty()) "" else NetUtil.compressString(exportCustomStats()), strReplayProp, "$gameType",
-		"$style", strTimeStamp)
+		"$style", strTimeStamp
+	)
 
 	/** Export to a String
 	 * @return String (Split by ;)
@@ -211,7 +210,7 @@ class NetSPRecord:Serializable {
 	/** Compare to other NetSPRecord
 	 * @param type Ranking Type
 	 * @param r2 The other NetSPRecord
-	 * @return `true` if this this record is better than r2
+	 * @return `true` if this record is better than r2
 	 */
 	fun compare(type:Int, r2:NetSPRecord):Boolean = compareRecords(type, this, r2)
 

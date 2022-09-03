@@ -165,7 +165,7 @@ object NetUtil {
 	 */
 	@JvmOverloads
 	fun compressByteArray(input:ByteArray, level:Int = Deflater.BEST_COMPRESSION):ByteArray {
-		// Create the compressor with highest level of compression
+		// Create the compressor with the highest level of compression
 		val compressor = Deflater(level)
 
 		// Give the compressor the data to compress
@@ -222,7 +222,7 @@ object NetUtil {
 	 */
 	@JvmOverloads
 	fun compressString(input:String?, level:Int = Deflater.BEST_COMPRESSION):String {
-		val bCompressed = compressByteArray(stringToBytes(input?:""), level)
+		val bCompressed = compressByteArray(stringToBytes(input ?: ""), level)
 		val cCompressed = Base64Coder.encode(bCompressed)
 		return String(cCompressed)
 	}

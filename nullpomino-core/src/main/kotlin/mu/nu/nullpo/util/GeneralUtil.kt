@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -138,7 +138,7 @@ object GeneralUtil {
 
 	/** Export a Calendar to a String for saving/sending.
 	 * TimeZone is always GMT. Time is based on current time.
-	 * @return Calendar String (Each field is separated with a hyphen '-')
+	 * @return Calendar String (Each field is separated with a hyphen '-' )
 	 */
 	val nowGMT get() = Calendar.getInstance(TimeZone.getTimeZone("GMT")).strDateTime
 	@Deprecated("extended", ReplaceWith("nowGMT"))
@@ -146,7 +146,7 @@ object GeneralUtil {
 
 	/** Export a Calendar to a String for saving/sending.
 	 * TimeZone is always GMT.
-	 * @return Calendar String (Each field is separated with a hyphen '-')
+	 * @return Calendar String (Each field is separated with a hyphen '-' )
 	 */
 	val Calendar.strGMT:String
 		get() = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").apply {timeZone = TimeZone.getTimeZone("GMT")}
@@ -156,7 +156,7 @@ object GeneralUtil {
 
 	/** Create a Calendar by using a String that came from exportCalendarString.
 	 * TimeZone is always GMT.
-	 * @sample String (Each field is separated with a hyphen '-')
+	 * @sample String (Each field is separated with a hyphen '-' )
 	 * @return Calendar (null if fails)
 	 */
 	val String.GMTtoDate:Calendar?

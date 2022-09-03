@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -74,7 +74,7 @@ class GrandMarathon:AbstractMode() {
 	private var secretGrade = 0
 
 	/** Current BGM */
-	private var bgmlv = 0
+	private var bgmLv = 0
 
 	/** 段位表示を光らせる残り frame count */
 	private var gradeflash = 0
@@ -129,7 +129,7 @@ class GrandMarathon:AbstractMode() {
 	/** Version */
 	private var version = 0
 
-	/** Current round's ranking rank */
+	/** Current round's ranking position */
 	private var rankingRank = 0
 
 	/** Rankings' 段位 */
@@ -153,9 +153,8 @@ class GrandMarathon:AbstractMode() {
 	override val rankMap:Map<String, IntArray>
 		get() = mapOf("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "section.time" to bestSectionTime)
 
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
-		menuTime = 0
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 		nextseclv = 0
 		lvupflag = true
 		gmPier = 0
@@ -167,7 +166,7 @@ class GrandMarathon:AbstractMode() {
 		gm300 = false
 		gm500 = false
 		secretGrade = 0
-		bgmlv = 0
+		bgmLv = 0
 		gradeflash = 0
 		sectionscore = IntArray(SECTION_MAX)
 		sectionTime = IntArray(SECTION_MAX)
@@ -189,10 +188,10 @@ class GrandMarathon:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = true
-		engine.splitb2b = true
+		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
-		engine.bighalf = false
-		engine.bigmove = false
+		engine.bigHalf = false
+		engine.bigMove = false
 		engine.staffrollNoDeath = true
 
 		engine.speed.are = 30
@@ -210,23 +209,23 @@ class GrandMarathon:AbstractMode() {
 		owner.backgroundStatus.bg = startLevel
 	}
 
-/*	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
-		startLevel = prop.getProperty("grademania1.startLevel", 0)
-		alwaysghost = prop.getProperty("grademania1.alwaysghost", true)
-		always20g = prop.getProperty("grademania1.always20g", false)
-		secAlert = prop.getProperty("grademania1.secAlert", true)
-		showST = prop.getProperty("grademania1.showST", true)
-		big = prop.getProperty("grademania1.big", false)
-	}
+	/*	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+			startLevel = prop.getProperty("grademania1.startLevel", 0)
+			alwaysghost = prop.getProperty("grademania1.alwaysghost", true)
+			always20g = prop.getProperty("grademania1.always20g", false)
+			secAlert = prop.getProperty("grademania1.secAlert", true)
+			showST = prop.getProperty("grademania1.showST", true)
+			big = prop.getProperty("grademania1.big", false)
+		}
 
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("grademania1.startLevel", startLevel)
-		prop.setProperty("grademania1.alwaysghost", alwaysghost)
-		prop.setProperty("grademania1.always20g", always20g)
-		prop.setProperty("grademania1.secAlert", secAlert)
-		prop.setProperty("grademania1.showST", showST)
-		prop.setProperty("grademania1.big", big)
-	}*/
+		override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+			prop.setProperty("grademania1.startLevel", startLevel)
+			prop.setProperty("grademania1.alwaysghost", alwaysghost)
+			prop.setProperty("grademania1.always20g", always20g)
+			prop.setProperty("grademania1.secAlert", secAlert)
+			prop.setProperty("grademania1.showST", showST)
+			prop.setProperty("grademania1.big", big)
+		}*/
 
 	/** Update falling speed
 	 * @param engine GameEngine
@@ -276,7 +275,7 @@ class GrandMarathon:AbstractMode() {
 	}
 
 	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
 		if(!engine.owner.replayMode) {
 			// Configuration changes
@@ -287,30 +286,29 @@ class GrandMarathon:AbstractMode() {
 			}
 
 			// section time display切替
-			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
 
 			// 決定
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				isShowBestSectionTime = false
 				sectionscomp = 0
-				bgmlv = if(engine.statistics.level<500) 0 else 1
+				bgmLv = if(engine.statistics.level<500) 0 else 1
 				owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
 				return false
 			}
 
 			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
-			menuTime++
 		} else {
 			menuTime++
 			menuCursor = -1
 
-			bgmlv = if(engine.statistics.level<500) 0 else 1
+			bgmLv = if(engine.statistics.level<500) 0 else 1
 			owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
 			return menuTime<60
 		}
@@ -325,7 +323,7 @@ class GrandMarathon:AbstractMode() {
 	}*/
 
 	/* Called at game start */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
 
 		dectemp = 0
@@ -341,25 +339,24 @@ class GrandMarathon:AbstractMode() {
 	}
 
 	/* Render score */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		receiver.drawScoreFont(engine, playerID, 0, 0, "GRAND MARATHON", COLOR.CYAN)
+	override fun renderLast(engine:GameEngine) {
+		receiver.drawScoreFont(engine, 0, 0, "GRAND MARATHON", COLOR.CYAN)
 
-		receiver.drawScoreFont(engine, playerID, -1, -4*2, "DECORATION", scale = .5f)
-		receiver.drawScoreBadges(engine, playerID, 0, -3, 100, decoration)
-		receiver.drawScoreBadges(engine, playerID, 5, -4, 100, dectemp)
+		receiver.drawScoreFont(engine, -1, -4*2, "DECORATION", scale = .5f)
+		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
+		receiver.drawScoreBadges(engine, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
-					receiver.drawScoreFont(engine, playerID, 3, 2, "GRADE TIME LEVEL", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 3, 2, "GRADE TIME LEVEL", COLOR.BLUE)
 
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreGrade(
-							engine, playerID, 0, 3+i, String.format("%2d", i+1),
-							if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+							engine, 0, 3+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
 						var gc = if(i==rankingRank)
-							if(playerID%2==0) COLOR.YELLOW else COLOR.ORANGE
+							if(engine.playerID%2==0) COLOR.YELLOW else COLOR.ORANGE
 						else COLOR.WHITE
 						if(rankingGrade[i]>=18) {
 							var gmP = 0
@@ -368,15 +365,15 @@ class GrandMarathon:AbstractMode() {
 							gc = tablePier21GradeColor[gmP]
 						}
 						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
-							receiver.drawScoreGrade(engine, playerID, 3, 3+i, tableGradeName[rankingGrade[i]], gc)
-						receiver.drawScoreNum(engine, playerID, 7, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
-						receiver.drawScoreNum(engine, playerID, 15, 3+i, String.format("%03d", rankingLevel[i]), i==rankingRank)
+							receiver.drawScoreGrade(engine, 3, 3+i, tableGradeName[rankingGrade[i]], gc)
+						receiver.drawScoreNum(engine, 7, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
+						receiver.drawScoreNum(engine, 15, 3+i, String.format("%03d", rankingLevel[i]), i==rankingRank)
 					}
 
-					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
+					receiver.drawScoreFont(engine, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
 				} else {
 					// Section Time
-					receiver.drawScoreFont(engine, playerID, 0, 2, "SECTION TIME SCORE", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME SCORE", COLOR.BLUE)
 
 					var totalTime = 0
 					for(i in 0 until SECTION_MAX) {
@@ -388,85 +385,89 @@ class GrandMarathon:AbstractMode() {
 							bestSectionScore[i]
 						)
 
-						receiver.drawScoreNum(engine, playerID, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
+						receiver.drawScoreNum(engine, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 						totalTime += bestSectionTime[i]
 					}
 
-					receiver.drawScoreFont(engine, playerID, 0, 14, "TOTAL", color = COLOR.BLUE)
-					receiver.drawScoreNum(engine, playerID, 0, 15, totalTime.toTimeStr, 2f)
+					receiver.drawScoreFont(engine, 0, 14, "TOTAL", color = COLOR.BLUE)
+					receiver.drawScoreNum(engine, 0, 15, totalTime.toTimeStr, 2f)
 					receiver.drawScoreFont(
-						engine, playerID, if(receiver.nextDisplayType==2)
+						engine, if(receiver.nextDisplayType==2)
 							0 else 12, if(receiver.nextDisplayType==2) 18 else 14, "AVERAGE", color = COLOR.BLUE
 					)
 					receiver.drawScoreNum(
-						engine, playerID, if(receiver.nextDisplayType==2)
+						engine, if(receiver.nextDisplayType==2)
 							0 else 12, if(receiver.nextDisplayType==2) 19 else 15, (totalTime/SECTION_MAX).toTimeStr, scale = 2f
 					)
 
-					receiver.drawScoreFont(engine, playerID, 0, 17, "F:VIEW RANKING", color = COLOR.GREEN)
+					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", color = COLOR.GREEN)
 				}
 		} else {
 			val g20 = engine.speed.gravity<0&&(engine.statistics.time/2%2==0||engine.ending>0)
 			receiver.drawScoreFont(
-				engine, playerID, 0, 2, "GRADE",
+				engine,
+				0,
+				2,
+				"GRADE",
 				color = if(g20 or (gradeflash>0&&gradeflash%4==0)) if(gm300) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
 			)
 			receiver.drawScoreGrade(
-				engine, playerID, 5, 2, tableGradeName[grade],
-				color = if(gradeflash>0&&gradeflash%(if(grade>=18) 2 else 4)==0)
-					(if(grade>=18) tablePier21GradeColor[gmPier] else COLOR.YELLOW) else COLOR.WHITE, scale = 2f
+				engine, 5, 2, tableGradeName[grade], color = if(gradeflash>0&&gradeflash%(if(grade>=18) 2 else 4)==0)
+					(if(grade>=18) tablePier21GradeColor[gmPier] else COLOR.YELLOW) else COLOR.WHITE,
+				scale = 2f
 			)
 
 			if(grade<17) {
 				receiver.drawScoreNano(
-					engine, playerID, 0, 3*2+1, "NEXT AT",
-					if(g20 or (gradeflash>0&&gradeflash%4==0)) if(gm300) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE, .5f
+					engine,
+					0,
+					3*2+1,
+					"NEXT AT",
+					if(g20 or (gradeflash>0&&gradeflash%4==0)) if(gm300) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE,
+					.5f
 				)
-				receiver.drawScoreNum(engine, playerID, 0, 4, "${tableGradeScore[grade]}")
+				receiver.drawScoreNum(engine, 0, 4, "${tableGradeScore[grade]}")
 			}
 
 			// 段位上昇時のフラッシュ
 			if(gradeflash>0) gradeflash--
 
 			receiver.drawScoreFont(
-				engine, playerID, 0, 5, "Score",
-				color = if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
+				engine, 0, 5, "Score", color = if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
 			)
-			receiver.drawScoreNum(engine, playerID, 5, 5, "+$lastscore", if(g20) COLOR.YELLOW else COLOR.WHITE)
+			receiver.drawScoreNum(engine, 5, 5, "+$lastscore", if(g20) COLOR.YELLOW else COLOR.WHITE)
 			receiver.drawScoreNum(
-				engine, playerID, 0, 6, "$scDisp",
-				if(g20) COLOR.YELLOW else COLOR.WHITE, 2f
+				engine, 0, 6, "$scDisp", if(g20) COLOR.YELLOW else COLOR.WHITE,
+				2f
 			)
 
 			receiver.drawScoreFont(
-				engine, playerID, 0, 9, "Level",
-				if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
+				engine, 0, 9, "Level", if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
 			)
-			receiver.drawScoreNum(engine, playerID, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)), g20)
-			receiver.drawSpeedMeter(
-				engine, playerID, 0, 11,
-				if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4, 4
+			receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)), g20)
+			receiver.drawScoreSpeed(
+				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4,
+				4
 			)
-			receiver.drawScoreNum(engine, playerID, 1, 12, String.format("%3d", nextseclv), g20)
+			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextseclv), g20)
 
 			receiver.drawScoreFont(
-				engine, playerID, 0, 14, "Time",
-				if(g20) if(gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
+				engine, 0, 14, "Time", if(g20) if(gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
 			)
 			if(engine.ending!=2||rolltime/30%2==0)
-				receiver.drawScoreNum(engine, playerID, 0, 15, engine.statistics.time.toTimeStr, g20, 2f)
+				receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, g20, 2f)
 
 			if(engine.gameActive&&engine.ending==2) {
 				var time = ROLLTIMELIMIT-rolltime
 				if(time<0) time = 0
-				receiver.drawScoreFont(engine, playerID, 0, 17, "ROLL TIME", COLOR.BLUE)
-				receiver.drawScoreNum(engine, playerID, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
+				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.BLUE)
+				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
 
 			// Section Time
 			if(showST&&sectionTime.isNotEmpty()) {
 				val x = receiver.nextDisplayType==2
-				receiver.drawScoreFont(engine, playerID, if(x) 8 else 10, 2, "SECTION TIME", COLOR.BLUE)
+				receiver.drawScoreFont(engine, if(x) 8 else 10, 2, "SECTION TIME", COLOR.BLUE)
 
 				for(i in sectionTime.indices)
 					if(sectionTime[i]>0) {
@@ -483,26 +484,28 @@ class GrandMarathon:AbstractMode() {
 							String.format("%3d%s%s %d\n", temp, strSeparator, sectionTime[i].toTimeStr, sectionscore[i])
 						)
 						receiver.drawScoreNum(
-							engine, playerID, if(x) 9 else 10, 3, "$strSectionTime", sectionIsNewRecord[i],
-							if(x) .75f else 1f
+							engine, if(x) 9 else 10, 3, "$strSectionTime", sectionIsNewRecord[i], if(x) .75f else 1f
 						)
 					}
 
-				receiver.drawScoreFont(engine, playerID, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", COLOR.BLUE)
+				receiver.drawScoreFont(engine, if(x) 8 else 12, if(x) 11 else 14, "AVERAGE", COLOR.BLUE)
 				receiver.drawScoreNum(
-					engine, playerID, if(x) 8 else 12, if(x) 12 else 15,
-					(engine.statistics.time/(sectionscomp+(engine.ending==0).toInt())).toTimeStr, scale = 2f
+					engine,
+					if(x) 8 else 12,
+					if(x) 12 else 15,
+					(engine.statistics.time/(sectionscomp+(engine.ending==0).toInt())).toTimeStr,
+					scale = 2f
 				)
 
 			}
 			// medal
-			receiver.drawScoreMedal(engine, playerID, 0, 20, "AC", medalAC)
+			receiver.drawScoreMedal(engine, 0, 20, "AC", medalAC)
 
 		}
 	}
 
 	/* 移動中の処理 */
-	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
+	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
 			if(engine.statistics.level<nextseclv-1) {
@@ -517,7 +520,7 @@ class GrandMarathon:AbstractMode() {
 	}
 
 	/* ARE中の処理 */
-	override fun onARE(engine:GameEngine, playerID:Int):Boolean {
+	override fun onARE(engine:GameEngine):Boolean {
 		// 最後の frame
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
 			if(engine.statistics.level<nextseclv-1) {
@@ -534,7 +537,7 @@ class GrandMarathon:AbstractMode() {
 	/** levelが上がったときの共通処理 */
 	private fun levelUp(engine:GameEngine) {
 		// Meter
-		engine.meterValue = engine.statistics.level%100*receiver.getMeterMax(engine)/99
+		engine.meterValue = engine.statistics.level%100/99f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
 		// 速度変更
@@ -544,11 +547,11 @@ class GrandMarathon:AbstractMode() {
 		if(engine.statistics.level>=100&&!alwaysghost) engine.ghost = false
 
 		// BGM fadeout
-		if(bgmlv==0&&engine.statistics.level>=490) owner.bgmStatus.fadesw = true
+		if(bgmLv==0&&engine.statistics.level>=490) owner.bgmStatus.fadesw = true
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		if(engine.ending!=0) return 0
 		// Combo
 		comboValue = if(lines==0) 1
@@ -580,7 +583,6 @@ class GrandMarathon:AbstractMode() {
 
 			// 段位上昇
 			while(grade<17&&engine.statistics.score>=tableGradeScore[grade]) {
-				engine.playSE("gradeup")
 				engine.playSE("grade${grade*4/17}")
 				grade++
 				when {
@@ -653,8 +655,8 @@ class GrandMarathon:AbstractMode() {
 				setAverageSectionTime()
 				stNewRecordCheck(sectionscomp-1)
 
-				if(bgmlv==0&&nextseclv==500) {
-					bgmlv++
+				if(bgmLv==0&&nextseclv==500) {
+					bgmLv++
 					owner.bgmStatus.fadesw = false
 					owner.bgmStatus.bgm = BGM.GrandM(1)
 				}
@@ -669,8 +671,8 @@ class GrandMarathon:AbstractMode() {
 	}
 
 	/* 各 frame の終わりの処理 */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 
 		// Section Time増加
 		if(engine.timerActive&&engine.ending==0) {
@@ -691,7 +693,7 @@ class GrandMarathon:AbstractMode() {
 
 			// Time meter
 			val remainRollTime = ROLLTIMELIMIT-rolltime
-			engine.meterValue = remainRollTime*receiver.getMeterMax(engine)/ROLLTIMELIMIT
+			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
 			// Roll 終了
@@ -704,7 +706,7 @@ class GrandMarathon:AbstractMode() {
 	}
 
 	/* Called at game over */
-	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+	override fun onGameOver(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			secretGrade = engine.field.secretGrade
 			val time = engine.statistics.time
@@ -722,81 +724,75 @@ class GrandMarathon:AbstractMode() {
 		return false
 	}
 
-	override fun renderExcellent(engine:GameEngine, playerID:Int) {
-		val offsetX = receiver.fieldX(engine, playerID)
-		val offsetY = receiver.fieldY(engine, playerID)
+	override fun renderExcellent(engine:GameEngine) {
+		val offsetX = receiver.fieldX(engine)
 
 		if(grade==18) {
-			val col = when {
-				engine.statc[0]%4==0 -> COLOR.YELLOW
-				engine.statc[0]%2==0 -> COLOR.WHITE
-				else -> COLOR.ORANGE
-			}
-			receiver.drawDirectFont(offsetX+12, offsetY+230, "YOU ARE A", COLOR.WHITE, 1f)
-			receiver.drawDirectFont(offsetX+22, offsetY+250, "GRAND", col, 1.5f)
-			receiver.drawDirectFont(offsetX+10, offsetY+274, "MASTER", col, 1.5f)
+			val col = if(engine.statc[0]%4<2) COLOR.WHITE else tablePier21GradeColor[gmPier]
+			receiver.drawMenuFont(engine, .5f, 8f, "YOU ARE A", COLOR.WHITE, 1f)
+			receiver.drawMenuFont(engine, 1.25f, 9f, "GRAND", col, 1.5f)
+			receiver.drawMenuFont(engine, .5f, 10.5f, "MASTER", col, 1.5f)
 		} else if(grade==17) {
 			val col = when {
 				engine.statc[0]%4==0 -> COLOR.CYAN
 				engine.statc[0]%2==0 -> COLOR.WHITE
 				else -> COLOR.BLUE
 			}
-			receiver.drawDirectFont(offsetX+44, offsetY+250, "BUT...", COLOR.WHITE, 1f)
-			receiver.drawDirectFont(offsetX+12, offsetY+266, "CHALLENGE", COLOR.BLUE, 1f)
-			receiver.drawDirectFont(offsetX-4, offsetY+282, "MORE FASTER", col, 1f)
-			receiver.drawDirectFont(offsetX+12, offsetY+298, "NEXT TIME", COLOR.WHITE, 1f)
+			receiver.drawMenuFont(engine, 3.5f, 8.5f, "BUT...", COLOR.WHITE, 1f)
+			receiver.drawMenuFont(engine, .5f, 10f, "CHALLENGE", COLOR.BLUE, 1f)
+			receiver.drawMenuFont(engine, -.5f, 11f, "MORE FASTER", col, 1f)
+			receiver.drawMenuFont(engine, .5f, 12f, "NEXT TIME", COLOR.WHITE, 1f)
 		}
 	}
 
 	/* 結果画面 */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 		when(engine.statc[1]) {
 			0 -> {
-				receiver.drawMenuFont(engine, playerID, 0, 2, "GRADE", COLOR.BLUE)
+				receiver.drawMenuFont(engine, 0, 2, "GRADE", COLOR.BLUE)
 				var gc = COLOR.WHITE
 				if(grade>=18) {
 					gc = tablePier21GradeColor[gmPier]
-					receiver.drawMenuFont(engine, playerID, 0, 3, tablePier21GradeName[gmPier], gc)
+					receiver.drawMenuFont(engine, 0, 3, tablePier21GradeName[gmPier], gc)
 				}
-				receiver.drawMenuGrade(engine, playerID, 6, 2, tableGradeName[grade], gc, 2f)
+				receiver.drawMenuGrade(engine, 6, 2, tableGradeName[grade], gc, 2f)
 				drawResultStats(
-					engine, playerID, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA,
-					Statistic.TIME
+					engine, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
 				)
-				drawResultRank(engine, playerID, receiver, 13, COLOR.BLUE, rankingRank)
+				drawResultRank(engine, receiver, 13, COLOR.BLUE, rankingRank)
 				if(secretGrade>4)
 					drawResult(
-						engine, playerID, receiver, 15, COLOR.BLUE, "S. GRADE",
+						engine, receiver, 15, COLOR.BLUE, "S. GRADE",
 						String.format("%10s", tableGradeName[secretGrade-1])
 					)
 			}
 			1 -> {
-				receiver.drawMenuFont(engine, playerID, 0, 2, "SECTION", COLOR.BLUE)
+				receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.BLUE)
 
 				for(i in sectionTime.indices)
 					if(sectionTime[i]>0)
-						receiver.drawMenuNum(engine, playerID, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
+						receiver.drawMenuNum(engine, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
 
 				if(sectionavgtime>0) {
-					receiver.drawMenuFont(engine, playerID, 0, 14, "AVERAGE", COLOR.BLUE)
-					receiver.drawMenuNum(engine, playerID, 0, 15, sectionavgtime.toTimeStr, 1.7f)
+					receiver.drawMenuFont(engine, 0, 14, "AVERAGE", COLOR.BLUE)
+					receiver.drawMenuNum(engine, 0, 15, sectionavgtime.toTimeStr, 1.7f)
 				}
 			}
 			2 -> {
 
-				receiver.drawMenuFont(engine, playerID, 0, 2, "MEDAL", COLOR.BLUE)
-				receiver.drawMenuMedal(engine, playerID, 8, 2, "AC", medalAC)
-				drawResultStats(engine, playerID, receiver, 4, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
+				receiver.drawMenuFont(engine, 0, 2, "MEDAL", COLOR.BLUE)
+				receiver.drawMenuMedal(engine, 8, 2, "AC", medalAC)
+				drawResultStats(engine, receiver, 4, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
 
-				drawResult(engine, playerID, receiver, 15, COLOR.BLUE, "DECORATION", String.format("%d", dectemp))
+				drawResult(engine, receiver, 15, COLOR.BLUE, "DECORATION", String.format("%d", dectemp))
 			}
 		}
 	}
 
 	/* 結果画面の処理 */
-	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
+	override fun onResult(engine:GameEngine):Boolean {
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = when(engine.ending) {
 			0 -> BGM.Result(0)
@@ -826,7 +822,7 @@ class GrandMarathon:AbstractMode() {
 	}
 
 	/* リプレイ保存 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		owner.replayProp.setProperty("result.grade.name", tableGradeName[grade])
 		owner.replayProp.setProperty("result.grade.number", grade)
 		owner.replayProp.setProperty("grademania1.version", version)
@@ -910,10 +906,10 @@ class GrandMarathon:AbstractMode() {
 		/** ARE table */
 		private val tableARE = intArrayOf(30, 27, 25)
 
-		/** Line clear time table */
+		/** Line clear times table */
 		private val tableLineDelay = intArrayOf(41, 40, 25)
 
-		/** 固定 time table */
+		/** 固定 times table */
 		private val tableLockDelay = intArrayOf(30, 30, 30)
 
 		/** DAS table */

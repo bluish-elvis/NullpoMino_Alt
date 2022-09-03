@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,15 +34,23 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.common.FragAnim.ANIM
+import mu.nu.nullpo.gui.common.fx.Beam
+import mu.nu.nullpo.gui.common.fx.Effect
+import mu.nu.nullpo.gui.common.fx.FragAnim
+import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM
+import mu.nu.nullpo.gui.common.fx.PopupAward
+import mu.nu.nullpo.gui.common.fx.PopupBravo
+import mu.nu.nullpo.gui.common.fx.PopupCombo
+import mu.nu.nullpo.gui.common.fx.PopupPoint
+import mu.nu.nullpo.gui.common.fx.particles.Fireworks
+import mu.nu.nullpo.gui.common.fx.particles.ParticleEmitterBase
 import mu.nu.nullpo.util.GeneralUtil.toInt
 
 abstract class AbstractRenderer:EventReceiver() {
-
 	internal abstract val resources:ResourceHolder
 
 	/** 演出オブジェクト */
-	internal val effects:ArrayList<EffectObject> = ArrayList(10*4)
+	internal val effects:MutableList<Effect> = mutableListOf()
 
 	/** Line clearエフェクト表示 */
 	protected var showlineeffect = false
@@ -75,7 +83,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	protected var showLocus = false
 
 	override fun drawFont(x:Int, y:Int, str:String, font:FONT, color:COLOR, scale:Float, alpha:Float) {
-		if(font==FONT.TTF) printTTFSpecific(x, y, str, color, alpha)
+		if(font==FONT.TTF) printTTFSpecific(x, y, str, color, scale, alpha)
 		else printFontSpecific(x, y, str, font, color, scale, alpha)
 	}
 
@@ -177,34 +185,28 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	protected abstract fun drawBG(engine:GameEngine)
-	protected abstract fun drawFrameSpecific(x:Int, y:Int, engine:GameEngine, displaysize:Int)
-	private fun drawFrame(x:Int, y:Int, engine:GameEngine, displaysize:Int) {
+	protected abstract fun drawFrameSpecific(x:Int, y:Int, engine:GameEngine)
+	private fun drawFrame(x:Int, y:Int, engine:GameEngine) {
 		// Upと下
-		var tmpX = x
-		var tmpY = y
 
-		val s = 4*when(displaysize) {
-			-1 -> 2
-			1 -> 8
-			else -> 4
-		}
+		val s = engine.blockSize
 
 		val fieldW = engine.field.width// ?: Field.DEFAULT_WIDTH
 		val fieldH = engine.field.height//?: Field.DEFAULT_HEIGHT
-		val maxWidth = fieldW*s
-		val maxHeight = fieldH*s
-		val lX = x+4
-		val rX = lX+maxWidth
-		val tY = y+4
-		val bY = tY+maxHeight
+		val fW = fieldW*s
+		val fH = fieldH*s
+		val lX = x
+		val rX = lX+fW
+		val tY = y
+		val bY = tY+fH
 		// NEXT area background
-		if(showbg&&darknextarea) {
+		if(showBg&&darknextarea) {
 			when(nextDisplayType) {
 				0 -> {
-					val w = maxWidth+15
-					fillRectSpecific(x+20, y, w-40, -48, 0)
+					val w = fW+15
+					fillRectSpecific(x+20, y, w-40, -nextHeight, 0)
 					for(i in 20 downTo 0)
-						drawRectSpecific(x+20-i, y, w-40+i*2, -48-i, 0, 1-i/20f, 1)
+						drawRectSpecific(x+20-i, y, w-40+i*2, -nextHeight-i, 0, 1-i/20f, 1)
 				}
 				1 -> {//side small
 					val x2 = x+s+fieldW*s
@@ -225,14 +227,14 @@ abstract class AbstractRenderer:EventReceiver() {
 					}
 				}
 				2 -> {//side big
-					val x2 = x+s+maxWidth
+					val x2 = x+s+fW
 					val maxNext = if(engine.isNextVisible) engine.ruleOpt.nextDisplay else 0
 
 					// HOLD area
 					if(engine.ruleOpt.holdEnable&&engine.isHoldVisible) {
-						fillRectSpecific(x-64, y, 64, 48, 0)
+						fillRectSpecific(x-64, y, 64, nextHeight, 0)
 						for(i in 8 downTo 0)
-							drawRectSpecific(x-64-i, y-i, 65+i, 48+i*2, 0, i/8f, 1)
+							drawRectSpecific(x-64-i, y-i, 65+i, nextHeight+i*2, 0, i/8f, 1)
 					}
 					// NEXT area
 					if(maxNext>0) {
@@ -247,35 +249,34 @@ abstract class AbstractRenderer:EventReceiver() {
 		if(fieldbgbright>0)
 			if(fieldW<=10&&fieldH<=20) {
 				var img = resources.imgFieldBG[1]
-				if(displaysize==-1) img = resources.imgFieldBG[0]
-				if(displaysize==1) img = resources.imgFieldBG[2]
-				img.draw(lX, tY, rX, bY, 0, 0, maxWidth, maxHeight, fieldbgbright)
-			} else if(showbg) drawRect(lX, tY, maxWidth, maxHeight, 0, fieldbgbright)
+				if(engine.displaySize==-1) img = resources.imgFieldBG[0]
+				if(engine.displaySize==1) img = resources.imgFieldBG[2]
+				img.draw(lX, tY, rX, bY, 0, 0, fW, fH, fieldbgbright)
+			} else if(showBg) drawRect(lX, tY, fW, fH, 0, fieldbgbright)
 
-		drawFrameSpecific(x, y, engine, displaysize)
+		drawFrameSpecific(x, y, engine)
 
-		when(engine.framecolor) {
+		when(engine.frameColor) {
 			GameEngine.FRAME_SKIN_GB -> {
-				drawRect(x+4, y+4, fieldW*s, fieldH*s, 0x888888)
+				drawRect(x, y, fW, fH, 0x888888)
 				val fi = resources.imgFrameOld[0]
-				tmpX -= 12
 				for(i in 0..fieldH) {
-
-					tmpY = y+i*s+4
-					fi.draw(tmpX, tmpY, (tmpX+s), (tmpY+s), 0, 0, 16, 16)
-					fi.draw((tmpX+maxWidth+s), tmpY, (tmpX+maxWidth+s*2), (tmpY+s), 0, 0, 16, 16)
+					val zx = x-s
+					val zy = y+i*s
+					fi.draw(zx, zy, zx+s, zy+s, 0, 0, 16, 16)
+					fi.draw(zx+fW+s, zy, zx+fW+s*2, zy+s, 0, 0, 16, 16)
 					if(i==fieldH)
 						for(z in 1..fieldW)
-							fi.draw((tmpX+z*s), tmpY, (tmpX+(z+1)*s), (tmpY+s), 0, 0, 16, 16)
+							fi.draw((zx+z*s), zy, zx+(z+1)*s, zy+s, 0, 0, 16, 16)
 				}
 			}
 			GameEngine.FRAME_SKIN_SG -> {
-				drawRect(x+4, y+4, fieldW*s, fieldH*s, 0)
+				drawRect(x, y, fW, fH, 0)
 
 				val fi = resources.imgFrameOld[1]
-				val mW = maxWidth+s*2
-				fi.draw(x-12, y-12, x-12+mW/2, y-12+(fieldH+2)*s, 0, 0, 96, 352)
-				fi.draw(x-12+mW, y-12, x-12+mW/2, y-12+(fieldH+2)*s, 0, 0, 96, 352)
+				val mW = fW+s*2
+				fi.draw(x-s, y-s, x-s+mW/2, y-s+(fieldH+2)*s, 0, 0, 96, 352)
+				fi.draw(x-s+mW, y-s, x-s+mW/2, y-s+(fieldH+2)*s, 0, 0, 96, 352)
 			}
 			GameEngine.FRAME_SKIN_HEBO -> {
 				val fi = resources.imgFrameOld[2]
@@ -305,72 +306,86 @@ abstract class AbstractRenderer:EventReceiver() {
 
 		if(showMeter) {
 			// 右Meter
-			val mainH = engine.meterValue
-			val subH = engine.meterValueSub
-			val maxH = maxHeight
-			tmpX = x+fieldW*s+8
-			tmpY = y+4
+			val mainH = fH*maxOf(0f, minOf(1f, engine.meterValue))
+			val subH = fH*maxOf(0f, minOf(1f, engine.meterValueSub))
+			val mW = maxOf(2f, s/4f)
+			val zx = rX+s/2-mW/2
+			val zy = tY.toFloat()
+			drawRect(zx, zy, mW, fH.toFloat(), 0)
 
-			drawRect(tmpX, tmpY, 4, maxH, 0)
 
+			if(engine.meterValueSub>engine.meterValue) {
+				drawRect(
+					zx+mW/2, zy+fH-subH, mW/2, subH,
+					getMeterColorHex(engine.meterColorSub, engine.meterValueSub)
+				)
+			}
 			if(engine.meterValue>0) {
 				drawRect(
-					tmpX, tmpY+maxHeight-mainH, 4, maxHeight,
-					getMeterColorHex(engine.meterColor, engine.meterValue, maxH), 1f
+					zx, zy+fH-mainH, mW, mainH,
+					getMeterColorHex(engine.meterColor, engine.meterValue)
+				)
+			}
+			if(engine.meterValueSub>0&&engine.meterValueSub<=engine.meterValue) {
+				val ov = minOf(mainH, subH)
+				drawRect(
+					zx+mW/2f, zy+fH-ov, mW, ov,
+					getMeterColorHex(engine.meterColorSub, engine.meterValueSub), .5f
 				)
 			}
 		}
-		if(true) {
+		if(showSpeed) {
 			//下Meter 残りlockdelayとARE
-			val tmpX = x+8f
-			val tmpY = y+fieldH*s+8f
-			val mW = maxWidth-8f
-			fillRectSpecific(tmpX, tmpY, mW, 4f, 0)
+			val tmpX = lX+s/2f
+			val tmpY = bY+s/2f
+			val mW = fW-8f
+			val mH = maxOf(2f, s/4f)
+			fillRectSpecific(tmpX, tmpY, mW, mH, 0)
 			when(engine.stat) {
 				GameEngine.Status.MOVE -> if(engine.lockDelay>0) {
 					val value = maxOf(0f, mW-engine.lockDelayNow*mW/engine.lockDelay)
 					fillRectSpecific(
-						tmpX+(mW-value)/2f, tmpY, value, 4f,
+						tmpX+(mW-value)/2f, tmpY, value, mH,
 						if(engine.lockDelayNow>0) 0xFFFF00 else 0x00FF00
 					)
 				} else {
-					fillRectSpecific(tmpX, tmpY, mW, 4f, 0xFF0000)
+					fillRectSpecific(tmpX, tmpY, mW, mH, 0xFF0000)
 				}
 				GameEngine.Status.LOCKFLASH -> {
-					fillRectSpecific(tmpX, tmpY, mW, 4f, 0xFFFFFF)
-					if(engine.ruleOpt.lockflash>0) {
-						val value = engine.statc[0]*mW/engine.ruleOpt.lockflash
-						fillRectSpecific(tmpX+(mW-value)/2f, tmpY, value, 4f, 0x808080)
+					fillRectSpecific(tmpX, tmpY, mW, mH, 0xFFFFFF)
+					if(engine.ruleOpt.lockFlash>0) {
+						val value = engine.statc[0]*mW/engine.ruleOpt.lockFlash
+						fillRectSpecific(tmpX+(mW-value)/2f, tmpY, value, mH, 0x808080)
 					}
 				}
 				GameEngine.Status.LINECLEAR -> if(engine.lineDelay>0) {
 					val value = mW-engine.statc[0]*mW/engine.lineDelay
-					fillRectSpecific(tmpX+(mW-value)/2f, tmpY, value, 4f, 0x00FFFF)
+					fillRectSpecific(tmpX+(mW-value)/2f, tmpY, value, mH, 0x00FFFF)
 				}
 				GameEngine.Status.ARE -> if(engine.statc[1]>0) {
 					fillRectSpecific(
-						tmpX, tmpY, mW, 4f,
-						if(engine.ruleOpt.areCancelMove||engine.ruleOpt.areCancelRotate||engine.ruleOpt.areCancelHold) 0xFF8000 else 0xFFFF00
+						tmpX, tmpY, mW, mH,
+						if(engine.ruleOpt.areCancelMove||engine.ruleOpt.areCancelSpin||engine.ruleOpt.areCancelHold) 0xFF8000 else 0xFFFF00
 					)
 					val value = maxOf(0f, mW-engine.statc[0]*mW/engine.statc[1])
-					fillRectSpecific(tmpX+(mW-value)/2f, tmpY, value, 4f, 0)
+					fillRectSpecific(tmpX+(mW-value)/2f, tmpY, value, mH, 0)
 				}
 				else -> {
 				}
 			}
-			val y = fieldH+1
+			val zy = fieldH+1
 			val spd = engine.speed
-			val playerID = engine.playerID
+			engine.playerID
 			val g = spd.gravity
 			val d = spd.denominator
-			drawSpeedMeter(engine, playerID, -13, y, g, d, 5)
-			drawMenuNum(engine, playerID, 0, y, String.format("%3f", if(g<0||d<0) fieldH*1f else g*1f/d))
+			drawMenuSpeed(engine, 1, zy, g, d, 5)
+			drawMenuNum(engine, 0, zy, String.format("%3f", if(g<0||d<0) fieldH*1f else g*1f/d))
 
 			for(i in 0..1) {
 				val show = if(i==0) "ARE" to spd.are else "LINE" to spd.areLine
 
-				drawMenuNum(engine, playerID, 6+i*3, y, String.format(if(i==0) "%2d/" else "%2d", show.second))
-				drawMenuNano(engine, playerID, 10+i*5, y*2+1, show.first, COLOR.WHITE, .5f)
+				drawMenuNum(engine, 6+i*3, zy, String.format(if(i==0) "%2d/" else "%2d", show.second))
+				drawMenuNano(engine, 10+i*5, zy*2+1, show.first, COLOR.WHITE, .5f)
 			}
 			for(i in 0..2) {
 				val show = when(i) {
@@ -378,10 +393,10 @@ abstract class AbstractRenderer:EventReceiver() {
 					1 -> "LOCK" to spd.lockDelay
 					else -> "DAS" to spd.das
 				}
-				drawMenuNum(engine, playerID, 8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", show.second))
-				drawMenuNano(engine, playerID, 13-i*6, y*2+2, show.first, COLOR.WHITE, .5f)
+				drawMenuNum(engine, 8-i*3, zy+1, String.format(if(i==1) "%2d+" else "%2d", show.second))
+				drawMenuNano(engine, 13-i*6, zy*2+2, show.first, COLOR.WHITE, .5f)
 			}
-			drawMenuNano(engine, playerID, 0, y*2+3, "DELAYS", COLOR.WHITE, .5f)
+			drawMenuNano(engine, 0, zy*2+3, "DELAYS", COLOR.WHITE, .5f)
 
 		}
 	}
@@ -399,7 +414,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		val by = engine.nowPieceY
 		var g = engine.fpf
 
-		val isRetro = engine.framecolor in GameEngine.FRAME_SKIN_SG..GameEngine.FRAME_SKIN_GB
+		val isRetro = engine.frameColor in GameEngine.FRAME_SKIN_SG..GameEngine.FRAME_SKIN_GB
 		val ys = if(!smoothfall||by>=engine.nowPieceBottomY||isRetro) 0 else engine.gcount*blksize/engine.speed.denominator%blksize
 		//if(engine.harddropFall>0)g+=engine.harddropFall;
 		if(!showLocus||isRetro) g = 0
@@ -522,60 +537,68 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param engine GameEngineのインスタンス
 	 */
 	private fun drawNext(x:Int, y:Int, engine:GameEngine) {
-		val fldWidth = engine.fieldWidth+1
-		val fldBlkSize = getBlockSize(engine)
+		val fldWidth = engine.field.width+1
+		val fbs = engine.blockSize
+		val cps = fldWidth*fbs
+		val cX = x+cps/2
+		val rX = x+cps
 		if(engine.isNextVisible&&engine.ruleOpt.nextDisplay>=1) {
 			val pid = engine.nextPieceCount
-			drawFont(x+60, y, "NEXT", FONT.NANO, COLOR.ORANGE)
-			drawFont(x, y, "${engine.nextPieceArraySize}", FONT.NANO, COLOR.ORANGE, .5f)
+			drawFont(x, y-fbs, "${engine.nextPieceArraySize}", FONT.NANO, COLOR.ORANGE, .5f)
+			printFontSpecific(x, y-fbs/2, "${engine.statistics.randSeed}", FONT.NANO, COLOR.WHITE, 0.7f, 0.75f)
 			engine.getNextObject(pid)?.let {
 				//int x2 = x + 4 + ((-1 + (engine.field.getWidth() - piece.getWidth() + 1) / 2) * 16);
-				val x2 = x+4+engine.getSpawnPosX(engine.field, it)*fldBlkSize //Rules with spawn x modified were misaligned.
-				val y2 = y+4+nextHeight+engine.getSpawnPosY(engine.field, it)*fldBlkSize
-				drawPiece(x2, y2, it)
-				drawFont(x+60, y+16, "$pid", FONT.NANO, if(pid%7==0) COLOR.YELLOW else COLOR.WHITE, .75f)
+				val x2 = x+engine.getSpawnPosX(engine.field, it)*fbs //Rules with spawn x modified were misaligned.
+				val y2 = y+engine.getSpawnPosY(engine.field, it)*fbs
 				if(engine.ruleOpt.fieldCeiling||!engine.ruleOpt.pieceEnterAboveField)
 					drawPieceOutline(x2, y2, it, 1f, .5f)
+				else drawPiece(x2, y2, it)
+				drawFont(x2, y-10, "$pid", FONT.NANO, if(pid%7==0) COLOR.YELLOW else COLOR.WHITE, .75f)
 			}
 			if(engine.ruleOpt.nextDisplay>1) when(nextDisplayType) {
 				2 -> {
-					val x2 = x+8+fldWidth*fldBlkSize
-					drawFont(x2+16, y+40, "NEXT", FONT.NANO, COLOR.ORANGE)
-					for(i in 0 until minOf(engine.ruleOpt.nextDisplay, 7)) {
+					drawFont(rX, y-fbs/2, "QUEUE", FONT.NANO, COLOR.ORANGE)
+					for(i in 0 until minOf(engine.ruleOpt.nextDisplay, 14)) {
 						engine.getNextObject(pid+i)?.let {
-							val centerX = (64-(it.width+1)*16)/2-it.minimumBlockX*16
-							val centerY = (64-(it.height+1)*16)/2-it.minimumBlockY*16
-							drawPiece(x2+centerX, y+48+i*64+centerY, it, 1f)
-							(pid+i+1).let {n -> if(n%7==0) drawFont(x2, y+48+i*64, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
+							val centerX = ((4-it.width-1)*fbs)/2-it.minimumBlockX*fbs
+							val centerY = ((4-it.height-1)*fbs)/2-it.minimumBlockY*fbs
+							val pY = y+i*3*fbs
+							drawPiece(rX+centerX, pY+centerY, it, 1f)
+							(pid+i+1).let {n -> if(n%7==0) drawFont(rX, pY, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
 						}
 					}
 				}
 				1 -> {
-					val x2 = x+8+fldWidth*fldBlkSize
-					drawFont(x2, y+40, "NEXT", FONT.NANO, COLOR.ORANGE)
+					drawFont(rX, y, "QUEUE", FONT.NANO, COLOR.ORANGE)
 					for(i in 0 until minOf(engine.ruleOpt.nextDisplay, 14)) {
 						engine.getNextObject(pid+i)?.let {
-							val centerX = (32-(it.width+1)*8)/2-it.minimumBlockX*8
-							val centerY = (32-(it.height+1)*8)/2-it.minimumBlockY*8
-							drawPiece(x2+centerX, y+48+i*32+centerY, it, .75f)
-							(pid+i+1).let {n -> if(n%7==0) drawFont(x2, y+48+i*32, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
+							val centerX = ((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2
+							val centerY = ((4-it.height-1)*fbs)/4-it.minimumBlockY*fbs/2
+							val pY = y+i*2*fbs
+							drawPiece(rX+centerX, pY+centerY, it, .5f)
+							(pid+i+1).let {n -> if(n%7==0) drawFont(rX, pY, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
 						}
 					}
 				}
 				else -> {
-					// NEXT1~3
-					for(i in 0 until minOf(2, engine.ruleOpt.nextDisplay-1))
+					drawFont(cX-16, y-nextHeight, "NEXT", FONT.NANO, COLOR.ORANGE)
+					// NEXT2~5
+					for(i in 0 until minOf(3, engine.ruleOpt.nextDisplay-1))
 						engine.getNextObject(pid+i+1)?.let {
-							drawPiece(x+124+i*40, y+48-(it.maximumBlockY+1)*8, it, .5f)
-							(pid+i+1).let {n -> if(n%7==0) drawFont(x+124+i*40, y+48, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
+							val pX = rX+(-2+i)*fbs*2
+							val cY = (i-2)*fbs/2
+							drawPiece(pX+((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2, y+cY-(it.maximumBlockY+1)*fbs/2, it, .5f)
+							(pid+i+1).let {n -> if(n%7==0) drawFont(pX, y+cY-6, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
 						}
+					if(engine.ruleOpt.nextDisplay>=5) {
+						// NEXT6~
+						for(i in 0 until engine.ruleOpt.nextDisplay-3)
+							engine.getNextObject(pid+i+4)?.let {
 
-					if(engine.ruleOpt.nextDisplay>=4) {
-						// NEXT4~
-						for(i in 0 until engine.ruleOpt.nextDisplay-3) engine.getNextObject(pid+i+3)?.let {
-							drawPiece(x+182, y+i*40+88-(it.maximumBlockY+1)*8, it, .5f)
-							(pid+i+3).let {n -> if(n%7==0) drawFont(x+182, y+i*40+88, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
-						}
+								val pY = (1+i)*32
+								drawPiece(rX+((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2, y+pY-(it.maximumBlockY+1)*8, it, .5f)
+								(pid+i+4).let {n -> if(n%7==0) drawFont(rX, y+pY-6, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
+							}
 					}
 				}
 			}
@@ -584,8 +607,8 @@ abstract class AbstractRenderer:EventReceiver() {
 		if(engine.isHoldVisible) {
 			// HOLD
 			val holdRemain = engine.ruleOpt.holdLimit-engine.holdUsedCount
-			val x2 = if(sidenext) x-32 else x+if(nextDisplayType==2) -48 else 0
-			val y2 = if(sidenext) y+40 else y+if(nextDisplayType==0) 16 else 0
+			val x2 = if(sideNext) x-fbs*3 else x+fbs
+			val y2 = if(sideNext) y else y-fbs*3
 
 			if(engine.ruleOpt.holdEnable&&(engine.ruleOpt.holdLimit<0||holdRemain>0)) {
 				var str = "SWAP"
@@ -604,16 +627,16 @@ abstract class AbstractRenderer:EventReceiver() {
 
 					when(nextDisplayType) {
 						2 -> {
-							val centerX = (64-(it.width+1)*16)/2-it.minimumBlockX*16
-							val centerY = (64-(it.height+1)*16)/2-it.minimumBlockY*16
-							drawPiece(x-64+centerX, y+48+centerY, it, 1f, dark, ow = 1f)
+							val centerX = ((4-it.width-1)*fbs)/2-it.minimumBlockX*fbs
+							val centerY = ((4-it.height-1)*fbs)/2-it.minimumBlockY*fbs
+							drawPiece(x-64+centerX, y+centerY, it, 1f, dark, ow = 1f)
 						}
 						1 -> {
-							val centerX = (32-(it.width+1)*8)/2-it.minimumBlockX*8
-							val centerY = (32-(it.height+1)*8)/2-it.minimumBlockY*8
-							drawPiece(x2+centerX, y+48+centerY, it, .5f, dark, ow = 1f)
+							val centerX = ((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2
+							val centerY = ((4-it.height-1)*fbs)/4-it.minimumBlockY*fbs/2
+							drawPiece(x2+centerX, y+centerY, it, .5f, dark, ow = 1f)
 						}
-						else -> drawPiece(x2, y+48-(it.maximumBlockY+1)*8, it, .5f, dark, ow = 1f)
+						else -> drawPiece(x2, y-fbs-(it.maximumBlockY+1)*8, it, .5f, dark, ow = 1f)
 					}
 				}
 			}
@@ -632,7 +655,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		val py = (engine.nowPieceBottomY*blksize+y).toInt()
 		engine.nowPieceObject?.let {
 			drawPiece(px, py, it, scale, .3f, .7f)
-			if(outlineghost) drawPieceOutline(px, py, it, blksize, 1f, true)
+			if(outlineGhost) drawPieceOutline(px, py, it, blksize, 1f, true)
 		}
 	}
 
@@ -653,8 +676,8 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param engine GameEngine
 	 * @param scale Display size of piece
 	 */
-	protected fun drawShadowNexts(x:Int, y:Int, engine:GameEngine, scale:Float) {
-		val blksize = 16*scale
+	protected fun drawShadowNexts(x:Int, y:Int, engine:GameEngine) {
+		val blksize = engine.blockSize.toFloat()
 		engine.getNextObject(engine.nextPieceCount)?.let {next ->
 			val sx = engine.getSpawnPosX(next)
 			val sy = next.getBottom(sx, engine.getSpawnPosY(next), engine.field)
@@ -668,7 +691,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		engine.nowPieceObject?.let {piece ->
 			val shadowX = engine.nowPieceX
 			val shadowY = engine.nowPieceBottomY+piece.minimumBlockY
-			val size = if(piece.big||engine.displaysize==1) 2 else 1
+			val size = if(piece.big||engine.displaySize==1) 2 else 1
 			val shadowCenter = blksize*(piece.minimumBlockX*2+(piece.width+size))/2
 
 			for(i in 0 until engine.ruleOpt.nextDisplay-1) {
@@ -679,112 +702,96 @@ abstract class AbstractRenderer:EventReceiver() {
 					val nextCenter = blksize*(next.minimumBlockX*2+(next.width+1))/4
 
 					if(vPos>=-blksize/2)
-						drawPiece(x+(blksize*shadowX+shadowCenter-nextCenter).toInt(), y+vPos, next, .5f*scale, .25f, .75f)
+						drawPiece(x+(blksize*shadowX+shadowCenter-nextCenter).toInt(), y+vPos, next, blksize/2f/BS, .25f, .75f)
 				}
 			}
 			engine.holdPieceObject?.let {hold ->
 				val nextCenter = blksize*(hold.minimumBlockX*2+(hold.width+1))/4
 
-				drawPiece(x+(blksize*shadowX-nextCenter).toInt(), y+(blksize*shadowY).toInt(), hold, .5f*scale, .25f, .25f)
+				drawPiece(x+(blksize*shadowX-nextCenter).toInt(), y+(blksize*shadowY).toInt(), hold, blksize/2f/BS, .25f, .25f)
 			}
 		}
 	}
 
 	/* Ready画面の描画処理 */
-	override fun renderReady(engine:GameEngine, playerID:Int) {
+	override fun renderReady(engine:GameEngine) {
 		if(!engine.allowTextRenderByReceiver) return
 		//if(engine.isVisible == false) return;
 
 		if(engine.statc[0]>0) {
-			val offsetX = fieldX(engine, playerID)
-			val offsetY = fieldY(engine, playerID)
+			val cy = (engine.fieldHeight-2)/2
+			if(engine.statc[0] in engine.readyStart until engine.readyEnd)
+				drawMenuFont(engine, 0, cy, "READY", COLOR.WHITE, 2f)
+			else if(engine.statc[0] in engine.goStart until engine.goEnd)
+				drawMenuFont(engine, 2, cy, "GO!", COLOR.WHITE, 2f)
 
-			if(engine.statc[0]>0)
-				if(engine.displaysize!=-1) {
-					if(engine.statc[0]>=engine.readyStart&&engine.statc[0]<engine.readyEnd)
-						drawDirectFont(offsetX+4, offsetY+196, "READY", COLOR.WHITE, 2f)
-					else if(engine.statc[0]>=engine.goStart&&engine.statc[0]<engine.goEnd)
-						drawDirectFont(offsetX+36, offsetY+196, "GO!", COLOR.WHITE, 2f)
-				} else if(engine.statc[0]>=engine.readyStart&&engine.statc[0]<engine.readyEnd)
-					drawDirectFont(offsetX+20, offsetY+80, "READY", COLOR.WHITE)
-				else if(engine.statc[0]>=engine.goStart&&engine.statc[0]<engine.goEnd)
-					drawDirectFont(offsetX+32, offsetY+30, "GO!", COLOR.WHITE)
-
-			drawDirectNano(offsetX+4, offsetY+230, "TODAY SEEDS:", COLOR.WHITE)
-			drawDirectNano(offsetX+4, offsetY+245, "${engine.statistics.randSeed}", COLOR.WHITE, 0.75f)
+			drawMenuNano(engine, 0f, cy+2.25f, "TODAY SEEDS:", COLOR.WHITE)
+			drawMenuNano(engine, 0f, cy+3f, "${engine.statistics.randSeed}", COLOR.WHITE, 0.75f)
 		}
 	}
 
 	/* Blockピース移動時の処理 */
-	override fun renderMove(engine:GameEngine, playerID:Int) {
+	override fun renderMove(engine:GameEngine) {
 		if(!engine.isVisible) return
 
-		val offsetX = fieldX(engine, playerID)
-		val offsetY = fieldY(engine, playerID)
+		val offsetX = engine.fX
+		val offsetY = engine.fY
 
-		if(engine.statc[0]>1||engine.ruleOpt.moveFirstFrame)
-			when(engine.displaysize) {
-				1 -> {
-					if(engine.ghost&&engine.ruleOpt.ghost) drawGhostPiece(offsetX+4f, offsetY+52f, engine, 2f)
-					if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+52, engine, 2f)
-					drawCurrentPiece(offsetX+4, offsetY+52, engine, 2f)
-				}
-				0 -> {
-					if(engine.ghost&&engine.ruleOpt.ghost) drawGhostPiece(offsetX+4f, offsetY+52f, engine, 1f)
-					if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+52, engine, 1f)
-					drawCurrentPiece(offsetX+4, offsetY+52, engine, 1f)
-				}
-				else -> {
-					if(engine.ghost&&engine.ruleOpt.ghost) drawGhostPiece(offsetX+4f, offsetY+4f, engine, .5f)
-					if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX+4, offsetY+4, engine, .5f)
-					drawCurrentPiece(offsetX+4, offsetY+4, engine, .5f)
+		if(engine.statc[0]>1||engine.ruleOpt.moveFirstFrame) {
+			val scale = when(engine.displaySize) {
+				-1 -> .5f
+				0 -> 1f
+				1 -> 2f
+				else -> 1f
+			}
+			if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX, offsetY, engine, scale)
+			if(engine.ghost&&engine.ruleOpt.ghost) drawGhostPiece(offsetX*1f, offsetY*1f, engine, scale)
+			drawCurrentPiece(offsetX, offsetY, engine, scale)
+		}
+	}
+
+	override fun renderLockFlash(engine:GameEngine) {
+		/*if(engine.fpf>0)*/ renderMove(engine)
+	}
+
+	override fun renderLineClear(engine:GameEngine) {
+		if(engine.fpf>0) renderMove(engine)
+	}
+
+	override fun renderARE(engine:GameEngine) {
+		if(engine.fpf>0) renderMove(engine)
+	}
+
+	override fun lineClear(engine:GameEngine, y:Collection<Int>) {
+		val s = engine.blockSize
+		y.forEach {
+			effects.add(Beam(engine.fX, engine.fY+it*s, s*engine.fieldWidth, s))
+		}
+	}
+
+	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {
+		if(showlineeffect&&engine.displaySize!=-1) {
+			blk.forEach {(y, row) ->
+				row.forEach {(x, blk) ->
+					val color = blk.drawColor
+					val sx = engine.fX+x*engine.blockSize
+					val sy = engine.fY+y*engine.blockSize
+					// 通常Block
+					val r = resources
+					if(blk.isGemBlock)
+						effects.add(FragAnim(ANIM.GEM, sx, sy, (color-Block.COLOR_GEM_RED)%r.pEraseMax, lineeffectspeed))
+					// 宝石Block
+					else if(!blk.getAttribute(Block.ATTRIBUTE.BONE))
+						effects.add(
+							FragAnim(
+								if(blk.getAttribute(Block.ATTRIBUTE.LAST_COMMIT)) ANIM.SPARK else ANIM.BLOCK,
+								sx, sy, maxOf(0, color-Block.COLOR_WHITE)%r.blockBreakMax, lineeffectspeed
+							)
+						)
+					//blockParticles.addBlock(engine, receiver, playerID, blk, j, i, 10, 90, li>=4, localRandom)
+					//blockParticles.addBlock(engine, receiver, playerID, blk, j, i, engine.field.width, cY, li, 120)
 				}
 			}
-	}
-
-	override fun renderLockFlash(engine:GameEngine, playerID:Int) {
-		/*if(engine.fpf>0)*/ renderMove(engine, playerID)
-	}
-
-	override fun renderLineClear(engine:GameEngine, playerID:Int) {
-		if(engine.fpf>0) renderMove(engine, playerID)
-	}
-
-	override fun renderARE(engine:GameEngine, playerID:Int) {
-		if(engine.fpf>0) renderMove(engine, playerID)
-	}
-
-	override fun lineClear(engine:GameEngine, playerID:Int, y:Int) {
-		val s = getBlockSize(engine)
-		effects.add(
-			BeamH(
-				fieldX(engine, playerID)+4, fieldY(engine, playerID)+52+y*s,
-				getBlockSize(engine)*engine.fieldWidth, s
-			)
-		)
-	}
-
-	/* Blockを消す演出を出すときの処理 */
-	override fun blockBreak(engine:GameEngine, x:Int, y:Int, blk:Block) {
-		resources
-		if(showlineeffect&&engine.displaysize!=-1) {
-			val color = blk.drawColor
-			val sx = fieldX(engine)+4+x*getBlockSize(engine)
-			val sy = fieldY(engine)+52+y*getBlockSize(engine)
-			// 通常Block
-			if(blk.isGemBlock)
-				effects.add(
-					FragAnim(ANIM.GEM, sx, sy, (color-Block.COLOR_GEM_RED)%resources.pEraseMax, lineeffectspeed)
-				)// 宝石Block
-			else if(!blk.getAttribute(Block.ATTRIBUTE.BONE))
-				effects.add(
-					FragAnim(
-						if(blk.getAttribute(Block.ATTRIBUTE.LAST_COMMIT)) ANIM.SPARK else ANIM.BLOCK,
-						sx, sy, maxOf(0, color-Block.COLOR_WHITE)%resources.blockBreakMax, lineeffectspeed
-					)
-				)
-			//blockParticles.addBlock(engine, receiver, playerID, blk, j, i, 10, 90, li>=4, localRandom)
-			//blockParticles.addBlock(engine, receiver, playerID, blk, j, i, engine.field.width, cY, li, 120)
 		}
 	}
 
@@ -792,10 +799,10 @@ abstract class AbstractRenderer:EventReceiver() {
 	override fun calcScore(engine:GameEngine, event:ScoreEvent?) {
 		event ?: return
 		val w = engine.fieldWidth*getBlockSize(engine)/2
-		val sx = fieldX(engine)+4+w
+		val sx = engine.fX+w
 
 		val dir = maxOf(-w*2, minOf(w*2, (320-sx)*w/128))
-		val sy = fieldY(engine)+52+getBlockSize(engine)/2*
+		val sy = engine.fY+getBlockSize(engine)/2*
 			when {
 				event.lines==0 -> engine.nowPieceBottomY*2
 				event.split -> engine.field.lastLinesTop*2
@@ -805,7 +812,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	override fun addScore(x:Int, y:Int, pts:Int, color:COLOR) {
-		effects.add(PopupPoint(x, y, pts, color.ordinal))
+		if(pts!=0) effects.add(PopupPoint(x, y, pts, color.ordinal))
 	}
 
 	override fun addCombo(x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN, ex:Int) {
@@ -813,213 +820,134 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	override fun shootFireworks(engine:GameEngine, x:Int, y:Int, color:COLOR) {
-		effects.add(FragAnim(ANIM.HANABI, x, y, color.ordinal))
+		if(heavyeffect) {
+			val col = ParticleEmitterBase.colorBy(color)
+			effects.add(Fireworks(x, y, col[0], col[1], col[2], 255, col[3]))
+		} else effects.add(FragAnim(ANIM.HANABI, x, y, color.ordinal))
 		super.shootFireworks(engine, x, y, color)
 	}
 
 	override fun bravo(engine:GameEngine) {
-		effects.add(PopupBravo(fieldX(engine), fieldY(engine)))
+		effects.add(PopupBravo(engine.fX, engine.fY))
 		super.bravo(engine)
 	}
 
 	/* EXCELLENT画面の描画処理 */
-	override fun renderExcellent(engine:GameEngine, playerID:Int) {
+	override fun renderExcellent(engine:GameEngine) {
 		if(!engine.allowTextRenderByReceiver) return
 		if(!engine.isVisible) return
 
-		val offsetX = fieldX(engine, playerID)
-		val offsetY = fieldY(engine, playerID)
+		val cY = (engine.fieldHeight-1)
+		if(engine.owner.players<=1)
+			drawMenuFont(engine, 0f, cY/3f, "EXCELLENT!", COLOR.RAINBOW, 1f)
+		else drawMenuFont(engine, 0f, cY/2f, "You WIN!", COLOR.ORANGE, 1f)
 
-		if(engine.displaysize!=-1) {
-			if(engine.owner.players<=1)
-				drawDirectFont(offsetX+4, offsetY+204, "EXCELLENT!", COLOR.RAINBOW, 1f)
-			else drawDirectFont(offsetX+36, offsetY+204, "You WIN!", COLOR.ORANGE, 1f)
-		} else if(engine.owner.players<=1)
-			drawDirectFont(offsetX+4, offsetY+80, "EXCELLENT!", COLOR.RAINBOW, .5f)
-		else drawDirectFont(offsetX+20, offsetY+80, "You WIN!", COLOR.ORANGE, .5f)
 	}
 
 	/* game over画面の描画処理 */
-	override fun renderGameOver(engine:GameEngine, playerID:Int) {
+	override fun renderGameOver(engine:GameEngine) {
 		if(!engine.allowTextRenderByReceiver||!engine.isVisible) return
-		val offsetX = fieldX(engine, playerID)
-		val offsetY = fieldY(engine, playerID)
+		val offsetX = engine.fX
+		val offsetY = engine.fY
 		if(engine.lives>0&&engine.gameActive) {
-			drawDirectFont(offsetX+4, offsetY+204, "LEFT", COLOR.WHITE, 1f)
-			drawDirectFont(offsetX+132, offsetY+196, ((engine.lives-1)%10).toString(), COLOR.WHITE, 2f)
+			drawDirectFont(offsetX+4, offsetY+156, "LEFT", COLOR.WHITE, 1f)
+			drawDirectFont(offsetX+128, offsetY+148, ((engine.lives-1)%10).toString(), COLOR.WHITE, 2f)
 		} else if(engine.statc[0]>=engine.statc[1])
 			when {
-				engine.displaysize!=-1 ->
-					when {
-						engine.owner.players<2 -> if(engine.ending==0)
-							drawDirectFont(offsetX+12, offsetY+204, "GAME OVER", COLOR.RED, 1f)
-						else drawDirectFont(offsetX+28, offsetY+204, "THE END", COLOR.WHITE, 1f)
-						engine.owner.winner==-2 -> drawDirectFont(offsetX+52, offsetY+204, "DRAW", COLOR.PURPLE, 1f)
-						engine.owner.players<3 -> drawDirectFont(offsetX+20, offsetY+80, "You Lost", COLOR.RED, 1f)
-					}
 				engine.owner.players<2 -> if(engine.ending==0)
-					drawDirectFont(offsetX+4, offsetY+204, "GAME OVER", COLOR.RED, 1f)
-				else drawDirectFont(offsetX+20, offsetY+204, "THE END", COLOR.WHITE, 1f)
-				engine.owner.winner==-2 -> drawDirectFont(offsetX+28, offsetY+80, "DRAW", COLOR.PURPLE, .5f)
-				engine.owner.players<3 -> drawDirectFont(offsetX+12, offsetY+80, "You Lost", COLOR.RED, .5f)
+					drawDirectFont(offsetX+12, offsetY+156, "GAME OVER", COLOR.RED, 1f)
+				else drawDirectFont(offsetX+28, offsetY+156, "THE END", COLOR.WHITE, 1f)
+				engine.owner.winner==-2 -> drawDirectFont(offsetX+48, offsetY+156, "DRAW", COLOR.PURPLE, 1f)
+				engine.owner.players<3 -> drawDirectFont(offsetX+16, offsetY+156, "You Lost", COLOR.RED, 1f)
 			}
 	}
 
 	/* Render results screen処理 */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
+	override fun renderResult(engine:GameEngine) {
 		if(!engine.allowTextRenderByReceiver) return
 		if(!engine.isVisible) return
 
 		var tempColor:COLOR = if(engine.statc[0]==0) COLOR.RED else COLOR.WHITE
 
 		drawDirectFont(
-			fieldX(engine, playerID)+12,
-			fieldY(engine, playerID)+340, "RETRY", tempColor, 1f
+			engine.fX+12,
+			engine.fY+340, "RETRY", tempColor, 1f
 		)
 
 		tempColor = if(engine.statc[0]==1) COLOR.RED else COLOR.WHITE
 		drawDirectFont(
-			fieldX(engine, playerID)+108,
-			fieldY(engine, playerID)+340, "END", tempColor, 1f
+			engine.fX+108,
+			engine.fY+340, "END", tempColor, 1f
 		)
 	}
 
 	/* fieldエディット画面の描画処理 */
-	override fun renderFieldEdit(engine:GameEngine, playerID:Int) {
-		val x = fieldX(engine, playerID)+4f+engine.fldeditX*getBlockSize(engine)
-		val y = fieldY(engine, playerID)+52f+engine.fldeditY*getBlockSize(engine)
-		val bright = if(engine.fldeditFrames%60>=30) -.5f else -.2f
-		drawBlock(x, y, engine.fldeditColor, engine.skin, false, bright, 1f, 1f)
+	override fun renderFieldEdit(engine:GameEngine) {
+		val x = engine.fX+4f+engine.mapEditX*getBlockSize(engine)
+		val y = engine.fY+52f+engine.mapEditY*getBlockSize(engine)
+		val bright = if(engine.mapEditFrames%60>=30) -.5f else -.2f
+		drawBlock(x, y, engine.mapEditColor, engine.skin, false, bright, 1f, 1f)
 	}
 	/* 各 frame 最初の描画処理 */
-	override fun renderFirst(engine:GameEngine, playerID:Int) {
+	override fun renderFirst(engine:GameEngine) {
 		if(engine.playerID==0) drawBG(engine)
 
 		// NEXTなど
 		if(!engine.owner.menuOnly&&engine.isVisible) {
-			val offsetX = fieldX(engine, playerID)
-			val offsetY = fieldY(engine, playerID)
+			val offsetX = engine.fX
+			val offsetY = engine.fY
 
-			if(engine.displaysize!=-1) {
-				drawFrame(offsetX, offsetY+48, engine, engine.displaysize)
-				drawNext(offsetX-fieldXOffset(engine), offsetY, engine)
-				drawField(offsetX+4, offsetY+4+nextHeight, engine, engine.displaysize)
-			} else {
-				drawFrame(offsetX, offsetY, engine, -1)
-				drawField(offsetX+4, offsetY+4, engine, -1)
-			}
-			printFontSpecific(offsetX, offsetY-15, "${engine.statistics.randSeed}", FONT.NANO, COLOR.WHITE, 0.7f, 0.75f)
+			drawFrame(offsetX, offsetY, engine)
+			if(engine.displaySize!=-1) drawNext(offsetX+engine.fieldXOffset, offsetY, engine)
+			drawField(offsetX, offsetY, engine, engine.displaySize)
 			engine.statc.forEachIndexed {i, it ->
-				printFontSpecific(offsetX-41, offsetY+i*10, String.format("%3d", it), FONT.NANO, COLOR.WHITE, 0.7f, 0.75f)
+				printFontSpecific(offsetX-32, offsetY+i*10, String.format("%3d", it), FONT.NANO, COLOR.WHITE, 0.7f, 0.75f)
 			}
 
-			if(nextshadow) drawShadowNexts(
-				offsetX+4, offsetY+52, engine, when(engine.displaysize) {
-					1 -> 2f
-					0 -> 1f
-					else -> .5f
-				}
-			)
+			if(nextshadow&&engine.ghost&&engine.ruleOpt.ghost&&engine.gameActive)
+				drawShadowNexts(offsetX, offsetY, engine)
 
 		}
 	}
 	/* 各 frame の最後に行われる処理 */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		if(playerID==engine.owner.players-1) effectUpdate()
+	override fun onLast(engine:GameEngine) {
+		if(engine.playerID==engine.owner.players-1) effectUpdate()
 	}
 
 	/** Update effects */
 	private fun effectUpdate() {
-		effects.forEach {
-			it.update()
-		}
-		effects.removeIf {it.isExpired}
+		effects.removeAll {it.update(this)}
 	}
 	/* 各 frame の最後に行われる描画処理 */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		if(playerID==engine.owner.players-1) effectRender()
+	override fun renderLast(engine:GameEngine) {
+		if(engine.playerID==engine.owner.players-1) effectRender()
 	}
 
-	fun drawAward(x:Int, y:Int, ev:ScoreEvent, anim:Int, alpha:Float = 1f) {
-		val strPieceName = ev.piece?.id?.let {Piece.Shape.names[it]} ?: ""
-
-		when {
-			ev.lines==1 -> drawDirectFont(x-48, y, "SINGLE", color = if(ev.twist==null) COLOR.COBALT else COLOR.BLUE, alpha = alpha)
-			ev.lines==2 -> {
-				if(!ev.split)
-					drawDirectFont(x-48, y, "DOUBLE", color = if(ev.twist==null) COLOR.BLUE else COLOR.CYAN, alpha = alpha)
-				else drawDirectFont(x-80, y, "SPLIT TWIN", color = COLOR.PURPLE, alpha = alpha)
-			}
-			ev.lines==3 -> {
-				if(!ev.split)
-					drawDirectFont(x-48, y, "TRIPLE", color = COLOR.GREEN, alpha = alpha)
-				else drawDirectFont(x-80, y, "1.2.TRIPLE", color = COLOR.CYAN, alpha = alpha)
-			}
-			ev.lines>=4 -> drawDirectFont(x-72, y, "QUADRUPLE", color = getRainbowColor(anim), alpha = alpha)
-		}
-		if(ev.twist!=null) when {
-			ev.twist.isMini -> {
-				drawDirectFont(x-80, y-16, "MINI", color = if(ev.b2b) COLOR.CYAN else COLOR.BLUE, alpha = alpha)
-				ev.piece?.let {drawPiece(x-32, y, it, 0.5f, alpha = alpha)}
-				drawDirectFont(x-16, y, "$strPieceName-TWIST", color = if(ev.b2b) COLOR.PINK else COLOR.PURPLE, alpha = alpha)
-			}
-			ev.twist==ScoreEvent.Twister.IMMOBILE_EZ -> {
-				ev.piece?.let {drawPiece(x-16, y, it, 0.5f, alpha = alpha)}
-				drawDirectFont(x-54, y-8, "EZ", color = COLOR.ORANGE, alpha = alpha)
-				drawDirectFont(x+54, y-8, "TRICK", color = COLOR.ORANGE, alpha = alpha)
-			}
-			else -> {
-				ev.piece?.let {drawPiece(x-64, y, it, 0.5f, alpha = alpha)}
-				drawDirectFont(
-					x-32, y-8, "-TWISTER",
-					color = if(ev.lines==3) getRainbowColor(anim) else if(ev.b2b) COLOR.PINK else COLOR.PURPLE, alpha = alpha
-				)
-			}
-		}
+	protected open fun effectRender() {
+		effects.forEachIndexed {i, it -> it.draw(i, this)}
 	}
 
-	@JvmOverloads fun drawCombo(x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN, alpha:Float = 1f) {
-		when(type) {
-			PopupCombo.CHAIN.B2B -> {
-				drawFont(x-18, y-15, "SKILL", FONT.NANO, COLOR.RED, .75f, alpha)
-				drawDirectNum(x-18, y, String.format("%2d", pts), COLOR.YELLOW, 1.5f, alpha)
-				drawFont(x-18, y+20, "CHAIN!", FONT.NANO, COLOR.ORANGE, .75f, alpha)
-			}
-			PopupCombo.CHAIN.COMBO -> {
-				drawDirectNum(x-18, y-0, String.format("%2d", pts), COLOR.CYAN, 1.5f, alpha)
-				drawFont(x+18, y+8, "REN", FONT.NANO, COLOR.BLUE, .5f, alpha)
-				drawFont(x-18, y+20, "COMBO!", FONT.NANO, COLOR.BLUE, .75f, alpha)
-			}
-		}
-	}
-
-	protected fun effectRender() {
-		effects.forEachIndexed {i, it ->
-			drawEffectSpecific(i, it)
-		}
+	open fun drawBlendAdd(unit:()->Unit) {
+		unit()
 	}
 
 	protected abstract fun printFontSpecific(x:Int, y:Int, str:String, font:FONT, color:COLOR, scale:Float, alpha:Float)
 
-	protected abstract fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, alpha:Float)
+	protected abstract fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, size:Int, alpha:Float)
+	protected fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float) =
+		printTTFSpecific(x, y, str, color, (scale*BaseFontTTF.FONT_SIZE).toInt(), alpha)
 
 	protected abstract fun doesGraphicsExist():Boolean
 
-	protected abstract fun drawBlockSpecific(
-		x:Float, y:Float, sx:Int, sy:Int, sk:Int,
-		size:Float, darkness:Float, alpha:Float
-	)
+	protected abstract fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int, size:Float, darkness:Float, alpha:Float)
 
-	protected abstract fun drawLineSpecific(
-		x:Float, y:Float, sx:Float, sy:Float, color:Int = 0xFFFFFF, alpha:Float = 1f,
-		w:Float = 1f
-	)
+	protected abstract fun drawLineSpecific(x:Float, y:Float, sx:Float, sy:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, w:Float = 1f)
 
 	protected fun drawLineSpecific(x:Int, y:Int, sx:Int, sy:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, w:Int = 1) =
 		drawLineSpecific(x.toFloat(), y.toFloat(), sx.toFloat(), sy.toFloat(), color, alpha, w.toFloat())
 
 	/** draw and Fill Rectangle */
-	private fun drawRect(
+	fun drawRect(
 		x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f,
 		outlineW:Float = 0f, outlineColor:Int = 0x000000
 	) {
@@ -1029,7 +957,7 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	}
 
-	private fun drawRect(
+	fun drawRect(
 		x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, outlineW:Int = 0,
 		outlineColor:Int = 0x000000
 	) =
@@ -1037,8 +965,7 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	/** Draw Rectangle Outline*/
 	protected abstract fun drawRectSpecific(
-		x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f,
-		bold:Float = 1f
+		x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Float = 1f
 	)
 
 	private fun drawRectSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
@@ -1048,6 +975,37 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	private fun fillRectSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f) =
 		fillRectSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha)
+
+	/** draw and Fill Oval */
+	fun drawOval(
+		x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f,
+		outlineW:Float = 0f, outlineColor:Int = 0x000000
+	) {
+		fillOvalSpecific(x-outlineW/2f, y-outlineW/2f, w+outlineW/2f, h+outlineW/2f, color, alpha)
+		if(outlineW>0)
+			drawOvalSpecific(x-outlineW/2f, y-outlineW/2f, w+outlineW/2f, h+outlineW/2f, outlineColor, alpha, outlineW)
+
+	}
+
+	fun drawOval(
+		x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, outlineW:Int = 0,
+		outlineColor:Int = 0x000000
+	) =
+		drawOval(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha, outlineW.toFloat(), outlineColor)
+
+	/** Draw Oval Outline*/
+	protected abstract fun drawOvalSpecific(
+		x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f,
+		bold:Float = 1f
+	)
+
+	private fun drawOvalSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
+		drawOvalSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha, bold.toFloat())
+	/** Fiil Oval Solid*/
+	protected abstract fun fillOvalSpecific(x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f)
+
+	private fun fillOvalSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f) =
+		fillOvalSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha)
 
 	/**
 	 * draw outline Piece
@@ -1106,49 +1064,6 @@ abstract class AbstractRenderer:EventReceiver() {
 		outlineType:Int
 	)
 
-	protected open fun drawEffectSpecific(i:Int, it:EffectObject) {
-
-		when(it) {
-			/*is FragAnim -> {
-				val flip = (i%2==0)!=(i%10==0)
-				when(it.type) {
-					ANIM.GEM
-						// Gems frag
-					-> ResourceHolder.imgPErase[it.color]
-					// TI Block frag
-					ANIM.SPARK
-					-> ResourceHolder.imgBreak[it.color][0]
-					// TAP Block frag
-					ANIM.BLOCK
-					-> ResourceHolder.imgBreak[it.color][1]
-					//Fireworks
-					ANIM.HANABI
-					-> ResourceHolder.imgHanabi[it.color]
-				}.draw(if(flip) it.dx else it.dx2, it.dy, if(flip) it.dx else x, y+sq,
-					srcx, srcy, srcx+sq, srcy+sq)
-			}
-			is BeamH //Line Cleaned
-			-> {
-				srcy = (it.anim/2-1)*8
-				if(it.anim%2==1) graphics.setDrawMode(Graphics.MODE_ADD)
-				ResourceHolder.imgLine[0].draw(x, y, x+it.w, y+it.h, 0, srcy, 80, srcy+8)
-				graphics.setDrawMode(Graphics.MODE_NORMAL)
-			}*/
-			is PopupAward -> drawAward(it.x.toInt(), it.y.toInt(), it.event, it.anim, it.alpha)
-			is PopupCombo -> drawCombo(it.x.toInt(), it.y.toInt(), it.pts, it.type, it.alpha)
-			is PopupPoint -> if(it.pts>0) drawDirectNum(
-				it.dx.toInt(), it.dy.toInt(), "+${it.pts}", COLOR.values()[it.color],
-				alpha = it.alpha
-			)
-			else if(it.pts<0) drawDirectNum(it.dx.toInt(), it.dy.toInt(), "${it.pts}", COLOR.RED)
-			is PopupBravo //Field Cleaned
-			-> {
-				drawDirectFont(it.x.toInt()+20, it.y.toInt()+204, "BRAVO!", getRainbowColor((it.anim+4)%9), 1.5f)
-				drawDirectFont(it.x.toInt()+52, it.y.toInt()+236, "PERFECT", getRainbowColor(it.anim%9), 1f)
-			}
-		}
-	}
-
 	override fun drawSpeedMeter(x:Float, y:Float, sp:Float, len:Float) {
 		val s = if(sp<0) 1f else sp
 		val w = maxOf(1f, len-1)*BS
@@ -1194,26 +1109,25 @@ abstract class AbstractRenderer:EventReceiver() {
 		 * @return color Hex
 		 */
 		fun getColorByID(color:Block.COLOR?):Int = getColorByID(getBlockColor(color))
-		fun getMeterColorHex(meterColor:Int, value:Int, max:Int):Int {
+		fun getMeterColorHex(meterColor:Int, value:Float):Int {
 			var r = meterColor/65536
 			var g = meterColor/256%256
 			var b = meterColor%256
 			when(meterColor) {
 				GameEngine.METER_COLOR_LEVEL -> {
-					r = (maxOf(0f, 255*minOf((value*3f-max)/max, 1f))).toInt()
-					g = (maxOf(0f, 255*minOf((max-value)*3f/max, 1f))).toInt()
-					b = (maxOf(0f, 255*minOf((max-value*3f)/max, 1f))).toInt()
+					r = (0xFF*maxOf(0f, minOf(value*3-1, 1f))).toInt()
+					g = (0xFF*maxOf(0f, minOf(3-value*3f, 1f))).toInt()
+					b = (0xFF*maxOf(0f, minOf((1-value*3), 1f))).toInt()
 				}
 				GameEngine.METER_COLOR_LIMIT -> {//red<yellow<green<cyan
-					r = (maxOf(0f, 255*minOf((max*2f-value*3f)/max, 1f))).toInt()
-					g = (maxOf(0f, 255*minOf(value*3f/max, 1f))).toInt()
-					b = (maxOf(0f, 255*minOf((value*3f-max*2f)/max, 1f))).toInt()
+					r = (0xFF*maxOf(0f, minOf((2-value*3), 1f))).toInt()
+					g = (0xFF*maxOf(0f, minOf(value*3, 1f))).toInt()
+					b = (0xFF*maxOf(0f, minOf((value*3f-2f), 1f))).toInt()
 				}
 				else -> return meterColor
 			}
-			return r*65536+g*256+b
+			return r*0x10000+g*0x100+b
 		}
 
-		const val nextHeight = 48
 	}
 }

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -125,7 +125,7 @@ class BGMStatus:Serializable {
 		)
 
 		class Finale(idx:Int = 0):BGM(idx, true, "Grand Finale", "Genuine", "Joker", "Further")
-		class Blitz(idx:Int = 0):BGM(idx, true, "Blitz", "3-min", "5-min")
+		class Blitz(idx:Int = 0):BGM(idx, true, "Blitz", "3-min", "5-min", "3-min EXTREME", "5-min EXTREME")
 
 		//operator fun get(index: Int): BGM = if(this.idx)
 		companion object {
@@ -133,7 +133,7 @@ class BGMStatus:Serializable {
 				get() = BGM::class.sealedSubclasses.map {bg ->
 					bg.objectInstance?.let {listOf(it)}
 						?: List(bg.createInstance().nums) {i -> bg.primaryConstructor?.call(i)}.filterNotNull()
-				}
+				}.filter {it.isNotEmpty()}.sortedBy {it.first().id}
 			val values:List<BGM> get() = all.flatten()
 			val listStr:List<String> get() = values.map {it.fullName}
 			val count:Int get() = values.count {!it.hidden}
@@ -155,7 +155,7 @@ class BGMStatus:Serializable {
 	 * @param b Copy source
 	 */
 	constructor(b:BGMStatus) {
-		copy(b)
+		replace(b)
 	}
 
 	/** Reset to defaults */
@@ -165,10 +165,8 @@ class BGMStatus:Serializable {
 		fadesw = false
 	}
 
-	/** 他のBGMStatusからコピー
-	 * @param b Copy source
-	 */
-	fun copy(b:BGMStatus) {
+	/** 設定を[b]からコピー */
+	fun replace(b:BGMStatus) {
 		bgm = b.bgm
 		volume = b.volume
 		fadesw = b.fadesw

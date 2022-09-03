@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -89,8 +89,8 @@ class RetroMania:AbstractMode() {
 
 	/** This function will be called when
 	 * the game enters the main game screen. */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 		lastscore = 0
 		levelTimer = 0
 		linesAfterLastLevelUp = 0
@@ -106,10 +106,10 @@ class RetroMania:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
-		engine.splitb2b = false
+		engine.splitB2B = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
-		engine.bighalf = false
-		engine.bigmove = false
+		engine.bigHalf = false
+		engine.bigMove = false
 
 		engine.speed.are = 30
 		engine.speed.areLine = 30
@@ -125,7 +125,7 @@ class RetroMania:AbstractMode() {
 		if(!owner.replayMode) version = CURRENT_VERSION
 		engine.owner.backgroundStatus.bg = startLevel/2
 		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
-		engine.framecolor = GameEngine.FRAME_SKIN_SG
+		engine.frameColor = GameEngine.FRAME_SKIN_SG
 	}
 
 	/** Set the gravity speed
@@ -139,7 +139,7 @@ class RetroMania:AbstractMode() {
 	}
 
 	/** Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		if(!engine.owner.replayMode) {
 			// Configuration changes
 			val change = updateCursor(engine, 3)
@@ -165,15 +165,14 @@ class RetroMania:AbstractMode() {
 			}
 
 			// Check for A button, when pressed this will begin the game
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				return false
 			}
 
-			// Check for B button, when pressed this will shutdown the game engine.
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			// Check for B button, when pressed this will shut down the game engine.
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
-			menuTime++
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -185,26 +184,26 @@ class RetroMania:AbstractMode() {
 	}
 
 	/** Renders game setup screen */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		drawMenu(
-			engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startLevel,
-			"BIG" to big, "POWERON" to poweron
+			engine, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startLevel, "BIG" to big,
+			"POWERON" to poweron
 		)
 	}
 
 	/** Ready */
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 
 			engine.ruleOpt.run {
-				lockresetMove = false
-				lockresetRotate = false
-				lockresetWallkick = false
-				lockresetFall = true
+				lockResetMove = false
+				lockResetSpin = false
+				lockResetWallkick = false
+				lockResetFall = true
 				softdropLock = true
 				softdropMultiplyNativeSpeed = false
 				softdropGravitySpeedLimit = true
-				rotateInitial = false
+				spinInitial = false
 				holdEnable = false
 				dasInARE = false
 				dasInReady = false
@@ -218,7 +217,7 @@ class RetroMania:AbstractMode() {
 
 	/** This function will be called before the game actually begins (after
 	 * Ready&Go screen disappears) */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 1
 
@@ -229,76 +228,75 @@ class RetroMania:AbstractMode() {
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		receiver.drawScoreFont(engine, playerID, 0, 0, "RETRO MANIA", COLOR.GREEN)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "(${GAMETYPE_NAME[gametype]} SPEED)", COLOR.GREEN)
+	override fun renderLast(engine:GameEngine) {
+		receiver.drawScoreFont(engine, 0, 0, "RETRO MANIA", COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 1, "(${GAMETYPE_NAME[gametype]} SPEED)", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE LINE LV TIME", COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LINE LV TIME", COLOR.BLUE, scale)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, topY+i, "${i+1}", COLOR.YELLOW)
+					receiver.drawScoreGrade(engine, 0, topY+i, "${i+1}", COLOR.YELLOW)
 					receiver.drawScoreNum(
-						engine, playerID, 2, topY+i,
-						if(rankingScore[gametype][i]>=0) String.format("%6d", rankingScore[gametype][i])
-						else rankingScore[gametype][i].toTimeStr, i==rankingRank, scale
+						engine, 2, topY+i, if(rankingScore[gametype][i]>=0) String.format("%6d", rankingScore[gametype][i])
+						else rankingScore[gametype][i].toTimeStr,
+						i==rankingRank, scale
 					)
 					receiver.drawScoreNum(
-						engine, playerID, 8, topY+i,
-						if(rankingLines[gametype][i]>=0) String.format("%3d", rankingLines[gametype][i])
-						else rankingLines[gametype][i].toTimeStr, i==rankingRank, scale
+						engine, 8, topY+i, if(rankingLines[gametype][i]>=0) String.format("%3d", rankingLines[gametype][i])
+						else rankingLines[gametype][i].toTimeStr,
+						i==rankingRank, scale
 					)
 					receiver.drawScoreNum(
-						engine, playerID, 11, topY+i,
-						if(rankingLevel[gametype][i]>=0) String.format("%2d", rankingLevel[gametype][i])
-						else rankingLevel[gametype][i].toTimeStr, i==rankingRank, scale
+						engine, 11, topY+i, if(rankingLevel[gametype][i]>=0) String.format("%2d", rankingLevel[gametype][i])
+						else rankingLevel[gametype][i].toTimeStr,
+						i==rankingRank, scale
 					)
 					receiver.drawScoreNum(
-						engine, playerID, 15, topY+i,
-						rankingTime[gametype][i].toTimeStr, i==rankingRank,
-						scale
+						engine, 15, topY+i, rankingTime[gametype][i].toTimeStr,
+						i==rankingRank, scale
 					)
 				}
 			}
 		} else {
 			// Game statistics
-			receiver.drawScoreFont(engine, playerID, 1, 3, "SCORE", COLOR.CYAN)
-			receiver.drawScoreFont(engine, playerID, 0, 4, String.format("%6d", scDisp), COLOR.CYAN)
+			receiver.drawScoreFont(engine, 1, 3, "SCORE", COLOR.CYAN)
+			receiver.drawScoreFont(engine, 0, 4, String.format("%6d", scDisp), COLOR.CYAN)
 
-			receiver.drawScoreFont(engine, playerID, 1, 6, "LINES", COLOR.CYAN)
-			receiver.drawScoreFont(engine, playerID, 0, 7, String.format("%6d", engine.statistics.lines), COLOR.CYAN)
+			receiver.drawScoreFont(engine, 1, 6, "LINES", COLOR.CYAN)
+			receiver.drawScoreFont(engine, 0, 7, String.format("%6d", engine.statistics.lines), COLOR.CYAN)
 
-			receiver.drawScoreFont(engine, playerID, 1, 9, "LEVEL", COLOR.CYAN)
-			receiver.drawScoreFont(engine, playerID, 0, 10, String.format("%6d", engine.statistics.level), COLOR.CYAN)
+			receiver.drawScoreFont(engine, 1, 9, "LEVEL", COLOR.CYAN)
+			receiver.drawScoreFont(engine, 0, 10, String.format("%6d", engine.statistics.level), COLOR.CYAN)
 
-			receiver.drawScoreFont(engine, playerID, 0, 13, "Time", COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 14, engine.statistics.time.toTimeStr, COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 13, "Time", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 14, engine.statistics.time.toTimeStr, COLOR.BLUE)
 
-			receiver.drawScoreNano(engine, playerID, 0, 31, "${4-linesAfterLastLevelUp} LINES TO GO", COLOR.CYAN, .5f)
+			receiver.drawScoreNano(engine, 0, 31, "${4-linesAfterLastLevelUp} LINES TO GO", COLOR.CYAN, .5f)
 			receiver.drawScoreNano(
-				engine, playerID, 0, 32,
-				"OR "+(levelTime[minOf(engine.statistics.level, 15)]-levelTimer).toTimeStr, COLOR.CYAN, .5f
+				engine, 0, 32, "OR "+(levelTime[minOf(engine.statistics.level, 15)]-levelTimer).toTimeStr,
+				COLOR.CYAN, .5f
 			)
 		}
 	}
 
 	/** This function will be called when the game timer updates */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 		if(engine.timerActive) levelTimer++
 		// Update the meter
-		engine.meterValue = levelTimer*receiver.getMeterMax(engine)/levelTime[minOf(engine.statistics.level, 15)]
-		+linesAfterLastLevelUp%4*receiver.getMeterMax(engine)/6
+		engine.meterValue = levelTimer*1f/levelTime[minOf(engine.statistics.level, 15)]
+		engine.meterValue += (1-engine.meterValue)*linesAfterLastLevelUp%4/4
 
 	}
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		// Determines line-clear bonus
 		val pts = minOf(engine.statistics.level/2+1, 5)*when {
 			lines==1 -> 100 // Single
@@ -356,7 +354,7 @@ class RetroMania:AbstractMode() {
 			levelTimer = 0
 			linesAfterLastLevelUp = 0
 
-			engine.meterValue = 0
+			engine.meterValue = 0f
 
 			setSpeed(engine)
 			if(engine.statistics.level>=MAX_LEVEL) {
@@ -373,30 +371,29 @@ class RetroMania:AbstractMode() {
 	}
 
 	/** This function will be called when soft-drop is used */
-	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		if(version>=2&&engine.speed.denominator==1) return
 		engine.statistics.scoreSD += fall
 	}
 
 	/** This function will be called when hard-drop is used */
-	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += fall
 	}
 
 	/** Renders game result screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", COLOR.ORANGE)
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", COLOR.ORANGE)
 
 		drawResultStats(
-			engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL,
-			Statistic.TIME
+			engine, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME
 		)
-		drawResultRank(engine, playerID, receiver, 11, COLOR.BLUE, rankingRank)
+		drawResultRank(engine, receiver, 11, COLOR.BLUE, rankingRank)
 	}
 
 	/** This function will be called when the replay data is going to be
 	 * saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(prop, engine)
 
 		// Checks/Updates the ranking

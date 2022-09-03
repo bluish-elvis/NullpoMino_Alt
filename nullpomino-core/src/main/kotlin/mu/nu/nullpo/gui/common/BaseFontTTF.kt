@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2021-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,12 +33,16 @@ import mu.nu.nullpo.game.event.EventReceiver
 
 interface BaseFontTTF {
 
-	/** TTF font Drawing a string using the
+	/** TTF font Drawing a string using TrueTypeFont
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param str String
-	 * @param color Letter cint
+	 * @param color Letter color
+	 * @param size unsupported: Font size
 	 */
-	fun print(x:Int, y:Int, str:String, color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE, alpha:Float = 1f)
+	fun print(x:Int, y:Int, str:String, color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE, alpha:Float = 1f, size:Int = FONT_SIZE)
 
+	companion object {
+		const val FONT_SIZE = 16
+	}
 }

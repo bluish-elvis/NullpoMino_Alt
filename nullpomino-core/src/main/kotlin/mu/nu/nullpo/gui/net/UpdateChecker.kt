@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -245,7 +245,7 @@ class UpdateChecker:Runnable {
 		 * @param strURL 最新版の情報が入ったXMLファイルのURL(nullまたは空文字列にすると default 値を使う)
 		 */
 		fun startCheckForUpdates(strURL:String?) {
-			strURLofXML = if(strURL==null||strURL.isEmpty()) DEFAULT_XML_URL else strURL
+			strURLofXML = if(strURL.isNullOrEmpty()) DEFAULT_XML_URL else strURL
 			thread = Thread(UpdateChecker()).apply {
 				isDaemon = true
 				start()

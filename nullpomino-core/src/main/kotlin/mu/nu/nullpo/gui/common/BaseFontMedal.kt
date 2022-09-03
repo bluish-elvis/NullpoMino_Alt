@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2021-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,6 +40,8 @@ abstract class BaseFontMedal {
 	/** marginedBottom */
 	private val mb = h-pt
 
+	abstract val img:ResourceImage<*>
+
 	protected fun processTxt(x:Float, y:Float, str:String, tier:Int, scale:Float,
 		draw:(x:Float, y:Float, dx:Float, dy:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) {
 		val sy = maxOf(0, 4-tier)*h
@@ -67,8 +69,15 @@ abstract class BaseFontMedal {
 	 * @param tier 文字色
 	 * @param scale 拡大率
 	 */
-	abstract fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
-		darkness:Float = 0f)
+	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
+		darkness:Float = 0f) =
+		processTxt(x.toFloat(), y.toFloat(), str, tier, scale)
+		{dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
+			FontMedal.img.draw(
+				dx, dy, w, h, sx, sy, sw, sh,
+				alpha, (minOf(1f, maxOf(0f, 1f-darkness))).let {brit -> Triple(brit, brit, brit)}
+			)
+		}
 
 	/** 文字列を描画
 	 * @param x X-coordinate

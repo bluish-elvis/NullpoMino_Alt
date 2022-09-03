@@ -34,6 +34,8 @@ package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.libs.Vector
+import kotlin.math.PI
 import kotlin.math.sin
 
 /**
@@ -45,29 +47,26 @@ import kotlin.math.sin
  * @param frequency   Waving frequency
  * @param offsetWidth Max offset
  * @param text        Text to draw
- * @param big         Should it be double size?
+ * @param big         Should it be float size?
  * @param largeClear  Should it flash and actually wave?
  */
-class SideWaveText(x:Int, y:Int, frequency:Double, offsetWidth:Double, val text:String, big:Boolean, largeClear:Boolean) {
-	private val offsetMax:Double
-	private val sinFrequency:Double
-	val big:Boolean
-	val largeClear:Boolean
-	var position:DoubleVector
+class SideWaveText(x:Int, y:Int, val frequency:Float, val offsetWidth:Float, val text:String, val big:Boolean, val largeClear:Boolean) {
+	var position = Vector(x, y)
 		private set
-	var xOffset:Double
+	var xOffset:Float = 0f
 		private set
-	var sinPhase:Double
+	var sinPhase:Float = 0f
 		private set
-	var lifeTime:Int
+	var lifeTime:Int = 0
 		private set
+
 	/**
 	 * Updates the instance to a new position.
 	 */
 	fun update() {
-		sinPhase += sinFrequency*(Math.PI*2/60)
-		xOffset = offsetMax*sin(sinPhase)
-		position = DoubleVector.plus(position, VerticalVelocity)
+		sinPhase += frequency*(PI*2/60).toFloat()
+		xOffset = offsetWidth*sin(sinPhase)
+		position += VerticalVelocity
 		lifeTime++
 	}
 	/**
@@ -98,23 +97,14 @@ class SideWaveText(x:Int, y:Int, frequency:Double, offsetWidth:Double, val text:
 		} else {
 			baseScale-baseScale*((lifeTime-24).toFloat()/96)
 		}
-		GameTextUtilities.drawDirectTextAlign(receiver, engine, playerID, x, y, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, text, color,
-			scale)
+		GameTextUtilities.drawDirectTextAlign(
+			receiver, x, y, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, text, color, scale
+		)
 	}
 
 	companion object {
 		const val MaxLifeTime = 120
-		private val VerticalVelocity = DoubleVector(0.0, -1*(4.0/5.0), false)
+		private val VerticalVelocity = Vector(0f, -.8f)
 	}
 
-	init {
-		position = DoubleVector(x.toDouble(), y.toDouble(), false)
-		sinPhase = 0.0
-		sinFrequency = frequency
-		offsetMax = offsetWidth
-		this.big = big
-		this.largeClear = largeClear
-		xOffset = 0.0
-		lifeTime = 0
-	}
 }

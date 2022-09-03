@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -47,7 +47,7 @@ class RuleOptions:Serializable {
 	var style = 0
 
 	var pieceOffset = 0
-	/** Blockピースのrotationパターンのcoordinate補正 (11ピース×4Direction) */
+	/** Blockピースの回転パターンのcoordinate補正 (11ピース×4Direction) */
 	var pieceOffsetX:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
 	var pieceOffsetY:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
 
@@ -90,7 +90,8 @@ class RuleOptions:Serializable {
 	/** field枠内に置けなかったら死ぬかどうか */
 	var fieldLockoutDeath = false
 
-	/** field枠外にはみ出しただけで死ぬかどうか */
+	/** field枠外に１マスでもはみ出しただけで死ぬかどうか
+	 * falseだと１マスでも枠内ならばセーフ */
 	var fieldPartialLockoutDeath = false
 
 	/** NEXTのcount */
@@ -129,7 +130,7 @@ class RuleOptions:Serializable {
 	/** Soft drop連続使用不可 */
 	var softdropLimit = false
 
-	/** 接地状態でSoft dropすると即固定 (falseだと20Gのみ) */
+	/** 接地状態でSoft dropすると即固定 (falseだと20Gのみ即固定) */
 	var softdropSurfaceLock = false
 
 	/** Soft drop速度 (1f=1G, .5f=0.5G) */
@@ -141,69 +142,64 @@ class RuleOptions:Serializable {
 	/** Soft drop速度を通常速度に影響させない */
 	var softdropGravitySpeedLimit = false
 
-	/** 先行rotation */
-	var rotateInitial = false
-
-	/** 先行rotation連続使用不可 */
-	var rotateInitialLimit = false
-
+	/** 先行回転 */
+	var spinInitial = false
+	/** 先行回転連続使用不可 */
+	var spinInitialLimit = false
 	/** Wallkick */
-	var rotateWallkick = false
-
-	/** 先行rotationでもWallkickする */
-	var rotateInitialWallkick = false
-
+	var spinWallkick = false
+	/** 先行回転でもWallkickする */
+	var spinInitialWallkick = false
 	/** 上DirectionへのWallkickができる count (-1:無限) */
-	var rotateMaxUpwardWallkick = 0
+	var spinWallkickMaxRise = 0
 
-	/** falseなら左が正rotation, When true,右が正rotation */
-	var rotateButtonDefaultRight = false
+	/** TrueにするとA,Cボタンを右回転にする */
+	var spinToRight = false
+	/** Bボタンでの回転を逆方向にする (falseならA,Cボタンと同じ) */
+	var spinReverseKey = false
+	/** Eボタンを180 spinにする (falseならA,Cボタンと同じ) */
+	var spinDoubleKey = false
 
-	/** 逆rotationを許可 (falseなら正rotationと同じ) */
-	var rotateButtonAllowReverse = false
+	/** 落下で固定猶予リセット */
+	var lockResetFall = false
+	/** 移動で固定猶予リセット */
+	var lockResetMove = false
 
-	/** 180-degree rotationを許可 (falseなら正rotationと同じ) */
-	var rotateButtonAllowDouble = false
+	/** 回転で固定猶予リセット */
+	var lockResetSpin = false
 
-	/** 落下で固定 timeリセット */
-	var lockresetFall = false
+	/** 壁蹴りで固定猶予リセット */
+	var lockResetWallkick = false
 
-	/** 移動で固定 timeリセット */
-	var lockresetMove = false
+	/** 横移動による固定猶予リセットの回数制限 (-1:無限) */
+	var lockResetMoveLimit = 0
 
-	/** rotationで固定 timeリセット */
-	var lockresetRotate = false
+	/** 回転による固定猶予リセットの回数制限 (-1:無限) */
+	var lockResetSpinLimit = 0
 
-	/** Lock delay reset on wallkick */
-	var lockresetWallkick = false
+	/** trueにすると回転の回数制限を横移動と共有する (true: lockResetMoveLimitのみ使用) */
+	var lockResetLimitShareCount = false
 
-	/** 横移動 count制限 (-1:無限) */
-	var lockresetLimitMove = 0
-
-	/** rotation count制限 (-1:無限) */
-	var lockresetLimitRotate = 0
-
-	/** 横移動 counterとrotation counterを共有 (横移動 counterだけ使う) */
-	var lockresetLimitShareCount = false
-
-	/** 横移動 counterかrotation counterが超過したときの処理
-	 * (LOCKRESET_LIMIT_OVER_で始まる定数を使う) */
-	var lockresetLimitOver = 0
+	/** 固定猶予リセットの回数を使い切った場合の処理
+	 * LOCKRESET_LIMIT_OVER_NORESET = 0 : 固定猶予をリセットしないようにする
+	 * LOCKRESET_LIMIT_OVER_INSTANT = 1 : 即固定する
+	 * LOCKRESET_LIMIT_OVER_NOWALLKICK = 2 : Wallkickしないようにする */
+	var lockResetLimitOver = 0
 
 	/** 固定した瞬間光る frame count */
-	var lockflash = 0
+	var lockFlash = 0
 
 	/** Blockが光る専用 frame を入れる */
-	var lockflashOnlyFrame = false
+	var lockFlashOnlyFrame = false
 
 	/** Line clear前にBlockが光る frame を入れる */
-	var lockflashBeforeLineClear = false
+	var lockFlashBeforeLineClear = false
 
 	/** ARE cancel on move */
 	var areCancelMove = false
 
-	/** ARE cancel on rotate */
-	var areCancelRotate = false
+	/** ARE cancel on spin */
+	var areCancelSpin = false
 
 	/** ARE cancel on hold */
 	var areCancelHold = false
@@ -286,8 +282,8 @@ class RuleOptions:Serializable {
 	/** Line delay cancel on move */
 	var lineCancelMove = false
 
-	/** Line delay cancel on rotate */
-	var lineCancelRotate = false
+	/** Line delay cancel on spin */
+	var lineCancelSpin = false
 
 	/** Line delay cancel on hold */
 	var lineCancelHold = false
@@ -307,7 +303,7 @@ class RuleOptions:Serializable {
 	 * @param r Copy source
 	 */
 	constructor(r:RuleOptions?) {
-		copy(r)
+		replaace(r)
 	}
 
 	/** Initialization */
@@ -369,29 +365,29 @@ class RuleOptions:Serializable {
 		softdropMultiplyNativeSpeed = false
 		softdropGravitySpeedLimit = false
 
-		rotateInitial = true
-		rotateInitialLimit = false
-		rotateWallkick = true
-		rotateInitialWallkick = true
-		rotateMaxUpwardWallkick = -1
-		rotateButtonDefaultRight = true
-		rotateButtonAllowReverse = true
-		rotateButtonAllowDouble = true
+		spinInitial = true
+		spinInitialLimit = false
+		spinWallkick = true
+		spinInitialWallkick = true
+		spinWallkickMaxRise = -1
+		spinToRight = true
+		spinReverseKey = true
+		spinDoubleKey = true
 
-		lockresetFall = true
-		lockresetMove = true
-		lockresetRotate = true
-		lockresetWallkick = false
-		lockresetLimitMove = 15
-		lockresetLimitRotate = 15
-		lockresetLimitShareCount = true
-		lockresetLimitOver = LOCKRESET_LIMIT_OVER_INSTANT
+		lockResetFall = true
+		lockResetMove = true
+		lockResetSpin = true
+		lockResetWallkick = false
+		lockResetMoveLimit = 15
+		lockResetSpinLimit = 15
+		lockResetLimitShareCount = true
+		lockResetLimitOver = LOCKRESET_LIMIT_OVER_INSTANT
 
-		lockflash = 2
-		lockflashOnlyFrame = true
-		lockflashBeforeLineClear = false
+		lockFlash = 2
+		lockFlashOnlyFrame = true
+		lockFlashBeforeLineClear = false
 		areCancelMove = false
-		areCancelRotate = false
+		areCancelSpin = false
 		areCancelHold = false
 
 		minARE = -1
@@ -428,139 +424,137 @@ class RuleOptions:Serializable {
 
 		lineFallAnim = true
 		lineCancelMove = false
-		lineCancelRotate = false
+		lineCancelSpin = false
 		lineCancelHold = false
 
 		skin = 0
 		ghost = true
 	}
 
-	/** 他のRuleParamの内容をコピー
-	 * @param r Copy sourceのRuleParam
-	 */
-	fun copy(r:RuleOptions?) {
-		r?.let{o->
-		strRuleName = o.strRuleName
-		strWallkick = o.strWallkick
-		strRandomizer = o.strRandomizer
+	/** 設定を[r]からコピー */
+	fun replaace(r:RuleOptions?) {
+		r?.let {o ->
+			strRuleName = o.strRuleName
+			strWallkick = o.strWallkick
+			strRandomizer = o.strRandomizer
 
-		style = o.style
-		pieceOffset = o.pieceOffset
-		pieceOffsetX = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-		pieceOffsetY = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-		pieceSpawnX = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-		pieceSpawnY = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-		pieceSpawnXBig = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-		pieceSpawnYBig = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-		pieceColor = IntArray(Piece.PIECE_COUNT)
-		pieceDefaultDirection = IntArray(Piece.PIECE_COUNT)
-		for(i in 0 until Piece.PIECE_COUNT) {
-			for(j in 0 until Piece.DIRECTION_COUNT) {
-				pieceOffsetX[i][j] = o.pieceOffsetX[i][j]
-				pieceOffsetY[i][j] = o.pieceOffsetY[i][j]
-				pieceSpawnX[i][j] = o.pieceSpawnX[i][j]
-				pieceSpawnY[i][j] = o.pieceSpawnY[i][j]
-				pieceSpawnXBig[i][j] = o.pieceSpawnXBig[i][j]
-				pieceSpawnYBig[i][j] = o.pieceSpawnYBig[i][j]
+			style = o.style
+			pieceOffset = o.pieceOffset
+			pieceOffsetX = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+			pieceOffsetY = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+			pieceSpawnX = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+			pieceSpawnY = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+			pieceSpawnXBig = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+			pieceSpawnYBig = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+			pieceColor = IntArray(Piece.PIECE_COUNT)
+			pieceDefaultDirection = IntArray(Piece.PIECE_COUNT)
+			for(i in 0 until Piece.PIECE_COUNT) {
+				for(j in 0 until Piece.DIRECTION_COUNT) {
+					pieceOffsetX[i][j] = o.pieceOffsetX[i][j]
+					pieceOffsetY[i][j] = o.pieceOffsetY[i][j]
+					pieceSpawnX[i][j] = o.pieceSpawnX[i][j]
+					pieceSpawnY[i][j] = o.pieceSpawnY[i][j]
+					pieceSpawnXBig[i][j] = o.pieceSpawnXBig[i][j]
+					pieceSpawnYBig[i][j] = o.pieceSpawnYBig[i][j]
+				}
+				pieceColor[i] = o.pieceColor[i]
+				pieceDefaultDirection[i] = o.pieceDefaultDirection[i]
 			}
-			pieceColor[i] = o.pieceColor[i]
-			pieceDefaultDirection[i] = o.pieceDefaultDirection[i]
-		}
-		pieceEnterAboveField = o.pieceEnterAboveField
-		pieceEnterMaxDistanceY = o.pieceEnterMaxDistanceY
+			pieceEnterAboveField = o.pieceEnterAboveField
+			pieceEnterMaxDistanceY = o.pieceEnterMaxDistanceY
 
-		fieldWidth = o.fieldWidth
-		fieldHeight = o.fieldHeight
-		fieldHiddenHeight = o.fieldHiddenHeight
-		fieldCeiling = o.fieldCeiling
-		fieldLockoutDeath = o.fieldLockoutDeath
-		fieldPartialLockoutDeath = o.fieldPartialLockoutDeath
+			fieldWidth = o.fieldWidth
+			fieldHeight = o.fieldHeight
+			fieldHiddenHeight = o.fieldHiddenHeight
+			fieldCeiling = o.fieldCeiling
+			fieldLockoutDeath = o.fieldLockoutDeath
+			fieldPartialLockoutDeath = o.fieldPartialLockoutDeath
 
-		nextDisplay = o.nextDisplay
+			nextDisplay = o.nextDisplay
 
-		holdEnable = o.holdEnable
-		holdInitial = o.holdInitial
-		holdInitialLimit = o.holdInitialLimit
-		holdResetDirection = o.holdResetDirection
-		holdLimit = o.holdLimit
+			holdEnable = o.holdEnable
+			holdInitial = o.holdInitial
+			holdInitialLimit = o.holdInitialLimit
+			holdResetDirection = o.holdResetDirection
+			holdLimit = o.holdLimit
 
-		harddropEnable = o.harddropEnable
-		harddropLock = o.harddropLock
-		harddropLimit = o.harddropLimit
+			harddropEnable = o.harddropEnable
+			harddropLock = o.harddropLock
+			harddropLimit = o.harddropLimit
 
-		softdropEnable = o.softdropEnable
-		softdropLock = o.softdropLock
-		softdropLimit = o.softdropLimit
-		softdropSurfaceLock = o.softdropSurfaceLock
-		softdropSpeed = o.softdropSpeed
-		softdropMultiplyNativeSpeed = o.softdropMultiplyNativeSpeed
-		softdropGravitySpeedLimit = o.softdropGravitySpeedLimit
+			softdropEnable = o.softdropEnable
+			softdropLock = o.softdropLock
+			softdropLimit = o.softdropLimit
+			softdropSurfaceLock = o.softdropSurfaceLock
+			softdropSpeed = o.softdropSpeed
+			softdropMultiplyNativeSpeed = o.softdropMultiplyNativeSpeed
+			softdropGravitySpeedLimit = o.softdropGravitySpeedLimit
 
-		rotateInitial = o.rotateInitial
-		rotateInitialLimit = o.rotateInitialLimit
-		rotateWallkick = o.rotateWallkick
-		rotateInitialWallkick = o.rotateInitialWallkick
-		rotateMaxUpwardWallkick = o.rotateMaxUpwardWallkick
-		rotateButtonDefaultRight = o.rotateButtonDefaultRight
-		rotateButtonAllowReverse = o.rotateButtonAllowReverse
-		rotateButtonAllowDouble = o.rotateButtonAllowDouble
+			spinInitial = o.spinInitial
+			spinInitialLimit = o.spinInitialLimit
+			spinWallkick = o.spinWallkick
+			spinInitialWallkick = o.spinInitialWallkick
+			spinWallkickMaxRise = o.spinWallkickMaxRise
+			spinToRight = o.spinToRight
+			spinReverseKey = o.spinReverseKey
+			spinDoubleKey = o.spinDoubleKey
 
-		lockresetFall = o.lockresetFall
-		lockresetMove = o.lockresetMove
-		lockresetRotate = o.lockresetRotate
-		lockresetWallkick = o.lockresetWallkick
-		lockresetLimitMove = o.lockresetLimitMove
-		lockresetLimitRotate = o.lockresetLimitRotate
-		lockresetLimitShareCount = o.lockresetLimitShareCount
-		lockresetLimitOver = o.lockresetLimitOver
+			lockResetFall = o.lockResetFall
+			lockResetMove = o.lockResetMove
+			lockResetSpin = o.lockResetSpin
+			lockResetWallkick = o.lockResetWallkick
+			lockResetMoveLimit = o.lockResetMoveLimit
+			lockResetSpinLimit = o.lockResetSpinLimit
+			lockResetLimitShareCount = o.lockResetLimitShareCount
+			lockResetLimitOver = o.lockResetLimitOver
 
-		lockflash = o.lockflash
-		lockflashOnlyFrame = o.lockflashOnlyFrame
-		lockflashBeforeLineClear = o.lockflashBeforeLineClear
-		areCancelMove = o.areCancelMove
-		areCancelRotate = o.areCancelRotate
-		areCancelHold = o.areCancelHold
+			lockFlash = o.lockFlash
+			lockFlashOnlyFrame = o.lockFlashOnlyFrame
+			lockFlashBeforeLineClear = o.lockFlashBeforeLineClear
+			areCancelMove = o.areCancelMove
+			areCancelSpin = o.areCancelSpin
+			areCancelHold = o.areCancelHold
 
-		minARE = o.minARE
-		maxARE = o.maxARE
-		minARELine = o.minARELine
-		maxARELine = o.maxARELine
-		minLineDelay = o.minLineDelay
-		maxLineDelay = o.maxLineDelay
-		minLockDelay = o.minLockDelay
-		maxLockDelay = o.maxLockDelay
-		minDAS = o.minDAS
-		maxDAS = o.maxDAS
+			minARE = o.minARE
+			maxARE = o.maxARE
+			minARELine = o.minARELine
+			maxARELine = o.maxARELine
+			minLineDelay = o.minLineDelay
+			maxLineDelay = o.maxLineDelay
+			minLockDelay = o.minLockDelay
+			maxLockDelay = o.maxLockDelay
+			minDAS = o.minDAS
+			maxDAS = o.maxDAS
 
-		dasARR = o.dasARR
+			dasARR = o.dasARR
 
-		shiftLockEnable = o.shiftLockEnable
+			shiftLockEnable = o.shiftLockEnable
 
-		dasInReady = o.dasInReady
-		dasInMoveFirstFrame = o.dasInMoveFirstFrame
-		dasInLockFlash = o.dasInLockFlash
-		dasInLineClear = o.dasInLineClear
-		dasInARE = o.dasInARE
-		dasInARELastFrame = o.dasInARELastFrame
-		dasInEndingStart = o.dasInEndingStart
-		dasChargeOnBlockedMove = o.dasChargeOnBlockedMove
-		dasStoreChargeOnNeutral = o.dasStoreChargeOnNeutral
-		dasRedirectInDelay = o.dasRedirectInDelay
+			dasInReady = o.dasInReady
+			dasInMoveFirstFrame = o.dasInMoveFirstFrame
+			dasInLockFlash = o.dasInLockFlash
+			dasInLineClear = o.dasInLineClear
+			dasInARE = o.dasInARE
+			dasInARELastFrame = o.dasInARELastFrame
+			dasInEndingStart = o.dasInEndingStart
+			dasChargeOnBlockedMove = o.dasChargeOnBlockedMove
+			dasStoreChargeOnNeutral = o.dasStoreChargeOnNeutral
+			dasRedirectInDelay = o.dasRedirectInDelay
 
-		moveFirstFrame = o.moveFirstFrame
-		moveDiagonal = o.moveDiagonal
-		moveUpAndDown = o.moveUpAndDown
-		moveLeftAndRightAllow = o.moveLeftAndRightAllow
-		moveLeftAndRightUsePreviousInput = o.moveLeftAndRightUsePreviousInput
+			moveFirstFrame = o.moveFirstFrame
+			moveDiagonal = o.moveDiagonal
+			moveUpAndDown = o.moveUpAndDown
+			moveLeftAndRightAllow = o.moveLeftAndRightAllow
+			moveLeftAndRightUsePreviousInput = o.moveLeftAndRightUsePreviousInput
 
-		lineFallAnim = o.lineFallAnim
-		lineCancelMove = o.lineCancelMove
-		lineCancelRotate = o.lineCancelRotate
-		lineCancelHold = o.lineCancelHold
+			lineFallAnim = o.lineFallAnim
+			lineCancelMove = o.lineCancelMove
+			lineCancelSpin = o.lineCancelSpin
+			lineCancelHold = o.lineCancelHold
 
-		skin = o.skin
-		ghost = o.ghost
-		}?:reset()
+			skin = o.skin
+			ghost = o.ghost
+		} ?: reset()
 	}
 
 	/** 他のルールと比較し, 同じならtrueを返す
@@ -619,29 +613,29 @@ class RuleOptions:Serializable {
 		if(softdropMultiplyNativeSpeed!=r.softdropMultiplyNativeSpeed) return false
 		if(softdropGravitySpeedLimit!=r.softdropGravitySpeedLimit) return false
 
-		if(rotateInitial!=r.rotateInitial) return false
-		if(rotateInitialLimit!=r.rotateInitialLimit) return false
-		if(rotateWallkick!=r.rotateWallkick) return false
-		if(rotateInitialWallkick!=r.rotateInitialWallkick) return false
-		if(rotateMaxUpwardWallkick!=r.rotateMaxUpwardWallkick) return false
-		if(rotateButtonDefaultRight!=r.rotateButtonDefaultRight) return false
-		if(rotateButtonAllowReverse!=r.rotateButtonAllowReverse) return false
-		if(rotateButtonAllowDouble!=r.rotateButtonAllowDouble) return false
+		if(spinInitial!=r.spinInitial) return false
+		if(spinInitialLimit!=r.spinInitialLimit) return false
+		if(spinWallkick!=r.spinWallkick) return false
+		if(spinInitialWallkick!=r.spinInitialWallkick) return false
+		if(spinWallkickMaxRise!=r.spinWallkickMaxRise) return false
+		if(spinToRight!=r.spinToRight) return false
+		if(spinReverseKey!=r.spinReverseKey) return false
+		if(spinDoubleKey!=r.spinDoubleKey) return false
 
-		if(lockresetFall!=r.lockresetFall) return false
-		if(lockresetMove!=r.lockresetMove) return false
-		if(lockresetRotate!=r.lockresetRotate) return false
-		if(lockresetWallkick!=r.lockresetWallkick) return false
-		if(lockresetLimitMove!=r.lockresetLimitMove) return false
-		if(lockresetLimitRotate!=r.lockresetLimitRotate) return false
-		if(lockresetLimitShareCount!=r.lockresetLimitShareCount) return false
-		if(lockresetLimitOver!=r.lockresetLimitOver) return false
+		if(lockResetFall!=r.lockResetFall) return false
+		if(lockResetMove!=r.lockResetMove) return false
+		if(lockResetSpin!=r.lockResetSpin) return false
+		if(lockResetWallkick!=r.lockResetWallkick) return false
+		if(lockResetMoveLimit!=r.lockResetMoveLimit) return false
+		if(lockResetSpinLimit!=r.lockResetSpinLimit) return false
+		if(lockResetLimitShareCount!=r.lockResetLimitShareCount) return false
+		if(lockResetLimitOver!=r.lockResetLimitOver) return false
 
-		if(lockflash!=r.lockflash) return false
-		if(lockflashOnlyFrame!=r.lockflashOnlyFrame) return false
-		if(lockflashBeforeLineClear!=r.lockflashBeforeLineClear) return false
+		if(lockFlash!=r.lockFlash) return false
+		if(lockFlashOnlyFrame!=r.lockFlashOnlyFrame) return false
+		if(lockFlashBeforeLineClear!=r.lockFlashBeforeLineClear) return false
 		if(areCancelMove!=r.areCancelMove) return false
-		if(areCancelRotate!=r.areCancelRotate) return false
+		if(areCancelSpin!=r.areCancelSpin) return false
 		if(areCancelHold!=r.areCancelHold) return false
 
 		if(minARE!=r.minARE) return false
@@ -678,7 +672,7 @@ class RuleOptions:Serializable {
 
 		if(ignoreGraphicsSetting&&lineFallAnim!=r.lineFallAnim) return false
 		if(lineCancelMove!=r.lineCancelMove) return false
-		if(lineCancelRotate!=r.lineCancelRotate) return false
+		if(lineCancelSpin!=r.lineCancelSpin) return false
 		if(lineCancelHold!=r.lineCancelHold) return false
 
 		return if(ignoreGraphicsSetting&&skin!=r.skin) false else ghost==r.ghost
@@ -739,29 +733,29 @@ class RuleOptions:Serializable {
 		p.setProperty("$id.ruleOpt.softdropMultiplyNativeSpeed", softdropMultiplyNativeSpeed)
 		p.setProperty("$id.ruleOpt.softdropGravitySpeedLimit", softdropGravitySpeedLimit)
 
-		p.setProperty("$id.ruleOpt.rotateInitial", rotateInitial)
-		p.setProperty("$id.ruleOpt.rotateInitialLimit", rotateInitialLimit)
-		p.setProperty("$id.ruleOpt.rotateWallkick", rotateWallkick)
-		p.setProperty("$id.ruleOpt.rotateInitialWallkick", rotateInitialWallkick)
-		p.setProperty("$id.ruleOpt.rotateMaxUpwardWallkick", rotateMaxUpwardWallkick)
-		p.setProperty("$id.ruleOpt.rotateButtonDefaultRight", rotateButtonDefaultRight)
-		p.setProperty("$id.ruleOpt.rotateButtonAllowReverse", rotateButtonAllowReverse)
-		p.setProperty("$id.ruleOpt.rotateButtonAllowDouble", rotateButtonAllowDouble)
+		p.setProperty("$id.ruleOpt.rotateInitial", spinInitial)
+		p.setProperty("$id.ruleOpt.rotateInitialLimit", spinInitialLimit)
+		p.setProperty("$id.ruleOpt.rotateWallkick", spinWallkick)
+		p.setProperty("$id.ruleOpt.rotateInitialWallkick", spinInitialWallkick)
+		p.setProperty("$id.ruleOpt.rotateMaxUpwardWallkick", spinWallkickMaxRise)
+		p.setProperty("$id.ruleOpt.rotateButtonDefaultRight", spinToRight)
+		p.setProperty("$id.ruleOpt.rotateButtonAllowReverse", spinReverseKey)
+		p.setProperty("$id.ruleOpt.rotateButtonAllowDouble", spinDoubleKey)
 
-		p.setProperty("$id.ruleOpt.lockresetFall", lockresetFall)
-		p.setProperty("$id.ruleOpt.lockresetMove", lockresetMove)
-		p.setProperty("$id.ruleOpt.lockresetRotate", lockresetRotate)
-		p.setProperty("$id.ruleOpt.lockresetWallkick", lockresetWallkick)
-		p.setProperty("$id.ruleOpt.lockresetLimitMove", lockresetLimitMove)
-		p.setProperty("$id.ruleOpt.lockresetLimitRotate", lockresetLimitRotate)
-		p.setProperty("$id.ruleOpt.lockresetLimitShareCount", lockresetLimitShareCount)
-		p.setProperty("$id.ruleOpt.lockresetLimitOver", lockresetLimitOver)
+		p.setProperty("$id.ruleOpt.lockresetFall", lockResetFall)
+		p.setProperty("$id.ruleOpt.lockresetMove", lockResetMove)
+		p.setProperty("$id.ruleOpt.lockresetRotate", lockResetSpin)
+		p.setProperty("$id.ruleOpt.lockresetWallkick", lockResetWallkick)
+		p.setProperty("$id.ruleOpt.lockresetLimitMove", lockResetMoveLimit)
+		p.setProperty("$id.ruleOpt.lockresetLimitRotate", lockResetSpinLimit)
+		p.setProperty("$id.ruleOpt.lockresetLimitShareCount", lockResetLimitShareCount)
+		p.setProperty("$id.ruleOpt.lockresetLimitOver", lockResetLimitOver)
 
-		p.setProperty("$id.ruleOpt.lockflash", lockflash)
-		p.setProperty("$id.ruleOpt.lockflashOnlyFrame", lockflashOnlyFrame)
-		p.setProperty("$id.ruleOpt.lockflashBeforeLineClear", lockflashBeforeLineClear)
+		p.setProperty("$id.ruleOpt.lockflash", lockFlash)
+		p.setProperty("$id.ruleOpt.lockflashOnlyFrame", lockFlashOnlyFrame)
+		p.setProperty("$id.ruleOpt.lockflashBeforeLineClear", lockFlashBeforeLineClear)
 		p.setProperty("$id.ruleOpt.areCancelMove", areCancelMove)
-		p.setProperty("$id.ruleOpt.areCancelRotate", areCancelRotate)
+		p.setProperty("$id.ruleOpt.areCancelRotate", areCancelSpin)
 		p.setProperty("$id.ruleOpt.areCancelHold", areCancelHold)
 
 		p.setProperty("$id.ruleOpt.minARE", minARE)
@@ -798,7 +792,7 @@ class RuleOptions:Serializable {
 
 		p.setProperty("$id.ruleOpt.lineFallAnim", lineFallAnim)
 		p.setProperty("$id.ruleOpt.lineCancelMove", lineCancelMove)
-		p.setProperty("$id.ruleOpt.lineCancelRotate", lineCancelRotate)
+		p.setProperty("$id.ruleOpt.lineCancelRotate", lineCancelSpin)
 		p.setProperty("$id.ruleOpt.lineCancelHold", lineCancelHold)
 
 		p.setProperty("$id.ruleOpt.skin", skin)
@@ -886,29 +880,29 @@ class RuleOptions:Serializable {
 		softdropMultiplyNativeSpeed = p.getProperty("$id.ruleOpt.softdropMultiplyNativeSpeed", softdropMultiplyNativeSpeed)
 		softdropGravitySpeedLimit = p.getProperty("$id.ruleOpt.softdropGravitySpeedLimit", softdropGravitySpeedLimit)
 
-		rotateInitial = p.getProperty("$id.ruleOpt.rotateInitial", rotateInitial)
-		rotateInitialLimit = p.getProperty("$id.ruleOpt.rotateInitialLimit", rotateInitialLimit)
-		rotateWallkick = p.getProperty("$id.ruleOpt.rotateWallkick", rotateWallkick)
-		rotateInitialWallkick = p.getProperty("$id.ruleOpt.rotateInitialWallkick", rotateInitialWallkick)
-		rotateMaxUpwardWallkick = p.getProperty("$id.ruleOpt.rotateMaxUpwardWallkick", rotateMaxUpwardWallkick)
-		rotateButtonDefaultRight = p.getProperty("$id.ruleOpt.rotateButtonDefaultRight", rotateButtonDefaultRight)
-		rotateButtonAllowReverse = p.getProperty("$id.ruleOpt.rotateButtonAllowReverse", rotateButtonAllowReverse)
-		rotateButtonAllowDouble = p.getProperty("$id.ruleOpt.rotateButtonAllowDouble", rotateButtonAllowDouble)
+		spinInitial = p.getProperty("$id.ruleOpt.rotateInitial", spinInitial)
+		spinInitialLimit = p.getProperty("$id.ruleOpt.rotateInitialLimit", spinInitialLimit)
+		spinWallkick = p.getProperty("$id.ruleOpt.rotateWallkick", spinWallkick)
+		spinInitialWallkick = p.getProperty("$id.ruleOpt.rotateInitialWallkick", spinInitialWallkick)
+		spinWallkickMaxRise = p.getProperty("$id.ruleOpt.rotateMaxUpwardWallkick", spinWallkickMaxRise)
+		spinToRight = p.getProperty("$id.ruleOpt.rotateButtonDefaultRight", spinToRight)
+		spinReverseKey = p.getProperty("$id.ruleOpt.rotateButtonAllowReverse", spinReverseKey)
+		spinDoubleKey = p.getProperty("$id.ruleOpt.rotateButtonAllowDouble", spinDoubleKey)
 
-		lockresetFall = p.getProperty("$id.ruleOpt.lockresetFall", lockresetFall)
-		lockresetMove = p.getProperty("$id.ruleOpt.lockresetMove", lockresetMove)
-		lockresetRotate = p.getProperty("$id.ruleOpt.lockresetRotate", lockresetRotate)
-		lockresetWallkick = p.getProperty("$id.ruleOpt.lockresetWallkick", lockresetWallkick)
-		lockresetLimitMove = p.getProperty("$id.ruleOpt.lockresetLimitMove", lockresetLimitMove)
-		lockresetLimitRotate = p.getProperty("$id.ruleOpt.lockresetLimitRotate", lockresetLimitRotate)
-		lockresetLimitShareCount = p.getProperty("$id.ruleOpt.lockresetLimitShareCount", lockresetLimitShareCount)
-		lockresetLimitOver = p.getProperty("$id.ruleOpt.lockresetLimitOver", lockresetLimitOver)
+		lockResetFall = p.getProperty("$id.ruleOpt.lockresetFall", lockResetFall)
+		lockResetMove = p.getProperty("$id.ruleOpt.lockresetMove", lockResetMove)
+		lockResetSpin = p.getProperty("$id.ruleOpt.lockresetRotate", lockResetSpin)
+		lockResetWallkick = p.getProperty("$id.ruleOpt.lockresetWallkick", lockResetWallkick)
+		lockResetMoveLimit = p.getProperty("$id.ruleOpt.lockresetLimitMove", lockResetMoveLimit)
+		lockResetSpinLimit = p.getProperty("$id.ruleOpt.lockresetLimitRotate", lockResetSpinLimit)
+		lockResetLimitShareCount = p.getProperty("$id.ruleOpt.lockresetLimitShareCount", lockResetLimitShareCount)
+		lockResetLimitOver = p.getProperty("$id.ruleOpt.lockresetLimitOver", lockResetLimitOver)
 
-		lockflash = p.getProperty("$id.ruleOpt.lockflash", lockflash)
-		lockflashOnlyFrame = p.getProperty("$id.ruleOpt.lockflashOnlyFrame", lockflashOnlyFrame)
-		lockflashBeforeLineClear = p.getProperty("$id.ruleOpt.lockflashBeforeLineClear", lockflashBeforeLineClear)
+		lockFlash = p.getProperty("$id.ruleOpt.lockflash", lockFlash)
+		lockFlashOnlyFrame = p.getProperty("$id.ruleOpt.lockflashOnlyFrame", lockFlashOnlyFrame)
+		lockFlashBeforeLineClear = p.getProperty("$id.ruleOpt.lockflashBeforeLineClear", lockFlashBeforeLineClear)
 		areCancelMove = p.getProperty("$id.ruleOpt.areCancelMove", areCancelMove)
-		areCancelRotate = p.getProperty("$id.ruleOpt.areCancelRotate", areCancelRotate)
+		areCancelSpin = p.getProperty("$id.ruleOpt.areCancelRotate", areCancelSpin)
 		areCancelHold = p.getProperty("$id.ruleOpt.areCancelHold", areCancelHold)
 
 		minARE = p.getProperty("$id.ruleOpt.minARE", minARE)
@@ -940,11 +934,12 @@ class RuleOptions:Serializable {
 		moveDiagonal = p.getProperty("$id.ruleOpt.moveDiagonal", moveDiagonal)
 		moveUpAndDown = p.getProperty("$id.ruleOpt.moveUpAndDown", moveUpAndDown)
 		moveLeftAndRightAllow = p.getProperty("$id.ruleOpt.moveLeftAndRightAllow", moveLeftAndRightAllow)
-		moveLeftAndRightUsePreviousInput = p.getProperty("$id.ruleOpt.moveLeftAndRightUsePreviousInput", moveLeftAndRightUsePreviousInput)
+		moveLeftAndRightUsePreviousInput =
+			p.getProperty("$id.ruleOpt.moveLeftAndRightUsePreviousInput", moveLeftAndRightUsePreviousInput)
 
 		lineFallAnim = p.getProperty("$id.ruleOpt.lineFallAnim", lineFallAnim)
 		lineCancelMove = p.getProperty("$id.ruleOpt.lineCancelMove", lineCancelMove)
-		lineCancelRotate = p.getProperty("$id.ruleOpt.lineCancelRotate", lineCancelRotate)
+		lineCancelSpin = p.getProperty("$id.ruleOpt.lineCancelRotate", lineCancelSpin)
 		lineCancelHold = p.getProperty("$id.ruleOpt.lineCancelHold", lineCancelHold)
 
 		skin = p.getProperty("$id.ruleOpt.skin", skin)
@@ -955,13 +950,13 @@ class RuleOptions:Serializable {
 		/** Serial version ID */
 		private const val serialVersionUID = 5781310758989780350L
 
-		/** 横移動 counterかrotation counterが超過したら固定 timeリセットを無効にする */
+		/** 横移動 counterかspin counterが超過したら固定 timeリセットを無効にする */
 		const val LOCKRESET_LIMIT_OVER_NORESET = 0
 
-		/** 横移動 counterかrotation counterが超過したら即座に固定する */
+		/** 横移動 counterかspin counterが超過したら即座に固定する */
 		const val LOCKRESET_LIMIT_OVER_INSTANT = 1
 
-		/** 横移動 counterかrotation counterが超過したらWallkick無効にする */
+		/** 横移動 counterかspin counterが超過したらWallkick無効にする */
 		const val LOCKRESET_LIMIT_OVER_NOWALLKICK = 2
 
 		/** Blockピースのcolorパターン */
@@ -972,7 +967,7 @@ class RuleOptions:Serializable {
 		const val PIECECOLOR_ARS = 0
 		const val PIECECOLOR_SRS = 1
 		val PIECECOLOR_PRESET = arrayOf(PieceColor.ARS.array, PieceColor.SRS.array)
-		/** Blockピースのrotationパターン */
+		/** Blockピースのspinパターン */
 		const val PIECEOFFSET_NONE = 0
 		const val PIECEOFFSET_BOTTOM = 1
 		const val PIECEOFFSET_BIASED = 2
@@ -980,8 +975,31 @@ class RuleOptions:Serializable {
 		val PIECEOFFSET_NAME = arrayOf("SRS CENTER", "BOTTOM Aligned", "ARS BIASED", "Customized")
 		val PIECEOFFSET_ARSPRESET = arrayOf(//[x/y][piece][direction]
 			arrayOf(//x
-				intArrayOf(0, 0, 0, 1), intArrayOf(0, 0, 0, 0), intArrayOf(0, 0, 0, 0), intArrayOf(0, 0, 0, 1), intArrayOf(0, 0, 0, 0), intArrayOf(0, 0, 0, 0), intArrayOf(0, -1, 0, 0), intArrayOf(0, 0, 0, 0), intArrayOf(0, 0, 0, 0), intArrayOf(0, 0, 0, 0), intArrayOf(0, 0, 0, 0)), arrayOf(//y
-			intArrayOf(0, 0, -1, 0), intArrayOf(1, 0, 0, 0), intArrayOf(0, 0, 0, 0), intArrayOf(1, 0, 0, 0), intArrayOf(1, 0, 0, 0), intArrayOf(1, 0, 0, 0), intArrayOf(1, 0, 0, 0), intArrayOf(0, 0, 0, 0), intArrayOf(0, 0, 0, 0), intArrayOf(0, 0, 0, 0), intArrayOf(0, 0, 0, 0)))
+				intArrayOf(0, 0, 0, 1),
+				intArrayOf(0, 0, 0, 0),
+				intArrayOf(0, 0, 0, 0),
+				intArrayOf(0, 0, 0, 1),
+				intArrayOf(0, 0, 0, 0),
+				intArrayOf(0, 0, 0, 0),
+				intArrayOf(0, -1, 0, 0),
+				intArrayOf(0, 0, 0, 0),
+				intArrayOf(0, 0, 0, 0),
+				intArrayOf(0, 0, 0, 0),
+				intArrayOf(0, 0, 0, 0)
+			), arrayOf(//y
+				intArrayOf(0, 0, -1, 0),
+				intArrayOf(1, 0, 0, 0),
+				intArrayOf(0, 0, 0, 0),
+				intArrayOf(1, 0, 0, 0),
+				intArrayOf(1, 0, 0, 0),
+				intArrayOf(1, 0, 0, 0),
+				intArrayOf(1, 0, 0, 0),
+				intArrayOf(0, 0, 0, 0),
+				intArrayOf(0, 0, 0, 0),
+				intArrayOf(0, 0, 0, 0),
+				intArrayOf(0, 0, 0, 0)
+			)
+		)
 
 		val PIECEDIRECTION_ARSPRESET = intArrayOf(0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0)
 	}

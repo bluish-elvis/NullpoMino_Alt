@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -66,7 +66,7 @@ class NetSPRanking:Serializable {
 	 * @param s Source
 	 */
 	constructor(s:NetSPRanking) {
-		copy(s)
+		replace(s)
 	}
 
 	/** Constructor
@@ -98,10 +98,8 @@ class NetSPRanking:Serializable {
 		listRecord = LinkedList()
 	}
 
-	/** Copy from other NetSPRankingData
-	 * @param s Source
-	 */
-	fun copy(s:NetSPRanking) {
+	/** Copy from [s] other NetSPRankingData*/
+	fun replace(s:NetSPRanking) {
 		strModeName = s.strModeName
 		strRuleName = s.strRuleName
 		gameType = s.gameType
@@ -252,7 +250,7 @@ class NetSPRanking:Serializable {
 
 		/** Condense a list of rankings into a single ranking file.
 		 * @param s The list of rankings.
-		 * @return A ranking that is the combination of all of the rankings.
+		 * @return A ranking that is the combination of all the rankings.
 		 */
 		fun mergeRankings(s:LinkedList<NetSPRanking>?):NetSPRanking? {
 			if(s.isNullOrEmpty()) return null

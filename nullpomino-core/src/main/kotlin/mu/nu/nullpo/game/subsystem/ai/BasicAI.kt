@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -57,7 +57,7 @@ open class BasicAI:DummyAI(), Runnable {
 		threadRunning = false
 
 		if(thread?.isAlive!=true&&engine.aiUseThread) {
-			thread = Thread(this, "AI_$playerID").apply {
+			thread = Thread(this, "AI_${engine.playerID}").apply {
 				isDaemon = true
 				start()
 			}
@@ -102,13 +102,13 @@ open class BasicAI:DummyAI(), Runnable {
 			else {
 				// rotation
 				if(rt!=bestRt) {
-					val lrot = engine.getRotateDirection(-1)
-					val rrot = engine.getRotateDirection(1)
+					val lrot = engine.getSpinDirection(-1)
+					val rrot = engine.getSpinDirection(1)
 
-					if(abs(rt-bestRt)==2&&engine.ruleOpt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E))
+					if(abs(rt-bestRt)==2&&engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E))
 						input = input or Controller.BUTTON_BIT_E
-					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse&&
-						((!engine.isRotateButtonDefaultRight&&bestRt==rrot)||engine.isRotateButtonDefaultRight&&bestRt==lrot)
+					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey&&
+						((!engine.spinDirection&&bestRt==rrot)||engine.spinDirection&&bestRt==lrot)
 					)
 						input = input or Controller.BUTTON_BIT_B
 					else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
@@ -188,7 +188,7 @@ open class BasicAI:DummyAI(), Runnable {
 		var pieceHold = engine.holdPieceObject
 		val pieceNext = engine.getNextObject(engine.nextPieceCount)
 		if(pieceHold==null) holdEmpty = true
-		if(engine.field==null) return
+//		if(engine.field==null) return
 		val fld = Field(engine.field)
 
 		for(depth in 0 until maxThinkDepth) {
@@ -198,7 +198,7 @@ open class BasicAI:DummyAI(), Runnable {
 				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)
 
 				for(x in minX..maxX) {
-					fld.copy(engine.field)
+					fld.replace(engine.field)
 					val y = pieceNow.getBottom(x, nowY, rt, fld)
 
 					if(!pieceNow.checkCollision(x, y, rt, fld)) {
@@ -218,7 +218,7 @@ open class BasicAI:DummyAI(), Runnable {
 
 						if(depth>0||bestPts<=10||pieceNow.type==Piece.Shape.T) {
 							// Left shift
-							fld.copy(engine.field)
+							fld.replace(engine.field)
 							if(!pieceNow.checkCollision(x-1, y, rt, fld)&&pieceNow.checkCollision(x-1, y-1, rt, fld)) {
 								pts = thinkMain(engine, x-1, y, rt, -1, fld, pieceNow, pieceNext, pieceHold, depth)
 
@@ -235,7 +235,7 @@ open class BasicAI:DummyAI(), Runnable {
 							}
 
 							// Right shift
-							fld.copy(engine.field)
+							fld.replace(engine.field)
 							if(!pieceNow.checkCollision(x+1, y, rt, fld)&&pieceNow.checkCollision(x+1, y-1, rt, fld)) {
 								pts = thinkMain(engine, x+1, y, rt, -1, fld, pieceNow, pieceNext, pieceHold, depth)
 
@@ -252,18 +252,18 @@ open class BasicAI:DummyAI(), Runnable {
 							}
 
 							// Leftrotation
-							if(!engine.isRotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-								val rot = pieceNow.getRotateDirection(-1, rt)
+							if(!engine.spinDirection||engine.ruleOpt.spinReverseKey) {
+								val rot = pieceNow.getSpinDirection(-1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = 0
 
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
-										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
 									val kick = engine.wallkick!!.executeWallkick(x, y, -1, rt, rot, allowUpward, pieceNow, fld, null)
 
 									if(kick!=null) {
@@ -286,18 +286,18 @@ open class BasicAI:DummyAI(), Runnable {
 							}
 
 							// Rightrotation
-							if(engine.isRotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-								val rot = pieceNow.getRotateDirection(1, rt)
+							if(engine.spinDirection||engine.ruleOpt.spinReverseKey) {
+								val rot = pieceNow.getSpinDirection(1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = 0
 
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
-										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
 									val kick = engine.wallkick!!.executeWallkick(x, y, 1, rt, rot, allowUpward, pieceNow, fld, null)
 
 									if(kick!=null) {
@@ -320,18 +320,18 @@ open class BasicAI:DummyAI(), Runnable {
 							}
 
 							// 180-degree rotation
-							if(engine.ruleOpt.rotateButtonAllowDouble) {
-								val rot = pieceNow.getRotateDirection(2, rt)
+							if(engine.ruleOpt.spinDoubleKey) {
+								val rot = pieceNow.getSpinDirection(2, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = 0
 
 								if(!pieceNow.checkCollision(x, y, rot, fld))
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
+								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
-										engine.ruleOpt.rotateMaxUpwardWallkick<0||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick
+										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
 									val kick = engine.wallkick!!.executeWallkick(x, y, 2, rt, rot, allowUpward, pieceNow, fld, null)
 
 									if(kick!=null) {
@@ -365,7 +365,7 @@ open class BasicAI:DummyAI(), Runnable {
 					val maxHoldX = pieceHold.getMostMovableRight(spawnX, spawnY, rt, engine.field)
 
 					for(x in minHoldX..maxHoldX) {
-						fld.copy(engine.field)
+						fld.replace(engine.field)
 						val y = pieceHold.getBottom(x, spawnY, rt, fld)
 
 						if(!pieceHold.checkCollision(x, y, rt, fld)) {
@@ -419,7 +419,7 @@ open class BasicAI:DummyAI(), Runnable {
 		if(piece.checkCollision(x+1, y, fld)) pts += 1
 		if(piece.checkCollision(x, y-1, fld)) pts += 100
 
-		// Number of holes and valleys needing an I piece (before placement)
+		// Number of holes and valleys needing an I-piece (before placement)
 		val holeBefore = fld.howManyHoles
 		val lidBefore = fld.howManyLidAboveHoles
 		val needIValleyBefore = fld.totalValleyNeedIPiece
@@ -470,7 +470,7 @@ open class BasicAI:DummyAI(), Runnable {
 		}
 
 		if(lines<4&&!allclear) {
-			// Number of holes and valleys needing an I piece (after placement)
+			// Number of holes and valleys needing an I-piece (after placement)
 			val holeAfter = fld.howManyHoles
 			val lidAfter = fld.howManyLidAboveHoles
 			val needIValleyAfter = fld.totalValleyNeedIPiece

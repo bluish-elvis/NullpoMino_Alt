@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,10 @@ import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.UpdateChecker
-import mu.nu.nullpo.gui.slick.img.*
+import mu.nu.nullpo.gui.slick.img.FontMedal
+import mu.nu.nullpo.gui.slick.img.FontNano
+import mu.nu.nullpo.gui.slick.img.FontTTF
+import mu.nu.nullpo.gui.slick.img.RenderStaffRoll
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
 import org.newdawn.slick.Color
@@ -106,10 +109,14 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		// Background
 		g.drawImage(ResourceHolder.imgTitleBG, 0f, 0f)
 		// Menu
-		FontNano.printFont(0, 0, "NULLPOMINO VERSION ${GameManager.versionString}",
-			COLOR.ORANGE, 0.5f)
-		FontNano.printFont(0, 8, "${container.width}*${container.height} SCR:${container.screenWidth}*${container.screenHeight}",
-			COLOR.WHITE, 0.5f)
+		FontNano.printFont(
+			0, 0, "NULLPOMINO VERSION ${GameManager.versionString}",
+			COLOR.ORANGE, 0.5f
+		)
+		FontNano.printFont(
+			0, 8, "${container.width}*${container.height} SCR:${container.screenWidth}*${container.screenHeight}",
+			COLOR.WHITE, 0.5f
+		)
 
 		FontMedal.printFont(600, 432, "ALT", 2)
 		renderChoices(2, minChoiceY, CHOICES)
@@ -122,8 +129,10 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		super.renderImpl(container, game, g)
 
 		if(UpdateChecker.isNewVersionAvailable(GameManager.versionMajor, GameManager.versionMinor)) {
-			val strTemp = String.format(NullpoMinoSlick.getUIText("Title_NewVersion"),
-				UpdateChecker.latestVersionFullString, UpdateChecker.strReleaseDate)
+			val strTemp = String.format(
+				NullpoMinoSlick.getUIText("Title_NewVersion"),
+				UpdateChecker.latestVersionFullString, UpdateChecker.strReleaseDate
+			)
 			FontTTF.print(16, 416, strTemp)
 		}
 	}

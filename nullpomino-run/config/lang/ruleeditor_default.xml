@@ -1,178 +1,178 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<comment>RuleEditor language file - Default English</comment>
+ <comment>RuleEditor language file - Default English</comment>
 
-<!--Title-->
-<entry key="Title_RuleEditor">NullpoMino RuleEditor</entry>
-<entry key="Title_FileLoadFailed">Load failed</entry>
-<entry key="Title_FileSaveFailed">Save failed</entry>
+ <!--Title-->
+ <entry key="Title_RuleEditor">NullpoMino RuleEditor</entry>
+ <entry key="Title_FileLoadFailed">Load failed</entry>
+ <entry key="Title_FileSaveFailed">Save failed</entry>
 
-<!--Message-->
-<entry key="Message_FileLoadFailed">Failed to load a rule file</entry>
-<entry key="Message_FileSaveFailed">Failed to save a rule file</entry>
+ <!--Message-->
+ <entry key="Message_FileLoadFailed">Failed to load a rule file</entry>
+ <entry key="Message_FileSaveFailed">Failed to save a rule file</entry>
 
-<!--Menu-->
-<entry key="JMenu_File">File</entry>
-<entry key="JMenuItem_New">New</entry>
-<entry key="JMenuItem_Open">Open...</entry>
-<entry key="JMenuItem_Save">Save</entry>
-<entry key="JMenuItem_SaveAs">Save As...</entry>
-<entry key="JMenuItem_Exit">Exit</entry>
+ <!--Menu-->
+ <entry key="JMenu_File">File</entry>
+ <entry key="JMenuItem_New">New</entry>
+ <entry key="JMenuItem_Open">Open...</entry>
+ <entry key="JMenuItem_Save">Save</entry>
+ <entry key="JMenuItem_SaveAs">Save As...</entry>
+ <entry key="JMenuItem_Exit">Exit</entry>
 
-<!--Tab Names-->
-<entry key="TabName_Basic">Basic</entry>
-<entry key="TabName_Field">Field</entry>
-<entry key="TabName_Hold">Hold</entry>
-<entry key="TabName_Drop">Drop</entry>
-<entry key="TabName_Rotate">Rotate</entry>
-<entry key="TabName_LockDelay">Lock Delay</entry>
-<entry key="TabName_ARE">ARE</entry>
-<entry key="TabName_Line">Line</entry>
-<entry key="TabName_Move">Move</entry>
-<entry key="TabName_PieceOffset">Piece</entry>
-<entry key="TabName_PieceOffsetX">X offset</entry>
-<entry key="TabName_PieceOffsetY">Y offset</entry>
-<entry key="TabName_PieceSpawn">Spawn</entry>
-<entry key="TabName_PieceSpawnX">X spawn offset</entry>
-<entry key="TabName_PieceSpawnY">Y spawn offset</entry>
-<entry key="TabName_PieceSpawnBigX">X big spawn offset</entry>
-<entry key="TabName_PieceSpawnBigY">Y big spawn offset</entry>
-<entry key="TabName_PieceColor">Color</entry>
-<entry key="TabName_PieceDirection">Direction</entry>
+ <!--Tab Names-->
+ <entry key="TabName_Basic">Basic</entry>
+ <entry key="TabName_Field">Field</entry>
+ <entry key="TabName_Hold">Hold</entry>
+ <entry key="TabName_Drop">Drop</entry>
+ <entry key="TabName_Rotate">Rotate</entry>
+ <entry key="TabName_LockDelay">Lock Delay</entry>
+ <entry key="TabName_ARE">ARE</entry>
+ <entry key="TabName_Line">Line</entry>
+ <entry key="TabName_Move">Move</entry>
+ <entry key="TabName_PieceOffset">Piece</entry>
+ <entry key="TabName_PieceOffsetX">X offset</entry>
+ <entry key="TabName_PieceOffsetY">Y offset</entry>
+ <entry key="TabName_PieceSpawn">Spawn</entry>
+ <entry key="TabName_PieceSpawnX">X spawn offset</entry>
+ <entry key="TabName_PieceSpawnY">Y spawn offset</entry>
+ <entry key="TabName_PieceSpawnBigX">X big spawn offset</entry>
+ <entry key="TabName_PieceSpawnBigY">Y big spawn offset</entry>
+ <entry key="TabName_PieceColor">Color</entry>
+ <entry key="TabName_PieceDirection">Direction</entry>
 
-<!--Basic-->
-<entry key="Basic_RuleName">Rule name</entry>
-<entry key="Basic_NextDisplay"># of piece preview</entry>
-<entry key="Basic_Style">Game Style</entry>
-<entry key="Basic_Skin">Block skin</entry>
-<entry key="Basic_Ghost">Ghost</entry>
-<entry key="Basic_EnterAboveField">Piece spawns above the ceiling</entry>
-<entry key="Basic_EnterMaxDistanceY">Piece spawn max distance</entry>
-<entry key="Basic_Randomizer">Randomizer</entry>
-<entry key="Basic_ResetRandomizer">Reset</entry>
+ <!--Basic-->
+ <entry key="Basic_RuleName">Rule name</entry>
+ <entry key="Basic_NextDisplay"># of piece preview</entry>
+ <entry key="Basic_Style">Game Style</entry>
+ <entry key="Basic_Skin">Block skin</entry>
+ <entry key="Basic_Ghost">Ghost</entry>
+ <entry key="Basic_EnterAboveField">Piece spawns above the ceiling</entry>
+ <entry key="Basic_EnterMaxDistanceY">Piece spawn max distance</entry>
+ <entry key="Basic_Randomizer">Randomizer</entry>
+ <entry key="Basic_ResetRandomizer">Reset</entry>
 
-<!--Field-->
-<entry key="Field_FieldWidth">Width</entry>
-<entry key="Field_FieldHeight">Height</entry>
-<entry key="Field_FieldHiddenHeight">Hidden height</entry>
-<entry key="Field_FieldCeiling">Enable solid ceiling</entry>
-<entry key="Field_FieldLockoutDeath">Enable lock out death</entry>
-<entry key="Field_FieldPartialLockoutDeath">Enable partial lock out death</entry>
+ <!--Field-->
+ <entry key="Field_FieldWidth">Width</entry>
+ <entry key="Field_FieldHeight">Height</entry>
+ <entry key="Field_FieldHiddenHeight">Hidden height</entry>
+ <entry key="Field_FieldCeiling">Enable solid ceiling</entry>
+ <entry key="Field_FieldLockoutDeath">Enable lock out death</entry>
+ <entry key="Field_FieldPartialLockoutDeath">Enable partial lock out death</entry>
 
-<!--Hold-->
-<entry key="Hold_HoldEnable">Enable hold</entry>
-<entry key="Hold_HoldInitial">Initial hold</entry>
-<entry key="Hold_HoldInitialLimit">Can't use initial hold again until release the button</entry>
-<entry key="Hold_HoldResetDirection">Reset direction</entry>
-<entry key="Hold_HoldLimit"># of times (-1:Unlimited)</entry>
+ <!--Hold-->
+ <entry key="Hold_HoldEnable">Enable hold</entry>
+ <entry key="Hold_HoldInitial">Initial hold</entry>
+ <entry key="Hold_HoldInitialLimit">Can't use initial hold again until release the button</entry>
+ <entry key="Hold_HoldResetDirection">Reset direction</entry>
+ <entry key="Hold_HoldLimit"># of times (-1:Unlimited)</entry>
 
-<!--Drop-->
-<entry key="Drop_HardDropEnable">Enable hard drop</entry>
-<entry key="Drop_HardDropLock">Instant lock by hard drop</entry>
-<entry key="Drop_HardDropLimit">Can't use hard drop again until release the button</entry>
-<entry key="Drop_SoftDropEnable">Enable soft drop</entry>
-<entry key="Drop_SoftDropLock">Instant lock by soft drop</entry>
-<entry key="Drop_SoftDropLimit">Can't use soft drop again until release the button</entry>
-<entry key="Drop_SoftDropSurfaceLock">Instant lock by soft drop on surface</entry>
-<entry key="Drop_SoftDropSpeed">Soft drop speed (1.0=1G or x1)</entry>
-<entry key="Drop_SoftDropMultiplyNativeSpeed">Multiply soft drop speed by native speed</entry>
-<entry key="Drop_SoftDropGravitySpeedLimit">Soft drop speed doesn't effect by native speed</entry>
+ <!--Drop-->
+ <entry key="Drop_HardDropEnable">Enable hard drop</entry>
+ <entry key="Drop_HardDropLock">Instant lock by hard drop</entry>
+ <entry key="Drop_HardDropLimit">Can't use hard drop again until release the button</entry>
+ <entry key="Drop_SoftDropEnable">Enable soft drop</entry>
+ <entry key="Drop_SoftDropLock">Instant lock by soft drop</entry>
+ <entry key="Drop_SoftDropLimit">Can't use soft drop again until release the button</entry>
+ <entry key="Drop_SoftDropSurfaceLock">Instant lock by soft drop on surface</entry>
+ <entry key="Drop_SoftDropSpeed">Soft drop speed (1.0=1G or x1)</entry>
+ <entry key="Drop_SoftDropMultiplyNativeSpeed">Multiply soft drop speed by native speed</entry>
+ <entry key="Drop_SoftDropGravitySpeedLimit">Soft drop speed doesn't affect by native speed</entry>
 
-<!--Rotate-->
-<entry key="Rotate_RotateInitial">Initial Rotate</entry>
-<entry key="Rotate_RotateInitialLimit">Can't use initial rotate again until release the button</entry>
-<entry key="Rotate_RotateWallkick">Enable wallkick</entry>
-<entry key="Rotate_RotateInitialWallkick">Enable wallkick on initial rotate</entry>
-<entry key="Rotate_RotateMaxUpwardWallkick"># of floorkicks allowed (-1:Unlimited)</entry>
-<entry key="Rotate_RotateButtonDefaultRight">Press A to rotate right</entry>
-<entry key="Rotate_RotateButtonAllowReverse">Allow reverse rotate (B button)</entry>
-<entry key="Rotate_RotateButtonAllowDouble">Allow double rotate (E button)</entry>
-<entry key="Rotate_WallkickSystem">Wallkick system</entry>
-<entry key="Rotate_ResetWallkickSystem">Reset</entry>
+ <!--Rotate-->
+ <entry key="Rotate_RotateInitial">Initial Rotate</entry>
+ <entry key="Rotate_RotateInitialLimit">Can't use initial rotate again until release the button</entry>
+ <entry key="Rotate_RotateWallkick">Enable wallkick</entry>
+ <entry key="Rotate_RotateInitialWallkick">Enable wallkick on initial rotate</entry>
+ <entry key="Rotate_RotateMaxUpwardWallkick"># of floorkicks allowed (-1:Unlimited)</entry>
+ <entry key="Rotate_RotateButtonDefaultRight">Press A to rotate right</entry>
+ <entry key="Rotate_RotateButtonAllowReverse">Allow reverse rotate (B button)</entry>
+ <entry key="Rotate_RotateButtonAllowDouble">Allow double rotate (E button)</entry>
+ <entry key="Rotate_WallkickSystem">Wallkick system</entry>
+ <entry key="Rotate_ResetWallkickSystem">Reset</entry>
 
-<!--LockDelay-->
-<entry key="LockDelay_LockDelayMinMax">Min/Max lock delay (-1:No Limit)</entry>
-<entry key="LockDelay_LockResetFall">Lock delay reset by fall</entry>
-<entry key="LockDelay_LockResetMove">Lock delay reset by move</entry>
-<entry key="LockDelay_LockResetRotate">Lock delay reset by rotate</entry>
-<entry key="LockDelay_LockResetWallkick">Lock delay reset by wallkick</entry>
-<entry key="LockDelay_LockDelayLockResetLimitShareCount">Share move and rotate counter (Use only move counter)</entry>
-<entry key="LockDelay_LockDelayLockResetLimitMove"># of move allowed (-1:Unlimited)</entry>
-<entry key="LockDelay_LockDelayLockResetLimitRotate"># of rotate allowed (-1:Unlimited)</entry>
-<entry key="LockDelay_LockDelayLockResetLimitOver">When you exceed the limit:</entry>
-<entry key="LockDelay_LockDelayLockResetLimitOverNoReset">Disable the lock delay reset</entry>
-<entry key="LockDelay_LockDelayLockResetLimitOverInstant">Instant lock</entry>
-<entry key="LockDelay_LockDelayLockResetLimitOverNoWallkick">Disable wallkick</entry>
+ <!--LockDelay-->
+ <entry key="LockDelay_LockDelayMinMax">Min/Max lock delay (-1:No Limit)</entry>
+ <entry key="LockDelay_LockResetFall">Lock delay reset by fall</entry>
+ <entry key="LockDelay_LockResetMove">Lock delay reset by move</entry>
+ <entry key="LockDelay_LockResetRotate">Lock delay reset by rotate</entry>
+ <entry key="LockDelay_LockResetWallkick">Lock delay reset by wallkick</entry>
+ <entry key="LockDelay_LockDelayLockResetLimitShareCount">Share move and rotate counter (Use only move counter)</entry>
+ <entry key="LockDelay_LockDelayLockResetLimitMove"># of move allowed (-1:Unlimited)</entry>
+ <entry key="LockDelay_LockDelayLockResetLimitRotate"># of rotate allowed (-1:Unlimited)</entry>
+ <entry key="LockDelay_LockDelayLockResetLimitOver">When you exceed the limit:</entry>
+ <entry key="LockDelay_LockDelayLockResetLimitOverNoReset">Disable the lock delay reset</entry>
+ <entry key="LockDelay_LockDelayLockResetLimitOverInstant">Instant lock</entry>
+ <entry key="LockDelay_LockDelayLockResetLimitOverNoWallkick">Disable wallkick</entry>
 
-<!--ARE-->
-<entry key="ARE_MinMax">Min/Max ARE (-1:No Limit)</entry>
-<entry key="ARE_LineMinMax">Min/Max Line ARE (-1:No Limit)</entry>
-<entry key="ARE_LockFlash">Lock flash</entry>
-<entry key="ARE_LockFlashOnlyFrame">Extra lock flash frame after the piece locked</entry>
-<entry key="ARE_LockFlashBeforeLineClear">Lock flash before line clear</entry>
-<entry key="ARE_CancelMove">ARE cancel on move input</entry>
-<entry key="ARE_CancelRotate">ARE cancel on rotate input</entry>
-<entry key="ARE_CancelHold">ARE cancel on hold input</entry>
+ <!--ARE-->
+ <entry key="ARE_MinMax">Min/Max ARE (-1:No Limit)</entry>
+ <entry key="ARE_LineMinMax">Min/Max Line ARE (-1:No Limit)</entry>
+ <entry key="ARE_LockFlash">Lock flash</entry>
+ <entry key="ARE_LockFlashOnlyFrame">Extra lock flash frame after the piece locked</entry>
+ <entry key="ARE_LockFlashBeforeLineClear">Lock flash before line clear</entry>
+ <entry key="ARE_CancelMove">ARE cancel on move input</entry>
+ <entry key="ARE_CancelRotate">ARE cancel on rotate input</entry>
+ <entry key="ARE_CancelHold">ARE cancel on hold input</entry>
 
-<!--Line-->
-<entry key="Line_MinMax">Min/Max line clear delay (-1:No Limit)</entry>
-<entry key="Line_FallAnim">Smoother stack falling animation</entry>
-<entry key="Line_CancelMove">Line clear delay cancel on move input</entry>
-<entry key="Line_CancelRotate">Line clear delay cancel on rotate input</entry>
-<entry key="Line_CancelHold">Line clear delay cancel on hold input</entry>
+ <!--Line-->
+ <entry key="Line_MinMax">Min/Max line clear delay (-1:No Limit)</entry>
+ <entry key="Line_FallAnim">Smoother stack falling animation</entry>
+ <entry key="Line_CancelMove">Line clear delay cancel on move input</entry>
+ <entry key="Line_CancelRotate">Line clear delay cancel on rotate input</entry>
+ <entry key="Line_CancelHold">Line clear delay cancel on hold input</entry>
 
-<!--Move-->
-<entry key="Move_DASMinMax">Min/Max DAS (-1:No Limit)</entry>
-<entry key="Move_DASDelay1">Move Delay 1/</entry>
-<entry key="Move_DASDelay2">G (0:Instant)</entry>
-<entry key="Move_DASInReady">Enable DAS charge in Ready screen</entry>
-<entry key="Move_DASInMoveFirstFrame">Enable DAS charge in the frame that piece spawns</entry>
-<entry key="Move_DASInLockFlash">Enable DAS charge in lock flash frames</entry>
-<entry key="Move_DASInLineClear">Enable DAS charge in line clear delay</entry>
-<entry key="Move_DASInARE">Enable DAS charge in ARE</entry>
-<entry key="Move_DASInARELastFrame">Enable DAS charge in ARE last frame</entry>
-<entry key="Move_DASInEndingStart">Enable DAS charge in ending start animation</entry>
-<entry key="Move_DASChargeOnBlockedMove">Enable DAS charge on blocked move</entry>
-<entry key="Move_DASStoreChargeOnNeutral">Keep DAS charge stored when a direction is released</entry>
-<entry key="Move_DASRedirectInDelay">Enable redirection of DAS in delays that disallow charging</entry>
-<entry key="Move_FirstFrame">Allow piece movement in the frame that piece spawns</entry>
-<entry key="Move_Diagonal">Allow diagonal move</entry>
-<entry key="Move_UpAndDown">Allow Up+Down</entry>
-<entry key="Move_LeftAndRightAllow">Allow Left+Right</entry>
-<entry key="Move_LeftAndRightUsePreviousInput">When both Left and Right are pressed, use previous button</entry>
-<entry key="Move_ShiftLock">Prevent DAS movement until drop key is lifted</entry>
+ <!--Move-->
+ <entry key="Move_DASMinMax">Min/Max DAS (-1:No Limit)</entry>
+ <entry key="Move_DASDelay1">Move Delay 1/</entry>
+ <entry key="Move_DASDelay2">G (0:Instant)</entry>
+ <entry key="Move_DASInReady">Enable DAS charge in Ready screen</entry>
+ <entry key="Move_DASInMoveFirstFrame">Enable DAS charge in the frame that piece spawns</entry>
+ <entry key="Move_DASInLockFlash">Enable DAS charge in lock flash frames</entry>
+ <entry key="Move_DASInLineClear">Enable DAS charge in line clear delay</entry>
+ <entry key="Move_DASInARE">Enable DAS charge in ARE</entry>
+ <entry key="Move_DASInARELastFrame">Enable DAS charge in ARE last frame</entry>
+ <entry key="Move_DASInEndingStart">Enable DAS charge in ending start animation</entry>
+ <entry key="Move_DASChargeOnBlockedMove">Enable DAS charge on blocked move</entry>
+ <entry key="Move_DASStoreChargeOnNeutral">Keep DAS charge stored when a direction is released</entry>
+ <entry key="Move_DASRedirectInDelay">Enable redirection of DAS in delays that disallow charging</entry>
+ <entry key="Move_FirstFrame">Allow piece movement in the frame that piece spawns</entry>
+ <entry key="Move_Diagonal">Allow diagonal move</entry>
+ <entry key="Move_UpAndDown">Allow Up+Down</entry>
+ <entry key="Move_LeftAndRightAllow">Allow Left+Right</entry>
+ <entry key="Move_LeftAndRightUsePreviousInput">When both Left and Right are pressed, use previous button</entry>
+ <entry key="Move_ShiftLock">Prevent DAS movement until drop key is lifted</entry>
 
-<!--PieceNames-->
-<entry key="PieceName0">I</entry>
-<entry key="PieceName1">L</entry>
-<entry key="PieceName2">O</entry>
-<entry key="PieceName3">Z</entry>
-<entry key="PieceName4">T</entry>
-<entry key="PieceName5">J</entry>
-<entry key="PieceName6">S</entry>
-<entry key="PieceName7">I1</entry>
-<entry key="PieceName8">I2</entry>
-<entry key="PieceName9">I3</entry>
-<entry key="PieceName10">L3</entry>
+ <!--PieceNames-->
+ <entry key="PieceName0">I</entry>
+ <entry key="PieceName1">L</entry>
+ <entry key="PieceName2">O</entry>
+ <entry key="PieceName3">Z</entry>
+ <entry key="PieceName4">T</entry>
+ <entry key="PieceName5">J</entry>
+ <entry key="PieceName6">S</entry>
+ <entry key="PieceName7">I1</entry>
+ <entry key="PieceName8">I2</entry>
+ <entry key="PieceName9">I3</entry>
+ <entry key="PieceName10">L3</entry>
 
-<!--ColorNames-->
-<entry key="ColorName0">Gray</entry>
-<entry key="ColorName1">Red</entry>
-<entry key="ColorName2">Orange</entry>
-<entry key="ColorName3">Yellow</entry>
-<entry key="ColorName4">Green</entry>
-<entry key="ColorName5">Cyan</entry>
-<entry key="ColorName6">Blue</entry>
-<entry key="ColorName7">Purple</entry>
+ <!--ColorNames-->
+ <entry key="ColorName0">Gray</entry>
+ <entry key="ColorName1">Red</entry>
+ <entry key="ColorName2">Orange</entry>
+ <entry key="ColorName3">Yellow</entry>
+ <entry key="ColorName4">Green</entry>
+ <entry key="ColorName5">Cyan</entry>
+ <entry key="ColorName6">Blue</entry>
+ <entry key="ColorName7">Purple</entry>
 
-<!--DirectionNames-->
-<entry key="DirectionName0">Up</entry>
-<entry key="DirectionName1">Right</entry>
-<entry key="DirectionName2">Down</entry>
-<entry key="DirectionName3">Left</entry>
-<entry key="DirectionName4">Random</entry>
+ <!--DirectionNames-->
+ <entry key="DirectionName0">Up</entry>
+ <entry key="DirectionName1">Right</entry>
+ <entry key="DirectionName2">Down</entry>
+ <entry key="DirectionName3">Left</entry>
+ <entry key="DirectionName4">Random</entry>
 
-<!--FileChooser-->
-<entry key="FileChooser_RuleFile">Rule File (*.rul)</entry>
+ <!--FileChooser-->
+ <entry key="FileChooser_RuleFile">Rule File (*.rul)</entry>
 </properties>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -53,7 +53,7 @@ class Controller:Serializable {
 	 * @param c Copy source
 	 */
 	constructor(c:Controller) {
-		copy(c)
+		replace(c)
 	}
 
 	/** 初期状態に戻す */
@@ -62,10 +62,8 @@ class Controller:Serializable {
 		clearButtonTime()
 	}
 
-	/** 他のController stateをコピー
-	 * @param c Copy source
-	 */
-	fun copy(c:Controller) {
+	/** 設定を[c]からコピー */
+	fun replace(c:Controller) {
 		for(i in 0 until BUTTON_COUNT) {
 			buttonPress[i] = c.buttonPress[i]
 			buttonTime[i] = c.buttonTime[i]
@@ -156,19 +154,19 @@ class Controller:Serializable {
 		/** → (Right movement) button */
 		const val BUTTON_RIGHT = 3
 
-		/** A (Regular rotation) button */
+		/** A (Regular spin) button */
 		const val BUTTON_A = 4
 
-		/** B (Reverse rotation) button */
+		/** B (Reverse spin) button */
 		const val BUTTON_B = 5
 
-		/** C (Regular rotation) button */
+		/** C (Regular spin) button */
 		const val BUTTON_C = 6
 
 		/** D (Hold) button */
 		const val BUTTON_D = 7
 
-		/** E (180-degree rotation) button */
+		/** E (180-degree spin) button */
 		const val BUTTON_E = 8
 
 		/** F (Use inum, staff roll fast-forward, etc.) button */

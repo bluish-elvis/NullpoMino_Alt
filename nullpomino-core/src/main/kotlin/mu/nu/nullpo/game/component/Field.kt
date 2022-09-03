@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -60,7 +60,7 @@ import kotlin.random.Random
 	 * @param f Copy source
 	 */
 	constructor(f:Field?) {
-		copy(f)
+		replace(f)
 	}
 
 	/** fieldの幅 */
@@ -393,10 +393,8 @@ import kotlin.random.Random
 
 	}
 
-	/** 別のFieldからコピー
-	 * @param f Copy source
-	 */
-	fun copy(f:Field?) {
+	/** [f]から内容をコピー*/
+	fun replace(f:Field?) {
 		f?.let {o ->
 			width = o.width
 			height = o.height
@@ -508,8 +506,8 @@ import kotlin.random.Random
 	fun setBlock(x:Int, y:Int, blk:Block?):Boolean = if(blk?.color==null) delBlock(x, y)!=null else
 		if(getCoordVaild(x, y)) try {
 			if(y<0) {
-				if((getBlock(x, y)?.copy(blk))==null) blockHidden[y*-1-1][x] = Block(blk)
-			} else if((getBlock(x, y)?.copy(blk))==null) blockField[y][x] = Block(blk)
+				if((getBlock(x, y)?.replace(blk))==null) blockHidden[y*-1-1][x] = Block(blk)
+			} else if((getBlock(x, y)?.replace(blk))==null) blockField[y][x] = Block(blk)
 			true
 		} catch(e:Throwable) {
 			log.error("setBlock($x,$y)", e)
@@ -534,10 +532,24 @@ import kotlin.random.Random
 	}
 	else null
 
-	fun Array<Block?>.delBlock(x:Int) {
-		if(x in indices) this[x] = null
+	fun findBlocks(range:IntRange, cond:(b:Block)->Boolean):Map<Int, Map<Int, Block>> = (range).associateWith {y ->
+		getRow(y).mapIndexedNotNull {x, b ->
+			b?.let {if(cond(b)) x to it else null}
+		}.associate {it}
 	}
 
+	fun findBlocks(inHide:Boolean = true, cond:(b:Block)->Boolean):Map<Int, Map<Int, Block>> =
+		findBlocks((if(inHide) -1*hiddenHeight else 0) until height, cond)
+	/** Remove blocks from specific location
+	 * @param x X-coordinate
+	 * @param y Y-coordinate
+	 * @return Previous Block if successful, null if failed
+	 */
+	@JvmName("delBlocksi") fun delBlocks(pos:Map<Int, Collection<Int>>) =
+		pos.map {(y, row) -> y to row.mapNotNull {x -> delBlock(x, y)?.let {x to it}}.associate {it}}.associate {it}
+
+	fun delBlocks(blocks:Map<Int, Map<Int, Block>>) =
+		blocks.map {(y, row) -> y to row.mapNotNull {(x, _) -> delBlock(x, y)?.let {x to it}}.associate {it}}.associate {it}
 	/** 指定した座標にあるBlock colorを取得
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -572,7 +584,11 @@ import kotlin.random.Random
 	 */
 	fun setBlockColor(x:Int, y:Int, c:Pair<Block.COLOR, Block.TYPE>):Boolean =
 		if(getCoordVaild(x, y))
-			if(getBlock(x, y)?.also {it.color = c.first;it.type = c.second}==null) setBlock(x, y, Block(c.first, c.second)) else true
+			if(getBlock(x, y)?.also {it.color = c.first;it.type = c.second}==null) setBlock(
+				x,
+				y,
+				Block(c.first, c.second)
+			) else true
 		else false
 	/** 指定した座標にあるBlock colorを変更
 	 * @param x X-coordinate
@@ -754,7 +770,7 @@ import kotlin.random.Random
 	 */
 	fun isEmptyLine(y:Int):Boolean = (0 until width).all {getBlockEmpty(it, y)}
 
-	@Deprecated("renamed",ReplaceWith("isTwistSpot(x, y, big)"))
+	@Deprecated("renamed", ReplaceWith("isTwistSpot(x, y, big)"))
 	fun isTSpinSpot(x:Int, y:Int, big:Boolean):Boolean = isTwistSpot(x, y, big)
 	/** Twisterになる地形だったらtrue
 	 * @param x X-coordinate

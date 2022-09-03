@@ -45,7 +45,7 @@ class TwistAI:BasicAI() {
 		if(piece.checkCollision(x+1, y, fld)) pts += 1
 		if(piece.checkCollision(x, y-1, fld)) pts += 100
 
-		// Number of holes and valleys needing an I piece (before placement)
+		// Number of holes and valleys needing an I-piece (before placement)
 		val holeBefore = fld.howManyHoles
 		val lidBefore = fld.howManyLidAboveHoles
 		val needIValleyBefore = fld.totalValleyNeedIPiece
@@ -100,7 +100,7 @@ class TwistAI:BasicAI() {
 		}
 
 		if(lines<4&&!allclear) {
-			// Number of holes and valleys needing an I piece (after placement)
+			// Number of holes and valleys needing an I-piece (after placement)
 			val holeAfter = fld.howManyHoles
 			val lidAfter = fld.howManyLidAboveHoles
 			val needIValleyAfter = fld.totalValleyNeedIPiece

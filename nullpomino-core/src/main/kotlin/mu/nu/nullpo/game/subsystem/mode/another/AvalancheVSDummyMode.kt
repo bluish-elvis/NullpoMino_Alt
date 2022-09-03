@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -305,7 +305,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		bigDisplay = prop.getProperty("avalanchevs$name.bigDisplay", false)
 		engine.colorClearSize = prop.getProperty("avalanchevs$name.clearSize.p$playerID", 4)
 		if(feverMapSet[playerID]>=0&&feverMapSet[playerID]<FEVER_MAPS.size)
-			loadMapSetFever(engine, playerID, feverMapSet[playerID], true)
+			loadMapSetFever(engine, feverMapSet[playerID], true)
 	}
 
 	/** Save settings from [engine] into [prop] not related to speeds */
@@ -360,7 +360,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	 * @param id MapID
 	 * @param forceReload trueWhen youMapForce Reload the file
 	 */
-	protected fun loadMapPreview(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
+	protected fun loadMapPreview(engine:GameEngine, id:Int, forceReload:Boolean) {
+		val playerID = engine.playerID
 		if(propMap[playerID].isNullOrEmpty()||forceReload) {
 			mapMaxNo[playerID] = 0
 			propMap[playerID] = receiver.loadProperties("config/map/avalanche/${mapSet[playerID]}.map")
@@ -376,7 +377,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		}
 	}
 
-	protected fun loadMapSetFever(engine:GameEngine, playerID:Int, id:Int, forceReload:Boolean) {
+	protected fun loadMapSetFever(engine:GameEngine, id:Int, forceReload:Boolean) {
+		val playerID = engine.playerID
 		if(propFeverMap[playerID].isNullOrEmpty()||forceReload) {
 			propFeverMap[playerID] = receiver.loadProperties("config/map/avalanche/${FEVER_MAPS[id]}.map")
 			feverChainMin[playerID] = propFeverMap[playerID]?.getProperty("minChain", 3) ?: 3
@@ -387,14 +389,15 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	}
 
 	/* Initialization for each player */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
+		val playerID = engine.playerID
 		if(playerID==1) {
 			engine.randSeed = owner.engine[0].randSeed
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.framecolor = PLAYER_COLOR_FRAME[playerID]
+		engine.frameColor = PLAYER_COLOR_FRAME[playerID]
 		engine.clearMode = GameEngine.ClearType.COLOR
 		engine.garbageColorClear = true
 		engine.lineGravityType = GameEngine.LineGravity.CASCADE
@@ -418,14 +421,15 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	}
 
 	/* Called for initialization during Ready (before initialization) */
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean =
-		if(engine.statc[0]==0) readyInit(engine, playerID) else false
+	override fun onReady(engine:GameEngine):Boolean =
+		if(engine.statc[0]==0) readyInit(engine) else false
 
-	open fun readyInit(engine:GameEngine, playerID:Int):Boolean {
+	open fun readyInit(engine:GameEngine):Boolean {
+		val playerID = engine.playerID
 		engine.numColors = numColors[playerID]
 		engine.lineGravityType =
 			if(cascadeSlow[playerID]) GameEngine.LineGravity.CASCADE_SLOW else GameEngine.LineGravity.CASCADE
-		engine.displaysize = if(bigDisplay) 1 else 0
+		engine.displaySize = if(bigDisplay) 1 else 0
 		engine.sticky = 2
 
 		if(outlineType[playerID]==0) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
@@ -437,12 +441,12 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			engine.fieldWidth = 3
 			engine.field.reset()
 			engine.colorClearSize = 3
-			engine.displaysize = 1
+			engine.displaySize = 1
 			engine.createFieldIfNeeded()
 			zenKeshiType[playerID] = ZENKESHI_MODE_OFF
 			ojamaHard[playerID] = 0
 		} else if(feverMapSet[playerID]>=0&&feverMapSet[playerID]<FEVER_MAPS.size)
-			loadMapSetFever(engine, playerID, feverMapSet[playerID], true)
+			loadMapSetFever(engine, feverMapSet[playerID], true)
 		// MapFor storing backup Replay read
 		if(useMap[playerID]) {
 			if(owner.replayMode) {
@@ -458,7 +462,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 					if(mapNumber[playerID]<0) {
 						if(playerID==1&&useMap[0]&&mapNumber[0]<0)
-							engine.field.copy(owner.engine[0].field)
+							engine.field.replace(owner.engine[0].field)
 						else {
 							val no = if(mapMaxNo[playerID]<1) 0 else randMap.nextInt(mapMaxNo[playerID])
 							loadMap(engine.field, it, no)
@@ -475,11 +479,11 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	}
 
 	/* Called at game start */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
-		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
+		engine.enableSE = enableSE[engine.playerID]
+		if(engine.playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 		engine.ignoreHidden = true
 
 		engine.twistAllowKick = false
@@ -488,62 +492,63 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	}
 
 	/* Called when hard drop used */
-	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += fall
 	}
 
 	/* Called when soft drop used */
-	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreSD += fall
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, avalanche:Int):Int {
+	override fun calcScore(engine:GameEngine, avalanche:Int):Int {
+		val pid = engine.playerID
 		if(avalanche>0) {
-			cleared[playerID] = true
+			cleared[pid] = true
 
-			chainDisplay[playerID] = 60
+			chainDisplay[pid] = 60
 			engine.playSE("combo${minOf(engine.chain, 20)}")
-			onClear(engine, playerID)
+			onClear(engine)
 
-			val pts = calcPts(engine, playerID, avalanche)
+			val pts = calcPts(engine, pid, avalanche)
 
 			var multiplier = engine.field.colorClearExtraCount
-			if(big[playerID]) multiplier = multiplier shr 2
+			if(big[pid]) multiplier = multiplier shr 2
 			if(engine.field.colorsCleared>1) multiplier += (engine.field.colorsCleared-1)*2
 
-			multiplier += calcChainMultiplier(engine, playerID, engine.chain)
+			multiplier += calcChainMultiplier(engine, pid, engine.chain)
 
 			if(multiplier>999) multiplier = 999
 			if(multiplier<1) multiplier = 1
 
-			lastscores[playerID] = pts
-			lastmultiplier[playerID] = multiplier
-			scgettime[playerID] = 25
+			lastscores[pid] = pts
+			lastmultiplier[pid] = multiplier
+			scgettime[pid] = 25
 			val ptsTotal = pts*multiplier
-			score[playerID] += ptsTotal
+			score[pid] += ptsTotal
 
-			val pow = if(engine.chain>=rensaShibari[playerID]) addOjama(engine, playerID, ptsTotal) else 0
+			val pow = if(engine.chain>=rensaShibari[pid]) addOjama(engine, ptsTotal) else 0
 
 			if(engine.field.isEmpty) {
-				zenKeshi[playerID] = true
+				zenKeshi[pid] = true
 				engine.statistics.scoreBonus += 2100
-				score[playerID] += 2100
+				score[pid] += 2100
 			} else
-				zenKeshi[playerID] = false
+				zenKeshi[pid] = false
 			return pow
-		} else if(!engine.field.canCascade()) cleared[playerID] = false
+		} else if(!engine.field.canCascade()) cleared[pid] = false
 		return 0
 	}
 
 	protected fun calcPts(engine:GameEngine, playerID:Int, avalanche:Int):Int = avalanche*10
 
 	protected fun calcChainMultiplier(engine:GameEngine, playerID:Int, chain:Int):Int = if(newChainPower[playerID])
-		calcChainNewPower(engine, playerID, chain)
+		calcChainNewPower(engine, chain)
 	else
 		calcChainClassicPower(engine, playerID, chain)
 
-	protected open fun calcChainNewPower(engine:GameEngine, playerID:Int, chain:Int):Int {
+	protected open fun calcChainNewPower(engine:GameEngine, chain:Int):Int {
 		return if(chain>CHAIN_POWERS.size)
 			CHAIN_POWERS[CHAIN_POWERS.size-1]
 		else
@@ -557,31 +562,31 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		else -> 0
 	}
 
-	protected open fun onClear(engine:GameEngine, playerID:Int) {}
+	protected open fun onClear(engine:GameEngine) {}
 
-	protected open fun addOjama(engine:GameEngine, playerID:Int, pts:Int):Int {
-		var enemyID = 0
-		if(playerID==0) enemyID = 1
+	protected open fun addOjama(engine:GameEngine, pts:Int):Int {
+		val pid = engine.playerID
+		val enemyID = if(pid==0) 1 else 0
 
 		var pow = 0
-		if(zenKeshi[playerID]&&zenKeshiType[playerID]==ZENKESHI_MODE_ON) pow += 30
+		if(zenKeshi[pid]&&zenKeshiType[pid]==ZENKESHI_MODE_ON) pow += 30
 		//Add ojama
-		var rate = maxOf(1, ojamaRate[playerID])
-		if(hurryupSeconds[playerID]>0&&engine.statistics.time>hurryupSeconds[playerID])
-			rate = rate shr engine.statistics.time/(hurryupSeconds[playerID]*60)
-		pow += ptsToOjama(engine, playerID, pts, rate)
-		ojamaSent[playerID] += pow
+		var rate = maxOf(1, ojamaRate[pid])
+		if(hurryupSeconds[pid]>0&&engine.statistics.time>hurryupSeconds[pid])
+			rate = rate shr engine.statistics.time/(hurryupSeconds[pid]*60)
+		pow += ptsToOjama(engine, pts, rate)
+		ojamaSent[pid] += pow
 		var send = pow
-		if(ojamaCounterMode[playerID]!=OJAMA_COUNTER_OFF) {
+		if(ojamaCounterMode[pid]!=OJAMA_COUNTER_OFF) {
 			//Counter ojama
-			if(ojama[playerID]>0&&send>0) {
-				val delta = minOf(ojama[playerID], send)
-				ojama[playerID] -= delta
+			if(ojama[pid]>0&&send>0) {
+				val delta = minOf(ojama[pid], send)
+				ojama[pid] -= delta
 				send -= delta
 			}
-			if(ojamaAdd[playerID]>0&&send>0) {
-				val delta = minOf(ojamaAdd[playerID], send)
-				ojamaAdd[playerID] -= delta
+			if(ojamaAdd[pid]>0&&send>0) {
+				val delta = minOf(ojamaAdd[pid], send)
+				ojamaAdd[pid] -= delta
 				send -= delta
 			}
 		}
@@ -589,45 +594,50 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		return pow
 	}
 
-	protected open fun ptsToOjama(engine:GameEngine, playerID:Int, pts:Int, rate:Int):Int = (pts+rate-1)/rate
+	protected open fun ptsToOjama(engine:GameEngine, pts:Int, rate:Int):Int = (pts+rate-1)/rate
 
-	abstract override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean
+	abstract override fun lineClearEnd(engine:GameEngine):Boolean
 
 	/** Check for game over */
-	protected fun gameOverCheck(engine:GameEngine, playerID:Int) {
-		if(engine.field==null) return
-		if(big[playerID]) {
+	protected fun gameOverCheck(engine:GameEngine) {
+		if(engine.field.isEmpty) return
+		if(big[engine.playerID]) {
 			if(!engine.field.getBlockEmpty(1, 0)) engine.stat = GameEngine.Status.GAMEOVER
-		} else if(!engine.field.getBlockEmpty(2, 0)||dangerColumnDouble[playerID]&&!engine.field.getBlockEmpty(3, 0))
+		} else if(!engine.field.getBlockEmpty(2, 0)||dangerColumnDouble[engine.playerID]&&!engine.field.getBlockEmpty(3, 0))
 			engine.stat = GameEngine.Status.GAMEOVER
 	}
 
-	protected fun loadFeverMap(engine:GameEngine, playerID:Int, chain:Int) {
-		loadFeverMap(engine, playerID, engine.random, chain, engine.random.nextInt(feverMapSubsets[playerID].size))
+	protected fun loadFeverMap(engine:GameEngine, chain:Int) {
+		loadFeverMap(engine, engine.random, chain, engine.random.nextInt(feverMapSubsets[engine.playerID].size))
 	}
 
-	protected fun loadFeverMap(engine:GameEngine, playerID:Int, rand:Random?, chain:Int, subset:Int) {
+	protected fun loadFeverMap(engine:GameEngine, rand:Random?, chain:Int, subset:Int) {
+		val pid = engine.playerID
 		engine.createFieldIfNeeded()
 		engine.field.run {
 			reset()
-			stringToField(propFeverMap[playerID]?.getProperty(
-				"${feverMapSubsets[playerID][subset]}.${numColors[playerID]}colors.${chain}chain") ?: "")
+			stringToField(
+				propFeverMap[pid]?.getProperty(
+					"${feverMapSubsets[pid][subset]}.${numColors[pid]}colors.${chain}chain"
+				) ?: ""
+			)
 			setBlockLinkByColor()
 			setAllAttribute(false, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.ANTIGRAVITY)
 			setAllSkin(engine.skin)
-			shuffleColors(BLOCK_COLORS, numColors[playerID], Random(rand!!.nextLong()))
+			shuffleColors(BLOCK_COLORS, numColors[pid], Random(rand!!.nextLong()))
 		}
 	}
 
 	/* Called after every frame */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
-		if(scgettime[playerID]>0) scgettime[playerID]--
-		if(zenKeshiDisplay[playerID]>0) zenKeshiDisplay[playerID]--
-		if(chainDisplay[playerID]>0) chainDisplay[playerID]--
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
+		val pid = engine.playerID
+		if(scgettime[pid]>0) scgettime[pid]--
+		if(zenKeshiDisplay[pid]>0) zenKeshiDisplay[pid]--
+		if(chainDisplay[pid]>0) chainDisplay[pid]--
 
 		// Settlement
-		if(playerID==1&&owner.engine[0].gameActive) {
+		if(pid==1&&owner.engine[0].gameActive) {
 			val p1Lose = owner.engine[0].stat==GameEngine.Status.GAMEOVER
 			val p2Lose = owner.engine[1].stat==GameEngine.Status.GAMEOVER
 			if(p1Lose&&p2Lose) {
@@ -658,21 +668,22 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		}
 	}
 
-	override fun pieceLocked(engine:GameEngine, playerID:Int, clear:Int) {
-		cleared[playerID] = false
-		ojamaDrop[playerID] = false
+	override fun pieceLocked(engine:GameEngine, clear:Int) {
+		cleared[engine.playerID] = false
+		ojamaDrop[engine.playerID] = false
 	}
 
-	protected open fun updateOjamaMeter(engine:GameEngine, playerID:Int) {
+	protected open fun updateOjamaMeter(engine:GameEngine) {
 		var width = 6
-		if(engine.field!=null) width = engine.field.width
-		val blockHeight = receiver.getBlockSize(engine)
+		width = engine.field.width
+		val blockHeight = EventReceiver.getBlockSize(engine)
 		// Rising auctionMeter
-		val value = ojama[playerID]*blockHeight/width
+		val pid = engine.playerID
+		val value = ojama[pid]*blockHeight/width
 		when {
-			ojama[playerID]>=5*width -> engine.meterColor = GameEngine.METER_COLOR_RED
-			ojama[playerID]>=width -> engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			ojama[playerID]>=1 -> engine.meterColor = GameEngine.METER_COLOR_YELLOW
+			ojama[pid]>=5*width -> engine.meterColor = GameEngine.METER_COLOR_RED
+			ojama[pid]>=width -> engine.meterColor = GameEngine.METER_COLOR_ORANGE
+			ojama[pid]>=1 -> engine.meterColor = GameEngine.METER_COLOR_YELLOW
 			else -> engine.meterColor = GameEngine.METER_COLOR_GREEN
 		}
 		if(value>engine.meterValue)
@@ -680,105 +691,103 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		else if(value<engine.meterValue) engine.meterValue--
 	}
 
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		if(!owner.engine[playerID].gameActive) return
-
-		val textHeight = if(engine.displaysize==1) 11 else engine.field.height+1
-
-		val baseX = if(engine.displaysize==1) 1 else -2
-
-		if(engine.chain>0&&chainDisplay[playerID]>0
-			&&chainDisplayType[playerID]!=CHAIN_DISPLAY_NONE)
-			receiver.drawMenuFont(engine, playerID, baseX+if(engine.chain>9)
-				0
-			else
-				1, textHeight, "${engine.chain} CHAIN!", getChainColor(engine, playerID))
-		if(zenKeshi[playerID]||zenKeshiDisplay[playerID]>0)
-			receiver.drawMenuFont(engine, playerID, baseX+1, textHeight+1, "ZENKESHI!", COLOR.YELLOW)
+	override fun renderLast(engine:GameEngine) {
+		val pid = engine.playerID
+		if(!owner.engine[pid].gameActive) return
+		val textHeight = if(engine.displaySize==1) 11 else engine.field.height+1
+		val baseX = if(engine.displaySize==1) 1 else -2
+		if(engine.chain>0&&chainDisplay[pid]>0&&chainDisplayType[pid]!=CHAIN_DISPLAY_NONE)
+			receiver.drawMenuFont(
+				engine, baseX+if(engine.chain>9) 0 else 1, textHeight, "${engine.chain} CHAIN!", getChainColor(engine)
+			)
+		if(zenKeshi[pid]||zenKeshiDisplay[pid]>0)
+			receiver.drawMenuFont(engine, baseX+1, textHeight+1, "ZENKESHI!", COLOR.YELLOW)
 	}
 
-	protected open fun getChainColor(engine:GameEngine, playerID:Int):COLOR {
-		return if(chainDisplayType[playerID]==CHAIN_DISPLAY_PLAYER)
-			EventReceiver.getPlayerColor(playerID)
-		else if(chainDisplayType[playerID]==CHAIN_DISPLAY_SIZE)
-			if(engine.chain>=rensaShibari[playerID]) COLOR.GREEN else COLOR.RED
-		else COLOR.YELLOW
+	protected open fun getChainColor(engine:GameEngine):COLOR = engine.playerID.let {pid ->
+		when {
+			chainDisplayType[pid]==CHAIN_DISPLAY_PLAYER -> EventReceiver.getPlayerColor(pid)
+			chainDisplayType[pid]==CHAIN_DISPLAY_SIZE -> if(engine.chain>=rensaShibari[pid]) COLOR.GREEN else COLOR.RED
+			else -> COLOR.YELLOW
+		}
 	}
 
-	protected fun drawX(engine:GameEngine, playerID:Int) {
+	protected open fun drawX(engine:GameEngine) {
+		val playerID = engine.playerID
 		if(!dangerColumnShowX[playerID]) return
 
 		val baseX = if(big[playerID]) 1 else 2
 
 		for(i in 0 until if(dangerColumnDouble[playerID]&&!big[playerID]) 2 else 1)
-			if(engine.field==null||engine.field.getBlockEmpty(baseX+i, 0))
+			if(engine.field.getBlockEmpty(baseX+i, 0))
 				when {
-					big[playerID] -> receiver.drawMenuFont(engine, playerID, 2, 0, "\u0085", COLOR.RED, 2f)
-					engine.displaysize==1 -> receiver.drawMenuFont(engine, playerID, 4+i*2, 0, "\u0085", COLOR.RED, 2f)
-					else -> receiver.drawMenuFont(engine, playerID, 2+i, 0, "\u0085", COLOR.RED)
+					big[playerID] -> receiver.drawMenuFont(engine, 2, 0, "\u0085", COLOR.RED, 2f)
+					engine.displaySize==1 -> receiver.drawMenuFont(engine, 4+i*2, 0, "\u0085", COLOR.RED, 2f)
+					else -> receiver.drawMenuFont(engine, 2+i, 0, "\u0085", COLOR.RED)
 				}
 	}
 
-	protected fun drawHardOjama(engine:GameEngine, playerID:Int) {
-		if(engine.field!=null)
-			for(x in 0 until engine.field.width)
-				for(y in 0 until engine.field.height) {
-					val hard = engine.field.getBlock(x, y)!!.hard
-					if(hard>0)
-						if(engine.displaysize==1) receiver.drawMenuFont(engine, playerID, x*2, y*2, "$hard", COLOR.YELLOW, 2f)
-						else receiver.drawMenuFont(engine, playerID, x, y, "$hard", COLOR.YELLOW)
-				}
+	protected fun drawHardOjama(engine:GameEngine) {
+		for(x in 0 until engine.field.width)
+			for(y in 0 until engine.field.height) {
+				val hard = engine.field.getBlock(x, y)!!.hard
+				if(hard>0)
+					if(engine.displaySize==1) receiver.drawMenuFont(engine, x*2, y*2, "$hard", COLOR.YELLOW, 2f)
+					else receiver.drawMenuFont(engine, x, y, "$hard", COLOR.YELLOW)
+			}
 	}
 
-	protected fun drawScores(engine:GameEngine, playerID:Int, x:Int, y:Int, headerColor:COLOR) {
+	protected fun drawScores(engine:GameEngine, x:Int, y:Int, headerColor:COLOR) {
 		var y = y
-		receiver.drawScoreFont(engine, playerID, x, y, "Score", headerColor)
+		receiver.drawScoreFont(engine, x, y, "Score", headerColor)
 		y++
-		receiver.drawScoreFont(engine, playerID, x, y, "1P: ", COLOR.RED)
+		receiver.drawScoreFont(engine, x, y, "1P: ", COLOR.RED)
 		if(scgettime[0]>0&&lastscores[0]>0&&lastmultiplier[0]>0)
-			receiver.drawScoreFont(engine, playerID, x+4, y, "+${lastscores[0]}e${lastmultiplier[0]}", COLOR.RED)
-		else receiver.drawScoreFont(engine, playerID, x+4, y, "${score[0]}", COLOR.RED)
+			receiver.drawScoreFont(engine, x+4, y, "+${lastscores[0]}e${lastmultiplier[0]}", COLOR.RED)
+		else receiver.drawScoreFont(engine, x+4, y, "${score[0]}", COLOR.RED)
 		y++
-		receiver.drawScoreFont(engine, playerID, x, y, "2P: ", COLOR.BLUE)
+		receiver.drawScoreFont(engine, x, y, "2P: ", COLOR.BLUE)
 		if(scgettime[1]>0&&lastscores[1]>0&&lastmultiplier[1]>0)
-			receiver.drawScoreFont(engine, playerID, x+4, y, "+${lastscores[1]}e${lastmultiplier[1]}", COLOR.BLUE)
-		else receiver.drawScoreFont(engine, playerID, x+4, y, "${score[1]}", COLOR.BLUE)
+			receiver.drawScoreFont(engine, x+4, y, "+${lastscores[1]}e${lastmultiplier[1]}", COLOR.BLUE)
+		else receiver.drawScoreFont(engine, x+4, y, "${score[1]}", COLOR.BLUE)
 	}
 
-	protected fun drawOjama(engine:GameEngine, playerID:Int, x:Int, y:Int, headerColor:COLOR) {
-		receiver.drawScoreFont(engine, playerID, x, y, "OJAMA", headerColor)
+	protected fun drawOjama(engine:GameEngine, x:Int, y:Int, headerColor:COLOR) {
+		receiver.drawScoreFont(engine, x, y, "OJAMA", headerColor)
 		val ojamaStr1P = "${ojama[0]}${if(ojamaAdd[0]>0) "(+${ojamaAdd[0]})" else ""}"
 		val ojamaStr2P = "${ojama[1]}${if(ojamaAdd[1]>0) "(+${ojamaAdd[1]})" else ""}"
-		receiver.drawScoreFont(engine, playerID, x, y+1, "1P:", COLOR.RED)
-		receiver.drawScoreFont(engine, playerID, x+4, y+1, ojamaStr1P, ojama[0]>0)
-		receiver.drawScoreFont(engine, playerID, x, y+2, "2P:", COLOR.BLUE)
-		receiver.drawScoreFont(engine, playerID, x+4, y+2, ojamaStr2P, ojama[1]>0)
+		receiver.drawScoreFont(engine, x, y+1, "1P:", COLOR.RED)
+		receiver.drawScoreFont(engine, x+4, y+1, ojamaStr1P, ojama[0]>0)
+		receiver.drawScoreFont(engine, x, y+2, "2P:", COLOR.BLUE)
+		receiver.drawScoreFont(engine, x+4, y+2, ojamaStr2P, ojama[1]>0)
 	}
 
-	protected fun drawAttack(engine:GameEngine, playerID:Int, x:Int, y:Int, headerColor:COLOR) {
-		receiver.drawScoreFont(engine, playerID, x, y, "ATTACK", headerColor)
-		receiver.drawScoreFont(engine, playerID, x, y+1, "1P: ${ojamaSent[0]}", COLOR.RED)
-		receiver.drawScoreFont(engine, playerID, x, y+2, "2P: ${ojamaSent[1]}", COLOR.BLUE)
+	protected fun drawAttack(engine:GameEngine, x:Int, y:Int, headerColor:COLOR) {
+		receiver.drawScoreFont(engine, x, y, "ATTACK", headerColor)
+		receiver.drawScoreFont(engine, x, y+1, "1P: ${ojamaSent[0]}", COLOR.RED)
+		receiver.drawScoreFont(engine, x, y+2, "2P: ${ojamaSent[1]}", COLOR.BLUE)
 	}
 
 	/* Render results screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 1, "RESULT", COLOR.ORANGE)
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 1, "RESULT", COLOR.ORANGE)
 		when(winnerID) {
-			-1 -> receiver.drawMenuFont(engine, playerID, 6, 2, "DRAW", COLOR.GREEN)
-			playerID -> receiver.drawMenuFont(engine, playerID, 6, 2, "WIN!", COLOR.YELLOW)
-			else -> receiver.drawMenuFont(engine, playerID, 6, 2, "LOSE", COLOR.WHITE)
+			-1 -> receiver.drawMenuFont(engine, 6, 2, "DRAW", COLOR.GREEN)
+			engine.playerID -> receiver.drawMenuFont(engine, 6, 2, "WIN!", COLOR.YELLOW)
+			else -> receiver.drawMenuFont(engine, 6, 2, "LOSE", COLOR.WHITE)
 		}
 
-		val apm = ojamaSent[playerID]*3600f/engine.statistics.time
-		drawResult(engine, playerID, receiver, 3, COLOR.ORANGE,
-			"ATTACK", String.format("%10d", ojamaSent[playerID]),
+		val apm = ojamaSent[engine.playerID]*3600f/engine.statistics.time
+		drawResult(
+			engine, receiver, 3, COLOR.ORANGE,
+			"ATTACK", String.format("%10d", ojamaSent[engine.playerID]),
 			"CLEARED", String.format("%10d", engine.statistics.lines),
 			"MAX CHAIN", String.format("%10d", engine.statistics.maxChain),
 			"PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
 			"ATTACK/MIN", String.format("%10g", apm),
 			"PIECE/SEC", String.format("%10g", engine.statistics.pps),
-			"Time", String.format("%10s", owner.engine[0].statistics.time.toTimeStr))
+			"Time", String.format("%10s", owner.engine[0].statistics.time.toTimeStr)
+		)
 	}
 
 	companion object {
@@ -787,14 +796,17 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 		/** Block colors */
 		val BLOCK_COLORS =
-			arrayOf(Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.BLUE, Block.COLOR.YELLOW,
-				Block.COLOR.PURPLE)
+			arrayOf(
+				Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.BLUE, Block.COLOR.YELLOW,
+				Block.COLOR.PURPLE
+			)
 
 		/** Fever values files list */
 		val FEVER_MAPS = arrayOf("Fever", "15th", "15thDS", "7", "Compendium")
 
 		/** Chain multipliers */
-		val CHAIN_POWERS = intArrayOf(4, 12, 24, 33, 50, 101, 169, 254, 341, 428, 538, 648, 763, 876, 990, 999 //Arle
+		val CHAIN_POWERS = intArrayOf(
+			4, 12, 24, 33, 50, 101, 169, 254, 341, 428, 538, 648, 763, 876, 990, 999 //Arle
 		)
 
 		/** Number of players */

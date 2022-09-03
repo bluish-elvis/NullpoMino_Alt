@@ -29,7 +29,12 @@
 package mu.nu.nullpo.gui.net
 
 import mu.nu.nullpo.game.component.RuleOptions
-import mu.nu.nullpo.game.net.*
+import mu.nu.nullpo.game.net.NetBaseClient
+import mu.nu.nullpo.game.net.NetMessageListener
+import mu.nu.nullpo.game.net.NetPlayerClient
+import mu.nu.nullpo.game.net.NetPlayerInfo
+import mu.nu.nullpo.game.net.NetRoomInfo
+import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
@@ -39,20 +44,73 @@ import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.strDateTime
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
-import java.awt.*
+import java.awt.BorderLayout
+import java.awt.CardLayout
+import java.awt.Color
+import java.awt.Component
+import java.awt.Dimension
+import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
-import java.awt.event.*
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import java.awt.image.BufferedImage
-import java.io.*
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.FileReader
+import java.io.IOException
+import java.io.PrintWriter
 import java.net.MalformedURLException
 import java.net.URL
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Collections
+import java.util.GregorianCalendar
+import java.util.LinkedList
+import java.util.Locale
+import java.util.Vector
 import java.util.zip.Adler32
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
-import javax.swing.*
+import javax.swing.AbstractAction
+import javax.swing.Action
+import javax.swing.BoxLayout
+import javax.swing.DefaultComboBoxModel
+import javax.swing.DefaultListModel
+import javax.swing.Icon
+import javax.swing.ImageIcon
+import javax.swing.JButton
+import javax.swing.JCheckBox
+import javax.swing.JComboBox
+import javax.swing.JFrame
+import javax.swing.JLabel
+import javax.swing.JList
+import javax.swing.JMenuBar
+import javax.swing.JMenuItem
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.JPopupMenu
+import javax.swing.JScrollPane
+import javax.swing.JSpinner
+import javax.swing.JSplitPane
+import javax.swing.JTabbedPane
+import javax.swing.JTable
+import javax.swing.JTextField
+import javax.swing.JTextPane
+import javax.swing.ListCellRenderer
+import javax.swing.ListSelectionModel
+import javax.swing.SpinnerNumberModel
+import javax.swing.SwingUtilities
+import javax.swing.UIManager
+import javax.swing.WindowConstants
 import javax.swing.table.DefaultTableModel
 import javax.swing.text.JTextComponent
 import javax.swing.text.SimpleAttributeSet
@@ -430,10 +488,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Game mode list data (Create room 1P screen) */
 	private var listmodelCreateRoom1PModeList:DefaultListModel<String> = DefaultListModel()
 
-	/** Rule list listbox (Create room 1P screen) */
+	/** Rule-list listbox (Create room 1P screen) */
 	private val listboxCreateRoom1PRuleList:JList<String> = JList()
 
-	/** Rule list list data (Create room 1P screen) */
+	/** Rule-list list data (Create room 1P screen) */
 	private var listmodelCreateRoom1PRuleList:DefaultListModel<String> = DefaultListModel()
 
 	/** OK button (Create room 1P screen) */
@@ -474,7 +532,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private var ruleEntries:LinkedList<RuleEntry> = LinkedList()
 
 	/** Tuning: A button rotation Combobox */
-	private var comboboxTuningRotateButtonDefaultRight:JComboBox<String> = JComboBox()
+	private var comboboxTuningSpinDirection:JComboBox<String> = JComboBox()
 	/** Tuning: Diagonal move Combobox */
 	private var comboboxTuningMoveDiagonal:JComboBox<String> = JComboBox()
 	/** Tuning: Show Outline Only Combobox */
@@ -1998,18 +2056,18 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelTuning.layout = BoxLayout(subpanelTuning, BoxLayout.Y_AXIS)
 		tabRuleChange.addTab(getUIText("RuleChange_Tab_Tuning"), subpanelTuning)
 
-		// *** A button rotate
-		val pTuningRotateButtonDefaultRight = JPanel()
+		// *** A button spin
+		val pTuningSpinDefaultRight = JPanel()
 		//pTuningRotateButtonDefaultRight.setLayout(new BoxLayout(pTuningRotateButtonDefaultRight, BoxLayout.Y_AXIS));
-		pTuningRotateButtonDefaultRight.alignmentX = Component.LEFT_ALIGNMENT
-		subpanelTuning.add(pTuningRotateButtonDefaultRight)
+		pTuningSpinDefaultRight.alignmentX = Component.LEFT_ALIGNMENT
+		subpanelTuning.add(pTuningSpinDefaultRight)
 
-		pTuningRotateButtonDefaultRight.add(JLabel(getUIText("GameTuning_RotateButtonDefaultRight_Label")))
+		pTuningSpinDefaultRight.add(JLabel(getUIText("GameTuning_RotateButtonDefaultRight_Label")))
 
-		comboboxTuningRotateButtonDefaultRight.model = DefaultComboBoxModel(
-			TUNING_ABUTTON_ROTATE.map {getUIText(it)}.toTypedArray()
+		comboboxTuningSpinDirection.model = DefaultComboBoxModel(
+			TUNING_ABUTTON_SPIN.map {getUIText(it)}.toTypedArray()
 		)
-		pTuningRotateButtonDefaultRight.add(comboboxTuningRotateButtonDefaultRight)
+		pTuningSpinDefaultRight.add(comboboxTuningSpinDirection)
 
 		// *** Diagonal move
 		val pTuningMoveDiagonal = JPanel()
@@ -3296,8 +3354,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		// Tuning
-		val owRotateButtonDefaultRight = propGlobal.getProperty("0.tuning.owRotateButtonDefaultRight", -1)+1
-		comboboxTuningRotateButtonDefaultRight.selectedIndex = owRotateButtonDefaultRight
+		val owSpinDirection = propGlobal.getProperty("0.tuning.owRotateButtonDefaultRight", -1)+1
+		comboboxTuningSpinDirection.selectedIndex = owSpinDirection
 		val owMoveDiagonal = propGlobal.getProperty("0.tuning.owMoveDiagonal", -1)+1
 		comboboxTuningMoveDiagonal.selectedIndex = owMoveDiagonal
 		val owBlockShowOutlineOnly = propGlobal.getProperty("0.tuning.owBlockShowOutlineOnly", -1)+1
@@ -3700,8 +3758,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			}
 
 			// Tuning
-			val owRotateButtonDefaultRight = comboboxTuningRotateButtonDefaultRight.selectedIndex-1
-			propGlobal.setProperty("0.tuning.owRotateButtonDefaultRight", owRotateButtonDefaultRight)
+			val owSpinDirection = comboboxTuningSpinDirection.selectedIndex-1
+			propGlobal.setProperty("0.tuning.owRotateButtonDefaultRight", owSpinDirection)
 
 			val owMoveDiagonal = comboboxTuningMoveDiagonal.selectedIndex-1
 			propGlobal.setProperty("0.tuning.owMoveDiagonal", owMoveDiagonal)
@@ -4393,7 +4451,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		if(netDummyMode!=null) netDummyMode!!.netlobbyOnDisconnect(this, netPlayerClient!!, ex)
 	}
 
-	/** Add an new NetLobbyListener, but don't add NetDummyMode!
+	/** Add a new NetLobbyListener, but don't add NetDummyMode!
 	 * @param l A NetLobbyListener to add
 	 */
 	fun addListener(l:NetLobbyListener) {
@@ -4788,7 +4846,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			arrayOf("GameTuning_ComboboxGeneric_Auto", "GameTuning_ComboboxGeneric_Disable", "GameTuning_ComboboxGeneric_Enable")
 
 		/** Tuning: A button rotation (before translation) */
-		val TUNING_ABUTTON_ROTATE =
+		val TUNING_ABUTTON_SPIN =
 			arrayOf(
 				"GameTuning_RotateButtonDefaultRight_Auto", "GameTuning_RotateButtonDefaultRight_Left",
 				"GameTuning_RotateButtonDefaultRight_Right"

@@ -1,15 +1,14 @@
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
-import java.awt.image.BufferedImage
 import java.awt.Graphics2D
-import javax.swing.JFrame
-import kotlin.jvm.JvmStatic
-import java.util.Locale
-import javax.imageio.ImageIO
-import java.io.IOException
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
+import java.awt.image.BufferedImage
 import java.io.File
+import java.io.IOException
+import java.util.Locale
+import javax.imageio.ImageIO
+import javax.swing.JFrame
 
 class TFrame:JFrame, KeyListener {
 	var label = TLabel(300, 700)

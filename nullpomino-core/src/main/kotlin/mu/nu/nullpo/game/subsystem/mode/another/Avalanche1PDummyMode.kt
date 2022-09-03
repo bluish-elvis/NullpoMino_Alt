@@ -106,8 +106,8 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	override val gameStyle = GameStyle.AVALANCHE
 
 	/* Initialization */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 		lastscore = 0
 		lastmultiplier = 0
 
@@ -129,7 +129,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		level = 5
 		toNextLevel = blocksPerLevel
 
-		engine.framecolor = GameEngine.FRAME_COLOR_PURPLE
+		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
 		engine.clearMode = GameEngine.ClearType.COLOR
 		engine.garbageColorClear = true
 		engine.colorClearSize = 4
@@ -162,13 +162,13 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		}
 	}
 
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean =
-		if(engine.statc[0]==0) readyInit(engine, playerID) else false
+	override fun onReady(engine:GameEngine):Boolean =
+		if(engine.statc[0]==0) readyInit(engine) else false
 
-	protected open fun readyInit(engine:GameEngine, playerID:Int):Boolean {
+	protected open fun readyInit(engine:GameEngine):Boolean {
 		engine.numColors = numColors
 		engine.lineGravityType = if(cascadeSlow) GameEngine.LineGravity.CASCADE_SLOW else GameEngine.LineGravity.CASCADE
-		engine.displaysize = if(bigDisplay) 1 else 0
+		engine.displaySize = if(bigDisplay) 1 else 0
 
 		when(outlinetype) {
 			0 -> engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
@@ -194,7 +194,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	}
 
 	/* Called for initialization during "Ready" screen */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 
 		engine.twistEnable = false
@@ -209,24 +209,25 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		setSpeed(engine)
 	}
 
-	override fun onARE(engine:GameEngine, playerID:Int):Boolean {
+	override fun onARE(engine:GameEngine):Boolean {
 		if(engine.dasCount in 1 until DAS) engine.dasCount = DAS
 		return false
 	}
-
+	/** Draw X or fever timer on death columns*/
+	abstract fun drawX(engine:GameEngine)
 	/* Called after every frame */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 		if(chainDisplay>0) chainDisplay--
 	}
 
 	/* game over */
-	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
-		if(engine.statc[0]==0) addBonus(engine, playerID)
+	override fun onGameOver(engine:GameEngine):Boolean {
+		if(engine.statc[0]==0) addBonus(engine)
 		return false
 	}
 
-	protected open fun addBonus(engine:GameEngine, playerID:Int) {
+	protected open fun addBonus(engine:GameEngine) {
 		zenKeshiBonus = when {
 			numColors>=5 -> zenKeshiCount*zenKeshiCount*1000
 			numColors==4 -> zenKeshiCount*(zenKeshiCount+1)*500
@@ -237,17 +238,17 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	}
 
 	/* Called when hard drop used */
-	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += fall
 	}
 
 	/* Called when soft drop used */
-	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreSD += fall
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		if(lines>0) {
 			if(zenKeshi) garbageAdd += 30
 			if(engine.field.isEmpty) {
@@ -257,7 +258,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 			} else
 				zenKeshi = false
 
-			onClear(engine, playerID)
+			onClear(engine, engine.playerID)
 			engine.playSE("combo${minOf(engine.chain, 20)}")
 
 			val pts = calcPts(lines)
@@ -307,7 +308,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		chainDisplay = 60
 	}
 
-	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
+	override fun lineClearEnd(engine:GameEngine):Boolean {
 		if(garbageAdd>0) {
 			garbageSent += garbageAdd
 			garbageAdd = 0
@@ -316,30 +317,30 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	}
 
 	/* Render results screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
-		receiver.drawMenuFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 3, "Score", EventReceiver.COLOR.BLUE)
 		val strScoreBefore = String.format("%10d", scoreBeforeBonus(engine.statistics))
-		receiver.drawMenuFont(engine, playerID, 0, 4, strScoreBefore, EventReceiver.COLOR.GREEN)
+		receiver.drawMenuFont(engine, 0, 4, strScoreBefore, EventReceiver.COLOR.GREEN)
 
-		receiver.drawMenuFont(engine, playerID, 0, 5, "ZENKESHI", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, playerID, 0, 6, String.format("%10d", zenKeshiCount))
+		receiver.drawMenuFont(engine, 0, 5, "ZENKESHI", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 6, String.format("%10d", zenKeshiCount))
 		val strZenKeshiBonus = "+$zenKeshiBonus"
-		receiver.drawMenuFont(engine, playerID, 10-strZenKeshiBonus.length, 7, strZenKeshiBonus, EventReceiver.COLOR.GREEN)
+		receiver.drawMenuFont(engine, 10-strZenKeshiBonus.length, 7, strZenKeshiBonus, EventReceiver.COLOR.GREEN)
 
-		receiver.drawMenuFont(engine, playerID, 0, 8, "MAX CHAIN", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, playerID, 0, 9, String.format("%10d", engine.statistics.maxChain))
+		receiver.drawMenuFont(engine, 0, 8, "MAX CHAIN", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 9, String.format("%10d", engine.statistics.maxChain))
 		val strMaxChainBonus = "+$maxChainBonus"
-		receiver.drawMenuFont(engine, playerID, 10-strMaxChainBonus.length, 10, strMaxChainBonus, EventReceiver.COLOR.GREEN)
+		receiver.drawMenuFont(engine, 10-strMaxChainBonus.length, 10, strMaxChainBonus, EventReceiver.COLOR.GREEN)
 
-		receiver.drawMenuFont(engine, playerID, 0, 11, "TOTAL", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 11, "TOTAL", EventReceiver.COLOR.BLUE)
 		val strScore = String.format("%10d", engine.statistics.score)
-		receiver.drawMenuFont(engine, playerID, 0, 12, strScore, EventReceiver.COLOR.RED)
+		receiver.drawMenuFont(engine, 0, 12, strScore, EventReceiver.COLOR.RED)
 
-		receiver.drawMenuFont(engine, playerID, 0, 13, "Time", EventReceiver.COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 13, "Time", EventReceiver.COLOR.BLUE)
 		val strTime = String.format("%10s", engine.statistics.time.toTimeStr)
-		receiver.drawMenuFont(engine, playerID, 0, 14, strTime)
+		receiver.drawMenuFont(engine, 0, 14, strTime)
 	}
 
 	companion object {

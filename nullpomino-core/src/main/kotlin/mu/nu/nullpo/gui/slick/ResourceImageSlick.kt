@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -54,27 +54,16 @@ class ResourceImageSlick(override val name:String):ResourceImage<Image> {
 		}
 	}
 
-	override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float) =
-		res.draw(x, y, x2, y2, srcX, srcY, srcX2, srcY2, Color(1f, 1f, 1f, alpha))
+	override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float,
+		alpha:Float, color:Triple<Float, Float, Float>) =
+		res.draw(x, y, x2, y2, srcX, srcY, srcX2, srcY2, Color(color.first, color.second, color.third, alpha))
 
-	fun draw(x:Int, y:Int, x2:Int, y2:Int, srcX:Int, srcY:Int, srcX2:Int, srcY2:Int, filter:Color) =
-		draw(
-			x.toFloat(), y.toFloat(), x2.toFloat(), y2.toFloat(),
-			srcX.toFloat(), srcY.toFloat(), srcX2.toFloat(), srcY2.toFloat(), filter
-		)
-
-	fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Int, srcY:Int, srcX2:Int, srcY2:Int, filter:Color) =
-		draw(x, y, x2, y2, srcX.toFloat(), srcY.toFloat(), srcX2.toFloat(), srcY2.toFloat(), filter)
-
-	fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, filter:Color) =
-		res.draw(x, y, x2, y2, srcX, srcY, srcX2, srcY2, filter)
-
-/*
-	fun draw(x:Float, y:Float) = res.draw(x, y)
-	fun draw(x:Float, y:Float, filter:Color) = res.draw(x, y, filter)
-	fun draw(x:Float, y:Float, width:Float, height:Float) = res.draw(x, y, width, height)
-	fun draw(x:Float, y:Float, width:Float, height:Float, filter:Color?) = res.draw(x, y, width, height, filter)
-*/
+	/*
+		fun draw(x:Float, y:Float) = res.draw(x, y)
+		fun draw(x:Float, y:Float, filter:Color) = res.draw(x, y, filter)
+		fun draw(x:Float, y:Float, width:Float, height:Float) = res.draw(x, y, width, height)
+		fun draw(x:Float, y:Float, width:Float, height:Float, filter:Color?) = res.draw(x, y, width, height, filter)
+	*/
 
 	override fun toString():String = name
 
