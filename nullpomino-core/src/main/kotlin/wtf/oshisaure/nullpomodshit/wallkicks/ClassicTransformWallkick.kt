@@ -74,7 +74,7 @@ class ClassicTransformWallkick:Wallkick {
 				if(!piece.checkCollision(x-1-check, y, rtNew, field)) return WallkickResult(-1-check, 0, rtNew)
 				if(!piece.checkCollision(x, y-1, rtNew, field)) return WallkickResult(0, -1, rtNew)
 			}
-			piece.copy(oldpiece)
+			piece.replace(oldpiece)
 		}
 		return null
 	}

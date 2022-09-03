@@ -40,8 +40,16 @@ import mu.nu.nullpo.gui.common.BaseFont.Companion.NAME_END
 import mu.nu.nullpo.gui.common.BaseFont.Companion.NAME_REV
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
-import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.*
-import java.io.*
+import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.Init
+import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.Name
+import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.Pin
+import zeroxfc.nullpo.custom.libs.ProfileProperties.LoginScreen.Companion.State.Result
+import java.io.BufferedWriter
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStreamWriter
+import java.io.Writer
 import java.nio.charset.StandardCharsets
 import java.security.SecureRandom
 import java.util.Locale
@@ -67,6 +75,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 	/** Is it logged in */
 	var isLoggedIn = false
 		private set
+
 	init {
 		try {
 			propProfile.load()
@@ -415,19 +424,18 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 		 * @param playerID Currnet playerID
 		 * @return True to override onCustom routine
 		 */
-		fun updateScreen(engine:GameEngine, playerID:Int):Boolean {
+		fun updateScreen(engine:GameEngine):Boolean {
 			val update = when(state) {
-				Init -> onInitialScreen(engine, playerID)
-				Name -> onNameInput(engine, playerID)
-				Pin -> onPasswordInput(engine, playerID)
-				Result -> onSuccessScreen(engine, playerID)
-				else -> return false
+				Init -> onInitialScreen(engine)
+				Name -> onNameInput(engine)
+				Pin -> onPasswordInput(engine)
+				Result -> onSuccessScreen(engine)
 			}
 			if(update) engine.statc[0]++
 			return true
 		}
 
-		private fun onInitialScreen(engine:GameEngine, playerID:Int):Boolean {
+		private fun onInitialScreen(engine:GameEngine):Boolean {
 			/*
              * A: Log-in
              * B: Sign-up
@@ -465,7 +473,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 			}
 		}
 
-		private fun onNameInput(engine:GameEngine, playerID:Int):Boolean {
+		private fun onNameInput(engine:GameEngine):Boolean {
 			/*
              * DOWN - next letter
              * UP - prev. letter
@@ -547,7 +555,7 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 			return true
 		}
 
-		private fun onPasswordInput(engine:GameEngine, playerID:Int):Boolean {
+		private fun onPasswordInput(engine:GameEngine):Boolean {
 			when {
 				engine.ctrl.isPush(Controller.BUTTON_A) -> {
 					if(engine.statc[2]==0) buttonPresses[engine.statc[1]] = VALUE_BT_A else secondButtonPresses[engine.statc[1]] =
@@ -602,11 +610,9 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 			return true
 		}
 
-		/**
-		 * Screen to draw. Use it inside onCustom and renderLast.
-		 */
+		/** Screen to draw. Use it inside onCustom and renderLast.*/
 
-		private fun onSuccessScreen(engine:GameEngine, playerID:Int):Boolean {
+		private fun onSuccessScreen(engine:GameEngine):Boolean {
 			if(engine.statc[0]>=180) {
 				if(success) engine.stat = GameEngine.Status.SETTING else state = Init
 				engine.resetStatc()
@@ -614,67 +620,62 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 			}
 			return true
 		}
-		/**
-		 * Render the current login screen.
-		 *
-		 * @param receiver Renderer to use
-		 * @param engine   Current GameEngine instance
-		 * @param playerID Player ID
-		 */
-		fun renderScreen(receiver:EventReceiver, engine:GameEngine, playerID:Int) {
+		/** Render the current login screen.*/
+		fun renderScreen(receiver:EventReceiver, engine:GameEngine) {
+			val pid = engine.playerID
 			when(state) {
 				Init -> {
 					// region INITIAL SCREEN
 					GameTextUtilities.drawMenuTextAlign(
-						receiver, engine, playerID, 5, 0,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "Player", colorHeading, 2f
+						receiver, engine, 5, 0, GameTextUtilities.ALIGN_TOP_MIDDLE,
+						"Player", colorHeading, 2f
 					)
 					GameTextUtilities.drawMenuTextAlign(
-						receiver, engine, playerID, 5, 2,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "Data", colorHeading, 2f
+						receiver, engine, 5, 2, GameTextUtilities.ALIGN_TOP_MIDDLE,
+						"Data", colorHeading, 2f
 					)
-					receiver.drawMenuFont(engine, playerID, 0, 8, "A: Login ", EventReceiver.COLOR.YELLOW)
-					receiver.drawMenuFont(engine, playerID, 0, 9, "B: New SignUp", EventReceiver.COLOR.YELLOW)
-					receiver.drawMenuFont(engine, playerID, 0, 11, "E: Play as Guest", EventReceiver.COLOR.YELLOW)
-					receiver.drawMenuNano(engine, playerID, 0, 18, "SELECT NEXT ACTION.", scale = .75f)
+					receiver.drawMenuFont(engine, 0, 8, "A: Login ", EventReceiver.COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 9, "B: New SignUp", EventReceiver.COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 11, "E: Play as Guest", EventReceiver.COLOR.YELLOW)
+					receiver.drawMenuNano(engine, 0, 18, "SELECT NEXT ACTION.", scale = .75f)
 				}
 				Name -> {
 					// region NAME INPUT
 					GameTextUtilities.drawMenuTextAlign(
-						receiver, engine, playerID, 5, 0,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "Name", colorHeading, 2f
+						receiver, engine, 5, 0, GameTextUtilities.ALIGN_TOP_MIDDLE,
+						"Name", colorHeading, 2f
 					)
 					GameTextUtilities.drawMenuTextAlign(
-						receiver, engine, playerID, 5, 2,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "Entry", colorHeading, 2f
+						receiver, engine, 5, 2, GameTextUtilities.ALIGN_TOP_MIDDLE,
+						"Entry", colorHeading, 2f
 					)
-					receiver.drawMenuFont(engine, playerID, 2, 8, nameEntry, scale = 2f)
+					receiver.drawMenuFont(engine, 2, 8, nameEntry, scale = 2f)
 					val c = if(engine.statc[0]/6%2==0) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.WHITE
-					receiver.drawMenuFont(engine, playerID, 2+nameEntry.length*2, 8, getCharAt(currentChar), c, 2f)
+					receiver.drawMenuFont(engine, 2+nameEntry.length*2, 8, getCharAt(currentChar), c, 2f)
 					ENTRY_CHARS.forEachIndexed {i, c ->
-						receiver.drawMenuFont(engine, playerID, i%10, 11+i/10, "$c", i==currentChar)
+						receiver.drawMenuFont(engine, i%10, 11+i/10, "$c", i==currentChar)
 					}
-					receiver.drawMenuFont(engine, playerID, 0, 18, "Input Your ID name.", scale = .75f)
+					receiver.drawMenuFont(engine, 0, 18, "Input Your ID name.", scale = .75f)
 
 				}
 				Pin -> {
 					// region PASSWORD INPUT
 					GameTextUtilities.drawMenuTextAlign(
-						receiver, engine, playerID, 5, 0,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, "Pass Phrase", colorHeading, .75f
+						receiver, engine, 5, 0, GameTextUtilities.ALIGN_TOP_MIDDLE,
+						"Pass Phrase", colorHeading, .75f
 					)
-					receiver.drawMenuFont(engine, playerID, 2, 8, nameEntry, scale = 2f)
+					receiver.drawMenuFont(engine, 2, 8, nameEntry, scale = 2f)
 					var x = 0
 					while(x<6) {
 						val chr = if(x<engine.statc[1]||x==engine.statc[1]&&engine.statc[0]/2%2==0) BaseFont.CIRCLE_S else BaseFont.CIRCLE_L
-						receiver.drawMenuFont(engine, playerID, x+2, 12, chr, colorHeading)
+						receiver.drawMenuFont(engine, x+2, 12, chr, colorHeading)
 						x++
 					}
 					receiver.drawMenuNano(
-						engine, playerID, 0, 18,
+						engine, 0, 18,
 						if(signup&&engine.statc[2]==1) "Input your PIN again" else "Input your PIN code"
 					)
-					receiver.drawMenuNano(engine, playerID, 0, 9, "With your ABCD Buttons")
+					receiver.drawMenuNano(engine, 0, 9, "With your ABCD Buttons")
 
 				}
 				Result -> {
@@ -685,8 +686,8 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 					else EventReceiver.COLOR.WHITE
 
 					GameTextUtilities.drawMenuTextAlign(
-						receiver, engine, playerID, 5, 9,
-						GameTextUtilities.ALIGN_TOP_MIDDLE, s, col, 2f
+						receiver, engine, 5, 9, GameTextUtilities.ALIGN_TOP_MIDDLE,
+						s, col, 2f
 					)
 				}
 			}

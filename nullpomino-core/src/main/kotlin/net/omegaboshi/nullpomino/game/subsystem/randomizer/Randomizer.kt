@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -36,7 +36,7 @@ abstract class Randomizer {
 
 	private var seed:Long = 0L//Random.Default.nextLong()
 	protected var r:Random = Random(seed)
-	var pieces = Shape.values().map {it.ordinal}.toIntArray()
+	var pieces = Shape.all.map {it.ordinal}.toIntArray()
 		private set
 
 	protected val isPieceSZOOnly:Boolean
@@ -59,7 +59,7 @@ abstract class Randomizer {
 	fun setState(pieceEnable:BooleanArray, seed:Long = this.seed) {
 		this.seed = seed
 		r = Random(seed)
-		pieces = Shape.values().map {it.ordinal}.filter {pieceEnable[it]}.toIntArray()
+		pieces = Shape.all.map {it.ordinal}.filter {pieceEnable[it]}.toIntArray()
 		init()
 	}
 

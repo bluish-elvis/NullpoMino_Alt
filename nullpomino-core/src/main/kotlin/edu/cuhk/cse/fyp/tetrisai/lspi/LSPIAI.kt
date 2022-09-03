@@ -1,31 +1,31 @@
 /*
-    Copyright (c) 2010, NullNoname
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-
-        * Redistributions of source code must retain the above copyright
-          notice, this list of conditions and the following disclaimer.
-        * Redistributions in binary form must reproduce the above copyright
-          notice, this list of conditions and the following disclaimer in the
-          documentation and/or other materials provided with the distribution.
-        * Neither the name of NullNoname nor the names of its
-          contributors may be used to endorse or promote products derived from
-          this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
 import mu.nu.nullpo.game.component.Controller
@@ -106,7 +106,7 @@ open class LSPIAI:DummyAI(), Runnable {
 		thinking = false
 		threadRunning = false
 		if(thread?.isAlive!=true&&engine.aiUseThread) {
-			thread = Thread(this, "AI_$playerID").apply {
+			thread = Thread(this, "AI_${engine.playerID}").apply {
 				isDaemon = true
 				start()
 			}
@@ -148,16 +148,16 @@ open class LSPIAI:DummyAI(), Runnable {
 			} else {
 				// rotation
 				if(rt!=bestRt) {
-					val lrot = engine.getRotateDirection(-1)
-					val rrot = engine.getRotateDirection(1)
-					if(abs(rt-bestRt)==2&&engine.ruleOpt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E)) {
+					val lrot = engine.getSpinDirection(-1)
+					val rrot = engine.getSpinDirection(1)
+					if(abs(rt-bestRt)==2&&engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E)) {
 						input = input or Controller.BUTTON_BIT_E
-					} else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse
-						&&!engine.isRotateButtonDefaultRight&&bestRt==rrot
+					} else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey
+						&&!engine.spinDirection&&bestRt==rrot
 					) {
 						input = input or Controller.BUTTON_BIT_B
-					} else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.rotateButtonAllowReverse
-						&&engine.isRotateButtonDefaultRight&&bestRt==lrot
+					} else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey
+						&&engine.spinDirection&&bestRt==lrot
 					) {
 						input = input or Controller.BUTTON_BIT_B
 					} else if(!ctrl.isPress(Controller.BUTTON_A)) {
@@ -331,7 +331,7 @@ open class LSPIAI:DummyAI(), Runnable {
 				val minX = pieceNow!!.getMostMovableLeft(nowX, nowY, rt, engine.field)
 				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)
 				for(x in minX..maxX) {
-					fld.copy(engine.field)
+					fld.replace(engine.field)
 					val y = pieceNow.getBottom(x, nowY, rt, fld)
 					if(!pieceNow.checkCollision(x, y, rt, fld)) {
 						// As it is
@@ -350,7 +350,7 @@ open class LSPIAI:DummyAI(), Runnable {
 						if(depth>0||pieceNow.id==Piece.PIECE_T) {
 							//if ((depth > 0) || (bestPts <= 10) || (pieceNow.id == Piece.PIECE_T)) {
 							// Left shift
-							fld.copy(engine.field)
+							fld.replace(engine.field)
 							if(!pieceNow.checkCollision(x-1, y, rt, fld)
 								&&pieceNow.checkCollision(x-1, y-1, rt, fld)
 							) {
@@ -369,7 +369,7 @@ open class LSPIAI:DummyAI(), Runnable {
 							}
 
 							// Right shift
-							fld.copy(engine.field)
+							fld.replace(engine.field)
 							if(!pieceNow.checkCollision(x+1, y, rt, fld)
 								&&pieceNow.checkCollision(x+1, y-1, rt, fld)
 							) {
@@ -388,17 +388,17 @@ open class LSPIAI:DummyAI(), Runnable {
 							}
 
 							// Leftrotation
-							if(!engine.isRotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-								val rot = pieceNow.getRotateDirection(-1, rt)
+							if(!engine.spinDirection||engine.ruleOpt.spinReverseKey) {
+								val rot = pieceNow.getSpinDirection(-1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = 0.0
 								if(!pieceNow.checkCollision(x, y, rot, fld)) {
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								} else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
-									val allowUpward = (engine.ruleOpt.rotateMaxUpwardWallkick<0
-										||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick)
+								} else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
+									val allowUpward = (engine.ruleOpt.spinWallkickMaxRise<0
+										||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise)
 									val kick = engine.wallkick!!.executeWallkick(
 										x, y, -1, rt, rot,
 										allowUpward, pieceNow, fld, null
@@ -426,17 +426,17 @@ open class LSPIAI:DummyAI(), Runnable {
 							}
 
 							// Rightrotation
-							if(engine.isRotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-								val rot = pieceNow.getRotateDirection(1, rt)
+							if(engine.spinDirection||engine.ruleOpt.spinReverseKey) {
+								val rot = pieceNow.getSpinDirection(1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = 0.0
 								if(!pieceNow.checkCollision(x, y, rot, fld)) {
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								} else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
-									val allowUpward = (engine.ruleOpt.rotateMaxUpwardWallkick<0
-										||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick)
+								} else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
+									val allowUpward = (engine.ruleOpt.spinWallkickMaxRise<0
+										||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise)
 									val kick = engine.wallkick!!.executeWallkick(
 										x, y, 1, rt, rot, allowUpward,
 										pieceNow, fld, null
@@ -464,17 +464,17 @@ open class LSPIAI:DummyAI(), Runnable {
 							}
 
 							// 180-degree rotation
-							if(engine.ruleOpt.rotateButtonAllowDouble) {
-								val rot = pieceNow.getRotateDirection(2, rt)
+							if(engine.ruleOpt.spinDoubleKey) {
+								val rot = pieceNow.getSpinDirection(2, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = 0.0
 								if(!pieceNow.checkCollision(x, y, rot, fld)) {
 									pts = thinkMain(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								} else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
-									val allowUpward = (engine.ruleOpt.rotateMaxUpwardWallkick<0
-										||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick)
+								} else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
+									val allowUpward = (engine.ruleOpt.spinWallkickMaxRise<0
+										||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise)
 									val kick = engine.wallkick!!.executeWallkick(
 										x, y, 2, rt, rot, allowUpward,
 										pieceNow, fld, null
@@ -513,7 +513,7 @@ open class LSPIAI:DummyAI(), Runnable {
 					val minHoldX = pieceHold.getMostMovableLeft(spawnX, spawnY, rt, engine.field)
 					val maxHoldX = pieceHold.getMostMovableRight(spawnX, spawnY, rt, engine.field)
 					for(x in minHoldX..maxHoldX) {
-						fld.copy(engine.field)
+						fld.replace(engine.field)
 						val y = pieceHold.getBottom(x, spawnY, rt, fld)
 						if(!pieceHold.checkCollision(x, y, rt, fld)) {
 							var pieceNext2 = engine.getNextObject(engine.nextPieceCount)
@@ -588,7 +588,7 @@ open class LSPIAI:DummyAI(), Runnable {
 				val minX = pieceNow!!.getMostMovableLeft(nowX, nowY, rt, engine.field)
 				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)
 				for(x in minX..maxX) {
-					fld.copy(engine.field)
+					fld.replace(engine.field)
 					val y = pieceNow.getBottom(x, nowY, rt, fld)
 					if(!pieceNow.checkCollision(x, y, rt, fld)) {
 						// As it is
@@ -607,7 +607,7 @@ open class LSPIAI:DummyAI(), Runnable {
 						if(depth>0||pieceNow.id==Piece.PIECE_T) {
 							//if ((depth > 0) || (bestOppPts <= 10) || (pieceNow.id == Piece.PIECE_T)) {
 							// Left shift
-							fld.copy(engine.field)
+							fld.replace(engine.field)
 							if(!pieceNow.checkCollision(x-1, y, rt, fld)
 								&&pieceNow.checkCollision(x-1, y-1, rt, fld)
 							) {
@@ -626,7 +626,7 @@ open class LSPIAI:DummyAI(), Runnable {
 							}
 
 							// Right shift
-							fld.copy(engine.field)
+							fld.replace(engine.field)
 							if(!pieceNow.checkCollision(x+1, y, rt, fld)
 								&&pieceNow.checkCollision(x+1, y-1, rt, fld)
 							) {
@@ -645,17 +645,17 @@ open class LSPIAI:DummyAI(), Runnable {
 							}
 
 							// Leftrotation
-							if(!engine.isRotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-								val rot = pieceNow.getRotateDirection(-1, rt)
+							if(!engine.spinDirection||engine.ruleOpt.spinReverseKey) {
+								val rot = pieceNow.getSpinDirection(-1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = 0.0
 								if(!pieceNow.checkCollision(x, y, rot, fld)) {
 									pts = thinkMainByLineStack(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								} else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
-									val allowUpward = (engine.ruleOpt.rotateMaxUpwardWallkick<0
-										||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick)
+								} else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
+									val allowUpward = (engine.ruleOpt.spinWallkickMaxRise<0
+										||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise)
 									val kick = engine.wallkick!!.executeWallkick(
 										x, y, -1, rt, rot,
 										allowUpward, pieceNow, fld, null
@@ -683,17 +683,17 @@ open class LSPIAI:DummyAI(), Runnable {
 							}
 
 							// Rightrotation
-							if(engine.isRotateButtonDefaultRight||engine.ruleOpt.rotateButtonAllowReverse) {
-								val rot = pieceNow.getRotateDirection(1, rt)
+							if(engine.spinDirection||engine.ruleOpt.spinReverseKey) {
+								val rot = pieceNow.getSpinDirection(1, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = 0.0
 								if(!pieceNow.checkCollision(x, y, rot, fld)) {
 									pts = thinkMainByLineStack(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								} else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
-									val allowUpward = (engine.ruleOpt.rotateMaxUpwardWallkick<0
-										||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick)
+								} else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
+									val allowUpward = (engine.ruleOpt.spinWallkickMaxRise<0
+										||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise)
 									val kick = engine.wallkick!!.executeWallkick(
 										x, y, 1, rt, rot, allowUpward,
 										pieceNow, fld, null
@@ -721,17 +721,17 @@ open class LSPIAI:DummyAI(), Runnable {
 							}
 
 							// 180-degree rotation
-							if(engine.ruleOpt.rotateButtonAllowDouble) {
-								val rot = pieceNow.getRotateDirection(2, rt)
+							if(engine.ruleOpt.spinDoubleKey) {
+								val rot = pieceNow.getSpinDirection(2, rt)
 								var newX = x
 								var newY = y
-								fld.copy(engine.field)
+								fld.replace(engine.field)
 								pts = 0.0
 								if(!pieceNow.checkCollision(x, y, rot, fld)) {
 									pts = thinkMainByLineStack(engine, x, y, rot, rt, fld, pieceNow, pieceNext, pieceHold, depth)
-								} else if(engine.wallkick!=null&&engine.ruleOpt.rotateWallkick) {
-									val allowUpward = (engine.ruleOpt.rotateMaxUpwardWallkick<0
-										||engine.nowUpwardWallkickCount<engine.ruleOpt.rotateMaxUpwardWallkick)
+								} else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
+									val allowUpward = (engine.ruleOpt.spinWallkickMaxRise<0
+										||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise)
 									val kick = engine.wallkick!!.executeWallkick(
 										x, y, 2, rt, rot, allowUpward,
 										pieceNow, fld, null
@@ -770,7 +770,7 @@ open class LSPIAI:DummyAI(), Runnable {
 					val minHoldX = pieceHold.getMostMovableLeft(spawnX, spawnY, rt, engine.field)
 					val maxHoldX = pieceHold.getMostMovableRight(spawnX, spawnY, rt, engine.field)
 					for(x in minHoldX..maxHoldX) {
-						fld.copy(engine.field)
+						fld.replace(engine.field)
 						val y = pieceHold.getBottom(x, spawnY, rt, fld)
 						if(!pieceHold.checkCollision(x, y, rt, fld)) {
 							var pieceNext2 = engine.getNextObject(engine.nextPieceCount)
@@ -913,8 +913,8 @@ open class LSPIAI:DummyAI(), Runnable {
 			val oppNow = Piece()
 			var oppLines = 0
 			if(oppEngine.nowPieceObject!=null) {
-				oppFld.copy(oppEngine.field)
-				oppNow.copy(oppEngine.nowPieceObject!!)
+				oppFld.replace(oppEngine.field)
+				oppNow.replace(oppEngine.nowPieceObject!!)
 				thinkbestOppPosition(oppEngine, 1-engine.playerID)
 				oppNow.placeToField(bestOppX, bestOppY, oppFld)
 				// Line clear
@@ -985,15 +985,17 @@ open class LSPIAI:DummyAI(), Runnable {
 			}
 			newState.top[c] = heightest
 		}
-		newState.addLinesStack(engine!!.meterValue/8)
-		if(engine.owner.mode is VSBattleMode) {
-			(engine.owner.mode as VSBattleMode).let {mode ->
-				newState.addLineSent(mode.garbageSent[engine.playerID])
+		if(engine!=null) {
+			if(engine.owner.mode is VSBattleMode) {
+				(engine.owner.mode as VSBattleMode).let {mode ->
+					newState.addLinesStack(mode.garbage[engine.playerID])
+					newState.addLineSent(mode.garbageSent[engine.playerID])
+				}
+			} else {
+				newState.addLineSent(engine.lineClearing)
 			}
-		} else {
-			newState.addLineSent(engine.lineClearing)
+			newState.addLineCleared(engine.lineClearing)
 		}
-		newState.addLineCleared(engine.lineClearing)
 		return newState
 	}
 
@@ -1074,7 +1076,7 @@ open class LSPIAI:DummyAI(), Runnable {
 
 	companion object {
 		/** Log  */
-		var log = Logger.getLogger(LSPIAI::class.java)
+		var log:Logger = Logger.getLogger(LSPIAI::class.java)
 		/**
 		 * NEW THINGS IN ESTR LSPI AI
 		 *
@@ -1086,7 +1088,7 @@ open class LSPIAI:DummyAI(), Runnable {
 		val lspi2nullpomino = intArrayOf(2, 0, 1, 5, 4, 6, 3)
 		/** Map nullpomino piece to LSPI AI piece  */
 		val nullpomino2lspi = intArrayOf(1, 2, 0, 6, 4, 3, 5)
-		/** Map LSPI AI rotate to nullpomino rotate according piece  */
+		/** Map LSPI AI spin to nullpomino spin according piece  */
 		val lspi2rotate =
 			arrayOf(
 				intArrayOf(0),

@@ -9,7 +9,7 @@
 <!--MessageBoxes-->
 <entry key="MessageBody_ServerDelete">Do you really want to delete the following server from the list?</entry>
 <entry key="MessageTitle_ServerDelete">Delete Server</entry>
-<entry key="MessageBody_SetObserver">Do you want to enable the watch feature for the following server?\nThe watch feature displays the current number of players on the bottom of the screen.\nOnly one server can be watched at a time.</entry>
+<entry key="MessageBody_SetObserver">Do you want to enable the watch feature for the following server?\nThe watch feature displays the current number of players at the bottom of the screen.\nOnly one server can be watched at a time.</entry>
 <entry key="MessageTitle_SetObserver">Enable Watch</entry>
 <entry key="MessageBody_UnsetObserver">Disable watch feature?\n(Currently watching %s:%d)</entry>
 <entry key="MessageTitle_UnsetObserver">Disable Watch</entry>
@@ -38,7 +38,7 @@
 <entry key="Lobby_QuickStart">Quick Start</entry>
 <entry key="Lobby_QuickStart_Tip">Get right into a game.</entry>
 <entry key="Lobby_RoomCreate">New Room...</entry>
-<entry key="Lobby_RoomCreate_Tip">Create a multi-player room.</entry>
+<entry key="Lobby_RoomCreate_Tip">Create a multiplayer room.</entry>
 <entry key="Lobby_RoomCreate1P">New 1P Room...</entry>
 <entry key="Lobby_RoomCreate1P_Tip">Create a single-player room.</entry>
 <entry key="Lobby_Options">Options...</entry>
@@ -191,7 +191,7 @@
 <entry key="CreateRoom_Mode_Tip">Select a game mode.</entry>
 <entry key="CreateRoom_MaxPlayers_Tip">Select the max number of players for this room.</entry>
 <entry key="CreateRoom_AutoStartSeconds_Tip">Select the countdown length in seconds.</entry>
-<entry key="CreateRoom_HurryupSeconds_Tip">Select how many seconds it takes before Hurry Up starts.</entry>
+<entry key="CreateRoom_HurryupSeconds_Tip">Select how many seconds it takes before Hurry-Up starts.</entry>
 <entry key="CreateRoom_HurryupInterval_Tip">Hurry up garbage will rise after every [This Setting] pieces are placed.</entry>
 <entry key="CreateRoom_twistEnableType_Tip">Select which spin bonus type to use. "T-Spin Only" will only recognize T piece twists, while "All Spins" will recognize all pieces.</entry>
 <entry key="CreateRoom_SpinCheckType_Tip">Select which method of spin detection to use. "4-Point" will check if 3 of 4 points around the piece are blocked. "Immobile" which check if the piece cannot move when locked.</entry>
@@ -201,7 +201,7 @@
 <entry key="CreateRoom_UseMap_Tip">If enabled, every match will begin with predefined pattern of blocks.</entry>
 <entry key="CreateRoom_RuleLock_Tip">Forces everyone to use the rule you are currently using.</entry>
 <entry key="CreateRoom_twistEnableEZ_Tip">If enabled, EZ spins will count when using "Immobile" recognition type.</entry>
-<entry key="CreateRoom_B2B_Tip">If enabled, a back-to-back bonus will send an extra garbage to the opponents.</entry>
+<entry key="CreateRoom_B2B_Tip">If enabled, a back-to-back bonus will send extra garbage to the opponents.</entry>
 <entry key="CreateRoom_Combo_Tip">Consecutive line clears (Combo) will send extra garbages to the opponents.</entry>
 <entry key="CreateRoom_RensaBlock_Tip">Consecutive line clears (Combo) will block incoming attacks.</entry>
 <entry key="CreateRoom_Counter_Tip">Outgoing garbage cancels out incoming garbage.</entry>

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -45,7 +45,7 @@ class VSBattleMode:AbstractMode() {
 
 	/** garbage blockType of */
 	private var garbageType = IntArray(MAX_PLAYERS)
-	private val garbageStyle get() = garbageType.map {GarbageStyle.values()[it]}
+	private val garbageStyle get() = garbageType.map {GarbageStyle.all[it]}
 
 	/** Rate of change of garbage holes */
 	private var messiness:Array<IntArray> = Array(MAX_PLAYERS) {IntArray(2) {0}}
@@ -57,7 +57,7 @@ class VSBattleMode:AbstractMode() {
 	private var garbageBlocking = BooleanArray(MAX_PLAYERS) {true}
 
 	/** Has accumulated garbage blockOfcount */
-	private val garbage:IntArray
+	val garbage:IntArray
 		get() = (0 until players).map {p -> garbageEntries[p].filter {it.time<=0}.sumOf {it.lines}}.toIntArray()
 
 	/** Had sent garbage blockOfcount */
@@ -221,47 +221,47 @@ class VSBattleMode:AbstractMode() {
 
 	/** Load settings into [engine] from [prop] not related to speeds */
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
-		val playerID = engine.playerID
+		val pid = engine.playerID
 		bgmno = prop.getProperty("vsbattle.bgmno", 0)
-		garbageType[playerID] = prop.getProperty("vsbattle.garbageType.p$playerID", 0)
-		messiness[playerID] = prop.getProperty("vsbattle.messiness.p$playerID", intArrayOf(90, 30))
-		garbageCounter[playerID] = prop.getProperty("vsbattle.garbageCounter.p$playerID", true)
-		garbageBlocking[playerID] = prop.getProperty("vsbattle.garbageBlocking.p$playerID", true)
-		twistEnableType[playerID] = prop.getProperty("vsbattle.twistEnableType.p$playerID", 1)
-		enableTwist[playerID] = prop.getProperty("vsbattle.enableTwist.p$playerID", true)
-		splitb2b[playerID] = prop.getProperty("vsbattle.splitb2b.p$playerID", true)
-		enableCombo[playerID] = prop.getProperty("vsbattle.enableCombo.p$playerID", true)
-		big[playerID] = prop.getProperty("vsbattle.big.p$playerID", false)
-		enableSE[playerID] = prop.getProperty("vsbattle.enableSE.p$playerID", true)
-		hurryupSeconds[playerID] = prop.getProperty("vsbattle.hurryupSeconds.p$playerID", -1)
-		hurryupInterval[playerID] = prop.getProperty("vsbattle.hurryupInterval.p$playerID", 5)
-		useMap[playerID] = prop.getProperty("vsbattle.useMap.p$playerID", false)
-		mapSet[playerID] = prop.getProperty("vsbattle.mapSet.p$playerID", 0)
-		mapNumber[playerID] = prop.getProperty("vsbattle.mapNumber.p$playerID", -1)
-		presetNumber[playerID] = prop.getProperty("vsbattle.presetNumber.p$playerID", 0)
+		garbageType[pid] = prop.getProperty("vsbattle.garbageType.p$pid", 0)
+		messiness[pid] = prop.getProperty("vsbattle.messiness.p$pid", intArrayOf(90, 30))
+		garbageCounter[pid] = prop.getProperty("vsbattle.garbageCounter.p$pid", true)
+		garbageBlocking[pid] = prop.getProperty("vsbattle.garbageBlocking.p$pid", true)
+		twistEnableType[pid] = prop.getProperty("vsbattle.twistEnableType.p$pid", 1)
+		enableTwist[pid] = prop.getProperty("vsbattle.enableTwist.p$pid", true)
+		splitb2b[pid] = prop.getProperty("vsbattle.splitb2b.p$pid", true)
+		enableCombo[pid] = prop.getProperty("vsbattle.enableCombo.p$pid", true)
+		big[pid] = prop.getProperty("vsbattle.big.p$pid", false)
+		enableSE[pid] = prop.getProperty("vsbattle.enableSE.p$pid", true)
+		hurryupSeconds[pid] = prop.getProperty("vsbattle.hurryupSeconds.p$pid", -1)
+		hurryupInterval[pid] = prop.getProperty("vsbattle.hurryupInterval.p$pid", 5)
+		useMap[pid] = prop.getProperty("vsbattle.useMap.p$pid", false)
+		mapSet[pid] = prop.getProperty("vsbattle.mapSet.p$pid", 0)
+		mapNumber[pid] = prop.getProperty("vsbattle.mapNumber.p$pid", -1)
+		presetNumber[pid] = prop.getProperty("vsbattle.presetNumber.p$pid", 0)
 		showStats = prop.getProperty("vsbattle.showStats", true)
 	}
 
 	/** Save settings from [engine] into [prop] not related to speeds */
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
-		val playerID = engine.playerID
+		val pid = engine.playerID
 		prop.setProperty("vsbattle.bgmno", bgmno)
-		prop.setProperty("vsbattle.garbageType.p$playerID", garbageType[playerID])
-		prop.setProperty("vsbattle.messiness.p$playerID", messiness.getOrElse(playerID) {intArrayOf()})
-		prop.setProperty("vsbattle.garbageCounter.p$playerID", garbageCounter[playerID])
-		prop.setProperty("vsbattle.garbageBlocking.p$playerID", garbageBlocking[playerID])
-		prop.setProperty("vsbattle.twistEnableType.p$playerID", twistEnableType[playerID])
-		prop.setProperty("vsbattle.enableTwist.p$playerID", enableTwist[playerID])
-		prop.setProperty("vsbattle.splitb2b.p$playerID", splitb2b[playerID])
-		prop.setProperty("vsbattle.enableCombo.p$playerID", enableCombo[playerID])
-		prop.setProperty("vsbattle.big.p$playerID", big[playerID])
-		prop.setProperty("vsbattle.enableSE.p$playerID", enableSE[playerID])
-		prop.setProperty("vsbattle.hurryupSeconds.p$playerID", hurryupSeconds[playerID])
-		prop.setProperty("vsbattle.hurryupInterval.p$playerID", hurryupInterval[playerID])
-		prop.setProperty("vsbattle.useMap.p$playerID", useMap[playerID])
-		prop.setProperty("vsbattle.mapSet.p$playerID", mapSet[playerID])
-		prop.setProperty("vsbattle.mapNumber.p$playerID", mapNumber[playerID])
-		prop.setProperty("vsbattle.presetNumber.p$playerID", presetNumber[playerID])
+		prop.setProperty("vsbattle.garbageType.p$pid", garbageType[pid])
+		prop.setProperty("vsbattle.messiness.p$pid", messiness.getOrElse(pid) {intArrayOf()})
+		prop.setProperty("vsbattle.garbageCounter.p$pid", garbageCounter[pid])
+		prop.setProperty("vsbattle.garbageBlocking.p$pid", garbageBlocking[pid])
+		prop.setProperty("vsbattle.twistEnableType.p$pid", twistEnableType[pid])
+		prop.setProperty("vsbattle.enableTwist.p$pid", enableTwist[pid])
+		prop.setProperty("vsbattle.splitb2b.p$pid", splitb2b[pid])
+		prop.setProperty("vsbattle.enableCombo.p$pid", enableCombo[pid])
+		prop.setProperty("vsbattle.big.p$pid", big[pid])
+		prop.setProperty("vsbattle.enableSE.p$pid", enableSE[pid])
+		prop.setProperty("vsbattle.hurryupSeconds.p$pid", hurryupSeconds[pid])
+		prop.setProperty("vsbattle.hurryupInterval.p$pid", hurryupInterval[pid])
+		prop.setProperty("vsbattle.useMap.p$pid", useMap[pid])
+		prop.setProperty("vsbattle.mapSet.p$pid", mapSet[pid])
+		prop.setProperty("vsbattle.mapNumber.p$pid", mapNumber[pid])
+		prop.setProperty("vsbattle.presetNumber.p$pid", presetNumber[pid])
 		prop.setProperty("vsbattle.showStats", showStats)
 	}
 
@@ -301,15 +301,16 @@ class VSBattleMode:AbstractMode() {
 	}
 
 	/* Initialization for each player */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
+	override fun playerInit(engine:GameEngine) {
+		val playerID = engine.playerID
 		if(playerID==1) {
 			engine.randSeed = owner.engine[0].randSeed
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.framecolor = PLAYER_COLOR_FRAME[playerID]
-		engine.ruleOpt.lockresetLimitMove = engine.ruleOpt.lockresetLimitMove.let {if(it<0) 30 else minOf(it, 30)}
-		engine.ruleOpt.lockresetLimitRotate = engine.ruleOpt.lockresetLimitRotate.let {if(it<0) 20 else minOf(it, 20)}
+		engine.frameColor = PLAYER_COLOR_FRAME[playerID]
+		engine.ruleOpt.lockResetMoveLimit = engine.ruleOpt.lockResetMoveLimit.let {if(it<0) 30 else minOf(it, 30)}
+		engine.ruleOpt.lockResetSpinLimit = engine.ruleOpt.lockResetSpinLimit.let {if(it<0) 20 else minOf(it, 20)}
 		garbageSent[playerID] = 0
 		lastHole[playerID] = -1
 		lastcombo[playerID] = 0
@@ -330,11 +331,12 @@ class VSBattleMode:AbstractMode() {
 	}
 
 	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
+		val pid = engine.playerID
 		if(!engine.owner.replayMode&&engine.statc[4]==0) {
 			// Configuration changes
-			val change = updateCursor(engine, 27, playerID)
+			val change = updateCursor(engine, 27)
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -351,70 +353,70 @@ class VSBattleMode:AbstractMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7, 8 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
-					9 -> garbageType[playerID] = rangeCursor(garbageType[playerID]+change, 0, GarbageStyle.values().size-1)
-					10 -> messiness[playerID][0] = rangeCursor(messiness[playerID][0]+change, 0, 100)
-					11 -> messiness[playerID][1] = rangeCursor(messiness[playerID][1]+change, 0, 100)
-					12 -> garbageCounter[playerID] = !garbageCounter[playerID]
-					13 -> garbageBlocking[playerID] = !garbageBlocking[playerID]
+					7, 8 -> presetNumber[pid] = rangeCursor(presetNumber[pid]+change, 0, 99)
+					9 -> garbageType[pid] = rangeCursor(garbageType[pid]+change, 0, GarbageStyle.all.size-1)
+					10 -> messiness[pid][0] = rangeCursor(messiness[pid][0]+change, 0, 100)
+					11 -> messiness[pid][1] = rangeCursor(messiness[pid][1]+change, 0, 100)
+					12 -> garbageCounter[pid] = !garbageCounter[pid]
+					13 -> garbageBlocking[pid] = !garbageBlocking[pid]
 					14 -> {
-						twistEnableType[playerID] += change
-						if(twistEnableType[playerID]<0) twistEnableType[playerID] = 2
-						if(twistEnableType[playerID]>2) twistEnableType[playerID] = 0
+						twistEnableType[pid] += change
+						if(twistEnableType[pid]<0) twistEnableType[pid] = 2
+						if(twistEnableType[pid]>2) twistEnableType[pid] = 0
 					}
-					15 -> splitb2b[playerID] = !splitb2b[playerID]
-					16 -> enableCombo[playerID] = !enableCombo[playerID]
-					17 -> big[playerID] = !big[playerID]
-					18 -> enableSE[playerID] = !enableSE[playerID]
+					15 -> splitb2b[pid] = !splitb2b[pid]
+					16 -> enableCombo[pid] = !enableCombo[pid]
+					17 -> big[pid] = !big[pid]
+					18 -> enableSE[pid] = !enableSE[pid]
 					19 -> {
-						hurryupSeconds[playerID] += change
-						if(hurryupSeconds[playerID]<-1) hurryupSeconds[playerID] = 300
-						if(hurryupSeconds[playerID]>300) hurryupSeconds[playerID] = -1
+						hurryupSeconds[pid] += change
+						if(hurryupSeconds[pid]<-1) hurryupSeconds[pid] = 300
+						if(hurryupSeconds[pid]>300) hurryupSeconds[pid] = -1
 					}
 					20 -> {
-						hurryupInterval[playerID] += change
-						if(hurryupInterval[playerID]<1) hurryupInterval[playerID] = 99
-						if(hurryupInterval[playerID]>99) hurryupInterval[playerID] = 1
+						hurryupInterval[pid] += change
+						if(hurryupInterval[pid]<1) hurryupInterval[pid] = 99
+						if(hurryupInterval[pid]>99) hurryupInterval[pid] = 1
 					}
 					21 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					22 -> showStats = !showStats
 					23 -> {
-						useMap[playerID] = !useMap[playerID]
-						if(!useMap[playerID]) engine.field.reset() else
-							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
+						useMap[pid] = !useMap[pid]
+						if(!useMap[pid]) engine.field.reset() else
+							loadMapPreview(engine, pid, if(mapNumber[pid]<0) 0 else mapNumber[pid], true)
 					}
 					24 -> {
-						mapSet[playerID] += change
-						if(mapSet[playerID]<0) mapSet[playerID] = 99
-						if(mapSet[playerID]>99) mapSet[playerID] = 0
-						if(useMap[playerID]) {
-							mapNumber[playerID] = -1
-							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
+						mapSet[pid] += change
+						if(mapSet[pid]<0) mapSet[pid] = 99
+						if(mapSet[pid]>99) mapSet[pid] = 0
+						if(useMap[pid]) {
+							mapNumber[pid] = -1
+							loadMapPreview(engine, pid, if(mapNumber[pid]<0) 0 else mapNumber[pid], true)
 						}
 					}
-					25 -> if(useMap[playerID]) {
-						mapNumber[playerID] += change
-						if(mapNumber[playerID]<-1) mapNumber[playerID] = mapMaxNo[playerID]-1
-						if(mapNumber[playerID]>mapMaxNo[playerID]-1) mapNumber[playerID] = -1
-						loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
+					25 -> if(useMap[pid]) {
+						mapNumber[pid] += change
+						if(mapNumber[pid]<-1) mapNumber[pid] = mapMaxNo[pid]-1
+						if(mapNumber[pid]>mapMaxNo[pid]-1) mapNumber[pid] = -1
+						loadMapPreview(engine, pid, if(mapNumber[pid]<0) 0 else mapNumber[pid], true)
 					} else
-						mapNumber[playerID] = -1
+						mapNumber[pid] = -1
 				}
 			}
 
 			// 決定
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 
 				when(menuCursor) {
-					7 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID])
+					7 -> loadPreset(engine, owner.modeConfig, presetNumber[pid])
 					8 -> {
-						savePreset(engine, owner.modeConfig, presetNumber[playerID])
+						savePreset(engine, owner.modeConfig, presetNumber[pid])
 						owner.saveModeConfig()
 					}
 					else -> {
 						saveOtherSetting(engine, owner.modeConfig)
-						savePreset(engine, owner.modeConfig, -1-playerID)
+						savePreset(engine, owner.modeConfig, -1-pid)
 						owner.saveModeConfig()
 						engine.statc[4] = 1
 					}
@@ -422,21 +424,20 @@ class VSBattleMode:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
 			// プレビュー用Map読み込み
-			if(useMap[playerID]&&menuTime==0)
-				loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
+			if(useMap[pid]&&menuTime==0)
+				loadMapPreview(engine, pid, if(mapNumber[pid]<0) 0 else mapNumber[pid], true)
 
 			// Random values preview
-			if(useMap[playerID]&&propMap[playerID]!=null&&mapNumber[playerID]<0)
+			if(useMap[pid]&&propMap[pid]!=null&&mapNumber[pid]<0)
 				if(menuTime%30==0) {
 					engine.statc[5]++
-					if(engine.statc[5]>=mapMaxNo[playerID]) engine.statc[5] = 0
-					loadMapPreview(engine, playerID, engine.statc[5], false)
+					if(engine.statc[5]>=mapMaxNo[pid]) engine.statc[5] = 0
+					loadMapPreview(engine, pid, engine.statc[5], false)
 				}
 
-			menuTime++
 		} else if(engine.statc[4]==0) {
 			menuTime++
 			menuCursor = 0
@@ -445,7 +446,7 @@ class VSBattleMode:AbstractMode() {
 			if(menuTime>=120) engine.statc[4] = 1
 		} else // Start
 			if(owner.engine[0].statc[4]==1&&((owner.engine[1].statc[4]==1||owner.engine[1].ai!=null)&&
-					(playerID==1||engine.ctrl.isPush(Controller.BUTTON_A)))
+					(pid==1||engine.ctrl.isPush(Controller.BUTTON_A)))
 			) {
 				owner.engine[0].stat = GameEngine.Status.READY
 				owner.engine[1].stat = GameEngine.Status.READY
@@ -457,78 +458,84 @@ class VSBattleMode:AbstractMode() {
 	}
 
 	/* Setting screen drawing */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		if(engine.statc[4]==0) {
+			val pid = engine.playerID
 			when {
 				menuCursor<9 -> {
-					drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.ORANGE, 0)
+					drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
 					drawMenu(
-						engine, playerID, receiver, 5, COLOR.GREEN, 7, "LOAD" to presetNumber[playerID],
-						"SAVE" to presetNumber[playerID]
+						engine, receiver, 5, COLOR.GREEN, 7, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid]
 					)
 				}
 				menuCursor<19 -> {
-					val strTWISTEnable = listOf("OFF", "T-ONLY", "ALL")[twistEnableType[playerID]]
+					val strTWISTEnable = listOf("OFF", "T-ONLY", "ALL")[twistEnableType[pid]]
 
-					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 17, "GARBAGE" to garbageStyle[playerID].name)
-					receiver.drawMenuFont(engine, playerID, 0, 2, "Messiness", COLOR.YELLOW)
-					messiness[playerID].map {"$it%"}.forEachIndexed {i, it ->
+					drawMenu(engine, receiver, 0, COLOR.CYAN, 17, "GARBAGE" to garbageStyle[pid].name)
+					receiver.drawMenuFont(engine, 0, 2, "Messiness", COLOR.YELLOW)
+					messiness[pid].map {"$it%"}.forEachIndexed {i, it ->
 						val f = menuCursor==(10+i)&&!engine.owner.replayMode
-						receiver.drawMenuFont(engine, playerID, 5*i+if(f) 1 else 0, 3, "\u0082$it", f)
+						receiver.drawMenuFont(engine, 5*i+if(f) 1 else 0, 3, "\u0082$it", f)
 					}
 					drawMenu(
-						engine, playerID, receiver, 4, COLOR.CYAN, 12, "COUNTERING" to garbageCounter[playerID],
-						"BLOCKING" to garbageBlocking[playerID], "SPIN BONUS" to strTWISTEnable, "COMBO" to enableCombo[playerID]
+						engine,
+						receiver,
+						4,
+						COLOR.CYAN,
+						12,
+						"COUNTERING" to garbageCounter[pid],
+						"BLOCKING" to garbageBlocking[pid],
+						"SPIN BONUS" to strTWISTEnable,
+						"COMBO" to enableCombo[pid]
 					)
 				}
 				else -> {
 					drawMenu(
-						engine, playerID, receiver, 0, COLOR.CYAN, 17, "BIG" to big[playerID],
-						"SE" to enableSE[playerID],
-						"HURRYUP" to if(hurryupSeconds[playerID]==-1) "NONE" else "${hurryupSeconds[playerID]}SEC",
-						"INTERVAL" to hurryupInterval[playerID]
+						engine, receiver, 0, COLOR.CYAN, 17, "BIG" to big[pid], "SE" to enableSE[pid],
+						"HURRYUP" to if(hurryupSeconds[pid]==-1) "NONE" else "${hurryupSeconds[pid]}SEC",
+						"INTERVAL" to hurryupInterval[pid]
 					)
-					drawMenu(engine, playerID, receiver, 8, COLOR.PINK, 22, "BGM" to BGM.values[bgmno], "SHOW STATS" to showStats)
+					drawMenu(engine, receiver, 8, COLOR.PINK, 22, "BGM" to BGM.values[bgmno], "SHOW STATS" to showStats)
 					drawMenu(
-						engine, playerID, receiver, 12, COLOR.CYAN, 24, "USE MAP" to useMap[playerID],
-						"MAP SET" to mapSet[playerID],
-						"MAP NO." to if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}/${mapMaxNo[playerID]-1}"
+						engine, receiver, 12, COLOR.CYAN, 24, "USE MAP" to useMap[pid], "MAP SET" to mapSet[pid],
+						"MAP NO." to if(mapNumber[pid]<0) "RANDOM" else "${mapNumber[pid]}/${mapMaxNo[pid]-1}"
 					)
 				}
 			}
 		} else
-			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", COLOR.YELLOW)
+			receiver.drawMenuFont(engine, 3, 10, "WAIT", COLOR.YELLOW)
 	}
 
 	/* Called for initialization during Ready (before initialization) */
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
+		val pid = engine.playerID
 		if(engine.statc[0]==0)
 		// MapFor storing backup Replay read
 			if(version>=3)
-				if(useMap[playerID]) {
+				if(useMap[pid]) {
 					if(owner.replayMode) {
 						engine.createFieldIfNeeded()
-						loadMap(engine.field, owner.replayProp, playerID)
+						loadMap(engine.field, owner.replayProp, pid)
 						engine.field.setAllSkin(engine.skin)
 					} else {
-						if(propMap[playerID]==null)
-							propMap[playerID] = receiver.loadProperties("config/map/vsbattle/${mapSet[playerID]}.map")
+						if(propMap[pid]==null)
+							propMap[pid] = receiver.loadProperties("config/map/vsbattle/${mapSet[pid]}.map")
 
-						propMap[playerID]?.let {
+						propMap[pid]?.let {
 							engine.createFieldIfNeeded()
 
-							if(mapNumber[playerID]<0) {
-								if(playerID==1&&useMap[0]&&mapNumber[0]<0)
-									engine.field.copy(owner.engine[0].field)
+							if(mapNumber[pid]<0) {
+								if(pid==1&&useMap[0]&&mapNumber[0]<0)
+									engine.field.replace(owner.engine[0].field)
 								else {
-									val no = if(mapMaxNo[playerID]<1) 0 else randMap!!.nextInt(mapMaxNo[playerID])
+									val no = if(mapMaxNo[pid]<1) 0 else randMap!!.nextInt(mapMaxNo[pid])
 									loadMap(engine.field, it, no)
 								}
 							} else
-								loadMap(engine.field, it, mapNumber[playerID])
+								loadMap(engine.field, it, mapNumber[pid])
 
 							engine.field.setAllSkin(engine.skin)
-							fldBackup[playerID] = Field(engine.field)
+							fldBackup[pid] = Field(engine.field)
 						}
 					}
 				} else engine.field.reset()
@@ -537,9 +544,10 @@ class VSBattleMode:AbstractMode() {
 	}
 
 	/* Called at game start */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
+		val playerID = engine.playerID
 		engine.b2bEnable = true
-		engine.splitb2b = version>=5&&splitb2b[playerID]
+		engine.splitB2B = version>=5&&splitb2b[playerID]
 		engine.comboType = if(enableCombo[playerID]) GameEngine.COMBO_TYPE_NORMAL else GameEngine.COMBO_TYPE_DISABLE
 		engine.big = big[playerID]
 		engine.enableSE = enableSE[playerID]
@@ -567,46 +575,47 @@ class VSBattleMode:AbstractMode() {
 	}
 
 	/* Render score */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		fun col(it:Int) = EventReceiver.getPlayerColor(it)
 		// Status display
-		if(playerID==0) {
+		val pid = engine.playerID
+		if(pid==0) {
 			receiver.drawDirectNum(232, 16, engine.statistics.time.toTimeStr, scale = 2f)
 
-			if(hurryupSeconds[playerID]>=0&&engine.timerActive&&
-				engine.statistics.time>=hurryupSeconds[playerID]*60&&engine.statistics.time<(hurryupSeconds[playerID]+5)*60
+			if(hurryupSeconds[pid]>=0&&engine.timerActive&&
+				engine.statistics.time>=hurryupSeconds[pid]*60&&engine.statistics.time<(hurryupSeconds[pid]+5)*60
 			)
 				receiver.drawDirectFont(256, 32, "DANGER", if(engine.statistics.time%2==0) COLOR.RED else COLOR.YELLOW)
 
 			if(owner.receiver.nextDisplayType!=2&&showStats) {
-				receiver.drawScoreFont(engine, playerID, 0, 0, "VS-BATTLE", COLOR.ORANGE)
+				receiver.drawScoreFont(engine, 0, 0, "VS-BATTLE", COLOR.ORANGE)
 
 				if(!owner.replayMode) {
-					receiver.drawScoreFont(engine, playerID, 3, 3, "WINS", COLOR.CYAN)
-					receiver.drawScoreNum(engine, playerID, 0, 1, String.format("%2d", winCount[0]), col(0), 2f)
-					receiver.drawScoreNum(engine, playerID, 6, 1, String.format("%2d", winCount[1]), col(1), 2f)
+					receiver.drawScoreFont(engine, 3, 3, "WINS", COLOR.CYAN)
+					receiver.drawScoreNum(engine, 0, 1, String.format("%2d", winCount[0]), col(0), 2f)
+					receiver.drawScoreNum(engine, 6, 1, String.format("%2d", winCount[1]), col(1), 2f)
 				}
-				receiver.drawScoreFont(engine, playerID, 2, 5, "SPIKES", COLOR.PINK)
-				receiver.drawScoreNum(engine, playerID, 1, 6, String.format("%3d", garbageSent[0]), col(0))
-				receiver.drawScoreNum(engine, playerID, 6, 6, String.format("%3d", garbageSent[1]), col(1))
+				receiver.drawScoreFont(engine, 2, 5, "SPIKES", COLOR.PINK)
+				receiver.drawScoreNum(engine, 1, 6, String.format("%3d", garbageSent[0]), col(0))
+				receiver.drawScoreNum(engine, 6, 6, String.format("%3d", garbageSent[1]), col(1))
 
 			}
 		}
 		if(showStats) {
-			receiver.drawSpeedMeter(engine, playerID, 0, 7, attackSpd[0]/50, 5f)
-			receiver.drawSpeedMeter(engine, playerID, 5, 7, attackSpd[1]/50, 5f)
-			receiver.drawScoreNum(engine, playerID, 1, 8, String.format("%5.2f", attackSpd[0]), col(0))
-			receiver.drawScoreNum(engine, playerID, 6, 8, String.format("%5.2f", attackSpd[1]), col(1))
-			receiver.drawScoreFont(engine, playerID, 0, 10, "RANK POINT", COLOR.PURPLE)
-			receiver.drawScoreNum(engine, playerID, 0, 11, String.format("%6.2f", score[0]), col(0))
-			receiver.drawScoreNum(engine, playerID, 5, 11, String.format("%6.2f", score[1]), col(1))
-			receiver.drawSpeedMeter(engine, playerID, 0, 12, score[0]/50, 5f)
-			receiver.drawSpeedMeter(engine, playerID, 5, 12, score[1]/50, 5f)
+			receiver.drawScoreSpeed(engine, 0, 7, attackSpd[0]/50, 5f)
+			receiver.drawScoreSpeed(engine, 5, 7, attackSpd[1]/50, 5f)
+			receiver.drawScoreNum(engine, 1, 8, String.format("%5.2f", attackSpd[0]), col(0))
+			receiver.drawScoreNum(engine, 6, 8, String.format("%5.2f", attackSpd[1]), col(1))
+			receiver.drawScoreFont(engine, 0, 10, "RANK POINT", COLOR.PURPLE)
+			receiver.drawScoreNum(engine, 0, 11, String.format("%6.2f", score[0]), col(0))
+			receiver.drawScoreNum(engine, 5, 11, String.format("%6.2f", score[1]), col(1))
+			receiver.drawScoreSpeed(engine, 0, 12, score[0]/50, 5f)
+			receiver.drawScoreSpeed(engine, 5, 12, score[1]/50, 5f)
 			val x = receiver.fieldX(engine)
 			val y = receiver.fieldY(engine)+22*EventReceiver.BS+1
 
 
-			garbageEntries[playerID].forEachIndexed {i, g ->
+			garbageEntries[pid].forEachIndexed {i, g ->
 				receiver.drawDirectNum(
 					x+engine.fieldWidth*EventReceiver.BS, y-i*16, "${g.lines}", when {
 						g.time>0&&(g.time/2)%2==1 -> EventReceiver.getPlayerColor(g.playerID)
@@ -619,34 +628,33 @@ class VSBattleMode:AbstractMode() {
 			}
 
 //			if(owner.receiver.nextDisplayType==2) {
-			val mycol = col(playerID)
+			val mycol = col(pid)
 
 			receiver.drawDirectFont(x-32, y+24, "WINS", mycol, .5f)
-			receiver.drawDirectNum(x-24, y+8, String.format("%2d", winCount[playerID]))
+			receiver.drawDirectNum(x-24, y+8, String.format("%2d", winCount[pid]))
 			receiver.drawDirectNano(x-32, y-8, "RP", mycol, .5f)
-			receiver.drawDirectNum(x-32, y-24, String.format("%3d", score[playerID].toInt()), mycol)
-			receiver.drawDirectNano(x-20, y-8, String.format("%3d", (score[playerID]*1000%1000).toInt()), mycol,0.5f)
+			receiver.drawDirectNum(x-32, y-24, String.format("%3d", score[pid].toInt()), mycol)
+			receiver.drawDirectNano(x-20, y-8, String.format("%3d", (score[pid]*1000%1000).toInt()), mycol, 0.5f)
 
 			receiver.drawDirectNano(x-32, y-36, "SENT", mycol, .5f)
-			receiver.drawDirectNum(x-32, y-52, String.format("%3d", garbageSent[playerID]))
-
+			receiver.drawDirectNum(x-32, y-52, String.format("%3d", garbageSent[pid]))
 
 //			}
 		}
 	}
 
 	private fun sendGarbage(pts:Int, playerID:Int) {
-		var enemyID = 0
-		if(playerID==0) enemyID = 1
+		val pid = playerID
+		val enemyID = if(pid==0) 1 else 0
 		// Offset
 		var ofs = 0
-		if(pts>0&&garbage[playerID]>0&&garbageCounter[playerID])
-			while(garbageEntries[playerID].any {it.time<=0}&&(pts-ofs)>0) {
-				val entry = garbageEntries[playerID].firstOrNull {it.time<=0}?:break
+		if(pts>0&&garbage[pid]>0&&garbageCounter[pid])
+			while(garbageEntries[pid].any {it.time<=0}&&(pts-ofs)>0) {
+				val entry = garbageEntries[pid].firstOrNull {it.time<=0} ?: break
 				val gl = entry.lines
 				if(gl<=(pts-ofs)) {
 					ofs += gl
-					garbageEntries[playerID].removeFirst()
+					garbageEntries[pid].removeFirst()
 				} else {
 					entry.lines -= maxOf(0, pts-ofs)
 					ofs = pts
@@ -655,11 +663,11 @@ class VSBattleMode:AbstractMode() {
 
 		//  Attack
 		if((pts-ofs)>0) {
-			garbageSent[playerID] += pts-ofs
+			garbageSent[pid] += pts-ofs
 			garbageEntries[enemyID].add(
 				GarbageEntry(
 					pts-ofs,
-					playerID,
+					pid,
 					maxOf(10, minOf(24, 30-owner.engine[enemyID].statistics.time/600))
 				)
 			)
@@ -668,92 +676,94 @@ class VSBattleMode:AbstractMode() {
 		}
 	}
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 
 		var pts = super.calcPower(engine, lines)
 		//  Attack
+		val pid = engine.playerID
 		if(lines>0) {
 
 			// gem block attack
 			pts += engine.field.howManyGemClears
 
 			engine.statistics.attacks += pts
-			sendGarbage(pts, playerID)
+			sendGarbage(pts, pid)
 		}
 
 		// Rising auction
-		if((lines==0||!garbageBlocking[playerID])&&garbage[playerID]>0) {
-			engine.playSE("linefall${if(garbage[playerID]>=3) "" else "1"}")
+		if((lines==0||!garbageBlocking[pid])&&garbage[pid]>0) {
+			engine.playSE("linefall${if(garbage[pid]>=3) "" else "1"}")
 			var gct = 0
 			do {
-				garbageEntries[playerID].filter {it.time<=0}.first {it.lines>0}.let {
+				garbageEntries[pid].filter {it.time<=0}.first {it.lines>0}.let {
 
 					if(it.lines>0) {
 						val garbageColor = PLAYER_COLOR_BLOCK[it.playerID]
 						val l = minOf(
 							it.lines,
-							if(garbageStyle[playerID]==GarbageStyle.FiveLines) 5-gct else engine.field.height/2
+							if(garbageStyle[pid]==GarbageStyle.FiveLines) 5-gct else engine.field.height/2
 						)
 						val w = engine.field.width
-						var hole = lastHole[playerID]
-						if(hole==-1||messiness[playerID][0]==10) hole = engine.random.nextInt(w)
+						var hole = lastHole[pid]
+						if(hole==-1||messiness[pid][0]==10) hole = engine.random.nextInt(w)
 						else {
 							val rand = engine.random.nextFloat()
-							if(rand<(messiness[playerID][0]/100f)) {
+							if(rand<(messiness[pid][0]/100f)) {
 								val newHole = (rand*w).toInt()
 								hole = newHole+if(newHole>=hole) 1 else 0
 							}
 						}
 
-						engine.field.addRandomHoleGarbage(engine, hole, messiness[playerID][1]/100f, garbageColor, engine.skin, l)
+						engine.field.addRandomHoleGarbage(engine, hole, messiness[pid][1]/100f, garbageColor, engine.skin, l)
 						gct += l
 						it.lines -= l
-						lastHole[playerID] = hole
+						lastHole[pid] = hole
 					}
 				}
-				garbageEntries[playerID].removeAll {it.lines<=0}
-			} while(when(garbageStyle[playerID]) {
+				garbageEntries[pid].removeAll {it.lines<=0}
+			} while(when(garbageStyle[pid]) {
 					GarbageStyle.STACK -> false
 					GarbageStyle.FiveLines -> gct<5
 					else -> true
-				}&&garbageEntries[playerID].isNotEmpty()
+				}&&garbageEntries[pid].isNotEmpty()
 			)
 		}
 
 		// HURRY UP!
-		if(hurryupSeconds[playerID]>=0&&engine.timerActive)
-			if(engine.statistics.time>=hurryupSeconds[playerID]*60) {
-				hurryupCount[playerID]++
+		if(hurryupSeconds[pid]>=0&&engine.timerActive)
+			if(engine.statistics.time>=hurryupSeconds[pid]*60) {
+				hurryupCount[pid]++
 
-				if(hurryupCount[playerID]%hurryupInterval[playerID]==0) engine.field.addHurryupFloor(1, engine.skin)
-			} else hurryupCount[playerID] = hurryupInterval[playerID]-1
+				if(hurryupCount[pid]%hurryupInterval[pid]==0) engine.field.addHurryupFloor(1, engine.skin)
+			} else hurryupCount[pid] = hurryupInterval[pid]-1
 
 		return pts
 	}
 
 	/* Called after every frame */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		val pid = engine.playerID
+		super.onLast(engine)
 		// HURRY UP!
-		if(playerID==0&&engine.timerActive&&hurryupSeconds[playerID]>=0&&engine.statistics.time==hurryupSeconds[playerID]*60)
+		if(pid==0&&engine.timerActive&&hurryupSeconds[pid]>=0&&engine.statistics.time==hurryupSeconds[pid]*60)
 			engine.playSE("hurryup")
-		if(garbageEntries[playerID].any {it.time>0}) {
-			if(garbageEntries[playerID].any {it.time==1})
-				engine.playSE(if(garbageEntries[playerID].filter {it.time==1}.maxOf {it.lines}>=4
-					||(engine.field.highestBlockY-garbage[playerID])<engine.fieldHeight*4/7
+		if(garbageEntries[pid].any {it.time>0}) {
+			if(garbageEntries[pid].any {it.time==1})
+				engine.playSE(if(garbageEntries[pid].filter {it.time==1}.maxOf {it.lines}>=4
+					||(engine.field.highestBlockY-garbage[pid])<engine.fieldHeight*4/7
 				)
 					"garbage1" else "garbage0"
 				)
-			garbageEntries[playerID].filter {it.time>0}.forEach {it.time--}
+			garbageEntries[pid].filter {it.time>0}.forEach {it.time--}
 		}
 		// Rising auctionMeter
-		if(garbage[playerID]*receiver.getBlockSize(engine)>engine.meterValue)
-			engine.meterValue += receiver.getBlockSize(engine)/2
-		else if(garbage[playerID]*receiver.getBlockSize(engine)<engine.meterValue) engine.meterValue--
+		if(garbage[pid]*EventReceiver.getBlockSize(engine)>engine.meterValue)
+			engine.meterValue += EventReceiver.getBlockSize(engine)/2
+		else if(garbage[pid]*EventReceiver.getBlockSize(engine)<engine.meterValue) engine.meterValue--
 		engine.meterColor = GameEngine.METER_COLOR_RED
 
 		// Settlement
-		if(playerID==1&&owner.engine[0].gameActive)
+		if(pid==1&&owner.engine[0].gameActive)
 			if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// Draw
 				winnerID = -1
@@ -790,23 +800,24 @@ class VSBattleMode:AbstractMode() {
 	}
 
 	/* Render results screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
+	override fun renderResult(engine:GameEngine) {
 		when(winnerID) {
-			-1 -> receiver.drawMenuFont(engine, playerID, 0, 0, "Double KO.", COLOR.YELLOW)
-			playerID -> receiver.drawMenuFont(engine, playerID, 1, 0, "You Won!", COLOR.GREEN)
-			else -> receiver.drawMenuFont(engine, playerID, 1, 0, "You Lost", COLOR.RED)
+			-1 -> receiver.drawMenuFont(engine, 0, 0, "Double KO.", COLOR.YELLOW)
+			engine.playerID -> receiver.drawMenuFont(engine, 1, 0, "You Won!", COLOR.GREEN)
+			else -> receiver.drawMenuFont(engine, 1, 0, "You Lost", COLOR.RED)
 		}
-		drawResultStats(engine, playerID, receiver, 2, COLOR.ORANGE, Statistic.VS, Statistic.LINES)
-		drawResultStats(engine, playerID, receiver, 6, COLOR.PINK, Statistic.ATTACKS, Statistic.APM, Statistic.APL)
-		drawResultStats(engine, playerID, receiver, 12, COLOR.ORANGE, Statistic.PPS, Statistic.MAXCOMBO, Statistic.MAXB2B)
+		drawResultStats(engine, receiver, 2, COLOR.ORANGE, Statistic.VS, Statistic.LINES)
+		drawResultStats(engine, receiver, 6, COLOR.PINK, Statistic.ATTACKS, Statistic.APM, Statistic.APL)
+		drawResultStats(engine, receiver, 12, COLOR.ORANGE, Statistic.PPS, Statistic.MAXCOMBO, Statistic.MAXB2B)
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveOtherSetting(engine, owner.replayProp)
-		savePreset(engine, owner.replayProp, -1-playerID)
+		val pid = engine.playerID
+		savePreset(engine, owner.replayProp, -1-pid)
 
-		if(useMap[playerID]) fldBackup[playerID]?.let {saveMap(it, owner.replayProp, playerID)}
+		if(useMap[pid]) fldBackup[pid]?.let {saveMap(it, owner.replayProp, pid)}
 
 		owner.replayProp.setProperty("vsbattle.version", version)
 		return false
@@ -824,10 +835,14 @@ class VSBattleMode:AbstractMode() {
 		private enum class GarbageStyle {
 			/** One Attack will be One garbage-Group*/
 			STACK,
-			/** Each One turn will draws max 5 lines*/
+			/** Each One turn will draw max 5 lines*/
 			FiveLines,
 			/** All garbages will put-out on Once placing**/
-			OnceAll,
+			OnceAll;
+
+			companion object {
+				val all = values()
+			}
 		}
 
 		/** Each player's garbage block cint */

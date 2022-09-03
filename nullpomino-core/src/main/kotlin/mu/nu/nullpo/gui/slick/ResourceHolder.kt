@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,8 +29,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
+import mu.nu.nullpo.gui.common.BaseFontTTF
 import org.newdawn.slick.Music
 import org.newdawn.slick.UnicodeFont
 import org.newdawn.slick.font.effects.ColorEffect
@@ -42,7 +41,6 @@ import java.io.File
 /** 画像や音声の管理をするクラス */
 object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 
-	override val log:Logger = LogManager.getLogger()
 	override val skinDir:String by lazy {NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")}
 
 //	override val backgroundMax get() = imgPlayBG.size
@@ -82,12 +80,12 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	/** Field background */
 	override val imgFieldBG = super.imgFieldBG.map {ResourceImageSlick(it)}
 	//public static Image imgFieldbg;
-
+	override val imgFrags = super.imgFrags.map {ResourceImageSlick(it)}
 	/** Beam animation during line clears */
 	override val imgLine = super.imgLine.map {ResourceImageSlick(it)}
 
 	/** Block spatter animation during line clears */
-	override val imgBreak = super.imgBreak.map {it.map {ResourceImageSlick(it)}}
+	override val imgBreak = super.imgBreak.map {it -> it.map {ResourceImageSlick(it)}}
 
 	/** Effects for clearing gem blocks */
 	override val imgPErase = super.imgPErase.map {ResourceImageSlick(it)}
@@ -134,7 +132,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		}
 		// Font
 		ttfFont = try {
-			UnicodeFont("$skinDir/font/font.ttf", 16, false, false).apply {
+			UnicodeFont("$skinDir/font/font.ttf", BaseFontTTF.FONT_SIZE, false, false).apply {
 				effects.add(ShadowEffect(Color.BLACK, 1, 1, 1f))
 				effects.add(ColorEffect(Color.WHITE))
 			}
@@ -152,7 +150,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 			}
 
 			log.info("Loading Sound Effect")
-			seList.forEach {loadSE(it)}
+			soundSet.forEach {loadSE(it)}
 			jingles.forEach {loadSE(it)}
 		}
 
@@ -160,27 +158,28 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		bgm = BGM.all.map {Array<Pair<Music?, Boolean>>(it.size) {null to false}}.toTypedArray()
 		bgmPlaying = null
 
-		if(NullpoMinoSlick.propConfig.getProperty("option.bgmpreload", false))
-			BGM.all.forEach {list -> list.forEach {loadBGM(it, false)}}
+		if(NullpoMinoSlick.propConfig.getProperty("option.bgmpreload", false)) BGM.all.forEach {list ->
+			list.forEach {loadBGM(it, false)}
+		}
 	}
 
-/*
-	/** 画像読み込み
-	 * @param filename Filename
-	 * @return 画像 data
-	 */
-	fun loadImage(filename:String):Image {
-		log.debug("Loading image from $filename")
-		var img = Image(256, 256)
-		try {
-			img = Image("$skinDir/graphics/$filename.png")
-		} catch(e:Exception) {
-			if(e !is UnsupportedOperationException&&(e is IOException||e is SlickException))
-				log.error("Failed to load image from $filename", e)
-		}
+	/*
+		/** 画像読み込み
+		 * @param filename Filename
+		 * @return 画像 data
+		 */
+		fun loadImage(filename:String):Image {
+			log.debug("Loading image from $filename")
+			var img = Image(256, 256)
+			try {
+				img = Image("$skinDir/graphics/$filename.png")
+			} catch(e:Exception) {
+				if(e !is UnsupportedOperationException&&(e is IOException||e is SlickException))
+					log.error("Failed to load image from $filename", e)
+			}
 
-		return img
-	}*/
+			return img
+		}*/
 
 	private fun loadSE(name:String) {
 		//log.info("LoadSE $name")
@@ -227,8 +226,8 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	internal fun bgmStart(M:BGM) {
 		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
 		bgmStop()
-		val x = M.id
-		val y = M.idx
+		val x = minOf(M.id, bgm.size-1)
+		val y = minOf(M.idx, bgm[x].size-1)
 		val bgmvolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
 		NullpoMinoSlick.appGameContainer.musicVolume = bgmvolume/256.toFloat()
 

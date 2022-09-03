@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2021,
+ * Copyright (c) 2021-2022,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -44,13 +44,18 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.*
+import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.Clear
+import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.ClearWith
+import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.Combo
+import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.Spin
+import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.SpinWith
+import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.Split
 import kotlin.random.Random
 
 class MissionMode:MarathonModeBase() {
 	private var scgettime = 0
-	// Mission randomiser.
-	private var missionRandomiser:Random = Random.Default
+	// Mission randomizer.
+	private var missionRandomizer:Random = Random.Default
 	// Mission text.
 	private var currentMissionText:LinkedHashMap<String, COLOR?> = LinkedHashMap()
 	// Mission data.
@@ -67,10 +72,6 @@ class MissionMode:MarathonModeBase() {
 	private var rankingScore:Array<IntArray> = emptyArray()
 	/** Rankings' times */
 	private var rankingTime:Array<IntArray> = emptyArray()
-	/**
-	 * The good hard drop effect
-	 */
-	private var pCoordList:ArrayList<IntArray>? = null
 
 	private var rankingScorePlayer:Array<IntArray> = emptyArray()
 	private var rankingTimePlayer:Array<IntArray> = emptyArray()
@@ -85,14 +86,12 @@ class MissionMode:MarathonModeBase() {
 	)
 
 	override val name:String
-		get() = "MISSION MODE"
-	/*
-     * Initialization
-     */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
+		get() = "Mission Rush"
+
+	// Initialization
+	override fun playerInit(engine:GameEngine) {
 		owner = engine.owner
 
-		pCoordList = ArrayList()
 		currentMissionText = LinkedHashMap()
 		missionCategory = null
 		missionGoal = -1
@@ -110,36 +109,36 @@ class MissionMode:MarathonModeBase() {
 		engine.playerProp.reset()
 		showPlayerStats = false
 
-		netPlayerInit(engine, playerID)
+		netPlayerInit(engine)
 		if(!owner.replayMode) version = CURRENT_VERSION else {
-			if(version==0&&owner.replayProp.getProperty("missionmode.endless", false)) goaltype = 2
+			if(version==0&&owner.replayProp.getProperty("missionmode.endless", false)) goalType = 2
 
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
+			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.backgroundStatus.bg = startLevel
-		engine.framecolor = GameEngine.FRAME_COLOR_GREEN
+		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
 		missionIsComplete = false
 	}
 	/*
      * Called at settings screen
      */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode) {
-			netOnUpdateNetPlayRanking(engine, goaltype)
+			netOnUpdateNetPlayRanking(engine, goalType)
 		} else if(!engine.owner.replayMode) {
 			// Configuration changes
-			val change = updateCursor(engine, 0, playerID)
+			val change = updateCursor(engine, 0)
 			if(change!=0) {
 				engine.playSE("change")
 				when(engine.statc[2]) {
 					0 -> {
-						goaltype += change
-						if(goaltype<0) goaltype = GAMETYPE_MAX-1
-						if(goaltype>GAMETYPE_MAX-1) goaltype = 0
-						if(startLevel>(tableGameClearMissions[goaltype]-1)/10&&tableGameClearMissions[goaltype]>=0) {
-							startLevel = (tableGameClearMissions[goaltype]-1)/10
+						goalType += change
+						if(goalType<0) goalType = GAMETYPE_MAX-1
+						if(goalType>GAMETYPE_MAX-1) goalType = 0
+						if(startLevel>(tableGameClearMissions[goalType]-1)/10&&tableGameClearMissions[goalType]>=0) {
+							startLevel = (tableGameClearMissions[goalType]-1)/10
 							engine.owner.backgroundStatus.bg = startLevel
 						}
 					}
@@ -161,7 +160,7 @@ class MissionMode:MarathonModeBase() {
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
-				engine.quitflag = true
+				engine.quitFlag = true
 				engine.playerProp.reset()
 			}
 
@@ -176,7 +175,7 @@ class MissionMode:MarathonModeBase() {
 
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
-				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
+				netEnterNetPlayRankingScreen(goalType)
 			}
 			engine.statc[3]++
 		} else {
@@ -187,10 +186,10 @@ class MissionMode:MarathonModeBase() {
 		return true
 	}
 
-	override fun onCustom(engine:GameEngine, playerID:Int):Boolean {
+	override fun onCustom(engine:GameEngine):Boolean {
 		showPlayerStats = false
 		engine.isInGame = true
-		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine, playerID)
+		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
 			loadSetting(engine.playerProp.propProfile, engine)
@@ -201,21 +200,25 @@ class MissionMode:MarathonModeBase() {
 	/*
      * Render the settings screen
      */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		if(netIsNetRankingDisplayMode) {
 			// NET: Netplay Ranking
-			netOnRenderNetPlayRanking(engine, playerID, receiver)
+			netOnRenderNetPlayRanking(engine, receiver)
 		} else {
 			drawMenu(
-				engine, playerID, receiver, 0, COLOR.BLUE, 0,
-				"GOAL" to if(tableGameClearMissions[goaltype]<0) "ENDLESS" else "${tableGameClearMissions[goaltype]} MISS."
+				engine,
+				receiver,
+				0,
+				COLOR.BLUE,
+				0,
+				"GOAL" to if(tableGameClearMissions[goalType]<0) "ENDLESS" else "${tableGameClearMissions[goalType]} MISS."
 			)
 		}
 	}
 
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
-			missionRandomiser = Random(engine.randSeed)
+			missionRandomizer = Random(engine.randSeed)
 			generateNewMission(engine, false)
 		}
 		return false
@@ -223,10 +226,10 @@ class MissionMode:MarathonModeBase() {
 	/*
      * Called after every frame
      */
-	override fun onLast(engine:GameEngine, playerID:Int) {
+	override fun onLast(engine:GameEngine) {
 		if(scgettime<120) scgettime++
 		else if(missionIsComplete&&engine.timerActive) {
-			generateNewMission(engine, engine.statistics.score==tableGameClearMissions[goaltype]-1)
+			generateNewMission(engine, engine.statistics.score==tableGameClearMissions[goalType]-1)
 			scgettime = 0
 		}
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
@@ -236,79 +239,77 @@ class MissionMode:MarathonModeBase() {
 				engine.playSE("change")
 			}
 		}
-		if(engine.quitflag) {
+		if(engine.quitFlag) {
 			engine.playerProp.reset()
 		}
 	}
 	/*
      * Render score
      */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, playerID, 0, 0, name, COLOR.GREEN)
-		if(tableGameClearMissions[goaltype]<0)
-			receiver.drawScoreFont(engine, playerID, 0, 1, "(Endless run)", COLOR.GREEN)
-		else receiver.drawScoreFont(engine, playerID, 0, 1, "(${tableGameClearMissions[goaltype]} missions run)", COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
+		if(tableGameClearMissions[goalType]<0)
+			receiver.drawScoreFont(engine, 0, 1, "(Endless run)", COLOR.GREEN)
+		else receiver.drawScoreFont(engine, 0, 1, "(${tableGameClearMissions[goalType]} missions run)", COLOR.GREEN)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE TIME", COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE TIME", COLOR.BLUE, scale)
 				if(showPlayerStats) {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+						receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 						receiver.drawScoreNum(
-							engine, playerID, 3, topY+i, "${rankingScorePlayer[goaltype][i]}",
-							i==rankingRankPlayer, scale
-						)
-						receiver.drawScoreNum(
-							engine, playerID, 9, topY+i, rankingTimePlayer[goaltype][i].toTimeStr, i==rankingRankPlayer,
+							engine, 3, topY+i, "${rankingScorePlayer[goalType][i]}", i==rankingRankPlayer,
 							scale
 						)
+						receiver.drawScoreNum(
+							engine, 9, topY+i, rankingTimePlayer[goalType][i].toTimeStr, i==rankingRankPlayer, scale
+						)
 					}
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
 					receiver.drawScoreFont(
-						engine, playerID, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay,
-						COLOR.WHITE, 2f
+						engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE,
+						2f
 					)
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-						receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[goaltype][i]}", i==rankingRank, scale)
-						receiver.drawScoreNum(engine, playerID, 9, topY+i, rankingTime[goaltype][i].toTimeStr, i==rankingRank, scale)
+						receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+						receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[goalType][i]}", i==rankingRank, scale)
+						receiver.drawScoreNum(engine, 9, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank, scale)
 					}
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, playerID, 0, topY+RANKING_MAX+2,
-						"(NOT LOGGED IN)\n(E:LOG IN)"
+						engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)"
 					)
 					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, playerID, 0, topY+RANKING_MAX+5,
-						"F:SWITCH RANK SCREEN", COLOR.GREEN
+						engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN",
+						COLOR.GREEN
 					)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
-			engine.playerProp.loginScreen.renderScreen(receiver, engine, playerID)
+			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
 			val strScore = "${engine.statistics.score}/${(engine.statistics.level+1)*5}"
-			receiver.drawScoreNum(engine, playerID, 0, 3, strScore, 2f)
-			receiver.drawScoreFont(engine, playerID, 0, 5, "Done", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 3, strScore, 2f)
+			receiver.drawScoreFont(engine, 0, 5, "Done", COLOR.BLUE)
 
-			receiver.drawScoreFont(engine, playerID, 0, 7, "Level", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 5, 6, "${engine.statistics.level+1}", 2f)
-			receiver.drawScoreFont(engine, playerID, 0, 9, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 10, engine.statistics.time.toTimeStr, 2f)
-			receiver.drawScoreFont(engine, playerID, 0, 12, "Objective", COLOR.GREEN)
-			receiver.drawScoreNum(engine, playerID, 0, 13, "$missionProgress/$missionGoal", missionIsComplete)
-			if(!missionIsComplete) drawMissionStrings(engine, playerID, currentMissionText, 0, 15, 1.0f)
+			receiver.drawScoreFont(engine, 0, 7, "Level", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 5, 6, "${engine.statistics.level+1}", 2f)
+			receiver.drawScoreFont(engine, 0, 9, "Time", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 10, engine.statistics.time.toTimeStr, 2f)
+			receiver.drawScoreFont(engine, 0, 12, "Objective", COLOR.GREEN)
+			receiver.drawScoreNum(engine, 0, 13, "$missionProgress/$missionGoal", missionIsComplete)
+			if(!missionIsComplete) drawMissionStrings(engine, currentMissionText, 0, 15, 1.0f)
 			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
-				receiver.drawScoreFont(engine, playerID, 0, 20, "PLAYER", COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 20, "PLAYER", COLOR.BLUE)
 				receiver.drawScoreFont(
-					engine, playerID, 0, 21,
-					if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
-					COLOR.WHITE, 2f
+					engine, 0, 21, if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
+					COLOR.WHITE,
+					2f
 				)
 			}
 		}
@@ -316,7 +317,7 @@ class MissionMode:MarathonModeBase() {
 		// NET: Number of spectators
 		netDrawSpectatorsCount(engine, 0, 18)
 		// NET: All number of players
-		if(playerID==players-1) {
+		if(engine.playerID==players-1) {
 			netDrawAllPlayersCount()
 			netDrawGameRate(engine)
 		}
@@ -326,120 +327,78 @@ class MissionMode:MarathonModeBase() {
 	/*
      * Calculate score
      */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		// Line clear bonus
 		var pts = 0
 		var incremented = false
 		val shapeName = engine.nowPieceObject?.type?.name ?: ""
 		if(!missionIsComplete) {
-			when(missionCategory) {
-				SpinWith -> if(engine.twist) {
-					if(lines>=lineAmount&&shapeName===specificPieceName) {
-						missionProgress++
-						incremented = true
-					}
-				}
-				Spin -> if(engine.twist) {
-					if(lines>=lineAmount) {
-						missionProgress++
-						incremented = true
-					}
-				}
-				ClearWith -> if(lines==lineAmount&&shapeName===specificPieceName) {
-					missionProgress++
-					incremented = true
-				}
-				Clear -> if(lines==lineAmount) {
-					missionProgress++
-					incremented = true
-				}
-				Combo -> {
-					missionProgress = engine.combo
-					if(missionProgress==missionGoal) incremented = true
-				}
+			incremented = when(missionCategory) {
+				Clear -> lines==lineAmount
+				ClearWith -> lines==lineAmount&&shapeName===specificPieceName
+				Spin -> engine.twist&&lines>=lineAmount
+				SpinWith -> engine.twist&&lines>=lineAmount&&shapeName===specificPieceName
+				Split -> engine.split
+
+				Combo -> engine.combo>missionProgress
+				null -> true
 			}
 		}
 
 		// Combo
-		if(missionProgress==missionGoal&&incremented) {
-			pts = 1
-			missionIsComplete = true
-			engine.playSE("levelup")
-		} else if(incremented) engine.playSE("b2b_start")
-
-		// Add to score
-		if(pts>0) {
-			if(lines>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
-		}
-
-		// BGM fade-out effects and BGM changes
-		if(tableBGMChange[bgmlv]!=-1) {
-			if(engine.statistics.score>=tableBGMChange[bgmlv]-1) owner.bgmStatus.fadesw = true
-			if(engine.statistics.score>=tableBGMChange[bgmlv]&&
-				(engine.statistics.score<tableGameClearMissions[goaltype]||tableGameClearMissions[goaltype]<0)
-			) {
-				bgmlv++
-				owner.bgmStatus.bgm = tableBGM[bgmlv]
-				owner.bgmStatus.fadesw = false
+		if(incremented) {
+			missionProgress++
+			scgettime = 0
+			// Add to score
+			engine.statistics.scoreBonus++
+			// BGM fade-out effects and BGM changes
+			if(tableBGMChange[bgmLv]!=-1) {
+				if(engine.statistics.score>=tableBGMChange[bgmLv]-1&&
+					(when(missionCategory) {
+						Clear, ClearWith -> missionProgress>=missionGoal-maxOf(2, 6-lineAmount)
+						Spin, SpinWith -> missionProgress>=missionGoal-2
+						else -> true
+					})) owner.bgmStatus.fadesw = true
+				if(engine.statistics.score>=tableBGMChange[bgmLv]&&
+					(engine.statistics.score<tableGameClearMissions[goalType]||tableGameClearMissions[goalType]<0)
+				) {
+					bgmLv++
+					owner.bgmStatus.bgm = tableBGM[bgmLv]
+					owner.bgmStatus.fadesw = false
+				}
 			}
-		}
 
-		// Meter
-		engine.meterValue = engine.statistics.score%10*receiver.getMeterMax(engine)/9
-		engine.meterColor = GameEngine.METER_COLOR_GREEN
-		if(engine.statistics.score%10>=4) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		if(engine.statistics.score%10>=6) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		if(engine.statistics.score%10>=8) engine.meterColor = GameEngine.METER_COLOR_RED
-		if(engine.statistics.score>=tableGameClearMissions[goaltype]&&tableGameClearMissions[goaltype]>=0) {
-			// Ending
-			engine.ending = 1
-			engine.gameEnded()
-		} else if(engine.statistics.score>=(engine.statistics.level+1)*5&&engine.statistics.level<19) {
-			// Level up
-			engine.statistics.level++
-			owner.backgroundStatus.fadesw = true
-			owner.backgroundStatus.fadecount = 0
-			owner.backgroundStatus.fadebg = engine.statistics.level
-			setSpeed(engine)
-			engine.playSE("levelup_section")
+			if(missionProgress>=missionGoal) {
+				missionIsComplete = true
+
+				// Meter
+				engine.meterValue = engine.statistics.score%10/9f
+				engine.meterColor = GameEngine.METER_COLOR_LEVEL
+				if(engine.statistics.score>=tableGameClearMissions[goalType]&&tableGameClearMissions[goalType]>=0) {
+					// Ending
+					engine.ending = 1
+					engine.gameEnded()
+				} else if(engine.statistics.score>=(engine.statistics.level+1)*5&&engine.statistics.level<19) {
+					// Level up
+					engine.statistics.level++
+					owner.backgroundStatus.fadesw = true
+					owner.backgroundStatus.fadecount = 0
+					owner.backgroundStatus.fadebg = engine.statistics.level
+					engine.playSE("levelup_section")
+				} else engine.playSE("levelup")
+			} else engine.playSE("gem")
+			return 1
 		}
 		return 0
 	}
-	/*
-     * Soft drop
-     */
-	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		return
+
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 	}
 
-	override fun onFirst(engine:GameEngine, playerID:Int) {
-		pCoordList?.clear()
+	override fun onFirst(engine:GameEngine) {
 	}
-	/*
-     * Hard drop
-     */
-	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
-		val baseX:Int = 16*engine.nowPieceX+4+receiver.fieldX(engine, playerID)
-		val baseY:Int = 16*engine.nowPieceY+52+receiver.fieldY(engine, playerID)
-		engine.nowPieceObject?.let {cPiece ->
-			for(i in 1..fall)
-				pCoordList!!.add(intArrayOf(engine.nowPieceX, engine.nowPieceY-i))
 
-			for(i in 0 until cPiece.maxBlock) {
-				if(!cPiece.big) {
-					val x2:Int = baseX+cPiece.dataX[cPiece.direction][i]*16
-					val y2:Int = baseY+cPiece.dataY[cPiece.direction][i]*16
-					receiver.blockBreak(engine, x2, y2, cPiece.block[i])
-				} else {
-					val x2:Int = baseX+cPiece.dataX[cPiece.direction][i]*32
-					val y2:Int = baseY+cPiece.dataY[cPiece.direction][i]*32
-					receiver.blockBreak(engine, x2, y2, cPiece.block[i])
-					receiver.blockBreak(engine, x2+16, y2, cPiece.block[i])
-					receiver.blockBreak(engine, x2, y2+16, cPiece.block[i])
-					receiver.blockBreak(engine, x2+16, y2+16, cPiece.block[i])
-				}
-			}
-		}
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 	}
 	// ------------------------------------------------------------------------------------------
 	// Ranking/Setting Saving/Loading
@@ -447,7 +406,7 @@ class MissionMode:MarathonModeBase() {
 	/*
      * Called for initialization during "Ready" screen
      */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 1
 		engine.b2bEnable = false
@@ -456,7 +415,7 @@ class MissionMode:MarathonModeBase() {
 		engine.twistAllowKick = true
 		engine.twistEnableEZ = false
 		setSpeed(engine)
-		owner.bgmStatus.bgm = tableBGM[bgmlv]
+		owner.bgmStatus.bgm = tableBGM[bgmLv]
 		if(netIsWatch) {
 			owner.bgmStatus.bgm = BGM.Silent
 		}
@@ -464,17 +423,17 @@ class MissionMode:MarathonModeBase() {
 	/*
      * Called when saving replay
      */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(prop, engine)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
-			prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
+			prop.setProperty("${engine.playerID}.net.netPlayerName", netPlayerName)
 		}
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			return updateRanking(engine.statistics.score, engine.statistics.time, goaltype, engine.playerProp.isLoggedIn)
+			return updateRanking(engine.statistics.score, engine.statistics.time, goalType, engine.playerProp.isLoggedIn)
 		}
 		return false
 	}
@@ -550,51 +509,50 @@ class MissionMode:MarathonModeBase() {
 	/*
      * Render results screen
      */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
+	override fun renderResult(engine:GameEngine) {
 		drawResultStats(
-			engine, playerID, receiver, 0, COLOR.BLUE,
-			Statistic.SCORE, Statistic.LEVEL, Statistic.TIME, Statistic.LPM
+			engine, receiver, 0, COLOR.BLUE, Statistic.SCORE,
+			Statistic.LEVEL, Statistic.TIME, Statistic.LPM
 		)
-		drawResultRank(engine, playerID, receiver, 8, COLOR.BLUE, rankingRank)
-		drawResultNetRank(engine, playerID, receiver, 10, COLOR.BLUE, netRankingRank[0])
-		drawResultNetRankDaily(engine, playerID, receiver, 12, COLOR.BLUE, netRankingRank[1])
+		drawResultRank(engine, receiver, 8, COLOR.BLUE, rankingRank)
+		drawResultNetRank(engine, receiver, 10, COLOR.BLUE, netRankingRank[0])
+		drawResultNetRankDaily(engine, receiver, 12, COLOR.BLUE, netRankingRank[1])
 		if(netIsPB) {
-			receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", COLOR.ORANGE)
+			receiver.drawMenuFont(engine, 2, 21, "NEW PB", COLOR.ORANGE)
 		}
 		if(netIsNetPlay&&netReplaySendStatus==1) {
-			receiver.drawMenuFont(engine, playerID, 0, 22, "SENDING...", COLOR.PINK)
+			receiver.drawMenuFont(engine, 0, 22, "SENDING...", COLOR.PINK)
 		} else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2) {
-			receiver.drawMenuFont(engine, playerID, 1, 22, "A: RETRY", COLOR.RED)
+			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", COLOR.RED)
 		}
 	}
 	// ------------------------------------------------------------------------------------------
 	// CRAPPY MISSION GENERATION METHODS >_<
 	// ------------------------------------------------------------------------------------------
-	/*
-     * I don't even know how these even are supposed to integrate into the rest of the mode but we'll get there later.
-     */
+	//I don't even know how these even are supposed to integrate into the rest of the mode, but we'll get there later.
 	private fun generateNewMission(engine:GameEngine, lastMission:Boolean) {
 		val classic:Boolean = engine.ruleOpt.strWallkick.contains("Classic")
 			||engine.ruleOpt.strWallkick.contains("GBC")||
 			engine.ruleOpt.strWallkick.contains("WallOnly")
-			||!(engine.ruleOpt.lockresetMove||engine.ruleOpt.lockresetRotate)
-		val missionTypeRd = missionRandomiser.nextInt(10)
+			||!(engine.ruleOpt.lockResetMove||engine.ruleOpt.lockResetSpin)
+		val missionTypeRd = missionRandomizer.nextInt(13)
 		val missionType = when {
-			missionTypeRd<4 -> Clear
-			missionTypeRd<6 -> ClearWith
-			missionTypeRd<8 -> Spin
-			missionTypeRd<9 -> Combo
-			else -> SpinWith
+			missionTypeRd<5 -> Clear
+			missionTypeRd<8 -> ClearWith
+			missionTypeRd<10 -> Split
+			missionTypeRd<11 -> Spin
+			missionTypeRd<12 -> SpinWith
+			else -> Combo
 		}
 		missionCategory = missionType
 		missionIsComplete = false
 		when(missionType) {
 			ClearWith -> {
-				val pieceNum = missionRandomiser.nextInt(VALID_LINECLEAR_PIECES.size)
+				val pieceNum = missionRandomizer.nextInt(VALID_LINECLEAR_PIECES.size)
 				val pieceName = VALID_LINECLEAR_PIECES[pieceNum]
 				val bodyColor = missionColor(engine, pieceName)
-				val lineClear = missionRandomiser.nextInt(VALID_MAX_LINECLEARS[pieceNum])+1
-				val amount = missionRandomiser.nextInt(MAX_MISSION_GOAL-lineClear/2)+1
+				val lineClear = missionRandomizer.nextInt(VALID_MAX_LINECLEARS[pieceNum])+1
+				val amount = missionRandomizer.nextInt(MAX_MISSION_GOAL-lineClear/2)+1
 				missionGoal = amount
 				missionProgress = 0
 				lineAmount = lineClear
@@ -604,8 +562,8 @@ class MissionMode:MarathonModeBase() {
 				currentMissionText = generateSpecificLineMissionData(pieceName, bodyColor, lineClear, amount, lastMission)
 			}
 			Clear -> {
-				val lineClear = missionRandomiser.nextInt(4)+1
-				val amount = missionRandomiser.nextInt(MAX_MISSION_GOAL-lineClear/2)+1
+				val lineClear = missionRandomizer.nextInt(4)+1
+				val amount = missionRandomizer.nextInt(MAX_MISSION_GOAL-lineClear/2)+1
 				val bodyColor = if(lineClear>=4) missionColor(engine, "I") else MISSION_GENERIC
 				missionGoal = amount
 				missionProgress = 0
@@ -616,13 +574,13 @@ class MissionMode:MarathonModeBase() {
 				currentMissionText = generateLineMissionData(bodyColor, lineClear, amount, lastMission)
 			}
 			SpinWith -> {
-				val pieceNum = missionRandomiser.nextInt(VALID_SPIN_PIECES.size)
+				val pieceNum = missionRandomizer.nextInt(VALID_SPIN_PIECES.size)
 				val pieceName = VALID_SPIN_PIECES[pieceNum]
 				val bodyColor = missionColor(engine, pieceName)
-				val lineClear = missionRandomiser.nextInt(
+				val lineClear = missionRandomizer.nextInt(
 					if(classic) VALID_CLASSIC_SPIN_MAX_LINES[pieceNum] else VALID_SPIN_MAX_LINES[pieceNum]
 				)
-				val amount = missionRandomiser.nextInt(MAX_MISSION_GOAL-lineClear/2)+1
+				val amount = missionRandomizer.nextInt(MAX_MISSION_GOAL-lineClear/2)+1
 				missionGoal = amount
 				missionProgress = 0
 				lineAmount = lineClear
@@ -632,8 +590,8 @@ class MissionMode:MarathonModeBase() {
 				currentMissionText = generateSpinMissionData(pieceName, bodyColor, lineClear, amount, lastMission)
 			}
 			Spin -> {
-				val lineClear = missionRandomiser.nextInt(if(classic) 2 else 3)
-				val amount = missionRandomiser.nextInt(MAX_MISSION_GOAL-lineClear/2)+1
+				val lineClear = missionRandomizer.nextInt(if(classic) 2 else 3)
+				val amount = missionRandomizer.nextInt(MAX_MISSION_GOAL-lineClear/2)+1
 				missionGoal = amount
 				missionProgress = 0
 				lineAmount = lineClear
@@ -642,8 +600,18 @@ class MissionMode:MarathonModeBase() {
 				specificPieceName = ""
 				currentMissionText = generateNonSpecificSpinMissionData(lineClear, amount, lastMission)
 			}
+			Split -> {
+//				val lineClear = missionRandomizer.nextInt(if(classic) 2 else 3)
+				val amount = missionRandomizer.nextInt(MAX_MISSION_GOAL-1)+1
+				missionGoal = amount
+				missionProgress = 0
+				//isSpecific = false;
+				//isSpinMission = true;
+				specificPieceName = ""
+				currentMissionText = generateSplitMissionData(amount, lastMission)
+			}
 			Combo -> {
-				val comboLimit = missionRandomiser.nextInt(MAX_MISSION_COMBO)+3
+				val comboLimit = missionRandomizer.nextInt(MAX_MISSION_COMBO)+3
 				missionGoal = comboLimit
 				missionProgress = 0
 				lineAmount = 0
@@ -653,8 +621,12 @@ class MissionMode:MarathonModeBase() {
 				currentMissionText = generateComboMissionData(comboLimit, lastMission)
 			}
 		}
+		setSpeed(engine)
 		engine.comboType = if(missionType==Combo) GameEngine.COMBO_TYPE_NORMAL else 0
-		engine.combo = 0
+	}
+
+	override fun setSpeed(engine:GameEngine) {
+		super.setSpeed(engine)
 	}
 
 	private fun missionColor(engine:GameEngine, pieceName:String):COLOR = try {
@@ -663,10 +635,8 @@ class MissionMode:MarathonModeBase() {
 		COLOR.WHITE
 	}
 
-	private fun generateSpinMissionData(
-		pieceName:String, bodyColor:COLOR, spinLine:Int, amount:Int,
-		lastMission:Boolean
-	):LinkedHashMap<String, COLOR?> {
+	private fun generateSpinMissionData(pieceName:String, bodyColor:COLOR, spinLine:Int, amount:Int, lastMission:Boolean)
+		:LinkedHashMap<String, COLOR?> {
 		val header = "Perform"
 		val footer = if(lastMission) "TO WIN!" else "TO GO"
 		val missionBody = "$amount"+"X "+pieceName+SPIN_MISSION_TABLE[spinLine]+if(amount>1) "S" else ""
@@ -681,10 +651,8 @@ class MissionMode:MarathonModeBase() {
 		return result
 	}
 
-	private fun generateNonSpecificSpinMissionData(
-		spinLine:Int, amount:Int,
-		lastMission:Boolean
-	):LinkedHashMap<String, COLOR?> {
+	private fun generateNonSpecificSpinMissionData(spinLine:Int, amount:Int, lastMission:Boolean)
+		:LinkedHashMap<String, COLOR?> {
 		val header = "Perform"
 		val footer = if(lastMission) "TO WIN!" else "TO GO"
 		val missionBody = "$amount"+"X "+NON_SPECIFIC_SPIN_MISSION_TABLE[spinLine]+if(amount>1) "S" else ""
@@ -700,8 +668,7 @@ class MissionMode:MarathonModeBase() {
 	}
 
 	private fun generateLineMissionData(
-		bodyColor:COLOR, lineClear:Int, amount:Int,
-		lastMission:Boolean
+		bodyColor:COLOR, lineClear:Int, amount:Int, lastMission:Boolean
 	):LinkedHashMap<String, COLOR?> {
 		val header = "Perform"
 		val footer = if(lastMission) "TO WIN!" else "TO GO"
@@ -715,10 +682,8 @@ class MissionMode:MarathonModeBase() {
 		return result
 	}
 
-	private fun generateSpecificLineMissionData(
-		pieceName:String, bodyColor:COLOR, lineClear:Int, amount:Int,
-		lastMission:Boolean
-	):LinkedHashMap<String, COLOR?> {
+	private fun generateSpecificLineMissionData(pieceName:String, bodyColor:COLOR, lineClear:Int, amount:Int, lastMission:Boolean)
+		:LinkedHashMap<String, COLOR?> {
 		val header = "Perform"
 		val footer = if(lastMission) "TO WIN!" else "TO GO"
 		val missionBody = "$amount"+"X "+LINECLEAR_MISSION_TABLE[lineClear-1]+if(amount>1) if(lineClear!=4) "S" else "ES" else ""
@@ -737,7 +702,21 @@ class MissionMode:MarathonModeBase() {
 	private fun generateComboMissionData(maxCombo:Int, lastMission:Boolean):LinkedHashMap<String, COLOR?> {
 		val header = "Perform"
 		val footer = if(lastMission) "TO WIN!" else "TO GO"
-		val missionBody = "A "+maxCombo+"X "+"Combo"
+		val missionBody = "A $maxCombo REN Combo"
+		val result = LinkedHashMap<String, COLOR?>()
+		result[header] = MISSION_NEUTRAL
+		result["[NEWLINE]"] = null
+		result[missionBody] = MISSION_GENERIC
+		result["[NEWLINE1]"] = null
+		result[footer] = MISSION_NEUTRAL
+		return result
+	}
+
+	private fun generateSplitMissionData(amount:Int, lastMission:Boolean)
+		:LinkedHashMap<String, COLOR?> {
+		val header = "Perform"
+		val footer = if(lastMission) "TO WIN!" else "TO GO"
+		val missionBody = "$amount"+"X Split Lines"
 		val result = LinkedHashMap<String, COLOR?>()
 		result[header] = MISSION_NEUTRAL
 		result["[NEWLINE]"] = null
@@ -757,14 +736,13 @@ class MissionMode:MarathonModeBase() {
 	 * @param scale        Text scale (0.5f, 1.0f, 2.0f).
 	 */
 	private fun drawMissionStrings(
-		engine:GameEngine, playerID:Int, missionData:LinkedHashMap<String, COLOR?>?,
-		destinationX:Int, destinationY:Int, scale:Float
+		engine:GameEngine, missionData:LinkedHashMap<String, COLOR?>, destinationX:Int, destinationY:Int, scale:Float
 	) {
 		var counterX = 0
 		var counterY = 0
-		currentMissionText.forEach {(str, col) ->
+		missionData.forEach {(str, col) ->
 			if(col!=null) {
-				receiver.drawScoreFont(engine, playerID, destinationX+counterX, destinationY+counterY, str, col, scale)
+				receiver.drawScoreFont(engine, destinationX+counterX, destinationY+counterY, str, col, scale)
 				counterX += str.length
 			} else {
 				counterX = 0
@@ -830,7 +808,8 @@ class MissionMode:MarathonModeBase() {
 		private val headerColor = COLOR.GREEN
 
 		private enum class MissionType {
-			SpinWith, ClearWith, Spin, Clear, Combo
+			Clear, ClearWith, Spin, SpinWith, Split, Combo
+			//HiSpeed
 		}
 	}
 }

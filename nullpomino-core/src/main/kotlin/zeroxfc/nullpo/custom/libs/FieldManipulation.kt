@@ -37,7 +37,6 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import java.util.Random
-import kotlin.math.roundToLong
 
 /**
  * Fixed flip field method (180° Field inum).
@@ -87,34 +86,26 @@ fun Field.mirror() {
 	}
 }
 /**
- * Fixed delete upper half of field method.
- *
- */
-fun Field.delUpper() {
-	val rows = ((height-highestBlockY)/2.0).roundToLong().toInt()
-	// I think this rounds up.
-	val g = highestBlockY
-	for(y in 0 until rows) delLine(g+y)
-}
-/**
  * Deletes blocks with any of the colors in the given array.
  *
  * @param colors Colors to erase
  * @return int[]; Amount of blocks of each color erased
  */
-fun Field.delColors(colors:Array<Block.COLOR>):IntArray = colors.map {delColor(it)}.toIntArray()
+fun Field.delColors(colors:Array<Block.COLOR>, dir:Boolean = true):IntArray = colors.map {delColor(it, dir)}.toIntArray()
 /**
  * Deletes all blocks of a certain color on a field.
  *
  * @param color Color to erase
+ * @param dir if false, block marked will be erased but not now
  * @return int; Amount of blocks erased
  */
-fun Field.delColor(color:Block.COLOR):Int {
-	var erased = 0
-	for(y in -1*hiddenHeight until height) for(x in 0 until width) if(getBlockColor(x, y)==color)
-		if(delBlock(x, y)!=null) erased++
-	return erased
-}
+fun Field.delColor(color:Block.COLOR, dir:Boolean = true):Int =
+	findBlocks {it.color==color}.entries.sumOf {(y, row) ->
+		row.entries.mapNotNull {(x, b) ->
+			if(dir) delBlock(x, y) else b.apply {setAttribute(true, Block.ATTRIBUTE.ERASE)}
+		}.size
+	}
+
 /**
  * Erases a mino in every filled line on a field. Displays the blockbreak effect.
  *
@@ -123,24 +114,10 @@ fun Field.delColor(color:Block.COLOR):Int {
  * @param random   Random instance to use
  */
 fun Field.shotgunField(random:Random, receiver:EventReceiver? = null, engine:GameEngine? = null) {
-	for(y in hiddenHeight*-1 until height) {
-		val spaces = (0 until width).mapNotNull {x ->
-			getBlock(x, y)?.let {x}
-		}
-		val allEmpty = spaces.isEmpty()
-
-		if(!allEmpty) {
-			while(true) {
-				val x = spaces[random.nextInt(spaces.size)]
-				if(getBlock(x, y)?.let {blk ->
-						if(blk.color!=null)
-							engine?.let {receiver?.blockBreak(it, x, y, blk)}
-
-						delBlock(x, y)
-						false
-					}!=false) break
-			}
-		}
+	(hiddenHeight*-1 until height).associateWith {y ->
+		getRow(y).mapIndexedNotNull {x, b -> b?.let {x to b}}.let {mapOf(it[random.nextInt(it.size)])}
+	}.filter {it.value.isNotEmpty()}.let {all ->
+		delBlocks(all).let {engine?.let {e -> receiver?.blockBreak(e, it)}}
 	}
 }
 /**
@@ -167,10 +144,10 @@ fun Field.shuffleColumns(ArrayRandomizer:ArrayRandomizer) {
 	val nf = Field(this)
 	for(i in columns.indices) {
 		for(y in -1*nf.hiddenHeight until nf.height) {
-			nf.getBlock(i, y)?.copy(getBlock(columns[i], y))
+			nf.getBlock(i, y)?.replace(getBlock(columns[i], y))
 		}
 	}
-	copy(nf)
+	replace(nf)
 }
 /**
  *
@@ -204,10 +181,10 @@ fun Field.shuffleRows(ArrayRandomizer:ArrayRandomizer, highestRow:Int = 2, lowes
 	val nf = Field(this)
 	for(i in rows.indices) {
 		for(x in 0 until nf.width) {
-			nf.getBlock(x, oldRows[i])!!.copy(getBlock(x, rows[i]))
+			nf.getBlock(x, oldRows[i])!!.replace(getBlock(x, rows[i]))
 		}
 	}
-	copy(nf)
+	replace(nf)
 }
 /**
  *
@@ -224,8 +201,7 @@ fun Field.shuffleRows(ArrayRandomizer:ArrayRandomizer, highestRow:Int = 2, lowes
  * @param colorMatch Exact color matching (halves match value of non-color matches)?
  * @return A double that denotes the proportion of match between the fields (0 <= value <= 1).
  */
-@JvmOverloads fun Field.compare(b:Field,
-	exact:Boolean = false, colorMatch:Boolean = false):Double {
+@JvmOverloads fun Field.compare(b:Field, exact:Boolean = false, colorMatch:Boolean = false):Double {
 	val a = this
 	return if(exact) {
 		/*
@@ -480,13 +456,13 @@ val Field.opposingCornerCoords:Array<IntArray>
  *
  * @return int[] results: results[0] = x, results[1] = y.
  */
-val Field.opposingCornerBoxSize:Array<Int>
+val Field.opposingCornerBoxSize:IntArray
 	get() {
 		val bbox = opposingCornerCoords
 		val i:Int = bbox[1][0]-bbox[0][0]+1
 		val j:Int = bbox[1][1]-bbox[0][1]+1
-		if(i<=0||j<=0) return emptyArray()
-		return arrayOf(i, j)
+		return if(i<=0||j<=0) intArrayOf()
+		else intArrayOf(i, j)
 	}
 /**
  * Gets the x coordinate of the left-most filled column a field.
@@ -494,48 +470,24 @@ val Field.opposingCornerBoxSize:Array<Int>
  * @return int; x coordinate
  */
 val Field.getLeftmostColumn:Int
-	get() {
-		for(x in 0 until width) {
-			for(y in -1*hiddenHeight until height) {
-				val blk = getBlock(x, y)
-				if(blk!=null) {
-					if(!blk.isEmpty) return x
-				}
-			}
-		}
-		return width-1
-	}
+	get() = (0 until width).firstOrNull {x ->
+		(-1*hiddenHeight until height).any {y -> !getBlockEmpty(x, y)}
+	} ?: width-1
 /**
  * Gets the x coordinate of the right-most filled column a field.
  *
  * @return int; x coordinate
  */
 val Field.getRightmostColumn:Int
-	get() {
-		for(x in width-1 downTo 0) {
-			for(y in -1*hiddenHeight until height) {
-				val blk = getBlock(x, y)
-				if(blk!=null) {
-					if(!blk.isEmpty) return x
-				}
-			}
-		}
-		return 0
-	}
+	get() = (width-1 downTo 0).firstOrNull {x ->
+		(-1*hiddenHeight until height).any {y -> !getBlockEmpty(x, y)}
+	} ?: 0
 /**
  * Gets the y coordinate of the bottom-most filled row in a field.
  *
  * @return int; y coordinate
  */
 val Field.getBottommostRow:Int
-	get() {
-		for(y in height-1 downTo -1*hiddenHeight) {
-			for(x in 0 until width) {
-				val blk = getBlock(x, y)
-				if(blk!=null) {
-					if(!blk.isEmpty) return y
-				}
-			}
-		}
-		return hiddenHeight*-1
-	}
+	get() = (height-1 downTo -1*hiddenHeight).firstOrNull {y ->
+		(0 until width).any {x -> !getBlockEmpty(x, y)}
+	} ?: hiddenHeight*-1

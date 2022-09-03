@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,15 +29,11 @@
 package mu.nu.nullpo.gui.slick.img
 
 import mu.nu.nullpo.gui.common.BaseFontMedal
+import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.slick.ResourceHolder
-import org.newdawn.slick.Color
 
 /** 普通の文字列の表示クラス */
 object FontMedal:BaseFontMedal() {
-	override fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float, alpha:Float, darkness:Float) =
-		processTxt(x.toFloat(), y.toFloat(), str, tier, scale)
-		{dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
-			ResourceHolder.imgFontMedal.draw(dx, dy, w, h, sx, sy, sw, sh, Color(1f, 1f, 1f, alpha).darker(maxOf(0f, darkness)))
-		}
+	override val img:ResourceImage<*> = ResourceHolder.imgFontMedal
 
 }

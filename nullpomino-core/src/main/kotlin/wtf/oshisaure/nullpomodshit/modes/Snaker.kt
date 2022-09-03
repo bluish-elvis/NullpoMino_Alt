@@ -52,7 +52,7 @@ class Snaker:AbstractMode() {
 	private var bonusX = 0
 	override val name = "Sneaker"
 
-	override fun playerInit(engine:GameEngine, playerID:Int) {
+	override fun playerInit(engine:GameEngine) {
 		snakelength = 5
 		snakepositionsX = IntArray(5)
 		snakepositionsY = IntArray(5)
@@ -68,7 +68,7 @@ class Snaker:AbstractMode() {
 		engine.rainbowAnimate = true
 	}
 
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
 		return if(engine.statc[0]==0) {
 			engine.fieldWidth = 19
 			engine.fieldHeight = 19
@@ -95,7 +95,7 @@ class Snaker:AbstractMode() {
 		}
 	}
 
-	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
+	override fun onMove(engine:GameEngine):Boolean {
 		if(engine.ctrl.isPress(0)&&lastmove!=2) orientation = 0
 		if(engine.ctrl.isPress(3)&&lastmove!=3) orientation = 1
 		if(engine.ctrl.isPress(1)&&lastmove!=0) orientation = 2

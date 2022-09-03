@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -49,13 +49,13 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	}
 
 	/* Player init */
-	override fun netPlayerInit(engine:GameEngine, playerID:Int) {
-		super.netPlayerInit(engine, playerID)
+	override fun netPlayerInit(engine:GameEngine) {
+		super.netPlayerInit(engine)
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 	}
 
 	/** Apply room settings, but ignore non-speed settings */
-	override fun netvsApplyRoomSettings(engine:GameEngine) {
+	override fun netVSApplyRoomSettings(engine:GameEngine) {
 		if(netCurrentRoomInfo!=null) {
 			engine.speed.gravity = netCurrentRoomInfo!!.gravity
 			engine.speed.denominator = netCurrentRoomInfo!!.denominator
@@ -68,25 +68,22 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	}
 
 	/* Called at game start */
-	override fun startGame(engine:GameEngine, playerID:Int) {
-		super.startGame(engine, playerID)
+	override fun startGame(engine:GameEngine) {
+		super.startGame(engine)
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
-		engine.meterValue = owner.receiver.getMeterMax(engine)
+		engine.meterValue = 1f
 	}
 
-	/** Get player's place
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @return Player's place
-	 */
+	/** @return Player's place */
 	private fun getNowPlayerPlace(engine:GameEngine, playerID:Int):Int {
-		if(!netvsPlayerExist[playerID]||netvsPlayerDead[playerID]) return -1
+		val pid = engine.playerID
+		if(!netVSPlayerExist[pid]||netVSPlayerDead[pid]) return -1
 
 		var place = 0
 		val myLines = minOf(engine.statistics.lines, goalLines)
 
 		for(i in 0 until players)
-			if(i!=playerID&&netvsPlayerExist[i]&&!netvsPlayerDead[i]) {
+			if(i!=pid&&netVSPlayerExist[i]&&!netVSPlayerDead[i]) {
 				val enemyLines = minOf(owner.engine[i].statistics.lines, goalLines)
 
 				if(myLines<enemyLines)
@@ -101,40 +98,35 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 		return place
 	}
 
-	/** Update progress meter
-	 * @param engine GameEngine
-	 */
+	/** Update progress meter*/
 	private fun updateMeter(engine:GameEngine) {
 		if(goalLines>0) {
 			val remainLines = goalLines-engine.statistics.lines
-			engine.meterValue = remainLines*owner.receiver.getMeterMax(engine)/goalLines
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(remainLines<=30) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(remainLines<=20) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(remainLines<=10) engine.meterColor = GameEngine.METER_COLOR_RED
+			engine.meterValue = remainLines*1f/goalLines
+			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 		}
 	}
 
 	/* Calculate Score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		// Meter
 		updateMeter(engine)
 
 		// Game Completed
-		if(engine.statistics.lines>=goalLines&&playerID==0)
-			if(netvsIsPractice) {
+		if(engine.statistics.lines>=goalLines&&engine.playerID==0)
+			if(netVSIsPractice) {
 				engine.stat = GameEngine.Status.EXCELLENT
 				engine.resetStatc()
 			} else {
 				// Send game end message
-				val places = IntArray(NETVS_MAX_PLAYERS)
-				val uidArray = IntArray(NETVS_MAX_PLAYERS)
+				val places = IntArray(NET_MAX_PLAYERS)
+				val uidArray = IntArray(NET_MAX_PLAYERS)
 				for(i in 0 until players) {
 					places[i] = getNowPlayerPlace(owner.engine[i], i)
 					uidArray[i] = -1
 				}
 				for(i in 0 until players)
-					if(places[i] in 0 until NETVS_MAX_PLAYERS) uidArray[places[i]] = netvsPlayerUID[i]
+					if(places[i] in 0 until NET_MAX_PLAYERS) uidArray[places[i]] = netVSPlayerUID[i]
 
 				val strMsg = StringBuilder("racewin")
 				for(i in 0 until players)
@@ -150,15 +142,15 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	}
 
 	/* Drawing processing at the end of every frame */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		super.renderLast(engine, playerID)
+	override fun renderLast(engine:GameEngine) {
+		super.renderLast(engine)
 
-		val x = owner.receiver.fieldX(engine, playerID)
-		val y = owner.receiver.fieldY(engine, playerID)
+		val x = owner.receiver.fieldX(engine)
+		val y = owner.receiver.fieldY(engine)
 
-
-		if(netvsPlayerExist[playerID]&&engine.isVisible) {
-			if((netvsIsGameActive||netvsIsPractice&&playerID==0)&&engine.stat!=GameEngine.Status.RESULT) {
+		val pid = engine.playerID
+		if(netVSPlayerExist[pid]&&engine.isVisible) {
+			if((netVSIsGameActive||netVSIsPractice&&pid==0)&&engine.stat!=GameEngine.Status.RESULT) {
 				// Lines left
 				val remainLines = maxOf(0, goalLines-engine.statistics.lines)
 				val fontColor = when(remainLines) {
@@ -171,10 +163,10 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 				val strLines = "$remainLines"
 
 				when {
-					engine.displaysize!=-1 -> when(strLines.length) {
-						1 -> owner.receiver.drawMenuFont(engine, playerID, 4, 21, strLines, fontColor, 2f)
-						2 -> owner.receiver.drawMenuFont(engine, playerID, 3, 21, strLines, fontColor, 2f)
-						3 -> owner.receiver.drawMenuFont(engine, playerID, 2, 21, strLines, fontColor, 2f)
+					engine.displaySize!=-1 -> when(strLines.length) {
+						1 -> owner.receiver.drawMenuFont(engine, 4, 21, strLines, fontColor, 2f)
+						2 -> owner.receiver.drawMenuFont(engine, 3, 21, strLines, fontColor, 2f)
+						3 -> owner.receiver.drawMenuFont(engine, 2, 21, strLines, fontColor, 2f)
 					}
 					strLines.length==1 -> owner.receiver.drawDirectFont(x+4+32, y+168, strLines, fontColor, 1f)
 					strLines.length==2 -> owner.receiver.drawDirectFont(x+4+24, y+168, strLines, fontColor, 1f)
@@ -182,19 +174,19 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 				}
 			}
 
-			if(netvsIsGameActive&&engine.stat!=GameEngine.Status.RESULT) {
+			if(netVSIsGameActive&&engine.stat!=GameEngine.Status.RESULT) {
 				// Place
-				var place = getNowPlayerPlace(engine, playerID)
-				if(netvsPlayerDead[playerID]) place = netvsPlayerPlace[playerID]
+				var place = getNowPlayerPlace(engine, pid)
+				if(netVSPlayerDead[pid]) place = netVSPlayerPlace[pid]
 
 				when {
-					engine.displaysize!=-1 -> when(place) {
-						0 -> owner.receiver.drawMenuFont(engine, playerID, -2, 22, "1ST", COLOR.ORANGE)
-						1 -> owner.receiver.drawMenuFont(engine, playerID, -2, 22, "2ND", COLOR.WHITE)
-						2 -> owner.receiver.drawMenuFont(engine, playerID, -2, 22, "3RD", COLOR.RED)
-						3 -> owner.receiver.drawMenuFont(engine, playerID, -2, 22, "4TH", COLOR.GREEN)
-						4 -> owner.receiver.drawMenuFont(engine, playerID, -2, 22, "5TH", COLOR.BLUE)
-						5 -> owner.receiver.drawMenuFont(engine, playerID, -2, 22, "6TH", COLOR.PURPLE)
+					engine.displaySize!=-1 -> when(place) {
+						0 -> owner.receiver.drawMenuFont(engine, -2, 22, "1ST", COLOR.ORANGE)
+						1 -> owner.receiver.drawMenuFont(engine, -2, 22, "2ND", COLOR.WHITE)
+						2 -> owner.receiver.drawMenuFont(engine, -2, 22, "3RD", COLOR.RED)
+						3 -> owner.receiver.drawMenuFont(engine, -2, 22, "4TH", COLOR.GREEN)
+						4 -> owner.receiver.drawMenuFont(engine, -2, 22, "5TH", COLOR.BLUE)
+						5 -> owner.receiver.drawMenuFont(engine, -2, 22, "6TH", COLOR.PURPLE)
 					}
 					place==0 -> owner.receiver.drawDirectFont(x, y+168, "1ST", COLOR.ORANGE, .5f)
 					place==1 -> owner.receiver.drawDirectFont(x, y+168, "2ND", COLOR.WHITE, .5f)
@@ -203,13 +195,13 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 					place==4 -> owner.receiver.drawDirectFont(x, y+168, "5TH", COLOR.BLUE, .5f)
 					place==5 -> owner.receiver.drawDirectFont(x, y+168, "6TH", COLOR.PURPLE, .5f)
 				}
-			} else if(!netvsIsPractice||playerID!=0) {
-				val strTemp = "${netvsPlayerWinCount[playerID]}/${netvsPlayerPlayCount[playerID]}"
+			} else if(!netVSIsPractice||pid!=0) {
+				val strTemp = "${netVSPlayerWinCount[pid]}/${netVSPlayerPlayCount[pid]}"
 
-				if(engine.displaysize!=-1) {
+				if(engine.displaySize!=-1) {
 					var y2 = 21
 					if(engine.stat==GameEngine.Status.RESULT) y2 = 22
-					owner.receiver.drawMenuFont(engine, playerID, 0, y2, strTemp, COLOR.WHITE)
+					owner.receiver.drawMenuFont(engine, 0, y2, strTemp, COLOR.WHITE)
 				} else
 					owner.receiver.drawDirectFont(x+4, y+168, strTemp, COLOR.WHITE, .5f)
 			}// Games count
@@ -217,21 +209,22 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	}
 
 	/* Render results screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		super.renderResult(engine, playerID)
+	override fun renderResult(engine:GameEngine) {
+		super.renderResult(engine)
 
-		var scale = 1f
-		if(engine.displaysize==-1) scale = .5f
+		val scale = if(engine.displaySize==-1) .5f else 1f
 
-		drawResultScale(engine, playerID, owner.receiver, 2, COLOR.ORANGE, scale, "LINE",
+		drawResultScale(
+			engine, owner.receiver, 2, COLOR.ORANGE, scale, "LINE",
 			String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
 			"LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps),
-			"Time", String.format("%10s", engine.statistics.time.toTimeStr))
+			"Time", String.format("%10s", engine.statistics.time.toTimeStr)
+		)
 	}
 
 	/* Send stats */
 	override fun netSendStats(engine:GameEngine) {
-		if(engine.playerID==0&&!netvsIsPractice&&!netvsIsWatch()) {
+		if(engine.playerID==0&&!netVSIsPractice&&!netVSIsWatch()) {
 			val strMsg = ("game\tstats\t${engine.statistics.lines}\t${engine.statistics.pps}\t"+engine.statistics.lpm
 				+"\n")
 			netLobby!!.netPlayerClient!!.send(strMsg)
@@ -250,21 +243,21 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	override fun netSendEndGameStats(engine:GameEngine) {
 		val playerID = engine.playerID
 		var msg = "gstat\t"
-		msg += "${netvsPlayerPlace[playerID]}\t"
+		msg += "${netVSPlayerPlace[playerID]}\t"
 		msg += "0\t0\t0\t"
 		msg += "${engine.statistics.lines}\t${engine.statistics.lpm}\t"
 		msg += "${engine.statistics.totalPieceLocked}\t${engine.statistics.pps}\t"
-		msg += "$netvsPlayTimer\t0\t${netvsPlayerWinCount[playerID]}\t${netvsPlayerPlayCount[playerID]}"
+		msg += "$netVSPlayTimer\t0\t${netVSPlayerWinCount[playerID]}\t${netVSPlayerPlayCount[playerID]}"
 		msg += "\n"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
 	/* Receive end-of-game stats */
-	override fun netvsRecvEndGameStats(message:Array<String>) {
+	override fun netVSRecvEndGameStats(message:Array<String>) {
 		val seatID = message[2].toInt()
-		val playerID = netvsGetPlayerIDbySeatID(seatID)
+		val playerID = netVSGetPlayerIDbySeatID(seatID)
 
-		if(playerID!=0||netvsIsWatch()) {
+		if(playerID!=0||netVSIsWatch()) {
 			val engine = owner.engine[playerID]
 
 			engine.statistics.lines = message[8].toInt()
@@ -273,7 +266,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 			//engine.statistics.pps = message[11].toFloat()
 			engine.statistics.time = message[12].toInt()
 
-			netvsPlayerResultReceived[playerID] = true
+			netVSPlayerResultReceived[playerID] = true
 		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -81,10 +81,11 @@ class SquareMode:AbstractMode() {
 			*((rankingScore.mapIndexed {a, x -> "$a.score" to x}+
 				rankingSquares.mapIndexed {a, x -> "$a.squares" to x}+
 				rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-		)	/* This function will be called when the game enters the main game
+		)  /* This function will be called when the game enters the main game
  * screen. */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 		lastscore = 0
 		squares = 0
 
@@ -104,7 +105,7 @@ class SquareMode:AbstractMode() {
 		} else
 			loadSetting(owner.replayProp, engine)
 
-		engine.framecolor = GameEngine.FRAME_COLOR_PURPLE
+		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
 	}
 
 	/** Set the gravity speed
@@ -120,7 +121,7 @@ class SquareMode:AbstractMode() {
 	}
 
 	/* Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// Main menu
 		if(!engine.owner.replayMode) {
 			// Configuration changes
@@ -155,15 +156,14 @@ class SquareMode:AbstractMode() {
 			}
 
 			// A button (confirm)
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				return false
 			}
 
 			// B button (cancel)
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
-			menuTime++
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -175,7 +175,7 @@ class SquareMode:AbstractMode() {
 	}
 
 	/* Renders game setup screen */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		var strOutline = ""
 		if(outlinetype==0) strOutline = "NORMAL"
 		if(outlinetype==1) strOutline = "CONNECT"
@@ -185,8 +185,7 @@ class SquareMode:AbstractMode() {
 		if(grayoutEnable==1) grayoutStr = "SPIN ONLY"
 		if(grayoutEnable==2) grayoutStr = "ALL"
 		drawMenu(
-			engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype],
-			"OUTLINE" to strOutline,
+			engine, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype], "OUTLINE" to strOutline,
 			"SPIN BONUS" to if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL",
 			"AVALANCHE" to if(tntAvalanche) "TNT" else "WORLDS",
 			"GRAYOUT" to grayoutStr
@@ -195,7 +194,7 @@ class SquareMode:AbstractMode() {
 
 	/* This function will be called before the game actually begins (after
  * Ready&Go screen disappears) */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 
 		if(outlinetype==0) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
@@ -220,15 +219,15 @@ class SquareMode:AbstractMode() {
 	}
 
 	/* Piece movement */
-	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
+	override fun onMove(engine:GameEngine):Boolean {
 		// Disable cascade
 		engine.lineGravityType = GameEngine.LineGravity.NATIVE
 		return false
 	}
 
 	/* Renders HUD (leaderboard or game statistics) */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		receiver.drawScoreFont(engine, playerID, 0, 0, "SQUARE (${GAMETYPE_NAME[gametype]})", EventReceiver.COLOR.COBALT)
+	override fun renderLast(engine:GameEngine) {
+		receiver.drawScoreFont(engine, 0, 0, "SQUARE (${GAMETYPE_NAME[gametype]})", EventReceiver.COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
@@ -236,63 +235,63 @@ class SquareMode:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2&&gametype==0) 6 else 4
 
 				when(gametype) {
-					0 -> receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE SQUARE TIME", EventReceiver.COLOR.BLUE, scale)
-					1 -> receiver.drawScoreFont(engine, playerID, 3, 3, "SCORE SQUARE", EventReceiver.COLOR.BLUE)
-					2 -> receiver.drawScoreFont(engine, playerID, 3, 3, "TIME     SQUARE", EventReceiver.COLOR.BLUE)
+					0 -> receiver.drawScoreFont(engine, 3, topY-1, "SCORE SQUARE TIME", EventReceiver.COLOR.BLUE, scale)
+					1 -> receiver.drawScoreFont(engine, 3, 3, "SCORE SQUARE", EventReceiver.COLOR.BLUE)
+					2 -> receiver.drawScoreFont(engine, 3, 3, "TIME     SQUARE", EventReceiver.COLOR.BLUE)
 				}
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
-							receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
-							receiver.drawScoreFont(engine, playerID, 9, topY+i, "${rankingSquares[gametype][i]}", i==rankingRank, scale)
+							receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
+							receiver.drawScoreFont(engine, 9, topY+i, "${rankingSquares[gametype][i]}", i==rankingRank, scale)
 							receiver.drawScoreFont(
-								engine, playerID, 16, topY+i, rankingTime[gametype][i].toTimeStr,
-								i==rankingRank, scale
+								engine, 16, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank,
+								scale
 							)
 						}
 						1 -> {
-							receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[gametype][i]}", i==rankingRank)
-							receiver.drawScoreFont(engine, playerID, 9, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
+							receiver.drawScoreFont(engine, 3, 4+i, "${rankingScore[gametype][i]}", i==rankingRank)
+							receiver.drawScoreFont(engine, 9, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
 						}
 						2 -> {
-							receiver.drawScoreFont(engine, playerID, 3, 4+i, rankingTime[gametype][i].toTimeStr, i==rankingRank)
-							receiver.drawScoreFont(engine, playerID, 12, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
+							receiver.drawScoreFont(engine, 3, 4+i, rankingTime[gametype][i].toTimeStr, i==rankingRank)
+							receiver.drawScoreFont(engine, 12, 4+i, "${rankingSquares[gametype][i]}", i==rankingRank)
 						}
 					}
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 4, "${engine.statistics.score}(+$lastscore)")
+			receiver.drawScoreFont(engine, 0, 3, "Score", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 4, "${engine.statistics.score}(+$lastscore)")
 
-			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
+			receiver.drawScoreFont(engine, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 7, "${engine.statistics.lines}")
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "SQUARE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 10, "$squares")
+			receiver.drawScoreFont(engine, 0, 9, "SQUARE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 10, "$squares")
 
-			receiver.drawScoreFont(engine, playerID, 0, 12, "Time", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 12, "Time", EventReceiver.COLOR.BLUE)
 			if(gametype==1) {
 				// Ultra timer
 				var time = ULTRA_MAX_TIME-engine.statistics.time
 				if(time<0) time = 0
-				receiver.drawScoreFont(engine, playerID, 0, 13, time.toTimeStr, getTimeFontColor(time))
+				receiver.drawScoreFont(engine, 0, 13, time.toTimeStr, getTimeFontColor(time))
 			} else
 			// Normal timer
-				receiver.drawScoreFont(engine, playerID, 0, 13, engine.statistics.time.toTimeStr)
+				receiver.drawScoreFont(engine, 0, 13, engine.statistics.time.toTimeStr)
 		}
 	}
 
 	/* This function will be called when the game timer updates */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 
 		if(gametype==1) {
 			val remainTime = ULTRA_MAX_TIME-engine.statistics.time
 			// Timer meter
-			engine.meterValue = remainTime*receiver.getMeterMax(engine)/ULTRA_MAX_TIME
+			engine.meterValue = remainTime*1f/ULTRA_MAX_TIME
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			if(remainTime<=3600) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 			if(remainTime<=1800) engine.meterColor = GameEngine.METER_COLOR_ORANGE
@@ -317,7 +316,7 @@ class SquareMode:AbstractMode() {
 		} else if(gametype==2) {
 			var remainScore = SPRINT_MAX_SCORE-engine.statistics.score
 			if(!engine.timerActive) remainScore = 0
-			engine.meterValue = remainScore*receiver.getMeterMax(engine)/SPRINT_MAX_SCORE
+			engine.meterValue = remainScore*1f/SPRINT_MAX_SCORE
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			if(remainScore<=50) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 			if(remainScore<=30) engine.meterColor = GameEngine.METER_COLOR_ORANGE
@@ -333,7 +332,7 @@ class SquareMode:AbstractMode() {
 	}
 
 	/* Line clear */
-	override fun onLineClear(engine:GameEngine, playerID:Int):Boolean {
+	override fun onLineClear(engine:GameEngine):Boolean {
 		if(engine.statc[0]==1) if(grayoutEnable==2) grayoutBrokenBlocks(engine.field)
 		return false
 	}
@@ -353,7 +352,7 @@ class SquareMode:AbstractMode() {
 
 	/* Calculates line-clear score
  * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		if(lines>0&&engine.twist) {
 			avalanche(engine, lines)
 			return 0
@@ -419,7 +418,7 @@ class SquareMode:AbstractMode() {
 					}
 				}
 			else if(tntAvalanche)
-			// Set anti-gravity when TNT avalanche is used
+			// Set antigravity when TNT avalanche is used
 				for(x in 0 until field.width) {
 					field.getBlock(x, y)?.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
 					field.getBlock(x, y-1)?.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
@@ -432,7 +431,7 @@ class SquareMode:AbstractMode() {
 	}
 
 	/* When the line clear ends */
-	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
+	override fun lineClearEnd(engine:GameEngine):Boolean {
 		if(engine.lineGravityType==GameEngine.LineGravity.CASCADE&&engine.lineGravityTotalLines>0&&tntAvalanche) {
 			val field = engine.field
 			for(i in field.heightWithoutHurryupFloor-1 downTo field.hiddenHeight*-1)
@@ -446,7 +445,7 @@ class SquareMode:AbstractMode() {
 	}
 
 	/* Check for squares when piece locks */
-	override fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun pieceLocked(engine:GameEngine, lines:Int) {
 		val sq = engine.field.checkForSquares()
 		squares += sq[0]+sq[1]
 		if(sq[0]==0&&sq[1]>0)
@@ -455,19 +454,19 @@ class SquareMode:AbstractMode() {
 	}
 
 	/* Results screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
 		drawResult(
-			engine, playerID, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
+			engine, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
 			"LINE", String.format("%10d", engine.statistics.lines), "SQUARE", String.format("%10d", squares), "Time",
 			String.format("%10s", engine.statistics.time.toTimeStr)
 		)
-		drawResultRank(engine, playerID, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
+		drawResultRank(engine, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
 	}
 
 	/* This function will be called when the replay data is going to be saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(prop, engine)
 		prop.setProperty("square.squares", squares)
 
@@ -517,7 +516,6 @@ class SquareMode:AbstractMode() {
 				rankingSquares[j][i] = prop.getProperty("$ruleName.$j.squares.$i", 0)
 			}
 	}
-
 
 	/** Update the ranking
 	 * @param sc Score

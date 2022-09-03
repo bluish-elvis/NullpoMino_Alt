@@ -1,10 +1,8 @@
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
-import kotlin.jvm.JvmStatic
-import java.io.IOException
-import kotlin.Throws
-import java.io.PrintWriter
 import java.io.File
+import java.io.IOException
+import java.io.PrintWriter
 import java.io.Writer
 import java.util.Random
 import java.util.concurrent.ThreadLocalRandom
@@ -124,8 +122,8 @@ object TrainerOppMove {
 				bag_index = 0
 			}
 			val nextPiece = bag[bag_index++]
-			s1.nextPiece=nextPiece
-			s2.nextPiece=nextPiece
+			s1.nextPiece = nextPiece
+			s2.nextPiece = nextPiece
 			s1.makeMove(p1.pickMove(s1, s2, s1.legalMoves(), s2.legalMoves()))
 			s2.addLinesStack(s1.linesSent)
 			//s1.draw();

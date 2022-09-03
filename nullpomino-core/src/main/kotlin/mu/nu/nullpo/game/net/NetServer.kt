@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -55,9 +55,8 @@ import kotlin.random.Random
 
 /** NullpoMino NetServer<br></br>
  * The code is based on
- * [James Greenfield's The
- * Rox Java NIO Tutorial](http://rox-xmlrpc.sourceforge.net/niotut/) */
-@Suppress("RemoveExplicitTypeArguments") class NetServer {
+ * [James Greenfield's The Rox Java NIO Tutorial](http://rox-xmlrpc.sourceforge.net/niotut/) */
+class NetServer {
 
 	/** List of SocketChannel */
 	private val channelList = LinkedList<SocketChannel>()
@@ -89,7 +88,7 @@ import kotlin.random.Random
 	/** RNG for values selection */
 	private val rand = Random.Default
 
-	/** Set true if shutdown is requested by the admin */
+	/** Set true if shut down is requested by the admin */
 	private var shutdownRequested = false
 
 	/** The port to listen on */
@@ -264,7 +263,7 @@ import kotlin.random.Random
 									ChangeRequest.DISCONNECT -> {
 										// Delayed disconnect
 										val queue = pendingData[change.socket]
-										if(queue==null||queue.isEmpty())
+										if(queue.isNullOrEmpty())
 											try {
 												changes.remove()
 												logout(key)
@@ -366,10 +365,12 @@ import kotlin.random.Random
 		} else {
 			// Send welcome message
 			log.debug("Accept:"+getHostName(socketChannel))
-			send(socketChannel,
+			send(
+				socketChannel,
 				"welcome\t${GameManager.versionMajor}\t${playerInfoMap.size}\t${observerList.size}\t"
 					+GameManager.versionMinor+"\t${GameManager.versionString}\t$clientPingInterval\t"
-					+GameManager.isDevBuild+"\n")
+					+GameManager.isDevBuild+"\n"
+			)
 		}
 	}
 
@@ -381,7 +382,7 @@ import kotlin.random.Random
 	private fun doRead(key:SelectionKey) {
 		val socketChannel = key.channel() as SocketChannel
 
-		// Clear out our read buffer so it's ready for new data
+		// Clear out our read buffer, so it's ready for new data
 		if(readBuffer==null) readBuffer = ByteBuffer.allocate(BUF_SIZE)
 		else readBuffer?.clear()
 
@@ -443,7 +444,7 @@ import kotlin.random.Random
 					queue.drop(0)
 				}
 
-				if(queue.isNullOrEmpty())
+				if(queue.isEmpty())
 				// We wrote away all data, so we're no longer interested
 				// in writing on this socket. Switch back to waiting for
 				// data.
@@ -452,7 +453,7 @@ import kotlin.random.Random
 		}
 	}
 
-	/** Logout
+	/** log out
 	 * @param key SelectionKey
 	 */
 	private fun logout(key:SelectionKey) {
@@ -462,7 +463,7 @@ import kotlin.random.Random
 		if(ch is SocketChannel) logout(ch)
 	}
 
-	/** Logout
+	/** log out
 	 * @param channel SocketChannel
 	 */
 	private fun logout(channel:SocketChannel?) {
@@ -604,12 +605,13 @@ import kotlin.random.Random
 			// And queue the data we want written
 			synchronized(pendingData) {
 				val queue = (pendingData as Map<SocketChannel, List<ByteBuffer>>).getOrDefault(client, emptyList())+ByteBuffer.wrap(
-					bytes)
+					bytes
+				)
 				log.info(queue)
 			}
 		}
 
-		// Finally, wake up our selecting thread so it can make the required changes
+		// Finally, wake up our selecting thread, so it can make the required changes
 		selector!!.wakeup()
 	}
 
@@ -721,7 +723,7 @@ import kotlin.random.Random
 		return null
 	}
 
-	/** Find longest matching player name matching a word boundary in msg.
+	/** Find the longest matching player name matching a word boundary in msg.
 	 * e.g. msg = "this is a test"
 	 * player = "this is" will succeed, "this i" will fail
 	 * "this is" will be returned if a player named "this" exists
@@ -961,9 +963,11 @@ import kotlin.random.Random
 			// Send lobby chat history
 			while(lobbyChatList!!.size>maxLobbyChatHistory) lobbyChatList!!.removeFirst()
 			for(chat in lobbyChatList!!)
-				send(client,
+				send(
+					client,
 					"lobbychath\t${NetUtil.urlEncode(chat.strUserName)}\t${chat.timestamp!!.strGMT}\t"
-						+NetUtil.urlEncode(chat.strMessage)+"\n")
+						+NetUtil.urlEncode(chat.strMessage)+"\n"
+				)
 
 			return
 		}
@@ -1072,10 +1076,12 @@ import kotlin.random.Random
 				if(msg.length>5&&msg.take(5)=="/msg ") {
 					val ch = findPlayerByMsg(msg.substring(5))
 					if(ch==null)
-						send(pInfo.channel,
+						send(
+							pInfo.channel,
 							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
 								chat.timestamp!!.strGMT
-							}\t${NetUtil.urlEncode("(private) Cannot find user")}\n")
+							}\t${NetUtil.urlEncode("(private) Cannot find user")}\n"
+						)
 					else {
 						var playerName = ""
 						var len = 0
@@ -1085,14 +1091,18 @@ import kotlin.random.Random
 							if(p.isTripUse) len -= 12
 						}
 						msg = chat.strMessage.substring(len+6)
-						send(pInfo.channel,
+						send(
+							pInfo.channel,
 							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
 								chat.timestamp!!.strGMT
-							}\t${NetUtil.urlEncode("-> *"+playerName.substring(0, len)+"* "+msg)}\n")
-						send(ch,
+							}\t${NetUtil.urlEncode("-> *"+playerName.substring(0, len)+"* "+msg)}\n"
+						)
+						send(
+							ch,
 							"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
 								chat.timestamp!!.strGMT
-							}\t${NetUtil.urlEncode("(private) $msg")}\n")
+							}\t${NetUtil.urlEncode("(private) $msg")}\n"
+						)
 
 					}
 				} else {
@@ -1102,9 +1112,11 @@ import kotlin.random.Random
 					while(lobbyChatList!!.size>maxLobbyChatHistory) lobbyChatList!!.removeFirst()
 					saveLobbyChatHistory()
 
-					broadcast("lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
-						chat.timestamp!!.strGMT
-					}\t${NetUtil.urlEncode(chat.strMessage)}\n")
+					broadcast(
+						"lobbychat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
+							chat.timestamp!!.strGMT
+						}\t${NetUtil.urlEncode(chat.strMessage)}\n"
+					)
 				}
 			}
 			return
@@ -1121,9 +1133,11 @@ import kotlin.random.Random
 					roomInfo.chatList.add(chat)
 					while(roomInfo.chatList.size>maxRoomChatHistory) roomInfo.chatList.removeFirst()
 
-					broadcast("chat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
-						chat.timestamp!!.strGMT
-					}\t${NetUtil.urlEncode(chat.strMessage)}\n", pInfo.roomID)
+					broadcast(
+						"chat\t${chat.uid}\t${NetUtil.urlEncode(chat.strUserName)}\t${
+							chat.timestamp!!.strGMT
+						}\t${NetUtil.urlEncode(chat.strMessage)}\n", pInfo.roomID
+					)
 				}
 			}
 			return
@@ -1278,7 +1292,8 @@ import kotlin.random.Random
 				send(client, "roomcreatesuccess\t${roomInfo.roomID}\t${pInfo.seatID}\t-1\n")
 
 				log.info(
-					"NewRoom ID:${roomInfo.roomID} Title:${roomInfo.strName} RuleLock:${roomInfo.ruleLock} Map:${roomInfo.useMap} Mode:${roomInfo.strMode}")
+					"NewRoom ID:${roomInfo.roomID} Title:${roomInfo.strName} RuleLock:${roomInfo.ruleLock} Map:${roomInfo.useMap} Mode:${roomInfo.strMode}"
+				)
 			}
 			return
 		}
@@ -1320,7 +1335,8 @@ import kotlin.random.Random
 				send(client, "roomcreatesuccess\t${roomInfo.roomID}\t${pInfo.seatID}\t-1\n")
 
 				log.info(
-					"NewRatedRoom ID:${roomInfo.roomID} Title:${roomInfo.strName} RuleLock:${roomInfo.ruleLock} Map:${roomInfo.useMap} Mode:${roomInfo.strMode}")
+					"NewRatedRoom ID:${roomInfo.roomID} Title:${roomInfo.strName} RuleLock:${roomInfo.ruleLock} Map:${roomInfo.useMap} Mode:${roomInfo.strMode}"
+				)
 			}
 			return
 		}
@@ -1339,7 +1355,8 @@ import kotlin.random.Random
 					if(prevRoom!=null) {
 						val seatID = pInfo.seatID
 						broadcast(
-							"playerleave\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t$seatID\n", prevRoom.roomID, pInfo)
+							"playerleave\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t$seatID\n", prevRoom.roomID, pInfo
+						)
 						playerDead(pInfo)
 						pInfo.ready = false
 						prevRoom.exitSeat(pInfo)
@@ -1369,7 +1386,8 @@ import kotlin.random.Random
 					if(prevRoom!=null) {
 						val seatID = pInfo.seatID
 						broadcast(
-							"playerleave\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t$seatID\n", prevRoom.roomID, pInfo)
+							"playerleave\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t$seatID\n", prevRoom.roomID, pInfo
+						)
 						playerDead(pInfo)
 						pInfo.ready = false
 						prevRoom.exitSeat(pInfo)
@@ -1422,17 +1440,20 @@ import kotlin.random.Random
 					}
 
 					broadcast(
-						"playerenter\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\n", newRoom.roomID, pInfo)
+						"playerenter\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\n", newRoom.roomID, pInfo
+					)
 					broadcastRoomInfoUpdate(newRoom)
 					broadcastPlayerInfoUpdate(pInfo)
 					send(client, "roomjoinsuccess\t${newRoom.roomID}\t${pInfo.seatID}\t${pInfo.queueID}\n")
 
 					// Send chat history
 					for(chat in newRoom.chatList)
-						send(client,
+						send(
+							client,
 							"chath\t${NetUtil.urlEncode(chat.strUserName)}\t${
 								chat.timestamp!!.strGMT
-							}\t${NetUtil.urlEncode(chat.strMessage)}\n")
+							}\t${NetUtil.urlEncode(chat.strMessage)}\n"
+						)
 				} else
 				// No such a room
 					send(client, "roomjoinfail\n")
@@ -1450,8 +1471,10 @@ import kotlin.random.Random
 					pInfo.strTeam = strTeam
 					broadcastPlayerInfoUpdate(pInfo)
 
-					broadcast("changeteam\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${NetUtil.urlEncode(pInfo.strTeam)}\n",
-						pInfo.roomID)
+					broadcast(
+						"changeteam\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${NetUtil.urlEncode(pInfo.strTeam)}\n",
+						pInfo.roomID
+					)
 				}
 			}
 		// Change Player/Spectator status
@@ -1472,8 +1495,10 @@ import kotlin.random.Random
 							pInfo.seatID = -1
 							pInfo.queueID = -1
 							//send(client, "changestatus\twatchonly\t-1\n");
-							broadcast("changestatus\twatchonly\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t$prevSeatID\n",
-								pInfo.roomID)
+							broadcast(
+								"changestatus\twatchonly\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t$prevSeatID\n",
+								pInfo.roomID
+							)
 
 							joinAllQueuePlayers(roomInfo) // Let the queue-player to join
 						} // Change to player
@@ -1482,16 +1507,20 @@ import kotlin.random.Random
 							pInfo.queueID = -1
 							pInfo.ready = false
 							//send(client, "changestatus\tjoinseat\t" + pInfo.seatID + "\n");
-							broadcast("changestatus\tjoinseat\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\n",
-								pInfo.roomID)
+							broadcast(
+								"changestatus\tjoinseat\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\n",
+								pInfo.roomID
+							)
 						}
 						else -> {
 							pInfo.seatID = -1
 							pInfo.queueID = roomInfo.joinQueue(pInfo)
 							pInfo.ready = false
 							//send(client, "changestatus\tjoinqueue\t" + pInfo.queueID + "\n");
-							broadcast("changestatus\tjoinqueue\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.queueID}\n",
-								pInfo.roomID)
+							broadcast(
+								"changestatus\tjoinqueue\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.queueID}\n",
+								pInfo.roomID
+							)
 						}
 					}
 					broadcastPlayerInfoUpdate(pInfo)
@@ -1711,12 +1740,10 @@ import kotlin.random.Random
 					}
 				}
 
-				var strMsg = "spranking\t$strRule\t$strMode\t$gameType\t$isDaily\t"
-				strMsg += "${ranking.rankingType}\t$maxRecord\t$strData\n"
+				val strMsg = "spranking\t$strRule\t$strMode\t$gameType\t$isDaily\t${ranking.rankingType}\t$maxRecord\t$strData\n"
 				send(client, strMsg)
 			} else {
-				var strMsg = "spranking\t$strRule\t$strMode\t$gameType\t$isDaily\t"
-				strMsg += "0\t0\n"
+				val strMsg = "spranking\t$strRule\t$strMode\t$gameType\t$isDaily\t0\t0\n"
 				send(client, strMsg)
 			}
 		}
@@ -2000,7 +2027,7 @@ import kotlin.random.Random
 			} else
 				sendAdminResult(client, "roomdeletefail\t$roomID")
 		}
-		// Shutdown
+		// shut down
 		if(message[0]=="shutdown") {
 			log.warn("Shutdown requested by the admin (${getHostFull(client)})")
 			shutdownRequested = true
@@ -2124,7 +2151,7 @@ import kotlin.random.Random
 		}
 	}
 
-	/** Start/Stop auto start timer. It also turn-off the Ready status if there
+	/** Start/Stop auto start timer. It also turns off the Ready status if there
 	 * is only 1 player.
 	 * @param roomInfo The room
 	 */
@@ -2261,10 +2288,14 @@ import kotlin.random.Random
 							val wp = roomInfo.playerSeatDead[w]
 							val lp = roomInfo.playerSeatDead[l]
 
-							wp.rating[style] += (rankDelta(wp.playCount[style], wp.rating[style].toDouble(), lp.rating[style].toDouble(),
-								1.0)/(n-1)).toInt()
-							lp.rating[style] += (rankDelta(lp.playCount[style], lp.rating[style].toDouble(), wp.rating[style].toDouble(),
-								0.0)/(n-1)).toInt()
+							wp.rating[style] += (rankDelta(
+								wp.playCount[style], wp.rating[style].toDouble(), lp.rating[style].toDouble(),
+								1.0
+							)/(n-1)).toInt()
+							lp.rating[style] += (rankDelta(
+								lp.playCount[style], lp.rating[style].toDouble(), wp.rating[style].toDouble(),
+								0.0
+							)/(n-1)).toInt()
 
 							if(wp.rating[style]<ratingMin) wp.rating[style] = ratingMin
 							if(lp.rating[style]<ratingMin) lp.rating[style] = ratingMin
@@ -2380,7 +2411,8 @@ import kotlin.random.Random
 			pInfo.queueID = -1
 			pInfo.ready = false
 			broadcast(
-				"changestatus\tjoinseat\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\n", pInfo.roomID)
+				"changestatus\tjoinseat\t${pInfo.uid}\t${NetUtil.urlEncode(pInfo.strName)}\t${pInfo.seatID}\n", pInfo.roomID
+			)
 			broadcastPlayerInfoUpdate(pInfo)
 			playerJoinedCount++
 		}

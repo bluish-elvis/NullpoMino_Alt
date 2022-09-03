@@ -59,8 +59,7 @@ abstract class PyAI(override val name:String = "PyAI", private val scriptPath:St
 	override var thinkLastPieceNo = 0
 	/** Did the thinking thread finish successfully?  */
 	override var thinkComplete = false
-	/** When true,Running thread  */ //public volatile boolean threadRunning;
-	/** Thread for executing the think routine  */ //public Thread thread;
+
 	private var jep:SubInterpreter? = null
 
 	init {
@@ -125,7 +124,7 @@ abstract class PyAI(override val name:String = "PyAI", private val scriptPath:St
 			jep?.run {
 				set("engine", engine)
 				set("playerID", playerID)
-				eval("ai.onLast(engine, playerID)")
+				eval("ai.onLast(engine, engine.playerID)")
 			}
 		} catch(j:JepException) {
 			log.error("Error in onLast, ", j)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -29,7 +29,14 @@
 package mu.nu.nullpo.util
 
 import mu.nu.nullpo.game.event.EventReceiver
-import java.io.*
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.UnsupportedEncodingException
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -45,7 +52,7 @@ class CustomProperties(name:String = ""):Properties() {
 		private set
 	/** Load from [file].
 	 * @param file Filename
-	 * @return This Properties you specified, or null if the file doesn't exist.
+	 * @return This Properties data you specified, or null if the file doesn't exist.
 	 */
 	fun load(file:String = fileName):CustomProperties? {
 		fileName = file

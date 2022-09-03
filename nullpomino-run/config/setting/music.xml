@@ -76,6 +76,8 @@
 
  <entry key="music.filename.Blitz.0">res/bgm/blitz/blitz3_octo.ogg</entry>
  <entry key="music.filename.Blitz.1">res/bgm/blitz/bztwist_blitz5.ogg</entry>
+ <entry key="music.filename.Blitz.2">res/bgm/blitz/blitz5_InFreRemix.ogg</entry>
+ <entry key="music.filename.Blitz.3">res/bgm/blitz/blitz5_InFreRemix.ogg</entry>
 
  <entry key="music.filename.Result.0">res/bgm/beats/cbr_result2.ogg</entry>
  <entry key="music.filename.Result.1">res/bgm/beats/xx_collon1.ogg</entry>

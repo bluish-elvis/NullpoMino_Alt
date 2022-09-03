@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -112,7 +112,7 @@ class NetPlayerInfo:Serializable {
 	 * @param n Copy source
 	 */
 	constructor(n:NetPlayerInfo) {
-		copy(n)
+		replace(n)
 	}
 
 	/** String array constructor (Uses importStringArray)
@@ -129,10 +129,8 @@ class NetPlayerInfo:Serializable {
 		importString(str)
 	}
 
-	/** Copy from other NetPlayerInfo
-	 * @param n Copy source
-	 */
-	fun copy(n:NetPlayerInfo) {
+	/** Copy from [n] other NetPlayerInfo */
+	fun replace(n:NetPlayerInfo) {
 		strName = n.strName
 		strCountry = n.strCountry
 		strHost = n.strHost
@@ -211,33 +209,34 @@ class NetPlayerInfo:Serializable {
 	 * @return String array (String[27])
 	 */
 	fun exportStringArray():Array<String> = arrayOf(
-	NetUtil.urlEncode(strName)
-	,NetUtil.urlEncode(strCountry)
-	,NetUtil.urlEncode(strHost)
-	,NetUtil.urlEncode(strTeam)
-	, "$roomID"
-	, "$uid"
-	, "$seatID"
-	, "$queueID"
-	, "$ready"
-	, "$playing"
-	, "$connected"
-	, "$isTripUse"
-	, "${rating[0]}"
-	, "${rating[1]}"
-	, "${rating[2]}"
-	, "${rating[3]}"
-	, "${playCount[0]}"
-	, "${playCount[1]}"
-	, "${playCount[2]}"
-	, "${playCount[3]}"
-	, "${winCount[0]}"
-	, "${winCount[1]}"
-	, "${winCount[2]}"
-	, "${winCount[3]}"
-	,NetUtil.compressString(spPersonalBest.exportString())
-	, "$playCountNow"
-	, "$winCountNow")
+		NetUtil.urlEncode(strName),
+		NetUtil.urlEncode(strCountry),
+		NetUtil.urlEncode(strHost),
+		NetUtil.urlEncode(strTeam),
+		"$roomID",
+		"$uid",
+		"$seatID",
+		"$queueID",
+		"$ready",
+		"$playing",
+		"$connected",
+		"$isTripUse",
+		"${rating[0]}",
+		"${rating[1]}",
+		"${rating[2]}",
+		"${rating[3]}",
+		"${playCount[0]}",
+		"${playCount[1]}",
+		"${playCount[2]}",
+		"${playCount[3]}",
+		"${winCount[0]}",
+		"${winCount[1]}",
+		"${winCount[2]}",
+		"${winCount[3]}",
+		NetUtil.compressString(spPersonalBest.exportString()),
+		"$playCountNow",
+		"$winCountNow"
+	)
 
 	/** Export to String (Divided by ;)
 	 * @return String

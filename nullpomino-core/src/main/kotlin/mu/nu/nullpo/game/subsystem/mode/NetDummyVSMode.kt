@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -49,110 +49,110 @@ open class NetDummyVSMode:NetDummyMode() {
 
 	/* -------------------- Variables -------------------- */
 	/** NET-VS: Local player's seat ID (-1:Spectator) */
-	private var netvsMySeatID = 0
+	private var netVSMySeatID = 0
 
 	/** NET-VS: Number of players */
-	private var netvsNumPlayers = 0
+	private var netVSNumPlayers = 0
 
 	/** NET-VS: Number of players in current game */
-	private var netvsNumNowPlayers = 0
+	private var netVSNumNowPlayers = 0
 
 	/** NET-VS: Number of players still alive in current game */
-	internal var netvsNumAlivePlayers = 0
+	internal var netVSNumAlivePlayers = 0
 
 	/** NET-VS: Player exist flag */
-	internal var netvsPlayerExist = BooleanArray(0)
+	internal var netVSPlayerExist = BooleanArray(0)
 
 	/** NET-VS: Player ready flag */
-	private var netvsPlayerReady = BooleanArray(0)
+	private var netVSPlayerReady = BooleanArray(0)
 
 	/** NET-VS: Player dead flag */
-	internal var netvsPlayerDead = BooleanArray(0)
+	internal var netVSPlayerDead = BooleanArray(0)
 
 	/** NET-VS: Player active flag (false if newcomer) */
-	private var netvsPlayerActive = BooleanArray(0)
+	private var netVSPlayerActive = BooleanArray(0)
 
 	/** NET-VS: Player's Seat ID array (-1:No Player) */
-	internal var netvsPlayerSeatID = IntArray(0)
+	internal var netVSPlayerSeatID = IntArray(0)
 
 	/** NET-VS: Player's UID array (-1:No Player) */
-	internal var netvsPlayerUID = IntArray(0)
+	internal var netVSPlayerUID = IntArray(0)
 
 	/** NET-VS: Player's place */
-	internal var netvsPlayerPlace = IntArray(0)
+	internal var netVSPlayerPlace = IntArray(0)
 
 	/** NET-VS: Player's win count */
-	internal var netvsPlayerWinCount = IntArray(0)
+	internal var netVSPlayerWinCount = IntArray(0)
 
 	/** NET-VS: Player's game count */
-	internal var netvsPlayerPlayCount = IntArray(0)
+	internal var netVSPlayerPlayCount = IntArray(0)
 
 	/** NET-VS: Player's team colors */
-	private var netvsPlayerTeamColor = IntArray(0)
+	private var netVSPlayerTeamColor = IntArray(0)
 
 	/** NET-VS: Player names */
-	private var netvsPlayerName:Array<String> = emptyArray()
+	private var netVSPlayerName:Array<String> = emptyArray()
 
 	/** NET-VS: Player team names */
-	private var netvsPlayerTeam:Array<String> = emptyArray()
+	private var netVSPlayerTeam:Array<String> = emptyArray()
 
 	/** NET-VS: Player's skins */
-	internal var netvsPlayerSkin = IntArray(0)
+	internal var netVSPlayerSkin = IntArray(0)
 
 	/** NET-VS: true if it's ready to show player's result */
-	internal var netvsPlayerResultReceived = BooleanArray(0)
+	internal var netVSPlayerResultReceived = BooleanArray(0)
 
 	/** NET-VS: true if automatic start timer is activated */
-	private var netvsAutoStartTimerActive = false
+	private var netVSAutoStartTimerActive = false
 
 	/** NET-VS: Time left until the game starts automatically */
-	private var netvsAutoStartTimer = 0
+	private var netVSAutoStartTimer = 0
 
 	/** NET-VS: true if room game is in progress */
-	internal var netvsIsGameActive = false
+	internal var netVSIsGameActive = false
 
 	/** NET-VS: true if room game is finished */
-	private var netvsIsGameFinished = false
+	private var netVSIsGameFinished = false
 
 	/** NET-VS: true if waiting for ready status change */
-	private var netvsIsReadyChangePending = false
+	private var netVSIsReadyChangePending = false
 
 	/** NET-VS: true if waiting for dead status change */
-	private var netvsIsDeadPending = false
+	private var netVSIsDeadPending = false
 
 	/** NET-VS: true if local player joined game in progress */
-	internal var netvsIsNewcomer = false
+	internal var netVSIsNewcomer = false
 
 	/** NET-VS: Elapsed timer active flag */
-	internal var netvsPlayTimerActive = false
+	internal var netVSPlayTimerActive = false
 
 	/** NET-VS: Elapsed time */
-	internal var netvsPlayTimer = 0
+	internal var netVSPlayTimer = 0
 
 	/** NET-VS: true if practice mode */
-	internal var netvsIsPractice = false
+	internal var netVSIsPractice = false
 
-	/** NET-VS: true if can exit from practice game */
-	internal var netvsIsPracticeExitAllowed = false
+	/** NET-VS: true if you can exit from practice game */
+	internal var netVSIsPracticeExitAllowed = false
 
 	/** NET-VS: How long current piece is active */
-	private var netvsPieceMoveTimer = 0
+	private var netVSPieceMoveTimer = 0
 
 	/** NET-VS: Time before forced piece lock */
-	private var netvsPieceMoveTimerMax = 0
+	private var netVSPieceMoveTimerMax = 0
 
 	/** NET-VS: Map number to use */
-	private var netvsMapNo = 0
+	private var netVSMapNo = 0
 
 	/** NET-VS: Random for selecting values in Practice mode */
-	private var netvsRandMap:Random? = null
+	private var netVSRandMap:Random? = null
 
 	/** NET-VS: Practice mode last used values number */
-	private var netvsMapPreviousPracticeMap = 0
+	private var netVSMapPreviousPracticeMap = 0
 
 	/** NET-VS: UID of player who attacked local player last (-1: Suicide or
 	 * Unknown) */
-	internal var netvsLastAttackerUID = 0
+	internal var netVSLastAttackerUID = 0
 
 	/* Mode Name */
 	override val name = "NET-VS-DUMMY"
@@ -162,7 +162,7 @@ open class NetDummyVSMode:NetDummyMode() {
 
 	/** NET-VS: Number of players */
 	override val players:Int
-		get() = NETVS_MAX_PLAYERS
+		get() = NET_MAX_PLAYERS
 
 	/** NET-VS: This is netplay-only mode */
 	override val isNetplayMode:Boolean
@@ -173,80 +173,79 @@ open class NetDummyVSMode:NetDummyMode() {
 		super.modeInit(manager)
 		log.debug("modeInit() on NetDummyVSMode")
 		netForceSendMovements = true
-		netvsMySeatID = -1
-		netvsNumPlayers = 0
-		netvsNumNowPlayers = 0
-		netvsNumAlivePlayers = 0
-		netvsPlayerExist = BooleanArray(NETVS_MAX_PLAYERS)
-		netvsPlayerReady = BooleanArray(NETVS_MAX_PLAYERS)
-		netvsPlayerActive = BooleanArray(NETVS_MAX_PLAYERS)
-		netvsPlayerSeatID = IntArray(NETVS_MAX_PLAYERS)
-		netvsPlayerUID = IntArray(NETVS_MAX_PLAYERS)
-		netvsPlayerWinCount = IntArray(NETVS_MAX_PLAYERS)
-		netvsPlayerPlayCount = IntArray(NETVS_MAX_PLAYERS)
-		netvsPlayerTeamColor = IntArray(NETVS_MAX_PLAYERS)
-		netvsPlayerName = Array(NETVS_MAX_PLAYERS) {""}
-		netvsPlayerTeam = Array(NETVS_MAX_PLAYERS) {""}
-		netvsPlayerSkin = IntArray(NETVS_MAX_PLAYERS) {-1}
-		netvsAutoStartTimerActive = false
-		netvsAutoStartTimer = 0
-		netvsPieceMoveTimerMax = NETVS_PIECE_AUTO_LOCK_TIME
-		netvsMapPreviousPracticeMap = -1
-		netvsResetFlags()
+		netVSMySeatID = -1
+		netVSNumPlayers = 0
+		netVSNumNowPlayers = 0
+		netVSNumAlivePlayers = 0
+		netVSPlayerExist = BooleanArray(NET_MAX_PLAYERS)
+		netVSPlayerReady = BooleanArray(NET_MAX_PLAYERS)
+		netVSPlayerActive = BooleanArray(NET_MAX_PLAYERS)
+		netVSPlayerSeatID = IntArray(NET_MAX_PLAYERS)
+		netVSPlayerUID = IntArray(NET_MAX_PLAYERS)
+		netVSPlayerWinCount = IntArray(NET_MAX_PLAYERS)
+		netVSPlayerPlayCount = IntArray(NET_MAX_PLAYERS)
+		netVSPlayerTeamColor = IntArray(NET_MAX_PLAYERS)
+		netVSPlayerName = Array(NET_MAX_PLAYERS) {""}
+		netVSPlayerTeam = Array(NET_MAX_PLAYERS) {""}
+		netVSPlayerSkin = IntArray(NET_MAX_PLAYERS) {-1}
+		netVSAutoStartTimerActive = false
+		netVSAutoStartTimer = 0
+		netVSPieceMoveTimerMax = NET_PIECE_AUTO_LOCK_TIME
+		netVSMapPreviousPracticeMap = -1
+		netVSResetFlags()
 	}
 
 	/** NET-VS: Init some variables */
-	private fun netvsResetFlags() {
-		netvsPlayerResultReceived = BooleanArray(NETVS_MAX_PLAYERS)
-		netvsPlayerDead = BooleanArray(NETVS_MAX_PLAYERS)
-		netvsPlayerPlace = IntArray(NETVS_MAX_PLAYERS)
-		netvsIsGameActive = false
-		netvsIsGameFinished = false
-		netvsIsReadyChangePending = false
-		netvsIsDeadPending = false
-		netvsIsNewcomer = false
-		netvsPlayTimerActive = false
-		netvsPlayTimer = 0
-		netvsIsPractice = false
-		netvsIsPracticeExitAllowed = false
-		netvsPieceMoveTimer = 0
+	private fun netVSResetFlags() {
+		netVSPlayerResultReceived = BooleanArray(NET_MAX_PLAYERS)
+		netVSPlayerDead = BooleanArray(NET_MAX_PLAYERS)
+		netVSPlayerPlace = IntArray(NET_MAX_PLAYERS)
+		netVSIsGameActive = false
+		netVSIsGameFinished = false
+		netVSIsReadyChangePending = false
+		netVSIsDeadPending = false
+		netVSIsNewcomer = false
+		netVSPlayTimerActive = false
+		netVSPlayTimer = 0
+		netVSIsPractice = false
+		netVSIsPracticeExitAllowed = false
+		netVSPieceMoveTimer = 0
 	}
 
 	/** NET-VS: Initialization for each player */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		netPlayerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		netPlayerInit(engine)
 	}
 
 	/** @return true if watch mode
 	 */
-	internal fun netvsIsWatch():Boolean {
-		try {
-			return netLobby!!.netPlayerClient!!.yourPlayerInfo!!.seatID==-1
+	internal fun netVSIsWatch():Boolean {
+		return try {
+			netLobby!!.netPlayerClient!!.yourPlayerInfo!!.seatID==-1
 		} catch(e:Exception) {
+			false
 		}
-
-		return false
 	}
 
 	/** NET-VS: Update player variables */
 	override fun netUpdatePlayerExist() {
-		netvsMySeatID = netLobby!!.netPlayerClient!!.yourPlayerInfo!!.seatID
-		netvsNumPlayers = 0
+		netVSMySeatID = netLobby!!.netPlayerClient!!.yourPlayerInfo!!.seatID
+		netVSNumPlayers = 0
 		netNumSpectators = 0
 		netPlayerName = netLobby!!.netPlayerClient!!.playerName
-		netIsWatch = netvsIsWatch()
+		netIsWatch = netVSIsWatch()
 
-		for(i in 0 until NETVS_MAX_PLAYERS) {
-			netvsPlayerExist[i] = false
-			netvsPlayerReady[i] = false
-			netvsPlayerActive[i] = false
-			netvsPlayerSeatID[i] = -1
-			netvsPlayerUID[i] = -1
-			netvsPlayerWinCount[i] = 0
-			netvsPlayerPlayCount[i] = 0
-			netvsPlayerName[i] = ""
-			netvsPlayerTeam[i] = ""
-			owner.engine[i].framecolor = GameEngine.FRAME_COLOR_GRAY
+		for(i in 0 until NET_MAX_PLAYERS) {
+			netVSPlayerExist[i] = false
+			netVSPlayerReady[i] = false
+			netVSPlayerActive[i] = false
+			netVSPlayerSeatID[i] = -1
+			netVSPlayerUID[i] = -1
+			netVSPlayerWinCount[i] = 0
+			netVSPlayerPlayCount[i] = 0
+			netVSPlayerName[i] = ""
+			netVSPlayerTeam[i] = ""
+			owner.engine[i].frameColor = GameEngine.FRAME_COLOR_GRAY
 		}
 
 		val pList = netLobby!!.updateSameRoomPlayerInfoList()
@@ -257,30 +256,30 @@ open class NetDummyVSMode:NetDummyMode() {
 				if(pInfo.seatID==-1)
 					netNumSpectators++
 				else {
-					netvsNumPlayers++
+					netVSNumPlayers++
 
-					val playerID = netvsGetPlayerIDbySeatID(pInfo.seatID)
-					netvsPlayerExist[playerID] = true
-					netvsPlayerReady[playerID] = pInfo.ready
-					netvsPlayerActive[playerID] = pInfo.playing
-					netvsPlayerSeatID[playerID] = pInfo.seatID
-					netvsPlayerUID[playerID] = pInfo.uid
-					netvsPlayerWinCount[playerID] = pInfo.winCountNow
-					netvsPlayerPlayCount[playerID] = pInfo.playCountNow
-					netvsPlayerName[playerID] = pInfo.strName
-					netvsPlayerTeam[playerID] = pInfo.strTeam
+					val playerID = netVSGetPlayerIDbySeatID(pInfo.seatID)
+					netVSPlayerExist[playerID] = true
+					netVSPlayerReady[playerID] = pInfo.ready
+					netVSPlayerActive[playerID] = pInfo.playing
+					netVSPlayerSeatID[playerID] = pInfo.seatID
+					netVSPlayerUID[playerID] = pInfo.uid
+					netVSPlayerWinCount[playerID] = pInfo.winCountNow
+					netVSPlayerPlayCount[playerID] = pInfo.playCountNow
+					netVSPlayerName[playerID] = pInfo.strName
+					netVSPlayerTeam[playerID] = pInfo.strTeam
 
 					// Set frame cint
-					if(pInfo.seatID<NETVS_PLAYER_COLOR_FRAME.size)
-						owner.engine[playerID].framecolor = NETVS_PLAYER_COLOR_FRAME[pInfo.seatID]
+					if(pInfo.seatID<NET_PLAYER_COLOR_FRAME.size)
+						owner.engine[playerID].frameColor = NET_PLAYER_COLOR_FRAME[pInfo.seatID]
 
 					// Set team cint
-					if(netvsPlayerTeam[playerID].isNotEmpty())
-						if(!teamList.contains(netvsPlayerTeam[playerID])) {
-							teamList.add(netvsPlayerTeam[playerID])
-							netvsPlayerTeamColor[playerID] = teamList.size
+					if(netVSPlayerTeam[playerID].isNotEmpty())
+						if(!teamList.contains(netVSPlayerTeam[playerID])) {
+							teamList.add(netVSPlayerTeam[playerID])
+							netVSPlayerTeamColor[playerID] = teamList.size
 						} else
-							netvsPlayerTeamColor[playerID] = teamList.indexOf(netvsPlayerTeam[playerID])+1
+							netVSPlayerTeamColor[playerID] = teamList.indexOf(netVSPlayerTeam[playerID])+1
 				}
 	}
 
@@ -290,44 +289,44 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		netCurrentRoomInfo = roomInfo
 		netIsNetPlay = true
-		netvsIsNewcomer = netCurrentRoomInfo!!.playing
+		netVSIsNewcomer = netCurrentRoomInfo!!.playing
 
 		netUpdatePlayerExist()
-		netvsSetLockedRule()
-		netvsSetGameScreenLayout()
+		netVSSetLockedRule()
+		netVSSetGameScreenLayout()
 
-		if(netvsIsNewcomer) netvsNumNowPlayers = netvsNumPlayers
+		if(netVSIsNewcomer) netVSNumNowPlayers = netVSNumPlayers
 	}
 
-	/** NET-VS: Initialize various NetPlay variables. Usually called from
-	 * playerInit. */
-	override fun netPlayerInit(engine:GameEngine, playerID:Int) {
-		log.debug("netPlayerInit(engine, $playerID) on NetDummyVSMode")
+	/** NET-VS: Initialize various NetPlay variables.
+	 * Usually called from [playerInit]. */
+	override fun netPlayerInit(engine:GameEngine) {
+		log.debug("netPlayerInit(engine#${engine.playerID}) on NetDummyVSMode")
 
-		super.netPlayerInit(engine, playerID)
+		super.netPlayerInit(engine)
 
 		// Misc. variables
 		engine.fieldWidth = 10
 		engine.fieldHeight = 20
-		engine.gameoverAll = false
+		engine.dieAll = false
 		engine.allowTextRenderByReceiver = true
 	}
 
 	/** NET-VS: Draw player's name */
 	override fun netDrawPlayerName(engine:GameEngine) {
 		val playerID = engine.playerID
-		val x = owner.receiver.fieldX(engine, playerID)
-		val y = owner.receiver.fieldY(engine, playerID)
+		val x = owner.receiver.fieldX(engine)
+		val y = owner.receiver.fieldY(engine)
 
-		if(netvsPlayerName[playerID].isNotEmpty()) {
-			var name = netvsPlayerName[playerID]
-			var fontcolorNum = netvsPlayerTeamColor[playerID]
+		if(netVSPlayerName[playerID].isNotEmpty()) {
+			var name = netVSPlayerName[playerID]
+			var fontcolorNum = netVSPlayerTeamColor[playerID]
 			if(fontcolorNum<0) fontcolorNum = 0
-			if(fontcolorNum>NETVS_TEAM_FONT_COLORS.size-1) fontcolorNum = NETVS_TEAM_FONT_COLORS.size-1
-			val fontcolor = NETVS_TEAM_FONT_COLORS[fontcolorNum]
+			if(fontcolorNum>NET_TEAM_FONT_COLORS.size-1) fontcolorNum = NET_TEAM_FONT_COLORS.size-1
+			val fontcolor = NET_TEAM_FONT_COLORS[fontcolorNum]
 
 			when {
-				engine.displaysize==-1 -> {
+				engine.displaySize==-1 -> {
 					if(name.length>7) name = name.take(7)+".."
 					owner.receiver.drawDirectTTF(x, y-16, name, fontcolor)
 				}
@@ -343,58 +342,59 @@ open class NetDummyVSMode:NetDummyMode() {
 	/** NET-VS: Send field to everyone. It won't do anything in practice
 	 * game. */
 	override fun netSendField(engine:GameEngine) {
-		if(!netvsIsPractice&&engine.playerID==0&&!netIsWatch) super.netSendField(engine)
+		if(!netVSIsPractice&&engine.playerID==0&&!netIsWatch) super.netSendField(engine)
 	}
 
-	/** NET-VS: Send next and hold piece informations to everyone. It won't do
-	 * anything in practice game. */
+	/** NET-VS: Send next and hold piece information to everyone.
+	 * It won't do anything in practice game. */
 	override fun netSendNextAndHold(engine:GameEngine) {
-		if(!netvsIsPractice&&engine.playerID==0&&!netIsWatch) super.netSendNextAndHold(engine)
+		if(!netVSIsPractice&&engine.playerID==0&&!netIsWatch) super.netSendNextAndHold(engine)
 	}
 
-	/** NET-VS: Send the current piece's movement to everyone. It won't do
-	 * anything in practice game. */
+	/** NET-VS: Send the current piece's movement to everyone.
+	 * It won't do anything in practice game. */
 	override fun netSendPieceMovement(engine:GameEngine, forceSend:Boolean):Boolean =
-		if(!netvsIsPractice&&engine.playerID==0&&!netIsWatch) super.netSendPieceMovement(engine, forceSend) else false
+		if(!netVSIsPractice&&engine.playerID==0&&!netIsWatch) super.netSendPieceMovement(engine, forceSend) else false
 
 	/** NET-VS: Set locked rule/Revert to user rule */
-	private fun netvsSetLockedRule() {
+	private fun netVSSetLockedRule() {
 		if(netCurrentRoomInfo!=null&&netCurrentRoomInfo!!.ruleLock) {
 			// Set to locked rule
 			if(netLobby!=null&&netLobby!!.ruleOptLock!=null) {
 				val randomizer = GeneralUtil.loadRandomizer(netLobby!!.ruleOptLock!!.strRandomizer)
 				val wallkick = GeneralUtil.loadWallkick(netLobby!!.ruleOptLock!!.strWallkick)
 				for(i in 0 until players) {
-					owner.engine[i].ruleOpt.copy(netLobby!!.ruleOptLock)
+					owner.engine[i].ruleOpt.replaace(netLobby!!.ruleOptLock)
 					owner.engine[i].randomizer = randomizer
 					owner.engine[i].wallkick = wallkick
 				}
 			} else
 				log.warn("Tried to set locked rule, but rule was not received yet!")
-		} else if(!netvsIsWatch()) {
+		} else if(!netVSIsWatch()) {
 			// Revert rules
-			owner.engine[0].ruleOpt.copy(netLobby!!.ruleOptPlayer)
+			owner.engine[0].ruleOpt.replaace(netLobby!!.ruleOptPlayer)
 			owner.engine[0].randomizer = GeneralUtil.loadRandomizer(owner.engine[0].ruleOpt.strRandomizer)
 			owner.engine[0].wallkick = GeneralUtil.loadWallkick(owner.engine[0].ruleOpt.strWallkick)
 		}
 	}
 
 	/** Set game screen layout */
-	private fun netvsSetGameScreenLayout() {
+	private fun netVSSetGameScreenLayout() {
 		for(i in 0 until players)
-			netvsSetGameScreenLayout(owner.engine[i])
+			netVSSetGameScreenLayout(owner.engine[i])
 	}
 
 	/** Set game screen layout
 	 * @param engine GameEngine
 	 */
-	private fun netvsSetGameScreenLayout(engine:GameEngine) {
+	private fun netVSSetGameScreenLayout(engine:GameEngine) {
 		// Set display size
-		if(engine.playerID==0&&!netvsIsWatch()||netCurrentRoomInfo!=null&&netCurrentRoomInfo!!.maxPlayers==2&&engine.playerID<=1) {
-			engine.displaysize = 0
+		if(engine.playerID==0&&!netVSIsWatch()||
+			netCurrentRoomInfo!=null&&netCurrentRoomInfo!!.maxPlayers==2&&engine.playerID<=1) {
+			engine.displaySize = 0
 			engine.enableSE = true
 		} else {
-			engine.displaysize = -1
+			engine.displaySize = -1
 			engine.enableSE = false
 		}
 
@@ -402,24 +402,22 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(netCurrentRoomInfo!=null&&engine.playerID>=netCurrentRoomInfo!!.maxPlayers) engine.isVisible = false
 
 		// Set frame cint
-		val seatID = netvsPlayerSeatID[engine.playerID]
-		if(seatID>=0&&seatID<NETVS_PLAYER_COLOR_FRAME.size)
-			engine.framecolor = NETVS_PLAYER_COLOR_FRAME[seatID]
-		else
-			engine.framecolor = GameEngine.FRAME_COLOR_GRAY
+		val seatID = netVSPlayerSeatID[engine.playerID]
+		engine.frameColor = if(seatID>=0&&seatID<NET_PLAYER_COLOR_FRAME.size)
+			NET_PLAYER_COLOR_FRAME[seatID] else GameEngine.FRAME_COLOR_GRAY
 	}
 
 	/** NET-VS: Apply room's settings (such as gravity) to all GameEngine */
-	protected fun netvsApplyRoomSettings() {
+	protected fun netVSApplyRoomSettings() {
 		for(i in 0 until players)
-			netvsApplyRoomSettings(owner.engine[i])
+			netVSApplyRoomSettings(owner.engine[i])
 	}
 
 	/** NET-VS: Apply room's settings (such as gravity) to the specific
 	 * GameEngine
 	 * @param engine GameEngine to apply settings
 	 */
-	internal open fun netvsApplyRoomSettings(engine:GameEngine) {
+	internal open fun netVSApplyRoomSettings(engine:GameEngine) {
 		if(netCurrentRoomInfo!=null) {
 			engine.speed.gravity = netCurrentRoomInfo!!.gravity
 			engine.speed.denominator = netCurrentRoomInfo!!.denominator
@@ -430,7 +428,7 @@ open class NetDummyVSMode:NetDummyMode() {
 			engine.speed.das = netCurrentRoomInfo!!.das
 
 			engine.b2bEnable = netCurrentRoomInfo!!.b2b
-			engine.splitb2b = netCurrentRoomInfo!!.splitb2b
+			engine.splitB2B = netCurrentRoomInfo!!.splitb2b
 
 			engine.comboType = if(netCurrentRoomInfo!!.combo) GameEngine.COMBO_TYPE_NORMAL else GameEngine.COMBO_TYPE_DISABLE
 
@@ -455,42 +453,42 @@ open class NetDummyVSMode:NetDummyMode() {
 	 * @param seat The seat ID want to know
 	 * @return Player number
 	 */
-	internal fun netvsGetPlayerIDbySeatID(seat:Int):Int = netvsGetPlayerIDbySeatID(seat, netvsMySeatID)
+	internal fun netVSGetPlayerIDbySeatID(seat:Int):Int = netVSGetPlayerIDbySeatID(seat, netVSMySeatID)
 
 	/** NET-VS: Get player field number by seat ID
 	 * @param seat The seat ID want to know
 	 * @param myseat Your seat number (-1 if spectator)
 	 * @return Player number
 	 */
-	private fun netvsGetPlayerIDbySeatID(seat:Int, myseat:Int):Int {
+	private fun netVSGetPlayerIDbySeatID(seat:Int, myseat:Int):Int {
 		var myseat2 = myseat
 		if(myseat2<0) myseat2 = 0
-		return NETVS_GAME_SEAT_NUMBERS[myseat2][seat]
+		return NET_GAME_SEAT_NUMBERS[myseat2][seat]
 	}
 
 	/** NET-VS: Start a practice game
 	 * @param engine GameEngine
 	 */
-	private fun netvsStartPractice(engine:GameEngine) {
-		netvsIsPractice = true
-		netvsIsPracticeExitAllowed = false
+	private fun netVSStartPractice(engine:GameEngine) {
+		netVSIsPractice = true
+		netVSIsPracticeExitAllowed = false
 
 		engine.init()
 		engine.stat = GameEngine.Status.READY
 		engine.resetStatc()
 		netUpdatePlayerExist()
-		netvsSetGameScreenLayout()
+		netVSSetGameScreenLayout()
 
 		// Map
 		if(netCurrentRoomInfo!!.useMap&&netLobby!!.mapList.size>0) {
-			if(netvsRandMap==null) netvsRandMap = Random.Default
+			if(netVSRandMap==null) netVSRandMap = Random.Default
 
 			var map:Int
 			val maxMap = netLobby!!.mapList.size
 			do
-				map = netvsRandMap!!.nextInt(maxMap)
-			while(map==netvsMapPreviousPracticeMap&&maxMap>=2)
-			netvsMapPreviousPracticeMap = map
+				map = netVSRandMap!!.nextInt(maxMap)
+			while(map==netVSMapPreviousPracticeMap&&maxMap>=2)
+			netVSMapPreviousPracticeMap = map
 
 			engine.createFieldIfNeeded()
 			engine.field.stringToField(netLobby!!.mapList[map])
@@ -505,25 +503,25 @@ open class NetDummyVSMode:NetDummyMode() {
 	 * NetDummyVSMode.
 	 * @param message Message
 	 */
-	internal open fun netvsRecvEndGameStats(message:Array<String>) {
+	internal open fun netVSRecvEndGameStats(message:Array<String>) {
 		val seatID = message[2].toInt()
-		val playerID = netvsGetPlayerIDbySeatID(seatID)
+		val playerID = netVSGetPlayerIDbySeatID(seatID)
 
-		if(playerID!=0||netvsIsWatch()) netvsPlayerResultReceived[playerID] = true
+		if(playerID!=0||netVSIsWatch()) netVSPlayerResultReceived[playerID] = true
 	}
 
 	/** Get number of teams alive (Each independence player will also count as a
 	 * team)
 	 * @return Number of teams alive
 	 */
-	internal fun netvsGetNumberOfTeamsAlive():Int {
+	internal fun netVSGetNumberOfTeamsAlive():Int {
 		val listTeamName = mutableListOf<String>()
 		var noTeamCount = 0
 
 		for(i in 0 until players)
-			if(netvsPlayerExist[i]&&!netvsPlayerDead[i]&&owner.engine[i].gameActive)
-				if(netvsPlayerTeam[i].isNotEmpty()) {
-					if(!listTeamName.contains(netvsPlayerTeam[i])) listTeamName.add(netvsPlayerTeam[i])
+			if(netVSPlayerExist[i]&&!netVSPlayerDead[i]&&owner.engine[i].gameActive)
+				if(netVSPlayerTeam[i].isNotEmpty()) {
+					if(!listTeamName.contains(netVSPlayerTeam[i])) listTeamName.add(netVSPlayerTeam[i])
 				} else
 					noTeamCount++
 
@@ -534,36 +532,36 @@ open class NetDummyVSMode:NetDummyMode() {
 	 * @param playerID Player ID (to attack)
 	 * @return true if playerID can be attacked
 	 */
-	internal fun netvsIsAttackable(playerID:Int):Boolean {
+	internal fun netVSIsAttackable(playerID:Int):Boolean {
 		// Can't attack self
 		if(playerID<=0) return false
 
 		// Doesn't exist?
-		if(!netvsPlayerExist[playerID]||netvsPlayerDead[playerID]||!netvsPlayerActive[playerID]) return false
+		if(!netVSPlayerExist[playerID]||netVSPlayerDead[playerID]||!netVSPlayerActive[playerID]) return false
 
 		// Is teammate?
-		val myTeam = netvsPlayerTeam[0]
-		val thisTeam = netvsPlayerTeam[playerID]
+		val myTeam = netVSPlayerTeam[0]
+		val thisTeam = netVSPlayerTeam[playerID]
 		return myTeam.isEmpty()||thisTeam.isEmpty()||myTeam!=thisTeam
 	}
 
-	/** Draw room info box (number of players, number of spectators, etc) to
+	/** Draw room info box (number of players, number of spectators, etc.) to
 	 * somewhere on the screen
 	 * @param x X position
 	 * @param y Y position
 	 */
-	private fun netvsDrawRoomInfoBox(x:Int, y:Int) {
+	private fun netVSDrawRoomInfoBox(x:Int, y:Int) {
 		if(netCurrentRoomInfo!=null) {
 			owner.receiver.drawDirectFont(x, y, "PLAYERS", COLOR.CYAN, .5f)
-			owner.receiver.drawDirectFont(x, y+8, "$netvsNumPlayers", COLOR.WHITE, .5f)
+			owner.receiver.drawDirectFont(x, y+8, "$netVSNumPlayers", COLOR.WHITE, .5f)
 			owner.receiver.drawDirectFont(x, y+16, "SPECTATORS", COLOR.CYAN, .5f)
 			owner.receiver.drawDirectFont(x, y+24, "$netNumSpectators", COLOR.WHITE, .5f)
 
-			if(!netvsIsWatch()) {
+			if(!netVSIsWatch()) {
 				owner.receiver.drawDirectFont(x, y+32, "MATCHES", COLOR.CYAN, .5f)
-				owner.receiver.drawDirectFont(x, y+40, "${netvsPlayerPlayCount[0]}", COLOR.WHITE, .5f)
+				owner.receiver.drawDirectFont(x, y+40, "${netVSPlayerPlayCount[0]}", COLOR.WHITE, .5f)
 				owner.receiver.drawDirectFont(x, y+48, "WINS", COLOR.CYAN, .5f)
-				owner.receiver.drawDirectFont(x, y+56, "${netvsPlayerWinCount[0]}", COLOR.WHITE, .5f)
+				owner.receiver.drawDirectFont(x, y+56, "${netVSPlayerWinCount[0]}", COLOR.WHITE, .5f)
 			}
 		}
 		owner.receiver.drawDirectFont(x, y+72, "ALL ROOMS", COLOR.GREEN, .5f)
@@ -571,42 +569,39 @@ open class NetDummyVSMode:NetDummyMode() {
 	}
 
 	/** NET-VS: Settings screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
-		if(netCurrentRoomInfo!=null&&playerID==0&&!netvsIsWatch()) {
-			netvsPlayerExist[0] = true
+	override fun onSetting(engine:GameEngine):Boolean {
+		if(netCurrentRoomInfo!=null&&engine.playerID==0&&!netVSIsWatch()) {
+			netVSPlayerExist[0] = true
 
-			engine.displaysize = 0
+			engine.displaySize = 0
 			engine.enableSE = true
 			engine.isVisible = true
 
-			if(!netvsIsReadyChangePending&&netvsNumPlayers>=2&&!netvsIsNewcomer&&menuTime>=5) {
+			if(menuTime>=5) if(!netVSIsReadyChangePending&&netVSNumPlayers>=2&&!netVSIsNewcomer) {
 				// Ready ON
-				if(engine.ctrl.isPush(Controller.BUTTON_A)&&!netvsPlayerReady[0]) {
+				if(engine.ctrl.isPush(Controller.BUTTON_A)&&!netVSPlayerReady[0]) {
 					engine.playSE("decide")
-					netvsIsReadyChangePending = true
+					netVSIsReadyChangePending = true
 					netLobby!!.netPlayerClient!!.send("ready\ttrue\n")
 				}
 				// Ready OFF
-				if(engine.ctrl.isPush(Controller.BUTTON_B)&&netvsPlayerReady[0]) {
+				if(engine.ctrl.isPush(Controller.BUTTON_B)&&netVSPlayerReady[0]) {
 					engine.playSE("decide")
-					netvsIsReadyChangePending = true
+					netVSIsReadyChangePending = true
 					netLobby!!.netPlayerClient!!.send("ready\tfalse\n")
 				}
-			}
-
-			// Practice Mode
-			if(engine.ctrl.isPush(Controller.BUTTON_F)&&menuTime>=5) {
+			} else if(engine.ctrl.isPush(Controller.BUTTON_F)) {
+				// Practice Mode
 				engine.playSE("decide")
-				netvsStartPractice(engine)
+				netVSStartPractice(engine)
 				return true
 			}
 		}
 
 		// Random Map Preview
-		if(netCurrentRoomInfo!=null&&netCurrentRoomInfo!!.useMap
-			&&!netLobby!!.mapList.isEmpty())
-			if(netvsPlayerExist[playerID]) {
-				if(menuTime%30==0) {
+		if(netCurrentRoomInfo!=null&&netCurrentRoomInfo!!.useMap&&!netLobby!!.mapList.isEmpty())
+			if(netVSPlayerExist[engine.playerID]) {
+				if(menuTime>=35) {
 					engine.statc[5]++
 					if(engine.statc[5]>=netLobby!!.mapList.size) engine.statc[5] = 0
 					engine.createFieldIfNeeded()
@@ -614,80 +609,82 @@ open class NetDummyVSMode:NetDummyMode() {
 					engine.field.setAllSkin(engine.skin)
 					engine.field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 					engine.field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
+					menuTime -= 30
 				}
-			} else if(engine.field!=null&&!engine.field.isEmpty) engine.field.reset()
+			} else if(!engine.field.isEmpty) engine.field.reset()
 
-		menuTime++
+		if(menuTime<35) menuTime++
 
 		return true
 	}
 
 	/** NET-VS: Render the settings screen */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		if(!engine.isVisible) return
 
-		val x = owner.receiver.fieldX(engine, playerID)
-		val y = owner.receiver.fieldY(engine, playerID)
+		val x = owner.receiver.fieldX(engine)
+		val y = owner.receiver.fieldY(engine)
 
+		val pid = engine.playerID
 		if(netCurrentRoomInfo!=null) {
-			if(netvsPlayerReady[playerID]&&netvsPlayerExist[playerID])
-				if(engine.displaysize!=-1)
+			if(netVSPlayerReady[pid]&&netVSPlayerExist[pid])
+				if(engine.displaySize!=-1)
 					owner.receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
 				else
 					owner.receiver.drawDirectFont(x+36, y+80, "OK", COLOR.YELLOW, .5f)
 
-			if(playerID==0&&!netvsIsWatch()&&!netvsIsReadyChangePending&&netvsNumPlayers>=2
-				&&!netvsIsNewcomer)
-				if(!netvsPlayerReady[playerID]) {
+			if(pid==0&&!netVSIsWatch()&&!netVSIsReadyChangePending&&netVSNumPlayers>=2
+				&&!netVSIsNewcomer)
+				if(!netVSPlayerReady[pid]) {
 					var strTemp = "A(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
 					if(strTemp.length>10) strTemp = strTemp.take(10)
-					owner.receiver.drawMenuFont(engine, playerID, 0, 16, strTemp, COLOR.CYAN)
-					owner.receiver.drawMenuFont(engine, playerID, 1, 17, "READY", COLOR.CYAN)
+					owner.receiver.drawMenuFont(engine, 0, 16, strTemp, COLOR.CYAN)
+					owner.receiver.drawMenuFont(engine, 1, 17, "READY", COLOR.CYAN)
 				} else {
 					var strTemp = "B(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_B)} KEY):"
 					if(strTemp.length>10) strTemp = strTemp.take(10)
-					owner.receiver.drawMenuFont(engine, playerID, 0, 16, strTemp, COLOR.BLUE)
-					owner.receiver.drawMenuFont(engine, playerID, 1, 17, "CANCEL", COLOR.BLUE)
+					owner.receiver.drawMenuFont(engine, 0, 16, strTemp, COLOR.BLUE)
+					owner.receiver.drawMenuFont(engine, 1, 17, "CANCEL", COLOR.BLUE)
 				}
 		}
 
-		if(playerID==0&&!netvsIsWatch()&&menuTime>=5) {
+		if(pid==0&&!netVSIsWatch()&&menuTime>=5) {
 			var strTemp = "F(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
 			if(strTemp.length>10) strTemp = strTemp.take(10)
 			strTemp = strTemp.uppercase()
-			owner.receiver.drawMenuFont(engine, playerID, 0, 18, strTemp, COLOR.PURPLE)
-			owner.receiver.drawMenuFont(engine, playerID, 1, 19, "PRACTICE", COLOR.PURPLE)
+			owner.receiver.drawMenuFont(engine, 0, 18, strTemp, COLOR.PURPLE)
+			owner.receiver.drawMenuFont(engine, 1, 19, "PRACTICE", COLOR.PURPLE)
 		}
 	}
 
 	/** NET-VS: Ready */
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0)
 		// Map
-			if(netCurrentRoomInfo!!.useMap&&netvsMapNo<netLobby!!.mapList.size&&!netvsIsPractice) {
+			if(netCurrentRoomInfo!!.useMap&&netVSMapNo<netLobby!!.mapList.size&&!netVSIsPractice) {
 				engine.createFieldIfNeeded()
-				engine.field.stringToField(netLobby!!.mapList[netvsMapNo])
-				if(playerID==0&&!netvsIsWatch())
+				engine.field.stringToField(netLobby!!.mapList[netVSMapNo])
+				if(engine.playerID==0&&!netVSIsWatch())
 					engine.field.setAllSkin(engine.skin)
 				else if(netCurrentRoomInfo!!.ruleLock&&netLobby!!.ruleOptLock!=null)
 					engine.field.setAllSkin(netLobby!!.ruleOptLock!!.skin)
-				else if(netvsPlayerSkin[playerID]>=0) engine.field.setAllSkin(netvsPlayerSkin[playerID])
+				else if(netVSPlayerSkin[engine.playerID]>=0) engine.field.setAllSkin(netVSPlayerSkin[engine.playerID])
 				engine.field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 				engine.field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 			}
 
-		if(netvsIsPractice&&engine.statc[0]>=10) netvsIsPracticeExitAllowed = true
+		if(netVSIsPractice&&engine.statc[0]>=10) netVSIsPracticeExitAllowed = true
 
 		return false
 	}
 
 	/** NET-VS: Executed after Ready->Go, before the first piece appears. */
-	override fun startGame(engine:GameEngine, playerID:Int) {
-		netvsApplyRoomSettings(engine)
+	override fun startGame(engine:GameEngine) {
+		netVSApplyRoomSettings(engine)
 
-		if(playerID==0) {
+		if(engine.playerID==0) {
 			// Set BGM
-			if(netvsIsPractice)
+			if(netVSIsPractice)
 				owner.bgmStatus.bgm = BGM.Silent
 			else {
 				owner.bgmStatus.bgm = BGM.Extra(0)
@@ -695,28 +692,28 @@ open class NetDummyVSMode:NetDummyMode() {
 			}
 
 			// Init Variables
-			netvsPieceMoveTimer = 0
+			netVSPieceMoveTimer = 0
 		}
 	}
 
 	/** NET-VS: When the pieces can move */
-	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
+	override fun onMove(engine:GameEngine):Boolean {
 		// Stop game for remote players
-		if(playerID!=0||netvsIsWatch()) return true
+		if(engine.playerID!=0||netVSIsWatch()) return true
 
 		// Timer start
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!netvsIsPractice) netvsPlayTimerActive = true
+		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!netVSIsPractice) netVSPlayTimerActive = true
 
 		// Send movements
-		super.onMove(engine, playerID)
+		super.onMove(engine)
 
 		// Auto lock
-		if(engine.ending==0&&engine.nowPieceObject!=null&&netvsPieceMoveTimerMax>0) {
-			netvsPieceMoveTimer++
-			if(netvsPieceMoveTimer>=netvsPieceMoveTimerMax) {
+		if(engine.ending==0&&engine.nowPieceObject!=null&&netVSPieceMoveTimerMax>0) {
+			netVSPieceMoveTimer++
+			if(netVSPieceMoveTimer>=netVSPieceMoveTimerMax) {
 				engine.nowPieceY = engine.nowPieceBottomY
 				engine.lockDelayNow = engine.lockDelay
-				netvsPieceMoveTimer = 0
+				netVSPieceMoveTimer = 0
 			}
 		}
 
@@ -724,35 +721,34 @@ open class NetDummyVSMode:NetDummyMode() {
 	}
 
 	/** NET-VS: When the piece locked */
-	override fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {
-		super.pieceLocked(engine, playerID, lines)
-		netvsPieceMoveTimer = 0
+	override fun pieceLocked(engine:GameEngine, lines:Int) {
+		netVSPieceMoveTimer = 0
 	}
 
 	/** NET-VS: Executed at the end of each frame */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		val pid = engine.playerID
+		super.onLast(engine)
 
 		// Play Timer
-		if(playerID==0&&netvsPlayTimerActive) netvsPlayTimer++
+		if(pid==0&&netVSPlayTimerActive) netVSPlayTimer++
 
 		// Automatic start timer
-		if(playerID==0&&netCurrentRoomInfo!=null&&netvsAutoStartTimerActive
-			&&!netvsIsGameActive)
+		if(pid==0&&netCurrentRoomInfo!=null&&netVSAutoStartTimerActive&&!netVSIsGameActive)
 			when {
-				netvsNumPlayers<=1 -> netvsAutoStartTimerActive = false
-				netvsAutoStartTimer>0 -> netvsAutoStartTimer--
+				netVSNumPlayers<=1 -> netVSAutoStartTimerActive = false
+				netVSAutoStartTimer>0 -> netVSAutoStartTimer--
 				else -> {
-					if(!netvsIsWatch()) netLobby!!.netPlayerClient!!.send("autostart\n")
-					netvsAutoStartTimer = 0
-					netvsAutoStartTimerActive = false
+					if(!netVSIsWatch()) netLobby!!.netPlayerClient!!.send("autostart\n")
+					netVSAutoStartTimer = 0
+					netVSAutoStartTimerActive = false
 				}
 			}
 
 		// End practice mode
-		if(playerID==0&&netvsIsPractice&&netvsIsPracticeExitAllowed&&engine.ctrl.isPush(Controller.BUTTON_F)) {
-			netvsIsPractice = false
-			netvsIsPracticeExitAllowed = false
+		if(pid==0&&netVSIsPractice&&netVSIsPracticeExitAllowed&&engine.ctrl.isPush(Controller.BUTTON_F)) {
+			netVSIsPractice = false
+			netVSIsPracticeExitAllowed = false
 			owner.bgmStatus.bgm = BGM.Silent
 			engine.field.reset()
 			engine.gameEnded()
@@ -762,46 +758,47 @@ open class NetDummyVSMode:NetDummyMode() {
 	}
 
 	/** NET-VS: Render something such as HUD */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		// Player count
-		if(playerID==players-1) super.renderLast(engine, playerID)
+		val pid = engine.playerID
+		if(pid==players-1) super.renderLast(engine)
 
 		// Room info box
-		if(playerID==players-1) {
+		if(pid==players-1) {
 			var x2 = if(owner.receiver.nextDisplayType==2) 544 else 503
 			if(owner.receiver.nextDisplayType==2&&netCurrentRoomInfo!!.maxPlayers==2) x2 = 321
 			if(owner.receiver.nextDisplayType!=2&&netCurrentRoomInfo!!.maxPlayers==2) x2 = 351
 
-			netvsDrawRoomInfoBox(x2, 286)
+			netVSDrawRoomInfoBox(x2, 286)
 		}
 
 		// Elapsed time
-		if(playerID==0) {
-			owner.receiver.drawDirectFont(256, 16, netvsPlayTimer.toTimeStr)
+		if(pid==0) {
+			owner.receiver.drawDirectFont(256, 16, netVSPlayTimer.toTimeStr)
 
-			if(netvsIsPractice)
-				owner.receiver.drawDirectFont(256, 32, engine.statistics.time.toTimeStr,
-					COLOR.PURPLE)
+			if(netVSIsPractice)
+				owner.receiver.drawDirectFont(256, 32, engine.statistics.time.toTimeStr, COLOR.PURPLE)
 		}
 
 		// Automatic start timer
-		if(playerID==0&&netCurrentRoomInfo!=null&&netvsAutoStartTimerActive
-			&&!netvsIsGameActive)
-			owner.receiver.drawDirectFont(496, 16,
-				netvsAutoStartTimer.toTimeStr,
-				if(netCurrentRoomInfo!!.autoStartTNET2) COLOR.RED else COLOR.YELLOW)
+		if(pid==0&&netCurrentRoomInfo!=null&&netVSAutoStartTimerActive&&!netVSIsGameActive)
+			owner.receiver.drawDirectFont(
+				496, 16, netVSAutoStartTimer.toTimeStr,
+				if(netCurrentRoomInfo!!.autoStartTNET2) COLOR.RED else COLOR.YELLOW
+			)
 
 	}
 
 	/** NET-VS: Game Over */
-	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+	override fun onGameOver(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) engine.gameEnded()
 		engine.allowTextRenderByReceiver = false
 		owner.bgmStatus.bgm = BGM.Silent
 		engine.resetFieldVisible()
 
+		val pid = engine.playerID
 		// Practice
-		if(playerID==0&&netvsIsPractice)
+		if(pid==0&&netVSIsPractice)
 			return if(engine.statc[0]<engine.field.height+1)
 				false
 			else {
@@ -812,94 +809,69 @@ open class NetDummyVSMode:NetDummyMode() {
 			}
 
 		// 1P died
-		if(playerID==0&&!netvsPlayerDead[playerID]&&!netvsIsDeadPending&&!netvsIsWatch()) {
+		if(pid==0&&!netVSPlayerDead[pid]&&!netVSIsDeadPending&&!netVSIsWatch()) {
 			netSendField(engine)
 			netSendNextAndHold(engine)
 			netSendStats(engine)
 
-			netLobby!!.netPlayerClient!!.send("dead\t$netvsLastAttackerUID\n")
+			netLobby!!.netPlayerClient!!.send("dead\t$netVSLastAttackerUID\n")
 
-			netvsPlayerResultReceived[playerID] = true
-			netvsIsDeadPending = true
+			netVSPlayerResultReceived[pid] = true
+			netVSIsDeadPending = true
 			return true
 		}
 
 		// Player/Opponent died
-		if(netvsPlayerDead[playerID]) {
-			if(engine.field==null) {
+		if(netVSPlayerDead[pid]) {
+			if(engine.field.isEmpty) {
 				engine.stat = GameEngine.Status.SETTING
 				engine.resetStatc()
 				return true
 			}
-			return engine.statc[0]>=engine.field.height+1&&!netvsPlayerResultReceived[playerID]
+			return engine.statc[0]>=engine.field.height+1&&!netVSPlayerResultReceived[pid]
 		}
 
 		return true
 	}
 
 	/** NET-VS: Draw Game Over screen */
-	override fun renderGameOver(engine:GameEngine, playerID:Int) {
-		if(playerID==0&&netvsIsPractice) return
+	override fun renderGameOver(engine:GameEngine) {
+		val pid = engine.playerID
+		if(pid==0&&netVSIsPractice) return
 		if(!engine.isVisible) return
 
-		val x = owner.receiver.fieldX(engine, playerID)
-		val y = owner.receiver.fieldY(engine, playerID)
-		val place = netvsPlayerPlace[playerID]
+		val x = owner.receiver.fieldX(engine)
+		val y = owner.receiver.fieldY(engine)
+		val place = netVSPlayerPlace[pid]
 
-		if(engine.displaysize!=-1) {
-			if(netvsPlayerReady[playerID]&&!netvsIsGameActive)
+		if(engine.displaySize!=-1) {
+			if(netVSPlayerReady[pid]&&!netVSIsGameActive)
 				owner.receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
-			else if(netvsNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
-				owner.receiver.drawDirectFont(x+20, y+204,
-					"YOU LOSE", COLOR.WHITE)
-			else if(place==1)
-				owner.receiver.drawDirectFont(x+28, y+80,
-					"YOU WIN", COLOR.WHITE, .5f)
-			else if(place==2)
-				owner.receiver.drawDirectFont(x+12, y+204,
-					"2ND PLACE", COLOR.WHITE)
-			else if(place==3)
-				owner.receiver.drawDirectFont(x+12, y+204,
-					"3RD PLACE", COLOR.RED)
-			else if(place==4)
-				owner.receiver.drawDirectFont(x+12, y+204,
-					"4TH PLACE", COLOR.GREEN)
-			else if(place==5)
-				owner.receiver.drawDirectFont(x+12, y+204,
-					"5TH PLACE", COLOR.BLUE)
-			else if(place==6)
-				owner.receiver.drawDirectFont(x+12, y+204,
-					"6TH PLACE", COLOR.PURPLE)
-		} else if(netvsPlayerReady[playerID]&&!netvsIsGameActive)
-			owner.receiver.drawDirectFont(x+36, y+80,
-				"OK", COLOR.YELLOW, .5f)
-		else if(netvsNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
-			owner.receiver.drawDirectFont(x+20, y+80,
-				"YOU LOSE", COLOR.WHITE, .5f)
-		else if(place==1)
-			owner.receiver.drawDirectFont(x+28, y+80,
-				"YOU WIN", COLOR.WHITE, .5f)
-		else if(place==2)
-			owner.receiver.drawDirectFont(x+8, y+80,
-				"2ND PLACE", COLOR.WHITE, .5f)
-		else if(place==3)
-			owner.receiver.drawDirectFont(x+8, y+80,
-				"3RD PLACE", COLOR.RED, .5f)
-		else if(place==4)
-			owner.receiver.drawDirectFont(x+8, y+80,
-				"4TH PLACE", COLOR.GREEN, .5f)
-		else if(place==5)
-			owner.receiver.drawDirectFont(x+8, y+80,
-				"5TH PLACE", COLOR.BLUE, .5f)
-		else if(place==6)
-			owner.receiver.drawDirectFont(x+8, y+80,
-				"6TH PLACE", COLOR.PURPLE, .5f)
+			else if(netVSNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
+				owner.receiver.drawDirectFont(x+20, y+204, "YOU LOSE", COLOR.WHITE)
+			else if(place==1) owner.receiver.drawDirectFont(x+28, y+80, "YOU WIN", COLOR.WHITE, .5f)
+			else if(place==2) owner.receiver.drawDirectFont(x+12, y+204, "2ND PLACE", COLOR.WHITE)
+			else if(place==3) owner.receiver.drawDirectFont(x+12, y+204, "3RD PLACE", COLOR.RED)
+			else if(place==4) owner.receiver.drawDirectFont(x+12, y+204, "4TH PLACE", COLOR.GREEN)
+			else if(place==5) owner.receiver.drawDirectFont(x+12, y+204, "5TH PLACE", COLOR.BLUE)
+			else if(place==6) owner.receiver.drawDirectFont(x+12, y+204, "6TH PLACE", COLOR.PURPLE)
+		} else if(netVSPlayerReady[pid]&&!netVSIsGameActive)
+			owner.receiver.drawDirectFont(x+36, y+80, "OK", COLOR.YELLOW, .5f)
+		else if(netVSNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
+			owner.receiver.drawDirectFont(x+20, y+80, "YOU LOSE", COLOR.WHITE, .5f)
+		else if(place==1) owner.receiver.drawDirectFont(x+28, y+80, "YOU WIN", COLOR.WHITE, .5f)
+		else if(place==2) owner.receiver.drawDirectFont(x+8, y+80, "2ND PLACE", COLOR.WHITE, .5f)
+		else if(place==3) owner.receiver.drawDirectFont(x+8, y+80, "3RD PLACE", COLOR.RED, .5f)
+		else if(place==4) owner.receiver.drawDirectFont(x+8, y+80, "4TH PLACE", COLOR.GREEN, .5f)
+		else if(place==5) owner.receiver.drawDirectFont(x+8, y+80, "5TH PLACE", COLOR.BLUE, .5f)
+		else if(place==6) owner.receiver.drawDirectFont(x+8, y+80, "6TH PLACE", COLOR.PURPLE, .5f)
 	}
 
 	/** NET-VS: Excellent screen */
-	override fun onExcellent(engine:GameEngine, playerID:Int):Boolean {
+	override fun onExcellent(engine:GameEngine):Boolean {
 		engine.allowTextRenderByReceiver = false
-		if(playerID==0) netvsPlayerResultReceived[playerID] = true
+		val pid = engine.playerID
+		if(pid==0) netVSPlayerResultReceived[pid] = true
 
 		if(engine.statc[0]==0) {
 			engine.gameEnded()
@@ -911,8 +883,8 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(engine.statc[0]>=120&&engine.ctrl.isPush(Controller.BUTTON_A)) engine.statc[0] = engine.field.height+1+180
 
 		if(engine.statc[0]>=engine.field.height+1+180) {
-			if(!netvsIsGameActive&&netvsPlayerResultReceived[playerID]) {
-				if(engine.field!=null) engine.field.reset()
+			if(!netVSIsGameActive&&netVSPlayerResultReceived[pid]) {
+				engine.field.reset()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.RESULT
 			}
@@ -923,40 +895,32 @@ open class NetDummyVSMode:NetDummyMode() {
 	}
 
 	/** NET-VS: Draw Excellent screen */
-	override fun renderExcellent(engine:GameEngine, playerID:Int) {
+	override fun renderExcellent(engine:GameEngine) {
 		if(!engine.isVisible) return
 
-		val x = owner.receiver.fieldX(engine, playerID)
-		val y = owner.receiver.fieldY(engine, playerID)
+		val pid = engine.playerID
+		val cY = (engine.fieldHeight-1)/2f
 
-		if(engine.displaysize!=-1) {
-			if(playerID==0&&netvsIsPractice&&!netvsIsWatch())
-				owner.receiver.drawDirectFont(x+4, y+204, "EXCELLENT!", COLOR.YELLOW)
-			else if(netvsPlayerReady[playerID]&&!netvsIsGameActive)
-				owner.receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
-			else if(netvsNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
-				owner.receiver.drawDirectFont(x+52, y+204, "WIN!", COLOR.YELLOW)
-			else
-				owner.receiver.drawDirectFont(x+4, y+204, "1ST PLACE!", COLOR.YELLOW)
-		} else if(playerID==0&&netvsIsPractice&&!netvsIsWatch())
-			owner.receiver.drawDirectFont(x+4, y+80, "EXCELLENT!", COLOR.YELLOW, .5f)
-		else if(netvsPlayerReady[playerID]&&!netvsIsGameActive)
-			owner.receiver.drawDirectFont(x+36, y+80, "OK", COLOR.YELLOW, .5f)
-		else if(netvsNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
-			owner.receiver.drawDirectFont(x+28, y+80, "WIN!", COLOR.YELLOW, .5f)
+		if(pid==0&&netVSIsPractice&&!netVSIsWatch())
+			owner.receiver.drawMenuFont(engine, 0f, cY/2, "EXCELLENT!", COLOR.RAINBOW)
+		else if(netVSPlayerReady[pid]&&!netVSIsGameActive)
+			owner.receiver.drawMenuFont(engine, 0f, cY/2, "OK", COLOR.WHITE)
+		else if(netVSNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
+			owner.receiver.drawMenuFont(engine, 0f, cY/2, "WIN!", COLOR.YELLOW)
 		else
-			owner.receiver.drawDirectFont(x+4, y+80, "1ST PLACE!", COLOR.YELLOW, .5f)
+			owner.receiver.drawMenuFont(engine, 0f, cY/2, "1ST PLACE!", COLOR.YELLOW)
+
 	}
 
 	/** NET-VS: Results screen */
-	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
+	override fun onResult(engine:GameEngine):Boolean {
 		engine.allowTextRenderByReceiver = false
 
-		if(playerID==0&&!netvsIsWatch()) {
+		if(engine.playerID==0&&!netVSIsWatch()) {
 			// To the settings screen
 			if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
-				netvsIsPractice = false
+				netVSIsPractice = false
 				engine.stat = GameEngine.Status.SETTING
 				engine.resetStatc()
 				return true
@@ -964,7 +928,7 @@ open class NetDummyVSMode:NetDummyMode() {
 			// Start Practice
 			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("decide")
-				netvsStartPractice(engine)
+				netVSStartPractice(engine)
 				return true
 			}
 		}
@@ -973,54 +937,55 @@ open class NetDummyVSMode:NetDummyMode() {
 	}
 
 	/** NET-VS: Draw results screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
+	override fun renderResult(engine:GameEngine) {
 		var scale = 1f
-		if(engine.displaysize==-1) scale = .5f
+		if(engine.displaySize==-1) scale = .5f
 
 		// Place
-		if(!netvsIsPractice||playerID!=0) {
-			owner.receiver.drawMenuFont(engine, playerID, 0, 0, "RESULT", COLOR.ORANGE, scale)
-			if(netvsPlayerPlace[playerID]==1) {
-				if(netvsNumNowPlayers==2)
-					owner.receiver.drawMenuFont(engine, playerID, 6, 1, "WIN!", COLOR.YELLOW, scale)
+		val pid = engine.playerID
+		if(!netVSIsPractice||pid!=0) {
+			owner.receiver.drawMenuFont(engine, 0, 0, "RESULT", COLOR.ORANGE, scale)
+			if(netVSPlayerPlace[pid]==1) {
+				if(netVSNumNowPlayers==2)
+					owner.receiver.drawMenuFont(engine, 6, 1, "WIN!", COLOR.YELLOW, scale)
 				else
-					owner.receiver.drawMenuFont(engine, playerID, 6, 1, "1ST!", COLOR.YELLOW, scale)
-			} else if(netvsPlayerPlace[playerID]==2) {
-				if(netvsNumNowPlayers==2)
-					owner.receiver.drawMenuFont(engine, playerID, 6, 1, "LOSE", COLOR.WHITE, scale)
+					owner.receiver.drawMenuFont(engine, 6, 1, "1ST!", COLOR.YELLOW, scale)
+			} else if(netVSPlayerPlace[pid]==2) {
+				if(netVSNumNowPlayers==2)
+					owner.receiver.drawMenuFont(engine, 6, 1, "LOSE", COLOR.WHITE, scale)
 				else
-					owner.receiver.drawMenuFont(engine, playerID, 7, 1, "2ND", COLOR.WHITE, scale)
-			} else if(netvsPlayerPlace[playerID]==3)
-				owner.receiver.drawMenuFont(engine, playerID, 7, 1, "3RD", COLOR.RED, scale)
-			else if(netvsPlayerPlace[playerID]==4)
-				owner.receiver.drawMenuFont(engine, playerID, 7, 1, "4TH", COLOR.GREEN, scale)
-			else if(netvsPlayerPlace[playerID]==5)
-				owner.receiver.drawMenuFont(engine, playerID, 7, 1, "5TH", COLOR.BLUE, scale)
-			else if(netvsPlayerPlace[playerID]==6)
-				owner.receiver.drawMenuFont(engine, playerID, 7, 1, "6TH", COLOR.COBALT, scale)
+					owner.receiver.drawMenuFont(engine, 7, 1, "2ND", COLOR.WHITE, scale)
+			} else if(netVSPlayerPlace[pid]==3)
+				owner.receiver.drawMenuFont(engine, 7, 1, "3RD", COLOR.RED, scale)
+			else if(netVSPlayerPlace[pid]==4)
+				owner.receiver.drawMenuFont(engine, 7, 1, "4TH", COLOR.GREEN, scale)
+			else if(netVSPlayerPlace[pid]==5)
+				owner.receiver.drawMenuFont(engine, 7, 1, "5TH", COLOR.BLUE, scale)
+			else if(netVSPlayerPlace[pid]==6)
+				owner.receiver.drawMenuFont(engine, 7, 1, "6TH", COLOR.COBALT, scale)
 		} else
-			owner.receiver.drawMenuFont(engine, playerID, 0, 0, "PRACTICE", COLOR.PINK, scale)
+			owner.receiver.drawMenuFont(engine, 0, 0, "PRACTICE", COLOR.PINK, scale)
 
-		if(playerID==0&&!netvsIsWatch()) {
+		if(pid==0&&!netVSIsWatch()) {
 			// Restart/Practice
 			var strTemp = "A(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
 			if(strTemp.length>10) strTemp = strTemp.take(10)
-			owner.receiver.drawMenuFont(engine, playerID, 0, 18, strTemp, COLOR.RED)
-			owner.receiver.drawMenuFont(engine, playerID, 1, 19, "RESTART", COLOR.RED)
+			owner.receiver.drawMenuFont(engine, 0, 18, strTemp, COLOR.RED)
+			owner.receiver.drawMenuFont(engine, 1, 19, "RESTART", COLOR.RED)
 
 			var strTempF = "F(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
 			if(strTempF.length>10) strTempF = strTempF.take(10)
-			owner.receiver.drawMenuFont(engine, playerID, 0, 20, strTempF, COLOR.PURPLE)
-			if(!netvsIsPractice)
-				owner.receiver.drawMenuFont(engine, playerID, 1, 21, "PRACTICE", COLOR.PURPLE)
+			owner.receiver.drawMenuFont(engine, 0, 20, strTempF, COLOR.PURPLE)
+			if(!netVSIsPractice)
+				owner.receiver.drawMenuFont(engine, 1, 21, "PRACTICE", COLOR.PURPLE)
 			else
-				owner.receiver.drawMenuFont(engine, playerID, 1, 21, "RETRY", COLOR.PURPLE)
-		} else if(netvsPlayerReady[playerID]&&netvsPlayerExist[playerID]) {
+				owner.receiver.drawMenuFont(engine, 1, 21, "RETRY", COLOR.PURPLE)
+		} else if(netVSPlayerReady[pid]&&netVSPlayerExist[pid]) {
 			// Player Ready
-			val x = owner.receiver.fieldX(engine, playerID)
-			val y = owner.receiver.fieldY(engine, playerID)
+			val x = owner.receiver.fieldX(engine)
+			val y = owner.receiver.fieldY(engine)
 
-			if(engine.displaysize!=-1)
+			if(engine.displaySize!=-1)
 				owner.receiver.drawDirectFont(x+68, y+356, "OK", COLOR.YELLOW)
 			else
 				owner.receiver.drawDirectFont(x+36, y+156, "OK", COLOR.YELLOW, .5f)
@@ -1028,7 +993,7 @@ open class NetDummyVSMode:NetDummyMode() {
 	}
 
 	/** NET-VS: No retry key. */
-	override fun netplayOnRetryKey(engine:GameEngine, playerID:Int) {}
+	override fun netplayOnRetryKey(engine:GameEngine) {}
 
 	/** NET-VS: Disconnected */
 	override fun netlobbyOnDisconnect(lobby:NetLobbyFrame, client:NetPlayerClient, ex:Throwable?) {
@@ -1045,13 +1010,13 @@ open class NetDummyVSMode:NetDummyMode() {
 
 			// Ready status change
 			if(pInfo.roomID==netCurrentRoomInfo!!.roomID&&pInfo.seatID!=-1) {
-				val playerID = netvsGetPlayerIDbySeatID(pInfo.seatID)
+				val playerID = netVSGetPlayerIDbySeatID(pInfo.seatID)
 
-				if(netvsPlayerReady[playerID]!=pInfo.ready) {
-					netvsPlayerReady[playerID] = pInfo.ready
+				if(netVSPlayerReady[playerID]!=pInfo.ready) {
+					netVSPlayerReady[playerID] = pInfo.ready
 
-					if(playerID==0&&!netvsIsWatch())
-						netvsIsReadyChangePending = false
+					if(playerID==0&&!netVSIsWatch())
+						netVSIsReadyChangePending = false
 					else if(pInfo.ready) owner.receiver.playSE("decide")
 					else if(!pInfo.playing) owner.receiver.playSE("change")
 				}
@@ -1059,7 +1024,7 @@ open class NetDummyVSMode:NetDummyMode() {
 
 			netUpdatePlayerExist()
 		}
-		// When someone logout
+		// When someone log out
 		if(message[0]=="playerlogout") {
 			val pInfo = NetPlayerInfo(message[1])
 
@@ -1070,19 +1035,19 @@ open class NetDummyVSMode:NetDummyMode() {
 			val uid = message[2].toInt()
 
 			netUpdatePlayerExist()
-			netvsSetGameScreenLayout()
+			netVSSetGameScreenLayout()
 
 			if(uid==netLobby!!.netPlayerClient!!.playerUID) {
-				netvsIsPractice = false
-				if(netvsIsGameActive&&!netvsIsWatch()) netvsIsNewcomer = true
+				netVSIsPractice = false
+				if(netVSIsGameActive&&!netVSIsWatch()) netVSIsNewcomer = true
 
 				owner.engine[0].stat = GameEngine.Status.SETTING
 
 				for(i in 0 until players) {
-					if(owner.engine[i].field!=null) owner.engine[i].field.reset()
+					owner.engine[i].field.reset()
 					owner.engine[i].nowPieceObject = null
 
-					if(owner.engine[i].stat==GameEngine.Status.NOTHING||!netvsIsGameActive)
+					if(owner.engine[i].stat==GameEngine.Status.NOTHING||!netVSIsGameActive)
 						owner.engine[i].stat = GameEngine.Status.SETTING
 					owner.engine[i].resetStatc()
 				}
@@ -1091,31 +1056,31 @@ open class NetDummyVSMode:NetDummyMode() {
 		// Someone entered here
 		if(message[0]=="playerenter") {
 			val seatID = message[3].toInt()
-			if(seatID!=-1&&netvsNumPlayers<2) owner.receiver.playSE("levelstop")
+			if(seatID!=-1&&netVSNumPlayers<2) owner.receiver.playSE("levelstop")
 		}
 		// Someone leave here
 		if(message[0]=="playerleave") {
 			netUpdatePlayerExist()
 
-			if(netvsNumPlayers<2) netvsAutoStartTimerActive = false
+			if(netVSNumPlayers<2) netVSAutoStartTimerActive = false
 		}
 		// Automatic timer start
 		if(message[0]=="autostartbegin")
-			if(netvsNumPlayers>=2) {
+			if(netVSNumPlayers>=2) {
 				val seconds = message[1].toInt()
-				netvsAutoStartTimer = seconds*60
-				netvsAutoStartTimerActive = true
+				netVSAutoStartTimer = seconds*60
+				netVSAutoStartTimerActive = true
 			}
 		// Automatic timer stop
-		if(message[0]=="autostartstop") netvsAutoStartTimerActive = false
+		if(message[0]=="autostartstop") netVSAutoStartTimerActive = false
 		// Game Started
 		if(message[0]=="start") {
 			val randseed = message[1].toLong(16)
-			netvsNumNowPlayers = message[2].toInt()
-			netvsNumAlivePlayers = netvsNumNowPlayers
-			netvsMapNo = message[3].toInt()
+			netVSNumNowPlayers = message[2].toInt()
+			netVSNumAlivePlayers = netVSNumNowPlayers
+			netVSMapNo = message[3].toInt()
 
-			netvsResetFlags()
+			netVSResetFlags()
 			netUpdatePlayerExist()
 
 			owner.menuOnly = false
@@ -1123,33 +1088,33 @@ open class NetDummyVSMode:NetDummyMode() {
 			owner.backgroundStatus.reset()
 			owner.replayProp.clear()
 			for(i in 0 until players)
-				if(netvsPlayerExist[i]) {
+				if(netVSPlayerExist[i]) {
 					owner.engine[i].init()
-					netvsSetGameScreenLayout(owner.engine[i])
+					netVSSetGameScreenLayout(owner.engine[i])
 				}
 
-			netvsAutoStartTimerActive = false
-			netvsIsGameActive = true
-			netvsIsGameFinished = false
-			netvsPlayTimer = 0
+			netVSAutoStartTimerActive = false
+			netVSIsGameActive = true
+			netVSIsGameFinished = false
+			netVSPlayTimer = 0
 
-			netvsSetLockedRule() // Set locked rule/Restore rule
+			netVSSetLockedRule() // Set locked rule/Restore rule
 
 			for(i in 0 until players) {
 				val engine = owner.engine[i]
 				engine.resetStatc()
 
-				if(netvsPlayerExist[i]) {
-					netvsPlayerActive[i] = true
+				if(netVSPlayerExist[i]) {
+					netVSPlayerActive[i] = true
 					engine.stat = GameEngine.Status.READY
 					engine.randSeed = randseed
 					engine.random = Random(randseed)
 
-					if(netCurrentRoomInfo!!.maxPlayers==2&&netvsNumPlayers==2) {
+					if(netCurrentRoomInfo!!.maxPlayers==2&&netVSNumPlayers==2) {
 						engine.isVisible = true
-						engine.displaysize = 0
+						engine.displaySize = 0
 
-						if(netCurrentRoomInfo!!.ruleLock||i==0&&!netvsIsWatch()) {
+						if(netCurrentRoomInfo!!.ruleLock||i==0&&!netVSIsWatch()) {
 							engine.isNextVisible = true
 							engine.isHoldVisible = true
 
@@ -1165,36 +1130,36 @@ open class NetDummyVSMode:NetDummyMode() {
 					engine.isNextVisible = false
 					engine.isHoldVisible = false
 
-					if(netCurrentRoomInfo!!.maxPlayers==2&&netvsNumPlayers==2) engine.isVisible = false
+					if(netCurrentRoomInfo!!.maxPlayers==2&&netVSNumPlayers==2) engine.isVisible = false
 				} else {
 					engine.stat = GameEngine.Status.SETTING
 					engine.isVisible = false
 				}
 
-				netvsPlayerResultReceived[i] = false
-				netvsPlayerDead[i] = false
-				netvsPlayerReady[i] = false
+				netVSPlayerResultReceived[i] = false
+				netVSPlayerDead[i] = false
+				netVSPlayerReady[i] = false
 			}
 		}
 		// Dead
 		if(message[0]=="dead") {
 			val seatID = message[3].toInt()
-			val playerID = netvsGetPlayerIDbySeatID(seatID)
+			val playerID = netVSGetPlayerIDbySeatID(seatID)
 
-			if(!netvsPlayerDead[playerID]) {
-				netvsPlayerDead[playerID] = true
-				netvsPlayerPlace[playerID] = message[4].toInt()
+			if(!netVSPlayerDead[playerID]) {
+				netVSPlayerDead[playerID] = true
+				netVSPlayerPlace[playerID] = message[4].toInt()
 				owner.engine[playerID].stat = GameEngine.Status.GAMEOVER
 				owner.engine[playerID].resetStatc()
-				netvsNumAlivePlayers--
+				netVSNumAlivePlayers--
 
 				if(seatID==netLobby!!.netPlayerClient!!.yourPlayerInfo!!.seatID) {
-					if(!netvsIsDeadPending) {
+					if(!netVSIsDeadPending) {
 						// Forced death
 						netSendField(owner.engine[0])
 						netSendNextAndHold(owner.engine[0])
 						netSendStats(owner.engine[0])
-						netvsPlayerResultReceived[0] = true
+						netVSPlayerResultReceived[0] = true
 					}
 
 					// Send end game stats
@@ -1203,18 +1168,18 @@ open class NetDummyVSMode:NetDummyMode() {
 			}
 		}
 		// End-of-game Stats
-		if(message[0]=="gstat") netvsRecvEndGameStats(message)
+		if(message[0]=="gstat") netVSRecvEndGameStats(message)
 		// Game Finished
 		if(message[0]=="finish") {
-			netvsIsGameActive = false
-			netvsIsGameFinished = true
-			netvsPlayTimerActive = false
-			netvsIsNewcomer = false
+			netVSIsGameActive = false
+			netVSIsGameFinished = true
+			netVSPlayTimerActive = false
+			netVSIsNewcomer = false
 
 			// Stop practice game
-			if(netvsIsPractice) {
-				netvsIsPractice = false
-				netvsIsPracticeExitAllowed = false
+			if(netVSIsPractice) {
+				netVSIsPractice = false
+				netVSIsPracticeExitAllowed = false
 				owner.bgmStatus.bgm = BGM.Silent
 				owner.engine[0].gameEnded()
 				owner.engine[0].stat = GameEngine.Status.SETTING
@@ -1226,36 +1191,36 @@ open class NetDummyVSMode:NetDummyMode() {
 			if(flagTeamWin) {
 				// Team won
 				for(i in 0 until players)
-					if(netvsPlayerExist[i]&&!netvsPlayerDead[i]) {
-						netvsPlayerPlace[i] = 1
+					if(netVSPlayerExist[i]&&!netVSPlayerDead[i]) {
+						netVSPlayerPlace[i] = 1
 						owner.engine[i].gameEnded()
 						owner.engine[i].stat = GameEngine.Status.EXCELLENT
 						owner.engine[i].resetStatc()
-						owner.engine[i].statistics.time = netvsPlayTimer
-						netvsNumAlivePlayers--
+						owner.engine[i].statistics.time = netVSPlayTimer
+						netVSNumAlivePlayers--
 
-						if(i==0&&!netvsIsWatch()) netSendEndGameStats(owner.engine[0])
+						if(i==0&&!netVSIsWatch()) netSendEndGameStats(owner.engine[0])
 					}
 			} else {
 				// Normal player won
 				val seatID = message[2].toInt()
 				if(seatID!=-1) {
-					val playerID = netvsGetPlayerIDbySeatID(seatID)
-					if(netvsPlayerExist[playerID]) {
-						netvsPlayerPlace[playerID] = 1
+					val playerID = netVSGetPlayerIDbySeatID(seatID)
+					if(netVSPlayerExist[playerID]) {
+						netVSPlayerPlace[playerID] = 1
 						owner.engine[playerID].gameEnded()
 						owner.engine[playerID].stat = GameEngine.Status.EXCELLENT
 						owner.engine[playerID].resetStatc()
-						owner.engine[playerID].statistics.time = netvsPlayTimer
-						netvsNumAlivePlayers--
+						owner.engine[playerID].statistics.time = netVSPlayTimer
+						netVSNumAlivePlayers--
 
-						if(seatID==netLobby!!.netPlayerClient!!.yourPlayerInfo!!.seatID&&!netvsIsWatch())
+						if(seatID==netLobby!!.netPlayerClient!!.yourPlayerInfo!!.seatID&&!netVSIsWatch())
 							netSendEndGameStats(owner.engine[0])
 					}
 				}
 			}
 
-			if(netvsIsWatch()||netvsPlayerPlace[0]>=3) owner.receiver.playSE("matchend")
+			if(netVSIsWatch()||netVSPlayerPlace[0]>=3) owner.receiver.playSE("matchend")
 
 			netUpdatePlayerExist()
 		}
@@ -1263,10 +1228,10 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(message[0]=="game") {
 			//int uid = message[1].toInt();
 			val seatID = message[2].toInt()
-			val playerID = netvsGetPlayerIDbySeatID(seatID)
+			val playerID = netVSGetPlayerIDbySeatID(seatID)
 			val engine = owner.engine[playerID]
 
-			if(engine.field==null) engine.createFieldIfNeeded()
+			engine.createFieldIfNeeded()
 
 			// Field
 			if(message[3]=="field"||message[3]=="fieldattr") netRecvField(engine, message)
@@ -1277,13 +1242,13 @@ open class NetDummyVSMode:NetDummyMode() {
 				netRecvPieceMovement(engine, message)
 
 				// Play timer start
-				if(netvsIsWatch()&&!netvsIsNewcomer&&!netvsPlayTimerActive&&!netvsIsGameFinished) {
-					netvsPlayTimerActive = true
-					netvsPlayTimer = 0
+				if(netVSIsWatch()&&!netVSIsNewcomer&&!netVSPlayTimerActive&&!netVSIsGameFinished) {
+					netVSPlayTimerActive = true
+					netVSPlayTimer = 0
 				}
 
 				// Force start
-				if(!netvsIsWatch()&&netvsPlayTimerActive&&!netvsIsPractice&&
+				if(!netVSIsWatch()&&netVSPlayTimerActive&&!netVSIsPractice&&
 					engine.stat==GameEngine.Status.READY&&engine.statc[0]<engine.goEnd)
 					engine.statc[0] = engine.goEnd
 			}
@@ -1295,29 +1260,35 @@ open class NetDummyVSMode:NetDummyMode() {
 	companion object {
 		/* -------------------- Constants -------------------- */
 		/** NET-VS: Max number of players */
-		internal const val NETVS_MAX_PLAYERS = 6
+		internal const val NET_MAX_PLAYERS = 6
 
 		/** NET-VS: Numbers of seats numbers corresponding to frames on player's
 		 * screen */
-		private val NETVS_GAME_SEAT_NUMBERS =
-			arrayOf(intArrayOf(0, 1, 2, 3, 4, 5), intArrayOf(1, 0, 2, 3, 4, 5), intArrayOf(1, 2, 0, 3, 4, 5),
-				intArrayOf(1, 2, 3, 0, 4, 5), intArrayOf(1, 2, 3, 4, 0, 5), intArrayOf(1, 2, 3, 4, 5, 0))
+		private val NET_GAME_SEAT_NUMBERS =
+			arrayOf(
+				intArrayOf(0, 1, 2, 3, 4, 5), intArrayOf(1, 0, 2, 3, 4, 5), intArrayOf(1, 2, 0, 3, 4, 5),
+				intArrayOf(1, 2, 3, 0, 4, 5), intArrayOf(1, 2, 3, 4, 0, 5), intArrayOf(1, 2, 3, 4, 5, 0)
+			)
 
 		/** NET-VS: Each player's garbage block cint */
-		internal val NETVS_PLAYER_COLOR_BLOCK =
-			arrayOf(Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.GREEN, Block.COLOR.YELLOW,
-				Block.COLOR.PURPLE, Block.COLOR.CYAN)
+		internal val NET_PLAYER_COLOR_BLOCK =
+			arrayOf(
+				Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.GREEN, Block.COLOR.YELLOW,
+				Block.COLOR.PURPLE, Block.COLOR.CYAN
+			)
 
 		/** NET-VS: Each player's frame cint */
-		private val NETVS_PLAYER_COLOR_FRAME =
-			intArrayOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE, GameEngine.FRAME_COLOR_GREEN,
-				GameEngine.FRAME_COLOR_BRONZE, GameEngine.FRAME_COLOR_PURPLE, GameEngine.FRAME_COLOR_CYAN)
+		private val NET_PLAYER_COLOR_FRAME =
+			intArrayOf(
+				GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE, GameEngine.FRAME_COLOR_GREEN,
+				GameEngine.FRAME_COLOR_BRONZE, GameEngine.FRAME_COLOR_PURPLE, GameEngine.FRAME_COLOR_CYAN
+			)
 
 		/** NET-VS: Team font colors */
-		private val NETVS_TEAM_FONT_COLORS =
+		private val NET_TEAM_FONT_COLORS =
 			arrayOf(COLOR.WHITE, COLOR.RED, COLOR.GREEN, COLOR.BLUE, COLOR.YELLOW, COLOR.PURPLE, COLOR.CYAN)
 
 		/** NET-VS: Default time before forced piece lock */
-		private const val NETVS_PIECE_AUTO_LOCK_TIME = 30*60
+		private const val NET_PIECE_AUTO_LOCK_TIME = 30*60
 	}
 }

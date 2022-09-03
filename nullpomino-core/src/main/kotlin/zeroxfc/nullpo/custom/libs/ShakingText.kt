@@ -60,9 +60,9 @@ class ShakingText
 	 * @param color       Color of text. Use colors from `EventReceiver`
 	 * @param scale        Scale of drawn text.
 	 */
-	private fun drawDirectText(receiver:EventReceiver, engine:GameEngine?, playerID:Int, x:Int, y:Int, maxDevianceX:Int,
-		maxDevianceY:Int,
-		text:String, color:EventReceiver.COLOR, scale:Float) {
+	private fun drawDirectText(receiver:EventReceiver, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int, text:String,
+		color:EventReceiver.COLOR,
+		scale:Float) {
 		val maxDevianceX = if(maxDevianceX<0) -maxDevianceX else maxDevianceX
 		val maxDevianceY = if(maxDevianceY<0) -maxDevianceY else maxDevianceY
 		val offset = 16.0*scale
@@ -89,11 +89,11 @@ class ShakingText
 	 * @param color       Color of text. Use colors from `EventReceiver`
 	 * @param scale        Scale of drawn text.
 	 */
-	fun drawScoreText(receiver:EventReceiver, engine:GameEngine, playerID:Int, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int,
-		text:String, color:EventReceiver.COLOR, scale:Float) {
-		val nx:Int = receiver.scoreX(engine, playerID)+x*if(scale<=0.5f) 8 else 16
-		val ny:Int = receiver.scoreY(engine, playerID)+y*if(scale<=0.5f) 8 else 16
-		drawDirectText(receiver, engine, playerID, nx, ny, maxDevianceX, maxDevianceY, text, color, scale)
+	fun drawScoreText(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int, text:String,
+		color:EventReceiver.COLOR, scale:Float) {
+		val nx:Int = receiver.scoreX(engine)+x*if(scale<=0.5f) 8 else 16
+		val ny:Int = receiver.scoreY(engine)+y*if(scale<=0.5f) 8 else 16
+		drawDirectText(receiver, nx, ny, maxDevianceX, maxDevianceY, text, color, scale)
 	}
 	/**
 	 * Draws some shaken text relative to the field display position.
@@ -109,10 +109,10 @@ class ShakingText
 	 * @param color       Color of text. Use colors from `EventReceiver`
 	 * @param scale        Scale of drawn text.
 	 */
-	fun drawMenuText(receiver:EventReceiver, engine:GameEngine, playerID:Int, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int,
-		text:String, color:EventReceiver.COLOR, scale:Float) {
-		val nx:Int = receiver.fieldX(engine, playerID)+x*if(scale<=0.5f) 8 else 16+4
-		val ny:Int = receiver.fieldY(engine, playerID)+y*if(scale<=0.5f) 8 else 16+52
-		drawDirectText(receiver, engine, playerID, nx, ny, maxDevianceX, maxDevianceY, text, color, scale)
+	fun drawMenuText(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int, text:String,
+		color:EventReceiver.COLOR, scale:Float) {
+		val nx:Int = receiver.fieldX(engine)+x*if(scale<=0.5f) 8 else 16+4
+		val ny:Int = receiver.fieldY(engine)+y*if(scale<=0.5f) 8 else 16+52
+		drawDirectText(receiver, nx, ny, maxDevianceX, maxDevianceY, text, color, scale)
 	}
 }

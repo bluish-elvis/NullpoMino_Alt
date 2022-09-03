@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -86,9 +86,7 @@ class GameManager(
 	/** Show input */
 	var showInput = false
 
-	/** Get number of players
-	 * @return Number of players
-	 */
+	/** @return Number of players*/
 	val players:Int
 		get() = engine.size
 
@@ -96,10 +94,10 @@ class GameManager(
 	 * @return true if the game should quit
 	 */
 	val quitFlag:Boolean
-		get() = engine.any {it.quitflag}
+		get() = engine.any {it.quitFlag}
 
 	/** Check if at least 1 game is active
-	 * @return true if there is a active GameEngine
+	 * @return true if there is an active GameEngine
 	 */
 	val isGameActive:Boolean
 		get() = engine.any {it.gameActive}
@@ -151,7 +149,7 @@ class GameManager(
 		engine.forEach {it.init()}
 	}
 
-	/** Shutdown the game */
+	/** shut down the game */
 	fun shutdown() {
 		log.debug("GameManager shutdown()")
 
@@ -195,7 +193,7 @@ class GameManager(
 		/** Major version */
 		const val versionMajor = 7.70f
 		/** Minor version */
-		const val versionMinor = 2021
+		const val versionMinor = 2022
 
 		/** Development-build flag (false:Release-build true:Dev-build) */
 		const val isDevBuild = true

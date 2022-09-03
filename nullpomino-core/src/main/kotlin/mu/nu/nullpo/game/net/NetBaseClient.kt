@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -44,7 +44,7 @@ open class NetBaseClient:Thread {
 	@Volatile
 	var threadRunning = false
 
-	/** Regular always While you are connectedtrue */
+	/** Regular always While you are connected = true */
 	@Volatile
 	var connectedFlag = false
 
@@ -75,16 +75,16 @@ open class NetBaseClient:Thread {
 	/** Interface receiving messages */
 	protected val listeners = LinkedList<NetMessageListener>()
 
-	/** pingHit count(From serverpongReset When a message is received) */
+	/** pingHit count(From server-pong Reset When a message is received) */
 	protected var pingCount = 0
 
 	/** Ping task */
 	protected lateinit var taskPing:TimerTask
 
-	/** AutomaticpingHitTimer */
+	/** Automatic ping HitTimer */
 	protected lateinit var timerPing:Timer
 
-	/** @return Regular always And are connectedtrue
+	/** @return Regular always And are connected true
 	 */
 	val isConnected:Boolean
 		get() = connectedFlag&&socket?.isConnected ?: false
@@ -238,8 +238,8 @@ open class NetBaseClient:Thread {
 
 	/** SpecifiedNetMessageListenerDelete the
 	 * @param l RemoveNetMessageListener
-	 * @return Actually been removedtrue, I has not been added
-	 * originallyfalse
+	 * @return Actually been removed true, I has not been added
+	 * originally false
 	 */
 	fun removeListener(l:NetMessageListener):Boolean = listeners.remove(l)
 
@@ -304,7 +304,7 @@ open class NetBaseClient:Thread {
 		/** Default ping interval (1000=1s) */
 		const val PING_INTERVAL = 5L*1000
 
-		/** This countOnlypingIf there is no reaction even hit the automatic
+		/** This count Only ping If there is no reaction even hit the automatic
 		 * disconnection */
 		const val PING_AUTO_DISCONNECT_COUNT = 6
 	}

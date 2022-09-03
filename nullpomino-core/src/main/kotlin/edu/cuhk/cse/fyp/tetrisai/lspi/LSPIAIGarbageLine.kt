@@ -88,8 +88,8 @@ class LSPIAIGarbageLine:LSPIAI() {
 //			val oppLines = 0
 			val saveNowPiece = oppEngine.nowPieceObject
 			if(saveNowPiece!=null) {
-				oppFld.copy(oppEngine.field)
-				oppNow.copy(saveNowPiece)
+				oppFld.replace(oppEngine.field)
+				oppNow.replace(saveNowPiece)
 				//thinkbestOppPosition(oppEngine, 1 - engine.playerID);
 				oppFld.addSingleHoleGarbage((Math.random()*width).toInt(), Block.COLOR.BLACK, 0, lineSent)
 			}

@@ -4,7 +4,11 @@
 //
 package wtf.oshisaure.nullpomodshit.wallkicks
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 
 class DestroyerWallkick:Wallkick {
@@ -89,9 +93,9 @@ class DestroyerWallkick:Wallkick {
 				val x2 = x+piece.dataX[rt][i]
 				val y2 = y+piece.dataY[rt][i]
 				if(x2>=fld.width) return 0 else
-				if(x2<0) return 1 else
-				if(y2>=fld.height) return 2 else
-				if(y2<0&&fld.ceiling) return 3
+					if(x2<0) return 1 else
+						if(y2>=fld.height) return 2 else
+							if(y2<0&&fld.ceiling) return 3
 			}
 			-1
 		}

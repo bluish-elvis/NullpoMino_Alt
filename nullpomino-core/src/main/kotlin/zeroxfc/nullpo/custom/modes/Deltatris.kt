@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2021,
+ * Copyright (c) 2021-2022,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -81,7 +81,7 @@ class Deltatris:MarathonModeBase() {
 	 * @return Mode name
 	 */
 	override val name:String get() = "DeltaTris"
-	// help me i forgot how to make modes
+	// help me I forgot how to make modes
 	// Initialization
 	override val menu:MenuList = MenuList("deltatris", itemMode, itemBig)
 	override val rankMap:Map<String, IntArray>
@@ -91,15 +91,16 @@ class Deltatris:MarathonModeBase() {
 				rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
 		)
 	override val rankPersMap:Map<String, IntArray>
-		get() = mapOf(*((rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}+
-			rankingLinesPlayer.mapIndexed {a, x -> "$a.lines" to x}+
-			rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
+		get() = mapOf(
+			*((rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLinesPlayer.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
 		)
 
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 		lastscore = 0
-		bgmlv = 0
+		bgmLv = 0
 		multiplier = 1.0
 		mScale = 1.0f
 		grav = START_GRAVITY.toDouble()
@@ -117,14 +118,14 @@ class Deltatris:MarathonModeBase() {
 		rankingLinesPlayer = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		rankingTimePlayer = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		pCoordList = ArrayList()
-		netPlayerInit(engine, playerID)
+		netPlayerInit(engine)
 		if(!owner.replayMode) version = CURRENT_VERSION else {
-			if(version==0&&owner.replayProp.getProperty("deltatris.endless", false)) goaltype = 2
+			if(version==0&&owner.replayProp.getProperty("deltatris.endless", false)) goalType = 2
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
+			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.backgroundStatus.bg = 0
-		engine.framecolor = GameEngine.FRAME_COLOR_GRAY
+		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
 	}
 	/**
 	 * Set the overall game speed
@@ -169,10 +170,10 @@ class Deltatris:MarathonModeBase() {
 	/*
      * Called at settings screen
      */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode) {
-			netOnUpdateNetPlayRanking(engine, goaltype)
+			netOnUpdateNetPlayRanking(engine, goalType)
 		} else if(!engine.owner.replayMode) {
 			// Configuration changes
 			val change = updateMenu(engine)
@@ -193,7 +194,7 @@ class Deltatris:MarathonModeBase() {
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
-				engine.quitflag = true
+				engine.quitFlag = true
 				engine.playerProp.reset()
 			}
 
@@ -208,7 +209,7 @@ class Deltatris:MarathonModeBase() {
 
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
-				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
+				netEnterNetPlayRankingScreen(goalType)
 			}
 			engine.statc[3]++
 		} else {
@@ -219,10 +220,10 @@ class Deltatris:MarathonModeBase() {
 		return true
 	}
 
-	override fun onCustom(engine:GameEngine, playerID:Int):Boolean {
+	override fun onCustom(engine:GameEngine):Boolean {
 		showPlayerStats = false
 		engine.isInGame = true
-		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine, playerID)
+		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
 			loadSetting(engine.playerProp.propProfile, engine)
@@ -231,13 +232,13 @@ class Deltatris:MarathonModeBase() {
 		return s
 	}
 
-	override fun onFirst(engine:GameEngine, playerID:Int) {
+	override fun onFirst(engine:GameEngine) {
 		pCoordList.clear()
 	}
 	/*
      * Called for initialization during "Ready" screen
      */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = 0
 		engine.statistics.levelDispAdd = 1
 		engine.b2bEnable = true
@@ -257,7 +258,7 @@ class Deltatris:MarathonModeBase() {
 		}
 	}
 
-	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
+	override fun onMove(engine:GameEngine):Boolean {
 		if(engine.statc[0]>engine.speed.lockDelay*3) {
 			multiplier = maxOf(1.0, multiplier*0.99225)
 		}
@@ -266,69 +267,67 @@ class Deltatris:MarathonModeBase() {
 	/*
      * Render score
      */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, playerID, 0, 0, name, EventReceiver.COLOR.RED)
+		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.RED)
 		receiver.drawScoreFont(
-			engine, playerID, 0, 1, "(${difficultyName[difficulty]} DIFFICULTY)",
-			EventReceiver.COLOR.RED
+			engine, 0, 1, "(${difficultyName[difficulty]} DIFFICULTY)", EventReceiver.COLOR.RED
 		)
+		val pid = engine.playerID
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
 				if(showPlayerStats) {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
 						receiver.drawScoreFont(
-							engine, playerID, 3, topY+i, "${rankingScorePlayer[difficulty][i]}",
-							i==rankingRankPlayer, scale
-						)
-						receiver.drawScoreFont(
-							engine, playerID, 10, topY+i, "${rankingLinesPlayer[difficulty][i]}",
-							i==rankingRankPlayer, scale
-						)
-						receiver.drawScoreFont(
-							engine, playerID, 15, topY+i,
-							rankingTimePlayer[difficulty][i].toTimeStr, i==rankingRankPlayer, scale
-						)
-					}
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreFont(
-						engine, playerID, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay,
-						EventReceiver.COLOR.WHITE, 2f
-					)
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
-				} else {
-					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
-						receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(
-							engine, playerID, 10, topY+i, "${rankingLines[difficulty][i]}", i==rankingRank,
+							engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", i==rankingRankPlayer,
 							scale
 						)
 						receiver.drawScoreFont(
-							engine, playerID, 15, topY+i, rankingTime[difficulty][i].toTimeStr,
-							i==rankingRank, scale
+							engine, 10, topY+i, "${rankingLinesPlayer[difficulty][i]}", i==rankingRankPlayer,
+							scale
+						)
+						receiver.drawScoreFont(
+							engine, 15, topY+i, rankingTimePlayer[difficulty][i].toTimeStr,
+							i==rankingRankPlayer, scale
 						)
 					}
-					receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE)
+					receiver.drawScoreFont(
+						engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, EventReceiver.COLOR.WHITE,
+						2f
+					)
+					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
+				} else {
+					for(i in 0 until RANKING_MAX) {
+						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank, scale)
+						receiver.drawScoreFont(
+							engine, 10, topY+i, "${rankingLines[difficulty][i]}", i==rankingRank, scale
+						)
+						receiver.drawScoreFont(
+							engine, 15, topY+i, rankingTime[difficulty][i].toTimeStr, i==rankingRank,
+							scale
+						)
+					}
+					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, playerID, 0, topY+RANKING_MAX+2,
-						"(NOT LOGGED IN)\n(E:LOG IN)"
+						engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)"
 					)
 					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, playerID, 0, topY+RANKING_MAX+5,
-						"F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN
+						engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN",
+						EventReceiver.COLOR.GREEN
 					)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
-			engine.playerProp.loginScreen.renderScreen(receiver, engine, playerID)
+			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
-			val baseX:Int = receiver.fieldX(engine, playerID)+4
-			val baseY:Int = receiver.fieldY(engine, playerID)+52
+			val baseX:Int = receiver.fieldX(engine)+4
+			val baseY:Int = receiver.fieldY(engine)+52
 			engine.nowPieceObject?.let {cPiece ->
 				if(pCoordList.size>0) for(loc in pCoordList) {
 					val cx = baseX+16*loc[0]
@@ -336,37 +335,34 @@ class Deltatris:MarathonModeBase() {
 					receiver.drawPiece(cx, cy, cPiece, 1f, 0f)
 				}
 			}
-			receiver.drawScoreFont(engine, playerID, 0, 4, "Score", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 5, 4, "+$lastscore")
+			receiver.drawScoreFont(engine, 0, 4, "Score", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreNum(engine, 5, 4, "+$lastscore")
 			val scget = scDisp<engine.statistics.score
-			receiver.drawScoreNum(engine, playerID, 0, 5, "$scDisp", scget, 2f)
+			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
 
-			val rix:Int = receiver.scoreX(engine, playerID)
-			val riy:Int = receiver.scoreY(engine, playerID)+13*16
+			val rix:Int = receiver.scoreX(engine)
+			val riy:Int = receiver.scoreY(engine)+13*16
 			GameTextUtilities.drawDirectTextAlign(
-				receiver, engine, playerID, rix, riy,
-				GameTextUtilities.ALIGN_TOP_LEFT,
-				String.format("%.2f", multiplier)+"X",
+				receiver, rix, riy, GameTextUtilities.ALIGN_TOP_LEFT, String.format("%.2f", multiplier)+"X",
 				if(engine.stat===GameEngine.Status.MOVE&&engine.statc[0]>engine.speed.lockDelay*3) EventReceiver.COLOR.RED else if(mScale>1) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.WHITE,
 				mScale
 			)
-			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
-			receiver.drawScoreFont(engine, playerID, 0, 9, "TIME", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 10, engine.statistics.time.toTimeStr)
-			receiver.drawScoreFont(engine, playerID, 0, 12, "MULTIPLIER", EventReceiver.COLOR.GREEN)
-			receiver.drawScoreFont(engine, playerID, 0, 17, "SPEED", EventReceiver.COLOR.RED)
+			receiver.drawScoreFont(engine, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 7, "${engine.statistics.lines}")
+			receiver.drawScoreFont(engine, 0, 9, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 10, engine.statistics.time.toTimeStr)
+			receiver.drawScoreFont(engine, 0, 12, "MULTIPLIER", EventReceiver.COLOR.GREEN)
+			receiver.drawScoreFont(engine, 0, 17, "SPEED", EventReceiver.COLOR.RED)
 			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
-				receiver.drawScoreFont(engine, playerID, 8, 17, "PLAYER", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, 8, 17, "PLAYER", EventReceiver.COLOR.BLUE)
 				receiver.drawScoreFont(
-					engine, playerID, 8, 18,
-					if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
-					EventReceiver.COLOR.WHITE, 2f
+					engine, 8, 18, if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
+					EventReceiver.COLOR.WHITE,
+					2f
 				)
 			}
-			receiver.drawSpeedMeter(
-				engine, playerID, 0, 18,
-				when {
+			receiver.drawScoreSpeed(
+				engine, 0, 18, when {
 					engine.statistics.totalPieceLocked<PIECES_MAX[difficulty] -> minOf(
 						1.0,
 						engine.statistics.totalPieceLocked/PIECES_MAX[difficulty]
@@ -379,8 +375,15 @@ class Deltatris:MarathonModeBase() {
 			)
 			if(engine.statistics.totalPieceLocked>=PIECES_MAX[difficulty]) {
 				stext.drawScoreText(
-					receiver, engine, playerID, 0, 20, 4, 2, "MAXIMUM VELOCITY",
-					if(engine.statistics.time/3%3==0) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.YELLOW, 1.25f
+					receiver,
+					engine,
+					0,
+					20,
+					4,
+					2,
+					"MAXIMUM VELOCITY",
+					if(engine.statistics.time/3%3==0) EventReceiver.COLOR.ORANGE else EventReceiver.COLOR.YELLOW,
+					1.25f
 				)
 			}
 		}
@@ -388,7 +391,7 @@ class Deltatris:MarathonModeBase() {
 		// NET: Number of spectators
 		netDrawSpectatorsCount(engine, 0, 18)
 		// NET: All number of players
-		if(playerID==players-1) {
+		if(pid==players-1) {
 			netDrawAllPlayersCount()
 			netDrawGameRate(engine)
 		}
@@ -398,16 +401,13 @@ class Deltatris:MarathonModeBase() {
 	/*
      * Called after every frame
      */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 		mScale = maxOf(1f, mScale*0.98f)
 
 		// Meter
-		engine.meterValue = (multiplier/20.0*receiver.getMeterMax(engine)).toInt()
-		engine.meterColor = GameEngine.METER_COLOR_GREEN
-		if(multiplier<15) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		if(multiplier<10) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		if(multiplier<5) engine.meterColor = GameEngine.METER_COLOR_RED
+		engine.meterValue = (multiplier/20f).toFloat()
+		engine.meterColor = GameEngine.METER_COLOR_LIMIT
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
@@ -419,21 +419,21 @@ class Deltatris:MarathonModeBase() {
 	/*
      * Calculate score
      */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		// Line clear bonus
 		val pts = calcScoreBase(engine, lines)
 		var get = 0
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		// Combo
-		val cmb = if(engine.combo>=1&&lines>=1) engine.combo-1 else 0
+		val cmb = if(engine.combo>0&&lines>=1) engine.combo else 0
 
 		if(engine.twist) {
 			// T-Spin 0 lines
-			if(engine.twistez&&lines>0) multiplier += (if(engine.b2b) MULTIPLIER_SINGLE*MULTIPLIER_MINI_SPIN*MULTIPLIER_B2B else MULTIPLIER_SINGLE*MULTIPLIER_MINI_SPIN) else if(lines==1) multiplier += if(engine.twistmini) {
+			if(engine.twistEZ&&lines>0) multiplier += (if(engine.b2b) MULTIPLIER_SINGLE*MULTIPLIER_MINI_SPIN*MULTIPLIER_B2B else MULTIPLIER_SINGLE*MULTIPLIER_MINI_SPIN) else if(lines==1) multiplier += if(engine.twistMini) {
 				if(engine.b2b) MULTIPLIER_SINGLE*MULTIPLIER_MINI_SPIN*MULTIPLIER_B2B else MULTIPLIER_SINGLE*MULTIPLIER_MINI_SPIN
 			} else
 				if(engine.b2b) MULTIPLIER_SINGLE*MULTIPLIER_SPIN*MULTIPLIER_B2B else MULTIPLIER_SINGLE*MULTIPLIER_SPIN
-			else if(lines==2) multiplier += (if(engine.twistmini&&engine.useAllSpinBonus) {
+			else if(lines==2) multiplier += (if(engine.twistMini&&engine.useAllSpinBonus) {
 				if(engine.b2b) MULTIPLIER_DOUBLE*MULTIPLIER_MINI_SPIN*MULTIPLIER_B2B else MULTIPLIER_DOUBLE*MULTIPLIER_MINI_SPIN
 			} else if(engine.b2b) MULTIPLIER_DOUBLE*MULTIPLIER_SPIN*MULTIPLIER_B2B else MULTIPLIER_DOUBLE*MULTIPLIER_SPIN)
 			else if(lines>=3) multiplier += (if(engine.b2b) MULTIPLIER_TRIPLE*MULTIPLIER_SPIN*MULTIPLIER_B2B else MULTIPLIER_TRIPLE*MULTIPLIER_SPIN)
@@ -450,7 +450,7 @@ class Deltatris:MarathonModeBase() {
 		}
 
 		// Combo
-		if(engine.combo>=1&&lines>=1) {
+		if(engine.combo>0&&lines>=1) {
 			multiplier += engine.combo*MULTIPLIER_COMBO
 			mScale += engine.combo*0.1f
 		}
@@ -481,8 +481,8 @@ class Deltatris:MarathonModeBase() {
 //		if ((pieces - (PIECES_MAX[difficulty] / 20)) % (PIECES_MAX[difficulty] / 5) >= ((PIECES_MAX[difficulty] / 5) - 10) && engine.statistics.totalPieceLocked - (PIECES_MAX[difficulty] / 20) <= PIECES_MAX[difficulty]) {
 //			owner.bgmStatus.fadesw = true;
 //		} else if ((0 == pieces % (PIECES_MAX[difficulty] / 5)) && engine.statistics.totalPieceLocked - (PIECES_MAX[difficulty] / 20) <= PIECES_MAX[difficulty] && (pieces - (PIECES_MAX[difficulty] / 20)) > 0) {
-//			bgmlv++;
-//			owner.bgmStatus.bgm = bgmlv;
+//			bgmLv++;
+//			owner.bgmStatus.bgm = bgmLv;
 //			owner.bgmStatus.fadesw = false;
 //		}
 
@@ -498,16 +498,16 @@ class Deltatris:MarathonModeBase() {
 			owner.backgroundStatus.fadecount = 0
 			owner.backgroundStatus.fadebg = engine.statistics.level
 			if(engine.statistics.level==4||engine.statistics.level==8||engine.statistics.level==12||engine.statistics.level==16) {
-				bgmlv++
-				owner.bgmStatus.bgm = BGMStatus.BGM.GrandT(bgmlv)
+				bgmLv++
+				owner.bgmStatus.bgm = BGMStatus.BGM.GrandT(bgmLv)
 				owner.bgmStatus.fadesw = false
 			}
 			engine.playSE("levelup")
 		}
 		if(engine.statistics.totalPieceLocked==PIECES_MAX[difficulty]) {
 			engine.playSE("hurryup")
-			bgmlv++
-			owner.bgmStatus.bgm = BGMStatus.BGM.GrandT(bgmlv)
+			bgmLv++
+			owner.bgmStatus.bgm = BGMStatus.BGM.GrandT(bgmLv)
 			owner.bgmStatus.fadesw = false
 		}
 		setSpeed(engine)
@@ -516,16 +516,16 @@ class Deltatris:MarathonModeBase() {
 	/*
      * Soft drop
      */
-	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreSD += (fall*multiplier).toInt()
 	}
 	/*
      * Hard drop
      */
-	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += (fall*2*multiplier).toInt()
-		val baseX:Int = 16*engine.nowPieceX+4+receiver.fieldX(engine, playerID)
-		val baseY:Int = 16*engine.nowPieceY+52+receiver.fieldY(engine, playerID)
+		val baseX:Int = 16*engine.nowPieceX+4+receiver.fieldX(engine)
+		val baseY:Int = 16*engine.nowPieceY+52+receiver.fieldY(engine)
 		engine.nowPieceObject?.let {cPiece ->
 			for(i in 1..fall) {
 				pCoordList.add(intArrayOf(engine.nowPieceX, engine.nowPieceY-i))
@@ -549,31 +549,31 @@ class Deltatris:MarathonModeBase() {
 	/*
      * Render results screen
      */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
+	override fun renderResult(engine:GameEngine) {
 		drawResultStats(
-			engine, playerID, receiver, 0, EventReceiver.COLOR.BLUE,
-			Statistic.SCORE, Statistic.LINES, Statistic.TIME, Statistic.SPL, Statistic.LPM
+			engine, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE,
+			Statistic.LINES, Statistic.TIME, Statistic.SPL, Statistic.LPM
 		)
-		drawResultRank(engine, playerID, receiver, 10, EventReceiver.COLOR.BLUE, rankingRank)
-		drawResultNetRank(engine, playerID, receiver, 12, EventReceiver.COLOR.BLUE, netRankingRank[0])
-		drawResultNetRankDaily(engine, playerID, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[1])
+		drawResultRank(engine, receiver, 10, EventReceiver.COLOR.BLUE, rankingRank)
+		drawResultNetRank(engine, receiver, 12, EventReceiver.COLOR.BLUE, netRankingRank[0])
+		drawResultNetRankDaily(engine, receiver, 14, EventReceiver.COLOR.BLUE, netRankingRank[1])
 		if(netIsPB) {
-			receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
+			receiver.drawMenuFont(engine, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
 		}
 		if(netIsNetPlay&&netReplaySendStatus==1) {
-			receiver.drawMenuFont(engine, playerID, 0, 22, "SENDING...", EventReceiver.COLOR.PINK)
+			receiver.drawMenuFont(engine, 0, 22, "SENDING...", EventReceiver.COLOR.PINK)
 		} else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2) {
-			receiver.drawMenuFont(engine, playerID, 1, 22, "A: RETRY", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", EventReceiver.COLOR.RED)
 		}
 	}
 	/*
      * Called when saving replay
      */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
-			prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
+			prop.setProperty("${engine.playerID}.net.netPlayerName", netPlayerName)
 		}
 
 		// Update rankings

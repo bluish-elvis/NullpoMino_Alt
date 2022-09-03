@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -97,8 +97,8 @@ class RetroClassic:AbstractMode() {
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 		lastscore = 0
 		softdropscore = 0
 		harddropscore = 0
@@ -114,10 +114,10 @@ class RetroClassic:AbstractMode() {
 		engine.run {
 			twistEnable = false
 			b2bEnable = false
-			splitb2b = false
+			splitB2B = false
 			comboType = GameEngine.COMBO_TYPE_DISABLE
-			bighalf = false
-			bigmove = false
+			bigHalf = false
+			bigMove = false
 			speed.are = 10
 			speed.areLine = 20
 			speed.lineDelay = 20
@@ -134,7 +134,7 @@ class RetroClassic:AbstractMode() {
 		engine.owner.backgroundStatus.bg = startLevel
 		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
 		levellines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
-		engine.framecolor = GameEngine.FRAME_SKIN_GB
+		engine.frameColor = GameEngine.FRAME_SKIN_GB
 	}
 
 	/** Set the gravity speed
@@ -164,7 +164,7 @@ class RetroClassic:AbstractMode() {
 	}
 
 	/** Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
 		if(!engine.owner.replayMode) {
 			// Configuration changes
@@ -201,15 +201,14 @@ class RetroClassic:AbstractMode() {
 			}
 
 			// Check for A button, when pressed this will begin the game
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				return false
 			}
 
-			// Check for B button, when pressed this will shutdown the game engine.
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			// Check for B button, when pressed this will shut down the game engine.
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
-			menuTime++
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -221,19 +220,28 @@ class RetroClassic:AbstractMode() {
 	}
 
 	/** Renders game setup screen */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype],
+	override fun renderSetting(engine:GameEngine) {
+		drawMenu(
+			engine,
+			receiver,
+			0,
+			COLOR.BLUE,
+			0,
+			"GAME TYPE" to GAMETYPE_NAME[gametype],
 			"DIFFICULTY" to SpeedLevel.values()[speedtype].showName,
-			"Level" to LEVEL_NAME[startLevel], "HEIGHT" to startheight, "BIG" to big)
+			"Level" to LEVEL_NAME[startLevel],
+			"HEIGHT" to startheight,
+			"BIG" to big
+		)
 	}
 
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			engine.run {
 				randomizer = NintendoRandomizer()
 				ruleOpt.run {
-					rotateInitial = false
-					lockresetMove = false
+					spinInitial = false
+					lockResetMove = false
 					softdropLock = true
 					softdropMultiplyNativeSpeed = false
 					softdropGravitySpeedLimit = false
@@ -255,7 +263,7 @@ class RetroClassic:AbstractMode() {
 
 	/** This function will be called before the game actually begins (after
 	 * Ready&Go screen disappears) */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 1
 		engine.big = big
@@ -264,7 +272,7 @@ class RetroClassic:AbstractMode() {
 		setSpeed(engine)
 	}
 
-	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
+	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable)
 			if(engine.run {getNextObjectCopy(nextPieceCount)}?.type!=Piece.Shape.I) drought++
@@ -277,50 +285,64 @@ class RetroClassic:AbstractMode() {
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		receiver.drawScoreFont(engine, playerID, 0, 0, "RETRO CLASSIC", COLOR.GREEN)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "(${SPEED_NAME[speedtype]} ${GAMETYPE_NAME[gametype]})", COLOR.GREEN)
+	override fun renderLast(engine:GameEngine) {
+		receiver.drawScoreFont(engine, 0, 0, "RETRO CLASSIC", COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 1, "(${SPEED_NAME[speedtype]} ${GAMETYPE_NAME[gametype]})", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				receiver.drawScoreFont(engine, playerID, 3, 3, "SCORE    LINE LV.", COLOR.BLUE)
+				receiver.drawScoreFont(engine, 3, 3, "SCORE    LINE LV.", COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, 4+i, String.format("%2d", i+1),
-						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW)
-					receiver.drawScoreNum(engine, playerID, 3, 4+i, GeneralUtil.capsInteger(rankingScore[gametype][i], 6), i==rankingRank)
-					receiver.drawScoreNum(engine, playerID, 12, 4+i, GeneralUtil.capsInteger(rankingLines[gametype][i], 3),
-						i==rankingRank)
-					receiver.drawScore(engine, playerID, 17, 4+i, LEVEL_NAME[rankingLevel[gametype][i]],
-						font = if(rankingLevel[gametype][i]<30) FONT.NUM else FONT.NORMAL, flag = i==rankingRank)
+					receiver.drawScoreGrade(
+						engine, 0, 4+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+					)
+					receiver.drawScoreNum(engine, 3, 4+i, GeneralUtil.capsInteger(rankingScore[gametype][i], 6), i==rankingRank)
+					receiver.drawScoreNum(
+						engine, 12, 4+i, GeneralUtil.capsInteger(rankingLines[gametype][i], 3), i==rankingRank
+					)
+					receiver.drawScore(
+						engine,
+						17,
+						4+i,
+						LEVEL_NAME[rankingLevel[gametype][i]],
+						font = if(rankingLevel[gametype][i]<30) FONT.NUM else FONT.NORMAL,
+						flag = i==rankingRank
+					)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE${if(lastscore>0) "(+$lastscore)" else ""}", COLOR.BLUE)
-			receiver.drawScore(engine, playerID, 0, 4, GeneralUtil.capsInteger(scDisp, 6),
-				font = if(engine.statistics.score<=999999) FONT.NUM else FONT.NORMAL, scale = 2f)
+			receiver.drawScoreFont(engine, 0, 3, "SCORE${if(lastscore>0) "(+$lastscore)" else ""}", COLOR.BLUE)
+			receiver.drawScore(
+				engine, 0, 4, GeneralUtil.capsInteger(scDisp, 6), font = if(engine.statistics.score<=999999) FONT.NUM else FONT.NORMAL,
+				scale = 2f
+			)
 
-			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", COLOR.BLUE)
-			receiver.drawScore(engine, playerID, 0, 7, when(gametype) {
-				GAMETYPE_TYPE_B -> String.format("-%2d", maxOf(25-engine.statistics.lines, 0))
-				else -> GeneralUtil.capsInteger(engine.statistics.lines, 3)
-			}, if(gametype!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.NORMAL, scale = 2f)
+			receiver.drawScoreFont(engine, 0, 6, "LINE", COLOR.BLUE)
+			receiver.drawScore(
+				engine, 0, 7, when(gametype) {
+					GAMETYPE_TYPE_B -> String.format("-%2d", maxOf(25-engine.statistics.lines, 0))
+					else -> GeneralUtil.capsInteger(engine.statistics.lines, 3)
+				}, if(gametype!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.NORMAL, scale = 2f
+			)
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "Level", COLOR.BLUE)
-			receiver.drawScore(engine, playerID, 0, 10, LEVEL_NAME[engine.statistics.level],
-				if(engine.statistics.level<30) FONT.NUM else FONT.NORMAL, scale = 2f)
+			receiver.drawScoreFont(engine, 0, 9, "Level", COLOR.BLUE)
+			receiver.drawScore(
+				engine, 0, 10, LEVEL_NAME[engine.statistics.level], if(engine.statistics.level<30) FONT.NUM else FONT.NORMAL,
+				scale = 2f
+			)
 
-			receiver.drawScoreFont(engine, playerID, 0, 12, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 13, engine.statistics.time.toTimeStr, 2f)
+			receiver.drawScoreFont(engine, 0, 12, "Time", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 13, engine.statistics.time.toTimeStr, 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 16, "I-Piece Drought", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 17, "$drought / ${maxOf(drought, droughts.maxOrNull() ?: 0)}", 2f)
+			receiver.drawScoreFont(engine, 0, 16, "I-Piece Drought", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 17, "$drought / ${maxOf(drought, droughts.maxOrNull() ?: 0)}", 2f)
 		}
 	}
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		softdropscore /= 2
 		engine.statistics.scoreSD += softdropscore
 		softdropscore = 0
@@ -357,22 +379,10 @@ class RetroClassic:AbstractMode() {
 		}
 
 		// Update meter
-		if(gametype==GAMETYPE_TYPE_B) {
-			engine.meterValue = minOf(engine.statistics.lines, 25)*receiver.getMeterMax(engine)/25
-			engine.meterColor = when {
-				engine.statistics.lines>=20 -> GameEngine.METER_COLOR_RED
-				engine.statistics.lines>=15 -> GameEngine.METER_COLOR_ORANGE
-				engine.statistics.lines>=10 -> GameEngine.METER_COLOR_YELLOW
-				else -> GameEngine.METER_COLOR_GREEN
-			}
-
-		} else {
-			engine.meterValue = engine.statistics.lines%10*receiver.getMeterMax(engine)/9
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(engine.statistics.lines%10>=2) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(engine.statistics.lines%10>=5) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(engine.statistics.lines%10>=8) engine.meterColor = GameEngine.METER_COLOR_RED
-		}
+		engine.meterColor = GameEngine.METER_COLOR_LEVEL
+		engine.meterValue =
+			if(gametype==GAMETYPE_TYPE_B) minOf(engine.statistics.lines, 25)/25f else
+				engine.statistics.lines%10*1f/9f
 
 		if(gametype!=GAMETYPE_TYPE_B&&engine.statistics.lines>=levellines) {
 			// Level up
@@ -397,16 +407,16 @@ class RetroClassic:AbstractMode() {
 	}
 
 	/** This function will be called when soft-drop is used */
-	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		softdropscore += fall
 	}
 
 	/** This function will be called when hard-drop is used */
-	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		harddropscore += fall
 	}
 
-	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+	override fun onGameOver(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			if(drought>7) droughts += drought
 			drought = 0
@@ -415,7 +425,7 @@ class RetroClassic:AbstractMode() {
 	}
 
 	/* 結果画面の処理 */
-	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
+	override fun onResult(engine:GameEngine):Boolean {
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
 			if(engine.statc[1]<0) engine.statc[1] = 2
@@ -431,41 +441,45 @@ class RetroClassic:AbstractMode() {
 	}
 
 	/** Renders game result screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/2", COLOR.ORANGE)
-		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", COLOR.ORANGE)
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/2", COLOR.ORANGE)
+		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", COLOR.ORANGE)
 
 		if(engine.statc[1]==0) {
-			drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES)
-			receiver.drawMenuFont(engine, playerID, 0, 7, "Level", COLOR.BLUE)
+			drawResultStats(engine, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES)
+			receiver.drawMenuFont(engine, 0, 7, "Level", COLOR.BLUE)
 			val strLevel = String.format("%10s", LEVEL_NAME[engine.statistics.level])
-			receiver.drawMenuFont(engine, playerID, 0, 8, strLevel)
-			drawResultStats(engine, playerID, receiver, 9, COLOR.BLUE, Statistic.SPL)
-			drawResultRank(engine, playerID, receiver, 15, COLOR.BLUE, rankingRank)
-			drawResult(engine, playerID, receiver, 11, COLOR.BLUE, "QUAD%", String.format("%3d%%", engine.statistics.run {
+			receiver.drawMenuFont(engine, 0, 8, strLevel)
+			drawResultStats(engine, receiver, 9, COLOR.BLUE, Statistic.SPL)
+			drawResultRank(engine, receiver, 15, COLOR.BLUE, rankingRank)
+			drawResult(engine, receiver, 11, COLOR.BLUE, "QUAD%", String.format("%3d%%", engine.statistics.run {
 				totalQuadruple*100/maxOf(1, totalQuadruple+totalSingle+totalDouble+totalTriple+totalSplitDouble+totalSplitTriple)
 			}))
 		} else {
-			drawResultStats(engine, playerID, receiver, 3, COLOR.BLUE, Statistic.TIME, Statistic.LPM)
-			receiver.drawMenuFont(engine, playerID, 0, 7, "I-Droughts", COLOR.BLUE)
-			receiver.drawMenuFont(engine, playerID, 0, 8, "Longest", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, playerID, 0, 8, String.format("%3d", droughts.maxOrNull() ?: 0), 2f)
-			receiver.drawMenuFont(engine, playerID, 0, 10, "Average", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, playerID, 0, 11, String.format("%3f", droughts.average()), 2f)
-			drawResult(engine, playerID, receiver, 13, COLOR.RED, "Burnouts",
-				String.format("%3d", engine.statistics.run {totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple}))
+			drawResultStats(engine, receiver, 3, COLOR.BLUE, Statistic.TIME, Statistic.LPM)
+			receiver.drawMenuFont(engine, 0, 7, "I-Droughts", COLOR.BLUE)
+			receiver.drawMenuFont(engine, 0, 8, "Longest", COLOR.BLUE, .8f)
+			receiver.drawMenuNum(engine, 0, 8, String.format("%3d", droughts.maxOrNull() ?: 0), 2f)
+			receiver.drawMenuFont(engine, 0, 10, "Average", COLOR.BLUE, .8f)
+			receiver.drawMenuNum(engine, 0, 11, String.format("%3f", droughts.average()), 2f)
+			drawResult(
+				engine, receiver, 13, COLOR.RED, "Burnouts",
+				String.format("%3d", engine.statistics.run {totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple})
+			)
 		}
 	}
 
 	/** This function will be called when the replay data is going to be
 	 * saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(prop, engine)
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.level,
-				gametype+speedtype*GAMETYPE_MAX)
+			updateRanking(
+				engine.statistics.score, engine.statistics.lines, engine.statistics.level,
+				gametype+speedtype*GAMETYPE_MAX
+			)
 
 			if(rankingRank!=-1) return true
 		}
@@ -514,7 +528,8 @@ class RetroClassic:AbstractMode() {
 				listOf(
 					"$ruleName.$j.score.$i" to rankingScore[j][i],
 					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.level.$i" to rankingLevel[j][i])
+					"$ruleName.$j.level.$i" to rankingLevel[j][i]
+				)
 			}
 		})
 	}

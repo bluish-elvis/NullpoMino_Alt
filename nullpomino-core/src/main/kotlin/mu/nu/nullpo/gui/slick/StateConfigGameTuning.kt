@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -69,7 +69,7 @@ class StateConfigGameTuning:BaseGameState() {
 	private var cursor = 0
 
 	/** A button rotation -1=Auto 0=Always CCW 1=Always CW */
-	private var owRotateButtonDefaultRight = 0
+	private var owSpinDirection = 0
 
 	/** Block Skin -1=Auto 0 or above=Fixed */
 	private var owSkin = 0
@@ -116,7 +116,7 @@ class StateConfigGameTuning:BaseGameState() {
 	 * @param prop Property file to read from
 	 */
 	private fun loadConfig(prop:CustomProperties) {
-		owRotateButtonDefaultRight = prop.getProperty("$player.tuning.owRotateButtonDefaultRight", -1)
+		owSpinDirection = prop.getProperty("$player.tuning.owRotateButtonDefaultRight", -1)
 		owSkin = prop.getProperty("$player.tuning.owSkin", -1)
 		owMinDAS = prop.getProperty("$player.tuning.owMinDAS", -1)
 		owMaxDAS = prop.getProperty("$player.tuning.owMaxDAS", -1)
@@ -132,7 +132,7 @@ class StateConfigGameTuning:BaseGameState() {
 	 * @param prop Property file to save to
 	 */
 	private fun saveConfig(prop:CustomProperties) {
-		prop.setProperty("$player.tuning.owRotateButtonDefaultRight", owRotateButtonDefaultRight)
+		prop.setProperty("$player.tuning.owRotateButtonDefaultRight", owSpinDirection)
 		prop.setProperty("$player.tuning.owSkin", owSkin)
 		prop.setProperty("$player.tuning.owMinDAS", owMinDAS)
 		prop.setProperty("$player.tuning.owMaxDAS", owMaxDAS)
@@ -159,7 +159,7 @@ class StateConfigGameTuning:BaseGameState() {
 
 	/** Start the preview game */
 	private fun startPreviewGame() {
-		gameManager = GameManager(RendererSlick(),PreviewMode()).also {
+		gameManager = GameManager(RendererSlick(), PreviewMode()).also {
 			it.receiver.setGraphics(appContainer.graphics)
 
 			it.init()
@@ -169,7 +169,7 @@ class StateConfigGameTuning:BaseGameState() {
 			// Initialization for each player
 			for(i in 0 until it.players) {
 				// Tuning
-				it.engine[i].owRotateButtonDefaultRight = owRotateButtonDefaultRight
+				it.engine[i].owSpinDirection = owSpinDirection
 				it.engine[i].owSkin = owSkin
 				it.engine[i].owMinDAS = owMinDAS
 				it.engine[i].owMaxDAS = owMaxDAS
@@ -183,7 +183,8 @@ class StateConfigGameTuning:BaseGameState() {
 				// Rule
 				val ruleOpt:RuleOptions
 				val rulename = NullpoMinoSlick.propGlobal.getProperty(
-					if(it.mode?.gameStyle==GameStyle.TETROMINO)"$i.rule" else "$i.rule.${it.mode!!.gameStyle.ordinal}", "")
+					if(it.mode?.gameStyle==GameStyle.TETROMINO) "$i.rule" else "$i.rule.${it.mode!!.gameStyle.ordinal}", ""
+				)
 
 				if(rulename.isNotEmpty()) {
 					log.info("Load rule options from $rulename")
@@ -211,7 +212,7 @@ class StateConfigGameTuning:BaseGameState() {
 					it.engine[i].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
 					it.engine[i].aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
 					it.engine[i].aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
-					it.engine[i].aiPrethink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPrethink", false)
+					it.engine[i].aiPreThink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPreThink", false)
 					it.engine[i].aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
 				}
 				it.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
@@ -244,11 +245,13 @@ class StateConfigGameTuning:BaseGameState() {
 					val engine = it.engine.first()
 					val strButtonF = it.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)
 					val fontY = if(it.receiver.nextDisplayType==2) 1 else 27
-					FontNormal.printFontGrid(1, fontY,
-						"PUSH F BUTTON (ASSIGNED: ${strButtonF.uppercase()}) TO EXIT", COLOR.YELLOW)
+					FontNormal.printFontGrid(
+						1, fontY,
+						"PUSH F BUTTON (ASSIGNED: ${strButtonF.uppercase()}) TO EXIT", COLOR.YELLOW
+					)
 					val spd = engine.speed
 					val ow = engine.softDropSpd
-					FontNano.printFontGrid(16,13,"${spd.gravity}>$ow/${spd.denominator} ${engine.gcount}")
+					FontNano.printFontGrid(16, 13, "${spd.gravity}>$ow/${spd.denominator} ${engine.gcount}")
 					it.renderAll()
 				}
 			} catch(e:Exception) {
@@ -261,10 +264,10 @@ class StateConfigGameTuning:BaseGameState() {
 			FontNormal.printFontGrid(1, 1, "GAME TUNING (${player+1}P)", COLOR.ORANGE)
 			FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RAINBOW)
 
-			if(owRotateButtonDefaultRight==-1) strTemp = "AUTO"
-			if(owRotateButtonDefaultRight==0) strTemp = "LEFT"
-			if(owRotateButtonDefaultRight==1) strTemp = "RIGHT"
-			FontNormal.printFontGrid(2, 3, "A BUTTON ROTATE:$strTemp", cursor==0)
+			if(owSpinDirection==-1) strTemp = "AUTO"
+			if(owSpinDirection==0) strTemp = "LEFT"
+			if(owSpinDirection==1) strTemp = "RIGHT"
+			FontNormal.printFontGrid(2, 3, "A BUTTON SPIN:$strTemp", cursor==0)
 
 			val skinmax = ResourceHolder.imgNormalBlockList.size
 			sk = when(owSkin) {
@@ -274,22 +277,63 @@ class StateConfigGameTuning:BaseGameState() {
 			}
 			val imgBlock = ResourceHolder.imgNormalBlockList[sk]
 			if(ResourceHolder.blockStickyFlagList[sk])
-				for(j in 0..8) imgBlock.draw((160+j*16).toFloat(), 64f, (160+j*16+16).toFloat(), (64+16).toFloat(), 0f, (j*16).toFloat(), 16f, (j*16+16).toFloat())
+				for(j in 0..8) imgBlock.draw(
+					(160+j*16).toFloat(),
+					64f,
+					(160+j*16+16).toFloat(),
+					(64+16).toFloat(),
+					0f,
+					(j*16).toFloat(),
+					16f,
+					(j*16+16).toFloat()
+				)
 			else
 				imgBlock.draw(160f, 64f, (160+144).toFloat(), (64+16).toFloat(), 0f, 0f, 144f, 16f)
-			FontNormal.printFontGrid(2, 4, "SKIN:${String.format("%02d", owSkin)}:", cursor==1
-				, COLOR.WHITE, if(ResourceHolder.blockStickyFlagList[sk]) COLOR.BLUE else COLOR.RED)
-			FontNormal.printFontGrid(19, 4, when(owSkin) {
-				-1 -> "AUTO"
-				-2 -> "RANDOM"
-				else -> NullpoMinoSlick.propSkins.getProperty("Skin$owSkin", "").uppercase()
-			}, cursor==1, COLOR.WHITE, if(ResourceHolder.blockStickyFlagList[sk]) COLOR.BLUE else COLOR.RED)
+			FontNormal.printFontGrid(
+				2,
+				4,
+				"SKIN:${String.format("%02d", owSkin)}:",
+				cursor==1,
+				COLOR.WHITE,
+				if(ResourceHolder.blockStickyFlagList[sk]) COLOR.BLUE else COLOR.RED
+			)
+			FontNormal.printFontGrid(
+				19, 4, when(owSkin) {
+					-1 -> "AUTO"
+					-2 -> "RANDOM"
+					else -> NullpoMinoSlick.propSkins.getProperty("Skin$owSkin", "").uppercase()
+				}, cursor==1, COLOR.WHITE, if(ResourceHolder.blockStickyFlagList[sk]) COLOR.BLUE else COLOR.RED
+			)
 
-			FontNormal.printFontGrid(2, 5, "min DAS:"+if(owMinDAS==-1) "AUTO" else "$owMinDAS", cursor==2, rainbow = (spdpv/2).toInt())
-			FontNormal.printFontGrid(2, 6, "max DAS:"+if(owMaxDAS==-1) "AUTO" else "$owMaxDAS", cursor==3, rainbow = (spdpv/2).toInt())
-			FontNormal.printFontGrid(2, 7, "DAS delay:"+if(owDASRate==-1) "AUTO" else "$owDASRate", cursor==4, rainbow = (spdpv/2).toInt())
-			FontNormal.printFontGrid(2, 8, "SoftDrop Speed:"+if(owSDSpd==-1) "AUTO" else
-				if(owSDSpd<SDS_FIXED.size) "${SDS_FIXED[owSDSpd]}G" else "*${owSDSpd-SDS_FIXED.size+5}", cursor==5, rainbow = (spdpv/4).toInt())
+			FontNormal.printFontGrid(
+				2,
+				5,
+				"min DAS:"+if(owMinDAS==-1) "AUTO" else "$owMinDAS",
+				cursor==2,
+				rainbow = (spdpv/2).toInt()
+			)
+			FontNormal.printFontGrid(
+				2,
+				6,
+				"max DAS:"+if(owMaxDAS==-1) "AUTO" else "$owMaxDAS",
+				cursor==3,
+				rainbow = (spdpv/2).toInt()
+			)
+			FontNormal.printFontGrid(
+				2,
+				7,
+				"DAS delay:"+if(owDASRate==-1) "AUTO" else "$owDASRate",
+				cursor==4,
+				rainbow = (spdpv/2).toInt()
+			)
+			FontNormal.printFontGrid(
+				2,
+				8,
+				"SoftDrop Speed:"+if(owSDSpd==-1) "AUTO" else
+					if(owSDSpd<SDS_FIXED.size) "${SDS_FIXED[owSDSpd]}G" else "*${owSDSpd-SDS_FIXED.size+5}",
+				cursor==5,
+				rainbow = (spdpv/4).toInt()
+			)
 			FontNormal.printFontGrid(2, 9, "Reverse UP/DOWN:"+owReverseUpDown.getOX, cursor==6)
 
 			if(owMoveDiagonal==-1) strTemp = "AUTO"
@@ -396,9 +440,9 @@ class StateConfigGameTuning:BaseGameState() {
 
 				when(cursor) {
 					0 -> {
-						owRotateButtonDefaultRight += change
-						if(owRotateButtonDefaultRight<-1) owRotateButtonDefaultRight = 1
-						if(owRotateButtonDefaultRight>1) owRotateButtonDefaultRight = -1
+						owSpinDirection += change
+						if(owSpinDirection<-1) owSpinDirection = 1
+						if(owSpinDirection>1) owSpinDirection = -1
 					}
 					1 -> {
 						owSkin += change
@@ -483,7 +527,18 @@ class StateConfigGameTuning:BaseGameState() {
 
 		/** UI Text identifier Strings */
 		private val UI_TEXT =
-			arrayOf("GameTuning_RotateButtonDefaultRight", "GameTuning_Skin", "GameTuning_MinDAS", "GameTuning_MaxDAS", "GameTuning_DasDelay", "GameTuning_ReverseUpDown", "GameTuning_MoveDiagonal", "GameTuning_BlockOutlineType", "GameTuning_BlockShowOutlineOnly", "GameTuning_Preview")
+			arrayOf(
+				"GameTuning_RotateButtonDefaultRight",
+				"GameTuning_Skin",
+				"GameTuning_MinDAS",
+				"GameTuning_MaxDAS",
+				"GameTuning_DasDelay",
+				"GameTuning_ReverseUpDown",
+				"GameTuning_MoveDiagonal",
+				"GameTuning_BlockOutlineType",
+				"GameTuning_BlockShowOutlineOnly",
+				"GameTuning_Preview"
+			)
 
 		/** Log */
 		internal val log = LogManager.getLogger()

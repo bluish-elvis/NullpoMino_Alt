@@ -3,14 +3,14 @@
  <modelVersion>4.0.0</modelVersion>
  <groupId>mu.nu.nullpo</groupId>
  <artifactId>NullpoMino_Alt</artifactId>
- <version>7.7.2021</version>
+ <version>7.7.2022</version>
  <packaging>pom</packaging>
  <name>NullpoMino</name>
  <dependencies>
   <dependency>
    <groupId>mu.nu.nullpo</groupId>
    <artifactId>nullpomino-core</artifactId>
-   <version>7.7.2021</version>
+   <version>7.7.2022</version>
   </dependency>
  </dependencies>
  <modules>
@@ -19,7 +19,7 @@
  </modules>
 
  <properties>
-  <kotlin.version>1.6.10</kotlin.version>
+  <kotlin.version>1.7.10</kotlin.version>
   <java.version>17</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
   <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -36,17 +36,17 @@
     <plugin>
      <groupId>org.apache.maven.plugins</groupId>
      <artifactId>maven-dependency-plugin</artifactId>
-     <version>3.2.0</version>
-    </plugin>
-    <plugin>
-     <groupId>org.apache.maven.plugins</groupId>
-     <artifactId>maven-assembly-plugin</artifactId>
      <version>3.3.0</version>
     </plugin>
     <plugin>
      <groupId>org.apache.maven.plugins</groupId>
+     <artifactId>maven-assembly-plugin</artifactId>
+     <version>3.4.2</version>
+    </plugin>
+    <plugin>
+     <groupId>org.apache.maven.plugins</groupId>
      <artifactId>maven-clean-plugin</artifactId>
-     <version>3.1.0</version>
+     <version>3.2.0</version>
     </plugin>
    </plugins>
   </pluginManagement>
@@ -54,7 +54,7 @@
    <plugin>
     <groupId>org.commonjava.maven.plugins</groupId>
     <artifactId>directory-maven-plugin</artifactId>
-    <version>0.3.1</version>
+    <version>1.0</version>
     <executions>
      <execution>
       <id>directories</id>

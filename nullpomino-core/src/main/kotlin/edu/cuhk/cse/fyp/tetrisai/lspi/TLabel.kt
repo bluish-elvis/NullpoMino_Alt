@@ -1,21 +1,55 @@
+/*
+ * Copyright (c) 2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
-import javax.swing.JLabel
-import java.awt.image.BufferedImage
-import javax.swing.JFrame
-import kotlin.jvm.JvmOverloads
-import javax.swing.ImageIcon
-import java.awt.event.MouseMotionListener
-import java.awt.event.MouseWheelListener
-import java.awt.geom.Line2D
-import java.awt.geom.Ellipse2D
-import java.awt.geom.Arc2D
-import java.awt.geom.Rectangle2D
-import java.awt.geom.GeneralPath
-import java.lang.NullPointerException
-import java.awt.*
+import java.awt.BasicStroke
+import java.awt.Color
+import java.awt.Container
+import java.awt.Font
+import java.awt.Graphics2D
+import java.awt.Image
+import java.awt.RenderingHints
+import java.awt.Toolkit
 import java.awt.event.KeyListener
 import java.awt.event.MouseListener
+import java.awt.event.MouseMotionListener
+import java.awt.event.MouseWheelListener
+import java.awt.geom.Arc2D
+import java.awt.geom.Ellipse2D
+import java.awt.geom.GeneralPath
+import java.awt.geom.Line2D
+import java.awt.geom.Rectangle2D
+import java.awt.image.BufferedImage
+import javax.swing.ImageIcon
+import javax.swing.JFrame
+import javax.swing.JLabel
 import kotlin.math.abs
 import kotlin.math.roundToLong
 import kotlin.math.sqrt
@@ -152,7 +186,8 @@ class TLabel(w:Int, h:Int) {
 		// add antialiasing
 		val hints = RenderingHints(
 			RenderingHints.KEY_ANTIALIASING,
-			RenderingHints.VALUE_ANTIALIAS_ON)
+			RenderingHints.VALUE_ANTIALIAS_ON
+		)
 		hints[RenderingHints.KEY_RENDERING] = RenderingHints.VALUE_RENDER_QUALITY
 		offscreen.addRenderingHints(hints)
 
@@ -291,7 +326,7 @@ class TLabel(w:Int, h:Int) {
 		if(ws<=1&&hs<=1) pixel(x, y) else offscreen.fill(Rectangle2D.Double(xs-ws/2, ys-hs/2, ws, hs))
 	}
 	//Draw an arrow of the appropriate scale, color, position
-	fun Arrow(x:Double, y:Double, w:Double, h:Double, Scale:Double, Color:Color?) {
+	fun arrow(x:Double, y:Double, w:Double, h:Double, Scale:Double, Color:Color?) {
 		rectangle(x, y, w, h, Color)
 		val xarray = doubleArrayOf(x+w/2-w/10+Scale*1/10*sqrt(h*h*25+w*w)*sqrt(3.0)/3, x+w/2-w/10, x+w/2-w/10)
 		val yarray =
@@ -406,7 +441,8 @@ class TLabel(w:Int, h:Int) {
 		val hs = factorY(h)
 		if(ws<=1&&hs<=1) pixel(x, y) else {
 			offscreen.drawImage(
-				image, xs.roundToLong().toInt(), ys.roundToLong().toInt(), ws.roundToLong().toInt(), hs.roundToLong().toInt(), null)
+				image, xs.roundToLong().toInt(), ys.roundToLong().toInt(), ws.roundToLong().toInt(), hs.roundToLong().toInt(), null
+			)
 		}
 	}
 	// draw picture (gif, jpg, or png) upperLeft on (x, y), rescaled to w-by-h
@@ -528,23 +564,23 @@ class TLabel(w:Int, h:Int) {
 	companion object {
 		private const val serialVersionUID = 1L
 		// pre-defined colors
-		val BLACK = Color.BLACK
-		val BLUE = Color.BLUE
-		val CYAN = Color.CYAN
-		val DARK_GRAY = Color.DARK_GRAY
-		val GRAY = Color.GRAY
-		val GREEN = Color.GREEN
-		val LIGHT_GRAY = Color.LIGHT_GRAY
-		val MAGENTA = Color.MAGENTA
-		val ORANGE = Color.ORANGE
-		val PINK = Color.PINK
-		val RED = Color.RED
-		val WHITE = Color.WHITE
-		val YELLOW = Color.YELLOW
+		val BLACK:Color = Color.BLACK
+		val BLUE:Color = Color.BLUE
+		val CYAN:Color = Color.CYAN
+		val DARK_GRAY:Color = Color.DARK_GRAY
+		val GRAY:Color = Color.GRAY
+		val GREEN:Color = Color.GREEN
+		val LIGHT_GRAY:Color = Color.LIGHT_GRAY
+		val MAGENTA:Color = Color.MAGENTA
+		val ORANGE:Color = Color.ORANGE
+		val PINK:Color = Color.PINK
+		val RED:Color = Color.RED
+		val WHITE:Color = Color.WHITE
+		val YELLOW:Color = Color.YELLOW
 		val NICEGREEN = Color(0, 153, 0)
 		// default colors
-		val DEFAULT_PEN_COLOR = BLACK
-		val DEFAULT_CLEAR_COLOR = WHITE
+		val DEFAULT_PEN_COLOR:Color = BLACK
+		val DEFAULT_CLEAR_COLOR:Color = WHITE
 		// current pen color
 		private var penColor:Color? = null
 		// default canvas size is SIZE-by-SIZE

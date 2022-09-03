@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2021,
+ * Copyright (c) 2021-2022,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -41,7 +41,11 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.subsystem.mode.menu.*
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.IntegerMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.ProfileProperties
@@ -127,18 +131,20 @@ class RollTraining:MarathonModeBase() {
 	override val menu = MenuList("rolltraining", itemMode, itemHide, itemGoal, itemLevel)
 	//     * Initialization
 	override val rankMap:Map<String, IntArray>
-		get() = mapOf(*((rankingGrade.mapIndexed {a, x -> "$a.grade" to x}+
-			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-			rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
+		get() = mapOf(
+			*((rankingGrade.mapIndexed {a, x -> "$a.grade" to x}+
+				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
 		)
 	override val rankPersMap:Map<String, IntArray>
-		get() = mapOf(*((rankingGradePlayer.mapIndexed {a, x -> "$a.grade" to x}+
-			rankingLinesPlayer.mapIndexed {a, x -> "$a.lines" to x}+
-			rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
+		get() = mapOf(
+			*((rankingGradePlayer.mapIndexed {a, x -> "$a.grade" to x}+
+				rankingLinesPlayer.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
 		)
 
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 		showPlayerStats = false
 		engine.playerProp.reset()
 
@@ -159,15 +165,15 @@ class RollTraining:MarathonModeBase() {
 		rankingTimePlayer = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
 		showPlayerStats = false
 		big = false
-		netPlayerInit(engine, playerID)
+		netPlayerInit(engine)
 		if(!owner.replayMode) version = CURRENT_VERSION else {
-			if(owner.replayProp.getProperty("rollTraining.endless", false)) goaltype = 2
+			if(owner.replayProp.getProperty("rollTraining.endless", false)) goalType = 2
 
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty("$playerID.net.netPlayerName", "")
+			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 		engine.owner.backgroundStatus.bg = startLevel
-		engine.framecolor = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
+		engine.frameColor = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
 	}
 	/**
 	 * Set the gravity rate
@@ -175,20 +181,20 @@ class RollTraining:MarathonModeBase() {
 	 * @param engine GameEngine
 	 */
 	override fun setSpeed(engine:GameEngine) {
-		engine.speed.copy(SPEED_SETTINGS[usedSpeed])
+		engine.speed.replace(SPEED_SETTINGS[usedSpeed])
 	}
 	/*
      * Called at settings screen
      */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode) {
-			netOnUpdateNetPlayRanking(engine, goaltype)
+			netOnUpdateNetPlayRanking(engine, goalType)
 		} else if(!engine.owner.replayMode) {
 			// Configuration changes
 			val change = updateMenu(engine)
 			if(change!=0) {
-				engine.framecolor = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
+				engine.frameColor = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
 				engine.owner.backgroundStatus.bg = startLevel
 
 				// NET: Signal options change
@@ -207,7 +213,7 @@ class RollTraining:MarathonModeBase() {
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) {
-				engine.quitflag = true
+				engine.quitFlag = true
 				engine.playerProp.reset()
 			}
 
@@ -222,7 +228,7 @@ class RollTraining:MarathonModeBase() {
 
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null) {
-				netEnterNetPlayRankingScreen(engine, playerID, goaltype)
+				netEnterNetPlayRankingScreen(goalType)
 			}
 			engine.statc[3]++
 		} else {
@@ -236,7 +242,7 @@ class RollTraining:MarathonModeBase() {
 	/*
      * Called for initialization during "Ready" screen
      */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = 0
 		engine.b2bEnable = true
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
@@ -247,7 +253,7 @@ class RollTraining:MarathonModeBase() {
 		engine.twistEnableEZ = true
 		setSpeed(engine)
 		timer = TIME_LIMITS[usedSpeed]
-		engine.blockHidden = if(useMRoll) engine.ruleOpt.lockflash else FADING_FRAMES
+		engine.blockHidden = if(useMRoll) engine.ruleOpt.lockFlash else FADING_FRAMES
 		engine.blockHiddenAnim = !useMRoll
 		engine.blockOutlineType = if(useMRoll) GameEngine.BLOCK_OUTLINE_NORMAL else GameEngine.BLOCK_OUTLINE_NONE
 		owner.bgmStatus.bgm = BGMStatus.BGM.Ending(if(usedSpeed==SPEED_TAP) 1 else 2)
@@ -256,10 +262,10 @@ class RollTraining:MarathonModeBase() {
 		}
 	}
 
-	override fun onCustom(engine:GameEngine, playerID:Int):Boolean {
+	override fun onCustom(engine:GameEngine):Boolean {
 		showPlayerStats = false
 		engine.isInGame = true
-		val s = engine.playerProp.loginScreen.updateScreen(engine, playerID)
+		val s = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
 			loadSetting(engine.playerProp.propProfile, engine)
@@ -271,23 +277,23 @@ class RollTraining:MarathonModeBase() {
 	/*
 		 * Render score
 		 */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, playerID, 0, 0, name, COLOR.RED)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.RED)
 		val sb = StringBuilder("(")
 		if(endless) sb.append("ENDLESS ")
 		if(usedSpeed==SPEED_TAP) sb.append("TAP ") else sb.append("TI ")
 		if(useMRoll) sb.append("M-") else sb.append("FADING ")
 		sb.append("ROLL)")
-		receiver.drawScoreFont(engine, playerID, 0, 1, "$sb", COLOR.RED)
+		receiver.drawScoreFont(engine, 0, 1, "$sb", COLOR.RED)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				if(showPlayerStats) {
 					val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 					val topY = if(receiver.nextDisplayType==2) 6 else 4
-					receiver.drawScoreFont(engine, playerID, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE, scale)
+					receiver.drawScoreFont(engine, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE, scale)
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 						val color = if(rankingRankPlayer==i) COLOR.RED else {
 							if(usedSpeed==SPEED_TAP) {
 								if(!useMRoll&&rankingTimePlayer[rankIndex][i]>=TIME_LIMITS[0]||useMRoll&&rankingLinesPlayer[rankIndex][i]>=32) COLOR.ORANGE else COLOR.GREEN
@@ -297,30 +303,30 @@ class RollTraining:MarathonModeBase() {
 						val gText:String = if(usedSpeed==SPEED_TAP) {
 							if(!useMRoll) "S9" else if(rankingGradePlayer[rankIndex][i]>=1.0) "GM" else "M"
 						} else {
-							"+"+String.format("%.2f", rankingGradePlayer[rankIndex][i])
+							"+${String.format("%.2f", rankingGradePlayer[rankIndex][i])}"
 						}
-						receiver.drawScoreFont(engine, playerID, 3, topY+i, gText, color, scale)
+						receiver.drawScoreFont(engine, 3, topY+i, gText, color, scale)
 						receiver.drawScoreFont(
-							engine, playerID, 10, topY+i, "${rankingLinesPlayer[rankIndex][i]}",
-							i==rankingRankPlayer, scale
+							engine, 10, topY+i, "${rankingLinesPlayer[rankIndex][i]}", i==rankingRankPlayer,
+							scale
 						)
 						receiver.drawScoreFont(
-							engine, playerID, 15, topY+i, rankingTimePlayer[rankIndex][i].toTimeStr,
-							i==rankingRankPlayer, scale
+							engine, 15, topY+i, rankingTimePlayer[rankIndex][i].toTimeStr, i==rankingRankPlayer,
+							scale
 						)
-						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
+						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
 						receiver.drawScoreFont(
-							engine, playerID, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay,
-							COLOR.WHITE, 2f
+							engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE,
+							2f
 						)
-						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
+						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 					}
 				} else {
 					val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 					val topY = if(receiver.nextDisplayType==2) 6 else 4
-					receiver.drawScoreFont(engine, playerID, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE, scale)
+					receiver.drawScoreFont(engine, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE, scale)
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 						val color = if(rankingRank==i) COLOR.RED else {
 							if(usedSpeed==SPEED_TAP) {
 								if(!useMRoll&&rankingTime[rankIndex][i]>=TIME_LIMITS[0]||useMRoll&&rankingLines[rankIndex][i]>=32) COLOR.ORANGE else COLOR.GREEN
@@ -331,27 +337,26 @@ class RollTraining:MarathonModeBase() {
 						val gText:String = if(usedSpeed==SPEED_TAP) {
 							if(!useMRoll) "S9" else if(rankingGrade[rankIndex][i]>=1.0) "GM" else "M"
 						} else {
-							"+"+String.format("%.2f", rankingGrade[rankIndex][i])
+							"+${String.format("%.2f", rankingGrade[rankIndex][i])}"
 						}
-						receiver.drawScoreGrade(engine, playerID, 3, topY+i, gText, color, scale)
-						receiver.drawScoreFont(engine, playerID, 10, topY+i, "${rankingLines[rankIndex][i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 15, topY+i, rankingTime[rankIndex][i].toTimeStr, i==rankingRank, scale)
-						receiver.drawScoreFont(engine, playerID, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
+						receiver.drawScoreGrade(engine, 3, topY+i, gText, color, scale)
+						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[rankIndex][i]}", i==rankingRank, scale)
+						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[rankIndex][i].toTimeStr, i==rankingRank, scale)
+						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
 						if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-							engine, playerID, 0, topY+RANKING_MAX+2,
-							"(NOT LOGGED IN)\n(E:LOG IN)"
+							engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)"
 						)
 						if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-							engine, playerID, 0, topY+RANKING_MAX+5,
-							"F:SWITCH RANK SCREEN", COLOR.GREEN
+							engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN",
+							COLOR.GREEN
 						)
 					}
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
-			engine.playerProp.loginScreen.renderScreen(receiver, engine, playerID)
+			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, if(usedSpeed==SPEED_TAP) "GRADE" else "BONUS", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 3, if(usedSpeed==SPEED_TAP) "GRADE" else "BONUS", COLOR.BLUE)
 			val grade:String
 			val gc:COLOR
 			if(usedSpeed==SPEED_TAP) {
@@ -362,20 +367,20 @@ class RollTraining:MarathonModeBase() {
 				grade = "+"+String.format("%.2f", tiGrade)
 				gc = if(engine.statistics.time>=TIME_LIMITS[1]) COLOR.ORANGE else COLOR.GREEN
 			}
-			receiver.drawScoreGrade(engine, playerID, 0, 4, grade, gc)
-			receiver.drawScoreFont(engine, playerID, 0, 6, "LINE", COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 7, "${engine.statistics.lines}")
-			receiver.drawScoreFont(engine, playerID, 0, 9, "TIME", COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 10, engine.statistics.time.toTimeStr)
+			receiver.drawScoreGrade(engine, 0, 4, grade, gc)
+			receiver.drawScoreFont(engine, 0, 6, "LINE", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 7, "${engine.statistics.lines}")
+			receiver.drawScoreFont(engine, 0, 9, "TIME", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 10, engine.statistics.time.toTimeStr)
 			if(!endless) {
-				receiver.drawScoreFont(engine, playerID, 0, 12, "REMAINING", COLOR.YELLOW)
-				receiver.drawScoreFont(engine, playerID, 0, 13, maxOf(timer, 0).toTimeStr, (timer<=600&&timer/2%2==0))
+				receiver.drawScoreFont(engine, 0, 12, "REMAINING", COLOR.YELLOW)
+				receiver.drawScoreFont(engine, 0, 13, maxOf(timer, 0).toTimeStr, (timer<=600&&timer/2%2==0))
 			}
 			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
-				receiver.drawScoreFont(engine, playerID, 0, if(endless) 12 else 15, "PLAYER", COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, if(endless) 12 else 15, "PLAYER", COLOR.BLUE)
 				receiver.drawScoreFont(
-					engine, playerID, 0, if(endless) 13 else 16,
-					if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay, COLOR.WHITE, 2f
+					engine, 0, if(endless) 13 else 16, if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
+					COLOR.WHITE, 2f
 				)
 			}
 		}
@@ -383,7 +388,7 @@ class RollTraining:MarathonModeBase() {
 		// NET: Number of spectators
 		netDrawSpectatorsCount(engine, 0, 18)
 		// NET: All number of players
-		if(playerID==players-1) {
+		if(engine.playerID==players-1) {
 			netDrawAllPlayersCount()
 			netDrawGameRate(engine)
 		}
@@ -391,14 +396,14 @@ class RollTraining:MarathonModeBase() {
 		netDrawPlayerName(engine)
 	}
 
-	override fun onFirst(engine:GameEngine, playerID:Int) {
+	override fun onFirst(engine:GameEngine) {
 		lastGrade = if(usedSpeed==SPEED_TAP) tapGrade.toInt() else tiGrade.toInt()
 	}
 	/*
 		 * Called after every frame
 		 */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 		if(engine.timerActive) {
 			if(timer==0) {
 				if(usedSpeed==SPEED_TI) tiGrade += CLEAR_GRADE_BONUS[if(useMRoll) 1 else 0] else {
@@ -415,18 +420,13 @@ class RollTraining:MarathonModeBase() {
 			if(!endless&&timer<=600&&timer>0&&timer%60==0) engine.playSE("countdown")
 		}
 		val cg = if(usedSpeed==SPEED_TAP) tapGrade.toInt() else tiGrade.toInt()
-		if(cg>lastGrade) engine.playSE("gradeup")
+		if(cg>lastGrade) engine.playSE("grade1")
 
 		// Meter
 		var lt = timer
 		if(lt<0) lt = 0
-		val factor = lt.toDouble()/TIME_LIMITS[usedSpeed].toDouble()
-		if(!endless) engine.meterValue = (factor*receiver.getMeterMax(engine)).toInt()
-		else engine.meterValue = receiver.getMeterMax(engine)
-		engine.meterColor = GameEngine.METER_COLOR_GREEN
-		if(factor>=0.25&&!endless) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		if(factor>=0.5&&!endless) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		if(factor>=0.75&&!endless) engine.meterColor = GameEngine.METER_COLOR_RED
+		if(!endless) engine.meterValue = lt*1f/TIME_LIMITS[usedSpeed] else 1f
+		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
 			if(engine.ctrl.isPush(Controller.BUTTON_F)&&engine.playerProp.isLoggedIn&&engine.stat!==GameEngine.Status.CUSTOM) {
@@ -434,14 +434,14 @@ class RollTraining:MarathonModeBase() {
 				engine.playSE("change")
 			}
 		}
-		if(engine.quitflag) {
+		if(engine.quitFlag) {
 			engine.playerProp.reset()
 		}
 	}
 	/*
 		 * Calculate score
 		 */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		if(usedSpeed==SPEED_TI&&lines>0) tiGrade += when(lines) {
 			1 -> GRADE_INCREASES[if(useMRoll) 1 else 0][lines-1]
 			2 -> GRADE_INCREASES[if(useMRoll) 1 else 0][lines-1]
@@ -453,19 +453,19 @@ class RollTraining:MarathonModeBase() {
 	/*
 		 * Soft drop
 		 */
-	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		// NOTHING
 	}
 	/*
 		 * Hard drop
 		 */
-	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		// NOTHING
 	}
 	/*
 		 * Render results screen
 		 */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
+	override fun renderResult(engine:GameEngine) {
 		val grade = if(usedSpeed==SPEED_TAP)
 			if(tapGrade>=1.0) "GM" else if(useMRoll) "M" else "S9"
 		else "+"+String.format("%.2f", tiGrade)
@@ -474,33 +474,33 @@ class RollTraining:MarathonModeBase() {
 				else engine.statistics.time>=TIME_LIMITS[1]
 			) COLOR.ORANGE else COLOR.GREEN
 
-		receiver.drawMenuFont(engine, playerID, 0, 0, if(usedSpeed==SPEED_TAP) "GRADE" else "BONUS", COLOR.BLUE)
-		receiver.drawMenuFont(engine, playerID, 0, 1, String.format("%10s", grade), gc)
+		receiver.drawMenuFont(engine, 0, 0, if(usedSpeed==SPEED_TAP) "GRADE" else "BONUS", COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 1, String.format("%10s", grade), gc)
 		drawResultStats(
-			engine, playerID, receiver, 2, COLOR.BLUE,
-			Statistic.LINES, Statistic.TIME, Statistic.LPM
+			engine, receiver, 2, COLOR.BLUE, Statistic.LINES,
+			Statistic.TIME, Statistic.LPM
 		)
-		drawResultRank(engine, playerID, receiver, 8, COLOR.BLUE, rankingRank)
-		drawResultNetRank(engine, playerID, receiver, 10, COLOR.BLUE, netRankingRank[0])
-		drawResultNetRankDaily(engine, playerID, receiver, 12, COLOR.BLUE, netRankingRank[1])
+		drawResultRank(engine, receiver, 8, COLOR.BLUE, rankingRank)
+		drawResultNetRank(engine, receiver, 10, COLOR.BLUE, netRankingRank[0])
+		drawResultNetRankDaily(engine, receiver, 12, COLOR.BLUE, netRankingRank[1])
 		if(netIsPB) {
-			receiver.drawMenuFont(engine, playerID, 2, 21, "NEW PB", COLOR.ORANGE)
+			receiver.drawMenuFont(engine, 2, 21, "NEW PB", COLOR.ORANGE)
 		}
 		if(netIsNetPlay&&netReplaySendStatus==1) {
-			receiver.drawMenuFont(engine, playerID, 0, 22, "SENDING...", COLOR.PINK)
+			receiver.drawMenuFont(engine, 0, 22, "SENDING...", COLOR.PINK)
 		} else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2) {
-			receiver.drawMenuFont(engine, playerID, 1, 22, "A: RETRY", COLOR.RED)
+			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", COLOR.RED)
 		}
 	}
 	/*
 		 * Called when saving replay
 		 */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(prop, engine)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
-			prop.setProperty("$playerID.net.netPlayerName", netPlayerName)
+			prop.setProperty("${engine.playerID}.net.netPlayerName", netPlayerName)
 		}
 
 		// Update rankings

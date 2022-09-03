@@ -30,7 +30,7 @@ class LineAutoplacementWallkick:Wallkick {
 					cur_x += 1+check
 				}
 			}
-			piece.copy(oldpiece)
+			piece.replace(oldpiece)
 		}
 		return null
 	}

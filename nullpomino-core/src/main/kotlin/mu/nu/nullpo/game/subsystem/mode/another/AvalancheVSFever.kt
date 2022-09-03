@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -90,8 +90,9 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 	}
 
 	/* Initialization for each player */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
+		val playerID = engine.playerID
 		ojamaCounterMode[playerID] = OJAMA_COUNTER_FEVER
 
 		ojama[playerID] = 0
@@ -109,7 +110,8 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 	}
 
 	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
+		val playerID = engine.playerID
 		// Menu
 		if(!engine.owner.replayMode&&engine.statc[4]==0) {
 			// Configuration changes
@@ -195,7 +197,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 						feverMapSet[playerID] += change
 						if(feverMapSet[playerID]<0) feverMapSet[playerID] = FEVER_MAPS.size-1
 						if(feverMapSet[playerID]>=FEVER_MAPS.size) feverMapSet[playerID] = 0
-						loadMapSetFever(engine, playerID, feverMapSet[playerID], true)
+						loadMapSetFever(engine, feverMapSet[playerID], true)
 						if(feverChainStart[playerID]<feverChainMin[playerID])
 							feverChainStart[playerID] = feverChainMax[playerID]
 						if(feverChainStart[playerID]>feverChainMax[playerID])
@@ -228,7 +230,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 			}
 
 			// 決定
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 
 				when(menuCursor) {
@@ -247,8 +249,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
-			menuTime++
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 		} else if(engine.statc[4]==0) {
 			menuTime++
 			menuCursor = 0
@@ -272,229 +273,241 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 	}
 
 	/* Setting screen drawing */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		if(engine.statc[4]==0) {
+			val pid = engine.playerID
 			when {
 				menuCursor<9 -> {
-					drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.ORANGE, 0)
-					drawMenu(engine, playerID, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
+					drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
+					drawMenu(engine, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
 
-					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/4", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "PAGE 1/4", COLOR.YELLOW)
 				}
 				menuCursor<18 -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "ZENKESHI" to ZENKESHI_TYPE_NAMES[zenKeshiType[playerID]],
-						"MAX ATTACK" to maxAttack[playerID], "COLORS" to numColors[playerID],
-						"MIN CHAIN" to "${rensaShibari[playerID]}", "OJAMA RATE" to ojamaRate[playerID],
-						"HURRYUP" to if(hurryupSeconds[playerID]==0) "NONE" else "${hurryupSeconds[playerID]} SEC",
-						"HARD OJAMA" to ojamaHard[playerID],
-						"X COLUMN" to if(dangerColumnDouble[playerID]) "3 AND 4" else "3 ONLY",
-						"X SHOW" to dangerColumnShowX[playerID])
+					drawMenu(
+						engine, receiver, 0, COLOR.CYAN, 9,
+						"ZENKESHI" to ZENKESHI_TYPE_NAMES[zenKeshiType[pid]],
+						"MAX ATTACK" to maxAttack[pid],
+						"COLORS" to numColors[pid],
+						"MIN CHAIN" to "${rensaShibari[pid]}",
+						"OJAMA RATE" to ojamaRate[pid],
+						"HURRYUP" to if(hurryupSeconds[pid]==0) "NONE" else "${hurryupSeconds[pid]} SEC",
+						"HARD OJAMA" to ojamaHard[pid],
+						"X COLUMN" to if(dangerColumnDouble[pid]) "3 AND 4" else "3 ONLY",
+						"X SHOW" to dangerColumnShowX[pid]
+					)
 
-					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 2/4", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "PAGE 2/4", COLOR.YELLOW)
 				}
 				menuCursor<25 -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.PURPLE, 18, "HANDICAP" to ojamaHandicap[playerID],
-						"F-MAP SET" to FEVER_MAPS[feverMapSet[playerID]].uppercase(), "STARTCHAIN" to feverChainStart[playerID])
+					drawMenu(
+						engine, receiver, 0, COLOR.PURPLE, 18,
+						"HANDICAP" to ojamaHandicap[pid],
+						"F-MAP SET" to FEVER_MAPS[feverMapSet[pid]].uppercase(),
+						"STARTCHAIN" to feverChainStart[pid]
+					)
 
-					drawMenu(engine, playerID, receiver, COLOR.COBALT, "OUTLINE" to OUTLINE_TYPE_NAMES[outlineType[playerID]],
-						"SHOW CHAIN" to if(chainDisplayType[playerID]==CHAIN_DISPLAY_FEVERSIZE) "FEVERSIZE" else CHAIN_DISPLAY_NAMES[chainDisplayType[playerID]],
-						"FALL ANIM" to if(cascadeSlow[playerID]) "FEVER" else "CLASSIC")
+					drawMenu(
+						engine, receiver, COLOR.COBALT,
+						"OUTLINE" to OUTLINE_TYPE_NAMES[outlineType[pid]],
+						"SHOW CHAIN" to if(chainDisplayType[pid]==CHAIN_DISPLAY_FEVERSIZE) "FEVERSIZE" else CHAIN_DISPLAY_NAMES[chainDisplayType[pid]],
+						"FALL ANIM" to if(cascadeSlow[pid]) "FEVER" else "CLASSIC"
+					)
 
-					drawMenu(engine, playerID, receiver, COLOR.CYAN, "CHAINPOWER" to if(newChainPower[playerID]) "FEVER" else "CLASSIC")
+					drawMenu(engine, receiver, COLOR.CYAN, "CHAINPOWER" to if(newChainPower[pid]) "FEVER" else "CLASSIC")
 
-					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 3/4", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "PAGE 3/4", COLOR.YELLOW)
 				}
 				else -> {
-					drawMenu(engine, playerID, receiver, 0, COLOR.PINK, 25, "BGM" to BGM.values[bgmno])
-					drawMenu(engine, playerID, receiver, COLOR.YELLOW, "SE" to enableSE[playerID])
-					drawMenu(engine, playerID, receiver, COLOR.PINK, "BIG DISP" to bigDisplay)
-					drawMenu(engine, playerID, receiver, COLOR.GREEN, "LOAD" to presetNumber[playerID], "SAVE" to presetNumber[playerID])
+					drawMenu(engine, receiver, 0, COLOR.PINK, 25, "BGM" to BGM.values[bgmno])
+					drawMenu(engine, receiver, COLOR.YELLOW, "SE" to enableSE[pid])
+					drawMenu(engine, receiver, COLOR.PINK, "BIG DISP" to bigDisplay)
+					drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 
-					receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 4/4", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "PAGE 4/4", COLOR.YELLOW)
 				}
 			}
-		} else receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", COLOR.YELLOW)
+		} else receiver.drawMenuFont(engine, 3, 10, "WAIT", COLOR.YELLOW)
 	}
 
 	/* Called for initialization during Ready (before initialization) */
-	override fun readyInit(engine:GameEngine, playerID:Int):Boolean {
-		super.readyInit(engine, playerID)
-		ojamaHandicapLeft[playerID] = ojamaHandicap[playerID]
-		feverChain[playerID] = feverChainStart[playerID]
-		if(engine.field!=null) engine.field.reset()
-		loadMapSetFever(engine, playerID, feverMapSet[playerID], true)
+	override fun readyInit(engine:GameEngine):Boolean {
+		super.readyInit(engine)
+		val pid = engine.playerID
+		ojamaHandicapLeft[pid] = ojamaHandicap[pid]
+		feverChain[pid] = feverChainStart[pid]
+		engine.field.reset()
+		loadMapSetFever(engine, feverMapSet[pid], true)
 		return false
 	}
 
 	/* Called at game start */
-	override fun startGame(engine:GameEngine, playerID:Int) {
-		super.startGame(engine, playerID)
-		loadFeverMap(engine, playerID, feverChain[playerID])
+	override fun startGame(engine:GameEngine) {
+		super.startGame(engine)
+		loadFeverMap(engine, feverChain[engine.playerID])
 	}
 
 	/* When the current piece is in action */
-	override fun renderMove(engine:GameEngine, playerID:Int) {
-		if(engine.gameStarted) drawX(engine, playerID)
+	override fun renderMove(engine:GameEngine) {
+		if(engine.gameStarted) drawX(engine)
 	}
 
 	/* Render score */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		val fldPosX = receiver.fieldX(engine, playerID)
-		val fldPosY = receiver.fieldY(engine, playerID)
-		val playerColor = EventReceiver.getPlayerColor(playerID)
+	override fun renderLast(engine:GameEngine) {
+		val fldPosX = receiver.fieldX(engine)
+		val fldPosY = receiver.fieldY(engine)
+		val pid = engine.playerID
+		val playerColor = EventReceiver.getPlayerColor(pid)
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(224, 8, engine.statistics.time.toTimeStr)
+		if(pid==0) receiver.drawDirectFont(224, 8, engine.statistics.time.toTimeStr)
 
 		// Ojama Counter
 		var fontColor = COLOR.WHITE
-		if(ojama[playerID]>=1) fontColor = COLOR.YELLOW
-		if(ojama[playerID]>=6) fontColor = COLOR.ORANGE
-		if(ojama[playerID]>=12) fontColor = COLOR.RED
+		if(ojama[pid]>=1) fontColor = COLOR.YELLOW
+		if(ojama[pid]>=6) fontColor = COLOR.ORANGE
+		if(ojama[pid]>=12) fontColor = COLOR.RED
 
-		var strOjama = "${ojama[playerID]}"
-		if(ojamaAdd[playerID]>0) strOjama += "(+${ojamaAdd[playerID]})"
+		var strOjama = "${ojama[pid]}"
+		if(ojamaAdd[pid]>0) strOjama += "(+${ojamaAdd[pid]})"
 
 		if(strOjama!="0") receiver.drawDirectFont(fldPosX+4, fldPosY+32, strOjama, fontColor)
 
 		// Handicap Counter
 		fontColor = COLOR.WHITE
-		if(ojamaHandicapLeft[playerID]<ojamaHandicap[playerID]/2) fontColor = COLOR.YELLOW
-		if(ojamaHandicapLeft[playerID]<ojamaHandicap[playerID]/3) fontColor = COLOR.ORANGE
-		if(ojamaHandicapLeft[playerID]<ojamaHandicap[playerID]/4) fontColor = COLOR.RED
+		if(ojamaHandicapLeft[pid]<ojamaHandicap[pid]/2) fontColor = COLOR.YELLOW
+		if(ojamaHandicapLeft[pid]<ojamaHandicap[pid]/3) fontColor = COLOR.ORANGE
+		if(ojamaHandicapLeft[pid]<ojamaHandicap[pid]/4) fontColor = COLOR.RED
 
 		var strOjamaHandicapLeft = ""
-		if(ojamaHandicapLeft[playerID]>0) strOjamaHandicapLeft = "${ojamaHandicapLeft[playerID]}"
+		if(ojamaHandicapLeft[pid]>0) strOjamaHandicapLeft = "${ojamaHandicapLeft[pid]}"
 
 		if(strOjamaHandicapLeft!="0")
 			receiver.drawDirectFont(fldPosX+4, fldPosY+16, strOjamaHandicapLeft, fontColor)
 
 		// Score
 		var strScoreMultiplier = ""
-		if(lastscores[playerID]!=0&&lastmultiplier[playerID]!=0&&scgettime[playerID]>0)
-			strScoreMultiplier = "(${lastscores[playerID]}e${lastmultiplier[playerID]})"
+		if(lastscores[pid]!=0&&lastmultiplier[pid]!=0&&scgettime[pid]>0)
+			strScoreMultiplier = "(${lastscores[pid]}e${lastmultiplier[pid]})"
 
-		if(engine.displaysize==1) {
-			receiver.drawDirectFont(fldPosX+4, fldPosY+440, String.format("%12d", score[playerID]), playerColor)
+		if(engine.displaySize==1) {
+			receiver.drawDirectFont(fldPosX+4, fldPosY+440, String.format("%12d", score[pid]), playerColor)
 			receiver.drawDirectFont(fldPosX+4, fldPosY+456, String.format("%12s", strScoreMultiplier), playerColor)
 		} else if(engine.gameStarted) {
-			receiver.drawDirectFont(fldPosX-28, fldPosY+248, String.format("%8d", score[playerID]), playerColor)
+			receiver.drawDirectFont(fldPosX-28, fldPosY+248, String.format("%8d", score[pid]), playerColor)
 			receiver.drawDirectFont(fldPosX-28, fldPosY+264, String.format("%8s", strScoreMultiplier), playerColor)
 		}
 
 		if(engine.stat!=GameEngine.Status.MOVE&&engine.stat!=GameEngine.Status.RESULT
 			&&engine.gameStarted)
-			drawX(engine, playerID)
+			drawX(engine)
 
-		if(ojamaHard[playerID]>0) drawHardOjama(engine, playerID)
+		if(ojamaHard[pid]>0) drawHardOjama(engine)
 
-		super.renderLast(engine, playerID)
+		super.renderLast(engine)
 	}
 
-	override fun getChainColor(engine:GameEngine, playerID:Int):COLOR {
-		return if(chainDisplayType[playerID]==CHAIN_DISPLAY_FEVERSIZE) {
+	override fun getChainColor(engine:GameEngine):COLOR = engine.playerID.let {pid ->
+		if(chainDisplayType[pid]==CHAIN_DISPLAY_FEVERSIZE)
 			when {
-				engine.chain>=feverChainDisplay[playerID] -> COLOR.GREEN
-				engine.chain==feverChainDisplay[playerID]-2 -> COLOR.ORANGE
-				engine.chain<feverChainDisplay[playerID]-2 -> COLOR.RED
+				engine.chain>=feverChainDisplay[pid] -> COLOR.GREEN
+				engine.chain==feverChainDisplay[pid]-2 -> COLOR.ORANGE
+				engine.chain<feverChainDisplay[pid]-2 -> COLOR.RED
 				else -> COLOR.YELLOW
 			}
-		} else
-			super.getChainColor(engine, playerID)
+		else super.getChainColor(engine)
 	}
 
-	override fun calcChainNewPower(engine:GameEngine, playerID:Int, chain:Int):Int {
-		return if(chain>FEVER_POWERS.size)
-			FEVER_POWERS[FEVER_POWERS.size-1]
-		else
-			FEVER_POWERS[chain-1]
+	override fun calcChainNewPower(engine:GameEngine, chain:Int):Int {
+		return if(chain>FEVER_POWERS.size) FEVER_POWERS[FEVER_POWERS.size-1]
+		else FEVER_POWERS[chain-1]
 	}
 
-	override fun onClear(engine:GameEngine, playerID:Int) {
-		feverChainDisplay[playerID] = feverChain[playerID]
+	override fun onClear(engine:GameEngine) {
+		feverChainDisplay[engine.playerID] = feverChain[engine.playerID]
 	}
 
-	override fun addOjama(engine:GameEngine, playerID:Int, pts:Int):Int {
-		var enemyID = 0
-		if(playerID==0) enemyID = 1
+	override fun addOjama(engine:GameEngine, pts:Int):Int {
+		val pid = engine.playerID
+		val enemyID = if(pid==0) 1 else 0
 
 		var pow = 0
-		if(zenKeshi[playerID]&&zenKeshiType[playerID]==ZENKESHI_MODE_ON) pow += 30
+		if(zenKeshi[pid]&&zenKeshiType[pid]==ZENKESHI_MODE_ON) pow += 30
 		//Add ojama
-		var rate = ojamaRate[playerID]
-		if(hurryupSeconds[playerID]>0&&engine.statistics.time>hurryupSeconds[playerID])
-			rate = rate shr engine.statistics.time/(hurryupSeconds[playerID]*60)
+		var rate = ojamaRate[pid]
+		if(hurryupSeconds[pid]>0&&engine.statistics.time>hurryupSeconds[pid])
+			rate = rate shr engine.statistics.time/(hurryupSeconds[pid]*60)
 		if(rate<=0) rate = 1
 		pow += (pts+rate-1)/rate
-		ojamaSent[playerID] += pow
+		ojamaSent[pid] += pow
 		var send = pow
 		//Counter ojama
-		if(ojama[playerID]>0&&send>0) {
-			val delta = minOf(ojama[playerID], send)
-			ojama[playerID] -= delta
+		if(ojama[pid]>0&&send>0) {
+			val delta = minOf(ojama[pid], send)
+			ojama[pid] -= delta
 			send -= delta
 		}
-		if(ojamaAdd[playerID]>0&&send>0) {
-			val delta = minOf(ojamaAdd[playerID], send)
-			ojamaAdd[playerID] -= delta
+		if(ojamaAdd[pid]>0&&send>0) {
+			val delta = minOf(ojamaAdd[pid], send)
+			ojamaAdd[pid] -= delta
 			send -= delta
 		}
-		if(ojamaHandicapLeft[playerID]>0&&send>0) {
-			val delta = minOf(ojamaHandicapLeft[playerID], send)
-			ojamaHandicapLeft[playerID] -= delta
+		if(ojamaHandicapLeft[pid]>0&&send>0) {
+			val delta = minOf(ojamaHandicapLeft[pid], send)
+			ojamaHandicapLeft[pid] -= delta
 			send -= delta
 		}
 		if(send>0) ojamaAdd[enemyID] += send
 		return pow
 	}
 
-	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
-		var enemyID = 0
-		if(playerID==0) enemyID = 1
+	override fun lineClearEnd(engine:GameEngine):Boolean {
+		val pid = engine.playerID
+		val enemyID = if(pid==0) 1 else 0
 		if(ojamaAdd[enemyID]>0) {
 			ojama[enemyID] += ojamaAdd[enemyID]
 			ojamaAdd[enemyID] = 0
 		}
 		//Reset Fever board if necessary
-		if(cleared[playerID]) {
-			val newFeverChain = maxOf(engine.chain+1, feverChain[playerID]-2)
-			if(newFeverChain>feverChain[playerID])
+		if(cleared[pid]) {
+			val newFeverChain = maxOf(engine.chain+1, feverChain[pid]-2)
+			if(newFeverChain>feverChain[pid])
 				engine.playSE("cool")
-			else if(newFeverChain<feverChain[playerID]) engine.playSE("regret")
-			feverChain[playerID] = newFeverChain
-			if(zenKeshi[playerID]&&zenKeshiType[playerID]==ZENKESHI_MODE_FEVER) {
-				feverChain[playerID] += 2
-				zenKeshi[playerID] = false
-				zenKeshiDisplay[playerID] = 120
+			else if(newFeverChain<feverChain[pid]) engine.playSE("regret")
+			feverChain[pid] = newFeverChain
+			if(zenKeshi[pid]&&zenKeshiType[pid]==ZENKESHI_MODE_FEVER) {
+				feverChain[pid] += 2
+				zenKeshi[pid] = false
+				zenKeshiDisplay[pid] = 120
 			}
-			if(feverChain[playerID]<feverChainMin[playerID]) feverChain[playerID] = feverChainMin[playerID]
-			if(feverChain[playerID]>feverChainMax[playerID]) feverChain[playerID] = feverChainMax[playerID]
-			loadFeverMap(engine, playerID, feverChain[playerID])
+			if(feverChain[pid]<feverChainMin[pid]) feverChain[pid] = feverChainMin[pid]
+			if(feverChain[pid]>feverChainMax[pid]) feverChain[pid] = feverChainMax[pid]
+			loadFeverMap(engine, feverChain[pid])
 		}
 		//Drop garbage if needed.
-		if(ojama[playerID]>0&&!ojamaDrop[playerID]&&!cleared[playerID]) {
-			ojamaDrop[playerID] = true
-			val drop = minOf(ojama[playerID], maxAttack[playerID])
-			ojama[playerID] -= drop
-			engine.field.garbageDrop(engine, drop, false, ojamaHard[playerID])
+		if(ojama[pid]>0&&!ojamaDrop[pid]&&!cleared[pid]) {
+			ojamaDrop[pid] = true
+			val drop = minOf(ojama[pid], maxAttack[pid])
+			ojama[pid] -= drop
+			engine.field.garbageDrop(engine, drop, false, ojamaHard[pid])
 			engine.field.setAllSkin(engine.skin)
 			return true
 		}
 		//Check for game over
-		gameOverCheck(engine, playerID)
+		gameOverCheck(engine)
 		return false
 	}
 
 	/* Called after every frame */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
-		updateOjamaMeter(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
+		updateOjamaMeter(engine)
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveOtherSetting(engine, owner.replayProp)
-		savePreset(engine, owner.replayProp, -1-playerID, "digrace")
+		savePreset(engine, owner.replayProp, -1-engine.playerID, "digrace")
 
 		owner.replayProp.setProperty("avalanchevsfever.version", version)
 		return false
@@ -505,7 +518,8 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Chain multipliers */
-		private val FEVER_POWERS = intArrayOf(4, 10, 18, 21, 29, 46, 76, 113, 150, 223, 259, 266, 313, 364, 398, 432, 468, 504, 540,
+		private val FEVER_POWERS = intArrayOf(
+			4, 10, 18, 21, 29, 46, 76, 113, 150, 223, 259, 266, 313, 364, 398, 432, 468, 504, 540,
 			576, 612, 648, 684, 720 //Arle
 		)
 

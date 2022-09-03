@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -47,7 +47,7 @@ class BagBonusBagRandomizer:BagRandomizer {
 					var i:Int
 					do i = r.nextInt(tmp.size)
 					while(if(tmp.size==baglen-1) noSZO&&(tmp[i]==Piece.Shape.S.ordinal||tmp[i]==Piece.Shape.Z.ordinal||tmp[i]==Piece.Shape.O.ordinal)
-						else limitPrev&&bonusbag.takeLast(minOf(4, maxOf(0, tmp.size-1))).any {it==tmp[i]})
+						else limitPrev&&bonusbag.takeLast(minOf(4, maxOf(0, tmp.size-1))).any {b -> b==tmp[i]})
 					bonusbag += tmp.removeAt(i)
 				}
 			}

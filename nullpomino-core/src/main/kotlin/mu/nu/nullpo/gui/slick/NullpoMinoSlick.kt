@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -36,11 +36,21 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.ModeManager
 import org.apache.logging.log4j.LogManager
 import org.lwjgl.opengl.Display
-import org.newdawn.slick.*
+import org.newdawn.slick.AppGameContainer
+import org.newdawn.slick.GameContainer
+import org.newdawn.slick.Graphics
+import org.newdawn.slick.Image
+import org.newdawn.slick.ScalableGame
+import org.newdawn.slick.SlickException
 import org.newdawn.slick.state.StateBasedGame
 import org.newdawn.slick.util.Log
 import java.awt.image.BufferedImage
-import java.io.*
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.FileReader
+import java.io.IOException
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -547,7 +557,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			val dir = propGlobal.getProperty("custom.screenshot.directory", "ss")
 			val c = Calendar.getInstance()
 			val dfm = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
-			val filename = dir+"/${dfm.format(c.time)}.png"
+			val filename = "$dir/${dfm.format(c.time)}.png"
 			log.info("Saving screenshot to $filename")
 
 			g.isAntiAlias = false
@@ -640,7 +650,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 						}
 					perfectFPSDelay += (1000000000/altMaxFPS).toLong()
 
-					// Don't run in super fast after the heavy slowdown
+					// Don't run in superfast after the heavy slowdown
 					if(System.nanoTime()>perfectFPSDelay+2000000000/altMaxFPS) perfectFPSDelay = System.nanoTime()
 
 					sleepFlag = true

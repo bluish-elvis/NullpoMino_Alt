@@ -35,7 +35,7 @@ package zeroxfc.nullpo.custom.libs
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-class MathHelper {
+object MathHelper {
 	/**
 	 * Checks if a coordinate is within a certain radius.
 	 *
@@ -67,117 +67,115 @@ class MathHelper {
 		return sqrt((dX*dX+dY*dY).toDouble())
 	}
 
-	companion object {
-		/**
-		 * Modulo operator that functions similarly to Python's % operator.
-		 *
-		 * @param value   Number
-		 * @param divisor Divisor
-		 * @return Remainder after division
-		 */
-		fun pythonModulo(value:Int, divisor:Int):Int {
-			var dividend = value%divisor
-			if(dividend<0) dividend += divisor
-			return dividend
-		}
-		/**
-		 * Modulo operator that functions similarly to Python's % operator.
-		 *
-		 * @param value   Number
-		 * @param divisor Divisor
-		 * @return Remainder after division
-		 */
-		fun pythonModulo(value:Long, divisor:Long):Long {
-			var dividend = value%divisor
-			if(dividend<0) dividend += divisor
-			return dividend
-		}
-		/**
-		 * Clamps a value to within a range.
-		 *
-		 * @param value Value to clamp
-		 * @param min   Min value
-		 * @param max   Max value
-		 * @return Clamped value
-		 */
-		fun clamp(value:Int, min:Int, max:Int):Int {
-			return when {
-				value in min..max -> value
-				value<min -> min
-				else -> max
-			}
-		}
-		/**
-		 * Clamps a value to within a range.
-		 *
-		 * @param value Value to clamp
-		 * @param min   Min value
-		 * @param max   Max value
-		 * @return Clamped value
-		 */
-		fun clamp(value:Long, min:Long, max:Long):Long {
-			return when {
-				value in min..max -> value
-				value<min -> min
-				else -> max
-			}
-		}
-		/**
-		 * Clamps a value to within a range.
-		 *
-		 * @param value Value to clamp
-		 * @param min   Min value
-		 * @param max   Max value
-		 * @return Clamped value
-		 */
-		fun clamp(value:Float, min:Float, max:Float):Float {
-			return when {
-				value in min..max -> value
-				value<min -> min
-				else -> max
-			}
-		}
-		/**
-		 * Clamps a value to within a range.
-		 *
-		 * @param value Value to clamp
-		 * @param min   Min value
-		 * @param max   Max value
-		 * @return Clamped value
-		 */
-		fun clamp(value:Double, min:Double, max:Double):Double {
-			return when {
-				value in min..max -> value
-				value<min -> min
-				else -> max
-			}
-		}
-		/**
-		 * Gets the greatest common divisor between two integers.<br></br>
-		 * Recursive function.
-		 *
-		 * @param a int
-		 * @param b int
-		 * @return GCD of the two integers
-		 */
-		private fun gcd(a:Int, b:Int):Int = if(a==0) b else gcd(b%a, a)
-		/**
-		 * Gets the lowest common multiple between two integers.<br></br>
-		 * Calls `gcd(a, b)`, a recursive function.
-		 *
-		 * @param a int
-		 * @param b int
-		 * @return LCM of the two integers
-		 */
-		fun lcm(a:Int, b:Int):Int = a*b/gcd(a, b)
-		/**
-		 * Is almost equal to.
-		 *
-		 * @param a   Value
-		 * @param b   Value
-		 * @param eps Exclusive maximum difference
-		 * @return Is the difference <= eps?
-		 */
-		fun almostEqual(a:Double, b:Double, eps:Double):Boolean = abs(a-b)<eps
+	/**
+	 * Modulo operator that functions similarly to Python's % operator.
+	 *
+	 * @param value   Number
+	 * @param divisor Divisor
+	 * @return Remainder after division
+	 */
+	fun pythonModulo(value:Int, divisor:Int):Int {
+		var dividend = value%divisor
+		if(dividend<0) dividend += divisor
+		return dividend
 	}
+	/**
+	 * Modulo operator that functions similarly to Python's % operator.
+	 *
+	 * @param value   Number
+	 * @param divisor Divisor
+	 * @return Remainder after division
+	 */
+	fun pythonModulo(value:Long, divisor:Long):Long {
+		var dividend = value%divisor
+		if(dividend<0) dividend += divisor
+		return dividend
+	}
+	/**
+	 * Clamps a value to within a range.
+	 *
+	 * @param value Value to clamp
+	 * @param min   Min value
+	 * @param max   Max value
+	 * @return Clamped value
+	 */
+	fun clamp(value:Int, min:Int, max:Int):Int {
+		return when {
+			value in min..max -> value
+			value<min -> min
+			else -> max
+		}
+	}
+	/**
+	 * Clamps a value to within a range.
+	 *
+	 * @param value Value to clamp
+	 * @param min   Min value
+	 * @param max   Max value
+	 * @return Clamped value
+	 */
+	fun clamp(value:Long, min:Long, max:Long):Long {
+		return when {
+			value in min..max -> value
+			value<min -> min
+			else -> max
+		}
+	}
+	/**
+	 * Clamps a value to within a range.
+	 *
+	 * @param value Value to clamp
+	 * @param min   Min value
+	 * @param max   Max value
+	 * @return Clamped value
+	 */
+	fun clamp(value:Float, min:Float, max:Float):Float {
+		return when {
+			value in min..max -> value
+			value<min -> min
+			else -> max
+		}
+	}
+	/**
+	 * Clamps a value to within a range.
+	 *
+	 * @param value Value to clamp
+	 * @param min   Min value
+	 * @param max   Max value
+	 * @return Clamped value
+	 */
+	fun clamp(value:Double, min:Double, max:Double):Double {
+		return when {
+			value in min..max -> value
+			value<min -> min
+			else -> max
+		}
+	}
+	/**
+	 * Gets the greatest common divisor between two integers.<br></br>
+	 * Recursive function.
+	 *
+	 * @param a int
+	 * @param b int
+	 * @return GCD of the two integers
+	 */
+	private fun gcd(a:Int, b:Int):Int = if(a==0) b else gcd(b%a, a)
+	/**
+	 * Gets the lowest common multiple between two integers.<br></br>
+	 * Calls `gcd(a, b)`, a recursive function.
+	 *
+	 * @param a int
+	 * @param b int
+	 * @return LCM of the two integers
+	 */
+	fun lcm(a:Int, b:Int):Int = a*b/gcd(a, b)
+	/**
+	 * Is almost equal to.
+	 *
+	 * @param a   Value
+	 * @param b   Value
+	 * @param eps Exclusive maximum difference
+	 * @return Is the difference <= eps?
+	 */
+	fun almostEqual(a:Double, b:Double, eps:Double):Boolean = abs(a-b)<eps
 }

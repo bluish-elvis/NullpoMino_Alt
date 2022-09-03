@@ -33,7 +33,7 @@
 package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
-import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.libs.Vector
 import kotlin.random.Random
 
 class FlyInOutText(  // String to draw
@@ -42,13 +42,13 @@ class FlyInOutText(  // String to draw
 	private val flyOutTime:Int,   // Colors: idx 0 - main, any other - shadows
 	private val textColors:Array<EventReceiver.COLOR>, scale:Float, seed:Long, flashOnLand:Boolean) {
 	// Vector array of positions
-	private val letterPositions:Array<Array<DoubleVector>>
+	private val letterPositions:Array<Array<Vector>>
 	// Start location
-	private val startLocation:Array<Array<DoubleVector>>
+	private val startLocation:Array<Array<Vector>>
 	// Vector array of velocities
-	// private DoubleVector[] letterVelocities;
+	// private FloatVector[] letterVelocities;
 	// Destination vector
-	private val destinationLocation:Array<Array<DoubleVector>>
+	private val destinationLocation:Array<Array<Vector>>
 	// Shadow count
 	private val shadowCount:Int = textColors.size
 	// Randomizer for start pos
@@ -59,12 +59,13 @@ class FlyInOutText(  // String to draw
 	private val flash:Boolean = flashOnLand
 	// Lifetime variable
 	private var currentLifetime = 0
-	fun draw(engine:GameEngine?, receiver:EventReceiver, playerID:Int) {
+	fun draw(receiver:EventReceiver) {
 		for(i in letterPositions.indices.reversed()) {
 			for(j in 0 until letterPositions[i].size) {
 				receiver.drawDirectFont(
 					letterPositions[i][j].x.toInt(), letterPositions[i][j].y.toInt(), "${mainString[j]}",
-					if((currentLifetime-i)/4%2==0&&flash) EventReceiver.COLOR.WHITE else textColors[i], textScale)
+					if((currentLifetime-i)/4%2==0&&flash) EventReceiver.COLOR.WHITE else textColors[i], textScale
+				)
 			}
 		}
 	}
@@ -75,26 +76,31 @@ class FlyInOutText(  // String to draw
 				for(j in 0 until letterPositions[i].size) {
 					val v1 = Interpolation.lerp(
 						startLocation[i][j].x, destinationLocation[i][j].x,
-						(currentLifetime-i).toDouble()/flyInTime).toInt()
+						(currentLifetime-i).toFloat()/flyInTime
+					).toInt()
 					val v2 = Interpolation.lerp(
 						startLocation[i][j].y, destinationLocation[i][j].y,
-						(currentLifetime-i).toDouble()/flyInTime).toInt()
-					letterPositions[i][j] = DoubleVector(v1.toDouble(), v2.toDouble(), false)
+						(currentLifetime-i).toFloat()/flyInTime
+					).toInt()
+					letterPositions[i][j] = Vector(v1.toFloat(), v2.toFloat(), false)
 				}
 			} else if(currentLifetime-i>=flyInTime+persistTime) {
 				for(j in 0 until letterPositions[i].size) {
 					val v1 = Interpolation.lerp(
 						destinationLocation[i][j].x, startLocation[i][j].x,
-						(currentLifetime-i-flyInTime-persistTime).toDouble()/flyOutTime).toInt()
+						(currentLifetime-i-flyInTime-persistTime).toFloat()/flyOutTime
+					).toInt()
 					val v2 = Interpolation.lerp(
 						destinationLocation[i][j].y, startLocation[i][j].y,
-						(currentLifetime-i-flyInTime-persistTime).toDouble()/flyOutTime).toInt()
-					letterPositions[i][j] = DoubleVector(v1.toDouble(), v2.toDouble(), false)
+						(currentLifetime-i-flyInTime-persistTime).toFloat()/flyOutTime
+					).toInt()
+					letterPositions[i][j] = Vector(v1.toFloat(), v2.toFloat(), false)
 				}
 			} else if(currentLifetime-i==flyInTime) {
 				for(j in 0 until letterPositions[i].size) {
-					letterPositions[i][j] = DoubleVector(
-						destinationLocation[i][j].x, destinationLocation[i][j].y, false)
+					letterPositions[i][j] = Vector(
+						destinationLocation[i][j].x, destinationLocation[i][j].y, false
+					)
 				}
 			}
 		}
@@ -109,35 +115,39 @@ class FlyInOutText(  // String to draw
 
 	init {
 		// Independent vars.
-		// destinationLocation = new DoubleVector(destinationX, destinationY, false);
+		// destinationLocation = new FloatVector(destinationX, destinationY, false);
 
 		// Dependent vars.
 
-		// letterVelocities = new DoubleVector[mainString.length()];
+		// letterVelocities = new FloatVector[mainString.length()];
 		var sMod = 16
 		if(scale==2.0f) sMod = 32
 		if(scale==0.5f) sMod = 16
-		val position:List<Pair<DoubleVector, DoubleVector>> = mainString.indices.map {i ->
+		val position:List<Pair<Vector, Vector>> = mainString.indices.map {i ->
 			var startX = 0
 			var startY = 0
-			var position:DoubleVector = DoubleVector.zero()
-			// double distanceX = 0, distanceY = 0;
-			// DoubleVector velocity = DoubleVector.zero();
-			val dec1 = positionRandomizer.nextDouble()
-			val dec2 = positionRandomizer.nextDouble()
-			if(dec1<0.5) {
+			var position:Vector = Vector.zero()
+			// float distanceX = 0, distanceY = 0;
+			// FloatVector velocity = FloatVector.zero();
+			val dec1 = positionRandomizer.nextFloat()
+			val dec2 = positionRandomizer.nextFloat()
+			if(dec1<.5f) {
 				startX = -sMod
-				if(dec2<0.5) startX = 41*sMod
-				startY = (positionRandomizer.nextDouble()*(32*sMod)).toInt()-sMod
+				if(dec2<.5f) startX = 41*sMod
+				startY = (positionRandomizer.nextFloat()*(32*sMod)).toInt()-sMod
 			} else {
 				startY = -sMod
-				if(dec2<0.5) startY = 31*sMod
-				startX = (positionRandomizer.nextDouble()*(42*sMod)).toInt()-sMod
+				if(dec2<.5f) startY = 31*sMod
+				startX = (positionRandomizer.nextFloat()*(42*sMod)).toInt()-sMod
 			}
-			return@map DoubleVector(startX.toDouble(), startY.toDouble(), false) to DoubleVector((destinationX+sMod*i).toDouble(), destinationY.toDouble(), false)
+			return@map Vector(startX.toFloat(), startY.toFloat(), false) to Vector(
+				(destinationX+sMod*i).toFloat(),
+				destinationY.toFloat(),
+				false
+			)
 			// distanceX = (destinationLocation.getX() + (i * sMod)) - position.getX();
 			// distanceY = destinationLocation.getY() - position.getY();
-			// velocity = new DoubleVector(distanceX / flyInTime, distanceY / flyInTime, false);
+			// velocity = new FloatVector(distanceX / flyInTime, distanceY / flyInTime, false);
 			// letterVelocities[i] = velocity;
 		}
 		letterPositions = Array(shadowCount) {j -> Array(mainString.length) {i -> position[i].first}}

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -80,12 +80,11 @@ class RetroModern:AbstractMode() {
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 		lastscore = 0
 		rolltime = 0
 		norm = 0
-		menuTime = 0
 		special = false
 
 		lineslot = IntArray(3)
@@ -99,10 +98,10 @@ class RetroModern:AbstractMode() {
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
-		engine.splitb2b = false
+		engine.splitB2B = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
-		engine.bighalf = false
-		engine.bigmove = false
+		engine.bigHalf = false
+		engine.bigMove = false
 
 		engine.staffrollEnable = true
 		engine.staffrollNoDeath = false
@@ -120,7 +119,7 @@ class RetroModern:AbstractMode() {
 			loadSetting(owner.replayProp, engine)
 		if(startLevel>15) startLevel = 15
 		engine.owner.backgroundStatus.bg = levelBG[startLevel]
-		engine.framecolor = GameEngine.FRAME_SKIN_HEBO
+		engine.frameColor = GameEngine.FRAME_SKIN_HEBO
 	}
 
 	/** Set the gravity speed
@@ -129,10 +128,10 @@ class RetroModern:AbstractMode() {
 	private fun setSpeed(engine:GameEngine) {
 		val lv = maxOf(0, engine.statistics.level)
 
-		engine.ruleOpt.lockresetMove = gametype==4
-		engine.ruleOpt.lockresetRotate = gametype==4
-		engine.ruleOpt.lockresetWallkick = gametype==4
-		engine.ruleOpt.lockresetFall = true
+		engine.ruleOpt.lockResetMove = gametype==4
+		engine.ruleOpt.lockResetSpin = gametype==4
+		engine.ruleOpt.lockResetWallkick = gametype==4
+		engine.ruleOpt.lockResetFall = true
 		engine.ruleOpt.softdropLock = true
 		engine.ruleOpt.softdropMultiplyNativeSpeed = false
 		engine.ruleOpt.softdropGravitySpeedLimit = true
@@ -187,7 +186,7 @@ class RetroModern:AbstractMode() {
 	}
 
 	/** Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		if(!engine.owner.replayMode) {
 			// Configuration changes
 			val change = updateCursor(engine, 2)
@@ -212,15 +211,14 @@ class RetroModern:AbstractMode() {
 			}
 
 			// Check for A button, when pressed this will begin the game
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				return false
 			}
 
-			// Check for B button, when pressed this will shutdown the game engine.
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			// Check for B button, when pressed this will shut down the game engine.
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
-			menuTime++
 		} else {
 			engine.statc[3]++
 			engine.statc[2] = -1
@@ -232,10 +230,9 @@ class RetroModern:AbstractMode() {
 	}
 
 	/** Renders game setup screen */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		drawMenu(
-			engine, playerID, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startLevel,
-			"BIG" to big
+			engine, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startLevel, "BIG" to big
 		)
 	}
 
@@ -249,7 +246,7 @@ class RetroModern:AbstractMode() {
 	}
 	/** This function will be called before the game actually begins (after
 	 * Ready&Go screen disappears) */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		if(engine.ending!=0) return
 		engine.big = big
 		special = true
@@ -258,7 +255,7 @@ class RetroModern:AbstractMode() {
 	}
 
 	/** Ready */
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0)
 			if(engine.ending==0) {
 //				engine.framecolor = if(gametype==4) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_WHITE
@@ -271,81 +268,75 @@ class RetroModern:AbstractMode() {
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		receiver.drawScoreFont(engine, playerID, 0, 0, "RETRO MODERN", color = COLOR.COBALT)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "(${GAMETYPE_NAME[gametype]} SPEED)", COLOR.COBALT)
+	override fun renderLast(engine:GameEngine) {
+		receiver.drawScoreFont(engine, 0, 0, "RETRO MODERN", color = COLOR.COBALT)
+		receiver.drawScoreFont(engine, 0, 1, "(${GAMETYPE_NAME[gametype]} SPEED)", COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE LV LINE TIME", color = COLOR.BLUE, scale = scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LV LINE TIME", color = COLOR.BLUE, scale = scale)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, playerID, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
+					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(
-						engine, playerID, 9, topY+i, String.format("%3d", rankingLines[gametype][i]), i==rankingRank,
-						scale
+						engine, 9, topY+i, String.format("%3d", rankingLines[gametype][i]), i==rankingRank, scale
 					)
 					receiver.drawScoreNum(
-						engine, playerID, 12, topY+i, String.format("%2d", rankingLevel[gametype][i]), i==rankingRank,
-						scale
+						engine, 12, topY+i, String.format("%2d", rankingLevel[gametype][i]), i==rankingRank, scale
 					)
 					receiver.drawScoreNum(
-						engine, playerID, 16, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank,
-						scale
+						engine, 16, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank, scale
 					)
 				}
 			}
 		} else {
 			// Game statistics
-			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 5, 3, "+$lastscore")
+			receiver.drawScoreFont(engine, 0, 3, "Score", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 5, 3, "+$lastscore")
 			val scget = scDisp<engine.statistics.score
-			receiver.drawScoreNum(engine, playerID, 0, 4, "$scDisp", scget, 2f)
+			receiver.drawScoreNum(engine, 0, 4, "$scDisp", scget, 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 7, "LINE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 8, String.format("%03d/%03d", engine.statistics.lines, totalnorma), scale = 2f)
+			receiver.drawScoreFont(engine, 0, 7, "LINE", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 8, String.format("%03d/%03d", engine.statistics.lines, totalnorma), scale = 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 10, "Level", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 10, "Level", COLOR.BLUE)
 			var lvdem = 0
 			if(rolltime>0)
 				lvdem = rolltime*100/ROLLTIMELIMIT
 			else if(engine.statistics.level<levelNorma.size) lvdem = norm*100/levelNorma[engine.statistics.level]
 			if(lvdem<0) lvdem *= -1
 			if(lvdem>=100) lvdem -= lvdem-lvdem%100
-			receiver.drawScoreNum(engine, playerID, 5, 10, String.format("%02d.%02d", engine.statistics.level, lvdem), scale = 2f)
+			receiver.drawScoreNum(engine, 5, 10, String.format("%02d.%02d", engine.statistics.level, lvdem), scale = 2f)
 
-			receiver.drawScoreFont(engine, playerID, 0, 11, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, playerID, 0, 12, engine.statistics.time.toTimeStr, scale = 2f)
+			receiver.drawScoreFont(engine, 0, 11, "Time", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 12, engine.statistics.time.toTimeStr, scale = 2f)
 
 			// Roll 残り time
 			if(rolltime>0) {
 				val time = ROLLTIMELIMIT-rolltime
-				receiver.drawScoreFont(engine, playerID, 0, 15, "FLASH BACK", COLOR.CYAN)
-				receiver.drawScoreNum(engine, playerID, 0, 16, time.toTimeStr, time>0&&time<10*60, 2f)
+				receiver.drawScoreFont(engine, 0, 15, "FLASH BACK", COLOR.CYAN)
+				receiver.drawScoreNum(engine, 0, 16, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
 
 		}
 	}
 
 	/** This function will be called when the game timer updates */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 		if(special&&(engine.ctrl.isPress(Controller.BUTTON_B)||engine.ctrl.isPress(Controller.BUTTON_E))) special = false
 		// Update the meter
 		if(engine.ending==0) {
 			if(engine.statistics.level<levelNorma.size)
-				engine.meterValue = receiver.getMeterMax(engine)*norm/levelNorma[engine.statistics.level]
+				engine.meterValue = 1f*norm/levelNorma[engine.statistics.level]
 			else
-				engine.meterValue = receiver.getMeterMax(engine)*engine.statistics.lines/totalnorma
+				engine.meterValue = 1f*engine.statistics.lines/totalnorma
 
-			engine.meterColor = -0xff0001
-			if(engine.statistics.level>=4) engine.meterColor = 0xFF00FF
-			if(engine.statistics.level>=10) engine.meterColor = -0x100
-			if(engine.statistics.level>=15) engine.meterColor = -0x1
+			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
 		} else
 		// Ending
@@ -354,7 +345,7 @@ class RetroModern:AbstractMode() {
 
 				// Time meter
 				val remainRollTime = ROLLTIMELIMIT-rolltime
-				engine.meterValue = remainRollTime*receiver.getMeterMax(engine)/ROLLTIMELIMIT
+				engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 				engine.meterColor = GameEngine.METER_COLOR_LIMIT
 				var bg = levelBG[levelBG.size-1]
 				if(rolltime<=ROLLTIMELIMIT-3600) bg = levelBG[rolltime*MAX_LEVEL/(ROLLTIMELIMIT-3600)]
@@ -381,7 +372,7 @@ class RetroModern:AbstractMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		// Determines line-clear bonus
 		var pts = 0
 		val mult = tableScoreMult[gametype][engine.statistics.level]*10
@@ -437,13 +428,13 @@ class RetroModern:AbstractMode() {
 				owner.backgroundStatus.fadesw = true
 			}
 			norm = 0
-			engine.meterValue = 0
+			engine.meterValue = 0f
 			setBGM(newlevel)
 		}
 		return pts
 	}
 
-	override fun renderLineClear(engine:GameEngine, playerID:Int) {
+	override fun renderLineClear(engine:GameEngine) {
 		var num = 0
 
 		when {
@@ -453,16 +444,16 @@ class RetroModern:AbstractMode() {
 			engine.lineClearing>=4 -> num = 100000
 		}
 		if(linecount>=3) num *= 5
-		receiver.drawMenuBadges(engine, playerID, 2, engine.lastline-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
-		receiver.drawMenuNum(engine, playerID, 4, engine.lastline, "$lastscore", COLOR.CYAN)
+		receiver.drawMenuBadges(engine, 2, engine.lastLine-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
+		receiver.drawMenuNum(engine, 4, engine.lastLine, "$lastscore", COLOR.CYAN)
 
 		if(engine.split) when(engine.lineClearing) {
-			2 -> receiver.drawMenuFont(engine, playerID, 0, engine.lastlines[0], "SPLIT TWIN", COLOR.PURPLE)
-			3 -> receiver.drawMenuFont(engine, playerID, 0, engine.lastlines[0], "1.2.TRIPLE", COLOR.PURPLE)
+			2 -> receiver.drawMenuFont(engine, 0, engine.lastLines[0], "SPLIT TWIN", COLOR.PURPLE)
+			3 -> receiver.drawMenuFont(engine, 0, engine.lastLines[0], "1.2.TRIPLE", COLOR.PURPLE)
 		}
 	}
 
-	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
+	override fun lineClearEnd(engine:GameEngine):Boolean {
 		if(linecount>=3) {
 			var pts = 0
 			if(lineslot[0]==lineslot[1]&&lineslot[1]==lineslot[2]) {
@@ -489,22 +480,22 @@ class RetroModern:AbstractMode() {
 				receiver.addScore(engine, engine.fieldWidth/2, engine.fieldHeight+1, pts, COLOR.RAINBOW)
 			}
 		}
-		return super.lineClearEnd(engine, playerID)
+		return false
 	}
 
 	/** This function will be called when soft-drop is used */
-	override fun afterSoftDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreSD += fall
 		scDisp += fall
 	}
 
 	/** This function will be called when hard-drop is used */
-	override fun afterHardDropFall(engine:GameEngine, playerID:Int, fall:Int) {
+	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += fall
 		scDisp += fall
 	}
 
-	override fun onEndingStart(engine:GameEngine, playerID:Int):Boolean {
+	override fun onEndingStart(engine:GameEngine):Boolean {
 		val time = engine.statc[0]>=engine.lineDelay+2
 		if(time) {
 			engine.ending = 2
@@ -517,7 +508,7 @@ class RetroModern:AbstractMode() {
 
 	}
 
-	override fun onCustom(engine:GameEngine, playerID:Int):Boolean {
+	override fun onCustom(engine:GameEngine):Boolean {
 		engine.nextPieceArrayID = GeneralUtil.createNextPieceArrayFromNumberString(STRING_POWERON_PATTERN)
 		engine.nextPieceArrayObject = emptyArray()
 		engine.holdPieceObject = null
@@ -534,34 +525,30 @@ class RetroModern:AbstractMode() {
 		return true
 	}
 
-	override fun renderCustom(engine:GameEngine, playerID:Int) {
-		val offsetX = receiver.fieldX(engine, playerID)
-		val offsetY = receiver.fieldY(engine, playerID)
+	override fun renderCustom(engine:GameEngine) {
 		val col = COLOR.WHITE
 
-		receiver.drawDirectFont(offsetX+4, offsetY+204, "EXCELLENT!", COLOR.ORANGE, 1f)
+		val cY = (engine.fieldHeight-1)
+		receiver.drawMenuFont(engine, 0f, cY/3f, "EXCELLENT!", COLOR.ORANGE, 1f)
 		if(engine.statc[0]>=100) {
-			receiver.drawDirectFont(offsetX+36, offsetY+228, "BUT...", col)
-			receiver.drawDirectFont(offsetX-4, offsetY+244, "THIS IS NOT", col)
-			receiver.drawDirectFont(offsetX+12, offsetY+260, "OVER YET!", col)
+			receiver.drawMenuFont(engine, 2f, 8f, "BUT...", col)
+			receiver.drawMenuFont(engine, -.25f, 9f, "THIS IS NOT", col)
+			receiver.drawMenuFont(engine, .5f, 10f, "OVER YET!", col)
 		}
 
 	}
 
-	override fun renderExcellent(engine:GameEngine, playerID:Int) {
-
-		val offsetX = receiver.fieldX(engine, playerID)
-		val offsetY = receiver.fieldY(engine, playerID)
+	override fun renderExcellent(engine:GameEngine) {
 		val col = COLOR.WHITE
 
-		receiver.drawDirectFont(offsetX-4, offsetY+228, "YOU REACHED", col)
-		receiver.drawDirectFont(offsetX-4, offsetY+244, "THE EDGE OF", col)
-		receiver.drawDirectFont(offsetX-4, offsetY+260, "THE JOURNEY", col)
+		receiver.drawMenuFont(engine, -.5f, 8f, "YOU REACHED", col)
+		receiver.drawMenuFont(engine, -.5f, 9f, "THE EDGE OF", col)
+		receiver.drawMenuFont(engine, -.5f, 10f, "THE JOURNEY", col)
 		if(special) {
-			receiver.drawDirectFont(offsetX+4, offsetY+292, "CLOCK WISE", col)
-			receiver.drawDirectFont(offsetX+40, offsetY+308, "BONUS", col)
-			receiver.drawDirectFont(
-				offsetX-4, offsetY+266, "+ 10000000", when {
+			receiver.drawMenuFont(engine, .5f, 13f, "CLOCK WISE", col)
+			receiver.drawMenuFont(engine, 2.5f, 14f, "BONUS", col)
+			receiver.drawMenuFont(
+				engine, .5f, 16f, "+ 10000000", when {
 					engine.statc[0]%4==0 -> COLOR.YELLOW
 					engine.statc[0]%2==0 -> col
 					else -> COLOR.ORANGE
@@ -571,19 +558,18 @@ class RetroModern:AbstractMode() {
 	}
 
 	/** Renders game result screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", COLOR.ORANGE)
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", COLOR.ORANGE)
 
 		drawResultStats(
-			engine, playerID, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL,
-			Statistic.TIME
+			engine, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME
 		)
-		drawResultRank(engine, playerID, receiver, 11, COLOR.BLUE, rankingRank)
+		drawResultRank(engine, receiver, 11, COLOR.BLUE, rankingRank)
 	}
 
 	/** This function will be called when the replay data is going to be
 	 * saved */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(prop, engine)
 
 		// Checks/Updates the ranking
@@ -724,7 +710,7 @@ class RetroModern:AbstractMode() {
 			6, 7, 8, 9, 14, 19,
 			10, 11, 12, 13, 29, 36
 		)
-		private val tableBGMlevel = arrayOf(4, 6, 8, 10, 11, 13, 15)
+		private val tableBGMlevel = intArrayOf(4, 6, 8, 10, 11, 13, 15)
 		/** Name of game types */
 		private val GAMETYPE_NAME = arrayOf("EASY", "NORMAL", "INTENSE", "HARD", "OVERED")
 

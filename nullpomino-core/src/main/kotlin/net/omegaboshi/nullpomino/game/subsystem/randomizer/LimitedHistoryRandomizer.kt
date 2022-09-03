@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -56,10 +56,10 @@ abstract class LimitedHistoryRandomizer:Randomizer {
 
 	override fun next():Int {
 		if(firstPiece&&!isPieceSZOOnly) {
-			pieces.subtract(listOf(Shape.O, Shape.Z, Shape.S).map {it.ordinal}).toList().let {id = it[r.nextInt(it.size)]}
+			pieces.subtract(setOf(Shape.O, Shape.Z, Shape.S).map {it.ordinal}.toSet()).toList().let {id = it[r.nextInt(it.size)]}
 			firstPiece = false
 		} else if(strict)
-			pieces.subtract(history.toList()).toList().let {id = it[r.nextInt(it.size)]}
+			pieces.subtract(history.toSet()).toList().let {id = it[r.nextInt(it.size)]}
 		else for(i in 0 until numrolls) {
 			id = r.nextInt(pieces.size)
 			if(history.take(4).none {it==id}) break

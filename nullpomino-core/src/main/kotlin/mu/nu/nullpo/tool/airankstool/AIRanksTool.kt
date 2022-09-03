@@ -38,9 +38,27 @@ import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
-import java.io.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.ObjectInputStream
 import java.util.Locale
-import javax.swing.*
+import javax.swing.BorderFactory
+import javax.swing.JButton
+import javax.swing.JCheckBox
+import javax.swing.JComboBox
+import javax.swing.JFormattedTextField
+import javax.swing.JFrame
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JSpinner
+import javax.swing.JTabbedPane
+import javax.swing.JTextField
+import javax.swing.SpinnerNumberModel
+import javax.swing.UIManager
+import javax.swing.WindowConstants
 
 class AIRanksTool:JFrame(), ActionListener {
 
@@ -294,7 +312,7 @@ class AIRanksTool:JFrame(), ActionListener {
 		}
 		//Number of previews to use
 		numPreviewsLabel = JLabel(getUIText("Main_Num_Previews_Label"))
-		numPreviewsSpinner = JSpinner(javax.swing.SpinnerNumberModel(2, 0, Integer.MAX_VALUE, 1)).apply {
+		numPreviewsSpinner = JSpinner(SpinnerNumberModel(2, 0, Integer.MAX_VALUE, 1)).apply {
 			value = maxOf(0, numPreviews)
 			toolTipText = getUIText("Main_Num_Previews_Tip")
 		}

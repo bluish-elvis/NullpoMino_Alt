@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -198,30 +198,30 @@ class PhysicianVS:AbstractMode() {
 
 	/** Load settings into [engine] from [prop] not related to speeds */
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
-		val playerID = engine.playerID
+		val pid = engine.playerID
 		bgmno = prop.getProperty("physicianvs.bgmno", 0)
-		enableSE[playerID] = prop.getProperty("physicianvs.enableSE.p$playerID", true)
-		useMap[playerID] = prop.getProperty("physicianvs.useMap.p$playerID", false)
-		mapSet[playerID] = prop.getProperty("physicianvs.mapSet.p$playerID", 0)
-		mapNumber[playerID] = prop.getProperty("physicianvs.mapNumber.p$playerID", -1)
-		presetNumber[playerID] = prop.getProperty("physicianvs.presetNumber.p$playerID", 0)
-		speed[playerID] = prop.getProperty("physicianvs.speed.p$playerID", 1)
-		hoverBlocks[playerID] = prop.getProperty("physicianvs.hoverBlocks.p$playerID", 40)
-		flash[playerID] = prop.getProperty("physicianvs.flash.p$playerID", false)
+		enableSE[pid] = prop.getProperty("physicianvs.enableSE.p$pid", true)
+		useMap[pid] = prop.getProperty("physicianvs.useMap.p$pid", false)
+		mapSet[pid] = prop.getProperty("physicianvs.mapSet.p$pid", 0)
+		mapNumber[pid] = prop.getProperty("physicianvs.mapNumber.p$pid", -1)
+		presetNumber[pid] = prop.getProperty("physicianvs.presetNumber.p$pid", 0)
+		speed[pid] = prop.getProperty("physicianvs.speed.p$pid", 1)
+		hoverBlocks[pid] = prop.getProperty("physicianvs.hoverBlocks.p$pid", 40)
+		flash[pid] = prop.getProperty("physicianvs.flash.p$pid", false)
 	}
 
 	/** Save settings from [engine] into [prop] not related to speeds */
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
-		val playerID = engine.playerID
+		val pid = engine.playerID
 		prop.setProperty("physicianvs.bgmno", bgmno)
-		prop.setProperty("physicianvs.enableSE.p$playerID", enableSE[playerID])
-		prop.setProperty("physicianvs.useMap.p$playerID", useMap[playerID])
-		prop.setProperty("physicianvs.mapSet.p$playerID", mapSet[playerID])
-		prop.setProperty("physicianvs.mapNumber.p$playerID", mapNumber[playerID])
-		prop.setProperty("physicianvs.presetNumber.p$playerID", presetNumber[playerID])
-		prop.setProperty("physicianvs.speed.p$playerID", speed[playerID])
-		prop.setProperty("physicianvs.hoverBlocks.p$playerID", hoverBlocks[playerID])
-		prop.setProperty("physicianvs.flash.p$playerID", flash[playerID])
+		prop.setProperty("physicianvs.enableSE.p$pid", enableSE[pid])
+		prop.setProperty("physicianvs.useMap.p$pid", useMap[pid])
+		prop.setProperty("physicianvs.mapSet.p$pid", mapSet[pid])
+		prop.setProperty("physicianvs.mapNumber.p$pid", mapNumber[pid])
+		prop.setProperty("physicianvs.presetNumber.p$pid", presetNumber[pid])
+		prop.setProperty("physicianvs.speed.p$pid", speed[pid])
+		prop.setProperty("physicianvs.hoverBlocks.p$pid", hoverBlocks[pid])
+		prop.setProperty("physicianvs.flash.p$pid", flash[pid])
 	}
 
 	/** MapRead into #[id]:[field] from [prop] */
@@ -262,13 +262,14 @@ class PhysicianVS:AbstractMode() {
 	}
 
 	/* Initialization for each player */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		if(playerID==1) {
+	override fun playerInit(engine:GameEngine) {
+		val pid = engine.playerID
+		if(pid==1) {
 			engine.randSeed = owner.engine[0].randSeed
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.framecolor = PLAYER_COLOR_FRAME[playerID]
+		engine.frameColor = PLAYER_COLOR_FRAME[pid]
 		engine.clearMode = GameEngine.ClearType.LINE_COLOR
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
@@ -283,25 +284,26 @@ class PhysicianVS:AbstractMode() {
 
 		//garbage[playerID] = 0;
 		//garbageSent[playerID] = 0;
-		score[playerID] = 0
-		scgettime[playerID] = 0
-		gemsClearedChainTotal[playerID] = 0
-		rest[playerID] = 0
+		score[pid] = 0
+		scgettime[pid] = 0
+		gemsClearedChainTotal[pid] = 0
+		rest[pid] = 0
 
 		version = if(!engine.owner.replayMode) {
 			loadOtherSetting(engine, engine.owner.modeConfig)
-			loadPreset(engine, engine.owner.modeConfig, -1-playerID)
+			loadPreset(engine, engine.owner.modeConfig, -1-pid)
 			CURRENT_VERSION
 		} else {
 			loadOtherSetting(engine, engine.owner.replayProp)
-			loadPreset(engine, engine.owner.replayProp, -1-playerID)
+			loadPreset(engine, engine.owner.replayProp, -1-pid)
 			owner.replayProp.getProperty("physicianvs.version", 0)
 		}
 	}
 
 	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
+		val pid = engine.playerID
 		if(!engine.owner.replayMode&&engine.statc[4]==0) {
 			// Configuration changes
 			val change = updateCursor(engine, 16)
@@ -321,62 +323,62 @@ class PhysicianVS:AbstractMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7, 8 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
+					7, 8 -> presetNumber[pid] = rangeCursor(presetNumber[pid]+change, 0, 99)
 					9 -> {
-						speed[playerID] += change
-						if(speed[playerID]<0) speed[playerID] = 2
-						if(speed[playerID]>2) speed[playerID] = 0
+						speed[pid] += change
+						if(speed[pid]<0) speed[pid] = 2
+						if(speed[pid]>2) speed[pid] = 0
 					}
 					10 -> {
 						if(m>=10)
-							hoverBlocks[playerID] += change*10
+							hoverBlocks[pid] += change*10
 						else
-							hoverBlocks[playerID] += change
-						if(hoverBlocks[playerID]<1) hoverBlocks[playerID] = 99
-						if(hoverBlocks[playerID]>99) hoverBlocks[playerID] = 1
+							hoverBlocks[pid] += change
+						if(hoverBlocks[pid]<1) hoverBlocks[pid] = 99
+						if(hoverBlocks[pid]>99) hoverBlocks[pid] = 1
 					}
-					11 -> flash[playerID] = !flash[playerID]
-					12 -> enableSE[playerID] = !enableSE[playerID]
+					11 -> flash[pid] = !flash[pid]
+					12 -> enableSE[pid] = !enableSE[pid]
 					13 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					14 -> {
-						useMap[playerID] = !useMap[playerID]
-						if(!useMap[playerID]) {
+						useMap[pid] = !useMap[pid]
+						if(!useMap[pid]) {
 							engine.field.reset()
 						} else
-							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
+							loadMapPreview(engine, pid, if(mapNumber[pid]<0) 0 else mapNumber[pid], true)
 					}
 					15 -> {
-						mapSet[playerID] += change
-						if(mapSet[playerID]<0) mapSet[playerID] = 99
-						if(mapSet[playerID]>99) mapSet[playerID] = 0
-						if(useMap[playerID]) {
-							mapNumber[playerID] = -1
-							loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
+						mapSet[pid] += change
+						if(mapSet[pid]<0) mapSet[pid] = 99
+						if(mapSet[pid]>99) mapSet[pid] = 0
+						if(useMap[pid]) {
+							mapNumber[pid] = -1
+							loadMapPreview(engine, pid, if(mapNumber[pid]<0) 0 else mapNumber[pid], true)
 						}
 					}
-					16 -> if(useMap[playerID]) {
-						mapNumber[playerID] += change
-						if(mapNumber[playerID]<-1) mapNumber[playerID] = mapMaxNo[playerID]-1
-						if(mapNumber[playerID]>mapMaxNo[playerID]-1) mapNumber[playerID] = -1
-						loadMapPreview(engine, playerID, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
+					16 -> if(useMap[pid]) {
+						mapNumber[pid] += change
+						if(mapNumber[pid]<-1) mapNumber[pid] = mapMaxNo[pid]-1
+						if(mapNumber[pid]>mapMaxNo[pid]-1) mapNumber[pid] = -1
+						loadMapPreview(engine, pid, if(mapNumber[pid]<0) 0 else mapNumber[pid], true)
 					} else
-						mapNumber[playerID] = -1
+						mapNumber[pid] = -1
 				}
 			}
 
 			// 決定
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 
 				when(menuCursor) {
-					7 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID])
+					7 -> loadPreset(engine, owner.modeConfig, presetNumber[pid])
 					8 -> {
-						savePreset(engine, owner.modeConfig, presetNumber[playerID])
+						savePreset(engine, owner.modeConfig, presetNumber[pid])
 						owner.saveModeConfig()
 					}
 					else -> {
 						saveOtherSetting(engine, owner.modeConfig)
-						savePreset(engine, owner.modeConfig, -1-playerID)
+						savePreset(engine, owner.modeConfig, -1-pid)
 						owner.saveModeConfig()
 						engine.statc[4] = 1
 					}
@@ -384,24 +386,22 @@ class PhysicianVS:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
 			// プレビュー用Map読み込み
-			if(useMap[playerID]&&menuTime==0)
-				loadMapPreview(engine, playerID, if(mapNumber[playerID]<0)
-					0
-				else
-					mapNumber[playerID], true)
+			if(useMap[pid]&&menuTime==0)
+				loadMapPreview(
+					engine, pid, if(mapNumber[pid]<0) 0 else mapNumber[pid], true
+				)
 
 			// Random values preview
-			if(useMap[playerID]&&propMap[playerID]!=null&&mapNumber[playerID]<0)
+			if(useMap[pid]&&propMap[pid]!=null&&mapNumber[pid]<0)
 				if(menuTime%30==0) {
 					engine.statc[5]++
-					if(engine.statc[5]>=mapMaxNo[playerID]) engine.statc[5] = 0
-					loadMapPreview(engine, playerID, engine.statc[5], false)
+					if(engine.statc[5]>=mapMaxNo[pid]) engine.statc[5] = 0
+					loadMapPreview(engine, pid, engine.statc[5], false)
 				}
 
-			menuTime++
 		} else if(engine.statc[4]==0) {
 			menuTime++
 			menuCursor = 0
@@ -410,7 +410,7 @@ class PhysicianVS:AbstractMode() {
 				engine.statc[4] = 1
 			else if(menuTime>=60) menuCursor = 9
 		} else // Start
-			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&playerID==1) {
+			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&pid==1) {
 				owner.engine[0].stat = GameEngine.Status.READY
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
@@ -421,62 +421,70 @@ class PhysicianVS:AbstractMode() {
 	}
 
 	/* Setting screen drawing */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		if(engine.statc[4]==0) {
+			val pid = engine.playerID
 			if(menuCursor<9) {
-				drawMenuSpeeds(engine, playerID, receiver, 0, COLOR.ORANGE, 0)
-				drawMenu(engine, playerID, receiver, COLOR.GREEN, "LOAD" to presetNumber[playerID], "SAVE" to presetNumber[playerID])
+				drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
+				drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 			} else {
-				drawMenu(engine, playerID, receiver, 0, COLOR.CYAN, 9, "SPEED" to SPEED_NAME[speed[playerID]],
-					"VIRUS" to hoverBlocks[playerID], "MODE" to if(flash[playerID]) "FLASH" else "NORMAL")
-				drawMenu(engine, playerID, receiver, COLOR.PINK, "SE" to enableSE[playerID], "BGM" to BGM.values[bgmno])
-				drawMenu(engine, playerID, receiver, COLOR.CYAN, "USE MAP" to useMap[playerID], "MAP SET" to "${mapSet[playerID]}",
-					"MAP NO." to if(mapNumber[playerID]<0) "RANDOM" else "${mapNumber[playerID]}"+"/"+(mapMaxNo[playerID]-1))
+				drawMenu(
+					engine, receiver, 0, COLOR.CYAN, 9, "SPEED" to SPEED_NAME[speed[pid]], "VIRUS" to hoverBlocks[pid],
+					"MODE" to if(flash[pid]) "FLASH" else "NORMAL"
+				)
+				drawMenu(engine, receiver, COLOR.PINK, "SE" to enableSE[pid], "BGM" to BGM.values[bgmno])
+				drawMenu(
+					engine, receiver, COLOR.CYAN,
+					"USE MAP" to useMap[pid],
+					"MAP SET" to "${mapSet[pid]}",
+					"MAP NO." to if(mapNumber[pid]<0) "RANDOM" else "${mapNumber[pid]}"+"/"+(mapMaxNo[pid]-1)
+				)
 			}
 		} else
-			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", COLOR.YELLOW)
+			receiver.drawMenuFont(engine, 3, 10, "WAIT", COLOR.YELLOW)
 	}
 
 	/* Called for initialization during Ready (before initialization) */
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
+		val pid = engine.playerID
 		if(engine.statc[0]==0) {
 			// MapFor storing backup Replay read
-			if(useMap[playerID]) {
+			if(useMap[pid]) {
 				if(owner.replayMode) {
 					engine.createFieldIfNeeded()
-					loadMap(engine.field, owner.replayProp, playerID)
+					loadMap(engine.field, owner.replayProp, pid)
 					engine.field.setAllSkin(engine.skin)
 				} else {
-					if(propMap[playerID]==null) {
-						propMap[playerID] = receiver.loadProperties("config/map/vsbattle/${mapSet[playerID]}.map")
-					} else propMap[playerID]?.let {
+					if(propMap[pid]==null) {
+						propMap[pid] = receiver.loadProperties("config/map/vsbattle/${mapSet[pid]}.map")
+					} else propMap[pid]?.let {
 						engine.createFieldIfNeeded()
 
-						if(mapNumber[playerID]<0) {
-							if(playerID==1&&useMap[0]&&mapNumber[0]<0) engine.field.copy(owner.engine[0].field)
+						if(mapNumber[pid]<0) {
+							if(pid==1&&useMap[0]&&mapNumber[0]<0) engine.field.replace(owner.engine[0].field)
 							else {
-								val no = if(mapMaxNo[playerID]<1) 0 else randMap!!.nextInt(mapMaxNo[playerID])
+								val no = if(mapMaxNo[pid]<1) 0 else randMap!!.nextInt(mapMaxNo[pid])
 								loadMap(engine.field, it, no)
 							}
-						} else loadMap(engine.field, it, mapNumber[playerID])
+						} else loadMap(engine.field, it, mapNumber[pid])
 
 						engine.field.setAllSkin(engine.skin)
-						fldBackup[playerID] = Field(engine.field)
+						fldBackup[pid] = Field(engine.field)
 					}
 				}
 			} else engine.field.reset()
-			if(hoverBlocks[playerID]>0) {
+			if(hoverBlocks[pid]>0) {
 				engine.createFieldIfNeeded()
 				var minY = 6
 				when {
-					hoverBlocks[playerID]>=80 -> minY = 3
-					hoverBlocks[playerID]>=72 -> minY = 4
-					hoverBlocks[playerID]>=64 -> minY = 5
+					hoverBlocks[pid]>=80 -> minY = 3
+					hoverBlocks[pid]>=72 -> minY = 4
+					hoverBlocks[pid]>=64 -> minY = 5
 				}
-				if(flash[playerID]) {
-					engine.field.addRandomHoverBlocks(engine, hoverBlocks[playerID], FLASH_BLOCK_COLORS, minY, true, true)
+				if(flash[pid]) {
+					engine.field.addRandomHoverBlocks(engine, hoverBlocks[pid], FLASH_BLOCK_COLORS, minY, true, true)
 					engine.field.setAllSkin(12)
-				} else engine.field.addRandomHoverBlocks(engine, hoverBlocks[playerID], HOVER_BLOCK_COLORS, minY, true)
+				} else engine.field.addRandomHoverBlocks(engine, hoverBlocks[pid], HOVER_BLOCK_COLORS, minY, true)
 			}
 		}
 
@@ -484,12 +492,12 @@ class PhysicianVS:AbstractMode() {
 	}
 
 	/* Called at game start */
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_CONNECT
-		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
+		engine.enableSE = enableSE[engine.playerID]
+		if(engine.playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 
 		engine.twistAllowKick = false
 		engine.twistEnable = false
@@ -497,25 +505,28 @@ class PhysicianVS:AbstractMode() {
 	}
 
 	/* Render score */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		val fldPosX = receiver.fieldX(engine, playerID)
-		val fldPosY = receiver.fieldY(engine, playerID)
-		val playerColor = EventReceiver.getPlayerColor(playerID)
+	override fun renderLast(engine:GameEngine) {
+		val fldPosX = receiver.fieldX(engine)
+		val fldPosY = receiver.fieldY(engine)
+		val pid = engine.playerID
+		val playerColor = EventReceiver.getPlayerColor(pid)
 		val tempX:Int
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(256, 16, engine.statistics.time.toTimeStr)
+		if(pid==0) receiver.drawDirectFont(256, 16, engine.statistics.time.toTimeStr)
 
 		if(engine.gameStarted) {
 			// Rest
-			receiver.drawDirectFont(fldPosX+160, fldPosY+241, "REST", playerColor, .5f)
-			tempX = if(rest[playerID]<10) 8 else 0
-			receiver.drawDirectFont(fldPosX+160+tempX, fldPosY+257, "${rest[playerID]}",
-				if(rest[playerID]<=if(flash[playerID]) 1 else 3) COLOR.RED else COLOR.WHITE)
+			receiver.drawDirectFont(fldPosX+160, fldPosY+241, "Target", playerColor, .5f)
+			tempX = if(rest[pid]<10) 8 else 0
+			receiver.drawDirectFont(
+				fldPosX+160+tempX, fldPosY+257, "${rest[pid]}",
+				if(rest[pid]<=if(flash[pid]) 1 else 3) COLOR.RED else COLOR.WHITE
+			)
 
 			// Speed
-			receiver.drawDirectFont(fldPosX+156, fldPosY+280, "SPEED", playerColor, .5f)
-			receiver.drawDirectFont(fldPosX+152, fldPosY+296, SPEED_NAME[speed[playerID]], SPEED_COLOR[speed[playerID]])
+			receiver.drawDirectFont(fldPosX+156, fldPosY+280, "Speed", playerColor, .5f)
+			receiver.drawDirectFont(fldPosX+152, fldPosY+296, SPEED_NAME[speed[pid]], SPEED_COLOR[speed[pid]])
 		}
 
 		/* if(playerID == 0) {
@@ -555,28 +566,29 @@ class PhysicianVS:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 //		if(engine.field==null) return 0
 		var gemsCleared = engine.field.gemsCleared
+		val pid = engine.playerID
 		if(gemsCleared>0&&lines>0) {
 			var pts = 0
-			while(gemsCleared>0&&gemsClearedChainTotal[playerID]<5) {
-				pts += 1 shl gemsClearedChainTotal[playerID]
-				gemsClearedChainTotal[playerID]++
+			while(gemsCleared>0&&gemsClearedChainTotal[pid]<5) {
+				pts += 1 shl gemsClearedChainTotal[pid]
+				gemsClearedChainTotal[pid]++
 				gemsCleared--
 			}
-			if(gemsClearedChainTotal[playerID]>=5) pts += gemsCleared shl 5
-			pts *= (speed[playerID]+1)*100
-			gemsClearedChainTotal[playerID] += gemsCleared
-			lastscores[playerID] = pts
-			scgettime[playerID] = 120
+			if(gemsClearedChainTotal[pid]>=5) pts += gemsCleared shl 5
+			pts *= (speed[pid]+1)*100
+			gemsClearedChainTotal[pid] += gemsCleared
+			lastscores[pid] = pts
+			scgettime[pid] = 120
 			engine.statistics.scoreLine += pts
-			score[playerID] += pts
+			score[pid] += pts
 			engine.playSE("gem")
 			setSpeed(engine)
 			return pts
 		} else if(lines==0&&!engine.field.canCascade())
-			if(garbageCheck(engine, playerID)) {
+			if(garbageCheck(engine)) {
 				engine.stat = GameEngine.Status.LINECLEAR
 				engine.statc[0] = engine.lineDelay
 			}
@@ -592,12 +604,8 @@ class PhysicianVS:AbstractMode() {
 		engine.speed.denominator = 3600
 	}
 
-	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
-		engine.field
-
-		var enemyID = 0
-		if(playerID==0) enemyID = 1
-
+	override fun lineClearEnd(engine:GameEngine):Boolean {
+		val enemyID = if(engine.playerID==0) 1 else 0
 
 		engine.field.lineColorsCleared.let {cleared ->
 			if(cleared.size>1)
@@ -608,18 +616,20 @@ class PhysicianVS:AbstractMode() {
 				}
 		}
 		engine.field.lineColorsCleared = IntArray(0)
-		return garbageCheck(engine, playerID)
+		return garbageCheck(engine)
 	}
 
-	private fun garbageCheck(engine:GameEngine, playerID:Int):Boolean {
-		if(garbageColors[playerID].isEmpty()) return false
-		val size = garbageColors[playerID].size
+	private fun garbageCheck(engine:GameEngine):Boolean {
+		val pid = engine.playerID
+		if(garbageColors[pid].isEmpty()) return false
+		val size = garbageColors[pid].size
 		if(size<2) return false
-		garbageColors[playerID] = garbageColors[playerID].toMutableList().shuffled(engine.random).toIntArray()
+		garbageColors[pid] = garbageColors[pid].toMutableList().shuffled(engine.random).toIntArray()
 		val colors = IntArray(4)
 		when {
 			size>=4 -> for(x in 0..3)
-				colors[x] = garbageColors[playerID][x]
+				colors[x] = garbageColors[pid][x]
+
 			size==3 -> {
 				val skipSlot = engine.random.nextInt(4)
 				colors[skipSlot] = -1
@@ -627,15 +637,16 @@ class PhysicianVS:AbstractMode() {
 				for(x in 0..2) {
 					i = x
 					if(x>=skipSlot) i++
-					colors[i] = garbageColors[playerID][x]
+					colors[i] = garbageColors[pid][x]
 				}
 			}
+
 			else -> {
 				val firstSlot = engine.random.nextInt(4)
-				colors[firstSlot] = garbageColors[playerID][0]
+				colors[firstSlot] = garbageColors[pid][0]
 				var secondSlot = firstSlot+2
 				if(secondSlot>3) secondSlot -= 4
-				colors[secondSlot] = garbageColors[playerID][1]
+				colors[secondSlot] = garbageColors[pid][1]
 			}
 		}
 		val shift = engine.random.nextInt(2)
@@ -645,35 +656,36 @@ class PhysicianVS:AbstractMode() {
 				engine.field.garbageDropPlace(2*x+shift, y, false, 0, colors[x])
 				engine.field.getBlock(2*x+shift, y)!!.skin = engine.skin
 			}
-		garbageColors[playerID] = IntArray(0)
+		garbageColors[pid] = IntArray(0)
 		return true
 	}
 
 	/* Called after every frame */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
-		scgettime[playerID]++
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
+		val pid = engine.playerID
+		scgettime[pid]++
 
 		val rest = engine.field.howManyGems
-		if(flash[playerID]) {
-			engine.meterValue = rest*receiver.getMeterMax(engine)/3
+		if(flash[pid]) {
+			engine.meterValue = rest/3f
 			when(rest) {
 				1 -> engine.meterColor = GameEngine.METER_COLOR_GREEN
 				2 -> engine.meterColor = GameEngine.METER_COLOR_YELLOW
 				else -> engine.meterColor = GameEngine.METER_COLOR_RED
 			}
 		} else {
-			engine.meterValue = rest*receiver.getMeterMax(engine)/hoverBlocks[playerID]
+			engine.meterValue = rest*1f/hoverBlocks[pid]
 			engine.meterColor = when {
 				rest<=3 -> GameEngine.METER_COLOR_GREEN
-				rest<hoverBlocks[playerID] shr 2 -> GameEngine.METER_COLOR_YELLOW
-				rest<hoverBlocks[playerID] shr 1 -> GameEngine.METER_COLOR_ORANGE
+				rest<hoverBlocks[pid] shr 2 -> GameEngine.METER_COLOR_YELLOW
+				rest<hoverBlocks[pid] shr 1 -> GameEngine.METER_COLOR_ORANGE
 				else -> GameEngine.METER_COLOR_RED
 			}
 		}
 
 		// Settlement
-		if(playerID==1&&owner.engine[0].gameActive) {
+		if(pid==1&&owner.engine[0].gameActive) {
 			val p1Lose = owner.engine[0].stat==GameEngine.Status.GAMEOVER||owner.engine[1].field.howManyGems==0
 			val p2Lose = owner.engine[1].stat==GameEngine.Status.GAMEOVER||owner.engine[0].field.howManyGems==0
 			if(p1Lose&&p2Lose) {
@@ -705,16 +717,17 @@ class PhysicianVS:AbstractMode() {
 	}
 
 	/* Render results screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 1, "RESULT", COLOR.ORANGE)
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 1, "RESULT", COLOR.ORANGE)
 		when(winnerID) {
-			-1 -> receiver.drawMenuFont(engine, playerID, 6, 2, "DRAW", COLOR.GREEN)
-			playerID -> receiver.drawMenuFont(engine, playerID, 6, 2, "WIN!", COLOR.YELLOW)
-			else -> receiver.drawMenuFont(engine, playerID, 6, 2, "LOSE", COLOR.WHITE)
+			-1 -> receiver.drawMenuFont(engine, 6, 2, "DRAW", COLOR.GREEN)
+			engine.playerID -> receiver.drawMenuFont(engine, 6, 2, "WIN!", COLOR.YELLOW)
+			else -> receiver.drawMenuFont(engine, 6, 2, "LOSE", COLOR.WHITE)
 		}
 
-		drawResultStats(engine, playerID, receiver, 3, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS,
-			Statistic.TIME)
+		drawResultStats(
+			engine, receiver, 3, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS, Statistic.TIME
+		)
 		/* float apm = (float)(garbageSent[playerID] * 3600) /
  * (float)(engine.statistics.time);
  * drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.ORANGE,
@@ -723,11 +736,12 @@ class PhysicianVS:AbstractMode() {
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveOtherSetting(engine, owner.replayProp)
-		savePreset(engine, owner.replayProp, -1-playerID)
+		val pid = engine.playerID
+		savePreset(engine, owner.replayProp, -1-pid)
 
-		if(useMap[playerID]) fldBackup[playerID]?.let {saveMap(it, owner.replayProp, playerID)}
+		if(useMap[pid]) fldBackup[pid]?.let {saveMap(it, owner.replayProp, pid)}
 
 		owner.replayProp.setProperty("physicianvs.version", version)
 		return false

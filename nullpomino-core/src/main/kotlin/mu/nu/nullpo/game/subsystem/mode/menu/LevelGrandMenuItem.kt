@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2021-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,10 +31,14 @@ package mu.nu.nullpo.game.subsystem.mode.menu
 
 import mu.nu.nullpo.game.event.EventReceiver
 
-class LevelGrandMenuItem(color:EventReceiver.COLOR, compact:Boolean, showG:Boolean, showD:Boolean):
-	LevelMenuItem("startLevel", "Level", color, 0, 0..9, compact, showG, showD) {
+class LevelGrandMenuItem(color:EventReceiver.COLOR, maxSection:Int = 9, compact:Boolean = true, showG:Boolean = true, showD:Boolean = true):
+	LevelMenuItem("startLevel", "Level", color, 0, 0..maxSection, compact, showG, showD) {
+	constructor(color:EventReceiver.COLOR, compact:Boolean = true, showG:Boolean = true, showD:Boolean = true):this(
+		color, 9, compact, showG, showD
+	)
+
 	constructor(color:EventReceiver.COLOR, showG:Boolean = true, showD:Boolean = true):this(color, false, showG, showD)
-	constructor(color:EventReceiver.COLOR, compact:Boolean):this(color, compact, false, false)
+	constructor(color:EventReceiver.COLOR, compact:Boolean = true):this(color, compact, false, false)
 
 	override val valueString:String
 		get() = "${value*100}"

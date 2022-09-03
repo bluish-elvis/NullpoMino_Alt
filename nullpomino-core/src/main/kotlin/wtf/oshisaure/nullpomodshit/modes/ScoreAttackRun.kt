@@ -1,3 +1,39 @@
+/*
+ * Copyright (c) 2022-2022,
+ * This library class was created by 0xFC963F18DC21 / Shots243
+ * It is part of an extension library for the game NullpoMino (copyright 2022-2022)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
+ *
+ * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+ *
+ * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+ *
+ * Repository: https://github.com/Shots243/ModePile
+ *
+ * When using this library in a mode / library pack of your own, the following
+ * conditions must be satisfied:
+ *     - This license must remain visible at the top of the document, unmodified.
+ *     - You are allowed to use this library for any modding purpose.
+ *         - If this is the case, the Library Creator must be credited somewhere.
+ *             - Source comments only are fine, but in a README is recommended.
+ *     - Modification of this library is allowed, but only in the condition that a
+ *       pull request is made to merge the changes to the repository.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 //
 // Source code recreated from a .class file by IntelliJ IDEA
 // (powered by FernFlower decompiler)
@@ -28,7 +64,7 @@ class ScoreAttackRun:AbstractMode() {
 	private var lastb2b = false
 	private var incombo = false
 	private var quads = 0
-	private var bgmlv = 0
+	private var bgmLv = 0
 	private var rankingScore:Array<LongArray> = Array(RANKING_TYPES) {LongArray(RANKING_MAX)}
 	private var rankingLevel:Array<IntArray> = Array(RANKING_TYPES) {IntArray(RANKING_MAX)}
 	private var rankingQuads:Array<IntArray> = Array(RANKING_TYPES) {IntArray(RANKING_MAX)}
@@ -42,7 +78,7 @@ class ScoreAttackRun:AbstractMode() {
 
 	private val itemMode = StringsMenuItem(
 		"gametype", "GAME MODE", COLOR.BLUE, 0,
-		Gametype.values().map {it.label}.toTypedArray()
+		Gametype.all.map {it.label}.toTypedArray()
 	)
 	private var gametype:Int by DelegateMenuItem(itemMode)
 	override val name:String get() = "ARCADE SCORE ATTACK"
@@ -105,7 +141,7 @@ class ScoreAttackRun:AbstractMode() {
 		return render.take(sciNotationLength-expstr.length)+expstr
 	}
 
-	override fun playerInit(engine:GameEngine, playerID:Int) {
+	override fun playerInit(engine:GameEngine) {
 
 		score = 0
 		scoreRate = 1
@@ -120,7 +156,7 @@ class ScoreAttackRun:AbstractMode() {
 		ren = 0
 		allclears = 0
 		maxchain = 0
-		bgmlv = 0
+		bgmLv = 0
 		rankingRank = -1
 		rankingScore = Array(RANKING_TYPES) {LongArray(RANKING_MAX)}
 		rankingLevel = Array(RANKING_TYPES) {IntArray(RANKING_MAX)}
@@ -129,7 +165,7 @@ class ScoreAttackRun:AbstractMode() {
 			version = 1
 		}
 		engine.owner.backgroundStatus.bg = 0
-		engine.framecolor = 7
+		engine.frameColor = 7
 	}
 
 	fun setSpeed(engine:GameEngine) {
@@ -163,14 +199,14 @@ class ScoreAttackRun:AbstractMode() {
 		}
 	}
 
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		if(!engine.owner.replayMode) {
 //			val change = updateMenu(engine)
 			if(engine.ctrl.isPush(4)&&engine.statc[3]>=5) {
 				engine.playSE("decide")
 				return false
 			}
-			if(engine.ctrl.isPush(5)) engine.quitflag = true
+			if(engine.ctrl.isPush(5)) engine.quitFlag = true
 			engine.statc[3]++
 		} else {
 			engine.statc[3]++
@@ -180,7 +216,7 @@ class ScoreAttackRun:AbstractMode() {
 		return true
 	}
 
-	override fun startGame(engine:GameEngine, playerID:Int) {
+	override fun startGame(engine:GameEngine) {
 		engine.twistEnable = gametype==1||gametype==3
 		engine.useAllSpinBonus = true
 		engine.big = gametype==4||gametype==5
@@ -203,76 +239,75 @@ class ScoreAttackRun:AbstractMode() {
 		setSpeed(engine)
 	}
 
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		if(!owner.menuOnly) {
-			receiver.drawScoreFont(engine, playerID, 0, 0, "ARCADE SCORE ATTACK", 8f)
-			if(gametype!=0) receiver.drawScoreFont(engine, playerID, 2, 1, "(${GAMETYPE_LABELS[gametype]} MODE)", 9f)
+			receiver.drawScoreFont(engine, 0, 0, "ARCADE SCORE ATTACK", 8f)
+			if(gametype!=0) receiver.drawScoreFont(engine, 2, 1, "(${GAMETYPE_LABELS[gametype]} MODE)", 9f)
 
 			var colour:Int
 			val event:Int = if(receiver.nextDisplayType==2) 6 else 4
 			if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 				if(!owner.replayMode&&engine.ai==null) {
 					val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
-					receiver.drawScoreFont(engine, playerID, 1, event-1, "LV QS SCORE", COLOR.PURPLE, scale)
+					receiver.drawScoreFont(engine, 1, event-1, "LV QS SCORE", COLOR.PURPLE, scale)
 					colour = 0
 					while(colour<10) {
-						receiver.drawScoreGrade(engine, playerID, -2, event+colour, String.format("%2d", colour+1), COLOR.YELLOW, scale)
+						receiver.drawScoreGrade(engine, -2, event+colour, String.format("%2d", colour+1), COLOR.YELLOW, scale)
 						receiver.drawScoreFont(
-							engine, playerID, 1, event+colour, "${rankingLevel[gametype][colour]+1}",
-							colour==rankingRank, scale
+							engine, 1, event+colour, "${rankingLevel[gametype][colour]+1}", colour==rankingRank,
+							scale
 						)
 						receiver.drawScoreFont(
-							engine, playerID, 4, event+colour, "${rankingQuads[gametype][colour]}",
-							colour==rankingRank, scale
+							engine, 4, event+colour, "${rankingQuads[gametype][colour]}", colour==rankingRank,
+							scale
 						)
 						receiver.drawScoreFont(
-							engine, playerID, 7, event+colour,
-							formatScore(rankingScore[gametype][colour]), colour==rankingRank, scale
+							engine, 7, event+colour, formatScore(rankingScore[gametype][colour]),
+							colour==rankingRank, scale
 						)
 						++colour
 					}
 				}
 			} else {
-				receiver.drawScoreFont(engine, playerID, 0, 3, "SCORE", 8f)
-				receiver.drawScoreFont(engine, playerID, 0, 4, formatScore(score), 5f)
+				receiver.drawScoreFont(engine, 0, 3, "SCORE", 8f)
+				receiver.drawScoreFont(engine, 0, 4, formatScore(score), 5f)
 				if(lastscoreL!=0L)
-					receiver.drawScoreFont(engine, playerID, 0, 5, "+"+formatScore(lastscoreL))
+					receiver.drawScoreFont(engine, 0, 5, "+"+formatScore(lastscoreL))
 
-				receiver.drawScoreFont(engine, playerID, 0, 7, "LINES", 8f)
+				receiver.drawScoreFont(engine, 0, 7, "LINES", 8f)
 				if(engine.statistics.level>=19) {
-					receiver.drawScoreFont(engine, playerID, 0, 8, engine.statistics.lines.toString())
+					receiver.drawScoreFont(engine, 0, 8, engine.statistics.lines.toString())
 				} else {
 					receiver.drawScoreFont(
 						engine,
-						playerID,
 						0,
 						8,
 						engine.statistics.lines.toString()+"/"+tableLevelChange[engine.statistics.level+1]
 					)
 				}
-				receiver.drawScoreFont(engine, playerID, 0, 10, "LEVEL", 8f)
-				receiver.drawScoreFont(engine, playerID, 0, 11, (engine.statistics.level+1).toString())
-				receiver.drawScoreFont(engine, playerID, 10, 10, "QUADS", 8f)
-				receiver.drawScoreFont(engine, playerID, 10, 11, "$quads", 6f)
+				receiver.drawScoreFont(engine, 0, 10, "LEVEL", 8f)
+				receiver.drawScoreFont(engine, 0, 11, (engine.statistics.level+1).toString())
+				receiver.drawScoreFont(engine, 10, 10, "QUADS", 8f)
+				receiver.drawScoreFont(engine, 10, 11, "$quads", 6f)
 				if(gametype!=4&&gametype!=5) {
-					receiver.drawScoreFont(engine, playerID, 0, 13, "CHAIN", 8f)
-					receiver.drawScoreFont(engine, playerID, 0, 14, "$ren", COLOR.RED)
+					receiver.drawScoreFont(engine, 0, 13, "CHAIN", 8f)
+					receiver.drawScoreFont(engine, 0, 14, "$ren", COLOR.RED)
 				} else {
-					receiver.drawScoreFont(engine, playerID, 0, 13, "ALL CLEARS", 8f)
-					receiver.drawScoreFont(engine, playerID, 0, 14, "$allclears", COLOR.RED)
+					receiver.drawScoreFont(engine, 0, 13, "ALL CLEARS", 8f)
+					receiver.drawScoreFont(engine, 0, 14, "$allclears", COLOR.RED)
 				}
-				receiver.drawScoreFont(engine, playerID, 10, 13, "MULTIPLIER", 8f)
-				receiver.drawScoreFont(engine, playerID, 10, 14, "${BaseFont.CROSS}$scoreRate%", 5f)
-				receiver.drawScoreFont(engine, playerID, 0, 17, "TIME LEFT", 2f)
-				receiver.drawScoreFont(engine, playerID, 0, 18, currenttime.toTimeStr)
-				receiver.drawScoreFont(engine, playerID, 10, 17, "TOTAL TIME", 9f)
-				receiver.drawScoreFont(engine, playerID, 10, 18, engine.statistics.time.toTimeStr)
+				receiver.drawScoreFont(engine, 10, 13, "MULTIPLIER", 8f)
+				receiver.drawScoreFont(engine, 10, 14, "${BaseFont.CROSS}$scoreRate%", 5f)
+				receiver.drawScoreFont(engine, 0, 17, "TIME LEFT", 2f)
+				receiver.drawScoreFont(engine, 0, 18, currenttime.toTimeStr)
+				receiver.drawScoreFont(engine, 10, 17, "TOTAL TIME", 9f)
+				receiver.drawScoreFont(engine, 10, 18, engine.statistics.time.toTimeStr)
 			}
 		}
 	}
 
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 		if(ingame&&engine.statistics.time>0) {
 			scgettime += scoreRate
 			while(scgettime>=100) {
@@ -292,12 +327,12 @@ class ScoreAttackRun:AbstractMode() {
 		}
 	}
 
-	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+	override fun onGameOver(engine:GameEngine):Boolean {
 		ingame = false
 		return false
 	}
 
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		lasttype = minOf(lines, 4)
 		lastpiece = engine.nowPieceObject!!.id
 		var pts = calcScoreBase(engine, lines)
@@ -333,13 +368,13 @@ class ScoreAttackRun:AbstractMode() {
 		engine.statistics.scoreLine += pts
 		score += pts
 
-		if(tableBGMChange[bgmlv]!=-1) {
-			if(engine.statistics.lines>=tableBGMChange[bgmlv]-5) {
+		if(tableBGMChange[bgmLv]!=-1) {
+			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) {
 				owner.bgmStatus.fadesw = true
 			}
-			if(engine.statistics.lines>=tableBGMChange[bgmlv]) {
-				++bgmlv
-				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmlv)
+			if(engine.statistics.lines>=tableBGMChange[bgmLv]) {
+				++bgmLv
+				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmLv)
 				owner.bgmStatus.fadesw = false
 			}
 		}
@@ -358,13 +393,13 @@ class ScoreAttackRun:AbstractMode() {
 			val linerange = maxlines-minlines
 			val curlines = engine.statistics.lines-minlines
 			val restlines = linerange-curlines
-			engine.meterValue = curlines*receiver.getMeterMax(engine)/(linerange-1)
+			engine.meterValue = curlines*1f/(linerange-1)
 			engine.meterColor = 3
 			if(restlines<=10) engine.meterColor = 2
 			if(restlines<=4) engine.meterColor = 1
 			if(restlines<=2) engine.meterColor = 0
 		} else {
-			engine.meterValue = currenttime*receiver.getMeterMax(engine)/'꿈'.code
+			engine.meterValue = currenttime*1f/'꿈'.code
 			engine.meterColor = if(currenttime<=10) 0
 			else if(currenttime<=30) 1
 			else if(currenttime<=60) 2
@@ -376,19 +411,19 @@ class ScoreAttackRun:AbstractMode() {
 		return pts
 	}
 
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "FINAL SCORE", COLOR.PURPLE)
-		receiver.drawMenuFont(engine, playerID, 0, 1, formatScore(score), COLOR.YELLOW)
-		receiver.drawMenuFont(engine, playerID, 0, 2, "QUADS", COLOR.PURPLE)
-		receiver.drawMenuFont(engine, playerID, 0, 3, "$quads", COLOR.CYAN)
-		receiver.drawMenuFont(engine, playerID, 0, 4, "MAX CHAIN", COLOR.PURPLE)
-		receiver.drawMenuFont(engine, playerID, 0, 5, "$maxchain", COLOR.RED)
-		receiver.drawMenuFont(engine, playerID, 0, 6, "MAX MULTI.", COLOR.PURPLE)
-		receiver.drawMenuFont(engine, playerID, 0, 7, "${BaseFont.CROSS}$maxmult", COLOR.YELLOW)
-		drawResultStats(engine, playerID, receiver, 8, COLOR.PURPLE, Statistic.LINES, Statistic.LEVEL, Statistic.LPM, Statistic.PPS)
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 0, "FINAL SCORE", COLOR.PURPLE)
+		receiver.drawMenuFont(engine, 0, 1, formatScore(score), COLOR.YELLOW)
+		receiver.drawMenuFont(engine, 0, 2, "QUADS", COLOR.PURPLE)
+		receiver.drawMenuFont(engine, 0, 3, "$quads", COLOR.CYAN)
+		receiver.drawMenuFont(engine, 0, 4, "MAX CHAIN", COLOR.PURPLE)
+		receiver.drawMenuFont(engine, 0, 5, "$maxchain", COLOR.RED)
+		receiver.drawMenuFont(engine, 0, 6, "MAX MULTI.", COLOR.PURPLE)
+		receiver.drawMenuFont(engine, 0, 7, "${BaseFont.CROSS}$maxmult", COLOR.YELLOW)
+		drawResultStats(engine, receiver, 8, COLOR.PURPLE, Statistic.LINES, Statistic.LEVEL, Statistic.LPM, Statistic.PPS)
 	}
 
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		if(!owner.replayMode&&engine.ai==null) {
 			updateRanking(score, engine.statistics.level, quads, gametype)
 			return (rankingRank!=-1)
@@ -430,9 +465,13 @@ class ScoreAttackRun:AbstractMode() {
 			Regular, Spin, MaxSpeed, SpinMax("Spin MaxSpeed"), Mega, MegaMax("Mega MaxSpeed");
 
 			val label:String = label ?: name
+
+			companion object {
+				val all = values()
+			}
 		}
 
-		private val GAMETYPE_LABELS:Array<String> = Gametype.values().map {it.label}.toTypedArray()
+		private val GAMETYPE_LABELS:Array<String> = Gametype.all.map {it.label}.toTypedArray()
 		private val RANKING_TYPES = GAMETYPE_LABELS.size
 		private const val GAMETYPE_REGULAR = 0
 		private const val GAMETYPE_SPIN = 1

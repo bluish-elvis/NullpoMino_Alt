@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,16 +28,22 @@
  */
 package mu.nu.nullpo.game.play
 
-import mu.nu.nullpo.game.component.*
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.ReplayData
+import mu.nu.nullpo.game.component.RuleOptions
+import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
+import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.event.ScoreEvent.Twister
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
-import mu.nu.nullpo.gui.common.PopupCombo.CHAIN
-import mu.nu.nullpo.gui.slick.NullpoMinoSlick
+import mu.nu.nullpo.gui.common.fx.PopupCombo.CHAIN
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
@@ -62,9 +68,9 @@ class GameEngine(
 	var randomizer:Randomizer = MemorylessRandomizer()
 ) {
 
-	var field = Field()
+	var field = Field(); private set
 	/** Controller: You can get player's input from here */
-	var ctrl = Controller()
+	var ctrl = Controller(); private set
 	/** Statistics: Various game statistics
 	 * such as score, number of lines, etc */
 	val statistics = Statistics()
@@ -81,7 +87,7 @@ class GameEngine(
 	/** Random: Used for creating various randomness */
 	var random = Random(0L)
 	/** ReplayData: Manages input data for replays */
-	var replayData = ReplayData()
+	var replayData = ReplayData(); private set
 
 	/** AIPlayer: AI for autoplaying */
 	var ai:AIPlayer? = null
@@ -91,7 +97,7 @@ class GameEngine(
 	var aiUseThread = false
 	var aiShowHint = false
 	/** Pre-think with AI */
-	var aiPrethink = false
+	var aiPreThink = false
 	/** Show internal state of AI */
 	var aiShowState = false
 	/** AI Hint piece (copy of current or hold) */
@@ -133,8 +139,8 @@ class GameEngine(
 	/** OLD minor version (Used for 6.9 or earlier replays) */
 	var versionMinorOld = 0f
 	/** Dev build flag */
-	var versionIsDevBuild = false
-	var quitflag = false
+	val versionIsDevBuild = false
+	var quitFlag = false
 
 	/** Piece object of current piece */
 	var nowPieceObject:Piece? = null
@@ -146,7 +152,7 @@ class GameEngine(
 	 * (Used for ghost piece and harddrop) */
 	var nowPieceBottomY = 0
 	/** Write anything other than -1 to override whole current piece cint */
-	var nowPieceColorOverride:Block.COLOR? = null
+	var nowPieceColorOverride:Block.COLOR? = null; private set
 
 	/** Allow/Disallow certain piece */
 	var nextPieceEnable = BooleanArray(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
@@ -167,12 +173,12 @@ class GameEngine(
 	var holdUsedCount = 0
 
 	/** Number of lines currently clearing */
-	var lineClearing = 0
-	var garbageClearing = 0
+	var lineClearing = 0; private set
+	var garbageClearing = 0; private set
 	/** Line gravity type (Native, Cascade, etc) */
 	var lineGravityType = LineGravity.NATIVE
 	/** Current number of chains */
-	var chain = 0
+	var chain = 0; private set
 
 	/** Number of lines cleared for this chains */
 	var lineGravityTotalLines = 0
@@ -183,67 +189,70 @@ class GameEngine(
 	/** DAS counter */
 	var dasCount = 0
 	/** DAS direction (-1:Left 0:None 1:Right) */
-	var dasDirection = 0
+	var dasDirection = 0; private set
 	/** DAS delay counter */
-	var dasSpeedCount = 0
+	var dasSpeedCount = 0; private set
 	/** Repeat statMove() for instant DAS */
-	var dasRepeat = false
+	var dasRepeat = false; private set
 	/** In the middle of an instant DAS loop */
-	var dasInstant = false
-	/** Wall pushing DAS for preventing movefail sounds */
-	var dasWall = false
+	var dasInstant = false; private set
+	/** Wall pushing DAS for preventing move-fail sounds */
+	var dasWall = false; private set
 
 	/** Disallow shift while locking key is pressed */
-	var shiftLock = 0
+	var shiftLock = 0; private set
 
 	/** IRS direction */
-	var initialRotateDirection = 0
+	var initialSpinDirection = 0; private set
 	/** Last IRS direction */
-	var initialRotateLastDirection = 0
+	var initialSpinLastDirection = 0; private set
 	/** IRS continuous use flag */
-	var initialRotateContinuousUse = false
+	var initialSpinContinuousUse = false; private set
 	/** IHS */
-	var initialHoldFlag = false
+	var initialHoldFlag = false; private set
 	/** IHS continuous use flag */
-	var initialHoldContinuousUse = false
+	var initialHoldContinuousUse = false; private set
 
 	/** Number of current piece movement */
-	var nowPieceMoveCount = 0
+	var nowPieceMoveCount = 0; private set
 	/** Number of current piece rotations */
-	var nowPieceRotateCount = 0
+	var nowPieceSpinCount = 0; private set
 	/** Number of current piece failed rotations */
-	var nowPieceRotateFailCount = 0
+	var nowPieceSpinFailCount = 0; private set
 	/** Number of movement while touching to the floor */
-	var extendedMoveCount = 0
+	var extendedMoveCount = 0; private set
 	/** Number of rotations while touching to the floor */
-	var extendedRotateCount = 0
-	/** Number of wallkicks used by current piece */
-	var nowWallkickCount = 0
-	/** Number of upward wallkicks used by current piece */
-	var nowUpwardWallkickCount = 0
-	/** Number of rows falled by soft drop (Used by soft drop bonuses) */
-	var softdropFall = 0
-	/** Number of rows falled by hard drop (Used by soft drop bonuses) */
-	var harddropFall = 0
+	var extendedSpinCount = 0; private set
+	/** Number of wall kicks used by current piece */
+	var nowWallkickCount = 0; private set
+	/** Number of upward wall kicks used by current piece */
+	var nowWallkickRiseCount = 0; private set
+	/** Number of rows fell by soft drop (Used by soft drop bonuses) */
+	var softdropFall = 0; private set
+	/** Number of rows fell by hard drop (Used by soft drop bonuses) */
+	var harddropFall = 0; private set
 	/** fall per frame */
-	var fpf = 0
+	var fpf = 0; private set
 	/** Soft drop continuous use flag */
-	var softdropContinuousUse = false
+	var softdropContinuousUse = false; private set
 	/** Hard drop continuous use flag */
-	var harddropContinuousUse = false
+	var harddropContinuousUse = false; private set
 	/** True if the piece was manually locked by player */
-	var manualLock = false
+	var manualLock = false; private set
 
 	/** Last successful movement */
-	var lastmove = LastMove.NONE
-	var lastline = 0
+	var lastMove = LastMove.NONE
+	var lastLine = 0
 
+	/** True if last placement is Finesse */
+	var finesse = false
+	var keycountMove = 0
 	/** Most recent scoring event type */
-	var lastevent:ScoreEvent? = null
-	val lasteventshape:Piece.Shape? get() = lastevent?.piece?.type
-	val lasteventpiece:Int get() = lastevent?.piece?.id ?: 0
+	var lastEvent:ScoreEvent? = null
+	val lastEventShape:Piece.Shape? get() = lastEvent?.piece?.type
+	val lastEventPiece:Int get() = lastEvent?.piece?.id ?: 0
 
-	var lastlines = IntArray(0)
+	var lastLines = IntArray(0)
 
 	/** True if last erased line is Split */
 	var split = false
@@ -252,19 +261,17 @@ class GameEngine(
 	/** True if Twister */
 	val twist:Boolean get() = twistType!=null
 	/** True if Twister Mini */
-	val twistmini:Boolean get() = twistType==Twister.IMMOBILE_MINI||twistType==Twister.POINT_MINI
+	val twistMini:Boolean get() = twistType==Twister.IMMOBILE_MINI||twistType==Twister.POINT_MINI
 	/** EZ Twister */
-	val twistez:Boolean get() = twistType==Twister.IMMOBILE_EZ
+	val twistEZ:Boolean get() = twistType==Twister.IMMOBILE_EZ
 
-	/** True if B2B */
+	/** True if last erasing line is B2B */
 	var b2b = false
 	/** B2B counter */
-	var b2bcount = 0
-	var b2bbuf = 0
+	var b2bCount = -1
 
 	/** Number of combos */
-	var combo = 0
-	var combobuf = 0
+	var combo = -1//;private set
 
 	/** Twister enable flag */
 	var twistEnable = false
@@ -278,7 +285,7 @@ class GameEngine(
 	/** B2B enable flag */
 	var b2bEnable = false
 	/** Does Split trigger B2B flag */
-	var splitb2b = false
+	var splitB2B = false
 
 	/** Combo type */
 	var comboType = 0
@@ -307,11 +314,11 @@ class GameEngine(
 	var heboHiddenYLimit = 0
 
 	/** Set when ARE or line delay is canceled */
-	var delayCancel = false
+	var delayCancel = false; private set
 	/** Piece must move left after canceled delay */
-	var delayCancelMoveLeft = false
+	var delayCancelMoveLeft = false; private set
 	/** Piece must move right after canceled delay */
-	var delayCancelMoveRight = false
+	var delayCancelMoveRight = false; private set
 
 	/** Use bone blocks [][][][] */
 	var bone = false
@@ -321,12 +328,12 @@ class GameEngine(
 	/** Big blocks */
 	var big = false
 	/** Big movement type (false:1cell true:2cell) */
-	var bigmove = false
+	var bigMove = false
 	/** Halves the amount of lines cleared in Big mode */
-	var bighalf = false
+	var bigHalf = false
 
 	/** True if wallkick is used */
-	var kickused = false
+	var kicked = false; private set
 
 	/** Field size (-1:Default) */
 	var fieldWidth = -1
@@ -345,8 +352,8 @@ class GameEngine(
 	/** Update various statistics in staff roll challenge */
 	var staffrollEnableStatistics = false
 
-	/** Frame cint */
-	var framecolor = 0
+	/** Field's Frame color-int */
+	var frameColor = 0
 
 	/** Duration of Ready->Go */
 	var readyStart = 0
@@ -363,33 +370,33 @@ class GameEngine(
 	/** Ghost piece flag */
 	var ghost = false
 
-	/** Amount of meter 0-100 */
-	var meterValue = 0
+	/** Amount of meter  */
+	var meterValue = 0f
 
 	/** Color of meter */
 	var meterColor = 0
 
-	/** Amount of meter 0-100(layer 2) */
-	var meterValueSub = 0
+	/** Amount of meter 0-100 */
+	var meterValueSub = 0f
 
-	/** Color of meter (layer 2) */
+	/** Color of meter (under layer) */
 	var meterColorSub = 0
 
 	/** Lag flag (Infinite length of ARE will happen
 	 * after placing a piece until this flag is set to false) */
-	var lagARE = false
+	var lagARE = false; private set
 
 	/** Lag flag (Pause the game completely) */
-	var lagStop = false
+	var lagStop = false; private set
 
 	/** Field display size (-1 for mini, 1 for big, 0 for normal) */
-	var displaysize = 0
+	var displaySize = 0
 
 	/** Sound effects enable flag */
 	var enableSE = false
 
 	/** Stops all other players when this player dies */
-	var gameoverAll = false
+	var dieAll = false
 
 	/** Field visible flag (false for invisible challenge) */
 	var isVisible = false
@@ -400,14 +407,15 @@ class GameEngine(
 	var isHoldVisible = false
 
 	/** Field edit screen: Cursor coord */
-	var fldeditX = 0
-	var fldeditY = 0
+	var mapEditX = 0
+	/** Field edit screen: Cursor coord */
+	var mapEditY = 0
 	/** Field edit screen: Selected cint */
-	var fldeditColor = 0
+	var mapEditColor = 0
 	/** Field edit screen: Previous game status number */
-	var fldeditPreviousStat = Status.NOTHING
+	var mapEditPreviousStat = Status.NOTHING
 	/** Field edit screen: Frame counter */
-	var fldeditFrames = 0
+	var mapEditFrames = 0
 
 	/** Next-skip during Ready->Go */
 	var holdButtonNextSkip = false
@@ -427,18 +435,18 @@ class GameEngine(
 	/** Color-block enable flag */
 	var itemColorEnable = false
 	/** Color-block counter */
-	var itemColorCount = 0
+	var itemColorCount = 0; private set
 
 	/** Gameplay-interruptable inum */
 	var interruptItemNumber:Block.ITEM? = null
 
 	/** Post-status of interruptable inum */
-	var interruptItemPreviousStat:Status = Status.MOVE
+	var interruptItemPreviousStat:Status = Status.MOVE; private set
 	/** Backup field for Mirror inum */
-	var interruptItemMirrorField:Field = Field()
+	var interruptItemMirrorField:Field = Field(); private set
 
 	/** A button direction -1=Auto(Use rule settings) 0=Left 1=Right */
-	var owRotateButtonDefaultRight:Int = -1
+	var owSpinDirection:Int = -1
 	/** Block Skin (-1=Auto -2=Random 0orAbove=Fixed) */
 	var owSkin:Int = -1
 	/** Min/Max DAS (-1=Auto 0orAbove=Fixed) */
@@ -460,7 +468,7 @@ class GameEngine(
 	 * (-1:Auto 0:Always Normal 1:Always Outline Only) */
 	var owBlockShowOutlineOnly = -1
 	/** ARE Canceling
-	 * (-1:Rule 1:Move 2:Rotate 4:Hold)*/
+	 * (-1:Rule 1:Move 2:Spin 4:Hold)*/
 	var owDelayCancel = -1
 
 	/** Clear mode selection */
@@ -497,12 +505,12 @@ class GameEngine(
 	var dominoQuickTurn = false
 
 	/** 0 = default, 1 = link by cint,
-	 * 2 = link by cint but ignore links forcascade (Avalanche) */
+	 * 2 = link by cint but ignore links for cascade (Avalanche) */
 	var sticky = 0
 
 	/** Hanabi発生間隔 */
-	var temphanabi = 0
-	var inthanabi = 0
+	var tempHanabi = 0
+	var intHanabi = 0
 
 	var explodSize = EXPLOD_SIZE_DEFAULT
 
@@ -572,7 +580,7 @@ class GameEngine(
 	val skin:Int get() = if(owSkin>=0) owSkin else ruleOpt.skin
 
 	/** A buttonを押したときに左rotationするならfalse, 右rotationするならtrue*/
-	val isRotateButtonDefaultRight:Boolean get() = if(owRotateButtonDefaultRight>=0) owRotateButtonDefaultRight!=0 else ruleOpt.rotateButtonDefaultRight
+	val spinDirection:Boolean get() = if(owSpinDirection>=0) owSpinDirection!=0 else ruleOpt.spinToRight
 
 	/** Is diagonal movement enabled?*/
 	val isDiagonalMoveEnabled:Boolean; get() = if(owMoveDiagonal>=0) owMoveDiagonal==1 else ruleOpt.moveDiagonal
@@ -592,40 +600,33 @@ class GameEngine(
 				}
 			} else if(ctrl.isPress(Controller.BUTTON_LEFT)) -1 else if(ctrl.isPress(Controller.BUTTON_RIGHT)) 1 else 0
 
-	/** 移動 count制限を超過しているか判定
-	 * @return 移動 count制限を超過したらtrue
-	 */
+	/**@return 移動 count制限を超過したらtrue*/
 	val isMoveCountExceed:Boolean
-		get() = if(ruleOpt.lockresetLimitShareCount) {
-			extendedMoveCount+extendedRotateCount>=ruleOpt.lockresetLimitMove&&ruleOpt.lockresetLimitMove>=0
-		} else ruleOpt.lockresetLimitMove in 0..extendedMoveCount
+		get() = if(ruleOpt.lockResetLimitShareCount) {
+			extendedMoveCount+extendedSpinCount>=ruleOpt.lockResetMoveLimit&&ruleOpt.lockResetMoveLimit>=0
+		} else ruleOpt.lockResetMoveLimit in 0..extendedMoveCount
 
-	/** rotation count制限を超過しているか判定
-	 * @return rotation count制限を超過したらtrue
-	 */
-	val isRotateCountExceed:Boolean
-		get() = if(ruleOpt.lockresetLimitShareCount) {
-			extendedMoveCount+extendedRotateCount>=ruleOpt.lockresetLimitMove&&ruleOpt.lockresetLimitMove>=0
-		} else ruleOpt.lockresetLimitRotate in 0..extendedRotateCount
+	/**@return 回転 count制限を超過したらtrue*/
+	val isSpinCountExceed:Boolean
+		get() = if(ruleOpt.lockResetLimitShareCount) {
+			extendedMoveCount+extendedSpinCount>=ruleOpt.lockResetMoveLimit&&ruleOpt.lockResetMoveLimit>=0
+		} else ruleOpt.lockResetSpinLimit in 0..extendedSpinCount
 
-	/**
-	 * ホールド可能かどうか判定
-	 * @return ホールド可能ならtrue
-	 */
+	/** @return ホールド可能ならtrue */
 	val isHoldOK:Boolean
 		get() = (ruleOpt.holdEnable&&!holdDisable&&(holdUsedCount<ruleOpt.holdLimit||ruleOpt.holdLimit<0)
 			&&!initialHoldContinuousUse)
 
 	val canARECancelMove:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 1)>0 else ruleOpt.areCancelMove
 	val canLineCancelMove:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 2)>0 else ruleOpt.lineCancelMove
-	val canARECancelSpin:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 4)>0 else ruleOpt.areCancelRotate
-	val canLineCancelSpin:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 8)>0 else ruleOpt.lineCancelRotate
+	val canARECancelSpin:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 4)>0 else ruleOpt.areCancelSpin
+	val canLineCancelSpin:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 8)>0 else ruleOpt.lineCancelSpin
 	val canARECancelHold:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 16)>0 else ruleOpt.areCancelHold
 	val canLineCancelHold:Boolean get() = if(owDelayCancel>=0) (owDelayCancel and 32)>0 else ruleOpt.lineCancelMove
 
 	/** READY前のInitialization */
 	fun init() {
-		log.debug("GameEngine init playerID:$playerID")
+		log.debug("GameEngine init playerID:${playerID}")
 		field.reset()
 		statistics.reset()
 		speed.reset()
@@ -650,7 +651,7 @@ class GameEngine(
 
 			replayData.readProperty(owner.replayProp, playerID)
 
-			owRotateButtonDefaultRight = owner.replayProp.getProperty("$playerID.tuning.owRotateButtonDefaultRight", -1)
+			owSpinDirection = owner.replayProp.getProperty("$playerID.tuning.owRotateButtonDefaultRight", -1)
 			owSkin = owner.replayProp.getProperty("$playerID.tuning.owSkin", -1)
 			owMinDAS = owner.replayProp.getProperty("$playerID.tuning.owMinDAS", -1)
 			owMaxDAS = owner.replayProp.getProperty("$playerID.tuning.owMaxDAS", -1)
@@ -665,14 +666,14 @@ class GameEngine(
 			randSeed = owner.replayProp.getProperty("$playerID.replay.randSeed", 16L)
 			random = Random(randSeed)
 		}
-		quitflag = false
+		quitFlag = false
 
 		stat = Status.SETTING
 		statc = IntArray(MAX_STATC)
 
-		lastevent = null
-		lastlines = IntArray(0)
-		lastline = fieldHeight
+		lastEvent = null
+		lastLines = IntArray(0)
+		lastLine = fieldHeight
 
 		isInGame = false
 		gameActive = false
@@ -711,21 +712,21 @@ class GameEngine(
 		dasInstant = false
 		shiftLock = 0
 
-		initialRotateDirection = 0
-		initialRotateLastDirection = 0
+		initialSpinDirection = 0
+		initialSpinLastDirection = 0
 		initialHoldFlag = false
-		initialRotateContinuousUse = false
+		initialSpinContinuousUse = false
 		initialHoldContinuousUse = false
 
 		nowPieceMoveCount = 0
-		nowPieceRotateCount = 0
-		nowPieceRotateFailCount = 0
+		nowPieceSpinCount = 0
+		nowPieceSpinFailCount = 0
 
 		extendedMoveCount = 0
-		extendedRotateCount = 0
+		extendedSpinCount = 0
 
 		nowWallkickCount = 0
-		nowUpwardWallkickCount = 0
+		nowWallkickRiseCount = 0
 
 		softdropFall = 0
 		harddropFall = 0
@@ -734,23 +735,21 @@ class GameEngine(
 
 		manualLock = false
 
-		lastmove = LastMove.NONE
+		lastMove = LastMove.NONE
 		split = false
 		twistType = null
 		b2b = false
-		b2bbuf = 0
-		b2bcount = 0
-		combobuf = 0
-		combo = 0
-		inthanabi = 0
-		temphanabi = 0
+		b2bCount = -1
+		combo = -1
+		intHanabi = 0
+		tempHanabi = 0
 
 		twistEnable = false
 		twistEnableEZ = false
 		twistAllowKick = true
 		useAllSpinBonus = false
 		b2bEnable = false
-		splitb2b = false
+		splitB2B = false
 		comboType = COMBO_TYPE_DISABLE
 
 		blockHidden = -1
@@ -772,10 +771,10 @@ class GameEngine(
 		gemRate = 0f
 
 		big = false
-		bigmove = true
-		bighalf = true
+		bigMove = true
+		bigHalf = true
 
-		kickused = false
+		kicked = false
 
 		fieldWidth = -1
 		fieldHeight = -1
@@ -786,7 +785,7 @@ class GameEngine(
 		staffrollNoDeath = false
 		staffrollEnableStatistics = false
 
-		framecolor = FRAME_COLOR_WHITE
+		frameColor = FRAME_COLOR_WHITE
 
 		readyStart = 0
 		readyEnd = READY_GO_TIME.first-1
@@ -799,15 +798,15 @@ class GameEngine(
 
 		ghost = true
 
-		meterValue = 0
-		meterColor = METER_COLOR_RED
+		meterValue = 0f
+		meterColor = METER_COLOR_LEVEL
 
 		lagARE = false
 		lagStop = false
-		displaysize = if(playerID>=2) -1 else 0
+		displaySize = if(playerID>=2) -1 else 0
 
 		enableSE = true
-		gameoverAll = true
+		dieAll = true
 
 		isNextVisible = true
 		isHoldVisible = true
@@ -845,14 +844,14 @@ class GameEngine(
 
 		//  event 発生
 		owner.mode?.let {
-			it.playerInit(this, playerID)
-			if(owner.replayMode) it.loadReplay(this, playerID, owner.replayProp)
+			it.playerInit(this)
+			if(owner.replayMode) it.loadReplay(this, owner.replayProp)
 			else it.loadRanking(owner.recordProp, ruleOpt.strRuleName)
 			if(playerProp.isLoggedIn) it.loadRankingPlayer(playerProp, ruleOpt.strRuleName)
 
 		}
 		playerName = if(owner.replayMode) owner.replayProp.getProperty("$playerID.playerName", "") else ""
-		owner.receiver.playerInit(this, playerID)
+		owner.receiver.playerInit(this)
 		ai?.shutdown()
 		ai?.init(this, playerID)
 	}
@@ -918,16 +917,16 @@ class GameEngine(
 			if(!ctrl.isPress(down)||!ruleOpt.softdropLimit) softdropContinuousUse = false
 			if(!ctrl.isPress(up)||!ruleOpt.harddropLimit) harddropContinuousUse = false
 			if(!ctrl.isPress(Controller.BUTTON_D)||!ruleOpt.holdInitialLimit) initialHoldContinuousUse = false
-			if(!ruleOpt.rotateInitialLimit) initialRotateContinuousUse = false
+			if(!ruleOpt.spinInitialLimit) initialSpinContinuousUse = false
 
-			if(initialRotateContinuousUse) {
+			if(initialSpinContinuousUse) {
 				var dir = 0
 				if(ctrl.isPress(Controller.BUTTON_A)||ctrl.isPress(Controller.BUTTON_C))
 					dir = -1
 				else if(ctrl.isPress(Controller.BUTTON_B)) dir = 1
 				else if(ctrl.isPress(Controller.BUTTON_E)) dir = 2
 
-				if(initialRotateLastDirection!=dir||dir==0) initialRotateContinuousUse = false
+				if(initialSpinLastDirection!=dir||dir==0) initialSpinContinuousUse = false
 			}
 		}
 	}
@@ -958,18 +957,18 @@ class GameEngine(
 	private fun checkTwisted(x:Int, y:Int, p:Piece?, f:Field?):Twister? {
 		p ?: return null
 		f ?: return null
-		if(!twistAllowKick&&kickused) return null
+		if(!twistAllowKick&&kicked) return null
 		val m = if(p.big) 2 else 1
 		var res:Twister? = null
 		if(p.checkCollision(x, y-m, f)&&p.checkCollision(x+m, y, f)
 			&&p.checkCollision(x-m, y, f)
 		) {
 			res = Twister.IMMOBILE
-			val copyField = Field().apply {copy(f)}
+			val copyField = Field().apply {replace(f)}
 			p.placeToField(x, y, copyField)
-			if(p.height+1!=copyField.checkLineNoFlag()&&kickused) res = Twister.IMMOBILE_MINI
-			if(copyField.checkLineNoFlag()==1&&kickused) res = Twister.IMMOBILE_MINI
-		} else if(twistEnableEZ&&kickused&&p.checkCollision(x, y+m, f))
+			if(p.height+1!=copyField.checkLineNoFlag()&&kicked) res = Twister.IMMOBILE_MINI
+			if(copyField.checkLineNoFlag()==1&&kicked) res = Twister.IMMOBILE_MINI
+		} else if(twistEnableEZ&&kicked&&p.checkCollision(x, y+m, f))
 			res = Twister.IMMOBILE_EZ
 
 		if(p.type==Piece.Shape.T) {
@@ -982,8 +981,8 @@ class GameEngine(
 			}
 			// Check the corner of the T p
 			if(tx.indices.count {!f.getBlockEmpty(x+tx[it], y+ty[it])}>=3) res = Twister.POINT
-			else if(p.checkCollision(x, y, getRotateDirection(-1), f)
-				&&p.checkCollision(x, y, getRotateDirection(1), f)
+			else if(p.checkCollision(x, y, getSpinDirection(-1), f)
+				&&p.checkCollision(x, y, getSpinDirection(1), f)
 			) res = Twister.POINT_MINI
 
 		} else {
@@ -1037,7 +1036,7 @@ class GameEngine(
 	private fun setAllSpin(x:Int, y:Int, p:Piece?, f:Field?) {
 		twistType = null
 
-		if((!twistAllowKick&&kickused)||p==null||f==null) return
+		if((!twistAllowKick&&kicked)||p==null||f==null) return
 		twistType = checkTwisted(x, y, p, f)
 	}
 
@@ -1050,7 +1049,7 @@ class GameEngine(
 		var x = 0
 		piece?.let {
 			x = (fld?.width ?: (0-it.width+1))/2-piece.centerX
-			if(big&&bigmove&&x%2!=0) x++
+			if(big&&bigMove&&x%2!=0) x++
 
 			x += if(big) ruleOpt.pieceSpawnXBig[it.id][it.direction]
 			else ruleOpt.pieceSpawnX[it.id][it.direction]
@@ -1092,7 +1091,7 @@ class GameEngine(
 	 * @param move rotationDirection (-1:左 1:右 2:180度）
 	 * @return rotation buttonを押したあとのピースのDirection
 	 */
-	fun getRotateDirection(move:Int):Int {
+	fun getSpinDirection(move:Int):Int {
 		var rt = move
 		nowPieceObject?.let {rt = it.direction+move}
 
@@ -1108,18 +1107,18 @@ class GameEngine(
 	}
 
 	/** 先行rotationと先行ホールドの処理 */
-	private fun initialRotate() {
-		initialRotateDirection = 0
+	private fun initialSpin() {
+		initialSpinDirection = 0
 		initialHoldFlag = false
 
 		ctrl.let {
-			if(ruleOpt.rotateInitial&&!initialRotateContinuousUse) {
+			if(ruleOpt.spinInitial&&!initialSpinContinuousUse) {
 				var dir = 0
 				if(it.isPress(Controller.BUTTON_A)||it.isPress(Controller.BUTTON_C))
 					dir = -1
 				else if(it.isPress(Controller.BUTTON_B)) dir = 1
 				else if(it.isPress(Controller.BUTTON_E)) dir = 2
-				initialRotateDirection = dir
+				initialSpinDirection = dir
 			}
 
 			if(it.isPress(Controller.BUTTON_D)&&ruleOpt.holdInitial&&isHoldOK) {
@@ -1142,7 +1141,7 @@ class GameEngine(
 					f.getBlock(i, j)?.run {
 						if(elapsedFrames<0) {
 							if(!getAttribute(Block.ATTRIBUTE.GARBAGE)) darkness = 0f
-						} else if(elapsedFrames<ruleOpt.lockflash) {
+						} else if(elapsedFrames<ruleOpt.lockFlash) {
 							darkness = -.8f
 							if(outlineOnly) {
 								setAttribute(true, Block.ATTRIBUTE.OUTLINE)
@@ -1254,7 +1253,7 @@ class GameEngine(
 		if(playerProp.isLoggedIn)
 			owner.replayProp.setProperty("$playerID.playerName", playerProp.nameDisplay)
 
-		owner.replayProp.setProperty("$playerID.tuning.owRotateButtonDefaultRight", owRotateButtonDefaultRight)
+		owner.replayProp.setProperty("$playerID.tuning.owRotateButtonDefaultRight", owSpinDirection)
 		owner.replayProp.setProperty("$playerID.tuning.owSkin", owSkin)
 		owner.replayProp.setProperty("$playerID.tuning.owMinDAS", owMinDAS)
 		owner.replayProp.setProperty("$playerID.tuning.owMaxDAS", owMaxDAS)
@@ -1270,7 +1269,7 @@ class GameEngine(
 		owner.mode?.let {
 			it.saveSetting(owner.replayProp, ruleOpt.strRuleName, playerID)
 			owner.saveModeConfig()
-			if(it.saveReplay(this, playerID, owner.replayProp)) {
+			if(it.saveReplay(this, owner.replayProp)) {
 				it.saveRanking()
 				owner.recordProp.save()
 				if(playerProp.isLoggedIn) {
@@ -1283,12 +1282,12 @@ class GameEngine(
 
 	/** fieldエディット画面に入る処理 */
 	fun enterFieldEdit() {
-		fldeditPreviousStat = stat
+		mapEditPreviousStat = stat
 		stat = Status.FIELDEDIT
-		fldeditX = 0
-		fldeditY = 0
-		fldeditColor = Block.COLOR_WHITE
-		fldeditFrames = 0
+		mapEditX = 0
+		mapEditY = 0
+		mapEditColor = Block.COLOR_WHITE
+		mapEditFrames = 0
 		owner.menuOnly = false
 		createFieldIfNeeded()
 	}
@@ -1357,8 +1356,8 @@ class GameEngine(
 		ctrl.updateButtonTime()
 
 		// 最初の処理
-		owner.mode?.onFirst(this, playerID)
-		owner.receiver.onFirst(this, playerID)
+		owner.mode?.onFirst(this)
+		owner.receiver.onFirst(this)
 		if(stat!=Status.SETTING&&stat!=Status.PROFILE&&stat!=Status.NOTHING&&
 			(!owner.replayMode||owner.replayRerecord)
 		) ai?.onFirst(this, playerID)
@@ -1393,17 +1392,17 @@ class GameEngine(
 		//if(ending==0||staffrollEnableStatistics) statistics.update()
 
 		// 最後の処理
-		if(inthanabi>0) inthanabi--
-		owner.mode?.onLast(this, playerID)
-		owner.receiver.onLast(this, playerID)
+		if(intHanabi>0) intHanabi--
+		owner.mode?.onLast(this)
+		owner.receiver.onLast(this)
 		ai?.also {if(!owner.replayMode||owner.replayRerecord) it.onLast(this, playerID)}
 
 		// Timer増加
 		if(gameActive&&timerActive) statistics.time++
-		if(temphanabi>0&&inthanabi<=0) {
+		if(tempHanabi>0&&intHanabi<=0) {
 			owner.receiver.shootFireworks(this)
-			temphanabi--
-			inthanabi += HANABI_INTERVAL
+			tempHanabi--
+			intHanabi += HANABI_INTERVAL
 		}
 
 		/* if(startTime > 0 && endTime == 0) {
@@ -1416,8 +1415,8 @@ class GameEngine(
 	 * (各Mode や event 処理クラスの event を呼び出すだけで, それ以外にGameEngine自身は何もしません） */
 	fun render() {
 		// 最初の処理
-		owner.mode?.renderFirst(this, playerID)
-		owner.receiver.renderFirst(this, playerID)
+		owner.mode?.renderFirst(this)
+		owner.receiver.renderFirst(this)
 
 		if(rainbowAnimate) Block.updateRainbowPhase(this)
 
@@ -1426,64 +1425,64 @@ class GameEngine(
 			Status.NOTHING -> {
 			}
 			Status.SETTING -> {
-				owner.mode?.renderSetting(this, playerID)
-				owner.receiver.renderSetting(this, playerID)
+				owner.mode?.renderSetting(this)
+				owner.receiver.renderSetting(this)
 			}
 			Status.PROFILE -> {
-				owner.mode?.renderProfile(this, playerID)
-				owner.receiver.renderProfile(this, playerID)
+				owner.mode?.renderProfile(this)
+				owner.receiver.renderProfile(this)
 			}
 			Status.READY -> {
-				owner.mode?.renderReady(this, playerID)
-				owner.receiver.renderReady(this, playerID)
+				owner.mode?.renderReady(this)
+				owner.receiver.renderReady(this)
 			}
 			Status.MOVE -> {
-				owner.mode?.renderMove(this, playerID)
-				owner.receiver.renderMove(this, playerID)
+				owner.mode?.renderMove(this)
+				owner.receiver.renderMove(this)
 			}
 			Status.LOCKFLASH -> {
-				owner.mode?.renderLockFlash(this, playerID)
-				owner.receiver.renderLockFlash(this, playerID)
+				owner.mode?.renderLockFlash(this)
+				owner.receiver.renderLockFlash(this)
 			}
 			Status.LINECLEAR -> {
-				owner.mode?.renderLineClear(this, playerID)
-				owner.receiver.renderLineClear(this, playerID)
+				owner.mode?.renderLineClear(this)
+				owner.receiver.renderLineClear(this)
 			}
 			Status.ARE -> {
-				owner.mode?.renderARE(this, playerID)
-				owner.receiver.renderARE(this, playerID)
+				owner.mode?.renderARE(this)
+				owner.receiver.renderARE(this)
 			}
 			Status.ENDINGSTART -> {
-				owner.mode?.renderEndingStart(this, playerID)
-				owner.receiver.renderEndingStart(this, playerID)
+				owner.mode?.renderEndingStart(this)
+				owner.receiver.renderEndingStart(this)
 			}
 			Status.CUSTOM -> {
-				owner.mode?.renderCustom(this, playerID)
-				owner.receiver.renderCustom(this, playerID)
+				owner.mode?.renderCustom(this)
+				owner.receiver.renderCustom(this)
 			}
 			Status.EXCELLENT -> {
-				owner.mode?.renderExcellent(this, playerID)
-				owner.receiver.renderExcellent(this, playerID)
+				owner.mode?.renderExcellent(this)
+				owner.receiver.renderExcellent(this)
 			}
 			Status.GAMEOVER -> {
-				owner.mode?.renderGameOver(this, playerID)
-				owner.receiver.renderGameOver(this, playerID)
+				owner.mode?.renderGameOver(this)
+				owner.receiver.renderGameOver(this)
 			}
 			Status.RESULT -> {
-				owner.mode?.renderResult(this, playerID)
-				owner.receiver.renderResult(this, playerID)
+				owner.mode?.renderResult(this)
+				owner.receiver.renderResult(this)
 			}
 			Status.FIELDEDIT -> {
-				owner.mode?.renderFieldEdit(this, playerID)
-				owner.receiver.renderFieldEdit(this, playerID)
+				owner.mode?.renderFieldEdit(this)
+				owner.receiver.renderFieldEdit(this)
 			}
 			Status.INTERRUPTITEM -> {
 			}
 		}
 
 		if(owner.showInput) {
-			owner.mode?.renderInput(this, playerID)
-			owner.receiver.renderInput(this, playerID)
+			owner.mode?.renderInput(this)
+			owner.receiver.renderInput(this)
 		}
 		ai?.also {
 			if(gameActive&&aiShowState) it.renderState(this, playerID)
@@ -1491,8 +1490,8 @@ class GameEngine(
 		}
 
 		// 最後の処理
-		owner.mode?.renderLast(this, playerID)
-		owner.receiver.renderLast(this, playerID)
+		owner.mode?.renderLast(this)
+		owner.receiver.renderLast(this)
 	}
 
 	/** 開始前の設定画面のときの処理 */
@@ -1500,8 +1499,8 @@ class GameEngine(
 		//  event 発生
 		owner.bgmStatus.fadesw = false
 		owner.bgmStatus.bgm = BGM.Menu(4+(owner.mode?.gameIntensity ?: 0))
-		if(owner.mode?.onSetting(this, playerID)==true) return
-		owner.receiver.onSetting(this, playerID)
+		if(owner.mode?.onSetting(this)==true) return
+		owner.receiver.onSetting(this)
 
 		// Mode側が何もしない・決定したことでfalseを返した場合はReady画面へ移動
 		stat = Status.READY
@@ -1518,10 +1517,10 @@ class GameEngine(
 	/** 開始前の名前入力画面のときの処理 */
 	private fun statProfile() {
 		//  event 発生
-		if(owner.mode?.onProfile(this, playerID)==true) return
-		owner.receiver.onProfile(this, playerID)
+		if(owner.mode?.onProfile(this)==true) return
+		owner.receiver.onProfile(this)
 
-		if(playerProp.loginScreen.updateScreen(this, playerID)) return
+		if(playerProp.loginScreen.updateScreen(this)) return
 		// Mode側が何もしない場合は設定画面へ戻る
 		stat = Status.SETTING
 		resetStatc()
@@ -1530,8 +1529,8 @@ class GameEngine(
 	/** Ready→Goのときの処理 */
 	private fun statReady() {
 		//  event 発生
-		if(owner.mode?.onReady(this, playerID)==true) return
-		owner.receiver.onReady(this, playerID)
+		if(owner.mode?.onReady(this)==true) return
+		owner.receiver.onReady(this)
 
 		// 横溜め
 		if(ruleOpt.dasInReady&&gameActive) padRepeat()
@@ -1622,10 +1621,10 @@ class GameEngine(
 
 		// 開始
 		if(statc[0]>=goEnd) {
-			owner.mode?.startGame(this, playerID)
-			owner.receiver.startGame(this, playerID)
+			owner.mode?.startGame(this)
+			owner.receiver.startGame(this)
 			owner.bgmStatus.fadesw = false
-			initialRotate()
+			initialSpin()
 			stat = Status.MOVE
 			resetStatc()
 			if(!readyDone) startTime = System.nanoTime()
@@ -1642,8 +1641,8 @@ class GameEngine(
 		dasRepeat = false
 
 		//  event 発生
-		if(owner.mode?.onMove(this, playerID)==true) return
-		owner.receiver.onMove(this, playerID)
+		if(owner.mode?.onMove(this)==true) return
+		owner.receiver.onMove(this)
 //		val field = field ?: return
 		// 横溜めInitialization
 		val moveDirection = moveDirection
@@ -1725,7 +1724,7 @@ class GameEngine(
 				holdDisable = true
 			}
 			getNextObject(nextPieceCount)?.let {
-				if(framecolor !in FRAME_SKIN_SG..FRAME_SKIN_GB)
+				if(frameColor !in FRAME_SKIN_SG..FRAME_SKIN_GB)
 					playSE(
 						"piece_${it.type.name.lowercase(Locale.getDefault())}", 1f,
 						if((owner.mode?.players ?: 1)>1) 0.3f else 1f
@@ -1740,7 +1739,7 @@ class GameEngine(
 				nowPieceY = getSpawnPosY(it)
 				nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
 			}
-			nowPieceColorOverride = if(itemRollRollEnable/* || itemEnable==ITEM.ROTATE_LOCK*/) Block.COLOR.WHITE else null
+			nowPieceColorOverride = if(itemRollRollEnable/* || itemEnable==ITEM.SPIN_LOCK*/) Block.COLOR.WHITE else null
 
 			gcount = if(speed.gravity>speed.denominator&&speed.denominator>0)
 				speed.gravity%speed.denominator
@@ -1751,19 +1750,19 @@ class GameEngine(
 			dasRepeat = false
 			dasInstant = false
 			extendedMoveCount = 0
-			extendedRotateCount = 0
+			extendedSpinCount = 0
 			softdropFall = 0
 			harddropFall = 0
 			manualLock = false
 			nowPieceMoveCount = 0
-			nowPieceRotateCount = 0
-			nowPieceRotateFailCount = 0
+			nowPieceSpinCount = 0
+			nowPieceSpinFailCount = 0
 			nowWallkickCount = 0
-			nowUpwardWallkickCount = 0
+			nowWallkickRiseCount = 0
 			lineClearing = 0
 			garbageClearing = 0
-			lastmove = LastMove.NONE
-			kickused = false
+			lastMove = LastMove.NONE
+			kicked = false
 			twistType = null
 
 			getNextObject(nextPieceCount+ruleOpt.nextDisplay-1)?.run {
@@ -1795,20 +1794,20 @@ class GameEngine(
 						initialHoldContinuousUse = true
 						initialHoldFlag = false
 						holdDisable = true
-						initialRotate() //Hold swap triggered IRS
+						initialSpin() //Hold swap triggered IRS
 						statMove()
 						return@statMove
 					} else if(statc[0]>0&&!initialHoldFlag) playSE("holdfail")
 
-				// rotation
-				val onGroundBeforeRotate = it.checkCollision(nowPieceX, nowPieceY+1, field)
+				// spin
+				val onGroundBeforeSpin = it.checkCollision(nowPieceX, nowPieceY+1, field)
 				var spin = 0
-				var rotated = false
+				var spun = false
 
-				if(initialRotateDirection!=0) {
-					spin = initialRotateDirection
-					initialRotateLastDirection = initialRotateDirection
-					initialRotateContinuousUse = true
+				if(initialSpinDirection!=0) {
+					spin = initialSpinDirection
+					initialSpinLastDirection = initialSpinDirection
+					initialSpinContinuousUse = true
 					playSE("initialrotate")
 				} else if(statc[0]>0||ruleOpt.moveFirstFrame) {
 					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) spin = 1 // Roll Roll
@@ -1822,89 +1821,89 @@ class GameEngine(
 
 
 					if(spin!=0) {
-						initialRotateLastDirection = spin
-						initialRotateContinuousUse = true
+						initialSpinLastDirection = spin
+						initialSpinContinuousUse = true
 					}
 				}
 
-				if(!ruleOpt.rotateButtonAllowDouble&&spin==2) spin = -1
-				if(!ruleOpt.rotateButtonAllowReverse&&spin==1) spin = -1
-				if(isRotateButtonDefaultRight&&spin!=2) spin *= -1
+				if(!ruleOpt.spinDoubleKey&&spin==2) spin = -1
+				if(!ruleOpt.spinReverseKey&&spin==1) spin = -1
+				if(spinDirection&&spin!=2) spin *= -1
 
 				it.also {piece ->
 					if(spin!=0) {
 						// Direction after rotationを決める
-						var rt = getRotateDirection(spin)
+						var rt = getSpinDirection(spin)
 
 						// rotationできるか判定
 						if(!piece.checkCollision(nowPieceX, nowPieceY, rt, field)) {
 							// Wallkickなしでrotationできるとき
-							rotated = true
-							kickused = false
+							spun = true
+							kicked = false
 							piece.direction = rt
 							piece.updateConnectData()
-						} else if(ruleOpt.rotateWallkick&&wallkick!=null&&(initialRotateDirection==0||ruleOpt.rotateInitialWallkick)
-							&&(ruleOpt.lockresetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK||!isRotateCountExceed)
+						} else if(ruleOpt.spinWallkick&&wallkick!=null&&(initialSpinDirection==0||ruleOpt.spinInitialWallkick)
+							&&(ruleOpt.lockResetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK||!isSpinCountExceed)
 						) {
 							// Wallkickを試みる
-							val allowUpward = ruleOpt.rotateMaxUpwardWallkick<0||nowUpwardWallkickCount<ruleOpt.rotateMaxUpwardWallkick
+							val allowUpward = ruleOpt.spinWallkickMaxRise<0||nowWallkickRiseCount<ruleOpt.spinWallkickMaxRise
 
 							wallkick?.executeWallkick(nowPieceX, nowPieceY, spin, piece.direction, rt, allowUpward, piece, field, ctrl)
 								?.let {kick ->
-									rotated = true
-									kickused = true
+									spun = true
+									kicked = true
 									playSE("wallkick")
 									nowWallkickCount++
-									if(kick.isUpward) nowUpwardWallkickCount++
+									if(kick.isUpward) nowWallkickRiseCount++
 									piece.direction = kick.direction
 									piece.updateConnectData()
 									nowPieceX += kick.offsetX
 									nowPieceY += kick.offsetY
 
-									if(ruleOpt.lockresetWallkick&&!isRotateCountExceed) {
+									if(ruleOpt.lockResetWallkick&&!isSpinCountExceed) {
 										lockDelayNow = 0
 										piece.setDarkness(0f)
 									}
 								}
-						} else if(!rotated&&dominoQuickTurn&&piece.type==Piece.Shape.I2&&nowPieceRotateFailCount>=1) {
+						} else if(!spun&&dominoQuickTurn&&piece.type==Piece.Shape.I2&&nowPieceSpinFailCount>=1) {
 							// Domino Quick Turn
-							rt = getRotateDirection(2)
-							rotated = true
+							rt = getSpinDirection(2)
+							spun = true
 							piece.direction = rt
 							piece.updateConnectData()
-							nowPieceRotateFailCount = 0
+							nowPieceSpinFailCount = 0
 
 							if(piece.checkCollision(nowPieceX, nowPieceY, rt, field))
 								nowPieceY--
-							else if(onGroundBeforeRotate) nowPieceY++
+							else if(onGroundBeforeSpin) nowPieceY++
 						}
 
-						if(rotated) {
+						if(spun) {
 							// rotation成功
 							nowPieceBottomY = piece.getBottom(nowPieceX, nowPieceY, field)
 
-							if(ruleOpt.lockresetRotate&&!isRotateCountExceed) {
+							if(ruleOpt.lockResetSpin&&!isSpinCountExceed) {
 								lockDelayNow = 0
 								piece.setDarkness(0f)
 							}
 
-							lastmove = if(onGroundBeforeRotate) {
-								extendedRotateCount++
-								LastMove.ROTATE_GROUND
-							} else LastMove.ROTATE_AIR
+							lastMove = if(onGroundBeforeSpin) {
+								extendedSpinCount++
+								LastMove.SPIN_GROUND
+							} else LastMove.SPIN_AIR
 
-							if(initialRotateDirection==0) playSE("rotate")
+							if(initialSpinDirection==0) playSE("rotate")
 							if(checkTwisted(nowPieceX, nowPieceY, piece, field)!=null) playSE("twist")
-							nowPieceRotateCount++
-							if(ending==0||staffrollEnableStatistics) statistics.totalPieceRotate++
+							nowPieceSpinCount++
+							if(ending==0||staffrollEnableStatistics) statistics.totalPieceSpin++
 						} else {
 							// rotation失敗
 							playSE("rotfail")
-							nowPieceRotateFailCount++
+							nowPieceSpinFailCount++
 						}
 					}
 
-					initialRotateDirection = 0
+					initialSpinDirection = 0
 
 					// game over check
 					if(statc[0]==0&&piece.checkCollision(nowPieceX, nowPieceY, field)) {
@@ -1915,7 +1914,7 @@ class GameEngine(
 							nowPieceY++
 							nowPieceBottomY = piece.getBottom(nowPieceX, nowPieceY, field)
 						}
-						// Blockの出現位置を上にずらすことができる場合はそうする
+						// Blockの出現位置を上にずらせる場合はそうする
 						for(i in 0 until ruleOpt.pieceEnterMaxDistanceY) {
 							nowPieceY--
 
@@ -1957,7 +1956,7 @@ class GameEngine(
 				} else if(statc[0]==1&&delayCancel&&dasCount<das) delayCancel = false
 
 				if(move!=0) sidemoveflag = true
-				if(big&&bigmove) move *= 2
+				if(big&&bigMove) move *= 2
 				if(move!=0&&dasCount==0) shiftLock = 0
 				if(move!=0&&(dasCount==0||dasCount>=das)) {
 					shiftLock = shiftLock and ctrl.buttonBit
@@ -1979,7 +1978,7 @@ class GameEngine(
 
 									//log.debug("Successful movement: move="+move);
 
-									if(ruleOpt.lockresetMove&&!isMoveCountExceed) {
+									if(ruleOpt.lockResetMove&&!isMoveCountExceed) {
 										lockDelayNow = 0
 										it.setDarkness(0f)
 									}
@@ -1988,7 +1987,7 @@ class GameEngine(
 									if(ending==0||staffrollEnableStatistics) statistics.totalPieceMove++
 									nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
 
-									lastmove = if(onGroundBeforeMove) {
+									lastMove = if(onGroundBeforeMove) {
 										extendedMoveCount++
 										LastMove.SLIDE_GROUND
 									} else LastMove.SLIDE_AIR
@@ -2020,15 +2019,15 @@ class GameEngine(
 							playSE("harddrop", 1f, maxOf(.75f, minOf(1f, fpf*2f/field.height)))
 						}
 						harddropContinuousUse = !ruleOpt.harddropLock
-						owner.mode?.afterHardDropFall(this, playerID, harddropFall)
-						owner.receiver.afterHardDropFall(this, playerID, harddropFall)
+						owner.mode?.afterHardDropFall(this, harddropFall)
+						owner.receiver.afterHardDropFall(this, harddropFall)
 
-						lastmove = LastMove.FALL_SELF
-						if(ruleOpt.lockresetFall) {
+						lastMove = LastMove.FALL_SELF
+						if(ruleOpt.lockResetFall) {
 							lockDelayNow = 0
 							it.setDarkness(0f)
 							extendedMoveCount = 0
-							extendedRotateCount = 0
+							extendedSpinCount = 0
 						}
 					}
 					if(ruleOpt.softdropEnable&&ctrl.isPress(down)&&
@@ -2056,32 +2055,32 @@ class GameEngine(
 				if(ruleOpt.softdropGravitySpeedLimit) gcount -= gcount%speed.denominator
 				nowPieceY++
 				if(speed.gravity>speed.denominator/2||speed.gravity<0||softDropUsed) fpf++
-				if(ruleOpt.lockresetFall) {
+				if(ruleOpt.lockResetFall) {
 					lockDelayNow = 0
 					it.setDarkness(0f)
 				}
 
-				if(lastmove!=LastMove.ROTATE_GROUND&&lastmove!=LastMove.SLIDE_GROUND&&lastmove!=LastMove.FALL_SELF) {
+				if(lastMove!=LastMove.SPIN_GROUND&&lastMove!=LastMove.SLIDE_GROUND&&lastMove!=LastMove.FALL_SELF) {
 					extendedMoveCount = 0
-					extendedRotateCount = 0
+					extendedSpinCount = 0
 				}
 
 				if(softDropUsed) {
-					lastmove = LastMove.FALL_SELF
+					lastMove = LastMove.FALL_SELF
 					softdropFall++
 					softDropFallNow++
-				} else lastmove = LastMove.FALL_AUTO
+				} else lastMove = LastMove.FALL_AUTO
 			}
 
 			if(softDropFallNow>0) {
 				playSE("softdrop")
-				owner.mode?.afterSoftDropFall(this, playerID, softDropFallNow)
-				owner.receiver.afterSoftDropFall(this, playerID, softDropFallNow)
+				owner.mode?.afterSoftDropFall(this, softDropFallNow)
+				owner.receiver.afterSoftDropFall(this, softDropFallNow)
 			}
 
 			// 接地と固定
 			if(it.checkCollision(nowPieceX, nowPieceY+1, field)&&(statc[0]>0||ruleOpt.moveFirstFrame)) {
-				if(lockDelayNow==0&&lockDelay>0&&lastmove!=LastMove.SLIDE_GROUND&&lastmove!=LastMove.ROTATE_GROUND) {
+				if(lockDelayNow==0&&lockDelay>0&&lastMove!=LastMove.SLIDE_GROUND&&lastMove!=LastMove.SPIN_GROUND) {
 					playSE("step")
 					if(!ruleOpt.softdropLock&&ruleOpt.softdropSurfaceLock&&softDropUsed) softdropContinuousUse = true
 				}
@@ -2124,7 +2123,7 @@ class GameEngine(
 					shiftLock = ctrl.buttonBit and 3
 
 				// 移動＆rotationcount制限超過
-				if(ruleOpt.lockresetLimitOver==RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT&&(isMoveCountExceed||isRotateCountExceed))
+				if(ruleOpt.lockResetLimitOver==RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT&&(isMoveCountExceed||isSpinCountExceed))
 					instantLock = true
 
 				// 接地即固定
@@ -2132,10 +2131,10 @@ class GameEngine(
 
 				// 固定
 				if(lockDelay in 1..lockDelayNow||instantLock) {
-					if(ruleOpt.lockflash>0) it.setDarkness(-.8f)
+					if(ruleOpt.lockFlash>0) it.setDarkness(-.8f)
 
 					// Twister判定
-					if(lastmove==LastMove.ROTATE_GROUND&&twistEnable)
+					if(lastMove==LastMove.SPIN_GROUND&&twistEnable)
 						if(useAllSpinBonus) setAllSpin(nowPieceX, nowPieceY, it, field)
 						else setTwist(nowPieceX, nowPieceY, it, field)
 
@@ -2165,25 +2164,25 @@ class GameEngine(
 
 						if(twist) {
 							playSE("twister")
-							lastevent = ScoreEvent(0, false, it, twistType!!)
-							if(b2bcount==0) {
-								b2bcount = 1
+							lastEvent = ScoreEvent(0, false, it, twistType!!)
+							if(b2bCount<0) {
+								b2bCount = 0
 								playSE("b2b_start")
 							}
 							if(ending==0||staffrollEnableStatistics)
-								if(twistmini) statistics.totalTwistZeroMini++
+								if(twistMini) statistics.totalTwistZeroMini++
 								else statistics.totalTwistZero++
-							owner.receiver.calcScore(this, lastevent)
-						} else combo = 0
+							owner.receiver.calcScore(this, lastEvent)
+						} else combo = -1
 
-						owner.mode?.calcScore(this, playerID, lineClearing)?.let {sc ->
+						owner.mode?.calcScore(this, lineClearing)?.let {sc ->
 							if(sc>0)
 								owner.receiver.addScore(this, nowPieceX, nowPieceBottomY, sc, EventReceiver.getPlayerColor(playerID))
 						}
 					}
 
-					owner.mode?.pieceLocked(this, playerID, lineClearing)
-					owner.receiver.pieceLocked(this, playerID, lineClearing)
+					owner.mode?.pieceLocked(this, lineClearing)
+					owner.receiver.pieceLocked(this, lineClearing)
 
 					dasRepeat = false
 					dasInstant = false
@@ -2205,17 +2204,17 @@ class GameEngine(
 								statc[0] = lineDelay
 								statLineClear()
 							}
-							lineClearing>0&&(ruleOpt.lockflash<=0||!ruleOpt.lockflashBeforeLineClear) -> {
+							lineClearing>0&&(ruleOpt.lockFlash<=0||!ruleOpt.lockFlashBeforeLineClear) -> {
 								// Line clear
 								stat = Status.LINECLEAR
 								statLineClear()
 							}
-							(are>0||lagARE||ruleOpt.lockflashBeforeLineClear)&&
-								ruleOpt.lockflash>1||(ruleOpt.lockflash==1&&ruleOpt.lockflashOnlyFrame)
+							(are>0||lagARE||ruleOpt.lockFlashBeforeLineClear)&&
+								ruleOpt.lockFlash>1||(ruleOpt.lockFlash==1&&ruleOpt.lockFlashOnlyFrame)
 							-> {
 								// AREあり (光あり）
 								stat = Status.LOCKFLASH
-								statc[0] = if(ruleOpt.lockflashOnlyFrame) 0 else 1
+								statc[0] = if(ruleOpt.lockFlashOnlyFrame) 0 else 1
 							}
 							are>0||lagARE -> {
 								// AREあり (光なし）
@@ -2250,8 +2249,8 @@ class GameEngine(
 	/** Block固定直後の光っているときの処理 */
 	private fun statLockFlash() {
 		//  event 発生
-		if(owner.mode?.onLockFlash(this, playerID)==true) return
-		owner.receiver.onLockFlash(this, playerID)
+		if(owner.mode?.onLockFlash(this)==true) return
+		owner.receiver.onLockFlash(this)
 		statc[0]++
 		checkDropContinuousUse()
 
@@ -2261,7 +2260,7 @@ class GameEngine(
 		else if(ruleOpt.dasRedirectInDelay) dasRedirect()
 
 		// Next ステータス
-		if(statc[0]>=ruleOpt.lockflash) {
+		if(statc[0]>=ruleOpt.lockFlash) {
 			resetStatc()
 
 			if(lineClearing>0) {
@@ -2280,8 +2279,8 @@ class GameEngine(
 	/** Line clear処理 */
 	private fun statLineClear() {
 		//  event 発生
-		if(owner.mode?.onLineClear(this, playerID)==true) return
-		owner.receiver.onLineClear(this, playerID)
+		if(owner.mode?.onLineClear(this)==true) return
+		owner.receiver.onLineClear(this)
 		checkDropContinuousUse()
 		// 横溜め
 		if(ruleOpt.dasInLineClear) padRepeat()
@@ -2306,7 +2305,7 @@ class GameEngine(
 			val ingame = ending==0||staffrollEnableStatistics
 			// Linescountを決める
 			var li = lineClearing
-			if(big&&bighalf) li = li shr 1
+			if(big&&bigHalf) li = li shr 1
 			if(clearMode==ClearType.LINE) {
 				split = field.lastLinesSplited
 
@@ -2314,24 +2313,24 @@ class GameEngine(
 					playSE("erase")
 					playSE(
 						when {
-							li>=(if(twist) 2 else if(combo>=1) 3 else 4) -> "erase2"
+							li>=(if(twist) 2 else if(combo>0) 3 else 4) -> "erase2"
 							li>=(if(twist) 1 else 2) -> "erase1"
 							else -> "erase0"
 						}
 					)
-					lastlines = field.lastLinesHeight
-					lastline = field.lastLinesBottom
+					lastLines = field.lastLinesHeight
+					lastLine = field.lastLinesBottom
 					playSE("line${maxOf(1, minOf(li, 4))}")
-					if(li>=4) playSE("applause${maxOf(0, minOf(1+b2bcount, 4))}")
+					if(li>=4) playSE("applause${maxOf(0, minOf(2+b2bCount, 4))}")
 					if(split) playSE("split")
 					if(twist) {
 						playSE("twister")
 						if(li>=3||li>=2&&b2b) playSE("crowd1") else playSE("crowd0")
 						if(ingame)
 							when(li) {
-								1 -> if(twistmini) statistics.totalTwistSingleMini++
+								1 -> if(twistMini) statistics.totalTwistSingleMini++
 								else statistics.totalTwistSingle++
-								2 -> if(split) statistics.totalTwistSplitDouble++ else if(twistmini) statistics.totalTwistDoubleMini++
+								2 -> if(split) statistics.totalTwistSplitDouble++ else if(twistMini) statistics.totalTwistDoubleMini++
 								else statistics.totalTwistDouble++
 								3 -> if(split) statistics.totalTwistSplitTriple++ else statistics.totalTwistTriple++
 							}
@@ -2349,40 +2348,38 @@ class GameEngine(
 				// B2B bonus
 
 				if(b2bEnable)
-					if(li>=4||(split&&splitb2b)||twist) {
-						b2bcount++
-
-						if(b2bcount==1) playSE("b2b_start")
-						else {
+					if(li>=4||(split&&splitB2B)||twist) {
+						b2bCount++
+						if(b2bCount>0) {
 							b2b = true
-							playSE("b2b_combo", minOf(1.5f, 1f+(b2bbuf-1)/13f))
-							if(ingame)
+							playSE("b2b_combo", minOf(1.5f, 1f+(b2bCount)/13f))
+							if(ingame) {
 								when {
 									li==4 -> statistics.totalB2BQuad++
 									split -> statistics.totalB2BSplit++
 									twist -> statistics.totalB2BTwist++
 								}
-							owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY-(combobuf>=1).toInt(), b2bcount-1, CHAIN.B2B)
-						}
-						if(ingame) if(b2bcount>=statistics.maxB2B) statistics.maxB2B = b2bcount-1
-						b2bbuf = b2bcount
-					} else if(b2bcount!=0&&combo<=0) {
+								if(b2bCount>=statistics.maxB2B) statistics.maxB2B = b2bCount
+							}
+							owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY-(combo>0).toInt(), b2bCount, CHAIN.B2B)
+						} else playSE("b2b_start")
+
+					} else if(b2bCount>=0&&combo<=0) {
 						b2b = false
-						b2bcount = 0
+						b2bCount = -1
 						playSE("b2b_end")
 					}
 				// Combo
 				if(comboType!=COMBO_TYPE_DISABLE&&chain==0) {
 					if(comboType==COMBO_TYPE_NORMAL||comboType==COMBO_TYPE_DOUBLE&&li>=2) combo++
-					if(combo>=2) {
-						playSE("combo", minOf(2f, 1f+(combo-2)/7f))
-						owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY+b2b.toInt(), combo-1, CHAIN.COMBO)
+					if(combo>0) {
+						playSE("combo", minOf(2f, 1f+(combo-1)/7f))
+						owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY+b2b.toInt(), combo, CHAIN.COMBO)
+						if(ingame) if(combo>=statistics.maxCombo) statistics.maxCombo = combo
 					}
-					if(ingame) if(combo>=statistics.maxCombo) statistics.maxCombo = combo-1
-					combobuf = combo
 				}
 
-				lastevent = ScoreEvent(li, split, nowPieceObject, twistType, b2b)
+				lastEvent = ScoreEvent(li, split, nowPieceObject, twistType, b2b)
 				lineGravityTotalLines += lineClearing
 				if(ingame) statistics.lines += li
 
@@ -2394,37 +2391,31 @@ class GameEngine(
 			// All clear
 			if(li>=1&&field.isEmpty) {
 				owner.receiver.bravo(this)
-				temphanabi += 6
+				tempHanabi += 6
 			}
 			// Calculate score
-			owner.mode?.calcScore(this, playerID, li)?.let {
+			owner.mode?.calcScore(this, li)?.let {
 				if(it>0)
 					owner.receiver.addScore(this, nowPieceX, field.lastLinesBottom, it, EventReceiver.getPlayerColor(playerID))
 			}
-			if(li>0) owner.receiver.calcScore(this, lastevent)
+			if(li>0) owner.receiver.calcScore(this, lastEvent)
 
 			// Blockを消す演出を出す (まだ実際には消えていない）
-			for(i in 0 until field.height) {
-				if(clearMode==ClearType.LINE&&field.getLineFlag(i)) {
-					owner.mode?.lineClear(this, playerID, i)
-					owner.receiver.lineClear(this, playerID, i)
+			(0 until field.height).filter {field.getLineFlag(it)}.toSet().let {row ->
+				if(clearMode==ClearType.LINE) {
+					owner.mode?.lineClear(this, row)
+					owner.receiver.lineClear(this, row)
 				}
-				field.getRow(i).filterNotNull().forEachIndexed {j, b ->
-					if(b.getAttribute(Block.ATTRIBUTE.ERASE)) {
-						owner.mode?.blockBreak(this, playerID, j, i, b)
-						owner.receiver.also {r ->
-							if(displaysize==1) {
-								r.blockBreak(this, 2*j, 2*i, b)
-								r.blockBreak(this, 2*j+1, 2*i, b)
-								r.blockBreak(this, 2*j, 2*i+1, b)
-								r.blockBreak(this, 2*j+1, 2*i+1, b)
-							} else r.blockBreak(this, j, i, b)
-							if(b.isGemBlock&&clearMode==ClearType.LINE_GEM_BOMB)
-								r.blockBreak(this, j, i, b)
-						}
-					}
+				row.associateWith {y ->
+					field.getRow(y).mapIndexedNotNull {x, b ->
+						b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) x to it else null}
+					}.associate {it}
+				}.let {
+					owner.mode?.blockBreak(this, it)
+					owner.receiver.blockBreak(this, it)
 				}
 			}
+
 			// Blockを消す
 			when(clearMode) {
 				ClearType.LINE -> field.clearLine()
@@ -2436,26 +2427,26 @@ class GameEngine(
 			}
 		}
 
-		// Linesを1段落とす
+// Linesを1段落とす
 		if(lineGravityType==LineGravity.NATIVE&&lineDelay>=lineClearing-1&&statc[0]>=lineDelay-(lineClearing-1)
 			&&ruleOpt.lineFallAnim
 		) field.downFloatingBlocksSingleLine()
 
-		// Line delay cancel check
+// Line delay cancel check
 		delayCancelMoveLeft = ctrl.isPush(Controller.BUTTON_LEFT)
 		delayCancelMoveRight = ctrl.isPush(Controller.BUTTON_RIGHT)
 
 		val moveCancel = canLineCancelMove&&(ctrl.isPush(up)||ctrl.isPush(down)
 			||delayCancelMoveLeft||delayCancelMoveRight)
-		val rotateCancel = canLineCancelSpin&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
+		val spinCancel = canLineCancelSpin&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
 			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E))
 		val holdCancel = canLineCancelHold&&ctrl.isPush(Controller.BUTTON_D)
 
-		delayCancel = moveCancel||rotateCancel||holdCancel
+		delayCancel = moveCancel||spinCancel||holdCancel
 
 		if(statc[0]<lineDelay&&delayCancel) statc[0] = lineDelay
 
-		// Next ステータス
+// Next ステータス
 		if(statc[0]>=lineDelay) {
 			field.also {field ->
 				if((clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)&&field.checkBombIgnited()>0) {
@@ -2476,28 +2467,23 @@ class GameEngine(
 							statc[6]++
 							return@statLineClear
 						}
-						clearMode==ClearType.LINE&&field.checkLineNoFlag()>0
-							||clearMode==ClearType.COLOR&&
+						clearMode==ClearType.LINE&&field.checkLineNoFlag()>0||(clearMode==ClearType.COLOR&&
 							field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)>0
-							||clearMode==ClearType.LINE_COLOR&&field.checkLineColor(
-							colorClearSize, false, lineColorDiagonals,
-							gemSameColor
-						)>0
+							||clearMode==ClearType.LINE_COLOR&&field.checkLineColor(colorClearSize, false, lineColorDiagonals, gemSameColor)>0
 							||clearMode==ClearType.GEM_COLOR&&field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)>0
-							||(clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)&&field.checkBombOnLine(true)>0 -> {
+							||(clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)&&field.checkBombOnLine(true)>0) -> {
 							twistType = null
 							chain++
 							if(chain>statistics.maxChain) statistics.maxChain = chain
 							statc[0] = 0
 							statc[6] = 0
-							combobuf = chain
 							return@statLineClear
 						}
 					}
 
 			}
-			val skip = owner.mode?.lineClearEnd(this, playerID) ?: false
-			owner.receiver.lineClearEnd(this, playerID)
+			val skip = owner.mode?.lineClearEnd(this) ?: false
+			owner.receiver.lineClearEnd(this)
 			if(sticky>0) field.setBlockLinkByColor()
 			if(sticky==2) field.setAllAttribute(true, Block.ATTRIBUTE.IGNORE_LINK)
 
@@ -2506,15 +2492,13 @@ class GameEngine(
 				field.run {
 					if((lastLinesBottom>=highestBlockY&&lineClearing>=3)||lastLinesSplited)
 						playSE(
-							"linefall", maxOf(
-								0.8f, 1.2f-lastLinesBottom/3f/fieldHeight
-							), minOf(1f, 0.4f+speed.lineDelay*0.1f)
+							"linefall", maxOf(0.8f, 1.2f-lastLinesBottom/3f/fieldHeight),
+							minOf(1f, 0.4f+speed.lineDelay*0.1f)
 						)
 					if((lastLinesBottom>=highestBlockY&&lineClearing<=2)||lastLinesSplited)
 						playSE(
-							"linefall1", maxOf(
-								0.8f, 1.2f-lastLinesBottom/3f/fieldHeight
-							), minOf(1f, 0.4f+speed.lineDelay*0.1f)
+							"linefall1", maxOf(0.8f, 1.2f-lastLinesBottom/3f/fieldHeight),
+							minOf(1f, 0.4f+speed.lineDelay*0.1f)
 						)
 				}
 
@@ -2555,9 +2539,9 @@ class GameEngine(
 	/** ARE中の処理 */
 	private fun statARE() {
 		//  event 発生
-		if(owner.mode?.onARE(this, playerID)==true) return
+		if(owner.mode?.onARE(this)==true) return
 
-		owner.receiver.onARE(this, playerID)
+		owner.receiver.onARE(this)
 		if(statc[0]==0)
 			if(field.danger) loopSE("danger") else stopSE("danger")
 
@@ -2570,18 +2554,22 @@ class GameEngine(
 		delayCancelMoveRight = ctrl.isPush(Controller.BUTTON_RIGHT)
 
 		val moveCancel = canARECancelMove&&(ctrl.isPush(up)||ctrl.isPush(down)||delayCancelMoveLeft||delayCancelMoveRight)
-		val rotateCancel = canARECancelSpin&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
+		val spinCancel = canARECancelSpin&&(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_B)
 			||ctrl.isPush(Controller.BUTTON_C)||ctrl.isPush(Controller.BUTTON_E))
 		val holdCancel = canARECancelHold&&ctrl.isPush(Controller.BUTTON_D)
 
-		delayCancel = moveCancel||rotateCancel||holdCancel
+		delayCancel = moveCancel||spinCancel||holdCancel
 
 		if(statc[0]<statc[1]&&delayCancel) statc[0] = statc[1]
 
 		// 横溜め
-		if(ruleOpt.dasInARE&&(statc[0]<statc[1]-1||ruleOpt.dasInARELastFrame))
+		if(ruleOpt.dasInARE&&(statc[0]<statc[1]-1||ruleOpt.dasInARELastFrame)) {
 			padRepeat()
-		else if(ruleOpt.dasRedirectInDelay) dasRedirect()
+			if(ruleOpt.dasChargeOnBlockedMove) {
+				dasCount = das
+				dasSpeedCount = dasDelay
+			}
+		} else if(ruleOpt.dasRedirectInDelay) dasRedirect()
 
 		// Next ステータス
 		if(statc[0]>=statc[1]&&!lagARE) {
@@ -2595,7 +2583,7 @@ class GameEngine(
 				stat = Status.INTERRUPTITEM
 			} else {
 				// Blockピース移動処理
-				initialRotate()
+				initialSpin()
 				stat = Status.MOVE
 			}
 		}
@@ -2606,8 +2594,8 @@ class GameEngine(
 		//  event 発生
 		val animint = 6
 		statc[3] = field.height*6
-		if(owner.mode?.onEndingStart(this, playerID)==true) return
-		owner.receiver.onEndingStart(this, playerID)
+		if(owner.mode?.onEndingStart(this)==true) return
+		owner.receiver.onEndingStart(this)
 
 		checkDropContinuousUse()
 		// 横溜め
@@ -2625,13 +2613,14 @@ class GameEngine(
 			field.let {field ->
 				if(statc[1]%animint==0) {
 					val y = field.height-statc[1]/animint
-					field.setLineFlag(y, true)
-
-					field.getRow(y).filterNotNull().filter {!it.isEmpty}.forEachIndexed {x, blk ->
-						owner.mode?.blockBreak(this, playerID, x, y, blk)
-						owner.receiver.blockBreak(this, x, y, blk)
-						blk.color = null
+					field.delLine(y)
+					field.getRow(y).mapIndexedNotNull {i, b ->
+						b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) i to it else null}
+					}.associate {it}.let {
+						owner.mode?.blockBreak(this, mapOf(y to it))
+						owner.receiver.blockBreak(this, mapOf(y to it))
 					}
+					field.clearLine()
 				}
 			}
 
@@ -2652,22 +2641,22 @@ class GameEngine(
 	/** 各ゲームMode が自由に使えるステータスの処理 */
 	private fun statCustom() {
 		//  event 発生
-		if(owner.mode?.onCustom(this, playerID)==true) return
-		owner.receiver.onCustom(this, playerID)
+		if(owner.mode?.onCustom(this)==true) return
+		owner.receiver.onCustom(this)
 	}
 
 	/** Ending画面 */
 	private fun statExcellent() {
 		//  event 発生
-		if(owner.mode?.onExcellent(this, playerID)==true) return
-		owner.receiver.onExcellent(this, playerID)
+		if(owner.mode?.onExcellent(this)==true) return
+		owner.receiver.onExcellent(this)
 
 		if(statc[0]==0) {
 			stopSE("danger")
 			gameEnded()
 			owner.bgmStatus.fadesw = true
 			resetFieldVisible()
-			temphanabi += 24
+			tempHanabi += 24
 			playSE("excellent")
 		}
 
@@ -2681,8 +2670,8 @@ class GameEngine(
 	/** game overの処理 */
 	private fun statGameOver() {
 		//  event 発生
-		if(owner.mode?.onGameOver(this, playerID)==true) return
-		owner.receiver.onGameOver(this, playerID)
+		if(owner.mode?.onGameOver(this)==true) return
+		owner.receiver.onGameOver(this)
 		if(statc[0]==0) {
 			//死亡時はgameActive中にStatus.GAMEOVERになる
 			statc[2] = if(gameActive&&!staffrollNoDeath) 0 else 1
@@ -2743,7 +2732,7 @@ class GameEngine(
 						if(!owner.replayMode||owner.replayRerecord) owner.saveReplay()
 
 						for(i in 0 until owner.players)
-							if(i==playerID||gameoverAll) {
+							if(i==playerID||dieAll) {
 								owner.engine[i].field.reset()
 								owner.engine[i].resetStatc()
 								owner.engine[i].stat = Status.RESULT
@@ -2764,11 +2753,14 @@ class GameEngine(
 				if(!field.isEmpty) {
 					val y = field.highestBlockY
 					for(i in 0 until field.width) {
-						field.getBlock(i, y)?.let {b ->
-							owner.mode?.blockBreak(this, playerID, i, y, b)
-							owner.receiver.blockBreak(this, i, y, b)
-							field.delBlock(i, y)
+						field.delLine(y)
+						field.getRow(y).mapIndexedNotNull {i, b ->
+							b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) i to it else null}
+						}.associate {it}.let {
+							owner.mode?.blockBreak(this, mapOf(y to it))
+							owner.receiver.blockBreak(this, mapOf(y to it))
 						}
+						field.clearLine()
 					}
 
 				} else if(statc[1]<are) statc[1]++
@@ -2793,8 +2785,8 @@ class GameEngine(
 			}
 		)
 
-		if(owner.mode?.onResult(this, playerID)==true) return
-		owner.receiver.onResult(this, playerID)
+		if(owner.mode?.onResult(this)==true) return
+		owner.receiver.onResult(this)
 
 		// Turn-off in-game flags
 		gameActive = false
@@ -2812,7 +2804,7 @@ class GameEngine(
 			playSE("decide")
 
 			if(statc[0]==0) owner.reset()
-			else quitflag = true
+			else quitFlag = true
 
 		}
 	}
@@ -2820,53 +2812,53 @@ class GameEngine(
 	/** fieldエディット画面 */
 	private fun statFieldEdit() {
 		//  event 発生
-		if(owner.mode?.onFieldEdit(this, playerID)==true) return
-		owner.receiver.onFieldEdit(this, playerID)
+		if(owner.mode?.onFieldEdit(this)==true) return
+		owner.receiver.onFieldEdit(this)
 
-		fldeditFrames++
+		mapEditFrames++
 
 		// Cursor movement
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT, false)&&!ctrl.isPress(Controller.BUTTON_C)) {
 			playSE("move")
-			fldeditX--
-			if(fldeditX<0) fldeditX = fieldWidth-1
+			mapEditX--
+			if(mapEditX<0) mapEditX = fieldWidth-1
 		}
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT, false)&&!ctrl.isPress(Controller.BUTTON_C)) {
 			playSE("move")
-			fldeditX++
-			if(fldeditX>fieldWidth-1) fldeditX = 0
+			mapEditX++
+			if(mapEditX>fieldWidth-1) mapEditX = 0
 		}
 		if(ctrl.isMenuRepeatKey(up, false)) {
 			playSE("move")
-			fldeditY--
-			if(fldeditY<0) fldeditY = fieldHeight-1
+			mapEditY--
+			if(mapEditY<0) mapEditY = fieldHeight-1
 		}
 		if(ctrl.isMenuRepeatKey(down, false)) {
 			playSE("move")
-			fldeditY++
-			if(fldeditY>fieldHeight-1) fldeditY = 0
+			mapEditY++
+			if(mapEditY>fieldHeight-1) mapEditY = 0
 		}
 
 		// 色選択
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT, false)&&ctrl.isPress(Controller.BUTTON_C)) {
 			playSE("cursor")
-			fldeditColor--
-			if(fldeditColor<Block.COLOR_WHITE) fldeditColor = Block.COLOR_GEM_PURPLE
+			mapEditColor--
+			if(mapEditColor<Block.COLOR_WHITE) mapEditColor = Block.COLOR_GEM_PURPLE
 		}
 		if(ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT, false)&&ctrl.isPress(Controller.BUTTON_C)) {
 			playSE("cursor")
-			fldeditColor++
-			if(fldeditColor>Block.COLOR_GEM_PURPLE) fldeditColor = Block.COLOR_WHITE
+			mapEditColor++
+			if(mapEditColor>Block.COLOR_GEM_PURPLE) mapEditColor = Block.COLOR_WHITE
 		}
 
 		field.let {field ->
 			// 配置
-			if(ctrl.isPress(Controller.BUTTON_A)&&fldeditFrames>10)
+			if(ctrl.isPress(Controller.BUTTON_A)&&mapEditFrames>10)
 				try {
-					if(field.getBlock(fldeditX, fldeditY)?.cint!=fldeditColor) {
+					if(field.getBlock(mapEditX, mapEditY)?.cint!=mapEditColor) {
 						field.setBlock(
-							fldeditX, fldeditY,
-							Block(fldeditColor, skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
+							mapEditX, mapEditY,
+							Block(mapEditColor, skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 						)
 						playSE("change")
 					}
@@ -2874,18 +2866,18 @@ class GameEngine(
 				}
 
 			// 消去
-			if(ctrl.isPress(Controller.BUTTON_D)&&fldeditFrames>10)
+			if(ctrl.isPress(Controller.BUTTON_D)&&mapEditFrames>10)
 				try {
-					if(field.delBlock(fldeditX, fldeditY)!=null)
+					if(field.delBlock(mapEditX, mapEditY)!=null)
 						playSE("change")
 				} catch(_:Exception) {
 				}
 		}
 		// 終了
-		if(ctrl.isPush(Controller.BUTTON_B)&&fldeditFrames>10) {
-			stat = fldeditPreviousStat
-			owner.mode?.fieldEditExit(this, playerID)
-			owner.receiver.fieldEditExit(this, playerID)
+		if(ctrl.isPush(Controller.BUTTON_B)&&mapEditFrames>10) {
+			stat = mapEditPreviousStat
+			owner.mode?.fieldEditExit(this)
+			owner.receiver.fieldEditExit(this)
 		}
 	}
 
@@ -2962,7 +2954,7 @@ class GameEngine(
 	}
 	/** Constants of last successful movements */
 	enum class LastMove {
-		NONE, FALL_AUTO, FALL_SELF, SLIDE_AIR, SLIDE_GROUND, ROTATE_AIR, ROTATE_GROUND
+		NONE, FALL_AUTO, FALL_SELF, SLIDE_AIR, SLIDE_GROUND, SPIN_AIR, SPIN_GROUND
 	}
 	/** Line gravity types */
 	enum class LineGravity {

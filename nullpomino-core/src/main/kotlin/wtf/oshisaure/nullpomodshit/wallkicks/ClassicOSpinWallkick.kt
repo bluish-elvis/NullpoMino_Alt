@@ -59,7 +59,7 @@ class ClassicOSpinWallkick:Wallkick {
 			if(piece.id==2) {
 				temp = 0
 				while(temp<trySeq.size) {
-					piece.copy(Piece(trySeq[temp]))
+					piece.replace(Piece(trySeq[temp]))
 					piece.setBlock(oldpiece.block[0])
 //					piece.id = oldpiece.id
 					piece.setColor(oldpiece.colors)
@@ -71,7 +71,7 @@ class ClassicOSpinWallkick:Wallkick {
 					}
 					++temp
 				}
-				piece.copy(oldpiece)
+				piece.replace(oldpiece)
 			} else if(piece.id!=0&&(checkCollisionKick(piece, x, y, rtNew, field)||piece.id==8||piece.id==10)) {
 				temp = 0
 				if(!piece.checkCollision(x-1-check, y, rtNew, field)) temp = -1-check

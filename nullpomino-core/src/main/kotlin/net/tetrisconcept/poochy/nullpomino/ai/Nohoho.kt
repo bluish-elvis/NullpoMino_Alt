@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -92,7 +92,7 @@ class Nohoho:DummyAI(), Runnable {
 		inARE = false
 
 		if((thread==null||!thread!!.isAlive)&&engine.aiUseThread) {
-			thread = Thread(this, "AI_$playerID")
+			thread = Thread(this, "AI_${engine.playerID}")
 			thread!!.isDaemon = true
 			thread!!.start()
 			thinkDelay = engine.aiThinkDelay
@@ -101,12 +101,11 @@ class Nohoho:DummyAI(), Runnable {
 		}
 	}
 
-
 	/* Called whenever a new piece is spawned */
 	override fun newPiece(engine:GameEngine, playerID:Int) {
 		if(!engine.aiUseThread)
 			thinkBestPosition(engine)
-		else if(!thinking&&!thinkComplete||!engine.aiPrethink||engine.aiShowHint) {
+		else if(!thinking&&!thinkComplete||!engine.aiPreThink||engine.aiShowHint) {
 			thinkRequest.newRequest()
 			thinkCurrentPieceNo++
 		}
@@ -114,7 +113,7 @@ class Nohoho:DummyAI(), Runnable {
 
 	/* Called at the start of each frame */
 	override fun onFirst(engine:GameEngine, playerID:Int) {
-		if(engine.aiPrethink&&engine.speed.are>0&&engine.speed.areLine>0) {
+		if(engine.aiPreThink&&engine.speed.are>0&&engine.speed.areLine>0) {
 			inputARE = 0
 			val newInARE = engine.stat===GameEngine.Status.ARE||engine.stat===GameEngine.Status.READY
 			if(newInARE&&!inARE||!thinking&&!thinkSuccess) {
@@ -145,9 +144,9 @@ class Nohoho:DummyAI(), Runnable {
 			val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 
 			var moveDir = 0 //-1 = left,  1 = right
-			var rotateDir = 0 //-1 = left,  1 = right
+			var spinDir = 0 //-1 = left,  1 = right
 			var drop = 0 //1 = up, -1 = down
-			val sync = false //true = delay either rotate or movement for synchro move if needed.
+			val sync = false //true = delay either spin or movement for synchro move if needed.
 
 			//If stuck, rethink.
 			if(pieceTouchGround&&rt==bestRt&&
@@ -172,7 +171,7 @@ class Nohoho:DummyAI(), Runnable {
 					if(DEBUG_ALL) log.debug("Needs rethink - piece is stuck, last inputs had no effect!")
 				}
 			}
-			if(engine.nowPieceRotateCount>=8) {
+			if(engine.nowPieceSpinCount>=8) {
 				thinkRequest.newRequest()
 				thinkComplete = false
 				if(DEBUG_ALL) log.debug("Needs rethink - piece is stuck, too many rotations!")
@@ -192,23 +191,17 @@ class Nohoho:DummyAI(), Runnable {
 				// Rotation
 				val best180 = abs(rt-bestRt)==2
 				if(rt!=bestRt) {
-					val lrot = engine.getRotateDirection(-1)
-					val rrot = engine.getRotateDirection(1)
+					val lrot = engine.getSpinDirection(-1)
+					val rrot = engine.getSpinDirection(1)
 					if(DEBUG_ALL) log.debug("lrot = $lrot, rrot = $rrot")
 
-					if(best180&&engine.ruleOpt.rotateButtonAllowDouble&&!ctrl.isPress(Controller.BUTTON_E))
+					if(best180&&engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E))
 						input = input or Controller.BUTTON_BIT_E
-					else if(bestRt==rrot)
-						rotateDir = 1
-					else if(bestRt==lrot)
-						rotateDir = -1
-					else if(engine.ruleOpt.rotateButtonAllowReverse&&best180&&rt and 1>0) {
-						rotateDir = if(rrot==Piece.DIRECTION_UP)
-							1
-						else
-							-1
-					} else
-						rotateDir = 1
+					else if(bestRt==rrot) spinDir = 1
+					else if(bestRt==lrot) spinDir = -1
+					else if(engine.ruleOpt.spinReverseKey&&best180&&rt and 1>0) {
+						spinDir = if(rrot==Piece.DIRECTION_UP) 1 else -1
+					} else spinDir = 1
 				}
 
 				// Whether reachable position
@@ -264,13 +257,13 @@ class Nohoho:DummyAI(), Runnable {
 				input = input or Controller.BUTTON_BIT_UP
 			else if(drop==-1) input = input or Controller.BUTTON_BIT_DOWN
 
-			if(rotateDir!=0)
-				if(engine.ruleOpt.rotateButtonAllowDouble&&rotateDir==2&&!ctrl.isPress(Controller.BUTTON_E))
+			if(spinDir!=0)
+				if(engine.ruleOpt.spinDoubleKey&&spinDir==2&&!ctrl.isPress(Controller.BUTTON_E))
 					input = input or Controller.BUTTON_BIT_E
-				else if(engine.ruleOpt.rotateButtonAllowReverse&&!engine.ruleOpt.rotateButtonDefaultRight&&rotateDir==1) {
+				else if(engine.ruleOpt.spinReverseKey&&!engine.ruleOpt.spinToRight&&spinDir==1) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
-				} else if(engine.ruleOpt.rotateButtonAllowReverse&&
-					engine.ruleOpt.rotateButtonDefaultRight&&rotateDir==-1
+				} else if(engine.ruleOpt.spinReverseKey&&
+					engine.ruleOpt.spinToRight&&spinDir==-1
 				) {
 					if(!ctrl.isPress(Controller.BUTTON_B)) input = input or Controller.BUTTON_BIT_B
 				} else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
@@ -282,7 +275,7 @@ class Nohoho:DummyAI(), Runnable {
 			lastRt = rt
 
 			if(DEBUG_ALL)
-				log.debug("Input = $input, moveDir = $moveDir, rotateDir = $rotateDir, sync = $sync, drop = $drop, setDAS = $setDAS")
+				log.debug("Input = $input, moveDir = $moveDir, spinDir = $spinDir, sync = $sync, drop = $drop, setDAS = $setDAS")
 
 			delay = 0
 			return input
@@ -347,7 +340,7 @@ class Nohoho:DummyAI(), Runnable {
 			}
 			for(rt in 0 until Piece.DIRECTION_COUNT) {
 				x = maxX-pieceNow.maximumBlockX
-				fld.copy(engine.field)
+				fld.replace(engine.field)
 				var y = pieceNow.getBottom(x, nowY, rt, fld)
 
 				if(!pieceNow.checkCollision(x, y, rt, fld)) {
@@ -368,7 +361,7 @@ class Nohoho:DummyAI(), Runnable {
 				}
 				if(holdOK&&pieceHold!=null) {
 					x = maxX-pieceHold.maximumBlockX
-					fld.copy(engine.field)
+					fld.replace(engine.field)
 					y = pieceHold.getBottom(x, nowY, rt, fld)
 
 					if(!pieceHold.checkCollision(x, y, rt, fld)) {
@@ -394,7 +387,7 @@ class Nohoho:DummyAI(), Runnable {
 				val minX = pieceNow.getMostMovableLeft(nowX, nowY, rt, engine.field)
 				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)
 				for(x in minX..maxX) {
-					fld.copy(engine.field)
+					fld.replace(engine.field)
 					val y = pieceNow.getBottom(x, nowY, rt, fld)
 
 					if(!pieceNow.checkCollision(x, y, rt, fld)) {
@@ -424,7 +417,7 @@ class Nohoho:DummyAI(), Runnable {
 					val maxHoldX = it.getMostMovableRight(spawnX, spawnY, rt, engine.field)
 
 					for(x in minHoldX..maxHoldX) {
-						fld.copy(engine.field)
+						fld.replace(engine.field)
 						val y = it.getBottom(x, spawnY, rt, fld)
 
 						if(!it.checkCollision(x, y, rt, fld)) {

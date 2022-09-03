@@ -33,6 +33,7 @@
 package zeroxfc.nullpo.custom.libs
 
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.gui.common.libs.Vector
 import kotlin.random.Random
 
 /**
@@ -52,65 +53,61 @@ class StaticFlyInText(private val mainString:String  // String to draw
 	, private val textScale:Float// Text scale
 	, seed:Long) {
 	// Vector array of positions
-	private var letterPositions:Array<DoubleVector> = emptyArray()
+	private var letterPositions:Array<Vector> = emptyArray()
 	// Start location
-	private var startLocation:Array<DoubleVector> = emptyArray()
+	private var startLocation:Array<Vector> = emptyArray()
 	// Destination vector
-	private var destinationLocation:Array<DoubleVector> = emptyArray()
+	private var destinationLocation:Array<Vector> = emptyArray()
 	// Randomizer for start pos
 	private val positionRandomizer:Random = Random(seed)
 	// Lifetime variable
 	private var currentLifetime = 0
-	/**
-	 * Updates the position and lifetime of this object.
-	 */
-	fun update() {
-		if(currentLifetime<flyInTime) {
-			currentLifetime++
-			for(i in letterPositions.indices) {
-				val v1 = Interpolation.lerp(startLocation[i].x, destinationLocation[i].x, currentLifetime.toDouble()/flyInTime).toInt()
-				val v2 = Interpolation.lerp(startLocation[i].y, destinationLocation[i].y, currentLifetime.toDouble()/flyInTime).toInt()
-				letterPositions[i] = DoubleVector(v1.toDouble(), v2.toDouble(), false)
-			}
-		}
-	}
-	/**
-	 * Draws the text at its current position.
-	 */
-	fun draw(receiver:EventReceiver) {
-		for(j in letterPositions.indices) {
-			receiver.drawDirectFont(
-				letterPositions[j].x.toInt(), letterPositions[j].y.toInt(), "${mainString[j]}",
-				textColor, textScale)
-		}
-	}
 
 	init {
-
 		var sMod = 16
 		if(textScale==2.0f) sMod = 32
 		if(textScale==0.5f) sMod = 16
-		val position:List<Pair<DoubleVector, DoubleVector>> = (mainString.indices).map {i ->
+		val position:List<Pair<Vector, Vector>> = (mainString.indices).map {i ->
 			var startX = 0
 			var startY = 0
-			var position:DoubleVector = DoubleVector.zero()
-			val dec1 = positionRandomizer.nextDouble()
-			val dec2 = positionRandomizer.nextDouble()
-			if(dec1<0.5) {
+			var position:Vector = Vector.zero()
+			val dec1 = positionRandomizer.nextFloat()
+			val dec2 = positionRandomizer.nextFloat()
+			if(dec1<.5f) {
 				startX = -sMod
-				if(dec2<0.5) startX = 41*sMod
-				startY = (positionRandomizer.nextDouble()*(32*sMod)).toInt()-sMod
+				if(dec2<.5f) startX = 41*sMod
+				startY = (positionRandomizer.nextFloat()*(32*sMod)).toInt()-sMod
 			} else {
 				startY = -sMod
-				if(dec2<0.5) startY = 31*sMod
-				startX = (positionRandomizer.nextDouble()*(42*sMod)).toInt()-sMod
+				if(dec2<.5f) startY = 31*sMod
+				startX = (positionRandomizer.nextFloat()*(42*sMod)).toInt()-sMod
 			}
-			return@map DoubleVector(startX.toDouble(), startY.toDouble(), false) to DoubleVector((destinationX+sMod*i).toDouble(),
-				destinationY.toDouble(), false)
+			return@map Vector(startX, startY) to Vector((destinationX+sMod*i), destinationY)
 		}
 		letterPositions = position.map {it.first}.toTypedArray()
 		startLocation = position.map {it.first}.toTypedArray()
 		destinationLocation = position.map {it.second}.toTypedArray()
-		currentLifetime = 0
 	}
+	/** Updates the position and lifetime of this object.*/
+	fun update() {
+		if(currentLifetime<flyInTime) {
+			currentLifetime++
+			for(i in letterPositions.indices) {
+				letterPositions[i] = Vector(
+					Interpolation.lerp(startLocation[i].x, destinationLocation[i].x, currentLifetime.toFloat()/flyInTime),
+					Interpolation.lerp(startLocation[i].y, destinationLocation[i].y, currentLifetime.toFloat()/flyInTime)
+				)
+			}
+		}
+	}
+	/** Draws the text at its current position.*/
+	fun draw(receiver:EventReceiver) {
+		for(j in letterPositions.indices) {
+			receiver.drawDirectFont(
+				letterPositions[j].x.toInt(), letterPositions[j].y.toInt(), "${mainString[j]}",
+				textColor, textScale
+			)
+		}
+	}
+
 }

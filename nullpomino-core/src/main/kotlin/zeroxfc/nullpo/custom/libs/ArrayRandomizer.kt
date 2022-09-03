@@ -32,7 +32,7 @@
  */
 package zeroxfc.nullpo.custom.libs
 
-import java.util.*
+import java.util.Random
 
 // import java.util.Iterator;
 // import java.util.List;
@@ -47,7 +47,7 @@ class ArrayRandomizer {
 	constructor(seed:Long) {
 		randomizer = Random(seed)
 	}
-	
+
 	fun permute(arr:IntArray?):IntArray {
 		val h = arr!!.clone()
 		val copy = ArrayList<Int>()

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2021,
+ * Copyright (c) 2021-2022,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -36,6 +36,7 @@
 
 package zeroxfc.nullpo.custom.libs
 
+import kotlin.math.PI
 import kotlin.math.sin
 
 object Interpolation {
@@ -47,7 +48,8 @@ object Interpolation {
 	 * @param lerpVal Proportion of point travelled (0 = start, 1 = end)
 	 * @return Interpolated value as `int`
 	 */
-	fun lerp(x:Int, y:Int, lerpVal:Double):Int = ((1.0-lerpVal)*x).toInt()+(lerpVal*y).toInt()
+	fun lerp(x:Int, y:Int, lerpVal:Float):Int = (x+(y-x)*lerpVal).toInt()
+	fun lerp(x:Int, y:Int, lerpVal:Double):Int = (x+(y-x)*lerpVal).toInt()
 	/**
 	 * Linear interpolation between two `double` values.
 	 *
@@ -56,16 +58,7 @@ object Interpolation {
 	 * @param lerpVal Proportion of point travelled (0 = start, 1 = end)
 	 * @return Interpolated value as `double`
 	 */
-	fun lerp(x:Double, y:Double, lerpVal:Double):Double = (1.0-lerpVal)*x+lerpVal*y
-	/**
-	 * Linear interpolation between two `long` values.
-	 *
-	 * @param x      Start point
-	 * @param y      End point
-	 * @param lerpVal Proportion of point travelled (0 = start, 1 = end)
-	 * @return Interpolated value as `long`
-	 */
-	fun lerp(x:Long, y:Long, lerpVal:Double):Long = ((1.0-lerpVal)*x).toLong()+(lerpVal*y).toLong()
+	fun lerp(x:Double, y:Double, lerpVal:Double):Double = (x+(y-x)*lerpVal)
 	/**
 	 * Linear interpolation between two `float` values.
 	 *
@@ -74,7 +67,56 @@ object Interpolation {
 	 * @param lerpVal Proportion of point travelled (0 = start, 1 = end)
 	 * @return Interpolated value as `float`
 	 */
-	fun lerp(x:Float, y:Float, lerpVal:Double):Float = ((1.0-lerpVal)*x).toFloat()+(lerpVal*y).toFloat()
+	fun lerp(x:Float, y:Float, lerpVal:Float):Float = (x+(y-x)*lerpVal)
+	/**
+	 * Linear interpolation between two `long` values.
+	 *
+	 * @param x      Start point
+	 * @param y      End point
+	 * @param lerpVal Proportion of point travelled (0 = start, 1 = end)
+	 * @return Interpolated value as `long`
+	 */
+	fun lerp(x:Long, y:Long, lerpVal:Double):Long = (x+(y-x)*lerpVal).toLong()
+
+	/**
+	 * One dimensional Bézier interpolation
+	 *
+	 * @param points Control points for the interpolation (first = start point, last = end point)
+	 * @param t      Proportion of point travelled (0 = start, 1 = end)
+	 * @return Interpolated value as `float`
+	 */
+	private fun bezier1DInterp(points:FloatArray, t:Float):Float = when {
+		points.isEmpty() -> 0f
+		points.size==1 -> points[0] // Only one point, return it.
+		else -> {
+			val np1 = FloatArray(points.size-1) {points[it]} // Get all points except last
+			val np2 = FloatArray(points.size-1) {points[it+1]}// Get all points except first
+			val ny = bezier1DInterp(np1, t)
+			val nv2 = bezier1DInterp(np2, t) // Recursive call
+			val nt = 1f-t // Inverse value
+			nt*ny+t*nv2
+		}
+	}
+	/**
+	 * Two-dimensional Bézier interpolation, requires a value pair within each
+	 *
+	 * @param points Control points for the interpolation (first = start point, last = end point)
+	 * @param t      Proportion of point travelled (0 = start, 1 = end)
+	 * @return Interpolated value as `float[]`
+	 */
+	private fun bezier2DInterp(points:Array<FloatArray>, t:Float):FloatArray = when {
+		points.isEmpty() -> floatArrayOf(0f, 0f)
+		points.size==1 -> points[0]
+
+		else -> {
+			val np1 = Array(points.size-1) {points[it]}
+			val np2 = Array(points.size-1) {points[it+1]}
+			val ny = bezier2DInterp(np1, t)
+			val nv2 = bezier2DInterp(np2, t)
+			val nt = 1f-t
+			floatArrayOf(nt*ny[0]+t*nv2[0], nt*ny[1]+t*nv2[1])
+		}
+	}
 	/**
 	 * One dimensional Bézier interpolation
 	 *
@@ -95,7 +137,7 @@ object Interpolation {
 		}
 	}
 	/**
-	 * Two dimensional Bézier interpolation, requires a value pair within each
+	 * Two-dimensional Bézier interpolation, requires a value pair within each
 	 *
 	 * @param points Control points for the interpolation (first = start point, last = end point)
 	 * @param t      Proportion of point travelled (0 = start, 1 = end)
@@ -114,6 +156,7 @@ object Interpolation {
 			doubleArrayOf(nt*ny[0]+t*nv2[0], nt*ny[1]+t*nv2[1])
 		}
 	}
+
 	/**
 	 * N-dimensional Bézier interpolation, requires a value set within each.<br></br>
 	 * Each value set must contain the same number of values.
@@ -135,6 +178,26 @@ object Interpolation {
 		}
 	}
 	/**
+	 * Smooth curve interpolation of two `float` values.
+	 *
+	 * @param x          Start point
+	 * @param y          End point
+	 * @param denominator Step ease scale (denominator > 2 where smaller = closer to linear)
+	 * @param interpVal   Proportion of point travelled (0 = start, 1 = end)
+	 * @return Interpolated value as `Float`
+	 */
+	fun smoothStep(x:Float, y:Float, interpVal:Float, denominator:Float = 6f):Float {
+		val den = maxOf(1f, denominator)
+		val diff = y-x
+		val p1 = diff*(1f/den)
+		val p2 = diff-p1
+
+		// log.debug(Arrays.toString(new double[] { x, x + p1, x + p2, y }));
+		// log.debug(Arrays.toString(new double[] { p1, p2}));
+		// log.debug(lerpVal);
+		return bezier1DInterp(floatArrayOf(x, x+p1, x+p2, y), interpVal)
+	}
+	/**
 	 * Smooth curve interpolation of two `double` values.
 	 *
 	 * @param x          Start point
@@ -143,8 +206,8 @@ object Interpolation {
 	 * @param interpVal   Proportion of point travelled (0 = start, 1 = end)
 	 * @return Interpolated value as `double`
 	 */
-	fun smoothStep(x:Double, y:Double, denominator:Double = 6.0, interpVal:Double):Double {
-		val den = if(denominator<=2) 6.0 else denominator
+	fun smoothStep(x:Double, y:Double, interpVal:Double, denominator:Double = 6.0):Double {
+		val den = maxOf(1.0, denominator)
 		val diff = y-x
 		val p1 = diff*(1.0/den)
 		val p2 = diff-p1
@@ -155,14 +218,18 @@ object Interpolation {
 		return bezier1DInterp(doubleArrayOf(x, x+p1, x+p2, y), interpVal)
 	}
 	/**
-	 * Smooth curve interpolation of two `double` values.
+	 * Sine interpolation of two `float` values.
 	 *
 	 * @param x        Start point
 	 * @param y        End point
 	 * @param interpVal Proportion of point travelled (0 = start, 1 = end)
-	 * @return Interpolated value as `double`
+	 * @return Interpolated value as `float`
 	 */
-	fun smoothStep(x:Double, y:Double, interpVal:Double):Double = smoothStep(x, y, 6.0, interpVal)
+	fun sineStep(x:Float, y:Float, interpVal:Float):Float {
+		val ofs = (PI/2f).toFloat()
+		val t = (sin(-1f*ofs+interpVal*ofs*2)+1f)/2f
+		return (1f-t)*x+y*t
+	}
 	/**
 	 * Sine interpolation of two `double` values.
 	 *
@@ -172,7 +239,7 @@ object Interpolation {
 	 * @return Interpolated value as `double`
 	 */
 	fun sineStep(x:Double, y:Double, interpVal:Double):Double {
-		val ofs = Math.PI/2.0
+		val ofs = PI/2.0
 		val t = (sin(-1.0*ofs+interpVal*ofs*2)+1.0)/2.0
 		return (1.0-t)*x+y*t
 	}

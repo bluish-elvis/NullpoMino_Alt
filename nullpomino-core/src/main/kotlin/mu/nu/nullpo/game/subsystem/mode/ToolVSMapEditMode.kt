@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -117,7 +117,7 @@ class ToolVSMapEditMode:AbstractMode() {
 
 		for(i in field.hiddenHeight*-1 until field.height)
 			for(j in 0 until field.width) {
-				val col=field.getBlockColor(j, i)
+				val col = field.getBlockColor(j, i)
 				if(col==COLOR.BLACK||col==COLOR.WHITE) {
 					var color:COLOR
 					do
@@ -130,14 +130,14 @@ class ToolVSMapEditMode:AbstractMode() {
 	}
 
 	/* Initialization for each player */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		engine.framecolor = GameEngine.FRAME_COLOR_GRAY
+	override fun playerInit(engine:GameEngine) {
+		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
 		engine.createFieldIfNeeded()
 		loadAllMaps(nowMapSetID)
 	}
 
 	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// Configuration changes
 		val change = updateCursor(engine, 7)
 
@@ -161,7 +161,7 @@ class ToolVSMapEditMode:AbstractMode() {
 		}
 
 		// 決定
-		if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+		if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 			engine.playSE("decide")
 
 			if(menuCursor==0)
@@ -176,13 +176,13 @@ class ToolVSMapEditMode:AbstractMode() {
 			else if(menuCursor==3) {
 				// SAVE
 				if(nowMapID>=0&&nowMapID<listFields!!.size)
-					listFields!![nowMapID].copy(engine.field)
+					listFields!![nowMapID].replace(engine.field)
 				else
 					listFields!!.add(Field(engine.field))
 			} else if(menuCursor==4) {
 				// LOAD
 				if(nowMapID>=0&&nowMapID<listFields!!.size) {
-					engine.field.copy(listFields!![nowMapID])
+					engine.field.replace(listFields!![nowMapID])
 					engine.field.setAllSkin(engine.skin)
 				} else
 					engine.field.reset()
@@ -201,51 +201,48 @@ class ToolVSMapEditMode:AbstractMode() {
 				nowMapID = 0
 				engine.field.reset()
 			}
-		}
-
+		} else if(engine.ctrl.isPress(Controller.BUTTON_D)&&engine.ctrl.isPress(Controller.BUTTON_E))
 		// 終了
-		if(engine.ctrl.isPress(Controller.BUTTON_D)&&engine.ctrl.isPress(Controller.BUTTON_E)&&menuTime>=5)
-			engine.quitflag = true
+			engine.quitFlag = true
 
-		menuTime++
 		return true
 	}
 
 	/* Setting screen drawing */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 1, "FIELD EDIT", EventReceiver.COLOR.COBALT)
+	override fun renderSetting(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 1, "FIELD EDIT", EventReceiver.COLOR.COBALT)
 		if(menuCursor in 0..2)
-			receiver.drawMenuFont(engine, playerID, 0, 2+menuCursor, "\u0082", EventReceiver.COLOR.RED)
-		receiver.drawMenuFont(engine, playerID, 1, 2, "[EDIT]", menuCursor==0)
-		receiver.drawMenuFont(engine, playerID, 1, 3, "[WHITE->?]", menuCursor==1)
-		receiver.drawMenuFont(engine, playerID, 1, 4, "[CLEAR]", menuCursor==2)
+			receiver.drawMenuFont(engine, 0, 2+menuCursor, "\u0082", EventReceiver.COLOR.RED)
+		receiver.drawMenuFont(engine, 1, 2, "[EDIT]", menuCursor==0)
+		receiver.drawMenuFont(engine, 1, 3, "[WHITE->?]", menuCursor==1)
+		receiver.drawMenuFont(engine, 1, 4, "[CLEAR]", menuCursor==2)
 
-		receiver.drawMenuFont(engine, playerID, 0, 6, "MAP DATA", EventReceiver.COLOR.COBALT)
+		receiver.drawMenuFont(engine, 0, 6, "MAP DATA", EventReceiver.COLOR.COBALT)
 		if(listFields!!.size>0)
-			receiver.drawMenuFont(engine, playerID, 0, 7, "$nowMapID"+"/"+(listFields!!.size-1), menuCursor in 3..5)
+			receiver.drawMenuFont(engine, 0, 7, "$nowMapID"+"/"+(listFields!!.size-1), menuCursor in 3..5)
 		else
-			receiver.drawMenuFont(engine, playerID, 0, 7, "NO MAPS", menuCursor in 3..5)
+			receiver.drawMenuFont(engine, 0, 7, "NO MAPS", menuCursor in 3..5)
 		if(menuCursor in 3..5)
-			receiver.drawMenuFont(engine, playerID, 0, 8+menuCursor-3, "\u0082", EventReceiver.COLOR.RED)
-		receiver.drawMenuFont(engine, playerID, 1, 8, "[SAVE]", menuCursor==3)
-		receiver.drawMenuFont(engine, playerID, 1, 9, "[LOAD]", menuCursor==4)
-		receiver.drawMenuFont(engine, playerID, 1, 10, "[DELETE]", menuCursor==5)
+			receiver.drawMenuFont(engine, 0, 8+menuCursor-3, "\u0082", EventReceiver.COLOR.RED)
+		receiver.drawMenuFont(engine, 1, 8, "[SAVE]", menuCursor==3)
+		receiver.drawMenuFont(engine, 1, 9, "[LOAD]", menuCursor==4)
+		receiver.drawMenuFont(engine, 1, 10, "[DELETE]", menuCursor==5)
 
-		receiver.drawMenuFont(engine, playerID, 0, 12, "MAP FILE", EventReceiver.COLOR.COBALT)
-		receiver.drawMenuFont(engine, playerID, 0, 13, "$nowMapSetID/99", menuCursor in 6..7)
+		receiver.drawMenuFont(engine, 0, 12, "MAP FILE", EventReceiver.COLOR.COBALT)
+		receiver.drawMenuFont(engine, 0, 13, "$nowMapSetID/99", menuCursor in 6..7)
 		if(menuCursor in 6..7)
-			receiver.drawMenuFont(engine, playerID, 0, 14+menuCursor-6, "\u0082", EventReceiver.COLOR.RED)
-		receiver.drawMenuFont(engine, playerID, 1, 14, "[WRITE]", menuCursor==6)
-		receiver.drawMenuFont(engine, playerID, 1, 15, "[READ]", menuCursor==7)
+			receiver.drawMenuFont(engine, 0, 14+menuCursor-6, "\u0082", EventReceiver.COLOR.RED)
+		receiver.drawMenuFont(engine, 1, 14, "[WRITE]", menuCursor==6)
+		receiver.drawMenuFont(engine, 1, 15, "[READ]", menuCursor==7)
 
-		receiver.drawMenuFont(engine, playerID, 0, 19, "EXIT-> D+E", EventReceiver.COLOR.ORANGE)
+		receiver.drawMenuFont(engine, 0, 19, "EXIT-> D+E", EventReceiver.COLOR.ORANGE)
 	}
 
 	/* fieldEdit screen */
-	override fun renderFieldEdit(engine:GameEngine, playerID:Int) {
-		receiver.drawScoreFont(engine, playerID, 0, 2, "X POS", EventReceiver.COLOR.BLUE)
-		receiver.drawScoreFont(engine, playerID, 0, 3, ""+engine.fldeditX)
-		receiver.drawScoreFont(engine, playerID, 0, 4, "Y POS", EventReceiver.COLOR.BLUE)
-		receiver.drawScoreFont(engine, playerID, 0, 5, ""+engine.fldeditY)
+	override fun renderFieldEdit(engine:GameEngine) {
+		receiver.drawScoreFont(engine, 0, 2, "X POS", EventReceiver.COLOR.BLUE)
+		receiver.drawScoreFont(engine, 0, 3, ""+engine.mapEditX)
+		receiver.drawScoreFont(engine, 0, 4, "Y POS", EventReceiver.COLOR.BLUE)
+		receiver.drawScoreFont(engine, 0, 5, ""+engine.mapEditY)
 	}
 }

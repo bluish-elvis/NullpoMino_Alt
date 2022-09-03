@@ -37,7 +37,7 @@ class PreviewMode:AbstractMode() {
 	override val name = "PREVIEW"
 
 	/* Player init */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
+	override fun playerInit(engine:GameEngine) {
 		engine.allowTextRenderByReceiver = false
 		engine.readyStart = -1
 		engine.readyEnd = -1
@@ -46,7 +46,7 @@ class PreviewMode:AbstractMode() {
 	}
 
 	/* Game Over - or is it? */
-	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+	override fun onGameOver(engine:GameEngine):Boolean {
 		engine.lives = 1 // Let's give unlimited lives
 		return false
 	}

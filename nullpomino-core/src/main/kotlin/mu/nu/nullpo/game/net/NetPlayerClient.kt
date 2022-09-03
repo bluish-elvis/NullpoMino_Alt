@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -50,11 +50,11 @@ class NetPlayerClient:NetBaseClient {
 	/** 自分のPlayer名 */
 	/** @return Current Player名
 	 */
-	var playerName:String=""
+	var playerName:String = ""
 		private set
 
 	/** 自分のTeam name */
-	private var playerTeam:String=""
+	private var playerTeam:String = ""
 
 	/** 自分のPlayer識別 number */
 	/** @return Current Playerの識別 number
@@ -73,9 +73,6 @@ class NetPlayerClient:NetBaseClient {
 	var playerCount = -1
 		private set
 
-	/** Observercount */
-	/** @return Observercount
-	 */
 	var observerCount = -1
 		private set
 
@@ -88,7 +85,7 @@ class NetPlayerClient:NetBaseClient {
 	/** @return Current room ID
 	 */
 	val currentRoomID:Int
-		get() = yourPlayerInfo?.roomID?:-1
+		get() = yourPlayerInfo?.roomID ?: -1
 
 	/** @return Current room info
 	 */
@@ -148,7 +145,13 @@ class NetPlayerClient:NetBaseClient {
 			val pingInterval:Long = if(message.size>6) message[6].toLong() else PING_INTERVAL
 			if(pingInterval!=PING_INTERVAL) startPingTask(pingInterval)
 
-			send("login\t${GameManager.versionMajor}\t${NetUtil.urlEncode(playerName)}\t${Locale.getDefault().country}\t${NetUtil.urlEncode(playerTeam)}\n")
+			send(
+				"login\t${GameManager.versionMajor}\t${NetUtil.urlEncode(playerName)}\t${Locale.getDefault().country}\t${
+					NetUtil.urlEncode(
+						playerTeam
+					)
+				}\n"
+			)
 		}
 		// 人count更新
 		if(message[0]=="observerupdate") {

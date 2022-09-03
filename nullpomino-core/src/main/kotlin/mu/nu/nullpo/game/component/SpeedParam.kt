@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -56,8 +56,10 @@ data class SpeedParam(
 	/** Copy constructor
 	 * @param s Copy source
 	 */
-	constructor(s:SpeedParam?):this(s?.gravity ?: 4, s?.denominator ?: 256, s?.are ?: 24, s?.areLine ?: 24,
-		s?.lineDelay ?: 40, s?.lockDelay ?: 30, s?.das ?: 14)
+	constructor(s:SpeedParam?):this(
+		s?.gravity ?: 4, s?.denominator ?: 256, s?.are ?: 24, s?.areLine ?: 24,
+		s?.lineDelay ?: 40, s?.lockDelay ?: 30, s?.das ?: 14
+	)
 
 	constructor(l:LevelData, i:Int):this(l[i])
 
@@ -72,10 +74,8 @@ data class SpeedParam(
 		das = 14
 	}
 
-	/** 別のSpeedParamからコピー
-	 * @param s Copy source
-	 */
-	fun copy(s:SpeedParam?) {
+	/** 設定を[s]からコピー */
+	fun replace(s:SpeedParam?) {
 		s?.let {b ->
 			gravity = b.gravity
 			denominator = b.denominator

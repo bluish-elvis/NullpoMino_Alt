@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,7 +43,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	/** Version number */
 	private var version = 0
 
-	/** Current round's ranking rank */
+	/** Current round's ranking position */
 	private var rankingRank = 0
 
 	/** Rankings' line counts */
@@ -73,8 +73,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	override val name = "AVALANCHE 1P (RC2)"
 
 	/* Initialization */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 
 		showChains = true
 
@@ -102,7 +102,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	}
 
 	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
 		if(!engine.owner.replayMode) {
 			// Up
@@ -171,15 +171,14 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			}
 
 			// 決定
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				return false
 			}
 
 			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
-			menuTime++
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -194,40 +193,42 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	}
 
 	/* Render the settings screen */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		if(menuCursor<=8) {
-			drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype])
+			drawMenu(engine, receiver, 0, COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype])
 			if(gametype==2)
-				drawMenu(engine, playerID, receiver, 2, COLOR.BLUE, 1, "TARGET" to SPRINT_MAX_SCORE[sprintTarget])
-			drawMenu(engine, playerID, receiver, 4, COLOR.BLUE, 2, "SCORE TYPE" to SCORETYPE_NAME[scoreType],
-				"COLORS" to numColors, "X COLUMN" to if(dangerColumnDouble) "3 AND 4" else "3 ONLY",
-				"X SHOW" to dangerColumnShowX, "CLEAR SIZE" to engine.colorClearSize,
-				"FALL ANIM" to if(cascadeSlow) "FEVER" else "CLASSIC", "BIG DISP" to bigDisplay)
+				drawMenu(engine, receiver, 2, COLOR.BLUE, 1, "TARGET" to SPRINT_MAX_SCORE[sprintTarget])
+			drawMenu(
+				engine, receiver, 4, COLOR.BLUE, 2, "SCORE TYPE" to SCORETYPE_NAME[scoreType], "COLORS" to numColors,
+				"X COLUMN" to if(dangerColumnDouble) "3 AND 4" else "3 ONLY", "X SHOW" to dangerColumnShowX,
+				"CLEAR SIZE" to engine.colorClearSize, "FALL ANIM" to if(cascadeSlow) "FEVER" else "CLASSIC",
+				"BIG DISP" to bigDisplay
+			)
 
-			receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 1/2", COLOR.YELLOW)
+			receiver.drawMenuFont(engine, 0, 19, "PAGE 1/2", COLOR.YELLOW)
 		} else {
 			val strOutline = when(outlinetype) {
 				1 -> "COLOR"
 				2 -> "NONE"
 				else -> "NORMAL"
 			}
-			drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 9, "OUTLINE" to strOutline, "SHOW CHAIN" to showChains)
+			drawMenu(engine, receiver, 0, COLOR.BLUE, 9, "OUTLINE" to strOutline, "SHOW CHAIN" to showChains)
 
-			receiver.drawMenuFont(engine, playerID, 0, 19, "PAGE 2/2", COLOR.YELLOW)
+			receiver.drawMenuFont(engine, 0, 19, "PAGE 2/2", COLOR.YELLOW)
 		}
 	}
 
 	/* When the piece is movable */
-	override fun renderMove(engine:GameEngine, playerID:Int) {
-		if(dangerColumnShowX&&engine.gameStarted) drawXorTimer(engine, playerID)
+	override fun renderMove(engine:GameEngine) {
+		if(dangerColumnShowX&&engine.gameStarted) drawX(engine)
 	}
 
 	/* Render score */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		var modeStr = GAMETYPE_NAME[gametype]
 		if(gametype==2) modeStr = "$modeStr ${SPRINT_MAX_SCORE[sprintTarget]/1000}K"
-		receiver.drawScoreFont(engine, playerID, 0, 0, "AVALANCHE ($modeStr)", COLOR.COBALT)
-		receiver.drawScoreFont(engine, playerID, 0, 1, "(${SCORETYPE_NAME[scoreType]} $numColors COLORS)", COLOR.COBALT)
+		receiver.drawScoreFont(engine, 0, 0, "AVALANCHE ($modeStr)", COLOR.COBALT)
+		receiver.drawScoreFont(engine, 0, 1, "(${SCORETYPE_NAME[scoreType]} $numColors COLORS)", COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null&&engine.colorClearSize==4) {
@@ -235,91 +236,95 @@ class Avalanche1P:Avalanche1PDummyMode() {
 				val topY = if(receiver.nextDisplayType==2&&gametype==0) 6 else 4
 
 				when(gametype) {
-					0 -> receiver.drawScoreFont(engine, playerID, 3, topY-1, "SCORE      TIME", COLOR.BLUE, scale)
-					1 -> receiver.drawScoreFont(engine, playerID, 3, 3, "Score", COLOR.BLUE)
-					2 -> receiver.drawScoreFont(engine, playerID, 3, 3, "Time", COLOR.BLUE)
+					0 -> receiver.drawScoreFont(engine, 3, topY-1, "SCORE      TIME", COLOR.BLUE, scale)
+					1 -> receiver.drawScoreFont(engine, 3, 3, "Score", COLOR.BLUE)
+					2 -> receiver.drawScoreFont(engine, 3, 3, "Time", COLOR.BLUE)
 				}
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, playerID, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
-							receiver.drawScoreFont(engine, playerID, 3, topY+i, "${rankingScore[scoreType][numColors-3][gametype][i]}",
-								i==rankingRank, scale)
-							receiver.drawScoreFont(engine, playerID, 14, topY+i,
-								rankingTime[scoreType][numColors-3][gametype][i].toTimeStr, i==rankingRank, scale)
+							receiver.drawScoreFont(
+								engine, 3, topY+i, "${rankingScore[scoreType][numColors-3][gametype][i]}", i==rankingRank,
+								scale
+							)
+							receiver.drawScoreFont(
+								engine, 14, topY+i, rankingTime[scoreType][numColors-3][gametype][i].toTimeStr,
+								i==rankingRank, scale
+							)
 						}
-						1 -> receiver.drawScoreFont(engine, playerID, 3, 4+i, "${rankingScore[scoreType][numColors-3][gametype][i]}",
-							i==rankingRank)
-						2 -> receiver.drawScoreFont(engine, playerID, 3, 4+i,
-							rankingTime[scoreType][numColors-3][gametype][i].toTimeStr, i==rankingRank)
+						1 -> receiver.drawScoreFont(
+							engine, 3, 4+i, "${rankingScore[scoreType][numColors-3][gametype][i]}", i==rankingRank
+						)
+						2 -> receiver.drawScoreFont(
+							engine, 3, 4+i, rankingTime[scoreType][numColors-3][gametype][i].toTimeStr,
+							i==rankingRank
+						)
 					}
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, playerID, 0, 3, "Score", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 3, "Score", COLOR.BLUE)
 			val strScore = "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
-			receiver.drawScoreFont(engine, playerID, 0, 4, strScore)
+			receiver.drawScoreFont(engine, 0, 4, strScore)
 
-			receiver.drawScoreFont(engine, playerID, 0, 6, "Level", COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 7, "$level")
+			receiver.drawScoreFont(engine, 0, 6, "Level", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 7, "$level")
 
-			receiver.drawScoreFont(engine, playerID, 0, 9, "POWER", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 9, "POWER", COLOR.BLUE)
 			var strSent = "$garbageSent"
 			if(garbageAdd>0) strSent = "$strSent(+$garbageAdd)"
-			receiver.drawScoreFont(engine, playerID, 0, 10, strSent)
+			receiver.drawScoreFont(engine, 0, 10, strSent)
 
-			receiver.drawScoreFont(engine, playerID, 0, 12, "Time", COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 13, engine.statistics.time.toTimeStr)
+			receiver.drawScoreFont(engine, 0, 12, "Time", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 13, engine.statistics.time.toTimeStr)
 
-			receiver.drawScoreFont(engine, playerID, 11, 6, "CLEARED", COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 11, 7, "$blocksCleared")
+			receiver.drawScoreFont(engine, 11, 6, "CLEARED", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 11, 7, "$blocksCleared")
 
-			receiver.drawScoreFont(engine, playerID, 11, 9, "ZENKESHI", COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 11, 10, "$zenKeshiCount")
+			receiver.drawScoreFont(engine, 11, 9, "ZENKESHI", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 11, 10, "$zenKeshiCount")
 
-			receiver.drawScoreFont(engine, playerID, 11, 12, "MAX CHAIN", COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 11, 13, engine.statistics.maxChain.toString())
+			receiver.drawScoreFont(engine, 11, 12, "MAX CHAIN", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 11, 13, engine.statistics.maxChain.toString())
 
 			if(dangerColumnShowX&&engine.gameStarted&&engine.stat!=GameEngine.Status.MOVE
 				&&engine.stat!=GameEngine.Status.RESULT)
-				drawXorTimer(engine, playerID)
+				drawX(engine)
 
-			val textHeight = if(engine.displaysize==1) 11 else engine.field.height+1
+			val textHeight = if(engine.displaySize==1) 11 else engine.field.height+1
 
-			val baseX = if(engine.displaysize==1) 1 else 0
+			val baseX = if(engine.displaySize==1) 1 else 0
 			if(engine.chain>0&&chainDisplay>0&&showChains)
-				receiver.drawMenuFont(engine, playerID, baseX+if(engine.chain>9)
-					0
-				else
-					1, textHeight, "${engine.chain} CHAIN!", COLOR.YELLOW)
+				receiver.drawMenuFont(
+					engine, baseX+if(engine.chain>9)
+						0
+					else
+						1, textHeight, "${engine.chain} CHAIN!", COLOR.YELLOW
+				)
 			if(zenKeshi)
-				receiver.drawMenuFont(engine, playerID, baseX, textHeight+1, "ZENKESHI!", COLOR.YELLOW)
+				receiver.drawMenuFont(engine, baseX, textHeight+1, "ZENKESHI!", COLOR.YELLOW)
 		}
 	}
 
-	/** Draw X on death columns
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	private fun drawXorTimer(engine:GameEngine, playerID:Int) {
+	/** Draw X on death columns*/
+	override fun drawX(engine:GameEngine) {
 		for(i in 0 until if(dangerColumnDouble) 2 else 1)
-			if(engine.field==null||engine.field.getBlockEmpty(2+i, 0))
-				if(engine.displaysize==1)
-					receiver.drawMenuFont(engine, playerID, 4+i*2, 0, "\u0085", COLOR.RED, 2f)
-				else
-					receiver.drawMenuFont(engine, playerID, 2+i, 0, "\u0085", COLOR.RED)
+			if(engine.field.getBlockEmpty(2+i, 0))
+				if(engine.displaySize==1) receiver.drawMenuFont(engine, 4+i*2, 0, "\u0085", COLOR.RED, 2f)
+				else receiver.drawMenuFont(engine, 2+i, 0, "\u0085", COLOR.RED)
 	}
 
 	/* Called after every frame */
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 		if(chainDisplay>0) chainDisplay--
 
 		if(gametype==1) {
 			val remainTime = ULTRA_MAX_TIME-engine.statistics.time
 			// Time meter
-			engine.meterValue = remainTime*receiver.getMeterMax(engine)/ULTRA_MAX_TIME
+			engine.meterValue = remainTime*1f/ULTRA_MAX_TIME
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			if(remainTime<=3600) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 			if(remainTime<=1800) engine.meterColor = GameEngine.METER_COLOR_ORANGE
@@ -335,7 +340,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		} else if(gametype==2) {
 			var remainScore = SPRINT_MAX_SCORE[sprintTarget]-engine.statistics.score
 			if(!engine.timerActive) remainScore = 0
-			engine.meterValue = remainScore*receiver.getMeterMax(engine)/SPRINT_MAX_SCORE[sprintTarget]
+			engine.meterValue = remainScore*1f/SPRINT_MAX_SCORE[sprintTarget]
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			if(remainScore<=50) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 			if(remainScore<=30) engine.meterColor = GameEngine.METER_COLOR_ORANGE
@@ -350,8 +355,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		}
 	}
 
-	override fun addBonus(engine:GameEngine, playerID:Int) {
-		if(gametype!=2) super.addBonus(engine, playerID)
+	override fun addBonus(engine:GameEngine) {
+		if(gametype!=2) super.addBonus(engine)
 	}
 
 	override fun calcChainMultiplier(chain:Int):Int {
@@ -368,52 +373,51 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			CHAIN_POWERS_FEVERTYPE[chain-1]
 	}
 
-	override fun lineClearEnd(engine:GameEngine, playerID:Int):Boolean {
-		super.lineClearEnd(engine, playerID)
+	override fun lineClearEnd(engine:GameEngine):Boolean {
+		super.lineClearEnd(engine)
 
-		if(engine.field!=null)
-			if(!engine.field.getBlockEmpty(2, 0)||dangerColumnDouble&&!engine.field.getBlockEmpty(3, 0)) {
-				engine.stat = GameEngine.Status.GAMEOVER
-				engine.gameEnded()
-				engine.resetStatc()
-				engine.statc[1] = 1
-			}
+		if(!engine.field.getBlockEmpty(2, 0)||dangerColumnDouble&&!engine.field.getBlockEmpty(3, 0)) {
+			engine.stat = GameEngine.Status.GAMEOVER
+			engine.gameEnded()
+			engine.resetStatc()
+			engine.statc[1] = 1
+		}
 
 		return false
 	}
 
 	/* Render results screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
+	override fun renderResult(engine:GameEngine) {
 
 		if(gametype==2) {
-			receiver.drawMenuFont(engine, playerID, 0, 1, "PLAY DATA", COLOR.ORANGE)
-			receiver.drawMenuFont(engine, playerID, 0, 3, "Time", COLOR.BLUE)
+			receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", COLOR.ORANGE)
+			receiver.drawMenuFont(engine, 0, 3, "Time", COLOR.BLUE)
 			val strTime = String.format("%10s", engine.statistics.time.toTimeStr)
-			receiver.drawMenuFont(engine, playerID, 0, 4, strTime)
-			receiver.drawMenuFont(engine, playerID, 0, 5, "Score", COLOR.BLUE)
-			receiver.drawMenuFont(engine, playerID, 0, 6, "${engine.statistics.score}")
-			receiver.drawMenuFont(engine, playerID, 0, 7, "ZENKESHI", COLOR.BLUE)
-			receiver.drawMenuFont(engine, playerID, 0, 8, String.format("%10d", zenKeshiCount))
-			receiver.drawMenuFont(engine, playerID, 0, 9, "MAX CHAIN", COLOR.BLUE)
-			receiver.drawMenuFont(engine, playerID, 0, 10, String.format("%10d", engine.statistics.maxChain))
+			receiver.drawMenuFont(engine, 0, 4, strTime)
+			receiver.drawMenuFont(engine, 0, 5, "Score", COLOR.BLUE)
+			receiver.drawMenuFont(engine, 0, 6, "${engine.statistics.score}")
+			receiver.drawMenuFont(engine, 0, 7, "ZENKESHI", COLOR.BLUE)
+			receiver.drawMenuFont(engine, 0, 8, String.format("%10d", zenKeshiCount))
+			receiver.drawMenuFont(engine, 0, 9, "MAX CHAIN", COLOR.BLUE)
+			receiver.drawMenuFont(engine, 0, 10, String.format("%10d", engine.statistics.maxChain))
 			if(rankingRank!=-1) {
-				receiver.drawMenuFont(engine, playerID, 0, 11, "RANK", COLOR.BLUE)
+				receiver.drawMenuFont(engine, 0, 11, "RANK", COLOR.BLUE)
 				val strRank = String.format("%10d", rankingRank+1)
-				receiver.drawMenuFont(engine, playerID, 0, 12, strRank)
+				receiver.drawMenuFont(engine, 0, 12, strRank)
 			}
 		} else {
-			super.renderResult(engine, playerID)
+			super.renderResult(engine)
 
 			if(rankingRank!=-1) {
-				receiver.drawMenuFont(engine, playerID, 0, 15, "RANK", COLOR.BLUE)
+				receiver.drawMenuFont(engine, 0, 15, "RANK", COLOR.BLUE)
 				val strRank = String.format("%10d", rankingRank+1)
-				receiver.drawMenuFont(engine, playerID, 0, 16, strRank)
+				receiver.drawMenuFont(engine, 0, 16, strRank)
 			}
 		}
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean =
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean =
 		!owner.replayMode&&engine.ai==null&&engine.colorClearSize==4&&
 			updateRanking(engine.statistics.score, engine.statistics.time, gametype, scoreType, numColors)!=-1
 
@@ -451,9 +455,11 @@ class Avalanche1P:Avalanche1PDummyMode() {
 				for(c in 3..5)
 					for(s in 0 until SCORETYPE_MAX) {
 						rankingScore[s][c-3][j][i] = prop.getProperty(
-							"$ruleName.$s.$c.$j.score.$i", 0)
+							"$ruleName.$s.$c.$j.score.$i", 0
+						)
 						rankingTime[s][c-3][j][i] = prop.getProperty(
-							"$ruleName.$s.$c.$j.time.$i", -1)
+							"$ruleName.$s.$c.$j.time.$i", -1
+						)
 					}
 	}
 
@@ -463,8 +469,10 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			(0 until SCORETYPE_MAX).flatMap {s ->
 				(0 until GAMETYPE_MAX).flatMap {j ->
 					(0 until RANKING_MAX).flatMap {i ->
-						listOf("$s.$c.$j.score.$i" to rankingScore[s][c-3][j][i],
-							"$s.$c.$j.time.$i" to rankingTime[s][c-3][j][i])
+						listOf(
+							"$s.$c.$j.score.$i" to rankingScore[s][c-3][j][i],
+							"$s.$c.$j.time.$i" to rankingTime[s][c-3][j][i]
+						)
 					}
 				}
 			}

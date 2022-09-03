@@ -1,3 +1,32 @@
+/*
+ * Copyright (c) 2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of NullNoname nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
 import mu.nu.nullpo.game.component.RuleOptions
@@ -10,6 +39,8 @@ import mu.nu.nullpo.game.subsystem.mode.GameMode
 import mu.nu.nullpo.game.subsystem.mode.VSBattleMode
 import mu.nu.nullpo.gui.slick.SlickLog4j
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.loadRule
+import org.apache.log4j.Logger
 import org.apache.log4j.PropertyConfigurator
 
 /**
@@ -68,26 +99,18 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		}
 		return -1
 	}
-	/*
-	 * Get the current in-game level.
-	 *
-	 * @return The level.
-	 *
-		public int getLevel() {
-			return gameEngine.statistics.level;
-		}
-	*//*
+	/** Get the current in-game level. */
+	fun getLevel():Int = gameEngine[0].statistics.level
+
+	/**
 	 * Make a new Simulator object, ready to go.
 	 *
 	 * @param mode Game mode Object
 	 * @param rulePath path string to the rules file
 	 * @param ai AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
-	 *
-		public Battler(GameMode mode, String rulePath, DummyAI ai)
-		{
-			this(mode, GeneralUtil.loadRule(rulePath), ai);
-		}
-	*/
+	 */
+	constructor(mode:GameMode, rulePath:String, ai:DummyAI):this(mode, loadRule(rulePath), ai, ai)
+
 	/**
 	 * Make a new Simulator object, ready to go.
 	 *
@@ -95,46 +118,38 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 * @param rulePath path string to the rules file
 	 * @param ai,ai2 AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
 	 */
-	constructor(mode:GameMode, rulePath:String, ai:DummyAI, ai2:DummyAI):this(mode, GeneralUtil.loadRule(rulePath), ai, ai2)
+	constructor(mode:GameMode, rulePath:String, ai:DummyAI, ai2:DummyAI):this(mode, loadRule(rulePath), ai, ai2)
 	/**
 	 * Performs a single simulation to completion (STATE == GAMEOVER)
 	 */
 	fun runSimulation() {
-		for(i in 0..1) {
+		gameEngine.forEach {
 			// Start a new game.
-			gameEngine[i].init()
+			it.init()
 
 			//		System.out.println(Long.toString(gameEngine.randSeed, 16));
-			if(customSeed!=null) {
-				gameEngine[i].randSeed = customSeed!!.toLong(16)
-				log.debug("Engine seed overwritten with $customSeed")
+			customSeed?.let {s ->
+				it.randSeed = s.toLong(16)
+				log.debug("Engine seed overwritten with $")
 			}
-		}
+			// You have to spend at least 5 frames in the menu before you can start the game.
+			for(i in 0..9) it.init()
 
-		// You have to spend at least 5 frames in the menu before you can start the game.
-		for(i in 0..9) {
-			for(j in 0..1) {
-				gameEngine[j].update()
-			}
-		}
+			// Press and release A to start game.
+			it.ctrl.setButtonPressed(mu.nu.nullpo.game.component.Controller.BUTTON_A)
+			for(j in 0..9) it.update()
 
-		// Press and release A to start game.
-		for(i in 0..1) gameEngine[i].ctrl.setButtonPressed(mu.nu.nullpo.game.component.Controller.BUTTON_A)
-		for(i in 0..1) for(j in 0..9) {
-			gameEngine[i].update()
-		}
-		for(i in 0..1) gameEngine[i].ctrl.setButtonUnpressed(mu.nu.nullpo.game.component.Controller.BUTTON_A)
-		for(i in 0..1) {
-			while(gameEngine[i].stat!==GameEngine.Status.MOVE) gameEngine[i].update()
+			it.ctrl.setButtonUnpressed(mu.nu.nullpo.game.component.Controller.BUTTON_A)
+			while(it.stat!==GameEngine.Status.MOVE) it.update()
 		}
 
 		// Run the game until Game Over.
-		while(gameEngine[0].stat!==GameEngine.Status.GAMEOVER&&gameEngine[1].stat!==GameEngine.Status.GAMEOVER) {
+		while(gameEngine.all {it.stat!==GameEngine.Status.GAMEOVER}) {
 			for(i in 0..1) {
 				val cur = gameEngine[i].nowPieceObject
 				do {
 					gameEngine[i].update()
-					if(gameEngine[0].stat===GameEngine.Status.GAMEOVER||gameEngine[1].stat===GameEngine.Status.GAMEOVER) break
+					if(gameEngine.any {it.stat===GameEngine.Status.GAMEOVER}) break
 				} while(cur==gameEngine[i].nowPieceObject)
 				val a = 1
 			}
@@ -163,29 +178,23 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 * @param count The number of simulations.
 	 */
 	fun runStatisticsSimulations(esp:Int, step:Int) {
-		val totalLines = IntArray(2)
-		for(i in 0..1) totalLines[i] = 0
+		val totalLines = IntArray(gameEngine.size)
+		for(i in totalLines.indices) totalLines[i] = 0
 		val count = esp*step
-		val winnerCount = IntArray(2)
-		for(i in 0..1) winnerCount[i] = 0
+		val winnerCount = IntArray(gameEngine.size)
+		for(i in winnerCount.indices) winnerCount[i] = 0
 		for(i in 0 until count) {
 			log.info(String.format("-------- Simulation %d of %d --------", i+1, count))
 			runSimulation()
 			//if (getGM3Grade() == 32) {
 			//	gm++;
 			//}
-			var winner:Int
-			if(gameEngine[0].stat!==GameEngine.Status.GAMEOVER&&gameEngine[1].stat===GameEngine.Status.GAMEOVER) {
-				winner = 0
-				winnerCount[0] += 1
-			} else if(gameEngine[1].stat!==GameEngine.Status.GAMEOVER&&gameEngine[0].stat===GameEngine.Status.GAMEOVER) {
-				winner = 1
-				winnerCount[1] += 1
-			} else winner = -1
+			val winner:Int = gameEngine.indexOfFirst {it.stat!==GameEngine.Status.GAMEOVER}
+			if(winner>=0) winnerCount[winner]++
 			log.info("Winner:\t$winner")
-			for(j in 0..1) log.info("win count "+j+":\t"+winnerCount[j])
-			for(j in 0..1) log.info("win count rate "+j+":\t"+winnerCount[j].toDouble()/(i+1))
-			for(j in 0..1) {
+			for(j in winnerCount.indices) log.info("win count $j:\t${winnerCount[j]}")
+			for(j in winnerCount.indices) log.info("win count rate $j:\t${winnerCount[j].toDouble()/(i+1)}")
+			for(j in gameEngine.indices) {
 				//int thisLines = getLineCleared(gameEngine[j]);
 				log.info("Player $j")
 				val thisLines:Int = (gameManager.mode as VSBattleMode).garbageSent[j]
@@ -216,65 +225,18 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		//log.info("Confidence interval:\t" + interval);
 	}
 	/**
-	 * Sets a custom random seed for use in simulations.
-	 *
-	 * @param seed The seed.
-	 */
-	fun setCustomSeed(seed:String?) {
-		customSeed = seed
-	}
-	/*
 	 * Make a new Simulator object, ready to go.
 	 * @param mode Game mode Object
 	 * @param rules Game rules Object
 	 * @param ai AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
-	 *
-	*
-	public Battler(GameMode mode, RuleOptions rules, DummyAI ai)
-	{
-		// UI
-		//receiver = new RendererSlick();
-
-		// Manager setup
-		gameManager = new GameManager();
-
-		gameManager.mode = mode;
-
-		gameManager.init();
-
-		gameManager.showInput = false;
-
-		// Engine setup
-		gameEngine = gameManager.engine[0];
-
-		// - Rules
-		gameEngine.ruleOpt = rules;
-
-		// - Randomizer
-		gameEngine.randomizer = GeneralUtil.loadRandomizer(rules.strRandomizer);
-
-		// - Wallkick
-		gameEngine.wallkick = GeneralUtil.loadWallkick(rules.strWallkick);
-
-		// - AI
-		gameEngine.ai = ai;
-		gameEngine.aiMoveDelay = 0;
-		gameEngine.aiThinkDelay = 0;
-		gameEngine.aiUseThread = false;
-		gameEngine.aiShowHint = false;
-		gameEngine.aiPrethink = false;
-		gameEngine.aiShowState = false;
-	}
-	*/
+	 */
 	init {
 		/*
 		 * NOTE(oliver): This code is a domain-specific version of
 		 * mu.nu.nullpo.gui.slick.StateInGame.startNewGame(String strRulePath)
 		 */
-
 		// UI
-		//receiver = new RendererSlick();
-
+//		receiver = new RendererSlick();
 		// Manager setup
 		gameManager.mode = mode
 		gameManager.init()
@@ -290,7 +252,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 				aiThinkDelay = 0
 				aiUseThread = false
 				aiShowHint = false
-				aiPrethink = false
+				aiPreThink = false
 				aiShowState = false
 			}
 		}
@@ -301,7 +263,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		private const val RUN_ESP = 1
 		// Each round run for this amount of simulation and then save Qtable
 		private const val RUN_STEP = 100
-		var log = org.apache.log4j.Logger.getLogger(Battler::class.java)
+		var log:Logger = Logger.getLogger(Battler::class.java)
 		/**
 		 * Log the current game state.
 		 */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -45,7 +45,7 @@ class NetObserverClient:NetBaseClient {
 	var playerCount = 0
 		private set
 
-	/** Observercount */
+	/** Observer count */
 	@Volatile
 	var observerCount = 0
 		private set

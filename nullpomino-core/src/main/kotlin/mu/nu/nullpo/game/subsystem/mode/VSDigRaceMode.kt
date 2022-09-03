@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -42,9 +42,6 @@ import kotlin.random.Random
 
 /** VS-DIG RACE mode */
 class VSDigRaceMode:AbstractMode() {
-
-	/** Each player's frame cint */
-	private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 
 	/** Number of garbage lines to clear */
 	private var goalLines = IntArray(0)
@@ -143,31 +140,33 @@ class VSDigRaceMode:AbstractMode() {
 	}
 
 	/* Initialization for each player */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		if(playerID==1) {
+	override fun playerInit(engine:GameEngine) {
+		val pid = engine.playerID
+		if(pid==1) {
 			engine.randSeed = owner.engine[0].randSeed
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.framecolor = PLAYER_COLOR_FRAME[playerID]
+		engine.frameColor = Companion.PLAYER_COLOR_FRAME[pid]
 
 		if(!engine.owner.replayMode) {
 			version = CURRENT_VERSION
 			loadOtherSetting(engine, engine.owner.modeConfig)
-			loadPreset(engine, engine.owner.modeConfig, -1-playerID)
+			loadPreset(engine, engine.owner.modeConfig, -1-pid)
 		} else {
 			version = owner.replayProp.getProperty("vsbattle.version", 0)
 			loadOtherSetting(engine, engine.owner.replayProp)
-			loadPreset(engine, engine.owner.replayProp, -1-playerID)
+			loadPreset(engine, engine.owner.replayProp, -1-pid)
 		}
 	}
 
 	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine, playerID:Int):Boolean {
+	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
+		val pid = engine.playerID
 		if(!engine.owner.replayMode&&engine.statc[4]==0) {
 			// Configuration changes
-			val change = updateCursor(engine, 12, playerID)
+			val change = updateCursor(engine, 12)
 
 			if(change!=0) {
 				engine.playSE("change")
@@ -185,35 +184,35 @@ class VSDigRaceMode:AbstractMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7, 8 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
+					7, 8 -> presetNumber[pid] = rangeCursor(presetNumber[pid]+change, 0, 99)
 					9 -> {
-						goalLines[playerID] += change
-						if(goalLines[playerID]<1) goalLines[playerID] = 18
-						if(goalLines[playerID]>18) goalLines[playerID] = 1
+						goalLines[pid] += change
+						if(goalLines[pid]<1) goalLines[pid] = 18
+						if(goalLines[pid]>18) goalLines[pid] = 1
 					}
 					10 -> {
-						messiness[playerID] += change
-						if(messiness[playerID]<0) messiness[playerID] = 100
-						if(messiness[playerID]>100) messiness[playerID] = 0
+						messiness[pid] += change
+						if(messiness[pid]<0) messiness[pid] = 100
+						if(messiness[pid]>100) messiness[pid] = 0
 					}
-					11 -> enableSE[playerID] = !enableSE[playerID]
+					11 -> enableSE[pid] = !enableSE[pid]
 					12 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 				}
 			}
 
 			// Confirm
-			if(engine.ctrl.isPush(Controller.BUTTON_A)&&menuTime>=5) {
+			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 
 				when(menuCursor) {
-					7 -> loadPreset(engine, owner.modeConfig, presetNumber[playerID])
+					7 -> loadPreset(engine, owner.modeConfig, presetNumber[pid])
 					8 -> {
-						savePreset(engine, owner.modeConfig, presetNumber[playerID])
+						savePreset(engine, owner.modeConfig, presetNumber[pid])
 						owner.saveModeConfig()
 					}
 					else -> {
 						saveOtherSetting(engine, owner.modeConfig)
-						savePreset(engine, owner.modeConfig, -1-playerID)
+						savePreset(engine, owner.modeConfig, -1-pid)
 						owner.saveModeConfig()
 						engine.statc[4] = 1
 					}
@@ -221,9 +220,8 @@ class VSDigRaceMode:AbstractMode() {
 			}
 
 			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitflag = true
+			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
-			menuTime++
 		} else if(engine.statc[4]==0) {
 			// Replay start
 			menuTime++
@@ -232,7 +230,7 @@ class VSDigRaceMode:AbstractMode() {
 			if(menuTime>=60) menuCursor = 9
 			if(menuTime>=120) engine.statc[4] = 1
 		} else // Start the game when both players are ready
-			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&playerID==1) {
+			if(owner.engine[0].statc[4]==1&&owner.engine[1].statc[4]==1&&pid==1) {
 				owner.engine[0].stat = GameEngine.Status.READY
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
@@ -243,54 +241,60 @@ class VSDigRaceMode:AbstractMode() {
 	}
 
 	/* Settings screen */
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		if(engine.statc[4]==0) {
+			val pid = engine.playerID
 			if(menuCursor<9) {
-				drawMenuSpeeds(engine, playerID, receiver, 0, EventReceiver.COLOR.ORANGE, 0)
-				drawMenu(engine, playerID, receiver, 14, EventReceiver.COLOR.GREEN, 7, "LOAD" to presetNumber[playerID],
-					"SAVE" to presetNumber[playerID])
+				drawMenuSpeeds(engine, receiver, 0, EventReceiver.COLOR.ORANGE, 0)
+				drawMenu(
+					engine, receiver, 14, EventReceiver.COLOR.GREEN, 7,
+					"LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid]
+				)
 			} else {
-				drawMenu(engine, playerID, receiver, 0, EventReceiver.COLOR.CYAN, 9, "GOAL" to goalLines[playerID],
-					"CHANGERATE" to "${messiness[playerID]}%", "SE" to enableSE[playerID])
-				drawMenu(engine, playerID, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM" to BGM.values[bgmno])
+				drawMenu(
+					engine, receiver, 0, EventReceiver.COLOR.CYAN, 9,
+					"GOAL" to goalLines[pid],
+					"CHANGERATE" to "${messiness[pid]}%",
+					"SE" to enableSE[pid]
+				)
+				drawMenu(engine, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM" to BGM.values[bgmno])
 			}
 		} else
-			receiver.drawMenuFont(engine, playerID, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
+			receiver.drawMenuFont(engine, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
 	}
 
 	/* Ready */
-	override fun onReady(engine:GameEngine, playerID:Int):Boolean {
+	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			engine.createFieldIfNeeded()
-			fillGarbage(engine, playerID)
+			fillGarbage(engine)
 
 			// Update meter
-			val remainLines = getRemainGarbageLines(engine, playerID)
-			engine.meterValue = remainLines*receiver.getBlockSize(engine)
+			val remainLines = getRemainGarbageLines(engine)
+			engine.meterValue = remainLines*1f/engine.fieldHeight
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 		}
 		return false
 	}
 
 	/* Called at game start */
-	override fun startGame(engine:GameEngine, playerID:Int) {
-		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
+	override fun startGame(engine:GameEngine) {
+		engine.enableSE = enableSE[engine.playerID]
+		if(engine.playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
 
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
-		engine.meterValue = receiver.getMeterMax(engine)
+		engine.meterValue = 1f
 	}
 
-	/** Fill the playfield with garbage
-	 * @param engine GameEngine
-	 */
-	private fun fillGarbage(engine:GameEngine, playerID:Int) {
+	/** Fill the playfield with garbage */
+	private fun fillGarbage(engine:GameEngine) {
+		val pid = engine.playerID
 		val w:Int = engine.field.width
 		val h:Int = engine.field.height
 		var hole:Int = -1
 
-		for(y:Int in h-1 downTo h-goalLines[playerID]) {
-			if(hole==-1||engine.random.nextInt(100)<messiness[playerID]) {
+		for(y:Int in h-1 downTo h-goalLines[pid]) {
+			if(hole==-1||engine.random.nextInt(100)<messiness[pid]) {
 				var newhole = -1
 				do
 					newhole = engine.random.nextInt(w)
@@ -304,12 +308,16 @@ class VSDigRaceMode:AbstractMode() {
 					var color:COLOR = COLOR.WHITE
 					if(y==h-1) {
 						do
-							color = COLOR.values()[1+engine.random.nextInt(7)]
+							color = COLOR.all[1+engine.random.nextInt(7)]
 						while(color==prevColor)
 						prevColor = color
 					}
-					engine.field.setBlock(x, y, Block(color, if(y==h-1) Block.TYPE.BLOCK else Block.TYPE.GEM,
-						engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
+					engine.field.setBlock(
+						x, y, Block(
+							color, if(y==h-1) Block.TYPE.BLOCK else Block.TYPE.GEM,
+							engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE
+						)
+					)
 				}
 			// Set connections
 			if(receiver.isStickySkin(engine)&&y!=h-1)
@@ -325,9 +333,9 @@ class VSDigRaceMode:AbstractMode() {
 		}
 	}
 
-	private fun getRemainGarbageLines(engine:GameEngine?, playerID:Int):Int {
-		if(engine?.field==null) return -1
-
+	private fun getRemainGarbageLines(engine:GameEngine):Int {
+		if(engine.field.isEmpty) return -1
+		val playerID = engine.playerID
 		val w:Int = engine.field.width
 		val h:Int = engine.field.height
 		var lines = 0
@@ -350,20 +358,20 @@ class VSDigRaceMode:AbstractMode() {
 	}
 
 	/* Render score */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
-		var enemyID = 0
-		if(playerID==0) enemyID = 1
+	override fun renderLast(engine:GameEngine) {
+		val pid = engine.playerID
+		val enemyID = if(pid==0) 1 else 0
 
-		val x:Int = receiver.fieldX(engine, playerID)
-		val y:Int = receiver.fieldY(engine, playerID)
+		val x:Int = receiver.fieldX(engine)
+		val y:Int = receiver.fieldY(engine)
 
-		val remainLines = maxOf(0, getRemainGarbageLines(engine, playerID))
+		val remainLines = maxOf(0, getRemainGarbageLines(engine))
 		var fontColor = EventReceiver.COLOR.WHITE
 		if(remainLines in 1..14) fontColor = EventReceiver.COLOR.YELLOW
 		if(remainLines in 1..8) fontColor = EventReceiver.COLOR.ORANGE
 		if(remainLines in 1..4) fontColor = EventReceiver.COLOR.RED
 
-		val enemyRemainLines = maxOf(0, getRemainGarbageLines(owner.engine[enemyID], enemyID))
+		val enemyRemainLines = maxOf(0, getRemainGarbageLines(owner.engine[enemyID]))
 		/* int fontColorEnemy = EventReceiver.COLOR.WHITE;
  * if((enemyRemainLines <= 14) && (enemyRemainLines > 0)) fontColorEnemy
  * = EventReceiver.COLOR.YELLOW;
@@ -377,59 +385,58 @@ class VSDigRaceMode:AbstractMode() {
 
 		if(remainLines>0)
 			when(strLines.length) {
-				1 -> receiver.drawMenuFont(engine, playerID, 4, 21, strLines, fontColor, 2f)
-				2 -> receiver.drawMenuFont(engine, playerID, 3, 21, strLines, fontColor, 2f)
-				3 -> receiver.drawMenuFont(engine, playerID, 2, 21, strLines, fontColor, 2f)
+				1 -> receiver.drawMenuFont(engine, 4, 21, strLines, fontColor, 2f)
+				2 -> receiver.drawMenuFont(engine, 3, 21, strLines, fontColor, 2f)
+				3 -> receiver.drawMenuFont(engine, 2, 21, strLines, fontColor, 2f)
 			}
 
 		// 1st/2nd
 		if(remainLines<enemyRemainLines)
-			receiver.drawMenuFont(engine, playerID, -2, 22, "1ST", EventReceiver.COLOR.ORANGE)
-		else if(remainLines>enemyRemainLines) receiver.drawMenuFont(engine, playerID, -2, 22, "2ND", EventReceiver.COLOR.WHITE)
+			receiver.drawMenuFont(engine, -2, 22, "1ST", EventReceiver.COLOR.ORANGE)
+		else if(remainLines>enemyRemainLines) receiver.drawMenuFont(engine, -2, 22, "2ND", EventReceiver.COLOR.WHITE)
 
 		// Timer
-		if(playerID==0) receiver.drawDirectFont(256, 16, engine.statistics.time.toTimeStr)
+		if(pid==0) receiver.drawDirectFont(256, 16, engine.statistics.time.toTimeStr)
 
 		// Normal layout
-		if(owner.receiver.nextDisplayType!=2&&playerID==0) {
-			receiver.drawScoreFont(engine, playerID, 0, 2, "1P LINES", EventReceiver.COLOR.RED)
-			receiver.drawScoreFont(engine, playerID, 0, 3, owner.engine[0].statistics.lines.toString())
+		if(owner.receiver.nextDisplayType!=2&&pid==0) {
+			receiver.drawScoreFont(engine, 0, 2, "1P LINES", EventReceiver.COLOR.RED)
+			receiver.drawScoreFont(engine, 0, 3, owner.engine[0].statistics.lines.toString())
 
-			receiver.drawScoreFont(engine, playerID, 0, 5, "2P LINES", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, playerID, 0, 6, owner.engine[1].statistics.lines.toString())
+			receiver.drawScoreFont(engine, 0, 5, "2P LINES", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 6, owner.engine[1].statistics.lines.toString())
 
 			if(!owner.replayMode) {
-				receiver.drawScoreFont(engine, playerID, 0, 8, "1P WINS", EventReceiver.COLOR.RED)
-				receiver.drawScoreFont(engine, playerID, 0, 9, "${winCount[0]}")
+				receiver.drawScoreFont(engine, 0, 8, "1P WINS", EventReceiver.COLOR.RED)
+				receiver.drawScoreFont(engine, 0, 9, "${winCount[0]}")
 
-				receiver.drawScoreFont(engine, playerID, 0, 11, "2P WINS", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, playerID, 0, 12, "${winCount[1]}")
+				receiver.drawScoreFont(engine, 0, 11, "2P WINS", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 12, "${winCount[1]}")
 			}
 		}
 
 		// Big-side-next layout
 		if(owner.receiver.nextDisplayType==2) {
-			val fontColor2 = if(playerID==0) EventReceiver.COLOR.RED else EventReceiver.COLOR.BLUE
+			val fontColor2 = if(pid==0) EventReceiver.COLOR.RED else EventReceiver.COLOR.BLUE
 
 			if(!owner.replayMode) {
 				receiver.drawDirectFont(x-44, y+190, "WINS", fontColor2, .5f)
-				receiver.drawDirectFont(x-if(winCount[playerID]>=10) 44 else 36, y+204,
-					"${winCount[playerID]}")
+				receiver.drawDirectFont(
+					x-if(winCount[pid]>=10) 44 else 36, y+204,
+					"${winCount[pid]}"
+				)
 			}
 		}
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, playerID:Int, lines:Int):Int {
-		var enemyID = 0
-		if(playerID==0) enemyID = 1
+	override fun calcScore(engine:GameEngine, lines:Int):Int {
+		val enemyID = if(engine.playerID==0) 1 else 0
 
 		// Update meter
-		val remainLines = getRemainGarbageLines(engine, playerID)
-		engine.meterValue = remainLines*receiver.getBlockSize(engine)
-		if(remainLines<=14) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		if(remainLines<=8) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		if(remainLines<=4) engine.meterColor = GameEngine.METER_COLOR_RED
+		val remainLines = getRemainGarbageLines(engine)
+		engine.meterValue = remainLines*1f/engine.fieldHeight
+		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
 		// Game completed
 		if(lines>0&&remainLines<=0) {
@@ -440,10 +447,10 @@ class VSDigRaceMode:AbstractMode() {
 		return 0
 	}
 
-	override fun onLast(engine:GameEngine, playerID:Int) {
-		super.onLast(engine, playerID)
+	override fun onLast(engine:GameEngine) {
+		super.onLast(engine)
 		// Game End
-		if(playerID==1&&owner.engine[0].gameActive)
+		if(engine.playerID==1&&owner.engine[0].gameActive)
 			if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// Draw
 				winnerID = -1
@@ -474,21 +481,23 @@ class VSDigRaceMode:AbstractMode() {
 	}
 
 	/* Render results screen */
-	override fun renderResult(engine:GameEngine, playerID:Int) {
-		receiver.drawMenuFont(engine, playerID, 0, 0, "RESULT", EventReceiver.COLOR.ORANGE)
+	override fun renderResult(engine:GameEngine) {
+		receiver.drawMenuFont(engine, 0, 0, "RESULT", EventReceiver.COLOR.ORANGE)
 		when(winnerID) {
-			-1 -> receiver.drawMenuFont(engine, playerID, 6, 1, "DRAW", EventReceiver.COLOR.GREEN)
-			playerID -> receiver.drawMenuFont(engine, playerID, 6, 1, "WIN!", EventReceiver.COLOR.YELLOW)
-			else -> receiver.drawMenuFont(engine, playerID, 6, 1, "LOSE", EventReceiver.COLOR.WHITE)
+			-1 -> receiver.drawMenuFont(engine, 6, 1, "DRAW", EventReceiver.COLOR.GREEN)
+			engine.playerID -> receiver.drawMenuFont(engine, 6, 1, "WIN!", EventReceiver.COLOR.YELLOW)
+			else -> receiver.drawMenuFont(engine, 6, 1, "LOSE", EventReceiver.COLOR.WHITE)
 		}
-		drawResultStats(engine, playerID, receiver, 2, EventReceiver.COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM,
-			Statistic.PPS, Statistic.TIME)
+		drawResultStats(
+			engine, receiver, 2, EventReceiver.COLOR.ORANGE, Statistic.LINES, Statistic.PIECE, Statistic.LPM, Statistic.PPS,
+			Statistic.TIME
+		)
 	}
 
 	/* Called when saving replay */
-	override fun saveReplay(engine:GameEngine, playerID:Int, prop:CustomProperties):Boolean {
+	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveOtherSetting(engine, owner.replayProp)
-		savePreset(engine, owner.replayProp, -1-playerID)
+		savePreset(engine, owner.replayProp, -1-engine.playerID)
 		owner.replayProp.setProperty("vsdigrace.version", version)
 		return false
 	}
@@ -499,5 +508,8 @@ class VSDigRaceMode:AbstractMode() {
 
 		/** Number of players */
 		private const val MAX_PLAYERS = 2
+
+		/** Each player's frame cint */
+		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 	}
 }

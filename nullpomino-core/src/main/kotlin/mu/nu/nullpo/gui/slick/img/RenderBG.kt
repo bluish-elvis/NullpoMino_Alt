@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -30,6 +30,7 @@
 package mu.nu.nullpo.gui.slick.img
 
 import mu.nu.nullpo.gui.slick.ResourceHolder
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.pow
 
@@ -40,7 +41,7 @@ object RenderBG {
 		val bg = bg%bgmax
 		if(bg in 0 until bgmax) {
 			val bgi = ResourceHolder.imgPlayBG[bg].res
-			val sc = (1-cos(bgi.rotation/Math.PI.pow(3.0))/Math.PI).toFloat()*1024f/minOf(bgi.width, bgi.height)
+			val sc = ((1-cos(bgi.rotation/PI.pow(3.0))/PI)*1024f/minOf(bgi.width, bgi.height)).toFloat()
 			val cx = bgi.width/2*sc
 			val cy = bgi.height/2*sc
 			bgi.setCenterOfRotation(cx, cy)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
+ * Copyright (c) 2010-2022, NullNoname
  * Kotlin converted and modified by Venom=Nhelv
  * All rights reserved.
  *
@@ -31,7 +31,11 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
-import org.newdawn.slick.*
+import org.newdawn.slick.GameContainer
+import org.newdawn.slick.Graphics
+import org.newdawn.slick.Image
+import org.newdawn.slick.Input
+import org.newdawn.slick.SlickException
 import org.newdawn.slick.state.StateBasedGame
 
 /** Dummy class for menus where the player picks from a list of options */
@@ -45,7 +49,7 @@ abstract class DummyMenuChooseState:BaseGameState() {
 	/** Top choice's y-coordinate */
 	protected open var minChoiceY = 3
 
-	/** Set to false to ignore mouse input */
+	/** Set to false for ignore mouse input */
 	protected open val mouseEnabled = true
 
 	protected var flashY = 0
@@ -79,11 +83,15 @@ abstract class DummyMenuChooseState:BaseGameState() {
 			val y = flashY
 			g.setDrawMode(Graphics.MODE_ADD)
 			if(i<8)
-				ResourceHolder.imgLine[0].draw(0f, y*16f, container.screenWidth.toFloat(), (y+1)*16f,
-					0f, 8f*i, 80f, 8f*(1+i))
+				ResourceHolder.imgLine[0].draw(
+					0f, y*16f, container.screenWidth.toFloat(), (y+1)*16f,
+					0f, 8f*i, 80f, 8f*(1+i)
+				)
 			if(j<16)
-				ig.draw(0f, y*16f, container.width.toFloat(), 16f*(1+y),
-					0f, 16f*j, 160f, 16f*(1+j))
+				ig.draw(
+					0f, y*16f, container.width.toFloat(), 16f*(1+y),
+					0f, 16f*j, 160f, 16f*(1+j)
+				)
 
 			g.setDrawMode(Graphics.MODE_NORMAL)
 			flashT++

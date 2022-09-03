@@ -1,13 +1,12 @@
 package org.cacas.java.gnu.tools;
 
-
 // http://www.cacas.org/java/gnu/tools/
 
 /**************************************************************************** Java-based
  * implementation of the unix crypt(3) command
  * Based upon C source code written by Eric Young, eay@psych.uq.oz.au Java
  * conversion by John F. Dumas, jdumas@zgs.com
- * Found at http://locutus.kingwoodcable.com/jfd/crypt.html Minor optimizations
+ * Found at <a href="http://locutus.kingwoodcable.com/jfd/crypt.html">Minor optimizations</a>
  * by Wes Biggs, wes@cacas.org
  * Eric's original code is licensed under the BSD license. As this is
  * derivative, the same license applies.
@@ -343,7 +342,7 @@ public class Crypt{
 	};
 
 	private static int byteToUnsigned(byte b){
-		return ((int)b >= 0)?(int)b:(int)b+256;
+		return ((int)b>=0)?(int)b:(int)b+256;
 	}
 
 	private static int fourBytesToInt(byte[] b,int offset){
@@ -521,7 +520,8 @@ public class Crypt{
 		return out;
 	}
 
-	@SuppressWarnings("WeakerAccess") public static final String alphabet="./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	@SuppressWarnings("WeakerAccess") public static final String alphabet=
+		"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 	public static String crypt(String salt,String original){
 		// wwb -- Should do some sanity checks: salt needs to be 2 chars, in alpha.
@@ -543,7 +543,7 @@ public class Crypt{
 		byte[] key=new byte[8];
 
 		for(int i=0;i<key.length;i++){
-			key[i]=i<original.length()?(byte) ((original.charAt(i))<<1):0;
+			key[i]=i<original.length()?(byte)((original.charAt(i))<<1):0;
 		}
 
 		int[] schedule=des_set_key(key);

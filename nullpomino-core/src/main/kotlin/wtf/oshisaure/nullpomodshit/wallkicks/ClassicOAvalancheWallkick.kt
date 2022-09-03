@@ -4,7 +4,11 @@
 //
 package wtf.oshisaure.nullpomodshit.wallkicks
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 
 class ClassicOAvalancheWallkick:Wallkick {
@@ -91,9 +95,9 @@ class ClassicOAvalancheWallkick:Wallkick {
 					val x2 = x+piece.dataX[rt][i]
 					val y2 = y+piece.dataY[rt][i]
 					if(x2>=fld.width) return true else
-					if(y2>=fld.height) return true else
-					if(fld.getCoordAttribute(x2, y2)==3) return true else
-					if(fld.getCoordAttribute(x2, y2)!=2&&fld.getBlockColor(x2, y2)!=null) return true
+						if(y2>=fld.height) return true else
+							if(fld.getCoordAttribute(x2, y2)==3) return true else
+								if(fld.getCoordAttribute(x2, y2)!=2&&fld.getBlockColor(x2, y2)!=null) return true
 				}
 			}
 			false
@@ -110,9 +114,9 @@ class ClassicOAvalancheWallkick:Wallkick {
 						val x3 = x2+k
 						val y3 = y2+l
 						if(x3>=fld.width) return true else
-						if(y3>=fld.height) return true else
-						if(fld.getCoordAttribute(x3, y3)==3) return true else
-						if(fld.getCoordAttribute(x3, y3)!=2&&fld.getBlockColor(x3, y3)!=null) return true
+							if(y3>=fld.height) return true else
+								if(fld.getCoordAttribute(x3, y3)==3) return true else
+									if(fld.getCoordAttribute(x3, y3)!=2&&fld.getBlockColor(x3, y3)!=null) return true
 					}
 				}
 			}

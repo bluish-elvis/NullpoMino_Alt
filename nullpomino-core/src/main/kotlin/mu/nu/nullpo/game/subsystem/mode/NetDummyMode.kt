@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,11 +29,19 @@
 
 package mu.nu.nullpo.game.subsystem.mode
 
-import mu.nu.nullpo.game.component.*
+import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.RuleOptions
+import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
-import mu.nu.nullpo.game.net.*
+import mu.nu.nullpo.game.net.NetPlayerClient
+import mu.nu.nullpo.game.net.NetPlayerInfo
+import mu.nu.nullpo.game.net.NetRoomInfo
+import mu.nu.nullpo.game.net.NetSPRecord
+import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.NetLobbyFrame
@@ -69,9 +77,10 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** NET: Send all movements even if there are no spectators */
 	internal var netForceSendMovements = false
 
-	/** NET: Previous piece informations (Declared in NetDummyMode) */
-	private var netPrevPieceID = 0
+	/** NET: Previous piece information (Declared in NetDummyMode) */
 	private var netPrevPieceX = 0
+	/** NET: Previous piece information (Declared in NetDummyMode) */
+	private var netPrevPieceID = 0
 	private var netPrevPieceY = 0
 	private var netPrevPieceDir = 0
 
@@ -89,7 +98,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * NetDummyMode) */
 	protected var netReplaySendStatus = 0
 
-	/** NET: Current round's online ranking rank (Declared in NetDummyMode) */
+	/** NET: Current round's online ranking position (Declared in NetDummyMode) */
 	protected var netRankingRank = intArrayOf(-1, -1)
 
 	/** NET: True if new personal record (Declared in NetDummyMode) */
@@ -184,7 +193,6 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: Mode Initialization. NetDummyMode will set the "owner" variable. */
-	@Suppress("RemoveExplicitTypeArguments")
 	override fun modeInit(manager:GameManager) {
 		log.debug("modeInit() on NetDummyMode")
 
@@ -217,18 +225,15 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** NET: Initialization for each player.
 	 * NetDummyMode will stop and hide all players.
 	 * Call netPlayerInit if you want to init NetPlay variables. */
-	override fun playerInit(engine:GameEngine, playerID:Int) {
-		super.playerInit(engine, playerID)
+	override fun playerInit(engine:GameEngine) {
+		super.playerInit(engine)
 		engine.stat = GameEngine.Status.NOTHING
 		engine.isVisible = false
 	}
 
-	/** NET: Initialize various NetPlay variables. Usually called from
-	 * playerInit.
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 */
-	protected open fun netPlayerInit(engine:GameEngine, playerID:Int) {
+	/** NET: Initialize various NetPlay variables.
+	 *  Usually called from [playerInit]. */
+	protected open fun netPlayerInit(engine:GameEngine) {
 		netPrevPieceID = Piece.PIECE_NONE
 		netPrevPieceX = 0
 		netPrevPieceY = 0
@@ -252,7 +257,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 	/** NET: When the pieces can move.
 	 * NetDummyMode will send field/next/stats/piece movements. */
-	override fun onMove(engine:GameEngine, playerID:Int):Boolean {
+	override fun onMove(engine:GameEngine):Boolean {
 		// NET: Send field, next, and stats
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&
 			netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
@@ -269,7 +274,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: When the piece locked. NetDummyMode will send field and stats. */
-	override fun pieceLocked(engine:GameEngine, playerID:Int, lines:Int) {
+	override fun pieceLocked(engine:GameEngine, lines:Int) {
 		// NET: Send field and stats
 		if(engine.ending==0&&netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
 			netSendField(engine)
@@ -278,7 +283,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: Line clear. NetDummyMode will send field and stats. */
-	override fun onLineClear(engine:GameEngine, playerID:Int):Boolean {
+	override fun onLineClear(engine:GameEngine):Boolean {
 		// NET: Send field and stats
 		if(engine.statc[0]==1&&engine.ending==0&&netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
 			netSendField(engine)
@@ -288,7 +293,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: ARE. NetDummyMode will send field, next and stats. */
-	override fun onARE(engine:GameEngine, playerID:Int):Boolean {
+	override fun onARE(engine:GameEngine):Boolean {
 		// NET: Send field, next, and stats
 		if(engine.statc[0]==0&&engine.ending==0&&netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
 			netSendField(engine)
@@ -299,7 +304,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: Ending start. NetDummyMode will send ending start messages. */
-	override fun onEndingStart(engine:GameEngine, playerID:Int):Boolean {
+	override fun onEndingStart(engine:GameEngine):Boolean {
 		if(menuCursor==0)
 		// NET: Send game completed messages
 			if(netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
@@ -312,7 +317,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: "Excellent!" screen */
-	override fun onExcellent(engine:GameEngine, playerID:Int):Boolean {
+	override fun onExcellent(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0)
 		// NET: Send game completed messages
 			if(netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
@@ -325,7 +330,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: Game Over */
-	override fun onGameOver(engine:GameEngine, playerID:Int):Boolean {
+	override fun onGameOver(engine:GameEngine):Boolean {
 		// NET: Send messages / Wait for messages
 		if(netIsNetPlay)
 			if(!netIsWatch) {
@@ -354,7 +359,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: Results screen */
-	override fun onResult(engine:GameEngine, playerID:Int):Boolean {
+	override fun onResult(engine:GameEngine):Boolean {
 		/*
     BGMStatus.BGM b=BGM.Result(0);
     if(engine.ending>=2)b=engine.statistics.time<10800?BGM.Result(1):BGM.Result(2);
@@ -388,18 +393,18 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		return false
 	}
 
-	override fun renderSetting(engine:GameEngine, playerID:Int) {
+	override fun renderSetting(engine:GameEngine) {
 		// NET: Netplay Ranking
-		if(netIsNetRankingDisplayMode) netOnRenderNetPlayRanking(engine, playerID, receiver)
-		else super.renderSetting(engine, playerID)
+		if(netIsNetRankingDisplayMode) netOnRenderNetPlayRanking(engine, receiver)
+		else super.renderSetting(engine)
 	}
 	/** NET: Render something such as HUD. NetDummyMode will render the number
 	 * of players to bottom-right of the screen. */
-	override fun renderLast(engine:GameEngine, playerID:Int) {
+	override fun renderLast(engine:GameEngine) {
 		// NET: Number of spectators
 		netDrawSpectatorsCount(engine, 0, 20)
 		// NET: All number of players
-		if(playerID==players-1) {
+		if(engine.playerID==players-1) {
 			netDrawAllPlayersCount()
 			netDrawGameRate(engine)
 		}
@@ -409,11 +414,11 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 	/** NET: Update menu cursor. NetDummyMode will signal cursor movement to all
 	 * spectators. */
-	override fun updateCursor(engine:GameEngine, maxCursor:Int, playerID:Int):Int {
+	override fun updateCursor(engine:GameEngine, maxCursor:Int):Int {
 		// NET: Don't execute in watch mode
 		if(netIsWatch) return 0
 
-		val change = super.updateCursor(engine, maxCursor, playerID)
+		val change = super.updateCursor(engine, maxCursor)
 
 		// NET: Signal cursor change
 		if((engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)||engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN))&&
@@ -424,7 +429,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: Retry key */
-	override fun netplayOnRetryKey(engine:GameEngine, playerID:Int) {
+	override fun netplayOnRetryKey(engine:GameEngine) {
 		if(netIsNetPlay&&!netIsWatch) {
 			owner.reset()
 			netLobby?.netPlayerClient?.send("reset1p\n")
@@ -452,7 +457,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:Array<String>) {
 		// Player status update
 		if(message[0]=="playerupdate") netUpdatePlayerExist()
-		// When someone logout
+		// When someone log out
 		if(message[0]=="playerlogout") {
 			val pInfo = NetPlayerInfo(message[1])
 
@@ -552,7 +557,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	override fun netlobbyOnExit(lobby:NetLobbyFrame) {
 		try {
 			for(i in owner.engine.indices)
-				owner.engine[i].quitflag = true
+				owner.engine[i].quitFlag = true
 		} catch(_:Exception) {
 		}
 
@@ -582,7 +587,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			log.info("Set locked rule")
 			val randomizer = GeneralUtil.loadRandomizer(it.strRandomizer)
 			val wallkick = GeneralUtil.loadWallkick(it.strWallkick)
-			owner.engine[0].ruleOpt.copy(it)
+			owner.engine[0].ruleOpt.replaace(it)
 			owner.engine[0].randomizer = randomizer
 			owner.engine[0].wallkick = wallkick
 
@@ -607,12 +612,14 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	fun netDrawAllPlayersCount() {
 		netLobby?.netPlayerClient?.let {
 			if(it.isConnected) {
-				owner.receiver.drawDirectFont(0, 480-16,
+				owner.receiver.drawDirectFont(
+					0, 480-16,
 					String.format("%40s", String.format("%d/%d", it.observerCount, it.playerCount)), when {
-					it.playerCount>1 -> COLOR.RED
-					it.observerCount>0 -> COLOR.GREEN
-					else -> COLOR.BLUE
-				})
+						it.playerCount>1 -> COLOR.RED
+						it.observerCount>0 -> COLOR.GREEN
+						else -> COLOR.BLUE
+					}
+				)
 			}
 		}
 	}
@@ -629,12 +636,14 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				(engine.replayTimer/(0.00000006*(nowtime-engine.startTime))).toFloat()
 			}
 
-			owner.receiver.drawDirectFont(0, 480-32, String.format("%40s", String.format("%.0f%%", gamerate*100f)), when {
-				gamerate<.8f -> COLOR.RED
-				gamerate<.9f -> COLOR.ORANGE
-				gamerate<1f -> COLOR.YELLOW
-				else -> COLOR.BLUE
-			})
+			owner.receiver.drawDirectFont(
+				0, 480-32, String.format("%40s", String.format("%.0f%%", gamerate*100f)), when {
+					gamerate<.8f -> COLOR.RED
+					gamerate<.9f -> COLOR.ORANGE
+					gamerate<1f -> COLOR.YELLOW
+					else -> COLOR.BLUE
+				}
+			)
 		}
 	}
 
@@ -646,15 +655,17 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	fun netDrawSpectatorsCount(engine:GameEngine, x:Int, y:Int) {
 		if(netIsNetPlay) {
 			val fontcolor = if(netIsWatch) COLOR.GREEN else COLOR.RED
-			owner.receiver.drawScoreFont(engine, engine.playerID, x, y, "SPECTATORS", fontcolor)
-			owner.receiver.drawScoreFont(engine, engine.playerID, x, y+1, "$netNumSpectators", COLOR.WHITE)
+			owner.receiver.drawScoreFont(engine, x, y, "SPECTATORS", fontcolor)
+			owner.receiver.drawScoreFont(engine, x, y+1, "$netNumSpectators", COLOR.WHITE)
 
 			if(engine.stat==GameEngine.Status.SETTING&&!netIsWatch&&netIsNetRankingViewOK(engine)) {
 				var y2 = y+2
 				if(y2>24) y2 = 24
 				val strBtnD = engine.owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_D)
-				owner.receiver.drawScoreFont(engine, engine.playerID, x, y2,
-					"D($strBtnD KEY):\n NET RANKING", COLOR.GREEN)
+				owner.receiver.drawScoreFont(
+					engine, x, y2, "D($strBtnD KEY):\n NET RANKING",
+					COLOR.GREEN
+				)
 			}
 		}
 	}
@@ -665,8 +676,10 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	protected open fun netDrawPlayerName(engine:GameEngine) {
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
 			val name = netPlayerName
-			owner.receiver.drawDirectTTF(owner.receiver.fieldX(engine, engine.playerID),
-				owner.receiver.fieldY(engine, engine.playerID)-20, name!!)
+			owner.receiver.drawDirectTTF(
+				owner.receiver.fieldX(engine),
+				owner.receiver.fieldY(engine)-20, name!!
+			)
 		}
 	}
 
@@ -689,13 +702,15 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				val x = netPrevPieceX+it.dataOffsetX[netPrevPieceDir]
 				val y = netPrevPieceY+it.dataOffsetY[netPrevPieceDir]
 				netLobby?.netPlayerClient?.send(
-					"game\tpiece\t$netPrevPieceID\t$x\t$y\t$netPrevPieceDir\t${engine.nowPieceBottomY}\t${engine.ruleOpt.pieceColor[netPrevPieceID]}\t${engine.skin}\t${it.big}\n")
+					"game\tpiece\t$netPrevPieceID\t$x\t$y\t$netPrevPieceDir\t${engine.nowPieceBottomY}\t${engine.ruleOpt.pieceColor[netPrevPieceID]}\t${engine.skin}\t${it.big}\n"
+				)
 				return@netSendPieceMovement true
 			}
 		} ?: if(netPrevPieceID!=Piece.PIECE_NONE||engine.manualLock) {
 			netPrevPieceID = Piece.PIECE_NONE
 			netLobby?.netPlayerClient?.send(
-				"game\tpiece\t$netPrevPieceID\t$netPrevPieceX\t$netPrevPieceY\t$netPrevPieceDir\t0\t${engine.skin}\tfalse\n")
+				"game\tpiece\t$netPrevPieceID\t$netPrevPieceX\t$netPrevPieceY\t$netPrevPieceDir\t0\t${engine.skin}\tfalse\n"
+			)
 			return true
 		}
 		return false
@@ -780,7 +795,8 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			}
 
 			netLobby?.netPlayerClient?.send(
-				"game\tfield\t${engine.skin}\t${engine.field.heightWithoutHurryupFloor}\t$strFieldData\t$isCompressed\n")
+				"game\tfield\t${engine.skin}\t${engine.field.heightWithoutHurryupFloor}\t$strFieldData\t$isCompressed\n"
+			)
 		}
 	}
 
@@ -822,7 +838,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			}
 	}
 
-	/** NET: Send next and hold piece informations to all spectators
+	/** NET: Send next and hold piece information to all spectators
 	 * @param engine GameEngine
 	 */
 	protected open fun netSendNextAndHold(engine:GameEngine) {
@@ -853,7 +869,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		netLobby?.netPlayerClient?.send("$msg")
 	}
 
-	/** NET: Receive next and hold piece informations
+	/** NET: Receive next and hold piece information
 	 * @param engine GameEngine
 	 * @param message Message array
 	 */
@@ -898,12 +914,11 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		engine.isHoldVisible = true
 	}
 
-	/** Menu routine for 1P NetPlay online ranking screen. Usually called from
-	 * onSetting(engine, playerID).
-	 * @param engine GameEngine
-	 * @param goaltype Goal Type
+	/** Menu routine for 1P NetPlay online ranking screen.
+	 * Usually called from [onSetting].
+	 * @param goalType Goal Type
 	 */
-	protected fun netOnUpdateNetPlayRanking(engine:GameEngine, goaltype:Int) {
+	protected fun netOnUpdateNetPlayRanking(engine:GameEngine, goalType:Int) {
 		if(netIsNetRankingDisplayMode) {
 			val d = netRankingView
 
@@ -924,9 +939,11 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 					engine.playSE("decide")
 
-					netLobby?.netPlayerClient?.send("spdownload\t${NetUtil.urlEncode(netCurrentRoomInfo!!.ruleName)}\t${
-						NetUtil.urlEncode(id)
-					}\t$goaltype\t${netRankingView!=0}\t${NetUtil.urlEncode(netRankingName[d][netRankingCursor[d]])}\n")
+					netLobby?.netPlayerClient?.send(
+						"spdownload\t${NetUtil.urlEncode(netCurrentRoomInfo!!.ruleName)}\t${
+							NetUtil.urlEncode(id)
+						}\t$goalType\t${netRankingView!=0}\t${NetUtil.urlEncode(netRankingName[d][netRankingCursor[d]])}\n"
+					)
 					netIsNetRankingDisplayMode = false
 					owner.menuOnly = false
 				}
@@ -946,13 +963,9 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		}
 	}
 
-	/** Render 1P NetPlay online ranking screen. Usually called from
-	 * renderSetting(engine, playerID).
-	 * @param engine GameEngine
-	 * @param playerID Player ID
-	 * @param receiver EventReceiver
-	 */
-	protected fun netOnRenderNetPlayRanking(engine:GameEngine, playerID:Int, receiver:EventReceiver) {
+	/** Render 1P NetPlay online ranking screen.
+	 * Usually called from [renderSetting].*/
+	protected fun netOnRenderNetPlayRanking(engine:GameEngine, receiver:EventReceiver) {
 		if(netIsNetRankingDisplayMode) {
 			val strBtnA = receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)
 			val strBtnB = receiver.getKeyNameByButtonID(engine, Controller.BUTTON_B)
@@ -960,113 +973,158 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			val d = netRankingView
 
 			if(!netRankingNoDataFlag[d]&&netRankingReady[d]) {
-				receiver.drawMenuFont(engine, playerID, 0, 1, "<<", COLOR.ORANGE)
-				receiver.drawMenuFont(engine, playerID, 38, 1, ">>", COLOR.ORANGE)
-				receiver.drawMenuFont(engine, playerID, 3, 1,
-					"${if(d!=0) "DAILY" else "ALL-TIME"} RANKING (${netRankingCursor[d]+1}/${netRankingPlace[d].size})", COLOR.GREEN)
+				receiver.drawMenuFont(engine, 0, 1, "<<", COLOR.ORANGE)
+				receiver.drawMenuFont(engine, 38, 1, ">>", COLOR.ORANGE)
+				receiver.drawMenuFont(
+					engine, 3, 1, "${if(d!=0) "DAILY" else "ALL-TIME"} RANKING (${netRankingCursor[d]+1}/${netRankingPlace[d].size})",
+					COLOR.GREEN
+				)
 
 				val startIndex = netRankingCursor[d]/20*20
 				var endIndex = startIndex+20
 				if(endIndex>netRankingPlace[d].size) endIndex = netRankingPlace[d].size
 
 				when(netRankingType) {
-					NetSPRecord.RANKINGTYPE_GENERIC_SCORE -> receiver.drawMenuFont(engine, playerID, 1, 3,
-						"    SCORE   LINE TIME     NAME", COLOR.BLUE)
-					NetSPRecord.RANKINGTYPE_GENERIC_TIME -> receiver.drawMenuFont(engine, playerID, 1, 3,
-						"    TIME     PIECE PPS    NAME", COLOR.BLUE)
-					NetSPRecord.RANKINGTYPE_SCORERACE -> receiver.drawMenuFont(engine, playerID, 1, 3, "    TIME     LINE SPL    NAME",
-						COLOR.BLUE)
-					NetSPRecord.RANKINGTYPE_DIGRACE -> receiver.drawMenuFont(engine, playerID, 1, 3, "    TIME     LINE PIECE  NAME",
-						COLOR.BLUE)
-					NetSPRecord.RANKINGTYPE_ULTRA -> receiver.drawMenuFont(engine, playerID, 1, 3, "    SCORE   LINE PIECE    NAME",
-						COLOR.BLUE)
-					NetSPRecord.RANKINGTYPE_COMBORACE -> receiver.drawMenuFont(engine, playerID, 1, 3, "    COMBO TIME     PPS    NAME",
-						COLOR.BLUE)
-					NetSPRecord.RANKINGTYPE_DIGCHALLENGE -> receiver.drawMenuFont(engine, playerID, 1, 3,
-						"    SCORE   LINE TIME     NAME", COLOR.BLUE)
-					NetSPRecord.RANKINGTYPE_TIMEATTACK -> receiver.drawMenuFont(engine, playerID, 1, 3,
-						"    LINE  TIME     PPS    NAME",
-						COLOR.BLUE)
+					NetSPRecord.RANKINGTYPE_GENERIC_SCORE -> receiver.drawMenuFont(
+						engine, 1, 3, "    SCORE   LINE TIME     NAME",
+						COLOR.BLUE
+					)
+					NetSPRecord.RANKINGTYPE_GENERIC_TIME -> receiver.drawMenuFont(
+						engine, 1, 3, "    TIME     PIECE PPS    NAME",
+						COLOR.BLUE
+					)
+					NetSPRecord.RANKINGTYPE_SCORERACE -> receiver.drawMenuFont(
+						engine, 1, 3, "    TIME     LINE SPL    NAME", COLOR.BLUE
+					)
+					NetSPRecord.RANKINGTYPE_DIGRACE -> receiver.drawMenuFont(
+						engine, 1, 3, "    TIME     LINE PIECE  NAME", COLOR.BLUE
+					)
+					NetSPRecord.RANKINGTYPE_ULTRA -> receiver.drawMenuFont(
+						engine, 1, 3, "    SCORE   LINE PIECE    NAME", COLOR.BLUE
+					)
+					NetSPRecord.RANKINGTYPE_COMBORACE -> receiver.drawMenuFont(
+						engine, 1, 3, "    COMBO TIME     PPS    NAME", COLOR.BLUE
+					)
+					NetSPRecord.RANKINGTYPE_DIGCHALLENGE -> receiver.drawMenuFont(
+						engine, 1, 3, "    SCORE   LINE TIME     NAME",
+						COLOR.BLUE
+					)
+					NetSPRecord.RANKINGTYPE_TIMEATTACK -> receiver.drawMenuFont(
+						engine, 1, 3, "    LINE  TIME     PPS    NAME",
+						COLOR.BLUE
+					)
 				}
 
 				for((c, i) in (startIndex until endIndex).withIndex()) {
 					if(i==netRankingCursor[d])
-						receiver.drawMenuFont(engine, playerID, 0, 4+c, "\u0082", COLOR.RED)
+						receiver.drawMenuFont(engine, 0, 4+c, "\u0082", COLOR.RED)
 
 					val rankColor = if(i==netRankingMyRank[d])
 						COLOR.PINK else COLOR.YELLOW
 					if(netRankingPlace[d][i]==-1)
-						receiver.drawMenuFont(engine, playerID, 1, 4+c, "N/A", rankColor)
+						receiver.drawMenuFont(engine, 1, 4+c, "N/A", rankColor)
 					else
-						receiver.drawMenuNum(engine, playerID, 1, 4+c, String.format("%3d", netRankingPlace[d][i]+1), rankColor)
+						receiver.drawMenuNum(engine, 1, 4+c, String.format("%3d", netRankingPlace[d][i]+1), rankColor)
 
 					when(netRankingType) {
 						NetSPRecord.RANKINGTYPE_GENERIC_SCORE -> {
-							receiver.drawMenuNum(engine, playerID, 5, 4+c, "${netRankingScore[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 13, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 18, 4+c, netRankingTime[d][i].toTimeStr,
-								i==netRankingCursor[d])
-							receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, 5, 4+c, "${netRankingScore[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, 13, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(
+								engine, 18, 4+c, netRankingTime[d][i].toTimeStr,
+								i==netRankingCursor[d]
+							)
+							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
 						}
 						NetSPRecord.RANKINGTYPE_GENERIC_TIME -> {
-							receiver.drawMenuNum(engine, playerID, 5, 4+c, netRankingTime[d][i].toTimeStr,
-								i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 14, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 20, 4+c, String.format("%.5g", netRankingPPS[d][i]),
-								i==netRankingCursor[d])
-							receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenuNum(
+								engine, 5, 4+c, netRankingTime[d][i].toTimeStr,
+								i==netRankingCursor[d]
+							)
+							receiver.drawMenuNum(engine, 14, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(
+								engine, 20, 4+c, String.format("%.5g", netRankingPPS[d][i]),
+								i==netRankingCursor[d]
+							)
+							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
 						}
 						NetSPRecord.RANKINGTYPE_SCORERACE -> {
-							receiver.drawMenuNum(engine, playerID, 5, 4+c, netRankingTime[d][i].toTimeStr,
-								i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 19, 4+c, String.format("%.5g", netRankingSPL[d][i]),
-								i==netRankingCursor[d])
-							receiver.drawMenuTTF(engine, playerID, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenuNum(
+								engine, 5, 4+c, netRankingTime[d][i].toTimeStr,
+								i==netRankingCursor[d]
+							)
+							receiver.drawMenuNum(engine, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(
+								engine, 19, 4+c, String.format("%.5g", netRankingSPL[d][i]),
+								i==netRankingCursor[d]
+							)
+							receiver.drawMenuTTF(engine, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
 						}
 						NetSPRecord.RANKINGTYPE_DIGRACE -> {
-							receiver.drawMenuNum(engine, playerID, 5, 4+c, netRankingTime[d][i].toTimeStr,
-								i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 19, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuTTF(engine, playerID, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenuNum(
+								engine, 5, 4+c, netRankingTime[d][i].toTimeStr,
+								i==netRankingCursor[d]
+							)
+							receiver.drawMenuNum(engine, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, 19, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuTTF(engine, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
 						}
 						NetSPRecord.RANKINGTYPE_ULTRA -> {
-							receiver.drawMenuNum(engine, playerID, 5, 4+c, "${netRankingScore[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 13, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 18, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuTTF(engine, playerID, 27, 4+c,
-								netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, 5, 4+c, "${netRankingScore[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, 13, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, 18, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
+							receiver.drawMenuTTF(
+								engine, 27, 4+c, netRankingName[d][i],
+								i==netRankingCursor[d]
+							)
 						}
 						NetSPRecord.RANKINGTYPE_COMBORACE -> {
-							receiver.drawMenuNum(engine, playerID, 5, 4+c,
-								"${(netRankingScore[d][i]-1)}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 11, 4+c,
-								netRankingTime[d][i].toTimeStr, i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 20, 4+c,
-								String.format("%.4g", netRankingPPS[d][i]), i==netRankingCursor[d])
-							receiver.drawMenuTTF(engine, playerID, 27, 4+c,
-								netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenuNum(
+								engine, 5, 4+c,
+								"${(netRankingScore[d][i]-1)}", i==netRankingCursor[d]
+							)
+							receiver.drawMenuNum(
+								engine, 11, 4+c,
+								netRankingTime[d][i].toTimeStr, i==netRankingCursor[d]
+							)
+							receiver.drawMenuNum(
+								engine, 20, 4+c,
+								String.format("%.4g", netRankingPPS[d][i]), i==netRankingCursor[d]
+							)
+							receiver.drawMenuTTF(
+								engine, 27, 4+c, netRankingName[d][i],
+								i==netRankingCursor[d]
+							)
 						}
 						NetSPRecord.RANKINGTYPE_DIGCHALLENGE -> {
-							receiver.drawMenuNum(engine, playerID, 5, 4+c,
-								"${netRankingScore[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 13, 4+c,
-								"${netRankingLines[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 18, 4+c,
-								"${netRankingDepth[d][i]}", i==netRankingCursor[d])
-							receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenuNum(
+								engine, 5, 4+c,
+								"${netRankingScore[d][i]}", i==netRankingCursor[d]
+							)
+							receiver.drawMenuNum(
+								engine, 13, 4+c,
+								"${netRankingLines[d][i]}", i==netRankingCursor[d]
+							)
+							receiver.drawMenuNum(
+								engine, 18, 4+c,
+								"${netRankingDepth[d][i]}", i==netRankingCursor[d]
+							)
+							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
 						}
 						NetSPRecord.RANKINGTYPE_TIMEATTACK -> {
 							var fontcolor = COLOR.WHITE
 							if(netRankingRollclear[d][i]==1) fontcolor = COLOR.GREEN
 							if(netRankingRollclear[d][i]==2) fontcolor = COLOR.ORANGE
-							receiver.drawMenuNum(engine, playerID, 5, 4+c, "${netRankingLines[d][i]}", fontcolor)
-							receiver.drawMenuNum(engine, playerID, 11, 4+c, netRankingTime[d][i].toTimeStr,
-								i==netRankingCursor[d])
-							receiver.drawMenuNum(engine, playerID, 20, 4+c, String.format("%.4g", netRankingPPS[d][i]),
-								i==netRankingCursor[d])
-							receiver.drawMenuTTF(engine, playerID, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
+							receiver.drawMenuNum(engine, 5, 4+c, "${netRankingLines[d][i]}", fontcolor)
+							receiver.drawMenuNum(
+								engine, 11, 4+c, netRankingTime[d][i].toTimeStr,
+								i==netRankingCursor[d]
+							)
+							receiver.drawMenuNum(
+								engine, 20, 4+c, String.format("%.4g", netRankingPPS[d][i]),
+								i==netRankingCursor[d]
+							)
+							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
 						}
 					}
 
@@ -1075,33 +1133,41 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				if(netRankingCursor[d]>=0&&netRankingCursor[d]<netRankingDate[d].size) {
 					val calendar = netRankingDate[d][netRankingCursor[d]]
 					val strDate = calendar.strDateTime(TimeZone.getDefault())
-					receiver.drawMenuFont(engine, playerID, 1, 25, "DATE:$strDate", COLOR.CYAN)
+					receiver.drawMenuFont(engine, 1, 25, "DATE:$strDate", COLOR.CYAN)
 
 					val gamerate = netRankingGamerate[d][netRankingCursor[d]]
-					receiver.drawMenuFont(engine, playerID, 1, 26,
-						"GAMERATE:"+if(gamerate==0f) "UNKNOWN" else "${(100*gamerate)}%", COLOR.CYAN)
+					receiver.drawMenuFont(
+						engine, 1, 26, "GAMERATE:"+if(gamerate==0f) "UNKNOWN" else "${(100*gamerate)}%",
+						COLOR.CYAN
+					)
 				}
 
-				receiver.drawMenuFont(engine, playerID, 1, 27,
-					"A($strBtnA KEY):DOWNLOAD\nB($strBtnB KEY):BACK LEFT/RIGHT:${if(d==0) "DAILY" else "ALL-TIME"}", COLOR.ORANGE)
+				receiver.drawMenuFont(
+					engine, 1, 27, "A($strBtnA KEY):DOWNLOAD\nB($strBtnB KEY):BACK LEFT/RIGHT:${if(d==0) "DAILY" else "ALL-TIME"}",
+					COLOR.ORANGE
+				)
 			} else if(netRankingNoDataFlag[d]) {
-				receiver.drawMenuFont(engine, playerID, 0, 1, "<<", COLOR.ORANGE)
-				receiver.drawMenuFont(engine, playerID, 38, 1, ">>", COLOR.ORANGE)
-				receiver.drawMenuFont(engine, playerID, 3, 1, (if(d!=0) "DAILY" else "ALL-TIME")+" RANKING", COLOR.GREEN)
+				receiver.drawMenuFont(engine, 0, 1, "<<", COLOR.ORANGE)
+				receiver.drawMenuFont(engine, 38, 1, ">>", COLOR.ORANGE)
+				receiver.drawMenuFont(engine, 3, 1, (if(d!=0) "DAILY" else "ALL-TIME")+" RANKING", COLOR.GREEN)
 
-				receiver.drawMenuFont(engine, playerID, 1, 3, "NO DATA", COLOR.COBALT)
+				receiver.drawMenuFont(engine, 1, 3, "NO DATA", COLOR.COBALT)
 
-				receiver.drawMenuFont(engine, playerID, 1, 28,
-					"B($strBtnB KEY):BACK LEFT/RIGHT:${if(d==0) "DAILY" else "ALL-TIME"}", COLOR.ORANGE)
+				receiver.drawMenuFont(
+					engine, 1, 28, "B($strBtnB KEY):BACK LEFT/RIGHT:${if(d==0) "DAILY" else "ALL-TIME"}",
+					COLOR.ORANGE
+				)
 			} else if(!netRankingReady[d]) {
-				receiver.drawMenuFont(engine, playerID, 0, 1, "<<", COLOR.ORANGE)
-				receiver.drawMenuFont(engine, playerID, 38, 1, ">>", COLOR.ORANGE)
-				receiver.drawMenuFont(engine, playerID, 3, 1, "${if(d!=0) "DAILY" else "ALL-TIME"} RANKING", COLOR.GREEN)
+				receiver.drawMenuFont(engine, 0, 1, "<<", COLOR.ORANGE)
+				receiver.drawMenuFont(engine, 38, 1, ">>", COLOR.ORANGE)
+				receiver.drawMenuFont(engine, 3, 1, "${if(d!=0) "DAILY" else "ALL-TIME"} RANKING", COLOR.GREEN)
 
-				receiver.drawMenuFont(engine, playerID, 1, 3, "LOADING...", COLOR.CYAN)
+				receiver.drawMenuFont(engine, 1, 3, "LOADING...", COLOR.CYAN)
 
-				receiver.drawMenuFont(engine, playerID, 1, 28,
-					"B($strBtnB KEY):BACK LEFT/RIGHT:${if(d==0) "DAILY" else "ALL-TIME"}", COLOR.ORANGE)
+				receiver.drawMenuFont(
+					engine, 1, 28, "B($strBtnB KEY):BACK LEFT/RIGHT:${if(d==0) "DAILY" else "ALL-TIME"}",
+					COLOR.ORANGE
+				)
 			}
 		}
 	}
@@ -1109,9 +1175,9 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** Enter the netplay ranking screen
 	 * @param engine GameEngine
 	 * @param playerID Player ID
-	 * @param goaltype Game Type
+	 * @param goalType Game Type
 	 */
-	protected fun netEnterNetPlayRankingScreen(engine:GameEngine, playerID:Int, goaltype:Int) {
+	protected fun netEnterNetPlayRankingScreen(goalType:Int) {
 		if(netRankingPlace.isNotEmpty()) {
 			netRankingPlace[0].clear()
 			netRankingPlace[1].clear()
@@ -1124,8 +1190,8 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		owner.menuOnly = true
 		netCurrentRoomInfo?.let {
 			val rule = if(it.rated) it.ruleName else "all"
-			netLobby?.netPlayerClient?.send("spranking\t${NetUtil.urlEncode(rule)}\t${NetUtil.urlEncode(id)}\t$goaltype\tfalse\n")
-			netLobby?.netPlayerClient?.send("spranking\t${NetUtil.urlEncode(rule)}\t${NetUtil.urlEncode(id)}\t$goaltype\ttrue\n")
+			netLobby?.netPlayerClient?.send("spranking\t${NetUtil.urlEncode(rule)}\t${NetUtil.urlEncode(id)}\t$goalType\tfalse\n")
+			netLobby?.netPlayerClient?.send("spranking\t${NetUtil.urlEncode(rule)}\t${NetUtil.urlEncode(id)}\t$goalType\ttrue\n")
 		}
 	}
 
@@ -1230,23 +1296,22 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 		}
 	}
 
-	/** NET: Send various in-game stats (as well as goaltype)<br></br>
+	/** NET: Send various in-game stats (as well as goalType)<br></br>
 	 * Game modes should implement this.
 	 * @param engine GameEngine
 	 */
 	protected open fun netSendStats(engine:GameEngine) {
 		val bg =
 			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
-		var msg = "game\tstats\t"
-		msg += "${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"
-		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
-		msg += "${engine.statistics.time}\t${engine.statistics.level}\t"
-		msg += "${engine.gameActive}\t${engine.timerActive}\t"
-		msg += "${engine.lastevent}\t${engine.b2bbuf}\t${engine.combobuf}\t$bg\n"
+		val msg = "game\tstats\t"+engine.run {
+			statistics.run {
+				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"
+			}+"${gameActive}\t${timerActive}\t${lastEvent}\t\t$bg\n"
+		}
 		netLobby?.netPlayerClient?.send(msg)
 	}
 
-	/** NET: Receive various in-game stats (as well as goaltype)<br></br>
+	/** NET: Receive various in-game stats (as well as goalType)<br></br>
 	 * Game modes should implement this.
 	 * @param engine GameEngine
 	 * @param message Message array
@@ -1263,19 +1328,14 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			{engine.statistics.level = it.toInt()},
 			{engine.gameActive = it.toBoolean()},
 			{engine.timerActive = it.toBoolean()},
-			{engine.lastevent = ScoreEvent.parseInt(it)},
-			{engine.b2bbuf = it.toInt()},
-			{engine.combobuf = it.toInt()},
+			{engine.lastEvent = ScoreEvent.parseInt(it)},
 			{engine.owner.backgroundStatus.bg = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
 
 		// Meter
-		engine.meterValue = engine.statistics.lines%10*receiver.getMeterMax(engine)/9
-		engine.meterColor = GameEngine.METER_COLOR_GREEN
-		if(engine.statistics.lines%10>=4) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		if(engine.statistics.lines%10>=6) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		if(engine.statistics.lines%10>=8) engine.meterColor = GameEngine.METER_COLOR_RED
+		engine.meterValue = engine.statistics.lines%10/9f
+		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 	}
 
 	/** NET: Send end-of-game stats<br></br>
@@ -1283,13 +1343,9 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * @param engine GameEngine
 	 */
 	protected open fun netSendEndGameStats(engine:GameEngine) {
-		val subMsg =
-			"SCORE;${engine.statistics.score}\t"+
-				"LINE;${engine.statistics.lines}\t"+
-				"LEVEL;${engine.statistics.level+engine.statistics.levelDispAdd}\t"+
-				"TIME;${engine.statistics.time.toTimeStr}\t"+
-				"SCORE/LINE;${engine.statistics.spl}\t"+
-				"LINE/MIN;${engine.statistics.lpm}\t"
+		val subMsg = engine.statistics.run {
+			"SCORE;${score}\tLINE;${lines}\tLEVEL;${level+levelDispAdd}\tTIME;${time.toTimeStr}\tSCORE/LINE;${spl}\tLINE/MIN;${lpm}\t"
+		}
 		netLobby?.netPlayerClient?.send("gstat1p	${NetUtil.urlEncode(subMsg)}\n")
 	}
 

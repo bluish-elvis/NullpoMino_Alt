@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -107,10 +107,12 @@ class StateConfigJoystickMain:BaseGameState() {
 
 		FontNormal.printFontGrid(2, 3, "[BUTTON SETTING]", cursor==0)
 		FontNormal.printFontGrid(2, 4, "[INPUT TEST]", cursor==1)
-		FontNormal.printFontGrid(2, 5, "JOYSTICK NUMBER:"+if(joyUseNumber==-1)
-			"NOTHING"
-		else
-			"$joyUseNumber", cursor==2)
+		FontNormal.printFontGrid(
+			2, 5, "JOYSTICK NUMBER:"+if(joyUseNumber==-1)
+				"NOTHING"
+			else
+				"$joyUseNumber", cursor==2
+		)
 		FontNormal.printFontGrid(2, 6, "JOYSTICK BORDER:$joyBorder", cursor==3)
 		FontNormal.printFontGrid(2, 7, "AXIS INPUT:"+(!joyIgnoreAxis).getONorOFF(), cursor==4)
 		FontNormal.printFontGrid(2, 8, "POV INPUT:"+(!joyIgnorePOV).getONorOFF(), cursor==5)
@@ -213,8 +215,10 @@ class StateConfigJoystickMain:BaseGameState() {
 
 		/** UI Text identifier Strings */
 		private val UI_TEXT =
-			arrayOf("ConfigJoystickMain_ButtonSetting", "ConfigJoystickMain_InputTest", "ConfigJoystickMain_JoyUseNumber",
+			arrayOf(
+				"ConfigJoystickMain_ButtonSetting", "ConfigJoystickMain_InputTest", "ConfigJoystickMain_JoyUseNumber",
 				"ConfigJoystickMain_JoyBorder", "ConfigJoystickMain_JoyIgnoreAxis", "ConfigJoystickMain_JoyIgnorePOV",
-				"ConfigJoystickMain_JoyMethod")
+				"ConfigJoystickMain_JoyMethod"
+			)
 	}
 }
