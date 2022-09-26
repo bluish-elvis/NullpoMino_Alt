@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.fx.particles.BlockParticle.Companion.Type
 import mu.nu.nullpo.gui.common.libs.Vector
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.random.Random
 
 /**
@@ -69,16 +70,18 @@ class BlockParticleCollection:ParticleEmitterBase {
 	}
 	/**TGM falling */
 	constructor(
-		engine:GameEngine, receiver:EventReceiver, blocks:Map<Int, Map<Int, Block>>, yMod:Int, maxYMod:Int, isFlashing:Boolean,
+		engine:GameEngine, receiver:EventReceiver, blocks:Map<Int, Map<Int, Block>>, velY:Float = 4.8f, velYMod:Float, isFlashing:Boolean = false,
 	) {
+		val colA = blocks.keys.sorted()
 		particles = blocks.flatMap {(y, row) ->
 			row.map {(x, b) ->
 				val bs = EventReceiver.getBlockSize(engine)
 				val width = engine.field.width
+				val py = colA.indexOf(y)
 				var xU = x-width/2f
 				if(width%2==0) xU += .5f
 				val mod = 1f/3f*xU
-				val velocity = Vector(mod*1.1f, -4.8f*(.5f+.5f*((maxYMod-yMod)/maxYMod)))
+				val velocity = Vector(mod*1.1f, -abs(velY)*1.5f-abs(velYMod)*py.toFloat()+abs(xU)*velY/width)
 				BlockParticle(
 					Block(b), Vector(receiver.fieldX(engine)+x*bs, receiver.fieldY(engine)+y*bs), velocity,
 					animType = Type.TGM, blockSize = bs, isFlashing = isFlashing

@@ -52,7 +52,7 @@ class MarathonActual:AbstractMode() {
 		if(!owner.replayMode) {
 			version = 1
 		}
-		engine.owner.backgroundStatus.bg = 0
+		engine.owner.bgMan.bg = 0
 		engine.frameColor = 0
 	}
 
@@ -142,12 +142,12 @@ class MarathonActual:AbstractMode() {
 		}
 		if(TABLE_BGM_CHANGE[bgmLv]!=-1) {
 			if(totalLength>=TABLE_BGM_CHANGE[bgmLv]-50) {
-				owner.bgmStatus.fadesw = true
+				owner.musMan.fadesw = true
 			}
 			if(totalLength>=TABLE_BGM_CHANGE[bgmLv]&&totalLength<MARATHON_LENGTH) {
 				++bgmLv
-				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmLv)
-				owner.bgmStatus.fadesw = false
+				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
+				owner.musMan.fadesw = false
 			}
 		}
 		engine.meterValue = totalLength%LEVEL_LENGTH*1f/LEVEL_LENGTH
@@ -158,9 +158,9 @@ class MarathonActual:AbstractMode() {
 			engine.stat = GameEngine.Status.EXCELLENT
 		} else if(totalLength>=(engine.statistics.level+1)*LEVEL_LENGTH) {
 			++engine.statistics.level
-			owner.backgroundStatus.fadesw = true
-			owner.backgroundStatus.fadecount = 0
-			owner.backgroundStatus.fadebg = engine.statistics.level
+			owner.bgMan.fadesw = true
+			owner.bgMan.fadecount = 0
+			owner.bgMan.fadebg = engine.statistics.level
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}

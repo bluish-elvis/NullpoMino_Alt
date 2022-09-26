@@ -35,7 +35,6 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.fx.Beam
-import mu.nu.nullpo.gui.common.fx.Effect
 import mu.nu.nullpo.gui.common.fx.FragAnim
 import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM
 import mu.nu.nullpo.gui.common.fx.PopupAward
@@ -48,9 +47,6 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 
 abstract class AbstractRenderer:EventReceiver() {
 	internal abstract val resources:ResourceHolder
-
-	/** 演出オブジェクト */
-	internal val effects:MutableList<Effect> = mutableListOf()
 
 	/** Line clearエフェクト表示 */
 	protected var showlineeffect = false
@@ -106,8 +102,6 @@ abstract class AbstractRenderer:EventReceiver() {
 		attr:Int, outline:Float
 	) {
 		var sk = skin
-
-		if(!doesGraphicsExist()) return
 
 		if(color<0) return
 		if(sk>=resources.imgBlockListSize) sk = 0
@@ -454,7 +448,6 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param engine GameEngineのインスタンス
 	 */
 	protected fun drawField(x:Int, y:Int, engine:GameEngine, size:Int, scale:Float = 1f) {
-		if(!doesGraphicsExist()) return
 
 		var blksize = getBlockSize(engine)
 		var zoom = scale
@@ -765,7 +758,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	override fun lineClear(engine:GameEngine, y:Collection<Int>) {
 		val s = engine.blockSize
 		y.forEach {
-			effects.add(Beam(engine.fX, engine.fY+it*s, s*engine.fieldWidth, s))
+			efxFG.add(Beam(engine.fX, engine.fY+it*s, s*engine.fieldWidth, s))
 		}
 	}
 
@@ -779,10 +772,10 @@ abstract class AbstractRenderer:EventReceiver() {
 					// 通常Block
 					val r = resources
 					if(blk.isGemBlock)
-						effects.add(FragAnim(ANIM.GEM, sx, sy, (color-Block.COLOR_GEM_RED)%r.pEraseMax, lineeffectspeed))
+						efxFG.add(FragAnim(ANIM.GEM, sx, sy, (color-Block.COLOR_GEM_RED)%r.pEraseMax, lineeffectspeed))
 					// 宝石Block
 					else if(!blk.getAttribute(Block.ATTRIBUTE.BONE))
-						effects.add(
+						efxFG.add(
 							FragAnim(
 								if(blk.getAttribute(Block.ATTRIBUTE.LAST_COMMIT)) ANIM.SPARK else ANIM.BLOCK,
 								sx, sy, maxOf(0, color-Block.COLOR_WHITE)%r.blockBreakMax, lineeffectspeed
@@ -808,27 +801,27 @@ abstract class AbstractRenderer:EventReceiver() {
 				event.split -> engine.field.lastLinesTop*2
 				else -> (engine.field.lastLinesTop+engine.field.lastLinesBottom)
 			}
-		effects.add(PopupAward(sx, sy, event, if(event.lines==0) engine.speed.are else engine.speed.lineDelay, dir))
+		efxFG.add(PopupAward(sx, sy, event, if(event.lines==0) engine.speed.are else engine.speed.lineDelay, dir))
 	}
 
 	override fun addScore(x:Int, y:Int, pts:Int, color:COLOR) {
-		if(pts!=0) effects.add(PopupPoint(x, y, pts, color.ordinal))
+		if(pts!=0) efxFG.add(PopupPoint(x, y, pts, color.ordinal))
 	}
 
 	override fun addCombo(x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN, ex:Int) {
-		if(pts>0) effects.add(PopupCombo(x, y, pts, type, ex))
+		if(pts>0) efxFG.add(PopupCombo(x, y, pts, type, ex))
 	}
 
 	override fun shootFireworks(engine:GameEngine, x:Int, y:Int, color:COLOR) {
 		if(heavyeffect) {
 			val col = ParticleEmitterBase.colorBy(color)
-			effects.add(Fireworks(x, y, col[0], col[1], col[2], 255, col[3]))
-		} else effects.add(FragAnim(ANIM.HANABI, x, y, color.ordinal))
+			efxFG.add(Fireworks(x, y, col[0], col[1], col[2], 255, col[3]))
+		} else efxFG.add(FragAnim(ANIM.HANABI, x, y, color.ordinal))
 		super.shootFireworks(engine, x, y, color)
 	}
 
 	override fun bravo(engine:GameEngine) {
-		effects.add(PopupBravo(engine.fX, engine.fY))
+		efxFG.add(PopupBravo(engine.fX, engine.fY))
 		super.bravo(engine)
 	}
 
@@ -837,10 +830,14 @@ abstract class AbstractRenderer:EventReceiver() {
 		if(!engine.allowTextRenderByReceiver) return
 		if(!engine.isVisible) return
 
-		val cY = (engine.fieldHeight-1)
-		if(engine.owner.players<=1)
+		val cY = (engine.fieldHeight-1) // 19 : cY/3f = 6.3
+		if(engine.owner.players<=1) {
 			drawMenuFont(engine, 0f, cY/3f, "EXCELLENT!", COLOR.RAINBOW, 1f)
-		else drawMenuFont(engine, 0f, cY/2f, "You WIN!", COLOR.ORANGE, 1f)
+			engine.owner.mode?.name?.let {
+				drawMenuNano(engine, 0f, cY*2/3f+3, it, COLOR.RAINBOW, .5f)
+				drawMenuNano(engine, 0f, cY*2/3f+4, "MODE COMPLETED", COLOR.RAINBOW, .5f)
+			}
+		} else drawMenuFont(engine, 0f, cY/2f, "You WIN!", COLOR.ORANGE, 1f)
 
 	}
 
@@ -890,8 +887,10 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 	/* 各 frame 最初の描画処理 */
 	override fun renderFirst(engine:GameEngine) {
-		if(engine.playerID==0) drawBG(engine)
-
+		if(engine.playerID==0) {
+			drawBG(engine)
+			efxBG.forEachIndexed {i, it -> it.draw(i, this)}
+		}
 		// NEXTなど
 		if(!engine.owner.menuOnly&&engine.isVisible) {
 			val offsetX = engine.fX
@@ -916,15 +915,14 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	/** Update effects */
 	private fun effectUpdate() {
-		effects.removeAll {it.update(this)}
+		efxBG.removeAll {it.update(this)}
+		efxFG.removeAll {it.update(this)}
 	}
 	/* 各 frame の最後に行われる描画処理 */
 	override fun renderLast(engine:GameEngine) {
-		if(engine.playerID==engine.owner.players-1) effectRender()
-	}
+		if(engine.playerID==engine.owner.players-1)
+			efxFG.forEachIndexed {i, it -> it.draw(i, this)}
 
-	protected open fun effectRender() {
-		effects.forEachIndexed {i, it -> it.draw(i, this)}
 	}
 
 	open fun drawBlendAdd(unit:()->Unit) {
@@ -936,8 +934,6 @@ abstract class AbstractRenderer:EventReceiver() {
 	protected abstract fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, size:Int, alpha:Float)
 	protected fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float) =
 		printTTFSpecific(x, y, str, color, (scale*BaseFontTTF.FONT_SIZE).toInt(), alpha)
-
-	protected abstract fun doesGraphicsExist():Boolean
 
 	protected abstract fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int, size:Float, darkness:Float, alpha:Float)
 

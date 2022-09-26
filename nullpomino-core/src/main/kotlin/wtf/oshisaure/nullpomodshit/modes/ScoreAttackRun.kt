@@ -164,7 +164,7 @@ class ScoreAttackRun:AbstractMode() {
 		if(!owner.replayMode) {
 			version = 1
 		}
-		engine.owner.backgroundStatus.bg = 0
+		engine.owner.bgMan.bg = 0
 		engine.frameColor = 7
 	}
 
@@ -370,20 +370,20 @@ class ScoreAttackRun:AbstractMode() {
 
 		if(tableBGMChange[bgmLv]!=-1) {
 			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) {
-				owner.bgmStatus.fadesw = true
+				owner.musMan.fadesw = true
 			}
 			if(engine.statistics.lines>=tableBGMChange[bgmLv]) {
 				++bgmLv
-				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmLv)
-				owner.bgmStatus.fadesw = false
+				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
+				owner.musMan.fadesw = false
 			}
 		}
 		if(engine.statistics.lines>=tableLevelChange[engine.statistics.level+1]&&engine.statistics.level<19) {
 			++engine.statistics.level
 			currenttime += timebonus
-			owner.backgroundStatus.fadesw = true
-			owner.backgroundStatus.fadecount = 0
-			owner.backgroundStatus.fadebg = engine.statistics.level
+			owner.bgMan.fadesw = true
+			owner.bgMan.fadecount = 0
+			owner.bgMan.fadebg = engine.statistics.level
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}

@@ -130,7 +130,7 @@ class ScoreTrial:MarathonModeBase() {
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
-		engine.owner.backgroundStatus.bg = startLevel
+		engine.owner.bgMan.bg = startLevel
 		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
 		engine.twistEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
@@ -317,10 +317,10 @@ class ScoreTrial:MarathonModeBase() {
 		l = STARTING_LIVES+lifeOffset+1
 		o = false
 		setSpeed(engine)
-		owner.bgmStatus.bgm = tableBGM[difficultySelected][0]
-		owner.bgmStatus.fadesw = false
+		owner.musMan.bgm = tableBGM[difficultySelected][0]
+		owner.musMan.fadesw = false
 		if(netIsWatch) {
-			owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGMStatus.BGM.Silent
 		}
 	}
 
@@ -598,7 +598,7 @@ class ScoreTrial:MarathonModeBase() {
 			// owner.backgroundStatus.fadecount = 0;
 			// owner.backgroundStatus.fadebg = engine.statistics.level / 5;
 			if(engine.statistics.level==200) {
-				owner.backgroundStatus.bg = 19
+				owner.bgMan.bg = 19
 				engine.playSE("endingstart")
 				val destinationX:Int = receiver.scoreX(engine)
 				val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
@@ -626,9 +626,9 @@ class ScoreTrial:MarathonModeBase() {
 
 				// owner.backgroundStatus.fadesw = true;
 				// owner.backgroundStatus.fadecount = 0;
-				owner.backgroundStatus.bg = engine.statistics.level/5
+				owner.bgMan.bg = engine.statistics.level/5
 				if(engine.statistics.level==lMax&&difficultySelected!=2) {
-					owner.backgroundStatus.bg = 19
+					owner.bgMan.bg = 19
 					shouldUseTimer = true
 					engine.playSE("endingstart")
 					val destinationX:Int = receiver.scoreX(engine)

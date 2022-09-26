@@ -172,7 +172,7 @@ class RollTraining:MarathonModeBase() {
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
-		engine.owner.backgroundStatus.bg = startLevel
+		engine.owner.bgMan.bg = startLevel
 		engine.frameColor = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
 	}
 	/**
@@ -195,7 +195,7 @@ class RollTraining:MarathonModeBase() {
 			val change = updateMenu(engine)
 			if(change!=0) {
 				engine.frameColor = if(usedSpeed==SPEED_TAP) GameEngine.FRAME_COLOR_GRAY else GameEngine.FRAME_COLOR_BLUE
-				engine.owner.backgroundStatus.bg = startLevel
+				engine.owner.bgMan.bg = startLevel
 
 				// NET: Signal options change
 				if(netIsNetPlay&&netNumSpectators>0) {
@@ -256,9 +256,9 @@ class RollTraining:MarathonModeBase() {
 		engine.blockHidden = if(useMRoll) engine.ruleOpt.lockFlash else FADING_FRAMES
 		engine.blockHiddenAnim = !useMRoll
 		engine.blockOutlineType = if(useMRoll) GameEngine.BLOCK_OUTLINE_NORMAL else GameEngine.BLOCK_OUTLINE_NONE
-		owner.bgmStatus.bgm = BGMStatus.BGM.Ending(if(usedSpeed==SPEED_TAP) 1 else 2)
+		owner.musMan.bgm = BGMStatus.BGM.Ending(if(usedSpeed==SPEED_TAP) 1 else 2)
 		if(netIsWatch) {
-			owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGMStatus.BGM.Silent
 		}
 	}
 
@@ -269,7 +269,7 @@ class RollTraining:MarathonModeBase() {
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
 			loadSetting(engine.playerProp.propProfile, engine)
-			engine.owner.backgroundStatus.bg = startLevel
+			engine.owner.bgMan.bg = startLevel
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s

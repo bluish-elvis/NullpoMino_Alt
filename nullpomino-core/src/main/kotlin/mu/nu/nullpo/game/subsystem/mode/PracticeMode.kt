@@ -718,7 +718,7 @@ class PracticeMode:AbstractMode() {
 
 		// Hebo Hidden
 		setHeboHidden(engine)
-		owner.bgmStatus.bgm = BGM.values[bgmno]
+		owner.musMan.bgm = BGM.values[bgmno]
 
 		goal = 5*(engine.statistics.level+1)
 
@@ -913,7 +913,7 @@ class PracticeMode:AbstractMode() {
 			if(timelimit>0&&timelimitTimer<=5*60&&!timelimitResetEveryLevel
 				&&engine.timerActive
 			)
-				owner.bgmStatus.fadesw = true
+				owner.musMan.fadesw = true
 		}
 
 		// Update meter
@@ -955,7 +955,7 @@ class PracticeMode:AbstractMode() {
 				if(leveltype==LEVELTYPE_MANIA) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 			}
 
-			owner.bgmStatus.bgm = BGM.Ending(0)
+			owner.musMan.bgm = BGM.Ending(0)
 		}
 
 		return false
@@ -1029,10 +1029,10 @@ class PracticeMode:AbstractMode() {
 				engine.playSE("levelup")
 
 				// BackgroundSwitching
-				if(owner.backgroundStatus.bg<19) {
-					owner.backgroundStatus.fadesw = true
-					owner.backgroundStatus.fadecount = 0
-					owner.backgroundStatus.fadebg = owner.backgroundStatus.bg+1
+				if(owner.bgMan.bg<19) {
+					owner.bgMan.fadesw = true
+					owner.bgMan.fadecount = 0
+					owner.bgMan.fadebg = owner.bgMan.bg+1
 				}
 
 				// Update level for next section
@@ -1104,10 +1104,10 @@ class PracticeMode:AbstractMode() {
 				// Level up
 				engine.statistics.level++
 
-				if(owner.backgroundStatus.bg<19) {
-					owner.backgroundStatus.fadesw = true
-					owner.backgroundStatus.fadecount = 0
-					owner.backgroundStatus.fadebg = owner.backgroundStatus.bg+1
+				if(owner.bgMan.bg<19) {
+					owner.bgMan.fadesw = true
+					owner.bgMan.fadecount = 0
+					owner.bgMan.fadebg = owner.bgMan.bg+1
 				}
 
 				goal = 5*(engine.statistics.level+1)

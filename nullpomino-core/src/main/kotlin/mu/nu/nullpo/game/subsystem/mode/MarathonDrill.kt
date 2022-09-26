@@ -126,7 +126,7 @@ class MarathonDrill:NetDummyMode() {
 			"${engine.playerID}.net.netPlayerName", ""
 		)
 
-		engine.owner.backgroundStatus.bg = startLevel
+		engine.owner.bgMan.bg = startLevel
 	}
 
 	/** Set the gravity rate
@@ -177,7 +177,7 @@ class MarathonDrill:NetDummyMode() {
 						startLevel += change
 						if(startLevel<0) startLevel = 19
 						if(startLevel>19) startLevel = 0
-						engine.owner.backgroundStatus.bg = startLevel
+						engine.owner.bgMan.bg = startLevel
 					}
 					3 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
 					4 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
@@ -248,7 +248,7 @@ class MarathonDrill:NetDummyMode() {
 
 		setSpeed(engine)
 
-		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
 
 	}
 
@@ -517,9 +517,9 @@ class MarathonDrill:NetDummyMode() {
 			}
 
 			if(lvupflag) {
-				owner.backgroundStatus.fadesw = true
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = engine.statistics.level
+				owner.bgMan.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = engine.statistics.level
 				setSpeed(engine)
 				engine.playSE("levelup")
 			}
@@ -533,8 +533,8 @@ class MarathonDrill:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine):Boolean {
-		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = if(engine.statistics.time<10800) BGM.Result(1) else BGM.Result(2)
+		owner.musMan.fadesw = false
+		owner.musMan.bgm = if(engine.statistics.time<10800) BGM.Result(1) else BGM.Result(2)
 
 		return super.onResult(engine)
 	}
@@ -657,7 +657,7 @@ class MarathonDrill:NetDummyMode() {
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
 		val bg =
-			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+			if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
 		var msg = "game\tstats\t"
 		msg += "${engine.statistics.scoreLine}\t${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"
 		msg += "${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t${engine.statistics.level}\t"
@@ -684,7 +684,7 @@ class MarathonDrill:NetDummyMode() {
 			{engine.timerActive = it.toBoolean()},
 			{lastscore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
-			{engine.owner.backgroundStatus.bg = it.toInt()},
+			{engine.owner.bgMan.bg = it.toInt()},
 			{garbagePending = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}

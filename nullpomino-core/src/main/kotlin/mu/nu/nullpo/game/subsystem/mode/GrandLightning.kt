@@ -236,7 +236,7 @@ class GrandLightning:AbstractMode() {
 			System.arraycopy(tableTimeRegret, 0, bestSectionTime, 0, SECTION_MAX)
 		}
 
-		owner.backgroundStatus.bg = 20+startLevel
+		owner.bgMan.bg = 20+startLevel
 	}
 
 	/*
@@ -341,7 +341,7 @@ class GrandLightning:AbstractMode() {
 						startLevel += change
 						if(startLevel<0) startLevel = 12
 						if(startLevel>12) startLevel = 0
-						owner.backgroundStatus.bg = 20+startLevel
+						owner.bgMan.bg = 20+startLevel
 					}
 					1 -> secAlert = !secAlert
 					2 -> showST = !showST
@@ -399,13 +399,13 @@ class GrandLightning:AbstractMode() {
 		if(engine.statistics.level>=1300) nextseclv = 1300
 		if(engine.statistics.level>=1000) engine.bone = true
 
-		owner.backgroundStatus.bg = 20+engine.statistics.level/100
+		owner.bgMan.bg = 20+engine.statistics.level/100
 
 		engine.big = big
 
 		setSpeed(engine)
 		setStartBgmlv(engine)
-		owner.bgmStatus.bgm = tableBGM[bgmLv]
+		owner.musMan.bgm = tableBGM[bgmLv]
 	}
 
 	/* Render score */
@@ -573,7 +573,7 @@ class GrandLightning:AbstractMode() {
 		if(engine.ending==2&&!rollstarted) {
 			rollstarted = true
 			engine.big = true
-			owner.bgmStatus.bgm = BGM.Ending(2)
+			owner.musMan.bgm = BGM.Ending(2)
 		}
 
 		return false
@@ -603,7 +603,7 @@ class GrandLightning:AbstractMode() {
 		setSpeed(engine)
 
 		// BGM fadeout
-		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.bgmStatus.fadesw = true
+		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadesw = true
 	}
 
 	/* Calculate score */
@@ -745,15 +745,15 @@ class GrandLightning:AbstractMode() {
 				engine.playSE("levelup")
 
 				// Background切り替え
-				owner.backgroundStatus.fadesw = true
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = 20+nextseclv/100
+				owner.bgMan.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = 20+nextseclv/100
 
 				// BGM切り替え
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = tableBGM[bgmLv]
+					owner.musMan.fadesw = false
+					owner.musMan.bgm = tableBGM[bgmLv]
 				}
 
 				// Section Timeを記録
@@ -909,8 +909,8 @@ class GrandLightning:AbstractMode() {
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine):Boolean {
 
-		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = when {
+		owner.musMan.fadesw = false
+		owner.musMan.bgm = when {
 			engine.ending==0 -> BGM.Result(0)
 			engine.ending==2&&rollclear>0 -> BGM.Result(3)
 			else -> BGM.Result(2)

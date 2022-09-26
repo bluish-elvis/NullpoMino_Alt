@@ -134,7 +134,7 @@ class Joker:MarathonModeBase() {
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
-		engine.owner.backgroundStatus.bg = 18
+		engine.owner.bgMan.bg = 18
 		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
 		engine.twistEnable = true
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
@@ -268,7 +268,7 @@ class Joker:MarathonModeBase() {
 		efficiency = 0f
 		engine.lives = 0
 		if(engine.statc[0]==0&&useAnimBG) {
-			engine.owner.backgroundStatus.bg = -2
+			engine.owner.bgMan.bg = -2
 			for(bg in ANIMATED_BACKGROUNDS) {
 				bg.reset()
 			}
@@ -309,17 +309,17 @@ class Joker:MarathonModeBase() {
 
 		// o = false;
 		setSpeed(engine)
-		owner.bgmStatus.bgm = BGMStatus.BGM.Finale(1)
+		owner.musMan.bgm = BGMStatus.BGM.Finale(1)
 
-		owner.bgmStatus.fadesw = false
+		owner.musMan.fadesw = false
 		if(netIsWatch) {
-			owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGMStatus.BGM.Silent
 		}
 	}
 
 	override fun renderFirst(engine:GameEngine) {
-		if(useAnimBG&&engine.owner.backgroundStatus.bg<0) {
-			ANIMATED_BACKGROUNDS[engine.owner.backgroundStatus.bg+2].draw(engine)
+		if(useAnimBG&&engine.owner.bgMan.bg<0) {
+			ANIMATED_BACKGROUNDS[engine.owner.bgMan.bg+2].draw(engine)
 		}
 	}
 	/*
@@ -453,8 +453,8 @@ class Joker:MarathonModeBase() {
      */
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
-		if(useAnimBG&&engine.owner.backgroundStatus.bg<0) {
-			ANIMATED_BACKGROUNDS[engine.owner.backgroundStatus.bg+2].update()
+		if(useAnimBG&&engine.owner.bgMan.bg<0) {
+			ANIMATED_BACKGROUNDS[engine.owner.bgMan.bg+2].update()
 		}
 		if(engine.gameStarted&&engine.ending==0) {
 			/*if(engine.stat===GameEngine.Status.ARE) {
@@ -540,7 +540,7 @@ class Joker:MarathonModeBase() {
 			if(engine.statistics.level==200) {
 				shouldUseTimer = false
 				engine.playSE("medal")
-				++engine.owner.backgroundStatus.bg
+				++engine.owner.bgMan.bg
 				val destinationX:Int = receiver.scoreX(engine)
 				val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
 				val colors = arrayOf(EventReceiver.COLOR.PINK, EventReceiver.COLOR.RED, EventReceiver.COLOR.PURPLE)

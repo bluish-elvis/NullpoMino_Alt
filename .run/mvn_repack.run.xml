@@ -11,10 +11,9 @@
           <option name="goals">
             <list>
               <option value="package" />
-              <option value="-U" />
             </list>
           </option>
-          <option name="pomFileName" />
+          <option name="pomFileName" value="pom.xml" />
           <option name="profilesMap">
             <map />
           </option>

@@ -314,7 +314,7 @@ class SprintScore:NetDummyMode() {
 		engine.comboType = if(enableCombo) GameEngine.COMBO_TYPE_NORMAL
 		else GameEngine.COMBO_TYPE_DISABLE
 
-		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent
 		else BGM.values[bgmno]
 
 		if(version>=1) {
@@ -430,7 +430,7 @@ class SprintScore:NetDummyMode() {
 		}
 
 		// BGM fadeout
-		if(remainScore<=1000&&engine.timerActive) owner.bgmStatus.fadesw = true
+		if(remainScore<=1000&&engine.timerActive) owner.musMan.fadesw = true
 
 	}
 

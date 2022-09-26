@@ -6,8 +6,8 @@
  <version>7.7.2022</version>
  <properties>
   <lwjgl.version>2.9.3</lwjgl.version>
-  <kotlin.version>1.7.10</kotlin.version>
-  <dokka.version>${kotlin.version}</dokka.version>
+  <kotlin.version>1.7.20-RC</kotlin.version>
+  <dokka.version>1.7.10</dokka.version>
   <log4j.version>2.18.0</log4j.version>
   <java.version>17</java.version>
   <serialization.version>1.4.0</serialization.version>

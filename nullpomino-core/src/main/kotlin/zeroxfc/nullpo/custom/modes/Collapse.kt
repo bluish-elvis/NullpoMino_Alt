@@ -264,7 +264,7 @@ class Collapse:AbstractMode() {
 
 		// 開始
 		if(engine.statc[0]>=engine.goEnd) {
-			if(!engine.readyDone) engine.owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+			if(!engine.readyDone) engine.owner.musMan.bgm = BGMStatus.BGM.Silent
 			startGame(engine)
 			engine.owner.receiver.startGame(engine)
 			engine.stat = GameEngine.Status.CUSTOM
@@ -293,7 +293,7 @@ class Collapse:AbstractMode() {
 	}
 
 	override fun startGame(engine:GameEngine) {
-		engine.owner.bgmStatus.bgm = BGMStatus.BGM.values[bgm]
+		engine.owner.musMan.bgm = BGMStatus.BGM.values[bgm]
 	}
 
 	override fun onCustom(engine:GameEngine):Boolean {
@@ -604,7 +604,7 @@ class Collapse:AbstractMode() {
 
 	private fun levelUp(engine:GameEngine, beginning:Boolean) {
 		if(!beginning) engine.statistics.level++
-		owner.backgroundStatus.bg = engine.statistics.level%20
+		owner.bgMan.bg = engine.statistics.level%20
 		val effectiveLevel:Int = engine.statistics.level
 		spawnTimer = 0
 		resetBlockArray()
@@ -721,7 +721,7 @@ class Collapse:AbstractMode() {
 			if(engine.statc[0]==0) {
 				engine.gameEnded()
 				engine.blockShowOutlineOnly = false
-				if(owner.players<2) owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+				if(owner.players<2) owner.musMan.bgm = BGMStatus.BGM.Silent
 				if(engine.field.isEmpty) {
 					engine.statc[0] = engine.field.height+1
 				} else {

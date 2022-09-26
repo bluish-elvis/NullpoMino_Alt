@@ -685,10 +685,10 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(engine.playerID==0) {
 			// Set BGM
 			if(netVSIsPractice)
-				owner.bgmStatus.bgm = BGM.Silent
+				owner.musMan.bgm = BGM.Silent
 			else {
-				owner.bgmStatus.bgm = BGM.Extra(0)
-				owner.bgmStatus.fadesw = false
+				owner.musMan.bgm = BGM.Extra(0)
+				owner.musMan.fadesw = false
 			}
 
 			// Init Variables
@@ -749,7 +749,7 @@ open class NetDummyVSMode:NetDummyMode() {
 		if(pid==0&&netVSIsPractice&&netVSIsPracticeExitAllowed&&engine.ctrl.isPush(Controller.BUTTON_F)) {
 			netVSIsPractice = false
 			netVSIsPracticeExitAllowed = false
-			owner.bgmStatus.bgm = BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 			engine.field.reset()
 			engine.gameEnded()
 			engine.stat = GameEngine.Status.SETTING
@@ -793,7 +793,7 @@ open class NetDummyVSMode:NetDummyMode() {
 	override fun onGameOver(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) engine.gameEnded()
 		engine.allowTextRenderByReceiver = false
-		owner.bgmStatus.bgm = BGM.Silent
+		owner.musMan.bgm = BGM.Silent
 		engine.resetFieldVisible()
 
 		val pid = engine.playerID
@@ -875,7 +875,7 @@ open class NetDummyVSMode:NetDummyMode() {
 
 		if(engine.statc[0]==0) {
 			engine.gameEnded()
-			owner.bgmStatus.bgm = BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 			engine.resetFieldVisible()
 			engine.playSE("excellent")
 		}
@@ -1084,8 +1084,8 @@ open class NetDummyVSMode:NetDummyMode() {
 			netUpdatePlayerExist()
 
 			owner.menuOnly = false
-			owner.bgmStatus.reset()
-			owner.backgroundStatus.reset()
+			owner.musMan.reset()
+			owner.bgMan.reset()
 			owner.replayProp.clear()
 			for(i in 0 until players)
 				if(netVSPlayerExist[i]) {
@@ -1180,7 +1180,7 @@ open class NetDummyVSMode:NetDummyMode() {
 			if(netVSIsPractice) {
 				netVSIsPractice = false
 				netVSIsPracticeExitAllowed = false
-				owner.bgmStatus.bgm = BGM.Silent
+				owner.musMan.bgm = BGM.Silent
 				owner.engine[0].gameEnded()
 				owner.engine[0].stat = GameEngine.Status.SETTING
 				owner.engine[0].resetStatc()

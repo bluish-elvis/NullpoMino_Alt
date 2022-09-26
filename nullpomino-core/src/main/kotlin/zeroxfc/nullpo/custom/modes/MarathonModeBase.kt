@@ -183,7 +183,7 @@ open class MarathonModeBase:NetDummyMode() {
 							if(startLevel<0) startLevel = 19
 							if(startLevel>19) startLevel = 0
 						}
-						engine.owner.backgroundStatus.bg = startLevel
+						engine.owner.bgMan.bg = startLevel
 					}
 					6 -> {
 						goalType += change
@@ -191,7 +191,7 @@ open class MarathonModeBase:NetDummyMode() {
 						if(goalType>GAMETYPE_MAX-1) goalType = 0
 						if(startLevel>(tableGameClearLines[goalType]-1)/10&&tableGameClearLines[goalType]>=0) {
 							startLevel = (tableGameClearLines[goalType]-1)/10
-							engine.owner.backgroundStatus.bg = startLevel
+							engine.owner.bgMan.bg = startLevel
 						}
 					}
 					7 -> big = !big
@@ -244,7 +244,7 @@ open class MarathonModeBase:NetDummyMode() {
 		engine.twistEnableEZ = true
 		setSpeed(engine)
 		if(netIsWatch) {
-			owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGMStatus.BGM.Silent
 		}
 	}
 	/*
@@ -355,7 +355,7 @@ open class MarathonModeBase:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+		val bg = if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t"+
@@ -383,7 +383,7 @@ open class MarathonModeBase:NetDummyMode() {
 			{lastscore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
 			{engine.lastEvent = ScoreEvent.parseInt(it)},
-			{engine.owner.backgroundStatus.bg = it.toInt()}).zip(message).forEach {(x, y) ->
+			{engine.owner.bgMan.bg = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
 

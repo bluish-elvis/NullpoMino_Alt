@@ -120,7 +120,7 @@ abstract class AnimatedBackgroundHook {
 		 * @return Background number (0 <= bg < 19)
 		 */
 		private fun getBGState(owner:GameManager):Int {
-			val bg = owner.backgroundStatus.bg
+			val bg = owner.bgMan.bg
 			return if(bg<0||bg>19) LAST_BG else {
 				LAST_BG = bg
 				bg
@@ -133,7 +133,7 @@ abstract class AnimatedBackgroundHook {
 		 * @return Background number (0 <= bg < 19)
 		 */
 		private fun getFadeBGState(owner:GameManager):Int {
-			val bg = owner.backgroundStatus.fadebg
+			val bg = owner.bgMan.fadebg
 			return if(bg<0||bg>19) LAST_FADE_BG else {
 				LAST_FADE_BG = bg
 				bg
@@ -147,8 +147,8 @@ abstract class AnimatedBackgroundHook {
 		fun disableDefaultBG(owner:GameManager) {
 			getBGState(owner)
 			getFadeBGState(owner)
-			owner.backgroundStatus.bg = -1
-			owner.backgroundStatus.fadebg = -1
+			owner.bgMan.bg = -1
+			owner.bgMan.fadebg = -1
 		}
 		/**
 		 * Re-enables the current background.
@@ -156,8 +156,8 @@ abstract class AnimatedBackgroundHook {
 		 * @param owner GameManager to re-enable BG in.
 		 */
 		fun enableDefaultBG(owner:GameManager) {
-			owner.backgroundStatus.bg = LAST_BG
-			owner.backgroundStatus.fadebg = LAST_FADE_BG
+			owner.bgMan.bg = LAST_BG
+			owner.bgMan.fadebg = LAST_FADE_BG
 		}
 		// Fuzzy equals.
 		internal fun almostEqual(a:Double, b:Double, eps:Double):Boolean = abs(a-b)<eps

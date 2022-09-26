@@ -136,7 +136,7 @@ class SubscriberChallenge:NetDummyMode() {
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
-		engine.owner.backgroundStatus.bg = startLevel
+		engine.owner.bgMan.bg = startLevel
 		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
 	}
 	/**
@@ -172,7 +172,7 @@ class SubscriberChallenge:NetDummyMode() {
 							if(startLevel<0) startLevel = 19
 							if(startLevel>19) startLevel = 0
 						}
-						engine.owner.backgroundStatus.bg = startLevel
+						engine.owner.bgMan.bg = startLevel
 					}
 					1 -> {
 						goalType += change
@@ -180,7 +180,7 @@ class SubscriberChallenge:NetDummyMode() {
 						if(goalType>GAMETYPE_MAX-1) goalType = 0
 						if((startLevel>(tableGameClearLines[goalType]-1)/10)&&(tableGameClearLines[goalType]>=0)) {
 							startLevel = (tableGameClearLines[goalType]-1)/10
-							engine.owner.backgroundStatus.bg = startLevel
+							engine.owner.bgMan.bg = startLevel
 						}
 					}
 					2 -> big = !big
@@ -252,7 +252,7 @@ class SubscriberChallenge:NetDummyMode() {
 		engine.useAllSpinBonus = true
 		engine.twistEnableEZ = true
 		setSpeed(engine)
-		owner.bgmStatus.bgm = if(netIsWatch) BGMStatus.BGM.Silent else BGMStatus.BGM.Generic(bgmLv)
+		owner.musMan.bgm = if(netIsWatch) BGMStatus.BGM.Silent else BGMStatus.BGM.Generic(bgmLv)
 	}
 	/*
 	 * Render score
@@ -397,13 +397,13 @@ class SubscriberChallenge:NetDummyMode() {
 		subscriber += sub
 		// BGM fade-out effects and BGM changes
 		if(tableBGMChange[bgmLv]!=-1) {
-			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.bgmStatus.fadesw = true
+			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.musMan.fadesw = true
 			if((engine.statistics.lines>=tableBGMChange[bgmLv])&&
 				((engine.statistics.lines<tableGameClearLines[goalType])||(tableGameClearLines[goalType]<0))
 			) {
 				bgmLv++
-				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmLv)
-				owner.bgmStatus.fadesw = false
+				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
+				owner.musMan.fadesw = false
 			}
 		}
 
@@ -420,9 +420,9 @@ class SubscriberChallenge:NetDummyMode() {
 		} else if((engine.statistics.lines>=(engine.statistics.level+1)*10)&&(engine.statistics.level<19)) {
 			// Level up
 			engine.statistics.level++
-			owner.backgroundStatus.fadesw = true
-			owner.backgroundStatus.fadecount = 0
-			owner.backgroundStatus.fadebg = engine.statistics.level
+			owner.bgMan.fadesw = true
+			owner.bgMan.fadecount = 0
+			owner.bgMan.fadebg = engine.statistics.level
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}
@@ -559,7 +559,7 @@ class SubscriberChallenge:NetDummyMode() {
 	 */
 	override fun netSendStats(engine:GameEngine) {
 		val bg:Int =
-			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+			if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+
 			"${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"+
 			"${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"+
@@ -589,7 +589,7 @@ class SubscriberChallenge:NetDummyMode() {
 		lastb2b = message[18].toBoolean()
 		lastcombo = message[19].toInt()
 		lastpiece = message[20].toInt()
-		engine.owner.backgroundStatus.bg = message[21].toInt()
+		engine.owner.bgMan.bg = message[21].toInt()
 
 		// Meter
 		engine.meterValue = (engine.statistics.lines%10)/9f

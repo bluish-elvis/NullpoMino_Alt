@@ -255,7 +255,7 @@ class SprintLine:NetDummyMode() {
 	override fun startGame(engine:GameEngine) {
 		engine.big = big
 
-		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
 
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		engine.meterValue = 1f
@@ -336,7 +336,7 @@ class SprintLine:NetDummyMode() {
 		if(remainLines<=0) {
 			engine.ending = 1
 			engine.gameEnded()
-		} else if(engine.statistics.lines>=GOAL_TABLE[goalType]-5) owner.bgmStatus.fadesw = true
+		} else if(engine.statistics.lines>=GOAL_TABLE[goalType]-5) owner.musMan.fadesw = true
 		return lines
 	}
 

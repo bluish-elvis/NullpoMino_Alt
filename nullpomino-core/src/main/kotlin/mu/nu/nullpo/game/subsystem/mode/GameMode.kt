@@ -206,8 +206,9 @@ interface GameMode {
 
 	/** Executed when a block gets destroyed in line-clear screen.
 	 * @param blk Block
+	 * @return if true, skip default behaivor
 	 */
-	fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>)
+	fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean
 
 	fun lineClear(gameEngine:GameEngine, i:Collection<Int>)
 

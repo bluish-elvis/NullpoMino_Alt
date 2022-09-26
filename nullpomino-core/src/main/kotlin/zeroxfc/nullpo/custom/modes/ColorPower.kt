@@ -147,7 +147,7 @@ class ColorPower:MarathonModeBase() {
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
-		engine.owner.backgroundStatus.bg = startLevel
+		engine.owner.bgMan.bg = startLevel
 		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
 	}
 	/*
@@ -172,7 +172,7 @@ class ColorPower:MarathonModeBase() {
 							if(startLevel<0) startLevel = 19
 							if(startLevel>19) startLevel = 0
 						}
-						engine.owner.backgroundStatus.bg = startLevel
+						engine.owner.bgMan.bg = startLevel
 					}
 					6 -> {
 						goalType += change
@@ -180,7 +180,7 @@ class ColorPower:MarathonModeBase() {
 						if(goalType>GAMETYPE_MAX-1) goalType = 0
 						if(startLevel>(tableGameClearLines[goalType]-1)/10&&tableGameClearLines[goalType]>=0) {
 							startLevel = (tableGameClearLines[goalType]-1)/10
-							engine.owner.backgroundStatus.bg = startLevel
+							engine.owner.bgMan.bg = startLevel
 						}
 					}
 					7 -> big = !big
@@ -192,7 +192,7 @@ class ColorPower:MarathonModeBase() {
 					netSendOptions(engine)
 				}
 			}
-			engine.owner.backgroundStatus.bg = startLevel
+			engine.owner.bgMan.bg = startLevel
 
 			// Confirm
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
@@ -302,7 +302,7 @@ class ColorPower:MarathonModeBase() {
 		hasSet = false
 		preset = true
 		if(netIsWatch) {
-			owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGMStatus.BGM.Silent
 		}
 		l = -1
 	}
@@ -741,13 +741,13 @@ class ColorPower:MarathonModeBase() {
 
 		// BGM fade-out effects and BGM changes
 		if(tableBGMChange[bgmLv]!=-1) {
-			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.bgmStatus.fadesw = true
+			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.musMan.fadesw = true
 			if(engine.statistics.lines>=tableBGMChange[bgmLv]&&
 				(engine.statistics.lines<tableGameClearLines[goalType]||tableGameClearLines[goalType]<0)
 			) {
 				bgmLv++
-				owner.bgmStatus.bgm = BGMStatus.BGM.GrandT(bgmLv)
-				owner.bgmStatus.fadesw = false
+				owner.musMan.bgm = BGMStatus.BGM.GrandT(bgmLv)
+				owner.musMan.fadesw = false
 			}
 		}
 
@@ -762,9 +762,9 @@ class ColorPower:MarathonModeBase() {
 		} else if(engine.statistics.lines>=(engine.statistics.level+1)*10&&engine.statistics.level<19) {
 			// Level up
 			engine.statistics.level++
-			owner.backgroundStatus.fadesw = true
-			owner.backgroundStatus.fadecount = 0
-			owner.backgroundStatus.fadebg = engine.statistics.level
+			owner.bgMan.fadesw = true
+			owner.bgMan.fadecount = 0
+			owner.bgMan.fadebg = engine.statistics.level
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}

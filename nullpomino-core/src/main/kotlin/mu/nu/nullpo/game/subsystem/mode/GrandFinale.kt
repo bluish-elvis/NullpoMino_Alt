@@ -208,7 +208,7 @@ class GrandFinale:AbstractMode() {
 
 		version = (if(!owner.replayMode) CURRENT_VERSION else owner.replayProp.getProperty("final.version", 0))
 
-		owner.backgroundStatus.bg = 30+startLevel
+		owner.bgMan.bg = 30+startLevel
 	}
 
 	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
@@ -330,7 +330,7 @@ class GrandFinale:AbstractMode() {
 		} else {
 			menuTime++
 			menuCursor = -1
-			owner.bgmStatus.bgm = BGM.Finale(gametype)
+			owner.musMan.bgm = BGM.Finale(gametype)
 			return menuTime<60
 		}
 
@@ -348,7 +348,7 @@ class GrandFinale:AbstractMode() {
 	/** Ready screen */
 	override fun onReady(engine:GameEngine):Boolean {
 
-		owner.bgmStatus.bgm = BGM.Finale(gametype)
+		owner.musMan.bgm = BGM.Finale(gametype)
 		return false
 	}
 
@@ -364,7 +364,7 @@ class GrandFinale:AbstractMode() {
 			if(engine.statistics.level<0) nextseclv = 100
 			if(engine.statistics.level>=900) nextseclv = 999
 
-			owner.backgroundStatus.bg = 30+engine.statistics.level/100
+			owner.bgMan.bg = 30+engine.statistics.level/100
 		}
 		engine.big = big
 
@@ -530,7 +530,7 @@ class GrandFinale:AbstractMode() {
 		// Ending start
 		if(engine.ending==2&&!rollstarted) {
 			rollstarted = true
-			owner.bgmStatus.bgm = BGM.Ending(3)
+			owner.musMan.bgm = BGM.Ending(3)
 		}
 
 		return false
@@ -661,7 +661,7 @@ class GrandFinale:AbstractMode() {
 				engine.statistics.level = 999
 				engine.timerActive = false
 				engine.ending = 2
-				owner.bgmStatus.bgm = BGM.Ending(3)
+				owner.musMan.bgm = BGM.Ending(3)
 				rollclear = 1
 
 				if(gametype==1&&joker>0) grade = 31
@@ -697,9 +697,9 @@ class GrandFinale:AbstractMode() {
 				engine.playSE("levelup")
 
 				// Change background image
-				owner.backgroundStatus.fadesw = true
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = 30+nextseclv/100
+				owner.bgMan.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = 30+nextseclv/100
 
 				// Records section time
 				sectionlasttime = sectionTime[levelb/100]

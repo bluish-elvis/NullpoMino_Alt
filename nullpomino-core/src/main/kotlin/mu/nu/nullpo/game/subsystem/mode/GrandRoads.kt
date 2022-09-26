@@ -174,7 +174,7 @@ class GrandRoads:NetDummyMode() {
 			"${engine.playerID}.net.netPlayerName", ""
 		)
 
-		engine.owner.backgroundStatus.bg = startLevel
+		engine.owner.bgMan.bg = startLevel
 	}
 
 	/** Set the gravity speed and some other things
@@ -256,7 +256,7 @@ class GrandRoads:NetDummyMode() {
 
 				if(startLevel>nowCourse.goalLevel-1) startLevel =
 					if(menuCursor==menu.items.indexOf(itemLevel)) 0 else nowCourse.goalLevel-1
-				engine.owner.backgroundStatus.bg = startLevel
+				engine.owner.bgMan.bg = startLevel
 				engine.statistics.level = startLevel
 				setSpeed(engine)
 				// NET: Signal options change
@@ -311,7 +311,7 @@ class GrandRoads:NetDummyMode() {
 	/** This function will be called before the game actually begins
 	 * (after Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
-		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent else nowCourse.bgmList[bgmLv]
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else nowCourse.bgmList[bgmLv]
 		engine.lives = nowCourse.lives
 	}
 
@@ -421,8 +421,8 @@ class GrandRoads:NetDummyMode() {
 		// Ending start
 		if(engine.ending==2&&engine.staffrollEnable&&!rollstarted&&!netIsWatch) {
 			rollstarted = true
-			owner.bgmStatus.bgm = BGM.Finale(2)
-			owner.bgmStatus.fadesw = false
+			owner.musMan.bgm = BGM.Finale(2)
+			owner.musMan.fadesw = false
 			if(nowCourse==Course.VOID) {
 				engine.blockHidden = engine.ruleOpt.lockFlash
 				engine.blockHiddenAnim = false
@@ -508,7 +508,7 @@ class GrandRoads:NetDummyMode() {
 		if(nextLv-norm>=nowCourse.goalLines(lv)/2&&bgmLv<nowCourse.bgmChange.size&&
 			(lv==nowCourse.goalLevel-1||nowCourse.bgmChange.any {it-1==lv})
 		)
-			owner.bgmStatus.fadesw = true// BGM fadeout
+			owner.musMan.fadesw = true// BGM fadeout
 
 		// Level up
 		if(lines>0&&norm>=nextLv)
@@ -532,19 +532,19 @@ class GrandRoads:NetDummyMode() {
 				}
 			} else {
 				nextLv += nowCourse.goalLevel
-				if(owner.bgmStatus.fadesw) {
+				if(owner.musMan.fadesw) {
 					bgmChanged = true
 					bgmLv++
-					owner.bgmStatus.bgm = nowCourse.bgmList[bgmLv]
-					owner.bgmStatus.fadesw = false
+					owner.musMan.bgm = nowCourse.bgmList[bgmLv]
+					owner.musMan.fadesw = false
 				}
 				if(bgmChanged) engine.playSE("levelup_section")
 				engine.playSE("levelup")
 				engine.statistics.level++
 
-				owner.backgroundStatus.fadesw = true
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = engine.statistics.level+nowCourse.bgOffset
+				owner.bgMan.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = engine.statistics.level+nowCourse.bgOffset
 
 				sectionscomp++
 
@@ -608,7 +608,7 @@ class GrandRoads:NetDummyMode() {
 
 	/** Additional routine for game result screen */
 	override fun onResult(engine:GameEngine):Boolean {
-		if(goalType>=Course.HELL.ordinal&&engine.statistics.rollclear>=1) owner.bgmStatus.bgm = BGM.Result(3)
+		if(goalType>=Course.HELL.ordinal&&engine.statistics.rollclear>=1) owner.musMan.bgm = BGM.Result(3)
 		if(!netIsWatch) {
 			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				engine.statc[1]--
@@ -710,10 +710,10 @@ class GrandRoads:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(engine.owner.backgroundStatus.fadesw)
-			engine.owner.backgroundStatus.fadebg
+		val bg = if(engine.owner.bgMan.fadesw)
+			engine.owner.bgMan.fadebg
 		else
-			engine.owner.backgroundStatus.bg
+			engine.owner.bgMan.bg
 		var msg = "game\tstats\t"
 		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
 		msg += "${engine.statistics.time}\t${engine.statistics.lpm}\t"
@@ -741,7 +741,7 @@ class GrandRoads:NetDummyMode() {
 		levelTimerMax = message[14].toInt()
 		rolltime = message[15].toInt()
 		norm = message[16].toInt()
-		engine.owner.backgroundStatus.bg = message[17].toInt()
+		engine.owner.bgMan.bg = message[17].toInt()
 		engine.meterValue = message[18].toFloat()
 		engine.meterColor = message[19].toInt()
 		engine.heboHiddenEnable = message[20].toBoolean()

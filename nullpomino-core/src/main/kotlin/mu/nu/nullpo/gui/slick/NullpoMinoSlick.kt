@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -722,7 +722,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		/** FPS display */
 		internal fun drawFPS() {
 			if(propConfig.getProperty("option.showfps", true))
-				FontNano.printFont(0, 480-8, "${df.format(actualFPS)}FPS", COLOR.WHITE, .5f)
+				FontNano.printFont(240-42, 480-8, "${df.format(actualFPS)}FPS", COLOR.WHITE, .5f)
 		}
 
 		/** Observerクライアントを開始 */

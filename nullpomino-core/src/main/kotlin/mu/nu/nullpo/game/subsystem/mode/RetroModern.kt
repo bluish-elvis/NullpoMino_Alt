@@ -102,6 +102,7 @@ class RetroModern:AbstractMode() {
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.bigHalf = false
 		engine.bigMove = false
+		engine.statistics.levelDispAdd = 0
 
 		engine.staffrollEnable = true
 		engine.staffrollNoDeath = false
@@ -118,7 +119,7 @@ class RetroModern:AbstractMode() {
 		} else
 			loadSetting(owner.replayProp, engine)
 		if(startLevel>15) startLevel = 15
-		engine.owner.backgroundStatus.bg = levelBG[startLevel]
+		engine.owner.bgMan.bg = levelBG[startLevel]
 		engine.frameColor = GameEngine.FRAME_SKIN_HEBO
 	}
 
@@ -204,7 +205,7 @@ class RetroModern:AbstractMode() {
 						startLevel += change
 						if(startLevel<0) startLevel = 15
 						if(startLevel>15) startLevel = 0
-						engine.owner.backgroundStatus.bg = levelBG[startLevel]
+						engine.owner.bgMan.bg = levelBG[startLevel]
 					}
 					2 -> big = !big
 				}
@@ -237,10 +238,10 @@ class RetroModern:AbstractMode() {
 	}
 
 	private fun setBGM(lv:Int) {
-		owner.bgmStatus.bgm = when(lv) {
+		owner.musMan.bgm = when(lv) {
 			MAX_LEVEL -> BGM.GrandM(1)
 			MAX_LEVEL+1 -> BGM.Silent
-			MAX_LEVEL+2 -> BGM.Ending(3)
+			MAX_LEVEL+2 -> BGM.Ending(if(gametype<3) 3 else 4)
 			else -> BGM.RetroS(tableBGMlevel.count {it<=lv})
 		}
 	}
@@ -277,16 +278,16 @@ class RetroModern:AbstractMode() {
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LV LINE TIME", color = COLOR.BLUE, scale = scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LINE LV TIME", color = COLOR.BLUE, scale = scale)
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(
-						engine, 9, topY+i, String.format("%3d", rankingLines[gametype][i]), i==rankingRank, scale
+						engine, 9, topY+i, String.format("%2d", rankingLines[gametype][i]), i==rankingRank, scale
 					)
 					receiver.drawScoreNum(
-						engine, 12, topY+i, String.format("%2d", rankingLevel[gametype][i]), i==rankingRank, scale
+						engine, 12, topY+i, String.format("%3d", rankingLevel[gametype][i]), i==rankingRank, scale
 					)
 					receiver.drawScoreNum(
 						engine, 16, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank, scale
@@ -351,10 +352,10 @@ class RetroModern:AbstractMode() {
 				if(rolltime<=ROLLTIMELIMIT-3600) bg = levelBG[rolltime*MAX_LEVEL/(ROLLTIMELIMIT-3600)]
 				//else owner.bgmStatus.bgm=Ending(1);
 
-				if(owner.backgroundStatus.fadebg!=bg) {
-					owner.backgroundStatus.fadebg = bg
-					owner.backgroundStatus.fadecount = 0
-					owner.backgroundStatus.fadesw = true
+				if(owner.bgMan.fadebg!=bg) {
+					owner.bgMan.fadebg = bg
+					owner.bgMan.fadecount = 0
+					owner.bgMan.fadesw = true
 				}
 				// Roll 終了
 				if(rolltime>=ROLLTIMELIMIT) {
@@ -423,9 +424,9 @@ class RetroModern:AbstractMode() {
 			if(newlevel!=MAX_LEVEL+1) setSpeed(engine)
 
 			if(newlevel<levelBG.size-1) {
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = levelBG[newlevel]
-				owner.backgroundStatus.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = levelBG[newlevel]
+				owner.bgMan.fadesw = true
 			}
 			norm = 0
 			engine.meterValue = 0f
@@ -525,6 +526,11 @@ class RetroModern:AbstractMode() {
 		return true
 	}
 
+	/*	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean {
+			engine.owner.receiver.efxFG.add()
+			return true
+		}*/
+
 	override fun renderCustom(engine:GameEngine) {
 		val col = COLOR.WHITE
 
@@ -541,11 +547,11 @@ class RetroModern:AbstractMode() {
 	override fun renderExcellent(engine:GameEngine) {
 		val col = COLOR.WHITE
 
-		receiver.drawMenuFont(engine, -.5f, 8f, "YOU REACHED", col)
-		receiver.drawMenuFont(engine, -.5f, 9f, "THE EDGE OF", col)
-		receiver.drawMenuFont(engine, -.5f, 10f, "THE JOURNEY", col)
+		receiver.drawMenuFont(engine, -.5f, 9f, "YOU REACHED", col)
+		receiver.drawMenuFont(engine, -.5f, 10f, "THE EDGE OF", col)
+		receiver.drawMenuFont(engine, -.5f, 11f, "THE JOURNEY", col)
 		if(special) {
-			receiver.drawMenuFont(engine, .5f, 13f, "CLOCK WISE", col)
+			receiver.drawMenuFont(engine, 0f, 13f, "C.C.W.ONLY", col)
 			receiver.drawMenuFont(engine, 2.5f, 14f, "BONUS", col)
 			receiver.drawMenuFont(
 				engine, .5f, 16f, "+ 10000000", when {
@@ -567,14 +573,13 @@ class RetroModern:AbstractMode() {
 		drawResultRank(engine, receiver, 11, COLOR.BLUE, rankingRank)
 	}
 
-	/** This function will be called when the replay data is going to be
-	 * saved */
+	/** This function will be called when the replay data is going to be saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(prop, engine)
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.level, engine.statistics.time, gametype)
+			updateRanking(engine.statistics.score, engine.statistics.level, engine.statistics.lines, engine.statistics.time, gametype)
 
 			if(rankingRank!=-1) return true
 		}
@@ -625,7 +630,7 @@ class RetroModern:AbstractMode() {
 
 	/** Update the ranking */
 	private fun updateRanking(sc:Int, lv:Int, li:Int, time:Int, type:Int) {
-		rankingRank = checkRanking(sc, li, lv, time, type)
+		rankingRank = checkRanking(sc, lv, li, time, type)
 
 		if(rankingRank!=-1) {
 			// Shift the old records
@@ -710,9 +715,9 @@ class RetroModern:AbstractMode() {
 			6, 7, 8, 9, 14, 19,
 			10, 11, 12, 13, 29, 36
 		)
-		private val tableBGMlevel = intArrayOf(4, 6, 8, 10, 11, 13, 15)
+		private val tableBGMlevel = intArrayOf(0, 4, 6, 8, 10, 11, 13, 15)
 		/** Name of game types */
-		private val GAMETYPE_NAME = arrayOf("EASY", "NORMAL", "INTENSE", "HARD", "OVERED")
+		private val GAMETYPE_NAME = arrayOf("EASY", "NORMAL", "INTENSE", "HARD", "EXTRA")
 
 		/** Number of game type */
 		private const val GAMETYPE_MAX = 5

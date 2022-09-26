@@ -268,7 +268,7 @@ class GrandMania:AbstractMode() {
 			version = owner.replayProp.getProperty("grademania2.version", 0)
 		}
 
-		owner.backgroundStatus.bg = startLevel+10
+		owner.bgMan.bg = startLevel+10
 	}
 
 	/** Set BGM at start of game
@@ -396,7 +396,7 @@ class GrandMania:AbstractMode() {
 			val change = updateMenu(engine)
 
 			if(change!=0) {
-				owner.backgroundStatus.bg = 10+startLevel
+				owner.bgMan.bg = 10+startLevel
 				engine.statistics.level = startLevel*100
 				setSpeed(engine)
 			}
@@ -412,7 +412,7 @@ class GrandMania:AbstractMode() {
 				isShowBestSectionTime = false
 				sectionscomp = 0
 
-				owner.bgmStatus.fadesw = true
+				owner.musMan.fadesw = true
 				return false
 			}
 
@@ -445,13 +445,13 @@ class GrandMania:AbstractMode() {
 		if(engine.statistics.level<0) nextseclv = 100
 		if(engine.statistics.level>=900) nextseclv = 999
 
-		owner.backgroundStatus.bg = 10+engine.statistics.level/100
+		owner.bgMan.bg = 10+engine.statistics.level/100
 
 		engine.big = big
 
 		setSpeed(engine)
 		setStartBgmlv(engine)
-		owner.bgmStatus.bgm = tableBGM[bgmLv]
+		owner.musMan.bgm = tableBGM[bgmLv]
 	}
 
 	/* Render score */
@@ -666,7 +666,7 @@ class GrandMania:AbstractMode() {
 				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
 			}
 
-			owner.bgmStatus.bgm = BGM.Ending(1)
+			owner.musMan.bgm = BGM.Ending(1)
 		}
 
 		return false
@@ -700,7 +700,7 @@ class GrandMania:AbstractMode() {
 		if(engine.statistics.level>=100&&!alwaysghost) engine.ghost = false
 
 		// BGM fadeout
-		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.bgmStatus.fadesw = true
+		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadesw = true
 
 		if(version>=2) {
 			// Hard drop bonusInitialization
@@ -864,15 +864,15 @@ class GrandMania:AbstractMode() {
 				// Next Section
 
 				// Background切り替え
-				owner.backgroundStatus.fadesw = true
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = 10+nextseclv/100
+				owner.bgMan.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = 10+nextseclv/100
 
 				// BGM切り替え
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = tableBGM[bgmLv]
+					owner.musMan.fadesw = false
+					owner.musMan.bgm = tableBGM[bgmLv]
 					engine.playSE("levelup_section")
 				}
 				engine.playSE("levelup")
@@ -1101,8 +1101,8 @@ class GrandMania:AbstractMode() {
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine):Boolean {
 
-		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = if(engine.ending>0)
+		owner.musMan.fadesw = false
+		owner.musMan.bgm = if(engine.ending>0)
 			if(rollclear<=1) BGM.Result(2) else BGM.Result(3)
 		else BGM.Result(0)
 		// ページ切り替え

@@ -123,8 +123,8 @@ class RetroMania:AbstractMode() {
 		engine.owDelayCancel = 0
 
 		if(!owner.replayMode) version = CURRENT_VERSION
-		engine.owner.backgroundStatus.bg = startLevel/2
-		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
+		engine.owner.bgMan.bg = startLevel/2
+		if(engine.owner.bgMan.bg>19) engine.owner.bgMan.bg = 19
 		engine.frameColor = GameEngine.FRAME_SKIN_SG
 	}
 
@@ -157,7 +157,7 @@ class RetroMania:AbstractMode() {
 						startLevel += change
 						if(startLevel<0) startLevel = 15
 						if(startLevel>15) startLevel = 0
-						engine.owner.backgroundStatus.bg = startLevel/2
+						engine.owner.bgMan.bg = startLevel/2
 					}
 					2 -> big = !big
 					3 -> poweron = !poweron
@@ -223,7 +223,7 @@ class RetroMania:AbstractMode() {
 
 		engine.big = big
 
-		owner.bgmStatus.bgm = BGM.RetroS(0)
+		owner.musMan.bgm = BGM.RetroS(0)
 		setSpeed(engine)
 	}
 
@@ -346,10 +346,10 @@ class RetroMania:AbstractMode() {
 		if(linesAfterLastLevelUp>=4||levelTimer>=levelTime[minOf(engine.statistics.level, 15)]&&lines==0||engine.field.isEmpty) {
 			engine.statistics.level++
 
-			owner.backgroundStatus.fadecount = 0
-			owner.backgroundStatus.fadebg = engine.statistics.level/2
-			if(owner.backgroundStatus.fadebg>19) owner.backgroundStatus.fadebg = 19
-			owner.backgroundStatus.fadesw = owner.backgroundStatus.fadebg!=owner.backgroundStatus.bg
+			owner.bgMan.fadecount = 0
+			owner.bgMan.fadebg = engine.statistics.level/2
+			if(owner.bgMan.fadebg>19) owner.bgMan.fadebg = 19
+			owner.bgMan.fadesw = owner.bgMan.fadebg!=owner.bgMan.bg
 
 			levelTimer = 0
 			linesAfterLastLevelUp = 0

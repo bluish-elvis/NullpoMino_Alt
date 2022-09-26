@@ -265,10 +265,7 @@ class SprintDig:NetDummyMode() {
 	override fun startGame(engine:GameEngine) {
 		if(version<=0) engine.big = big
 
-		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.Silent
-		else
-			owner.bgmStatus.bgm = BGM.values[bgmno]
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
 	}
 
 	/** Fill the playfield with garbage

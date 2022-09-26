@@ -483,7 +483,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.enableSE = enableSE[engine.playerID]
-		if(engine.playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
+		if(engine.playerID==1) owner.musMan.bgm = BGM.values[bgmno]
 		engine.ignoreHidden = true
 
 		engine.twistAllowKick = false
@@ -663,7 +663,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 				owner.engine[1].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.Silent
+				owner.musMan.bgm = BGM.Silent
 			}
 		}
 	}

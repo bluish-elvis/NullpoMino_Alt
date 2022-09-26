@@ -196,11 +196,11 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 					gameManager.mode?.let {mode ->
 						// BGM
-						if(ResourceHolder.bgmPlaying!=gameManager.bgmStatus.bgm) ResourceHolder.bgmStart(gameManager.bgmStatus.bgm)
+						if(ResourceHolder.bgmPlaying!=gameManager.musMan.bgm) ResourceHolder.bgmStart(gameManager.musMan.bgm)
 						if(ResourceHolder.bgmIsPlaying) {
 							val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
 							val basevolume2 = basevolume/128.toFloat()
-							var newvolume = gameManager.bgmStatus.volume*basevolume2
+							var newvolume = gameManager.musMan.volume*basevolume2
 							if(newvolume<0f) newvolume = 0f
 							if(newvolume>1f) newvolume = 1f
 							container.musicVolume = newvolume
