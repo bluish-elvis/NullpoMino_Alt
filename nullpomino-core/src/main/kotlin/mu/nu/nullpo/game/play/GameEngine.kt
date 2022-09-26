@@ -332,9 +332,10 @@ class GameEngine(
 	/** Halves the amount of lines cleared in Big mode */
 	var bigHalf = false
 
+	/** True if rotate is used */
+	var spun = false
 	/** True if wallkick is used */
 	var kicked = false; private set
-
 	/** Field size (-1:Default) */
 	var fieldWidth = -1
 	var fieldHeight = -1
@@ -1415,6 +1416,7 @@ class GameEngine(
 	 * (各Mode や event 処理クラスの event を呼び出すだけで, それ以外にGameEngine自身は何もしません） */
 	fun render() {
 		// 最初の処理
+		if(!owner.receiver.doesGraphicsExist) return
 		owner.mode?.renderFirst(this)
 		owner.receiver.renderFirst(this)
 
@@ -1497,8 +1499,8 @@ class GameEngine(
 	/** 開始前の設定画面のときの処理 */
 	private fun statSetting() {
 		//  event 発生
-		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = BGM.Menu(4+(owner.mode?.gameIntensity ?: 0))
+		owner.musMan.fadesw = false
+		owner.musMan.bgm = BGM.Menu(4+(owner.mode?.gameIntensity ?: 0))
 		if(owner.mode?.onSetting(this)==true) return
 		owner.receiver.onSetting(this)
 
@@ -1539,10 +1541,10 @@ class GameEngine(
 		// Initialization
 		if(statc[0]==0) {
 
-			if(!readyDone&&!owner.bgmStatus.fadesw&&owner.bgmStatus.bgm.id<0&&
-				owner.bgmStatus.bgm.id !in BGM.Finale(0).id..BGM.Finale(2).id
+			if(!readyDone&&!owner.musMan.fadesw&&owner.musMan.bgm.id<0&&
+				owner.musMan.bgm.id !in BGM.Finale(0).id..BGM.Finale(2).id
 			)
-				owner.bgmStatus.fadesw = true
+				owner.musMan.fadesw = true
 			// fieldInitialization
 			createFieldIfNeeded()
 			// NEXTピース作成
@@ -1623,7 +1625,7 @@ class GameEngine(
 		if(statc[0]>=goEnd) {
 			owner.mode?.startGame(this)
 			owner.receiver.startGame(this)
-			owner.bgmStatus.fadesw = false
+			owner.musMan.fadesw = false
 			initialSpin()
 			stat = Status.MOVE
 			resetStatc()
@@ -1802,7 +1804,6 @@ class GameEngine(
 				// spin
 				val onGroundBeforeSpin = it.checkCollision(nowPieceX, nowPieceY+1, field)
 				var spin = 0
-				var spun = false
 
 				if(initialSpinDirection!=0) {
 					spin = initialSpinDirection
@@ -1814,9 +1815,10 @@ class GameEngine(
 
 					//  button input
 					when {
-						ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_C) -> spin = -1
-						ctrl.isPush(Controller.BUTTON_B) -> spin = 1
-						ctrl.isPush(Controller.BUTTON_E) -> spin = 2
+						ctrl.isPress(Controller.BUTTON_A)||ctrl.isPress(Controller.BUTTON_C) -> spin = -1
+						ctrl.isPress(Controller.BUTTON_B) -> spin = 1
+						ctrl.isPress(Controller.BUTTON_E) -> spin = 2
+						else -> spun = false
 					}
 
 
@@ -1829,9 +1831,8 @@ class GameEngine(
 				if(!ruleOpt.spinDoubleKey&&spin==2) spin = -1
 				if(!ruleOpt.spinReverseKey&&spin==1) spin = -1
 				if(spinDirection&&spin!=2) spin *= -1
-
 				it.also {piece ->
-					if(spin!=0) {
+					if(spin!=0&&!spun) {
 						// Direction after rotationを決める
 						var rt = getSpinDirection(spin)
 
@@ -1865,7 +1866,7 @@ class GameEngine(
 										piece.setDarkness(0f)
 									}
 								}
-						} else if(!spun&&dominoQuickTurn&&piece.type==Piece.Shape.I2&&nowPieceSpinFailCount>=1) {
+						} else if(dominoQuickTurn&&piece.type==Piece.Shape.I2&&nowPieceSpinFailCount>=1) {
 							// Domino Quick Turn
 							rt = getSpinDirection(2)
 							spun = true
@@ -1892,7 +1893,7 @@ class GameEngine(
 								LastMove.SPIN_GROUND
 							} else LastMove.SPIN_AIR
 
-							if(initialSpinDirection==0) playSE("rotate")
+							playSE("rotate")
 							if(checkTwisted(nowPieceX, nowPieceY, piece, field)!=null) playSE("twist")
 							nowPieceSpinCount++
 							if(ending==0||staffrollEnableStatistics) statistics.totalPieceSpin++
@@ -2364,7 +2365,7 @@ class GameEngine(
 							owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY-(combo>0).toInt(), b2bCount, CHAIN.B2B)
 						} else playSE("b2b_start")
 
-					} else if(b2bCount>=0&&combo<=0) {
+					} else if(b2bCount>=0&&combo<0) {
 						b2b = false
 						b2bCount = -1
 						playSE("b2b_end")
@@ -2411,8 +2412,8 @@ class GameEngine(
 						b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) x to it else null}
 					}.associate {it}
 				}.let {
-					owner.mode?.blockBreak(this, it)
-					owner.receiver.blockBreak(this, it)
+					if(owner.mode?.blockBreak(this, it)!=true)
+						owner.receiver.blockBreak(this, it)
 				}
 			}
 
@@ -2604,7 +2605,7 @@ class GameEngine(
 
 		if(statc[2]==0) {
 			timerActive = false
-			owner.bgmStatus.bgm = BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 			playSE("endingstart")
 			statc[2] = 1
 		}
@@ -2613,14 +2614,14 @@ class GameEngine(
 			field.let {field ->
 				if(statc[1]%animint==0) {
 					val y = field.height-statc[1]/animint
-					field.delLine(y)
 					field.getRow(y).mapIndexedNotNull {i, b ->
 						b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) i to it else null}
 					}.associate {it}.let {
-						owner.mode?.blockBreak(this, mapOf(y to it))
-						owner.receiver.blockBreak(this, mapOf(y to it))
+						field.delBlocks(mapOf(y to it)).let {
+							if(owner.mode?.blockBreak(this, it)!=true)
+								owner.receiver.blockBreak(this, it)
+						}
 					}
-					field.clearLine()
 				}
 			}
 
@@ -2654,7 +2655,7 @@ class GameEngine(
 		if(statc[0]==0) {
 			stopSE("danger")
 			gameEnded()
-			owner.bgmStatus.fadesw = true
+			owner.musMan.fadesw = true
 			resetFieldVisible()
 			tempHanabi += 24
 			playSE("excellent")
@@ -2687,7 +2688,7 @@ class GameEngine(
 					if(topout) playSE("dead_last")
 					gameEnded()
 					blockShowOutlineOnly = false
-					if(owner.players<2) owner.bgmStatus.bgm = BGM.Silent
+					if(owner.players<2) owner.musMan.bgm = BGM.Silent
 
 					if(field.isEmpty) statc[0] = statc[1]
 					else {
@@ -2753,14 +2754,13 @@ class GameEngine(
 				if(!field.isEmpty) {
 					val y = field.highestBlockY
 					for(i in 0 until field.width) {
-						field.delLine(y)
 						field.getRow(y).mapIndexedNotNull {i, b ->
 							b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) i to it else null}
 						}.associate {it}.let {
-							owner.mode?.blockBreak(this, mapOf(y to it))
-							owner.receiver.blockBreak(this, mapOf(y to it))
+							field.delBlocks(mapOf(y to it)).let {
+								if(owner.mode?.blockBreak(this, it)!=true) owner.receiver.blockBreak(this, it)
+							}
 						}
-						field.clearLine()
 					}
 
 				} else if(statc[1]<are) statc[1]++
@@ -2776,8 +2776,8 @@ class GameEngine(
 	/** Results screen */
 	private fun statResult() {
 		// Event
-		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = BGM.Result(
+		owner.musMan.fadesw = false
+		owner.musMan.bgm = BGM.Result(
 			when {
 				ending==2 -> if(owner.mode?.gameIntensity==1) (if(statistics.time<10800) 1 else 2) else 3
 				ending!=0 -> if(statistics.time<10800) 1 else 2

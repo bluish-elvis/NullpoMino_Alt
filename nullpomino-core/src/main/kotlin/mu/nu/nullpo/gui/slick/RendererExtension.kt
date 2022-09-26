@@ -123,7 +123,7 @@ object RendererExtension {
 		val local:Class<*> = AbstractRenderer::class.java
 
 		try {
-			receiver.effects.add(
+			receiver.efxBG.add(
 				FragAnim(
 					when(effectType) {
 						1 -> FragAnim.ANIM.SPARK

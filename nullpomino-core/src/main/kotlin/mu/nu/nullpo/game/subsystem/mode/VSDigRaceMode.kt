@@ -280,7 +280,7 @@ class VSDigRaceMode:AbstractMode() {
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
 		engine.enableSE = enableSE[engine.playerID]
-		if(engine.playerID==1) owner.bgmStatus.bgm = BGM.values[bgmno]
+		if(engine.playerID==1) owner.musMan.bgm = BGM.values[bgmno]
 
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		engine.meterValue = 1f
@@ -456,7 +456,7 @@ class VSDigRaceMode:AbstractMode() {
 				winnerID = -1
 				owner.engine[0].gameEnded()
 				owner.engine[1].gameEnded()
-				owner.bgmStatus.bgm = BGM.Silent
+				owner.musMan.bgm = BGM.Silent
 			} else if(owner.engine[0].stat!=GameEngine.Status.GAMEOVER&&owner.engine[1].stat==GameEngine.Status.GAMEOVER) {
 				// 1P win
 				winnerID = 0
@@ -465,7 +465,7 @@ class VSDigRaceMode:AbstractMode() {
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[0].resetStatc()
 				owner.engine[0].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.Silent
+				owner.musMan.bgm = BGM.Silent
 				if(!owner.replayMode) winCount[0]++
 			} else if(owner.engine[0].stat==GameEngine.Status.GAMEOVER&&owner.engine[1].stat!=GameEngine.Status.GAMEOVER) {
 				// 2P win
@@ -475,7 +475,7 @@ class VSDigRaceMode:AbstractMode() {
 				owner.engine[1].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].resetStatc()
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.Silent
+				owner.musMan.bgm = BGM.Silent
 				if(!owner.replayMode) winCount[1]++
 			}
 	}

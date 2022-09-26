@@ -94,7 +94,7 @@ class Minesweeper:AbstractMode() {
 		if(!owner.replayMode) loadSetting(owner.modeConfig, engine)
 		else loadSetting(owner.replayProp, engine)
 
-		engine.owner.backgroundStatus.bg = bg
+		engine.owner.bgMan.bg = bg
 	}
 
 	override fun onSetting(engine:GameEngine):Boolean {
@@ -136,11 +136,11 @@ class Minesweeper:AbstractMode() {
 						bg += change
 						if(bg>19) bg = 0
 						if(bg<0) bg = 19
-						engine.owner.backgroundStatus.bg = bg
+						engine.owner.bgMan.bg = bg
 					}
 				}
 			}
-			engine.owner.backgroundStatus.bg = bg
+			engine.owner.bgMan.bg = bg
 
 			// Confirm
 			if(engine.ctrl.isPush(Controller.BUTTON_A)&&engine.statc[3]>=5) {
@@ -241,7 +241,7 @@ class Minesweeper:AbstractMode() {
 
 		// 開始
 		if(engine.statc[0]>=engine.goEnd) {
-			if(!engine.readyDone) engine.owner.bgmStatus.bgm = BGMStatus.BGM.values[bgm]
+			if(!engine.readyDone) engine.owner.musMan.bgm = BGMStatus.BGM.values[bgm]
 			engine.owner.mode?.startGame(engine)
 			engine.owner.receiver.startGame(engine)
 			engine.stat = GameEngine.Status.CUSTOM
@@ -265,7 +265,7 @@ class Minesweeper:AbstractMode() {
 					// もう復活できないとき
 					engine.gameEnded()
 					engine.blockShowOutlineOnly = false
-					if(owner.players<2) owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+					if(owner.players<2) owner.musMan.bgm = BGMStatus.BGM.Silent
 					if(field.isEmpty) engine.statc[0] = field.height+1 else engine.resetFieldVisible()
 				}
 				engine.statc[0]<field.height+1 -> {

@@ -155,8 +155,8 @@ class MarathonShuttle:NetDummyMode() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 
-		engine.owner.backgroundStatus.bg = startLevel
-		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
+		engine.owner.bgMan.bg = startLevel
+		if(engine.owner.bgMan.bg>19) engine.owner.bgMan.bg = 19
 		engine.frameColor = GameEngine.FRAME_COLOR_WHITE
 	}
 
@@ -186,7 +186,7 @@ class MarathonShuttle:NetDummyMode() {
 
 			if(change!=0) {
 				engine.playSE("change")
-				engine.owner.backgroundStatus.bg = minOf(19, startLevel)
+				engine.owner.bgMan.bg = minOf(19, startLevel)
 				engine.statistics.level = startLevel
 				engine.statistics.levelDispAdd = 1
 				setSpeed(engine)
@@ -245,10 +245,10 @@ class MarathonShuttle:NetDummyMode() {
 		setSpeed(engine)
 
 		if(netIsWatch)
-			owner.bgmStatus.bgm = BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 		else {
 			setStartBgmlv(engine)
-			owner.bgmStatus.bgm = tableBGM[bgmLv]
+			owner.musMan.bgm = tableBGM[bgmLv]
 		}
 
 		if(goalType==GAMETYPE_10MIN_EASY||goalType==GAMETYPE_10MIN_HARD) totalTimer = TIMELIMIT_10MIN
@@ -528,11 +528,11 @@ class MarathonShuttle:NetDummyMode() {
 			// BGM fade-out effects and BGM changes
 			if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level==tableBGMChange[bgmLv]-1)
 				if(goal in 1..10)
-					owner.bgmStatus.fadesw = true
+					owner.musMan.fadesw = true
 				else if(goal<=0) {
 					bgmLv++
-					owner.bgmStatus.bgm = tableBGM[bgmLv]
-					owner.bgmStatus.fadesw = false
+					owner.musMan.bgm = tableBGM[bgmLv]
+					owner.musMan.fadesw = false
 				}
 
 			if(goal<=0)
@@ -544,8 +544,8 @@ class MarathonShuttle:NetDummyMode() {
 					// Ending (SPECIAL）
 					engine.ending = 2
 					engine.timerActive = false
-					owner.bgmStatus.bgm = BGM.Ending(0)
-					owner.bgmStatus.fadesw = false
+					owner.musMan.bgm = BGM.Ending(0)
+					owner.musMan.fadesw = false
 					engine.playSE("endingstart")
 				} else {
 					// Level up
@@ -554,10 +554,10 @@ class MarathonShuttle:NetDummyMode() {
 
 					goalmax = (engine.statistics.level+1)*5
 					goal += goalmax
-					if(owner.backgroundStatus.bg<19) {
-						owner.backgroundStatus.fadesw = true
-						owner.backgroundStatus.fadecount = 0
-						owner.backgroundStatus.fadebg = engine.statistics.level
+					if(owner.bgMan.bg<19) {
+						owner.bgMan.fadesw = true
+						owner.bgMan.fadecount = 0
+						owner.bgMan.fadebg = engine.statistics.level
 					}
 
 					levelTimer = 0
@@ -584,8 +584,8 @@ class MarathonShuttle:NetDummyMode() {
 
 	override fun onResult(engine:GameEngine):Boolean {
 		val b = if(engine.statistics.time<10800) BGM.Result(1) else BGM.Result(2)
-		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = b
+		owner.musMan.fadesw = false
+		owner.musMan.bgm = b
 
 		return super.onResult(engine)
 	}
@@ -660,7 +660,7 @@ class MarathonShuttle:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
+		val bg = if(owner.bgMan.fadesw) owner.bgMan.fadebg else owner.bgMan.bg
 		val msg = "game\tstats\t"+
 			engine.run {
 				statistics.run {"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"}+
@@ -691,7 +691,7 @@ class MarathonShuttle:NetDummyMode() {
 			{lastgoal = it.toInt()},
 			{lasttimebonus = it.toInt()},
 			{regretdispframe = it.toInt()},
-			{owner.backgroundStatus.bg = it.toInt()},
+			{owner.bgMan.bg = it.toInt()},
 			{engine.meterValue = it.toFloat()},
 			{engine.meterColor = it.toInt()},
 			{levelTimer = it.toInt()},

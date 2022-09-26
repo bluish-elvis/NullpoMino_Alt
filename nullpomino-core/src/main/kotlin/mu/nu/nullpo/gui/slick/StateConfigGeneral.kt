@@ -171,7 +171,7 @@ class StateConfigGeneral:BaseGameState() {
 		sevolume = prop.getProperty("option.sevolume", 128)
 		bgmvolume = prop.getProperty("option.bgmvolume", 128)
 		showmeter = prop.getProperty("option.showmeter", true)
-		vsync = prop.getProperty("option.vsync", true)
+		vsync = prop.getProperty("option.vsync", false)
 		nextshadow = prop.getProperty("option.nextshadow", false)
 		outlineghost = prop.getProperty("option.outlineghost", false)
 		smoothfall = prop.getProperty("option.smoothfall", false)

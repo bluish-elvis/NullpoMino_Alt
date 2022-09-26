@@ -30,6 +30,7 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
@@ -39,6 +40,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** ULTRA Mode */
@@ -162,7 +164,12 @@ class SprintUltra:NetDummyMode() {
 		prop.setProperty("ultra.das.$preset", engine.speed.das)
 		prop.setProperty("ultra.big.$preset", big)
 		prop.setProperty("ultra.goalType.$preset", goalType)
+
+		engine.frameColor = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
 	}
+
+	fun is20g(speed:SpeedParam) = speed.rank>=.3f
+	fun goalType(speed:SpeedParam) = goalType+tableLength.size*is20g(speed).toInt()
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
@@ -192,12 +199,12 @@ class SprintUltra:NetDummyMode() {
 					7 -> big = !big
 					8 -> {
 						goalType += change
-						if(goalType<0) goalType = GOALTYPE_MAX-1
-						if(goalType>GOALTYPE_MAX-1) goalType = 0
+						if(goalType<0) goalType = tableLength.size-1
+						if(goalType>tableLength.size-1) goalType = 0
 					}
 					10, 11 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
 				}
-
+				engine.frameColor = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
 				// NET: Signal options change
 				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
 			}
@@ -273,9 +280,8 @@ class SprintUltra:NetDummyMode() {
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.meterValue = 1f
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
-
-		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent
-		else if(tableLength[goalType]<=3) BGM.Blitz(0) else BGM.Blitz(1)
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent
+		else BGM.Blitz((tableLength[goalType]>3).toInt()+is20g(engine.speed).toInt()*2)
 		engine.twistAllowKick = true
 		engine.twistEnable = true
 		engine.useAllSpinBonus = true
@@ -286,56 +292,62 @@ class SprintUltra:NetDummyMode() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, 0, 0, name, COLOR.CYAN)
-		receiver.drawScoreFont(engine, 0, 1, "(${(tableLength[goalType])} Minutes sprint)", COLOR.CYAN)
+		receiver.drawScoreFont(engine, 0, 0, name, if(is20g(engine.speed)) COLOR.PINK else COLOR.CYAN)
+		val is20g = is20g(engine.speed)
+		if(is20g) receiver.drawScoreFont(engine, 0, 1, "(${(tableLength[goalType])} Minutes Rush)", COLOR.PINK)
+		else receiver.drawScoreFont(engine, 0, 1, "(${(tableLength[goalType])} Minutes sprint)", COLOR.CYAN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
+			val gt = goalType(engine.speed)
+			val col1 = if(is20g) COLOR.RED else COLOR.BLUE
+			val col2 = if(is20g) COLOR.YELLOW else COLOR.GREEN
+			val col3 = if(is20g) COLOR.ORANGE else COLOR.YELLOW
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				receiver.drawScoreFont(engine, 0, 3, "Score RANKING", COLOR.GREEN)
-				receiver.drawScoreFont(engine, 1, 4, "Score Power Lines", COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 3, "Score RANKING", col2)
+				receiver.drawScoreFont(engine, 1, 4, "Score Power Lines", col1)
 
 				for(i in 0 until minOf(RANKING_MAX, 12)) {
-					receiver.drawScoreGrade(engine, 0, 5+i, String.format("%2d", i+1), COLOR.YELLOW)
+					receiver.drawScoreGrade(engine, 0, 5+i, String.format("%2d", i+1), col3)
 					receiver.drawScoreNum(
-						engine, 1, 5+i, String.format("%7d", rankingScore[0][goalType][i]), i==rankingRank[0]
+						engine, 1, 5+i, String.format("%7d", rankingScore[0][gt][i]), i==rankingRank[0]
 					)
 					receiver.drawScoreNum(
-						engine, 8, 5+i, String.format("%5d", rankingPower[0][goalType][i]), i==rankingRank[0]
+						engine, 8, 5+i, String.format("%5d", rankingPower[0][gt][i]), i==rankingRank[0]
 					)
 					receiver.drawScoreNum(
-						engine, 14, 5+i, String.format("%5d", rankingLines[0][goalType][i]), i==rankingRank[0]
-					)
-				}
-
-				receiver.drawScoreFont(engine, 0, 11, "Power RANKING", COLOR.GREEN)
-				receiver.drawScoreFont(engine, 1, 12, "Power Score Lines", COLOR.BLUE)
-
-				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, 13+i, String.format("%2d", i+1), COLOR.YELLOW)
-					receiver.drawScoreNum(
-						engine, 2, 13+i, String.format("%5d", rankingPower[1][goalType][i]), i==rankingRank[1]
-					)
-					receiver.drawScoreNum(
-						engine, 7, 13+i, String.format("%7d", rankingScore[1][goalType][i]), i==rankingRank[1]
-					)
-					receiver.drawScoreNum(
-						engine, 14, 13+i, String.format("%5d", rankingLines[1][goalType][i]), i==rankingRank[1]
+						engine, 14, 5+i, String.format("%5d", rankingLines[0][gt][i]), i==rankingRank[0]
 					)
 				}
 
-				receiver.drawScoreFont(engine, 0, 19, "Lines RANKING", COLOR.GREEN)
-				receiver.drawScoreFont(engine, 1, 20, "Lines Score Power", COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 11, "Power RANKING", col2)
+				receiver.drawScoreFont(engine, 1, 12, "Power Score Lines", col1)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, 21+i, String.format("%2d", i+1), COLOR.YELLOW)
+					receiver.drawScoreGrade(engine, 0, 13+i, String.format("%2d", i+1), col3)
 					receiver.drawScoreNum(
-						engine, 2, 21+i, String.format("%5d", rankingLines[2][goalType][i]), i==rankingRank[2]
+						engine, 2, 13+i, String.format("%5d", rankingPower[1][gt][i]), i==rankingRank[1]
 					)
 					receiver.drawScoreNum(
-						engine, 7, 21+i, String.format("%7d", rankingScore[2][goalType][i]), i==rankingRank[2]
+						engine, 7, 13+i, String.format("%7d", rankingScore[1][gt][i]), i==rankingRank[1]
 					)
 					receiver.drawScoreNum(
-						engine, 14, 21+i, String.format("%5d", rankingPower[2][goalType][i]), i==rankingRank[2]
+						engine, 14, 13+i, String.format("%5d", rankingLines[1][gt][i]), i==rankingRank[1]
+					)
+				}
+
+				receiver.drawScoreFont(engine, 0, 19, "Lines RANKING", col2)
+				receiver.drawScoreFont(engine, 1, 20, "Lines Score Power", col1)
+
+				for(i in 0 until RANKING_MAX) {
+					receiver.drawScoreGrade(engine, 0, 21+i, String.format("%2d", i+1), col3)
+					receiver.drawScoreNum(
+						engine, 2, 21+i, String.format("%5d", rankingLines[2][gt][i]), i==rankingRank[2]
+					)
+					receiver.drawScoreNum(
+						engine, 7, 21+i, String.format("%7d", rankingScore[2][gt][i]), i==rankingRank[2]
+					)
+					receiver.drawScoreNum(
+						engine, 14, 21+i, String.format("%5d", rankingPower[2][gt][i]), i==rankingRank[2]
 					)
 				}
 			}
@@ -419,8 +431,8 @@ class SprintUltra:NetDummyMode() {
 				// 1Per-minuteBackgroundSwitching
 				if(engine.statistics.time>0&&engine.statistics.time%3600==0) {
 					engine.playSE("levelup")
-					owner.backgroundStatus.fadesw = true
-					owner.backgroundStatus.fadebg = owner.backgroundStatus.bg+1
+					owner.bgMan.fadesw = true
+					owner.bgMan.fadebg = owner.bgMan.bg+1
 				}
 			}
 		}
@@ -506,7 +518,12 @@ class SprintUltra:NetDummyMode() {
 
 		// Update rankings
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			if(updateRanking(goalType, engine.statistics.score, engine.statistics.attacks, engine.statistics.lines).any {it!=-1})
+			if(updateRanking(
+					goalType(engine.speed),
+					engine.statistics.score,
+					engine.statistics.attacks,
+					engine.statistics.lines
+				).any {it!=-1})
 				return true
 		}
 		return false
@@ -571,7 +588,7 @@ class SprintUltra:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
+		val bg = if(owner.bgMan.fadesw) owner.bgMan.fadebg else owner.bgMan.bg
 		val msg = "game\tstats\t"+
 			"${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t"+
 			"${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"+
@@ -601,7 +618,7 @@ class SprintUltra:NetDummyMode() {
 			{lastb2b = it.toBoolean()},
 			{lastcombo = it.toInt()},
 			{lastpiece = it.toInt()},
-			{owner.backgroundStatus.bg = it.toInt()}).zip(message).forEach {(x, y) ->
+			{owner.bgMan.bg = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
 
@@ -671,7 +688,7 @@ class SprintUltra:NetDummyMode() {
 		/** Number of entries in rankings */
 		private const val RANKING_MAX = 5
 
-		/** Line counts when game ending occurs */
+		/** Minutes counts when game ending occurs */
 		private val tableLength = intArrayOf(3, 5)
 
 		/** Number of ranking types */
@@ -681,7 +698,7 @@ class SprintUltra:NetDummyMode() {
 		private val RANKTYPE_MAX = RankingType.values().size
 
 		/** Time limit type */
-		private val GOALTYPE_MAX = tableLength.size
+		private val GOALTYPE_MAX = tableLength.size*2
 
 	}
 }

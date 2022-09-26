@@ -30,10 +30,13 @@ package mu.nu.nullpo.game.event
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.SpeedParam.Companion.spdRank
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.fx.Effect
 import mu.nu.nullpo.gui.common.fx.PopupCombo
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toReplayFilename
 import org.apache.logging.log4j.LogManager
 import java.io.File
@@ -42,7 +45,6 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
-import kotlin.math.sqrt
 import kotlin.random.Random
 
 /** Drawing and event handling EventReceiver */
@@ -90,7 +92,7 @@ open class EventReceiver {
 	 * @return 0=Above 1=Side Small 2=Side Big
 	 */
 	val nextDisplayType:Int
-		get() = if(sideNext) if(bigSideNext) 2 else 1 else 0
+		get() = if(sideNext) 1+bigSideNext.toInt() else 0
 
 	/** Get Number of Block Skins */
 	open val skinMax:Int
@@ -478,8 +480,6 @@ open class EventReceiver {
 	 */
 	open fun drawSpeedMeter(x:Float, y:Float, sp:Float, len:Float) {}
 
-	private fun gravityMeter(g:Int, d:Int) = if(g<=0||d<=0) 1f else (sqrt((g.toFloat()/d).toDouble())/sqrt(20.0)).toFloat()
-
 	/** Draw speed meter on Field Area.
 	 * @param x X-coordinate grid
 	 * @param y Y-coordinate grid
@@ -504,7 +504,7 @@ open class EventReceiver {
 	 * @param len Meter Width Grid
 	 */
 	fun drawMenuSpeed(engine:GameEngine, x:Int, y:Int, g:Int, d:Int, len:Int = 3) =
-		drawMenuSpeed(engine, x, y, gravityMeter(g, d), len.toFloat())
+		drawMenuSpeed(engine, x, y, spdRank(g, d), len.toFloat())
 
 	/** Draw speed meter on Score Area.
 	 * @param x X-coordinate grid
@@ -533,7 +533,7 @@ open class EventReceiver {
 	 * @param d gravity Denominator
 	 */
 	fun drawScoreSpeed(engine:GameEngine, x:Int, y:Int, g:Int, d:Int, len:Int = 3) =
-		drawScoreSpeed(engine, x, y, gravityMeter(g, d), len.toFloat())
+		drawScoreSpeed(engine, x, y, spdRank(g, d), len.toFloat())
 
 	/** Draw Decorations*/
 	open fun drawBadges(x:Int, y:Int, width:Int = 0, nums:Int, scale:Float = 1f) {}
@@ -874,6 +874,13 @@ open class EventReceiver {
 		}
 
 	}
+
+	open val doesGraphicsExist:Boolean = false
+
+	/** 演出オブジェクト */
+	internal val efxBG:MutableList<Effect> = mutableListOf()
+	/** 演出オブジェクト */
+	internal val efxFG:MutableList<Effect> = mutableListOf()
 
 	companion object {
 		/** cell and block size(block,font) */

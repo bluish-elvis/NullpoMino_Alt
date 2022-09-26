@@ -41,6 +41,7 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 	}
 	/** map of [items] drawed Y-coordinate grids*/
 	val locs = items.fold(emptyList<Int>()) {buf, it -> buf+((buf.lastOrNull() ?: 0)+it.showHeight)}
+	private fun locPage(page:Int, height:Int) = locs.indexOfFirst {it>=page*height}.let {if(it<0) locs.size else it}
 	val size get() = items.size
 	operator fun get(index:Int) = items[index]
 
@@ -52,8 +53,6 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 		val it = menus[cur]
 		items[it.first].change(dir, fast, it.second)
 	}
-
-	private fun locPage(page:Int, height:Int) = locs.indexOfFirst {it>=page*height}.let {if(it<0) locs.size else it}
 
 	fun drawMenu(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int = menuY, cur:Int = menuCursor) =
 		drawMenu(engine, playerID, receiver, y, page = locs[cur]/engine.field.height)

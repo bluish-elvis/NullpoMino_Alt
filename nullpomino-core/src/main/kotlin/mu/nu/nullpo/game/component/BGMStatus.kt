@@ -116,7 +116,7 @@ class BGMStatus:Serializable {
 
 		class Ending(idx:Int = 0):BGM(
 			idx, true, "Ending Challenge",
-			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)"
+			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)", "Modern-Hard (200Sec)"
 		)
 
 		class Result(idx:Int = 0):BGM(

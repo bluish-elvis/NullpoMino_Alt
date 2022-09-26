@@ -159,7 +159,7 @@ class MarathonPlus:NetDummyMode() {
 
 		engine.staffrollNoDeath = false
 		engine.staffrollEnableStatistics = true
-		engine.owner.backgroundStatus.bg = if(startLevel) 36 else 0
+		engine.owner.bgMan.bg = if(startLevel) 36 else 0
 		engine.frameColor = GameEngine.FRAME_COLOR_WHITE
 	}
 
@@ -213,7 +213,7 @@ class MarathonPlus:NetDummyMode() {
 			if(change!=0) {
 				engine.playSE("change")
 
-				engine.owner.backgroundStatus.bg = 0
+				engine.owner.bgMan.bg = 0
 
 				// NET: Signal options change
 				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
@@ -283,9 +283,9 @@ class MarathonPlus:NetDummyMode() {
 			staffrollEnable = startLevel&&goalType>0
 		}
 		setSpeed(engine)
-		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent
 		else if(startLevel) tableBGM[4][goalType] else tableBGM[goalType][0]
-		owner.bgmStatus.fadesw = false
+		owner.musMan.fadesw = false
 		if(goalType==3) bonusTime = 10800
 		bonusTimeMax = ROLLTIMELIMIT[goalType]
 	}
@@ -455,12 +455,12 @@ class MarathonPlus:NetDummyMode() {
 		} else {
 			var bgmChanged = false
 			if(bgmLv<tableBGMChange[goalType].size&&tableBGMChange[goalType][bgmLv]>=5) {
-				if(engine.statistics.lines>=tableBGMChange[goalType][bgmLv]-5) owner.bgmStatus.fadesw = true
+				if(engine.statistics.lines>=tableBGMChange[goalType][bgmLv]-5) owner.musMan.fadesw = true
 				if(engine.statistics.lines>=tableBGMChange[goalType][bgmLv]) {
 					bgmChanged = true
 					bgmLv++
-					owner.bgmStatus.bgm = tableBGM[goalType][bgmLv]
-					owner.bgmStatus.fadesw = false
+					owner.musMan.bgm = tableBGM[goalType][bgmLv]
+					owner.musMan.fadesw = false
 				}
 			}
 			var normMax = tableNorma[goalType][minOf(lv/10, tableNorma[goalType].size-1)]
@@ -474,9 +474,9 @@ class MarathonPlus:NetDummyMode() {
 				// Level up
 				lv = ++engine.statistics.level
 				setSpeed(engine)
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = if(lv<20) lv/2 else if(lv<50) 10+(lv-20)/3 else 20+(lv-50)/15
-				owner.backgroundStatus.fadesw = owner.backgroundStatus.fadebg!=owner.backgroundStatus.bg
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = if(lv<20) lv/2 else if(lv<50) 10+(lv-20)/3 else 20+(lv-50)/15
+				owner.bgMan.fadesw = owner.bgMan.fadebg!=owner.bgMan.bg
 				if(lv>=tableGameClearLevel[goalType]) {
 					// Bonus level unlocked
 					bonusTime = 0
@@ -485,7 +485,7 @@ class MarathonPlus:NetDummyMode() {
 						bonusScore = engine.statistics.score*(1+lastlives)/3
 						engine.statistics.scoreBonus += bonusScore
 
-						owner.bgmStatus.bgm = BGM.Ending(1)
+						owner.musMan.bgm = BGM.Ending(1)
 						engine.ending = 1
 						engine.timerActive = false
 					} else {
@@ -498,8 +498,8 @@ class MarathonPlus:NetDummyMode() {
 						engine.ending = 2
 					}
 
-					owner.bgmStatus.bgm = tableBGM[goalType][tableBGM[goalType].size-1]
-					owner.bgmStatus.fadesw = false
+					owner.musMan.bgm = tableBGM[goalType][tableBGM[goalType].size-1]
+					owner.musMan.fadesw = false
 					break
 				}
 				normMax = tableNorma[goalType][minOf(lv/10, tableNorma[goalType].size-1)]
@@ -728,7 +728,7 @@ class MarathonPlus:NetDummyMode() {
 			// Bonus level entered
 			if(message[3]=="bonuslevelenter") {
 				engine.meterValue = 0f
-				owner.bgmStatus.bgm = BGM.GrandM(1)
+				owner.musMan.bgm = BGM.GrandM(1)
 				engine.timerActive = false
 				engine.ending = 1
 				engine.stat = GameEngine.Status.CUSTOM
@@ -753,7 +753,7 @@ class MarathonPlus:NetDummyMode() {
 	 */
 	override fun netSendStats(engine:GameEngine) {
 		val bg =
-			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+			if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"}+
 				"${gameActive}\t${timerActive}\t$lastscore\t$scDisp\t${lastEvent}\tt${lastEventPiece}\t"
@@ -778,7 +778,7 @@ class MarathonPlus:NetDummyMode() {
 			{lastscore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
 			{engine.lastEvent = ScoreEvent.parseInt(it)},
-			{engine.owner.backgroundStatus.bg = it.toInt()},
+			{engine.owner.bgMan.bg = it.toInt()},
 			{bonusLines = it.toInt()},
 			{bonusFlashNow = it.toInt()},
 			{bonusPieceCount = it.toInt()},

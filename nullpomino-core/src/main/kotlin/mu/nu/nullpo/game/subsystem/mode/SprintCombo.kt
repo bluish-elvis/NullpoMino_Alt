@@ -336,7 +336,7 @@ class SprintCombo:NetDummyMode() {
 	 * Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
 		if(version<=0) engine.big = big
-		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.twistEnable = true
 		engine.twistAllowKick = true
@@ -499,11 +499,11 @@ class SprintCombo:NetDummyMode() {
 						engine.ending = 1
 						engine.gameEnded()
 					}
-					engine.statistics.lines>=GOAL_TABLE[goalType]-5 -> owner.bgmStatus.fadesw = true
+					engine.statistics.lines>=GOAL_TABLE[goalType]-5 -> owner.musMan.fadesw = true
 					engine.statistics.lines>=nextseclines -> {
-						owner.backgroundStatus.fadesw = true
-						owner.backgroundStatus.fadecount = 0
-						owner.backgroundStatus.fadebg = nextseclines/10
+						owner.bgMan.fadesw = true
+						owner.bgMan.fadecount = 0
+						owner.bgMan.fadebg = nextseclines/10
 						nextseclines += 10
 					}
 				}
@@ -616,7 +616,7 @@ class SprintCombo:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(owner.backgroundStatus.fadesw) owner.backgroundStatus.fadebg else owner.backgroundStatus.bg
+		val bg = if(owner.bgMan.fadesw) owner.bgMan.fadebg else owner.bgMan.bg
 		val msg = "game\tstats\t"+
 			engine.run {
 				statistics.run {"${maxCombo}\t${lines}\t${totalPieceLocked}\t${time}\t${lpm}\t${pps}\t"}+
@@ -638,7 +638,7 @@ class SprintCombo:NetDummyMode() {
 			{engine.timerActive = it.toBoolean()},
 			{engine.meterColor = it.toInt()},
 			{engine.meterValue = it.toFloat()},
-			{owner.backgroundStatus.bg = it.toInt()},
+			{owner.bgMan.bg = it.toInt()},
 			{scgettime = it.toInt()},
 			{lastb2b = it.toBoolean()},
 			{lastcombo = it.toInt()},

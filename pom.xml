@@ -19,7 +19,7 @@
  </modules>
 
  <properties>
-  <kotlin.version>1.7.10</kotlin.version>
+  <kotlin.version>1.7.20-RC</kotlin.version>
   <java.version>17</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
   <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -182,6 +182,27 @@
       </configuration>
      </execution>
     </executions>
+    <configuration>
+     <excludeDefaultDirectories>true</excludeDefaultDirectories>
+     <filesets>
+      <fileset>
+       <directory>${loc}/META-INF</directory>
+      </fileset>
+      <fileset>
+       <directory>${loc}/lib/META-INF</directory>
+      </fileset>
+      <fileset>
+       <useDefaultExcludes>true</useDefaultExcludes>
+       <directory>${project.basedir}/nullpomino-core/target</directory>
+       <includes>**/*</includes>
+      </fileset>
+      <fileset>
+       <useDefaultExcludes>true</useDefaultExcludes>
+       <directory>${project.basedir}/nullpomino-run/target</directory>
+       <includes>**/*</includes>
+      </fileset>
+     </filesets>
+    </configuration>
    </plugin>
    <!--<plugin>
      <groupId>org.apache.maven.plugins</groupId>

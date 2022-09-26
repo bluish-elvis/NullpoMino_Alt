@@ -460,7 +460,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 				owner.engine[1].resetStatc()
 				owner.engine[0].statc[1] = 1
 				owner.engine[1].statc[1] = 1
-				owner.bgmStatus.bgm = BGM.Silent
+				owner.musMan.bgm = BGM.Silent
 			}
 		}
 	}

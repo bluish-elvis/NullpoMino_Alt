@@ -431,11 +431,11 @@ class StateInGame:BasicGameState() {
 			} else fastforward = 0
 
 			// BGM
-			if(ResourceHolder.bgmPlaying!=m.bgmStatus.bgm&&!m.bgmStatus.fadesw)
-				ResourceHolder.bgmStart(m.bgmStatus.bgm)
+			if(ResourceHolder.bgmPlaying!=m.musMan.bgm&&!m.musMan.fadesw)
+				ResourceHolder.bgmStart(m.musMan.bgm)
 			if(ResourceHolder.bgmIsPlaying) {
 				val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
-				val newvolume = maxOf(0f, minOf(m.bgmStatus.volume*basevolume/128f, 1f))
+				val newvolume = maxOf(0f, minOf(m.musMan.volume*basevolume/128f, 1f))
 				container.musicVolume = newvolume
 				if(newvolume<=0f) ResourceHolder.bgmStop()
 			}

@@ -192,7 +192,7 @@ class GrandMountain:AbstractMode() {
 		else owner.replayProp.getProperty("garbagemania.version", 0)
 
 
-		owner.backgroundStatus.bg = startLevel
+		owner.bgMan.bg = startLevel
 	}
 
 	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
@@ -278,7 +278,7 @@ class GrandMountain:AbstractMode() {
 						startLevel += change
 						if(startLevel<0) startLevel = 9
 						if(startLevel>9) startLevel = 0
-						owner.backgroundStatus.bg = startLevel
+						owner.bgMan.bg = startLevel
 					}
 					2 -> alwaysghost = !alwaysghost
 					3 -> always20g = !always20g
@@ -336,7 +336,7 @@ class GrandMountain:AbstractMode() {
 
 		nextseclv = maxOf(100, minOf(engine.statistics.level+100, 999))
 
-		owner.backgroundStatus.bg = engine.statistics.level/100
+		owner.bgMan.bg = engine.statistics.level/100
 
 		garbageCount = 13-engine.statistics.level/100
 		engine.big = big
@@ -347,7 +347,7 @@ class GrandMountain:AbstractMode() {
 				engine.random.nextInt(engine.field.width)
 		setSpeed(engine)
 		setStartBgmlv(engine)
-		owner.bgmStatus.bgm = BGM.values[bgmLv]
+		owner.musMan.bgm = BGM.values[bgmLv]
 	}
 
 	/* Render score */
@@ -528,7 +528,7 @@ class GrandMountain:AbstractMode() {
 		if(engine.statistics.level>=100&&!alwaysghost) engine.ghost = false
 
 		// BGM fadeout
-		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.bgmStatus.fadesw = true
+		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadesw = true
 	}
 
 	/* Calculate score */
@@ -679,15 +679,15 @@ class GrandMountain:AbstractMode() {
 				stNewRecordCheck(sectionscomp-1, goalType)
 
 				// Background切り替え
-				owner.backgroundStatus.fadesw = true
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = nextseclv/100
+				owner.bgMan.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = nextseclv/100
 
 				// BGM切り替え
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = BGM.values[bgmLv]
+					owner.musMan.fadesw = false
+					owner.musMan.bgm = BGM.values[bgmLv]
 					engine.playSE("levelup_section")
 				}
 				engine.playSE("levelup")

@@ -109,7 +109,7 @@ class Marathon:NetDummyMode() {
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 
-		engine.owner.backgroundStatus.bg = startLevel
+		engine.owner.bgMan.bg = startLevel
 		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
 	}
 
@@ -149,10 +149,10 @@ class Marathon:NetDummyMode() {
 
 				if(startLevel>(tableGameClearLines[goalType]-1)/10&&tableGameClearLines[goalType]>=0) {
 					startLevel = (tableGameClearLines[goalType]-1)/10
-					engine.owner.backgroundStatus.bg = startLevel
+					engine.owner.bgMan.bg = startLevel
 				}
 
-				engine.owner.backgroundStatus.bg = startLevel
+				engine.owner.bgMan.bg = startLevel
 				engine.statistics.level = startLevel
 				engine.frameColor = (1+startLevel)%GameEngine.FRAME_COLOR_ALL
 				setSpeed(engine)
@@ -203,7 +203,7 @@ class Marathon:NetDummyMode() {
 
 		setSpeed(engine)
 
-		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent else BGM.Generic(bgmLv)
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.Generic(bgmLv)
 		engine.frameColor = (1+startLevel)%GameEngine.FRAME_COLOR_ALL
 	}
 
@@ -267,12 +267,12 @@ class Marathon:NetDummyMode() {
 	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		super.calcScore(engine, lines)
 		// BGM fade-out effects and BGM changes
-		if(engine.statistics.lines>=nextbgmLine(engine.statistics.lines)-5) owner.bgmStatus.fadesw = true
+		if(engine.statistics.lines>=nextbgmLine(engine.statistics.lines)-5) owner.musMan.fadesw = true
 		val newbgm = minOf(maxOf(0, bgmLv(engine.statistics.lines)), 8)
 		if(bgmLv!=newbgm) {
 			bgmLv = newbgm
-			owner.bgmStatus.bgm = BGM.Generic(bgmLv)
-			owner.bgmStatus.fadesw = false
+			owner.musMan.bgm = BGM.Generic(bgmLv)
+			owner.musMan.fadesw = false
 		}
 
 		// Meter
@@ -287,9 +287,9 @@ class Marathon:NetDummyMode() {
 			// Level up
 			engine.statistics.level++
 			engine.frameColor = (1+engine.statistics.level)%GameEngine.FRAME_COLOR_ALL
-			owner.backgroundStatus.fadesw = true
-			owner.backgroundStatus.fadecount = 0
-			owner.backgroundStatus.fadebg = engine.statistics.level
+			owner.bgMan.fadesw = true
+			owner.bgMan.fadecount = 0
+			owner.bgMan.fadebg = engine.statistics.level
 
 			setSpeed(engine)
 			engine.playSE("levelup")
@@ -311,8 +311,8 @@ class Marathon:NetDummyMode() {
 
 	override fun onResult(engine:GameEngine):Boolean {
 		val b = if(engine.ending==0) BGM.Result(1) else BGM.Result(2)
-		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = b
+		owner.musMan.fadesw = false
+		owner.musMan.bgm = b
 
 		return super.onResult(engine)
 	}
@@ -397,7 +397,7 @@ class Marathon:NetDummyMode() {
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
 		val bg =
-			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+			if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"
@@ -423,7 +423,7 @@ class Marathon:NetDummyMode() {
 			{lastscore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
 			{engine.lastEvent = ScoreEvent.parseInt(it)},
-			{engine.owner.backgroundStatus.bg = it.toInt()}).zip(message).forEach {(x, y) ->
+			{engine.owner.bgMan.bg = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
 

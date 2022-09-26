@@ -72,10 +72,10 @@ class GameManager(
 	var menuOnly = false
 
 	/** BGMStatus: Manages the status of background music */
-	val bgmStatus:BGMStatus = BGMStatus()
+	val musMan:BGMStatus = BGMStatus()
 
 	/** BackgroundStatus: Manages the status of background image */
-	val backgroundStatus:BackgroundStatus = BackgroundStatus()
+	val bgMan:BackgroundStatus = BackgroundStatus()
 
 	/** GameEngine: This is where the most action takes place */
 	val engine:MutableList<GameEngine> = mutableListOf()
@@ -143,8 +143,8 @@ class GameManager(
 		log.debug("GameManager reset()")
 
 		menuOnly = false
-		bgmStatus.reset()
-		backgroundStatus.reset()
+		musMan.reset()
+		bgMan.reset()
 		if(!replayMode) replayProp.clear()
 		engine.forEach {it.init()}
 	}
@@ -159,8 +159,8 @@ class GameManager(
 			mode = null
 			modeConfig.clear()
 			replayProp.clear()
-			bgmStatus.reset()
-			backgroundStatus.reset()
+			musMan.reset()
+			bgMan.reset()
 		} catch(e:Throwable) {
 			log.debug("Caught Throwable on shutdown", e)
 		}
@@ -170,8 +170,8 @@ class GameManager(
 	/** Update every GameEngine */
 	fun updateAll() {
 		engine.forEach {it.update()}
-		bgmStatus.fadeUpdate()
-		backgroundStatus.fadeUpdate()
+		musMan.fadeUpdate()
+		bgMan.fadeUpdate()
 	}
 
 	/** Dispatches all render events to EventReceiver */

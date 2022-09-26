@@ -175,7 +175,7 @@ class MarathonZone:NetDummyMode() {
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
-		engine.owner.backgroundStatus.bg = startLevel
+		engine.owner.bgMan.bg = startLevel
 		engine.frameColor = GameEngine.FRAME_COLOR_CYAN
 	}
 	/**
@@ -203,7 +203,7 @@ class MarathonZone:NetDummyMode() {
 			// Configuration changes
 			val change = updateMenu(engine)
 			if(change!=0) {
-				engine.owner.backgroundStatus.bg = startLevel
+				engine.owner.bgMan.bg = startLevel
 				engine.playSE("change")
 
 				// NET: Signal options change
@@ -272,9 +272,9 @@ class MarathonZone:NetDummyMode() {
 		engine.twistEnableEZ = true
 		setSpeed(engine)
 		if(netIsWatch) {
-			owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGMStatus.BGM.Silent
 		} else
-			owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmLv)
+			owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
 	}
 	/*
 	 * Render score
@@ -489,13 +489,13 @@ class MarathonZone:NetDummyMode() {
 
 		// BGM fade-out effects and BGM changes
 		if(tableBGMChange[bgmLv]!=-1) {
-			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.bgmStatus.fadesw = true
+			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.musMan.fadesw = true
 			if(engine.statistics.lines>=tableBGMChange[bgmLv]&&
 				(engine.statistics.lines<tableGameClearLines[goalType]||tableGameClearLines[goalType]<0)
 			) {
 				bgmLv++
-				owner.bgmStatus.bgm = BGMStatus.BGM.Generic(bgmLv)
-				owner.bgmStatus.fadesw = false
+				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
+				owner.musMan.fadesw = false
 			}
 		}
 		if(engine.statistics.lines>=tableGameClearLines[goalType]&&tableGameClearLines[goalType]>=0) {
@@ -505,9 +505,9 @@ class MarathonZone:NetDummyMode() {
 		} else if(engine.statistics.lines>=(engine.statistics.level+1)*24&&engine.statistics.level<19) {
 			// Level up
 			engine.statistics.level++
-			owner.backgroundStatus.fadesw = true
-			owner.backgroundStatus.fadecount = 0
-			owner.backgroundStatus.fadebg = engine.statistics.level
+			owner.bgMan.fadesw = true
+			owner.bgMan.fadecount = 0
+			owner.bgMan.fadebg = engine.statistics.level
 			if(!inzone) setSpeed(engine)
 			engine.playSE("levelup")
 		}
@@ -641,7 +641,7 @@ class MarathonZone:NetDummyMode() {
 	}
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+		val bg = if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+
 			"${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"+
 			"${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t${engine.statistics.level}\t"+
@@ -667,7 +667,7 @@ class MarathonZone:NetDummyMode() {
 //		scDisp = message[16].toInt()
 		lastb2b = message[17].toBoolean()
 		lastcombo = message[18].toInt()
-		engine.owner.backgroundStatus.bg = message[19].toInt()
+		engine.owner.bgMan.bg = message[19].toInt()
 
 		// Meter
 		engine.meterValue = (engine.statistics.lines%10)/9f

@@ -169,7 +169,7 @@ abstract class AbstractMode:GameMode {
 	override fun lineClearEnd(engine:GameEngine):Boolean = false
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {}
 	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {}
-	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {}
+	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean = false
 	override fun lineClear(gameEngine:GameEngine, i:Collection<Int>) {}
 	override fun fieldEditExit(engine:GameEngine) {}
 	override fun loadReplay(engine:GameEngine, prop:CustomProperties) {}

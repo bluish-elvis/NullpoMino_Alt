@@ -131,8 +131,8 @@ class RetroClassic:AbstractMode() {
 			owDelayCancel = 0
 		}
 
-		engine.owner.backgroundStatus.bg = startLevel
-		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
+		engine.owner.bgMan.bg = startLevel
+		if(engine.owner.bgMan.bg>19) engine.owner.bgMan.bg = 19
 		levellines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
 		engine.frameColor = GameEngine.FRAME_SKIN_GB
 	}
@@ -188,7 +188,7 @@ class RetroClassic:AbstractMode() {
 						startLevel += change
 						if(startLevel<0) startLevel = 19
 						if(startLevel>19) startLevel = 0
-						engine.owner.backgroundStatus.bg = startLevel
+						engine.owner.bgMan.bg = startLevel
 						levellines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
 					}
 					3 -> {
@@ -268,7 +268,7 @@ class RetroClassic:AbstractMode() {
 		engine.statistics.levelDispAdd = 1
 		engine.big = big
 
-		owner.bgmStatus.bgm = BGM.RetroN((gametype+startLevel)%3)
+		owner.musMan.bgm = BGM.RetroN((gametype+startLevel)%3)
 		setSpeed(engine)
 	}
 
@@ -395,10 +395,10 @@ class RetroClassic:AbstractMode() {
 				engine.statistics.level = 0
 			}
 
-			owner.backgroundStatus.fadesw = true
-			owner.backgroundStatus.fadecount = 0
+			owner.bgMan.fadesw = true
+			owner.bgMan.fadecount = 0
 
-			owner.backgroundStatus.fadebg = maxOf(0, minOf(19, engine.statistics.level))
+			owner.bgMan.fadebg = maxOf(0, minOf(19, engine.statistics.level))
 
 			setSpeed(engine)
 			engine.playSE("levelup")

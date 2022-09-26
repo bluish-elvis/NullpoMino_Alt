@@ -116,7 +116,7 @@ class MissionMode:MarathonModeBase() {
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
-		engine.owner.backgroundStatus.bg = startLevel
+		engine.owner.bgMan.bg = startLevel
 		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
 		missionIsComplete = false
 	}
@@ -139,7 +139,7 @@ class MissionMode:MarathonModeBase() {
 						if(goalType>GAMETYPE_MAX-1) goalType = 0
 						if(startLevel>(tableGameClearMissions[goalType]-1)/10&&tableGameClearMissions[goalType]>=0) {
 							startLevel = (tableGameClearMissions[goalType]-1)/10
-							engine.owner.backgroundStatus.bg = startLevel
+							engine.owner.bgMan.bg = startLevel
 						}
 					}
 				}
@@ -358,13 +358,13 @@ class MissionMode:MarathonModeBase() {
 						Clear, ClearWith -> missionProgress>=missionGoal-maxOf(2, 6-lineAmount)
 						Spin, SpinWith -> missionProgress>=missionGoal-2
 						else -> true
-					})) owner.bgmStatus.fadesw = true
+					})) owner.musMan.fadesw = true
 				if(engine.statistics.score>=tableBGMChange[bgmLv]&&
 					(engine.statistics.score<tableGameClearMissions[goalType]||tableGameClearMissions[goalType]<0)
 				) {
 					bgmLv++
-					owner.bgmStatus.bgm = tableBGM[bgmLv]
-					owner.bgmStatus.fadesw = false
+					owner.musMan.bgm = tableBGM[bgmLv]
+					owner.musMan.fadesw = false
 				}
 			}
 
@@ -381,9 +381,9 @@ class MissionMode:MarathonModeBase() {
 				} else if(engine.statistics.score>=(engine.statistics.level+1)*5&&engine.statistics.level<19) {
 					// Level up
 					engine.statistics.level++
-					owner.backgroundStatus.fadesw = true
-					owner.backgroundStatus.fadecount = 0
-					owner.backgroundStatus.fadebg = engine.statistics.level
+					owner.bgMan.fadesw = true
+					owner.bgMan.fadecount = 0
+					owner.bgMan.fadebg = engine.statistics.level
 					engine.playSE("levelup_section")
 				} else engine.playSE("levelup")
 			} else engine.playSE("gem")
@@ -415,9 +415,9 @@ class MissionMode:MarathonModeBase() {
 		engine.twistAllowKick = true
 		engine.twistEnableEZ = false
 		setSpeed(engine)
-		owner.bgmStatus.bgm = tableBGM[bgmLv]
+		owner.musMan.bgm = tableBGM[bgmLv]
 		if(netIsWatch) {
-			owner.bgmStatus.bgm = BGM.Silent
+			owner.musMan.bgm = BGM.Silent
 		}
 	}
 	/*

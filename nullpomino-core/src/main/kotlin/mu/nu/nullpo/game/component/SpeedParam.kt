@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -49,7 +49,8 @@ data class SpeedParam(
 	var das:Int = 14
 ):Serializable {
 
-	val rank:Float get() = if(gravity<0) 1f else (sqrt((gravity.toFloat()/denominator).toDouble())/sqrt(20.0)).toFloat()
+	val rank:Float get() = spdRank(gravity, denominator)
+
 	/** Constructor */
 	constructor():this(4, 256, 24, 24, 40, 30, 14)
 
@@ -88,8 +89,9 @@ data class SpeedParam(
 	}
 
 	companion object {
-		/** Serial version ID */
-		private const val serialVersionUID = -955934100998757270L
 		val SDS_FIXED = floatArrayOf(0.5f, 1f, 2f, 3f, 4f, 5f, 20f)
+		/** Calcuate Speed Rank by [gravity]/[denominator] */
+		fun spdRank(gravity:Int, denominator:Int) = if(gravity<0||denominator<=0) 1f
+		else (sqrt((gravity.toFloat()/denominator).toDouble())/sqrt(20.0)).toFloat()
 	}
 }

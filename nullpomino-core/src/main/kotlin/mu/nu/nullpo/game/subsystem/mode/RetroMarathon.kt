@@ -131,8 +131,8 @@ class RetroMarathon:AbstractMode() {
 		engine.owSDSpd = -1
 		if(!owner.replayMode) version = CURRENT_VERSION
 
-		engine.owner.backgroundStatus.bg = if(gametype==GAMETYPE.PRESSURE) 0 else startLevel
-		if(engine.owner.backgroundStatus.bg>19) engine.owner.backgroundStatus.bg = 19
+		engine.owner.bgMan.bg = if(gametype==GAMETYPE.PRESSURE) 0 else startLevel
+		if(engine.owner.bgMan.bg>19) engine.owner.bgMan.bg = 19
 		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
 	}
 
@@ -182,13 +182,13 @@ class RetroMarathon:AbstractMode() {
 							GAMETYPE.all.last() -> GAMETYPE.all.first()
 							else -> GAMETYPE.all[gametype.ordinal+change]
 						}
-						engine.owner.backgroundStatus.bg = if(gametype==GAMETYPE.PRESSURE) 0 else startLevel
+						engine.owner.bgMan.bg = if(gametype==GAMETYPE.PRESSURE) 0 else startLevel
 					}
 					1 -> {
 						startLevel += change
 						if(startLevel<0) startLevel = 19
 						if(startLevel>19) startLevel = 0
-						engine.owner.backgroundStatus.bg = startLevel
+						engine.owner.bgMan.bg = startLevel
 					}
 					2 -> big = !big
 				}
@@ -234,7 +234,7 @@ class RetroMarathon:AbstractMode() {
 		engine.big = big
 		engine.statistics.levelDispAdd = 1
 
-		owner.bgmStatus.bgm = BGM.RetroA(0)
+		owner.musMan.bgm = BGM.RetroA(0)
 		when(gametype) {
 			GAMETYPE.PRESSURE -> {
 				engine.statistics.level = 0
@@ -345,16 +345,16 @@ class RetroMarathon:AbstractMode() {
 
 			levellines += if(gametype==GAMETYPE.PRESSURE) 5 else 10
 
-			owner.backgroundStatus.fadesw = true
-			owner.backgroundStatus.fadecount = 0
+			owner.bgMan.fadesw = true
+			owner.bgMan.fadecount = 0
 
 			var lv = engine.statistics.level
 
 			if(lv<0) lv = 0
 			else if(lv>=19) lv = 19
 
-			owner.backgroundStatus.fadebg = lv
-			owner.bgmStatus.bgm = BGM.RetroA(maxOf(lv/4, 4))
+			owner.bgMan.fadebg = lv
+			owner.musMan.bgm = BGM.RetroA(maxOf(lv/4, 4))
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}

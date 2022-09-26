@@ -110,7 +110,7 @@ class MarathonExtreme:NetDummyMode() {
 		engine.staffrollNoDeath = true
 		engine.staffrollEnableStatistics = true
 
-		engine.owner.backgroundStatus.bg = startLevel
+		engine.owner.bgMan.bg = startLevel
 		engine.frameColor = GameEngine.FRAME_COLOR_RED
 	}
 
@@ -180,7 +180,7 @@ class MarathonExtreme:NetDummyMode() {
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.big = big
 
-		owner.bgmStatus.bgm = if(netIsWatch) BGM.Silent
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent
 		else tableBGM[bgmLv]
 
 		engine.twistAllowKick = true
@@ -279,12 +279,12 @@ class MarathonExtreme:NetDummyMode() {
 		if(engine.ending==0) {
 			// BGM fade-out effects and BGM changes
 			if(tableBGMChange[bgmLv]!=-1) {
-				if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.bgmStatus.fadesw = true
+				if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.musMan.fadesw = true
 
 				if(engine.statistics.lines>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.bgmStatus.bgm = tableBGM[bgmLv]
-					owner.bgmStatus.fadesw = false
+					owner.musMan.bgm = tableBGM[bgmLv]
+					owner.musMan.fadesw = false
 				}
 			}
 
@@ -296,8 +296,8 @@ class MarathonExtreme:NetDummyMode() {
 				// Ending
 				engine.playSE("levelup")
 				engine.playSE("endingstart")
-				owner.bgmStatus.fadesw = false
-				owner.bgmStatus.bgm = BGM.Ending(2)
+				owner.musMan.fadesw = false
+				owner.musMan.bgm = BGM.Ending(2)
 				engine.bone = true
 				engine.ending = 2
 				engine.timerActive = false
@@ -305,9 +305,9 @@ class MarathonExtreme:NetDummyMode() {
 				// Level up
 				engine.statistics.level++
 
-				owner.backgroundStatus.fadesw = true
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = engine.statistics.level
+				owner.bgMan.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = engine.statistics.level
 
 				setSpeed(engine)
 				engine.playSE("levelup")
@@ -318,8 +318,8 @@ class MarathonExtreme:NetDummyMode() {
 
 	override fun onResult(engine:GameEngine):Boolean {
 		val b = if(engine.ending==0) BGM.Result(0) else BGM.Result(3)
-		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = b
+		owner.musMan.fadesw = false
+		owner.musMan.bgm = b
 
 		return super.onResult(engine)
 	}
@@ -429,7 +429,7 @@ class MarathonExtreme:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+		val bg = if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t$endless\t"
@@ -455,7 +455,7 @@ class MarathonExtreme:NetDummyMode() {
 			{lastscore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
 			{engine.lastEvent = ScoreEvent.parseInt(it)},
-			{engine.owner.backgroundStatus.bg = it.toInt()},
+			{engine.owner.bgMan.bg = it.toInt()},
 			{rolltime = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}

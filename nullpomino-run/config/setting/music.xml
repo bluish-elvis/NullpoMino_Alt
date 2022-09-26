@@ -46,6 +46,7 @@
  <entry key="music.filename.RetroS.5">res/bgm/retro/leo/4_Floating Continent.ogg</entry>
  <entry key="music.filename.RetroS.6">res/bgm/retro/leo/5_Inside of Ruins.ogg</entry>
  <entry key="music.filename.RetroS.7">res/bgm/retro/leo/6_Core of the Planet.ogg</entry>
+ <entry key="music.filename.RetroS.8">res/bgm/retro/leo/0_boss.ogg</entry>
 
  <entry key="music.filename.Extra.0">res/bgm/retro/leo/0_boss.ogg</entry>
  <entry key="music.filename.Extra.1">res/bgm/steam/hydelic_butterflyeffect.ogg</entry>
@@ -59,25 +60,26 @@
  <entry key="music.filename.GrandA.1">res/bgm/ddp/play_black5.ogg</entry>
  <entry key="music.filename.GrandA.2">res/bgm/ddp/speed_black2.ogg</entry>
  <entry key="music.filename.GrandA.3">res/bgm/ddp/sudden_black2.ogg</entry>
- <entry key="music.filename.Ending.1">res/bgm/2_absolute/roll.ogg</entry>
+ <entry key="music.filename.Ending.1">res/bgm/blitz/gm2_roll.ogg</entry>
 
  <entry key="music.filename.GrandT.0">res/bgm/ddp/play_blue4.ogg</entry>
  <entry key="music.filename.GrandT.1">res/bgm/ddp/play_blue2.ogg</entry>
  <entry key="music.filename.GrandT.2">res/bgm/ddp/play_blue5.ogg</entry>
  <entry key="music.filename.GrandT.3">res/bgm/ddp/speed_blue.ogg</entry>
- <entry key="music.filename.GrandT.4">res/bgm/ddp/speed_black1.ogg</entry>
- <entry key="music.filename.GrandT.5">res/bgm/ddp/finale_white.ogg</entry>
- <entry key="music.filename.Ending.2">res/bgm/3_instinct/roll_.ogg</entry>
+ <entry key="music.filename.GrandT.4">res/bgm/ddp/sudden_blue.ogg</entry>
+ <entry key="music.filename.GrandT.5">res/bgm/ddp/finale_blue.ogg</entry>
+ <entry key="music.filename.Ending.2">res/bgm/blitz/gm3_roll_m.ogg</entry>
 
  <entry key="music.filename.Finale.0">res/bgm/beats/finale_dreadnought.ogg</entry>
  <entry key="music.filename.Finale.1">res/bgm/beats/finale_hesperides.ogg</entry>
  <entry key="music.filename.Finale.2">res/bgm/beats/finale_siva.ogg</entry>
- <entry key="music.filename.Ending.3">res/bgm/fb_kaerezunochi.ogg</entry>
+ <entry key="music.filename.Ending.3">res/bgm/blitz/fb_kaerezunochi.ogg</entry>
+ <entry key="music.filename.Ending.4">res/bgm/blitz/fb_VillainVirus.ogg</entry>
 
  <entry key="music.filename.Blitz.0">res/bgm/blitz/blitz3_octo.ogg</entry>
  <entry key="music.filename.Blitz.1">res/bgm/blitz/bztwist_blitz5.ogg</entry>
- <entry key="music.filename.Blitz.2">res/bgm/blitz/blitz5_InFreRemix.ogg</entry>
- <entry key="music.filename.Blitz.3">res/bgm/blitz/blitz5_InFreRemix.ogg</entry>
+ <entry key="music.filename.Blitz.2">res/bgm/blitz/blitz3x_InvisibleFrenzy.ogg</entry>
+ <entry key="music.filename.Blitz.3">res/bgm/blitz/blitz5x_InvisibleFrenzyRemix.ogg</entry>
 
  <entry key="music.filename.Result.0">res/bgm/beats/cbr_result2.ogg</entry>
  <entry key="music.filename.Result.1">res/bgm/beats/xx_collon1.ogg</entry>
@@ -88,6 +90,7 @@
  <entry key="music.noloop.Ending.1">true</entry>
  <entry key="music.noloop.Ending.2">true</entry>
  <entry key="music.noloop.Ending.3">true</entry>
+ <entry key="music.noloop.Ending.4">true</entry>
  <entry key="music.noloop.Extra.0">false</entry>
  <entry key="music.noloop.Extra.1">false</entry>
  <entry key="music.noloop.Extra.2">false</entry>
@@ -127,5 +130,7 @@
  <entry key="music.noloop.Rush.2">false</entry>
  <entry key="music.noloop.Blitz.0">true</entry>
  <entry key="music.noloop.Blitz.1">true</entry>
+ <entry key="music.noloop.Blitz.2">true</entry>
+ <entry key="music.noloop.Blitz.3">true</entry>
 
 </properties>

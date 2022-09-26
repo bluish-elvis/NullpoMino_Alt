@@ -108,7 +108,7 @@ class RendererSlick:AbstractRenderer() {
 	override fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, size:Int, alpha:Float) =
 		FontTTF.print(x, y, str, color, alpha, size)
 
-	override fun doesGraphicsExist():Boolean = graphics!=null
+	override val doesGraphicsExist get() = graphics!=null
 
 	/* 勲章を描画 */
 	override fun drawMedal(x:Int, y:Int, str:String, tier:Int, scale:Float) {
@@ -128,10 +128,8 @@ class RendererSlick:AbstractRenderer() {
 	}
 
 	/* Is the skin sticky? */
-	override fun isStickySkin(skin:Int):Boolean {
-		return (skin>=0&&skin<resources.blockStickyFlagList.size
-			&&resources.blockStickyFlagList[skin])
-	}
+	override fun isStickySkin(skin:Int):Boolean =
+		(skin>=0&&skin<resources.blockStickyFlagList.size&&resources.blockStickyFlagList[skin])
 
 	/* Sound effects再生 */
 	override fun playSE(name:String, freq:Float, vol:Float) {
@@ -613,25 +611,26 @@ class RendererSlick:AbstractRenderer() {
 			graphics.drawImage(resources.imgMenuBG[1], 0f, 0f)
 		} else {
 			val bgmax = resources.backgroundMax
-			var bg = engine.owner.backgroundStatus.bg%bgmax
-			if(engine.owner.backgroundStatus.fadesw&&!heavyeffect) bg = engine.owner.backgroundStatus.fadebg
+			var bg = engine.owner.bgMan.bg%bgmax
+			if(engine.owner.bgMan.fadesw&&!heavyeffect) bg = engine.owner.bgMan.fadebg
 
 			if(bg in 0 until bgmax&&showBg) {
 				graphics.color = Color.white
 				val bgi = resources.imgPlayBG[bg].res
 				if(heavyeffect) {
+					//TODO when(bg){is spinBG->{
 					val sc = (1-cos(bgi.rotation/PI.pow(3.0))/PI).toFloat()*1024f/minOf(bgi.width, bgi.height)
 					val cx = bgi.width/2*sc
 					val cy = bgi.height/2*sc
 					bgi.setCenterOfRotation(cx, cy)
 					bgi.rotate(0.04f)
 					bgi.draw(320-cx, 240-cy, sc)
-					if(engine.owner.backgroundStatus.fadesw) {
-						val filter = Color(Color.black)
-						filter.a = if(!engine.owner.backgroundStatus.fadestat)
-							engine.owner.backgroundStatus.fadecount.toFloat()/100
-						else
-							(100-engine.owner.backgroundStatus.fadecount).toFloat()/100
+					if(engine.owner.bgMan.fadesw) {
+						val filter = Color(Color.black).apply {
+							a = engine.owner.bgMan.let {
+								if(!it.fadestat) it.fadecount/100f else (100f-it.fadecount)/100
+							}
+						}
 						graphics.color = filter
 						graphics.fillRect(0, 0, 640, 480)
 					}

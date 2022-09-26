@@ -164,7 +164,7 @@ class StateConfigGameTuning:BaseGameState() {
 
 			it.init()
 
-			it.backgroundStatus.bg = -1 // Force no BG
+			it.bgMan.bg = -1 // Force no BG
 
 			// Initialization for each player
 			for(i in 0 until it.players) {
@@ -400,7 +400,7 @@ class StateConfigGameTuning:BaseGameState() {
 				// Retry button
 				if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RETRY)) {
 					gameManager!!.reset()
-					gameManager!!.backgroundStatus.bg = -1 // Force no BG
+					gameManager!!.bgMan.bg = -1 // Force no BG
 				}
 
 				// Exit

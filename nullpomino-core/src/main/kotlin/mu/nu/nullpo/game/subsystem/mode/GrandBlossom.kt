@@ -36,6 +36,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
 
@@ -307,10 +308,10 @@ class GrandBlossom:AbstractMode() {
 		continueNextPieceCount = engine.nextPieceCount
 
 		// Background戻す
-		if(owner.backgroundStatus.bg!=0) {
-			owner.backgroundStatus.fadesw = true
-			owner.backgroundStatus.fadecount = 0
-			owner.backgroundStatus.fadebg = 0
+		if(owner.bgMan.bg!=0) {
+			owner.bgMan.fadesw = true
+			owner.bgMan.fadecount = 0
+			owner.bgMan.fadebg = 0
 		}
 
 		// ghost 復活
@@ -334,7 +335,7 @@ class GrandBlossom:AbstractMode() {
 		stagetimeNow = stagetimeStart
 		rest = engine.field.howManyGems
 
-		if(owner.bgmStatus.bgm.id!=stagebgm) owner.bgmStatus.fadesw = true
+		if(owner.musMan.bgm.id!=stagebgm) owner.musMan.fadesw = true
 	}
 
 	/** stage セットを読み込み
@@ -776,8 +777,8 @@ class GrandBlossom:AbstractMode() {
 		if(gimmickColor>0) engine.itemColorEnable = true
 
 		// BGM切り替え
-		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = BGM.values[stagebgm]
+		owner.musMan.fadesw = false
+		owner.musMan.bgm = BGM.values[stagebgm]
 	}
 
 	/* Render score */
@@ -798,7 +799,7 @@ class GrandBlossom:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2) 5 else 3
 
 				receiver.drawScoreFont(engine, 3, topY-1, "STAGE CLEAR TIME", COLOR.PINK, scale)
-				val type = if(randomnext) 1 else 0
+				val type = randomnext.toInt()
 
 				for(i in 0 until RANKING_MAX) {
 					var gcolor = COLOR.WHITE
@@ -1045,9 +1046,9 @@ class GrandBlossom:AbstractMode() {
 				engine.playSE("levelup")
 
 				// Background切り替え
-				owner.backgroundStatus.fadesw = true
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = nextseclv/100
+				owner.bgMan.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = nextseclv/100
 
 				// Update level for next section
 				nextseclv += 100
@@ -1116,7 +1117,7 @@ class GrandBlossom:AbstractMode() {
 					MAX_STAGE_TOTAL-1 // クリア率が100%で5分以内ならEX7
 
 			// BGM fadeout
-			if((stage==MAX_STAGE_NORMAL-1||stage==laststage)&&trainingType==0) owner.bgmStatus.fadesw = true
+			if((stage==MAX_STAGE_NORMAL-1||stage==laststage)&&trainingType==0) owner.musMan.fadesw = true
 
 			// ギミック解除
 			engine.interruptItemNumber = null
@@ -1264,7 +1265,7 @@ class GrandBlossom:AbstractMode() {
 			if(engine.statc[0]==0) {
 				engine.playSE("died")
 				engine.playSE("shutter")
-				owner.bgmStatus.bgm = BGM.Silent
+				owner.musMan.bgm = BGM.Silent
 
 				engine.timerActive = false
 				engine.blockShowOutlineOnly = false
@@ -1421,7 +1422,7 @@ class GrandBlossom:AbstractMode() {
 		}
 		// Update rankings
 		return (!owner.replayMode&&startstage==0&&trainingType==0&&startnextc==0&&stageset<0&&!always20g&&engine.ai==null&&
-			updateRanking(if(randomnext) 1 else 0, stage, clearper, engine.statistics.time, allclear)!=-1)
+			updateRanking(randomnext.toInt(), stage, clearper, engine.statistics.time, allclear)!=-1)
 	}
 
 	/** Update rankings

@@ -221,7 +221,7 @@ class GrandPhantom:AbstractMode() {
 			version = owner.replayProp.getProperty("phantommania.version", 0)
 		}
 
-		owner.backgroundStatus.bg = startLevel
+		owner.bgMan.bg = startLevel
 	}
 
 	/** Load the settings */
@@ -347,7 +347,7 @@ class GrandPhantom:AbstractMode() {
 						startLevel += change
 						if(startLevel<0) startLevel = 9
 						if(startLevel>9) startLevel = 0
-						owner.backgroundStatus.bg = startLevel
+						owner.bgMan.bg = startLevel
 					}
 					1 -> secAlert = !secAlert
 					2 -> showST = !showST
@@ -399,14 +399,14 @@ class GrandPhantom:AbstractMode() {
 		if(engine.statistics.level<0) nextseclv = 100
 		if(engine.statistics.level>=900) nextseclv = 999
 
-		owner.backgroundStatus.bg = engine.statistics.level/100
+		owner.bgMan.bg = engine.statistics.level/100
 
 		engine.big = big
 		engine.heboHiddenEnable = true
 
 		setSpeed(engine)
 		setStartBgmlv(engine)
-		owner.bgmStatus.bgm = tableBGM[bgmLv]
+		owner.musMan.bgm = tableBGM[bgmLv]
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
@@ -563,7 +563,7 @@ class GrandPhantom:AbstractMode() {
 
 		setSpeed(engine)
 
-		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.bgmStatus.fadesw = true
+		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadesw = true
 	}
 
 	/** Calculates line-clear score
@@ -660,8 +660,8 @@ class GrandPhantom:AbstractMode() {
 
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = tableBGM[bgmLv]
+					owner.musMan.fadesw = false
+					owner.musMan.bgm = tableBGM[bgmLv]
 				}
 
 				sectionlasttime = sectionTime[levelb/100]
@@ -680,8 +680,8 @@ class GrandPhantom:AbstractMode() {
 
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = tableBGM[bgmLv]
+					owner.musMan.fadesw = false
+					owner.musMan.bgm = tableBGM[bgmLv]
 				}
 
 				sectionlasttime = sectionTime[levelb/100]
@@ -700,8 +700,8 @@ class GrandPhantom:AbstractMode() {
 
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = tableBGM[bgmLv]
+					owner.musMan.fadesw = false
+					owner.musMan.bgm = tableBGM[bgmLv]
 				}
 
 				sectionlasttime = sectionTime[levelb/100]
@@ -709,14 +709,14 @@ class GrandPhantom:AbstractMode() {
 				stMedalCheck(engine, levelb/100)
 			} else if(engine.statistics.level>=nextseclv) {
 
-				owner.backgroundStatus.fadesw = true
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = nextseclv/100
+				owner.bgMan.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = nextseclv/100
 
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = tableBGM[bgmLv]
+					owner.musMan.fadesw = false
+					owner.musMan.bgm = tableBGM[bgmLv]
 					engine.playSE("levelup_section")
 				}
 				engine.playSE("levelup")

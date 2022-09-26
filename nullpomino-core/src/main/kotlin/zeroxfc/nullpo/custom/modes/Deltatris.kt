@@ -124,7 +124,7 @@ class Deltatris:MarathonModeBase() {
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
-		engine.owner.backgroundStatus.bg = 0
+		engine.owner.bgMan.bg = 0
 		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
 	}
 	/**
@@ -254,7 +254,7 @@ class Deltatris:MarathonModeBase() {
 		setSpeed(engine)
 		grav = START_GRAVITY.toDouble()
 		if(netIsWatch) {
-			owner.bgmStatus.bgm = BGMStatus.BGM.Silent
+			owner.musMan.bgm = BGMStatus.BGM.Silent
 		}
 	}
 
@@ -490,25 +490,25 @@ class Deltatris:MarathonModeBase() {
 		engine.statistics.level = minOf(19, pieces/(PIECES_MAX[difficulty]/20))
 		val levelDec = pieces.toDouble()/(PIECES_MAX[difficulty].toDouble()/20.0)
 		if(levelDec-levelDec.toInt()>=0.8&&pieces<PIECES_MAX[difficulty]) {
-			if(engine.statistics.level==3||engine.statistics.level==7||engine.statistics.level==11||engine.statistics.level==15||engine.statistics.level==19) owner.bgmStatus.fadesw =
+			if(engine.statistics.level==3||engine.statistics.level==7||engine.statistics.level==11||engine.statistics.level==15||engine.statistics.level==19) owner.musMan.fadesw =
 				true
 		}
 		if(engine.statistics.level>lastLevel) {
-			owner.backgroundStatus.fadesw = true
-			owner.backgroundStatus.fadecount = 0
-			owner.backgroundStatus.fadebg = engine.statistics.level
+			owner.bgMan.fadesw = true
+			owner.bgMan.fadecount = 0
+			owner.bgMan.fadebg = engine.statistics.level
 			if(engine.statistics.level==4||engine.statistics.level==8||engine.statistics.level==12||engine.statistics.level==16) {
 				bgmLv++
-				owner.bgmStatus.bgm = BGMStatus.BGM.GrandT(bgmLv)
-				owner.bgmStatus.fadesw = false
+				owner.musMan.bgm = BGMStatus.BGM.GrandT(bgmLv)
+				owner.musMan.fadesw = false
 			}
 			engine.playSE("levelup")
 		}
 		if(engine.statistics.totalPieceLocked==PIECES_MAX[difficulty]) {
 			engine.playSE("hurryup")
 			bgmLv++
-			owner.bgmStatus.bgm = BGMStatus.BGM.GrandT(bgmLv)
-			owner.bgmStatus.fadesw = false
+			owner.musMan.bgm = BGMStatus.BGM.GrandT(bgmLv)
+			owner.musMan.fadesw = false
 		}
 		setSpeed(engine)
 		return get

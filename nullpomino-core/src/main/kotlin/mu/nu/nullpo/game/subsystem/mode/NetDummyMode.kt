@@ -1302,7 +1302,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 */
 	protected open fun netSendStats(engine:GameEngine) {
 		val bg =
-			if(engine.owner.backgroundStatus.fadesw) engine.owner.backgroundStatus.fadebg else engine.owner.backgroundStatus.bg
+			if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"
@@ -1329,7 +1329,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			{engine.gameActive = it.toBoolean()},
 			{engine.timerActive = it.toBoolean()},
 			{engine.lastEvent = ScoreEvent.parseInt(it)},
-			{engine.owner.backgroundStatus.bg = it.toInt()}).zip(message).forEach {(x, y) ->
+			{engine.owner.bgMan.bg = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
 

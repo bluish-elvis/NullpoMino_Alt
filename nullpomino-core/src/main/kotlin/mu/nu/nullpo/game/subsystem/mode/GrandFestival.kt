@@ -216,7 +216,7 @@ class GrandFestival:AbstractMode() {
 
 		version = (if(!owner.replayMode) CURRENT_VERSION else owner.replayProp.getProperty("scoreattack.version", 0))
 
-		owner.backgroundStatus.bg = startLevel
+		owner.bgMan.bg = startLevel
 	}
 
 	/** Set the gravity speed
@@ -263,7 +263,7 @@ class GrandFestival:AbstractMode() {
 
 				if(startLevel<0) startLevel = 2
 				if(startLevel>2) startLevel = 0
-				owner.backgroundStatus.bg = startLevel
+				owner.bgMan.bg = startLevel
 				engine.statistics.level = startLevel*100
 				nextseclv = engine.statistics.level+100
 				setSpeed(engine)
@@ -308,13 +308,13 @@ class GrandFestival:AbstractMode() {
 		if(engine.statistics.level<0) nextseclv = 100
 		if(engine.statistics.level>=900) nextseclv = 999
 
-		owner.backgroundStatus.bg = engine.statistics.level/100
+		owner.bgMan.bg = engine.statistics.level/100
 
 		engine.big = big
 
 		setSpeed(engine)
 		bgmLv = if(engine.statistics.level<500) 0 else 1
-		owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GrandA(0) else BGM.GrandA(1)
+		owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandA(0) else BGM.GrandA(1)
 
 	}
 
@@ -486,7 +486,7 @@ class GrandFestival:AbstractMode() {
 
 		engine.ghost = alwaysGhost||engine.statistics.level<100
 
-		if(bgmLv==0&&engine.statistics.level>=280&&engine.ending==0) owner.bgmStatus.fadesw = true
+		if(bgmLv==0&&engine.statistics.level>=280&&engine.ending==0) owner.musMan.fadesw = true
 	}
 
 	/** Calculates line-clear score (This function will be called even if no
@@ -516,18 +516,18 @@ class GrandFestival:AbstractMode() {
 					}
 					bonusspeed = 3265/maxOf(1, hanabi)
 					bgmLv++
-					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = BGM.GrandA(1)
+					owner.musMan.fadesw = false
+					owner.musMan.bgm = BGM.GrandA(1)
 
 					engine.statistics.level = 300
 					engine.timerActive = false
 					engine.ending = 2
 					halfminbonus = true
 					halfminline = 0
-				} else if(owner.backgroundStatus.bg<(nextseclv-100)/100) {
-					owner.backgroundStatus.fadesw = true
-					owner.backgroundStatus.fadecount = 0
-					owner.backgroundStatus.fadebg = (nextseclv-100)/100
+				} else if(owner.bgMan.bg<(nextseclv-100)/100) {
+					owner.bgMan.fadesw = true
+					owner.bgMan.fadecount = 0
+					owner.bgMan.fadebg = (nextseclv-100)/100
 				}
 			}
 			lastscore = 6*

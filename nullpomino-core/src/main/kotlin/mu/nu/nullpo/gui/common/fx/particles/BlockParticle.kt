@@ -54,16 +54,16 @@ class BlockParticle @JvmOverloads constructor(
 	}
 
 	override fun draw(i:Int, r:AbstractRenderer) {
-		val size = if(animType==Type.TGM) 1+ticks/60f else 1f
+		val size = if(animType==Type.TGM) 1+ticks/100f else 1f
 		if(animType==Type.TGM)
 			r.drawBlock(
 				pos.x+blockSize/4, pos.y+blockSize/4, objectTexture,
 				if(isFlashing&&ticks/2%2==0) 0f else 0.5f,
-				1f, blockSize*size/BS
+				1f, size*blockSize/BS
 			)
 		r.drawBlock(
 			pos.x, pos.y, objectTexture, if(isFlashing&&ticks/2%2==0) -0.8f else 0f,
-			if(animType==Type.TGM) 2f/3 else 1f, blockSize*size/BS
+			if(animType==Type.TGM) 2f/3 else 1f, size*blockSize/BS
 		)
 	}
 

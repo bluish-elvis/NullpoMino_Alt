@@ -402,7 +402,7 @@ class GrandMastery:AbstractMode() {
 			}
 		}
 
-		owner.backgroundStatus.bg = 20+startLevel
+		owner.bgMan.bg = 20+startLevel
 	}
 
 	/** Set BGM at start of game
@@ -548,7 +548,7 @@ class GrandMastery:AbstractMode() {
 			val change = updateMenu(engine)
 
 			if(change!=0) {
-				owner.backgroundStatus.bg = 20+startLevel
+				owner.bgMan.bg = 20+startLevel
 				engine.statistics.level = startLevel*100
 				setSpeed(engine)
 			}
@@ -617,13 +617,13 @@ class GrandMastery:AbstractMode() {
 
 		internalLevel = engine.statistics.level
 
-		owner.backgroundStatus.bg = 20+engine.statistics.level/100
+		owner.bgMan.bg = 20+engine.statistics.level/100
 
 		engine.big = big
 
 		setSpeed(engine)
 		setStartBgmlv(engine)
-		owner.bgmStatus.bgm = tableBGM[bgmLv]
+		owner.musMan.bgm = tableBGM[bgmLv]
 	}
 
 	/* Render score */
@@ -911,7 +911,7 @@ class GrandMastery:AbstractMode() {
 				engine.blockHiddenAnim = true
 			}
 
-			owner.bgmStatus.bgm = BGM.Ending(2)
+			owner.musMan.bgm = BGM.Ending(2)
 		}
 
 		return false
@@ -951,13 +951,13 @@ class GrandMastery:AbstractMode() {
 		var tempLevel = internalLevel
 		if(cool) tempLevel += 100
 
-		if(tableBGMFadeout[bgmLv]!=-1&&tempLevel>=tableBGMFadeout[bgmLv]) owner.bgmStatus.fadesw = true
+		if(tableBGMFadeout[bgmLv]!=-1&&tempLevel>=tableBGMFadeout[bgmLv]) owner.musMan.fadesw = true
 
 		// BGM切り替え
 		if(tableBGMChange[bgmLv]!=-1&&internalLevel>=tableBGMChange[bgmLv]) {
 			bgmLv++
-			owner.bgmStatus.fadesw = false
-			owner.bgmStatus.bgm = tableBGM[bgmLv]
+			owner.musMan.fadesw = false
+			owner.musMan.bgm = tableBGM[bgmLv]
 		}
 	}
 
@@ -1120,15 +1120,15 @@ class GrandMastery:AbstractMode() {
 				// Next Section
 
 				// Background切り替え
-				owner.backgroundStatus.fadesw = true
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = 20+nextseclv/100
+				owner.bgMan.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = 20+nextseclv/100
 
 				// BGM切り替え
 				if(tableBGMChange[bgmLv]!=-1&&internalLevel>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = tableBGM[bgmLv]
+					owner.musMan.fadesw = false
+					owner.musMan.bgm = tableBGM[bgmLv]
 					engine.playSE("levelup_section")
 				}
 				engine.playSE("levelup")
@@ -1486,8 +1486,8 @@ class GrandMastery:AbstractMode() {
 
 		engine.allowTextRenderByReceiver = true
 
-		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = when {
+		owner.musMan.fadesw = false
+		owner.musMan.bgm = when {
 			engine.ending==1||engine.ending==2&&rollclear==0 -> BGM.Result(2)
 			rollclear>0||promotionFlag&&grade>=promotionalExam -> BGM.Result(3)
 			demotionFlag&&grade<=qualifiedGrade -> BGM.Result(0)

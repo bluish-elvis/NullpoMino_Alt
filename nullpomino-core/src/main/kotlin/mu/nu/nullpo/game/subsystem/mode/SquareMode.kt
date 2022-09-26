@@ -304,7 +304,7 @@ class SquareMode:AbstractMode() {
 				engine.playSE("countdown")
 
 			// BGM fadeout
-			if(remainTime<=5*60&&engine.timerActive) owner.bgmStatus.fadesw = true
+			if(remainTime<=5*60&&engine.timerActive) owner.musMan.fadesw = true
 
 			// Time up!
 			if(engine.statistics.time>=ULTRA_MAX_TIME&&engine.timerActive) {

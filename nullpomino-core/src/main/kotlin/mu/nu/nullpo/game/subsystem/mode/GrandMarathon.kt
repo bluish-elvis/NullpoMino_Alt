@@ -29,6 +29,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
+import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
@@ -36,6 +37,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.LevelGrandMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.gui.common.fx.particles.BlockParticleCollection
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -206,7 +208,7 @@ class GrandMarathon:AbstractMode() {
 			CURRENT_VERSION
 		}
 
-		owner.backgroundStatus.bg = startLevel
+		owner.bgMan.bg = startLevel
 	}
 
 	/*	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
@@ -282,7 +284,7 @@ class GrandMarathon:AbstractMode() {
 			if(updateMenu(engine)!=0) {
 				engine.statistics.level = startLevel*100
 				setSpeed(engine)
-				owner.backgroundStatus.bg = minOf(9, startLevel)
+				owner.bgMan.bg = minOf(9, startLevel)
 			}
 
 			// section time display切替
@@ -297,7 +299,7 @@ class GrandMarathon:AbstractMode() {
 				isShowBestSectionTime = false
 				sectionscomp = 0
 				bgmLv = if(engine.statistics.level<500) 0 else 1
-				owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
+				owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
 				return false
 			}
 
@@ -309,7 +311,7 @@ class GrandMarathon:AbstractMode() {
 			menuCursor = -1
 
 			bgmLv = if(engine.statistics.level<500) 0 else 1
-			owner.bgmStatus.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
+			owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
 			return menuTime<60
 		}
 
@@ -331,7 +333,7 @@ class GrandMarathon:AbstractMode() {
 		if(engine.statistics.level<0) nextseclv = 100
 		if(engine.statistics.level>=900) nextseclv = 999
 
-		owner.backgroundStatus.bg = engine.statistics.level/100
+		owner.bgMan.bg = engine.statistics.level/100
 
 		engine.big = big
 
@@ -547,9 +549,15 @@ class GrandMarathon:AbstractMode() {
 		if(engine.statistics.level>=100&&!alwaysghost) engine.ghost = false
 
 		// BGM fadeout
-		if(bgmLv==0&&engine.statistics.level>=490) owner.bgmStatus.fadesw = true
+		if(bgmLv==0&&engine.statistics.level>=490) owner.musMan.fadesw = true
 	}
 
+	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean {
+		engine.owner.receiver.efxFG.add(
+			BlockParticleCollection(engine, engine.owner.receiver, blk, 4.8f, 2f, engine.combo>=0)
+		)
+		return true
+	}
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, lines:Int):Int {
 		if(engine.ending!=0) return 0
@@ -625,8 +633,8 @@ class GrandMarathon:AbstractMode() {
 					for(i in 1 until tablePier21GradeTime.size)
 						if(engine.statistics.time<tablePier21GradeTime[i]) gmPier = i
 					if(gmPier>3) grade++
-					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = BGM.Ending(0)
+					owner.musMan.fadesw = false
+					owner.musMan.bgm = BGM.Ending(0)
 
 					engine.ending = 2
 				} else {
@@ -637,9 +645,9 @@ class GrandMarathon:AbstractMode() {
 			} else if(engine.statistics.level>=nextseclv) {
 				// Next Section
 
-				owner.backgroundStatus.fadesw = true
-				owner.backgroundStatus.fadecount = 0
-				owner.backgroundStatus.fadebg = nextseclv/100
+				owner.bgMan.fadesw = true
+				owner.bgMan.fadecount = 0
+				owner.bgMan.fadebg = nextseclv/100
 
 				if(nextseclv==300&&grade>=GM_300_GRADE_REQUIRE&&engine.statistics.time<=GM_300_TIME_REQUIRE) {
 					gm300 = true
@@ -657,8 +665,8 @@ class GrandMarathon:AbstractMode() {
 
 				if(bgmLv==0&&nextseclv==500) {
 					bgmLv++
-					owner.bgmStatus.fadesw = false
-					owner.bgmStatus.bgm = BGM.GrandM(1)
+					owner.musMan.fadesw = false
+					owner.musMan.bgm = BGM.GrandM(1)
 				}
 
 				nextseclv += 100
@@ -793,8 +801,8 @@ class GrandMarathon:AbstractMode() {
 
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine):Boolean {
-		owner.bgmStatus.fadesw = false
-		owner.bgmStatus.bgm = when(engine.ending) {
+		owner.musMan.fadesw = false
+		owner.musMan.bgm = when(engine.ending) {
 			0 -> BGM.Result(0)
 			2 -> BGM.Result(3)
 			else -> BGM.Result(2)
