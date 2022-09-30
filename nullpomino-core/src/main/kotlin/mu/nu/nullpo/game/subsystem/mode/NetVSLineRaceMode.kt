@@ -30,6 +30,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -108,7 +109,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	}
 
 	/* Calculate Score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Meter
 		updateMeter(engine)
 

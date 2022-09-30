@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -75,12 +76,12 @@ class GrandFinale:AbstractMode() {
 	private var secretGrade = 0
 
 	/** Section Time */
-	private var sectionTime = IntArray(SECTION_MAX)
-	private var sectionLine = IntArray(SECTION_MAX)
+	private val sectionTime = Array(SECTION_MAX) {0}
+	private val sectionLine = Array(SECTION_MAX) {0}
 
 	/** This will be true if the player achieves new section time record in
 	 * specific section */
-	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
+	private val sectionIsNewRecord = Array(SECTION_MAX) {false}
 
 	/** Amount of sections completed */
 	private var sectionscomp = 0
@@ -128,31 +129,30 @@ class GrandFinale:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Grade records */
-	private var rankingGrade:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingGrade = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Level records */
-	private var rankingLevel:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Time records */
-	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Game completed flag records */
-	private var rankingRollclear:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingRollclear = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Best section time records */
-	private var bestSectionTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(SECTION_MAX)}
-	private var bestSectionLine:Array<IntArray> = Array(RANKING_TYPE) {IntArray(SECTION_MAX)}
+	private val bestSectionTime = List(RANKING_TYPE) {MutableList(SECTION_MAX) {0}}
+	private val bestSectionLine = List(RANKING_TYPE) {MutableList(SECTION_MAX) {0}}
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*((
-				rankingGrade.mapIndexed {a, x -> "$a.lines" to x}+
-					rankingLevel.mapIndexed {a, x -> "$a.lfes" to x}+
-					rankingTime.mapIndexed {a, x -> "$a.time" to x}+
-					rankingRollclear.mapIndexed {a, x -> "$a.rollclear" to x}+
-					bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}+
-					bestSectionLine.mapIndexed {a, x -> "$a.section.line" to x}
-				).toTypedArray()))
+	override val rankMap
+		get() = rankMapOf(
+			rankingGrade.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
+				rankingRollclear.mapIndexed {a, x -> "$a.rollclear" to x}+
+				bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}+
+				bestSectionLine.mapIndexed {a, x -> "$a.section.line" to x}
+		)
 	/** Returns the name of this mode */
 	override val name = "Grand Finale"
 	override val gameIntensity = 3
@@ -173,9 +173,9 @@ class GrandFinale:AbstractMode() {
 		comboValue = 0
 		lastscore = 0
 		secretGrade = 0
-		sectionTime = IntArray(SECTION_MAX)
-		sectionLine = IntArray(SECTION_MAX)
-		sectionIsNewRecord = BooleanArray(SECTION_MAX)
+		sectionTime.fill(0)
+		sectionLine.fill(0)
+		sectionIsNewRecord.fill(false)
 		sectionscomp = 0
 		sectionavgtime = 0
 		sectionlasttime = 0
@@ -189,12 +189,12 @@ class GrandFinale:AbstractMode() {
 		big = false
 
 		rankingRank = -1
-		rankingGrade = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLevel = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingRollclear = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		bestSectionTime = Array(RANKING_TYPE) {IntArray(SECTION_MAX)}
-		bestSectionLine = Array(RANKING_TYPE) {IntArray(SECTION_MAX)}
+		rankingGrade.forEach {it.fill(0)}
+		rankingLevel.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
+		rankingRollclear.forEach {it.fill(0)}
+		bestSectionTime.forEach {it.fill(0)}
+		bestSectionLine.forEach {it.fill(0)}
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
@@ -566,19 +566,20 @@ class GrandFinale:AbstractMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		if(engine.ending>0&&lines>0)
-			engine.tempHanabi += ((lines*1.9-.9)*(if(grade==31) 3.5 else 1.0+grade/10.0)*
-				(if(engine.twist) 4.0 else if(engine.twistMini) 2.0 else 1.0)
-				*if(engine.lockDelay>engine.lockDelayNow) 1.3 else 1.0).toInt()
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		val li = ev.lines
+		if(engine.ending>0&&li>0)
+			engine.tempHanabi += ((li*1.9f-.9f)*(if(grade==31) 3.5f else 1f+grade/10f)*
+				(if(ev.twistMini) 2 else if(ev.twist) 4 else 1)*
+				if(engine.lockDelay>engine.lockDelayNow) 1.3f else 1f).toInt()
 
 		// Combo
-		comboValue = if(lines==0) 1
-		else maxOf(1, comboValue+2*lines-2)
+		comboValue = if(li==0) 1
+		else maxOf(1, comboValue+2*li-2)
 
-		if(lines>=1&&engine.ending==0) {
+		if(li>=1&&engine.ending==0) {
 			if(gametype==2) {
-				gradeinternal += lines*(1+engine.lives)
+				gradeinternal += li*(1+engine.lives)
 				val gm = FURTHEST_LINES*(MAX_LIVES[2]+1)
 				val gi = gradeinternal*31/gm
 				if(gradeinternal>gm) gradeinternal = gm
@@ -589,7 +590,7 @@ class GrandFinale:AbstractMode() {
 				}
 			}
 			// 4 lines clear count
-			if(lines>=4) { // SK medal
+			if(li>=4) { // SK medal
 				if(big) {
 					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
 						||engine.statistics.totalQuadruple==4
@@ -635,22 +636,22 @@ class GrandFinale:AbstractMode() {
 			val levelb = engine.statistics.level
 			when(gametype) {
 				1 -> {//joker
-					if(lines>=1) engine.statistics.level++
-					if(lines>=3) joker++
-					if(engine.statistics.level>=500&&lines>0&&joker>0) {
+					engine.statistics.level++
+					if(li>=3) joker++
+					if(engine.statistics.level>=500&&joker>0) {
 						engine.statistics.level += stacks
 						stacks = 0
-						if(lines<=3||engine.split) joker--
+						if(li<=3||engine.split) joker--
 
 					}
 					if(engine.statistics.level<500||joker>0) {
-						engine.statistics.level += lines
-						if(lines>2) engine.statistics.level += lines-2
+						engine.statistics.level += li
+						if(li>2) engine.statistics.level += li-2
 					}
 				}
 				0 -> {
-					engine.statistics.level += lines
-					if(lines>2) engine.statistics.level += lines-2
+					engine.statistics.level += li
+					if(li>2) engine.statistics.level += li-2
 				}
 				2 -> engine.statistics.level = engine.statistics.lines*999/FURTHEST_LINES
 			}
@@ -729,8 +730,8 @@ class GrandFinale:AbstractMode() {
 			// Add score
 
 			val section = levelb/100
-			if(section>=0&&section<sectionTime.size) sectionLine[levelb/100] += if(gametype==1) (lines>=4).toInt() else lines
-			lastscore = (((levelb+lines)/4+engine.softdropFall+engine.manualLock.toInt())*lines*comboValue+
+			if(section>=0&&section<sectionTime.size) sectionLine[levelb/100] += if(gametype==1) (li>=4).toInt() else li
+			lastscore = (((levelb+li)/4+engine.softdropFall+engine.manualLock.toInt())*li*comboValue+
 				maxOf(0, engine.lockDelay-engine.lockDelayNow)+engine.statistics.level/2)*if(engine.field.isEmpty) 2 else 1
 
 			engine.statistics.scoreLine += lastscore

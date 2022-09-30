@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -72,10 +73,10 @@ class GrandStorm:AbstractMode() {
 	private var secretGrade = 0
 
 	/** Section Time */
-	private var sectionTime = IntArray(SECTION_MAX)
+	private var sectionTime = MutableList(SECTION_MAX) {0}
 
 	/** 新記録が出たSection はtrue */
-	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
+	private var sectionIsNewRecord = MutableList(SECTION_MAX) {false}
 
 	/** Cleared Section count */
 	private var sectionscomp = 0
@@ -140,16 +141,16 @@ class GrandStorm:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Rankings' 段位 */
-	private var rankingGrade = IntArray(RANKING_MAX)
+	private val rankingGrade = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' level */
-	private var rankingLevel = IntArray(RANKING_MAX)
+	private val rankingLevel = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' times */
-	private var rankingTime = IntArray(RANKING_MAX)
+	private val rankingTime = MutableList(RANKING_MAX) {0}
 
 	/** Section Time記録 */
-	private var bestSectionTime = IntArray(SECTION_MAX)
+	private val bestSectionTime = MutableList(SECTION_MAX) {0}
 
 	private var decoration = 0
 	private var dectemp = 0
@@ -160,8 +161,13 @@ class GrandStorm:AbstractMode() {
 	/* Initialization */
 	override val menu:MenuList = MenuList("speedmania1", itemLevel, itemQualify, itemAlert, itemST, itemBig)
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "section.time" to bestSectionTime)
+	override val rankMap
+		get() = rankMapOf(
+			"grade" to rankingGrade,
+			"level" to rankingLevel,
+			"time" to rankingTime,
+			"section.time" to bestSectionTime
+		)
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
@@ -175,8 +181,8 @@ class GrandStorm:AbstractMode() {
 		grade = 0
 		gradeflash = 0
 		secretGrade = 0
-		sectionTime = IntArray(SECTION_MAX)
-		sectionIsNewRecord = BooleanArray(SECTION_MAX)
+		sectionTime.fill(0)
+		sectionIsNewRecord.fill(false)
 		sectionscomp = 0
 		sectionavgtime = 0
 		sectionlasttime = 0
@@ -196,10 +202,10 @@ class GrandStorm:AbstractMode() {
 		decoration = 0
 		dectemp = 0
 		rankingRank = -1
-		rankingGrade = IntArray(RANKING_MAX)
-		rankingLevel = IntArray(RANKING_MAX)
-		rankingTime = IntArray(RANKING_MAX)
-		bestSectionTime = IntArray(SECTION_MAX)
+		rankingGrade.fill(0)
+		rankingLevel.fill(0)
+		rankingTime.fill(0)
+		bestSectionTime.fill(0)
 
 		engine.twistEnable = false
 		engine.b2bEnable = true
@@ -551,19 +557,20 @@ class GrandStorm:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Combo
-		comboValue = if(lines==0) 1
-		else maxOf(1, comboValue+2*lines-2)
+		val li = ev.lines
+		comboValue = if(li==0) 1
+		else maxOf(1, comboValue+2*li-2)
 
 		// RO medal 用カウント
 		var spinTemp = engine.nowPieceSpinCount
 		if(spinTemp>4) spinTemp = 4
 		spinCount += spinTemp
 
-		if(lines>=1&&engine.ending==0) {
+		if(li>=1&&engine.ending==0) {
 			// 4-line clearカウント
-			if(lines>=4)
+			if(li>=4)
 			// SK medal
 				if(big) {
 					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
@@ -581,9 +588,9 @@ class GrandStorm:AbstractMode() {
 			// AC medal
 			if(engine.field.isEmpty) {
 
-				dectemp += lines*25
-				if(lines==3) dectemp += 25
-				if(lines==4) dectemp += 150
+				dectemp += li*25
+				if(li==3) dectemp += 25
+				if(li==4) dectemp += 150
 				if(medalAC<3) {
 					dectemp += 3+medalAC*4// 3 10 21
 					engine.playSE("medal${++medalAC}")
@@ -618,7 +625,7 @@ class GrandStorm:AbstractMode() {
 
 			// Level up
 			val levelb = engine.statistics.level
-			engine.statistics.level += lines
+			engine.statistics.level += li+maxOf(0, minOf(2, ev.b2b))
 			levelUp(engine)
 
 			if(engine.statistics.level>=999) {
@@ -705,8 +712,8 @@ class GrandStorm:AbstractMode() {
 
 			// Calculate score
 
-			lastscore = ((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+if(engine.manualLock) 1 else 0)
-				*lines*comboValue*if(engine.field.isEmpty) 4 else 1)
+			lastscore = ((((levelb+li)/(if(engine.b2b) 3 else 4)+engine.softdropFall+if(engine.manualLock) 1 else 0)
+				*li*comboValue*if(engine.field.isEmpty) 4 else 1)
 				+engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			engine.statistics.scoreLine += lastscore
 			return lastscore

@@ -52,7 +52,7 @@
   <tns:description>Watch a replay file.</tns:description>
  </tns:MenuItem>
  <tns:MenuItem>
-  <tns:name>Netplay</tns:name>
+  <tns:name>NetPlay</tns:name>
   <tns:description>Connect to a server and play against various players over the internet.</tns:description>
  </tns:MenuItem>
  <tns:MenuItem>

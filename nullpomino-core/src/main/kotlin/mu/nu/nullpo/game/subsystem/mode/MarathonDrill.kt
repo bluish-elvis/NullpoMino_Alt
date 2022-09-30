@@ -33,6 +33,7 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
@@ -43,7 +44,7 @@ class MarathonDrill:NetDummyMode() {
 
 	/** Previous garbage hole */
 	private var garbageHole = 0
-	private var garbageHistory = IntArray(7) {0}
+	private var garbageHistory = MutableList(7) {0}
 
 	/** Garbage timer */
 	private var garbageTimer = 0
@@ -79,35 +80,36 @@ class MarathonDrill:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' scores */
-	private var rankingScore:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+	private val rankingScore = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0L}}
 
 	/** Rankings' line counts */
-	private var rankingLines:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+	private val rankingLines = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' depth */
-	private var rankingDepth:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+	private val rankingDepth = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*((rankingScore.mapIndexed {a, x -> "$a.stage" to x}+
+	override val rankMap
+		get() = rankMapOf(
+			rankingScore.mapIndexed {a, x -> "$a.stage" to x}+
 				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingDepth.mapIndexed {a, x -> "$a.deoth" to x}/*+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x}*/).toTypedArray())
+				rankingDepth.mapIndexed {a, x -> "$a.depth" to x}/*+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x}*/
 		)
+
 	/* Mode name */
 	override val name = "Drill Marathon"
 	override val gameIntensity = 1
 	/* Initialization for each player */
 	override fun playerInit(engine:GameEngine) {
-		rankingScore = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingLines = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingDepth = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingDepth.forEach {it.fill(0)}
 		super.playerInit(engine)
 
 		lastscore = 0
 
 		garbageHole = -1
-		garbageHistory = IntArray(7) {-1}
+		garbageHistory.fill(-1)
 		garbageTimer = 0
 		garbageDigged = 0
 		garbageTotal = 0
@@ -321,10 +323,9 @@ class MarathonDrill:NetDummyMode() {
 
 			if(garbagePending>0) {
 				val fontColor = when {
-					garbagePending>=1 -> COLOR.YELLOW
 					garbagePending>=3 -> COLOR.ORANGE
 					garbagePending>=4 -> COLOR.RED
-					else -> COLOR.WHITE
+					else -> COLOR.YELLOW
 				}
 				val strTempGarbage = String.format("%2d", garbagePending)
 				receiver.drawMenuNum(engine, 10, 20, strTempGarbage, fontColor)
@@ -404,21 +405,23 @@ class MarathonDrill:NetDummyMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		garbageTimer -= getGarbageMaxTime(engine.statistics.level)/50
 		// Line clear bonus
-		val pts = calcPoint(engine, lines)
+		val li = ev.lines
+		val pts = calcPoint(engine, ev)
 		val cln = engine.garbageClearing
-		if(lines>0) {
+		if(li>0) {
 			garbageDigged += cln
 			// Combo
-			val cmb = if(engine.combo>0) engine.combo else 0
+			val cmb = if(ev.combo>0) ev.combo else 0
 			// Add to score
 			var get = calcScoreCombo(pts, cmb, 0, 0)
 
 			get += cln*100
 			// Decrease waiting garbage
-			garbageTimer -= maxOf(0, 60-engine.statistics.level*2-cmb*7)+calcPower(engine, lines)*20
+			val pow = calcPower(engine, ev, true)
+			garbageTimer -= maxOf(0, 60-engine.statistics.level*2-cmb*7)+pow*20
 			if(goalType==GOALTYPE_NORMAL)
 				while(garbagePending>0&&garbageTimer<0) {
 					garbageTimer += getGarbageMaxTime(engine.statistics.level)
@@ -526,7 +529,7 @@ class MarathonDrill:NetDummyMode() {
 		}
 
 		if(change) {
-			garbageHistory = (garbageHistory.drop(1)+garbageHole).toIntArray()
+			garbageHistory = (garbageHistory.drop(1)+garbageHole).toMutableList()
 			do garbageHole = engine.random.nextInt(w)
 			while(garbageHistory.any {it==garbageHole}||(garbageHistory.last()-garbageHole) in -2..2)
 		}
@@ -592,35 +595,12 @@ class MarathonDrill:NetDummyMode() {
 		prop.setProperty("digchallenge.version", version)
 	}
 
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(j in 0 until GOALTYPE_MAX) {
-				rankingScore[j][i] = prop.getProperty("$ruleName.$j.$i.score", 0)
-				rankingLines[j][i] = prop.getProperty("$ruleName.$j.$i.lines", 0)
-				rankingDepth[j][i] = prop.getProperty("$ruleName.$j.$i.depth", 0)
-			}
-	}
-
-	/** Save rankings
-	 * @param type Goal Type
-	 * @param ruleName Rule name
-	 */
-	private fun saveRanking(type:Int, ruleName:String) {
-		super.saveRanking((0 until RANKING_MAX).flatMap {i ->
-			listOf(
-				"$ruleName.$type.$i.score" to rankingScore[type][i],
-				"$ruleName.$type.$i.lines" to rankingLines[type][i],
-				"$ruleName.$type.$i.depth" to rankingDepth[type][i]
-			)
-		}.toMap())
-	}
-
 	/** Update rankings
 	 * @param sc Score
 	 * @param li Lines
 	 * @param dep Depth
 	 */
-	private fun updateRanking(sc:Int, li:Int, dep:Int, type:Int):Int {
+	private fun updateRanking(sc:Long, li:Int, dep:Int, type:Int):Int {
 		rankingRank = checkRanking(sc, li, dep, type)
 
 		if(rankingRank!=-1) {
@@ -645,7 +625,7 @@ class MarathonDrill:NetDummyMode() {
 	 * @param dep Depth
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, li:Int, dep:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, li:Int, dep:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
@@ -729,8 +709,7 @@ class MarathonDrill:NetDummyMode() {
 	/** NET: Get goal type */
 	override fun netGetGoalType():Int = goalType
 
-	/** NET: It returns true when the current settings doesn't prevent
-	 * leaderboard screen from showing. */
+	/** NET: It returns true when the current settings don't prevent leaderboard screen from showing. */
 	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = startLevel==0&&engine.ai==null
 
 	companion object {

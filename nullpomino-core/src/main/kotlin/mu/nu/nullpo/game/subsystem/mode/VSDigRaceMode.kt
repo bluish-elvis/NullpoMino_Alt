@@ -34,6 +34,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Block.COLOR
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
@@ -147,7 +148,7 @@ class VSDigRaceMode:AbstractMode() {
 			engine.random = Random(owner.engine[0].randSeed)
 		}
 
-		engine.frameColor = Companion.PLAYER_COLOR_FRAME[pid]
+		engine.frameColor = PLAYER_COLOR_FRAME[pid]
 
 		if(!engine.owner.replayMode) {
 			version = CURRENT_VERSION
@@ -430,7 +431,7 @@ class VSDigRaceMode:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		val enemyID = if(engine.playerID==0) 1 else 0
 
 		// Update meter
@@ -439,7 +440,7 @@ class VSDigRaceMode:AbstractMode() {
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
 		// Game completed
-		if(lines>0&&remainLines<=0) {
+		if(ev.lines>0&&remainLines<=0) {
 			engine.timerActive = false
 			owner.engine[enemyID].stat = GameEngine.Status.GAMEOVER
 			owner.engine[enemyID].resetStatc()

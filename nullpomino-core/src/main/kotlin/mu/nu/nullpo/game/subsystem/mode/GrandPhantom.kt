@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -71,11 +72,11 @@ class GrandPhantom:AbstractMode() {
 	private var bgmLv = 0
 
 	/** Section Time */
-	private var sectionTime = IntArray(SECTION_MAX)
+	private var sectionTime = MutableList(SECTION_MAX) {0}
 
 	/** This will be true if the player achieves
 	 * new section time record in specific section */
-	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
+	private var sectionIsNewRecord = MutableList(SECTION_MAX) {false}
 
 	/** Amount of sections completed */
 	private var sectionscomp = 0
@@ -140,25 +141,25 @@ class GrandPhantom:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Grade records */
-	private var rankingGrade = IntArray(RANKING_MAX)
+	private val rankingGrade = MutableList(RANKING_MAX) {0}
 
 	/** Level records */
-	private var rankingLevel = IntArray(RANKING_MAX)
+	private val rankingLevel = MutableList(RANKING_MAX) {0}
 
 	/** Time records */
-	private var rankingTime = IntArray(RANKING_MAX)
+	private val rankingTime = MutableList(RANKING_MAX) {0}
 
 	/** Roll-Cleared records */
-	private var rankingRollclear = IntArray(RANKING_MAX)
+	private val rankingRollclear = MutableList(RANKING_MAX) {0}
 
 	/** Best section time records */
-	private var bestSectionTime = IntArray(SECTION_MAX)
+	private val bestSectionTime = MutableList(SECTION_MAX) {0}
 
 	/** Returns the name of this mode */
 	override val name = "Grand Phantom"
 	override val gameIntensity = 3
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
+	override val rankMap
+		get() = rankMapOf(
 			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollclear" to rankingRollclear,
 			"section.time" to bestSectionTime
 		)
@@ -176,8 +177,8 @@ class GrandPhantom:AbstractMode() {
 		rollclear = 0
 		rollstarted = false
 		bgmLv = 0
-		sectionTime = IntArray(SECTION_MAX)
-		sectionIsNewRecord = BooleanArray(SECTION_MAX)
+		sectionTime.fill(0)
+		sectionIsNewRecord.fill(false)
 		sectionavgtime = 0
 		sectionlasttime = 0
 		sectionfourline = 0
@@ -197,11 +198,11 @@ class GrandPhantom:AbstractMode() {
 		showST = true
 
 		rankingRank = -1
-		rankingGrade = IntArray(RANKING_MAX)
-		rankingLevel = IntArray(RANKING_MAX)
-		rankingTime = IntArray(RANKING_MAX)
-		rankingRollclear = IntArray(RANKING_MAX)
-		bestSectionTime = IntArray(SECTION_MAX)
+		rankingGrade.fill(0)
+		rankingLevel.fill(0)
+		rankingTime.fill(0)
+		rankingRollclear.fill(0)
+		bestSectionTime.fill(0)
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
@@ -568,16 +569,17 @@ class GrandPhantom:AbstractMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		comboValue = if(lines==0) 1
-		else maxOf(1, comboValue+2*lines-2)
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		val li = ev.lines
+		comboValue = if(li==0) 1
+		else maxOf(1, comboValue+2*li-2)
 
 		var spinTemp = engine.nowPieceSpinCount
 		if(spinTemp>4) spinTemp = 4
 		spinCount += spinTemp
 
-		if(lines>=1&&engine.ending==0) {
-			if(lines>=4) {
+		if(li>=1&&engine.ending==0) {
+			if(li>=4) {
 				sectionfourline++
 
 				if(big) {
@@ -622,7 +624,7 @@ class GrandPhantom:AbstractMode() {
 			}
 
 			val levelb = engine.statistics.level
-			engine.statistics.level += lines
+			engine.statistics.level += li
 			levelUp(engine)
 
 			if(engine.statistics.level>=999) {
@@ -744,7 +746,7 @@ class GrandPhantom:AbstractMode() {
 				if(nextseclv>999) nextseclv = 999
 			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 
-			lastscore = ((((levelb+lines)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*lines*comboValue
+			lastscore = ((((levelb+li)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*li*comboValue
 				*if(engine.field.isEmpty) 4 else 1)
 				+engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			engine.statistics.scoreLine += lastscore

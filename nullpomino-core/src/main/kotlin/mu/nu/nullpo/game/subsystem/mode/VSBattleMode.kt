@@ -34,6 +34,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
@@ -224,7 +225,7 @@ class VSBattleMode:AbstractMode() {
 		val pid = engine.playerID
 		bgmno = prop.getProperty("vsbattle.bgmno", 0)
 		garbageType[pid] = prop.getProperty("vsbattle.garbageType.p$pid", 0)
-		messiness[pid] = prop.getProperty("vsbattle.messiness.p$pid", intArrayOf(90, 30))
+		messiness[pid] = prop.getProperties("vsbattle.messiness.p$pid", intArrayOf(90, 30))
 		garbageCounter[pid] = prop.getProperty("vsbattle.garbageCounter.p$pid", true)
 		garbageBlocking[pid] = prop.getProperty("vsbattle.garbageBlocking.p$pid", true)
 		twistEnableType[pid] = prop.getProperty("vsbattle.twistEnableType.p$pid", 1)
@@ -615,15 +616,15 @@ class VSBattleMode:AbstractMode() {
 			val y = receiver.fieldY(engine)+22*EventReceiver.BS+1
 
 
-			garbageEntries[pid].forEachIndexed {i, g ->
+			garbageEntries[pid].forEachIndexed {i, (lines, playerID, time) ->
 				receiver.drawDirectNum(
-					x+engine.fieldWidth*EventReceiver.BS, y-i*16, "${g.lines}", when {
-						g.time>0&&(g.time/2)%2==1 -> EventReceiver.getPlayerColor(g.playerID)
-						g.lines>=5 -> COLOR.RED
-						g.lines>=3 -> COLOR.ORANGE
-						g.lines>=1 -> COLOR.YELLOW
+					x+engine.fieldWidth*EventReceiver.BS, y-i*16, "${lines}", when {
+						time>0&&(time/2)%2==1 -> EventReceiver.getPlayerColor(playerID)
+						lines>=5 -> COLOR.RED
+						lines>=3 -> COLOR.ORANGE
+						lines>=1 -> COLOR.YELLOW
 						else -> COLOR.WHITE
-					}, 1f-g.time*0.01f
+					}, 1f-time*0.01f
 				)
 			}
 
@@ -676,22 +677,24 @@ class VSBattleMode:AbstractMode() {
 		}
 	}
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 
-		var pts = super.calcPower(engine, lines)
+		var pts = 0
 		//  Attack
 		val pid = engine.playerID
-		if(lines>0) {
+		if(ev.lines>0) {
 
+			val pow = super.calcPower(engine, ev, true)
 			// gem block attack
-			pts += engine.field.howManyGemClears
+			val gems = engine.field.howManyGemClears
+			engine.statistics.attacksBonus += gems
+			pts += pow+gems
 
-			engine.statistics.attacks += pts
 			sendGarbage(pts, pid)
 		}
 
 		// Rising auction
-		if((lines==0||!garbageBlocking[pid])&&garbage[pid]>0) {
+		if((ev.lines==0||!garbageBlocking[pid])&&garbage[pid]>0) {
 			engine.playSE("linefall${if(garbage[pid]>=3) "" else "1"}")
 			var gct = 0
 			do {

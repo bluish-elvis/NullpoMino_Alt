@@ -55,10 +55,10 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' line counts */
-	private var rankingScore:Array<Array<IntArray>> = emptyArray()
+	private val rankingScore = List(3) {List(FEVER_MAPS.size) {MutableList(RANKING_MAX) {0L}}}
 
 	/** Rankings' times */
-	private var rankingTime:Array<Array<IntArray>> = emptyArray()
+	private val rankingTime = List(3) {List(FEVER_MAPS.size) {MutableList(RANKING_MAX) {0}}}
 
 	/** Flag for all clear */
 	private var zenKeshiDisplay = 0
@@ -86,7 +86,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	private var cleared = false
 
 	/** List of subsets in selected values */
-	private var mapSubsets:Array<String>? = null
+	private var mapSubsets = List(0) {""}
 
 	/** Fever chain count when last chain hit occurred */
 	private var feverChainDisplay = 0
@@ -113,6 +113,12 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	/** ??? */
 	private var xyzzy = 0
 
+	override val rankMap
+		get() = rankMapOf(rankingScore.flatMapIndexed {a, x ->
+			x.flatMapIndexed {b, y -> y.mapIndexed {c, z -> "$a.$b.$c.score" to z}}
+		}+rankingTime.flatMapIndexed {a, w ->
+			w.flatMapIndexed {b, x -> x.mapIndexed {c, z -> "$a.$b.$c.time" to z}}
+		})
 	/* Mode name */
 	override val name = "AVALANCHE 1P FEVER MARATHON (RC2)"
 	override val gameIntensity = 1
@@ -134,8 +140,8 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		feverChain = 5
 
 		rankingRank = -1
-		rankingScore = Array(3) {Array(FEVER_MAPS.size) {IntArray(RANKING_MAX)}}
-		rankingTime = Array(3) {Array(FEVER_MAPS.size) {IntArray(RANKING_MAX)}}
+		rankingScore.forEach {it.forEach {it.fill(0)}}
+		rankingTime.forEach {it.forEach {it.fill(0)}}
 
 		xyzzy = 0
 		fastenable = 0
@@ -566,56 +572,29 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			feverChainMin = propFeverMap.getProperty("minChain", 3)
 			feverChainMax = propFeverMap.getProperty("maxChain", 15)
 			val subsets = propFeverMap.getProperty("sets")
-			mapSubsets = subsets.split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			mapSubsets = subsets.split(",".toRegex()).dropLastWhile {it.isEmpty()}
 		}
 	}
 
 	private fun loadFeverMap(engine:GameEngine, chain:Int) {
-		loadFeverMap(engine, engine.random, chain, engine.random.nextInt(mapSubsets!!.size))
+		loadFeverMap(engine, engine.random, chain, engine.random.nextInt(mapSubsets.size))
 	}
 
 	private fun loadFeverMap(engine:GameEngine, rand:Random, chain:Int, subset:Int) {
 		engine.createFieldIfNeeded()
 		engine.field.reset()
-		engine.field.stringToField(propFeverMap.getProperty("${mapSubsets!![subset]}.${numColors}colors.${chain}chain"))
+		engine.field.stringToField(propFeverMap.getProperty("${mapSubsets[subset]}.${numColors}colors.${chain}chain"))
 		engine.field.setBlockLinkByColor()
 		engine.field.setAllAttribute(false, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.ANTIGRAVITY)
 		engine.field.setAllSkin(engine.skin)
 		engine.field.shuffleColors(BLOCK_COLORS, numColors, rand)
 	}
 
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(j in FEVER_MAPS.indices)
-				for(c in 3..5) {
-					rankingScore[c-3][j][i] = prop.getProperty(
-						"$ruleName.$c.${FEVER_MAPS[j]}.score.$i", 0
-					)
-					rankingTime[c-3][j][i] = prop.getProperty(
-						"$ruleName.$c.${FEVER_MAPS[j]}.time.$i", -1
-					)
-				}
-	}
-
-	/** Save rankings to owner.recordProp */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking((3..5).flatMap {c ->
-			FEVER_MAPS.indices.flatMap {j ->
-				(0 until RANKING_MAX).flatMap {i ->
-					listOf(
-						"$ruleName.$c.$j.score.$i" to rankingScore[c-3][j][i],
-						"$ruleName.$c.$j.time.$i" to rankingTime[c-3][j][i]
-					)
-				}
-			}
-		})
-	}
-
 	/** Update rankings
 	 * @param sc Score
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, time:Int, type:Int, colors:Int):Int {
+	private fun updateRanking(sc:Long, time:Int, type:Int, colors:Int):Int {
 		rankingRank = checkRanking(sc, time, type, colors)
 
 		if(rankingRank!=-1) {
@@ -637,7 +616,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, time:Int, type:Int, colors:Int):Int {
+	private fun checkRanking(sc:Long, time:Int, type:Int, colors:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(sc>rankingScore[colors-3][type][i])
 				return i

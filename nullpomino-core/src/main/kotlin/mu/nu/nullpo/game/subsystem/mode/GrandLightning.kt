@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -85,7 +86,7 @@ class GrandLightning:AbstractMode() {
 	private var bgmLv = 0
 
 	/** Section Time */
-	private var sectionTime = IntArray(SECTION_MAX)
+	private var sectionTime = Array(SECTION_MAX) {0}
 
 	/** 新記録が出たSection はtrue */
 	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
@@ -144,19 +145,19 @@ class GrandLightning:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Rankings' 段位 */
-	private var rankingGrade = IntArray(RANKING_MAX)
+	private val rankingGrade = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' level */
-	private var rankingLevel = IntArray(RANKING_MAX)
+	private val rankingLevel = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' times */
-	private var rankingTime = IntArray(RANKING_MAX)
+	private val rankingTime = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' Roll completely cleared flag */
-	private var rankingRollclear = IntArray(RANKING_MAX)
+	private val rankingRollclear = MutableList(RANKING_MAX) {0}
 
 	/** Section Time記録 */
-	private var bestSectionTime = IntArray(SECTION_MAX)
+	private val bestSectionTime = MutableList(SECTION_MAX) {0}
 
 	private var decoration = 0
 	private var dectemp = 0
@@ -167,8 +168,8 @@ class GrandLightning:AbstractMode() {
 	/* Initialization */
 	override val menu:MenuList = MenuList("speedmania2", itemLevel, itemQualify, itemAlert, itemST, itemBig)
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
+	override val rankMap
+		get() = rankMapOf(
 			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollclear" to rankingRollclear,
 			"section.time" to bestSectionTime
 		)
@@ -188,7 +189,7 @@ class GrandLightning:AbstractMode() {
 		regretdispframe = 0
 		secretGrade = 0
 		bgmLv = 0
-		sectionTime = IntArray(SECTION_MAX)
+		sectionTime.fill(0)
 		sectionIsNewRecord = BooleanArray(SECTION_MAX)
 		sectionscomp = 0
 		sectionavgtime = 0
@@ -208,11 +209,11 @@ class GrandLightning:AbstractMode() {
 		dectemp = 0
 
 		rankingRank = -1
-		rankingGrade = IntArray(RANKING_MAX)
-		rankingLevel = IntArray(RANKING_MAX)
-		rankingTime = IntArray(RANKING_MAX)
-		rankingRollclear = IntArray(RANKING_MAX)
-		bestSectionTime = IntArray(SECTION_MAX)
+		rankingGrade.fill(0)
+		rankingLevel.fill(0)
+		rankingTime.fill(0)
+		rankingRollclear.fill(0)
+		bestSectionTime.fill(0)
 
 		engine.twistEnable = true
 		engine.b2bEnable = true
@@ -607,14 +608,15 @@ class GrandLightning:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Combo
-		comboValue = if(lines==0) 1
-		else maxOf(1, comboValue+2*lines-2)
+		val li = ev.lines
+		comboValue = if(li==0) 1
+		else maxOf(1, comboValue+2*li-2)
 
-		if(lines>=1&&engine.ending==0) {
+		if(li>=1&&engine.ending==0) {
 			// 4-line clearカウント
-			if(lines>=4)
+			if(li>=4)
 			// SK medal
 				if(big) {
 					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
@@ -634,9 +636,9 @@ class GrandLightning:AbstractMode() {
 			// AC medal
 			if(engine.field.isEmpty) {
 
-				dectemp += lines*25
-				if(lines==3) dectemp += 25
-				if(lines==4) dectemp += 150
+				dectemp += li*25
+				if(li==3) dectemp += 25
+				if(li==4) dectemp += 150
 				if(medalAC<3) {
 					dectemp += 3+medalAC*4// 3 10 21
 					engine.playSE("medal${++medalAC}")
@@ -670,14 +672,16 @@ class GrandLightning:AbstractMode() {
 			}
 
 			// せり上がりカウント減少
-			if(tableGarbage[engine.statistics.level/100]!=0) garbageCount -= lines
+			if(tableGarbage[engine.statistics.level/100]!=0) garbageCount -= li
 			if(garbageCount<0) garbageCount = 0
 
 			// Level up
 			val levelb = engine.statistics.level
-			var levelplus = lines
-			if(lines==3) levelplus = 4
-			if(lines>=4) levelplus = 6
+			val levelplus = when {
+				li==3 -> 4
+				li>=4 -> 6
+				else -> li
+			}
 
 			engine.statistics.level += levelplus
 
@@ -784,8 +788,8 @@ class GrandLightning:AbstractMode() {
 
 			// Calculate score
 
-			lastscore = ((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+engine.manualLock.toInt())
-				*lines*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
+			lastscore = ((((levelb+li)/(if(engine.b2b) 3 else 4)+engine.softdropFall+engine.manualLock.toInt())
+				*li*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
 				+engine.statistics.level/if(engine.twist) 2 else 3)*if(engine.field.isEmpty) 2 else 1
 
 			engine.statistics.scoreLine += lastscore

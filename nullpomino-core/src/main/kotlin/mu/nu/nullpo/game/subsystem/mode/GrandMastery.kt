@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -110,10 +111,10 @@ class GrandMastery:AbstractMode() {
 	private var regretdispframe = 0
 
 	/** COOL section flags */
-	private var coolsection = BooleanArray(0)
+	private val coolsection = MutableList(SECTION_MAX) {false}
 
 	/** REGRET section flags */
-	private var regretsection = BooleanArray(0)
+	private val regretsection = MutableList(SECTION_MAX) {false}
 
 	/** Roll 経過 time */
 	private var rolltime = 0
@@ -133,10 +134,10 @@ class GrandMastery:AbstractMode() {
 	private var gradeflash = 0
 
 	/** Section Time */
-	private var sectionTime = IntArray(SECTION_MAX)
+	private val sectionTime = MutableList(SECTION_MAX) {0}
 
 	/** 新記録が出たSection はtrue */
-	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
+	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
 
 	/** Cleared Section count */
 	private var sectionscomp = 0
@@ -216,38 +217,37 @@ class GrandMastery:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Rankings' 段位 */
-	private var rankingGrade = IntArray(RANKING_MAX)
+	private val rankingGrade = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' levels */
-	private var rankingLevel = IntArray(RANKING_MAX)
+	private val rankingLevel = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' times */
-	private var rankingTime = IntArray(RANKING_MAX)
+	private val rankingTime = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' Roll completely cleared flag */
-	private var rankingRollclear = IntArray(RANKING_MAX)
+	private val rankingRollclear = MutableList(RANKING_MAX) {0}
 
 	/** Section Time記録 */
-	private var bestSectionTime = IntArray(SECTION_MAX)
+	private val bestSectionTime = MutableList(SECTION_MAX) {0}
 
 	/** 段位履歴 (昇格・降格試験用) */
-	private var gradeHistory = IntArray(0)
+	private val gradeHistory = MutableList(GRADE_HISTORY_SIZE) {0}
 
-	var examRecord:IntArray = intArrayOf(0, 0)
-		get() = intArrayOf(qualifiedGrade, demotionPoints)
+	var examRecord = listOf(0, 0)
+		get() = listOf(qualifiedGrade, demotionPoints)
 		set(value) {
-			field[0] = value[0]
+			field = value
 			qualifiedGrade = value[0]
-			field[1] = value[1]
 			demotionPoints = value[1]
 		}
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
+	override val rankMap
+		get() = rankMapOf(
 			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollclear" to rankingRollclear,
 			"section.time" to bestSectionTime, "exam.history" to gradeHistory, "exam.record" to examRecord
 		)
 	/*override val rankPersMap:Map<String, IntArray>
-		get() = mapOf("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollclear" to rankingRollclear,
+		get() = rankMap("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollclear" to rankingRollclear,
 			"section.time" to bestSectionTime, "exam.history" to gradeHistory, "exam.record" to examRecord)*/
 
 	/** 昇格試験の目標段位 */
@@ -314,10 +314,10 @@ class GrandMastery:AbstractMode() {
 		secretGrade = 0
 		bgmLv = 0
 		gradeflash = 0
-		sectionTime = IntArray(SECTION_MAX)
-		sectionIsNewRecord = BooleanArray(SECTION_MAX)
-		regretsection = BooleanArray(SECTION_MAX)
-		coolsection = BooleanArray(SECTION_MAX)
+		sectionTime.fill(0)
+		sectionIsNewRecord.fill(false)
+		regretsection.fill(false)
+		coolsection.fill(false)
 		sectionscomp = 0
 		sectionavgtime = 0
 		sectionlasttime = 0
@@ -343,7 +343,7 @@ class GrandMastery:AbstractMode() {
 		promotionalExam = 0
 		passframe = 0
 		readyframe = 0
-		gradeHistory = IntArray(GRADE_HISTORY_SIZE)
+		gradeHistory.fill(0)
 		demotionFlag = false
 		promotionFlag = false
 		demotionExamGrade = 0
@@ -352,11 +352,11 @@ class GrandMastery:AbstractMode() {
 		decoration = 0
 
 		rankingRank = -1
-		rankingGrade = IntArray(RANKING_MAX)
-		rankingLevel = IntArray(RANKING_MAX)
-		rankingTime = IntArray(RANKING_MAX)
-		rankingRollclear = IntArray(RANKING_MAX)
-		bestSectionTime = IntArray(SECTION_MAX)
+		rankingGrade.fill(0)
+		rankingLevel.fill(0)
+		rankingTime.fill(0)
+		rankingRollclear.fill(0)
+		bestSectionTime.fill(0)
 
 		engine.twistEnable = true
 		engine.twistEnableEZ = true
@@ -884,9 +884,7 @@ class GrandMastery:AbstractMode() {
 		if(engine.ending==0&&engine.statc[0]>0&&(version>=1||!engine.holdDisable)) lvupflag = false
 
 		// 段位 point減少
-		if(engine.timerActive&&gradeBasicPoint>0&&engine.combo<=0
-			&&engine.lockDelayNow<engine.lockDelay-1
-		) {
+		if(engine.timerActive&&gradeBasicPoint>0&&engine.combo<0&&engine.lockDelayNow<engine.lockDelay-1) {
 			gradeBasicDecay++
 
 			var index = gradeBasicInternal
@@ -962,20 +960,21 @@ class GrandMastery:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Combo
-		comboValue = if(lines==0) 1
-		else maxOf(1, comboValue+2*lines-2)
+		val li = ev.lines
+		comboValue = if(li==0) 1
+		else maxOf(1, comboValue+2*li-2)
 
-		if(lines>=1&&engine.ending==0) {
+		if(li>=1&&engine.ending==0) {
 			// 段位 point
 			var index = gradeBasicInternal
 			if(index>10) index = 10
-			val basepoint = tableGradePoint[lines-1][index]
-			var indexcombo = engine.combo+if(engine.b2b) 0 else -1
+			val basepoint = tableGradePoint[li-1][index]
+			var indexcombo = ev.combo+if(ev.b2b>0) 0 else -1
 			if(indexcombo<0) indexcombo = 0
-			if(indexcombo>tableGradeComboBonus[lines-1].size-1) indexcombo = tableGradeComboBonus[lines-1].size-1
-			val combobonus = tableGradeComboBonus[lines-1][indexcombo]
+			if(indexcombo>tableGradeComboBonus[li-1].size-1) indexcombo = tableGradeComboBonus[li-1].size-1
+			val combobonus = tableGradeComboBonus[li-1][indexcombo]
 
 			val levelbonus = 1+engine.statistics.level/250
 
@@ -1002,7 +1001,7 @@ class GrandMastery:AbstractMode() {
 			}
 
 			// 4-line clearカウント
-			if(lines>=4)
+			if(li>=4)
 			// SK medal
 				if(big) {
 					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
@@ -1020,9 +1019,9 @@ class GrandMastery:AbstractMode() {
 			// AC medal
 			if(engine.field.isEmpty) {
 
-				dectemp += lines*25
-				if(lines==3) dectemp += 25
-				if(lines==4) dectemp += 150
+				dectemp += li*25
+				if(li==3) dectemp += 25
+				if(li==4) dectemp += 150
 				if(medalAC<3) {
 					engine.playSE("medal1")
 					dectemp += 3+medalAC*4// 3 10 21
@@ -1032,25 +1031,25 @@ class GrandMastery:AbstractMode() {
 
 			// CO medal
 			if(big) {
-				if(engine.combo>=2&&medalCO<1) {
+				if(ev.combo>=2&&medalCO<1) {
 					engine.playSE("medal1")
 					medalCO = 1
-				} else if(engine.combo>=3&&medalCO<2) {
+				} else if(ev.combo>=3&&medalCO<2) {
 					engine.playSE("medal2")
 					medalCO = 2
-				} else if(engine.combo>=4&&medalCO<3) {
+				} else if(ev.combo>=4&&medalCO<3) {
 					engine.playSE("medal3")
 					medalCO = 3
 				}
-			} else if(engine.combo>=3&&medalCO<1) {
+			} else if(ev.combo>=3&&medalCO<1) {
 				engine.playSE("medal1")
 				medalCO = 1
 				dectemp += 3// 3
-			} else if(engine.combo>=4&&medalCO<2) {
+			} else if(ev.combo>=4&&medalCO<2) {
 				engine.playSE("medal2")
 				medalCO = 2
 				dectemp += 4// 7
-			} else if(engine.combo>=5&&medalCO<3) {
+			} else if(ev.combo>=5&&medalCO<3) {
 				engine.playSE("medal3")
 				medalCO = 3
 				dectemp += 5// 12
@@ -1059,8 +1058,8 @@ class GrandMastery:AbstractMode() {
 			// Level up
 			val levelb = engine.statistics.level
 
-			var levelplus = lines
-			if(lines>=3) levelplus += lines-2
+			var levelplus = li
+			if(li>=3) levelplus += li-2
 			//if(lines>=4) levelplus=6;
 
 			engine.statistics.level += levelplus
@@ -1173,25 +1172,25 @@ class GrandMastery:AbstractMode() {
 			// Calculate score
 
 			lastscore =
-				((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
-					*lines*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
+				((((levelb+li)/(if(ev.b2b>0) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
+					*li*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
 					+engine.statistics.level/if(engine.twist) 2 else 3)*if(engine.field.isEmpty) 3 else 1
 
 			engine.statistics.scoreLine += lastscore
 			return lastscore
-		} else if(lines>=1&&engine.ending==2) {
+		} else if(li>=1&&engine.ending==2) {
 			// Roll 中のLine clear
 			var points = 0f
-			if(!mrollFlag||engine.twist||engine.b2b) {
-				if(lines==1) points = 0.04f
-				if(lines==2) points = 0.09f
-				if(lines==3) points = 0.15f
-				if(lines==4) points = 0.27f
+			if(!mrollFlag||engine.twist||ev.b2b>0) {
+				if(li==1) points = 0.04f
+				if(li==2) points = 0.09f
+				if(li==3) points = 0.15f
+				if(li==4) points = 0.27f
 			} else {
-				if(lines==1) points = .1f
-				if(lines==2) points = .2f
-				if(lines==3) points = .5f
-				if(lines==4) points = 1f
+				if(li==1) points = .1f
+				if(li==2) points = .2f
+				if(li==3) points = .5f
+				if(li==4) points = 1f
 			}
 			rollPoints += points
 			rollPointsTotal += points
@@ -1288,7 +1287,7 @@ class GrandMastery:AbstractMode() {
 
 	/* game over */
 	override fun onGameOver(engine:GameEngine):Boolean {
-		// This code block will executed only once
+		// This code block will execute only once
 		if(engine.statc[0]==0) {
 			secretGrade = engine.field.secretGrade
 			val time = engine.statistics.time
@@ -1352,15 +1351,15 @@ class GrandMastery:AbstractMode() {
 					else {
 						receiver.drawMenuFont(
 							engine, 2, 11, "PASS!!", when {
-								passframe%2==0 -> COLOR.GREEN
-								passframe%4==0 -> COLOR.BLUE
+								passframe%4==0 -> COLOR.GREEN
+								passframe%4==2 -> COLOR.BLUE
 								else -> COLOR.CYAN
 							}
 						)
 						receiver.drawMenuFont(
 							engine, 1, 5, "YOU ARE", when {
-								passframe%2==0 -> COLOR.GREEN
-								passframe%4==0 -> COLOR.BLUE
+								passframe%4==0 -> COLOR.GREEN
+								passframe%4==2 -> COLOR.BLUE
 								else -> COLOR.CYAN
 							}
 						)
@@ -1381,8 +1380,8 @@ class GrandMastery:AbstractMode() {
 					else
 						receiver.drawMenuFont(
 							engine, 3, 11, "SAFE", when {
-								passframe%2==0 -> COLOR.GREEN
-								passframe%4==0 -> COLOR.BLUE
+								passframe%4==0 -> COLOR.GREEN
+								passframe%4==2 -> COLOR.BLUE
 								else -> COLOR.CYAN
 							}
 						)

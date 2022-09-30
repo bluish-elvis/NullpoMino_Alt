@@ -82,12 +82,12 @@ object RendererExtension {
 	fun drawAlignedScaledPiece(receiver:EventReceiver?, x:Int, y:Int, alignment:Int, piece:Piece, scale:Float, darkness:Float) {
 		val baseSize:Int = 16*max(piece.width, piece.height)
 		var offsetX:Int = when(alignment) {
-			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> (baseSize*0.5f*scale).toInt()
+			ALIGN_TOP_MIDDLE, ALIGN_MIDDLE_MIDDLE, ALIGN_BOTTOM_MIDDLE -> (baseSize*.5f*scale).toInt()
 			ALIGN_TOP_RIGHT, ALIGN_MIDDLE_RIGHT, ALIGN_BOTTOM_RIGHT -> (baseSize*scale).toInt()
 			else -> 0
 		}
 		var offsetY:Int = when(alignment) {
-			ALIGN_MIDDLE_LEFT, ALIGN_MIDDLE_MIDDLE, ALIGN_MIDDLE_RIGHT -> (baseSize*0.5f*scale).toInt()
+			ALIGN_MIDDLE_LEFT, ALIGN_MIDDLE_MIDDLE, ALIGN_MIDDLE_RIGHT -> (baseSize*.5f*scale).toInt()
 			ALIGN_BOTTOM_LEFT, ALIGN_BOTTOM_MIDDLE, ALIGN_BOTTOM_RIGHT -> (baseSize*scale).toInt()
 			else -> 0
 		}

@@ -39,6 +39,7 @@ package zeroxfc.nullpo.custom.modes
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.AbstractRenderer.FontBadge.Companion.b
 import mu.nu.nullpo.gui.common.fx.particles.BlockParticleCollection
@@ -60,9 +61,9 @@ class Joker:MarathonModeBase() {
 	// starting stock
 	private var startingStock = 0
 	// Ranking stuff
-	private var rankingLevel = intArrayOf()
-	private var rankingTime = intArrayOf()
-	private var rankingLines = intArrayOf()
+	private val rankingLevel = intArrayOf()
+	private val rankingTime = intArrayOf()
+	private val rankingLines = intArrayOf()
 	// time score
 	private var timeScore = 0
 	// Local randomizer
@@ -80,9 +81,9 @@ class Joker:MarathonModeBase() {
 	private var efficiencyGrade = 0
 	// PROFILE
 	private var rankingRankPlayer = 0
-	private var rankingLevelPlayer = intArrayOf()
-	private var rankingTimePlayer = intArrayOf()
-	private var rankingLinesPlayer = intArrayOf()
+	private val rankingLevelPlayer = intArrayOf()
+	private val rankingTimePlayer = intArrayOf()
+	private val rankingLinesPlayer = intArrayOf()
 	// Last amount of lines cleared;
 	private var lastLine = 0
 	// Animated backgrounds
@@ -114,16 +115,16 @@ class Joker:MarathonModeBase() {
 		warningText = null
 		warningTextSecondLine = null
 		rankingRank = -1
-		rankingLevel = IntArray(RANKING_MAX)
-		rankingLines = IntArray(RANKING_MAX)
-		rankingTime = IntArray(RANKING_MAX)
+		rankingLevel.fill(0)
+		rankingLines.fill(0)
+		rankingTime.fill(0)
 		engine.playerProp.reset()
 		showPlayerStats = false
 
 		rankingRankPlayer = -1
-		rankingLevelPlayer = IntArray(RANKING_MAX)
-		rankingLinesPlayer = IntArray(RANKING_MAX)
-		rankingTimePlayer = IntArray(RANKING_MAX)
+		rankingLevelPlayer.fill(0)
+		rankingLinesPlayer.fill(0)
+		rankingTimePlayer.fill(0)
 		netPlayerInit(engine)
 		if(!owner.replayMode) {
 
@@ -138,7 +139,6 @@ class Joker:MarathonModeBase() {
 		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
 		engine.twistEnable = true
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
-		engine.b2b = false
 		engine.statistics.levelDispAdd = 0
 		engine.speed.gravity = -1
 		engine.speed.das = 6
@@ -328,7 +328,6 @@ class Joker:MarathonModeBase() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.RED)
-		receiver.drawScoreFont(engine, 0, 1, "(FINAL TIER)", EventReceiver.COLOR.RED)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&startingStock==0) {
 				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
@@ -442,7 +441,7 @@ class Joker:MarathonModeBase() {
 		engine.isInGame = true
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
-			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
+			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine.playerProp.propProfile, engine)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
@@ -515,11 +514,12 @@ class Joker:MarathonModeBase() {
 	/*
      * Calculate score - PAIN
      */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Line clear bonus
 		// if (linesUsed > 4) linesUsed = 4;
 		var res = 0
-		if(lines>0) {
+		val li = ev.lines
+		if(li>0) {
 			val pts:Int = engine.statistics.time-timeScore
 
 			// Add to score
@@ -527,10 +527,10 @@ class Joker:MarathonModeBase() {
 				// scoreBeforeIncrease = engine.statistics.score;
 				lastscore = pts
 				timeScore += pts
-				lastLine = lines
+				lastLine = li
 			}
 		}
-		if(lines>0) {
+		if(li>0) {
 			// Level up
 			engine.statistics.level++
 
@@ -568,7 +568,7 @@ class Joker:MarathonModeBase() {
 					engine.randSeed+engine.statistics.time, true
 				)
 			}
-			if(lines<4) {
+			if(li<4&&!ev.twist) {
 				if(engine.statistics.level>200) {
 					res--
 					stock--

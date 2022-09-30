@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -66,14 +66,14 @@ class ModeManager {
 	 * @return Modeのcount
 	 */
 	fun getNumberOfModes(netplay:Boolean):Int =
-		list.count {it.isNetplayMode==netplay}
+		list.count {it.isOnlineMode==netplay}
 
 	/** 読み込まれているMode nameを取得
 	 * @param netplay falseなら通常Mode だけ, When true,ネットプレイ用Mode だけ取得
 	 * @return Mode nameの配列
 	 */
 	fun getModeNames(netplay:Boolean):Array<String> =
-		list.filter {it.isNetplayMode==netplay}.map {it.name}.toTypedArray()
+		list.filter {it.isOnlineMode==netplay}.map {it.name}.toTypedArray()
 
 	/** Mode nameを取得
 	 * @param id ModeID

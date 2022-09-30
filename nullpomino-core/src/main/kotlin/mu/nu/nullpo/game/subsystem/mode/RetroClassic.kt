@@ -34,6 +34,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.EventReceiver.FONT
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -79,13 +80,13 @@ class RetroClassic:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Score records */
-	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 
 	/** Line records */
-	private var rankingLines:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Level records */
-	private var rankingLevel:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Time records Reaches Score Max-out 999999 */
 	private var maxScoredTime:Int? = null
@@ -94,6 +95,11 @@ class RetroClassic:AbstractMode() {
 	override val name = "Retro Classic .N"
 
 	override val gameIntensity = -1
+	override val rankMap
+		get() = rankMapOf(
+			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingLevel.mapIndexed {a, x -> "$a.level" to x})
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -107,9 +113,9 @@ class RetroClassic:AbstractMode() {
 		droughts.removeAll {true}
 
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLevel = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingLevel.forEach {it.fill(0)}
 
 		engine.run {
 			twistEnable = false
@@ -297,9 +303,9 @@ class RetroClassic:AbstractMode() {
 					receiver.drawScoreGrade(
 						engine, 0, 4+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
-					receiver.drawScoreNum(engine, 3, 4+i, GeneralUtil.capsInteger(rankingScore[gametype][i], 6), i==rankingRank)
+					receiver.drawScoreNum(engine, 3, 4+i, GeneralUtil.capsNum(rankingScore[gametype][i], 6), i==rankingRank)
 					receiver.drawScoreNum(
-						engine, 12, 4+i, GeneralUtil.capsInteger(rankingLines[gametype][i], 3), i==rankingRank
+						engine, 12, 4+i, GeneralUtil.capsNum(rankingLines[gametype][i], 3), i==rankingRank
 					)
 					receiver.drawScore(
 						engine,
@@ -314,7 +320,7 @@ class RetroClassic:AbstractMode() {
 		} else {
 			receiver.drawScoreFont(engine, 0, 3, "SCORE${if(lastscore>0) "(+$lastscore)" else ""}", COLOR.BLUE)
 			receiver.drawScore(
-				engine, 0, 4, GeneralUtil.capsInteger(scDisp, 6), font = if(engine.statistics.score<=999999) FONT.NUM else FONT.NORMAL,
+				engine, 0, 4, GeneralUtil.capsNum(scDisp, 6), font = if(engine.statistics.score<=999999) FONT.NUM else FONT.NORMAL,
 				scale = 2f
 			)
 
@@ -322,7 +328,7 @@ class RetroClassic:AbstractMode() {
 			receiver.drawScore(
 				engine, 0, 7, when(gametype) {
 					GAMETYPE_TYPE_B -> String.format("-%2d", maxOf(25-engine.statistics.lines, 0))
-					else -> GeneralUtil.capsInteger(engine.statistics.lines, 3)
+					else -> GeneralUtil.capsNum(engine.statistics.lines, 3)
 				}, if(gametype!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.NORMAL, scale = 2f
 			)
 
@@ -342,7 +348,7 @@ class RetroClassic:AbstractMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		softdropscore /= 2
 		engine.statistics.scoreSD += softdropscore
 		softdropscore = 0
@@ -353,11 +359,12 @@ class RetroClassic:AbstractMode() {
 		// Line clear score
 		var pts = 0
 		// Level up
+		val li = ev.lines
 		when {
-			lines==1 -> pts += 40*(engine.statistics.level+1) // Single
-			lines==2 -> pts += 100*(engine.statistics.level+1) // Double
-			lines==3 -> pts += 300*(engine.statistics.level+1) // Triple
-			lines>=4 -> pts += 1200*(engine.statistics.level+1) // Quadruple
+			li==1 -> pts += 40*(engine.statistics.level+1) // Single
+			li==2 -> pts += 100*(engine.statistics.level+1) // Double
+			li==3 -> pts += 300*(engine.statistics.level+1) // Triple
+			li>=4 -> pts += 1200*(engine.statistics.level+1) // Quadruple
 		}
 
 		// B-TYPE game completed
@@ -506,41 +513,13 @@ class RetroClassic:AbstractMode() {
 		prop.setProperty("retromarathon.big", big)
 	}
 
-	/** Load the ranking
-	 * @param prop CustomProperties
-	 * @param ruleName Rule name
-	 */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(type in 0 until RANKING_TYPE) {
-				rankingScore[type][i] = prop.getProperty("$ruleName.$type.score.$i", 0)
-				rankingLines[type][i] = prop.getProperty("$ruleName.$type.lines.$i", 0)
-				rankingLevel[type][i] = prop.getProperty("$ruleName.$type.level.$i", 0)
-			}
-	}
-
-	/** Save the ranking
-	 * @param ruleName Rule name
-	 */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking((0 until RANKING_TYPE).flatMap {j ->
-			(0 until RANKING_MAX).flatMap {i ->
-				listOf(
-					"$ruleName.$j.score.$i" to rankingScore[j][i],
-					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.level.$i" to rankingLevel[j][i]
-				)
-			}
-		})
-	}
-
 	/** Update the ranking
 	 * @param sc Score
 	 * @param li Lines
 	 * @param lv Level
 	 * @param type Game type
 	 */
-	private fun updateRanking(sc:Int, li:Int, lv:Int, type:Int) {
+	private fun updateRanking(sc:Long, li:Int, lv:Int, type:Int) {
 		rankingRank = checkRanking(sc, li, lv, type)
 
 		if(rankingRank!=-1) {
@@ -565,7 +544,7 @@ class RetroClassic:AbstractMode() {
 	 * @param lv Level
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
-	private fun checkRanking(sc:Int, li:Int, lv:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, li:Int, lv:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i])

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,7 +34,7 @@ import java.io.Serializable
 /** Scoreなどの情報 */
 class Statistics:Serializable {
 	/** Total score */
-	val score:Int get() = scoreLine+scoreHD+scoreSD+scoreBonus
+	val score:Long get() = 0L+scoreLine+scoreHD+scoreSD+scoreBonus
 	/** Line clear score */
 	var scoreLine = 0
 	/** Soft drop score */
@@ -48,7 +48,13 @@ class Statistics:Serializable {
 	var lines = 0
 
 	/** Total sent garbage */
-	var attacks = 0
+	val attacks get() = attacksLine+attacksTwist+attacksBonus
+	/** Multi Lines clear garbage */
+	var attacksLine = 0
+	/** Twister clear garbage */
+	var attacksTwist = 0
+	/** Combo/Chain/B2B garbage */
+	var attacksBonus = 0
 
 	/** Cleared Garbage Lines */
 	var garbageLines = 0
@@ -126,11 +132,11 @@ class Statistics:Serializable {
 	var maxB2B = 0
 
 	/** 1Linesあたりの得点 (Score Per Line) */
-	val spl:Double get() = if(lines>0) score.toDouble()/lines.toDouble() else 0.0
+	val spl:Double get() = if(lines>0) score.toDouble()/lines.toDouble() else .0
 	/** 1分間あたりの得点 (Score Per Minute) */
-	val spm:Double get() = if(time>0) score*3600.0/time else 0.0
+	val spm:Double get() = if(time>0) score*3600.0/time else .0
 	/** 1秒間あたりの得点 (Score Per Second) */
-	val sps:Double get() = if(time>0) score*60.0/time else 0.0
+	val sps:Double get() = if(time>0) score*60.0/time else .0
 
 	/** 1分間あたりのLinescount (Lines Per Minute) */
 	val lpm:Float get() = if(time>0) lines*3600f/time else 0f
@@ -207,13 +213,15 @@ class Statistics:Serializable {
 		scoreSD = 0
 		scoreHD = 0
 		scoreBonus = 0
+		attacksLine = 0
+		attacksTwist = 0
+		attacksBonus = 0
 	}
 
 	/** Reset to defaults */
 	fun reset() {
 		scoreReset()
 		lines = 0
-		attacks = 0
 		blocks = 0
 		time = 0
 		level = 0
@@ -258,7 +266,9 @@ class Statistics:Serializable {
 			scoreHD = b.scoreHD
 			scoreBonus = b.scoreBonus
 			lines = b.lines
-			attacks = b.lines
+			attacksLine = b.attacksLine
+			attacksTwist = b.attacksTwist
+			attacksBonus = b.attacksBonus
 			blocks = b.blocks
 			time = b.time
 			level = b.level
@@ -310,7 +320,9 @@ class Statistics:Serializable {
 			scoreHD += b.scoreHD
 			scoreBonus += b.scoreBonus
 			lines += b.lines
-			attacks += b.attacks
+			attacksLine += b.attacksLine
+			attacksTwist += b.attacksTwist
+			attacksBonus += b.attacksBonus
 			blocks += b.blocks
 			time += b.time
 			level += b.level
@@ -361,7 +373,9 @@ class Statistics:Serializable {
 			"$id.statistics.scoreHD" to scoreHD,
 			"$id.statistics.scoreBonus" to scoreBonus,
 			"$id.statistics.lines" to lines,
-			"$id.statistics.attacks" to attacks,
+			"$id.statistics.attacksLine" to attacksLine,
+			"$id.statistics.attacksTwist" to attacksTwist,
+			"$id.statistics.attacksBonus" to attacksBonus,
 			"$id.statistics.blocks" to blocks,
 			"$id.statistics.time" to time,
 			"$id.statistics.level" to level,
@@ -411,7 +425,9 @@ class Statistics:Serializable {
 		scoreHD = p.getProperty("$id.statistics.scoreHD", 0)
 		scoreBonus = p.getProperty("$id.statistics.scoreBonus", 0)
 		lines = p.getProperty("$id.statistics.lines", 0)
-		attacks = p.getProperty("$id.statistics.attacks", 0)
+		attacksLine = p.getProperty("$id.statistics.attacksLine", 0)
+		attacksTwist = p.getProperty("$id.statistics.attacksTwist", 0)
+		attacksBonus = p.getProperty("$id.statistics.attacksBonus", 0)
 		blocks = p.getProperty("$id.statistics.blocks", 0)
 		time = p.getProperty("$id.statistics.time", 0)
 		level = p.getProperty("$id.statistics.level", 0)
@@ -457,6 +473,9 @@ class Statistics:Serializable {
 		{scoreSD = it.toInt()},
 		{scoreHD = it.toInt()},
 		{scoreBonus = it.toInt()},
+		{attacksLine = it.toInt()},
+		{attacksTwist = it.toInt()},
+		{attacksBonus = it.toInt()},
 		{lines = it.toInt()},
 		{blocks = it.toInt()},
 		{time = it.toInt()},
@@ -506,9 +525,10 @@ class Statistics:Serializable {
 	 * @return String Array (String[38])
 	 */
 	fun exportStringArray():Array<String> = arrayOf(
-		"$scoreLine", "$scoreSD", "$scoreHD", "$scoreBonus", "$lines", "$blocks", "$time", "$level", "$levelDispAdd",
-		"$totalPieceLocked", "$totalPieceActiveTime", "$totalPieceMove", "$totalPieceSpin", "$totalSingle", "$totalDouble",
-		"$totalSplitDouble", "$totalTriple", "$totalSplitTriple", "$totalQuadruple", "$totalTwistZeroMini", "$totalTwistZero",
+		"$scoreLine", "$scoreSD", "$scoreHD", "$scoreBonus", "$attacksLine", "$attacksTwist", "$attacksBonus",
+		"$lines", "$blocks", "$time", "$level", "$levelDispAdd", "$totalPieceLocked", "$totalPieceActiveTime",
+		"$totalPieceMove", "$totalPieceSpin", "$totalSingle", "$totalDouble", "$totalSplitDouble",
+		"$totalTriple", "$totalSplitTriple", "$totalQuadruple", "$totalTwistZeroMini", "$totalTwistZero",
 		"$totalTwistSingleMini", "$totalTwistSingle", "$totalTwistDoubleMini", "$totalTwistDouble", "$totalTwistSplitDouble",
 		"$totalTwistTriple", "$totalTwistSplitTriple", "$totalB2BQuad", "$totalB2BSplit", "$totalB2BTwist", "$totalHoldUsed",
 		"$maxCombo", "$maxB2B", "$gamerate", "$maxChain", "$rollclear", "$randSeed"

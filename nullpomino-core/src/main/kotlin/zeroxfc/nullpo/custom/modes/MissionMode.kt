@@ -41,6 +41,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -69,21 +70,18 @@ class MissionMode:MarathonModeBase() {
 	private var missionIsComplete = false
 
 	/** Rankings' scores */
-	private var rankingScore:Array<IntArray> = emptyArray()
+	private val rankingScore = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0L}}
 	/** Rankings' times */
-	private var rankingTime:Array<IntArray> = emptyArray()
+	private val rankingTime = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
 
-	private var rankingScorePlayer:Array<IntArray> = emptyArray()
-	private var rankingTimePlayer:Array<IntArray> = emptyArray()
+	private val rankingScorePlayer = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0L}}
+	private val rankingTimePlayer = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
 	private var rankingRankPlayer = 0
-	override val rankMap:Map<String, IntArray> = mapOf(
-		*((rankingScore.mapIndexed {a, x -> "$a.score" to x}
-			+rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-	)
-	override val rankPersMap:Map<String, IntArray> = mapOf(
-		*((rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}
-			+rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-	)
+	override val rankMap = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}
+		+rankingTime.mapIndexed {a, x -> "$a.time" to x})
+
+	override val rankPersMap = rankMapOf(rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}
+		+rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x})
 
 	override val name:String
 		get() = "Mission Rush"
@@ -102,10 +100,10 @@ class MissionMode:MarathonModeBase() {
 		// isSpecific = false;
 		specificPieceName = ""
 		rankingRank = -1
-		rankingScore = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingTime = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingScorePlayer = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingTimePlayer = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
+		rankingScorePlayer.forEach {it.fill(0)}
+		rankingTimePlayer.forEach {it.fill(0)}
 		engine.playerProp.reset()
 		showPlayerStats = false
 
@@ -120,9 +118,7 @@ class MissionMode:MarathonModeBase() {
 		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
 		missionIsComplete = false
 	}
-	/*
-     * Called at settings screen
-     */
+
 	override fun onSetting(engine:GameEngine):Boolean {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode) {
@@ -191,15 +187,13 @@ class MissionMode:MarathonModeBase() {
 		engine.isInGame = true
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
-			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
+			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine.playerProp.propProfile, engine)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s
 	}
-	/*
-     * Render the settings screen
-     */
+
 	override fun renderSetting(engine:GameEngine) {
 		if(netIsNetRankingDisplayMode) {
 			// NET: Netplay Ranking
@@ -223,13 +217,11 @@ class MissionMode:MarathonModeBase() {
 		}
 		return false
 	}
-	/*
-     * Called after every frame
-     */
+
 	override fun onLast(engine:GameEngine) {
 		if(scgettime<120) scgettime++
 		else if(missionIsComplete&&engine.timerActive) {
-			generateNewMission(engine, engine.statistics.score==tableGameClearMissions[goalType]-1)
+			generateNewMission(engine, engine.statistics.scoreBonus==tableGameClearMissions[goalType]-1)
 			scgettime = 0
 		}
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
@@ -243,9 +235,7 @@ class MissionMode:MarathonModeBase() {
 			engine.playerProp.reset()
 		}
 	}
-	/*
-     * Render score
-     */
+
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
@@ -324,23 +314,20 @@ class MissionMode:MarathonModeBase() {
 		// NET: Player name (It may also appear in offline replay)
 		netDrawPlayerName(engine)
 	}
-	/*
-     * Calculate score
-     */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Line clear bonus
 		var pts = 0
 		var incremented = false
-		val shapeName = engine.nowPieceObject?.type?.name ?: ""
+		val shapeName = ev.piece?.type?.name ?: ""
 		if(!missionIsComplete) {
 			incremented = when(missionCategory) {
-				Clear -> lines==lineAmount
-				ClearWith -> lines==lineAmount&&shapeName===specificPieceName
-				Spin -> engine.twist&&lines>=lineAmount
-				SpinWith -> engine.twist&&lines>=lineAmount&&shapeName===specificPieceName
-				Split -> engine.split
-
-				Combo -> engine.combo>missionProgress
+				Clear -> ev.lines==lineAmount
+				ClearWith -> ev.lines==lineAmount&&shapeName===specificPieceName
+				Spin -> ev.twist&&ev.lines>=lineAmount
+				SpinWith -> ev.twist&&ev.lines>=lineAmount&&shapeName===specificPieceName
+				Split -> ev.split
+				Combo -> ev.combo>missionProgress
 				null -> true
 			}
 		}
@@ -443,7 +430,7 @@ class MissionMode:MarathonModeBase() {
 	 * @param sc   Score
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, time:Int, type:Int, isLoggedIn:Boolean):Boolean {
+	private fun updateRanking(sc:Long, time:Int, type:Int, isLoggedIn:Boolean):Boolean {
 		rankingRank = checkRanking(sc, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -479,7 +466,7 @@ class MissionMode:MarathonModeBase() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
 			if(sc>rankingScore[type][i]) {
 				return i
@@ -496,7 +483,7 @@ class MissionMode:MarathonModeBase() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRankingPlayer(sc:Int, time:Int, type:Int):Int {
+	private fun checkRankingPlayer(sc:Long, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
 			if(sc>rankingScorePlayer[type][i]) {
 				return i
@@ -506,9 +493,7 @@ class MissionMode:MarathonModeBase() {
 		}
 		return -1
 	}
-	/*
-     * Render results screen
-     */
+
 	override fun renderResult(engine:GameEngine) {
 		drawResultStats(
 			engine, receiver, 0, COLOR.BLUE, Statistic.SCORE,
@@ -527,9 +512,9 @@ class MissionMode:MarathonModeBase() {
 		}
 	}
 	// ------------------------------------------------------------------------------------------
-	// CRAPPY MISSION GENERATION METHODS >_<
-	// ------------------------------------------------------------------------------------------
-	//I don't even know how these even are supposed to integrate into the rest of the mode, but we'll get there later.
+// CRAPPY MISSION GENERATION METHODS >_<
+// ------------------------------------------------------------------------------------------
+//I don't even know how these even are supposed to integrate into the rest of the mode, but we'll get there later.
 	private fun generateNewMission(engine:GameEngine, lastMission:Boolean) {
 		val classic:Boolean = engine.ruleOpt.strWallkick.contains("Classic")
 			||engine.ruleOpt.strWallkick.contains("GBC")||

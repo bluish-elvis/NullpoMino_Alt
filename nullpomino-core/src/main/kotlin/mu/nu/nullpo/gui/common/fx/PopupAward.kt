@@ -60,10 +60,16 @@ class PopupAward(x:Int, y:Int, val event:ScoreEvent, val moveTime:Int, val ex:In
 		val strPieceName = ev.piece?.id?.let {Piece.Shape.names[it]} ?: ""
 
 		when {
-			ev.lines==1 -> r.drawDirectFont(x-48, y, "SINGLE", color = if(ev.twist==null) COLOR.COBALT else COLOR.BLUE, alpha = alpha)
+			ev.lines==1 -> r.drawDirectFont(
+				x-48,
+				y,
+				"SINGLE",
+				color = if(ev.twistType==null) COLOR.COBALT else COLOR.BLUE,
+				alpha = alpha
+			)
 			ev.lines==2 -> {
 				if(!ev.split)
-					r.drawDirectFont(x-48, y, "DOUBLE", color = if(ev.twist==null) COLOR.BLUE else COLOR.CYAN, alpha = alpha)
+					r.drawDirectFont(x-48, y, "DOUBLE", color = if(ev.twistType==null) COLOR.BLUE else COLOR.CYAN, alpha = alpha)
 				else r.drawDirectFont(x-80, y, "SPLIT TWIN", color = COLOR.PURPLE, alpha = alpha)
 			}
 			ev.lines==3 -> {
@@ -73,13 +79,13 @@ class PopupAward(x:Int, y:Int, val event:ScoreEvent, val moveTime:Int, val ex:In
 			}
 			ev.lines>=4 -> r.drawDirectFont(x-72, y, "QUADRUPLE", color = EventReceiver.getRainbowColor(ticks), alpha = alpha)
 		}
-		if(ev.twist!=null) when {
-			ev.twist.isMini -> {
-				r.drawDirectFont(x-80, y-16, "MINI", color = if(ev.b2b) COLOR.CYAN else COLOR.BLUE, alpha = alpha)
+		if(ev.twistType!=null) when {
+			ev.twistType.mini -> {
+				r.drawDirectFont(x-80, y-16, "MINI", color = if(ev.b2b>0) COLOR.CYAN else COLOR.BLUE, alpha = alpha)
 				ev.piece?.let {r.drawPiece(x-32, y, it, 0.5f, alpha = alpha)}
-				r.drawDirectFont(x-16, y, "$strPieceName-TWIST", color = if(ev.b2b) COLOR.PINK else COLOR.PURPLE, alpha = alpha)
+				r.drawDirectFont(x-16, y, "$strPieceName-TWIST", color = if(ev.b2b>0) COLOR.PINK else COLOR.PURPLE, alpha = alpha)
 			}
-			ev.twist==ScoreEvent.Twister.IMMOBILE_EZ -> {
+			ev.twistType==ScoreEvent.Twister.IMMOBILE_EZ -> {
 				ev.piece?.let {r.drawPiece(x-16, y, it, 0.5f, alpha = alpha)}
 				r.drawDirectFont(x-54, y-8, "EZ", color = COLOR.ORANGE, alpha = alpha)
 				r.drawDirectFont(x+54, y-8, "TRICK", color = COLOR.ORANGE, alpha = alpha)
@@ -90,7 +96,7 @@ class PopupAward(x:Int, y:Int, val event:ScoreEvent, val moveTime:Int, val ex:In
 					x-32,
 					y-8,
 					"-TWISTER",
-					color = if(ev.lines==3) EventReceiver.getRainbowColor(ticks) else if(ev.b2b) COLOR.PINK else COLOR.PURPLE,
+					color = if(ev.lines==3) EventReceiver.getRainbowColor(ticks) else if(ev.b2b>0) COLOR.PINK else COLOR.PURPLE,
 					alpha = alpha
 				)
 			}

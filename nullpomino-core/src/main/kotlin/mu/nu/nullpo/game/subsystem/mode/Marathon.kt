@@ -68,24 +68,21 @@ class Marathon:NetDummyMode() {
 	private var version = 0
 
 	/** Current round's ranking position */
-	private var rankingRank:Int = -1
+	private var rankingRank = -1
 
 	/** Rankings' scores */
-	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 
 	/** Rankings' line counts */
-	private var rankingLines:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-
+	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	/** Rankings' times */
-	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*(
-				(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-					rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-					rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-		)
+	override val rankMap
+		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x})
+
 	// Mode name
 	override val name = "Marathon"
 
@@ -96,9 +93,9 @@ class Marathon:NetDummyMode() {
 		bgmLv = 0
 
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0L)}
+		rankingLines.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
 
 		netPlayerInit(engine)
 
@@ -264,8 +261,8 @@ class Marathon:NetDummyMode() {
 	fun bgmLv(lines:Int) =
 		tableBGMChange[goalType].indexOfFirst {lines<=it}.let {if(it<0) tableBGMChange[goalType].size else it}
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		super.calcScore(engine, lines)
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		super.calcScore(engine, ev)
 		// BGM fade-out effects and BGM changes
 		if(engine.statistics.lines>=nextbgmLine(engine.statistics.lines)-5) owner.musMan.fadesw = true
 		val newbgm = minOf(maxOf(0, bgmLv(engine.statistics.lines)), 8)
@@ -294,7 +291,7 @@ class Marathon:NetDummyMode() {
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}
-		return if(lines>0) lastscore else 0
+		return if(ev.lines>0) lastscore else 0
 	}
 
 	/* Soft drop */
@@ -361,7 +358,7 @@ class Marathon:NetDummyMode() {
 	 * @param li Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int) {
+	private fun updateRanking(sc:Long, li:Int, time:Int, type:Int) {
 		rankingRank = checkRanking(sc, li, time, type)
 
 		if(rankingRank!=-1) {
@@ -385,7 +382,7 @@ class Marathon:NetDummyMode() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
@@ -422,7 +419,7 @@ class Marathon:NetDummyMode() {
 			{engine.timerActive = it.toBoolean()},
 			{lastscore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
-			{engine.lastEvent = ScoreEvent.parseInt(it)},
+			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{engine.owner.bgMan.bg = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
@@ -462,8 +459,7 @@ class Marathon:NetDummyMode() {
 	/** NET: Get goal type */
 	override fun netGetGoalType():Int = goalType
 
-	/** NET: It returns true when the current settings doesn't prevent
-	 * leaderboard screen from showing. */
+	/** NET: It returns true when the current settings don't prevent leaderboard screen from showing. */
 	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = startLevel==0&&!big&&engine.ai==null
 
 	companion object {

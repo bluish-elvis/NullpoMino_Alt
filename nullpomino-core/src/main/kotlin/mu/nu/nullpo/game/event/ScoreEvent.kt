@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2021-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,8 +32,15 @@ package mu.nu.nullpo.game.event
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.util.GeneralUtil.toInt
 
-data class ScoreEvent(val lines:Int = 0, val split:Boolean = false, val piece:Piece? = null, val twist:Twister? = null,
-	val b2b:Boolean = false) {
+data class ScoreEvent(val piece:Piece? = null, val lines:Int = 0, val b2b:Int = -1,
+	val combo:Int = -1, val twistType:Twister? = null, val split:Boolean = false) {
+
+	/** True if Twister */
+	val twist:Boolean get() = twistType!=null
+	/** True if Twister Mini */
+	val twistMini:Boolean get() = twistType?.mini==true
+	/** EZ Twister */
+	val twistEZ:Boolean get() = twistType?.EZ==true
 
 	override fun equals(other:Any?):Boolean {
 		if(this===other) return true
@@ -41,36 +48,37 @@ data class ScoreEvent(val lines:Int = 0, val split:Boolean = false, val piece:Pi
 
 		other as ScoreEvent
 
-		return !(lines!=other.lines||split!=other.split||piece!=other.piece||twist!=other.twist||b2b!=other.b2b)
+		return !(lines!=other.lines||split!=other.split||piece!=other.piece||twistType!=other.twistType||combo!=other.combo||b2b!=other.b2b)
 	}
 
+	override fun toString():String = "sc<${piece?.type?.name},$lines,$b2b,$combo,${twistType?.name},${split.toInt()}>"
 	override fun hashCode():Int {
-		var result = piece.hashCode()
-		result = (Twister.all.size+1)*result+1+(twist?.ordinal ?: -1)
-		result = 10*result+minOf(maxOf(0, lines), 9)
-		result = 4*result+split.toInt()+b2b.toInt()*2
+		var result = lines
+		result = 31*result+split.hashCode()
+		result = 31*result+(piece?.hashCode() ?: 0)
+		result = 31*result+(twistType?.hashCode() ?: 0)
+		result = 31*result+combo
+		result = 31*result+b2b
 		return result
 	}
 
 	companion object {
-		fun parseInt(i:Int):ScoreEvent? = if(i<0) null
-		else {
-			val lines = (i shr 2)%10
-			val twist = (i shr 2)/10%(Twister.all.size+1)
-			val piece = (i shr 2)/10/(Twister.all.size+1)%Piece.Shape.all.size
-			ScoreEvent(
-				lines, i%2==1, if(piece<=0) null else Piece(piece-1).apply {},
-				Twister.all.getOrNull(twist-1), (i shr 1)%2==1
-			)
-		}
+		fun parseStr(s:String) =
+			Regex("""^sc<(?<piece>\w+),(?<lines>\d+),(?<b2b>[-\d]+),(?<combo>[-\d]+),(?<twist>\w+),(?<split>\d)>$""")
+				.matchEntire(s)?.destructured?.toList()?.let {i ->
+					ScoreEvent(
+						Piece(Piece.Shape.names.indexOf(i[0])), i[1].toInt(), i[2].toInt(), i[3].toInt(),
+						Twister.all.find {it.name==i[4]}, i[5]=="1"
+					)
+				}
 
-		fun parseInt(i:String):ScoreEvent? = parseInt(i.toInt())
 	}
 
 	enum class Twister {
 		IMMOBILE_EZ, IMMOBILE_MINI, POINT_MINI, IMMOBILE, POINT;
 
-		val isMini:Boolean get() = this==POINT_MINI||this==IMMOBILE_MINI
+		val mini:Boolean get() = this==POINT_MINI||this==IMMOBILE_MINI
+		val EZ:Boolean get() = this==IMMOBILE_EZ
 
 		companion object {
 			val all = Twister.values()

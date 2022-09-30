@@ -857,7 +857,7 @@ open class EventReceiver {
 	 * @param foldername Replay folder name
 	 */
 	open fun saveReplay(owner:GameManager, prop:CustomProperties, foldername:String = "replay") {
-		if(owner.mode?.isNetplayMode!=false) return
+		if(owner.mode?.isOnlineMode!=false) return
 		val folder = "$foldername/${owner.mode?.javaClass?.simpleName ?: ""}"
 		val filename = "$folder/"+prop.getProperty("name.rule").lowercase().toReplayFilename.replace("[\\s-]".toRegex(), "_")
 		try {
@@ -885,6 +885,12 @@ open class EventReceiver {
 	companion object {
 		/** cell and block size(block,font) */
 		const val BS = 16
+		/** @return Width&Height of block image*/
+		fun getScaleF(displaySize:Int):Float = when(displaySize) {
+			-1 -> .5f
+			1 -> 2f
+			else -> 1f
+		}
 		/** @return Width&Height of block image*/
 		fun getBlockSize(displaySize:Int):Int = when(displaySize) {
 			-1 -> BS/2

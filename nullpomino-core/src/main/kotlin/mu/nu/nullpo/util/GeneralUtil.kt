@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -86,6 +86,9 @@ object GeneralUtil {
 			if(this<0) "--:--.--" else String.format("%02d:%02d.%02d", this/3600, this/60%60, (this%60*5f/3f).toInt())
 	@Deprecated("Int extended", ReplaceWith("t.toTimeStr", "mu.nu.nullpo.util.GeneralUtil.getTime"))
 	fun getTime(t:Int):String = t.toTimeStr
+	val Long.toTimeStr
+		get() =
+			if(this<0) "--:--.--" else String.format("%02d:%02d.%02d", this/3600, this/60%60, (this%60*5f/3f).toInt())
 
 	/** Returns ON if b is true, OFF if b is false
 	 * @return ON if b is true, OFF if b is false
@@ -333,17 +336,19 @@ object GeneralUtil {
 
 	}
 
-	fun capsInteger(x:Int, digits:Int):String = when {
+	fun capsNum(x:Long, digits:Int):String = when {
 		digits<=0 -> ""
 		x<=0 -> (1 until digits).fold("0") {b, _ -> "${b}0"}
 		"$x".length>digits -> {
 			val y = (1 until digits).fold(x) {b, _ -> b.div(10)}
 			val z = (1 until digits).fold(minOf(y, 35)) {b, _ -> b.times(10)}
-			"${('A'.code+minOf(y-10, 25)).toChar()}${if(digits>1) capsInteger(x-z, digits-1) else ""}"
+			"${('A'.code+minOf(y-10, 25)).toChar()}${if(digits>1) capsNum(x-z, digits-1) else ""}"
 		}
 		digits>0 -> String.format("%0${digits}d", x)
 		else -> ""
 	}
+
+	fun capsNum(x:Int, digits:Int):String = capsNum(x.toLong(), digits)
 	/**'0'-'9','A'-'Z' represent colors 0-36.
 	 * Colors beyond that would follow the ASCII table starting at '['.
 	 * */

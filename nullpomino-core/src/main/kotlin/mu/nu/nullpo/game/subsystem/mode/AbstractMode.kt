@@ -35,6 +35,8 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.EventReceiver.Companion.getScaleF
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
@@ -61,14 +63,14 @@ abstract class AbstractMode:GameMode {
 	/** Drawing and event handling EventReceiver */
 	protected val receiver:EventReceiver get() = owner.receiver
 
-	/** Used by [loadRanking], [saveRanking]
-	 * @sample GrandMarathon.rankMap
-	 * @sample Marathon.rankMap  */
-	/*abstract */override val rankMap:Map<String, IntArray> = emptyMap()
+	override val rankMap:rankMapType = emptyMap()
+	override val rankPersMap:rankMapType = emptyMap()
 
-	/** Used by [loadRankingPlayer], [saveRankingPlayer]
-	 * @sample zeroxfc.nullpo.custom.modes.MissionMode.rankPersMap  */
-	override val rankPersMap:Map<String, IntArray> = emptyMap()
+	protected fun rankMapOf(list:List<Pair<String, *>>):rankMapType =
+		list.filterIsInstance<Pair<String, rankMapChild>>().toMap()
+
+	protected fun rankMapOf(vararg array:Pair<String, *>):rankMapType = rankMapOf(listOf(*array))
+
 	protected var menuColor = COLOR.WHITE
 	/*abstract */override val menu:MenuList = MenuList(id)
 	protected var statcMenu
@@ -95,7 +97,7 @@ abstract class AbstractMode:GameMode {
 	override val players:Int = 1
 	override val gameStyle = GameStyle.TETROMINO
 	override val gameIntensity = 0
-	override val isNetplayMode = false
+	override val isOnlineMode = false
 	override val isVSMode = false
 	/** Show Player profile */
 	protected var showPlayerStats = false
@@ -121,47 +123,45 @@ abstract class AbstractMode:GameMode {
 
 	/** Read rankings from [prop]
 	 * This should be called from Only [GameEngine] */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		rankMap.forEach {rec ->
-			rec.value.forEachIndexed {i, _ ->
-				rec.value[i] = prop.getProperty("${rec.key}.$i", rec.value[i])
+	override fun loadRanking(prop:CustomProperties) {
+		rankMap.forEach {(key, value) ->
+			value.forEachIndexed {i, n ->
+				value[i] = prop.getProperty("${key}.$i", n)
 			}
-		}
-	}
-
-	override fun loadRankingPlayer(prof:ProfileProperties, ruleName:String) {
-		if(prof.isLoggedIn) {
-			rankPersMap.forEach {rec ->
-				rec.value.forEachIndexed {i, _ ->
-					rec.value[i] = prof.propProfile.getProperty("$id.${rec.key}.$i", rec.value[i])
-				}
-			}
-		}
-	}
-	/** Save rankings [map] to [prop] */
-	internal fun <T:Comparable<T>> saveRanking(map:List<Pair<String, Comparable<T>>>) =
-		saveRanking(map.toMap())
-	/** Save rankings [map] */
-	internal fun <T:Comparable<T>> saveRanking(map:Map<String, Comparable<T>>) {
-		map.forEach {(key, it) ->
-			owner.recordProp.setProperty(key, it)
 		}
 	}
 
 	override fun saveRanking() {
 		rankMap.forEach {(key, value) ->
-			value.forEachIndexed {i, rec -> owner.recordProp.setProperty("$key.$i", rec)}
+			value.forEachIndexed {i, rec ->
+				owner.recordProp.setProperty("$key.$i", rec)
+			}
+		}
+	}
+
+	override fun loadRankingPlayer(prof:ProfileProperties) {
+		if(prof.isLoggedIn) rankPersMap.forEach {(key, value) ->
+			value.forEachIndexed {i, n ->
+				value[i] = prof.propProfile.getProperty("$id.${key}.$i", n)
+			}
 		}
 	}
 
 	override fun saveRankingPlayer(prof:ProfileProperties) {
-		if(prof.isLoggedIn) {
-			rankPersMap.forEach {rec ->
-				rec.value.forEachIndexed {i, v ->
-					prof.propProfile.setProperty("$id.${rec.key}.$i", v)
-				}
+		if(prof.isLoggedIn) rankPersMap.forEach {(key, value) ->
+			value.forEachIndexed {i, v ->
+				prof.propProfile.setProperty("$id.${key}.$i", v)
 			}
+		}
+	}
 
+	/** Save rankings [map] to prop */
+	internal inline fun <reified T:Comparable<T>> saveRanking(map:List<Pair<String, T>>) =
+		saveRanking(map.toMap())
+	/** Save rankings [map] */
+	internal inline fun <reified T:Comparable<T>> saveRanking(map:Map<String, T>) {
+		map.forEach {(key, it) ->
+			owner.recordProp.setProperty(key, it)
 		}
 	}
 
@@ -193,15 +193,23 @@ abstract class AbstractMode:GameMode {
 	 * (This function will be called even if no lines are cleared)
 	 * @param engine GameEngine
 	 * @param lines Cleared line
-	 * */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	 */
+	@Deprecated("use ScoreEvent insted lines")
+	fun calcScore(engine:GameEngine, lines:Int):Int =
+		calcScore(engine, ScoreEvent(engine.nowPieceObject, lines, engine.b2bCount, engine.combo, engine.twistType, engine.split))
+	/** Calculates line-clear score
+	 * (This function will be called even if no lines are cleared)
+	 * @param engine GameEngine
+	 * @param ev Cleared Lines Data
+	 */
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
-		val pts = calcScoreBase(engine, lines)
+		val pts = calcScoreBase(engine, ev)
 		val get = calcScoreCombo(
-			pts, if(engine.combo>0&&lines>=1) engine.combo else 0,
+			pts, ev.combo,
 			engine.statistics.level, spd
 		)
-		if(lines>=1) engine.statistics.scoreLine += get
+		if(ev.lines>=1) engine.statistics.scoreLine += get
 		else engine.statistics.scoreBonus += get
 		scDisp += minOf(get, spd)
 		lastscore = get
@@ -211,38 +219,39 @@ abstract class AbstractMode:GameMode {
 	var renSum = 0; private set
 
 	/** Time to display the most recent increase in score */
-	var scDisp = 0//; private set
+	var scDisp = 0L//; private set
 
 	/** Most recent increase in score */
 	var lastscore = 0
 
 	/** npmAlt style Scoring: base Point */
-	fun calcScoreBase(engine:GameEngine, lines:Int):Int {
+	fun calcScoreBase(engine:GameEngine, ev:ScoreEvent):Int {
+		val ln = ev.lines
 		val pts = when {
-			engine.twist -> when {
-				lines<=0&&!engine.twistEZ -> if(engine.twistMini) 5 else 8// Twister 0 lines
-				engine.twistEZ -> (if(engine.b2b) 11+lines else 0)+when(lines) {
+			ev.twist -> when {
+				ln<=0&&!ev.twistEZ -> if(ev.twistMini) 5 else 8// Twister 0 lines
+				ev.twistEZ -> (if(engine.b2b) 11+ln else 0)+when(ln) {
 					1 -> 20
 					2 -> 40
-					else -> lines*25
+					else -> ln*25
 				}
 // Immobile Spin
-				lines==1 -> if(engine.twistMini) (if(engine.b2b) 32 else 24)//Mini Twister 1 lines
-				else if(engine.b2b) 75 else 50// Twister 1 line
-				lines==2 -> if(engine.twistMini&&engine.useAllSpinBonus) (if(engine.b2b) 100 else 75)//Mini Twister 2 lines
-				else if(engine.b2b) 128 else 100// Twister 2 lines
-				lines==3 -> if(engine.b2b) 210 else 175// Twister 3 lines
-				else -> if(engine.b2b) 256 else 192// 180Twister Quads
+				ln==1 -> if(ev.twistMini) (if(ev.b2b>0) 32 else 24)//Mini Twister 1 lines
+				else if(ev.b2b>0) 75 else 50// Twister 1 line
+				ln==2 -> if(ev.twistMini&&engine.useAllSpinBonus) (if(ev.b2b>0) 100 else 75)//Mini Twister 2 lines
+				else if(ev.b2b>0) 128 else 100// Twister 2 lines
+				ln==3 -> if(ev.b2b>0) 210 else 175// Twister 3 lines
+				else -> if(ev.b2b>0) 256 else 192// 180Twister Quads
 			}
-			lines==1 -> 16 // Single
-			lines==2 -> if(engine.split) (if(engine.b2b) 77 else 64) else 48 // Double
-			lines==3 -> if(engine.split) (if(engine.b2b) 128 else 102) else 85 // Triple
-			lines>=4 -> if(engine.b2b) 192 else 160 // Quads
+			ln==1 -> 16 // Single
+			ln==2 -> if(ev.split) (if(ev.b2b>0) 77 else 64) else 48 // Double
+			ln==3 -> if(ev.split) (if(ev.b2b>0) 128 else 102) else 85 // Triple
+			ln>=4 -> if(ev.b2b>0) 192 else 160 // Quads
 			else -> 0
 		}
 		// All clear
-		val btb = if(engine.b2b) 99+engine.b2bCount else 100
-		return if(lines>=1&&engine.field.isEmpty) pts*(1000+btb*7)/70+2048 else pts*btb/10
+		val btb = if(ev.b2b>0) 99+engine.b2bCount else 100
+		return if(ln>=1&&engine.field.isEmpty) pts*(1000+btb*7)/70+2048 else pts*btb/10
 	}
 	/** npmAlt style Scoring: level&combo bonus at Marathon*/
 	fun calcScoreCombo(pts:Int, cmb:Int, lv:Int, spd:Int):Int =
@@ -259,38 +268,60 @@ abstract class AbstractMode:GameMode {
 		} else 0
 
 	/**Tetris World Style Goal*/
-	fun calcPoint(engine:GameEngine, lines:Int):Int = when {
-		engine.twist -> when {
-			lines<=0&&!engine.twistEZ -> 1 // Twister 0 lines
-			engine.twistEZ&&lines>0 -> lines*2+(engine.b2b.toInt()) // Immobile EZ Spin
-			lines==1 -> if(engine.twistMini) if(engine.b2b) 3 else 2
-			else if(engine.b2b) 5 else 3 // Twister 1 line
-			lines==2 -> if(engine.twistMini&&engine.useAllSpinBonus) (if(engine.b2b) 6 else 4)
-			else if(engine.b2b) 8 else 6 // Twister 2 lines
-			else -> if(engine.b2b) 12 else 8// Twister 3 lines
-		}
-		lines==1 -> 1 // Single
-		lines==2 -> if(engine.split) 4 else 3 // Double
-		lines==3 -> if(engine.split) if(engine.b2b) 7 else 6 else 5 // Triple
-		lines>=4 -> if(engine.b2b) 12 else 8 // Quads
-		else -> 0
-	}+when(val it = engine.combo) {
-		if(it<=1) it else 0 -> 0
-		in 2..4 -> 1
-		in 5..8 -> 2
-		else -> 3
-	}+if(lines>=1&&engine.field.isEmpty) 18 else 0 // All clear
+	fun calcPoint(engine:GameEngine, ev:ScoreEvent):Int = ev.lines.let {li ->
+		when {
+			ev.twist -> when {
+				li<=0&&!ev.twistEZ -> 1 // Twister 0 lines
+				ev.twistEZ&&li>0 -> li*2+(ev.b2b>0).toInt() // Immobile EZ Spin
+				li==1 -> if(ev.twistMini) if(ev.b2b>0) 3 else 2
+				else if(ev.b2b>0) 5 else 3 // Twister 1 line
+				li==2 -> if(ev.twistMini&&engine.useAllSpinBonus) (if(ev.b2b>0) 6 else 4)
+				else if(ev.b2b>0) 8 else 6 // Twister 2 lines
+				else -> if(ev.b2b>0) 12 else 8// Twister 3 lines
+			}
+			li==1 -> 1 // Single
+			li==2 -> if(ev.split) 4 else 3 // Double
+			li==3 -> if(ev.split) if(ev.b2b>0) 7 else 6 else 5 // Triple
+			li>=4 -> if(ev.b2b>0) 12 else 8 // Quads
+			else -> 0
+		}+when(val it = ev.combo) {
+			if(it<=1) it else 0 -> 0
+			in 2..4 -> 1
+			in 5..8 -> 2
+			else -> 3
+		}+if(li>=1&&engine.field.isEmpty) 18 else 0 // All clear
+	}
 
-	/**VS Attack lines based tetr.io garbaging by osk, g3ner1c, emmachase*/
-	fun calcPower(engine:GameEngine, lines:Int):Int = if(lines<=0) 0 else (when {
-		engine.twist -> (if(engine.lastEventShape==Piece.Shape.T) lines*2 else lines+1)
-		lines<=3 -> maxOf(0, lines-1)
-		else -> lines
-	}+engine.b2bCount.let {b ->
-		if(b>0) (floor(1+ln1p(b*.8f))+if(b>2) floor(ln1p(b*.8f)%1/3) else 0f).toInt()
-		else 0
-	}).let {if(it<=0) floor(ln1p(engine.combo*1.25f)).toInt() else engine.combo*it/4+it}+
-		if(engine.field.isEmpty) 10 else 0
+	data class powData(val base:Int = 0, val bonus:Int = 0) {
+		val total = base+bonus
+	}
+	/**VS Attack lines based tetr.io garbaging by osk, g3ner1c, emmachase
+	 * @param statc if true increase to statistics attacks
+	 * @return total,line/twist,bonus*/
+	fun calcPower(engine:GameEngine, ev:ScoreEvent, statc:Boolean = false):Int =
+		calcPower(engine, ev).also {
+			if(statc) {
+				if(ev.twist) engine.statistics.attacksTwist += it.base
+				else engine.statistics.attacksLine += it.base
+				engine.statistics.attacksBonus += it.bonus
+			}
+		}.total
+
+	fun calcPower(engine:GameEngine, ev:ScoreEvent):powData {
+		val lines = ev.lines
+		if(lines<=0) return powData()
+		val base = when {
+			engine.twist -> (if(engine.lastEventShape==Piece.Shape.T) lines*2 else lines+1)
+			lines<=3 -> maxOf(0, lines-1)
+			else -> lines
+		}
+		val it = (base+engine.b2bCount.let {c ->
+			if(c>0) (floor(1+ln1p(c*.8f))+if(c>2) floor(ln1p(c*.8f)%1/3) else 0f).toInt()
+			else 0
+		}).let {if(it<=0) floor(ln1p(engine.combo*1.25f)).toInt() else it+engine.combo*it/4+engine.field.isEmpty.toInt()*10}
+
+		return powData(it, it-base)
+	}
 
 	override fun onLockFlash(engine:GameEngine):Boolean = false
 	override fun onMove(engine:GameEngine):Boolean = false
@@ -423,15 +454,15 @@ abstract class AbstractMode:GameMode {
 	}
 
 	protected fun drawMenu(engine:GameEngine, receiver:EventReceiver, vararg value:Pair<String, Any>) {
-		value.forEachIndexed {y, it ->
-			val str = it.second.let {
+		value.forEachIndexed {y, (key, v) ->
+			val str = v.let {
 				when(it) {
 					is String -> it
 					is Boolean -> it.getONorOFF(true)
 					else -> "$it"
 				}
 			}
-			receiver.drawMenuFont(engine, 0, menuY+y*2, it.first, color = menuColor)
+			receiver.drawMenuFont(engine, 0, menuY+y*2, key, color = menuColor)
 			if(menuCursor==statcMenu+y&&!engine.owner.replayMode)
 				receiver.drawMenuFont(engine, 0, menuY+1+y*2, "\u0082${str}", true)
 			else receiver.drawMenuFont(engine, 1, menuY+1+y*2, str)
@@ -467,9 +498,8 @@ abstract class AbstractMode:GameMode {
 	}
 
 	protected fun drawMenuCompact(engine:GameEngine, receiver:EventReceiver, vararg value:Pair<String, Any>) {
-		for(it in value) {
-			val label = it.first
-			val str:String = it.second.let {
+		for((label, second) in value) {
+			val str:String = second.let {
 				when(it) {
 					is String -> it
 					is Boolean -> if(label.length<6) it.getONorOFF(false)
@@ -673,7 +703,7 @@ abstract class AbstractMode:GameMode {
 	}
 
 	protected fun drawResultRank(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, rank:Int) {
-		drawResultRankScale(engine, receiver, y, color, 1f, rank)
+		drawResultRankScale(engine, receiver, y, color, getScaleF(engine.displaySize), rank)
 	}
 
 	protected fun drawResultRankScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int) {
@@ -681,7 +711,7 @@ abstract class AbstractMode:GameMode {
 	}
 
 	protected fun drawResultNetRank(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, rank:Int) {
-		drawResultNetRankScale(engine, receiver, y, color, 1f, rank)
+		drawResultNetRankScale(engine, receiver, y, color, getScaleF(engine.displaySize), rank)
 	}
 
 	protected fun drawResultNetRankScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int) {
@@ -689,7 +719,7 @@ abstract class AbstractMode:GameMode {
 	}
 
 	protected fun drawResultNetRankDaily(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, rank:Int) {
-		drawResultNetRankDailyScale(engine, receiver, y, color, 1f, rank)
+		drawResultNetRankDailyScale(engine, receiver, y, color, getScaleF(engine.displaySize), rank)
 	}
 
 	protected fun drawResultNetRankDailyScale(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, scale:Float, rank:Int) {
@@ -697,7 +727,7 @@ abstract class AbstractMode:GameMode {
 	}
 
 	protected fun drawResultStats(engine:GameEngine, receiver:EventReceiver, y:Int, color:COLOR, vararg stats:Statistic) {
-		drawResultStatsScale(engine, receiver, y, color, 1f, *stats)
+		drawResultStatsScale(engine, receiver, y, color, getScaleF(engine.displaySize), *stats)
 	}
 
 	protected fun drawResultStatsScale(engine:GameEngine, receiver:EventReceiver, startY:Int, color:COLOR, scale:Float, vararg stats:Statistic) {
@@ -711,7 +741,7 @@ abstract class AbstractMode:GameMode {
 				Statistic.ATTACKS -> {
 					receiver.drawMenuFont(engine, 6, y, "Lines", color, scale*.8f)
 					receiver.drawMenuFont(engine, 6, y+1, "Sent", color, scale*.8f)
-					receiver.drawMenuNum(engine, 0, y, String.format("%4d", engine.statistics.attacks), scale = 2f)
+					receiver.drawMenuNum(engine, 0, y, String.format("%4d", engine.statistics.attacks), scale = scale*2f)
 				}
 				Statistic.TIME -> {
 					receiver.drawMenuFont(engine, 0, y, "Elapsed Time", color, scale*.8f)

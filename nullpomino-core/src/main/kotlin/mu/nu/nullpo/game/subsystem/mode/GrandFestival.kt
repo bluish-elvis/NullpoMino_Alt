@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -80,17 +81,17 @@ class GrandFestival:AbstractMode() {
 	private var bgmLv = 0
 
 	/** Section Record */
-	private var sectionhanabi = IntArray(SECTION_MAX+1)
-	private var sectionscore = IntArray(SECTION_MAX+1)
-	private var sectionTime = IntArray(SECTION_MAX+1)
+	private val sectionhanabi = Array(SECTION_MAX+1) {0}
+	private val sectionscore = Array(SECTION_MAX+1) {0L}
+	private val sectionTime = Array(SECTION_MAX+1) {0}
 
 	/** This will be true if the player achieves new section time record in
 	 * specific section */
-	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
+	private var sectionIsNewRecord = Array(SECTION_MAX+1) {false}
 
 	/** This will be true if the player achieves new section time record
 	 * somewhere */
-	private var sectionAnyNewRecord = false
+	private val sectionAnyNewRecord get() = sectionIsNewRecord.any()
 
 	/** Amount of sections completed */
 	private var sectionscomp = 0
@@ -131,26 +132,26 @@ class GrandFestival:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Score records */
-	private var rankingScore = IntArray(RANKING_MAX)
-	private var rankingHanabi = IntArray(RANKING_MAX)
+	private val rankingScore = MutableList(RANKING_MAX) {0L}
+	private val rankingHanabi = MutableList(RANKING_MAX) {0}
 
 	/** Level records */
-	private var rankingLevel = IntArray(RANKING_MAX)
+	private val rankingLevel = MutableList(RANKING_MAX) {0}
 
 	/** Time records */
-	private var rankingTime = IntArray(RANKING_MAX)
+	private val rankingTime = MutableList(RANKING_MAX) {0}
 
-	private var bestSectionScore = IntArray(RANKING_MAX)
-	private var bestSectionHanabi = IntArray(RANKING_MAX)
-	private var bestSectionTime = IntArray(RANKING_MAX)
+	private val bestSectionScore = MutableList(RANKING_MAX) {0L}
+	private val bestSectionHanabi = MutableList(RANKING_MAX) {0}
+	private val bestSectionTime = MutableList(RANKING_MAX) {0}
 	private var decoration = 0
 	private var dectemp = 0
 
 	/** Returns the name of this mode */
 	override val name = "Grand Festival"
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
+	override val rankMap
+		get() = rankMapOf(
 			"score" to rankingScore, "level" to rankingLevel, "time" to rankingTime, "hanabi" to rankingHanabi,
 			"section.score" to bestSectionScore, "section.hanabi" to bestSectionHanabi, "section.time" to bestSectionTime
 		)
@@ -161,7 +162,7 @@ class GrandFestival:AbstractMode() {
 		nextseclv = 0
 		lvupflag = true
 		comboValue = 0
-		lastscore = scDisp
+		lastscore = 0
 		bonusint = 0
 		bonusspeed = bonusint
 		temphanabi = bonusspeed
@@ -172,11 +173,10 @@ class GrandFestival:AbstractMode() {
 		halfminbonus = false
 		lastlinetime = 0
 		lastspawntime = 0
-		sectionhanabi = IntArray(SECTION_MAX+1)
-		sectionscore = IntArray(SECTION_MAX+1)
-		sectionTime = IntArray(SECTION_MAX)
-		sectionIsNewRecord = BooleanArray(SECTION_MAX+1)
-		sectionAnyNewRecord = false
+		sectionhanabi.fill(0)
+		sectionscore.fill(0)
+		sectionTime.fill(0)
+		sectionIsNewRecord.fill(false)
 		sectionavgtime = 0
 		sectionscomp = sectionavgtime
 		isShowBestSectionTime = false
@@ -190,13 +190,13 @@ class GrandFestival:AbstractMode() {
 		dectemp = 0
 
 		rankingRank = -1
-		rankingScore = IntArray(RANKING_MAX)
-		rankingHanabi = IntArray(RANKING_MAX)
-		rankingLevel = IntArray(RANKING_MAX)
-		rankingTime = IntArray(RANKING_MAX)
-		bestSectionHanabi = IntArray(SECTION_MAX)
-		bestSectionScore = IntArray(SECTION_MAX)
-		bestSectionTime = IntArray(SECTION_MAX)
+		rankingScore.fill(0)
+		rankingHanabi.fill(0)
+		rankingLevel.fill(0)
+		rankingTime.fill(0)
+		bestSectionHanabi.fill(0)
+		bestSectionScore.fill(0)
+		bestSectionTime.fill(0)
 
 		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
 		engine.twistEnable = true
@@ -249,7 +249,6 @@ class GrandFestival:AbstractMode() {
 				&&sectionTime[numsec]<bestSectionTime[numsec])
 		) {
 			sectionIsNewRecord[numsec] = true
-			sectionAnyNewRecord = true
 		}
 	}
 
@@ -346,9 +345,9 @@ class GrandFestival:AbstractMode() {
 					// Best Section Time Records
 					receiver.drawScoreFont(engine, 0, 2, "SECTION SCORE TIME", COLOR.BLUE)
 
-					var totalTime = 0
-					var totalScore = 0
-					var totalHanabi = 0
+					val totalTime = bestSectionTime.sum()
+					val totalScore = bestSectionScore.sum()
+					val totalHanabi = bestSectionHanabi.sum()
 					for(i in 0 until SECTION_MAX) {
 						val temp = i*100
 						receiver.drawScoreNum(engine, 0, 3+i, String.format("%3d-", temp), sectionIsNewRecord[i])
@@ -359,9 +358,7 @@ class GrandFestival:AbstractMode() {
 							),
 							sectionIsNewRecord[i]
 						)
-						totalScore += bestSectionScore[i]
-						totalHanabi += bestSectionHanabi[i]
-						totalTime += bestSectionTime[i]
+
 					}
 					receiver.drawScoreFont(engine, 0, 5+SECTION_MAX, "TOTAL", COLOR.BLUE)
 					receiver.drawScoreNum(
@@ -491,27 +488,28 @@ class GrandFestival:AbstractMode() {
 
 	/** Calculates line-clear score (This function will be called even if no
 	 * lines are cleared) */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 
-		comboValue = if(lines==0) 1
-		else maxOf(1, comboValue+2*lines-2)
+		val li = ev.lines
+		comboValue = if(li==0) 1
+		else maxOf(1, comboValue+2*li-2)
 
-		if(lines>=1) {
-			halfminline += lines
+		if(li>=1) {
+			halfminline += li
 			val levelb = engine.statistics.level
-			var indexcombo = engine.combo+if(engine.b2b) 0 else -1
+			var indexcombo = ev.combo+if(ev.b2b>0) 0 else -1
 			if(indexcombo<0) indexcombo = 0
 			if(indexcombo>tableHanabiComboBonus.size-1) indexcombo = tableHanabiComboBonus.size-1
 			val combobonus = tableHanabiComboBonus[indexcombo]
 
 			if(engine.ending==0) {
-				engine.statistics.level += lines
+				engine.statistics.level += li
 				levelUp(engine)
 
 				if(engine.statistics.level>=300) {
 					if(engine.timerActive) {
 						val timebonus = (1253*ceil(maxOf(18000-engine.statistics.time, 0)/60.0)).toInt()
-						sectionscore[SECTION_MAX] = timebonus
+						sectionscore[SECTION_MAX] = timebonus.toLong()
 						engine.statistics.scoreBonus += timebonus
 					}
 					bonusspeed = 3265/maxOf(1, hanabi)
@@ -531,32 +529,32 @@ class GrandFestival:AbstractMode() {
 				}
 			}
 			lastscore = 6*
-				((((levelb+lines)/(if(engine.b2b) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
-					*lines
+				((((levelb+li)/(if(ev.b2b>0) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
+					*li
 					*comboValue*if(engine.field.isEmpty) 4 else 1)
-					+engine.statistics.level/(if(engine.twist) 2 else 3)+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
+					+engine.statistics.level/(if(ev.twist) 2 else 3)+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			// AC medal
 			if(engine.field.isEmpty) {
 
-				dectemp += lines*25
-				if(lines==3) dectemp += 25
-				if(lines==4) dectemp += 150
+				dectemp += li*25
+				if(li==3) dectemp += 25
+				if(li==4) dectemp += 150
 			}
 			temphanabi += maxOf(
 				1, (
-					when(lines) {
-						2 -> 2.9
-						3 -> 3.8
-						else -> if(lines>=4) 4.7 else 1.0
-					}*combobonus*(if(engine.twist) 4.0 else if(engine.twistMini) 2.0 else 1.0)*(if(engine.split) 1.4 else 1.0)
-						*(if(inthanabi>-100) 1.3 else 1.0)*(maxOf(engine.statistics.level-lastspawntime, 100)/100.0)
-						*(maxOf(engine.statistics.level-lastspawntime, 120)/120.0)
-						*(if(halfminbonus) 1.4 else 1.0)*(if(engine.ending==0&&(levelb%25==0||levelb==299)) 1.3 else 1.0)
+					when(li) {
+						2 -> 2.9f
+						3 -> 3.8f
+						else -> if(li>=4) 4.7f else 1f
+					}*combobonus*(if(ev.twistMini) 2 else if(ev.twist) 4 else 1)*(if(ev.split) 1.4f else 1f)
+						*(if(inthanabi>-100) 1.3f else 1f)*(maxOf(engine.statistics.level-lastspawntime, 100)/100f)
+						*(maxOf(engine.statistics.level-lastspawntime, 120)/120f)
+						*(if(halfminbonus) 1.4f else 1f)*(if(engine.ending==0&&(levelb%25==0||levelb==299)) 1.3f else 1f)
 					).toInt()
 			)
 			halfminbonus = false
 			lastlinetime = 0
-			if(sectionscomp>=0&&sectionscomp<sectionscore.size) sectionscore[sectionscomp] += lastscore
+			if(sectionscomp>=0&&sectionscomp<sectionscore.size) sectionscore[sectionscomp] += lastscore.toLong()
 			engine.statistics.scoreLine += lastscore
 			return lastscore
 		}
@@ -713,7 +711,7 @@ class GrandFestival:AbstractMode() {
 	}
 
 	/** Update the ranking */
-	private fun updateRanking(sc:Int, fw:Int, lv:Int, time:Int) {
+	private fun updateRanking(sc:Long, fw:Int, lv:Int, time:Int) {
 		rankingRank = checkRanking(sc, fw, lv, time)
 
 		if(rankingRank!=-1) {
@@ -733,7 +731,7 @@ class GrandFestival:AbstractMode() {
 
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
-	private fun checkRanking(sc:Int, fw:Int, lv:Int, time:Int):Int {
+	private fun checkRanking(sc:Long, fw:Int, lv:Int, time:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			when {
 				sc>rankingScore[i] -> return i

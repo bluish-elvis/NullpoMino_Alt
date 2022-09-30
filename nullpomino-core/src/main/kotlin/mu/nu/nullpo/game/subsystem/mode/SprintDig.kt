@@ -33,6 +33,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Block.COLOR
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -64,13 +65,18 @@ class SprintDig:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' times */
-	private var rankingTime:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+	private val rankingTime:List<MutableList<Int>> = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' line counts */
-	private var rankingLines:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+	private val rankingLines:List<MutableList<Int>> = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' piece counts */
-	private var rankingPiece:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+	private val rankingPiece:List<MutableList<Int>> = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
+
+	override val rankMap
+		get() = rankMapOf(rankingTime.mapIndexed {i, a -> "$i.time" to a}+
+			rankingLines.mapIndexed {i, a -> "$i.lines" to a}+
+			rankingPiece.mapIndexed {i, a -> "$i.piece" to a})
 
 	/* Mode name */
 	override val name = "Digging Sprint"
@@ -85,9 +91,9 @@ class SprintDig:NetDummyMode() {
 		presetNumber = 0
 
 		rankingRank = -1
-		rankingTime = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingLines = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingPiece = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+		rankingTime.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingPiece.forEach {it.fill(0)}
 
 		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
 
@@ -396,14 +402,14 @@ class SprintDig:NetDummyMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Update meter
 		val remainLines = getRemainGarbageLines(engine, goalType)
 		engine.meterValue = remainLines*1f/engine.fieldHeight
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
 		// Game is completed when there is no gem blocks
-		if(lines>0&&remainLines==0) {
+		if(ev.lines>0&&remainLines==0) {
 			engine.ending = 1
 			engine.gameEnded()
 		}
@@ -448,28 +454,6 @@ class SprintDig:NetDummyMode() {
 		}
 
 		return false
-	}
-
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until GOALTYPE_MAX)
-			for(j in 0 until RANKING_MAX) {
-				rankingTime[i][j] = prop.getProperty("$ruleName.$i.time.$j", -1)
-				rankingLines[i][j] = prop.getProperty("$ruleName.$i.lines.$j", 0)
-				rankingPiece[i][j] = prop.getProperty("$ruleName.$i.piece.$j", 0)
-			}
-	}
-
-	/** Save rankings of [ruleName] to owner.recordProp */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking((0 until GOALTYPE_MAX).flatMap {j ->
-			(0 until RANKING_MAX).flatMap {i ->
-				listOf(
-					"$ruleName.$j.time.$i" to rankingTime[j][i],
-					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.piece.$i" to rankingPiece[j][i]
-				)
-			}
-		})
 	}
 
 	/** Update rankings

@@ -172,7 +172,8 @@ class GameEngine(
 	/** Number of holds used */
 	var holdUsedCount = 0
 
-	/** Number of lines currently clearing */
+	/** Number of lines currently clearing
+	 * (if [clearMode] isn't [ClearType.LINE], this shows Number of cleared blocks)  */
 	var lineClearing = 0; private set
 	var garbageClearing = 0; private set
 	/** Line gravity type (Native, Cascade, etc) */
@@ -261,12 +262,12 @@ class GameEngine(
 	/** True if Twister */
 	val twist:Boolean get() = twistType!=null
 	/** True if Twister Mini */
-	val twistMini:Boolean get() = twistType==Twister.IMMOBILE_MINI||twistType==Twister.POINT_MINI
+	val twistMini:Boolean get() = twistType?.mini==true
 	/** EZ Twister */
-	val twistEZ:Boolean get() = twistType==Twister.IMMOBILE_EZ
+	val twistEZ:Boolean get() = twistType?.EZ==true
 
 	/** True if last erasing line is B2B */
-	var b2b = false
+	val b2b get() = b2bCount>0
 	/** B2B counter */
 	var b2bCount = -1
 
@@ -739,7 +740,6 @@ class GameEngine(
 		lastMove = LastMove.NONE
 		split = false
 		twistType = null
-		b2b = false
 		b2bCount = -1
 		combo = -1
 		intHanabi = 0
@@ -847,8 +847,8 @@ class GameEngine(
 		owner.mode?.let {
 			it.playerInit(this)
 			if(owner.replayMode) it.loadReplay(this, owner.replayProp)
-			else it.loadRanking(owner.recordProp, ruleOpt.strRuleName)
-			if(playerProp.isLoggedIn) it.loadRankingPlayer(playerProp, ruleOpt.strRuleName)
+			else it.loadRanking(owner.recordProp)
+			if(playerProp.isLoggedIn) it.loadRankingPlayer(playerProp)
 
 		}
 		playerName = if(owner.replayMode) owner.replayProp.getProperty("$playerID.playerName", "") else ""
@@ -2162,10 +2162,10 @@ class GameEngine(
 					garbageClearing = field.garbageCleared
 					//if(combo==0 && lastevent!=EVENT_NONE)lastevent=EVENT_NONE;
 					if(lineClearing==0) {
-
+						val ev = ScoreEvent(it, twistType = twistType)
 						if(twist) {
 							playSE("twister")
-							lastEvent = ScoreEvent(0, false, it, twistType!!)
+							lastEvent = ev
 							if(b2bCount<0) {
 								b2bCount = 0
 								playSE("b2b_start")
@@ -2176,7 +2176,7 @@ class GameEngine(
 							owner.receiver.calcScore(this, lastEvent)
 						} else combo = -1
 
-						owner.mode?.calcScore(this, lineClearing)?.let {sc ->
+						owner.mode?.calcScore(this, ev)?.let {sc ->
 							if(sc>0)
 								owner.receiver.addScore(this, nowPieceX, nowPieceBottomY, sc, EventReceiver.getPlayerColor(playerID))
 						}
@@ -2304,9 +2304,9 @@ class GameEngine(
 				}
 			}
 			val ingame = ending==0||staffrollEnableStatistics
+			val li = lineClearing.let {if(big&&bigHalf) it shr 1 else it}
 			// Linescountを決める
-			var li = lineClearing
-			if(big&&bigHalf) li = li shr 1
+			val ev = ScoreEvent(nowPieceObject, li, b2bCount, combo, twistType, split)
 			if(clearMode==ClearType.LINE) {
 				split = field.lastLinesSplited
 
@@ -2352,7 +2352,6 @@ class GameEngine(
 					if(li>=4||(split&&splitB2B)||twist) {
 						b2bCount++
 						if(b2bCount>0) {
-							b2b = true
 							playSE("b2b_combo", minOf(1.5f, 1f+(b2bCount)/13f))
 							if(ingame) {
 								when {
@@ -2366,7 +2365,6 @@ class GameEngine(
 						} else playSE("b2b_start")
 
 					} else if(b2bCount>=0&&combo<0) {
-						b2b = false
 						b2bCount = -1
 						playSE("b2b_end")
 					}
@@ -2380,7 +2378,7 @@ class GameEngine(
 					}
 				}
 
-				lastEvent = ScoreEvent(li, split, nowPieceObject, twistType, b2b)
+				lastEvent = ev
 				lineGravityTotalLines += lineClearing
 				if(ingame) statistics.lines += li
 
@@ -2395,11 +2393,11 @@ class GameEngine(
 				tempHanabi += 6
 			}
 			// Calculate score
-			owner.mode?.calcScore(this, li)?.let {
+			owner.mode?.calcScore(this, ev)?.let {
 				if(it>0)
-					owner.receiver.addScore(this, nowPieceX, field.lastLinesBottom, it, EventReceiver.getPlayerColor(playerID))
+					owner.receiver.addScore(this, nowPieceX, field.lastLinesBottom, it)
 			}
-			if(li>0) owner.receiver.calcScore(this, lastEvent)
+			if(li>0) owner.receiver.calcScore(this, ev)
 
 			// Blockを消す演出を出す (まだ実際には消えていない）
 			(0 until field.height).filter {field.getLineFlag(it)}.toSet().let {row ->

@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -113,10 +114,10 @@ class GrandRoads:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Ranking ecords */
-	private var rankingLines:Array<IntArray> = Array(COURSE_MAX) {IntArray(RANKING_MAX)}
-	private var rankingLifes:Array<IntArray> = Array(COURSE_MAX) {IntArray(RANKING_MAX)}
-	private var rankingTime:Array<IntArray> = Array(COURSE_MAX) {IntArray(RANKING_MAX)}
-	private var rankingRollclear:Array<IntArray> = Array(COURSE_MAX) {IntArray(RANKING_MAX)}
+	private val rankingLines = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingLifes = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingRollclear = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
 
 	/** Returns the name of this mode */
 	override val name = "Grand Roads"
@@ -127,14 +128,12 @@ class GrandRoads:NetDummyMode() {
 			Course.XTREME, Course.HELL, Course.HIDE, Course.VOID -> 3
 			else -> 0
 		}
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*((
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-					rankingLifes.mapIndexed {a, x -> "$a.lfes" to x}+
-					rankingTime.mapIndexed {a, x -> "$a.time" to x}+
-					rankingRollclear.mapIndexed {a, x -> "$a.rollclear" to x}).toTypedArray())
-		)
+	override val rankMap
+		get() = rankMapOf(
+			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingLifes.mapIndexed {a, x -> "$a.lifes" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
+				rankingRollclear.mapIndexed {a, x -> "$a.rollclear" to x})
 
 	/** This function will be called when the game enters the main game
 	 * screen. */
@@ -153,10 +152,10 @@ class GrandRoads:NetDummyMode() {
 		showST = true
 
 		rankingRank = -1
-		rankingLines = Array(COURSE_MAX) {IntArray(RANKING_MAX)}
-		rankingLifes = Array(COURSE_MAX) {IntArray(RANKING_MAX)}
-		rankingTime = Array(COURSE_MAX) {IntArray(RANKING_MAX)}
-		rankingRollclear = Array(COURSE_MAX) {IntArray(RANKING_MAX)}
+		rankingLines.forEach {it.fill(0)}
+		rankingLifes.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
+		rankingRollclear.forEach {it.fill(0)}
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
@@ -490,17 +489,18 @@ class GrandRoads:NetDummyMode() {
 	}
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Don't do anything during the ending
 		if(engine.ending!=0) return 0
 		val lv = engine.statistics.level
 		// Add lines to norm
 		norm = engine.statistics.lines
-		if(lines>0) lastlinetime = levelTimer
+		val li = ev.lines
+		if(li>0) lastlinetime = levelTimer
 		// Decrease Pressure Hidden
-		if(engine.heboHiddenEnable&&lines>0) {
+		if(engine.heboHiddenEnable&&li>0) {
 			engine.heboHiddenTimerNow = 0
-			engine.heboHiddenYNow -= lines
+			engine.heboHiddenYNow -= li
 			if(engine.heboHiddenYNow<0) engine.heboHiddenYNow = 0
 		}
 		var bgmChanged = false
@@ -511,7 +511,7 @@ class GrandRoads:NetDummyMode() {
 			owner.musMan.fadesw = true// BGM fadeout
 
 		// Level up
-		if(lines>0&&norm>=nextLv)
+		if(li>0&&norm>=nextLv)
 		// Game completed
 			if(lv>=nowCourse.goalLevel) {
 				engine.playSE("levelup_section")

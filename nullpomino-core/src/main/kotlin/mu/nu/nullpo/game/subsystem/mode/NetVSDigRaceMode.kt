@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -70,7 +71,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 		}
 	}
 
-	/** Fill the playfield with garbage
+	/** Fill the play field with garbage
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
@@ -222,9 +223,9 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 		}
 	}
 
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		val pid = engine.playerID
-		if(lines>0&&pid==0) {
+		if(ev.lines>0&&pid==0) {
 			if(netCurrentRoomInfo==null||!netCurrentRoomInfo!!.useMap)
 				playerRemainLines[pid] = getRemainGarbageLines(engine, pid)
 			else playerRemainLines[pid] = engine.field.howManyGems-engine.field.howManyGemClears

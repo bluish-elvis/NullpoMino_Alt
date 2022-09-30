@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -196,10 +197,11 @@ class NetVSBattleMode:NetDummyVSMode() {
 	}
 
 	/* Calculate Score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		val ev = ev.lines
 		// Attack
 		val pid = engine.playerID
-		if(lines>0&&pid==0) {
+		if(ev>0&&pid==0) {
 			val pts = IntArray(ATTACK_CATEGORIES)
 
 			scgettime[pid] = 0
@@ -221,7 +223,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 				if(engine.twistEZ) {
 					attackLineIndex = LINE_ATTACK_INDEX_EZ_T
 					lastevent[pid] = EVENT_TWIST_EZ
-				} else if(lines==1) {
+				} else if(ev==1) {
 					if(engine.twistMini) {
 						attackLineIndex = LINE_ATTACK_INDEX_TMINI
 						lastevent[pid] = EVENT_TWIST_SINGLE_MINI
@@ -229,7 +231,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 						attackLineIndex = LINE_ATTACK_INDEX_TSINGLE
 						lastevent[pid] = EVENT_TWIST_SINGLE
 					}
-				} else if(lines==2) {
+				} else if(ev==2) {
 					if(engine.twistMini&&engine.useAllSpinBonus) {
 						attackLineIndex = LINE_ATTACK_INDEX_TMINI_D
 						lastevent[pid] = EVENT_TWIST_DOUBLE_MINI
@@ -237,23 +239,23 @@ class NetVSBattleMode:NetDummyVSMode() {
 						attackLineIndex = LINE_ATTACK_INDEX_TDOUBLE
 						lastevent[pid] = EVENT_TWIST_DOUBLE
 					}
-				} else if(lines>=3) {
+				} else {
 					attackLineIndex = LINE_ATTACK_INDEX_TTRIPLE
 					lastevent[pid] = EVENT_TWIST_TRIPLE
 				}// Twister 3 lines
 				// Twister 2 lines
 				// Twister 1 line
 			} else // Single
-				if(lines==1) {
+				if(ev==1) {
 					attackLineIndex = LINE_ATTACK_INDEX_SINGLE
 					lastevent[pid] = EVENT_SINGLE
-				} else if(lines==2) {
+				} else if(ev==2) {
 					attackLineIndex = LINE_ATTACK_INDEX_DOUBLE
 					lastevent[pid] = EVENT_DOUBLE
-				} else if(lines==3) {
+				} else if(ev==3) {
 					attackLineIndex = LINE_ATTACK_INDEX_TRIPLE
 					lastevent[pid] = EVENT_TRIPLE
-				} else if(lines>=4) {
+				} else {
 					attackLineIndex = LINE_ATTACK_INDEX_FOUR
 					lastevent[pid] = EVENT_FOUR
 				}// Four
@@ -282,7 +284,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 			}
 
 			// All clear (Bravo)
-			if(lines>=1&&engine.field.isEmpty&&netCurrentRoomInfo!!.bravo)
+			if(ev>=1&&engine.field.isEmpty&&netCurrentRoomInfo!!.bravo)
 				pts[ATTACK_CATEGORY_BRAVO] += 6
 
 			// Gem block attack
@@ -337,7 +339,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 		}
 
 		// Garbage lines appear
-		if((lines==0||!netCurrentRoomInfo!!.rensaBlock)&&totalGarbageLines>=GARBAGE_DENOMINATOR&&!netVSIsPractice) {
+		if((ev==0||!netCurrentRoomInfo!!.rensaBlock)&&totalGarbageLines>=GARBAGE_DENOMINATOR&&!netVSIsPractice) {
 			engine.playSE("garbage${if(totalGarbageLines-GARBAGE_DENOMINATOR>3) 1 else 0}")
 
 			var smallGarbageCount = 0

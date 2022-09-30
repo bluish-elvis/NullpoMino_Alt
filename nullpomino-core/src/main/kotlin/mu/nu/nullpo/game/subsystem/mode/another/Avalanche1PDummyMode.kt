@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
@@ -248,8 +249,9 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		if(lines>0) {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		val blkc = ev.lines
+		if(blkc>0) {
 			if(zenKeshi) garbageAdd += 30
 			if(engine.field.isEmpty) {
 				zenKeshi = true
@@ -261,7 +263,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 			onClear(engine, engine.playerID)
 			engine.playSE("combo${minOf(engine.chain, 20)}")
 
-			val pts = calcPts(lines)
+			val pts = calcPts(blkc)
 
 			var multiplier = engine.field.colorClearExtraCount
 			if(engine.field.colorsCleared>1) multiplier += (engine.field.colorsCleared-1)*2
@@ -271,8 +273,8 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 			if(multiplier>999) multiplier = 999
 			if(multiplier<1) multiplier = 1
 
-			blocksCleared += lines
-			toNextLevel -= lines
+			blocksCleared += blkc
+			toNextLevel -= blkc
 			if(toNextLevel<=0&&level<maxLevel) {
 				toNextLevel = blocksPerLevel
 				level++
@@ -283,7 +285,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 			val score = pts*multiplier
 			engine.statistics.scoreLine += score
 
-			garbageAdd += calcOjama(score, lines, pts, multiplier)
+			garbageAdd += calcOjama(score, blkc, pts, multiplier)
 
 			setSpeed(engine)
 			return pts

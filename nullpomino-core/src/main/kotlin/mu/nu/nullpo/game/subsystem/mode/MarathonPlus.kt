@@ -112,19 +112,17 @@ class MarathonPlus:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' scores */
-	private var rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-	private var rankingLives = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-	private var rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-	private var rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
+	private val rankingLives = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*(
-				(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-					rankingLives.mapIndexed {a, x -> "$a.ives" to x}+
-					rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-					rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-		)
+	override val rankMap
+		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+			rankingLives.mapIndexed {a, x -> "$a.lives" to x}+
+			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x})
+
 	private var ruleOptOrg = RuleOptions()
 	/* Mode name */
 	override val name = "Marathon+ ScoreAttack"
@@ -147,10 +145,10 @@ class MarathonPlus:NetDummyMode() {
 		bonusLines = bonusPieceCount
 
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLives = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingLives.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
 
 		netPlayerInit(engine)
 		if(!owner.replayMode) version = CURRENT_VERSION else
@@ -377,7 +375,7 @@ class MarathonPlus:NetDummyMode() {
 						// Completed
 						if(!netIsWatch) {
 							if(!startLevel) {
-								bonusScore = engine.statistics.score*(1+engine.lives)/4
+								bonusScore = (engine.statistics.score*(1+engine.lives)/4).toInt()
 								engine.statistics.scoreBonus += bonusScore
 							} else {
 								engine.staffrollEnable = false
@@ -433,13 +431,13 @@ class MarathonPlus:NetDummyMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		super.calcScore(engine, lines)
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		super.calcScore(engine, ev)
 		var lv = engine.statistics.level
 
 		// Bonus level
 		if(lv>=tableGameClearLevel[goalType]) {
-			bonusLines += lines
+			bonusLines += ev.lines
 			bonusPieceCount++
 			if(bonusPieceCount>bonusLines/4) {
 				bonusPieceCount = 0
@@ -450,7 +448,7 @@ class MarathonPlus:NetDummyMode() {
 			if(goalType>0) {
 				if(startLevel&&engine.statistics.lines>=100)
 					engine.ending = 2
-				else if(!startLevel) bonusTimeMax += engine.speed.are*lines//20,64,99,
+				else if(!startLevel) bonusTimeMax += engine.speed.are*ev.lines//20,64,99,
 			}
 		} else {
 			var bgmChanged = false
@@ -464,13 +462,13 @@ class MarathonPlus:NetDummyMode() {
 				}
 			}
 			var normMax = tableNorma[goalType][minOf(lv/10, tableNorma[goalType].size-1)]
-			norm += lines
+			norm += ev.lines
 			// Meter
 			if(goalType<3) {
 				engine.meterValue = norm/(normMax-1f)
 				engine.meterColor = GameEngine.METER_COLOR_LEVEL
 			}
-			while(lines>0&&engine.statistics.lines>=nextsec) {
+			while(ev.lines>0&&engine.statistics.lines>=nextsec) {
 				// Level up
 				lv = ++engine.statistics.level
 				setSpeed(engine)
@@ -480,9 +478,9 @@ class MarathonPlus:NetDummyMode() {
 				if(lv>=tableGameClearLevel[goalType]) {
 					// Bonus level unlocked
 					bonusTime = 0
+					bonusScore = (engine.statistics.score*(1+lastlives)/3f).toInt()
 					if(goalType==0) {
 						lastlives = engine.lives
-						bonusScore = engine.statistics.score*(1+lastlives)/3
 						engine.statistics.scoreBonus += bonusScore
 
 						owner.musMan.bgm = BGM.Ending(1)
@@ -490,8 +488,7 @@ class MarathonPlus:NetDummyMode() {
 						engine.timerActive = false
 					} else {
 						lastlives = engine.lives
-						bonusScore = engine.statistics.score*(1+lastlives)*10
-						bonusScore = bonusTime*(1+lastlives)
+						bonusScore += bonusTime*(1+lastlives)/2
 						engine.statistics.scoreBonus += bonusScore
 						engine.playSE("endingstart")
 						engine.playSE("levelup_section")
@@ -511,12 +508,12 @@ class MarathonPlus:NetDummyMode() {
 				} else {
 					norm = engine.statistics.lines
 					nextsec = norm+1
-					bonusTime += (engine.speed.lockDelay+engine.speed.are+36+lines*15)*lines//65,230,390,580
+					bonusTime += (engine.speed.lockDelay+engine.speed.are+36+ev.lines*15)*ev.lines//65,230,390,580
 				}
 
 			}
 		}
-		return if(lines>0) lastscore else 0
+		return if(ev.lines>0) lastscore else 0
 	}
 
 	/* Soft drop */
@@ -678,7 +675,7 @@ class MarathonPlus:NetDummyMode() {
 	 * @param li Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, li:Int, lf:Int, time:Int, type:Int) {
+	private fun updateRanking(sc:Long, li:Int, lf:Int, time:Int, type:Int) {
 		rankingRank = checkRanking(sc, li, lf, time, type)
 
 		if(rankingRank!=-1) {
@@ -704,7 +701,7 @@ class MarathonPlus:NetDummyMode() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, li:Int, lf:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, li:Int, lf:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(goalType>0&&startLevel) {
 				if(time<rankingTime[type][i]) return i
@@ -777,7 +774,7 @@ class MarathonPlus:NetDummyMode() {
 			{engine.timerActive = it.toBoolean()},
 			{lastscore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
-			{engine.lastEvent = ScoreEvent.parseInt(it)},
+			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{engine.owner.bgMan.bg = it.toInt()},
 			{bonusLines = it.toInt()},
 			{bonusFlashNow = it.toInt()},

@@ -29,6 +29,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
@@ -36,6 +37,9 @@ import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
 import zeroxfc.nullpo.custom.libs.ProfileProperties
+
+typealias rankMapType = Map<String, rankMapChild>
+typealias rankMapChild = MutableList<Comparable<Any>>
 
 /** Game mode interface */
 interface GameMode {
@@ -57,8 +61,8 @@ interface GameMode {
 	 */
 	val gameIntensity:Int
 
-	/**  @return true if this is netplay-only mode.*/
-	val isNetplayMode:Boolean
+	/**  @return true if this is net-play only mode.*/
+	val isOnlineMode:Boolean
 
 	/**  @return true if this is a multiplayer mode.*/
 	val isVSMode:Boolean
@@ -67,12 +71,15 @@ interface GameMode {
 	val menu:MenuList
 
 	/** Mapping of Ranking Properties
-	 * = mapOf(String to [Score])
-	 * @sample Marathon.rankMap
+	 * get()= [AbstractMode.rankMapOf] (List<String to Score>)
+	 * @sample Marathon.rankMapOf
 	 */
-	val rankMap:Map<String, IntArray>
-	val rankPersMap:Map<String, IntArray>
+	val rankMap:rankMapType
 
+	/** Used by [loadRankingPlayer], [saveRankingPlayer]
+	 * get()= [AbstractMode.rankMapOf] (List<String to Score>)
+	 * @sample zeroxfc.nullpo.custom.modes.MissionMode.rankPersMap  */
+	val rankPersMap:rankMapType
 	/** Initialization of game mode. Executed before the game screen appears.
 	 * @param manager GameManager that owns this mode
 	 */
@@ -206,7 +213,7 @@ interface GameMode {
 
 	/** Executed when a block gets destroyed in line-clear screen.
 	 * @param blk Block
-	 * @return if true, skip default behaivor
+	 * @return if true, skip default behavior
 	 */
 	fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean
 
@@ -214,9 +221,9 @@ interface GameMode {
 
 	/** Calculate score. Executed before pieceLocked.
 	 *  Please note this event will be called even If no lines are cleared!
-	 * @param lines Number of lines. Can be zero.
+	 * @param ev Number of lines. Can be zero.
 	 */
-	fun calcScore(engine:GameEngine, lines:Int):Int
+	fun calcScore(engine:GameEngine, ev:ScoreEvent):Int
 
 	/** After soft drop is used
 	 * @param fall Number of rows
@@ -254,13 +261,13 @@ interface GameMode {
 	 *  This is used in playerInit or from netOnJoin.
 	 * @param ruleName Rule name
 	 */
-	fun loadRanking(prop:CustomProperties, ruleName:String = "")
+	fun loadRanking(prop:CustomProperties)
 
 	/** Read rankings from [prof].
 	 *  This is used in playerInit or from netOnJoin.
 	 * @param ruleName Rule name
 	 */
-	fun loadRankingPlayer(prof:ProfileProperties, ruleName:String = "")
+	fun loadRankingPlayer(prof:ProfileProperties)
 
 	fun saveSetting(prop:CustomProperties, ruleName:String = "", playerID:Int = -1)
 

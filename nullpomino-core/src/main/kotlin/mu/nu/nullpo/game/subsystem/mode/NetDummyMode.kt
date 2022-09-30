@@ -1173,8 +1173,6 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** Enter the netplay ranking screen
-	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @param goalType Game Type
 	 */
 	protected fun netEnterNetPlayRankingScreen(goalType:Int) {
@@ -1328,7 +1326,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			{engine.statistics.level = it.toInt()},
 			{engine.gameActive = it.toBoolean()},
 			{engine.timerActive = it.toBoolean()},
-			{engine.lastEvent = ScoreEvent.parseInt(it)},
+			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{engine.owner.bgMan.bg = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
@@ -1392,22 +1390,18 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 */
 	protected open fun netGetGoalType():Int = 0
 
-	/** NET: It returns `true` when the current settings doesn't
-	 * prevent leaderboard screen from showing.
+	/** NET: It returns true when the current settings don't prevent leaderboard screen from showing.
 	 * Game modes should implement this. By default, this always returns false.
 	 * @param engine GameEngine
-	 * @return `true` when the current settings doesn't prevent
-	 * leaderboard screen from showing.
+	 * @return `true` when the current settings don't prevent leaderboard screen from showing.
 	 */
 	protected open fun netIsNetRankingViewOK(engine:GameEngine):Boolean = engine.ai==null
 
-	/** NET: It returns `true` when the current settings doesn't
-	 * prevent replay data from sending.
+	/** NET: It returns true when the current settings don't prevent leaderboard screen from showing.
 	 * By default, it just calls netIsNetRankingViewOK, but you should override
 	 * it if you make "race" modes.
 	 * @param engine GameEngine
-	 * @return `true` when the current settings doesn't prevent
-	 * replay data from sending.
+	 * @return `true` when the current settings don't prevent replay data from sending.
 	 */
 	protected open fun netIsNetRankingSendOK(engine:GameEngine):Boolean = netIsNetRankingViewOK(engine)
 

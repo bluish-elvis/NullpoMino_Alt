@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -65,7 +66,7 @@ class GrandMountain:AbstractMode() {
 	private var bgmLv = 0
 
 	/** Section Time */
-	private var sectionTime = IntArray(SECTION_MAX)
+	private var sectionTime = Array(SECTION_MAX) {0}
 
 	/** 新記録が出たSection はtrue */
 	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
@@ -120,13 +121,13 @@ class GrandMountain:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Rankings' level */
-	private var rankingLevel:Array<IntArray> = Array(RANKING_MAX) {IntArray(GOALTYPE_MAX)}
+	private val rankingLevel:List<MutableList<Int>> = List(RANKING_MAX) {MutableList(GOALTYPE_MAX) {0}}
 
 	/** Rankings' times */
-	private var rankingTime:Array<IntArray> = Array(RANKING_MAX) {IntArray(GOALTYPE_MAX)}
+	private val rankingTime:List<MutableList<Int>> = List(RANKING_MAX) {MutableList(GOALTYPE_MAX) {0}}
 
 	/** Section Time記録 */
-	private var bestSectionTime:Array<IntArray> = Array(SECTION_MAX) {IntArray(GOALTYPE_MAX)}
+	private val bestSectionTime:List<MutableList<Int>> = List(SECTION_MAX) {MutableList(GOALTYPE_MAX) {0}}
 
 	private val decoration = 0
 	private val dectemp = 0
@@ -134,12 +135,10 @@ class GrandMountain:AbstractMode() {
 	/* Mode name */
 	override val name = "Grand Mountain"
 	override val gameIntensity = 1
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*((rankingLevel.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
-				bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}).toTypedArray())
-		)
+	override val rankMap
+		get() = rankMapOf(rankingLevel.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x}+
+			bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x})
 
 	/* Initialization */
 	override fun playerInit(engine:GameEngine) {
@@ -153,7 +152,7 @@ class GrandMountain:AbstractMode() {
 		rolltime = 0
 		secretGrade = 0
 		bgmLv = 0
-		sectionTime = IntArray(SECTION_MAX)
+		sectionTime.fill(0)
 		sectionIsNewRecord = BooleanArray(SECTION_MAX)
 		sectionAnyNewRecord = false
 		sectionscomp = 0
@@ -169,9 +168,9 @@ class GrandMountain:AbstractMode() {
 		big = false
 
 		rankingRank = -1
-		rankingLevel = Array(RANKING_MAX) {IntArray(GOALTYPE_MAX)}
-		rankingTime = Array(RANKING_MAX) {IntArray(GOALTYPE_MAX)}
-		bestSectionTime = Array(SECTION_MAX) {IntArray(GOALTYPE_MAX)}
+		rankingLevel.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
+		bestSectionTime.forEach {it.fill(0)}
 
 		engine.speed.are = 23
 		engine.speed.areLine = 23
@@ -532,12 +531,13 @@ class GrandMountain:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Combo
-		comboValue = if(lines==0) 1
-		else maxOf(1, comboValue+2*lines-2)
+		val li = ev.lines
+		comboValue = if(li==0) 1
+		else maxOf(1, comboValue+2*li-2)
 
-		if(lines==0) {
+		if(li==0) {
 			// せり上がり
 			garbageCount--
 
@@ -653,10 +653,10 @@ class GrandMountain:AbstractMode() {
 				garbageCount = 13-engine.statistics.level/100
 			}
 		}
-		if(lines>=1&&engine.ending==0) {
+		if(li>=1&&engine.ending==0) {
 			// Level up
 			val levelb = engine.statistics.level
-			var ls = lines
+			var ls = li
 			ls += engine.field.howManyGarbageLineClears
 			engine.statistics.level += ls
 			levelUp(engine)
