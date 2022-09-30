@@ -34,6 +34,7 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
@@ -356,7 +357,6 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	/** For previewMapRead
 	 * @param engine GameEngine
-	 * @param playerID Player number
 	 * @param id MapID
 	 * @param forceReload trueWhen youMapForce Reload the file
 	 */
@@ -502,8 +502,9 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, avalanche:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		val pid = engine.playerID
+		val avalanche = ev.lines
 		if(avalanche>0) {
 			cleared[pid] = true
 

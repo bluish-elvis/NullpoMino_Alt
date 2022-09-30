@@ -77,6 +77,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.IntegerMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.game.subsystem.mode.rankMapType
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -105,19 +106,16 @@ open class MarathonModeBase:NetDummyMode() {
 	/** Current round's ranking position */
 	@JvmField var rankingRank = 0
 	/** Rankings' scores */
-	private var rankingScore:Array<IntArray> = emptyArray()
+	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 	/** Rankings' line counts*/
-	private var rankingLines:Array<IntArray> = emptyArray()
+	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	/** Rankings' times */
-	private var rankingTime:Array<IntArray> = emptyArray()
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*(
-				(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-					rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-					rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-		)
-	override val rankPersMap:Map<String, IntArray> get() = emptyMap()
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	override val rankMap
+		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x})
+	override val rankPersMap:rankMapType get() = emptyMap()
 
 	override val name:String
 		get() = "marathonBase"
@@ -128,9 +126,9 @@ open class MarathonModeBase:NetDummyMode() {
 		lastscore = 0
 		bgmLv = 0
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
 		netPlayerInit(engine)
 		/*if(!owner.replayMode) {
 			loadSetting(owner.modeConfig)
@@ -267,7 +265,7 @@ open class MarathonModeBase:NetDummyMode() {
 	/*
      * Calculate score
      */
-	override fun calcScore(engine:GameEngine, lines:Int):Int = 0
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int = 0
 	/*
      * Soft drop
      */
@@ -319,7 +317,7 @@ open class MarathonModeBase:NetDummyMode() {
 	 * @param li   Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int):Int {
+	private fun updateRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -344,7 +342,7 @@ open class MarathonModeBase:NetDummyMode() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
@@ -382,7 +380,7 @@ open class MarathonModeBase:NetDummyMode() {
 			{engine.timerActive = it.toBoolean()},
 			{lastscore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
-			{engine.lastEvent = ScoreEvent.parseInt(it)},
+			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{engine.owner.bgMan.bg = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}

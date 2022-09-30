@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -82,13 +83,19 @@ class RetroMarathon:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Score records */
-	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 
 	/** Line records */
-	private var rankingLines:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Level records */
-	private var rankingLevel:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+
+	override val rankMap
+		get() = rankMapOf(
+			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingLevel.mapIndexed {a, x -> "$a.level" to x})
 
 	/** Returns the name of this mode */
 	override val name = "Retro Marathon.A"
@@ -106,9 +113,9 @@ class RetroMarathon:AbstractMode() {
 		efficiency = 0f
 
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLevel = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingLevel.forEach {it.fill(0)}
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
@@ -291,7 +298,7 @@ class RetroMarathon:AbstractMode() {
 		}
 	}
 
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		softdropscore /= 2
 		engine.statistics.scoreSD += softdropscore
 		softdropscore = 0
@@ -305,20 +312,21 @@ class RetroMarathon:AbstractMode() {
 		// Level up
 
 		// Update meter
+		val li = ev.lines
 		when {
-			lines==1 -> {
+			li==1 -> {
 				pts += 40*(engine.statistics.level+1) // Single
 				loons += 1
 			}
-			lines==2 -> {
+			li==2 -> {
 				pts += 100*(engine.statistics.level+1) // Double
 				loons += 2
 			}
-			lines==3 -> {
+			li==3 -> {
 				pts += 200*(engine.statistics.level+1) // Triple
 				loons += 3
 			}
-			lines>=4 -> {
+			li>=4 -> {
 				pts += 300*(engine.statistics.level+1) // Four
 				loons += 3
 			}
@@ -428,41 +436,13 @@ class RetroMarathon:AbstractMode() {
 		prop.setProperty("retromastery.version", version)
 	}
 
-	/** Load the ranking
-	 * @param prop CustomProperties
-	 * @param ruleName Rule name
-	 */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(type in 0 until RANKING_TYPE) {
-				rankingScore[type][i] = prop.getProperty("$ruleName.$type.score.$i", 0)
-				rankingLines[type][i] = prop.getProperty("$ruleName.$type.lines.$i", 0)
-				rankingLevel[type][i] = prop.getProperty("$ruleName.$type.level.$i", 0)
-			}
-	}
-
-	/** Save the ranking
-	 * @param ruleName Rule name
-	 */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking((0 until RANKING_TYPE).flatMap {j ->
-			(0 until RANKING_MAX).flatMap {i ->
-				listOf(
-					"$ruleName.$j.score.$i" to rankingScore[j][i],
-					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.level.$i" to rankingLevel[j][i]
-				)
-			}
-		})
-	}
-
 	/** Update the ranking
 	 * @param sc Score
 	 * @param li Lines
 	 * @param lv Level
 	 * @param type Game type
 	 */
-	private fun updateRanking(sc:Int, li:Int, lv:Int, type:GAMETYPE) {
+	private fun updateRanking(sc:Long, li:Int, lv:Int, type:GAMETYPE) {
 		rankingRank = checkRanking(sc, li, lv, type)
 		val t = type.ordinal
 		if(rankingRank!=-1) {
@@ -487,7 +467,7 @@ class RetroMarathon:AbstractMode() {
 	 * @param lv Level
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
-	private fun checkRanking(sc:Int, li:Int, lv:Int, type:GAMETYPE):Int {
+	private fun checkRanking(sc:Long, li:Int, lv:Int, type:GAMETYPE):Int {
 		val t = type.ordinal
 		for(i in 0 until RANKING_MAX)
 			if(sc>rankingScore[t][i])

@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
@@ -720,7 +721,7 @@ class SPF:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		val field = engine.field
 		if(field.canCascade()) return 0
 		checkAll(engine)
@@ -743,9 +744,9 @@ class SPF:AbstractMode() {
 					engine.statistics.scoreLine += 10000
 					score[pid] += 10000
 				}
-				diamondBreakColor = all.entries.maxBy {it.key}.let {
-					val y = it.key
-					val x = it.value.minBy {it.key}.key
+				diamondBreakColor = all.entries.maxBy {it.key}.let {i ->
+					val y = i.key
+					val x = i.value.minBy {it.key}.key
 					field.getBlockColor(x, y+1)
 				}
 			}
@@ -1166,16 +1167,16 @@ class SPF:AbstractMode() {
 
 		val apm = (ojamaSent[pid]*3600).toFloat()/engine.statistics.time.toFloat()
 		drawResult(engine, receiver, 3, COLOR.ORANGE, "ATTACK", String.format("%10d", ojamaSent[pid]))
-		drawResultStats(engine, receiver, 5, COLOR.ORANGE, AbstractMode.Statistic.LINES, AbstractMode.Statistic.PIECE)
+		drawResultStats(engine, receiver, 5, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE)
 		drawResult(engine, receiver, 9, COLOR.ORANGE, "ATTACK/MIN", String.format("%10g", apm))
 		drawResultStats(
 			engine,
 			receiver,
 			11,
 			COLOR.ORANGE,
-			AbstractMode.Statistic.LPM,
-			AbstractMode.Statistic.PPS,
-			AbstractMode.Statistic.TIME
+			Statistic.LPM,
+			Statistic.PPS,
+			Statistic.TIME
 		)
 	}
 

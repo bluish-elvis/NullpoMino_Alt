@@ -69,21 +69,19 @@ class MarathonExtreme:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' scores */
-	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 
 	/** Rankings' line counts */
-	private var rankingLines:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' times */
-	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*(
-				(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-					rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-					rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-		)
+	override val rankMap
+		get() = rankMapOf(
+			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
 	/* Mode name */
 	override val name = "Marathon:Extreme"
@@ -97,9 +95,9 @@ class MarathonExtreme:NetDummyMode() {
 		rolltime = 0
 
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
 
 		netPlayerInit(engine)
 		// NET: Load name
@@ -273,8 +271,8 @@ class MarathonExtreme:NetDummyMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		super.calcScore(engine, lines)
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		super.calcScore(engine, ev)
 
 		if(engine.ending==0) {
 			// BGM fade-out effects and BGM changes
@@ -313,7 +311,7 @@ class MarathonExtreme:NetDummyMode() {
 				engine.playSE("levelup")
 			}
 		}
-		return if(lines>0) lastscore else 0
+		return if(ev.lines>0) lastscore else 0
 	}
 
 	override fun onResult(engine:GameEngine):Boolean {
@@ -383,7 +381,7 @@ class MarathonExtreme:NetDummyMode() {
 	 * @param li Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, li:Int, time:Int, endlessMode:Boolean) {
+	private fun updateRanking(sc:Long, li:Int, time:Int, endlessMode:Boolean) {
 		rankingRank = checkRanking(sc, li, time, endlessMode)
 
 		if(rankingRank!=-1) {
@@ -410,7 +408,7 @@ class MarathonExtreme:NetDummyMode() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, li:Int, time:Int, endlessMode:Boolean):Int {
+	private fun checkRanking(sc:Long, li:Int, time:Int, endlessMode:Boolean):Int {
 		var endlessIndex = 0
 		if(endlessMode) endlessIndex = 1
 
@@ -454,7 +452,7 @@ class MarathonExtreme:NetDummyMode() {
 			{engine.timerActive = it.toBoolean()},
 			{lastscore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
-			{engine.lastEvent = ScoreEvent.parseInt(it)},
+			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{engine.owner.bgMan.bg = it.toInt()},
 			{rolltime = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
@@ -495,8 +493,7 @@ class MarathonExtreme:NetDummyMode() {
 	/** NET: Get goal type */
 	override fun netGetGoalType():Int = if(endless) 1 else 0
 
-	/** NET: It returns true when the current settings doesn't prevent
-	 * leaderboard screen from showing. */
+	/** NET: It returns true when the current settings don't prevent leaderboard screen from showing.*/
 	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = startLevel==0&&!big&&engine.ai==null
 
 	companion object {

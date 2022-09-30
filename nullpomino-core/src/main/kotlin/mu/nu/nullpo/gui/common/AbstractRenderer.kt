@@ -731,12 +731,7 @@ abstract class AbstractRenderer:EventReceiver() {
 		val offsetY = engine.fY
 
 		if(engine.statc[0]>1||engine.ruleOpt.moveFirstFrame) {
-			val scale = when(engine.displaySize) {
-				-1 -> .5f
-				0 -> 1f
-				1 -> 2f
-				else -> 1f
-			}
+			val scale = getScaleF(engine.displaySize)
 			if(engine.ai!=null&&engine.aiShowHint&&engine.aiHintReady) drawHintPiece(offsetX, offsetY, engine, scale)
 			if(engine.ghost&&engine.ruleOpt.ghost) drawGhostPiece(offsetX*1f, offsetY*1f, engine, scale)
 			drawCurrentPiece(offsetX, offsetY, engine, scale)

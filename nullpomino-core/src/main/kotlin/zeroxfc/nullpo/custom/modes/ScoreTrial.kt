@@ -39,6 +39,7 @@ package zeroxfc.nullpo.custom.modes
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.fx.particles.BlockParticleCollection
 import mu.nu.nullpo.util.CustomProperties
@@ -50,13 +51,13 @@ class ScoreTrial:MarathonModeBase() {
 	// Ingame Timer
 	private var mainTimer = 0
 	// Ranking stuff
-	private var rankingScore:Array<IntArray> = emptyArray()
-	private var rankingLines:Array<IntArray> = emptyArray()
-	private var rankingTime:Array<IntArray> = emptyArray()
+	private val rankingScore = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0L}}
+	private val rankingLines = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0}}
 	// Lives added/removed
 	private var lifeOffset = 0
 	// Score before increase;
-	private var scoreBeforeIncrease = 0
+	private var scoreBeforeIncrease = 0L
 	// ANIMATION TYPE
 	private var lineClearAnimType = 0
 	// Difficulty selector
@@ -83,9 +84,9 @@ class ScoreTrial:MarathonModeBase() {
 	private var o = false
 	private var l = 0
 	private var rankingRankPlayer = 0
-	private var rankingScorePlayer:Array<IntArray> = emptyArray()
-	private var rankingLinesPlayer:Array<IntArray> = emptyArray()
-	private var rankingTimePlayer:Array<IntArray> = emptyArray()
+	private val rankingScorePlayer = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0L}}
+	private val rankingLinesPlayer = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0}}
+	private val rankingTimePlayer = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0}}
 	// Mode name
 	override val name:String
 		get() = "SCORE TRIAL"
@@ -111,16 +112,18 @@ class ScoreTrial:MarathonModeBase() {
 		mainTimer = 0
 		livesStartedWith = 0
 		rankingRank = -1
-		rankingScore = Array(MAX_DIFFICULTIES) {IntArray(RANKING_MAX)}
-		rankingLines = Array(MAX_DIFFICULTIES) {IntArray(RANKING_MAX)}
-		rankingTime = Array(MAX_DIFFICULTIES) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
+
 		engine.playerProp.reset()
 		showPlayerStats = false
 
 		rankingRankPlayer = -1
-		rankingScorePlayer = Array(MAX_DIFFICULTIES) {IntArray(RANKING_MAX)}
-		rankingLinesPlayer = Array(MAX_DIFFICULTIES) {IntArray(RANKING_MAX)}
-		rankingTimePlayer = Array(MAX_DIFFICULTIES) {IntArray(RANKING_MAX)}
+		rankingScorePlayer.forEach {it.fill(0)}
+		rankingLinesPlayer.forEach {it.fill(0)}
+		rankingTimePlayer.forEach {it.fill(0)}
+
 		netPlayerInit(engine)
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
@@ -134,7 +137,6 @@ class ScoreTrial:MarathonModeBase() {
 		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
 		engine.twistEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
-		engine.b2b = false
 		engine.statistics.levelDispAdd = 0
 		engine.speed.das = 8
 		engine.speed.denominator = 256
@@ -162,8 +164,8 @@ class ScoreTrial:MarathonModeBase() {
 		}
 	}
 	/*
-     * Called at settings screen
-     */
+		 * Called at settings screen
+		 */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode) {
@@ -236,8 +238,8 @@ class ScoreTrial:MarathonModeBase() {
 		return true
 	}
 	/*
-     * Render the settings screen
-     */
+		 * Render the settings screen
+		 */
 	override fun renderSetting(engine:GameEngine) {
 		val lc = when(lineClearAnimType) {
 			0 -> "DTET"
@@ -267,8 +269,8 @@ class ScoreTrial:MarathonModeBase() {
 		return false
 	}
 	/*
-     * Called for initialization during "Ready" screen
-     */
+		 * Called for initialization during "Ready" screen
+		 */
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 0
@@ -329,7 +331,7 @@ class ScoreTrial:MarathonModeBase() {
 		engine.isInGame = true
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
-			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
+			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine.playerProp.propProfile, engine)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
@@ -454,8 +456,8 @@ class ScoreTrial:MarathonModeBase() {
 		netDrawPlayerName(engine)
 	}
 	/*
-     * Called after every frame
-     */
+		 * Called after every frame
+		 */
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
 		if(engine.gameStarted&&engine.ending==0) {
@@ -470,7 +472,7 @@ class ScoreTrial:MarathonModeBase() {
 			}
 
 			// Meter - use as timer.
-			var timerMax = when(difficultySelected) {
+			val timerMax = when(difficultySelected) {
 				0 -> NORMAL_30_TIMER
 				1 -> HARD_50_TIMER
 				else -> TIMER_MAX
@@ -485,8 +487,7 @@ class ScoreTrial:MarathonModeBase() {
 					engine.gameEnded()
 				} else {
 					// Ending
-					var baseBonus:Int = engine.statistics.score
-					baseBonus *= ((engine.lives+1).toFloat()/(livesStartedWith+1)).toInt()
+					val baseBonus = (engine.statistics.score*((engine.lives+1).toFloat()/(livesStartedWith+1))).toInt()
 					engine.statistics.scoreBonus += baseBonus
 					lastscore = baseBonus
 					o = true
@@ -542,40 +543,39 @@ class ScoreTrial:MarathonModeBase() {
 	}
 
 	/*
-     * Calculate score - PAIN
-     */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+		 * Calculate score - PAIN
+		 */
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Line clear bonus
-		var linesUsed = lines
-		if(linesUsed>4) linesUsed = 4
-		if(lines>0) {
-			var pts = LINECLEAR_SCORES[linesUsed-1]
-			pts *= engine.combo
+		val li = ev.lines
+		if(li>0) {
+			var pts = LINECLEAR_SCORES[li-1]
+			pts *= ev.combo
 			pts *= engine.statistics.level+1
-			if(engine.combo>=2) {
+			if(ev.combo>=2) {
 				val destinationX:Int = receiver.scoreX(engine)
 				val destinationY:Int = receiver.scoreY(engine)+20*if(engine.displaySize==0) 16 else 32
 				val colors = when {
-					engine.combo>10 -> arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED)
-					engine.combo>=8 -> arrayOf(COLOR.CYAN, COLOR.BLUE, COLOR.COBALT)
-					engine.combo>=4 -> arrayOf(COLOR.BLUE, COLOR.COBALT)
+					ev.combo>10 -> arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED)
+					ev.combo>=8 -> arrayOf(COLOR.CYAN, COLOR.BLUE, COLOR.COBALT)
+					ev.combo>=4 -> arrayOf(COLOR.BLUE, COLOR.COBALT)
 					else -> arrayOf(COLOR.COBALT)
 				}
 				comboTextNumber = FlyInOutText(
 					"${(engine.combo)} COMBO", destinationX, destinationY, 15, 60, 15, colors,
 					1.0f, engine.randSeed+engine.statistics.time, engine.combo>=8
 				)
-				if(engine.combo==4) comboTextAward = FlyInOutText(
+				if(ev.combo==4) comboTextAward = FlyInOutText(
 					"GOOD!", destinationX,
 					destinationY+if(engine.displaySize==0) 16 else 32, 15, 60, 15, arrayOf(COLOR.YELLOW), 1.0f,
 					engine.randSeed+engine.statistics.time, engine.combo>=8
 				)
-				if(engine.combo==8) comboTextAward = FlyInOutText(
+				if(ev.combo==8) comboTextAward = FlyInOutText(
 					"AWESOME!", destinationX,
 					destinationY+if(engine.displaySize==0) 16 else 32, 15, 60, 15, arrayOf(COLOR.GREEN), 1.0f,
 					engine.randSeed+engine.statistics.time, engine.combo>=8
 				)
-				if(engine.combo==11) comboTextAward = FlyInOutText(
+				if(ev.combo==11) comboTextAward = FlyInOutText(
 					"UNREAL!", destinationX,
 					destinationY+if(engine.displaySize==0) 16 else 32, 15, 60, 15,
 					arrayOf(COLOR.ORANGE, COLOR.RED), 1.0f, engine.randSeed+engine.statistics.time,
@@ -587,10 +587,10 @@ class ScoreTrial:MarathonModeBase() {
 			if(pts>0) {
 				scoreBeforeIncrease = engine.statistics.score
 				lastscore = pts
-				if(lines>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
+				if(li>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
 			}
 		}
-		if(engine.statistics.level in 50..199&&lines>0&&difficultySelected==2) {
+		if(engine.statistics.level in 50..199&&li>0&&difficultySelected==2) {
 			// Level up
 			engine.statistics.level++
 
@@ -650,8 +650,8 @@ class ScoreTrial:MarathonModeBase() {
 		return 0
 	}
 	/*
-     * Soft drop
-     */
+		 * Soft drop
+		 */
 	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreSD += fall*(engine.statistics.level+1)
 	}
@@ -660,8 +660,8 @@ class ScoreTrial:MarathonModeBase() {
 		pCoordList?.clear()
 	}
 	/*
-     * Hard drop
-     */
+		 * Hard drop
+		 */
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += (fall*3+45)*(engine.statistics.level+1)
 		/*	val baseX:Int = 16*engine.nowPieceX+receiver.fieldX(engine, playerID)
@@ -687,8 +687,8 @@ class ScoreTrial:MarathonModeBase() {
 			}*/
 	}
 	/*
-     * Called when saving replay
-     */
+		 * Called when saving replay
+		 */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 
 		// NET: Save name
@@ -712,7 +712,7 @@ class ScoreTrial:MarathonModeBase() {
 	 * @param li   Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, li:Int, time:Int, diff:Int, isLogin:Boolean):Boolean {
+	private fun updateRanking(sc:Long, li:Int, time:Int, diff:Int, isLogin:Boolean):Boolean {
 		rankingRank = checkRanking(sc, li, time, diff)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -753,7 +753,7 @@ class ScoreTrial:MarathonModeBase() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, li:Int, time:Int, diff:Int):Int {
+	private fun checkRanking(sc:Long, li:Int, time:Int, diff:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(sc>rankingScore[diff][i]) return i
 			else if(sc==rankingScore[diff][i]&&li>rankingLines[diff][i]) return i
@@ -768,7 +768,7 @@ class ScoreTrial:MarathonModeBase() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRankingPlayer(sc:Int, li:Int, time:Int, diff:Int):Int {
+	private fun checkRankingPlayer(sc:Long, li:Int, time:Int, diff:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(sc>rankingScorePlayer[diff][i]) return i
 			else if(sc==rankingScorePlayer[diff][i]&&li>rankingLinesPlayer[diff][i]) return i

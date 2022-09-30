@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
@@ -64,16 +65,16 @@ class RetroMania:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Score records */
-	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 
 	/** Line records */
-	private var rankingLines:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Line records */
-	private var rankingLevel:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Time records */
-	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Score 999,999 Reached time */
 	private var maxScoreTime = -1
@@ -86,6 +87,12 @@ class RetroMania:AbstractMode() {
 	override val name = "Retro Mania .S"
 
 	override val gameIntensity:Int = -1
+	override val rankMap
+		get() = rankMapOf(
+			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
 	/** This function will be called when
 	 * the game enters the main game screen. */
@@ -99,10 +106,10 @@ class RetroMania:AbstractMode() {
 		maxLevelTime = -1
 
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLevel = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingLevel.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
@@ -296,13 +303,14 @@ class RetroMania:AbstractMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Determines line-clear bonus
+		val li = ev.lines
 		val pts = minOf(engine.statistics.level/2+1, 5)*when {
-			lines==1 -> 100 // Single
-			lines==2 -> 400 // Double
-			lines==3 -> 900 // Triple
-			lines>=4 -> 2000 // Quadruple
+			li==1 -> 100 // Single
+			li==2 -> 400 // Double
+			li==3 -> 900 // Triple
+			li>=4 -> 2000 // Quadruple
 			else -> 0
 		}*if(engine.field.isEmpty) 10 else 1  // Perfect clear bonus
 
@@ -333,17 +341,12 @@ class RetroMania:AbstractMode() {
 		}
 
 		// Add lines
-		linesAfterLastLevelUp += lines
+		linesAfterLastLevelUp += li
 
-		engine.meterColor = when {
-			linesAfterLastLevelUp>=1 -> GameEngine.METER_COLOR_YELLOW
-			linesAfterLastLevelUp>=2 -> GameEngine.METER_COLOR_ORANGE
-			linesAfterLastLevelUp>=3 -> GameEngine.METER_COLOR_RED
-			else -> GameEngine.METER_COLOR_GREEN
-		}
+		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
 		// Level up
-		if(linesAfterLastLevelUp>=4||levelTimer>=levelTime[minOf(engine.statistics.level, 15)]&&lines==0||engine.field.isEmpty) {
+		if(linesAfterLastLevelUp>=4||levelTimer>=levelTime[minOf(engine.statistics.level, 15)]&&li==0||engine.field.isEmpty) {
 			engine.statistics.level++
 
 			owner.bgMan.fadecount = 0
@@ -399,7 +402,7 @@ class RetroMania:AbstractMode() {
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
 			updateRanking(
-				if(engine.statistics.score>=MAX_SCORE) -maxScoreTime else engine.statistics.score,
+				if(engine.statistics.score>=MAX_SCORE) -maxScoreTime.toLong() else engine.statistics.score,
 				if(engine.statistics.lines>=MAX_LINES) -maxLinesTime else engine.statistics.lines,
 				if(engine.statistics.level>=MAX_LEVEL) -maxLevelTime else engine.statistics.level,
 				engine.statistics.time, gametype
@@ -428,37 +431,8 @@ class RetroMania:AbstractMode() {
 		prop.setProperty("retromania.version", version)
 	}
 
-	/** Load the ranking */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(type in 0 until RANKING_TYPE) {
-				rankingScore[type][i] = prop.getProperty("$ruleName.$type.score.$i", 0)
-				rankingLines[type][i] = prop.getProperty("$ruleName.$type.lines.$i", 0)
-				rankingLevel[type][i] = prop.getProperty("$ruleName.$type.level.$i", 0)
-				rankingTime[type][i] = prop.getProperty("$ruleName.$type.time.$i", 0)
-
-				if(rankingScore[type][i]>MAX_SCORE) rankingScore[type][i] = MAX_SCORE
-				if(rankingLines[type][i]>MAX_LINES) rankingLines[type][i] = MAX_LINES
-				if(rankingLevel[type][i]>MAX_LEVEL) rankingLevel[type][i] = MAX_LEVEL
-			}
-	}
-
-	/** Save the ranking */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking((0 until RANKING_TYPE).flatMap {j ->
-			(0 until RANKING_MAX).flatMap {i ->
-				listOf(
-					"$ruleName.$j.score.$i" to rankingScore[j][i],
-					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.level.$i" to rankingLevel[j][i],
-					"$ruleName.$j.time.$i" to rankingTime[j][i]
-				)
-			}
-		})
-	}
-
 	/** Update the ranking */
-	private fun updateRanking(sc:Int, li:Int, lv:Int, time:Int, type:Int) {
+	private fun updateRanking(sc:Long, li:Int, lv:Int, time:Int, type:Int) {
 		rankingRank = checkRanking(sc, li, lv, time, type)
 
 		if(rankingRank!=-1) {
@@ -480,7 +454,7 @@ class RetroMania:AbstractMode() {
 
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
-	private fun checkRanking(sc:Int, li:Int, lv:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, li:Int, lv:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(if(sc<0) sc<rankingScore[type][i] else sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&if(li<0) li<rankingLines[type][i] else li>rankingLines[type][i]) return i

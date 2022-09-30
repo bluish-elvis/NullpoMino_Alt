@@ -75,25 +75,23 @@ class SprintUltra:NetDummyMode() {
 	private var version = 0
 
 	/** Current round's ranking position */
-	private var rankingRank = IntArray(RANKTYPE_MAX)
+	private val rankingRank = MutableList(RANKTYPE_MAX) {-1}
 
 	/** Rankings' scores */
-	private var rankingScore:Array<Array<IntArray>> = Array(RANKTYPE_MAX) {Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}}
+	private val rankingScore = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0L}}}
 
 	/** Rankings' sent line counts */
-	private var rankingPower:Array<Array<IntArray>> = Array(RANKTYPE_MAX) {Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}}
+	private val rankingPower = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}}
 
 	/** Rankings' line counts */
-	private var rankingLines:Array<Array<IntArray>> = Array(RANKTYPE_MAX) {Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}}
+	private val rankingLines = List(RANKTYPE_MAX) {List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}}
 
 	private var rankingShow = 0
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*(
-				(rankingScore.mapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
-					rankingPower.mapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.power" to y}}+
-					rankingLines.mapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}}).flatten().toTypedArray())
-		)
+	override val rankMap
+		get() = rankMapOf(rankingScore.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
+			rankingPower.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.power" to y}}+
+			rankingLines.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}})
+
 	/* Mode name */
 	override val name = "ULTRA Score Attack"
 	override val gameIntensity = 2
@@ -108,11 +106,11 @@ class SprintUltra:NetDummyMode() {
 		pow = 0
 		rankingShow = 0
 
-		rankingRank = IntArray(RANKTYPE_MAX) {-1}
+		rankingRank.fill(-1)
 
-		rankingScore = Array(RANKTYPE_MAX) {Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}}
-		rankingLines = Array(RANKTYPE_MAX) {Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}}
-		rankingPower = Array(RANKTYPE_MAX) {Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}}
+		rankingScore.forEach {it.forEach {it.fill(0)}}
+		rankingLines.forEach {it.forEach {it.fill(0)}}
+		rankingPower.forEach {it.forEach {it.fill(0)}}
 
 		engine.frameColor = GameEngine.FRAME_COLOR_BLUE
 
@@ -381,10 +379,10 @@ class SprintUltra:NetDummyMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		engine.statistics.attacks += calcPower(engine, lines)
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		calcPower(engine, ev, true)
 		engine.statistics.level = engine.statistics.attacks/2
-		return super.calcScore(engine, lines)
+		return super.calcScore(engine, ev)
 	}
 
 	/* Soft drop */
@@ -533,8 +531,8 @@ class SprintUltra:NetDummyMode() {
 	 * @param po Power
 	 * @param li Lines
 	 */
-	private fun updateRanking(goal:Int, sc:Int, po:Int, li:Int):IntArray {
-		rankingRank = RANKTYPE_ALL.mapIndexed {i, it ->
+	private fun updateRanking(goal:Int, sc:Long, po:Int, li:Int):List<Int> {
+		RANKTYPE_ALL.mapIndexed {i, it ->
 			val ret = checkRanking(it, goal, sc, po, li)
 			if(ret!=-1) {
 				// Shift down ranking entries
@@ -549,8 +547,8 @@ class SprintUltra:NetDummyMode() {
 				rankingPower[i][goal][ret] = po
 				rankingLines[i][goal][ret] = li
 			}
-			ret
-		}.toIntArray()
+			rankingRank[i] = ret
+		}
 		return rankingRank
 	}
 
@@ -560,7 +558,7 @@ class SprintUltra:NetDummyMode() {
 	 * @param type Number of ranking types
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(type:RankingType, goal:Int, sc:Int, po:Int, li:Int):Int {
+	private fun checkRanking(type:RankingType, goal:Int, sc:Long, po:Int, li:Int):Int {
 		val ord = type.ordinal
 		for(i in 0 until RANKING_MAX)
 			when(type) {
@@ -614,7 +612,7 @@ class SprintUltra:NetDummyMode() {
 			{engine.timerActive = it.toBoolean()},
 			{lastscore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
-			{engine.lastEvent = ScoreEvent.parseInt(it)},
+			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{lastb2b = it.toBoolean()},
 			{lastcombo = it.toInt()},
 			{lastpiece = it.toInt()},
@@ -626,24 +624,21 @@ class SprintUltra:NetDummyMode() {
 		val limitTime = (goalType+1)*3600
 		val remainTime = (goalType+1)*3600-engine.statistics.time
 		engine.meterValue = remainTime*1f/limitTime
-		engine.meterColor = GameEngine.METER_COLOR_GREEN
-		if(remainTime<=30*60) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		if(remainTime<=20*60) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		if(remainTime<=10*60) engine.meterColor = GameEngine.METER_COLOR_RED
+		engine.meterColor = GameEngine.METER_COLOR_LIMIT
 	}
 
 	/** NET: Send end-of-game stats
 	 * @param engine GameEngine
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
-		var subMsg = ""
-		subMsg += "SCORE;${engine.statistics.score}\t"
-		subMsg += "LINE;${engine.statistics.lines}\t"
-		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
-		subMsg += "SCORE/LINE;${engine.statistics.spl}\t"
-		subMsg += "SCORE/MIN;${engine.statistics.spm}\t"
-		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
-		subMsg += "PIECE/SEC;${engine.statistics.pps}\t"
+		val subMsg =
+			"SCORE;${engine.statistics.score}\t"+
+				"LINE;${engine.statistics.lines}\t"+
+				"PIECE;${engine.statistics.totalPieceLocked}\t"+
+				"SCORE/LINE;${engine.statistics.spl}\t"+
+				"SCORE/MIN;${engine.statistics.spm}\t"+
+				"LINE/MIN;${engine.statistics.lpm}\t"+
+				"PIECE/SEC;${engine.statistics.pps}\t"
 
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
 		netLobby!!.netPlayerClient!!.send(msg)
@@ -653,10 +648,10 @@ class SprintUltra:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendOptions(engine:GameEngine) {
-		var msg = "game\toption\t"
-		msg += "${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"
-		msg += "${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
-		msg += "${engine.speed.das}\t$big\t$goalType\t$presetNumber\t"
+		val msg = "game\toption\t"+
+			"${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"+
+			"${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"+
+			"${engine.speed.das}\t$big\t$goalType\t$presetNumber\t"
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 

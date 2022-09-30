@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -82,15 +83,15 @@ class GrandMarathon:AbstractMode() {
 	private var gradeflash = 0
 
 	/** Section Time */
-	private var sectionTime = IntArray(SECTION_MAX)
-	private var sectionscore = IntArray(SECTION_MAX)
+	private val sectionTime = Array(SECTION_MAX) {0}
+	private val sectionscore = Array(SECTION_MAX) {0}
 
 	/** Section Time記録 */
-	private var bestSectionTime = IntArray(SECTION_MAX)
-	private var bestSectionScore = IntArray(SECTION_MAX)
+	private val bestSectionTime = Array(SECTION_MAX) {0}
+	private val bestSectionScore = Array(SECTION_MAX) {0}
 
 	/** 新記録が出たSection はtrue */
-	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
+	private val sectionIsNewRecord = Array(SECTION_MAX) {false}
 
 	/** どこかのSection で新記録を出すとtrue */
 	private val sectionAnyNewRecord:Boolean get() = sectionIsNewRecord.any {true}
@@ -135,13 +136,13 @@ class GrandMarathon:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Rankings' 段位 */
-	private var rankingGrade = IntArray(RANKING_MAX)
+	private val rankingGrade = Array(RANKING_MAX) {0}
 
 	/** Rankings' level */
-	private var rankingLevel = IntArray(RANKING_MAX)
+	private val rankingLevel = Array(RANKING_MAX) {0}
 
 	/** Rankings' times */
-	private var rankingTime = IntArray(RANKING_MAX)
+	private val rankingTime = Array(RANKING_MAX) {0}
 
 	private var medalAC = 0
 	private var decoration = 0
@@ -152,8 +153,13 @@ class GrandMarathon:AbstractMode() {
 
 	/* Initialization */
 	override val menu:MenuList = MenuList("grademania1", itemGhost, itemAlert, itemST, itemLevel, item20g, itemBig)
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "section.time" to bestSectionTime)
+	override val rankMap
+		get() = rankMapOf(
+			"grade" to rankingGrade,
+			"level" to rankingLevel,
+			"time" to rankingTime,
+			"section.time" to bestSectionTime
+		)
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
@@ -170,9 +176,9 @@ class GrandMarathon:AbstractMode() {
 		secretGrade = 0
 		bgmLv = 0
 		gradeflash = 0
-		sectionscore = IntArray(SECTION_MAX)
-		sectionTime = IntArray(SECTION_MAX)
-		sectionIsNewRecord = BooleanArray(SECTION_MAX)
+		sectionscore.fill(0)
+		sectionTime.fill(0)
+		sectionIsNewRecord.fill(false)
 		sectionscomp = 0
 		sectionavgtime = 0
 		isShowBestSectionTime = false
@@ -182,11 +188,11 @@ class GrandMarathon:AbstractMode() {
 		dectemp = 0
 
 		rankingRank = -1
-		rankingGrade = IntArray(RANKING_MAX)
-		rankingLevel = IntArray(RANKING_MAX)
-		rankingTime = IntArray(RANKING_MAX)
-		bestSectionScore = IntArray(SECTION_MAX)
-		bestSectionTime = IntArray(SECTION_MAX)
+		rankingGrade.fill(0)
+		rankingLevel.fill(0)
+		rankingTime.fill(0)
+		bestSectionScore.fill(0)
+		bestSectionTime.fill(0)
 
 		engine.twistEnable = false
 		engine.b2bEnable = true
@@ -559,13 +565,14 @@ class GrandMarathon:AbstractMode() {
 		return true
 	}
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		if(engine.ending!=0) return 0
 		// Combo
-		comboValue = if(lines==0) 1
-		else maxOf(1, comboValue+2*lines-2)
+		val li = ev.lines
+		comboValue = if(li==0) 1
+		else maxOf(1, comboValue+2*li-2)
 
-		if(lines>=1) {
+		if(li>=1) {
 			// Calculate score
 			var manuallock = 0
 			if(engine.manualLock) manuallock = 1
@@ -574,9 +581,9 @@ class GrandMarathon:AbstractMode() {
 			if(engine.field.isEmpty) {
 				bravo = 4
 
-				dectemp += lines*25
-				if(lines==3) dectemp += 25
-				if(lines==4) dectemp += 150
+				dectemp += li*25
+				if(li==3) dectemp += 25
+				if(li==4) dectemp += 150
 				if(medalAC<3) {
 					dectemp += 3+medalAC*4// 3 10 21
 					engine.playSE("medal${++medalAC}")
@@ -584,8 +591,8 @@ class GrandMarathon:AbstractMode() {
 			}
 
 			lastscore =
-				(((engine.statistics.level+lines)/(if(engine.b2b) 4 else 3)+engine.softdropFall+engine.harddropFall+manuallock)
-					*lines*comboValue*bravo)
+				(((engine.statistics.level+li)/(if(ev.b2b>0) 4 else 3)+engine.softdropFall+engine.harddropFall+manuallock)
+					*li*comboValue*bravo)
 			sectionscore[sectionscomp] += lastscore
 			engine.statistics.scoreLine += lastscore
 
@@ -607,7 +614,7 @@ class GrandMarathon:AbstractMode() {
 			}
 
 			// Level up
-			engine.statistics.level += lines
+			engine.statistics.level += li
 			levelUp(engine)
 			if(engine.statistics.level>=999) {
 				// Ending
@@ -733,7 +740,6 @@ class GrandMarathon:AbstractMode() {
 	}
 
 	override fun renderExcellent(engine:GameEngine) {
-		val offsetX = receiver.fieldX(engine)
 
 		if(grade==18) {
 			val col = if(engine.statc[0]%4<2) COLOR.WHITE else tablePier21GradeColor[gmPier]

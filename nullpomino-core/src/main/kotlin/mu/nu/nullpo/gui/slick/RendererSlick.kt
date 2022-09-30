@@ -151,7 +151,7 @@ class RendererSlick:AbstractRenderer() {
 
 	/* リプレイを保存 */
 	override fun saveReplay(owner:GameManager, prop:CustomProperties, foldername:String) {
-		if(owner.mode?.isNetplayMode!=false) return
+		if(owner.mode?.isOnlineMode!=false) return
 
 		super.saveReplay(owner, prop, NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", foldername))
 	}
@@ -623,7 +623,7 @@ class RendererSlick:AbstractRenderer() {
 					val cx = bgi.width/2*sc
 					val cy = bgi.height/2*sc
 					bgi.setCenterOfRotation(cx, cy)
-					bgi.rotate(0.04f)
+					bgi.rotate(.04f)
 					bgi.draw(320-cx, 240-cy, sc)
 					if(engine.owner.bgMan.fadesw) {
 						val filter = Color(Color.black).apply {

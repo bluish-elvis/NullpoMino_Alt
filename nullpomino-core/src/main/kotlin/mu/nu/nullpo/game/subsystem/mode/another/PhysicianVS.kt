@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
@@ -566,11 +567,12 @@ class PhysicianVS:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 //		if(engine.field==null) return 0
 		var gemsCleared = engine.field.gemsCleared
 		val pid = engine.playerID
-		if(gemsCleared>0&&lines>0) {
+		val blkc = ev.lines
+		if(gemsCleared>0&&blkc>0) {
 			var pts = 0
 			while(gemsCleared>0&&gemsClearedChainTotal[pid]<5) {
 				pts += 1 shl gemsClearedChainTotal[pid]
@@ -587,7 +589,7 @@ class PhysicianVS:AbstractMode() {
 			engine.playSE("gem")
 			setSpeed(engine)
 			return pts
-		} else if(lines==0&&!engine.field.canCascade())
+		} else if(blkc==0&&!engine.field.canCascade())
 			if(garbageCheck(engine)) {
 				engine.stat = GameEngine.Status.LINECLEAR
 				engine.statc[0] = engine.lineDelay

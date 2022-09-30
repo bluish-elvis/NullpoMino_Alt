@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -64,25 +65,22 @@ class SquareMode:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Score records */
-	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 
 	/** Time records */
-	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Squares records */
-	private var rankingSquares:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingSquares = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/* Returns the name of this mode */
 	override val name = "SQUARE"
 	override val gameIntensity:Int = -1
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*((rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-				rankingSquares.mapIndexed {a, x -> "$a.squares" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-		)  /* This function will be called when the game enters the main game
- * screen. */
+	override val rankMap
+		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+			rankingSquares.mapIndexed {a, x -> "$a.squares" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
@@ -94,9 +92,9 @@ class SquareMode:AbstractMode() {
 		grayoutEnable = 1
 
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingSquares = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
+		rankingSquares.forEach {it.fill(0)}
 
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig, engine)
@@ -352,20 +350,21 @@ class SquareMode:AbstractMode() {
 
 	/* Calculates line-clear score
  * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		if(lines>0&&engine.twist) {
-			avalanche(engine, lines)
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		val li = ev.lines
+		if(li>0&&engine.twist) {
+			avalanche(engine, li)
 			return 0
 		}
 
 		// Line clear bonus
-		var pts = lines
+		var pts = li
 
-		if(lines>0) {
+		if(li>0) {
 			engine.lineGravityType = GameEngine.LineGravity.NATIVE
 			if(engine.field.isEmpty) engine.playSE("bravo")
 
-			if(lines>3) pts = 3+(lines-3)*2
+			if(li>3) pts = 3+(li-3)*2
 
 			val squareClears = engine.field.howManySquareClears
 			pts += 10*squareClears[0]+5*squareClears[1]
@@ -504,26 +503,13 @@ class SquareMode:AbstractMode() {
 		prop.setProperty("square.version", version)
 	}
 
-	/** Load the ranking from CustomProperties
-	 * @param prop CustomProperties to read
-	 * @param ruleName Rule name
-	 */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(j in 0 until GAMETYPE_MAX) {
-				rankingScore[j][i] = prop.getProperty("$ruleName.$j.score.$i", 0)
-				rankingTime[j][i] = prop.getProperty("$ruleName.$j.time.$i", -1)
-				rankingSquares[j][i] = prop.getProperty("$ruleName.$j.squares.$i", 0)
-			}
-	}
-
 	/** Update the ranking
 	 * @param sc Score
 	 * @param time Time
 	 * @param sq Squares
 	 * @param type GameType
 	 */
-	private fun updateRanking(sc:Int, time:Int, sq:Int, type:Int) {
+	private fun updateRanking(sc:Long, time:Int, sq:Int, type:Int) {
 		rankingRank = checkRanking(sc, time, sq, type)
 
 		if(rankingRank!=-1) {
@@ -549,7 +535,7 @@ class SquareMode:AbstractMode() {
 	 * @param type GameType
 	 * @return Place (-1: Out of rank)
 	 */
-	private fun checkRanking(sc:Int, time:Int, sq:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, time:Int, sq:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(gametype==0) {
 				// Marathon

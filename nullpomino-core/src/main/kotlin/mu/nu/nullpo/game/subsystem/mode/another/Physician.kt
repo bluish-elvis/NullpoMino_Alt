@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.component.Block.COLOR.YELLOW
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
@@ -56,11 +57,12 @@ class Physician:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Rankings' line counts */
-	private var rankingScore = IntArray(RANKING_MAX)
+	private val rankingScore = MutableList(RANKING_MAX) {0L}
 
 	/** Rankings' times */
-	private var rankingTime = IntArray(RANKING_MAX)
-
+	private val rankingTime = MutableList(RANKING_MAX) {0}
+	override val rankMap
+		get() = rankMapOf("score" to rankingScore, "time" to rankingTime)
 	/** Number of initial gem blocks */
 	private var hoverBlocks = 0
 
@@ -83,9 +85,8 @@ class Physician:AbstractMode() {
 		gemsClearedChainTotal = 0
 
 		rankingRank = -1
-		rankingScore = IntArray(RANKING_MAX)
-		rankingTime = IntArray(RANKING_MAX)
-
+		rankingScore.fill(0L)
+		rankingTime.fill(0)
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig, engine)
 
@@ -271,9 +272,10 @@ class Physician:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		var gemsCleared = engine.field.gemsCleared
-		if(gemsCleared>0&&lines>0) {
+		val blkc = ev.lines
+		if(gemsCleared>0&&blkc>0) {
 			var pts = 0
 			while(gemsCleared>0&&gemsClearedChainTotal<5) {
 				pts += 1 shl gemsClearedChainTotal
@@ -334,28 +336,11 @@ class Physician:AbstractMode() {
 		prop.setProperty("physician.version", version)
 	}
 
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) {
-			rankingScore[i] = prop.getProperty("$ruleName.$i.score", 0)
-			rankingTime[i] = prop.getProperty("$ruleName.$i.time", -1)
-		}
-	}
-
-	/** Save rankings of [ruleName] to owner.recordProp */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking((0 until RANKING_MAX).flatMap {i ->
-			listOf(
-				"$ruleName.$i.score" to rankingScore[i],
-				"$ruleName.$i.time" to rankingTime[i],
-			)
-		})
-	}
-
 	/** Update rankings
 	 * @param sc Score
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, time:Int) {
+	private fun updateRanking(sc:Long, time:Int) {
 		rankingRank = checkRanking(sc, time)
 
 		if(rankingRank!=-1) {
@@ -376,7 +361,7 @@ class Physician:AbstractMode() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, time:Int):Int {
+	private fun checkRanking(sc:Long, time:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(sc>rankingScore[i])
 				return i

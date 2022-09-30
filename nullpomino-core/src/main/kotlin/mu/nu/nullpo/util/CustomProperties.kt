@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -51,7 +51,6 @@ class CustomProperties(name:String = ""):Properties() {
 	var fileName = name
 		private set
 	/** Load from [file].
-	 * @param file Filename
 	 * @return This Properties data you specified, or null if the file doesn't exist.
 	 */
 	fun load(file:String = fileName):CustomProperties? {
@@ -104,27 +103,25 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** プロパティを設定
-	 * @param key キー
-	 * @param value keyに対応する変数
-	 * @return プロパティリストの指定されたキーの前の値。それがない場合は null
+	 * @return 指定された[key]に設定されていた値。それがない場合は null
 	 */
-	@Suppress("UNCHECKED_CAST")
-	@Synchronized
-	fun <T:Comparable<T>> setProperty(key:String, value:Comparable<T>):T? = when(value) {
-		is Byte -> setProperty(key, "$value")
-		is Int -> setProperty(key, "$value")
-		is Long -> setProperty(key, "$value")
-		is Float -> setProperty(key, "$value")
-		is Double -> setProperty(key, "$value")
-		is Char -> setProperty(key, "$value")
-		is Boolean -> setProperty(key, "$value")
-		else -> setProperty(key, "$value")
-	} as T?
+	inline fun <reified T> setProperty(key:String, value:T):T? = setProperty(key, "$value") as? T
+	/** プロパティを設定
+	 * @return 指定された[key]に対応する値 (見つからなかったら[def]）
+	 */
+	inline fun <reified T> getProperty(key:String, def:T):T = when(def) {
+		is Byte -> getProperty(key, def)
+		is Int -> getProperty(key, def)
+		is Long -> getProperty(key, def)
+		is Float -> getProperty(key, def)
+		is Double -> getProperty(key, def)
+		is Char -> getProperty(key, def)
+		is Boolean -> getProperty(key, def)
+		else -> getProperty(key, "$def")
+	} as? T ?: def
 
 	/** byte型のプロパティを取得
-	 * @param key キー
-	 * @param defaultValue keyが見つからない場合に返す変数
-	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
 	 */
 	fun getProperty(key:String, defaultValue:Byte):Byte = try {
 		getProperty(key, "$defaultValue").toByte()
@@ -133,9 +130,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** short型のプロパティを取得
-	 * @param key キー
-	 * @param defaultValue keyが見つからない場合に返す変数
-	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
 	 */
 	fun getProperty(key:String, defaultValue:Short):Short = try {
 		getProperty(key, "$defaultValue").toShort()
@@ -144,9 +139,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** int型のプロパティを取得
-	 * @param key キー
-	 * @param defaultValue keyが見つからない場合に返す変数
-	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
 	 */
 	fun getProperty(key:String, defaultValue:Int):Int = try {
 		getProperty(key, "$defaultValue").toInt()
@@ -155,23 +148,30 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** intArray型のプロパティを取得
-	 * @param key キー
-	 * @param defaultValue keyが見つからない場合に返す変数
-	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
 	 */
-	fun getProperty(key:String, defaultValue:IntArray):IntArray = try {
+	fun <T:Number> getProperties(key:String, defaultValue:T):List<T> = try {
+		getProperty(key, "$defaultValue").split(',').map {it as? T ?: defaultValue}
+	} catch(e:NumberFormatException) {
+		listOf(defaultValue)
+	}
+	/** intArray型のプロパティを取得
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
+	 */
+	fun getProperties(key:String, defaultValue:IntArray):IntArray = try {
 		getProperty(key, "$defaultValue").split(',').map {it.toInt()}.toIntArray()
 	} catch(e:NumberFormatException) {
 		defaultValue
 	}
 
-	fun setProperty(key:String, value:IntArray):Any? =
-		setProperty(key, value.joinToString(","))
+	fun setProperty(key:String, value:IntArray):IntArray? =
+		setProperty(key, value.joinToString(","))?.let {
+			if(it is String) it.split(',').map {it.toInt()}.toIntArray()
+			else null
+		}
 
 	/** long型のプロパティを取得
-	 * @param key キー
-	 * @param defaultValue keyが見つからない場合に返す変数
-	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
 	 */
 	fun getProperty(key:String, defaultValue:Long):Long = try {
 		getProperty(key, "$defaultValue").toLong()
@@ -180,9 +180,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** float型のプロパティを取得
-	 * @param key キー
-	 * @param defaultValue keyが見つからない場合に返す変数
-	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
 	 */
 	fun getProperty(key:String, defaultValue:Float):Float = try {
 		getProperty(key, "$defaultValue").toFloat()
@@ -191,9 +189,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** double型のプロパティを取得
-	 * @param key キー
-	 * @param defaultValue keyが見つからない場合に返す変数
-	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
 	 */
 	fun getProperty(key:String, defaultValue:Double):Double = try {
 		getProperty(key, "$defaultValue").toDouble()
@@ -202,9 +198,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** char型のプロパティを取得
-	 * @param key キー
-	 * @param defaultValue keyが見つからない場合に返す変数
-	 * @return 指定されたキーに対応する整数 (見つからなかったらdefaultValue）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
 	 */
 	fun getProperty(key:String, defaultValue:Char):Char = try {
 		getProperty(key, "$defaultValue")[0]
@@ -213,9 +207,7 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	/** boolean型のプロパティを取得
-	 * @param key キー
-	 * @param defaultValue keyが見つからない場合に返す変数
-	 * @return 指定されたキーに対応するboolean型変数 (見つからなかったらdefaultValue）
+	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
 	 */
 	fun getProperty(key:String, defaultValue:Boolean):Boolean =
 		getProperty(key, "$defaultValue").toBoolean()

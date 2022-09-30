@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
@@ -77,10 +78,10 @@ class SprintCombo:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' times */
-	private var rankingTime:Array<Array<IntArray>> = Array(GOAL_TABLE.size) {Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}}
+	private val rankingTime = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}}
 
 	/** Rankings' Combo */
-	private var rankingCombo:Array<Array<IntArray>> = Array(GOAL_TABLE.size) {Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}}
+	private val rankingCombo = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}}
 
 	/** Shape type */
 	private var shapetype = 0
@@ -135,8 +136,8 @@ class SprintCombo:NetDummyMode() {
 		nextseclines = 10
 
 		rankingRank = -1
-		rankingTime = Array(GOAL_TABLE.size) {Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}}
-		rankingCombo = Array(GOAL_TABLE.size) {Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}}
+		rankingTime.forEach {it.forEach {it.fill(0)}}
+		rankingCombo.forEach {it.forEach {it.fill(0)}}
 
 		engine.frameColor = GameEngine.FRAME_COLOR_RED
 
@@ -446,16 +447,16 @@ class SprintCombo:NetDummyMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		//  Attack
-		if(lines>0) {
+		if(ev.lines>0) {
 			// B2B
-			lastb2b = engine.b2b
+			lastb2b = ev.b2b>0
 
 			// Combo
-			lastcombo = engine.combo
+			lastcombo = ev.combo
 			scgettime = engine.statistics.time
-			lastpiece = engine.nowPieceObject!!.id
+			lastpiece = ev.piece!!.id
 
 			// add any remaining stack lines
 			val w = engine.field.width
@@ -463,7 +464,7 @@ class SprintCombo:NetDummyMode() {
 				if(GOAL_TABLE[goalType]==-1) remainStack = Integer.MAX_VALUE
 				val cx = w-comboWidth/2-1
 				var tmplines = 1
-				while(tmplines<=lines&&remainStack>0) {
+				while(tmplines<=ev.lines&&remainStack>0) {
 					for(x in 0 until w)
 						if(x<cx-1||x>cx-2+comboWidth)
 							engine.field.setBlock(
@@ -557,30 +558,6 @@ class SprintCombo:NetDummyMode() {
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Load the ranking */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in GOAL_TABLE.indices)
-			for(j in 0 until GAMETYPE_MAX)
-				for(k in 0 until RANKING_MAX) {
-					rankingCombo[i][j][k] = prop.getProperty("$ruleName.$i.$j.maxcombo.$k", 0)
-					rankingTime[i][j][k] = prop.getProperty("$ruleName.$i.$j.time.$k", -1)
-				}
-	}
-
-	/** Save the ranking */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking((GOAL_TABLE.indices).flatMap {i ->
-			(0 until GAMETYPE_MAX).flatMap {j ->
-				(0 until RANKING_MAX).flatMap {k ->
-					listOf(
-						"$ruleName.$i.$j.maxcombo.$k" to rankingCombo[i][j][k],
-						"$ruleName.$i.$j.time.$k" to rankingTime[i][j][k]
-					)
-				}
-			}
-		})
 	}
 
 	/** Update the ranking */

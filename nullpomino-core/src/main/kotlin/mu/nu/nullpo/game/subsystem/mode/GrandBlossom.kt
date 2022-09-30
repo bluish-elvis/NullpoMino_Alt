@@ -33,6 +33,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
@@ -122,7 +123,7 @@ class GrandBlossom:AbstractMode() {
 	private var noContinue = false
 
 	/** All clear flag */
-	private var allclear = 0
+	private var allClear = 0
 
 	/** Best time in training mode */
 	private var trainingBestTime = 0
@@ -146,13 +147,13 @@ class GrandBlossom:AbstractMode() {
 	private var editModeScreen = 0
 
 	/** Stage at start */
-	private var startstage = 0
+	private var startStage = 0
 
 	/** Selected stage set */
-	private var stageset = 0
+	private var mapSet = 0
 
 	/** When true, always ghost ON */
-	private var alwaysghost = false
+	private var alwaysGhost = false
 
 	/** When true, always 20G */
 	private var always20g = false
@@ -164,13 +165,13 @@ class GrandBlossom:AbstractMode() {
 	private var showST = false
 
 	/** NEXTをランダムにする */
-	private var randomnext = false
+	private var randomQueue = false
 
 	/** Training mode */
 	private var trainingType = 0
 
 	/** Block counter at start */
-	private var startnextc = 0
+	private var startNextc = 0
 
 	/** Version */
 	private var version = 0
@@ -179,24 +180,22 @@ class GrandBlossom:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Rankings' stage reached */
-	private var rankingStage:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingStage = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' clear ratio */
-	private var rankingClearPer:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingRate = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' times */
-	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' all clear flag */
-	private var rankingAllClear:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingAllClear = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*((rankingStage.mapIndexed {a, x -> "$a.stage" to x}+
-				rankingClearPer.mapIndexed {a, x -> "$a.clearper" to x}+
-				rankingAllClear.mapIndexed {a, x -> "$a.allclear" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-		)
+	override val rankMap
+		get() = rankMapOf(rankingStage.mapIndexed {a, x -> "$a.stage" to x}+
+			rankingRate.mapIndexed {a, x -> "$a.rate" to x}+
+			rankingAllClear.mapIndexed {a, x -> "$a.clear" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
 	private var decoration = 0
 	private var dectemp = 0
@@ -240,7 +239,7 @@ class GrandBlossom:AbstractMode() {
 		continueNextPieceCount = 0
 		noContinue = false
 
-		allclear = 0
+		allClear = 0
 
 		trainingBestTime = -1
 
@@ -252,21 +251,21 @@ class GrandBlossom:AbstractMode() {
 
 		editModeScreen = 0
 
-		startstage = 0
-		stageset = -1
-		alwaysghost = false
+		startStage = 0
+		mapSet = -1
+		alwaysGhost = false
 		always20g = false
 		secAlert = true
 		showST = false
-		randomnext = false
+		randomQueue = false
 		trainingType = 0
-		startnextc = 0
+		startNextc = 0
 
 		rankingRank = -1
-		rankingStage = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingClearPer = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingAllClear = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingStage.forEach {it.fill(0)}
+		rankingRate.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
+		rankingAllClear.forEach {it.fill(0)}
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
@@ -397,27 +396,27 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
-		startstage = prop.getProperty("gemmania.startstage", 0)
-		stageset = prop.getProperty("gemmania.stageset", -1)
-		alwaysghost = prop.getProperty("gemmania.alwaysghost", true)
+		startStage = prop.getProperty("gemmania.startstage", 0)
+		mapSet = prop.getProperty("gemmania.stageset", -1)
+		alwaysGhost = prop.getProperty("gemmania.alwaysghost", true)
 		always20g = prop.getProperty("gemmania.always20g", false)
 		secAlert = prop.getProperty("gemmania.lvstopse", true)
 		showST = prop.getProperty("gemmania.showsectiontime", true)
-		randomnext = prop.getProperty("gemmania.randomnext", false)
+		randomQueue = prop.getProperty("gemmania.randomnext", false)
 		trainingType = prop.getProperty("gemmania.trainingType", 0)
-		startnextc = prop.getProperty("gemmania.startnextc", 0)
+		startNextc = prop.getProperty("gemmania.startnextc", 0)
 	}
 
 	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("gemmania.startstage", startstage)
-		prop.setProperty("gemmania.stageset", stageset)
-		prop.setProperty("gemmania.alwaysghost", alwaysghost)
+		prop.setProperty("gemmania.startstage", startStage)
+		prop.setProperty("gemmania.stageset", mapSet)
+		prop.setProperty("gemmania.alwaysghost", alwaysGhost)
 		prop.setProperty("gemmania.always20g", always20g)
 		prop.setProperty("gemmania.lvstopse", secAlert)
 		prop.setProperty("gemmania.showsectiontime", showST)
-		prop.setProperty("gemmania.randomnext", randomnext)
+		prop.setProperty("gemmania.randomnext", randomQueue)
 		prop.setProperty("gemmania.trainingType", trainingType)
-		prop.setProperty("gemmania.startnextc", startnextc)
+		prop.setProperty("gemmania.startnextc", startNextc)
 	}
 
 	/** Update falling speed
@@ -441,7 +440,7 @@ class GrandBlossom:AbstractMode() {
 			engine.speed.das = 9
 		}
 
-		engine.ghost = (speedlevel>=100&&!alwaysghost)
+		engine.ghost = (speedlevel>=100&&!alwaysGhost)
 	}
 
 	/** Stage clearや time切れの判定
@@ -482,14 +481,14 @@ class GrandBlossom:AbstractMode() {
 					0 -> {
 					}
 					1, 2 -> {
-						startstage += change
-						if(startstage<0) startstage = MAX_STAGE_TOTAL-1
-						if(startstage>MAX_STAGE_TOTAL-1) startstage = 0
+						startStage += change
+						if(startStage<0) startStage = MAX_STAGE_TOTAL-1
+						if(startStage>MAX_STAGE_TOTAL-1) startStage = 0
 					}
 					3, 4 -> {
-						stageset += change
-						if(stageset<0) stageset = 99
-						if(stageset>99) stageset = 0
+						mapSet += change
+						if(mapSet<0) mapSet = 99
+						if(mapSet>99) mapSet = 0
 					}
 				}
 			}
@@ -505,12 +504,12 @@ class GrandBlossom:AbstractMode() {
 						menuTime = 0
 					}
 					1 -> if(propStageSet.isNotEmpty()) {
-						loadMap(engine.field, propStageSet, startstage)
+						loadMap(engine.field, propStageSet, startStage)
 						engine.field.setAllSkin(engine.skin)
 					}
-					2 -> if(propStageSet.isNotEmpty()) saveMap(engine.field, propStageSet, startstage)
-					3 -> loadStageSet(stageset)
-					4 -> saveStageSet(stageset)
+					2 -> if(propStageSet.isNotEmpty()) saveMap(engine.field, propStageSet, startStage)
+					3 -> loadStageSet(mapSet)
+					4 -> saveStageSet(mapSet)
 				}
 			}
 
@@ -614,37 +613,37 @@ class GrandBlossom:AbstractMode() {
 
 				when(menuCursor) {
 					0 -> {
-						startstage += change
-						if(startstage<0) startstage = MAX_STAGE_TOTAL-1
-						if(startstage>MAX_STAGE_TOTAL-1) startstage = 0
+						startStage += change
+						if(startStage<0) startStage = MAX_STAGE_TOTAL-1
+						if(startStage>MAX_STAGE_TOTAL-1) startStage = 0
 
-						if(propStageSet.isEmpty) loadStageSet(stageset)
-						loadMap(engine.field, propStageSet, startstage)
+						if(propStageSet.isEmpty) loadStageSet(mapSet)
+						loadMap(engine.field, propStageSet, startStage)
 						engine.field.setAllSkin(engine.skin)
 					}
 					1 -> {
-						stageset += change
-						if(stageset<-1) stageset = 99
-						if(stageset>99) stageset = -1
+						mapSet += change
+						if(mapSet<-1) mapSet = 99
+						if(mapSet>99) mapSet = -1
 
-						loadStageSet(stageset)
-						loadMap(engine.field, propStageSet, startstage)
+						loadStageSet(mapSet)
+						loadMap(engine.field, propStageSet, startStage)
 						engine.field.setAllSkin(engine.skin)
 					}
-					2 -> alwaysghost = !alwaysghost
+					2 -> alwaysGhost = !alwaysGhost
 					3 -> always20g = !always20g
 					4 -> secAlert = !secAlert
 					5 -> showST = !showST
-					6 -> randomnext = !randomnext
+					6 -> randomQueue = !randomQueue
 					7 -> {
 						trainingType += change
 						if(trainingType<0) trainingType = 2
 						if(trainingType>2) trainingType = 0
 					}
 					8 -> {
-						startnextc += change
-						if(startnextc<0) startnextc = STRING_DEFAULT_NEXT_LIST.length-1
-						if(startnextc>STRING_DEFAULT_NEXT_LIST.length-1) startnextc = 0
+						startNextc += change
+						if(startNextc<0) startNextc = STRING_DEFAULT_NEXT_LIST.length-1
+						if(startNextc>STRING_DEFAULT_NEXT_LIST.length-1) startNextc = 0
 					}
 				}
 			}
@@ -660,10 +659,10 @@ class GrandBlossom:AbstractMode() {
 
 			// エディット
 			if(engine.ctrl.isPush(Controller.BUTTON_D)) {
-				if(stageset<0) stageset = 0
+				if(mapSet<0) mapSet = 0
 
-				loadStageSet(stageset)
-				loadMap(engine.field, propStageSet, startstage)
+				loadStageSet(mapSet)
+				loadMap(engine.field, propStageSet, startStage)
 				engine.field.setAllSkin(engine.skin)
 
 				editModeScreen = 1
@@ -688,9 +687,9 @@ class GrandBlossom:AbstractMode() {
 		when(editModeScreen) {
 			1 -> {
 				drawMenu(
-					engine, receiver, 0, COLOR.GREEN, 0, "STAGE EDIT" to "[PUSH A]", "LOAD STAGE" to "[${getStageName(startstage)}]",
-					"SAVE STAGE" to "[${getStageName(startstage)}]", "LOAD" to "[SET $stageset]",
-					"SAVE" to "[SET $stageset]"
+					engine, receiver, 0, COLOR.GREEN, 0, "STAGE EDIT" to "[PUSH A]", "LOAD STAGE" to "[${getStageName(startStage)}]",
+					"SAVE STAGE" to "[${getStageName(startStage)}]", "LOAD" to "[SET $mapSet]",
+					"SAVE" to "[SET $mapSet]"
 				)
 
 				receiver.drawMenuFont(engine, 0, 19, "EXIT-> D+E", COLOR.ORANGE)
@@ -717,15 +716,15 @@ class GrandBlossom:AbstractMode() {
 					0,
 					COLOR.PINK,
 					0,
-					"STAGE NO." to getStageName(startstage),
-					"STAGE SET" to if(stageset<0) "DEFAULT" else "EDIT $stageset",
-					"FULL GHOST" to alwaysghost,
+					"STAGE NO." to getStageName(startStage),
+					"STAGE SET" to if(mapSet<0) "DEFAULT" else "EDIT $mapSet",
+					"FULL GHOST" to alwaysGhost,
 					"FULL 20G" to always20g,
 					"LVSTOPSE" to secAlert,
 					"SHOW STIME" to showST,
-					"RANDOM" to randomnext,
+					"RANDOM" to randomQueue,
 					"TRAINING" to strTrainingType,
-					"NEXT COUNT" to startnextc
+					"NEXT COUNT" to startNextc
 				)
 			}
 		}
@@ -735,11 +734,11 @@ class GrandBlossom:AbstractMode() {
 	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			if(!engine.readyDone) {
-				loadStageSet(stageset)
-				stage = startstage
-				engine.nextPieceCount = startnextc
+				loadStageSet(mapSet)
+				stage = startStage
+				engine.nextPieceCount = startNextc
 
-				if(!randomnext)
+				if(!randomQueue)
 					engine.nextPieceArrayID = GeneralUtil.createNextPieceArrayFromNumberString(STRING_DEFAULT_NEXT_LIST)
 			}
 
@@ -784,7 +783,7 @@ class GrandBlossom:AbstractMode() {
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScoreFont(
-			engine, 0, 0, "GRAND BLOSSOM"+if(randomnext)
+			engine, 0, 0, "GRAND BLOSSOM"+if(randomQueue)
 				" (RANDOM)"
 			else
 				"", COLOR.RED
@@ -794,12 +793,12 @@ class GrandBlossom:AbstractMode() {
 		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
 		receiver.drawScoreBadges(engine, 5, -4, 100, dectemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
-			if(startstage==0&&!always20g&&trainingType==0&&startnextc==0&&stageset<0&&engine.ai==null) {
+			if(startStage==0&&!always20g&&trainingType==0&&startNextc==0&&mapSet<0&&engine.ai==null) {
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 5 else 3
 
 				receiver.drawScoreFont(engine, 3, topY-1, "STAGE CLEAR TIME", COLOR.PINK, scale)
-				val type = randomnext.toInt()
+				val type = randomQueue.toInt()
 
 				for(i in 0 until RANKING_MAX) {
 					var gcolor = COLOR.WHITE
@@ -811,7 +810,7 @@ class GrandBlossom:AbstractMode() {
 						scale
 					)
 					receiver.drawScoreFont(engine, 3, topY+i, getStageName(rankingStage[type][i]), gcolor, scale)
-					receiver.drawScoreNum(engine, 9, topY+i, "${rankingClearPer[type][i]}%", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, 9, topY+i, "${rankingRate[type][i]}%", i==rankingRank, scale)
 					receiver.drawScoreNum(
 						engine, 15, topY+i, rankingTime[type][i].toTimeStr, i==rankingRank, scale
 					)
@@ -1015,7 +1014,7 @@ class GrandBlossom:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// 実際に消えるLinescount(Big時半分にならない)
 		val realLines = engine.field.lines
 
@@ -1031,9 +1030,13 @@ class GrandBlossom:AbstractMode() {
 			}
 
 			// Level up
-			var levelplus = lines
-			if(lines==3) levelplus = 4
-			if(lines>=4) levelplus = 6
+			val levelplus = ev.lines.let {
+				when {
+					it==3 -> 4
+					it>=4 -> 6
+					else -> it
+				}
+			}
 
 			speedlevel += levelplus
 
@@ -1161,7 +1164,7 @@ class GrandBlossom:AbstractMode() {
 				engine.stat = GameEngine.Status.READY
 				engine.resetStatc()
 			} else if(stage>=laststage) {
-				allclear = if(stage>=MAX_STAGE_TOTAL-1) 2 else 1
+				allClear = if(stage>=MAX_STAGE_TOTAL-1) 2 else 1
 				engine.ending = 1
 				engine.gameEnded()
 				engine.stat = GameEngine.Status.ENDINGSTART
@@ -1374,8 +1377,8 @@ class GrandBlossom:AbstractMode() {
 
 		if(engine.statc[1]==0) {
 			var gcolor = COLOR.WHITE
-			if(allclear==1) gcolor = COLOR.GREEN
-			if(allclear==2) gcolor = COLOR.ORANGE
+			if(allClear==1) gcolor = COLOR.GREEN
+			if(allClear==2) gcolor = COLOR.ORANGE
 
 			receiver.drawMenuFont(engine, 0, 2, "STAGE", COLOR.PINK)
 			val strStage = String.format("%10s", getStageName(stage))
@@ -1409,8 +1412,8 @@ class GrandBlossom:AbstractMode() {
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		prop.setProperty("gemmania.version", version)
 		prop.setProperty("gemmania.result.stage", stage)
-		prop.setProperty("gemmania.result.clearper", clearper)
-		prop.setProperty("gemmania.result.allclear", allclear)
+		prop.setProperty("gemmania.result.rate", clearper)
+		prop.setProperty("gemmania.result.clear", allClear)
 
 		engine.statistics.level = stage
 		engine.statistics.levelDispAdd = 1
@@ -1421,8 +1424,8 @@ class GrandBlossom:AbstractMode() {
 			owner.statsProp.save(owner.statsFile)
 		}
 		// Update rankings
-		return (!owner.replayMode&&startstage==0&&trainingType==0&&startnextc==0&&stageset<0&&!always20g&&engine.ai==null&&
-			updateRanking(randomnext.toInt(), stage, clearper, engine.statistics.time, allclear)!=-1)
+		return (!owner.replayMode&&startStage==0&&trainingType==0&&startNextc==0&&mapSet<0&&!always20g&&engine.ai==null&&
+			updateRanking(randomQueue.toInt(), stage, clearper, engine.statistics.time, allClear)!=-1)
 	}
 
 	/** Update rankings
@@ -1439,14 +1442,14 @@ class GrandBlossom:AbstractMode() {
 			// Shift down ranking entries
 			for(i in RANKING_MAX-1 downTo rankingRank+1) {
 				rankingStage[type][i] = rankingStage[type][i-1]
-				rankingClearPer[type][i] = rankingClearPer[type][i-1]
+				rankingRate[type][i] = rankingRate[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
 				rankingAllClear[type][i] = rankingAllClear[type][i-1]
 			}
 
 			// Add new data
 			rankingStage[type][rankingRank] = stg
-			rankingClearPer[type][rankingRank] = clper
+			rankingRate[type][rankingRank] = clper
 			rankingTime[type][rankingRank] = time
 			rankingAllClear[type][rankingRank] = clear
 		}
@@ -1465,8 +1468,8 @@ class GrandBlossom:AbstractMode() {
 		for(i in 0 until RANKING_MAX)
 			if(clear>rankingAllClear[type][i]) return i
 			else if(clear==rankingAllClear[type][i]&&stg>rankingStage[type][i]) return i
-			else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&clper>rankingClearPer[type][i]) return i
-			else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&clper==rankingClearPer[type][i]&&
+			else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&clper>rankingRate[type][i]) return i
+			else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&clper==rankingRate[type][i]&&
 				time<rankingTime[type][i]
 			) return i
 

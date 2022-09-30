@@ -40,6 +40,7 @@ import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -47,6 +48,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.IntegerMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.ProfileProperties
 
@@ -100,9 +102,9 @@ class RollTraining:MarathonModeBase() {
 		}
 	}
 
-	private var rankingGrade:Array<IntArray> = emptyArray()
-	private var rankingLines:Array<IntArray> = emptyArray()
-	private var rankingTime:Array<IntArray> = emptyArray()
+	private val rankingGrade = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	private val itemHide = BooleanMenuItem("useMRoll", "Stealth", COLOR.RED, false)
 	private var useMRoll:Boolean by DelegateMenuItem(itemHide)
@@ -115,9 +117,9 @@ class RollTraining:MarathonModeBase() {
 	private var tapGrade = 0.0
 	private var lastGrade = 0
 	private var timer = 0
-	private var rankingGradePlayer:Array<IntArray> = emptyArray()
-	private var rankingLinesPlayer:Array<IntArray> = emptyArray()
-	private var rankingTimePlayer:Array<IntArray> = emptyArray()
+	private val rankingGradePlayer = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingLinesPlayer = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTimePlayer = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	private var rankingRankPlayer = 0
 	private val rankIndex:Int
 		get() {
@@ -130,18 +132,15 @@ class RollTraining:MarathonModeBase() {
 	override val name:String = "ROLL TRAINING"
 	override val menu = MenuList("rolltraining", itemMode, itemHide, itemGoal, itemLevel)
 	//     * Initialization
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*((rankingGrade.mapIndexed {a, x -> "$a.grade" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-		)
-	override val rankPersMap:Map<String, IntArray>
-		get() = mapOf(
-			*((rankingGradePlayer.mapIndexed {a, x -> "$a.grade" to x}+
-				rankingLinesPlayer.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-		)
+	override val rankMap
+		get() = rankMapOf(rankingGrade.mapIndexed {a, x -> "$a.grade" to x}+
+			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x})
+
+	override val rankPersMap
+		get() = rankMapOf(rankingGradePlayer.mapIndexed {a, x -> "$a.grade" to x}+
+			rankingLinesPlayer.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x})
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
@@ -156,13 +155,13 @@ class RollTraining:MarathonModeBase() {
 		timer = 0
 		lastGrade = 0
 		rankingRank = -1
-		rankingGrade = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingGrade.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
 		rankingRankPlayer = -1
-		rankingGradePlayer = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLinesPlayer = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTimePlayer = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingGradePlayer.forEach {it.fill(0)}
+		rankingLinesPlayer.forEach {it.fill(0)}
+		rankingTimePlayer.forEach {it.fill(0)}
 		showPlayerStats = false
 		big = false
 		netPlayerInit(engine)
@@ -267,7 +266,7 @@ class RollTraining:MarathonModeBase() {
 		engine.isInGame = true
 		val s = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
-			loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
+			loadRankingPlayer(engine.playerProp)
 			loadSetting(engine.playerProp.propProfile, engine)
 			engine.owner.bgMan.bg = startLevel
 		}
@@ -406,7 +405,7 @@ class RollTraining:MarathonModeBase() {
 		super.onLast(engine)
 		if(engine.timerActive) {
 			if(timer==0) {
-				if(usedSpeed==SPEED_TI) tiGrade += CLEAR_GRADE_BONUS[if(useMRoll) 1 else 0] else {
+				if(usedSpeed==SPEED_TI) tiGrade += CLEAR_GRADE_BONUS[useMRoll.toInt()] else {
 					tapGrade += 1.0
 				}
 				if(!endless) {
@@ -441,13 +440,9 @@ class RollTraining:MarathonModeBase() {
 	/*
 		 * Calculate score
 		 */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		if(usedSpeed==SPEED_TI&&lines>0) tiGrade += when(lines) {
-			1 -> GRADE_INCREASES[if(useMRoll) 1 else 0][lines-1]
-			2 -> GRADE_INCREASES[if(useMRoll) 1 else 0][lines-1]
-			3 -> GRADE_INCREASES[if(useMRoll) 1 else 0][lines-1]
-			else -> GRADE_INCREASES[if(useMRoll) 1 else 0][lines-1]
-		}
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		val li = ev.lines
+		if(usedSpeed==SPEED_TI&&li>0) tiGrade += GRADE_INCREASES[useMRoll.toInt()][maxOf(0, li-1)]
 		return 0
 	}
 	/*

@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -42,6 +42,7 @@ package wtf.oshisaure.nullpomodshit.modes
 
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -53,8 +54,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.pow
 
 class ScoreAttackRun:AbstractMode() {
-	private var lasttype = 0
-	private var lastpiece = 0
 	private var score:Long = 0
 	/** Score Rate Percentage*/
 	private var scoreRate:Int = 0
@@ -65,9 +64,9 @@ class ScoreAttackRun:AbstractMode() {
 	private var incombo = false
 	private var quads = 0
 	private var bgmLv = 0
-	private var rankingScore:Array<LongArray> = Array(RANKING_TYPES) {LongArray(RANKING_MAX)}
-	private var rankingLevel:Array<IntArray> = Array(RANKING_TYPES) {IntArray(RANKING_MAX)}
-	private var rankingQuads:Array<IntArray> = Array(RANKING_TYPES) {IntArray(RANKING_MAX)}
+	private val rankingScore = List(RANKING_TYPES) {MutableList(RANKING_MAX) {0L}}
+	private val rankingLevel = List(RANKING_TYPES) {MutableList(RANKING_MAX) {0}}
+	private val rankingQuads = List(RANKING_TYPES) {MutableList(RANKING_MAX) {0}}
 	private var rankingRank = 0
 	private var version = 0
 	private var lastscoreL:Long = 0
@@ -75,6 +74,10 @@ class ScoreAttackRun:AbstractMode() {
 	private var maxchain = 0
 	private var maxmult:Int = 0
 	private var scgettime = 0
+	override val rankMap
+		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+			rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
+			rankingQuads.mapIndexed {a, x -> "$a.quads" to x})
 
 	private val itemMode = StringsMenuItem(
 		"gametype", "GAME MODE", COLOR.BLUE, 0,
@@ -84,26 +87,12 @@ class ScoreAttackRun:AbstractMode() {
 	override val name:String get() = "ARCADE SCORE ATTACK"
 	override val menu = MenuList("arcadescoreattack", itemMode)
 
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
+	override fun loadRanking(prop:CustomProperties) {
 		for(i in 0 until RANKING_MAX) for(j in 0 until RANKING_TYPES) {
 			rankingScore[j][i] = prop.getProperty("$j.score.$i", 0L)
 			rankingLevel[j][i] = prop.getProperty("$j.level.$i", 0)
 			rankingQuads[j][i] = prop.getProperty("$j.quads$i", 0)
 		}
-	}
-
-	override fun saveRanking() {
-		return super.saveRanking(
-			(0 until RANKING_TYPES).flatMap {t ->
-				(0 until RANKING_MAX).flatMap {i ->
-					listOf(
-						"$t.score.$i" to rankingScore[t][i],
-						"$t.level.$i" to rankingLevel[t][i],
-						"$t.quads.$i" to rankingQuads[t][i],
-					)
-				}
-			}
-		)
 	}
 
 	private fun formatScore(sc:Long):String {
@@ -158,9 +147,9 @@ class ScoreAttackRun:AbstractMode() {
 		maxchain = 0
 		bgmLv = 0
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPES) {LongArray(RANKING_MAX)}
-		rankingLevel = Array(RANKING_TYPES) {IntArray(RANKING_MAX)}
-		rankingQuads = Array(RANKING_TYPES) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLevel.forEach {it.fill(0)}
+		rankingQuads.forEach {it.fill(0)}
 		if(!owner.replayMode) {
 			version = 1
 		}
@@ -311,6 +300,7 @@ class ScoreAttackRun:AbstractMode() {
 		if(ingame&&engine.statistics.time>0) {
 			scgettime += scoreRate
 			while(scgettime>=100) {
+				engine.statistics.scoreBonus++
 				score++
 				scgettime -= 100
 			}
@@ -332,39 +322,36 @@ class ScoreAttackRun:AbstractMode() {
 		return false
 	}
 
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		lasttype = minOf(lines, 4)
-		lastpiece = engine.nowPieceObject!!.id
-		var pts = calcScoreBase(engine, lines)
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+		val li = ev.lines
+		var pts = calcScoreBase(engine, ev)
 		var maxlines:Int
-		if(lines!=0) {
+		if(li!=0) {
 			incombo = true
 			maxlines = 2
-			while(maxlines<=lines) {
+			while(maxlines<=li) {
 				pts *= maxlines
 				++maxlines
 			}
 //			engine.playSE("b2b_"+if(ren==0) "start" else "continue")
 			++ren
-			lastb2b = lines>=4||engine.twist
-			quads += if(lines>=4) 1 else 0
+			lastb2b = li>=4||ev.twist
+			quads += if(li>=4) 1 else 0
 		} else {
 			pts = 0
 			incombo = false
 		}
-		if(engine.twist) lasttype += 5
-		if(lines>=1&&engine.field.isEmpty) {
+		if(li>=1&&engine.field.isEmpty) {
 			engine.playSE("bravo")
 			++allclears
-			lasttype += 10
 		}
-		pts = pts*scoreRate/100
 		if(!lastb2b&&!incombo) {
 			if(ren!=0&&gametype!=4&&gametype!=5) {
 				engine.playSE("b2b_end")
 			}
 			ren = 0
 		}
+		pts *= pts*scoreRate/100
 		engine.statistics.scoreLine += pts
 		score += pts
 

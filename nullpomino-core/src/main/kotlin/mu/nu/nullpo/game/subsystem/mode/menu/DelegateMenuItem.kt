@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2021-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,8 +32,8 @@ package mu.nu.nullpo.game.subsystem.mode.menu
 import kotlin.reflect.KProperty
 
 class DelegateMenuItem<T>(val item:AbstractMenuItem<T>) {
-	inline operator fun getValue(thisRef:Any?, prop:KProperty<*>):T = item.value
-	inline operator fun setValue(thisRef:Any?, prop:KProperty<*>, set:T) {
+	operator fun getValue(thisRef:Any?, prop:KProperty<*>):T = item.value
+	operator fun setValue(thisRef:Any?, prop:KProperty<*>, set:T) {
 		item.value = set
 	}
 }

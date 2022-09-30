@@ -34,6 +34,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -980,19 +981,20 @@ class PracticeMode:AbstractMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
+
 		// Decrease Hebo Hidden
-		if(engine.heboHiddenEnable&&lines>0) {
+		if(engine.heboHiddenEnable&&ev.lines>0) {
 			engine.heboHiddenTimerNow = 0
-			engine.heboHiddenYNow -= lines
+			engine.heboHiddenYNow -= ev.lines
 			if(engine.heboHiddenYNow<0) engine.heboHiddenYNow = 0
 		}
-		engine.statistics.attacks += calcPower(engine, lines)
+		calcPower(engine, ev, true)
 		return if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
-			calcScoreMania(engine, lines) else calcScoreNormal(engine, lines)
+			calcScoreMania(engine, ev.lines) else calcScoreNormal(engine, ev)
 	}
 
-	/** levelTypesMANIAAt the time ofCalculate score */
+	/** levelTypesMANIA At the time ofCalculate score */
 	private fun calcScoreMania(engine:GameEngine, lines:Int):Int {
 		// Combo
 		comboValue = if(lines==0) 1
@@ -1083,12 +1085,12 @@ class PracticeMode:AbstractMode() {
 	}
 
 	/** levelTypesMANIAWhen a non-systemCalculate score */
-	private fun calcScoreNormal(engine:GameEngine, lines:Int):Int {
+	private fun calcScoreNormal(engine:GameEngine, ev:ScoreEvent):Int {
 		// Line clear bonus
-		val pts = super.calcScore(engine, lines)
+		val pts = super.calcScore(engine, ev)
 		// Add to score
 		if(leveltype==LEVELTYPE_POINTS) {
-			lastgoal = calcPoint(engine, lines)
+			lastgoal = calcPoint(engine, ev)
 			goal -= lastgoal
 			lastlineTime = levelTimer
 			if(goal<=0) goal = 0
@@ -1169,26 +1171,23 @@ class PracticeMode:AbstractMode() {
 		}
 
 		if(engine.meterValue<0) engine.meterValue = 0f
-		if(engine.meterValue>receiver.getMeterMax(engine)) engine.meterValue = 1f
+		if(engine.meterValue>1f) engine.meterValue = 1f
 	}
 
-	/* Soft drop */
 	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
-		if(leveltype!=LEVELTYPE_MANIA&&leveltype!=LEVELTYPE_MANIAPLUS) {
+		if(leveltype!=LEVELTYPE_MANIA&&leveltype!=LEVELTYPE_MANIAPLUS)
 			engine.statistics.scoreSD += fall
-		}
+
 	}
 
-	/* Hard drop */
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
 			if(fall*2>harddropBonus) harddropBonus = fall*2
-		} else {
+		} else
 			engine.statistics.scoreHD += fall*2
-		}
+
 	}
 
-	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
 		drawResultStats(
 			engine, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_ADD_DISP,
@@ -1201,7 +1200,6 @@ class PracticeMode:AbstractMode() {
 			)
 	}
 
-	/* Called when saving replay */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		engine.owner.replayProp.setProperty("practice.version", version)
 		if(useMap&&fldBackup!=null) saveMap(fldBackup!!, prop, 0)

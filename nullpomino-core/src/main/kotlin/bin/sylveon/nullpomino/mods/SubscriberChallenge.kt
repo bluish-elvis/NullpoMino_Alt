@@ -38,6 +38,7 @@ package bin.sylveon.nullpomino.mods
 
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Status
@@ -92,20 +93,18 @@ class SubscriberChallenge:NetDummyMode() {
 	/** Version  */
 	private var version:Int = 0
 	/** Current round's ranking position  */
-	private var rankingRank:Int = 0
+	private var rankingRank = 0
 	/** Rankings' scores  */
-	private var rankingScore = emptyArray<IntArray>()
+	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 	/** Rankings' line counts  */
-	private var rankingLines = emptyArray<IntArray>()
+	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	/** Rankings' times  */
-	private var rankingTime = emptyArray<IntArray>()
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray()
-		)
+	override val rankMap
+		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x})
 	/*
 	 * Mode name
 	 */
@@ -124,9 +123,9 @@ class SubscriberChallenge:NetDummyMode() {
 		subscriber = 0
 		lastValue = 0
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
 		netPlayerInit(engine)
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
@@ -330,12 +329,13 @@ class SubscriberChallenge:NetDummyMode() {
 	/*
 	 * Calculate score
 	 */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Line clear bonus
 		var sub = 0
-		if(lines>0) lastValue = subscriber
-		val pts = calcScoreBase(engine, lines)
-		val cmb = if(engine.combo>0&&lines>=1) engine.combo else 0
+		val li = ev.lines
+		if(li>0) lastValue = subscriber
+		val pts = calcScoreBase(engine, ev)
+		val cmb = if(ev.combo>0&&li>=1) engine.combo else 0
 		// Combo
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+engine.manualLock.toInt()
 		// Add to score
@@ -343,47 +343,34 @@ class SubscriberChallenge:NetDummyMode() {
 			val get = calcScoreCombo(pts, cmb, engine.statistics.level, spd)
 
 			if(pts>0) lastscore = get
-			if(lines>=1) engine.statistics.scoreLine += get
+			if(li>=1) engine.statistics.scoreLine += get
 			else engine.statistics.scoreBonus += get
 		}
-		if(engine.twist) {
-			// T-Spin 0 lines
-			if((lines==0)&&(!engine.twistEZ)) {
-				sub += subscriberRNG.nextInt(100)
-			} else if(engine.twistEZ&&(lines>0)) {
-				sub += subscriberRNG.nextInt(100*lines)+100*lines
-			} else if(lines==1) {
-				sub += if(engine.twistMini) {
-					subscriberRNG.nextInt(200)+3000
-				} else {
-					subscriberRNG.nextInt(700)+6000
-				}
-			} else if(lines==2) {
-				sub += subscriberRNG.nextInt(2300)+6000
-			} else if(lines>=3) {
-				sub += subscriberRNG.nextInt(5000)+9000
-			}
-		} else {
-			if(lines==1) {
-				sub += subscriberRNG.nextInt(600)-300
-			} else if(lines==2) {
-				sub += subscriberRNG.nextInt(600)-150
-			} else if(lines==3) {
-				sub += subscriberRNG.nextInt(600)
-			} else if(lines>=4) {
-				sub += subscriberRNG.nextInt(2300)+6000
-			}
+		// T-Spin 0 lines
+		sub += if(engine.twist) when {
+			(li==0)&&(!engine.twistEZ) -> subscriberRNG.nextInt(100)
+			engine.twistEZ&&(li>0) -> subscriberRNG.nextInt(100*li)+100*li
+			li==1 -> (if(engine.twistMini) subscriberRNG.nextInt(200)+3000 else subscriberRNG.nextInt(700)+6000)
+			li==2 -> subscriberRNG.nextInt(2300)+6000
+			li>=3 -> subscriberRNG.nextInt(5000)+9000
+			else -> 0
+		} else when {
+			li==1 -> subscriberRNG.nextInt(600)-300
+			li==2 -> subscriberRNG.nextInt(600)-150
+			li==3 -> subscriberRNG.nextInt(600)
+			li>=4 -> subscriberRNG.nextInt(2300)+6000
+			else -> 0
 		}
 		lastb2b = engine.b2b
 
 		// Combo
-		if(engine.combo>0&&lines>=1) {
+		if(ev.combo>0&&ev.lines>=1) {
 			sub += subscriberRNG.nextInt(1000*engine.combo)+100*engine.combo-100
 			lastcombo = engine.combo
 		}
 
 		// All clear
-		if(lines>=1&&engine.field.isEmpty) {
+		if(li>=1&&engine.field.isEmpty) {
 			engine.playSE("bravo")
 			sub += subscriberRNG.nextInt(500)+10000
 		}
@@ -392,7 +379,7 @@ class SubscriberChallenge:NetDummyMode() {
 		if(pts>0) {
 			lastscore = pts
 			lastpiece = engine.nowPieceObject?.id ?: 0
-			if(lines>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
+			if(li>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
 		}
 		subscriber += sub
 		// BGM fade-out effects and BGM changes
@@ -478,46 +465,13 @@ class SubscriberChallenge:NetDummyMode() {
 		}
 		return false
 	}
-	/*override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
-		startLevel = prop.getProperty("subscriberchallenge.startLevel", 0)
-		tspinEnableType = prop.getProperty("subscriberchallenge.tspinEnableType", 1)
-		enableTSpin = prop.getProperty("subscriberchallenge.enableTSpin", true)
-		goalType = prop.getProperty("subscriberchallenge.gametype", 0)
-		big = prop.getProperty("subscriberchallenge.big", false)
-		version = prop.getProperty("subscriberchallenge.version", 0)
-	}*/
-//	override val rankMap:Map<String, Array<Comparable<*>>> =
-//		mapOf("score" to rankingScore[0], "lines" to rankingLines[0], "time" to rankingTime[0])
-	/*(0 until GAMETYPE_MAX).map {"$it."}.keysToMap {
-
-})*/
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(j in 0 until GAMETYPE_MAX) {
-				rankingScore[j][i] = owner.recordProp.getProperty("$ruleName.$j.score.$i", 0)
-				rankingLines[j][i] = owner.recordProp.getProperty("$ruleName.$j.lines.$i", 0)
-				rankingTime[j][i] = owner.recordProp.getProperty("$ruleName.$j.time.$i", 0)
-			}
-
-	}
-	/** Save rankings of [ruleName] */
-	private fun saveRanking(ruleName:String) = super.saveRanking((0 until GAMETYPE_MAX).flatMap {j ->
-		(0 until RANKING_MAX).flatMap {i ->
-			listOf(
-				"$ruleName.$j.score.$i" to rankingScore[j][i],
-				"$ruleName.$j.lines.$i" to rankingLines[j][i],
-				"$ruleName.$j.time.$i" to rankingTime[j][i]
-			)
-		}
-	}
-	)
 	/**
 	 * Update rankings
 	 * @param sc Score
 	 * @param li Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int):Int {
+	private fun updateRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -541,7 +495,7 @@ class SubscriberChallenge:NetDummyMode() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
 			if(sc>rankingScore[type][i]) {
 				return i

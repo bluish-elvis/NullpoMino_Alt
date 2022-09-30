@@ -103,21 +103,19 @@ class MarathonShuttle:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' scores */
-	private var rankingScore:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 
 	/** Rankings' line counts */
-	private var rankingLines:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' times */
-	private var rankingTime:Array<IntArray> = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*(
-				(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-					rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-					rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-		)
+	override val rankMap
+		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x})
+
 	/* Mode name */
 	override val name = "MARATHON ShuttleRun"
 	override val gameIntensity = 1
@@ -139,9 +137,9 @@ class MarathonShuttle:NetDummyMode() {
 		bgmLv = 0
 
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
 
 		netPlayerInit(engine)
 
@@ -484,41 +482,21 @@ class MarathonShuttle:NetDummyMode() {
 	}
 
 	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Line clear bonus
-		val pts = super.calcScore(engine, lines)
-		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
-		// Combo
-		val cmb = if(engine.combo>0&&lines>=1) engine.combo else 0
-		// Add to score
-		if(pts+cmb+spd>0) {
-			var get = pts*(10+engine.statistics.level)/10+spd
-			if(cmb>=1) {
-				var b = sum*(1+cmb)/2
-				sum += get
-				b = sum*(2+cmb)/2-b
-				get = b
-			} else
-				sum = get
-			if(pts>0) lastscore = get
-			if(lines>=1) engine.statistics.scoreLine += get
-			else engine.statistics.scoreBonus += get
-			scgettime += spd
+		val pts = super.calcScore(engine, ev)
+		if(pts>0) lastscore = pts
 
-			var cmbindex = engine.combo
-			if(cmbindex<0) cmbindex = 0
-			if(cmbindex>=COMBO_GOAL_TABLE.size) cmbindex = COMBO_GOAL_TABLE.size-1
-			lastgoal = calcPoint(engine, lines)+COMBO_GOAL_TABLE[cmbindex]
-			goal -= lastgoal
-			lastlineTime = levelTimer
-			if(goal<=0) goal = 0
-		}
+		lastgoal = calcPoint(engine, ev)
+		goal -= lastgoal
+		lastlineTime = levelTimer
+		if(goal<=0) goal = 0
+
 
 		if(engine.ending==0) {
 			// Time bonus
 			if(goal<=0&&!levelTimeOut&&goalType!=GAMETYPE_SPECIAL) {
-				lasttimebonus = (TIMELIMIT_LEVEL-levelTimer)*(engine.statistics.level+1)
-				if(lasttimebonus<0) lasttimebonus = 0
+				lasttimebonus = maxOf(0, (TIMELIMIT_LEVEL-levelTimer)*(engine.statistics.level+1))
 				engine.statistics.scoreBonus += lasttimebonus
 			} else if(goal<=0&&goalType==GAMETYPE_SPECIAL) {
 				lasttimebonus = TIMELIMIT_SPECIAL_BONUS
@@ -611,23 +589,13 @@ class MarathonShuttle:NetDummyMode() {
 
 	}
 
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(gametypeIndex in 0 until RANKING_TYPE) {
-				rankingScore[gametypeIndex][i] = prop.getProperty("$ruleName.$gametypeIndex.score.$i", 0)
-				rankingLines[gametypeIndex][i] = prop.getProperty("$ruleName.$gametypeIndex.lines.$i", 0)
-				rankingTime[gametypeIndex][i] = prop.getProperty("$ruleName.$gametypeIndex.time.$i", 0)
-			}
-
-	}
-
 	/** Calculate ranking position
 	 * @param sc Score
 	 * @param li Lines
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
@@ -687,7 +655,7 @@ class MarathonShuttle:NetDummyMode() {
 			{engine.timerActive = it.toBoolean()},
 			{lastscore = it.toInt()},
 			{scgettime = it.toInt()},
-			{engine.lastEvent = ScoreEvent.parseInt(it)},
+			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{lastgoal = it.toInt()},
 			{lasttimebonus = it.toInt()},
 			{regretdispframe = it.toInt()},
@@ -716,19 +684,6 @@ class MarathonShuttle:NetDummyMode() {
 		netLobby!!.netPlayerClient!!.send(msg)
 	}
 
-	/** Save rankings of [ruleName] to owner.recordProp */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking((0 until RANKING_TYPE).flatMap {j ->
-			(0 until RANKING_MAX).flatMap {i ->
-				listOf(
-					"$ruleName.$j.score.$i" to rankingScore[j][i],
-					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.time.$i" to rankingTime[j][i]
-				)
-			}
-		})
-	}
-
 	/* Called when saving replay */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(prop, engine)
@@ -751,7 +706,7 @@ class MarathonShuttle:NetDummyMode() {
 	 * @param time Time
 	 * @param type Game type
 	 */
-	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int) {
+	private fun updateRanking(sc:Long, li:Int, time:Int, type:Int) {
 		rankingRank = checkRanking(sc, li, time, type)
 
 		if(rankingRank!=-1) {

@@ -92,13 +92,17 @@ class SprintScore:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' times */
-	private var rankingTime:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+	private val rankingTime = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' line counts */
-	private var rankingLines:Array<IntArray> = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
+	private val rankingLines = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' score/line */
-	private var rankingSPL:Array<DoubleArray> = Array(GOALTYPE_MAX) {DoubleArray(RANKING_MAX)}
+	private val rankingSPL = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0.0}}
+	override val rankMap
+		get() = rankMapOf(rankingTime.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.time" to y}}+
+			rankingSPL.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.spl" to y}}+
+			rankingLines.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}})
 
 	/* Mode name */
 	override val name = "Score SprintRace"
@@ -114,9 +118,9 @@ class SprintScore:NetDummyMode() {
 		bgmno = 0
 
 		rankingRank = -1
-		rankingTime = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingLines = Array(GOALTYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingSPL = Array(GOALTYPE_MAX) {DoubleArray(RANKING_MAX)}
+		rankingTime.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingSPL.forEach {it.fill(0.0)}
 
 		engine.frameColor = GameEngine.FRAME_COLOR_BRONZE
 
@@ -395,11 +399,6 @@ class SprintScore:NetDummyMode() {
 		super.renderLast(engine)
 	}
 
-	/* Calculate score */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
-		return super.calcScore(engine, lines)
-	}
-
 	/* Soft drop */
 	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreSD += fall
@@ -500,33 +499,6 @@ class SprintScore:NetDummyMode() {
 		}
 
 		return false
-	}
-
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until GOALTYPE_MAX)
-			for(j in 0 until RANKING_MAX) {
-				rankingTime[i][j] = prop.getProperty("$ruleName.$i.time.$j", -1)
-				rankingLines[i][j] = prop.getProperty("$ruleName.$i.lines.$j", 0)
-
-				if(rankingLines[i][j]>0) {
-					val defaultSPL = GOAL_TABLE[i].toDouble()/rankingLines[i][j].toDouble()
-					rankingSPL[i][j] = prop.getProperty("$ruleName.$i.spl.$j", defaultSPL)
-				} else
-					rankingSPL[i][j] = 0.0
-			}
-	}
-
-	/** Save rankings of [ruleName] to owner.recordProp */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking((0 until GOALTYPE_MAX).flatMap {j ->
-			(0 until RANKING_MAX).flatMap {i ->
-				listOf(
-					"$ruleName.$j.time.$i" to rankingTime[j][i],
-					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.spl.$i" to rankingSPL[j][i]
-				)
-			}
-		})
 	}
 
 	/** Update rankings

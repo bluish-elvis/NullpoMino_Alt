@@ -251,7 +251,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		val rainbow get() = (upTimeFrame%18).toInt()/2
 
 		/** 実際のFPS */
-		private var actualFPS = 0.0
+		private var actualFPS = .0
 
 		/** FPS表示用DecimalFormat */
 		private val df = DecimalFormat("0.0")

@@ -39,6 +39,7 @@ package wtf.oshisaure.nullpomodshit.modes
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
@@ -87,19 +88,17 @@ class MarathonZone:NetDummyMode() {
 	/** Current round's ranking position  */
 	private var rankingRank = 0
 	/** Rankings' scores  */
-	private var rankingScore = emptyArray<IntArray>()
+	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 	/** Rankings' line counts  */
-	private var rankingLines = emptyArray<IntArray>()
+	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	/** Rankings' times  */
-	private var rankingTime = emptyArray<IntArray>()
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*((rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingTime.mapIndexed {a, x -> "$a.time" to x}).toTypedArray())
-		)
-	override val rankPersMap:Map<String, IntArray> = emptyMap()
+	override val rankMap
+		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+			rankingTime.mapIndexed {a, x -> "$a.time" to x})
+
 	/**
 	 * Calculate bonus points using a 4th degree polynomial.
 	 * @param li lines cleared
@@ -162,9 +161,9 @@ class MarathonZone:NetDummyMode() {
 		zonegaintimer = 0
 		inzone = false
 		rankingRank = -1
-		rankingScore = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingLines = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
-		rankingTime = Array(RANKING_TYPE) {IntArray(RANKING_MAX)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
 		netPlayerInit(engine)
 		if(!owner.replayMode) {
 
@@ -427,8 +426,8 @@ class MarathonZone:NetDummyMode() {
 				else engine.playSE("combo", minOf(2f, 1f+(newlines-1)/10f))
 			}
 			lastzonelines = newlines
-			engine.owner.mode?.calcScore(engine, newlines)
-			engine.owner.receiver.calcScore(engine, null)
+			calcScore(engine, ScoreEvent(null, newlines))
+//			engine.owner.receiver.calcScore(engine, ScoreEvent(null, newlines))
 			engine.statc[0] = 0
 			engine.statc[1] = engine.are
 			engine.statc[2] = 1
@@ -440,42 +439,43 @@ class MarathonZone:NetDummyMode() {
 	/*
 	 * Calculate score
 	 */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Zone timer bonus
-		if(!inzone&&lines>0) {
-			lastzonegain = lines*lines*6
+		val li = ev.lines
+		if(!inzone&&li>0) {
+			lastzonegain = li*li*6
 			zoneframes = minOf(zoneframes+lastzonegain, maxzonetime) //20s cap
 			zonegaintimer = 0
 		}
 
 		// Line clear bonus
 		var pts = 0
-		if(engine.twist) {
+		if(ev.twist) {
 			when {
-				lines==0&&!engine.twistEZ -> pts += if(engine.twistMini) 10 else 40
-				engine.twistEZ&&(lines>0) -> pts += if(engine.b2b) 18 else 12
-				lines==1 -> pts += if(engine.twistMini) (if(engine.b2b) 30 else 20) else (if(engine.b2b) 120 else 80)
-				lines==2 -> pts += if(engine.twistMini&&engine.useAllSpinBonus) (if(engine.b2b) 60 else 40) else (if(engine.b2b) 180 else 120)
-				lines>=3 -> pts += if(engine.b2b) 240 else 160
+				li==0&&!ev.twistEZ -> pts += if(ev.twistMini) 10 else 40
+				ev.twistEZ&&(li>0) -> pts += if(ev.b2b>0) 18 else 12
+				li==1 -> pts += if(ev.twistMini) (if(ev.b2b>0) 30 else 20) else (if(ev.b2b>0) 120 else 80)
+				li==2 -> pts += if(ev.twistMini&&engine.useAllSpinBonus) (if(ev.b2b>0) 60 else 40) else (if(ev.b2b>0) 180 else 120)
+				li>=3 -> pts += if(ev.b2b>0) 240 else 160
 			}
 		} else {
 			when {
-				lines==1 -> pts += 10
-				lines==2 -> pts += 30
-				lines==3 -> pts += 50
-				lines>=4 -> pts += if(engine.b2b) 120 else 80
+				li==1 -> pts += 10
+				li==2 -> pts += 30
+				li==3 -> pts += 50
+				li>=4 -> pts += if(ev.b2b>0) 120 else 80
 			}
 		}
-		lastb2b = engine.b2b
+		lastb2b = ev.b2b>0
 
 		// Combo
-		if(engine.combo>0&&lines>=1) {
-			pts += ((engine.combo)*5)
-			lastcombo = engine.combo
+		if(ev.combo>0&&li>=1) {
+			pts += ((ev.combo)*5)
+			lastcombo = ev.combo
 		}
 
 		// All clear
-		if((lines>=1)&&(engine.field.isEmpty)) {
+		if((li>=1)&&(engine.field.isEmpty)) {
 			engine.playSE("bravo")
 			pts += 180
 		}
@@ -484,7 +484,7 @@ class MarathonZone:NetDummyMode() {
 		// Add to score
 		if(pts>0) {
 			lastscore = pts
-			if(lines>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
+			if(li>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
 		}
 
 		// BGM fade-out effects and BGM changes
@@ -583,32 +583,13 @@ class MarathonZone:NetDummyMode() {
 		prop.setProperty("marathonzone.version", version)
 	}
 
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX) for(j in 0 until GAMETYPE_MAX) {
-			rankingScore[j][i] = prop.getProperty("$ruleName.$j.score.$i", 0)
-			rankingLines[j][i] = prop.getProperty("$ruleName.$j.lines.$i", 0)
-			rankingTime[j][i] = prop.getProperty("$ruleName.$j.time.$i", 0)
-		}
-	}
-	/** Save rankings of [ruleName] to owner.recordProp */
-	private fun saveRanking(ruleName:String) =
-		super.saveRanking((0 until GAMETYPE_MAX).flatMap {j ->
-			(0 until RANKING_MAX).flatMap {i ->
-				listOf(
-					"$ruleName.$j.score.$i" to rankingScore[j][i],
-					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.time.$i" to rankingTime[j][i]
-				)
-			}
-		})
-
 	/**
 	 * Update rankings
 	 * @param sc Score
 	 * @param li Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int):Int {
+	private fun updateRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -632,7 +613,7 @@ class MarathonZone:NetDummyMode() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if((sc==rankingScore[type][i])&&(li>rankingLines[type][i])) return i

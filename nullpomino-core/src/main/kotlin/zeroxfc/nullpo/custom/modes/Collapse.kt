@@ -56,8 +56,8 @@ import kotlin.random.Random
 
 class Collapse:AbstractMode() {
 	private var enableBombs = false
-	private var rankingScore:Array<IntArray> = emptyArray()
-	private var rankingLevel:Array<IntArray> = emptyArray()
+	private val rankingScore = List(MAX_DIFFICULTIES) {MutableList(MAX_RANKING) {0L}}
+	private val rankingLevel = List(MAX_DIFFICULTIES) {MutableList(MAX_RANKING) {0}}
 	private var bScore = 0
 	private var rankingRank = 0
 	private var difficulty = 0
@@ -80,19 +80,16 @@ class Collapse:AbstractMode() {
 	private var lineSpawn = 0
 	private var multiplier = 0.0
 	private var acTime = 0
-	private var rankingScorePlayer:Array<IntArray> = emptyArray()
-	private var rankingLevelPlayer:Array<IntArray> = emptyArray()
+	private val rankingScorePlayer = List(MAX_DIFFICULTIES) {MutableList(MAX_RANKING) {0L}}
+	private val rankingLevelPlayer = List(MAX_DIFFICULTIES) {MutableList(MAX_RANKING) {0}}
 	private var rankingRankPlayer = 0
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*((rankingScore.mapIndexed {a, x -> "$a.score" to x}+
-				rankingLevel.mapIndexed {a, x -> "$a.level" to x}).toTypedArray())
-		)
-	override val rankPersMap:Map<String, IntArray>
-		get() = mapOf(
-			*((rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}+
-				rankingLevelPlayer.mapIndexed {a, x -> "$a.level" to x}).toTypedArray())
-		)
+	override val rankMap
+		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+			rankingLevel.mapIndexed {a, x -> "$a.level" to x})
+
+	override val rankPersMap
+		get() = rankMapOf(rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}+
+			rankingLevelPlayer.mapIndexed {a, x -> "$a.level" to x})
 
 	/*
      * ------ MAIN METHODS ------
@@ -100,12 +97,12 @@ class Collapse:AbstractMode() {
 	override val name:String = "COLLAPSE"
 
 	override fun playerInit(engine:GameEngine) {
-		rankingScorePlayer = Array(MAX_DIFFICULTIES) {IntArray(MAX_RANKING)}
-		rankingLevelPlayer = Array(MAX_DIFFICULTIES) {IntArray(MAX_RANKING)}
+		rankingScore.forEach {it.fill(0)}
+		rankingLevel.forEach {it.fill(0)}
+		rankingScorePlayer.forEach {it.fill(0)}
+		rankingLevelPlayer.forEach {it.fill(0)}
 		rankingRankPlayer = -1
 		enableBombs = false
-		rankingScore = Array(MAX_DIFFICULTIES) {IntArray(MAX_RANKING)}
-		rankingLevel = Array(MAX_DIFFICULTIES) {IntArray(MAX_RANKING)}
 		rankingRank = -1
 		difficulty = 0
 		linesLeft = 0
@@ -793,7 +790,7 @@ class Collapse:AbstractMode() {
 	}
 
 	private fun setNewLowerScore(engine:GameEngine) {
-		lastscore = engine.statistics.score
+
 	}
 
 	override fun onLast(engine:GameEngine) {
@@ -906,11 +903,13 @@ class Collapse:AbstractMode() {
 					nOffX = ((baseDim*it.text.length-baseDim*it.text.length*rs)/2).toInt()
 					nOffY = ((baseDim-baseDim*rs)/2).toInt()
 				}
-				if(it.lifeTime/2%2==0&&it.largeClear) {
-					receiver.drawDirectFont(x+nOffX, y+nOffY, it.text, EventReceiver.COLOR.YELLOW, scale)
-				} else {
-					receiver.drawDirectFont(x+nOffX, y+nOffY, it.text, EventReceiver.COLOR.ORANGE, scale)
-				}
+				if(it.lifeTime/2%2==0&&it.largeClear) receiver.drawDirectFont(
+					x+nOffX,
+					y+nOffY,
+					it.text,
+					EventReceiver.COLOR.YELLOW,
+					scale
+				) else receiver.drawDirectFont(x+nOffX, y+nOffY, it.text, EventReceiver.COLOR.ORANGE, scale)
 			}
 			receiver.drawMenuFont(engine, fieldX, fieldY, "f", EventReceiver.COLOR.YELLOW)
 
@@ -1008,7 +1007,7 @@ class Collapse:AbstractMode() {
 	 *
 	 * @param sc Score
 	 */
-	private fun updateRanking(sc:Int, type:Int, lv:Int, isLoggedIn:Boolean) {
+	private fun updateRanking(sc:Long, type:Int, lv:Int, isLoggedIn:Boolean) {
 		rankingRank = checkRanking(sc, lv, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -1042,7 +1041,7 @@ class Collapse:AbstractMode() {
 	 * @param sc Score
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, lv:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, lv:Int, type:Int):Int {
 		for(i in 0 until MAX_RANKING) {
 			if(sc>rankingScore[type][i]) {
 				return i
@@ -1058,7 +1057,7 @@ class Collapse:AbstractMode() {
 	 * @param sc Score
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRankingPlayer(sc:Int, lv:Int, type:Int):Int {
+	private fun checkRankingPlayer(sc:Long, lv:Int, type:Int):Int {
 		for(i in 0 until MAX_RANKING) {
 			if(sc>rankingScorePlayer[type][i]) return i
 			else if(sc==rankingScorePlayer[type][i]&&lv<rankingLevelPlayer[type][i]) return i

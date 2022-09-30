@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -70,10 +71,17 @@ class RetroModern:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Ranking records */
-	private var rankingScore:Array<IntArray> = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
-	private var rankingLevel:Array<IntArray> = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
-	private var rankingLines:Array<IntArray> = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
-	private var rankingTime:Array<IntArray> = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
+	private val rankingScore:List<MutableList<Long>> = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0L}}
+	private val rankingLevel:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingLines:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime:List<MutableList<Int>> = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
+
+	override val rankMap
+		get() = rankMapOf(
+			rankingScore.mapIndexed {a, x -> "$a.score" to x}+
+				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
+				rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x})
 
 	/** Returns the name of this mode */
 	override val name = "Retro Modern.S"
@@ -91,11 +99,10 @@ class RetroModern:AbstractMode() {
 		linecount = 0
 
 		rankingRank = -1
-		rankingScore = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingLevel = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingLines = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
-		rankingTime = Array(GAMETYPE_MAX) {IntArray(RANKING_MAX)}
-
+		rankingScore.forEach {it.fill(0)}
+		rankingLevel.forEach {it.fill(0)}
+		rankingLines.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(0)}
 		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.splitB2B = false
@@ -373,18 +380,19 @@ class RetroModern:AbstractMode() {
 
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Determines line-clear bonus
 		var pts = 0
 		val mult = tableScoreMult[gametype][engine.statistics.level]*10
-		if(lines==1)
+		val li = ev.lines
+		if(li==1)
 			pts = 5*mult // Single
-		else if(lines==2)
+		else if(li==2)
 			pts = (if(engine.split) 30 else 20)*mult // Double
-		else if(lines==3)
+		else if(li==3)
 			pts = (if(engine.split) 55 else 45)*mult // Triple
-		else if(lines>=4) pts = 100*mult // Four
-		if(lines>0&&engine.field.isEmpty)
+		else if(li>=4) pts = 100*mult // Four
+		if(li>0&&engine.field.isEmpty)
 		// Perfect clear bonus
 			pts = 2000*tableBonusMult[engine.statistics.level]
 		// Add score
@@ -397,12 +405,12 @@ class RetroModern:AbstractMode() {
 			if(engine.ruleOpt.harddropLock) engine.statistics.scoreHD++
 			else engine.statistics.scoreSD++
 		}
-		if(lines>0) {
-			lineslot[linecount] = if(lines>4) 4 else lines
+		if(li>0) {
+			lineslot[linecount] = if(li>4) 4 else li
 			linecount++
 
 			// Add lines
-			norm += lines
+			norm += li
 		}
 		// Level up
 		var lvup = false
@@ -410,7 +418,7 @@ class RetroModern:AbstractMode() {
 			engine.statistics.level==MAX_LEVEL&&engine.statistics.lines>=totalnorma||
 			engine.statistics.level==MAX_LEVEL+1
 		)
-			lvup = lines>0
+			lvup = li>0
 
 		if(lvup) {
 			val newlevel = ++engine.statistics.level
@@ -602,34 +610,8 @@ class RetroModern:AbstractMode() {
 		prop.setProperty("retromodern.version", version)
 	}
 
-	/** Load the ranking */
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(type in 0 until GAMETYPE_MAX) {
-				rankingScore[type][i] = prop.getProperty("$ruleName.$type.score.$i", 0)
-				rankingLevel[type][i] = prop.getProperty("$ruleName.$type.level.$i", 0)
-				rankingLines[type][i] = prop.getProperty("$ruleName.$type.lines.$i", 0)
-				rankingTime[type][i] = prop.getProperty("$ruleName.$type.time.$i", 0)
-
-			}
-	}
-
-	/** Save the ranking */
-	private fun saveRanking(ruleName:String) {
-		super.saveRanking((0 until GAMETYPE_MAX).flatMap {j ->
-			(0 until RANKING_MAX).flatMap {i ->
-				listOf(
-					"$ruleName.$j.score.$i" to rankingScore[j][i],
-					"$ruleName.$j.lines.$i" to rankingLines[j][i],
-					"$ruleName.$j.level.$i" to rankingLevel[j][i],
-					"$ruleName.$j.time.$i" to rankingTime[j][i]
-				)
-			}
-		})
-	}
-
 	/** Update the ranking */
-	private fun updateRanking(sc:Int, lv:Int, li:Int, time:Int, type:Int) {
+	private fun updateRanking(sc:Long, lv:Int, li:Int, time:Int, type:Int) {
 		rankingRank = checkRanking(sc, lv, li, time, type)
 
 		if(rankingRank!=-1) {
@@ -651,7 +633,7 @@ class RetroModern:AbstractMode() {
 
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
-	private fun checkRanking(sc:Int, lv:Int, li:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, lv:Int, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&lv>rankingLines[type][i]) return i

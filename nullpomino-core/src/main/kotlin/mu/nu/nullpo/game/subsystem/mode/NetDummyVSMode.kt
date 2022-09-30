@@ -165,7 +165,7 @@ open class NetDummyVSMode:NetDummyMode() {
 		get() = NET_MAX_PLAYERS
 
 	/** NET-VS: This is netplay-only mode */
-	override val isNetplayMode:Boolean
+	override val isOnlineMode:Boolean
 		get() = true
 
 	/** NET-VS: Mode Initialization */

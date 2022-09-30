@@ -47,12 +47,10 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' line counts */
-	private var rankingScore:Array<Array<Array<IntArray>>> =
-		Array(SCORETYPE_MAX) {Array(3) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}}
+	private val rankingScore = List(SCORETYPE_MAX) {List(3) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}}}
 
 	/** Rankings' times */
-	private var rankingTime:Array<Array<Array<IntArray>>> =
-		Array(SCORETYPE_MAX) {Array(3) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}}
+	private val rankingTime = List(SCORETYPE_MAX) {List(3) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}}}
 
 	/** Chain display enable/disable */
 	private var showChains = false
@@ -68,7 +66,16 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 	/** Sprint target score */
 	private var sprintTarget = 0
-
+	override val rankMap
+		get() = rankMapOf(rankingScore.flatMapIndexed {a, w ->
+			w.flatMapIndexed {b, x ->
+				x.flatMapIndexed {c, y -> y.mapIndexed {d, z -> "$a.$b.$c.$d.score" to z}}
+			}
+		}+rankingTime.flatMapIndexed {a, w ->
+			w.flatMapIndexed {b, x ->
+				x.flatMapIndexed {c, y -> y.mapIndexed {d, z -> "$a.$b.$c.$d.time" to z}}
+			}
+		})
 	/* Mode name */
 	override val name = "AVALANCHE 1P (RC2)"
 
@@ -82,8 +89,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		sprintTarget = 0
 
 		rankingRank = -1
-		rankingScore = Array(SCORETYPE_MAX) {Array(3) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}}
-		rankingTime = Array(SCORETYPE_MAX) {Array(3) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}}
+		rankingScore.forEach {it.forEach {it.forEach {it.fill(0)}}}
+		rankingTime.forEach {it.forEach {it.forEach {it.fill(0)}}}
 
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
@@ -449,40 +456,10 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		prop.setProperty("avalanche.bigDisplay", bigDisplay)
 	}
 
-	override fun loadRanking(prop:CustomProperties, ruleName:String) {
-		for(i in 0 until RANKING_MAX)
-			for(j in 0 until GAMETYPE_MAX)
-				for(c in 3..5)
-					for(s in 0 until SCORETYPE_MAX) {
-						rankingScore[s][c-3][j][i] = prop.getProperty(
-							"$ruleName.$s.$c.$j.score.$i", 0
-						)
-						rankingTime[s][c-3][j][i] = prop.getProperty(
-							"$ruleName.$s.$c.$j.time.$i", -1
-						)
-					}
-	}
-
-	/** Save rankings to owner.recordProp */
-	override fun saveRanking() {
-		super.saveRanking((3..5).flatMap {c ->
-			(0 until SCORETYPE_MAX).flatMap {s ->
-				(0 until GAMETYPE_MAX).flatMap {j ->
-					(0 until RANKING_MAX).flatMap {i ->
-						listOf(
-							"$s.$c.$j.score.$i" to rankingScore[s][c-3][j][i],
-							"$s.$c.$j.time.$i" to rankingTime[s][c-3][j][i]
-						)
-					}
-				}
-			}
-		})
-	}
-
 	/** Update rankings
 	 * @param sc Score
 	 */
-	private fun updateRanking(sc:Int, time:Int, type:Int, sctype:Int, colors:Int):Int {
+	private fun updateRanking(sc:Long, time:Int, type:Int, sctype:Int, colors:Int):Int {
 		rankingRank = checkRanking(sc, time, type, sctype, colors)
 
 		if(rankingRank!=-1) {
@@ -504,7 +481,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, time:Int, type:Int, sctype:Int, colors:Int):Int {
+	private fun checkRanking(sc:Long, time:Int, type:Int, sctype:Int, colors:Int):Int {
 		if(type==2&&sc<SPRINT_MAX_SCORE[sprintTarget]) return -1
 		for(i in 0 until RANKING_MAX)
 			if(type==0) {

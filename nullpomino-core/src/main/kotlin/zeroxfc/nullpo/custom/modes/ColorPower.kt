@@ -45,6 +45,7 @@ import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
@@ -81,32 +82,29 @@ class ColorPower:MarathonModeBase() {
 	// Hm
 	private var preset = false
 	/** Rankings' scores */
-	private var rankingScore:Array<Array<IntArray>> = emptyArray()
+	private val rankingScore = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}}
 	/** Rankings' line counts */
-	private var rankingLines:Array<Array<IntArray>> = emptyArray()
+	private val rankingLines = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}}
 	/** Rankings' times */
-	private var rankingTime:Array<Array<IntArray>> = emptyArray()
+	private val rankingTime = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}}
 	/** Player rank */
 	private var rankingRankPlayer = 0
 	/** Rankings' scores */
-	private var rankingScorePlayer:Array<Array<IntArray>> = emptyArray()
+	private val rankingScorePlayer = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}}
 	/**  Rankings' line counts */
-	private var rankingLinesPlayer:Array<Array<IntArray>> = emptyArray()
+	private val rankingLinesPlayer = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}}
 	/** Rankings' times */
-	private var rankingTimePlayer:Array<Array<IntArray>> = emptyArray()
+	private val rankingTimePlayer = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}}
 
-	override val rankMap:Map<String, IntArray>
-		get() = mapOf(
-			*((rankingScore.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
-				rankingLines.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}}+
-				rankingTime.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.time" to y}}).toTypedArray())
-		)
-	override val rankPersMap:Map<String, IntArray>
-		get() = mapOf(
-			*((rankingScorePlayer.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
-				rankingLinesPlayer.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}}+
-				rankingTimePlayer.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.time" to y}}).toTypedArray())
-		)
+	override val rankMap
+		get() = rankMapOf(rankingScore.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
+			rankingLines.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}}+
+			rankingTime.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.time" to y}})
+
+	override val rankPersMap
+		get() = rankMapOf(rankingScorePlayer.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.score" to y}}+
+			rankingLinesPlayer.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.lines" to y}}+
+			rankingTimePlayer.flatMapIndexed {a, x -> x.mapIndexed {b, y -> "$a.$b.time" to y}})
 
 	/** The good hard drop effect */
 	private var pCoordList:MutableList<IntArray>? = null
@@ -133,9 +131,12 @@ class ColorPower:MarathonModeBase() {
 		showPlayerStats = false
 
 		rankingRankPlayer = -1
-		rankingScorePlayer = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
-		rankingLinesPlayer = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
-		rankingTimePlayer = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
+		rankingScore.forEach {it.forEach {it.fill(0)}}
+		rankingLines.forEach {it.forEach {it.fill(0)}}
+		rankingTime.forEach {it.forEach {it.fill(0)}}
+		rankingScorePlayer.forEach {it.forEach {it.fill(0)}}
+		rankingLinesPlayer.forEach {it.forEach {it.fill(0)}}
+		rankingTimePlayer.forEach {it.forEach {it.fill(0)}}
 		rankingRank = -1
 //		rankingScore = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
 //		rankingLines = Array(2) {Array(RANKING_TYPE) {IntArray(RANKING_MAX)}}
@@ -151,8 +152,8 @@ class ColorPower:MarathonModeBase() {
 		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
 	}
 	/*
-     * Called at settings screen
-     */
+		 * Called at settings screen
+		 */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode) {
@@ -281,8 +282,8 @@ class ColorPower:MarathonModeBase() {
 		return false
 	}
 	/*
-     * Called for initialization during "Ready" screen
-     */
+		 * Called for initialization during "Ready" screen
+		 */
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 1
@@ -323,8 +324,8 @@ class ColorPower:MarathonModeBase() {
 		pCoordList?.clear()
 	}
 	/*
-     * Hard drop
-     */
+		 * Hard drop
+		 */
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += fall*2
 
@@ -370,8 +371,8 @@ class ColorPower:MarathonModeBase() {
 		}
 	}
 	/*
-     * Render score
-     */
+		 * Render score
+		 */
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 		receiver.drawScoreFont(engine, 0, 0, (if(ruleboundMode) "RULEBOUND " else "")+name, COLOR.GREEN)
@@ -478,36 +479,68 @@ class ColorPower:MarathonModeBase() {
 				engine, (10/scale).toInt(), (base/scale).toInt(), "POWER-UPS", COLOR.PINK, scale
 			)
 			receiver.drawScoreFont(
-				engine, (10/scale).toInt(), (base+1/scale).toInt(), "  GREY:"+String.format("%d/%d", meterValues[0], POWER_METER_MAX),
-				POWERUP_TEXT_COLORS[0], scale
+				engine,
+				(10/scale).toInt(),
+				(base+1/scale).toInt(),
+				"  GREY:"+String.format("%d/%d", meterValues[0], POWER_METER_MAX),
+				POWERUP_TEXT_COLORS[0],
+				scale
 			)
 			receiver.drawScoreFont(
-				engine, (10/scale).toInt(), (base+2/scale).toInt(), "   RED:"+String.format("%d/%d", meterValues[1], POWER_METER_MAX),
-				POWERUP_TEXT_COLORS[1], scale
+				engine,
+				(10/scale).toInt(),
+				(base+2/scale).toInt(),
+				"   RED:"+String.format("%d/%d", meterValues[1], POWER_METER_MAX),
+				POWERUP_TEXT_COLORS[1],
+				scale
 			)
 			receiver.drawScoreFont(
-				engine, (10/scale).toInt(), (base+3/scale).toInt(), "ORANGE:"+String.format("%d/%d", meterValues[2], POWER_METER_MAX),
-				POWERUP_TEXT_COLORS[2], scale
+				engine,
+				(10/scale).toInt(),
+				(base+3/scale).toInt(),
+				"ORANGE:"+String.format("%d/%d", meterValues[2], POWER_METER_MAX),
+				POWERUP_TEXT_COLORS[2],
+				scale
 			)
 			receiver.drawScoreFont(
-				engine, (10/scale).toInt(), (base+4/scale).toInt(), "YELLOW:"+String.format("%d/%d", meterValues[3], POWER_METER_MAX),
-				POWERUP_TEXT_COLORS[3], scale
+				engine,
+				(10/scale).toInt(),
+				(base+4/scale).toInt(),
+				"YELLOW:"+String.format("%d/%d", meterValues[3], POWER_METER_MAX),
+				POWERUP_TEXT_COLORS[3],
+				scale
 			)
 			receiver.drawScoreFont(
-				engine, (10/scale).toInt(), (base+5/scale).toInt(), " GREEN:"+String.format("%d/%d", meterValues[4], POWER_METER_MAX),
-				POWERUP_TEXT_COLORS[4], scale
+				engine,
+				(10/scale).toInt(),
+				(base+5/scale).toInt(),
+				" GREEN:"+String.format("%d/%d", meterValues[4], POWER_METER_MAX),
+				POWERUP_TEXT_COLORS[4],
+				scale
 			)
 			receiver.drawScoreFont(
-				engine, (10/scale).toInt(), (base+6/scale).toInt(), "  CYAN:"+String.format("%d/%d", meterValues[5], POWER_METER_MAX),
-				POWERUP_TEXT_COLORS[5], scale
+				engine,
+				(10/scale).toInt(),
+				(base+6/scale).toInt(),
+				"  CYAN:"+String.format("%d/%d", meterValues[5], POWER_METER_MAX),
+				POWERUP_TEXT_COLORS[5],
+				scale
 			)
 			receiver.drawScoreFont(
-				engine, (10/scale).toInt(), (base+7/scale).toInt(), "  BLUE:"+String.format("%d/%d", meterValues[6], POWER_METER_MAX),
-				POWERUP_TEXT_COLORS[6], scale
+				engine,
+				(10/scale).toInt(),
+				(base+7/scale).toInt(),
+				"  BLUE:"+String.format("%d/%d", meterValues[6], POWER_METER_MAX),
+				POWERUP_TEXT_COLORS[6],
+				scale
 			)
 			receiver.drawScoreFont(
-				engine, (10/scale).toInt(), (base+8/scale).toInt(), "PURPLE:"+String.format("%d/%d", meterValues[7], POWER_METER_MAX),
-				POWERUP_TEXT_COLORS[7], scale
+				engine,
+				(10/scale).toInt(),
+				(base+8/scale).toInt(),
+				"PURPLE:"+String.format("%d/%d", meterValues[7], POWER_METER_MAX),
+				POWERUP_TEXT_COLORS[7],
+				scale
 			)
 			receiver.drawScoreFont(engine, 0, 15, "MULTI.", COLOR.BLUE)
 			receiver.drawScoreFont(engine, 0, 16, "$scoreMultiplier"+"X")
@@ -701,7 +734,7 @@ class ColorPower:MarathonModeBase() {
 			engine.isInGame = true
 			val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 			if(engine.playerProp.isLoggedIn) {
-				loadRankingPlayer(engine.playerProp, engine.ruleOpt.strRuleName)
+				loadRankingPlayer(engine.playerProp)
 				loadSetting(engine.playerProp.propProfile, engine)
 			}
 			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
@@ -709,9 +742,9 @@ class ColorPower:MarathonModeBase() {
 		return false
 	}
 	/*
-     * Calculate score
-     */
-	override fun calcScore(engine:GameEngine, lines:Int):Int {
+		 * Calculate score
+		 */
+	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		setSpeed(engine)
 		if(!ruleboundMode) {
 			randomizeColors(engine, true)
@@ -720,8 +753,9 @@ class ColorPower:MarathonModeBase() {
 		}
 
 		// Line clear bonus
-		val pts = calcScoreBase(engine, lines)
-		val cmb = if(engine.combo>0&&lines>=1) engine.combo else 0
+		val li = ev.lines
+		val pts = calcScoreBase(engine, ev)
+		val cmb = if(ev.combo>0&&li>=1) ev.combo else 0
 		// Combo
 		val spd = maxOf(0, engine.lockDelay-engine.lockDelayNow)+if(engine.manualLock) 1 else 0
 		// Add to score
@@ -729,12 +763,12 @@ class ColorPower:MarathonModeBase() {
 		if(pts+cmb+spd>0) {
 			get = calcScoreCombo(pts, cmb, engine.statistics.level, spd)*scoreMultiplier
 			if(pts>0) lastscore = get
-			if(lines>=1) engine.statistics.scoreLine += get
+			if(li>=1) engine.statistics.scoreLine += get
 			else engine.statistics.scoreBonus += get
 			scDisp += spd*scoreMultiplier
 		}
 
-		if(lines>0&&engine.lives>0&&engine.statistics.lines%100==0&&tableGameClearLines[goalType]<0&&engine.statistics.lines>=200) {
+		if(li>0&&engine.lives>0&&engine.statistics.lines%100==0&&tableGameClearLines[goalType]<0&&engine.statistics.lines>=200) {
 			val bonus:Int = engine.lives*30000*scoreMultiplier
 			engine.statistics.scoreBonus += bonus
 		}
@@ -771,8 +805,8 @@ class ColorPower:MarathonModeBase() {
 		return get
 	}
 	/*
-     * Called when saving replay
-     */
+		 * Called when saving replay
+		 */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		saveSetting(prop, engine)
 
@@ -798,7 +832,7 @@ class ColorPower:MarathonModeBase() {
 	 * @param li   Lines
 	 * @param time Time
 	 */
-	private fun updateRanking(sc:Int, li:Int, time:Int, type:Int, isLoggedIn:Boolean):Boolean {
+	private fun updateRanking(sc:Long, li:Int, time:Int, type:Int, isLoggedIn:Boolean):Boolean {
 		rankingRank = checkRanking(sc, li, time, type)
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
@@ -818,9 +852,12 @@ class ColorPower:MarathonModeBase() {
 			if(rankingRankPlayer!=-1) {
 				// Shift down ranking entries
 				for(i in RANKING_MAX-1 downTo rankingRankPlayer+1) {
-					rankingScorePlayer[if(ruleboundMode) 1 else 0][type][i] = rankingScorePlayer[if(ruleboundMode) 1 else 0][type][i-1]
-					rankingLinesPlayer[if(ruleboundMode) 1 else 0][type][i] = rankingLinesPlayer[if(ruleboundMode) 1 else 0][type][i-1]
-					rankingTimePlayer[if(ruleboundMode) 1 else 0][type][i] = rankingTimePlayer[if(ruleboundMode) 1 else 0][type][i-1]
+					rankingScorePlayer[if(ruleboundMode) 1 else 0][type][i] =
+						rankingScorePlayer[if(ruleboundMode) 1 else 0][type][i-1]
+					rankingLinesPlayer[if(ruleboundMode) 1 else 0][type][i] =
+						rankingLinesPlayer[if(ruleboundMode) 1 else 0][type][i-1]
+					rankingTimePlayer[if(ruleboundMode) 1 else 0][type][i] =
+						rankingTimePlayer[if(ruleboundMode) 1 else 0][type][i-1]
 				}
 
 				// Add new data
@@ -839,7 +876,7 @@ class ColorPower:MarathonModeBase() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
+	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
 			if(sc>rankingScore[if(ruleboundMode) 1 else 0][type][i]) {
 				return i
@@ -859,7 +896,7 @@ class ColorPower:MarathonModeBase() {
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRankingPlayer(sc:Int, li:Int, time:Int, type:Int):Int {
+	private fun checkRankingPlayer(sc:Long, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
 			if(sc>rankingScorePlayer[if(ruleboundMode) 1 else 0][type][i]) {
 				return i
