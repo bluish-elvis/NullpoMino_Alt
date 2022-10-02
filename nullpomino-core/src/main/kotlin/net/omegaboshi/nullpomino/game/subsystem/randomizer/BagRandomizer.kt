@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,24 +36,24 @@ open class BagRandomizer:Randomizer {
 	open val limitPrev = false
 
 	internal open val baglen:Int get() = pieces.size
-	private var bag = IntArray(0)
-	internal open val bagInit:IntArray get() = IntArray(baglen) {pieces[it%pieces.size]}
+	private var bag = MutableList(0) {0}
+	internal open val bagInit get() = List(baglen) {pieces[it%pieces.size]}
 
 	private var pt:Int = pieces.size
 	private var isfirst = true
 
 	constructor():super()
-	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
+	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
 
 	override fun init() {
 		isfirst = true
-		bag = bagInit
+		bag = bagInit.toMutableList()
 		shuffle()
 	}
 
 	open fun shuffle() {
 		val tmp = bagInit.toMutableList()
-		bag = IntArray(0)
+		bag.clear()
 		pt = 0
 		while(tmp.isNotEmpty()) {
 			var i = 0

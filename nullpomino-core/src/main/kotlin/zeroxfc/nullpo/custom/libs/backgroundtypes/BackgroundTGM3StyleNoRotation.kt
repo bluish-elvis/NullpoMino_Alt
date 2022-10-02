@@ -216,11 +216,9 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 	override fun draw(engine:GameEngine) {
 		customHolder.drawImage("blackBG", 0, 0)
 		val rawImgDim = customHolder.getImageDimensions(imageName)
-		val imgDim = customHolder.getImageDimensions(imageName)
+		val imgDim = customHolder.getImageDimensions(imageName).map {it*(currentValues.scale).toInt()}
 
 		// log.debug(String.format("%d, %d", imgDim[0], imgDim[1]));
-		imgDim[0] *= (currentValues.scale).toInt()
-		imgDim[1] *= (currentValues.scale).toInt()
 		var v = 255
 		if(dimTimer>0) {
 			val t = dimTimer-15

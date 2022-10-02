@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -119,13 +119,13 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 	/** Prepare rule list */
 	private fun prepareRuleList() {
 		strCurrentMode = NullpoMinoSlick.propGlobal.getProperty("name.mode", "")
-		val entry = entryRules.listName.toTypedArray()
-		val modes = modeRules.listName.toTypedArray()
+		val entry = entryRules.listName
+		val modes = modeRules.listName
 
 		log.debug("${entry.toList()} ${modes.toList()}")
 
 		val curRule = NullpoMinoSlick.propGlobal.getProperty("0.rule")
-		list = if(!curRule.isNullOrEmpty()) arrayOf(*(entry+modes), STR_FB) else entry+modes
+		list = if(!curRule.isNullOrEmpty()) entry+modes+STR_FB else entry+modes
 
 		val strLastRule = NullpoMinoSlick.propGlobal.getProperty("lastrule.${strCurrentMode.lowercase(Locale.getDefault())}")
 		val defaultCursor = list.indexOfFirst {it==strLastRule}

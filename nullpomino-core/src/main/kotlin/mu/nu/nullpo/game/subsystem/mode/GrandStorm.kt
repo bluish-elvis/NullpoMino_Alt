@@ -929,33 +929,33 @@ class GrandStorm:AbstractMode() {
 		private const val CURRENT_VERSION = 3
 
 		/** ARE table */
-		private val tableARE = intArrayOf(16, 12, 10, 8, 6, 4)
+		private val tableARE = listOf(16, 12, 10, 8, 6, 4)
 
 		/** ARE after line clear table */
-		private val tableARELine = intArrayOf(12, 9, 7, 6, 5, 4)
+		private val tableARELine = listOf(12, 9, 7, 6, 5, 4)
 
 		/** Line clear times table */
-		private val tableLineDelay = intArrayOf(12, 9, 7, 6, 5, 4)
+		private val tableLineDelay = listOf(12, 9, 7, 6, 5, 4)
 
 		/** 固定 times table */
-		private val tableLockDelay = intArrayOf(30, 28, 26, 24, 22, 20)
+		private val tableLockDelay = listOf(30, 28, 26, 24, 22, 20)
 
 		/** DAS table */
-		private val tableDAS = intArrayOf(12, 10, 8, 6, 5, 4)
+		private val tableDAS = listOf(12, 10, 8, 6, 5, 4)
 
 		/** BGM fadeout levels */
-		private val tableBGMFadeout = intArrayOf(280, 480, -1)
+		private val tableBGMFadeout = listOf(280, 480, -1)
 
 		/** BGM change levels */
-		private val tableBGMChange = intArrayOf(300, 500, 999, -1)
-		private val tableBGM = arrayOf(BGM.GrandA(1), BGM.GrandA(2), BGM.GrandA(3))
+		private val tableBGMChange = listOf(300, 500, 999, -1)
+		private val tableBGM = listOf(BGM.GrandA(1), BGM.GrandA(2), BGM.GrandA(3))
 
 		/** 段位のName */
-		private val tableGradeName = arrayOf("", "m", "Gm", "GM")
+		private val tableGradeName = listOf("", "m", "Gm", "GM")
 
 		/** 裏段位のName */
 		private val tableSecretGradeName =
-			arrayOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "GM")
+			listOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "GM")
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 1982

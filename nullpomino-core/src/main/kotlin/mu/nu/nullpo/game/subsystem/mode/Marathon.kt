@@ -54,7 +54,7 @@ class Marathon:NetDummyMode() {
 
 	private val itemMode = StringsMenuItem(
 		"goalType", "GOAL", COLOR.BLUE, 0,
-		tableGameClearLines.map {if(it<=0) "ENDLESS" else "$it LINES"}.toTypedArray()
+		tableGameClearLines.map {if(it<=0) "ENDLESS" else "$it LINES"}
 	)
 	/** Game type  */
 	private var goalType:Int by DelegateMenuItem(itemMode)
@@ -404,7 +404,7 @@ class Marathon:NetDummyMode() {
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		listOf<(String)->Unit>({}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
 			{engine.statistics.scoreSD = it.toInt()},
@@ -450,7 +450,7 @@ class Marathon:NetDummyMode() {
 	}
 
 	/** NET: Receive game options */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		startLevel = message[4].toInt()
 		goalType = message[5].toInt()
 		big = message[6].toBoolean()
@@ -467,20 +467,20 @@ class Marathon:NetDummyMode() {
 		private const val CURRENT_VERSION = 2
 
 		/** Fall velocity table (numerators) */
-		private val tableGravity = intArrayOf(1, 2, 1, 3, 3, 7, 3, 12, 30, 26, 26, 3, 1, 3, 2, 3, 5, 15, 10, -1)
+		private val tableGravity = listOf(1, 2, 1, 3, 3, 7, 3, 12, 30, 26, 26, 3, 1, 3, 2, 3, 5, 15, 10, -1)
 
 		/** Fall velocity table (denominators) */
-		private val tableDenominator = intArrayOf(60, 95, 37, 85, 64, 110, 34, 97, 169, 100, 67, 5, 1, 2, 1, 1, 1, 2, 1, 1)
+		private val tableDenominator = listOf(60, 95, 37, 85, 64, 110, 34, 97, 169, 100, 67, 5, 1, 2, 1, 1, 1, 2, 1, 1)
 
 		/** Line counts when BGM changes occur */
-		private val tableBGMChange = arrayOf(
-			intArrayOf(30, 60, 90, 120),
-			intArrayOf(30, 60, 90, 120, 140, 160, 180),
-			intArrayOf(110, 220, 330, 440, 550, 660, 770, 880)
+		private val tableBGMChange = listOf(
+			listOf(30, 60, 90, 120),
+			listOf(30, 60, 90, 120, 140, 160, 180),
+			listOf(110, 220, 330, 440, 550, 660, 770, 880)
 		)
 
 		/** Line counts when game ending occurs */
-		private val tableGameClearLines = intArrayOf(150, 200, 999, -1)
+		private val tableGameClearLines = listOf(150, 200, 999, -1)
 
 		/** Number of entries in rankings */
 		private const val RANKING_MAX = 13

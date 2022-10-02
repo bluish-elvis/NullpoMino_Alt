@@ -1214,9 +1214,6 @@ class PracticeMode:AbstractMode() {
 		/** Current version */
 		private const val CURRENT_VERSION = 5
 
-		/** ComboGet in point */
-		private val COMBO_GOAL_TABLE = intArrayOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)
-
 		/** LevelConstant of typecount */
 		private const val LEVELTYPE_NONE = 0
 		private const val LEVELTYPE_10LINES = 1
@@ -1226,24 +1223,24 @@ class PracticeMode:AbstractMode() {
 		private const val LEVELTYPE_MAX = 5
 
 		/** Dan&#39;s backName */
-		private val tableSecretGradeName = arrayOf(
+		private val tableSecretGradeName = listOf(
 			"9", "8", "7", "6", "5", "4", "3", "2", "1", //  0~ 8
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", //  9~17
 			"GM" // 18
 		)
 
 		/** LevelThe display name of the type */
-		private val LEVELTYPE_STRING = arrayOf("NONE", "10LINES", "POINTS", "MANIA", "MANIA+")
+		private val LEVELTYPE_STRING = listOf("NONE", "10LINES", "POINTS", "MANIA", "MANIA+")
 
 		/** ComboThe display name of the type */
-		private val COMBOTYPE_STRING = arrayOf("DISABLE", "NORMAL", "DOUBLE")
+		private val COMBOTYPE_STRING = listOf("DISABLE", "NORMAL", "DOUBLE")
 
 		/** Outline type names */
-		private val BLOCK_OUTLINE_TYPE_STRING = arrayOf("NONE", "NORMAL", "CONNECT", "SAMECOLOR")
+		private val BLOCK_OUTLINE_TYPE_STRING = listOf("NONE", "NORMAL", "CONNECT", "SAMECOLOR")
 
 		/** Cascade type names */
-		private val BLOCK_CASCADE_TYPE_STRING = arrayOf("NONE", "CONNECT", "SAMECOLOR")
+		private val BLOCK_CASCADE_TYPE_STRING = listOf("NONE", "CONNECT", "SAMECOLOR")
 		/** Erase type names */
-		private val BLOCK_ERASE_TYPE_STRING = arrayOf("LINE", "BOMB", "CROSS")
+		private val BLOCK_ERASE_TYPE_STRING = listOf("LINE", "BOMB", "CROSS")
 	}
 }

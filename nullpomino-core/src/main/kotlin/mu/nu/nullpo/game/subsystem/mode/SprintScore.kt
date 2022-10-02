@@ -556,7 +556,7 @@ class SprintScore:NetDummyMode() {
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		engine.statistics.scoreLine = message[4].toInt()
 		engine.statistics.scoreHD = message[5].toInt()
 		engine.statistics.scoreSD = message[6].toInt()
@@ -605,7 +605,7 @@ class SprintScore:NetDummyMode() {
 	}
 
 	/** NET: Receive game options */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		engine.speed.gravity = message[4].toInt()
 		engine.speed.denominator = message[5].toInt()
 		engine.speed.are = message[6].toInt()
@@ -648,7 +648,7 @@ class SprintScore:NetDummyMode() {
 		private const val GOALTYPE_MAX = 3
 
 		/** Goal score constants */
-		private val GOAL_TABLE = intArrayOf(10000, 25000, 30000)
+		private val GOAL_TABLE = listOf(10000, 25000, 30000)
 
 		/* ----- Main variables ----- */
 		/** Log */

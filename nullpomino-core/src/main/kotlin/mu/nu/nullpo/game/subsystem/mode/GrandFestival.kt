@@ -759,14 +759,14 @@ class GrandFestival:AbstractMode() {
 
 		/** Gravity table (Gravity speed value) */
 		private val tableGravityValue =
-			intArrayOf(
+			listOf(
 				4, 5, 6, 8, 10, 12, 16, 32, 48, 64, 4, 5, 6, 8, 12, 32, 48, 80, 112, 128, 144, 16, 48, 80, 112, 144, 176,
 				192, 208, 224, 240, -1
 			)
 
 		/** Gravity table (Gravity change level) */
 		private val tableGravityChangeLevel =
-			intArrayOf(
+			listOf(
 				8, 19, 35, 40, 50, 60, 70, 80, 90, 100, 108, 119, 125, 131, 139, 149, 146, 164, 174, 180, 200, 212, 221,
 				232, 244, 256, 267, 277, 287, 295, 300, 10000
 			)
@@ -781,7 +781,7 @@ class GrandFestival:AbstractMode() {
 		private const val RANKING_MAX = 20
 
 		/** Secret grade names */
-		private val tableSecretGradeName = arrayOf(
+		private val tableSecretGradeName = listOf(
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", // 0-8
 			"M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", // 9 - 17
 			"GM" // 18

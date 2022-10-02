@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -52,10 +52,10 @@ class StateConfigRuleSelect:DummyMenuScrollState() {
 	private var strFileList:Array<String> = emptyArray()
 
 	/** Rule name list */
-	private var strRuleNameList:Array<String> = emptyArray()
+	private var strRuleNameList:List<String> = emptyList()
 
 	/** Rule file list (for list display) */
-	private var strRuleFileList:Array<String> = emptyArray()
+	private var strRuleFileList:List<String> = emptyList()
 
 	/** Current Rule File name */
 	private var strCurrentFileName = ""
@@ -124,14 +124,14 @@ class StateConfigRuleSelect:DummyMenuScrollState() {
 	/** Get rule name list as String[]
 	 * @return Rule name list
 	 */
-	private fun extractRuleNameListFromRuleEntries():Array<String> =
-		Array(ruleEntries.size) {ruleEntries[it].rulename}
+	private fun extractRuleNameListFromRuleEntries():List<String> =
+		List(ruleEntries.size) {ruleEntries[it].rulename}
 
 	/** Get rule file name list as String[]
 	 * @return Rule name list
 	 */
-	private fun extractFileNameListFromRuleEntries():Array<String> =
-		Array(ruleEntries.size) {ruleEntries[it].filename}
+	private fun extractFileNameListFromRuleEntries():List<String> =
+		List(ruleEntries.size) {ruleEntries[it].filename}
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
@@ -199,10 +199,7 @@ class StateConfigRuleSelect:DummyMenuScrollState() {
 	/* D button */
 	override fun onPushButtonD(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("change")
-		list = if(list.contentEquals(strRuleNameList))
-			strRuleFileList
-		else
-			strRuleNameList
+		list = if(list==strRuleNameList) strRuleFileList else strRuleNameList
 		return false
 	}
 

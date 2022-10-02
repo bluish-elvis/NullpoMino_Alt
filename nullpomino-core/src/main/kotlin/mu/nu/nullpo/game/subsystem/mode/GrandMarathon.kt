@@ -906,38 +906,38 @@ class GrandMarathon:AbstractMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** 落下速度 table */
-		private val tableGravityValue = intArrayOf(
+		private val tableGravityValue = listOf(
 			4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160,
 			192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1
 		)
 
 		/** 落下速度が変わる level */
-		private val tableGravityChangeLevel = intArrayOf(
+		private val tableGravityChangeLevel = listOf(
 			30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230,
 			233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000
 		)
 
 		/** ARE table */
-		private val tableARE = intArrayOf(30, 27, 25)
+		private val tableARE = listOf(30, 27, 25)
 
 		/** Line clear times table */
-		private val tableLineDelay = intArrayOf(41, 40, 25)
+		private val tableLineDelay = listOf(41, 40, 25)
 
 		/** 固定 times table */
-		private val tableLockDelay = intArrayOf(30, 30, 30)
+		private val tableLockDelay = listOf(30, 30, 30)
 
 		/** DAS table */
-		private val tableDAS = intArrayOf(16, 15, 14)
+		private val tableDAS = listOf(16, 15, 14)
 
 		/** 段位上昇に必要なScore */
-		private val tableGradeScore = intArrayOf(
+		private val tableGradeScore = listOf(
 			500, 1000, 1500, 2500, 3500, 5000, 8000, 12000, // 8～1
 			16000, 22000, 30000, 40000, 52000, 66000, 82000, 100000, 123456, // S1～S9
 			131072 // GM
 		)
 
 		/** 段位のName */
-		private val tableGradeName = arrayOf(
+		private val tableGradeName = listOf(
 			"9", "8", "7", "6", "5", "4", "3", "2", "1", // 0～8
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", // 9～17
 			"Gm", "GM" // 18
@@ -961,12 +961,12 @@ class GrandMarathon:AbstractMode() {
 		private const val GM_999_TIME_REQUIRE = 48600
 
 		/** GMの時の評価Time */
-		private val tablePier21GradeTime = intArrayOf(GM_999_TIME_REQUIRE, 44800, 40000, 38166, 36333, 34500, 33000)
+		private val tablePier21GradeTime = listOf(GM_999_TIME_REQUIRE, 44800, 40000, 38166, 36333, 34500, 33000)
 
 		/** GM */
-		private val tablePier21GradeName = arrayOf("CARBON", "STEEL", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
+		private val tablePier21GradeName = listOf("CARBON", "STEEL", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND")
 
-		private val tablePier21GradeColor = arrayOf(
+		private val tablePier21GradeColor = listOf(
 			COLOR.PURPLE, COLOR.BLUE, COLOR.RED, COLOR.WHITE, COLOR.YELLOW, COLOR.CYAN,
 			COLOR.GREEN
 		)

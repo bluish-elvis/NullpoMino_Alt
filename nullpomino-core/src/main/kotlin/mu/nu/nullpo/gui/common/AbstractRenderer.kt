@@ -168,13 +168,13 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	class FontBadge(type:Int) {
 		val type = maxOf(0, minOf(b.size-1, type))
-		val sx = intArrayOf(0, 10, 20, 30, 0, 10, 20, 30, 0, 20, 40, 0)[type]
-		val sy = intArrayOf(0, 0, 0, 0, 14, 14, 14, 14, 24, 24, 0, 44)[type]
-		val w = intArrayOf(10, 10, 10, 10, 10, 10, 10, 10, 20, 20, 32, 64)[type]
-		val h = intArrayOf(10, 10, 14, 14, 14, 14, 15, 15, 15, 15, 32, 48)[type]
+		val sx = listOf(0, 10, 20, 30, 0, 10, 20, 30, 0, 20, 40, 0)[type]
+		val sy = listOf(0, 0, 0, 0, 14, 14, 14, 14, 24, 24, 0, 44)[type]
+		val w = listOf(10, 10, 10, 10, 10, 10, 10, 10, 20, 20, 32, 64)[type]
+		val h = listOf(10, 10, 14, 14, 14, 14, 15, 15, 15, 15, 32, 48)[type]
 
 		companion object {
-			val b = intArrayOf(1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000)
+			val b = listOf(1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000)
 		}
 	}
 

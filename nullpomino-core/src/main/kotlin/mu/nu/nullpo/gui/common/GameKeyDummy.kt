@@ -40,40 +40,29 @@ open class GameKeyDummy
 	/** Player ID */
 	val player:Int = 0
 ) {
+	private val empty get() = mutableListOf<Int>()
 
 	/** Key code (ingame) */
-	val keymap:Array<IntArray>
+	val keymap = MutableList(MAX_BUTTON) {empty}
 
 	/** Key code (menu) */
-	val keymapNav:Array<IntArray>
+	val keymapNav = MutableList(MAX_BUTTON) {empty}
 
 	/** Joystick button number */
-	val buttonmap:Array<IntArray>
+	val buttonmap = MutableList(MAX_BUTTON) {empty}
 
 	/** Joystick direction key border */
 	var joyBorder = 0
 
 	/** Button input flag and length */
-	protected val inputState:IntArray
+	protected val inputState = MutableList(MAX_BUTTON) {0}
 
 	/** Button input flag */
-	protected val pressState:BooleanArray
-
-	private val empty get() = IntArray(0)
-
-	init {
-		keymap = Array(MAX_BUTTON) {empty}
-		keymapNav = Array(MAX_BUTTON) {empty}
-		buttonmap = Array(MAX_BUTTON) {empty}
-		joyBorder = 0
-		inputState = IntArray(MAX_BUTTON)
-		pressState = BooleanArray(MAX_BUTTON)
-	}
+	protected val pressState get() = inputState.map {it>0}
 
 	/** Clear button input state */
 	fun clear() {
-		for(i in 0 until MAX_BUTTON)
-			inputState[i] = 0
+		inputState.fill(0)
 	}
 
 	/** buttonが1 frame だけ押されているか判定
@@ -86,7 +75,7 @@ open class GameKeyDummy
 	 * @param key Button number
 	 * @return 押されていたらtrue
 	 */
-	fun isPressKey(key:Int):Boolean = inputState[key]>=1
+	fun isPressKey(key:Int):Boolean = pressState[key]
 
 	/** Menu でカーソルが動くかどうか判定
 	 * @param key Button number
@@ -112,58 +101,60 @@ open class GameKeyDummy
 	/** Load settings from [prop] */
 	open fun loadConfig(prop:CustomProperties) {
 		// Keyboard - ingame
-		keymap[BUTTON_UP] = prop.getProperties("key.p$player.up", empty)
-		keymap[BUTTON_DOWN] = prop.getProperties("key.p$player.down", empty)
-		keymap[BUTTON_LEFT] = prop.getProperties("key.p$player.left", empty)
-		keymap[BUTTON_RIGHT] = prop.getProperties("key.p$player.right", empty)
-		keymap[BUTTON_A] = prop.getProperties("key.p$player.a", empty)
-		keymap[BUTTON_B] = prop.getProperties("key.p$player.b", empty)
-		keymap[BUTTON_C] = prop.getProperties("key.p$player.c", empty)
-		keymap[BUTTON_D] = prop.getProperties("key.p$player.d", empty)
-		keymap[BUTTON_E] = prop.getProperties("key.p$player.e", empty)
-		keymap[BUTTON_F] = prop.getProperties("key.p$player.f", empty)
-		keymap[BUTTON_QUIT] = prop.getProperties("key.p$player.quit", empty)
-		keymap[BUTTON_PAUSE] = prop.getProperties("key.p$player.pause", empty)
-		keymap[BUTTON_GIVEUP] = prop.getProperties("key.p$player.giveup", empty)
-		keymap[BUTTON_RETRY] = prop.getProperties("key.p$player.retry", empty)
-		keymap[BUTTON_FRAMESTEP] = prop.getProperties("key.p$player.framestep", empty)
-		keymap[BUTTON_SCREENSHOT] = prop.getProperties("key.p$player.screenshot", empty)
+		fun getProp(key:String) =
+			prop.getPropertiesMutable(key, empty)//.filter {it>=0}.toMutableList()
+		keymap[BUTTON_UP] = getProp("key.p$player.up")
+		keymap[BUTTON_DOWN] = getProp("key.p$player.down")
+		keymap[BUTTON_LEFT] = getProp("key.p$player.left")
+		keymap[BUTTON_RIGHT] = getProp("key.p$player.right")
+		keymap[BUTTON_A] = getProp("key.p$player.a")
+		keymap[BUTTON_B] = getProp("key.p$player.b")
+		keymap[BUTTON_C] = getProp("key.p$player.c")
+		keymap[BUTTON_D] = getProp("key.p$player.d")
+		keymap[BUTTON_E] = getProp("key.p$player.e")
+		keymap[BUTTON_F] = getProp("key.p$player.f")
+		keymap[BUTTON_QUIT] = getProp("key.p$player.quit")
+		keymap[BUTTON_PAUSE] = getProp("key.p$player.pause")
+		keymap[BUTTON_GIVEUP] = getProp("key.p$player.giveup")
+		keymap[BUTTON_RETRY] = getProp("key.p$player.retry")
+		keymap[BUTTON_FRAMESTEP] = getProp("key.p$player.framestep")
+		keymap[BUTTON_SCREENSHOT] = getProp("key.p$player.screenshot")
 
 		// Keyboard - menu
-		keymapNav[BUTTON_UP] = prop.getProperties("keynav.p$player.up", keymap[BUTTON_UP])
-		keymapNav[BUTTON_DOWN] = prop.getProperties("keynav.p$player.down", keymap[BUTTON_DOWN])
-		keymapNav[BUTTON_LEFT] = prop.getProperties("keynav.p$player.left", keymap[BUTTON_LEFT])
-		keymapNav[BUTTON_RIGHT] = prop.getProperties("keynav.p$player.right", keymap[BUTTON_RIGHT])
-		keymapNav[BUTTON_A] = prop.getProperties("keynav.p$player.a", keymap[BUTTON_A])
-		keymapNav[BUTTON_B] = prop.getProperties("keynav.p$player.b", keymap[BUTTON_B])
-		keymapNav[BUTTON_C] = prop.getProperties("keynav.p$player.c", keymap[BUTTON_C])
-		keymapNav[BUTTON_D] = prop.getProperties("keynav.p$player.d", keymap[BUTTON_D])
-		keymapNav[BUTTON_E] = prop.getProperties("keynav.p$player.e", keymap[BUTTON_E])
-		keymapNav[BUTTON_F] = prop.getProperties("keynav.p$player.f", keymap[BUTTON_F])
-		keymapNav[BUTTON_QUIT] = prop.getProperties("keynav.p$player.quit", keymap[BUTTON_QUIT])
-		keymapNav[BUTTON_PAUSE] = prop.getProperties("keynav.p$player.pause", keymap[BUTTON_PAUSE])
-		keymapNav[BUTTON_GIVEUP] = prop.getProperties("keynav.p$player.giveup", keymap[BUTTON_GIVEUP])
-		keymapNav[BUTTON_RETRY] = prop.getProperties("keynav.p$player.retry", keymap[BUTTON_RETRY])
-		keymapNav[BUTTON_FRAMESTEP] = prop.getProperties("keynav.p$player.framestep", keymap[BUTTON_FRAMESTEP])
-		keymapNav[BUTTON_SCREENSHOT] = prop.getProperties("keynav.p$player.screenshot", keymap[BUTTON_SCREENSHOT])
+		keymapNav[BUTTON_UP] = prop.getPropertiesMutable("keynav.p$player.up", keymap[BUTTON_UP])
+		keymapNav[BUTTON_DOWN] = prop.getPropertiesMutable("keynav.p$player.down", keymap[BUTTON_DOWN])
+		keymapNav[BUTTON_LEFT] = prop.getPropertiesMutable("keynav.p$player.left", keymap[BUTTON_LEFT])
+		keymapNav[BUTTON_RIGHT] = prop.getPropertiesMutable("keynav.p$player.right", keymap[BUTTON_RIGHT])
+		keymapNav[BUTTON_A] = prop.getPropertiesMutable("keynav.p$player.a", keymap[BUTTON_A])
+		keymapNav[BUTTON_B] = prop.getPropertiesMutable("keynav.p$player.b", keymap[BUTTON_B])
+		keymapNav[BUTTON_C] = prop.getPropertiesMutable("keynav.p$player.c", keymap[BUTTON_C])
+		keymapNav[BUTTON_D] = prop.getPropertiesMutable("keynav.p$player.d", keymap[BUTTON_D])
+		keymapNav[BUTTON_E] = prop.getPropertiesMutable("keynav.p$player.e", keymap[BUTTON_E])
+		keymapNav[BUTTON_F] = prop.getPropertiesMutable("keynav.p$player.f", keymap[BUTTON_F])
+		keymapNav[BUTTON_QUIT] = prop.getPropertiesMutable("keynav.p$player.quit", keymap[BUTTON_QUIT])
+		keymapNav[BUTTON_PAUSE] = prop.getPropertiesMutable("keynav.p$player.pause", keymap[BUTTON_PAUSE])
+		keymapNav[BUTTON_GIVEUP] = prop.getPropertiesMutable("keynav.p$player.giveup", keymap[BUTTON_GIVEUP])
+		keymapNav[BUTTON_RETRY] = prop.getPropertiesMutable("keynav.p$player.retry", keymap[BUTTON_RETRY])
+		keymapNav[BUTTON_FRAMESTEP] = prop.getPropertiesMutable("keynav.p$player.framestep", keymap[BUTTON_FRAMESTEP])
+		keymapNav[BUTTON_SCREENSHOT] = prop.getPropertiesMutable("keynav.p$player.screenshot", keymap[BUTTON_SCREENSHOT])
 
 		// Joystick
 		//buttonmap[BUTTON_UP] = prop.getProperty("button.p" + player + ".up", 0);
 		//buttonmap[BUTTON_DOWN] = prop.getProperty("button.p" + player + ".down", 0);
 		//buttonmap[BUTTON_LEFT] = prop.getProperty("button.p" + player + ".left", 0);
 		//buttonmap[BUTTON_RIGHT] = prop.getProperty("button.p" + player + ".right", 0);
-		buttonmap[BUTTON_A] = prop.getProperties("button.p$player.a", empty)
-		buttonmap[BUTTON_B] = prop.getProperties("button.p$player.b", empty)
-		buttonmap[BUTTON_C] = prop.getProperties("button.p$player.c", empty)
-		buttonmap[BUTTON_D] = prop.getProperties("button.p$player.d", empty)
-		buttonmap[BUTTON_E] = prop.getProperties("button.p$player.e", empty)
-		buttonmap[BUTTON_F] = prop.getProperties("button.p$player.f", empty)
-		buttonmap[BUTTON_QUIT] = prop.getProperties("button.p$player.quit", empty)
-		buttonmap[BUTTON_PAUSE] = prop.getProperties("button.p$player.pause", empty)
-		buttonmap[BUTTON_GIVEUP] = prop.getProperties("button.p$player.giveup", empty)
-		buttonmap[BUTTON_RETRY] = prop.getProperties("button.p$player.retry", empty)
-		buttonmap[BUTTON_FRAMESTEP] = prop.getProperties("button.p$player.framestep", empty)
-		buttonmap[BUTTON_SCREENSHOT] = prop.getProperties("button.p$player.screenshot", empty)
+		buttonmap[BUTTON_A] = getProp("button.p$player.a")
+		buttonmap[BUTTON_B] = getProp("button.p$player.b")
+		buttonmap[BUTTON_C] = getProp("button.p$player.c")
+		buttonmap[BUTTON_D] = getProp("button.p$player.d")
+		buttonmap[BUTTON_E] = getProp("button.p$player.e")
+		buttonmap[BUTTON_F] = getProp("button.p$player.f")
+		buttonmap[BUTTON_QUIT] = getProp("button.p$player.quit")
+		buttonmap[BUTTON_PAUSE] = getProp("button.p$player.pause")
+		buttonmap[BUTTON_GIVEUP] = getProp("button.p$player.giveup")
+		buttonmap[BUTTON_RETRY] = getProp("button.p$player.retry")
+		buttonmap[BUTTON_FRAMESTEP] = getProp("button.p$player.framestep")
+		buttonmap[BUTTON_SCREENSHOT] = getProp("button.p$player.screenshot")
 
 		joyBorder = prop.getProperty("joyBorder.p$player", 0)
 	}
@@ -171,58 +162,58 @@ open class GameKeyDummy
 	/** Save settings to [prop] */
 	fun saveConfig(prop:CustomProperties) {
 		// Keyboard - ingame
-		prop.setProperty("key.p$player.up", keymap[BUTTON_UP])
-		prop.setProperty("key.p$player.down", keymap[BUTTON_DOWN])
-		prop.setProperty("key.p$player.left", keymap[BUTTON_LEFT])
-		prop.setProperty("key.p$player.right", keymap[BUTTON_RIGHT])
-		prop.setProperty("key.p$player.a", keymap[BUTTON_A])
-		prop.setProperty("key.p$player.b", keymap[BUTTON_B])
-		prop.setProperty("key.p$player.c", keymap[BUTTON_C])
-		prop.setProperty("key.p$player.d", keymap[BUTTON_D])
-		prop.setProperty("key.p$player.e", keymap[BUTTON_E])
-		prop.setProperty("key.p$player.f", keymap[BUTTON_F])
-		prop.setProperty("key.p$player.quit", keymap[BUTTON_QUIT])
-		prop.setProperty("key.p$player.pause", keymap[BUTTON_PAUSE])
-		prop.setProperty("key.p$player.giveup", keymap[BUTTON_GIVEUP])
-		prop.setProperty("key.p$player.retry", keymap[BUTTON_RETRY])
-		prop.setProperty("key.p$player.framestep", keymap[BUTTON_FRAMESTEP])
-		prop.setProperty("key.p$player.screenshot", keymap[BUTTON_SCREENSHOT])
+		prop.setProperties("key.p$player.up", keymap[BUTTON_UP])
+		prop.setProperties("key.p$player.down", keymap[BUTTON_DOWN])
+		prop.setProperties("key.p$player.left", keymap[BUTTON_LEFT])
+		prop.setProperties("key.p$player.right", keymap[BUTTON_RIGHT])
+		prop.setProperties("key.p$player.a", keymap[BUTTON_A])
+		prop.setProperties("key.p$player.b", keymap[BUTTON_B])
+		prop.setProperties("key.p$player.c", keymap[BUTTON_C])
+		prop.setProperties("key.p$player.d", keymap[BUTTON_D])
+		prop.setProperties("key.p$player.e", keymap[BUTTON_E])
+		prop.setProperties("key.p$player.f", keymap[BUTTON_F])
+		prop.setProperties("key.p$player.quit", keymap[BUTTON_QUIT])
+		prop.setProperties("key.p$player.pause", keymap[BUTTON_PAUSE])
+		prop.setProperties("key.p$player.giveup", keymap[BUTTON_GIVEUP])
+		prop.setProperties("key.p$player.retry", keymap[BUTTON_RETRY])
+		prop.setProperties("key.p$player.framestep", keymap[BUTTON_FRAMESTEP])
+		prop.setProperties("key.p$player.screenshot", keymap[BUTTON_SCREENSHOT])
 
 		// Keyboard - menu
-		prop.setProperty("keynav.p$player.up", keymapNav[BUTTON_UP])
-		prop.setProperty("keynav.p$player.down", keymapNav[BUTTON_DOWN])
-		prop.setProperty("keynav.p$player.left", keymapNav[BUTTON_LEFT])
-		prop.setProperty("keynav.p$player.right", keymapNav[BUTTON_RIGHT])
-		prop.setProperty("keynav.p$player.a", keymapNav[BUTTON_A])
-		prop.setProperty("keynav.p$player.b", keymapNav[BUTTON_B])
-		prop.setProperty("keynav.p$player.c", keymapNav[BUTTON_C])
-		prop.setProperty("keynav.p$player.d", keymapNav[BUTTON_D])
-		prop.setProperty("keynav.p$player.e", keymapNav[BUTTON_E])
-		prop.setProperty("keynav.p$player.f", keymapNav[BUTTON_F])
-		prop.setProperty("keynav.p$player.quit", keymapNav[BUTTON_QUIT])
-		prop.setProperty("keynav.p$player.pause", keymapNav[BUTTON_PAUSE])
-		prop.setProperty("keynav.p$player.giveup", keymapNav[BUTTON_GIVEUP])
-		prop.setProperty("keynav.p$player.retry", keymapNav[BUTTON_RETRY])
-		prop.setProperty("keynav.p$player.framestep", keymapNav[BUTTON_FRAMESTEP])
-		prop.setProperty("keynav.p$player.screenshot", keymapNav[BUTTON_SCREENSHOT])
+		prop.setProperties("keynav.p$player.up", keymapNav[BUTTON_UP])
+		prop.setProperties("keynav.p$player.down", keymapNav[BUTTON_DOWN])
+		prop.setProperties("keynav.p$player.left", keymapNav[BUTTON_LEFT])
+		prop.setProperties("keynav.p$player.right", keymapNav[BUTTON_RIGHT])
+		prop.setProperties("keynav.p$player.a", keymapNav[BUTTON_A])
+		prop.setProperties("keynav.p$player.b", keymapNav[BUTTON_B])
+		prop.setProperties("keynav.p$player.c", keymapNav[BUTTON_C])
+		prop.setProperties("keynav.p$player.d", keymapNav[BUTTON_D])
+		prop.setProperties("keynav.p$player.e", keymapNav[BUTTON_E])
+		prop.setProperties("keynav.p$player.f", keymapNav[BUTTON_F])
+		prop.setProperties("keynav.p$player.quit", keymapNav[BUTTON_QUIT])
+		prop.setProperties("keynav.p$player.pause", keymapNav[BUTTON_PAUSE])
+		prop.setProperties("keynav.p$player.giveup", keymapNav[BUTTON_GIVEUP])
+		prop.setProperties("keynav.p$player.retry", keymapNav[BUTTON_RETRY])
+		prop.setProperties("keynav.p$player.framestep", keymapNav[BUTTON_FRAMESTEP])
+		prop.setProperties("keynav.p$player.screenshot", keymapNav[BUTTON_SCREENSHOT])
 
 		// Joystick
 		//prop.setProperty("button.p" + player + ".up", buttonmap[BUTTON_UP]);
 		//prop.setProperty("button.p" + player + ".down", buttonmap[BUTTON_DOWN]);
 		//prop.setProperty("button.p" + player + ".left", buttonmap[BUTTON_LEFT]);
 		//prop.setProperty("button.p" + player + ".right", buttonmap[BUTTON_RIGHT]);
-		prop.setProperty("button.p$player.a", buttonmap[BUTTON_A])
-		prop.setProperty("button.p$player.b", buttonmap[BUTTON_B])
-		prop.setProperty("button.p$player.c", buttonmap[BUTTON_C])
-		prop.setProperty("button.p$player.d", buttonmap[BUTTON_D])
-		prop.setProperty("button.p$player.e", buttonmap[BUTTON_E])
-		prop.setProperty("button.p$player.f", buttonmap[BUTTON_F])
-		prop.setProperty("button.p$player.quit", buttonmap[BUTTON_QUIT])
-		prop.setProperty("button.p$player.pause", buttonmap[BUTTON_PAUSE])
-		prop.setProperty("button.p$player.giveup", buttonmap[BUTTON_GIVEUP])
-		prop.setProperty("button.p$player.retry", buttonmap[BUTTON_RETRY])
-		prop.setProperty("button.p$player.framestep", buttonmap[BUTTON_FRAMESTEP])
-		prop.setProperty("button.p$player.screenshot", buttonmap[BUTTON_SCREENSHOT])
+		prop.setProperties("button.p$player.a", buttonmap[BUTTON_A])
+		prop.setProperties("button.p$player.b", buttonmap[BUTTON_B])
+		prop.setProperties("button.p$player.c", buttonmap[BUTTON_C])
+		prop.setProperties("button.p$player.d", buttonmap[BUTTON_D])
+		prop.setProperties("button.p$player.e", buttonmap[BUTTON_E])
+		prop.setProperties("button.p$player.f", buttonmap[BUTTON_F])
+		prop.setProperties("button.p$player.quit", buttonmap[BUTTON_QUIT])
+		prop.setProperties("button.p$player.pause", buttonmap[BUTTON_PAUSE])
+		prop.setProperties("button.p$player.giveup", buttonmap[BUTTON_GIVEUP])
+		prop.setProperties("button.p$player.retry", buttonmap[BUTTON_RETRY])
+		prop.setProperties("button.p$player.framestep", buttonmap[BUTTON_FRAMESTEP])
+		prop.setProperties("button.p$player.screenshot", buttonmap[BUTTON_SCREENSHOT])
 
 		prop.setProperty("joyBorder.p$player", joyBorder)
 

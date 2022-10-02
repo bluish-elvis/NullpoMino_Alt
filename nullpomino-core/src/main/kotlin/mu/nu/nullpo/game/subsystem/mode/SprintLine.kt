@@ -426,7 +426,7 @@ class SprintLine:NetDummyMode() {
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		engine.statistics.lines = message[4].toInt()
 		engine.statistics.totalPieceLocked = message[5].toInt()
 		engine.statistics.time = message[6].toInt()
@@ -471,7 +471,7 @@ class SprintLine:NetDummyMode() {
 	}
 
 	/** NET: Receive game options */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		engine.speed.gravity = message[4].toInt()
 		engine.speed.denominator = message[5].toInt()
 		engine.speed.are = message[6].toInt()
@@ -509,6 +509,6 @@ class SprintLine:NetDummyMode() {
 		private const val GOALTYPE_MAX = 3
 
 		/** Target line count constants */
-		private val GOAL_TABLE = intArrayOf(20, 40, 100)
+		private val GOAL_TABLE = listOf(20, 40, 100)
 	}
 }

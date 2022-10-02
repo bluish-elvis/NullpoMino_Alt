@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -184,13 +184,13 @@ class UpdateChecker:Runnable {
 				var resultVersion = 0f
 				if(strLatestVersion.isNotEmpty()) {
 					val strDot = if(strLatestVersion.contains("_")) "_" else "."
-					val strSplit = strLatestVersion.split(strDot.toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+					val strSplit = strLatestVersion.split(strDot.toRegex()).dropLastWhile {it.isEmpty()}
 
 					if(strSplit.size>=2) {
 						val strTemp = "${strSplit[0]}.${strSplit[1]}"
 						try {
 							resultVersion = strTemp.toFloat()
-						} catch(e:NumberFormatException) {
+						} catch(_:NumberFormatException) {
 						}
 
 					}
@@ -206,7 +206,7 @@ class UpdateChecker:Runnable {
 				var resultVersion = 0
 				if(strLatestVersion.isNotEmpty()) {
 					val strDot = if(strLatestVersion.contains("_")) "_" else "."
-					val strSplit = strLatestVersion.split(strDot.toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+					val strSplit = strLatestVersion.split(strDot.toRegex()).dropLastWhile {it.isEmpty()}
 
 					if(strSplit.isNotEmpty()) {
 						val strTemp = strSplit[strSplit.size-1]

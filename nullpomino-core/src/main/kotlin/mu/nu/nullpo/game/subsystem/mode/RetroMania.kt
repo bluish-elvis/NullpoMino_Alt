@@ -484,19 +484,19 @@ class RetroMania:AbstractMode() {
 
 		/** Gravity table */
 		private val tableDenominator =
-			arrayOf(
-				intArrayOf(48, 32, 24, 18, 14, 12, 10, 8, 6, 4, 12, 10, 8, 6, 4, 2),
-				intArrayOf(48, 24, 18, 15, 12, 10, 8, 6, 4, 2, 10, 8, 6, 4, 2, 1),
-				intArrayOf(40, 20, 16, 12, 10, 8, 6, 4, 2, 1, 10, 8, 6, 4, 2, 1),
-				intArrayOf(30, 15, 12, 10, 8, 6, 4, 2, 1, 1, 8, 6, 4, 2, 1, 1)
+			listOf(
+				listOf(48, 32, 24, 18, 14, 12, 10, 8, 6, 4, 12, 10, 8, 6, 4, 2),
+				listOf(48, 24, 18, 15, 12, 10, 8, 6, 4, 2, 10, 8, 6, 4, 2, 1),
+				listOf(40, 20, 16, 12, 10, 8, 6, 4, 2, 1, 10, 8, 6, 4, 2, 1),
+				listOf(30, 15, 12, 10, 8, 6, 4, 2, 1, 1, 8, 6, 4, 2, 1, 1)
 			)
 
 		/** Time until auto-level up occers */
 		private val levelTime =
-			intArrayOf(3584, 2304, 2304, 2304, 2304, 2304, 2304, 2304, 2304, 3584, 3584, 2304, 2304, 2304, 2304, 3584)
+			listOf(3584, 2304, 2304, 2304, 2304, 2304, 2304, 2304, 2304, 3584, 3584, 2304, 2304, 2304, 2304, 3584)
 
 		/** Name of game types */
-		private val GAMETYPE_NAME = arrayOf("EASY", "NORMAL", "HARD", "HARDEST")
+		private val GAMETYPE_NAME = listOf("EASY", "NORMAL", "HARD", "HARDEST")
 
 		/** Number of game type */
 		private val GAMETYPE_MAX = tableDenominator.size

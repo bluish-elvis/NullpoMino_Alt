@@ -63,12 +63,11 @@ class StateSelectMode:DummyMenuScrollState() {
 		val listMode:LinkedList<String>?
 		if(isTopLevel) {
 			listMode = StateSelectModeFolder.listTopLevelModes
-			list = Array(listMode.size) {convModeName(listMode[it], true)}
-			list += "[more...]"
+			list = List(listMode.size) {convModeName(listMode[it], true)}+"[more...]"
 		} else {
 			listMode = StateSelectModeFolder.mapFolder[strCurrentFolder]
 			list = if(strCurrentFolder.isNotBlank()&&listMode?.isNotEmpty()==true)
-				Array(listMode.size) {convModeName(listMode[it], true)}
+				List(listMode.size) {convModeName(listMode[it], true)}
 			else
 				NullpoMinoSlick.modeManager.getModeNames(false)
 

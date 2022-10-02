@@ -28,7 +28,7 @@
  */
 package mu.nu.nullpo.util
 
-import mu.nu.nullpo.game.event.EventReceiver
+import org.apache.logging.log4j.LogManager
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -55,17 +55,17 @@ class CustomProperties(name:String = ""):Properties() {
 	 */
 	fun load(file:String = fileName):CustomProperties? {
 		fileName = file
-		EventReceiver.log.debug(" $file")
+		log.debug(" $file")
 		try {
 			val f = GZIPInputStream(FileInputStream(file))
 			load(f)
 			f.close()
 
 		} catch(e:FileNotFoundException) {
-			EventReceiver.log.debug("Not found custom property file: $file")
+			log.debug("Not found custom property file: $file")
 			return null
 		} catch(e:IOException) {
-			EventReceiver.log.debug("Failed to load custom property file from $file", e)
+			log.debug("Failed to load custom property file from $file", e)
 			return null
 		}
 
@@ -79,14 +79,14 @@ class CustomProperties(name:String = ""):Properties() {
 		try {
 			val repFolder = File(file).parentFile
 			if(!repFolder.exists())
-				if(repFolder.mkdirs()) EventReceiver.log.info("Created folder: ${repFolder.name}")
-				else EventReceiver.log.error("Couldn't create folder at ${repFolder.name}")
+				if(repFolder.mkdirs()) log.info("Created folder: ${repFolder.name}")
+				else log.error("Couldn't create folder at ${repFolder.name}")
 			val out = GZIPOutputStream(FileOutputStream(file))
 			store(out, "NullpoMino Custom Property File")
-			EventReceiver.log.debug("Saving custom property file to $file")
+			log.debug("Saving custom property file to $file")
 			out.close()
 		} catch(e:IOException) {
-			EventReceiver.log.debug("Failed to save custom property file to $file", e)
+			log.debug("Failed to save custom property file to $file", e)
 			return false
 		}
 		return true
@@ -147,14 +147,44 @@ class CustomProperties(name:String = ""):Properties() {
 		defaultValue
 	}
 
-	/** intArray型のプロパティを取得
-	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
+	/** List型のプロパティを取得
+	 * @return 指定された[key]に対応するListの値 空Listであってはならない (見つからなかったら[defaultValues]）
 	 */
-	fun <T:Number> getProperties(key:String, defaultValue:T):List<T> = try {
-		getProperty(key, "$defaultValue").split(',').map {it as? T ?: defaultValue}
+	inline fun <reified T> getProperties(key:String, defaultValues:List<T>) = try {
+		getProperty(key, "${defaultValues.joinToString(",")}}").split(',')
+			.mapIndexedNotNull {i, it ->
+				when(T::class) {
+					Byte::class -> it.toByte()
+					Int::class -> it.toInt()
+					Long::class -> it.toLong()
+					Float::class -> it.toFloat()
+					Double::class -> it.toDouble()
+					Char::class -> it[0]
+					Boolean::class -> it.toBoolean()
+					else -> it
+				} as? T ?: defaultValues.getOrNull(minOf(i, defaultValues.size-1))
+			}
 	} catch(e:NumberFormatException) {
-		listOf(defaultValue)
+		defaultValues
 	}
+
+	inline fun <reified T> getPropertiesMutable(key:String, defaultValues:List<T>) =
+		getProperties(key, defaultValues).toMutableList()
+
+	inline fun <reified T> getProperties(key:String, defaultValues:T) = try {
+		getProperty(key, "$defaultValues").split(',').map {it as? T ?: defaultValues}
+	} catch(e:NumberFormatException) {
+		listOf(defaultValues)
+	}
+
+	inline fun <reified T> getPropertiesMutable(key:String, defaultValues:T) =
+		getProperties(key, defaultValues).toMutableList()
+
+	inline fun <reified T> setProperties(key:String, value:List<T>):List<T> =
+		setProperty(key, value.joinToString(","))?.let {
+			if(it is String) it.split(',').filterIsInstance<T>()
+			else null
+		} ?: emptyList()
 	/** intArray型のプロパティを取得
 	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
 	 */
@@ -164,7 +194,7 @@ class CustomProperties(name:String = ""):Properties() {
 		defaultValue
 	}
 
-	fun setProperty(key:String, value:IntArray):IntArray? =
+	fun setProperties(key:String, value:IntArray):IntArray? =
 		setProperty(key, value.joinToString(","))?.let {
 			if(it is String) it.split(',').map {it.toInt()}.toIntArray()
 			else null
@@ -248,6 +278,7 @@ class CustomProperties(name:String = ""):Properties() {
 		/** Serial version */
 		private const val serialVersionUID = 2L
 
+		private val log = LogManager.getLogger()
 		private val code = StandardCharsets.UTF_8
 	}
 }

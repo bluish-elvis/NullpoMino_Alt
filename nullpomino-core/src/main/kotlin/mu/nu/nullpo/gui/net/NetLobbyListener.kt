@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -73,7 +73,12 @@ interface NetLobbyListener {
 	 * @throws IOException When something bad occurs
 	 */
 	@Throws(IOException::class)
-	fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:Array<String>)
+	fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>)
+
+	@Deprecated("message should use List")
+	@Throws(IOException::class)
+	fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:Array<String>) =
+		netlobbyOnMessage(lobby, client, message.toList())
 
 	/** When the lobby window is closed
 	 * @param lobby NetLobbyFrame

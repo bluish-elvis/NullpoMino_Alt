@@ -69,13 +69,13 @@ abstract class ParticleEmitterBase:Effect {
 		 * In order: Gray, Red, Orange, Yellow, Green, Cyan, Blue, Purple<br></br>
 		 * Parameters: Red, Green, Blue, Alpha, Variance
 		 */
-		val DEF_COLORS = arrayOf(
-			intArrayOf(240, 240, 240, 235, 20), intArrayOf(240, 30, 0, 235, 20),
-			intArrayOf(240, 130, 0, 235, 20), intArrayOf(240, 240, 0, 235, 20), intArrayOf(30, 240, 0, 235, 20),
-			intArrayOf(0, 240, 240, 235, 20), intArrayOf(0, 30, 240, 235, 20), intArrayOf(210, 0, 210, 235, 20)
+		val DEF_COLORS = listOf(
+			listOf(240, 240, 240, 235, 20), listOf(240, 30, 0, 235, 20),
+			listOf(240, 130, 0, 235, 20), listOf(240, 240, 0, 235, 20), listOf(30, 240, 0, 235, 20),
+			listOf(0, 240, 240, 235, 20), listOf(0, 30, 240, 235, 20), listOf(210, 0, 210, 235, 20)
 		)
 
-		fun colorBy(c:COLOR):IntArray = DEF_COLORS[when(c) {
+		fun colorBy(c:COLOR):List<Int> = DEF_COLORS[when(c) {
 			COLOR.RED -> 1
 			COLOR.ORANGE -> 2
 			COLOR.YELLOW -> 3

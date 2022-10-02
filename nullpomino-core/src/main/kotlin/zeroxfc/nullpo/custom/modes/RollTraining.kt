@@ -108,7 +108,7 @@ class RollTraining:MarathonModeBase() {
 
 	private val itemHide = BooleanMenuItem("useMRoll", "Stealth", COLOR.RED, false)
 	private var useMRoll:Boolean by DelegateMenuItem(itemHide)
-	override val itemMode:IntegerMenuItem = StringsMenuItem("usedSpeed", "TYPE", COLOR.BLUE, SPEED_TI, arrayOf("TAP", "TI"), true)
+	override val itemMode:IntegerMenuItem = StringsMenuItem("usedSpeed", "TYPE", COLOR.BLUE, SPEED_TI, listOf("TAP", "TI"), true)
 	private var usedSpeed:Int by DelegateMenuItem(itemMode)
 	private val itemGoal = BooleanMenuItem("endless", "ENDLESS", COLOR.BLUE, false)
 	private var endless:Boolean by DelegateMenuItem(itemGoal)

@@ -1496,10 +1496,10 @@ class GrandBlossom:AbstractMode() {
 				"0621543621435624013542130562345123641230462134502613542"
 
 		/** 落下速度 table */
-		private val tableGravityValue = intArrayOf(4, 32, 64, 96, 128, 160, 192, 224, 256, 512, 768, 1024, 768, -1)
+		private val tableGravityValue = listOf(4, 32, 64, 96, 128, 160, 192, 224, 256, 512, 768, 1024, 768, -1)
 
 		/** 落下速度が変わる level */
-		private val tableGravityChangeLevel = intArrayOf(20, 30, 33, 36, 39, 43, 47, 51, 100, 130, 160, 250, 300, 10000)
+		private val tableGravityChangeLevel = listOf(20, 30, 33, 36, 39, 43, 47, 51, 100, 130, 160, 250, 300, 10000)
 
 		/** Number of ranking typesのcount */
 		private const val RANKING_TYPE = 2

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -3155,7 +3155,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		var msg = strMsg
 		when {
 			msg.startsWith("/team") -> {
-				msg = msg.replaceFirst("/team".toRegex(), "")
+				msg = msg.replaceFirst(Regex("/team"), "")
 				msg = msg.trim {it<=' '}
 				netPlayerClient?.send("changeteam\t${NetUtil.urlEncode(msg)}\n")
 			}
@@ -3673,7 +3673,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		if(e.actionCommand=="CreateRoom_PresetCodeImport")
 			try {
 				var strPresetCode = txtfldCreateRoomPresetCode.text
-				strPresetCode = strPresetCode.replace("[^a-zA-Z0-9+/=]".toRegex(), "")
+				strPresetCode = strPresetCode.replace(Regex("[^a-zA-Z0-9+/=]"), "")
 				if(strPresetCode.isNotEmpty()) {
 					val strPresetCodeD = NetUtil.decompressString(strPresetCode)
 					val r = NetRoomInfo(strPresetCodeD)
@@ -3811,7 +3811,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 	/* Message reception */
 	@Throws(IOException::class)
-	override fun netOnMessage(client:NetBaseClient, message:Array<String>) {
+	override fun netOnMessage(client:NetBaseClient, message:List<String>) {
 		//addSystemChatLog(getCurrentChatLogTextPane(), message[0], Color.green);
 
 		// Connection completion
@@ -4174,11 +4174,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Map receive
 		if(message[0]=="values") {
 			val strDecompressed = NetUtil.decompressString(message[1])
-			val strMaps = strDecompressed.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
-
+			val strMaps = strDecompressed.split(Regex("\t")).dropLastWhile {it.isEmpty()}
 			mapList.clear()
-
-			Collections.addAll(mapList, *strMaps)
+			mapList.addAll(strMaps)
 
 			log.debug("Received ${mapList.size} maps")
 		}
@@ -4314,19 +4312,18 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Game stats (Single player)
 		if(message[0]=="gstat1p") {
 			val strRowData = NetUtil.urlDecode(message[1])
-			val rowData = strRowData.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			val rowData = strRowData.split(Regex("\t")).dropLastWhile {it.isEmpty()}
 
 			if(writerRoomLog!=null) writerRoomLog!!.print("[$currentTimeAsString]\n")
 
 			tablemodelGameStat1P.rowCount = 0
 			for(element in rowData) {
-				val strTempArray = element.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
-				tablemodelGameStat1P.addRow(strTempArray)
+				val strTempArray = element.split(Regex(";")).dropLastWhile {it.isEmpty()}
+				tablemodelGameStat1P.addRow(strTempArray.toTypedArray())
 
 				if(writerRoomLog!=null&&strTempArray.size>1)
 					writerRoomLog!!.print(
-						" ${strTempArray[0]}:"+strTempArray[1]
-							+"\n"
+						" ${strTempArray[0]}:${strTempArray[1]}\n"
 					)
 			}
 
@@ -4367,10 +4364,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			tablemodelMPRanking[style].rowCount = 0
 
 			val strPData = NetUtil.decompressString(message[3])
-			val strPDataA = strPData.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			val strPDataA = strPData.split(Regex("\t")).dropLastWhile {it.isEmpty()}
 
 			for(element in strPDataA) {
-				val strRankData = element.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+				val strRankData = element.split(Regex(";")).dropLastWhile {it.isEmpty()}
 				val strRowData = arrayOfNulls<String>(MPRANKING_COLUMNNAMES.size)
 				val rank = strRankData[0].toInt()
 				if(rank==-1)

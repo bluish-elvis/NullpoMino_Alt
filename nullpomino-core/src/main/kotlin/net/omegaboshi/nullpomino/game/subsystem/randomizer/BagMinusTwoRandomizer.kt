@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,11 +31,12 @@ package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 class BagMinusTwoRandomizer:BagRandomizer {
 	override val baglen:Int get() = maxOf(0, super.baglen-2)
-	override val bagInit:IntArray
+	override val bagInit:List<Int>
 		get() {
-			val cut = MutableList(super.baglen){it}.shuffled().toIntArray().take(2)
-			return IntArray(super.baglen) {it%pieces.size}.filterIndexed {i, _ -> cut.all {it != i}}.toIntArray()
+			val cut = MutableList(super.baglen) {it}.shuffled(r).take(2)
+			return List(super.baglen) {it%pieces.size}.filterIndexed {i, _ -> cut.all {it!=i}}
 		}
+
 	constructor():super()
-	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
+	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
 }

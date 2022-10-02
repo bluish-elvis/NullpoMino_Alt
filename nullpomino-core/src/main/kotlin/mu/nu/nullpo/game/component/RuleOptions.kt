@@ -960,47 +960,47 @@ class RuleOptions:Serializable {
 		const val LOCKRESET_LIMIT_OVER_NOWALLKICK = 2
 
 		/** Blockピースのcolorパターン */
-		enum class PieceColor(val array:IntArray) {
-			ARS(intArrayOf(1, 2, 3, 4, 5, 6, 7, 5, 4, 0, 0)), SRS(intArrayOf(5, 2, 3, 1, 7, 6, 4, 1, 4, 0, 0));
+		enum class PieceColor(val array:List<Int>) {
+			ARS(listOf(1, 2, 3, 4, 5, 6, 7, 5, 4, 0, 0)), SRS(listOf(5, 2, 3, 1, 7, 6, 4, 1, 4, 0, 0));
 		}
 
 		const val PIECECOLOR_ARS = 0
 		const val PIECECOLOR_SRS = 1
-		val PIECECOLOR_PRESET = arrayOf(PieceColor.ARS.array, PieceColor.SRS.array)
+		val PIECECOLOR_PRESET = listOf(PieceColor.ARS.array, PieceColor.SRS.array)
 		/** Blockピースのspinパターン */
 		const val PIECEOFFSET_NONE = 0
 		const val PIECEOFFSET_BOTTOM = 1
 		const val PIECEOFFSET_BIASED = 2
 		const val PIECEOFFSET_ASSIGN = 3
-		val PIECEOFFSET_NAME = arrayOf("SRS CENTER", "BOTTOM Aligned", "ARS BIASED", "Customized")
-		val PIECEOFFSET_ARSPRESET = arrayOf(//[x/y][piece][direction]
-			arrayOf(//x
-				intArrayOf(0, 0, 0, 1),
-				intArrayOf(0, 0, 0, 0),
-				intArrayOf(0, 0, 0, 0),
-				intArrayOf(0, 0, 0, 1),
-				intArrayOf(0, 0, 0, 0),
-				intArrayOf(0, 0, 0, 0),
-				intArrayOf(0, -1, 0, 0),
-				intArrayOf(0, 0, 0, 0),
-				intArrayOf(0, 0, 0, 0),
-				intArrayOf(0, 0, 0, 0),
-				intArrayOf(0, 0, 0, 0)
-			), arrayOf(//y
-				intArrayOf(0, 0, -1, 0),
-				intArrayOf(1, 0, 0, 0),
-				intArrayOf(0, 0, 0, 0),
-				intArrayOf(1, 0, 0, 0),
-				intArrayOf(1, 0, 0, 0),
-				intArrayOf(1, 0, 0, 0),
-				intArrayOf(1, 0, 0, 0),
-				intArrayOf(0, 0, 0, 0),
-				intArrayOf(0, 0, 0, 0),
-				intArrayOf(0, 0, 0, 0),
-				intArrayOf(0, 0, 0, 0)
+		val PIECEOFFSET_NAME = listOf("SRS CENTER", "BOTTOM Aligned", "ARS BIASED", "Customized")
+		val PIECEOFFSET_ARSPRESET = listOf(//[x/y][piece][direction]
+			listOf(//x
+				listOf(0, 0, 0, 1),
+				listOf(0, 0, 0, 0),
+				listOf(0, 0, 0, 0),
+				listOf(0, 0, 0, 1),
+				listOf(0, 0, 0, 0),
+				listOf(0, 0, 0, 0),
+				listOf(0, -1, 0, 0),
+				listOf(0, 0, 0, 0),
+				listOf(0, 0, 0, 0),
+				listOf(0, 0, 0, 0),
+				listOf(0, 0, 0, 0)
+			), listOf(//y
+				listOf(0, 0, -1, 0),
+				listOf(1, 0, 0, 0),
+				listOf(0, 0, 0, 0),
+				listOf(1, 0, 0, 0),
+				listOf(1, 0, 0, 0),
+				listOf(1, 0, 0, 0),
+				listOf(1, 0, 0, 0),
+				listOf(0, 0, 0, 0),
+				listOf(0, 0, 0, 0),
+				listOf(0, 0, 0, 0),
+				listOf(0, 0, 0, 0)
 			)
 		)
 
-		val PIECEDIRECTION_ARSPRESET = intArrayOf(0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0)
+		val PIECEDIRECTION_ARSPRESET = listOf(0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0)
 	}
 }

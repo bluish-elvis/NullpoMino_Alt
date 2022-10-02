@@ -503,7 +503,7 @@ open class NetDummyVSMode:NetDummyMode() {
 	 * NetDummyVSMode.
 	 * @param message Message
 	 */
-	internal open fun netVSRecvEndGameStats(message:Array<String>) {
+	internal open fun netVSRecvEndGameStats(message:List<String>) {
 		val seatID = message[2].toInt()
 		val playerID = netVSGetPlayerIDbySeatID(seatID)
 
@@ -1003,7 +1003,7 @@ open class NetDummyVSMode:NetDummyMode() {
 
 	/** NET-VS: Message received */
 	@Throws(IOException::class)
-	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:Array<String>) {
+	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>) {
 		// Player status update
 		if(message[0]=="playerupdate") {
 			val pInfo = NetPlayerInfo(message[1])
@@ -1265,28 +1265,28 @@ open class NetDummyVSMode:NetDummyMode() {
 		/** NET-VS: Numbers of seats numbers corresponding to frames on player's
 		 * screen */
 		private val NET_GAME_SEAT_NUMBERS =
-			arrayOf(
-				intArrayOf(0, 1, 2, 3, 4, 5), intArrayOf(1, 0, 2, 3, 4, 5), intArrayOf(1, 2, 0, 3, 4, 5),
-				intArrayOf(1, 2, 3, 0, 4, 5), intArrayOf(1, 2, 3, 4, 0, 5), intArrayOf(1, 2, 3, 4, 5, 0)
+			listOf(
+				listOf(0, 1, 2, 3, 4, 5), listOf(1, 0, 2, 3, 4, 5), listOf(1, 2, 0, 3, 4, 5),
+				listOf(1, 2, 3, 0, 4, 5), listOf(1, 2, 3, 4, 0, 5), listOf(1, 2, 3, 4, 5, 0)
 			)
 
 		/** NET-VS: Each player's garbage block cint */
 		internal val NET_PLAYER_COLOR_BLOCK =
-			arrayOf(
+			listOf(
 				Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.GREEN, Block.COLOR.YELLOW,
 				Block.COLOR.PURPLE, Block.COLOR.CYAN
 			)
 
 		/** NET-VS: Each player's frame cint */
 		private val NET_PLAYER_COLOR_FRAME =
-			intArrayOf(
+			listOf(
 				GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE, GameEngine.FRAME_COLOR_GREEN,
 				GameEngine.FRAME_COLOR_BRONZE, GameEngine.FRAME_COLOR_PURPLE, GameEngine.FRAME_COLOR_CYAN
 			)
 
 		/** NET-VS: Team font colors */
 		private val NET_TEAM_FONT_COLORS =
-			arrayOf(COLOR.WHITE, COLOR.RED, COLOR.GREEN, COLOR.BLUE, COLOR.YELLOW, COLOR.PURPLE, COLOR.CYAN)
+			listOf(COLOR.WHITE, COLOR.RED, COLOR.GREEN, COLOR.BLUE, COLOR.YELLOW, COLOR.PURPLE, COLOR.CYAN)
 
 		/** NET-VS: Default time before forced piece lock */
 		private const val NET_PIECE_AUTO_LOCK_TIME = 30*60

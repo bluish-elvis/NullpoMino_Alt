@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -51,8 +51,8 @@ object AIRanksValue {
 				val `in` = ObjectInputStream(fis)
 				val ranks = `in`.readObject() as Ranks
 				`in`.close()
-				val surface1 = intArrayOf(0, 1, 1, -1, -1, 1, -3, -2)
-				val surface2 = intArrayOf(0, 1, 1, -1, -1, 4, -4, 2)
+				val surface1 = listOf(0, 1, 1, -1, -1, 1, -3, -2)
+				val surface2 = listOf(0, 1, 1, -1, -1, 4, -4, 2)
 
 				val rank1 = ranks.getRankValue(ranks.encode(surface1))
 				val rank2 = ranks.getRankValue(ranks.encode(surface2))

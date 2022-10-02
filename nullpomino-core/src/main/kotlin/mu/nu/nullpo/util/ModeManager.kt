@@ -37,7 +37,7 @@ import java.io.IOException
 class ModeManager {
 
 	/** Mode の動的配列 */
-	val list = ArrayList<GameMode>()
+	val list:MutableList<GameMode> = mutableListOf()
 
 	/** Mode のcountを取得(通常+ネットプレイ全部)
 	 * @return Modeのcount(通常 + ネットプレイ全部)
@@ -48,8 +48,8 @@ class ModeManager {
 	/** 読み込まれている全てのMode nameを取得
 	 * @return Mode nameの配列
 	 */
-	val allModeNames:Array<String>
-		get() = Array(size) {getName(it)}
+	val allModeNames:List<String>
+		get() = List(size) {getName(it)}
 
 	/** Constructor */
 	constructor()
@@ -72,8 +72,8 @@ class ModeManager {
 	 * @param netplay falseなら通常Mode だけ, When true,ネットプレイ用Mode だけ取得
 	 * @return Mode nameの配列
 	 */
-	fun getModeNames(netplay:Boolean):Array<String> =
-		list.filter {it.isOnlineMode==netplay}.map {it.name}.toTypedArray()
+	fun getModeNames(netplay:Boolean):List<String> =
+		list.filter {it.isOnlineMode==netplay}.map {it.name}
 
 	/** Mode nameを取得
 	 * @param id ModeID

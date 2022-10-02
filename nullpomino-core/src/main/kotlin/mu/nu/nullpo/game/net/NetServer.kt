@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -767,7 +767,7 @@ class NetServer {
 		if(checkConnectionOnBanlist(client)) throw NetServerDisconnectRequestedException("Connection banned")
 
 		// Setup Variables
-		val message = fullMessage.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray() // Split by \t
+		val message = fullMessage.split(Regex("\t")).dropLastWhile {it.isEmpty()} // Split by \t
 		var pInfo:NetPlayerInfo? = playerInfoMap[client] // NetPlayerInfo of this client. null if not logged in.
 
 		// Update last communication time
@@ -1249,7 +1249,7 @@ class NetServer {
 				// Set values
 				if(roomInfo.useMap&&message.size>4) {
 					val strDecompressed = NetUtil.decompressString(message[4])
-					val strMaps = strDecompressed.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+					val strMaps = strDecompressed.split(Regex("\t")).dropLastWhile {it.isEmpty()}
 
 //					val maxMap = strMaps.size
 
@@ -1886,7 +1886,7 @@ class NetServer {
 		if(message[0]=="admin")
 			if(adminList.contains(client)) {
 				val strAdminCommandTemp = NetUtil.decompressString(message[1])
-				val strAdminCommandArray = strAdminCommandTemp.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+				val strAdminCommandArray = strAdminCommandTemp.split(Regex("\t")).dropLastWhile {it.isEmpty()}
 				processAdminCommand(client, strAdminCommandArray)
 			} else {
 				log.warn(getHostFull(client)+" has tried to access admin command without login")
@@ -1897,11 +1897,11 @@ class NetServer {
 
 	/** Process admin command
 	 * @param client The SocketChannel who sent this packet
-	 * @param message The String array of the command
+	 * @param message The String list of the command
 	 * @throws IOException When something bad happens
 	 */
 	@Throws(IOException::class)
-	private fun processAdminCommand(client:SocketChannel, message:Array<String>) {
+	private fun processAdminCommand(client:SocketChannel, message:List<String>) {
 		// Client list (force update)
 		if(message[0]=="clientlist") adminSendClientList(client)
 		// Ban
@@ -2588,11 +2588,11 @@ class NetServer {
 
 		var status = propServer.getProperty("netserver.statusformat", "\$observers/\$players")
 
-		status = status.replace("\\\$version".toRegex(), GameManager.versionMajor.toString())
-		status = status.replace("\\\$observers".toRegex(), observerList.size.toString())
-		status = status.replace("\\\$players".toRegex(), playerInfoMap.size.toString())
-		status = status.replace("\\\$clients".toRegex(), (observerList.size+playerInfoMap.size).toString())
-		status = status.replace("\\\$rooms".toRegex(), roomInfoList.size.toString())
+		status = status.replace(Regex("\\\$version"), GameManager.versionMajor.toString())
+		status = status.replace(Regex("\\\$observers"), observerList.size.toString())
+		status = status.replace(Regex("\\\$players"), playerInfoMap.size.toString())
+		status = status.replace(Regex("\\\$clients"), (observerList.size+playerInfoMap.size).toString())
+		status = status.replace(Regex("\\\$rooms"), roomInfoList.size.toString())
 
 		try {
 			val outFile = FileWriter(propServer.getProperty("netserver.statusfilename", "status.txt"))
@@ -2810,7 +2810,7 @@ class NetServer {
 					// Rule file
 						try {
 							var settingID = 0
-							val strTempArray = str.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+							val strTempArray = str.split(Regex(";")).dropLastWhile {it.isEmpty()}
 							if(strTempArray.size>1) settingID = strTempArray[1].toInt()
 
 							log.debug("{RuleLoad} StyleID:$style RuleFile:${strTempArray[0]} SettingID:"+settingID)
@@ -2865,7 +2865,7 @@ class NetServer {
 						if(style==-1) style = 0
 					} else {
 						// Game mode name
-						val strSplit = str.split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+						val strSplit = str.split(Regex(",")).dropLastWhile {it.isEmpty()}
 						val strModeName = strSplit[0]
 						var isRace = false
 						if(strSplit.size>1) isRace = strSplit[1].toBoolean()
@@ -3023,7 +3023,7 @@ class NetServer {
 						} else log.debug("{StyleChange} StyleID:$style StyleName:$strStyle")
 					} else {
 						// Game mode name
-						val strSplit = str.split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+						val strSplit = str.split(Regex(",")).dropLastWhile {it.isEmpty()}
 						val strModeName = strSplit[0]
 						var rankingType = 0
 						var maxGameType = 0

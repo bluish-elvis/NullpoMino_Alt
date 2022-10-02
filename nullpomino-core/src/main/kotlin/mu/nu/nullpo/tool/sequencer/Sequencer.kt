@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -113,7 +113,7 @@ class Sequencer:JFrame(), ActionListener {
 	private var sequence = IntArray(0)
 
 	/** Enabled Pieces */
-	private var nextPieceEnable = BooleanArray(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
+	private var nextPieceEnable = MutableList(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
 
 	/** Constructor */
 	init {
@@ -124,7 +124,7 @@ class Sequencer:JFrame(), ActionListener {
 				propConfig.loadFromXML(it)
 				it.close()
 			}
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		// Load UI Language file
@@ -143,7 +143,7 @@ class Sequencer:JFrame(), ActionListener {
 				it.close()
 			}
 
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		// Set Look&Feel
@@ -156,7 +156,7 @@ class Sequencer:JFrame(), ActionListener {
 			}
 
 		// Initialize enabled pieces
-		nextPieceEnable = BooleanArray(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
+		nextPieceEnable = MutableList(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
 
 		title = getUIText("Title_Sequencer")
 		defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE

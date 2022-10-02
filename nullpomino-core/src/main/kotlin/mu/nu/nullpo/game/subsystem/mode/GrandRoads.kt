@@ -31,7 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.LevelData
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
@@ -80,8 +80,7 @@ class GrandRoads:NetDummyMode() {
 	private var sectionavgtime = 0
 
 	private val itemMode = StringsMenuItem(
-		"goalType", "DIFFICULTY", EventReceiver.COLOR.BLUE, 0,
-		courses.map {it.showName}.toTypedArray()
+		"goalType", "DIFFICULTY", COLOR.BLUE, 0, courses.map {it.showName}
 	)
 	/** Game type */
 	private var goalType:Int by DelegateMenuItem(itemMode)
@@ -92,17 +91,17 @@ class GrandRoads:NetDummyMode() {
 		}
 
 	private val itemLevel = LevelMenuItem(
-		"startlevel", "LEVEL", EventReceiver.COLOR.RED, 0,
+		"startlevel", "LEVEL", COLOR.RED, 0,
 		0..(courses.maxOfOrNull {it.goalLevel} ?: 0), true, true
 	)
 	/** Selected starting level */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
-	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
-	private val itemST = BooleanMenuItem("showsectiontime", "SHOW STIME", EventReceiver.COLOR.BLUE, true)
+	private val itemST = BooleanMenuItem("showsectiontime", "SHOW STIME", COLOR.BLUE, true)
 	/** Show section time */
 	private var showST:Boolean by DelegateMenuItem(itemST)
 
@@ -318,44 +317,44 @@ class GrandRoads:NetDummyMode() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, 0, -1, "GRAND ROADS", EventReceiver.COLOR.PURPLE)
-		receiver.drawScoreFont(engine, 0, 0, "TIME ATTACK", EventReceiver.COLOR.PURPLE, .75f)
-		receiver.drawScoreFont(engine, 0, 1, "${nowCourse.showName} COURSE", EventReceiver.COLOR.PURPLE)
+		receiver.drawScoreFont(engine, 0, -1, "GRAND ROADS", COLOR.PURPLE)
+		receiver.drawScoreFont(engine, 0, 0, "TIME ATTACK", COLOR.PURPLE, .75f)
+		receiver.drawScoreFont(engine, 0, 1, "${nowCourse.showName} COURSE", COLOR.PURPLE)
 		//rereceiver.drawScore(engine, playerID, -1, -4*2, "DECORATION", scale = .5f);
 		//receiver.drawScoreBadges(engine, playerID,0,-3,100,decoration);
 		//receiver.drawScoreBadges(engine, playerID,5,-4,100,dectemp);
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null&&!netIsWatch) {
-				receiver.drawScoreFont(engine, 8, 3, "Time", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, 8, 3, "Time", COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					var gcolor = EventReceiver.COLOR.WHITE
-					if(rankingRollclear[goalType][i]==1) gcolor = EventReceiver.COLOR.GREEN
-					if(rankingRollclear[goalType][i]==2) gcolor = EventReceiver.COLOR.ORANGE
+					var gcolor = COLOR.WHITE
+					if(rankingRollclear[goalType][i]==1) gcolor = COLOR.GREEN
+					if(rankingRollclear[goalType][i]==2) gcolor = COLOR.ORANGE
 					receiver.drawScoreGrade(
 						engine,
 						0,
 						4+i,
 						String.format("%2d", i+1),
-						if(i==rankingRank) EventReceiver.COLOR.RED else EventReceiver.COLOR.YELLOW
+						if(i==rankingRank) COLOR.RED else COLOR.YELLOW
 					)
 
 					receiver.drawScoreNum(engine, 8, 4+i, rankingTime[goalType][i].toTimeStr, gcolor)
 					receiver.drawScoreNano(
-						engine, 10, 8+i*2, if(gcolor==EventReceiver.COLOR.WHITE) "LINES\nCLEARED" else "LIFES\nREMAINED",
+						engine, 10, 8+i*2, if(gcolor==COLOR.WHITE) "LINES\nCLEARED" else "LIFES\nREMAINED",
 						gcolor,
 						.5f
 					)
 					receiver.drawScoreNum(
 						engine, 2, 4+i, String.format(
 							"%3d",
-							if(gcolor==EventReceiver.COLOR.WHITE) rankingLines[goalType][i] else rankingLifes[goalType][i]
+							if(gcolor==COLOR.WHITE) rankingLines[goalType][i] else rankingLifes[goalType][i]
 						), gcolor
 					)
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "Level", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 3, "Level", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 5, 2, String.format("%02d", engine.statistics.level+1), 2f)
 			receiver.drawScoreNum(engine, 8, 3, String.format("/%3d", nowCourse.goalLevel))
 			receiver.drawScoreNum(engine, 0, 4, String.format("%3d/%3d", norm, (engine.statistics.level+1)*10))
@@ -367,20 +366,20 @@ class GrandRoads:NetDummyMode() {
 				6
 			)
 
-			receiver.drawScoreFont(engine, 0, 7, "TIME LIMIT", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 7, "TIME LIMIT", COLOR.BLUE)
 			receiver.drawScoreNum(
 				engine, 0, 8, levelTimer.toTimeStr, levelTimer in 1 until 600&&levelTimer%4==0,
 				2f
 			)
 
-			receiver.drawScoreFont(engine, 0, 10, "TOTAL TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 10, "TOTAL TIME", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 0, 11, engine.statistics.time.toTimeStr, 2f)
 
 			// Remaining ending time
 			if(engine.gameActive&&engine.ending==2&&engine.staffrollEnable) {
 				var time = ROLLTIMELIMIT-rolltime
 				if(time<0) time = 0
-				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.BLUE)
 				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
 
@@ -390,7 +389,7 @@ class GrandRoads:NetDummyMode() {
 				val y = if(receiver.nextDisplayType==2) 4 else 2
 				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 
-				receiver.drawScoreFont(engine, x, y, "SECTION TIME", EventReceiver.COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, x, y, "SECTION TIME", COLOR.BLUE, scale)
 
 				val l = maxOf(0, engine.statistics.level-20)
 				var i = l
@@ -404,7 +403,7 @@ class GrandRoads:NetDummyMode() {
 					}
 					i++
 				}
-				receiver.drawScoreFont(engine, 0, 13, "AVERAGE", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 13, "AVERAGE", COLOR.BLUE)
 				receiver.drawScoreNum(engine, 0, 14, (engine.statistics.time/(sectionscomp+1)).toTimeStr, 2f)
 			}
 		}
@@ -559,29 +558,29 @@ class GrandRoads:NetDummyMode() {
 		if(!netIsWatch)
 			receiver.drawMenuFont(
 				engine, 0, 0, "\u0090\u0093 PAGE"+(engine.statc[1]+1)
-					+"/3", EventReceiver.COLOR.RED
+					+"/3", COLOR.RED
 			)
 
 		if(engine.statc[1]==0) {
-			var gcolor = EventReceiver.COLOR.RED
-			if(engine.statistics.rollclear==1) gcolor = EventReceiver.COLOR.GREEN
-			if(engine.statistics.rollclear==2) gcolor = EventReceiver.COLOR.ORANGE
+			var gcolor = COLOR.RED
+			if(engine.statistics.rollclear==1) gcolor = COLOR.GREEN
+			if(engine.statistics.rollclear==2) gcolor = COLOR.ORANGE
 
-			receiver.drawMenuFont(engine, 0, 1, "LIFE REMAINED", EventReceiver.COLOR.BLUE, .8f)
+			receiver.drawMenuFont(engine, 0, 1, "LIFE REMAINED", COLOR.BLUE, .8f)
 			receiver.drawMenuNum(engine, 7, 1, String.format("%2d", engine.lives), gcolor, 2f)
 
 			receiver.drawMenuNum(engine, 0, 2, String.format("%04d", norm), gcolor, 2f)
-			receiver.drawMenuFont(engine, 6, 3, "Lines", EventReceiver.COLOR.BLUE, .8f)
+			receiver.drawMenuFont(engine, 6, 3, "Lines", COLOR.BLUE, .8f)
 
 			drawResultStats(
-				engine, receiver, 4, EventReceiver.COLOR.BLUE, Statistic.LPM, Statistic.TIME, Statistic.PPS,
+				engine, receiver, 4, COLOR.BLUE, Statistic.LPM, Statistic.TIME, Statistic.PPS,
 				Statistic.PIECE
 			)
-			drawResultRank(engine, receiver, 14, EventReceiver.COLOR.BLUE, rankingRank)
-			drawResultNetRank(engine, receiver, 16, EventReceiver.COLOR.BLUE, netRankingRank[0])
-			drawResultNetRankDaily(engine, receiver, 18, EventReceiver.COLOR.BLUE, netRankingRank[1])
+			drawResultRank(engine, receiver, 14, COLOR.BLUE, rankingRank)
+			drawResultNetRank(engine, receiver, 16, COLOR.BLUE, netRankingRank[0])
+			drawResultNetRankDaily(engine, receiver, 18, COLOR.BLUE, netRankingRank[1])
 		} else if(engine.statc[1]==1||engine.statc[1]==2) {
-			receiver.drawMenuFont(engine, 0, 2, "SECTION", EventReceiver.COLOR.BLUE)
+			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.BLUE)
 
 			var i = 0
 			var x:Int
@@ -593,17 +592,17 @@ class GrandRoads:NetDummyMode() {
 				i++
 			}
 			if(sectionavgtime>0) {
-				receiver.drawMenuFont(engine, 0, 14, "AVERAGE", EventReceiver.COLOR.BLUE)
+				receiver.drawMenuFont(engine, 0, 14, "AVERAGE", COLOR.BLUE)
 				receiver.drawMenuFont(engine, 2, 15, sectionavgtime.toTimeStr)
 			}
 		}
 
-		if(netIsPB) receiver.drawMenuFont(engine, 2, 20, "NEW PB", EventReceiver.COLOR.ORANGE)
+		if(netIsPB) receiver.drawMenuFont(engine, 2, 20, "NEW PB", COLOR.ORANGE)
 
 		if(netIsNetPlay&&netReplaySendStatus==1)
-			receiver.drawMenuFont(engine, 0, 21, "SENDING...", EventReceiver.COLOR.PINK)
+			receiver.drawMenuFont(engine, 0, 21, "SENDING...", COLOR.PINK)
 		else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2)
-			receiver.drawMenuFont(engine, 1, 21, "A: RETRY", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, 1, 21, "A: RETRY", COLOR.RED)
 	}
 
 	/** Additional routine for game result screen */
@@ -727,7 +726,7 @@ class GrandRoads:NetDummyMode() {
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		engine.statistics.lines = message[4].toInt()
 		engine.statistics.totalPieceLocked = message[5].toInt()
 		engine.statistics.time = message[6].toInt()
@@ -784,7 +783,7 @@ class GrandRoads:NetDummyMode() {
 	}
 
 	/** NET: Receive game options */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		goalType = message[4].toInt()
 		startLevel = message[5].toInt()
 		showST = message[6].toBoolean()
@@ -809,16 +808,16 @@ class GrandRoads:NetDummyMode() {
 			/** Gravity tables */
 			val gravity by lazy {
 				when(this) {
-					EASY -> intArrayOf(4, 12, 48, 72, 96, 128, 256, 384, 512, 768, 1024, 1280, -1)
-					HARD -> intArrayOf(84, 128, 256, 512, 768, 1024, 1280, -1)
-					LONG -> intArrayOf(4, 12, 48, 72, 96, 128, 256, 384, 512, 768, 1024, 1280, -1)
-					CHALLENGE -> intArrayOf(1, 3, 15, 30, 60, 120, 180, 240, 300, 300, -1)
-					else -> intArrayOf(-1)
+					EASY -> listOf(4, 12, 48, 72, 96, 128, 256, 384, 512, 768, 1024, 1280, -1)
+					HARD -> listOf(84, 128, 256, 512, 768, 1024, 1280, -1)
+					LONG -> listOf(4, 12, 48, 72, 96, 128, 256, 384, 512, 768, 1024, 1280, -1)
+					CHALLENGE -> listOf(1, 3, 15, 30, 60, 120, 180, 240, 300, 300, -1)
+					else -> listOf(-1)
 				}
 			}
 
 			/** Denominator table */
-			val denominator by lazy {intArrayOf(256)}
+			val denominator by lazy {listOf(256)}
 
 			/** Max level table */
 			val goalLevel by lazy {
@@ -840,35 +839,35 @@ class GrandRoads:NetDummyMode() {
 					EASY, HARD, HARDEST -> LevelData(gravity, denominator, 25, 25, 41, 30, 15)
 					SUPER, SURVIVAL ->
 						LevelData(
-							intArrayOf(19, 18, 17, 16, 15, 14, 13, 12, 11, 10), // ARE
-							intArrayOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21), // Line delay
-							intArrayOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21), // Lock delay
-							intArrayOf(10, 10, 9, 9, 8, 8, 8, 7, 7, 7) // DAS
+							listOf(19, 18, 17, 16, 15, 14, 13, 12, 11, 10), // ARE
+							listOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21), // Line delay
+							listOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21), // Lock delay
+							listOf(10, 10, 9, 9, 8, 8, 8, 7, 7, 7) // DAS
 						)
 					XTREME -> LevelData(6, 6, 4, 20, 7)//(6,6,4,13,7)
 					LONG ->
 						/** Speed table for BASIC */
 						LevelData(
 							gravity, denominator,
-							intArrayOf(25, 25, 25, 25, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10), // ARE
-							intArrayOf(25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6), // Line delay
-							intArrayOf(30, 30, 30, 30, 29, 29, 29, 29, 28, 28, 28, 27, 27, 27, 26, 26, 25, 25, 24, 24), // Lock delay
-							intArrayOf(15, 15, 15, 15, 15, 14, 14, 14, 14, 13, 13, 13, 12, 12, 11, 10, 9, 8, 7, 6) // DAS
+							listOf(25, 25, 25, 25, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10), // ARE
+							listOf(25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6), // Line delay
+							listOf(30, 30, 30, 30, 29, 29, 29, 29, 28, 28, 28, 27, 27, 27, 26, 26, 25, 25, 24, 24), // Lock delay
+							listOf(15, 15, 15, 15, 15, 14, 14, 14, 14, 13, 13, 13, 12, 12, 11, 10, 9, 8, 7, 6) // DAS
 						)
 					CHALLENGE ->
 						LevelData(
 							gravity, denominator,
-							intArrayOf(26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7), // ARE
-							intArrayOf(40, 36, 33, 30, 27, 24, 21, 19, 17, 15, 13, 11, 9, 8, 7, 6, 5, 4, 3, 3), // Line delay
-							intArrayOf(28, 28, 28, 27, 27, 27, 26, 26, 26, 25, 25, 25, 24, 24, 23, 22, 22, 21, 21, 20), // Lock delay
-							intArrayOf(15, 15, 15, 15, 15, 14, 14, 14, 14, 13, 13, 13, 12, 12, 11, 10, 9, 8, 7, 6) // DAS
+							listOf(26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7), // ARE
+							listOf(40, 36, 33, 30, 27, 24, 21, 19, 17, 15, 13, 11, 9, 8, 7, 6, 5, 4, 3, 3), // Line delay
+							listOf(28, 28, 28, 27, 27, 27, 26, 26, 26, 25, 25, 25, 24, 24, 23, 22, 22, 21, 21, 20), // Lock delay
+							listOf(15, 15, 15, 15, 15, 14, 14, 14, 14, 13, 13, 13, 12, 12, 11, 10, 9, 8, 7, 6) // DAS
 						)
 					HELL, HIDE -> LevelData(2, 2, 3, 22, 7)
 					VOID -> LevelData(
-						intArrayOf(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1), // ARE
-						intArrayOf(8, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0), // Line delay
-						intArrayOf(25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 19, 18, 17, 16, 15), // Lock delay
-						intArrayOf(9, 8, 8, 7, 7, 6, 6, 5, 5, 4, 4, 4, 4, 4, 4, 4) // DAS
+						listOf(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1), // ARE
+						listOf(8, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0), // Line delay
+						listOf(25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 19, 18, 17, 16, 15), // Lock delay
+						listOf(9, 8, 8, 7, 7, 6, 6, 5, 5, 4, 4, 4, 4, 4, 4, 4) // DAS
 					)
 				}
 			}
@@ -889,55 +888,55 @@ class GrandRoads:NetDummyMode() {
 			/** Level timer tables */
 			val levelTimer by lazy {
 				when(this) {
-					EASY -> intArrayOf(6400, 6250, 6000, 5750, 5500, 5250, 5000, 4750, 4500, 4250, 4000, 3750, 3500, 3250, 3000)
-					HARD -> intArrayOf(4500, 4200, 4100, 3900, 3700, 3500, 3300, 3100, 2900, 2700, 2500, 2350, 2200, 2100, 2000)
-					HARDEST -> intArrayOf(4000, 3900, 3800, 3700, 3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2500)
-					SUPER -> intArrayOf(3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2550, 2400, 2250, 2100, 2000)
-					LONG -> intArrayOf(
+					EASY -> listOf(6400, 6250, 6000, 5750, 5500, 5250, 5000, 4750, 4500, 4250, 4000, 3750, 3500, 3250, 3000)
+					HARD -> listOf(4500, 4200, 4100, 3900, 3700, 3500, 3300, 3100, 2900, 2700, 2500, 2350, 2200, 2100, 2000)
+					HARDEST -> listOf(4000, 3900, 3800, 3700, 3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2500)
+					SUPER -> listOf(3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2550, 2400, 2250, 2100, 2000)
+					LONG -> listOf(
 						6400, 6200, 6000, 5800, 5600, 5400, 5200, 5000, 4800, 4600, // NORMAL 000-100
 						4300, 4000, 3800, 3600, 3500, 3400, 3300, 3200, 3100, 3000
 					) // NORMAL 100-200
-					SURVIVAL -> intArrayOf(
+					SURVIVAL -> listOf(
 						4000, 3890, 3780, 3670, 3560, 3450, 3340, 3230, 3120, 3010, // ANOTHER 000-100
 						2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000
 					) // ANOTHER 100-200
-					CHALLENGE -> intArrayOf(
+					CHALLENGE -> listOf(
 						4000, 3890, 3780, 3670, 3560, 3450, 3340, 3230, 3120, 3010, // BASIC 000-100
 						2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000
 					) // BASIC 100-200
-					else -> intArrayOf(3000, 2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000, 2000, 2000, 2000, 2000)
+					else -> listOf(3000, 2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000, 2000, 2000, 2000, 2000)
 				}
 			}
 
 			/** BGM table */
 			val bgmList by lazy {
 				when(this) {
-					EASY -> arrayOf(BGM.GrandA(0), BGM.GrandM(0), BGM.Extra(1))
-					HARD -> arrayOf(BGM.GrandT(0), BGM.Extra(0), BGM.GrandA(1))
-					HARDEST -> arrayOf(BGM.GrandM(1), BGM.GrandA(1), BGM.GrandT(1))
-					SUPER -> arrayOf(BGM.GrandT(2), BGM.GrandA(2), BGM.GrandA(3))
-					XTREME -> arrayOf(BGM.GrandT(3), BGM.GrandT(4), BGM.GrandT(5))
-					LONG -> arrayOf(BGM.Extra(1), BGM.GrandA(0), BGM.GrandT(0), BGM.Extra(0), BGM.GrandT(2))
-					SURVIVAL -> arrayOf(BGM.GrandT(2), BGM.GrandA(2), BGM.GrandT(3), BGM.GrandA(3), BGM.GrandT(4))
-					CHALLENGE -> arrayOf(BGM.Extra(2), BGM.GrandA(0), BGM.GrandM(1), BGM.GrandT(2), BGM.GrandA(3))
-					HELL -> arrayOf(BGM.Finale(2))
-					HIDE -> arrayOf(BGM.Finale(0))
-					VOID -> arrayOf(BGM.Finale(1))
-					else -> arrayOf(BGM.Silent)
+					EASY -> listOf(BGM.GrandA(0), BGM.GrandM(0), BGM.Extra(1))
+					HARD -> listOf(BGM.GrandT(0), BGM.Extra(0), BGM.GrandA(1))
+					HARDEST -> listOf(BGM.GrandM(1), BGM.GrandA(1), BGM.GrandT(1))
+					SUPER -> listOf(BGM.GrandT(2), BGM.GrandA(2), BGM.GrandA(3))
+					XTREME -> listOf(BGM.GrandT(3), BGM.GrandT(4), BGM.GrandT(5))
+					LONG -> listOf(BGM.Extra(1), BGM.GrandA(0), BGM.GrandT(0), BGM.Extra(0), BGM.GrandT(2))
+					SURVIVAL -> listOf(BGM.GrandT(2), BGM.GrandA(2), BGM.GrandT(3), BGM.GrandA(3), BGM.GrandT(4))
+					CHALLENGE -> listOf(BGM.Extra(2), BGM.GrandA(0), BGM.GrandM(1), BGM.GrandT(2), BGM.GrandA(3))
+					HELL -> listOf(BGM.Finale(2))
+					HIDE -> listOf(BGM.Finale(0))
+					VOID -> listOf(BGM.Finale(1))
+					else -> listOf(BGM.Silent)
 				}
 			}
 			/** BGM change lines table */
 			val bgmChange by lazy {
 				when(this) {
-					EASY -> intArrayOf(5, 10)
-					HARD -> intArrayOf(5, 10)
-					HARDEST -> intArrayOf(5, 10)
-					SUPER -> intArrayOf(5, 10)
-					XTREME -> intArrayOf(5, 10)
-					LONG -> intArrayOf(5, 10, 15)
-					SURVIVAL -> intArrayOf(5, 10, 15)
-					CHALLENGE -> intArrayOf(5, 10, 15, 20)
-					else -> intArrayOf()
+					EASY -> listOf(5, 10)
+					HARD -> listOf(5, 10)
+					HARDEST -> listOf(5, 10)
+					SUPER -> listOf(5, 10)
+					XTREME -> listOf(5, 10)
+					LONG -> listOf(5, 10, 15)
+					SURVIVAL -> listOf(5, 10, 15)
+					CHALLENGE -> listOf(5, 10, 15, 20)
+					else -> listOf()
 				}
 			}
 
@@ -980,7 +979,7 @@ class GrandRoads:NetDummyMode() {
 
 		/** HELL-X fade table */
 		private val tableHellXFade =
-			intArrayOf(
+			listOf(
 				600, 550, 500, 450, 400, 350, 300, 270, 240, 210,
 				190, 170, 160, 150, 140, 130, 125, 120, 115, 110,
 				100, 90, 80, 70, 60, 58, 56, 54, 52, 50

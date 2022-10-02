@@ -353,7 +353,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	}
 
 	/* Receive stats */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		val playerID = engine.playerID
 		if(message.size>4) playerRemainLines[playerID] = message[4].toInt()
 		updateMeter(engine)
@@ -373,7 +373,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	}
 
 	/* Receive end-of-game stats */
-	override fun netVSRecvEndGameStats(message:Array<String>) {
+	override fun netVSRecvEndGameStats(message:List<String>) {
 		val seatID = message[2].toInt()
 		val playerID = netVSGetPlayerIDbySeatID(seatID)
 

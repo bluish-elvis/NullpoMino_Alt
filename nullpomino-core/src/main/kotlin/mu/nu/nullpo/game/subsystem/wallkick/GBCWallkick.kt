@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,8 +40,7 @@ class GBCWallkick:Wallkick {
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
 		field:Field, ctrl:Controller?):WallkickResult? {
 		if(piece.id!=Piece.PIECE_I&&piece.id!=Piece.PIECE_I2&&piece.id!=Piece.PIECE_I3) {
-			var kicktable = KICKTABLE_L
-			if(rtDir>=0) kicktable = KICKTABLE_R
+			val kicktable = if(rtDir>=0) KICKTABLE_R else KICKTABLE_L
 
 			var x2 = kicktable[rtOld][0]
 			var y2 = kicktable[rtOld][1]
@@ -59,7 +58,7 @@ class GBCWallkick:Wallkick {
 	}
 
 	companion object {
-		private val KICKTABLE_L = arrayOf(intArrayOf(1, -1), intArrayOf(1, 1), intArrayOf(-1, 1), intArrayOf(-1, -1))
-		private val KICKTABLE_R = arrayOf(intArrayOf(-1, -1), intArrayOf(1, -1), intArrayOf(1, 1), intArrayOf(-1, 1))
+		private val KICKTABLE_L = listOf(listOf(1, -1), listOf(1, 1), listOf(-1, 1), listOf(-1, -1))
+		private val KICKTABLE_R = listOf(listOf(-1, -1), listOf(1, -1), listOf(1, 1), listOf(-1, 1))
 	}
 }

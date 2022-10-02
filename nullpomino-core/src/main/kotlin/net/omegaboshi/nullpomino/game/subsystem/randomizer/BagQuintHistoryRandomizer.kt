@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,5 +36,5 @@ class BagQuintHistoryRandomizer:BagRandomizer {
 	override val baglen:Int get() = pieces.size*5
 
 	constructor():super()
-	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
+	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
 }

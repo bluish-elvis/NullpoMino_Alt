@@ -527,7 +527,7 @@ class StateConfigGameTuning:BaseGameState() {
 
 		/** UI Text identifier Strings */
 		private val UI_TEXT =
-			arrayOf(
+			listOf(
 				"GameTuning_RotateButtonDefaultRight",
 				"GameTuning_Skin",
 				"GameTuning_MinDAS",
@@ -544,6 +544,6 @@ class StateConfigGameTuning:BaseGameState() {
 		internal val log = LogManager.getLogger()
 
 		/** Outline type names */
-		private val OUTLINE_TYPE_NAMES = arrayOf("AUTO", "NONE", "NORMAL", "CONNECT", "SAMECOLOR")
+		private val OUTLINE_TYPE_NAMES = listOf("AUTO", "NONE", "NORMAL", "CONNECT", "SAMECOLOR")
 	}
 }

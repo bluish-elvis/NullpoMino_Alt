@@ -454,7 +454,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 	/* NET: Message received */
 	@Throws(IOException::class)
-	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:Array<String>) {
+	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>) {
 		// Player status update
 		if(message[0]=="playerupdate") netUpdatePlayerExist()
 		// When someone log out
@@ -721,7 +721,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * @param engine GameEngine
 	 * @param message Message array
 	 */
-	internal fun netRecvPieceMovement(engine:GameEngine, message:Array<String>) {
+	internal fun netRecvPieceMovement(engine:GameEngine, message:List<String>) {
 		val id = message[4].toInt()
 
 		if(id>=0) {
@@ -804,7 +804,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * @param engine GameEngine
 	 * @param message Message array
 	 */
-	protected open fun netRecvField(engine:GameEngine, message:Array<String>) {
+	protected open fun netRecvField(engine:GameEngine, message:List<String>) {
 		if(message[3]=="fieldattr") {
 			// With attributes
 			if(message.size>4) {
@@ -873,14 +873,14 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * @param engine GameEngine
 	 * @param message Message array
 	 */
-	internal fun netRecvNextAndHold(engine:GameEngine, message:Array<String>) {
+	internal fun netRecvNextAndHold(engine:GameEngine, message:List<String>) {
 		val maxNext = message[4].toInt()
 		engine.ruleOpt.nextDisplay = maxNext
 		engine.holdDisable = message[5].toBoolean()
 
 		for(i in 0 until maxNext+1)
 			if(i+6<message.size) {
-				val strPieceData = message[i+6].split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+				val strPieceData = message[i+6].split(Regex(";")).dropLastWhile {it.isEmpty()}
 				val pieceID = strPieceData[0].toInt()
 				val pieceDirection = strPieceData[1].toInt()
 				val pieceColor = strPieceData[2].toInt()
@@ -898,7 +898,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 					}
 				} else {
 					if(engine.nextPieceArrayObject.size<maxNext)
-						engine.nextPieceArrayObject = Array(maxNext) {
+						engine.nextPieceArrayObject = List(maxNext) {
 							//engine.nextPieceArrayObject[i-1] =
 							Piece(pieceID).apply {
 								direction = pieceDirection
@@ -1196,7 +1196,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** Receive 1P NetPlay ranking.
 	 * @param message Message array
 	 */
-	private fun netRecvNetPlayRanking(message:Array<String>) {
+	private fun netRecvNetPlayRanking(message:List<String>) {
 		val strDebugTemp = StringBuilder()
 		for(element in message)
 			strDebugTemp.append(element).append(" ")
@@ -1208,7 +1208,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 			netRankingType = message[5].toInt()
 			var maxRecords = message[6].toInt()
-			val arrayRow = message[7].split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			val arrayRow = message[7].split(Regex(";")).dropLastWhile {it.isEmpty()}
 			maxRecords = minOf(maxRecords, arrayRow.size)
 
 			netRankingNoDataFlag[d] = false
@@ -1227,7 +1227,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			netRankingRollclear[d] = LinkedList()
 
 			for(i in 0 until maxRecords) {
-				val arrayData = arrayRow[i].split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+				val arrayData = arrayRow[i].split(Regex(",")).dropLastWhile {it.isEmpty()}
 				netRankingPlace[d].add(arrayData[0].toInt())
 				val pName = NetUtil.urlDecode(arrayData[1])
 				netRankingName[d].add(pName)
@@ -1314,7 +1314,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * @param engine GameEngine
 	 * @param message Message array
 	 */
-	protected open fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	protected open fun netRecvStats(engine:GameEngine, message:List<String>) {
 		listOf<(String)->Unit>({}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
 			{engine.statistics.scoreSD = it.toInt()},
@@ -1358,7 +1358,7 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * @param engine GameEngine
 	 * @param message Message array
 	 */
-	protected open fun netRecvOptions(engine:GameEngine, message:Array<String>) {}
+	protected open fun netRecvOptions(engine:GameEngine, message:List<String>) {}
 
 	/** NET: Send replay data<br></br>
 	 * Game modes should implement this. However, some basic codes are already

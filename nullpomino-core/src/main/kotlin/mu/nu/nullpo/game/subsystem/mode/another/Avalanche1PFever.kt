@@ -572,7 +572,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			feverChainMin = propFeverMap.getProperty("minChain", 3)
 			feverChainMax = propFeverMap.getProperty("maxChain", 15)
 			val subsets = propFeverMap.getProperty("sets")
-			mapSubsets = subsets.split(",".toRegex()).dropLastWhile {it.isEmpty()}
+			mapSubsets = subsets.split(Regex(",")).dropLastWhile {it.isEmpty()}
 		}
 	}
 
@@ -629,13 +629,13 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		/** Current version */
 		private const val CURRENT_VERSION = 0
 
-		private val CHAIN_POWERS = intArrayOf(
+		private val CHAIN_POWERS = listOf(
 			4, 10, 18, 22, 30, 48, 80, 120, 160, 240, 280, 288, 342, 400, 440, 480, 520, 560, 600,
 			640, 680, 720, 760, 800 //Amitie
 		)
 
 		/** Names of chain display settings */
-		private val CHAIN_DISPLAY_NAMES = arrayOf("OFF", "YELLOW", "SIZE")
+		private val CHAIN_DISPLAY_NAMES = listOf("OFF", "YELLOW", "SIZE")
 
 		/** Number of ranking records */
 		private const val RANKING_MAX = 13
@@ -644,6 +644,6 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		private const val TIME_LIMIT = 3600
 
 		/** Names of fast-forward settings */
-		private val FAST_NAMES = arrayOf("OFF", "CLEAR", "ALL")
+		private val FAST_NAMES = listOf("OFF", "CLEAR", "ALL")
 	}
 }

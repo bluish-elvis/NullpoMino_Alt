@@ -80,8 +80,7 @@ class MarathonPlus:NetDummyMode() {
 	private var nextsec = 0
 
 	private val itemMode = object:StringsMenuItem(
-		"goalType", "GOAL", COLOR.BLUE, 0,
-		tableGameClearLevel.map {"$it LEVEL"}.toTypedArray()
+		"goalType", "GOAL", COLOR.BLUE, 0, tableGameClearLevel.map {"$it LEVEL"}
 	) {
 		override val showHeight = 2
 		override fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int) {
@@ -715,7 +714,7 @@ class MarathonPlus:NetDummyMode() {
 
 	/* NET: Message received */
 	@Throws(IOException::class)
-	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:Array<String>) {
+	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>) {
 		super.netlobbyOnMessage(lobby, client, message)
 
 		// Game messages
@@ -739,7 +738,7 @@ class MarathonPlus:NetDummyMode() {
 	}
 
 	/* NET: Receive field message */
-	override fun netRecvField(engine:GameEngine, message:Array<String>) {
+	override fun netRecvField(engine:GameEngine, message:List<String>) {
 		super.netRecvField(engine, message)
 
 		if(engine.statistics.level>=20&&engine.timerActive&&engine.gameActive) bonusLevelProc(engine)
@@ -759,7 +758,7 @@ class MarathonPlus:NetDummyMode() {
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 
 		listOf<(String)->Unit>({}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
@@ -813,7 +812,7 @@ class MarathonPlus:NetDummyMode() {
 	}
 
 	/** NET: Receive game options */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		startLevel = message[4].toBoolean()
 		big = message[5].toBoolean()
 	}
@@ -830,15 +829,15 @@ class MarathonPlus:NetDummyMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Fall velocity table (numerators) */
-		private val tableSpeed = arrayOf(
-			intArrayOf(
+		private val tableSpeed = listOf(
+			listOf(
 				5, 8, 10, 12, 16, 20, 24, 30, 36, 42,
 				48, 54, 60, 66, 72, 80, 88, 96, 108, 120,
 				48, 60, 75, 90, 105, 120, 140, 160, 180, 200,
 				240, 280, 320, 360, 420, 480, 600, 720, 840, 960,
 				240, 320, 480, 640, 800, 960, 1200, 1440, 1920, 2400, -1
 			),
-			intArrayOf(
+			listOf(
 				1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
 				11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
 				8, 10, 12, 14, 16, 18, 20, 24, 28, 30,
@@ -846,19 +845,19 @@ class MarathonPlus:NetDummyMode() {
 				64, 80, 96, 128, 160, 192, 224, 256, 288, 320, -1
 			)
 		)
-		private val tableDenominator = intArrayOf(240, 32)
-		private val tableLineDelay = arrayOf(intArrayOf(12, 24, 16, 0), intArrayOf(6, 18, 8, 0))
-		private val ARE_TABLE = intArrayOf(
+		private val tableDenominator = listOf(240, 32)
+		private val tableLineDelay = listOf(listOf(12, 24, 16, 0), listOf(6, 18, 8, 0))
+		private val ARE_TABLE = listOf(
 			15, 15, 15, 15, 14, 14,
 			13, 12, 11, 10, 9, 8, 7, 6, 5, 15
 		)
-		private val LOCK_TABLE = intArrayOf(
+		private val LOCK_TABLE = listOf(
 			30, 29, 28, 27, 26, 25,
 			24, 23, 22, 21, 20, 19, 18, 17, 17, 30
 		)
 
 		// Levels for speed changes
-		private val LEVEL_ARE_LOCK_CHANGE = intArrayOf(
+		private val LEVEL_ARE_LOCK_CHANGE = listOf(
 			60, 70, 80, 90, 100,
 			110, 120, 130, 140, 150,
 			160, 170, 180, 190, 200, 10000
@@ -871,28 +870,28 @@ class MarathonPlus:NetDummyMode() {
 * */
 		/** Line counts when Level changes occur */
 		private val tableNorma =
-			arrayOf(intArrayOf(10), intArrayOf(8, 10, 12), intArrayOf(6, 7, 8, 9, 10), intArrayOf(7, 7, 7, 7, 7, 1))
+			listOf(listOf(10), listOf(8, 10, 12), listOf(6, 7, 8, 9, 10), listOf(7, 7, 7, 7, 7, 1))
 
 		/** Line counts when BGM changes occur */
 		private val tableBGMChange =
-			arrayOf(intArrayOf(100, 150), intArrayOf(80, 180), intArrayOf(130, 300), intArrayOf(140, 280, 350))
+			listOf(listOf(100, 150), listOf(80, 180), listOf(130, 300), listOf(140, 280, 350))
 		private val tableBGM =
-			arrayOf(
-				arrayOf(BGM.Generic(0), BGM.Generic(1), BGM.Generic(2), BGM.GrandM(0)),
-				arrayOf(BGM.Puzzle(0), BGM.Generic(2), BGM.Generic(3), BGM.Generic(4)), //30levels
-				arrayOf(BGM.Puzzle(1), BGM.Generic(4), BGM.Generic(5), BGM.Generic(6)), //50levels
-				arrayOf(BGM.Puzzle(2), BGM.Generic(5), BGM.Generic(6), BGM.Generic(7), BGM.Generic(8)), //200levels
-				arrayOf(BGM.Rush(0), BGM.Rush(1), BGM.Rush(2), BGM.Rush(3))
+			listOf(
+				listOf(BGM.Generic(0), BGM.Generic(1), BGM.Generic(2), BGM.GrandM(0)),
+				listOf(BGM.Puzzle(0), BGM.Generic(2), BGM.Generic(3), BGM.Generic(4)), //30levels
+				listOf(BGM.Puzzle(1), BGM.Generic(4), BGM.Generic(5), BGM.Generic(6)), //50levels
+				listOf(BGM.Puzzle(2), BGM.Generic(5), BGM.Generic(6), BGM.Generic(7), BGM.Generic(8)), //200levels
+				listOf(BGM.Rush(0), BGM.Rush(1), BGM.Rush(2), BGM.Rush(3))
 			)//challenge mode
 
 		/** Ending time */
-		private val ROLLTIMELIMIT = intArrayOf(-1, 5000, 7500, 10000)
+		private val ROLLTIMELIMIT = listOf(-1, 5000, 7500, 10000)
 
 		/** Line counts when game ending occurs */
-		private val tableGameClearLevel = intArrayOf(20, 30, 50, 200)
+		private val tableGameClearLevel = listOf(20, 30, 50, 200)
 		private val tableGameClearLines = tableGameClearLevel.mapIndexed {i, l ->
 			tableNorma[i].sumOf {it*10}+tableNorma[i].last {true}*(l-tableNorma[i].size*10)
-		}.toIntArray()
+		}
 		/** Number of game types */
 		private val GAMETYPE_MAX = tableGameClearLevel.size
 

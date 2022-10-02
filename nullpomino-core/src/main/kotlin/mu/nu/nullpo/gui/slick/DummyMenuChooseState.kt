@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -167,11 +167,10 @@ abstract class DummyMenuChooseState:BaseGameState() {
 		return false
 	}
 
-	protected fun renderChoices(x:Int, choices:Array<String>) {
+	protected fun renderChoices(x:Int, choices:List<String>) =
 		renderChoices(x, minChoiceY, choices)
-	}
 
-	protected fun renderChoices(x:Int, y:Int, choices:Array<String>) {
+	protected fun renderChoices(x:Int, y:Int = minChoiceY, choices:List<String>) {
 		FontNormal.printFontGrid(x-1, y+cursor, "\u0082", EventReceiver.COLOR.RAINBOW)
 		choices.forEachIndexed {i, z ->
 			FontNormal.printFontGrid(x, y+i, z, cursor==i)

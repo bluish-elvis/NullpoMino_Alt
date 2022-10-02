@@ -648,7 +648,7 @@ class MarathonDrill:NetDummyMode() {
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		listOf<(String)->Unit>({}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
 			{engine.statistics.scoreBonus = it.toInt()},
@@ -699,7 +699,7 @@ class MarathonDrill:NetDummyMode() {
 	}
 
 	/** NET: Receive game options */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		goalType = message[4].toInt()
 		startLevel = message[5].toInt()
 		bgmno = message[6].toInt()
@@ -734,20 +734,20 @@ class MarathonDrill:NetDummyMode() {
 		private const val GARBAGE_BOTTOM = 4
 
 		/** Fall velocity table (numerators) */
-		private val tableGravity = intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
+		private val tableGravity = listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
 
 		/** Fall velocity table (denominators) */
 		private val tableDenominator =
-			intArrayOf(64, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
+			listOf(64, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
 
 		/** Garbage speed table */
-		private val GARBAGE_TIMER_TABLE = arrayOf(
-			intArrayOf(360, 340, 320, 310, 300, 290, 280, 270, 260, 250, 240, 230, 220, 210, 200, 190, 180, 170, 160, 150), // Normal
-			intArrayOf(420, 410, 400, 385, 370, 350, 330, 305, 280, 265, 240, 230, 220, 210, 205, 200, 195, 190, 185, 180)// Realtime
+		private val GARBAGE_TIMER_TABLE = listOf(
+			listOf(360, 340, 320, 310, 300, 290, 280, 270, 260, 250, 240, 230, 220, 210, 200, 190, 180, 170, 160, 150), // Normal
+			listOf(420, 410, 400, 385, 370, 350, 330, 305, 280, 265, 240, 230, 220, 210, 205, 200, 195, 190, 185, 180)// Realtime
 		)
-		private val GARBAGE_MESSINESS_TABLE = arrayOf(
-			intArrayOf(20, 22, 25, 27, 30, 32, 35, 37, 40, 43, 46, 50, 55, 60, 65, 70, 75, 80, 85, 90), // Normal
-			intArrayOf(20, 25, 30, 32, 35, 37, 40, 45, 50, 52, 55, 57, 60, 62, 64, 66, 68, 70, 72, 75), // Realtime
+		private val GARBAGE_MESSINESS_TABLE = listOf(
+			listOf(20, 22, 25, 27, 30, 32, 35, 37, 40, 43, 46, 50, 55, 60, 65, 70, 75, 80, 85, 90), // Normal
+			listOf(20, 25, 30, 32, 35, 37, 40, 45, 50, 52, 55, 57, 60, 62, 64, 66, 68, 70, 72, 75), // Realtime
 		)
 	}
 }

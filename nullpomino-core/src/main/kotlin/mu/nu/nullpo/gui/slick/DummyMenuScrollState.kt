@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -47,7 +47,7 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 	protected var pageHeight = 0
 
 	/** List of entries */
-	protected var list:Array<String> = emptyArray()
+	protected var list:List<String> = emptyList()
 	override val numChoice:Int get() = list.size
 
 	protected var emptyError = ""
@@ -158,9 +158,19 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 			fillMinY = (insideHeight-fillHeight)*minentry/(list.size-pageHeight)
 		}
 		graphics.color = SB_BACK_COLOR
-		graphics.fillRect((SB_MIN_X+LINE_WIDTH).toFloat(), (SB_MIN_Y+LINE_WIDTH).toFloat(), insideWidth.toFloat(), insideHeight.toFloat())
+		graphics.fillRect(
+			(SB_MIN_X+LINE_WIDTH).toFloat(),
+			(SB_MIN_Y+LINE_WIDTH).toFloat(),
+			insideWidth.toFloat(),
+			insideHeight.toFloat()
+		)
 		graphics.color = SB_FILL_COLOR
-		graphics.fillRect((SB_MIN_X+LINE_WIDTH).toFloat(), (SB_MIN_Y+LINE_WIDTH+fillMinY).toFloat(), insideWidth.toFloat(), fillHeight.toFloat())
+		graphics.fillRect(
+			(SB_MIN_X+LINE_WIDTH).toFloat(),
+			(SB_MIN_Y+LINE_WIDTH+fillMinY).toFloat(),
+			insideWidth.toFloat(),
+			fillHeight.toFloat()
+		)
 		graphics.color = Color.white
 
 		//Update coordinates

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022,
+ * Copyright (c) 2022-2022,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2022-2022)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -63,30 +63,22 @@ class PressFToFillTheScreenWallkick:Wallkick {
 				while(xi<field.width) {
 					xi = -field.hiddenHeight
 					while(xi<field.height) {
-						if(!this.isABlockOnTheField(xi, xi, field)) {
-							++blockCount
-						}
+						if(!this.isABlockOnTheField(xi, xi, field)) ++blockCount
 						++xi
 					}
 					++xi
 				}
 			}
-			piece.block = Array(blockCount) {piece.block[0]}
-			piece.dataX = Array(4) {IntArray(blockCount)}
-			piece.dataY = Array(4) {IntArray(blockCount)}
+			piece.block = List(blockCount) {piece.block[0]}
+			piece.dataX.forEach {it.clear()}
+			piece.dataY.forEach {it.clear()}
 			blockCount = 0
 			xi = 0
 			while(xi<field.width) {
 				for(yi in -field.hiddenHeight until field.height) {
 					if(!isABlockOnTheField(xi, yi, field)) {
-						piece.dataX[0][blockCount] = xi
-						piece.dataX[1][blockCount] = xi
-						piece.dataX[2][blockCount] = xi
-						piece.dataX[3][blockCount] = xi
-						piece.dataY[0][blockCount] = yi
-						piece.dataY[1][blockCount] = yi
-						piece.dataY[2][blockCount] = yi
-						piece.dataY[3][blockCount] = yi
+						piece.dataX.forEach {it.add(xi)}
+						piece.dataY.forEach {it.add(xi)}
 						++blockCount
 					}
 				}

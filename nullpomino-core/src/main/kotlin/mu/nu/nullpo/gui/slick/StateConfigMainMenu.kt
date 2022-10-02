@@ -137,7 +137,7 @@ internal class StateConfigMainMenu:DummyMenuChooseState() {
 
 		/** Text identifier Strings */
 		private val CHOICES =
-			arrayOf(
+			listOf(
 				"General Settings" to "General",
 				"RULE Select" to "Rule", "Tweaks Handling" to "GameTuning",
 				"AI Setting" to "AI",

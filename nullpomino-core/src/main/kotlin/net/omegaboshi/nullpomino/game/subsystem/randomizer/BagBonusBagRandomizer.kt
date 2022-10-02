@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,16 +33,16 @@ import mu.nu.nullpo.game.component.Piece
 
 class BagBonusBagRandomizer:BagRandomizer {
 
-	private var bonusbag = IntArray(0)
+	private var bonusbag = mutableListOf<Int>()
 	private var bonuspt:Int = pieces.size
 	override val baglen:Int get() = pieces.size+1
-	override val bagInit:IntArray
-		get() = IntArray(baglen) {
+	override val bagInit
+		get() = List(baglen) {
 			if(bonuspt>=bonusbag.size) {
 				bonuspt = 0
 
-				val tmp = IntArray(pieces.size) {i -> pieces[i]}.toMutableList()
-				bonusbag = IntArray(0)
+				val tmp = MutableList(pieces.size) {i -> pieces[i]}
+				bonusbag.clear()
 				while(tmp.isNotEmpty()) {
 					var i:Int
 					do i = r.nextInt(tmp.size)
@@ -55,5 +55,5 @@ class BagBonusBagRandomizer:BagRandomizer {
 		}
 
 	constructor():super()
-	constructor(pieceEnable:BooleanArray, seed:Long):super(pieceEnable, seed)
+	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
 }

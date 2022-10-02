@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -230,7 +230,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 			/** 宝石になりうるBlock colorのMaximum count */
 			val COLOR_NUM = all.count {it.color}
 			val ALL_COLOR_NUM = COUNT+COLOR_NUM
-			fun colors() = all.filter {it.color}.toTypedArray()
+			fun colors() = all.filter {it.color}
 		}
 
 	}

@@ -859,7 +859,7 @@ open class EventReceiver {
 	open fun saveReplay(owner:GameManager, prop:CustomProperties, foldername:String = "replay") {
 		if(owner.mode?.isOnlineMode!=false) return
 		val folder = "$foldername/${owner.mode?.javaClass?.simpleName ?: ""}"
-		val filename = "$folder/"+prop.getProperty("name.rule").lowercase().toReplayFilename.replace("[\\s-]".toRegex(), "_")
+		val filename = "$folder/"+prop.getProperty("name.rule").lowercase().toReplayFilename.replace(Regex("[\\s-]"), "_")
 		try {
 			val repFolder = File(folder)
 			if(!repFolder.exists()) if(repFolder.mkdirs()) log.info("Created replay folder: $folder")
@@ -951,100 +951,100 @@ open class EventReceiver {
 		}
 
 		/** Field X position */
-		val NEW_FIELD_OFFSET_X = arrayOf(
-			arrayOf(// TETROMINO
-				intArrayOf(119, 247, 375, 503, 247, 375, 375), // Small
-				intArrayOf(32, 432, 432, 432, 432, 432, 432), // Normal
-				intArrayOf(16, 416, 416, 416, 416, 416, 416)
+		val NEW_FIELD_OFFSET_X = listOf(
+			listOf(// TETROMINO
+				listOf(119, 247, 375, 503, 247, 375, 375), // Small
+				listOf(32, 432, 432, 432, 432, 432, 432), // Normal
+				listOf(16, 416, 416, 416, 416, 416, 416)
 			)// Big
-			, arrayOf(// AVALANCHE
-				intArrayOf(119, 247, 375, 503, 247, 375, 375), // Small
-				intArrayOf(32, 432, 432, 432, 432, 432, 432), // Normal
-				intArrayOf(16, 352, 352, 352, 352, 352, 352)
+			, listOf(// AVALANCHE
+				listOf(119, 247, 375, 503, 247, 375, 375), // Small
+				listOf(32, 432, 432, 432, 432, 432, 432), // Normal
+				listOf(16, 352, 352, 352, 352, 352, 352)
 			)// Big
-			, arrayOf(// PHYSICIAN
-				intArrayOf(119, 247, 375, 503, 247, 375, 375), // Small
-				intArrayOf(32, 432, 432, 432, 432, 432, 432), // Normal
-				intArrayOf(16, 416, 416, 416, 416, 416, 416)
+			, listOf(// PHYSICIAN
+				listOf(119, 247, 375, 503, 247, 375, 375), // Small
+				listOf(32, 432, 432, 432, 432, 432, 432), // Normal
+				listOf(16, 416, 416, 416, 416, 416, 416)
 			)// Big
-			, arrayOf(// SPF
-				intArrayOf(119, 247, 375, 503, 247, 375, 375), // Small
-				intArrayOf(32, 432, 432, 432, 432, 432, 432), // Normal
-				intArrayOf(16, 352, 352, 352, 352, 352, 416)
+			, listOf(// SPF
+				listOf(119, 247, 375, 503, 247, 375, 375), // Small
+				listOf(32, 432, 432, 432, 432, 432, 432), // Normal
+				listOf(16, 352, 352, 352, 352, 352, 416)
 			)// Big
 		)
 
 		/** Field Y position */
-		val NEW_FIELD_OFFSET_Y = arrayOf(
-			arrayOf(// TETROMINO
-				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
-				intArrayOf(32), // Normal
-				intArrayOf(8)
+		val NEW_FIELD_OFFSET_Y = listOf(
+			listOf(// TETROMINO
+				listOf(80, 80, 80, 80, 286, 286, 286), // Small
+				listOf(32), // Normal
+				listOf(8)
 			)// Big
-			, arrayOf(// AVALANCHE
-				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
-				intArrayOf(32), // Normal
-				intArrayOf(8)
+			, listOf(// AVALANCHE
+				listOf(80, 80, 80, 80, 286, 286, 286), // Small
+				listOf(32), // Normal
+				listOf(8)
 			)// Big
-			, arrayOf(// PHYSICIAN
-				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
-				intArrayOf(32), // Normal
-				intArrayOf(8)
+			, listOf(// PHYSICIAN
+				listOf(80, 80, 80, 80, 286, 286, 286), // Small
+				listOf(32), // Normal
+				listOf(8)
 			)// Big
-			, arrayOf(// SPF
-				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
-				intArrayOf(32), // Normal
-				intArrayOf(8)
+			, listOf(// SPF
+				listOf(80, 80, 80, 80, 286, 286, 286), // Small
+				listOf(32), // Normal
+				listOf(8)
 			)// Big
 		)
 
 		const val nextHeight = 48
 
 		/** Field X position (Big side preview) */
-		val NEW_FIELD_OFFSET_X_BSP = arrayOf(
-			arrayOf(// TETROMINO
-				intArrayOf(208, 320, 432, 544, 320, 432, 544), // Small
-				intArrayOf(64, 400), // Normal
-				intArrayOf(16, 352)
+		val NEW_FIELD_OFFSET_X_BSP = listOf(
+			listOf(// TETROMINO
+				listOf(208, 320, 432, 544, 320, 432, 544), // Small
+				listOf(64, 400), // Normal
+				listOf(16, 352)
 			)// Big
-			, arrayOf(// AVALANCHE
-				intArrayOf(208, 320, 432, 544, 320, 432, 544), // Small
-				intArrayOf(64, 400), // Normal
-				intArrayOf(16, 352)
+			, listOf(// AVALANCHE
+				listOf(208, 320, 432, 544, 320, 432, 544), // Small
+				listOf(64, 400), // Normal
+				listOf(16, 352)
 			)// Big
-			, arrayOf(// PHYSICIAN
-				intArrayOf(208, 320, 432, 544, 320, 432, 544), // Small
-				intArrayOf(64, 400), // Normal
-				intArrayOf(16, 352)
+			, listOf(// PHYSICIAN
+				listOf(208, 320, 432, 544, 320, 432, 544), // Small
+				listOf(64, 400), // Normal
+				listOf(16, 352)
 			)// Big
-			, arrayOf(// SPF
-				intArrayOf(208, 320, 432, 544, 320, 432, 544), // Small
-				intArrayOf(64, 400), // Normal
-				intArrayOf(16, 352)
+			, listOf(// SPF
+				listOf(208, 320, 432, 544, 320, 432, 544), // Small
+				listOf(64, 400), // Normal
+				listOf(16, 352)
 			)// Big
 		)
 
 		/** Field Y position (Big side preview) */
-		val NEW_FIELD_OFFSET_Y_BSP = arrayOf(
-			arrayOf(// TETROMINO
-				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
-				intArrayOf(32), // Normal
-				intArrayOf(8)
+		val NEW_FIELD_OFFSET_Y_BSP = listOf(
+			listOf(// TETROMINO
+				listOf(80, 80, 80, 80, 286, 286, 286), // Small
+				listOf(32), // Normal
+				listOf(8)
 			)// Big
-			, arrayOf(// AVALANCHE
-				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
-				intArrayOf(32), // Normal
-				intArrayOf(8)
+			, listOf(// AVALANCHE
+				listOf(80, 80, 80, 80, 286, 286, 286), // Small
+				listOf(32), // Normal
+				listOf(8)
 			)// Big
-			, arrayOf(// PHYSICIAN
-				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
-				intArrayOf(32), // Normal
-				intArrayOf(8)
+			, listOf(// PHYSICIAN
+				listOf(80, 80, 80, 80, 286, 286, 286), // Small
+				listOf(32), // Normal
+				listOf(8)
 			)// Big
-			, arrayOf(// SPF
-				intArrayOf(80, 80, 80, 80, 286, 286, 286), // Small
-				intArrayOf(32), // Normal
-				intArrayOf(8)
+			, listOf(// SPF
+				listOf(80, 80, 80, 80, 286, 286, 286), // Small
+				listOf(32), // Normal
+				listOf(8)
 			)// Big
 		)
 

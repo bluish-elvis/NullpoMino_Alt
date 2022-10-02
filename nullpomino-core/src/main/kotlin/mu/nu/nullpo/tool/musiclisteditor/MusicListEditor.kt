@@ -285,7 +285,7 @@ class MusicListEditor:JFrame(), ActionListener {
 			// Button number取得
 			var number = 0
 			try {
-				val strNum = e.actionCommand.replaceFirst("OpenFileDialog".toRegex(), "")
+				val strNum = e.actionCommand.replaceFirst(Regex("OpenFileDialog"), "")
 				number = strNum.toInt()
 			} catch(e2:Exception) {
 				log.error("OpenFileDialog: Failed to get button number", e2)
@@ -322,7 +322,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		} else if(e.actionCommand.startsWith("Clear")) {
 			var number = 0
 			try {
-				val strNum = e.actionCommand.replaceFirst("Clear".toRegex(), "")
+				val strNum = e.actionCommand.replaceFirst(Regex("Clear"), "")
 				number = strNum.toInt()
 			} catch(e2:Exception) {
 				log.error("Clear: Failed to get button number", e2)

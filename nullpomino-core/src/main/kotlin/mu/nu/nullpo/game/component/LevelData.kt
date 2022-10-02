@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,67 +31,41 @@ package mu.nu.nullpo.game.component
 
 data class LevelData(
 	/** 落下速度 */
-	var gravity:IntArray = intArrayOf(4),
+	var gravity:List<Int> = listOf(4),
 	/** 落下速度の分母 (gravity==denominatorなら1Gになる) */
-	var denominator:IntArray = intArrayOf(256),
+	var denominator:List<Int> = listOf(256),
 	/** 出現待ち time */
-	var are:IntArray = intArrayOf(24),
+	var are:List<Int> = listOf(24),
 	/** Line clear後の出現待ち time */
-	var areLine:IntArray = intArrayOf(24),
+	var areLine:List<Int> = listOf(24),
 	/** Line clear time */
-	var lineDelay:IntArray = intArrayOf(40),
+	var lineDelay:List<Int> = listOf(40),
 	/** 固定 time */
-	var lockDelay:IntArray = intArrayOf(30),
+	var lockDelay:List<Int> = listOf(30),
 	/** 横移動 time */
-	var das:IntArray = intArrayOf(14)
+	var das:List<Int> = listOf(14)
 ) {
-	constructor(gravity:IntArray, denominator:IntArray, are:Int, areLine:Int, lineDelay:Int, lockDelay:Int, das:Int):
-		this(gravity, denominator,
-			intArrayOf(are), intArrayOf(areLine), intArrayOf(lineDelay), intArrayOf(lockDelay), intArrayOf(das))
+	constructor(gravity:List<Int>, denominator:List<Int>, are:Int, areLine:Int, lineDelay:Int, lockDelay:Int, das:Int):
+		this(
+			gravity, denominator,
+			listOf(are), listOf(areLine), listOf(lineDelay), listOf(lockDelay), listOf(das)
+		)
 
 	constructor(gravity:Int, denominator:Int,
-		are:IntArray, areLine:IntArray, lineDelay:IntArray, lockDelay:IntArray, das:IntArray):
-		this(intArrayOf(gravity), intArrayOf(denominator), are, areLine, lineDelay, lockDelay, das)
+		are:List<Int>, areLine:List<Int>, lineDelay:List<Int>, lockDelay:List<Int>, das:List<Int>):
+		this(listOf(gravity), listOf(denominator), are, areLine, lineDelay, lockDelay, das)
 
-	constructor(are:IntArray, areLine:IntArray, lineDelay:IntArray, lockDelay:IntArray, das:IntArray):
+	constructor(are:List<Int>, areLine:List<Int>, lineDelay:List<Int>, lockDelay:List<Int>, das:List<Int>):
 		this(-1, 256, are, areLine, lineDelay, lockDelay, das)
 
 	constructor(are:Int, areLine:Int, lineDelay:Int, lockDelay:Int, das:Int):
-		this(intArrayOf(-1), intArrayOf(256), are, areLine, lineDelay, lockDelay, das)
+		this(listOf(-1), listOf(256), are, areLine, lineDelay, lockDelay, das)
 
 	operator fun get(i:Int) =
 		SpeedParam(lv(gravity, i), lv(denominator, i), lv(are, i), lv(areLine, i), lv(lineDelay, i), lv(lockDelay, i), lv(das, i))
 
-	override fun equals(other:Any?):Boolean {
-		if(this===other) return true
-		if(javaClass!=other?.javaClass) return false
-
-		other as LevelData
-
-		if(!gravity.contentEquals(other.gravity)) return false
-		if(!denominator.contentEquals(other.denominator)) return false
-		if(!are.contentEquals(other.are)) return false
-		if(!areLine.contentEquals(other.areLine)) return false
-		if(!lineDelay.contentEquals(other.lineDelay)) return false
-		if(!lockDelay.contentEquals(other.lockDelay)) return false
-		if(!das.contentEquals(other.das)) return false
-
-		return true
-	}
-
-	override fun hashCode():Int {
-		var result = gravity.contentHashCode()
-		result = 31*result+denominator.contentHashCode()
-		result = 31*result+are.contentHashCode()
-		result = 31*result+areLine.contentHashCode()
-		result = 31*result+lineDelay.contentHashCode()
-		result = 31*result+lockDelay.contentHashCode()
-		result = 31*result+das.contentHashCode()
-		return result
-	}
-
 	companion object {
-		fun lv(arr:IntArray, i:Int):Int = arr[maxOf(0, minOf(i, arr.size-1))]
+		fun lv(arr:List<Int>, i:Int):Int = arr[maxOf(0, minOf(i, arr.size-1))]
 	}
 
 }

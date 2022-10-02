@@ -58,7 +58,7 @@ class Fireworks @JvmOverloads constructor(
 	/**Randomizer*/
 	randomizer:Random = Random.Default
 ):ParticleEmitterBase() {
-	override val particles = Array((randomizer.nextInt(64)+64)*num) {
+	override val particles = MutableList((randomizer.nextInt(64)+64)*num) {
 
 		val origin = Vector(x, y)
 
@@ -82,7 +82,7 @@ class Fireworks @JvmOverloads constructor(
 			lerp(ured, 255, .9f), lerp(ugreen, 255, .9f), lerp(ublue, 255, .9f),
 			lerp(ualpha, 255, .9f), ured*4/5, ugreen*4/5, ublue*4/5, 0
 		)
-		arrayOf(particle, particle2)
+		listOf(particle, particle2)
 	}.flatten().toMutableList()
 
 	private var ticks = 0

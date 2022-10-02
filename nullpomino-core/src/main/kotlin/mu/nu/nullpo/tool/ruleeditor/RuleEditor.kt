@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -405,10 +405,10 @@ class RuleEditor:JFrame, ActionListener {
 	private var tabPieceOffset:JTabbedPane? = null
 
 	/** rotationパターン補正(X) input 欄 */
-	private var txtfldPieceOffsetX:Array<Array<JTextField>>? = null
+	private var txtfldPieceOffsetX:List<List<JTextField>>? = null
 
 	/** rotationパターン補正(Y) input 欄 */
-	private var txtfldPieceOffsetY:Array<Array<JTextField>>? = null
+	private var txtfldPieceOffsetY:List<List<JTextField>>? = null
 
 	//----------------------------------------------------------------------
 	/* rotationパターン補正パネル */
@@ -417,32 +417,32 @@ class RuleEditor:JFrame, ActionListener {
 	private var tabPieceSpawn:JTabbedPane? = null
 
 	/** 出現位置補正(X) input 欄 */
-	private var txtfldPieceSpawnX:Array<Array<JTextField>>? = null
+	private var txtfldPieceSpawnX:List<List<JTextField>>? = null
 
 	/** 出現位置補正(Y) input 欄 */
-	private var txtfldPieceSpawnY:Array<Array<JTextField>>? = null
+	private var txtfldPieceSpawnY:List<List<JTextField>>? = null
 
 	/** Big時出現位置補正(X) input 欄 */
-	private var txtfldPieceSpawnBigX:Array<Array<JTextField>>? = null
+	private var txtfldPieceSpawnBigX:List<List<JTextField>>? = null
 
 	/** Big時出現位置補正(Y) input 欄 */
-	private var txtfldPieceSpawnBigY:Array<Array<JTextField>>? = null
+	private var txtfldPieceSpawnBigY:List<List<JTextField>>? = null
 
 	//----------------------------------------------------------------------
 	/* 色設定パネル */
 
 	/** 色選択Comboボックス */
-	private var comboboxPieceColor:Array<JComboBox<*>>? = null
+	private var comboboxPieceColor:List<JComboBox<*>>? = null
 
 	//----------------------------------------------------------------------
 	/* 初期Direction設定パネル */
 
 	/** 初期Direction選択Comboボックス */
-	private var comboboxPieceDirection:Array<JComboBox<*>>? = null
+	private var comboboxPieceDirection:List<JComboBox<*>>? = null
 
 	//----------------------------------------------------------------------
 	/** Block画像 */
-	private var imgBlockSkins:Array<BufferedImage>? = null
+	private var imgBlockSkins:List<BufferedImage>? = null
 
 	/** Constructor */
 	constructor():super() {
@@ -603,7 +603,7 @@ class RuleEditor:JFrame, ActionListener {
 		// Game style
 		val pStyle = JPanel()
 		pStyle.add(JLabel(getUIText("Basic_Style")))
-		comboboxStyle = JComboBox(GameEngine.GAMESTYLE_NAMES).apply {
+		comboboxStyle = JComboBox(GameEngine.GAMESTYLE_NAMES.toTypedArray()).apply {
 			preferredSize = Dimension(100, 30)
 		}
 		pStyle.add(comboboxStyle)
@@ -1087,15 +1087,15 @@ class RuleEditor:JFrame, ActionListener {
 		panelPieceOffsetX.layout = BoxLayout(panelPieceOffsetX, BoxLayout.Y_AXIS)
 		tabPieceOffset?.addTab(getUIText("TabName_PieceOffsetX"), panelPieceOffsetX)
 
-		val pPieceOffsetX = Array(Piece.PIECE_COUNT) {
+		val pPieceOffsetX = List(Piece.PIECE_COUNT) {
 			JPanel().apply {
 				panelPieceOffsetX.add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtfldPieceOffsetX = Array(Piece.PIECE_COUNT) {i ->
-			Array(Piece.DIRECTION_COUNT) {
+		txtfldPieceOffsetX = List(Piece.PIECE_COUNT) {i ->
+			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {pPieceOffsetX[i].add(this)}
 			}
 		}
@@ -1105,15 +1105,15 @@ class RuleEditor:JFrame, ActionListener {
 			tabPieceOffset?.addTab(getUIText("TabName_PieceOffsetY"), this)
 		}
 
-		val pPieceOffsetY = Array(Piece.PIECE_COUNT) {
+		val pPieceOffsetY = List(Piece.PIECE_COUNT) {
 			JPanel().apply {
 				panelPieceOffsetY.add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtfldPieceOffsetY = Array(Piece.PIECE_COUNT) {i ->
-			Array(Piece.DIRECTION_COUNT) {
+		txtfldPieceOffsetY = List(Piece.PIECE_COUNT) {i ->
+			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {
 					pPieceOffsetY[i].add(this)
 				}
@@ -1134,15 +1134,15 @@ class RuleEditor:JFrame, ActionListener {
 		panelPieceSpawnX.layout = BoxLayout(panelPieceSpawnX, BoxLayout.Y_AXIS)
 		tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnX"), panelPieceSpawnX)
 
-		val pPieceSpawnX = Array(Piece.PIECE_COUNT) {
+		val pPieceSpawnX = List(Piece.PIECE_COUNT) {
 			JPanel().apply {
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtfldPieceSpawnX = Array(Piece.PIECE_COUNT) {i ->
+		txtfldPieceSpawnX = List(Piece.PIECE_COUNT) {i ->
 			panelPieceSpawnX.add(pPieceSpawnX[i])
-			Array(Piece.DIRECTION_COUNT) {
+			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {
 					pPieceSpawnX[i].add(this)
 				}
@@ -1155,15 +1155,15 @@ class RuleEditor:JFrame, ActionListener {
 			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnY"), this)
 		}
 
-		val pPieceSpawnY = Array(Piece.PIECE_COUNT) {
+		val pPieceSpawnY = List(Piece.PIECE_COUNT) {
 			JPanel().apply {
 				panelPieceSpawnY.add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtfldPieceSpawnY = Array(Piece.PIECE_COUNT) {i ->
-			Array(Piece.DIRECTION_COUNT) {
+		txtfldPieceSpawnY = List(Piece.PIECE_COUNT) {i ->
+			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {
 					pPieceSpawnY[i].add(this)
 				}
@@ -1176,15 +1176,15 @@ class RuleEditor:JFrame, ActionListener {
 			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnBigX"), this)
 		}
 
-		val pPieceSpawnBigX = Array(Piece.PIECE_COUNT) {
+		val pPieceSpawnBigX = List(Piece.PIECE_COUNT) {
 			JPanel().apply {
 				panelPieceSpawnBigX.add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtfldPieceSpawnBigX = Array(Piece.PIECE_COUNT) {i ->
-			Array(Piece.DIRECTION_COUNT) {
+		txtfldPieceSpawnBigX = List(Piece.PIECE_COUNT) {i ->
+			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {pPieceSpawnBigX[i].add(this)}
 			}
 		}
@@ -1194,15 +1194,15 @@ class RuleEditor:JFrame, ActionListener {
 			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnBigY"), this)
 		}
 
-		val pPieceSpawnBigY = Array(Piece.PIECE_COUNT) {
+		val pPieceSpawnBigY = List(Piece.PIECE_COUNT) {
 			JPanel().apply {
 				panelPieceSpawnBigY.add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		txtfldPieceSpawnBigY = Array(Piece.PIECE_COUNT) {i ->
-			Array(Piece.DIRECTION_COUNT) {
+		txtfldPieceSpawnBigY = List(Piece.PIECE_COUNT) {i ->
+			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {pPieceSpawnBigY[i].add(this)}
 			}
 		}
@@ -1213,16 +1213,14 @@ class RuleEditor:JFrame, ActionListener {
 			tabPane.addTab(getUIText("TabName_PieceColor"), this)
 		}
 
-		val strColorNames = Array(Block.COLOR.COUNT-1) {getUIText("ColorName$it")}
-
-		val pColorRow = Array(2) {
+		val pColorRow = List(2) {
 			JPanel().apply {
 				layout = BoxLayout(this, BoxLayout.Y_AXIS)
 				panelPieceColor.add(this)
 			}
 
 		}
-		val bResetColor = arrayOf(JButton(getUIText("Basic_Reset")+" SRS").apply {
+		val bResetColor = listOf(JButton(getUIText("Basic_Reset")+" SRS").apply {
 			setMnemonic('S')
 			actionCommand = "PresetColors_SRS"
 		}, JButton("${getUIText("Basic_Reset")} ARS").apply {
@@ -1234,13 +1232,14 @@ class RuleEditor:JFrame, ActionListener {
 			pColorRow[1].add(it)
 		}
 
-		val pPieceColor = Array(Piece.PIECE_COUNT) {
+		val strColorNames = Array(Block.COLOR.COUNT-1) {getUIText("ColorName$it")}
+		val pPieceColor = List(Piece.PIECE_COUNT) {
 			JPanel().apply {
 				pColorRow[0].add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
-		comboboxPieceColor = Array(Piece.PIECE_COUNT) {i ->
+		comboboxPieceColor = List(Piece.PIECE_COUNT) {i ->
 			JComboBox(strColorNames).apply {
 				preferredSize = Dimension(100, 30)
 				maximumRowCount = strColorNames.size
@@ -1253,13 +1252,13 @@ class RuleEditor:JFrame, ActionListener {
 		panelPieceDirection.layout = BoxLayout(panelPieceDirection, BoxLayout.X_AXIS)
 		tabPane.addTab(getUIText("TabName_PieceDirection"), panelPieceDirection)
 
-		val pDirectRow = Array(2) {
+		val pDirectRow = List(2) {
 			JPanel().apply {
 				this@apply.layout = BoxLayout(this, BoxLayout.Y_AXIS)
 				panelPieceDirection.add(this)
 			}
 		}
-		val bResetDirect = arrayOf(JButton("${getUIText("Basic_Reset")} SRS").apply {
+		val bResetDirect = listOf(JButton("${getUIText("Basic_Reset")} SRS").apply {
 			setMnemonic('S')
 			actionCommand = "ResetDirection_SRS"
 		}, JButton("${getUIText("Basic_Reset")} ARS").apply {
@@ -1271,18 +1270,18 @@ class RuleEditor:JFrame, ActionListener {
 			pDirectRow[1].add(it)
 		}
 
-		val strDirectionNames = Array(Piece.DIRECTION_COUNT+1) {
-			getUIText("DirectionName$it")
-		}
-
-		val pPieceDirection = Array(Piece.PIECE_COUNT) {
+		val pPieceDirection = List(Piece.PIECE_COUNT) {
 			JPanel().apply {
 				pDirectRow[0].add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
 
-		comboboxPieceDirection = Array(Piece.PIECE_COUNT) {
+		val strDirectionNames = Array(Piece.DIRECTION_COUNT+1) {
+			getUIText("DirectionName$it")
+		}
+
+		comboboxPieceDirection = List(Piece.PIECE_COUNT) {
 			JComboBox(strDirectionNames).apply {
 				preferredSize = Dimension(150, 30)
 				maximumRowCount = strDirectionNames.size
@@ -1300,7 +1299,7 @@ class RuleEditor:JFrame, ActionListener {
 		while(File("$skindir/graphics/blockskin/normal/n$numBlocks.png").canRead()) numBlocks++
 		log.debug("$numBlocks block skins found")
 
-		imgBlockSkins = Array(numBlocks) {i ->
+		imgBlockSkins = List(numBlocks) {i ->
 			val imgBlock = loadImage(getURL("$skindir/graphics/blockskin/normal/n$i.png"))
 			val isSticky = imgBlock!=null&&imgBlock.width>=400&&imgBlock.height>=304
 

@@ -74,7 +74,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 	 * @param name Image name in holder dictionary.
 	 * @return int[] { width, height } (both in pixels).
 	 */
-	fun getImageDimensions(name:String):IntArray = intArrayOf(slickImages[name]?.width ?: 0, slickImages[name]?.height ?: 0)
+	fun getImageDimensions(name:String):List<Int> = listOf(slickImages[name]?.width ?: 0, slickImages[name]?.height ?: 0)
 
 	/**
 	 * Puts image in the holder at name.
@@ -189,8 +189,10 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 	 */
 	fun drawImage(name:String, x:Int, y:Int, srcX:Int, srcY:Int, srcSizeX:Int, srcSizeY:Int, red:Int,
 		green:Int = 255, blue:Int = 255, alpha:Int = 255, scale:Float = 1f) {
-		drawImage(name, x.toFloat(), y.toFloat(), srcX.toFloat(), srcY.toFloat(), srcSizeX.toFloat(), srcSizeY.toFloat(),
-			Color(red, green, blue, alpha), scale)
+		drawImage(
+			name, x.toFloat(), y.toFloat(), srcX.toFloat(), srcY.toFloat(), srcSizeX.toFloat(), srcSizeY.toFloat(),
+			Color(red, green, blue, alpha), scale
+		)
 
 	}
 	/**
@@ -217,8 +219,10 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 			val fx = x+sx
 			val fy = y+sy
 			val filter = Color(red, green, blue, alpha)
-			toDraw.draw(x.toFloat(), y.toFloat(), fx.toFloat(), fy.toFloat(), srcX.toFloat(), srcY.toFloat(),
-				(srcX+srcSizeX).toFloat(), (srcY+srcSizeY).toFloat(), filter)
+			toDraw.draw(
+				x.toFloat(), y.toFloat(), fx.toFloat(), fy.toFloat(), srcX.toFloat(), srcY.toFloat(),
+				(srcX+srcSizeX).toFloat(), (srcY+srcSizeY).toFloat(), filter
+			)
 		}
 	}
 	/**
@@ -266,147 +270,147 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 		val a = alpha.toInt(16)
 		drawImage(name, x, y, srcX, srcY, srcSizeX, srcSizeY, r, g, b, a, scale)
 	}
-/*
-	/**
-	 * Appends a new BGM number into the BGM array. On Swing, this has no effect.
-	 *
-	 * @param filename File path of music file to import.
-	 * @param showerr  Show in log?
-	 */
-	fun loadNewBGMAppend(filename:String?, noLoop:Boolean, showerr:Boolean) {
-		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
-		val no = BGMStatus.BGM.all.size+1
-		val newArr = arrayOfNulls<Music>(no)
-		var i = 0
-		while(i<ResourceHolder.bgm.size) {
-			newArr[i] = ResourceHolder.bgm
-			i++
-		}
-		if(newArr[no-1]==null) {
-			if(showerr) log.info("Loading BGM at $filename")
-			try {
-				// String filename = NullpoMinoSlick.propMusic.getProperty("music.filename." + no, null);
-				if(filename==null||filename.isEmpty()) {
-					if(showerr) log.info("BGM at $filename not available")
-					return
-				}
-				NullpoMinoSlick.propMusic.setProperty("music.noloop.$no", noLoop)
-				// boolean streaming = NullpoMinoSlick.propConfig.getProperty("option.bgmstreaming", true);
-				newArr[no-1] = Music(filename, true)
-				ResourceHolder.bgm = arrayOf(newArr.clone())
-				if(!showerr) log.info("Loaded BGM at $filename")
-			} catch(e:Throwable) {
-				if(showerr) log.error("BGM at $filename load failed", e) else log.warn("BGM at $filename load failed")
+	/*
+		/**
+		 * Appends a new BGM number into the BGM list. On Swing, this has no effect.
+		 *
+		 * @param filename File path of music file to import.
+		 * @param showerr  Show in log?
+		 */
+		fun loadNewBGMAppend(filename:String?, noLoop:Boolean, showerr:Boolean) {
+			if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
+			val no = BGMStatus.BGM.all.size+1
+			val newArr = arrayOfNulls<Music>(no)
+			var i = 0
+			while(i<ResourceHolder.bgm.size) {
+				newArr[i] = ResourceHolder.bgm
+				i++
 			}
+			if(newArr[no-1]==null) {
+				if(showerr) log.info("Loading BGM at $filename")
+				try {
+					// String filename = NullpoMinoSlick.propMusic.getProperty("music.filename." + no, null);
+					if(filename==null||filename.isEmpty()) {
+						if(showerr) log.info("BGM at $filename not available")
+						return
+					}
+					NullpoMinoSlick.propMusic.setProperty("music.noloop.$no", noLoop)
+					// boolean streaming = NullpoMinoSlick.propConfig.getProperty("option.bgmstreaming", true);
+					newArr[no-1] = Music(filename, true)
+					ResourceHolder.bgm = arrayOf(newArr.clone())
+					if(!showerr) log.info("Loaded BGM at $filename")
+				} catch(e:Throwable) {
+					if(showerr) log.error("BGM at $filename load failed", e) else log.warn("BGM at $filename load failed")
+				}
+			}
+			return
 		}
-		return
-	}
 
-	/**
-	 * Removes a loaded BGM file from the end of the BGM array. On Swing, this has no effect.
-	 *
-	 * @param showerr Show in log?
-	 */
-	fun removeBGMFromEnd(showerr:Boolean) {
-		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
-		val no:Int = ResourceHolder.bgm.size-1
-		val newBGM = arrayOfNulls<Music>(no)
-		var i = 0
-		while(i<newBGM.size) {
-			newBGM[i] = ResourceHolder.bgm.flatten()[i]
-			i++
+		/**
+		 * Removes a loaded BGM file from the end of the BGM array. On Swing, this has no effect.
+		 *
+		 * @param showerr Show in log?
+		 */
+		fun removeBGMFromEnd(showerr:Boolean) {
+			if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
+			val no:Int = ResourceHolder.bgm.size-1
+			val newBGM = arrayOfNulls<Music>(no)
+			var i = 0
+			while(i<newBGM.size) {
+				newBGM[i] = ResourceHolder.bgm.flatten()[i]
+				i++
+			}
+			ResourceHolder.bgm = arrayOf(newBGM.clone())
+			if(showerr) log.info("Removed BGM at $no")
+			return
 		}
-		ResourceHolder.bgm = arrayOf(newBGM.clone())
-		if(showerr) log.info("Removed BGM at $no")
-		return
-	}
 
-	/**
-	 * Starts the play of an internal BGM. Use the relative index of the added music. (0 = first added track.)
-	 * There is a limitation that the song can't be paused.
-	 *
-	 * @param name   Track name.
-	 * @param noLoop Set true if it shouldn't loop.
-	 */
-	fun playCustomBGM(name:String, noLoop:Boolean) {
-		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
-		stopCustomBGM()
-		val bgmvolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
-		NullpoMinoSlick.appGameContainer.musicVolume = bgmvolume/128.toFloat()
-		try {
-			if(noLoop) slickMusic[name]!!.play() else slickMusic[name]!!.play()
-		} catch(e:Throwable) {
-			log.error("Failed to play music $name", e)
+		/**
+		 * Starts the play of an internal BGM. Use the relative index of the added music. (0 = first added track.)
+		 * There is a limitation that the song can't be paused.
+		 *
+		 * @param name   Track name.
+		 * @param noLoop Set true if it shouldn't loop.
+		 */
+		fun playCustomBGM(name:String, noLoop:Boolean) {
+			if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
+			stopCustomBGM()
+			val bgmvolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
+			NullpoMinoSlick.appGameContainer.musicVolume = bgmvolume/128.toFloat()
+			try {
+				if(noLoop) slickMusic[name]!!.play() else slickMusic[name]!!.play()
+			} catch(e:Throwable) {
+				log.error("Failed to play music $name", e)
+			}
+			return
 		}
-		return
-	}
 
-	/**
-	 * Remove internal custom BGM by name
-	 *
-	 * @param name BGM name
-	 */
-	fun removeCustomInternalBGM(name:String?) = slickMusic.remove(name)
+		/**
+		 * Remove internal custom BGM by name
+		 *
+		 * @param name BGM name
+		 */
+		fun removeCustomInternalBGM(name:String?) = slickMusic.remove(name)
 
-	/**
-	 * Gets number of loaded, appended BGM files.
-	 *
-	 * @return Number of loaded, appended BGM files.
-	 */
-	fun getAmountLoadedBGM():Int = ResourceHolder.bgm.size-BGMStatus.BGM.count
+		/**
+		 * Gets number of loaded, appended BGM files.
+		 *
+		 * @return Number of loaded, appended BGM files.
+		 */
+		fun getAmountLoadedBGM():Int = ResourceHolder.bgm.size-BGMStatus.BGM.count
 
-	/**
-	 * Gets number of loaded BGM files in holder.
-	 *
-	 * @return Number of loaded BGM files in holder.
-	 */
-	fun getAmountDiscreteLoadedBGM():Int = slickMusic.size
+		/**
+		 * Gets number of loaded BGM files in holder.
+		 *
+		 * @return Number of loaded BGM files in holder.
+		 */
+		fun getAmountDiscreteLoadedBGM():Int = slickMusic.size
 
-	/**
-	 * Stops all custom BGM.
-	 */
-	fun stopCustomBGM() {
-		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
-		slickMusic.forEach {t, u ->
-			u.pause()
-			u.stop()
+		/**
+		 * Stops all custom BGM.
+		 */
+		fun stopCustomBGM() {
+			if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
+			slickMusic.forEach {t, u ->
+				u.pause()
+				u.stop()
+			}
+			return
 		}
-		return
-	}
-	/**
-	 * Stops custom BGM.
-	 */
-	fun stopBGM() {
-		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
-		for(s in ResourceHolder.bgm) {
-			s?.pause()
-			s?.stop()
+		/**
+		 * Stops custom BGM.
+		 */
+		fun stopBGM() {
+			if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
+			for(s in ResourceHolder.bgm) {
+				s?.pause()
+				s?.stop()
 
+			}
+			return
 		}
-		return
-	}
 
-	/**
-	 * Stops all BGM.
-	 *
-	 * @param owner Current GameManager
-	 */
-	fun stopDefaultBGM(owner:GameManager) {
-		if(owner.bgmStatus.bgm!=BGMStatus.BGM.Silent) bgmPrevious = owner.bgmStatus.bgm
-		owner.bgmStatus.bgm = BGMStatus.BGM.Silent
-	}
-
-	/**
-	 * Restarts previously playing default BGM.
-	 *
-	 * @param owner Current GameManager
-	 */
-	fun restartDefaultBGM(owner:GameManager) {
-		if(owner.bgmStatus.bgm==BGMStatus.BGM.Silent) {
-			owner.bgmStatus.bgm = bgmPrevious
-			owner.bgmStatus.fadesw = false
+		/**
+		 * Stops all BGM.
+		 *
+		 * @param owner Current GameManager
+		 */
+		fun stopDefaultBGM(owner:GameManager) {
+			if(owner.bgmStatus.bgm!=BGMStatus.BGM.Silent) bgmPrevious = owner.bgmStatus.bgm
+			owner.bgmStatus.bgm = BGMStatus.BGM.Silent
 		}
-	}*/
+
+		/**
+		 * Restarts previously playing default BGM.
+		 *
+		 * @param owner Current GameManager
+		 */
+		fun restartDefaultBGM(owner:GameManager) {
+			if(owner.bgmStatus.bgm==BGMStatus.BGM.Silent) {
+				owner.bgmStatus.bgm = bgmPrevious
+				owner.bgmStatus.fadesw = false
+			}
+		}*/
 
 	companion object {
 		private val log = LogManager.getLogger()
@@ -454,17 +458,17 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 				null
 			}
 		}
-/*
-		fun setGraphicsSlick(renderer:RendererSlick?, grp:Graphics?) {
-			val local:Class<RendererSlick> = RendererSlick::class.java
-			val localField:Field
-			try {
-				localField = local.getDeclaredField("graphics")
-				localField.isAccessible = true
-				localField[renderer] = grp
-			} catch(e:Exception) {
-				log.error("Failed to extract graphics from Slick renderer.")
-			}
-		}*/
+		/*
+				fun setGraphicsSlick(renderer:RendererSlick?, grp:Graphics?) {
+					val local:Class<RendererSlick> = RendererSlick::class.java
+					val localField:Field
+					try {
+						localField = local.getDeclaredField("graphics")
+						localField.isAccessible = true
+						localField[renderer] = grp
+					} catch(e:Exception) {
+						log.error("Failed to extract graphics from Slick renderer.")
+					}
+				}*/
 	}
 }

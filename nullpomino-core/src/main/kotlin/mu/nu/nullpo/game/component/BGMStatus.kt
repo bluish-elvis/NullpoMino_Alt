@@ -70,7 +70,7 @@ class BGMStatus:Serializable {
 		val subName:String = if(sn.isEmpty()) "" else sn[maxOf(minOf(this.idx, minOf(sn.size, nums)-1), 0)]
 		val drawName = "#$id-${this.idx} ${name.replace('_', ' ')}"
 		val fullName = "$longName $subName"
-		//var filename:Array<String> = Array(maxOf(1, nums)) {""}
+		//var filename:List<String> = List(maxOf(1, nums)) {""}
 
 		override fun equals(other:Any?):Boolean =
 			super.equals(other)||if(other is BGM) id==other.id&&idx==other.idx else false

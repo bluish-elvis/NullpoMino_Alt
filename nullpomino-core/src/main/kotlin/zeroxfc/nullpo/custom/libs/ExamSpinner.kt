@@ -35,6 +35,7 @@ package zeroxfc.nullpo.custom.libs
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.RendererExtension
 import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
@@ -79,7 +80,7 @@ class ExamSpinner {
 	private var customHolder:ResourceHolderCustomAssetExtension? = null
 	private var header:String? = null
 	private var subheading:String? = null
-	private var possibilities:Array<String> = emptyArray()
+	private var possibilities:List<String> = emptyList()
 	private var clickedBefore = false
 	private var lifeTime = 0
 
@@ -91,14 +92,13 @@ class ExamSpinner {
 	 * @param close           Was it a close one?
 	 */
 	constructor(gradeText:String?, selectedOutcome:Int, close:Boolean) {
-		var gradeText = gradeText
+		val gText = gradeText ?: "UNDEFINED"
 		custom = false
-		if(gradeText==null) gradeText = "UNDEFINED"
 		customHolder = ResourceHolderCustomAssetExtension().apply {
 			loadImage("res/graphics/examResultText.png", "default")
 		}
 		log.debug("Non-custom ExamSpinner object created.")
-		this.gradeText = gradeText
+		this.gradeText = gText
 		this.selectedOutcome = selectedOutcome
 		this.close = close
 
@@ -113,24 +113,20 @@ class ExamSpinner {
 	 * @param selectedOutcome 0 for first outcome, 1 for second.
 	 * @param close           Was it a close one?
 	 */
-	constructor(header:String?, subheading:String?, gradeText:String?, possibilities:Array<String>?, selectedOutcome:Int,
+	constructor(header:String?, subheading:String?, gradeText:String?, possibilities:List<String>?, selectedOutcome:Int,
 		close:Boolean) {
-		var header = header
-		var subheading = subheading
-		var gradeText = gradeText
-		var possibilities = possibilities
+		val head = header ?: "PROMOTION\nEXAM"
+		val subHead = subheading ?: "QUALIFY\nGRADE"
+		val gText = gradeText ?: "UNDEFINED"
+		val possible = possibilities?.let {
+			it.takeIf {it.size>=2}?.take(2)
+		} ?: listOf("PASS", "FAIL")
 		custom = true
-		if(header==null) header = "PROMOTION\nEXAM"
-		if(subheading==null) subheading = "EXAM\nGRADE"
-		if(gradeText==null) gradeText = "UNDEFINED"
-		if(possibilities==null) possibilities = arrayOf("PASS", "FAIL")
-		if(possibilities.size<2) possibilities = arrayOf("PASS", "FAIL")
-		if(possibilities.size>2) possibilities = arrayOf(possibilities[0], possibilities[1])
 		log.debug("Custom ExamSpinner object created.")
-		this.header = header
-		this.subheading = subheading
-		this.gradeText = gradeText
-		this.possibilities = possibilities
+		this.header = head
+		this.subheading = subHead
+		this.gradeText = gText
+		this.possibilities = possible
 		this.selectedOutcome = selectedOutcome
 		this.close = close
 	}
@@ -149,14 +145,14 @@ class ExamSpinner {
 		HUGE_O.setSkin(engine.skin)
 		var b = 255
 		if(flag) b = 0
-		var color:EventReceiver.COLOR = EventReceiver.COLOR.WHITE
-		if(flag) color = EventReceiver.COLOR.YELLOW
+		var color:COLOR = COLOR.WHITE
+		if(flag) color = COLOR.YELLOW
 		if(custom) {
-			val splitHeadingText = header!!.split("\n".toRegex()).toTypedArray()
-			val splitSubheadingText = subheading!!.split("\n".toRegex()).toTypedArray()
-			val splitGradeText = gradeText.split("\n".toRegex()).toTypedArray()
-			val splitPossibilityText:Array<Array<String>> = Array(possibilities.size) {i ->
-				possibilities[i].split("\n".toRegex()).toTypedArray()
+			val splitHeadingText = header!!.split(Regex("\n"))
+			val splitSubheadingText = subheading!!.split(Regex("\n"))
+			val splitGradeText = gradeText.split(Regex("\n"))
+			val splitPossibilityText = List(possibilities.size) {i ->
+				possibilities[i].split(Regex("\n"))
 			}
 
 			// region MAIN HEADING
@@ -204,7 +200,7 @@ class ExamSpinner {
 					for(i in 0 until splitPossibilityText[1].size) {
 						if(locations[1]%320<=160) GameTextUtilities.drawDirectTextAlign(
 							receiver, baseX+locations[1]%320, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-							splitPossibilityText[1][i], EventReceiver.COLOR.COBALT,
+							splitPossibilityText[1][i], COLOR.COBALT,
 							1f
 						)
 					}
@@ -222,7 +218,7 @@ class ExamSpinner {
 					for(i in 0 until splitPossibilityText[1].size) {
 						if(locations[3]%320<=160) GameTextUtilities.drawDirectTextAlign(
 							receiver, baseX+locations[3]%320, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
-							splitPossibilityText[1][i], EventReceiver.COLOR.COBALT,
+							splitPossibilityText[1][i], COLOR.COBALT,
 							1f
 						)
 					}
@@ -232,7 +228,7 @@ class ExamSpinner {
 					for(i in 0 until splitPossibilityText[1].size) {
 						GameTextUtilities.drawDirectTextAlign(
 							receiver, HBX+offset, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[1][i],
-							EventReceiver.COLOR.COBALT,
+							COLOR.COBALT,
 							1f
 						)
 					}
@@ -257,16 +253,14 @@ class ExamSpinner {
 						for(i in 0 until splitPossibilityText[0].size) {
 							GameTextUtilities.drawDirectTextAlign(
 								receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[0][i],
-								color,
-								1f
+								color, 1f
 							)
 						}
 					} else {
 						for(i in 0 until splitPossibilityText[1].size) {
 							GameTextUtilities.drawDirectTextAlign(
 								receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[1][i],
-								EventReceiver.COLOR.COBALT,
-								1f
+								COLOR.COBALT, 1f
 							)
 						}
 					}
@@ -277,16 +271,14 @@ class ExamSpinner {
 					for(i in 0 until splitPossibilityText[0].size) {
 						GameTextUtilities.drawDirectTextAlign(
 							receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[0][i],
-							color,
-							1f
+							color, 1f
 						)
 					}
 				} else {
 					for(i in 0 until splitPossibilityText[1].size) {
 						GameTextUtilities.drawDirectTextAlign(
 							receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[1][i],
-							EventReceiver.COLOR.COBALT,
-							1f
+							COLOR.COBALT, 1f
 						)
 					}
 				}
@@ -401,18 +393,10 @@ class ExamSpinner {
 		lifeTime++
 		if(lifeTime==60&&!close) {
 			engine.playSE("linefall")
-			if(selectedOutcome==0) {
-				engine.playSE("excellent")
-			} else {
-				engine.playSE("regret")
-			}
+			engine.playSE(if(selectedOutcome==0) "excellent" else "regret")
 		} else if(lifeTime==spinDuration+120&&close) {
 			engine.playSE("linefall")
-			if(selectedOutcome==0) {
-				engine.playSE("excellent")
-			} else {
-				engine.playSE("regret")
-			}
+			engine.playSE(if(selectedOutcome==0) "excellent" else "regret")
 		}
 		if(close&&lifeTime<=spinDuration) {
 			val j = lifeTime.toDouble()/spinDuration.toDouble()
@@ -436,9 +420,7 @@ class ExamSpinner {
 					}
 					break
 				}
-				if(i==locations.size-1) {
-					clickedBefore = false
-				}
+				if(i==locations.size-1) clickedBefore = false
 			}
 		}
 	}

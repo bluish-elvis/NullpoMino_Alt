@@ -417,6 +417,6 @@ class VSLineRaceMode:AbstractMode() {
 		private const val MAX_PLAYERS = 2
 
 		/** Each player's frame cint */
-		private val PLAYER_COLOR_FRAME = intArrayOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
+		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 	}
 }

@@ -185,7 +185,7 @@ object GeneralUtil {
 	 * @return Number of piece types can appear (In the normal Tetromino games,
 	 * it returns 7)
 	 */
-	fun getNumberOfPiecesCanAppear(pieceEnable:BooleanArray?):Int {
+	fun getNumberOfPiecesCanAppear(pieceEnable:List<Boolean>?):Int {
 		if(pieceEnable==null) return Piece.PIECE_COUNT
 
 		var count = 0
@@ -200,32 +200,26 @@ object GeneralUtil {
 	 * @param pieceEnable Piece enable flags
 	 * @return `true` if enabled piece types are S,Z,O only.
 	 */
-	fun isPieceSZOOnly(pieceEnable:BooleanArray?):Boolean =
+	fun isPieceSZOOnly(pieceEnable:List<Boolean>?):Boolean =
 		pieceEnable?.let {it[Piece.PIECE_S]&&it[Piece.PIECE_Z]&&it[Piece.PIECE_O]} ?: false
 
 	/** Create piece ID array from a String
 	 * @param strSrc String
 	 * @return Piece ID array
 	 */
-	fun createNextPieceArrayFromNumberString(strSrc:String):IntArray {
+	fun createNextPieceArrayFromNumberString(strSrc:String):List<Int> {
 		val len = strSrc.length
-		if(len<1) return IntArray(0)
-
-		val nextArray = IntArray(len)
-		for(i in 0 until len) {
+		return if(len<1) emptyList() else List(len) {
 			var pieceID = Piece.PIECE_I
 
 			try {
-				pieceID = Character.getNumericValue(strSrc[i])%Piece.PIECE_STANDARD_COUNT
-			} catch(e:NumberFormatException) {
+				pieceID = Character.getNumericValue(strSrc[it])%Piece.PIECE_STANDARD_COUNT
+			} catch(_:NumberFormatException) {
 			}
 
 			if(pieceID<0||pieceID>=Piece.PIECE_STANDARD_COUNT) pieceID = Piece.PIECE_I
-
-			nextArray[i] = pieceID
+			pieceID
 		}
-
-		return nextArray
 	}
 
 	/*fun <T:Any?> Class<T>.resource(path:String, fallback:String? = null):String {
@@ -325,16 +319,8 @@ object GeneralUtil {
 	 * @param startIndex First element which will be combined
 	 * @return Combined string
 	 */
-	fun stringCombine(strings:Array<String>, separator:String, startIndex:Int):String {
-		val res = StringBuilder()
-		for(i in startIndex until strings.size) {
-			res.append(strings[i])
-			if(i!=strings.size-1) res.append(separator)
-		}
-
-		return "$res"
-
-	}
+	@Deprecated("Kotlin has collecton method", ReplaceWith("strings.drop(startIndex).joinToString(separator)"))
+	fun stringCombine(strings:List<String>, separator:String, startIndex:Int):String = strings.drop(1).joinToString(" ")
 
 	fun capsNum(x:Long, digits:Int):String = when {
 		digits<=0 -> ""

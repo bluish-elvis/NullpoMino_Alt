@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -49,16 +49,16 @@ import java.util.zip.GZIPInputStream
 class StateReplaySelect:DummyMenuScrollState() {
 	private var strCurrentFolder = ""
 	private var strPrevFolder = ""
-	private var fileList:Array<File> = emptyArray()
+	private var fileList:List<File> = emptyList()
 
 	/** Mode name */
-	private var modenameList:Array<String> = emptyArray()
+	private var modenameList:MutableList<String> = MutableList(0) {""}
 
 	/** Rule name */
-	private var rulenameList:Array<String> = emptyArray()
+	private var rulenameList:MutableList<String> = MutableList(0) {""}
 
 	/** Scoreなどの情報 */
-	private var statsList:Array<Statistics?> = emptyArray()
+	private var statsList:MutableList<Statistics?> = MutableList(0) {null}
 
 	init {
 		pageHeight = PAGE_HEIGHT
@@ -98,16 +98,16 @@ class StateReplaySelect:DummyMenuScrollState() {
 		}
 
 		val dir = File(d)
-		val fold:Array<File> = dir.listFiles(FileFilter {it.isDirectory})?.sortedBy {it.name}?.toTypedArray()
-			?: emptyArray()
-		fileList = dir.listFiles {i -> i.name.endsWith(".rep")}?.sortedBy {it.name}?.toTypedArray()
-			?: emptyArray()
+		val fold = dir.listFiles(FileFilter {it.isDirectory})?.sortedBy {it.name}
+			?: emptyList()
+		fileList = dir.listFiles {i -> i.name.endsWith(".rep")}?.sortedBy {it.name}
+			?: emptyList()
 		val nF = fold.size
 		val nT = nF+fileList.size
-		list = (fold.map {it.name}+fileList.map {it.name}).toTypedArray()
-		modenameList = Array(nT) {""}
-		rulenameList = Array(nT) {""}
-		statsList = arrayOfNulls(nT)
+		list = fold.map {it.name}+fileList.map {it.name}
+		modenameList = MutableList(nT) {""}
+		rulenameList = MutableList(nT) {""}
+		statsList = MutableList(nT) {null}
 		fileList.forEachIndexed {i, it ->
 			val prop = CustomProperties()
 

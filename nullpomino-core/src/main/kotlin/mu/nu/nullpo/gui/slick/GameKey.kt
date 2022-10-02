@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -99,33 +99,138 @@ class GameKey:GameKeyDummy {
 
 	companion object {
 		/** Key input state (Used by all game states) */
-		var gamekey:Array<GameKey> = emptyArray()
+		var gamekey:List<GameKey> = emptyList()
 
 		/** Default key mappings */
-		val DEFAULTKEYS = arrayOf(
+		val DEFAULTKEYS = listOf(
 			// Ingame
-			arrayOf(
+			listOf(
 				// Blockbox type
-				intArrayOf(Input.KEY_UP, Input.KEY_DOWN, Input.KEY_LEFT, Input.KEY_RIGHT, Input.KEY_Z, Input.KEY_X, Input.KEY_A, Input.KEY_SPACE, Input.KEY_D, Input.KEY_S, Input.KEY_F12, Input.KEY_ESCAPE, Input.KEY_F11, Input.KEY_F10, Input.KEY_N, Input.KEY_F5),
+				listOf(
+					Input.KEY_UP,
+					Input.KEY_DOWN,
+					Input.KEY_LEFT,
+					Input.KEY_RIGHT,
+					Input.KEY_Z,
+					Input.KEY_X,
+					Input.KEY_A,
+					Input.KEY_SPACE,
+					Input.KEY_D,
+					Input.KEY_S,
+					Input.KEY_F12,
+					Input.KEY_ESCAPE,
+					Input.KEY_F11,
+					Input.KEY_F10,
+					Input.KEY_N,
+					Input.KEY_F5
+				),
 				// Guideline games type
-				intArrayOf(Input.KEY_SPACE, Input.KEY_DOWN, Input.KEY_LEFT, Input.KEY_RIGHT, Input.KEY_Z, Input.KEY_UP, Input.KEY_C, Input.KEY_LSHIFT, Input.KEY_X, Input.KEY_V, Input.KEY_F12, Input.KEY_ESCAPE, Input.KEY_F11, Input.KEY_F10, Input.KEY_N, Input.KEY_F5),
+				listOf(
+					Input.KEY_SPACE,
+					Input.KEY_DOWN,
+					Input.KEY_LEFT,
+					Input.KEY_RIGHT,
+					Input.KEY_Z,
+					Input.KEY_UP,
+					Input.KEY_C,
+					Input.KEY_LSHIFT,
+					Input.KEY_X,
+					Input.KEY_V,
+					Input.KEY_F12,
+					Input.KEY_ESCAPE,
+					Input.KEY_F11,
+					Input.KEY_F10,
+					Input.KEY_N,
+					Input.KEY_F5
+				),
 				// NullpoMino classic type
-				intArrayOf(Input.KEY_UP, Input.KEY_DOWN, Input.KEY_LEFT, Input.KEY_RIGHT, Input.KEY_A, Input.KEY_S, Input.KEY_D, Input.KEY_Z, Input.KEY_X, Input.KEY_C, Input.KEY_ESCAPE, Input.KEY_F1, Input.KEY_F12, Input.KEY_F11, Input.KEY_N, Input.KEY_F10)),
+				listOf(
+					Input.KEY_UP,
+					Input.KEY_DOWN,
+					Input.KEY_LEFT,
+					Input.KEY_RIGHT,
+					Input.KEY_A,
+					Input.KEY_S,
+					Input.KEY_D,
+					Input.KEY_Z,
+					Input.KEY_X,
+					Input.KEY_C,
+					Input.KEY_ESCAPE,
+					Input.KEY_F1,
+					Input.KEY_F12,
+					Input.KEY_F11,
+					Input.KEY_N,
+					Input.KEY_F10
+				)
+			),
 			// Menu
-			arrayOf(
+			listOf(
 				// Blockbox type
-				intArrayOf(Input.KEY_UP, Input.KEY_DOWN, Input.KEY_LEFT, Input.KEY_RIGHT, Input.KEY_ENTER, Input.KEY_ESCAPE, Input.KEY_A, Input.KEY_SPACE, Input.KEY_D, Input.KEY_S, Input.KEY_F12, Input.KEY_F1, Input.KEY_F11, Input.KEY_F10, Input.KEY_N, Input.KEY_F5),
+				listOf(
+					Input.KEY_UP,
+					Input.KEY_DOWN,
+					Input.KEY_LEFT,
+					Input.KEY_RIGHT,
+					Input.KEY_ENTER,
+					Input.KEY_ESCAPE,
+					Input.KEY_A,
+					Input.KEY_SPACE,
+					Input.KEY_D,
+					Input.KEY_S,
+					Input.KEY_F12,
+					Input.KEY_F1,
+					Input.KEY_F11,
+					Input.KEY_F10,
+					Input.KEY_N,
+					Input.KEY_F5
+				),
 				// Guideline games type
-				intArrayOf(Input.KEY_UP, Input.KEY_DOWN, Input.KEY_LEFT, Input.KEY_RIGHT, Input.KEY_ENTER, Input.KEY_ESCAPE, Input.KEY_C, Input.KEY_LSHIFT, Input.KEY_X, Input.KEY_V, Input.KEY_F12, Input.KEY_F1, Input.KEY_F11, Input.KEY_F10, Input.KEY_N, Input.KEY_F5),
+				listOf(
+					Input.KEY_UP,
+					Input.KEY_DOWN,
+					Input.KEY_LEFT,
+					Input.KEY_RIGHT,
+					Input.KEY_ENTER,
+					Input.KEY_ESCAPE,
+					Input.KEY_C,
+					Input.KEY_LSHIFT,
+					Input.KEY_X,
+					Input.KEY_V,
+					Input.KEY_F12,
+					Input.KEY_F1,
+					Input.KEY_F11,
+					Input.KEY_F10,
+					Input.KEY_N,
+					Input.KEY_F5
+				),
 				// NullpoMino classic type
-				intArrayOf(Input.KEY_UP, Input.KEY_DOWN, Input.KEY_LEFT, Input.KEY_RIGHT, Input.KEY_A, Input.KEY_S, Input.KEY_D, Input.KEY_Z, Input.KEY_X, Input.KEY_C, Input.KEY_ESCAPE, Input.KEY_F1, Input.KEY_F12, Input.KEY_F11, Input.KEY_N, Input.KEY_F10)))
+				listOf(
+					Input.KEY_UP,
+					Input.KEY_DOWN,
+					Input.KEY_LEFT,
+					Input.KEY_RIGHT,
+					Input.KEY_A,
+					Input.KEY_S,
+					Input.KEY_D,
+					Input.KEY_Z,
+					Input.KEY_X,
+					Input.KEY_C,
+					Input.KEY_ESCAPE,
+					Input.KEY_F1,
+					Input.KEY_F12,
+					Input.KEY_F11,
+					Input.KEY_N,
+					Input.KEY_F10
+				)
+			)
+		)
 
 		/** Init everything */
 		fun initGlobalGameKey() {
 			ControllerManager.initControllers()
 			JInputManager.initKeymap()
 			JInputManager.initKeyboard()
-			gamekey = arrayOf(GameKey(0), GameKey(1))
+			gamekey = List(2) {GameKey(it)}
 		}
 	}
 }

@@ -437,7 +437,7 @@ class MarathonExtreme:NetDummyMode() {
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		listOf<(String)->Unit>({}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
 			{engine.statistics.scoreSD = it.toInt()},
@@ -484,7 +484,7 @@ class MarathonExtreme:NetDummyMode() {
 	}
 
 	/** NET: Receive game options */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		startLevel = message[4].toInt()
 		endless = message[5].toBoolean()
 		big = message[6].toBoolean()
@@ -504,23 +504,23 @@ class MarathonExtreme:NetDummyMode() {
 		private const val ROLLTIMELIMIT = 3238
 
 		/** ARE table */
-		private val tableARE = intArrayOf(25, 24, 23, 22, 21, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+		private val tableARE = listOf(25, 24, 23, 22, 21, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
 
 		/** ARE after line clear table */
-		private val tableARELine = intArrayOf(20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1)
+		private val tableARELine = listOf(20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1)
 
 		/** Line clear times table */
-		private val tableLineDelay = intArrayOf(30, 25, 20, 17, 14, 11, 9, 8, 7, 6, 5, 5, 5, 5, 5, 4, 3, 2, 1, 0)
+		private val tableLineDelay = listOf(30, 25, 20, 17, 14, 11, 9, 8, 7, 6, 5, 5, 5, 5, 5, 4, 3, 2, 1, 0)
 		//   50,43,36,31,26,21,18,16,14,12,10, 9, 8, 7, 6, 5, 4, 3, 2, 1
 		/** Lock delay table */
-		private val tableLockDelay = intArrayOf(30, 29, 28, 27, 27, 26, 26, 25, 25, 24, 24, 23, 23, 22, 22, 22, 21, 21, 21, 20)
+		private val tableLockDelay = listOf(30, 29, 28, 27, 27, 26, 26, 25, 25, 24, 24, 23, 23, 22, 22, 22, 21, 21, 21, 20)
 
 		/** DAS table */
-		private val tableDAS = intArrayOf(10, 10, 10, 9, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4)
+		private val tableDAS = listOf(10, 10, 10, 9, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4)
 
 		/** Line counts when BGM changes occur */
-		private val tableBGMChange = intArrayOf(20, 40, 70, 100, 130, 160, -1)
-		private val tableBGM = arrayOf(
+		private val tableBGMChange = listOf(20, 40, 70, 100, 130, 160, -1)
+		private val tableBGM = listOf(
 			BGM.Rush(0), BGM.Generic(6), BGM.Rush(1), BGM.Generic(7), BGM.Generic(8), BGM.Rush(2),
 			BGM.Rush(3)
 		)

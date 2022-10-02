@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -54,10 +54,10 @@ class NetSPPersonalBest:Serializable {
 		replace(s)
 	}
 
-	/** Constructor that imports data from a String Array
-	 * @param s String Array (String[2])
+	/** Constructor that imports data from a String List
+	 * @param s String List (String[2])
 	 */
-	constructor(s:Array<String>) {
+	constructor(s:List<String>) {
 		importStringArray(s)
 	}
 
@@ -174,7 +174,7 @@ class NetSPPersonalBest:Serializable {
 	fun importListRecord(s:String) {
 		listRecord.clear()
 
-		val array = s.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+		val array = s.split(Regex(";")).dropLastWhile {it.isEmpty()}
 		for(element in array) {
 			val strTemp = NetUtil.decompressString(element)
 			val record = NetSPRecord(strTemp)
@@ -182,8 +182,8 @@ class NetSPPersonalBest:Serializable {
 		}
 	}
 
-	/** Export to a String Array
-	 * @return String Array (String[2])
+	/** Export to a String List
+	 * @return String List (String[2])
 	 */
 	fun exportStringArray():Array<String> =
 		arrayOf(
@@ -205,10 +205,10 @@ class NetSPPersonalBest:Serializable {
 		return "$result"
 	}
 
-	/** Import from a String Array
-	 * @param s String Array (String[8])
+	/** Import from a String List
+	 * @param s String List (String[8])
 	 */
-	fun importStringArray(s:Array<String>) {
+	fun importStringArray(s:List<String>) {
 		if(s.isNotEmpty()) strPlayerName = NetUtil.urlDecode(s[0])
 		if(s.size>1) importListRecord(s[1])
 	}
@@ -217,7 +217,7 @@ class NetSPPersonalBest:Serializable {
 	 * @param s String (Split by ;)
 	 */
 	fun importString(s:String) {
-		importStringArray(s.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray())
+		importStringArray(s.split(Regex(";")).dropLastWhile {it.isEmpty()})
 	}
 
 	companion object {

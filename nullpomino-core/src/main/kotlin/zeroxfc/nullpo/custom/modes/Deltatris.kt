@@ -700,11 +700,11 @@ class Deltatris:MarathonModeBase() {
 		 * GRAVITY, ARE, LINE ARE: Linear
 		 * DAS, LOCK DELAY, LINE DELAY: Ease-in-ease-out
 		 */
-		private val PIECES_MAX = intArrayOf(1000, 800, 600)
-		private val GRAVITY_MULTIPLIERS = floatArrayOf(1.014412098f, 1.018047461f, 1.024135373f)
+		private val PIECES_MAX = listOf(1000, 800, 600)
+		private val GRAVITY_MULTIPLIERS = listOf(1.014412098f, 1.018047461f, 1.024135373f)
 		/**
 		 * Difficulties
 		 */
-		private val difficultyName = arrayOf("EASY", "NORMAL", "HARD")
+		private val difficultyName = listOf("EASY", "NORMAL", "HARD")
 	}
 }

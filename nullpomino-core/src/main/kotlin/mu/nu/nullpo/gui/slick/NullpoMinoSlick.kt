@@ -59,7 +59,6 @@ import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 
 /** NullpoMino SlickVersion */
-/** Constructor */
 class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 	/* ステート (タイトルとかゲームとかのシーンのことね）を追加 */
@@ -397,18 +396,13 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				log.fatal("LWJGL load failed", e)
 
 				// LWJGL Load failed! Do the file of LWJGL exist?
-				val fileLWJGL:File = if(!System.getProperty("os.arch").contains("64")&&
-					System.getProperty("os.name").contains("Windows")
-				)
-					File("lib/lwjgl.dll")
-				else if(System.getProperty("os.arch").contains("64")&&System.getProperty("os.name").contains("Windows"))
-					File("lib/lwjgl64.dll")
-				else if(System.getProperty("os.name").contains("Mac OS"))
-					File("lib/liblwjgl.jnilib")
-				else if(System.getProperty("os.arch").contains("64"))
-					File("lib/liblwjgl64.so")
-				else
-					File("lib/liblwjgl.so")
+				val fileLWJGL:File = when {
+					System.getProperty("os.name").contains("Windows") -> if(System.getProperty("os.arch").contains("64"))
+						File("lib/lwjgl64.dll") else File("lib/lwjgl.dll")
+					System.getProperty("os.name").contains("Mac OS") -> File("lib/liblwjgl.jnilib")
+					else -> if(System.getProperty("os.arch").contains("64")) File("lib/liblwjgl64.so")
+					else File("lib/liblwjgl.so")
+				}
 
 				if(fileLWJGL.isFile&&fileLWJGL.canRead()) {
 					// File exists but incompatible with your OS
