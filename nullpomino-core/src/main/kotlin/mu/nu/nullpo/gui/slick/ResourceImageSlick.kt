@@ -35,7 +35,7 @@ import org.newdawn.slick.Image
 import org.newdawn.slick.SlickException
 import java.io.IOException
 
-class ResourceImageSlick(override val name:String):ResourceImage<Image> {
+class ResourceImageSlick(override val name:String, val antiAlias:Boolean = false):ResourceImage<Image> {
 	override var res:Image = Image(1, 1)
 
 	override val width get() = res.width
@@ -46,7 +46,9 @@ class ResourceImageSlick(override val name:String):ResourceImage<Image> {
 	fun copy():Image = res.copy()
 	override fun load() {
 		res = try {
-			Image("${ResourceHolder.skinDir}/graphics/$name.png")
+			Image("${ResourceHolder.skinDir}/graphics/$name.png").apply {
+				filter = if(antiAlias) Image.FILTER_LINEAR else Image.FILTER_NEAREST
+			}
 		} catch(e:Exception) {
 			if(e !is UnsupportedOperationException&&(e is IOException||e is SlickException))
 				ResourceHolder.log.error("Failed to load image from $name", e)
@@ -67,7 +69,7 @@ class ResourceImageSlick(override val name:String):ResourceImage<Image> {
 
 	override fun toString():String = name
 
-	constructor(it:ResourceImage<*>):this(it.name)
+	constructor(it:ResourceImage<*>, antiAlias:Boolean = false):this(it.name, antiAlias)
 	constructor(it:ResourceImageSlick):this(it.name) {
 		res = it.copy()
 	}

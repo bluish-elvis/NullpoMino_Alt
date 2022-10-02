@@ -77,7 +77,7 @@ class SubscriberChallenge:NetDummyMode() {
 	private var startLevel:Int by DelegateMenuItem(itemLv)
 
 	private val itemMode = StringsMenuItem("goalType", "GOAL", EventReceiver.COLOR.BLUE, 0,
-		Array(GAMETYPE_MAX) {if(tableGameClearLines[it]<=0) "ENDLESS" else "${tableGameClearLines[it]} LINES"})
+		List(GAMETYPE_MAX) {if(tableGameClearLines[it]<=0) "ENDLESS" else "${tableGameClearLines[it]} LINES"})
 	/** Game type  */
 	private var goalType:Int by DelegateMenuItem(itemMode)
 
@@ -525,7 +525,7 @@ class SubscriberChallenge:NetDummyMode() {
 	/**
 	 * NET: Receive various in-game stats (as well as goalType)
 	 */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		engine.statistics.scoreLine = message[4].toInt()
 		engine.statistics.scoreSD = message[5].toInt()
 		engine.statistics.scoreHD = message[6].toInt()
@@ -572,7 +572,7 @@ class SubscriberChallenge:NetDummyMode() {
 	/**
 	 * NET: Receive game options
 	 */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		startLevel = message[4].toInt()
 		goalType = message[5].toInt()
 		big = message[6].toBoolean()
@@ -580,28 +580,28 @@ class SubscriberChallenge:NetDummyMode() {
 	/**
 	 * NET: Get goal type
 	 */
-	override fun netGetGoalType():Int = goalType
+	override fun netGetGoalType() = goalType
 	/**
 	 * NET: It returns true when the current settings don't prevent leaderboard screen from showing.
 	 */
-	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = ((startLevel==0)&&(!big)&&(engine.ai==null))
+	override fun netIsNetRankingViewOK(engine:GameEngine) = startLevel==0&&!big&&engine.ai==null
 
 	companion object {
 		/** Current version  */
-		val CURRENT_VERSION:Int = 2
+		val CURRENT_VERSION = 2
 		/** Fall velocity table (numerators)  */
-		val tableGravity:IntArray = intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
+		val tableGravity = listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
 		/** Fall velocity table (denominators)  */
-		val tableDenominator:IntArray = intArrayOf(63, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
+		val tableDenominator = listOf(63, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
 		/** Line counts when BGM changes occur  */
-		val tableBGMChange:IntArray = intArrayOf(50, 100, 150, 200, -1)
+		val tableBGMChange = listOf(50, 100, 150, 200, -1)
 		/** Line counts when game ending occurs  */
-		val tableGameClearLines:IntArray = intArrayOf(150, 200, -1)
+		val tableGameClearLines = listOf(150, 200, -1)
 		/** Number of entries in rankings  */
-		val RANKING_MAX:Int = 10
+		val RANKING_MAX = 10
 		/** Number of ranking types  */
-		val RANKING_TYPE:Int = 3
+		val RANKING_TYPE = 3
 		/** Number of game types  */
-		val GAMETYPE_MAX:Int = 3
+		val GAMETYPE_MAX = 3
 	}
 }

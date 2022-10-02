@@ -32,7 +32,6 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -54,37 +53,37 @@ class PhysicianVS:AbstractMode() {
 	//private int[] garbageSent;
 
 	/** Time to display the most recent increase in score */
-	private var scgettime = IntArray(0)
+	private var scgettime = MutableList(MAX_PLAYERS) {0}
 
 	/** UseBGM */
 	private var bgmno = 0
 
 	/** Sound effectsON/OFF */
-	private var enableSE = BooleanArray(0)
+	private var enableSE = MutableList(MAX_PLAYERS) {false}
 
 	/** MapUse flag */
-	private var useMap = BooleanArray(0)
+	private var useMap = MutableList(MAX_PLAYERS) {false}
 
 	/** UseMapSet number */
-	private var mapSet = IntArray(0)
+	private var mapSet = MutableList(MAX_PLAYERS) {0}
 
 	/** Map number(-1Random in) */
-	private var mapNumber = IntArray(0)
+	private var mapNumber = MutableList(MAX_PLAYERS) {0}
 
 	/** Last preset number used */
-	private var presetNumber = IntArray(0)
+	private var presetNumber = MutableList(MAX_PLAYERS) {0}
 
 	/** Winner */
 	private var winnerID = 0
 
 	/** MapSets ofProperty file */
-	private var propMap:Array<CustomProperties?> = emptyArray()
+	private val propMap:MutableList<CustomProperties?> = MutableList(MAX_PLAYERS) {null}
 
 	/** MaximumMap number */
 	private var mapMaxNo = IntArray(0)
 
 	/** For backupfield (MapUsed to save the replay) */
-	private var fldBackup:Array<Field?> = emptyArray()
+	private val fldBackup:MutableList<Field?> = MutableList(MAX_PLAYERS) {null}
 
 	/** MapRan for selectioncount */
 	private var randMap:Random? = null
@@ -96,31 +95,31 @@ class PhysicianVS:AbstractMode() {
 	//private boolean[] zenKeshi;
 
 	/** Amount of points earned from most recent clear */
-	private var lastscores = IntArray(0)
+	private var lastscores = MutableList(MAX_PLAYERS) {0}
 
 	/** Amount of garbage added in current chain */
 	//private int[] garbageAdd;
 
 	/** Score */
-	private var score = IntArray(0)
+	private val score get() = owner.engine.map {it.statistics.score}
 
 	/** Number of initial gem blocks */
-	private var hoverBlocks = IntArray(0)
+	private var hoverBlocks = MutableList(MAX_PLAYERS) {0}
 
 	/** Speed mode */
-	private var speed = IntArray(0)
+	private var speed = MutableList(MAX_PLAYERS) {0}
 
 	/** Number gem blocks cleared in current chain */
-	private var gemsClearedChainTotal = IntArray(0)
+	private var gemsClearedChainTotal = MutableList(MAX_PLAYERS) {0}
 
 	/** Each player's remaining gem count */
-	private var rest = IntArray(0)
+	private var rest = MutableList(MAX_PLAYERS) {0}
 
 	/** Each player's garbage block colors to be dropped */
-	private var garbageColors:Array<IntArray> = emptyArray()
+	private val garbageColors:List<MutableList<Int>> = List(MAX_PLAYERS) {MutableList(0) {0}}
 
 	/** Flash/normal mode settings */
-	private var flash = BooleanArray(0)
+	private val flash = MutableList(MAX_PLAYERS) {false}
 
 	/* Mode name */
 	override val name = "PHYSICIAN VS-BATTLE (RC1)"
@@ -142,27 +141,26 @@ class PhysicianVS:AbstractMode() {
 		//garbage = new int[MAX_PLAYERS];
 		//garbageSent = new int[MAX_PLAYERS];
 
-		scgettime = IntArray(MAX_PLAYERS)
+		scgettime.fill(0)
 		bgmno = 0
-		enableSE = BooleanArray(MAX_PLAYERS)
-		useMap = BooleanArray(MAX_PLAYERS)
-		mapSet = IntArray(MAX_PLAYERS)
-		mapNumber = IntArray(MAX_PLAYERS)
-		presetNumber = IntArray(MAX_PLAYERS)
-		propMap = arrayOfNulls(MAX_PLAYERS)
-		mapMaxNo = IntArray(MAX_PLAYERS)
-		fldBackup = arrayOfNulls(MAX_PLAYERS)
+		enableSE.fill(false)
+		useMap.fill(false)
+		mapSet.fill(0)
+		mapNumber.fill(0)
+		presetNumber.fill(0)
+		propMap.fill(null)
+		mapMaxNo.fill(0)
+		fldBackup.fill(null)
 		randMap = Random.Default
 
-		lastscores = IntArray(MAX_PLAYERS)
+		lastscores.fill(0)
 		//garbageAdd = new int[MAX_PLAYERS];
-		score = IntArray(MAX_PLAYERS)
-		hoverBlocks = IntArray(MAX_PLAYERS)
-		speed = IntArray(MAX_PLAYERS)
-		gemsClearedChainTotal = IntArray(MAX_PLAYERS)
-		rest = IntArray(MAX_PLAYERS)
-		garbageColors = Array(MAX_PLAYERS) {IntArray(0)}
-		flash = BooleanArray(MAX_PLAYERS)
+		hoverBlocks.fill(0)
+		speed.fill(0)
+		gemsClearedChainTotal.fill(0)
+		rest.fill(0)
+		garbageColors.forEach {it.clear()}
+		flash.fill(false)
 
 		winnerID = -1
 	}
@@ -275,8 +273,7 @@ class PhysicianVS:AbstractMode() {
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
 		engine.lineGravityType = GameEngine.LineGravity.CASCADE
-		for(i in 0 until Piece.PIECE_COUNT)
-			engine.nextPieceEnable[i] = PIECE_ENABLE[i]==1
+		engine.nextPieceEnable = PIECE_ENABLE.map {it==1}
 		engine.randomBlockColor = true
 		engine.blockColors = BLOCK_COLORS
 		engine.connectBlocks = true
@@ -285,7 +282,6 @@ class PhysicianVS:AbstractMode() {
 
 		//garbage[playerID] = 0;
 		//garbageSent[playerID] = 0;
-		score[pid] = 0
 		scgettime[pid] = 0
 		gemsClearedChainTotal[pid] = 0
 		rest[pid] = 0
@@ -585,7 +581,6 @@ class PhysicianVS:AbstractMode() {
 			lastscores[pid] = pts
 			scgettime[pid] = 120
 			engine.statistics.scoreLine += pts
-			score[pid] += pts
 			engine.playSE("gem")
 			setSpeed(engine)
 			return pts
@@ -602,7 +597,7 @@ class PhysicianVS:AbstractMode() {
 	 */
 	fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity =
-			intArrayOf(6, 8, 10)[speed[engine.playerID]]*(10+(engine.statistics.totalPieceLocked/10))
+			listOf(6, 8, 10)[speed[engine.playerID]]*(10+(engine.statistics.totalPieceLocked/10))
 		engine.speed.denominator = 3600
 	}
 
@@ -611,13 +606,16 @@ class PhysicianVS:AbstractMode() {
 
 		engine.field.lineColorsCleared.let {cleared ->
 			if(cleared.size>1)
-				if(garbageColors[enemyID].isEmpty()) garbageColors[enemyID] = cleared.clone()
+				if(garbageColors[enemyID].isEmpty()) garbageColors[enemyID].apply {
+					clear()
+					addAll(cleared)
+				}
 				else {
 					val s = garbageColors.size
 					cleared.forEachIndexed {i, it -> garbageColors[enemyID][s+i] = it}
 				}
 		}
-		engine.field.lineColorsCleared = IntArray(0)
+		engine.field.lineColorsCleared = emptyList()
 		return garbageCheck(engine)
 	}
 
@@ -626,7 +624,10 @@ class PhysicianVS:AbstractMode() {
 		if(garbageColors[pid].isEmpty()) return false
 		val size = garbageColors[pid].size
 		if(size<2) return false
-		garbageColors[pid] = garbageColors[pid].toMutableList().shuffled(engine.random).toIntArray()
+		garbageColors[pid].apply {
+			clear()
+			addAll(garbageColors[pid].shuffled(engine.random))
+		}
 		val colors = IntArray(4)
 		when {
 			size>=4 -> for(x in 0..3)
@@ -658,7 +659,7 @@ class PhysicianVS:AbstractMode() {
 				engine.field.garbageDropPlace(2*x+shift, y, false, 0, colors[x])
 				engine.field.getBlock(2*x+shift, y)!!.skin = engine.skin
 			}
-		garbageColors[pid] = IntArray(0)
+		garbageColors[pid].clear()
 		return true
 	}
 
@@ -754,24 +755,24 @@ class PhysicianVS:AbstractMode() {
 		private const val CURRENT_VERSION = 0
 
 		/** Enabled piece types */
-		private val PIECE_ENABLE = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
+		private val PIECE_ENABLE = listOf(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
 
 		/** Block colors */
-		private val BLOCK_COLORS = arrayOf(Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.YELLOW)
-		private val FLASH_BLOCK_COLORS = BLOCK_COLORS.map {it to Block.TYPE.BLOCK}.toTypedArray()
+		private val BLOCK_COLORS = listOf(Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.YELLOW)
+		private val FLASH_BLOCK_COLORS = BLOCK_COLORS.map {it to Block.TYPE.BLOCK}
 		/** Hovering block colors */
-		private val HOVER_BLOCK_COLORS = BLOCK_COLORS.map {it to Block.TYPE.GEM}.toTypedArray()
+		private val HOVER_BLOCK_COLORS = BLOCK_COLORS.map {it to Block.TYPE.GEM}
 		//private static final int[] BASE_SPEEDS = {10, 20, 25};
 
 		/** Names of speed settings */
-		private val SPEED_NAME = arrayOf("LOW", "MED", "HI")
+		private val SPEED_NAME = listOf("LOW", "MED", "HI")
 
 		/** Colors for speed settings */
-		private val SPEED_COLOR = arrayOf(COLOR.BLUE, COLOR.YELLOW, COLOR.RED)
+		private val SPEED_COLOR = listOf(COLOR.BLUE, COLOR.YELLOW, COLOR.RED)
 
 		/** Number of players */
 		private const val MAX_PLAYERS = 2
 		/** Each player's frame cint */
-		private val PLAYER_COLOR_FRAME = intArrayOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
+		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 	}
 }

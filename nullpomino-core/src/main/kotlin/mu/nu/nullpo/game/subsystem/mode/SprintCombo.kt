@@ -603,7 +603,7 @@ class SprintCombo:NetDummyMode() {
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		listOf<(String)->Unit>(
 			{}, {}, {}, {},
 			{engine.statistics.maxCombo = it.toInt()},
@@ -647,7 +647,7 @@ class SprintCombo:NetDummyMode() {
 	}
 
 	/** NET: Receive game options */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		engine.speed.gravity = message[4].toInt()
 		engine.speed.denominator = message[5].toInt()
 		engine.speed.are = message[6].toInt()
@@ -682,40 +682,40 @@ class SprintCombo:NetDummyMode() {
 		private const val GAMETYPE_MAX = 3
 
 		/** HindranceLinescountConstantcount */
-		private val GOAL_TABLE = intArrayOf(21, 41, 101, -1)
+		private val GOAL_TABLE = listOf(21, 41, 101, -1)
 
 		/** Number of starting shapes */
 		private const val SHAPETYPE_MAX = 9
 
 		/** Names of starting shapes */
-		private val SHAPE_NAME_TABLE = arrayOf(
+		private val SHAPE_NAME_TABLE = listOf(
 			"NONE", "LEFT I", "RIGHT I", "LEFT Z", "RIGHT S", "LEFT S", "RIGHT Z", "LEFT J",
 			"RIGHT L"
 		)
 
 		/** Starting shape table */
-		private val SHAPE_TABLE = arrayOf(
-			intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-			intArrayOf(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0), intArrayOf(0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0),
-			intArrayOf(1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0), intArrayOf(0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0),
-			intArrayOf(1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0),
-			intArrayOf(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0), intArrayOf(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+		private val SHAPE_TABLE = listOf(
+			listOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+			listOf(1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0), listOf(0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0),
+			listOf(1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0), listOf(0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0),
+			listOf(1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0), listOf(0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0),
+			listOf(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0), listOf(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
 		)
 
 		/** Starting shape color */
-		private val SHAPE_COLOR_TABLE:Array<Block.COLOR?> = arrayOf(
+		private val SHAPE_COLOR_TABLE = listOf(
 			null, Block.COLOR.CYAN, Block.COLOR.CYAN, Block.COLOR.RED,
 			Block.COLOR.GREEN, Block.COLOR.GREEN, Block.COLOR.RED, Block.COLOR.BLUE, Block.COLOR.ORANGE
 		)
 
 		/** Stack color order */
-		private val STACK_COLOR_TABLE:Array<Block.COLOR> = arrayOf(
+		private val STACK_COLOR_TABLE = listOf(
 			Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW,
 			Block.COLOR.GREEN, Block.COLOR.CYAN, Block.COLOR.BLUE, Block.COLOR.PURPLE
 		)
 
 		/** Meter colors for really high combos in Endless */
-		private val METER_COLOR_TABLE = intArrayOf(
+		private val METER_COLOR_TABLE = listOf(
 			GameEngine.METER_COLOR_GREEN, GameEngine.METER_COLOR_YELLOW,
 			GameEngine.METER_COLOR_ORANGE, GameEngine.METER_COLOR_RED, GameEngine.METER_COLOR_PINK, GameEngine.METER_COLOR_PURPLE,
 			GameEngine.METER_COLOR_DARKBLUE, GameEngine.METER_COLOR_BLUE, GameEngine.METER_COLOR_CYAN,

@@ -518,7 +518,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Chain multipliers */
-		private val FEVER_POWERS = intArrayOf(
+		private val FEVER_POWERS = listOf(
 			4, 10, 18, 21, 29, 46, 76, 113, 150, 223, 259, 266, 313, 364, 398, 432, 468, 504, 540,
 			576, 612, 648, 684, 720 //Arle
 		)

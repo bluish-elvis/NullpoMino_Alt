@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -118,10 +118,10 @@ class NetChatMessage:Serializable {
 			log.info("RoomChat Room:$strRoomName UID:$uid Name:$strUserName Msg:$strMessage")
 	}
 
-	/** Import from String array
-	 * @param s String array (String[7])
+	/** Import from String list
+	 * @param s String list (String[7])
 	 */
-	fun importStringArray(s:Array<String>) {
+	fun importStringArray(s:List<String>) {
 		uid = s[0].toInt()
 		strUserName = NetUtil.urlDecode(s[1])
 		strHost = NetUtil.urlDecode(s[2])
@@ -135,20 +135,21 @@ class NetChatMessage:Serializable {
 	 * @param str String
 	 */
 	fun importString(str:String) {
-		importStringArray(str.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray())
+		importStringArray(str.split(Regex(";")).dropLastWhile {it.isEmpty()})
 	}
 
-	/** Export to String array
-	 * @return String array (String[7])
+	/** Export to String list
+	 * @return String list (String[7])
 	 */
-	fun exportStringArray():Array<String> = arrayOf(
-		"$uid"
-		, NetUtil.urlEncode(strUserName)
-		, NetUtil.urlEncode(strHost)
-		, "$roomID"
-		, NetUtil.urlEncode(strRoomName)
-		, timestamp!!.strGMT
-		, NetUtil.urlEncode(strMessage))
+	fun exportStringArray():List<String> = listOf(
+		"$uid",
+		NetUtil.urlEncode(strUserName),
+		NetUtil.urlEncode(strHost),
+		"$roomID",
+		NetUtil.urlEncode(strRoomName),
+		timestamp!!.strGMT,
+		NetUtil.urlEncode(strMessage)
+	)
 
 	/** Export to String (Divided by ;)
 	 * @return String

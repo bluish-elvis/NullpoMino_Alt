@@ -152,11 +152,11 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		const val ID = 1
 
 		/** Strings for menu choices */
-		private val CHOICES = arrayOf("Game Start", "Watch Replay", "Online Game", "Configurations", "Exit")
-		private val CHOICEID = intArrayOf(StateSelectMode.ID, StateReplaySelect.ID, StateNetGame.ID, StateConfigMainMenu.ID, -1)
+		private val CHOICES = listOf("Game Start", "Watch Replay", "Online Game", "Configurations", "Exit")
+		private val CHOICEID = listOf(StateSelectMode.ID, StateReplaySelect.ID, StateNetGame.ID, StateConfigMainMenu.ID, -1)
 
 		/** UI Text identifier Strings */
-		private val UI_TEXT = arrayOf("Title_Start", "Title_Replay", "Title_NetPlay", "Title_Config", "Title_Exit")
+		private val UI_TEXT = listOf("Title_Start", "Title_Replay", "Title_NetPlay", "Title_Config", "Title_Exit")
 
 		/** Log */
 		internal var log = LogManager.getLogger()

@@ -371,7 +371,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 	override fun netlobbyOnLoginOK(lobby:NetLobbyFrame, client:NetPlayerClient) {}
 
-	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:Array<String>) {}
+	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>) {}
 
 	override fun netlobbyOnRoomJoin(lobby:NetLobbyFrame, client:NetPlayerClient, roomInfo:NetRoomInfo) {
 		//enterNewMode(roomInfo.strMode);

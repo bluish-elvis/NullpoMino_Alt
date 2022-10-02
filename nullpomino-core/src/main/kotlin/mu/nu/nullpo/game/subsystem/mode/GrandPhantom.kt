@@ -925,36 +925,36 @@ class GrandPhantom:AbstractMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** ARE table */
-		private val tableARE = intArrayOf(15, 11, 11, 5, 4, 3)
+		private val tableARE = listOf(15, 11, 11, 5, 4, 3)
 
 		/** ARE Line table */
-		private val tableARELine = intArrayOf(11, 5, 5, 4, 4, 3)
+		private val tableARELine = listOf(11, 5, 5, 4, 4, 3)
 
 		/** Line Delay table */
-		private val tableLineDelay = intArrayOf(12, 6, 6, 7, 5, 4)
+		private val tableLineDelay = listOf(12, 6, 6, 7, 5, 4)
 
 		/** Lock Delay table */
-		private val tableLockDelay = intArrayOf(31, 29, 28, 27, 26, 25)
+		private val tableLockDelay = listOf(31, 29, 28, 27, 26, 25)
 
 		/** DAS table */
-		private val tableDAS = intArrayOf(11, 11, 10, 9, 7, 7)
-		private val tableHiddenDelay = intArrayOf(360, 320, 256, 192, 160, 128)
+		private val tableDAS = listOf(11, 11, 10, 9, 7, 7)
+		private val tableHiddenDelay = listOf(360, 320, 256, 192, 160, 128)
 
 		/** BGM fadeout level */
-		private val tableBGMFadeout = intArrayOf(280, 480, -1)
+		private val tableBGMFadeout = listOf(280, 480, -1)
 
 		/** BGM change level */
-		private val tableBGMChange = intArrayOf(300, 500, -1)
-		private val tableBGM = arrayOf(BGM.GrandT(5), BGM.GrandT(4), BGM.GrandT(3), BGM.GrandA(3))
+		private val tableBGMChange = listOf(300, 500, -1)
+		private val tableBGM = listOf(BGM.GrandT(5), BGM.GrandT(4), BGM.GrandT(3), BGM.GrandA(3))
 		/** Grade names */
 
-		private val tableGradeName = arrayOf("", "m", "MK", "MV", "MO", "MM", "GM")
+		private val tableGradeName = listOf("", "m", "MK", "MV", "MO", "MM", "GM")
 
 		/** Required level for grade */
-		private val tableGradeLevel = intArrayOf(0, 500, 600, 700, 800, 900, 999)
+		private val tableGradeLevel = listOf(0, 500, 600, 700, 800, 900, 999)
 
 		/** Secret grade names */
-		private val tableSecretGradeName = arrayOf(
+		private val tableSecretGradeName = listOf(
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", //  0?` 8
 			"M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", //  9?`17
 			"GM" // 18

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2021,
+ * Copyright (c) 2021-2022,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -77,121 +77,118 @@ class StandardMirroredWallkick:BaseStandardWallkick() {
      * Get kick table
      */
 	override fun getKickTable(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece, field:Field,
-		ctrl:Controller?):Array<Array<IntArray>>? {
-		var kicktable:Array<Array<IntArray>>? = null
-		when(rtDir) {
-			2 -> { // 180-degree rotation
-				kicktable = when(piece.id) {
-					Piece.PIECE_I -> WALLKICK_I_180
-					else -> WALLKICK_NORMAL_180
-				}
-			}
-			-1 -> { // Left rotation
-				kicktable = when(piece.id) {
-					Piece.PIECE_I -> WALLKICK_I_L
-					Piece.PIECE_I2 -> WALLKICK_I2_L
-					Piece.PIECE_I3 -> WALLKICK_I3_L
-					Piece.PIECE_L3 -> WALLKICK_L3_L
-					else -> WALLKICK_NORMAL_L
-				}
-			}
-			1 -> { // Right rotation
-				kicktable = when(piece.id) {
-					Piece.PIECE_I -> WALLKICK_I_R
-					Piece.PIECE_I2 -> WALLKICK_I2_R
-					Piece.PIECE_I3 -> WALLKICK_I3_R
-					Piece.PIECE_L3 -> WALLKICK_L3_R
-					else -> WALLKICK_NORMAL_R
-				}
+		ctrl:Controller?) = when(rtDir) {
+		2 -> { // 180-degree rotation
+			when(piece.id) {
+				Piece.PIECE_I -> WALLKICK_I_180
+				else -> WALLKICK_NORMAL_180
 			}
 		}
-		return kicktable
+		-1 -> { // Left rotation
+			when(piece.id) {
+				Piece.PIECE_I -> WALLKICK_I_L
+				Piece.PIECE_I2 -> WALLKICK_I2_L
+				Piece.PIECE_I3 -> WALLKICK_I3_L
+				Piece.PIECE_L3 -> WALLKICK_L3_L
+				else -> WALLKICK_NORMAL_L
+			}
+		}
+		1 -> { // Right rotation
+			when(piece.id) {
+				Piece.PIECE_I -> WALLKICK_I_R
+				Piece.PIECE_I2 -> WALLKICK_I2_R
+				Piece.PIECE_I3 -> WALLKICK_I3_R
+				Piece.PIECE_L3 -> WALLKICK_L3_R
+				else -> WALLKICK_NORMAL_R
+			}
+		}
+		else -> null
 	}
 
 	companion object {
 		// Wallkick data
-		private val WALLKICK_NORMAL_L = arrayOf(
-			arrayOf(intArrayOf(-1, 0), intArrayOf(-1, -1), intArrayOf(0, 2), intArrayOf(-1, 2)),
-			arrayOf(intArrayOf(-1, 0), intArrayOf(-1, 1), intArrayOf(0, -2), intArrayOf(-1, -2)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(1, -1), intArrayOf(0, 2), intArrayOf(1, 2)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(1, 1), intArrayOf(0, -2), intArrayOf(1, -2))
+		private val WALLKICK_NORMAL_L = listOf(
+			listOf(listOf(-1, 0), listOf(-1, -1), listOf(0, 2), listOf(-1, 2)),
+			listOf(listOf(-1, 0), listOf(-1, 1), listOf(0, -2), listOf(-1, -2)),
+			listOf(listOf(1, 0), listOf(1, -1), listOf(0, 2), listOf(1, 2)),
+			listOf(listOf(1, 0), listOf(1, 1), listOf(0, -2), listOf(1, -2))
 		)
-		private val WALLKICK_NORMAL_R = arrayOf(
-			arrayOf(intArrayOf(1, 0), intArrayOf(1, -1), intArrayOf(0, 2), intArrayOf(1, 2)),
-			arrayOf(intArrayOf(-1, 0), intArrayOf(-1, 1), intArrayOf(0, -2), intArrayOf(-1, -2)),
-			arrayOf(intArrayOf(-1, 0), intArrayOf(-1, -1), intArrayOf(0, 2), intArrayOf(-1, 2)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(1, 1), intArrayOf(0, -2), intArrayOf(1, -2))
+		private val WALLKICK_NORMAL_R = listOf(
+			listOf(listOf(1, 0), listOf(1, -1), listOf(0, 2), listOf(1, 2)),
+			listOf(listOf(-1, 0), listOf(-1, 1), listOf(0, -2), listOf(-1, -2)),
+			listOf(listOf(-1, 0), listOf(-1, -1), listOf(0, 2), listOf(-1, 2)),
+			listOf(listOf(1, 0), listOf(1, 1), listOf(0, -2), listOf(1, -2))
 		)
-		private val WALLKICK_I_L = arrayOf(
-			arrayOf(intArrayOf(-2, 0), intArrayOf(1, 0), intArrayOf(1, -2), intArrayOf(-2, 1)),
-			arrayOf(intArrayOf(-2, 0), intArrayOf(1, 0), intArrayOf(-2, -1), intArrayOf(1, 2)),
-			arrayOf(intArrayOf(2, 0), intArrayOf(-1, 0), intArrayOf(2, -1), intArrayOf(-1, 1)),
-			arrayOf(intArrayOf(-1, 0), intArrayOf(2, 0), intArrayOf(-1, -2), intArrayOf(2, 1))
+		private val WALLKICK_I_L = listOf(
+			listOf(listOf(-2, 0), listOf(1, 0), listOf(1, -2), listOf(-2, 1)),
+			listOf(listOf(-2, 0), listOf(1, 0), listOf(-2, -1), listOf(1, 2)),
+			listOf(listOf(2, 0), listOf(-1, 0), listOf(2, -1), listOf(-1, 1)),
+			listOf(listOf(-1, 0), listOf(2, 0), listOf(-1, -2), listOf(2, 1))
 		)
-		private val WALLKICK_I_R = arrayOf(
-			arrayOf(intArrayOf(2, 0), intArrayOf(-1, 0), intArrayOf(-1, -2), intArrayOf(2, 1)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(-2, 0), intArrayOf(1, -2), intArrayOf(-2, 1)),
-			arrayOf(intArrayOf(-2, 0), intArrayOf(1, 0), intArrayOf(-2, -1), intArrayOf(1, 1)),
-			arrayOf(intArrayOf(2, 0), intArrayOf(-1, 0), intArrayOf(2, -1), intArrayOf(-1, 2))
+		private val WALLKICK_I_R = listOf(
+			listOf(listOf(2, 0), listOf(-1, 0), listOf(-1, -2), listOf(2, 1)),
+			listOf(listOf(1, 0), listOf(-2, 0), listOf(1, -2), listOf(-2, 1)),
+			listOf(listOf(-2, 0), listOf(1, 0), listOf(-2, -1), listOf(1, 1)),
+			listOf(listOf(2, 0), listOf(-1, 0), listOf(2, -1), listOf(-1, 2))
 		)
-		private val WALLKICK_I2_L = arrayOf(
-			arrayOf(intArrayOf(-1, 0), intArrayOf(-0, -1), intArrayOf(-1, -2)),
-			arrayOf(intArrayOf(-0, 1), intArrayOf(-1, 0), intArrayOf(-1, 1)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(-0, 1), intArrayOf(1, 0)),
-			arrayOf(intArrayOf(-0, -1), intArrayOf(1, 0), intArrayOf(1, 1))
+		private val WALLKICK_I2_L = listOf(
+			listOf(listOf(-1, 0), listOf(-0, -1), listOf(-1, -2)),
+			listOf(listOf(-0, 1), listOf(-1, 0), listOf(-1, 1)),
+			listOf(listOf(1, 0), listOf(-0, 1), listOf(1, 0)),
+			listOf(listOf(-0, -1), listOf(1, 0), listOf(1, 1))
 		)
-		private val WALLKICK_I2_R = arrayOf(
-			arrayOf(intArrayOf(-0, -1), intArrayOf(1, 0), intArrayOf(1, -1)),
-			arrayOf(intArrayOf(-1, 0), intArrayOf(-0, -1), intArrayOf(-1, 0)),
-			arrayOf(intArrayOf(-0, 1), intArrayOf(-1, 0), intArrayOf(-1, -1)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(-0, 1), intArrayOf(1, 2))
+		private val WALLKICK_I2_R = listOf(
+			listOf(listOf(-0, -1), listOf(1, 0), listOf(1, -1)),
+			listOf(listOf(-1, 0), listOf(-0, -1), listOf(-1, 0)),
+			listOf(listOf(-0, 1), listOf(-1, 0), listOf(-1, -1)),
+			listOf(listOf(1, 0), listOf(-0, 1), listOf(1, 2))
 		)
-		private val WALLKICK_I3_L = arrayOf(
-			arrayOf(intArrayOf(-1, 0), intArrayOf(1, 0), intArrayOf(0, 0), intArrayOf(0, 0)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(-1, 0), intArrayOf(0, -1), intArrayOf(0, 1)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(-1, 0), intArrayOf(0, 2), intArrayOf(0, -2)),
-			arrayOf(intArrayOf(-1, 0), intArrayOf(1, 0), intArrayOf(0, -1), intArrayOf(0, 1))
+		private val WALLKICK_I3_L = listOf(
+			listOf(listOf(-1, 0), listOf(1, 0), listOf(0, 0), listOf(0, 0)),
+			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, -1), listOf(0, 1)),
+			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, 2), listOf(0, -2)),
+			listOf(listOf(-1, 0), listOf(1, 0), listOf(0, -1), listOf(0, 1))
 		)
-		private val WALLKICK_I3_R = arrayOf(
-			arrayOf(intArrayOf(-1, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(0, -1)),
-			arrayOf(intArrayOf(-1, 0), intArrayOf(1, 0), intArrayOf(0, -2), intArrayOf(0, 2)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(-1, 0), intArrayOf(0, 1), intArrayOf(0, -1)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(-1, 0), intArrayOf(0, 0), intArrayOf(0, 0))
+		private val WALLKICK_I3_R = listOf(
+			listOf(listOf(-1, 0), listOf(-1, 0), listOf(0, 1), listOf(0, -1)),
+			listOf(listOf(-1, 0), listOf(1, 0), listOf(0, -2), listOf(0, 2)),
+			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, 1), listOf(0, -1)),
+			listOf(listOf(1, 0), listOf(-1, 0), listOf(0, 0), listOf(0, 0))
 		)
-		private val WALLKICK_L3_L = arrayOf(
-			arrayOf(intArrayOf(-0, -1), intArrayOf(-0, 1)),
-			arrayOf(intArrayOf(-1, 0), intArrayOf(1, 0)), arrayOf(intArrayOf(-0, 1), intArrayOf(-0, -1)),
-			arrayOf(intArrayOf(1, 0), intArrayOf(-1, 0))
+		private val WALLKICK_L3_L = listOf(
+			listOf(listOf(-0, -1), listOf(-0, 1)),
+			listOf(listOf(-1, 0), listOf(1, 0)), listOf(listOf(-0, 1), listOf(-0, -1)),
+			listOf(listOf(1, 0), listOf(-1, 0))
 		)
-		private val WALLKICK_L3_R = arrayOf(
-			arrayOf(intArrayOf(1, 0), intArrayOf(-1, 0)),
-			arrayOf(intArrayOf(-0, -1), intArrayOf(-0, 1)), arrayOf(intArrayOf(-1, 0), intArrayOf(1, 0)),
-			arrayOf(intArrayOf(-0, 1), intArrayOf(-0, -1))
+		private val WALLKICK_L3_R = listOf(
+			listOf(listOf(1, 0), listOf(-1, 0)),
+			listOf(listOf(-0, -1), listOf(-0, 1)), listOf(listOf(-1, 0), listOf(1, 0)),
+			listOf(listOf(-0, 1), listOf(-0, -1))
 		)
 		// 180-degree rotation wallkick data
-		private val WALLKICK_NORMAL_180 = arrayOf(
-			arrayOf(
-				intArrayOf(-1, 0), intArrayOf(-2, 0), intArrayOf(-1, 1), intArrayOf(-2, 1), intArrayOf(1, 0), intArrayOf(2, 0),
-				intArrayOf(1, 1), intArrayOf(2, 1), intArrayOf(-0, -1), intArrayOf(-3, 0), intArrayOf(3, 0)
+		private val WALLKICK_NORMAL_180 = listOf(
+			listOf(
+				listOf(-1, 0), listOf(-2, 0), listOf(-1, 1), listOf(-2, 1), listOf(1, 0), listOf(2, 0),
+				listOf(1, 1), listOf(2, 1), listOf(-0, -1), listOf(-3, 0), listOf(3, 0)
 			),
-			arrayOf(
-				intArrayOf(-0, 1), intArrayOf(-0, 2), intArrayOf(1, 1), intArrayOf(1, 2), intArrayOf(-0, -1), intArrayOf(-0, -2),
-				intArrayOf(1, -1), intArrayOf(1, -2), intArrayOf(-1, 0), intArrayOf(-0, 3), intArrayOf(-0, -3)
+			listOf(
+				listOf(-0, 1), listOf(-0, 2), listOf(1, 1), listOf(1, 2), listOf(-0, -1), listOf(-0, -2),
+				listOf(1, -1), listOf(1, -2), listOf(-1, 0), listOf(-0, 3), listOf(-0, -3)
 			),
-			arrayOf(
-				intArrayOf(1, 0), intArrayOf(2, 0), intArrayOf(1, -1), intArrayOf(2, -1), intArrayOf(-1, 0), intArrayOf(-2, 0),
-				intArrayOf(-1, -1), intArrayOf(-2, -1), intArrayOf(-0, 1), intArrayOf(3, 0), intArrayOf(-3, 0)
+			listOf(
+				listOf(1, 0), listOf(2, 0), listOf(1, -1), listOf(2, -1), listOf(-1, 0), listOf(-2, 0),
+				listOf(-1, -1), listOf(-2, -1), listOf(-0, 1), listOf(3, 0), listOf(-3, 0)
 			),
-			arrayOf(
-				intArrayOf(-0, 1), intArrayOf(-0, 2), intArrayOf(-1, 1), intArrayOf(-1, 2), intArrayOf(-0, -1),
-				intArrayOf(-0, -2), intArrayOf(-1, -1), intArrayOf(-1, -2), intArrayOf(1, 0), intArrayOf(-0, 3), intArrayOf(-0, -3)
+			listOf(
+				listOf(-0, 1), listOf(-0, 2), listOf(-1, 1), listOf(-1, 2), listOf(-0, -1),
+				listOf(-0, -2), listOf(-1, -1), listOf(-1, -2), listOf(1, 0), listOf(-0, 3), listOf(-0, -3)
 			)
 		)
-		private val WALLKICK_I_180 = arrayOf(
-			arrayOf(intArrayOf(1, 0), intArrayOf(2, 0), intArrayOf(-1, 0), intArrayOf(-2, 0), intArrayOf(-0, 1)),
-			arrayOf(intArrayOf(-0, 1), intArrayOf(-0, 2), intArrayOf(-0, -1), intArrayOf(-0, -2), intArrayOf(1, 0)),
-			arrayOf(intArrayOf(-1, 0), intArrayOf(-2, 0), intArrayOf(1, 0), intArrayOf(2, 0), intArrayOf(-0, -1)),
-			arrayOf(intArrayOf(-0, 1), intArrayOf(-0, 2), intArrayOf(-0, -1), intArrayOf(-0, -2), intArrayOf(-1, 0))
+		private val WALLKICK_I_180 = listOf(
+			listOf(listOf(1, 0), listOf(2, 0), listOf(-1, 0), listOf(-2, 0), listOf(-0, 1)),
+			listOf(listOf(-0, 1), listOf(-0, 2), listOf(-0, -1), listOf(-0, -2), listOf(1, 0)),
+			listOf(listOf(-1, 0), listOf(-2, 0), listOf(1, 0), listOf(2, 0), listOf(-0, -1)),
+			listOf(listOf(-0, 1), listOf(-0, 2), listOf(-0, -1), listOf(-0, -2), listOf(-1, 0))
 		)
 	}
 }

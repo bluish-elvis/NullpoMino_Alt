@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,7 +30,12 @@
 package mu.nu.nullpo.tool.netadmin
 
 import biz.source_code.base64Coder.Base64Coder
-import mu.nu.nullpo.game.net.*
+import mu.nu.nullpo.game.net.NetBaseClient
+import mu.nu.nullpo.game.net.NetMessageListener
+import mu.nu.nullpo.game.net.NetPlayerInfo
+import mu.nu.nullpo.game.net.NetRoomInfo
+import mu.nu.nullpo.game.net.NetServerBan
+import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
@@ -38,13 +43,50 @@ import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.strDateTime
 import net.clarenceho.crypto.RC4
 import org.apache.logging.log4j.LogManager
-import java.awt.*
+import java.awt.BorderLayout
+import java.awt.CardLayout
+import java.awt.Color
+import java.awt.Component
+import java.awt.Dimension
+import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
-import java.awt.event.*
-import java.io.*
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
+import java.io.BufferedReader
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStreamReader
 import java.util.Locale
 import java.util.Vector
-import javax.swing.*
+import javax.swing.AbstractAction
+import javax.swing.Action
+import javax.swing.BoxLayout
+import javax.swing.JButton
+import javax.swing.JCheckBox
+import javax.swing.JComboBox
+import javax.swing.JDialog
+import javax.swing.JFrame
+import javax.swing.JLabel
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.JPasswordField
+import javax.swing.JPopupMenu
+import javax.swing.JScrollPane
+import javax.swing.JTabbedPane
+import javax.swing.JTable
+import javax.swing.JTextField
+import javax.swing.JTextPane
+import javax.swing.ListSelectionModel
+import javax.swing.SwingUtilities
+import javax.swing.UIManager
+import javax.swing.WindowConstants
 import javax.swing.table.DefaultTableModel
 import javax.swing.text.JTextComponent
 import javax.swing.text.SimpleAttributeSet
@@ -550,7 +592,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			val doc = txtpaneConsoleLog.document
 			str?.let {doc.insertString(doc.length, "$it\n", sas)}
 			txtpaneConsoleLog.caretPosition = doc.length
-		} catch(e:Exception) {
+		} catch(_:Exception) {
 		}
 
 	}
@@ -559,7 +601,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	 * @param commands Command line (split by every single space)
 	 * @param fullCommandLine Command line (raw String)
 	 */
-	private fun executeConsoleCommand(commands:Array<String>, fullCommandLine:String) {
+	private fun executeConsoleCommand(commands:List<String>, fullCommandLine:String) {
 		if(commands.isEmpty()||fullCommandLine.isEmpty()) return
 
 		addConsoleLog(">$fullCommandLine", Color.blue)
@@ -584,7 +626,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				addConsoleLog(String.format(getUIText("Console_Help_Error"), "$e"), Color.red)
 			}
 		else if(commands[0].equals("echo", ignoreCase = true)) {
-			val strTemp = GeneralUtil.stringCombine(commands, " ", 1)
+			val strTemp = commands.drop(1).joinToString(" ")
 			addConsoleLog(strTemp)
 		} else if(commands[0].equals("cls", ignoreCase = true))
 			txtpaneConsoleLog.text = null
@@ -602,7 +644,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			isShutdownRequested = true
 			sendCommand("shutdown")
 		} else if(commands[0].equals("announce", ignoreCase = true)) {
-			val strTemp = GeneralUtil.stringCombine(commands, " ", 1)
+			val strTemp = commands.drop(1).joinToString(" ")
 			if(strTemp.isNotEmpty()) {
 				sendCommand("announce\t${NetUtil.urlEncode(strTemp)}")
 				addConsoleLog(getUIText("Console_Announce")+strTemp)
@@ -644,7 +686,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			if(commands.size>1) sendCommand("unban\t${commands[1]}")
 			else addConsoleLog(getUIText("Console_UnBan_NoParams"))
 		} else if(commands[0].equals("playerdelete", ignoreCase = true)||commands[0].equals("pdel", ignoreCase = true)) {
-			val strTemp = GeneralUtil.stringCombine(commands, " ", 1)
+			val strTemp = commands.drop(1).joinToString(" ")
 			if(strTemp.isNotEmpty()) sendCommand("playerdelete\t$strTemp")
 			else addConsoleLog(getUIText("Console_PlayerDelete_NoParams"))
 		} else if(commands[0].equals("roomdelete", ignoreCase = true)||commands[0].equals("rdel", ignoreCase = true)) {
@@ -777,7 +819,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				try {
 					val strPort = strHost.substring(portSpliter+1, strHost.length)
 					serverPort = strPort.toInt()
-				} catch(e2:Exception) {
+				} catch(_:Exception) {
 				}
 
 				// Begin connect
@@ -793,7 +835,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		// Execute console command
 		if(e.actionCommand=="Lobby_Console_Execute") {
 			val commandline = txtfldConsoleCommand.text
-			val commands = commandline.split(" ".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			val commands = commandline.split(Regex(" ")).dropLastWhile {it.isEmpty()}
 			executeConsoleCommand(commands, commandline)
 			txtfldConsoleCommand.text = ""
 		}
@@ -805,7 +847,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	/* Received a message */
-	override fun netOnMessage(client:NetBaseClient, message:Array<String>) {
+	override fun netOnMessage(client:NetBaseClient, message:List<String>) {
 		//if(message.length > 0) log.debug(message[0]);
 
 		// Welcome
@@ -917,10 +959,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			tablemodelMPRanking[style].rowCount = 0
 
 			val strPData = NetUtil.decompressString(message[3])
-			val strPDataA = strPData.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			val strPDataA = strPData.split(Regex("\t")).dropLastWhile {it.isEmpty()}
 
 			for(element in strPDataA) {
-				val strRankData = element.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+				val strRankData = element.split(Regex(";")).dropLastWhile {it.isEmpty()}
 
 				if(strRankData.size>=MPRANKING_COLUMNNAMES.size) {
 					val strRowData = arrayOfNulls<String>(MPRANKING_COLUMNNAMES.size)
@@ -988,16 +1030,16 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		if(message[0]=="adminresult")
 			if(message.size>1) {
 				val strAdminResultTemp = NetUtil.decompressString(message[1])
-				val strAdminResultArray = strAdminResultTemp.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+				val strAdminResultArray = strAdminResultTemp.split(Regex("\t")).dropLastWhile {it.isEmpty()}
 				onAdminResultMessage(client, strAdminResultArray)
 			}
 	}
 
-	/** Create a row of room list
+	/** Create a row of room list, used to javax.swing.table.DefaultTableModel
 	 * @param r NetRoomInfo
 	 * @return Row data
 	 */
-	private fun createRoomListRowData(r:NetRoomInfo):Array<String> = arrayOf(
+	private fun createRoomListRowData(r:NetRoomInfo) = arrayOf(
 		r.roomID.toString(), r.strName, if(r.rated) getUIText("RoomTable_Rated_True") else getUIText("RoomTable_Rated_False"),
 		if(r.ruleLock) r.ruleName.uppercase(Locale.getDefault()) else getUIText("RoomTable_RuleName_Any"),
 		if(r.playing) getUIText("RoomTable_Status_Playing") else getUIText("RoomTable_Status_Waiting"),
@@ -1008,7 +1050,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	 * @param client NetBaseClient
 	 * @param message Message
 	 */
-	private fun onAdminResultMessage(client:NetBaseClient, message:Array<String>) {
+	private fun onAdminResultMessage(client:NetBaseClient, message:List<String>) {
 		// Client list
 		if(message[0]=="clientlist") {
 			// Get current selected IP and Type
@@ -1024,7 +1066,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			if(tablemodelUsers.rowCount>message.size-1) tablemodelUsers.rowCount = message.size-1
 
 			for(i in 1 until message.size) {
-				val strClientData = message[i].split("\\|".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+				val strClientData = message[i].split(Regex("\\|")).dropLastWhile {it.isEmpty()}
 
 				val strIP = strClientData[0] // IP
 				val strHost = strClientData[1] // Hostname
@@ -1372,25 +1414,25 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		private const val SCREENCARD_LOBBY = 1
 
 		/** Names for each screen-card */
-		private val SCREENCARD_NAMES = arrayOf("Login", "Lobby")
+		private val SCREENCARD_NAMES = listOf("Login", "Lobby")
 
 		/** User type names */
 		private val USERTABLE_USERTYPES =
-			arrayOf("UserTable_Type_Guest", "UserTable_Type_Player", "UserTable_Type_Observer", "UserTable_Type_Admin")
+			listOf("UserTable_Type_Guest", "UserTable_Type_Player", "UserTable_Type_Observer", "UserTable_Type_Admin")
 
 		/** User table column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
-		private val USERTABLE_COLUMNNAMES = arrayOf("UserTable_IP", "UserTable_Hostname", "UserTable_Type", "UserTable_Name")
+		private val USERTABLE_COLUMNNAMES = listOf("UserTable_IP", "UserTable_Hostname", "UserTable_Type", "UserTable_Name")
 
 		/** Multiplayer leaderboard column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
 		private val MPRANKING_COLUMNNAMES =
-			arrayOf("MPRanking_Rank", "MPRanking_Name", "MPRanking_Rating", "MPRanking_PlayCount", "MPRanking_WinCount")
+			listOf("MPRanking_Rank", "MPRanking_Name", "MPRanking_Rating", "MPRanking_PlayCount", "MPRanking_WinCount")
 
 		/** Room-table column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
 		private val ROOMTABLE_COLUMNNAMES =
-			arrayOf(
+			listOf(
 				"RoomTable_ID", "RoomTable_Name", "RoomTable_Rated", "RoomTable_RuleName", "RoomTable_Status",
 				"RoomTable_Players", "RoomTable_Spectators"
 			)

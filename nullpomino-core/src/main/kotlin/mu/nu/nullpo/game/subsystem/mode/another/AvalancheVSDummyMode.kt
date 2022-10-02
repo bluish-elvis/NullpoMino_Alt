@@ -31,7 +31,6 @@ package mu.nu.nullpo.game.subsystem.mode.another
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Field
-import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -141,10 +140,10 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected var feverMapSet = IntArray(MAX_PLAYERS)
 
 	/** Selected fever values set file's subset list */
-	protected var feverMapSubsets:Array<Array<String>> = emptyArray()
+	protected val feverMapSubsets = MutableList(MAX_PLAYERS) {List(0) {""}}
 
 	/** Fever values CustomProperties */
-	protected var propFeverMap:Array<CustomProperties?> = emptyArray()
+	protected val propFeverMap = MutableList<CustomProperties?>(MAX_PLAYERS) {null}
 
 	/** Chain level boundaries for Fever Mode */
 	protected var feverChainMin = IntArray(MAX_PLAYERS)
@@ -234,8 +233,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		cascadeSlow = BooleanArray(MAX_PLAYERS)
 
 		feverMapSet = IntArray(MAX_PLAYERS)
-		propFeverMap = Array(MAX_PLAYERS) {CustomProperties()}
-		feverMapSubsets = Array(MAX_PLAYERS) {emptyArray<String>()}
+		propFeverMap.fill(null)
+		feverMapSubsets.fill(emptyList())
 		feverChainMin = IntArray(MAX_PLAYERS)
 		feverChainMax = IntArray(MAX_PLAYERS)
 
@@ -367,7 +366,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 			propMap[playerID] = receiver.loadProperties("config/map/avalanche/${mapSet[playerID]}.map")
 		}
 
-		if(propMap[playerID].isNullOrEmpty()&&engine.field!=null)
+		if(propMap[playerID].isNullOrEmpty())
 			engine.field.reset()
 		else propMap[playerID]?.let {
 			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
@@ -377,14 +376,14 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		}
 	}
 
-	protected fun loadMapSetFever(engine:GameEngine, id:Int, forceReload:Boolean) {
+	protected fun loadMapSetFever(engine:GameEngine, map:Int, forceReload:Boolean) {
 		val playerID = engine.playerID
 		if(propFeverMap[playerID].isNullOrEmpty()||forceReload) {
-			propFeverMap[playerID] = receiver.loadProperties("config/map/avalanche/${FEVER_MAPS[id]}.map")
+			propFeverMap[playerID] = receiver.loadProperties("config/map/avalanche/${FEVER_MAPS[map]}.map")
 			feverChainMin[playerID] = propFeverMap[playerID]?.getProperty("minChain", 3) ?: 3
 			feverChainMax[playerID] = propFeverMap[playerID]?.getProperty("maxChain", 15) ?: 15
 			val subsets = propFeverMap[playerID]?.getProperty("sets") ?: ""
-			feverMapSubsets[playerID] = subsets.split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			feverMapSubsets[playerID] = subsets.split(Regex(",")).dropLastWhile {it.isEmpty()}
 		}
 	}
 
@@ -401,8 +400,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		engine.clearMode = GameEngine.ClearType.COLOR
 		engine.garbageColorClear = true
 		engine.lineGravityType = GameEngine.LineGravity.CASCADE
-		for(i in 0 until Piece.PIECE_COUNT)
-			engine.nextPieceEnable[i] = PIECE_ENABLE[i]==1
+		engine.nextPieceEnable = PIECE_ENABLE.map {it==1}
 		engine.blockColors = BLOCK_COLORS
 		engine.randomBlockColor = true
 		engine.connectBlocks = false
@@ -793,20 +791,20 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 	companion object {
 		/** Enabled piece types */
-		val PIECE_ENABLE = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
+		val PIECE_ENABLE = listOf(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
 
 		/** Block colors */
 		val BLOCK_COLORS =
-			arrayOf(
+			listOf(
 				Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.BLUE, Block.COLOR.YELLOW,
 				Block.COLOR.PURPLE
 			)
 
 		/** Fever values files list */
-		val FEVER_MAPS = arrayOf("Fever", "15th", "15thDS", "7", "Compendium")
+		val FEVER_MAPS = listOf("Fever", "15th", "15thDS", "7", "Compendium")
 
 		/** Chain multipliers */
-		val CHAIN_POWERS = intArrayOf(
+		val CHAIN_POWERS = listOf(
 			4, 12, 24, 33, 50, 101, 169, 254, 341, 428, 538, 648, 763, 876, 990, 999 //Arle
 		)
 
@@ -819,7 +817,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		const val OJAMA_COUNTER_FEVER = 2
 
 		/** Names of ojama counter settings */
-		val OJAMA_COUNTER_STRING = arrayOf("OFF", "ON", "FEVER")
+		val OJAMA_COUNTER_STRING = listOf("OFF", "ON", "FEVER")
 
 		/** Zenkeshi setting constants */
 		const val ZENKESHI_MODE_OFF = 0
@@ -827,13 +825,13 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		const val ZENKESHI_MODE_FEVER = 2
 
 		/** Names of zenkeshi settings */
-		val ZENKESHI_TYPE_NAMES = arrayOf("OFF", "ON", "FEVER")
+		val ZENKESHI_TYPE_NAMES = listOf("OFF", "ON", "FEVER")
 
 		/** Names of outline settings */
-		val OUTLINE_TYPE_NAMES = arrayOf("NORMAL", "COLOR", "NONE")
+		val OUTLINE_TYPE_NAMES = listOf("NORMAL", "COLOR", "NONE")
 
 		/** Names of chain display settings */
-		val CHAIN_DISPLAY_NAMES = arrayOf("OFF", "YELLOW", "PLAYER", "SIZE")
+		val CHAIN_DISPLAY_NAMES = listOf("OFF", "YELLOW", "PLAYER", "SIZE")
 
 		/** Constants for chain display settings */
 		const val CHAIN_DISPLAY_NONE = 0
@@ -842,6 +840,6 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		const val CHAIN_DISPLAY_SIZE = 3
 
 		/** Each player's frame cint */
-		val PLAYER_COLOR_FRAME = intArrayOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
+		val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 	}
 }

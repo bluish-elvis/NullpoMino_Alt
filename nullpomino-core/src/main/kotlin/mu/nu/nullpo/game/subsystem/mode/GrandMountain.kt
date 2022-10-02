@@ -882,25 +882,25 @@ class GrandMountain:AbstractMode() {
 		private const val GOALTYPE_COPY = 2
 
 		/** 落下速度 table */
-		private val tableGravityValue = intArrayOf(
+		private val tableGravityValue = listOf(
 			4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160,
 			192, 224, 256, 512, 768, 1024, 1280, 1024, 768, -1
 		)
 
 		/** 落下速度が変わる level */
-		private val tableGravityChangeLevel = intArrayOf(
+		private val tableGravityChangeLevel = listOf(
 			30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230,
 			233, 236, 239, 243, 247, 251, 300, 330, 360, 400, 420, 450, 500, 10000
 		)
 
 		/** BGM fadeout levels */
-		private val tableBGMFadeout = intArrayOf(495, 695, 880, -1)
+		private val tableBGMFadeout = listOf(495, 695, 880, -1)
 
 		/** BGM change levels */
-		private val tableBGMChange = intArrayOf(500, 700, 900, -1)
+		private val tableBGMChange = listOf(500, 700, 900, -1)
 
 		/** 裏段位のName */
-		private val tableSecretGradeName = arrayOf(
+		private val tableSecretGradeName = listOf(
 			"9", "8", "7", "6", "5", "4", "3", "2", "1", //  0～ 8
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", //  9～17
 			"GM" // 18
@@ -919,31 +919,31 @@ class GrandMountain:AbstractMode() {
 		private const val DEFAULT_SECTION_TIME = 5400
 
 		/** せり上がりパターン */
-		private val tableGarbagePattern = arrayOf(
-			intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-			intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-			intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
-			intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
-			intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(0, 0, 1, 1, 1, 1, 1, 1, 1, 1),
-			intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-			intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 0, 0), intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
-			intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), intArrayOf(1, 1, 0, 1, 1, 1, 1, 1, 1, 1),
-			intArrayOf(1, 0, 0, 1, 1, 1, 1, 1, 1, 1), intArrayOf(1, 0, 1, 1, 1, 1, 1, 1, 1, 1),
-			intArrayOf(1, 1, 1, 1, 1, 1, 1, 0, 1, 1), intArrayOf(1, 1, 1, 1, 1, 1, 1, 0, 0, 1),
-			intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 0, 1), intArrayOf(1, 1, 1, 1, 0, 0, 1, 1, 1, 1),
-			intArrayOf(1, 1, 1, 1, 0, 0, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 0, 1, 1, 1, 1, 1),
-			intArrayOf(1, 1, 1, 0, 0, 0, 1, 1, 1, 1)
+		private val tableGarbagePattern = listOf(
+			listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+			listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+			listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
+			listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
+			listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), listOf(0, 0, 1, 1, 1, 1, 1, 1, 1, 1),
+			listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1), listOf(0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+			listOf(1, 1, 1, 1, 1, 1, 1, 1, 0, 0), listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0),
+			listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 0), listOf(1, 1, 0, 1, 1, 1, 1, 1, 1, 1),
+			listOf(1, 0, 0, 1, 1, 1, 1, 1, 1, 1), listOf(1, 0, 1, 1, 1, 1, 1, 1, 1, 1),
+			listOf(1, 1, 1, 1, 1, 1, 1, 0, 1, 1), listOf(1, 1, 1, 1, 1, 1, 1, 0, 0, 1),
+			listOf(1, 1, 1, 1, 1, 1, 1, 1, 0, 1), listOf(1, 1, 1, 1, 0, 0, 1, 1, 1, 1),
+			listOf(1, 1, 1, 1, 0, 0, 1, 1, 1, 1), listOf(1, 1, 1, 1, 0, 1, 1, 1, 1, 1),
+			listOf(1, 1, 1, 0, 0, 0, 1, 1, 1, 1)
 		)
 
 		/** BIG用せり上がりパターン */
-		private val tableGarbagePatternBig = arrayOf(
-			intArrayOf(0, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1),
-			intArrayOf(0, 1, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1), intArrayOf(1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 0),
-			intArrayOf(1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 0), intArrayOf(0, 0, 1, 1, 1), intArrayOf(0, 1, 1, 1, 1),
-			intArrayOf(0, 1, 1, 1, 1), intArrayOf(1, 1, 1, 0, 0), intArrayOf(1, 1, 1, 1, 0), intArrayOf(1, 1, 1, 1, 0),
-			intArrayOf(1, 1, 0, 1, 1), intArrayOf(1, 0, 0, 1, 1), intArrayOf(1, 0, 1, 1, 1), intArrayOf(1, 1, 0, 1, 1),
-			intArrayOf(1, 1, 0, 0, 1), intArrayOf(1, 1, 1, 0, 1), intArrayOf(1, 0, 0, 1, 1), intArrayOf(1, 0, 0, 1, 1),
-			intArrayOf(1, 1, 0, 1, 1), intArrayOf(1, 0, 0, 0, 1)
+		private val tableGarbagePatternBig = listOf(
+			listOf(0, 1, 1, 1, 1), listOf(0, 1, 1, 1, 1),
+			listOf(0, 1, 1, 1, 1), listOf(0, 1, 1, 1, 1), listOf(1, 1, 1, 1, 0), listOf(1, 1, 1, 1, 0),
+			listOf(1, 1, 1, 1, 0), listOf(1, 1, 1, 1, 0), listOf(0, 0, 1, 1, 1), listOf(0, 1, 1, 1, 1),
+			listOf(0, 1, 1, 1, 1), listOf(1, 1, 1, 0, 0), listOf(1, 1, 1, 1, 0), listOf(1, 1, 1, 1, 0),
+			listOf(1, 1, 0, 1, 1), listOf(1, 0, 0, 1, 1), listOf(1, 0, 1, 1, 1), listOf(1, 1, 0, 1, 1),
+			listOf(1, 1, 0, 0, 1), listOf(1, 1, 1, 0, 1), listOf(1, 0, 0, 1, 1), listOf(1, 0, 0, 1, 1),
+			listOf(1, 1, 0, 1, 1), listOf(1, 0, 0, 0, 1)
 		)
 	}
 }

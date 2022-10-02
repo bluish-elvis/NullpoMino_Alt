@@ -573,7 +573,7 @@ class RetroClassic:AbstractMode() {
 	companion object {
 
 		/** Denominator table (NTSC-U) */
-		private val tableDenominator = intArrayOf(
+		private val tableDenominator = listOf(
 			//	0  1  2  3  4  5  6  7  8  9    +xx
 			48, 43, 38, 33, 28, 23, 18, 13, 8, 6, // 00
 			5, 5, 5, 4, 4, 4, 3, 3, 3, 2, // 10
@@ -581,15 +581,15 @@ class RetroClassic:AbstractMode() {
 		)
 
 		/** Denominator table (Arrange) */
-		private val tableDenominatorHard = intArrayOf(
+		private val tableDenominatorHard = listOf(
 			//	0  1  2  3  4  5  6  7  8  9    +xx
 			36, 32, 29, 25, 22, 18, 15, 11, 7, 5, // 00
 			4, 4, 4, 3, 3, 3, 2, 2, 2, 1, // 10
 		)
 		/** Garbage height table */
-		private val tableGarbagePeriod = intArrayOf(6, 5)
+		private val tableGarbagePeriod = listOf(6, 5)
 		/** Garbage height table */
-		private val tableGarbageHeight = intArrayOf(0, 3, 5, 8, 10, 12)
+		private val tableGarbageHeight = listOf(0, 3, 5, 8, 10, 12)
 
 		/** Game types */
 		private enum class GameType(val showName:String) { A("A-"), B("B+"), C("C#") }
@@ -623,7 +623,7 @@ class RetroClassic:AbstractMode() {
 		private val RANKING_TYPE = GAMETYPE_MAX*SpeedLevel.values().size
 
 		/** Maximum-Level name table */
-		private val LEVEL_NAME = arrayOf(
+		private val LEVEL_NAME = listOf(
 			//    0    1    2    3    4    5    6    7    8    9      +xx
 			"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", // 000
 			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", // 010

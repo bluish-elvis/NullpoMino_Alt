@@ -59,11 +59,10 @@ class StateSelectModeFolder:DummyMenuScrollState() {
 
 	/** Prepare folder list */
 	private fun prepareFolderList() {
-		list = Array(listFolder.size) {
+		list = List(listFolder.size) {
 			if(strCurrentFolder==listFolder[it]) cursor = it
 			listFolder[it]
-		}
-		list += "[ALL MODES]"
+		}+"[ALL MODES]"
 	}
 
 	/** Get folder description
@@ -71,9 +70,8 @@ class StateSelectModeFolder:DummyMenuScrollState() {
 	 * @return Description
 	 */
 	private fun getFolderDesc(str:String):String {
-		var str2 = str.replace(' ', '_')
-		str2 = str2.replace('(', 'l')
-		str2 = str2.replace(')', 'r')
+		val str2 = str.replace(' ', '_').replace('(', 'l')
+			.replace(')', 'r')
 		return NullpoMinoSlick.propModeDesc.getProperty("_$str2")
 			?: NullpoMinoSlick.propDefaultModeDesc.getProperty("_$str2", "_$str2") ?: str2
 	}

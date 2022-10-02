@@ -620,7 +620,7 @@ class MarathonShuttle:NetDummyMode() {
 	}
 
 	/** NET: Receive game options */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		goalType = message[4].toInt()
 		startLevel = message[5].toInt()
 		big = message[6].toBoolean()
@@ -639,7 +639,7 @@ class MarathonShuttle:NetDummyMode() {
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 
 		listOf<(String)->Unit>({}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
@@ -729,20 +729,20 @@ class MarathonShuttle:NetDummyMode() {
 		private const val CURRENT_VERSION = 2
 
 		/** Fall velocity table (numerators) */
-		private val tableGravity = intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 7, 10, -1)
+		private val tableGravity = listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 7, 10, -1)
 
 		/** Fall velocity table (denominators) */
-		private val tableDenominator = intArrayOf(64, 50, 40, 33, 25, 20, 13, 10, 8, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1)
+		private val tableDenominator = listOf(64, 50, 40, 33, 25, 20, 13, 10, 8, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1)
 
 		/** BGM change levels */
-		private val tableBGMChange = intArrayOf(5, 8, 15, 17, 19, -1)
-		private val tableBGM = arrayOf(
+		private val tableBGMChange = listOf(5, 8, 15, 17, 19, -1)
+		private val tableBGM = listOf(
 			BGM.Generic(0), BGM.Generic(1), BGM.Generic(2), BGM.Generic(3), BGM.Generic(4),
 			BGM.Generic(5)
 		)
 
 		/** Combo goal table */
-		private val COMBO_GOAL_TABLE = intArrayOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)
+		private val COMBO_GOAL_TABLE = listOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5)
 
 		/** Number of entries in rankings */
 		private const val RANKING_MAX = 13
@@ -758,11 +758,11 @@ class MarathonShuttle:NetDummyMode() {
 		private const val GAMETYPE_SPECIAL = 4
 
 		/** Game type names */
-		private val GAMETYPE_NAME = arrayOf(
+		private val GAMETYPE_NAME = listOf(
 			"15LEVELS TIME TRIAL", "15LEVELS SPEED RUN", "10MINUITES TRIAL", "10MINUTES SURVIVAL",
 			"UNLIMITED ENDURANCE"
 		)
-		private val GAMETYPE_SHORTNAME = arrayOf("15LV T.A.", "15LV S.R.", "10MIN.TRY", "10MIN.SURV", "ULM.ENDURO")
+		private val GAMETYPE_SHORTNAME = listOf("15LV T.A.", "15LV S.R.", "10MIN.TRY", "10MIN.SURV", "ULM.ENDURO")
 
 		/** Game type max */
 		private const val GAMETYPE_MAX = 5

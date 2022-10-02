@@ -83,16 +83,16 @@ import kotlin.random.Random
 	 * any visible effects outside this function. -Kitaru */
 
 	/** fieldのBlock */
-	private var blockField:Array<Array<Block?>> = Array(height) {arrayOfNulls(width)}
+	private var blockField:List<MutableList<Block?>> = List(height) {MutableList(width) {null}}
 
 	/** field上の見えない部分のBlock */
-	private var blockHidden:Array<Array<Block?>> = Array(hiddenHeight) {arrayOfNulls(width)}
+	private var blockHidden:List<MutableList<Block?>> = List(hiddenHeight) {MutableList(width) {null}}
 
 	/** Line clear flag */
-	private var lineflagField = BooleanArray(height)
+	private var lineflagField = MutableList(height) {false}
 
 	/** 見えない部分のLine clear flag */
-	private var lineflagHidden = BooleanArray(hiddenHeight)
+	private var lineflagHidden = MutableList(hiddenHeight) {false}
 
 	/** HURRY UP地面のcount */
 	var hurryupFloorLines = 0; private set
@@ -110,11 +110,11 @@ import kotlin.random.Random
 	var garbageCleared = 0; private set
 
 	/** List of colors of lines cleared in most recent line cint clear */
-	var lineColorsCleared = IntArray(0)
+	var lineColorsCleared = emptyList<Int>()
 
 	/** List of last rows cleared in most recent horizontal line clear. */
-	var lastLinesCleared:Array<Array<Block?>> = emptyArray(); private set
-	var lastLinesHeight = IntArray(0); private set
+	var lastLinesCleared:List<List<Block?>> = emptyList(); private set
+	var lastLinesHeight = emptyList<Int>(); private set
 
 	var lastLinesSplited = false; private set
 
@@ -262,16 +262,9 @@ import kotlin.random.Random
 	 */
 	// Put an empty block if the original block was in the last
 	// commit to the field.
-	val lastLinesAsTGMAttack:Array<Array<Block?>>
-		get() {
-			val attack = lastLinesCleared
-			attack.forEachIndexed {y, it ->
-				it.forEachIndexed {x, b ->
-					if(b?.getAttribute(ATTRIBUTE.LAST_COMMIT)==true)
-						attack[y][x] = null
-				}
-			}
-			return attack
+	val lastLinesAsTGMAttack:List<List<Block?>>
+		get() = lastLinesCleared.map {y ->
+			y.map {it?.takeUnless {it.getAttribute(ATTRIBUTE.LAST_COMMIT)}}
 		}
 
 	/** 裏段位を取得 (from NullpoMino Unofficial Expansion build 091309)
@@ -315,11 +308,11 @@ import kotlin.random.Random
 			.sumOf {i -> getRow(i).filterNotNull().count {it.isGemBlock}}
 
 	/** Checks for inum blocks cleared
-	 * @return A boolean array with true at each index for which an inum block
+	 * @return A boolean list with true at each index for which an inum block
 	 * of the corresponding ID number was cleared
 	 */
-	val itemClears:BooleanArray
-		get() = BooleanArray(Block.MAX_ITEM+1) {item ->
+	val itemClears
+		get() = List(Block.MAX_ITEM+1) {item ->
 			(-hiddenHeight until heightWithoutHurryupFloor)
 				.filter {getLineFlag(it)}.any {i -> getRow(i).any {b -> b?.inum==item}}
 		}
@@ -334,34 +327,21 @@ import kotlin.random.Random
 				getRow(it).filterNotNull().any {b -> b.getAttribute(ATTRIBUTE.GARBAGE)}
 			}
 
-	/** Checks the lines that are currently being cleared to see how many strips
-	 * of squares are present in them.
-	 * @return +1 for every 1x4 strip of gold (index 0) or silver (index 1)
+	/** Checks the lines that are currently being cleared to see how many strips of squares are present in them.
+	 * @return +4 for every 1x4 strip of gold (index 0) or silver (index 1)
 	 */
 	// Check the lines we are clearing.
 	// Silver blocks are worth 1, gold are worth 2,
 	// but not if they are garbage (avalanche)
 	// We have to divide the amount by 4 because it's based on 1x4 strips,
 	// not single blocks.
-	val howManySquareClears:IntArray
-		get() {
-			val squares = intArrayOf(0, 0)
-			for(i in -hiddenHeight until heightWithoutHurryupFloor)
-				if(getLineFlag(i))
-					for(j in 0 until width)
-						getBlock(j, i)?.let {blk ->
-							if(!blk.getAttribute(ATTRIBUTE.GARBAGE))
-								if(blk.isGoldSquareBlock)
-									squares[0]++
-								else if(blk.isSilverSquareBlock) squares[1]++
-
-						}
-
-			squares[0] /= 4
-			squares[1] /= 4
-
-			return squares
-		}
+	val howManySquareClears:List<Int>
+		get() = findBlocks {!it.getAttribute(ATTRIBUTE.GARBAGE)&&(it.isGoldSquareBlock||it.isSilverSquareBlock)}
+			.filter {(y, _) -> getLineFlag(y)}.values.let {
+				listOf(it.sumOf {it.values.count {it.isGoldSquareBlock}},
+					it.sumOf {it.values.count {it.isSilverSquareBlock}}
+				)
+			}
 
 	/** HURRY UPの地面を除いたField heightを返す
 	 * @return HURRY UPの地面を除いたField height
@@ -371,18 +351,18 @@ import kotlin.random.Random
 
 	/** Called at initialization */
 	fun reset() {
-		blockField = Array(height) {arrayOfNulls<Block?>(width)}
-		blockHidden = Array(hiddenHeight) {arrayOfNulls<Block?>(width)}
-		lineflagField = BooleanArray(height)
-		lineflagHidden = BooleanArray(hiddenHeight)
+		blockField = List(height) {MutableList(width) {null}}
+		blockHidden = List(hiddenHeight) {MutableList(width) {null}}
+		lineflagField = MutableList(height) {false}
+		lineflagHidden = MutableList(hiddenHeight) {false}
 		hurryupFloorLines = 0
 
 		colorClearExtraCount = 0
 		colorsCleared = 0
 		gemsCleared = 0
-		lineColorsCleared = IntArray(0)
-		lastLinesCleared = emptyArray()
-		lastLinesHeight = IntArray(0)
+		lineColorsCleared = emptyList()
+		lastLinesCleared = emptyList()
+		lastLinesHeight = emptyList()
 
 		lastLinesSplited = false
 		garbageCleared = 0
@@ -401,20 +381,20 @@ import kotlin.random.Random
 			hiddenHeight = o.hiddenHeight
 			ceiling = o.ceiling
 
-			blockField = o.blockField.map {x -> x.map {y -> y?.let {Block(it)}}.toTypedArray()}.toTypedArray()
-			blockHidden = o.blockHidden.map {x -> x.map {y -> y?.let {Block(it)}}.toTypedArray()}.toTypedArray()
-			lineflagField = o.lineflagField.clone()
-			lineflagHidden = o.lineflagField.clone()
+			blockField = o.blockField.map {x -> x.map {y -> y?.let {Block(it)}}.toMutableList()}
+			blockHidden = o.blockHidden.map {x -> x.map {y -> y?.let {Block(it)}}.toMutableList()}
+			lineflagField = o.lineflagField.toMutableList()
+			lineflagHidden = o.lineflagField.toMutableList()
 			hurryupFloorLines = o.hurryupFloorLines
 
 			colorClearExtraCount = o.colorClearExtraCount
 			colorsCleared = o.colorsCleared
 			o.gemsCleared = 0
 			gemsCleared = o.gemsCleared
-			lineColorsCleared = o.lineColorsCleared.clone()
-			lastLinesCleared = o.lastLinesCleared.clone()
+			lineColorsCleared = o.lineColorsCleared.toList()
+			lastLinesCleared = o.lastLinesCleared.toList()
 			garbageCleared = o.garbageCleared
-			lastLinesHeight = o.lastLinesHeight.clone()
+			lastLinesHeight = o.lastLinesHeight.toList()
 			lastLinesSplited = o.lastLinesSplited
 
 			explodHeight = o.explodHeight
@@ -448,7 +428,7 @@ import kotlin.random.Random
 	fun readProperty(p:CustomProperties, id:Int) {
 		for(i in 0 until height) {
 			val mapStr = p.getProperty("$id.field.values.$i", "")
-			val mapArray = mapStr.split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			val mapArray = mapStr.split(Regex(",")).dropLastWhile {it.isEmpty()}
 
 			for(j in mapArray.indices) {
 				val blkColor = try {
@@ -487,8 +467,8 @@ import kotlin.random.Random
 	/** @param y height of the row in the field
 	 * @return a reference to the row
 	 */
-	fun getRow(y:Int):Array<Block?> = (if(height>0&&y>=0) blockField.getOrNull(y)
-	else blockHidden.getOrNull(y*-1-1))?.map {if(it?.isEmpty!=false) null else it}?.toTypedArray() ?: arrayOfNulls<Block?>(10)
+	fun getRow(y:Int):List<Block?> = (if(height>0&&y>=0) blockField.getOrNull(y)
+	else blockHidden.getOrNull(y*-1-1))?.map {if(it?.isEmpty!=false) null else it} ?: List(10) {null}
 
 	/** 指定した座標にあるBlockを取得
 	 * @param x X-coordinate
@@ -651,7 +631,7 @@ import kotlin.random.Random
 	fun checkLine():Int {
 		val lines = checkLinesNoFlag()
 		if(height<=0||lines.isEmpty()) return 0
-		lastLinesCleared = lines.map {getRow(it)}.toTypedArray()
+		lastLinesCleared = lines.map {getRow(it)}
 		lastLinesHeight = lines
 
 		lastLinesSplited = false
@@ -664,7 +644,7 @@ import kotlin.random.Random
 				for(it in getRow(i)) {
 					it?.setAttribute(true, ATTRIBUTE.ERASE)
 				}
-			} else if(i>=lines.sortedArray().first()) inv = true
+			} else if(i>=lines.sorted().first()) inv = true
 		}
 		return lines.size
 	}
@@ -674,7 +654,7 @@ import kotlin.random.Random
 	 */
 	fun checkLineNoFlag():Int = checkLinesNoFlag().size
 
-	fun checkLinesNoFlag():IntArray {
+	fun checkLinesNoFlag():List<Int> {
 		val lines = (-hiddenHeight until heightWithoutHurryupFloor)
 			.filter {
 				getRow(it).all {b -> b?.isEmpty==false&&!b.getAttribute(ATTRIBUTE.WALL)}
@@ -682,7 +662,7 @@ import kotlin.random.Random
 		garbageCleared = lines.count {
 			getRow(it).any {b -> b?.getAttribute(ATTRIBUTE.GARBAGE)==true}
 		}
-		return lines.toIntArray()
+		return lines
 	}
 
 	/** Linesを消す
@@ -896,17 +876,14 @@ import kotlin.random.Random
 	fun getTSlotLineClear(x:Int, y:Int, big:Boolean):Int {
 		if(!isTSlot(x, y, big)) return 0
 
-		val lineflag = BooleanArray(2)
-		lineflag[1] = true
-		lineflag[0] = lineflag[1]
-
-		for(j in 0 until width)
-			for(i in 0..1)
-			// ■■■★※■■■■■
-			// □□□※※※□□□□
-			// □□□○※○□□□□
-				if(j<x||j>=x+3) if(getBlockEmpty(j, y+1+i, false)) lineflag[i] = false
-
+		val lineflag = (0..1).map {i ->
+			!(0 until width).any {j ->
+				// ■■■★※■■■■■
+				// □□□※※※□□□□
+				// □□□○※○□□□□
+				(j<x||j>=x+3)&&getBlockEmpty(j, y+1+i, false)
+			}
+		}
 		var lines = 0
 		for(element in lineflag)
 			if(element) lines++
@@ -1199,8 +1176,8 @@ import kotlin.random.Random
 				// We found a square! Set all the blocks equal to gold blocks.
 				if(squareCheck) {
 					squares[0]++
-					val squareX = intArrayOf(0, 1, 1, 2)
-					val squareY = intArrayOf(0, 3, 3, 6)
+					val squareX = listOf(0, 1, 1, 2)
+					val squareY = listOf(0, 3, 3, 6)
 					for(k in 0..3)
 						for(l in 0..3) getBlock(j+l, i+k)?.apply {
 							cint = Block.COLOR_SQUARE_GOLD_1+squareX[l]+squareY[k]
@@ -1244,8 +1221,8 @@ import kotlin.random.Random
 				// We found a square! Set all the blocks equal to silver blocks.
 				if(squareCheck) {
 					squares[1]++
-					val squareX = intArrayOf(0, 1, 1, 2)
-					val squareY = intArrayOf(0, 3, 3, 6)
+					val squareX = listOf(0, 1, 1, 2)
+					val squareY = listOf(0, 3, 3, 6)
 					for(k in 0..3)
 						for(l in 0..3) getBlock(j+l, i+k)?.apply {
 							cint = Block.COLOR_SQUARE_SILVER_1+squareX[l]+squareY[k]
@@ -1343,7 +1320,7 @@ import kotlin.random.Random
 		val my = heightWithoutHurryupFloor
 		var blocks = 0
 		val r =
-			intArrayOf(
+			listOf(
 				if(y-h>-hiddenHeight) y-h else -hiddenHeight, if(y+h<my) y+h else my, if(x>w) x-w else 0,
 				if(x+w<width) x+w else width
 			)
@@ -1408,22 +1385,22 @@ import kotlin.random.Random
 		return total
 	}
 
-	/** Check for line cint clears of sufficient size.
-	 * @param size Minimum length of line for a clear
-	 * @param flag `true` to set Block.ATTRIBUTE.ERASE to true on
-	 * blocks to be cleared.
+	/** Check for clears of Color Connected straight line.
+	 * @param size Minimum length of connect for a clear
+	 * @param flag `true` to set Block.ATTRIBUTE.ERASE on blocks to be cleared.
 	 * @param diagonals `true` to check diagonals,
 	 * `false` to check only vertical and horizontal
 	 * @param gemSame `true` to check gem blocks
 	 * @return Total number of blocks that would be cleared.
 	 */
-	fun checkLineColor(size:Int, flag:Boolean, diagonals:Boolean, gemSame:Boolean):Int {
+	fun checkConnectLine(size:Int, flag:Boolean, diagonals:Boolean, gemSame:Boolean):Int {
 		if(size<1) return 0
 		if(flag) {
 			setAllAttribute(false, ATTRIBUTE.ERASE)
-			lineColorsCleared = IntArray(0)
+			lineColorsCleared = emptyList()
 			gemsCleared = 0
 		}
+		val colored = MutableList(0) {0}
 		var total = 0
 		var x:Int
 		var y:Int
@@ -1448,7 +1425,7 @@ import kotlin.random.Random
 					if(count<size) continue
 					total += count
 					if(!flag) continue
-					if(count==size) lineColorsCleared[lineColor] = lineColor
+					if(count==size) colored.add(lineColor)
 					x = j
 					y = i
 					blockColor = lineColor
@@ -1466,6 +1443,7 @@ import kotlin.random.Random
 					}
 				}
 			}
+		lineColorsCleared = colored.toList()
 		return total
 	}
 
@@ -1847,7 +1825,7 @@ import kotlin.random.Random
 	/** @param row Row of blocks
 	 * @return a String representing the row
 	 */
-	fun rowToString(row:Array<Block?>?):String {
+	fun rowToString(row:List<Block?>?):String {
 		val strResult = StringBuilder()
 
 		row?.forEach {strResult.append(it ?: " ")}
@@ -1934,9 +1912,9 @@ import kotlin.random.Random
 	}
 
 	/** @param row Row of blocks
-	 * @return a String representing the row with attributes
+	 * @return a String representing the [row] with attributes
 	 */
-	fun attrRowToString(row:Array<Block?>?):String {
+	fun attrRowToString(row:List<Block?>?):String {
 		val strResult = StringBuilder()
 
 		row?.forEach {
@@ -1961,15 +1939,15 @@ import kotlin.random.Random
 		return "$strResult"
 	}
 
-	fun attrStringToRow(str:String, skin:Int):Array<Block> =
-		attrStringToRow(str.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray(), skin)
+	fun attrStringToRow(str:String, skin:Int):List<Block> =
+		attrStringToRow(str.split(Regex(";")).dropLastWhile {it.isEmpty()}, skin)
 
-	fun attrStringToRow(strArray:Array<String>, skin:Int):Array<Block> = Array(width) {j ->
+	fun attrStringToRow(strArray:List<String>, skin:Int):List<Block> = List(width) {j ->
 		var blkColor:Int = Block.COLOR_NONE
 		var attr = 0
 
 		try {
-			val strSubArray = strArray[j].split("/".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			val strSubArray = strArray[j].split(Regex("/")).dropLastWhile {it.isEmpty()}
 			if(strSubArray.isNotEmpty()) blkColor = strSubArray[0].toInt(16)
 			if(strSubArray.size>1) attr = strSubArray[1].toInt(16)
 		} catch(_:Exception) {
@@ -1983,18 +1961,16 @@ import kotlin.random.Random
 	}
 
 	fun attrStringToField(str:String, skin:Int) {
-		val strArray = str.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+		val strArray = str.split(Regex(";")).dropLastWhile {it.isEmpty()}
 
 		for(i in -1 until height) {
 			val index = (height-1-i)*width
 
 			try {
 				//String strTemp="";
-				val strArray2 = arrayOf("")
-				for(j in 0 until width)
-					strArray2[j] = if(index+j<strArray.size) strArray[index+j]
-					else ""
-
+				val strArray2 = List(width) {
+					if(index+it<strArray.size) strArray[index+it] else ""
+				}
 				val row = attrStringToRow(strArray2, skin)
 				for(j in 0 until width)
 					setBlock(j, i, row[j])
@@ -2177,18 +2153,16 @@ import kotlin.random.Random
 
 	/** mainly for Physician, generate random maps */
 	fun addRandomHoverBlocks(
-		engine:GameEngine, count:Int, colors:Array<Pair<Block.COLOR, Block.TYPE>>,
+		engine:GameEngine, count:Int, colors:List<Pair<Block.COLOR, Block.TYPE>>,
 		minY:Int, avoidLines:Boolean, flashMode:Boolean = false
 	) {
 		val posRand = Random(engine.random.nextLong())
 		val colorRand = Random(engine.random.nextLong())
 		val placeHeight = height-minY
 		val placeSize = placeHeight*width
-		val colorCounts = IntArray(colors.size)
-		for(i in colorCounts.indices)
-			colorCounts[i] = 0
+		val colorCounts = MutableList(colors.size) {0}
 
-		val placeBlock = Array(width) {BooleanArray(placeHeight) {count>=(placeSize shr 1)}}
+		val placeBlock = List(width) {MutableList(placeHeight) {count>=(placeSize shr 1)}}
 		if(count<placeSize shr 1) {
 			var i = 0
 			while(i<count) {
@@ -2235,29 +2209,28 @@ import kotlin.random.Random
 					cIndex = colors.indexOfFirst {it.first==blockColor}
 
 					if(cIndex!=-1) {
-						val colors = colors.map {it.first}
-						if(colors.size==2) {
-							if(colors[0]==colorUp&&colors[1]!=colorLeft||colors[0]==colorLeft&&colors[1]!=colorUp) {
+						val color = colors.map {it.first}
+						if(color.size==2) {
+							if(color[0]==colorUp&&color[1]!=colorLeft||color[0]==colorLeft&&color[1]!=colorUp) {
 								colorCounts[1]++
 								colorCounts[cIndex]--
-								setBlockColor(x, y, colors[1])
-							} else if(colors[1]==colorUp&&colors[0]!=colorLeft||colors[1]==colorLeft&&colors[0]!=colorUp) {
+								setBlockColor(x, y, color[1])
+							} else if(color[1]==colorUp&&color[0]!=colorLeft||color[1]==colorLeft&&color[0]!=colorUp) {
 								colorCounts[0]++
 								colorCounts[cIndex]--
-								setBlockColor(x, y, colors[0])
+								setBlockColor(x, y, color[0])
 							}
 						} else {
 							var newColor:Int
 							do
-								newColor = colorRand.nextInt(colors.size)
-							while(colors[newColor]==colorUp||colors[newColor]==colorLeft)
+								newColor = colorRand.nextInt(color.size)
+							while(color[newColor]==colorUp||color[newColor]==colorLeft)
 							colorCounts[cIndex]--
 							colorCounts[newColor]++
-							setBlockColor(x, y, colors[newColor])
+							setBlockColor(x, y, color[newColor])
 						}
 					}
 				}
-		val canSwitch = BooleanArray(colors.size)
 		val minCount = count/colors.size
 		val maxCount = (count+colors.size-1)/colors.size
 		var done = true
@@ -2283,17 +2256,12 @@ import kotlin.random.Random
 						if(cIndex==-1) continue
 						if(colorCounts[cIndex]<=maxCount) continue
 					}
-					for(i in colorCounts.indices)
-						canSwitch[i] = colorCounts[i]<maxCount
-					listOf(
-						getBlockColor(x, y-2), getBlockColor(x, y+2),
-						getBlockColor(x-2, y), getBlockColor(x+2, y)
-					).forEach {
-						for(i in colors.indices)
-							if(colors[i].first==it) {
-								canSwitch[i] = false
-								break
-							}
+
+					val canSwitch = colorCounts.map {
+						it<maxCount&&!listOf(
+							getBlockColor(x, y-2), getBlockColor(x, y+2),
+							getBlockColor(x-2, y), getBlockColor(x+2, y)
+						).any {c -> !colors.any {p -> p.first==c}}
 					}
 					bestSwitch = -1
 					bestSwitchCount = Integer.MAX_VALUE
@@ -2340,13 +2308,9 @@ import kotlin.random.Random
 			if(balanced) done = true
 		}
 		if(!flashMode) return
-		done = true
-		val gemNeeded = BooleanArray(colors.size)
-		for(i in colors.indices)
-			if(colors[i].first.color&&colorCounts[i]>0) {
-				gemNeeded[i] = true
-				done = false
-			} else gemNeeded[i] = false
+		val gemNeeded = colors.mapIndexed {i, it -> it.first.color&&colorCounts[i]>0}
+			.toMutableList()
+		done = !gemNeeded.any()
 		while(!done) {
 			val x = posRand.nextInt(width)
 			val y = posRand.nextInt(placeHeight)+minY
@@ -2373,9 +2337,8 @@ import kotlin.random.Random
 			)
 		})
 
-	fun shuffleColors(blockColors:Array<Block.COLOR>, numColors:Int, rand:Random) {
-		var bC = blockColors
-		bC = bC.clone()
+	fun shuffleColors(blockColors:List<Block.COLOR>, numColors:Int, rand:Random) {
+		var bC = blockColors.toMutableList()
 		val maxX = minOf(bC.size, numColors)
 		var j:Int
 		var i = maxX
@@ -2548,9 +2511,6 @@ import kotlin.random.Random
 	companion object {
 		/** Log */
 		internal var log = LogManager.getLogger()
-
-		/** Serial version ID */
-		private const val serialVersionUID = 7745183278794213487L
 
 		/** default の幅 */
 		const val DEFAULT_WIDTH = 10

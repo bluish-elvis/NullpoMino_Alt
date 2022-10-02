@@ -666,7 +666,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 	}
 
 	/* Receive stats */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		if(message.size>4) garbage[engine.playerID] = message[4].toInt()
 	}
 
@@ -684,7 +684,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 	}
 
 	/* Receive end-of-game stats */
-	override fun netVSRecvEndGameStats(message:Array<String>) {
+	override fun netVSRecvEndGameStats(message:List<String>) {
 		val seatID = message[2].toInt()
 		val playerID = netVSGetPlayerIDbySeatID(seatID)
 
@@ -708,7 +708,7 @@ class NetVSBattleMode:NetDummyVSMode() {
 
 	/* Message received */
 	@Throws(IOException::class)
-	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:Array<String>) {
+	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>) {
 		super.netlobbyOnMessage(lobby, client, message)
 
 		// Dead
@@ -835,33 +835,33 @@ class NetVSBattleMode:NetDummyVSMode() {
 		private const val ATTACK_CATEGORIES = 6
 
 		/** Attack table (for Twister only) */
-		private val LINE_ATTACK_TABLE = arrayOf(
+		private val LINE_ATTACK_TABLE = listOf(
 			// 1-2P, 3P, 4P, 5P, 6P
-			intArrayOf(0, 0, 0, 0, 0), // Single
-			intArrayOf(1, 1, 0, 0, 0), // Double
-			intArrayOf(2, 2, 1, 1, 1), // Triple
-			intArrayOf(4, 3, 2, 2, 2), // Four
-			intArrayOf(1, 1, 0, 0, 0), // T-Mini-S
-			intArrayOf(2, 2, 1, 1, 1), // T-Single
-			intArrayOf(4, 3, 2, 2, 2), // T-Double
-			intArrayOf(6, 4, 3, 3, 3), // T-Triple
-			intArrayOf(4, 3, 2, 2, 2), // T-Mini-D
-			intArrayOf(1, 1, 0, 0, 0)
+			listOf(0, 0, 0, 0, 0), // Single
+			listOf(1, 1, 0, 0, 0), // Double
+			listOf(2, 2, 1, 1, 1), // Triple
+			listOf(4, 3, 2, 2, 2), // Four
+			listOf(1, 1, 0, 0, 0), // T-Mini-S
+			listOf(2, 2, 1, 1, 1), // T-Single
+			listOf(4, 3, 2, 2, 2), // T-Double
+			listOf(6, 4, 3, 3, 3), // T-Triple
+			listOf(4, 3, 2, 2, 2), // T-Mini-D
+			listOf(1, 1, 0, 0, 0)
 		)// EZ-T
 
 		/** Attack table(for All Spin) */
-		private val LINE_ATTACK_TABLE_ALLSPIN = arrayOf(
+		private val LINE_ATTACK_TABLE_ALLSPIN = listOf(
 			// 1-2P, 3P, 4P, 5P, 6P
-			intArrayOf(0, 0, 0, 0, 0), // Single
-			intArrayOf(1, 1, 0, 0, 0), // Double
-			intArrayOf(2, 2, 1, 1, 1), // Triple
-			intArrayOf(4, 3, 2, 2, 2), // Four
-			intArrayOf(0, 0, 0, 0, 0), // T-Mini-S
-			intArrayOf(2, 2, 1, 1, 1), // T-Single
-			intArrayOf(4, 3, 2, 2, 2), // T-Double
-			intArrayOf(6, 4, 3, 3, 3), // T-Triple
-			intArrayOf(3, 2, 1, 1, 1), // T-Mini-D
-			intArrayOf(0, 0, 0, 0, 0)
+			listOf(0, 0, 0, 0, 0), // Single
+			listOf(1, 1, 0, 0, 0), // Double
+			listOf(2, 2, 1, 1, 1), // Triple
+			listOf(4, 3, 2, 2, 2), // Four
+			listOf(0, 0, 0, 0, 0), // T-Mini-S
+			listOf(2, 2, 1, 1, 1), // T-Single
+			listOf(4, 3, 2, 2, 2), // T-Double
+			listOf(6, 4, 3, 3, 3), // T-Triple
+			listOf(3, 2, 1, 1, 1), // T-Mini-D
+			listOf(0, 0, 0, 0, 0)
 		)// EZ-T
 
 		/** Indexes of attack types in attack table */
@@ -877,12 +877,12 @@ class NetVSBattleMode:NetDummyVSMode() {
 		private const val LINE_ATTACK_INDEX_EZ_T = 9
 
 		/** Combo attack table */
-		private val COMBO_ATTACK_TABLE = arrayOf(
-			intArrayOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5), // 1-2 Player(s)
-			intArrayOf(0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 4), // 3 Player
-			intArrayOf(0, 0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 4), // 4 Player
-			intArrayOf(0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 4), // 5 Player
-			intArrayOf(0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3)
+		private val COMBO_ATTACK_TABLE = listOf(
+			listOf(0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5), // 1-2 Player(s)
+			listOf(0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 4), // 3 Player
+			listOf(0, 0, 0, 1, 1, 1, 2, 2, 3, 3, 4, 4), // 4 Player
+			listOf(0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 4), // 5 Player
+			listOf(0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3)
 		)// 6 Payers
 
 		/** Garbage denominator (can be divided by 2,3,4,5) */

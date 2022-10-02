@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@ abstract class Randomizer {
 
 	private var seed:Long = 0L//Random.Default.nextLong()
 	protected var r:Random = Random(seed)
-	var pieces = Shape.all.map {it.ordinal}.toIntArray()
+	var pieces = Shape.all.map {it.ordinal}
 		private set
 
 	protected val isPieceSZOOnly:Boolean
@@ -44,7 +44,7 @@ abstract class Randomizer {
 
 	constructor()
 
-	constructor(pieceEnable:BooleanArray, seed:Long) {
+	constructor(pieceEnable:List<Boolean>, seed:Long) {
 		setState(pieceEnable, seed)
 	}
 
@@ -56,10 +56,10 @@ abstract class Randomizer {
 	 *
 	 * @param pieceEnable Array of enabled pieces.
 	 */
-	fun setState(pieceEnable:BooleanArray, seed:Long = this.seed) {
+	fun setState(pieceEnable:List<Boolean>, seed:Long = this.seed) {
 		this.seed = seed
 		r = Random(seed)
-		pieces = Shape.all.map {it.ordinal}.filter {pieceEnable[it]}.toIntArray()
+		pieces = Shape.all.map {it.ordinal}.filter {pieceEnable[it]}
 		init()
 	}
 

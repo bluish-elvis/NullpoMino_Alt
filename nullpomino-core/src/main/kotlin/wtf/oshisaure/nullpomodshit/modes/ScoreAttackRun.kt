@@ -80,8 +80,7 @@ class ScoreAttackRun:AbstractMode() {
 			rankingQuads.mapIndexed {a, x -> "$a.quads" to x})
 
 	private val itemMode = StringsMenuItem(
-		"gametype", "GAME MODE", COLOR.BLUE, 0,
-		Gametype.all.map {it.label}.toTypedArray()
+		"gametype", "GAME MODE", COLOR.BLUE, 0, Gametype.all.map {it.label}
 	)
 	private var gametype:Int by DelegateMenuItem(itemMode)
 	override val name:String get() = "ARCADE SCORE ATTACK"
@@ -458,7 +457,7 @@ class ScoreAttackRun:AbstractMode() {
 			}
 		}
 
-		private val GAMETYPE_LABELS:Array<String> = Gametype.all.map {it.label}.toTypedArray()
+		private val GAMETYPE_LABELS = Gametype.all.map {it.label}
 		private val RANKING_TYPES = GAMETYPE_LABELS.size
 		private const val GAMETYPE_REGULAR = 0
 		private const val GAMETYPE_SPIN = 1

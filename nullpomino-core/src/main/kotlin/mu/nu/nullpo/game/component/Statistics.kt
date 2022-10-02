@@ -169,17 +169,17 @@ class Statistics:Serializable {
 				}
 			}
 			field = it
-			rollclearHistory = rollclearHistory.plus(it).takeLast(historyMax).toIntArray()
+			rollclearHistory = listOf(it)+rollclearHistory.takeLast(historyMax)
 		}
 	/** Roll cleared history */
-	var rollclearHistory = IntArray(historyMax)
+	var rollclearHistory = List(historyMax) {0}
 
 	/** Roll Reached Count */
 	var rollReached = 0
 	/** Roll Survived Count */
 	var rollSurvived = 0
 
-	var pieces = IntArray(Piece.PIECE_COUNT)
+	var pieces = List(Piece.PIECE_COUNT) {0}
 
 	var randSeed:Long = 0L
 	/** Constructor */
@@ -194,10 +194,10 @@ class Statistics:Serializable {
 		replace(s)
 	}
 
-	/** Constructor that imports data from a String Array
-	 * @param s String Array (String[37])
+	/** Constructor that imports data from a String List
+	 * @param s String List (String[37])
 	 */
-	constructor(s:Array<String>) {
+	constructor(s:List<String>) {
 		importStringArray(s)
 	}
 
@@ -254,7 +254,7 @@ class Statistics:Serializable {
 		maxChain = 0
 		rollclear = 0
 
-		pieces = IntArray(Piece.PIECE_COUNT)
+		pieces = List(Piece.PIECE_COUNT) {0}
 		randSeed = 0L
 	}
 
@@ -357,7 +357,7 @@ class Statistics:Serializable {
 			rollclear = b.rollclear
 			garbageLines += b.garbageLines
 
-			pieces = pieces.mapIndexed {it, i -> it+b.pieces[i]}.toIntArray()
+			pieces = pieces.mapIndexed {it, i -> it+b.pieces[i]}
 			randSeed = b.randSeed
 		}
 	}
@@ -461,70 +461,73 @@ class Statistics:Serializable {
 		maxChain = p.getProperty("$id.statistics.maxChain", 0)
 		rollclear = p.getProperty("$id.statistics.rollclear", 0)
 		randSeed = p.getProperty("$id.statistics.randSeed", 0L)
-		for(i in 0 until pieces.size-1)
-			pieces[i] = p.getProperty("$id.statistics.pieces.$i", 0)
+		pieces = List(pieces.size) {p.getProperty("$id.statistics.pieces.$it", 0)}
 	}
 
-	/** Import from String Array
-	 * @param s String Array (String[42])
+	/** Import from String List
+	 * @param s String List (String[42])
 	 */
-	fun importStringArray(s:Array<String>) = listOf<(String)->Unit>(
-		{scoreLine = it.toInt()},
-		{scoreSD = it.toInt()},
-		{scoreHD = it.toInt()},
-		{scoreBonus = it.toInt()},
-		{attacksLine = it.toInt()},
-		{attacksTwist = it.toInt()},
-		{attacksBonus = it.toInt()},
-		{lines = it.toInt()},
-		{blocks = it.toInt()},
-		{time = it.toInt()},
-		{level = it.toInt()},
-		{levelDispAdd = it.toInt()},
-		{totalPieceLocked = it.toInt()},
-		{totalPieceActiveTime = it.toInt()},
-		{totalPieceMove = it.toInt()},
-		{totalPieceSpin = it.toInt()},
-		{totalSingle = it.toInt()},
-		{totalDouble = it.toInt()},
-		{totalSplitDouble = it.toInt()},
-		{totalTriple = it.toInt()},
-		{totalSplitTriple = it.toInt()},
-		{totalQuadruple = it.toInt()},
-		{totalTwistZeroMini = it.toInt()},
-		{totalTwistZero = it.toInt()},
-		{totalTwistSingleMini = it.toInt()},
-		{totalTwistSingle = it.toInt()},
-		{totalTwistDoubleMini = it.toInt()},
-		{totalTwistDouble = it.toInt()},
-		{totalTwistSplitDouble = it.toInt()},
-		{totalTwistTriple = it.toInt()},
-		{totalTwistSplitTriple = it.toInt()},
-		{totalB2BQuad = it.toInt()},
-		{totalB2BSplit = it.toInt()},
-		{totalB2BTwist = it.toInt()},
-		{totalHoldUsed = it.toInt()},
-		{maxCombo = it.toInt()},
-		{maxB2B = it.toInt()},
-		{gamerate = it.toFloat()},
-		{maxChain = it.toInt()},
-		{rollclear = it.toInt()},
-		{randSeed = it.toLong()}).plus(
-		(0 until pieces.size-1).map {i:Int ->
-			{pieces[i] = it.toInt()}
-		}).zip(s).forEach {(m, st) -> m(st)}
+	fun importStringArray(s:List<String>) {
+		val pi = MutableList(pieces.size) {0}
+		listOf<(String)->Unit>(
+			{scoreLine = it.toInt()},
+			{scoreSD = it.toInt()},
+			{scoreHD = it.toInt()},
+			{scoreBonus = it.toInt()},
+			{attacksLine = it.toInt()},
+			{attacksTwist = it.toInt()},
+			{attacksBonus = it.toInt()},
+			{lines = it.toInt()},
+			{blocks = it.toInt()},
+			{time = it.toInt()},
+			{level = it.toInt()},
+			{levelDispAdd = it.toInt()},
+			{totalPieceLocked = it.toInt()},
+			{totalPieceActiveTime = it.toInt()},
+			{totalPieceMove = it.toInt()},
+			{totalPieceSpin = it.toInt()},
+			{totalSingle = it.toInt()},
+			{totalDouble = it.toInt()},
+			{totalSplitDouble = it.toInt()},
+			{totalTriple = it.toInt()},
+			{totalSplitTriple = it.toInt()},
+			{totalQuadruple = it.toInt()},
+			{totalTwistZeroMini = it.toInt()},
+			{totalTwistZero = it.toInt()},
+			{totalTwistSingleMini = it.toInt()},
+			{totalTwistSingle = it.toInt()},
+			{totalTwistDoubleMini = it.toInt()},
+			{totalTwistDouble = it.toInt()},
+			{totalTwistSplitDouble = it.toInt()},
+			{totalTwistTriple = it.toInt()},
+			{totalTwistSplitTriple = it.toInt()},
+			{totalB2BQuad = it.toInt()},
+			{totalB2BSplit = it.toInt()},
+			{totalB2BTwist = it.toInt()},
+			{totalHoldUsed = it.toInt()},
+			{maxCombo = it.toInt()},
+			{maxB2B = it.toInt()},
+			{gamerate = it.toFloat()},
+			{maxChain = it.toInt()},
+			{rollclear = it.toInt()},
+			{randSeed = it.toLong()}).plus(
+			(0 until pieces.size-1).map {i:Int ->
+				{pi[i] = it.toInt()}
+			}).zip(s).forEach {(m, st) -> m(st)}
+		pieces = pi.toList()
+	}
 
 	/** Import from String
 	 * @param s String (Split by ;)
 	 */
 	fun importString(s:String) {
-		importStringArray(s.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray())
+		importStringArray(s.split(Regex(";")).dropLastWhile {it.isEmpty()})
 	}
 
-	/** Export to String Array
-	 * @return String Array (String[38])
+	/** Export to String List
+	 * @return String List (String[38])
 	 */
-	fun exportStringArray():Array<String> = arrayOf(
+	fun exportStringArray():List<String> = listOf(
 		"$scoreLine", "$scoreSD", "$scoreHD", "$scoreBonus", "$attacksLine", "$attacksTwist", "$attacksBonus",
 		"$lines", "$blocks", "$time", "$level", "$levelDispAdd", "$totalPieceLocked", "$totalPieceActiveTime",
 		"$totalPieceMove", "$totalPieceSpin", "$totalSingle", "$totalDouble", "$totalSplitDouble",

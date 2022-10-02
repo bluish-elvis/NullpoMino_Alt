@@ -984,20 +984,20 @@ class AvalancheVS:AvalancheVSDummyMode() {
 
 		/** Chain multipliers in Fever */
 		private val FEVER_POWERS =
-			intArrayOf(
+			listOf(
 				4, 10, 18, 21, 29, 46, 76, 113, 150, 223, 259, 266, 313, 364, 398, 432, 468, 504, 540, 576, 612, 648, 684,
 				720 //Arle
 			)
 
 		/** Names of fever point criteria settings */
-		private val FEVER_POINT_CRITERIA_NAMES = arrayOf("COUNTER", "CLEAR", "BOTH")
+		private val FEVER_POINT_CRITERIA_NAMES = listOf("COUNTER", "CLEAR", "BOTH")
 
 		/** Constants for fever point criteria settings */
 		private const val FEVER_POINT_CRITERIA_COUNTER = 0
 		private const val FEVER_POINT_CRITERIA_CLEAR = 1/* ,FEVER_POINT_CRITERIA_BOTH = 2 */
 
 		/** Names of fever time criteria settings */
-		private val FEVER_TIME_CRITERIA_NAMES = arrayOf("COUNTER", "ATTACK")
+		private val FEVER_TIME_CRITERIA_NAMES = listOf("COUNTER", "ATTACK")
 
 		/** Constants for fever time criteria settings */
 		private const val FEVER_TIME_CRITERIA_COUNTER = 0
@@ -1005,7 +1005,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 
 		/** Fever meter colors */
 		private val FEVER_METER_COLORS =
-			arrayOf(
+			listOf(
 				COLOR.RED, COLOR.ORANGE, COLOR.YELLOW, COLOR.GREEN, COLOR.CYAN, COLOR.BLUE, COLOR.COBALT, COLOR.PURPLE,
 				COLOR.PINK
 			)

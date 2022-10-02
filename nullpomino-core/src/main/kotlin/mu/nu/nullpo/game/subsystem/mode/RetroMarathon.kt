@@ -484,7 +484,7 @@ class RetroMarathon:AbstractMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Denominator table */
-		private val tableDenominator = intArrayOf(
+		private val tableDenominator = listOf(
 			//	0  1  2  3  4  5  6  7  8  9    +xx
 			48, 40, 32, 27, 22, 18, 15, 12, 10, 8, // 00
 			7, 6, 11, 5, 9, 4, 7, 3, 11, 10, // 10
@@ -493,7 +493,7 @@ class RetroMarathon:AbstractMode() {
 		)
 
 		/** Gravity table */
-		private val tableGravity = intArrayOf(
+		private val tableGravity = listOf(
 			//	0  1  2  3  4  5  6  7  8  9    +xx
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 00
 			1, 1, 2, 1, 2, 1, 2, 1, 4, 4, // 10
@@ -502,7 +502,7 @@ class RetroMarathon:AbstractMode() {
 		)
 
 		/** Lock delay table */
-		private val tableLockDelay = intArrayOf(
+		private val tableLockDelay = listOf(
 			//	0  1  2  3  4  5  6  7  8  9    +xx
 			60, 52, 45, 39, 34, 30, 27, 24, 22, 20, // 00
 			19, 18, 17, 16, 15, 14, 13, 12, 11, 10, // 10

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@ package mu.nu.nullpo.game.net
 
 import mu.nu.nullpo.util.CustomProperties
 import java.io.Serializable
-import java.util.*
+import java.util.LinkedList
 
 /** Single player mode ranking */
 class NetSPRanking:Serializable {
@@ -55,7 +55,7 @@ class NetSPRanking:Serializable {
 	var maxRecords = 0
 
 	/** Records */
-	var listRecord:LinkedList<NetSPRecord> = LinkedList()
+	var listRecord:MutableList<NetSPRecord> = mutableListOf()
 
 	/** Default Constructor */
 	constructor() {
@@ -95,7 +95,7 @@ class NetSPRanking:Serializable {
 		style = 0
 		rankingType = 0
 		maxRecords = 100
-		listRecord = LinkedList()
+		listRecord.clear()
 	}
 
 	/** Copy from [s] other NetSPRankingData*/
@@ -106,9 +106,7 @@ class NetSPRanking:Serializable {
 		style = s.style
 		rankingType = s.rankingType
 		maxRecords = s.maxRecords
-		listRecord = LinkedList()
-		for(i in s.listRecord.indices)
-			listRecord.add(NetSPRecord(s.listRecord[i]))
+		listRecord = s.listRecord.toMutableList()
 	}
 
 	/** Get specific player's record
@@ -130,13 +128,7 @@ class NetSPRanking:Serializable {
 	 * @param strPlayerName Player Name
 	 * @return Index (-1 if not found)
 	 */
-	fun indexOf(strPlayerName:String):Int {
-		for(i in listRecord.indices) {
-			val r = listRecord[i]
-			if(r.strPlayerName==strPlayerName) return i
-		}
-		return -1
-	}
+	fun indexOf(strPlayerName:String):Int = listRecord.indexOfFirst {it.strPlayerName==strPlayerName}
 
 	/** Get specific player's index
 	 * @param pInfo NetPlayerInfo

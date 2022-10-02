@@ -94,17 +94,17 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	override val imgHanabi = super.imgHanabi.map {ResourceImageSlick(it)}
 
 	/** Title Background */
-	override var imgTitleBG = ResourceImageSlick(super.imgTitleBG)
+	override var imgTitleBG = ResourceImageSlick(super.imgTitleBG, true)
 
 	/** Title Logo */
-	override val imgLogo = ResourceImageSlick(super.imgLogo)
-	override val imgLogoSmall = ResourceImageSlick(super.imgLogoSmall)
+	override val imgLogo = ResourceImageSlick(super.imgLogo, true)
+	override val imgLogoSmall = ResourceImageSlick(super.imgLogoSmall, true)
 
 	/** Menu Background */
-	override val imgMenuBG:List<ResourceImageSlick> by lazy {super.imgMenuBG.map {ResourceImageSlick(it)}}
+	override val imgMenuBG:List<ResourceImageSlick> by lazy {super.imgMenuBG.map {ResourceImageSlick(it, true)}}
 
 	/** プレイ中のBackground */
-	override val imgPlayBG by lazy {super.imgPlayBG.map {ResourceImageSlick(it)}}
+	override val imgPlayBG by lazy {super.imgPlayBG.map {ResourceImageSlick(it, true)}}
 
 	/** TTF font */
 	internal var ttfFont:UnicodeFont? = null
@@ -113,7 +113,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	var soundManager:SoundManager = SoundManager()
 
 	/** BGM */
-	var bgm:Array<Array<Pair<Music?, Boolean>>> = emptyArray()
+	var bgm:List<MutableList<Pair<Music?, Boolean>>> = emptyList()
 
 	/** Current BGM number */
 	private var bgmint:Pair<Int, Int> = 0 to 0
@@ -155,7 +155,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		}
 
 		// 音楽
-		bgm = BGM.all.map {Array<Pair<Music?, Boolean>>(it.size) {null to false}}.toTypedArray()
+		bgm = BGM.all.map {MutableList<Pair<Music?, Boolean>>(it.size) {null to false}}
 		bgmPlaying = null
 
 		if(NullpoMinoSlick.propConfig.getProperty("option.bgmpreload", false)) BGM.all.forEach {list ->

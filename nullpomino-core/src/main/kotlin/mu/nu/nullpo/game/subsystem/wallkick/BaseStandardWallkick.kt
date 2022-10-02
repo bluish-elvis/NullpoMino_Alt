@@ -52,7 +52,7 @@ open class BaseStandardWallkick:Wallkick {
 	 * a kick.
 	 */
 	protected open fun getKickTable(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
-		field:Field, ctrl:Controller?):Array<Array<IntArray>>? = null
+		field:Field, ctrl:Controller?):List<List<List<Int>>>? = null
 
 	/* Wallkick */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,

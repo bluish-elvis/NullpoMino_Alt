@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,8 +38,7 @@ class DTETPlusWallkick:DTETWallkick() {
 
 	/* Wallkick main method */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
-		piece:Piece,
-		field:Field, ctrl:Controller?):WallkickResult? {
+		piece:Piece, field:Field, ctrl:Controller?):WallkickResult? {
 		var x2:Int
 		var y2:Int
 
@@ -91,7 +90,9 @@ class DTETPlusWallkick:DTETWallkick() {
 
 	companion object {
 		/** Wallkick table */
-		private val WALLKICK = arrayOf(intArrayOf(-1, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(-1, 1), intArrayOf(1, 1),
-			intArrayOf(0, -1), intArrayOf(-1, -1), intArrayOf(1, -1))
+		private val WALLKICK = listOf(
+			listOf(-1, 0), listOf(1, 0), listOf(0, 1), listOf(-1, 1), listOf(1, 1),
+			listOf(0, -1), listOf(-1, -1), listOf(1, -1)
+		)
 	}
 }

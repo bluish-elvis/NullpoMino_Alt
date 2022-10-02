@@ -503,7 +503,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 		/** Enabled piece types */
 		private val CHAIN_POWERS_FEVERTYPE =
-			intArrayOf(4, 12, 24, 32, 48, 96, 160, 240, 320, 400, 500, 600, 700, 800, 900, 999)
+			listOf(4, 12, 24, 32, 48, 96, 160, 240, 320, 400, 500, 600, 700, 800, 900, 999)
 
 		/** Number of ranking records */
 		private const val RANKING_MAX = 13
@@ -512,13 +512,13 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		private const val RANKING_TYPE = 7
 
 		/** Name of game types */
-		private val GAMETYPE_NAME = arrayOf("MARATHON", "ULTRA", "SPRINT")
+		private val GAMETYPE_NAME = listOf("MARATHON", "ULTRA", "SPRINT")
 
 		/** Number of game types */
 		private const val GAMETYPE_MAX = 3
 
 		/** Name of score types */
-		private val SCORETYPE_NAME = arrayOf("CLASSIC", "FEVER")
+		private val SCORETYPE_NAME = listOf("CLASSIC", "FEVER")
 
 		/** Number of score types */
 		private const val SCORETYPE_MAX = 2
@@ -527,6 +527,6 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		private const val ULTRA_MAX_TIME = 10800
 
 		/** Max score in Sprint */
-		private val SPRINT_MAX_SCORE = intArrayOf(15000, 20000, 100000, 175000, 350000)
+		private val SPRINT_MAX_SCORE = listOf(15000, 20000, 100000, 175000, 350000)
 	}
 }

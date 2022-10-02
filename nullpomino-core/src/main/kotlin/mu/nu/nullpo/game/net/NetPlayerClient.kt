@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -134,7 +134,7 @@ class NetPlayerClient:NetBaseClient {
 	/* 受信したメッセージに応じていろいろ処理をする */
 	@Throws(IOException::class)
 	override fun processPacket(fullMessage:String) {
-		val message = fullMessage.split("\t".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray() // タブ区切り
+		val message = fullMessage.split(Regex("\t")).dropLastWhile {it.isEmpty()} // タブ区切り
 
 		// 接続完了
 		if(message[0]=="welcome") {

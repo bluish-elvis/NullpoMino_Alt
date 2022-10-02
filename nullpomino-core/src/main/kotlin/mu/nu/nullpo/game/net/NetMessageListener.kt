@@ -38,7 +38,7 @@ interface NetMessageListener {
 	 * @throws IOException 何かエラーがあったとき
 	 */
 	@Throws(IOException::class)
-	fun netOnMessage(client:NetBaseClient, message:Array<String>)
+	fun netOnMessage(client:NetBaseClient, message:List<String>)
 
 	/** 切断時に呼び出される
 	 * @param client クライアント(NetBaseClientとその派生クラス)

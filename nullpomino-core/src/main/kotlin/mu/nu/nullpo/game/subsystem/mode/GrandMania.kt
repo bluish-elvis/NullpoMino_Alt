@@ -526,16 +526,14 @@ class GrandMania:AbstractMode() {
 			// 段位
 			if(grade>=0&&grade<tableGradeName.size)
 				receiver.drawScoreGrade(engine, 0, 1, tableGradeName[grade], gradeflash>0&&gradeflash%4==0||g20, 2f)
-			if(grade<17)
+			if(grade<17) {
+				receiver.drawScoreSpeed(engine, 0, 3, gradePoint-gradeDecay*1f/tableGradeDecayRate[gradeInternal], 5f)
 				receiver.drawScoreNum(
 					engine, 0, 3, String.format("%02.1f%%", gradePoint-gradeDecay*1f/tableGradeDecayRate[gradeInternal]),
-					if(g20)
-						COLOR.YELLOW
-					else if(mrollFourline&&mrollSectiontime)
-						COLOR.CYAN
-					else
-						COLOR.BLUE
+					if(g20) COLOR.YELLOW
+					else if(mrollFourline&&mrollSectiontime) COLOR.CYAN else COLOR.BLUE
 				)
+			}
 			if(gradeInternal>=0&&gradeInternal<tableDetailGradeName.size)
 				receiver.drawScoreGrade(
 					engine, 3, 3, tableDetailGradeName[gradeInternal], gradeflash>0&&gradeflash%4==0||g20
@@ -560,9 +558,7 @@ class GrandMania:AbstractMode() {
 			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextseclv), g20)
 
 			// Time
-			receiver.drawScoreFont(
-				engine, 0, 14, "Time", if(g20&&mrollSectiontime) COLOR.CYAN else COLOR.BLUE
-			)
+			receiver.drawScoreFont(engine, 0, 14, "Time", if(g20&&mrollSectiontime) COLOR.CYAN else COLOR.BLUE)
 			if(engine.ending!=2||rolltime/20%2==0)
 				receiver.drawScoreNum(
 					engine, 0, 15, engine.statistics.time.toTimeStr, g20&&mrollSectiontime, 2f
@@ -1201,51 +1197,51 @@ class GrandMania:AbstractMode() {
 
 		/** 落下速度 table */
 		private val tableGravityValue =
-			intArrayOf(
+			listOf(
 				4, 6, 8, 10, 12, 16, 32, 48, 64, 80, 96, 112, 128, 144, 4, 32, 64, 96, 128, 160, 192, 224, 256, 512, 768,
 				1024, 1280, 1024, 768, -1
 			)
 
 		/** 落下速度が変わる level */
 		private val tableGravityChangeLevel =
-			intArrayOf(
+			listOf(
 				30, 35, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 170, 200, 220, 230, 233, 236, 239, 243, 247, 251, 300,
 				330, 360, 400, 420, 450, 500, 10000
 			)
 
 		/** ARE table */
-		private val tableARE = intArrayOf(25, 25, 24, 23, 22, 21, 19, 16, 14, 12)
+		private val tableARE = listOf(25, 25, 24, 23, 22, 21, 19, 16, 14, 12)
 
 		/** ARE after line clear table */
-		private val tableARELine = intArrayOf(25, 25, 24, 22, 20, 18, 15, 12, 9, 6)
+		private val tableARELine = listOf(25, 25, 24, 22, 20, 18, 15, 12, 9, 6)
 
 		/** Line clear times table */
-		private val tableLineDelay = intArrayOf(40, 38, 35, 31, 25, 20, 16, 12, 9, 6)
+		private val tableLineDelay = listOf(40, 38, 35, 31, 25, 20, 16, 12, 9, 6)
 
 		/** 固定 times table */
-		private val tableLockDelay = intArrayOf(30, 30, 30, 30, 30, 30, 28, 26, 24, 20)
+		private val tableLockDelay = listOf(30, 30, 30, 30, 30, 30, 28, 26, 24, 20)
 
 		/** DAS table */
-		private val tableDAS = intArrayOf(15, 14, 13, 12, 11, 10, 9, 8, 7, 6)
+		private val tableDAS = listOf(15, 14, 13, 12, 11, 10, 9, 8, 7, 6)
 
 		/** BGM fadeout levels */
-		private val tableBGMFadeout = intArrayOf(475, 680, 880, -1)
+		private val tableBGMFadeout = listOf(475, 680, 880, -1)
 
 		/** BGM change levels */
-		private val tableBGMChange = intArrayOf(500, 700, 900, -1)
-		private val tableBGM = arrayOf(BGM.GrandA(0), BGM.GrandA(1), BGM.GrandA(2), BGM.GrandA(3))
+		private val tableBGMChange = listOf(500, 700, 900, -1)
+		private val tableBGM = listOf(BGM.GrandA(0), BGM.GrandA(1), BGM.GrandA(2), BGM.GrandA(3))
 
 		/** Line clear時に入る段位 point */
 		private val tableGradePoint =
-			arrayOf(
-				intArrayOf(10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2),
-				intArrayOf(20, 20, 20, 18, 16, 15, 13, 10, 11, 11, 12), intArrayOf(40, 36, 33, 30, 27, 24, 20, 18, 17, 16, 15),
-				intArrayOf(50, 47, 44, 40, 40, 38, 36, 34, 32, 31, 30)
+			listOf(
+				listOf(10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2),
+				listOf(20, 20, 20, 18, 16, 15, 13, 10, 11, 11, 12), listOf(40, 36, 33, 30, 27, 24, 20, 18, 17, 16, 15),
+				listOf(50, 47, 44, 40, 40, 38, 36, 34, 32, 31, 30)
 			)
 
 		/** 段位 pointのCombo bonus */
 		private val tableGradeComboBonus =
-			arrayOf(
+			listOf(
 				floatArrayOf(1.0f, 1.2f, 1.2f, 1.4f, 1.4f, 1.4f, 1.4f, 1.5f, 1.5f, 2.0f),
 				floatArrayOf(1.0f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.0f, 2.1f, 2.5f),
 				floatArrayOf(1.0f, 1.5f, 1.8f, 2.0f, 2.2f, 2.3f, 2.4f, 2.5f, 2.6f, 3.0f),
@@ -1253,24 +1249,24 @@ class GrandMania:AbstractMode() {
 			)
 
 		/** 実際の段位を上げるのに必要な内部段位 */
-		private val tableGradeChange = intArrayOf(1, 2, 3, 4, 5, 7, 9, 12, 15, 18, 19, 20, 23, 25, 27, 29, 31, -1)
+		private val tableGradeChange = listOf(1, 2, 3, 4, 5, 7, 9, 12, 15, 18, 19, 20, 23, 25, 27, 29, 31, -1)
 
 		/** 段位 pointが1つ減る time */
 		private val tableGradeDecayRate =
-			intArrayOf(
+			listOf(
 				125, 100, 80, 50, 48, 47, 45, 44, 43, 42, 41, 40, 36, 33, 30, 28, 26, 24, 22, 20, 19, 18, 17, 16, 15, 15,
 				14, 14, 13, 13, 11, 10
 			)
 
 		/** 段位のName */
-		private val tableGradeName = arrayOf(
+		private val tableGradeName = listOf(
 			"9", "8", "7", "6", "5", "4", "3", "2", "1", // 0～8
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", // 9～17
 			"m", "Gm", "GM" // 18～20
 		)
 
 		/** 詳細段位のName */
-		private val tableDetailGradeName = arrayOf(
+		private val tableDetailGradeName = listOf(
 			"9", "8", "7", "6", "5", "4", "3", "2", "1", // 0～8
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", // 9～17
 			"M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", // 18～26
@@ -1278,7 +1274,7 @@ class GrandMania:AbstractMode() {
 		)
 
 		/** 裏段位のName */
-		private val tableSecretGradeName = arrayOf(
+		private val tableSecretGradeName = listOf(
 			"9", "8", "7", "6", "5", "4", "3", "2", "1", // 0～8
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", // 9～17
 			"GM" // 18

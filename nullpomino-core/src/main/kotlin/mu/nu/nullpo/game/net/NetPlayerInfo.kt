@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -115,10 +115,10 @@ class NetPlayerInfo:Serializable {
 		replace(n)
 	}
 
-	/** String array constructor (Uses importStringArray)
-	 * @param pdata String array (String[12])
+	/** String list constructor (Uses importStringArray)
+	 * @param pdata String list (String[12])
 	 */
-	constructor(pdata:Array<String>) {
+	constructor(pdata:List<String>) {
 		importStringArray(pdata)
 	}
 
@@ -165,10 +165,10 @@ class NetPlayerInfo:Serializable {
 		channel = n.channel
 	}
 
-	/** Import from String array
-	 * @param pdata String array (String[27])
+	/** Import from String list
+	 * @param pdata String list (String[27])
 	 */
-	fun importStringArray(pdata:Array<String>) {
+	fun importStringArray(pdata:List<String>) {
 		strName = NetUtil.urlDecode(pdata[0])
 		strCountry = NetUtil.urlDecode(pdata[1])
 		strHost = NetUtil.urlDecode(pdata[2])
@@ -202,13 +202,13 @@ class NetPlayerInfo:Serializable {
 	 * @param str String
 	 */
 	fun importString(str:String) {
-		importStringArray(str.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray())
+		importStringArray(str.split(Regex(";")).dropLastWhile {it.isEmpty()})
 	}
 
-	/** Export to String array
-	 * @return String array (String[27])
+	/** Export to String list
+	 * @return String list (String[27])
 	 */
-	fun exportStringArray():Array<String> = arrayOf(
+	fun exportStringArray():List<String> = listOf(
 		NetUtil.urlEncode(strName),
 		NetUtil.urlEncode(strCountry),
 		NetUtil.urlEncode(strHost),

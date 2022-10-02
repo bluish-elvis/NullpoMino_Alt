@@ -114,7 +114,7 @@ class GameEngine(
 	/** Current main game status */
 	var stat:Status = Status.NOTHING
 	/** Free status counters */
-	var statc = IntArray(MAX_STATC)
+	var statc = MutableList(MAX_STATC) {0}
 
 	/** True if game play, false if menu.
 	 * Used for alternate keyboard mappings. */
@@ -155,14 +155,14 @@ class GameEngine(
 	var nowPieceColorOverride:Block.COLOR? = null; private set
 
 	/** Allow/Disallow certain piece */
-	var nextPieceEnable = BooleanArray(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
+	var nextPieceEnable = List(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
 	/** Preferred size of next piece array
 	 * Might be ignored by certain Randomizer. (Default:1400) */
 	var nextPieceArraySize = 0
 	/** Array of next piece IDs */
-	var nextPieceArrayID = IntArray(0)
+	var nextPieceArrayID = List(0) {0}
 	/** Array of next piece Objects */
-	var nextPieceArrayObject:Array<Piece> = emptyArray()
+	var nextPieceArrayObject = emptyList<Piece>()
 	/** Number of pieces put (Used by next piece sequence) */
 	var nextPieceCount = 0
 	/** Hold piece (null: None) */
@@ -253,7 +253,7 @@ class GameEngine(
 	val lastEventShape:Piece.Shape? get() = lastEvent?.piece?.type
 	val lastEventPiece:Int get() = lastEvent?.piece?.id ?: 0
 
-	var lastLines = IntArray(0)
+	var lastLines = emptyList<Int>()
 
 	/** True if last erased line is Split */
 	var split = false
@@ -671,10 +671,10 @@ class GameEngine(
 		quitFlag = false
 
 		stat = Status.SETTING
-		statc = IntArray(MAX_STATC)
+		statc.fill(0)
 
 		lastEvent = null
-		lastLines = IntArray(0)
+		lastLines = emptyList()
 		lastLine = fieldHeight
 
 		isInGame = false
@@ -690,9 +690,9 @@ class GameEngine(
 		nowPieceColorOverride = null
 
 		nextPieceArraySize = 1400
-		nextPieceEnable = BooleanArray(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
-		nextPieceArrayID = IntArray(0)
-		nextPieceArrayObject = emptyArray()
+		nextPieceEnable = List(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
+		nextPieceArrayID = emptyList()
+		nextPieceArrayObject = emptyList()
 		nextPieceCount = 0
 
 		holdPieceObject = null
@@ -974,11 +974,11 @@ class GameEngine(
 
 		if(p.type==Piece.Shape.T) {
 			// Setup 4-point coordinates
-			val tx = if(p.big) intArrayOf(1, 4, 1, 4) else intArrayOf(0, 2, 0, 2)
-			val ty = if(p.big) intArrayOf(1, 1, 4, 4) else intArrayOf(0, 0, 2, 2)
-			tx.indices.forEach {
-				tx[it] += ruleOpt.pieceOffsetX[p.id][p.direction]*(if(p.big) 2 else 1)
-				ty[it] += ruleOpt.pieceOffsetY[p.id][p.direction]*(if(p.big) 2 else 1)
+			val tx = (if(p.big) listOf(1, 4, 1, 4) else listOf(0, 2, 0, 2)).map {
+				it+ruleOpt.pieceOffsetX[p.id][p.direction]*(if(p.big) 2 else 1)
+			}
+			val ty = (if(p.big) listOf(1, 1, 4, 4) else listOf(0, 0, 2, 2)).map {
+				it+ruleOpt.pieceOffsetY[p.id][p.direction]*(if(p.big) 2 else 1)
 			}
 			// Check the corner of the T p
 			if(tx.indices.count {!f.getBlockEmpty(x+tx[it], y+ty[it])}>=3) res = Twister.POINT
@@ -1551,22 +1551,22 @@ class GameEngine(
 			if(nextPieceArrayID.isEmpty()) {
 				if(owner.replayMode) {
 					randSeed = owner.replayProp.getProperty("$playerID.replay.randSeed", 16L)
-					nextPieceArrayID = IntArray(0)
-					nextPieceArrayObject = emptyArray()
+					nextPieceArrayID = emptyList()
+					nextPieceArrayObject = emptyList()
 				}
 				// 出現可能なピースが1つもない場合は全て出現できるようにする
-				if(nextPieceEnable.all {false}) nextPieceEnable = BooleanArray(Piece.PIECE_COUNT) {true}
+				if(nextPieceEnable.all {false}) nextPieceEnable = List(Piece.PIECE_COUNT) {true}
 
 				// NEXTピースの出現順を作成
 				random = Random(randSeed)
 				randomizer.setState(nextPieceEnable, randSeed)
 
-				nextPieceArrayID = IntArray(nextPieceArraySize) {randomizer.next()}
+				nextPieceArrayID = List(nextPieceArraySize) {randomizer.next()}
 				statistics.randSeed = randSeed
 			}
 			// NEXTピースのオブジェクトを作成
 			if(nextPieceArrayObject.isEmpty()) {
-				nextPieceArrayObject = Array(nextPieceArrayID.size) {
+				nextPieceArrayObject = List(nextPieceArrayID.size) {
 					Piece(nextPieceArrayID[it]).also {p ->
 						p.direction = ruleOpt.pieceDefaultDirection[p.id]
 						if(p.direction>=Piece.DIRECTION_COUNT)
@@ -1582,7 +1582,7 @@ class GameEngine(
 						if(randomBlockColor) {
 							if(blockColors.size<numColors||numColors<1) numColors = blockColors.size
 							val size = p.maxBlock
-							p.setColor(Array(size) {blockColors[random.nextInt(numColors)]})
+							p.setColor(List(size) {blockColors[random.nextInt(numColors)]})
 							if(clearMode==ClearType.GEM_COLOR) p.block.forEach {b ->
 								if(random.nextFloat()<=gemRate) b.type = Block.TYPE.GEM
 							}
@@ -2152,7 +2152,7 @@ class GameEngine(
 					lineClearing = when(clearMode) {
 						ClearType.LINE -> field.checkLineNoFlag()
 						ClearType.COLOR -> field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)
-						ClearType.LINE_COLOR -> field.checkLineColor(colorClearSize, false, lineColorDiagonals, gemSameColor)
+						ClearType.LINE_COLOR -> field.checkConnectLine(colorClearSize, false, lineColorDiagonals, gemSameColor)
 						ClearType.GEM_COLOR -> field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)
 						ClearType.LINE_GEM_BOMB, ClearType.LINE_GEM_SPARK -> field.checkBombOnLine(true)
 					}
@@ -2292,7 +2292,7 @@ class GameEngine(
 			lineClearing = when(clearMode) {
 				ClearType.LINE -> field.checkLine()
 				ClearType.COLOR -> field.checkColor(colorClearSize, true, garbageColorClear, gemSameColor, ignoreHidden)
-				ClearType.LINE_COLOR -> field.checkLineColor(colorClearSize, true, lineColorDiagonals, gemSameColor)
+				ClearType.LINE_COLOR -> field.checkConnectLine(colorClearSize, true, lineColorDiagonals, gemSameColor)
 				ClearType.GEM_COLOR -> field.gemColorCheck(colorClearSize, true, garbageColorClear, ignoreHidden)
 				ClearType.LINE_GEM_BOMB, ClearType.LINE_GEM_SPARK -> {
 					val ret = field.checkBombIgnited()
@@ -2468,7 +2468,12 @@ class GameEngine(
 						}
 						clearMode==ClearType.LINE&&field.checkLineNoFlag()>0||(clearMode==ClearType.COLOR&&
 							field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)>0
-							||clearMode==ClearType.LINE_COLOR&&field.checkLineColor(colorClearSize, false, lineColorDiagonals, gemSameColor)>0
+							||clearMode==ClearType.LINE_COLOR&&field.checkConnectLine(
+							colorClearSize,
+							false,
+							lineColorDiagonals,
+							gemSameColor
+						)>0
 							||clearMode==ClearType.GEM_COLOR&&field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)>0
 							||(clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)&&field.checkBombOnLine(true)>0) -> {
 							twistType = null
@@ -2501,7 +2506,7 @@ class GameEngine(
 						)
 				}
 
-				field.lineColorsCleared = IntArray(0)
+				field.lineColorsCleared = emptyList()
 
 				if(stat==Status.LINECLEAR) {
 					resetStatc()
@@ -2975,7 +2980,7 @@ class GameEngine(
 
 		/** Max number of game style */
 		val MAX_GAMESTYLE get() = GameStyle.values().size
-		val GAMESTYLE_NAMES = GameStyle.values().map {it.name}.toTypedArray()
+		val GAMESTYLE_NAMES = GameStyle.values().map {it.name}
 		/** Number of free status counters (used by statc array) */
 		const val MAX_STATC = 10
 
@@ -3029,14 +3034,14 @@ class GameEngine(
 
 		/** Table for cint-block inum */
 		val ITEM_COLOR_BRIGHT_TABLE =
-			intArrayOf(
+			listOf(
 				10, 10, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0,
 				0, 0, 0, 0, 0
 			)
 
 		/** Default list of block colors to use for random block colors. */
 		val BLOCK_COLORS_DEFAULT =
-			arrayOf(
+			listOf(
 				Block.COLOR.RED, Block.COLOR.ORANGE, Block.COLOR.YELLOW, Block.COLOR.GREEN,
 				Block.COLOR.CYAN, Block.COLOR.BLUE, Block.COLOR.PURPLE
 			)
@@ -3044,9 +3049,9 @@ class GameEngine(
 		const val HANABI_INTERVAL = 10
 
 		val EXPLOD_SIZE_DEFAULT =
-			arrayOf(
-				intArrayOf(4, 3), intArrayOf(3, 0), intArrayOf(3, 1), intArrayOf(3, 2), intArrayOf(3, 3), intArrayOf(4, 4),
-				intArrayOf(5, 5), intArrayOf(5, 5), intArrayOf(6, 6), intArrayOf(6, 6), intArrayOf(7, 7)
+			listOf(
+				listOf(4, 3), listOf(3, 0), listOf(3, 1), listOf(3, 2), listOf(3, 3), listOf(4, 4),
+				listOf(5, 5), listOf(5, 5), listOf(6, 6), listOf(6, 6), listOf(7, 7)
 			)
 	}
 }

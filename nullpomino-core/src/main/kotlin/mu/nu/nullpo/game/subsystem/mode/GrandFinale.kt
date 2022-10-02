@@ -944,30 +944,30 @@ class GrandFinale:AbstractMode() {
 
 		/** ARE */
 		private val tableARE =
-			arrayOf(
-				intArrayOf(20, 19, 18, 17, 16, 15, 14, 13, 12, 11), intArrayOf(15, 14, 13, 12, 11, 10, 9, 8, 7, 5),
-				intArrayOf(10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+			listOf(
+				listOf(20, 19, 18, 17, 16, 15, 14, 13, 12, 11), listOf(15, 14, 13, 12, 11, 10, 9, 8, 7, 5),
+				listOf(10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
 			)
 
 		/** Lock delay */
 		private val tableLockDelay =
-			arrayOf(
-				intArrayOf(25, 25, 24, 24, 23, 23, 22, 22, 21, 21), intArrayOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21),
-				intArrayOf(22, 22, 21, 21, 20, 20, 19, 18, 17, 16)
+			listOf(
+				listOf(25, 25, 24, 24, 23, 23, 22, 22, 21, 21), listOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21),
+				listOf(22, 22, 21, 21, 20, 20, 19, 18, 17, 16)
 			)
 
-		private val tableHiddenDelay = intArrayOf(320, 300, 275, 250, 225, 200, 180, 150, 120, 60)
+		private val tableHiddenDelay = listOf(320, 300, 275, 250, 225, 200, 180, 150, 120, 60)
 		/** Mode names */
-		private val tableModeName = arrayOf("GENUINE", "BEST BOWER", "LONGOMINIAD")
+		private val tableModeName = listOf("GENUINE", "BEST BOWER", "LONGOMINIAD")
 		/** Grade names */
 		private val tableGradeName =
-			arrayOf(
+			listOf(
 				"", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "m", "m1", "m2", "m3", "m4", "m5", "m6", "m7",
 				"m8", "m9", "mK", "mV", "mO", "M", "MK", "MV", "MO", "MM", "Gm", "GM", "GOD"
 			)
 
 		/** Secret grade names */
-		private val tableSecretGradeName = arrayOf(
+		private val tableSecretGradeName = listOf(
 			"M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", //  0～ 8
 			"M10", "M11", "M12", "M13", "MK", "MV", "MO", "MM", "GM", //  9～17
 			"GOD" // 18
@@ -988,7 +988,7 @@ class GrandFinale:AbstractMode() {
 		private const val DEFAULT_SECTION_TIME = 4000
 
 		/** Allowed Topouts */
-		private val MAX_LIVES = intArrayOf(4, 0, 2)
+		private val MAX_LIVES = listOf(4, 0, 2)
 
 		/** goal of gamemode:2 */
 		private const val FURTHEST_LINES = 300

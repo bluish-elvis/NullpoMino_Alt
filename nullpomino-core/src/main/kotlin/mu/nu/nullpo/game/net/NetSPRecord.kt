@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,6 @@ package mu.nu.nullpo.game.net
 import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.util.CustomProperties
 import java.io.Serializable
-import java.util.Collections
 import java.util.LinkedList
 
 /** Single player mode record */
@@ -90,10 +89,10 @@ class NetSPRecord:Serializable {
 		replace(s)
 	}
 
-	/** Constructor that imports data from a String Array
-	 * @param s String Array (String[6])
+	/** Constructor that imports data from a String List
+	 * @param s String List (String[6])
 	 */
-	constructor(s:Array<String>) {
+	constructor(s:List<String>) {
 		importStringArray(s)
 	}
 
@@ -155,12 +154,12 @@ class NetSPRecord:Serializable {
 		listCustomStats.clear()
 		if(s.isNullOrEmpty()) return
 
-		val array = s.split(",".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
-		Collections.addAll(listCustomStats, *array)
+		val array = s.split(Regex(",")).dropLastWhile {it.isEmpty()}
+		listCustomStats.addAll(array)
 	}
 
-	/** Export to a String Array
-	 * @return String Array (String[9])
+	/** Export to a String List
+	 * @return String List (String[9])
 	 */
 	fun exportStringArray():Array<String> = arrayOf(
 		NetUtil.urlEncode(strPlayerName), NetUtil.urlEncode(strModeName), NetUtil.urlEncode(strRuleName),
@@ -184,10 +183,10 @@ class NetSPRecord:Serializable {
 		return "$result"
 	}
 
-	/** Import from a String Array
-	 * @param s String Array (String[9])
+	/** Import from a String List
+	 * @param s String List (String[9])
 	 */
-	fun importStringArray(s:Array<String>) {
+	fun importStringArray(s:List<String>) {
 		strPlayerName = NetUtil.urlDecode(s[0])
 		strModeName = NetUtil.urlDecode(s[1])
 		strRuleName = NetUtil.urlDecode(s[2])
@@ -204,7 +203,7 @@ class NetSPRecord:Serializable {
 	 * @param s String (Split by ;)
 	 */
 	fun importString(s:String) {
-		importStringArray(s.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray())
+		importStringArray(s.split(Regex(";")).dropLastWhile {it.isEmpty()})
 	}
 
 	/** Compare to other NetSPRecord
@@ -221,7 +220,7 @@ class NetSPRecord:Serializable {
 	fun setCustomStat(name:String, value:String) {
 		for(i in listCustomStats.indices) {
 			val strTemp = listCustomStats[i]
-			val strArray = strTemp.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			val strArray = strTemp.split(Regex(";")).dropLastWhile {it.isEmpty()}
 
 			if(strArray[0]==name) {
 				listCustomStats[i] = "$name;$value"
@@ -237,7 +236,7 @@ class NetSPRecord:Serializable {
 	 */
 	fun getCustomStat(name:String):String? {
 		for(strTemp in listCustomStats) {
-			val strArray = strTemp.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray()
+			val strArray = strTemp.split(Regex(";")).dropLastWhile {it.isEmpty()}
 
 			if(strArray[0]==name) return strArray[1]
 		}
@@ -313,80 +312,41 @@ class NetSPRecord:Serializable {
 		 * @return `true` if r1 is better than r2
 		 */
 		fun compareRecords(type:Int, r1:NetSPRecord, r2:NetSPRecord):Boolean {
-			val s1 = r1.stats
-			val s2 = r2.stats
+			val s1 = r1.stats ?: return false
+			val s2 = r2.stats ?: return false
 
-			when(type) {
-				RANKINGTYPE_GENERIC_SCORE -> {
-					return if(s1!!.score>s2!!.score)
-						true
-					else if(s1.score==s2.score&&s1.lines>s2.lines)
-						true
-					else
-						s1.score==s2.score&&s1.lines==s2.lines&&s1.time<s2.time
-				}
-				RANKINGTYPE_GENERIC_TIME -> {
-					return if(s1!!.time<s2!!.time)
-						true
-					else if(s1.time==s2.time&&s1.totalPieceLocked<s2.totalPieceLocked)
-						true
-					else
-						s1.time==s2.time&&s1.totalPieceLocked==s2.totalPieceLocked&&s1.pps>s2.pps
-				}
-				RANKINGTYPE_SCORERACE -> {
-					return if(s1!!.time<s2!!.time)
-						true
-					else if(s1.time==s2.time&&s1.lines<s2.lines)
-						true
-					else
-						s1.time==s2.time&&s1.lines==s2.lines&&s1.spl>s2.spl
-				}
-				RANKINGTYPE_DIGRACE -> {
-					return if(s1!!.time<s2!!.time)
-						true
-					else if(s1.time==s2.time&&s1.lines<s2.lines)
-						true
-					else
-						s1.time==s2.time&&s1.lines==s2.lines&&s1.totalPieceLocked<s2.totalPieceLocked
-				}
-				RANKINGTYPE_ULTRA -> {
-					return if(s1!!.score>s2!!.score)
-						true
-					else if(s1.score==s2.score&&s1.lines>s2.lines)
-						true
-					else
-						s1.score==s2.score&&s1.lines==s2.lines&&s1.totalPieceLocked<s2.totalPieceLocked
-				}
-				RANKINGTYPE_COMBORACE -> {
-					return if(s1!!.maxCombo>s2!!.maxCombo)
-						true
-					else if(s1.maxCombo==s2.maxCombo&&s1.time<s2.time)
-						true
-					else
-						s1.maxCombo==s2.maxCombo&&s1.time==s2.time&&s1.pps>s2.pps
-				}
-				RANKINGTYPE_DIGCHALLENGE -> {
-					return if(s1!!.score>s2!!.score)
-						true
-					else if(s1.score==s2.score&&s1.lines>s2.lines)
-						true
-					else
-						s1.score==s2.score&&s1.lines==s2.lines&&s1.time>s2.time
-				}
+			return when(type) {
+				RANKINGTYPE_GENERIC_SCORE -> (s1.score>s2.score)||
+					(s1.score==s2.score&&s1.lines>s2.lines)
+					||s1.score==s2.score&&s1.lines==s2.lines&&s1.time<s2.time
+				RANKINGTYPE_GENERIC_TIME -> (s1.time<s2.time)
+					||(s1.time==s2.time&&s1.totalPieceLocked<s2.totalPieceLocked)
+					||s1.time==s2.time&&s1.totalPieceLocked==s2.totalPieceLocked&&s1.pps>s2.pps
+				RANKINGTYPE_SCORERACE -> (s1.time<s2.time)
+					||(s1.time==s2.time&&s1.lines<s2.lines)
+					||s1.time==s2.time&&s1.lines==s2.lines&&s1.spl>s2.spl
+				RANKINGTYPE_DIGRACE -> (s1.time<s2.time)
+					||(s1.time==s2.time&&s1.lines<s2.lines)
+					||s1.time==s2.time&&s1.lines==s2.lines&&s1.totalPieceLocked<s2.totalPieceLocked
+				RANKINGTYPE_ULTRA -> (s1.score>s2.score)
+					||(s1.score==s2.score&&s1.lines>s2.lines)
+					||s1.score==s2.score&&s1.lines==s2.lines&&s1.totalPieceLocked<s2.totalPieceLocked
+				RANKINGTYPE_COMBORACE -> (s1.maxCombo>s2.maxCombo)
+					||(s1.maxCombo==s2.maxCombo&&s1.time<s2.time)
+					||s1.maxCombo==s2.maxCombo&&s1.time==s2.time&&s1.pps>s2.pps
+				RANKINGTYPE_DIGCHALLENGE -> (s1.score>s2.score)
+					||(s1.score==s2.score&&s1.lines>s2.lines)
+					||s1.score==s2.score&&s1.lines==s2.lines&&s1.time>s2.time
 				RANKINGTYPE_TIMEATTACK -> {
 					// Cap the line count at 150 or 200
 					val maxLines = if(r1.gameType>=5) 200 else 150
-					val l1 = minOf(s1!!.lines, maxLines)
-					val l2 = minOf(s2!!.lines, maxLines)
+					val l1 = minOf(s1.lines, maxLines)
+					val l2 = minOf(s2.lines, maxLines)
 
-					return if(s1.rollclear>s2.rollclear)
-						true
-					else if(s1.rollclear==s2.rollclear&&l1>l2)
-						true
-					else if(s1.rollclear==s2.rollclear&&l1==l2&&s1.time<s2.time)
-						true
-					else
-						s1.rollclear==s2.rollclear&&l1==l2&&s1.time==s2.time&&s1.pps>s2.pps
+					(s1.rollclear>s2.rollclear)
+						||(s1.rollclear==s2.rollclear&&l1>l2)
+						||(s1.rollclear==s2.rollclear&&l1==l2&&s1.time<s2.time)
+						||s1.rollclear==s2.rollclear&&l1==l2&&s1.time==s2.time&&s1.pps>s2.pps
 				}
 				else -> return false
 			}

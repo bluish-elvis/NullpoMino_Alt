@@ -233,7 +233,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	}
 
 	/* Receive stats */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		if(message.size>4) engine.statistics.lines = message[4].toInt()
 		//if(message.size>5) engine.statistics.pps = message[5].toFloat()
 		//if(message.size>6) engine.statistics.lpm = message[6].toFloat()
@@ -254,7 +254,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	}
 
 	/* Receive end-of-game stats */
-	override fun netVSRecvEndGameStats(message:Array<String>) {
+	override fun netVSRecvEndGameStats(message:List<String>) {
 		val seatID = message[2].toInt()
 		val playerID = netVSGetPlayerIDbySeatID(seatID)
 

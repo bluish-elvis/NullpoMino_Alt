@@ -33,7 +33,6 @@ import mu.nu.nullpo.game.component.Block.COLOR.BLUE
 import mu.nu.nullpo.game.component.Block.COLOR.RED
 import mu.nu.nullpo.game.component.Block.COLOR.YELLOW
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -99,8 +98,7 @@ class Physician:AbstractMode() {
 		engine.garbageColorClear = false
 		engine.colorClearSize = 4
 		engine.lineGravityType = GameEngine.LineGravity.CASCADE
-		for(i in 0 until Piece.PIECE_COUNT)
-			engine.nextPieceEnable[i] = PIECE_ENABLE[i]==1
+		engine.nextPieceEnable = PIECE_ENABLE.map {it==1}
 		engine.randomBlockColor = true
 		engine.blockColors = BLOCK_COLORS
 		engine.connectBlocks = true
@@ -375,24 +373,24 @@ class Physician:AbstractMode() {
 		private const val CURRENT_VERSION = 0
 
 		/** Enabled piece types */
-		private val PIECE_ENABLE = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
+		private val PIECE_ENABLE = listOf(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
 
 		/** Block colors */
-		private val BLOCK_COLORS = arrayOf(RED, BLUE, YELLOW)
-		//.map {it to Block.TYPE.BLOCK}.toTypedArray()
+		private val BLOCK_COLORS = listOf(RED, BLUE, YELLOW)
+		//.map {it to Block.TYPE.BLOCK}
 
-		private val TAB_BLOCK_COLORS = BLOCK_COLORS.map {it to Block.TYPE.BLOCK}.toTypedArray()
+		private val TAB_BLOCK_COLORS = BLOCK_COLORS.map {it to Block.TYPE.BLOCK}
 		/** Hovering block colors */
-		private val HOVER_BLOCK_COLORS = BLOCK_COLORS.map {it to Block.TYPE.GEM}.toTypedArray()
-		private val BASE_SPEEDS = intArrayOf(10, 20, 25)
+		private val HOVER_BLOCK_COLORS = BLOCK_COLORS.map {it to Block.TYPE.GEM}
+		private val BASE_SPEEDS = listOf(10, 20, 25)
 
 		/** Number of ranking records */
 		private const val RANKING_MAX = 13
 
 		/** Names of speed settings */
-		private val SPEED_NAME = arrayOf("LOW", "MED", "HI")
+		private val SPEED_NAME = listOf("LOW", "MED", "HI")
 
 		/** Colors for speed settings */
-		private val SPEED_COLOR = arrayOf(EventReceiver.COLOR.BLUE, EventReceiver.COLOR.YELLOW, EventReceiver.COLOR.RED)
+		private val SPEED_COLOR = listOf(EventReceiver.COLOR.BLUE, EventReceiver.COLOR.YELLOW, EventReceiver.COLOR.RED)
 	}
 }

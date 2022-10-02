@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -275,7 +275,7 @@ class NetRoomInfo:Serializable {
 	/** Stringの配列から data代入するConstructor
 	 * @param rdata Stringの配列(String[7])
 	 */
-	constructor(rdata:Array<String>) {
+	constructor(rdata:List<String>) {
 		importStringArray(rdata)
 	}
 
@@ -359,7 +359,7 @@ class NetRoomInfo:Serializable {
 	/** Stringの配列から data代入(Playerリスト除く)
 	 * @param rdata Stringの配列(String[43])
 	 */
-	private fun importStringArray(rdata:Array<String>) {
+	private fun importStringArray(rdata:List<String>) {
 		roomID = rdata[0].toInt()
 		strName = NetUtil.urlDecode(rdata[1])
 		maxPlayers = rdata[2].toInt()
@@ -409,14 +409,14 @@ class NetRoomInfo:Serializable {
 	 * @param str String
 	 */
 	fun importString(str:String) {
-		importStringArray(str.split(";".toRegex()).dropLastWhile {it.isEmpty()}.toTypedArray())
+		importStringArray(str.split(Regex(";")).dropLastWhile {it.isEmpty()})
 	}
 
 	/** Stringの配列に変換(Playerリスト除く)
 	 * @return Stringの配列(String[40])
 	 */
-	private fun exportStringArray():Array<String> =
-		arrayOf(
+	private fun exportStringArray():List<String> =
+		listOf(
 			"$roomID", NetUtil.urlEncode(strName), "$maxPlayers", "$playerSeatedCount", "$spectatorCount", "$playerListCount",
 			"$playing", "$ruleLock", NetUtil.urlEncode(ruleName), "$autoStartSeconds", "$gravity", "$denominator", "$are", "$areLine",
 			"$lineDelay", "$lockDelay", "$das", "$twistEnableType", "$b2b", "$combo", "$rensaBlock", "$counter", "$bravo",

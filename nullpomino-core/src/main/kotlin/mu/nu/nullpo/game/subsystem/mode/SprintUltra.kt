@@ -62,8 +62,7 @@ class SprintUltra:NetDummyMode() {
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	private val itemGoal = StringsMenuItem(
-		"goalType", "Length", COLOR.BLUE,
-		0, tableLength.map {"$it Min"}.toTypedArray()
+		"goalType", "Length", COLOR.BLUE, 0, tableLength.map {"$it Min"}
 	)
 	/** Time limit type */
 	private var goalType:Int by DelegateMenuItem(itemGoal)
@@ -598,7 +597,7 @@ class SprintUltra:NetDummyMode() {
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		listOf<(String)->Unit>({}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
 			{engine.statistics.scoreSD = it.toInt()},
@@ -656,7 +655,7 @@ class SprintUltra:NetDummyMode() {
 	}
 
 	/** NET: Receive game options */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		engine.speed.gravity = message[4].toInt()
 		engine.speed.denominator = message[5].toInt()
 		engine.speed.are = message[6].toInt()
@@ -684,7 +683,7 @@ class SprintUltra:NetDummyMode() {
 		private const val RANKING_MAX = 5
 
 		/** Minutes counts when game ending occurs */
-		private val tableLength = intArrayOf(3, 5)
+		private val tableLength = listOf(3, 5)
 
 		/** Number of ranking types */
 		private enum class RankingType { Score, Power, Lines }

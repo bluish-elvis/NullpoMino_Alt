@@ -36,6 +36,7 @@ import java.util.Random
 
 // import java.util.Iterator;
 // import java.util.List;
+@Deprecated("kotlin List has .shuffled Method")
 class ArrayRandomizer {
 	// Internal randomizer
 	private val randomizer:Random
@@ -48,16 +49,8 @@ class ArrayRandomizer {
 		randomizer = Random(seed)
 	}
 
-	fun permute(arr:IntArray?):IntArray {
-		val h = arr!!.clone()
-		val copy = ArrayList<Int>()
-		for(integer in arr) {
-			copy.add(integer)
-		}
-		copy.shuffle(randomizer)
-		for(i in copy.indices) {
-			h[i] = copy[i]
-		}
-		return h
-	}
+	@Deprecated("kotlin List has .shuffled Method", ReplaceWith("arr?.toList()?.shuffled(randomizer)"))
+	fun permute(arr:List<Int>?):List<Int> =
+		arr?.shuffled(randomizer) ?: emptyList()
+
 }

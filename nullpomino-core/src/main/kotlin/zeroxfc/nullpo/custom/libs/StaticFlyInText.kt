@@ -53,11 +53,11 @@ class StaticFlyInText(private val mainString:String  // String to draw
 	, private val textScale:Float// Text scale
 	, seed:Long) {
 	// Vector array of positions
-	private var letterPositions:Array<Vector> = emptyArray()
+	private var letterPositions:MutableList<Vector> = mutableListOf()
 	// Start location
-	private var startLocation:Array<Vector> = emptyArray()
+	private var startLocation:MutableList<Vector> = mutableListOf()
 	// Destination vector
-	private var destinationLocation:Array<Vector> = emptyArray()
+	private var destinationLocation:MutableList<Vector> = mutableListOf()
 	// Randomizer for start pos
 	private val positionRandomizer:Random = Random(seed)
 	// Lifetime variable
@@ -84,9 +84,9 @@ class StaticFlyInText(private val mainString:String  // String to draw
 			}
 			return@map Vector(startX, startY) to Vector((destinationX+sMod*i), destinationY)
 		}
-		letterPositions = position.map {it.first}.toTypedArray()
-		startLocation = position.map {it.first}.toTypedArray()
-		destinationLocation = position.map {it.second}.toTypedArray()
+		letterPositions = position.map {it.first}.toMutableList()
+		startLocation = position.map {it.first}.toMutableList()
+		destinationLocation = position.map {it.second}.toMutableList()
 	}
 	/** Updates the position and lifetime of this object.*/
 	fun update() {

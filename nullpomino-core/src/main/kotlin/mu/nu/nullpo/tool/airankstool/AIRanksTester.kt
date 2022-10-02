@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,18 +38,16 @@ import kotlin.random.Random
 class AIRanksTester(private val numTries:Int) {
 	private var randomizer:Randomizer? = null
 	private val ranksAI:RanksAI = RanksAI()
-	private var pieces = IntArray(0)
+	private var pieces:MutableList<Int> = mutableListOf()
 	private var totalPieces = 0
 
 	private fun init() {
-		val pieceEnable = BooleanArray(Piece.PIECE_COUNT)
-		for(i in 0 until Piece.PIECE_STANDARD_COUNT)
-			pieceEnable[i] = true
+		val pieceEnable = List(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
 		val seed = Random.Default.nextLong()
 
 		randomizer = History4RollsRandomizer(pieceEnable, seed).apply {init()}
 
-		pieces = IntArray(6) {randomizer!!.next()}
+		pieces = MutableList(6) {randomizer!!.next()}
 
 		ranksAI.initRanks()
 	}
@@ -75,9 +73,9 @@ class AIRanksTester(private val numTries:Int) {
  * (pieces[0]==Piece.PIECE_O)){
  * //System.out.println("Suchec");
  * } */
-		val heights = IntArray(9)
-		val holdPiece = intArrayOf(-1)
-		val holdOK = booleanArrayOf(true)
+		val heights = MutableList(9) {0}
+		val holdPiece = mutableListOf(-1)
+		val holdOK = mutableListOf(true)
 		while(!ranksAI.isGameOver) {
 			//holdOK[0]=false;
 			totalPieces++

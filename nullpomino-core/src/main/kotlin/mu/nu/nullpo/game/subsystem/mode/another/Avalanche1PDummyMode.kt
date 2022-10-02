@@ -29,7 +29,6 @@
 package mu.nu.nullpo.game.subsystem.mode.another
 
 import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -41,9 +40,9 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 /** AVALANCHE DUMMY Mode */
 abstract class Avalanche1PDummyMode:AbstractMode() {
 
-	val tableSpeedChangeLevel = intArrayOf(80, 90, 96, 97, Integer.MAX_VALUE)
+	val tableSpeedChangeLevel = listOf(80, 90, 96, 97, Integer.MAX_VALUE)
 
-	val tableSpeedValue = intArrayOf(30, 45, 120, 480, -1)
+	val tableSpeedValue = listOf(30, 45, 120, 480, -1)
 
 	protected var lastmultiplier = 0
 
@@ -135,8 +134,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		engine.garbageColorClear = true
 		engine.colorClearSize = 4
 		engine.ignoreHidden = true
-		for(i in 0 until Piece.PIECE_COUNT)
-			engine.nextPieceEnable[i] = PIECE_ENABLE[i]==1
+		engine.nextPieceEnable = PIECE_ENABLE.map {it==1}
 		engine.randomBlockColor = true
 		engine.blockColors = BLOCK_COLORS
 		engine.connectBlocks = false
@@ -347,19 +345,19 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 
 	companion object {
 		/** Enabled piece types */
-		val PIECE_ENABLE = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
+		val PIECE_ENABLE = listOf(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0)
 
 		/** Enabled piece types */
-		val CHAIN_POWERS_FEVERTYPE = intArrayOf(4, 12, 24, 32, 48, 96, 160, 240, 320, 400, 500, 600, 700, 800, 900, 999)
+		val CHAIN_POWERS_FEVERTYPE = listOf(4, 12, 24, 32, 48, 96, 160, 240, 320, 400, 500, 600, 700, 800, 900, 999)
 
 		/** Block colors */
-		val BLOCK_COLORS = arrayOf(
+		val BLOCK_COLORS = listOf(
 			Block.COLOR.RED, Block.COLOR.GREEN, Block.COLOR.BLUE,
 			Block.COLOR.YELLOW, Block.COLOR.PURPLE
 		)
 
 		/** Fever values files list */
-		val FEVER_MAPS = arrayOf("Fever", "15th", "15thDS", "7", "Poochy7")
+		val FEVER_MAPS = listOf("Fever", "15th", "15thDS", "7", "Poochy7")
 
 		const val DAS = 10
 	}

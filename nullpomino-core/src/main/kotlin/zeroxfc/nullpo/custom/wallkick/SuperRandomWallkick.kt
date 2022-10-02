@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2021,
+ * Copyright (c) 2021-2022,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -47,12 +47,9 @@ class SuperRandomWallkick:BaseStandardWallkick() {
      */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
 		field:mu.nu.nullpo.game.component.Field, ctrl:mu.nu.nullpo.game.component.Controller?):WallkickResult? {
-		val kicktable:Array<Array<IntArray>> = getKickTable(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)
+		val kicktable = getKickTable(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)
 			?: return null
-		var arr = IntArray(kicktable[rtOld].size)
-		for(i in arr.indices) {
-			arr[i] = i
-		}
+		var arr = List(kicktable[rtOld].size) {it}
 		var v = 0
 		for(i in ctrl!!.buttonTime) {
 			v += i

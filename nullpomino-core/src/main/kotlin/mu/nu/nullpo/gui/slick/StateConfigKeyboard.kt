@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -64,7 +64,7 @@ class StateConfigKeyboard:BasicGameState() {
 	private var keyConfigRestFrame = 0
 
 	/** Button settings */
-	private var keymap:Array<IntArray> = Array(NUM_KEYS) {IntArray(MAX_KEYS) {0}}
+	private var keymap = MutableList(NUM_KEYS) {MutableList(MAX_KEYS) {0}}
 
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
@@ -77,7 +77,7 @@ class StateConfigKeyboard:BasicGameState() {
 		frame = 0
 		keyConfigRestFrame = 0
 
-		keymap = Array(NUM_KEYS) {
+		keymap = MutableList(NUM_KEYS) {
 			if(!isNavSetting) GameKey.gamekey[player].keymap[it]
 			else GameKey.gamekey[player].keymapNav[it]
 		}
@@ -187,7 +187,7 @@ class StateConfigKeyboard:BasicGameState() {
 			if(keyConfigRestFrame>0) {
 				// Key-set mode
 				ResourceHolder.soundManager.play("move")
-				if(keymap[keynum].size<=keypos) keymap[keynum] = keymap[keynum]+key else keymap[keynum][keypos] = key
+				if(keymap[keynum].size<=keypos) keymap[keynum] = (keymap[keynum]+key).toMutableList() else keymap[keynum][keypos] = key
 				keyConfigRestFrame = 0
 			} else {
 				// Menu mode
@@ -238,7 +238,7 @@ class StateConfigKeyboard:BasicGameState() {
 				if(key==Input.KEY_DELETE)
 					if(keynum<NUM_KEYS&&keymap[keynum][keypos]>0) {
 						ResourceHolder.soundManager.play("change")
-						keymap[keynum]=(keymap[keynum].toList()-keymap[keynum][keypos]).toIntArray()
+						keymap[keynum] = (keymap[keynum]-keymap[keynum][keypos]).toMutableList()
 					}
 
 				// Backspace

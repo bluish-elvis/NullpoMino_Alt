@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,19 +34,16 @@ import mu.nu.nullpo.tool.airankstool.RanksIterator.OneIteration
 class RanksIteratorPart internal constructor(private val oneIteration:OneIteration, private var ranks:Ranks?, i:Int,
 	totalParts:Int):Thread() {
 
-	private val sMin:Int
-	private val sMax:Int
 	private val size:Int = ranks!!.size
-	private val surface:IntArray
-	private val surfaceDecodedWork:IntArray
+	private val sMin:Int = i*size/totalParts
+	private val sMax:Int = if(i==totalParts-1) size else (i+1)*size/totalParts
+	private val surface = MutableList(ranks!!.stackWidth-1) {0}
+	private val surfaceDecodedWork = MutableList(ranks!!.stackWidth-1) {0}
 
 	init {
 
-		sMin = i*size/totalParts
-		sMax = if(i==totalParts-1) size else (i+1)*size/totalParts
-		surface = IntArray(ranks!!.stackWidth-1)
 		ranks!!.decode(sMin, surface)
-		surfaceDecodedWork = IntArray(ranks!!.stackWidth-1)
+		surfaceDecodedWork
 		ranks!!.decode(sMin, surfaceDecodedWork)
 		priority = MIN_PRIORITY
 	}
@@ -55,17 +52,13 @@ class RanksIteratorPart internal constructor(private val oneIteration:OneIterati
 
 		for(s in sMin until sMax) {
 			ranks!!.iterateSurface(surface, surfaceDecodedWork)
-
 			synchronized(this) {
 				oneIteration.iterate()
 			}
 			if(interrupted()) {
-
 				ranks = null
 				break
-
 			}
-
 		}
 
 	}

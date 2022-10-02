@@ -1018,36 +1018,36 @@ class GrandLightning:AbstractMode() {
 		private const val DEFAULT_TORIKAN_CLASSIC = 8880
 
 		/** ARE table */
-		private val tableARE = intArrayOf(16, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2, 2)
+		private val tableARE = listOf(16, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 2, 2)
 		/** ARE after line clear table */
-		private val tableARELine = intArrayOf(6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 1, 2)
+		private val tableARELine = listOf(6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 1, 2)
 		/** Line clear times table */
-		private val tableLineDelay = intArrayOf(7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 2, 1, 6)
+		private val tableLineDelay = listOf(7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 2, 1, 6)
 		/** 固定 times table */
-		private val tableLockDelay = intArrayOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 20)
+		private val tableLockDelay = listOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 20)
 		/** DAS table */
-		private val tableDAS = intArrayOf(9, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4, 4, 4, 5)
+		private val tableDAS = listOf(9, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4, 4, 4, 5)
 
 		/** せり上がり間隔 */
-		private val tableGarbage = intArrayOf(50, 33, 27, 25, 21, 18, 15, 12, 9, 7, 0, 0, 0, 0)
+		private val tableGarbage = listOf(50, 33, 27, 25, 21, 18, 15, 12, 9, 7, 0, 0, 0, 0)
 
 		/** REGRET criteria Time */
 		private val tableTimeRegret =
-			intArrayOf(6000, 5800, 5600, 5400, 5200, 5000, 4750, 4500, 4250, 4000, 3750, 3500, 3250, 3000)
+			listOf(6000, 5800, 5600, 5400, 5200, 5000, 4750, 4500, 4250, 4000, 3750, 3500, 3250, 3000)
 
 		/** BGM fadeout levels */
-		private val tableBGMFadeout = intArrayOf(485, 685, 985)
+		private val tableBGMFadeout = listOf(485, 685, 985)
 		/** BGM change levels */
-		private val tableBGMChange = intArrayOf(500, 700, 1000)
-		private val tableBGM = arrayOf(BGM.GrandT(2), BGM.GrandT(3), BGM.GrandT(4), BGM.GrandT(5))
+		private val tableBGMChange = listOf(500, 700, 1000)
+		private val tableBGM = listOf(BGM.GrandT(2), BGM.GrandT(3), BGM.GrandT(4), BGM.GrandT(5))
 		/** 段位のName */
 		private val tableGradeName =
-			arrayOf("1", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13")
+			listOf("1", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13")
 
 		/** 裏段位のName */
 
 		private val tableSecretGradeName =
-			arrayOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "GM")
+			listOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "GM")
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 3238

@@ -80,7 +80,7 @@ class MarathonZone:NetDummyMode() {
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
 	private val itemMode = StringsMenuItem("goalType", "GOAL", EventReceiver.COLOR.BLUE, 0,
-		Array(GAMETYPE_MAX) {if(tableGameClearLines[it]<0) "ENDLESS" else "${tableGameClearLines[it]} LINES"})
+		List(GAMETYPE_MAX) {if(tableGameClearLines[it]<0) "ENDLESS" else "${tableGameClearLines[it]} LINES"})
 	/** Game type  */
 	private var goalType:Int by DelegateMenuItem(itemMode)
 	/** Version  */
@@ -632,7 +632,7 @@ class MarathonZone:NetDummyMode() {
 		netLobby?.netPlayerClient?.send(msg)
 	}
 	/** NET: Parse Received [message] as in-game stats of [engine] */
-	override fun netRecvStats(engine:GameEngine, message:Array<String>) {
+	override fun netRecvStats(engine:GameEngine, message:List<String>) {
 		engine.statistics.scoreLine = message[4].toInt()
 		engine.statistics.scoreSD = message[5].toInt()
 		engine.statistics.scoreHD = message[6].toInt()
@@ -680,7 +680,7 @@ class MarathonZone:NetDummyMode() {
 	/**
 	 * NET: Receive game options
 	 */
-	override fun netRecvOptions(engine:GameEngine, message:Array<String>) {
+	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		startLevel = message[4].toInt()
 		goalType = message[5].toInt()
 	}

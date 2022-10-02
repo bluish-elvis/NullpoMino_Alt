@@ -58,17 +58,16 @@ class VSBattleMode:AbstractMode() {
 	private var garbageBlocking = BooleanArray(MAX_PLAYERS) {true}
 
 	/** Has accumulated garbage blockOfcount */
-	val garbage:IntArray
-		get() = (0 until players).map {p -> garbageEntries[p].filter {it.time<=0}.sumOf {it.lines}}.toIntArray()
+	val garbage get() = (0 until players).map {p -> garbageEntries[p].filter {it.time<=0}.sumOf {it.lines}}
 
 	/** Had sent garbage blockOfcount */
-	val garbageSent:IntArray get() = owner.engine.map {it.statistics.attacks}.toIntArray()
+	val garbageSent get() = owner.engine.map {it.statistics.attacks}
 
 	/** Had sent garbage per minutes */
-	private val attackSpd:FloatArray get() = owner.engine.map {it.statistics.apm}.toFloatArray()
+	private val attackSpd get() = owner.engine.map {it.statistics.apm}
 
 	/** VS Score */
-	private val score:FloatArray get() = owner.engine.map {it.statistics.vs}.toFloatArray()
+	private val score get() = owner.engine.map {it.statistics.vs}
 
 	/** Had guard garbage blockOfcount */
 	private var garbageGuard = IntArray(MAX_PLAYERS)
@@ -312,7 +311,6 @@ class VSBattleMode:AbstractMode() {
 		engine.frameColor = PLAYER_COLOR_FRAME[playerID]
 		engine.ruleOpt.lockResetMoveLimit = engine.ruleOpt.lockResetMoveLimit.let {if(it<0) 30 else minOf(it, 30)}
 		engine.ruleOpt.lockResetSpinLimit = engine.ruleOpt.lockResetSpinLimit.let {if(it<0) 20 else minOf(it, 20)}
-		garbageSent[playerID] = 0
 		lastHole[playerID] = -1
 		lastcombo[playerID] = 0
 
@@ -664,13 +662,8 @@ class VSBattleMode:AbstractMode() {
 
 		//  Attack
 		if((pts-ofs)>0) {
-			garbageSent[pid] += pts-ofs
 			garbageEntries[enemyID].add(
-				GarbageEntry(
-					pts-ofs,
-					pid,
-					maxOf(10, minOf(24, 30-owner.engine[enemyID].statistics.time/600))
-				)
+				GarbageEntry(pts-ofs, pid, maxOf(10, minOf(24, 30-owner.engine[enemyID].statistics.time/600)))
 			)
 
 			if(owner.engine[enemyID].ai==null&&garbage[enemyID]>=4) owner.engine[enemyID].playSE("levelstop")
@@ -849,10 +842,10 @@ class VSBattleMode:AbstractMode() {
 		}
 
 		/** Each player's garbage block cint */
-		private val PLAYER_COLOR_BLOCK = arrayOf(Block.COLOR.RED, Block.COLOR.BLUE)
+		private val PLAYER_COLOR_BLOCK = listOf(Block.COLOR.RED, Block.COLOR.BLUE)
 
 		/** Each player's frame cint */
-		private val PLAYER_COLOR_FRAME = intArrayOf(GameEngine.FRAME_COLOR_GREEN, GameEngine.FRAME_COLOR_BLUE)
+		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_GREEN, GameEngine.FRAME_COLOR_BLUE)
 
 		/** Current version */
 		private const val CURRENT_VERSION = 5

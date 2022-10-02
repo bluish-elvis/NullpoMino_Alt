@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -41,6 +41,7 @@ object ControllerManager {
 	/** 最小/Maximum buttoncount */
 	const val MIN_BUTTONS = 3
 	const val MAX_BUTTONS = 100
+	const val MAX_PLAYERS = 2
 
 	/** Joystick 状態検出法の定数 */
 	const val CONTROLLER_METHOD_NONE = 0
@@ -53,19 +54,19 @@ object ControllerManager {
 	var method = CONTROLLER_METHOD_SLICK_DEFAULT
 
 	/** Joystick state */
-	var controllers:ArrayList<Controller> = ArrayList()
+	var controllers = mutableListOf<Controller>()
 
 	/** 各Playerが使用するJoystick の number */
-	var controllerID = IntArray(0)
+	var controllerID = MutableList(0) {0}
 
 	/** Joystick direction key が反応する閾値 (一部検出法では使えない) */
-	var border = FloatArray(0)
+	var border = MutableList(0) {0f}
 
 	/** アナログスティック無視 */
-	var ignoreAxis = BooleanArray(0)
+	var ignoreAxis = MutableList(0) {false}
 
 	/** ハットスイッチ無視 */
-	var ignorePOV = BooleanArray(0)
+	var ignorePOV = MutableList(0) {false}
 
 	/** Joystick のcountを取得
 	 * @return Joystick のcount
@@ -75,12 +76,12 @@ object ControllerManager {
 
 	/** Initialization */
 	fun initControllers() {
-		controllers = ArrayList()
-		controllerID = IntArray(2) {-1}
-		border = FloatArray(2) {0f}
-		ignoreAxis = BooleanArray(2)
-		ignorePOV = BooleanArray(2)
 		Controllers.destroy()
+		controllers.clear()
+		controllerID = MutableList(MAX_PLAYERS) {-1}
+		border = MutableList(MAX_PLAYERS) {0f}
+		ignoreAxis = MutableList(MAX_PLAYERS) {false}
+		ignorePOV = MutableList(MAX_PLAYERS) {false}
 		for(i in 0 until Controllers.getControllerCount()) {
 			val c = Controllers.getController(i)
 

@@ -211,11 +211,11 @@ class StateConfigJoystickMain:BaseGameState() {
 		const val KEYACCEPTFRAME = 20
 
 		/** Joystick method names */
-		private val JOYSTICK_METHOD_STRINGS = arrayOf("NONE", "SLICK DEFAULT", "SLICK ALTERNATE", "LWJGL")
+		private val JOYSTICK_METHOD_STRINGS = listOf("NONE", "SLICK DEFAULT", "SLICK ALTERNATE", "LWJGL")
 
 		/** UI Text identifier Strings */
 		private val UI_TEXT =
-			arrayOf(
+			listOf(
 				"ConfigJoystickMain_ButtonSetting", "ConfigJoystickMain_InputTest", "ConfigJoystickMain_JoyUseNumber",
 				"ConfigJoystickMain_JoyBorder", "ConfigJoystickMain_JoyIgnoreAxis", "ConfigJoystickMain_JoyIgnorePOV",
 				"ConfigJoystickMain_JoyMethod"

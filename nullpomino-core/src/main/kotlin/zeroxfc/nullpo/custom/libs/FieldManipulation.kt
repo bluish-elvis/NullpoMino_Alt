@@ -91,7 +91,7 @@ fun Field.mirror() {
  * @param colors Colors to erase
  * @return int[]; Amount of blocks of each color erased
  */
-fun Field.delColors(colors:Array<Block.COLOR>, dir:Boolean = true):IntArray = colors.map {delColor(it, dir)}.toIntArray()
+fun Field.delColors(colors:Array<Block.COLOR>, dir:Boolean = true) = colors.map {delColor(it, dir)}
 /**
  * Deletes all blocks of a certain color on a field.
  *
@@ -127,26 +127,19 @@ fun Field.shotgunField(random:Random, receiver:EventReceiver? = null, engine:Gam
  *
  * @param seed  Random seed
  */
-fun Field.shuffleColumns(seed:Long) {
-	shuffleColumns(ArrayRandomizer(seed))
-}
+fun Field.shuffleColumns(seed:Long) = shuffleColumns(Random(seed))
+
 /**
  *
  * Randomises the column order in a field.
  * Requires a pre-instantiated `ArrayRandomizer` instance.
  *
- * @param ArrayRandomizer ArrayRandomizer instance
+ * @param randomizer Randomizer instance
  */
-fun Field.shuffleColumns(ArrayRandomizer:ArrayRandomizer) {
-	var columns:IntArray? = IntArray(width)
-	for(i in columns!!.indices) columns[i] = i
-	columns = ArrayRandomizer.permute(columns)
+fun Field.shuffleColumns(randomizer:Random) {
+	val columns = List(width) {it}.shuffled(randomizer)
 	val nf = Field(this)
-	for(i in columns.indices) {
-		for(y in -1*nf.hiddenHeight until nf.height) {
-			nf.getBlock(i, y)?.replace(getBlock(columns[i], y))
-		}
-	}
+	for(i in columns.indices) for(y in -1*nf.hiddenHeight until nf.height) nf.getBlock(i, y)?.replace(getBlock(columns[i], y))
 	replace(nf)
 }
 /**
@@ -158,9 +151,8 @@ fun Field.shuffleColumns(ArrayRandomizer:ArrayRandomizer) {
  * @param highestRow Highest row randomised (0 = top visible), recommended / default is >= 2 (inclusive)
  * @param lowestRow  Lowest row randomised (inclusive)
  */
-fun Field.shuffleRows(seed:Long, highestRow:Int = 2, lowestRow:Int = height-1) {
-	shuffleRows(ArrayRandomizer(seed), highestRow, lowestRow)
-}
+fun Field.shuffleRows(seed:Long, highestRow:Int = 2, lowestRow:Int = height-1) =
+	shuffleRows(Random(seed), highestRow, lowestRow)
 /**
  *
  * Randomises the row order in a field.
@@ -170,20 +162,12 @@ fun Field.shuffleRows(seed:Long, highestRow:Int = 2, lowestRow:Int = height-1) {
  * @param highestRow      Highest row randomised (0 = top visible), recommended / default is >= 2 (inclusive)
  * @param lowestRow       Lowest row randomised (inclusive)
  */
-fun Field.shuffleRows(ArrayRandomizer:ArrayRandomizer, highestRow:Int = 2, lowestRow:Int = height-1) {
+fun Field.shuffleRows(randomizer:Random, highestRow:Int = 2, lowestRow:Int = height-1) {
 	if(highestRow<hiddenHeight*-1||highestRow>=hiddenHeight) return
-	var rows:IntArray? = IntArray(lowestRow-highestRow+1)
-	for(i in rows!!.indices) {
-		rows[i] = highestRow+i
-	}
-	val oldRows = rows.clone()
-	rows = ArrayRandomizer.permute(rows)
+	val oldRows = List(lowestRow-highestRow+1) {highestRow+it}
+	val rows = oldRows.shuffled(randomizer)
 	val nf = Field(this)
-	for(i in rows.indices) {
-		for(x in 0 until nf.width) {
-			nf.getBlock(x, oldRows[i])!!.replace(getBlock(x, rows[i]))
-		}
-	}
+	for(i in rows.indices) for(x in 0 until nf.width) nf.getBlock(x, oldRows[i])?.replace(getBlock(x, rows[i]))
 	replace(nf)
 }
 /**
@@ -219,37 +203,20 @@ fun Field.shuffleRows(ArrayRandomizer:ArrayRandomizer, highestRow:Int = 2, lowes
 				if(blkA!=null&&blkB!=null) {
 					if(colorMatch) {
 						if(!blkA.isEmpty||!blkB.isEmpty) {
-							if(!blkA.isEmpty&&blkB.isEmpty) {
-								current -= 6
-							} else if(!blkA.isEmpty&&!blkB.isEmpty) {
-								current += if(blkA.color===blkB.color) {
-									2
-								} else {
-									1
-								}
-							}
+							if(!blkA.isEmpty&&blkB.isEmpty) current -= 6
+							else if(!blkA.isEmpty&&!blkB.isEmpty) current += (if(blkA.color===blkB.color) 2 else 1)
 						}
-					} else {
-						if(!blkA.isEmpty||!blkB.isEmpty) {
-							if(!blkA.isEmpty&&blkB.isEmpty) {
-								current -= 6
-							} else if(!blkA.isEmpty&&!blkB.isEmpty) {
-								current += 2
-							}
-						}
+					} else if(!blkA.isEmpty||!blkB.isEmpty) {
+						if(!blkA.isEmpty&&blkB.isEmpty) current -= 6 else if(!blkA.isEmpty&&!blkB.isEmpty) current += 2
 					}
 				}
 			}
 		}
-		var res = current.toDouble()/total.toDouble()
-		if(res<0) res = 0.0
-		res
+		maxOf(0.0, current.toDouble()/total.toDouble())
 	} else {
 		val finalResult = 0.0
 		var areaA = 0
 		var areaB = 0
-		val topLeftA:IntArray
-		val topLeftB:IntArray
 
 		// Stage 1: area filled
 		for(y in -1*a.hiddenHeight until a.height) {
@@ -267,10 +234,10 @@ fun Field.shuffleRows(ArrayRandomizer:ArrayRandomizer, highestRow:Int = 2, lowes
 
 		// Stage 2: blocks
 		val resA = a.opposingCornerCoords
-		topLeftA = resA[0]
+		val topLeftA = resA[0]
 		// bottomRightA = resA[1];
 		val resB = b.opposingCornerCoords
-		topLeftB = resB[0]
+		val topLeftB = resB[0]
 		// bottomRightB = resB[1];
 		val bboxSizeA = a.opposingCornerBoxSize
 		val bboxSizeB = b.opposingCornerBoxSize
@@ -315,7 +282,7 @@ fun Field.shuffleRows(ArrayRandomizer:ArrayRandomizer, highestRow:Int = 2, lowes
 					}
 				}
 			}
-			var res3 = total.toDouble()/(2*aB).toDouble()
+			var res3 = total/(2.0*aB)
 			if(res3<0) res3 = 0.0
 
 			// log.debug(String.format("TOTAL: %d, MAX: %d, PERCENT: %.2f", total, 2 * aB, res3 * 100));
@@ -430,7 +397,7 @@ val Field.fullHeight:Int get() = hiddenHeight+height
 /**
  * Gets the number of empty blocks inside the field.
  *
- * @return Number of empty spaces inside (including in hidden height)
+ * @return Number of empty spaces inside (including in hidden height and clear queued line)
  */
 val Field.getNumberOfEmptySpaces:Int
 	get() = (hiddenHeight*-1 until heightWithoutHurryupFloor).sumOf {
@@ -441,29 +408,21 @@ val Field.getNumberOfEmptySpaces:Int
  *
  * @return int[2][2] result: result[0] = top left, result[1] = bottom right. result[i][0] = x, result[i][1] = y.
  */
-val Field.opposingCornerCoords:Array<IntArray>
-	get() {
-		val topLeft = IntArray(2)
-		val bottomRight = IntArray(2)
-		topLeft[0] = getLeftmostColumn
-		topLeft[1] = highestBlockY
-		bottomRight[0] = getRightmostColumn
-		bottomRight[1] = getBottommostRow
-		return arrayOf(topLeft, bottomRight)
-	}
+val Field.opposingCornerCoords
+	get() = listOf(listOf(getLeftmostColumn, highestBlockY), listOf(getRightmostColumn, getBottommostRow))
 /**
  * Gets the size of the smallest bounding box that covers all blocks in the field.
  *
  * @return int[] results: results[0] = x, results[1] = y.
  */
-val Field.opposingCornerBoxSize:IntArray
-	get() {
-		val bbox = opposingCornerCoords
-		val i:Int = bbox[1][0]-bbox[0][0]+1
-		val j:Int = bbox[1][1]-bbox[0][1]+1
-		return if(i<=0||j<=0) intArrayOf()
-		else intArrayOf(i, j)
-	}
+val Field.opposingCornerBoxSize
+	get() =
+		opposingCornerCoords.let {bbox ->
+			val i = bbox[1][0]-bbox[0][0]+1
+			val j = bbox[1][1]-bbox[0][1]+1
+			if(i<=0||j<=0) emptyList<Int>()
+			else listOf(i, j)
+		}
 /**
  * Gets the x coordinate of the left-most filled column a field.
  *

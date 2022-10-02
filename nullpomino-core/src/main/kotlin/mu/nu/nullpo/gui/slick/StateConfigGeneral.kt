@@ -435,7 +435,7 @@ class StateConfigGeneral:BaseGameState() {
 
 		/** UI Text identifier Strings */
 		private val UI_TEXT =
-			arrayOf(
+			listOf(
 				"ConfigGeneral_SE", "ConfigGeneral_BGM", "ConfigGeneral_BGMPreload", "ConfigGeneral_SEVolume",
 				"ConfigGeneral_BGMVolume", "ConfigGeneral_Background", "ConfigGeneral_UseBackgroundFade",
 				"ConfigGeneral_ShowFieldBGGrid", "ConfigGeneral_FieldBGBright", "ConfigGeneral_ShowLineEffect",
@@ -448,13 +448,13 @@ class StateConfigGeneral:BaseGameState() {
 			)
 
 		/** Piece preview type options */
-		private val NEXTTYPE_OPTIONS = arrayOf("TOP", "SIDE(SMALL)", "SIDE(BIG)")
+		private val NEXTTYPE_OPTIONS = listOf("TOP", "SIDE(SMALL)", "SIDE(BIG)")
 
 		/** Screen size table */
 		private val SCREENSIZE_TABLE =
-			arrayOf(
-				intArrayOf(320, 240), intArrayOf(400, 300), intArrayOf(480, 360), intArrayOf(512, 384), intArrayOf(640, 480),
-				intArrayOf(800, 600), intArrayOf(1024, 768), intArrayOf(1152, 864), intArrayOf(1280, 960)
+			listOf(
+				listOf(320, 240), listOf(400, 300), listOf(480, 360), listOf(512, 384), listOf(640, 480),
+				listOf(800, 600), listOf(1024, 768), listOf(1152, 864), listOf(1280, 960)
 			)
 	}
 }

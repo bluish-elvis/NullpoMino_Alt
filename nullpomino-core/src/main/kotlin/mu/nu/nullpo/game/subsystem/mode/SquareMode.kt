@@ -367,7 +367,7 @@ class SquareMode:AbstractMode() {
 			if(li>3) pts = 3+(li-3)*2
 
 			val squareClears = engine.field.howManySquareClears
-			pts += 10*squareClears[0]+5*squareClears[1]
+			pts += (5*squareClears[0]+2*squareClears[1])
 
 			lastscore = pts
 			engine.statistics.scoreLine += pts
@@ -569,7 +569,7 @@ class SquareMode:AbstractMode() {
 		private const val RANKING_TYPE = 3
 
 		/** Name of game types */
-		private val GAMETYPE_NAME = arrayOf("MARATHON", "ULTRA", "SPRINT")
+		private val GAMETYPE_NAME = listOf("MARATHON", "ULTRA", "SPRINT")
 
 		/** Number of game types */
 		private const val GAMETYPE_MAX = 3
@@ -579,7 +579,7 @@ class SquareMode:AbstractMode() {
 
 		/** Max score in Sprint */
 		private const val SPRINT_MAX_SCORE = 150
-		private val tableGravityChangeScore = intArrayOf(150, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2500, 4000, 5000)
-		private val tableGravityValue = intArrayOf(1, 2, 3, 4, 6, 8, 10, 20, 30, 60, 120, 180, 300, -1)
+		private val tableGravityChangeScore = listOf(150, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2500, 4000, 5000)
+		private val tableGravityValue = listOf(1, 2, 3, 4, 6, 8, 10, 20, 30, 60, 120, 180, 300, -1)
 	}
 }

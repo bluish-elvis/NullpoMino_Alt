@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -42,11 +42,11 @@ class Piece(id:Int = 0):Serializable {
 			big = false
 			offsetApplied = false
 			connectBlocks = true
-			dataX = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
-			dataY = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
-			block = Array(maxBlock) {Block()}
-			dataOffsetX = IntArray(DIRECTION_COUNT)
-			dataOffsetY = IntArray(DIRECTION_COUNT)
+			dataX.forEach {it.fill(0)}
+			dataY.forEach {it.fill(0)}
+			block = List(maxBlock) {Block()}
+			dataOffsetX.fill(0)
+			dataOffsetY.fill(0)
 
 			resetOffsetArray()
 		}
@@ -62,26 +62,29 @@ class Piece(id:Int = 0):Serializable {
 	var connectBlocks = true
 
 	/** 相対X位置 (4Direction×nBlock) */
-	var dataX:Array<IntArray> = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
+	var dataX:List<MutableList<Int>> = List(DIRECTION_COUNT) {MutableList(maxBlock) {0}}
+		private set
 
 	/** 相対Y位置 (4Direction×nBlock) */
-	var dataY:Array<IntArray> = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
-
+	var dataY:List<MutableList<Int>> = List(DIRECTION_COUNT) {MutableList(maxBlock) {0}}
+		private set
 	/** ピースを構成するBlock (nBlock) */
-	var block:Array<Block> = Array(maxBlock) {Block()}
+	var block:List<Block> = List(maxBlock) {Block()}
 
 	/** 相対X位置と相対Y位置がオリジナル stateからずらされているならtrue */
 	var offsetApplied = false
 
 	/** 相対X位置のずれ幅 */
-	var dataOffsetX = IntArray(DIRECTION_COUNT)
+	var dataOffsetX = MutableList(DIRECTION_COUNT) {0}
+		private set
 
 	/** 相対Y位置のずれ幅 */
-	var dataOffsetY = IntArray(DIRECTION_COUNT)
+	var dataOffsetY = MutableList(DIRECTION_COUNT) {0}
+		private set
 
-	/*dataX = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
-		dataY = Array(DIRECTION_COUNT) {IntArray(maxBlock)}
-		block = Array(maxBlock) {Block()}
+	/*dataX = List(DIRECTION_COUNT) {IntArray(maxBlock)}
+		dataY = List(DIRECTION_COUNT) {IntArray(maxBlock)}
+		block = List(maxBlock) {Block()}
 		dataOffsetX = IntArray(DIRECTION_COUNT)
 		dataOffsetY = IntArray(DIRECTION_COUNT)*/
 	/** 1つのピースに含まれるBlockのcountを取得
@@ -184,13 +187,13 @@ class Piece(id:Int = 0):Serializable {
 		big = p.big
 		offsetApplied = p.offsetApplied
 		connectBlocks = p.connectBlocks
-		block = Array(p.maxBlock) {Block(p.block[it])}
+		block = List(p.maxBlock) {Block(p.block[it])}
 
-		dataX = p.dataX.clone()
-		dataY = p.dataY.clone()
-		block = p.block.clone()
-		dataOffsetX = p.dataOffsetX.clone()
-		dataOffsetY = p.dataOffsetY.clone()
+		dataX = p.dataX.map {it.toMutableList()}
+		dataY = p.dataY.map {it.toMutableList()}
+		block = p.block.toList()
+		dataOffsetX = p.dataOffsetX.toMutableList()
+		dataOffsetY = p.dataOffsetY.toMutableList()
 	}
 
 	/** すべてのBlock stateをbと同じに設定
@@ -212,7 +215,7 @@ class Piece(id:Int = 0):Serializable {
 	 * blocks of multiple colors
 	 * @param color Array with each cell specifying a cint of a block
 	 */
-	fun setColor(color:Array<Block.COLOR>) = block.forEachIndexed {i, it -> it.color = color[i%color.size]}
+	fun setColor(color:List<Block.COLOR>) = block.forEachIndexed {i, it -> it.color = color[i%color.size]}
 
 	/** Changes the colors of the blocks individually; allows one piece to have
 	 * blocks of multiple colors
@@ -309,10 +312,10 @@ class Piece(id:Int = 0):Serializable {
 	/** 相対X位置と相対Y位置を初期状態に戻す */
 	fun resetOffsetArray() {
 		for(i in 0 until DIRECTION_COUNT) {
-			for(j in 0 until maxBlock) {
-				dataX[i][j] = DEFAULT_PIECE_DATA_X[id][i][j]
-				dataY[i][j] = DEFAULT_PIECE_DATA_Y[id][i][j]
-			}
+			dataX[i].clear()
+			dataY[i].clear()
+			dataX[i].addAll(DEFAULT_PIECE_DATA_X[id][i])
+			dataY[i].addAll(DEFAULT_PIECE_DATA_Y[id][i])
 			dataOffsetX[i] = 0
 			dataOffsetY[i] = 0
 		}
@@ -429,11 +432,11 @@ class Piece(id:Int = 0):Serializable {
 			block[i].setAttribute(true, Block.ATTRIBUTE.LAST_COMMIT)
 
 			/* Loop through width/height of the block, setting cells in the
- * field.
- * If the piece is normal (size == 1), a standard, 1x1 space is
- * allotted per block.
- * If the piece is big (size == 2), a 2x2 space is allotted per
- * block. */
+	* field.
+	* If the piece is normal (size == 1), a standard, 1x1 space is
+	* allotted per block.
+	* If the piece is big (size == 2), a 2x2 space is allotted per
+	* block. */
 			for(k in 0 until size)
 				for(l in 0 until size) {
 					val x3 = x2+k
@@ -687,7 +690,7 @@ class Piece(id:Int = 0):Serializable {
 
 		/** BlockピースのName */
 		@Deprecated("This will be enumed", ReplaceWith("Shape.names", "mu.nu.nullpo.game.component.Shape"))
-		val PIECE_NAMES = Shape.names.toTypedArray()
+		val PIECE_NAMES = Shape.names
 
 		/** 通常のBlockピースのIDのMaximumcount */
 		const val PIECE_STANDARD_COUNT = 7
@@ -697,98 +700,98 @@ class Piece(id:Int = 0):Serializable {
 
 		/** default のBlockピースの data (X-coordinate) */
 		val DEFAULT_PIECE_DATA_X =
-			arrayOf(
-				arrayOf(intArrayOf(0, 1, 2, 3), intArrayOf(2, 2, 2, 2), intArrayOf(3, 2, 1, 0), intArrayOf(1, 1, 1, 1)), // I
-				arrayOf(intArrayOf(2, 2, 1, 0), intArrayOf(2, 1, 1, 1), intArrayOf(0, 0, 1, 2), intArrayOf(0, 1, 1, 1)), // L
-				arrayOf(intArrayOf(0, 1, 1, 0), intArrayOf(1, 1, 0, 0), intArrayOf(1, 0, 0, 1), intArrayOf(0, 0, 1, 1)), // O
-				arrayOf(intArrayOf(0, 1, 1, 2), intArrayOf(2, 2, 1, 1), intArrayOf(2, 1, 1, 0), intArrayOf(0, 0, 1, 1)), // Z
-				arrayOf(intArrayOf(1, 0, 1, 2), intArrayOf(2, 1, 1, 1), intArrayOf(1, 2, 1, 0), intArrayOf(0, 1, 1, 1)), // T
-				arrayOf(intArrayOf(0, 0, 1, 2), intArrayOf(2, 1, 1, 1), intArrayOf(2, 2, 1, 0), intArrayOf(0, 1, 1, 1)), // J
-				arrayOf(intArrayOf(2, 1, 1, 0), intArrayOf(2, 2, 1, 1), intArrayOf(0, 1, 1, 2), intArrayOf(0, 0, 1, 1)), // S
-				arrayOf(intArrayOf(0), intArrayOf(0), intArrayOf(0), intArrayOf(0)), // I1
-				arrayOf(intArrayOf(0, 1), intArrayOf(1, 1), intArrayOf(1, 0), intArrayOf(0, 0)), // I2
-				arrayOf(intArrayOf(0, 1, 2), intArrayOf(1, 1, 1), intArrayOf(2, 1, 0), intArrayOf(1, 1, 1)), // I3
-				arrayOf(intArrayOf(1, 0, 0), intArrayOf(0, 0, 1), intArrayOf(0, 1, 1), intArrayOf(1, 1, 0))
+			listOf(
+				listOf(listOf(0, 1, 2, 3), listOf(2, 2, 2, 2), listOf(3, 2, 1, 0), listOf(1, 1, 1, 1)), // I
+				listOf(listOf(2, 2, 1, 0), listOf(2, 1, 1, 1), listOf(0, 0, 1, 2), listOf(0, 1, 1, 1)), // L
+				listOf(listOf(0, 1, 1, 0), listOf(1, 1, 0, 0), listOf(1, 0, 0, 1), listOf(0, 0, 1, 1)), // O
+				listOf(listOf(0, 1, 1, 2), listOf(2, 2, 1, 1), listOf(2, 1, 1, 0), listOf(0, 0, 1, 1)), // Z
+				listOf(listOf(1, 0, 1, 2), listOf(2, 1, 1, 1), listOf(1, 2, 1, 0), listOf(0, 1, 1, 1)), // T
+				listOf(listOf(0, 0, 1, 2), listOf(2, 1, 1, 1), listOf(2, 2, 1, 0), listOf(0, 1, 1, 1)), // J
+				listOf(listOf(2, 1, 1, 0), listOf(2, 2, 1, 1), listOf(0, 1, 1, 2), listOf(0, 0, 1, 1)), // S
+				listOf(listOf(0), listOf(0), listOf(0), listOf(0)), // I1
+				listOf(listOf(0, 1), listOf(1, 1), listOf(1, 0), listOf(0, 0)), // I2
+				listOf(listOf(0, 1, 2), listOf(1, 1, 1), listOf(2, 1, 0), listOf(1, 1, 1)), // I3
+				listOf(listOf(1, 0, 0), listOf(0, 0, 1), listOf(0, 1, 1), listOf(1, 1, 0))
 			)// L3
 
 		/** default のBlockピースの data (Y-coordinate) */
 		val DEFAULT_PIECE_DATA_Y =
-			arrayOf(
-				arrayOf(intArrayOf(1, 1, 1, 1), intArrayOf(0, 1, 2, 3), intArrayOf(2, 2, 2, 2), intArrayOf(3, 2, 1, 0)), // I
-				arrayOf(intArrayOf(0, 1, 1, 1), intArrayOf(2, 2, 1, 0), intArrayOf(2, 1, 1, 1), intArrayOf(0, 0, 1, 2)), // L
-				arrayOf(intArrayOf(0, 0, 1, 1), intArrayOf(0, 1, 1, 0), intArrayOf(1, 1, 0, 0), intArrayOf(1, 0, 0, 1)), // O
-				arrayOf(intArrayOf(0, 0, 1, 1), intArrayOf(0, 1, 1, 2), intArrayOf(2, 2, 1, 1), intArrayOf(2, 1, 1, 0)), // Z
-				arrayOf(intArrayOf(0, 1, 1, 1), intArrayOf(1, 0, 1, 2), intArrayOf(2, 1, 1, 1), intArrayOf(1, 2, 1, 0)), // T
-				arrayOf(intArrayOf(0, 1, 1, 1), intArrayOf(0, 0, 1, 2), intArrayOf(2, 1, 1, 1), intArrayOf(2, 2, 1, 0)), // J
-				arrayOf(intArrayOf(0, 0, 1, 1), intArrayOf(2, 1, 1, 0), intArrayOf(2, 2, 1, 1), intArrayOf(0, 1, 1, 2)), // S
-				arrayOf(intArrayOf(0), intArrayOf(0), intArrayOf(0), intArrayOf(0)), // I1
-				arrayOf(intArrayOf(0, 0), intArrayOf(0, 1), intArrayOf(1, 1), intArrayOf(1, 0)), // I2
-				arrayOf(intArrayOf(1, 1, 1), intArrayOf(0, 1, 2), intArrayOf(1, 1, 1), intArrayOf(2, 1, 0)), // I3
-				arrayOf(intArrayOf(1, 1, 0), intArrayOf(1, 0, 0), intArrayOf(0, 0, 1), intArrayOf(0, 1, 1))
+			listOf(
+				listOf(listOf(1, 1, 1, 1), listOf(0, 1, 2, 3), listOf(2, 2, 2, 2), listOf(3, 2, 1, 0)), // I
+				listOf(listOf(0, 1, 1, 1), listOf(2, 2, 1, 0), listOf(2, 1, 1, 1), listOf(0, 0, 1, 2)), // L
+				listOf(listOf(0, 0, 1, 1), listOf(0, 1, 1, 0), listOf(1, 1, 0, 0), listOf(1, 0, 0, 1)), // O
+				listOf(listOf(0, 0, 1, 1), listOf(0, 1, 1, 2), listOf(2, 2, 1, 1), listOf(2, 1, 1, 0)), // Z
+				listOf(listOf(0, 1, 1, 1), listOf(1, 0, 1, 2), listOf(2, 1, 1, 1), listOf(1, 2, 1, 0)), // T
+				listOf(listOf(0, 1, 1, 1), listOf(0, 0, 1, 2), listOf(2, 1, 1, 1), listOf(2, 2, 1, 0)), // J
+				listOf(listOf(0, 0, 1, 1), listOf(2, 1, 1, 0), listOf(2, 2, 1, 1), listOf(0, 1, 1, 2)), // S
+				listOf(listOf(0), listOf(0), listOf(0), listOf(0)), // I1
+				listOf(listOf(0, 0), listOf(0, 1), listOf(1, 1), listOf(1, 0)), // I2
+				listOf(listOf(1, 1, 1), listOf(0, 1, 2), listOf(1, 1, 1), listOf(2, 1, 0)), // I3
+				listOf(listOf(1, 1, 0), listOf(1, 0, 0), listOf(0, 0, 1), listOf(0, 1, 1))
 			)// L3
 
 		/** 新スピン bonus用座標 dataA(X-coordinate) */
 		val SPINBONUSDATA_HIGH_X =
-			arrayOf(
-				arrayOf(intArrayOf(1, 2, 2, 1), intArrayOf(1, 3, 1, 3), intArrayOf(1, 2, 2, 1), intArrayOf(0, 2, 0, 2)), // I
-				arrayOf(intArrayOf(1, 0), intArrayOf(2, 2), intArrayOf(1, 2), intArrayOf(0, 0)), // L
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // O
-				arrayOf(intArrayOf(2, 0), intArrayOf(2, 1), intArrayOf(0, 2), intArrayOf(0, 1)), // Z
-				arrayOf(intArrayOf(0, 2), intArrayOf(2, 2), intArrayOf(0, 2), intArrayOf(0, 0)), // T
-				arrayOf(intArrayOf(1, 2), intArrayOf(2, 2), intArrayOf(1, 0), intArrayOf(0, 0)), // J
-				arrayOf(intArrayOf(0, 2), intArrayOf(1, 2), intArrayOf(2, 0), intArrayOf(1, 0)), // S
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I1
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I2
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I3
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf())
+			listOf(
+				listOf(listOf(1, 2, 2, 1), listOf(1, 3, 1, 3), listOf(1, 2, 2, 1), listOf(0, 2, 0, 2)), // I
+				listOf(listOf(1, 0), listOf(2, 2), listOf(1, 2), listOf(0, 0)), // L
+				listOf(listOf(), listOf(), listOf(), listOf()), // O
+				listOf(listOf(2, 0), listOf(2, 1), listOf(0, 2), listOf(0, 1)), // Z
+				listOf(listOf(0, 2), listOf(2, 2), listOf(0, 2), listOf(0, 0)), // T
+				listOf(listOf(1, 2), listOf(2, 2), listOf(1, 0), listOf(0, 0)), // J
+				listOf(listOf(0, 2), listOf(1, 2), listOf(2, 0), listOf(1, 0)), // S
+				listOf(listOf(), listOf(), listOf(), listOf()), // I1
+				listOf(listOf(), listOf(), listOf(), listOf()), // I2
+				listOf(listOf(), listOf(), listOf(), listOf()), // I3
+				listOf(listOf(), listOf(), listOf(), listOf())
 			)// L3
 
 		/** 新スピン bonus用座標 dataA(Y-coordinate) */
 		val SPINBONUSDATA_HIGH_Y =
-			arrayOf(
-				arrayOf(intArrayOf(0, 2, 0, 2), intArrayOf(1, 2, 2, 1), intArrayOf(1, 3, 1, 3), intArrayOf(1, 2, 2, 1)), // I
-				arrayOf(intArrayOf(0, 0), intArrayOf(1, 0), intArrayOf(2, 2), intArrayOf(1, 2)), // L
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // O
-				arrayOf(intArrayOf(0, 1), intArrayOf(2, 0), intArrayOf(2, 1), intArrayOf(0, 2)), // Z
-				arrayOf(intArrayOf(0, 0), intArrayOf(0, 2), intArrayOf(2, 2), intArrayOf(0, 2)), // T
-				arrayOf(intArrayOf(0, 0), intArrayOf(1, 2), intArrayOf(2, 2), intArrayOf(1, 0)), // J
-				arrayOf(intArrayOf(0, 1), intArrayOf(2, 0), intArrayOf(2, 1), intArrayOf(0, 2)), // S
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I1
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I2
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I3
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf())
+			listOf(
+				listOf(listOf(0, 2, 0, 2), listOf(1, 2, 2, 1), listOf(1, 3, 1, 3), listOf(1, 2, 2, 1)), // I
+				listOf(listOf(0, 0), listOf(1, 0), listOf(2, 2), listOf(1, 2)), // L
+				listOf(listOf(), listOf(), listOf(), listOf()), // O
+				listOf(listOf(0, 1), listOf(2, 0), listOf(2, 1), listOf(0, 2)), // Z
+				listOf(listOf(0, 0), listOf(0, 2), listOf(2, 2), listOf(0, 2)), // T
+				listOf(listOf(0, 0), listOf(1, 2), listOf(2, 2), listOf(1, 0)), // J
+				listOf(listOf(0, 1), listOf(2, 0), listOf(2, 1), listOf(0, 2)), // S
+				listOf(listOf(), listOf(), listOf(), listOf()), // I1
+				listOf(listOf(), listOf(), listOf(), listOf()), // I2
+				listOf(listOf(), listOf(), listOf(), listOf()), // I3
+				listOf(listOf(), listOf(), listOf(), listOf())
 			)// L3
 
 		/** 新スピン bonus用座標 dataB(X-coordinate) */
 		val SPINBONUSDATA_LOW_X =
-			arrayOf(
-				arrayOf(intArrayOf(-1, 4, -1, 4), intArrayOf(2, 2, 2, 2), intArrayOf(-1, 4, -1, 4), intArrayOf(1, 1, 1, 1)), // I
-				arrayOf(intArrayOf(2, 0), intArrayOf(0, 0), intArrayOf(0, 2), intArrayOf(2, 2)), // L
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // O
-				arrayOf(intArrayOf(-1, 3), intArrayOf(2, 1), intArrayOf(3, -1), intArrayOf(0, 1)), // Z
-				arrayOf(intArrayOf(0, 2), intArrayOf(0, 0), intArrayOf(0, 2), intArrayOf(2, 2)), // T
-				arrayOf(intArrayOf(0, 2), intArrayOf(0, 0), intArrayOf(2, 0), intArrayOf(2, 2)), // J
-				arrayOf(intArrayOf(3, -1), intArrayOf(1, 2), intArrayOf(-1, 3), intArrayOf(1, 0)), // S
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I1
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I2
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I3
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf())
+			listOf(
+				listOf(listOf(-1, 4, -1, 4), listOf(2, 2, 2, 2), listOf(-1, 4, -1, 4), listOf(1, 1, 1, 1)), // I
+				listOf(listOf(2, 0), listOf(0, 0), listOf(0, 2), listOf(2, 2)), // L
+				listOf(listOf(), listOf(), listOf(), listOf()), // O
+				listOf(listOf(-1, 3), listOf(2, 1), listOf(3, -1), listOf(0, 1)), // Z
+				listOf(listOf(0, 2), listOf(0, 0), listOf(0, 2), listOf(2, 2)), // T
+				listOf(listOf(0, 2), listOf(0, 0), listOf(2, 0), listOf(2, 2)), // J
+				listOf(listOf(3, -1), listOf(1, 2), listOf(-1, 3), listOf(1, 0)), // S
+				listOf(listOf(), listOf(), listOf(), listOf()), // I1
+				listOf(listOf(), listOf(), listOf(), listOf()), // I2
+				listOf(listOf(), listOf(), listOf(), listOf()), // I3
+				listOf(listOf(), listOf(), listOf(), listOf())
 			)// L3
 
 		/** 新スピン bonus用座標 dataB(Y-coordinate) */
 		val SPINBONUSDATA_LOW_Y =
-			arrayOf(
-				arrayOf(intArrayOf(1, 1, 1, 1), intArrayOf(-1, 4, -1, 4), intArrayOf(2, 2, 2, 2), intArrayOf(-1, 4, -1, 4)), // I
-				arrayOf(intArrayOf(2, 2), intArrayOf(2, 0), intArrayOf(0, 0), intArrayOf(0, 3)), // L
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // O
-				arrayOf(intArrayOf(0, 1), intArrayOf(-1, 3), intArrayOf(2, 1), intArrayOf(3, -1)), // Z
-				arrayOf(intArrayOf(2, 2), intArrayOf(0, 2), intArrayOf(0, 0), intArrayOf(0, 2)), // T
-				arrayOf(intArrayOf(2, 2), intArrayOf(0, 2), intArrayOf(0, 0), intArrayOf(2, 0)), // J
-				arrayOf(intArrayOf(0, 1), intArrayOf(-1, 3), intArrayOf(2, 1), intArrayOf(3, -1)), // S
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I1
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I2
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf()), // I3
-				arrayOf(intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf())
+			listOf(
+				listOf(listOf(1, 1, 1, 1), listOf(-1, 4, -1, 4), listOf(2, 2, 2, 2), listOf(-1, 4, -1, 4)), // I
+				listOf(listOf(2, 2), listOf(2, 0), listOf(0, 0), listOf(0, 3)), // L
+				listOf(listOf(), listOf(), listOf(), listOf()), // O
+				listOf(listOf(0, 1), listOf(-1, 3), listOf(2, 1), listOf(3, -1)), // Z
+				listOf(listOf(2, 2), listOf(0, 2), listOf(0, 0), listOf(0, 2)), // T
+				listOf(listOf(2, 2), listOf(0, 2), listOf(0, 0), listOf(2, 0)), // J
+				listOf(listOf(0, 1), listOf(-1, 3), listOf(2, 1), listOf(3, -1)), // S
+				listOf(listOf(), listOf(), listOf(), listOf()), // I1
+				listOf(listOf(), listOf(), listOf(), listOf()), // I2
+				listOf(listOf(), listOf(), listOf(), listOf()), // I3
+				listOf(listOf(), listOf(), listOf(), listOf())
 			)// L3
 
 		/** Directionの定数 */

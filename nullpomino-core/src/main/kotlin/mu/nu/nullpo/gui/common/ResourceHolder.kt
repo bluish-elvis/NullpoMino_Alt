@@ -237,15 +237,11 @@ abstract class ResourceHolder {
 
 		"countdown", "hurryup", "timeout",
 		"stageclear", "stagefail", "matchend",
-		"gem", "bomb", "square_s", "square_g",
-		*setOf(
-			(0..1).flatMap {setOf("start$it", "garbage$it", "crowd$it")},
-			(0..2).flatMap {setOf("decide$it", "erase$it", "firecracker$it")},
-			(0..4).map {"grade$it"}, (0..5).map {"applause$it"},
-			Piece.Shape.names.map {"piece_${it.lowercase()}"},
-			(1..3).map {"medal$it"},
-			(1..4).map {"line$it"}
-		).flatten().toTypedArray()
-	)
+		"gem", "bomb", "square_s", "square_g"
+	)+((0..1).flatMap {setOf("start$it", "garbage$it", "crowd$it")}+
+		(0..2).flatMap {setOf("decide$it", "erase$it", "firecracker$it")}+
+		(0..4).map {"grade$it"}+(0..5).map {"applause$it"}+
+		Piece.Shape.names.map {"piece_${it.lowercase()}"}+
+		(1..3).map {"medal$it"}+(1..4).map {"line$it"}).toSet()
 
 }

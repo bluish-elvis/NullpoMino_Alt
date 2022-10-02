@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -44,8 +44,9 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 	/** StateBasedGame */
 	private lateinit var gameObj:StateBasedGame
 	override val numChoice = 2
+
 	init {
-		minChoiceY = 1
+		minChoiceY = 3
 	}
 
 	/* Fetch this state's ID */
@@ -78,12 +79,11 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 	}
 
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
-		if(cursor==0){
+		if(cursor==0) {
 			for(i in 0 until GameKeyDummy.MAX_BUTTON)
 				GameKey.gamekey[player].keymapNav[i] = GameKey.gamekey[player].keymap[i]
 			ResourceHolder.soundManager.play("decide1")
-		}
-		else if(cursor==1) {
+		} else if(cursor==1) {
 			ResourceHolder.soundManager.play("decide2")
 			NullpoMinoSlick.stateConfigKeyboard.player = player
 			NullpoMinoSlick.stateConfigKeyboard.isNavSetting = true
