@@ -59,7 +59,6 @@ import javax.swing.WindowConstants
 
 /** MusicListEditor (音楽リスト編集ツール) */
 class MusicListEditor:JFrame(), ActionListener {
-
 	/** Swing版のSave settings用Property file */
 	private val propConfig = CustomProperties()
 
@@ -260,7 +259,6 @@ class MusicListEditor:JFrame(), ActionListener {
 			`in`.close()
 		} catch(e:IOException) {
 		}
-
 	}
 
 	/** 音楽リストを保存
@@ -276,7 +274,6 @@ class MusicListEditor:JFrame(), ActionListener {
 			log.error("Failed to save music list file", e)
 			throw e
 		}
-
 	}
 
 	/* Menu 実行時の処理 */
@@ -340,7 +337,6 @@ class MusicListEditor:JFrame(), ActionListener {
 
 			try {
 				saveMusicList(prop)
-
 			} catch(e2:IOException) {
 				JOptionPane.showMessageDialog(
 					this,
@@ -356,7 +352,6 @@ class MusicListEditor:JFrame(), ActionListener {
 	/** ポップアップMenu
 	 * [出展](http://terai.xrea.jp/Swing/DefaultEditorKit.html) */
 	private inner class TextFieldPopupMenu(field:JTextField):JPopupMenu() {
-
 		private val cutAction:Action = object:AbstractAction(getUIText("Popup_Cut")) {
 			private val serialVersionUID = 1L
 
@@ -394,7 +389,6 @@ class MusicListEditor:JFrame(), ActionListener {
 		}
 
 		init {
-
 			add(cutAction)
 			add(copyAction)
 			add(pasteAction)
@@ -413,7 +407,6 @@ class MusicListEditor:JFrame(), ActionListener {
 		}
 
 		private val serialVersionUID = 1L
-
 	}
 
 	companion object {

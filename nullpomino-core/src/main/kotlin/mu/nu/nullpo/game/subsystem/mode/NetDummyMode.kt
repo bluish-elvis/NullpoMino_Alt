@@ -57,8 +57,7 @@ import java.util.TimeZone
 import java.util.zip.Adler32
 
 /** Special base class for netplay */
-open class NetDummyMode:AbstractMode(), NetLobbyListener {
-
+abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** NET: Lobby (Declared in NetDummyMode) */
 	protected var netLobby:NetLobbyFrame? = null
 
@@ -270,7 +269,6 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			if(netSendPieceMovement(engine, false)) netSendNextAndHold(engine)
 		// NET: Stop game in watch mode
 		return netIsWatch
-
 	}
 
 	/** NET: When the piece locked. NetDummyMode will send field and stats. */
@@ -560,7 +558,6 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				owner.engine[i].quitFlag = true
 		} catch(_:Exception) {
 		}
-
 	}
 
 	/** NET: When you join the room
@@ -590,7 +587,6 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 			owner.engine[0].ruleOpt.replaace(it)
 			owner.engine[0].randomizer = randomizer
 			owner.engine[0].wallkick = wallkick
-
 		}
 	}
 
@@ -702,17 +698,18 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 				val x = netPrevPieceX+it.dataOffsetX[netPrevPieceDir]
 				val y = netPrevPieceY+it.dataOffsetY[netPrevPieceDir]
 				netLobby?.netPlayerClient?.send(
-					"game\tpiece\t$netPrevPieceID\t$x\t$y\t$netPrevPieceDir\t${engine.nowPieceBottomY}\t${engine.ruleOpt.pieceColor[netPrevPieceID]}\t${engine.skin}\t${it.big}\n"
+					"game\tpiece\t$netPrevPieceID\t$x\t$y\t$netPrevPieceDir\t${engine.nowPieceBottomY}\t"+
+						"${engine.ruleOpt.pieceColor[netPrevPieceID]}\t${engine.skin}\t${it.big}\n"
 				)
 				return@netSendPieceMovement true
 			}
-		} ?: if(netPrevPieceID!=Piece.PIECE_NONE||engine.manualLock) {
+		} ?: (if(netPrevPieceID!=Piece.PIECE_NONE||engine.manualLock) {
 			netPrevPieceID = Piece.PIECE_NONE
 			netLobby?.netPlayerClient?.send(
 				"game\tpiece\t$netPrevPieceID\t$netPrevPieceX\t$netPrevPieceY\t$netPrevPieceDir\t0\t${engine.skin}\tfalse\n"
 			)
 			return true
-		}
+		} else return false)
 		return false
 	}
 
@@ -1127,7 +1124,6 @@ open class NetDummyMode:AbstractMode(), NetLobbyListener {
 							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
 						}
 					}
-
 				}
 
 				if(netRankingCursor[d]>=0&&netRankingCursor[d]<netRankingDate[d].size) {

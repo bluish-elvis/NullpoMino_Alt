@@ -32,7 +32,6 @@ package mu.nu.nullpo.tool.ruleeditor
 
 /** ルールエディター */
 class RuleEditorFX:Application(null) {
-
 	private var stage:Stage = Stage()
 	private var scene:Scene? = null
 	/** Swing版のSave settings用Property file */
@@ -450,7 +449,6 @@ class RuleEditorFX:Application(null) {
 	 * @param filename Filename (空文字列かnullにするとパラメータなしConstructorと同じ動作）
 	 */
 	constructor(filename:String?):super() {
-
 		init()
 
 
@@ -1168,9 +1166,7 @@ class RuleEditorFX:Application(null) {
 			Pane().apply {
 				layout = BoxLayout(this, BoxLayout.Y_AXIS)
 				panelPieceColor.add(this)
-			}
-
-		}
+			}		}
 		val bResetColor = arrayOf(JButton(getUIText("Basic_Reset")+" SRS").apply {
 			setMnemonic('S')
 			actionCommand = "PresetColors_SRS"
@@ -1237,9 +1233,7 @@ class RuleEditorFX:Application(null) {
 				maximumRowCount = strDirectionNames.size
 				pPieceDirection[it].add(this)
 			}
-		}
-
-	}
+		}}
 
 	/** Block画像を読み込み */
 	private fun loadBlockSkins() {
@@ -1254,7 +1248,6 @@ class RuleEditorFX:Application(null) {
 			val isSticky = imgBlock!=null&&imgBlock.width>=400&&imgBlock.height>=304
 
 			BufferedImage(144, 16, BufferedImage.TYPE_INT_RGB).apply {
-
 				if(isSticky) for(j in 0..8)
 					graphics.drawImage(imgBlock, j*16, 0, j*16+16, 16, 0, j*16, 16, j*16+16, null)
 				else
@@ -1683,9 +1676,7 @@ class RuleEditorFX:Application(null) {
 						log.error("Failed to save rule data to ${strNowFile!!}", e2)
 						JOptionPane.showMessageDialog(this, "${getUIText("Message_FileSaveFailed")}\n$e2",
 							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE)
-					}
-
-				} else {
+					}				} else {
 					// Nameを付けて保存
 					c = JFileChooser("${System.getProperty("user.dir")}/config/rule")
 					c.fileFilter = FileFilterRUL()
@@ -1806,9 +1797,7 @@ class RuleEditorFX:Application(null) {
 			}
 
 			return this
-		}
-
-	}
+		}}
 
 	companion object {
 		/** Serial version */

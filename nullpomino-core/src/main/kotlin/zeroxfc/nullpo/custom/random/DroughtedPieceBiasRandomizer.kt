@@ -86,7 +86,6 @@ class DroughtedPieceBiasRandomizer:Randomizer() {
 				counters[idx]++
 				break
 			} else if(i==2) counters[idx]++
-
 		}
 
 		// Add piece to history

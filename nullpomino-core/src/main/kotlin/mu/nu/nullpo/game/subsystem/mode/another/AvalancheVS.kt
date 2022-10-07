@@ -41,7 +41,6 @@ import kotlin.random.Random
 
 /** AVALANCHE VS-BATTLE mode (Release Candidate 1) */
 class AvalancheVS:AvalancheVSDummyMode() {
-
 	/** Version */
 	private var version = 0
 
@@ -485,7 +484,6 @@ class AvalancheVS:AvalancheVSDummyMode() {
 					if(engine.statc[5]>=mapMaxNo[playerID]) engine.statc[5] = 0
 					loadMapPreview(engine, engine.statc[5], false)
 				}
-
 		} else if(engine.statc[4]==0) {
 			menuTime++
 			menuCursor = 0

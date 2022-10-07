@@ -36,7 +36,6 @@ import java.io.FileReader
 import java.io.IOException
 
 class FixedSequenceRandomizer:Randomizer {
-
 	private var sequenceTranslated = IntArray(0)
 	private var id = -1
 
@@ -58,11 +57,9 @@ class FixedSequenceRandomizer:Randomizer {
 			} catch(e:IOException) {
 				e.printStackTrace()
 			}
-
 		}
 		sequenceTranslated = IntArray("$sequence".length) {pieceCharToId("$sequence"[it])}
 		println(sequenceTranslated.contentToString())
-
 	}
 
 	override fun init() {

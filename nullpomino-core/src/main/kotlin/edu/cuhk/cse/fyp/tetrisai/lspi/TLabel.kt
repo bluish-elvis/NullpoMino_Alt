@@ -447,7 +447,6 @@ class TLabel(w:Int, h:Int) {
 	}
 	// draw picture (gif, jpg, or png) upperLeft on (x, y), rescaled to w-by-h
 	fun imageP(x:Double, y:Double, image:Image?) {
-
 		//if (ws <= 1 && hs <= 1) pixel(x, y);
 		offscreen.drawImage(image, x.roundToLong().toInt(), y.roundToLong().toInt(), null)
 	}

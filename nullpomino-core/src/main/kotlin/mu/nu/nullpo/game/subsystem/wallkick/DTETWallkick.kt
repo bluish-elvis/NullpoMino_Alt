@@ -36,7 +36,6 @@ import mu.nu.nullpo.game.component.WallkickResult
 /** DTET Wallkick - An extension of the Classic Wallkick system
  * by Z ircean */
 open class DTETWallkick:Wallkick {
-
 	/* Wallkick main method */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
 		field:Field, ctrl:Controller?):WallkickResult? {

@@ -166,7 +166,6 @@ class MarathonZone:NetDummyMode() {
 		rankingTime.forEach {it.fill(0)}
 		netPlayerInit(engine)
 		if(!owner.replayMode) {
-
 			version = CURRENT_VERSION
 		} else {
 			if(version==0&&owner.replayProp.getProperty("marathonzone.endless", false)) goalType = 2
@@ -376,11 +375,9 @@ class MarathonZone:NetDummyMode() {
 			for(y in engine.field.height-1 downTo engine.field.height-lastzonelines) {
 				for(x in 0 until engine.field.width)
 					engine.field.getBlock(x, y)?.color = Block.COLOR.colors()[(x+y+(zoneframes/4))%Block.COLOR.COLOR_NUM]
-
 			}
 			if(zoneframes>0) zoneframes--
 			//else endZone(engine)
-
 		}
 	}
 
@@ -568,7 +565,6 @@ class MarathonZone:NetDummyMode() {
 		// Update rankings
 		return (!owner.replayMode&&engine.ai==null&&
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goalType)!=-1)
-
 	}
 	/** Load settings from [prop] */
 	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {

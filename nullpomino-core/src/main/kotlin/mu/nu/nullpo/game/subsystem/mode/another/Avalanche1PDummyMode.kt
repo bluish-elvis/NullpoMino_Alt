@@ -39,7 +39,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** AVALANCHE DUMMY Mode */
 abstract class Avalanche1PDummyMode:AbstractMode() {
-
 	val tableSpeedChangeLevel = listOf(80, 90, 96, 97, Integer.MAX_VALUE)
 
 	val tableSpeedValue = listOf(30, 45, 120, 480, -1)

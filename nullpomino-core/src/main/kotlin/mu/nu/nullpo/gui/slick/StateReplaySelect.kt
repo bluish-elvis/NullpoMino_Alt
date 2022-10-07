@@ -91,7 +91,6 @@ class StateReplaySelect:DummyMenuScrollState() {
 				strPrevFolder = ""
 				strCurrentFolder = strPrevFolder
 			}
-
 		} else {
 			strPrevFolder = ""
 			strCurrentFolder = strPrevFolder

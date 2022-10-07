@@ -559,7 +559,6 @@ class SubscriberChallenge:NetDummyMode() {
 			"TIME;${engine.statistics.time.toTimeStr}\t"+
 			"SCORE/LINE;${engine.statistics.spl}\tLINE/MIN;${engine.statistics.lpm}"
 		netLobby?.netPlayerClient?.send("gstat1p\t${NetUtil.urlEncode(subMsg)}\n")
-
 	}
 	/**
 	 * NET: Send game options to all spectators

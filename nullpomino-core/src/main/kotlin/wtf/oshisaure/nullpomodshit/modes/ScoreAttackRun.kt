@@ -130,7 +130,6 @@ class ScoreAttackRun:AbstractMode() {
 	}
 
 	override fun playerInit(engine:GameEngine) {
-
 		score = 0
 		scoreRate = 1
 		maxmult = 1

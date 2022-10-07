@@ -74,8 +74,10 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 
 	fun getSurroundingMines(x:Int, y:Int):Int {
 		var mine = 0
-		val testLocations = arrayOf(intArrayOf(-1, -1), intArrayOf(0, -1), intArrayOf(1, -1), intArrayOf(-1, 0), intArrayOf(1, 0),
-			intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1))
+		val testLocations = arrayOf(
+			intArrayOf(-1, -1), intArrayOf(0, -1), intArrayOf(1, -1), intArrayOf(-1, 0), intArrayOf(1, 0),
+			intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1)
+		)
 		for(loc in testLocations) {
 			val px = x+loc[0]
 			val py = y+loc[1]
@@ -88,8 +90,10 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 
 	fun getSurroundingFlags(x:Int, y:Int):Int {
 		var flag = 0
-		val testLocations = arrayOf(intArrayOf(-1, -1), intArrayOf(0, -1), intArrayOf(1, -1), intArrayOf(-1, 0), intArrayOf(1, 0),
-			intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1))
+		val testLocations = arrayOf(
+			intArrayOf(-1, -1), intArrayOf(0, -1), intArrayOf(1, -1), intArrayOf(-1, 0), intArrayOf(1, 0),
+			intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1)
+		)
 		for(loc in testLocations) {
 			val px = x+loc[0]
 			val py = y+loc[1]
@@ -102,8 +106,10 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 
 	fun getSurroundingCovered(x:Int, y:Int):Int {
 		var flag = 0
-		val testLocations = arrayOf(intArrayOf(-1, -1), intArrayOf(0, -1), intArrayOf(1, -1), intArrayOf(-1, 0), intArrayOf(1, 0),
-			intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1))
+		val testLocations = arrayOf(
+			intArrayOf(-1, -1), intArrayOf(0, -1), intArrayOf(1, -1), intArrayOf(-1, 0), intArrayOf(1, 0),
+			intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1)
+		)
 		for(loc in testLocations) {
 			val px = x+loc[0]
 			val py = y+loc[1]
@@ -153,8 +159,10 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 				State.MINE
 			} else {
 				if(contents[y][x].surroundingMines==0) {
-					val testLocations = arrayOf(intArrayOf(-1, -1), intArrayOf(0, -1), intArrayOf(1, -1), intArrayOf(-1, 0),
-						intArrayOf(1, 0), intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1))
+					val testLocations = arrayOf(
+						intArrayOf(-1, -1), intArrayOf(0, -1), intArrayOf(1, -1), intArrayOf(-1, 0),
+						intArrayOf(1, 0), intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1)
+					)
 					for(loc in testLocations) {
 						val px = x+loc[0]
 						val py = y+loc[1]
@@ -198,7 +206,6 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 	}
 
 	companion object {
-
 		const val STATE_SAFE = 0
 		const val STATE_MINE = 1
 		const val STATE_ALREADY_OPEN = 2

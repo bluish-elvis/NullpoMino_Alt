@@ -35,7 +35,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 class TimeMenuItem constructor(name:String, displayName:String, color:COLOR, defaultValue:Int, range:IntRange,
 	private val increment:Int = 60)
 	:IntegerMenuItem(name, displayName, color, defaultValue, range, false, true) {
-
 	override val valueString:String
 		get() = value.toTimeStr
 

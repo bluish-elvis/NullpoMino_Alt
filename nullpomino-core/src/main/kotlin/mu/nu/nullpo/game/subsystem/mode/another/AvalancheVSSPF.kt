@@ -40,7 +40,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** AVALANCHE-SPF VS-BATTLE mode (Release Candidate 1) */
 class AvalancheVSSPF:AvalancheVSDummyMode() {
-
 	/** Version */
 	private var version = 0
 
@@ -342,7 +341,6 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					if(engine.statc[5]>=mapMaxNo[playerID]) engine.statc[5] = 0
 					loadMapPreview(engine, engine.statc[5], false)
 				}
-
 		} else if(engine.statc[4]==0) {
 			menuTime++
 			menuCursor = 0
@@ -541,7 +539,6 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 				for(y in 0 until engine.field.height)
 					engine.field.getBlock(x, y)?.let {b ->
 						if(!b.isEmpty&&b.countdown>0) {
-
 							val textColor:COLOR =
 								when(b.color) {
 									Block.COLOR.BLUE -> COLOR.BLUE
@@ -950,7 +947,6 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			} catch(e:ArrayIndexOutOfBoundsException) {
 				1.0
 			}
-
 		}
 
 		fun getDefendMultiplier(set:Int, map:Int):Double {
@@ -959,7 +955,6 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			} catch(e:ArrayIndexOutOfBoundsException) {
 				1.0
 			}
-
 		}
 	}
 }

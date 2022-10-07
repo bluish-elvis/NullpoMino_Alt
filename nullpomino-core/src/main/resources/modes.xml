@@ -1,1 +1,147 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<ModeList>
+ <!-- #:Popular-->
+ <Mode class="Marathon"/>
+ <Mode class="GrandRoads"/>
+ <Mode class="MarathonExtreme"/>
+ <Mode class="SprintUltra"/>
+ <Mode class="SprintLine"/>
+ <Mode class="Practice"/>
+ <Mode class="MarathonDrill"/>
+ <Mode class="SprintDig"/>
+ <Mode class="GrandBasic"/>
+ <Mode class="GrandPuzzle"/>
+ <Mode class="GrandM2"/>
+ <Mode class="GrandM3"/>
+ <Mode class="GrandS1"/>
+ <Mode class="GrandS2"/>
+ <Mode class="VSBattle"/>
+
+ <Folder id="guidelines" name="Guidelines Games">
+  <Mode class="Marathon"/>
+  <Mode class="SprintLine"/>
+  <Mode class="SprintUltra"/>
+  <Mode class="GrandRoads"/>
+  <Mode class="MarathonShuttle"/>
+  <Mode class="MarathonExtreme"/>
+  <Mode class="VSBattle"/>
+  <Mode class="ToolMapEditor"/>
+  <Mode class="Practice"/>
+ </Folder>
+ <Folder id="variety" name="Uniques Variety">
+  <Mode class="MarathonDrill"/>
+  <Mode class="MarathonPlus"/>
+  <Mode class="RetroModern"/>
+  <Mode class="MarathonExtreme"/>
+  <Mode class="SprintScore"/>
+  <Mode class="SprintDig"/>
+  <Mode class="Practice"/>
+  <Mode class="MarathonSquare"/>
+ </Folder>
+ <Folder id="modepile" name="ModePile Extras">
+  <Mode class="MarathonZone"/>
+  <Mode class="ColorPower"/>
+  <Mode class="Deltatris"/>
+  <Mode class="ScoreTrial"/>
+  <Mode class="Joker"/>
+  <Mode class="MissionMode"/>
+  <Mode class="RollTraining"/>
+  <Mode class="Minesweeper"/>
+  <Mode class="Collapse"/>
+  <Mode class="Sneaker"/>
+ </Folder>
+ <Folder id="retro" name="Retrospective style">
+  <Mode class="RetroN"/>
+  <Mode class="RetroA"/>
+  <Mode class="RetroS"/>
+  <Mode class="RetroModern"/>
+ </Folder>
+ <Folder id="sprint" name="Short Race">
+  <Mode class="SprintLine"/>
+  <Mode class="SprintScore"/>
+  <Mode class="SprintDig"/>
+  <Mode class="SprintCombo"/>
+  <Mode class="SprintUltra"/>
+ </Folder>
+ <Folder id="grand" name="Grand Challenges">
+  <Mode class="GrandBasic"/>
+  <Mode class="GrandM1"/>
+  <Mode class="GrandRoads"/>
+  <Mode class="GrandPuzzle"/>
+  <Mode class="GrandM2G"/>
+  <Mode class="GrandM2"/>
+  <Mode class="GrandM3"/>
+  <Mode class="GrandS1"/>
+  <Mode class="GrandS2"/>
+  <Mode class="GrandSStealth"/>
+  <Mode class="GrandZ"/>
+ </Folder>
+</ModeList>
+ <!-- mu.nu.nullpo.game.subsystem.mode.Marathon-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.SprintLine-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.SprintUltra-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.VSBattle-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.ToolMapEditor-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.Practice-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.MarathonExtreme-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.MarathonPlus-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.SprintScore-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.SprintDig-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.SprintCombo-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.MarathonShuttle-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.MarathonSquareuare-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.MarathonDrill-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.RetroN-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.RetroA-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.RetroS-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.RetroModern-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandBasic-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandPuzzle-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandM1-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandM2-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandM3-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandM2G-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandRoads-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandS1-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandS2-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandSStealth-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.GrandZ-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.NetVSBattle-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.another.Avalanche1P-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.another.Avalanche1PFever-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.another.AvalancheVS-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.another.AvalancheVSFever-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.another.AvalancheVSDig-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.another.AvalancheVSBomb-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.another.AvalancheVSSPF-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.another.Physician-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.another.PhysicianVS-->
+ <!-- mu.nu.nullpo.game.subsystem.mode.another.SPF-->
+ <!-- zeroxfc.nullpo.custom.modes.ColorPower-->
+ <!-- zeroxfc.nullpo.custom.modes.Deltatris-->
+ <!-- zeroxfc.nullpo.custom.modes.Joker-->
+ <!-- zeroxfc.nullpo.custom.modes.Minesweeper-->
+ <!-- zeroxfc.nullpo.custom.modes.MissionMode-->
+ <!-- zeroxfc.nullpo.custom.modes.RollTraining-->
+ <!-- zeroxfc.nullpo.custom.modes.ScoreTrial-->
+ <!-- wtf.oshisaure.nullpomodshit.modes.MarathonZone-->
+ <!-- wtf.oshisaure.nullpomodshit.modes.Sneaker-->
+
+ <!-- #Mode folder list-->
+
+
+ <!-- :TYPE AVALANCHE-->
+ <!-- Avalanche1P-->
+ <!-- Avalanche1PFever-->
+ <!-- AvalancheVS-->
+ <!-- AvalancheVSFever-->
+ <!-- AvalancheVSDig-->
+ <!-- AvalancheVSBOMB-->
+ <!-- AvalancheVSSPF-->
+
+ <!-- :TYPE PHYSICIAN-->
+ <!-- Physician-->
+ <!-- PhysicianVS-->
+
+ <!-- :TYPE SPF-->
+ <!-- SPF-->

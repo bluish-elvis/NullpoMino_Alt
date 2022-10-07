@@ -43,11 +43,9 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** SPEED MANIA-DEATH Mode */
-class GrandStorm:AbstractMode() {
-
+class GrandS1:AbstractMode() {
 	/** Next Section の level (これ-1のときに levelストップする) */
 	private var nextseclv = 0
-
 	/** Levelが増えた flag */
 	private var lvupflag = false
 
@@ -60,57 +58,40 @@ class GrandStorm:AbstractMode() {
 	/** Roll started flag */
 	private var rollstarted = false
 
-	/** Current BGM */
-	private var bgmLv = 0
-
 	/** 段位 */
 	private var grade = 0
-
 	/** 段位表示を光らせる残り frame count */
 	private var gradeflash = 0
-
 	/** 裏段位 */
 	private var secretGrade = 0
 
 	/** Section Time */
 	private var sectionTime = MutableList(SECTION_MAX) {0}
-
 	/** 新記録が出たSection はtrue */
 	private var sectionIsNewRecord = MutableList(SECTION_MAX) {false}
-
 	/** Cleared Section count */
 	private var sectionscomp = 0
-
 	/** Average Section Time */
 	private var sectionavgtime = 0
-
 	/** 直前のSection Time */
 	private var sectionlasttime = 0
 
 	/** AC medal 状態 */
 	private var medalAC = 0
-
 	/** ST medal 状態 */
 	private var medalST = 0
-
 	/** SK medal 状態 */
 	private var medalSK = 0
-
 	/** RE medal 状態 */
 	private var medalRE = 0
-
 	/** RO medal 状態 */
 	private var medalRO = 0
-
 	/** CO medal 状態 */
 	private var medalCO = 0
-
 	/** 150個以上Blockがあるとtrue, 70個まで減らすとfalseになる */
 	private var recoveryFlag = false
-
 	/** spinした合計 count (Maximum4個ずつ増える) */
 	private var spinCount = 0
-
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
 
@@ -139,16 +120,12 @@ class GrandStorm:AbstractMode() {
 
 	/** Current round's ranking position */
 	private var rankingRank = 0
-
 	/** Rankings' 段位 */
 	private val rankingGrade = MutableList(RANKING_MAX) {0}
-
 	/** Rankings' level */
 	private val rankingLevel = MutableList(RANKING_MAX) {0}
-
 	/** Rankings' times */
 	private val rankingTime = MutableList(RANKING_MAX) {0}
-
 	/** Section Time記録 */
 	private val bestSectionTime = MutableList(SECTION_MAX) {0}
 
@@ -177,7 +154,6 @@ class GrandStorm:AbstractMode() {
 		lastscore = 0
 		rolltime = 0
 		rollstarted = false
-		bgmLv = 0
 		grade = 0
 		gradeflash = 0
 		secretGrade = 0
@@ -194,13 +170,7 @@ class GrandStorm:AbstractMode() {
 		medalCO = 0
 		recoveryFlag = false
 		spinCount = 0
-		isShowBestSectionTime = false
-		startLevel = 0
-		secAlert = false
-		big = false
-		qualify = 12300
-		decoration = 0
-		dectemp = 0
+
 		rankingRank = -1
 		rankingGrade.fill(0)
 		rankingLevel.fill(0)
@@ -228,14 +198,7 @@ class GrandStorm:AbstractMode() {
 		owner.bgMan.bg = startLevel
 	}
 
-	/** Set BGM at start of game
-	 * @param engine GameEngine
-	 */
-	private fun setStartBgmlv(engine:GameEngine) {
-		bgmLv = 0
-		while(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv])
-			bgmLv++
-	}
+	private fun calcBgmLv(lv:Int) = 2+tableBGMChange.count {lv>=it}
 
 	/** Update falling speed
 	 * @param engine GameEngine
@@ -254,13 +217,9 @@ class GrandStorm:AbstractMode() {
 	/** Update average section time */
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
-			var temp = 0
-			for(i in startLevel until startLevel+sectionscomp)
-				if(i>=0&&i<sectionTime.size) temp += sectionTime[i]
-			sectionavgtime = temp/sectionscomp
-		} else
-			sectionavgtime = 0
-
+			val i = minOf(sectionscomp+startLevel, sectionTime.size)
+			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
+		} else sectionavgtime = 0
 	}
 
 	/** ST medal check
@@ -321,7 +280,6 @@ class GrandStorm:AbstractMode() {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
-
 			// 決定
 			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
@@ -329,20 +287,15 @@ class GrandStorm:AbstractMode() {
 				sectionscomp = 0
 				return false
 			}
-
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
-
 			return menuTime<60
 		}
-
 		return true
 	}
-
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine) {
 		drawMenu(
@@ -353,7 +306,8 @@ class GrandStorm:AbstractMode() {
 
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
-		engine.statistics.level = startLevel*100
+		val lv = startLevel*100
+		engine.statistics.level = lv
 
 		nextseclv = engine.statistics.level+100
 		if(engine.statistics.level<0) nextseclv = 100
@@ -364,8 +318,7 @@ class GrandStorm:AbstractMode() {
 		engine.big = big
 		dectemp = 0
 		setSpeed(engine)
-		setStartBgmlv(engine)
-		owner.musMan.bgm = tableBGM[bgmLv]
+		owner.musMan.bgm = BGM.GrandA(calcBgmLv(lv))
 	}
 
 	/* Render score */
@@ -489,9 +442,7 @@ class GrandStorm:AbstractMode() {
 					engine.statistics.time%3!=0,
 					2f
 				)
-
 			}
-
 		}
 	}
 
@@ -500,12 +451,8 @@ class GrandStorm:AbstractMode() {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
 			// Level up
-			if(engine.statistics.level<nextseclv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
-
+			levelUp(engine, (engine.statistics.level<nextseclv-1).toInt())
+			if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 		}
 		if(engine.ending==0&&engine.statc[0]>0&&(version>=2||!engine.holdDisable)) lvupflag = false
 
@@ -519,11 +466,8 @@ class GrandStorm:AbstractMode() {
 	override fun onARE(engine:GameEngine):Boolean {
 		// 最後の frame
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
-			if(engine.statistics.level<nextseclv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
+			levelUp(engine, (engine.statistics.level<nextseclv-1).toInt())
+			if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
 			lvupflag = true
 		}
 
@@ -531,15 +475,15 @@ class GrandStorm:AbstractMode() {
 	}
 
 	/** levelが上がったときの共通処理 */
-	private fun levelUp(engine:GameEngine) {
+	private fun levelUp(engine:GameEngine, lu:Int) {
+		val lb = engine.statistics.level
+		engine.statistics.level += lu
+		val lA = engine.statistics.level
 		// Meter
-		engine.meterValue = engine.statistics.level%100/99f
+		engine.meterValue = lA%100/99f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		// 速度変更
 		setSpeed(engine)
-
-		// BGM fadeout
-		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadesw = true
 
 		// RE medal
 		if(engine.timerActive&&medalRE<3) {
@@ -547,12 +491,19 @@ class GrandStorm:AbstractMode() {
 
 			if(!recoveryFlag) {
 				if(blocks>=150) recoveryFlag = true
-
 			} else if(blocks<=70) {
 				recoveryFlag = false
 				engine.playSE("medal1")
 				medalRE++
 			}
+		}
+		if(lu<=0) return
+		// BGM fadeout
+		if(tableBGMFadeout.any {it in lb..lA}) owner.musMan.fadesw = true
+		// BGM切り替え
+		if(tableBGMChange.any {it in lb..lA}) {
+			owner.musMan.fadesw = false
+			owner.musMan.bgm = BGM.GrandM(calcBgmLv(lA))
 		}
 	}
 
@@ -587,7 +538,6 @@ class GrandStorm:AbstractMode() {
 
 			// AC medal
 			if(engine.field.isEmpty) {
-
 				dectemp += li*25
 				if(li==3) dectemp += 25
 				if(li==4) dectemp += 150
@@ -624,10 +574,8 @@ class GrandStorm:AbstractMode() {
 			}
 
 			// Level up
-			val levelb = engine.statistics.level
-			engine.statistics.level += li+maxOf(0, minOf(2, ev.b2b))
-			levelUp(engine)
-
+			val lb = engine.statistics.level
+			levelUp(engine, li+maxOf(0, minOf(2, ev.b2b)))
 			if(engine.statistics.level>=999) {
 				// Ending
 				engine.playSE("endingstart")
@@ -639,12 +587,12 @@ class GrandStorm:AbstractMode() {
 				gradeflash = 180
 
 				// Section Timeを記録
-				sectionlasttime = sectionTime[levelb/100]
+				sectionlasttime = sectionTime[lb/100]
 				sectionscomp++
 				setAverageSectionTime()
 				dectemp++
 				// ST medal
-				stMedalCheck(engine, levelb/100)
+				stMedalCheck(engine, lb/100)
 
 				owner.musMan.bgm = BGM.Ending(1)
 				// RO medal
@@ -658,20 +606,13 @@ class GrandStorm:AbstractMode() {
 				engine.timerActive = false
 				engine.ending = 2
 
-				// BGM切り替え
-				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
-					bgmLv++
-					owner.musMan.fadesw = false
-					owner.musMan.bgm = tableBGM[bgmLv]
-				}
-
 				// Section Timeを記録
-				sectionlasttime = sectionTime[levelb/100]
+				sectionlasttime = sectionTime[lb/100]
 				sectionscomp++
 				setAverageSectionTime()
 
 				// ST medal
-				stMedalCheck(engine, levelb/100)
+				stMedalCheck(engine, lb/100)
 			} else if(engine.statistics.level>=nextseclv) {
 				// Next Section
 				engine.playSE("levelup")
@@ -681,20 +622,13 @@ class GrandStorm:AbstractMode() {
 				owner.bgMan.fadecount = 0
 				owner.bgMan.fadebg = nextseclv/100
 
-				// BGM切り替え
-				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
-					bgmLv++
-					owner.musMan.fadesw = false
-					owner.musMan.bgm = tableBGM[bgmLv]
-				}
-
 				// Section Timeを記録
-				sectionlasttime = sectionTime[levelb/100]
+				sectionlasttime = sectionTime[lb/100]
 				sectionscomp++
 				setAverageSectionTime()
 
 				// ST medal
-				stMedalCheck(engine, levelb/100)
+				stMedalCheck(engine, lb/100)
 
 				// RO medal
 				if(nextseclv==300||nextseclv==700) roMedalCheck(engine)
@@ -712,7 +646,7 @@ class GrandStorm:AbstractMode() {
 
 			// Calculate score
 
-			lastscore = ((((levelb+li)/(if(engine.b2b) 3 else 4)+engine.softdropFall+if(engine.manualLock) 1 else 0)
+			lastscore = ((((lb+li)/(if(engine.b2b) 3 else 4)+engine.softdropFall+if(engine.manualLock) 1 else 0)
 				*li*comboValue*if(engine.field.isEmpty) 4 else 1)
 				+engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			engine.statistics.scoreLine += lastscore
@@ -732,7 +666,6 @@ class GrandStorm:AbstractMode() {
 			val section = engine.statistics.level/100
 
 			if(section>=0&&section<sectionTime.size) sectionTime[section]++
-
 		}
 
 		// Ending
@@ -752,11 +685,7 @@ class GrandStorm:AbstractMode() {
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		} else if(engine.statistics.level==nextseclv-1)
-			engine.meterColor = if(engine.meterColor==-0x1)
-				-0x10000
-			else
-				-0x1
-
+			engine.meterColor = if(engine.meterColor==-0x1) -0x10000 else -0x1
 	}
 
 	/* Called at game over */
@@ -838,12 +767,10 @@ class GrandStorm:AbstractMode() {
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine):Boolean {
 		owner.musMan.fadesw = false
-		owner.musMan.bgm = if(engine.ending>0)
-			if(engine.statistics.level<900)
-				BGM.Result(2)
-			else
-				BGM.Result(3)
-		else BGM.Result(0)
+		owner.musMan.bgm = BGM.Result(
+			if(engine.ending>0)
+				if(engine.statistics.level<900) 2 else 3 else 0
+		)
 		// ページ切り替え
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
@@ -921,7 +848,6 @@ class GrandStorm:AbstractMode() {
 	private fun updateBestSectionTime() {
 		for(i in 0 until SECTION_MAX)
 			if(sectionIsNewRecord[i]) bestSectionTime[i] = sectionTime[i]
-
 	}
 
 	companion object {
@@ -930,42 +856,30 @@ class GrandStorm:AbstractMode() {
 
 		/** ARE table */
 		private val tableARE = listOf(16, 12, 10, 8, 6, 4)
-
 		/** ARE after line clear table */
 		private val tableARELine = listOf(12, 9, 7, 6, 5, 4)
-
 		/** Line clear times table */
 		private val tableLineDelay = listOf(12, 9, 7, 6, 5, 4)
-
 		/** 固定 times table */
 		private val tableLockDelay = listOf(30, 28, 26, 24, 22, 20)
-
 		/** DAS table */
 		private val tableDAS = listOf(12, 10, 8, 6, 5, 4)
-
 		/** BGM fadeout levels */
 		private val tableBGMFadeout = listOf(280, 480, -1)
-
 		/** BGM change levels */
-		private val tableBGMChange = listOf(300, 500, 999, -1)
-		private val tableBGM = listOf(BGM.GrandA(1), BGM.GrandA(2), BGM.GrandA(3))
-
+		private val tableBGMChange = listOf(300, 500, 800)
 		/** 段位のName */
 		private val tableGradeName = listOf("", "m", "Gm", "GM")
-
 		/** 裏段位のName */
 		private val tableSecretGradeName =
 			listOf("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "GM")
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 1982
-
 		/** Number of entries in rankings */
 		private const val RANKING_MAX = 13
-
 		/** Number of sections */
 		private const val SECTION_MAX = 10
-
 		/** Default section time */
 		private const val DEFAULT_SECTION_TIME = 2520
 	}

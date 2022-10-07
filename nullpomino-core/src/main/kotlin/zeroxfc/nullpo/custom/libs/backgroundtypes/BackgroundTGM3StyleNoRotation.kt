@@ -35,6 +35,7 @@ package zeroxfc.nullpo.custom.libs.backgroundtypes
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
 import zeroxfc.nullpo.custom.libs.Interpolation
+import zeroxfc.nullpo.custom.libs.MathHelper.almostEqual
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -79,7 +80,7 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 		localPath = filePath
 		this.valueRandomizer = valueRandomizer
 		val imgDim = customHolder.getImageDimensions(imageName)
-		// if (holderType == HOLDER_SLICK) customHolder.setRotationCentre(imageName,(float)imgDim[0] / 2, (float)imgDim[1] / 2);
+		// if (holderType == HOLDER_SLICK) customHolder.setRotationCenter(imageName,(float)imgDim[0] / 2, (float)imgDim[1] / 2);
 		sizeX = imgDim[0].toDouble()
 		sizeY = imgDim[1].toDouble()
 		reset()
@@ -93,7 +94,7 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 		localPath = filePath
 		valueRandomizer = Random(seed)
 		val imgDim = customHolder.getImageDimensions(imageName)
-		// if (holderType == HOLDER_SLICK) customHolder.setRotationCentre(imageName,(float)imgDim[0] / 2, (float)imgDim[1] / 2);
+		// if (holderType == HOLDER_SLICK) customHolder.setRotationCenter(imageName,(float)imgDim[0] / 2, (float)imgDim[1] / 2);
 		sizeX = imgDim[0].toDouble()
 		sizeY = imgDim[1].toDouble()
 		reset()
@@ -127,16 +128,14 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 		} while(!almostEqual(ns.toDouble(), currentValues.scale.toDouble(), 1.0))
 		targetValues.scale = ns
 
-		// Find max pan from centre
+		// Find max pan from center
 		// int[] imgDim = customHolder.getImageDimensions(imageName);
 
 		// if (holderType == HOLDER_SLICK) {
 		// 	differences = new int[] { (int)minOf(imgDim[0] * ns, imgDim[1] * ns) - 640, (int)minOf(imgDim[0] * ns, imgDim[1] * ns) - 480 };
 		// } else {
-		val differences = intArrayOf((imgDim[0]*ns-640).toInt(), (imgDim[1]*ns-480).toInt())
+		val differences = listOf((imgDim[0]*ns-640).toInt()/2, (imgDim[1]*ns-480).toInt()/2)
 		// }
-		differences[0] /= 2
-		differences[1] /= 2
 
 		// Set new target pan
 		// double r = (differences[0] * differences[1]) / Math.sqrt( (differences[0] * differences[0] * Math.sin(targetValues.angle) * Math.sin(targetValues.angle)) + (differences[1] * differences[1] * Math.cos(targetValues.angle) * Math.cos(targetValues.angle)) );
@@ -164,10 +163,10 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 		} else {
 			val t = currentValues.frame.toDouble()/targetValues.frame.toDouble()
 
-			// if (holderType == HOLDER_SLICK) {
+			/* if (holderType == HOLDER_SLICK) {
 			// 	currentValues.angle = Interpolation.sineStep(lastValues.angle, targetValues.angle, t);
 			// 	customHolder.setRotation(imageName, currentValues.angle.floatValue());
-			// }
+			 }*/
 			currentValues.scale = Interpolation.sineStep(
 				lastValues.scale.toDouble(),
 				targetValues.scale.toDouble(), t
@@ -175,9 +174,9 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 				.toFloat()
 
 			// int[] imgDim = customHolder.getImageDimensions(imageName);
-			// sizeX = (imgDim[1] * Math.sin(Math.toRadians(currentValues.angle))) + (imgDim[0] * Math.cos(Math.toRadians(currentValues.angle)));
+			// size = (imgDim[1] * Math.sin(Math.toRadians(currentValues.angle))) + (imgDim[0] * Math.cos(Math.toRadians(currentValues.angle)));
 			// sizeY = (imgDim[1] * Math.cos(Math.toRadians(currentValues.angle))) + (imgDim[0] * Math.sin(Math.toRadians(currentValues.angle)));
-			// sizeX *= currentValues.scale;
+			// size *= currentValues.scale;
 			// sizeY *= currentValues.scale;
 			currentPan[0] = Interpolation.sineStep(lastPan[0].toDouble(), targetPan[0].toDouble(), t).toInt()
 			currentPan[1] = Interpolation.sineStep(lastPan[1].toDouble(), targetPan[1].toDouble(), t).toInt()
@@ -190,7 +189,7 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 		if(dimTimer==15) {
 			val dim = customHolder.getImageDimensions("transitory")
 			customHolder.copyImage("transitory", imageName)
-			customHolder.setRotationCentre(imageName, dim[0]/2f, dim[1]/2f)
+			customHolder.setRotationCenter(imageName, dim[0]/2f, dim[1]/2f)
 			reset()
 		}
 	}

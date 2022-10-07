@@ -50,7 +50,6 @@ import java.io.IOException
 
 /** MARATHON+ Mode */
 class MarathonPlus:NetDummyMode() {
-
 	private var sc = 0
 	private var sum = 0
 	private var lastlinetime = 0
@@ -193,7 +192,6 @@ class MarathonPlus:NetDummyMode() {
 				else -> 30-lv/10
 			}
 			engine.speed.das = if(turbo==0) 14-lv/10 else 12-lv/20
-
 		}
 		engine.speed.lineDelay = tableLineDelay[turbo][goalType]
 	}
@@ -232,7 +230,6 @@ class MarathonPlus:NetDummyMode() {
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!big&&engine.ai==null)
 				netEnterNetPlayRankingScreen(netGetGoalType())
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -405,7 +402,6 @@ class MarathonPlus:NetDummyMode() {
 					engine.stat = GameEngine.Status.GAMEOVER
 				}
 			}
-
 	}
 
 	/** Bonus level subroutine
@@ -424,7 +420,6 @@ class MarathonPlus:NetDummyMode() {
 								setAttribute(goalType>0, Block.ATTRIBUTE.OUTLINE)
 							}
 						}
-
 			}
 		}
 	}
@@ -509,7 +504,6 @@ class MarathonPlus:NetDummyMode() {
 					nextsec = norm+1
 					bonusTime += (engine.speed.lockDelay+engine.speed.are+36+ev.lines*15)*ev.lines//65,230,390,580
 				}
-
 			}
 		}
 		return if(ev.lines>0) lastscore else 0
@@ -759,7 +753,6 @@ class MarathonPlus:NetDummyMode() {
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:List<String>) {
-
 		listOf<(String)->Unit>({}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
 			{engine.statistics.scoreSD = it.toInt()},

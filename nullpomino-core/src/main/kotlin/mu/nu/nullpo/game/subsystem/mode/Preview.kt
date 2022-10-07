@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,7 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.play.GameEngine
 
 /** PREVIEW mode - A game mode for Tuning preview */
-class PreviewMode:AbstractMode() {
+class Preview:AbstractMode() {
 	/* Mode name */
 	override val name = "PREVIEW"
 
@@ -45,6 +45,7 @@ class PreviewMode:AbstractMode() {
 		engine.goEnd = 10
 	}
 
+	override fun onSetting(engine:GameEngine):Boolean = false
 	/* Game Over - or is it? */
 	override fun onGameOver(engine:GameEngine):Boolean {
 		engine.lives = 1 // Let's give unlimited lives

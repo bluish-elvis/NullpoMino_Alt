@@ -190,7 +190,6 @@ abstract class PyAI(override val name:String = "PyAI", private val scriptPath:St
 	operator fun invoke(command:String?) {
 		try {
 			jep?.eval(command)
-
 		} catch(j:JepException) {
 			log.error("Error in invoke, ", j)
 		}

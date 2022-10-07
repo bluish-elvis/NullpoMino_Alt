@@ -45,8 +45,7 @@ import java.util.Objects
 import kotlin.math.abs
 
 /** NET-VS-BATTLE Mode */
-class NetVSBattleMode:NetDummyVSMode() {
-
+class NetVSBattle:NetDummyVSMode() {
 	/** Column number of hole in most recent garbage line */
 	private var lastHole = -1
 

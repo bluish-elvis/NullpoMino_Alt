@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -41,7 +41,6 @@ import kotlin.random.Random
 
 /** Gamefield */
 @kotlinx.serialization.Serializable class Field {
-
 	/** パラメータ付きConstructor
 	 * @param w fieldの幅
 	 * @param h Field height
@@ -114,11 +113,15 @@ import kotlin.random.Random
 
 	/** List of last rows cleared in most recent horizontal line clear. */
 	var lastLinesCleared:List<List<Block?>> = emptyList(); private set
-	var lastLinesHeight = emptyList<Int>(); private set
+	var lastLinesY = emptySet<Set<Int>>(); private set
+	val lastLinesHeight:List<Int> get() = lastLinesY.map {it.size}
+
+	val lastLinesTop:Int get() = lastLinesY.flatten().minOrNull() ?: height
+	val lastLinesBottom:Int get() = lastLinesY.flatten().maxOrNull() ?: -hiddenHeight
 
 	var lastLinesSplited = false; private set
 
-	var lastexplodedbombs = false; private set
+	var lastExplodedBombs = false; private set
 
 	/** Used for TGM garbage, can later be extended to all types */
 	// public ArrayList<Block[]> pendingGarbage;
@@ -128,9 +131,6 @@ import kotlin.random.Random
 	private var explodHeight = 0
 	private var explodWidthBig = 0
 	private var explodHeightBig = 0
-
-	val lastLinesTop:Int get() = lastLinesHeight.minOrNull() ?: height
-	val lastLinesBottom:Int get() = lastLinesHeight.maxOrNull() ?: 0
 
 	/** 消えるLinescountを数える
 	 * @return Linescount
@@ -234,7 +234,6 @@ import kotlin.random.Random
 							blocks += count
 							count = 0
 						} else if(!getBlockEmpty(j, i)) count++
-
 			}
 
 			return blocks
@@ -362,7 +361,7 @@ import kotlin.random.Random
 		gemsCleared = 0
 		lineColorsCleared = emptyList()
 		lastLinesCleared = emptyList()
-		lastLinesHeight = emptyList()
+		lastLinesY = emptySet()
 
 		lastLinesSplited = false
 		garbageCleared = 0
@@ -370,7 +369,6 @@ import kotlin.random.Random
 		explodHeight = 0
 		explodWidthBig = 0
 		explodHeightBig = 0
-
 	}
 
 	/** [f]から内容をコピー*/
@@ -394,7 +392,7 @@ import kotlin.random.Random
 			lineColorsCleared = o.lineColorsCleared.toList()
 			lastLinesCleared = o.lastLinesCleared.toList()
 			garbageCleared = o.garbageCleared
-			lastLinesHeight = o.lastLinesHeight.toList()
+			lastLinesY = o.lastLinesY.toSet()
 			lastLinesSplited = o.lastLinesSplited
 
 			explodHeight = o.explodHeight
@@ -629,10 +627,11 @@ import kotlin.random.Random
 	 * @return 消えるLinescount
 	 */
 	fun checkLine():Int {
-		val lines = checkLinesNoFlag()
+		val res = checkLinesNoFlag()
+		val lines = res.flatten()
 		if(height<=0||lines.isEmpty()) return 0
 		lastLinesCleared = lines.map {getRow(it)}
-		lastLinesHeight = lines
+		lastLinesY = res
 
 		lastLinesSplited = false
 		var inv = false
@@ -652,9 +651,12 @@ import kotlin.random.Random
 	/** Line clear check (消去 flagの設定とかはしない）
 	 * @return 消えるLinescount
 	 */
-	fun checkLineNoFlag():Int = checkLinesNoFlag().size
+	fun checkLineNoFlag():Int = checkLinesNoFlag().flatten().size
 
-	fun checkLinesNoFlag():List<Int> {
+	/** Line clear check (消去 flagの設定とかはしない）
+	 * @return 消えるY-coordinates(group by continuous)
+	 */
+	fun checkLinesNoFlag():Set<Set<Int>> {
 		val lines = (-hiddenHeight until heightWithoutHurryupFloor)
 			.filter {
 				getRow(it).all {b -> b?.isEmpty==false&&!b.getAttribute(ATTRIBUTE.WALL)}
@@ -662,7 +664,11 @@ import kotlin.random.Random
 		garbageCleared = lines.count {
 			getRow(it).any {b -> b?.getAttribute(ATTRIBUTE.GARBAGE)==true}
 		}
-		return lines
+		return lines.sorted().fold(mutableListOf<Set<Int>>()) {a, t ->
+			if(a.isEmpty()||a.last().maxOrNull()!=t-1) a += setOf(t)
+			else a[a.lastIndex] = a[a.lastIndex]+t
+			a
+		}.toSet()
 	}
 
 	/** Linesを消す
@@ -671,7 +677,7 @@ import kotlin.random.Random
 	fun clearLine():Int {
 		val lines = checkLinesNoFlag()
 		// field内
-		lines.forEach {y ->
+		lines.flatten().forEach {y ->
 			getRow(y).filterNotNullIndexed().forEach {(x, b) ->
 				if(b.hard>0) {
 					b.hard--
@@ -696,7 +702,7 @@ import kotlin.random.Random
 	}
 
 	/** 上にあったBlockをすべて下まで下ろす
-	 * @return 消えていたLinescount
+	 * @return 消えていたLines count
 	 */
 	fun downFloatingBlocks():Int {
 		var lines = 0
@@ -790,7 +796,6 @@ import kotlin.random.Random
 			if(getBlock(x+tx[i], y+ty[i])!=null) count++
 
 		return count>=3
-
 	}
 
 	/** Twisterできそうな穴だったらtrue
@@ -850,7 +855,6 @@ import kotlin.random.Random
 			if(getBlock(x+tx[i], y+ty[i])!=null) count++
 
 		return count==3
-
 	}
 
 	/** Twisterできそうな穴が何個あるか調べる
@@ -1011,7 +1015,6 @@ import kotlin.random.Random
 						if(j<hole) ATTRIBUTE.CONNECT_LEFT else if(j>hole) ATTRIBUTE.CONNECT_RIGHT else ATTRIBUTE.ERASE
 					)
 				)
-
 	}
 	/** Add a single hole garbage (Attributes are automatically set)
 	 * @param hole Hole position before add lines
@@ -1082,7 +1085,6 @@ import kotlin.random.Random
 		for(i in -hiddenHeight until height)
 			for(j in 0 until width)
 				getBlock(j, i)?.skin = skin
-
 	}
 
 	/** Checks for 2x2 square formations of gem and
@@ -1090,7 +1092,6 @@ import kotlin.random.Random
 	 * @return Number of big bomb formations
 	 */
 	fun checkForBigBomb():Int {
-
 		// Check for big bomb
 		for(i in -hiddenHeight until heightWithoutHurryupFloor-1)
 			for(j in 0 until width-1) {
@@ -1170,7 +1171,6 @@ import kotlin.random.Random
 							}
 						}
 						if(!squareCheck) break
-
 					}
 				}
 				// We found a square! Set all the blocks equal to gold blocks.
@@ -1262,7 +1262,6 @@ import kotlin.random.Random
 							cint = Block.COLOR_GEM_RAINBOW
 							setAttribute(true, ATTRIBUTE.ERASE)
 						}
-
 			}
 		}
 		return ret
@@ -1606,7 +1605,6 @@ import kotlin.random.Random
 											&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK))
 									)
 										fall = false
-
 								}
 							}
 						}
@@ -1859,7 +1857,6 @@ import kotlin.random.Random
 	fun stringToRow(str:String, skin:Int = 0, isGarbage:Boolean = false, isWall:Boolean = false):Array<Block?> {
 		val row = arrayOfNulls<Block>(width)
 		for(j in 0 until width) {
-
 			/* NullNoname's original approach from the old stringToField: If a
 			 * character outside the row string is referenced, default to an
 			 * empty block by ignoring the exception. */
@@ -1907,7 +1904,6 @@ import kotlin.random.Random
 				for(j in 0 until width)
 					setBlock(j, i, Block())
 			}
-
 		}
 	}
 
@@ -1978,7 +1974,6 @@ import kotlin.random.Random
 				for(j in 0 until width)
 					setBlock(j, i, null)
 			}
-
 		}
 	}
 
@@ -2422,7 +2417,6 @@ import kotlin.random.Random
 		// I think this rounds up.
 		val g = highestBlockY
 		for(y in 0 until rows) delLine(g+y)
-
 	}
 
 	fun delLine(y:Int) {
@@ -2477,10 +2471,17 @@ import kotlin.random.Random
 		}
 	}
 
+	/**
+	 * Gets the full height of a field, including hidden height.
+	 *
+	 * @return int; Full height
+	 */
+	val fullHeight:Int get() = hiddenHeight+height
+
 	fun flipVertical() {
 		val field2 = Field(this)
 		var yMin = highestBlockY-hiddenHeight
-		var yMax = hiddenHeight+height-1
+		var yMax = fullHeight-1
 		while(yMin<yMax) {
 			for(x in 0 until width) {
 				setBlock(x, yMin, field2.getBlock(x, yMin))

@@ -41,7 +41,6 @@ import kotlin.random.Random
 
 /** AVALANCHE VS DIG RACE mode (Release Candidate 1) */
 class AvalancheVSDig:AvalancheVSDummyMode() {
-
 	/** Version */
 	private var version = 0
 

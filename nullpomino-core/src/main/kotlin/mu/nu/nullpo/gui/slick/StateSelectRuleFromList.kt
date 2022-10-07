@@ -47,7 +47,6 @@ import java.util.zip.GZIPInputStream
 
 /** Rule select (after mode selection) */
 class StateSelectRuleFromList:DummyMenuScrollState() {
-
 	/** HashMap of rules (ModeName->RuleEntry) */
 	private var mapRuleEntries:MutableMap<String, RuleEntry> = mutableMapOf()
 
@@ -106,14 +105,12 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 						} catch(e2:IOException) {
 							log.error("File $r doesn't exist", e2)
 						}
-
 				}
 			}
 			reader.close()
 		} catch(e:IOException) {
 			log.error("Failed to load recommended rules list", e)
 		}
-
 	}
 
 	/** Prepare rule list */

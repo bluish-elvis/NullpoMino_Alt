@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -46,7 +46,6 @@ import org.newdawn.slick.state.StateBasedGame
 
 /** ゲーム画面のステート */
 class StateInGame:BasicGameState() {
-
 	/** ゲームのメインクラス */
 	var gameManager:GameManager? = null
 
@@ -183,11 +182,11 @@ class StateInGame:BasicGameState() {
 
 	/** リプレイ[prop]を読み込んで再生 */
 	fun startReplayGame(prop:CustomProperties) {
-
 		// Mode
 		modeName = prop.getProperty("name.mode", "")
 		val modeObj = NullpoMinoSlick.modeManager[modeName]
 		if(modeObj==null) log.error("Couldn't find mode:$modeName")
+
 		gameManager = GameManager(RendererSlick(), modeObj).also {
 			it.replayMode = true
 			it.replayProp = prop

@@ -27,7 +27,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE. */
 package net.clarenceho.crypto;
 
-/** This is a simple implementation of the RC4 (tm) encryption algorithm. The
+/**
+ * This is a simple implementation of the RC4 (tm) encryption algorithm. The
  * author implemented this class for some simple applications
  * that don't need/want/require the Sun's JCE framework.
  * <p>
@@ -43,27 +44,30 @@ package net.clarenceho.crypto;
  * Please check your local law. The author is not
  * responsible for any illegal use of this code.
  * <p>
- * @author Clarence Ho */
+ * @author Clarence Ho
+ */
 @SuppressWarnings("ALL") public class RC4{
-
 	private final byte[] state=new byte[256];
 	private int x;
 	private int y;
 
-	/** Initializes the class with a string key. The length
+	/**
+	 * Initializes the class with a string key. The length
 	 * of a normal key should be between 1 and 2048 bits. But
 	 * this method doens't check the length at all.
-	 * @param key the encryption/decryption key */
+	 * @param key the encryption/decryption key
+	 */
 	public RC4(String key) throws NullPointerException{
 		this(key.getBytes());
 	}
 
-	/** Initializes the class with a byte array key. The length
+	/**
+	 * Initializes the class with a byte array key. The length
 	 * of a normal key should be between 1 and 2048 bits. But
 	 * this method doens't check the length at all.
-	 * @param key the encryption/decryption key */
+	 * @param key the encryption/decryption key
+	 */
 	public RC4(byte[] key) throws NullPointerException{
-
 		for(int i=0;i<256;i++)
 			state[i]=(byte)i;
 
@@ -78,7 +82,6 @@ package net.clarenceho.crypto;
 		if(key==null||key.length==0) throw new NullPointerException();
 
 		for(int i=0;i<256;i++){
-
 			index2=(key[index1]&0xff)+(state[i]&0xff)+index2&0xff;
 
 			tmp=state[i];
@@ -87,14 +90,14 @@ package net.clarenceho.crypto;
 
 			index1=(index1+1)%key.length;
 		}
-
 	}
 
-	/** RC4 encryption/decryption.
+	/**
+	 * RC4 encryption/decryption.
 	 * @param data the data to be encrypted/decrypted
-	 * @return the result of the encryption/decryption */
+	 * @return the result of the encryption/decryption
+	 */
 	public byte[] rc4(String data){
-
 		if(data==null) return null;
 
 		byte[] tmp=data.getBytes();
@@ -104,11 +107,12 @@ package net.clarenceho.crypto;
 		return tmp;
 	}
 
-	/** RC4 encryption/decryption.
+	/**
+	 * RC4 encryption/decryption.
 	 * @param buf the data to be encrypted/decrypted
-	 * @return the result of the encryption/decryption */
+	 * @return the result of the encryption/decryption
+	 */
 	public byte[] rc4(byte[] buf){
-
 		//int lx = this.x;
 		//int ly = this.y;
 
@@ -120,7 +124,6 @@ package net.clarenceho.crypto;
 		byte[] result=new byte[buf.length];
 
 		for(int i=0;i<buf.length;i++){
-
 			x=x+1&0xff;
 			y=(state[x]&0xff)+y&0xff;
 
@@ -139,12 +142,13 @@ package net.clarenceho.crypto;
 	}
 
 	// ***** BEGIN HACKED CODE *****
-	/** Initializes the class with a string key. The length
+	/**
+	 * Initializes the class with a string key. The length
 	 * of a normal key should be between 1 and 2048 bits. But
 	 * this method doens't check the length at all.
-	 * @param key the encryption/decryption key */
+	 * @param key the encryption/decryption key
+	 */
 	public RC4(char[] key) throws NullPointerException{
-
 		for(int i=0;i<256;i++)
 			state[i]=(byte)i;
 
@@ -159,7 +163,6 @@ package net.clarenceho.crypto;
 		if(key==null||key.length==0) throw new NullPointerException();
 
 		for(int i=0;i<256;i++){
-
 			index2=(key[index1]&0xff)+(state[i]&0xff)+index2&0xff;
 
 			tmp=state[i];
@@ -168,14 +171,14 @@ package net.clarenceho.crypto;
 
 			index1=(index1+1)%key.length;
 		}
-
 	}
 
-	/** RC4 encryption/decryption.
+	/**
+	 * RC4 encryption/decryption.
 	 * @param buf the data to be encrypted/decrypted
-	 * @return the result of the encryption/decryption */
+	 * @return the result of the encryption/decryption
+	 */
 	public byte[] rc4(char[] buf){
-
 		//int lx = this.x;
 		//int ly = this.y;
 
@@ -187,7 +190,6 @@ package net.clarenceho.crypto;
 		byte[] result=new byte[buf.length];
 
 		for(int i=0;i<buf.length;i++){
-
 			x=x+1&0xff;
 			y=(state[x]&0xff)+y&0xff;
 

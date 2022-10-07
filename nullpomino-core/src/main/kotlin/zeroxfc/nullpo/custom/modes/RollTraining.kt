@@ -297,7 +297,6 @@ class RollTraining:MarathonModeBase() {
 							if(usedSpeed==SPEED_TAP) {
 								if(!useMRoll&&rankingTimePlayer[rankIndex][i]>=TIME_LIMITS[0]||useMRoll&&rankingLinesPlayer[rankIndex][i]>=32) COLOR.ORANGE else COLOR.GREEN
 							} else if(rankingTimePlayer[rankIndex][i]>=TIME_LIMITS[1]) COLOR.ORANGE else COLOR.GREEN
-
 						}
 						val gText:String = if(usedSpeed==SPEED_TAP) {
 							if(!useMRoll) "S9" else if(rankingGradePlayer[rankIndex][i]>=1.0) "GM" else "M"
@@ -504,7 +503,6 @@ class RollTraining:MarathonModeBase() {
 				((if(usedSpeed==SPEED_TAP) tapGrade else tiGrade)*100).toInt(),
 				engine.statistics.lines, engine.statistics.time, rankIndex, engine.playerProp.isLoggedIn
 			)
-
 		}
 		return false
 	}

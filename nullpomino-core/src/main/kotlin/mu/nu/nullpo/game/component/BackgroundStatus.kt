@@ -30,7 +30,6 @@ package mu.nu.nullpo.game.component
 
 /** BackgroundImage state */
 @kotlinx.serialization.Serializable class BackgroundStatus {
-
 	/** Background number */
 	var bg = 0
 //TODO bg:BG_RenderClass

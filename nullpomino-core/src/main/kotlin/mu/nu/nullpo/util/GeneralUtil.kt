@@ -76,56 +76,42 @@ object GeneralUtil {
 	 * @return String for play time
 	 */
 	val Float.toTimeStr
-		get() =
-			if(this<0) "--:--.--" else String.format("%02d:%02d.%02d", this.toInt()/3600, this.toInt()/60%60, (this%60*5f/3f).toInt())
+		get() = if(this<0) "--:--.--" else
+			String.format("%02d:%02d.%02d", this.toInt()/3600, this.toInt()/60%60, (this%60*5f/3f).toInt())
 	@Deprecated("Float extended", ReplaceWith("t.toTimeStr", "mu.nu.nullpo.util.GeneralUtil.getTime"))
 	fun getTime(t:Float):String = t.toTimeStr
 
 	val Int.toTimeStr
-		get() =
-			if(this<0) "--:--.--" else String.format("%02d:%02d.%02d", this/3600, this/60%60, (this%60*5f/3f).toInt())
+		get() = if(this<0) "--:--.--" else
+			String.format("%02d:%02d.%02d", this/3600, this/60%60, (this%60*5f/3f).toInt())
 	@Deprecated("Int extended", ReplaceWith("t.toTimeStr", "mu.nu.nullpo.util.GeneralUtil.getTime"))
 	fun getTime(t:Int):String = t.toTimeStr
 	val Long.toTimeStr
-		get() =
-			if(this<0) "--:--.--" else String.format("%02d:%02d.%02d", this/3600, this/60%60, (this%60*5f/3f).toInt())
+		get() = if(this<0) "--:--.--" else
+			String.format("%02d:%02d.%02d", this/3600, this/60%60, (this%60*5f/3f).toInt())
 
-	/** Returns ON if b is true, OFF if b is false
-	 * @return ON if b is true, OFF if b is false
-	 */
+	/**  @return ON if b is true, OFF if b is false*/
 	@JvmOverloads
 	fun Boolean.getONorOFF(islong:Boolean = false):String =
 		if(this) "\u0083 ${if(islong) "ENABLE" else "ON"}" else "\u0085 ${if(islong) "DISABLE" else "OFF"}"
 
-	/** Returns ○ if b is true, × if b is false
-	 * @return ○ if b is true, × if b is false
-	 */
+	/** @return ○ if b is true, × if b is false*/
 	val Boolean.getOX:String get() = if(this) "\u0083" else "\u0085"
 
 	@Deprecated("Bool extended", ReplaceWith("b.getOX", "mu.nu.nullpo.util.GeneralUtil.getOX"))
 	fun getOX(b:Boolean) = b.getOX
 
-	/** Get date and time from a Calendar
-	 * @return Date and Time String
-	 */
+	/** @return Date and Time String */
 	val Calendar.strDateTime:String get() = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(time)
 
-	/** Get date and time from a Calendar with specific TimeZone
-	 * @param z TimeZone
-	 * @return Date and Time String
-	 */
+	/** @return Date and Time String in [z] TimeZone */
 	fun Calendar.strDateTime(z:TimeZone):String = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 		.apply {timeZone = z}.format(this)
 
-	/** Get date from a Calendar
-	 * @return Date String
-	 */
+	/** @return Date String */
 	val Calendar.strDate:String get() = SimpleDateFormat("yyyy-MM-dd").format(time)
 
-	/** Get date from a Calendar with specific TimeZone
-	 * @param z TimeZone
-	 * @return Date String
-	 */
+	/** @return Date and Time String in [z] TimeZone */
 	fun Calendar.strDate(z:TimeZone):String = SimpleDateFormat("yyyy-MM-dd").apply {timeZone = z}.format(this)
 
 	/** Get time from a Calendar
@@ -328,7 +314,7 @@ object GeneralUtil {
 		"$x".length>digits -> {
 			val y = (1 until digits).fold(x) {b, _ -> b.div(10)}
 			val z = (1 until digits).fold(minOf(y, 35)) {b, _ -> b.times(10)}
-			"${('A'.code+minOf(y-10, 25)).toChar()}${if(digits>1) capsNum(x-z, digits-1) else ""}"
+			"${('A'.code+minOf(y.toInt()-10, 25)).toChar()}${if(digits>1) capsNum(x-z, digits-1) else ""}"
 		}
 		digits>0 -> String.format("%0${digits}d", x)
 		else -> ""

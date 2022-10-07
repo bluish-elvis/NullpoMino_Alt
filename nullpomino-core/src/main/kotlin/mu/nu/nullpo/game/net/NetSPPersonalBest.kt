@@ -35,7 +35,6 @@ import java.util.LinkedList
 
 /** Single player personal record manager */
 class NetSPPersonalBest:Serializable {
-
 	/** Player Name */
 	var strPlayerName = ""
 

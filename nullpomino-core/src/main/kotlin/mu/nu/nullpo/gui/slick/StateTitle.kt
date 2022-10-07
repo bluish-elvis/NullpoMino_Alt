@@ -45,7 +45,6 @@ import org.newdawn.slick.state.StateBasedGame
 
 /** Title screen state */
 class StateTitle internal constructor():DummyMenuChooseState() {
-
 	/** True when new version is already checked */
 	private var isNewVersionChecked = false
 	override val numChoice:Int get() = CHOICES.size

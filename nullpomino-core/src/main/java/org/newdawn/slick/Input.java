@@ -731,7 +731,6 @@ public class Input{
 
 		return ((Controller)controllers.get(controller)).getYAxisValue()>0.5f
 			||((Controller)controllers.get(controller)).getPovY()>0.5f;
-
 	}
 
 	/**
@@ -823,7 +822,6 @@ public class Input{
 		public void write(int b){
 			// null implemetnation
 		}
-
 	}
 
 	/**
@@ -912,7 +910,6 @@ public class Input{
 				if(listener.isAcceptingInput()){
 					listener.keyPressed(eventKey,Keyboard.getEventCharacter());
 					if(consumed) break;
-
 				}
 			}
 		}else{
@@ -925,7 +922,6 @@ public class Input{
 				if(listener.isAcceptingInput()){
 					listener.keyReleased(eventKey,keys[eventKey]);
 					if(consumed) break;
-
 				}
 			}
 		}
@@ -942,7 +938,6 @@ public class Input{
 				if(listener.isAcceptingInput()){
 					listener.mousePressed(Mouse.getEventButton(),pressedX,pressedY);
 					if(consumed) break;
-
 				}
 			}
 		}else{
@@ -964,7 +959,6 @@ public class Input{
 				if(listener.isAcceptingInput()){
 					listener.mouseReleased(Mouse.getEventButton(),releasedX,releasedY);
 					if(consumed) break;
-
 				}
 			}
 		}
@@ -978,7 +972,6 @@ public class Input{
 						else listener.mouseMoved(0,0,Mouse.getEventDX(),-Mouse.getEventDY());
 
 						if(consumed) break;
-
 					}
 				}
 			}
@@ -992,7 +985,6 @@ public class Input{
 					if(listener.isAcceptingInput()){
 						listener.mouseWheelMoved(dwheel);
 						if(consumed) break;
-
 					}
 				}
 			}
@@ -1010,7 +1002,6 @@ public class Input{
 					else listener.mouseMoved(lastMouseX,lastMouseY,getMouseX(),getMouseY());
 
 					if(consumed) break;
-
 				}
 			}
 			lastMouseX=getMouseX();
@@ -1041,7 +1032,6 @@ public class Input{
 					if(listener.isAcceptingInput()){
 						listener.keyPressed(i,keys[i]);
 						if(consumed) break;
-
 					}
 				}
 			}
@@ -1185,7 +1175,6 @@ public class Input{
 			if(listener.isAcceptingInput()){
 				listener.mouseClicked(button,x,y,clickCount);
 				if(consumed) break;
-
 			}
 		}
 	}

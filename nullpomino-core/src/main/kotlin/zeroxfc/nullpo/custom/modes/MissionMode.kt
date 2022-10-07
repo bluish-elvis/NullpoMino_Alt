@@ -737,7 +737,6 @@ class MissionMode:MarathonModeBase() {
 	}
 
 	companion object {
-
 		/**
 		 * Line counts when BGM changes occur
 		 */

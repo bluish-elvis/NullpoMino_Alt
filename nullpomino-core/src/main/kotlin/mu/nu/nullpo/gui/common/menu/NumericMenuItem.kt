@@ -39,7 +39,6 @@ constructor(
 	private val step:Int = 1,
 	private val arithmeticStyle:Int = ARITHSTYLE_MODULAR
 ):MenuItem(name) {
-
 	init {
 		this.color = color
 		this.state = state
@@ -65,7 +64,6 @@ constructor(
 	}
 
 	companion object {
-
 		const val ARITHSTYLE_MODULAR = 0
 		const val ARITHSTYLE_SATURATE = 1
 	}

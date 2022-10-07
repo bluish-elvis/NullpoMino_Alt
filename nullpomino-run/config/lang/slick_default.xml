@@ -1,86 +1,98 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<comment>Slick language file - Default English</comment>
+ <comment>Slick language file - Default English</comment>
 
-<!--Title-->
-<entry key="Title_Start">Start a new game.</entry>
-<entry key="Title_Replay">Watch a replay file.</entry>
-<entry key="Title_NetPlay">Connect to a server and play against other players over the internet.</entry>
-<entry key="Title_Config">You can adjust various settings here.</entry>
-<entry key="Title_Exit">Quit the game.</entry>
-<entry key="Title_NewVersion">New version %s (%s) is available.</entry>
+ <!--Title-->
+ <entry key="Title_Start">Start a new game.</entry>
+ <entry key="Title_Replay">Watch a replay file.</entry>
+ <entry key="Title_NetPlay">Connect to a server and play against other players over the internet.</entry>
+ <entry key="Title_Config">You can adjust various settings here.</entry>
+ <entry key="Title_Exit">Quit the game.</entry>
+ <entry key="Title_NewVersion">New version %s (%s) is available.</entry>
 
-<!--Config Main Menu-->
-<entry key="ConfigMainMenu_General">Changes various settings.</entry>
-<entry key="ConfigMainMenu_Rule">Select a rule to use. (Push Left/Right to select player)</entry>
-<entry key="ConfigMainMenu_GameTuning">You can override some rule settings here. (Push Left/Right to select player)</entry>
-<entry key="ConfigMainMenu_AI">Enable or disable AI. (Push Left/Right to select player)</entry>
-<entry key="ConfigMainMenu_Keyboard">Changes keyboard mappings. (Push Left/Right to select player)</entry>
-<entry key="ConfigMainMenu_Joystick">Changes joystick settings. (Push Left/Right to select player)</entry>
-<entry key="ConfigMainMenu_KeyboardNavi">Changes menu keyboard mappings. (Push Left/Right to select player)</entry>
-<entry key="ConfigMainMenu_KeyboardReset">Resets keyboard mappings to default. (Push Left/Right to select player)</entry>
+ <!--Config Main Menu-->
+ <entry key="ConfigMainMenu_General">Changes various settings.</entry>
+ <entry key="ConfigMainMenu_Rule">Select a rule to use. (Push Left/Right to select player)</entry>
+ <entry key="ConfigMainMenu_GameTuning">You can override some rule settings here. (Push Left/Right to select player)</entry>
+ <entry key="ConfigMainMenu_AI">Enable or disable AI. (Push Left/Right to select player)</entry>
+ <entry key="ConfigMainMenu_Keyboard">Changes keyboard mappings. (Push Left/Right to select player)</entry>
+ <entry key="ConfigMainMenu_Joystick">Changes joystick settings. (Push Left/Right to select player)</entry>
+ <entry key="ConfigMainMenu_KeyboardNavi">Changes menu keyboard mappings. (Push Left/Right to select player)</entry>
+ <entry key="ConfigMainMenu_KeyboardReset">Resets keyboard mappings to default. (Push Left/Right to select player)</entry>
 
-<!--Config General-->
-<entry key="ConfigGeneral_Fullscreen">Toggles fullscreen mode. (Requires restart; Not Recommended!)</entry>
-<entry key="ConfigGeneral_SE">Toggles sound effects. (Requires restart)</entry>
-<entry key="ConfigGeneral_BGM">Toggles music. (Requires restart)</entry>
-<entry key="ConfigGeneral_BGMPreload">Loads all music into RAM at startup. (Requires restart)</entry>
-<entry key="ConfigGeneral_BGMStreaming">Plays all ogg music with streaming mode. (Requires restart)</entry>
-<entry key="ConfigGeneral_Background">Toggles background image display.</entry>
-<entry key="ConfigGeneral_ShowFPS">Toggles FPS display.</entry>
-<entry key="ConfigGeneral_FrameStep">Toggles frame step function when paused.</entry>
-<entry key="ConfigGeneral_MaxFPS">Adjusts max FPS. (60 recommended)</entry>
-<entry key="ConfigGeneral_ShowLineEffect">Toggles line clear effect. (Heavy)</entry>
-<entry key="ConfigGeneral_LineEffectSpeed">Adjusts line clear effect speed.</entry>
-<entry key="ConfigGeneral_UseBackgroundFade">Toggles heavy background fadein/fadeout effect.</entry>
-<entry key="ConfigGeneral_FieldBGBright">Adjusts field background brightness. (0:None 255:Full)</entry>
-<entry key="ConfigGeneral_ShowFieldBGGrid">Toggles grid display of field background.</entry>
-<entry key="ConfigGeneral_SmoothFall">Toggles piece falling slowly.</entry>
-<entry key="ConfigGeneral_ShowLocus">Toggles piece falling blur effect. (Heavy)</entry>
-<entry key="ConfigGeneral_ShowInput">Toggles input display.</entry>
-<entry key="ConfigGeneral_DarkNextArea">When enabled the background of piece preview area will be darker.</entry>
-<entry key="ConfigGeneral_SEVolume">Adjusts sound effect volume. (0:No Sound 128:Max)</entry>
-<entry key="ConfigGeneral_BGMVolume">Adjusts music volume. (0:No Sound 128:Max)</entry>
-<entry key="ConfigGeneral_ShowMeter">Displays a level/lines/time meter next to the play field.</entry>
-<entry key="ConfigGeneral_VSync">Sync screen to the vertical refresh. (stops tearing)</entry>
-<entry key="ConfigGeneral_NextShadow">Display piece previews above the ghost piece.</entry>
-<entry key="ConfigGeneral_OutlineGhost">Use outline-styled ghost pieces instead of darker image of the piece.</entry>
-<entry key="ConfigGeneral_NextType">Select where the piece previews are displayed.</entry>
-<entry key="ConfigGeneral_AlternateFPSTiming">Select when the FPS is calculated.</entry>
-<entry key="ConfigGeneral_AlternateFPSDynamicAdjust">Automatically adjusts target FPS in order to achieve max FPS.</entry>
-<entry key="ConfigGeneral_AlternateFPSPerfectMode">Use more accurate frame rate mode. (Warning: It eats more CPU power!)</entry>
-<entry key="ConfigGeneral_AlternateFPSPerfectYield">Sightly lower the CPU usage of Perfect FPS mode.</entry>
-<entry key="ConfigGeneral_ScreenSizeType">Selects screen size. (Requires restart)</entry>
+ <!--Config General-->
+ <entry key="ConfigGeneral_Fullscreen">Toggles fullscreen mode. (Requires restart; Not Recommended!)</entry>
+ <entry key="ConfigGeneral_SE">Toggles sound effects. (Requires restart)</entry>
+ <entry key="ConfigGeneral_BGM">Toggles music. (Requires restart)</entry>
+ <entry key="ConfigGeneral_BGMPreload">Loads all music into RAM at startup. (Requires restart)</entry>
+ <entry key="ConfigGeneral_BGMStreaming">Plays all ogg music with streaming mode. (Requires restart)</entry>
+ <entry key="ConfigGeneral_Background">Toggles background image display.</entry>
+ <entry key="ConfigGeneral_ShowFPS">Toggles FPS display.</entry>
+ <entry key="ConfigGeneral_FrameStep">Toggles frame step function when paused.</entry>
+ <entry key="ConfigGeneral_MaxFPS">Adjusts max FPS. (60 recommended)</entry>
+ <entry key="ConfigGeneral_EdgeBold">Adjusts field blocks edge line thickness.</entry>
+ <entry key="ConfigGeneral_ShowLineEffect">Toggles line clear effect. (Heavy)</entry>
+ <entry key="ConfigGeneral_LineEffectSpeed">Adjusts line clear effect speed.</entry>
+ <entry key="ConfigGeneral_UseBackgroundFade">Toggles heavy background fade-in/out effect.</entry>
+ <entry key="ConfigGeneral_FieldBGBright">Adjusts field background brightness. (0:None 255:Full)</entry>
+ <entry key="ConfigGeneral_ShowFieldBGGrid">Toggles grid display of field background.</entry>
+ <entry key="ConfigGeneral_SmoothFall">Toggles piece falling slowly.</entry>
+ <entry key="ConfigGeneral_ShowLocus">Toggles piece falling blur effect. (Heavy)</entry>
+ <entry key="ConfigGeneral_ShowInput">Toggles input display.</entry>
+ <entry key="ConfigGeneral_DarkNextArea">When enabled the background of piece preview area will be darker.</entry>
+ <entry key="ConfigGeneral_SEVolume">Adjusts sound effect volume. (0:No Sound 128:Max)</entry>
+ <entry key="ConfigGeneral_BGMVolume">Adjusts music volume. (0:No Sound 128:Max)</entry>
+ <entry key="ConfigGeneral_ShowMeter">Displays a level/lines/time meter next to the play field.</entry>
+ <entry key="ConfigGeneral_VSync">Sync screen to the vertical refresh. (stops tearing)</entry>
+ <entry key="ConfigGeneral_NextShadow">Display piece previews above the ghost piece.</entry>
+ <entry key="ConfigGeneral_OutlineGhost">Use outline-styled ghost pieces instead of darker image of the piece.</entry>
+ <entry key="ConfigGeneral_NextType">Select where the piece previews are displayed.</entry>
+ <entry key="ConfigGeneral_AlternateFPSTiming">Select when the FPS is calculated.</entry>
+ <entry key="ConfigGeneral_AlternateFPSDynamicAdjust">Automatically adjusts target FPS in order to achieve max FPS.</entry>
+ <entry key="ConfigGeneral_AlternateFPSPerfectMode">Use more accurate frame rate mode. (Warning: It eats more CPU power!)
+ </entry>
+ <entry key="ConfigGeneral_AlternateFPSPerfectYield">Sightly lower the CPU usage of Perfect FPS mode.</entry>
+ <entry key="ConfigGeneral_ScreenSizeType">Selects screen size. (Requires restart)</entry>
 
-<!--Config Joystick-->
-<entry key="ConfigJoystickMain_ButtonSetting">Change joystick mappings.</entry>
-<entry key="ConfigJoystickMain_InputTest">You can test your joystick here.</entry>
-<entry key="ConfigJoystickMain_JoyUseNumber">Selects which joystick to use.</entry>
-<entry key="ConfigJoystickMain_JoyBorder">Adjusts directional key sensibility ("border").</entry>
-<entry key="ConfigJoystickMain_JoyIgnoreAxis">Ignores analog stick (Axis).</entry>
-<entry key="ConfigJoystickMain_JoyIgnorePOV">Ignores hat switch (POV).</entry>
-<entry key="ConfigJoystickMain_JoyMethod">Selects joystick input detection method. (Shared by both players)</entry>
+ <!--Config Joystick-->
+ <entry key="ConfigJoystickMain_ButtonSetting">Change joystick mappings.</entry>
+ <entry key="ConfigJoystickMain_InputTest">You can test your joystick here.</entry>
+ <entry key="ConfigJoystickMain_JoyUseNumber">Selects which joystick to use.</entry>
+ <entry key="ConfigJoystickMain_JoyBorder">Adjusts directional key sensibility ("border").</entry>
+ <entry key="ConfigJoystickMain_JoyIgnoreAxis">Ignores analog stick (Axis).</entry>
+ <entry key="ConfigJoystickMain_JoyIgnorePOV">Ignores hat switch (POV).</entry>
+ <entry key="ConfigJoystickMain_JoyMethod">Selects joystick input detection method. (Shared by both players)</entry>
 
-<!--GameTuning-->
-<entry key="GameTuning_RotateButtonDefaultRight">Select the rotation direction for A button.</entry>
-<entry key="GameTuning_Skin">Select the appearance of the blocks.</entry>
-<entry key="GameTuning_MinDAS">Adjusts minimum DAS.</entry>
-<entry key="GameTuning_MaxDAS">Adjusts maximum DAS.</entry>
-<entry key="GameTuning_DasDelay">Adjusts move delay. (0:Instant DAS)</entry>
-<entry key="GameTuning_MoveDiagonal">Toggles diagonal movement of the pieces.</entry>
-<entry key="GameTuning_ReverseUpDown">Toggles the function of reverse the Up and Down buttons.</entry>
-<entry key="GameTuning_BlockOutlineType">Select the type of block outline.</entry>
-<entry key="GameTuning_BlockShowOutlineOnly">Toggles the block display.</entry>
-<entry key="GameTuning_Preview">Preview your tuning settings. (Hotkey: D button)</entry>
+ <!--GameTuning-->
+ <entry key="GameTuning_RotateButtonDefaultRight">Select the rotation direction for A button.</entry>
+ <entry key="GameTuning_Skin">Select the appearance of the blocks.</entry>
+ <entry key="GameTuning_MinDAS">Adjusts minimum DAS.</entry>
+ <entry key="GameTuning_MaxDAS">Adjusts maximum DAS.</entry>
+ <entry key="GameTuning_DasDelay">Adjusts move delay. (0:Instant DAS)</entry>
+ <entry key="GameTuning_MoveDiagonal">Toggles diagonal movement of the pieces.</entry>
+ <entry key="GameTuning_ReverseUpDown">Toggles the function of reverse the Up and Down buttons.</entry>
+ <entry key="GameTuning_BlockOutlineType">Select the type of block outline.</entry>
+ <entry key="GameTuning_BlockShowOutlineOnly">Toggles the block display.</entry>
+ <entry key="GameTuning_Preview">Preview your tuning settings. (Hotkey: D button)</entry>
 
-<!--Init Failed-->
-<entry key="LWJGLLoadFailedMessage_Title">LWJGL is not compatible with your OS</entry>
-<entry key="LWJGLLoadFailedMessage_Body">Failed to load LWJGL.\nUnfortunately, it seems LWGJL is not compatible with your OS.\n\nException Message:%s\nPlease refer to "log/log_slick.txt" file for detailed error log.</entry>
-<entry key="LWJGLNotFoundMessage_Title">LWJGL not found</entry>
-<entry key="LWJGLNotFoundMessage_Body">Couldn't find LWJGL. Please reinstall NullpoMino.\n\nException Message:%s\nPlease refer to "log/log_slick.txt" file for detailed error log.</entry>
-<entry key="InitFailedMessageSlick_Title">Sorry! Can't start the game!</entry>
-<entry key="InitFailedMessageSlick_Body">Couldn't initialize the game screen.\nUnfortunately, your video card doesn't appear to have a proper OpenGL support.\nIf available, try installing the latest driver.\nIf you are lucky, it may solve this problem.\n\nYour driver name:%s, version:%s\nException Message:%s\nPlease refer to "log/log_slick.txt" file for detailed error log.</entry>
-<entry key="InitFailedMessageGeneral_Title">Init failed</entry>
-<entry key="InitFailedMessageGeneral_Body">Couldn't start NullpoMino for some reason.\n\nYour driver name:%s, version:%s\nException Message:%s\nPlease refer to "log/log_slick.txt" file for detailed error log.</entry>
+ <!--Init Failed-->
+ <entry key="LWJGLLoadFailedMessage_Title">LWJGL is not compatible with your OS</entry>
+ <entry key="LWJGLLoadFailedMessage_Body">Failed to load LWJGL.\nUnfortunately, it seems LWGJL is not compatible with your
+  OS.\n\nException Message:%s\nPlease refer to "log/log_slick.txt" file for detailed error log.
+ </entry>
+ <entry key="LWJGLNotFoundMessage_Title">LWJGL not found</entry>
+ <entry key="LWJGLNotFoundMessage_Body">Couldn't find LWJGL. Please reinstall NullpoMino.\n\nException Message:%s\nPlease refer
+  to "log/log_slick.txt" file for detailed error log.
+ </entry>
+ <entry key="InitFailedMessageSlick_Title">Sorry! Can't start the game!</entry>
+ <entry key="InitFailedMessageSlick_Body">Couldn't initialize the game screen.\nUnfortunately, your video card doesn't appear to
+  have a proper OpenGL support.\nIf available, try installing the latest driver.\nIf you are lucky, it may solve this
+  problem.\n\nYour driver name:%s, version:%s\nException Message:%s\nPlease refer to "log/log_slick.txt" file for detailed error
+  log.
+ </entry>
+ <entry key="InitFailedMessageGeneral_Title">Init failed</entry>
+ <entry key="InitFailedMessageGeneral_Body">Couldn't start NullpoMino for some reason.\n\nYour driver name:%s,
+  version:%s\nException Message:%s\nPlease refer to "log/log_slick.txt" file for detailed error log.
+ </entry>
 </properties>

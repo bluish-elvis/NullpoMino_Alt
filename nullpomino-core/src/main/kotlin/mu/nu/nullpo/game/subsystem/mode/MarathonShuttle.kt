@@ -45,7 +45,6 @@ import kotlin.math.ceil
 
 /** TECHNICIAN Mode */
 class MarathonShuttle:NetDummyMode() {
-
 	/** Number of Goal-points remaining */
 	private var goal = 0
 	private var goalmax = 0
@@ -208,7 +207,6 @@ class MarathonShuttle:NetDummyMode() {
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&netIsNetRankingViewOK(engine))
 				netEnterNetPlayRankingScreen(goalType)
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -329,7 +327,7 @@ class MarathonShuttle:NetDummyMode() {
 				// +30sec
 				if(lasttimebonus>0&&scget&&engine.ending==0)
 					receiver.drawScoreFont(
-						engine, 6, 6, String.format("+%3.2fSEC.", lasttimebonus/60.0f),
+						engine, 6, 6, String.format("+%3.2fSEC.", lasttimebonus/60f),
 						COLOR.YELLOW
 					)
 			} else {
@@ -382,7 +380,6 @@ class MarathonShuttle:NetDummyMode() {
 						else -> COLOR.ORANGE
 					}
 				)
-
 		}
 
 		super.renderLast(engine)
@@ -586,7 +583,6 @@ class MarathonShuttle:NetDummyMode() {
 			&&netReplaySendStatus==2
 		)
 			receiver.drawMenuFont(engine, 1, 19, "A: RETRY", COLOR.RED)
-
 	}
 
 	/** Calculate ranking position
@@ -640,7 +636,6 @@ class MarathonShuttle:NetDummyMode() {
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:List<String>) {
-
 		listOf<(String)->Unit>({}, {}, {}, {},
 			{engine.statistics.scoreLine = it.toInt()},
 			{engine.statistics.scoreSD = it.toInt()},
@@ -668,7 +663,6 @@ class MarathonShuttle:NetDummyMode() {
 			{goal = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
-
 	}
 
 	/** NET: Send end-of-game stats

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2022-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -36,7 +36,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.ai.BasicAI
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.game.subsystem.mode.GameMode
-import mu.nu.nullpo.game.subsystem.mode.VSBattleMode
+import mu.nu.nullpo.game.subsystem.mode.VSBattle
 import mu.nu.nullpo.gui.slick.SlickLog4j
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.loadRule
@@ -60,7 +60,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 * @return The TGM3 grade.
 
 	*public int getGM3Grade(){
-		VSBattleMode gm3m = (VSBattleMode) gameEngine.owner.mode;
+		VSBattle gm3m = (VSBattle) gameEngine.owner.mode;
 		Field field;
 		try {
 			field = gm3m.getClass().getDeclaredField("grade");
@@ -82,7 +82,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 * @return The line cleared
 	 */
 	fun getLineCleared(gameEngine:GameEngine):Int {
-		val aitm:VSBattleMode = gameEngine.owner.mode as VSBattleMode
+		val aitm:VSBattle = gameEngine.owner.mode as VSBattle
 		try {
 			return aitm.garbageSent[0]
 			//getDeclaredField("garbageSent");
@@ -186,9 +186,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		for(i in 0 until count) {
 			log.info(String.format("-------- Simulation %d of %d --------", i+1, count))
 			runSimulation()
-			//if (getGM3Grade() == 32) {
-			//	gm++;
-			//}
+			//if (getGM3Grade() == 32) gm++
 			val winner:Int = gameEngine.indexOfFirst {it.stat!==GameEngine.Status.GAMEOVER}
 			if(winner>=0) winnerCount[winner]++
 			log.info("Winner:\t$winner")
@@ -197,18 +195,18 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 			for(j in gameEngine.indices) {
 				//int thisLines = getLineCleared(gameEngine[j]);
 				log.info("Player $j")
-				val thisLines:Int = (gameManager.mode as VSBattleMode).garbageSent[j]
+				val thisLines:Int = (gameManager.mode as VSBattle).garbageSent[j]
 				totalLines[j] += thisLines
 				log.info("Line cleared:\t$thisLines")
 				log.info("-------- stat till now --------")
 				log.info("Total line cleared:\t"+totalLines[j])
 				log.info("Line per game:\t"+(totalLines[j].toDouble()/(i+1)).toString())
 			}
-			//			if (i % step == 0) {
+			/*			if (i % step == 0) {
 //				PyAI pyai = (PyAI) gameEngine.ai;
 //				pyai.invoke("sys.getsizeof(ai.qtable)");
 //				pyai.invoke("ai.saveQTable()");
-//			}
+			}*/
 		}
 		log.info("-------- COMPLETE --------")
 		log.info("Total:\t$count")
@@ -267,7 +265,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		/**
 		 * Log the current game state.
 		 */
-		//	private void logGameState()
+		/*	private void logGameState()
 		//	{
 		//		int level = gameEngine.statistics.level;
 		//
@@ -279,15 +277,14 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		//		String state = gameEngine.stat.toString();
 		//
 		//		log.info(String.format("\tLevel: %3d \tPiece: %s \tState: %s", level, piece, state));
-		//	}
+			}*/
 		@JvmStatic fun main(args:Array<String>) {
-
 			// Logger initialization.
 			PropertyConfigurator.configure("config/etc/log_slick.cfg")
 			org.newdawn.slick.util.Log.setLogSystem(SlickLog4j())
 
 			// NOTE(oliver): For other GameModes, look inside src/mu/nu/nullpo/game/subsystem/mode
-			val mode:GameMode = VSBattleMode()
+			val mode:GameMode = VSBattle()
 
 			// NOTE(oliver): For other rules, look inside config/rule.
 			val rulePath = "config/rule/StandardAITraining.rul"

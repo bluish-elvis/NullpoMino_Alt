@@ -51,7 +51,6 @@ class SpeedPresets(color:COLOR, defaultPreset:Int, val showG:Boolean = true, sho
 			receiver.drawScoreSpeed(engine, -13, y+1, g, d, 5)
 			receiver.drawMenuNum(engine, 6, y, String.format("%5d", g))
 			receiver.drawMenuNum(engine, 6, y+1, String.format("%5d", d))
-
 		}
 		if(showD) {
 			val y = y+if(showG) 2 else 0

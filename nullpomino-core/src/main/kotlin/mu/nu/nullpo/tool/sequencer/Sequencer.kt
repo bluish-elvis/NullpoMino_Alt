@@ -73,7 +73,6 @@ import javax.swing.filechooser.FileFilter
 /** NullpoMino Sequence Viewer
  * (Original from NullpoUE build 010210 by Zircean) */
 class Sequencer:JFrame(), ActionListener {
-
 	/** Config File */
 	val propConfig = CustomProperties()
 
@@ -117,7 +116,6 @@ class Sequencer:JFrame(), ActionListener {
 
 	/** Constructor */
 	init {
-
 		// Load config file
 		try {
 			FileInputStream("config/setting/swing.xml").let {
@@ -142,7 +140,6 @@ class Sequencer:JFrame(), ActionListener {
 				propLang.loadFromXML(it)
 				it.close()
 			}
-
 		} catch(_:IOException) {
 		}
 
@@ -285,7 +282,7 @@ class Sequencer:JFrame(), ActionListener {
 		JPanel().apply {
 			contentPane.add(this)
 			add(JLabel(getUIText("Option_Randomizer")))
-			vectorRandomizer = getTextFileVector("config/list/randomizer.lst")
+			vectorRandomizer = this::class.java.getResource("/randomizer.lst")?.path?.let {getTextFileVector(it)}
 			comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer)).apply {
 				preferredSize = Dimension(222, 30)
 				selectedIndex = 0
@@ -315,7 +312,6 @@ class Sequencer:JFrame(), ActionListener {
 				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
 			)
 		)
-
 	}
 
 	private fun getTextFileVector(filename:String):Vector<String> {
@@ -412,11 +408,9 @@ class Sequencer:JFrame(), ActionListener {
 					randomizerObject.next()
 				return@IntArray randomizerObject.next()
 			}
-
 		} catch(e:Exception) {
 			log.error("Randomizer class $name load failed", e)
 		}
-
 	}
 
 	fun display() {
@@ -486,7 +480,6 @@ class Sequencer:JFrame(), ActionListener {
 					)
 					return
 				}
-
 			}
 		} else if(e.actionCommand=="Reset")
 		// Reset

@@ -91,7 +91,6 @@ object RenderStaffRoll {
 		} catch(e:IOException) {
 			log.error("Failed to load Staffroll list file", e)
 		}
-
 	}
 
 	fun draw() = img.draw()

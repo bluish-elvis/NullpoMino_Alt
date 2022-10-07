@@ -4,6 +4,11 @@
  <groupId>mu.nu.nullpo</groupId>
  <artifactId>nullpomino-run</artifactId>
  <version>7.7.2022</version>
+ <properties>
+  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+ </properties>
+
  <build>
   <resources>
    <resource>

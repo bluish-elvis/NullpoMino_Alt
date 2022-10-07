@@ -85,7 +85,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
  * MARATHON Mode
  */
 open class MarathonModeBase:NetDummyMode() {
-
 	/** Current BGM*/
 	@JvmField var bgmLv = 0
 
@@ -308,7 +307,6 @@ open class MarathonModeBase:NetDummyMode() {
 		// Update rankings
 		return !owner.replayMode&&!big&&engine.ai==null&&
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goalType)!=-1
-
 	}
 	/**
 	 * Update rankings

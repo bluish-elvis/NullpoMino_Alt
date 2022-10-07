@@ -51,7 +51,6 @@ object NetUtil {
 		} catch(e:UnsupportedEncodingException) {
 			throw Error("UTF-8 Not Supported", e)
 		}
-
 	}
 
 	/** Convert String to byte[] (with UTF-8 encoding)
@@ -64,7 +63,6 @@ object NetUtil {
 		} catch(e:UnsupportedEncodingException) {
 			throw Error("UTF-8 Not Supported", e)
 		}
-
 	}
 
 	/** Encode non-URL-safe characters with using URLEncoder
@@ -77,7 +75,6 @@ object NetUtil {
 		} catch(e:UnsupportedEncodingException) {
 			throw Error("UTF-8 Not Supported", e)
 		}
-
 	}
 
 	/** Decode URL-safe characters with using URLDecoder
@@ -90,7 +87,6 @@ object NetUtil {
 		} catch(e:UnsupportedEncodingException) {
 			throw Error("UTF-8 Not Supported", e)
 		}
-
 	}
 
 	/** Convert String to byte[] with Shift_JIS encoding
@@ -98,7 +94,6 @@ object NetUtil {
 	 * @return Shift_JIS encoded byte array (byte[])
 	 */
 	fun stringToShiftJIS(s:String):ByteArray {
-
 		return try {
 			s.toByteArray(charset("Shift_JIS"))
 		} catch(e:UnsupportedEncodingException) {

@@ -40,7 +40,6 @@ import java.io.File
 
 /** 画像や音声の管理をするクラス */
 object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
-
 	override val skinDir:String by lazy {NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")}
 
 //	override val backgroundMax get() = imgPlayBG.size
@@ -126,7 +125,6 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 				NullpoMinoSlick.propConfig.getProperty("option.showbg", true),
 				NullpoMinoSlick.propConfig.getProperty("option.showlineeffect", true)
 			)
-
 		} catch(e:Throwable) {
 			log.error("Resource load failed", e)
 		}
@@ -277,7 +275,6 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 				if(!NullpoMinoSlick.propConfig.getProperty("option.bgmpreload", false)) bgm[x][y] = null to false
 			}
 		}
-
 	}
 
 }

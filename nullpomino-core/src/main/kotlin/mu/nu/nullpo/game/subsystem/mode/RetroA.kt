@@ -40,8 +40,7 @@ import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** RETRO MASTERY mode by Pineapple 20100722 - 20100808 */
-class RetroMarathon:AbstractMode() {
-
+class RetroA:AbstractMode() {
 	/** GameManager object (Manages entire game status) */
 
 	/** EventReceiver object (This receives many game events, can also be used
@@ -209,7 +208,6 @@ class RetroMarathon:AbstractMode() {
 
 			// Check for B button, when pressed this will shut down the game engine.
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -524,6 +522,5 @@ class RetroMarathon:AbstractMode() {
 
 		/** Number of ranking types */
 		private val RANKING_TYPE:Int = GAMETYPE.all.size
-
 	}
 }

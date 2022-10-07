@@ -121,7 +121,6 @@ class LSPIAIGarbageLine:LSPIAI() {
 
 		//log.error(pts);
 		return pts
-
 	}
 
 }

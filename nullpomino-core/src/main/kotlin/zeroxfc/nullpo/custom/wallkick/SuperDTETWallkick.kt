@@ -92,7 +92,6 @@ class SuperDTETWallkick:Wallkick {
 			}
 			if(!piece.checkCollision(x+x2, y+y2, rtNew, field))
 				return WallkickResult(x2, y2, rtNew)
-
 		}
 		return null
 	}
@@ -101,7 +100,9 @@ class SuperDTETWallkick:Wallkick {
 		/**
 		 * Wallkick table
 		 */
-		private val WALLKICK = arrayOf(intArrayOf(-1, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(-1, 1), intArrayOf(1, 1),
-			intArrayOf(0, -1))
+		private val WALLKICK = arrayOf(
+			intArrayOf(-1, 0), intArrayOf(1, 0), intArrayOf(0, 1), intArrayOf(-1, 1), intArrayOf(1, 1),
+			intArrayOf(0, -1)
+		)
 	}
 }

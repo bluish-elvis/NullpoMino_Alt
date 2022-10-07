@@ -32,12 +32,13 @@
  */
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
-class ImageChunk @JvmOverloads constructor(anchorType:Int = 0, anchorLocation:IntArray = intArrayOf(0, 0),
-	val sourceLocation:IntArray = intArrayOf(0, 0),
-	sourceDimensions:IntArray = intArrayOf(1, 1), scale:FloatArray = floatArrayOf(1f, 1f)) {
-	var drawLocation = intArrayOf()
+import zeroxfc.nullpo.custom.libs.AnchorPoint
+
+class ImageChunk @JvmOverloads constructor(anchorType:AnchorPoint = AnchorPoint.TL, anchorLocation:List<Int> = listOf(0, 0),
+	val sourceLocation:List<Int> = listOf(0, 0), sourceDimensions:List<Int> = listOf(1, 1), scale:List<Float> = listOf(1f, 1f)) {
+	var drawLocation = emptyList<Int>()
 		private set
-	private var anchorType:Int = anchorType
+	private var anchorType:AnchorPoint = anchorType
 		set(value) {
 			field = value
 			calibrateDrawLocation()
@@ -58,37 +59,25 @@ class ImageChunk @JvmOverloads constructor(anchorType:Int = 0, anchorLocation:In
 			calibrateDrawLocation()
 		}
 
-	private fun calibrateDrawLocation() {
-		val ddim = drawDimensions
-		drawLocation = when(anchorType) {
-			ANCHOR_POINT_TM -> intArrayOf(anchorLocation[0]-ddim[0]/2, anchorLocation[1])
-			ANCHOR_POINT_TR -> intArrayOf(anchorLocation[0]-ddim[0], anchorLocation[1])
-			ANCHOR_POINT_ML -> intArrayOf(anchorLocation[0], anchorLocation[1]-ddim[1]/2)
-			ANCHOR_POINT_MM -> intArrayOf(anchorLocation[0]-ddim[0]/2, anchorLocation[1]-ddim[1]/2)
-			ANCHOR_POINT_MR -> intArrayOf(anchorLocation[0]-ddim[0], anchorLocation[1]-ddim[1]/2)
-			ANCHOR_POINT_LL -> intArrayOf(anchorLocation[0], anchorLocation[1]-ddim[1])
-			ANCHOR_POINT_LM -> intArrayOf(anchorLocation[0]-ddim[0]/2, anchorLocation[1]-ddim[1])
-			ANCHOR_POINT_LR -> intArrayOf(anchorLocation[0]-ddim[0], anchorLocation[1]-ddim[1])
-			else -> intArrayOf(anchorLocation[0], anchorLocation[1])
-		}
-	}
-
-	val drawDimensions:IntArray
-		get() = intArrayOf((sourceDimensions[0]*scale[0]).toInt(), (sourceDimensions[1]*scale[1]).toInt())
-
-	companion object {
-		const val ANCHOR_POINT_TL = 0
-		const val ANCHOR_POINT_TM = 1
-		const val ANCHOR_POINT_TR = 2
-		const val ANCHOR_POINT_ML = 3
-		const val ANCHOR_POINT_MM = 4
-		const val ANCHOR_POINT_MR = 5
-		const val ANCHOR_POINT_LL = 6
-		const val ANCHOR_POINT_LM = 7
-		const val ANCHOR_POINT_LR = 8
-	}
+	val drawDimensions
+		get() = listOf((sourceDimensions[0]*scale[0]).toInt(), (sourceDimensions[1]*scale[1]).toInt())
 
 	init {
 		calibrateDrawLocation()
+	}
+
+	private fun calibrateDrawLocation() {
+		val ddim = drawDimensions
+		drawLocation = when(anchorType) {
+			AnchorPoint.TM -> listOf(anchorLocation[0]-ddim[0]/2, anchorLocation[1])
+			AnchorPoint.TR -> listOf(anchorLocation[0]-ddim[0], anchorLocation[1])
+			AnchorPoint.ML -> listOf(anchorLocation[0], anchorLocation[1]-ddim[1]/2)
+			AnchorPoint.MM -> listOf(anchorLocation[0]-ddim[0]/2, anchorLocation[1]-ddim[1]/2)
+			AnchorPoint.MR -> listOf(anchorLocation[0]-ddim[0], anchorLocation[1]-ddim[1]/2)
+			AnchorPoint.LL -> listOf(anchorLocation[0], anchorLocation[1]-ddim[1])
+			AnchorPoint.LM -> listOf(anchorLocation[0]-ddim[0]/2, anchorLocation[1]-ddim[1])
+			AnchorPoint.LR -> listOf(anchorLocation[0]-ddim[0], anchorLocation[1]-ddim[1])
+			else -> listOf(anchorLocation[0], anchorLocation[1])
+		}
 	}
 }

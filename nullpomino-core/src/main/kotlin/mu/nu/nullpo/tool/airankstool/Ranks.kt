@@ -56,7 +56,6 @@ class Ranks:java.io.Serializable {
 			var completionPercentage:Long = (completion.toLong()+1)*100
 			completionPercentage /= size.toLong()
 			return completionPercentage.toInt()
-
 		}
 	val errorPercentage:Float
 		get() {
@@ -72,7 +71,6 @@ class Ranks:java.io.Serializable {
 	fun completionPercentageIncrease():Boolean = 0==completion%(size/100)&&completion!=0
 
 	constructor(maxJump:Int, stackWidth:Int) {
-
 		this.maxJump = maxJump
 		base = 2*maxJump+1
 
@@ -88,11 +86,9 @@ class Ranks:java.io.Serializable {
 		rankMin = Integer.MAX_VALUE
 		rankMax = 0
 		ranks.fill(Integer.MAX_VALUE)
-
 	}
 
 	constructor(rankFrom:Ranks?) {
-
 		ranksFrom = rankFrom
 		maxJump = ranksFrom!!.maxJump
 		base = 2*maxJump+1
@@ -106,7 +102,6 @@ class Ranks:java.io.Serializable {
 		maxError = 0
 		rankMin = Integer.MAX_VALUE
 		rankMax = 0
-
 	}
 
 	fun setRanksFrom(ranksfrom:Ranks) {
@@ -116,7 +111,6 @@ class Ranks:java.io.Serializable {
 		completion = 0
 		rankMin = Integer.MAX_VALUE
 		rankMax = 0
-
 	}
 
 	fun freeRanksFrom() {
@@ -182,13 +176,11 @@ class Ranks:java.io.Serializable {
 	}
 
 	fun decode(surfaceNum:Int, surface:MutableList<Int>) {
-
 		var surfaceNumWork = surfaceNum
 		for(i in 0 until surfaceWidth) {
 			surface[i] = surfaceNumWork%base-maxJump
 			surfaceNumWork /= base
 		}
-
 	}
 
 	fun iterateSurface(surface:MutableList<Int>, surfaceDecodedWork:MutableList<Int>) {
@@ -207,7 +199,6 @@ class Ranks:java.io.Serializable {
 				surfaceDecodedWork[i] = -maxJump
 				retenue = 1
 			}
-
 	}
 
 	private fun getRank(surface:List<Int>, surfaceDecodedWork:MutableList<Int>):Int {
@@ -231,7 +222,6 @@ class Ranks:java.io.Serializable {
 		for(r in 0 until PIECES_NUM_ROTATIONS[piece]) {
 			val rank = getRankPieceRotation(surface, surfaceDecodedWork, piece, r)
 			if(rank>bestRank) bestRank = rank
-
 		}
 		return bestRank
 	}
@@ -254,7 +244,6 @@ class Ranks:java.io.Serializable {
 			if(surfaceDecodedWork[x-1]>maxJump)
 				return false
 			else if(surfaceDecodedWork[x-1]<-maxJump) return false
-
 		}
 
 		for(x1 in 0 until PIECES_WIDTHS[piece][rotation]-1) {
@@ -276,7 +265,6 @@ class Ranks:java.io.Serializable {
 	fun addToHeights(heights:MutableList<Int>, piece:Int, rotation:Int, x:Int) {
 		for(x1 in 0 until PIECES_WIDTHS[piece][rotation])
 			heights[x+x1] += PIECES_HEIGHTS[piece][rotation][x1]
-
 	}
 
 	fun heightsToSurface(heights:List<Int>) = List(stackWidth-1) {i ->
@@ -284,12 +272,10 @@ class Ranks:java.io.Serializable {
 	}
 
 	private fun getRankPieceRotation(surface:List<Int>, surfaceDecodedWork:MutableList<Int>, piece:Int, rotation:Int):Int {
-
 		var bestRank = 0
 		if(piece==Piece.PIECE_I) {
 			val rank = ranksFrom!!.getRankValue(encode(surface))
 			if(rank>bestRank) bestRank = rank
-
 		}
 
 		for(x in 0 until stackWidth-(PIECES_WIDTHS[piece][rotation]-1)) {
@@ -302,16 +288,13 @@ class Ranks:java.io.Serializable {
 
 					val rank = ranksFrom!!.getRankValue(newSurface)
 					if(rank>bestRank) bestRank = rank
-
 				}
-
 			}
 			//Reinit work surface
 			if(x>0) surfaceDecodedWork[x-1] = surface[x-1]
 			System.arraycopy(surface, x, surfaceDecodedWork, x, PIECES_WIDTHS[piece][rotation]-1)
 			if(x<surfaceWidth-(PIECES_WIDTHS[piece][rotation]-1))
 				surfaceDecodedWork[x+PIECES_WIDTHS[piece][rotation]-1] = surface[x+PIECES_WIDTHS[piece][rotation]-1]
-
 		}
 
 		return bestRank

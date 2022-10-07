@@ -33,7 +33,9 @@
 
 package mu.nu.nullpo.gui.common.fx.particles
 
+import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.fx.Effect
 import mu.nu.nullpo.gui.common.libs.Vector
 import zeroxfc.nullpo.custom.libs.Interpolation.lerp
 import kotlin.math.PI
@@ -51,16 +53,14 @@ import kotlin.random.Random
  * @param num    Number of particles / particle groups.
  */
 class Fireworks @JvmOverloads constructor(
-	var x:Int, var y:Int, red:Int, green:Int, blue:Int, alpha:Int, variance:Int, gravity:Float = GRAVITY,
+	override var x:Float, override var y:Float, red:Int, green:Int, blue:Int, alpha:Int, variance:Int, gravity:Float = GRAVITY,
 	friction:Float = FRICTION, minLifeTime:Int = DEF_MIN_LIFE, maxLifeTime:Int = DEF_MAX_LIFE, maxVelocity:Float = DEF_MAX_VEL,
-	/** 120-240 FireSparks * [num] */
-	num:Int = 1,
+	/** FireSparks + [num] * random 1x~2x */
+	num:IntRange = 64..128,
 	/**Randomizer*/
 	randomizer:Random = Random.Default
-):ParticleEmitterBase() {
-	override val particles = MutableList((randomizer.nextInt(64)+64)*num) {
-
-		val origin = Vector(x, y)
+):Effect {
+	val particles = List((num.last-num.start).let {if(it>0) randomizer.nextInt(it+1) else 0}+num.start) {
 
 		val ured:Int = red+(2*randomizer.nextFloat()*variance-variance).toInt()
 		val ugreen:Int = green+(2*randomizer.nextFloat()*variance-variance).toInt()
@@ -71,19 +71,19 @@ class Fireworks @JvmOverloads constructor(
 		val particle = Particle(
 			Particle.ParticleShape.ASprite,
 			lerp(minLifeTime, maxLifeTime, randomizer.nextFloat()),
-			origin, v, Vector(0f, gravity), friction, s, s, 1f, ured, ugreen, ublue, ualpha,
+			x, y, v, Vector(0f, gravity), friction, s, 1f, ured, ugreen, ublue, ualpha,
 			ured*2/3, ugreen*2/3, ublue*2/3, 0
 		)
 		val v2 = Vector(maxVelocity*sin(randomizer.nextFloat()*PI.toFloat()), (randomizer.nextDouble(2*PI)).toFloat(), true)
 		val particle2 = Particle(
 			Particle.ParticleShape.ASprite,
 			lerp(minLifeTime, maxLifeTime, randomizer.nextFloat()),
-			origin, v2, Vector(0f, gravity), friction, 1, 1, 1f,
+			x, y, v2, Vector(0f, gravity), friction, 1, 1f,
 			lerp(ured, 255, .9f), lerp(ugreen, 255, .9f), lerp(ublue, 255, .9f),
 			lerp(ualpha, 255, .9f), ured*4/5, ugreen*4/5, ublue*4/5, 0
 		)
 		listOf(particle, particle2)
-	}.flatten().toMutableList()
+	}.flatten()
 
 	private var ticks = 0
 	private val cColor = Triple(
@@ -91,7 +91,6 @@ class Fireworks @JvmOverloads constructor(
 	)
 	private val cAlpha = lerp(alpha, 255, .5f)/255f
 	override fun draw(i:Int, r:AbstractRenderer) {
-		super.draw(i, r)
 		(100-ticks*10).let {s ->
 			if(s>0)
 				r.drawBlendAdd {
@@ -104,7 +103,7 @@ class Fireworks @JvmOverloads constructor(
 
 	override fun update(r:AbstractRenderer):Boolean {
 		++ticks
-		return super.update(r)&&ticks>=10
+		return ticks>=10
 	}
 
 	companion object {
@@ -116,5 +115,28 @@ class Fireworks @JvmOverloads constructor(
 		const val DEF_MAX_LIFE = 72
 		private const val FRICTION = 0.95f
 		private const val GRAVITY = FRICTION/60
+
+		/**
+		 * Default color set shared by all emitters.<br></br>
+		 * In order: Gray, Red, Orange, Yellow, Green, Cyan, Blue, Purple<br></br>
+		 * Parameters: Red, Green, Blue, Alpha, Variance
+		 */
+		val DEF_COLORS = listOf(
+			listOf(240, 240, 240, 235, 20), listOf(240, 30, 0, 235, 20),
+			listOf(240, 130, 0, 235, 20), listOf(240, 240, 0, 235, 20), listOf(30, 240, 0, 235, 20),
+			listOf(0, 240, 240, 235, 20), listOf(0, 30, 240, 235, 20), listOf(210, 0, 210, 235, 20)
+		)
+
+		fun colorBy(c:EventReceiver.COLOR):List<Int> = DEF_COLORS[when(c) {
+			EventReceiver.COLOR.RED -> 1
+			EventReceiver.COLOR.ORANGE -> 2
+			EventReceiver.COLOR.YELLOW -> 3
+			EventReceiver.COLOR.GREEN -> 4
+			EventReceiver.COLOR.CYAN -> 5
+			EventReceiver.COLOR.BLUE, EventReceiver.COLOR.COBALT -> 6
+			EventReceiver.COLOR.PURPLE, EventReceiver.COLOR.PINK -> 7
+			else -> 0
+		}]
+
 	}
 }

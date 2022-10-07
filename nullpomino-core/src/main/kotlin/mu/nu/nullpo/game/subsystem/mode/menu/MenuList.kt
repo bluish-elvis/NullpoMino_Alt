@@ -55,7 +55,7 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 	}
 
 	fun drawMenu(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int = menuY, cur:Int = menuCursor) =
-		drawMenu(engine, playerID, receiver, y, page = locs[cur]/engine.field.height)
+		drawMenu(engine, playerID, receiver, y, page = locs.getOrElse(cur) {0}/engine.field.height)
 
 	fun drawMenu(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int = menuY, page:Int, offset:Int = 0) {
 		var menuY = y
@@ -63,7 +63,7 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 		items.slice(range).forEachIndexed {i, it ->
 			it.draw(
 				engine, playerID, receiver, menuY,
-				if(menus[menuCursor].first!=i||engine.owner.replayMode) -1 else menus[menuCursor].second
+				if(engine.owner.replayMode||menus[menuCursor].first!=i) -1 else menus[menuCursor].second
 			)
 			menuY += it.showHeight
 			statcMenu += if(it is SpeedPresets) (if(it.showG) 2 else 0+if(it.showD) 5 else 0) else 1

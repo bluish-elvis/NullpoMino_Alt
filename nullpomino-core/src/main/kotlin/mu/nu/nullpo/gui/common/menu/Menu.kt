@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,15 +37,10 @@ open class Menu @JvmOverloads constructor(
 	private val menuItems:Vector<MenuItem> = Vector()) {
 	var selectedIndex = 0
 
-	init {
-		selectedIndex = 0
-	}
-
 	constructor(title:String, menuItems:Vector<MenuItem>):this(title, "", menuItems)
 
 	fun addMenuItem(menuItem:MenuItem) {
 		menuItems.add(menuItem)
-
 	}
 
 	fun incIndex() {
@@ -55,5 +50,4 @@ open class Menu @JvmOverloads constructor(
 	fun decIndex() {
 		if(selectedIndex>=1) selectedIndex--
 	}
-
 }

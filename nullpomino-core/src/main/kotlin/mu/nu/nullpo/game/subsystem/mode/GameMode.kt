@@ -43,171 +43,119 @@ typealias rankMapChild = MutableList<Comparable<Any>>
 
 /** Game mode interface */
 interface GameMode {
-
 	/** @return Mode identifier */
 	val id:String
 	/**  @return Mode name*/
 	val name:String
-
 	/**  @return Maximum number of players*/
 	val players:Int
-
 	/** @return Game style of this mode (0:Tetromino, 1:Avalanche, 2:Physician, 3:SPF)*/
 	val gameStyle:GameStyle
-
 	/** @return Game genre of this mode
 	 *  (-1:Retro/Puzzle, 0: Generic/Guideline,
-	 *  1: Various Unique, 2:Rush Trial, 3:Grand 20G Challenge)
-	 */
+	 *  1: Various Unique, 2:Rush Trial, 3:Grand 20G Challenge)*/
 	val gameIntensity:Int
-
 	/**  @return true if this is net-play only mode.*/
 	val isOnlineMode:Boolean
-
 	/**  @return true if this is a multiplayer mode.*/
 	val isVSMode:Boolean
 
 	/** State of Setting menu */
 	val menu:MenuList
-
 	/** Mapping of Ranking Properties
 	 * get()= [AbstractMode.rankMapOf] (List<String to Score>)
 	 * @sample Marathon.rankMapOf
 	 */
 	val rankMap:rankMapType
-
 	/** Used by [loadRankingPlayer], [saveRankingPlayer]
 	 * get()= [AbstractMode.rankMapOf] (List<String to Score>)
 	 * @sample zeroxfc.nullpo.custom.modes.MissionMode.rankPersMap  */
 	val rankPersMap:rankMapType
+
 	/** Initialization of game mode. Executed before the game screen appears.
 	 * @param manager GameManager that owns this mode
 	 */
 	fun modeInit(manager:GameManager)
-
 	/** Initialization for each player. */
 	fun playerInit(engine:GameEngine)
-
 	/** Executed after Ready->Go, before the first piece appears. */
 	fun startGame(engine:GameEngine)
-
 	/** Executed at the start of each frame.*/
 	fun onFirst(engine:GameEngine)
-
 	/** Executed at the end of each frame. You can update your own timers here.*/
 	fun onLast(engine:GameEngine)
-
 	/** Settings screen.
-	 * @return true if you don't want to start the game yet. false if settings are done.
-	 */
+	 * @return true if you don't want to start the game yet. false if settings are done.*/
 	fun onSetting(engine:GameEngine):Boolean
-
 	/** Profile screen.
-	 * @return true if you don't want to start the game yet. false if settings are done.
-	 */
+	 * @return true if you don't want to start the game yet. false if settings are done.*/
 	fun onProfile(engine:GameEngine):Boolean
 	/** Ready->Go screen.
-	 * @return true if you override everything of this screen (skips default behavior)
-	 */
+	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onReady(engine:GameEngine):Boolean
-
 	/** Piece movement screen.
 	 * This is where the player can move/spin/drop the current piece.
-	 * @return true if you override everything of this screen (skips default behavior)
-	 */
+	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onMove(engine:GameEngine):Boolean
-
 	/** "Lock flash" screen. Certain rules may skip this screen.
-	 * @return true if you override everything of this screen (skips default behavior)
-	 */
+	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onLockFlash(engine:GameEngine):Boolean
-
 	/** During line clear.
-	 * @return true if you override everything of this screen (skips default behavior)
-	 */
+	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onLineClear(engine:GameEngine):Boolean
-
 	/** During ARE.
-	 * @return true if you override everything of this screen (skips default behavior)
-	 */
+	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onARE(engine:GameEngine):Boolean
-
 	/** During ending-start sequence.
-	 * @return true if you override everything of this screen (skips default behavior)
-	 */
+	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onEndingStart(engine:GameEngine):Boolean
-
 	/** "Custom" screen. Any game mode can use this screen freely.
-	 * @return This is ignored.
-	 */
+	 * @return This is ignored.*/
 	fun onCustom(engine:GameEngine):Boolean
-
 	/** "Excellent!" screen.
-	 * @return true if you override everything of this screen (skips default behavior)
-	 */
+	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onExcellent(engine:GameEngine):Boolean
-
 	/** "Game Over" screen.
-	 * @return true if you override everything of this screen (skips default behavior)
-	 */
+	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onGameOver(engine:GameEngine):Boolean
-
 	/** End-of-game results screen.
-	 * @return true if you override everything of this screen (skips default behavior)
-	 */
+	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onResult(engine:GameEngine):Boolean
-
 	/** Field editor screen.
-	 * @return true if you override everything of this screen (skips default behavior)
-	 */
+	 * @return true if you override everything of this screen (skips default behavior)*/
 	fun onFieldEdit(engine:GameEngine):Boolean
 
 	/** Executed at the start of each frame.*/
 	fun renderFirst(engine:GameEngine)
-
 	/** Executed at the end of each frame.
 	 *  You can render HUD here.*/
 	fun renderLast(engine:GameEngine)
-
 	/** Render settings screen.*/
 	fun renderSetting(engine:GameEngine)
-
 	/** Render profile screen.*/
 	fun renderProfile(engine:GameEngine)
-
 	/** Render Ready->Go screen.*/
 	fun renderReady(engine:GameEngine)
-
 	/** Render piece movement screen.*/
 	fun renderMove(engine:GameEngine)
-
 	/** Render "Lock flash" screen.*/
 	fun renderLockFlash(engine:GameEngine)
-
 	/** Render line clear screen.*/
 	fun renderLineClear(engine:GameEngine)
-
 	/** Render ARE screen.*/
 	fun renderARE(engine:GameEngine)
-
 	/** Render "ending start sequence" screen.*/
 	fun renderEndingStart(engine:GameEngine)
-
 	/** Render "Custom" screen. */
 	fun renderCustom(engine:GameEngine)
-
 	/** Render "Excellent!" screen. */
 	fun renderExcellent(engine:GameEngine)
-
 	/** Render "Game Over" screen. */
 	fun renderGameOver(engine:GameEngine)
-
 	/** Render results screen. */
 	fun renderResult(engine:GameEngine)
-
 	/** Render field editor screen. */
 	fun renderFieldEdit(engine:GameEngine)
-
 	/** Render player input. */
 	fun renderInput(engine:GameEngine)
 
@@ -249,7 +197,6 @@ interface GameMode {
 	fun lineClearEnd(engine:GameEngine):Boolean
 
 	fun loadSetting(prop:CustomProperties, ruleName:String = "", playerID:Int = -1)
-
 	fun loadSetting(prop:CustomProperties, engine:GameEngine) =
 		loadSetting(prop, engine.ruleOpt.strRuleName, engine.playerID)
 
@@ -262,7 +209,6 @@ interface GameMode {
 	 * @param ruleName Rule name
 	 */
 	fun loadRanking(prop:CustomProperties)
-
 	/** Read rankings from [prof].
 	 *  This is used in playerInit or from netOnJoin.
 	 * @param ruleName Rule name
@@ -270,7 +216,6 @@ interface GameMode {
 	fun loadRankingPlayer(prof:ProfileProperties)
 
 	fun saveSetting(prop:CustomProperties, ruleName:String = "", playerID:Int = -1)
-
 	fun saveSetting(prop:CustomProperties, engine:GameEngine) =
 		saveSetting(prop, engine.ruleOpt.strRuleName, engine.playerID)
 
@@ -279,7 +224,6 @@ interface GameMode {
 
 	/** Called when saving replay to [prop] */
 	fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean
-
 	/** Called when a replay file is loaded from [prop] */
 	fun loadReplay(engine:GameEngine, prop:CustomProperties)
 
@@ -287,12 +231,10 @@ interface GameMode {
 	 * @param obj Any object (Currently NetLobbyFrame)
 	 */
 	fun netplayInit(obj:NetLobbyFrame)
-
 	/** When the mode unloads during netplay (Called when mode change happens)
 	 * @param obj Any object (Currently NetLobbyFrame)
 	 */
 	fun netplayUnload(obj:NetLobbyFrame)
-
 	/** Called when retry key is pressed during netplay */
 	fun netplayOnRetryKey(engine:GameEngine)
 }

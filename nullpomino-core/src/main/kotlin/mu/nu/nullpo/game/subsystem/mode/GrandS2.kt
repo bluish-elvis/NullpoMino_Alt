@@ -44,8 +44,7 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** SPEED MANIA 2 Mode */
-class GrandLightning:AbstractMode() {
-
+class GrandS2:AbstractMode() {
 	/** Default section time */
 	// private static final int DEFAULT_SECTION_TIME = 2520;
 
@@ -81,9 +80,6 @@ class GrandLightning:AbstractMode() {
 
 	/** 裏段位 */
 	private var secretGrade = 0
-
-	/** Current BGM */
-	private var bgmLv = 0
 
 	/** Section Time */
 	private var sectionTime = Array(SECTION_MAX) {0}
@@ -188,7 +184,6 @@ class GrandLightning:AbstractMode() {
 		garbageCount = 0
 		regretdispframe = 0
 		secretGrade = 0
-		bgmLv = 0
 		sectionTime.fill(0)
 		sectionIsNewRecord = BooleanArray(SECTION_MAX)
 		sectionscomp = 0
@@ -198,15 +193,6 @@ class GrandLightning:AbstractMode() {
 		medalST = 0
 		medalSK = 0
 		medalCO = 0
-		isShowBestSectionTime = false
-		startLevel = 0
-		secAlert = false
-		big = false
-		qualify = DEFAULT_TORIKAN
-		showST = false
-		gradedisp = false
-		decoration = 0
-		dectemp = 0
 
 		rankingRank = -1
 		rankingGrade.fill(0)
@@ -262,13 +248,8 @@ class GrandLightning:AbstractMode() {
 	}*/
 
 	/** Set BGM at start of game
-	 * @param engine GameEngine
 	 */
-	private fun setStartBgmlv(engine:GameEngine) {
-		bgmLv = tableBGMChange.count {engine.statistics.level>=it}
-		while(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv])
-			bgmLv++
-	}
+	private fun calcBgmLv(lv:Int) = tableBGMChange.count {lv>=it}
 
 	/** Update falling speed
 	 * @param engine GameEngine
@@ -287,13 +268,9 @@ class GrandLightning:AbstractMode() {
 	/** Update average section time */
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
-			var temp = 0
-			for(i in startLevel until startLevel+sectionscomp)
-				if(i>=0&&i<sectionTime.size) temp += sectionTime[i]
-			sectionavgtime = temp/sectionscomp
-		} else
-			sectionavgtime = 0
-
+			val i = minOf(sectionscomp+startLevel, sectionTime.size)
+			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
+		} else sectionavgtime = 0
 	}
 
 	/** ST medal check
@@ -371,7 +348,6 @@ class GrandLightning:AbstractMode() {
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -393,11 +369,10 @@ class GrandLightning:AbstractMode() {
 
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
-		engine.statistics.level = startLevel*100
+		val lv = startLevel*100
+		engine.statistics.level = lv
 
-		nextseclv = engine.statistics.level+100
-		if(engine.statistics.level<0) nextseclv = 100
-		if(engine.statistics.level>=1300) nextseclv = 1300
+		nextseclv = maxOf(100, minOf(1300, lv+100))
 		if(engine.statistics.level>=1000) engine.bone = true
 
 		owner.bgMan.bg = 20+engine.statistics.level/100
@@ -405,8 +380,7 @@ class GrandLightning:AbstractMode() {
 		engine.big = big
 
 		setSpeed(engine)
-		setStartBgmlv(engine)
-		owner.musMan.bgm = tableBGM[bgmLv]
+		owner.musMan.bgm = BGM.GrandTS(calcBgmLv(lv))
 	}
 
 	/* Render score */
@@ -528,7 +502,6 @@ class GrandLightning:AbstractMode() {
 							engine, x-1, y+1
 								+i, strSectionTime, sectionIsNewRecord[i], scale
 						)
-
 					}
 
 				receiver.drawScoreFont(engine, x2, 17, "AVERAGE", COLOR.RED)
@@ -536,7 +509,6 @@ class GrandLightning:AbstractMode() {
 					engine, x2, 18, (engine.statistics.time/(sectionscomp+(engine.ending==0).toInt())).toTimeStr,
 					2f
 				)
-
 			}
 		}
 	}
@@ -546,11 +518,7 @@ class GrandLightning:AbstractMode() {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
 			// Level up
-			if(engine.statistics.level<nextseclv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
+			levelUp(engine, (engine.statistics.level<nextseclv-1).toInt())
 		}
 		if(engine.ending==0&&engine.statc[0]>0&&(version>=1||!engine.holdDisable))
 			lvupflag = false
@@ -584,11 +552,7 @@ class GrandLightning:AbstractMode() {
 	override fun onARE(engine:GameEngine):Boolean {
 		// 最後の frame
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
-			if(engine.statistics.level<nextseclv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
+			levelUp(engine, (engine.statistics.level<nextseclv-1).toInt())
 			lvupflag = true
 		}
 
@@ -596,15 +560,25 @@ class GrandLightning:AbstractMode() {
 	}
 
 	/** levelが上がったときの共通処理 */
-	private fun levelUp(engine:GameEngine) {
+	private fun levelUp(engine:GameEngine, lu:Int) {
+		val lb = engine.statistics.level
+		engine.statistics.level += lu
+		val lA = engine.statistics.level
 		// Meter
-		engine.meterValue = engine.statistics.level%100/99f
+		engine.meterValue = lA%100/99f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		// 速度変更
 		setSpeed(engine)
 
+		if(lu<=0) return
+		if(lA==nextseclv-1&&secAlert) engine.playSE("levelstop")
 		// BGM fadeout
-		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadesw = true
+		if(tableBGMFadeout.any {it in lb..lA}) owner.musMan.fadesw = true
+		// BGM切り替え
+		if(tableBGMChange.any {it in lb..lA}) {
+			owner.musMan.fadesw = false
+			owner.musMan.bgm = BGM.GrandTS(calcBgmLv(lA))
+		}
 	}
 
 	/* Calculate score */
@@ -635,7 +609,6 @@ class GrandLightning:AbstractMode() {
 
 			// AC medal
 			if(engine.field.isEmpty) {
-
 				dectemp += li*25
 				if(li==3) dectemp += 25
 				if(li==4) dectemp += 150
@@ -677,15 +650,7 @@ class GrandLightning:AbstractMode() {
 
 			// Level up
 			val levelb = engine.statistics.level
-			val levelplus = when {
-				li==3 -> 4
-				li>=4 -> 6
-				else -> li
-			}
-
-			engine.statistics.level += levelplus
-
-			levelUp(engine)
+			levelUp(engine, li.let {it+maxOf(0, it-2)})
 
 			if(engine.statistics.level>=1300) {
 				// Ending
@@ -752,13 +717,6 @@ class GrandLightning:AbstractMode() {
 				owner.bgMan.fadesw = true
 				owner.bgMan.fadecount = 0
 				owner.bgMan.fadebg = 20+nextseclv/100
-
-				// BGM切り替え
-				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
-					bgmLv++
-					owner.musMan.fadesw = false
-					owner.musMan.bgm = tableBGM[bgmLv]
-				}
 
 				// Section Timeを記録
 				sectionlasttime = sectionTime[levelb/100]
@@ -835,7 +793,6 @@ class GrandLightning:AbstractMode() {
 				-0x10000
 			else
 				-0x1
-
 	}
 
 	/* Called at game over */
@@ -912,7 +869,6 @@ class GrandLightning:AbstractMode() {
 
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine):Boolean {
-
 		owner.musMan.fadesw = false
 		owner.musMan.bgm = when {
 			engine.ending==0 -> BGM.Result(0)
@@ -1004,7 +960,6 @@ class GrandLightning:AbstractMode() {
 	private fun updateBestSectionTime() {
 		for(i in 0 until SECTION_MAX)
 			if(sectionIsNewRecord[i]) bestSectionTime[i] = sectionTime[i]
-
 	}
 
 	companion object {

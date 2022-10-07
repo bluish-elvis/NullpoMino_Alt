@@ -44,7 +44,6 @@ import kotlin.random.Random
 
 /** AVALANCHE VS DUMMY Mode */
 abstract class AvalancheVSDummyMode:AbstractMode() {
-
 	/** Rule settings for countering ojama not yet dropped */
 	protected var ojamaCounterMode = IntArray(MAX_PLAYERS)
 

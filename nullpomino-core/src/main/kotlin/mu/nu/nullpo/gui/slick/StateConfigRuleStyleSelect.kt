@@ -38,11 +38,11 @@ import org.newdawn.slick.state.StateBasedGame
 
 /** Style select menu */
 class StateConfigRuleStyleSelect:DummyMenuChooseState() {
-
 	/** Player number */
 	var player = 0
 
 	override val numChoice = GameEngine.MAX_GAMESTYLE-1
+
 	init {
 		minChoiceY = 3
 	}

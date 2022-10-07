@@ -34,7 +34,6 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 
 data class ScoreEvent(val piece:Piece? = null, val lines:Int = 0, val b2b:Int = -1,
 	val combo:Int = -1, val twistType:Twister? = null, val split:Boolean = false) {
-
 	/** True if Twister */
 	val twist:Boolean get() = twistType!=null
 	/** True if Twister Mini */
@@ -71,7 +70,6 @@ data class ScoreEvent(val piece:Piece? = null, val lines:Int = 0, val b2b:Int = 
 						Twister.all.find {it.name==i[4]}, i[5]=="1"
 					)
 				}
-
 	}
 
 	enum class Twister {

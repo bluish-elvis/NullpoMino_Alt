@@ -39,7 +39,6 @@ import org.newdawn.slick.state.StateBasedGame
 
 /** Joystick button設定画面のステート */
 class StateConfigJoystickButton:BasicGameState() {
-
 	/** Player number */
 	var player = 0
 
@@ -57,7 +56,7 @@ class StateConfigJoystickButton:BasicGameState() {
 	private var frame = 0
 
 	/** Button settings */
-	private var buttonmap:Array<IntArray> = Array(GameKeyDummy.MAX_BUTTON) {IntArray(MAX_KEYS){-1} }
+	private var buttonmap:Array<IntArray> = Array(GameKeyDummy.MAX_BUTTON) {IntArray(MAX_KEYS) {-1}}
 
 	/* Fetch this state's ID */
 	override fun getID():Int = ID

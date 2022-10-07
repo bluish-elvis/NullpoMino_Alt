@@ -131,7 +131,6 @@ class Collapse:AbstractMode() {
 			else -> -1
 		}
 		engine.frameColor = GameEngine.FRAME_COLOR_BRONZE
-
 	}
 
 	private fun resetSTextArr() {
@@ -294,15 +293,15 @@ class Collapse:AbstractMode() {
 	}
 
 	override fun onCustom(engine:GameEngine):Boolean {
-//		if (engine.ctrl.isPush(Controller.BUTTON_D)) {
-//			engine.resetStatc();
-//			engine.gameEnded();
-//
-//			engine.stat = GameEngine.Status.EXCELLENT;
-//			engine.ending = 1;
-//			engine.rainbowAnimate = false;
-//			return false;
-//		}  // DEBUG CODE.
+		/*		if (engine.ctrl.isPush(Controller.BUTTON_D)) {
+		//			engine.resetStatc();
+		//			engine.gameEnded();
+		//
+		//			engine.stat = GameEngine.Status.EXCELLENT;
+		//			engine.ending = 1;
+		//			engine.rainbowAnimate = false;
+		//			return false;
+				}  // DEBUG CODE.*/
 		return if(engine.gameActive) {
 			parseMouse(engine)
 			if(!engine.rainbowAnimate) engine.rainbowAnimate = true
@@ -537,7 +536,6 @@ class Collapse:AbstractMode() {
 				val y = 15-f/3
 				for(x in 0 until engine.field.width)
 					engine.field.delBlock(x, y)?.let {receiver.blockBreak(engine, x, y, it)}
-
 			}
 			if(engine.statc[0]==120+16*3) engine.playSE("ready")
 		} else {
@@ -735,7 +733,6 @@ class Collapse:AbstractMode() {
 						blk.darkness = 0.3f
 						blk.elapsedFrames = -1
 					}
-
 				}
 				engine.statc[0]++
 			} else if(engine.statc[0]==engine.field.height+1) {
@@ -790,7 +787,6 @@ class Collapse:AbstractMode() {
 	}
 
 	private fun setNewLowerScore(engine:GameEngine) {
-
 	}
 
 	override fun onLast(engine:GameEngine) {
@@ -930,10 +926,10 @@ class Collapse:AbstractMode() {
 //			receiver.drawScoreFont(engine, playerID, 0, 18, "FIELD CELL CLICKED", EventReceiver.COLOR.BLUE);
 //			receiver.drawScoreFont(engine, playerID, 0, 19, "(" + fieldX + ", " + fieldY + ")");
 			if(localState==LOCALSTATE_INGAME) {
-				val fx:Int = receiver.fieldX(engine)+4
-				val fy:Int = receiver.fieldY(engine)+52+17*16
+				val fx = receiver.fieldX(engine)+4
+				val fy = receiver.fieldY(engine)+52+17*16f
 				nextBlocks.forEachIndexed {i, it ->
-					receiver.drawBlock(fx+i*16, fy, it.drawColor, engine.skin, it.getAttribute(Block.ATTRIBUTE.BONE), 0f, 1f, 1f)
+					receiver.drawBlock(fx+i*16f, fy, it)
 				}
 				val s = "${(100000*1.025.pow(engine.statistics.level)).toInt()}"
 				val l = s.length
@@ -1081,8 +1077,8 @@ class Collapse:AbstractMode() {
 	/**
 	 * Checks if a coordinate is within a certain radius.
 	 *
-	 * @param x      X-coordinate of circle's centre.
-	 * @param y      Y-coordinate of circle's centre.
+	 * @param x      X-coordinate of circle's center.
+	 * @param y      Y-coordinate of circle's center.
 	 * @param xTest  X-coordinate of test square.
 	 * @param yTest  Y-coordinate of test square.
 	 * @param radius The testing radius
@@ -1107,7 +1103,7 @@ class Collapse:AbstractMode() {
 		// Field Dimensions: 12 x 16; 1 Hidden Height
 		//
 		// DONE: Create a weighted Randomizer for the blocks.
-		// DONE: Do the centre-direction column gravity thing... somehow.
+		// DONE: Do the center-direction column gravity thing... somehow.
 		// DONE: Implement mouse control if you can.
 		// DONE: Implement flying score popups.
 		private val tableColors = arrayOf(

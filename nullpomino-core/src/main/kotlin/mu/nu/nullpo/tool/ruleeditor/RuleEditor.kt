@@ -84,7 +84,6 @@ import javax.swing.filechooser.FileFilter
 
 /** ルールエディター */
 class RuleEditor:JFrame, ActionListener {
-
 	/** Swing版のSave settings用Property file */
 	val propConfig = CustomProperties()
 
@@ -446,7 +445,6 @@ class RuleEditor:JFrame, ActionListener {
 
 	/** Constructor */
 	constructor():super() {
-
 		init()
 		readRuleToUI(RuleOptions())
 
@@ -457,7 +455,6 @@ class RuleEditor:JFrame, ActionListener {
 	 * @param filename Filename (空文字列かnullにするとパラメータなしConstructorと同じ動作）
 	 */
 	constructor(filename:String?):super() {
-
 		init()
 
 		var ruleOpt = RuleOptions()
@@ -648,7 +645,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		pRandomizer.add(JLabel(getUIText("Basic_Randomizer")))
 
-		vectorRandomizer = getTextFileVector("config/list/randomizer.lst")
+		vectorRandomizer = this::class.java.getResource("/randomizer.lst")?.path?.let {getTextFileVector(it)}
 		comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer)).apply {
 			preferredSize = Dimension(200, 30)
 			pRandomizer.add(this)
@@ -1218,7 +1215,6 @@ class RuleEditor:JFrame, ActionListener {
 				layout = BoxLayout(this, BoxLayout.Y_AXIS)
 				panelPieceColor.add(this)
 			}
-
 		}
 		val bResetColor = listOf(JButton(getUIText("Basic_Reset")+" SRS").apply {
 			setMnemonic('S')
@@ -1288,7 +1284,6 @@ class RuleEditor:JFrame, ActionListener {
 				pPieceDirection[it].add(this)
 			}
 		}
-
 	}
 
 	/** Block画像を読み込み */
@@ -1304,7 +1299,6 @@ class RuleEditor:JFrame, ActionListener {
 			val isSticky = imgBlock!=null&&imgBlock.width>=400&&imgBlock.height>=304
 
 			BufferedImage(144, 16, BufferedImage.TYPE_INT_RGB).apply {
-
 				if(isSticky) for(j in 0..8)
 					graphics.drawImage(imgBlock, j*16, 0, j*16+16, 16, 0, j*16, 16, j*16+16, null)
 				else
@@ -1708,13 +1702,12 @@ class RuleEditor:JFrame, ActionListener {
 
 				if(c.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
 					val file = c.selectedFile
-					var ruleOpt = RuleOptions()
 
 					strNowFile = file.path
 					title = "${getUIText("Title_RuleEditor")}:$strNowFile"
 
 					try {
-						ruleOpt = load(file.path)
+						readRuleToUI(load(file.path))
 					} catch(e2:IOException) {
 						log.error("Failed to load rule data from ${strNowFile!!}", e2)
 						JOptionPane.showMessageDialog(
@@ -1723,8 +1716,6 @@ class RuleEditor:JFrame, ActionListener {
 						)
 						return
 					}
-
-					readRuleToUI(ruleOpt)
 				}
 			}
 			"Save" -> {
@@ -1738,7 +1729,6 @@ class RuleEditor:JFrame, ActionListener {
 							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
 						)
 					}
-
 				} else {
 					// Nameを付けて保存
 					c = JFileChooser("${System.getProperty("user.dir")}/config/rule")
@@ -1765,7 +1755,7 @@ class RuleEditor:JFrame, ActionListener {
 					}
 				}
 			}
-			"Save", "SaveAs" -> {
+			"SaveAs" -> {
 				c = JFileChooser("${System.getProperty("user.dir")}/config/rule")
 				c.fileFilter = FileFilterRUL()
 				if(c.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
@@ -1865,7 +1855,6 @@ class RuleEditor:JFrame, ActionListener {
 
 			return this
 		}
-
 	}
 
 	companion object {

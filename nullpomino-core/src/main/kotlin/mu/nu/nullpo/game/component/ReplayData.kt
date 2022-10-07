@@ -33,7 +33,6 @@ import java.io.Serializable
 
 /** リプレイで使用する button input dataのクラス */
 class ReplayData:Serializable {
-
 	/** Button input data */
 	var inputDataArray:ArrayList<Int> = ArrayList(DEFAULT_ARRAYLIST_SIZE)
 
@@ -60,7 +59,6 @@ class ReplayData:Serializable {
 		r.inputDataArray.forEachIndexed {i, it ->
 			inputDataArray.add(i, it)
 		}
-
 	}
 
 	/** button input状況を設定

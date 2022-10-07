@@ -36,13 +36,16 @@
 
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
-import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
+import mu.nu.nullpo.gui.common.AbstractBG
+import mu.nu.nullpo.gui.common.ResourceImage
+import zeroxfc.nullpo.custom.libs.AnchorPoint
 import kotlin.math.PI
 import kotlin.math.sin
 
-class BackgroundInterlaceVertical:AnimatedBackgroundHook {
-	private var chunks:Array<ImageChunk> = emptyArray()
+class BackgroundInterlaceVertical<T>(img:ResourceImage<T>, columnWidth:Int = DEFAULT_COLUMN_WIDTH,
+	pulseTimerFrames:Int = DEFAULT_TIMER_MAX, pulseBaseScale:Float = BASE_SCALE, pulseScaleVariance:Float = SCALE_VARIANCE,
+	upOdd:Boolean = UP_ODD_DEFAULT, reverse:Boolean = false):AbstractBG<T>(img) {
+	private var chunks:List<ImageChunk> = emptyList()
 	private var pulseTimer = 0
 	private var pulseTimerMax = 0
 	private var columnWidth = 0
@@ -51,20 +54,8 @@ class BackgroundInterlaceVertical:AnimatedBackgroundHook {
 	private var upOdd = false
 	private var reverse = false
 
-	constructor(bgNumber:Int, columnWidth:Int, pulseTimerFrames:Int, pulseBaseScale:Float, pulseScaleVariance:Float,
-		upOdd:Boolean, reverse:Boolean) {
-		var bgNumber = bgNumber
-		if(bgNumber<0||bgNumber>19) bgNumber = 0
-		customHolder.loadImage("res/graphics/back$bgNumber.png", imageName)
+	init {
 		setup(columnWidth, pulseTimerFrames, pulseBaseScale, pulseScaleVariance, upOdd, reverse)
-		log.debug("Non-custom vertical interlace background ($bgNumber) created.")
-	}
-
-	constructor(filePath:String, columnWidth:Int, pulseTimerFrames:Int, pulseBaseScale:Float, pulseScaleVariance:Float,
-		upOdd:Boolean, reverse:Boolean) {
-		customHolder.loadImage(filePath, imageName)
-		setup(columnWidth, pulseTimerFrames, pulseBaseScale, pulseScaleVariance, upOdd, reverse)
-		log.debug("Custom vertical interlace background created (File Path: $filePath).")
 	}
 
 	private fun setup(columnWidth:Int = DEFAULT_COLUMN_WIDTH, pulseTimerFrames:Int = DEFAULT_TIMER_MAX,
@@ -77,12 +68,12 @@ class BackgroundInterlaceVertical:AnimatedBackgroundHook {
 		pulseTimer = pulseTimerFrames
 		this.reverse = reverse
 		this.columnWidth = if(480%columnWidth!=0) DEFAULT_COLUMN_WIDTH else columnWidth
-		chunks = Array(SCREEN_WIDTH/columnWidth) {i ->
+		chunks = List(SCREEN_WIDTH/columnWidth) {i ->
 			val up = upOdd&&i%2==1
-			val anchorType:Int = if(up) ImageChunk.ANCHOR_POINT_LL else ImageChunk.ANCHOR_POINT_TL
-			val anchorLocation = intArrayOf(i*columnWidth, if(up) SCREEN_HEIGHT else 0)
-			val srcLocation = intArrayOf(i*columnWidth, 0)
-			ImageChunk(anchorType, anchorLocation, srcLocation, intArrayOf(columnWidth, 480), floatArrayOf(1f, baseScale))
+			val anchorType = if(up) AnchorPoint.LL else AnchorPoint.TL
+			val anchorLocation = listOf(i*columnWidth, if(up) SCREEN_HEIGHT else 0)
+			val srcLocation = listOf(i*columnWidth, 0)
+			ImageChunk(anchorType, anchorLocation, srcLocation, listOf(columnWidth, 480), listOf(1f, baseScale))
 		}
 	}
 	/**
@@ -100,7 +91,7 @@ class BackgroundInterlaceVertical:AnimatedBackgroundHook {
 			val s = sin(PI*(ppu.toDouble()/pulseTimerMax))
 			var scale = baseScale+scaleVariance*s
 			if(scale<1.0) scale = 1.0
-			chunks[j].scale = floatArrayOf(1f, scale.toFloat())
+			chunks[j].scale = listOf(1f, scale.toFloat())
 		}
 	}
 
@@ -119,55 +110,15 @@ class BackgroundInterlaceVertical:AnimatedBackgroundHook {
 		update()
 	}
 
-	override fun draw(engine:GameEngine) {
-		for(i in chunks) {
+	override fun draw() {
+		chunks.forEach {i ->
 			val pos = i.drawLocation
 			val ddim = i.drawDimensions
 			val sloc = i.sourceLocation
 			val sdim = i.sourceDimensions
-			customHolder.drawImage(
-				imageName, pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0],
-				sdim[1], 255, 255, 255, 255
-			)
+			img.draw(pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0], sdim[1])
 		}
 	}
-	/**
-	 * Change BG to one of the default ones.
-	 *
-	 * @param bg New BG number
-	 */
-	override fun setBG(bg:Int) {
-		customHolder.loadImage("res/graphics/back$bg.png", imageName)
-		log.debug("Non-custom vertical interlace background modified (New BG: $bg).")
-	}
-	/**
-	 * Change BG to a custom BG using its file path.
-	 *
-	 * @param filePath File path of new background
-	 */
-	override fun setBG(filePath:String) {
-		customHolder.loadImage(filePath, imageName)
-		log.debug("Custom vertical interlace background modified (New File Path: $filePath).")
-	}
-	/**
-	 * Allows the hot-swapping of preloaded BGs from a storage instance of a `ResourceHolderCustomAssetExtension`.
-	 *
-	 * @param holder Storage instance
-	 * @param name   Image name
-	 */
-	override fun setBGFromHolder(holder:ResourceHolderCustomAssetExtension, name:String) {
-		customHolder.putImageAt(holder.getImageAt(name), imageName)
-		log.debug(
-			"Custom vertical interlace background modified (New Image Reference: $name)."
-		)
-	}
-	/**
-	 * This last one is important. In the case that any of the child types are used, it allows identification.
-	 * The identification can be used to allow casting during operations.
-	 *
-	 * @return Identification number of child class.
-	 */
-	override val id = ANIMATION_INTERLACE_VERTICAL
 
 	companion object {
 		private const val SCREEN_WIDTH = 640
@@ -179,8 +130,4 @@ class BackgroundInterlaceVertical:AnimatedBackgroundHook {
 		private const val SCALE_VARIANCE = 0.1f
 	}
 
-	init {
-		customHolder = ResourceHolderCustomAssetExtension()
-		imageName = ("localBG")
-	}
 }

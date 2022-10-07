@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -56,7 +56,6 @@ import javax.swing.WindowConstants
 class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:String, private val numIterations:Int,
 	private val getUIText:(String)->String):
 	JDialog(parent, getUIText("Progress_Message")), PropertyChangeListener, ActionListener {
-
 	private var ranks:Ranks? = null
 	private var ranksFrom:Ranks? = null
 	private var iteration = 0
@@ -73,11 +72,9 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 
 		init {
 			cancelled = false
-
 		}
 
 		fun iterate() {
-
 			if(ranks!!.completionPercentageIncrease()) progress = ranks!!.completionPercentage
 		}
 
@@ -98,7 +95,6 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 				//System.out.println("cancelled !");
 				ranks = ranks!!.ranksFrom
 				allIterations.cancelTask()
-
 			}
 			progress = 100
 			return null
@@ -108,7 +104,6 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 			cancelled = true
 			ranksIteratorPart.forEach {it.interrupt()}
 		}
-
 	}
 
 	internal inner class AllIterations(private val totalParts:Int, private val ranksIterator:RanksIterator,
@@ -118,7 +113,6 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 		init {
 			cancelled = false
 			progress = 0
-
 		}
 
 		public override fun doInBackground():Void? {
@@ -134,7 +128,6 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 					`in` = ObjectInputStream(fis)
 					ranksFrom = `in`.readObject() as Ranks
 					`in`.close()
-
 				} catch(e:FileNotFoundException) {
 					ranksFrom = Ranks(4, 9)
 				} catch(e:IOException) {
@@ -175,7 +168,6 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 					ranksFrom!!.ranksFrom = ranks
 					ranks = ranksFrom
 				}
-
 			}
 			//System.out.println("save file !");
 			progressLabel.text = getUIText("Progress_Note_Save_File")
@@ -188,7 +180,6 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 				ranks!!.freeRanksFrom()
 				out.writeObject(ranks)
 				out.close()
-
 			} catch(e:Exception) {
 				e.printStackTrace()
 			}
@@ -202,17 +193,12 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 
 		fun cancelTask() {
 			cancelled = true
-
 		}
 
 		override fun done() {
-
 			dispose()
-
 			//new RanksResult(parent,ranks,100,false);
-
 		}
-
 	}
 
 	init {
@@ -245,7 +231,6 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 		allIterations = this.AllIterations(numProcessors, this, inputFile)
 		//allIterations.addPropertyChangeListener(this);
 		allIterations.execute()
-
 	}
 
 	override fun propertyChange(evt:PropertyChangeEvent) {
@@ -256,18 +241,10 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 			val message =
 				String.format(getUIText("Progress_Note"), iteration+1, ranks!!.completionPercentage, numIterations, totalCompletion)
 			progressLabel.text = message
-
 		}
-
 	}
 
 	override fun actionPerformed(arg0:ActionEvent) {
 		oneIteration!!.cancelTask()
 	}
-
-	companion object {
-		/** */
-		private const val serialVersionUID = 1L
-	}
-
 }

@@ -35,7 +35,6 @@ import java.io.IOException
 import java.io.ObjectInputStream
 
 object AIRanksValue {
-
 	/** @param args arguments
 	 */
 	@JvmStatic
@@ -66,7 +65,6 @@ object AIRanksValue {
 			} catch(e:ClassNotFoundException) {
 				e.printStackTrace()
 			}
-
 	}
 
 }

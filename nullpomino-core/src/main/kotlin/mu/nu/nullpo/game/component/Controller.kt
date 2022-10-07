@@ -32,7 +32,6 @@ import java.io.Serializable
 
 /** button input状態を管理するクラス */
 class Controller:Serializable {
-
 	/** Buttonを押した状態ならtrue */
 	val buttonPress = MutableList(BUTTON_COUNT) {false}
 
@@ -98,7 +97,6 @@ class Controller:Serializable {
 	fun isMenuRepeatKey(key:Int, enableCButton:Boolean = true):Boolean {
 		return buttonTime[key]==1||buttonTime[key]>=25&&buttonTime[key]%3==0||
 			buttonTime[key]>=1&&isPress(BUTTON_C)&&enableCButton
-
 	}
 
 	/** buttonを押した状態にする

@@ -61,7 +61,6 @@ import javax.swing.UIManager
 import javax.swing.WindowConstants
 
 class AIRanksTool:JFrame(), ActionListener {
-
 	/** Config File */
 	val propConfig = CustomProperties()
 
@@ -142,7 +141,6 @@ class AIRanksTool:JFrame(), ActionListener {
 	private var newFileText = ""
 
 	init {
-
 		// Load config file
 		try {
 			FileInputStream("config/setting/swing.xml").let {
@@ -189,7 +187,6 @@ class AIRanksTool:JFrame(), ActionListener {
 	}
 
 	private fun initUI() {
-
 		// Loads Ranks AI property file, to populate the fields
 		val propRanksAI = CustomProperties()
 		try {
@@ -219,7 +216,6 @@ class AIRanksTool:JFrame(), ActionListener {
 
 		//Find the index of default Ranks File
 		if(children!=null) {
-
 			if(ranksFile!=null) {
 				fileIndex = -1
 				for(i in children.indices) {
@@ -437,7 +433,6 @@ class AIRanksTool:JFrame(), ActionListener {
 			val ranksIterator = RanksIterator(this, inputFile, outputFile, numIterationsSpinner!!.value as Int) {getUIText(it)}
 
 			ranksIterator.addWindowListener(object:WindowAdapter() {
-
 				override fun windowClosed(e:WindowEvent?) {
 					var isInCombo = false
 					var index = 0
@@ -460,11 +455,8 @@ class AIRanksTool:JFrame(), ActionListener {
 
 					setDefaults()
 					goButton!!.isEnabled = true
-
 				}
-
 			})
-
 		} else {
 			if("bests"==e.actionCommand||"worsts"==e.actionCommand) {
 				setEnabledBWButtons(false)
@@ -489,20 +481,14 @@ class AIRanksTool:JFrame(), ActionListener {
 					} catch(e1:ClassNotFoundException) {
 						e1.printStackTrace()
 					}
-
 				}
 
 				val results = RanksResult(this, ranks!!, 100, "worsts"==e.actionCommand) {getUIText(it)}
 				results.addWindowListener(object:WindowAdapter() {
-
 					override fun windowClosed(e:WindowEvent?) {
-
 						setEnabledBWButtons(true)
-
 					}
-
 				})
-
 			} else {
 				if("default"==e.actionCommand) {
 					setDefaults()
@@ -517,7 +503,6 @@ class AIRanksTool:JFrame(), ActionListener {
 				}
 			}
 		}
-
 	}
 
 	fun setDefaults() {
@@ -531,15 +516,12 @@ class AIRanksTool:JFrame(), ActionListener {
 			ranksAIConfig.store(out, "Ranks AI Config")
 		} catch(exc:IOException) {
 			log.error("Failed to save RanksAI config file", exc)
-
 		}
-
 	}
 
 	fun setEnabledBWButtons(b:Boolean) {
 		viewBestsButton?.isEnabled = b
 		viewWorstsButton?.isEnabled = b
-
 	}
 
 	companion object {
@@ -549,7 +531,6 @@ class AIRanksTool:JFrame(), ActionListener {
 
 		@JvmStatic
 		fun main(args:Array<String>) {
-
 			// Start
 			AIRanksTool()
 		}

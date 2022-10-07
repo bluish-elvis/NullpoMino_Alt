@@ -35,6 +35,7 @@ package zeroxfc.nullpo.custom.libs.backgroundtypes
 import mu.nu.nullpo.game.component.Block.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
+import zeroxfc.nullpo.custom.libs.AnchorPoint
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -101,10 +102,8 @@ class BackgroundSlidingTiles:AnimatedBackgroundHook {
 			gridChunks = Array(sh) {y ->
 				Array(sw) {x ->
 					ImageChunk(
-						ImageChunk.ANCHOR_POINT_TL, intArrayOf((x-1)*dim[0], (y-1)*dim[1]),
-						intArrayOf(0, 0), intArrayOf(
-							dim[0], dim[1]
-						), floatArrayOf(1f, 1f)
+						AnchorPoint.TL, listOf((x-1)*dim[0], (y-1)*dim[1]),
+						listOf(0, 0), listOf(dim[0], dim[1]), listOf(1f, 1f)
 					)
 				}
 			}
@@ -117,8 +116,8 @@ class BackgroundSlidingTiles:AnimatedBackgroundHook {
 			gridChunks = Array(480/s+2) {y ->
 				Array(640/s+2) {x ->
 					ImageChunk(
-						ImageChunk.ANCHOR_POINT_TL, intArrayOf((x-1)*s, (y-1)*s), intArrayOf(0, 0),
-						intArrayOf(s, s), floatArrayOf(1f, 1f)
+						AnchorPoint.TL, listOf((x-1)*s, (y-1)*s), listOf(0, 0),
+						listOf(s, s), listOf(1f, 1f)
 					)
 				}
 			}
@@ -144,12 +143,12 @@ class BackgroundSlidingTiles:AnimatedBackgroundHook {
 							DIRECTION_LEFT -> {
 								xNew = locOld[0]-1
 								if(xNew<=width*-2) xNew = (gridChunks[0].size-2)*width
-								gridChunks[y][x].anchorLocation = intArrayOf(xNew, locOld[1])
+								gridChunks[y][x].anchorLocation = listOf(xNew, locOld[1])
 							}
 							DIRECTION_RIGHT -> {
 								xNew = locOld[0]+1
 								if(xNew>=(gridChunks[0].size-1)*width) xNew = width*-1
-								gridChunks[y][x].anchorLocation = intArrayOf(xNew, locOld[1])
+								gridChunks[y][x].anchorLocation = listOf(xNew, locOld[1])
 							}
 							else -> {
 							}
@@ -168,12 +167,12 @@ class BackgroundSlidingTiles:AnimatedBackgroundHook {
 							DIRECTION_UP -> {
 								yNew = locOld[1]-1
 								if(yNew<=height*-2) yNew = (gridChunks.size-2)*height
-								gridChunks[y][x].anchorLocation = intArrayOf(locOld[0], yNew)
+								gridChunks[y][x].anchorLocation = listOf(locOld[0], yNew)
 							}
 							DIRECTION_DOWN -> {
 								yNew = locOld[1]+1
 								if(yNew>=(gridChunks.size-1)*height) yNew = height*-1
-								gridChunks[y][x].anchorLocation = intArrayOf(locOld[0], yNew)
+								gridChunks[y][x].anchorLocation = listOf(locOld[0], yNew)
 							}
 							else -> {
 							}

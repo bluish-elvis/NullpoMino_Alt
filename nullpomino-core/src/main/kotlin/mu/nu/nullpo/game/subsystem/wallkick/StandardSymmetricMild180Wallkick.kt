@@ -35,7 +35,6 @@ import mu.nu.nullpo.game.component.Piece
 
 /** SRS with symmetric I-piece kicks and saner 180 kicks */
 class StandardSymmetricMild180Wallkick:BaseStandardWallkick() {
-
 	/* Get kick table */
 	override fun getKickTable(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
 		piece:Piece, field:Field, ctrl:Controller?):List<List<List<Int>>>? = when(rtDir) {

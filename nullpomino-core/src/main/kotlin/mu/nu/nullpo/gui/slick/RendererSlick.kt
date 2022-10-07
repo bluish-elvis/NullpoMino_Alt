@@ -32,7 +32,9 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_GRADE
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.AbstractBG
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.slick.img.FontGrade
 import mu.nu.nullpo.gui.slick.img.FontMedal
 import mu.nu.nullpo.gui.slick.img.FontNano
@@ -40,15 +42,18 @@ import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.gui.slick.img.FontNumber
 import mu.nu.nullpo.gui.slick.img.FontTTF
 import mu.nu.nullpo.gui.slick.img.RenderStaffRoll
+import mu.nu.nullpo.gui.slick.img.bg.SpinBG
 import mu.nu.nullpo.util.CustomProperties
 import org.lwjgl.input.Keyboard
 import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.Image
 import org.newdawn.slick.geom.Polygon
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.pow
+import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundHorizontalBars
+import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundInterlaceHorizontal
+import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundInterlaceVertical
+import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundVerticalBars
+import kotlin.random.Random
 
 /** ゲームの event 処理と描画処理 (Slick版） */
 class RendererSlick:AbstractRenderer() {
@@ -69,11 +74,8 @@ class RendererSlick:AbstractRenderer() {
 		showBg = NullpoMinoSlick.propConfig.getProperty("option.showbg", true)
 		showlineeffect = NullpoMinoSlick.propConfig.getProperty("option.showlineeffect", true)
 		heavyeffect = NullpoMinoSlick.propConfig.getProperty("option.heavyeffect", false)
-		var bright = NullpoMinoSlick.propConfig.getProperty("option.fieldbgbright", 64)*2
-		if(NullpoMinoSlick.propConfig.getProperty("option.fieldbgbright2")!=null)
-			bright = NullpoMinoSlick.propConfig.getProperty("option.fieldbgbright2", 128)
-		if(bright>255) bright = 255
-		fieldbgbright = bright/255.toFloat()
+		edgeBold = NullpoMinoSlick.propConfig.getProperty("option.edgeBold", false)
+		fieldbgbright = NullpoMinoSlick.propConfig.getProperty("option.fieldbgbright", 128)/255f
 		showfieldbggrid = NullpoMinoSlick.propConfig.getProperty("option.showfieldbggrid", true)
 		showMeter = NullpoMinoSlick.propConfig.getProperty("option.showmeter", true)
 		showSpeed = NullpoMinoSlick.propConfig.getProperty("option.showmeter", true)
@@ -465,7 +467,6 @@ class RendererSlick:AbstractRenderer() {
 	}
 
 	override fun drawHintPiece(x:Int, y:Int, engine:GameEngine, scale:Float) {
-
 		val g = graphics ?: return
 		engine.aiHintPiece?.let {
 			it.direction = engine.ai!!.bestRt
@@ -478,7 +479,6 @@ class RendererSlick:AbstractRenderer() {
 					val y2 = engine.ai!!.bestY+it.dataY[engine.ai!!.bestRt][i]
 
 					if(y2>=0) {
-
 						val blkTemp = it.block[i]
 						val x3:Float = (x+x2*blksize).toFloat()
 						val y3:Float = (y+y2*blksize).toFloat()
@@ -604,6 +604,28 @@ class RendererSlick:AbstractRenderer() {
 		}
 	}
 
+	val bgtype:List<AbstractBG<Image>> by lazy {
+		resources.imgPlayBG.map {it:ResourceImage<Image> ->
+			when(Random.Default.nextInt(7)) {
+				0, 2 -> BackgroundHorizontalBars(it, 1000)
+				1, 3 -> BackgroundVerticalBars(it, 1000)
+				4 -> BackgroundInterlaceHorizontal(it)
+				5 -> BackgroundInterlaceVertical(it)
+				else -> SpinBG(it)
+			}
+		}
+	}
+
+	override fun onFirst(engine:GameEngine) {
+		super.onFirst(engine)
+
+		val bgmax = resources.backgroundMax
+		val bg = engine.owner.bgMan.bg%bgmax
+
+		if(!engine.owner.menuOnly&&bg in 0 until bgmax&&showBg&&heavyeffect)
+			bgtype[bg].update()
+	}
+
 	override fun drawBG(engine:GameEngine) {
 		val graphics = graphics ?: return
 		if(engine.owner.menuOnly) {
@@ -616,15 +638,8 @@ class RendererSlick:AbstractRenderer() {
 
 			if(bg in 0 until bgmax&&showBg) {
 				graphics.color = Color.white
-				val bgi = resources.imgPlayBG[bg].res
 				if(heavyeffect) {
-					//TODO when(bg){is spinBG->{
-					val sc = (1-cos(bgi.rotation/PI.pow(3.0))/PI).toFloat()*1024f/minOf(bgi.width, bgi.height)
-					val cx = bgi.width/2*sc
-					val cy = bgi.height/2*sc
-					bgi.setCenterOfRotation(cx, cy)
-					bgi.rotate(.04f)
-					bgi.draw(320-cx, 240-cy, sc)
+					bgtype[bg].draw()
 					if(engine.owner.bgMan.fadesw) {
 						val filter = Color(Color.black).apply {
 							a = engine.owner.bgMan.let {
@@ -635,6 +650,7 @@ class RendererSlick:AbstractRenderer() {
 						graphics.fillRect(0, 0, 640, 480)
 					}
 				} else {
+					val bgi = resources.imgPlayBG[bg].res
 					bgi.rotation = 0f
 					graphics.drawImage(bgi, 0, 0, 640, 480, 0, 0, bgi.width, bgi.height)
 				}
@@ -645,14 +661,13 @@ class RendererSlick:AbstractRenderer() {
 	/*override fun effectRender() {
 	_	effects.forEachIndexed {i, it ->
 			when(it) {
-
 				is Particle -> {
 					val g = graphics ?: return it.draw(i, this)
 					when(it.shape) {
 						Particle.ParticleShape.ARect -> {
 							g.setDrawMode(Graphics.MODE_ADD)
 							drawRect(
-								it.pos.x-it.uw/2, it.pos.y-it.uh/2, it.uw, it.uh,
+								it.pos.x-it.us/2, it.pos.y-it.us/2, it.us, it.us,
 								it.ur*0x10000+it.ug*0x100+it.ub, it.ua/255f, 0f
 							)
 							g.setDrawMode(Graphics.MODE_NORMAL)
@@ -660,7 +675,7 @@ class RendererSlick:AbstractRenderer() {
 						Particle.ParticleShape.AOval -> {
 							g.setDrawMode(Graphics.MODE_ADD)
 							drawOval(
-								it.pos.x-it.uw/2, it.pos.y-it.uh/2, it.uw, it.uh,
+								it.pos.x-it.us/2, it.pos.y-it.us/2, it.us, it.us,
 								it.ur*0x10000+it.ug*0x100+it.ub, it.ua/255f, 0f
 							)
 							g.setDrawMode(Graphics.MODE_NORMAL)
@@ -674,7 +689,6 @@ class RendererSlick:AbstractRenderer() {
 	}*/
 
 	companion object {
-
 		/** Block colorIDに応じてSlick用Colorオブジェクトを作成・取得
 		 * @param colorID Block colorID
 		 * @return Slick用Colorオブジェクト

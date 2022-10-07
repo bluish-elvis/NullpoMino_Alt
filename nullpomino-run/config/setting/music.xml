@@ -39,14 +39,11 @@
  <entry key="music.filename.RetroA.3">res/bgm/retro/rus_Kalinka_b.ogg</entry>
  <entry key="music.filename.RetroA.4">res/bgm/retro/rus_Troika.ogg</entry>
  <entry key="music.filename.RetroS.0">res/bgm/retro/sega_Tetremix.ogg</entry>
- <entry key="music.filename.RetroS.1">res/bgm/retro/leo/1_Paradise Planet.ogg</entry>
+ <entry key="music.filename.RetroS.1">res/bgm/retro/sega_1_BackTo1988.ogg</entry>
  <entry key="music.filename.RetroS.2">res/bgm/retro/sega_Tetremix_mbm.ogg</entry>
- <entry key="music.filename.RetroS.3">res/bgm/retro/leo/2_Red-Hot Desert.ogg</entry>
- <entry key="music.filename.RetroS.4">res/bgm/retro/leo/3_Tropical Forest.ogg</entry>
- <entry key="music.filename.RetroS.5">res/bgm/retro/leo/4_Floating Continent.ogg</entry>
- <entry key="music.filename.RetroS.6">res/bgm/retro/leo/5_Inside of Ruins.ogg</entry>
- <entry key="music.filename.RetroS.7">res/bgm/retro/leo/6_Core of the Planet.ogg</entry>
- <entry key="music.filename.RetroS.8">res/bgm/retro/leo/0_boss.ogg</entry>
+ <entry key="music.filename.RetroS.3">res/bgm/retro/sega_2_milky.ogg</entry>
+ <entry key="music.filename.RetroS.4">res/bgm/retro/sega_3_Pliocene.ogg</entry>
+ <entry key="music.filename.RetroS.5">res/bgm/retro/sega_4_crux.ogg</entry>
 
  <entry key="music.filename.Extra.0">res/bgm/retro/leo/0_boss.ogg</entry>
  <entry key="music.filename.Extra.1">res/bgm/steam/hydelic_butterflyeffect.ogg</entry>
@@ -58,21 +55,28 @@
 
  <entry key="music.filename.GrandA.0">res/bgm/ddp/play_black1.ogg</entry>
  <entry key="music.filename.GrandA.1">res/bgm/ddp/play_black5.ogg</entry>
- <entry key="music.filename.GrandA.2">res/bgm/ddp/speed_black2.ogg</entry>
- <entry key="music.filename.GrandA.3">res/bgm/ddp/sudden_black2.ogg</entry>
+ <entry key="music.filename.GrandA.2">res/bgm/ddp/speed_black1.ogg</entry>
+ <entry key="music.filename.GrandA.3">res/bgm/ddp/speed_black2.ogg</entry>
+ <entry key="music.filename.GrandA.4">res/bgm/ddp/sudden_black2.ogg</entry>
+ <entry key="music.filename.GrandA.5">res/bgm/ddp/finale_black.ogg</entry>
  <entry key="music.filename.Ending.1">res/bgm/blitz/gm2_roll.ogg</entry>
 
- <entry key="music.filename.GrandT.0">res/bgm/ddp/play_blue4.ogg</entry>
- <entry key="music.filename.GrandT.1">res/bgm/ddp/play_blue2.ogg</entry>
- <entry key="music.filename.GrandT.2">res/bgm/ddp/play_blue5.ogg</entry>
- <entry key="music.filename.GrandT.3">res/bgm/ddp/speed_blue.ogg</entry>
- <entry key="music.filename.GrandT.4">res/bgm/ddp/sudden_blue.ogg</entry>
- <entry key="music.filename.GrandT.5">res/bgm/ddp/finale_blue.ogg</entry>
+ <entry key="music.filename.GrandT.0">res/bgm/ddp/play_cyan4.ogg</entry>
+ <entry key="music.filename.GrandT.1">res/bgm/ddp/play_cyan3.ogg</entry>
+ <entry key="music.filename.GrandT.2">res/bgm/ddp/play_cyan2.ogg</entry>
+ <entry key="music.filename.GrandT.3">res/bgm/ddp/speed_cyan1.ogg</entry>
+ <entry key="music.filename.GrandT.4">res/bgm/ddp/speed_cyan5.ogg</entry>
+ <entry key="music.filename.GrandT.5">res/bgm/ddp/sudden_blue.ogg</entry>
+ <entry key="music.filename.GrandT.6">res/bgm/ddp/sudden_cyan.ogg</entry>
+ <entry key="music.filename.GrandTS.0">res/bgm/ddp/speed_cyan5.ogg</entry>
+ <entry key="music.filename.GrandTS.1">res/bgm/ddp/speed_cyan1.ogg</entry>
+ <entry key="music.filename.GrandTS.2">res/bgm/ddp/sudden_cyan.ogg</entry>
+ <entry key="music.filename.GrandTS.3">res/bgm/ddp/finale_cyan.ogg</entry>
  <entry key="music.filename.Ending.2">res/bgm/blitz/gm3_roll_m.ogg</entry>
 
  <entry key="music.filename.Finale.0">res/bgm/beats/finale_dreadnought.ogg</entry>
- <entry key="music.filename.Finale.1">res/bgm/beats/finale_hesperides.ogg</entry>
- <entry key="music.filename.Finale.2">res/bgm/beats/finale_siva.ogg</entry>
+ <entry key="music.filename.Finale.1">res/bgm/ddp/sudden_cyan.ogg</entry>
+ <entry key="music.filename.Finale.2">res/bgm/ddp/play_cyan5.ogg</entry>
  <entry key="music.filename.Ending.3">res/bgm/blitz/fb_kaerezunochi.ogg</entry>
  <entry key="music.filename.Ending.4">res/bgm/blitz/fb_VillainVirus.ogg</entry>
 

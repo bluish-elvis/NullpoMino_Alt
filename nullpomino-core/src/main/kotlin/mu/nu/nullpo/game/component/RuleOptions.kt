@@ -33,13 +33,10 @@ import java.io.Serializable
 
 /** ゲームルールの設定 data */
 class RuleOptions:Serializable {
-
 	/** このルールのName */
 	var strRuleName = ""
-
 	/** 使用するWallkickアルゴリズムのクラス名 (空文字列ならWallkickしない) */
 	var strWallkick = ""
-
 	/** 使用する出現順補正アルゴリズムのクラス名 (空文字列なら完全ランダム) */
 	var strRandomizer = ""
 
@@ -50,46 +47,35 @@ class RuleOptions:Serializable {
 	/** Blockピースの回転パターンのcoordinate補正 (11ピース×4Direction) */
 	var pieceOffsetX:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
 	var pieceOffsetY:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-
 	/** Blockピースの出現X-coordinate補正 (11ピース×4Direction) */
 	var pieceSpawnX:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-
 	/** Blockピースの出現Y-coordinate補正 (11ピース×4Direction) */
 	var pieceSpawnY:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-
 	/** BlockピースのBig時の出現X-coordinate補正 (11ピース×4Direction) */
 	var pieceSpawnXBig:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-
 	/** BlockピースのBig時の出現Y-coordinate補正 (11ピース×4Direction) */
 	var pieceSpawnYBig:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
 
 	/** Blockピース cint */
 	var pieceColor = IntArray(Piece.PIECE_COUNT)
-
 	/** Blockピースの初期Direction */
 	var pieceDefaultDirection = IntArray(Piece.PIECE_COUNT)
 
 	/** fieldより上から出現 */
 	var pieceEnterAboveField = false
-
 	/** 出現予定地が埋まっているときにY-coordinateを上にずらすMaximum count */
 	var pieceEnterMaxDistanceY = 0
 
 	/** fieldの幅 */
 	var fieldWidth = 0
-
 	/** Field height */
 	var fieldHeight = 0
-
 	/** fieldより上の見えない部分の高さ */
 	var fieldHiddenHeight = 0
-
 	/** fieldの天井の有無 */
 	var fieldCeiling = false
-
 	/** field枠内に置けなかったら死ぬかどうか */
 	var fieldLockoutDeath = false
-
 	/** field枠外に１マスでもはみ出しただけで死ぬかどうか
 	 * falseだと１マスでも枠内ならばセーフ */
 	var fieldPartialLockoutDeath = false
@@ -99,46 +85,34 @@ class RuleOptions:Serializable {
 
 	/** ホールド使用可否 */
 	var holdEnable = false
-
 	/** 先行ホールド */
 	var holdInitial = false
-
 	/** 先行ホールド連続使用不可 */
 	var holdInitialLimit = false
-
 	/** ホールドを使ったときにBlockピースの向きを初期状態に戻す */
 	var holdResetDirection = false
-
 	/** ゲーム毎にホールドできる総数 (-1:無制限) */
 	var holdLimit = 0
 
 	/** Hard drop使用可否 */
 	var harddropEnable = false
-
 	/** Hard drop即固定 */
 	var harddropLock = false
-
 	/** Hard drop連続使用不可 */
 	var harddropLimit = false
 
 	/** Soft drop使用可否 */
 	var softdropEnable = false
-
 	/** Soft drop即固定 */
 	var softdropLock = false
-
 	/** Soft drop連続使用不可 */
 	var softdropLimit = false
-
 	/** 接地状態でSoft dropすると即固定 (falseだと20Gのみ即固定) */
 	var softdropSurfaceLock = false
-
 	/** Soft drop速度 (1f=1G, .5f=0.5G) */
 	var softdropSpeed = 0f
-
 	/** Soft drop速度を通常速度×n倍にする */
 	var softdropMultiplyNativeSpeed = false
-
 	/** Soft drop速度を通常速度に影響させない */
 	var softdropGravitySpeedLimit = false
 
@@ -164,22 +138,16 @@ class RuleOptions:Serializable {
 	var lockResetFall = false
 	/** 移動で固定猶予リセット */
 	var lockResetMove = false
-
 	/** 回転で固定猶予リセット */
 	var lockResetSpin = false
-
 	/** 壁蹴りで固定猶予リセット */
 	var lockResetWallkick = false
-
 	/** 横移動による固定猶予リセットの回数制限 (-1:無限) */
 	var lockResetMoveLimit = 0
-
 	/** 回転による固定猶予リセットの回数制限 (-1:無限) */
 	var lockResetSpinLimit = 0
-
 	/** trueにすると回転の回数制限を横移動と共有する (true: lockResetMoveLimitのみ使用) */
 	var lockResetLimitShareCount = false
-
 	/** 固定猶予リセットの回数を使い切った場合の処理
 	 * LOCKRESET_LIMIT_OVER_NORESET = 0 : 固定猶予をリセットしないようにする
 	 * LOCKRESET_LIMIT_OVER_INSTANT = 1 : 即固定する
@@ -188,19 +156,15 @@ class RuleOptions:Serializable {
 
 	/** 固定した瞬間光る frame count */
 	var lockFlash = 0
-
 	/** Blockが光る専用 frame を入れる */
 	var lockFlashOnlyFrame = false
-
 	/** Line clear前にBlockが光る frame を入れる */
 	var lockFlashBeforeLineClear = false
 
 	/** ARE cancel on move */
 	var areCancelMove = false
-
 	/** ARE cancel on spin */
 	var areCancelSpin = false
-
 	/** ARE cancel on hold */
 	var areCancelHold = false
 
@@ -223,68 +187,48 @@ class RuleOptions:Serializable {
 	/** 最小/Maximum横溜め time (-1:指定なし) */
 	var minDAS = 0
 	var maxDAS = 0
-
 	/** 横移動間隔 */
 	var dasARR = 0
-
 	var shiftLockEnable = false
-
 	/** Ready画面で横溜め可能 */
 	var dasInReady = false
-
 	/** 最初の frame で横溜め可能 */
 	var dasInMoveFirstFrame = false
-
 	/** Blockが光った瞬間に横溜め可能 */
 	var dasInLockFlash = false
-
 	/** Line clear中に横溜め可能 */
 	var dasInLineClear = false
-
 	/** ARE中に横溜め可能 */
 	var dasInARE = false
-
 	/** AREの最後の frame で横溜め可能 */
 	var dasInARELastFrame = false
-
 	/** Ending突入画面で横溜め可能 */
 	var dasInEndingStart = false
-
 	/** Charge DAS on blocked move */
 	var dasChargeOnBlockedMove = false
-
-	/** Leave DAS charge alone when left/right are not held -- useful with
-	 * dasRedirectInDelay
-	 */
+	/** Leave DAS charge alone when left/right are not held
+	 *  -- useful with dasRedirectInDelay*/
 	var dasStoreChargeOnNeutral = false
-
 	/** Allow direction changes during ARE delay without zeroing DAS charge */
 	var dasRedirectInDelay = false
 
 	/** 最初の frame で移動可能 */
 	var moveFirstFrame = false
-
 	/** 斜め移動 */
 	var moveDiagonal = false
-
 	/** 上下同時押し許可 */
 	var moveUpAndDown = false
-
 	/** 左右同時押し許可 */
 	var moveLeftAndRightAllow = false
-
 	/** 左右同時押ししたときに前の frame の input Directionを優先する (左を押しながら右を押すと右を無視して左を優先) */
 	var moveLeftAndRightUsePreviousInput = false
 
 	/** Line clear後に上のBlockが1段ずつ落ちるアニメーションを表示 */
 	var lineFallAnim = false
-
 	/** Line delay cancel on move */
 	var lineCancelMove = false
-
 	/** Line delay cancel on spin */
 	var lineCancelSpin = false
-
 	/** Line delay cancel on hold */
 	var lineCancelHold = false
 

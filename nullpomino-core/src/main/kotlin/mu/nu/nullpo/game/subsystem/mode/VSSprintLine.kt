@@ -41,8 +41,7 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
 
 /** VS-LINE RACE Mode */
-class VSLineRaceMode:AbstractMode() {
-
+class VSSprintLine:AbstractMode() {
 	/** Number of lines to clear */
 	private var goalLines = IntArray(0)
 
@@ -79,7 +78,6 @@ class VSLineRaceMode:AbstractMode() {
 
 	/* Mode init */
 	override fun modeInit(manager:GameManager) {
-
 		goalLines = IntArray(MAX_PLAYERS)
 		bgmno = 0
 		big = BooleanArray(MAX_PLAYERS)
@@ -177,7 +175,6 @@ class VSLineRaceMode:AbstractMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-
 					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
 					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
 					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
@@ -218,7 +215,6 @@ class VSLineRaceMode:AbstractMode() {
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else if(engine.statc[4]==0) {
 			// Replay start
 			menuTime++

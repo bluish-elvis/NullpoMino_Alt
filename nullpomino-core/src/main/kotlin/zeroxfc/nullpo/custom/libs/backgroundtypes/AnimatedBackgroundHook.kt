@@ -36,8 +36,8 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
 import org.apache.logging.log4j.LogManager
-import kotlin.math.abs
 
+@Deprecated("Use Generic class AbstractBG")
 abstract class AnimatedBackgroundHook {
 	protected abstract val id:Int
 	protected var customHolder:ResourceHolderCustomAssetExtension = ResourceHolderCustomAssetExtension()
@@ -159,7 +159,5 @@ abstract class AnimatedBackgroundHook {
 			owner.bgMan.bg = LAST_BG
 			owner.bgMan.fadebg = LAST_FADE_BG
 		}
-		// Fuzzy equals.
-		internal fun almostEqual(a:Double, b:Double, eps:Double):Boolean = abs(a-b)<eps
 	}
 }

@@ -54,7 +54,7 @@ object ControllerManager {
 	var method = CONTROLLER_METHOD_SLICK_DEFAULT
 
 	/** Joystick state */
-	var controllers = mutableListOf<Controller>()
+	var controllers = emptyList<Controller>()
 
 	/** 各Playerが使用するJoystick の number */
 	var controllerID = MutableList(0) {0}
@@ -77,16 +77,13 @@ object ControllerManager {
 	/** Initialization */
 	fun initControllers() {
 		Controllers.destroy()
-		controllers.clear()
 		controllerID = MutableList(MAX_PLAYERS) {-1}
 		border = MutableList(MAX_PLAYERS) {0f}
 		ignoreAxis = MutableList(MAX_PLAYERS) {false}
 		ignorePOV = MutableList(MAX_PLAYERS) {false}
-		for(i in 0 until Controllers.getControllerCount()) {
-			val c = Controllers.getController(i)
-
-			if(c.buttonCount in MIN_BUTTONS until MAX_BUTTONS) controllers.add(c)
-		}
+		controllers = List(Controllers.getControllerCount()) {i ->
+			Controllers.getController(i).takeIf {it.buttonCount in MIN_BUTTONS until MAX_BUTTONS}
+		}.filterNotNull()
 
 		log.info("Found ${controllers.size} controllers from NullpoMinoSlick app")
 
@@ -104,18 +101,17 @@ object ControllerManager {
 		try {
 			val controller = controllerID[player]
 
-			if(controller<0) return false
-
-			if(method==CONTROLLER_METHOD_SLICK_DEFAULT)
-				return input.isControllerUp(controller)
-			else if(method==CONTROLLER_METHOD_SLICK_ALTERNATE)
-				return input.isControllerUp(controller)||!ignoreAxis[player]&&input.getAxisValue(controller, 1)<-border[player]
-			else if(method==CONTROLLER_METHOD_LWJGL)
-				if(controller>=0&&controller<controllers.size) {
-					val axisValue = controllers[controller].yAxisValue
-					val povValue = controllers[controller].povY
-					return !ignoreAxis[player]&&axisValue<-border[player]||!ignorePOV[player]&&povValue<-border[player]
-				}
+			return when {
+				controller<0 -> false
+				method==CONTROLLER_METHOD_SLICK_DEFAULT -> input.isControllerUp(controller)
+				method==CONTROLLER_METHOD_SLICK_ALTERNATE -> input.isControllerUp(controller)||!ignoreAxis[player]&&input.getAxisValue(
+					controller,
+					1
+				)<-border[player]
+				method==CONTROLLER_METHOD_LWJGL&&controller<controllers.size -> !ignoreAxis[player]&&controllers[controller].yAxisValue<-border[player]||
+					!ignorePOV[player]&&controllers[controller].povY<-border[player]
+				else -> false
+			}
 		} catch(e:Throwable) {
 			log.debug("Exception on isControllerUp", e)
 		}
@@ -132,18 +128,16 @@ object ControllerManager {
 		try {
 			val controller = controllerID[player]
 
-			if(controller<0) return false
-
-			if(method==CONTROLLER_METHOD_SLICK_DEFAULT)
-				return input.isControllerDown(controller)
-			else if(method==CONTROLLER_METHOD_SLICK_ALTERNATE)
-				return input.isControllerDown(controller)||!ignoreAxis[player]&&input.getAxisValue(controller, 1)>border[player]
-			else if(method==CONTROLLER_METHOD_LWJGL)
-				if(controller>=0&&controller<controllers.size) {
-					val axisValue = controllers[controller].yAxisValue
-					val povValue = controllers[controller].povY
-					return !ignoreAxis[player]&&axisValue>border[player]||!ignorePOV[player]&&povValue>border[player]
-				}
+			return when {
+				controller<0 -> false
+				method==CONTROLLER_METHOD_SLICK_DEFAULT -> input.isControllerDown(controller)
+				method==CONTROLLER_METHOD_SLICK_ALTERNATE -> input.isControllerDown(controller)||
+					!ignoreAxis[player]&&input.getAxisValue(controller, 1)>border[player]
+				method==CONTROLLER_METHOD_LWJGL&&controller<controllers.size ->
+					!ignoreAxis[player]&&controllers[controller].yAxisValue>border[player]||
+						!ignorePOV[player]&&controllers[controller].povY>border[player]
+				else -> false
+			}
 		} catch(e:Throwable) {
 			log.debug("Exception on isControllerDown", e)
 		}
@@ -159,19 +153,17 @@ object ControllerManager {
 	fun isControllerLeft(player:Int, input:Input):Boolean {
 		try {
 			val controller = controllerID[player]
-
-			if(controller<0) return false
-
-			if(method==CONTROLLER_METHOD_SLICK_DEFAULT)
-				return input.isControllerLeft(controller)
-			else if(method==CONTROLLER_METHOD_SLICK_ALTERNATE)
-				return input.isControllerLeft(controller)||!ignoreAxis[player]&&input.getAxisValue(controller, 0)<-border[player]
-			else if(method==CONTROLLER_METHOD_LWJGL)
-				if(controller>=0&&controller<controllers.size) {
-					val axisValue = controllers[controller].xAxisValue
-					val povValue = controllers[controller].povX
-					return !ignoreAxis[player]&&axisValue<-border[player]||!ignorePOV[player]&&povValue<-border[player]
-				}
+			return when {
+				controller<0 -> false
+				method==CONTROLLER_METHOD_SLICK_DEFAULT ->
+					input.isControllerLeft(controller)
+				method==CONTROLLER_METHOD_SLICK_ALTERNATE ->
+					input.isControllerLeft(controller)||!ignoreAxis[player]&&input.getAxisValue(controller, 0)<-border[player]
+				method==CONTROLLER_METHOD_LWJGL&&controller<controllers.size ->
+					!ignoreAxis[player]&&controllers[controller].xAxisValue<-border[player]||
+						!ignorePOV[player]&&controllers[controller].povX<-border[player]
+				else -> false
+			}
 		} catch(e:Throwable) {
 			log.debug("Exception on isControllerLeft", e)
 		}
@@ -188,18 +180,16 @@ object ControllerManager {
 		try {
 			val controller = controllerID[player]
 
-			if(controller<0) return false
-
-			if(method==CONTROLLER_METHOD_SLICK_DEFAULT)
-				return input.isControllerRight(controller)
-			else if(method==CONTROLLER_METHOD_SLICK_ALTERNATE)
-				return input.isControllerRight(controller)||!ignoreAxis[player]&&input.getAxisValue(controller, 0)>border[player]
-			else if(method==CONTROLLER_METHOD_LWJGL)
-				if(controller>=0&&controller<controllers.size) {
-					val axisValue = controllers[controller].xAxisValue
-					val povValue = controllers[controller].povX
-					return !ignoreAxis[player]&&axisValue>border[player]||!ignorePOV[player]&&povValue>border[player]
-				}
+			return when {
+				controller<0 -> false
+				method==CONTROLLER_METHOD_SLICK_DEFAULT -> input.isControllerRight(controller)
+				method==CONTROLLER_METHOD_SLICK_ALTERNATE ->
+					input.isControllerRight(controller)||!ignoreAxis[player]&&input.getAxisValue(controller, 0)>border[player]
+				method==CONTROLLER_METHOD_LWJGL&&controller<controllers.size ->
+					!ignoreAxis[player]&&controllers[controller].xAxisValue>border[player]||
+						!ignorePOV[player]&&controllers[controller].povX>border[player]
+				else -> false
+			}
 		} catch(e:Throwable) {
 			log.debug("Exception on isControllerRight", e)
 		}
@@ -216,17 +206,14 @@ object ControllerManager {
 	fun isControllerButton(player:Int, input:Input, button:Int):Boolean {
 		try {
 			val controller = controllerID[player]
-
-			if(controller<0) return false
-			if(button<0) return false
-
-			if(method==CONTROLLER_METHOD_SLICK_DEFAULT||method==CONTROLLER_METHOD_SLICK_ALTERNATE)
-				return input.isButtonPressed(button, controller)
-			else if(method==CONTROLLER_METHOD_LWJGL)
-				if(controller>=0&&controller<controllers.size) {
-					val c = controllers[controller]
-					if(button<c.buttonCount) return c.isButtonPressed(button)
-				}
+			return when {
+				controller<0||button<0 -> false
+				method==CONTROLLER_METHOD_SLICK_DEFAULT||method==CONTROLLER_METHOD_SLICK_ALTERNATE ->
+					input.isButtonPressed(button, controller)
+				method==CONTROLLER_METHOD_LWJGL&&controller<controllers.size ->
+					controllers[controller].let {c -> button<c.buttonCount&&c.isButtonPressed(button)}
+				else -> false
+			}
 		} catch(e:ArrayIndexOutOfBoundsException) {
 			// Invalid button
 		} catch(e:Throwable) {

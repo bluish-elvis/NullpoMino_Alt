@@ -33,7 +33,6 @@ import mu.nu.nullpo.game.event.EventReceiver
 import java.util.Locale
 
 abstract class BaseFontNano:BaseFont {
-
 	val w = 12
 	val h = 14
 	abstract override val rainbowCount:Int

@@ -45,7 +45,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** ULTRA Mode */
 class SprintUltra:NetDummyMode() {
-
 	private var pow = 0
 
 	/** Most recent scoring event b2b */
@@ -185,7 +184,6 @@ class SprintUltra:NetDummyMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-
 					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
 					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
 					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
@@ -454,7 +452,6 @@ class SprintUltra:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-
 		receiver.drawMenuFont(
 			engine,
 			0,
@@ -571,7 +568,6 @@ class SprintUltra:NetDummyMode() {
 					po>rankingPower[ord][goal][i] -> return i
 					po==rankingPower[ord][goal][i]&&sc>rankingScore[ord][goal][i] -> return i
 					po==rankingPower[ord][goal][i]&&sc==rankingScore[ord][goal][i]&&li>rankingLines[ord][goal][i] -> return i
-
 				}
 				RankingType.Lines -> when {
 					li>rankingLines[ord][goal][i] -> return i
@@ -693,6 +689,5 @@ class SprintUltra:NetDummyMode() {
 
 		/** Time limit type */
 		private val GOALTYPE_MAX = tableLength.size*2
-
 	}
 }

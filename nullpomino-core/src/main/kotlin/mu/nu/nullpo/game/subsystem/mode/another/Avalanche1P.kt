@@ -36,7 +36,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** AVALANCHE mode (Release Candidate 2) */
 class Avalanche1P:Avalanche1PDummyMode() {
-
 	/** Selected game type */
 	private var gametype = 0
 
@@ -138,7 +137,6 @@ class Avalanche1P:Avalanche1PDummyMode() {
 				engine.playSE("change")
 
 				when(menuCursor) {
-
 					0 -> {
 						gametype += change
 						if(gametype<0) gametype = GAMETYPE_MAX-1
@@ -185,7 +183,6 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -395,7 +392,6 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-
 		if(gametype==2) {
 			receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", COLOR.ORANGE)
 			receiver.drawMenuFont(engine, 0, 3, "Time", COLOR.BLUE)

@@ -39,7 +39,6 @@ import org.newdawn.slick.state.StateBasedGame
 
 /** Options screen */
 internal class StateConfigMainMenu:DummyMenuChooseState() {
-
 	/** Player number */
 	private var player = 0
 
@@ -146,6 +145,5 @@ internal class StateConfigMainMenu:DummyMenuChooseState() {
 				"RESET Keyboard Assign" to "KeyboardReset",
 				"Joystick SETTING" to "Joystick"
 			)
-
 	}
 }

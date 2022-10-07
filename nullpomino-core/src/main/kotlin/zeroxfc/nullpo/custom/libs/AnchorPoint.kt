@@ -1,13 +1,16 @@
 /*
+ * Copyright (c) 2022-2022,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2010)
+ * It is part of an extension library for the game NullpoMino (copyright 2022-2022)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
  *
  * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -30,27 +33,37 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package zeroxfc.nullpo.custom.libs
 
-import java.util.Random
-
-// import java.util.Iterator;
-// import java.util.List;
-@Deprecated("kotlin List has .shuffled Method")
-class ArrayRandomizer {
-	// Internal randomizer
-	private val randomizer:Random
-
-	constructor() {
-		randomizer = Random()
-	}
-
-	constructor(seed:Long) {
-		randomizer = Random(seed)
-	}
-
-	@Deprecated("kotlin List has .shuffled Method", ReplaceWith("arr?.toList()?.shuffled(randomizer)"))
-	fun permute(arr:List<Int>?):List<Int> =
-		arr?.shuffled(randomizer) ?: emptyList()
-
+/**
+ * TL = top-left corner.
+ * TM = top-middle.
+ * TR = top-right corner.
+ * ML = middle-left.
+ * MM = center.
+ * MR = middle-right.
+ * LL = bottom-left corner.
+ * LM = bottom-middle.
+ * LR = bottom-right corner.
+ */
+enum class AnchorPoint {
+	/**top-left corner*/
+	TL,
+	/**top-middle*/
+	TM,
+	/**top-right corner*/
+	TR,
+	/**middle-left*/
+	ML,
+	/**center*/
+	MM,
+	/**middle-right*/
+	MR,
+	/**bottom-left corner*/
+	LL,
+	/**bottom-middle*/
+	LM,
+	/**bottom-right corner*/
+	LR
 }

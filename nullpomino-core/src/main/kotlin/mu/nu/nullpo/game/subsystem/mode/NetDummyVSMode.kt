@@ -45,8 +45,7 @@ import java.io.IOException
 import kotlin.random.Random
 
 /** Special base class for netplay VS modes. Up to 6 players supported. */
-open class NetDummyVSMode:NetDummyMode() {
-
+abstract class NetDummyVSMode:NetDummyMode() {
 	/* -------------------- Variables -------------------- */
 	/** NET-VS: Local player's seat ID (-1:Spectator) */
 	private var netVSMySeatID = 0
@@ -786,7 +785,6 @@ open class NetDummyVSMode:NetDummyMode() {
 				496, 16, netVSAutoStartTimer.toTimeStr,
 				if(netCurrentRoomInfo!!.autoStartTNET2) COLOR.RED else COLOR.YELLOW
 			)
-
 	}
 
 	/** NET-VS: Game Over */
@@ -909,7 +907,6 @@ open class NetDummyVSMode:NetDummyMode() {
 			owner.receiver.drawMenuFont(engine, 0f, cY/2, "WIN!", COLOR.YELLOW)
 		else
 			owner.receiver.drawMenuFont(engine, 0f, cY/2, "1ST PLACE!", COLOR.YELLOW)
-
 	}
 
 	/** NET-VS: Results screen */

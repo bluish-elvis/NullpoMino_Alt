@@ -35,7 +35,6 @@ import java.util.LinkedList
 
 /** Single player mode ranking */
 class NetSPRanking:Serializable {
-
 	/** Game Mode Name */
 	var strModeName = ""
 

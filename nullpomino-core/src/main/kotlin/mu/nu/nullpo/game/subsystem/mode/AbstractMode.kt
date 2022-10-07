@@ -292,9 +292,6 @@ abstract class AbstractMode:GameMode {
 		}+if(li>=1&&engine.field.isEmpty) 18 else 0 // All clear
 	}
 
-	data class powData(val base:Int = 0, val bonus:Int = 0) {
-		val total = base+bonus
-	}
 	/**VS Attack lines based tetr.io garbaging by osk, g3ner1c, emmachase
 	 * @param statc if true increase to statistics attacks
 	 * @return total,line/twist,bonus*/
@@ -307,20 +304,20 @@ abstract class AbstractMode:GameMode {
 			}
 		}.total
 
-	fun calcPower(engine:GameEngine, ev:ScoreEvent):powData {
+	fun calcPower(engine:GameEngine, ev:ScoreEvent):PowData {
 		val lines = ev.lines
-		if(lines<=0) return powData()
+		if(lines<=0) return PowData()
 		val base = when {
-			engine.twist -> (if(engine.lastEventShape==Piece.Shape.T) lines*2 else lines+1)
+			ev.twist -> (if(ev.piece?.type==Piece.Shape.T) lines*2 else lines+1)
 			lines<=3 -> maxOf(0, lines-1)
 			else -> lines
 		}
-		val it = (base+engine.b2bCount.let {c ->
+		val it = (ev.b2b.let {c ->
 			if(c>0) (floor(1+ln1p(c*.8f))+if(c>2) floor(ln1p(c*.8f)%1/3) else 0f).toInt()
 			else 0
-		}).let {if(it<=0) floor(ln1p(engine.combo*1.25f)).toInt() else it+engine.combo*it/4+engine.field.isEmpty.toInt()*10}
+		}+base).let {if(it<=0) floor(ln1p(ev.combo*1.25f)).toInt() else it+ev.combo*it/4+engine.field.isEmpty.toInt()*10}
 
-		return powData(it, it-base)
+		return PowData(base, it-base)
 	}
 
 	override fun onLockFlash(engine:GameEngine):Boolean = false
@@ -333,8 +330,7 @@ abstract class AbstractMode:GameMode {
 	override fun onResult(engine:GameEngine):Boolean = false
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
-		if(!engine.owner.replayMode) {
-
+		if(!engine.owner.replayMode&&menu.size==0) {
 			// Configuration changes val change = updateCursor(engine, 5)
 			updateMenu(engine)
 
@@ -347,7 +343,6 @@ abstract class AbstractMode:GameMode {
 			}
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -603,7 +598,6 @@ abstract class AbstractMode:GameMode {
 		engine:GameEngine, receiver:EventReceiver,
 		are:Int, aline:Int, lined:Int, lock:Int, das:Int
 	) {
-
 		for(i in 0..1) {
 			val cur = menuCursor==statcMenu&&!engine.owner.replayMode
 			val show = if(i==0) "ARE" to are else "LINE" to aline
@@ -872,6 +866,12 @@ abstract class AbstractMode:GameMode {
 		MAXCOMBO, MAXB2B, SPL, SPM, SPS,
 		LPM, LPS, PPM, PPS, APL, APM,
 		MAXCHAIN, LEVEL_ADD_DISP
+	}
+
+	companion object {
+		data class PowData(val base:Int = 0, val bonus:Int = 0) {
+			val total = base+bonus
+		}
 	}
 
 }

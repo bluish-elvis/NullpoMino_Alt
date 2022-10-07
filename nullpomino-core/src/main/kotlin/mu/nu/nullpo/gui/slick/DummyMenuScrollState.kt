@@ -39,7 +39,6 @@ import org.newdawn.slick.state.StateBasedGame
 
 /** Dummy class for menus with a scroll bar */
 abstract class DummyMenuScrollState:DummyMenuChooseState() {
-
 	/** ID number of file at top of currently displayed section */
 	private var minentry = 0
 

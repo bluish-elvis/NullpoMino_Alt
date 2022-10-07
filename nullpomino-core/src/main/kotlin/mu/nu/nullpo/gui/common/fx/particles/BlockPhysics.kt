@@ -42,19 +42,21 @@ import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.fx.Effect
 import mu.nu.nullpo.gui.common.libs.PhysicsObject
 import mu.nu.nullpo.gui.common.libs.Vector
+import zeroxfc.nullpo.custom.libs.AnchorPoint
 import kotlin.math.abs
 
-class BlockPhysics(position:Vector = Vector(0, 0), velocity:Vector = Vector(0, 0),
-	collisionsToDestroy:Int = -1, val blockSizeX:Int = 1, val blockSizeY:Int = 1, anchorPoint:Int = 0, val block:Block = Block(1)):
-	PhysicsObject(position, velocity, collisionsToDestroy, blockSizeX*BS, blockSizeY*BS, anchorPoint), Effect {
+class BlockPhysics(x:Float = 0f, y:Float = 0f, velocity:Vector = Vector(0, 0),
+	collisionsToDestroy:Int = -1, val blockSizeX:Int = 1, val blockSizeY:Int = 1, anchorPoint:AnchorPoint = AnchorPoint.TL,
+	val block:Block = Block(1)):
+	PhysicsObject(x, y, velocity, collisionsToDestroy, blockSizeX*BS, blockSizeY*BS, anchorPoint), Effect {
 	override fun update(r:AbstractRenderer):Boolean {
 		move()
-		if(pos.y>465) {
+		if(y>465) {
 			reflectVelocityWithRestitution(vel, true, .75f)
-			while(pos.y>465) move()
+			while(y>465) move()
 		}
 		vel += FieldScatter.GRAVITY
-		return pos.x<=-BS/2||pos.x>640+BS/2||(pos.y>460&&abs(vel.magnitude)<0.0001)
+		return x<=-BS/2||x>640+BS/2||(y>460&&abs(vel.magnitude)<0.0001)
 	}
 
 	override fun draw(i:Int, r:AbstractRenderer) {
@@ -67,7 +69,7 @@ class BlockPhysics(position:Vector = Vector(0, 0), velocity:Vector = Vector(0, 0
 		 */
 		for(y in 0 until blockSizeY) {
 			for(x in 0 until blockSizeX) {
-				r.drawBlock(minX+x*BS, minY+y*BS, block, 0f, 1f, 1f)
+				r.drawBlock(minX+x*BS, minY+y*BS, block)
 			}
 		}
 	}

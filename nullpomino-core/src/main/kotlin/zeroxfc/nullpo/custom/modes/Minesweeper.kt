@@ -337,11 +337,11 @@ class Minesweeper:AbstractMode() {
 		updateEngineGrid(engine)
 
 		receiver.blockBreak(engine, engine.field.findBlocks {it.color==Block.COLOR.RED&&it.isGemBlock})
-		//				for (int y = 0; y < height; y++) {
-		//					for (int x = 0; x < length; x++) {
-		//						if (mainGrid.getSquareAt(x, y).isMine) engine.field.getBlock(x, y).copy(mine);
-		//					}
-		//				}
+		/*				for (int y = 0; y < height; y++) {
+							for (int x = 0; x < length; x++) {
+								if (mainGrid.getSquareAt(x, y).isMine) engine.field.getBlock(x, y).copy(mine);
+							}
+						}*/
 		engine.gameEnded()
 		engine.resetStatc()
 		engine.stat = GameEngine.Status.GAMEOVER
@@ -526,11 +526,11 @@ class Minesweeper:AbstractMode() {
 				updateBlockGrid(engine)
 				updateEngineGrid(engine)
 
-				//			for (int y = 0; y < height; y++) {
-				//				for (int x = 0; x < length; x++) {
-				//					if (mainGrid.getSquareAt(x, y).uncovered) engine.field.getBlock(x, y).copy(open);
-				//				}
-				//			}
+				/*			for (int y = 0; y < height; y++) {
+								for (int x = 0; x < length; x++) {
+									if (mainGrid.getSquareAt(x, y).uncovered) engine.field.getBlock(x, y).copy(open);
+								}
+							}*/
 				engine.gameEnded()
 				engine.stat = GameEngine.Status.EXCELLENT
 				engine.ending = 1
@@ -654,7 +654,6 @@ class Minesweeper:AbstractMode() {
 									receiver.drawMenuFont(engine, x, y, "b", COLOR.RED)
 								else if(mainGrid.getSquareAt(x, y).question)
 									receiver.drawMenuFont(engine, x, y, "?")
-
 							}
 						}
 					}
@@ -734,7 +733,6 @@ class Minesweeper:AbstractMode() {
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		if(!owner.replayMode) {
 			saveSetting(prop, engine)
-
 		}
 		return false
 	}

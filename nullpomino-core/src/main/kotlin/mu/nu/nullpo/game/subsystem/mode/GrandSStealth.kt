@@ -39,20 +39,16 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** PHANTOM MANIA mode (Original from NullpoUE build 121909 by Zircean) */
-class GrandPhantom:AbstractMode() {
-
+class GrandSStealth:AbstractMode() {
 	/** Next section level */
 	private var nextseclv = 0
-
 	/** Level up flag (Set to true when the level increases) */
 	private var lvupflag = false
 
 	/** Current grade */
 	private var grade = 0
-
 	/** Remaining frames of flash effect of grade display */
 	private var gradeflash = 0
-
 	/** Used by combo scoring */
 	private var comboValue = 0
 
@@ -61,10 +57,8 @@ class GrandPhantom:AbstractMode() {
 
 	/** Remaining ending time limit */
 	private var rolltime = 0
-
 	/** 0:Died before ending, 1:Died during ending, 2:Completed ending */
 	private var rollclear = 0
-
 	/** True if ending has started */
 	private var rollstarted = false
 
@@ -73,47 +67,35 @@ class GrandPhantom:AbstractMode() {
 
 	/** Section Time */
 	private var sectionTime = MutableList(SECTION_MAX) {0}
-
 	/** This will be true if the player achieves
 	 * new section time record in specific section */
 	private var sectionIsNewRecord = MutableList(SECTION_MAX) {false}
-
 	/** Amount of sections completed */
 	private var sectionscomp = 0
-
 	/** Average section time */
 	private var sectionavgtime = 0
-
 	/** Current section time */
 	private var sectionlasttime = 0
-
 	/** Number of 4-Line clears in current section */
-	private var sectionfourline = 0
-
-	/** Set to true by default, set to false when sectionfourline is below 2 */
-	private var gmfourline = false
+	private var sectionQuads = 0
+	/** Set to true by default, set to false when sectionQuads is below 2 */
+	private var gmQuads = false
 
 	/** AC medal (0:None, 1:Bronze, 2:Silver, 3:Gold) */
 	private var medalAC = 0
-
 	/** ST medal */
 	private var medalST = 0
-
 	/** SK medal */
 	private var medalSK = 0
-
 	/** RE medal */
 	private var medalRE = 0
-
 	/** RO medal */
 	private var medalRO = 0
-
 	/** CO medal */
 	private var medalCO = 0
 
 	/** Used by RE medal */
 	private var recoveryFlag = false
-
 	/** Total spins */
 	private var spinCount = 0
 
@@ -142,16 +124,12 @@ class GrandPhantom:AbstractMode() {
 
 	/** Grade records */
 	private val rankingGrade = MutableList(RANKING_MAX) {0}
-
 	/** Level records */
 	private val rankingLevel = MutableList(RANKING_MAX) {0}
-
 	/** Time records */
 	private val rankingTime = MutableList(RANKING_MAX) {0}
-
 	/** Roll-Cleared records */
 	private val rankingRollclear = MutableList(RANKING_MAX) {0}
-
 	/** Best section time records */
 	private val bestSectionTime = MutableList(SECTION_MAX) {0}
 
@@ -181,8 +159,8 @@ class GrandPhantom:AbstractMode() {
 		sectionIsNewRecord.fill(false)
 		sectionavgtime = 0
 		sectionlasttime = 0
-		sectionfourline = 0
-		gmfourline = true
+		sectionQuads = 0
+		gmQuads = true
 		medalAC = 0
 		medalST = 0
 		medalSK = 0
@@ -295,12 +273,9 @@ class GrandPhantom:AbstractMode() {
 	/** Calculates average section time */
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
-			var temp = 0
-			for(i in startLevel until startLevel+sectionscomp)
-				temp += sectionTime[i]
-			sectionavgtime = temp/sectionscomp
-		} else
-			sectionavgtime = 0
+			val i = minOf(sectionscomp+startLevel, sectionTime.size)
+			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
+		} else sectionavgtime = 0
 	}
 
 	/** Checks ST medal
@@ -372,7 +347,6 @@ class GrandPhantom:AbstractMode() {
 
 			// Check for B button, when pressed this will shut down the game engine.
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -580,14 +554,13 @@ class GrandPhantom:AbstractMode() {
 
 		if(li>=1&&engine.ending==0) {
 			if(li>=4) {
-				sectionfourline++
+				sectionQuads++
 
 				if(big) {
 					if(engine.statistics.totalQuadruple==1||engine.statistics.totalQuadruple==2
 						||engine.statistics.totalQuadruple==4
 					) {
 						engine.playSE("medal${++medalSK}")
-
 					}
 				} else if(engine.statistics.totalQuadruple==5||engine.statistics.totalQuadruple==10
 					||engine.statistics.totalQuadruple==17
@@ -645,7 +618,7 @@ class GrandPhantom:AbstractMode() {
 
 				roMedalCheck(engine)
 
-				if(engine.statistics.totalQuadruple>=31&&gmfourline&&sectionfourline>=1) {
+				if(engine.statistics.totalQuadruple>=31&&gmQuads&&sectionQuads>=1) {
 					grade = 6
 					gradeflash = 180
 				}
@@ -710,7 +683,6 @@ class GrandPhantom:AbstractMode() {
 
 				stMedalCheck(engine, levelb/100)
 			} else if(engine.statistics.level>=nextseclv) {
-
 				owner.bgMan.fadesw = true
 				owner.bgMan.fadecount = 0
 				owner.bgMan.fadebg = nextseclv/100
@@ -727,9 +699,9 @@ class GrandPhantom:AbstractMode() {
 
 				sectionlasttime = sectionTime[levelb/100]
 
-				if(sectionfourline<2) gmfourline = false
+				if(sectionQuads<2) gmQuads = false
 
-				sectionfourline = 0
+				sectionQuads = 0
 
 				stMedalCheck(engine, levelb/100)
 
@@ -875,7 +847,6 @@ class GrandPhantom:AbstractMode() {
 			if(medalST==3) updateBestSectionTime()
 
 			if(rankingRank!=-1||medalST==3) return true
-
 		}
 		return false
 	}

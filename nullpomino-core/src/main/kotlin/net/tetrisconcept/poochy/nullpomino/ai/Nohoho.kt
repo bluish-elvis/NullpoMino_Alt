@@ -43,7 +43,6 @@ import kotlin.math.abs
  * Poochy.Spambucket@gmail.com
  */
 class Nohoho:DummyAI(), Runnable {
-
 	/** When true,To threadThink routineInstructing the execution of the */
 	private var thinkRequest = ThinkRequestMutex()
 	/** Number of frames for which piece has been stuck */
@@ -567,7 +566,6 @@ class Nohoho:DummyAI(), Runnable {
 				} catch(e:InterruptedException) {
 					break
 				}
-
 		}
 
 		threadRunning = false

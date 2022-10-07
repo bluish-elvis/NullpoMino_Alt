@@ -45,8 +45,7 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.NintendoRandomizer
 
 /** RETRO CLASSIC mode (Based from NES, Original from NullpoUE build 010210 by Zircean) */
-class RetroClassic:AbstractMode() {
-
+class RetroN:AbstractMode() {
 	/** Selected game type */
 	private var gametype = 0
 
@@ -166,7 +165,6 @@ class RetroClassic:AbstractMode() {
 			engine.owARR = 6
 		}
 		engine.speed.lockDelay = engine.speed.denominator/engine.speed.gravity
-
 	}
 
 	/** Main routine for game setup screen */
@@ -214,7 +212,6 @@ class RetroClassic:AbstractMode() {
 
 			// Check for B button, when pressed this will shut down the game engine.
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -571,7 +568,6 @@ class RetroClassic:AbstractMode() {
 	}
 
 	companion object {
-
 		/** Denominator table (NTSC-U) */
 		private val tableDenominator = listOf(
 			//	0  1  2  3  4  5  6  7  8  9    +xx

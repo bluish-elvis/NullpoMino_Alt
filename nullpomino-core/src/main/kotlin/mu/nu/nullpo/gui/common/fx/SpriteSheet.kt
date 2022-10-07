@@ -31,28 +31,16 @@ package mu.nu.nullpo.gui.common.fx
 import mu.nu.nullpo.gui.common.libs.Vector
 
 /** 各種エフェクト state */
-abstract class SpriteSheet(
-	var pos:Vector = Vector(),
+abstract class SpriteSheet(override var x:Float, override var y:Float,
 	/** アニメーション velocity */
 	var vel:Vector = Vector(),
 	/**	エフェクトサイズ*/
 	var scale:Float = 1f,
 	open var alpha:Float = 1f):Effect {
+
 	/** アニメーション counter */
 	var ticks = 0
 		protected set
-	/** X-coordinate */
-	var x
-		get() = pos.x
-		set(v) {
-			pos.x = v
-		}
-	/** Y-coordinate */
-	var y:Float
-		get() = pos.y
-		set(v) {
-			pos.y = v
-		}
 
 	/** その他パラメータ
 	 * 0: Color
@@ -61,11 +49,11 @@ abstract class SpriteSheet(
 	 * 3: darkness Darkness or brightness
 	 */
 
-	constructor(x:Float, y:Float, scale:Float = 1f, alpha:Float = 1f, vel:Vector = Vector())
-		:this(Vector(x, y), vel, scale, alpha)
+	constructor(pos:Vector, vel:Vector = Vector(), scale:Float = 1f, alpha:Float = 1f)
+		:this(pos.x, pos.y, vel, scale, alpha)
 
 	constructor(x:Int, y:Int, scale:Float = 1f, alpha:Float = 1f, vel:Vector = Vector())
-		:this(x.toFloat(), y.toFloat(), scale, alpha, vel)
+		:this(x.toFloat(), y.toFloat(), vel, scale, alpha)
 
 	open val dx:Float get() = x
 	open val dy:Float get() = y

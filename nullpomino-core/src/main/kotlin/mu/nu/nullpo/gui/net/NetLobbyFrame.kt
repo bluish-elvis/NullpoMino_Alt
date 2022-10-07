@@ -71,7 +71,6 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Collections
 import java.util.GregorianCalendar
 import java.util.LinkedList
 import java.util.Locale
@@ -825,7 +824,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			it.addActionListener(this)
 			it.actionCommand = "ServerSelect_Exit"
 			it.setMnemonic('X')
-
 		})
 	}
 
@@ -2296,7 +2294,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			// TODO: There are several threading issue here
 			log.debug("changeCurrentScreenCard failed; Possible threading issue", e)
 		}
-
 	}
 
 	/** Create String from a Calendar (for chat log)
@@ -2359,7 +2356,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			}
 		} catch(_:Exception) {
 		}
-
 	}
 
 	/** Chat logAdd a new line to the(System calls from a different thread for
@@ -2414,7 +2410,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			}
 		} catch(_:Exception) {
 		}
-
 	}
 
 	/** Add a user chat to log pane (for multi threading)
@@ -2465,7 +2460,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			}
 		} catch(_:Exception) {
 		}
-
 	}
 
 	/** Add a recorded user chat to log pane (for multi threading)
@@ -3008,7 +3002,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		} catch(e:IOException) {
 			log.warn("Failed to save netlobby config file", e)
 		}
-
 	}
 
 	/** Save global config file */
@@ -3020,7 +3013,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		} catch(e:IOException) {
 			log.warn("Failed to save global config file", e)
 		}
-
 	}
 
 	/** End processing */
@@ -3142,7 +3134,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				} catch(e:IOException) {
 					log.warn("Failed to save NetObserver config file", e)
 				}
-
 			}
 		}
 	}
@@ -3405,7 +3396,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					} catch(e2:IOException) {
 						log.warn("Failed to save NetObserver config file", e2)
 					}
-
 				}
 			}
 		// End
@@ -4411,7 +4401,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				} catch(e:IOException) {
 					log.error("Failed to write replay to replay/netreplay.rep", e)
 				}
-
 			}
 		}
 
@@ -4464,7 +4453,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Text input Pop-up for the fieldMenu
 	 * [Exhibit](http://terai.xrea.jp/Swing/DefaultEditorKit.html) */
 	private inner class TextComponentPopupMenu(field:JTextComponent):JPopupMenu() {
-
 		private val cutAction:Action = object:AbstractAction(getUIText("Popup_Cut")) {
 			override fun actionPerformed(evt:ActionEvent) {
 				field.cut()
@@ -4492,7 +4480,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		init {
-
 			add(cutAction)
 			add(copyAction)
 			add(pasteAction)
@@ -4509,7 +4496,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			selectAllAction.isEnabled = field.isFocusOwner
 			super.show(c, x, y)
 		}
-
 	}
 
 	/** Pop-up box for the listMenu */
@@ -4528,7 +4514,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		init {
-
 			add(copyAction)
 		}
 
@@ -4538,12 +4523,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				super.show(c, x, y)
 			}
 		}
-
 	}
 
 	/** Pop-up list box for server selectionMenu */
 	private inner class ServerSelectListBoxPopupMenu:JPopupMenu() {
-
 		private val connectAction:Action = object:AbstractAction(getUIText("Popup_ServerSelect_Connect")) {
 			override fun actionPerformed(e:ActionEvent) {
 				serverSelectConnectButtonClicked()
@@ -4561,7 +4544,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		init {
-
 			add(connectAction)
 			add(deleteAction)
 			add(setObserverAction)
@@ -4570,7 +4552,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		override fun show(c:Component, x:Int, y:Int) {
 			if(listboxServerList.selectedIndex!=-1) super.show(c, x, y)
 		}
-
 	}
 
 	/** For server selection list boxMouseAdapter */
@@ -4582,7 +4563,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 	/** Room list tablePop-up forMenu */
 	private inner class RoomTablePopupMenu:JPopupMenu() {
-
 		private val joinAction:Action = object:AbstractAction(getUIText("Popup_RoomTable_Join")) {
 			override fun actionPerformed(evt:ActionEvent) {
 				val row = tableRoomList.selectedRow
@@ -4618,7 +4598,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		init {
-
 			add(joinAction)
 			add(watchAction)
 			add(detailAction)
@@ -4632,7 +4611,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				super.show(c, x, y)
 			}
 		}
-
 	}
 
 	/** Room list tableUseMouseAdapter */
@@ -4674,7 +4652,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 	/** Pop-up display field for logMenu */
 	private inner class LogPopupMenu(field:JTextComponent):JPopupMenu() {
-
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
 			override fun actionPerformed(evt:ActionEvent) {
 				field.copy()
@@ -4692,7 +4669,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		init {
-
 			add(copyAction)
 			add(selectAllAction)
 			add(clearAction)
@@ -4705,7 +4681,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			selectAllAction.isEnabled = field.isFocusOwner
 			super.show(c, x, y)
 		}
-
 	}
 
 	/** Display field for logKeyAdapter */
@@ -4728,7 +4703,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 	/** Popup menu for any table */
 	private inner class TablePopupMenu(table:JTable):JPopupMenu() {
-
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
 			override fun actionPerformed(e:ActionEvent) {
 				val row = table.selectedRow
@@ -4753,7 +4727,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		init {
-
 			add(copyAction)
 		}
 
@@ -4763,7 +4736,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			copyAction.isEnabled = flg
 			super.show(c, x, y)
 		}
-
 	}
 
 	/** Rule entry for rule change screen */
@@ -4805,7 +4777,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			return this
 		}
-
 	}
 
 	companion object {

@@ -48,7 +48,6 @@ data class SpeedParam(
 	/** 横移動 time */
 	var das:Int = 14
 ):Serializable {
-
 	val rank:Float get() = spdRank(gravity, denominator)
 
 	/** Constructor */

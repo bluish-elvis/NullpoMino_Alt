@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022,
+ * Copyright (c) 2022-2022,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2022-2022)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -73,7 +73,7 @@ class Snaker:AbstractMode() {
 			engine.fieldWidth = 19
 			engine.fieldHeight = 19
 			engine.createFieldIfNeeded()
-			val var10002 = engine.statc[0]++
+			engine.statc[0]++
 			engine.playSE("ready")
 			val startx = 9-snakelength/2
 			for(i in 0 until snakelength) {

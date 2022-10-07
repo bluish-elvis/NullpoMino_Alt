@@ -36,7 +36,6 @@ import java.util.Locale
 
 /** クライアント(Player用) */
 class NetPlayerClient:NetBaseClient {
-
 	/** Player情報 */
 	/** @return Player情報のリスト
 	 */

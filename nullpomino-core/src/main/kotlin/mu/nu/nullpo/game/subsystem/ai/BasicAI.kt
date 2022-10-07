@@ -37,7 +37,6 @@ import kotlin.math.abs
 
 /** CommonAI */
 open class BasicAI:DummyAI(), Runnable {
-
 	/* AIOfName */
 	override val name = "BASIC"
 
@@ -540,7 +539,6 @@ open class BasicAI:DummyAI(), Runnable {
 				} catch(e:InterruptedException) {
 					break
 				}
-
 		}
 
 		threadRunning = false

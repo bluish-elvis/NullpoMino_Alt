@@ -53,10 +53,8 @@ class AIRanksTester(private val numTries:Int) {
 	}
 
 	private fun incrementPieces() {
-
 		System.arraycopy(pieces, 1, pieces, 0, 5)
 		pieces[5] = randomizer!!.next()
-
 	}
 
 	fun test() {
@@ -82,14 +80,12 @@ class AIRanksTester(private val numTries:Int) {
 			//System.out.println(Arrays.toString(heights));
 			ranksAI.playFictitiousMove(heights, pieces, holdPiece, holdOK)
 			incrementPieces()
-
 		}
 	}
 
 	companion object {
 		@JvmStatic
 		fun main(args:Array<String>) {
-
 			val tester = AIRanksTester(100)
 			tester.test()
 		}

@@ -630,30 +630,30 @@ class ColorPower:MarathonModeBase() {
 			return true
 		}
 
-//		if (engine.statc[0] > 0 && !ruleboundMode && !preset) {
-//			int v = -1;
-//			for (int j = 0; j < 8; j++) {
-//				boolean flag = false;
-//
-//				 v = nonRuleboundRandomizer.nextInt(POWERUP_NAMES.length);
-//				 for (int elem : colorHistory) {
-//					if (elem == v) {
-//						flag = true;
-//						break;
-//					}
-//				 }
-//				 if (!flag) break;
-//			}
-//			appendToHistory(v);
-//
-//			try {
-//				engine.nextPieceArrayObject[engine.nextPieceCount + engine.ruleOpt.nextDisplay - 1].setColor(v + 1);
-//			} catch (IndexOutOfBoundsException e) {
-//				// DO NOTHING
-//			}
-//
-//			preset = true;
-//		}
+		/*		if (engine.statc[0] > 0 && !ruleboundMode && !preset) {
+					int v = -1;
+					for (int j = 0; j < 8; j++) {
+						boolean flag = false;
+
+						 v = nonRuleboundRandomizer.nextInt(POWERUP_NAMES.length);
+						 for (int elem : colorHistory) {
+							if (elem == v) {
+								flag = true;
+								break;
+							}
+						 }
+						 if (!flag) break;
+					}
+					appendToHistory(v);
+
+					try {
+						engine.nextPieceArrayObject[engine.nextPieceCount + engine.ruleOpt.nextDisplay - 1].setColor(v + 1);
+					} catch (IndexOutOfBoundsException e) {
+						// DO NOTHING
+					}
+
+					preset = true;
+				}*/
 		if(engine.statc[0]==0&&!ruleboundMode&&preset&&!engine.holdDisable) {
 			preset = false
 		}

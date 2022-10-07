@@ -38,7 +38,6 @@ import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNoSZORandomizer
 import org.apache.logging.log4j.LogManager
 
 open class ComboRaceSeedSearch:DummyAI() {
-
 	private class Transition
 	constructor(val x:Int, val rt:Int, val rtSub:Int = 0, val newField:Int, val next:Transition?) {
 		constructor(x:Int, rt:Int, newField:Int, next:Transition):this(x, rt, 0, newField, next)
@@ -273,7 +272,6 @@ open class ComboRaceSeedSearch:DummyAI() {
 							fldTemp.replace(fldBackup)
 
 							if(piece.checkCollision(x, y, rot, fldTemp)) {
-
 								wallkick.executeWallkick(x, y, -1, rt, rot, true, piece, fldTemp, null)?.let {kick ->
 									newX = x+kick.offsetX
 									newY = piece.getBottom(newX, y+kick.offsetY, rot, fldTemp)
@@ -372,6 +370,5 @@ open class ComboRaceSeedSearch:DummyAI() {
 		private fun fieldToIndex(field:Field, valleyX:Int):Int = fieldToIndex(fieldToCode(field, valleyX))
 
 		fun fieldToIndex(field:Field):Int = fieldToIndex(fieldToCode(field))
-
 	}
 }

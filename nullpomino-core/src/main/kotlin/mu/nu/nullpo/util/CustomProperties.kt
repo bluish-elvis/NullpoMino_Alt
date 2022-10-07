@@ -60,7 +60,6 @@ class CustomProperties(name:String = ""):Properties() {
 			val f = GZIPInputStream(FileInputStream(file))
 			load(f)
 			f.close()
-
 		} catch(e:FileNotFoundException) {
 			log.debug("Not found custom property file: $file")
 			return null
@@ -109,16 +108,21 @@ class CustomProperties(name:String = ""):Properties() {
 	/** プロパティを設定
 	 * @return 指定された[key]に対応する値 (見つからなかったら[def]）
 	 */
-	inline fun <reified T> getProperty(key:String, def:T):T = when(def) {
-		is Byte -> getProperty(key, def)
-		is Int -> getProperty(key, def)
-		is Long -> getProperty(key, def)
-		is Float -> getProperty(key, def)
-		is Double -> getProperty(key, def)
-		is Char -> getProperty(key, def)
-		is Boolean -> getProperty(key, def)
-		else -> getProperty(key, "$def")
-	} as? T ?: def
+	inline fun <reified T> getProperty(key:String, def:T):T = try {
+		when(def) {
+			is Byte -> getProperty(key, def)
+			is Int -> getProperty(key, def)
+			is Long -> getProperty(key, def)
+			is Float -> getProperty(key, def)
+			is Double -> getProperty(key, def)
+			is Char -> getProperty(key, def)
+			is Boolean -> getProperty(key, def)
+			is List<*> -> getProperties(key, def)
+			else -> getProperty(key, "$def")
+		} as? T ?: def
+	} catch(e:Exception) {
+		def
+	}
 
 	/** byte型のプロパティを取得
 	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
@@ -164,7 +168,7 @@ class CustomProperties(name:String = ""):Properties() {
 					else -> it
 				} as? T ?: defaultValues.getOrNull(minOf(i, defaultValues.size-1))
 			}
-	} catch(e:NumberFormatException) {
+	} catch(e:Exception) {
 		defaultValues
 	}
 
@@ -173,7 +177,7 @@ class CustomProperties(name:String = ""):Properties() {
 
 	inline fun <reified T> getProperties(key:String, defaultValues:T) = try {
 		getProperty(key, "$defaultValues").split(',').map {it as? T ?: defaultValues}
-	} catch(e:NumberFormatException) {
+	} catch(e:Exception) {
 		listOf(defaultValues)
 	}
 
@@ -274,7 +278,6 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	companion object {
-
 		/** Serial version */
 		private const val serialVersionUID = 2L
 
