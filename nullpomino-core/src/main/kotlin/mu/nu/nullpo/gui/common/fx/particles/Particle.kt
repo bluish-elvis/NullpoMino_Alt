@@ -68,8 +68,10 @@ open class Particle @JvmOverloads constructor(
 	val shape:ParticleShape?,
 	/** Lifetime */
 	protected val maxLifetime:Int,
-	/** Position vector */
-	pos:Vector = Vector.zero(),
+	/** X-coordinate */
+	x:Float,
+	/** Y-coordinate */
+	y:Float,
 	/** Velocity vector */
 	vel:Vector = Vector.zero(),
 	/** Acceleration vector */
@@ -77,9 +79,7 @@ open class Particle @JvmOverloads constructor(
 	/** Velocity decerase float */
 	val friction:Float = 1f,
 	/** X size */
-	val sizeX:Int,
-	/** Y size */
-	val sizeY:Int,
+	val size:Int,
 	val sizeEase:Float = 6f,
 	/** Red color component 0-255 */
 	val red:Int = DEFAULT_COLOR,
@@ -96,8 +96,7 @@ open class Particle @JvmOverloads constructor(
 	/** Blue color component at end 0-255 */
 	val blueEnd:Int = blue,
 	/** Alpha component at end 0-255 */
-	val alphaEnd:Int = alphaI):SpriteSheet(pos, vel) {
-
+	val alphaEnd:Int = alphaI):SpriteSheet(x, y, vel) {
 	/** Used colors 0-255*/
 	var ur = red
 		protected set
@@ -110,21 +109,18 @@ open class Particle @JvmOverloads constructor(
 	/** Used colors 0-255*/
 	var ua = alphaI
 		protected set
-	/** used width*/
-	var uw = sizeX.toFloat()
-		protected set
-	/** used height*/
-	var uh = sizeY.toFloat()
+	/** used scale*/
+	var us = size.toFloat()
 		protected set
 	/** Draw the particle.*/
 	override fun draw(i:Int, r:AbstractRenderer) {
 		fun rect() = r.drawRect(
-			pos.x-uw/2, pos.y-uh/2, uw, uh,
+			x-us/2, y-us/2, us, us,
 			ur*0x10000+ug*0x100+ub, ua/255f, 0f
 		)
 
 		fun oval() = r.drawOval(
-			pos.x-uw/2, pos.y-uh/2, uw, uh,
+			x-us/2, y-us/2, us, us,
 			ur*0x10000+ug*0x100+ub, ua/255f, 0f
 		)
 
@@ -135,11 +131,11 @@ open class Particle @JvmOverloads constructor(
 			AOval -> r.drawBlendAdd {oval()}
 			ASprite -> r.drawBlendAdd {
 				rect()
-				val sx = 16*uw
-				val sy = 16*uh
+				val sx = 16*us
+				val sy = 16*us
 				r.resources.imgFrags.let {
 					it[2].draw(
-						pos.x-sx/2, pos.y-sy/2, pos.x+sx/2, pos.y+sy/2,
+						x-sx/2, y-sy/2, x+sx/2, y+sy/2,
 						ua/255f, Triple(ur/255f, ug/255f, ub/255f)
 					)
 				}
@@ -153,20 +149,20 @@ open class Particle @JvmOverloads constructor(
 	 * @return `true` if the particle needs to be destroyed, else `false`.
 	 */
 	override fun update(r:AbstractRenderer):Boolean {
-		pos += vel
+		x += vel.x
+		y += vel.y
 		vel *= friction
 		vel += acc
 		ur = lerp(red, redEnd, ticks.toDouble()/maxLifetime)
 		ug = lerp(green, greenEnd, ticks.toDouble()/maxLifetime)
 		ub = lerp(blue, blueEnd, ticks.toDouble()/maxLifetime)
 		ua = lerp(alphaI, alphaEnd, ticks.toDouble()/maxLifetime)
-		if(sizeEase>=1) {
-			uw = smoothStep(sizeX.toFloat(), 0f, ticks.toFloat()/maxLifetime, sizeEase)
-			uh = smoothStep(sizeY.toFloat(), 0f, ticks.toFloat()/maxLifetime, sizeEase)
-		}
+		if(sizeEase>=1)
+			us = smoothStep(size.toFloat(), 0f, ticks.toFloat()/maxLifetime, sizeEase)
+
 		return ++ticks>maxLifetime||ua<=0||
-			pos.x<-uw/2&&vel.x<0||pos.x>640+uw/2&&vel.x>0||
-			pos.y<-uh/2&&vel.y<0||pos.y>480+uh/2&&vel.y<0
+			x<-us/2&&vel.x<0||x>640+us/2&&vel.x>0||
+			y<-us/2&&vel.y<0||y>480+us/2&&vel.y<0
 	}
 	/**
 	 * Particle Shapes

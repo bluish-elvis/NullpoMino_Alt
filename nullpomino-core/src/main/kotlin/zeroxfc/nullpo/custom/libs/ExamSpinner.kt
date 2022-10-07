@@ -69,7 +69,6 @@ class ExamSpinner {
 			setColor(Block.COLOR.YELLOW)
 		}
 		private val log = LogManager.getLogger()
-
 	}
 
 	private val gradeText:String
@@ -101,7 +100,6 @@ class ExamSpinner {
 		this.gradeText = gText
 		this.selectedOutcome = selectedOutcome
 		this.close = close
-
 	}
 	/**
 	 * Creates a custom spinner. Make sure to fill in all fields. Note: use lowercase "\n" for newlines.

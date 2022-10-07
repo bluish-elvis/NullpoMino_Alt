@@ -37,7 +37,6 @@ import java.util.regex.Pattern
 
 /** 新Versionチェッカー */
 class UpdateChecker:Runnable {
-
 	/* 更新 check スレッドの処理 */
 	override fun run() {
 		// 開始
@@ -192,7 +191,6 @@ class UpdateChecker:Runnable {
 							resultVersion = strTemp.toFloat()
 						} catch(_:NumberFormatException) {
 						}
-
 					}
 				}
 				return resultVersion
@@ -214,7 +212,6 @@ class UpdateChecker:Runnable {
 							resultVersion = strTemp.toInt()
 						} catch(_:NumberFormatException) {
 						}
-
 					}
 				}
 				return resultVersion
@@ -238,7 +235,6 @@ class UpdateChecker:Runnable {
 			val latestMinor = latestMinorVersionAsInt
 
 			return if(latestMajor>nowMajor) true else latestMajor==nowMajor&&latestMinor>nowMinor
-
 		}
 
 		/** Version check

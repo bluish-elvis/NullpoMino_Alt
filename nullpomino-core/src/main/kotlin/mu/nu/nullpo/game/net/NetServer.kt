@@ -57,7 +57,6 @@ import kotlin.random.Random
  * The code is based on
  * [James Greenfield's The Rox Java NIO Tutorial](http://rox-xmlrpc.sourceforge.net/niotut/) */
 class NetServer {
-
 	/** List of SocketChannel */
 	private val channelList = LinkedList<SocketChannel>()
 
@@ -270,7 +269,6 @@ class NetServer {
 											} catch(e:ConcurrentModificationException) {
 												log.debug("ConcurrentModificationException on delayed disconnect", e)
 											}
-
 									}
 									ChangeRequest.CHANGEOPS -> {
 										// interestOps Change
@@ -314,12 +312,10 @@ class NetServer {
 							log.warn("Socket disconnected by Non-IOException", e)
 							logout(key)
 						}
-
 					}
 				} catch(e:ConcurrentModificationException) {
 					log.debug("ConcurrentModificationException on the server mainloop", e)
 				}
-
 			} catch(e:IOException) {
 				log.fatal("IOException on the server mainloop", e)
 			} catch(e:Throwable) {
@@ -1103,7 +1099,6 @@ class NetServer {
 								chat.timestamp!!.strGMT
 							}\t${NetUtil.urlEncode("(private) $msg")}\n"
 						)
-
 					}
 				} else {
 					// End here
@@ -2527,7 +2522,6 @@ class NetServer {
 				val tempObj = ruleList!![style][i]
 
 				msg.append("\t").append(NetUtil.urlEncode(tempObj.strRuleName))
-
 			}
 
 			msg.append("\n")
@@ -2602,7 +2596,6 @@ class NetServer {
 		} catch(e:IOException) {
 			e.printStackTrace()
 		}
-
 	}
 
 	/** Pending changes */
@@ -2834,7 +2827,6 @@ class NetServer {
 			} catch(e:Exception) {
 				log.warn("Failed to load rule list", e)
 			}
-
 		}
 
 		/** Load multiplayer leaderboard */
@@ -2980,7 +2972,6 @@ class NetServer {
 			} catch(e:IOException) {
 				log.error("Failed to write multiplayer ranking data", e)
 			}
-
 		}
 
 		/** Load single player leaderboard */
@@ -3067,7 +3058,6 @@ class NetServer {
 			} catch(e:Exception) {
 				log.warn("Failed to load single player mode list", e)
 			}
-
 		}
 
 		/** Get specific NetSPRanking
@@ -3150,7 +3140,6 @@ class NetServer {
 			} catch(e:IOException) {
 				log.error("Failed to write single player daily ranking data", e)
 			}
-
 		}
 
 		/** Get player data from propPlayerData
@@ -3199,7 +3188,6 @@ class NetServer {
 			} catch(e:IOException) {
 				log.error("Failed to write player data", e)
 			}
-
 		}
 
 		/** Load ban list from a file */
@@ -3221,7 +3209,6 @@ class NetServer {
 			} catch(e:Exception) {
 				log.warn("Failed to load ban list", e)
 			}
-
 		}
 
 		/** Write ban list to a file */
@@ -3240,7 +3227,6 @@ class NetServer {
 			} catch(e:Exception) {
 				log.error("Failed to save ban list", e)
 			}
-
 		}
 
 		/** Load lobby chat history file */
@@ -3287,7 +3273,6 @@ class NetServer {
 			} catch(e:Exception) {
 				log.error("Failed to save lobby chat history file", e)
 			}
-
 		}
 
 		/** Get IP address

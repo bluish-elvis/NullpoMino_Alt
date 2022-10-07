@@ -32,44 +32,33 @@
  */
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
-import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
+import mu.nu.nullpo.gui.common.AbstractBG
+import mu.nu.nullpo.gui.common.ResourceImage
+import zeroxfc.nullpo.custom.libs.AnchorPoint
+import zeroxfc.nullpo.custom.libs.MathHelper.almostEqual
 import kotlin.math.PI
 import kotlin.math.sin
 
-class BackgroundDiagonalRipple:AnimatedBackgroundHook {
-	private var chunkGrid:Array<Array<ImageChunk>> = emptyArray()
-	private var reverse = false
-	private var reverseSlant = false
-	private var pulsePhaseMax = 0
+class BackgroundDiagonalRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRID_WIDTH, cellHeight:Int? = DEF_GRID_HEIGHT,
+	pulseFrames:Int = 200, var pulseBaseScale:Float = BASE_SCALE, var pulseScaleVariance:Float = SCALE_VARIANCE,
+	reverse:Boolean = false, reverseSlant:Boolean = false):AbstractBG<T>(img) {
+	private var chunkGrid:List<List<ImageChunk>> = emptyList()
+	var reverse = false
+	var reverseSlant = false
+	var pulseFrame = 0
 	private var currentPulsePhase = 0
-	private var pulseBaseScale:Float = BASE_SCALE
-	private var pulseScaleVariance:Float = SCALE_VARIANCE
 
-	constructor(bgNumber:Int, cellWidth:Int?, cellHeight:Int?, pulseFrames:Int, pulseBaseScale:Float?, pulseScaleVariance:Float?,
-		reverse:Boolean, reverseSlant:Boolean) {
-		val num = if(bgNumber in 1..19) bgNumber else 0
-		customHolder = ResourceHolderCustomAssetExtension()
-		customHolder.loadImage("res/graphics/back$num.png", imageName)
+	init {
 		setup(cellWidth, cellHeight, pulseFrames, pulseBaseScale, pulseScaleVariance, reverse, reverseSlant)
-		log.debug("Non-custom diagonal ripple background ($num) created.")
-	}
-
-	constructor(filePath:String, cellWidth:Int?, cellHeight:Int?, pulseFrames:Int, pulseBaseScale:Float?,
-		pulseScaleVariance:Float?, reverse:Boolean, reverseSlant:Boolean) {
-		customHolder = ResourceHolderCustomAssetExtension()
-		customHolder.loadImage(filePath, imageName)
-		setup(cellWidth, cellHeight, pulseFrames, pulseBaseScale, pulseScaleVariance, reverse, reverseSlant)
-		log.debug("Custom diagonal ripple background created (File Path: $filePath).")
 	}
 
 	fun modifyValues(pulseFrames:Int, pulseBaseScale:Float?, pulseScaleVariance:Float?, reverse:Boolean, reverseSlant:Boolean) {
 		this.reverse = reverse
 		this.reverseSlant = reverseSlant
-		pulsePhaseMax = pulseFrames
+		pulseFrame = pulseFrames
 		if(pulseBaseScale!=null) this.pulseBaseScale = pulseBaseScale
 		if(pulseScaleVariance!=null) this.pulseScaleVariance = pulseScaleVariance
-		if(currentPulsePhase>pulsePhaseMax) currentPulsePhase = pulsePhaseMax
+		if(currentPulsePhase>pulseFrame) currentPulsePhase = pulseFrame
 	}
 
 	fun resetPulseScaleValues() {
@@ -81,17 +70,17 @@ class BackgroundDiagonalRipple:AnimatedBackgroundHook {
 		reverse:Boolean, reverseSlant:Boolean) {
 		this.reverse = reverse
 		this.reverseSlant = reverseSlant
-		pulsePhaseMax = pulseFrames
-		currentPulsePhase = pulsePhaseMax
+		pulseFrame = pulseFrames
+		currentPulsePhase = pulseFrame
 		if(pulseBaseScale==null||pulseScaleVariance==null||cellWidth==null||cellHeight==null) {
-			chunkGrid = Array(DEF_GRID_HEIGHT) {y ->
-				Array(DEF_GRID_WIDTH) {x ->
+			chunkGrid = List(DEF_GRID_HEIGHT) {y ->
+				List(DEF_GRID_WIDTH) {x ->
 					ImageChunk(
-						ImageChunk.ANCHOR_POINT_MM, intArrayOf(
+						AnchorPoint.MM, listOf(
 							DEF_FIELD_DIM*x+DEF_FIELD_DIM/2, DEF_FIELD_DIM*y+DEF_FIELD_DIM/2
-						), intArrayOf(
+						), listOf(
 							DEF_FIELD_DIM*x, DEF_FIELD_DIM*y
-						), intArrayOf(DEF_FIELD_DIM, DEF_FIELD_DIM), floatArrayOf(BASE_SCALE, BASE_SCALE)
+						), listOf(DEF_FIELD_DIM, DEF_FIELD_DIM), listOf(BASE_SCALE, BASE_SCALE)
 					)
 				}
 			}
@@ -100,13 +89,12 @@ class BackgroundDiagonalRipple:AnimatedBackgroundHook {
 			this.pulseScaleVariance = pulseScaleVariance
 			val w:Int = if(640%cellWidth!=0) 8 else 640/cellWidth
 			val h:Int = if(480%cellHeight!=0) 8 else 480/cellHeight
-			chunkGrid = Array(h) {y ->
-				Array(w) {x ->
+			chunkGrid = List(h) {y ->
+				List(w) {x ->
 					ImageChunk(
-						ImageChunk.ANCHOR_POINT_MM,
-						intArrayOf(cellWidth*x+cellWidth/2, cellHeight*y+cellHeight/2), intArrayOf(
-							cellWidth*x, cellHeight*y
-						), intArrayOf(cellWidth, cellHeight), floatArrayOf(pulseBaseScale, pulseBaseScale)
+						AnchorPoint.MM,
+						listOf(cellWidth*x+cellWidth/2, cellHeight*y+cellHeight/2),
+						listOf(cellWidth*x, cellHeight*y), listOf(cellWidth, cellHeight), listOf(pulseBaseScale, pulseBaseScale)
 					)
 				}
 			}
@@ -114,79 +102,41 @@ class BackgroundDiagonalRipple:AnimatedBackgroundHook {
 	}
 
 	override fun update() {
-		currentPulsePhase = (currentPulsePhase+1)%pulsePhaseMax
+		currentPulsePhase = (currentPulsePhase+1)%pulseFrame
 		for(y in chunkGrid.indices) {
 			for(x in 0 until chunkGrid[y].size) {
 				var j = currentPulsePhase
-				if(reverse) j = pulsePhaseMax-currentPulsePhase-1
-				if(reverseSlant) {
-					j -= x+y
-				} else {
-					j += x+y
-				}
-				var ppu = j%pulsePhaseMax
-				if(ppu<0) ppu = pulsePhaseMax-ppu
+				if(reverse) j = pulseFrame-currentPulsePhase-1
+				if(reverseSlant) j -= x+y else j += x+y
+				var ppu = j%pulseFrame
+				if(ppu<0) ppu = pulseFrame-ppu
 				val baseScale = pulseBaseScale
 				val scaleVariance = pulseScaleVariance
-				var newScale = baseScale+sin(TWO_PI*(ppu.toDouble()/pulsePhaseMax))*scaleVariance
-				if(newScale<1.0) newScale = 1.0
-				chunkGrid[y][x].scale = floatArrayOf(newScale.toFloat(), newScale.toFloat())
+				val newScale = minOf(1.0, baseScale+sin(TWO_PI*ppu.toDouble()/pulseFrame)*scaleVariance)
+				chunkGrid[y][x].scale = listOf(newScale.toFloat(), newScale.toFloat())
 			}
 		}
 	}
 
 	override fun reset() {
-		currentPulsePhase = pulsePhaseMax
+		currentPulsePhase = pulseFrame
 		update()
 	}
 
-	override fun draw(engine:GameEngine) {
-		val priorityList = ArrayList<ImageChunk>()
-		for(imageChunks in chunkGrid) {
-			priorityList.addAll(imageChunks)
-		}
-		priorityList.sortWith {c1:ImageChunk, c2:ImageChunk ->
-			c1.scale[0].compareTo(c2.scale[0])
-		}
+	override fun draw() {
+		val priorityList = chunkGrid.flatten().sortedBy {it.scale[0]}.toMutableList()
 		val baseScale = pulseBaseScale
 		if(almostEqual(baseScale.toDouble(), 1.0, 0.005)) {
-			customHolder.drawImage(imageName, 0, 0)
-			priorityList.removeAll {imageChunk:ImageChunk ->
-				almostEqual(
-					imageChunk.scale[0].toDouble(), 1.0, 0.005
-				)
-			}
+			img.draw()
+			priorityList.removeAll {almostEqual(it.scale[0].toDouble(), 1.0, 0.005)}
 		}
-		for(i in priorityList) {
+		priorityList.forEach {i ->
 			val pos = i.drawLocation
 			val ddim = i.drawDimensions
 			val sloc = i.sourceLocation
 			val sdim = i.sourceDimensions
-			customHolder.drawImage(
-				imageName, pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0], sdim[1],
-				255, 255, 255, 255
-			)
+			img.draw(pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0], sdim[1])
 		}
-	}
-
-	override fun setBG(bg:Int) {
-		customHolder.loadImage("res/graphics/back$bg.png", imageName)
-		log.debug("Non-custom diagonal ripple background modified (New BG: $bg).")
-	}
-
-	override fun setBG(filePath:String) {
-		customHolder.loadImage(filePath, imageName)
-		log.debug("Custom diagonal ripple background modified (New File Path: $filePath).")
-	}
-	/**
-	 * Allows the hot-swapping of preloaded BGs from a storage instance of a `ResourceHolderCustomAssetExtension`.
-	 *
-	 * @param holder Storage instance
-	 * @param name   Image name
-	 */
-	override fun setBGFromHolder(holder:ResourceHolderCustomAssetExtension, name:String) {
-		customHolder.putImageAt(holder.getImageAt(name), imageName)
-		log.debug("Custom diagonal ripple background modified (New Image Reference: $name).")
 	}
 
 	companion object {
@@ -198,9 +148,4 @@ class BackgroundDiagonalRipple:AnimatedBackgroundHook {
 		private const val SCALE_VARIANCE = 1f
 	}
 
-	override val id:Int = ANIMATION_DIAGONAL_RIPPLE
-
-	init {
-		imageName = ("localBG")
-	}
 }

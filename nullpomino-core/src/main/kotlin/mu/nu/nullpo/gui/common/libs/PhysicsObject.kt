@@ -33,6 +33,7 @@
 package mu.nu.nullpo.gui.common.libs
 
 import org.apache.logging.log4j.LogManager
+import zeroxfc.nullpo.custom.libs.AnchorPoint
 
 /**
  * PhysicsObject
@@ -42,12 +43,12 @@ import org.apache.logging.log4j.LogManager
  * Has a bounding box collision system.
  */
 abstract class PhysicsObject @JvmOverloads constructor(
-	var pos:Vector = Vector(0, 0),
+	var x:Float = 0f, var y:Float = 0f,
 	var vel:Vector = Vector(0, 0),
 	/** Object "Health". Set to -1 to make indestructible .*/
 	protected var collisionsToDestroy:Int = -1,
 	protected var width:Int = 1, private var height:Int = 1,
-	private var anchorPoint:Int = 0
+	private var anchorPoint:AnchorPoint = AnchorPoint.TL
 ):Cloneable {
 	/**
 	 * Property identitifiers. Is set automatically during constructions but can be overridden by external methods.
@@ -69,24 +70,23 @@ abstract class PhysicsObject @JvmOverloads constructor(
 	 */
 	open val boundingBox:Array<FloatArray>
 		get() {
-
 			val sizeX = width
 			val sizeY = height
 			var anchor = floatArrayOf(0f, 0f)
 			when(anchorPoint) {
-				ANCHOR_POINT_TL -> anchor = floatArrayOf(0f, 0f)
-				ANCHOR_POINT_TM -> anchor = floatArrayOf((sizeX/2f), 0f)
-				ANCHOR_POINT_TR -> anchor = floatArrayOf((sizeX-1f), 0f)
-				ANCHOR_POINT_ML -> anchor = floatArrayOf(0f, (sizeY/2f))
-				ANCHOR_POINT_MM -> anchor = floatArrayOf((sizeX/2f), (sizeY/2f))
-				ANCHOR_POINT_MR -> anchor = floatArrayOf((sizeX-1f), (sizeY/2f))
-				ANCHOR_POINT_LL -> anchor = floatArrayOf(0f, (sizeY-1f))
-				ANCHOR_POINT_LM -> anchor = floatArrayOf((sizeX/2f), (sizeY-1f))
-				ANCHOR_POINT_LR -> anchor = floatArrayOf((sizeX-1f), (sizeY-1f))
+				AnchorPoint.TL -> anchor = floatArrayOf(0f, 0f)
+				AnchorPoint.TM -> anchor = floatArrayOf((sizeX/2f), 0f)
+				AnchorPoint.TR -> anchor = floatArrayOf((sizeX-1f), 0f)
+				AnchorPoint.ML -> anchor = floatArrayOf(0f, (sizeY/2f))
+				AnchorPoint.MM -> anchor = floatArrayOf((sizeX/2f), (sizeY/2f))
+				AnchorPoint.MR -> anchor = floatArrayOf((sizeX-1f), (sizeY/2f))
+				AnchorPoint.LL -> anchor = floatArrayOf(0f, (sizeY-1f))
+				AnchorPoint.LM -> anchor = floatArrayOf((sizeX/2f), (sizeY-1f))
+				AnchorPoint.LR -> anchor = floatArrayOf((sizeX-1f), (sizeY-1f))
 			}
 			return arrayOf(
-				floatArrayOf(pos.x-anchor[0], pos.y-anchor[1]),
-				floatArrayOf(pos.x+sizeX-anchor[0], pos.y+sizeY-anchor[1])
+				floatArrayOf(x-anchor[0], y-anchor[1]),
+				floatArrayOf(x+sizeX-anchor[0], y+sizeY-anchor[1])
 			)
 		}
 	/** Get x-coordinate of top-left corner of bounding box.*/
@@ -101,7 +101,8 @@ abstract class PhysicsObject @JvmOverloads constructor(
 	/** Do one movement tick.*/
 	fun move() {
 		if(isStatic) return
-		pos += vel
+		x += vel.x
+		y += vel.y
 		ticks++
 	}
 	/**
@@ -117,10 +118,14 @@ abstract class PhysicsObject @JvmOverloads constructor(
 		if(isStatic) return false
 		val v:Vector = vel/subTicks
 		for(i in 0 until subTicks) {
-			pos += v
+			x += v.x
+			y += v.y
 			for(obj in obstacles) {
 				if(checkCollision(this, obj)) {
-					if(retract) pos -= v
+					if(retract) {
+						x -= v.x
+						y -= v.y
+					}
 					return true
 				}
 			}
@@ -134,27 +139,15 @@ abstract class PhysicsObject @JvmOverloads constructor(
 	 * @param obstacles All obstacles.
 	 * @return Did the object collide to any obstacles?
 	 */
-	fun move(subTicks:Int, obstacles:Array<PhysicsObject>, retract:Boolean):Boolean {
-		ticks++
-		if(isStatic) return false
-		val v:Vector = vel/subTicks
-		for(i in 0 until subTicks) {
-			pos += v
-			for(obj in obstacles) {
-				if(checkCollision(this, obj)) {
-					if(retract) pos -= v
-					return true
-				}
-			}
-		}
-		return false
-	}
+	fun move(subTicks:Int, obstacles:Array<PhysicsObject>, retract:Boolean):Boolean =
+		move(subTicks, obstacles.toList(), retract)
 	/**
 	 * Do one movement tick with a custom velocity.
 	 */
 	fun move(velocity:Vector) {
 		if(!isStatic) return
-		pos += velocity
+		x += velocity.x
+		y += velocity.y
 		ticks++
 	}
 	/**
@@ -177,7 +170,8 @@ abstract class PhysicsObject @JvmOverloads constructor(
 	 * @param obj PhysicsObject to use fields from.
 	 */
 	fun replace(obj:PhysicsObject) {
-		pos = obj.pos
+		x = obj.x
+		y = obj.y
 		vel = obj.vel
 		collisionsToDestroy = obj.collisionsToDestroy
 		width = obj.width
@@ -189,30 +183,6 @@ abstract class PhysicsObject @JvmOverloads constructor(
 	}
 
 	companion object {
-		/**
-		 * Anchor points for position.
-		 *
-		 * This selects where the position represents on the object.
-		 *
-		 * TL = top-left corner.
-		 * TM = top-middle.
-		 * TR = top-right corner.
-		 * ML = middle-left.
-		 * MM = centre.
-		 * MR = middle-right.
-		 * LL = bottom-left corner.
-		 * LM = bottom-middle.
-		 * LR = bottom-right corner.
-		 */
-		const val ANCHOR_POINT_TL = 0
-		const val ANCHOR_POINT_TM = 1
-		const val ANCHOR_POINT_TR = 2
-		const val ANCHOR_POINT_ML = 3
-		const val ANCHOR_POINT_MM = 4
-		const val ANCHOR_POINT_MR = 5
-		const val ANCHOR_POINT_LL = 6
-		const val ANCHOR_POINT_LM = 7
-		const val ANCHOR_POINT_LR = 8
 		private val log = LogManager.getLogger()
 		/**
 		 * Checks if two PhysicsObject instances are intersecting each other.
@@ -250,7 +220,6 @@ abstract class PhysicsObject @JvmOverloads constructor(
 		fun reflectVelocity(vector:Vector, vertical:Boolean) {
 			if(vertical) vector.y = vector.y*-1
 			else vector.x = vector.x*-1
-
 		}
 		/**
 		 * Conducts a flat-surface reflection.

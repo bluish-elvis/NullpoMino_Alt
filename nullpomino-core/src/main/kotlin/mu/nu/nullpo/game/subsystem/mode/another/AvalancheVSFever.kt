@@ -39,7 +39,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** AVALANCHE VS FEVER MARATHON mode (Release Candidate 1) */
 class AvalancheVSFever:AvalancheVSDummyMode() {
-
 	/** Version */
 	private var version = 0
 

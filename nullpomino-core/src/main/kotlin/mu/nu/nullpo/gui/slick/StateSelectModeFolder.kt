@@ -168,7 +168,6 @@ class StateSelectModeFolder:DummyMenuScrollState() {
 			} catch(e:IOException) {
 				log.error("Failed to load mode folder list file", e)
 			}
-
 		}
 	}
 }

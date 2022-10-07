@@ -40,7 +40,6 @@ import org.newdawn.slick.state.StateBasedGame
 
 /** Keyboard config screen state */
 class StateConfigKeyboard:BasicGameState() {
-
 	/** Player number */
 	var player = 0
 
@@ -214,7 +213,6 @@ class StateConfigKeyboard:BasicGameState() {
 				}
 				// Enter
 				if(key==Input.KEY_ENTER) {
-
 					if(keynum>=NUM_KEYS) {
 						ResourceHolder.soundManager.play("decide2")
 						// Save & Exit

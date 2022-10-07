@@ -29,6 +29,7 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
@@ -38,8 +39,7 @@ import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** SQUARE Mode */
-class SquareMode:AbstractMode() {
-
+class MarathonSquare:AbstractMode() {
 	/** Number of squares created */
 	private var squares = 0
 
@@ -110,7 +110,6 @@ class SquareMode:AbstractMode() {
 	 * @param engine GameEngine
 	 */
 	fun setSpeed(engine:GameEngine) {
-
 		engine.speed.gravity = if(gametype==0) {
 			tableGravityValue[tableGravityChangeScore.indexOfLast {it<=engine.statistics.score}
 				.let {if(it<0) tableGravityChangeScore.size-1 else it}]
@@ -161,7 +160,6 @@ class SquareMode:AbstractMode() {
 
 			// B button (cancel)
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -174,14 +172,16 @@ class SquareMode:AbstractMode() {
 
 	/* Renders game setup screen */
 	override fun renderSetting(engine:GameEngine) {
-		var strOutline = ""
-		if(outlinetype==0) strOutline = "NORMAL"
-		if(outlinetype==1) strOutline = "CONNECT"
-		if(outlinetype==2) strOutline = "NONE"
-		var grayoutStr = ""
-		if(grayoutEnable==0) grayoutStr = "OFF"
-		if(grayoutEnable==1) grayoutStr = "SPIN ONLY"
-		if(grayoutEnable==2) grayoutStr = "ALL"
+		val strOutline = when(outlinetype) {
+			0 -> "NORMAL"
+			1 -> "CONNECT"
+			else -> "NONE"
+		}
+		val grayoutStr = when(grayoutEnable) {
+			1 -> "SPIN ONLY"
+			2 -> "ALL"
+			else -> "OFF"
+		}
 		drawMenu(
 			engine, receiver, 0, EventReceiver.COLOR.BLUE, 0, "GAME TYPE" to GAMETYPE_NAME[gametype], "OUTLINE" to strOutline,
 			"SPIN BONUS" to if(twistEnableType==0) "OFF" else if(twistEnableType==1) "T-ONLY" else "ALL",
@@ -195,9 +195,11 @@ class SquareMode:AbstractMode() {
 	override fun startGame(engine:GameEngine) {
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 
-		if(outlinetype==0) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
-		if(outlinetype==1) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_CONNECT
-		if(outlinetype==2) engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
+		engine.blockOutlineType = when(outlinetype) {
+			0 -> GameEngine.BLOCK_OUTLINE_NORMAL
+			1 -> GameEngine.BLOCK_OUTLINE_CONNECT
+			else -> GameEngine.BLOCK_OUTLINE_NONE
+		}
 
 		when(twistEnableType) {
 			0 -> engine.twistEnable = false
@@ -273,8 +275,7 @@ class SquareMode:AbstractMode() {
 			receiver.drawScoreFont(engine, 0, 12, "Time", EventReceiver.COLOR.BLUE)
 			if(gametype==1) {
 				// Ultra timer
-				var time = ULTRA_MAX_TIME-engine.statistics.time
-				if(time<0) time = 0
+				val time = maxOf(0, ULTRA_MAX_TIME-engine.statistics.time)
 				receiver.drawScoreFont(engine, 0, 13, time.toTimeStr, getTimeFontColor(time))
 			} else
 			// Normal timer
@@ -290,10 +291,12 @@ class SquareMode:AbstractMode() {
 			val remainTime = ULTRA_MAX_TIME-engine.statistics.time
 			// Timer meter
 			engine.meterValue = remainTime*1f/ULTRA_MAX_TIME
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(remainTime<=3600) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(remainTime<=1800) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(remainTime<=600) engine.meterColor = GameEngine.METER_COLOR_RED
+			engine.meterColor = when {
+				remainTime<=600 -> GameEngine.METER_COLOR_RED
+				remainTime<=1800 -> GameEngine.METER_COLOR_ORANGE
+				remainTime<=3600 -> GameEngine.METER_COLOR_YELLOW
+				else -> GameEngine.METER_COLOR_GREEN
+			}
 
 			// Countdown
 			if(remainTime>0&&remainTime<=10*60&&engine.statistics.time%60==0
@@ -342,10 +345,9 @@ class SquareMode:AbstractMode() {
 		for(i in field.hiddenHeight*-1 until field.heightWithoutHurryupFloor)
 			for(j in 0 until field.width)
 				field.getBlock(j, i)?.run {
-					if(!isEmpty&&getAttribute(Block.ATTRIBUTE.BROKEN))
+					if(!isEmpty&&getAttribute(ATTRIBUTE.BROKEN))
 						color = Block.COLOR.WHITE
 				}
-
 	}
 
 	/* Calculates line-clear score
@@ -383,11 +385,11 @@ class SquareMode:AbstractMode() {
 	 */
 	private fun avalanche(engine:GameEngine, lines:Int) {
 		val field = engine.field
-		field.setAllAttribute(false, Block.ATTRIBUTE.ANTIGRAVITY)
+		field.setAllAttribute(false, ATTRIBUTE.ANTIGRAVITY)
 
 		val hiddenHeight = field.hiddenHeight
 		val height = field.height
-		val affectY = BooleanArray(height+hiddenHeight)
+		val affectY = BooleanArray(field.fullHeight)
 		for(i in affectY.indices)
 			affectY[i] = false
 		val minY = engine.nowPieceObject!!.minimumBlockY+engine.nowPieceY
@@ -407,20 +409,22 @@ class SquareMode:AbstractMode() {
 				for(x in 0 until field.width) {
 					field.getBlock(x, y)?.run {
 						// Change each affected block to broken and garbage, and break connections.
-						setAttribute(true, Block.ATTRIBUTE.GARBAGE)
-						setAttribute(true, Block.ATTRIBUTE.BROKEN)
-						setAttribute(false, Block.ATTRIBUTE.CONNECT_UP)
-						setAttribute(false, Block.ATTRIBUTE.CONNECT_DOWN)
-						setAttribute(false, Block.ATTRIBUTE.CONNECT_LEFT)
-						setAttribute(false, Block.ATTRIBUTE.CONNECT_RIGHT)
+						setAttribute(true, ATTRIBUTE.GARBAGE, ATTRIBUTE.BROKEN)
+						setAttribute(
+							false,
+							ATTRIBUTE.CONNECT_UP,
+							ATTRIBUTE.CONNECT_DOWN,
+							ATTRIBUTE.CONNECT_LEFT,
+							ATTRIBUTE.CONNECT_RIGHT
+						)
 						if(grayoutEnable!=0) color = Block.COLOR.WHITE
 					}
 				}
 			else if(tntAvalanche)
 			// Set antigravity when TNT avalanche is used
 				for(x in 0 until field.width) {
-					field.getBlock(x, y)?.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
-					field.getBlock(x, y-1)?.setAttribute(true, Block.ATTRIBUTE.ANTIGRAVITY)
+					field.getBlock(x, y)?.setAttribute(true, ATTRIBUTE.ANTIGRAVITY)
+					field.getBlock(x, y-1)?.setAttribute(true, ATTRIBUTE.ANTIGRAVITY)
 				}
 		// Reset line flags
 		for(y in -1*hiddenHeight until height)
@@ -537,23 +541,27 @@ class SquareMode:AbstractMode() {
 	 */
 	private fun checkRanking(sc:Long, time:Int, sq:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(gametype==0) {
-				// Marathon
-				if(sc>rankingScore[type][i])
-					return i
-				else if(sc==rankingScore[type][i]&&sq>rankingSquares[type][i])
-					return i
-				else if(sc==rankingScore[type][i]&&sq==rankingSquares[type][i]&&time<rankingTime[type][i]) return i
-			} else if(gametype==1&&time>=ULTRA_MAX_TIME) {
-				// Ultra
-				if(sc>rankingScore[type][i])
-					return i
-				else if(sc==rankingScore[type][i]&&sq>rankingSquares[type][i]) return i
-			} else if(gametype==2&&sc>=SPRINT_MAX_SCORE)
-			// Sprint
-				if(time<rankingTime[type][i]||rankingTime[type][i]<0)
+			when {
+				gametype==0 -> {
+					// Marathon
+					if(sc>rankingScore[type][i])
+						return i
+					else if(sc==rankingScore[type][i]&&sq>rankingSquares[type][i])
+						return i
+					else if(sc==rankingScore[type][i]&&sq==rankingSquares[type][i]&&time<rankingTime[type][i]) return i
+				}
+				gametype==1&&time>=ULTRA_MAX_TIME -> {
+					// Ultra
+					if(sc>rankingScore[type][i])
+						return i
+					else if(sc==rankingScore[type][i]&&sq>rankingSquares[type][i]) return i
+				}
+				gametype==2&&sc>=SPRINT_MAX_SCORE
+					// Sprint
+				-> if(time<rankingTime[type][i]||rankingTime[type][i]<0)
 					return i
 				else if(time==rankingTime[type][i]&&sq>rankingSquares[type][i]) return i
+			}
 
 		return -1
 	}

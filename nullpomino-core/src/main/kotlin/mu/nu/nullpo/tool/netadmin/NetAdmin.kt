@@ -95,7 +95,6 @@ import kotlin.system.exitProcess
 
 /** NetAdmin - NetServer admin tool */
 class NetAdmin:JFrame(), ActionListener, NetMessageListener {
-
 	//***** Main GUI elements *****
 	/** Layout manager for main screen */
 	private val contentPaneCardLayout:CardLayout = CardLayout()
@@ -202,7 +201,6 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				} catch(e:Exception) {
 					log.warn("Failed to set native look&feel", e)
 				}
-
 		} catch(e:Exception) {
 		}
 
@@ -513,7 +511,6 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		} catch(e:IOException) {
 			log.warn("Failed to save netlobby config file", e)
 		}
-
 	}
 
 	/** Change current screen card
@@ -594,7 +591,6 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			txtpaneConsoleLog.caretPosition = doc.length
 		} catch(_:Exception) {
 		}
-
 	}
 
 	/** Execute a console command
@@ -655,7 +651,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		else if(commands[0].equals("serverhost", ignoreCase = true)) addConsoleLog(strServerHost)
 		else if(commands[0].equals("serverport", ignoreCase = true)) addConsoleLog("$serverPort")
 		else if(commands[0].equals("version", ignoreCase = true)) {
-			addConsoleLog("Client:"+GameManager.versionString)
+			addConsoleLog("Client:${GameManager.versionString}")
 			addConsoleLog("Server:$serverFullVer")
 		} else if(commands[0].equals("bangui", ignoreCase = true)) {
 			if(commands.size>1) openBanDialog(commands[1])
@@ -663,19 +659,17 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		} else if(commands[0].equals("ban", ignoreCase = true)) {
 			when {
 				commands.size>2 -> {
-					var banLength = -1
 					try {
-						banLength = commands[2].toInt()
+						val banLength = commands[2].toInt()
+						if(banLength<-1||banLength>6) {
+							addConsoleLog(String.format(getUIText("Console_Ban_InvalidLength"), commands[2]))
+							return
+						}
+						requestBanFromGUI(commands[1], banLength, false)
 					} catch(e:NumberFormatException) {
 						addConsoleLog(String.format(getUIText("Console_Ban_InvalidLength"), commands[2]))
 						return
 					}
-
-					if(banLength<-1||banLength>6) {
-						addConsoleLog(String.format(getUIText("Console_Ban_InvalidLength"), commands[2]))
-						return
-					}
-					requestBanFromGUI(commands[1], banLength, false)
 				}
 				commands.size>1 -> requestBanFromGUI(commands[1], -1, false)
 				else -> addConsoleLog(getUIText("Console_Ban_NoParams"))
@@ -1182,40 +1176,33 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 	/** Popup menu for text components */
 	private class TextComponentPopupMenu(field:JTextComponent):JPopupMenu() {
-
 		private val cutAction:Action = object:AbstractAction(getUIText("Popup_Cut")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.cut()
 			}
 		}
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.copy()
 			}
 		}
 		private val pasteAction:Action = object:AbstractAction(getUIText("Popup_Paste")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.paste()
 			}
 		}
 		private val deleteAction:Action = object:AbstractAction(getUIText("Popup_Delete")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.replaceSelection(null)
 			}
 		}
 		private val selectAllAction:Action = object:AbstractAction(getUIText("Popup_SelectAll")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.selectAll()
 			}
 		}
 
 		init {
-
 			add(cutAction)
 			add(copyAction)
 			add(pasteAction)
@@ -1232,33 +1219,27 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			selectAllAction.isEnabled = field.isFocusOwner
 			super.show(c, x, y)
 		}
-
 	}
 
 	/** Popup menu for console log */
 	private class LogPopupMenu(field:JTextComponent):JPopupMenu() {
-
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.copy()
 			}
 		}
 		private val selectAllAction:Action = object:AbstractAction(getUIText("Popup_SelectAll")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.selectAll()
 			}
 		}
 		private val clearAction:Action = object:AbstractAction(getUIText("Popup_Clear")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.text = null
 			}
 		}
 
 		init {
-
 			add(copyAction)
 			add(selectAllAction)
 			add(clearAction)
@@ -1271,20 +1252,16 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			selectAllAction.isEnabled = field.isFocusOwner
 			super.show(c, x, y)
 		}
-
 	}
 
 	/** Popup menu for users table */
 	private inner class UserPopupMenu(table:JTable):JPopupMenu() {
-
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-
 			override fun actionPerformed(e:ActionEvent) {
 				copyTableRowToClipboard(table)
 			}
 		}
 		private val kickAction:Action = object:AbstractAction(getUIText("Popup_Kick")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				val rowNumber = table.selectedRow
 				val strIP = table.getValueAt(rowNumber, 0) as String
@@ -1292,7 +1269,6 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			}
 		}
 		private val banAction:Action = object:AbstractAction(getUIText("Popup_Ban")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				val rowNumber = table.selectedRow
 				val strIP = table.getValueAt(rowNumber, 0) as String
@@ -1301,7 +1277,6 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		init {
-
 			add(copyAction)
 			add(kickAction)
 			add(banAction)
@@ -1315,20 +1290,16 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			banAction.isEnabled = flg
 			super.show(c, x, y)
 		}
-
 	}
 
 	/** Popup menu for leaderboard table */
 	private inner class MPRankingPopupMenu(table:JTable):JPopupMenu() {
-
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-
 			override fun actionPerformed(e:ActionEvent) {
 				copyTableRowToClipboard(table)
 			}
 		}
 		private val deleteAction:Action = object:AbstractAction(getUIText("Popup_Delete")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				val rowNumber = table.selectedRow
 				val strName = table.getValueAt(rowNumber, 1) as String
@@ -1349,20 +1320,16 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			deleteAction.isEnabled = flg
 			super.show(c, x, y)
 		}
-
 	}
 
 	/** Popup menu for room list table */
 	private inner class RoomTablePopupMenu(table:JTable):JPopupMenu() {
-
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-
 			override fun actionPerformed(e:ActionEvent) {
 				copyTableRowToClipboard(table)
 			}
 		}
 		private val deleteAction:Action = object:AbstractAction(getUIText("Popup_Delete")) {
-
 			override fun actionPerformed(evt:ActionEvent) {
 				val rowNumber = table.selectedRow
 				val strID = table.getValueAt(rowNumber, 0) as String
@@ -1371,7 +1338,6 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		init {
-
 			add(copyAction)
 			add(deleteAction)
 		}
@@ -1383,7 +1349,6 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			deleteAction.isEnabled = flg
 			super.show(c, x, y)
 		}
-
 	}
 
 	/** KeyAdapter for console log */

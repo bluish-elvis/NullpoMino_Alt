@@ -42,8 +42,8 @@ import kotlin.math.sin
  * Creates a Super Collapse II-styled score popup that flies away.<br></br>
  * For now, drawing is manual.
  *
- * @param x           X-coordinate of centre (?)
- * @param y           Y-coordinate of centre (?)
+ * @param x           X-coordinate of center (?)
+ * @param y           Y-coordinate of center (?)
  * @param frequency   Waving frequency
  * @param offsetWidth Max offset
  * @param text        Text to draw

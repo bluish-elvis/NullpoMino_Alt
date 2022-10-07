@@ -40,8 +40,7 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** FINAL mode (Original from NullpoUE build 010210 by Zircean) */
-class GrandFinale:AbstractMode() {
-
+class GrandZ:AbstractMode() {
 	private var gametype = 0
 	private var joker = 0
 	private var stacks = 0
@@ -259,12 +258,9 @@ class GrandFinale:AbstractMode() {
 	/** Calculates the average section time */
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
-			var temp = 0
-			for(i in startLevel until startLevel+sectionscomp)
-				if(i>=0&&i<sectionTime.size) temp += sectionTime[i]
-			sectionavgtime = temp/sectionscomp
-		} else
-			sectionavgtime = 0
+			val i = minOf(sectionscomp+startLevel, sectionTime.size)
+			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
+		} else sectionavgtime = 0
 	}
 
 	/** Checks ST medal
@@ -326,7 +322,6 @@ class GrandFinale:AbstractMode() {
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
 			sectionscomp = 0
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -347,7 +342,6 @@ class GrandFinale:AbstractMode() {
 
 	/** Ready screen */
 	override fun onReady(engine:GameEngine):Boolean {
-
 		owner.musMan.bgm = BGM.Finale(gametype)
 		return false
 	}
@@ -642,7 +636,6 @@ class GrandFinale:AbstractMode() {
 						engine.statistics.level += stacks
 						stacks = 0
 						if(li<=3||engine.split) joker--
-
 					}
 					if(engine.statistics.level<500||joker>0) {
 						engine.statistics.level += li
@@ -692,7 +685,6 @@ class GrandFinale:AbstractMode() {
 
 				// ST medal
 				stMedalCheck(engine, levelb/100)
-
 			} else if(engine.statistics.level>=nextseclv) {
 				// Next section
 				engine.playSE("levelup")

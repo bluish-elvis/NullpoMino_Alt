@@ -48,7 +48,6 @@ import org.newdawn.slick.state.StateBasedGame
 
 /** ネットゲーム画面のステート */
 class StateNetGame:BasicGameState(), NetLobbyListener {
-
 	/** ゲームのメインクラス */
 	var gameManager:GameManager? = null
 
@@ -120,7 +119,6 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 
 	/* Called when leaving this state */
 	override fun leave(container:GameContainer?, game:StateBasedGame?) {
-
 		gameManager?.shutdown()
 		gameManager = null
 
@@ -157,15 +155,12 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				if(gameManager==null||gameManager?.quitFlag==false) log.error("render NPE", e)
 			} catch(e2:Throwable) {
 			}
-
 		} catch(e:Exception) {
 			try {
 				if(gameManager==null||gameManager?.quitFlag==false) log.error("render fail", e)
 			} catch(e2:Throwable) {
 			}
-
 		}
-
 	}
 
 	/* Update game state */
@@ -244,7 +239,6 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				log.error("update NPE", e)
 			} catch(e2:Throwable) {
 			}
-
 		} catch(e:Exception) {
 			try {
 				if(gameManager?.quitFlag==true) {
@@ -254,9 +248,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				log.error("update fail", e)
 			} catch(e2:Throwable) {
 			}
-
 		}
-
 	}
 
 	/** Enter to a new mode
@@ -267,7 +259,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 		val gm = gameManager ?: return
 		val previousMode = gm.mode
 
-		when(val newModeTemp = if(newModeName==null) NetDummyMode() else NullpoMinoSlick.modeManager[newModeName]) {
+		when(val newModeTemp = NullpoMinoSlick.modeManager[newModeName]) {
 			null -> log.error("Cannot find a mode:$newModeName")
 			is NetDummyMode -> {
 				log.info("Enter new mode:${newModeTemp.id}")

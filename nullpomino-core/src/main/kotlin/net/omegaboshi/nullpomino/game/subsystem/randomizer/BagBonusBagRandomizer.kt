@@ -32,7 +32,6 @@ package net.omegaboshi.nullpomino.game.subsystem.randomizer
 import mu.nu.nullpo.game.component.Piece
 
 class BagBonusBagRandomizer:BagRandomizer {
-
 	private var bonusbag = mutableListOf<Int>()
 	private var bonuspt:Int = pieces.size
 	override val baglen:Int get() = pieces.size+1

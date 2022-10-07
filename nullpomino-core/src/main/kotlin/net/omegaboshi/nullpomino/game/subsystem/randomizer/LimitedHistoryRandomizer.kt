@@ -32,7 +32,6 @@ package net.omegaboshi.nullpomino.game.subsystem.randomizer
 import mu.nu.nullpo.game.component.Piece.Shape
 
 abstract class LimitedHistoryRandomizer:Randomizer {
-
 	internal var history = IntArray(0)
 	private var historySZ:Int? = null
 	private var historyJL:Int? = null

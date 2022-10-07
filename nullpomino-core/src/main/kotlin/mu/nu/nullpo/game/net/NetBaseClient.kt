@@ -39,7 +39,6 @@ import java.util.TimerTask
 
 /** Client(Basic part) */
 open class NetBaseClient:Thread {
-
 	/** True if Thread moves between */
 	@Volatile
 	var threadRunning = false
@@ -172,7 +171,6 @@ open class NetBaseClient:Thread {
 			} catch(e2:Exception) {
 				log.debug("Uncaught Exception on NetMessageListener #$i (disconnect event)", e2)
 			}
-
 	}
 
 	/** The various processing depending on the received message
@@ -196,7 +194,6 @@ open class NetBaseClient:Thread {
 			} catch(e:Exception) {
 				log.error("Uncaught Exception on NetMessageListener #$i (message event)", e)
 			}
-
 	}
 
 	/** Send a message to the server
@@ -287,7 +284,6 @@ open class NetBaseClient:Thread {
 				log.error("Exception in Ping Timer. Stopping the task.", e)
 				timerPing.cancel()
 			}
-
 		}
 	}
 

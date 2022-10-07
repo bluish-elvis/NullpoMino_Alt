@@ -655,7 +655,6 @@ class ComboRaceBot:DummyAI(), Runnable {
 				val rt = pieceNow.direction
 				val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 				if(pieceTouchGround&&(nowX==bestX)&&(nowY==bestY)&&(rt==bestRt)) return else if(pieceTouchGround&&(nowX==bestXSub)&&(nowY==bestYSub)&&(rt==bestRtSub)) {
-
 					val best180 = abs(rt-bestRt)==2
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
 					val lrot = engine.getSpinDirection(-1)
@@ -737,7 +736,6 @@ class ComboRaceBot:DummyAI(), Runnable {
 		constructor(bestX:Int, bestRt:Int, newFld:Int):this(bestX, bestRt, 0, newFld, null)
 		constructor(bestX:Int, bestRt:Int, bestRtSub:Int, newFld:Int):this(bestX, bestRt, bestRtSub, newFld, null)
 		constructor(bestX:Int, bestRt:Int, newFld:Int, nxt:Transition?):this(bestX, bestRt, 0, newFld, nxt)
-
 	}
 	//Wrapper for think requests
 	class ThinkRequestMutex:Object() {

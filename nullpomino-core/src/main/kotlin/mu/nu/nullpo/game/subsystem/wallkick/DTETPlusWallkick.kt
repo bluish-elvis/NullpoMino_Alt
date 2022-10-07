@@ -35,7 +35,6 @@ import mu.nu.nullpo.game.component.WallkickResult
 
 /** DTETPlus Wallkick - An extension of the ClassicPlusWallkick */
 class DTETPlusWallkick:DTETWallkick() {
-
 	/* Wallkick main method */
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
 		piece:Piece, field:Field, ctrl:Controller?):WallkickResult? {
@@ -83,7 +82,6 @@ class DTETPlusWallkick:DTETWallkick() {
 				else if(!piece.checkCollision(x, y-2-i, rtNew, field)) temp = -2-i
 
 				if(temp!=0) return WallkickResult(0, temp, rtNew)
-
 			}
 		return null
 	}

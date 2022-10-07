@@ -38,6 +38,7 @@ package zeroxfc.nullpo.custom.libs.backgroundtypes
 
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
+import zeroxfc.nullpo.custom.libs.AnchorPoint
 import kotlin.random.Random
 
 class BackgroundFakeScanlines:AnimatedBackgroundHook {
@@ -83,21 +84,20 @@ class BackgroundFakeScanlines:AnimatedBackgroundHook {
 	}
 
 	private fun setup() {
-
 		// Generate chunks
 		chunks = Array(AMT) {i ->
 			ImageChunk(
-				ImageChunk.ANCHOR_POINT_TL, intArrayOf(0, 480/AMT*i+480/AMT/2), intArrayOf(0, 480/AMT*i),
-				intArrayOf(640, 480/AMT), floatArrayOf(1f, 1f)
+				AnchorPoint.TL, listOf(0, 480/AMT*i+480/AMT/2), listOf(0, 480/AMT*i),
+				listOf(640, 480/AMT), listOf(1f, 1f)
 			)
 		}
 		phase = 0
 	}
 
 	override fun update() {
-		for(chunk in chunks) {
-			val newScale = (0.01f*colorRandom.nextDouble()).toFloat()+0.995f
-			chunk.scale = floatArrayOf(newScale, 1f)
+		chunks.forEach {
+			val newScale = (.01f*colorRandom.nextFloat())+.995f
+			it.scale = listOf(newScale, 1f)
 		}
 		phase = (phase+1)%PERIOD
 	}

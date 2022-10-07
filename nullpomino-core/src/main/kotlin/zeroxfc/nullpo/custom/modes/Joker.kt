@@ -46,9 +46,6 @@ import mu.nu.nullpo.gui.common.fx.particles.BlockParticleCollection
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.FlyInOutText
-import zeroxfc.nullpo.custom.libs.backgroundtypes.AnimatedBackgroundHook
-import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundDiagonalRipple
-import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundVerticalBars
 import kotlin.random.Random
 
 class Joker:MarathonModeBase() {
@@ -88,12 +85,12 @@ class Joker:MarathonModeBase() {
 	private var lastLine = 0
 	// Animated backgrounds
 	private var useAnimBG = false
-	private val ANIMATED_BACKGROUNDS:Array<AnimatedBackgroundHook> by lazy {
-		arrayOf(
-			BackgroundVerticalBars(18, 60, 160, 1f, 4f, false),
-			BackgroundDiagonalRipple(19, 8, 8, 60, 1f, 2f, false, false)
-		)
-	}
+	/*	private val ANIMATED_BACKGROUNDS:Array<AnimatedBackgroundHook> by lazy {
+			arrayOf(
+				BackgroundVerticalBars(18, 60, 160, 1f, 4f, false),
+				BackgroundDiagonalRipple(19, 8, 8, 60, 1f, 2f, false, false)
+			)
+		}*/
 
 	override val name:String
 		get() = "JOKER"
@@ -127,7 +124,6 @@ class Joker:MarathonModeBase() {
 		rankingTimePlayer.fill(0)
 		netPlayerInit(engine)
 		if(!owner.replayMode) {
-
 			version = CURRENT_VERSION
 		} else {
 			if(version==0&&owner.replayProp.getProperty("joker.endless", false)) goalType = 2
@@ -178,7 +174,6 @@ class Joker:MarathonModeBase() {
      * Called at settings screen
      */
 	override fun onSetting(engine:GameEngine):Boolean {
-
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode) {
 			netOnUpdateNetPlayRanking(engine, goalType)
@@ -269,9 +264,7 @@ class Joker:MarathonModeBase() {
 		engine.lives = 0
 		if(engine.statc[0]==0&&useAnimBG) {
 			engine.owner.bgMan.bg = -2
-			for(bg in ANIMATED_BACKGROUNDS) {
-				bg.reset()
-			}
+			//for(bg in ANIMATED_BACKGROUNDS) bg.reset()
 		}
 		return false
 	}
@@ -317,11 +310,11 @@ class Joker:MarathonModeBase() {
 		}
 	}
 
-	override fun renderFirst(engine:GameEngine) {
+	/*override fun renderFirst(engine:GameEngine) {
 		if(useAnimBG&&engine.owner.bgMan.bg<0) {
 			ANIMATED_BACKGROUNDS[engine.owner.bgMan.bg+2].draw(engine)
 		}
-	}
+	}*/
 	/*
      * Render score
      */
@@ -452,9 +445,9 @@ class Joker:MarathonModeBase() {
      */
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
-		if(useAnimBG&&engine.owner.bgMan.bg<0) {
+		/*if(useAnimBG&&engine.owner.bgMan.bg<0) {
 			ANIMATED_BACKGROUNDS[engine.owner.bgMan.bg+2].update()
-		}
+		}*/
 		if(engine.gameStarted&&engine.ending==0) {
 			/*if(engine.stat===GameEngine.Status.ARE) {
 				engine.dasCount = engine.speed.das
@@ -467,21 +460,27 @@ class Joker:MarathonModeBase() {
 			}
 
 			// Meter - use as timer.
-			if(engine.statistics.level<200) {
+			if(engine.statistics.level<300) {
 				engine.meterValue = mainTimer*1f/TIMER_MAX
 				engine.meterColor = GameEngine.METER_COLOR_LIMIT
 			} else {
 				engine.meterValue = minOf(stock/20f, 1f)
 				engine.meterColor = GameEngine.METER_COLOR_LIMIT
 			}
-			if(mainTimer<=0) {
-				if(engine.statistics.level<200) {
-					engine.playSE("died")
-					engine.lives = 0
-					engine.stat = GameEngine.Status.GAMEOVER
-					engine.resetStatc()
-					engine.gameEnded()
-				}
+			if(engine.statistics.level<300&&mainTimer<=0) {
+				engine.playSE("died")
+				engine.lives = 0
+				engine.stat = GameEngine.Status.GAMEOVER
+				engine.resetStatc()
+				engine.gameEnded()
+			}
+			if(engine.statistics.level>=300&&stock<0) {
+				engine.playSE("died")
+				stock = 0
+				engine.lives = 0
+				engine.stat = GameEngine.Status.GAMEOVER
+				engine.resetStatc()
+				engine.gameEnded()
 			}
 		}
 		if(engine.gameStarted) {
@@ -490,14 +489,6 @@ class Joker:MarathonModeBase() {
 			if(warningText?.shouldPurge()==true) warningText = null
 			warningTextSecondLine?.update()
 			if(warningTextSecondLine?.shouldPurge()==true) warningTextSecondLine = null
-		}
-		if(stock<0) {
-			engine.playSE("died")
-			stock = 0
-			engine.lives = 0
-			engine.stat = GameEngine.Status.GAMEOVER
-			engine.resetStatc()
-			engine.gameEnded()
 		}
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
@@ -521,7 +512,7 @@ class Joker:MarathonModeBase() {
 		val li = ev.lines
 		if(li>0) {
 			val pts:Int = engine.statistics.time-timeScore
-
+			val flag = li>=4||!ev.twist
 			// Add to score
 			if(pts>0) {
 				// scoreBeforeIncrease = engine.statistics.score;
@@ -529,51 +520,17 @@ class Joker:MarathonModeBase() {
 				timeScore += pts
 				lastLine = li
 			}
-		}
-		if(li>0) {
-			// Level up
-			engine.statistics.level++
 
-			// owner.backgroundStatus.fadesw = true;
-			// owner.backgroundStatus.fadecount = 0;
-			// owner.backgroundStatus.fadebg = engine.statistics.level / 5;
-			if(engine.statistics.level==200) {
-				shouldUseTimer = false
-				engine.playSE("medal")
-				++engine.owner.bgMan.bg
-				val destinationX:Int = receiver.scoreX(engine)
-				val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
-				val colors = arrayOf(EventReceiver.COLOR.PINK, EventReceiver.COLOR.RED, EventReceiver.COLOR.PURPLE)
-				warningText = FlyInOutText(
-					"WARNING: NON-TETRISES", destinationX, destinationY, 9, 162, 9, colors, 1.0f,
-					engine.randSeed+engine.statistics.time, true
-				)
-				warningTextSecondLine = FlyInOutText(
-					"REDUCE STOCK!", destinationX+4*if(engine.displaySize==0) 16 else 32,
-					destinationY+if(engine.displaySize==0) 16 else 32, 9, 162, 9, colors, 1.0f, engine.randSeed+engine.statistics.time,
-					true
-				)
-			}
-			if(engine.statistics.level<200) {
+			if(flag||stock>0||engine.statistics.level<=200||engine.statistics.level>=300) {
+				// Level up
+				engine.statistics.level++
 				mainTimer += LEVEL_TIMEBONUS
 				if(mainTimer>TIMER_MAX) mainTimer = TIMER_MAX
-			}
-			if(engine.statistics.level==300) {
-				engine.playSE("endingstart")
-				val destinationX:Int = receiver.scoreX(engine)
-				val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
-				val colors = arrayOf(EventReceiver.COLOR.YELLOW, EventReceiver.COLOR.ORANGE, EventReceiver.COLOR.RED)
-				warningText = FlyInOutText(
-					"CONGRATULATIONS!", destinationX, destinationY, 15, 120, 15, colors, 1.0f,
-					engine.randSeed+engine.statistics.time, true
-				)
-			}
-			if(li<4&&!ev.twist) {
-				if(engine.statistics.level>200) {
+
+				if(engine.statistics.level>200&&!flag) {
 					res--
 					stock--
-					if(stock<=2) {
-						if(stock>=0) engine.playSE("danger")
+					if(stock<=4) {
 						val destinationX:Int = receiver.scoreX(engine)
 						val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
 						val colors = arrayOf(EventReceiver.COLOR.RED, EventReceiver.COLOR.PURPLE)
@@ -582,18 +539,47 @@ class Joker:MarathonModeBase() {
 							15, 60, 15, colors, 1.0f, engine.randSeed+engine.statistics.time, stock>=0
 						)
 					}
-				}
-			} else {
-				if(engine.statistics.level<=200) {
+				} else if(engine.statistics.level<=200&&flag) {
 					stock++
 					res++
 				}
+
+				if(engine.statistics.level<=300) {
+					calculateEfficiencyGrade(engine)
+				}
+				// owner.backgroundStatus.fadesw = true;
+				// owner.backgroundStatus.fadecount = 0;
+				// owner.backgroundStatus.fadebg = engine.statistics.level / 5;
+				if(engine.statistics.level==200) {
+					shouldUseTimer = false
+					engine.playSE("medal")
+					++engine.owner.bgMan.bg
+					val destinationX:Int = receiver.scoreX(engine)
+					val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
+					val colors = arrayOf(EventReceiver.COLOR.PINK, EventReceiver.COLOR.RED, EventReceiver.COLOR.PURPLE)
+					warningText = FlyInOutText(
+						"WARNING: NON-QUADS", destinationX, destinationY, 9, 162, 9, colors, 1.0f,
+						engine.randSeed+engine.statistics.time, true
+					)
+					warningTextSecondLine = FlyInOutText(
+						"REDUCE STOCK!", destinationX+4*if(engine.displaySize==0) 16 else 32,
+						destinationY+if(engine.displaySize==0) 16 else 32, 9, 162, 9, colors, 1.0f, engine.randSeed+engine.statistics.time,
+						true
+					)
+				}
+				if(engine.statistics.level==300) {
+					engine.playSE("endingstart")
+					val destinationX:Int = receiver.scoreX(engine)
+					val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
+					val colors = arrayOf(EventReceiver.COLOR.YELLOW, EventReceiver.COLOR.ORANGE, EventReceiver.COLOR.RED)
+					warningText = FlyInOutText(
+						"OUTSTANDING!", destinationX, destinationY, 15, 120, 15, colors, 1.0f,
+						engine.randSeed+engine.statistics.time, true
+					)
+				}
+				setSpeed(engine)
+				engine.playSE("levelup")
 			}
-			if(engine.statistics.level<=300) {
-				calculateEfficiencyGrade(engine)
-			}
-			setSpeed(engine)
-			engine.playSE("levelup")
 		}
 		return res
 	}

@@ -38,31 +38,32 @@ import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.libs.Vector
 
 class BlockParticle @JvmOverloads constructor(
-	block:Block?, position:Vector, velocity:Vector, accelerate:Vector = Vector(0f, 0.980665f/2.25f), val animType:Type,
+	block:Block?, x:Float, y:Float, velocity:Vector, accelerate:Vector = Vector(0f, 0.980665f/2.25f), val animType:Type,
 	val blockSize:Int = 16, private val isFlashing:Boolean = false)
-	:Particle(null, if(animType==Type.TGM) 100 else 250, position, velocity, accelerate, 0.980665f, blockSize, blockSize) {
+	:Particle(null, if(animType==Type.TGM) 100 else 250, x, y, velocity, accelerate, 0.980665f, blockSize) {
 	// Block for use in texture.
 	private val objectTexture:Block = Block(block)
 
 	override fun update(r:AbstractRenderer):Boolean {
-		pos += vel
+		x += vel.x
+		y += vel.y
 		vel *= friction
 		vel += acc
 		return ++ticks>maxLifetime||ua<=0||
-			pos.x<-blockSize/2&&vel.x<0||pos.x>640+blockSize/2&&vel.x>0||
-			pos.y<-blockSize/2&&vel.y<0||pos.y>480+blockSize/2&&vel.y<0
+			x<-blockSize/2&&vel.x<0||x>640+blockSize/2&&vel.x>0||
+			y<-blockSize/2&&vel.y<0||y>480+blockSize/2&&vel.y<0
 	}
 
 	override fun draw(i:Int, r:AbstractRenderer) {
 		val size = if(animType==Type.TGM) 1+ticks/100f else 1f
 		if(animType==Type.TGM)
 			r.drawBlock(
-				pos.x+blockSize/4, pos.y+blockSize/4, objectTexture,
+				x+blockSize/4, y+blockSize/4, objectTexture,
 				if(isFlashing&&ticks/2%2==0) 0f else 0.5f,
 				1f, size*blockSize/BS
 			)
 		r.drawBlock(
-			pos.x, pos.y, objectTexture, if(isFlashing&&ticks/2%2==0) -0.8f else 0f,
+			x, y, objectTexture, if(isFlashing&&ticks/2%2==0) -0.8f else 0f,
 			if(animType==Type.TGM) 2f/3 else 1f, size*blockSize/BS
 		)
 	}

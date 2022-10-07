@@ -40,7 +40,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** AVALANCHE VS BOMB BATTLE mode (Release Candidate 1) */
 class AvalancheVSBomb:AvalancheVSDummyMode() {
-
 	/** Version */
 	private var version = 0
 
@@ -270,7 +269,6 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					if(engine.statc[5]>=mapMaxNo[playerID]) engine.statc[5] = 0
 					loadMapPreview(engine, engine.statc[5], false)
 				}
-
 		} else if(engine.statc[4]==0) {
 			menuTime++
 			menuCursor = 0

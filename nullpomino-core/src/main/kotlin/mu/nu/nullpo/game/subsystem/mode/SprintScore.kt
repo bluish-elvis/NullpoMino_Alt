@@ -42,7 +42,6 @@ import org.apache.logging.log4j.LogManager
 
 /** SCORE RACE Mode */
 class SprintScore:NetDummyMode() {
-
 	/** Most recent scoring event b2b */
 	private var lastb2b = false
 
@@ -205,7 +204,6 @@ class SprintScore:NetDummyMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-
 					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
 					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
 					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
@@ -269,7 +267,6 @@ class SprintScore:NetDummyMode() {
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!netIsWatch&&!big&&engine.ai==null)
 				netEnterNetPlayRankingScreen(goalType)
-
 		} else {
 			menuTime++
 			menuCursor = 0
@@ -393,7 +390,6 @@ class SprintScore:NetDummyMode() {
 
 			receiver.drawScoreFont(engine, 0, 18, "Time", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, 0, 19, engine.statistics.time.toTimeStr, 2f)
-
 		}
 
 		super.renderLast(engine)
@@ -430,7 +426,6 @@ class SprintScore:NetDummyMode() {
 
 		// BGM fadeout
 		if(remainScore<=1000&&engine.timerActive) owner.musMan.fadesw = true
-
 	}
 
 	/* Render results screen */

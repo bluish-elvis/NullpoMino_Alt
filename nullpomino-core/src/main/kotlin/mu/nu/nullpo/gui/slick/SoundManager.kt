@@ -39,7 +39,6 @@ class SoundManager
 constructor(
 	/** 登録できるWAVE file のMaximumcount */
 	private val maxClips:Int = 128) {
-
 	/** WAVE file data (Name-> data本体) */
 	private val clipMap:MutableMap<String, Sound> = mutableMapOf()
 	/** 登録されたWAVE file count */
@@ -73,7 +72,6 @@ constructor(
 		clipMap[name]?.run {
 			if(!loop) play(pitch, vol)
 			else if(!playing()) loop(pitch, vol)
-
 		}
 
 	/** 停止

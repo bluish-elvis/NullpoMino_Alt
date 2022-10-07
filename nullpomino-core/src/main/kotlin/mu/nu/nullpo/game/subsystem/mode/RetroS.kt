@@ -38,8 +38,7 @@ import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** RETRO MANIA mode (Based System16, Original from NullpoUE build 121909 by Zircean) */
-class RetroMania:AbstractMode() {
-
+class RetroS:AbstractMode() {
 	/** Selected game type */
 	private var gametype = 0
 
@@ -143,6 +142,8 @@ class RetroMania:AbstractMode() {
 
 		engine.speed.gravity = 1
 		engine.speed.denominator = tableDenominator[gametype][lv]
+
+		owner.musMan.bgm = BGM.RetroS(maxOf(0, minOf(engine.statistics.level/6, 5)))
 	}
 
 	/** Main routine for game setup screen */
@@ -179,7 +180,6 @@ class RetroMania:AbstractMode() {
 
 			// Check for B button, when pressed this will shut down the game engine.
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -201,7 +201,6 @@ class RetroMania:AbstractMode() {
 	/** Ready */
 	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
-
 			engine.ruleOpt.run {
 				lockResetMove = false
 				lockResetSpin = false
@@ -230,7 +229,6 @@ class RetroMania:AbstractMode() {
 
 		engine.big = big
 
-		owner.musMan.bgm = BGM.RetroS(0)
 		setSpeed(engine)
 	}
 
@@ -298,7 +296,6 @@ class RetroMania:AbstractMode() {
 		// Update the meter
 		engine.meterValue = levelTimer*1f/levelTime[minOf(engine.statistics.level, 15)]
 		engine.meterValue += (1-engine.meterValue)*linesAfterLastLevelUp%4/4
-
 	}
 
 	/** Calculates line-clear score
@@ -320,7 +317,6 @@ class RetroMania:AbstractMode() {
 			engine.statistics.scoreLine += pts
 			// Max-out score, lines, and level
 			if(version>=2) {
-
 				if(engine.statistics.score>MAX_SCORE) {
 					engine.statistics.scoreBonus =
 						MAX_SCORE-engine.statistics.scoreLine-engine.statistics.scoreSD-engine.statistics.scoreHD
@@ -332,7 +328,6 @@ class RetroMania:AbstractMode() {
 				if(engine.statistics.lines>MAX_LINES) {
 					engine.statistics.lines = MAX_LINES
 					if(maxLevelTime<0) {
-
 						engine.playSE("grade4")
 						maxLinesTime = engine.statistics.time
 					}
@@ -368,7 +363,6 @@ class RetroMania:AbstractMode() {
 				}
 			}
 			engine.playSE("levelup")
-
 		}
 		return pts
 	}

@@ -39,8 +39,8 @@ object MathHelper {
 	/**
 	 * Checks if a coordinate is within a certain radius.
 	 *
-	 * @param x      X-coordinate of circle's centre.
-	 * @param y      Y-coordinate of circle's centre.
+	 * @param x      X-coordinate of circle's center.
+	 * @param y      Y-coordinate of circle's center.
 	 * @param xTest  X-coordinate of test square.
 	 * @param yTest  Y-coordinate of test square.
 	 * @param radius The testing radius

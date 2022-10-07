@@ -32,7 +32,6 @@ package mu.nu.nullpo.gui.common
 import mu.nu.nullpo.game.event.EventReceiver
 
 interface BaseFontTTF {
-
 	/** TTF font Drawing a string using TrueTypeFont
 	 * @param x X-coordinate
 	 * @param y Y-coordinate

@@ -31,7 +31,6 @@ package mu.nu.nullpo.gui.common.menu
 
 class ToggleMenuItem @JvmOverloads constructor(name:String, color:Int, state:Int = 0, val drawStyle:Int = DRAWSTYLE_OX)
 	:MenuItem(name) {
-
 	init {
 		this.name = name
 		this.color = color
@@ -43,7 +42,6 @@ class ToggleMenuItem @JvmOverloads constructor(name:String, color:Int, state:Int
 	}
 
 	companion object {
-
 		const val DRAWSTYLE_OX = 0
 		const val DRAWSTYLE_ONOFF = 1
 	}

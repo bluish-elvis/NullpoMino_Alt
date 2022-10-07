@@ -33,7 +33,6 @@ import mu.nu.nullpo.tool.airankstool.RanksIterator.OneIteration
 
 class RanksIteratorPart internal constructor(private val oneIteration:OneIteration, private var ranks:Ranks?, i:Int,
 	totalParts:Int):Thread() {
-
 	private val size:Int = ranks!!.size
 	private val sMin:Int = i*size/totalParts
 	private val sMax:Int = if(i==totalParts-1) size else (i+1)*size/totalParts
@@ -41,7 +40,6 @@ class RanksIteratorPart internal constructor(private val oneIteration:OneIterati
 	private val surfaceDecodedWork = MutableList(ranks!!.stackWidth-1) {0}
 
 	init {
-
 		ranks!!.decode(sMin, surface)
 		surfaceDecodedWork
 		ranks!!.decode(sMin, surfaceDecodedWork)
@@ -49,7 +47,6 @@ class RanksIteratorPart internal constructor(private val oneIteration:OneIterati
 	}
 
 	override fun run() {
-
 		for(s in sMin until sMax) {
 			ranks!!.iterateSurface(surface, surfaceDecodedWork)
 			synchronized(this) {
@@ -60,6 +57,5 @@ class RanksIteratorPart internal constructor(private val oneIteration:OneIterati
 				break
 			}
 		}
-
 	}
 }

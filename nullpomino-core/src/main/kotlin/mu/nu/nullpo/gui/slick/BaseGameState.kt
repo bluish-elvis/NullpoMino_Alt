@@ -47,7 +47,6 @@ abstract class BaseGameState:BasicGameState() {
 
 	/* State initialization */
 	override fun init(container:GameContainer, game:StateBasedGame) {
-
 	}
 
 	/** Draw the screen. BaseGameState will do the common things here.
@@ -108,7 +107,6 @@ abstract class BaseGameState:BasicGameState() {
 	 * @param g Graphics
 	 */
 	protected open fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
-
 		if(MouseInput.isMousePressed) {
 			val x = MouseInput.mouseX shr 4
 			val y = MouseInput.mouseY shr 4

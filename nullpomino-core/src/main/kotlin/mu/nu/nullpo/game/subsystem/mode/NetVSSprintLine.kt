@@ -36,7 +36,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** NET-VS-LINE RACE mode */
-class NetVSLineRaceMode:NetDummyVSMode() {
+class NetVSSprintLine:NetDummyVSMode() {
 	/** Number of lines required to win */
 	private var goalLines:Int = 0 // TODO: Add option to change this
 
@@ -76,7 +76,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 	}
 
 	/** @return Player's place */
-	private fun getNowPlayerPlace(engine:GameEngine, playerID:Int):Int {
+	private fun getNowPlayerPlace(engine:GameEngine):Int {
 		val pid = engine.playerID
 		if(!netVSPlayerExist[pid]||netVSPlayerDead[pid]) return -1
 
@@ -123,7 +123,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 				val places = IntArray(NET_MAX_PLAYERS)
 				val uidArray = IntArray(NET_MAX_PLAYERS)
 				for(i in 0 until players) {
-					places[i] = getNowPlayerPlace(owner.engine[i], i)
+					places[i] = getNowPlayerPlace(owner.engine[i])
 					uidArray[i] = -1
 				}
 				for(i in 0 until players)
@@ -177,7 +177,7 @@ class NetVSLineRaceMode:NetDummyVSMode() {
 
 			if(netVSIsGameActive&&engine.stat!=GameEngine.Status.RESULT) {
 				// Place
-				var place = getNowPlayerPlace(engine, pid)
+				var place = getNowPlayerPlace(engine)
 				if(netVSPlayerDead[pid]) place = netVSPlayerPlace[pid]
 
 				when {

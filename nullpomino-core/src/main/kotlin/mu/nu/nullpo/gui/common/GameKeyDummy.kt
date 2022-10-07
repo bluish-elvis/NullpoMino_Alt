@@ -216,7 +216,6 @@ open class GameKeyDummy
 		prop.setProperties("button.p$player.screenshot", buttonmap[BUTTON_SCREENSHOT])
 
 		prop.setProperty("joyBorder.p$player", joyBorder)
-
 	}
 
 	/** Controllerに input 状況を伝える
@@ -233,7 +232,6 @@ open class GameKeyDummy
 	}
 
 	companion object {
-
 		/** Button number constants */
 		const val BUTTON_UP = 0
 		const val BUTTON_DOWN = 1

@@ -43,7 +43,6 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	/** Blockの属性 */
 	var aint:Int = 0
 ) {
-
 	/** Block color integer for processing */
 	var cint:Int
 		get() = colorNumber(color, type, getAttribute(ATTRIBUTE.BONE), item)
@@ -82,7 +81,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	/** Blockの暗さ, または明るさ (0.03だったら3%暗く, -0.05だったら5%明るい) */
 	var darkness = 0f
 
-	/** 透明度 (1fで不透明, 0.0fで完全に透明) */
+	/** 透明度 (1fで不透明, 0fで完全に透明) */
 	var alpha:Float = 1f
 
 	/** ゲームが始まってから何番目に置いたBlockか (負countだったら初期配置やgarbage block) */
@@ -161,19 +160,19 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	/** 設定を[b]からコピー */
 	fun replace(b:Block?) {
 		b?.let {
-			color = b.color
-			type = b.type
-			skin = b.skin
-			aint = b.aint
-			elapsedFrames = b.elapsedFrames
-			darkness = b.darkness
-			alpha = b.alpha
-			pieceNum = b.pieceNum
-			inum = b.inum
-			hard = b.hard
-			countdown = b.countdown
-			secondaryColor = b.secondaryColor
-			bonusValue = b.bonusValue
+			color = it.color
+			type = it.type
+			skin = it.skin
+			aint = it.aint
+			elapsedFrames = it.elapsedFrames
+			darkness = it.darkness
+			alpha = it.alpha
+			pieceNum = it.pieceNum
+			inum = it.inum
+			hard = it.hard
+			countdown = it.countdown
+			secondaryColor = it.secondaryColor
+			bonusValue = it.bonusValue
 		} ?: reset(true)
 	}
 
@@ -232,7 +231,6 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 			val ALL_COLOR_NUM = COUNT+COLOR_NUM
 			fun colors() = all.filter {it.color}
 		}
-
 	}
 
 	enum class ITEM(val color:Block.COLOR = Block.COLOR.RED, val showName:String? = null) {
@@ -259,7 +257,6 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 		BONE_BLOCK,
 		SPOT_LIGHT,
 		SPIN_FIELD
-
 	}
 
 	enum class ATTRIBUTE {
@@ -299,7 +296,6 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 		IGNORE_LINK;
 
 		val bit:Int get() = 1 shl ordinal
-
 	}
 
 	companion object {

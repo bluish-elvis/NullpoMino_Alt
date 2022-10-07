@@ -36,7 +36,6 @@ import java.util.LinkedList
 
 /** Single player mode record */
 class NetSPRecord:Serializable {
-
 	/** Player Name */
 	var strPlayerName = ""
 
@@ -350,7 +349,6 @@ class NetSPRecord:Serializable {
 				}
 				else -> return false
 			}
-
 		}
 	}
 }

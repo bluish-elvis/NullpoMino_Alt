@@ -33,7 +33,6 @@ import org.newdawn.slick.util.LogSystem
 
 /** Slickのシステムログをlog4jに渡す */
 class SlickLog4j:LogSystem {
-
 	override fun debug(message:String) {
 		log.debug(message)
 	}

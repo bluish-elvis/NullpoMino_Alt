@@ -119,7 +119,6 @@ open class DummyAI:AIPlayer, Runnable {
 	}
 
 	override fun renderHint(engine:GameEngine, playerID:Int) {
-
 	}
 
 	override fun run() {}

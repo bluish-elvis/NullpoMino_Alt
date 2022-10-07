@@ -6,16 +6,16 @@ GrandRoads
 MarathonExtreme
 SprintUltra
 SprintLine
-PracticeMode
+Practice
 MarathonDrill
 SprintDig
-GrandFestival
-GrandBlossom
-GrandMania
-GrandMastery
-GrandStorm
-GrandLightning
-VSBattleMode
+GrandBasic
+GrandPuzzle
+GrandM2
+GrandM3
+GrandS1
+GrandS2
+VSBattle
 
 :Guidelines Games
 Marathon
@@ -23,20 +23,20 @@ SprintLine
 SprintUltra
 MarathonShuttle
 GrandRoads
-VSBattleMode
-ToolVSMapEditMode
+VSBattle
+ToolMapEditor
 MarathonExtreme
-PracticeMode
+Practice
 
 :Uniques Variety
 MarathonPlus
 MarathonDrill
 RetroModern
 SprintDig
-PracticeMode
-SquareMode
+Practice
+MarathonSquare
 MarathonExtreme
-ToolVSMapEditMode
+ToolMapEditor
 
 :ModePile Extras
 MarathonZone
@@ -50,9 +50,9 @@ ScoreTrial
 
 
 :Retrospective style
-RetroClassic
+RetroN
 RetroMarathon
-RetroMania
+RetroS
 RetroModern
 
 :Trial Rush
@@ -63,17 +63,17 @@ SprintCombo
 SprintUltra
 
 :Grand Challenges
-GrandFestival
-GrandMarathon
+GrandBasic
+GrandM1
 GrandRoads
-GrandBlossom
-GrandMountain
-GrandMania
-GrandMastery
-GrandStorm
-GrandLightning
-GrandPhantom
-GrandFinale
+GrandPuzzle
+GrandM2G
+GrandM2
+GrandM3
+GrandS1
+GrandS2
+GrandSStealth
+GrandZ
 
 
 :TYPE AVALANCHE

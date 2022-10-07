@@ -35,7 +35,6 @@ import org.apache.log4j.Logger
  * BasePvPAI - Base PvP AI Class
  */
 class BaseSRSAI:PyAI("BasePvPAI", scriptPath, BaseSRSAI::class.java) {
-
 	companion object {
 		/** Log  */
 		var log:Logger = Logger.getLogger(BaseSRSAI::class.java)

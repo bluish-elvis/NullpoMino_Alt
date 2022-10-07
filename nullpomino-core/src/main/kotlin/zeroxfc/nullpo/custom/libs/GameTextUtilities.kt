@@ -508,7 +508,6 @@ object GameTextUtilities {
 			for(i in string.indices) {
 				receiver.drawScoreFont(engine, x, y, string.substring(i, i+1), colorData[(offset+i)%colorData.size], scale)
 			}
-
 		}
 // endregion Color Alternator Text
 	}

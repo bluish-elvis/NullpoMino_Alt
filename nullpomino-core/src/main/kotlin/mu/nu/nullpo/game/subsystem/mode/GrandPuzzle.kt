@@ -42,8 +42,7 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
 
 /** GEM MANIA */
-class GrandBlossom:AbstractMode() {
-
+class GrandPuzzle:AbstractMode() {
 	/** Stage set property file */
 	private var propStageSet = CustomProperties()
 
@@ -251,15 +250,6 @@ class GrandBlossom:AbstractMode() {
 
 		editModeScreen = 0
 
-		startStage = 0
-		mapSet = -1
-		alwaysGhost = false
-		always20g = false
-		secAlert = true
-		showST = false
-		randomQueue = false
-		trainingType = 0
-		startNextc = 0
 
 		rankingRank = -1
 		rankingStage.forEach {it.fill(0)}
@@ -280,8 +270,6 @@ class GrandBlossom:AbstractMode() {
 		engine.fieldWidth = 10
 		engine.fieldHeight = 20
 		engine.createFieldIfNeeded()
-		dectemp = 0
-		decoration = dectemp
 		version = if(!owner.replayMode) CURRENT_VERSION
 		else owner.replayProp.getProperty("gemmania.version", 0)
 
@@ -519,7 +507,6 @@ class GrandBlossom:AbstractMode() {
 				menuCursor = 0
 				menuTime = 0
 			}
-
 		} else if(editModeScreen==2) {
 			// Up
 			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
@@ -669,13 +656,11 @@ class GrandBlossom:AbstractMode() {
 				menuCursor = 0
 				menuTime = 0
 			}
-
 		} else {
 			menuTime++
 			menuCursor = -1
 
 			return menuTime<60
-
 		}// 普通のMenu
 		// エディットMenu   stage 画面
 
@@ -745,7 +730,6 @@ class GrandBlossom:AbstractMode() {
 			startStage(engine)
 
 			if(!engine.readyDone) limittimeNow = limittimeStart
-
 		}
 		return false
 	}
@@ -942,7 +926,6 @@ class GrandBlossom:AbstractMode() {
 			if(limittimeNow>0&&limittimeNow<=10*60&&limittimeNow%60==0)
 			// 10秒前からのカウントダウン
 				engine.playSE("countdown")
-
 		}
 
 		//  stage Time
@@ -952,7 +935,6 @@ class GrandBlossom:AbstractMode() {
 			if(stagetimeNow>0&&stagetimeNow<=10*60&&stagetimeNow%60==0)
 			// 10秒前からのカウントダウン
 				engine.playSE("countdown")
-
 		}
 	}
 
@@ -992,7 +974,6 @@ class GrandBlossom:AbstractMode() {
 					engine.itemColorEnable = false
 					engine.resetFieldVisible()
 				}
-
 		}
 
 		return false
@@ -1135,7 +1116,6 @@ class GrandBlossom:AbstractMode() {
 
 			// トレーニングでのベストTime
 			if(trainingType!=0&&clearflag&&(cleartime<trainingBestTime||trainingBestTime<0)) trainingBestTime = cleartime
-
 		}
 
 		// Time limitが増える演出
@@ -1316,10 +1296,8 @@ class GrandBlossom:AbstractMode() {
 					} else
 					// NO
 						engine.statc[0] = engine.field.height+1+600
-
 				} else
 					engine.statc[0]++
-
 			} else if(engine.statc[0]>=engine.field.height+1+600) {
 				// ＼(^o^)／ｵﾜﾀ
 				noContinue = true
@@ -1352,7 +1330,6 @@ class GrandBlossom:AbstractMode() {
 
 				if(trainingType==0) receiver.drawMenuFont(engine, 0, 18, "+2 MINUTES", COLOR.RED)
 			}
-
 	}
 
 	/* 結果画面の処理 */

@@ -42,7 +42,6 @@ import mu.nu.nullpo.gui.common.fx.PopupBravo
 import mu.nu.nullpo.gui.common.fx.PopupCombo
 import mu.nu.nullpo.gui.common.fx.PopupPoint
 import mu.nu.nullpo.gui.common.fx.particles.Fireworks
-import mu.nu.nullpo.gui.common.fx.particles.ParticleEmitterBase
 import mu.nu.nullpo.util.GeneralUtil.toInt
 
 abstract class AbstractRenderer:EventReceiver() {
@@ -55,7 +54,10 @@ abstract class AbstractRenderer:EventReceiver() {
 	protected var heavyeffect = false
 
 	/** fieldBackgroundの明るさ */
-	protected var fieldbgbright:Float = .5f
+	protected var fieldbgbright = .5f
+
+	/** 縁線を太くする */
+	protected var edgeBold = false
 
 	/** Show field BG grid */
 	protected var showfieldbggrid = false
@@ -391,7 +393,6 @@ abstract class AbstractRenderer:EventReceiver() {
 				drawMenuNano(engine, 13-i*6, zy*2+2, show.first, COLOR.WHITE, .5f)
 			}
 			drawMenuNano(engine, 0, zy*2+3, "DELAYS", COLOR.WHITE, .5f)
-
 		}
 	}
 
@@ -448,7 +449,6 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param engine GameEngineのインスタンス
 	 */
 	protected fun drawField(x:Int, y:Int, engine:GameEngine, size:Int, scale:Float = 1f) {
-
 		var blksize = getBlockSize(engine)
 		var zoom = scale
 		if(size==-1) {
@@ -483,32 +483,31 @@ abstract class AbstractRenderer:EventReceiver() {
 
 						if(it.getAttribute(Block.ATTRIBUTE.OUTLINE)&&!it.getAttribute(Block.ATTRIBUTE.BONE)) {
 							val ls = blksize-1
+							val w = if(edgeBold) 2f else 1f
 							when(outlineType) {
 								GameEngine.BLOCK_OUTLINE_NORMAL -> {
-									if(field.getBlockEmpty(j, i-1)) drawLineSpecific(x2, y2, (x2+ls), y2)
-									if(field.getBlockEmpty(j, i+1)) drawLineSpecific(x2, (y2+ls), (x2+ls), (y2+ls))
-									if(field.getBlockEmpty(j-1, i)) drawLineSpecific(x2, y2, x2, (y2+ls))
-									if(field.getBlockEmpty(j+1, i)) drawLineSpecific((x2+ls), y2, (x2+ls), (y2+ls))
+									if(field.getBlockEmpty(j, i-1)) drawLineSpecific(x2, y2, x2+ls, y2, w = w)
+									if(field.getBlockEmpty(j, i+1)) drawLineSpecific(x2, y2+ls, x2+ls, y2+ls, w = w)
+									if(field.getBlockEmpty(j-1, i)) drawLineSpecific(x2, y2, x2, y2+ls, w = w)
+									if(field.getBlockEmpty(j+1, i)) drawLineSpecific(x2+ls, y2, x2+ls, y2+ls, w = w)
 								}
 								GameEngine.BLOCK_OUTLINE_CONNECT -> {
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) drawLineSpecific(x2, y2, (x2+ls), y2)
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) drawLineSpecific(x2, (y2+ls), (x2+ls), (y2+ls))
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) drawLineSpecific(x2, y2, x2, (y2+ls))
-									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) drawLineSpecific((x2+ls), y2, (x2+ls), (y2+ls))
+									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_UP)) drawLineSpecific(x2, y2, x2+ls, y2, w = w)
+									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_DOWN)) drawLineSpecific(x2, y2+ls, x2+ls, y2+ls, w = w)
+									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_LEFT)) drawLineSpecific(x2, y2, x2, y2+ls, w = w)
+									if(!it.getAttribute(Block.ATTRIBUTE.CONNECT_RIGHT)) drawLineSpecific(x2+ls, y2, x2+ls, y2+ls, w = w)
 								}
 								GameEngine.BLOCK_OUTLINE_SAMECOLOR -> {
 									val color = getColorByID(it.color ?: Block.COLOR.WHITE)
-									if(field.getBlockColor(j, i-1)!=it.color) drawLineSpecific(x2, y2, (x2+ls), y2, color)
-									if(field.getBlockColor(j, i+1)!=it.color) drawLineSpecific(x2, (y2+ls), (x2+ls), (y2+ls), color)
-									if(field.getBlockColor(j-1, i)!=it.color) drawLineSpecific(x2, y2, x2, (y2+ls), color)
-									if(field.getBlockColor(j+1, i)!=it.color) drawLineSpecific((x2+ls), y2, (x2+ls), (y2+ls), color)
+									if(field.getBlockColor(j, i-1)!=it.color) drawLineSpecific(x2, y2, x2+ls, y2, color, w = w)
+									if(field.getBlockColor(j, i+1)!=it.color) drawLineSpecific(x2, y2+ls, x2+ls, y2+ls, color, w = w)
+									if(field.getBlockColor(j-1, i)!=it.color) drawLineSpecific(x2, y2, x2, y2+ls, color, w = w)
+									if(field.getBlockColor(j+1, i)!=it.color) drawLineSpecific(x2+ls, y2, x2+ls, y2+ls, color, w = w)
 								}
 							}
 						}
-
 					}
 				}
-
 			}
 		drawFieldSpecific(x, y, width, viewHeight, blksize, zoom, outlineType)
 
@@ -519,7 +518,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				if(maxY>height) maxY = height
 				for(i in 0 until maxY)
 					for(j in 0 until width)
-						drawBlock(x+j*blksize, y+(height-1-i)*blksize, (x+y)%2, 0, false, 0.0f, 1f, zoom)
+						drawBlock(x+j*blksize, y+(height-1-i)*blksize, (x+y)%2, 0, false, 0f, 1f, zoom)
 			}
 		}
 	}
@@ -587,7 +586,6 @@ abstract class AbstractRenderer:EventReceiver() {
 						// NEXT6~
 						for(i in 0 until engine.ruleOpt.nextDisplay-3)
 							engine.getNextObject(pid+i+4)?.let {
-
 								val pY = (1+i)*32
 								drawPiece(rX+((4-it.width-1)*fbs)/4-it.minimumBlockX*fbs/2, y+pY-(it.maximumBlockY+1)*8, it, .5f)
 								(pid+i+4).let {n -> if(n%7==0) drawFont(rX, y+pY-6, "$n", FONT.NANO, COLOR.YELLOW, .5f)}
@@ -750,6 +748,10 @@ abstract class AbstractRenderer:EventReceiver() {
 		if(engine.fpf>0) renderMove(engine)
 	}
 
+	override fun pieceLocked(engine:GameEngine, pX:Int, pY:Int, p:Piece, lines:Int) {
+		//TODO: lockflash particle
+	}
+
 	override fun lineClear(engine:GameEngine, y:Collection<Int>) {
 		val s = engine.blockSize
 		y.forEach {
@@ -776,8 +778,8 @@ abstract class AbstractRenderer:EventReceiver() {
 								sx, sy, maxOf(0, color-Block.COLOR_WHITE)%r.blockBreakMax, lineeffectspeed
 							)
 						)
-					//blockParticles.addBlock(engine, receiver, playerID, blk, j, i, 10, 90, li>=4, localRandom)
-					//blockParticles.addBlock(engine, receiver, playerID, blk, j, i, engine.field.width, cY, li, 120)
+					//efxFG.addAll(blockParticles.addBlock(engine, receiver, playerID, blk, j, i, 10, 90, li>=4, localRandom).particles)
+					//efxFG.addAll(blockParticles.addBlock(engine, receiver, playerID, blk, j, i, engine.field.width, cY, li, 120).particles)
 				}
 			}
 		}
@@ -809,8 +811,8 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	override fun shootFireworks(engine:GameEngine, x:Int, y:Int, color:COLOR) {
 		if(heavyeffect) {
-			val col = ParticleEmitterBase.colorBy(color)
-			efxFG.add(Fireworks(x, y, col[0], col[1], col[2], 255, col[3]))
+			val col = Fireworks.colorBy(color)
+			efxFG.addAll(Fireworks(x.toFloat(), y.toFloat(), col[0], col[1], col[2], 255, col[3]).let {it.particles+it})
 		} else efxFG.add(FragAnim(ANIM.HANABI, x, y, color.ordinal))
 		super.shootFireworks(engine, x, y, color)
 	}
@@ -833,7 +835,6 @@ abstract class AbstractRenderer:EventReceiver() {
 				drawMenuNano(engine, 0f, cY*2/3f+4, "MODE COMPLETED", COLOR.RAINBOW, .5f)
 			}
 		} else drawMenuFont(engine, 0f, cY/2f, "You WIN!", COLOR.ORANGE, 1f)
-
 	}
 
 	/* game over画面の描画処理 */
@@ -900,7 +901,6 @@ abstract class AbstractRenderer:EventReceiver() {
 
 			if(nextshadow&&engine.ghost&&engine.ruleOpt.ghost&&engine.gameActive)
 				drawShadowNexts(offsetX, offsetY, engine)
-
 		}
 	}
 	/* 各 frame の最後に行われる処理 */
@@ -917,7 +917,6 @@ abstract class AbstractRenderer:EventReceiver() {
 	override fun renderLast(engine:GameEngine) {
 		if(engine.playerID==engine.owner.players-1)
 			efxFG.forEachIndexed {i, it -> it.draw(i, this)}
-
 	}
 
 	open fun drawBlendAdd(unit:()->Unit) {
@@ -945,7 +944,6 @@ abstract class AbstractRenderer:EventReceiver() {
 		fillRectSpecific(x-outlineW/2f, y-outlineW/2f, w+outlineW/2f, h+outlineW/2f, color, alpha)
 		if(outlineW>0)
 			drawRectSpecific(x-outlineW/2f, y-outlineW/2f, w+outlineW/2f, h+outlineW/2f, outlineColor, alpha, outlineW)
-
 	}
 
 	fun drawRect(
@@ -975,7 +973,6 @@ abstract class AbstractRenderer:EventReceiver() {
 		fillOvalSpecific(x-outlineW/2f, y-outlineW/2f, w+outlineW/2f, h+outlineW/2f, color, alpha)
 		if(outlineW>0)
 			drawOvalSpecific(x-outlineW/2f, y-outlineW/2f, w+outlineW/2f, h+outlineW/2f, outlineColor, alpha, outlineW)
-
 	}
 
 	fun drawOval(
@@ -1079,7 +1076,6 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	companion object {
-
 		/** Block colorIDに応じてColor Hexを作成
 		 * @param color Block colorID
 		 * @return color Hex
@@ -1119,6 +1115,5 @@ abstract class AbstractRenderer:EventReceiver() {
 			}
 			return r*0x10000+g*0x100+b
 		}
-
 	}
 }

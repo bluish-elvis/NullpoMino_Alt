@@ -69,7 +69,7 @@ object RendererExtension {
 	/**
 	 * Draw a custom-scaled piece that does not have to have a scale of 0.5f, 1f or 2f.<br></br>
 	 * <br></br>
-	 * It can be aligned to any corner, side midpoint or centre of its bounding box.
+	 * It can be aligned to any corner, side midpoint or center of its bounding box.
 	 *
 	 * @param receiver  Renderer to draw with
 	 * @param x         X-coordinate of piece's top-left corner

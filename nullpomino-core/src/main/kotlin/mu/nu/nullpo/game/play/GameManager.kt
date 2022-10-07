@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -42,7 +42,6 @@ class GameManager(
 	/** Game Mode */
 	var mode:GameMode? = null
 ) {
-
 	/** Properties used by game mode */
 	var modeConfig = CustomProperties(cfgMode)
 
@@ -64,7 +63,6 @@ class GameManager(
 	var replayProp = CustomProperties()
 	/** True if replay mode */
 	var replayMode = false
-
 	/** True if replay rerecording */
 	var replayRerecord = false
 
@@ -73,35 +71,29 @@ class GameManager(
 
 	/** BGMStatus: Manages the status of background music */
 	val musMan:BGMStatus = BGMStatus()
-
 	/** BackgroundStatus: Manages the status of background image */
 	val bgMan:BackgroundStatus = BackgroundStatus()
-
 	/** GameEngine: This is where the most action takes place */
 	val engine:MutableList<GameEngine> = mutableListOf()
 
 	/** True to show invisible blocks in replay */
 	var replayShowInvisible = false
-
 	/** Show input */
 	var showInput = false
 
 	/** @return Number of players*/
 	val players:Int
 		get() = engine.size
-
 	/** Check if quit flag is true in any GameEngine object
 	 * @return true if the game should quit
 	 */
 	val quitFlag:Boolean
 		get() = engine.any {it.quitFlag}
-
 	/** Check if at least 1 game is active
 	 * @return true if there is an active GameEngine
 	 */
 	val isGameActive:Boolean
 		get() = engine.any {it.gameActive}
-
 	/** Get winner ID
 	 * @return Player ID of last survivor.
 	 * -2 in single player game.
@@ -148,7 +140,6 @@ class GameManager(
 		if(!replayMode) replayProp.clear()
 		engine.forEach {it.init()}
 	}
-
 	/** shut down the game */
 	fun shutdown() {
 		log.debug("GameManager shutdown()")
@@ -164,7 +155,6 @@ class GameManager(
 		} catch(e:Throwable) {
 			log.debug("Caught Throwable on shutdown", e)
 		}
-
 	}
 
 	/** Update every GameEngine */
@@ -173,7 +163,6 @@ class GameManager(
 		musMan.fadeUpdate()
 		bgMan.fadeUpdate()
 	}
-
 	/** Dispatches all render events to EventReceiver */
 	fun renderAll() {
 		engine.forEach {it.render()}
@@ -194,28 +183,23 @@ class GameManager(
 		const val versionMajor = 7.70f
 		/** Minor version */
 		const val versionMinor = 2022
-
 		/** Development-build flag (false:Release-build true:Dev-build) */
 		const val isDevBuild = true
-
 		/** Get minor version (For compatibility with old replays)
 		 * @return Minor version
 		 */
 		val versionMinorOld:Float
 			get() = versionMinor.toFloat()
-
 		/** Get version information as String
 		 * @return Version information
 		 */
 		val versionString:String
 			get() = "$versionMajor.$versionMinor${if(isDevBuild) "DEV" else ""}"
-
 		/** Get build type as string
 		 * @return Build type as String
 		 */
 		val buildTypeString:String
 			get() = if(isDevBuild) "Development" else "Release"
-
 		/** Get build type name
 		 * @param type Build type (false:Release true:Development)
 		 * @return Build type as String

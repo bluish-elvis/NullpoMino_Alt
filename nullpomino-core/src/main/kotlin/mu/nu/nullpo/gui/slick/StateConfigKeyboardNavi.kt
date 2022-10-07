@@ -37,7 +37,6 @@ import org.newdawn.slick.state.StateBasedGame
 
 /** キーボード設定画面のステート */
 class StateConfigKeyboardNavi:DummyMenuChooseState() {
-
 	/** Player number */
 	var player = 0
 

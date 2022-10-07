@@ -45,7 +45,6 @@ import kotlin.random.Random
 
 /** PHYSICIAN VS-BATTLE mode (beta) */
 class PhysicianVS:AbstractMode() {
-
 	/** Has accumulatedojama blockOfcount */
 	//private int[] garbage;
 
@@ -398,7 +397,6 @@ class PhysicianVS:AbstractMode() {
 					if(engine.statc[5]>=mapMaxNo[pid]) engine.statc[5] = 0
 					loadMapPreview(engine, pid, engine.statc[5], false)
 				}
-
 		} else if(engine.statc[4]==0) {
 			menuTime++
 			menuCursor = 0

@@ -37,7 +37,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** NET-VS-DIG RACE mode */
-class NetVSDigRaceMode:NetDummyVSMode() {
+class NetVSSprintDig:NetDummyVSMode() {
 	/** Number of garbage lines to clear */
 	private var goalLines:Int = 0 // TODO: Add option to change this
 
@@ -120,7 +120,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 	 * @param playerID Player ID
 	 * @return Number of garbage lines left
 	 */
-	private fun getRemainGarbageLines(engine:GameEngine?, playerID:Int):Int {
+	private fun getRemainGarbageLines(engine:GameEngine?):Int {
 		val field = engine?.field ?: return -1
 
 		val w = field.width
@@ -141,19 +141,17 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 				}
 
 		return if(!hasGemBlock) 0 else lines
-
 	}
 
 	/** Turn all normal blocks to gem (for values game)
 	 * @param engine GameEngine
 	 * @param playerID Player ID
 	 */
-	private fun turnAllBlocksToGem(engine:GameEngine, playerID:Int) {
+	private fun turnAllBlocksToGem(engine:GameEngine) {
 		val field = engine.field
 
 		for(y in field.highestBlockY until field.height)
 			for(x in 0 until field.width) field.getBlock(x, y)?.type = Block.TYPE.GEM
-
 	}
 
 	/* Ready */
@@ -168,14 +166,14 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 				fillGarbage(engine, playerID)
 
 				// Update meter
-				val remainLines = getRemainGarbageLines(engine, playerID)
+				val remainLines = getRemainGarbageLines(engine)
 				playerRemainLines[playerID] = remainLines
 				engine.meterValue = remainLines*1f/engine.fieldHeight
 				engine.meterColor = GameEngine.METER_COLOR_GREEN
 			} else {
 				// Map game
 				engine.createFieldIfNeeded()
-				turnAllBlocksToGem(engine, playerID)
+				turnAllBlocksToGem(engine)
 				playerStartGems[playerID] = engine.field.howManyGems
 				playerRemainLines[playerID] = playerStartGems[playerID]
 				engine.meterValue = 1f
@@ -219,7 +217,6 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 			val remainLines = engine.field.howManyGems-engine.field.howManyGemClears
 			engine.meterValue = remainLines*1f*playerStartGems[playerID]/engine.fieldHeight
 			engine.meterColor = GameEngine.METER_COLOR_LEVEL
-
 		}
 	}
 
@@ -227,7 +224,7 @@ class NetVSDigRaceMode:NetDummyVSMode() {
 		val pid = engine.playerID
 		if(ev.lines>0&&pid==0) {
 			if(netCurrentRoomInfo==null||!netCurrentRoomInfo!!.useMap)
-				playerRemainLines[pid] = getRemainGarbageLines(engine, pid)
+				playerRemainLines[pid] = getRemainGarbageLines(engine)
 			else playerRemainLines[pid] = engine.field.howManyGems-engine.field.howManyGemClears
 			updateMeter(engine)
 

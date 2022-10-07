@@ -131,13 +131,13 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 		}
 	}
 	/**
-	 * Sets rotation centre for an image when using Slick renderer.
+	 * Sets rotation center for an image when using Slick renderer.
 	 *
 	 * @param name Image name
 	 * @param x    X-coordinate relative to image's top-left corner
 	 * @param y    Y-coordinate relative to image's top-left corner
 	 */
-	fun setRotationCentre(name:String, x:Float, y:Float) {
+	fun setRotationCenter(name:String, x:Float, y:Float) {
 		slickImages[name]?.setCenterOfRotation(x, y)
 	}
 	/**
@@ -193,7 +193,6 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 			name, x.toFloat(), y.toFloat(), srcX.toFloat(), srcY.toFloat(), srcSizeX.toFloat(), srcSizeY.toFloat(),
 			Color(red, green, blue, alpha), scale
 		)
-
 	}
 	/**
 	 * Draws image to game.
@@ -237,7 +236,6 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 			val fx = toDraw.width
 			val fy = toDraw.height
 			drawImage(name, x, y, 0, 0, fx, fy, 255, 255, 255, 255, 1f)
-
 		}
 	}
 	/**
@@ -384,9 +382,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 			if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
 			for(s in ResourceHolder.bgm) {
 				s?.pause()
-				s?.stop()
-
-			}
+				s?.stop()			}
 			return
 		}
 

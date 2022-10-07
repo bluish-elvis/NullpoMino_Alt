@@ -46,20 +46,20 @@ import kotlin.random.Random
  *
  * @param length Maximum particle count.
  */
-class BlockParticleCollection:ParticleEmitterBase {
-	override val particles:MutableSet<Particle>
+class BlockParticleCollection {
+	val particles:MutableSet<Particle>
 	/**DTET scattering to horizontal */
 	constructor(engine:GameEngine, receiver:EventReceiver, blocks:Map<Int, Map<Int, Block>>,
 		maxVelocity:Float, isFlashing:Boolean, randomizer:Random) {
+		val bs = EventReceiver.getBlockSize(engine)
 		particles = blocks.flatMap {(y, row) ->
 			val colA = blocks.keys.sorted()
 			val rowA = row.keys.sorted()
 			row.map {(x, b) ->
-				val bs = EventReceiver.getBlockSize(engine)
 				val py = colA.let {a -> a.indexOf(y)-a.size/2}.let {if(it==0) 2*rowA.indexOf(x)%2-1 else it}
 
 				BlockParticle(
-					Block(b), Vector(receiver.fieldX(engine)/*+(bs/4)*/+x*bs, receiver.fieldY(engine)/*+(bs*13/4)*/+y*bs),
+					Block(b), receiver.fieldX(engine)/*+(bs/4)*/+x*bs.toFloat(), receiver.fieldY(engine)/*+(bs*13/4)*/+y*bs.toFloat(),
 					Vector(randomizer.nextFloat()*2-1f, py.toFloat()).apply {magnitude = maxVelocity*(.5f+randomizer.nextFloat()/2)},
 					Vector(randomizer.nextFloat()*maxVelocity, randomizer.nextDouble(PI*2).toFloat(), true),
 					Type.DTET,
@@ -73,18 +73,18 @@ class BlockParticleCollection:ParticleEmitterBase {
 		engine:GameEngine, receiver:EventReceiver, blocks:Map<Int, Map<Int, Block>>, velY:Float = 4.8f, velYMod:Float, isFlashing:Boolean = false,
 	) {
 		val colA = blocks.keys.sorted()
+		val width = engine.field.width
+		val bs = EventReceiver.getBlockSize(engine)
 		particles = blocks.flatMap {(y, row) ->
 			row.map {(x, b) ->
-				val bs = EventReceiver.getBlockSize(engine)
-				val width = engine.field.width
 				val py = colA.indexOf(y)
 				var xU = x-width/2f
 				if(width%2==0) xU += .5f
 				val mod = 1f/3f*xU
 				val velocity = Vector(mod*1.1f, -abs(velY)*1.5f-abs(velYMod)*py.toFloat()+abs(xU)*velY/width)
 				BlockParticle(
-					Block(b), Vector(receiver.fieldX(engine)+x*bs, receiver.fieldY(engine)+y*bs), velocity,
-					animType = Type.TGM, blockSize = bs, isFlashing = isFlashing
+					Block(b), receiver.fieldX(engine)+x*bs.toFloat(), receiver.fieldY(engine)+y*bs.toFloat(), velocity, Vector.zero(),
+					Type.TGM, bs, isFlashing
 				)
 			}
 		}.toMutableSet()

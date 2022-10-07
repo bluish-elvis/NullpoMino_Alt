@@ -41,7 +41,6 @@ import java.util.LinkedList
 
 /** Mode select screen */
 class StateSelectMode:DummyMenuScrollState() {
-
 	/** Current folder name */
 	private var strCurrentFolder = ""
 
@@ -70,7 +69,6 @@ class StateSelectMode:DummyMenuScrollState() {
 				List(listMode.size) {convModeName(listMode[it], true)}
 			else
 				NullpoMinoSlick.modeManager.getModeNames(false)
-
 		}
 
 		// Set cursor postion
@@ -121,7 +119,6 @@ class StateSelectMode:DummyMenuScrollState() {
 
 	/* Render screen */
 	public override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
-
 		FontNormal.printFontGrid(1, 1, "Select a Game Mode (${cursor+1}/${list.size})", COLOR.ORANGE)
 		if(!isTopLevel)
 			FontNano.printFont(
@@ -134,7 +131,6 @@ class StateSelectMode:DummyMenuScrollState() {
 
 	/* Decide */
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
-
 		if(isTopLevel&&cursor==list.lastIndex) {
 			// More...
 			NullpoMinoSlick.propGlobal.setProperty("name.mode.toplevel", list[cursor])

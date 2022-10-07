@@ -42,7 +42,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** COMBO RACE Mode */
 class SprintCombo:NetDummyMode() {
-
 	/** EventReceiver object (This receives many game events, can also be used
 	 * for drawing the fonts.) */
 
@@ -147,7 +146,6 @@ class SprintCombo:NetDummyMode() {
 			version = CURRENT_VERSION
 			presetNumber = engine.owner.modeConfig.getProperty("comborace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-
 		} else {
 			version = engine.owner.replayProp.getProperty("comborace.version", 0)
 			presetNumber = 0
@@ -276,7 +274,6 @@ class SprintCombo:NetDummyMode() {
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&netIsNetRankingViewOK(engine))
 				netEnterNetPlayRankingScreen(goalType)
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -293,7 +290,6 @@ class SprintCombo:NetDummyMode() {
 		// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, receiver)
 		else {
-
 			drawMenu(
 				engine, receiver, 0, COLOR.BLUE, 0,
 				"GOAL" to if(GOAL_TABLE[goalType]==-1) "ENDLESS" else GOAL_TABLE[goalType]
@@ -420,7 +416,6 @@ class SprintCombo:NetDummyMode() {
 				}
 			}
 		} else {
-
 			receiver.drawScoreFont(engine, 0, 3, "Longest Chain", COLOR.BLUE)
 			receiver.drawScoreNum(
 				engine, 0, 4, "${engine.statistics.maxCombo}", engine.statistics.maxCombo>0&&engine.combo==engine.statistics.maxCombo,

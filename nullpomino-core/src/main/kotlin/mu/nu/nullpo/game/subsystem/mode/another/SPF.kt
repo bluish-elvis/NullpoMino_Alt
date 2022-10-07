@@ -46,7 +46,6 @@ import kotlin.random.Random
 
 /** SPF VS-BATTLE mode (Beta) */
 class SPF:AbstractMode() {
-
 	/** Has accumulatedojama blockOfcount */
 	private var ojama = IntArray(0)
 
@@ -289,7 +288,6 @@ class SPF:AbstractMode() {
 	}
 
 	private fun loadDropMapPreview(engine:GameEngine, pattern:List<List<Int>>?) {
-
 		pattern?.let {
 			log.debug("Loading drop values preview")
 			engine.createFieldIfNeeded().run {
@@ -492,7 +490,6 @@ class SPF:AbstractMode() {
 					if(engine.statc[5]>=mapMaxNo[pid]) engine.statc[5] = 0
 					loadMapPreview(engine, pid, engine.statc[5], false)
 				}
-
 		} else if(engine.statc[4]==0) {
 			menuTime++
 			menuCursor = 0
@@ -680,7 +677,6 @@ class SPF:AbstractMode() {
 				for(y in 0 until engine.field.height)
 					engine.field.getBlock(x, y)?.let {b ->
 						if(b.countdown>0) {
-
 							val textColor = when(b.secondaryColor) {
 								Block.COLOR.BLUE -> COLOR.BLUE
 								Block.COLOR.GREEN -> COLOR.GREEN
@@ -1028,7 +1024,6 @@ class SPF:AbstractMode() {
 				}
 				log.debug("expanded = $expanded")
 				if(expanded) {
-
 					log.debug(
 						"Expanding square. Coordinates after: ($minX, $minY) to ("+
 							maxX+", $maxY)"
@@ -1046,7 +1041,6 @@ class SPF:AbstractMode() {
 							bTest.setAttribute(testX!=maxX, Block.ATTRIBUTE.CONNECT_RIGHT)
 							bTest.bonusValue = size
 							testY++
-
 						}
 						testX++
 					}
@@ -1499,7 +1493,6 @@ class SPF:AbstractMode() {
 			} catch(e:ArrayIndexOutOfBoundsException) {
 				1.0
 			}
-
 		}
 
 		fun getDefendMultiplier(set:Int, map:Int):Double {
@@ -1508,7 +1501,6 @@ class SPF:AbstractMode() {
 			} catch(e:ArrayIndexOutOfBoundsException) {
 				1.0
 			}
-
 		}
 
 		fun getRowValue(row:Int):Double = ROW_VALUES[minOf(maxOf(row, 0), ROW_VALUES.size-1)]

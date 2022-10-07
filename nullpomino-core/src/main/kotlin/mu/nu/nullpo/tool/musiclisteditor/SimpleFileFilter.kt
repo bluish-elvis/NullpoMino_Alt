@@ -36,7 +36,6 @@ class SimpleFileFilter constructor(
 	/** 拡張子 */
 	var extension:String = "",
 	desc:String = ""):FileFilter() {
-
 	/** 表示名 */
 	private var description:String = desc
 

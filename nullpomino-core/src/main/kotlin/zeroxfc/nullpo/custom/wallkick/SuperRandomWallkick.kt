@@ -39,7 +39,7 @@ package zeroxfc.nullpo.custom.wallkick
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.WallkickResult
 import mu.nu.nullpo.game.subsystem.wallkick.BaseStandardWallkick
-import zeroxfc.nullpo.custom.libs.ArrayRandomizer
+import kotlin.random.Random
 
 class SuperRandomWallkick:BaseStandardWallkick() {
 	/*
@@ -54,8 +54,7 @@ class SuperRandomWallkick:BaseStandardWallkick() {
 		for(i in ctrl!!.buttonTime) {
 			v += i
 		}
-		val randomizer = ArrayRandomizer((rtOld+rtNew+piece.id+field.highestBlockY+v).toLong())
-		arr = randomizer.permute(arr)
+		arr = arr.shuffled(Random((rtOld+rtNew+piece.id+field.highestBlockY+v).toLong()))
 		for(i in arr) {
 			var x2 = kicktable[rtOld][i][0]
 			var y2 = kicktable[rtOld][i][1]
@@ -66,7 +65,6 @@ class SuperRandomWallkick:BaseStandardWallkick() {
 			if(y2>=0||allowUpward)
 				if(!piece.checkCollision(x+x2, y+y2, rtNew, field))
 					return WallkickResult(x2, y2, rtNew)
-
 		}
 		return null
 	}

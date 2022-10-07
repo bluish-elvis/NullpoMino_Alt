@@ -60,7 +60,6 @@ import kotlin.system.exitProcess
 
 /** NullpoMino SlickVersion */
 class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
-
 	/* ステート (タイトルとかゲームとかのシーンのことね）を追加 */
 	override fun initStatesList(container:GameContainer) {
 		stateLoading = StateLoading()
@@ -107,34 +106,25 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 	}
 
 	companion object {
-
 		/** Log */
 		internal val log = LogManager.getLogger()
 
 		/** Save settings用Property file */
 		var propConfig = CustomProperties()
-
 		/** Save settings用Property file (全Version共通) */
 		var propGlobal = CustomProperties()
-
 		/** 音楽リストProperty file */
 		internal val propMusic = CustomProperties()
-
 		/** Observer機能用Property file */
 		private val propObserver = CustomProperties()
-
 		/** Default language file */
 		private val propLangDefault = CustomProperties()
-
 		/** 言語ファイル */
 		private val propLang = CustomProperties()
-
 		/** Default game mode description file */
 		internal val propDefaultModeDesc = CustomProperties()
-
 		/** Game mode description file */
 		internal val propModeDesc = CustomProperties()
-
 		/** Skin description file */
 		internal val propSkins = CustomProperties()
 
@@ -143,118 +133,81 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 		/** AppGameContainer */
 		internal lateinit var appGameContainer:AppGameContainer
-
 		/** ロード画面のステート */
 		internal lateinit var stateLoading:StateLoading
-
 		/** タイトル画面のステート */
 		internal lateinit var stateTitle:StateTitle
-
 		/** ゲーム画面のステート */
 		internal lateinit var stateInGame:StateInGame
-
 		/** Mode 選択画面のステート */
 		internal lateinit var stateSelectMode:StateSelectMode
-
 		/** リプレイ選択画面のステート */
 		internal lateinit var stateReplaySelect:StateReplaySelect
-
 		/** 設定画面のステート */
 		internal lateinit var stateConfigMainMenu:StateConfigMainMenu
-
 		/** 全般の設定画面のステート */
 		internal lateinit var stateConfigGeneral:StateConfigGeneral
-
 		/** ルール選択画面のステート */
 		internal lateinit var stateConfigRuleSelect:StateConfigRuleSelect
-
 		/** AI選択画面のステート */
 		internal lateinit var stateConfigAISelect:StateConfigAISelect
-
 		/** キーボード設定画面のステート */
 		internal lateinit var stateConfigKeyboard:StateConfigKeyboard
-
 		/** Joystick button設定画面のステート */
 		internal lateinit var stateConfigJoystickButton:StateConfigJoystickButton
-
 		/** ネットプレイ画面のステート */
 		private lateinit var stateNetGame:StateNetGame
-
 		/** Joystick 設定メインMenu のステート */
 		internal lateinit var stateConfigJoystickMain:StateConfigJoystickMain
-
 		/** Joystick テスト画面のステート */
 		internal lateinit var stateConfigJoystickTest:StateConfigJoystickTest
-
 		/** チューニング設定画面のステート */
 		internal lateinit var stateConfigGameTuning:StateConfigGameTuning
-
 		/** Style select state */
 		internal lateinit var stateConfigRuleStyleSelect:StateConfigRuleStyleSelect
-
 		/** Keyboard menu navigation settings state */
 		internal lateinit var stateConfigKeyboardNavi:StateConfigKeyboardNavi
-
 		/** Keyboard Reset menu state */
 		internal lateinit var stateConfigKeyboardReset:StateConfigKeyboardReset
-
 		/** Rule select (after mode selection) */
 		internal lateinit var stateSelectRuleFromList:StateSelectRuleFromList
-
 		/** Mode folder select */
 		internal lateinit var stateSelectModeFolder:StateSelectModeFolder
 
 		/** Timing of alternate FPS sleep (false=render true=update) */
 		internal var alternateFPSTiming = false
-
 		/** Allow dynamic adjust of target FPS (as seen in Swing version) */
 		private var alternateFPSDynamicAdjust = false
-
 		/** Perfect FPS mode (more accurate, eats more CPU) */
 		private var alternateFPSPerfectMode = false
-
 		/** Execute Thread.yield() during Perfect FPS mode */
 		private var alternateFPSPerfectYield = false
-
 		/** Target FPS */
 		internal var altMaxFPS = 0
-
 		/** Current max FPS */
 		private var altMaxFPSCurrent = 0
-
 		/** Used for FPS calculation */
 		private var periodCurrent:Long = 0L
-
 		/** FPS維持用 */
 		private var beforeTime = 0L
-
 		/** FPS維持用 */
 		private var overSleepTime = 0L
-
 		/** FPS維持用 */
 		private var noDelays = 0
-
 		/** FPS計算用 */
 		private var calcInterval = 0L
-
 		/** FPS計算用 */
 		private var prevCalcTime = 0L
-
 		/** frame count */
 		var frameCount = 0L; private set
-
 		/** upTime by frame */
 		var upTimeFrame = 0L; private set
-
 		/** rainbow counter */
 		val rainbow get() = (upTimeFrame%18).toInt()/2
-
 		/** 実際のFPS */
 		private var actualFPS = .0
-
 		/** FPS表示用DecimalFormat */
 		private val df = DecimalFormat("0.0")
-
 		/** Used by perfect fps mode */
 		private var perfectFPSDelay = 0L
 
@@ -263,7 +216,6 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 		/** True if read keyboard input from JInput */
 		internal var useJInputKeyboard = false
-
 		/** True to use safer texture loading
 		 * (Use BigImage instead of regular Image) */
 		internal var useBigImageTextureLoad = false
@@ -315,32 +267,34 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 			// Game mode description
 			try {
-				val `in` = FileInputStream("config/lang/modedesc_default.xml")
-				propDefaultModeDesc.loadFromXML(`in`)
+				val fis = FileInputStream("config/lang/modedesc_default.xml")
+				propDefaultModeDesc.loadFromXML(fis)
 			} catch(e:IOException) {
 				log.error("Couldn't load default mode description file", e)
 			}
 
 			try {
-				val `in` = FileInputStream("config/lang/modedesc_${Locale.getDefault().country}.xml")
-				propModeDesc.loadFromXML(`in`)
-				`in`.close()
+				val fis = FileInputStream("config/lang/modedesc_${Locale.getDefault().country}.xml")
+				propModeDesc.loadFromXML(fis)
+				fis.close()
 			} catch(_:IOException) {
 			}
 
 			// 設定ファイル読み込み
 			try {
-				val `in` = FileInputStream("config/lang/blockskin.xml")
-				propSkins.loadFromXML(`in`)
-				`in`.close()
+				val fis = FileInputStream("config/lang/blockskin.xml")
+				propSkins.loadFromXML(fis)
+				fis.close()
 			} catch(_:IOException) {
 			}
 
 			// Mode読み込み
 			try {
-				val txtMode = BufferedReader(FileReader("config/list/mode.lst"))
-				modeManager.loadGameModes(txtMode)
-				txtMode.close()
+				this::class.java.getResource("/mode.lst")?.file?.let {
+					val txtMode = BufferedReader(FileReader(it))
+					modeManager.loadGameModes(txtMode)
+					txtMode.close()
+				}
 			} catch(e:IOException) {
 				log.error("Mode list load failed", e)
 			}
@@ -348,9 +302,9 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			// Set default rule selections
 			try {
 				val propDefaultRule = CustomProperties()
-				val `in` = FileInputStream("config/list/global_defaultrule.lst")
-				propDefaultRule.load(`in`)
-				`in`.close()
+				val fis = FileInputStream("config/list/global_defaultrule.lst")
+				propDefaultRule.load(fis)
+				fis.close()
 
 				for(pl in 0..1)
 					for(i in 0 until GameEngine.MAX_GAMESTYLE)
@@ -490,7 +444,6 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			} catch(e:IOException) {
 				log.error("Failed to save global config", e)
 			}
-
 		}
 
 		/** (Re-)Load global config file */
@@ -501,7 +454,6 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				`in`.close()
 			} catch(_:IOException) {
 			}
-
 		}
 
 		/** いろいろな設定を反映させる */
@@ -539,7 +491,6 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				ignorePOV[1] = propConfig.getProperty("joyIgnorePOV.p1", false)
 			}
 			// useJInputKeyboard = propConfig.getProperty("option.useJInputKeyboard", true);
-
 		}
 
 		/** Screenshot保存
@@ -593,7 +544,6 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			} catch(e:Throwable) {
 				log.error("Failed to create screen shot", e)
 			}
-
 		}
 
 		/** 翻訳後のUIの文字列を取得

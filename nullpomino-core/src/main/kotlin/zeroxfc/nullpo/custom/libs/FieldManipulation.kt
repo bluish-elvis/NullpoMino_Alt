@@ -39,53 +39,6 @@ import mu.nu.nullpo.game.play.GameEngine
 import java.util.Random
 
 /**
- * Fixed flip field method (180° Field inum).
- *
- */
-fun Field.flipVertical() {
-	val field2 = Field(this)
-	var yMin = highestBlockY-hiddenHeight
-	var yMax = hiddenHeight+height-1
-	while(yMin<yMax) {
-		for(x in 0 until width) {
-			setBlock(x, yMin, field2.getBlock(x, yMin))
-			setBlock(x, yMax, field2.getBlock(x, yMax))
-		}
-		yMin++
-		yMax--
-	}
-}
-/**
- * Negates all the blocks in the field up to the current stack height.
- *
- */
-fun Field.negaField() {
-	for(y in highestBlockY until height) for(x in 0 until width) {
-		if(getBlockEmpty(x, y)) garbageDropPlace(x, y, false, 0) // TODO: Set color
-		else setBlock(x, y, null)
-	}
-}
-/**
- * Mirrors the current field. Essentially the same as horizontal flip.
- *
- */
-fun Field.mirror() {
-	var temp:Block?
-	var y = highestBlockY
-	while(y<height) {
-		var xMin = 0
-		var xMax = width-1
-		while(xMin<xMax) {
-			temp = getBlock(xMin, y)
-			setBlock(xMin, y, getBlock(xMax, y))
-			setBlock(xMax, y, temp)
-			xMin++
-			xMax--
-		}
-		y--
-	}
-}
-/**
  * Deletes blocks with any of the colors in the given array.
  *
  * @param colors Colors to erase
@@ -158,7 +111,7 @@ fun Field.shuffleRows(seed:Long, highestRow:Int = 2, lowestRow:Int = height-1) =
  * Randomises the row order in a field.
  * Requires a pre-instantiated `ArrayRandomizer` instance.
  *
- * @param ArrayRandomizer ArrayRandomizer instance
+ * @param randomizer Randomizer instance
  * @param highestRow      Highest row randomised (0 = top visible), recommended / default is >= 2 (inclusive)
  * @param lowestRow       Lowest row randomised (inclusive)
  */
@@ -317,7 +270,7 @@ fun Field.shuffleRows(randomizer:Random, highestRow:Int = 2, lowestRow:Int = hei
 							if(v1>0&&v2<=0) {
 								total -= 6
 								//matchArr.append("-8");
-							} else if(v1>0&&v2>0) {
+							} else if(v1>0) {
 								total += if(v1==v2) {
 									2
 									//matchArr.append(" 2");
@@ -338,7 +291,7 @@ fun Field.shuffleRows(randomizer:Random, highestRow:Int = 2, lowestRow:Int = hei
 							if(v1>0&&v2<=0) {
 								total -= 6
 								//matchArr.append("-8");
-							} else if(v1>0&&v2>0) {
+							} else if(v1>0) {
 								total += 2
 								//matchArr.append(" 2");
 							} // else {
@@ -389,12 +342,6 @@ fun gcd(a:Int, b:Int):Int = if(a==0) b else gcd(b%a, a)
 // Method to return LCM of two numbers
 fun lcm(a:Int, b:Int):Int = a*b/gcd(a, b)
 /**
- * Gets the full height of a field, including hidden height.
- *
- * @return int; Full height
- */
-val Field.fullHeight:Int get() = hiddenHeight+height
-/**
  * Gets the number of empty blocks inside the field.
  *
  * @return Number of empty spaces inside (including in hidden height and clear queued line)
@@ -416,13 +363,12 @@ val Field.opposingCornerCoords
  * @return int[] results: results[0] = x, results[1] = y.
  */
 val Field.opposingCornerBoxSize
-	get() =
-		opposingCornerCoords.let {bbox ->
-			val i = bbox[1][0]-bbox[0][0]+1
-			val j = bbox[1][1]-bbox[0][1]+1
-			if(i<=0||j<=0) emptyList<Int>()
-			else listOf(i, j)
-		}
+	get() = opposingCornerCoords.let {bbox ->
+		val i = bbox[1][0]-bbox[0][0]+1
+		val j = bbox[1][1]-bbox[0][1]+1
+		if(i<=0||j<=0) emptyList()
+		else listOf(i, j)
+	}
 /**
  * Gets the x coordinate of the left-most filled column a field.
  *

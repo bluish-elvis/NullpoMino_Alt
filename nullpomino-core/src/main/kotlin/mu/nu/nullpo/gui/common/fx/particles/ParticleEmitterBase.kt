@@ -33,7 +33,6 @@
 
 package mu.nu.nullpo.gui.common.fx.particles
 
-import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.fx.Effect
 
@@ -41,7 +40,6 @@ import mu.nu.nullpo.gui.common.fx.Effect
  * Child Class must Add some number of particles.
  */
 abstract class ParticleEmitterBase:Effect {
-
 	val size:Int
 		get() = particles.size
 	/** Particle container*/
@@ -63,27 +61,4 @@ abstract class ParticleEmitterBase:Effect {
 		}
 	}
 
-	companion object {
-		/**
-		 * Default color set shared by all emitters.<br></br>
-		 * In order: Gray, Red, Orange, Yellow, Green, Cyan, Blue, Purple<br></br>
-		 * Parameters: Red, Green, Blue, Alpha, Variance
-		 */
-		val DEF_COLORS = listOf(
-			listOf(240, 240, 240, 235, 20), listOf(240, 30, 0, 235, 20),
-			listOf(240, 130, 0, 235, 20), listOf(240, 240, 0, 235, 20), listOf(30, 240, 0, 235, 20),
-			listOf(0, 240, 240, 235, 20), listOf(0, 30, 240, 235, 20), listOf(210, 0, 210, 235, 20)
-		)
-
-		fun colorBy(c:COLOR):List<Int> = DEF_COLORS[when(c) {
-			COLOR.RED -> 1
-			COLOR.ORANGE -> 2
-			COLOR.YELLOW -> 3
-			COLOR.GREEN -> 4
-			COLOR.CYAN -> 5
-			COLOR.BLUE, COLOR.COBALT -> 6
-			COLOR.PURPLE, COLOR.PINK -> 7
-			else -> 0
-		}]
-	}
 }

@@ -34,7 +34,6 @@ import java.io.IOException
 
 /** クライアント(Observer用) */
 class NetObserverClient:NetBaseClient {
-
 	/** サーバーVersion */
 	@Volatile
 	var serverVersion = 0f

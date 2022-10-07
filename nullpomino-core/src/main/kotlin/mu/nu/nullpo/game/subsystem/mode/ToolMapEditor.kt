@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,8 +40,7 @@ import java.util.LinkedList
 import kotlin.random.Random
 
 /** TOOL-VS MAP EDIT */
-class ToolVSMapEditMode:AbstractMode() {
-
+class ToolMapEditor:AbstractMode() {
 	/** Map dataI went into theProperty file */
 	private var propMap = CustomProperties()
 

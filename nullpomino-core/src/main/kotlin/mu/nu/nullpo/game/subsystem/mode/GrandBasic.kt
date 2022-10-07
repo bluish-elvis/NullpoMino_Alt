@@ -44,7 +44,7 @@ import kotlin.math.floor
 import kotlin.math.ln
 
 /** SCORE ATTACK mode (Original from NullpoUE build 121909 by Zircean) */
-class GrandFestival:AbstractMode() {
+class GrandBasic:AbstractMode() {
 	/** Next section level */
 	private var nextseclv = 0
 
@@ -179,15 +179,7 @@ class GrandFestival:AbstractMode() {
 		sectionIsNewRecord.fill(false)
 		sectionavgtime = 0
 		sectionscomp = sectionavgtime
-		isShowBestSectionTime = false
-		startLevel = 0
-		big = false
-		always20g = big
-		alwaysGhost = always20g
-		showST = true
 
-		decoration = 0
-		dectemp = 0
 
 		rankingRank = -1
 		rankingScore.fill(0)
@@ -226,18 +218,14 @@ class GrandFestival:AbstractMode() {
 		engine.speed.gravity = if(always20g) -1
 		else tableGravityValue[tableGravityChangeLevel.indexOfFirst {it>=engine.statistics.level}
 			.let {if(it<0) tableGravityChangeLevel.lastIndex else it}]
-
 	}
 
 	/** Calculates average section time */
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
-			var temp = 0
-			for(i in startLevel until startLevel+sectionscomp)
-				temp += sectionTime[i]
-			sectionavgtime = temp/sectionscomp
-		} else
-			sectionavgtime = 0
+			val i = minOf(sectionscomp+startLevel, sectionTime.size)
+			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
+		} else sectionavgtime = 0
 	}
 
 	/** Best section time update check routine
@@ -266,7 +254,6 @@ class GrandFestival:AbstractMode() {
 				engine.statistics.level = startLevel*100
 				nextseclv = engine.statistics.level+100
 				setSpeed(engine)
-
 			}
 
 			// Check for F button, when pressed this will flip Leaderboard/Best
@@ -287,7 +274,6 @@ class GrandFestival:AbstractMode() {
 			// Check for B button, when pressed this will shut down the game
 			// engine.
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -314,7 +300,6 @@ class GrandFestival:AbstractMode() {
 		setSpeed(engine)
 		bgmLv = if(engine.statistics.level<500) 0 else 1
 		owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandA(0) else BGM.GrandA(1)
-
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
@@ -334,7 +319,7 @@ class GrandFestival:AbstractMode() {
 					receiver.drawScoreFont(engine, 0, 2, "HANABI SCORE TIME", COLOR.BLUE)
 
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreNum(engine, 0, 3+i, String.format("%2d", i+1), COLOR.YELLOW)
+						receiver.drawScoreGrade(engine, 0, 3+i, String.format("%2d", i+1), COLOR.YELLOW)
 						receiver.drawScoreNum(engine, 2, 3+i, "${rankingHanabi[i]}", i==rankingRank)
 						receiver.drawScoreNum(engine, 6, 3+i, "${rankingScore[i]}", i==rankingRank)
 						receiver.drawScoreNum(engine, 13, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
@@ -358,7 +343,6 @@ class GrandFestival:AbstractMode() {
 							),
 							sectionIsNewRecord[i]
 						)
-
 					}
 					receiver.drawScoreFont(engine, 0, 5+SECTION_MAX, "TOTAL", COLOR.BLUE)
 					receiver.drawScoreNum(
@@ -414,7 +398,6 @@ class GrandFestival:AbstractMode() {
 							receiver.drawScoreNum(
 								engine, x, 5+i, String.format("%4d %d", sectionhanabi[i+1], sectionscore[i+1])
 							)
-
 						}
 
 						var strSeparator = "-"
@@ -430,7 +413,6 @@ class GrandFestival:AbstractMode() {
 					engine, x2, 15, (engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0)).toTimeStr,
 					2f
 				)
-
 			}
 		}
 	}
@@ -489,7 +471,6 @@ class GrandFestival:AbstractMode() {
 	/** Calculates line-clear score (This function will be called even if no
 	 * lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-
 		val li = ev.lines
 		comboValue = if(li==0) 1
 		else maxOf(1, comboValue+2*li-2)
@@ -535,7 +516,6 @@ class GrandFestival:AbstractMode() {
 					+engine.statistics.level/(if(ev.twist) 2 else 3)+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			// AC medal
 			if(engine.field.isEmpty) {
-
 				dectemp += li*25
 				if(li==3) dectemp += 25
 				if(li==4) dectemp += 150
@@ -648,7 +628,6 @@ class GrandFestival:AbstractMode() {
 					engine, receiver, 15, COLOR.BLUE, "S. GRADE",
 					String.format("%10s", tableSecretGradeName[secretGrade-1])
 				)
-
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.BLUE)
 			receiver.drawMenuFont(engine, 0, 3, "Score", COLOR.BLUE)

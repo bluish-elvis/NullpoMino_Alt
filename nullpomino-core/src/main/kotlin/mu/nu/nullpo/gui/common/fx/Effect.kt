@@ -32,6 +32,10 @@ import mu.nu.nullpo.gui.common.AbstractRenderer
 
 /** 各種エフェクト state */
 interface Effect {
+	/** X-coordinate */
+	var x:Float
+	/** Y-coordinate */
+	var y:Float
 	/** @return true if it's expired */
 	fun update(r:AbstractRenderer):Boolean
 	fun draw(i:Int, r:AbstractRenderer)

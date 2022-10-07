@@ -35,7 +35,6 @@ import java.awt.Graphics
 import javax.swing.JComponent
 
 class SurfaceComponent(private val maxJump:Int, private val stackWidth:Int, surface:Int):JComponent() {
-
 	private val surfaceDecoded = IntArray(stackWidth-1)
 	private var minHeight = 0
 	private var maxHeight = 0
@@ -44,16 +43,15 @@ class SurfaceComponent(private val maxJump:Int, private val stackWidth:Int, surf
 	private var baseSizeY = 0
 
 	init {
-
 		baseSizeX = 10
 		baseSizeY = 10
 		componentHeight = maxJump*(stackWidth-1)
 		preferredSize = preferredSize
 		setSurface(surface)
-
 	}
 
-	override fun getPreferredSize():Dimension = Dimension(baseSizeX*(stackWidth+1)+2*baseSizeX, componentHeight*baseSizeY+2*baseSizeY)
+	override fun getPreferredSize():Dimension =
+		Dimension(baseSizeX*(stackWidth+1)+2*baseSizeX, componentHeight*baseSizeY+2*baseSizeY)
 
 	fun setSurface(surface:Int) {
 		var height = 0
@@ -87,11 +85,9 @@ class SurfaceComponent(private val maxJump:Int, private val stackWidth:Int, surf
 			posY -= surfaceDecoded[x]*baseSizeY
 		}
 		g.drawLine(posX, posY, posX+baseSizeX, posY)
-
 	}
 
 	companion object {
-
 		private const val serialVersionUID = 1L
 	}
 

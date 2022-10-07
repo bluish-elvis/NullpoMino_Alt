@@ -41,7 +41,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** DIG CHALLENGE mode */
 class MarathonDrill:NetDummyMode() {
-
 	/** Previous garbage hole */
 	private var garbageHole = 0
 	private var garbageHistory = MutableList(7) {0}
@@ -207,7 +206,6 @@ class MarathonDrill:NetDummyMode() {
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&netIsNetRankingViewOK(engine))
 				netEnterNetPlayRankingScreen(goalType)
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -251,7 +249,6 @@ class MarathonDrill:NetDummyMode() {
 		setSpeed(engine)
 
 		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
-
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
@@ -332,7 +329,6 @@ class MarathonDrill:NetDummyMode() {
 			}
 			receiver.drawMenuFont(engine, garbageHole, 20, "\u008b")
 		}
-
 	}
 
 	/* Called after every frame */
@@ -352,7 +348,6 @@ class MarathonDrill:NetDummyMode() {
 						garbageTimer -= maxTime
 					}
 					if(goalType==GOALTYPE_REALTIME&&garbagePending>0&&engine.stat!=GameEngine.Status.LINECLEAR) {
-
 						// Add Garbage (Realtime)
 						garbageTimer %= maxTime
 
@@ -446,7 +441,6 @@ class MarathonDrill:NetDummyMode() {
 			val gh = garbageHeight-(it.height-it.highestGarbageBlockY)
 			if(gh>0) if(goalType==GOALTYPE_NORMAL) garbagePending = maxOf(garbagePending, gh)
 			else addGarbage(engine, gh, false)
-
 		}
 		return pts+cln*100
 	}

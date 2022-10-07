@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -121,7 +121,6 @@ class RetroModern:AbstractMode() {
 		engine.speed.das = 15
 
 		if(!owner.replayMode) {
-
 			version = CURRENT_VERSION
 		} else
 			loadSetting(owner.replayProp, engine)
@@ -136,9 +135,9 @@ class RetroModern:AbstractMode() {
 	private fun setSpeed(engine:GameEngine) {
 		val lv = maxOf(0, engine.statistics.level)
 
-		engine.ruleOpt.lockResetMove = gametype==4
-		engine.ruleOpt.lockResetSpin = gametype==4
-		engine.ruleOpt.lockResetWallkick = gametype==4
+		engine.ruleOpt.lockResetMove = gametype!=0
+		engine.ruleOpt.lockResetSpin = gametype!=1
+		engine.ruleOpt.lockResetWallkick = gametype!=2
 		engine.ruleOpt.lockResetFall = true
 		engine.ruleOpt.softdropLock = true
 		engine.ruleOpt.softdropMultiplyNativeSpeed = false
@@ -226,7 +225,6 @@ class RetroModern:AbstractMode() {
 
 			// Check for B button, when pressed this will shut down the game engine.
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			engine.statc[3]++
 			engine.statc[2] = -1
@@ -246,7 +244,7 @@ class RetroModern:AbstractMode() {
 
 	private fun setBGM(lv:Int) {
 		owner.musMan.bgm = when(lv) {
-			MAX_LEVEL -> BGM.GrandM(1)
+//			MAX_LEVEL -> BGM.GrandM(1)
 			MAX_LEVEL+1 -> BGM.Silent
 			MAX_LEVEL+2 -> BGM.Ending(if(gametype<3) 3 else 4)
 			else -> BGM.RetroS(tableBGMlevel.count {it<=lv})
@@ -329,7 +327,6 @@ class RetroModern:AbstractMode() {
 				receiver.drawScoreFont(engine, 0, 15, "FLASH BACK", COLOR.CYAN)
 				receiver.drawScoreNum(engine, 0, 16, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
-
 		}
 	}
 
@@ -345,7 +342,6 @@ class RetroModern:AbstractMode() {
 				engine.meterValue = 1f*engine.statistics.lines/totalnorma
 
 			engine.meterColor = GameEngine.METER_COLOR_LEVEL
-
 		} else
 		// Ending
 			if(engine.gameActive&&engine.statistics.level==17) {
@@ -453,12 +449,12 @@ class RetroModern:AbstractMode() {
 			engine.lineClearing>=4 -> num = 100000
 		}
 		if(linecount>=3) num *= 5
-		receiver.drawMenuBadges(engine, 2, engine.lastLine-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
-		receiver.drawMenuNum(engine, 4, engine.lastLine, "$lastscore", COLOR.CYAN)
+		receiver.drawMenuBadges(engine, 2, engine.lastLineY-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
+		receiver.drawMenuNum(engine, 4, engine.lastLineY, "$lastscore", COLOR.CYAN)
 
 		if(engine.split) when(engine.lineClearing) {
-			2 -> receiver.drawMenuFont(engine, 0, engine.lastLines[0], "SPLIT TWIN", COLOR.PURPLE)
-			3 -> receiver.drawMenuFont(engine, 0, engine.lastLines[0], "1.2.TRIPLE", COLOR.PURPLE)
+			2 -> receiver.drawMenuFont(engine, 0f, engine.lastLinesY.minOf {it.average().toFloat()}, "SPLIT TWIN", COLOR.PURPLE)
+			3 -> receiver.drawMenuFont(engine, 0f, engine.lastLinesY.minOf {it.average().toFloat()}, "1.2.TRIPLE", COLOR.PURPLE)
 		}
 	}
 
@@ -514,13 +510,13 @@ class RetroModern:AbstractMode() {
 			engine.stat = GameEngine.Status.CUSTOM
 		}
 		return time
-
 	}
 
 	override fun onCustom(engine:GameEngine):Boolean {
 		engine.nextPieceArrayID = GeneralUtil.createNextPieceArrayFromNumberString(STRING_POWERON_PATTERN)
 		engine.nextPieceArrayObject = emptyList()
 		engine.holdPieceObject = null
+		engine.nextPieceCount = 0
 		if(engine.statc[0]==0) engine.playSE("excellent")
 		when {
 			engine.statc[0]>=200&&engine.ctrl.isPush(Controller.BUTTON_A) -> engine.statc[0] = 300
@@ -549,7 +545,6 @@ class RetroModern:AbstractMode() {
 			receiver.drawMenuFont(engine, -.25f, 9f, "THIS IS NOT", col)
 			receiver.drawMenuFont(engine, .5f, 10f, "OVER YET!", col)
 		}
-
 	}
 
 	override fun renderExcellent(engine:GameEngine) {
@@ -676,12 +671,6 @@ class RetroModern:AbstractMode() {
 			listOf(26, 26, 26, 26, 28, 25, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20)
 		)
 
-		/** Lines until level up occers */
-		private val levelNorma = listOf(6, 6, 7, 9, 6, 9, 9, 9, 10, 10, 20, 16, 16, 16, 16)
-		/** Max level */
-		private const val MAX_LEVEL = 15
-		private const val MAX_LINES = 300
-
 		/** Score multiply table */
 		private val tableScoreMult = listOf(
 			listOf(1, 2, 3, 4, 5, 6, 6, 6, 8, 8, 10, 10, 10, 10, 10, 11, 12, 13),
@@ -691,13 +680,18 @@ class RetroModern:AbstractMode() {
 			listOf(5, 5, 6, 7, 8, 9, 10, 10, 11, 12, 13, 14, 14, 15, 15, 16, 25, 25)
 		)
 		private val tableBonusMult = listOf(1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 5, 5, 10)
+		/** Lines until level up occers */
+		private val levelNorma = listOf(6, 6, 7, 9, 6, 9, 9, 9, 10, 10, 20, 16, 16, 16, 16)
+		private val tableBGMlevel = listOf(4, 8, 11, 13, 15)
 
 		private val levelBG = listOf(
 			0, 1, 2, 3, 4, 5,
 			6, 7, 8, 9, 14, 19,
 			10, 11, 12, 13, 29, 36
 		)
-		private val tableBGMlevel = listOf(0, 4, 6, 8, 10, 11, 13, 15)
+		/** Max level */
+		private const val MAX_LEVEL = 15
+		private const val MAX_LINES = 300
 		/** Name of game types */
 		private val GAMETYPE_NAME = listOf("EASY", "NORMAL", "INTENSE", "HARD", "EXTRA")
 

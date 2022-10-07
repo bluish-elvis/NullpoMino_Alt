@@ -49,7 +49,6 @@ import kotlin.random.Random
 
 /** Drawing and event handling EventReceiver */
 open class EventReceiver {
-
 	protected val random = Random.Default
 
 	/** Font cint constants */
@@ -109,7 +108,6 @@ open class EventReceiver {
 			else NEW_FIELD_OFFSET_X[m.gameStyle.ordinal][displaySize+1].let {
 				it[minOf(it.lastIndex, playerID)]+if(nextDisplayType==1) blockSize else 0
 			}
-
 		} ?: 0
 
 	/** @return Left Margin of field for Centering w/width<10 */
@@ -544,7 +542,6 @@ open class EventReceiver {
 
 	/** Draw Decorations at in-field pos*/
 	fun drawMenuBadges(engine:GameEngine, x:Int, y:Int, nums:Int, scale:Float = 1f) {
-
 		drawBadges(x*BS+engine.fX, y*BS+engine.fY, BS*10, nums, scale)
 	}
 
@@ -595,13 +592,14 @@ open class EventReceiver {
 	 * @param darkness 暗さもしくは明るさ
 	 */
 	@JvmOverloads
-	fun drawBlock(x:Float, y:Float, block:Block, darkness:Float = block.darkness, alpha:Float = block.alpha, scale:Float = 1f, outline:Float = 0f) =
+	fun drawBlock(x:Float, y:Float, block:Block, darkness:Float = 0f, alpha:Float = 1f, scale:Float = 1f, outline:Float = 0f) =
 		drawBlock(
-			x, y, block.drawColor, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE), darkness, alpha, scale, block.aint, outline
+			x, y, block.drawColor, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE), block.darkness+darkness,
+			block.alpha*alpha, scale, block.aint, outline
 		)
 
 	@JvmOverloads fun drawBlockForceVisible(x:Float, y:Float, blk:Block, scale:Float = 1f) = drawBlock(
-		x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), blk.darkness/2, .5f*blk.alpha+.5f, scale, blk.aint
+		x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), blk.darkness/2, .25f*blk.alpha+.25f, scale, blk.aint
 	)
 
 	/** Blockピースを描画 (暗さもしくは明るさの指定可能）
@@ -617,7 +615,7 @@ open class EventReceiver {
 			val ls = scale*if(piece.big) 32 else 16
 			drawBlock(
 				x+(piece.dataX[piece.direction][i].toFloat()*ls), y+(piece.dataY[piece.direction][i].toFloat()*ls),
-				blk, blk.darkness+darkness, blk.alpha*alpha, scale, ow
+				blk, darkness, alpha, scale, ow
 			)
 		}
 
@@ -843,11 +841,14 @@ open class EventReceiver {
 	/** It will be called when the player exit the field editor.*/
 	open fun fieldEditExit(engine:GameEngine) {}
 
-	/** It will be called when the piece has locked. (after calcScore)
+	/** It will be called when the p has locked. (after calcScore)
 	 * @param engine GameEngine
+	 * @param pX pieceX
+	 * @param pY pieceY
+	 * @param p piece
 	 * @param lines Number of lines to be cleared (can be 0)
 	 */
-	open fun pieceLocked(engine:GameEngine, lines:Int) {}
+	open fun pieceLocked(engine:GameEngine, pX:Int, pY:Int, p:Piece, lines:Int) {}
 
 	/** It will be called at the end of line-clear phase.*/
 	open fun lineClearEnd(engine:GameEngine) {}
@@ -872,7 +873,6 @@ open class EventReceiver {
 		} catch(e:IOException) {
 			log.error("Couldn't save replay file to $filename", e)
 		}
-
 	}
 
 	open val doesGraphicsExist:Boolean = false
@@ -1047,6 +1047,5 @@ open class EventReceiver {
 				listOf(8)
 			)// Big
 		)
-
 	}
 }

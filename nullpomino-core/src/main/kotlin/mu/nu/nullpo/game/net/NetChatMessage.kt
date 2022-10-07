@@ -37,7 +37,6 @@ import java.util.Calendar
 
 /** Chat message */
 class NetChatMessage:Serializable {
-
 	/** User ID */
 	var uid = 0
 

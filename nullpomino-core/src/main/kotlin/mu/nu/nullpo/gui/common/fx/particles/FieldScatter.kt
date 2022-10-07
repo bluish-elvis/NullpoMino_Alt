@@ -35,10 +35,8 @@ package mu.nu.nullpo.gui.common.fx.particles
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.common.AbstractRenderer
-import mu.nu.nullpo.gui.common.fx.Effect
-import mu.nu.nullpo.gui.common.libs.PhysicsObject
 import mu.nu.nullpo.gui.common.libs.Vector
+import zeroxfc.nullpo.custom.libs.AnchorPoint
 import java.util.Random
 import kotlin.math.PI
 
@@ -49,9 +47,7 @@ import kotlin.math.PI
  * @param fieldBlockLocations Block locations.
  * @param clearBlocks Clear the blocks in the field?
  */
-class FieldScatter @JvmOverloads constructor(engine:GameEngine, fieldBlockLocations:Iterable<IntArray>? = null, clearBlocks:Boolean)
-	:Effect {
-
+class FieldScatter @JvmOverloads constructor(engine:GameEngine, fieldBlockLocations:Iterable<IntArray>? = null, clearBlocks:Boolean) {
 	/** Blocks to draw*/
 	private val blocks:MutableSet<BlockPhysics> = mutableSetOf()
 
@@ -63,9 +59,9 @@ class FieldScatter @JvmOverloads constructor(engine:GameEngine, fieldBlockLocati
 			if(blk.cint>0) {
 				blocks.add(
 					BlockPhysics(
-						Vector(receiver.fieldX(engine)+4+x*16, receiver.fieldY(engine)+52+y*16),
+						receiver.fieldX(engine)+4+x*16f, receiver.fieldY(engine)+52+y*16f,
 						Vector(rdm.nextFloat(8f), rdm.nextFloat((PI*2).toFloat()), true),
-						-1, 1, 1, PhysicsObject.ANCHOR_POINT_TL, blk
+						-1, 1, 1, AnchorPoint.TL, blk
 					)
 				)
 				if(clearBlocks) {
@@ -81,23 +77,6 @@ class FieldScatter @JvmOverloads constructor(engine:GameEngine, fieldBlockLocati
 		} ?: (-1*engine.field.hiddenHeight until engine.field.height).forEach {i ->
 			for(j in 0 until engine.field.width)
 				engine.field.getBlock(j, i)?.let {b -> blkAdd(b, j, i)}
-		}
-	}
-
-	private var lifeTime:Int = 0
-	/**
-	 * Updates the life cycle of the explosion.
-	 */
-	override fun update(r:AbstractRenderer):Boolean {
-		blocks.removeAll {pho ->
-			pho.update(r)
-		}
-		return ++lifeTime>600||blocks.isEmpty()
-	}
-
-	override fun draw(i:Int, r:AbstractRenderer) {
-		blocks.forEach {pho ->
-			pho.draw(i, r)
 		}
 	}
 

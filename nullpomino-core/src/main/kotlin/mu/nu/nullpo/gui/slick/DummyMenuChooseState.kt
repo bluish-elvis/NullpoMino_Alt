@@ -136,7 +136,6 @@ abstract class DummyMenuChooseState:BaseGameState() {
 			// Confirm button
 			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_A)||mouseConfirm)
 				if(onDecide(container, game, delta)) return
-
 		}
 		if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_D)) {
 			if(onPushButtonD(container, game, delta)) return

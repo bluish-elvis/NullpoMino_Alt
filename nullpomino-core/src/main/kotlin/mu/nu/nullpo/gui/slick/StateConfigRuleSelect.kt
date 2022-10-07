@@ -41,36 +41,32 @@ import java.util.zip.GZIPInputStream
 
 /** Rule selector state */
 class StateConfigRuleSelect:DummyMenuScrollState() {
-
 	/** Player ID */
 	var player = 0
-
 	/** Game style ID */
 	var style = 0
 
 	/** Rule file list (for loading) */
 	private var strFileList:Array<String> = emptyArray()
-
 	/** Rule name list */
 	private var strRuleNameList:List<String> = emptyList()
-
 	/** Rule file list (for list display) */
 	private var strRuleFileList:List<String> = emptyList()
-
 	/** Current Rule File name */
 	private var strCurrentFileName = ""
-
 	/** Current Rule name */
 	private var strCurrentRuleName = ""
-
 	/** Rule entries */
 	private var ruleEntries:LinkedList<RuleEntry> = LinkedList()
+
+	init {
+		minChoiceY = 3
+	}
 
 	/** Get rule file list
 	 * @return Rule file list. null if directory doesn't exist.
 	 */
-	private// Sort if not windows
-	val ruleFileList:Array<String>?
+	private val ruleFileList:Array<String>?
 		get() {
 			val dir = File("config/rule")
 

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2022, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -43,15 +43,14 @@ import java.io.IOException
 
 /** AI config screen state */
 class StateConfigAISelect:BaseGameState() {
-
 	/** Player ID */
 	var player = 0
 
 	/** AIのクラス一覧 */
-	private var aiPathList:Array<String> = emptyArray()
+	private var aiPathList:List<String> = emptyList()
 
 	/** AIのName一覧 */
-	private var aiNameList:Array<String> = emptyArray()
+	private var aiNameList:List<String> = emptyList()
 
 	/** Current AIのクラス */
 	private var currentAI = ""
@@ -83,14 +82,15 @@ class StateConfigAISelect:BaseGameState() {
 	/* State initialization */
 	override fun init(container:GameContainer, game:StateBasedGame) {
 		try {
-			val `in` = BufferedReader(FileReader("config/list/ai.lst"))
-			aiPathList = loadAIList(`in`)
-			aiNameList = loadAINames(aiPathList)
-			`in`.close()
+			this::class.java.getResource("/ai.lst")?.file?.let {
+				val bf = BufferedReader(FileReader(it))
+				aiPathList = loadAIList(bf)
+				aiNameList = loadAINames(aiPathList)
+				bf.close()
+			}
 		} catch(e:IOException) {
 			log.error("Failed to load AI list", e)
 		}
-
 	}
 
 	/* Called when entering this state */
@@ -112,8 +112,8 @@ class StateConfigAISelect:BaseGameState() {
 	 * @param bf 読み込み元のテキストファイル
 	 * @return AI一覧
 	 */
-	fun loadAIList(bf:BufferedReader):Array<String> {
-		val aiArrayList = ArrayList<String>()
+	fun loadAIList(bf:BufferedReader):List<String> {
+		val aiArrayList = mutableListOf<String>()
 
 		while(true) {
 			val name:String?
@@ -128,26 +128,26 @@ class StateConfigAISelect:BaseGameState() {
 			if(!name.startsWith("#")) aiArrayList.add(name)
 		}
 
-		return Array(aiArrayList.size) {aiArrayList[it]}
+		return aiArrayList.toList()
 	}
 
 	/** AIのName一覧を作成
 	 * @param aiPath AIのクラスのリスト
 	 * @return AIのName一覧
 	 */
-	fun loadAINames(aiPath:Array<String>):Array<String> = Array(aiPath.size) {
+	fun loadAINames(aiPath:List<String>):List<String> = List(aiPath.size) {
 		val aiClass:Class<*>
 		val aiObj:AIPlayer
 		try {
 			aiClass = Class.forName(aiPath[it])
 			aiObj = aiClass.getDeclaredConstructor().newInstance() as AIPlayer
-			return@Array aiObj.name
+			return@List aiObj.name
 		} catch(e:ClassNotFoundException) {
 			log.error("AI class ${aiPath[it]} not found", e)
 		} catch(e:Throwable) {
 			log.error("AI class ${aiPath[it]} load failed", e)
 		}
-		return@Array "(INVALID)"
+		return@List "(INVALID)"
 	}
 
 	/* Draw the screen */

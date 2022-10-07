@@ -442,7 +442,6 @@ class ScoreTrial:MarathonModeBase() {
 			congratulationsText?.draw(receiver)
 			comboTextAward?.draw(receiver)
 			comboTextNumber?.draw(receiver)
-
 		}
 
 		// NET: Number of spectators
@@ -521,7 +520,6 @@ class ScoreTrial:MarathonModeBase() {
 			}
 			comboTextNumber?.update()
 			if(comboTextNumber?.shouldPurge()==true) comboTextNumber = null
-
 		}
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
@@ -690,7 +688,6 @@ class ScoreTrial:MarathonModeBase() {
 		 * Called when saving replay
 		 */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
 			prop.setProperty("${engine.playerID}.net.netPlayerName", netPlayerName)

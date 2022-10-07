@@ -32,7 +32,6 @@ package mu.nu.nullpo.gui.common
 import mu.nu.nullpo.game.event.EventReceiver
 
 abstract class BaseFontGrade:BaseFont {
-
 	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float,
 		rainbow:Int,
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) =

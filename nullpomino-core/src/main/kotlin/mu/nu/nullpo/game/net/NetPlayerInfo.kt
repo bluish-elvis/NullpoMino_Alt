@@ -35,7 +35,6 @@ import java.nio.channels.SocketChannel
 
 /** Player information */
 class NetPlayerInfo:Serializable {
-
 	/** Name */
 	var strName = ""
 

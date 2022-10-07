@@ -34,6 +34,7 @@ package zeroxfc.nullpo.custom.libs.backgroundtypes
 
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
+import zeroxfc.nullpo.custom.libs.AnchorPoint
 
 class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boolean):AnimatedBackgroundHook() {
 	private val type:Int
@@ -55,10 +56,9 @@ class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boo
 				val hAmount = hDim[0]/640
 				chunkSequence = Array(hAmount) {i ->
 					ImageChunk(
-						ImageChunk.ANCHOR_POINT_TL, intArrayOf(0, 0), intArrayOf(i*640, 0),
-						intArrayOf(640, 480), floatArrayOf(1f, 1f)
+						AnchorPoint.TL, listOf(0, 0), listOf(i*640, 0),
+						listOf(640, 480), listOf(1f, 1f)
 					)
-
 				}
 				frameCount = hAmount
 			}
@@ -67,10 +67,9 @@ class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boo
 				val vAmount = vDim[1]/480
 				chunkSequence = Array(vAmount) {i ->
 					ImageChunk(
-						ImageChunk.ANCHOR_POINT_TL, intArrayOf(0, 0), intArrayOf(0, i*480),
-						intArrayOf(640, 480), floatArrayOf(1f, 1f)
+						AnchorPoint.TL, listOf(0, 0), listOf(0, i*480),
+						listOf(640, 480), listOf(1f, 1f)
 					)
-
 				}
 				frameCount = vAmount
 			}
@@ -81,8 +80,8 @@ class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boo
 				chunkSequence = Array(vCells1*hCells1) {i ->
 					val x = i%hCells1
 					ImageChunk(
-						ImageChunk.ANCHOR_POINT_TL, intArrayOf(0, 0), intArrayOf(640*x, 480*x),
-						intArrayOf(640, 480), floatArrayOf(1f, 1f)
+						AnchorPoint.TL, listOf(0, 0), listOf(640*x, 480*x),
+						listOf(640, 480), listOf(1f, 1f)
 					)
 				}
 				frameCount = hCells1*vCells1
@@ -94,8 +93,8 @@ class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boo
 				chunkSequence = Array(vCells2*hCells2) {i ->
 					val x = i%vCells2
 					ImageChunk(
-						ImageChunk.ANCHOR_POINT_TL, intArrayOf(0, 0), intArrayOf(640*x, 480*x),
-						intArrayOf(640, 480), floatArrayOf(1f, 1f)
+						AnchorPoint.TL, listOf(0, 0), listOf(640*x, 480*x),
+						listOf(640, 480), listOf(1f, 1f)
 					)
 				}
 				frameCount = hCells2*vCells2

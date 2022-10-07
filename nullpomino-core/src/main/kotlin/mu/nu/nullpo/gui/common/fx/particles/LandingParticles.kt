@@ -53,7 +53,7 @@ class LandingParticles(
 	upChance:Float,
 	/** Randomizer*/
 	randomizer:Random = Random.Default
-):ParticleEmitterBase() {
+) {
 	/**
 	 * Adds a number of landing particles.<br></br>
 	 * Parameters are min start x, max start x, start y, start y variance,
@@ -63,7 +63,7 @@ class LandingParticles(
 	 * @param num    Number of particles
 	 * @param params Parameters to pass onto the particles
 	 */
-	override val particles:MutableSet<Particle> = (0 until num).map {i ->
+	val particles = (0 until num).map {i ->
 		val ured:Int = red+(2*randomizer.nextFloat()*variance-variance).toInt()
 		val ugreen:Int = green+(2*randomizer.nextFloat()*variance-variance).toInt()
 		val ublue:Int = blue+(2*randomizer.nextFloat()*variance-variance).toInt()
@@ -78,11 +78,11 @@ class LandingParticles(
 		)
 		Particle(
 			ParticleShape.Rect, Interpolation.lerp(DEF_MIN_LIFE, DEF_MAX_LIFE, randomizer.nextFloat()),
-			p, v, Vector.zero(), .98f, 2, 2, 6f,
+			p.x, p.y, v, Vector.zero(), .98f, 2, 6f,
 			ured, ugreen, ublue, ualpha,
 			ured*3/2, ugreen*3/2, ublue*3/2, 64
 		)
-	}.toMutableSet()
+	}
 
 	companion object {
 		/** Default max velocity*/

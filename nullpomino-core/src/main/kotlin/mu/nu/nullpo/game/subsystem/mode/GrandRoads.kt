@@ -42,13 +42,10 @@ import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import kotlin.math.floor
-import kotlin.math.ln
 
 /** TIME ATTACK mode (Original from NullpoUE build 010210 by Zircean.
  * This mode is heavily modified from the original.) */
 class GrandRoads:NetDummyMode() {
-
 	/** Remaining level time */
 	private var levelTimer = 0
 	private var lastlinetime = 0
@@ -253,7 +250,7 @@ class GrandRoads:NetDummyMode() {
 				engine.playSE("change")
 
 				if(startLevel>nowCourse.goalLevel-1) startLevel =
-					if(menuCursor==menu.items.indexOf(itemLevel)) 0 else nowCourse.goalLevel-1
+					if(menuCursor!=menu.items.indexOf(itemLevel)) 0 else nowCourse.goalLevel-1
 				engine.owner.bgMan.bg = startLevel
 				engine.statistics.level = startLevel
 				setSpeed(engine)
@@ -279,7 +276,6 @@ class GrandRoads:NetDummyMode() {
 				&&engine.ai==null
 			)
 				netEnterNetPlayRankingScreen(goalType)
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -342,8 +338,7 @@ class GrandRoads:NetDummyMode() {
 					receiver.drawScoreNum(engine, 8, 4+i, rankingTime[goalType][i].toTimeStr, gcolor)
 					receiver.drawScoreNano(
 						engine, 10, 8+i*2, if(gcolor==COLOR.WHITE) "LINES\nCLEARED" else "LIFES\nREMAINED",
-						gcolor,
-						.5f
+						gcolor, .5f
 					)
 					receiver.drawScoreNum(
 						engine, 2, 4+i, String.format(
@@ -358,13 +353,9 @@ class GrandRoads:NetDummyMode() {
 			receiver.drawScoreNum(engine, 5, 2, String.format("%02d", engine.statistics.level+1), 2f)
 			receiver.drawScoreNum(engine, 8, 3, String.format("/%3d", nowCourse.goalLevel))
 			receiver.drawScoreNum(engine, 0, 4, String.format("%3d/%3d", norm, (engine.statistics.level+1)*10))
+			receiver.drawScoreNum(engine, 0, 4, String.format("%3d/%3d", norm, (engine.statistics.level+1)*10))
 
-			receiver.drawScoreSpeed(
-				engine, 0, 5, if(engine.speed.gravity<0) 40 else floor(
-					ln(engine.speed.gravity.toDouble())
-				).toInt()*(engine.speed.denominator/60),
-				6
-			)
+			receiver.drawScoreSpeed(engine, 0, 5, engine.speed.rank, 6f)
 
 			receiver.drawScoreFont(engine, 0, 7, "TIME LIMIT", COLOR.BLUE)
 			receiver.drawScoreNum(
@@ -482,7 +473,6 @@ class GrandRoads:NetDummyMode() {
 		if(engine.statc[0]==0) {
 			if(engine.lives>0)
 				setSpeed(engine)
-
 		}
 		return super.onGameOver(engine)
 	}
@@ -755,21 +745,14 @@ class GrandRoads:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
-		val subMsg = StringBuilder()
-		subMsg.append("NORM;").append(norm).append("\t")
-		subMsg.append("LEVEL;").append(engine.statistics.level+engine.statistics.levelDispAdd).append("\t")
-		subMsg.append("TIME;").append(engine.statistics.time.toTimeStr).append("\t")
-		subMsg.append("PIECE;").append(engine.statistics.totalPieceLocked).append("\t")
-		subMsg.append("LINE/MIN;").append(engine.statistics.lpm).append("\t")
-		subMsg.append("PIECE/SEC;").append(engine.statistics.pps).append("\t")
-		subMsg.append("SECTION AVERAGE;").append(sectionavgtime.toTimeStr).append("\t")
-		for(i in sectionTime.indices)
-			if(sectionTime[i]>0)
-				subMsg.append("SECTION ").append(
-					i+1
-				).append(";").append(sectionTime[i].toTimeStr).append("\t")
+		val subMsg =
+			"NORM;$norm\tLEVEL;${engine.statistics.level+engine.statistics.levelDispAdd}\t"+
+				"TIME;${engine.statistics.time.toTimeStr}\tPIECE;${engine.statistics.totalPieceLocked}\t"+
+				"LINE/MIN;${engine.statistics.lpm}\tPIECE/SEC;${engine.statistics.pps}\t"+
+				"SECTION AVERAGE;${sectionavgtime.toTimeStr}\t"+
+				sectionTime.filter {it>0}.mapIndexed {i, it -> "SECTION ${i+1};"+it.toTimeStr}.joinToString("\t")
 
-		val msg = "gstat1p\t${NetUtil.urlEncode("$subMsg")}\n"
+		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
 
@@ -777,8 +760,7 @@ class GrandRoads:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendOptions(engine:GameEngine) {
-		val msg = "game\toption\t"+
-			"$goalType\t$startLevel\t$showST\t$big\n"
+		val msg = "game\toption\t$goalType\t$startLevel\t$showST\t$big\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
 
@@ -922,7 +904,6 @@ class GrandRoads:NetDummyMode() {
 					HELL -> listOf(BGM.Finale(2))
 					HIDE -> listOf(BGM.Finale(0))
 					VOID -> listOf(BGM.Finale(1))
-					else -> listOf(BGM.Silent)
 				}
 			}
 			/** BGM change lines table */
@@ -990,6 +971,5 @@ class GrandRoads:NetDummyMode() {
 
 		/** Number of ranking records */
 		private const val RANKING_MAX = 13
-
 	}
 }

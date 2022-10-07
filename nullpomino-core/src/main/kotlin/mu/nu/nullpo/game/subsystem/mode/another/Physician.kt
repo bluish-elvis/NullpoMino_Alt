@@ -43,7 +43,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** PHYSICIAN mode (beta) */
 class Physician:AbstractMode() {
-
 	/** GameManager object (Manages entire game status) */
 
 	/** EventReceiver object (This receives many game events, can also be used
@@ -153,7 +152,6 @@ class Physician:AbstractMode() {
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1

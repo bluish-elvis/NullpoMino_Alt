@@ -43,7 +43,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** EXTREME Mode */
 class MarathonExtreme:NetDummyMode() {
-
 	/** Ending time */
 	private var rolltime = 0
 
@@ -158,7 +157,6 @@ class MarathonExtreme:NetDummyMode() {
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null)
 				netEnterNetPlayRankingScreen(netGetGoalType())
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -229,7 +227,6 @@ class MarathonExtreme:NetDummyMode() {
 				receiver.drawScoreFont(engine, 0, 7, "ROLL TIME", COLOR.RED)
 				receiver.drawScoreNum(engine, 5, 7, remainRollTime.toTimeStr, remainRollTime>0&&remainRollTime<10*60, 2f)
 			} else {
-
 				receiver.drawScoreFont(engine, 0, 7, "Level", COLOR.RED)
 				receiver.drawScoreNum(
 					engine, 5, 7, String.format("%.1f", engine.statistics.level.toDouble()+1.0+engine.statistics.lines%10*0.1),
@@ -238,7 +235,6 @@ class MarathonExtreme:NetDummyMode() {
 			}
 			receiver.drawScoreFont(engine, 0, 8, "Time", COLOR.RED)
 			receiver.drawScoreNum(engine, 0, 9, engine.statistics.time.toTimeStr, 2f)
-
 		}
 
 		super.renderLast(engine)
@@ -267,7 +263,6 @@ class MarathonExtreme:NetDummyMode() {
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
 		}
-
 	}
 
 	/* Calculate score */

@@ -34,7 +34,6 @@ import java.util.LinkedList
 
 /** ルーム情報 */
 class NetRoomInfo:Serializable {
-
 	/** 識別 number */
 	var roomID = -1
 

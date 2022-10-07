@@ -28,6 +28,7 @@
  */
 package mu.nu.nullpo.game.component
 
+import mu.nu.nullpo.game.component.Piece.Companion.DIRECTION_COUNT
 import java.io.Serializable
 import kotlin.math.roundToInt
 
@@ -42,11 +43,7 @@ class Piece(id:Int = 0):Serializable {
 			big = false
 			offsetApplied = false
 			connectBlocks = true
-			dataX.forEach {it.fill(0)}
-			dataY.forEach {it.fill(0)}
 			block = List(maxBlock) {Block()}
-			dataOffsetX.fill(0)
-			dataOffsetY.fill(0)
 
 			resetOffsetArray()
 		}
@@ -64,7 +61,6 @@ class Piece(id:Int = 0):Serializable {
 	/** 相対X位置 (4Direction×nBlock) */
 	var dataX:List<MutableList<Int>> = List(DIRECTION_COUNT) {MutableList(maxBlock) {0}}
 		private set
-
 	/** 相対Y位置 (4Direction×nBlock) */
 	var dataY:List<MutableList<Int>> = List(DIRECTION_COUNT) {MutableList(maxBlock) {0}}
 		private set
@@ -73,11 +69,9 @@ class Piece(id:Int = 0):Serializable {
 
 	/** 相対X位置と相対Y位置がオリジナル stateからずらされているならtrue */
 	var offsetApplied = false
-
 	/** 相対X位置のずれ幅 */
 	var dataOffsetX = MutableList(DIRECTION_COUNT) {0}
 		private set
-
 	/** 相対Y位置のずれ幅 */
 	var dataOffsetY = MutableList(DIRECTION_COUNT) {0}
 		private set
@@ -99,75 +93,36 @@ class Piece(id:Int = 0):Serializable {
 	val colors:IntArray
 		get() = IntArray(block.size) {block[it].cint}
 
-	/** ピースの幅を取得
-	 * @return ピースの幅
-	 */
-	val width:Int
-		get() = maximumBlockX-minimumBlockX
-	/*{
-		var max = dataX[direction][0]
-		var min = dataX[direction][0]
-
-		for(j in 1 until maxBlock) {
-			val bx = dataX[direction][j]
-
-			max = maxOf(bx, max)
-			min = minOf(bx, min)
-		}
-
-		var wide = 1
-		if(big) wide = 2
-
-		return (max-min)*wide
-		}*/
-	val centerX:Int get() = (width/2f).roundToInt()
-	/** ピースの高さを取得
-	 * @return ピースの高さ
-	 */
-	val height:Int
-		get() = maximumBlockY-minimumBlockY
-	/*{
-	var max = dataY[direction][0]
-	var min = dataY[direction][0]
-
-	for(j in 1 until maxBlock) {
-		val by = dataY[direction][j]
-
-		max = maxOf(by, max)
-		min = minOf(by, min)
-	}
-
-	var wide = 1
-	if(big) wide = 2
-}*/
-
-	/** テトラミノの最も高いBlockのX-coordinateを取得
-	 * @return テトラミノの最も高いBlockのX-coordinate
-	 */
+	/** @return ピース回転軸のX-coordinate */
+	val spinCX:Double
+		get() = dataX.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2.0
+	/** @return ピース回転軸のY-coordinate */
+	val spinCY:Double
+		get() = dataY.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2.0
+	/** @return ピースの幅*/
+	val width:Int get() = maximumBlockX-minimumBlockX
+	/** @return ピースの高さ*/
+	val height:Int get() = maximumBlockY-minimumBlockY
+	val centerX:Int get() = (width/2.0).roundToInt()
+	val centerY:Int get() = (height/2.0).roundToInt()
+	/** @return テトラミノの最も高いBlockのX-coordinate*/
 	val minimumBlockX:Int
 		get() = (dataX[direction].minOrNull() ?: 0)*if(big) 2 else 1
 
-	/** テトラミノの最も低いBlockのX-coordinateを取得
-	 * @return テトラミノの最も低いBlockのX-coordinate
-	 */
+	/** @return テトラミノの最も低いBlockのX-coordinate */
 	val maximumBlockX:Int
 		get() = (dataX[direction].maxOrNull() ?: 0)*if(big) 2 else 1
 
-	/** テトラミノの最も高いBlockのY-coordinateを取得
-	 * @return テトラミノの最も高いBlockのY-coordinate
-	 */
+	/** @return テトラミノの最も高いBlockのY-coordinate */
 	val minimumBlockY:Int
 		get() = (dataY[direction].minOrNull() ?: 0)*if(big) 2 else 1
 
-	/** テトラミノの最も低いBlockのY-coordinateを取得
-	 * @return テトラミノの最も低いBlockのY-coordinate
-	 */
+	/** @return テトラミノの最も低いBlockのY-coordinate */
 	val maximumBlockY:Int
 		get() = (dataY[direction].maxOrNull() ?: 0)*if(big) 2 else 1
 
 	init {
 		resetOffsetArray()
-		updateConnectData()
 	}
 
 	/** Copy constructor
@@ -262,7 +217,7 @@ class Piece(id:Int = 0):Serializable {
 	fun setDarkness(darkness:Float) = block.forEach {it.darkness = darkness}
 
 	/** すべてのBlockの透明度を変更
-	 * @param alpha 透明度 (1fで不透明, 0.0fで完全に透明）
+	 * @param alpha 透明度 (1fで不透明, 0fで完全に透明）
 	 */
 	fun setAlpha(alpha:Float) = block.forEach {it.alpha = alpha}
 
@@ -311,44 +266,41 @@ class Piece(id:Int = 0):Serializable {
 
 	/** 相対X位置と相対Y位置を初期状態に戻す */
 	fun resetOffsetArray() {
-		for(i in 0 until DIRECTION_COUNT) {
-			dataX[i].clear()
-			dataY[i].clear()
-			dataX[i].addAll(DEFAULT_PIECE_DATA_X[id][i])
-			dataY[i].addAll(DEFAULT_PIECE_DATA_Y[id][i])
-			dataOffsetX[i] = 0
-			dataOffsetY[i] = 0
-		}
+		dataX = DEFAULT_PIECE_DATA_X[id].map {it.toMutableList()}
+		dataY = DEFAULT_PIECE_DATA_Y[id].map {it.toMutableList()}
+		dataOffsetX.fill(0)
+		dataOffsetY.fill(0)
 		offsetApplied = false
+		updateConnectData()
 	}
 
 	/** Blockの繋がり dataを更新 */
 	fun updateConnectData() {
-		for(j in 0 until maxBlock) {
-			// 相対X位置と相対Y位置
-			val bx = dataX[direction][j]
-			val by = dataY[direction][j]
+		block.forEachIndexed {j, b ->
 
-			block[j].setAttribute(false, Block.ATTRIBUTE.CONNECT_UP)
-			block[j].setAttribute(false, Block.ATTRIBUTE.CONNECT_DOWN)
-			block[j].setAttribute(false, Block.ATTRIBUTE.CONNECT_LEFT)
-			block[j].setAttribute(false, Block.ATTRIBUTE.CONNECT_RIGHT)
+			b.setAttribute(
+				false, Block.ATTRIBUTE.CONNECT_UP, Block.ATTRIBUTE.CONNECT_DOWN,
+				Block.ATTRIBUTE.CONNECT_LEFT, Block.ATTRIBUTE.CONNECT_RIGHT
+			)
 
 			if(connectBlocks) {
-				block[j].setAttribute(false, Block.ATTRIBUTE.BROKEN)
+				// 相対X位置と相対Y位置
+				val bx = dataX[direction][j]
+				val by = dataY[direction][j]
+				b.setAttribute(false, Block.ATTRIBUTE.BROKEN)
 				// 他の3つのBlockとの繋がりを調べる
-				for(k in 0 until maxBlock)
+				block.forEachIndexed {k, _ ->
 					if(k!=j) {
 						val bx2 = dataX[direction][k]
 						val by2 = dataY[direction][k]
 
-						if(bx==bx2&&by-1==by2) block[j].setAttribute(true, Block.ATTRIBUTE.CONNECT_UP) // Up
-						if(bx==bx2&&by+1==by2) block[j].setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN) // Down
-						if(by==by2&&bx-1==bx2) block[j].setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT) // 左
-						if(by==by2&&bx+1==bx2) block[j].setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT) // 右
+						if(bx==bx2&&by-1==by2) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_UP) // Up
+						if(bx==bx2&&by+1==by2) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_DOWN) // Down
+						if(by==by2&&bx-1==bx2) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT) // 左
+						if(by==by2&&bx+1==bx2) b.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT) // 右
 					}
-			} else
-				block[j].setAttribute(true, Block.ATTRIBUTE.BROKEN)
+				}
+			} else b.setAttribute(true, Block.ATTRIBUTE.BROKEN)
 		}
 	}
 
@@ -386,7 +338,6 @@ class Piece(id:Int = 0):Serializable {
 		var placed = false
 		// Bigでは専用処理
 		if(big) {
-
 			for(i in 0 until maxBlock) {
 				val y2 = y+dataY[rt][i]*2
 
@@ -431,12 +382,9 @@ class Piece(id:Int = 0):Serializable {
 
 			block[i].setAttribute(true, Block.ATTRIBUTE.LAST_COMMIT)
 
-			/* Loop through width/height of the block, setting cells in the
-	* field.
-	* If the piece is normal (size == 1), a standard, 1x1 space is
-	* allotted per block.
-	* If the piece is big (size == 2), a 2x2 space is allotted per
-	* block. */
+			/* Loop through width/height of the block, setting cells in the field.
+	* If the piece is normal (size == 1), a standard, 1x1 space is allotted per block.
+	* If the piece is big (size == 2), a 2x2 space is allotted per block. */
 			for(k in 0 until size)
 				for(l in 0 until size) {
 					val x3 = x2+k
@@ -810,7 +758,6 @@ class Piece(id:Int = 0):Serializable {
 		 */
 		@Deprecated("This will be enumed", ReplaceWith("Shape.name", "mu.nu.nullpo.game.component.Shape"))
 		fun getPieceName(id:Int):String = if(id>=0&&id<Shape.names.size) Shape.names[id] else "?"
-
 	}
 
 	/** BlockピースのIDの定数 */

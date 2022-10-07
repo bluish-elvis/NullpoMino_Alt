@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2010-2022, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -48,7 +48,6 @@ import kotlin.math.pow
 
 class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRanks:Int, ascendant:Boolean,
 	private val getUIText:(String)->String):JDialog(parent, true), ActionListener, PropertyChangeListener {
-
 	private var surfaceComponent:SurfaceComponent? = null
 	private var surfaceComponentMirrored:SurfaceComponent? = null
 	private var labelScore:JLabel? = null
@@ -71,27 +70,22 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 
 	//private JFrame parent;
 	internal inner class SurfaceComparator:Comparator<Int> {
-
 		override fun compare(o1:Int?, o2:Int?):Int =
 			(factorCompare*ranks!!.getRankValue(o2!!)).compareTo(factorCompare*ranks!!.getRankValue(o1!!))
-
 	}
 
 	internal inner class SurfaceRank(val surface:Int, val rank:Int):Comparable<SurfaceRank> {
-		override fun compareTo(o:SurfaceRank):Int = (factorCompare*o.rank).compareTo(factorCompare*rank)
-
+		override fun compareTo(other:SurfaceRank):Int = (factorCompare*other.rank).compareTo(factorCompare*rank)
 	}
 
 	internal inner class Task:SwingWorker<Void, Void>() {
 		public override fun doInBackground():Void? {
-
 			var progress = 0
 			setProgress(0)
 			val surfaceRankBestsList = ArrayList<SurfaceRank>(bestNRanks+1)
 			for(i in 0 until bestNRanks) {
 				val rank = ranks!!.getRankValue(i)
 				surfaceRankBestsList.add(SurfaceRank(i, rank))
-
 			}
 			var iMin = surfaceRankBestsList.indexOf(Collections.min(surfaceRankBestsList))
 			var iMax = surfaceRankBestsList.indexOf(Collections.max(surfaceRankBestsList))
@@ -110,12 +104,9 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 				}
 
 				if(0==i%(ranks!!.size/100)&&i>=ranks!!.size/100) {
-
 					progress++
 					setProgress(progress)
-
 				}
-
 			}
 			surfaceRankBestsList.sort()
 
@@ -131,13 +122,11 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 		}
 
 		public override fun done() {
-
 			title = getUIText("Result_Title")
 			initUI()
 			pack()
 			isVisible = true
 			ranks = null
-
 		}
 	}
 
@@ -150,11 +139,9 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 		task = Task()
 		task.addPropertyChangeListener(this)
 		task.execute()
-
 	}//this.parent=parent;
 
 	private fun getMirroredSurface(surface:Int):Int {
-
 		var surfaceWork = surface
 		var surfaceMirrored = 0
 
@@ -166,11 +153,9 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 			factorD /= 9
 		}
 		return surfaceMirrored
-
 	}
 
 	private fun initUI() {
-
 		indexSurface = 0
 		currentSurface = surfaceRanksBests!![indexSurface].surface
 
@@ -211,11 +196,9 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 		contentPane.add(pane)
 
 		//getContentPane().add(surfaceComponent);
-
 	}
 
 	override fun actionPerformed(e:ActionEvent) {
-
 		if("next"==e.actionCommand) {
 			if(indexSurface<bestNRanks-1) {
 				indexSurface++
@@ -229,9 +212,7 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 
 				if(indexSurface>0) buttonPrevious!!.isEnabled = true
 				if(indexSurface==bestNRanks-1) buttonNext!!.isEnabled = false
-
 			}
-
 		} else if(indexSurface>0) {
 			indexSurface--
 			currentSurface = surfaceRanksBests!![indexSurface].surface
@@ -244,9 +225,7 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 
 			if(indexSurface<bestNRanks-1) buttonNext!!.isEnabled = true
 			if(indexSurface==0) buttonPrevious!!.isEnabled = false
-
 		}
-
 	}
 
 	override fun propertyChange(evt:PropertyChangeEvent) {
@@ -258,12 +237,10 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 		}
 
 		if(progressMonitor.isCanceled) task.cancel(true)
-
 	}
 
 	companion object {
 		/** */
 		private const val serialVersionUID = 1L
 	}
-
 }

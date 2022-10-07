@@ -81,9 +81,12 @@ object PrimitiveDrawingSlick {
 	fun drawRectangle(graphics:Graphics, x:Int, y:Int, sizeX:Int, sizeY:Int,
 		red:Int, green:Int, blue:Int, alpha:Int, fill:Boolean) {
 		graphics.color = org.newdawn.slick.Color(red, green, blue, alpha)
-		if(fill) graphics.fillRect(x.toFloat(), y.toFloat(), sizeX.toFloat(),
-			sizeY.toFloat()) else graphics.drawRect(
-			x.toFloat(), y.toFloat(), sizeX.toFloat(), sizeY.toFloat())
+		if(fill) graphics.fillRect(
+			x.toFloat(), y.toFloat(), sizeX.toFloat(),
+			sizeY.toFloat()
+		) else graphics.drawRect(
+			x.toFloat(), y.toFloat(), sizeX.toFloat(), sizeY.toFloat()
+		)
 		graphics.color = org.newdawn.slick.Color.white
 	}
 	/**
@@ -91,8 +94,8 @@ object PrimitiveDrawingSlick {
 	 * **Warning: SDL cannot use this feature.**
 	 *
 	 * @param graphics Graphics object to draw on
-	 * @param x              X-coordinate of the centre
-	 * @param y              Y-coordinate of the centre
+	 * @param x              X-coordinate of the center
+	 * @param y              Y-coordinate of the center
 	 * @param sizeX          X-size of the arc
 	 * @param sizeY          Y-size of the arc
 	 * @param angleStart     Start angle of arc in circle (0 degrees = top)
@@ -106,9 +109,13 @@ object PrimitiveDrawingSlick {
 	fun drawArc(graphics:Graphics, x:Int, y:Int, sizeX:Int, sizeY:Int, angleStart:Int, angleSize:Int,
 		red:Int, green:Int, blue:Int, alpha:Int, fill:Boolean) {
 		graphics.color = org.newdawn.slick.Color(red, green, blue, alpha)
-		if(fill) graphics.fillArc(x.toFloat(), y.toFloat(), sizeX.toFloat(), sizeY.toFloat(), angleStart.toFloat(),
-			angleSize.toFloat()) else graphics.drawArc(x.toFloat(), y.toFloat(), sizeX.toFloat(), sizeY.toFloat(),
-			angleStart.toFloat(), angleSize.toFloat())
+		if(fill) graphics.fillArc(
+			x.toFloat(), y.toFloat(), sizeX.toFloat(), sizeY.toFloat(), angleStart.toFloat(),
+			angleSize.toFloat()
+		) else graphics.drawArc(
+			x.toFloat(), y.toFloat(), sizeX.toFloat(), sizeY.toFloat(),
+			angleStart.toFloat(), angleSize.toFloat()
+		)
 		graphics.color = org.newdawn.slick.Color.white
 	}
 	/**
@@ -128,9 +135,12 @@ object PrimitiveDrawingSlick {
 	 */
 	fun drawOval(graphics:Graphics, x:Int, y:Int, sizeX:Int, sizeY:Int, red:Int, green:Int, blue:Int, alpha:Int, fill:Boolean) {
 		graphics.color = org.newdawn.slick.Color(red, green, blue, alpha)
-		if(fill) graphics.fillOval(x.toFloat(), y.toFloat(), sizeX.toFloat(),
-			sizeY.toFloat()) else graphics.drawOval(
-			x.toFloat(), y.toFloat(), sizeX.toFloat(), sizeY.toFloat())
+		if(fill) graphics.fillOval(
+			x.toFloat(), y.toFloat(), sizeX.toFloat(),
+			sizeY.toFloat()
+		) else graphics.drawOval(
+			x.toFloat(), y.toFloat(), sizeX.toFloat(), sizeY.toFloat()
+		)
 		graphics.color = org.newdawn.slick.Color.white
 	}
 }

@@ -42,8 +42,7 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
 
 /** VS-DIG RACE mode */
-class VSDigRaceMode:AbstractMode() {
-
+class VSSprintDig:AbstractMode() {
 	/** Number of garbage lines to clear */
 	private var goalLines = IntArray(0)
 
@@ -177,7 +176,6 @@ class VSDigRaceMode:AbstractMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-
 					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
 					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
 					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
@@ -222,7 +220,6 @@ class VSDigRaceMode:AbstractMode() {
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else if(engine.statc[4]==0) {
 			// Replay start
 			menuTime++
@@ -355,7 +352,6 @@ class VSDigRaceMode:AbstractMode() {
 				}
 
 		return if(!hasGemBlock) 0 else lines
-
 	}
 
 	/* Render score */

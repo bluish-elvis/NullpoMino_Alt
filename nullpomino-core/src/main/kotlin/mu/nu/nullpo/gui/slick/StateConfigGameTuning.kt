@@ -34,7 +34,7 @@ import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
-import mu.nu.nullpo.game.subsystem.mode.PreviewMode
+import mu.nu.nullpo.game.subsystem.mode.Preview
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
@@ -52,7 +52,6 @@ import kotlin.random.Random
 
 /** Game Tuning menu state */
 class StateConfigGameTuning:BaseGameState() {
-
 	/** Player number */
 	var player = 0
 
@@ -105,7 +104,6 @@ class StateConfigGameTuning:BaseGameState() {
 
 	/* State initialization */
 	override fun init(container:GameContainer, game:StateBasedGame) {
-
 		if(container is AppGameContainer)
 			appContainer = container
 		else
@@ -159,7 +157,7 @@ class StateConfigGameTuning:BaseGameState() {
 
 	/** Start the preview game */
 	private fun startPreviewGame() {
-		gameManager = GameManager(RendererSlick(), PreviewMode()).also {
+		gameManager = GameManager(RendererSlick(), Preview()).also {
 			it.receiver.setGraphics(appContainer.graphics)
 
 			it.init()
@@ -230,7 +228,6 @@ class StateConfigGameTuning:BaseGameState() {
 			isPreview = false
 			gameManager?.shutdown()
 			gameManager = null
-
 		}
 	}
 
@@ -259,15 +256,20 @@ class StateConfigGameTuning:BaseGameState() {
 			}
 		else {
 			// Menu
-			var strTemp = ""
+			""
 
 			FontNormal.printFontGrid(1, 1, "GAME TUNING (${player+1}P)", COLOR.ORANGE)
 			FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RAINBOW)
 
-			if(owSpinDirection==-1) strTemp = "AUTO"
-			if(owSpinDirection==0) strTemp = "LEFT"
-			if(owSpinDirection==1) strTemp = "RIGHT"
-			FontNormal.printFontGrid(2, 3, "A BUTTON SPIN:$strTemp", cursor==0)
+			FontNormal.printFontGrid(
+				2, 3, "A BUTTON SPIN:${
+					when(owSpinDirection) {
+						0 -> "LEFT"
+						1 -> "RIGHT"
+						else -> "AUTO"
+					}
+				}", cursor==0
+			)
 
 			val skinmax = ResourceHolder.imgNormalBlockList.size
 			sk = when(owSkin) {
@@ -278,22 +280,12 @@ class StateConfigGameTuning:BaseGameState() {
 			val imgBlock = ResourceHolder.imgNormalBlockList[sk]
 			if(ResourceHolder.blockStickyFlagList[sk])
 				for(j in 0..8) imgBlock.draw(
-					(160+j*16).toFloat(),
-					64f,
-					(160+j*16+16).toFloat(),
-					(64+16).toFloat(),
-					0f,
-					(j*16).toFloat(),
-					16f,
-					(j*16+16).toFloat()
+					(160+j*16).toFloat(), 64f, (160+j*16+16).toFloat(), (64+16).toFloat(),
+					0f, (j*16).toFloat(), 16f, (j*16+16).toFloat()
 				)
-			else
-				imgBlock.draw(160f, 64f, (160+144).toFloat(), (64+16).toFloat(), 0f, 0f, 144f, 16f)
+			else imgBlock.draw(160f, 64f, (160+144).toFloat(), (64+16).toFloat(), 0f, 0f, 144f, 16f)
 			FontNormal.printFontGrid(
-				2,
-				4,
-				"SKIN:${String.format("%02d", owSkin)}:",
-				cursor==1,
+				2, 4, "SKIN:${String.format("%02d", owSkin)}:", cursor==1,
 				COLOR.WHITE,
 				if(ResourceHolder.blockStickyFlagList[sk]) COLOR.BLUE else COLOR.RED
 			)
@@ -306,47 +298,49 @@ class StateConfigGameTuning:BaseGameState() {
 			)
 
 			FontNormal.printFontGrid(
-				2,
-				5,
-				"min DAS:"+if(owMinDAS==-1) "AUTO" else "$owMinDAS",
-				cursor==2,
+				2, 5, "min DAS:"+if(owMinDAS==-1) "AUTO" else "$owMinDAS", cursor==2,
 				rainbow = (spdpv/2).toInt()
 			)
 			FontNormal.printFontGrid(
-				2,
-				6,
-				"max DAS:"+if(owMaxDAS==-1) "AUTO" else "$owMaxDAS",
-				cursor==3,
+				2, 6, "max DAS:"+if(owMaxDAS==-1) "AUTO" else "$owMaxDAS", cursor==3,
 				rainbow = (spdpv/2).toInt()
 			)
 			FontNormal.printFontGrid(
-				2,
-				7,
-				"DAS delay:"+if(owDASRate==-1) "AUTO" else "$owDASRate",
-				cursor==4,
+				2, 7, "DAS delay:"+if(owDASRate==-1) "AUTO" else "$owDASRate", cursor==4,
 				rainbow = (spdpv/2).toInt()
 			)
 			FontNormal.printFontGrid(
-				2,
-				8,
-				"SoftDrop Speed:"+if(owSDSpd==-1) "AUTO" else
-					if(owSDSpd<SDS_FIXED.size) "${SDS_FIXED[owSDSpd]}G" else "*${owSDSpd-SDS_FIXED.size+5}",
-				cursor==5,
-				rainbow = (spdpv/4).toInt()
+				2, 8, "SoftDrop Speed:"+when {
+					owSDSpd==-1 -> "AUTO"
+					owSDSpd<SDS_FIXED.size -> "${SDS_FIXED[owSDSpd]}G"
+					else -> "*${owSDSpd-SDS_FIXED.size+5}"
+				},
+				cursor==5, rainbow = (spdpv/4).toInt()
 			)
 			FontNormal.printFontGrid(2, 9, "Reverse UP/DOWN:"+owReverseUpDown.getOX, cursor==6)
 
-			if(owMoveDiagonal==-1) strTemp = "AUTO"
-			if(owMoveDiagonal==0) strTemp = "\u0085"
-			if(owMoveDiagonal==1) strTemp = "\u0083"
-			FontNormal.printFontGrid(2, 10, "Diagonal Move:$strTemp", cursor==7)
+
+			FontNormal.printFontGrid(
+				2, 10, "Diagonal Move:${
+					when(owMoveDiagonal) {
+						0 -> "\u0085"
+						1 -> "\u0083"
+						else -> "AUTO"
+					}
+				}", cursor==7
+			)
 
 			FontNormal.printFontGrid(2, 11, "OUTLINE TYPE:"+OUTLINE_TYPE_NAMES[owBlockOutlineType+1], cursor==8)
 
-			if(owBlockShowOutlineOnly==-1) strTemp = "AUTO"
-			if(owBlockShowOutlineOnly==0) strTemp = "\u0085"
-			if(owBlockShowOutlineOnly==1) strTemp = "\u0083"
-			FontNormal.printFontGrid(2, 12, "SHOW Outline Only:$strTemp", cursor==9)
+			FontNormal.printFontGrid(
+				2, 12, "SHOW Outline Only:${
+					when(owBlockShowOutlineOnly) {
+						0 -> "\u0085"
+						1 -> "\u0083"
+						else -> "AUTO"
+					}
+				}", cursor==9
+			)
 
 			FontNormal.printFontGrid(2, 13, "[PREVIEW]", cursor==10)
 			FontNano.printFontGrid(13, 13, "HOTKEY : D BUTTON")
@@ -395,18 +389,18 @@ class StateConfigGameTuning:BaseGameState() {
 
 				// Execute game loops
 				GameKey.gamekey[0].inputStatusUpdate(gameManager!!.engine[0].ctrl)
-				gameManager!!.updateAll()
+				gameManager?.updateAll()
 
 				// Retry button
 				if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RETRY)) {
-					gameManager!!.reset()
-					gameManager!!.bgMan.bg = -1 // Force no BG
+					gameManager?.reset()
+					gameManager?.bgMan?.bg = -1 // Force no BG
 				}
 
 				// Exit
 				if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_F)
 					||GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_GIVEUP)||
-					gameManager!!.quitFlag)
+					gameManager?.quitFlag==true)
 					stopPreviewGame()
 			} catch(e:Exception) {
 				log.error("Update fail", e)

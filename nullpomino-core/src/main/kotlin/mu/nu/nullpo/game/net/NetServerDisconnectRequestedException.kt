@@ -32,7 +32,6 @@ package mu.nu.nullpo.game.net
 /** This will be thrown when a client requests disconnection. Used by
  * NetServer. */
 class NetServerDisconnectRequestedException:RuntimeException {
-
 	constructor()
 
 	constructor(message:String):super(message)

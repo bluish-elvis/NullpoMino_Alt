@@ -656,7 +656,6 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 						receiver.drawMenuFont(engine, i%10, 11+i/10, "$c", i==currentChar)
 					}
 					receiver.drawMenuFont(engine, 0, 18, "Input Your ID name.", scale = .75f)
-
 				}
 				Pin -> {
 					// region PASSWORD INPUT
@@ -676,7 +675,6 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 						if(signup&&engine.statc[2]==1) "Input your PIN again" else "Input your PIN code"
 					)
 					receiver.drawMenuNano(engine, 0, 9, "With your ABCD Buttons")
-
 				}
 				Result -> {
 					// region SUCCESS SCREEN
@@ -697,7 +695,6 @@ class ProfileProperties @JvmOverloads constructor(colorHeading:EventReceiver.COL
 			/** Screen states */
 			enum class State { Init, Name, Pin, Result }
 		}
-
 	}
 
 	companion object {

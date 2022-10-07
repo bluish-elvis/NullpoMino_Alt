@@ -44,7 +44,6 @@ import kotlin.random.Random
 
 /** AVALANCHE FEVER MARATHON mode (Release Candidate 2) */
 class Avalanche1PFever:Avalanche1PDummyMode() {
-
 	/** Selected game type */
 	private var mapSet = 0
 
@@ -177,7 +176,6 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 				engine.playSE("change")
 
 				when(menuCursor) {
-
 					0, 6 -> {
 						mapSet += change
 						if(mapSet<0) mapSet = FEVER_MAPS.size-1
@@ -266,7 +264,6 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 				else
 				// Cancel
 					engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1

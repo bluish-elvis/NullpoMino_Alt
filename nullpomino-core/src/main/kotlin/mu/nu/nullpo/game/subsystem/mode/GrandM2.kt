@@ -40,12 +40,9 @@ import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
-import kotlin.math.floor
-import kotlin.math.ln
 
 /** GRADE MANIA 2 Mode */
-class GrandMania:AbstractMode() {
-
+class GrandM2:AbstractMode() {
 	/** Next Section の level (これ-1のときに levelストップする) */
 	private var nextseclv = 0
 
@@ -58,7 +55,7 @@ class GrandMania:AbstractMode() {
 	/** 内部段位 */
 	private var gradeInternal = 0
 
-	/** 段位 point */
+	/** 段位 point 100以上で昇段 */
 	private var gradePoint = 0
 
 	/** 段位 pointが1つ減る time */
@@ -85,41 +82,38 @@ class GrandMania:AbstractMode() {
 	/** 裏段位 */
 	private var secretGrade = 0
 
-	/** Current BGM */
-	private var bgmLv = 0
-
 	/** 段位表示を光らせる残り frame count */
 	private var gradeflash = 0
 
 	/** Section Time */
-	private val sectionTime = Array(SECTION_MAX) {0}
+	private val sectionTime = MutableList(SECTION_MAX) {0}
 
 	/** 新記録が出たSection はtrue */
-	private val sectionIsNewRecord = Array(SECTION_MAX) {false}
+	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
 
 	/** Cleared Section count */
 	private var sectionscomp = 0
 
 	/** Average Section Time */
-	private var sectionavgtime = 0
+	private val sectionavgtime get() = setAverageSectionTime()
 
 	/** 直前のSection Time */
 	private var sectionlasttime = 0
 
 	/** Section 内で4-line clearした count */
-	private var sectionquads = IntArray(0)
+	private var sectionQuads = MutableList(SECTION_MAX) {0}
 
 	/** 消えRoll flag１ (Section Time) */
-	private var mrollSectiontime = false
+	private var mRollSTime = false
 
 	/** 消えRoll flag２ (4-line clear) */
-	private var mrollFourline = false
+	private var mRollQuads = false
 
 	/** 消えRoll started flag */
-	private var mrollFlag = false
+	private var mRollFlag = false
 
 	/** 消えRoll 中に消したline count */
-	private var mrollLines = 0
+	private var mRollLines = 0
 
 	/** medal 状態 */
 	private var medalAC = 0
@@ -169,20 +163,20 @@ class GrandMania:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Rankings' 段位 */
-	private val rankingGrade = Array(RANKING_MAX) {0}
+	private val rankingGrade = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' level */
-	private val rankingLevel = Array(RANKING_MAX) {0}
+	private val rankingLevel = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' times */
-	private val rankingTime = Array(RANKING_MAX) {0}
+	private val rankingTime = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' Roll completely cleared flag */
-	private val rankingRollclear = Array(RANKING_MAX) {0}
+	private val rankingRollclear = MutableList(RANKING_MAX) {0}
 
 	/** Section Time記録 */
-	private val bestSectionTime = Array(SECTION_MAX) {0}
-	private val bestSectionQuads = Array(SECTION_MAX) {0}
+	private val bestSectionTime = MutableList(SECTION_MAX) {0}
+	private val bestSectionQuads = MutableList(SECTION_MAX) {0}
 
 	private var decoration = 0
 	private var dectemp = 0
@@ -214,18 +208,16 @@ class GrandMania:AbstractMode() {
 		rollclear = 0
 		rollstarted = false
 		secretGrade = 0
-		bgmLv = 0
 		gradeflash = 0
 		sectionTime.fill(0)
 		sectionIsNewRecord.fill(false)
 		sectionscomp = 0
-		sectionavgtime = 0
 		sectionlasttime = 0
-		sectionquads.fill(0)
-		mrollSectiontime = true
-		mrollFourline = true
-		mrollFlag = false
-		mrollLines = 0
+		sectionQuads.fill(0)
+		mRollSTime = true
+		mRollQuads = true
+		mRollFlag = false
+		mRollLines = 0
 		medalAC = 0
 		medalST = 0
 		medalSK = 0
@@ -234,15 +226,6 @@ class GrandMania:AbstractMode() {
 		medalCO = 0
 		recoveryFlag = false
 		spinCount = 0
-		isShowBestSectionTime = false
-		startLevel = 0
-		alwaysghost = false
-		always20g = false
-		secAlert = false
-		big = false
-
-		decoration = 0
-		dectemp = 0
 
 		rankingRank = -1
 		rankingGrade.fill(0)
@@ -270,15 +253,11 @@ class GrandMania:AbstractMode() {
 		}
 
 		owner.bgMan.bg = startLevel+10
+		setSpeed(engine)
 	}
 
-	/** Set BGM at start of game
-	 * @param engine GameEngine
-	 */
-	private fun setStartBgmlv(engine:GameEngine) {
-		bgmLv = 0
-		while(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv])
-			bgmLv++
+	private fun calcBgmLv(lv:Int) = tableBGMChange.count {lv>=it}.let {
+		it+maxOf(0, it-3)+(mRollSTime&&mRollQuads).toInt()
 	}
 
 	/** Update falling speed
@@ -286,8 +265,7 @@ class GrandMania:AbstractMode() {
 	 */
 	private fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = if(always20g||engine.statistics.time>=54000) -1
-		else tableGravityValue[tableGravityChangeLevel.indexOfLast {it<=engine.statistics.level}
-			.let {if(it<0) tableGravityChangeLevel.size-1 else it}]
+		else tableGravityValue[(tableGravityChangeLevel.indexOfFirst {engine.statistics.level<it}).let {if(it<0) tableGravityChangeLevel.size-1 else it}]
 
 		val section = minOf(engine.statistics.level/100, tableARE.size-1)
 		engine.speed.das = tableDAS[section]
@@ -306,43 +284,32 @@ class GrandMania:AbstractMode() {
 	}
 
 	/** Update average section time */
-	private fun setAverageSectionTime() {
+	private fun setAverageSectionTime() =
 		if(sectionscomp>0) {
-			var temp = 0
-			for(i in startLevel until startLevel+sectionscomp)
-				if(i>=0&&i<sectionTime.size) temp += sectionTime[i]
-
-			sectionavgtime = temp/sectionscomp
-		} else
-			sectionavgtime = 0
-
-	}
+			val i = minOf(sectionscomp+startLevel, sectionTime.size)
+			sectionTime.slice(startLevel until i).sum()/i
+		} else 0
 
 	/** 消えRoll 条件を満たしているか check
 	 * @param levelb 上がる前の level
 	 */
-	private fun mrollCheck(levelb:Int) {
-		if(sectionlasttime>mrollTime(levelb/100)) mrollSectiontime = false
-		// 4-line clear
-		var required4line = 2
-		if(levelb in 500..899) required4line = 1
-		if(levelb>=900) required4line = 0
-
-		if(sectionquads[levelb/100]<required4line) mrollFourline = false
+	private fun mRollCheck(levelb:Int):Boolean {
+		mRollSTime = sectionTime.take(1+levelb/100).mapIndexed {i, t -> t<=mRollTime(i)}.all {it}
+			&&sectionTime.sum()<=M_ROLL_TIME_REQUIRE
+		mRollQuads = sectionQuads.take(1+levelb/100).mapIndexed {i, t ->
+			t>=when(i) {
+				in 0..4 -> 2
+				in 5..8 -> 1
+				else -> 0
+			}
+		}.all {it}
+		return mRollSTime&&mRollQuads
 	}
 
-	private fun mrollTime(section:Int):Int {
-		// Section Time
-		var temp = 4500-section*100
-		if(section>=6)
-			if(section==6) {
-				for(i in 0..4)
-					temp += sectionTime[i]
-				temp = temp/5+1000
-			} else
-				temp = sectionTime[section-1]+(1140-section*60)
-		//780 720 660 600
-		return temp
+	private fun mRollTime(section:Int):Int = when {
+		section==6 -> sectionTime.take(5).sum()/5+1000
+		section>6 -> sectionTime[section-1]+(1140-section*60)
+		else -> 4500-section*100
 	}
 
 	/** ST medal check
@@ -392,7 +359,6 @@ class GrandMania:AbstractMode() {
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
 		if(!engine.owner.replayMode) {
-
 			// Configuration changes
 			val change = updateMenu(engine)
 
@@ -419,7 +385,6 @@ class GrandMania:AbstractMode() {
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -439,20 +404,18 @@ class GrandMania:AbstractMode() {
 
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
-		engine.statistics.level = startLevel*100
+		val lv = startLevel*100
+		engine.statistics.level = lv
 
 		dectemp = 0
-		nextseclv = engine.statistics.level+100
-		if(engine.statistics.level<0) nextseclv = 100
-		if(engine.statistics.level>=900) nextseclv = 999
+		nextseclv = maxOf(100, minOf(999, lv+100))
 
-		owner.bgMan.bg = 10+engine.statistics.level/100
+		owner.bgMan.bg = 10+startLevel/100
 
 		engine.big = big
 
 		setSpeed(engine)
-		setStartBgmlv(engine)
-		owner.musMan.bgm = tableBGM[bgmLv]
+		owner.musMan.bgm = BGM.GrandA(calcBgmLv(lv))
 	}
 
 	/* Render score */
@@ -506,20 +469,15 @@ class GrandMania:AbstractMode() {
 					receiver.drawScoreFont(engine, 0, 14, "TOTAL", COLOR.BLUE)
 					receiver.drawScoreNum(engine, 0, 15, totalTime.toTimeStr, 2f)
 					receiver.drawScoreFont(
-						engine, if(receiver.nextDisplayType==2)
-							0
-						else
-							12, if(receiver.nextDisplayType==2) 18 else 14, "AVERAGE", COLOR.BLUE
+						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 18 else 14,
+						"AVERAGE", COLOR.BLUE
 					)
 					receiver.drawScoreNum(
-						engine, if(receiver.nextDisplayType==2)
-							0
-						else
-							12, if(receiver.nextDisplayType==2) 19 else 15, (totalTime/SECTION_MAX).toTimeStr, 2f
+						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 19 else 15,
+						(totalTime/SECTION_MAX).toTimeStr, 2f
 					)
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
-
 				}
 		} else {
 			val g20 = engine.speed.gravity<0&&engine.statistics.time%3==0
@@ -527,11 +485,11 @@ class GrandMania:AbstractMode() {
 			if(grade>=0&&grade<tableGradeName.size)
 				receiver.drawScoreGrade(engine, 0, 1, tableGradeName[grade], gradeflash>0&&gradeflash%4==0||g20, 2f)
 			if(grade<17) {
-				receiver.drawScoreSpeed(engine, 0, 3, gradePoint-gradeDecay*1f/tableGradeDecayRate[gradeInternal], 5f)
+				receiver.drawScoreSpeed(engine, 0, 3, (gradePoint-gradeDecay*1f/tableGradeDecayRate[gradeInternal])/100f, 5f)
 				receiver.drawScoreNum(
-					engine, 0, 3, String.format("%02.1f%%", gradePoint-gradeDecay*1f/tableGradeDecayRate[gradeInternal]),
+					engine, 0, 4, String.format("%02.1f%%", gradePoint-gradeDecay*1f/tableGradeDecayRate[gradeInternal]),
 					if(g20) COLOR.YELLOW
-					else if(mrollFourline&&mrollSectiontime) COLOR.CYAN else COLOR.BLUE
+					else if(mRollQuads&&mRollSTime) COLOR.CYAN else COLOR.BLUE
 				)
 			}
 			if(gradeInternal>=0&&gradeInternal<tableDetailGradeName.size)
@@ -541,27 +499,24 @@ class GrandMania:AbstractMode() {
 
 			// Score
 			receiver.drawScoreFont(
-				engine, 0, 6, "Score", if(g20&&mrollFourline) COLOR.CYAN else COLOR.BLUE
+				engine, 0, 6, "Score", if(g20&&mRollQuads) COLOR.CYAN else COLOR.BLUE
 			)
 			receiver.drawScoreNum(engine, 5, 6, "+$lastscore", g20)
 			receiver.drawScoreNum(engine, 0, 7, "$scDisp", g20, 2f)
 
 			// level
 			receiver.drawScoreFont(
-				engine, 0, 9, "Level", if(g20&&mrollSectiontime&&mrollFourline) COLOR.CYAN else COLOR.BLUE
+				engine, 0, 9, "Level", if(g20&&mRollSTime&&mRollQuads) COLOR.CYAN else COLOR.BLUE
 			)
 			receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)), g20)
-			receiver.drawScoreSpeed(
-				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4,
-				4
-			)
+			receiver.drawScoreSpeed(engine, 0, 11, if(g20) 1f else engine.speed.rank, 4f)
 			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextseclv), g20)
 
 			// Time
-			receiver.drawScoreFont(engine, 0, 14, "Time", if(g20&&mrollSectiontime) COLOR.CYAN else COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 14, "Time", if(g20&&mRollSTime) COLOR.CYAN else COLOR.BLUE)
 			if(engine.ending!=2||rolltime/20%2==0)
 				receiver.drawScoreNum(
-					engine, 0, 15, engine.statistics.time.toTimeStr, g20&&mrollSectiontime, 2f
+					engine, 0, 15, engine.statistics.time.toTimeStr, g20&&mRollSTime, 2f
 				)
 
 			// Roll 残り time
@@ -588,12 +543,11 @@ class GrandMania:AbstractMode() {
 				val section = engine.statistics.level/100
 				for(i in sectionTime.indices)
 					if(sectionTime[i]>0) {
-
 						var strSeparator = "-"
 						if(i==section&&engine.ending==0) strSeparator = "+"
 
 						val color:COLOR =
-							if(sectionquads[i]>=(if(i<5) 2 else 1)&&sectionTime[i]<mrollTime(i))
+							if(sectionQuads[i]>=(if(i<5) 2 else 1)&&sectionTime[i]<mRollTime(i))
 								if(sectionIsNewRecord[i]) COLOR.CYAN else COLOR.GREEN
 							else if(sectionIsNewRecord[i]) COLOR.RED else COLOR.WHITE
 
@@ -603,7 +557,7 @@ class GrandMania:AbstractMode() {
 						strSectionTime.append(
 							String.format(
 								"%3d%s%s %d\n",
-								if(i<10) i*100 else 999, strSeparator, sectionTime[i].toTimeStr, sectionquads[i]
+								if(i<10) i*100 else 999, strSeparator, sectionTime[i].toTimeStr, sectionQuads[i]
 							)
 						)
 						receiver.drawScoreNum(engine, if(x) 9 else 10, 3, "$strSectionTime", color, if(x) .75f else 1f)
@@ -617,7 +571,6 @@ class GrandMania:AbstractMode() {
 					(engine.statistics.time/(sectionscomp+(engine.ending==0).toInt())).toTimeStr,
 					2f
 				)
-
 			}
 		}
 	}
@@ -627,12 +580,7 @@ class GrandMania:AbstractMode() {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
 			// Level up
-			if(engine.statistics.level<nextseclv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
-
+			levelUp(engine, (engine.statistics.level<nextseclv-1).toInt())
 		}
 		if(engine.ending==0&&engine.statc[0]>0&&(version>=1||!engine.holdDisable)) lvupflag = false
 
@@ -653,7 +601,7 @@ class GrandMania:AbstractMode() {
 		if(engine.ending==2&&!rollstarted) {
 			rollstarted = true
 
-			if(mrollFlag) {
+			if(mRollFlag) {
 				engine.blockHidden = engine.ruleOpt.lockFlash
 				engine.blockHiddenAnim = false
 				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
@@ -673,11 +621,8 @@ class GrandMania:AbstractMode() {
 	override fun onARE(engine:GameEngine):Boolean {
 		// 最後の frame
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
-			if(engine.statistics.level<nextseclv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
+			levelUp(engine, (engine.statistics.level<nextseclv-1).toInt())
+
 			lvupflag = true
 		}
 
@@ -685,19 +630,16 @@ class GrandMania:AbstractMode() {
 	}
 
 	/** levelが上がったときの共通処理 */
-	private fun levelUp(engine:GameEngine) {
+	private fun levelUp(engine:GameEngine, lu:Int) {
+		val levelb = engine.statistics.level
+		engine.statistics.level += lu
+		val lA = engine.statistics.level
 		// Meter
-		engine.meterValue = engine.statistics.level%100/99f
+		engine.meterValue = lA%100/99f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
 		// 速度変更
 		setSpeed(engine)
-
-		// LV100到達でghost を消す
-		if(engine.statistics.level>=100&&!alwaysghost) engine.ghost = false
-
-		// BGM fadeout
-		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadesw = true
 
 		if(version>=2) {
 			// Hard drop bonusInitialization
@@ -709,14 +651,24 @@ class GrandMania:AbstractMode() {
 
 				if(!recoveryFlag) {
 					if(blocks>=150) recoveryFlag = true
-
 				} else if(blocks<=70) {
 					recoveryFlag = false
 					dectemp += 5+medalRE// 5 11 18
 					engine.playSE("medal${++medalRE}")
 				}
-
 			}
+		}
+		// LV100到達でghost を消す
+		if(lA>=100&&!alwaysghost) engine.ghost = false
+
+		if(lu<=0) return
+		if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+		// BGM fadeout
+		if(tableBGMFadeout.any {it in levelb..lA}) owner.musMan.fadesw = true
+		// BGM切り替え
+		if(tableBGMChange.any {it in levelb..lA}) {
+			owner.musMan.fadesw = false
+			owner.musMan.bgm = BGM.GrandA(calcBgmLv(lA))
 		}
 	}
 
@@ -728,9 +680,7 @@ class GrandMania:AbstractMode() {
 		else maxOf(1, comboValue+2*li-2)
 
 		// RO medal 用カウント
-		var spinTemp = engine.nowPieceSpinCount
-		if(spinTemp>4) spinTemp = 4
-		spinCount += spinTemp
+		spinCount += minOf(4, engine.nowPieceSpinCount)
 
 		if(li>=1&&engine.ending==0) {
 			// 段位 point
@@ -765,7 +715,7 @@ class GrandMania:AbstractMode() {
 
 			// 4-line clearカウント
 			if(li>=4) {
-				sectionquads[engine.statistics.level/100]++
+				sectionQuads[engine.statistics.level/100]++
 
 				// SK medal
 				if(big) {
@@ -780,12 +730,10 @@ class GrandMania:AbstractMode() {
 					dectemp += 3+medalSK*2// 3 8 15
 					engine.playSE("medal${++medalSK}")
 				}
-
 			}
 
 			// AC medal
 			if(engine.field.isEmpty) {
-
 				dectemp += li*25
 				if(li==3) dectemp += 25
 				if(li==4) dectemp += 150
@@ -822,8 +770,8 @@ class GrandMania:AbstractMode() {
 			}
 			// Level up
 			val levelb = engine.statistics.level
-			engine.statistics.level += li+maxOf(0, minOf(2, ev.b2b))
-			levelUp(engine)
+			val lu = li+maxOf(0, minOf(2, ev.b2b))
+			levelUp(engine, lu)
 
 			if(engine.statistics.level>=999) {
 				// Ending
@@ -840,10 +788,7 @@ class GrandMania:AbstractMode() {
 				setAverageSectionTime()
 
 				// 消えRoll check
-				mrollCheck(levelb)
-				if(engine.statistics.time>M_ROLL_TIME_REQUIRE) mrollSectiontime = false
-
-				mrollFlag = mrollSectiontime&&mrollFourline&&gradeInternal>=31
+				mRollFlag = mRollCheck(levelb)
 				// ST medal
 				stMedalCheck(engine, levelb/100)
 
@@ -851,7 +796,7 @@ class GrandMania:AbstractMode() {
 				roMedalCheck(engine)
 
 				// 段位M
-				if(mrollFlag) {
+				if(mRollFlag) {
 					engine.playSE("applause4")
 					grade = 18
 					gradeInternal = 32
@@ -866,13 +811,6 @@ class GrandMania:AbstractMode() {
 				owner.bgMan.fadecount = 0
 				owner.bgMan.fadebg = 10+nextseclv/100
 
-				// BGM切り替え
-				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
-					bgmLv++
-					owner.musMan.fadesw = false
-					owner.musMan.bgm = tableBGM[bgmLv]
-					engine.playSE("levelup_section")
-				}
 				engine.playSE("levelup")
 
 				// Section Timeを記録
@@ -881,10 +819,8 @@ class GrandMania:AbstractMode() {
 				setAverageSectionTime()
 
 				// 消えRoll check
-				mrollCheck(levelb)
-				if(engine.statistics.time>M_ROLL_TIME_REQUIRE) mrollSectiontime = false
-				mrollFlag = mrollSectiontime
-				if(mrollFlag&&mrollFourline) engine.playSE("cool")
+				mRollFlag = mRollCheck(levelb)
+				if(mRollFlag) engine.playSE("cool")
 				// ST medal
 				stMedalCheck(engine, levelb/100)
 
@@ -903,9 +839,9 @@ class GrandMania:AbstractMode() {
 					+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			engine.statistics.scoreLine += lastscore
 			return lastscore
-		} else if(li>=1&&mrollFlag&&engine.ending==2)
+		} else if(li>=1&&mRollFlag&&engine.ending==2)
 		// 消えRoll 中のLine clear
-			mrollLines += li
+			mRollLines += li
 		return 0
 	}
 
@@ -928,7 +864,6 @@ class GrandMania:AbstractMode() {
 			val section = engine.statistics.level/100
 
 			if(section>=0&&section<sectionTime.size) sectionTime[section]++
-
 		}
 
 		// Ending
@@ -944,7 +879,7 @@ class GrandMania:AbstractMode() {
 			if(rolltime>=ROLLTIMELIMIT) {
 				rollclear = 2
 
-				if(mrollFlag) {
+				if(mRollFlag) {
 					grade = 19
 					gradeflash = 180
 					lastGradeTime = engine.statistics.time
@@ -952,7 +887,7 @@ class GrandMania:AbstractMode() {
 					engine.playSE("grade4")
 					gradeInternal = 33
 					rollclear = 3
-					if(mrollLines>=16) {
+					if(mRollLines>=16) {
 						rollclear = 4
 						grade = 20
 					}
@@ -966,16 +901,11 @@ class GrandMania:AbstractMode() {
 				if(engine.statistics.time<28800) dectemp += (28800-engine.statistics.time)/1800
 			}
 		} else if(engine.statistics.level==nextseclv-1)
-			engine.meterColor = if(engine.meterColor==-0x1)
-				-0x10000
-			else
-				-0x1
-
+			engine.meterColor = if(engine.meterColor==0xFFFFFF) 0 else 0xFFFFFF
 	}
 
 	/* game over */
 	override fun onGameOver(engine:GameEngine):Boolean {
-
 		if(engine.statc[0]==0) {
 			val time = engine.statistics.time
 			if(time<6000)
@@ -1074,7 +1004,7 @@ class GrandMania:AbstractMode() {
 			}
 		} else if(grade>=17) {
 			receiver.drawMenuFont(engine, 3.5f, 8.5f, "BUT...", COLOR.WHITE, 1f)
-			if(mrollSectiontime&&!mrollFourline) {
+			if(mRollSTime&&!mRollQuads) {
 				col = when {
 					engine.statc[0]%4==0 -> COLOR.RED
 					engine.statc[0]%2==0 -> COLOR.YELLOW
@@ -1098,7 +1028,6 @@ class GrandMania:AbstractMode() {
 
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine):Boolean {
-
 		owner.musMan.fadesw = false
 		owner.musMan.bgm = if(engine.ending>0)
 			if(rollclear<=1) BGM.Result(2) else BGM.Result(3)
@@ -1186,9 +1115,8 @@ class GrandMania:AbstractMode() {
 		for(i in 0 until SECTION_MAX)
 			if(sectionIsNewRecord[i]) {
 				bestSectionTime[i] = sectionTime[i]
-				bestSectionQuads[i] = sectionquads[i]
+				bestSectionQuads[i] = sectionQuads[i]
 			}
-
 	}
 
 	companion object {
@@ -1225,11 +1153,10 @@ class GrandMania:AbstractMode() {
 		private val tableDAS = listOf(15, 14, 13, 12, 11, 10, 9, 8, 7, 6)
 
 		/** BGM fadeout levels */
-		private val tableBGMFadeout = listOf(475, 680, 880, -1)
+		private val tableBGMFadeout = listOf(475, 680, 880)
 
 		/** BGM change levels */
-		private val tableBGMChange = listOf(500, 700, 900, -1)
-		private val tableBGM = listOf(BGM.GrandA(0), BGM.GrandA(1), BGM.GrandA(2), BGM.GrandA(3))
+		private val tableBGMChange = listOf(500, 700, 900)
 
 		/** Line clear時に入る段位 point */
 		private val tableGradePoint =
@@ -1242,10 +1169,10 @@ class GrandMania:AbstractMode() {
 		/** 段位 pointのCombo bonus */
 		private val tableGradeComboBonus =
 			listOf(
-				floatArrayOf(1.0f, 1.2f, 1.2f, 1.4f, 1.4f, 1.4f, 1.4f, 1.5f, 1.5f, 2.0f),
-				floatArrayOf(1.0f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.0f, 2.1f, 2.5f),
-				floatArrayOf(1.0f, 1.5f, 1.8f, 2.0f, 2.2f, 2.3f, 2.4f, 2.5f, 2.6f, 3.0f),
-				floatArrayOf(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f)
+				listOf(1.0f, 1.2f, 1.2f, 1.4f, 1.4f, 1.4f, 1.4f, 1.5f, 1.5f, 2.0f),
+				listOf(1.0f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.0f, 2.1f, 2.5f),
+				listOf(1.0f, 1.5f, 1.8f, 2.0f, 2.2f, 2.3f, 2.4f, 2.5f, 2.6f, 3.0f),
+				listOf(1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f)
 			)
 
 		/** 実際の段位を上げるのに必要な内部段位 */

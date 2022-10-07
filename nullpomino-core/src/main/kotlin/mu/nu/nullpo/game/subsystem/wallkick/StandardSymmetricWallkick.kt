@@ -34,7 +34,6 @@ import mu.nu.nullpo.game.component.Piece
 
 /** SRS with symmetric I-piece kicks */
 class StandardSymmetricWallkick:BaseStandardWallkick() {
-
 	/* Get kick table */
 	override fun getKickTable(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean,
 		piece:Piece, field:Field, ctrl:Controller?) = when(rtDir) {

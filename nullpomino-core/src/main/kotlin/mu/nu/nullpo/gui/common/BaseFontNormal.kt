@@ -33,7 +33,6 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 
 abstract class BaseFontNormal:BaseFont {
-
 	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
 		var dx = x
@@ -54,7 +53,6 @@ abstract class BaseFontNormal:BaseFont {
 					scale<=.5f -> draw(0, dx, wy, scale*2, c%32*8, (c/32+fontColor*4)*8, 8, 8, a)
 					scale>=(5f/3f) -> draw(2, dx, wy, scale/2, c%32*32, (c/32+fontColor*4)*32, 32, 32, a)
 					else -> draw(1, dx, wy, scale, c%32*16, (c/32+fontColor*4)*16, 16, 16, a)
-
 				}
 				dx += 16*scale
 			}

@@ -35,7 +35,6 @@ import java.io.IOException
 
 /** Mode 管理クラス */
 class ModeManager {
-
 	/** Mode の動的配列 */
 	val list:MutableList<GameMode> = mutableListOf()
 
@@ -62,14 +61,14 @@ class ModeManager {
 	}
 
 	/** Mode のcountを取得
-	 * @param netplay falseなら通常Mode だけ, When true,ネットプレイ用Mode だけcount
+	 * @param netplay falseなら通常Modeだけ, trueならネットプレイ用Modeだけcount
 	 * @return Modeのcount
 	 */
 	fun getNumberOfModes(netplay:Boolean):Int =
 		list.count {it.isOnlineMode==netplay}
 
 	/** 読み込まれているMode nameを取得
-	 * @param netplay falseなら通常Mode だけ, When true,ネットプレイ用Mode だけ取得
+	 * @param netplay falseなら通常Modeだけ, trueならネットプレイ用Modeだけ取得
 	 * @return Mode nameの配列
 	 */
 	fun getModeNames(netplay:Boolean):List<String> =
@@ -102,22 +101,15 @@ class ModeManager {
 	fun getNum(name:String?):Int {
 		if(name==null) return -1
 
-		for(i in list.indices)
-			if(name.compareTo(list[i].name)==0||name.compareTo(list[i].id)==0)
-				return i
+		return list.indexOfFirst {(name==it.name)||(name==it.id)}
 
-		return -1
 	}
 
 	/** Mode オブジェクトを取得
 	 * @param id Mode No.
 	 * @return Modeオブジェクト (idが不正ならnull）
 	 */
-	operator fun get(id:Int):GameMode? = try {
-		list[id]
-	} catch(e:Exception) {
-		null
-	}
+	operator fun get(id:Int):GameMode? = list.getOrNull(id)
 	@Deprecated("operator get", ReplaceWith("get(id)"))
 	fun getMode(id:Int):GameMode? = get(id)
 
@@ -125,8 +117,8 @@ class ModeManager {
 	 * @param name Mode name
 	 * @return Modeオブジェクト (見つからないならnull）
 	 */
-	operator fun get(name:String):GameMode? = try {
-		list[getNum(name)]
+	operator fun get(name:String?):GameMode? = try {
+		name?.let {list.getOrNull(getNum(it))}
 	} catch(e:Exception) {
 		null
 	}
@@ -190,7 +182,6 @@ class ModeManager {
 				} catch(e:Exception) {
 					log.warn("Mode class $name load failed", e)
 				}
-
 			}
 		}
 	}

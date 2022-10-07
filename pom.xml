@@ -19,7 +19,9 @@
  </modules>
 
  <properties>
-  <kotlin.version>1.7.20</kotlin.version>
+  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  <kotlin.version>1.8.0</kotlin.version>
   <java.version>18</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
   <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -128,6 +130,9 @@
          <excludes>META-INF</excludes>
         </artifactItem>
        </artifactItems>
+       <overWriteIfNewer>true</overWriteIfNewer>
+       <overWriteReleases>true</overWriteReleases>
+       <overWriteSnapshots>true</overWriteSnapshots>
       </configuration>
      </execution>
     </executions>

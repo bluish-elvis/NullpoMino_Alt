@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -34,7 +34,6 @@ import org.newdawn.slick.Input
 /** Key input state manager (Only use with Slick. Don't use inside game
  * modes!) */
 class GameKey:GameKeyDummy {
-
 	/** Default constructor */
 	constructor():super()
 
@@ -73,7 +72,7 @@ class GameKey:GameKeyDummy {
 	}
 
 	/** Reset keyboard settings to default
-	 * @param type Settings type (0=Blockbox 1=Guideline 2=NullpoMino-Classic)
+	 * @param type Settings type (0=Blockbox 1=Guideline 2=NullpoMino-Classic 3=ThreshBind)
 	 */
 	@JvmOverloads
 	fun loadDefaultKeymap(type:Int = 0) {
@@ -83,7 +82,7 @@ class GameKey:GameKeyDummy {
 
 	/** Reset in-game keyboard settings to default. Menu keys are unchanged.
 	 * @param type Settings type (0=Blockbox 1=Guideline
-	 * 2=NullpoMino-Classic)
+	 * 2=NullpoMino-Classic 3=ThreshBind)
 	 */
 	fun loadDefaultGameKeymap(type:Int) {
 		System.arraycopy(DEFAULTKEYS[0][type], 0, keymap, 0, keymap.size)
@@ -91,7 +90,7 @@ class GameKey:GameKeyDummy {
 
 	/** Reset menu keyboard settings to default. In-game keys are unchanged.
 	 * @param type Settings type (0=Blockbox 1=Guideline
-	 * 2=NullpoMino-Classic)
+	 * 2=NullpoMino-Classic 3=ThreshBind)
 	 */
 	fun loadDefaultMenuKeymap(type:Int) {
 		System.arraycopy(DEFAULTKEYS[1][type], 0, keymapNav, 0, keymapNav.size)
@@ -161,7 +160,26 @@ class GameKey:GameKeyDummy {
 					Input.KEY_F11,
 					Input.KEY_N,
 					Input.KEY_F10
-				)
+				),
+				// Thresh Bind type
+				listOf(
+					Input.KEY_W,
+					Input.KEY_S,
+					Input.KEY_A,
+					Input.KEY_D,
+					Input.KEY_J,
+					Input.KEY_K,
+					Input.KEY_L,
+					Input.KEY_SPACE,
+					Input.KEY_I,
+					Input.KEY_RCONTROL,
+					Input.KEY_F12,
+					Input.KEY_F1,
+					Input.KEY_F11,
+					Input.KEY_F10,
+					Input.KEY_N,
+					Input.KEY_F5
+				),
 			),
 			// Menu
 			listOf(
@@ -221,7 +239,26 @@ class GameKey:GameKeyDummy {
 					Input.KEY_F11,
 					Input.KEY_N,
 					Input.KEY_F10
-				)
+				),
+				// Thresh Bind type
+				listOf(
+					Input.KEY_W,
+					Input.KEY_S,
+					Input.KEY_A,
+					Input.KEY_D,
+					Input.KEY_ENTER,
+					Input.KEY_BACK,
+					Input.KEY_LSHIFT,
+					Input.KEY_SPACE,
+					Input.KEY_RSHIFT,
+					Input.KEY_RCONTROL,
+					Input.KEY_F12,
+					Input.KEY_F1,
+					Input.KEY_F11,
+					Input.KEY_F10,
+					Input.KEY_N,
+					Input.KEY_F5
+				),
 			)
 		)
 

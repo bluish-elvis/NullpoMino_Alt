@@ -30,7 +30,9 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
+import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.component.Block.COLOR
+import mu.nu.nullpo.game.component.Block.TYPE
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
@@ -44,7 +46,6 @@ import org.apache.logging.log4j.LogManager
 
 /** DIG RACE Mode */
 class SprintDig:NetDummyMode() {
-
 	/** BGM number */
 	private var bgmno = 0
 
@@ -103,7 +104,6 @@ class SprintDig:NetDummyMode() {
 			version = CURRENT_VERSION
 			presetNumber = engine.owner.modeConfig.getProperty("digrace.presetNumber", 0)
 			loadPreset(engine, engine.owner.modeConfig, -1)
-
 		} else {
 			version = engine.owner.replayProp.getProperty("digrace.version", 0)
 			presetNumber = 0
@@ -167,7 +167,6 @@ class SprintDig:NetDummyMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
 
 				when(menuCursor) {
-
 					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
 					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
 					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
@@ -222,7 +221,6 @@ class SprintDig:NetDummyMode() {
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!big&&engine.ai==null)
 				netEnterNetPlayRankingScreen(goalType)
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -284,7 +282,7 @@ class SprintDig:NetDummyMode() {
 		var hole:Int = -1
 
 		for(y:Int in h-1 downTo h-GOAL_TABLE[height]) {
-			var newhole:Int = -1
+			var newhole:Int
 			do newhole = engine.random.nextInt(w)
 			while(newhole==hole)
 			hole = newhole
@@ -301,8 +299,8 @@ class SprintDig:NetDummyMode() {
 					}
 					engine.field.setBlock(
 						x, y, Block(
-							color, if(y==h-1) Block.TYPE.BLOCK else Block.TYPE.GEM,
-							engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE
+							color, if(y==h-1) TYPE.BLOCK else TYPE.GEM,
+							engine.skin, ATTRIBUTE.VISIBLE, ATTRIBUTE.GARBAGE
 						)
 					)
 				}
@@ -313,9 +311,9 @@ class SprintDig:NetDummyMode() {
 					if(x!=hole) {
 						val blk = engine.field.getBlock(x, y)
 						if(blk!=null) {
-							if(!engine.field.getBlockEmpty(x-1, y)) blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+							if(!engine.field.getBlockEmpty(x-1, y)) blk.setAttribute(true, ATTRIBUTE.CONNECT_LEFT)
 							if(!engine.field.getBlockEmpty(x+1, y))
-								blk.setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
+								blk.setAttribute(true, ATTRIBUTE.CONNECT_RIGHT)
 						}
 					}
 		}
@@ -333,7 +331,7 @@ class SprintDig:NetDummyMode() {
 				for(x in 0 until w) {
 					val blk = engine.field.getBlock(x, y)
 
-					if(blk!=null&&blk.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
+					if(blk!=null&&blk.getAttribute(ATTRIBUTE.GARBAGE)) {
 						lines++
 						break
 					}

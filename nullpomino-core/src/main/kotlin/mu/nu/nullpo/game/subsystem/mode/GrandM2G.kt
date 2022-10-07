@@ -42,8 +42,7 @@ import kotlin.math.floor
 import kotlin.math.ln
 
 /** GARBAGE MANIA Mode */
-class GrandMountain:AbstractMode() {
-
+class GrandM2G:AbstractMode() {
 	/** Next Section の level (これ-1のときに levelストップする) */
 	private var nextseclv = 0
 
@@ -160,12 +159,6 @@ class GrandMountain:AbstractMode() {
 		garbagePos = 0
 		garbageCount = 0
 		garbageTotal = 0
-		isShowBestSectionTime = false
-		startLevel = 0
-		alwaysghost = false
-		always20g = false
-		secAlert = false
-		big = false
 
 		rankingRank = -1
 		rankingLevel.forEach {it.fill(0)}
@@ -190,8 +183,8 @@ class GrandMountain:AbstractMode() {
 		version = if(!owner.replayMode) CURRENT_VERSION
 		else owner.replayProp.getProperty("garbagemania.version", 0)
 
-
 		owner.bgMan.bg = startLevel
+		setSpeed(engine)
 	}
 
 	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
@@ -228,22 +221,16 @@ class GrandMountain:AbstractMode() {
 	 */
 	private fun setSpeed(engine:GameEngine) {
 		engine.speed.gravity = if(always20g) -1
-		else tableGravityValue[tableGravityChangeLevel.indexOfLast {it<=engine.statistics.level}
+		else tableGravityValue[tableGravityChangeLevel.indexOfFirst {engine.statistics.level<it}
 			.let {if(it<0) tableGravityChangeLevel.size-1 else it}]
-
 	}
 
 	/** Update average section time */
 	private fun setAverageSectionTime() {
 		if(sectionscomp>0) {
-			var temp = 0
-			for(i in startLevel until startLevel+sectionscomp)
-				if(i>=0&&i<sectionTime.size) temp += sectionTime[i]
-
-			sectionavgtime = temp/sectionscomp
-		} else
-			sectionavgtime = 0
-
+			val i = minOf(sectionscomp+startLevel, sectionTime.size)
+			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
+		} else sectionavgtime = 0
 	}
 
 	/** Section Time更新処理
@@ -267,7 +254,6 @@ class GrandMountain:AbstractMode() {
 				engine.playSE("change")
 
 				when(menuCursor) {
-
 					0 -> {
 						goalType += change
 						if(goalType<0) goalType = GOALTYPE_MAX-1
@@ -303,7 +289,6 @@ class GrandMountain:AbstractMode() {
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -594,9 +579,7 @@ class GrandMountain:AbstractMode() {
 									if(!field.getBlockEmpty(x+1, h-y))
 										setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 								}
-
 				} else {
-
 					when(goalType) {
 						GOALTYPE_RANDOM -> {
 							field.pushUp()
@@ -641,7 +624,6 @@ class GrandMountain:AbstractMode() {
 								if(!field.getBlockEmpty(x+1, h-1))
 									setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
 							}
-
 				}
 
 				garbageTotal++
@@ -723,7 +705,6 @@ class GrandMountain:AbstractMode() {
 			val section = engine.statistics.level/100
 
 			if(section>=0&&section<sectionTime.size) sectionTime[section]++
-
 		}
 
 		// Ending
@@ -789,7 +770,6 @@ class GrandMountain:AbstractMode() {
 				Statistic.PPS
 			)
 		}
-
 	}
 
 	/* 結果画面の処理 */

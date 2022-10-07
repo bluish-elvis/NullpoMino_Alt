@@ -40,7 +40,6 @@ import org.newdawn.slick.state.StateBasedGame
 
 /** ロード画面のステート */
 class StateLoading:BasicGameState() {
-
 	/** プリロード進行度 */
 	private var preloadSet:Int = -2
 
@@ -55,7 +54,6 @@ class StateLoading:BasicGameState() {
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-
 		//  input 関連をInitialization
 		GameKey.initGlobalGameKey()
 		GameKey.gamekey[0].loadConfig(NullpoMinoSlick.propConfig)
@@ -72,7 +70,6 @@ class StateLoading:BasicGameState() {
 				container?.graphics?.drawImage(loadBG, 0f, 0f)
 			} catch(e:Throwable) {
 			}
-
 	}
 
 	/* Draw the screen */

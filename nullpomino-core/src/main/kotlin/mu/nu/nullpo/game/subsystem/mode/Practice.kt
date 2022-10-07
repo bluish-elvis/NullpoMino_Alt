@@ -44,8 +44,7 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
 
 /** PRACTICE Mode */
-class PracticeMode:AbstractMode() {
-
+class Practice:AbstractMode() {
 	private var levelTimer = 0
 	private var lastlineTime = 0
 	/** Level upRemaining until point */
@@ -142,7 +141,7 @@ class PracticeMode:AbstractMode() {
 	private var rolltimelimit = 0
 
 	/** Arrangement of the pieces can appear */
-	private var pieceEnable = BooleanArray(0)
+	private var pieceEnable = MutableList(0) {false}
 
 	/** MapUse flag */
 	private var useMap = false
@@ -181,9 +180,6 @@ class PracticeMode:AbstractMode() {
 	/** How to erase Block */
 	private var eraseStyle = 0
 
-	/* Mode name */
-	override val name = "PRACTICE"
-
 	/* Initialization */
 	override fun playerInit(engine:GameEngine) {
 		log.debug("playerInit called")
@@ -202,7 +198,7 @@ class PracticeMode:AbstractMode() {
 		rolltime = 0
 		rollstarted = false
 		secretGrade = 0
-		pieceEnable = BooleanArray(Piece.PIECE_COUNT)
+		pieceEnable = MutableList(Piece.PIECE_COUNT) {false}
 		fldBackup = null
 		timelimitTimer = 0
 		engine.frameColor = GameEngine.FRAME_COLOR_BRONZE
@@ -469,7 +465,7 @@ class PracticeMode:AbstractMode() {
 					savePreset(engine, owner.modeConfig, -1)
 					owner.saveModeConfig()
 
-					if(useMap&&(engine.field==null||engine.field.isEmpty)) {
+					if(useMap&&engine.field.isEmpty) {
 						val prop = receiver.loadProperties("config/map/practice/$mapNumber.map")
 						if(prop!=null) {
 							engine.createFieldIfNeeded()
@@ -486,7 +482,6 @@ class PracticeMode:AbstractMode() {
 
 			// Cancel
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-
 		} else {
 			owner.menuOnly = true
 
@@ -530,7 +525,7 @@ class PracticeMode:AbstractMode() {
 			receiver.drawMenuFont(engine, 2, 3, "GRAVITY:", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuNum(engine, 11, 3, String.format("%5d/", engine.speed.gravity), menuCursor==0)
 			receiver.drawMenuNum(engine, 16, 3, String.format("%5d", engine.speed.denominator), menuCursor==1)
-			receiver.drawScoreSpeed(engine, 13, 4, engine.speed.gravity, engine.speed.denominator, 3)
+			receiver.drawScoreSpeed(engine, 13, 4, engine.speed.rank, 3f)
 			receiver.drawMenuFont(engine, 2, 4, "ARE:", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuNum(engine, 7, 4, String.format("%2d/", engine.speed.are), menuCursor==2)
 			receiver.drawMenuNum(engine, 11, 4, String.format("%2d", engine.speed.areLine), menuCursor==3)
@@ -642,7 +637,7 @@ class PracticeMode:AbstractMode() {
 			engine.bone = bone
 
 			// Set the piece that can appear
-			if(version>=1) System.arraycopy(pieceEnable, 0, engine.nextPieceEnable, 0, Piece.PIECE_COUNT)
+			if(version>=1) engine.nextPieceEnable = pieceEnable
 
 			// MapFor storing backup Replay read
 			if(version>=2)
@@ -656,11 +651,10 @@ class PracticeMode:AbstractMode() {
 						log.debug("Backup values data")
 						fldBackup = Field(engine.field)
 					}
-				} else if(engine.field!=null) {
+				} else {
 					log.debug("Use no values, reseting field")
 					engine.field.reset()
-				} else
-					log.debug("Use no values")
+				}
 		}
 
 		// Another Rule
@@ -775,7 +769,6 @@ class PracticeMode:AbstractMode() {
 
 		// fieldエディットのとき
 		if(engine.stat==GameEngine.Status.FIELDEDIT) {
-
 			// 座標
 			receiver.drawScoreFont(engine, 0, 2, "X POS", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, 0, 3, "${engine.mapEditX}")
@@ -793,7 +786,6 @@ class PracticeMode:AbstractMode() {
 			 * receiver.drawScore(engine, playerID, 0, 10, "" +
 			 * engine.field.getHowManyHoles());
 			 * } */
-
 		} else {
 			// Score
 			receiver.drawScoreFont(engine, 0, 5, "Score", EventReceiver.COLOR.BLUE)
@@ -868,7 +860,6 @@ class PracticeMode:AbstractMode() {
 				receiver.drawScoreFont(engine, 0, 8, "Level", EventReceiver.COLOR.BLUE)
 				receiver.drawScoreNum(engine, 0, 9, (engine.statistics.level+1).toString())
 			}
-
 		}
 	}
 
@@ -982,7 +973,6 @@ class PracticeMode:AbstractMode() {
 
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-
 		// Decrease Hebo Hidden
 		if(engine.heboHiddenEnable&&ev.lines>0) {
 			engine.heboHiddenTimerNow = 0
@@ -1059,7 +1049,6 @@ class PracticeMode:AbstractMode() {
 
 				lastscore = ((levelb+lines)/4+engine.softdropFall+manuallock+harddropBonus)*lines*comboValue*bravo+
 					engine.statistics.level/2+speedBonus*7
-
 			} else {
 				var manuallock = 0
 				if(engine.manualLock) manuallock = 1
@@ -1072,7 +1061,6 @@ class PracticeMode:AbstractMode() {
 
 				lastscore = (((levelb+lines)/4+engine.softdropFall+manuallock+harddropBonus)*lines*comboValue+speedBonus+
 					engine.statistics.level/2)*bravo
-
 			}
 			if(engine.clearMode==GameEngine.ClearType.LINE_GEM_BOMB||engine.clearMode==GameEngine.ClearType.LINE_GEM_SPARK) {
 				lastscore /= 7+3*engine.chain
@@ -1177,7 +1165,6 @@ class PracticeMode:AbstractMode() {
 	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		if(leveltype!=LEVELTYPE_MANIA&&leveltype!=LEVELTYPE_MANIAPLUS)
 			engine.statistics.scoreSD += fall
-
 	}
 
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
@@ -1185,7 +1172,6 @@ class PracticeMode:AbstractMode() {
 			if(fall*2>harddropBonus) harddropBonus = fall*2
 		} else
 			engine.statistics.scoreHD += fall*2
-
 	}
 
 	override fun renderResult(engine:GameEngine) {

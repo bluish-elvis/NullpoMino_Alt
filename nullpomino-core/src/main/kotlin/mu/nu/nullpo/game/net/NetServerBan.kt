@@ -41,7 +41,6 @@ import java.util.Calendar
 import java.util.TimeZone
 
 class NetServerBan {
-
 	var addr = ""
 
 	var startDate:Calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"))

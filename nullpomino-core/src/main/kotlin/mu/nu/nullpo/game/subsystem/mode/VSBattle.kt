@@ -42,8 +42,7 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
 
 /** VS-BATTLE Mode */
-class VSBattleMode:AbstractMode() {
-
+class VSBattle:AbstractMode() {
 	/** garbage blockType of */
 	private var garbageType = IntArray(MAX_PLAYERS)
 	private val garbageStyle get() = garbageType.map {GarbageStyle.all[it]}
@@ -436,7 +435,6 @@ class VSBattleMode:AbstractMode() {
 					if(engine.statc[5]>=mapMaxNo[pid]) engine.statc[5] = 0
 					loadMapPreview(engine, pid, engine.statc[5], false)
 				}
-
 		} else if(engine.statc[4]==0) {
 			menuTime++
 			menuCursor = 0
@@ -570,7 +568,6 @@ class VSBattleMode:AbstractMode() {
 			}
 		} else engine.twistEnable = enableTwist[playerID]
 		engine.twistEnableEZ = engine.twistEnable
-
 	}
 
 	/* Render score */
@@ -597,7 +594,6 @@ class VSBattleMode:AbstractMode() {
 				receiver.drawScoreFont(engine, 2, 5, "SPIKES", COLOR.PINK)
 				receiver.drawScoreNum(engine, 1, 6, String.format("%3d", garbageSent[0]), col(0))
 				receiver.drawScoreNum(engine, 6, 6, String.format("%3d", garbageSent[1]), col(1))
-
 			}
 		}
 		if(showStats) {
@@ -671,12 +667,10 @@ class VSBattleMode:AbstractMode() {
 	}
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-
 		var pts = 0
 		//  Attack
 		val pid = engine.playerID
 		if(ev.lines>0) {
-
 			val pow = super.calcPower(engine, ev, true)
 			// gem block attack
 			val gems = engine.field.howManyGemClears
@@ -692,7 +686,6 @@ class VSBattleMode:AbstractMode() {
 			var gct = 0
 			do {
 				garbageEntries[pid].filter {it.time<=0}.first {it.lines>0}.let {
-
 					if(it.lines>0) {
 						val garbageColor = PLAYER_COLOR_BLOCK[it.playerID]
 						val l = minOf(
@@ -826,7 +819,6 @@ class VSBattleMode:AbstractMode() {
 	 */
 	private data class GarbageEntry(var lines:Int, val playerID:Int, var time:Int)
 	companion object {
-
 		/** garbage blockChanges to the position of the holes in the normally random */
 		private enum class GarbageStyle {
 			/** One Attack will be One garbage-Group*/
@@ -852,6 +844,5 @@ class VSBattleMode:AbstractMode() {
 
 		/** Number of players */
 		private const val MAX_PLAYERS = 2
-
 	}
 }

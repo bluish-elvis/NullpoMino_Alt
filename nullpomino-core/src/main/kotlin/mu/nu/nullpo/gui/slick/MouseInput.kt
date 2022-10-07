@@ -33,7 +33,6 @@ import mu.nu.nullpo.gui.common.MouseInputDummy
 import org.newdawn.slick.Input
 
 object MouseInput:MouseInputDummy() {
-
 	fun update(input:Input) {
 		mouseX = input.mouseX
 		mouseY = input.mouseY

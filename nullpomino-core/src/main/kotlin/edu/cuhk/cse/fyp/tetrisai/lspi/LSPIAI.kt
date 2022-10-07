@@ -33,7 +33,7 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.ai.DummyAI
-import mu.nu.nullpo.game.subsystem.mode.VSBattleMode
+import mu.nu.nullpo.game.subsystem.mode.VSBattle
 import org.apache.log4j.Logger
 import kotlin.math.abs
 
@@ -952,12 +952,11 @@ open class LSPIAI:DummyAI(), Runnable {
 
 		//log.error(pts);
 		return pts
-
 	}
 
 	protected fun createState(fld:Field, engine:GameEngine?):State {
 		val newState = State()
-		val transformedFld = Array(height+hiddenHeight) {IntArray(width)}
+		val transformedFld = Array(fld.fullHeight) {IntArray(width)}
 		for(c in 0 until width) {
 			for(r in -hiddenHeight until height) {
 				transformedFld[r+hiddenHeight][c] = if(fld.getBlockEmpty(c, r)) 0 else 1
@@ -986,8 +985,8 @@ open class LSPIAI:DummyAI(), Runnable {
 			newState.top[c] = heightest
 		}
 		if(engine!=null) {
-			if(engine.owner.mode is VSBattleMode) {
-				(engine.owner.mode as VSBattleMode).let {mode ->
+			if(engine.owner.mode is VSBattle) {
+				(engine.owner.mode as VSBattle).let {mode ->
 					newState.addLinesStack(mode.garbage[engine.playerID])
 					newState.addLineSent(mode.garbageSent[engine.playerID])
 				}
@@ -1004,7 +1003,7 @@ open class LSPIAI:DummyAI(), Runnable {
 	):FutureState {
 		val newState = FutureState()
 		newState.resetToCurrentState(oldState)
-		val transformedFld = Array(height+hiddenHeight) {IntArray(width)}
+		val transformedFld = Array(fld.fullHeight) {IntArray(width)}
 		for(c in 0 until width) {
 			for(r in -hiddenHeight until height) {
 				transformedFld[r+hiddenHeight][c] = if(fld.getBlockEmpty(c, r)) 0 else 1
@@ -1033,8 +1032,8 @@ open class LSPIAI:DummyAI(), Runnable {
 			newState.top[c] = heightest
 		}
 		newState.addLinesStack(deltaMeter)
-		if(engine!!.owner.mode is VSBattleMode) {
-			val mode = engine.owner.mode as VSBattleMode?
+		if(engine!!.owner.mode is VSBattle) {
+			val mode = engine.owner.mode as VSBattle?
 			newState.addLineSent(deltaLineSent)
 		} else {
 			newState.addLineSent(deltaLineCleared)

@@ -44,7 +44,6 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** MARATHON Mode */
 class Marathon:NetDummyMode() {
-
 	/** Current BGM */
 	private var bgmLv = 0
 
@@ -174,7 +173,6 @@ class Marathon:NetDummyMode() {
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null)
 				netEnterNetPlayRankingScreen(goalType)
-
 		} else {
 			menuTime++
 			menuCursor = -1

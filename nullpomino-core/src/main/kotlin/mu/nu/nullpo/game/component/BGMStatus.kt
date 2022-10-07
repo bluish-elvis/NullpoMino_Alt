@@ -34,7 +34,6 @@ import kotlin.reflect.full.primaryConstructor
 
 /** 音楽の再生状況を管理するクラス */
 class BGMStatus:Serializable {
-
 	/** Current BGM */
 	var bgm:BGM = BGM.Silent
 	var track = 0
@@ -55,11 +54,12 @@ class BGMStatus:Serializable {
 	/** 音楽の定数 */
 	sealed class BGM(
 		idx:Int = 0, val hidden:Boolean = false, nums:Int = 1, ln:String = "",
-		vararg sn:String = emptyArray()
+		val sn:List<String> = emptyList()
 	) {
-		constructor(idx:Int, nums:Int, ln:String, vararg sn:String):this(idx, false, nums, ln, *sn)
-		constructor(idx:Int, ln:String, vararg sn:String):this(idx, false, sn.size, ln, *sn)
-		constructor(idx:Int, hidden:Boolean, ln:String, vararg sn:String):this(idx, hidden, sn.size, ln, *sn)
+		constructor(idx:Int, nums:Int, ln:String):this(idx, false, nums, ln)
+		constructor(idx:Int, ln:String, hidden:Boolean = false, sn:List<String>):this(idx, hidden, sn.size, ln, sn)
+		constructor(idx:Int, ln:String, vararg sn:String = emptyArray(), hidden:Boolean = false)
+			:this(idx, hidden, sn.size, ln, sn.toList())
 
 		val id:Int = BGM::class.java.declaredClasses.indexOfFirst {it==this::class.java}
 		val idx:Int = minOf(maxOf(0, idx), nums-1)
@@ -92,40 +92,49 @@ class BGMStatus:Serializable {
 		override fun toString():String = fullName
 
 		object Silent:BGM(ln = "Silent")
-		class Generic(idx:Int = 0):BGM(idx, "Guidelines Modes", *Array(9) {"Level:${it+1}"})
-		class Rush(idx:Int = 0):BGM(idx, "Trial Rush", *Array(3) {"Level:${it+1}"})
+		class Generic(idx:Int = 0):BGM(idx, "Guidelines Modes", sn = List(9) {"Level:${it+1}"})
+		class Rush(idx:Int = 0):BGM(idx, "Trial Rush", sn = List(3) {"Level:${it+1}"})
 		class Extra(idx:Int = 0):BGM(idx, 3, "Extra Modes")
 		class RetroN(idx:Int = 0):BGM(idx, 4, "Retro Classic:N.")
 		class RetroA(idx:Int = 0):BGM(idx, 5, "Retro Marathon:AT")
-		class RetroS(idx:Int = 0):BGM(idx, 8, "Retro Mania:S")
+		class RetroS(idx:Int = 0):BGM(idx, 6, "Retro Mania:S")
 
 		class Puzzle(idx:Int = 0):BGM(idx, "Grand Blossom", "SAKURA", "TOMOYO", "CELBERUS")
-		class GrandM(idx:Int = 0):BGM(idx, "Grand Marathon", "NORMAL", "20G")
-		class GrandA(idx:Int = 0):BGM(idx, "Grand Mania", "NORMAL", "20G 500", "Storm 300/700", "Storm 500/900")
+		class GrandM(idx:Int = 0):BGM(idx, "Grand Marathon", "Lv 0", "Lv 500")
+		class GrandA(idx:Int = 0):BGM(
+			idx, "Grand Mania", "Lv 0", "Lv500", "Lv700/SLv0 ", "Lv700 mRoll/SLv300",
+			"Lv900/SLv500", "Lv900 with mRoll/SLv800"
+		)
+
 		class GrandT(idx:Int = 0):BGM(
 			idx, "Grand Mastery",
-			"NORMAL", "20G", "Blitz", "Blitz 500", "Lightning 700", "Lightning 1k"
+			"NORMAL", "rank 200", "rank 500", "rank 700", "rank 1200", "Lv900", "Lv900 mRoll"
+		)
+
+		class GrandTS(idx:Int = 0):BGM(
+			idx, "Grand Lightning",
+			"Lightning 0", "Mastery 900/Lightning 500", "700", "1200 /sec9"
 		)
 
 		class Menu(idx:Int = 0):BGM(
-			idx, true, "Select BGM",
+			idx, "Select BGM",
 			"Title Menu/Replay", "Mode Select", "General Config",
 			"Mode Config(Retro/Puzzle)", "Mode Config(Generic)", "Mode Config(Unique)",
-			"Mode Config(Trial)", "Mode Config(Grand 20G)"
+			"Mode Config(Trial)", "Mode Config(Grand 20G)", hidden = true
 		)
 
 		class Ending(idx:Int = 0):BGM(
-			idx, true, "Ending Challenge",
-			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)", "Modern-Hard (200Sec)"
+			idx, "Ending Challenge",
+			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)", "Modern-Hard (200Sec)", hidden = true
 		)
 
 		class Result(idx:Int = 0):BGM(
-			idx, true, "Play Result",
-			"Failure", "Done Sprint", "Done Enduro", "Cleared Game"
+			idx, "Play Result",
+			"Failure", "Done Sprint", "Done Enduro", "Cleared Game", hidden = true
 		)
 
-		class Finale(idx:Int = 0):BGM(idx, true, "Grand Finale", "Genuine", "Joker", "Further")
-		class Blitz(idx:Int = 0):BGM(idx, true, "Blitz", "3-min", "5-min", "3-min EXTREME", "5-min EXTREME")
+		class Finale(idx:Int = 0):BGM(idx, "Grand Finale", "Genuine", "Joker", "Further", hidden = true)
+		class Blitz(idx:Int = 0):BGM(idx, "Blitz", "3-min", "5-min", "3-min EXTREME", "5-min EXTREME", hidden = true)
 
 		//operator fun get(index: Int): BGM = if(this.idx)
 		companion object {
@@ -148,7 +157,6 @@ class BGMStatus:Serializable {
 	/** Constructor */
 	constructor() {
 		reset()
-
 	}
 
 	/** Copy constructor
@@ -184,6 +192,5 @@ class BGMStatus:Serializable {
 	companion object {
 		/** Serial version ID */
 		private const val serialVersionUID = -1003092972570497408L
-
 	}
 }

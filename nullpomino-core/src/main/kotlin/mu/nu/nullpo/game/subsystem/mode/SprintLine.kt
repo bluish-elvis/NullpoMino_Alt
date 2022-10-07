@@ -42,7 +42,6 @@ import org.apache.logging.log4j.LogManager
 
 /** LINE RACE Mode */
 class SprintLine:NetDummyMode() {
-
 	/** BGM number */
 	private var bgmno = 0
 
@@ -165,7 +164,6 @@ class SprintLine:NetDummyMode() {
 				if(engine.ctrl.isPress(Controller.BUTTON_D)) m = 1000
 
 				when(menuCursor) {
-
 					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
 					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
 					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
@@ -220,7 +218,6 @@ class SprintLine:NetDummyMode() {
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!big&&engine.ai==null)
 				netEnterNetPlayRankingScreen(goalType)
-
 		} else {
 			menuTime++
 			menuCursor = -1

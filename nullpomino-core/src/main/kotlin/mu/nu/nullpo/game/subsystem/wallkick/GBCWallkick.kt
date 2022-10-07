@@ -36,7 +36,6 @@ import mu.nu.nullpo.game.component.WallkickResult
 
 /** GBCWallkick */
 class GBCWallkick:Wallkick {
-
 	override fun executeWallkick(x:Int, y:Int, rtDir:Int, rtOld:Int, rtNew:Int, allowUpward:Boolean, piece:Piece,
 		field:Field, ctrl:Controller?):WallkickResult? {
 		if(piece.id!=Piece.PIECE_I&&piece.id!=Piece.PIECE_I2&&piece.id!=Piece.PIECE_I3) {

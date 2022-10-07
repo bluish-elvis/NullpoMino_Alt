@@ -478,13 +478,13 @@ class Deltatris:MarathonModeBase() {
 		)
 		val lastLevel:Int = engine.statistics.level
 
-//		if ((pieces - (PIECES_MAX[difficulty] / 20)) % (PIECES_MAX[difficulty] / 5) >= ((PIECES_MAX[difficulty] / 5) - 10) && engine.statistics.totalPieceLocked - (PIECES_MAX[difficulty] / 20) <= PIECES_MAX[difficulty]) {
-//			owner.bgmStatus.fadesw = true;
-//		} else if ((0 == pieces % (PIECES_MAX[difficulty] / 5)) && engine.statistics.totalPieceLocked - (PIECES_MAX[difficulty] / 20) <= PIECES_MAX[difficulty] && (pieces - (PIECES_MAX[difficulty] / 20)) > 0) {
-//			bgmLv++;
-//			owner.bgmStatus.bgm = bgmLv;
-//			owner.bgmStatus.fadesw = false;
-//		}
+		/*		if ((pieces - (PIECES_MAX[difficulty] / 20)) % (PIECES_MAX[difficulty] / 5) >= ((PIECES_MAX[difficulty] / 5) - 10) && engine.statistics.totalPieceLocked - (PIECES_MAX[difficulty] / 20) <= PIECES_MAX[difficulty]) {
+		//			owner.bgmStatus.fadesw = true;
+				} else if ((0 == pieces % (PIECES_MAX[difficulty] / 5)) && engine.statistics.totalPieceLocked - (PIECES_MAX[difficulty] / 20) <= PIECES_MAX[difficulty] && (pieces - (PIECES_MAX[difficulty] / 20)) > 0) {
+		//			bgmLv++;
+		//			owner.bgmStatus.bgm = bgmLv;
+		//			owner.bgmStatus.fadesw = false;
+				}*/
 
 		// Level up
 		engine.statistics.level = minOf(19, pieces/(PIECES_MAX[difficulty]/20))
@@ -570,7 +570,6 @@ class Deltatris:MarathonModeBase() {
      * Called when saving replay
      */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
 			prop.setProperty("${engine.playerID}.net.netPlayerName", netPlayerName)
@@ -583,7 +582,6 @@ class Deltatris:MarathonModeBase() {
 					engine.playerProp.isLoggedIn
 				)
 			) return true
-
 		}
 		return false
 	}

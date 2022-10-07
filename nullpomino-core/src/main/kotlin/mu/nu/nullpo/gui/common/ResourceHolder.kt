@@ -47,7 +47,7 @@ abstract class ResourceHolder {
 
 	init {
 		try {
-			val originLog = File(ResourceHolder::class.java.getResource("/log4j2.xml")!!.toString())
+			val originLog = File(ResourceHolder::class.java.getResource("/log4j2.xml")?.toString() ?: "")
 			val f = File(logConf)
 			if(!f.parentFile.exists()) f.parentFile.mkdirs()
 			else if(f.isDirectory) f.deleteRecursively()

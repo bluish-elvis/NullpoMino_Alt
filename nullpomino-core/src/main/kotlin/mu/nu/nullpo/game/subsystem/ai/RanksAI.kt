@@ -42,7 +42,6 @@ import java.io.ObjectInputStream
 import kotlin.math.abs
 
 open class RanksAI:DummyAI(), Runnable {
-
 	private var ranks:Ranks? = null
 	private var skipNextFrame = false
 
@@ -73,13 +72,11 @@ open class RanksAI:DummyAI(), Runnable {
 	protected var thinkRequest = false
 
 	inner class Score {
-
 		var rankStacking = 0f
 		var distanceToSet = 0
 		var iPieceUsedInTheStack = false
 
 		init {
-
 			rankStacking = 0f
 			distanceToSet = (ranks?.stackWidth ?: 0)*20
 		}
@@ -100,20 +97,16 @@ open class RanksAI:DummyAI(), Runnable {
 				var diff = heights[i+1]-heights[i]
 
 				if(diff>maxJump) {
-
 					nbstep++
 
 					distanceToSet += diff-maxJump
 					diff = maxJump
-
 				}
 				if(diff<-maxJump) {
-
 					nbstep++
 					distanceToSet -= diff+maxJump
 
 					diff = -maxJump
-
 				}
 				surface[i] = diff
 			}
@@ -123,7 +116,6 @@ open class RanksAI:DummyAI(), Runnable {
 
 			rankStacking = ranks.getRankValue(surfaceNb).toFloat()
 			if(previewsMax>0&&distanceToSet>0) rankStacking = 0f
-
 		}
 
 		operator fun compareTo(o:Any):Int {
@@ -134,7 +126,6 @@ open class RanksAI:DummyAI(), Runnable {
  * }
  * else { */
 			return if(rankStacking!=otherScore.rankStacking) if(rankStacking>otherScore.rankStacking) 1 else -1 else 0
-
 		}
 	}
 
@@ -173,7 +164,6 @@ open class RanksAI:DummyAI(), Runnable {
 					`in` = ObjectInputStream(fis)
 					ranks = `in`.readObject() as Ranks
 					`in`.close()
-
 				} catch(e:FileNotFoundException) {
 					ranks = Ranks(4, 9)
 				} catch(e:IOException) {
@@ -182,7 +172,6 @@ open class RanksAI:DummyAI(), Runnable {
 				} catch(e:ClassNotFoundException) {
 					e.printStackTrace()
 				}
-
 		}
 
 		heights = MutableList(ranks!!.stackWidth) {0}
@@ -205,7 +194,6 @@ open class RanksAI:DummyAI(), Runnable {
 			thinkCurrentPieceNo = 0
 			thinkLastPieceNo = 0
 		}
-
 	}
 
 	final override fun shutdown() {
@@ -227,7 +215,6 @@ open class RanksAI:DummyAI(), Runnable {
 	override fun onLast(engine:GameEngine, playerID:Int) {}
 
 	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int {
-
 		if(engine.nowPieceObject!=null&&engine.stat==GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0&&
 			(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
 		) {
@@ -245,7 +232,6 @@ open class RanksAI:DummyAI(), Runnable {
 				if(bestHold||forceHold) {
 					if(engine.isHoldOK) input = input or Controller.BUTTON_BIT_D
 				} else {
-
 					if(rt!=bestRt) {
 						val lrot = engine.getSpinDirection(-1)
 						val rrot = engine.getSpinDirection(1)
@@ -273,9 +259,7 @@ open class RanksAI:DummyAI(), Runnable {
 						if((bestX<minX-1||bestX>maxX+1||bestY<nowY)&&rt==bestRt)
 							thinkRequest = true
 						else {
-
 							if(nowX==bestX&&pieceTouchGround&&rt==bestRt) {
-
 								if(bestRtSub!=-1) {
 									bestRt = bestRtSub
 									bestRtSub = -1
@@ -288,11 +272,9 @@ open class RanksAI:DummyAI(), Runnable {
 							}
 
 							if(nowX>bestX) {
-
 								if(!ctrl.isPress(Controller.BUTTON_LEFT)||engine.aiMoveDelay>=0)
 									input = input or Controller.BUTTON_BIT_LEFT
 							} else if(nowX<bestX) {
-
 								if(!ctrl.isPress(Controller.BUTTON_RIGHT)||engine.aiMoveDelay>=0)
 									input = input or Controller.BUTTON_BIT_RIGHT
 							} else if(nowX==bestX&&rt==bestRt)
@@ -329,7 +311,6 @@ open class RanksAI:DummyAI(), Runnable {
 		currentHeightMin = 25
 		currentHeightMax = 0
 		for(i in 0 until ranks!!.stackWidth) {
-
 			if(heights[i]<currentHeightMin) currentHeightMin = heights[i]
 			if(heights[i]>currentHeightMax) currentHeightMax = heights[i]
 		}
@@ -352,7 +333,6 @@ open class RanksAI:DummyAI(), Runnable {
 					}
 			}
 		}
-
 	}
 
 	/** Think the best position, for a given engine. It will do the necessary
@@ -363,7 +343,6 @@ open class RanksAI:DummyAI(), Runnable {
 	 * @param playerID Player ID
 	 */
 	fun thinkBestPosition(engine:GameEngine) {
-
 		// Current line of the current piece
 		val nowY = engine.nowPieceY
 
@@ -402,7 +381,6 @@ open class RanksAI:DummyAI(), Runnable {
 		//bestHold=true;
 		thinkLastPieceNo++
 		log.debug("nowX : ${engine.nowPieceX} X:$bestX Y:$bestY R:$bestRt H:$bestHold Pts:$bestScore")
-
 	}
 
 	/** Main method that will return the best move for the current piece, by
@@ -412,7 +390,6 @@ open class RanksAI:DummyAI(), Runnable {
 	 */
 
 	fun thinkBestPosition(heights:MutableList<Int>, pieces:MutableList<Int>, holdPiece:MutableList<Int>, holdOK:Boolean) {
-
 		// The best* variables contain the chosen best position for the current piece.
 		// The best*Sub variables are used in case you want to do a twist or a spin or a slide. they give the final position for the best move
 		// We are not using slides or twists so the best*Sub basically equal the best* variables.
@@ -445,7 +422,6 @@ open class RanksAI:DummyAI(), Runnable {
 
 		//Compute the maximum/minimum heights
 		for(i in 0 until ranks!!.stackWidth) {
-
 			if(heights[i]<currentHeightMin) currentHeightMin = heights[i]
 			if(heights[i]>currentHeightMax) currentHeightMax = heights[i]
 		}
@@ -453,7 +429,6 @@ open class RanksAI:DummyAI(), Runnable {
 		// If we are able to score a 4-Line and if the maximum height is dangerously high, then force doing a tetris
 		if(pieceNow==Piece.PIECE_I&&currentHeightMin>=THRESHOLD_FORCE_4LINES
 			&&currentHeightMin>=4 /* &&!plannedToUseIPiece */) {
-
 			bestHold = false
 			//Rightmost column
 			bestX = ranks!!.stackWidth
@@ -466,7 +441,6 @@ open class RanksAI:DummyAI(), Runnable {
 
 			// Dummy score so that the AI doesn't think the game is over (can't fit a piece anymore)
 			bestScore.rankStacking = Integer.MAX_VALUE.toFloat()
-
 		} else
 		// Try using hold or not
 			for(useHold in 0 until if(holdOK&&allowHold) 2 else 1) {
@@ -476,9 +450,7 @@ open class RanksAI:DummyAI(), Runnable {
 						System.arraycopy(piecesCopy, 1, piecesCopy, 0, piecesCopy.size-1)
 
 						pieceNow = piecesCopy[0]
-						// numPreviews--;
-
-					} else {
+						// numPreviews--;					} else {
 						val tempPiece = piecesCopy[0]
 						piecesCopy[0] = holdPiece[0]
 						holdPiece[0] = tempPiece
@@ -486,12 +458,10 @@ open class RanksAI:DummyAI(), Runnable {
 					}
 				// try all possible rotations{
 				for(rt in 0 until Ranks.PIECES_NUM_ROTATIONS[pieceNow]) {
-
 					// Columns go from 0 to 9 in Ranks representation
 					val minX = 0
 					val maxX = ranks!!.stackWidth-Ranks.PIECES_WIDTHS[pieceNow][rt]
 					for(x in minX..maxX) {
-
 						// Run thinkmain on that move to get its score
 						score = thinkMain(x, rt, heights, piecesCopy, holdPiece, useHold!=1, numPreviews)
 						log.debug("MAIN  id=$pieceNow posX=$x rt=$rt hold :$useHold score:$score")
@@ -507,12 +477,10 @@ open class RanksAI:DummyAI(), Runnable {
 							bestRtSub = -1
 							bestScore = score
 						}
-
 					}
 
 					// If we can score a 4-Line, try it
 					if(pieceNow==Piece.PIECE_I&&(rt==1||rt==3)&&currentHeightMin>=4) {
-
 						// What are the consequences of scoring a 4-Line ?
 						score = thinkMain(maxX+1, rt, heights, piecesCopy, holdPiece, useHold!=1, numPreviews)
 						log.debug("MAIN (4 Lines) id=$pieceNow posX=${maxX+1} rt=$rt hold :$useHold score:$score")
@@ -528,14 +496,11 @@ open class RanksAI:DummyAI(), Runnable {
 							bestRtSub = -1
 							bestScore = score
 						}
-
 					}
-
 				}
 			}
 
 		if(numPreviews>0) plannedToUseIPiece = bestScore.iPieceUsedInTheStack
-
 	}
 
 	/** Recursive method that returns the score of a given move for a given
@@ -549,7 +514,6 @@ open class RanksAI:DummyAI(), Runnable {
 	 * this rotation)
 	 */
 	fun thinkMain(x:Int, rt:Int, heights:List<Int>, pieces:MutableList<Int>, holdPiece:MutableList<Int>, holdOK:Boolean, numPreviews:Int):Score {
-
 		// Initialize the score with zero
 		val score = Score()
 
@@ -566,27 +530,23 @@ open class RanksAI:DummyAI(), Runnable {
 
 		// Either we are going to score a 4-Line or we have to check that the piece fits the surface
 		if(isVerticalIRightMost||ranks!!.surfaceFitsPiece(surface, pieces[0], rt, x)) {
-
 			// Cloning the heights in order to not alter the heights array, that was passed in parameters (and possibly used elsewhere)
 			val heightsWork = heights.toMutableList()
 
 			// If we are not going to score a 4-Line, add the piece to the heightsWork array and update the minimum and maximum height.
 			if(!isVerticalIRightMost) {
-
 				ranks!!.addToHeights(heightsWork, pieces[0], rt, x)
 
 				for(i in 0 until ranks!!.stackWidth) {
 					if(heightsWork[i]>heightMax) heightMax = heights[i]
 					if(heightsWork[i]<heightMin) heightMin = heights[i]
 				}
-
 			} else {
 				for(i in 0 until ranks!!.stackWidth)
 					heightsWork[i] -= 4
 
 				heightMin -= 4
 				heightMax -= 4
-
 			}// If we are going to score a 4-Line, substract 4 to the heights and to the minimum and maximum heights. They will remain positive because
 			// the necessary condition to score a tetris is that the minimal height be greater than 4.
 
@@ -635,9 +595,7 @@ open class RanksAI:DummyAI(), Runnable {
 								System.arraycopy(pieces2, 1, pieces2, 0, pieces2.size-1)
 
 								pieceNow = pieces2[0]
-								// numPreviews2--;
-
-							} else {
+								// numPreviews2--;							} else {
 								val tempPiece = pieces2[0]
 								pieces2[0] = holdPiece2[0]
 								holdPiece2[0] = tempPiece
@@ -645,7 +603,6 @@ open class RanksAI:DummyAI(), Runnable {
 							}
 
 						for(rt2 in 0 until Ranks.PIECES_NUM_ROTATIONS[pieceNow]) {
-
 							// is the piece a vertical I ?
 							val isVerticalI2 = pieceNow==Piece.PIECE_I&&(rt2==1||rt2==3)
 
@@ -654,7 +611,6 @@ open class RanksAI:DummyAI(), Runnable {
 							val maxX2 = minX2+ranks!!.stackWidth-Ranks.PIECES_WIDTHS[pieceNow][rt2]
 
 							for(x2 in minX2..maxX2) {
-
 								// Recursive call to thinkMain to examine that move
 								scoreCurrent = thinkMain(x2, rt2, heightsWork, pieces2, holdPiece2, h2!=1, numPreviews2)
 								log.debug("SUB $numPreviews id=$pieceNow posX=$x2 rt=$rt2 hold :$h2 score $scoreCurrent")
@@ -664,12 +620,10 @@ open class RanksAI:DummyAI(), Runnable {
 									log.debug("SUB new best piece !")
 									bestScore = scoreCurrent
 								}
-
 							}
 
 							// If the piece considered is vertical I and if the minimum height is greater than 4, try scoring a 4-Line
 							if(isVerticalI2&&heightMin>=4) {
-
 								// Recursive call to thinkMain to examine that move
 								scoreCurrent = thinkMain(maxX2+1, rt2, heightsWork, pieces2, holdPiece2, h2!=1, numPreviews2)
 								log.debug("SUB (4 Lines)$numPreviews id=$pieceNow posX=${maxX2+1} rt=$rt2 hold :$h2 score:$scoreCurrent")
@@ -702,7 +656,6 @@ open class RanksAI:DummyAI(), Runnable {
 			// If numPreviews==0, that is, if there are no previews left to consider, just return the score of the surface resulting from the move.
 		}
 		return score
-
 	}
 	/* Thread routine for this AI */
 	override fun run() {
@@ -715,7 +668,6 @@ open class RanksAI:DummyAI(), Runnable {
 				thinking = true
 				try {
 					thinkBestPosition(gEngine)
-
 				} catch(e:Throwable) {
 					log.debug("RanksAI: thinkBestPosition Failed", e)
 				}
@@ -730,7 +682,6 @@ open class RanksAI:DummyAI(), Runnable {
 				} catch(e:InterruptedException) {
 					break
 				}
-
 		}
 
 		threadRunning = false
@@ -739,7 +690,6 @@ open class RanksAI:DummyAI(), Runnable {
 	}
 
 	companion object {
-
 		internal val log = LogManager.getLogger()
 
 		private const val THRESHOLD_FORCE_4LINES = 8

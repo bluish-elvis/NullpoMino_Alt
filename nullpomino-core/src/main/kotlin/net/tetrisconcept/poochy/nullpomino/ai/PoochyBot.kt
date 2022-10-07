@@ -45,7 +45,6 @@ import kotlin.math.abs
  * Poochy.Spambucket@gmail.com
  */
 open class PoochyBot:DummyAI(), Runnable {
-
 	/** When true,To threadThink routineInstructing the execution of the */
 	private var thinkRequest:ThinkRequestMutex = ThinkRequestMutex()
 
@@ -1466,7 +1465,6 @@ open class PoochyBot:DummyAI(), Runnable {
 			} catch(e:InterruptedException) {
 				log.debug("PoochyBot: InterruptedException trying to sleep")
 			}
-
 		}
 
 		threadRunning = false
