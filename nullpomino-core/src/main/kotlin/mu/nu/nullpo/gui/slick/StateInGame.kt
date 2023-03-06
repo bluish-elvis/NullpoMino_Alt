@@ -305,7 +305,7 @@ class StateInGame:BasicGameState() {
 	@Throws(SlickException::class)
 	override fun update(container:GameContainer, game:StateBasedGame, delta:Int) {
 		if(!container.hasFocus()) {
-			GameKey.gamekey.forEach {it.clear()}
+			GameKey.gameKey.forEach {it.clear()}
 			if(NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep()
 			return
 		}
@@ -313,7 +313,7 @@ class StateInGame:BasicGameState() {
 		// TTF font 描画
 		ResourceHolder.ttfFont?.loadGlyphs()
 		// Update key input states
-		GameKey.gamekey.forEachIndexed {i, it ->
+		GameKey.gameKey.forEachIndexed {i, it ->
 			it.update(
 				container.input,
 				(!pause||enableframestep)&&i<(gameManager?.engine?.size ?: 0)&&gameManager?.engine?.get(i)?.isInGame==true
@@ -329,7 +329,7 @@ class StateInGame:BasicGameState() {
 		}
 
 		// Pause
-		if(GameKey.gamekey.any {it.isPushKey(GameKeyDummy.BUTTON_PAUSE)}) {
+		if(GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_PAUSE)}) {
 			if(!pause) {
 				if(gameManager?.isGameActive==true&&pauseFrame<=0) {
 					ResourceHolder.soundManager.play("pause")
@@ -345,7 +345,7 @@ class StateInGame:BasicGameState() {
 			updateTitleBarCaption()
 		} else if(pause&&!pauseMessageHide) {
 			// Cursor movement
-			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
+			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
 				cursor--
 
 				if(cursor<0)
@@ -354,7 +354,7 @@ class StateInGame:BasicGameState() {
 
 				ResourceHolder.soundManager.play("cursor")
 			}
-			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
+			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 				cursor++
 				if(cursor>3) cursor = 0
 
@@ -364,14 +364,14 @@ class StateInGame:BasicGameState() {
 			}
 
 			// Confirm
-			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
+			if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
 				ResourceHolder.soundManager.play("decide0")
 				when(cursor) {
 					0 // Continue
 					-> {
 						pause = false
 						pauseFrame = 0
-						GameKey.gamekey[0].clear()
+						GameKey.gameKey[0].clear()
 						ResourceHolder.bgmResume()
 					}
 					1 // Retry
@@ -383,6 +383,8 @@ class StateInGame:BasicGameState() {
 					2 // End
 					-> {
 						ResourceHolder.bgmStop()
+						ResourceHolder.soundManager.stop("danger")
+						gameManager?.reset()
 						game.enterState(StateTitle.ID)
 						return
 					}
@@ -394,11 +396,11 @@ class StateInGame:BasicGameState() {
 					}
 				}
 				updateTitleBarCaption()
-			} else if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_B)&&pauseFrame<=0) {
+			} else if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_B)&&pauseFrame<=0) {
 				ResourceHolder.soundManager.play("pause")
 				pause = false
 				pauseFrame = 5
-				GameKey.gamekey[0].clear()
+				GameKey.gameKey[0].clear()
 				ResourceHolder.bgmPause()
 				updateTitleBarCaption()
 			}// Unpause by cancel key
@@ -406,23 +408,23 @@ class StateInGame:BasicGameState() {
 		if(pauseFrame>0) pauseFrame--
 
 		// Hide pause menu
-		pauseMessageHide = GameKey.gamekey[0].isPressKey(GameKeyDummy.BUTTON_C)
+		pauseMessageHide = GameKey.gameKey[0].isPressKey(GameKeyDummy.BUTTON_C)
 
 
 		gameManager?.let {m ->
 			if(m.replayMode&&!m.replayRerecord&&m.engine[0].gameActive) {
 				// Replay speed
-				if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) if(fastforward>0) fastforward--
-				if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) if(fastforward<98) fastforward++
+				if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) if(fastforward>0) fastforward--
+				if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) if(fastforward<98) fastforward++
 
 				// Replay re-record
-				if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_D)) {
+				if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_D)) {
 					m.replayRerecord = true
 					ResourceHolder.soundManager.play("twist")
 					cursor = 0
 				}
 				// Show invisible blocks during replays
-				if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_E)) {
+				if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_E)) {
 					m.replayShowInvisible = !m.replayShowInvisible
 					ResourceHolder.soundManager.play("twist")
 					cursor = 0
@@ -440,22 +442,22 @@ class StateInGame:BasicGameState() {
 			}
 
 			// ゲームの処理を実行
-			if(!pause||GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_FRAMESTEP)&&enableframestep) {
-				for(i in 0 until minOf(m.players, GameKey.gamekey.size))
+			if(!pause||GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_FRAMESTEP)&&enableframestep) {
+				for(i in 0 until minOf(m.players, GameKey.gameKey.size))
 					if(!m.engine[i].gameActive||((m.engine[i].ai==null||m.engine[i].aiShowHint)&&(!m.replayMode||m.replayRerecord)))
-						GameKey.gamekey[i].inputStatusUpdate(m.engine[i].ctrl)
+						GameKey.gameKey[i].inputStatusUpdate(m.engine[i].ctrl)
 
 				for(i in 0..fastforward) gameManager?.updateAll()
 			}
 			// Retry button
-			if(GameKey.gamekey.any {it.isPushKey(GameKeyDummy.BUTTON_RETRY)}) {
+			if(GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_RETRY)}) {
 				ResourceHolder.bgmStop()
 				pause = false
 				m.reset()
 			}
 
 			// Return to title
-			if(m.quitFlag||GameKey.gamekey.any {it.isPushKey(GameKeyDummy.BUTTON_GIVEUP)}) {
+			if(m.quitFlag||GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_GIVEUP)}) {
 				ResourceHolder.bgmStop()
 				game.enterState(StateTitle.ID)
 				return@update
@@ -463,11 +465,11 @@ class StateInGame:BasicGameState() {
 		}
 
 		// Screenshot button
-		if(GameKey.gamekey.any {it.isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)})
+		if(GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)})
 			ssflag = true
 
 		// Exit button
-		if(GameKey.gamekey.any {it.isPushKey(GameKeyDummy.BUTTON_QUIT)}) {
+		if(GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_QUIT)}) {
 			shutdown()
 			container.exit()
 		}

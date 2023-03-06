@@ -253,7 +253,7 @@ class StateConfigGeneral:BaseGameState() {
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Background
-		ResourceHolder.imgMenuBG[0].draw()
+		ResourceHolder.imgMenuBG[1].draw()
 
 		// Basic Options
 		when {
@@ -322,15 +322,15 @@ class StateConfigGeneral:BaseGameState() {
 		if(ResourceHolder.ttfFont!=null) ResourceHolder.ttfFont!!.loadGlyphs()
 
 		// Update key input states
-		GameKey.gamekey[0].update(container.input)
+		GameKey.gameKey[0].update(container.input)
 
 		// Cursor movement
-		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
+		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
 			cursor--
 			if(cursor<0) cursor = 30
 			ResourceHolder.soundManager.play("cursor")
 		}
-		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
+		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 			cursor++
 			if(cursor>30) cursor = 0
 			ResourceHolder.soundManager.play("cursor")
@@ -338,8 +338,8 @@ class StateConfigGeneral:BaseGameState() {
 
 		// Configuration changes
 		var change = 0
-		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) change = -1
-		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) change = 1
+		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) change = -1
+		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) change = 1
 
 		if(change!=0) {
 			ResourceHolder.soundManager.play("change")
@@ -408,7 +408,7 @@ class StateConfigGeneral:BaseGameState() {
 		}
 
 		// Confirm button
-		if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
+		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
 			ResourceHolder.soundManager.play("decide2")
 			saveConfig(NullpoMinoSlick.propConfig)
 			NullpoMinoSlick.saveConfig()
@@ -419,7 +419,7 @@ class StateConfigGeneral:BaseGameState() {
 		}
 
 		// Cancel button
-		if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_B)) {
+		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_B)) {
 			loadConfig(NullpoMinoSlick.propConfig)
 			game.enterState(StateConfigMainMenu.ID)
 		}

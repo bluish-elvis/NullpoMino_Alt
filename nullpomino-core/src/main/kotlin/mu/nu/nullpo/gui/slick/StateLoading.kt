@@ -56,8 +56,8 @@ class StateLoading:BasicGameState() {
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		//  input 関連をInitialization
 		GameKey.initGlobalGameKey()
-		GameKey.gamekey[0].loadConfig(NullpoMinoSlick.propConfig)
-		GameKey.gamekey[1].loadConfig(NullpoMinoSlick.propConfig)
+		GameKey.gameKey[0].loadConfig(NullpoMinoSlick.propConfig)
+		GameKey.gameKey[1].loadConfig(NullpoMinoSlick.propConfig)
 
 		// 設定を反映させる
 		NullpoMinoSlick.setGeneralConfig()
@@ -101,8 +101,8 @@ class StateLoading:BasicGameState() {
 				// First run
 				if(NullpoMinoSlick.propConfig.getProperty("option.firstSetupMode", true)) {
 					// Set various default settings here
-					GameKey.gamekey[0].loadDefaultKeymap()
-					GameKey.gamekey[0].saveConfig(NullpoMinoSlick.propConfig)
+					GameKey.gameKey[0].loadDefaultKeymap()
+					GameKey.gameKey[0].saveConfig(NullpoMinoSlick.propConfig)
 					NullpoMinoSlick.propConfig.setProperty("option.firstSetupMode", false)
 
 					// Set default rotation button setting (only for first run)

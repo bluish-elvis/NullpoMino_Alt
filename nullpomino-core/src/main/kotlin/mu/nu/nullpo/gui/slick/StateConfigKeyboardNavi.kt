@@ -67,7 +67,7 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
-		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
+		g.drawImage(ResourceHolder.imgMenuBG[1], 0f, 0f)
 
 		FontNormal.printFontGrid(1, 1, "KEYBOARD NAVIGATION SETTING (${player+1}P)", COLOR.ORANGE)
 
@@ -80,7 +80,7 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		if(cursor==0) {
 			for(i in 0 until GameKeyDummy.MAX_BUTTON)
-				GameKey.gamekey[player].keymapNav[i] = GameKey.gamekey[player].keymap[i]
+				GameKey.gameKey[player].keymapNav[i] = GameKey.gameKey[player].keymap[i]
 			ResourceHolder.soundManager.play("decide1")
 		} else if(cursor==1) {
 			ResourceHolder.soundManager.play("decide2")
@@ -90,7 +90,7 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 			return true
 		}
 
-		GameKey.gamekey[player].saveConfig(NullpoMinoSlick.propConfig)
+		GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig)
 		NullpoMinoSlick.saveConfig()
 
 		gameObj.enterState(StateConfigMainMenu.ID)

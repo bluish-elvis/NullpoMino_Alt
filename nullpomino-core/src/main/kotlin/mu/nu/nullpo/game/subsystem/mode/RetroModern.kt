@@ -55,8 +55,8 @@ class RetroModern:AbstractMode() {
 	/** Amount of lines cleared (It will be reset when the level increases) */
 	private var norm = 0
 
-	private var lineslot = IntArray(3)
-	private var linecount = 0
+	private var lineSlot = IntArray(3)
+	private var lineCount = 0
 
 	private var special = false
 
@@ -95,8 +95,8 @@ class RetroModern:AbstractMode() {
 		norm = 0
 		special = false
 
-		lineslot = IntArray(3)
-		linecount = 0
+		lineSlot = IntArray(3)
+		lineCount = 0
 
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
@@ -156,6 +156,7 @@ class RetroModern:AbstractMode() {
 				engine.speed.areLine = tableARE[gametype][lv]
 				engine.speed.are = engine.speed.areLine
 				engine.speed.lockDelay = tableLockDelay[gametype][lv]
+				engine.speed.das = minOf(15, tableLockDelay[gametype][lv]-12)
 
 				engine.speed.lineDelay = when(gametype) {
 					0 -> 57
@@ -170,8 +171,9 @@ class RetroModern:AbstractMode() {
 				engine.speed.denominator = 24
 				engine.speed.areLine = 31
 				engine.speed.are = engine.speed.areLine
-				engine.speed.lockDelay = 44
 				engine.speed.lineDelay = 57
+				engine.speed.lockDelay = 44
+				engine.speed.das = 15
 			}
 			gametype==4 -> {
 				engine.speed.gravity = -1
@@ -180,14 +182,17 @@ class RetroModern:AbstractMode() {
 				engine.speed.are = engine.speed.areLine
 				engine.speed.lineDelay = 25
 				engine.speed.lockDelay = 22
+				engine.speed.das = 13
 			}
 			else -> {
+				engine.ruleOpt.lockResetMove = false
 				engine.speed.denominator = 1
 				engine.speed.gravity = engine.speed.denominator
 				engine.speed.areLine = 17
 				engine.speed.are = engine.speed.areLine
 				engine.speed.lineDelay = 42
 				engine.speed.lockDelay = 18
+				engine.speed.das = 6
 			}
 		}
 	}
@@ -247,7 +252,7 @@ class RetroModern:AbstractMode() {
 //			MAX_LEVEL -> BGM.GrandM(1)
 			MAX_LEVEL+1 -> BGM.Silent
 			MAX_LEVEL+2 -> BGM.Ending(if(gametype<3) 3 else 4)
-			else -> BGM.RetroS(tableBGMlevel.count {it<=lv})
+			else -> BGM.RetroS(1+tableBGMlevel.count {it<=lv})
 		}
 	}
 	/** This function will be called before the game actually begins (after
@@ -305,21 +310,32 @@ class RetroModern:AbstractMode() {
 			receiver.drawScoreNum(engine, 5, 3, "+$lastscore")
 			val scget = scDisp<engine.statistics.score
 			receiver.drawScoreNum(engine, 0, 4, "$scDisp", scget, 2f)
+			val num = lineSlot.fold(0) {s, it ->
+				s+when {
+					it==1 -> 1
+					it==2 -> 10
+					it==3 -> 100
+					it>=4 -> 100000
+					else -> 0
+				}
+			}
+//			if(lineCount>=3)  5 else 1
+			receiver.drawScoreBadges(engine, 2, 6, 200, num)
 
-			receiver.drawScoreFont(engine, 0, 7, "LINE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 8, String.format("%03d/%03d", engine.statistics.lines, totalnorma), scale = 2f)
+			receiver.drawScoreFont(engine, 0, 10, "LINE", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 11, String.format("%03d/%03d", engine.statistics.lines, totalnorma), scale = 2f)
 
-			receiver.drawScoreFont(engine, 0, 10, "Level", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 13, "Level", COLOR.BLUE)
 			var lvdem = 0
 			if(rolltime>0)
 				lvdem = rolltime*100/ROLLTIMELIMIT
 			else if(engine.statistics.level<levelNorma.size) lvdem = norm*100/levelNorma[engine.statistics.level]
 			if(lvdem<0) lvdem *= -1
 			if(lvdem>=100) lvdem -= lvdem-lvdem%100
-			receiver.drawScoreNum(engine, 5, 10, String.format("%02d.%02d", engine.statistics.level, lvdem), scale = 2f)
+			receiver.drawScoreNum(engine, 5, 13, String.format("%02d.%02d", engine.statistics.level, lvdem), scale = 2f)
 
-			receiver.drawScoreFont(engine, 0, 11, "Time", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 12, engine.statistics.time.toTimeStr, scale = 2f)
+			receiver.drawScoreFont(engine, 0, 14, "Time", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, scale = 2f)
 
 			// Roll 残り time
 			if(rolltime>0) {
@@ -336,10 +352,9 @@ class RetroModern:AbstractMode() {
 		if(special&&(engine.ctrl.isPress(Controller.BUTTON_B)||engine.ctrl.isPress(Controller.BUTTON_E))) special = false
 		// Update the meter
 		if(engine.ending==0) {
-			if(engine.statistics.level<levelNorma.size)
-				engine.meterValue = 1f*norm/levelNorma[engine.statistics.level]
-			else
-				engine.meterValue = 1f*engine.statistics.lines/totalnorma
+			engine.meterValue = if(engine.statistics.level<levelNorma.size)
+				1f*norm/levelNorma[engine.statistics.level]
+			else 1f*engine.statistics.lines/totalnorma
 
 			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		} else
@@ -378,19 +393,18 @@ class RetroModern:AbstractMode() {
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Determines line-clear bonus
-		var pts = 0
+
 		val mult = tableScoreMult[gametype][engine.statistics.level]*10
 		val li = ev.lines
-		if(li==1)
-			pts = 5*mult // Single
-		else if(li==2)
-			pts = (if(engine.split) 30 else 20)*mult // Double
-		else if(li==3)
-			pts = (if(engine.split) 55 else 45)*mult // Triple
-		else if(li>=4) pts = 100*mult // Four
-		if(li>0&&engine.field.isEmpty)
-		// Perfect clear bonus
-			pts = 2000*tableBonusMult[engine.statistics.level]
+		val pts = when {
+			li>0&&engine.field.isEmpty -> 2000*tableBonusMult[engine.statistics.level]
+			// Perfect clear bonus
+			li==1 -> 5*mult // Single
+			li==2 -> (if(engine.split) 30 else 20)*mult // Double
+			li==3 -> (if(engine.split) 55 else 45)*mult // Triple
+			li>=4 -> 100*mult // Four
+			else -> 0
+		}
 		// Add score
 		if(pts>0) {
 			lastscore = pts
@@ -402,8 +416,8 @@ class RetroModern:AbstractMode() {
 			else engine.statistics.scoreSD++
 		}
 		if(li>0) {
-			lineslot[linecount] = if(li>4) 4 else li
-			linecount++
+			lineSlot[lineCount] = if(li>4) 4 else li
+			lineCount++
 
 			// Add lines
 			norm += li
@@ -419,14 +433,9 @@ class RetroModern:AbstractMode() {
 		if(lvup) {
 			val newlevel = ++engine.statistics.level
 			if(engine.ending==0)
-				if(engine.statistics.lines>=totalnorma)
-					engine.ending = 1
-				else
-					engine.playSE("levelup")
-
-
+				if(engine.statistics.lines>=totalnorma) engine.ending = 1
+				else engine.playSE("levelup")
 			if(newlevel!=MAX_LEVEL+1) setSpeed(engine)
-
 			if(newlevel<levelBG.size-1) {
 				owner.bgMan.fadecount = 0
 				owner.bgMan.fadebg = levelBG[newlevel]
@@ -440,15 +449,13 @@ class RetroModern:AbstractMode() {
 	}
 
 	override fun renderLineClear(engine:GameEngine) {
-		var num = 0
-
-		when {
-			engine.lineClearing==1 -> num = 1
-			engine.lineClearing==2 -> num = 10
-			engine.lineClearing==3 -> num = 100
-			engine.lineClearing>=4 -> num = 100000
-		}
-		if(linecount>=3) num *= 5
+		val num = when {
+			engine.lineClearing==1 -> 1
+			engine.lineClearing==2 -> 10
+			engine.lineClearing==3 -> 100
+			engine.lineClearing>=4 -> 100000
+			else -> 0
+		}*if(lineCount>=3) 5 else 1
 		receiver.drawMenuBadges(engine, 2, engine.lastLineY-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
 		receiver.drawMenuNum(engine, 4, engine.lastLineY, "$lastscore", COLOR.CYAN)
 
@@ -459,35 +466,48 @@ class RetroModern:AbstractMode() {
 	}
 
 	override fun lineClearEnd(engine:GameEngine):Boolean {
-		if(linecount>=3) {
+		if(lineCount>=2&&lineSlot[0]!=lineSlot[1]) {
+			engine.playSE("b2b_end")
+			lineCount = 1
+		} else if(lineCount>=3) {
 			var pts = 0
-			if(lineslot[0]==lineslot[1]&&lineslot[1]==lineslot[2]) {
-				val y = lineslot[0]
+			if(lineSlot[0]==lineSlot[1]&&lineSlot[1]==lineSlot[2]) {
+				val y = lineSlot[0]
 				if(y==1) {
 					pts = 5
 					engine.playSE("b2b_start")
-				} else if(y>=4) {
-					pts = 10000
-					engine.playSE("combo_continue")
-					engine.playSE("b2b_combo")
 				} else {
 					engine.playSE("b2b_combo")
-					if(y==2) pts = 1000
-					if(y==3) pts = 5000
-				}
-			} else if(lineslot[0]==lineslot[1]) engine.playSE("b2b_end")
+					if(y>=4) {
+						pts = 10000
+						engine.playSE("combo")
+					} else if(y==2) pts = 1000
+					else if(y==3) pts = 5000
 
-			linecount = 0
+				}
+				lineCount = 0
+			} else {
+				if(lineSlot[0]==lineSlot[1]) engine.playSE("b2b_end")
+				lineCount = 1
+			}
 			if(pts>0) {
 				pts *= 10*tableBonusMult[engine.statistics.level]
 				lastscore = pts
 				engine.statistics.scoreBonus += pts
-				receiver.addScore(engine, engine.fieldWidth/2, engine.fieldHeight+1, pts, COLOR.RAINBOW)
+				receiver.addScore(engine, engine.fieldWidth/2, engine.lastLineY, pts, COLOR.RAINBOW)
 			}
 		}
 		return false
 	}
 
+	override fun onMove(engine:GameEngine):Boolean {
+		if(lineCount<lineSlot.count {it>0}) {
+			lineSlot[0] = if(lineCount>0) lineSlot.last {it>0} else 0
+			lineSlot[1] = 0
+			lineSlot[2] = 0
+		}
+		return super.onMove(engine)
+	}
 	/** This function will be called when soft-drop is used */
 	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreSD += fall
@@ -650,39 +670,39 @@ class RetroModern:AbstractMode() {
 		private val tableDenominator = listOf(
 			listOf(24, 15, 10, 6, 20, 5, 5, 4, 3, 3, 2, 2, 2, 2, 2, 1),
 			listOf(24, 15, 10, 4, 20, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1),
-			listOf(15, 6, 4, 3, 20, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-			listOf(1, 1, 1, 1, 20, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+			listOf(15, 10, +5, 3, 20, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+			listOf(+1, +1, +1, 1, 20, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
 			listOf(1, 1, 1, -2, 20, 1, 1, -2, -3, -4, -4, -4, -5, -4, -3, 0)
 		)
 		/** Lock delay table */
 		private val tableLockDelay = listOf(
 			listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 24),
-			listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 24, 24, 24, 20, 20, 19),
-			listOf(39, 30, 30, 29, 39, 28, 28, 24, 24, 24, 24, 24, 24, 20, 20, 19),
+			listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 27, 26, 25, 24, 20, 22),
+			listOf(39, 34, 32, 30, 39, 28, 28, 27, 26, 25, 24, 24, 24, 22, 20, 20),
 			listOf(24, 24, 24, 30, 39, 24, 24, 24, 24, 24, 24, 24, 24, 20, 20, 19),
 			listOf(24, 24, 24, 30, 39, 24, 24, 25, 25, 25, 24, 23, 23, 23, 23, 25)
 		)
 		/** ARE table */
 		private val tableARE = listOf(
-			listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26),
-			listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26),
-			listOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26),
-			listOf(26, 26, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26),
-			listOf(26, 26, 26, 26, 28, 25, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20)
+			listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 25, 26, 26),
+			listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 25, 24, 26, 25),
+			listOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 25, 24, 23, 26, 24),
+			listOf(26, 26, 26, 26, 28, 26, 26, 26, 26, 26, 25, 24, 23, 22, 26, 22),
+			listOf(26, 25, 24, 24, 28, 25, 24, 24, 24, 24, 23, 22, 22, 21, 21, 20)
 		)
 
 		/** Score multiply table */
 		private val tableScoreMult = listOf(
-			listOf(1, 2, 3, 4, 5, 6, 6, 6, 8, 8, 10, 10, 10, 10, 10, 11, 12, 13),
-			listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 20),
-			listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 20),
-			listOf(5, 5, 6, 6, 8, 8, 10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 20, 20),
-			listOf(5, 5, 6, 7, 8, 9, 10, 10, 11, 12, 13, 14, 14, 15, 15, 16, 25, 25)
+			listOf(1, 2, 3, 4, 5, 6, +6, +6, +8, +8, 10, 10, 10, 10, 10, 11, 12, 13),
+			listOf(1, 2, 3, 4, 5, 6, +7, +8, +9, 10, 11, 12, 13, 14, 15, 16, 20, 20),
+			listOf(2, 3, 4, 5, 6, 7, +8, +9, 10, 10, 11, 12, 13, 14, 15, 16, 20, 21),
+			listOf(5, 5, 6, 6, 8, 8, 10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 21, 22),
+			listOf(5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 25)
 		)
 		private val tableBonusMult = listOf(1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 5, 5, 10)
 		/** Lines until level up occers */
 		private val levelNorma = listOf(6, 6, 7, 9, 6, 9, 9, 9, 10, 10, 20, 16, 16, 16, 16)
-		private val tableBGMlevel = listOf(4, 8, 11, 13, 15)
+		private val tableBGMlevel = listOf(5, 9, 12, 15)
 
 		private val levelBG = listOf(
 			0, 1, 2, 3, 4, 5,

@@ -699,20 +699,17 @@ class GrandRoads:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(engine.owner.bgMan.fadesw)
-			engine.owner.bgMan.fadebg
-		else
-			engine.owner.bgMan.bg
-		var msg = "game\tstats\t"
-		msg += "${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"
-		msg += "${engine.statistics.time}\t${engine.statistics.lpm}\t"
-		msg += "${engine.statistics.pps}\t$goalType\t"
-		msg += "${engine.gameActive}\t${engine.timerActive}\t"
-		msg += "${engine.statistics.level}\t$levelTimer\t$levelTimerMax\t"
-		msg += "$rolltime${"\t$norm\t$bg\t${engine.meterValue}\t"+engine.meterColor}\t"
-		msg += "${engine.heboHiddenEnable}\t${engine.heboHiddenTimerNow}\t${engine.heboHiddenTimerMax}\t"
-		msg += "${engine.heboHiddenYNow}\t${engine.heboHiddenYLimit}\n${engine.lives}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		val bg = if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
+		val msg = "game\tstats\t"+
+			"${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"+
+			"${engine.statistics.time}\t${engine.statistics.lpm}\t"+
+			"${engine.statistics.pps}\t$goalType\t"+
+			"${engine.gameActive}\t${engine.timerActive}\t"+
+			"${engine.statistics.level}\t$levelTimer\t$levelTimerMax\t"+
+			"$rolltime${"\t$norm\t$bg\t${engine.meterValue}\t"+engine.meterColor}\t"+
+			"${engine.heboHiddenEnable}\t${engine.heboHiddenTimerNow}\t${engine.heboHiddenTimerMax}\t"+
+			"${engine.heboHiddenYNow}\t${engine.heboHiddenYLimit}\n${engine.lives}\n"
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */

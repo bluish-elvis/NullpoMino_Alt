@@ -29,7 +29,7 @@
 package mu.nu.nullpo.game.component
 
 import java.io.Serializable
-import kotlin.math.sqrt
+import kotlin.math.log
 
 /** Blockピースの落下速度や出現待ち timeなどの data */
 data class SpeedParam(
@@ -48,6 +48,8 @@ data class SpeedParam(
 	/** 横移動 time */
 	var das:Int = 14
 ):Serializable {
+	/** Calculate Speed Rank by [gravity]/[denominator]
+	 * @return (float:0.0~1.0) */
 	val rank:Float get() = spdRank(gravity, denominator)
 
 	/** Constructor */
@@ -89,8 +91,12 @@ data class SpeedParam(
 
 	companion object {
 		val SDS_FIXED = floatArrayOf(0.5f, 1f, 2f, 3f, 4f, 5f, 20f)
-		/** Calcuate Speed Rank by [gravity]/[denominator] */
+		/** Calculate Speed Rank by [gravity]/[denominator]
+		 * @return (float:0.0~1.0) */
 		fun spdRank(gravity:Int, denominator:Int) = if(gravity<0||denominator<=0) 1f
-		else (sqrt((gravity.toFloat()/denominator).toDouble())/sqrt(20.0)).toFloat()
+		else (gravity.toFloat()/denominator).let {
+			if(it<1) log(1+it, 2f)*1.5f
+			else 1.5f+log(it, 12f)/2
+		}/2
 	}
 }

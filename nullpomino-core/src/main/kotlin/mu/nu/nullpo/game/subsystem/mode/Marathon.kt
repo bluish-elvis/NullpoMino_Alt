@@ -209,8 +209,7 @@ class Marathon:NetDummyMode() {
 			receiver.drawScoreFont(engine, 0, 0, "ENDLESS MARATHON", COLOR.GREEN)
 		else
 			receiver.drawScoreFont(
-				engine, 0, 0, "${tableGameClearLines[goalType]} LINES MARATHON",
-				COLOR.GREEN
+				engine, 0, 0, "${tableGameClearLines[goalType]} LINES MARATHON", COLOR.GREEN
 			)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
@@ -255,9 +254,11 @@ class Marathon:NetDummyMode() {
 		super.renderLast(engine)
 	}
 
-	fun nextbgmLine(lines:Int) = tableBGMChange[goalType].firstOrNull {lines<=it} ?: tableGameClearLines[goalType]
+	fun nextbgmLine(lines:Int) =
+		tableBGMChange[goalType].firstOrNull {lines<it} ?: tableGameClearLines[goalType].let {if(it>0) it else lines+10}
+
 	fun bgmLv(lines:Int) =
-		tableBGMChange[goalType].indexOfFirst {lines<=it}.let {if(it<0) tableBGMChange[goalType].size else it}
+		tableBGMChange[goalType].indexOfFirst {lines<it}.let {if(it<0) tableBGMChange[goalType].size else it}
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		super.calcScore(engine, ev)
@@ -398,7 +399,7 @@ class Marathon:NetDummyMode() {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"
 			}+"$goalType\t${gameActive}\t${timerActive}\t$lastscore\t$scDisp\t${lastEvent}\t$bg\n"
 		}
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
@@ -436,7 +437,7 @@ class Marathon:NetDummyMode() {
 		}
 
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Send game options to all spectators
@@ -444,7 +445,7 @@ class Marathon:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		val msg = "game\toption\t$startLevel\t$goalType\t$big\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Receive game options */
@@ -474,7 +475,8 @@ class Marathon:NetDummyMode() {
 		private val tableBGMChange = listOf(
 			listOf(30, 60, 90, 120),
 			listOf(30, 60, 90, 120, 140, 160, 180),
-			listOf(110, 220, 330, 440, 550, 660, 770, 880)
+			listOf(110, 220, 330, 440, 550, 660, 770, 880),
+			listOf(30, 60, 90, 120, 140, 160, 180, 200)
 		)
 
 		/** Line counts when game ending occurs */

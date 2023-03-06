@@ -43,8 +43,8 @@ import kotlin.math.sqrt
 /**
  * Generate a vector for handling directions.
  * @param sx   X or Magnitude
- * @param sy   Y or Direction
- * @param isDir Use (Mag., Dir) if true, use (X, Y) otherwise.
+ * @param sy   Y or Radian
+ * @param isDir Use (Mag., Rad.) if true, use (X, Y) otherwise.
  */
 class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boolean = false) {
 	constructor(sx:Int, sy:Int = 0, isDir:Boolean = false):this(sx.toFloat(), sy.toFloat(), isDir)
@@ -63,6 +63,7 @@ class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boole
 			y = abs(value)*sin(direction)
 			if(almostEqual(y, 0f, Float.MIN_VALUE)) y = 0f
 		}
+	/** radian */
 	var direction:Float
 		get() = atan2(y, x).let {if(it<0) it+(2f*PI).toFloat() else it}
 		set(value) {

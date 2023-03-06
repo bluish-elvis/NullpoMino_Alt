@@ -55,7 +55,7 @@ class StateConfigKeyboardReset:DummyMenuChooseState() {
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Background
-		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
+		g.drawImage(ResourceHolder.imgMenuBG[1], 0f, 0f)
 
 		// Menu
 		FontNormal.printFontGrid(1, 1, "KEYBOARD RESET (${player+1}P)", COLOR.ORANGE)
@@ -72,8 +72,8 @@ class StateConfigKeyboardReset:DummyMenuChooseState() {
 	/* Decide */
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("decide1")
-		GameKey.gamekey[player].loadDefaultKeymap(cursor)
-		GameKey.gamekey[player].saveConfig(NullpoMinoSlick.propConfig)
+		GameKey.gameKey[player].loadDefaultKeymap(cursor)
+		GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig)
 		NullpoMinoSlick.saveConfig()
 		game.enterState(StateConfigMainMenu.ID)
 		return true

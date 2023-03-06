@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.Preview
@@ -165,19 +166,23 @@ class StateConfigGameTuning:BaseGameState() {
 			it.bgMan.bg = -1 // Force no BG
 
 			// Initialization for each player
-			for(i in 0 until it.players) {
+			it.engine.forEachIndexed {i, e ->
 				// Tuning
-				it.engine[i].owSpinDirection = owSpinDirection
-				it.engine[i].owSkin = owSkin
-				it.engine[i].owMinDAS = owMinDAS
-				it.engine[i].owMaxDAS = owMaxDAS
-				it.engine[i].owARR = owDASRate
-				it.engine[i].owSDSpd = owSDSpd
-				it.engine[i].owReverseUpDown = owReverseUpDown
-				it.engine[i].owMoveDiagonal = owMoveDiagonal
-				it.engine[i].owBlockOutlineType = owBlockOutlineType
-				it.engine[i].owBlockShowOutlineOnly = owBlockShowOutlineOnly
-				it.engine[i].lives = 99
+				e.owSpinDirection = owSpinDirection
+				e.owSkin = owSkin
+				e.owMinDAS = owMinDAS
+				e.owMaxDAS = owMaxDAS
+				e.owARR = owDASRate
+				e.owSDSpd = owSDSpd
+				e.owReverseUpDown = owReverseUpDown
+				e.owMoveDiagonal = owMoveDiagonal
+				e.owBlockOutlineType = owBlockOutlineType
+				e.owBlockShowOutlineOnly = owBlockShowOutlineOnly
+				e.comboType = GameEngine.COMBO_TYPE_NORMAL
+				e.b2bEnable = true
+				e.splitB2B = true
+				e.lives = 99
+
 				// Rule
 				val ruleOpt:RuleOptions
 				val rulename = NullpoMinoSlick.propGlobal.getProperty(
@@ -192,31 +197,31 @@ class StateConfigGameTuning:BaseGameState() {
 					ruleOpt = RuleOptions()
 					ruleOpt.readProperty(NullpoMinoSlick.propGlobal, i)
 				}
-				it.engine[i].ruleOpt = ruleOpt
+				e.ruleOpt = ruleOpt
 
 				// Randomizer
 				if(ruleOpt.strRandomizer.isNotEmpty())
-					it.engine[i].randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
+					e.randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
 
 				// Wallkick
 				if(ruleOpt.strWallkick.isNotEmpty())
-					it.engine[i].wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
+					e.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
 
 				// AI
 				val aiName = NullpoMinoSlick.propGlobal.getProperty("$i.ai", "")
 				if(aiName.isNotEmpty()) {
-					it.engine[i].ai = GeneralUtil.loadAIPlayer(aiName)
-					it.engine[i].aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiMoveDelay", 0)
-					it.engine[i].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
-					it.engine[i].aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
-					it.engine[i].aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
-					it.engine[i].aiPreThink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPreThink", false)
-					it.engine[i].aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
+					e.ai = GeneralUtil.loadAIPlayer(aiName)
+					e.aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiMoveDelay", 0)
+					e.aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
+					e.aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
+					e.aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
+					e.aiPreThink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPreThink", false)
+					e.aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
 				}
 				it.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
 
 				// Init
-				it.engine[i].init()
+				e.init()
 			}
 		}
 		isPreview = true
@@ -233,22 +238,24 @@ class StateConfigGameTuning:BaseGameState() {
 
 	/* Draw the game screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
-		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 
 		if(isPreview)
 		// Preview
 			try {
+				g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 				gameManager?.let {
 					val engine = it.engine.first()
-					val strButtonF = it.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)
-					val fontY = if(it.receiver.nextDisplayType==2) 1 else 27
-					FontNormal.printFontGrid(
-						1, fontY,
-						"PUSH F BUTTON (ASSIGNED: ${strButtonF.uppercase()}) TO EXIT", COLOR.YELLOW
-					)
+					val fontX = when(it.receiver.nextDisplayType) {
+						0 -> 16
+						1 -> 17
+						else -> 18
+					}
+					FontNormal.printFontGrid(fontX, 14, "PUSH F BUTTON TO EXIT", COLOR.YELLOW)
+					val strButtonF = GameKey.getKeyName(player, true, Controller.BUTTON_F)
+					FontNormal.printFontGrid(fontX, 15, "(ASSIGNED: ${strButtonF.uppercase()})", COLOR.YELLOW)
 					val spd = engine.speed
 					val ow = engine.softDropSpd
-					FontNano.printFontGrid(16, 13, "${spd.gravity}>$ow/${spd.denominator} ${engine.gcount}")
+					FontNano.printFontGrid(fontX, 13, "${spd.gravity}>$ow/${spd.denominator} ${engine.gcount}")
 					it.renderAll()
 				}
 			} catch(e:Exception) {
@@ -256,7 +263,7 @@ class StateConfigGameTuning:BaseGameState() {
 			}
 		else {
 			// Menu
-			""
+			g.drawImage(ResourceHolder.imgMenuBG[1], 0f, 0f)
 
 			FontNormal.printFontGrid(1, 1, "GAME TUNING (${player+1}P)", COLOR.ORANGE)
 			FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RAINBOW)
@@ -344,6 +351,8 @@ class StateConfigGameTuning:BaseGameState() {
 
 			FontNormal.printFontGrid(2, 13, "[PREVIEW]", cursor==10)
 			FontNano.printFontGrid(13, 13, "HOTKEY : D BUTTON")
+			val strButtonD = GameKey.getKeyName(player, false, Controller.BUTTON_D)
+			FontNano.printFontGrid(13, 14, "(ASSIGNED: ${strButtonD.uppercase()})")
 
 			if(cursor>=0&&cursor<UI_TEXT.size)
 				FontTTF.print(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
@@ -385,21 +394,21 @@ class StateConfigGameTuning:BaseGameState() {
 		if(isPreview)
 		// Preview
 			try {
-				GameKey.gamekey[0].update(container.input, true)
+				GameKey.gameKey[0].update(container.input, true)
 
 				// Execute game loops
-				GameKey.gamekey[0].inputStatusUpdate(gameManager!!.engine[0].ctrl)
+				GameKey.gameKey[0].inputStatusUpdate(gameManager!!.engine[0].ctrl)
 				gameManager?.updateAll()
 
 				// Retry button
-				if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RETRY)) {
+				if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RETRY)) {
 					gameManager?.reset()
 					gameManager?.bgMan?.bg = -1 // Force no BG
 				}
 
 				// Exit
-				if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_F)
-					||GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_GIVEUP)||
+				if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_F)
+					||GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_GIVEUP)||
 					gameManager?.quitFlag==true)
 					stopPreviewGame()
 			} catch(e:Exception) {
@@ -407,18 +416,18 @@ class StateConfigGameTuning:BaseGameState() {
 			}
 		else {
 			// Menu screen
-			GameKey.gamekey[0].update(container.input, false)
+			GameKey.gameKey[0].update(container.input, false)
 
 			// TTF font
 			if(ResourceHolder.ttfFont!=null) ResourceHolder.ttfFont!!.loadGlyphs()
 
 			// Cursor movement
-			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
+			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
 				cursor--
 				if(cursor<0) cursor = 10
 				ResourceHolder.soundManager.play("cursor")
 			}
-			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
+			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 				cursor++
 				if(cursor>10) cursor = 0
 				ResourceHolder.soundManager.play("cursor")
@@ -426,8 +435,8 @@ class StateConfigGameTuning:BaseGameState() {
 
 			// Configuration changes
 			var change = 0
-			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) change = -1
-			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) change = 1
+			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) change = -1
+			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) change = 1
 
 			if(change!=0) {
 				ResourceHolder.soundManager.play("change")
@@ -485,21 +494,22 @@ class StateConfigGameTuning:BaseGameState() {
 			}
 
 			// Preview by D button
-			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_D)) {
+			if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_D)) {
 				ResourceHolder.soundManager.play("decide")
 				startPreviewGame()
 				return
 			}
 
 			// Confirm button
-			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
-				ResourceHolder.soundManager.play("decide2")
+			if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
 
 				if(cursor==10) {
 					// Preview
+					ResourceHolder.soundManager.play("decide")
 					startPreviewGame()
 					return
 				}
+				ResourceHolder.soundManager.play("decide2")
 				// Save
 				saveConfig(NullpoMinoSlick.propGlobal)
 				NullpoMinoSlick.saveConfig()
@@ -507,7 +517,7 @@ class StateConfigGameTuning:BaseGameState() {
 			}
 
 			// Cancel button
-			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_B)) {
+			if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_B)) {
 				ResourceHolder.soundManager.play("cancel")
 				loadConfig(NullpoMinoSlick.propGlobal)
 				game.enterState(StateConfigMainMenu.ID)

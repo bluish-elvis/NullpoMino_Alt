@@ -10,7 +10,6 @@ cmake-build-*/
 out/
 *.iml
 # mpeltonen/sbt-idea plugin
-.idea/
 .idea_modules/
 # JIRA plugin
 atlassian-ide-plugin.xml

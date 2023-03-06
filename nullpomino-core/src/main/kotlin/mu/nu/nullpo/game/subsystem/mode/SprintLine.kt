@@ -419,7 +419,7 @@ class SprintLine:NetDummyMode() {
 			"${engine.statistics.pps}\t$goalType\t"+
 			"${engine.gameActive}\t${engine.timerActive}"+
 			"\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
@@ -453,7 +453,7 @@ class SprintLine:NetDummyMode() {
 				"PIECE/SEC;${engine.statistics.pps}\t"
 
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Send game options to all spectators
@@ -464,7 +464,7 @@ class SprintLine:NetDummyMode() {
 			"${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"+
 			"${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"+
 			"${engine.speed.das}\t$bgmno\t$big\t$goalType\t$presetNumber\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Receive game options */

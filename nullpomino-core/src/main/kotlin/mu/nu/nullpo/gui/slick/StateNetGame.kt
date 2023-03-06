@@ -167,7 +167,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 	override fun update(container:GameContainer, game:StateBasedGame, delta:Int) {
 		try {
 			// Clear input states if game window does not have focus
-			if(!container.hasFocus()||netLobby.isFocused) GameKey.gamekey[0].clear()
+			if(!container.hasFocus()||netLobby.isFocused) GameKey.gameKey[0].clear()
 
 			// TTF font 描画
 			ResourceHolder.ttfFont?.loadGlyphs()
@@ -187,7 +187,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 			// Update key input states
 			if(container.hasFocus()&&!netLobby.isFocused)
 				gameManager?.also {gameManager ->
-					GameKey.gamekey[0].update(container.input, gameManager.engine.size>0&&gameManager.engine[0].isInGame)
+					GameKey.gameKey[0].update(container.input, gameManager.engine.size>0&&gameManager.engine[0].isInGame)
 
 					gameManager.mode?.let {mode ->
 						// BGM
@@ -203,7 +203,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 						}
 
 						// ゲームの処理を実行
-						GameKey.gamekey[0].inputStatusUpdate(gameManager.engine[0].ctrl)
+						GameKey.gameKey[0].inputStatusUpdate(gameManager.engine[0].ctrl)
 						gameManager.updateAll()
 
 						if(gameManager.quitFlag) {
@@ -213,13 +213,13 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 						}
 
 						// Retry button
-						if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_RETRY))
+						if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_RETRY))
 							mode.netplayOnRetryKey(gameManager.engine[0])
 					}
 				}
 			// Screenshot button
-			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)||
-				GameKey.gamekey[1].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)
+			if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)||
+				GameKey.gameKey[1].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)
 			)
 				ssflag = true
 

@@ -207,10 +207,10 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		setSpeed(engine)
 	}
 
-	override fun onARE(engine:GameEngine):Boolean {
+	/*override fun onARE(engine:GameEngine):Boolean {
 		if(engine.dasCount in 1 until DAS) engine.dasCount = DAS
 		return false
-	}
+	}*/
 	/** Draw X or fever timer on death columns*/
 	abstract fun drawX(engine:GameEngine)
 	/* Called after every frame */

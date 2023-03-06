@@ -594,7 +594,7 @@ class SprintCombo:NetDummyMode() {
 				statistics.run {"${maxCombo}\t${lines}\t${totalPieceLocked}\t${time}\t${lpm}\t${pps}\t"}+
 					"$goalType\t${gameActive}\t${timerActive}\t${meterColor}\t${meterValue}\t"
 			}+"$bg\t$scgettime\t\t$lastb2b\t$lastcombo\t$lastpiece\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
@@ -628,7 +628,7 @@ class SprintCombo:NetDummyMode() {
 			"MAX COMBO;${(maxCombo-1)}\tTIME;${time.toTimeStr}\tLINE;${lines}\tPIECE;${totalPieceLocked}\tLINE/MIN;${lpm}\tPIECE/SEC;${pps}\t"
 		}
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Send game options to all spectators
@@ -638,7 +638,7 @@ class SprintCombo:NetDummyMode() {
 		val msg = "game\toption\t"+engine.speed.run {
 			"${gravity}\t${denominator}\t${are}\t${areLine}\t${lineDelay}\t${lockDelay}\t${das}\t"
 		}+"$bgmno\t$goalType\t$presetNumber\t$shapetype${"\t\t$comboWidth\t$ceilingAdjust\t"+spawnAboveField}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Receive game options */

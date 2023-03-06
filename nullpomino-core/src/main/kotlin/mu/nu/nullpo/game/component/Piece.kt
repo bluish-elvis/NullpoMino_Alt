@@ -94,11 +94,11 @@ class Piece(id:Int = 0):Serializable {
 		get() = IntArray(block.size) {block[it].cint}
 
 	/** @return ピース回転軸のX-coordinate */
-	val spinCX:Double
-		get() = dataX.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2.0
+	val spinCX:Float
+		get() = dataX.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2f
 	/** @return ピース回転軸のY-coordinate */
-	val spinCY:Double
-		get() = dataY.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2.0
+	val spinCY:Float
+		get() = dataY.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2f
 	/** @return ピースの幅*/
 	val width:Int get() = maximumBlockX-minimumBlockX
 	/** @return ピースの高さ*/
@@ -125,8 +125,7 @@ class Piece(id:Int = 0):Serializable {
 		resetOffsetArray()
 	}
 
-	/** Copy constructor
-	 * @param p Copy source
+	/** Copy constructor from [p]
 	 */
 	constructor(p:Piece):this(p.id) {
 		replace(p)
@@ -151,19 +150,15 @@ class Piece(id:Int = 0):Serializable {
 		dataOffsetY = p.dataOffsetY.toMutableList()
 	}
 
-	/** すべてのBlock stateをbと同じに設定
+	/** すべてのBlock stateを[b]と同じに設定
 	 * @param b 設定するBlock
 	 */
 	fun setBlock(b:Block) = block.forEach {it.replace(b)}
 
-	/** すべてのBlock colorを変更
-	 * @param color 色
-	 */
+	/** すべてのBlock colorを[color]に変更*/
 	fun setColor(color:Block.COLOR) = block.forEach {it.color = color}
 
-	/** すべてのBlock colorを変更
-	 * @param color 色
-	 */
+	/** すべてのBlock colorを[color]に変更*/
 	fun setColor(color:Int) = block.forEach {it.cint = color}
 
 	/** Changes the colors of the blocks individually; allows one piece to have

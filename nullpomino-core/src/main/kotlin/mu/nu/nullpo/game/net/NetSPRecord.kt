@@ -257,36 +257,19 @@ class NetSPRecord:Serializable {
 	 * @return Short String of stats of the record
 	 */
 	fun getStatRow(type:Int):String {
-		var strRow = ""
-		stats?.also {
-			if(type!=RANKINGTYPE_GENERIC_SCORE) {
-				when(type) {
-					RANKINGTYPE_GENERIC_TIME -> {
-						strRow += "${it.time},${it.totalPieceLocked},${it.pps}"
-					}
-					RANKINGTYPE_SCORERACE -> {
-						strRow += "${it.time},${it.lines},${it.spl}"
-					}
-					RANKINGTYPE_DIGRACE -> {
-						strRow += "${it.time},${it.lines},${it.totalPieceLocked}"
-					}
-					RANKINGTYPE_ULTRA -> {
-						strRow += "${it.score},${it.lines},${it.totalPieceLocked}"
-					}
-					RANKINGTYPE_COMBORACE -> {
-						strRow += "${it.maxCombo},${it.time},${it.pps}"
-					}
-					RANKINGTYPE_DIGCHALLENGE -> {
-						strRow += "${it.score},${it.lines},${it.time}"
-					}
-					RANKINGTYPE_TIMEATTACK -> {
-						strRow += "${it.lines},${it.time},${it.pps},${it.rollclear}"
-					}
-				}
-			} else {
-				strRow += "${it.score},${it.lines},${it.time}"
-			}
-		}
+		val strRow =
+			stats?.let {
+				if(type!=RANKINGTYPE_GENERIC_SCORE) when(type) {
+					RANKINGTYPE_GENERIC_TIME -> "${it.time},${it.totalPieceLocked},${it.pps}"
+					RANKINGTYPE_SCORERACE -> "${it.time},${it.lines},${it.spl}"
+					RANKINGTYPE_DIGRACE -> "${it.time},${it.lines},${it.totalPieceLocked}"
+					RANKINGTYPE_ULTRA -> "${it.score},${it.lines},${it.totalPieceLocked}"
+					RANKINGTYPE_COMBORACE -> "${it.maxCombo},${it.time},${it.pps}"
+					RANKINGTYPE_DIGCHALLENGE -> "${it.score},${it.lines},${it.time}"
+					RANKINGTYPE_TIMEATTACK -> "${it.lines},${it.time},${it.pps},${it.rollclear}"
+					else -> "${it.score},${it.lines},${it.time}"
+				} else "${it.score},${it.lines},${it.time}"
+			} ?: ""
 		return strRow
 	}
 

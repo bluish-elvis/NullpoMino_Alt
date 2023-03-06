@@ -359,14 +359,14 @@ class NetVSSprintDig:NetDummyVSMode() {
 	/* Send end-of-game stats */
 	override fun netSendEndGameStats(engine:GameEngine) {
 		val playerID = engine.playerID
-		var msg = "gstat\t"
-		msg += "${netVSPlayerPlace[playerID]}\t"
-		msg += "0\t0\t0\t"
-		msg += "${engine.statistics.lines}\t${engine.statistics.lpm}\t"
-		msg += "${engine.statistics.totalPieceLocked}\t${engine.statistics.pps}\t"
-		msg += "$netVSPlayTimer\t0\t${netVSPlayerWinCount[playerID]}\t${netVSPlayerPlayCount[playerID]}"
-		msg += "\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		val msg = "gstat\t"+
+			"${netVSPlayerPlace[playerID]}\t"+
+			"0\t0\t0\t"+
+			"${engine.statistics.lines}\t${engine.statistics.lpm}\t"+
+			"${engine.statistics.totalPieceLocked}\t${engine.statistics.pps}\t"+
+			"$netVSPlayTimer\t0\t${netVSPlayerWinCount[playerID]}\t${netVSPlayerPlayCount[playerID]}"+
+			"\n"
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/* Receive end-of-game stats */
