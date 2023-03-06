@@ -77,8 +77,8 @@ class StateConfigKeyboard:BasicGameState() {
 		keyConfigRestFrame = 0
 
 		keymap = MutableList(NUM_KEYS) {
-			if(!isNavSetting) GameKey.gamekey[player].keymap[it]
-			else GameKey.gamekey[player].keymapNav[it]
+			if(!isNavSetting) GameKey.gameKey[player].keymap[it]
+			else GameKey.gameKey[player].keymapNav[it]
 		}
 	}
 
@@ -103,7 +103,7 @@ class StateConfigKeyboard:BasicGameState() {
 			return
 		}
 
-		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
+		g.drawImage(ResourceHolder.imgMenuBG[1], 0f, 0f)
 
 		if(!isNavSetting)
 			FontNormal.printFontGrid(1, 1, "KEYBOARD Assign (${player+1}P)", COLOR.ORANGE)
@@ -218,10 +218,10 @@ class StateConfigKeyboard:BasicGameState() {
 						// Save & Exit
 						for(i in 0 until NUM_KEYS)
 							if(!isNavSetting)
-								GameKey.gamekey[player].keymap[i] = keymap[i]
+								GameKey.gameKey[player].keymap[i] = keymap[i]
 							else
-								GameKey.gamekey[player].keymapNav[i] = keymap[i]
-						GameKey.gamekey[player].saveConfig(NullpoMinoSlick.propConfig)
+								GameKey.gameKey[player].keymapNav[i] = keymap[i]
+						GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig)
 						NullpoMinoSlick.saveConfig()
 						gameObj.enterState(StateConfigMainMenu.ID)
 					} else {

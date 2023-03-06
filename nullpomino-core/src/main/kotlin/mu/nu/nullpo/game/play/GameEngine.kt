@@ -184,10 +184,10 @@ class GameEngine(
 	var lineGravityTotalLines = 0
 
 	/** Lock delay counter */
-	var lockDelayNow = 0
+	var lockDelayNow = 0//; private set
 
 	/** DAS counter */
-	var dasCount = 0
+	var dasCount = 0; private set
 	/** DAS direction (-1:Left 0:None 1:Right) */
 	var dasDirection = 0; private set
 	/** DAS delay counter */
@@ -269,10 +269,10 @@ class GameEngine(
 	/** True if last erasing line is B2B */
 	val b2b get() = b2bCount>0
 	/** B2B counter */
-	var b2bCount = -1
+	var b2bCount = -1; private set
 
 	/** Number of combos */
-	var combo = -1//;private set
+	var combo = -1; private set
 
 	/** Twister enable flag */
 	var twistEnable = false
@@ -288,7 +288,8 @@ class GameEngine(
 	/** Does Split trigger B2B flag */
 	var splitB2B = false
 
-	/** Combo type */
+	/** Combo counts Line border
+	 * (0:Disable, 1: Normal Ren, 2: Except Single, 4:Only Quad) */
 	var comboType = 0
 
 	/** Number of frames before placed blocks disappear (-1:Disable) */
@@ -334,7 +335,7 @@ class GameEngine(
 	var bigHalf = false
 
 	/** True if rotate is used */
-	var spun = false
+	var spun = false; private set
 	/** True if wallkick is used */
 	var kicked = false; private set
 	/** Field size (-1:Default) */
@@ -853,6 +854,7 @@ class GameEngine(
 		owner.receiver.playerInit(this)
 		ai?.shutdown()
 		ai?.init(this, playerID)
+		stopSE("danger")
 	}
 
 	/** 終了処理 */
@@ -878,19 +880,13 @@ class GameEngine(
 	fun stopSE(name:String) = owner.receiver.stopSE(name)
 
 	/** NEXTピース[c]番目のIDを取得*/
-	fun getNextID(c:Int):Int {
-		if(nextPieceArrayObject.isEmpty()) return Piece.PIECE_NONE
-		return nextPieceArrayID[c%nextPieceArrayID.size]
-	}
+	fun getNextID(c:Int):Int = if(nextPieceArrayObject.isEmpty()) Piece.PIECE_NONE else nextPieceArrayID[c%nextPieceArrayID.size]
 
 	/** NEXTピース[c]番目のオブジェクトを取得*/
-	fun getNextObject(c:Int):Piece? {
-		try {
-			if(nextPieceArrayObject.isEmpty()) return null
-			return nextPieceArrayObject[c%nextPieceArrayObject.size]
-		} catch(_:Exception) {
-			return null
-		}
+	fun getNextObject(c:Int):Piece? = try {
+		if(nextPieceArrayObject.isEmpty()) null else nextPieceArrayObject[c%nextPieceArrayObject.size]
+	} catch(_:Exception) {
+		null
 	}
 	/** NEXTピース[c]番目のオブジェクトコピーを取得*/
 	fun getNextObjectCopy(c:Int):Piece? = getNextObject(c)?.let {Piece(it)}
@@ -2454,16 +2450,15 @@ class GameEngine(
 							statc[6]++
 							return@statLineClear
 						}
-						clearMode==ClearType.LINE&&field.checkLineNoFlag()>0||(clearMode==ClearType.COLOR&&
-							field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)>0
-							||clearMode==ClearType.LINE_COLOR&&field.checkConnectLine(
-							colorClearSize,
-							false,
-							lineColorDiagonals,
-							gemSameColor
-						)>0
-							||clearMode==ClearType.GEM_COLOR&&field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)>0
-							||(clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)&&field.checkBombOnLine(true)>0) -> {
+						clearMode==ClearType.LINE&&field.checkLineNoFlag()>0||
+							(clearMode==ClearType.COLOR&&
+								field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)>0||
+								clearMode==ClearType.LINE_COLOR&&
+								field.checkConnectLine(colorClearSize, false, lineColorDiagonals, gemSameColor)>0||
+								clearMode==ClearType.GEM_COLOR&&
+								field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)>0||
+								(clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)&&
+								field.checkBombOnLine(true)>0) -> {
 							twistType = null
 							chain++
 							if(chain>statistics.maxChain) statistics.maxChain = chain

@@ -265,20 +265,24 @@ class MarathonExtreme:NetDummyMode() {
 		}
 	}
 
+	fun nextbgmLine(lines:Int) =
+		tableBGMChange.firstOrNull {lines<it} ?: if(endless) lines+20 else 200
+
+	fun bgmLv(lines:Int) =
+		tableBGMChange.indexOfFirst {lines<it}.let {if(it<0) tableBGMChange.size else it}
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		super.calcScore(engine, ev)
 
 		if(engine.ending==0) {
 			// BGM fade-out effects and BGM changes
-			if(tableBGMChange[bgmLv]!=-1) {
-				if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.musMan.fadesw = true
 
-				if(engine.statistics.lines>=tableBGMChange[bgmLv]) {
-					bgmLv++
-					owner.musMan.bgm = tableBGM[bgmLv]
-					owner.musMan.fadesw = false
-				}
+			if(engine.statistics.lines>=nextbgmLine(engine.statistics.lines)-5) owner.musMan.fadesw = true
+			val newbgm = minOf(maxOf(0, bgmLv(engine.statistics.lines)), tableBGM.size-1)
+			if(bgmLv!=newbgm) {
+				bgmLv = newbgm
+				owner.musMan.bgm = tableBGM[bgmLv]
+				owner.musMan.fadesw = false
 			}
 
 			// Meter
@@ -428,7 +432,7 @@ class MarathonExtreme:NetDummyMode() {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t$endless\t"
 			}+"${gameActive}\t${timerActive}\t$lastscore\t$scDisp\t${lastEvent}\t${lastEventPiece}\t$bg\t$rolltime\n"
 		}
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
@@ -467,7 +471,7 @@ class MarathonExtreme:NetDummyMode() {
 		}
 
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Send game options to all spectators
@@ -475,7 +479,7 @@ class MarathonExtreme:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		val msg = "game\toption\t$startLevel\t$endless\t$big\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Receive game options */
@@ -514,7 +518,7 @@ class MarathonExtreme:NetDummyMode() {
 		private val tableDAS = listOf(10, 10, 10, 9, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4)
 
 		/** Line counts when BGM changes occur */
-		private val tableBGMChange = listOf(20, 40, 70, 100, 130, 160, -1)
+		private val tableBGMChange = listOf(20, 40, 70, 100, 130, 160)
 		private val tableBGM = listOf(
 			BGM.Rush(0), BGM.Generic(6), BGM.Rush(1), BGM.Generic(7), BGM.Generic(8), BGM.Rush(2),
 			BGM.Rush(3)

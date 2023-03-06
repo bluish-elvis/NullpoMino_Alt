@@ -632,13 +632,13 @@ class MarathonDrill:NetDummyMode() {
 	override fun netSendStats(engine:GameEngine) {
 		val bg =
 			if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
-		var msg = "game\tstats\t"
-		msg += "${engine.statistics.scoreLine}\t${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"
-		msg += "${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t${engine.statistics.level}\t"
-		msg += "$garbageTimer\t$garbageTotal\t$garbageDigged\t$goalType\t"
-		msg += "${engine.gameActive}\t${engine.timerActive}\t"
-		msg += "$lastscore\t$scDisp\t$bg\t$garbagePending\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		val msg = "game\tstats\t"+
+			"${engine.statistics.scoreLine}\t${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"+
+			"${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t${engine.statistics.level}\t"+
+			"$garbageTimer\t$garbageTotal\t$garbageDigged\t$goalType\t"+
+			"${engine.gameActive}\t${engine.timerActive}\t"+
+			"$lastscore\t$scDisp\t$bg\t$garbagePending\n"
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
@@ -671,25 +671,24 @@ class MarathonDrill:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
-		var subMsg = ""
-		subMsg += "SCORE;${engine.statistics.score}\t"
-		subMsg += "LINE;${engine.statistics.lines}\t"
-		subMsg += "GARBAGE;$garbageDigged\t"
-		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
-		subMsg += "LEVEL;${engine.statistics.level+engine.statistics.levelDispAdd}\t"
-		subMsg += "TIME;${engine.statistics.time.toTimeStr}\t"
+		val subMsg =
+			"SCORE;${engine.statistics.score}\t"+
+				"LINE;${engine.statistics.lines}\t"+
+				"GARBAGE;$garbageDigged\t"+
+				"PIECE;${engine.statistics.totalPieceLocked}\t"+
+				"LEVEL;${engine.statistics.level+engine.statistics.levelDispAdd}\t"+
+				"TIME;${engine.statistics.time.toTimeStr}\t"
 
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Send game options to all spectators
 	 * @param engine GameEngine
 	 */
 	override fun netSendOptions(engine:GameEngine) {
-		var msg = "game\toption\t"
-		msg += "$goalType\t$startLevel\t$bgmno\t${engine.speed.das}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		val msg = "game\toption\t$goalType\t$startLevel\t$bgmno\t${engine.speed.das}\n"
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Receive game options */

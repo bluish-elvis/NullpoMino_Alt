@@ -83,8 +83,8 @@ abstract class BaseGameState:BasicGameState() {
 	override fun update(container:GameContainer, game:StateBasedGame, delta:Int) {
 		// Lost the focus
 		if(!container.hasFocus()) {
-			GameKey.gamekey[0].clear()
-			GameKey.gamekey[1].clear()
+			GameKey.gameKey[0].clear()
+			GameKey.gameKey[1].clear()
 			if(NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep()
 			return
 		}
@@ -93,9 +93,9 @@ abstract class BaseGameState:BasicGameState() {
 		updateImpl(container, game, delta)
 
 		// Screenshot button
-		if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)) screenShotFlag = true
+		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)) screenShotFlag = true
 		// Exit button
-		if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_QUIT)) container.exit()
+		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_QUIT)) container.exit()
 
 		// Framerate Cap
 		if(NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep()

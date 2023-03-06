@@ -636,7 +636,7 @@ class SprintUltra:NetDummyMode() {
 				"PIECE/SEC;${engine.statistics.pps}\t"
 
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Send game options to all spectators
@@ -647,7 +647,7 @@ class SprintUltra:NetDummyMode() {
 			"${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"+
 			"${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"+
 			"${engine.speed.das}\t$big\t$goalType\t$presetNumber\t"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Receive game options */

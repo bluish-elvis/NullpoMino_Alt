@@ -266,9 +266,7 @@ class MarathonPlus:NetDummyMode() {
 			lives = if(goalType==0||startLevel) 2 else 4
 			ruleOpt = ruleOptOrg
 			if(goalType>0) {
-				if(goalType==1)
-					owSDSpd = 5
-				ruleOpt.softdropEnable = goalType==1
+				if(goalType==1) owSDSpd = 5
 				ruleOpt.softdropLock = goalType==1
 				ruleOpt.softdropSurfaceLock = goalType>1
 				ruleOpt.harddropEnable = goalType>1
@@ -793,7 +791,7 @@ class MarathonPlus:NetDummyMode() {
 		}
 
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Send game options to all spectators
@@ -801,7 +799,7 @@ class MarathonPlus:NetDummyMode() {
 	 */
 	override fun netSendOptions(engine:GameEngine) {
 		val msg = "game\toption\t$startLevel\t$big\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Receive game options */

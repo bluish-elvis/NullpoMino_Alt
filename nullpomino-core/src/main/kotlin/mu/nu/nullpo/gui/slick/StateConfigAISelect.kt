@@ -153,7 +153,7 @@ class StateConfigAISelect:BaseGameState() {
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Background
-		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
+		g.drawImage(ResourceHolder.imgMenuBG[1], 0f, 0f)
 
 		// Menu
 		FontNormal.printFontGrid(1, 1, "${(player+1)}P AI setting", COLOR.ORANGE)
@@ -175,15 +175,15 @@ class StateConfigAISelect:BaseGameState() {
 	/* Update game state */
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
 		// Update key input states
-		GameKey.gamekey[0].update(container.input)
+		GameKey.gameKey[0].update(container.input)
 
 		// Cursor movement
-		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
+		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
 			cursor--
 			if(cursor<0) cursor = 6
 			ResourceHolder.soundManager.play("cursor")
 		}
-		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
+		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 			cursor++
 			if(cursor>6) cursor = 0
 			ResourceHolder.soundManager.play("cursor")
@@ -191,8 +191,8 @@ class StateConfigAISelect:BaseGameState() {
 
 		// Configuration changes
 		var change = 0
-		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) change = -1
-		if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) change = 1
+		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) change = -1
+		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) change = 1
 
 		if(change!=0) {
 			ResourceHolder.soundManager.play("change")
@@ -221,7 +221,7 @@ class StateConfigAISelect:BaseGameState() {
 		}
 
 		// Confirm button
-		if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
+		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
 			ResourceHolder.soundManager.play("decide1")
 
 
@@ -239,7 +239,7 @@ class StateConfigAISelect:BaseGameState() {
 		}
 
 		// Cancel button
-		if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_B)) {
+		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_B)) {
 			game.enterState(StateConfigMainMenu.ID)
 			return
 		}

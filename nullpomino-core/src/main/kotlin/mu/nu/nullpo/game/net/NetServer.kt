@@ -2345,9 +2345,7 @@ class NetServer {
 	 */
 	private fun broadcastRoomInfoUpdate(roomInfo:NetRoomInfo, command:String = "roomupdate") {
 		roomInfo.updatePlayerCount()
-		var msg = command+"\t"
-		msg += roomInfo.exportString()
-		msg += "\n"
+		val msg = "$command\t${roomInfo.exportString()}\n"
 		broadcast(msg)
 		broadcastAdmin(msg)
 	}

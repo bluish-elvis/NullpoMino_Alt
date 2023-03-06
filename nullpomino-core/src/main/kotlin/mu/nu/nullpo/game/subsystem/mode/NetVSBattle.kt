@@ -679,7 +679,7 @@ class NetVSBattle:NetDummyVSMode() {
 			"${engine.statistics.totalPieceLocked}\t${engine.statistics.pps}\t"+
 			"$netVSPlayTimer${"\t$currentKO\t"+netVSPlayerWinCount[playerID]}\t"+netVSPlayerPlayCount[playerID]+
 			"\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/* Receive end-of-game stats */

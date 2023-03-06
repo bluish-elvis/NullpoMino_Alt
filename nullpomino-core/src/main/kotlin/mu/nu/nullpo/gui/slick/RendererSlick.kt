@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.AbstractBG
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.common.libs.Vector
 import mu.nu.nullpo.gui.slick.img.FontGrade
 import mu.nu.nullpo.gui.slick.img.FontMedal
 import mu.nu.nullpo.gui.slick.img.FontNano
@@ -44,7 +45,6 @@ import mu.nu.nullpo.gui.slick.img.FontTTF
 import mu.nu.nullpo.gui.slick.img.RenderStaffRoll
 import mu.nu.nullpo.gui.slick.img.bg.SpinBG
 import mu.nu.nullpo.util.CustomProperties
-import org.lwjgl.input.Keyboard
 import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.Image
@@ -53,6 +53,7 @@ import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundHorizontalBars
 import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundInterlaceHorizontal
 import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundInterlaceVertical
 import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundVerticalBars
+import kotlin.math.PI
 import kotlin.random.Random
 
 /** ゲームの event 処理と描画処理 (Slick版） */
@@ -118,16 +119,8 @@ class RendererSlick:AbstractRenderer() {
 	}
 
 	/* Get key name by button ID */
-	override fun getKeyNameByButtonID(playerID:Int, inGame:Boolean, btnID:Int):String {
-		val keymap = if(inGame) GameKey.gamekey[playerID].keymap else GameKey.gamekey[playerID].keymapNav
-
-		if(btnID>=0&&btnID<keymap.size) {
-			val keycode = keymap[btnID]
-			return keycode.joinToString {Keyboard.getKeyName(it) ?: "($it)"}
-		}
-
-		return ""
-	}
+	override fun getKeyNameByButtonID(playerID:Int, inGame:Boolean, btnID:Int):String =
+		GameKey.getKeyName(playerID, inGame, btnID)
 
 	/* Is the skin sticky? */
 	override fun isStickySkin(skin:Int):Boolean =
@@ -211,6 +204,35 @@ class RendererSlick:AbstractRenderer() {
 		val c = g.color
 		g.color = Color(color).apply {a = alpha}
 		g.fillRect(x, y, w, h)
+		g.color = c
+	}
+
+	override fun drawDiaSpecific(x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int, alpha:Float, bold:Float) {
+		if(w>0f) {
+			val g = graphics ?: return
+			val c = g.color
+			g.color = Color(color).apply {a = alpha}
+			val lw = g.lineWidth
+			g.lineWidth = bold
+			val p = PI.toFloat()
+			val rad = angle%p
+			val va = Vector(w/2, rad, true)
+			val vb = Vector(h/2, p/2+rad, true)
+			g.draw(Polygon(floatArrayOf(x+va.x, y+va.y, x+vb.x, y+vb.y, x-va.x, y-va.y, x-vb.x, y-vb.y)))
+			g.color = c
+			g.lineWidth = lw
+		}
+	}
+
+	override fun fillDiaSpecific(x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int, alpha:Float) {
+		val g = graphics ?: return
+		val c = g.color
+		g.color = Color(color).apply {a = alpha}
+		val pi = PI.toFloat()
+		val rad = angle%pi
+		val va = Vector(w/2, rad, true)
+		val vb = Vector(h/2, pi/2+rad, true)
+		g.fill(Polygon(floatArrayOf(x+va.x, y+va.y, x+vb.x, y+vb.y, x-va.x, y-va.y, x-vb.x, y-vb.y)))
 		g.color = c
 	}
 

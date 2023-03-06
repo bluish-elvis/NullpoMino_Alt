@@ -72,7 +72,7 @@ open class EventReceiver {
 	/** Show ARE meter */
 	protected var showSpeed = false
 
-	/** Outline ghost piece */
+	/** Show Outline ghost piece */
 	protected var outlineGhost = false
 
 	/** Piece previews on sides */
@@ -81,9 +81,7 @@ open class EventReceiver {
 	/** Use bigger side previews */
 	protected var bigSideNext = false
 
-	/** Is TTF font available?
-	 * @return true if you can use TTF font routines.
-	 */
+	/** @return True if you can use TTF font routines */
 	open val isTTFSupport:Boolean
 		get() = false
 
@@ -125,7 +123,7 @@ open class EventReceiver {
 
 	/**  @return Maximum length of the meter*/
 	@Deprecated("meterValue is now 0f~1f")
-	fun getMeterMax(e:GameEngine) = if(!showMeter) 0 else e.field.height*e.blockSize
+	fun getMeterMax(e:GameEngine) = 1//if(!showMeter) 0 else e.field.height*e.blockSize
 
 	/** @return X position of score display area*/
 	fun scoreX(e:GameEngine) = e.sX
@@ -151,6 +149,8 @@ open class EventReceiver {
 	/** It will be called when a line is cleared.*/
 	open fun lineClear(engine:GameEngine, y:Collection<Int>) {}
 
+	/** It will be called when score gained.
+	 * @param pts Number of points last gained*/
 	open fun addScore(x:Int, y:Int, pts:Int, color:COLOR) {}
 
 	/** After Score Gained, to show points.
@@ -610,7 +610,7 @@ open class EventReceiver {
 	 * @param darkness 暗さもしくは明るさ
 	 */
 	@JvmOverloads
-	fun drawPiece(x:Int, y:Int, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f, ow:Float = 0f) =
+	fun drawPiece(x:Float, y:Float, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f, ow:Float = 0f) =
 		piece.block.forEachIndexed {i, blk ->
 			val ls = scale*if(piece.big) 32 else 16
 			drawBlock(
@@ -618,6 +618,9 @@ open class EventReceiver {
 				blk, darkness, alpha, scale, ow
 			)
 		}
+
+	fun drawPiece(x:Int, y:Int, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f, ow:Float = 0f) =
+		drawPiece(x.toFloat(), y.toFloat(), piece, scale, darkness, alpha, ow)
 
 	/** Get key name by button ID
 	 * @param playerID Player ID

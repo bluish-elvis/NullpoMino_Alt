@@ -29,6 +29,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.gui.common.GameKeyDummy
+import org.lwjgl.input.Keyboard
 import org.newdawn.slick.Input
 
 /** Key input state manager (Only use with Slick. Don't use inside game
@@ -85,7 +86,7 @@ class GameKey:GameKeyDummy {
 	 * 2=NullpoMino-Classic 3=ThreshBind)
 	 */
 	fun loadDefaultGameKeymap(type:Int) {
-		System.arraycopy(DEFAULTKEYS[0][type], 0, keymap, 0, keymap.size)
+		System.arraycopy(defaultKeys[0][type], 0, keymap, 0, keymap.size)
 	}
 
 	/** Reset menu keyboard settings to default. In-game keys are unchanged.
@@ -93,15 +94,22 @@ class GameKey:GameKeyDummy {
 	 * 2=NullpoMino-Classic 3=ThreshBind)
 	 */
 	fun loadDefaultMenuKeymap(type:Int) {
-		System.arraycopy(DEFAULTKEYS[1][type], 0, keymapNav, 0, keymapNav.size)
+		System.arraycopy(defaultKeys[1][type], 0, keymapNav, 0, keymapNav.size)
 	}
 
 	companion object {
+		fun getKeyName(playerID:Int, inGame:Boolean, btnID:Int):String =
+			(if(inGame) gameKey[playerID].keymap else gameKey[playerID].keymapNav).let {keymap ->
+				if(btnID>=0&&btnID<keymap.size)
+					keymap[btnID].joinToString {Keyboard.getKeyName(it) ?: "($it)"}
+				else ""
+			}
+
 		/** Key input state (Used by all game states) */
-		var gamekey:List<GameKey> = emptyList()
+		var gameKey:List<GameKey> = emptyList()
 
 		/** Default key mappings */
-		val DEFAULTKEYS = listOf(
+		val defaultKeys = listOf(
 			// Ingame
 			listOf(
 				// Blockbox type
@@ -267,7 +275,7 @@ class GameKey:GameKeyDummy {
 			ControllerManager.initControllers()
 			JInputManager.initKeymap()
 			JInputManager.initKeyboard()
-			gamekey = List(2) {GameKey(it)}
+			gameKey = List(2) {GameKey(it)}
 		}
 	}
 }

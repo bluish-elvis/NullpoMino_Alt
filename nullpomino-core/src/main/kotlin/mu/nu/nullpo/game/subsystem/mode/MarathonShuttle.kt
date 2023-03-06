@@ -631,7 +631,7 @@ class MarathonShuttle:NetDummyMode() {
 					"$goalType\t${gameActive}\t${timerActive}\t$lastscore\t$scgettime\t${lastEvent}\t"+
 					"$lastgoal\t$lasttimebonus\t$regretdispframe\t$bg\t${meterValue}\t${meterColor}\t$levelTimer\t$totalTimer\t$rolltime\t$goal\n"
 			}
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
@@ -675,7 +675,7 @@ class MarathonShuttle:NetDummyMode() {
 		}
 
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/* Called when saving replay */

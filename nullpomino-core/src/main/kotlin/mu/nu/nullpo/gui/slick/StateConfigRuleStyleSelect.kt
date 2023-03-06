@@ -56,7 +56,7 @@ class StateConfigRuleStyleSelect:DummyMenuChooseState() {
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Background
-		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
+		g.drawImage(ResourceHolder.imgMenuBG[1], 0f, 0f)
 
 		// Menu
 		FontNormal.printFontGrid(1, 1, "SELECT ${player+1}P STYLE", COLOR.ORANGE)

@@ -84,7 +84,7 @@ class StateConfigJoystickTest:BasicGameState() {
 			return
 		}
 
-		ResourceHolder.imgMenuBG[0].draw()
+		ResourceHolder.imgMenuBG[1].draw()
 
 		FontNormal.printFontGrid(1, 1, "Joystick Input TEST (${player+1}P)", COLOR.ORANGE)
 

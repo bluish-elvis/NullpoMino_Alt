@@ -156,15 +156,15 @@ abstract class AbstractRenderer:EventReceiver() {
 			while(z<b.size-1&&n>=b[z+1]) z++
 			val w = FontBadge(z).w*scale
 			val h = FontBadge(z).h
-			if(nx+w>width) {
-				nx = x.toFloat()
-				ny += mh*scale
-				mh = 0
-			}
 			if(h>mh) mh = h
 			drawBadgesSpecific(nx, ny, z, scale)
 			n -= b[z]
 			nx += w
+			if(nx>x+width) {
+				nx = x.toFloat()
+				ny += mh*scale
+				mh = 0
+			}
 		}
 	}
 
@@ -404,13 +404,13 @@ abstract class AbstractRenderer:EventReceiver() {
 	 * @param scale Display magnification
 	 */
 	protected fun drawCurrentPiece(x:Int, y:Int, engine:GameEngine, scale:Float) {
-		val blksize = (getBlockSize(engine)*scale).toInt()
+		val blksize = (getBlockSize(engine)*scale)
 		val bx = engine.nowPieceX
 		val by = engine.nowPieceY
 		var g = engine.fpf
 
 		val isRetro = engine.frameColor in GameEngine.FRAME_SKIN_SG..GameEngine.FRAME_SKIN_GB
-		val ys = if(!smoothfall||by>=engine.nowPieceBottomY||isRetro) 0 else engine.gcount*blksize/engine.speed.denominator%blksize
+		val ys = if(!smoothfall||by>=engine.nowPieceBottomY||isRetro) 0f else engine.gcount*blksize/engine.speed.denominator%blksize
 		//if(engine.harddropFall>0)g+=engine.harddropFall;
 		if(!showLocus||isRetro) g = 0
 
@@ -430,7 +430,7 @@ abstract class AbstractRenderer:EventReceiver() {
 					}
 					val b = it.block[i]
 					drawBlock(
-						x+((x2+bx)*16f*scale), y+((y2+by-z)*16f*scale), b,
+						x+((x2+bx)*blksize), y+((y2+by-z)*blksize), b,
 						-.1f, .4f, scale*if(engine.big) 2 else 1
 					)
 					i++
@@ -440,6 +440,11 @@ abstract class AbstractRenderer:EventReceiver() {
 					ow = if(engine.statc[0]%2==0||engine.holdDisable) 2f else 0f
 				)
 			}
+			drawDia(
+				x+(bx+it.spinCX+.5f)*blksize, y+(by+it.spinCY+.5f)*blksize+ys, blksize*2/3, blksize*2/3,
+				engine.statc[0]/(14f-engine.speed.rank*10f), alpha = .75f,
+				outlineColor = getColorByID(it.block[engine.statc[0]%it.block.size].color), outlineW = 2f
+			)
 		}
 	}
 
@@ -964,6 +969,35 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	private fun fillRectSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f) =
 		fillRectSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha)
+
+	/** draw and Fill Rectangle */
+	fun drawDia(
+		x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f,
+		outlineW:Float = 0f, outlineColor:Int = 0x000000
+	) {
+		fillDiaSpecific(x, y, w, h, angle, color, alpha)
+		if(outlineW>0)
+			drawDiaSpecific(x, y, w, h, angle, outlineColor, alpha, outlineW)
+	}
+
+	fun drawDia(
+		x:Int, y:Int, w:Int, h:Int, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, outlineW:Int = 0,
+		outlineColor:Int = 0x000000
+	) =
+		drawDia(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), angle, color, alpha, outlineW.toFloat(), outlineColor)
+
+	/** Draw Rectangle Outline*/
+	protected abstract fun drawDiaSpecific(
+		x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Float = 1f
+	)
+
+	private fun drawDiaSpecific(x:Int, y:Int, w:Int, h:Int, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
+		drawDiaSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), angle, color, alpha, bold.toFloat())
+	/** Fiil Diaangle Solid*/
+	protected abstract fun fillDiaSpecific(x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f)
+
+	private fun fillDiaSpecific(x:Int, y:Int, w:Int, h:Int, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f) =
+		fillDiaSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), angle, color, alpha)
 
 	/** draw and Fill Oval */
 	fun drawOval(

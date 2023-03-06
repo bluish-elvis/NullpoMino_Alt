@@ -70,7 +70,7 @@ class StateConfigJoystickButton:BasicGameState() {
 
 		joyNumber = ControllerManager.controllerID[player]
 
-		System.arraycopy(GameKey.gamekey[player].buttonmap, 0, buttonmap, 0, GameKeyDummy.MAX_BUTTON)
+		System.arraycopy(GameKey.gameKey[player].buttonmap, 0, buttonmap, 0, GameKeyDummy.MAX_BUTTON)
 	}
 
 	/* State initialization */
@@ -85,7 +85,7 @@ class StateConfigJoystickButton:BasicGameState() {
 			return
 		}
 
-		g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
+		g.drawImage(ResourceHolder.imgMenuBG[1], 0f, 0f)
 
 		FontNormal.printFontGrid(1, 1, "JOYSTICK setting (${player+1}P)", COLOR.ORANGE)
 
@@ -186,8 +186,8 @@ class StateConfigJoystickButton:BasicGameState() {
 			} else if(key==Input.KEY_ENTER) {
 				ResourceHolder.soundManager.play("decide1")
 
-				System.arraycopy(buttonmap, 0, GameKey.gamekey[player].buttonmap, 0, GameKeyDummy.MAX_BUTTON)
-				GameKey.gamekey[player].saveConfig(NullpoMinoSlick.propConfig)
+				System.arraycopy(buttonmap, 0, GameKey.gameKey[player].buttonmap, 0, GameKeyDummy.MAX_BUTTON)
+				GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig)
 				NullpoMinoSlick.saveConfig()
 
 				gameObj.enterState(StateConfigJoystickMain.ID)

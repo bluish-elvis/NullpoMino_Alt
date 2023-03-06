@@ -22,9 +22,28 @@
   <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
  </properties>
  <packaging>jar</packaging>
-
  <build>
+  <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
   <plugins>
+   <plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>build-helper-maven-plugin</artifactId>
+    <version>3.3.0</version>
+    <executions>
+     <execution>
+      <id>add-source</id>
+      <phase>generate-sources</phase>
+      <goals>
+       <goal>add-source</goal>
+      </goals>
+      <configuration>
+       <sources>
+        <source>${project.basedir}/src/main/java</source>
+       </sources>
+      </configuration>
+     </execution>
+    </executions>
+   </plugin>
    <plugin>
     <groupId>org.jetbrains.kotlin</groupId>
     <artifactId>kotlin-maven-plugin</artifactId>
@@ -120,12 +139,32 @@
     <version>${dokka.version}</version>
     <executions>
      <execution>
-      <phase>package</phase>
+      <phase>pre-site</phase>
       <goals>
        <goal>dokka</goal>
       </goals>
      </execution>
     </executions>
+    <configuration>
+     <outputDir>${project.basedir}/target/documentation/dokka</outputDir>
+     <moduleName>nullpomino-core</moduleName>
+     <perPackageOptions>
+      <packageOptions>
+       <matchingRegex>.*nullpo.*</matchingRegex>
+       <suppress>false</suppress>
+       <reportUndocumented>false</reportUndocumented>
+       <skipDeprecated>false</skipDeprecated>
+       <documentedVisibilities>
+        <visibility>PUBLIC</visibility>
+        <visibility>PRIVATE</visibility>
+        <visibility>PROTECTED</visibility>
+        <visibility>INTERNAL</visibility>
+        <visibility>PACKAGE</visibility>
+       </documentedVisibilities>
+      </packageOptions>
+     </perPackageOptions>
+
+    </configuration>
    </plugin>
   </plugins>
  </build>
@@ -215,7 +254,6 @@
    <groupId>org.jetbrains.kotlin</groupId>
    <artifactId>kotlin-maven-plugin</artifactId>
    <version>${kotlin.version}</version>
-   <scope>provided</scope>
   </dependency>
   <dependency>
    <groupId>org.jetbrains.kotlin</groupId>

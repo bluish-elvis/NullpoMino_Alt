@@ -105,21 +105,21 @@ abstract class DummyMenuChooseState:BaseGameState() {
 		ResourceHolder.ttfFont?.loadGlyphs()
 
 		// Update key input states
-		GameKey.gamekey[0].update(container.input)
+		GameKey.gameKey[0].update(container.input)
 		// Mouse
 		var mouseConfirm = false
 		if(mouseEnabled) mouseConfirm = updateMouseInput(container.input)
 
 		if(numChoice>=0) {
 			// Cursor movement
-			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
+			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
 				cursor--
 				if(cursor<0) cursor = numChoice-1
 				ResourceHolder.soundManager.play("cursor")
 				flashY = cursor+minChoiceY
 				flashT = 0
 			}
-			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
+			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 				cursor++
 				if(cursor>=numChoice) cursor = 0
 				ResourceHolder.soundManager.play("cursor")
@@ -128,21 +128,21 @@ abstract class DummyMenuChooseState:BaseGameState() {
 			}
 
 			var change = 0
-			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) change = -1
-			if(GameKey.gamekey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) change = 1
+			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) change = -1
+			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) change = 1
 
 			if(change!=0) onChange(container, game, delta, change)
 
 			// Confirm button
-			if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_A)||mouseConfirm)
+			if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_A)||mouseConfirm)
 				if(onDecide(container, game, delta)) return
 		}
-		if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_D)) {
+		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_D)) {
 			if(onPushButtonD(container, game, delta)) return
 		}
 
 		// Cancel button
-		if(GameKey.gamekey[0].isPushKey(GameKeyDummy.BUTTON_B)||MouseInput.isMouseRightClicked) {
+		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_B)||MouseInput.isMouseRightClicked) {
 			if(onCancel(container, game, delta)) {
 				ResourceHolder.soundManager.play("cancel")
 				return

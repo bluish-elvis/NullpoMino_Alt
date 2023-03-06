@@ -541,13 +541,13 @@ class SprintScore:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		var msg = "game\tstats\t"
-		msg += "${engine.statistics.scoreLine}\t${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"
-		msg += "${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t"
-		msg += "${engine.statistics.lpm}\t${engine.statistics.spl}\t$goalType\t"
-		msg += "${engine.gameActive}\t${engine.timerActive}\t"
-		msg += "$lastscore\t$scDisp\t$lastb2b\t$lastcombo\t$lastpiece\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		val msg = "game\tstats\t"+
+			"${engine.statistics.scoreLine}\t${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"+
+			"${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t"+
+			"${engine.statistics.lpm}\t${engine.statistics.spl}\t$goalType\t"+
+			"${engine.gameActive}\t${engine.timerActive}\t"+
+			"$lastscore\t$scDisp\t$lastb2b\t$lastcombo\t$lastpiece\n"
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
@@ -573,30 +573,30 @@ class SprintScore:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendEndGameStats(engine:GameEngine) {
-		var subMsg = ""
-		subMsg += "SCORE;${engine.statistics.score}/${GOAL_TABLE[goalType]}\t"
-		subMsg += "LINE;${engine.statistics.lines}\t"
-		subMsg += "TIME;${engine.statistics.time.toTimeStr}\t"
-		subMsg += "PIECE;${engine.statistics.totalPieceLocked}\t"
-		subMsg += "SCORE/LINE;${engine.statistics.spl}\t"
-		subMsg += "SCORE/MIN;${engine.statistics.spm}\t"
-		subMsg += "LINE/MIN;${engine.statistics.lpm}\t"
-		subMsg += "PIECE/SEC;${engine.statistics.pps}\t"
+		val subMsg =
+			"SCORE;${engine.statistics.score}/${GOAL_TABLE[goalType]}\t"+
+				"LINE;${engine.statistics.lines}\t"+
+				"TIME;${engine.statistics.time.toTimeStr}\t"+
+				"PIECE;${engine.statistics.totalPieceLocked}\t"+
+				"SCORE/LINE;${engine.statistics.spl}\t"+
+				"SCORE/MIN;${engine.statistics.spm}\t"+
+				"LINE/MIN;${engine.statistics.lpm}\t"+
+				"PIECE/SEC;${engine.statistics.pps}\t"
 
 		val msg = "gstat1p\t${NetUtil.urlEncode(subMsg)}\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Send game options to all spectators
 	 * @param engine GameEngine
 	 */
 	override fun netSendOptions(engine:GameEngine) {
-		var msg = "game\toption\t"
-		msg += "${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"
-		msg += "${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"
-		msg += "${engine.speed.das}\t$bgmno\t$big\t$goalType\t$twistEnableType\t"
-		msg += "$enableTwistKick${"\t$enableB2B\t"+enableCombo}\t$presetNumber\t\t$twistEnableEZ\n"
-		netLobby!!.netPlayerClient!!.send(msg)
+		val msg = "game\toption\t"+
+			"${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"+
+			"${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"+
+			"${engine.speed.das}\t$bgmno\t$big\t$goalType\t$twistEnableType\t"+
+			"$enableTwistKick${"\t$enableB2B\t"+enableCombo}\t$presetNumber\t\t$twistEnableEZ\n"
+		netLobby?.netPlayerClient?.send(msg)
 	}
 
 	/** NET: Receive game options */

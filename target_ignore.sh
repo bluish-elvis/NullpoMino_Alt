@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+mkdir target nullpomino-core/target nullpomino-run/target
+
 if [ "$(uname)" == "Darwin" ]; then
   # Do something under Mac OS X platform
   xattr -w com.dropbox.ignored 1 target
