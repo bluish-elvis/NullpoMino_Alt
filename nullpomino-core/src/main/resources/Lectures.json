@@ -1,0 +1,274 @@
+[
+  {
+    "name": "Fundamentals",
+    "desc_jp": "",
+    "levels": [
+      {
+        "name": "Stack Flat: Don't make Deep"
+      },
+      {
+        "name": "Stack Flat: Don't make Deep",
+        "name_jp": "平積み: 溝を深めるな",
+        "desc_jp": "2マス以上の深い溝は隙間を作らずに積めるピースが大幅に減る。3マス以上の淵はIピースしか入らない！\n平地を維持するためには、無闇に縦向きに積まないのが重要だ\n\n端2マスにも注意せよ：2列の谷も受け付けるピースが少ない",
+        "queue": "LJITSZOI",
+        "mission": [
+          "3",
+          "4"
+        ]
+      },
+      {
+        "name": "Stack Flat:In 20G Survival",
+        "name_jp": "平積み: 超高速モードのみの注意点",
+        "desc_jp": "ピース落下が最高速の場合、中央5列目を高めにしなければ可動域が限られてしまう！\n注意：端の高さの維持も忘れるな。W字の地形を意識し、しかし高くしすぎずに…"
+      },
+      {
+        "name": "Stack Flat: Skimming for Quad",
+        "name_jp": "平積み: 削り",
+        "desc_jp": "穴を塞ぐように見えてすぐ消える屋根で、地形を削る\nQUADが狙える形への修正、急いで地形を低くしたい緊急時などに役立つ\n\n注意：ボーナスなしのライン消しを用いるためスコア・タイムで不利になりやすい\n問題について：",
+        "queue": "LJTI",
+        "mission": [
+          "1",
+          "1",
+          "2",
+          "bravo"
+        ]
+      },
+      {
+        "name": "Dig the hole: Avoid covering roof",
+        "name_jp": "掘り: 下穴の屋根を避けろ",
+        "desc_jp": "ブロックを積む際は、塞がってしまった穴の列をできるだけ避けろ\n\n\n補足：すぐにラインを消せるNEXTなら、その分の天井をつけても良い",
+
+        "queue": "LJSZTOI",
+        "mission": [
+          "Combo",
+          "1"
+        ]
+      },
+      {
+        "name": "Dig the hole: Count Quad",
+        "name_jp": "掘り: 4列ピッタリ",
+        "desc_jp": "対戦で穴を掘り起こす際は、できる限りまとめ消しを狙おう\n時には攻撃こそ最大の防御となる\n\n注意：穴の上は4行ピッタリを意識しろ！",
+        "queue": "LJTSZOII",
+        "mission": [
+          "4",
+          "C.4"
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "Twist",
+    "name_jp": "回転入れテクニック",
+    "desc_jp": "屋根ができてしまい、普通に移動させただけでは入らない隙間を回転操作で埋められることがある\n積みミスをフォローしつつ、高得点につなげる逆転ワザ\n注意：特定の回転方向でなければ成功しないパターンが有る",
+    "levels": [
+      {
+        "name": "T-Twist",
+        "desc_jp": "Tピースの回転入れでラインを消すと、高得点ボーナス\nT-Twist DoubleはQuadrupleと同等のパワー値だ\n\n補足：Tピースの背が壁を向いており、かつ回転入れで押し下げられていないとボーナスの小さいMini Twistになる",
+        "mission": [
+          "twist1",
+          "C.4"
+        ]
+      },
+      {
+        "name": "Other Twist",
+        "desc_jp": "Tピース以外でも、回転入れでラインを消したときのボーナスは少し入ることがある\n積みミスのフォローに活用せよ\n\n補足: モードによってはTピース以外のTwistボーナスは無効",
+        "queue": "LJISZ",
+        "mission": [
+          "twist2",
+          "C.twist1",
+          "C.twist2"
+        ]
+      },
+      {
+        "queue": "LJTSZTSZT",
+        "name": "Twist Triple",
+        "mission": [
+          "C.twist3",
+          "C.twist1"
+        ],
+        "desc_jp": "(StandardWallkick系を使用する)一部のルールでは、\n屋根を利用して埋まりかけの縦の隙間を埋めることができるかもしれない\n\n補足: SとZのみ、下腹側を段差に噛ませて回転させると下にめり込むパターンが有る"
+      },
+      {
+        "name": "Twist Single: Hamburger Quad",
+        "name_jp": "ダブルバーガー・クアッド",
+        "desc_jp": "S/ZとT-Twist Singleで高得点の削りを決めろ\n中央3列と逆側4列を四角形で組めるようにパターン化すると\n連続でT-Singleしながら積み上げられる",
+        "mission": [
+          "twist1",
+          "C.4"
+        ]
+      },
+      {
+        "name": "Twist Single: Cutting Board Quad",
+        "name_jp": "何見てんだよ ぺったんこ",
+        "desc_jp": "Twist Doubleにとらわれるな: あえてT-Singleにすることで、その後Quadで下穴を開けられる",
+        "queue": "TOLI",
+        "mission": [
+          "twist1",
+          "C.4"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Bonus Features",
+    "name_jp": "特殊ボーナス",
+    "desc_jp": "Twist以外にも、特殊な消し方によるボーナスで通常より高いスコアやパワー点を得られる\n※モードや設定によっては発生しないが、VSBattleではせり上げラインを送るためのパワー点が重要！",
+    "levels": [
+      {
+        "name": "Split Double / 1.2.Triple",
+        "desc_jp": "中抜きで2～3ラインを消すと、スコアとポイントが若干高い\n地形を荒らさずに整えつつ、高さを削るテクニックでもある\n\n注意：パワー値には影響しない"
+      },
+      {
+        "name": "REN Combo",
+        "Desc": "Make Line-Clear consequence without not clearing stack receives bonus\nGrind with singles : Long Combo makes Huge Power\n\nNotice : In Grand Challenges modes, Single lines not counts up the bonus",
+        "desc_jp": "積みを挟まずに連続でラインを消すと、回数に応じたボーナス\n1ラインずつ稼げ：長いコンボならパワー値が高まる"
+      },
+      {
+        "name": "Back 2 Back Chain",
+        "desc_jp": "「4ライン消し」または「Twistのライン消し」を連続で決めるとボーナス\nボーナスのないライン消しをしない限り途切れない\n\nモードによってはSplitでも入ることがあるかも？"
+      },
+      {
+        "name": "PERFECT:ALL CLEAR",
+        "desc_jp": "フィールドからブロックを完全に一掃すると特大ボーナス\n超高難易度の超必殺技：BagRandomizerルール用の定石以外で狙うのは極めて困難"
+      }
+    ]
+  },
+  {
+    "name": "Opener-Setup",
+    "name_jp": "開幕テンプレ",
+    "desc_jp": "対戦ゲームで、プレイヤーたちが相手への速攻につなげるため発明した定石がいくつもある\nSprint Lineで2分以内を達成したプレイヤー向け\n\n注意：これらの定石戦法は、BagRandomizerを使用しているルールでのみ使用可能",
+    "levels": [
+      {
+        "name": "TKI's TSD.Opener",
+        "desc_jp": "T-Twist Doubleを最速で決める定石の一つ\nT-Twistの勉強から、ALL CLEARを狙う相手の阻止まで幅広い状況に対応\nとてもシンプルな定石、T Double後も臨機応変に作戦を選べる\n\nNEXTに注意：Iが遅いと活用しやすい形にならない",
+        "mission": [
+          "twistT2"
+        ]
+      },
+      {
+        "name": "Stick Spin",
+        "desc_jp": "T-Twist Singleを最速で決め、中開けを作る定石\n直列のせり上がりを引く幸運な相手のALL CLEARを阻止できる\nT Single後は臨機応変に作戦を選べる まれにALL CLEARも可能\n\nNEXTに注意：OがT/Z/Sより遅いと組めない",
+        "mission": [
+          "twistT1"
+        ]
+      },
+      {
+        "name": "Double-Triple Cannon",
+        "desc_jp": "T-Twist DoubleとT-Twist Tripleを連続で決める有名な定石\nTwistを行う部分を端にしているため、土台側の積みの難易度が比較的低い\nただし、中央が高くなりやすいため相手の速攻に弱い！\n\nNEXTに注意：LとSまたはJが遅いと組めない\nJとZが早ければ右側でTwistを行う反転型を組もう",
+        "mission": [
+          "twistT3",
+          "C.twistT2"
+        ]
+      },
+      {
+        "name": "Double-Triple Cannon:",
+        "desc_jp": "端開けの定石ではT-Twist DoubleとT-Twist Tripleから長いREN Comboを目指して積みやすい\nハイリスク・ハイリターンの派生手",
+        "mission": [
+          "twistT3",
+          "C.twistT2"
+        ]
+      },
+      {
+        "name": "Triple+Double Attack: MS2",
+        "desc_jp": "T-Twist TripleとT-Twist Doubleを連続で決める形の定石は中央が凹みやすい\n中開けは積み上げが難しいが、敵の攻撃が刺さりにくく有利",
+        "mission": [
+          "twistT3",
+          "C.twistT2"
+        ]
+      },
+      {
+        "name": "Triple+Double/Perfect: Gamushiro",
+        "desc_jp": "T-Twist TripleとT-Twist Doubleを連続で決める形の定石は\nTriple後にALL CLEARを狙いやすい形も多い\n\nMS2とGamushiroの違いは1巡目IとLの位置\nそれだけでALL CLEARまでに覚えるべき手順分岐が減っている",
+        "mission": [
+          "bravo"
+        ]
+      },
+      {
+        "name": "Gassho TSD+PC Opener",
+        "desc_jp": "T-Twist DoubleからALL CLEARを狙う定石\n中央が低めの地形なので、敵の攻撃が刺さりにくい\n\nNEXTに注意：Iが遅いと組めない",
+        "mission": [
+          "twistT2"
+        ]
+      }
+    ]
+  },
+
+  {
+    "name": "Mid-game Twister Setup",
+    "name_jp": "中盤テンプレ",
+    "desc_jp": "ゲーム途中のアドリブ状態からでもT-Twistを効率的に用意する手法がある\n使いこなせば、少ないピース数で高得点を稼げる",
+    "levels": [
+      {
+        "name": "Stair Donation",
+        "desc_jp": "QUAD狙いで地形を積んでいる際、端に向けて３段の下り階段になっていればS/ZでT-Twistのチャンス\n閉じた穴をすぐ開けられるように意識せよ",
+        "queue": "SZOTI",
+        "mission": [
+          "twistT2",
+          "4"
+        ]
+      },
+      {
+        "name": "STMB Cave",
+        "desc_jp": "3列の谷のどちらかの崖にS/Zを横に被せれば、T-Twist Doubleの隙間ができる\n被せたS/Zの上を避けられれば、何事もなく地形を削れる",
+        "mission": [
+          "C.twistT2"
+        ]
+      },
+      {
+        "name": "TD Attack",
+        "desc_jp": "中央1マスの穴の上にT-Twist Tripleの形を作ると\nそのままT-Twist Doubleも連続でできる\n\n中開け向きのテクニック",
+        "queue": "SZOTI",
+        "mission": [
+          "twistT3",
+          "C.twistT2"
+        ]
+      },
+      {
+        "name": "Super T.S.D.",
+        "desc_jp": "3x3の谷にはL/Jを逆立ちさせると、T-Twist Doubleが2連続でできる形になる\nT-TwistTripleの原理で、建てた屋根をこじ開けろ\n\n注意:敵の攻撃などで谷底に穴が開いているとT-Twistが決まらない",
+        "mission": [
+          "twistT2",
+          "C.twistT2"
+        ]
+      },
+      {
+        "name": "2:7 LST Stacking",
+        "desc_jp": "端から3列目が空いた積み方はT-TwistとQUADを続ける土台\nT Twistの屋根はLJかSZの縦置きを推奨",
+        "queue": "SZOTI",
+        "mission": [
+          "twistT2",
+          "twistT2",
+          "4"
+        ]
+      },
+      {
+        "name": "Fractal:Double Dagger",
+        "desc_jp": "T型の隙間を２つ並べて連続T-Twist Doubleを決めろ",
+        "mission": [
+          "twistT2",
+          "C.twistT2"
+        ]
+      },
+      {
+        "name": "The Imperial Cross",
+        "desc_jp": "十字形の隙間に屋根を付けて、Tピースを縦に回転入れさせろ\nT-TwistTripleの原理でSplitを決めると、さらにT-Twist Doubleの形ができる\n\n余談：T-Twist Tripleのパターンに似ている、T背後の1マスに隙間はあるか?",
+        "queue": "OJTZLOSITLJT",
+        "mission": [
+          "S.twistT2",
+          "C.twistT2"
+        ]
+      },
+      {
+        "name": "Imperial's Double Cross",
+        "desc_jp": "T-TwistがうまくDoubleにできなさそうなら、一旦横に新しくT-Twistを作る\n十字の隙間をSplitで削ることを意識しろ",
+        "queue": "OJTZLOSITLJT",
+        "mission": [
+          "S.twistT2",
+          "S.C.twistT2",
+          "C.twistT2"
+        ]
+      }
+    ]
+  }
+]

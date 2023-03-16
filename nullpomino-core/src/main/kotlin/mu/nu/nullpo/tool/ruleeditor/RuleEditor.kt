@@ -56,30 +56,7 @@ import java.util.Vector
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
-import javax.swing.BoxLayout
-import javax.swing.ButtonGroup
-import javax.swing.DefaultComboBoxModel
-import javax.swing.Icon
-import javax.swing.ImageIcon
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JComboBox
-import javax.swing.JFileChooser
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.JList
-import javax.swing.JMenu
-import javax.swing.JMenuBar
-import javax.swing.JMenuItem
-import javax.swing.JOptionPane
-import javax.swing.JPanel
-import javax.swing.JRadioButton
-import javax.swing.JTabbedPane
-import javax.swing.JTextField
-import javax.swing.KeyStroke
-import javax.swing.ListCellRenderer
-import javax.swing.UIManager
-import javax.swing.WindowConstants
+import javax.swing.*
 import javax.swing.filechooser.FileFilter
 
 /** ルールエディター */
@@ -480,28 +457,12 @@ class RuleEditor:JFrame, ActionListener {
 	/** Initialization */
 	private fun init() {
 		// 設定ファイル読み込み
-		try {
-			val `in` = FileInputStream("config/setting/swing.xml")
-			propConfig.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-		}
+		propConfig.loadXML("config/setting/swing.xml")
 
 		// 言語ファイル読み込み
-		try {
-			val `in` = FileInputStream("config/lang/ruleeditor_default.xml")
-			propLangDefault.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-			log.error("Couldn't load default UI language file", e)
-		}
+		if(propLangDefault.loadXML("config/lang/ruleeditor_default.xml")==null) log.error("Couldn't load default UI language file")
 
-		try {
-			val `in` = FileInputStream("config/lang/ruleeditor_${Locale.getDefault().country}.xml")
-			propLang.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-		}
+		propLang.loadXML("config/lang/ruleeditor_${Locale.getDefault().country}.xml")
 
 		// Look&Feel設定
 		if(propConfig.getProperty("option.usenativelookandfeel", true))
@@ -1288,14 +1249,14 @@ class RuleEditor:JFrame, ActionListener {
 
 	/** Block画像を読み込み */
 	private fun loadBlockSkins() {
-		val skindir = propConfig.getProperty("custom.skin.directory", "res")
+		val skinDir = propConfig.getProperty("custom.skin.directory", "res")
 
 		var numBlocks = 0
-		while(File("$skindir/graphics/blockskin/normal/n$numBlocks.png").canRead()) numBlocks++
+		while(File("$skinDir/graphics/blockskin/normal/n$numBlocks.png").canRead()) numBlocks++
 		log.debug("$numBlocks block skins found")
 
 		imgBlockSkins = List(numBlocks) {i ->
-			val imgBlock = loadImage(getURL("$skindir/graphics/blockskin/normal/n$i.png"))
+			val imgBlock = loadImage(getURL("$skinDir/graphics/blockskin/normal/n$i.png"))
 			val isSticky = imgBlock!=null&&imgBlock.width>=400&&imgBlock.height>=304
 
 			BufferedImage(144, 16, BufferedImage.TYPE_INT_RGB).apply {
@@ -1315,7 +1276,7 @@ class RuleEditor:JFrame, ActionListener {
 		var img:BufferedImage? = null
 		try {
 			img = ImageIO.read(url!!)
-			log.debug("Loaded image from $url")
+			log.debug("Loaded image from {}", url)
 		} catch(e:IOException) {
 			log.error("Failed to load image from ${url ?: ""}", e)
 		}
@@ -1327,27 +1288,11 @@ class RuleEditor:JFrame, ActionListener {
 	 * @param str Filename
 	 * @return リソースファイルのURL
 	 */
-	private fun getURL(str:String):URL? {
-		val url:URL
-
-		try {
-			val sep = File.separator[0]
-			var file = str.replace(sep, '/')
-
-			// 参考：http://www.asahi-net.or.jp/~DP8T-ASM/java/tips/HowToMakeURL.html
-			if(file[0]!='/') {
-				var dir = System.getProperty("user.dir")
-				dir = dir.replace(sep, '/')+'/'
-				if(dir[0]!='/') dir = "/$dir"
-				file = dir+file
-			}
-			url = URL("file", "", file)
-		} catch(e:MalformedURLException) {
-			log.warn("Invalid URL:$str", e)
-			return null
-		}
-
-		return url
+	private fun getURL(str:String):URL? = try {
+		File(str).toURI().toURL()
+	} catch(e:MalformedURLException) {
+		log.warn("Invalid URL:$str", e)
+		null
 	}
 
 	/** テキストファイルを読み込んでVector&lt;String&gt;に入れる
@@ -1365,7 +1310,7 @@ class RuleEditor:JFrame, ActionListener {
 				if(str==null||str.isEmpty()) break
 				vec.add(str)
 			}
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		return vec
@@ -1445,9 +1390,9 @@ class RuleEditor:JFrame, ActionListener {
 		txtfldLockDelayLockResetLimitMove.text = r.lockResetMoveLimit.toString()
 		txtfldLockDelayLockResetLimitSpin.text = r.lockResetSpinLimit.toString()
 		when(r.lockResetLimitOver) {
-			RuleOptions.LOCKRESET_LIMIT_OVER_NORESET -> radioLockDelayLockResetLimitOverNoReset?.isSelected = true
+			RuleOptions.LOCKRESET_LIMIT_OVER_NoReset -> radioLockDelayLockResetLimitOverNoReset?.isSelected = true
 			RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT -> radioLockDelayLockResetLimitOverInstant?.isSelected = true
-			RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK -> radioLockDelayLockResetLimitOverNoWallkick?.isSelected = true
+			RuleOptions.LOCKRESET_LIMIT_OVER_NoKick -> radioLockDelayLockResetLimitOverNoWallkick?.isSelected = true
 		}
 
 		txtfldAREMin.text = r.minARE.toString()
@@ -1567,11 +1512,11 @@ class RuleEditor:JFrame, ActionListener {
 		r.lockResetMoveLimit = getIntTextField(txtfldLockDelayLockResetLimitMove)
 		r.lockResetSpinLimit = getIntTextField(txtfldLockDelayLockResetLimitSpin)
 		if(radioLockDelayLockResetLimitOverNoReset!!.isSelected)
-			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NORESET
+			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NoReset
 		if(radioLockDelayLockResetLimitOverInstant!!.isSelected)
 			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT
 		if(radioLockDelayLockResetLimitOverNoWallkick!!.isSelected)
-			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK
+			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NoKick
 
 		r.minARE = getIntTextField(txtfldAREMin)
 		r.maxARE = getIntTextField(txtfldAREMax)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -30,10 +30,12 @@ package mu.nu.nullpo.gui.slick.img
 
 import mu.nu.nullpo.gui.common.BaseFontMedal
 import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolder
 
 /** 普通の文字列の表示クラス */
 object FontMedal:BaseFontMedal() {
 	override val img:ResourceImage<*> = ResourceHolder.imgFontMedal
+	override val rainbowCount:Int get() = NullpoMinoSlick.rainbow
 
 }

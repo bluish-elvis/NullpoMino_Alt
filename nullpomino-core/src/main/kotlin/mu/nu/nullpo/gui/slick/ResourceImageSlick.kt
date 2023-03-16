@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -45,14 +45,16 @@ class ResourceImageSlick(override val name:String, val antiAlias:Boolean = false
 
 	fun copy():Image = res.copy()
 	override fun load() {
+		if(name.isEmpty()) return
 		res = try {
+			ResourceHolder.log.debug("load image from $name.png")
 			Image("${ResourceHolder.skinDir}/graphics/$name.png").apply {
 				filter = if(antiAlias) Image.FILTER_LINEAR else Image.FILTER_NEAREST
 			}
 		} catch(e:Exception) {
 			if(e !is UnsupportedOperationException&&(e is IOException||e is SlickException))
 				ResourceHolder.log.error("Failed to load image from $name", e)
-			Image(256, 256)
+			res
 		}
 	}
 
@@ -70,6 +72,10 @@ class ResourceImageSlick(override val name:String, val antiAlias:Boolean = false
 	override fun toString():String = name
 
 	constructor(it:ResourceImage<*>, antiAlias:Boolean = false):this(it.name, antiAlias)
+	constructor(i:Image, antiAlias:Boolean = false):this(i.name ?: "", antiAlias) {
+		res = i
+	}
+
 	constructor(it:ResourceImageSlick):this(it.name) {
 		res = it.copy()
 	}

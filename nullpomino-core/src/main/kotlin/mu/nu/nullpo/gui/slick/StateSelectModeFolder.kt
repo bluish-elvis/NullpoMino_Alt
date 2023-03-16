@@ -35,14 +35,16 @@ import mu.nu.nullpo.gui.slick.img.FontTTF
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
+import org.newdawn.slick.state.GameState
 import org.newdawn.slick.state.StateBasedGame
+import org.newdawn.slick.state.transition.EmptyTransition
 import java.io.BufferedReader
 import java.io.FileReader
 import java.io.IOException
 import java.util.LinkedList
 
 /** Mode folder select */
-class StateSelectModeFolder:DummyMenuScrollState() {
+class StateSelectModeFolder:BaseMenuScrollState() {
 	/** Constructor */
 	init {
 		pageHeight = PAGE_HEIGHT
@@ -88,16 +90,24 @@ class StateSelectModeFolder:DummyMenuScrollState() {
 		strCurrentFolder = if(cursor==list.lastIndex) "" else list[cursor]
 		NullpoMinoSlick.propGlobal.setProperty("name.folder", strCurrentFolder)
 		NullpoMinoSlick.saveConfig()
-		StateSelectMode.isTopLevel = false
-		game.enterState(StateSelectMode.ID)
+//		StateSelectMode.isTopLevel = false
+		game.enterState(StateSelectMode.ID, TransDecideFolder(strCurrentFolder), EmptyTransition())
 		return false
 	}
 
 	/* Cancel */
 	override fun onCancel(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
-		StateSelectMode.isTopLevel = true
-		game.enterState(StateSelectMode.ID)
+		game.enterState(StateSelectMode.ID, TransDecideFolder(), EmptyTransition())
 		return true
+	}
+
+	internal class TransDecideFolder(val folderName:String? = null):EmptyTransition() {
+		override fun init(firstState:GameState?, secondState:GameState?) {
+			if(secondState is StateSelectMode) {
+				secondState.strCurrentFolder = folderName ?: ""
+				secondState.isTopLevel = folderName==null
+			}
+		}
 	}
 
 	companion object {

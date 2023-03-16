@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -33,12 +33,12 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.EventReceiver.FONT
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -104,7 +104,7 @@ class RetroN:AbstractMode() {
 	 * screen. */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		softdropscore = 0
 		harddropscore = 0
 		levellines = 0
@@ -136,8 +136,8 @@ class RetroN:AbstractMode() {
 			owDelayCancel = 0
 		}
 
-		engine.owner.bgMan.bg = startLevel
-		if(engine.owner.bgMan.bg>19) engine.owner.bgMan.bg = 19
+		owner.bgMan.bg = startLevel
+		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
 		levellines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
 		engine.frameColor = GameEngine.FRAME_SKIN_GB
 	}
@@ -170,7 +170,7 @@ class RetroN:AbstractMode() {
 	/** Main routine for game setup screen */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
-		if(!engine.owner.replayMode) {
+		if(!owner.replayMode) {
 			// Configuration changes
 			val change = updateCursor(engine, 4)
 
@@ -192,7 +192,7 @@ class RetroN:AbstractMode() {
 						startLevel += change
 						if(startLevel<0) startLevel = 19
 						if(startLevel>19) startLevel = 0
-						engine.owner.bgMan.bg = startLevel
+						owner.bgMan.bg = startLevel
 						levellines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
 					}
 					3 -> {
@@ -289,7 +289,7 @@ class RetroN:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "RETRO CLASSIC", COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
 		receiver.drawScoreFont(engine, 0, 1, "(${SPEED_NAME[speedtype]} ${GAMETYPE_NAME[gametype]})", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
@@ -298,7 +298,7 @@ class RetroN:AbstractMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(
-						engine, 0, 4+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+						engine, 0, 4+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
 					receiver.drawScoreNum(engine, 3, 4+i, GeneralUtil.capsNum(rankingScore[gametype][i], 6), i==rankingRank)
 					receiver.drawScoreNum(
@@ -315,7 +315,7 @@ class RetroN:AbstractMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "SCORE${if(lastscore>0) "(+$lastscore)" else ""}", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 3, "SCORE${if(lastScore>0) "(+$lastScore)" else ""}", COLOR.BLUE)
 			receiver.drawScore(
 				engine, 0, 4, GeneralUtil.capsNum(scDisp, 6), font = if(engine.statistics.score<=999999) FONT.NUM else FONT.NORMAL,
 				scale = 2f
@@ -324,7 +324,7 @@ class RetroN:AbstractMode() {
 			receiver.drawScoreFont(engine, 0, 6, "LINE", COLOR.BLUE)
 			receiver.drawScore(
 				engine, 0, 7, when(gametype) {
-					GAMETYPE_TYPE_B -> String.format("-%2d", maxOf(25-engine.statistics.lines, 0))
+					GAMETYPE_TYPE_B -> "-%2d".format(maxOf(25-engine.statistics.lines, 0))
 					else -> GeneralUtil.capsNum(engine.statistics.lines, 3)
 				}, if(gametype!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.NORMAL, scale = 2f
 			)
@@ -373,7 +373,7 @@ class RetroN:AbstractMode() {
 
 		// Add score to total
 		if(pts>0) {
-			lastscore = pts
+			lastScore = pts
 			engine.statistics.scoreLine += pts
 		}
 
@@ -395,14 +395,9 @@ class RetroN:AbstractMode() {
 			levellines += 10
 
 			//engine.framecolor = engine.statistics.level
-			if(engine.statistics.level>255) {
-				engine.statistics.level = 0
-			}
+			if(engine.statistics.level>255) engine.statistics.level = 0
 
-			owner.bgMan.fadesw = true
-			owner.bgMan.fadecount = 0
-
-			owner.bgMan.fadebg = maxOf(0, minOf(19, engine.statistics.level))
+			owner.bgMan.nextBg = maxOf(0, minOf(19, engine.statistics.level))
 
 			setSpeed(engine)
 			engine.playSE("levelup")
@@ -452,7 +447,7 @@ class RetroN:AbstractMode() {
 		if(engine.statc[1]==0) {
 			drawResultStats(engine, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES)
 			receiver.drawMenuFont(engine, 0, 7, "Level", COLOR.BLUE)
-			val strLevel = String.format("%10s", LEVEL_NAME[engine.statistics.level])
+			val strLevel = "%10s".format(LEVEL_NAME[engine.statistics.level])
 			receiver.drawMenuFont(engine, 0, 8, strLevel)
 			drawResultStats(engine, receiver, 9, COLOR.BLUE, Statistic.SPL)
 			drawResultRank(engine, receiver, 15, COLOR.BLUE, rankingRank)
@@ -463,12 +458,12 @@ class RetroN:AbstractMode() {
 			drawResultStats(engine, receiver, 3, COLOR.BLUE, Statistic.TIME, Statistic.LPM)
 			receiver.drawMenuFont(engine, 0, 7, "I-Droughts", COLOR.BLUE)
 			receiver.drawMenuFont(engine, 0, 8, "Longest", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, 0, 8, String.format("%3d", droughts.maxOrNull() ?: 0), 2f)
+			receiver.drawMenuNum(engine, 0, 8, "%3d".format(droughts.maxOrNull() ?: 0), 2f)
 			receiver.drawMenuFont(engine, 0, 10, "Average", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, 0, 11, String.format("%3f", droughts.average()), 2f)
+			receiver.drawMenuNum(engine, 0, 11, droughts.average(), null to 3, scale = 2f)
 			drawResult(
 				engine, receiver, 13, COLOR.RED, "Burnouts",
-				String.format("%3d", engine.statistics.run {totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple})
+				"%3d".format(engine.statistics.run {totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple})
 			)
 		}
 	}

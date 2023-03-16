@@ -202,8 +202,8 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		var frameCount = 0L; private set
 		/** upTime by frame */
 		var upTimeFrame = 0L; private set
-		/** rainbow counter */
-		val rainbow get() = (upTimeFrame%18).toInt()/2
+		/** rainbow 9 counter */
+		val rainbow get() = (upTimeFrame%20).toInt()/2
 		/** 実際のFPS */
 		private var actualFPS = .0
 		/** FPS表示用DecimalFormat */
@@ -467,7 +467,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			alternateFPSDynamicAdjust = propConfig.getProperty("option.alternateFPSDynamicAdjust", true)
 			alternateFPSPerfectMode = propConfig.getProperty("option.alternateFPSPerfectMode", false)
 			alternateFPSPerfectYield = propConfig.getProperty("option.alternateFPSPerfectYield", false)
-			altMaxFPS = propConfig.getProperty("option.maxfps", 60)
+			altMaxFPS = propConfig.getProperty("option.maxFps", 60)
 			altMaxFPSCurrent = altMaxFPS
 			periodCurrent = (1.0/altMaxFPSCurrent*1000000000).toLong()
 
@@ -475,7 +475,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			appGameContainer.alwaysRender = !alternateFPSTiming
 
 
-			appGameContainer.soundVolume = propConfig.getProperty("option.sevolume", 128)/128f
+			appGameContainer.soundVolume = propConfig.getProperty("option.seVolume", 128)/128f
 
 			ControllerManager.run {
 				method = propConfig.getProperty("option.joymethod", CONTROLLER_METHOD_NONE)
@@ -558,9 +558,9 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		 */
 		@JvmOverloads
 		internal fun alternateFPSSleep(ingame:Boolean = false) {
-			val maxfps = altMaxFPSCurrent
+			val maxFps = altMaxFPSCurrent
 
-			if(maxfps>0) {
+			if(maxFps>0) {
 				var sleepFlag = false
 				val afterTime:Long = System.nanoTime()
 
@@ -571,7 +571,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 				if(sleepTimeInMillis>=10&&(!alternateFPSPerfectMode||!ingame)) {
 					// If it is possible to use sleep
-					if(maxfps>0)
+					if(maxFps>0)
 						try {
 							Thread.sleep(sleepTimeInMillis)
 						} catch(_:InterruptedException) {
@@ -665,7 +665,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 		/** FPS display */
 		internal fun drawFPS() {
-			if(propConfig.getProperty("option.showfps", true))
+			if(propConfig.getProperty("option.showFps", true))
 				FontNano.printFont(240-42, 480-8, "${df.format(actualFPS)}FPS", COLOR.WHITE, .5f)
 		}
 
@@ -711,8 +711,8 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				if(it.isConnected) {
 					val fontcolor = if(it.observerCount>0&&it.playerCount>0) COLOR.RED
 					else if(it.observerCount>1) COLOR.GREEN else COLOR.BLUE
-					val strObserverInfo = String.format("%d/%d", it.observerCount, it.playerCount)
-					val strObserverString = String.format("%40s", strObserverInfo)
+					val strObserverInfo = "%d/%d".format(it.observerCount, it.playerCount)
+					val strObserverString = "%40s".format(strObserverInfo)
 					FontNano.printFont(0, 480-16, strObserverString, fontcolor)
 				}
 			}

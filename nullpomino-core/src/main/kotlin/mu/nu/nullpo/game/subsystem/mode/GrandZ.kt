@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -46,50 +46,51 @@ class GrandZ:AbstractMode() {
 	private var stacks = 0
 
 	/** Next section level */
-	private var nextseclv = 0
+	private var nextSecLv = 0
 
 	/** Level up flag (Set to true when the level increases) */
-	private var lvupflag = false
+	private var lvupFlag = false
 
 	/** Elapsed ending time */
-	private var rolltime = 0
+	private var rollTime = 0
 
 	/** Ending started flag */
-	private var rollstarted = false
+	private var rollStarted = false
 
 	/** Grade */
 	private var grade = 0
 	private var gradeinternal = 0
 
 	/** Remaining frames of flashing grade display */
-	private var gradeflash = 0
+	private var gradeFlash = 0
 
 	/** Used by combo scoring */
 	private var comboValue = 0
 
 	/** Game completed flag (0=Died before Lv999 1=Died during credits roll
 	 * 2=Survived credits roll */
-	private var rollclear = 0
+	private var rollClear = 0
 
 	/** Secret Grade */
 	private var secretGrade = 0
 
 	/** Section Time */
-	private val sectionTime = Array(SECTION_MAX) {0}
-	private val sectionLine = Array(SECTION_MAX) {0}
+	private val sectionTime = MutableList(SECTION_MAX) {0}
+	private val sectionLine = MutableList(SECTION_MAX) {0}
 
 	/** This will be true if the player achieves new section time record in
 	 * specific section */
-	private val sectionIsNewRecord = Array(SECTION_MAX) {false}
+	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
 
 	/** Amount of sections completed */
-	private var sectionscomp = 0
+	private var sectionsDone = 0
 
 	/** Average section time */
-	private var sectionavgtime = 0
+	private val sectionAvgTime
+		get() = sectionTime.filter {it>0}.average().toFloat()
 
 	/** Current section time */
-	private var sectionlasttime = 0
+	private var sectionLastTime = 0
 
 	/** AC medal */
 	private var medalAC = 0
@@ -134,13 +135,13 @@ class GrandZ:AbstractMode() {
 	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Time records */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	/** Game completed flag records */
-	private val rankingRollclear = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingRollClear = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Best section time records */
-	private val bestSectionTime = List(RANKING_TYPE) {MutableList(SECTION_MAX) {0}}
+	private val bestSectionTime = List(RANKING_TYPE) {MutableList(SECTION_MAX) {DEFAULT_SECTION_TIME}}
 	private val bestSectionLine = List(RANKING_TYPE) {MutableList(SECTION_MAX) {0}}
 
 	override val rankMap
@@ -148,7 +149,7 @@ class GrandZ:AbstractMode() {
 			rankingGrade.mapIndexed {a, x -> "$a.lines" to x}+
 				rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
 				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
-				rankingRollclear.mapIndexed {a, x -> "$a.rollclear" to x}+
+				rankingRollClear.mapIndexed {a, x -> "$a.rollClear" to x}+
 				bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}+
 				bestSectionLine.mapIndexed {a, x -> "$a.section.line" to x}
 		)
@@ -162,22 +163,21 @@ class GrandZ:AbstractMode() {
 		super.playerInit(engine)
 		stacks = 0
 		joker = stacks
-		nextseclv = 0
-		lvupflag = true
-		rolltime = 0
-		rollstarted = false
+		nextSecLv = 0
+		lvupFlag = true
+		rollTime = 0
+		rollStarted = false
 		gradeinternal = 0
 		grade = gradeinternal
-		gradeflash = 0
+		gradeFlash = 0
 		comboValue = 0
-		lastscore = 0
+		lastScore = 0
 		secretGrade = 0
 		sectionTime.fill(0)
 		sectionLine.fill(0)
 		sectionIsNewRecord.fill(false)
-		sectionscomp = 0
-		sectionavgtime = 0
-		sectionlasttime = 0
+		sectionsDone = 0
+		sectionLastTime = 0
 		medalAC = 0
 		medalST = 0
 		medalSK = 0
@@ -190,14 +190,14 @@ class GrandZ:AbstractMode() {
 		rankingRank = -1
 		rankingGrade.forEach {it.fill(0)}
 		rankingLevel.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
-		rankingRollclear.forEach {it.fill(0)}
-		bestSectionTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
+		rankingRollClear.forEach {it.fill(0)}
+		bestSectionTime.forEach {it.fill(-1)}
 		bestSectionLine.forEach {it.fill(0)}
 
-		engine.twistEnable = false
-		engine.b2bEnable = false
-		engine.splitB2B = false
+		engine.twistEnable = true
+		engine.b2bEnable = true
+		engine.splitB2B = true
 		engine.comboType = GameEngine.COMBO_TYPE_DOUBLE
 		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
 		engine.bigHalf = true
@@ -239,28 +239,20 @@ class GrandZ:AbstractMode() {
 			engine.blockShowOutlineOnly = false
 			engine.blockHidden = -1
 		} else {
-			var section = engine.statistics.level/100
+			var section = if(gametype==1) engine.statistics.level/40 else engine.statistics.level/100
 			if(section>tableARE[gametype].size-1) section = tableARE[gametype].size-1
 			engine.speed.are = tableARE[gametype][section]
 			engine.speed.areLine = 0
 			engine.speed.lineDelay = tableARE[gametype][section]
 			engine.speed.lockDelay = tableLockDelay[gametype][section]
 			if(!engine.ruleOpt.lockResetMove&&!engine.ruleOpt.lockResetSpin) engine.speed.lockDelay++
-			engine.speed.das = 8-gametype*2
+			engine.speed.das = 10-gametype*2
 
 			engine.blockHidden = if(gametype==0) maxOf(engine.ruleOpt.lockFlash, tableHiddenDelay[section])
 			else -1
 
 			engine.blockShowOutlineOnly = true
 		}
-	}
-
-	/** Calculates the average section time */
-	private fun setAverageSectionTime() {
-		if(sectionscomp>0) {
-			val i = minOf(sectionscomp+startLevel, sectionTime.size)
-			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
-		} else sectionavgtime = 0
 	}
 
 	/** Checks ST medal
@@ -270,16 +262,16 @@ class GrandZ:AbstractMode() {
 	private fun stMedalCheck(engine:GameEngine, sectionNumber:Int) {
 		val best = bestSectionTime[gametype][sectionNumber]
 
-		if(sectionlasttime<best) {
+		if(sectionLastTime<best) {
 			if(medalST<3) {
 				engine.playSE("medal3")
 				medalST = 3
 			}
 			if(!owner.replayMode) sectionIsNewRecord[sectionNumber] = true
-		} else if(sectionlasttime<best+300&&medalST<2) {
+		} else if(sectionLastTime<best+300&&medalST<2) {
 			engine.playSE("medal2")
 			medalST = 2
-		} else if(sectionlasttime<best+600&&medalST<1) {
+		} else if(sectionLastTime<best+600&&medalST<1) {
 			engine.playSE("medal1")
 			medalST = 1
 		}
@@ -321,7 +313,7 @@ class GrandZ:AbstractMode() {
 			// Check for B button, when pressed this will shut down the game engine.
 			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
 
-			sectionscomp = 0
+			sectionsDone = 0
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -346,17 +338,17 @@ class GrandZ:AbstractMode() {
 		return false
 	}
 
-	/** This function will be called before the game actually begins (after
-	 * Ready&Go screen disappears) */
+	/** This function will be called before the game actually begins
+	 * (after Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
 		if(gametype==2)
 			engine.statistics.level = 0
 		else {
 			engine.statistics.level = startLevel*100
 
-			nextseclv = engine.statistics.level+100
-			if(engine.statistics.level<0) nextseclv = 100
-			if(engine.statistics.level>=900) nextseclv = 999
+			nextSecLv = engine.statistics.level+100
+			if(engine.statistics.level<0) nextSecLv = 100
+			if(engine.statistics.level>=900) nextSecLv = 999
 
 			owner.bgMan.bg = 30+engine.statistics.level/100
 		}
@@ -373,7 +365,7 @@ class GrandZ:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "GRAND Finale", COLOR.WHITE)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.WHITE)
 
 		receiver.drawScoreFont(engine, 0, 1, "b${tableModeName[gametype]}", COLOR.WHITE)
 
@@ -381,26 +373,25 @@ class GrandZ:AbstractMode() {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Leaderboard
-					val scale = if(receiver.nextDisplayType==2) .5f else 1f
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
-					receiver.drawScoreFont(engine, 3, topY-1, "GRADE LEVEL TIME", COLOR.RED, scale)
+					receiver.drawScoreFont(engine, 3, topY-1, "GRADE LEVEL TIME", COLOR.RED)
 
 					for(i in 0 until RANKING_MAX) {
-						var gcolor = COLOR.WHITE
-						if(rankingRollclear[gametype][i]==1) gcolor = COLOR.RED
-						if(rankingRollclear[gametype][i]==2) gcolor = COLOR.ORANGE
 
-						receiver.drawScoreNum(engine, 0, topY+i, String.format("%02d", i+1), COLOR.YELLOW, scale)
-						receiver.drawScoreGrade(engine, 3, topY+i, tableGradeName[rankingGrade[gametype][i]], gcolor, scale)
-						receiver.drawScoreNum(
-							engine, 9, topY+i, String.format("%03d", rankingLevel[gametype][i]), i==rankingRank, scale
+						receiver.drawScoreGrade(engine, 0, topY+i, "%02d".format(i+1), COLOR.YELLOW)
+						receiver.drawScoreGrade(
+							engine, 3, topY+i, tableGradeName[minOf(tableGradeName.lastIndex, rankingGrade[gametype][i])],
+							when {
+								rankingRollClear[gametype][i]==1 -> COLOR.RED
+								rankingRollClear[gametype][i]==2 -> COLOR.ORANGE
+								else -> COLOR.WHITE
+							}
 						)
-						receiver.drawScoreNum(
-							engine, 15, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank, scale
-						)
+						receiver.drawScoreNum(engine, 9, topY+i, "%03d".format(rankingLevel[gametype][i]), i==rankingRank)
+						receiver.drawScoreNum(engine, 15, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank)
 					}
 
-					receiver.drawScoreFont(engine, 0, 17, "F:VIEW SECTION TIME", COLOR.ORANGE)
+					receiver.drawScoreFont(engine, 0, 19, "F:VIEW SECTION TIME", COLOR.ORANGE)
 				} else {
 					// Best section time records
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.RED)
@@ -425,38 +416,34 @@ class GrandZ:AbstractMode() {
 					receiver.drawScoreFont(engine, 9, 14, "AVERAGE", COLOR.RED)
 					receiver.drawScoreNum(engine, 9, 15, (totalTime*1f/SECTION_MAX).toTimeStr, 2f)
 
-					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", COLOR.ORANGE)
+					receiver.drawScoreFont(engine, 0, 19, "F:VIEW RANKING", COLOR.ORANGE)
 				}
 		} else {
-			val color:COLOR = COLOR.all[(engine.statistics.time+rolltime)%COLOR.all.size]
+			val color:COLOR = COLOR.all[(engine.statistics.time+rollTime)%COLOR.all.size]
 			// Grade
 			if(grade>=1&&grade<tableGradeName.size)
-				receiver.drawScoreGrade(engine, 0, 2, tableGradeName[grade], gradeflash>0&&gradeflash%4==0, 2f)
+				receiver.drawScoreGrade(engine, 0, 2, tableGradeName[grade], gradeFlash>0&&gradeFlash%4==0, 2f)
 
 			// Time
 			receiver.drawScoreFont(engine, 0, 4, "Time", color)
-			if((engine.ending!=2) or (rolltime/10%2==0))
+			if((engine.ending!=2) or (rollTime/10%2==0))
 				receiver.drawScoreNum(engine, 0, 5, engine.statistics.time.toTimeStr, 2f)
 			// Level
 			receiver.drawScoreFont(engine, 0, 8, "Level", color)
-			receiver.drawScoreNum(engine, 0, 9, String.format("%3d", maxOf(engine.statistics.level, 0)))
+			receiver.drawScoreNum(engine, 0, 9, "%3d".format(maxOf(engine.statistics.level, 0)))
 			receiver.drawScoreSpeed(
 				engine, 0, 10, if(gametype==1)
-					if(engine.statistics.level<500) engine.statistics.level*20/500 else 80-engine.statistics.level*80/999
-				else
-					engine.statistics.level*40/999,
-				4
+					if(engine.statistics.level<600) engine.statistics.level/600f else 1-(engine.statistics.level-600)/400f
+				else engine.statistics.level/999f,
+				4f
 			)
-			receiver.drawScoreNum(engine, 0, 11, String.format("%3d", nextseclv))
+			receiver.drawScoreNum(engine, 0, 11, "%3d".format(nextSecLv))
 			// Lines
 			receiver.drawScoreFont(
 				engine, 0, 13, if(gametype==1) "JOKERS" else "Lines", if(gametype==1&&joker<=0) COLOR.WHITE else color
 			)
 			receiver.drawScoreNum(
-				engine, 1, 14, String.format(
-					"%3d",
-					if(gametype==1) joker else engine.statistics.lines
-				), 2f
+				engine, 1, 14, "%3d".format(if(gametype==1) joker else engine.statistics.lines), 2f
 			)
 			if(gametype!=0)
 				receiver.drawScoreSpeed(
@@ -464,11 +451,11 @@ class GrandZ:AbstractMode() {
 					4
 				)
 			if(gametype==2)
-				receiver.drawScoreNum(engine, 1, 17, String.format("%3d", FURTHEST_LINES))
+				receiver.drawScoreNum(engine, 1, 17, "%3d".format(FURTHEST_LINES))
 
 			// Remain roll time
 			if(engine.gameActive&&engine.ending==2) {
-				var time = ROLLTIMELIMIT-rolltime
+				var time = ROLLTIMELIMIT-rollTime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.RED)
 				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
@@ -496,13 +483,13 @@ class GrandZ:AbstractMode() {
 						var strSeparator = "-"
 						if(i==section&&engine.ending==0) strSeparator = "+"
 
-						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, sectionTime[i].toTimeStr)
+						val strSectionTime:String = "%3d%s%s".format(temp, strSeparator, sectionTime[i].toTimeStr)
 
 						receiver.drawScoreNum(engine, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
 
 				receiver.drawScoreFont(engine, x2, 17, "AVERAGE", COLOR.RED)
-				receiver.drawScoreNum(engine, x2, 18, (engine.statistics.time/(sectionscomp+1)).toTimeStr, 2f)
+				receiver.drawScoreNum(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, 2f)
 			}
 		}
 	}
@@ -510,20 +497,19 @@ class GrandZ:AbstractMode() {
 	/** This function will be called when the piece is active */
 	override fun onMove(engine:GameEngine):Boolean {
 		// New piece is active
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
+		if(engine.ending==0&&engine.statc[0]==0&&gametype==0&&!engine.holdDisable&&!lvupFlag) {
 			// Level up
-			if(gametype==1&&engine.statistics.level>=500&&stacks<40) stacks++
-			if(isLeveledPerBlock(engine.statistics.level)) {
+			if(engine.statistics.level<nextSecLv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 		}
-		if(engine.ending==0&&engine.statc[0]>0&&(version>=2||!engine.holdDisable)) lvupflag = false
+		if(engine.ending==0&&engine.statc[0]>0&&(version>=2||!engine.holdDisable)) lvupFlag = false
 
 		// Ending start
-		if(engine.ending==2&&!rollstarted) {
-			rollstarted = true
+		if(engine.ending==2&&!rollStarted) {
+			rollStarted = true
 			owner.musMan.bgm = BGM.Ending(3)
 		}
 
@@ -533,20 +519,17 @@ class GrandZ:AbstractMode() {
 	/** This function will be called during ARE */
 	override fun onARE(engine:GameEngine):Boolean {
 		// Last frame of ARE
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
-			if(gametype==1&&engine.statistics.level>=500&&stacks<40) stacks++
-			if(isLeveledPerBlock(engine.statistics.level)) {
+		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&gametype==0&&!lvupFlag) {
+			if(engine.statistics.level<nextSecLv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
-			lvupflag = true
+			lvupFlag = true
 		}
 
 		return false
 	}
-
-	private fun isLeveledPerBlock(level:Int):Boolean = level<nextseclv-1&&(gametype==0||gametype==1&&level<499)
 
 	/** Levelup */
 	private fun levelUp(engine:GameEngine) {
@@ -579,7 +562,7 @@ class GrandZ:AbstractMode() {
 				if(gradeinternal>gm) gradeinternal = gm
 				if(grade!=gi) {
 					grade = gi
-					gradeflash = 180
+					gradeFlash = 180
 					engine.playSE("cool")
 				}
 			}
@@ -629,18 +612,11 @@ class GrandZ:AbstractMode() {
 			// Levelup
 			val levelb = engine.statistics.level
 			when(gametype) {
-				1 -> {//joker
-					engine.statistics.level++
-					if(li>=3) joker++
-					if(engine.statistics.level>=500&&joker>0) {
-						engine.statistics.level += stacks
-						stacks = 0
-						if(li<=3||engine.split) joker--
-					}
-					if(engine.statistics.level<500||joker>0) {
-						engine.statistics.level += li
-						if(li>2) engine.statistics.level += li-2
-					}
+				1 -> {//joker {
+					engine.statistics.level += 4
+					val jo = li>=3||ev.twist||ev.split
+					if(engine.statistics.level<600&&jo) joker++
+					else if(engine.statistics.level>=600&&!jo) joker--
 				}
 				0 -> {
 					engine.statistics.level += li
@@ -649,55 +625,52 @@ class GrandZ:AbstractMode() {
 				2 -> engine.statistics.level = engine.statistics.lines*999/FURTHEST_LINES
 			}
 
-			if(engine.statistics.level>=999) {
+			if((gametype==1&&engine.statistics.level>=1000&&joker<0)||
+				gametype!=1&&engine.statistics.level>=999) {
 				// Ending Start
 				engine.playSE("endingstart")
-				engine.statistics.level = 999
+				if(gametype==0) engine.statistics.level = 999
+				engine.staffrollEnable = true
+				engine.staffrollNoDeath = true
 				engine.timerActive = false
 				engine.ending = 2
 				owner.musMan.bgm = BGM.Ending(3)
-				rollclear = 1
+				rollClear = 1
 
-				if(gametype==1&&joker>0) grade = 31
+				if(gametype==1&&(joker>0||engine.statistics.level>1000)) grade = 31
 				else if(engine.lives>=MAX_LIVES[gametype]) grade = 31
-				gradeflash = 180
+				gradeFlash = 180
 
 				// Records section time
-				sectionlasttime = sectionTime[levelb/100]
-				sectionscomp++
-				setAverageSectionTime()
+				sectionLastTime = sectionTime[levelb/100]
+				sectionsDone++
 
 				// Check for ST medal
 				stMedalCheck(engine, levelb/100)
-			} else if(nextseclv==500&&engine.statistics.level>=500&&gametype==1&&joker<=0) {
-				// level500とりカン
-				engine.statistics.level = 500
+			} else if(engine.statistics.level>=600&&gametype==1&&joker<0) {
+				// ストック切れとりカン
 				engine.gameEnded()
 				engine.staffrollEnable = false
 				engine.ending = 1
-				rollclear = 1
+				rollClear = if(engine.lives==MAX_LIVES[gametype]) 2 else 1
 
 				secretGrade = engine.field.secretGrade
 				// Section Timeを記録
-				sectionlasttime = sectionTime[levelb/100]
-				sectionscomp++
-				setAverageSectionTime()
+				sectionLastTime = sectionTime[levelb/100]
+				sectionsDone++
 
 				// ST medal
 				stMedalCheck(engine, levelb/100)
-			} else if(engine.statistics.level>=nextseclv) {
+			} else if(engine.statistics.level>=nextSecLv) {
 				// Next section
 				engine.playSE("levelup")
 
 				// Change background image
-				owner.bgMan.fadesw = true
-				owner.bgMan.fadecount = 0
-				owner.bgMan.fadebg = 30+nextseclv/100
+				owner.bgMan.nextBg = 30+nextSecLv/100
 
 				// Records section time
-				sectionlasttime = sectionTime[levelb/100]
-				sectionscomp++
-				setAverageSectionTime()
+				sectionLastTime = sectionTime[levelb/100]
+				sectionsDone++
 
 				// Check for ST medal
 				stMedalCheck(engine, levelb/100)
@@ -708,25 +681,25 @@ class GrandZ:AbstractMode() {
 					val gi = gradeinternal*31/gm
 					if(grade!=gi) {
 						grade = gi
-						gradeflash = 180
+						gradeFlash = 180
 						engine.playSE("cool")
 					}
 				}
-				gradeflash = 180
+				gradeFlash = 180
 
 				// Update next section level
-				nextseclv += 100
-				if(nextseclv>999) nextseclv = 999
-			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+				nextSecLv += 100
+				if(nextSecLv>999) nextSecLv = 999
+			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
 			// Add score
 
 			val section = levelb/100
 			if(section>=0&&section<sectionTime.size) sectionLine[levelb/100] += if(gametype==1) (li>=4).toInt() else li
-			lastscore = (((levelb+li)/4+engine.softdropFall+engine.manualLock.toInt())*li*comboValue+
+			lastScore = (((levelb+li)/4+engine.softdropFall+engine.manualLock.toInt())*li*comboValue+
 				maxOf(0, engine.lockDelay-engine.lockDelayNow)+engine.statistics.level/2)*if(engine.field.isEmpty) 2 else 1
 
-			engine.statistics.scoreLine += lastscore
+			engine.statistics.scoreLine += lastScore
 			levelUp(engine)
 		}
 		return 0
@@ -736,32 +709,29 @@ class GrandZ:AbstractMode() {
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
 		// Grade up flash
-		if(gradeflash>0) gradeflash--
+		if(gradeFlash>0) gradeFlash--
 
 		// Increase section timer
 		if(engine.timerActive&&engine.ending==0) {
 			val section = engine.statistics.level/100
 
-			if(section>=0&&section<sectionTime.size) sectionTime[section]++
-			if(engine.statistics.level==nextseclv-1)
-				engine.meterColor = if(engine.meterColor==-0x1)
-					-0x10000
-				else
-					-0x1
+			if(section>=0&&section<sectionTime.size)
+				sectionTime[section] = engine.statistics.time-sectionTime.take(section).sum()
+			if(engine.statistics.level==nextSecLv-1)
+				engine.meterColor = if(engine.meterColor==-0x1) -0x10000 else -0x1
 		}
 
 		// Engine
 		if(engine.gameActive&&engine.ending==2) {
-			rolltime++
+			rollTime++
 
 			// Time meter
-			val remainRollTime = ROLLTIMELIMIT-rolltime
+			val remainRollTime = ROLLTIMELIMIT-rollTime
 			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
 			// Player has survived the roll
-			if(rolltime>=ROLLTIMELIMIT) {
-				rollclear = if(engine.lives==MAX_LIVES[gametype]) 2 else 1
+			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
@@ -781,9 +751,11 @@ class GrandZ:AbstractMode() {
 
 		if(engine.statc[1]==0) {
 			if(grade>=1&&grade<tableGradeName.size) {
-				var gcolor = COLOR.WHITE
-				if(rollclear==1) gcolor = COLOR.GREEN
-				if(rollclear==2) gcolor = COLOR.ORANGE
+				val gcolor = when(rollClear) {
+					1 -> COLOR.GREEN
+					2 -> COLOR.ORANGE
+					else -> COLOR.WHITE
+				}
 				receiver.drawMenuFont(engine, 0, 2, "GRADE", COLOR.RED)
 				receiver.drawMenuGrade(engine, 6, 2, tableGradeName[grade], gcolor, 2f)
 			}
@@ -794,7 +766,7 @@ class GrandZ:AbstractMode() {
 			if(secretGrade>4)
 				drawResult(
 					engine, receiver, 14, COLOR.RED, "S. GRADE",
-					String.format("%10s", tableSecretGradeName[secretGrade-1])
+					"%10s".format(tableSecretGradeName[secretGrade-1])
 				)
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.RED)
@@ -803,9 +775,9 @@ class GrandZ:AbstractMode() {
 				if(sectionTime[i]>0)
 					receiver.drawMenuFont(engine, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
 
-			if(sectionavgtime>0) {
+			if(sectionAvgTime>0) {
 				receiver.drawMenuFont(engine, 0, 14, "AVERAGE", COLOR.RED)
-				receiver.drawMenuNum(engine, 2, 15, sectionavgtime.toTimeStr)
+				receiver.drawMenuNum(engine, 2, 15, sectionAvgTime.toTimeStr)
 			}
 		} else if(engine.statc[1]==2) {
 			receiver.drawMenuFont(engine, 0, 2, "MEDAL", COLOR.RED)
@@ -848,7 +820,7 @@ class GrandZ:AbstractMode() {
 
 		// Updates leaderboard and best section time records
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
-			updateRanking(gametype, grade, engine.statistics.level, engine.statistics.time, rollclear)
+			updateRanking(gametype, grade, engine.statistics.level, engine.statistics.time, rollClear)
 			if(medalST==3) updateBestSectionTime(gametype)
 
 			if(rankingRank!=-1||medalST==3) return true
@@ -866,7 +838,7 @@ class GrandZ:AbstractMode() {
 					"$j.$ruleName.$i.grade" to rankingGrade[j][i],
 					"$j.$ruleName.$i.level" to rankingLevel[j][i],
 					"$j.$ruleName.$i.time" to rankingTime[j][i],
-					"$j.$ruleName.$i.clear" to rankingRollclear[j][i]
+					"$j.$ruleName.$i.clear" to rankingRollClear[j][i]
 				)
 			}+(0 until SECTION_MAX).flatMap {i ->
 				listOf("$j,$ruleName.sectiontime.$i" to bestSectionTime[j][i])
@@ -888,13 +860,13 @@ class GrandZ:AbstractMode() {
 				rankingGrade[type][i] = rankingGrade[type][i-1]
 				rankingLevel[type][i] = rankingLevel[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
-				rankingRollclear[type][i] = rankingRollclear[type][i-1]
+				rankingRollClear[type][i] = rankingRollClear[type][i-1]
 			}
 
 			rankingGrade[type][rankingRank] = gr
 			rankingLevel[type][rankingRank] = lv
 			rankingTime[type][rankingRank] = time
-			rankingRollclear[type][rankingRank] = clear
+			rankingRollClear[type][rankingRank] = clear
 		}
 	}
 
@@ -907,13 +879,13 @@ class GrandZ:AbstractMode() {
 	 */
 	private fun checkRanking(type:Int, gr:Int, lv:Int, time:Int, clear:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(clear>rankingRollclear[type][i])
+			if(clear>rankingRollClear[type][i])
 				return i
-			else if(clear==rankingRollclear[type][i]&&gr>rankingGrade[type][i])
+			else if(clear==rankingRollClear[type][i]&&gr>rankingGrade[type][i])
 				return i
-			else if(clear==rankingRollclear[type][i]&&gr==rankingGrade[type][i]&&lv>rankingLevel[type][i])
+			else if(clear==rankingRollClear[type][i]&&gr==rankingGrade[type][i]&&lv>rankingLevel[type][i])
 				return i
-			else if(clear==rankingRollclear[type][i]&&gr==rankingGrade[type][i]&&lv==rankingLevel[type][i]
+			else if(clear==rankingRollClear[type][i]&&gr==rankingGrade[type][i]&&lv==rankingLevel[type][i]
 				&&time<rankingTime[type][i]
 			)
 				return i
@@ -937,14 +909,22 @@ class GrandZ:AbstractMode() {
 		/** ARE */
 		private val tableARE =
 			listOf(
-				listOf(20, 19, 18, 17, 16, 15, 14, 13, 12, 11), listOf(15, 14, 13, 12, 11, 10, 9, 8, 7, 5),
+				listOf(20, 19, 18, 17, 16, 15, 14, 13, 12, 11),
+				listOf(
+					15, 15, 15, 15, 14, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5,
+					15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5
+				),
 				listOf(10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
 			)
 
 		/** Lock delay */
 		private val tableLockDelay =
 			listOf(
-				listOf(25, 25, 24, 24, 23, 23, 22, 22, 21, 21), listOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21),
+				listOf(25, 25, 24, 24, 23, 23, 22, 22, 21, 21),
+				listOf(
+					30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 17,//0,40-599
+					30, 28, 26, 24, 22, 20, 19, 18, 17, 16, 15//600,640-999
+				),
 				listOf(22, 22, 21, 21, 20, 20, 19, 18, 17, 16)
 			)
 
@@ -982,6 +962,8 @@ class GrandZ:AbstractMode() {
 		/** Allowed Topouts */
 		private val MAX_LIVES = listOf(4, 0, 2)
 
+		/** goal of gamemode:1 */
+		private val JOKER_SECTION_LEVEL = listOf(150, 250)
 		/** goal of gamemode:2 */
 		private const val FURTHEST_LINES = 300
 	}

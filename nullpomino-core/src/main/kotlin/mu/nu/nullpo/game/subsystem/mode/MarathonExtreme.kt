@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -44,7 +44,7 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 /** EXTREME Mode */
 class MarathonExtreme:NetDummyMode() {
 	/** Ending time */
-	private var rolltime = 0
+	private var rollTime = 0
 
 	/** Current BGM */
 	private var bgmLv = 0
@@ -74,7 +74,7 @@ class MarathonExtreme:NetDummyMode() {
 	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	override val rankMap
 		get() = rankMapOf(
@@ -89,14 +89,14 @@ class MarathonExtreme:NetDummyMode() {
 	override val menu = MenuList("extreme", itemEndless, itemLevel, itemBig)
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		bgmLv = 0
-		rolltime = 0
+		rollTime = 0
 
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 
 		netPlayerInit(engine)
 		// NET: Load name
@@ -129,7 +129,7 @@ class MarathonExtreme:NetDummyMode() {
 	override fun onSetting(engine:GameEngine):Boolean {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode)
-			netOnUpdateNetPlayRanking(engine, netGetGoalType())
+			netOnUpdateNetPlayRanking(engine, netGetGoalType)
 		else if(!engine.owner.replayMode) {
 			// Configuration changes
 			val change = updateMenu(engine)
@@ -156,7 +156,7 @@ class MarathonExtreme:NetDummyMode() {
 
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null)
-				netEnterNetPlayRankingScreen(netGetGoalType())
+				netEnterNetPlayRankingScreen(netGetGoalType)
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -195,22 +195,20 @@ class MarathonExtreme:NetDummyMode() {
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.RED, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.RED)
 
 				for(i in 0 until RANKING_MAX) {
 					var endlessIndex = 0
 					if(endless) endlessIndex = 1
 
 					receiver.drawScoreGrade(
-						engine, 0, topY+i, String.format("%02d", i+1),
-						if(rankingRank==i) COLOR.RAINBOW else if(rankingLines[endlessIndex][i]>=200) COLOR.ORANGE else COLOR.RED,
-						scale
+						engine, 0, topY+i, "%02d".format(i+1),
+						if(rankingRank==i) COLOR.RAINBOW else if(rankingLines[endlessIndex][i]>=200) COLOR.ORANGE else COLOR.RED
 					)
-					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[endlessIndex][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, 10, topY+i, "${rankingLines[endlessIndex][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[endlessIndex][i].toTimeStr, i==rankingRank, scale)
+					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[endlessIndex][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 10, topY+i, "${rankingLines[endlessIndex][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[endlessIndex][i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
@@ -218,18 +216,18 @@ class MarathonExtreme:NetDummyMode() {
 			receiver.drawScoreNum(engine, 5, 2, engine.statistics.lines.toString(), 2f)
 
 			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.RED)
-			receiver.drawScoreNum(engine, 5, 4, "+$lastscore")
+			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
 			val scget = scDisp<engine.statistics.score
 			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
 			if(engine.gameActive&&engine.ending==2) {
-				val remainRollTime = maxOf(0, ROLLTIMELIMIT-rolltime)
+				val remainRollTime = maxOf(0, ROLLTIMELIMIT-rollTime)
 
 				receiver.drawScoreFont(engine, 0, 7, "ROLL TIME", COLOR.RED)
 				receiver.drawScoreNum(engine, 5, 7, remainRollTime.toTimeStr, remainRollTime>0&&remainRollTime<10*60, 2f)
 			} else {
 				receiver.drawScoreFont(engine, 0, 7, "Level", COLOR.RED)
 				receiver.drawScoreNum(
-					engine, 5, 7, String.format("%.1f", engine.statistics.level.toDouble()+1.0+engine.statistics.lines%10*0.1),
+					engine, 5, 7, "%.1f".format(engine.statistics.level.toDouble()+1.0+engine.statistics.lines%10*0.1),
 					2f
 				)
 			}
@@ -245,10 +243,10 @@ class MarathonExtreme:NetDummyMode() {
 		super.onLast(engine)
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
-			rolltime++
+			rollTime++
 
 			// Time meter
-			var remainRollTime = ROLLTIMELIMIT-rolltime
+			var remainRollTime = ROLLTIMELIMIT-rollTime
 			if(remainRollTime<0) remainRollTime = 0
 			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
@@ -257,7 +255,7 @@ class MarathonExtreme:NetDummyMode() {
 			if(remainRollTime<=10*60) engine.meterColor = GameEngine.METER_COLOR_RED
 
 			// Finished
-			if(rolltime>=ROLLTIMELIMIT) {
+			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
@@ -273,16 +271,16 @@ class MarathonExtreme:NetDummyMode() {
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		super.calcScore(engine, ev)
-
+		calcPower(engine, ev, true)
 		if(engine.ending==0) {
 			// BGM fade-out effects and BGM changes
 
-			if(engine.statistics.lines>=nextbgmLine(engine.statistics.lines)-5) owner.musMan.fadesw = true
+			if(engine.statistics.lines>=nextbgmLine(engine.statistics.lines)-5) owner.musMan.fadeSW = true
 			val newbgm = minOf(maxOf(0, bgmLv(engine.statistics.lines)), tableBGM.size-1)
 			if(bgmLv!=newbgm) {
 				bgmLv = newbgm
 				owner.musMan.bgm = tableBGM[bgmLv]
-				owner.musMan.fadesw = false
+				owner.musMan.fadeSW = false
 			}
 
 			// Meter
@@ -293,7 +291,7 @@ class MarathonExtreme:NetDummyMode() {
 				// Ending
 				engine.playSE("levelup")
 				engine.playSE("endingstart")
-				owner.musMan.fadesw = false
+				owner.musMan.fadeSW = false
 				owner.musMan.bgm = BGM.Ending(2)
 				engine.bone = true
 				engine.ending = 2
@@ -302,31 +300,47 @@ class MarathonExtreme:NetDummyMode() {
 				// Level up
 				engine.statistics.level++
 
-				owner.bgMan.fadesw = true
-				owner.bgMan.fadecount = 0
-				owner.bgMan.fadebg = engine.statistics.level
+				owner.bgMan.nextBg = engine.statistics.level
 
 				setSpeed(engine)
 				engine.playSE("levelup")
 			}
 		}
-		return if(ev.lines>0) lastscore else 0
+		return if(ev.lines>0) lastScore else 0
 	}
 
 	override fun onResult(engine:GameEngine):Boolean {
 		val b = if(engine.ending==0) BGM.Result(0) else BGM.Result(3)
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		owner.musMan.bgm = b
+
+		// Page change
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
+			engine.statc[1]--
+			if(engine.statc[1]<0) engine.statc[1] = 1
+			engine.playSE("change")
+		}
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+			engine.statc[1]++
+			if(engine.statc[1]>1) engine.statc[1] = 0
+			engine.playSE("change")
+		}
 
 		return super.onResult(engine)
 	}
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		drawResultStats(
-			engine, receiver, 0, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.TIME, Statistic.SPM,
-			Statistic.LPM, Statistic.SPL
-		)
+		when {
+			engine.statc[1]==0 -> drawResultStats(
+				engine, receiver, 0, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.TIME,
+				Statistic.PIECE, Statistic.ATTACKS, Statistic.SPL
+			)
+			engine.statc[1]==1 -> drawResultStats(
+				engine, receiver, 0, COLOR.RED, Statistic.SPM, Statistic.LPM, Statistic.TIME,
+				Statistic.PPS, Statistic.APM, Statistic.SPL
+			)
+		}
 		drawResultRank(engine, receiver, 12, COLOR.RED, rankingRank)
 		drawResultNetRank(engine, receiver, 14, COLOR.RED, netRankingRank[0])
 		drawResultNetRankDaily(engine, receiver, 16, COLOR.RED, netRankingRank[1])
@@ -426,11 +440,11 @@ class MarathonExtreme:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
+		val bg = if(engine.owner.bgMan.fadeSW) engine.owner.bgMan.nextBg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t$endless\t"
-			}+"${gameActive}\t${timerActive}\t$lastscore\t$scDisp\t${lastEvent}\t${lastEventPiece}\t$bg\t$rolltime\n"
+			}+"${gameActive}\t${timerActive}\t$lastScore\t$scDisp\t${lastEvent}\t${lastEventPiece}\t$bg\t$rollTime\n"
 		}
 		netLobby?.netPlayerClient?.send(msg)
 	}
@@ -449,11 +463,11 @@ class MarathonExtreme:NetDummyMode() {
 			{endless = it.toBoolean()},
 			{engine.gameActive = it.toBoolean()},
 			{engine.timerActive = it.toBoolean()},
-			{lastscore = it.toInt()},
+			{lastScore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
 			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{engine.owner.bgMan.bg = it.toInt()},
-			{rolltime = it.toInt()}).zip(message).forEach {(x, y) ->
+			{rollTime = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
 		// Meter
@@ -490,7 +504,7 @@ class MarathonExtreme:NetDummyMode() {
 	}
 
 	/** NET: Get goal type */
-	override fun netGetGoalType():Int = if(endless) 1 else 0
+	override val netGetGoalType get() = if(endless) 1 else 0
 
 	/** NET: It returns true when the current settings don't prevent leaderboard screen from showing.*/
 	override fun netIsNetRankingViewOK(engine:GameEngine):Boolean = startLevel==0&&!big&&engine.ai==null
@@ -518,10 +532,10 @@ class MarathonExtreme:NetDummyMode() {
 		private val tableDAS = listOf(10, 10, 10, 9, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4)
 
 		/** Line counts when BGM changes occur */
-		private val tableBGMChange = listOf(20, 40, 70, 100, 130, 160)
+		private val tableBGMChange = listOf(20, 40, 60, 80, 110, 140, 170)
 		private val tableBGM = listOf(
-			BGM.Rush(0), BGM.Generic(6), BGM.Rush(1), BGM.Generic(7), BGM.Generic(8), BGM.Rush(2),
-			BGM.Rush(3)
+			BGM.Rush(0), BGM.Generic(6), BGM.Generic(7), BGM.Rush(1), BGM.Generic(8),
+			BGM.Generic(9), BGM.Rush(2), BGM.Rush(3)
 		)
 
 		/** Number of entries in rankings */

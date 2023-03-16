@@ -94,7 +94,7 @@ import kotlin.random.Random
 	private var lineflagHidden = MutableList(hiddenHeight) {false}
 
 	/** HURRY UP地面のcount */
-	var hurryupFloorLines = 0; private set
+	var hurryUpFloorLines = 0; private set
 
 	/** Number of total blocks above minimum required in cint clears */
 	var colorClearExtraCount = 0
@@ -336,9 +336,9 @@ import kotlin.random.Random
 	// not single blocks.
 	val howManySquareClears:List<Int>
 		get() = findBlocks {!it.getAttribute(ATTRIBUTE.GARBAGE)&&(it.isGoldSquareBlock||it.isSilverSquareBlock)}
-			.filter {(y, _) -> getLineFlag(y)}.values.let {
-				listOf(it.sumOf {it.values.count {it.isGoldSquareBlock}},
-					it.sumOf {it.values.count {it.isSilverSquareBlock}}
+			.filter {(y, _) -> getLineFlag(y)}.values.let {y ->
+				listOf(y.sumOf {x -> x.values.count {it.isGoldSquareBlock}},
+					y.sumOf {x -> x.values.count {it.isSilverSquareBlock}}
 				)
 			}
 
@@ -346,7 +346,7 @@ import kotlin.random.Random
 	 * @return HURRY UPの地面を除いたField height
 	 */
 	val heightWithoutHurryupFloor:Int
-		get() = height-hurryupFloorLines
+		get() = height-hurryUpFloorLines
 
 	/** Called at initialization */
 	fun reset() {
@@ -354,7 +354,7 @@ import kotlin.random.Random
 		blockHidden = List(hiddenHeight) {MutableList(width) {null}}
 		lineflagField = MutableList(height) {false}
 		lineflagHidden = MutableList(hiddenHeight) {false}
-		hurryupFloorLines = 0
+		hurryUpFloorLines = 0
 
 		colorClearExtraCount = 0
 		colorsCleared = 0
@@ -383,7 +383,7 @@ import kotlin.random.Random
 			blockHidden = o.blockHidden.map {x -> x.map {y -> y?.let {Block(it)}}.toMutableList()}
 			lineflagField = o.lineflagField.toMutableList()
 			lineflagHidden = o.lineflagField.toMutableList()
-			hurryupFloorLines = o.hurryupFloorLines
+			hurryUpFloorLines = o.hurryUpFloorLines
 
 			colorClearExtraCount = o.colorClearExtraCount
 			colorsCleared = o.colorsCleared
@@ -519,8 +519,7 @@ import kotlin.random.Random
 	fun findBlocks(inHide:Boolean = true, cond:(b:Block)->Boolean):Map<Int, Map<Int, Block>> =
 		findBlocks((if(inHide) -1*hiddenHeight else 0) until height, cond)
 	/** Remove blocks from specific location
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
+	 * @param pos [X,y] coordinate-array
 	 * @return Previous Block if successful, null if failed
 	 */
 	@JvmName("delBlocksi") fun delBlocks(pos:Map<Int, Collection<Int>>) =
@@ -643,7 +642,7 @@ import kotlin.random.Random
 				for(it in getRow(i)) {
 					it?.setAttribute(true, ATTRIBUTE.ERASE)
 				}
-			} else if(i>=lines.sorted().first()) inv = true
+			} else if(i>=lines.minOf {it}) inv = true
 		}
 		return lines.size
 	}
@@ -1573,132 +1572,103 @@ import kotlin.random.Random
 
 	fun doCascadeGravity(type:LineGravity):Boolean {
 		setAllAttribute(false, ATTRIBUTE.LAST_COMMIT)
-		return if(type==LineGravity.CASCADE_SLOW)
-			doCascadeSlow()
-		else doCascadeGravity()
+		return when(type) {
+			LineGravity.CASCADE_SLOW -> doCascadeSlow()
+			LineGravity.CASCADE -> doCascadeGravity()
+			else -> false
+		}
 	}
 
-	/** Main routine for cascade gravity.
-	 * @return `true` if something falls. `false` if
-	 * nothing falls.
+	/**
+	 * Main routine for cascade gravity.
+	 * @return `true` if something falls. `false` if nothing falls.
 	 */
-	fun doCascadeGravity():Boolean {
+	private fun doCascadeGravity():Boolean {
 		var result = false
-
 		setAllAttribute(false, ATTRIBUTE.CASCADE_FALL)
-
-		for(i in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
-			for(j in 0 until width) getBlock(j, i)?.let {blk ->
+		for(i in heightWithoutHurryupFloor-1 downTo -hiddenHeight) for(j in 0 until width) {
+			getBlock(j, i)?.let {blk ->
 				if(!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
-					var fall = true
 					checkBlockLink(j, i)
-
-					for(k in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
-						for(l in 0 until width) {
+					val fall = !(heightWithoutHurryupFloor-1 downTo -hiddenHeight).any {k ->
+						(0 until width).any {l ->
 							getBlock(l, k)?.let {
-								if(!it.isEmpty&&it.getAttribute(ATTRIBUTE.TEMP_MARK)
-									&&!it.getAttribute(ATTRIBUTE.CASCADE_FALL)
-								) {
-									val bBelow = getBlock(l, k+1)
-
-									if(getCoordAttribute(l, k+1)==COORD_WALL||(bBelow!=null&&!bBelow.isEmpty
-											&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK))
-									)
-										fall = false
-								}
-							}
+								if(!it.isEmpty&&it.getAttribute(ATTRIBUTE.TEMP_MARK)&&!it.getAttribute(ATTRIBUTE.CASCADE_FALL))
+									getBlock(l, k+1)?.let {bBelow ->
+										getCoordAttribute(l, k+1)==COORD_WALL||!bBelow.isEmpty&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK)
+									} else false
+							} ?: false
 						}
-
+					}
 					if(fall) {
 						result = true
-						for(k in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
-							for(l in 0 until width)
-								getBlock(l, k)?.let {bTemp ->
-									getBlock(l, k+1)?.let {bBelow ->
-										if(getCoordAttribute(l, k+1)!=COORD_WALL&&!bTemp.isEmpty&&bBelow.isEmpty&&bTemp.getAttribute(
-												ATTRIBUTE.TEMP_MARK
-											)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)
-										) {
-											bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
-											bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL)
-											bTemp.setAttribute(true, ATTRIBUTE.LAST_COMMIT)
-											setBlock(l, k+1, bTemp)
-											setBlock(l, k, Block())
-										}
-									}
-								}
+						cascadeDown()
 					}
 				}
 			}
-
+		}
 		setAllAttribute(false, ATTRIBUTE.TEMP_MARK, ATTRIBUTE.CASCADE_FALL)
 
-		/* for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor();
-		 * i++) { setLineFlag(i, false); } */
+		/*
+			for(int i = (hidden_height * -1); i < getHeightWithoutHurryupFloor(); i++) {
+				setLineFlag(i, false);
+			}
+			*/return result
+	}
+	/**
+	 * Routine for cascade gravity which checks from the top down for a slower fall animation.
+	 * @return `true` if something falls. `false` if nothing falls.
+	 */
+	private fun doCascadeSlow():Boolean {
+		var result = false
+		setAllAttribute(false, ATTRIBUTE.CASCADE_FALL)
+		for(i in hiddenHeight*-1 until heightWithoutHurryupFloor) for(j in 0 until width) getBlock(j, i)?.let {blk ->
+			if(!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
 
+				checkBlockLink(j, i)
+				val fall = !(heightWithoutHurryupFloor-1 downTo -hiddenHeight).any {k ->
+					(0 until width).any {l ->
+						getBlock(l, k)?.let {
+							if(!it.isEmpty&&it.getAttribute(ATTRIBUTE.TEMP_MARK)&&!it.getAttribute(ATTRIBUTE.CASCADE_FALL))
+								getBlock(l, k+1)?.let {bBelow ->
+									getCoordAttribute(l, k+1)==COORD_WALL||!bBelow.isEmpty&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK)
+								} else false
+						} ?: false
+					}
+				}
+				if(fall) {
+					result = true
+					cascadeDown()
+				}
+			}
+		}
+		setAllAttribute(false, ATTRIBUTE.TEMP_MARK, ATTRIBUTE.CASCADE_FALL)
 		return result
 	}
 
-	/** Routine for cascade gravity which checks from the top down for a slower
-	 * fall animation.
-	 * @return `true` if something falls. `false` if
-	 * nothing falls.
-	 */
-	fun doCascadeSlow():Boolean {
-		var result = false
-
-		setAllAttribute(false, ATTRIBUTE.CASCADE_FALL)
-
-		for(i in -hiddenHeight until heightWithoutHurryupFloor)
-			for(j in 0 until width) {
-				getBlock(j, i)?.let {blk ->
-					if(!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
-						var fall = true
-						checkBlockLink(j, i)
-
-						for(k in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
-							for(l in 0 until width) getBlock(l, k)?.let {bTemp ->
-								if(bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
-									getBlock(l, k+1)?.let {bBelow ->
-										if(getCoordAttribute(l, k+1)==COORD_WALL||!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK))
-											fall = false
-									}
-								}
-							}
-
-						if(fall) {
-							result = true
-							for(k in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
-								for(l in 0 until width) {
-									val bTemp = getBlock(l, k)
-									val bBelow = getBlock(l, k+1)
-
-									if(getCoordAttribute(l, k+1)!=COORD_WALL&&bTemp!=null&&!bTemp.isEmpty&&bBelow!=null
-										&&bBelow.isEmpty
-										&&bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)
-										&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)
-									) {
-										bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
-										bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL, ATTRIBUTE.LAST_COMMIT)
-										setBlock(l, k+1, bTemp)
-										setBlock(l, k, Block())
-									}
-								}
-						}
+	private fun cascadeDown() {
+		for(y in heightWithoutHurryupFloor-1 downTo -hiddenHeight) for(x in 0 until width)
+			getBlock(x, y)?.let {bTemp ->
+				getBlock(x, y+1)?.let {bBelow ->
+					if(getCoordAttribute(x, y+1)!=COORD_WALL&&!bTemp.isEmpty&&bBelow.isEmpty&&
+						bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
+						bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
+						bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL, ATTRIBUTE.LAST_COMMIT)
+						if(bTemp.getAttribute(ATTRIBUTE.IGNORE_LINK)) bTemp.setAttribute(
+							false, ATTRIBUTE.CONNECT_LEFT, ATTRIBUTE.CONNECT_DOWN, ATTRIBUTE.CONNECT_UP, ATTRIBUTE.CONNECT_RIGHT
+						)
+						setBlock(x, y+1, bTemp)
+						delBlock(x, y)
 					}
 				}
 			}
-
-		setAllAttribute(false, ATTRIBUTE.TEMP_MARK, ATTRIBUTE.CASCADE_FALL)
-
-		return result
 	}
 
 	/** Checks the connection of blocks and set "mark" to each block.
 	 * @param x X coord
 	 * @param y Y coord
 	 */
-	fun checkBlockLink(x:Int, y:Int) {
+	private fun checkBlockLink(x:Int, y:Int) {
 		setAllAttribute(false, ATTRIBUTE.TEMP_MARK)
 		checkBlockLinkSub(x, y)
 	}
@@ -1727,7 +1697,7 @@ import kotlin.random.Random
 	 * @param x X coord
 	 * @param y Y coord
 	 */
-	fun setBlockLinkBroken(x:Int, y:Int) {
+	private fun setBlockLinkBroken(x:Int, y:Int) {
 		setAllAttribute(false, ATTRIBUTE.TEMP_MARK)
 		setBlockLinkBrokenSub(x, y)
 	}
@@ -1811,11 +1781,11 @@ import kotlin.random.Random
 					setBlock(j, heightWithoutHurryupFloor-1, blk)
 				}
 
-				hurryupFloorLines++
+				hurryUpFloorLines++
 			}
 		else if(lines<0) {
-			val l = minOf(lines, hurryupFloorLines)
-			hurryupFloorLines -= l
+			val l = minOf(lines, hurryUpFloorLines)
+			hurryUpFloorLines -= l
 			cutLine(height-1, l)
 		}
 	}
@@ -1982,7 +1952,7 @@ import kotlin.random.Random
 		val str = StringBuilder("${javaClass.name}@${Integer.toHexString(hashCode())}\n")
 
 		for(i in -hiddenHeight until height) {
-			str.append(String.format("%3d:", i))
+			str.append("%3d:".format(i))
 
 			for(j in 0 until width) {
 				val blk = getBlock(j, i)
@@ -2256,7 +2226,7 @@ import kotlin.random.Random
 						it<maxCount&&!listOf(
 							getBlockColor(x, y-2), getBlockColor(x, y+2),
 							getBlockColor(x-2, y), getBlockColor(x+2, y)
-						).any {c -> !colors.any {p -> p.first==c}}
+						).any {c -> !colors.any {(first) -> first==c}}
 					}
 					bestSwitch = -1
 					bestSwitchCount = Integer.MAX_VALUE
@@ -2303,7 +2273,7 @@ import kotlin.random.Random
 			if(balanced) done = true
 		}
 		if(!flashMode) return
-		val gemNeeded = colors.mapIndexed {i, it -> it.first.color&&colorCounts[i]>0}
+		val gemNeeded = colors.mapIndexed {i, (first) -> first.color&&colorCounts[i]>0}
 			.toMutableList()
 		done = !gemNeeded.any()
 		while(!done) {
@@ -2333,7 +2303,7 @@ import kotlin.random.Random
 		})
 
 	fun shuffleColors(blockColors:List<Block.COLOR>, numColors:Int, rand:Random) {
-		var bC = blockColors.toMutableList()
+		val bC = blockColors.toMutableList()
 		val maxX = minOf(bC.size, numColors)
 		var j:Int
 		var i = maxX

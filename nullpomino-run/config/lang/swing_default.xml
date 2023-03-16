@@ -1,170 +1,172 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<comment>Swing language file - Default English</comment>
+ <comment>Swing language file - Default English</comment>
 
-<!--Title-->
-<entry key="Title_Main">NullpoMino</entry>
-<entry key="Title_Game">NullpoMino</entry>
-<entry key="Title_KeyConfig">Keyboard Setting</entry>
-<entry key="Title_RuleSelect">Rule Select</entry>
-<entry key="Title_AISelect">AI Setting</entry>
-<entry key="Title_GeneralConfig">General Options</entry>
-<entry key="Title_GameTuning">Tuning Setting</entry>
-<entry key="Title_UpdateCheck">Update Check Setting</entry>
+ <!--Title-->
+ <entry key="Title_Main">NullpoMino</entry>
+ <entry key="Title_Game">NullpoMino</entry>
+ <entry key="Title_KeyConfig">Keyboard Setting</entry>
+ <entry key="Title_RuleSelect">Rule Select</entry>
+ <entry key="Title_AISelect">AI Setting</entry>
+ <entry key="Title_GeneralConfig">General Options</entry>
+ <entry key="Title_GameTuning">Tuning Setting</entry>
+ <entry key="Title_UpdateCheck">Update Check Setting</entry>
 
-<!--Top screen-->
-<entry key="Top_ModeSelect">Game modes:</entry>
-<entry key="Top_StartOffline">Start game</entry>
-<entry key="Top_ServerSelect">Online game servers:</entry>
-<entry key="Top_Connect">Connect</entry>
-<entry key="Top_NewVersion">v%s (%s) is available.</entry>
-<entry key="Top_CurrentRule">(Current Rule)</entry>
+ <!--Top screen-->
+ <entry key="Top_ModeSelect">Game modes:</entry>
+ <entry key="Top_StartOffline">Start game</entry>
+ <entry key="Top_ServerSelect">Online game servers:</entry>
+ <entry key="Top_Connect">Connect</entry>
+ <entry key="Top_NewVersion">v%s (%s) is available.</entry>
+ <entry key="Top_CurrentRule">(Current Rule)</entry>
 
-<!--Menu-->
-<entry key="Menu_File">File</entry>
-<entry key="Menu_Open">Open replay file...</entry>
-<entry key="Menu_NetPlay">Start NetPlay</entry>
-<entry key="Menu_ReturnToTop">Return to top screen</entry>
-<entry key="Menu_Exit">Exit</entry>
+ <!--Menu-->
+ <entry key="Menu_File">File</entry>
+ <entry key="Menu_Open">Open replay file...</entry>
+ <entry key="Menu_NetPlay">Start NetPlay</entry>
+ <entry key="Menu_ReturnToTop">Return to top screen</entry>
+ <entry key="Menu_Exit">Exit</entry>
 
-<entry key="Menu_Config">Config</entry>
-<entry key="Menu_RuleSelect">1P Rule Select...</entry>
-<entry key="Menu_RuleSelect2P">2P Rule Select...</entry>
-<entry key="Menu_GameTuning">1P Tuning Setting...</entry>
-<entry key="Menu_GameTuning2P">2P Tuning Setting...</entry>
-<entry key="Menu_AIConfig">1P AI Setting...</entry>
-<entry key="Menu_AIConfig2P">2P AI Setting(Z)...</entry>
-<entry key="Menu_KeyConfig">1P Keyboard Setting...</entry>
-<entry key="Menu_KeyConfig2P">2P Keyboard Setting...</entry>
-<entry key="Menu_UpdateCheck">Update Check Setting...</entry>
-<entry key="Menu_GeneralConfig">General Options...</entry>
+ <entry key="Menu_Config">Config</entry>
+ <entry key="Menu_RuleSelect">1P Rule Select...</entry>
+ <entry key="Menu_RuleSelect2P">2P Rule Select...</entry>
+ <entry key="Menu_GameTuning">1P Tuning Setting...</entry>
+ <entry key="Menu_GameTuning2P">2P Tuning Setting...</entry>
+ <entry key="Menu_AIConfig">1P AI Setting...</entry>
+ <entry key="Menu_AIConfig2P">2P AI Setting(Z)...</entry>
+ <entry key="Menu_KeyConfig">1P Keyboard Setting...</entry>
+ <entry key="Menu_KeyConfig2P">2P Keyboard Setting...</entry>
+ <entry key="Menu_UpdateCheck">Update Check Setting...</entry>
+ <entry key="Menu_GeneralConfig">General Options...</entry>
 
-<!--KeyConfig-->
-<entry key="KeyConfig_OK">OK</entry>
-<entry key="KeyConfig_Cancel">Cancel</entry>
-<entry key="KeyConfig_Reset0">Reset to Blockbox style (Default)</entry>
-<entry key="KeyConfig_Reset1">Reset to Guideline style</entry>
-<entry key="KeyConfig_Reset2">Reset to NullpoMino Classic style</entry>
-<entry key="KeyConfig_LabelHelp1">To assign a key, click the text box with left mouse button, then push any key on your keyboard.</entry>
-<entry key="KeyConfig_LabelHelp2">To clear the setting, click the text box with right mouse button.</entry>
-<entry key="KeyConfig_Tab_Ingame">Ingame</entry>
-<entry key="KeyConfig_Tab_Menu">Menu</entry>
-<entry key="KeyConfig_Tab_Reset">Reset</entry>
-<entry key="KeyConfig_LabelKey0">Up (Hard Drop)</entry>
-<entry key="KeyConfig_LabelKey1">Down (Soft Drop)</entry>
-<entry key="KeyConfig_LabelKey2">Left</entry>
-<entry key="KeyConfig_LabelKey3">Right</entry>
-<entry key="KeyConfig_LabelKey4">A (Rotate)</entry>
-<entry key="KeyConfig_LabelKey5">B (Reverse Rotate)</entry>
-<entry key="KeyConfig_LabelKey6">C (Rotate)</entry>
-<entry key="KeyConfig_LabelKey7">D (Hold)</entry>
-<entry key="KeyConfig_LabelKey8">E (Double Rotate)</entry>
-<entry key="KeyConfig_LabelKey9">F</entry>
-<entry key="KeyConfig_LabelKey10">Quit</entry>
-<entry key="KeyConfig_LabelKey11">Pause</entry>
-<entry key="KeyConfig_LabelKey12">Giveup</entry>
-<entry key="KeyConfig_LabelKey13">Retry</entry>
-<entry key="KeyConfig_LabelKey14">Frame Step</entry>
-<entry key="KeyConfig_LabelKey15">Screen Shot</entry>
+ <!--KeyConfig-->
+ <entry key="KeyConfig_OK">OK</entry>
+ <entry key="KeyConfig_Cancel">Cancel</entry>
+ <entry key="KeyConfig_Reset0">Reset to Blockbox style (Default)</entry>
+ <entry key="KeyConfig_Reset1">Reset to Guideline style</entry>
+ <entry key="KeyConfig_Reset2">Reset to NullpoMino Classic style</entry>
+ <entry key="KeyConfig_LabelHelp1">To assign a key, click the text box with left mouse button, then push any key on your
+  keyboard.
+ </entry>
+ <entry key="KeyConfig_LabelHelp2">To clear the setting, click the text box with right mouse button.</entry>
+ <entry key="KeyConfig_Tab_Ingame">Ingame</entry>
+ <entry key="KeyConfig_Tab_Menu">Menu</entry>
+ <entry key="KeyConfig_Tab_Reset">Reset</entry>
+ <entry key="KeyConfig_LabelKey0">Up (Hard Drop)</entry>
+ <entry key="KeyConfig_LabelKey1">Down (Soft Drop)</entry>
+ <entry key="KeyConfig_LabelKey2">Left</entry>
+ <entry key="KeyConfig_LabelKey3">Right</entry>
+ <entry key="KeyConfig_LabelKey4">A (Rotate)</entry>
+ <entry key="KeyConfig_LabelKey5">B (Reverse Rotate)</entry>
+ <entry key="KeyConfig_LabelKey6">C (Rotate)</entry>
+ <entry key="KeyConfig_LabelKey7">D (Hold)</entry>
+ <entry key="KeyConfig_LabelKey8">E (Double Rotate)</entry>
+ <entry key="KeyConfig_LabelKey9">F</entry>
+ <entry key="KeyConfig_LabelKey10">Quit</entry>
+ <entry key="KeyConfig_LabelKey11">Pause</entry>
+ <entry key="KeyConfig_LabelKey12">Giveup</entry>
+ <entry key="KeyConfig_LabelKey13">Retry</entry>
+ <entry key="KeyConfig_LabelKey14">Frame Step</entry>
+ <entry key="KeyConfig_LabelKey15">Screen Shot</entry>
 
-<!--RuleSelect-->
-<entry key="RuleSelect_OK">OK</entry>
-<entry key="RuleSelect_Cancel">Cancel</entry>
-<entry key="RuleSelect_UseDefault">Default</entry>
+ <!--RuleSelect-->
+ <entry key="RuleSelect_OK">OK</entry>
+ <entry key="RuleSelect_Cancel">Cancel</entry>
+ <entry key="RuleSelect_UseDefault">Default</entry>
 
-<!--AISelect-->
-<entry key="AISelect_NoUse">No AI</entry>
-<entry key="AISelect_LabelAIMoveDelay">Move Delay</entry>
-<entry key="AISelect_LabelAIThinkDelay">Think Delay</entry>
-<entry key="AISelect_CheckboxAIUseThread">Use Thread</entry>
-<entry key="AISelect_CheckboxAIShowHint">Show Hint</entry>
-<entry key="AISelect_CheckboxAIPrethink">Pre-Think</entry>
-<entry key="AISelect_CheckboxAIShowState">AI State Display (If the AI supports it)</entry>
-<entry key="AISelect_OK">OK</entry>
-<entry key="AISelect_Cancel">Cancel</entry>
+ <!--AISelect-->
+ <entry key="AISelect_NoUse">No AI</entry>
+ <entry key="AISelect_LabelAIMoveDelay">Move Delay</entry>
+ <entry key="AISelect_LabelAIThinkDelay">Think Delay</entry>
+ <entry key="AISelect_CheckboxAIUseThread">Use Thread</entry>
+ <entry key="AISelect_CheckboxAIShowHint">Show Hint</entry>
+ <entry key="AISelect_CheckboxAIPrethink">Pre-Think</entry>
+ <entry key="AISelect_CheckboxAIShowState">AI State Display (If the AI supports it)</entry>
+ <entry key="AISelect_OK">OK</entry>
+ <entry key="AISelect_Cancel">Cancel</entry>
 
-<!--GeneralConfig-->
-<entry key="GeneralConfig_OK">OK</entry>
-<entry key="GeneralConfig_Cancel">Cancel</entry>
-<entry key="GeneralConfig_ScreenSize">Screen Size (Everything but 640x480 is very slow!)</entry>
-<entry key="GeneralConfig_MaxFPS">Max FPS (Default is 60)</entry>
-<entry key="GeneralConfig_SEVolume">Sound Effects Volume (1.0 is 100%, 0.5 is 50%)</entry>
-<entry key="GeneralConfig_LineClearEffectSpeed">Line clear effect speed (1 is 1x, 2 is 2x)</entry>
-<entry key="GeneralConfig_ShowFPS">Show FPS</entry>
-<entry key="GeneralConfig_ShowBackground">Show Background</entry>
-<entry key="GeneralConfig_ShowMeter">Show Meter</entry>
-<entry key="GeneralConfig_ShowFieldBlockGraphics">Show field block graphics (Uncheck to display white borders only)</entry>
-<entry key="GeneralConfig_SimpleBlock">Use simple block graphics</entry>
-<entry key="GeneralConfig_SE">Enable Sound Effects (Requires restart)</entry>
-<entry key="GeneralConfig_UseNativeLookAndFeel">Use native Look & Feel (Requires restart)</entry>
-<entry key="GeneralConfig_EnableFrameStep">Enable Frame Step</entry>
-<entry key="GeneralConfig_NextShadow">Show piece previews above shadow</entry>
-<entry key="GeneralConfig_OutlineGhost">Outline ghost piece</entry>
-<entry key="GeneralConfig_SideNext">Show piece previews on side of the playfield</entry>
-<entry key="GeneralConfig_BigSideNext">Use bigger side previews</entry>
-<entry key="GeneralConfig_PerfectFPSMode">Perfect FPS (Warning: It eats more CPU power!)</entry>
-<entry key="GeneralConfig_PerfectYield">Perfect FPS Yield (Execute Thread.yield() during the wait loop)</entry>
-<entry key="GeneralConfig_SyncDisplay">Draw all frames (Toolkit.getDefaultToolkit().sync())</entry>
-<entry key="GeneralConfig_ShowLineClearEffect">Show line clear effect (Requires excellent CPU and GPU)</entry>
-<entry key="GeneralConfig_DarkNextArea">Dark piece preview area</entry>
-<entry key="GeneralConfig_ShowFieldBGGrid">Show field BG grid</entry>
-<entry key="GeneralConfig_ShowInput">Show Input</entry>
-<entry key="GeneralConfig_TabName_Basic">Basic</entry>
-<entry key="GeneralConfig_TabName_Advanced">Advanced</entry>
+ <!--GeneralConfig-->
+ <entry key="GeneralConfig_OK">OK</entry>
+ <entry key="GeneralConfig_Cancel">Cancel</entry>
+ <entry key="GeneralConfig_ScreenSize">Screen Size (Everything but 640x480 is very slow!)</entry>
+ <entry key="GeneralConfig_MaxFPS">Max FPS (Default is 60)</entry>
+ <entry key="GeneralConfig_SEVolume">Sound Effects Volume (1.0 is 100%, 0.5 is 50%)</entry>
+ <entry key="GeneralConfig_LineClearEffectSpeed">Line clear effect speed (1 is 1x, 2 is 2x)</entry>
+ <entry key="GeneralConfig_ShowFPS">Show FPS</entry>
+ <entry key="GeneralConfig_ShowBackground">Show Background</entry>
+ <entry key="GeneralConfig_ShowMeter">Show Meter</entry>
+ <entry key="GeneralConfig_ShowFieldBlockGraphics">Show field block graphics (Uncheck to display white borders only)</entry>
+ <entry key="GeneralConfig_SimpleBlock">Use simple block graphics</entry>
+ <entry key="GeneralConfig_SE">Enable Sound Effects (Requires restart)</entry>
+ <entry key="GeneralConfig_UseNativeLookAndFeel">Use native Look &amp; Feel (Requires restart)</entry>
+ <entry key="GeneralConfig_EnableFrameStep">Enable Frame Step</entry>
+ <entry key="GeneralConfig_NextShadow">Show piece previews above shadow</entry>
+ <entry key="GeneralConfig_OutlineGhost">Outline ghost piece</entry>
+ <entry key="GeneralConfig_SideNext">Show piece previews on side of the playfield</entry>
+ <entry key="GeneralConfig_BigSideNext">Use bigger side previews</entry>
+ <entry key="GeneralConfig_PerfectFPSMode">Perfect FPS (Warning: It eats more CPU power!)</entry>
+ <entry key="GeneralConfig_PerfectYield">Perfect FPS Yield (Execute Thread.yield() during the wait loop)</entry>
+ <entry key="GeneralConfig_SyncDisplay">Draw all frames (Toolkit.getDefaultToolkit().sync())</entry>
+ <entry key="GeneralConfig_ShowLineClearEffect">Show line clear effect (Requires excellent CPU and GPU)</entry>
+ <entry key="GeneralConfig_DarkNextArea">Dark piece preview area</entry>
+ <entry key="GeneralConfig_ShowFieldBGGrid">Show field BG grid</entry>
+ <entry key="GeneralConfig_ShowInput">Show Input</entry>
+ <entry key="GeneralConfig_TabName_Basic">Basic</entry>
+ <entry key="GeneralConfig_TabName_Advanced">Advanced</entry>
 
-<!--GameTuning-->
-<entry key="GameTuning_RotateButtonDefaultRight_Label">Rotate direction for A button</entry>
-<entry key="GameTuning_RotateButtonDefaultRight_Auto">Auto (Use rule setting)</entry>
-<entry key="GameTuning_RotateButtonDefaultRight_Left">Left (Counter-clockwise)</entry>
-<entry key="GameTuning_RotateButtonDefaultRight_Right">Right (Clockwise)</entry>
-<entry key="GameTuning_MoveDiagonal_Label">Diagonal Move</entry>
-<entry key="GameTuning_MoveDiagonal_Auto">Auto (Use rule setting)</entry>
-<entry key="GameTuning_MoveDiagonal_Disable">Always Disable</entry>
-<entry key="GameTuning_MoveDiagonal_Enable">Always Enable</entry>
-<entry key="GameTuning_BlockShowOutlineOnly_Label">Show Outline Only</entry>
-<entry key="GameTuning_BlockShowOutlineOnly_Auto">Auto (Depends to mode)</entry>
-<entry key="GameTuning_BlockShowOutlineOnly_Disable">Always Disable</entry>
-<entry key="GameTuning_BlockShowOutlineOnly_Enable">Always Enable</entry>
-<entry key="GameTuning_Skin_Label">Block Skin</entry>
-<entry key="GameTuning_Skin_Auto">Auto (Use rule setting)</entry>
-<entry key="GameTuning_OutlineType_Label">Outline Type</entry>
-<entry key="GameTuning_OutlineType_Auto">Auto (Depends to mode)</entry>
-<entry key="GameTuning_OutlineType_None">None</entry>
-<entry key="GameTuning_OutlineType_Normal">Normal</entry>
-<entry key="GameTuning_OutlineType_Connect">Connect</entry>
-<entry key="GameTuning_OutlineType_SameColor">Same Color</entry>
-<entry key="GameTuning_MinDAS_Label">Minimum DAS (-1:Auto)</entry>
-<entry key="GameTuning_MaxDAS_Label">Maximum DAS (-1:Auto)</entry>
-<entry key="GameTuning_DasDelay_Label">Move Delay (-1:Auto)</entry>
-<entry key="GameTuning_ReverseUpDown_Label">Reverse Up and Down button</entry>
-<entry key="GameTuning_OK">OK</entry>
-<entry key="GameTuning_Cancel">Cancel</entry>
+ <!--GameTuning-->
+ <entry key="GameTuning_RotateButtonDefaultRight_Label">Rotate direction for A button</entry>
+ <entry key="GameTuning_RotateButtonDefaultRight_Auto">Auto (Use rule setting)</entry>
+ <entry key="GameTuning_RotateButtonDefaultRight_Left">Left (Counter-clockwise)</entry>
+ <entry key="GameTuning_RotateButtonDefaultRight_Right">Right (Clockwise)</entry>
+ <entry key="GameTuning_MoveDiagonal_Label">Diagonal Move</entry>
+ <entry key="GameTuning_MoveDiagonal_Auto">Auto (Use rule setting)</entry>
+ <entry key="GameTuning_MoveDiagonal_Disable">Always Disable</entry>
+ <entry key="GameTuning_MoveDiagonal_Enable">Always Enable</entry>
+ <entry key="GameTuning_BlockShowOutlineOnly_Label">Show Outline Only</entry>
+ <entry key="GameTuning_BlockShowOutlineOnly_Auto">Auto (Depends to mode)</entry>
+ <entry key="GameTuning_BlockShowOutlineOnly_Disable">Always Disable</entry>
+ <entry key="GameTuning_BlockShowOutlineOnly_Enable">Always Enable</entry>
+ <entry key="GameTuning_Skin_Label">Block Skin</entry>
+ <entry key="GameTuning_Skin_Auto">Auto (Use rule setting)</entry>
+ <entry key="GameTuning_OutlineType_Label">Outline Type</entry>
+ <entry key="GameTuning_OutlineType_Auto">Auto (Depends to mode)</entry>
+ <entry key="GameTuning_OutlineType_None">None</entry>
+ <entry key="GameTuning_OutlineType_Normal">Normal</entry>
+ <entry key="GameTuning_OutlineType_Connect">Connect</entry>
+ <entry key="GameTuning_OutlineType_SameColor">Same Color</entry>
+ <entry key="GameTuning_MinDAS_Label">Minimum DAS (-1:Auto)</entry>
+ <entry key="GameTuning_MaxDAS_Label">Maximum DAS (-1:Auto)</entry>
+ <entry key="GameTuning_DasDelay_Label">Move Delay (-1:Auto)</entry>
+ <entry key="GameTuning_ReverseUpDown_Label">Reverse Up and Down button</entry>
+ <entry key="GameTuning_OK">OK</entry>
+ <entry key="GameTuning_Cancel">Cancel</entry>
 
-<!--UpdateCheck-->
-<entry key="UpdateCheck_Tab_UpdateInfo">Info</entry>
-<entry key="UpdateCheck_Label_Status_Ready">Click "Check Now" to check updates.</entry>
-<entry key="UpdateCheck_Label_Status_Checking">Now checking for updates...</entry>
-<entry key="UpdateCheck_Label_Status_Failed">Failed to check updates (see log/log_swing.txt for error log)</entry>
-<entry key="UpdateCheck_Label_Status_Complete">Check completed.</entry>
-<entry key="UpdateCheck_Label_LatestVersion">Version:</entry>
-<entry key="UpdateCheck_Label_ReleaseDate">Release Date:</entry>
-<entry key="UpdateCheck_Label_DownloadURL">Archive URL:</entry>
-<entry key="UpdateCheck_Label_InstallerURL">Installer URL:</entry>
-<entry key="UpdateCheck_Button_CheckNow">Check Now</entry>
-<entry key="UpdateCheck_Button_OpenDownloadURL">Download archive by web browser</entry>
-<entry key="UpdateCheck_Button_OpenInstallerURL">Download installer by web browser</entry>
-<entry key="UpdateCheck_Tab_Setting">Setting</entry>
-<entry key="UpdateCheck_CheckBox_Enable">Enable automated update check</entry>
-<entry key="UpdateCheck_Label_XMLURL">URL of version info XML:</entry>
-<entry key="UpdateCheck_Label_StartupMax">Check interval (by startup count):</entry>
-<entry key="UpdateCheck_Button_Save">Save</entry>
-<entry key="UpdateCheck_Button_Close">Close</entry>
+ <!--UpdateCheck-->
+ <entry key="UpdateCheck_Tab_UpdateInfo">Info</entry>
+ <entry key="UpdateCheck_Label_Status_Ready">Click "Check Now" to check updates.</entry>
+ <entry key="UpdateCheck_Label_Status_Checking">Now checking for updates...</entry>
+ <entry key="UpdateCheck_Label_Status_Failed">Failed to check updates (see log/log_swing.txt for error log)</entry>
+ <entry key="UpdateCheck_Label_Status_Complete">Check completed.</entry>
+ <entry key="UpdateCheck_Label_LatestVersion">Version:</entry>
+ <entry key="UpdateCheck_Label_ReleaseDate">Release Date:</entry>
+ <entry key="UpdateCheck_Label_DownloadURL">Archive URL:</entry>
+ <entry key="UpdateCheck_Label_InstallerURL">Installer URL:</entry>
+ <entry key="UpdateCheck_Button_CheckNow">Check Now</entry>
+ <entry key="UpdateCheck_Button_OpenDownloadURL">Download archive by web browser</entry>
+ <entry key="UpdateCheck_Button_OpenInstallerURL">Download installer by web browser</entry>
+ <entry key="UpdateCheck_Tab_Setting">Setting</entry>
+ <entry key="UpdateCheck_CheckBox_Enable">Enable automated update check</entry>
+ <entry key="UpdateCheck_Label_XMLURL">URL of version info XML:</entry>
+ <entry key="UpdateCheck_Label_StartupMax">Check interval (by startup count):</entry>
+ <entry key="UpdateCheck_Button_Save">Save</entry>
+ <entry key="UpdateCheck_Button_Close">Close</entry>
 
-<!--FileChooser-->
-<entry key="FileChooser_ReplayFile">Replay File (*.rep)</entry>
+ <!--FileChooser-->
+ <entry key="FileChooser_ReplayFile">Replay File (*.rep)</entry>
 
-<!--InGame-->
-<entry key="InGame_Next">NEXT</entry>
-<entry key="InGame_Hold">HOLD</entry>
+ <!--InGame-->
+ <entry key="InGame_Next">NEXT</entry>
+ <entry key="InGame_Hold">HOLD</entry>
 </properties>

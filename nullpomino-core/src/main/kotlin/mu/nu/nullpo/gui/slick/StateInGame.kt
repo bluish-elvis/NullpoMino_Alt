@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
@@ -56,13 +57,13 @@ class StateInGame:BasicGameState() {
 	private var pauseMessageHide = false
 
 	/** frame ステップ is enabled flag */
-	private var enableframestep = false
+	private var enableFrameStep = false
 
 	/** Show background flag */
-	var showbg = true; private set
+	var showBg = true; private set
 
 	/** 倍速Mode */
-	private var fastforward = 0
+	private var fastForward = 0
 
 	/** Pause menuのCursor position */
 	private var cursor = 0
@@ -71,7 +72,7 @@ class StateInGame:BasicGameState() {
 	private var pauseFrame = 0
 
 	/** Screenshot撮影 flag */
-	private var ssflag = false
+	private var ssFlag = false
 
 	/** AppGameContainer (これを使ってタイトルバーを変える) */
 	private var appContainer:AppGameContainer? = null
@@ -92,13 +93,13 @@ class StateInGame:BasicGameState() {
 
 	/** Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		enableframestep = NullpoMinoSlick.propConfig.getProperty("option.enableframestep", false)
-		showbg = NullpoMinoSlick.propConfig.getProperty("option.showbg", true)
-		fastforward = 0
+		enableFrameStep = NullpoMinoSlick.propConfig.getProperty("option.enableFrameStep", false)
+		showBg = NullpoMinoSlick.propConfig.getProperty("option.showBg", true)
+		fastForward = 0
 		cursor = 0
 		prevInGameFlag = false
 
-		container?.setClearEachFrame(!showbg) // Clear each frame when there is no BG
+		container?.setClearEachFrame(!showBg) // Clear each frame when there is no BG
 	}
 
 	/** Start a new game
@@ -110,12 +111,8 @@ class StateInGame:BasicGameState() {
 		modeName = NullpoMinoSlick.propGlobal.getProperty("name.mode", "")
 		val modeObj = NullpoMinoSlick.modeManager[modeName]
 		if(modeObj==null) log.error("Couldn't find mode:$modeName")
-		gameManager = GameManager(RendererSlick(), modeObj).also {
+		gameManager = GameManager(RendererSlick(appContainer!!.graphics), modeObj).also {
 			pause = false
-
-			it.receiver.setGraphics(appContainer!!.graphics)
-
-			it.init()
 
 			// Initialization for each player
 			for(i in 0 until it.players) it.engine[i].let {e ->
@@ -133,32 +130,26 @@ class StateInGame:BasicGameState() {
 				e.owDelayCancel = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owDelayCancel", -1)
 
 				// ルール
-				val ruleOpt:RuleOptions
-				var rulename = strRulePath
-				if(rulename==null) {
-					rulename = NullpoMinoSlick.propGlobal.getProperty("$i.rule", "")
-					if(it.mode?.gameStyle!=GameStyle.TETROMINO)
-						rulename = NullpoMinoSlick.propGlobal.getProperty("$i.rule.${it.mode!!.gameStyle.ordinal}", "")
-				}
-				if(!rulename.isNullOrEmpty()) {
-					log.info("Load rule options from $rulename")
-					ruleOpt = GeneralUtil.loadRule(rulename)
+				val ruleName = strRulePath ?: NullpoMinoSlick.propGlobal.getProperty(
+					if(it.mode?.gameStyle!=null&&it.mode?.gameStyle!=GameStyle.TETROMINO) "$i.rule.${it.mode!!.gameStyle.ordinal}"
+					else "$i.rule", ""
+				)
+
+				val ruleOpt:RuleOptions = if(!ruleName.isNullOrEmpty()) {
+					log.info("Load rule options from $ruleName")
+					GeneralUtil.loadRule(ruleName)
 				} else {
 					log.info("Load rule options from setting file")
-					ruleOpt = RuleOptions()
-					ruleOpt.readProperty(NullpoMinoSlick.propGlobal, i)
+					RuleOptions().apply {
+						readProperty(NullpoMinoSlick.propGlobal, i)
+					}
 				}
 				e.ruleOpt = ruleOpt
 
 				// NEXT順生成アルゴリズム
-				if(ruleOpt.strRandomizer.isNotEmpty()) {
-					e.randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
-				}
-
+				if(ruleOpt.strRandomizer.isNotEmpty()) e.randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
 				// Wallkick
-				if(ruleOpt.strWallkick.isNotEmpty()) {
-					e.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
-				}
+				if(ruleOpt.strWallkick.isNotEmpty()) e.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
 
 				// AI
 				val aiName = NullpoMinoSlick.propGlobal.getProperty("$i.ai", "")
@@ -187,14 +178,10 @@ class StateInGame:BasicGameState() {
 		val modeObj = NullpoMinoSlick.modeManager[modeName]
 		if(modeObj==null) log.error("Couldn't find mode:$modeName")
 
-		gameManager = GameManager(RendererSlick(), modeObj).also {
+		gameManager = GameManager(RendererSlick(appContainer!!.graphics), modeObj).also {
 			it.replayMode = true
 			it.replayProp = prop
 			pause = false
-
-			it.receiver.setGraphics(appContainer!!.graphics)
-
-			it.init()
 
 			// Initialization for each player
 			for(i in 0 until it.players) {
@@ -235,7 +222,7 @@ class StateInGame:BasicGameState() {
 		gameManager?.let {
 			if(it.engine.isNotEmpty())
 				strTitle = when {
-					pause&&!enableframestep -> "[PAUSE]"
+					pause&&!enableFrameStep -> "[PAUSE]"
 					it.replayMode -> if(it.replayRerecord) "[RERECORD]" else "[REPLAY]"
 					it.engine[0].isInGame&&!it.replayMode&&!it.replayRerecord -> "[PLAY]"
 					else -> "[Menu]"
@@ -273,8 +260,8 @@ class StateInGame:BasicGameState() {
 				val offsetY = it.receiver.fieldY(it.engine[0])
 
 				// Pause menu
-				if(pause&&!enableframestep&&!pauseMessageHide) {
-					FontNormal.printFont(offsetX+12, offsetY+188+cursor*16, "\u0082", COLOR.RAINBOW)
+				if(pause&&!enableFrameStep&&!pauseMessageHide) {
+					FontNormal.printFont(offsetX+12, offsetY+188+cursor*16, BaseFont.CURSOR, COLOR.RAINBOW)
 
 					FontNormal.printFont(offsetX+28, offsetY+188, "Continue", cursor==0)
 					FontNormal.printFont(offsetX+28, offsetY+204, "Restart", cursor==1)
@@ -284,8 +271,8 @@ class StateInGame:BasicGameState() {
 				}
 
 				// Fast-forward
-				if(fastforward!=0)
-					FontNormal.printFont(offsetX, offsetY+376, "e${fastforward+1}", COLOR.ORANGE)
+				if(fastForward!=0)
+					FontNormal.printFont(offsetX, offsetY+376, "e${fastForward+1}", COLOR.ORANGE)
 				if(it.replayShowInvisible)
 					FontNormal.printFont(offsetX, offsetY+392, "SHOW INVIS", COLOR.ORANGE)
 			}
@@ -293,9 +280,9 @@ class StateInGame:BasicGameState() {
 
 		NullpoMinoSlick.drawFPS() // FPS
 		NullpoMinoSlick.drawObserverClient() // Observer
-		if(ssflag) {
+		if(ssFlag) {
 			NullpoMinoSlick.saveScreenShot(container, g) // Screenshot
-			ssflag = false
+			ssFlag = false
 		}
 
 		if(!NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep(true)
@@ -316,7 +303,7 @@ class StateInGame:BasicGameState() {
 		GameKey.gameKey.forEachIndexed {i, it ->
 			it.update(
 				container.input,
-				(!pause||enableframestep)&&i<(gameManager?.engine?.size ?: 0)&&gameManager?.engine?.get(i)?.isInGame==true
+				(!pause||enableFrameStep)&&i<(gameManager?.engine?.size ?: 0)&&gameManager?.engine?.get(i)?.isInGame==true
 			)
 		}
 		// Title bar update
@@ -337,8 +324,9 @@ class StateInGame:BasicGameState() {
 					pause = true
 					cursor = 0
 				}
-			} else {
+			} else {// Unpause by pause key
 				ResourceHolder.soundManager.play("pause")
+				ResourceHolder.bgmResume()
 				pause = false
 				pauseFrame = 0
 			}
@@ -347,7 +335,6 @@ class StateInGame:BasicGameState() {
 			// Cursor movement
 			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
 				cursor--
-
 				if(cursor<0)
 					cursor = if(gameManager?.replayMode==true&&gameManager?.replayRerecord==false)
 						3 else 2
@@ -367,29 +354,25 @@ class StateInGame:BasicGameState() {
 			if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
 				ResourceHolder.soundManager.play("decide0")
 				when(cursor) {
-					0 // Continue
-					-> {
+					0 -> { // Continue
 						pause = false
 						pauseFrame = 0
 						GameKey.gameKey[0].clear()
 						ResourceHolder.bgmResume()
 					}
-					1 // Retry
-					-> {
+					1 -> { // Retry
 						ResourceHolder.bgmStop()
 						pause = false
 						gameManager?.reset()
 					}
-					2 // End
-					-> {
+					2 -> { // End
 						ResourceHolder.bgmStop()
 						ResourceHolder.soundManager.stop("danger")
 						gameManager?.reset()
 						game.enterState(StateTitle.ID)
 						return
 					}
-					3 // Replay re-record
-					-> {
+					3 -> { // Replay re-record
 						gameManager?.replayRerecord = true
 						ResourceHolder.soundManager.play("twist")
 						cursor = 0
@@ -398,12 +381,13 @@ class StateInGame:BasicGameState() {
 				updateTitleBarCaption()
 			} else if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_B)&&pauseFrame<=0) {
 				ResourceHolder.soundManager.play("pause")
+				// Unpause by cancel key
 				pause = false
 				pauseFrame = 5
 				GameKey.gameKey[0].clear()
-				ResourceHolder.bgmPause()
+				ResourceHolder.bgmResume()
 				updateTitleBarCaption()
-			}// Unpause by cancel key
+			}
 		}// Pause menu
 		if(pauseFrame>0) pauseFrame--
 
@@ -414,8 +398,8 @@ class StateInGame:BasicGameState() {
 		gameManager?.let {m ->
 			if(m.replayMode&&!m.replayRerecord&&m.engine[0].gameActive) {
 				// Replay speed
-				if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) if(fastforward>0) fastforward--
-				if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) if(fastforward<98) fastforward++
+				if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) if(fastForward>0) fastForward--
+				if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) if(fastForward<98) fastForward++
 
 				// Replay re-record
 				if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_D)) {
@@ -429,25 +413,25 @@ class StateInGame:BasicGameState() {
 					ResourceHolder.soundManager.play("twist")
 					cursor = 0
 				}
-			} else fastforward = 0
+			} else fastForward = 0
 
 			// BGM
-			if(ResourceHolder.bgmPlaying!=m.musMan.bgm&&!m.musMan.fadesw)
+			if(ResourceHolder.bgmPlaying!=m.musMan.bgm&&!m.musMan.fadeSW)
 				ResourceHolder.bgmStart(m.musMan.bgm)
 			if(ResourceHolder.bgmIsPlaying) {
-				val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
-				val newvolume = maxOf(0f, minOf(m.musMan.volume*basevolume/128f, 1f))
-				container.musicVolume = newvolume
-				if(newvolume<=0f) ResourceHolder.bgmStop()
+				val baseVolume = NullpoMinoSlick.propConfig.getProperty("option.bgmVolume", 128)
+				val newVolume = maxOf(0f, minOf(m.musMan.volume*baseVolume/128f, 1f))
+				container.musicVolume = newVolume
+				if(newVolume<=0f) ResourceHolder.bgmStop()
 			}
 
 			// ゲームの処理を実行
-			if(!pause||GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_FRAMESTEP)&&enableframestep) {
+			if(!pause||GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_FRAMESTEP)&&enableFrameStep) {
 				for(i in 0 until minOf(m.players, GameKey.gameKey.size))
 					if(!m.engine[i].gameActive||((m.engine[i].ai==null||m.engine[i].aiShowHint)&&(!m.replayMode||m.replayRerecord)))
 						GameKey.gameKey[i].inputStatusUpdate(m.engine[i].ctrl)
 
-				for(i in 0..fastforward) gameManager?.updateAll()
+				for(i in 0..fastForward) gameManager?.updateAll()
 			}
 			// Retry button
 			if(GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_RETRY)}) {
@@ -466,7 +450,7 @@ class StateInGame:BasicGameState() {
 
 		// Screenshot button
 		if(GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)})
-			ssflag = true
+			ssFlag = true
 
 		// Exit button
 		if(GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_QUIT)}) {

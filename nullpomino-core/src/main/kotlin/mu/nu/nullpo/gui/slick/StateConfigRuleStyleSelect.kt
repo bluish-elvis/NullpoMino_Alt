@@ -31,13 +31,14 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** Style select menu */
-class StateConfigRuleStyleSelect:DummyMenuChooseState() {
+class StateConfigRuleStyleSelect:BaseMenuChooseState() {
 	/** Player number */
 	var player = 0
 
@@ -61,7 +62,7 @@ class StateConfigRuleStyleSelect:DummyMenuChooseState() {
 		// Menu
 		FontNormal.printFontGrid(1, 1, "SELECT ${player+1}P STYLE", COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RAINBOW)
+		FontNormal.printFontGrid(1, 3+cursor, BaseFont.CURSOR, COLOR.RAINBOW)
 
 		for(i in 0 until GameEngine.MAX_GAMESTYLE)
 			FontNormal.printFontGrid(2, 3+i, GameEngine.GAMESTYLE_NAMES[i], cursor==i)

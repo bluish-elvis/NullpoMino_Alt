@@ -1,8 +1,7 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -13,7 +12,6 @@
  *     * Neither the name of NullNoname nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -44,6 +42,7 @@ import mu.nu.nullpo.game.net.NetSPRecord
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.gui.net.NetLobbyListener
 import mu.nu.nullpo.util.GeneralUtil
@@ -61,7 +60,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/** NET: Lobby (Declared in NetDummyMode) */
 	protected var netLobby:NetLobbyFrame? = null
 
-	/** NET: true if netplay (Declared in NetDummyMode) */
+	/** NET: true if net-play (Declared in NetDummyMode) */
 	internal var netIsNetPlay = false
 
 	/** NET: true if watch mode (Declared in NetDummyMode) */
@@ -166,7 +165,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	/* NET: Mode name */
 	override val name = "NETWORK MODE"
 
-	/** NET: Netplay Initialization. NetDummyMode will set the lobby's current
+	/** NET: Net-play Initialization. NetDummyMode will set the lobby's current
 	 * mode to this. */
 	override fun netplayInit(obj:NetLobbyFrame) {
 		netLobby = obj
@@ -195,7 +194,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	override fun modeInit(manager:GameManager) {
 		log.debug("modeInit() on NetDummyMode")
 
-		menuTime = 0
+		super.modeInit(manager)
 		netIsNetPlay = false
 		netIsWatch = false
 		netNumSpectators = 0
@@ -252,6 +251,43 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 		engine.stat = GameEngine.Status.SETTING
 		engine.isVisible = true
+	}
+
+	override fun onSetting(engine:GameEngine):Boolean {
+
+		if(netIsNetRankingDisplayMode) {
+			netOnUpdateNetPlayRanking(engine, netGetGoalType)
+			return true
+		} else
+		// Menu
+			if(!owner.replayMode&&menu.size>0) {
+				// Configuration changes val change = updateCursor(engine, 5)
+				updateMenu(engine)
+
+				// 決定
+				if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
+					engine.playSE("decide")
+					saveSetting(owner.modeConfig, engine)
+					owner.saveModeConfig()
+					onSettingChanged(engine)
+					// NET: Signal start of the game
+					if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start${engine.playerID+1}p\n")
+					return false
+				}
+				// Cancel
+				if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitFlag = true
+
+				// NET: Netplay Ranking
+				if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!netIsWatch&&netIsNetRankingViewOK(engine))
+					netEnterNetPlayRankingScreen(netGetGoalType)
+
+			}
+		return true
+	}
+
+	override fun onSettingChanged(engine:GameEngine) {
+		// NET: Signal options change
+		if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
 	}
 
 	/** NET: When the pieces can move.
@@ -361,7 +397,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 		/*
     BGMStatus.BGM b=BGM.Result(0);
     if(engine.ending>=2)b=engine.statistics.time<10800?BGM.Result(1):BGM.Result(2);
-    owner.bgmStatus.fadesw=false;
+    owner.bgmStatus.fadeSW=false;
     owner.bgmStatus.bgm=b; */
 		// NET: Retry
 		if(netIsNetPlay) {
@@ -584,7 +620,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			log.info("Set locked rule")
 			val randomizer = GeneralUtil.loadRandomizer(it.strRandomizer)
 			val wallkick = GeneralUtil.loadWallkick(it.strWallkick)
-			owner.engine[0].ruleOpt.replaace(it)
+			owner.engine[0].ruleOpt.replace(it)
 			owner.engine[0].randomizer = randomizer
 			owner.engine[0].wallkick = wallkick
 		}
@@ -608,9 +644,9 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	fun netDrawAllPlayersCount() {
 		netLobby?.netPlayerClient?.let {
 			if(it.isConnected) {
-				owner.receiver.drawDirectFont(
+				receiver.drawDirectFont(
 					0, 480-16,
-					String.format("%40s", String.format("%d/%d", it.observerCount, it.playerCount)), when {
+					"%40s".format("%d/%d".format(it.observerCount, it.playerCount)), when {
 						it.playerCount>1 -> COLOR.RED
 						it.observerCount>0 -> COLOR.GREEN
 						else -> COLOR.BLUE
@@ -632,8 +668,8 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				(engine.replayTimer/(0.00000006*(nowtime-engine.startTime))).toFloat()
 			}
 
-			owner.receiver.drawDirectFont(
-				0, 480-32, String.format("%40s", String.format("%.0f%%", gamerate*100f)), when {
+			receiver.drawDirectFont(
+				0, 480-32, "%40s".format("%.0f%%".format(gamerate*100f)), when {
 					gamerate<.8f -> COLOR.RED
 					gamerate<.9f -> COLOR.ORANGE
 					gamerate<1f -> COLOR.YELLOW
@@ -651,14 +687,14 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	fun netDrawSpectatorsCount(engine:GameEngine, x:Int, y:Int) {
 		if(netIsNetPlay) {
 			val fontcolor = if(netIsWatch) COLOR.GREEN else COLOR.RED
-			owner.receiver.drawScoreFont(engine, x, y, "SPECTATORS", fontcolor)
-			owner.receiver.drawScoreFont(engine, x, y+1, "$netNumSpectators", COLOR.WHITE)
+			receiver.drawScoreFont(engine, x, y, "SPECTATORS", fontcolor)
+			receiver.drawScoreFont(engine, x, y+1, "$netNumSpectators", COLOR.WHITE)
 
 			if(engine.stat==GameEngine.Status.SETTING&&!netIsWatch&&netIsNetRankingViewOK(engine)) {
 				var y2 = y+2
 				if(y2>24) y2 = 24
-				val strBtnD = engine.owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_D)
-				owner.receiver.drawScoreFont(
+				val strBtnD = owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_D)
+				receiver.drawScoreFont(
 					engine, x, y2, "D($strBtnD KEY):\n NET RANKING",
 					COLOR.GREEN
 				)
@@ -672,9 +708,9 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	protected open fun netDrawPlayerName(engine:GameEngine) {
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
 			val name = netPlayerName
-			owner.receiver.drawDirectTTF(
-				owner.receiver.fieldX(engine),
-				owner.receiver.fieldY(engine)-20, name!!
+			receiver.drawDirectTTF(
+				receiver.fieldX(engine),
+				receiver.fieldY(engine)-20, name!!
 			)
 		}
 	}
@@ -703,13 +739,13 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				)
 				return@netSendPieceMovement true
 			}
-		} ?: (if(netPrevPieceID!=Piece.PIECE_NONE||engine.manualLock) {
+		} ?: (return if(netPrevPieceID!=Piece.PIECE_NONE||engine.manualLock) {
 			netPrevPieceID = Piece.PIECE_NONE
 			netLobby?.netPlayerClient?.send(
 				"game\tpiece\t$netPrevPieceID\t$netPrevPieceX\t$netPrevPieceY\t$netPrevPieceDir\t0\t${engine.skin}\tfalse\n"
 			)
-			return true
-		} else return false)
+			true
+		} else false)
 		return false
 	}
 
@@ -760,7 +796,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * @param engine GameEngine
 	 */
 	protected open fun netSendField(engine:GameEngine) {
-		if(owner.receiver.isStickySkin(engine)||netAlwaysSendFieldAttributes) {
+		if(receiver.isStickySkin(engine)||netAlwaysSendFieldAttributes) {
 			// Send with attributes
 			val strSrcFieldData = engine.field.attrFieldToString()
 			val nocompSize = strSrcFieldData.length
@@ -1014,14 +1050,14 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 				for((c, i) in (startIndex until endIndex).withIndex()) {
 					if(i==netRankingCursor[d])
-						receiver.drawMenuFont(engine, 0, 4+c, "\u0082", COLOR.RED)
+						receiver.drawMenuFont(engine, 0, 4+c, BaseFont.CURSOR, COLOR.RED)
 
 					val rankColor = if(i==netRankingMyRank[d])
 						COLOR.PINK else COLOR.YELLOW
 					if(netRankingPlace[d][i]==-1)
 						receiver.drawMenuFont(engine, 1, 4+c, "N/A", rankColor)
 					else
-						receiver.drawMenuNum(engine, 1, 4+c, String.format("%3d", netRankingPlace[d][i]+1), rankColor)
+						receiver.drawMenuNum(engine, 1, 4+c, "%3d".format(netRankingPlace[d][i]+1), rankColor)
 
 					when(netRankingType) {
 						NetSPRecord.RANKINGTYPE_GENERIC_SCORE -> {
@@ -1040,7 +1076,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 							)
 							receiver.drawMenuNum(engine, 14, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
 							receiver.drawMenuNum(
-								engine, 20, 4+c, String.format("%.5g", netRankingPPS[d][i]),
+								engine, 20, 4+c, "%.5g".format(netRankingPPS[d][i]),
 								i==netRankingCursor[d]
 							)
 							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
@@ -1052,7 +1088,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 							)
 							receiver.drawMenuNum(engine, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
 							receiver.drawMenuNum(
-								engine, 19, 4+c, String.format("%.5g", netRankingSPL[d][i]),
+								engine, 19, 4+c, "%.5g".format(netRankingSPL[d][i]),
 								i==netRankingCursor[d]
 							)
 							receiver.drawMenuTTF(engine, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
@@ -1086,7 +1122,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 							)
 							receiver.drawMenuNum(
 								engine, 20, 4+c,
-								String.format("%.4g", netRankingPPS[d][i]), i==netRankingCursor[d]
+								"%.4g".format(netRankingPPS[d][i]), i==netRankingCursor[d]
 							)
 							receiver.drawMenuTTF(
 								engine, 27, 4+c, netRankingName[d][i],
@@ -1118,7 +1154,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 								i==netRankingCursor[d]
 							)
 							receiver.drawMenuNum(
-								engine, 20, 4+c, String.format("%.4g", netRankingPPS[d][i]),
+								engine, 20, 4+c, "%.4g".format(netRankingPPS[d][i]),
 								i==netRankingCursor[d]
 							)
 							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
@@ -1196,7 +1232,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 		val strDebugTemp = StringBuilder()
 		for(element in message)
 			strDebugTemp.append(element).append(" ")
-		log.debug("$strDebugTemp")
+		log.debug("{}", strDebugTemp)
 
 		if(message.size>7) {
 			val isDaily = message[4].toBoolean()
@@ -1295,12 +1331,11 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * @param engine GameEngine
 	 */
 	protected open fun netSendStats(engine:GameEngine) {
-		val bg =
-			if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
+
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"
-			}+"${gameActive}\t${timerActive}\t${lastEvent}\t\t$bg\n"
+			}+"${gameActive}\t${timerActive}\t${lastEvent}\t\t${if(owner.bgMan.fadeSW) owner.bgMan.nextBg else engine.owner.bgMan.bg}\n"
 		}
 		netLobby?.netPlayerClient?.send(msg)
 	}
@@ -1366,7 +1401,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			val record = NetSPRecord()
 			record.replayProp = owner.replayProp
 			record.stats = Statistics(engine.statistics)
-			record.gameType = netGetGoalType()
+			record.gameType = netGetGoalType
 
 			val strData = NetUtil.compressString(record.exportString())
 
@@ -1384,7 +1419,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 * Game modes should implement this, unless there is only 1 goal type.
 	 * @return Goal type (default implementation will return 0)
 	 */
-	protected open fun netGetGoalType():Int = 0
+	protected open val netGetGoalType get() = 0
 
 	/** NET: It returns true when the current settings don't prevent leaderboard screen from showing.
 	 * Game modes should implement this. By default, this always returns false.

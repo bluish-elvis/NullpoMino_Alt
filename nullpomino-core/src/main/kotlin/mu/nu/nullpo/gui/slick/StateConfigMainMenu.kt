@@ -30,6 +30,7 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.gui.slick.img.FontTTF
@@ -38,7 +39,7 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** Options screen */
-internal class StateConfigMainMenu:DummyMenuChooseState() {
+internal class StateConfigMainMenu:BaseMenuChooseState() {
 	/** Player number */
 	private var player = 0
 
@@ -68,11 +69,11 @@ internal class StateConfigMainMenu:DummyMenuChooseState() {
 		FontNormal.printFontGrid(1, 1, "OPTIONS", player==0, COLOR.ORANGE, COLOR.CYAN)
 		FontNano.printFontGrid(8, 1, "FOR ${player+1}P", COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 3+cursor, "\u0082", player==0, COLOR.RED, COLOR.BLUE)
+		FontNormal.printFontGrid(1, 3+cursor, BaseFont.CURSOR, player==0, COLOR.RED, COLOR.BLUE)
 
-		CHOICES.forEachIndexed {i, it ->
+		CHOICES.forEachIndexed {i, (first) ->
 			FontNormal.printFontGrid(
-				2, 3+i, "[${it.first}]", cursor==i, COLOR.WHITE,
+				2, 3+i, "[$first]", cursor==i, COLOR.WHITE,
 				if(player==0) COLOR.BLUE else COLOR.RED
 			)
 		}

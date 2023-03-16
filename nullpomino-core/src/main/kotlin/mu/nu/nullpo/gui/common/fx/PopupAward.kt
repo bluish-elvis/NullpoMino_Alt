@@ -85,7 +85,7 @@ class PopupAward(x:Int, y:Int, val event:ScoreEvent, val moveTime:Int, val ex:In
 				ev.piece?.let {r.drawPiece(x-32, y, it, 0.5f, alpha = alpha)}
 				r.drawDirectFont(x-16, y, "$strPieceName-TWIST", color = if(ev.b2b>0) COLOR.PINK else COLOR.PURPLE, alpha = alpha)
 			}
-			ev.twistType==ScoreEvent.Twister.IMMOBILE_EZ -> {
+			ev.twistType.ez -> {
 				ev.piece?.let {r.drawPiece(x-16, y, it, 0.5f, alpha = alpha)}
 				r.drawDirectFont(x-54, y-8, "EZ", color = COLOR.ORANGE, alpha = alpha)
 				r.drawDirectFont(x+54, y-8, "TRICK", color = COLOR.ORANGE, alpha = alpha)

@@ -29,6 +29,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.newdawn.slick.GameContainer
@@ -97,8 +98,8 @@ class StateConfigJoystickButton:BasicGameState() {
 			buttonmap[it].forEachIndexed {i, key -> FontNormal.printFontGrid(15+i*3, it+1, "$key", flag)}
 		}
 
-		FontNormal.printFontGrid(14+keypos*3, 1+keynum, "\u0082", COLOR.RAINBOW)
-		FontNormal.printFontGrid(1, 5+keynum-4, "\u0082", COLOR.RAINBOW)
+		FontNormal.printFontGrid(14+keypos*3, 1+keynum, BaseFont.CURSOR, COLOR.RAINBOW)
+		FontNormal.printFontGrid(1, 5+keynum-4, BaseFont.CURSOR, COLOR.RAINBOW)
 		if(frame>=KEYACCEPTFRAME) {
 			FontNormal.printFontGrid(1, 22, "<\u008B\u008E>:   MOVE CURSOR", COLOR.GREEN)
 			FontNormal.printFontGrid(1, 21, "ENTER:     OK", COLOR.GREEN)
@@ -131,7 +132,7 @@ class StateConfigJoystickButton:BasicGameState() {
 						buttonmap[keynum][keypos] = i
 						frame = 0
 					}
-				} catch(e:Throwable) {
+				} catch(_:Throwable) {
 				}
 
 		// JInput

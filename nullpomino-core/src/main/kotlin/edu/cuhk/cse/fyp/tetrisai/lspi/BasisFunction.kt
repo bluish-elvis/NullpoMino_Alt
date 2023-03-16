@@ -43,7 +43,7 @@ class BasisFunction {
 	 *
 	 * reward = DIFF_ROWS_COMPLETED
 	 */
-	var A = Array(FUTURE_COUNT) {DoubleArray(FUTURE_COUNT)}
+	var a = Array(FUTURE_COUNT) {DoubleArray(FUTURE_COUNT)}
 	var b = Array(FUTURE_COUNT) {DoubleArray(1)}
 	var weight = DoubleArray(FUTURE_COUNT)
 
@@ -210,7 +210,7 @@ class BasisFunction {
 		Matrix.multiply(-1*DISCOUNT, mFutureFeatures)
 		Matrix.sum(mRowFeatures, mFutureFeatures)
 		Matrix.product(mFeatures, mRowFeatures, changeToA)
-		Matrix.sum(A, changeToA)
+		Matrix.sum(a, changeToA)
 		Matrix.multiply(features[DIFF_LINES_SENT], mFeatures)
 		//		Matrix.multiply(features[DIFF_ROWS_COMPLETED], mFeatures);
 		Matrix.sum(b, mFeatures)
@@ -224,7 +224,7 @@ class BasisFunction {
 	 * This saves computing inverse of A and then multiplying it with b.
 	 */
 	fun computeWeights() {
-		if(Matrix.premultiplyInverse(A, b, mWeight, tmpA)==null) return
+		if(Matrix.premultiplyInverse(a, b, mWeight, tmpA)==null) return
 		Matrix.colToArray(mWeight, weight)
 		//printField(mWeight);
 	}

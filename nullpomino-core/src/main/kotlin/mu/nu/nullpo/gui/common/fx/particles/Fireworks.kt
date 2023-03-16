@@ -60,7 +60,7 @@ class Fireworks @JvmOverloads constructor(
 	/**Randomizer*/
 	randomizer:Random = Random.Default
 ):Effect {
-	val particles = List((num.last-num.start).let {if(it>0) randomizer.nextInt(it+1) else 0}+num.start) {
+	val particles = List((num.last-num.first).let {if(it>0) randomizer.nextInt(it+1) else 0}+num.first) {
 
 		val ured:Int = red+(2*randomizer.nextFloat()*variance-variance).toInt()
 		val ugreen:Int = green+(2*randomizer.nextFloat()*variance-variance).toInt()

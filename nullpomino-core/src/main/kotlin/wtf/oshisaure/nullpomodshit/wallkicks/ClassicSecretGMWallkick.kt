@@ -1,3 +1,39 @@
+/*
+ Copyright (c) 2023,
+ This library class was created by 0xFC963F18DC21 / Shots243
+ It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+
+ Kotlin converted and modified by Venom=Nhelv
+
+ Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+
+ THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+
+ Original Repository: https://github.com/Shots243/ModePile
+
+ When using this library in a mode / library pack of your own, the following
+ conditions must be satisfied:
+     - This license must remain visible at the top of the document, unmodified.
+     - You are allowed to use this library for any modding purpose.
+         - If this is the case, the Library Creator must be credited somewhere.
+             - Source comments only are fine, but in a README is recommended.
+     - Modification of this library is allowed, but only in the condition that a
+       pull request is made to merge the changes to the repository.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+ */
+
 //
 // Source code recreated from a .class file by IntelliJ IDEA
 // (powered by FernFlower decompiler)
@@ -27,18 +63,18 @@ class ClassicSecretGMWallkick:Wallkick {
 			if(!piece.checkCollision(x+1+check, y, rtNew, field)) temp = 1+check
 			if(temp!=0) return WallkickResult(temp, 0, rtNew)
 		}
-		val n_skin = 29
-		val w_field = field.width
-		val h_field = field.height
-		for(sg_y in 0 until w_field*2) {
-			var hole = if(sg_y<w_field) sg_y else w_field*2-2-sg_y
-			hole = if(hole<0) w_field-1 else hole
-			for(sg_x in 0 until w_field) {
-				if(sg_x==hole) field.setBlock(sg_x, h_field-sg_y-1, Block())
-				else field.setBlock(sg_x, h_field-sg_y-1, Block(1+random.nextInt(15), random.nextInt(n_skin), 129))
+		val nSkin = 29
+		val wField = field.width
+		val hField = field.height
+		for(sgY in 0 until wField*2) {
+			var hole = if(sgY<wField) sgY else wField*2-2-sgY
+			hole = if(hole<0) wField-1 else hole
+			for(sgX in 0 until wField) {
+				if(sgX==hole) field.setBlock(sgX, hField-sgY-1, Block())
+				else field.setBlock(sgX, hField-sgY-1, Block(1+random.nextInt(15), random.nextInt(nSkin), 129))
 			}
 		}
-		return WallkickResult(0, -y-h_field-4, rtNew)
+		return WallkickResult(0, -y-hField-4, rtNew)
 	}
 
 	private fun checkCollisionKick(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Boolean {

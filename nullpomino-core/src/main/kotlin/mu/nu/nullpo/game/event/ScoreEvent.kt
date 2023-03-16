@@ -39,7 +39,7 @@ data class ScoreEvent(val piece:Piece? = null, val lines:Int = 0, val b2b:Int = 
 	/** True if Twister Mini */
 	val twistMini:Boolean get() = twistType?.mini==true
 	/** EZ Twister */
-	val twistEZ:Boolean get() = twistType?.EZ==true
+	val twistEZ:Boolean get() = twistType?.ez==true
 
 	override fun equals(other:Any?):Boolean {
 		if(this===other) return true
@@ -75,8 +75,9 @@ data class ScoreEvent(val piece:Piece? = null, val lines:Int = 0, val b2b:Int = 
 	enum class Twister {
 		IMMOBILE_EZ, IMMOBILE_MINI, POINT_MINI, IMMOBILE, POINT;
 
-		val mini:Boolean get() = this==POINT_MINI||this==IMMOBILE_MINI
-		val EZ:Boolean get() = this==IMMOBILE_EZ
+		val mini get() = this==POINT_MINI||this==IMMOBILE_MINI
+		val ez get() = this==IMMOBILE_EZ
+		val legit get() = !mini&&!ez
 
 		companion object {
 			val all = Twister.values()

@@ -49,25 +49,7 @@ import java.io.IOException
 import java.util.Locale
 import java.util.Vector
 import java.util.zip.GZIPInputStream
-import javax.swing.BoxLayout
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JComboBox
-import javax.swing.JFileChooser
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.JMenu
-import javax.swing.JMenuBar
-import javax.swing.JMenuItem
-import javax.swing.JOptionPane
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTextArea
-import javax.swing.JTextField
-import javax.swing.KeyStroke
-import javax.swing.ScrollPaneConstants
-import javax.swing.UIManager
-import javax.swing.WindowConstants
+import javax.swing.*
 import javax.swing.filechooser.FileFilter
 
 /** NullpoMino Sequence Viewer
@@ -326,7 +308,7 @@ class Sequencer:JFrame(), ActionListener {
 				vec.add(str)
 			}
 			read.close()
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		return vec

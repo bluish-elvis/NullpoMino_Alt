@@ -65,28 +65,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.util.Locale
 import java.util.Vector
-import javax.swing.AbstractAction
-import javax.swing.Action
-import javax.swing.BoxLayout
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JComboBox
-import javax.swing.JDialog
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.JOptionPane
-import javax.swing.JPanel
-import javax.swing.JPasswordField
-import javax.swing.JPopupMenu
-import javax.swing.JScrollPane
-import javax.swing.JTabbedPane
-import javax.swing.JTable
-import javax.swing.JTextField
-import javax.swing.JTextPane
-import javax.swing.ListSelectionModel
-import javax.swing.SwingUtilities
-import javax.swing.UIManager
-import javax.swing.WindowConstants
+import javax.swing.*
 import javax.swing.table.DefaultTableModel
 import javax.swing.text.JTextComponent
 import javax.swing.text.SimpleAttributeSet
@@ -168,7 +147,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			val `in` = FileInputStream("config/setting/netadmin.cfg")
 			propConfig.load(`in`)
 			`in`.close()
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		// Load language files
@@ -184,7 +163,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			val `in` = FileInputStream("config/lang/netadmin_${Locale.getDefault().country}.xml")
 			propLang.loadFromXML(`in`)
 			`in`.close()
-		} catch(e:IOException) {
+		} catch(_:IOException) {
 		}
 
 		// Set look&feel
@@ -201,7 +180,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 				} catch(e:Exception) {
 					log.warn("Failed to set native look&feel", e)
 				}
-		} catch(e:Exception) {
+		} catch(_:Exception) {
 		}
 
 		// Set close action

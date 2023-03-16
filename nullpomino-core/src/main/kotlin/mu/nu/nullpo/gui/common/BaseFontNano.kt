@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, NullNoname
+ * Copyright (c) 2021-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -33,8 +33,11 @@ import mu.nu.nullpo.game.event.EventReceiver
 import java.util.Locale
 
 abstract class BaseFontNano:BaseFont {
-	val w = 12
-	val h = 14
+	companion object {
+		const val w = 12
+		const val h = 14
+	}
+
 	abstract override val rainbowCount:Int
 	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float,
 		rainbow:Int,
@@ -50,7 +53,7 @@ abstract class BaseFontNano:BaseFont {
 				dy = (dy+16*scale)
 				dx = x
 			} else {// 文字出力
-				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
+				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
 				val c = stringChar-32// Character output
 				val sx = (c%32)*w
 				val sy = (c/32+col*3)*h
@@ -61,9 +64,9 @@ abstract class BaseFontNano:BaseFont {
 		}
 	}
 
-	override fun printFont(x:Int, y:Int, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int) =
+	override fun printFont(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int) =
 		processTxt(
-			x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow
+			x, y, str, color, scale, alpha, rainbow
 		) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int, a:Float ->
 			getImg(i).draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, alpha = a)
 		}

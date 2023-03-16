@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -68,7 +68,7 @@ class MarathonSquare:AbstractMode() {
 	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 
 	/** Time records */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	/** Squares records */
 	private val rankingSquares = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
@@ -84,7 +84,7 @@ class MarathonSquare:AbstractMode() {
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		squares = 0
 
 		outlinetype = 0
@@ -93,7 +93,7 @@ class MarathonSquare:AbstractMode() {
 
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 		rankingSquares.forEach {it.fill(0)}
 
 		if(!owner.replayMode) {
@@ -241,7 +241,7 @@ class MarathonSquare:AbstractMode() {
 				}
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
 							receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
@@ -264,7 +264,7 @@ class MarathonSquare:AbstractMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 0, 4, "${engine.statistics.score}(+$lastscore)")
+			receiver.drawScoreFont(engine, 0, 4, "${engine.statistics.score}(+$lastScore)")
 
 			receiver.drawScoreFont(engine, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, 0, 7, "${engine.statistics.lines}")
@@ -305,7 +305,7 @@ class MarathonSquare:AbstractMode() {
 				engine.playSE("countdown")
 
 			// BGM fadeout
-			if(remainTime<=5*60&&engine.timerActive) owner.musMan.fadesw = true
+			if(remainTime<=5*60&&engine.timerActive) owner.musMan.fadeSW = true
 
 			// Time up!
 			if(engine.statistics.time>=ULTRA_MAX_TIME&&engine.timerActive) {
@@ -371,7 +371,7 @@ class MarathonSquare:AbstractMode() {
 			val squareClears = engine.field.howManySquareClears
 			pts += (5*squareClears[0]+2*squareClears[1])
 
-			lastscore = pts
+			lastScore = pts
 			engine.statistics.scoreLine += pts
 			setSpeed(engine)
 			return pts
@@ -461,9 +461,9 @@ class MarathonSquare:AbstractMode() {
 		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
 		drawResult(
-			engine, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
-			"LINE", String.format("%10d", engine.statistics.lines), "SQUARE", String.format("%10d", squares), "Time",
-			String.format("%10s", engine.statistics.time.toTimeStr)
+			engine, receiver, 3, EventReceiver.COLOR.BLUE, "Score", "%10d".format(engine.statistics.score),
+			"LINE", "%10d".format(engine.statistics.lines), "SQUARE", "%10d".format(squares), "Time",
+			"%10s".format(engine.statistics.time.toTimeStr)
 		)
 		drawResultRank(engine, receiver, 11, EventReceiver.COLOR.BLUE, rankingRank)
 	}

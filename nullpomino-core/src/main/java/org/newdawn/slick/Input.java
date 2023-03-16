@@ -841,7 +841,7 @@ public class Input{
 
 	/**
 	 * Notification that the mouse has been pressed and hence we
-	 * should consider what we're doing with double clicking
+	 * should consider what we're doing with double-clicking
 	 * @param button The button pressed/released
 	 * @param x The location of the mouse
 	 * @param y The location of the mouse

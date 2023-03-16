@@ -55,13 +55,13 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 	var netLobby:NetLobbyFrame = NetLobbyFrame()
 
 	/** FPS表示 */
-	private var showfps = true
+	private var showFPS = true
 
 	/** Screenshot撮影 flag */
-	private var ssflag = false
+	private var ssFlag = false
 
 	/** Show background flag */
-	private var showbg = true
+	private var showBG = true
 
 	/** Previous ingame flag (Used by title-bar text change) */
 	private var prevInGameFlag = false
@@ -86,7 +86,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		// Init variables
-		showbg = NullpoMinoSlick.propConfig.getProperty("option.showbg", true)
+		showBG = NullpoMinoSlick.propConfig.getProperty("option.showBg", true)
 		prevInGameFlag = false
 
 		// Observer stop
@@ -98,12 +98,10 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 		appContainer?.setUpdateOnlyWhenVisible(false)
 
 		// Clear each frame
-		appContainer?.setClearEachFrame(!showbg)
+		appContainer?.setClearEachFrame(!showBG)
 
 		// gameManager initialization
-		gameManager = GameManager(RendererSlick()).apply {
-			receiver.setGraphics(appContainer!!.graphics)
-		}
+		gameManager = GameManager(RendererSlick(appContainer!!.graphics))
 
 		// Lobby initialization
 		netLobby.addListener(this)
@@ -127,7 +125,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 		container?.setClearEachFrame(false)
 
 		// FPS restore
-		NullpoMinoSlick.altMaxFPS = NullpoMinoSlick.propConfig.getProperty("option.maxfps", 60)
+		NullpoMinoSlick.altMaxFPS = NullpoMinoSlick.propConfig.getProperty("option.maxFps", 60)
 		appContainer?.alwaysRender = !NullpoMinoSlick.alternateFPSTiming
 		appContainer?.setUpdateOnlyWhenVisible(true)
 
@@ -144,21 +142,21 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 			// FPS
 			NullpoMinoSlick.drawFPS()
 			// Screenshot
-			if(ssflag) {
+			if(ssFlag) {
 				NullpoMinoSlick.saveScreenShot(container, g)
-				ssflag = false
+				ssFlag = false
 			}
 
 			if(!NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep(true)
 		} catch(e:NullPointerException) {
 			try {
 				if(gameManager==null||gameManager?.quitFlag==false) log.error("render NPE", e)
-			} catch(e2:Throwable) {
+			} catch(_:Throwable) {
 			}
 		} catch(e:Exception) {
 			try {
 				if(gameManager==null||gameManager?.quitFlag==false) log.error("render fail", e)
-			} catch(e2:Throwable) {
+			} catch(_:Throwable) {
 			}
 		}
 	}
@@ -193,7 +191,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 						// BGM
 						if(ResourceHolder.bgmPlaying!=gameManager.musMan.bgm) ResourceHolder.bgmStart(gameManager.musMan.bgm)
 						if(ResourceHolder.bgmIsPlaying) {
-							val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
+							val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmVolume", 128)
 							val basevolume2 = basevolume/128.toFloat()
 							var newvolume = gameManager.musMan.volume*basevolume2
 							if(newvolume<0f) newvolume = 0f
@@ -221,7 +219,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 			if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)||
 				GameKey.gameKey[1].isPushKey(GameKeyDummy.BUTTON_SCREENSHOT)
 			)
-				ssflag = true
+				ssFlag = true
 
 			// Enter to new mode
 			if(strModeToEnter.isNotEmpty()) {
@@ -237,7 +235,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 					return
 				}
 				log.error("update NPE", e)
-			} catch(e2:Throwable) {
+			} catch(_:Throwable) {
 			}
 		} catch(e:Exception) {
 			try {
@@ -246,7 +244,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 					return
 				}
 				log.error("update fail", e)
-			} catch(e2:Throwable) {
+			} catch(_:Throwable) {
 			}
 		}
 	}
@@ -286,13 +284,13 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 					it.owBlockShowOutlineOnly = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owBlockShowOutlineOnly", -1)
 					it.owDelayCancel = NullpoMinoSlick.propGlobal.getProperty("0.tuning.owDelayCancel", -1)
 					// Rule
-					val ruleOpt:RuleOptions
-					val rulename = NullpoMinoSlick.propGlobal.getProperty(
+
+					val ruleName = NullpoMinoSlick.propGlobal.getProperty(
 						if(gm.mode?.gameStyle==GameStyle.TETROMINO) "0.rule" else "0.rule.${gm.mode?.gameStyle}", ""
 					)
-					ruleOpt = if(rulename.isNotEmpty()) {
-						log.info("Load rule options from $rulename")
-						GeneralUtil.loadRule(rulename)
+					val ruleOpt:RuleOptions = if(ruleName.isNotEmpty()) {
+						log.info("Load rule options from $ruleName")
+						GeneralUtil.loadRule(ruleName)
 					} else {
 						log.info("Load rule options from setting file")
 						RuleOptions().apply {
@@ -302,12 +300,9 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 					it.ruleOpt = ruleOpt
 
 					// Randomizer
-					if(ruleOpt.strRandomizer.isNotEmpty())
-						it.randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
-
+					if(ruleOpt.strRandomizer.isNotEmpty()) it.randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
 					// Wallkick
-					if(ruleOpt.strWallkick.isNotEmpty())
-						it.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
+					if(ruleOpt.strWallkick.isNotEmpty()) it.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
 
 					// AI
 					val aiName = NullpoMinoSlick.propGlobal.getProperty("0.ai", "")
@@ -344,7 +339,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				strTitle = "[${
 					if(it.engine[0].isInGame&&!it.replayMode&&!it.replayRerecord)
 						"PLAY" else "Menu"
-				}] NullpoMino Netplay - $modeName"
+				}] NullpoMino NetPlay - $modeName"
 		}
 		appContainer?.setTitle(strTitle)
 	}

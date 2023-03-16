@@ -29,6 +29,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -122,7 +123,12 @@ class StateConfigKeyboard:BasicGameState() {
 		}
 		FontNormal.printFontGrid(2, 20, "SAVE & EXIT", keynum==16)
 
-		FontNormal.printFontGrid(14+if(keynum!=16) keypos*10 else 0, 4+keynum, if(keynum==16) "?" else "\u0082", COLOR.RAINBOW)
+		FontNormal.printFontGrid(
+			14+if(keynum!=16) keypos*10 else 0,
+			4+keynum,
+			if(keynum==16) "?" else BaseFont.CURSOR,
+			COLOR.RAINBOW
+		)
 
 		if(frame>=KEYACCEPTFRAME)
 			when {

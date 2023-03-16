@@ -30,7 +30,6 @@
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
 import mu.nu.nullpo.game.component.RuleOptions
-import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.subsystem.ai.BasicAI
@@ -50,10 +49,39 @@ import org.apache.log4j.PropertyConfigurator
  * @param ai,ai2 AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
  */
 class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
-	private val gameManager:GameManager = GameManager()
-	private val gameEngine:Array<GameEngine>
-	private val receiver:EventReceiver? = null
+	// NOTE(oliver): For other GameModes, look inside src/mu/nu/nullpo/game/subsystem/mode
+
+	private val gameManager:GameManager = GameManager(mode = mode)
+	private val gameEngine get() = gameManager.engine
+	private val receiver get() = gameManager.receiver
 	private var customSeed:String? = null
+
+	init {
+		/*
+		 * NOTE(oliver): This code is a domain-specific version of
+		 * mu.nu.nullpo.gui.slick.StateInGame.startNewGame(String strRulePath)
+		 */
+		// UI
+//		receiver = new RendererSlick();
+		// Manager setup
+		gameManager.showInput = false
+		gameManager.engine.forEachIndexed {i, it ->
+			// Engine setup
+			it.apply {
+				ruleOpt = rules
+				randomizer = GeneralUtil.loadRandomizer(rules.strRandomizer)
+				wallkick = GeneralUtil.loadWallkick(rules.strWallkick)
+				this.ai = if(i==0) ai else ai2
+				aiMoveDelay = 0
+				aiThinkDelay = 0
+				aiUseThread = false
+				aiShowHint = false
+				aiPreThink = false
+				aiShowState = false
+			}
+		}
+	}
+
 	/*
 	 * Get the current in-game grade from a game of Tetris The Grand Master 3: Terror Instinct.
 	 *
@@ -166,7 +194,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 */
 	fun runSimulations(count:Int) {
 		for(i in 1..count) {
-			log.info(String.format("-------- Simulation %d of %d --------", i, count))
+			log.info("-------- Simulation %d of %d --------".format(i, count))
 			runSimulation()
 		}
 		//gameEngine.ai.shutdown(gameEngine, 0);
@@ -175,7 +203,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 * Performs multiple sequential simulations to completion (STATE == GAMEOVER),
 	 * and records statistics.
 	 *
-	 * @param count The number of simulations.
+	 * @param esp The number of simulations.
 	 */
 	fun runStatisticsSimulations(esp:Int, step:Int) {
 		val totalLines = IntArray(gameEngine.size)
@@ -184,7 +212,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		val winnerCount = IntArray(gameEngine.size)
 		for(i in winnerCount.indices) winnerCount[i] = 0
 		for(i in 0 until count) {
-			log.info(String.format("-------- Simulation %d of %d --------", i+1, count))
+			log.info("-------- Simulation %d of %d --------".format(i+1, count))
 			runSimulation()
 			//if (getGM3Grade() == 32) gm++
 			val winner:Int = gameEngine.indexOfFirst {it.stat!==GameEngine.Status.GAMEOVER}
@@ -222,39 +250,6 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 
 		//log.info("Confidence interval:\t" + interval);
 	}
-	/**
-	 * Make a new Simulator object, ready to go.
-	 * @param mode Game mode Object
-	 * @param rules Game rules Object
-	 * @param ai AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
-	 */
-	init {
-		/*
-		 * NOTE(oliver): This code is a domain-specific version of
-		 * mu.nu.nullpo.gui.slick.StateInGame.startNewGame(String strRulePath)
-		 */
-		// UI
-//		receiver = new RendererSlick();
-		// Manager setup
-		gameManager.mode = mode
-		gameManager.init()
-		gameManager.showInput = false
-		gameEngine = Array(2) {i ->
-			// Engine setup
-			gameManager.engine[i].apply {
-				ruleOpt = rules
-				randomizer = GeneralUtil.loadRandomizer(rules.strRandomizer)
-				wallkick = GeneralUtil.loadWallkick(rules.strWallkick)
-				this.ai = if(i==0) ai else ai2
-				aiMoveDelay = 0
-				aiThinkDelay = 0
-				aiUseThread = false
-				aiShowHint = false
-				aiPreThink = false
-				aiShowState = false
-			}
-		}
-	}
 
 	companion object {
 		// Run for this amount of round
@@ -276,23 +271,20 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		//
 		//		String state = gameEngine.stat.toString();
 		//
-		//		log.info(String.format("\tLevel: %3d \tPiece: %s \tState: %s", level, piece, state));
+		//		log.info("\tLevel: %3d \tPiece: %s \tState: %s".format(level, piece, state));
 			}*/
 		@JvmStatic fun main(args:Array<String>) {
 			// Logger initialization.
 			PropertyConfigurator.configure("config/etc/log_slick.cfg")
 			org.newdawn.slick.util.Log.setLogSystem(SlickLog4j())
-
-			// NOTE(oliver): For other GameModes, look inside src/mu/nu/nullpo/game/subsystem/mode
-			val mode:GameMode = VSBattle()
-
+			val mode = VSBattle()
 			// NOTE(oliver): For other rules, look inside config/rule.
 			val rulePath = "config/rule/StandardAITraining.rul"
 
 			// NOTE(oliver): For other AIs, look inside src/mu/nu/nullpo/game/subsystem/ai, or src/dk/itu/ai
 			val ai:DummyAI = LSPIAI()
 			val ai2:DummyAI = BasicAI()
-			//new net.tetrisconcept.poochy.nullpomino.ai.PoochyBot();
+			//net.tetrisconcept.poochy.nullpomino.ai.PoochyBot()
 
 			// Actual simulation.
 			val battler = Battler(mode, rulePath, ai, ai2)

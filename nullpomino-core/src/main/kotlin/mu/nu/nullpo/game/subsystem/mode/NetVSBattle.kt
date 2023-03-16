@@ -40,7 +40,6 @@ import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
 import java.util.LinkedList
-import java.util.Locale
 import java.util.Objects
 import kotlin.math.abs
 
@@ -50,13 +49,13 @@ class NetVSBattle:NetDummyVSMode() {
 	private var lastHole = -1
 
 	/** True if Hurry Up has been started */
-	private var hurryupStarted = false
+	private var hurryUpStarted = false
 
 	/** Number of frames left to show "HURRY UP!" text */
-	private var hurryupShowFrames = 0
+	private var hurryUpShowFrames = 0
 
 	/** Number of pieces placed after Hurry Up has started */
-	private var hurryupCount = 0
+	private var hurryUpCount = 0
 
 	/** True if you KO'd player */
 	private var playerKObyYou = BooleanArray(0)
@@ -161,7 +160,7 @@ class NetVSBattle:NetDummyVSMode() {
 		val pid = engine.playerID
 		if(pid==0&&!netVSIsWatch()) {
 			lastHole = -1
-			hurryupCount = 0
+			hurryUpCount = 0
 			currentKO = 0
 			targetID = -1
 			targetTimer = 0
@@ -187,8 +186,8 @@ class NetVSBattle:NetDummyVSMode() {
 
 		if(engine.playerID==0&&!netVSIsWatch()) {
 			if(!netVSIsPractice) {
-				hurryupStarted = false
-				hurryupShowFrames = 0
+				hurryUpStarted = false
+				hurryUpShowFrames = 0
 			}
 			setNewTarget()
 			targetTimer = 0
@@ -339,7 +338,7 @@ class NetVSBattle:NetDummyVSMode() {
 
 		// Garbage lines appear
 		if((ev==0||!netCurrentRoomInfo!!.rensaBlock)&&totalGarbageLines>=GARBAGE_DENOMINATOR&&!netVSIsPractice) {
-			engine.playSE("garbage${if(totalGarbageLines-GARBAGE_DENOMINATOR>3) 1 else 0}")
+			engine.playSE("garbage${minOf(2, (totalGarbageLines-GARBAGE_DENOMINATOR)/3)}")
 
 			var smallGarbageCount = 0
 			var hole = lastHole
@@ -416,13 +415,13 @@ class NetVSBattle:NetDummyVSMode() {
 		}
 
 		// HURRY UP!
-		if(netCurrentRoomInfo!!.hurryupSeconds>=0&&engine.timerActive&&!netVSIsPractice)
-			if(hurryupStarted) {
-				hurryupCount++
+		if(netCurrentRoomInfo!!.hurryUpSeconds>=0&&engine.timerActive&&!netVSIsPractice)
+			if(hurryUpStarted) {
+				hurryUpCount++
 
-				if(hurryupCount%netCurrentRoomInfo!!.hurryupInterval==0) engine.field.addHurryupFloor(1, engine.skin)
+				if(hurryUpCount%netCurrentRoomInfo!!.hurryUpInterval==0) engine.field.addHurryupFloor(1, engine.skin)
 			} else
-				hurryupCount = netCurrentRoomInfo!!.hurryupInterval-1
+				hurryUpCount = netCurrentRoomInfo!!.hurryUpInterval-1
 		return 0
 	}
 
@@ -432,17 +431,17 @@ class NetVSBattle:NetDummyVSMode() {
 		super.onLast(engine)
 
 		scgettime[pid]++
-		if(pid==0&&hurryupShowFrames>0) hurryupShowFrames--
+		if(pid==0&&hurryUpShowFrames>0) hurryUpShowFrames--
 
 		// HURRY UP!
-		if(pid==0&&engine.timerActive&&netCurrentRoomInfo!=null&&netCurrentRoomInfo!!.hurryupSeconds>=0&&
-			netVSPlayTimer==netCurrentRoomInfo!!.hurryupSeconds*60&&!hurryupStarted) {
+		if(pid==0&&engine.timerActive&&netCurrentRoomInfo!=null&&netCurrentRoomInfo!!.hurryUpSeconds>=0&&
+			netVSPlayTimer==netCurrentRoomInfo!!.hurryUpSeconds*60&&!hurryUpStarted) {
 			if(!netVSIsWatch()&&!netVSIsPractice) {
 				netLobby!!.netPlayerClient!!.send("game\thurryup\n")
 				engine.playSE("hurryup")
 			}
-			hurryupStarted = true
-			hurryupShowFrames = 60*5
+			hurryUpStarted = true
+			hurryUpShowFrames = 60*5
 		}
 
 		// Garbage meter
@@ -488,8 +487,8 @@ class NetVSBattle:NetDummyVSMode() {
 	override fun renderLast(engine:GameEngine) {
 		super.renderLast(engine)
 
-		val x = owner.receiver.fieldX(engine)
-		val y = owner.receiver.fieldY(engine)
+		val x = receiver.fieldX(engine)
+		val y = receiver.fieldY(engine)
 
 		val pid = engine.playerID
 		if(netVSPlayerExist[pid]&&engine.isVisible) {
@@ -497,18 +496,11 @@ class NetVSBattle:NetDummyVSMode() {
 			if(garbage[pid]>0&&netCurrentRoomInfo!!.useFractionalGarbage&&engine.stat!=GameEngine.Status.RESULT) {
 				val strTempGarbage:String
 
-				var fontColor = COLOR.WHITE
-				if(garbage[pid]>=GARBAGE_DENOMINATOR) fontColor = COLOR.YELLOW
-				if(garbage[pid]>=GARBAGE_DENOMINATOR*3) fontColor = COLOR.ORANGE
-				if(garbage[pid]>=GARBAGE_DENOMINATOR*4) fontColor = COLOR.RED
-
-				if(engine.displaySize!=-1) {
-					strTempGarbage = String.format(Locale.US, "%5.2f", garbage[pid].toFloat()/GARBAGE_DENOMINATOR)
-					owner.receiver.drawDirectFont(x+96, y+372, strTempGarbage, fontColor, 1f)
-				} else {
-					strTempGarbage = String.format(Locale.US, "%4.1f", garbage[pid].toFloat()/GARBAGE_DENOMINATOR)
-					owner.receiver.drawDirectFont(x+64, y+168, strTempGarbage, fontColor, .5f)
-				}
+				val fontColor = if(garbage[pid]>=GARBAGE_DENOMINATOR*4) COLOR.RED
+				else if(garbage[pid]>=GARBAGE_DENOMINATOR*3) COLOR.ORANGE
+				else if(garbage[pid]>=GARBAGE_DENOMINATOR) COLOR.YELLOW
+				else COLOR.WHITE
+				receiver.drawDirectNum(x+96, y+372, garbage[pid].toFloat()/GARBAGE_DENOMINATOR, 5 to 2, fontColor, 1f)
 			}
 
 			// Target
@@ -517,7 +509,7 @@ class NetVSBattle:NetDummyVSMode() {
 				val fontcolor = if(targetTimer>=netCurrentRoomInfo!!.targetTimer-20&&targetTimer%2==0)
 					COLOR.WHITE else COLOR.GREEN
 
-				owner.receiver.drawMenuFont(engine, 2, 12, "TARGET", fontcolor)
+				receiver.drawMenuFont(engine, 2, 12, "TARGET", fontcolor)
 			}
 		}
 
@@ -525,96 +517,96 @@ class NetVSBattle:NetDummyVSMode() {
 		if(pid==0&&netVSIsPractice&&netVSIsPracticeExitAllowed
 			&&engine.stat!=GameEngine.Status.RESULT)
 			if(lastevent[pid]==EVENT_NONE||scgettime[pid]>=120)
-				owner.receiver.drawMenuFont(
+				receiver.drawMenuFont(
 					engine, 0, 21, "F("
-						+owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)
+						+receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)
 						+" KEY):\n END GAME", COLOR.PURPLE
 				)
 
 		// Hurry Up
 		if(netCurrentRoomInfo!=null&&pid==0)
-			if(netCurrentRoomInfo!!.hurryupSeconds>=0&&hurryupShowFrames>0
-				&&!netVSIsPractice&&hurryupStarted)
-				owner.receiver.drawDirectFont(pid, 256-8, 32, "HURRY UP!", hurryupShowFrames%2==0)
+			if(netCurrentRoomInfo!!.hurryUpSeconds>=0&&hurryUpShowFrames>0
+				&&!netVSIsPractice&&hurryUpStarted)
+				receiver.drawDirectFont(pid, 256-8, 32, "HURRY UP!", hurryUpShowFrames%2==0)
 
 		// Bottom message
 		if(netVSPlayerExist[pid]&&engine.isVisible)
 		// K.O.
 			if(playerKObyYou[pid]) {
 				if(engine.displaySize!=-1)
-					owner.receiver.drawMenuFont(engine, 3, 21, "K.O.", COLOR.PINK)
+					receiver.drawMenuFont(engine, 3, 21, "K.O.", COLOR.PINK)
 				else
-					owner.receiver.drawDirectFont(x+4+24, y+168, "K.O.", COLOR.PINK, .5f)
+					receiver.drawDirectFont(x+4+24, y+168, "K.O.", COLOR.PINK, .5f)
 			} else if(lastevent[pid]!=EVENT_NONE&&scgettime[pid]<120) {
 				val strPieceName = Piece.Shape.names[lastpiece[pid]]
 
 				if(engine.displaySize!=-1) {
 					when(lastevent[pid]) {
-						EVENT_SINGLE -> owner.receiver.drawMenuFont(engine, 2, 21, "SINGLE", COLOR.COBALT)
-						EVENT_DOUBLE -> owner.receiver.drawMenuFont(engine, 2, 21, "DOUBLE", COLOR.BLUE)
-						EVENT_TRIPLE -> owner.receiver.drawMenuFont(engine, 2, 21, "TRIPLE", COLOR.GREEN)
+						EVENT_SINGLE -> receiver.drawMenuFont(engine, 2, 21, "SINGLE", COLOR.COBALT)
+						EVENT_DOUBLE -> receiver.drawMenuFont(engine, 2, 21, "DOUBLE", COLOR.BLUE)
+						EVENT_TRIPLE -> receiver.drawMenuFont(engine, 2, 21, "TRIPLE", COLOR.GREEN)
 						EVENT_FOUR -> if(lastb2b[pid])
-							owner.receiver.drawMenuFont(engine, 3, 21, "FOUR", COLOR.RED)
+							receiver.drawMenuFont(engine, 3, 21, "FOUR", COLOR.RED)
 						else
-							owner.receiver.drawMenuFont(engine, 3, 21, "FOUR", COLOR.ORANGE)
+							receiver.drawMenuFont(engine, 3, 21, "FOUR", COLOR.ORANGE)
 						EVENT_TWIST_SINGLE_MINI -> if(lastb2b[pid])
-							owner.receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-S", COLOR.RED)
+							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-S", COLOR.RED)
 						else
-							owner.receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-S", COLOR.ORANGE)
+							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-S", COLOR.ORANGE)
 						EVENT_TWIST_SINGLE -> if(lastb2b[pid])
-							owner.receiver.drawMenuFont(engine, 1, 21, "$strPieceName-SINGLE", COLOR.RED)
+							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-SINGLE", COLOR.RED)
 						else
-							owner.receiver.drawMenuFont(engine, 1, 21, "$strPieceName-SINGLE", COLOR.ORANGE)
+							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-SINGLE", COLOR.ORANGE)
 						EVENT_TWIST_DOUBLE_MINI -> if(lastb2b[pid])
-							owner.receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-D", COLOR.RED)
+							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-D", COLOR.RED)
 						else
-							owner.receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-D", COLOR.ORANGE)
+							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-MINI-D", COLOR.ORANGE)
 						EVENT_TWIST_DOUBLE -> if(lastb2b[pid])
-							owner.receiver.drawMenuFont(engine, 1, 21, "$strPieceName-DOUBLE", COLOR.RED)
+							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-DOUBLE", COLOR.RED)
 						else
-							owner.receiver.drawMenuFont(engine, 1, 21, "$strPieceName-DOUBLE", COLOR.ORANGE)
+							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-DOUBLE", COLOR.ORANGE)
 						EVENT_TWIST_TRIPLE -> if(lastb2b[pid])
-							owner.receiver.drawMenuFont(engine, 1, 21, "$strPieceName-TRIPLE", COLOR.RED)
+							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-TRIPLE", COLOR.RED)
 						else
-							owner.receiver.drawMenuFont(engine, 1, 21, "$strPieceName-TRIPLE", COLOR.ORANGE)
+							receiver.drawMenuFont(engine, 1, 21, "$strPieceName-TRIPLE", COLOR.ORANGE)
 						EVENT_TWIST_EZ -> if(lastb2b[pid])
-							owner.receiver.drawMenuFont(engine, 3, 21, "EZ-$strPieceName", COLOR.RED)
+							receiver.drawMenuFont(engine, 3, 21, "EZ-$strPieceName", COLOR.RED)
 						else
-							owner.receiver.drawMenuFont(engine, 3, 21, "EZ-$strPieceName", COLOR.ORANGE)
+							receiver.drawMenuFont(engine, 3, 21, "EZ-$strPieceName", COLOR.ORANGE)
 					}
 
 					if(lastcombo[pid]>=2)
-						owner.receiver.drawMenuFont(engine, 2, 22, "${(lastcombo[pid]-1)}COMBO", COLOR.CYAN)
+						receiver.drawMenuFont(engine, 2, 22, "${(lastcombo[pid]-1)}COMBO", COLOR.CYAN)
 				} else {
 					var x2 = 8
 					if(Objects.requireNonNull(netCurrentRoomInfo)!!.useFractionalGarbage&&garbage[pid]>0) x2 = 0
 
 					when(lastevent[pid]) {
-						EVENT_SINGLE -> owner.receiver.drawDirectFont(x+4+16, y+168, "SINGLE", COLOR.COBALT, .5f)
-						EVENT_DOUBLE -> owner.receiver.drawDirectFont(x+4+16, y+168, "DOUBLE", COLOR.BLUE, .5f)
-						EVENT_TRIPLE -> owner.receiver.drawDirectFont(x+4+16, y+168, "TRIPLE", COLOR.GREEN, .5f)
+						EVENT_SINGLE -> receiver.drawDirectFont(x+4+16, y+168, "SINGLE", COLOR.COBALT, .5f)
+						EVENT_DOUBLE -> receiver.drawDirectFont(x+4+16, y+168, "DOUBLE", COLOR.BLUE, .5f)
+						EVENT_TRIPLE -> receiver.drawDirectFont(x+4+16, y+168, "TRIPLE", COLOR.GREEN, .5f)
 						EVENT_FOUR -> if(lastb2b[pid])
-							owner.receiver.drawDirectFont(x-4, y+168, "QUADRUPLE", COLOR.RED, .5f)
+							receiver.drawDirectFont(x-4, y+168, "QUADRUPLE", COLOR.RED, .5f)
 						else
-							owner.receiver.drawDirectFont(x-4, y+168, "QUADRUPLE", COLOR.ORANGE, .5f)
+							receiver.drawDirectFont(x-4, y+168, "QUADRUPLE", COLOR.ORANGE, .5f)
 						EVENT_TWIST_SINGLE_MINI -> if(lastb2b[pid])
-							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-S", COLOR.RED, .5f)
+							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-S", COLOR.RED, .5f)
 						else
-							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-S", COLOR.ORANGE, .5f)
+							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-S", COLOR.ORANGE, .5f)
 						EVENT_TWIST_SINGLE -> if(lastb2b[pid])
-							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-SINGLE", COLOR.RED, .5f)
+							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-SINGLE", COLOR.RED, .5f)
 						else
-							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-SINGLE", COLOR.ORANGE, .5f)
+							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-SINGLE", COLOR.ORANGE, .5f)
 						EVENT_TWIST_DOUBLE_MINI -> if(lastb2b[pid])
-							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-D", COLOR.RED, .5f)
+							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-D", COLOR.RED, .5f)
 						else
-							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-D", COLOR.ORANGE, .5f)
+							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-MINI-D", COLOR.ORANGE, .5f)
 						EVENT_TWIST_DOUBLE -> if(lastb2b[pid])
-							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-DOUBLE", COLOR.RED, .5f)
+							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-DOUBLE", COLOR.RED, .5f)
 						else
-							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-DOUBLE", COLOR.ORANGE, .5f)
+							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-DOUBLE", COLOR.ORANGE, .5f)
 						EVENT_TWIST_TRIPLE -> if(lastb2b[pid])
-							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-TRIPLE", COLOR.RED, .5f)
+							receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-TRIPLE", COLOR.RED, .5f)
 						else
 							owner.receiver.drawDirectFont(x+4+x2, y+168, "$strPieceName-TRIPLE", COLOR.ORANGE, .5f)
 						EVENT_TWIST_EZ -> if(lastb2b[pid])
@@ -646,15 +638,15 @@ class NetVSBattle:NetDummyVSMode() {
 		val scale = if(engine.displaySize==-1) .5f else 1f
 
 		drawResultScale(
-			engine, owner.receiver, 2, COLOR.ORANGE, scale,
-			"ATTACK", String.format("%10g", garbageSent[pid].toFloat()/GARBAGE_DENOMINATOR),
-			"LINE", String.format("%10d", engine.statistics.lines),
-			"PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
-			"ATK/LINE", String.format("%10g", playerAPL[pid]),
-			"ATTACK/MIN", String.format("%10g", playerAPM[pid]),
-			"LINE/MIN", String.format("%10g", engine.statistics.lpm),
-			"PIECE/SEC", String.format("%10g", engine.statistics.pps),
-			"Time", String.format("%10s", engine.statistics.time.toTimeStr)
+			engine, receiver, 2, COLOR.ORANGE, scale,
+			"ATTACK", "%10g".format(garbageSent[pid].toFloat()/GARBAGE_DENOMINATOR),
+			"LINE", "%10d".format(engine.statistics.lines),
+			"PIECE", "%10d".format(engine.statistics.totalPieceLocked),
+			"ATK/LINE", "%10g".format(playerAPL[pid]),
+			"ATTACK/MIN", "%10g".format(playerAPM[pid]),
+			"LINE/MIN", "%10g".format(engine.statistics.lpm),
+			"PIECE/SEC", "%10g".format(engine.statistics.pps),
+			"Time", "%10s".format(engine.statistics.time.toTimeStr)
 		)
 	}
 
@@ -769,11 +761,11 @@ class NetVSBattle:NetDummyVSMode() {
 			}
 			// HurryUp
 			if(message[3]=="hurryup")
-				if(!hurryupStarted&&netCurrentRoomInfo!=null
-					&&netCurrentRoomInfo!!.hurryupSeconds>0) {
-					if(!netVSIsWatch()&&!netVSIsPractice&&owner.engine[0].timerActive) owner.receiver.playSE("hurryup")
-					hurryupStarted = true
-					hurryupShowFrames = 60*5
+				if(!hurryUpStarted&&netCurrentRoomInfo!=null
+					&&netCurrentRoomInfo!!.hurryUpSeconds>0) {
+					if(!netVSIsWatch()&&!netVSIsPractice&&owner.engine[0].timerActive) receiver.playSE("hurryup")
+					hurryUpStarted = true
+					hurryUpShowFrames = 60*5
 				}
 		}
 	}

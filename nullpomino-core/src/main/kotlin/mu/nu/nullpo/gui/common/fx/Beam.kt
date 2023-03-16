@@ -42,14 +42,14 @@ class Beam(x:Int, y:Int, val w:Int, val h:Int):SpriteSheet(x, y) {
 
 	override fun draw(i:Int, r:AbstractRenderer) {
 		r.drawBlendAdd {
-			r.resources.imgLine[if(isV) 1 else 0].draw(x, y, dx2, dy2, srcx, srcy, srcx2, srcy2)
+			r.resources.imgLine[if(isV) 1 else 0].draw(x, y, dx2, dy2, srcX, srcY, srcX2, srcY2)
 		}
 	}
 
 	override val dx2:Float get() = x+w
 	override val dy2:Float get() = y+h
-	override val srcx:Int get() = if(isV) (ticks-1)*8 else 0
-	override val srcx2:Int get() = srcx+if(isV) 16 else 80
-	override val srcy:Int get() = if(isV) 0 else (ticks/2-1)*8
-	override val srcy2:Int get() = srcy+if(isV) 160 else 8
+	override val srcX:Int get() = if(isV) (ticks-1)*8 else 0
+	override val srcX2:Int get() = srcX+if(isV) 16 else 80
+	override val srcY:Int get() = if(isV) 0 else (ticks/2-1)*8
+	override val srcY2:Int get() = srcY+if(isV) 160 else 8
 }

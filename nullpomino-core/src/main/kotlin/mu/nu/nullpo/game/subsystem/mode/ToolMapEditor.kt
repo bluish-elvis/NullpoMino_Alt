@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
 import java.util.LinkedList
 import kotlin.random.Random
@@ -58,7 +59,7 @@ class ToolMapEditor:AbstractMode() {
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
-		owner = manager
+		super.modeInit(manager)
 		propMap = CustomProperties()
 		listFields = LinkedList()
 		nowMapSetID = 0
@@ -211,7 +212,7 @@ class ToolMapEditor:AbstractMode() {
 	override fun renderSetting(engine:GameEngine) {
 		receiver.drawMenuFont(engine, 0, 1, "FIELD EDIT", EventReceiver.COLOR.COBALT)
 		if(menuCursor in 0..2)
-			receiver.drawMenuFont(engine, 0, 2+menuCursor, "\u0082", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, 0, 2+menuCursor, BaseFont.CURSOR, EventReceiver.COLOR.RED)
 		receiver.drawMenuFont(engine, 1, 2, "[EDIT]", menuCursor==0)
 		receiver.drawMenuFont(engine, 1, 3, "[WHITE->?]", menuCursor==1)
 		receiver.drawMenuFont(engine, 1, 4, "[CLEAR]", menuCursor==2)
@@ -222,7 +223,7 @@ class ToolMapEditor:AbstractMode() {
 		else
 			receiver.drawMenuFont(engine, 0, 7, "NO MAPS", menuCursor in 3..5)
 		if(menuCursor in 3..5)
-			receiver.drawMenuFont(engine, 0, 8+menuCursor-3, "\u0082", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, 0, 8+menuCursor-3, BaseFont.CURSOR, EventReceiver.COLOR.RED)
 		receiver.drawMenuFont(engine, 1, 8, "[SAVE]", menuCursor==3)
 		receiver.drawMenuFont(engine, 1, 9, "[LOAD]", menuCursor==4)
 		receiver.drawMenuFont(engine, 1, 10, "[DELETE]", menuCursor==5)
@@ -230,7 +231,7 @@ class ToolMapEditor:AbstractMode() {
 		receiver.drawMenuFont(engine, 0, 12, "MAP FILE", EventReceiver.COLOR.COBALT)
 		receiver.drawMenuFont(engine, 0, 13, "$nowMapSetID/99", menuCursor in 6..7)
 		if(menuCursor in 6..7)
-			receiver.drawMenuFont(engine, 0, 14+menuCursor-6, "\u0082", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, 0, 14+menuCursor-6, BaseFont.CURSOR, EventReceiver.COLOR.RED)
 		receiver.drawMenuFont(engine, 1, 14, "[WRITE]", menuCursor==6)
 		receiver.drawMenuFont(engine, 1, 15, "[READ]", menuCursor==7)
 

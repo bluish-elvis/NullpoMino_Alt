@@ -232,11 +232,11 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					}
 					14 -> {
 						if(m>10)
-							hurryupSeconds[playerID] += change*m/10
+							hurryUpSeconds[playerID] += change*m/10
 						else
-							hurryupSeconds[playerID] += change
-						if(hurryupSeconds[playerID]<0) hurryupSeconds[playerID] = 300
-						if(hurryupSeconds[playerID]>300) hurryupSeconds[playerID] = 0
+							hurryUpSeconds[playerID] += change
+						if(hurryUpSeconds[playerID]<0) hurryUpSeconds[playerID] = 300
+						if(hurryUpSeconds[playerID]>300) hurryUpSeconds[playerID] = 0
 					}
 					15 -> dangerColumnDouble[playerID] = !dangerColumnDouble[playerID]
 					16 -> dangerColumnShowX[playerID] = !dangerColumnShowX[playerID]
@@ -289,7 +289,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 					} else
 						mapNumber[playerID] = -1
 					27 -> bigDisplay = !bigDisplay
-					28 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					28 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					29 -> enableSE[playerID] = !enableSE[playerID]
 					30, 31 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
 					32 -> {
@@ -397,7 +397,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 							engine.colorClearSize.toString(),
 						"OJAMA RATE" to ojamaRate[pid],
 						"HURRYUP" to
-							if(hurryupSeconds[pid]==0) "NONE" else "${hurryupSeconds[pid]}SEC",
+							if(hurryUpSeconds[pid]==0) "NONE" else "${hurryUpSeconds[pid]}SEC",
 						"X COLUMN" to if(dangerColumnDouble[pid]) "3 AND 4" else "3 ONLY",
 						"X SHOW" to dangerColumnShowX[pid]
 					)
@@ -435,7 +435,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 						"BIG DISP" to bigDisplay
 					)
 
-					drawMenu(engine, receiver, COLOR.COBALT, "BGM" to BGM.values[bgmno], "SE" to enableSE[pid])
+					drawMenu(engine, receiver, COLOR.COBALT, "BGM" to BGM.values[bgmId], "SE" to enableSE[pid])
 
 					drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 
@@ -463,8 +463,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 						COLOR.CYAN,
 						32,
 						"DROP SET" to DROP_SET_NAMES[dropSet[pid]],
-						"DROP MAP" to "${String.format("%2d", dropMap[pid]+1)}/${
-							String.format("%2d", DROP_PATTERNS[dropSet[pid]].size)
+						"DROP MAP" to "${"%2d".format(dropMap[pid]+1)}/${
+							"%2d".format(DROP_PATTERNS[dropSet[pid]].size)
 						}"
 					)
 
@@ -519,11 +519,11 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			strScoreMultiplier = "(${lastscores[pid]}e${lastmultiplier[pid]})"
 
 		if(engine.displaySize==1) {
-			receiver.drawDirectFont(fldPosX+4, fldPosY+440, String.format("%12d", score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX+4, fldPosY+456, String.format("%12s", strScoreMultiplier), playerColor)
+			receiver.drawDirectFont(fldPosX+4, fldPosY+440, "%12d".format(score[pid]), playerColor)
+			receiver.drawDirectFont(fldPosX+4, fldPosY+456, "%12s".format(strScoreMultiplier), playerColor)
 		} else if(engine.gameStarted) {
-			receiver.drawDirectFont(fldPosX-28, fldPosY+248, String.format("%8d", score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX-28, fldPosY+264, String.format("%8s", strScoreMultiplier), playerColor)
+			receiver.drawDirectFont(fldPosX-28, fldPosY+248, "%8d".format(score[pid]), playerColor)
+			receiver.drawDirectFont(fldPosX-28, fldPosY+264, "%8s".format(strScoreMultiplier), playerColor)
 		}
 
 		if(engine.stat!=GameEngine.Status.MOVE&&engine.stat!=GameEngine.Status.RESULT&&engine.gameStarted)

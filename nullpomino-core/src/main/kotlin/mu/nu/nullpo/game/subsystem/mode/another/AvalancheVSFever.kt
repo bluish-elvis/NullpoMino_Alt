@@ -174,11 +174,11 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 					}
 					14 -> {
 						if(m>10)
-							hurryupSeconds[playerID] += change*m/10
+							hurryUpSeconds[playerID] += change*m/10
 						else
-							hurryupSeconds[playerID] += change
-						if(hurryupSeconds[playerID]<0) hurryupSeconds[playerID] = 300
-						if(hurryupSeconds[playerID]>300) hurryupSeconds[playerID] = 0
+							hurryUpSeconds[playerID] += change
+						if(hurryUpSeconds[playerID]<0) hurryUpSeconds[playerID] = 300
+						if(hurryUpSeconds[playerID]>300) hurryUpSeconds[playerID] = 0
 					}
 					15 -> {
 						ojamaHard[playerID] += change
@@ -221,7 +221,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 					}
 					23 -> cascadeSlow[playerID] = !cascadeSlow[playerID]
 					24 -> newChainPower[playerID] = !newChainPower[playerID]
-					25 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					25 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					26 -> enableSE[playerID] = !enableSE[playerID]
 					27 -> bigDisplay = !bigDisplay
 					28, 29 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
@@ -290,7 +290,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 						"COLORS" to numColors[pid],
 						"MIN CHAIN" to "${rensaShibari[pid]}",
 						"OJAMA RATE" to ojamaRate[pid],
-						"HURRYUP" to if(hurryupSeconds[pid]==0) "NONE" else "${hurryupSeconds[pid]} SEC",
+						"HURRYUP" to if(hurryUpSeconds[pid]==0) "NONE" else "${hurryUpSeconds[pid]} SEC",
 						"HARD OJAMA" to ojamaHard[pid],
 						"X COLUMN" to if(dangerColumnDouble[pid]) "3 AND 4" else "3 ONLY",
 						"X SHOW" to dangerColumnShowX[pid]
@@ -318,7 +318,7 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 					receiver.drawMenuFont(engine, 0, 19, "PAGE 3/4", COLOR.YELLOW)
 				}
 				else -> {
-					drawMenu(engine, receiver, 0, COLOR.PINK, 25, "BGM" to BGM.values[bgmno])
+					drawMenu(engine, receiver, 0, COLOR.PINK, 25, "BGM" to BGM.values[bgmId])
 					drawMenu(engine, receiver, COLOR.YELLOW, "SE" to enableSE[pid])
 					drawMenu(engine, receiver, COLOR.PINK, "BIG DISP" to bigDisplay)
 					drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
@@ -434,8 +434,8 @@ class AvalancheVSFever:AvalancheVSDummyMode() {
 		if(zenKeshi[pid]&&zenKeshiType[pid]==ZENKESHI_MODE_ON) pow += 30
 		//Add ojama
 		var rate = ojamaRate[pid]
-		if(hurryupSeconds[pid]>0&&engine.statistics.time>hurryupSeconds[pid])
-			rate = rate shr engine.statistics.time/(hurryupSeconds[pid]*60)
+		if(hurryUpSeconds[pid]>0&&engine.statistics.time>hurryUpSeconds[pid])
+			rate = rate shr engine.statistics.time/(hurryUpSeconds[pid]*60)
 		if(rate<=0) rate = 1
 		pow += (pts+rate-1)/rate
 		ojamaSent[pid] += pow

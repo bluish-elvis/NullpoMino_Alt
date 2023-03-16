@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -39,29 +39,29 @@ class BGMStatus:Serializable {
 	var track = 0
 
 	/** 音量 (1f=100%, .5f=50%) */
-	var volume:Float = 1f
+	var volume:Float = 1f; private set
 
 	/** BGM fadeoutスイッチ */
-	var fadesw:Boolean
-		get() = fadespd>0f
+	var fadeSW:Boolean
+		get() = fadeSpd>0f
 		set(sw) {
-			fadespd = if(sw) 0.01f else 0f
+			fadeSpd = if(sw) .01f else 0f
 		}
 
 	/** BGM fadeout速度 */
-	var fadespd = 0f
+	var fadeSpd = 0f
 
 	/** 音楽の定数 */
 	sealed class BGM(
-		idx:Int = 0, val hidden:Boolean = false, nums:Int = 1, ln:String = "",
+		val id:Int, idx:Int = 0, val hidden:Boolean = false, nums:Int = 1, ln:String = "",
 		val sn:List<String> = emptyList()
 	) {
-		constructor(idx:Int, nums:Int, ln:String):this(idx, false, nums, ln)
-		constructor(idx:Int, ln:String, hidden:Boolean = false, sn:List<String>):this(idx, hidden, sn.size, ln, sn)
-		constructor(idx:Int, ln:String, vararg sn:String = emptyArray(), hidden:Boolean = false)
-			:this(idx, hidden, sn.size, ln, sn.toList())
+		constructor(id:Int, idx:Int, nums:Int, ln:String):this(id, idx, false, nums, ln)
+		constructor(id:Int, idx:Int, ln:String, hidden:Boolean = false, sn:List<String>):this(id, idx, hidden, sn.size, ln, sn)
+		constructor(id:Int, idx:Int, ln:String, vararg sn:String = emptyArray(), hidden:Boolean = false)
+			:this(id, idx, hidden, sn.size, ln, sn.toList())
 
-		val id:Int = BGM::class.java.declaredClasses.indexOfFirst {it==this::class.java}
+		//		val id:Int = BGM::class.java.declaredClasses.indexOfFirst {it==this::class.java}
 		val idx:Int = minOf(maxOf(0, idx), nums-1)
 		val nums = maxOf(1, nums, sn.size)
 
@@ -91,50 +91,52 @@ class BGMStatus:Serializable {
 
 		override fun toString():String = fullName
 
-		object Silent:BGM(ln = "Silent")
-		class Generic(idx:Int = 0):BGM(idx, "Guidelines Modes", sn = List(9) {"Level:${it+1}"})
-		class Rush(idx:Int = 0):BGM(idx, "Trial Rush", sn = List(3) {"Level:${it+1}"})
-		class Extra(idx:Int = 0):BGM(idx, 3, "Extra Modes")
-		class RetroN(idx:Int = 0):BGM(idx, 4, "Retro Classic:N.")
-		class RetroA(idx:Int = 0):BGM(idx, 5, "Retro Marathon:AT")
-		class RetroS(idx:Int = 0):BGM(idx, 6, "Retro Mania:S")
+		object Silent:BGM(0, ln = "Silent")
+		class Generic(idx:Int = 0):BGM(1, idx, "Guidelines Modes", sn = List(10) {"Level:${it+1}"})
+		class Rush(idx:Int = 0):BGM(2, idx, "Trial Rush", sn = List(4) {"Level:${it+1}"})
+		class Extra(idx:Int = 0):BGM(3, idx, 5, "Extra Modes")
+		class Puzzle(idx:Int = 0):BGM(4, idx, "Strategy Mode/Grand Blossom", "SAKURA", "SAKURA", "TOMOYO", "CELBERUS", "EXTRA")
+		class RetroN(idx:Int = 0):BGM(5, idx, 4, "Retro Classic:N.")
+		class RetroA(idx:Int = 0):BGM(6, idx, 5, "Retro Marathon:AT")
+		class RetroS(idx:Int = 0):BGM(7, idx, 6, "Retro Mania:S")
 
-		class Puzzle(idx:Int = 0):BGM(idx, "Grand Blossom", "SAKURA", "TOMOYO", "CELBERUS")
-		class GrandM(idx:Int = 0):BGM(idx, "Grand Marathon", "Lv 0", "Lv 500")
+		class GrandM(idx:Int = 0):BGM(8, idx, "Grand Marathon", "Lv 0", "Lv 500")
 		class GrandA(idx:Int = 0):BGM(
-			idx, "Grand Mania", "Lv 0", "Lv500", "Lv700/SLv0 ", "Lv700 mRoll/SLv300",
-			"Lv900/SLv500", "Lv900 with mRoll/SLv800"
+			9, idx, "Grand Mania", "Lv 0", "Lv200", "Lv500", "Lv500 mRoll/SLv0",
+			"Lv700/SLv300", "Lv700 with mRoll/SLv500", "Lv900/SLv800"
 		)
 
 		class GrandT(idx:Int = 0):BGM(
-			idx, "Grand Mastery",
-			"NORMAL", "rank 200", "rank 500", "rank 700", "rank 1200", "Lv900", "Lv900 mRoll"
+			10, idx,
+			"Grand Mastery", "NORMAL", "rank 200", "rank 500", "rank 800 on NORMAL",
+			"rank 800 on Lv400-500", "rank 1000 on NORMAL", "rank 1000 on Lv500-700", "Lv900 mRoll"
 		)
 
 		class GrandTS(idx:Int = 0):BGM(
-			idx, "Grand Lightning",
-			"Lightning 0", "Mastery 900/Lightning 500", "700", "1200 /sec9"
+			11, idx,
+			"Grand Lightning", "LLv0", "LLv500", "LLv700", "LLv 1000"
 		)
 
 		class Menu(idx:Int = 0):BGM(
-			idx, "Select BGM",
-			"Title Menu/Replay", "Mode Select", "General Config",
-			"Mode Config(Retro/Puzzle)", "Mode Config(Generic)", "Mode Config(Unique)",
-			"Mode Config(Trial)", "Mode Config(Grand 20G)", hidden = true
+			12, idx,
+			"Select BGM", "Title Menu/Replay", "Mode Select", "General Config",
+			"Mode Config(Retro/Puzzle)", "Mode Config(Generic)",
+			"Mode Config(Unique)", "Mode Config(Trial)", "Mode Config(Grand 20G)", hidden = true
 		)
 
 		class Ending(idx:Int = 0):BGM(
-			idx, "Ending Challenge",
-			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)", "Modern-Hard (200Sec)", hidden = true
+			13, idx, "Ending Challenge",
+			"Marathon", "Mania (60sec)", "Mastery (55sec)", "Modern (200Sec)", "Modern-Hard (200Sec)",
+			hidden = true
 		)
 
 		class Result(idx:Int = 0):BGM(
-			idx, "Play Result",
+			14, idx, "Play Result",
 			"Failure", "Done Sprint", "Done Enduro", "Cleared Game", hidden = true
 		)
 
-		class Finale(idx:Int = 0):BGM(idx, "Grand Finale", "Genuine", "Joker", "Further", hidden = true)
-		class Blitz(idx:Int = 0):BGM(idx, "Blitz", "3-min", "5-min", "3-min EXTREME", "5-min EXTREME", hidden = true)
+		class Finale(idx:Int = 0):BGM(15, idx, "Grand Finale", "Genuine", "Joker", "Further", hidden = true)
+		class Blitz(idx:Int = 0):BGM(16, idx, "Blitz", "3-min", "5-min", "3-min EXTREME", "5-min EXTREME", hidden = true)
 
 		//operator fun get(index: Int): BGM = if(this.idx)
 		companion object {
@@ -170,21 +172,21 @@ class BGMStatus:Serializable {
 	fun reset() {
 		bgm = BGM.Silent
 		volume = 1f
-		fadesw = false
+		fadeSW = false
 	}
 
 	/** 設定を[b]からコピー */
 	fun replace(b:BGMStatus) {
 		bgm = b.bgm
 		volume = b.volume
-		fadesw = b.fadesw
+		fadeSW = b.fadeSW
 	}
 
 	/** BGM fade状態と音量の更新 */
 	fun fadeUpdate() {
-		if(fadesw) {
+		if(fadeSW) {
 			if(volume>0f)
-				volume -= fadespd
+				volume -= fadeSpd
 			else if(volume<0f) volume = 0f
 		} else if(volume!=1f) volume = 1f
 	}

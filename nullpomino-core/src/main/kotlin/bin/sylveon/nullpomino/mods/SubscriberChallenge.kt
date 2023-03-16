@@ -1,37 +1,37 @@
 /*
- * Copyright (c) 2021-2022,
- * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
- *
- * Kotlin converted and modified by Venom=Nhelv
- *
- * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
- *
- * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
- * Original Repository: https://github.com/Shots243/ModePile
- *
- * When using this library in a mode / library pack of your own, the following
- * conditions must be satisfied:
- *     - This license must remain visible at the top of the document, unmodified.
- *     - You are allowed to use this library for any modding purpose.
- *         - If this is the case, the Library Creator must be credited somewhere.
- *             - Source comments only are fine, but in a README is recommended.
- *     - Modification of this library is allowed, but only in the condition that a
- *       pull request is made to merge the changes to the repository.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ Copyright (c) 2021-2023,
+ This library class was created by 0xFC963F18DC21 / Shots243
+ It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+
+ Kotlin converted and modified by Venom=Nhelv
+
+ Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+
+ THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+
+ Original Repository: https://github.com/Shots243/ModePile
+
+ When using this library in a mode / library pack of your own, the following
+ conditions must be satisfied:
+     - This license must remain visible at the top of the document, unmodified.
+     - You are allowed to use this library for any modding purpose.
+         - If this is the case, the Library Creator must be credited somewhere.
+             - Source comments only are fine, but in a README is recommended.
+     - Modification of this library is allowed, but only in the condition that a
+       pull request is made to merge the changes to the repository.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
  */
 
 package bin.sylveon.nullpomino.mods
@@ -99,7 +99,7 @@ class SubscriberChallenge:NetDummyMode() {
 	/** Rankings' line counts  */
 	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	/** Rankings' times  */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	override val rankMap
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
@@ -114,7 +114,7 @@ class SubscriberChallenge:NetDummyMode() {
 	override val menu = MenuList("subscriberchallenge", itemMode, itemLv, itemBig)
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
@@ -125,7 +125,7 @@ class SubscriberChallenge:NetDummyMode() {
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 		netPlayerInit(engine)
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
@@ -133,9 +133,9 @@ class SubscriberChallenge:NetDummyMode() {
 			if((version==0)&&(owner.replayProp.getProperty("subscriberchallenge.endless", false))) goalType = 2
 
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
+			netPlayerName = owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
-		engine.owner.bgMan.bg = startLevel
+		owner.bgMan.bg = startLevel
 		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
 	}
 	/**
@@ -156,7 +156,7 @@ class SubscriberChallenge:NetDummyMode() {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode) {
 			netOnUpdateNetPlayRanking(engine, goalType)
-		} else if(!engine.owner.replayMode) {
+		} else if(!owner.replayMode) {
 			// Configuration changes
 			val change:Int = updateCursor(engine, 8)
 			if(change!=0) {
@@ -171,7 +171,7 @@ class SubscriberChallenge:NetDummyMode() {
 							if(startLevel<0) startLevel = 19
 							if(startLevel>19) startLevel = 0
 						}
-						engine.owner.bgMan.bg = startLevel
+						owner.bgMan.bg = startLevel
 					}
 					1 -> {
 						goalType += change
@@ -179,7 +179,7 @@ class SubscriberChallenge:NetDummyMode() {
 						if(goalType>GAMETYPE_MAX-1) goalType = 0
 						if((startLevel>(tableGameClearLines[goalType]-1)/10)&&(tableGameClearLines[goalType]>=0)) {
 							startLevel = (tableGameClearLines[goalType]-1)/10
-							engine.owner.bgMan.bg = startLevel
+							owner.bgMan.bg = startLevel
 						}
 					}
 					2 -> big = !big
@@ -269,7 +269,7 @@ class SubscriberChallenge:NetDummyMode() {
 				val topY:Int = if((receiver.nextDisplayType==2)) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
 					receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[goalType][i]}", (i==rankingRank), scale)
 					receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[goalType][i]}", (i==rankingRank), scale)
 					receiver.drawScoreFont(engine, 15, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank, scale)
@@ -342,7 +342,7 @@ class SubscriberChallenge:NetDummyMode() {
 		if(pts+cmb+spd>0) {
 			val get = calcScoreCombo(pts, cmb, engine.statistics.level, spd)
 
-			if(pts>0) lastscore = get
+			if(pts>0) lastScore = get
 			if(li>=1) engine.statistics.scoreLine += get
 			else engine.statistics.scoreBonus += get
 		}
@@ -377,20 +377,20 @@ class SubscriberChallenge:NetDummyMode() {
 
 		// Add to score
 		if(pts>0) {
-			lastscore = pts
+			lastScore = pts
 			lastpiece = engine.nowPieceObject?.id ?: 0
 			if(li>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
 		}
 		subscriber += sub
 		// BGM fade-out effects and BGM changes
 		if(tableBGMChange[bgmLv]!=-1) {
-			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.musMan.fadesw = true
+			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.musMan.fadeSW = true
 			if((engine.statistics.lines>=tableBGMChange[bgmLv])&&
 				((engine.statistics.lines<tableGameClearLines[goalType])||(tableGameClearLines[goalType]<0))
 			) {
 				bgmLv++
 				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
-				owner.musMan.fadesw = false
+				owner.musMan.fadeSW = false
 			}
 		}
 
@@ -407,9 +407,7 @@ class SubscriberChallenge:NetDummyMode() {
 		} else if((engine.statistics.lines>=(engine.statistics.level+1)*10)&&(engine.statistics.level<19)) {
 			// Level up
 			engine.statistics.level++
-			owner.bgMan.fadesw = true
-			owner.bgMan.fadecount = 0
-			owner.bgMan.fadebg = engine.statistics.level
+			owner.bgMan.nextBg = engine.statistics.level
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}
@@ -497,13 +495,9 @@ class SubscriberChallenge:NetDummyMode() {
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
-			if(sc>rankingScore[type][i]) {
-				return i
-			} else if((sc==rankingScore[type][i])&&(li>rankingLines[type][i])) {
-				return i
-			} else if((sc==rankingScore[type][i])&&(li==rankingLines[type][i])&&(time<rankingTime[type][i])) {
-				return i
-			}
+			if(sc>rankingScore[type][i]) return i
+			else if((sc==rankingScore[type][i])&&(li>rankingLines[type][i])) return i
+			else if((sc==rankingScore[type][i])&&(li==rankingLines[type][i])&&(time<rankingTime[type][i])) return i
 		}
 		return -1
 	}
@@ -513,12 +507,12 @@ class SubscriberChallenge:NetDummyMode() {
 	 */
 	override fun netSendStats(engine:GameEngine) {
 		val bg:Int =
-			if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
+			if(owner.bgMan.fadeSW) engine.owner.bgMan.nextBg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+
 			"${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"+
 			"${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"+
 			"${engine.statistics.time}\t${engine.statistics.level}\t${engine.statistics.lpm}\t${engine.statistics.spl}\t"+
-			"$goalType\t${engine.gameActive}\t${engine.timerActive}\t$lastscore\t$scDisp\t"+
+			"$goalType\t${engine.gameActive}\t${engine.timerActive}\t$lastScore\t$scDisp\t"+
 			"$subscriber\t$lastb2b\t$lastcombo\t$lastpiece\t$bg\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
@@ -579,7 +573,7 @@ class SubscriberChallenge:NetDummyMode() {
 	/**
 	 * NET: Get goal type
 	 */
-	override fun netGetGoalType() = goalType
+	override val netGetGoalType get() = goalType
 	/**
 	 * NET: It returns true when the current settings don't prevent leaderboard screen from showing.
 	 */
@@ -587,7 +581,7 @@ class SubscriberChallenge:NetDummyMode() {
 
 	companion object {
 		/** Current version  */
-		val CURRENT_VERSION = 2
+		const val CURRENT_VERSION = 2
 		/** Fall velocity table (numerators)  */
 		val tableGravity = listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
 		/** Fall velocity table (denominators)  */
@@ -597,10 +591,10 @@ class SubscriberChallenge:NetDummyMode() {
 		/** Line counts when game ending occurs  */
 		val tableGameClearLines = listOf(150, 200, -1)
 		/** Number of entries in rankings  */
-		val RANKING_MAX = 10
+		const val RANKING_MAX = 10
 		/** Number of ranking types  */
-		val RANKING_TYPE = 3
+		const val RANKING_TYPE = 3
 		/** Number of game types  */
-		val GAMETYPE_MAX = 3
+		const val GAMETYPE_MAX = 3
 	}
 }

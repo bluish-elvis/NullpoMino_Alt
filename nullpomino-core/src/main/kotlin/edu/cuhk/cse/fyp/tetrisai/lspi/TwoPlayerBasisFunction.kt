@@ -43,14 +43,14 @@ class TwoPlayerBasisFunction {
 	 *
 	 * reward = DIFF_ROWS_COMPLETED
 	 */
-	var A = Array(FEATURE_COUNT) {DoubleArray(FEATURE_COUNT)}
+	var a = Array(FEATURE_COUNT) {DoubleArray(FEATURE_COUNT)}
 	var b = Array(FEATURE_COUNT) {DoubleArray(1)}
 	var z = Array(FEATURE_COUNT) {DoubleArray(1)}
 	var weight = DoubleArray(FEATURE_COUNT)
 
 	init {
 		for(i in 0 until FEATURE_COUNT) {
-			A[i][i] = 0.00001
+			a[i][i] = 0.00001
 		}
 	}
 
@@ -303,7 +303,7 @@ class TwoPlayerBasisFunction {
 		Matrix.multiply(-1*DISCOUNT, mFutureFeatures)
 		Matrix.sum(mRowFeatures, mFutureFeatures)
 		Matrix.product(z, mRowFeatures, changeToA)
-		Matrix.sum(A, changeToA)
+		Matrix.sum(a, changeToA)
 		//		Matrix.multiply(features[OPPO_DIFF_DIE], mFeatures);
 		Matrix.multiply(features[DIFF_LINES_SENT], zz)
 		//		Matrix.multiply(features[DIFF_ROWS_COMPLETED], mFeatures);
@@ -318,7 +318,7 @@ class TwoPlayerBasisFunction {
 	 * This saves computing inverse of A and then multiplying it with b.
 	 */
 	fun computeWeights() {
-		if(Matrix.premultiplyInverse(A, b, mWeight, tmpA)==null) return
+		if(Matrix.premultiplyInverse(a, b, mWeight, tmpA)==null) return
 		Matrix.colToArray(mWeight, weight)
 		//printField(mWeight);
 	}

@@ -30,20 +30,30 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.game.subsystem.mode.GameMode
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.modeManager
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.gui.slick.img.FontTTF
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
+import org.newdawn.slick.state.GameState
 import org.newdawn.slick.state.StateBasedGame
-import java.util.LinkedList
+import org.newdawn.slick.state.transition.EmptyTransition
 
 /** Mode select screen */
-class StateSelectMode:DummyMenuScrollState() {
+class StateSelectMode:BaseMenuScrollState() {
+	/** True if top-level folder */
+	internal var isTopLevel = false
 	/** Current folder name */
-	private var strCurrentFolder = ""
-
+	internal var strCurrentFolder = ""
+	private var listInternal = emptyList<GameMode>()
+	override var list
+		get() = listInternal.map {it.name}.let {
+			if(isTopLevel) it+"[more...]" else it
+		}
+		set(value) {}
 	/** Constructor */
 	init {
 		pageHeight = PAGE_HEIGHT
@@ -57,18 +67,18 @@ class StateSelectMode:DummyMenuScrollState() {
 
 	/** Prepare mode list */
 	private fun prepareModeList() {
-		strCurrentFolder = StateSelectModeFolder.strCurrentFolder
+		if(strCurrentFolder.isEmpty()) strCurrentFolder = StateSelectModeFolder.strCurrentFolder
 		// Get mode list
-		val listMode:LinkedList<String>?
 		if(isTopLevel) {
-			listMode = StateSelectModeFolder.listTopLevelModes
-			list = List(listMode.size) {convModeName(listMode[it], true)}+"[more...]"
+			StateSelectModeFolder.listTopLevelModes.let {modes ->
+				listInternal = modes.mapNotNull {modeManager[it]}
+			}
 		} else {
-			listMode = StateSelectModeFolder.mapFolder[strCurrentFolder]
-			list = if(strCurrentFolder.isNotBlank()&&listMode?.isNotEmpty()==true)
-				List(listMode.size) {convModeName(listMode[it], true)}
-			else
-				NullpoMinoSlick.modeManager.getModeNames(false)
+			StateSelectModeFolder.mapFolder[strCurrentFolder].let {listMode ->
+				listInternal = if(strCurrentFolder.isNotBlank()&&listMode?.isNotEmpty()==true)
+					listMode.mapNotNull {modeManager[it]}
+				else modeManager.list.filter {!it.isOnlineMode}
+			}
 		}
 
 		// Set cursor postion
@@ -105,7 +115,7 @@ class StateSelectMode:DummyMenuScrollState() {
 	}
 
 	private fun convModeName(str:String, sw:Boolean):String {
-		val mm = NullpoMinoSlick.modeManager
+		val mm = modeManager
 		val i = mm.getNum(str)
 		return if(i==-1) str else if(sw) mm.getName(i) else mm.getID(i)
 	}
@@ -145,17 +155,31 @@ class StateSelectMode:DummyMenuScrollState() {
 
 			NullpoMinoSlick.propGlobal.setProperty("name.mode", list[cursor])
 			//NullpoMinoSlick.saveConfig();
-			game.enterState(StateSelectRuleFromList.ID)
+			game.enterState(
+				StateSelectRuleFromList.ID,
+				TransDecideMode(list[cursor], listInternal[cursor].gameStyle.ordinal),
+				EmptyTransition()
+			)
 		}
 
 		return false
 	}
 
+	private class TransDecideMode(val modeName:String, val mode:Int):EmptyTransition() {
+		override fun init(firstState:GameState?, secondState:GameState?) {
+			if(secondState is StateSelectRuleFromList) {
+				secondState.strCurrentMode = modeName
+				secondState.intCurrentMode = mode
+			}
+		}
+	}
+
 	/* Cancel */
 	override fun onCancel(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
-		if(isTopLevel) game.enterState(StateTitle.ID)
-		else game.enterState(StateSelectModeFolder.ID)
-
+		game.enterState(
+			if(isTopLevel) StateTitle.ID else StateSelectModeFolder.ID,
+			StateSelectModeFolder.TransDecideFolder(), EmptyTransition()
+		)
 		return true
 	}
 
@@ -168,7 +192,5 @@ class StateSelectMode:DummyMenuScrollState() {
 
 		const val PAGE_HEIGHT = 24
 
-		/** True if top-level folder */
-		var isTopLevel = false
 	}
 }

@@ -30,6 +30,7 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
@@ -158,7 +159,7 @@ class StateConfigAISelect:BaseGameState() {
 		// Menu
 		FontNormal.printFontGrid(1, 1, "${(player+1)}P AI setting", COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RAINBOW)
+		FontNormal.printFontGrid(1, 3+cursor, BaseFont.CURSOR, COLOR.RAINBOW)
 
 		val aiName:String = if(aiID<0) "(disable)" else aiNameList[aiID]
 		FontNormal.printFontGrid(2, 3, "AI type:$aiName", cursor==0)

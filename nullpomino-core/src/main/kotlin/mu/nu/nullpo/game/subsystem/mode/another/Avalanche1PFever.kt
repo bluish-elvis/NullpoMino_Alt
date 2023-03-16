@@ -1,8 +1,7 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -13,7 +12,6 @@
  *     * Neither the name of NullNoname nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -57,7 +55,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	private val rankingScore = List(3) {List(FEVER_MAPS.size) {MutableList(RANKING_MAX) {0L}}}
 
 	/** Rankings' times */
-	private val rankingTime = List(3) {List(FEVER_MAPS.size) {MutableList(RANKING_MAX) {0}}}
+	private val rankingTime = List(3) {List(FEVER_MAPS.size) {MutableList(RANKING_MAX) {-1}}}
 
 	/** Flag for all clear */
 	private var zenKeshiDisplay = 0
@@ -114,9 +112,10 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 	override val rankMap
 		get() = rankMapOf(rankingScore.flatMapIndexed {a, x ->
-			x.flatMapIndexed {b, y -> y.mapIndexed {c, z -> "$a.$b.$c.score" to z}}
-		}+rankingTime.flatMapIndexed {a, w ->
-			w.flatMapIndexed {b, x -> x.mapIndexed {c, z -> "$a.$b.$c.time" to z}}
+			x.mapIndexed {b, y -> "$a.$b.score" to y}
+		}
+			+rankingTime.flatMapIndexed {a, x ->
+			x.mapIndexed {b, y -> "$a.$b.time" to y}
 		})
 	/* Mode name */
 	override val name = "AVALANCHE 1P FEVER MARATHON (RC2)"
@@ -139,8 +138,8 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		feverChain = 5
 
 		rankingRank = -1
-		rankingScore.forEach {it.forEach {it.fill(0)}}
-		rankingTime.forEach {it.forEach {it.fill(0)}}
+		rankingScore.forEach {it.forEach {p -> p.fill(0)}}
+		rankingTime.forEach {it.forEach {p -> p.fill(0)}}
 
 		xyzzy = 0
 		fastenable = 0
@@ -184,7 +183,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 							loadMapSetFever(mapSet, true)
 							if(previewChain<feverChainMin) previewChain = feverChainMax
 							if(previewChain>feverChainMax) previewChain = feverChainMin
-							if(previewSubset>=mapSubsets!!.size) previewSubset = 0
+							if(previewSubset>=mapSubsets.size) previewSubset = 0
 						}
 					}
 					1 -> {
@@ -210,8 +209,8 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 					}
 					7 -> {
 						previewSubset += change
-						if(previewSubset<0) previewSubset = mapSubsets!!.size-1
-						if(previewSubset>=mapSubsets!!.size) previewSubset = 0
+						if(previewSubset<0) previewSubset = mapSubsets.size-1
+						if(previewSubset>=mapSubsets.size) previewSubset = 0
 					}
 					8 -> {
 						previewChain += change
@@ -304,7 +303,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 				BLUE,
 				6,
 				"MAP SET" to FEVER_MAPS[mapSet].uppercase(),
-				"SUBSET" to mapSubsets!![previewSubset].uppercase(),
+				"SUBSET" to mapSubsets[previewSubset].uppercase(),
 				"CHAIN" to previewChain
 			)
 		}
@@ -319,25 +318,19 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE      TIME", BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE      TIME", BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), YELLOW, scale)
-					receiver.drawScoreFont(
-						engine, 3, topY+i, "${rankingScore[numColors-3][mapSet][i]}", i==rankingRank, scale
-					)
-					receiver.drawScoreNum(
-						engine, 14, topY+i, rankingTime[numColors-3][mapSet][i].toTimeStr, i==rankingRank,
-						scale
-					)
+					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), YELLOW)
+					receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[numColors-3][mapSet][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 14, topY+i, rankingTime[numColors-3][mapSet][i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
 			receiver.drawScoreFont(engine, 0, 3, "Score", BLUE)
-			val strScore = "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
+			val strScore = "${engine.statistics.score}(+${lastScore}X$lastmultiplier)"
 			receiver.drawScoreNum(engine, 0, 4, strScore, 2f)
 
 			receiver.drawScoreFont(engine, 0, 6, "Level", BLUE)
@@ -393,7 +386,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 	/** Draw fever timer on death columns*/
 	override fun drawX(engine:GameEngine) {
-		val strFeverTimer = String.format("%02d", (timeLimit+59)/60)
+		val strFeverTimer = "%02d".format((timeLimit+59)/60)
 
 		for(i in 0..1)
 			if(engine.field.getBlockEmpty(2+i, 0))
@@ -511,32 +504,32 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", ORANGE)
 
 		receiver.drawMenuFont(engine, 0, 3, "Score", BLUE)
-		val strScoreBefore = String.format("%10d", scoreBeforeBonus(engine.statistics))
+		val strScoreBefore = "%10d".format(scoreBeforeBonus(engine.statistics))
 		receiver.drawMenuNum(engine, 0, 4, strScoreBefore, GREEN)
 
 		receiver.drawMenuFont(engine, 0, 5, "Clean Bonus", BLUE)
-		val strZenKeshi = String.format("%10d", zenKeshiCount)
+		val strZenKeshi = "%10d".format(zenKeshiCount)
 		receiver.drawMenuNum(engine, 0, 6, strZenKeshi)
 		val strZenKeshiBonus = "+$zenKeshiBonus"
 		receiver.drawMenuFont(engine, 10-strZenKeshiBonus.length, 7, strZenKeshiBonus, GREEN)
 
 		receiver.drawMenuFont(engine, 0, 8, "Chain Bonus", BLUE)
-		val strMaxChain = String.format("%10d", engine.statistics.maxChain)
+		val strMaxChain = "%10d".format(engine.statistics.maxChain)
 		receiver.drawMenuFont(engine, 0, 9, strMaxChain)
 		val strMaxChainBonus = "+$maxChainBonus"
 		receiver.drawMenuFont(engine, 10-strMaxChainBonus.length, 10, strMaxChainBonus, GREEN)
 
 		receiver.drawMenuFont(engine, 0, 11, "TOTAL", BLUE)
-		val strScore = String.format("%10d", engine.statistics.score)
+		val strScore = "%10d".format(engine.statistics.score)
 		receiver.drawMenuFont(engine, 0, 12, strScore, RED)
 
 		receiver.drawMenuFont(engine, 0, 13, "Time", BLUE)
-		val strTime = String.format("%10s", engine.statistics.time.toTimeStr)
+		val strTime = "%10s".format(engine.statistics.time.toTimeStr)
 		receiver.drawMenuNum(engine, 0, 14, strTime)
 
 		if(rankingRank!=-1) {
 			receiver.drawMenuFont(engine, 0, 15, "RANK", BLUE)
-			val strRank = String.format("%10d", rankingRank+1)
+			val strRank = "%10d".format(rankingRank+1)
 			receiver.drawMenuNum(engine, 0, 16, strRank)
 		}
 	}

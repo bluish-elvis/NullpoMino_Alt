@@ -49,11 +49,12 @@ import zeroxfc.nullpo.custom.libs.Interpolation.smoothStep
  *
  * @param shape        The shape of the particle. Warning: SDL cannot draw circular particles.
  * @param maxLifetime  The maximum frame lifetime of the particle.
- * @param pos     Vector position of the particle.
+ * @param x     Horizontal position of the particle.
+ * @param y     Vertical position of the particle.
  * @param vel     Vector velocity of the particle.
  * @param acc Vector acceleration of the particle.
- * @param pos        Horizontal size of the particle.
- * @param vel        Vertical size of the particle.
+ * @param friction Vector deceleration of the particle
+ * @param size        size of the particle.
  * @param red          Red component of color.
  * @param green        Green component of color.
  * @param blue         Blue component of color.
@@ -76,7 +77,7 @@ open class Particle @JvmOverloads constructor(
 	vel:Vector = Vector.zero(),
 	/** Acceleration vector */
 	var acc:Vector = Vector.zero(),
-	/** Velocity decerase float */
+	/** Velocity decrease float */
 	val friction:Float = 1f,
 	/** X size */
 	val size:Int,

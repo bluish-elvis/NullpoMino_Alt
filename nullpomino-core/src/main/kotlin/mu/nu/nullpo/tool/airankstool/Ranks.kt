@@ -268,7 +268,7 @@ class Ranks:java.io.Serializable {
 	}
 
 	fun heightsToSurface(heights:List<Int>) = List(stackWidth-1) {i ->
-		heights[i+1]-heights[i].let {maxOf(-maxJump, minOf(maxJump, it))}
+		heights[i+1]-maxOf(-maxJump, minOf(maxJump, heights[i]))
 	}
 
 	private fun getRankPieceRotation(surface:List<Int>, surfaceDecodedWork:MutableList<Int>, piece:Int, rotation:Int):Int {

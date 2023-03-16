@@ -1,8 +1,7 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -13,7 +12,6 @@
  *     * Neither the name of NullNoname nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -50,8 +48,6 @@ import java.io.IOException
 
 /** MARATHON+ Mode */
 class MarathonPlus:NetDummyMode() {
-	private var sc = 0
-	private var sum = 0
 	private var lastlinetime = 0
 
 	/** Current BGM */
@@ -81,10 +77,14 @@ class MarathonPlus:NetDummyMode() {
 	private val itemMode = object:StringsMenuItem(
 		"goalType", "GOAL", COLOR.BLUE, 0, tableGameClearLevel.map {"$it LEVEL"}
 	) {
-		override val showHeight = 2
+		override val showHeight = 3
 		override fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int) {
 			super.draw(engine, playerID, receiver, y, focus)
-			receiver.drawMenuNano(engine, 1, y+1, "${tableGameClearLines[value]} LINES")
+			receiver.drawMenuNano(
+				engine, 1, y+2,
+				"${if(startLevel) if(goalType>0) 100 else "???" else tableGameClearLines[value]} LINES",
+				if(focus==0) COLOR.RAINBOW else COLOR.WHITE
+			)
 		}
 	}
 	/** Game type */
@@ -113,7 +113,7 @@ class MarathonPlus:NetDummyMode() {
 	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 	private val rankingLives = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	override val rankMap
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
@@ -132,7 +132,7 @@ class MarathonPlus:NetDummyMode() {
 			ruleOptOrg = engine.ruleOpt
 		lastlives = 0
 		bonusScore = lastlives
-		lastscore = bonusScore
+		lastScore = bonusScore
 		bgmLv = 0
 		nextsec = 0
 		norm = nextsec
@@ -146,16 +146,18 @@ class MarathonPlus:NetDummyMode() {
 		rankingScore.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
 		rankingLives.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 
 		netPlayerInit(engine)
 		if(!owner.replayMode) version = CURRENT_VERSION else
 		// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
+			netPlayerName = owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 
+
+		engine.staffrollEnable = true
 		engine.staffrollNoDeath = false
 		engine.staffrollEnableStatistics = true
-		engine.owner.bgMan.bg = if(startLevel) 36 else 0
+		owner.bgMan.bg = if(startLevel) 36 else -1
 		engine.frameColor = GameEngine.FRAME_COLOR_WHITE
 	}
 
@@ -200,16 +202,16 @@ class MarathonPlus:NetDummyMode() {
 	override fun onSetting(engine:GameEngine):Boolean {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode)
-			netOnUpdateNetPlayRanking(engine, netGetGoalType())
-		else if(!engine.owner.replayMode) {
+			netOnUpdateNetPlayRanking(engine, netGetGoalType)
+		else if(!owner.replayMode) {
 			// Configuration changes
 			val change = updateMenu(engine)
 
 			if(change!=0) {
 				engine.playSE("change")
 
-				engine.owner.bgMan.bg = 0
-
+				owner.bgMan.bg = if(startLevel) (if(goalType==0) -13 else -14) else -1
+				receiver.setBGSpd(owner, .5f+goalType*.4f+turbo)
 				// NET: Signal options change
 				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
 			}
@@ -229,7 +231,7 @@ class MarathonPlus:NetDummyMode() {
 
 			// NET: Netplay Ranking
 			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!big&&engine.ai==null)
-				netEnterNetPlayRankingScreen(netGetGoalType())
+				netEnterNetPlayRankingScreen(netGetGoalType)
 		} else {
 			menuTime++
 			menuCursor = -1
@@ -277,7 +279,7 @@ class MarathonPlus:NetDummyMode() {
 		setSpeed(engine)
 		owner.musMan.bgm = if(netIsWatch) BGM.Silent
 		else if(startLevel) tableBGM[4][goalType] else tableBGM[goalType][0]
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		if(goalType==3) bonusTime = 10800
 		bonusTimeMax = ROLLTIMELIMIT[goalType]
 	}
@@ -286,26 +288,22 @@ class MarathonPlus:NetDummyMode() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, 0, 0, "MARATHON +", COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 0, "Marathon +", COLOR.GREEN)
 		if(goalType!=0) receiver.drawScoreFont(
-			engine, 0, 1, if(startLevel) "(TIME ATTACK MODE)" else "(SCORE ATTACK MODE)",
+			engine, 0, 1, if(startLevel) "(Time Attack Mode)" else "(Score Attack Mode)",
 			COLOR.GREEN
 		)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE   LINE TIME", COLOR.BLUE, scale)
-				val gametype = typeSerial(goalType, turbo, startLevel)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE   LINE TIME", COLOR.BLUE)
+				val gameType = typeSerial(goalType, turbo, startLevel)
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, 11, topY+i, "${rankingLines[gametype][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(
-						engine, 16, topY+i, rankingTime[gametype][i].toTimeStr,
-						i==rankingRank, scale
-					)
+					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[gameType][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 11, topY+i, "${rankingLines[gameType][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 16, topY+i, rankingTime[gameType][i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
@@ -320,7 +318,7 @@ class MarathonPlus:NetDummyMode() {
 			receiver.drawScoreNum(engine, 5, 2, strline, 2f)
 			val scget:Boolean = scDisp<engine.statistics.score
 			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 4, "+$lastscore")
+			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
 			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
 
 			receiver.drawScoreFont(engine, 0, 7, "Level", COLOR.BLUE)
@@ -374,7 +372,7 @@ class MarathonPlus:NetDummyMode() {
 							} else {
 								engine.staffrollEnable = false
 							}
-							engine.statistics.rollclear = 2
+							engine.statistics.rollClear = 2
 							engine.gameEnded()
 							engine.resetStatc()
 							engine.stat = if(startLevel) GameEngine.Status.ENDINGSTART else GameEngine.Status.EXCELLENT
@@ -443,14 +441,12 @@ class MarathonPlus:NetDummyMode() {
 				else if(!startLevel) bonusTimeMax += engine.speed.are*ev.lines//20,64,99,
 			}
 		} else {
-			var bgmChanged = false
 			if(bgmLv<tableBGMChange[goalType].size&&tableBGMChange[goalType][bgmLv]>=5) {
-				if(engine.statistics.lines>=tableBGMChange[goalType][bgmLv]-5) owner.musMan.fadesw = true
+				if(engine.statistics.lines>=tableBGMChange[goalType][bgmLv]-5) owner.musMan.fadeSW = true
 				if(engine.statistics.lines>=tableBGMChange[goalType][bgmLv]) {
-					bgmChanged = true
 					bgmLv++
 					owner.musMan.bgm = tableBGM[goalType][bgmLv]
-					owner.musMan.fadesw = false
+					owner.musMan.fadeSW = false
 				}
 			}
 			var normMax = tableNorma[goalType][minOf(lv/10, tableNorma[goalType].size-1)]
@@ -464,13 +460,17 @@ class MarathonPlus:NetDummyMode() {
 				// Level up
 				lv = ++engine.statistics.level
 				setSpeed(engine)
-				owner.bgMan.fadecount = 0
-				owner.bgMan.fadebg = if(lv<20) lv/2 else if(lv<50) 10+(lv-20)/3 else 20+(lv-50)/15
-				owner.bgMan.fadesw = owner.bgMan.fadebg!=owner.bgMan.bg
+				owner.bgMan.nextBg = -1-when {
+					goalType==0 -> lv/2
+					goalType==3&&lv>=50 -> 11
+					else -> lv/5
+				}//if(lv<20) lv/2 else if(lv<50) 10+(lv-20)/3 else 20+(lv-50)/15
+
 				if(lv>=tableGameClearLevel[goalType]) {
 					// Bonus level unlocked
 					bonusTime = 0
 					bonusScore = (engine.statistics.score*(1+lastlives)/3f).toInt()
+					owner.bgMan.nextBg = -12
 					if(goalType==0) {
 						lastlives = engine.lives
 						engine.statistics.scoreBonus += bonusScore
@@ -488,7 +488,7 @@ class MarathonPlus:NetDummyMode() {
 					}
 
 					owner.musMan.bgm = tableBGM[goalType][tableBGM[goalType].size-1]
-					owner.musMan.fadesw = false
+					owner.musMan.fadeSW = false
 					break
 				}
 				normMax = tableNorma[goalType][minOf(lv/10, tableNorma[goalType].size-1)]
@@ -504,7 +504,7 @@ class MarathonPlus:NetDummyMode() {
 				}
 			}
 		}
-		return if(ev.lines>0) lastscore else 0
+		return if(ev.lines>0) lastScore else 0
 	}
 
 	/* Soft drop */
@@ -600,9 +600,9 @@ class MarathonPlus:NetDummyMode() {
 				drawResultStats(engine, receiver, 6, COLOR.BLUE, Statistic.LEVEL)
 			drawResult(
 				engine, receiver, 8, COLOR.BLUE,
-				"TOTAL TIME", String.format("%10s", engine.statistics.time.toTimeStr),
-				"LV20- TIME", String.format("%10s", (engine.statistics.time-bonusTime).toTimeStr),
-				"BONUS TIME", String.format("%10s", bonusTime.toTimeStr)
+				"TOTAL TIME", "%10s".format(engine.statistics.time.toTimeStr),
+				"LV20- TIME", "%10s".format((engine.statistics.time-bonusTime).toTimeStr),
+				"BONUS TIME", "%10s".format(bonusTime.toTimeStr)
 			)
 
 			drawResultRank(engine, receiver, 14, COLOR.BLUE, rankingRank)
@@ -741,10 +741,10 @@ class MarathonPlus:NetDummyMode() {
 	 */
 	override fun netSendStats(engine:GameEngine) {
 		val bg =
-			if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
+			if(owner.bgMan.fadeSW) owner.bgMan.nextBg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"}+
-				"${gameActive}\t${timerActive}\t$lastscore\t$scDisp\t${lastEvent}\tt${lastEventPiece}\t"
+				"${gameActive}\t${timerActive}\t$lastScore\t$scDisp\t${lastEvent}\tt${lastEventPiece}\t"
 		}+"$bg\t$bonusLines\t$bonusFlashNow\t$bonusPieceCount\t$bonusTime\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
@@ -762,7 +762,7 @@ class MarathonPlus:NetDummyMode() {
 			{engine.statistics.level = it.toInt()},
 			{engine.gameActive = it.toBoolean()},
 			{engine.timerActive = it.toBoolean()},
-			{lastscore = it.toInt()},
+			{lastScore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
 			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{engine.owner.bgMan.bg = it.toInt()},
@@ -809,7 +809,7 @@ class MarathonPlus:NetDummyMode() {
 	}
 
 	/** NET: Get goal type */
-	override fun netGetGoalType():Int = goalType+if(startLevel) GAMETYPE_MAX else 0
+	override val netGetGoalType get() = goalType+if(startLevel) GAMETYPE_MAX else 0
 
 	/** NET: It returns true when the current settings don't prevent
 	 * leaderboard screen from showing. */
@@ -868,11 +868,11 @@ class MarathonPlus:NetDummyMode() {
 			listOf(listOf(100, 150), listOf(80, 180), listOf(130, 300), listOf(140, 280, 350))
 		private val tableBGM =
 			listOf(
-				listOf(BGM.Generic(0), BGM.Generic(1), BGM.Generic(2), BGM.GrandM(0)),
-				listOf(BGM.Puzzle(0), BGM.Generic(2), BGM.Generic(3), BGM.Generic(4)), //30levels
-				listOf(BGM.Puzzle(1), BGM.Generic(4), BGM.Generic(5), BGM.Generic(6)), //50levels
-				listOf(BGM.Puzzle(2), BGM.Generic(5), BGM.Generic(6), BGM.Generic(7), BGM.Generic(8)), //200levels
-				listOf(BGM.Rush(0), BGM.Rush(1), BGM.Rush(2), BGM.Rush(3))
+				listOf(BGM.Puzzle(0), BGM.Generic(0), BGM.Extra(2), BGM.GrandM(0)),
+				listOf(BGM.Generic(0), BGM.Generic(1), BGM.Generic(2), BGM.Puzzle(2)), //30levels
+				listOf(BGM.Puzzle(2), BGM.Generic(3), BGM.Generic(4), BGM.Generic(5)), //50levels
+				listOf(BGM.Puzzle(3), BGM.Generic(6), BGM.Generic(7), BGM.Generic(8), BGM.Generic(9)), //200levels
+				listOf(BGM.Puzzle(4), BGM.Rush(1), BGM.Rush(2), BGM.Rush(3))
 			)//challenge mode
 
 		/** Ending time */
@@ -886,7 +886,7 @@ class MarathonPlus:NetDummyMode() {
 		/** Number of game types */
 		private val GAMETYPE_MAX = tableGameClearLevel.size
 
-		private val TURBO_MAX = tableSpeed.size
+		private val TURBO_MAX = minOf(tableSpeed.size, tableDenominator.size)
 
 		/** Number of entries in rankings */
 		private const val RANKING_MAX = 13

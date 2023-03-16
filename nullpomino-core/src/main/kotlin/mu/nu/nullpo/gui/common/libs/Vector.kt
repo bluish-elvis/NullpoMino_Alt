@@ -44,7 +44,7 @@ import kotlin.math.sqrt
  * Generate a vector for handling directions.
  * @param sx   X or Magnitude
  * @param sy   Y or Radian
- * @param isDir Use (Mag., Rad.) if true, use (X, Y) otherwise.
+ * @param isDir true: Use (Mag., Rad.), false: use (X, Y).
  */
 class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boolean = false) {
 	constructor(sx:Int, sy:Int = 0, isDir:Boolean = false):this(sx.toFloat(), sy.toFloat(), isDir)
@@ -129,11 +129,11 @@ class Vector @JvmOverloads constructor(sx:Float = 0f, sy:Float = 0f, isDir:Boole
 		 *
 		 * @param a Vector 1.
 		 * @param b Vector 2.
-		 * @return DoubleVector that treats a as origin and b as end.
+		 * @return DoubleVector that treats [a] as origin and [b] as end.
 		 */
 		fun directionBetween(a:Vector, b:Vector):Float = (b-a).direction
 		// Fuzzy equals.
-		private fun almostEqual(a:Float, b:Float, eps:Float):Boolean = abs(a-b)<eps
+		fun almostEqual(a:Float, b:Float, eps:Float):Boolean = abs(a-b)<eps
 	}
 
 	override fun toString():String = "($x, $y)"

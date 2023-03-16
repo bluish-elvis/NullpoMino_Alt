@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -35,20 +35,21 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** PHANTOM MANIA mode (Original from NullpoUE build 121909 by Zircean) */
 class GrandSStealth:AbstractMode() {
 	/** Next section level */
-	private var nextseclv = 0
+	private var nextSecLv = 0
 	/** Level up flag (Set to true when the level increases) */
-	private var lvupflag = false
+	private var lvupFlag = false
 
 	/** Current grade */
 	private var grade = 0
 	/** Remaining frames of flash effect of grade display */
-	private var gradeflash = 0
+	private var gradeFlash = 0
 	/** Used by combo scoring */
 	private var comboValue = 0
 
@@ -56,26 +57,27 @@ class GrandSStealth:AbstractMode() {
 	private var secretGrade = 0
 
 	/** Remaining ending time limit */
-	private var rolltime = 0
+	private var rollTime = 0
 	/** 0:Died before ending, 1:Died during ending, 2:Completed ending */
-	private var rollclear = 0
+	private var rollClear = 0
 	/** True if ending has started */
-	private var rollstarted = false
+	private var rollStarted = false
 
 	/** Current BGM */
 	private var bgmLv = 0
 
 	/** Section Time */
-	private var sectionTime = MutableList(SECTION_MAX) {0}
+	private val sectionTime = MutableList(SECTION_MAX) {0}
 	/** This will be true if the player achieves
 	 * new section time record in specific section */
-	private var sectionIsNewRecord = MutableList(SECTION_MAX) {false}
+	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
 	/** Amount of sections completed */
-	private var sectionscomp = 0
+	private var sectionsDone = 0
 	/** Average section time */
-	private var sectionavgtime = 0
+	private val sectionAvgTime
+		get() = sectionTime.filter {it>0}.average().toFloat()
 	/** Current section time */
-	private var sectionlasttime = 0
+	private var sectionLastTime = 0
 	/** Number of 4-Line clears in current section */
 	private var sectionQuads = 0
 	/** Set to true by default, set to false when sectionQuads is below 2 */
@@ -127,38 +129,37 @@ class GrandSStealth:AbstractMode() {
 	/** Level records */
 	private val rankingLevel = MutableList(RANKING_MAX) {0}
 	/** Time records */
-	private val rankingTime = MutableList(RANKING_MAX) {0}
+	private val rankingTime = MutableList(RANKING_MAX) {-1}
 	/** Roll-Cleared records */
-	private val rankingRollclear = MutableList(RANKING_MAX) {0}
+	private val rankingRollClear = MutableList(RANKING_MAX) {0}
 	/** Best section time records */
-	private val bestSectionTime = MutableList(SECTION_MAX) {0}
+	private val bestSectionTime = MutableList(SECTION_MAX) {DEFAULT_SECTION_TIME}
 
 	/** Returns the name of this mode */
 	override val name = "Grand Phantom"
 	override val gameIntensity = 3
 	override val rankMap
 		get() = rankMapOf(
-			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollclear" to rankingRollclear,
+			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollClear" to rankingRollClear,
 			"section.time" to bestSectionTime
 		)
 	/** This function will be called when the game enters
 	 * the main game screen. */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		nextseclv = 0
-		lvupflag = true
+		nextSecLv = 0
+		lvupFlag = true
 		grade = 0
-		gradeflash = 0
+		gradeFlash = 0
 		comboValue = 0
-		lastscore = 0
-		rolltime = 0
-		rollclear = 0
-		rollstarted = false
+		lastScore = 0
+		rollTime = 0
+		rollClear = 0
+		rollStarted = false
 		bgmLv = 0
 		sectionTime.fill(0)
 		sectionIsNewRecord.fill(false)
-		sectionavgtime = 0
-		sectionlasttime = 0
+		sectionLastTime = 0
 		sectionQuads = 0
 		gmQuads = true
 		medalAC = 0
@@ -178,9 +179,9 @@ class GrandSStealth:AbstractMode() {
 		rankingRank = -1
 		rankingGrade.fill(0)
 		rankingLevel.fill(0)
-		rankingTime.fill(0)
-		rankingRollclear.fill(0)
-		bestSectionTime.fill(0)
+		rankingTime.fill(-1)
+		rankingRollClear.fill(0)
+		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
@@ -270,14 +271,6 @@ class GrandSStealth:AbstractMode() {
 		}
 	}
 
-	/** Calculates average section time */
-	private fun setAverageSectionTime() {
-		if(sectionscomp>0) {
-			val i = minOf(sectionscomp+startLevel, sectionTime.size)
-			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
-		} else sectionavgtime = 0
-	}
-
 	/** Checks ST medal
 	 * @param engine GameEngine
 	 * @param sectionNumber Section Number
@@ -285,16 +278,16 @@ class GrandSStealth:AbstractMode() {
 	private fun stMedalCheck(engine:GameEngine, sectionNumber:Int) {
 		val best = bestSectionTime[sectionNumber]
 
-		if(sectionlasttime<best) {
+		if(sectionLastTime<best||best<=0) {
 			if(medalST<3) {
 				engine.playSE("medal3")
 				medalST = 3
 			}
 			if(!owner.replayMode) sectionIsNewRecord[sectionNumber] = true
-		} else if(sectionlasttime<best+300&&medalST<2) {
+		} else if(sectionLastTime<best+300&&medalST<2) {
 			engine.playSE("medal2")
 			medalST = 2
-		} else if(sectionlasttime<best+600&&medalST<1) {
+		} else if(sectionLastTime<best+600&&medalST<1) {
 			engine.playSE("medal1")
 			medalST = 1
 		}
@@ -311,7 +304,7 @@ class GrandSStealth:AbstractMode() {
 
 	/** Main routine for game setup screen */
 	override fun onSetting(engine:GameEngine):Boolean {
-		if(!engine.owner.replayMode) {
+		if(!owner.replayMode) {
 			// Configuration changes
 			val change = updateCursor(engine, 3)
 
@@ -341,7 +334,7 @@ class GrandSStealth:AbstractMode() {
 			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				isShowBestSectionTime = false
-				sectionscomp = 0
+				sectionsDone = 0
 				return false
 			}
 
@@ -370,9 +363,9 @@ class GrandSStealth:AbstractMode() {
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
 
-		nextseclv = engine.statistics.level+100
-		if(engine.statistics.level<0) nextseclv = 100
-		if(engine.statistics.level>=900) nextseclv = 999
+		nextSecLv = engine.statistics.level+100
+		if(engine.statistics.level<0) nextSecLv = 100
+		if(engine.statistics.level>=900) nextSecLv = 999
 
 		owner.bgMan.bg = engine.statistics.level/100
 
@@ -386,7 +379,7 @@ class GrandSStealth:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "PHANTOM MANIA", COLOR.WHITE)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.WHITE)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
@@ -396,15 +389,18 @@ class GrandSStealth:AbstractMode() {
 					receiver.drawScoreFont(engine, 3, topY-1, "GRADE LEVEL TIME", COLOR.PURPLE)
 
 					for(i in 0 until RANKING_MAX) {
-						var gcolor = COLOR.WHITE
-						if(rankingRollclear[i]==1) gcolor = COLOR.GREEN
-						if(rankingRollclear[i]==2) gcolor = COLOR.ORANGE
+
 						receiver.drawScoreGrade(
-							engine, 0, topY+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+							engine, 0, topY+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
 						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
-							receiver.drawScoreFont(engine, 3, topY+i, tableGradeName[rankingGrade[i]], gcolor)
-						receiver.drawScoreNum(engine, 9, topY+i, String.format("%03d", rankingLevel[i]), i==rankingRank)
+							receiver.drawScoreFont(
+								engine, 3, topY+i, tableGradeName[rankingGrade[i]],
+								if(rankingRollClear[i]==1) COLOR.GREEN
+								else if(rankingRollClear[i]==2) COLOR.ORANGE
+								else COLOR.WHITE
+							)
+						receiver.drawScoreNum(engine, 9, topY+i, "%03d".format(rankingLevel[i]), i==rankingRank)
 						receiver.drawScoreNum(engine, 15, topY+i, rankingTime[i].toTimeStr, i==rankingRank)
 					}
 
@@ -418,7 +414,7 @@ class GrandSStealth:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime:String = String.format("%3d-%3d %s", temp, temp2, bestSectionTime[i].toTimeStr)
+						val strSectionTime:String = "%3d-%3d %s".format(temp, temp2, bestSectionTime[i].toTimeStr)
 
 						receiver.drawScoreNum(engine, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -433,22 +429,22 @@ class GrandSStealth:AbstractMode() {
 				}
 		} else {
 			if(grade>=0&&grade<tableGradeName.size)
-				receiver.drawScoreFont(engine, 0, 2, tableGradeName[grade], gradeflash>0&&gradeflash%4==0, 2f)
+				receiver.drawScoreFont(engine, 0, 2, tableGradeName[grade], gradeFlash>0&&gradeFlash%4==0, 2f)
 
 			// Score
 			receiver.drawScoreFont(engine, 0, 5, "Score", COLOR.PURPLE)
-			receiver.drawScoreNum(engine, 0, 6, "$scDisp"+"\n"+lastscore)
+			receiver.drawScoreNum(engine, 0, 6, "$scDisp"+"\n"+lastScore)
 
 			receiver.drawScoreFont(engine, 0, 9, "Level", COLOR.PURPLE)
-			receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
+			receiver.drawScoreNum(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)))
 			receiver.drawScoreSpeed(engine, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
-			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextseclv))
+			receiver.drawScoreNum(engine, 1, 12, "%3d".format(nextSecLv))
 
 			receiver.drawScoreFont(engine, 0, 14, "Time", COLOR.PURPLE)
 			receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, 2f)
 
 			if(engine.gameActive&&engine.ending==2) {
-				var time = ROLLTIMELIMIT-rolltime
+				var time = ROLLTIMELIMIT-rollTime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.PURPLE)
 				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
@@ -473,26 +469,26 @@ class GrandSStealth:AbstractMode() {
 						if(temp>999) temp = 999
 
 						val section = engine.statistics.level/100
-						var strSeparator = " "
-						if(i==section&&engine.ending==0) strSeparator = "\u0082"
-
-						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, sectionTime[i].toTimeStr)
+						val strSeparator =
+							if(i==section&&engine.ending==0) BaseFont.CURSOR
+							else " "
+						val strSectionTime:String = "%3d%s%s".format(temp, strSeparator, sectionTime[i].toTimeStr)
 
 						receiver.drawScoreNum(engine, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
 
 				receiver.drawScoreFont(engine, x2, 17, "AVERAGE", COLOR.PURPLE)
-				receiver.drawScoreNum(engine, x2, 18, (engine.statistics.time/(sectionscomp+1)).toTimeStr, 2f)
+				receiver.drawScoreNum(engine, x2, 18, (engine.statistics.time/(sectionsDone+1)).toTimeStr, 2f)
 			}
 		}
 	}
 
 	/** This function will be called when the piece is active */
 	override fun onMove(engine:GameEngine):Boolean {
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
-			if(engine.statistics.level<nextseclv-1) {
+		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
+			if(engine.statistics.level<nextSecLv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 
@@ -507,22 +503,22 @@ class GrandSStealth:AbstractMode() {
 				}
 			}
 		}
-		if(engine.ending==0&&engine.statc[0]>0) lvupflag = false
+		if(engine.ending==0&&engine.statc[0]>0) lvupFlag = false
 
-		if(engine.ending==2&&!rollstarted) rollstarted = true
+		if(engine.ending==2&&!rollStarted) rollStarted = true
 
 		return false
 	}
 
 	/** This function will be called during ARE */
 	override fun onARE(engine:GameEngine):Boolean {
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
-			if(engine.statistics.level<nextseclv-1) {
+		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
+			if(engine.statistics.level<nextSecLv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
-			lvupflag = true
+			lvupFlag = true
 		}
 
 		return false
@@ -534,11 +530,11 @@ class GrandSStealth:AbstractMode() {
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		if(engine.statistics.level%100>=50) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 		if(engine.statistics.level%100>=80) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-		if(engine.statistics.level>=nextseclv-1) engine.meterColor = GameEngine.METER_COLOR_RED
+		if(engine.statistics.level>=nextSecLv-1) engine.meterColor = GameEngine.METER_COLOR_RED
 
 		setSpeed(engine)
 
-		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadesw = true
+		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadeSW = true
 	}
 
 	/** Calculates line-clear score
@@ -601,18 +597,15 @@ class GrandSStealth:AbstractMode() {
 			levelUp(engine)
 
 			if(engine.statistics.level>=999) {
-				if(engine.timerActive) {
-					sectionscomp++
-					setAverageSectionTime()
-				}
+				if(engine.timerActive) sectionsDone++
 
 				engine.playSE("endingstart")
 				engine.statistics.level = 999
 				engine.timerActive = false
 				engine.ending = 2
-				rollclear = 1
+				rollClear = 1
 
-				sectionlasttime = sectionTime[levelb/100]
+				sectionLastTime = sectionTime[levelb/100]
 
 				stMedalCheck(engine, levelb/100)
 
@@ -620,13 +613,11 @@ class GrandSStealth:AbstractMode() {
 
 				if(engine.statistics.totalQuadruple>=31&&gmQuads&&sectionQuads>=1) {
 					grade = 6
-					gradeflash = 180
+					gradeFlash = 180
 				}
-			} else if(nextseclv==300&&engine.statistics.level>=300&&engine.statistics.time>LV300TORIKAN) {
-				if(engine.timerActive) {
-					sectionscomp++
-					setAverageSectionTime()
-				}
+			} else if(nextSecLv==300&&engine.statistics.level>=300&&engine.statistics.time>LV300TORIKAN) {
+				if(engine.timerActive) sectionsDone++
+
 
 				engine.playSE("endingstart")
 				engine.statistics.level = 300
@@ -635,18 +626,16 @@ class GrandSStealth:AbstractMode() {
 
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.musMan.fadesw = false
+					owner.musMan.fadeSW = false
 					owner.musMan.bgm = tableBGM[bgmLv]
 				}
 
-				sectionlasttime = sectionTime[levelb/100]
+				sectionLastTime = sectionTime[levelb/100]
 
 				stMedalCheck(engine, levelb/100)
-			} else if(nextseclv==500&&engine.statistics.level>=500&&engine.statistics.time>LV500TORIKAN) {
-				if(engine.timerActive) {
-					sectionscomp++
-					setAverageSectionTime()
-				}
+			} else if(nextSecLv==500&&engine.statistics.level>=500&&engine.statistics.time>LV500TORIKAN) {
+				if(engine.timerActive) sectionsDone++
+
 
 				engine.playSE("endingstart")
 				engine.statistics.level = 500
@@ -655,18 +644,16 @@ class GrandSStealth:AbstractMode() {
 
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.musMan.fadesw = false
+					owner.musMan.fadeSW = false
 					owner.musMan.bgm = tableBGM[bgmLv]
 				}
 
-				sectionlasttime = sectionTime[levelb/100]
+				sectionLastTime = sectionTime[levelb/100]
 
 				stMedalCheck(engine, levelb/100)
-			} else if(nextseclv==800&&engine.statistics.level>=800&&engine.statistics.time>LV800TORIKAN) {
-				if(engine.timerActive) {
-					sectionscomp++
-					setAverageSectionTime()
-				}
+			} else if(nextSecLv==800&&engine.statistics.level>=800&&engine.statistics.time>LV800TORIKAN) {
+				if(engine.timerActive) sectionsDone++
+
 
 				engine.playSE("endingstart")
 				engine.statistics.level = 800
@@ -675,29 +662,27 @@ class GrandSStealth:AbstractMode() {
 
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.musMan.fadesw = false
+					owner.musMan.fadeSW = false
 					owner.musMan.bgm = tableBGM[bgmLv]
 				}
 
-				sectionlasttime = sectionTime[levelb/100]
+				sectionLastTime = sectionTime[levelb/100]
 
 				stMedalCheck(engine, levelb/100)
-			} else if(engine.statistics.level>=nextseclv) {
-				owner.bgMan.fadesw = true
-				owner.bgMan.fadecount = 0
-				owner.bgMan.fadebg = nextseclv/100
+			} else if(engine.statistics.level>=nextSecLv) {
+				owner.bgMan.nextBg = nextSecLv/100
 
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.musMan.fadesw = false
+					owner.musMan.fadeSW = false
 					owner.musMan.bgm = tableBGM[bgmLv]
 					engine.playSE("levelup_section")
 				}
 				engine.playSE("levelup")
 
-				sectionscomp++
+				sectionsDone++
 
-				sectionlasttime = sectionTime[levelb/100]
+				sectionLastTime = sectionTime[levelb/100]
 
 				if(sectionQuads<2) gmQuads = false
 
@@ -705,23 +690,23 @@ class GrandSStealth:AbstractMode() {
 
 				stMedalCheck(engine, levelb/100)
 
-				if(nextseclv==300||nextseclv==700) roMedalCheck(engine)
+				if(nextSecLv==300||nextSecLv==700) roMedalCheck(engine)
 
 				if(startLevel==0)
 					for(i in 0 until tableGradeLevel.size-1)
 						if(engine.statistics.level>=tableGradeLevel[i]) {
 							grade = i
-							gradeflash = 180
+							gradeFlash = 180
 						}
 
-				nextseclv += 100
-				if(nextseclv>999) nextseclv = 999
-			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+				nextSecLv += 100
+				if(nextSecLv>999) nextSecLv = 999
+			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
-			lastscore = ((((levelb+li)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*li*comboValue
+			lastScore = ((((levelb+li)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*li*comboValue
 				*if(engine.field.isEmpty) 4 else 1)
 				+engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
-			engine.statistics.scoreLine += lastscore
+			engine.statistics.scoreLine += lastScore
 			//return lastscore
 		}
 		return 0
@@ -730,30 +715,29 @@ class GrandSStealth:AbstractMode() {
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
-		if(gradeflash>0) gradeflash--
+		if(gradeFlash>0) gradeFlash--
 		setHeboHidden(engine)
 		if(engine.timerActive&&engine.ending==0) {
 			val section = engine.statistics.level/100
 
 			if(section>=0&&section<sectionTime.size) {
-				sectionTime[section]++
-				setAverageSectionTime()
+				sectionTime[section] = engine.statistics.time-sectionTime.take(section).sum()
 			}
 		}
 
 		if(engine.gameActive&&engine.ending==2) {
-			if(engine.ctrl.isPress(Controller.BUTTON_F)&&engine.statistics.level<999) rolltime += 5
-			rolltime++
+			if(engine.ctrl.isPress(Controller.BUTTON_F)&&engine.statistics.level<999) rollTime += 5
+			rollTime++
 
-			val remainRollTime = ROLLTIMELIMIT-rolltime
+			val remainRollTime = ROLLTIMELIMIT-rollTime
 			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
 			if(remainRollTime<=30*60) engine.meterColor = GameEngine.METER_COLOR_YELLOW
 			if(remainRollTime<=20*60) engine.meterColor = GameEngine.METER_COLOR_ORANGE
 			if(remainRollTime<=10*60) engine.meterColor = GameEngine.METER_COLOR_RED
 
-			if(rolltime>=ROLLTIMELIMIT) {
-				if(engine.statistics.level>=999) rollclear = 2
+			if(rollTime>=ROLLTIMELIMIT) {
+				if(engine.statistics.level>=999) rollClear = 2
 
 				engine.gameEnded()
 				engine.resetStatc()
@@ -773,12 +757,14 @@ class GrandSStealth:AbstractMode() {
 		receiver.drawMenuFont(engine, 0, 0, "\u0090\u0093 PAGE${(engine.statc[1]+1)}/3", COLOR.RED)
 
 		if(engine.statc[1]==0) {
-			var gcolor = COLOR.WHITE
-			if(rollclear==1) gcolor = COLOR.GREEN
-			if(rollclear==2) gcolor = COLOR.ORANGE
+			val col = when(rollClear) {
+				1 -> COLOR.GREEN
+				2 -> COLOR.ORANGE
+				else -> COLOR.WHITE
+			}
 			receiver.drawMenuFont(engine, 0, 2, "GRADE", COLOR.PURPLE)
-			val strGrade = String.format("%10s", tableGradeName[grade])
-			receiver.drawMenuFont(engine, 0, 3, strGrade, gcolor)
+			val strGrade = "%10s".format(tableGradeName[grade])
+			receiver.drawMenuFont(engine, 0, 3, strGrade, col)
 
 			drawResultStats(
 				engine, receiver, 4, COLOR.PURPLE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
@@ -787,7 +773,7 @@ class GrandSStealth:AbstractMode() {
 			if(secretGrade>4)
 				drawResult(
 					engine, receiver, 15, COLOR.PURPLE, "S. GRADE",
-					String.format("%10s", tableSecretGradeName[secretGrade-1])
+					"%10s".format(tableSecretGradeName[secretGrade-1])
 				)
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.PURPLE)
@@ -796,9 +782,9 @@ class GrandSStealth:AbstractMode() {
 				if(sectionTime[i]>0)
 					receiver.drawMenuFont(engine, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
 
-			if(sectionavgtime>0) {
+			if(sectionAvgTime>0) {
 				receiver.drawMenuFont(engine, 0, 14, "AVERAGE", COLOR.PURPLE)
-				receiver.drawMenuFont(engine, 2, 15, sectionavgtime.toTimeStr)
+				receiver.drawMenuFont(engine, 2, 15, sectionAvgTime.toTimeStr)
 			}
 		} else if(engine.statc[1]==2) {
 			receiver.drawMenuFont(engine, 0, 2, "MEDAL", COLOR.PURPLE)
@@ -843,7 +829,7 @@ class GrandSStealth:AbstractMode() {
 
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
 //			owner.statsProp.setProperty("decoration", decoration)
-			updateRanking(grade, engine.statistics.level, engine.statistics.time, rollclear)
+			updateRanking(grade, engine.statistics.level, engine.statistics.time, rollClear)
 			if(medalST==3) updateBestSectionTime()
 
 			if(rankingRank!=-1||medalST==3) return true
@@ -860,13 +846,13 @@ class GrandSStealth:AbstractMode() {
 				rankingGrade[i] = rankingGrade[i-1]
 				rankingLevel[i] = rankingLevel[i-1]
 				rankingTime[i] = rankingTime[i-1]
-				rankingRollclear[i] = rankingRollclear[i-1]
+				rankingRollClear[i] = rankingRollClear[i-1]
 			}
 
 			rankingGrade[rankingRank] = gr
 			rankingLevel[rankingRank] = lv
 			rankingTime[rankingRank] = time
-			rankingRollclear[rankingRank] = clear
+			rankingRollClear[rankingRank] = clear
 		}
 	}
 
@@ -874,13 +860,13 @@ class GrandSStealth:AbstractMode() {
 	 * (-1: Out of rank) */
 	private fun checkRanking(gr:Int, lv:Int, time:Int, clear:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(clear>rankingRollclear[i])
+			if(clear>rankingRollClear[i])
 				return i
-			else if(clear==rankingRollclear[i]&&gr>rankingGrade[i])
+			else if(clear==rankingRollClear[i]&&gr>rankingGrade[i])
 				return i
-			else if(clear==rankingRollclear[i]&&gr==rankingGrade[i]&&lv>rankingLevel[i])
+			else if(clear==rankingRollClear[i]&&gr==rankingGrade[i]&&lv>rankingLevel[i])
 				return i
-			else if(clear==rankingRollclear[i]&&gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
+			else if(clear==rankingRollClear[i]&&gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
 
 		return -1
 	}

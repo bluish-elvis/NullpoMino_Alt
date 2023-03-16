@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -73,7 +73,7 @@ class RetroS:AbstractMode() {
 	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Time records */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	/** Score 999,999 Reached time */
 	private var maxScoreTime = -1
@@ -97,7 +97,7 @@ class RetroS:AbstractMode() {
 	 * the game enters the main game screen. */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		levelTimer = 0
 		linesAfterLastLevelUp = 0
 		maxScoreTime = -1
@@ -108,7 +108,7 @@ class RetroS:AbstractMode() {
 		rankingScore.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
 		rankingLevel.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
@@ -129,8 +129,8 @@ class RetroS:AbstractMode() {
 		engine.owDelayCancel = 0
 
 		if(!owner.replayMode) version = CURRENT_VERSION
-		engine.owner.bgMan.bg = startLevel/2
-		if(engine.owner.bgMan.bg>19) engine.owner.bgMan.bg = 19
+		owner.bgMan.bg = startLevel/2
+		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
 		engine.frameColor = GameEngine.FRAME_SKIN_SG
 	}
 
@@ -148,7 +148,7 @@ class RetroS:AbstractMode() {
 
 	/** Main routine for game setup screen */
 	override fun onSetting(engine:GameEngine):Boolean {
-		if(!engine.owner.replayMode) {
+		if(!owner.replayMode) {
 			// Configuration changes
 			val change = updateCursor(engine, 3)
 
@@ -165,7 +165,7 @@ class RetroS:AbstractMode() {
 						startLevel += change
 						if(startLevel<0) startLevel = 15
 						if(startLevel>15) startLevel = 0
-						engine.owner.bgMan.bg = startLevel/2
+						owner.bgMan.bg = startLevel/2
 					}
 					2 -> big = !big
 					3 -> poweron = !poweron
@@ -234,49 +234,45 @@ class RetroS:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "RETRO MANIA", COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
 		receiver.drawScoreFont(engine, 0, 1, "(${GAMETYPE_NAME[gametype]} SPEED)", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LINE LV TIME", COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LINE LV TIME", COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "${i+1}", COLOR.YELLOW)
 					receiver.drawScoreNum(
-						engine, 2, topY+i, if(rankingScore[gametype][i]>=0) String.format("%6d", rankingScore[gametype][i])
-						else rankingScore[gametype][i].toTimeStr,
-						i==rankingRank, scale
+						engine, 2, topY+i,
+						if(rankingScore[gametype][i]>=0) "%6d".format(rankingScore[gametype][i])
+						else rankingScore[gametype][i].toTimeStr, i==rankingRank
 					)
 					receiver.drawScoreNum(
-						engine, 8, topY+i, if(rankingLines[gametype][i]>=0) String.format("%3d", rankingLines[gametype][i])
-						else rankingLines[gametype][i].toTimeStr,
-						i==rankingRank, scale
+						engine, 8, topY+i,
+						if(rankingLines[gametype][i]>=0) "%3d".format(rankingLines[gametype][i])
+						else rankingLines[gametype][i].toTimeStr, i==rankingRank
 					)
 					receiver.drawScoreNum(
-						engine, 11, topY+i, if(rankingLevel[gametype][i]>=0) String.format("%2d", rankingLevel[gametype][i])
-						else rankingLevel[gametype][i].toTimeStr,
-						i==rankingRank, scale
+						engine, 11, topY+i,
+						if(rankingLevel[gametype][i]>=0) "%2d".format(rankingLevel[gametype][i])
+						else rankingLevel[gametype][i].toTimeStr, i==rankingRank
 					)
-					receiver.drawScoreNum(
-						engine, 15, topY+i, rankingTime[gametype][i].toTimeStr,
-						i==rankingRank, scale
-					)
+					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
 			// Game statistics
 			receiver.drawScoreFont(engine, 1, 3, "SCORE", COLOR.CYAN)
-			receiver.drawScoreFont(engine, 0, 4, String.format("%6d", scDisp), COLOR.CYAN)
+			receiver.drawScoreFont(engine, 0, 4, "%6d".format(scDisp), COLOR.CYAN)
 
 			receiver.drawScoreFont(engine, 1, 6, "LINES", COLOR.CYAN)
-			receiver.drawScoreFont(engine, 0, 7, String.format("%6d", engine.statistics.lines), COLOR.CYAN)
+			receiver.drawScoreFont(engine, 0, 7, "%6d".format(engine.statistics.lines), COLOR.CYAN)
 
 			receiver.drawScoreFont(engine, 1, 9, "LEVEL", COLOR.CYAN)
-			receiver.drawScoreFont(engine, 0, 10, String.format("%6d", engine.statistics.level), COLOR.CYAN)
+			receiver.drawScoreFont(engine, 0, 10, "%6d".format(engine.statistics.level), COLOR.CYAN)
 
 			receiver.drawScoreFont(engine, 0, 13, "Time", COLOR.BLUE)
 			receiver.drawScoreFont(engine, 0, 14, engine.statistics.time.toTimeStr, COLOR.BLUE)
@@ -313,7 +309,7 @@ class RetroS:AbstractMode() {
 
 		// Add score
 		if(pts>0) {
-			lastscore = pts
+			lastScore = pts
 			engine.statistics.scoreLine += pts
 			// Max-out score, lines, and level
 			if(version>=2) {
@@ -344,10 +340,7 @@ class RetroS:AbstractMode() {
 		if(linesAfterLastLevelUp>=4||levelTimer>=levelTime[minOf(engine.statistics.level, 15)]&&li==0||engine.field.isEmpty) {
 			engine.statistics.level++
 
-			owner.bgMan.fadecount = 0
-			owner.bgMan.fadebg = engine.statistics.level/2
-			if(owner.bgMan.fadebg>19) owner.bgMan.fadebg = 19
-			owner.bgMan.fadesw = owner.bgMan.fadebg!=owner.bgMan.bg
+			owner.bgMan.nextBg = minOf(engine.statistics.level/2, 19)
 
 			levelTimer = 0
 			linesAfterLastLevelUp = 0

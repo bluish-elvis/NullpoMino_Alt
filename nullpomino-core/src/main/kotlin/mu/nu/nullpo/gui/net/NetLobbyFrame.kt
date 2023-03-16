@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
+import mu.nu.nullpo.tool.ruleeditor.RuleEditor
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.strDateTime
@@ -79,37 +80,7 @@ import java.util.zip.Adler32
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import javax.imageio.ImageIO
-import javax.swing.AbstractAction
-import javax.swing.Action
-import javax.swing.BoxLayout
-import javax.swing.DefaultComboBoxModel
-import javax.swing.DefaultListModel
-import javax.swing.Icon
-import javax.swing.ImageIcon
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JComboBox
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.JList
-import javax.swing.JMenuBar
-import javax.swing.JMenuItem
-import javax.swing.JOptionPane
-import javax.swing.JPanel
-import javax.swing.JPopupMenu
-import javax.swing.JScrollPane
-import javax.swing.JSpinner
-import javax.swing.JSplitPane
-import javax.swing.JTabbedPane
-import javax.swing.JTable
-import javax.swing.JTextField
-import javax.swing.JTextPane
-import javax.swing.ListCellRenderer
-import javax.swing.ListSelectionModel
-import javax.swing.SpinnerNumberModel
-import javax.swing.SwingUtilities
-import javax.swing.UIManager
-import javax.swing.WindowConstants
+import javax.swing.*
 import javax.swing.table.DefaultTableModel
 import javax.swing.text.JTextComponent
 import javax.swing.text.SimpleAttributeSet
@@ -2204,7 +2175,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		var img:BufferedImage? = null
 		try {
 			img = ImageIO.read(url!!)
-			log.debug("Loaded image from $url")
+			log.debug("Loaded image from {}", url)
 		} catch(e:IOException) {
 			log.error("Failed to load image from "+url!!, e)
 		}
@@ -2216,26 +2187,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param str Filename
 	 * @return URL of the filename
 	 */
-	private fun getURL(str:String):URL? {
-		val url:URL
-
-		try {
-			val sep = File.separator[0]
-			var file = str.replace(sep, '/')
-
-			if(file[0]!='/') {
-				var dir = System.getProperty("user.dir")
-				dir = dir.replace(sep, '/')+'/'
-				if(dir[0]!='/') dir = "/$dir"
-				file = dir+file
-			}
-			url = URL("file", "", file)
-		} catch(e:MalformedURLException) {
-			log.warn("Invalid URL:$str", e)
-			return null
-		}
-
-		return url
+	private fun getURL(str:String):URL? = try {
+		File(str).toURI().toURL()
+	} catch(e:MalformedURLException) {
+		RuleEditor.log.warn("Invalid URL:$str", e)
+		null
 	}
 
 	/** PosttranslationalUIGets a string of
@@ -2249,9 +2205,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @return Description
 	 */
 	private fun getModeDesc(str:String):String {
-		var str2 = str.replace(' ', '_')
-		str2 = str2.replace('(', 'l')
-		str2 = str2.replace(')', 'r')
+		val str2 = str.replace(' ', '_')
+			.replace('(', 'l')
+			.replace(')', 'r')
 		return propModeDesc.getProperty(str2) ?: propDefaultModeDesc.getProperty(str2, str2) ?: str2
 	}
 
@@ -2291,7 +2247,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			if(defaultButton!=null) getRootPane().defaultButton = defaultButton
 		} catch(e:Exception) {
-			// TODO: There are several threading issue here
+			// TODO: There are some threading issue here
 			log.debug("changeCurrentScreenCard failed; Possible threading issue", e)
 		}
 	}
@@ -2675,8 +2631,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					lineDelay = propConfig.getProperty("createroom.defaultLineDelay", 0)
 					lockDelay = propConfig.getProperty("createroom.defaultLockDelay", 30)
 					das = propConfig.getProperty("createroom.defaultDAS", 11)
-					hurryupSeconds = propConfig.getProperty("createroom.defaultHurryupSeconds", 180)
-					hurryupInterval = propConfig.getProperty("createroom.defaultHurryupInterval", 5)
+					hurryUpSeconds = propConfig.getProperty("createroom.defaultHurryupSeconds", 180)
+					hurryUpInterval = propConfig.getProperty("createroom.defaultHurryupInterval", 5)
 					messiness = propConfig.getProperty("createroom.defaultGarbagePercent", 90)
 					ruleLock = propConfig.getProperty("createroom.defaultRuleLock", false)
 					twistEnableType = propConfig.getProperty("createroom.defaultTwistEnableType", 2)
@@ -2960,8 +2916,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			propConfig.setProperty("createroom.defaultDAS", it.das)
 			propConfig.setProperty("createroom.defaultGarbagePercent", it.messiness)
 			propConfig.setProperty("createroom.defaultTargetTimer", it.targetTimer)
-			propConfig.setProperty("createroom.defaultHurryupSeconds", it.hurryupSeconds)
-			propConfig.setProperty("createroom.defaultHurryupInterval", it.hurryupInterval)
+			propConfig.setProperty("createroom.defaultHurryupSeconds", it.hurryUpSeconds)
+			propConfig.setProperty("createroom.defaultHurryupInterval", it.hurryUpInterval)
 			propConfig.setProperty("createroom.defaultRuleLock", it.ruleLock)
 			propConfig.setProperty("createroom.defaultTwistEnableType", it.twistEnableType)
 			propConfig.setProperty("createroom.defaultTwistEnableEZ", it.twistEnableEZ)
@@ -3206,8 +3162,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			roomInfo.lineDelay = integerLineDelay
 			roomInfo.lockDelay = integerLockDelay
 			roomInfo.das = integerDAS
-			roomInfo.hurryupSeconds = integerHurryupSeconds
-			roomInfo.hurryupInterval = integerHurryupInterval
+			roomInfo.hurryUpSeconds = integerHurryupSeconds
+			roomInfo.hurryUpInterval = integerHurryupInterval
 			roomInfo.ruleLock = rulelock
 			roomInfo.twistEnableType = twistEnableType
 			roomInfo.twistEnableEZ = twistEnableEZ
@@ -3253,8 +3209,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			spinnerCreateRoomLineDelay.value = r.lineDelay
 			spinnerCreateRoomLockDelay.value = r.lockDelay
 			spinnerCreateRoomDAS.value = r.das
-			spinnerCreateRoomHurryupSeconds.value = r.hurryupSeconds
-			spinnerCreateRoomHurryupInterval.value = r.hurryupInterval
+			spinnerCreateRoomHurryupSeconds.value = r.hurryUpSeconds
+			spinnerCreateRoomHurryupInterval.value = r.hurryUpInterval
 			spinnerCreateRoomGarbagePercent.value = r.messiness
 			spinnerCreateRoomTargetTimer.value = r.targetTimer
 			chkboxCreateRoomUseMap.isSelected = r.useMap
@@ -4854,24 +4810,18 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		/** Log */
 		internal val log = LogManager.getLogger()
 
-		/** Get int value from JTextField
-		 * @param value Default Value (used if convertion fails)
-		 * @param txtfld JTextField
+		/** Get int value from JTextField[field]
+		 * @param value Default Value (used if conversion fails)
 		 * @return int value (or default value if fails)
 		 */
-		fun getIntTextField(value:Int, txtfld:JTextField):Int {
-			var v = value
-
-			try {
-				v = txtfld.text.toInt()
-			} catch(e:NumberFormatException) {
-			}
-
-			return v
+		fun getIntTextField(value:Int, field:JTextField):Int = try {
+			field.text.toInt()
+		} catch(e:NumberFormatException) {
+			value
 		}
 
-		/** Main functioncount
-		 * @param args CommandLinesArgumentcount
+		/** Main function count
+		 * @param args CommandLines Argument count
 		 */
 		@JvmStatic fun main(args:Array<String>) {
 			org.apache.logging.log4j.core.config.Configurator.initialize(log.name, "config/etc/log.xml")

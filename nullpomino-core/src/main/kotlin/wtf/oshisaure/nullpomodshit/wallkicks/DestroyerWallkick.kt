@@ -1,3 +1,39 @@
+/*
+ Copyright (c) 2023,
+ This library class was created by 0xFC963F18DC21 / Shots243
+ It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+
+ Kotlin converted and modified by Venom=Nhelv
+
+ Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+
+ THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+
+ Original Repository: https://github.com/Shots243/ModePile
+
+ When using this library in a mode / library pack of your own, the following
+ conditions must be satisfied:
+     - This license must remain visible at the top of the document, unmodified.
+     - You are allowed to use this library for any modding purpose.
+         - If this is the case, the Library Creator must be credited somewhere.
+             - Source comments only are fine, but in a README is recommended.
+     - Modification of this library is allowed, but only in the condition that a
+       pull request is made to merge the changes to the repository.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+ */
+
 //
 // Source code recreated from a .class file by IntelliJ IDEA
 // (powered by FernFlower decompiler)
@@ -53,36 +89,36 @@ class DestroyerWallkick:Wallkick {
 		return if(piece.big) {
 			movePieceInBoundsBig(piece, x, y, rt, fld)
 		} else {
-			var kick_x = 0
-			var kick_y = 0
-			var kick_dir = checkInBoundsKick(piece, x+kick_x, y+kick_y, rt, fld)
-			while(kick_dir!=-1) {
-				when(kick_dir) {
-					0 -> --kick_x
-					1 -> ++kick_x
-					2 -> --kick_y
-					3 -> ++kick_y
+			var kickX = 0
+			var kickY = 0
+			var kickDir = checkInBoundsKick(piece, x+kickX, y+kickY, rt, fld)
+			while(kickDir!=-1) {
+				when(kickDir) {
+					0 -> --kickX
+					1 -> ++kickX
+					2 -> --kickY
+					3 -> ++kickY
 				}
-				kick_dir = checkInBoundsKick(piece, x+kick_x, y+kick_y, rt, fld)
+				kickDir = checkInBoundsKick(piece, x+kickX, y+kickY, rt, fld)
 			}
-			WallkickResult(kick_x, kick_y, rt)
+			WallkickResult(kickX, kickY, rt)
 		}
 	}
 
 	private fun movePieceInBoundsBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):WallkickResult {
-		var kick_x = 0
-		var kick_y = 0
-		var kick_dir = checkInBoundsKickBig(piece, x+kick_x, y+kick_y, rt, fld)
-		while(kick_dir!=-1) {
-			when(kick_dir) {
-				0 -> --kick_x
-				1 -> ++kick_x
-				2 -> --kick_y
-				3 -> ++kick_y
+		var kickX = 0
+		var kickY = 0
+		var kickDir = checkInBoundsKickBig(piece, x+kickX, y+kickY, rt, fld)
+		while(kickDir!=-1) {
+			when(kickDir) {
+				0 -> --kickX
+				1 -> ++kickX
+				2 -> --kickY
+				3 -> ++kickY
 			}
-			kick_dir = checkInBoundsKickBig(piece, x+kick_x, y+kick_y, rt, fld)
+			kickDir = checkInBoundsKickBig(piece, x+kickX, y+kickY, rt, fld)
 		}
-		return WallkickResult(kick_x, kick_y, rt)
+		return WallkickResult(kickX, kickY, rt)
 	}
 
 	private fun checkInBoundsKick(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Int {

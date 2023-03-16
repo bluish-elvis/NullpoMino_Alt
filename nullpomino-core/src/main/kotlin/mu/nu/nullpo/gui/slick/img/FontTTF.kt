@@ -35,20 +35,22 @@ import mu.nu.nullpo.gui.slick.ResourceHolder
 import org.newdawn.slick.Color
 
 object FontTTF:BaseFontTTF {
-	override fun print(x:Int, y:Int, str:String, color:COLOR, alpha:Float, size:Int) {
+	override fun print(x:Float, y:Float, str:String, color:COLOR, alpha:Float, size:Float) {
 		ResourceHolder.ttfFont?.let {
-			it.drawString(x.toFloat(), y.toFloat(), str, when(color) {
-				COLOR.BLUE -> Color(0, 0, 255)
-				COLOR.RED -> Color(255, 0, 0)
-				COLOR.PINK -> Color(255, 128, 128)
-				COLOR.GREEN -> Color(0, 255, 0)
-				COLOR.YELLOW -> Color(255, 255, 0)
-				COLOR.CYAN -> Color(0, 255, 255)
-				COLOR.ORANGE -> Color(255, 128, 0)
-				COLOR.PURPLE -> Color(255, 0, 255)
-				COLOR.COBALT -> Color(0, 0, 128)
-				else -> Color(255, 255, 255)
-			}.apply {a = alpha})
+
+			it.drawString(
+				x, y, str, when(color) {
+					COLOR.BLUE -> Color(0, 0, 255)
+					COLOR.RED -> Color(255, 0, 0)
+					COLOR.PINK -> Color(255, 128, 128)
+					COLOR.GREEN -> Color(0, 255, 0)
+					COLOR.YELLOW -> Color(255, 255, 0)
+					COLOR.CYAN -> Color(0, 255, 255)
+					COLOR.ORANGE -> Color(255, 128, 0)
+					COLOR.PURPLE -> Color(255, 0, 255)
+					COLOR.COBALT -> Color(0, 0, 128)
+					else -> Color(255, 255, 255)
+				}.apply {a = alpha})
 		}
 	}
 }

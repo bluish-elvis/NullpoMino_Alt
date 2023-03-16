@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, NullNoname
+ * Copyright (c) 2021-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -48,10 +48,15 @@ interface BaseFont {
 		const val HYPHEN = "\u0092"
 		const val DOWN_L = "\u0093"
 		const val DOWN_S = "\u0094"
-		/** Backquote at end*/
+		/** Back-quote at end*/
 		const val DQ_END = "\u0095"
 		const val NAME_REV = "\u0096"
 		const val NAME_END = "\u0097"
+	}
+	/** Font cint constants */
+	enum class FONT(val w:Int, val h:Int = 16) {
+		NORMAL(BaseFontNormal.w), NANO(BaseFontNumber.w), NUM(BaseFontNumber.w),
+		GRADE(BaseFontGrade.ws), GRADE_BIG(BaseFontGrade.wb), MEDAL(BaseFontMedal.w), TTF(BaseFontTTF.FONT_SIZE);
 	}
 
 	val rainbowCount:Int
@@ -65,16 +70,20 @@ interface BaseFont {
 	 * @param color Letter cint
 	 * @param scale Enlargement factor
 	 */
-	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
+	fun printFont(x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = rainbowCount)
+
+	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
+		rainbow:Int = rainbowCount) =
+		printFont(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
 	/** flagThefalseIf it&#39;s the casefontColorTrue cint, trueIf it&#39;s the
 	 * casefontColorTrue colorDraws the string in
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param str String
 	 * @param flag Conditional expression
-	 * @param fontColorFalse flagThefalseText cint in the case of
-	 * @param fontColorTrue flagThetrueText cint in the case of
+	 * @param fontColorFalse color when flag is false
+	 * @param fontColorTrue color when flag is true
 	 * @param scale Enlargement factor
 	 */
 	fun printFont(x:Int, y:Int, str:String, flag:Boolean, fontColorFalse:COLOR = COLOR.WHITE,
@@ -96,8 +105,8 @@ interface BaseFont {
 	 * @param fontY Y-coordinate
 	 * @param fontStr String
 	 * @param flag Conditional expression
-	 * @param fontColorFalse flagThefalseText cint in the case of
-	 * @param fontColorTrue flagThetrueText cint in the case of
+	 * @param fontColorFalse color when flag is false
+	 * @param fontColorTrue color when flag is true
 	 */
 	fun printFontGrid(fontX:Int, fontY:Int, fontStr:String, flag:Boolean,
 		fontColorFalse:COLOR = COLOR.WHITE, fontColorTrue:COLOR = COLOR.RAINBOW, scale:Float = 1f,

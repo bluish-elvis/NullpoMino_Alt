@@ -1,128 +1,128 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<comment>NetAdmin language file - Default English</comment>
+ <comment>NetAdmin language file - Default English</comment>
 
-<!--Title-->
-<entry key="Title_ServerAdmin">NullpoMino NetAdmin</entry>
+ <!--Title-->
+ <entry key="Title_ServerAdmin">NullpoMino NetAdmin</entry>
 
-<!--Console-->
-<entry key="Console_LoginOK">Logged in to %s:%d\nTo see the list of commands, type 'help'.</entry>
-<entry key="Console_UnknownCommand">Unknown command: %s\nTo see the list of commands, type 'help'.</entry>
-<entry key="Console_Help_Error">Failed to load help file (%s)</entry>
-<entry key="Console_Logout">Logout...</entry>
-<entry key="Console_Shutdown">Requesting shutdown to the server...</entry>
-<entry key="Console_Ban_InvalidLength">%s is not a valid ban length (valid range: -1 to 6)</entry>
-<entry key="Console_Ban_NoParams">No IP specified\nUsage: ban <IP> (Length;-1 to 6)</entry>
-<entry key="Console_Ban_Result">[ban] IP:%s, Length:%s, Kicked-connections:%s</entry>
-<entry key="Console_BanList_Result">IP:%s, Length:%s, Since:%s</entry>
-<entry key="Console_BanList_Result_None">No ban is registered now</entry>
-<entry key="Console_UnBan_NoParams">No IP specified\nUsage: unban <IP>\nTo un-ban all IPs, type: unban ALL</entry>
-<entry key="Console_UnBan_Result">[unban] IP:%s, Removed:%s</entry>
-<entry key="Console_PlayerDelete_NoParams">No player name specified\nUsage: playerdelete <PlayerName></entry>
-<entry key="Console_PlayerDelete_Result">[playerdelete] Deleted the data of %s</entry>
-<entry key="Console_Announce">Sent announcement message:</entry>
-<entry key="Console_RoomDelete_NoParams">No room ID specified\nUsage: roomdelete <RoomID></entry>
-<entry key="Console_RoomDelete_OK">[roomdelete] Deleted a room. ID:%s Name:%s</entry>
-<entry key="Console_RoomDelete_NG">[roomdelete] The room ID %s didn't exist.</entry>
+ <!--Console-->
+ <entry key="Console_LoginOK">Logged in to %s:%d\nTo see the list of commands, type 'help'.</entry>
+ <entry key="Console_UnknownCommand">Unknown command: %s\nTo see the list of commands, type 'help'.</entry>
+ <entry key="Console_Help_Error">Failed to load help file (%s)</entry>
+ <entry key="Console_Logout">Logout...</entry>
+ <entry key="Console_Shutdown">Requesting shutdown to the server...</entry>
+ <entry key="Console_Ban_InvalidLength">%s is not a valid ban length (valid range: -1 to 6)</entry>
+ <entry key="Console_Ban_NoParams">No IP specified\nUsage: ban &lt;IP&gt; (Length;-1 to 6)</entry>
+ <entry key="Console_Ban_Result">[ban] IP:%s, Length:%s, Kicked-connections:%s</entry>
+ <entry key="Console_BanList_Result">IP:%s, Length:%s, Since:%s</entry>
+ <entry key="Console_BanList_Result_None">No ban is registered now</entry>
+ <entry key="Console_UnBan_NoParams">No IP specified\nUsage: unban &lt;IP&gt;\nTo un-ban all IPs, type: unban ALL</entry>
+ <entry key="Console_UnBan_Result">[unban] IP:%s, Removed:%s</entry>
+ <entry key="Console_PlayerDelete_NoParams">No player name specified\nUsage: playerdelete &lt;PlayerName&gt;</entry>
+ <entry key="Console_PlayerDelete_Result">[playerdelete] Deleted the data of %s</entry>
+ <entry key="Console_Announce">Sent announcement message:</entry>
+ <entry key="Console_RoomDelete_NoParams">No room ID specified\nUsage: roomdelete &lt;RoomID&gt;</entry>
+ <entry key="Console_RoomDelete_OK">[roomdelete] Deleted a room. ID:%s Name:%s</entry>
+ <entry key="Console_RoomDelete_NG">[roomdelete] The room ID %s didn't exist.</entry>
 
-<!--Messages-->
-<entry key="Title_ConfirmKick">Kick</entry>
-<entry key="Message_ConfirmKick">Kick the following IP?</entry>
-<entry key="Title_ConfirmBan">Ban</entry>
-<entry key="Message_ConfirmBan">Ban the following IP for %s?</entry>
+ <!--Messages-->
+ <entry key="Title_ConfirmKick">Kick</entry>
+ <entry key="Message_ConfirmKick">Kick the following IP?</entry>
+ <entry key="Title_ConfirmBan">Ban</entry>
+ <entry key="Message_ConfirmBan">Ban the following IP for %s?</entry>
 
-<!--Ban types-->
-<entry key="BanType-1">Kick only</entry>
-<entry key="BanType0">1 hour</entry>
-<entry key="BanType1">6 hours</entry>
-<entry key="BanType2">24 hours</entry>
-<entry key="BanType3">1 week</entry>
-<entry key="BanType4">1 month</entry>
-<entry key="BanType5">1 year</entry>
-<entry key="BanType6">Permanent</entry>
+ <!--Ban types-->
+ <entry key="BanType-1">Kick only</entry>
+ <entry key="BanType0">1 hour</entry>
+ <entry key="BanType1">6 hours</entry>
+ <entry key="BanType2">24 hours</entry>
+ <entry key="BanType3">1 week</entry>
+ <entry key="BanType4">1 month</entry>
+ <entry key="BanType5">1 year</entry>
+ <entry key="BanType6">Permanent</entry>
 
-<!--Ban dialog elements-->
-<entry key="Title_BanDialog">Ban</entry>
-<entry key="Ban_IP">IP</entry>
-<entry key="Ban_Length">Ban Length</entry>
-<entry key="Ban_Length_Tip">Select the length of ban. "Kick only" will kick the IP but will not set a ban.</entry>
-<entry key="Ban_Confirm">OK</entry>
-<entry key="Ban_Cancel">Cancel</entry>
+ <!--Ban dialog elements-->
+ <entry key="Title_BanDialog">Ban</entry>
+ <entry key="Ban_IP">IP</entry>
+ <entry key="Ban_Length">Ban Length</entry>
+ <entry key="Ban_Length_Tip">Select the length of ban. "Kick only" will kick the IP but will not set a ban.</entry>
+ <entry key="Ban_Confirm">OK</entry>
+ <entry key="Ban_Cancel">Cancel</entry>
 
-<!--Login screen elements-->
-<entry key="Login_Server">Server:Port</entry>
-<entry key="Login_Username">Username</entry>
-<entry key="Login_Password">Password</entry>
-<entry key="Login_RememberUsername">Remember Username</entry>
-<entry key="Login_RememberPassword">Remember Password</entry>
-<entry key="Login_Login">Login</entry>
-<entry key="Login_Quit">Quit</entry>
+ <!--Login screen elements-->
+ <entry key="Login_Server">Server:Port</entry>
+ <entry key="Login_Username">Username</entry>
+ <entry key="Login_Password">Password</entry>
+ <entry key="Login_RememberUsername">Remember Username</entry>
+ <entry key="Login_RememberPassword">Remember Password</entry>
+ <entry key="Login_Login">Login</entry>
+ <entry key="Login_Quit">Quit</entry>
 
-<!--Lobby screen elements-->
-<entry key="Lobby_Tab_Console">Console</entry>
-<entry key="Lobby_Tab_Users">Users</entry>
-<entry key="Lobby_Tab_MPRanking">Leaderboard</entry>
-<entry key="Lobby_Tab_RoomList">Rooms</entry>
-<entry key="Lobby_Console_Execute">Execute</entry>
+ <!--Lobby screen elements-->
+ <entry key="Lobby_Tab_Console">Console</entry>
+ <entry key="Lobby_Tab_Users">Users</entry>
+ <entry key="Lobby_Tab_MPRanking">Leaderboard</entry>
+ <entry key="Lobby_Tab_RoomList">Rooms</entry>
+ <entry key="Lobby_Console_Execute">Execute</entry>
 
-<!--UserTable column names-->
-<entry key="UserTable_IP">IP</entry>
-<entry key="UserTable_Hostname">Hostname</entry>
-<entry key="UserTable_Type">Type</entry>
-<entry key="UserTable_Name">Name</entry>
+ <!--UserTable column names-->
+ <entry key="UserTable_IP">IP</entry>
+ <entry key="UserTable_Hostname">Hostname</entry>
+ <entry key="UserTable_Type">Type</entry>
+ <entry key="UserTable_Name">Name</entry>
 
-<!--UserTable user types-->
-<entry key="UserTable_Type_Guest">Guest</entry>
-<entry key="UserTable_Type_Player">Player</entry>
-<entry key="UserTable_Type_Observer">Observer</entry>
-<entry key="UserTable_Type_Admin">Admin</entry>
+ <!--UserTable user types-->
+ <entry key="UserTable_Type_Guest">Guest</entry>
+ <entry key="UserTable_Type_Player">Player</entry>
+ <entry key="UserTable_Type_Observer">Observer</entry>
+ <entry key="UserTable_Type_Admin">Admin</entry>
 
-<!--MPRanking column names-->
-<entry key="MPRanking_Rank">\#</entry>
-<entry key="MPRanking_Name">Name</entry>
-<entry key="MPRanking_Rating">Rating</entry>
-<entry key="MPRanking_PlayCount">Games</entry>
-<entry key="MPRanking_WinCount">Wins</entry>
-<entry key="MPRanking_Button_LoadRanking">Load/Refresh Ranking</entry>
+ <!--MPRanking column names-->
+ <entry key="MPRanking_Rank">\#</entry>
+ <entry key="MPRanking_Name">Name</entry>
+ <entry key="MPRanking_Rating">Rating</entry>
+ <entry key="MPRanking_PlayCount">Games</entry>
+ <entry key="MPRanking_WinCount">Wins</entry>
+ <entry key="MPRanking_Button_LoadRanking">Load/Refresh Ranking</entry>
 
-<!--RoomTable column names-->
-<entry key="RoomTable_ID">ID</entry>
-<entry key="RoomTable_Name">Name</entry>
-<entry key="RoomTable_Rated">Rated</entry>
-<entry key="RoomTable_RuleName">Rule</entry>
-<entry key="RoomTable_Status">Status</entry>
-<entry key="RoomTable_Players">Players</entry>
-<entry key="RoomTable_Spectators">Spectators</entry>
+ <!--RoomTable column names-->
+ <entry key="RoomTable_ID">ID</entry>
+ <entry key="RoomTable_Name">Name</entry>
+ <entry key="RoomTable_Rated">Rated</entry>
+ <entry key="RoomTable_RuleName">Rule</entry>
+ <entry key="RoomTable_Status">Status</entry>
+ <entry key="RoomTable_Players">Players</entry>
+ <entry key="RoomTable_Spectators">Spectators</entry>
 
-<!--RoomTable status names-->
-<entry key="RoomTable_Rated_True">Yes</entry>
-<entry key="RoomTable_Rated_False">No</entry>
-<entry key="RoomTable_RuleName_Any">*Any*</entry>
-<entry key="RoomTable_Status_Playing">Playing</entry>
-<entry key="RoomTable_Status_Waiting">Waiting</entry>
+ <!--RoomTable status names-->
+ <entry key="RoomTable_Rated_True">Yes</entry>
+ <entry key="RoomTable_Rated_False">No</entry>
+ <entry key="RoomTable_RuleName_Any">*Any*</entry>
+ <entry key="RoomTable_Status_Playing">Playing</entry>
+ <entry key="RoomTable_Status_Waiting">Waiting</entry>
 
-<!--Login messages-->
-<entry key="Login_Message_Default">Fill out all text boxes, then click "Login" button.</entry>
-<entry key="Login_Message_Connecting">Connecting...</entry>
-<entry key="Login_Message_LoggingIn">Logging In...</entry>
-<entry key="Login_Message_VersionError">Server version is different (Client:%f, Server:%f)</entry>
-<entry key="Login_Message_BuildTypeError">Build type of the server is different (Client:%s, Server:%s)</entry>
-<entry key="Login_Message_DisabledError">Admin feature is disabled in this server.</entry>
-<entry key="Login_Message_LoginError">Login failed. Check your username and password.</entry>
-<entry key="Login_Message_Banned">Server Refused (%s - %s)</entry>
-<entry key="Login_Message_Banned_Permanent">Permanent</entry>
-<entry key="Login_Message_UnwantedDisconnect">Disconnected by error. Reason: %s</entry>
-<entry key="Login_Message_LoggingOut">Successfully logged-out from the server.</entry>
-<entry key="Login_Message_Shutdown">Server shutdown completed.</entry>
+ <!--Login messages-->
+ <entry key="Login_Message_Default">Fill out all text boxes, then click "Login" button.</entry>
+ <entry key="Login_Message_Connecting">Connecting...</entry>
+ <entry key="Login_Message_LoggingIn">Logging In...</entry>
+ <entry key="Login_Message_VersionError">Server version is different (Client:%f, Server:%f)</entry>
+ <entry key="Login_Message_BuildTypeError">Build type of the server is different (Client:%s, Server:%s)</entry>
+ <entry key="Login_Message_DisabledError">Admin feature is disabled in this server.</entry>
+ <entry key="Login_Message_LoginError">Login failed. Check your username and password.</entry>
+ <entry key="Login_Message_Banned">Server Refused (%s - %s)</entry>
+ <entry key="Login_Message_Banned_Permanent">Permanent</entry>
+ <entry key="Login_Message_UnwantedDisconnect">Disconnected by error. Reason: %s</entry>
+ <entry key="Login_Message_LoggingOut">Successfully logged-out from the server.</entry>
+ <entry key="Login_Message_Shutdown">Server shutdown completed.</entry>
 
-<!--Popup Menu-->
-<entry key="Popup_Cut">Cut</entry>
-<entry key="Popup_Copy">Copy</entry>
-<entry key="Popup_Paste">Paste</entry>
-<entry key="Popup_Delete">Delete</entry>
-<entry key="Popup_SelectAll">Select All</entry>
-<entry key="Popup_Clear">Clear</entry>
-<entry key="Popup_Kick">Kick...</entry>
-<entry key="Popup_Ban">Ban...</entry>
+ <!--Popup Menu-->
+ <entry key="Popup_Cut">Cut</entry>
+ <entry key="Popup_Copy">Copy</entry>
+ <entry key="Popup_Paste">Paste</entry>
+ <entry key="Popup_Delete">Delete</entry>
+ <entry key="Popup_SelectAll">Select All</entry>
+ <entry key="Popup_Clear">Clear</entry>
+ <entry key="Popup_Kick">Kick...</entry>
+ <entry key="Popup_Ban">Ban...</entry>
 </properties>

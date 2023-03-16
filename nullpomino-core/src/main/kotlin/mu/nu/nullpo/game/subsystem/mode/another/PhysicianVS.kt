@@ -55,7 +55,7 @@ class PhysicianVS:AbstractMode() {
 	private var scgettime = MutableList(MAX_PLAYERS) {0}
 
 	/** UseBGM */
-	private var bgmno = 0
+	private var bgmId = 0
 
 	/** Sound effectsON/OFF */
 	private var enableSE = MutableList(MAX_PLAYERS) {false}
@@ -135,13 +135,13 @@ class PhysicianVS:AbstractMode() {
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
-		owner = manager
+		super.modeInit(manager)
 
 		//garbage = new int[MAX_PLAYERS];
 		//garbageSent = new int[MAX_PLAYERS];
 
 		scgettime.fill(0)
-		bgmno = 0
+		bgmId = 0
 		enableSE.fill(false)
 		useMap.fill(false)
 		mapSet.fill(0)
@@ -197,7 +197,7 @@ class PhysicianVS:AbstractMode() {
 	/** Load settings into [engine] from [prop] not related to speeds */
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val pid = engine.playerID
-		bgmno = prop.getProperty("physicianvs.bgmno", 0)
+		bgmId = prop.getProperty("physicianvs.bgmno", 0)
 		enableSE[pid] = prop.getProperty("physicianvs.enableSE.p$pid", true)
 		useMap[pid] = prop.getProperty("physicianvs.useMap.p$pid", false)
 		mapSet[pid] = prop.getProperty("physicianvs.mapSet.p$pid", 0)
@@ -211,7 +211,7 @@ class PhysicianVS:AbstractMode() {
 	/** Save settings from [engine] into [prop] not related to speeds */
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val pid = engine.playerID
-		prop.setProperty("physicianvs.bgmno", bgmno)
+		prop.setProperty("physicianvs.bgmno", bgmId)
 		prop.setProperty("physicianvs.enableSE.p$pid", enableSE[pid])
 		prop.setProperty("physicianvs.useMap.p$pid", useMap[pid])
 		prop.setProperty("physicianvs.mapSet.p$pid", mapSet[pid])
@@ -335,7 +335,7 @@ class PhysicianVS:AbstractMode() {
 					}
 					11 -> flash[pid] = !flash[pid]
 					12 -> enableSE[pid] = !enableSE[pid]
-					13 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					13 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					14 -> {
 						useMap[pid] = !useMap[pid]
 						if(!useMap[pid]) {
@@ -427,7 +427,7 @@ class PhysicianVS:AbstractMode() {
 					engine, receiver, 0, COLOR.CYAN, 9, "SPEED" to SPEED_NAME[speed[pid]], "VIRUS" to hoverBlocks[pid],
 					"MODE" to if(flash[pid]) "FLASH" else "NORMAL"
 				)
-				drawMenu(engine, receiver, COLOR.PINK, "SE" to enableSE[pid], "BGM" to BGM.values[bgmno])
+				drawMenu(engine, receiver, COLOR.PINK, "SE" to enableSE[pid], "BGM" to BGM.values[bgmId])
 				drawMenu(
 					engine, receiver, COLOR.CYAN,
 					"USE MAP" to useMap[pid],
@@ -492,7 +492,7 @@ class PhysicianVS:AbstractMode() {
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_CONNECT
 		engine.enableSE = enableSE[engine.playerID]
-		if(engine.playerID==1) owner.musMan.bgm = BGM.values[bgmno]
+		if(engine.playerID==1) owner.musMan.bgm = BGM.values[bgmId]
 
 		engine.twistAllowKick = false
 		engine.twistEnable = false
@@ -732,8 +732,8 @@ class PhysicianVS:AbstractMode() {
 		/* float apm = (float)(garbageSent[playerID] * 3600) /
  * (float)(engine.statistics.time);
  * drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.ORANGE,
- * "ATTACK", String.format("%10d", garbageSent[playerID]),
- * "ATTACK/MIN", String.format("%10g", apm)); */
+ * "ATTACK", "%10d".format(garbageSent[playerID]),
+ * "ATTACK/MIN", "%10g".format(apm)); */
 	}
 
 	/* Called when saving replay */

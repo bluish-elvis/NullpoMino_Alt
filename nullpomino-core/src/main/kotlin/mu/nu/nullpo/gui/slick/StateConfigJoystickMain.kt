@@ -29,6 +29,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.gui.slick.img.FontTTF
@@ -102,7 +103,7 @@ class StateConfigJoystickMain:BaseGameState() {
 
 		FontNormal.printFontGrid(1, 1, "JOYSTICK SETTING (${player+1}P)", COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RAINBOW)
+		FontNormal.printFontGrid(1, 3+cursor, BaseFont.CURSOR, COLOR.RAINBOW)
 
 		FontNormal.printFontGrid(2, 3, "[BUTTON SETTING]", cursor==0)
 		FontNormal.printFontGrid(2, 4, "[INPUT TEST]", cursor==1)

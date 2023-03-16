@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="core" pattern="gitignore||src[nullpomino-core]:mu..*||src[nullpomino-core]:net.omegaboshi..*||src[nullpomino-core]:net.tetrisconcept..*" />
+</component>

@@ -1,37 +1,37 @@
 /*
- * Copyright (c) 2021-2022,
- * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
- *
- * Kotlin converted and modified by Venom=Nhelv
- *
- * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
- *
- * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
- * Original Repository: https://github.com/Shots243/ModePile
- *
- * When using this library in a mode / library pack of your own, the following
- * conditions must be satisfied:
- *     - This license must remain visible at the top of the document, unmodified.
- *     - You are allowed to use this library for any modding purpose.
- *         - If this is the case, the Library Creator must be credited somewhere.
- *             - Source comments only are fine, but in a README is recommended.
- *     - Modification of this library is allowed, but only in the condition that a
- *       pull request is made to merge the changes to the repository.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ Copyright (c) 2021-2023,
+ This library class was created by 0xFC963F18DC21 / Shots243
+ It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+
+ Kotlin converted and modified by Venom=Nhelv
+
+ Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+
+ THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+
+ Original Repository: https://github.com/Shots243/ModePile
+
+ When using this library in a mode / library pack of your own, the following
+ conditions must be satisfied:
+     - This license must remain visible at the top of the document, unmodified.
+     - You are allowed to use this library for any modding purpose.
+         - If this is the case, the Library Creator must be credited somewhere.
+             - Source comments only are fine, but in a README is recommended.
+     - Modification of this library is allowed, but only in the condition that a
+       pull request is made to merge the changes to the repository.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
  */
 
 package zeroxfc.nullpo.custom.modes
@@ -48,12 +48,12 @@ import zeroxfc.nullpo.custom.libs.FlyInOutText
 import kotlin.random.Random
 
 class ScoreTrial:MarathonModeBase() {
-	// Ingame Timer
+	// In-game Timer
 	private var mainTimer = 0
 	// Ranking stuff
 	private val rankingScore = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0L}}
 	private val rankingLines = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0}}
-	private val rankingTime = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {-1}}
 	// Lives added/removed
 	private var lifeOffset = 0
 	// Score before increase;
@@ -95,7 +95,7 @@ class ScoreTrial:MarathonModeBase() {
      */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		bgmLv = 0
 		lifeOffset = 0
 		o = false
@@ -114,7 +114,7 @@ class ScoreTrial:MarathonModeBase() {
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 
 		engine.playerProp.reset()
 		showPlayerStats = false
@@ -320,7 +320,7 @@ class ScoreTrial:MarathonModeBase() {
 		o = false
 		setSpeed(engine)
 		owner.musMan.bgm = tableBGM[difficultySelected][0]
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		if(netIsWatch) {
 			owner.musMan.bgm = BGMStatus.BGM.Silent
 		}
@@ -344,29 +344,19 @@ class ScoreTrial:MarathonModeBase() {
 		receiver.drawScoreFont(engine, 0, 1, "("+DIFFICULTY_NAMES[difficultySelected]+" TIER)", COLOR.GREEN)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&lifeOffset==0) {
-				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingScorePlayer[difficultySelected][i]}"
+						val isLong = s.length>6&&receiver.nextDisplayType!=2
 						receiver.drawScoreFont(
-							engine,
-							if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
-							if(s.length>6&&receiver.nextDisplayType!=2) (topY+i)*2 else topY+i,
-							s,
-							i==rankingRankPlayer,
-							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale
+							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, i==rankingRankPlayer,
+							if(isLong) .5f else 1f
 						)
-						receiver.drawScoreFont(
-							engine, 10, topY+i, "${rankingLinesPlayer[difficultySelected][i]}", i==rankingRankPlayer,
-							scale
-						)
-						receiver.drawScoreFont(
-							engine, 15, topY+i, rankingTimePlayer[difficultySelected][i].toTimeStr, i==rankingRankPlayer,
-							scale
-						)
+						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLinesPlayer[difficultySelected][i]}", i==rankingRankPlayer)
+						receiver.drawScoreFont(engine, 15, topY+i, rankingTimePlayer[difficultySelected][i].toTimeStr, i==rankingRankPlayer)
 					}
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
 					receiver.drawScoreFont(
@@ -376,24 +366,15 @@ class ScoreTrial:MarathonModeBase() {
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingScore[difficultySelected][i]}"
+						val isLong = s.length>6&&receiver.nextDisplayType!=2
 						receiver.drawScoreFont(
-							engine,
-							if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
-							if(s.length>6&&receiver.nextDisplayType!=2) (topY+i)*2 else topY+i,
-							s,
-							i==rankingRank,
-							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale
+							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, i==rankingRank,
+							if(isLong) .5f else 1f
 						)
-						receiver.drawScoreFont(
-							engine, 10, topY+i, "${rankingLines[difficultySelected][i]}", i==rankingRank,
-							scale
-						)
-						receiver.drawScoreFont(
-							engine, 15, topY+i, rankingTime[difficultySelected][i].toTimeStr, i==rankingRank,
-							scale
-						)
+						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[difficultySelected][i]}", i==rankingRank)
+						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[difficultySelected][i].toTimeStr, i==rankingRank)
 					}
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
@@ -410,10 +391,10 @@ class ScoreTrial:MarathonModeBase() {
 		} else {
 			receiver.drawScoreFont(engine, 0, 3, "LINE", COLOR.BLUE)
 
-			receiver.drawScoreNum(engine, 5, 2, String.format("%3d/%3d", engine.statistics.lines, goalLine), 2f)
+			receiver.drawScoreNum(engine, 5, 2, "%3d/%3d".format(engine.statistics.lines, goalLine), 2f)
 			val scget:Boolean = scDisp<engine.statistics.score
 			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 4, "+$lastscore")
+			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
 
 			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
 			if(!o) {
@@ -488,7 +469,7 @@ class ScoreTrial:MarathonModeBase() {
 					// Ending
 					val baseBonus = (engine.statistics.score*((engine.lives+1).toFloat()/(livesStartedWith+1))).toInt()
 					engine.statistics.scoreBonus += baseBonus
-					lastscore = baseBonus
+					lastScore = baseBonus
 					o = true
 					l = engine.lives+1
 					if(engine.lives==STARTING_LIVES+lifeOffset) {
@@ -584,7 +565,7 @@ class ScoreTrial:MarathonModeBase() {
 			// Add to score
 			if(pts>0) {
 				scoreBeforeIncrease = engine.statistics.score
-				lastscore = pts
+				lastScore = pts
 				if(li>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
 			}
 		}
@@ -592,9 +573,9 @@ class ScoreTrial:MarathonModeBase() {
 			// Level up
 			engine.statistics.level++
 
-			// owner.backgroundStatus.fadesw = true;
-			// owner.backgroundStatus.fadecount = 0;
-			// owner.backgroundStatus.fadebg = engine.statistics.level / 5;
+			// owner.backgroundStatus.fadeSW = true;
+			// owner.backgroundStatus.fadeCount = 0;
+			// owner.backgroundStatus.nextBg = engine.statistics.level / 5;
 			if(engine.statistics.level==200) {
 				owner.bgMan.bg = 19
 				engine.playSE("endingstart")
@@ -622,8 +603,8 @@ class ScoreTrial:MarathonModeBase() {
 					2 -> goalLine += 8
 				}
 
-				// owner.backgroundStatus.fadesw = true;
-				// owner.backgroundStatus.fadecount = 0;
+				// owner.backgroundStatus.fadeSW = true;
+				// owner.backgroundStatus.fadeCount = 0;
 				owner.bgMan.bg = engine.statistics.level/5
 				if(engine.statistics.level==lMax&&difficultySelected!=2) {
 					owner.bgMan.bg = 19

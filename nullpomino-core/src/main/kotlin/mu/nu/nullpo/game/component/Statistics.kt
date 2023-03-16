@@ -61,26 +61,28 @@ class Statistics:Serializable {
 	/** Total Cleared block count */
 	var blocks = 0
 
-	/** 経過 time */
-	var time = 0
-
-	/** Level */
 	var level = 0
-
 	/** Levelの表示に加算する数値 (表示 levelが内部の値と異なる場合に使用) */
 	var levelDispAdd = 0
 
+	/** 経過 time */
+	var time = 0
+	/** 有効なisPushKeyの合計 count */
+	var totalKeyPush = 0
+	var finesse = 0
+	var finesseFault = 0
+	var maxFinesseCombo = 0
+
 	/** 置いたピースのcount */
 	var totalPieceLocked = 0
-
-	/** ピースを操作していた合計 time */
+	/** ピースを操作していた合計 time*/
 	var totalPieceActiveTime = 0
-
 	/** ピースを移動させた合計 count */
 	var totalPieceMove = 0
-
 	/** ピースを回転させた合計 count */
 	var totalPieceSpin = 0
+	/** Hold use count */
+	var totalHoldUsed = 0
 
 	/** 1-line clear count */
 	var totalSingle = 0
@@ -121,9 +123,6 @@ class Statistics:Serializable {
 	/** Back to Back Twister clear count */
 	var totalB2BTwist = 0
 
-	/** Hold use count */
-	var totalHoldUsed = 0
-
 	/** Longest combo */
 	var maxCombo = 0
 	/** Longest Avalanche-chain */
@@ -132,33 +131,41 @@ class Statistics:Serializable {
 	var maxB2B = 0
 
 	/** 1Linesあたりの得点 (Score Per Line) */
-	val spl:Double get() = if(lines>0) score.toDouble()/lines.toDouble() else .0
+	val spl:Double get() = score.toDouble()/maxOf(1, lines)
+	/** 1Pieceあたりの得点 (Score Per Piece) */
+	val spp:Double get() = score.toDouble()/maxOf(1, totalPieceLocked)
 	/** 1分間あたりの得点 (Score Per Minute) */
-	val spm:Double get() = if(time>0) score*3600.0/time else .0
+	val spm:Double get() = score*3600.0/maxOf(1, time)
 	/** 1秒間あたりの得点 (Score Per Second) */
-	val sps:Double get() = if(time>0) score*60.0/time else .0
+	val sps:Double get() = score*60.0/maxOf(1, time)
 
-	/** 1分間あたりのLinescount (Lines Per Minute) */
-	val lpm:Float get() = if(time>0) lines*3600f/time else 0f
-	/** 1秒間あたりのLinescount (Lines Per Second) */
-	val lps:Float get() = if(time>0) lines*60f/time else 0f
+	/** 1分間あたりのLines (Lines Per Minute) */
+	val lpm:Float get() = lines*3600f/maxOf(1, time)
+	/** 1秒間あたりのLines (Lines Per Second) */
+	val lps:Float get() = lines*60f/maxOf(1, time)
+
 	/** 1分間あたりのピースcount (Pieces Per Minute) */
-	val ppm:Float get() = if(time>0) totalPieceLocked*3600f/time else 0f
+	val ppm:Float get() = totalPieceLocked*3600f/maxOf(1, time)
 	/** 1秒間あたりのピースcount (Pieces Per Second) */
-	val pps:Float get() = if(time>0) totalPieceLocked*60f/time else 0f
+	val pps:Float get() = totalPieceLocked*60f/maxOf(1, time)
 
-	/** 1Linesあたりの攻撃 (Attack Per Lintes) */
-	val apl:Float get() = if(lines>0) attacks.toFloat()/lines.toFloat() else 0f
+	/** 1Pieceあたりのキー押下数 (Keys Per Piece) */
+	val kpp:Float get() = totalKeyPush.toFloat()/maxOf(1, totalPieceLocked)
+
+	/** 1Linesあたりの攻撃 (Attack Per Line) */
+	val apl:Float get() = attacks.toFloat()/maxOf(1, lines)
+	/** 1Pieceあたりの攻撃 (Attack Per Piece) */
+	val app:Float get() = attacks.toFloat()/maxOf(1, totalPieceLocked)
 	/** 1分間あたりの攻撃 (Attack Per Minutes) */
-	val apm:Float get() = if(time>0) attacks*3600f/time else 0f
+	val apm:Float get() = attacks*3600f/maxOf(1, time)
 	/** 対戦評価 (VS Score)*/
-	val vs:Float get() = if(time>0) (attacks+garbageLines)*6000f/time else 0f
+	val vs:Float get() = (attacks+garbageLines)*6000f/maxOf(1, time)
 
 	/** TAS detection: slowdown rate */
 	var gamerate = 0f
 
 	/** Roll cleared flag (0=Not Reached 1=Reached 2=Fully Survived) */
-	var rollclear = 0
+	var rollClear = 0
 		set(it) {
 			if(field==it||!(0..2).contains(it)) return
 			when(it) {
@@ -252,7 +259,7 @@ class Statistics:Serializable {
 		maxCombo = 0
 		gamerate = 0f
 		maxChain = 0
-		rollclear = 0
+		rollClear = 0
 
 		pieces = List(Piece.PIECE_COUNT) {0}
 		randSeed = 0L
@@ -300,7 +307,7 @@ class Statistics:Serializable {
 			maxB2B = b.maxB2B
 			gamerate = b.gamerate
 			maxChain = b.maxChain
-			rollclear = b.rollclear
+			rollClear = b.rollClear
 			rollclearHistory =
 				b.rollclearHistory
 			garbageLines = b.garbageLines
@@ -354,7 +361,7 @@ class Statistics:Serializable {
 			maxB2B = maxOf(maxB2B, b.maxB2B)
 			gamerate = (gamerate+b.gamerate)/2f
 			maxChain = maxOf(maxCombo, b.maxChain)
-			rollclear = b.rollclear
+			rollClear = b.rollClear
 			garbageLines += b.garbageLines
 
 			pieces = pieces.mapIndexed {it, i -> it+b.pieces[i]}
@@ -407,7 +414,7 @@ class Statistics:Serializable {
 			"$id.statistics.maxB2B" to maxB2B,
 			"$id.statistics.gamerate" to gamerate,
 			"$id.statistics.maxChain" to maxChain,
-			"$id.statistics.rollclear" to rollclear,
+			"$id.statistics.rollClear" to rollClear,
 			"$id.statistics.randSeed" to randSeed,
 		).plus((0 until pieces.size-1).associate {
 			"$id.statistics.pieces.$it" to pieces[it]
@@ -459,7 +466,7 @@ class Statistics:Serializable {
 		maxB2B = p.getProperty("$id.statistics.maxB2B", 0)
 		gamerate = p.getProperty("$id.statistics.gamerate", 0f)
 		maxChain = p.getProperty("$id.statistics.maxChain", 0)
-		rollclear = p.getProperty("$id.statistics.rollclear", 0)
+		rollClear = p.getProperty("$id.statistics.rollClear", 0)
 		randSeed = p.getProperty("$id.statistics.randSeed", 0L)
 		pieces = List(pieces.size) {p.getProperty("$id.statistics.pieces.$it", 0)}
 	}
@@ -509,7 +516,7 @@ class Statistics:Serializable {
 			{maxB2B = it.toInt()},
 			{gamerate = it.toFloat()},
 			{maxChain = it.toInt()},
-			{rollclear = it.toInt()},
+			{rollClear = it.toInt()},
 			{randSeed = it.toLong()}).plus(
 			(0 until pieces.size-1).map {i:Int ->
 				{pi[i] = it.toInt()}
@@ -534,7 +541,7 @@ class Statistics:Serializable {
 		"$totalTriple", "$totalSplitTriple", "$totalQuadruple", "$totalTwistZeroMini", "$totalTwistZero",
 		"$totalTwistSingleMini", "$totalTwistSingle", "$totalTwistDoubleMini", "$totalTwistDouble", "$totalTwistSplitDouble",
 		"$totalTwistTriple", "$totalTwistSplitTriple", "$totalB2BQuad", "$totalB2BSplit", "$totalB2BTwist", "$totalHoldUsed",
-		"$maxCombo", "$maxB2B", "$gamerate", "$maxChain", "$rollclear", "$randSeed"
+		"$maxCombo", "$maxB2B", "$gamerate", "$maxChain", "$rollClear", "$randSeed"
 	)+(pieces.map {"$it"})
 
 	/** Export to String

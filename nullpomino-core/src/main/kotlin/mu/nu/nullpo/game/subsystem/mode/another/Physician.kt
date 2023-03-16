@@ -58,7 +58,7 @@ class Physician:AbstractMode() {
 	private val rankingScore = MutableList(RANKING_MAX) {0L}
 
 	/** Rankings' times */
-	private val rankingTime = MutableList(RANKING_MAX) {0}
+	private val rankingTime = MutableList(RANKING_MAX) {-1}
 	override val rankMap
 		get() = rankMapOf("score" to rankingScore, "time" to rankingTime)
 	/** Number of initial gem blocks */
@@ -79,12 +79,12 @@ class Physician:AbstractMode() {
 	/* Initialization */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		gemsClearedChainTotal = 0
 
 		rankingRank = -1
 		rankingScore.fill(0L)
-		rankingTime.fill(0)
+		rankingTime.fill(-1)
 		if(!owner.replayMode) {
 			loadSetting(owner.modeConfig, engine)
 
@@ -180,20 +180,20 @@ class Physician:AbstractMode() {
 	}
 
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "PHYSICIAN", EventReceiver.COLOR.COBALT)
+		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
 				receiver.drawScoreFont(engine, 3, 3, "SCORE  TIME", EventReceiver.COLOR.BLUE)
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreFont(engine, 0, 4+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW)
+					receiver.drawScoreFont(engine, 0, 4+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW)
 					receiver.drawScoreFont(engine, 3, 4+i, "${rankingScore[i]}", i==rankingRank)
 					receiver.drawScoreFont(engine, 10, 4+i, rankingTime[i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
 			receiver.drawScoreFont(engine, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreFont(engine, 6, 3, "(+$lastscore)")
+			receiver.drawScoreFont(engine, 6, 3, "(+$lastScore)")
 			receiver.drawScoreFont(engine, 0, 4, "$scDisp")
 
 			receiver.drawScoreFont(engine, 0, 6, "Target", EventReceiver.COLOR.BLUE)
@@ -214,9 +214,9 @@ class Physician:AbstractMode() {
 					}
 				}
 			receiver.drawScoreFont(engine, 0, 8, "(")
-			receiver.drawScoreFont(engine, 1, 8, String.format("%2d", red), EventReceiver.COLOR.RED)
-			receiver.drawScoreFont(engine, 4, 8, String.format("%2d", yellow), EventReceiver.COLOR.YELLOW)
-			receiver.drawScoreFont(engine, 7, 8, String.format("%2d", blue), EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 1, 8, "%2d".format(red), EventReceiver.COLOR.RED)
+			receiver.drawScoreFont(engine, 4, 8, "%2d".format(yellow), EventReceiver.COLOR.YELLOW)
+			receiver.drawScoreFont(engine, 7, 8, "%2d".format(blue), EventReceiver.COLOR.BLUE)
 			receiver.drawScoreFont(engine, 9, 8, ")")
 
 			receiver.drawScoreFont(engine, 0, 10, "SPEED", EventReceiver.COLOR.BLUE)
@@ -281,7 +281,7 @@ class Physician:AbstractMode() {
 			if(gemsClearedChainTotal>=5) pts += gemsCleared shl 5
 			pts *= (speed+1)*100
 			gemsClearedChainTotal += gemsCleared
-			lastscore = pts
+			lastScore = pts
 			engine.statistics.scoreLine += pts
 			engine.playSE("gem")
 			setSpeed(engine)
@@ -300,9 +300,9 @@ class Physician:AbstractMode() {
 		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
 		drawResult(
-			engine, receiver, 3, EventReceiver.COLOR.BLUE, "Score", String.format("%10d", engine.statistics.score),
-			"CLEARED", String.format("%10d", engine.statistics.lines), "Time",
-			String.format("%10s", engine.statistics.time.toTimeStr)
+			engine, receiver, 3, EventReceiver.COLOR.BLUE, "Score", "%10d".format(engine.statistics.score),
+			"CLEARED", "%10d".format(engine.statistics.lines), "Time",
+			"%10s".format(engine.statistics.time.toTimeStr)
 		)
 		drawResultRank(engine, receiver, 9, EventReceiver.COLOR.BLUE, rankingRank)
 	}

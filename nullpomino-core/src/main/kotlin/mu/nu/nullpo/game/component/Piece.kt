@@ -50,7 +50,7 @@ class Piece(id:Int = 0):Serializable {
 	val type:Shape get() = Shape.all[id]
 
 	/** Direction */
-	var direction:Int = DIRECTION_UP
+	var direction = DIRECTION_UP
 
 	/** BigBlock */
 	@JvmField var big = false
@@ -59,13 +59,13 @@ class Piece(id:Int = 0):Serializable {
 	var connectBlocks = true
 
 	/** 相対X位置 (4Direction×nBlock) */
-	var dataX:List<MutableList<Int>> = List(DIRECTION_COUNT) {MutableList(maxBlock) {0}}
+	var dataX = List(DIRECTION_COUNT) {MutableList(maxBlock) {0}}
 		private set
 	/** 相対Y位置 (4Direction×nBlock) */
-	var dataY:List<MutableList<Int>> = List(DIRECTION_COUNT) {MutableList(maxBlock) {0}}
+	var dataY = List(DIRECTION_COUNT) {MutableList(maxBlock) {0}}
 		private set
 	/** ピースを構成するBlock (nBlock) */
-	var block:List<Block> = List(maxBlock) {Block()}
+	var block = List(maxBlock) {Block()}
 
 	/** 相対X位置と相対Y位置がオリジナル stateからずらされているならtrue */
 	var offsetApplied = false
@@ -84,42 +84,34 @@ class Piece(id:Int = 0):Serializable {
 	/** 1つのピースに含まれるBlockのcountを取得
 	 * @return 1つのピースに含まれるBlockのcount
 	 */
-	val maxBlock:Int
-		get() = DEFAULT_PIECE_DATA_X[id][direction].size
+	val maxBlock get() = DEFAULT_PIECE_DATA_X[id][direction].size
 
 	/** Fetches the colors of the blocks in the piece
 	 * @return An int array containing the cint of each block
 	 */
-	val colors:IntArray
-		get() = IntArray(block.size) {block[it].cint}
+	val colors get() = List(block.size) {block[it].cint}
 
 	/** @return ピース回転軸のX-coordinate */
-	val spinCX:Float
-		get() = dataX.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2f
+	val spinCX get() = dataX.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2f
 	/** @return ピース回転軸のY-coordinate */
-	val spinCY:Float
-		get() = dataY.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2f
+	val spinCY get() = dataY.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2f
 	/** @return ピースの幅*/
-	val width:Int get() = maximumBlockX-minimumBlockX
+	val width get() = maximumBlockX-minimumBlockX
 	/** @return ピースの高さ*/
-	val height:Int get() = maximumBlockY-minimumBlockY
-	val centerX:Int get() = (width/2.0).roundToInt()
-	val centerY:Int get() = (height/2.0).roundToInt()
+	val height get() = maximumBlockY-minimumBlockY
+	val centerX get() = (width/2.0).roundToInt()
+	val centerY get() = (height/2.0).roundToInt()
 	/** @return テトラミノの最も高いBlockのX-coordinate*/
-	val minimumBlockX:Int
-		get() = (dataX[direction].minOrNull() ?: 0)*if(big) 2 else 1
+	val minimumBlockX get() = (dataX[direction].minOrNull() ?: 0)*if(big) 2 else 1
 
 	/** @return テトラミノの最も低いBlockのX-coordinate */
-	val maximumBlockX:Int
-		get() = (dataX[direction].maxOrNull() ?: 0)*if(big) 2 else 1
+	val maximumBlockX get() = (dataX[direction].maxOrNull() ?: 0)*if(big) 2 else 1
 
 	/** @return テトラミノの最も高いBlockのY-coordinate */
-	val minimumBlockY:Int
-		get() = (dataY[direction].minOrNull() ?: 0)*if(big) 2 else 1
+	val minimumBlockY get() = (dataY[direction].minOrNull() ?: 0)*if(big) 2 else 1
 
 	/** @return テトラミノの最も低いBlockのY-coordinate */
-	val maximumBlockY:Int
-		get() = (dataY[direction].maxOrNull() ?: 0)*if(big) 2 else 1
+	val maximumBlockY get() = (dataY[direction].maxOrNull() ?: 0)*if(big) 2 else 1
 
 	init {
 		resetOffsetArray()
@@ -150,10 +142,9 @@ class Piece(id:Int = 0):Serializable {
 		dataOffsetY = p.dataOffsetY.toMutableList()
 	}
 
-	/** すべてのBlock stateを[b]と同じに設定
-	 * @param b 設定するBlock
+	/** すべてのBlock stateを[block]と同じに設定
 	 */
-	fun setBlock(b:Block) = block.forEach {it.replace(b)}
+	fun setBlock(block:Block) = this.block.forEach {it.replace(block)}
 
 	/** すべてのBlock colorを[color]に変更*/
 	fun setColor(color:Block.COLOR) = block.forEach {it.color = color}
@@ -165,7 +156,12 @@ class Piece(id:Int = 0):Serializable {
 	 * blocks of multiple colors
 	 * @param color Array with each cell specifying a cint of a block
 	 */
-	fun setColor(color:List<Block.COLOR>) = block.forEachIndexed {i, it -> it.color = color[i%color.size]}
+	fun setColor(color:List<*>) {
+		when(color.firstOrNull()) {
+			is Block.COLOR -> block.forEachIndexed {i, it -> it.color = color[i%color.size] as Block.COLOR}
+			is Int -> block.forEachIndexed {i, it -> it.cint = color[i%color.size] as Int}
+		}
+	}
 
 	/** Changes the colors of the blocks individually; allows one piece to have
 	 * blocks of multiple colors
@@ -182,11 +178,9 @@ class Piece(id:Int = 0):Serializable {
 	 * different inum settings for each block
 	 * @param item Array with each element specifying a cint of a block
 	 */
-	fun setItem(item:IntArray) = block.forEachIndexed {i, it -> it.inum = item[i%item.size]}
+	fun setItem(item:List<Int>) = block.forEachIndexed {i, it -> it.inum = item[i%item.size]}
 
-	/** Sets all blocks' hard count
-	 * @param hard Hard count
-	 */
+	/** Sets all blocks' hard count to [hard] */
 	fun setHard(hard:Int) = block.forEach {it.hard = hard}
 
 	/** Sets the hard counts of the blocks individually; allows one piece to
@@ -194,7 +188,7 @@ class Piece(id:Int = 0):Serializable {
 	 * different hard count settings for each block
 	 * @param hard Array with each element specifying a hard count of a block
 	 */
-	fun setHard(hard:IntArray) = block.forEachIndexed {i, it -> it.hard = hard[i%hard.size]}
+	fun setHard(hard:List<Int>) = block.forEachIndexed {i, it -> it.hard = hard[i%hard.size]}
 
 	/** すべてのBlockの模様を変更
 	 * @param skin 模様
@@ -228,7 +222,7 @@ class Piece(id:Int = 0):Serializable {
 	 * @param offsetX X位置補正量の配列 (int[DIRECTION_COUNT]）
 	 * @param offsetY Y位置補正量の配列 (int[DIRECTION_COUNT]）
 	 */
-	fun applyOffsetArray(offsetX:IntArray, offsetY:IntArray) {
+	fun applyOffsetArray(offsetX:MutableList<Int>, offsetY:MutableList<Int>) {
 		applyOffsetArrayX(offsetX)
 		applyOffsetArrayY(offsetY)
 	}
@@ -236,7 +230,7 @@ class Piece(id:Int = 0):Serializable {
 	/** 相対X位置をずらす
 	 * @param offsetX X位置補正量の配列 (int[DIRECTION_COUNT]）
 	 */
-	fun applyOffsetArrayX(offsetX:IntArray) {
+	fun applyOffsetArrayX(offsetX:MutableList<Int>) {
 		offsetApplied = true
 
 		for(i in 0 until DIRECTION_COUNT) {
@@ -249,7 +243,7 @@ class Piece(id:Int = 0):Serializable {
 	/** 相対Y位置をずらす
 	 * @param offsetY Y位置補正量の配列 (int[DIRECTION_COUNT]）
 	 */
-	fun applyOffsetArrayY(offsetY:IntArray) {
+	fun applyOffsetArrayY(offsetY:MutableList<Int>) {
 		offsetApplied = true
 
 		for(i in 0 until DIRECTION_COUNT) {

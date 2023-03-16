@@ -1,37 +1,37 @@
 /*
- * Copyright (c) 2022-2022,
- * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2022-2022)
- *
- * Kotlin converted and modified by Venom=Nhelv
- *
- * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
- *
- * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
- * Original Repository: https://github.com/Shots243/ModePile
- *
- * When using this library in a mode / library pack of your own, the following
- * conditions must be satisfied:
- *     - This license must remain visible at the top of the document, unmodified.
- *     - You are allowed to use this library for any modding purpose.
- *         - If this is the case, the Library Creator must be credited somewhere.
- *             - Source comments only are fine, but in a README is recommended.
- *     - Modification of this library is allowed, but only in the condition that a
- *       pull request is made to merge the changes to the repository.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ Copyright (c) 2022-2023,
+ This library class was created by 0xFC963F18DC21 / Shots243
+ It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+
+ Kotlin converted and modified by Venom=Nhelv
+
+ Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+
+ THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+
+ Original Repository: https://github.com/Shots243/ModePile
+
+ When using this library in a mode / library pack of your own, the following
+ conditions must be satisfied:
+     - This license must remain visible at the top of the document, unmodified.
+     - You are allowed to use this library for any modding purpose.
+         - If this is the case, the Library Creator must be credited somewhere.
+             - Source comments only are fine, but in a README is recommended.
+     - Modification of this library is allowed, but only in the condition that a
+       pull request is made to merge the changes to the repository.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
  */
 
 //
@@ -71,16 +71,16 @@ class MarathonActual:AbstractMode() {
 	private val rankingPPS
 		get() = List(minOf(rankingPieces.size, rankingTime.size)) {rankingPieces[it]*60f/rankingTime[it]}
 	private val rankingPieces = MutableList(RANKING_MAX) {0}
-	private val rankingTime = MutableList(RANKING_MAX) {0}
+	private val rankingTime = MutableList(RANKING_MAX) {-1}
 	override val rankMap
 		get() = rankMapOf("pieces" to rankingPieces, "time" to rankingTime)
 	private var totalLength = 0
-	override val name:String = "ACTUAL MARATHON"
+	override val name:String = "Actual Marathon"
 	override val menu = MenuList("actualmarathon", itemLevel, itemBig)
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
@@ -134,12 +134,12 @@ class MarathonActual:AbstractMode() {
 
 	override fun renderLast(engine:GameEngine) {
 		if(!owner.menuOnly) {
-			receiver.drawScoreFont(engine, 0, 0, "ACTUAL MARATHON", 4f)
+			receiver.drawScoreFont(engine, 0, 0, name, 4f)
 			var topY:Int
 			if(engine.gameActive) {
 				receiver.drawScoreFont(engine, 0, 3, "SCORE", 1f)
-				val strScore:String = if(lastscore!=0&&scDisp<120)
-					"${engine.statistics.score}(+$lastscore)" else "${engine.statistics.score}(+$lastscore)"
+				val strScore:String = if(lastScore!=0&&scDisp<120)
+					"${engine.statistics.score}(+$lastScore)" else "${engine.statistics.score}(+$lastScore)"
 				receiver.drawScoreFont(engine, 0, 4, strScore)
 				receiver.drawScoreFont(engine, 0, 6, "LINE", 1f)
 				receiver.drawScoreFont(engine, 0, 7, engine.statistics.lines.toString())
@@ -154,14 +154,13 @@ class MarathonActual:AbstractMode() {
 				receiver.drawScoreFont(engine, 0, 15, "TIME", 1f)
 				receiver.drawScoreFont(engine, 0, 16, engine.statistics.time.toTimeStr)
 			} else if(!owner.replayMode&&!big&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 				topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "TIME     PIECE PPS", COLOR.BLUE, scale = scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "TIME     PIECE PPS", COLOR.BLUE)
 				for(i in 0..9) {
-					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale = scale)
-					receiver.drawScoreFont(engine, 3, topY+i, rankingTime[i].toTimeStr, rankingRank==i, scale)
-					receiver.drawScoreFont(engine, 12, topY+i, "${rankingPieces[i]}", rankingRank==i, scale)
-					receiver.drawScoreFont(engine, 18, topY+i, String.format("%.5g", rankingPPS[i]), rankingRank==i, scale)
+					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+					receiver.drawScoreFont(engine, 3, topY+i, rankingTime[i].toTimeStr, rankingRank==i)
+					receiver.drawScoreFont(engine, 12, topY+i, "${rankingPieces[i]}", rankingRank==i)
+					receiver.drawScoreFont(engine, 18, topY+i, "%.5g".format(rankingPPS[i]), rankingRank==i)
 				}
 			}
 		}
@@ -173,19 +172,19 @@ class MarathonActual:AbstractMode() {
 		engine.statistics.scoreBonus += dist
 		val pts = calcPower(engine, ev, true)
 		if(pts>0) {
-			lastscore = pts
+			lastScore = pts
 			lastpiece = engine.nowPieceObject!!.id
 			if(ev.lines>=1) engine.statistics.scoreLine += pts
 			else engine.statistics.scoreBonus += pts
 		}
 		if(TABLE_BGM_CHANGE[bgmLv]!=-1) {
 			if(totalLength>=TABLE_BGM_CHANGE[bgmLv]-50) {
-				owner.musMan.fadesw = true
+				owner.musMan.fadeSW = true
 			}
 			if(totalLength>=TABLE_BGM_CHANGE[bgmLv]&&totalLength<MARATHON_LENGTH) {
 				++bgmLv
 				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
-				owner.musMan.fadesw = false
+				owner.musMan.fadeSW = false
 			}
 		}
 		engine.meterValue = totalLength%LEVEL_LENGTH*1f/LEVEL_LENGTH
@@ -196,9 +195,7 @@ class MarathonActual:AbstractMode() {
 			engine.stat = GameEngine.Status.EXCELLENT
 		} else if(totalLength>=(engine.statistics.level+1)*LEVEL_LENGTH) {
 			++engine.statistics.level
-			owner.bgMan.fadesw = true
-			owner.bgMan.fadecount = 0
-			owner.bgMan.fadebg = engine.statistics.level
+			owner.bgMan.nextBg = engine.statistics.level
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}

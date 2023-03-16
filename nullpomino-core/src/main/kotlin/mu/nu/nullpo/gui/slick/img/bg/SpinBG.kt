@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, NullNoname
+ * Copyright (c) 2022-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -29,30 +29,41 @@
 
 package mu.nu.nullpo.gui.slick.img.bg
 
-import mu.nu.nullpo.gui.common.AbstractBG
 import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.common.libs.Vector
 import org.newdawn.slick.Image
-import kotlin.math.PI
 import kotlin.math.sin
 
-class SpinBG(bg:ResourceImage<Image>):AbstractBG<Image>(bg) {
-	override val bg:Image get() = img.res.copy()
-	val sc get() = ((1+sin(this.bg.rotation*PI/180)/3)*1024f/minOf(this.bg.width, this.bg.height)).toFloat()
+class SpinBG(bg:ResourceImage<Image>):AbstractBG(bg) {
+	val sc get() = ((1+sin(this.bg.rotation*Rg)/3)*1024f/minOf(this.bg.width, this.bg.height))
 	val cx get() = this.bg.width/2*sc
 	val cy get() = this.bg.height/2*sc
+	var a = 0f
+	override var speed:Float = 1f
+	override var tick:Int
+		get() = a.toInt()
+		set(value) {
+			a = value.toFloat()
+		}
+
 	override fun update() {
-		tick++
-		bg.rotation = tick*.04f
-		bg.setCenterOfRotation(cx, cy)
-		if(tick>9000) tick -= 9000
+		val fact = speed*.3f
+		if(!Vector.almostEqual(speed, 0f, Float.MIN_VALUE)) {
+			a += fact
+			bg.rotation = a
+			bg.setCenterOfRotation(cx, cy)
+			while(a>=360) a -= 360
+			while(a<0) a += 360
+		}
 	}
 
 	override fun reset() {
-		tick = 0
+		a = 0f
 		bg.rotation = 0f
 	}
 
 	override fun draw() {
 		bg.draw(320-bg.centerOfRotationX, 240-bg.centerOfRotationY, sc)
 	}
+
 }

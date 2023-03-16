@@ -29,9 +29,22 @@
 
 package mu.nu.nullpo.game.subsystem.mode.menu
 
+import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
 
 interface PresetItem {
-	fun presetSave(prop:CustomProperties, modeName:String)
-	fun presetLoad(prop:CustomProperties, modeName:String)
+
+	/** Save options to a preset
+	 * @param engine GameEngine
+	 * @param prop Property file to save to
+	 * @param setId Preset number
+	 */
+	fun presetSave(engine:GameEngine, prop:CustomProperties, modeName:String, setId:Int)
+
+	/** Save options to a preset
+	 * @param engine GameEngine
+	 * @param prop Property file to save to
+	 * @param setId Preset number
+	 */
+	fun presetLoad(engine:GameEngine, prop:CustomProperties, modeName:String, setId:Int)
 }

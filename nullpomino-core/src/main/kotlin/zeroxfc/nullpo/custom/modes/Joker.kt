@@ -1,44 +1,44 @@
 /*
- * Copyright (c) 2021-2022,
- * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
- *
- * Kotlin converted and modified by Venom=Nhelv
- *
- * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
- *
- * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
- * Original Repository: https://github.com/Shots243/ModePile
- *
- * When using this library in a mode / library pack of your own, the following
- * conditions must be satisfied:
- *     - This license must remain visible at the top of the document, unmodified.
- *     - You are allowed to use this library for any modding purpose.
- *         - If this is the case, the Library Creator must be credited somewhere.
- *             - Source comments only are fine, but in a README is recommended.
- *     - Modification of this library is allowed, but only in the condition that a
- *       pull request is made to merge the changes to the repository.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ Copyright (c) 2021-2023,
+ This library class was created by 0xFC963F18DC21 / Shots243
+ It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+
+ Kotlin converted and modified by Venom=Nhelv
+
+ Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+
+ THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+
+ Original Repository: https://github.com/Shots243/ModePile
+
+ When using this library in a mode / library pack of your own, the following
+ conditions must be satisfied:
+     - This license must remain visible at the top of the document, unmodified.
+     - You are allowed to use this library for any modding purpose.
+         - If this is the case, the Library Creator must be credited somewhere.
+             - Source comments only are fine, but in a README is recommended.
+     - Modification of this library is allowed, but only in the condition that a
+       pull request is made to merge the changes to the repository.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
  */
 
 package zeroxfc.nullpo.custom.modes
 
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.AbstractRenderer.FontBadge.Companion.b
@@ -101,7 +101,7 @@ class Joker:MarathonModeBase() {
 		super.playerInit(engine)
 		efficiency = 0f
 		efficiencyGrade = 0
-		lastscore = 0
+		lastScore = 0
 		lineClearAnimType = 0
 		shouldUseTimer = false
 		stock = 0
@@ -114,7 +114,7 @@ class Joker:MarathonModeBase() {
 		rankingRank = -1
 		rankingLevel.fill(0)
 		rankingLines.fill(0)
-		rankingTime.fill(0)
+		rankingTime.fill(-1)
 		engine.playerProp.reset()
 		showPlayerStats = false
 
@@ -249,8 +249,8 @@ class Joker:MarathonModeBase() {
 			// NET: Netplay Ranking
 			netOnRenderNetPlayRanking(engine, receiver)
 		} else {
-			drawMenu(engine, receiver, 0, EventReceiver.COLOR.RED, 0, "ST. STOCK" to startingStock)
-			drawMenu(engine, receiver, 2, EventReceiver.COLOR.BLUE, 1, "BIG" to big, "LINE ANIM." to lc)
+			drawMenu(engine, receiver, 0, COLOR.RED, 0, "ST. STOCK" to startingStock)
+			drawMenu(engine, receiver, 2, COLOR.BLUE, 1, "BIG" to big, "LINE ANIM." to lc)
 		}
 	}
 
@@ -304,7 +304,7 @@ class Joker:MarathonModeBase() {
 		setSpeed(engine)
 		owner.musMan.bgm = BGMStatus.BGM.Finale(1)
 
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		if(netIsWatch) {
 			owner.musMan.bgm = BGMStatus.BGM.Silent
 		}
@@ -320,92 +320,80 @@ class Joker:MarathonModeBase() {
      */
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.RED)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.RED)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&startingStock==0) {
-				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "LEVEL  LINE TIME", EventReceiver.COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "LEVEL  LINE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingLevelPlayer[i]}"
+						val isLong = s.length>6&&receiver.nextDisplayType!=2
 						receiver.drawScoreFont(
-							engine,
-							if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
-							if(s.length>6&&receiver.nextDisplayType!=2) (topY+i)*2 else topY+i,
-							s,
-							i==rankingRankPlayer,
-							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale
+							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, i==rankingRankPlayer,
+							if(isLong) .5f else 1f
 						)
-						receiver.drawScoreFont(
-							engine, 10, topY+i, "${rankingLinesPlayer[i]}", i==rankingRankPlayer, scale
-						)
-						receiver.drawScoreFont(engine, 15, topY+i, rankingTimePlayer[i].toTimeStr, i==rankingRankPlayer, scale)
+						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLinesPlayer[i]}", i==rankingRankPlayer)
+						receiver.drawScoreFont(engine, 15, topY+i, rankingTimePlayer[i].toTimeStr, i==rankingRankPlayer)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
 					receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, EventReceiver.COLOR.WHITE,
+						engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE,
 						2f
 					)
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN)
+					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingLevel[i]}"
+						val isLong = s.length>6&&receiver.nextDisplayType!=2
 						receiver.drawScoreFont(
-							engine,
-							if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
-							if(s.length>6&&receiver.nextDisplayType!=2) (topY+i)*2 else topY+i,
-							s,
-							i==rankingRank,
-							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale
+							engine, if(isLong) 6 else 3, if(isLong) (topY+i)*2 else topY+i, s, i==rankingRank,
+							if(isLong) .5f else 1f
 						)
-						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[i].toTimeStr, i==rankingRank, scale)
+						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[i]}", i==rankingRank)
+						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[i].toTimeStr, i==rankingRank)
 					}
-					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
 					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
 						engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)"
 					)
 					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
 						engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN",
-						EventReceiver.COLOR.GREEN
+						COLOR.GREEN
 					)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 3, "TIME", COLOR.BLUE)
 			val strScore = "${timeScore.toTimeStr}(+${(engine.statistics.time-timeScore).toTimeStr})"
 			receiver.drawScoreFont(engine, 0, 4, strScore)
-			receiver.drawScoreFont(engine, 0, 6, "LINE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 6, "LINE", COLOR.BLUE)
 			receiver.drawScoreFont(engine, 0, 7, "${engine.statistics.lines}")
-			receiver.drawScoreFont(engine, 0, 9, "LEVEL", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 9, "LEVEL", COLOR.BLUE)
 			receiver.drawScoreFont(engine, 0, 10, "${engine.statistics.level}")
 
-			receiver.drawScoreFont(engine, 0, 12, "STOCK", EventReceiver.COLOR.GREEN)
+			receiver.drawScoreFont(engine, 0, 12, "STOCK", COLOR.GREEN)
 			receiver.drawScoreFont(engine, 0, 13, "$stock"+b, (stock<=2))
-			receiver.drawScoreFont(engine, 0, 15, "EFFICIENCY", EventReceiver.COLOR.GREEN)
+			receiver.drawScoreFont(engine, 0, 15, "EFFICIENCY", COLOR.GREEN)
 			receiver.drawScoreNum(
-				engine,
-				0,
-				16,
-				String.format("%.2f", efficiency*100)+"%",
-				if(engine.statistics.level>=300) EventReceiver.COLOR.PINK else EventReceiver.COLOR.WHITE
+				engine, 0, 16, "%.2f%%".format(efficiency*100),
+				if(engine.statistics.level>=300) COLOR.PINK else COLOR.WHITE
 			)
 
 			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
-				receiver.drawScoreFont(engine, 0, 18, "PLAYER", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 18, "PLAYER", COLOR.BLUE)
 				receiver.drawScoreFont(
 					engine, 0, 19, if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
-					EventReceiver.COLOR.WHITE,
+					COLOR.WHITE,
 					2f
 				)
 			}
 			if(shouldUseTimer) {
-				receiver.drawMenuFont(engine, 0, 21, "TIME LIMIT", EventReceiver.COLOR.RED)
+				receiver.drawMenuFont(engine, 0, 21, "TIME LIMIT", COLOR.RED)
 				receiver.drawMenuFont(engine, 1, 22, mainTimer.toTimeStr, mainTimer<=600&&mainTimer/2%2==0)
 			}
 
@@ -516,7 +504,7 @@ class Joker:MarathonModeBase() {
 			// Add to score
 			if(pts>0) {
 				// scoreBeforeIncrease = engine.statistics.score;
-				lastscore = pts
+				lastScore = pts
 				timeScore += pts
 				lastLine = li
 			}
@@ -533,7 +521,7 @@ class Joker:MarathonModeBase() {
 					if(stock<=4) {
 						val destinationX:Int = receiver.scoreX(engine)
 						val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
-						val colors = arrayOf(EventReceiver.COLOR.RED, EventReceiver.COLOR.PURPLE)
+						val colors = arrayOf(COLOR.RED, COLOR.PURPLE)
 						warningText = FlyInOutText(
 							if(stock>=0) "WARNING: STOCK LOW!" else "STOCK DEPLETED!", destinationX, destinationY,
 							15, 60, 15, colors, 1.0f, engine.randSeed+engine.statistics.time, stock>=0
@@ -547,16 +535,16 @@ class Joker:MarathonModeBase() {
 				if(engine.statistics.level<=300) {
 					calculateEfficiencyGrade(engine)
 				}
-				// owner.backgroundStatus.fadesw = true;
-				// owner.backgroundStatus.fadecount = 0;
-				// owner.backgroundStatus.fadebg = engine.statistics.level / 5;
+				// owner.backgroundStatus.fadeSW = true;
+				// owner.backgroundStatus.fadeCount = 0;
+				// owner.backgroundStatus.nextBg = engine.statistics.level / 5;
 				if(engine.statistics.level==200) {
 					shouldUseTimer = false
 					engine.playSE("medal")
 					++engine.owner.bgMan.bg
 					val destinationX:Int = receiver.scoreX(engine)
 					val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
-					val colors = arrayOf(EventReceiver.COLOR.PINK, EventReceiver.COLOR.RED, EventReceiver.COLOR.PURPLE)
+					val colors = arrayOf(COLOR.PINK, COLOR.RED, COLOR.PURPLE)
 					warningText = FlyInOutText(
 						"WARNING: NON-QUADS", destinationX, destinationY, 9, 162, 9, colors, 1.0f,
 						engine.randSeed+engine.statistics.time, true
@@ -571,7 +559,7 @@ class Joker:MarathonModeBase() {
 					engine.playSE("endingstart")
 					val destinationX:Int = receiver.scoreX(engine)
 					val destinationY:Int = receiver.scoreY(engine)+18*if(engine.displaySize==0) 16 else 32
-					val colors = arrayOf(EventReceiver.COLOR.YELLOW, EventReceiver.COLOR.ORANGE, EventReceiver.COLOR.RED)
+					val colors = arrayOf(COLOR.YELLOW, COLOR.ORANGE, COLOR.RED)
 					warningText = FlyInOutText(
 						"OUTSTANDING!", destinationX, destinationY, 15, 120, 15, colors, 1.0f,
 						engine.randSeed+engine.statistics.time, true
@@ -588,29 +576,29 @@ class Joker:MarathonModeBase() {
      */
 	override fun renderResult(engine:GameEngine) {
 		drawResultStats(
-			engine, receiver, 0, EventReceiver.COLOR.BLUE, Statistic.LINES,
+			engine, receiver, 0, COLOR.BLUE, Statistic.LINES,
 			Statistic.LEVEL, Statistic.LPM
 		)
-		drawResultRank(engine, receiver, 15, EventReceiver.COLOR.BLUE, rankingRank)
-		receiver.drawMenuFont(engine, 0, 6, "TIME SCORE", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 7, String.format("%10s", timeScore.toTimeStr))
-		receiver.drawMenuFont(engine, 0, 8, "EFFICIENCY", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 9, String.format("%10s", String.format("%.2f", efficiency*100)+"%"))
+		drawResultRank(engine, receiver, 15, COLOR.BLUE, rankingRank)
+		receiver.drawMenuFont(engine, 0, 6, "TIME SCORE", COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 7, "%10s".format(timeScore.toTimeStr))
+		receiver.drawMenuFont(engine, 0, 8, "EFFICIENCY", COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 9, "%10s$$".format("%.2f".format(efficiency*100)))
 		if(engine.statistics.level>=300) {
-			receiver.drawMenuFont(engine, 0, 10, "GRADE", EventReceiver.COLOR.BLUE)
+			receiver.drawMenuFont(engine, 0, 10, "GRADE", COLOR.BLUE)
 			val dX:Int = 4+receiver.fieldX(engine)+3*16
 			val dY:Int = 52+receiver.fieldY(engine)+(11.5*16).toInt()
 			//customHolder.drawImage("grades", dX, dY, 64*efficiencyGrade, 0, 64, 48, 255, 255, 255, 255, 1.0f)
 		}
-		drawResultNetRank(engine, receiver, 10, EventReceiver.COLOR.BLUE, netRankingRank[0])
-		drawResultNetRankDaily(engine, receiver, 12, EventReceiver.COLOR.BLUE, netRankingRank[1])
+		drawResultNetRank(engine, receiver, 10, COLOR.BLUE, netRankingRank[0])
+		drawResultNetRankDaily(engine, receiver, 12, COLOR.BLUE, netRankingRank[1])
 		if(netIsPB) {
-			receiver.drawMenuFont(engine, 2, 21, "NEW PB", EventReceiver.COLOR.ORANGE)
+			receiver.drawMenuFont(engine, 2, 21, "NEW PB", COLOR.ORANGE)
 		}
 		if(netIsNetPlay&&netReplaySendStatus==1) {
-			receiver.drawMenuFont(engine, 0, 22, "SENDING...", EventReceiver.COLOR.PINK)
+			receiver.drawMenuFont(engine, 0, 22, "SENDING...", COLOR.PINK)
 		} else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2) {
-			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", EventReceiver.COLOR.RED)
+			receiver.drawMenuFont(engine, 1, 22, "A: RETRY", COLOR.RED)
 		}
 	}
 	/*
@@ -711,18 +699,19 @@ class Joker:MarathonModeBase() {
 	companion object {
 		// Speed Tables
 		private val ARE_TABLE = intArrayOf(
-			15, 15, 15, 15, 14, 14,
-			13, 12, 11, 10, 9,
-			8, 7, 6, 5, 15,
-			13, 10, 10, 9, 9,
-			8, 8, 7, 6, 5
+			15, 15, 15, 15, 14,
+			14, 13, 12, 11, 10,
+			9, 8, 7, 6, 5,
+			15, 13, 10, 10, 9,
+			9, 8, 8, 7, 6, 5
 		)
 		private val LOCK_TABLE = intArrayOf(
-			30, 29, 28, 27, 26, 25,
-			24, 23, 22, 21, 20,
-			19, 18, 17, 17, 30,
-			27, 25, 23, 21, 20,
-			19, 18, 17, 16, 15
+			30, 29, 28, 27, 26,
+			25, 24, 23, 22, 21,
+			20, 19, 18, 17, 17,
+			30, 27, 25, 23, 21,
+			20, 19, 18, 17, 16,
+			15
 		)
 		// Levels for speed changes
 		private val LEVEL_ARE_LOCK_CHANGE = intArrayOf(
@@ -747,6 +736,6 @@ class Joker:MarathonModeBase() {
 			0.90f,  // S
 			1.0f // PF
 		)
-		private val headerColor = EventReceiver.COLOR.RED
+		private val headerColor = COLOR.RED
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, NullNoname
+ * Copyright (c) 2021-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -29,18 +29,23 @@
 
 package mu.nu.nullpo.gui.common
 
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.slick.img.FontMedal
 
-abstract class BaseFontMedal {
-	private val h = 24
-	/** paddingLeft */
-	private val pl = 5
-	/** paddingTop */
-	private val pt = 4
-	/** marginedBottom */
-	private val mb = h-pt
+abstract class BaseFontMedal:BaseFont {
+	companion object {
+		const val w = 9
+		const val h = 24
+		/** paddingLeft */
+		const val pl = 5
+		/** paddingTop */
+		const val pt = 4
+		/** marginedBottom */
+		const val mb = h-pt
+	}
 
 	abstract val img:ResourceImage<*>
+	final override fun getImg(i:Int):ResourceImage<*> = img
 
 	protected fun processTxt(x:Float, y:Float, str:String, tier:Int, scale:Float,
 		draw:(x:Float, y:Float, dx:Float, dy:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) {
@@ -69,9 +74,9 @@ abstract class BaseFontMedal {
 	 * @param tier 文字色
 	 * @param scale 拡大率
 	 */
-	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
+	fun printFont(x:Float, y:Float, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
 		darkness:Float = 0f) =
-		processTxt(x.toFloat(), y.toFloat(), str, tier, scale)
+		processTxt(x, y, str, tier, scale)
 		{dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
 			FontMedal.img.draw(
 				dx, dy, w, h, sx, sy, sw, sh,
@@ -79,6 +84,8 @@ abstract class BaseFontMedal {
 			)
 		}
 
+	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f, darkness:Float = 0f) =
+		printFont(x.toFloat(), y.toFloat(), str, tier, scale, alpha, darkness)
 	/** 文字列を描画
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -88,4 +95,23 @@ abstract class BaseFontMedal {
 	 */
 	fun printFontGrid(x:Int, y:Int, str:String, tier:Int = 0, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
 		darkness:Float = 0f) = FontMedal.printFont(x*16, y*16, str, tier, scale, alpha, darkness)
+
+	private fun col(color:COLOR) = when(color) {
+		COLOR.RED -> 2
+		else -> 1
+	}
+
+	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
+		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) =
+		printFont(x, y, str, col(color), scale, alpha)
+	//x:Float, y:Float, str:String, tier:Int, scale:Float,
+	/** Draws the string
+	 * @param x X-coordinate
+	 * @param y Y-coordinate
+	 * @param str String
+	 * @param color Letter cint
+	 * @param scale Enlargement factor
+	 */
+	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
+		printFont(x, y, str, col(color), scale, alpha)
 }

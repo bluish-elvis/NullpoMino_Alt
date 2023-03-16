@@ -30,13 +30,14 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** Keyboard Reset menu */
-class StateConfigKeyboardReset:DummyMenuChooseState() {
+class StateConfigKeyboardReset:BaseMenuChooseState() {
 	/** Player number */
 	var player = 0
 	override val numChoice = 3
@@ -62,7 +63,7 @@ class StateConfigKeyboardReset:DummyMenuChooseState() {
 
 		FontNormal.printFontGrid(1, 3, "RESET SETTINGS TO...", COLOR.GREEN)
 
-		FontNormal.printFontGrid(1, 4+cursor, "\u0082", COLOR.RAINBOW)
+		FontNormal.printFontGrid(1, 4+cursor, BaseFont.CURSOR, COLOR.RAINBOW)
 
 		FontNormal.printFontGrid(2, 4, "BLOCKBOX STYLE (DEFAULT)", cursor==0)
 		FontNormal.printFontGrid(2, 5, "GUIDELINE STYLE", cursor==1)

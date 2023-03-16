@@ -29,6 +29,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import org.newdawn.slick.GameContainer
@@ -36,7 +37,7 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** キーボード設定画面のステート */
-class StateConfigKeyboardNavi:DummyMenuChooseState() {
+class StateConfigKeyboardNavi:BaseMenuChooseState() {
 	/** Player number */
 	var player = 0
 
@@ -71,7 +72,7 @@ class StateConfigKeyboardNavi:DummyMenuChooseState() {
 
 		FontNormal.printFontGrid(1, 1, "KEYBOARD NAVIGATION SETTING (${player+1}P)", COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 3+cursor, "\u0082", COLOR.RED)
+		FontNormal.printFontGrid(1, 3+cursor, BaseFont.CURSOR, COLOR.RED)
 
 		FontNormal.printFontGrid(2, 3, "COPY FROM GAME KEYS", cursor==0)
 		FontNormal.printFontGrid(2, 4, "CUSTOMIZE", cursor==1)

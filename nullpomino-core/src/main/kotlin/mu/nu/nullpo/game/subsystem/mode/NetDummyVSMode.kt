@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -314,8 +314,8 @@ abstract class NetDummyVSMode:NetDummyMode() {
 	/** NET-VS: Draw player's name */
 	override fun netDrawPlayerName(engine:GameEngine) {
 		val playerID = engine.playerID
-		val x = owner.receiver.fieldX(engine)
-		val y = owner.receiver.fieldY(engine)
+		val x = receiver.fieldX(engine)
+		val y = receiver.fieldY(engine)
 
 		if(netVSPlayerName[playerID].isNotEmpty()) {
 			var name = netVSPlayerName[playerID]
@@ -327,13 +327,13 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			when {
 				engine.displaySize==-1 -> {
 					if(name.length>7) name = name.take(7)+".."
-					owner.receiver.drawDirectTTF(x, y-16, name, fontcolor)
+					receiver.drawDirectTTF(x, y-16, name, fontcolor)
 				}
 				playerID==0 -> {
 					if(name.length>14) name = name.take(14)+".."
-					owner.receiver.drawDirectTTF(x, y-20, name, fontcolor)
+					receiver.drawDirectTTF(x, y-20, name, fontcolor)
 				}
-				else -> owner.receiver.drawDirectTTF(x, y-20, name, fontcolor)
+				else -> receiver.drawDirectTTF(x, y-20, name, fontcolor)
 			}
 		}
 	}
@@ -363,7 +363,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 				val randomizer = GeneralUtil.loadRandomizer(netLobby!!.ruleOptLock!!.strRandomizer)
 				val wallkick = GeneralUtil.loadWallkick(netLobby!!.ruleOptLock!!.strWallkick)
 				for(i in 0 until players) {
-					owner.engine[i].ruleOpt.replaace(netLobby!!.ruleOptLock)
+					owner.engine[i].ruleOpt.replace(netLobby!!.ruleOptLock)
 					owner.engine[i].randomizer = randomizer
 					owner.engine[i].wallkick = wallkick
 				}
@@ -371,7 +371,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 				log.warn("Tried to set locked rule, but rule was not received yet!")
 		} else if(!netVSIsWatch()) {
 			// Revert rules
-			owner.engine[0].ruleOpt.replaace(netLobby!!.ruleOptPlayer)
+			owner.engine[0].ruleOpt.replace(netLobby!!.ruleOptPlayer)
 			owner.engine[0].randomizer = GeneralUtil.loadRandomizer(owner.engine[0].ruleOpt.strRandomizer)
 			owner.engine[0].wallkick = GeneralUtil.loadWallkick(owner.engine[0].ruleOpt.strWallkick)
 		}
@@ -551,20 +551,20 @@ abstract class NetDummyVSMode:NetDummyMode() {
 	 */
 	private fun netVSDrawRoomInfoBox(x:Int, y:Int) {
 		if(netCurrentRoomInfo!=null) {
-			owner.receiver.drawDirectFont(x, y, "PLAYERS", COLOR.CYAN, .5f)
-			owner.receiver.drawDirectFont(x, y+8, "$netVSNumPlayers", COLOR.WHITE, .5f)
-			owner.receiver.drawDirectFont(x, y+16, "SPECTATORS", COLOR.CYAN, .5f)
-			owner.receiver.drawDirectFont(x, y+24, "$netNumSpectators", COLOR.WHITE, .5f)
+			receiver.drawDirectFont(x, y, "PLAYERS", COLOR.CYAN, .5f)
+			receiver.drawDirectFont(x, y+8, "$netVSNumPlayers", COLOR.WHITE, .5f)
+			receiver.drawDirectFont(x, y+16, "SPECTATORS", COLOR.CYAN, .5f)
+			receiver.drawDirectFont(x, y+24, "$netNumSpectators", COLOR.WHITE, .5f)
 
 			if(!netVSIsWatch()) {
-				owner.receiver.drawDirectFont(x, y+32, "MATCHES", COLOR.CYAN, .5f)
-				owner.receiver.drawDirectFont(x, y+40, "${netVSPlayerPlayCount[0]}", COLOR.WHITE, .5f)
-				owner.receiver.drawDirectFont(x, y+48, "WINS", COLOR.CYAN, .5f)
-				owner.receiver.drawDirectFont(x, y+56, "${netVSPlayerWinCount[0]}", COLOR.WHITE, .5f)
+				receiver.drawDirectFont(x, y+32, "MATCHES", COLOR.CYAN, .5f)
+				receiver.drawDirectFont(x, y+40, "${netVSPlayerPlayCount[0]}", COLOR.WHITE, .5f)
+				receiver.drawDirectFont(x, y+48, "WINS", COLOR.CYAN, .5f)
+				receiver.drawDirectFont(x, y+56, "${netVSPlayerWinCount[0]}", COLOR.WHITE, .5f)
 			}
 		}
-		owner.receiver.drawDirectFont(x, y+72, "ALL ROOMS", COLOR.GREEN, .5f)
-		owner.receiver.drawDirectFont(x, y+80, "${netLobby!!.netPlayerClient!!.roomInfoList.size}", COLOR.WHITE, .5f)
+		receiver.drawDirectFont(x, y+72, "ALL ROOMS", COLOR.GREEN, .5f)
+		receiver.drawDirectFont(x, y+80, "${netLobby!!.netPlayerClient!!.roomInfoList.size}", COLOR.WHITE, .5f)
 	}
 
 	/** NET-VS: Settings screen */
@@ -621,38 +621,38 @@ abstract class NetDummyVSMode:NetDummyMode() {
 	override fun renderSetting(engine:GameEngine) {
 		if(!engine.isVisible) return
 
-		val x = owner.receiver.fieldX(engine)
-		val y = owner.receiver.fieldY(engine)
+		val x = receiver.fieldX(engine)
+		val y = receiver.fieldY(engine)
 
 		val pid = engine.playerID
 		if(netCurrentRoomInfo!=null) {
 			if(netVSPlayerReady[pid]&&netVSPlayerExist[pid])
 				if(engine.displaySize!=-1)
-					owner.receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
+					receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
 				else
-					owner.receiver.drawDirectFont(x+36, y+80, "OK", COLOR.YELLOW, .5f)
+					receiver.drawDirectFont(x+36, y+80, "OK", COLOR.YELLOW, .5f)
 
 			if(pid==0&&!netVSIsWatch()&&!netVSIsReadyChangePending&&netVSNumPlayers>=2
 				&&!netVSIsNewcomer)
 				if(!netVSPlayerReady[pid]) {
-					var strTemp = "A(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
+					var strTemp = "A(${receiver.getKeyNameByButtonID(engine, Controller.BUTTON_A)} KEY):"
 					if(strTemp.length>10) strTemp = strTemp.take(10)
-					owner.receiver.drawMenuFont(engine, 0, 16, strTemp, COLOR.CYAN)
-					owner.receiver.drawMenuFont(engine, 1, 17, "READY", COLOR.CYAN)
+					receiver.drawMenuFont(engine, 0, 16, strTemp, COLOR.CYAN)
+					receiver.drawMenuFont(engine, 1, 17, "READY", COLOR.CYAN)
 				} else {
-					var strTemp = "B(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_B)} KEY):"
+					var strTemp = "B(${receiver.getKeyNameByButtonID(engine, Controller.BUTTON_B)} KEY):"
 					if(strTemp.length>10) strTemp = strTemp.take(10)
-					owner.receiver.drawMenuFont(engine, 0, 16, strTemp, COLOR.BLUE)
-					owner.receiver.drawMenuFont(engine, 1, 17, "CANCEL", COLOR.BLUE)
+					receiver.drawMenuFont(engine, 0, 16, strTemp, COLOR.BLUE)
+					receiver.drawMenuFont(engine, 1, 17, "CANCEL", COLOR.BLUE)
 				}
 		}
 
 		if(pid==0&&!netVSIsWatch()&&menuTime>=5) {
-			var strTemp = "F(${owner.receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
+			var strTemp = "F(${receiver.getKeyNameByButtonID(engine, Controller.BUTTON_F)} KEY):"
 			if(strTemp.length>10) strTemp = strTemp.take(10)
 			strTemp = strTemp.uppercase()
-			owner.receiver.drawMenuFont(engine, 0, 18, strTemp, COLOR.PURPLE)
-			owner.receiver.drawMenuFont(engine, 1, 19, "PRACTICE", COLOR.PURPLE)
+			receiver.drawMenuFont(engine, 0, 18, strTemp, COLOR.PURPLE)
+			receiver.drawMenuFont(engine, 1, 19, "PRACTICE", COLOR.PURPLE)
 		}
 	}
 
@@ -686,8 +686,8 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			if(netVSIsPractice)
 				owner.musMan.bgm = BGM.Silent
 			else {
-				owner.musMan.bgm = BGM.Extra(0)
-				owner.musMan.fadesw = false
+				owner.musMan.bgm = BGM.Extra(4)
+				owner.musMan.fadeSW = false
 			}
 
 			// Init Variables
@@ -764,24 +764,24 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 		// Room info box
 		if(pid==players-1) {
-			var x2 = if(owner.receiver.nextDisplayType==2) 544 else 503
-			if(owner.receiver.nextDisplayType==2&&netCurrentRoomInfo!!.maxPlayers==2) x2 = 321
-			if(owner.receiver.nextDisplayType!=2&&netCurrentRoomInfo!!.maxPlayers==2) x2 = 351
+			var x2 = if(receiver.nextDisplayType==2) 544 else 503
+			if(receiver.nextDisplayType==2&&netCurrentRoomInfo!!.maxPlayers==2) x2 = 321
+			if(receiver.nextDisplayType!=2&&netCurrentRoomInfo!!.maxPlayers==2) x2 = 351
 
 			netVSDrawRoomInfoBox(x2, 286)
 		}
 
 		// Elapsed time
 		if(pid==0) {
-			owner.receiver.drawDirectFont(256, 16, netVSPlayTimer.toTimeStr)
+			receiver.drawDirectFont(256, 16, netVSPlayTimer.toTimeStr)
 
 			if(netVSIsPractice)
-				owner.receiver.drawDirectFont(256, 32, engine.statistics.time.toTimeStr, COLOR.PURPLE)
+				receiver.drawDirectFont(256, 32, engine.statistics.time.toTimeStr, COLOR.PURPLE)
 		}
 
 		// Automatic start timer
 		if(pid==0&&netCurrentRoomInfo!=null&&netVSAutoStartTimerActive&&!netVSIsGameActive)
-			owner.receiver.drawDirectFont(
+			receiver.drawDirectFont(
 				496, 16, netVSAutoStartTimer.toTimeStr,
 				if(netCurrentRoomInfo!!.autoStartTNET2) COLOR.RED else COLOR.YELLOW
 			)
@@ -838,8 +838,8 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		if(pid==0&&netVSIsPractice) return
 		if(!engine.isVisible) return
 
-		val x = owner.receiver.fieldX(engine)
-		val y = owner.receiver.fieldY(engine)
+		val x = receiver.fieldX(engine)
+		val y = receiver.fieldY(engine)
 		val place = netVSPlayerPlace[pid]
 
 		if(engine.displaySize!=-1) {
@@ -847,22 +847,22 @@ abstract class NetDummyVSMode:NetDummyMode() {
 				owner.receiver.drawDirectFont(x+68, y+204, "OK", COLOR.YELLOW)
 			else if(netVSNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
 				owner.receiver.drawDirectFont(x+20, y+204, "YOU LOSE", COLOR.WHITE)
-			else if(place==1) owner.receiver.drawDirectFont(x+28, y+80, "YOU WIN", COLOR.WHITE, .5f)
-			else if(place==2) owner.receiver.drawDirectFont(x+12, y+204, "2ND PLACE", COLOR.WHITE)
-			else if(place==3) owner.receiver.drawDirectFont(x+12, y+204, "3RD PLACE", COLOR.RED)
-			else if(place==4) owner.receiver.drawDirectFont(x+12, y+204, "4TH PLACE", COLOR.GREEN)
-			else if(place==5) owner.receiver.drawDirectFont(x+12, y+204, "5TH PLACE", COLOR.BLUE)
-			else if(place==6) owner.receiver.drawDirectFont(x+12, y+204, "6TH PLACE", COLOR.PURPLE)
+			else if(place==1) receiver.drawDirectFont(x+28, y+80, "YOU WIN", COLOR.WHITE, .5f)
+			else if(place==2) receiver.drawDirectFont(x+12, y+204, "2ND PLACE", COLOR.WHITE)
+			else if(place==3) receiver.drawDirectFont(x+12, y+204, "3RD PLACE", COLOR.RED)
+			else if(place==4) receiver.drawDirectFont(x+12, y+204, "4TH PLACE", COLOR.GREEN)
+			else if(place==5) receiver.drawDirectFont(x+12, y+204, "5TH PLACE", COLOR.BLUE)
+			else if(place==6) receiver.drawDirectFont(x+12, y+204, "6TH PLACE", COLOR.PURPLE)
 		} else if(netVSPlayerReady[pid]&&!netVSIsGameActive)
 			owner.receiver.drawDirectFont(x+36, y+80, "OK", COLOR.YELLOW, .5f)
 		else if(netVSNumNowPlayers==2||netCurrentRoomInfo!!.maxPlayers==2)
 			owner.receiver.drawDirectFont(x+20, y+80, "YOU LOSE", COLOR.WHITE, .5f)
-		else if(place==1) owner.receiver.drawDirectFont(x+28, y+80, "YOU WIN", COLOR.WHITE, .5f)
-		else if(place==2) owner.receiver.drawDirectFont(x+8, y+80, "2ND PLACE", COLOR.WHITE, .5f)
-		else if(place==3) owner.receiver.drawDirectFont(x+8, y+80, "3RD PLACE", COLOR.RED, .5f)
-		else if(place==4) owner.receiver.drawDirectFont(x+8, y+80, "4TH PLACE", COLOR.GREEN, .5f)
-		else if(place==5) owner.receiver.drawDirectFont(x+8, y+80, "5TH PLACE", COLOR.BLUE, .5f)
-		else if(place==6) owner.receiver.drawDirectFont(x+8, y+80, "6TH PLACE", COLOR.PURPLE, .5f)
+		else if(place==1) receiver.drawDirectFont(x+28, y+80, "YOU WIN", COLOR.WHITE, .5f)
+		else if(place==2) receiver.drawDirectFont(x+8, y+80, "2ND PLACE", COLOR.WHITE, .5f)
+		else if(place==3) receiver.drawDirectFont(x+8, y+80, "3RD PLACE", COLOR.RED, .5f)
+		else if(place==4) receiver.drawDirectFont(x+8, y+80, "4TH PLACE", COLOR.GREEN, .5f)
+		else if(place==5) receiver.drawDirectFont(x+8, y+80, "5TH PLACE", COLOR.BLUE, .5f)
+		else if(place==6) receiver.drawDirectFont(x+8, y+80, "6TH PLACE", COLOR.PURPLE, .5f)
 	}
 
 	/** NET-VS: Excellent screen */
@@ -979,8 +979,8 @@ abstract class NetDummyVSMode:NetDummyMode() {
 				owner.receiver.drawMenuFont(engine, 1, 21, "RETRY", COLOR.PURPLE)
 		} else if(netVSPlayerReady[pid]&&netVSPlayerExist[pid]) {
 			// Player Ready
-			val x = owner.receiver.fieldX(engine)
-			val y = owner.receiver.fieldY(engine)
+			val x = receiver.fieldX(engine)
+			val y = receiver.fieldY(engine)
 
 			if(engine.displaySize!=-1)
 				owner.receiver.drawDirectFont(x+68, y+356, "OK", COLOR.YELLOW)
@@ -1014,8 +1014,8 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 					if(playerID==0&&!netVSIsWatch())
 						netVSIsReadyChangePending = false
-					else if(pInfo.ready) owner.receiver.playSE("decide")
-					else if(!pInfo.playing) owner.receiver.playSE("change")
+					else if(pInfo.ready) receiver.playSE("decide")
+					else if(!pInfo.playing) receiver.playSE("change")
 				}
 			}
 
@@ -1053,7 +1053,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		// Someone entered here
 		if(message[0]=="playerenter") {
 			val seatID = message[3].toInt()
-			if(seatID!=-1&&netVSNumPlayers<2) owner.receiver.playSE("levelstop")
+			if(seatID!=-1&&netVSNumPlayers<2) receiver.playSE("levelstop")
 		}
 		// Someone leave here
 		if(message[0]=="playerleave") {
@@ -1217,7 +1217,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 				}
 			}
 
-			if(netVSIsWatch()||netVSPlayerPlace[0]>=3) owner.receiver.playSE("matchend")
+			if(netVSIsWatch()||netVSPlayerPlace[0]>=3) receiver.playSE("matchend")
 
 			netUpdatePlayerExist()
 		}

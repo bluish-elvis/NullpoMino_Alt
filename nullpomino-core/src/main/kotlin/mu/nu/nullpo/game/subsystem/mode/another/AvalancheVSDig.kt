@@ -156,11 +156,11 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 					}
 					14 -> {
 						if(m>10)
-							hurryupSeconds[pid] += change*m/10
+							hurryUpSeconds[pid] += change*m/10
 						else
-							hurryupSeconds[pid] += change
-						if(hurryupSeconds[pid]<0) hurryupSeconds[pid] = 300
-						if(hurryupSeconds[pid]>300) hurryupSeconds[pid] = 0
+							hurryUpSeconds[pid] += change
+						if(hurryUpSeconds[pid]<0) hurryUpSeconds[pid] = 300
+						if(hurryUpSeconds[pid]>300) hurryUpSeconds[pid] = 0
 					}
 					15 -> {
 						ojamaHard[pid] += change
@@ -191,7 +191,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 						if(chainDisplayType[pid]>3) chainDisplayType[pid] = 0
 					}
 					23 -> cascadeSlow[pid] = !cascadeSlow[pid]
-					24 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					24 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					25 -> enableSE[pid] = !enableSE[pid]
 					26 -> bigDisplay = !bigDisplay
 					27, 28 -> presetNumber[pid] = rangeCursor(presetNumber[pid]+change, 0, 99)
@@ -258,7 +258,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 						"COLORS" to numColors[pid],
 						"MIN CHAIN" to rensaShibari[pid],
 						"OJAMA RATE" to ojamaRate[pid],
-						"HURRYUP" to if(hurryupSeconds[pid]==0) "NONE" else "${hurryupSeconds[pid]}SEC",
+						"HURRYUP" to if(hurryUpSeconds[pid]==0) "NONE" else "${hurryUpSeconds[pid]}SEC",
 						"HARD OJAMA" to ojamaHard[pid],
 						"X COLUMN" to if(dangerColumnDouble[pid]) "3 AND 4" else "3 ONLY",
 						"X SHOW" to dangerColumnShowX[pid]
@@ -281,7 +281,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 						"FALL ANIM" to if(cascadeSlow[pid]) "FEVER" else "CLASSIC"
 					)
 
-					drawMenuCompact(engine, receiver, COLOR.PINK, "BGM" to BGM.values[bgmno])
+					drawMenuCompact(engine, receiver, COLOR.PINK, "BGM" to BGM.values[bgmId])
 					drawMenuCompact(engine, receiver, COLOR.YELLOW, "SE" to enableSE[pid])
 					drawMenu(engine, receiver, COLOR.PINK, "BIG DISP" to bigDisplay)
 					drawMenuCompact(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
@@ -379,11 +379,11 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 			strScoreMultiplier = "(${lastscores[pid]}e${lastmultiplier[pid]})"
 
 		if(engine.displaySize==1) {
-			receiver.drawDirectFont(fldPosX+4, fldPosY+440, String.format("%12d", score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX+4, fldPosY+456, String.format("%12s", strScoreMultiplier), playerColor)
+			receiver.drawDirectFont(fldPosX+4, fldPosY+440, "%12d".format(score[pid]), playerColor)
+			receiver.drawDirectFont(fldPosX+4, fldPosY+456, "%12s".format(strScoreMultiplier), playerColor)
 		} else if(engine.gameStarted) {
-			receiver.drawDirectFont(fldPosX-28, fldPosY+248, String.format("%8d", score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX-28, fldPosY+264, String.format("%8s", strScoreMultiplier), playerColor)
+			receiver.drawDirectFont(fldPosX-28, fldPosY+248, "%8d".format(score[pid]), playerColor)
+			receiver.drawDirectFont(fldPosX-28, fldPosY+264, "%8s".format(strScoreMultiplier), playerColor)
 		}
 
 		if(!owner.engine[pid].gameActive) return
