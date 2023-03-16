@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -34,17 +34,29 @@ package mu.nu.nullpo.game.component
 	var bg = 0
 //TODO bg:BG_RenderClass
 
+	var fadeEnabled = true
 	/** Background fade flag */
-	var fadesw = false
+	var fadeSW = false; private set
 
 	/** Background fade state (false for fade-out, true for fade-in) */
-	var fadestat = false
+	var fadeStat = false; private set
 
 	/** Background fade usage counter */
-	var fadecount = 0
+	var fadeCount = 0; private set
 
 	/** Background after fade */
-	var fadebg = 0
+	var nextBg = 0
+		set(value) {
+			field = value
+			if(!fadeEnabled) bg = value
+			else
+				if(value!=bg) {
+					fadeSW = true
+					fadeStat = false
+					fadeCount = 0
+				}
+
+		}
 
 	/** Default constructor */
 	constructor() {
@@ -59,35 +71,37 @@ package mu.nu.nullpo.game.component
 	/** Reset to defaults */
 	fun reset() {
 		bg = 0
-		fadesw = false
-		fadestat = false
-		fadecount = 0
-		fadebg = 0
+		fadeSW = false
+		fadeStat = false
+		fadeCount = 0
+		nextBg = 0
 	}
 
 	/** copy settings from [b] */
 	fun replace(b:BackgroundStatus) {
 		bg = b.bg
-		fadesw = b.fadesw
-		fadestat = b.fadestat
-		fadecount = b.fadecount
-		fadebg = b.fadebg
+		fadeSW = b.fadeSW
+		fadeStat = b.fadeStat
+		fadeCount = b.fadeCount
+		nextBg = b.nextBg
 	}
 
 	/** Update background fade state */
 	fun fadeUpdate() {
-		if(fadesw)
-			if(fadecount<100)
-				fadecount += 10
-			else if(!fadestat) {
-				bg = fadebg
-				fadestat = true
-				fadecount = 0
-			} else {
-				fadesw = false
-				fadestat = false
-				fadecount = 0
-			}
+		if(fadeSW)
+			if(fadeCount<100) fadeCount += 2
+			else if(!fadeStat) {
+				bg = nextBg
+				fadeStat = true
+				fadeCount = 0
+			} else fadeFinish()
+	}
+
+	fun fadeFinish() {
+		bg = nextBg
+		fadeSW = false
+		fadeStat = false
+		fadeCount = 0
 	}
 
 	companion object {

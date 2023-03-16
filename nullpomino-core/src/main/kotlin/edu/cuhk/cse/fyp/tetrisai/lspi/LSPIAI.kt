@@ -50,7 +50,7 @@ open class LSPIAI:DummyAI(), Runnable {
 	/** Plan to putDirection  */
 	var bestOppRt = 0
 	/** Hold Force  */
-	var OppforceHold = false
+	var oppforceHold = false
 	/** The best moveEvaluation score  */
 	var bestPtsD = 0.0
 		set(value) {
@@ -557,7 +557,7 @@ open class LSPIAI:DummyAI(), Runnable {
 		bestOppYSub = 0
 		bestOppRtSub = -1
 		bestOppPts = 0.0
-		OppforceHold = false
+		oppforceHold = false
 		height = engine.fieldHeight
 		hiddenHeight = engine.fieldHiddenHeight
 		width = engine.fieldWidth

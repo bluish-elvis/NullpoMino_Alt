@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2022,
+ * Copyright (c) 2021-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -304,7 +304,7 @@ class Joker:MarathonModeBase() {
 		setSpeed(engine)
 		owner.musMan.bgm = BGMStatus.BGM.Finale(1)
 
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		if(netIsWatch) {
 			owner.musMan.bgm = BGMStatus.BGM.Silent
 		}
@@ -547,9 +547,9 @@ class Joker:MarathonModeBase() {
 				if(engine.statistics.level<=300) {
 					calculateEfficiencyGrade(engine)
 				}
-				// owner.backgroundStatus.fadesw = true;
-				// owner.backgroundStatus.fadecount = 0;
-				// owner.backgroundStatus.fadebg = engine.statistics.level / 5;
+				// owner.backgroundStatus.fadeSW = true;
+				// owner.backgroundStatus.fadeCount = 0;
+				// owner.backgroundStatus.nextBg = engine.statistics.level / 5;
 				if(engine.statistics.level==200) {
 					shouldUseTimer = false
 					engine.playSE("medal")
@@ -711,18 +711,19 @@ class Joker:MarathonModeBase() {
 	companion object {
 		// Speed Tables
 		private val ARE_TABLE = intArrayOf(
-			15, 15, 15, 15, 14, 14,
-			13, 12, 11, 10, 9,
-			8, 7, 6, 5, 15,
-			13, 10, 10, 9, 9,
-			8, 8, 7, 6, 5
+			15, 15, 15, 15, 14,
+			14, 13, 12, 11, 10,
+			9, 8, 7, 6, 5,
+			15, 13, 10, 10, 9,
+			9, 8, 8, 7, 6, 5
 		)
 		private val LOCK_TABLE = intArrayOf(
-			30, 29, 28, 27, 26, 25,
-			24, 23, 22, 21, 20,
-			19, 18, 17, 17, 30,
-			27, 25, 23, 21, 20,
-			19, 18, 17, 16, 15
+			30, 29, 28, 27, 26,
+			25, 24, 23, 22, 21,
+			20, 19, 18, 17, 17,
+			30, 27, 25, 23, 21,
+			20, 19, 18, 17, 16,
+			15
 		)
 		// Levels for speed changes
 		private val LEVEL_ARE_LOCK_CHANGE = intArrayOf(

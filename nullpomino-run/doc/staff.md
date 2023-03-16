@@ -71,4 +71,4 @@
   - Puyo Nexus http://www.puyonexus.net/
 
 - Google Code Project Page: http://code.google.com/p/nullpomino/
-- Github Project Page: https://github.com/nullpomino/nullpomino
+- GitHub Project Page: https://github.com/nullpomino/nullpomino

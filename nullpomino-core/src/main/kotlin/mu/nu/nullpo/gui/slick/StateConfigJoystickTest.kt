@@ -130,7 +130,7 @@ class StateConfigJoystickTest:BasicGameState() {
 						ResourceHolder.soundManager.play("change")
 						lastPressButton = i
 					}
-				} catch(e:Throwable) {
+				} catch(_:Throwable) {
 				}
 
 		// JInput

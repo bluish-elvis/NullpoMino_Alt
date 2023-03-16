@@ -25,7 +25,7 @@ class TFrame:JFrame, KeyListener {
 		title = "Tetris BKW"
 		contentPane = label.draw
 		pack()
-		label.BORDER = .05
+		label.border = .05
 		label.setXscale(0.0, State.COLS.toDouble())
 		label.setYscale(0.0, (State.ROWS+5).toDouble())
 		addKeyListener(this) //may be unnecessary (not certain)
@@ -40,7 +40,7 @@ class TFrame:JFrame, KeyListener {
 		setTitle(title)
 		contentPane = label.draw
 		pack()
-		label.BORDER = .05
+		label.border = .05
 		label.setXscale(0.0, State.COLS.toDouble())
 		label.setYscale(0.0, (State.ROWS+5).toDouble())
 		addKeyListener(this) //may be unnecessary (not certain)

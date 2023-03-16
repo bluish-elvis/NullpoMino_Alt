@@ -88,8 +88,8 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		sprintTarget = 0
 
 		rankingRank = -1
-		rankingScore.forEach {it.forEach {it.forEach {it.fill(0)}}}
-		rankingTime.forEach {it.forEach {it.forEach {it.fill(0)}}}
+		rankingScore.forEach {it.forEach {t -> t.forEach {p -> p.fill(0)}}}
+		rankingTime.forEach {it.forEach {t -> t.forEach {p -> p.fill(0)}}}
 
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION

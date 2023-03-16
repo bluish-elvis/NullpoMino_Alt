@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/config" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/doc" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/lib" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nullpomino-core/src/main/kotlin" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nullpomino-core/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nullpomino-run/config" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nullpomino-run/doc" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nullpomino-run/lib" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nullpomino-run/res" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nullpomino-run/scripts" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/nullpomino-run/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/res" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/scripts" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/kotlin" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

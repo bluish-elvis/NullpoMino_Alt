@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2022,
+ * Copyright (c) 2021-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -988,7 +988,7 @@ class Collapse:AbstractMode() {
 		 * you got people saying "your workflow is shit, your computer's OS is shit and you should be ashamed, you got people saying the sites you use are shit and you should feel bad" like
 		 * what the hell do I do
 		 * I just want to use my computer and develop shit for mostly fun
-		 * nothing I do in my own time when i'm not interacting with you is hurting you
+		 * nothing I do in my own time when I'm not interacting with you is hurting you
 		 * ...fucking elitists...
 		 * why the absolute FUCK do you care so much about what I do?
 		 * where I source information about a game which has no official source (a game's speed difficulty ffs) does not hurt you in any way.

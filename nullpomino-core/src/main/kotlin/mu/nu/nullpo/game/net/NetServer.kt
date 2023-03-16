@@ -125,50 +125,19 @@ class NetServer {
 	 */
 	private fun init(port:Int) {
 		this.port = port
-
+		fun loadProp(name:String) = CustomProperties().apply {loadXML(name, true)}
 		// Load player data file
-		propPlayerData = CustomProperties()
-		try {
-			val `in` = GZIPInputStream(FileInputStream("config/setting/netserver_playerdata"))
-			propPlayerData.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-		}
+		propPlayerData = loadProp("config/setting/netserver_playerdata")
 
 		// Load multiplayer leaderboard file
-		propMPRanking = CustomProperties()
-		try {
-			val `in` = GZIPInputStream(FileInputStream("config/setting/netserver_mpranking"))
-			propMPRanking.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-		}
+		propMPRanking = loadProp("config/setting/netserver_mpranking")
 
 		// Load single player leaderboard file
-		propSPRankingAlltime = CustomProperties()
-		try {
-			val `in` = GZIPInputStream(FileInputStream("config/setting/netserver_spranking"))
-			propSPRankingAlltime.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-		}
-
-		propSPRankingDaily = CustomProperties()
-		try {
-			val `in` = GZIPInputStream(FileInputStream("config/setting/netserver_spranking_daily"))
-			propSPRankingDaily.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-		}
+		propSPRankingAlltime = loadProp("config/setting/netserver_spranking")
+		propSPRankingDaily = loadProp("config/setting/netserver_spranking_daily")
 
 		// Load single player personal best
-		propSPPersonalBest = CustomProperties()
-		try {
-			val `in` = GZIPInputStream(FileInputStream("config/setting/netserver_sppersonalbest"))
-			propSPPersonalBest.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-		}
+		propSPPersonalBest = loadProp("config/setting/netserver_sppersonalbest")
 
 		// Load settings
 		allowDNSAccess = propServer.getProperty("netserver.allowDNSAccess", true)
@@ -3280,7 +3249,7 @@ class NetServer {
 		private fun getHostAddress(client:SocketChannel):String {
 			try {
 				return client.socket().inetAddress.hostAddress
-			} catch(e:Exception) {
+			} catch(_:Exception) {
 			}
 
 			return ""
@@ -3294,7 +3263,7 @@ class NetServer {
 			if(!allowDNSAccess) return getHostAddress(client)
 			try {
 				return client.socket().inetAddress.hostName
-			} catch(e:Exception) {
+			} catch(_:Exception) {
 			}
 
 			return ""
@@ -3308,7 +3277,7 @@ class NetServer {
 			if(!allowDNSAccess) return getHostAddress(client)
 			try {
 				return getHostName(client)+" (${getHostAddress(client)})"
-			} catch(e:Exception) {
+			} catch(_:Exception) {
 			}
 
 			return ""
@@ -3343,7 +3312,7 @@ class NetServer {
 			// If command-line option is used, change port number to the new one
 				try {
 					port = args[0].toInt()
-				} catch(e:NumberFormatException) {
+				} catch(_:NumberFormatException) {
 				}
 
 			// Run

@@ -1080,7 +1080,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				testY++
 			}
 		}
-		//Fetch depths and find valleys that require an I, J, or L.
+		//Fetch depths and find valleys that require an [I], [J], or [L].
 		val depthsBefore = getColumnDepths(fld)
 		var deepestY = -1
 		//int deepestX = -1;

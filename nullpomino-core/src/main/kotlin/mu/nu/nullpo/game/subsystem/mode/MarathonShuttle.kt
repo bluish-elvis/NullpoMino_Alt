@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -60,7 +60,7 @@ class MarathonShuttle:NetDummyMode() {
 	private var totalTimer = 0
 
 	/** Ending time */
-	private var rolltime = 0
+	private var rollTime = 0
 
 	/** Most recent increase in goal-points */
 	private var lastgoal = 0
@@ -126,7 +126,7 @@ class MarathonShuttle:NetDummyMode() {
 		levelTimer = lastlineTime
 		levelTimeOut = false
 		totalTimer = 0
-		rolltime = 0
+		rollTime = 0
 		lastgoal = 0
 		lastscore = 0
 		lasttimebonus = 0
@@ -149,11 +149,11 @@ class MarathonShuttle:NetDummyMode() {
 		} else {
 			loadSetting(owner.replayProp, engine)
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
+			netPlayerName = owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 
-		engine.owner.bgMan.bg = startLevel
-		if(engine.owner.bgMan.bg>19) engine.owner.bgMan.bg = 19
+		owner.bgMan.bg = startLevel
+		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
 		engine.frameColor = GameEngine.FRAME_COLOR_WHITE
 	}
 
@@ -177,13 +177,13 @@ class MarathonShuttle:NetDummyMode() {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode)
 			netOnUpdateNetPlayRanking(engine, goalType)
-		else if(!engine.owner.replayMode) {
+		else if(!owner.replayMode) {
 			// Configuration changes
 			val change = updateMenu(engine)
 
 			if(change!=0) {
 				engine.playSE("change")
-				engine.owner.bgMan.bg = minOf(19, startLevel)
+				owner.bgMan.bg = minOf(19, startLevel)
 				engine.statistics.level = startLevel
 				engine.statistics.levelDispAdd = 1
 				setSpeed(engine)
@@ -360,8 +360,8 @@ class MarathonShuttle:NetDummyMode() {
 			receiver.drawScoreNum(engine, 0, 11, totaltime.toTimeStr, fontcolorTotalTime, 2f)
 
 			// Ending time
-			if(engine.gameActive&&(engine.ending==2||rolltime>0)) {
-				var remainRollTime = TIMELIMIT_ROLL-rolltime
+			if(engine.gameActive&&(engine.ending==2||rollTime>0)) {
+				var remainRollTime = TIMELIMIT_ROLL-rollTime
 				if(remainRollTime<0) remainRollTime = 0
 
 				receiver.drawScoreFont(engine, 0, 13, "ROLL TIME", COLOR.BLUE)
@@ -458,15 +458,15 @@ class MarathonShuttle:NetDummyMode() {
 
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
-			rolltime++
+			rollTime++
 
 			// Time meter
-			val remainRollTime = TIMELIMIT_ROLL-rolltime
+			val remainRollTime = TIMELIMIT_ROLL-rollTime
 			engine.meterValue = remainRollTime*1f/TIMELIMIT_ROLL
 			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
 			// Finished
-			if(rolltime>=TIMELIMIT_ROLL&&!netIsWatch) {
+			if(rollTime>=TIMELIMIT_ROLL&&!netIsWatch) {
 				lastscore = totalTimer*2
 				engine.statistics.scoreBonus += lastscore
 				engine.lastEvent = null
@@ -503,11 +503,11 @@ class MarathonShuttle:NetDummyMode() {
 			// BGM fade-out effects and BGM changes
 			if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level==tableBGMChange[bgmLv]-1)
 				if(goal in 1..10)
-					owner.musMan.fadesw = true
+					owner.musMan.fadeSW = true
 				else if(goal<=0) {
 					bgmLv++
 					owner.musMan.bgm = tableBGM[bgmLv]
-					owner.musMan.fadesw = false
+					owner.musMan.fadeSW = false
 				}
 
 			if(goal<=0)
@@ -520,7 +520,7 @@ class MarathonShuttle:NetDummyMode() {
 					engine.ending = 2
 					engine.timerActive = false
 					owner.musMan.bgm = BGM.Ending(0)
-					owner.musMan.fadesw = false
+					owner.musMan.fadeSW = false
 					engine.playSE("endingstart")
 				} else {
 					// Level up
@@ -529,11 +529,8 @@ class MarathonShuttle:NetDummyMode() {
 
 					goalmax = (engine.statistics.level+1)*5
 					goal += goalmax
-					if(owner.bgMan.bg<19) {
-						owner.bgMan.fadesw = true
-						owner.bgMan.fadecount = 0
-						owner.bgMan.fadebg = engine.statistics.level
-					}
+					if(owner.bgMan.bg<19) owner.bgMan.nextBg = engine.statistics.level
+
 
 					levelTimer = 0
 					if(version>=1) engine.holdUsedCount = 0
@@ -559,7 +556,7 @@ class MarathonShuttle:NetDummyMode() {
 
 	override fun onResult(engine:GameEngine):Boolean {
 		val b = if(engine.statistics.time<10800) BGM.Result(1) else BGM.Result(2)
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		owner.musMan.bgm = b
 
 		return super.onResult(engine)
@@ -624,12 +621,12 @@ class MarathonShuttle:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(owner.bgMan.fadesw) owner.bgMan.fadebg else owner.bgMan.bg
+		val bg = if(owner.bgMan.fadeSW) owner.bgMan.nextBg else owner.bgMan.bg
 		val msg = "game\tstats\t"+
 			engine.run {
 				statistics.run {"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"}+
 					"$goalType\t${gameActive}\t${timerActive}\t$lastscore\t$scgettime\t${lastEvent}\t"+
-					"$lastgoal\t$lasttimebonus\t$regretdispframe\t$bg\t${meterValue}\t${meterColor}\t$levelTimer\t$totalTimer\t$rolltime\t$goal\n"
+					"$lastgoal\t$lasttimebonus\t$regretdispframe\t$bg\t${meterValue}\t${meterColor}\t$levelTimer\t$totalTimer\t$rollTime\t$goal\n"
 			}
 		netLobby?.netPlayerClient?.send(msg)
 	}
@@ -659,7 +656,7 @@ class MarathonShuttle:NetDummyMode() {
 			{engine.meterColor = it.toInt()},
 			{levelTimer = it.toInt()},
 			{totalTimer = it.toInt()},
-			{rolltime = it.toInt()},
+			{rollTime = it.toInt()},
 			{goal = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}

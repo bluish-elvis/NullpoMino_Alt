@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -106,25 +106,26 @@ class SprintUltra:NetDummyMode() {
 
 		rankingRank.fill(-1)
 
-		rankingScore.forEach {it.forEach {it.fill(0)}}
-		rankingLines.forEach {it.forEach {it.fill(0)}}
-		rankingPower.forEach {it.forEach {it.fill(0)}}
+		rankingScore.forEach {it.forEach {p -> p.fill(0)}}
+		rankingLines.forEach {it.forEach {p -> p.fill(0)}}
+		rankingPower.forEach {it.forEach {p -> p.fill(0)}}
 
+		owner.bgMan.bg = -14
 		engine.frameColor = GameEngine.FRAME_COLOR_BLUE
 
 		netPlayerInit(engine)
 
-		if(!engine.owner.replayMode) {
-			presetNumber = engine.owner.modeConfig.getProperty("ultra.presetNumber", 0)
-			loadPreset(engine, engine.owner.modeConfig, -1)
+		if(!owner.replayMode) {
+			presetNumber = owner.modeConfig.getProperty("ultra.presetNumber", 0)
+			loadPreset(engine, owner.modeConfig, -1)
 
 			version = CURRENT_VERSION
 		} else {
 			presetNumber = 0
-			loadPreset(engine, engine.owner.replayProp, -1)
-			version = engine.owner.replayProp.getProperty("ultra.version", 0)
+			loadPreset(engine, owner.replayProp, -1)
+			version = owner.replayProp.getProperty("ultra.version", 0)
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
+			netPlayerName = owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 	}
 
@@ -172,7 +173,7 @@ class SprintUltra:NetDummyMode() {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode)
 			netOnUpdateNetPlayRanking(engine, goalType)
-		else if(!engine.owner.replayMode) {
+		else if(!owner.replayMode) {
 			// Configuration changes
 			val change = updateCursor(engine, 17)
 
@@ -259,7 +260,7 @@ class SprintUltra:NetDummyMode() {
 		else {
 			drawMenuSpeeds(engine, receiver, 0, COLOR.BLUE, 0)
 			drawMenuCompact(engine, receiver, "BIG" to big, "Length" to "${tableLength[goalType]} Min")
-			if(!engine.owner.replayMode) {
+			if(!owner.replayMode) {
 				menuColor = COLOR.GREEN
 				drawMenuCompact(engine, receiver, "LOAD" to presetNumber, "SAVE" to presetNumber)
 			}
@@ -377,7 +378,7 @@ class SprintUltra:NetDummyMode() {
 
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-		calcPower(engine, ev, true)
+		engine.tempHanabi += calcPower(engine, ev, true)
 		engine.statistics.level = engine.statistics.attacks/2
 		return super.calcScore(engine, ev)
 	}
@@ -421,13 +422,12 @@ class SprintUltra:NetDummyMode() {
 				if(engine.statistics.time>=limitTime-10*60&&engine.statistics.time%60==0) engine.playSE("countdown")
 
 				// 5 seconds beforeBGM fadeout
-//				if(engine.statistics.time>=limitTime-5*60) owner.bgmStatus.fadesw = true
+//				if(engine.statistics.time>=limitTime-5*60) owner.bgmStatus.fadeSW = true
 
 				// 1Per-minuteBackgroundSwitching
 				if(engine.statistics.time>0&&engine.statistics.time%3600==0) {
 					engine.playSE("levelup")
-					owner.bgMan.fadesw = true
-					owner.bgMan.fadebg = owner.bgMan.bg+1
+					owner.bgMan.nextBg = owner.bgMan.bg+1
 				}
 			}
 		}
@@ -581,7 +581,7 @@ class SprintUltra:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(owner.bgMan.fadesw) owner.bgMan.fadebg else owner.bgMan.bg
+		val bg = if(owner.bgMan.fadeSW) owner.bgMan.nextBg else owner.bgMan.bg
 		val msg = "game\tstats\t"+
 			"${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t"+
 			"${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"+

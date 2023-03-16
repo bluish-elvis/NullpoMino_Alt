@@ -49,11 +49,7 @@ abstract class ParticleEmitterBase:Effect {
 		particles.removeAll {it.update(r)}
 		return particles.isEmpty()
 	}
-	/**
-	 * Draw the particles to the current renderer.
-	 *
-	 * @param receiver Renderer to use
-	 */
+
 	override fun draw(i:Int, r:AbstractRenderer) {
 		if(particles.isEmpty()) return
 		particles.forEach {

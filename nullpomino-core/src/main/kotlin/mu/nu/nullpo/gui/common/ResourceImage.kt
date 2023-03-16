@@ -41,6 +41,12 @@ interface ResourceImage<T> {
 		color:Triple<Float, Float, Float> = Triple(1f, 1f, 1f))
 
 	fun draw() = draw(0, 0, width, height, 0, 0, width, height)
+	fun draw(x:Float, y:Float, srcx:Float, srcy:Float, srcx2:Float, srcy2:Float) =
+		draw(x, y, x+(srcx2-srcx), y+(srcy2-srcy), srcx, srcy, srcx2, srcy2)
+
+	fun draw(x:Float, y:Float, srcx:Float, srcy:Float, srcx2:Float, srcy2:Float, alpha:Float = 1f,
+		color:Triple<Float, Float, Float> = Triple(1f, 1f, 1f)) =
+		draw(x, y, x+width, y+height, srcx, srcy, srcx2, srcy2, alpha, color)
 
 	fun draw(x:Float, y:Float, x2:Float, y2:Float, alpha:Float = 1f, color:Triple<Float, Float, Float> = Triple(1f, 1f, 1f)) =
 		draw(x, y, x2, y2, 0, 0, width, height, alpha, color)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -161,11 +161,11 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					}
 					15 -> {
 						if(m>10)
-							hurryupSeconds[playerID] += change*m/10
+							hurryUpSeconds[playerID] += change*m/10
 						else
-							hurryupSeconds[playerID] += change
-						if(hurryupSeconds[playerID]<0) hurryupSeconds[playerID] = 300
-						if(hurryupSeconds[playerID]>300) hurryupSeconds[playerID] = 0
+							hurryUpSeconds[playerID] += change
+						if(hurryUpSeconds[playerID]<0) hurryUpSeconds[playerID] = 300
+						if(hurryUpSeconds[playerID]>300) hurryUpSeconds[playerID] = 0
 					}
 					16 -> {
 						ojamaHard[playerID] += change
@@ -203,9 +203,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					25 -> newChainPower[playerID] = !newChainPower[playerID]
 					26 -> {
 						useMap[playerID] = !useMap[playerID]
-						if(!useMap[playerID]) {
-							if(engine.field!=null) engine.field.reset()
-						} else
+						if(!useMap[playerID]) engine.field.reset() else
 							loadMapPreview(engine, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 					}
 					27 -> {
@@ -225,7 +223,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					} else
 						mapNumber[playerID] = -1
 					29 -> bigDisplay = !bigDisplay
-					30 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					30 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					31 -> enableSE[playerID] = !enableSE[playerID]
 					32, 33 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
 				}
@@ -314,7 +312,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 						"MIN CHAIN" to rensaShibari[pid],
 						"CLEAR SIZE" to engine.colorClearSize,
 						"OJAMA RATE" to ojamaRate[pid],
-						"HURRYUP" to if(hurryupSeconds[pid]==0) "NONE" else "${hurryupSeconds[pid]}SEC",
+						"HURRYUP" to if(hurryUpSeconds[pid]==0) "NONE" else "${hurryUpSeconds[pid]}SEC",
 						"HARD OJAMA" to ojamaHard[pid]
 					)
 
@@ -356,7 +354,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 						"BIG DISP" to bigDisplay
 					)
 
-					drawMenu(engine, receiver, COLOR.COBALT, "BGM" to BGM.values[bgmno], "SE" to enableSE[pid])
+					drawMenu(engine, receiver, COLOR.COBALT, "BGM" to BGM.values[bgmId], "SE" to enableSE[pid])
 					drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 
 					receiver.drawMenuFont(engine, 0, 19, "PAGE 4/4", COLOR.YELLOW)
@@ -410,28 +408,27 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 			drawX(engine)
 
 		if(engine.stat!=GameEngine.Status.RESULT&&engine.gameStarted)
-			if(engine.field!=null)
-				for(x in 0 until engine.field.width)
-					for(y in 0 until engine.field.height) {
-						val b = engine.field.getBlock(x, y) ?: continue
-						if(b.isEmpty) continue
-						if(b.hard>0)
-							if(engine.displaySize==1)
-								receiver.drawMenuFont(
-									engine, x*2, y*2,
-									b.hard.toString(), COLOR.YELLOW, 2f
-								)
-							else
-								receiver.drawMenuFont(engine, x, y, b.hard.toString(), COLOR.YELLOW)
-						if(b.countdown>0)
-							if(engine.displaySize==1)
-								receiver.drawMenuFont(
-									engine, x*2, y*2,
-									b.countdown.toString(), COLOR.RED, 2f
-								)
-							else
-								receiver.drawMenuFont(engine, x, y, b.countdown.toString(), COLOR.RED)
-					}
+			for(x in 0 until engine.field.width)
+				for(y in 0 until engine.field.height) {
+					val b = engine.field.getBlock(x, y) ?: continue
+					if(b.isEmpty) continue
+					if(b.hard>0)
+						if(engine.displaySize==1)
+							receiver.drawMenuFont(
+								engine, x*2, y*2,
+								b.hard.toString(), COLOR.YELLOW, 2f
+							)
+						else
+							receiver.drawMenuFont(engine, x, y, b.hard.toString(), COLOR.YELLOW)
+					if(b.countdown>0)
+						if(engine.displaySize==1)
+							receiver.drawMenuFont(
+								engine, x*2, y*2,
+								b.countdown.toString(), COLOR.RED, 2f
+							)
+						else
+							receiver.drawMenuFont(engine, x, y, b.countdown.toString(), COLOR.RED)
+				}
 
 		super.renderLast(engine)
 	}
@@ -497,10 +494,8 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 	}
 
 	override fun updateOjamaMeter(engine:GameEngine) {
-		var width = 6
-		width = engine.field.width
-		width *= 6
-		val blockHeight = EventReceiver.getBlockSize(engine)
+		val width = engine.field.width*6
+		val blockHeight = engine.blockSize
 		// Rising auctionMeter
 		val pid = engine.playerID
 		val value = ojama[pid]*blockHeight/width

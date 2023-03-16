@@ -58,7 +58,7 @@ class ToolMapEditor:AbstractMode() {
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
-		owner = manager
+		super.modeInit(manager)
 		propMap = CustomProperties()
 		listFields = LinkedList()
 		nowMapSetID = 0

@@ -202,8 +202,8 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		var frameCount = 0L; private set
 		/** upTime by frame */
 		var upTimeFrame = 0L; private set
-		/** rainbow counter */
-		val rainbow get() = (upTimeFrame%18).toInt()/2
+		/** rainbow 9 counter */
+		val rainbow get() = (upTimeFrame%20).toInt()/2
 		/** 実際のFPS */
 		private var actualFPS = .0
 		/** FPS表示用DecimalFormat */

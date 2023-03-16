@@ -59,9 +59,6 @@ class LandingParticles(
 	 * Parameters are min start x, max start x, start y, start y variance,
 	 * red, green, blue, alpha, variance (all `int` types),
 	 * maximum velocity, chance of upward movement (all `double` types)
-	 *
-	 * @param num    Number of particles
-	 * @param params Parameters to pass onto the particles
 	 */
 	val particles = (0 until num).map {i ->
 		val ured:Int = red+(2*randomizer.nextFloat()*variance-variance).toInt()

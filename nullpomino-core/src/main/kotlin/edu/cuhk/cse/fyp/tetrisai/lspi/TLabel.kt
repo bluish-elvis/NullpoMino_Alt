@@ -59,13 +59,13 @@ class TLabel(w:Int, h:Int) {
 	var width = SIZE
 	private var height = SIZE
 	// boundary of drawing canvas, 0% border
-	var BORDER = 0.00
-	var xmin = 0.0
-	var ymin = 0.0
-	var xmax = 0.0
-	var ymax = 0.0
+	var border = 0.00
+	var xMin = 0.0
+	var yMin = 0.0
+	var xMax = 0.0
+	var yMax = 0.0
 	// default font
-	private val DEFAULT_FONT = Font("Serif", Font.PLAIN, 16)
+	private val defaultFont = Font("Serif", Font.PLAIN, 16)
 	// double buffered graphics
 	private val offscreenImage:BufferedImage
 	private val onscreenImage:BufferedImage
@@ -82,27 +82,27 @@ class TLabel(w:Int, h:Int) {
 
 	fun setXscale(min:Double, max:Double) {
 		val size = max-min
-		xmin = min-BORDER*size
-		xmax = max+BORDER*size
+		xMin = min-border*size
+		xMax = max+border*size
 	}
 
 	fun setYscale(min:Double, max:Double) {
 		val size = max-min
-		ymin = min-BORDER*size
-		ymax = max+BORDER*size
+		yMin = min-border*size
+		yMax = max+border*size
 	}
 	// helper functions that scale from user coordinates to screen coordinates and back
-	protected fun scaleX(x:Double):Double = width*(x-xmin)/(xmax-xmin)
+	protected fun scaleX(x:Double):Double = width*(x-xMin)/(xMax-xMin)
 
-	protected fun scaleY(y:Double):Double = height*(ymax-y)/(ymax-ymin)
+	protected fun scaleY(y:Double):Double = height*(yMax-y)/(yMax-yMin)
 
-	fun factorX(w:Double):Double = w*width/abs(xmax-xmin)
+	fun factorX(w:Double):Double = w*width/abs(xMax-xMin)
 
-	fun factorY(h:Double):Double = h*height/abs(ymax-ymin)
+	fun factorY(h:Double):Double = h*height/abs(yMax-yMin)
 
-	fun userX(x:Double):Double = xmin+x*(xmax-xmin)/width
+	fun userX(x:Double):Double = xMin+x*(xMax-xMin)/width
 
-	fun userY(y:Double):Double = ymax-y*(ymax-ymin)/height
+	fun userY(y:Double):Double = yMax-y*(yMax-yMin)/height
 	//create a frame, insert self in frame, then show self
 	fun showInFrame() {
 		val j = JFrame()
@@ -154,7 +154,7 @@ class TLabel(w:Int, h:Int) {
 	}
 	// write the given string in the current font
 	fun setFont() {
-		setFont(DEFAULT_FONT)
+		setFont(defaultFont)
 	}
 
 	fun setFont(f:Font) {

@@ -71,8 +71,8 @@ class FieldScatter @JvmOverloads constructor(engine:GameEngine, fieldBlockLocati
 			}
 		}
 		fieldBlockLocations?.let {
-			it.forEach {
-				engine.field.getBlock(it[0], it[1])?.let {b -> blkAdd(b, it[0], it[1])}
+			it.forEach {p ->
+				engine.field.getBlock(p[0], p[1])?.let {b -> blkAdd(b, p[0], p[1])}
 			}
 		} ?: (-1*engine.field.hiddenHeight until engine.field.height).forEach {i ->
 			for(j in 0 until engine.field.width)

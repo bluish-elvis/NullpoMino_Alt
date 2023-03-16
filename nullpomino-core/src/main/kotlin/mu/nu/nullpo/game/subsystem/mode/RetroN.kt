@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -33,12 +33,12 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.EventReceiver.FONT
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.BaseFont.FONT
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -136,8 +136,8 @@ class RetroN:AbstractMode() {
 			owDelayCancel = 0
 		}
 
-		engine.owner.bgMan.bg = startLevel
-		if(engine.owner.bgMan.bg>19) engine.owner.bgMan.bg = 19
+		owner.bgMan.bg = startLevel
+		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
 		levellines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
 		engine.frameColor = GameEngine.FRAME_SKIN_GB
 	}
@@ -170,7 +170,7 @@ class RetroN:AbstractMode() {
 	/** Main routine for game setup screen */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
-		if(!engine.owner.replayMode) {
+		if(!owner.replayMode) {
 			// Configuration changes
 			val change = updateCursor(engine, 4)
 
@@ -192,7 +192,7 @@ class RetroN:AbstractMode() {
 						startLevel += change
 						if(startLevel<0) startLevel = 19
 						if(startLevel>19) startLevel = 0
-						engine.owner.bgMan.bg = startLevel
+						owner.bgMan.bg = startLevel
 						levellines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
 					}
 					3 -> {
@@ -289,7 +289,7 @@ class RetroN:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "RETRO CLASSIC", COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
 		receiver.drawScoreFont(engine, 0, 1, "(${SPEED_NAME[speedtype]} ${GAMETYPE_NAME[gametype]})", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
@@ -395,14 +395,9 @@ class RetroN:AbstractMode() {
 			levellines += 10
 
 			//engine.framecolor = engine.statistics.level
-			if(engine.statistics.level>255) {
-				engine.statistics.level = 0
-			}
+			if(engine.statistics.level>255) engine.statistics.level = 0
 
-			owner.bgMan.fadesw = true
-			owner.bgMan.fadecount = 0
-
-			owner.bgMan.fadebg = maxOf(0, minOf(19, engine.statistics.level))
+			owner.bgMan.nextBg = maxOf(0, minOf(19, engine.statistics.level))
 
 			setSpeed(engine)
 			engine.playSE("levelup")

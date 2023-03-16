@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -44,7 +44,7 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 /** EXTREME Mode */
 class MarathonExtreme:NetDummyMode() {
 	/** Ending time */
-	private var rolltime = 0
+	private var rollTime = 0
 
 	/** Current BGM */
 	private var bgmLv = 0
@@ -91,7 +91,7 @@ class MarathonExtreme:NetDummyMode() {
 		super.playerInit(engine)
 		lastscore = 0
 		bgmLv = 0
-		rolltime = 0
+		rollTime = 0
 
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
@@ -222,7 +222,7 @@ class MarathonExtreme:NetDummyMode() {
 			val scget = scDisp<engine.statistics.score
 			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
 			if(engine.gameActive&&engine.ending==2) {
-				val remainRollTime = maxOf(0, ROLLTIMELIMIT-rolltime)
+				val remainRollTime = maxOf(0, ROLLTIMELIMIT-rollTime)
 
 				receiver.drawScoreFont(engine, 0, 7, "ROLL TIME", COLOR.RED)
 				receiver.drawScoreNum(engine, 5, 7, remainRollTime.toTimeStr, remainRollTime>0&&remainRollTime<10*60, 2f)
@@ -245,10 +245,10 @@ class MarathonExtreme:NetDummyMode() {
 		super.onLast(engine)
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
-			rolltime++
+			rollTime++
 
 			// Time meter
-			var remainRollTime = ROLLTIMELIMIT-rolltime
+			var remainRollTime = ROLLTIMELIMIT-rollTime
 			if(remainRollTime<0) remainRollTime = 0
 			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 			engine.meterColor = GameEngine.METER_COLOR_GREEN
@@ -257,7 +257,7 @@ class MarathonExtreme:NetDummyMode() {
 			if(remainRollTime<=10*60) engine.meterColor = GameEngine.METER_COLOR_RED
 
 			// Finished
-			if(rolltime>=ROLLTIMELIMIT) {
+			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
@@ -277,12 +277,12 @@ class MarathonExtreme:NetDummyMode() {
 		if(engine.ending==0) {
 			// BGM fade-out effects and BGM changes
 
-			if(engine.statistics.lines>=nextbgmLine(engine.statistics.lines)-5) owner.musMan.fadesw = true
+			if(engine.statistics.lines>=nextbgmLine(engine.statistics.lines)-5) owner.musMan.fadeSW = true
 			val newbgm = minOf(maxOf(0, bgmLv(engine.statistics.lines)), tableBGM.size-1)
 			if(bgmLv!=newbgm) {
 				bgmLv = newbgm
 				owner.musMan.bgm = tableBGM[bgmLv]
-				owner.musMan.fadesw = false
+				owner.musMan.fadeSW = false
 			}
 
 			// Meter
@@ -293,7 +293,7 @@ class MarathonExtreme:NetDummyMode() {
 				// Ending
 				engine.playSE("levelup")
 				engine.playSE("endingstart")
-				owner.musMan.fadesw = false
+				owner.musMan.fadeSW = false
 				owner.musMan.bgm = BGM.Ending(2)
 				engine.bone = true
 				engine.ending = 2
@@ -302,9 +302,7 @@ class MarathonExtreme:NetDummyMode() {
 				// Level up
 				engine.statistics.level++
 
-				owner.bgMan.fadesw = true
-				owner.bgMan.fadecount = 0
-				owner.bgMan.fadebg = engine.statistics.level
+				owner.bgMan.nextBg = engine.statistics.level
 
 				setSpeed(engine)
 				engine.playSE("levelup")
@@ -315,7 +313,7 @@ class MarathonExtreme:NetDummyMode() {
 
 	override fun onResult(engine:GameEngine):Boolean {
 		val b = if(engine.ending==0) BGM.Result(0) else BGM.Result(3)
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		owner.musMan.bgm = b
 
 		return super.onResult(engine)
@@ -426,11 +424,11 @@ class MarathonExtreme:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
+		val bg = if(engine.owner.bgMan.fadeSW) engine.owner.bgMan.nextBg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t$endless\t"
-			}+"${gameActive}\t${timerActive}\t$lastscore\t$scDisp\t${lastEvent}\t${lastEventPiece}\t$bg\t$rolltime\n"
+			}+"${gameActive}\t${timerActive}\t$lastscore\t$scDisp\t${lastEvent}\t${lastEventPiece}\t$bg\t$rollTime\n"
 		}
 		netLobby?.netPlayerClient?.send(msg)
 	}
@@ -453,7 +451,7 @@ class MarathonExtreme:NetDummyMode() {
 			{/*scDisp = it.toInt()*/},
 			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{engine.owner.bgMan.bg = it.toInt()},
-			{rolltime = it.toInt()}).zip(message).forEach {(x, y) ->
+			{rollTime = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}
 		// Meter
@@ -518,10 +516,10 @@ class MarathonExtreme:NetDummyMode() {
 		private val tableDAS = listOf(10, 10, 10, 9, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4)
 
 		/** Line counts when BGM changes occur */
-		private val tableBGMChange = listOf(20, 40, 70, 100, 130, 160)
+		private val tableBGMChange = listOf(20, 40, 60, 80, 110, 140, 170)
 		private val tableBGM = listOf(
-			BGM.Rush(0), BGM.Generic(6), BGM.Rush(1), BGM.Generic(7), BGM.Generic(8), BGM.Rush(2),
-			BGM.Rush(3)
+			BGM.Rush(0), BGM.Generic(6), BGM.Generic(7), BGM.Rush(1), BGM.Generic(8),
+			BGM.Generic(9), BGM.Rush(2), BGM.Rush(3)
 		)
 
 		/** Number of entries in rankings */

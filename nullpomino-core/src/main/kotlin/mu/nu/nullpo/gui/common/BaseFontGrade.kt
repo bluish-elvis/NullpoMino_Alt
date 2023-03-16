@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, NullNoname
+ * Copyright (c) 2021-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -32,6 +32,11 @@ package mu.nu.nullpo.gui.common
 import mu.nu.nullpo.game.event.EventReceiver
 
 abstract class BaseFontGrade:BaseFont {
+	companion object {
+		const val wb = 64
+		const val ws = 16
+	}
+
 	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float,
 		rainbow:Int,
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) =
@@ -40,7 +45,7 @@ abstract class BaseFontGrade:BaseFont {
 			var dx = x
 			var i = 0
 			while(i<str.length) {
-				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
+				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
 				var cd = str[i].code
 				var nX = -1
 				var nY = -1
@@ -87,7 +92,7 @@ abstract class BaseFontGrade:BaseFont {
 			var dx = x
 			var i = 0
 			while(i<str.length) {
-				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
+				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
 				var cd = str[i].code
 				when(cd) {
 					in 0x31..0x39 -> if(cd==0x31&&i<str.length-1) {

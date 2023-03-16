@@ -1,13 +1,16 @@
 /*
+ * Copyright (c) 2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2010)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
  *
  * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -133,7 +136,6 @@ class ExamSpinner {
 	 *
 	 * @param receiver Renderer to draw with
 	 * @param engine   Current `GameEngine` instance
-	 * @param playerID Current Player ID (0 = 1P)
 	 * @param flag     Yellow text?
 	 */
 	@JvmOverloads fun draw(receiver:EventReceiver, engine:GameEngine, flag:Boolean = lifeTime/2%2==0) {
@@ -390,10 +392,10 @@ class ExamSpinner {
 	fun update(engine:GameEngine) {
 		lifeTime++
 		if(lifeTime==60&&!close) {
-			engine.playSE("linefall")
+			engine.playSE("linefall0")
 			engine.playSE(if(selectedOutcome==0) "excellent" else "regret")
 		} else if(lifeTime==spinDuration+120&&close) {
-			engine.playSE("linefall")
+			engine.playSE("linefall0")
 			engine.playSE(if(selectedOutcome==0) "excellent" else "regret")
 		}
 		if(close&&lifeTime<=spinDuration) {

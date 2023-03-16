@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2010-2021, NullNoname
- * Kotlin converted and modified by Venom=Nhelv
- * All rights reserved.
+ * Copyright (c) 2010-2023, NullNoname
+ * Kotlin converted and modified by Venom=Nhelv.
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -1261,15 +1261,15 @@ class RuleEditorFX:Application(null) {
 	 * @return 画像ファイル (失敗するとnull）
 	 */
 	private fun loadImage(url:URL?):BufferedImage? {
-		var img:BufferedImage? = null
+		var bufI:BufferedImage? = null
 		try {
-			img = ImageIO.read(url!!)
+			bufI = ImageIO.read(url!!)
 			log.debug("Loaded image from $url")
 		} catch(e:IOException) {
 			log.error("Failed to load image from ${url ?: ""}", e)
 		}
 
-		return img
+		return bufI
 	}
 
 	/** リソースファイルのURLを返す
@@ -1394,9 +1394,9 @@ class RuleEditorFX:Application(null) {
 		txtfldLockDelayLockResetLimitMove.text = r.lockresetLimitMove.toString()
 		txtfldLockDelayLockResetLimitRotate.text = r.lockresetLimitRotate.toString()
 		when(r.lockresetLimitOver) {
-			RuleOptions.LOCKRESET_LIMIT_OVER_NORESET -> radioLockDelayLockResetLimitOverNoReset?.isSelected = true
+			RuleOptions.LOCKRESET_LIMIT_OVER_NoReset -> radioLockDelayLockResetLimitOverNoReset?.isSelected = true
 			RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT -> radioLockDelayLockResetLimitOverInstant?.isSelected = true
-			RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK -> radioLockDelayLockResetLimitOverNoWallkick?.isSelected = true
+			RuleOptions.LOCKRESET_LIMIT_OVER_NoKick -> radioLockDelayLockResetLimitOverNoWallkick?.isSelected = true
 		}
 
 		txtfldAREMin.text = r.minARE.toString()
@@ -1516,11 +1516,11 @@ class RuleEditorFX:Application(null) {
 		r.lockresetLimitMove = getIntTextField(txtfldLockDelayLockResetLimitMove)
 		r.lockresetLimitRotate = getIntTextField(txtfldLockDelayLockResetLimitRotate)
 		if(radioLockDelayLockResetLimitOverNoReset!!.isSelected)
-			r.lockresetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NORESET
+			r.lockresetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NoReset
 		if(radioLockDelayLockResetLimitOverInstant!!.isSelected)
 			r.lockresetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT
 		if(radioLockDelayLockResetLimitOverNoWallkick!!.isSelected)
-			r.lockresetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK
+			r.lockresetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NoKick
 
 		r.minARE = getIntTextField(txtfldAREMin)
 		r.maxARE = getIntTextField(txtfldAREMax)

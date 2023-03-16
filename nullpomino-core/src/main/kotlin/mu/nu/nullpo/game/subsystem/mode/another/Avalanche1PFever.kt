@@ -1,8 +1,7 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -13,7 +12,6 @@
  *     * Neither the name of NullNoname nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -139,8 +137,8 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		feverChain = 5
 
 		rankingRank = -1
-		rankingScore.forEach {it.forEach {it.fill(0)}}
-		rankingTime.forEach {it.forEach {it.fill(0)}}
+		rankingScore.forEach {it.forEach {p -> p.fill(0)}}
+		rankingTime.forEach {it.forEach {p -> p.fill(0)}}
 
 		xyzzy = 0
 		fastenable = 0
@@ -184,7 +182,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 							loadMapSetFever(mapSet, true)
 							if(previewChain<feverChainMin) previewChain = feverChainMax
 							if(previewChain>feverChainMax) previewChain = feverChainMin
-							if(previewSubset>=mapSubsets!!.size) previewSubset = 0
+							if(previewSubset>=mapSubsets.size) previewSubset = 0
 						}
 					}
 					1 -> {
@@ -210,8 +208,8 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 					}
 					7 -> {
 						previewSubset += change
-						if(previewSubset<0) previewSubset = mapSubsets!!.size-1
-						if(previewSubset>=mapSubsets!!.size) previewSubset = 0
+						if(previewSubset<0) previewSubset = mapSubsets.size-1
+						if(previewSubset>=mapSubsets.size) previewSubset = 0
 					}
 					8 -> {
 						previewChain += change
@@ -304,7 +302,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 				BLUE,
 				6,
 				"MAP SET" to FEVER_MAPS[mapSet].uppercase(),
-				"SUBSET" to mapSubsets!![previewSubset].uppercase(),
+				"SUBSET" to mapSubsets[previewSubset].uppercase(),
 				"CHAIN" to previewChain
 			)
 		}

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2021,
+ * Copyright (c) 2021-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2021)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -39,25 +39,25 @@ package zeroxfc.nullpo.custom.modes.objects.minesweeper
 import kotlin.random.Random
 
 class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 10, minePercent:Float = 0.1f,
-	randseed:Long = 0) {
+	randSeed:Long = 0) {
 	val squares:Int get() = length*height
 	val mines:Int = (minePercent/100f*squares).toInt()
-	private val randomizer:Random = Random(randseed)
+	private val randomizer:Random = Random(randSeed)
 	var contents:Array<Array<GridSpace>> = Array(height) {Array(length) {GridSpace(false)}}
 
 	fun generateMines(excludeX:Int, excludeY:Int) {
 		var i = 0
 		while(i<mines) {
-			var TestX:Int
-			var TestY:Int
-			var RollCount = 0
+			var testX:Int
+			var testY:Int
+			var rollCount = 0
 			do {
-				TestX = randomizer.nextInt(length)
-				TestY = randomizer.nextInt(height)
-				RollCount++
-			} while(getSurroundingMines(TestX, TestY)>=3&&RollCount<6)
-			if(!contents[TestY][TestX].isMine&&!(TestY==excludeY&&TestX==excludeX)) {
-				contents[TestY][TestX].isMine = true
+				testX = randomizer.nextInt(length)
+				testY = randomizer.nextInt(height)
+				rollCount++
+			} while(getSurroundingMines(testX, testY)>=3&&rollCount<6)
+			if(!contents[testY][testX].isMine&&!(testY==excludeY&&testX==excludeX)) {
+				contents[testY][testX].isMine = true
 			} else {
 				i--
 			}
@@ -121,61 +121,43 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 	}
 
 	fun uncoverAllMines() {
-		for(y in 0 until height) {
-			for(x in 0 until length) {
-				if(contents[y][x].isMine) {
-					contents[y][x].uncovered = true
-				}
-			}
-		}
+		for(y in 0 until height) for(x in 0 until length)
+			if(contents[y][x].isMine) contents[y][x].uncovered = true
 	}
 
 	fun uncoverNonMines() {
-		for(y in 0 until height) {
-			for(x in 0 until length) {
-				if(!contents[y][x].isMine) {
-					contents[y][x].uncovered = true
-				}
-			}
-		}
+		for(y in 0 until height) for(x in 0 until length)
+			if(!contents[y][x].isMine) contents[y][x].uncovered = true
 	}
 
 	fun flagAllCovered() {
-		for(y in 0 until height) {
-			for(x in 0 until length) {
-				if(!contents[y][x].uncovered) {
-					contents[y][x].flagged = true
-					contents[y][x].question = false
-				}
+		for(y in 0 until height) for(x in 0 until length)
+			if(!contents[y][x].uncovered) {
+				contents[y][x].flagged = true
+				contents[y][x].question = false
 			}
-		}
 	}
 
-	fun uncoverAt(x:Int, y:Int):State {
-		if(!contents[y][x].flagged&&!contents[y][x].uncovered&&!contents[y][x].question) {
-			contents[y][x].uncovered = true
+	fun uncoverAt(x:Int, y:Int):State = if(!contents[y][x].flagged&&!contents[y][x].uncovered&&!contents[y][x].question) {
+		contents[y][x].uncovered = true
 
-			return if(contents[y][x].isMine) {
-				State.MINE
-			} else {
-				if(contents[y][x].surroundingMines==0) {
-					val testLocations = arrayOf(
-						intArrayOf(-1, -1), intArrayOf(0, -1), intArrayOf(1, -1), intArrayOf(-1, 0),
-						intArrayOf(1, 0), intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1)
-					)
-					for(loc in testLocations) {
-						val px = x+loc[0]
-						val py = y+loc[1]
-						if(px<0||px>=length) continue
-						if(py<0||py>=height) continue
-						if(!contents[py][px].uncovered) uncoverAt(px, py)
-					}
+		if(contents[y][x].isMine) State.MINE else {
+			if(contents[y][x].surroundingMines==0) {
+				val testLocations = arrayOf(
+					intArrayOf(-1, -1), intArrayOf(0, -1), intArrayOf(1, -1), intArrayOf(-1, 0),
+					intArrayOf(1, 0), intArrayOf(-1, 1), intArrayOf(0, 1), intArrayOf(1, 1)
+				)
+				for(loc in testLocations) {
+					val px = x+loc[0]
+					val py = y+loc[1]
+					if(px<0||px>=length) continue
+					if(py<0||py>=height) continue
+					if(!contents[py][px].uncovered) uncoverAt(px, py)
 				}
-				State.SAFE
 			}
+			State.SAFE
 		}
-		return State.ALREADY_OPEN
-	}
+	} else State.ALREADY_OPEN
 
 	fun cycleState(x:Int, y:Int):Boolean {
 		if(!contents[y][x].uncovered) {

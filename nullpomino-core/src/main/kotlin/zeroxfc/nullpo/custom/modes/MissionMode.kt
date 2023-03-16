@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2022,
+ * Copyright (c) 2021-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -345,13 +345,13 @@ class MissionMode:MarathonModeBase() {
 						Clear, ClearWith -> missionProgress>=missionGoal-maxOf(2, 6-lineAmount)
 						Spin, SpinWith -> missionProgress>=missionGoal-2
 						else -> true
-					})) owner.musMan.fadesw = true
+					})) owner.musMan.fadeSW = true
 				if(engine.statistics.score>=tableBGMChange[bgmLv]&&
 					(engine.statistics.score<tableGameClearMissions[goalType]||tableGameClearMissions[goalType]<0)
 				) {
 					bgmLv++
 					owner.musMan.bgm = tableBGM[bgmLv]
-					owner.musMan.fadesw = false
+					owner.musMan.fadeSW = false
 				}
 			}
 
@@ -368,9 +368,7 @@ class MissionMode:MarathonModeBase() {
 				} else if(engine.statistics.score>=(engine.statistics.level+1)*5&&engine.statistics.level<19) {
 					// Level up
 					engine.statistics.level++
-					owner.bgMan.fadesw = true
-					owner.bgMan.fadecount = 0
-					owner.bgMan.fadebg = engine.statistics.level
+					owner.bgMan.nextBg = engine.statistics.level
 					engine.playSE("levelup_section")
 				} else engine.playSE("levelup")
 			} else engine.playSE("gem")
@@ -714,7 +712,6 @@ class MissionMode:MarathonModeBase() {
 	 * Draws the mission texts to a location.
 	 *
 	 * @param engine       GameEngine to draw with.
-	 * @param playerID     Player to draw next to (0 = 1P).
 	 * @param missionData  LinkedHashMap containing mission text and color data.
 	 * @param destinationX X of destination (uses drawScoreFont(...)).
 	 * @param destinationY Y of destination (uses drawScoreFont(...)).

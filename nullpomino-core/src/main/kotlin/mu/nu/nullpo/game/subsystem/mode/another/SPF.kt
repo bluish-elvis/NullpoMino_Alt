@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -56,7 +56,7 @@ class SPF:AbstractMode() {
 	private var scgettime = IntArray(0)
 
 	/** UseBGM */
-	private var bgmno = 0
+	private var bgmId = 0
 
 	/** Big */
 	//private boolean[] big;
@@ -107,7 +107,7 @@ class SPF:AbstractMode() {
 	private var bigDisplay = false
 
 	/** HurryupSeconds before the startcount(0InHurryupNo) */
-	private var hurryupSeconds = IntArray(0)
+	private var hurryUpSeconds = IntArray(0)
 
 	/** Time to display "ZENKESHI!" */
 	private var zenKeshiDisplay = IntArray(0)
@@ -149,16 +149,16 @@ class SPF:AbstractMode() {
 	override val gameStyle = GameStyle.SPF
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
-		owner = manager
+		super.modeInit(manager)
 
 		ojama = IntArray(MAX_PLAYERS)
 		ojamaSent = IntArray(MAX_PLAYERS)
 
 		scgettime = IntArray(MAX_PLAYERS)
-		bgmno = 0
+		bgmId = 0
 		//big = new boolean[MAX_PLAYERS];
 		enableSE = BooleanArray(MAX_PLAYERS)
-		hurryupSeconds = IntArray(MAX_PLAYERS)
+		hurryUpSeconds = IntArray(MAX_PLAYERS)
 		useMap = BooleanArray(MAX_PLAYERS)
 		mapSet = IntArray(MAX_PLAYERS)
 		mapNumber = IntArray(MAX_PLAYERS)
@@ -220,10 +220,10 @@ class SPF:AbstractMode() {
 	/** Load settings into [engine] from [prop] not related to speeds */
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
-		bgmno = prop.getProperty("spfvs.bgmno", 0)
+		bgmId = prop.getProperty("spfvs.bgmno", 0)
 		//big[playerID] = prop.getProperty("spfvs.big.p" + playerID, false);
 		enableSE[playerID] = prop.getProperty("spfvs.enableSE.p$playerID", true)
-		hurryupSeconds[playerID] = prop.getProperty("vsbattle.hurryupSeconds.p$playerID", 0)
+		hurryUpSeconds[playerID] = prop.getProperty("vsbattle.hurryupSeconds.p$playerID", 0)
 		useMap[playerID] = prop.getProperty("spfvs.useMap.p$playerID", false)
 		mapSet[playerID] = prop.getProperty("spfvs.mapSet.p$playerID", 0)
 		mapNumber[playerID] = prop.getProperty("spfvs.mapNumber.p$playerID", -1)
@@ -238,10 +238,10 @@ class SPF:AbstractMode() {
 	/** Save settings from [engine] into [prop] not related to speeds */
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val playerID = engine.playerID
-		prop.setProperty("spfvs.bgmno", bgmno)
+		prop.setProperty("spfvs.bgmno", bgmId)
 		//prop.setProperty("spfvs.big.p" + playerID, big[playerID]);
 		prop.setProperty("spfvs.enableSE.p$playerID", enableSE[playerID])
-		prop.setProperty("vsbattle.hurryupSeconds.p$playerID", hurryupSeconds[playerID])
+		prop.setProperty("vsbattle.hurryupSeconds.p$playerID", hurryUpSeconds[playerID])
 		prop.setProperty("spfvs.useMap.p$playerID", useMap[playerID])
 		prop.setProperty("spfvs.mapSet.p$playerID", mapSet[playerID])
 		prop.setProperty("spfvs.mapNumber.p$playerID", mapNumber[playerID])
@@ -393,12 +393,10 @@ class SPF:AbstractMode() {
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
 					7, 8 -> presetNumber[pid] = rangeCursor(presetNumber[pid]+change, 0, 99)
-					9 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					9 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					10 -> {
 						useMap[pid] = !useMap[pid]
-						if(!useMap[pid]) {
-							if(engine.field!=null) engine.field.reset()
-						} else
+						if(!useMap[pid]) engine.field.reset() else
 							loadMapPreview(engine, pid, if(mapNumber[pid]<0) 0 else mapNumber[pid], true)
 					}
 					11 -> {
@@ -420,11 +418,11 @@ class SPF:AbstractMode() {
 					13 -> enableSE[pid] = !enableSE[pid]
 					14 -> {
 						if(m>10)
-							hurryupSeconds[pid] += change*m/10
+							hurryUpSeconds[pid] += change*m/10
 						else
-							hurryupSeconds[pid] += change
-						if(hurryupSeconds[pid]<0) hurryupSeconds[pid] = 300
-						if(hurryupSeconds[pid]>300) hurryupSeconds[pid] = 0
+							hurryUpSeconds[pid] += change
+						if(hurryUpSeconds[pid]<0) hurryUpSeconds[pid] = 300
+						if(hurryUpSeconds[pid]>300) hurryUpSeconds[pid] = 0
 					}
 					15 -> {
 						ojamaCountdown[pid] += change
@@ -522,7 +520,7 @@ class SPF:AbstractMode() {
 				drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 				receiver.drawMenuFont(engine, 0, 19, "PAGE 1/3", COLOR.YELLOW)
 			} else if(menuCursor<18) {
-				drawMenu(engine, receiver, 0, COLOR.PINK, 9, "BGM" to BGM.values[bgmno])
+				drawMenu(engine, receiver, 0, COLOR.PINK, 9, "BGM" to BGM.values[bgmId])
 
 				drawMenu(
 					engine,
@@ -532,7 +530,7 @@ class SPF:AbstractMode() {
 					"MAP SET" to mapSet[pid],
 					"MAP NO." to if(mapNumber[pid]<0) "RANDOM" else "${mapNumber[pid]}/${mapMaxNo[pid]-1}",
 					"SE" to enableSE[pid],
-					"HURRYUP" to if(hurryupSeconds[pid]==0) "NONE" else "${hurryupSeconds[pid]}SEC",
+					"HURRYUP" to if(hurryUpSeconds[pid]==0) "NONE" else "${hurryUpSeconds[pid]}SEC",
 					"COUNTDOWN" to ojamaCountdown[pid]
 				)
 				drawMenu(engine, receiver, COLOR.PINK, "BIG DISP" to bigDisplay)
@@ -616,7 +614,7 @@ class SPF:AbstractMode() {
 						fldBackup[pid] = Field(engine.field)
 					}
 				}
-			} else if(engine.field!=null) engine.field.reset()
+			} else engine.field.reset()
 		} else if(engine.statc[0]==1&&diamondPower[pid]>0) {
 			var x = 24
 			while(x<engine.nextPieceArraySize) {
@@ -636,7 +634,7 @@ class SPF:AbstractMode() {
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		//engine.big = big[engine.playerID];
 		engine.enableSE = enableSE[engine.playerID]
-		if(engine.playerID==1) owner.musMan.bgm = BGM.values[bgmno]
+		if(engine.playerID==1) owner.musMan.bgm = BGM.values[bgmId]
 		//engine.colorClearSize = big[engine.playerID] ? 8 : 2;
 		engine.colorClearSize = 2
 		engine.ignoreHidden = false
@@ -788,8 +786,8 @@ class SPF:AbstractMode() {
 		scgettime[pid] = 120
 		score[pid] += lastscores[pid]
 
-		if(hurryupSeconds[pid]>0&&engine.statistics.time>hurryupSeconds[pid])
-			pow *= (1 shl engine.statistics.time/(hurryupSeconds[pid]*60)).toDouble()
+		if(hurryUpSeconds[pid]>0&&engine.statistics.time>hurryUpSeconds[pid])
+			pow *= (1 shl engine.statistics.time/(hurryUpSeconds[pid]*60)).toDouble()
 		var ojamaSend = pow
 		if(ojama[pid]>0&&ojamaSend>0.0) {
 			val delta = minOf(ojama[pid] shl 1, ojamaSend.toInt())
@@ -1104,19 +1102,17 @@ class SPF:AbstractMode() {
 		val pid = engine.playerID
 		scgettime[pid]++
 		if(zenKeshiDisplay[pid]>0) zenKeshiDisplay[pid]--
-		var width = 1
-		width = engine.field.width
-		val blockHeight = EventReceiver.getBlockSize(engine)
+		val width = engine.field.width
+		val blockHeight = engine.blockSize
 		// Rising auctionMeter
 		if(ojama[pid]*blockHeight/width>engine.meterValue)
 			engine.meterValue++
 		else if(ojama[pid]*blockHeight/width<engine.meterValue) engine.meterValue--
-		if(ojama[pid]>30)
-			engine.meterColor = GameEngine.METER_COLOR_RED
-		else if(ojama[pid]>10)
-			engine.meterColor = GameEngine.METER_COLOR_YELLOW
-		else
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
+		engine.meterColor = when {
+			ojama[pid]>30 -> GameEngine.METER_COLOR_RED
+			ojama[pid]>10 -> GameEngine.METER_COLOR_YELLOW
+			else -> GameEngine.METER_COLOR_GREEN
+		}
 
 		// Settlement
 		if(pid==1&&owner.engine[0].gameActive)

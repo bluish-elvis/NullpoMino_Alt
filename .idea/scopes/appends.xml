@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="appends" pattern="src[nullpomino-core]:bin.sylveon.nullpomino..*||src[nullpomino-core]:zeroxfc..*||src[nullpomino-core]:wtf.oshisaure..*" />
+</component>

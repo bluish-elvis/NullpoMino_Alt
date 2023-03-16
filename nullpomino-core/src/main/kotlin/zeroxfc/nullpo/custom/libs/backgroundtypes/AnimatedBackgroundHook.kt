@@ -133,7 +133,7 @@ abstract class AnimatedBackgroundHook {
 		 * @return Background number (0 <= bg < 19)
 		 */
 		private fun getFadeBGState(owner:GameManager):Int {
-			val bg = owner.bgMan.fadebg
+			val bg = owner.bgMan.nextBg
 			return if(bg<0||bg>19) LAST_FADE_BG else {
 				LAST_FADE_BG = bg
 				bg
@@ -148,7 +148,7 @@ abstract class AnimatedBackgroundHook {
 			getBGState(owner)
 			getFadeBGState(owner)
 			owner.bgMan.bg = -1
-			owner.bgMan.fadebg = -1
+			owner.bgMan.nextBg = -1
 		}
 		/**
 		 * Re-enables the current background.
@@ -157,7 +157,7 @@ abstract class AnimatedBackgroundHook {
 		 */
 		fun enableDefaultBG(owner:GameManager) {
 			owner.bgMan.bg = LAST_BG
-			owner.bgMan.fadebg = LAST_FADE_BG
+			owner.bgMan.nextBg = LAST_FADE_BG
 		}
 	}
 }

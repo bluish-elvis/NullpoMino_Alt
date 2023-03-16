@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -32,9 +32,10 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_GRADE
 import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.gui.common.AbstractBG
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.common.bg.*
 import mu.nu.nullpo.gui.common.libs.Vector
 import mu.nu.nullpo.gui.slick.img.FontGrade
 import mu.nu.nullpo.gui.slick.img.FontMedal
@@ -49,17 +50,14 @@ import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.Image
 import org.newdawn.slick.geom.Polygon
-import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundHorizontalBars
-import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundInterlaceHorizontal
-import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundInterlaceVertical
-import zeroxfc.nullpo.custom.libs.backgroundtypes.BackgroundVerticalBars
 import kotlin.math.PI
-import kotlin.random.Random
+import kotlin.math.absoluteValue
 
 /** ゲームの event 処理と描画処理 (Slick版） */
-class RendererSlick:AbstractRenderer() {
+class RendererSlick(
 	/** 描画先サーフェイス */
 	internal var graphics:Graphics? = null
+):AbstractRenderer() {
 
 	override val resources = ResourceHolder
 
@@ -73,20 +71,20 @@ class RendererSlick:AbstractRenderer() {
 	/** Constructor */
 	init {
 		showBg = NullpoMinoSlick.propConfig.getProperty("option.showbg", true)
-		showlineeffect = NullpoMinoSlick.propConfig.getProperty("option.showlineeffect", true)
-		heavyeffect = NullpoMinoSlick.propConfig.getProperty("option.heavyeffect", false)
+		showLineEffect = NullpoMinoSlick.propConfig.getProperty("option.showlineeffect", true)
+		heavyEffect = NullpoMinoSlick.propConfig.getProperty("option.heavyeffect", false)
 		edgeBold = NullpoMinoSlick.propConfig.getProperty("option.edgeBold", false)
-		fieldbgbright = NullpoMinoSlick.propConfig.getProperty("option.fieldbgbright", 128)/255f
-		showfieldbggrid = NullpoMinoSlick.propConfig.getProperty("option.showfieldbggrid", true)
+		fieldBgBright = NullpoMinoSlick.propConfig.getProperty("option.fieldbgbright", 128)/255f
+		showFieldBgGrid = NullpoMinoSlick.propConfig.getProperty("option.showfieldbggrid", true)
 		showMeter = NullpoMinoSlick.propConfig.getProperty("option.showmeter", true)
 		showSpeed = NullpoMinoSlick.propConfig.getProperty("option.showmeter", true)
-		darknextarea = NullpoMinoSlick.propConfig.getProperty("option.darknextarea", true)
-		nextshadow = NullpoMinoSlick.propConfig.getProperty("option.nextshadow", false)
-		lineeffectspeed = NullpoMinoSlick.propConfig.getProperty("option.lineeffectspeed", 0)
+		darkNextArea = NullpoMinoSlick.propConfig.getProperty("option.darknextarea", true)
+		nextShadow = NullpoMinoSlick.propConfig.getProperty("option.nextshadow", false)
+		lineEffectSpeed = NullpoMinoSlick.propConfig.getProperty("option.lineeffectspeed", 0)
 		outlineGhost = NullpoMinoSlick.propConfig.getProperty("option.outlineghost", false)
 		sideNext = NullpoMinoSlick.propConfig.getProperty("option.sidenext", false)
 		bigSideNext = NullpoMinoSlick.propConfig.getProperty("option.bigsidenext", false)
-		smoothfall = NullpoMinoSlick.propConfig.getProperty("option.smoothfall", false)
+		smoothFall = NullpoMinoSlick.propConfig.getProperty("option.smoothfall", false)
 		showLocus = NullpoMinoSlick.propConfig.getProperty("option.showLocus", false)
 		showCenter = NullpoMinoSlick.propConfig.getProperty("option.showCenter", false)
 	}
@@ -98,12 +96,12 @@ class RendererSlick:AbstractRenderer() {
 		g.setDrawMode(Graphics.MODE_NORMAL)
 	}
 
-	override fun printFontSpecific(x:Int, y:Int, str:String, font:FONT, color:COLOR, scale:Float, alpha:Float) {
+	override fun printFontSpecific(x:Int, y:Int, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float) {
 		when(font) {
-			FONT.NANO -> FontNano.printFont(x, y, str, color, scale, alpha)
-			FONT.NUM -> FontNumber.printFont(x, y, str, color, scale, alpha)
-			FONT.TTF -> printTTFSpecific(x, y, str, color, scale, alpha)
-			FONT.GRADE -> FontGrade.printFont(x, y, str, color, scale, alpha)
+			BaseFont.FONT.NANO -> FontNano.printFont(x, y, str, color, scale, alpha)
+			BaseFont.FONT.NUM -> FontNumber.printFont(x, y, str, color, scale, alpha)
+			BaseFont.FONT.TTF -> printTTFSpecific(x, y, str, color, scale, alpha)
+			BaseFont.FONT.GRADE -> FontGrade.printFont(x, y, str, color, scale, alpha)
 			else -> FontNormal.printFont(x, y, str, color, scale, alpha)
 		}
 	}
@@ -141,14 +139,14 @@ class RendererSlick:AbstractRenderer() {
 
 	/* 描画先のサーフェイスを設定 */
 	override fun setGraphics(g:Any?) {
-		if(g is Graphics) graphics = g
+		if(g is Graphics&&g!=graphics) this.graphics = g
 	}
 
 	/* リプレイを保存 */
-	override fun saveReplay(owner:GameManager, prop:CustomProperties, foldername:String) {
+	override fun saveReplay(owner:GameManager, prop:CustomProperties, folderName:String) {
 		if(owner.mode?.isOnlineMode!=false) return
 
-		super.saveReplay(owner, prop, NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", foldername))
+		super.saveReplay(owner, prop, NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", folderName))
 	}
 
 	override fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int, size:Float, darkness:Float, alpha:Float) {
@@ -626,26 +624,49 @@ class RendererSlick:AbstractRenderer() {
 		}
 	}
 
-	val bgtype:List<AbstractBG<Image>> by lazy {
-		resources.imgPlayBG.map {it:ResourceImage<Image> ->
-			when(Random.Default.nextInt(7)) {
-				0, 2 -> BackgroundHorizontalBars(it, 1000)
-				1, 3 -> BackgroundVerticalBars(it, 1000)
-				4 -> BackgroundInterlaceHorizontal(it)
-				5 -> BackgroundInterlaceVertical(it)
-				else -> SpinBG(it)
+	val bgType:List<AbstractBG<Image>> by lazy {
+		resources.imgPlayBG.map {it:ResourceImage<Image> -> SpinBG(it)}
+	}
+
+	val bgaType:List<AbstractBG<Image>> by lazy {
+		resources.imgPlayBGA.mapIndexed {i, it:ResourceImage<Image> ->
+			when {
+				it.name.endsWith("_o") -> DTET00Ocean(it)
+				it.name.endsWith("_c") -> DTET01CircleLoop(it)
+				it.name.endsWith("_f") -> DTET02Fall(it)
+				it.name.endsWith("_n") -> DTET03NightClock(it)
+				it.name.endsWith("_d") -> DTET04Deep(it)
+				it.name.endsWith("_k") -> DTET05KaleidSq(it)
+				it.name.endsWith("_t") -> DTET06Texture(it)
+				it.name.endsWith("_b") -> DTET07Beams(it)
+				it.name.endsWith("_m") -> DTET08Mist(it)
+				it.name.endsWith("_p") -> DTET09Prism(it)
+				it.name.endsWith("_x") -> DTET11ExTrans(it)
+				it.name.endsWith("_r") -> DTET12Rush(it)
+				else -> DTET10VWave(it)
 			}
 		}
 	}
 
+	override fun modeInit(manager:GameManager) {
+		super.modeInit(manager)
+		bgType.forEach {it.reset()}
+		bgaType.forEach {it.reset()}
+//		engine.owner.bgMan.fadeEnabled=heavyEffect
+	}
+
 	override fun onFirst(engine:GameEngine) {
 		super.onFirst(engine)
+		val bgMax = resources.bgMax
+		val bgaMax = resources.bgaMax
+		val bg = engine.owner.bgMan.bg
 
-		val bgmax = resources.backgroundMax
-		val bg = engine.owner.bgMan.bg%bgmax
-
-		if(!engine.owner.menuOnly&&bg in 0 until bgmax&&showBg&&heavyeffect)
-			bgtype[bg].update()
+		if(!engine.owner.menuOnly&&showBg&&heavyEffect) {
+			if(bg in 0 until bgMax)
+				bgType[bg].update()
+			else if(bg<0&&bg.absoluteValue in 1..bgaMax+1)
+				bgaType[bg.absoluteValue-1].update()
+		}
 	}
 
 	override fun drawBG(engine:GameEngine) {
@@ -653,33 +674,93 @@ class RendererSlick:AbstractRenderer() {
 		if(engine.owner.menuOnly) {
 			graphics.color = Color.white
 			graphics.drawImage(resources.imgMenuBG[1], 0f, 0f)
-		} else {
-			val bgmax = resources.backgroundMax
-			var bg = engine.owner.bgMan.bg%bgmax
-			if(engine.owner.bgMan.fadesw&&!heavyeffect) bg = engine.owner.bgMan.fadebg
+		} else if(showBg) {
+			val bgMax = resources.bgMax
+			val bgaMax = resources.bgaMax
+			val bg = engine.owner.bgMan.bg
 
-			if(bg in 0 until bgmax&&showBg) {
-				graphics.color = Color.white
-				if(heavyeffect) {
-					bgtype[bg].draw()
-					if(engine.owner.bgMan.fadesw) {
-						val filter = Color(Color.black).apply {
-							a = engine.owner.bgMan.let {
-								if(!it.fadestat) it.fadecount/100f else (100f-it.fadecount)/100
-							}
+
+			graphics.color = Color.white
+			if(heavyEffect) {
+				if(bg in 0 until bgMax)
+					bgType[bg].draw()
+				else if(bg<0&&bg.absoluteValue in 1..bgaMax+1)
+					bgaType[bg.absoluteValue-1].draw()
+
+				if(engine.owner.bgMan.fadeSW) {
+					val filter = Color(Color.black).apply {
+						a = engine.owner.bgMan.let {
+							if(!it.fadeStat) it.fadeCount/100f else (100f-it.fadeCount)/100
 						}
-						graphics.color = filter
-						graphics.fillRect(0, 0, 640, 480)
 					}
-				} else {
-					val bgi = resources.imgPlayBG[bg].res
-					bgi.rotation = 0f
-					graphics.drawImage(bgi, 0, 0, 640, 480, 0, 0, bgi.width, bgi.height)
+					graphics.color = filter
+					graphics.fillRect(0, 0, 640, 480)
 				}
+			} else {
+
+				if(bg in 0 until bgMax)
+					bgType[bg].drawLite()
+				else if(bg<0&&bg.absoluteValue in 1..bgaMax+1)
+					bgaType[bg.absoluteValue-1].drawLite()
+				val bgi = resources.imgPlayBG[bg].res
+				bgi.rotation = 0f
+				graphics.drawImage(bgi, 0, 0, 640, 480, 0, 0, bgi.width, bgi.height)
+				/*
+If FOC < 30 Then
+FOC = FOC + 1
+RR = FAC
+RR1 = FOC + (FOC > 20) * (FOC - 20)
+For I = 0 To 11: For U = 0 To 1
+With Src
+.Left = 0: .Top = 232 - RR1 * 2: .Right = 40 * (8 - ((RR * 3) Mod 8)): .Bottom = 232
+End With
+If Not FS Then BBSf.BltFast U * 320 + 320 - 40 * (8 - ((RR * 3) Mod 8)), I * 40 + 40 - RR1 * 2, SpSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 40 * (8 - ((RR * 3) Mod 8)): .Top = 232 - RR1 * 2: .Right = 320: .Bottom = 232
+End With
+If Not FS Then BBSf.BltFast U * 320, I * 40 + 40 - RR1 * 2, SpSf, Src, DDBLTFAST_WAIT
+Next U, I
+Else
+If FIC = 0 Then
+Stt = Int(Lev / 5)
+If Lev >= 50 And Lev < 200 Then Stt = 10
+If Lev >= 30 - (TrM >= 1) * 20 - (TrM = 2) * 150 Then Stt = 11 - (Not (Fnl Or TA)) * 2
+BGCr Stt
+End If
+FIC = FIC + 1
+RR = FAC
+RR1 = (FIC - 10) * -(FIC >= 10)
+For I = 0 To 11: For U = 0 To 1
+With Src
+.Left = 0: .Top = 192: .Right = 40 * (8 - ((RR * 3) Mod 8)): .Bottom = 232 - RR1 * 2
+End With
+If Not FS Then BBSf.BltFast U * 320 + 320 - 40 * (8 - ((RR * 3) Mod 8)), I * 40, SpSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 40 * (8 - ((RR * 3) Mod 8)): .Top = 192: .Right = 320: .Bottom = 232 - RR1 * 2
+End With
+If Not FS Then BBSf.BltFast U * 320, I * 40, SpSf, Src, DDBLTFAST_WAIT
+Next U, I
+If FIC >= 30 Then FOC = 0: FIC = 0: FF = False
+End If
+Exit Sub
+*/
 			}
 		}
 	}
 
+	override fun setBGSpd(owner:GameManager, spd:Float, id:Int?) {
+		val bgMax = resources.bgMax
+		val bgaMax = resources.bgaMax
+
+		if(!owner.menuOnly&&showBg&&heavyEffect)
+			if(id==null) {
+				bgType.forEach {it.speed = spd}
+				bgaType.forEach {it.speed = spd}
+			} else if(id in 0 until bgMax)
+				bgType[id].speed = spd
+			else if(id<0&&id.absoluteValue in 1..bgaMax+1)
+				bgaType[id.absoluteValue-1].speed = spd
+	}
 	/*override fun effectRender() {
 	_	effects.forEachIndexed {i, it ->
 			when(it) {

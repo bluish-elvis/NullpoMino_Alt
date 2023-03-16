@@ -70,6 +70,27 @@ class CustomProperties(name:String = ""):Properties() {
 
 		return this
 	}
+	/** Load from [file].
+	 * @return This Properties data you specified, or null if the file doesn't exist.
+	 */
+	fun loadXML(file:String = fileName, gzip:Boolean = false):CustomProperties? {
+		fileName = file
+		log.debug("XML $file")
+		try {
+			FileInputStream(file).let {if(gzip) GZIPInputStream(it) else it}.let {
+				loadFromXML(it)
+				it.close()
+			}
+		} catch(e:FileNotFoundException) {
+			log.debug("Not found prop XML: $file")
+			return null
+		} catch(e:IOException) {
+			log.debug("Failed to load prop from XML $file", e)
+			return null
+		}
+
+		return this
+	}
 
 	/** Save to [file].
 	 * @return true if success
@@ -108,6 +129,7 @@ class CustomProperties(name:String = ""):Properties() {
 	/** プロパティを設定
 	 * @return 指定された[key]に対応する値 (見つからなかったら[def]）
 	 */
+	@Suppress("IMPLICIT_CAST_TO_ANY")
 	inline fun <reified T> getProperty(key:String, def:T):T = try {
 		when(def) {
 			is Byte -> getProperty(key, def)
@@ -117,6 +139,7 @@ class CustomProperties(name:String = ""):Properties() {
 			is Double -> getProperty(key, def)
 			is Char -> getProperty(key, def)
 			is Boolean -> getProperty(key, def)
+			is MutableList<*> -> getProperties(key, def)
 			is List<*> -> getProperties(key, def)
 			else -> getProperty(key, "$def")
 		} as? T ?: def
@@ -189,6 +212,7 @@ class CustomProperties(name:String = ""):Properties() {
 			if(it is String) it.split(',').filterIsInstance<T>()
 			else null
 		} ?: emptyList()
+
 	/** intArray型のプロパティを取得
 	 * @return 指定された[key]に対応する値 (見つからなかったら[defaultValue]）
 	 */
@@ -200,7 +224,7 @@ class CustomProperties(name:String = ""):Properties() {
 
 	fun setProperties(key:String, value:IntArray):IntArray? =
 		setProperty(key, value.joinToString(","))?.let {
-			if(it is String) it.split(',').map {it.toInt()}.toIntArray()
+			if(it is String) it.split(',').map {s -> s.toInt()}.toIntArray()
 			else null
 		}
 

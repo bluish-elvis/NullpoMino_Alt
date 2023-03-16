@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2022,
+ * Copyright (c) 2021-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -351,7 +351,7 @@ open class MarathonModeBase:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
+		val bg = if(engine.owner.bgMan.fadeSW) engine.owner.bgMan.nextBg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t"+

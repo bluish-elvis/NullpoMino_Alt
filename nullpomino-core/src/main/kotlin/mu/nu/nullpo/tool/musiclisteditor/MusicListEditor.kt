@@ -37,25 +37,10 @@ import java.awt.Dimension
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Locale
-import javax.swing.AbstractAction
-import javax.swing.Action
-import javax.swing.BoxLayout
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JFileChooser
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.JOptionPane
-import javax.swing.JPanel
-import javax.swing.JPopupMenu
-import javax.swing.JTabbedPane
-import javax.swing.JTextField
-import javax.swing.UIManager
-import javax.swing.WindowConstants
+import javax.swing.*
 
 /** MusicListEditor (音楽リスト編集ツール) */
 class MusicListEditor:JFrame(), ActionListener {
@@ -95,30 +80,13 @@ class MusicListEditor:JFrame(), ActionListener {
 	/** Initialization */
 	private fun init() {
 		// 設定ファイル読み込み
-		try {
-			val `in` = FileInputStream("config/setting/swing.xml")
-			propConfig.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-		}
+		propConfig.loadXML("config/setting/swing.xml")
 
 		// 言語ファイル読み込み
-		try {
-			val `in` = FileInputStream("config/lang/musiclisteditor_default.xml")
-			propLangDefault.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-			log.error("Couldn't load default UI language file", e)
-		}
+		if(propLangDefault.loadXML("config/lang/musiclisteditor_default.xml")==null)
+			log.error("Couldn't load default UI language file")
 
-		try {
-			val `in` = FileInputStream(
-				"config/lang/musiclisteditor_${Locale.getDefault().country}.xml"
-			)
-			propLang.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-		}
+		propLang.loadXML("config/lang/musiclisteditor_${Locale.getDefault().country}.xml")
 
 		// 音楽リスト読み込み
 		loadMusicList()
@@ -162,20 +130,20 @@ class MusicListEditor:JFrame(), ActionListener {
 		txtfldMusicFileNames = Array(num) {JTextField(45)}
 		chkboxNoLoop = Array(num) {JCheckBox()}
 		//TODO:Tab : BGM. : Category
-		BGM.values.forEachIndexed {i, Track ->
-			if(Track!=BGM.Silent) {
+		BGM.values.forEachIndexed {i, tr ->
+			if(tr!=BGM.Silent) {
 				val i = i-1
-				val name = "${Track.name}.${Track.idx}"
-				val id = Track.id
-				panels[Track.id-1].let {
-					if(Track.idx==0) tabPane.addTab(Track.longName, it)
+				val name = "${tr.name}.${tr.idx}"
+				val id = tr.id
+				panels[tr.id-1].let {p ->
+					if(tr.idx==0) tabPane.addTab(tr.longName, p)
 
 					val pMusicTemp = JPanel(BorderLayout())
-					it.add(pMusicTemp)
+					p.add(pMusicTemp)
 
 					val pMusicTempLabels = JPanel(BorderLayout())
 					pMusicTemp.add(pMusicTempLabels, BorderLayout.WEST)
-					pMusicTempLabels.add(JLabel("${Track.id}-${Track.idx} ${Track.fullName}"), BorderLayout.WEST)
+					pMusicTempLabels.add(JLabel("${tr.id}-${tr.idx} ${tr.fullName}"), BorderLayout.WEST)
 
 					val pMusicTempTexts = JPanel(BorderLayout())
 					pMusicTemp.add(pMusicTempTexts, BorderLayout.EAST)
@@ -253,12 +221,7 @@ class MusicListEditor:JFrame(), ActionListener {
 	/** 音楽リスト読み込み */
 	private fun loadMusicList() {
 		propMusic.clear()
-		try {
-			val `in` = FileInputStream("config/setting/music.xml")
-			propMusic.loadFromXML(`in`)
-			`in`.close()
-		} catch(e:IOException) {
-		}
+		propMusic.loadXML("config/setting/music.xml")
 	}
 
 	/** 音楽リストを保存
@@ -304,11 +267,11 @@ class MusicListEditor:JFrame(), ActionListener {
 				try {
 					val strName = file.name
 					val lastPeriod = strName.lastIndexOf('.')
-					if(lastPeriod!=-1) {
+					if(lastPeriod!=-1&&hashmapFileFilters!=null) {
 						val strExt = strName.substring(lastPeriod, strName.length)
 						fileChooser?.fileFilter = hashmapFileFilters!![strExt]
 					}
-				} catch(e2:Exception) {
+				} catch(_:Exception) {
 				}
 
 			// ファイル選択ダイアログを表示

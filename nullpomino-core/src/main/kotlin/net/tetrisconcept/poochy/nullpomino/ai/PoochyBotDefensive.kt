@@ -74,7 +74,7 @@ class PoochyBotDefensive:PoochyBot() {
 			//deepestX = i;
 		}
 
-		//Find valleys that need an I, J, or L.
+		//Find valleys that need an [I], [J], or [L].
 		var needIValleyBefore = 0
 		var needJValleyBefore = 0
 		var needLValleyBefore = 0
@@ -190,7 +190,7 @@ class PoochyBotDefensive:PoochyBot() {
 			// Number of holes and valleys needing an I-piece (after placement)
 			//int lidAfter = fld.getHowManyLidAboveHoles();
 
-			//Find valleys that need an I, J, or L.
+			//Find valleys that need an [I], [J], or [L].
 			var needIValleyAfter = 0
 			var needJValleyAfter = 0
 			var needLValleyAfter = 0

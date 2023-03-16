@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -33,6 +33,7 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.SpeedParam.Companion.spdRank
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont.FONT
 import mu.nu.nullpo.gui.common.fx.Effect
 import mu.nu.nullpo.gui.common.fx.PopupCombo
 import mu.nu.nullpo.util.CustomProperties
@@ -50,9 +51,6 @@ import kotlin.random.Random
 /** Drawing and event handling EventReceiver */
 open class EventReceiver {
 	protected val random = Random.Default
-
-	/** Font cint constants */
-	enum class FONT { NORMAL, NANO, NUM, GRADE, GRADE_BIG, MEDAL, TTF; }
 
 	/** Font cint constants */
 	enum class COLOR {
@@ -121,10 +119,6 @@ open class EventReceiver {
 				if(nextDisplayType==0) nextHeight else 0
 		} ?: 0
 
-	/**  @return Maximum length of the meter*/
-	@Deprecated("meterValue is now 0f~1f")
-	fun getMeterMax(e:GameEngine) = 1//if(!showMeter) 0 else e.field.height*e.blockSize
-
 	/** @return X position of score display area*/
 	fun scoreX(e:GameEngine) = e.sX
 	/** @return X position of score display area*/
@@ -138,12 +132,19 @@ open class EventReceiver {
 			} ?: 0)+fieldXOffset+blockSize*(field.width+3+nextDisplayType)
 
 	/** @return Y position of score display area */
+	@Deprecated("toExtend", ReplaceWith("e.sY"))
 	fun scoreY(e:GameEngine) = e.sY
 	/** @return Y position of score display area */
 	val GameEngine.sY
 		get() = if(owner.menuOnly) 0 else owner.mode?.let {m ->
-			if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal][displaySize+1][playerID]
-			else NEW_FIELD_OFFSET_Y[m.gameStyle.ordinal][displaySize+1][0]
+			if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal].let {it[minOf(it.lastIndex, displaySize+1)]}
+				.let {it[minOf(it.lastIndex, playerID)]}
+			else NEW_FIELD_OFFSET_Y[m.gameStyle.ordinal].let {it[minOf(it.lastIndex, displaySize+1)]}.let {
+				it[minOf(
+					it.lastIndex,
+					playerID
+				)]
+			}
 		} ?: 0
 
 	/** It will be called when a line is cleared.*/
@@ -313,7 +314,7 @@ open class EventReceiver {
 	/** Draw String inside the field.
 	 * @param engine GameEngine
 	 * @param x X-coordinate
-	 * @param y Y-coordinate
+	 * @param y Y-coordinate if x < -2 Center Align
 	 * @param str String to draw
 	 * @param font Fomt specifies
 	 * @param color Font cint
@@ -321,7 +322,7 @@ open class EventReceiver {
 	 */
 	fun drawMenu(engine:GameEngine, x:Float, y:Float, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f) {
 		val s = if(scale<=.5f) BS/2 else BS
-		var sx = x*s
+		var sx = if(x<-2) engine.fieldWidth*BS/2-str.length*font.w/scale/2 else s*x
 		var sy = y*s
 		if(!engine.owner.menuOnly) {
 			sx += engine.fX
@@ -612,7 +613,7 @@ open class EventReceiver {
 	@JvmOverloads
 	fun drawPiece(x:Float, y:Float, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f, ow:Float = 0f) =
 		piece.block.forEachIndexed {i, blk ->
-			val ls = scale*if(piece.big) 32 else 16
+			val ls = scale*getBlockSize(piece.big.toInt())
 			drawBlock(
 				x+(piece.dataX[piece.direction][i].toFloat()*ls), y+(piece.dataY[piece.direction][i].toFloat()*ls),
 				blk, darkness, alpha, scale, ow
@@ -707,7 +708,13 @@ open class EventReceiver {
 	/** It will be called before game screen appears.
 	 * @param manager GameManager that owns this mode
 	 */
-	open fun modeInit(manager:GameManager) {}
+	open fun modeInit(manager:GameManager) {
+		setBGSpd(manager, 1f)
+	}
+
+	/**change BGA Speed multiplier to [spd]
+	 * @param spd Recommended : 0f-2f*/
+	open fun setBGSpd(owner:GameManager, spd:Float, id:Int? = null) {}
 
 	/** It will be called at the end of initialization for each player.*/
 	open fun playerInit(engine:GameEngine) {}
@@ -811,12 +818,12 @@ open class EventReceiver {
 
 	/** It will be called before blocks are destroyed.
 	 * @param engine GameEngine
-	 * @param blks Indexed Iterable (listOf(y:listOf(x:Block))
+	 * @param blk Indexed Iterable (listOf(y:listOf(x:Block))
 	 */
 	open fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>) {}
 	/** It will be called before a block is destroyed.
 	 * @param engine GameEngine
-	 * @param blks Indexed Iterable (listOf(y:listOf(x:Block))
+	 * @param blk Indexed Iterable (listOf(y:listOf(x:Block))
 	 * @param x X-coordinate grid
 	 * @param y Y-coordinate grid
 	 */
@@ -858,11 +865,11 @@ open class EventReceiver {
 
 	/** Called when saving replay into [prop]
 	 * @param owner GameManager
-	 * @param foldername Replay folder name
+	 * @param folderName Replay folder name
 	 */
-	open fun saveReplay(owner:GameManager, prop:CustomProperties, foldername:String = "replay") {
+	open fun saveReplay(owner:GameManager, prop:CustomProperties, folderName:String = "replay") {
 		if(owner.mode?.isOnlineMode!=false) return
-		val folder = "$foldername/${owner.mode?.javaClass?.simpleName ?: ""}"
+		val folder = "$folderName/${owner.mode?.javaClass?.simpleName ?: ""}"
 		val filename = "$folder/"+prop.getProperty("name.rule").lowercase().toReplayFilename.replace(Regex("[\\s-]"), "_")
 		try {
 			val repFolder = File(folder)
@@ -900,24 +907,19 @@ open class EventReceiver {
 			1 -> BS*2
 			else -> BS
 		}
-		/** @return Width&Height of block image*/
-		fun getBlockSize(e:GameEngine) = getBlockSize(e.displaySize)
-		/** @return Width&Height of block image*/
-		@get:JvmName("blockSize")
-		val GameEngine.blockSize get() = getBlockSize(displaySize)
 		/** Log */
 		internal val log = LogManager.getLogger()
 
-		fun getRainbowColor(i:Int):COLOR = when(i%9) {
-			0 -> COLOR.RED
-			1 -> COLOR.ORANGE
-			2 -> COLOR.YELLOW
-			3 -> COLOR.GREEN
-			4 -> COLOR.CYAN
-			5 -> COLOR.BLUE
-			6 -> COLOR.COBALT
-			7 -> COLOR.PURPLE
-			8 -> COLOR.PINK
+		fun getRainbowColor(i:Int, o:Int = 0):COLOR = when((i-o%10)%10) {
+			1, -9 -> COLOR.RED
+			2, -8 -> COLOR.ORANGE
+			3, -7 -> COLOR.YELLOW
+			4, -6 -> COLOR.GREEN
+			5, -5 -> COLOR.CYAN
+			6, -4 -> COLOR.BLUE
+			7, -3 -> COLOR.COBALT
+			8, -2 -> COLOR.PURPLE
+			9, -1 -> COLOR.PINK
 			else -> COLOR.WHITE
 		}
 
@@ -1051,4 +1053,5 @@ open class EventReceiver {
 			)// Big
 		)
 	}
+
 }

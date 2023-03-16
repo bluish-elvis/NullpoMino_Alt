@@ -266,7 +266,7 @@ class NetSPRecord:Serializable {
 					RANKINGTYPE_ULTRA -> "${it.score},${it.lines},${it.totalPieceLocked}"
 					RANKINGTYPE_COMBORACE -> "${it.maxCombo},${it.time},${it.pps}"
 					RANKINGTYPE_DIGCHALLENGE -> "${it.score},${it.lines},${it.time}"
-					RANKINGTYPE_TIMEATTACK -> "${it.lines},${it.time},${it.pps},${it.rollclear}"
+					RANKINGTYPE_TIMEATTACK -> "${it.lines},${it.time},${it.pps},${it.rollClear}"
 					else -> "${it.score},${it.lines},${it.time}"
 				} else "${it.score},${it.lines},${it.time}"
 			} ?: ""
@@ -325,10 +325,10 @@ class NetSPRecord:Serializable {
 					val l1 = minOf(s1.lines, maxLines)
 					val l2 = minOf(s2.lines, maxLines)
 
-					(s1.rollclear>s2.rollclear)
-						||(s1.rollclear==s2.rollclear&&l1>l2)
-						||(s1.rollclear==s2.rollclear&&l1==l2&&s1.time<s2.time)
-						||s1.rollclear==s2.rollclear&&l1==l2&&s1.time==s2.time&&s1.pps>s2.pps
+					(s1.rollClear>s2.rollClear)
+						||(s1.rollClear==s2.rollClear&&l1>l2)
+						||(s1.rollClear==s2.rollClear&&l1==l2&&s1.time<s2.time)
+						||s1.rollClear==s2.rollClear&&l1==l2&&s1.time==s2.time&&s1.pps>s2.pps
 				}
 				else -> return false
 			}

@@ -264,7 +264,7 @@ class GameEngine(
 	/** True if Twister Mini */
 	val twistMini:Boolean get() = twistType?.mini==true
 	/** EZ Twister */
-	val twistEZ:Boolean get() = twistType?.EZ==true
+	val twistEZ:Boolean get() = twistType?.ez==true
 
 	/** True if last erasing line is B2B */
 	val b2b get() = b2bCount>0
@@ -346,13 +346,13 @@ class GameEngine(
 	/** Ending mode (0:During the normal game) */
 	var ending = 0
 
-	/** Enable staff roll challenge (Credits) in ending */
+	/** Enable Credits phase (Credits) after ending=1 */
 	var staffrollEnable = false
 
-	/** Disable death in staff roll challenge */
+	/** Disable GameOver in Credits phase */
 	var staffrollNoDeath = false
 
-	/** Update various statistics in staff roll challenge */
+	/** Update various statistics in Credits phase */
 	var staffrollEnableStatistics = false
 
 	/** Field's Frame color-int */
@@ -394,6 +394,9 @@ class GameEngine(
 
 	/** Field display size (-1 for mini, 1 for big, 0 for normal) */
 	var displaySize = 0
+
+	/** @return Width&Height of block image*/
+	val blockSize get() = EventReceiver.getBlockSize(displaySize)
 
 	/** Sound effects enable flag */
 	var enableSE = false
@@ -1490,7 +1493,7 @@ class GameEngine(
 	/** 開始前の設定画面のときの処理 */
 	private fun statSetting() {
 		//  event 発生
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		owner.musMan.bgm = BGM.Menu(4+(owner.mode?.gameIntensity ?: 0))
 		if(owner.mode?.onSetting(this)==true) return
 		owner.receiver.onSetting(this)
@@ -1531,10 +1534,10 @@ class GameEngine(
 
 		// Initialization
 		if(statc[0]==0) {
-			if(!readyDone&&!owner.musMan.fadesw&&owner.musMan.bgm.id<0&&
+			if(!readyDone&&!owner.musMan.fadeSW&&owner.musMan.bgm.id<0&&
 				owner.musMan.bgm.id !in BGM.Finale(0).id..BGM.Finale(2).id
 			)
-				owner.musMan.fadesw = true
+				owner.musMan.fadeSW = true
 			// fieldInitialization
 			createFieldIfNeeded()
 			// NEXTピース作成
@@ -1615,7 +1618,7 @@ class GameEngine(
 		if(statc[0]>=goEnd) {
 			owner.mode?.startGame(this)
 			owner.receiver.startGame(this)
-			owner.musMan.fadesw = false
+			owner.musMan.fadeSW = false
 			initialSpin()
 			stat = Status.MOVE
 			resetStatc()
@@ -1833,7 +1836,7 @@ class GameEngine(
 							piece.direction = rt
 							piece.updateConnectData()
 						} else if(ruleOpt.spinWallkick&&wallkick!=null&&(initialSpinDirection==0||ruleOpt.spinInitialWallkick)
-							&&(ruleOpt.lockResetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NOWALLKICK||!isSpinCountExceed)
+							&&(ruleOpt.lockResetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NoKick||!isSpinCountExceed)
 						) {
 							// Wallkickを試みる
 							val allowUpward = ruleOpt.spinWallkickMaxRise<0||nowWallkickRiseCount<ruleOpt.spinWallkickMaxRise
@@ -2293,7 +2296,6 @@ class GameEngine(
 			val ingame = ending==0||staffrollEnableStatistics
 			val li = lineClearing.let {if(big&&bigHalf) it shr 1 else it}
 			// Linescountを決める
-			val ev = ScoreEvent(nowPieceObject, li, b2bCount, combo, twistType, split)
 			if(clearMode==ClearType.LINE) {
 				split = field.lastLinesHeight.size>1
 
@@ -2363,7 +2365,6 @@ class GameEngine(
 					}
 				}
 
-				lastEvent = ev
 				lineGravityTotalLines += lineClearing
 				if(ingame) statistics.lines += li
 			} else if(clearMode==ClearType.LINE_GEM_BOMB) {
@@ -2371,6 +2372,8 @@ class GameEngine(
 				playSE("erase")
 			}
 			if(field.howManyGemClears>0) playSE("gem")
+			val ev = ScoreEvent(nowPieceObject, li, b2bCount, combo, twistType, split)
+			lastEvent = ev
 			// All clear
 			if(li>=1&&field.isEmpty) {
 				owner.receiver.bravo(this)
@@ -2476,9 +2479,10 @@ class GameEngine(
 			if(!skip) {
 				if(lineGravityType==LineGravity.NATIVE) field.downFloatingBlocks()
 
-				lastLinesY.filter {it.max()>=field.highestBlockY}.distinctBy {it.size>=3}.forEach {
+				if(clearMode==LINE) lastLinesY.filter {it.max()>=field.highestBlockY}.distinctBy {it.size>=3}.forEach {
 					playSE(
-						if(it.size>=3) "linefall" else "linefall1", maxOf(0.8f, 1.2f-it.max()/3f/fieldHeight),
+						if(it.size>=3) "linefall1" else if(it.size>1) "linefall0" else "linefall",
+						maxOf(0.8f, 1.2f-it.max()/3f/fieldHeight),
 						minOf(1f, 0.4f+speed.lineDelay*0.1f)
 					)
 				}
@@ -2596,9 +2600,9 @@ class GameEngine(
 					field.getRow(y).mapIndexedNotNull {i, b ->
 						b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) i to it else null}
 					}.associate {it}.let {
-						field.delBlocks(mapOf(y to it)).let {
-							if(owner.mode?.blockBreak(this, it)!=true)
-								owner.receiver.blockBreak(this, it)
+						field.delBlocks(mapOf(y to it)).let {b ->
+							if(owner.mode?.blockBreak(this, b)!=true)
+								owner.receiver.blockBreak(this, b)
 						}
 					}
 				}
@@ -2634,7 +2638,7 @@ class GameEngine(
 		if(statc[0]==0) {
 			stopSE("danger")
 			gameEnded()
-			owner.musMan.fadesw = true
+			owner.musMan.fadeSW = true
 			resetFieldVisible()
 			tempHanabi += 24
 			playSE("excellent")
@@ -2733,11 +2737,11 @@ class GameEngine(
 				if(!field.isEmpty) {
 					val y = field.highestBlockY
 					for(i in 0 until field.width) {
-						field.getRow(y).mapIndexedNotNull {i, b ->
-							b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) i to it else null}
+						field.getRow(y).mapIndexedNotNull {my, b ->
+							b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) my to it else null}
 						}.associate {it}.let {
-							field.delBlocks(mapOf(y to it)).let {
-								if(owner.mode?.blockBreak(this, it)!=true) owner.receiver.blockBreak(this, it)
+							field.delBlocks(mapOf(y to it)).let {b ->
+								if(owner.mode?.blockBreak(this, b)!=true) owner.receiver.blockBreak(this, b)
 							}
 						}
 					}
@@ -2754,7 +2758,7 @@ class GameEngine(
 	/** Results screen */
 	private fun statResult() {
 		// Event
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		owner.musMan.bgm = BGM.Result(
 			when {
 				ending==2 -> if(owner.mode?.gameIntensity==1) (if(statistics.time<10800) 1 else 2) else 3

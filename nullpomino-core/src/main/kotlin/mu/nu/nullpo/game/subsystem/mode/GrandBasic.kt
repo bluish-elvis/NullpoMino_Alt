@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -46,10 +46,10 @@ import kotlin.math.ln
 /** SCORE ATTACK mode (Original from NullpoUE build 121909 by Zircean) */
 class GrandBasic:AbstractMode() {
 	/** Next section level */
-	private var nextseclv = 0
+	private var nextSecLv = 0
 
 	/** Level up flag (Set to true when the level increases) */
-	private var lvupflag = false
+	private var lvupFlag = false
 
 	/** Used by Hard-drop scoring */
 	private var harddropBonus = 0
@@ -58,21 +58,21 @@ class GrandBasic:AbstractMode() {
 	private var comboValue = 0
 
 	private var hanabi = 0
-	private var temphanabi = 0
-	private var inthanabi = 0
-	private var bonusspeed = 0
-	private var bonusint = 0
-	private var halfminline = 0
-	private var halfminbonus = false
+	private var tempHanabi = 0
+	private var intHanabi = 0
+	private var bonusSpeed = 0
+	private var bonusInt = 0
+	private var halfMinLine = 0
+	private var halfMinBonus = false
 
 	/** Elapsed time from last line clear */
-	private var lastlinetime = 0
+	private var lastLineTime = 0
 
 	/** Elapsed time from last piece spawns */
-	private var lastspawntime = 0
+	private var lastSpawnTime = 0
 
 	/** Remaining ending time limit */
-	private var rolltime = 0
+	private var rollTime = 0
 
 	/** Secret Grade */
 	private var secretGrade = 0
@@ -81,27 +81,27 @@ class GrandBasic:AbstractMode() {
 	private var bgmLv = 0
 
 	/** Section Record */
-	private val sectionhanabi = Array(SECTION_MAX+1) {0}
-	private val sectionscore = Array(SECTION_MAX+1) {0L}
-	private val sectionTime = Array(SECTION_MAX+1) {0}
+	private val sectionHanabi = MutableList(SECTION_MAX+1) {0}
+	private val sectionScore = MutableList(SECTION_MAX+1) {0L}
+	private val sectionTime = MutableList(SECTION_MAX+1) {0}
 
 	/** This will be true if the player achieves new section time record in
 	 * specific section */
-	private var sectionIsNewRecord = Array(SECTION_MAX+1) {false}
+	private val sectionIsNewRecord = MutableList(SECTION_MAX+1) {false}
 
 	/** This will be true if the player achieves new section time record
 	 * somewhere */
 	private val sectionAnyNewRecord get() = sectionIsNewRecord.any()
 
 	/** Amount of sections completed */
-	private var sectionscomp = 0
+	private var sectionsDone = 0
 
 	/** Average section time */
-	private var sectionavgtime = 0
+	private val sectionAvgTime
+		get() = sectionTime.filter {it>0}.average().toFloat()
 
-	/** false:Leaderboard, true:Section time record (Push F in settings screen
-	 * to
-	 * flip it) */
+	/** false:Leaderboard, true:Section time record
+	 *  (Push F in settings screen to flip it) */
 	private var isShowBestSectionTime = false
 
 	private val itemLevel = LevelGrandMenuItem(COLOR.GREEN, 3)
@@ -145,7 +145,7 @@ class GrandBasic:AbstractMode() {
 	private val bestSectionHanabi = MutableList(RANKING_MAX) {0}
 	private val bestSectionTime = MutableList(RANKING_MAX) {0}
 	private var decoration = 0
-	private var dectemp = 0
+	private var decTemp = 0
 
 	/** Returns the name of this mode */
 	override val name = "Grand Festival"
@@ -159,27 +159,25 @@ class GrandBasic:AbstractMode() {
 	 * screen. */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		nextseclv = 0
-		lvupflag = true
+		nextSecLv = 0
+		lvupFlag = true
 		comboValue = 0
 		lastscore = 0
-		bonusint = 0
-		bonusspeed = bonusint
-		temphanabi = bonusspeed
-		hanabi = temphanabi
-		rolltime = 0
+		bonusInt = 0
+		bonusSpeed = bonusInt
+		tempHanabi = bonusSpeed
+		hanabi = tempHanabi
+		rollTime = 0
 		bgmLv = 0
-		halfminline = 0
-		halfminbonus = false
-		lastlinetime = 0
-		lastspawntime = 0
-		sectionhanabi.fill(0)
-		sectionscore.fill(0)
+		halfMinLine = 0
+		halfMinBonus = false
+		lastLineTime = 0
+		lastSpawnTime = 0
+		sectionHanabi.fill(0)
+		sectionScore.fill(0)
 		sectionTime.fill(0)
 		sectionIsNewRecord.fill(false)
-		sectionavgtime = 0
-		sectionscomp = sectionavgtime
-
+		sectionsDone = 0
 
 		rankingRank = -1
 		rankingScore.fill(0)
@@ -208,7 +206,7 @@ class GrandBasic:AbstractMode() {
 
 		version = (if(!owner.replayMode) CURRENT_VERSION else owner.replayProp.getProperty("scoreattack.version", 0))
 
-		owner.bgMan.bg = startLevel
+		owner.bgMan.bg = -1
 	}
 
 	/** Set the gravity speed
@@ -220,23 +218,15 @@ class GrandBasic:AbstractMode() {
 			.let {if(it<0) tableGravityChangeLevel.lastIndex else it}]
 	}
 
-	/** Calculates average section time */
-	private fun setAverageSectionTime() {
-		if(sectionscomp>0) {
-			val i = minOf(sectionscomp+startLevel, sectionTime.size)
-			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
-		} else sectionavgtime = 0
-	}
-
 	/** Best section time update check routine
-	 * @param numsec Section Number
+	 * @param sec Section Number
 	 */
-	private fun stNewRecordCheck(numsec:Int) {
-		if(!owner.replayMode&&(sectionhanabi[numsec]>bestSectionHanabi[numsec]||sectionscore[numsec]>bestSectionScore[numsec])||
-			(sectionhanabi[numsec]==bestSectionHanabi[numsec]&&sectionscore[numsec]==bestSectionScore[numsec]
-				&&sectionTime[numsec]<bestSectionTime[numsec])
+	private fun stNewRecordCheck(sec:Int) {
+		if(!owner.replayMode&&(sectionHanabi[sec]>bestSectionHanabi[sec]||sectionScore[sec]>bestSectionScore[sec])||
+			(sectionHanabi[sec]==bestSectionHanabi[sec]&&sectionScore[sec]==bestSectionScore[sec]
+				&&sectionTime[sec]<bestSectionTime[sec])
 		) {
-			sectionIsNewRecord[numsec] = true
+			sectionIsNewRecord[sec] = true
 		}
 	}
 
@@ -250,9 +240,9 @@ class GrandBasic:AbstractMode() {
 
 				if(startLevel<0) startLevel = 2
 				if(startLevel>2) startLevel = 0
-				owner.bgMan.bg = startLevel
+				owner.bgMan.bg = -1-startLevel
 				engine.statistics.level = startLevel*100
-				nextseclv = engine.statistics.level+100
+				nextSecLv = engine.statistics.level+100
 				setSpeed(engine)
 			}
 
@@ -267,7 +257,7 @@ class GrandBasic:AbstractMode() {
 			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				isShowBestSectionTime = false
-				sectionscomp = 0
+				sectionsDone = 0
 				return false
 			}
 
@@ -289,11 +279,11 @@ class GrandBasic:AbstractMode() {
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
 
-		nextseclv = engine.statistics.level+100
-		if(engine.statistics.level<0) nextseclv = 100
-		if(engine.statistics.level>=900) nextseclv = 999
+		nextSecLv = engine.statistics.level+100
+		if(engine.statistics.level<0) nextSecLv = 100
+		if(engine.statistics.level>=900) nextSecLv = 999
 
-		owner.bgMan.bg = engine.statistics.level/100
+		owner.bgMan.bg = engine.statistics.level/-100-1
 
 		engine.big = big
 
@@ -304,12 +294,12 @@ class GrandBasic:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "GRAND FESTIVAL", COLOR.COBALT)
-		receiver.drawScoreFont(engine, 1, 1, "SCORE ATTACK", COLOR.COBALT)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.COBALT)
+		receiver.drawScoreFont(engine, 1, 1, "Score Attack", COLOR.COBALT)
 
 		receiver.drawScoreFont(engine, -1, -4*2, "DECORATION", scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
-		receiver.drawScoreBadges(engine, 5, -4, 100, dectemp)
+		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g
 				&&engine.ai==null
@@ -360,10 +350,10 @@ class GrandBasic:AbstractMode() {
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
 				}
 		} else {
-			val g20 = engine.speed.gravity<0&&rolltime%2==0
+			val g20 = engine.speed.gravity<0&&rollTime%2==0
 			receiver.drawScoreFont(engine, 0, 5, "Score", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 0, 6, "$scDisp", g20, 2f)
-			receiver.drawScoreNum(engine, 5, 4, "$hanabi", g20||inthanabi>-100, 2f)
+			receiver.drawScoreNum(engine, 5, 4, "$hanabi", g20||intHanabi>-100, 2f)
 
 			receiver.drawScoreFont(engine, 0, 9, "Level", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
@@ -377,7 +367,7 @@ class GrandBasic:AbstractMode() {
 			receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, 2f)
 
 			if(engine.gameActive&&engine.ending==2) {
-				val time = maxOf(0, ROLLTIMELIMIT-rolltime)
+				val time = maxOf(0, ROLLTIMELIMIT-rollTime)
 				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.BLUE)
 				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
@@ -389,28 +379,28 @@ class GrandBasic:AbstractMode() {
 
 				receiver.drawScoreFont(engine, x-1, 2, "SECTION SCORE", COLOR.BLUE)
 
-				for(i in sectionscore.indices)
-					if(i<=sectionscomp) {
+				for(i in sectionScore.indices)
+					if(i<=sectionsDone) {
 						var temp = i*100
 						if(temp>=300) {
 							temp = 300
 							receiver.drawScoreFont(engine, x-1, 4+i, "BONUS", COLOR.BLUE)
 							receiver.drawScoreNum(
-								engine, x, 5+i, String.format("%4d %d", sectionhanabi[i+1], sectionscore[i+1])
+								engine, x, 5+i, String.format("%4d %d", sectionHanabi[i+1], sectionScore[i+1])
 							)
 						}
 
 						var strSeparator = "-"
-						if(i==sectionscomp) strSeparator = "+"
+						if(i==sectionsDone) strSeparator = "+"
 
-						val strSection = String.format("%3d%s%4d %d", temp, strSeparator, sectionhanabi[i], sectionscore[i])
+						val strSection = String.format("%3d%s%4d %d", temp, strSeparator, sectionHanabi[i], sectionScore[i])
 
 						receiver.drawScoreNum(engine, x, 3+i, strSection, sectionIsNewRecord[i])
 					}
 
 				receiver.drawScoreFont(engine, x2, 14, "AVERAGE", COLOR.BLUE)
 				receiver.drawScoreNum(
-					engine, x2, 15, (engine.statistics.time/(sectionscomp+if(engine.ending==0) 1 else 0)).toTimeStr,
+					engine, x2, 15, (engine.statistics.time/(sectionsDone+if(engine.ending==0) 1 else 0)).toTimeStr,
 					2f
 				)
 			}
@@ -419,25 +409,25 @@ class GrandBasic:AbstractMode() {
 
 	/** This function will be called when the piece is active */
 	override fun onMove(engine:GameEngine):Boolean {
-		if(lastspawntime<120) lastspawntime++
+		if(lastSpawnTime<120) lastSpawnTime++
 		if(engine.statc[0]==0&&!engine.holdDisable) {
-			lastspawntime = 0
-			if(engine.ending==0&&!lvupflag) {
+			lastSpawnTime = 0
+			if(engine.ending==0&&!lvupFlag) {
 				if(engine.statistics.level<299) engine.statistics.level++
 				levelUp(engine)
 			}
 		}
-		if(engine.ending==0&&engine.statc[0]>0) lvupflag = false
+		if(engine.ending==0&&engine.statc[0]>0) lvupFlag = false
 
 		return false
 	}
 
 	/** This function will be called during ARE */
 	override fun onARE(engine:GameEngine):Boolean {
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
+		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
 			if(engine.statistics.level<299) engine.statistics.level++
 			levelUp(engine)
-			lvupflag = true
+			lvupFlag = true
 		}
 
 		return false
@@ -448,24 +438,19 @@ class GrandBasic:AbstractMode() {
 		engine.meterValue = engine.statistics.level%100/99f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
-		if(engine.statistics.level>=nextseclv) {
-			nextseclv += 100
+		if(engine.statistics.level>=nextSecLv) {
+			nextSecLv += 100
 			engine.playSE("levelup")
 
-			// owner.backgroundStatus.fadesw = true;
-			// owner.backgroundStatus.fadecount = 0;
-			// owner.backgroundStatus.fadebg = nextseclv / 100;
-
-			sectionscomp++
-			setAverageSectionTime()
-			stNewRecordCheck(sectionscomp-1)
+			sectionsDone++
+			stNewRecordCheck(sectionsDone-1)
 		}
 
 		setSpeed(engine)
 
 		engine.ghost = alwaysGhost||engine.statistics.level<100
 
-		if(bgmLv==0&&engine.statistics.level>=280&&engine.ending==0) owner.musMan.fadesw = true
+		if(bgmLv==0&&engine.statistics.level>=280&&engine.ending==0) owner.musMan.fadeSW = true
 	}
 
 	/** Calculates line-clear score (This function will be called even if no
@@ -476,7 +461,7 @@ class GrandBasic:AbstractMode() {
 		else maxOf(1, comboValue+2*li-2)
 
 		if(li>=1) {
-			halfminline += li
+			halfMinLine += li
 			val levelb = engine.statistics.level
 			var indexcombo = ev.combo+if(ev.b2b>0) 0 else -1
 			if(indexcombo<0) indexcombo = 0
@@ -489,24 +474,22 @@ class GrandBasic:AbstractMode() {
 
 				if(engine.statistics.level>=300) {
 					if(engine.timerActive) {
-						val timebonus = (1253*ceil(maxOf(18000-engine.statistics.time, 0)/60.0)).toInt()
-						sectionscore[SECTION_MAX] = timebonus.toLong()
-						engine.statistics.scoreBonus += timebonus
+						val timeBonus = (1253*ceil(maxOf(18000-engine.statistics.time, 0)/60.0)).toInt()
+						sectionScore[SECTION_MAX] = timeBonus.toLong()
+						engine.statistics.scoreBonus += timeBonus
 					}
-					bonusspeed = 3265/maxOf(1, hanabi)
+					bonusSpeed = 3265/maxOf(1, hanabi)
 					bgmLv++
-					owner.musMan.fadesw = false
+					owner.musMan.fadeSW = false
 					owner.musMan.bgm = BGM.GrandA(1)
 
 					engine.statistics.level = 300
 					engine.timerActive = false
 					engine.ending = 2
-					halfminbonus = true
-					halfminline = 0
-				} else if(owner.bgMan.bg<(nextseclv-100)/100) {
-					owner.bgMan.fadesw = true
-					owner.bgMan.fadecount = 0
-					owner.bgMan.fadebg = (nextseclv-100)/100
+					halfMinBonus = true
+					halfMinLine = 0
+				} else if(owner.bgMan.bg<(nextSecLv-100)/100) {
+					owner.bgMan.nextBg = (nextSecLv-100)/100
 				}
 			}
 			lastscore = 6*
@@ -516,25 +499,25 @@ class GrandBasic:AbstractMode() {
 					+engine.statistics.level/(if(ev.twist) 2 else 3)+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
 			// AC medal
 			if(engine.field.isEmpty) {
-				dectemp += li*25
-				if(li==3) dectemp += 25
-				if(li==4) dectemp += 150
+				decTemp += li*25
+				if(li==3) decTemp += 25
+				if(li==4) decTemp += 150
 			}
-			temphanabi += maxOf(
+			tempHanabi += maxOf(
 				1, (
 					when(li) {
 						2 -> 2.9f
 						3 -> 3.8f
 						else -> if(li>=4) 4.7f else 1f
 					}*combobonus*(if(ev.twistMini) 2 else if(ev.twist) 4 else 1)*(if(ev.split) 1.4f else 1f)
-						*(if(inthanabi>-100) 1.3f else 1f)*(maxOf(engine.statistics.level-lastspawntime, 100)/100f)
-						*(maxOf(engine.statistics.level-lastspawntime, 120)/120f)
-						*(if(halfminbonus) 1.4f else 1f)*(if(engine.ending==0&&(levelb%25==0||levelb==299)) 1.3f else 1f)
+						*(if(intHanabi>-100) 1.3f else 1f)*(maxOf(engine.statistics.level-lastSpawnTime, 100)/100f)
+						*(maxOf(engine.statistics.level-lastSpawnTime, 120)/120f)
+						*(if(halfMinBonus) 1.4f else 1f)*(if(engine.ending==0&&(levelb%25==0||levelb==299)) 1.3f else 1f)
 					).toInt()
 			)
-			halfminbonus = false
-			lastlinetime = 0
-			if(sectionscomp>=0&&sectionscomp<sectionscore.size) sectionscore[sectionscomp] += lastscore.toLong()
+			halfMinBonus = false
+			lastLineTime = 0
+			if(sectionsDone>=0&&sectionsDone<sectionScore.size) sectionScore[sectionsDone] += lastscore.toLong()
 			engine.statistics.scoreLine += lastscore
 			return lastscore
 		}
@@ -549,44 +532,44 @@ class GrandBasic:AbstractMode() {
 	/** This function will be called when the game timer updates */
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
-		if(lastlinetime<100) lastlinetime++
-		if(inthanabi>-100) inthanabi--
-		if(temphanabi>0&&inthanabi<=0) {
+		if(lastLineTime<100) lastLineTime++
+		if(intHanabi>-100) intHanabi--
+		if(tempHanabi>0&&intHanabi<=0) {
 			receiver.shootFireworks(engine)
 			hanabi++
-			sectionhanabi[sectionscomp]++
-			temphanabi--
-			inthanabi += GameEngine.HANABI_INTERVAL-minOf(inthanabi, 0)
+			sectionHanabi[sectionsDone]++
+			tempHanabi--
+			intHanabi += GameEngine.HANABI_INTERVAL-minOf(intHanabi, 0)
 		}
 		if(engine.tempHanabi>0&&engine.intHanabi<=0) {
 			hanabi++
-			sectionhanabi[sectionscomp]++
+			sectionHanabi[sectionsDone]++
 		}
 		// Increase section timer
 		if(engine.timerActive&&engine.ending==0) {
 			val section = engine.statistics.level/100
-			if(section>=0&&section<sectionTime.size) sectionTime[section]++
+			if(section>=0&&section<sectionTime.size) sectionTime[section] = engine.statistics.time-sectionTime.take(section).sum()
 			if(engine.statistics.time%1800==0) {
-				if(halfminline>0) halfminbonus = true
-				halfminline = 0
+				if(halfMinLine>0) halfMinBonus = true
+				halfMinLine = 0
 			}
 		}
 
 		// Increase ending timer
 		if(engine.gameActive&&engine.ending==2) {
-			rolltime++
-			bonusint--
-			if(bonusint<=0) {
+			rollTime++
+			bonusInt--
+			if(bonusInt<=0) {
 				receiver.shootFireworks(engine)
 				hanabi++
-				sectionhanabi[SECTION_MAX]++
-				bonusint += bonusspeed
+				sectionHanabi[SECTION_MAX]++
+				bonusInt += bonusSpeed
 			}
-			val remainRollTime = ROLLTIMELIMIT-rolltime
+			val remainRollTime = ROLLTIMELIMIT-rollTime
 			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
-			if(rolltime>=ROLLTIMELIMIT) {
+			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
@@ -595,7 +578,7 @@ class GrandBasic:AbstractMode() {
 	}
 
 	override fun onExcellent(engine:GameEngine):Boolean {
-		engine.statc[1] = temphanabi
+		engine.statc[1] = tempHanabi
 		return false
 	}
 
@@ -603,11 +586,11 @@ class GrandBasic:AbstractMode() {
 	override fun onGameOver(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			secretGrade = engine.field.secretGrade
-			inthanabi = 0
-			temphanabi = inthanabi
+			intHanabi = 0
+			tempHanabi = intHanabi
 			if(engine.ending==2) {
-				dectemp += hanabi/150
-				decoration += dectemp+secretGrade
+				decTemp += hanabi/150
+				decoration += decTemp+secretGrade
 			}
 		}
 		return false
@@ -632,10 +615,10 @@ class GrandBasic:AbstractMode() {
 			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.BLUE)
 			receiver.drawMenuFont(engine, 0, 3, "Score", COLOR.BLUE)
 
-			for(i in sectionscore.indices)
+			for(i in sectionScore.indices)
 				receiver.drawMenuNum(
 					engine, 0, (if(i==SECTION_MAX) 5 else 4)+i,
-					String.format("%4d %d", sectionhanabi[i], sectionscore[i]), sectionIsNewRecord[i]
+					String.format("%4d %d", sectionHanabi[i], sectionScore[i]), sectionIsNewRecord[i]
 				)
 			receiver.drawMenuFont(engine, 0, 4+SECTION_MAX, "BONUS", COLOR.BLUE)
 
@@ -644,9 +627,9 @@ class GrandBasic:AbstractMode() {
 				if(sectionTime[i]>0)
 					receiver.drawMenuNum(engine, 2, 8+SECTION_MAX+i, sectionTime[i].toTimeStr)
 
-			if(sectionavgtime>0) {
+			if(sectionAvgTime>0) {
 				receiver.drawMenuFont(engine, 0, 15, "AVERAGE", COLOR.BLUE)
-				receiver.drawMenuNum(engine, 2, 16, sectionavgtime.toTimeStr)
+				receiver.drawMenuNum(engine, 2, 16, sectionAvgTime.toTimeStr)
 			}
 		} else if(engine.statc[1]==2)
 			drawResultStats(
@@ -726,8 +709,8 @@ class GrandBasic:AbstractMode() {
 	private fun updateBestSectionTime() {
 		for(i in 0 until SECTION_MAX)
 			if(sectionIsNewRecord[i]) {
-				bestSectionScore[i] = sectionscore[i]
-				bestSectionHanabi[i] = sectionhanabi[i]
+				bestSectionScore[i] = sectionScore[i]
+				bestSectionHanabi[i] = sectionHanabi[i]
 				bestSectionTime[i] = sectionTime[i]
 			}
 	}

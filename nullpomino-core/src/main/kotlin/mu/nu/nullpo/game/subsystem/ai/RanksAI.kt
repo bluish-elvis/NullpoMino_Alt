@@ -1,8 +1,7 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -13,7 +12,6 @@
  *     * Neither the name of NullNoname nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -340,7 +338,6 @@ open class RanksAI:DummyAI(), Runnable {
 	 * representation
 	 * of it, and run the main method thinkBestPosition
 	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 */
 	fun thinkBestPosition(engine:GameEngine) {
 		// Current line of the current piece
@@ -355,7 +352,7 @@ open class RanksAI:DummyAI(), Runnable {
 
 		// Initialization of the pieces array (contains the current piece and the next pieces)
 		val pieces = MutableList(engine.nextPieceArraySize) {
-			if(it==0) pieceNow!!.id else engine.getNextObject(engine.nextPieceCount+it-1)!!.id
+			if(it==0) pieceNow.id else engine.getNextObject(engine.nextPieceCount+it-1)!!.id
 		}
 
 		val holdPiece = mutableListOf(engine.holdPieceObject?.id ?: -1)
@@ -380,7 +377,7 @@ open class RanksAI:DummyAI(), Runnable {
 		if(bestScore.rankStacking==0f) threadRunning = false
 		//bestHold=true;
 		thinkLastPieceNo++
-		log.debug("nowX : ${engine.nowPieceX} X:$bestX Y:$bestY R:$bestRt H:$bestHold Pts:$bestScore")
+		log.debug("nowX : {} X:{} Y:{} R:{} H:{} Pts:{}", engine.nowPieceX, bestX, bestY, bestRt, bestHold, bestScore)
 	}
 
 	/** Main method that will return the best move for the current piece, by
@@ -464,7 +461,7 @@ open class RanksAI:DummyAI(), Runnable {
 					for(x in minX..maxX) {
 						// Run thinkmain on that move to get its score
 						score = thinkMain(x, rt, heights, piecesCopy, holdPiece, useHold!=1, numPreviews)
-						log.debug("MAIN  id=$pieceNow posX=$x rt=$rt hold :$useHold score:$score")
+						log.debug("MAIN  id={} posX={} rt={} hold :{} score:{}", pieceNow, x, rt, useHold, score)
 
 						//If the score is better than the previous best score, change it, and record the chosen move for further application by setControl
 						if(score>bestScore) {
@@ -483,7 +480,7 @@ open class RanksAI:DummyAI(), Runnable {
 					if(pieceNow==Piece.PIECE_I&&(rt==1||rt==3)&&currentHeightMin>=4) {
 						// What are the consequences of scoring a 4-Line ?
 						score = thinkMain(maxX+1, rt, heights, piecesCopy, holdPiece, useHold!=1, numPreviews)
-						log.debug("MAIN (4 Lines) id=$pieceNow posX=${maxX+1} rt=$rt hold :$useHold score:$score")
+						log.debug("MAIN (4 Lines) id={} posX={} rt={} hold :{} score:{}", pieceNow, maxX+1, rt, useHold, score)
 
 						//If the score is better than the previous best score, change it, and record the chosen move for further application by setControl
 						if(score>bestScore) {
@@ -579,7 +576,7 @@ open class RanksAI:DummyAI(), Runnable {
 					val maxX2 = ranks!!.stackWidth-1
 					// Recursive call to thinkMain to examine that move
 					scoreCurrent = thinkMain(maxX2+1, rt2, heightsWork, pieces2, holdPiece2, true, numPreviews2)
-					log.debug("SUB (4 Lines)$numPreviews id=$pieceNow posX=${maxX2+1} rt=$rt2 score:$scoreCurrent")
+					log.debug("SUB (4 Lines){} id={} posX={} rt={} score:{}", numPreviews, pieceNow, maxX2+1, rt2, scoreCurrent)
 
 					// if the score is better than the previous best score, replace it.
 					if(scoreCurrent>bestScore) {
@@ -613,7 +610,7 @@ open class RanksAI:DummyAI(), Runnable {
 							for(x2 in minX2..maxX2) {
 								// Recursive call to thinkMain to examine that move
 								scoreCurrent = thinkMain(x2, rt2, heightsWork, pieces2, holdPiece2, h2!=1, numPreviews2)
-								log.debug("SUB $numPreviews id=$pieceNow posX=$x2 rt=$rt2 hold :$h2 score $scoreCurrent")
+								log.debug("SUB {} id={} posX={} rt={} hold :{} score {}", numPreviews, pieceNow, x2, rt2, h2, scoreCurrent)
 
 								// if the score is better than the previous best score, replace it.
 								if(scoreCurrent>bestScore) {
@@ -626,7 +623,15 @@ open class RanksAI:DummyAI(), Runnable {
 							if(isVerticalI2&&heightMin>=4) {
 								// Recursive call to thinkMain to examine that move
 								scoreCurrent = thinkMain(maxX2+1, rt2, heightsWork, pieces2, holdPiece2, h2!=1, numPreviews2)
-								log.debug("SUB (4 Lines)$numPreviews id=$pieceNow posX=${maxX2+1} rt=$rt2 hold :$h2 score:$scoreCurrent")
+								log.debug(
+									"SUB (4 Lines){} id={} posX={} rt={} hold :{} score:{}",
+									numPreviews,
+									pieceNow,
+									maxX2+1,
+									rt2,
+									h2,
+									scoreCurrent
+								)
 								// if the score is better than the previous best score, replace it.
 								if(scoreCurrent>bestScore) {
 									log.debug("SUB new best piece !")

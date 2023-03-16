@@ -41,16 +41,16 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** RETRO MODERN mode (Based from NAOMI, build by Venom_Nhelv 20180131-2020 */
 class RetroModern:AbstractMode() {
-	private var totalnorma = 0
+	private var totalNorma = 0
 
 	/** Selected game type */
-	private var gametype = 0
+	private var gameType = 0
 
 	/** Selected starting level */
 	private var startLevel = 0
 
 	/** Ending Level timer */
-	private var rolltime = 0
+	private var rollTime = 0
 
 	/** Amount of lines cleared (It will be reset when the level increases) */
 	private var norm = 0
@@ -91,7 +91,7 @@ class RetroModern:AbstractMode() {
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
 		lastscore = 0
-		rolltime = 0
+		rollTime = 0
 		norm = 0
 		special = false
 
@@ -125,7 +125,7 @@ class RetroModern:AbstractMode() {
 		} else
 			loadSetting(owner.replayProp, engine)
 		if(startLevel>15) startLevel = 15
-		engine.owner.bgMan.bg = levelBG[startLevel]
+		owner.bgMan.bg = levelBG[startLevel]
 		engine.frameColor = GameEngine.FRAME_SKIN_HEBO
 	}
 
@@ -135,9 +135,9 @@ class RetroModern:AbstractMode() {
 	private fun setSpeed(engine:GameEngine) {
 		val lv = maxOf(0, engine.statistics.level)
 
-		engine.ruleOpt.lockResetMove = gametype!=0
-		engine.ruleOpt.lockResetSpin = gametype!=1
-		engine.ruleOpt.lockResetWallkick = gametype!=2
+		engine.ruleOpt.lockResetMove = gameType!=0
+		engine.ruleOpt.lockResetSpin = gameType!=1
+		engine.ruleOpt.lockResetWallkick = gameType!=2
 		engine.ruleOpt.lockResetFall = true
 		engine.ruleOpt.softdropLock = true
 		engine.ruleOpt.softdropMultiplyNativeSpeed = false
@@ -146,19 +146,20 @@ class RetroModern:AbstractMode() {
 		engine.owSDSpd = -1
 		when {
 			lv<=MAX_LEVEL -> {
-				val d = tableDenominator[gametype][lv]
+				receiver.setBGSpd(owner, .5f+gameType*.4f)
+				val d = tableDenominator[gameType][lv]
 				if(d==0)
 					engine.speed.gravity = -1
 				else {
 					engine.speed.gravity = if(d<0) d*-1 else 1
 					engine.speed.denominator = if(d>0) d else 1
 				}
-				engine.speed.areLine = tableARE[gametype][lv]
+				engine.speed.areLine = tableARE[gameType][lv]
 				engine.speed.are = engine.speed.areLine
-				engine.speed.lockDelay = tableLockDelay[gametype][lv]
-				engine.speed.das = minOf(15, tableLockDelay[gametype][lv]-12)
+				engine.speed.lockDelay = tableLockDelay[gameType][lv]
+				engine.speed.das = minOf(15, tableLockDelay[gameType][lv]-12)
 
-				engine.speed.lineDelay = when(gametype) {
+				engine.speed.lineDelay = when(gameType) {
 					0 -> 57
 					1 -> 48
 					2 -> 39
@@ -175,7 +176,7 @@ class RetroModern:AbstractMode() {
 				engine.speed.lockDelay = 44
 				engine.speed.das = 15
 			}
-			gametype==4 -> {
+			gameType==4 -> {
 				engine.speed.gravity = -1
 				engine.speed.denominator = 1
 				engine.speed.areLine = 15
@@ -208,15 +209,17 @@ class RetroModern:AbstractMode() {
 
 				when(menuCursor) {
 					0 -> {
-						gametype += change
-						if(gametype<0) gametype = GAMETYPE_MAX-1
-						if(gametype>GAMETYPE_MAX-1) gametype = 0
+						gameType += change
+						if(gameType<0) gameType = GAMETYPE_MAX-1
+						if(gameType>GAMETYPE_MAX-1) gameType = 0
+						receiver.setBGSpd(owner, .5f+gameType*.4f, levelBG[startLevel])
 					}
 					1 -> {
 						startLevel += change
 						if(startLevel<0) startLevel = 15
 						if(startLevel>15) startLevel = 0
-						engine.owner.bgMan.bg = levelBG[startLevel]
+						owner.bgMan.bg = levelBG[startLevel]
+						receiver.setBGSpd(owner, .5f+gameType*.4f, levelBG[startLevel])
 					}
 					2 -> big = !big
 				}
@@ -243,7 +246,7 @@ class RetroModern:AbstractMode() {
 	/** Renders game setup screen */
 	override fun renderSetting(engine:GameEngine) {
 		drawMenu(
-			engine, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startLevel, "BIG" to big
+			engine, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gameType], "Level" to startLevel, "BIG" to big
 		)
 	}
 
@@ -251,8 +254,8 @@ class RetroModern:AbstractMode() {
 		owner.musMan.bgm = when(lv) {
 //			MAX_LEVEL -> BGM.GrandM(1)
 			MAX_LEVEL+1 -> BGM.Silent
-			MAX_LEVEL+2 -> BGM.Ending(if(gametype<3) 3 else 4)
-			else -> BGM.RetroS(1+tableBGMlevel.count {it<=lv})
+			MAX_LEVEL+2 -> BGM.Ending(if(gameType<3) 3 else 4)
+			else -> BGM.RetroS(1+tableBGMLevel.count {it<=lv})
 		}
 	}
 	/** This function will be called before the game actually begins (after
@@ -269,8 +272,8 @@ class RetroModern:AbstractMode() {
 	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0)
 			if(engine.ending==0) {
-//				engine.framecolor = if(gametype==4) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_WHITE
-				totalnorma = MAX_LINES-startLevel*16
+//				engine.framecolor = if(gameType==4) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_WHITE
+				totalNorma = MAX_LINES-startLevel*16
 				engine.statistics.level = startLevel
 			} else
 				engine.nextPieceArrayID = GeneralUtil.createNextPieceArrayFromNumberString(STRING_POWERON_PATTERN)
@@ -280,8 +283,8 @@ class RetroModern:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "RETRO MODERN", color = COLOR.COBALT)
-		receiver.drawScoreFont(engine, 0, 1, "(${GAMETYPE_NAME[gametype]} SPEED)", COLOR.COBALT)
+		receiver.drawScoreFont(engine, 0, 0, name, color = COLOR.COBALT)
+		receiver.drawScoreFont(engine, 0, 1, "(${GAMETYPE_NAME[gameType]} SPEED)", COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
@@ -292,15 +295,15 @@ class RetroModern:AbstractMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[gametype][i]}", i==rankingRank, scale)
+					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[gameType][i]}", i==rankingRank, scale)
 					receiver.drawScoreNum(
-						engine, 9, topY+i, String.format("%2d", rankingLines[gametype][i]), i==rankingRank, scale
+						engine, 9, topY+i, String.format("%2d", rankingLines[gameType][i]), i==rankingRank, scale
 					)
 					receiver.drawScoreNum(
-						engine, 12, topY+i, String.format("%3d", rankingLevel[gametype][i]), i==rankingRank, scale
+						engine, 12, topY+i, String.format("%3d", rankingLevel[gameType][i]), i==rankingRank, scale
 					)
 					receiver.drawScoreNum(
-						engine, 16, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank, scale
+						engine, 16, topY+i, rankingTime[gameType][i].toTimeStr, i==rankingRank, scale
 					)
 				}
 			}
@@ -323,12 +326,12 @@ class RetroModern:AbstractMode() {
 			receiver.drawScoreBadges(engine, 2, 6, 200, num)
 
 			receiver.drawScoreFont(engine, 0, 10, "LINE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 11, String.format("%03d/%03d", engine.statistics.lines, totalnorma), scale = 2f)
+			receiver.drawScoreNum(engine, 0, 11, String.format("%03d/%03d", engine.statistics.lines, totalNorma), scale = 2f)
 
 			receiver.drawScoreFont(engine, 0, 13, "Level", COLOR.BLUE)
 			var lvdem = 0
-			if(rolltime>0)
-				lvdem = rolltime*100/ROLLTIMELIMIT
+			if(rollTime>0)
+				lvdem = rollTime*100/ROLLTIMELIMIT
 			else if(engine.statistics.level<levelNorma.size) lvdem = norm*100/levelNorma[engine.statistics.level]
 			if(lvdem<0) lvdem *= -1
 			if(lvdem>=100) lvdem -= lvdem-lvdem%100
@@ -338,8 +341,8 @@ class RetroModern:AbstractMode() {
 			receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, scale = 2f)
 
 			// Roll 残り time
-			if(rolltime>0) {
-				val time = ROLLTIMELIMIT-rolltime
+			if(rollTime>0) {
+				val time = ROLLTIMELIMIT-rollTime
 				receiver.drawScoreFont(engine, 0, 15, "FLASH BACK", COLOR.CYAN)
 				receiver.drawScoreNum(engine, 0, 16, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
@@ -354,29 +357,27 @@ class RetroModern:AbstractMode() {
 		if(engine.ending==0) {
 			engine.meterValue = if(engine.statistics.level<levelNorma.size)
 				1f*norm/levelNorma[engine.statistics.level]
-			else 1f*engine.statistics.lines/totalnorma
+			else 1f*engine.statistics.lines/totalNorma
 
 			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		} else
 		// Ending
 			if(engine.gameActive&&engine.statistics.level==17) {
-				rolltime++
+				rollTime++
 
 				// Time meter
-				val remainRollTime = ROLLTIMELIMIT-rolltime
+				val remainRollTime = ROLLTIMELIMIT-rollTime
 				engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 				engine.meterColor = GameEngine.METER_COLOR_LIMIT
 				var bg = levelBG[levelBG.size-1]
-				if(rolltime<=ROLLTIMELIMIT-3600) bg = levelBG[rolltime*MAX_LEVEL/(ROLLTIMELIMIT-3600)]
+				if(rollTime<=ROLLTIMELIMIT-3600) bg = levelBG[rollTime*MAX_LEVEL/(ROLLTIMELIMIT-3600)]
 				//else owner.bgmStatus.bgm=Ending(1);
 
-				if(owner.bgMan.fadebg!=bg) {
-					owner.bgMan.fadebg = bg
-					owner.bgMan.fadecount = 0
-					owner.bgMan.fadesw = true
+				if(owner.bgMan.nextBg!=bg) {
+					owner.bgMan.nextBg = bg
 				}
 				// Roll 終了
-				if(rolltime>=ROLLTIMELIMIT) {
+				if(rollTime>=ROLLTIMELIMIT) {
 					engine.statistics.level++
 					engine.gameEnded()
 					engine.resetStatc()
@@ -394,7 +395,7 @@ class RetroModern:AbstractMode() {
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Determines line-clear bonus
 
-		val mult = tableScoreMult[gametype][engine.statistics.level]*10
+		val mult = tableScoreMult[gameType][engine.statistics.level]*10
 		val li = ev.lines
 		val pts = when {
 			li>0&&engine.field.isEmpty -> 2000*tableBonusMult[engine.statistics.level]
@@ -425,7 +426,7 @@ class RetroModern:AbstractMode() {
 		// Level up
 		var lvup = false
 		if(engine.statistics.level<MAX_LEVEL&&norm>=levelNorma[engine.statistics.level]||
-			engine.statistics.level==MAX_LEVEL&&engine.statistics.lines>=totalnorma||
+			engine.statistics.level==MAX_LEVEL&&engine.statistics.lines>=totalNorma||
 			engine.statistics.level==MAX_LEVEL+1
 		)
 			lvup = li>0
@@ -433,13 +434,11 @@ class RetroModern:AbstractMode() {
 		if(lvup) {
 			val newlevel = ++engine.statistics.level
 			if(engine.ending==0)
-				if(engine.statistics.lines>=totalnorma) engine.ending = 1
+				if(engine.statistics.lines>=totalNorma) engine.ending = 1
 				else engine.playSE("levelup")
 			if(newlevel!=MAX_LEVEL+1) setSpeed(engine)
 			if(newlevel<levelBG.size-1) {
-				owner.bgMan.fadecount = 0
-				owner.bgMan.fadebg = levelBG[newlevel]
-				owner.bgMan.fadesw = true
+				owner.bgMan.nextBg = levelBG[newlevel]
 			}
 			norm = 0
 			engine.meterValue = 0f
@@ -602,7 +601,7 @@ class RetroModern:AbstractMode() {
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.score, engine.statistics.level, engine.statistics.lines, engine.statistics.time, gametype)
+			updateRanking(engine.statistics.score, engine.statistics.level, engine.statistics.lines, engine.statistics.time, gameType)
 
 			if(rankingRank!=-1) return true
 		}
@@ -612,7 +611,7 @@ class RetroModern:AbstractMode() {
 	/** Load the settings */
 	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		startLevel = prop.getProperty("retromodern.startLevel", 0)
-		gametype = prop.getProperty("retromodern.gametype", 0)
+		gameType = prop.getProperty("retromodern.gameType", 0)
 		big = prop.getProperty("retromodern.big", false)
 		version = prop.getProperty("retromodern.version", 0)
 	}
@@ -620,7 +619,7 @@ class RetroModern:AbstractMode() {
 	/** Save the settings */
 	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("retromodern.startLevel", startLevel)
-		prop.setProperty("retromodern.gametype", gametype)
+		prop.setProperty("retromodern.gameType", gameType)
 		prop.setProperty("retromodern.big", big)
 		prop.setProperty("retromodern.version", version)
 	}
@@ -702,12 +701,12 @@ class RetroModern:AbstractMode() {
 		private val tableBonusMult = listOf(1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 5, 5, 10)
 		/** Lines until level up occers */
 		private val levelNorma = listOf(6, 6, 7, 9, 6, 9, 9, 9, 10, 10, 20, 16, 16, 16, 16)
-		private val tableBGMlevel = listOf(5, 9, 12, 15)
+		private val tableBGMLevel = listOf(5, 9, 12, 15)
 
 		private val levelBG = listOf(
-			0, 1, 2, 3, 4, 5,
-			6, 7, 8, 9, 14, 19,
-			10, 11, 12, 13, 29, 36
+			-1, -2, -3, -4, -5, -6,
+			-7, -8, -9, -10, -11, -12,
+			-13, -12, -14, -15, 29, -15
 		)
 		/** Max level */
 		private const val MAX_LEVEL = 15

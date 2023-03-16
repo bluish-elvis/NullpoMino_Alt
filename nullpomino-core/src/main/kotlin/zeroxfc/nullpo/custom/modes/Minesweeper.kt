@@ -71,7 +71,6 @@ class Minesweeper:AbstractMode() {
 
 	override fun playerInit(engine:GameEngine) {
 		//SoundLoader.loadSoundset(SoundLoader.LOADTYPE_MINESWEEPER)
-		owner = engine.owner
 		width = 0
 		height = 0
 		cursorX = 0

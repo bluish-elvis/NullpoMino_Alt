@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -57,7 +57,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected var scgettime = IntArray(MAX_PLAYERS)
 
 	/** UseBGM */
-	protected var bgmno = 0
+	protected var bgmId = 0
 
 	/** Big */
 	protected var big = BooleanArray(MAX_PLAYERS)
@@ -121,7 +121,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected var ojamaHard = IntArray(MAX_PLAYERS)
 
 	/** HurryupSeconds before the startcount(0InHurryupNo) */
-	protected var hurryupSeconds = IntArray(MAX_PLAYERS)
+	protected var hurryUpSeconds = IntArray(MAX_PLAYERS)
 
 	/** Set to true when last drop resulted in a clear */
 	protected var cleared = BooleanArray(MAX_PLAYERS)
@@ -186,19 +186,18 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	override val gameStyle = GameStyle.AVALANCHE
 	override val gameIntensity = 2
 	/* Mode initialization */
-	@Suppress("RemoveExplicitTypeArguments")
 	override fun modeInit(manager:GameManager) {
-		owner = manager
+		super.modeInit(manager)
 
 		ojamaCounterMode = IntArray(MAX_PLAYERS)
 		ojama = IntArray(MAX_PLAYERS)
 		ojamaSent = IntArray(MAX_PLAYERS)
 
 		scgettime = IntArray(MAX_PLAYERS)
-		bgmno = 0
+		bgmId = 0
 		big = BooleanArray(MAX_PLAYERS)
 		enableSE = BooleanArray(MAX_PLAYERS)
-		hurryupSeconds = IntArray(MAX_PLAYERS)
+		hurryUpSeconds = IntArray(MAX_PLAYERS)
 		useMap = BooleanArray(MAX_PLAYERS)
 		mapSet = IntArray(MAX_PLAYERS)
 		mapNumber = IntArray(MAX_PLAYERS)
@@ -281,11 +280,11 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	 */
 	protected fun loadOtherSetting(engine:GameEngine, prop:CustomProperties, name:String) {
 		val playerID = engine.playerID
-		bgmno = prop.getProperty("avalanchevs$name.bgmno", 0)
+		bgmId = prop.getProperty("avalanchevs$name.bgmno", 0)
 		ojamaCounterMode[playerID] = prop.getProperty("avalanchevs$name.ojamaCounterMode", OJAMA_COUNTER_ON)
 		big[playerID] = prop.getProperty("avalanchevs$name.big.p$playerID", false)
 		enableSE[playerID] = prop.getProperty("avalanchevs$name.enableSE.p$playerID", true)
-		hurryupSeconds[playerID] = prop.getProperty("avalanchevs$name.hurryupSeconds.p$playerID", 192)
+		hurryUpSeconds[playerID] = prop.getProperty("avalanchevs$name.hurryupSeconds.p$playerID", 192)
 		useMap[playerID] = prop.getProperty("avalanchevs$name.useMap.p$playerID", false)
 		mapSet[playerID] = prop.getProperty("avalanchevs$name.mapSet.p$playerID", 0)
 		mapNumber[playerID] = prop.getProperty("avalanchevs$name.mapNumber.p$playerID", -1)
@@ -310,11 +309,11 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	/** Save settings from [engine] into [prop] not related to speeds */
 	protected fun saveOtherSetting(engine:GameEngine, prop:CustomProperties, name:String) {
 		val playerID = engine.playerID
-		prop.setProperty("avalanchevs$name.bgmno", bgmno)
+		prop.setProperty("avalanchevs$name.bgmno", bgmId)
 		prop.setProperty("avalanchevs$name.ojamaCounterMode", ojamaCounterMode[playerID])
 		prop.setProperty("avalanchevs$name.big.p$playerID", big[playerID])
 		prop.setProperty("avalanchevs$name.enableSE.p$playerID", enableSE[playerID])
-		prop.setProperty("avalanchevs$name.hurryupSeconds.p$playerID", hurryupSeconds[playerID])
+		prop.setProperty("avalanchevs$name.hurryupSeconds.p$playerID", hurryUpSeconds[playerID])
 		prop.setProperty("avalanchevs$name.useMap.p$playerID", useMap[playerID])
 		prop.setProperty("avalanchevs$name.mapSet.p$playerID", mapSet[playerID])
 		prop.setProperty("avalanchevs$name.mapNumber.p$playerID", mapNumber[playerID])
@@ -480,7 +479,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		engine.b2bEnable = false
 		engine.comboType = GameEngine.COMBO_TYPE_DISABLE
 		engine.enableSE = enableSE[engine.playerID]
-		if(engine.playerID==1) owner.musMan.bgm = BGM.values[bgmno]
+		if(engine.playerID==1) owner.musMan.bgm = BGM.values[bgmId]
 		engine.ignoreHidden = true
 
 		engine.twistAllowKick = false
@@ -570,8 +569,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		if(zenKeshi[pid]&&zenKeshiType[pid]==ZENKESHI_MODE_ON) pow += 30
 		//Add ojama
 		var rate = maxOf(1, ojamaRate[pid])
-		if(hurryupSeconds[pid]>0&&engine.statistics.time>hurryupSeconds[pid])
-			rate = rate shr engine.statistics.time/(hurryupSeconds[pid]*60)
+		if(hurryUpSeconds[pid]>0&&engine.statistics.time>hurryUpSeconds[pid])
+			rate = rate shr engine.statistics.time/(hurryUpSeconds[pid]*60)
 		pow += ptsToOjama(engine, pts, rate)
 		ojamaSent[pid] += pow
 		var send = pow
@@ -674,7 +673,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected open fun updateOjamaMeter(engine:GameEngine) {
 		var width = 6
 		width = engine.field.width
-		val blockHeight = EventReceiver.getBlockSize(engine)
+		val blockHeight = engine.blockSize
 		// Rising auctionMeter
 		val pid = engine.playerID
 		val value = ojama[pid]*blockHeight/width

@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2022,
+ * Copyright (c) 2021-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -44,6 +44,7 @@ package zeroxfc.nullpo.custom.modes
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -72,13 +73,13 @@ class ColorPower:MarathonModeBase() {
 
 	private val itemRule = BooleanMenuItem("rulebound", "RULE BOUND", COLOR.BLUE, false)
 	// Rulebound mode: default = false.
-	private var ruleboundMode:Boolean by DelegateMenuItem(itemRule)
+	private var ruleBoundMode:Boolean by DelegateMenuItem(itemRule)
 	// Randomizer for non-rulebound mode
-	private var nonRuleboundRandomizer:Random = Random.Default
+	private var nonRuleBoundRandomizer:Random = Random.Default
 	// Color history
-	private var colorHistory = intArrayOf()
+	private val colorHistory = MutableList(4) {-1}
 	// engine dif
-	private var defaultColors = intArrayOf()
+	private val defaultColors = MutableList(Piece.PIECE_COUNT) {0}
 	// Hm
 	private var preset = false
 	/** Rankings' scores */
@@ -116,7 +117,7 @@ class ColorPower:MarathonModeBase() {
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
 		l = -1
-		defaultColors = intArrayOf()
+		defaultColors.fill(0)
 		pCoordList = ArrayList()
 		customTimer = 0
 		meterValues = IntArray(POWERUP_AMOUNT)
@@ -124,9 +125,9 @@ class ColorPower:MarathonModeBase() {
 		scoreMultiplier = 1
 		currentModified = -1
 		hasSet = false
-		ruleboundMode = false
+		ruleBoundMode = false
 		preset = false
-		colorHistory = intArrayOf(-1, -1, -1, -1)
+		colorHistory.fill(-1)
 		engine.playerProp.reset()
 		showPlayerStats = false
 
@@ -185,7 +186,7 @@ class ColorPower:MarathonModeBase() {
 						}
 					}
 					7 -> big = !big
-					8 -> ruleboundMode = !ruleboundMode
+					8 -> ruleBoundMode = !ruleBoundMode
 				}
 
 				// NET: Signal options change
@@ -237,7 +238,7 @@ class ColorPower:MarathonModeBase() {
 			var v = -1
 			for(j in 0..7) {
 				var flag = false
-				v = nonRuleboundRandomizer.nextInt(8)+1
+				v = nonRuleBoundRandomizer.nextInt(8)+1
 				for(elem in colorHistory) {
 					if(elem==v) {
 						flag = true
@@ -253,7 +254,7 @@ class ColorPower:MarathonModeBase() {
 				var v = -1
 				for(j in 0..7) {
 					var flag = false
-					v = nonRuleboundRandomizer.nextInt(8)+1
+					v = nonRuleBoundRandomizer.nextInt(8)+1
 					for(elem in colorHistory) {
 						if(elem==v) {
 							flag = true
@@ -270,10 +271,12 @@ class ColorPower:MarathonModeBase() {
 
 	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==1) {
-			if(defaultColors==null) defaultColors = engine.ruleOpt.pieceColor
-			nonRuleboundRandomizer = Random(engine.randSeed)
-			colorHistory = intArrayOf(621, 621, 621, 621)
-			if(!ruleboundMode) {
+			engine.ruleOpt.pieceColor.forEachIndexed {i, it ->
+				defaultColors[i] = it
+			}
+			nonRuleBoundRandomizer = Random(engine.randSeed)
+			colorHistory.fill(621)
+			if(!ruleBoundMode) {
 				randomizeColors(engine, false)
 			} else {
 				engine.ruleOpt.pieceColor = defaultColors
@@ -375,7 +378,7 @@ class ColorPower:MarathonModeBase() {
 		 */
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, 0, 0, (if(ruleboundMode) "RULEBOUND " else "")+name, COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 0, (if(ruleBoundMode) "RULEBOUND " else "")+name, COLOR.GREEN)
 		if(tableGameClearLines[goalType]==-1) {
 			receiver.drawScoreFont(engine, 0, 1, "(Endless run)", COLOR.GREEN)
 		} else {
@@ -391,7 +394,7 @@ class ColorPower:MarathonModeBase() {
 				if(showPlayerStats) {
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-						val s = "${rankingScorePlayer[if(ruleboundMode) 1 else 0][goalType][i]}"
+						val s = "${rankingScorePlayer[if(ruleBoundMode) 1 else 0][goalType][i]}"
 						receiver.drawScoreFont(
 							engine,
 							if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
@@ -401,11 +404,11 @@ class ColorPower:MarathonModeBase() {
 							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale
 						)
 						receiver.drawScoreFont(
-							engine, 10, topY+i, "${rankingLinesPlayer[if(ruleboundMode) 1 else 0][goalType][i]}",
+							engine, 10, topY+i, "${rankingLinesPlayer[if(ruleBoundMode) 1 else 0][goalType][i]}",
 							i==rankingRankPlayer, scale
 						)
 						receiver.drawScoreFont(
-							engine, 15, topY+i, rankingTimePlayer[if(ruleboundMode) 1 else 0][goalType][i].toTimeStr,
+							engine, 15, topY+i, rankingTimePlayer[if(ruleBoundMode) 1 else 0][goalType][i].toTimeStr,
 							i==rankingRankPlayer, scale
 						)
 					}
@@ -418,7 +421,7 @@ class ColorPower:MarathonModeBase() {
 				} else {
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-						val s = "${rankingScore[if(ruleboundMode) 1 else 0][goalType][i]}"
+						val s = "${rankingScore[if(ruleBoundMode) 1 else 0][goalType][i]}"
 						receiver.drawScoreFont(
 							engine,
 							if(s.length>6&&receiver.nextDisplayType!=2) 6 else 3,
@@ -428,11 +431,11 @@ class ColorPower:MarathonModeBase() {
 							if(s.length>6&&receiver.nextDisplayType!=2) scale*0.5f else scale
 						)
 						receiver.drawScoreFont(
-							engine, 10, topY+i, "${rankingLines[if(ruleboundMode) 1 else 0][goalType][i]}",
+							engine, 10, topY+i, "${rankingLines[if(ruleBoundMode) 1 else 0][goalType][i]}",
 							i==rankingRank, scale
 						)
 						receiver.drawScoreFont(
-							engine, 15, topY+i, rankingTime[if(ruleboundMode) 1 else 0][goalType][i].toTimeStr,
+							engine, 15, topY+i, rankingTime[if(ruleBoundMode) 1 else 0][goalType][i].toTimeStr,
 							i==rankingRank, scale
 						)
 					}
@@ -630,12 +633,12 @@ class ColorPower:MarathonModeBase() {
 			return true
 		}
 
-		/*		if (engine.statc[0] > 0 && !ruleboundMode && !preset) {
+		/*		if (engine.statc[0] > 0 && !ruleBoundMode && !preset) {
 					int v = -1;
 					for (int j = 0; j < 8; j++) {
 						boolean flag = false;
 
-						 v = nonRuleboundRandomizer.nextInt(POWERUP_NAMES.length);
+						 v = nonRuleBoundRandomizer.nextInt(POWERUP_NAMES.length);
 						 for (int elem : colorHistory) {
 							if (elem == v) {
 								flag = true;
@@ -654,7 +657,7 @@ class ColorPower:MarathonModeBase() {
 
 					preset = true;
 				}*/
-		if(engine.statc[0]==0&&!ruleboundMode&&preset&&!engine.holdDisable) {
+		if(engine.statc[0]==0&&!ruleBoundMode&&preset&&!engine.holdDisable) {
 			preset = false
 		}
 		hasSet = false
@@ -694,21 +697,21 @@ class ColorPower:MarathonModeBase() {
 					}
 					POWERUP_FREEFALL -> if(it.freeFall()) {
 						it.checkLine()
-						receiver.blockBreak(engine, it.findBlocks {it.getAttribute(Block.ATTRIBUTE.ERASE)})
+						receiver.blockBreak(engine, it.findBlocks {b -> b.getAttribute(Block.ATTRIBUTE.ERASE)})
 						it.clearLine()
 						it.downFloatingBlocks()
 						engine.playSE("linefall")
 					}
 					POWERUP_BOTTOMCLEAR -> if(!it.isEmpty) {
 						it.delLower()
-						receiver.blockBreak(engine, it.findBlocks {it.getAttribute(Block.ATTRIBUTE.ERASE)})
+						receiver.blockBreak(engine, it.findBlocks {b -> b.getAttribute(Block.ATTRIBUTE.ERASE)})
 						it.clearLine()
 						it.downFloatingBlocks()
 						engine.playSE("linefall")
 					}
 					POWERUP_TOPCLEAR -> if(!it.isEmpty) {
 						it.delUpper()
-						receiver.blockBreak(engine, it.findBlocks {it.getAttribute(Block.ATTRIBUTE.ERASE)})
+						receiver.blockBreak(engine, it.findBlocks {b -> b.getAttribute(Block.ATTRIBUTE.ERASE)})
 						it.clearLine()
 						it.downFloatingBlocks()
 						engine.playSE("linefall")
@@ -746,7 +749,7 @@ class ColorPower:MarathonModeBase() {
 		 */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		setSpeed(engine)
-		if(!ruleboundMode) {
+		if(!ruleBoundMode) {
 			randomizeColors(engine, true)
 		} else {
 			engine.ruleOpt.pieceColor = defaultColors
@@ -775,13 +778,13 @@ class ColorPower:MarathonModeBase() {
 
 		// BGM fade-out effects and BGM changes
 		if(tableBGMChange[bgmLv]!=-1) {
-			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.musMan.fadesw = true
+			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.musMan.fadeSW = true
 			if(engine.statistics.lines>=tableBGMChange[bgmLv]&&
 				(engine.statistics.lines<tableGameClearLines[goalType]||tableGameClearLines[goalType]<0)
 			) {
 				bgmLv++
 				owner.musMan.bgm = BGMStatus.BGM.GrandT(bgmLv)
-				owner.musMan.fadesw = false
+				owner.musMan.fadeSW = false
 			}
 		}
 
@@ -796,9 +799,7 @@ class ColorPower:MarathonModeBase() {
 		} else if(engine.statistics.lines>=(engine.statistics.level+1)*10&&engine.statistics.level<19) {
 			// Level up
 			engine.statistics.level++
-			owner.bgMan.fadesw = true
-			owner.bgMan.fadecount = 0
-			owner.bgMan.fadebg = engine.statistics.level
+			owner.bgMan.nextBg = engine.statistics.level
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}
@@ -837,33 +838,33 @@ class ColorPower:MarathonModeBase() {
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
 			for(i in RANKING_MAX-1 downTo rankingRank+1) {
-				rankingScore[if(ruleboundMode) 1 else 0][type][i] = rankingScore[if(ruleboundMode) 1 else 0][type][i-1]
-				rankingLines[if(ruleboundMode) 1 else 0][type][i] = rankingLines[if(ruleboundMode) 1 else 0][type][i-1]
-				rankingTime[if(ruleboundMode) 1 else 0][type][i] = rankingTime[if(ruleboundMode) 1 else 0][type][i-1]
+				rankingScore[if(ruleBoundMode) 1 else 0][type][i] = rankingScore[if(ruleBoundMode) 1 else 0][type][i-1]
+				rankingLines[if(ruleBoundMode) 1 else 0][type][i] = rankingLines[if(ruleBoundMode) 1 else 0][type][i-1]
+				rankingTime[if(ruleBoundMode) 1 else 0][type][i] = rankingTime[if(ruleBoundMode) 1 else 0][type][i-1]
 			}
 
 			// Add new data
-			rankingScore[if(ruleboundMode) 1 else 0][type][rankingRank] = sc
-			rankingLines[if(ruleboundMode) 1 else 0][type][rankingRank] = li
-			rankingTime[if(ruleboundMode) 1 else 0][type][rankingRank] = time
+			rankingScore[if(ruleBoundMode) 1 else 0][type][rankingRank] = sc
+			rankingLines[if(ruleBoundMode) 1 else 0][type][rankingRank] = li
+			rankingTime[if(ruleBoundMode) 1 else 0][type][rankingRank] = time
 		}
 		if(isLoggedIn) {
 			rankingRankPlayer = checkRankingPlayer(sc, li, time, type)
 			if(rankingRankPlayer!=-1) {
 				// Shift down ranking entries
 				for(i in RANKING_MAX-1 downTo rankingRankPlayer+1) {
-					rankingScorePlayer[if(ruleboundMode) 1 else 0][type][i] =
-						rankingScorePlayer[if(ruleboundMode) 1 else 0][type][i-1]
-					rankingLinesPlayer[if(ruleboundMode) 1 else 0][type][i] =
-						rankingLinesPlayer[if(ruleboundMode) 1 else 0][type][i-1]
-					rankingTimePlayer[if(ruleboundMode) 1 else 0][type][i] =
-						rankingTimePlayer[if(ruleboundMode) 1 else 0][type][i-1]
+					rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][i] =
+						rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][i-1]
+					rankingLinesPlayer[if(ruleBoundMode) 1 else 0][type][i] =
+						rankingLinesPlayer[if(ruleBoundMode) 1 else 0][type][i-1]
+					rankingTimePlayer[if(ruleBoundMode) 1 else 0][type][i] =
+						rankingTimePlayer[if(ruleBoundMode) 1 else 0][type][i-1]
 				}
 
 				// Add new data
-				rankingScorePlayer[if(ruleboundMode) 1 else 0][type][rankingRankPlayer] = sc
-				rankingLinesPlayer[if(ruleboundMode) 1 else 0][type][rankingRankPlayer] = li
-				rankingTimePlayer[if(ruleboundMode) 1 else 0][type][rankingRankPlayer] = time
+				rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][rankingRankPlayer] = sc
+				rankingLinesPlayer[if(ruleBoundMode) 1 else 0][type][rankingRankPlayer] = li
+				rankingTimePlayer[if(ruleBoundMode) 1 else 0][type][rankingRankPlayer] = time
 			}
 		} else rankingRankPlayer = -1
 		return rankingRank!=-1||rankingRankPlayer!=-1
@@ -878,11 +879,11 @@ class ColorPower:MarathonModeBase() {
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
-			if(sc>rankingScore[if(ruleboundMode) 1 else 0][type][i]) {
+			if(sc>rankingScore[if(ruleBoundMode) 1 else 0][type][i]) {
 				return i
-			} else if(sc==rankingScore[if(ruleboundMode) 1 else 0][type][i]&&li>rankingLines[if(ruleboundMode) 1 else 0][type][i]) {
+			} else if(sc==rankingScore[if(ruleBoundMode) 1 else 0][type][i]&&li>rankingLines[if(ruleBoundMode) 1 else 0][type][i]) {
 				return i
-			} else if(sc==rankingScore[if(ruleboundMode) 1 else 0][type][i]&&li==rankingLines[if(ruleboundMode) 1 else 0][type][i]&&time<rankingTime[if(ruleboundMode) 1 else 0][type][i]) {
+			} else if(sc==rankingScore[if(ruleBoundMode) 1 else 0][type][i]&&li==rankingLines[if(ruleBoundMode) 1 else 0][type][i]&&time<rankingTime[if(ruleBoundMode) 1 else 0][type][i]) {
 				return i
 			}
 		}
@@ -898,11 +899,11 @@ class ColorPower:MarathonModeBase() {
 	 */
 	private fun checkRankingPlayer(sc:Long, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
-			if(sc>rankingScorePlayer[if(ruleboundMode) 1 else 0][type][i]) {
+			if(sc>rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][i]) {
 				return i
-			} else if(sc==rankingScorePlayer[if(ruleboundMode) 1 else 0][type][i]&&li>rankingLinesPlayer[if(ruleboundMode) 1 else 0][type][i]) {
+			} else if(sc==rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][i]&&li>rankingLinesPlayer[if(ruleBoundMode) 1 else 0][type][i]) {
 				return i
-			} else if(sc==rankingScorePlayer[if(ruleboundMode) 1 else 0][type][i]&&li==rankingLinesPlayer[if(ruleboundMode) 1 else 0][type][i]&&time<rankingTimePlayer[if(ruleboundMode) 1 else 0][type][i]) {
+			} else if(sc==rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][i]&&li==rankingLinesPlayer[if(ruleBoundMode) 1 else 0][type][i]&&time<rankingTimePlayer[if(ruleBoundMode) 1 else 0][type][i]) {
 				return i
 			}
 		}

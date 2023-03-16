@@ -49,14 +49,14 @@ open class BooleanMenuItem(name:String, label:String, color:COLOR, defaultValue:
 	infix fun xor(to:Boolean) = value.xor(to)
 
 	override val valueString:String
-		get() = if(compact&&label.length>=6) value.getOX else value.getONorOFF()
+		get() = if(compact&&label.length>=5) value.getOX else value.getONorOFF(!compact)
 
 	override fun change(dir:Int, fast:Int, cur:Int) {
 		value = !value
 	}
 
 	override fun load(prop:CustomProperties, propName:String) {
-		value = prop.getProperty(propName, DEFAULT_VALUE)
+		value = prop.getProperty(propName, defaultValue)
 	}
 
 	override fun save(prop:CustomProperties, propName:String) {

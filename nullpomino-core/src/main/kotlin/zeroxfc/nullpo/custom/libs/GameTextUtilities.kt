@@ -1,13 +1,16 @@
 /*
+ * Copyright (c) 2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2010)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
  *
  * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -168,8 +171,6 @@ object GameTextUtilities {
 	 * Draws an aligned string using `drawDirectFont`.
 	 *
 	 * @param receiver  EventReceiver used to draw
-	 * @param engine    Current GameEngine
-	 * @param playerID  Player ID (1P = 0)
 	 * @param x         X coordinate of top-left corner of text
 	 * @param y         Y coordinate of top-left corner of text
 	 * @param alignment Alignment of string relative to string's area
@@ -292,7 +293,6 @@ object GameTextUtilities {
 	 *
 	 * @param receiver     EventReceiver used to draw
 	 * @param engine       Current GameEngine
-	 * @param playerID     Player ID (1P = 0)
 	 * @param x            X coordinate of top-left corner of text
 	 * @param y            Y coordinate of top-left corner of text
 	 * @param str          String to draw
@@ -319,7 +319,6 @@ object GameTextUtilities {
 	 *
 	 * @param receiver     EventReceiver used to draw
 	 * @param engine       Current GameEngine
-	 * @param playerID     Player ID (1P = 0)
 	 * @param x            X coordinate of top-left corner of text
 	 * @param y            Y coordinate of top-left corner of text
 	 * @param str          String to draw
@@ -352,8 +351,6 @@ object GameTextUtilities {
 	 * For newlines, insert a -1 for color.
 	 * By default, all text is left-aligned.
 	 *
-	 * @param engine       GameEngine to draw with.
-	 * @param playerID     Player to draw next to (0 = 1P).
 	 * @param stringData   String[] containing text data.
 	 * @param colorData   int[] containing color data.
 	 * @param destinationX X of destination (uses drawDirectFont(...)).
@@ -388,7 +385,6 @@ object GameTextUtilities {
 	 * By default, all text is left-aligned.
 	 *
 	 * @param engine       GameEngine to draw with.
-	 * @param playerID     Player to draw next to (0 = 1P).
 	 * @param stringData   String[] containing text data.
 	 * @param colorData   int[] containing color data.
 	 * @param destinationX X of destination (uses drawScoreFont(...)).
@@ -418,7 +414,6 @@ object GameTextUtilities {
 	 * By default, all text is left-aligned.
 	 *
 	 * @param engine       GameEngine to draw with.
-	 * @param playerID     Player to draw next to (0 = 1P).
 	 * @param stringData   String[] containing text data.
 	 * @param colorData   int[] containing color data.
 	 * @param destinationX X of destination (uses drawMenuFont(...)).
@@ -443,8 +438,6 @@ object GameTextUtilities {
 	/**
 	 * Draws an alternating-color string to a location using `drawDirectFont`.
 	 *
-	 * @param engine     GameEngine to draw with.
-	 * @param playerID   Player to draw next to (0 = 1P).
 	 * @param string     Text.
 	 * @param colorData int[] containing color data.
 	 * @param offset     Start offset of color array.
@@ -469,7 +462,6 @@ object GameTextUtilities {
 	 * Draws an alternating-color string to a location using `drawScoreFont`.
 	 *
 	 * @param engine     GameEngine to draw with.
-	 * @param playerID   Player to draw next to (0 = 1P).
 	 * @param string     Text.
 	 * @param colorData int[] containing color data.
 	 * @param offset     Start offset of color array.
@@ -491,7 +483,6 @@ object GameTextUtilities {
 		 * Draws an alternating-color string to a location using `drawMenuFont`.
 		 *
 		 * @param engine     GameEngine to draw with.
-		 * @param playerID   Player to draw next to (0 = 1P).
 		 * @param string     Text.
 		 * @param colorData int[] containing color data.
 		 * @param offset     Start offset of color array.

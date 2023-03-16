@@ -68,7 +68,7 @@ class StateLoading:BasicGameState() {
 				clip.play()
 				loadBG = Image("$skindir/graphics/${ResourceHolder.imgTitleBG.name}.png")
 				container?.graphics?.drawImage(loadBG, 0f, 0f)
-			} catch(e:Throwable) {
+			} catch(_:Throwable) {
 			}
 	}
 
@@ -129,7 +129,7 @@ class StateLoading:BasicGameState() {
 				for(i in 0 until ResourceHolder.blockBreakMax)
 					try {
 						ResourceHolder.imgBreak[i][0].draw()
-					} catch(e:Exception) {
+					} catch(_:Exception) {
 					}
 
 				preloadSet++
@@ -138,7 +138,7 @@ class StateLoading:BasicGameState() {
 				for(i in 0 until ResourceHolder.blockBreakMax)
 					try {
 						ResourceHolder.imgBreak[i][1].draw()
-					} catch(e:Exception) {
+					} catch(_:Exception) {
 					}
 
 				preloadSet++
@@ -147,7 +147,7 @@ class StateLoading:BasicGameState() {
 				for(i in 0 until ResourceHolder.pEraseMax)
 					try {
 						ResourceHolder.imgPErase[i].draw()
-					} catch(e:Exception) {
+					} catch(_:Exception) {
 					}
 
 				preloadSet++
@@ -159,7 +159,7 @@ class StateLoading:BasicGameState() {
 							i.draw()
 						}
 						it.imgFontNano.draw()
-					} catch(e:Exception) {
+					} catch(_:Exception) {
 					}
 				}
 				preloadSet++

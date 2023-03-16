@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -43,7 +43,7 @@ import org.apache.logging.log4j.LogManager
 /** LINE RACE Mode */
 class SprintLine:NetDummyMode() {
 	/** BGM number */
-	private var bgmno = 0
+	private var bgmId = 0
 
 	private val itemBig = BooleanMenuItem("big", "BIG", EventReceiver.COLOR.BLUE, false)
 	/** BigMode */
@@ -85,7 +85,7 @@ class SprintLine:NetDummyMode() {
 
 		super.playerInit(engine)
 
-		bgmno = 0
+		bgmId = 0
 		big = false
 		goalType = 0
 		presetNumber = 0
@@ -95,19 +95,20 @@ class SprintLine:NetDummyMode() {
 		rankingPiece.forEach {it.fill(0)}
 //		rankingPPS = Array(GOALTYPE_MAX) {FloatArray(RANKING_MAX)}
 
+		owner.bgMan.bg = -14
 		engine.frameColor = GameEngine.FRAME_COLOR_RED
 
 		netPlayerInit(engine)
 
-		if(!engine.owner.replayMode) {
-			presetNumber = engine.owner.modeConfig.getProperty("linerace.presetNumber", 0)
-			loadPreset(engine, engine.owner.modeConfig, -1)
+		if(!owner.replayMode) {
+			presetNumber = owner.modeConfig.getProperty("linerace.presetNumber", 0)
+			loadPreset(engine, owner.modeConfig, -1)
 		} else {
 			presetNumber = 0
-			loadPreset(engine, engine.owner.replayProp, -1)
+			loadPreset(engine, owner.replayProp, -1)
 
 			// NET: Load name
-			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
+			netPlayerName = owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 	}
 
@@ -124,7 +125,7 @@ class SprintLine:NetDummyMode() {
 		engine.speed.lineDelay = prop.getProperty("linerace. lineDelay.$preset", 0)
 		engine.speed.lockDelay = prop.getProperty("linerace.lockDelay.$preset", 30)
 		engine.speed.das = prop.getProperty("linerace.das.$preset", 10)
-		bgmno = prop.getProperty("linerace.bgmno.$preset", BGM.values.indexOf(BGM.Rush(0)))
+		bgmId = prop.getProperty("linerace.bgmno.$preset", BGM.values.indexOf(BGM.Rush(0)))
 		big = prop.getProperty("linerace.big.$preset", false)
 		goalType = prop.getProperty("linerace.goalType.$preset", 1)
 	}
@@ -142,7 +143,7 @@ class SprintLine:NetDummyMode() {
 		prop.setProperty("linerace.lineDelay.$preset", engine.speed.lineDelay)
 		prop.setProperty("linerace.lockDelay.$preset", engine.speed.lockDelay)
 		prop.setProperty("linerace.das.$preset", engine.speed.das)
-		prop.setProperty("linerace.bgmno.$preset", bgmno)
+		prop.setProperty("linerace.bgmno.$preset", bgmId)
 		prop.setProperty("linerace.big.$preset", big)
 		prop.setProperty("linerace.goalType.$preset", goalType)
 	}
@@ -152,7 +153,7 @@ class SprintLine:NetDummyMode() {
 		// NET: Net Ranking
 		if(netIsNetRankingDisplayMode)
 			netOnUpdateNetPlayRanking(engine, goalType)
-		else if(!engine.owner.replayMode) {
+		else if(!owner.replayMode) {
 			// Configuration changes
 			val change = updateCursor(engine, 11)
 
@@ -171,7 +172,7 @@ class SprintLine:NetDummyMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					7 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					8 -> big = !big
 					9 -> {
 						goalType += change
@@ -235,9 +236,9 @@ class SprintLine:NetDummyMode() {
 			netOnRenderNetPlayRanking(engine, receiver)
 		else {
 			drawMenuSpeeds(engine, receiver, 0, EventReceiver.COLOR.BLUE, 0)
-			drawMenuBGM(engine, receiver, bgmno)
+			drawMenuBGM(engine, receiver, bgmId)
 			drawMenuCompact(engine, receiver, "BIG" to big, "GOAL" to GOAL_TABLE[goalType])
-			if(!engine.owner.replayMode) {
+			if(!owner.replayMode) {
 				menuColor = EventReceiver.COLOR.GREEN
 				drawMenuCompact(engine, receiver, "LOAD" to presetNumber, "SAVE" to presetNumber)
 			}
@@ -248,8 +249,7 @@ class SprintLine:NetDummyMode() {
 	* Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
 		engine.big = big
-
-		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmId]
 
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		engine.meterValue = 1f
@@ -259,7 +259,7 @@ class SprintLine:NetDummyMode() {
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
 
-		receiver.drawScoreFont(engine, 0, 0, "LINE RACE", EventReceiver.COLOR.RED)
+		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.RED)
 		receiver.drawScoreFont(engine, 0, 1, "(${GOAL_TABLE[goalType]} Lines run)", EventReceiver.COLOR.RED)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
@@ -327,7 +327,7 @@ class SprintLine:NetDummyMode() {
 		if(remainLines<=0) {
 			engine.ending = 1
 			engine.gameEnded()
-		} else if(engine.statistics.lines>=GOAL_TABLE[goalType]-5) owner.musMan.fadesw = true
+		} else if(engine.statistics.lines>=GOAL_TABLE[goalType]-5) owner.musMan.fadeSW = true
 		return li
 	}
 
@@ -351,7 +351,7 @@ class SprintLine:NetDummyMode() {
 
 	/* Save replay file */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		savePreset(engine, engine.owner.replayProp, -1)
+		savePreset(engine, owner.replayProp, -1)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(
@@ -463,7 +463,7 @@ class SprintLine:NetDummyMode() {
 		val msg = "game\toption\t"+
 			"${engine.speed.gravity}\t${engine.speed.denominator}\t${engine.speed.are}\t"+
 			"${engine.speed.areLine}\t${engine.speed.lineDelay}\t${engine.speed.lockDelay}\t"+
-			"${engine.speed.das}\t$bgmno\t$big\t$goalType\t$presetNumber\n"
+			"${engine.speed.das}\t$bgmId\t$big\t$goalType\t$presetNumber\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
 
@@ -476,7 +476,7 @@ class SprintLine:NetDummyMode() {
 		engine.speed.lineDelay = message[8].toInt()
 		engine.speed.lockDelay = message[9].toInt()
 		engine.speed.das = message[10].toInt()
-		bgmno = message[11].toInt()
+		bgmId = message[11].toInt()
 		big = message[12].toBoolean()
 		goalType = message[13].toInt()
 		presetNumber = message[14].toInt()

@@ -61,11 +61,11 @@ class ModeManager {
 	}
 
 	/** Mode のcountを取得
-	 * @param netplay falseなら通常Modeだけ, trueならネットプレイ用Modeだけcount
+	 * @param netPlay falseなら通常Modeだけ, trueならネットプレイ用Modeだけcount
 	 * @return Modeのcount
 	 */
-	fun getNumberOfModes(netplay:Boolean):Int =
-		list.count {it.isOnlineMode==netplay}
+	fun getNumberOfModes(netPlay:Boolean):Int =
+		list.count {it.isOnlineMode==netPlay}
 
 	/** 読み込まれているMode nameを取得
 	 * @param netplay falseなら通常Modeだけ, trueならネットプレイ用Modeだけ取得

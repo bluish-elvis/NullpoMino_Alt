@@ -38,7 +38,7 @@
  <entry key="AvalancheVS">AVALANCHEの対戦モードです。大きい連鎖を作り、一気に邪魔ブロックを降らせましょう。</entry>
  <entry key="AvalancheVSFever">用意された連鎖の形を次々と消し、相手と競争するモードです。</entry>
  <entry key="AvalancheVSDig">相手より先に宝石ブロックを消すことが目的のモードです。</entry>
- <entry key="AvalancheVSBomb">連鎖すると相手に爆弾ブロックを送ることができます。</entry>
+ <entry key="AvalancheVSBomb">連鎖して相手に爆弾ブロックを送る対戦モードです。</entry>
  <entry key="AvalancheVSSPF">連鎖すると相手に決まったパターンのブロックが落下します。</entry>
  <entry key="Physician">フィールドに配置された宝石ブロックをすべて消していきます。</entry>
  <entry key="PhysicianVS">相手より先にすべての宝石ブロックを消す対戦モードです。</entry>

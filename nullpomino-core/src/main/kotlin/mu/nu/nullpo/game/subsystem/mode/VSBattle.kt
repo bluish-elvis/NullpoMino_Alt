@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -44,17 +44,17 @@ import kotlin.random.Random
 /** VS-BATTLE Mode */
 class VSBattle:AbstractMode() {
 	/** garbage blockType of */
-	private var garbageType = IntArray(MAX_PLAYERS)
+	private val garbageType = MutableList(MAX_PLAYERS) {0}
 	private val garbageStyle get() = garbageType.map {GarbageStyle.all[it]}
 
 	/** Rate of change of garbage holes */
-	private var messiness:Array<IntArray> = Array(MAX_PLAYERS) {IntArray(2) {0}}
+	private val messiness = List(MAX_PLAYERS) {MutableList(2) {0}}
 
 	/** Allow garbage countering */
-	private var garbageCounter = BooleanArray(MAX_PLAYERS) {true}
+	private val garbageCounter = MutableList(MAX_PLAYERS) {true}
 
 	/** Allow garbage blocking */
-	private var garbageBlocking = BooleanArray(MAX_PLAYERS) {true}
+	private val garbageBlocking = MutableList(MAX_PLAYERS) {true}
 
 	/** Has accumulated garbage blockOfcount */
 	val garbage get() = (0 until players).map {p -> garbageEntries[p].filter {it.time<=0}.sumOf {it.lines}}
@@ -69,52 +69,52 @@ class VSBattle:AbstractMode() {
 	private val score get() = owner.engine.map {it.statistics.vs}
 
 	/** Had guard garbage blockOfcount */
-	private var garbageGuard = IntArray(MAX_PLAYERS)
+	private val garbageGuard = MutableList(MAX_PLAYERS) {0}
 
 	/** Last garbage hole position */
-	private var lastHole = IntArray(MAX_PLAYERS)
+	private val lastHole = MutableList(MAX_PLAYERS) {0}
 
 	/** Most recent scoring eventInCombocount */
-	private var lastcombo = IntArray(MAX_PLAYERS)
+	private val lastcombo = MutableList(MAX_PLAYERS) {0}
 
 	/** UseBGM */
-	private var bgmno = 0
+	private var bgmId = 0
 
 	/** Flag for types of Twisters allowed (0=none, 1=normal, 2=all spin) */
-	private var twistEnableType = IntArray(MAX_PLAYERS)
+	private val twistEnableType = MutableList(MAX_PLAYERS) {0}
 
 	/** Old flag for allowing Twisters */
-	private var enableTwist = BooleanArray(MAX_PLAYERS)
+	private val enableTwist = MutableList(MAX_PLAYERS) {false}
 
 	/** Flag for Split chains b2b */
-	private var splitb2b = BooleanArray(MAX_PLAYERS)
+	private val splitb2b = MutableList(MAX_PLAYERS) {false}
 
 	/** Flag for enabling combos */
-	private var enableCombo = BooleanArray(MAX_PLAYERS)
+	private val enableCombo = MutableList(MAX_PLAYERS) {false}
 
 	/** Big */
-	private var big = BooleanArray(MAX_PLAYERS)
+	private val big = MutableList(MAX_PLAYERS) {false}
 
 	/** Sound effects ON/OFF */
-	private var enableSE = BooleanArray(MAX_PLAYERS)
+	private val enableSE = MutableList(MAX_PLAYERS) {false}
 
-	/** HurryupSeconds before the startcount(-1InHurryupNo) */
-	private var hurryupSeconds = IntArray(MAX_PLAYERS)
+	/** Hurry up Seconds before the startcount(-1InHurryupNo) */
+	private val hurryUpSeconds = MutableList(MAX_PLAYERS) {0}
 
-	/** HurryupTimes afterBlockDo you run up the floor every time you put the */
-	private var hurryupInterval = IntArray(MAX_PLAYERS)
+	/** Hurry up Times afterBlockDo you run up the floor every time you put the */
+	private val hurryUpInterval = MutableList(MAX_PLAYERS) {0}
 
 	/** MapUse flag */
-	private var useMap = BooleanArray(MAX_PLAYERS)
+	private val useMap = MutableList(MAX_PLAYERS) {false}
 
 	/** UseMapSet number */
-	private var mapSet = IntArray(MAX_PLAYERS)
+	private val mapSet = MutableList(MAX_PLAYERS) {0}
 
 	/** Map number(-1Random in) */
-	private var mapNumber = IntArray(MAX_PLAYERS)
+	private val mapNumber = MutableList(MAX_PLAYERS) {0}
 
 	/** Last preset number used */
-	private var presetNumber = IntArray(MAX_PLAYERS)
+	private val presetNumber = MutableList(MAX_PLAYERS) {0}
 
 	/** True if display detailed stats */
 	private var showStats = false
@@ -122,26 +122,26 @@ class VSBattle:AbstractMode() {
 	/** Winner */
 	private var winnerID = 0
 
-	/** I was sent from the enemygarbage blockA list of */
-	private var garbageEntries:Array<MutableList<GarbageEntry>> = emptyArray()
+	/** gGrbage blocks sent from the enemy A list of */
+	private val garbageEntries = List(MAX_PLAYERS) {emptyList<GarbageEntry>().toMutableList()}
 
-	/** HurryupAfterBlockI put count */
-	private var hurryupCount = IntArray(MAX_PLAYERS) {0}
+	/** Hurry up After BlockI put count */
+	private val hurryUpCount = MutableList(MAX_PLAYERS) {0}
 
 	/** MapSets ofProperty file */
 	private var propMap:Array<CustomProperties?> = emptyArray()
 
 	/** MaximumMap number */
-	private var mapMaxNo = IntArray(MAX_PLAYERS) {0}
+	private val mapMaxNo = MutableList(MAX_PLAYERS) {0}
 
-	/** For backupfield (MapUsed to save the replay) */
+	/** For backup field (MapUsed to save the replay) */
 	private var fldBackup:Array<Field?> = emptyArray()
 
-	/** MapRan for selectioncount */
+	/** MapRandom for selection count */
 	private var randMap:Random? = null
 
 	/** Win count for each player */
-	private var winCount = IntArray(MAX_PLAYERS)
+	private val winCount = MutableList(MAX_PLAYERS) {0}
 
 	/** Version */
 	private var version = 0
@@ -158,35 +158,34 @@ class VSBattle:AbstractMode() {
 
 	/* Mode initialization */
 	override fun modeInit(manager:GameManager) {
-		owner = manager
-
-		garbageType = IntArray(MAX_PLAYERS) {0}
-		messiness = Array(MAX_PLAYERS) {IntArray(2)}
-		garbageCounter = BooleanArray(MAX_PLAYERS) {true}
-		garbageBlocking = BooleanArray(MAX_PLAYERS) {true}
-		garbageGuard = IntArray(MAX_PLAYERS) {0}
-		lastHole = IntArray(MAX_PLAYERS) {0}
-		lastcombo = IntArray(MAX_PLAYERS) {0}
-		bgmno = 0
-		twistEnableType = IntArray(MAX_PLAYERS) {0}
-		enableTwist = BooleanArray(MAX_PLAYERS) {true}
-		splitb2b = BooleanArray(MAX_PLAYERS) {true}
-		enableCombo = BooleanArray(MAX_PLAYERS) {true}
-		big = BooleanArray(MAX_PLAYERS) {false}
-		enableSE = BooleanArray(MAX_PLAYERS) {true}
-		hurryupSeconds = IntArray(MAX_PLAYERS) {-1}
-		hurryupInterval = IntArray(MAX_PLAYERS) {5}
-		useMap = BooleanArray(MAX_PLAYERS) {false}
-		mapSet = IntArray(MAX_PLAYERS) {0}
-		mapNumber = IntArray(MAX_PLAYERS) {-1}
-		presetNumber = IntArray(MAX_PLAYERS) {0}
-		garbageEntries = Array(MAX_PLAYERS) {mutableListOf()}
-		hurryupCount = IntArray(MAX_PLAYERS) {0}
+		super.modeInit(manager)
+		garbageType.fill(0)
+		messiness.forEach {it.fill(0)}
+		garbageCounter.fill(true)
+		garbageBlocking.fill(true)
+		garbageGuard.fill(0)
+		lastHole.fill(0)
+		lastcombo.fill(0)
+		bgmId = 0
+		twistEnableType.fill(0)
+		enableTwist.fill(true)
+		splitb2b.fill(true)
+		enableCombo.fill(true)
+		big.fill(false)
+		enableSE.fill(true)
+		hurryUpSeconds.fill(-1)
+		hurryUpInterval.fill(5)
+		useMap.fill(false)
+		mapSet.fill(0)
+		mapNumber.fill(-1)
+		presetNumber.fill(0)
+		garbageEntries.forEach {it.clear()}
+		hurryUpCount.fill(0)
 		propMap = arrayOfNulls(MAX_PLAYERS)
-		mapMaxNo = IntArray(MAX_PLAYERS) {0}
+		mapMaxNo.fill(0)
 		fldBackup = arrayOfNulls(MAX_PLAYERS)
 		randMap = Random.Default
-		winCount = IntArray(MAX_PLAYERS) {0}
+		winCount.fill(0)
 		winnerID = -1
 	}
 
@@ -221,10 +220,13 @@ class VSBattle:AbstractMode() {
 	/** Load settings into [engine] from [prop] not related to speeds */
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val pid = engine.playerID
-		bgmno = prop.getProperty("vsbattle.bgmno", 0)
+		bgmId = prop.getProperty("vsbattle.bgmno", 0)
 		garbageType[pid] = prop.getProperty("vsbattle.garbageType.p$pid", 0)
-		messiness[pid] = prop.getProperties("vsbattle.messiness.p$pid", intArrayOf(90, 30))
+		prop.getProperties("vsbattle.messiness.p$pid", listOf(90, 30)).forEachIndexed {i, it ->
+			messiness[pid][i] = it
+		}
 		garbageCounter[pid] = prop.getProperty("vsbattle.garbageCounter.p$pid", true)
+
 		garbageBlocking[pid] = prop.getProperty("vsbattle.garbageBlocking.p$pid", true)
 		twistEnableType[pid] = prop.getProperty("vsbattle.twistEnableType.p$pid", 1)
 		enableTwist[pid] = prop.getProperty("vsbattle.enableTwist.p$pid", true)
@@ -232,8 +234,8 @@ class VSBattle:AbstractMode() {
 		enableCombo[pid] = prop.getProperty("vsbattle.enableCombo.p$pid", true)
 		big[pid] = prop.getProperty("vsbattle.big.p$pid", false)
 		enableSE[pid] = prop.getProperty("vsbattle.enableSE.p$pid", true)
-		hurryupSeconds[pid] = prop.getProperty("vsbattle.hurryupSeconds.p$pid", -1)
-		hurryupInterval[pid] = prop.getProperty("vsbattle.hurryupInterval.p$pid", 5)
+		hurryUpSeconds[pid] = prop.getProperty("vsbattle.hurryupSeconds.p$pid", -1)
+		hurryUpInterval[pid] = prop.getProperty("vsbattle.hurryupInterval.p$pid", 5)
 		useMap[pid] = prop.getProperty("vsbattle.useMap.p$pid", false)
 		mapSet[pid] = prop.getProperty("vsbattle.mapSet.p$pid", 0)
 		mapNumber[pid] = prop.getProperty("vsbattle.mapNumber.p$pid", -1)
@@ -244,9 +246,9 @@ class VSBattle:AbstractMode() {
 	/** Save settings from [engine] into [prop] not related to speeds */
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val pid = engine.playerID
-		prop.setProperty("vsbattle.bgmno", bgmno)
+		prop.setProperty("vsbattle.bgmno", bgmId)
 		prop.setProperty("vsbattle.garbageType.p$pid", garbageType[pid])
-		prop.setProperty("vsbattle.messiness.p$pid", messiness.getOrElse(pid) {intArrayOf()})
+		prop.setProperty("vsbattle.messiness.p$pid", messiness.getOrElse(pid) {emptyList()})
 		prop.setProperty("vsbattle.garbageCounter.p$pid", garbageCounter[pid])
 		prop.setProperty("vsbattle.garbageBlocking.p$pid", garbageBlocking[pid])
 		prop.setProperty("vsbattle.twistEnableType.p$pid", twistEnableType[pid])
@@ -255,8 +257,8 @@ class VSBattle:AbstractMode() {
 		prop.setProperty("vsbattle.enableCombo.p$pid", enableCombo[pid])
 		prop.setProperty("vsbattle.big.p$pid", big[pid])
 		prop.setProperty("vsbattle.enableSE.p$pid", enableSE[pid])
-		prop.setProperty("vsbattle.hurryupSeconds.p$pid", hurryupSeconds[pid])
-		prop.setProperty("vsbattle.hurryupInterval.p$pid", hurryupInterval[pid])
+		prop.setProperty("vsbattle.hurryupSeconds.p$pid", hurryUpSeconds[pid])
+		prop.setProperty("vsbattle.hurryupInterval.p$pid", hurryUpInterval[pid])
 		prop.setProperty("vsbattle.useMap.p$pid", useMap[pid])
 		prop.setProperty("vsbattle.mapSet.p$pid", mapSet[pid])
 		prop.setProperty("vsbattle.mapNumber.p$pid", mapNumber[pid])
@@ -315,7 +317,7 @@ class VSBattle:AbstractMode() {
 
 		garbageEntries[playerID].clear()
 
-		hurryupCount[playerID] = 0
+		hurryUpCount[playerID] = 0
 
 		if(!engine.owner.replayMode) {
 			version = CURRENT_VERSION
@@ -367,16 +369,16 @@ class VSBattle:AbstractMode() {
 					17 -> big[pid] = !big[pid]
 					18 -> enableSE[pid] = !enableSE[pid]
 					19 -> {
-						hurryupSeconds[pid] += change
-						if(hurryupSeconds[pid]<-1) hurryupSeconds[pid] = 300
-						if(hurryupSeconds[pid]>300) hurryupSeconds[pid] = -1
+						hurryUpSeconds[pid] += change
+						if(hurryUpSeconds[pid]<-1) hurryUpSeconds[pid] = 300
+						if(hurryUpSeconds[pid]>300) hurryUpSeconds[pid] = -1
 					}
 					20 -> {
-						hurryupInterval[pid] += change
-						if(hurryupInterval[pid]<1) hurryupInterval[pid] = 99
-						if(hurryupInterval[pid]>99) hurryupInterval[pid] = 1
+						hurryUpInterval[pid] += change
+						if(hurryUpInterval[pid]<1) hurryUpInterval[pid] = 99
+						if(hurryUpInterval[pid]>99) hurryUpInterval[pid] = 1
 					}
-					21 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					21 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					22 -> showStats = !showStats
 					23 -> {
 						useMap[pid] = !useMap[pid]
@@ -475,24 +477,18 @@ class VSBattle:AbstractMode() {
 						receiver.drawMenuFont(engine, 5*i+if(f) 1 else 0, 3, "\u0082$it", f)
 					}
 					drawMenu(
-						engine,
-						receiver,
-						4,
-						COLOR.CYAN,
-						12,
-						"COUNTERING" to garbageCounter[pid],
-						"BLOCKING" to garbageBlocking[pid],
-						"SPIN BONUS" to strTWISTEnable,
-						"COMBO" to enableCombo[pid]
+						engine, receiver, 4, COLOR.CYAN, 12,
+						"COUNTERING" to garbageCounter[pid], "BLOCKING" to garbageBlocking[pid],
+						"SPIN BONUS" to strTWISTEnable, "COMBO" to enableCombo[pid]
 					)
 				}
 				else -> {
 					drawMenu(
 						engine, receiver, 0, COLOR.CYAN, 17, "BIG" to big[pid], "SE" to enableSE[pid],
-						"HURRYUP" to if(hurryupSeconds[pid]==-1) "NONE" else "${hurryupSeconds[pid]}SEC",
-						"INTERVAL" to hurryupInterval[pid]
+						"HURRYUP" to if(hurryUpSeconds[pid]==-1) "NONE" else "${hurryUpSeconds[pid]}SEC",
+						"INTERVAL" to hurryUpInterval[pid]
 					)
-					drawMenu(engine, receiver, 8, COLOR.PINK, 22, "BGM" to BGM.values[bgmno], "SHOW STATS" to showStats)
+					drawMenu(engine, receiver, 8, COLOR.PINK, 22, "BGM" to BGM.values[bgmId], "SHOW STATS" to showStats)
 					drawMenu(
 						engine, receiver, 12, COLOR.CYAN, 24, "USE MAP" to useMap[pid], "MAP SET" to mapSet[pid],
 						"MAP NO." to if(mapNumber[pid]<0) "RANDOM" else "${mapNumber[pid]}/${mapMaxNo[pid]-1}"
@@ -548,7 +544,7 @@ class VSBattle:AbstractMode() {
 		engine.comboType = if(enableCombo[playerID]) GameEngine.COMBO_TYPE_NORMAL else GameEngine.COMBO_TYPE_DISABLE
 		engine.big = big[playerID]
 		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.musMan.bgm = BGM.values[bgmno]
+		if(playerID==1) owner.musMan.bgm = BGM.values[bgmId]
 
 		engine.twistAllowKick = true
 		if(version>=4) {
@@ -578,8 +574,8 @@ class VSBattle:AbstractMode() {
 		if(pid==0) {
 			receiver.drawDirectNum(232, 16, engine.statistics.time.toTimeStr, scale = 2f)
 
-			if(hurryupSeconds[pid]>=0&&engine.timerActive&&
-				engine.statistics.time>=hurryupSeconds[pid]*60&&engine.statistics.time<(hurryupSeconds[pid]+5)*60
+			if(hurryUpSeconds[pid]>=0&&engine.timerActive&&
+				engine.statistics.time>=hurryUpSeconds[pid]*60&&engine.statistics.time<(hurryUpSeconds[pid]+5)*60
 			)
 				receiver.drawDirectFont(256, 32, "DANGER", if(engine.statistics.time%2==0) COLOR.RED else COLOR.YELLOW)
 
@@ -607,7 +603,7 @@ class VSBattle:AbstractMode() {
 			receiver.drawScoreSpeed(engine, 0, 12, score[0]/50, 5f)
 			receiver.drawScoreSpeed(engine, 5, 12, score[1]/50, 5f)
 			val x = receiver.fieldX(engine)
-			val y = receiver.fieldY(engine)+22*EventReceiver.BS+1
+			val y = receiver.fieldY(engine)+(engine.fieldHeight+2)*EventReceiver.BS+1
 
 
 			garbageEntries[pid].forEachIndexed {i, (lines, playerID, time) ->
@@ -623,15 +619,15 @@ class VSBattle:AbstractMode() {
 			}
 
 //			if(owner.receiver.nextDisplayType==2) {
-			val mycol = col(pid)
+			val myCol = col(pid)
 
-			receiver.drawDirectFont(x-32, y+24, "WINS", mycol, .5f)
+			receiver.drawDirectFont(x-32, y+24, "WINS", myCol, .5f)
 			receiver.drawDirectNum(x-24, y+8, String.format("%2d", winCount[pid]))
-			receiver.drawDirectNano(x-32, y-8, "RP", mycol, .5f)
-			receiver.drawDirectNum(x-32, y-24, String.format("%3d", score[pid].toInt()), mycol)
-			receiver.drawDirectNano(x-20, y-8, String.format("%3d", (score[pid]*1000%1000).toInt()), mycol, 0.5f)
+			receiver.drawDirectNano(x-32, y-8, "RP", myCol, .5f)
+			receiver.drawDirectNum(x-32, y-24, String.format("%3d", score[pid].toInt()), myCol)
+			receiver.drawDirectNano(x-14, y-8, String.format("%3d", (score[pid]*1000%1000).toInt()), myCol, 0.5f)
 
-			receiver.drawDirectNano(x-32, y-36, "SENT", mycol, .5f)
+			receiver.drawDirectNano(x-32, y-36, "SENT", myCol, .5f)
 			receiver.drawDirectNum(x-32, y-52, String.format("%3d", garbageSent[pid]))
 
 //			}
@@ -682,7 +678,7 @@ class VSBattle:AbstractMode() {
 
 		// Rising auction
 		if((ev.lines==0||!garbageBlocking[pid])&&garbage[pid]>0) {
-			engine.playSE("linefall${if(garbage[pid]>=3) "" else "1"}")
+			engine.playSE("linefall${if(garbage[pid]>3) "1" else if(garbage[pid]>1) "0" else ""}")
 			var gct = 0
 			do {
 				garbageEntries[pid].filter {it.time<=0}.first {it.lines>0}.let {
@@ -719,12 +715,12 @@ class VSBattle:AbstractMode() {
 		}
 
 		// HURRY UP!
-		if(hurryupSeconds[pid]>=0&&engine.timerActive)
-			if(engine.statistics.time>=hurryupSeconds[pid]*60) {
-				hurryupCount[pid]++
+		if(hurryUpSeconds[pid]>=0&&engine.timerActive)
+			if(engine.statistics.time>=hurryUpSeconds[pid]*60) {
+				hurryUpCount[pid]++
 
-				if(hurryupCount[pid]%hurryupInterval[pid]==0) engine.field.addHurryupFloor(1, engine.skin)
-			} else hurryupCount[pid] = hurryupInterval[pid]-1
+				if(hurryUpCount[pid]%hurryUpInterval[pid]==0) engine.field.addHurryupFloor(1, engine.skin)
+			} else hurryUpCount[pid] = hurryUpInterval[pid]-1
 
 		return pts
 	}
@@ -734,21 +730,22 @@ class VSBattle:AbstractMode() {
 		val pid = engine.playerID
 		super.onLast(engine)
 		// HURRY UP!
-		if(pid==0&&engine.timerActive&&hurryupSeconds[pid]>=0&&engine.statistics.time==hurryupSeconds[pid]*60)
+		if(pid==0&&engine.timerActive&&hurryUpSeconds[pid]>=0&&engine.statistics.time==hurryUpSeconds[pid]*60)
 			engine.playSE("hurryup")
 		if(garbageEntries[pid].any {it.time>0}) {
 			if(garbageEntries[pid].any {it.time==1})
-				engine.playSE(if(garbageEntries[pid].filter {it.time==1}.maxOf {it.lines}>=4
-					||(engine.field.highestBlockY-garbage[pid])<engine.fieldHeight*4/7
-				)
-					"garbage1" else "garbage0"
+				engine.playSE(
+					"garbage${
+						(garbageEntries[pid].filter {it.time==1}.maxOf {it.lines}>=4).toInt()+
+							((engine.field.highestBlockY-garbage[pid])<engine.fieldHeight*4/7).toInt()
+					}"
 				)
 			garbageEntries[pid].filter {it.time>0}.forEach {it.time--}
 		}
 		// Rising auctionMeter
-		if(garbage[pid]*EventReceiver.getBlockSize(engine)>engine.meterValue)
-			engine.meterValue += EventReceiver.getBlockSize(engine)/2
-		else if(garbage[pid]*EventReceiver.getBlockSize(engine)<engine.meterValue) engine.meterValue--
+		if(garbage[pid]*engine.blockSize>engine.meterValue)
+			engine.meterValue += engine.blockSize/2
+		else if(garbage[pid]*engine.blockSize<engine.meterValue) engine.meterValue--
 		engine.meterColor = GameEngine.METER_COLOR_RED
 
 		// Settlement

@@ -158,7 +158,7 @@ class Statistics:Serializable {
 	var gamerate = 0f
 
 	/** Roll cleared flag (0=Not Reached 1=Reached 2=Fully Survived) */
-	var rollclear = 0
+	var rollClear = 0
 		set(it) {
 			if(field==it||!(0..2).contains(it)) return
 			when(it) {
@@ -252,7 +252,7 @@ class Statistics:Serializable {
 		maxCombo = 0
 		gamerate = 0f
 		maxChain = 0
-		rollclear = 0
+		rollClear = 0
 
 		pieces = List(Piece.PIECE_COUNT) {0}
 		randSeed = 0L
@@ -300,7 +300,7 @@ class Statistics:Serializable {
 			maxB2B = b.maxB2B
 			gamerate = b.gamerate
 			maxChain = b.maxChain
-			rollclear = b.rollclear
+			rollClear = b.rollClear
 			rollclearHistory =
 				b.rollclearHistory
 			garbageLines = b.garbageLines
@@ -354,7 +354,7 @@ class Statistics:Serializable {
 			maxB2B = maxOf(maxB2B, b.maxB2B)
 			gamerate = (gamerate+b.gamerate)/2f
 			maxChain = maxOf(maxCombo, b.maxChain)
-			rollclear = b.rollclear
+			rollClear = b.rollClear
 			garbageLines += b.garbageLines
 
 			pieces = pieces.mapIndexed {it, i -> it+b.pieces[i]}
@@ -407,7 +407,7 @@ class Statistics:Serializable {
 			"$id.statistics.maxB2B" to maxB2B,
 			"$id.statistics.gamerate" to gamerate,
 			"$id.statistics.maxChain" to maxChain,
-			"$id.statistics.rollclear" to rollclear,
+			"$id.statistics.rollClear" to rollClear,
 			"$id.statistics.randSeed" to randSeed,
 		).plus((0 until pieces.size-1).associate {
 			"$id.statistics.pieces.$it" to pieces[it]
@@ -459,7 +459,7 @@ class Statistics:Serializable {
 		maxB2B = p.getProperty("$id.statistics.maxB2B", 0)
 		gamerate = p.getProperty("$id.statistics.gamerate", 0f)
 		maxChain = p.getProperty("$id.statistics.maxChain", 0)
-		rollclear = p.getProperty("$id.statistics.rollclear", 0)
+		rollClear = p.getProperty("$id.statistics.rollClear", 0)
 		randSeed = p.getProperty("$id.statistics.randSeed", 0L)
 		pieces = List(pieces.size) {p.getProperty("$id.statistics.pieces.$it", 0)}
 	}
@@ -509,7 +509,7 @@ class Statistics:Serializable {
 			{maxB2B = it.toInt()},
 			{gamerate = it.toFloat()},
 			{maxChain = it.toInt()},
-			{rollclear = it.toInt()},
+			{rollClear = it.toInt()},
 			{randSeed = it.toLong()}).plus(
 			(0 until pieces.size-1).map {i:Int ->
 				{pi[i] = it.toInt()}
@@ -534,7 +534,7 @@ class Statistics:Serializable {
 		"$totalTriple", "$totalSplitTriple", "$totalQuadruple", "$totalTwistZeroMini", "$totalTwistZero",
 		"$totalTwistSingleMini", "$totalTwistSingle", "$totalTwistDoubleMini", "$totalTwistDouble", "$totalTwistSplitDouble",
 		"$totalTwistTriple", "$totalTwistSplitTriple", "$totalB2BQuad", "$totalB2BSplit", "$totalB2BTwist", "$totalHoldUsed",
-		"$maxCombo", "$maxB2B", "$gamerate", "$maxChain", "$rollclear", "$randSeed"
+		"$maxCombo", "$maxB2B", "$gamerate", "$maxChain", "$rollClear", "$randSeed"
 	)+(pieces.map {"$it"})
 
 	/** Export to String

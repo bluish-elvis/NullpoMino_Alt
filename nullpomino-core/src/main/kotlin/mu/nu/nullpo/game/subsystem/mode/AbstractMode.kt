@@ -175,6 +175,7 @@ abstract class AbstractMode:GameMode {
 	override fun loadReplay(engine:GameEngine, prop:CustomProperties) {}
 	override fun modeInit(manager:GameManager) {
 		menuTime = 0
+		owner = manager
 	}
 
 	override fun onARE(engine:GameEngine):Boolean = false
@@ -194,7 +195,7 @@ abstract class AbstractMode:GameMode {
 	 * @param engine GameEngine
 	 * @param lines Cleared line
 	 */
-	@Deprecated("use ScoreEvent insted lines")
+	@Deprecated("use ScoreEvent instead lines")
 	fun calcScore(engine:GameEngine, lines:Int):Int =
 		calcScore(engine, ScoreEvent(engine.nowPieceObject, lines, engine.b2bCount, engine.combo, engine.twistType, engine.split))
 	/** Calculates line-clear score
@@ -292,12 +293,12 @@ abstract class AbstractMode:GameMode {
 		}+if(li>=1&&engine.field.isEmpty) 18 else 0 // All clear
 	}
 
-	/**VS Attack lines based tetr.io garbaging by osk, g3ner1c, emmachase
-	 * @param statc if true increase to statistics attacks
+	/**VS Attack lines based tetr.io garbage by osk, g3ner1c, emmachase
+	 * @param statC if true increase to statistics attacks
 	 * @return total,line/twist,bonus*/
-	fun calcPower(engine:GameEngine, ev:ScoreEvent, statc:Boolean = false):Int =
+	fun calcPower(engine:GameEngine, ev:ScoreEvent, statC:Boolean = false):Int =
 		calcPower(engine, ev).also {
-			if(statc) {
+			if(statC) {
 				if(ev.twist) engine.statistics.attacksTwist += it.base
 				else engine.statistics.attacksLine += it.base
 				engine.statistics.attacksBonus += it.bonus
@@ -315,7 +316,10 @@ abstract class AbstractMode:GameMode {
 		val it = (ev.b2b.let {c ->
 			if(c>0) (floor(1+ln1p(c*.8f))+if(c>2) floor(ln1p(c*.8f)%1/3) else 0f).toInt()
 			else 0
-		}+base).let {if(it<=0) floor(ln1p(ev.combo*1.25f)).toInt() else it+ev.combo*it/4+engine.field.isEmpty.toInt()*10}
+		}+base).let {
+			val combo = maxOf(0, ev.combo)
+			if(it<=0) floor(ln1p(combo*1.25f)).toInt() else it+combo*it/4+engine.field.isEmpty.toInt()*10
+		}
 
 		return PowData(base, it-base)
 	}
@@ -330,7 +334,7 @@ abstract class AbstractMode:GameMode {
 	override fun onResult(engine:GameEngine):Boolean = false
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
-		if(!engine.owner.replayMode&&menu.size==0) {
+		if(!owner.replayMode&&menu.size==0) {
 			// Configuration changes val change = updateCursor(engine, 5)
 			updateMenu(engine)
 
@@ -358,7 +362,6 @@ abstract class AbstractMode:GameMode {
 
 	override fun onFieldEdit(engine:GameEngine):Boolean = false
 	override fun playerInit(engine:GameEngine) {
-		owner = engine.owner
 		menuTime = 0
 		scDisp = 0
 		loadSetting(if(owner.replayMode) owner.replayProp else owner.modeConfig, engine.ruleOpt.strRuleName, engine.playerID)
@@ -458,7 +461,7 @@ abstract class AbstractMode:GameMode {
 				}
 			}
 			receiver.drawMenuFont(engine, 0, menuY+y*2, key, color = menuColor)
-			if(menuCursor==statcMenu+y&&!engine.owner.replayMode)
+			if(menuCursor==statcMenu+y&&!owner.replayMode)
 				receiver.drawMenuFont(engine, 0, menuY+1+y*2, "\u0082${str}", true)
 			else receiver.drawMenuFont(engine, 1, menuY+1+y*2, str)
 		}
@@ -482,11 +485,11 @@ abstract class AbstractMode:GameMode {
 		drawMenu(engine, receiver, *value)
 	}
 
-	protected fun drawMenuBGM(engine:GameEngine, receiver:EventReceiver, bgmno:Int, color:COLOR = menuColor) {
-		val cur = menuCursor==statcMenu&&!engine.owner.replayMode
+	protected fun drawMenuBGM(engine:GameEngine, receiver:EventReceiver, bgmId:Int, color:COLOR = menuColor) {
+		val cur = menuCursor==statcMenu&&!owner.replayMode
 		receiver.drawMenuFont(engine, 0, menuY, "BGM", color)
-		receiver.drawMenuFont(engine, 0, menuY+1, BGM.values[bgmno].drawName, cur)
-		receiver.drawMenuNum(engine, 8, menuY, String.format("%2d", bgmno), cur)
+		receiver.drawMenuFont(engine, 0, menuY+1, BGM.values[bgmId].drawName, cur)
+		receiver.drawMenuNum(engine, 8, menuY, String.format("%2d", bgmId), cur)
 		if(cur) receiver.drawMenuFont(engine, 7, menuY, "\u0082", true)
 		statcMenu++
 		menuY += 2
@@ -503,7 +506,7 @@ abstract class AbstractMode:GameMode {
 				}
 			}
 			receiver.drawMenuFont(engine, 1, menuY, "${label}:", color = menuColor)
-			if(menuCursor==statcMenu&&!engine.owner.replayMode) {
+			if(menuCursor==statcMenu&&!owner.replayMode) {
 				receiver.drawMenuFont(engine, 0, menuY, "\u0082", true)
 				receiver.drawMenuFont(engine, label.length+2, menuY, str, true)
 			} else
@@ -537,7 +540,7 @@ abstract class AbstractMode:GameMode {
 		receiver.drawMenuFont(engine, 0, menuY, "SPEED", color = menuColor)
 		receiver.drawMenuSpeed(engine, 5, menuY+1, g, d, 5)
 		for(i in 0..1) {
-			if(menuCursor==statcMenu&&!engine.owner.replayMode) {
+			if(menuCursor==statcMenu&&!owner.replayMode) {
 				receiver.drawMenuFont(engine, 5, menuY, "\u0082", true)
 				receiver.drawMenuNum(engine, 6, menuY, String.format("%5d", if(i==0) g else d), true)
 			} else receiver.drawMenuNum(engine, 6, menuY, String.format("%5d", if(i==0) g else d))
@@ -599,7 +602,7 @@ abstract class AbstractMode:GameMode {
 		are:Int, aline:Int, lined:Int, lock:Int, das:Int
 	) {
 		for(i in 0..1) {
-			val cur = menuCursor==statcMenu&&!engine.owner.replayMode
+			val cur = menuCursor==statcMenu&&!owner.replayMode
 			val show = if(i==0) "ARE" to are else "LINE" to aline
 			if(cur) receiver.drawMenuFont(engine, 3+i*3, menuY, "\u0082", true)
 
@@ -612,7 +615,7 @@ abstract class AbstractMode:GameMode {
 		}
 		menuY++
 		for(i in 0..2) {
-			val cur = menuCursor==statcMenu&&!engine.owner.replayMode
+			val cur = menuCursor==statcMenu&&!owner.replayMode
 			val show = when(i) {
 				0 -> "LINE" to lined
 				1 -> "LOCK" to lock
@@ -731,21 +734,22 @@ abstract class AbstractMode:GameMode {
 				Statistic.SCORE -> {
 					receiver.drawMenuFont(engine, 0, y, "Score", color, scale*.75f)
 					receiver.drawMenuNum(engine, 0, y, String.format("%7d", engine.statistics.score), scale = scale*1.9f)
+					receiver.drawMenuNano(engine, 5f, y+1.25f, "Score", color = color, scale = scale*.75f)
 				}
 				Statistic.ATTACKS -> {
 					receiver.drawMenuFont(engine, 6, y, "Lines", color, scale*.8f)
 					receiver.drawMenuFont(engine, 6, y+1, "Sent", color, scale*.8f)
-					receiver.drawMenuNum(engine, 0, y, String.format("%4d", engine.statistics.attacks), scale = scale*2f)
+					receiver.drawMenuNum(engine, 0, y, String.format("%4d", engine.statistics.attacks), scale = scale*2)
 				}
 				Statistic.TIME -> {
-					receiver.drawMenuFont(engine, 0, y, "Elapsed Time", color, scale*.8f)
 					receiver.drawMenuNum(
-						engine, 0, y, String.format("%8s", engine.statistics.time.toTimeStr), scale = scale*1.7f
+						engine, 0f, y+0.33f, String.format("%8s", engine.statistics.time.toTimeStr), scale = scale*5/3
 					)
+					receiver.drawMenuNano(engine, 0, y, "Elapsed Time", color, scale*.75f)
 				}
 				Statistic.LEVEL -> {
 					receiver.drawMenuFont(engine, 0, y+1, "Level", color, scale)
-					receiver.drawMenuNum(engine, 5, y, String.format("%03d", engine.statistics.level+1), scale = scale*2f)
+					receiver.drawMenuNum(engine, 5, y, String.format("%03d", engine.statistics.level+1), scale = scale*2)
 				}
 				Statistic.LEVEL_ADD_DISP -> {
 					receiver.drawMenuFont(engine, 0, y, "Level", color, scale)
@@ -756,16 +760,16 @@ abstract class AbstractMode:GameMode {
 				}
 				Statistic.LEVEL_MANIA -> {
 					receiver.drawMenuFont(engine, 0, y+1, "Level", color, scale)
-					receiver.drawMenuNum(engine, 5, y, String.format("%03d", engine.statistics.level), scale = scale*2f)
+					receiver.drawMenuNum(engine, 5, y, String.format("%03d", engine.statistics.level), scale = scale*2)
 				}
 				Statistic.LINES -> {
 					receiver.drawMenuFont(engine, 6, y, "Lines", color, scale*.8f)
 					receiver.drawMenuFont(engine, 6, y+1, "clear", color, scale*.8f)
-					receiver.drawMenuNum(engine, 0, y, String.format("%4d", engine.statistics.lines), scale = scale*2f)
+					receiver.drawMenuNum(engine, 0, y, String.format("%4d", engine.statistics.lines), scale = scale*2)
 				}
 				Statistic.PIECE -> {
 					receiver.drawMenuNum(
-						engine, 0, y, String.format("%4d", engine.statistics.totalPieceLocked), scale = scale*2f
+						engine, 0, y, String.format("%4d", engine.statistics.totalPieceLocked), scale = scale*2
 					)
 					receiver.drawMenuFont(engine, 6, y, "Pieces", color, scale*.8f)
 					receiver.drawMenuFont(engine, 6, y+1, "set", color, scale*.8f)
@@ -774,19 +778,19 @@ abstract class AbstractMode:GameMode {
 					receiver.drawMenuFont(engine, 0, y, "Best", color, scale*.8f)
 					receiver.drawMenuFont(engine, 6, y, "Combo", color, scale*.8f)
 					receiver.drawMenuFont(engine, 6, y+1, "HITS", color, scale)
-					receiver.drawMenuNum(engine, 0, y, String.format("%4d", engine.statistics.maxCombo), scale = scale*2f)
+					receiver.drawMenuNum(engine, 0, y, String.format("%4d", engine.statistics.maxCombo), scale = scale*2)
 				}
 				Statistic.MAXB2B -> {
 					receiver.drawMenuFont(engine, 0, y, "Back2Back Peak", color, scale*.75f)
 					receiver.drawMenuFont(engine, 6, y+1, "Chain", color, scale*.8f)
-					receiver.drawMenuNum(engine, 0, y, String.format("%4d", engine.statistics.maxB2B), scale = scale*2f)
+					receiver.drawMenuNum(engine, 0, y, String.format("%4d", engine.statistics.maxB2B), scale = scale*2)
 				}
 				Statistic.MAXCHAIN -> {
 					receiver.drawMenuFont(engine, 0, y, "Longest", color, scale*.8f)
 					receiver.drawMenuFont(engine, 6, y, "Chain", color, scale*.8f)
 					receiver.drawMenuFont(engine, 6, y+1, "HITS", color, scale)
 					receiver.drawMenuNum(
-						engine, 0, y, String.format("%4d", engine.statistics.maxChain-1), scale = scale*2f
+						engine, 0, y, String.format("%4d", engine.statistics.maxChain-1), scale = scale*2
 					)
 				}
 				Statistic.SPL -> {
@@ -831,7 +835,8 @@ abstract class AbstractMode:GameMode {
 				}
 				Statistic.VS -> {
 					receiver.drawMenuFont(engine, 0, y, "Rank Point", color = color, scale = scale*.8f)
-					receiver.drawMenuNum(engine, 0, y, String.format("%7f", engine.statistics.vs), scale = scale*1.7f)
+					receiver.drawMenuNum(engine, 0, y, String.format("%6f", engine.statistics.vs), scale = scale*1.7f)
+					receiver.drawMenuNano(engine, 4.25f, y+1.25f, "Rank Point", color = color, scale = scale*.75f)
 				}
 			}
 			y += 2
@@ -841,7 +846,7 @@ abstract class AbstractMode:GameMode {
 	 * @param engine GameEngine
 	 */
 	override fun renderInput(engine:GameEngine) {
-		val receiver = engine.owner.receiver
+		val receiver = owner.receiver
 		val pid = engine.playerID
 		val x = 170*(pid+1)-110
 		val y = 464

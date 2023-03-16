@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -158,12 +158,8 @@ class StateConfigGameTuning:BaseGameState() {
 
 	/** Start the preview game */
 	private fun startPreviewGame() {
-		gameManager = GameManager(RendererSlick(), Preview()).also {
-			it.receiver.setGraphics(appContainer.graphics)
-
-			it.init()
-
-			it.bgMan.bg = -1 // Force no BG
+		gameManager = GameManager(RendererSlick(this.appContainer.graphics), Preview()).also {
+			it.bgMan.bg = -999 // Force no BG
 
 			// Initialization for each player
 			it.engine.forEachIndexed {i, e ->
@@ -182,16 +178,15 @@ class StateConfigGameTuning:BaseGameState() {
 				e.b2bEnable = true
 				e.splitB2B = true
 				e.lives = 99
-
 				// Rule
 				val ruleOpt:RuleOptions
-				val rulename = NullpoMinoSlick.propGlobal.getProperty(
+				val ruleName = NullpoMinoSlick.propGlobal.getProperty(
 					if(it.mode?.gameStyle==GameStyle.TETROMINO) "$i.rule" else "$i.rule.${it.mode!!.gameStyle.ordinal}", ""
 				)
 
-				if(rulename.isNotEmpty()) {
-					log.info("Load rule options from $rulename")
-					ruleOpt = GeneralUtil.loadRule(rulename)
+				if(ruleName.isNotEmpty()) {
+					log.info("Load rule options from $ruleName")
+					ruleOpt = GeneralUtil.loadRule(ruleName)
 				} else {
 					log.info("Load rule options from setting file")
 					ruleOpt = RuleOptions()
@@ -244,6 +239,7 @@ class StateConfigGameTuning:BaseGameState() {
 			try {
 				g.drawImage(ResourceHolder.imgMenuBG[0], 0f, 0f)
 				gameManager?.let {
+					it.renderAll()
 					val engine = it.engine.first()
 					val fontX = when(it.receiver.nextDisplayType) {
 						0 -> 16
@@ -256,7 +252,6 @@ class StateConfigGameTuning:BaseGameState() {
 					val spd = engine.speed
 					val ow = engine.softDropSpd
 					FontNano.printFontGrid(fontX, 13, "${spd.gravity}>$ow/${spd.denominator} ${engine.gcount}")
-					it.renderAll()
 				}
 			} catch(e:Exception) {
 				log.error("Render fail", e)
@@ -278,10 +273,10 @@ class StateConfigGameTuning:BaseGameState() {
 				}", cursor==0
 			)
 
-			val skinmax = ResourceHolder.imgNormalBlockList.size
+			val skinMax = ResourceHolder.imgNormalBlockList.size
 			sk = when(owSkin) {
-				-1 -> (sk+1)%skinmax
-				-2 -> Random.Default.nextInt(skinmax)
+				-1 -> (sk+1)%skinMax
+				-2 -> Random.Default.nextInt(skinMax)
 				else -> owSkin
 			}
 			val imgBlock = ResourceHolder.imgNormalBlockList[sk]
@@ -403,7 +398,7 @@ class StateConfigGameTuning:BaseGameState() {
 				// Retry button
 				if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RETRY)) {
 					gameManager?.reset()
-					gameManager?.bgMan?.bg = -1 // Force no BG
+					gameManager?.bgMan?.bg = -999 // Force no BG
 				}
 
 				// Exit

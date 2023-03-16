@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2022, NullNoname
+ * Copyright (c) 2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
- * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -27,19 +27,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common
+package mu.nu.nullpo.gui.slick.img.bg
 
-abstract class AbstractBG<T>(val img:ResourceImage<T>) {
-	open val bg:T get() = img.res
-	open var tick:Int = 0
-	/** Performs an update tick on the background. Advisably used in onLast.*/
-	open fun update() {}
-	/** Resets the background to its base state.*/
-	open fun reset() {}
-	/** Draws the background to the game screen.*/
-	open fun draw() {
-		img.draw()
-	}
+import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.common.bg.AbstractBG
+import org.newdawn.slick.Image
 
-	open fun setSpeed() {}
+abstract class AbstractBG(bg:ResourceImage<Image>):AbstractBG<Image>(bg) {
+	final override val bg get() = img.res.copy()
 }

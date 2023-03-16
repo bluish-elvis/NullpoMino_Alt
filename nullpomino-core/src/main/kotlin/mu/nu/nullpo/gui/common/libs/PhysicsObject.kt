@@ -73,16 +73,16 @@ abstract class PhysicsObject @JvmOverloads constructor(
 			val sizeX = width
 			val sizeY = height
 			var anchor = floatArrayOf(0f, 0f)
-			when(anchorPoint) {
-				AnchorPoint.TL -> anchor = floatArrayOf(0f, 0f)
-				AnchorPoint.TM -> anchor = floatArrayOf((sizeX/2f), 0f)
-				AnchorPoint.TR -> anchor = floatArrayOf((sizeX-1f), 0f)
-				AnchorPoint.ML -> anchor = floatArrayOf(0f, (sizeY/2f))
-				AnchorPoint.MM -> anchor = floatArrayOf((sizeX/2f), (sizeY/2f))
-				AnchorPoint.MR -> anchor = floatArrayOf((sizeX-1f), (sizeY/2f))
-				AnchorPoint.LL -> anchor = floatArrayOf(0f, (sizeY-1f))
-				AnchorPoint.LM -> anchor = floatArrayOf((sizeX/2f), (sizeY-1f))
-				AnchorPoint.LR -> anchor = floatArrayOf((sizeX-1f), (sizeY-1f))
+			anchor = when(anchorPoint) {
+				AnchorPoint.TL -> floatArrayOf(0f, 0f)
+				AnchorPoint.TM -> floatArrayOf((sizeX/2f), 0f)
+				AnchorPoint.TR -> floatArrayOf((sizeX-1f), 0f)
+				AnchorPoint.ML -> floatArrayOf(0f, (sizeY/2f))
+				AnchorPoint.MM -> floatArrayOf((sizeX/2f), (sizeY/2f))
+				AnchorPoint.MR -> floatArrayOf((sizeX-1f), (sizeY/2f))
+				AnchorPoint.LL -> floatArrayOf(0f, (sizeY-1f))
+				AnchorPoint.LM -> floatArrayOf((sizeX/2f), (sizeY-1f))
+				AnchorPoint.LR -> floatArrayOf((sizeX-1f), (sizeY-1f))
 			}
 			return arrayOf(
 				floatArrayOf(x-anchor[0], y-anchor[1]),

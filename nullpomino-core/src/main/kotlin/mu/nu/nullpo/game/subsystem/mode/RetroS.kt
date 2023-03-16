@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -129,8 +129,8 @@ class RetroS:AbstractMode() {
 		engine.owDelayCancel = 0
 
 		if(!owner.replayMode) version = CURRENT_VERSION
-		engine.owner.bgMan.bg = startLevel/2
-		if(engine.owner.bgMan.bg>19) engine.owner.bgMan.bg = 19
+		owner.bgMan.bg = startLevel/2
+		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
 		engine.frameColor = GameEngine.FRAME_SKIN_SG
 	}
 
@@ -148,7 +148,7 @@ class RetroS:AbstractMode() {
 
 	/** Main routine for game setup screen */
 	override fun onSetting(engine:GameEngine):Boolean {
-		if(!engine.owner.replayMode) {
+		if(!owner.replayMode) {
 			// Configuration changes
 			val change = updateCursor(engine, 3)
 
@@ -165,7 +165,7 @@ class RetroS:AbstractMode() {
 						startLevel += change
 						if(startLevel<0) startLevel = 15
 						if(startLevel>15) startLevel = 0
-						engine.owner.bgMan.bg = startLevel/2
+						owner.bgMan.bg = startLevel/2
 					}
 					2 -> big = !big
 					3 -> poweron = !poweron
@@ -234,7 +234,7 @@ class RetroS:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "RETRO MANIA", COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
 		receiver.drawScoreFont(engine, 0, 1, "(${GAMETYPE_NAME[gametype]} SPEED)", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
@@ -344,10 +344,7 @@ class RetroS:AbstractMode() {
 		if(linesAfterLastLevelUp>=4||levelTimer>=levelTime[minOf(engine.statistics.level, 15)]&&li==0||engine.field.isEmpty) {
 			engine.statistics.level++
 
-			owner.bgMan.fadecount = 0
-			owner.bgMan.fadebg = engine.statistics.level/2
-			if(owner.bgMan.fadebg>19) owner.bgMan.fadebg = 19
-			owner.bgMan.fadesw = owner.bgMan.fadebg!=owner.bgMan.bg
+			owner.bgMan.nextBg = minOf(engine.statistics.level/2, 19)
 
 			levelTimer = 0
 			linesAfterLastLevelUp = 0

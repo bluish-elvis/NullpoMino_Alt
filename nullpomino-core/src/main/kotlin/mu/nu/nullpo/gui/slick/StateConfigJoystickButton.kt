@@ -131,7 +131,7 @@ class StateConfigJoystickButton:BasicGameState() {
 						buttonmap[keynum][keypos] = i
 						frame = 0
 					}
-				} catch(e:Throwable) {
+				} catch(_:Throwable) {
 				}
 
 		// JInput

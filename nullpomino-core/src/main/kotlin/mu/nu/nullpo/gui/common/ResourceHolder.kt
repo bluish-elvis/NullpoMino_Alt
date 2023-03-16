@@ -181,9 +181,17 @@ abstract class ResourceHolder {
 			ResourceImageStr("back/"+it.nameWithoutExtension)
 		} ?: emptyList()
 	}
-
+	/** プレイ中のBackground Animation */
+	internal open val imgPlayBGA:List<ResourceImage<*>> by lazy {
+		File("$skinDir/graphics/back_vis/").listFiles(filterImg)?.sortedWith(nameSort)?.map {
+			ResourceImageStr("back_vis/"+it.nameWithoutExtension)
+		} ?: emptyList()
+	}
 	/** BackgroundOfcount */
-	val backgroundMax get() = imgPlayBG.size
+	val bgMax get() = imgPlayBG.size
+	val bgaMax get() = imgPlayBGA.size
+	/** BGA Count except rush*/
+	val bgaMaxUniq get() = imgPlayBGA.count {!it.name.contains("rush")}
 
 	fun loadImg(back:Boolean, frags:Boolean) {
 		log.info("Loading Image from $skinDir")
@@ -202,7 +210,7 @@ abstract class ResourceHolder {
 			listOf(
 				imgBadges, imgFont, imgFontNano, imgNum, imgGrade, imgFontMedal, imgCursor,
 				imgFrame, imgFrameOld, imgFieldBG, imgLine, imgTitleBG, imgLogo, imgLogoSmall,
-				imgMenuBG, imgPlayBG
+				imgMenuBG/*, imgPlayBG, imgPlayBGA*/
 			)
 		).forEach {it.load()}
 
@@ -213,6 +221,8 @@ abstract class ResourceHolder {
 	internal fun loadBackgroundImages() {
 		log.debug("${imgPlayBG.size} backgrounds found")
 		imgPlayBG.forEach {it.load()}
+		log.debug("${imgPlayBGA.size} SP-backgrounds found")
+		imgPlayBGA.forEach {it.load()}
 	}
 
 	/** Load line clear effect images. */
@@ -227,7 +237,7 @@ abstract class ResourceHolder {
 		"hold", "initialhold", "holdfail", "move", "movefail",
 		"rotate", "wallkick", "initialrotate", "rotfail",
 		"harddrop", "softdrop", "step", "lock",
-		"erase", "linefall", "linefall1", "cheer", "twist", "twister",
+		"erase", "linefall", "linefall0", "linefall1", "cheer", "twist", "twister",
 		"combo", "combo_pow", "b2b_start", "b2b_combo", "b2b_end",
 
 		"danger", "dead", "dead_last", "shutter",
@@ -238,8 +248,8 @@ abstract class ResourceHolder {
 		"countdown", "hurryup", "timeout",
 		"stageclear", "stagefail", "matchend",
 		"gem", "bomb", "square_s", "square_g"
-	)+((0..1).flatMap {setOf("start$it", "garbage$it", "crowd$it")}+
-		(0..2).flatMap {setOf("decide$it", "erase$it", "firecracker$it")}+
+	)+((0..1).flatMap {setOf("start$it", "crowd$it")}+
+		(0..2).flatMap {setOf("decide$it", "garbage$it", "erase$it", "firecracker$it")}+
 		(0..4).map {"grade$it"}+(0..5).map {"applause$it"}+
 		Piece.Shape.names.map {"piece_${it.lowercase()}"}+
 		(1..3).map {"medal$it"}+(1..4).map {"line$it"}).toSet()

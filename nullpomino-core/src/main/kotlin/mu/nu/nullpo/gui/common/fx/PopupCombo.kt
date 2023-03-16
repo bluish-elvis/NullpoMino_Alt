@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2022, NullNoname
+ * Copyright (c) 2022-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -30,8 +30,8 @@
 package mu.nu.nullpo.gui.common.fx
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
-import mu.nu.nullpo.game.event.EventReceiver.FONT
 import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.BaseFont.FONT
 import mu.nu.nullpo.gui.common.libs.Vector
 
 class PopupCombo(x:Int, y:Int, val pts:Int, val type:CHAIN, val ex:Int = 0):SpriteSheet(

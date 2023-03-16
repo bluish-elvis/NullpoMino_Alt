@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -45,36 +45,37 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 /** SPEED MANIA-DEATH Mode */
 class GrandS1:AbstractMode() {
 	/** Next Section の level (これ-1のときに levelストップする) */
-	private var nextseclv = 0
+	private var nextSecLv = 0
 	/** Levelが増えた flag */
-	private var lvupflag = false
+	private var lvupFlag = false
 
 	/** Combo bonus */
 	private var comboValue = 0
 
 	/** Roll 経過 time */
-	private var rolltime = 0
+	private var rollTime = 0
 
 	/** Roll started flag */
-	private var rollstarted = false
+	private var rollStarted = false
 
 	/** 段位 */
 	private var grade = 0
 	/** 段位表示を光らせる残り frame count */
-	private var gradeflash = 0
+	private var gradeFlash = 0
 	/** 裏段位 */
 	private var secretGrade = 0
 
 	/** Section Time */
-	private var sectionTime = MutableList(SECTION_MAX) {0}
+	private val sectionTime = MutableList(SECTION_MAX) {0}
 	/** 新記録が出たSection はtrue */
-	private var sectionIsNewRecord = MutableList(SECTION_MAX) {false}
+	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
 	/** Cleared Section count */
-	private var sectionscomp = 0
+	private var sectionsDone = 0
 	/** Average Section Time */
-	private var sectionavgtime = 0
+	private val sectionAvgTime
+		get() = sectionTime.filter {it>0}.average().toFloat()
 	/** 直前のSection Time */
-	private var sectionlasttime = 0
+	private var sectionLastTime = 0
 
 	/** AC medal 状態 */
 	private var medalAC = 0
@@ -130,7 +131,7 @@ class GrandS1:AbstractMode() {
 	private val bestSectionTime = MutableList(SECTION_MAX) {0}
 
 	private var decoration = 0
-	private var dectemp = 0
+	private var decTemp = 0
 
 	/* Mode name */
 	override val name = "Grand Storm"
@@ -148,20 +149,19 @@ class GrandS1:AbstractMode() {
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		nextseclv = 0
-		lvupflag = true
+		nextSecLv = 0
+		lvupFlag = true
 		comboValue = 0
 		lastscore = 0
-		rolltime = 0
-		rollstarted = false
+		rollTime = 0
+		rollStarted = false
 		grade = 0
-		gradeflash = 0
+		gradeFlash = 0
 		secretGrade = 0
 		sectionTime.fill(0)
 		sectionIsNewRecord.fill(false)
-		sectionscomp = 0
-		sectionavgtime = 0
-		sectionlasttime = 0
+		sectionsDone = 0
+		sectionLastTime = 0
 		medalAC = 0
 		medalST = 0
 		medalSK = 0
@@ -198,7 +198,7 @@ class GrandS1:AbstractMode() {
 		owner.bgMan.bg = startLevel
 	}
 
-	private fun calcBgmLv(lv:Int) = 2+tableBGMChange.count {lv>=it}
+	private fun calcBgmLv(lv:Int) = 3+tableBGMChange.count {lv>=it}
 
 	/** Update falling speed
 	 * @param engine GameEngine
@@ -214,14 +214,6 @@ class GrandS1:AbstractMode() {
 		engine.speed.das = tableDAS[section]
 	}
 
-	/** Update average section time */
-	private fun setAverageSectionTime() {
-		if(sectionscomp>0) {
-			val i = minOf(sectionscomp+startLevel, sectionTime.size)
-			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
-		} else sectionavgtime = 0
-	}
-
 	/** ST medal check
 	 * @param engine GameEngine
 	 * @param sectionNumber Section number
@@ -229,27 +221,27 @@ class GrandS1:AbstractMode() {
 	private fun stMedalCheck(engine:GameEngine, sectionNumber:Int) {
 		val best = bestSectionTime[sectionNumber]
 
-		if(sectionlasttime<best) {
+		if(sectionLastTime<best) {
 			if(medalST<3) {
 				engine.playSE("medal3")
-				if(medalST<1) dectemp += 3
-				if(medalST<2) dectemp += 6
+				if(medalST<1) decTemp += 3
+				if(medalST<2) decTemp += 6
 				medalST = 3
-				dectemp += 6
+				decTemp += 6
 			}
 			if(!owner.replayMode) {
-				dectemp++
+				decTemp++
 				sectionIsNewRecord[sectionNumber] = true
 			}
-		} else if(sectionlasttime<best+300&&medalST<2) {
+		} else if(sectionLastTime<best+300&&medalST<2) {
 			engine.playSE("medal2")
-			if(medalST<1) dectemp += 3
+			if(medalST<1) decTemp += 3
 			medalST = 2
-			dectemp += 6
-		} else if(sectionlasttime<best+600&&medalST<1) {
+			decTemp += 6
+		} else if(sectionLastTime<best+600&&medalST<1) {
 			engine.playSE("medal1")
 			medalST = 1
-			dectemp += 3// 12
+			decTemp += 3// 12
 		}
 	}
 
@@ -261,14 +253,14 @@ class GrandS1:AbstractMode() {
 
 		if(spinAverage>=1.2f&&medalRO<3) {
 			engine.playSE("medal${++medalRO}")
-			dectemp += 6
+			decTemp += 6
 		}
 	}
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
-		if(!engine.owner.replayMode) {
+		if(!owner.replayMode) {
 			// Configuration changes
 			updateMenu(engine)
 
@@ -284,7 +276,7 @@ class GrandS1:AbstractMode() {
 			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				isShowBestSectionTime = false
-				sectionscomp = 0
+				sectionsDone = 0
 				return false
 			}
 			// Cancel
@@ -309,25 +301,25 @@ class GrandS1:AbstractMode() {
 		val lv = startLevel*100
 		engine.statistics.level = lv
 
-		nextseclv = engine.statistics.level+100
-		if(engine.statistics.level<0) nextseclv = 100
-		if(engine.statistics.level>=900) nextseclv = 999
+		nextSecLv = engine.statistics.level+100
+		if(engine.statistics.level<0) nextSecLv = 100
+		if(engine.statistics.level>=900) nextSecLv = 999
 
 		owner.bgMan.bg = engine.statistics.level/100
 
 		engine.big = big
-		dectemp = 0
+		decTemp = 0
 		setSpeed(engine)
 		owner.musMan.bgm = BGM.GrandA(calcBgmLv(lv))
 	}
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "Grand Storm", COLOR.RED)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.RED)
 
 		receiver.drawScoreNano(engine, -1, -4*2, "DECORATION", scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
-		receiver.drawScoreBadges(engine, 5, -4, 100, dectemp)
+		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
@@ -390,18 +382,18 @@ class GrandS1:AbstractMode() {
 				engine, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)), engine.statistics.time%3!=0
 			)
 			receiver.drawScoreSpeed(engine, 0, 11, if(engine.statistics.time%3!=0) 40 else 0, 4)
-			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextseclv), engine.statistics.time%3!=0)
+			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextSecLv), engine.statistics.time%3!=0)
 
 			// Time
 			receiver.drawScoreFont(engine, 0, 14, "Time", engine.statistics.time%3!=0)
-			if(engine.ending!=2||rolltime/20%2==0)
+			if(engine.ending!=2||rollTime/20%2==0)
 				receiver.drawScoreNum(
 					engine, 0, 15, engine.statistics.time.toTimeStr, engine.statistics.time%3!=0, 2f
 				)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
-				var time = ROLLTIMELIMIT-rolltime
+				var time = ROLLTIMELIMIT-rollTime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", engine.statistics.time%3!=0)
 				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
@@ -438,7 +430,7 @@ class GrandS1:AbstractMode() {
 
 				receiver.drawScoreFont(engine, x2, 14, "AVERAGE", engine.statistics.time%3!=0)
 				receiver.drawScoreNum(
-					engine, x2, 15, (engine.statistics.time/(sectionscomp+(engine.ending==0).toInt())).toTimeStr,
+					engine, x2, 15, (engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
 					engine.statistics.time%3!=0,
 					2f
 				)
@@ -449,15 +441,15 @@ class GrandS1:AbstractMode() {
 	/* 移動中の処理 */
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
+		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
 			// Level up
-			levelUp(engine, (engine.statistics.level<nextseclv-1).toInt())
-			if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
+			if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 		}
-		if(engine.ending==0&&engine.statc[0]>0&&(version>=2||!engine.holdDisable)) lvupflag = false
+		if(engine.ending==0&&engine.statc[0]>0&&(version>=2||!engine.holdDisable)) lvupFlag = false
 
 		// Endingスタート
-		if(engine.ending==2&&!rollstarted) rollstarted = true
+		if(engine.ending==2&&!rollStarted) rollStarted = true
 
 		return false
 	}
@@ -465,10 +457,10 @@ class GrandS1:AbstractMode() {
 	/* ARE中の処理 */
 	override fun onARE(engine:GameEngine):Boolean {
 		// 最後の frame
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
-			levelUp(engine, (engine.statistics.level<nextseclv-1).toInt())
-			if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
-			lvupflag = true
+		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
+			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
+			if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
+			lvupFlag = true
 		}
 
 		return false
@@ -499,10 +491,10 @@ class GrandS1:AbstractMode() {
 		}
 		if(lu<=0) return
 		// BGM fadeout
-		if(tableBGMFadeout.any {it in lb..lA}) owner.musMan.fadesw = true
+		if(tableBGMFadeout.any {it in lb..lA}) owner.musMan.fadeSW = true
 		// BGM切り替え
 		if(tableBGMChange.any {it in lb..lA}) {
-			owner.musMan.fadesw = false
+			owner.musMan.fadeSW = false
 			owner.musMan.bgm = BGM.GrandM(calcBgmLv(lA))
 		}
 	}
@@ -532,17 +524,17 @@ class GrandS1:AbstractMode() {
 				} else if(engine.statistics.totalQuadruple==5||engine.statistics.totalQuadruple==10
 					||engine.statistics.totalQuadruple==17
 				) {
-					dectemp += 3+medalSK*2// 3 8 15
+					decTemp += 3+medalSK*2// 3 8 15
 					engine.playSE("medal${++medalSK}")
 				}
 
 			// AC medal
 			if(engine.field.isEmpty) {
-				dectemp += li*25
-				if(li==3) dectemp += 25
-				if(li==4) dectemp += 150
+				decTemp += li*25
+				if(li==3) decTemp += 25
+				if(li==4) decTemp += 150
 				if(medalAC<3) {
-					dectemp += 3+medalAC*4// 3 10 21
+					decTemp += 3+medalAC*4// 3 10 21
 					engine.playSE("medal${++medalAC}")
 				}
 			}
@@ -562,15 +554,15 @@ class GrandS1:AbstractMode() {
 			} else if(engine.combo>=3&&medalCO<1) {
 				engine.playSE("medal1")
 				medalCO = 1
-				dectemp += 3// 3
+				decTemp += 3// 3
 			} else if(engine.combo>=4&&medalCO<2) {
 				engine.playSE("medal2")
 				medalCO = 2
-				dectemp += 4// 7
+				decTemp += 4// 7
 			} else if(engine.combo>=5&&medalCO<3) {
 				engine.playSE("medal3")
 				medalCO = 3
-				dectemp += 5// 12
+				decTemp += 5// 12
 			}
 
 			// Level up
@@ -584,20 +576,19 @@ class GrandS1:AbstractMode() {
 				engine.ending = 2
 
 				grade = 2
-				gradeflash = 180
+				gradeFlash = 180
 
 				// Section Timeを記録
-				sectionlasttime = sectionTime[lb/100]
-				sectionscomp++
-				setAverageSectionTime()
-				dectemp++
+				sectionLastTime = sectionTime[lb/100]
+				sectionsDone++
+				decTemp++
 				// ST medal
 				stMedalCheck(engine, lb/100)
 
 				owner.musMan.bgm = BGM.Ending(1)
 				// RO medal
 				roMedalCheck(engine)
-			} else if(nextseclv==500&&engine.statistics.level>=500&&qualify>0
+			} else if(nextSecLv==500&&engine.statistics.level>=500&&qualify>0
 				&&engine.statistics.time>qualify
 			) {
 				// level500とりカン
@@ -607,42 +598,38 @@ class GrandS1:AbstractMode() {
 				engine.ending = 2
 
 				// Section Timeを記録
-				sectionlasttime = sectionTime[lb/100]
-				sectionscomp++
-				setAverageSectionTime()
+				sectionLastTime = sectionTime[lb/100]
+				sectionsDone++
 
 				// ST medal
 				stMedalCheck(engine, lb/100)
-			} else if(engine.statistics.level>=nextseclv) {
+			} else if(engine.statistics.level>=nextSecLv) {
 				// Next Section
 				engine.playSE("levelup")
 
 				// Background切り替え
-				owner.bgMan.fadesw = true
-				owner.bgMan.fadecount = 0
-				owner.bgMan.fadebg = nextseclv/100
+				owner.bgMan.nextBg = nextSecLv/100
 
 				// Section Timeを記録
-				sectionlasttime = sectionTime[lb/100]
-				sectionscomp++
-				setAverageSectionTime()
+				sectionLastTime = sectionTime[lb/100]
+				sectionsDone++
 
 				// ST medal
 				stMedalCheck(engine, lb/100)
 
 				// RO medal
-				if(nextseclv==300||nextseclv==700) roMedalCheck(engine)
+				if(nextSecLv==300||nextSecLv==700) roMedalCheck(engine)
 
 				// 段位上昇
-				if(nextseclv==500) {
+				if(nextSecLv==500) {
 					grade = 1
-					gradeflash = 180
+					gradeFlash = 180
 				}
 
 				// Update level for next section
-				nextseclv += 100
-				if(nextseclv>999) nextseclv = 999
-			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+				nextSecLv += 100
+				if(nextSecLv>999) nextSecLv = 999
+			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
 			// Calculate score
 
@@ -659,32 +646,32 @@ class GrandS1:AbstractMode() {
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
 		// 段位上昇時のフラッシュ
-		if(gradeflash>0) gradeflash--
+		if(gradeFlash>0) gradeFlash--
 
 		// Section Time増加
 		if(engine.timerActive&&engine.ending==0) {
 			val section = engine.statistics.level/100
 
-			if(section>=0&&section<sectionTime.size) sectionTime[section]++
+			if(section>=0&&section<sectionTime.size) sectionTime[section] = engine.statistics.time-sectionTime.take(section).sum()
 		}
 
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
-			rolltime += if(version>=1&&engine.ctrl.isPress(Controller.BUTTON_F))
+			rollTime += if(version>=1&&engine.ctrl.isPress(Controller.BUTTON_F))
 				5 else 1
 
 			// Time meter
-			val remainRollTime = ROLLTIMELIMIT-rolltime
+			val remainRollTime = ROLLTIMELIMIT-rollTime
 			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
 			// Roll 終了
-			if(rolltime>=ROLLTIMELIMIT) {
+			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
-		} else if(engine.statistics.level==nextseclv-1)
+		} else if(engine.statistics.level==nextSecLv-1)
 			engine.meterColor = if(engine.meterColor==-0x1) -0x10000 else -0x1
 	}
 
@@ -695,18 +682,18 @@ class GrandS1:AbstractMode() {
 
 			val time = engine.statistics.time
 			if(time<6000)
-				dectemp -= 3
+				decTemp -= 3
 			else {
-				dectemp++
-				if(time%3600<=60||time%3600>=3540) dectemp++
+				decTemp++
+				if(time%3600<=60||time%3600>=3540) decTemp++
 			}
 
-			if(sectionscomp==0) dectemp -= 4
+			if(sectionsDone==0) decTemp -= 4
 			// Blockの表示を元に戻す
 			engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
 			// 裏段位
 			secretGrade = engine.field.secretGrade
-			decoration += dectemp+secretGrade
+			decoration += decTemp+secretGrade
 		}
 		return false
 	}
@@ -739,9 +726,9 @@ class GrandS1:AbstractMode() {
 					if(sectionTime[i]>0)
 						receiver.drawMenuNum(engine, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
 
-				if(sectionavgtime>0) {
+				if(sectionAvgTime>0) {
 					receiver.drawMenuFont(engine, 0, 14, "AVERAGE", COLOR.BLUE)
-					receiver.drawMenuNum(engine, 0, 15, sectionavgtime.toTimeStr, 1.7f)
+					receiver.drawMenuNum(engine, 0, 15, sectionAvgTime.toTimeStr, 1.7f)
 				}
 			}
 			2 -> {
@@ -759,14 +746,14 @@ class GrandS1:AbstractMode() {
 				)
 
 				receiver.drawMenuFont(engine, 0, 15, "DECORATION", COLOR.BLUE)
-				receiver.drawMenuFont(engine, 0, 16, String.format("%10d", dectemp), COLOR.WHITE)
+				receiver.drawMenuFont(engine, 0, 16, String.format("%10d", decTemp), COLOR.WHITE)
 			}
 		}
 	}
 
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine):Boolean {
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		owner.musMan.bgm = BGM.Result(
 			if(engine.ending>0)
 				if(engine.statistics.level<900) 2 else 3 else 0

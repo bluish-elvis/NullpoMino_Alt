@@ -69,7 +69,7 @@ open class IntegerMenuItem(name:String, displayName:String, color:COLOR, default
 	}
 
 	override fun load(prop:CustomProperties, propName:String) {
-		value = prop.getProperty(propName, DEFAULT_VALUE)
+		value = prop.getProperty(propName, defaultValue)
 	}
 
 	override fun save(prop:CustomProperties, propName:String) {

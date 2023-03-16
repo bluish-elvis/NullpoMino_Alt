@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022-2022,
+ * Copyright (c) 2022-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2022-2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -281,7 +281,7 @@ class MarathonZone:NetDummyMode() {
 		if(owner.menuOnly) return
 		val titlecolor = if(inzone) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.CYAN
 		val hudcolor = if(inzone) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.BLUE
-		receiver.drawScoreFont(engine, 0, 0, "ZONE MARATHON", titlecolor)
+		receiver.drawScoreFont(engine, 0, 0, name, titlecolor)
 		receiver.drawScoreFont(
 			engine, 0, 1, if(tableGameClearLines[goalType]==-1) "(Endless run)" else "(${tableGameClearLines[goalType]} Lines run)",
 			titlecolor
@@ -486,13 +486,13 @@ class MarathonZone:NetDummyMode() {
 
 		// BGM fade-out effects and BGM changes
 		if(tableBGMChange[bgmLv]!=-1) {
-			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.musMan.fadesw = true
+			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) owner.musMan.fadeSW = true
 			if(engine.statistics.lines>=tableBGMChange[bgmLv]&&
 				(engine.statistics.lines<tableGameClearLines[goalType]||tableGameClearLines[goalType]<0)
 			) {
 				bgmLv++
 				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
-				owner.musMan.fadesw = false
+				owner.musMan.fadeSW = false
 			}
 		}
 		if(engine.statistics.lines>=tableGameClearLines[goalType]&&tableGameClearLines[goalType]>=0) {
@@ -502,9 +502,7 @@ class MarathonZone:NetDummyMode() {
 		} else if(engine.statistics.lines>=(engine.statistics.level+1)*24&&engine.statistics.level<19) {
 			// Level up
 			engine.statistics.level++
-			owner.bgMan.fadesw = true
-			owner.bgMan.fadecount = 0
-			owner.bgMan.fadebg = engine.statistics.level
+			owner.bgMan.nextBg = engine.statistics.level
 			if(!inzone) setSpeed(engine)
 			engine.playSE("levelup")
 		}
@@ -618,7 +616,7 @@ class MarathonZone:NetDummyMode() {
 	}
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
+		val bg = if(engine.owner.bgMan.fadeSW) engine.owner.bgMan.nextBg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+
 			"${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"+
 			"${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t${engine.statistics.level}\t"+
@@ -691,7 +689,7 @@ class MarathonZone:NetDummyMode() {
 
 	companion object {
 		/** Current version  */
-		private val CURRENT_VERSION = 2
+		private const val CURRENT_VERSION = 2
 		/** Fall velocity table (numerators)  */
 		private val tableGravity = intArrayOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
 		/** Fall velocity table (denominators)  */
@@ -700,11 +698,11 @@ class MarathonZone:NetDummyMode() {
 		private val tableBGMChange = intArrayOf(5*24, 10*24, 15*24, 20*24, -1)
 		/** Line counts when game ending occurs  */
 		private val tableGameClearLines = intArrayOf(15*24, 20*24, -1)
-		private val maxzonetime = 1200 // 20 seconds
+		private const val maxzonetime = 1200 // 20 seconds
 		/** Number of entries in rankings  */
-		private val RANKING_MAX = 13
+		private const val RANKING_MAX = 13
 		/** Number of game types  */
-		private val GAMETYPE_MAX = 3
+		private const val GAMETYPE_MAX = 3
 		/** Number of ranking types  */
 		private val RANKING_TYPE = GAMETYPE_MAX
 	}

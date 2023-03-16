@@ -45,20 +45,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.ObjectInputStream
 import java.util.Locale
-import javax.swing.BorderFactory
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JComboBox
-import javax.swing.JFormattedTextField
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JSpinner
-import javax.swing.JTabbedPane
-import javax.swing.JTextField
-import javax.swing.SpinnerNumberModel
-import javax.swing.UIManager
-import javax.swing.WindowConstants
+import javax.swing.*
 
 class AIRanksTool:JFrame(), ActionListener {
 	/** Config File */
@@ -142,13 +129,7 @@ class AIRanksTool:JFrame(), ActionListener {
 
 	init {
 		// Load config file
-		try {
-			FileInputStream("config/setting/swing.xml").let {
-				propConfig.loadFromXML(it)
-				it.close()
-			}
-		} catch(e:IOException) {
-		}
+		propConfig.loadXML("config/setting/swing.xml")
 
 		// Set Look&Feel
 		if(propConfig.getProperty("option.usenativelookandfeel", true))
@@ -160,23 +141,11 @@ class AIRanksTool:JFrame(), ActionListener {
 			}
 
 		// Load language files
-		try {
-			FileInputStream("config/lang/airankstool_default.xml").let {
-				propLangDefault.loadFromXML(it)
-				it.close()
-			}
-		} catch(e:IOException) {
+		if(propLangDefault.loadXML("config/lang/airankstool_default.xml")==null)
 			System.err.println("Couldn't load default UI language file")
-			e.printStackTrace()
-		}
-		try {
-			FileInputStream("config/lang/airankstool_${Locale.getDefault().country}.xml").let {
-				propLang.loadFromXML(it)
-				it.close()
-			}
-		} catch(e:IOException) {
+		if(propLang.loadXML("config/lang/airankstool_${Locale.getDefault().country}.xml")==null)
 			System.err.println("Couldn't load ${Locale.getDefault().country} UI language file")
-		}
+
 
 		title = getUIText("Main_Title")
 		defaultCloseOperation = WindowConstants.EXIT_ON_CLOSE

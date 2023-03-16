@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -305,7 +305,7 @@ class MarathonSquare:AbstractMode() {
 				engine.playSE("countdown")
 
 			// BGM fadeout
-			if(remainTime<=5*60&&engine.timerActive) owner.musMan.fadesw = true
+			if(remainTime<=5*60&&engine.timerActive) owner.musMan.fadeSW = true
 
 			// Time up!
 			if(engine.statistics.time>=ULTRA_MAX_TIME&&engine.timerActive) {

@@ -119,7 +119,7 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 		val entry = entryRules.listName
 		val modes = modeRules.listName
 
-		log.debug("${entry.toList()} ${modes.toList()}")
+		log.debug("{} {}", entry.toList(), modes.toList())
 
 		val curRule = NullpoMinoSlick.propGlobal.getProperty("0.rule")
 		list = if(!curRule.isNullOrEmpty()) entry+modes+STR_FB else entry+modes

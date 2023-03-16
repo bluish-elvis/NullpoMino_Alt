@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -47,16 +47,16 @@ class RetroA:AbstractMode() {
 	 * for drawing the fonts.) */
 
 	/** Selected game type */
-	private var gametype:GAMETYPE = GAMETYPE.RACE200
+	private var gameType:GAMETYPE = GAMETYPE.RACE200
 
 	/** Selected starting level */
 	private var startLevel = 0
 
 	/** Used for soft drop scoring */
-	private var softdropscore = 0
+	private var scoreSD = 0
 
 	/** Used for hard drop scoring */
-	private var harddropscore = 0
+	private var scoreHD = 0
 
 	/** Number of "lines" cleared (most things use this instead of
 	 * engine.statistics.lines); don't ask me why I called it this... */
@@ -69,7 +69,7 @@ class RetroA:AbstractMode() {
 	private var efficiency = 0f
 
 	/** Next level lines */
-	private var levellines = 0
+	private var levelLines = 0
 
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
@@ -104,9 +104,9 @@ class RetroA:AbstractMode() {
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
 		lastscore = 0
-		softdropscore = 0
-		harddropscore = 0
-		levellines = 0
+		scoreSD = 0
+		scoreHD = 0
+		levelLines = 0
 		loons = 0
 		actions = 0
 		efficiency = 0f
@@ -137,7 +137,7 @@ class RetroA:AbstractMode() {
 		engine.owSDSpd = -1
 		if(!owner.replayMode) version = CURRENT_VERSION
 
-		engine.owner.bgMan.bg = if(gametype==GAMETYPE.PRESSURE) 0 else startLevel
+		engine.owner.bgMan.bg = if(gameType==GAMETYPE.PRESSURE) 0 else startLevel
 		if(engine.owner.bgMan.bg>19) engine.owner.bgMan.bg = 19
 		engine.frameColor = GameEngine.FRAME_COLOR_GRAY
 	}
@@ -161,14 +161,14 @@ class RetroA:AbstractMode() {
 			// Check for UP button, when pressed it will move cursor up.
 			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				menuCursor--
-				if(menuCursor==1&&gametype==GAMETYPE.PRESSURE) menuCursor--
+				if(menuCursor==1&&gameType==GAMETYPE.PRESSURE) menuCursor--
 				if(menuCursor<0) menuCursor = 2
 				engine.playSE("cursor")
 			}
 			// Check for DOWN button, when pressed it will move cursor down.
 			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 				menuCursor++
-				if(menuCursor==1&&gametype==GAMETYPE.PRESSURE) menuCursor++
+				if(menuCursor==1&&gameType==GAMETYPE.PRESSURE) menuCursor++
 				if(menuCursor>2) menuCursor = 0
 				engine.playSE("cursor")
 			}
@@ -183,12 +183,12 @@ class RetroA:AbstractMode() {
 
 				when(menuCursor) {
 					0 -> {
-						gametype = when(gametype) {
+						gameType = when(gameType) {
 							GAMETYPE.all.first() -> GAMETYPE.all.last()
 							GAMETYPE.all.last() -> GAMETYPE.all.first()
-							else -> GAMETYPE.all[gametype.ordinal+change]
+							else -> GAMETYPE.all[gameType.ordinal+change]
 						}
-						engine.owner.bgMan.bg = if(gametype==GAMETYPE.PRESSURE) 0 else startLevel
+						engine.owner.bgMan.bg = if(gameType==GAMETYPE.PRESSURE) 0 else startLevel
 					}
 					1 -> {
 						startLevel += change
@@ -224,8 +224,8 @@ class RetroA:AbstractMode() {
 			receiver.drawMenuFont(engine, 0, menuCursor*2+1, "\u0082", COLOR.RED)
 
 		receiver.drawMenuFont(engine, 0, 0, "GAME TYPE", COLOR.BLUE)
-		receiver.drawMenuFont(engine, 1, 1, gametype.name, menuCursor==0)
-		if(gametype!=GAMETYPE.ENDLESS) {
+		receiver.drawMenuFont(engine, 1, 1, gameType.name, menuCursor==0)
+		if(gameType!=GAMETYPE.ENDLESS) {
 			receiver.drawMenuFont(engine, 0, 2, "Level", COLOR.BLUE)
 			receiver.drawMenuFont(engine, 1, 3, String.format("%02d", startLevel), menuCursor==1)
 		}
@@ -240,18 +240,18 @@ class RetroA:AbstractMode() {
 		engine.statistics.levelDispAdd = 1
 
 		owner.musMan.bgm = BGM.RetroA(0)
-		when(gametype) {
+		when(gameType) {
 			GAMETYPE.PRESSURE -> {
 				engine.statistics.level = 0
-				levellines = 5
+				levelLines = 5
 			}
 			GAMETYPE.RACE200 -> {
 				engine.statistics.level = startLevel
-				levellines = 10*minOf(startLevel+1, 10)
+				levelLines = 10*minOf(startLevel+1, 10)
 			}
 			GAMETYPE.ENDLESS -> {
 				engine.statistics.level = startLevel
-				levellines = if(startLevel<=9) (startLevel+1)*10 else (startLevel+11)*5
+				levelLines = if(startLevel<=9) (startLevel+1)*10 else (startLevel+11)*5
 			}
 		}
 
@@ -260,8 +260,8 @@ class RetroA:AbstractMode() {
 
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "RETRO MASTERY", COLOR.GREEN)
-		receiver.drawScoreFont(engine, 0, 1, "(${gametype.name})", COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 1, "(${gameType.name})", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -271,10 +271,10 @@ class RetroA:AbstractMode() {
 					receiver.drawScoreGrade(
 						engine, 0, 4+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
-					receiver.drawScoreNum(engine, 3, 4+i, "${rankingScore[gametype.ordinal][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 12, 4+i, "${rankingLines[gametype.ordinal][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 3, 4+i, "${rankingScore[gameType.ordinal][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 12, 4+i, "${rankingLines[gameType.ordinal][i]}", i==rankingRank)
 					receiver.drawScoreNum(
-						engine, 17, 4+i, String.format("%02d", rankingLevel[gametype.ordinal][i]), i==rankingRank
+						engine, 17, 4+i, String.format("%02d", rankingLevel[gameType.ordinal][i]), i==rankingRank
 					)
 				}
 			}
@@ -297,13 +297,13 @@ class RetroA:AbstractMode() {
 	}
 
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-		softdropscore /= 2
-		engine.statistics.scoreSD += softdropscore
-		softdropscore = 0
+		scoreSD /= 2
+		engine.statistics.scoreSD += scoreSD
+		scoreSD = 0
 
-		harddropscore /= 2
-		engine.statistics.scoreHD += harddropscore
-		harddropscore = 0
+		scoreHD /= 2
+		engine.statistics.scoreHD += scoreHD
+		scoreHD = 0
 
 		// Line clear score
 		var pts = 0
@@ -331,7 +331,7 @@ class RetroA:AbstractMode() {
 		}
 
 		// Do the ending (at 200 lines for now)
-		if(gametype==GAMETYPE.RACE200&&loons>=200) {
+		if(gameType==GAMETYPE.RACE200&&loons>=200) {
 			engine.ending = 1
 			engine.gameEnded()
 		}
@@ -345,44 +345,38 @@ class RetroA:AbstractMode() {
 
 		efficiency = if(actions!=0) engine.statistics.lines/actions.toFloat() else 0f
 
-		if(loons>=levellines) {
+		if(loons>=levelLines) {
 			// Level up
 			engine.statistics.level++
 
-			levellines += if(gametype==GAMETYPE.PRESSURE) 5 else 10
+			levelLines += if(gameType==GAMETYPE.PRESSURE) 5 else 10
 
-			owner.bgMan.fadesw = true
-			owner.bgMan.fadecount = 0
+			val lv = maxOf(0, minOf(engine.statistics.level, 19))
 
-			var lv = engine.statistics.level
-
-			if(lv<0) lv = 0
-			else if(lv>=19) lv = 19
-
-			owner.bgMan.fadebg = lv
+			owner.bgMan.nextBg = lv
 			owner.musMan.bgm = BGM.RetroA(maxOf(lv/4, 4))
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}
 
 		// Update meter
-		val togo = levellines-loons
+		val togo = levelLines-loons
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		engine.meterValue =
-			if(gametype==GAMETYPE.PRESSURE) loons%5/4f
-			else if(engine.statistics.level==startLevel&&startLevel!=0) loons/(levellines-1f)
+			if(gameType==GAMETYPE.PRESSURE) loons%5/4f
+			else if(engine.statistics.level==startLevel&&startLevel!=0) loons/(levelLines-1f)
 			else (10-togo)/9f
 		return pts
 	}
 
 	/** This function will be called when soft-drop is used */
 	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
-		softdropscore += fall
+		scoreSD += fall
 	}
 
 	/** This function will be called when hard-drop is used */
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-		harddropscore += fall
+		scoreHD += fall
 	}
 
 	/** Renders game result screen */
@@ -409,7 +403,7 @@ class RetroA:AbstractMode() {
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
-			updateRanking(engine.statistics.score, loons, engine.statistics.level, gametype)
+			updateRanking(engine.statistics.score, loons, engine.statistics.level, gameType)
 
 			if(rankingRank!=-1) return true
 		}
@@ -418,7 +412,7 @@ class RetroA:AbstractMode() {
 
 	/** Load the settings from [prop] */
 	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
-		gametype = GAMETYPE.all[prop.getProperty("retromastery.gametype", 0)]
+		gameType = GAMETYPE.all[prop.getProperty("retromastery.gametype", 0)]
 		startLevel = prop.getProperty("retromastery.startLevel", 0)
 		big = prop.getProperty("retromastery.big", false)
 		version = prop.getProperty("retromastery.version", 0)
@@ -428,7 +422,7 @@ class RetroA:AbstractMode() {
 	 * @param prop CustomProperties
 	 */
 	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("retromastery.gametype", gametype.ordinal)
+		prop.setProperty("retromastery.gametype", gameType.ordinal)
 		prop.setProperty("retromastery.startLevel", startLevel)
 		prop.setProperty("retromastery.big", big)
 		prop.setProperty("retromastery.version", version)

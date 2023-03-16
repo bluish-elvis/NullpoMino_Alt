@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -58,7 +58,7 @@ class SprintCombo:NetDummyMode() {
 	private var lastpiece = 0
 
 	/** BGM number */
-	private var bgmno = 0
+	private var bgmId = 0
 
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
@@ -125,7 +125,7 @@ class SprintCombo:NetDummyMode() {
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
-		bgmno = 0
+		bgmId = 0
 		big = false
 		goalType = 0
 		shapetype = 1
@@ -135,8 +135,8 @@ class SprintCombo:NetDummyMode() {
 		nextseclines = 10
 
 		rankingRank = -1
-		rankingTime.forEach {it.forEach {it.fill(0)}}
-		rankingCombo.forEach {it.forEach {it.fill(0)}}
+		rankingTime.forEach {it.forEach {p -> p.fill(0)}}
+		rankingCombo.forEach {it.forEach {p -> p.fill(0)}}
 
 		engine.frameColor = GameEngine.FRAME_COLOR_RED
 
@@ -165,7 +165,7 @@ class SprintCombo:NetDummyMode() {
 		engine.speed.lineDelay = prop.getProperty("comborace. lineDelay.$preset", 0)
 		engine.speed.lockDelay = prop.getProperty("comborace.lockDelay.$preset", 30)
 		engine.speed.das = prop.getProperty("comborace.das.$preset", 10)
-		bgmno = prop.getProperty("comborace.bgmno.$preset", BGM.values.indexOf(BGM.Rush(0)))
+		bgmId = prop.getProperty("comborace.bgmno.$preset", BGM.values.indexOf(BGM.Rush(0)))
 		big = prop.getProperty("comborace.big.$preset", false)
 		goalType = prop.getProperty("comborace.goalType.$preset", 1)
 		shapetype = prop.getProperty("comborace.shapetype.$preset", 1)
@@ -183,7 +183,7 @@ class SprintCombo:NetDummyMode() {
 		prop.setProperty("comborace.lineDelay.$preset", engine.speed.lineDelay)
 		prop.setProperty("comborace.lockDelay.$preset", engine.speed.lockDelay)
 		prop.setProperty("comborace.das.$preset", engine.speed.das)
-		prop.setProperty("comborace.bgmno.$preset", bgmno)
+		prop.setProperty("comborace.bgmno.$preset", bgmId)
 		prop.setProperty("comborace.big.$preset", big)
 		prop.setProperty("comborace.goalType.$preset", goalType)
 		prop.setProperty("comborace.shapetype.$preset", shapetype)
@@ -236,7 +236,7 @@ class SprintCombo:NetDummyMode() {
 					8 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					9 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					10 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					11 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					11 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					12, 13 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
 				}
 
@@ -303,7 +303,7 @@ class SprintCombo:NetDummyMode() {
 			drawMenuCompact(engine, receiver, "WIDTH" to comboWidth)
 
 			drawMenuSpeeds(engine, receiver)
-			drawMenuBGM(engine, receiver, bgmno)
+			drawMenuBGM(engine, receiver, bgmId)
 			if(!engine.owner.replayMode) {
 				menuColor = COLOR.GREEN
 				drawMenuCompact(engine, receiver, "LOAD" to presetNumber, "SAVE" to presetNumber)
@@ -333,7 +333,7 @@ class SprintCombo:NetDummyMode() {
 	 * Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
 		if(version<=0) engine.big = big
-		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmId]
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
 		engine.twistEnable = true
 		engine.twistAllowKick = true
@@ -475,7 +475,7 @@ class SprintCombo:NetDummyMode() {
 				}
 			}
 			if(GOAL_TABLE[goalType]==-1) {
-				val meterMax = receiver.getMeterMax(engine)
+				val meterMax = 1
 				val colorIndex = (engine.statistics.maxCombo-1)/meterMax
 				engine.meterValue = (engine.statistics.maxCombo-1f)%meterMax
 				engine.meterColor = METER_COLOR_TABLE[colorIndex%METER_COLOR_TABLE.size]
@@ -495,11 +495,9 @@ class SprintCombo:NetDummyMode() {
 						engine.ending = 1
 						engine.gameEnded()
 					}
-					engine.statistics.lines>=GOAL_TABLE[goalType]-5 -> owner.musMan.fadesw = true
+					engine.statistics.lines>=GOAL_TABLE[goalType]-5 -> owner.musMan.fadeSW = true
 					engine.statistics.lines>=nextseclines -> {
-						owner.bgMan.fadesw = true
-						owner.bgMan.fadecount = 0
-						owner.bgMan.fadebg = nextseclines/10
+						owner.bgMan.nextBg = nextseclines/10
 						nextseclines += 10
 					}
 				}
@@ -588,7 +586,7 @@ class SprintCombo:NetDummyMode() {
 
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
-		val bg = if(owner.bgMan.fadesw) owner.bgMan.fadebg else owner.bgMan.bg
+		val bg = if(owner.bgMan.fadeSW) owner.bgMan.nextBg else owner.bgMan.bg
 		val msg = "game\tstats\t"+
 			engine.run {
 				statistics.run {"${maxCombo}\t${lines}\t${totalPieceLocked}\t${time}\t${lpm}\t${pps}\t"}+
@@ -637,7 +635,7 @@ class SprintCombo:NetDummyMode() {
 	override fun netSendOptions(engine:GameEngine) {
 		val msg = "game\toption\t"+engine.speed.run {
 			"${gravity}\t${denominator}\t${are}\t${areLine}\t${lineDelay}\t${lockDelay}\t${das}\t"
-		}+"$bgmno\t$goalType\t$presetNumber\t$shapetype${"\t\t$comboWidth\t$ceilingAdjust\t"+spawnAboveField}\n"
+		}+"$bgmId\t$goalType\t$presetNumber\t$shapetype${"\t\t$comboWidth\t$ceilingAdjust\t"+spawnAboveField}\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
 
@@ -650,7 +648,7 @@ class SprintCombo:NetDummyMode() {
 		engine.speed.lineDelay = message[8].toInt()
 		engine.speed.lockDelay = message[9].toInt()
 		engine.speed.das = message[10].toInt()
-		bgmno = message[11].toInt()
+		bgmId = message[11].toInt()
 		goalType = message[12].toInt()
 		presetNumber = message[13].toInt()
 		shapetype = message[14].toInt()

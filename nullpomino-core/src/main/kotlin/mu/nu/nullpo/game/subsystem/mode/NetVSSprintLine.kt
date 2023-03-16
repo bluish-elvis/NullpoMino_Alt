@@ -146,8 +146,8 @@ class NetVSSprintLine:NetDummyVSMode() {
 	override fun renderLast(engine:GameEngine) {
 		super.renderLast(engine)
 
-		val x = owner.receiver.fieldX(engine)
-		val y = owner.receiver.fieldY(engine)
+		val x = receiver.fieldX(engine)
+		val y = receiver.fieldY(engine)
 
 		val pid = engine.playerID
 		if(netVSPlayerExist[pid]&&engine.isVisible) {
@@ -165,13 +165,13 @@ class NetVSSprintLine:NetDummyVSMode() {
 
 				when {
 					engine.displaySize!=-1 -> when(strLines.length) {
-						1 -> owner.receiver.drawMenuFont(engine, 4, 21, strLines, fontColor, 2f)
-						2 -> owner.receiver.drawMenuFont(engine, 3, 21, strLines, fontColor, 2f)
-						3 -> owner.receiver.drawMenuFont(engine, 2, 21, strLines, fontColor, 2f)
+						1 -> receiver.drawMenuFont(engine, 4, 21, strLines, fontColor, 2f)
+						2 -> receiver.drawMenuFont(engine, 3, 21, strLines, fontColor, 2f)
+						3 -> receiver.drawMenuFont(engine, 2, 21, strLines, fontColor, 2f)
 					}
-					strLines.length==1 -> owner.receiver.drawDirectFont(x+4+32, y+168, strLines, fontColor, 1f)
-					strLines.length==2 -> owner.receiver.drawDirectFont(x+4+24, y+168, strLines, fontColor, 1f)
-					strLines.length==3 -> owner.receiver.drawDirectFont(x+4+16, y+168, strLines, fontColor, 1f)
+					strLines.length==1 -> receiver.drawDirectFont(x+4+32, y+168, strLines, fontColor, 1f)
+					strLines.length==2 -> receiver.drawDirectFont(x+4+24, y+168, strLines, fontColor, 1f)
+					strLines.length==3 -> receiver.drawDirectFont(x+4+16, y+168, strLines, fontColor, 1f)
 				}
 			}
 
@@ -182,19 +182,19 @@ class NetVSSprintLine:NetDummyVSMode() {
 
 				when {
 					engine.displaySize!=-1 -> when(place) {
-						0 -> owner.receiver.drawMenuFont(engine, -2, 22, "1ST", COLOR.ORANGE)
-						1 -> owner.receiver.drawMenuFont(engine, -2, 22, "2ND", COLOR.WHITE)
-						2 -> owner.receiver.drawMenuFont(engine, -2, 22, "3RD", COLOR.RED)
-						3 -> owner.receiver.drawMenuFont(engine, -2, 22, "4TH", COLOR.GREEN)
-						4 -> owner.receiver.drawMenuFont(engine, -2, 22, "5TH", COLOR.BLUE)
-						5 -> owner.receiver.drawMenuFont(engine, -2, 22, "6TH", COLOR.PURPLE)
+						0 -> receiver.drawMenuFont(engine, -3, 22, "1ST", COLOR.ORANGE)
+						1 -> receiver.drawMenuFont(engine, -3, 22, "2ND", COLOR.WHITE)
+						2 -> receiver.drawMenuFont(engine, -3, 22, "3RD", COLOR.RED)
+						3 -> receiver.drawMenuFont(engine, -3, 22, "4TH", COLOR.GREEN)
+						4 -> receiver.drawMenuFont(engine, -3, 22, "5TH", COLOR.BLUE)
+						5 -> receiver.drawMenuFont(engine, -3, 22, "6TH", COLOR.PURPLE)
 					}
-					place==0 -> owner.receiver.drawDirectFont(x, y+168, "1ST", COLOR.ORANGE, .5f)
-					place==1 -> owner.receiver.drawDirectFont(x, y+168, "2ND", COLOR.WHITE, .5f)
-					place==2 -> owner.receiver.drawDirectFont(x, y+168, "3RD", COLOR.RED, .5f)
-					place==3 -> owner.receiver.drawDirectFont(x, y+168, "4TH", COLOR.GREEN, .5f)
-					place==4 -> owner.receiver.drawDirectFont(x, y+168, "5TH", COLOR.BLUE, .5f)
-					place==5 -> owner.receiver.drawDirectFont(x, y+168, "6TH", COLOR.PURPLE, .5f)
+					place==0 -> receiver.drawDirectFont(x, y+168, "1ST", COLOR.ORANGE, .5f)
+					place==1 -> receiver.drawDirectFont(x, y+168, "2ND", COLOR.WHITE, .5f)
+					place==2 -> receiver.drawDirectFont(x, y+168, "3RD", COLOR.RED, .5f)
+					place==3 -> receiver.drawDirectFont(x, y+168, "4TH", COLOR.GREEN, .5f)
+					place==4 -> receiver.drawDirectFont(x, y+168, "5TH", COLOR.BLUE, .5f)
+					place==5 -> receiver.drawDirectFont(x, y+168, "6TH", COLOR.PURPLE, .5f)
 				}
 			} else if(!netVSIsPractice||pid!=0) {
 				val strTemp = "${netVSPlayerWinCount[pid]}/${netVSPlayerPlayCount[pid]}"
@@ -216,7 +216,7 @@ class NetVSSprintLine:NetDummyVSMode() {
 		val scale = if(engine.displaySize==-1) .5f else 1f
 
 		drawResultScale(
-			engine, owner.receiver, 2, COLOR.ORANGE, scale, "LINE",
+			engine, receiver, 2, COLOR.ORANGE, scale, "LINE",
 			String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
 			"LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps),
 			"Time", String.format("%10s", engine.statistics.time.toTimeStr)

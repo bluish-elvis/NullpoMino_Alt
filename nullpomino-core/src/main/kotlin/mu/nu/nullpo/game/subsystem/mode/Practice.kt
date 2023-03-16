@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -40,6 +40,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
 
@@ -63,16 +64,16 @@ class Practice:AbstractMode() {
 	private var lastpiece = 0
 
 	/** EndingThe rest of the time */
-	private var rolltime = 0
+	private var rollTime = 0
 
 	/** EndingStart flag */
-	private var rollstarted = false
+	private var rollStarted = false
 
 	/** Dan back */
 	private var secretGrade = 0
 
 	/** BGM number */
-	private var bgmno = 0
+	private var bgmId = 0
 
 	/** Flag for types of Twisters allowed (0=none, 1=normal, 2=all spin) */
 	private var twistEnableType = 0
@@ -117,10 +118,10 @@ class Practice:AbstractMode() {
 	private var version = 0
 
 	/** Next Section Of level (This-1At levelStop) */
-	private var nextseclv = 0
+	private var nextSecLv = 0
 
 	/** LevelHas increased flag */
-	private var lvupflag = false
+	private var lvupFlag = false
 
 	/** Combo bonus */
 	private var comboValue = 0
@@ -191,12 +192,12 @@ class Practice:AbstractMode() {
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
-		nextseclv = 100
-		lvupflag = false
+		nextSecLv = 100
+		lvupFlag = false
 		comboValue = 0
 		harddropBonus = 0
-		rolltime = 0
-		rollstarted = false
+		rollTime = 0
+		rollStarted = false
 		secretGrade = 0
 		pieceEnable = MutableList(Piece.PIECE_COUNT) {false}
 		fldBackup = null
@@ -229,7 +230,7 @@ class Practice:AbstractMode() {
 		engine.speed.lineDelay = prop.getProperty("practice. lineDelay.$preset", 20)
 		engine.speed.lockDelay = prop.getProperty("practice.lockDelay.$preset", 30)
 		engine.speed.das = prop.getProperty("practice.das.$preset", 14)
-		bgmno = prop.getProperty("practice.bgmno.$preset", 0)
+		bgmId = prop.getProperty("practice.bgmno.$preset", 0)
 		twistEnableType = prop.getProperty("practice.twistEnableType.$preset", 1)
 		enableTwist = prop.getProperty("practice.enableTwist.$preset", true)
 		enableTwistKick = prop.getProperty("practice.enableTwistKick.$preset", true)
@@ -271,7 +272,7 @@ class Practice:AbstractMode() {
 		prop.setProperty("practice.lineDelay.$preset", engine.speed.lineDelay)
 		prop.setProperty("practice.lockDelay.$preset", engine.speed.lockDelay)
 		prop.setProperty("practice.das.$preset", engine.speed.das)
-		prop.setProperty("practice.bgmno.$preset", bgmno)
+		prop.setProperty("practice.bgmno.$preset", bgmId)
 		prop.setProperty("practice.twistEnableType.$preset", twistEnableType)
 		prop.setProperty("practice.enableTwist.$preset", enableTwist)
 		prop.setProperty("practice.enableTwistKick.$preset", enableTwistKick)
@@ -337,7 +338,7 @@ class Practice:AbstractMode() {
 					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					7 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					8 -> big = !big
 					9 -> {
 						leveltype += change
@@ -535,7 +536,7 @@ class Practice:AbstractMode() {
 			receiver.drawMenuFont(engine, 15, 5, "DAS:", EventReceiver.COLOR.BLUE)
 			receiver.drawMenuNum(engine, 20, 5, String.format("%2d", engine.speed.das), menuCursor==6)
 			receiver.drawMenuFont(
-				engine, 2, 7, String.format("BGM:%2d %s", bgmno, "${BGM.values[bgmno]}".uppercase()),
+				engine, 2, 7, String.format("BGM:%2d %s", bgmId, "${BGM.values[bgmId]}".uppercase()),
 				menuCursor==7
 			)
 			receiver.drawMenuFont(engine, 2, 8, "BIG:${big.getONorOFF()}", menuCursor==8)
@@ -713,7 +714,7 @@ class Practice:AbstractMode() {
 
 		// Hebo Hidden
 		setHeboHidden(engine)
-		owner.musMan.bgm = BGM.values[bgmno]
+		owner.musMan.bgm = BGM.values[bgmId]
 
 		goal = 5*(engine.statistics.level+1)
 
@@ -765,7 +766,7 @@ class Practice:AbstractMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "PRACTICE", EventReceiver.COLOR.YELLOW)
+		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.YELLOW)
 
 		// fieldエディットのとき
 		if(engine.stat==GameEngine.Status.FIELDEDIT) {
@@ -787,78 +788,63 @@ class Practice:AbstractMode() {
 			 * engine.field.getHowManyHoles());
 			 * } */
 		} else {
-			// Score
-			receiver.drawScoreFont(engine, 0, 5, "Score", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 2, "Score", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreNum(engine, 5, 2, "+${String.format("%6d", lastscore)}")
+			receiver.drawScoreNum(engine, 0, 3, String.format("%7d", scDisp), scDisp<engine.statistics.score, 2f)
 
-			receiver.drawScoreNum(engine, 6, 5, "+$lastscore")
-			receiver.drawScoreNum(engine, 0, 6, "${engine.statistics.score}", 2f)
+			receiver.drawScoreFont(engine, 10, 2, "/min", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreNum(
+				engine, 10, 3, String.format("%7g", engine.statistics.spm), scDisp<engine.statistics.score,
+				1.5f
+			)
+
+			receiver.drawScoreFont(engine, 0, 5, "Spike", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 6, String.format("%5d", engine.statistics.attacks), 2f)
+
+			receiver.drawScoreFont(engine, 3, 8, "Lines", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreNum(engine, 8, 7, "${engine.statistics.lines}", 2f)
+
+			receiver.drawScoreFont(engine, 4, 9, "/min", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreNum(engine, 8, 9, "${engine.statistics.lpm}", 1.5f)
 
 			// Time
-			receiver.drawScoreFont(engine, 0, 17, "Time", EventReceiver.COLOR.BLUE)
-			var time = engine.statistics.time
-			if(timelimit>0) time = timelimitTimer
-			if(time<0) time = 0
+			receiver.drawScoreFont(engine, 0, 18, "Time", EventReceiver.COLOR.BLUE)
+			val time = if(timelimit>0) timelimitTimer else maxOf(0, engine.statistics.time)
 			receiver.drawScoreNum(
-				engine, 0, 18, time.toTimeStr, if(timelimit>0) getTimeFontColor(time) else EventReceiver.COLOR.WHITE,
+				engine, 0, 19, time.toTimeStr, if(timelimit>0) getTimeFontColor(time) else EventReceiver.COLOR.WHITE,
 				2f
 			)
 
 			// Roll Rest time
 			if(engine.gameActive&&engine.ending==2) {
-				var remainTime = rolltimelimit-rolltime
-				if(remainTime<0) remainTime = 0
-				receiver.drawScoreFont(engine, 0, 20, "ROLL TIME", EventReceiver.COLOR.BLUE)
+				val remainTime = maxOf(0, rolltimelimit-rollTime)
+				receiver.drawScoreFont(engine, 14, 18, "ROLL TIME", EventReceiver.COLOR.BLUE)
 				receiver.drawScoreFont(
-					engine, 0, 21, remainTime.toTimeStr, remainTime>0&&remainTime<10*60, 2f
+					engine, 14, 19, remainTime.toTimeStr, remainTime>0&&remainTime<10*60, 2f
 				)
 			}
-			// 1分間あたり score
-			receiver.drawScoreFont(engine, 0, 11, "SCORE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 12, String.format("%10f", engine.statistics.spm))
-
-			// 1分間あたりのLines
-			receiver.drawScoreFont(engine, 0, 14, "LINE/MIN", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 15, "${engine.statistics.lpm}")
-
-			if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
-				//  GrandLevel
-				receiver.drawScoreFont(engine, 0, 9, "Level", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(0, engine.statistics.level)))
-				receiver.drawScoreSpeed(engine, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
-				receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextseclv))
-
-				// Roll Rest time
-				if(engine.gameActive&&engine.ending==2) {
-					var remainTime = rolltimelimit-rolltime
-					if(remainTime<0) remainTime = 0
-					receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreNum(
-						engine, 0, 18, remainTime.toTimeStr, remainTime>0&&remainTime<10*60, 2f
-					)
+			if(leveltype!=LEVELTYPE_NONE) when(leveltype) {
+				LEVELTYPE_MANIA, LEVELTYPE_MANIAPLUS -> {
+					//  GrandLevel
+					receiver.drawScoreFont(engine, 0, 12, "Level", EventReceiver.COLOR.BLUE)
+					receiver.drawScoreNum(engine, 1, 13, String.format("%3d", maxOf(0, engine.statistics.level)))
+					receiver.drawScoreSpeed(engine, 0, 14, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
+					receiver.drawScoreNum(engine, 1, 15, String.format("%3d", nextSecLv))
 				}
-			} else if(leveltype!=LEVELTYPE_NONE) {
-				when(leveltype) {
-					LEVELTYPE_POINTS -> {
-						// ゴール
-						receiver.drawScoreFont(engine, 0, 5, "GOAL", EventReceiver.COLOR.BLUE)
-						var strGoal = "$goal"
-						if(lastgoal!=0&&engine.ending==0) strGoal += "(-$lastgoal)"
-						receiver.drawScoreFont(engine, 0, 6, strGoal)
-					}
-					LEVELTYPE_10LINES -> {
-						// Lines( levelタイプが10LINESのとき)
-						receiver.drawScoreFont(engine, 0, 5, "LINE", EventReceiver.COLOR.BLUE)
-						receiver.drawScoreNum(engine, 0, 6, "${engine.statistics.lines}/${(engine.statistics.level+1)*10}")
-					}
-					else -> {
-						// Lines( levelタイプがNONEのとき)
-						receiver.drawScoreFont(engine, 0, 5, "LINE", EventReceiver.COLOR.BLUE)
-						receiver.drawScoreNum(engine, 0, 6, engine.statistics.lines.toString())
-					}
+				LEVELTYPE_POINTS -> {
+					receiver.drawScoreFont(engine, 0, 11, "Level", EventReceiver.COLOR.BLUE)
+					receiver.drawScoreNum(engine, 0, 12, (engine.statistics.level+1).toString())
+					// ゴール
+					receiver.drawScoreFont(engine, 0, 13, "GOAL", EventReceiver.COLOR.BLUE)
+					var strGoal = "$goal"
+					if(lastgoal!=0&&engine.ending==0) strGoal += "(-$lastgoal)"
+					receiver.drawScoreFont(engine, 0, 14, strGoal)
 				}
+				LEVELTYPE_10LINES -> {
+					receiver.drawScoreFont(engine, 0, 11, "Level", EventReceiver.COLOR.BLUE)
+					receiver.drawScoreNum(engine, 0, 12, (engine.statistics.level+1).toString())
 
-				receiver.drawScoreFont(engine, 0, 8, "Level", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreNum(engine, 0, 9, (engine.statistics.level+1).toString())
+				}
 			}
 		}
 	}
@@ -873,10 +859,10 @@ class Practice:AbstractMode() {
 
 		if(engine.gameActive&&engine.ending==2) {
 			// EndingMedium
-			rolltime++
+			rollTime++
 
 			// Roll End
-			if(rolltime>=rolltimelimit) {
+			if(rollTime>=rolltimelimit) {
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
@@ -889,23 +875,16 @@ class Practice:AbstractMode() {
 				engine.gameEnded()
 				engine.timerActive = false
 				engine.resetStatc()
-				if(goallv==-1)
-					engine.stat = GameEngine.Status.ENDINGSTART
-				else
-					engine.stat = GameEngine.Status.GAMEOVER
+				engine.stat = if(goallv==-1) GameEngine.Status.ENDINGSTART else GameEngine.Status.GAMEOVER
 			}
 
 			// 10Seconds before the countdown
-			if(timelimit>0&&timelimitTimer<=10*60&&timelimitTimer%60==0
-				&&engine.timerActive
-			)
+			if(timelimit>0&&timelimitTimer<=10*60&&timelimitTimer%60==0&&engine.timerActive)
 				engine.playSE("countdown")
 
 			// 5Of seconds beforeBGM fadeout
-			if(timelimit>0&&timelimitTimer<=5*60&&!timelimitResetEveryLevel
-				&&engine.timerActive
-			)
-				owner.musMan.fadesw = true
+			if(timelimit>0&&timelimitTimer<=5*60&&!timelimitResetEveryLevel&&engine.timerActive)
+				owner.musMan.fadeSW = true
 		}
 
 		// Update meter
@@ -922,23 +901,23 @@ class Practice:AbstractMode() {
 	override fun onMove(engine:GameEngine):Boolean {
 		// Occurrence new piece
 		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
-			if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
+			if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
 				// Level up
-				if(engine.statistics.level<nextseclv-1) {
+				if(engine.statistics.level<nextSecLv-1) {
 					engine.statistics.level++
-					if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+					if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 					setMeter(engine)
 				}
 
 				// Hard drop bonusInitialization
 				harddropBonus = 0
 			}
-			if(engine.ending==0&&engine.statc[0]>0&&(version>=1||!engine.holdDisable)) lvupflag = false
+			if(engine.ending==0&&engine.statc[0]>0&&(version>=1||!engine.holdDisable)) lvupFlag = false
 		}
 
 		// EndingStart
-		if(engine.ending==2&&!rollstarted) {
-			rollstarted = true
+		if(engine.ending==2&&!rollStarted) {
+			rollStarted = true
 
 			if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS) {
 				engine.blockHidden = 300
@@ -958,14 +937,14 @@ class Practice:AbstractMode() {
 		// Last frame
 		if(leveltype==LEVELTYPE_MANIA||leveltype==LEVELTYPE_MANIAPLUS)
 			if(engine.ending==0
-				&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag
+				&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag
 			) {
-				if(engine.statistics.level<nextseclv-1) {
+				if(engine.statistics.level<nextSecLv-1) {
 					engine.statistics.level++
-					if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+					if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 					setMeter(engine)
 				}
-				lvupflag = true
+				lvupFlag = true
 			}
 
 		return false
@@ -1016,50 +995,31 @@ class Practice:AbstractMode() {
 					engine.staffrollEnableStatistics = false
 					engine.staffrollNoDeath = false
 				}
-			} else if(engine.statistics.level>=nextseclv) {
+			} else if(engine.statistics.level>=nextSecLv) {
 				// Next Section
 				engine.playSE("levelup")
 
 				// BackgroundSwitching
-				if(owner.bgMan.bg<19) {
-					owner.bgMan.fadesw = true
-					owner.bgMan.fadecount = 0
-					owner.bgMan.fadebg = owner.bgMan.bg+1
-				}
+				if(owner.bgMan.bg<19) owner.bgMan.nextBg = owner.bgMan.bg+1
 
 				// Update level for next section
-				nextseclv += 100
+				nextSecLv += 100
 
 				// Limit timeReset
 				if(timelimitResetEveryLevel&&timelimit>0) timelimitTimer = timelimit
-			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
+			val manualLock = engine.manualLock.toInt()
+			val speedBonus = maxOf(0, engine.lockDelay-engine.statc[0])
 			// Calculate score
 			if(leveltype==LEVELTYPE_MANIA) {
-				var manuallock = 0
-				if(engine.manualLock) manuallock = 1
+				val bravo = if(engine.field.isEmpty) 4 else 1
 
-				var bravo = 1
-				if(engine.field.isEmpty) {
-					bravo = 4
-				}
-
-				var speedBonus = engine.lockDelay-engine.statc[0]
-				if(speedBonus<0) speedBonus = 0
-
-				lastscore = ((levelb+lines)/4+engine.softdropFall+manuallock+harddropBonus)*lines*comboValue*bravo+
+				lastscore = ((levelb+lines)/4+engine.softdropFall+manualLock+harddropBonus)*lines*comboValue*bravo+
 					engine.statistics.level/2+speedBonus*7
 			} else {
-				var manuallock = 0
-				if(engine.manualLock) manuallock = 1
-
-				var bravo = 1
-				if(engine.field.isEmpty) bravo = 2
-
-				var speedBonus = engine.lockDelay-engine.statc[0]
-				if(speedBonus<0) speedBonus = 0
-
-				lastscore = (((levelb+lines)/4+engine.softdropFall+manuallock+harddropBonus)*lines*comboValue+speedBonus+
+				val bravo = 1+engine.field.isEmpty.toInt()
+				lastscore = (((levelb+lines)/4+engine.softdropFall+manualLock+harddropBonus)*lines*comboValue+speedBonus+
 					engine.statistics.level/2)*bravo
 			}
 			if(engine.clearMode==GameEngine.ClearType.LINE_GEM_BOMB||engine.clearMode==GameEngine.ClearType.LINE_GEM_SPARK) {
@@ -1094,11 +1054,7 @@ class Practice:AbstractMode() {
 				// Level up
 				engine.statistics.level++
 
-				if(owner.bgMan.bg<19) {
-					owner.bgMan.fadesw = true
-					owner.bgMan.fadecount = 0
-					owner.bgMan.fadebg = owner.bgMan.bg+1
-				}
+				if(owner.bgMan.bg<19) owner.bgMan.nextBg = owner.bgMan.bg+1
 
 				goal = 5*(engine.statistics.level+1)
 
@@ -1137,7 +1093,7 @@ class Practice:AbstractMode() {
 	 * */
 	private fun setMeter(engine:GameEngine) {
 		if(engine.gameActive&&engine.ending==2) {
-			val remainRollTime = rolltimelimit-rolltime
+			val remainRollTime = rolltimelimit-rollTime
 			engine.meterValue = remainRollTime*1f/rolltimelimit
 			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		} else if(timelimit>0) {

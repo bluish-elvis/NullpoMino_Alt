@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -42,7 +42,7 @@ import java.io.File
 object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	override val skinDir:String by lazy {NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")}
 
-//	override val backgroundMax get() = imgPlayBG.size
+//	override val bgMax get() = imgPlayBG.size
 
 	/** Block images */
 	override val imgNormalBlockList by lazy {
@@ -104,7 +104,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 
 	/** プレイ中のBackground */
 	override val imgPlayBG by lazy {super.imgPlayBG.map {ResourceImageSlick(it, true)}}
-
+	override val imgPlayBGA by lazy {super.imgPlayBGA.map {ResourceImageSlick(it, true)}}
 	/** TTF font */
 	internal var ttfFont:UnicodeFont? = null
 
@@ -168,15 +168,15 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		 */
 		fun loadImage(filename:String):Image {
 			log.debug("Loading image from $filename")
-			var img = Image(256, 256)
+			var bufI = Image(256, 256)
 			try {
-				img = Image("$skinDir/graphics/$filename.png")
+				bufI = Image("$skinDir/graphics/$filename.png")
 			} catch(e:Exception) {
 				if(e !is UnsupportedOperationException&&(e is IOException||e is SlickException))
 					log.error("Failed to load image from $filename", e)
 			}
 
-			return img
+			return bufI
 		}*/
 
 	private fun loadSE(name:String) {
@@ -219,27 +219,27 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	}
 
 	/** 指定した numberのBGMを再生
-	 * @param M enums of BGM [mu.nu.nullpo.game.component.BGMStatus.BGM]
+	 * @param m enums of BGM [mu.nu.nullpo.game.component.BGMStatus.BGM]
 	 */
-	internal fun bgmStart(M:BGM) {
+	internal fun bgmStart(m:BGM) {
 		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
 		bgmStop()
-		val x = minOf(M.id, bgm.size-1)
-		val y = minOf(M.idx, bgm[x].size-1)
-		val bgmvolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
-		NullpoMinoSlick.appGameContainer.musicVolume = bgmvolume/256.toFloat()
+		val x = minOf(m.id, bgm.size-1)
+		val y = minOf(m.idx, bgm[x].size-1)
+		val bgmVol = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
+		NullpoMinoSlick.appGameContainer.musicVolume = bgmVol/256.toFloat()
 
-		if(M!=BGM.Silent&&M!=bgmPlaying) {
+		if(m!=BGM.Silent&&m!=bgmPlaying) {
 			bgm[x][y].first?.also {
 				try {
 					if(bgm[x][y].second) it.play() else it.loop()
-					log.info("Play BGM $x:$y ${M.longName}")
+					log.info("Play BGM $x:$y ${m.longName}")
 				} catch(e:Throwable) {
-					log.error("Failed to play BGM $x:$y ${M.longName}", e)
+					log.error("Failed to play BGM $x:$y ${m.longName}", e)
 				}
-			} ?: loadBGM(M, true)
+			} ?: loadBGM(m, true)
 
-			bgmPlaying = M
+			bgmPlaying = m
 			bgmint = x to y
 		}
 	}

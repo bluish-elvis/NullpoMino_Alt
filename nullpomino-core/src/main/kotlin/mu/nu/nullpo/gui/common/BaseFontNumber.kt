@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, NullNoname
+ * Copyright (c) 2021-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -32,6 +32,11 @@ package mu.nu.nullpo.gui.common
 import mu.nu.nullpo.game.event.EventReceiver
 
 abstract class BaseFontNumber:BaseFont {
+	companion object {
+		const val w:Int = 12
+		const val h:Int = 16
+	}
+
 	abstract override val rainbowCount:Int
 	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int,
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
@@ -44,7 +49,7 @@ abstract class BaseFontNumber:BaseFont {
 				when(it) {
 					0x0A -> {
 						// 改行 (\n）
-						dy += 16*scale
+						dy += h*scale
 						dx = x
 						0
 					}
@@ -62,12 +67,12 @@ abstract class BaseFontNumber:BaseFont {
 
 			if(stringChar in 0x30..0x40) { // 文字出力
 				val sx = if(c.code==0x20) 0 else (stringChar-48)%16
-				val sy = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow+i) else color).ordinal
+				val sy = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
 				val a = if(c.code==0x20) alpha*.4f else alpha
 				if(fontBig) draw(1, dx, dy, scale/2, sx*24, sy*32, 24, 32, a)
 				else draw(0, dx, dy-1, scale, sx*12, sy*16, 12, 16, a)
 
-				dx += 12*scale
+				dx += w*scale
 			}
 		}
 	}
@@ -77,4 +82,5 @@ abstract class BaseFontNumber:BaseFont {
 		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int, a:Float ->
 			getImg(i).draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, alpha = a)
 		}
+
 }

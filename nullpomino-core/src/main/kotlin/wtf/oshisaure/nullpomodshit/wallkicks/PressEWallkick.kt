@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022,
+ * Copyright (c) 2022-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -10,7 +10,7 @@
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -58,11 +58,11 @@ class PressEWallkick:Wallkick {
 		} else {
 			val mino = Piece(7).apply {
 				setBlock(piece.block[0])
-				for(cur_y in -field.hiddenHeight until field.height) {
-					for(cur_x in 0 until field.width) {
-						setColor(2+(cur_x-cur_y+field.height)%7)
-						placeToField(cur_x, cur_y, field)
-						if(checkCollisionKick(piece, x, y, rtOld, field)) field.delBlock(cur_x, cur_y)
+				for(curY in -field.hiddenHeight until field.height) {
+					for(curX in 0 until field.width) {
+						setColor(2+(curX-curY+field.height)%7)
+						placeToField(curX, curY, field)
+						if(checkCollisionKick(piece, x, y, rtOld, field)) field.delBlock(curX, curY)
 					}
 				}
 			}

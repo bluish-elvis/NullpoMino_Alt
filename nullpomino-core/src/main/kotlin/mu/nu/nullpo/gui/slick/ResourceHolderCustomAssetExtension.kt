@@ -404,7 +404,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 		fun restartDefaultBGM(owner:GameManager) {
 			if(owner.bgmStatus.bgm==BGMStatus.BGM.Silent) {
 				owner.bgmStatus.bgm = bgmPrevious
-				owner.bgmStatus.fadesw = false
+				owner.bgmStatus.fadeSW = false
 			}
 		}*/
 

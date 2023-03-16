@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2022,
+ * Copyright (c) 2021-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -60,9 +60,9 @@ class Deltatris:MarathonModeBase() {
 	override val itemMode = StringsMenuItem("difficulty", "Difficulty", COLOR.RED, 1, difficultyName)
 	private var difficulty:Int by DelegateMenuItem(itemMode)
 	private var multiplier = 1f
-	private var grav = 0f
+	private var grav = 0.0
 	private var mScale = 1f
-	private var scorebefore = 0
+	private var scoreBbefore = 0
 	// Generic
 	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
 	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
@@ -101,8 +101,8 @@ class Deltatris:MarathonModeBase() {
 		bgmLv = 0
 		multiplier = 1f
 		mScale = 1f
-		grav = START_GRAVITY.toFloat()
-		scorebefore = 0
+		grav = START_GRAVITY.toDouble()
+		scoreBbefore = 0
 		difficulty = 1
 		rankingRank = -1
 		rankingScore
@@ -135,7 +135,7 @@ class Deltatris:MarathonModeBase() {
 		if(percentage>1.0) percentage = 1.0
 		if(engine.speed.gravity<GRAVITY_DENOMINATOR*20) {
 			grav *= GRAVITY_MULTIPLIERS[difficulty]
-			grav = minOf(grav, GRAVITY_DENOMINATOR*20f)
+			grav = minOf(grav, GRAVITY_DENOMINATOR*20.0)
 		}
 		engine.speed.gravity = grav.toInt()
 		engine.speed.are = ceil(
@@ -240,7 +240,7 @@ class Deltatris:MarathonModeBase() {
 		engine.statistics.level = 0
 		engine.statistics.levelDispAdd = 1
 		engine.b2bEnable = true
-		scorebefore = 0
+		scoreBbefore = 0
 		stext = ShakingText(Random(engine.randSeed))
 		multiplier = MULTIPLIER_MINIMUM
 		engine.comboType = GameEngine.COMBO_TYPE_NORMAL
@@ -250,7 +250,7 @@ class Deltatris:MarathonModeBase() {
 		engine.useAllSpinBonus = true
 		engine.twistEnableEZ = true
 		setSpeed(engine)
-		grav = START_GRAVITY.toFloat()
+		grav = START_GRAVITY.toDouble()
 		if(netIsWatch) {
 			owner.musMan.bgm = BGMStatus.BGM.Silent
 		}
@@ -404,7 +404,7 @@ class Deltatris:MarathonModeBase() {
 		mScale = maxOf(1f, mScale*0.98f)
 
 		// Meter
-		engine.meterValue = (multiplier/20f).toFloat()
+		engine.meterValue = (multiplier/20f)
 		engine.meterColor = GameEngine.METER_COLOR_LIMIT
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode||engine.stat===GameEngine.Status.CUSTOM) {
 			// Show rank
@@ -479,28 +479,26 @@ class Deltatris:MarathonModeBase() {
 		val lastLevel:Int = engine.statistics.level
 
 		/*		if ((pieces - (PIECES_MAX[difficulty] / 20)) % (PIECES_MAX[difficulty] / 5) >= ((PIECES_MAX[difficulty] / 5) - 10) && engine.statistics.totalPieceLocked - (PIECES_MAX[difficulty] / 20) <= PIECES_MAX[difficulty]) {
-		//			owner.bgmStatus.fadesw = true;
+		//			owner.bgmStatus.fadeSW = true;
 				} else if ((0 == pieces % (PIECES_MAX[difficulty] / 5)) && engine.statistics.totalPieceLocked - (PIECES_MAX[difficulty] / 20) <= PIECES_MAX[difficulty] && (pieces - (PIECES_MAX[difficulty] / 20)) > 0) {
 		//			bgmLv++;
 		//			owner.bgmStatus.bgm = bgmLv;
-		//			owner.bgmStatus.fadesw = false;
+		//			owner.bgmStatus.fadeSW = false;
 				}*/
 
 		// Level up
 		engine.statistics.level = minOf(19, pieces/(PIECES_MAX[difficulty]/20))
 		val levelDec = pieces.toDouble()/(PIECES_MAX[difficulty].toDouble()/20.0)
 		if(levelDec-levelDec.toInt()>=0.8&&pieces<PIECES_MAX[difficulty]) {
-			if(engine.statistics.level==3||engine.statistics.level==7||engine.statistics.level==11||engine.statistics.level==15||engine.statistics.level==19) owner.musMan.fadesw =
+			if(engine.statistics.level==3||engine.statistics.level==7||engine.statistics.level==11||engine.statistics.level==15||engine.statistics.level==19) owner.musMan.fadeSW =
 				true
 		}
 		if(engine.statistics.level>lastLevel) {
-			owner.bgMan.fadesw = true
-			owner.bgMan.fadecount = 0
-			owner.bgMan.fadebg = engine.statistics.level
+			owner.bgMan.nextBg = engine.statistics.level
 			if(engine.statistics.level==4||engine.statistics.level==8||engine.statistics.level==12||engine.statistics.level==16) {
 				bgmLv++
 				owner.musMan.bgm = BGMStatus.BGM.GrandT(bgmLv)
-				owner.musMan.fadesw = false
+				owner.musMan.fadeSW = false
 			}
 			engine.playSE("levelup")
 		}
@@ -508,7 +506,7 @@ class Deltatris:MarathonModeBase() {
 			engine.playSE("hurryup")
 			bgmLv++
 			owner.musMan.bgm = BGMStatus.BGM.GrandT(bgmLv)
-			owner.musMan.fadesw = false
+			owner.musMan.fadeSW = false
 		}
 		setSpeed(engine)
 		return get
@@ -699,7 +697,7 @@ class Deltatris:MarathonModeBase() {
 		 * DAS, LOCK DELAY, LINE DELAY: Ease-in-ease-out
 		 */
 		private val PIECES_MAX = listOf(1000, 800, 600)
-		private val GRAVITY_MULTIPLIERS = listOf(1.014412098f, 1.018047461f, 1.024135373f)
+		private val GRAVITY_MULTIPLIERS = listOf(1.014412098, 1.018047461, 1.024135373)
 		/**
 		 * Difficulties
 		 */

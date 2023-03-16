@@ -377,7 +377,7 @@ val Field.opposingCornerBoxSize
 val Field.getLeftmostColumn:Int
 	get() = (0 until width).firstOrNull {x ->
 		(-1*hiddenHeight until height).any {y -> !getBlockEmpty(x, y)}
-	} ?: width-1
+	} ?: (width-1)
 /**
  * Gets the x coordinate of the right-most filled column a field.
  *
@@ -395,4 +395,4 @@ val Field.getRightmostColumn:Int
 val Field.getBottommostRow:Int
 	get() = (height-1 downTo -1*hiddenHeight).firstOrNull {y ->
 		(0 until width).any {x -> !getBlockEmpty(x, y)}
-	} ?: hiddenHeight*-1
+	} ?: (hiddenHeight*-1)

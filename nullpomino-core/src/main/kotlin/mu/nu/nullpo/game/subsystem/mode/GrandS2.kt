@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -49,52 +49,53 @@ class GrandS2:AbstractMode() {
 	// private static final int DEFAULT_SECTION_TIME = 2520;
 
 	/** Next Section の level (これ-1のときに levelストップする) */
-	private var nextseclv = 0
+	private var nextSecLv = 0
 
 	/** Levelが増えた flag */
-	private var lvupflag = false
+	private var lvupFlag = false
 
 	/** 最終結果などに表示される実際の段位 */
 	private var grade = 0
 
 	/** 段位表示を光らせる残り frame count */
-	private var gradeflash = 0
+	private var gradeFlash = 0
 
 	/** Combo bonus */
 	private var comboValue = 0
 
 	/** Roll 経過 time */
-	private var rolltime = 0
+	private var rollTime = 0
 
 	/** Roll started flag */
-	private var rollstarted = false
+	private var rollStarted = false
 
 	/** Roll completely cleared flag */
-	private var rollclear = 0
+	private var rollClear = 0
 
 	/** せり上がりまでのBlockcount */
 	private var garbageCount = 0
 
 	/** REGRET display time frame count */
-	private var regretdispframe = 0
+	private var regretDispFrame = 0
 
 	/** 裏段位 */
 	private var secretGrade = 0
 
 	/** Section Time */
-	private var sectionTime = Array(SECTION_MAX) {0}
+	private val sectionTime = MutableList(SECTION_MAX) {0}
 
 	/** 新記録が出たSection はtrue */
-	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
+	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
 
 	/** Cleared Section count */
-	private var sectionscomp = 0
+	private var sectionsDone = 0
 
 	/** Average Section Time */
-	private var sectionavgtime = 0
+	private val sectionAvgTime
+		get() = sectionTime.filter {it>0}.average().toFloat()
 
 	/** 直前のSection Time */
-	private var sectionlasttime = 0
+	private var sectionLastTime = 0
 
 	/** AC medal 状態 */
 	private var medalAC = 0
@@ -150,13 +151,13 @@ class GrandS2:AbstractMode() {
 	private val rankingTime = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' Roll completely cleared flag */
-	private val rankingRollclear = MutableList(RANKING_MAX) {0}
+	private val rankingRollClear = MutableList(RANKING_MAX) {0}
 
 	/** Section Time記録 */
 	private val bestSectionTime = MutableList(SECTION_MAX) {0}
 
 	private var decoration = 0
-	private var dectemp = 0
+	private var decTemp = 0
 
 	/* Mode name */
 	override val name = "Grand Lightning"
@@ -166,29 +167,28 @@ class GrandS2:AbstractMode() {
 
 	override val rankMap
 		get() = rankMapOf(
-			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollclear" to rankingRollclear,
+			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollClear" to rankingRollClear,
 			"section.time" to bestSectionTime
 		)
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		nextseclv = 0
-		lvupflag = true
+		nextSecLv = 0
+		lvupFlag = true
 		grade = 0
-		gradeflash = 0
+		gradeFlash = 0
 		comboValue = 0
 		lastscore = 0
-		rolltime = 0
-		rollstarted = false
-		rollclear = 0
+		rollTime = 0
+		rollStarted = false
+		rollClear = 0
 		garbageCount = 0
-		regretdispframe = 0
+		regretDispFrame = 0
 		secretGrade = 0
 		sectionTime.fill(0)
-		sectionIsNewRecord = BooleanArray(SECTION_MAX)
-		sectionscomp = 0
-		sectionavgtime = 0
-		sectionlasttime = 0
+		sectionIsNewRecord.fill(false)
+		sectionsDone = 0
+		sectionLastTime = 0
 		medalAC = 0
 		medalST = 0
 		medalSK = 0
@@ -198,7 +198,7 @@ class GrandS2:AbstractMode() {
 		rankingGrade.fill(0)
 		rankingLevel.fill(0)
 		rankingTime.fill(0)
-		rankingRollclear.fill(0)
+		rankingRollClear.fill(0)
 		bestSectionTime.fill(0)
 
 		engine.twistEnable = true
@@ -265,14 +265,6 @@ class GrandS2:AbstractMode() {
 		engine.speed.das = tableDAS[section]
 	}
 
-	/** Update average section time */
-	private fun setAverageSectionTime() {
-		if(sectionscomp>0) {
-			val i = minOf(sectionscomp+startLevel, sectionTime.size)
-			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
-		} else sectionavgtime = 0
-	}
-
 	/** ST medal check
 	 * @param engine GameEngine
 	 * @param sectionNumber Section number
@@ -280,34 +272,34 @@ class GrandS2:AbstractMode() {
 	private fun stMedalCheck(engine:GameEngine, sectionNumber:Int) {
 		val best = bestSectionTime[sectionNumber]
 
-		if(sectionlasttime<best) {
+		if(sectionLastTime<best) {
 			if(medalST<3) {
 				engine.playSE("medal3")
-				if(medalST<1) dectemp += 3
-				if(medalST<2) dectemp += 6
+				if(medalST<1) decTemp += 3
+				if(medalST<2) decTemp += 6
 				medalST = 3
-				dectemp += 6
+				decTemp += 6
 			}
 			if(!owner.replayMode) {
-				dectemp++
+				decTemp++
 				sectionIsNewRecord[sectionNumber] = true
 			}
-		} else if(sectionlasttime<best+300&&medalST<2) {
+		} else if(sectionLastTime<best+300&&medalST<2) {
 			engine.playSE("medal2")
-			if(medalST<1) dectemp += 3
+			if(medalST<1) decTemp += 3
 			medalST = 2
-			dectemp += 6
-		} else if(sectionlasttime<best+600&&medalST<1) {
+			decTemp += 6
+		} else if(sectionLastTime<best+600&&medalST<1) {
 			engine.playSE("medal1")
 			medalST = 1
-			dectemp += 3// 12
+			decTemp += 3// 12
 		}
 	}
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
-		if(!engine.owner.replayMode) {
+		if(!owner.replayMode) {
 			// Configuration changes
 			val change = updateCursor(engine, 5)
 
@@ -342,7 +334,7 @@ class GrandS2:AbstractMode() {
 			// 決定
 			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
-				sectionscomp = 0
+				sectionsDone = 0
 				return false
 			}
 
@@ -372,7 +364,7 @@ class GrandS2:AbstractMode() {
 		val lv = startLevel*100
 		engine.statistics.level = lv
 
-		nextseclv = maxOf(100, minOf(1300, lv+100))
+		nextSecLv = maxOf(100, minOf(1300, lv+100))
 		if(engine.statistics.level>=1000) engine.bone = true
 
 		owner.bgMan.bg = 20+engine.statistics.level/100
@@ -385,11 +377,11 @@ class GrandS2:AbstractMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "SPEED MANIA 2", COLOR.RED)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.RED)
 
 		receiver.drawScoreFont(engine, -1, -4*2, "DECORATION", scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
-		receiver.drawScoreBadges(engine, 5, -4, 100, dectemp)
+		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null)
 				if(!isShowBestSectionTime) {
@@ -400,8 +392,8 @@ class GrandS2:AbstractMode() {
 
 					for(i in 0 until RANKING_MAX) {
 						var gcolor = COLOR.WHITE
-						if(rankingRollclear[i]==1) gcolor = COLOR.GREEN
-						if(rankingRollclear[i]==2) gcolor = COLOR.ORANGE
+						if(rankingRollClear[i]==1) gcolor = COLOR.GREEN
+						if(rankingRollClear[i]==2) gcolor = COLOR.ORANGE
 
 						receiver.drawScoreNum(engine, 0, topY+i, String.format("%02d", i+1), COLOR.YELLOW, scale)
 						receiver.drawScoreGrade(engine, 3, topY+i, tableGradeName[rankingGrade[i]], gcolor, scale)
@@ -437,7 +429,7 @@ class GrandS2:AbstractMode() {
 			if(gradedisp) {
 				// 段位
 				if(grade>=0&&grade<tableGradeName.size)
-					receiver.drawScoreGrade(engine, 0, 1, tableGradeName[grade], gradeflash>0&&gradeflash%4==0, 2f)
+					receiver.drawScoreGrade(engine, 0, 1, tableGradeName[grade], gradeFlash>0&&gradeFlash%4==0, 2f)
 
 				// Score
 				receiver.drawScoreFont(engine, 0, 6, "Score", COLOR.RED)
@@ -449,27 +441,27 @@ class GrandS2:AbstractMode() {
 			receiver.drawScoreFont(engine, 0, 9, "Level", COLOR.RED)
 			receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
 			receiver.drawScoreSpeed(engine, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
-			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextseclv))
+			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextSecLv))
 
 			// Time
 			receiver.drawScoreFont(engine, 0, 14, "Time", COLOR.RED)
-			if((engine.ending!=2) or (rolltime/10%2==0))
+			if((engine.ending!=2) or (rollTime/10%2==0))
 				receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, 2f)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
-				var time = ROLLTIMELIMIT-rolltime
+				var time = ROLLTIMELIMIT-rollTime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", COLOR.RED)
 				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
 			}
 
 			// REGRET表示
-			if(regretdispframe>0)
+			if(regretDispFrame>0)
 				receiver.drawMenuFont(
 					engine, 2, 21, "REGRET", when {
-						regretdispframe%4==0 -> COLOR.YELLOW
-						regretdispframe%4==2 -> COLOR.RED
+						regretDispFrame%4==0 -> COLOR.YELLOW
+						regretDispFrame%4==2 -> COLOR.RED
 						else -> COLOR.ORANGE
 					}
 				)
@@ -506,7 +498,7 @@ class GrandS2:AbstractMode() {
 
 				receiver.drawScoreFont(engine, x2, 17, "AVERAGE", COLOR.RED)
 				receiver.drawScoreNum(
-					engine, x2, 18, (engine.statistics.time/(sectionscomp+(engine.ending==0).toInt())).toTimeStr,
+					engine, x2, 18, (engine.statistics.time/(sectionsDone+(engine.ending==0).toInt())).toTimeStr,
 					2f
 				)
 			}
@@ -516,12 +508,12 @@ class GrandS2:AbstractMode() {
 	/* 移動中の処理 */
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
+		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
 			// Level up
-			levelUp(engine, (engine.statistics.level<nextseclv-1).toInt())
+			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
 		}
 		if(engine.ending==0&&engine.statc[0]>0&&(version>=1||!engine.holdDisable))
-			lvupflag = false
+			lvupFlag = false
 
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable) {
 			// せり上がりカウント
@@ -539,8 +531,8 @@ class GrandS2:AbstractMode() {
 		}
 
 		// Endingスタート
-		if(engine.ending==2&&!rollstarted) {
-			rollstarted = true
+		if(engine.ending==2&&!rollStarted) {
+			rollStarted = true
 			engine.big = true
 			owner.musMan.bgm = BGM.Ending(2)
 		}
@@ -551,9 +543,9 @@ class GrandS2:AbstractMode() {
 	/* ARE中の処理 */
 	override fun onARE(engine:GameEngine):Boolean {
 		// 最後の frame
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
-			levelUp(engine, (engine.statistics.level<nextseclv-1).toInt())
-			lvupflag = true
+		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
+			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
+			lvupFlag = true
 		}
 
 		return false
@@ -571,12 +563,12 @@ class GrandS2:AbstractMode() {
 		setSpeed(engine)
 
 		if(lu<=0) return
-		if(lA==nextseclv-1&&secAlert) engine.playSE("levelstop")
+		if(lA==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 		// BGM fadeout
-		if(tableBGMFadeout.any {it in lb..lA}) owner.musMan.fadesw = true
+		if(tableBGMFadeout.any {it in lb..lA}) owner.musMan.fadeSW = true
 		// BGM切り替え
 		if(tableBGMChange.any {it in lb..lA}) {
-			owner.musMan.fadesw = false
+			owner.musMan.fadeSW = false
 			owner.musMan.bgm = BGM.GrandTS(calcBgmLv(lA))
 		}
 	}
@@ -604,16 +596,16 @@ class GrandS2:AbstractMode() {
 				) {
 					engine.playSE("medal1")
 					medalSK++
-					dectemp += 3+medalSK*2// 3 8 15
+					decTemp += 3+medalSK*2// 3 8 15
 				}
 
 			// AC medal
 			if(engine.field.isEmpty) {
-				dectemp += li*25
-				if(li==3) dectemp += 25
-				if(li==4) dectemp += 150
+				decTemp += li*25
+				if(li==3) decTemp += 25
+				if(li==4) decTemp += 150
 				if(medalAC<3) {
-					dectemp += 3+medalAC*4// 3 10 21
+					decTemp += 3+medalAC*4// 3 10 21
 					engine.playSE("medal${++medalAC}")
 				}
 			}
@@ -633,15 +625,15 @@ class GrandS2:AbstractMode() {
 			} else if(engine.combo>=3&&medalCO<1) {
 				engine.playSE("medal1")
 				medalCO = 1
-				dectemp += 3// 3
+				decTemp += 3// 3
 			} else if(engine.combo>=4&&medalCO<2) {
 				engine.playSE("medal2")
 				medalCO = 2
-				dectemp += 4// 7
+				decTemp += 4// 7
 			} else if(engine.combo>=5&&medalCO<3) {
 				engine.playSE("medal3")
 				medalCO = 3
-				dectemp += 5// 12
+				decTemp += 5// 12
 			}
 
 			// せり上がりカウント減少
@@ -658,32 +650,31 @@ class GrandS2:AbstractMode() {
 				engine.statistics.level = 1300
 				engine.timerActive = false
 				engine.ending = 1
-				rollclear = 1
+				rollClear = 1
 
 				// Section Timeを記録
-				sectionlasttime = sectionTime[levelb/100]
-				sectionscomp++
-				setAverageSectionTime()
-				dectemp++
+				sectionLastTime = sectionTime[levelb/100]
+				sectionsDone++
+				decTemp++
 				// ST medal
 				stMedalCheck(engine, levelb/100)
 
-				if(sectionlasttime>tableTimeRegret[levelb/100]) {
+				if(sectionLastTime>tableTimeRegret[levelb/100]) {
 					// REGRET判定
-					regretdispframe = 180
+					regretDispFrame = 180
 					engine.playSE("regret")
 				} else {
 					// 段位上昇
 					grade++
 					if(grade>13) grade = 13
-					gradeflash = 180
+					gradeFlash = 180
 				}
-			} else if(nextseclv==500&&engine.statistics.level>=500&&qualify>0&&engine.statistics.time>qualify||nextseclv==1000&&engine.statistics.level>=1000&&qualify>0&&engine.statistics.time>qualify*2) {
+			} else if(nextSecLv==500&&engine.statistics.level>=500&&qualify>0&&engine.statistics.time>qualify||nextSecLv==1000&&engine.statistics.level>=1000&&qualify>0&&engine.statistics.time>qualify*2) {
 				// level500/1000とりカン
 				engine.playSE("endingstart")
 
-				if(nextseclv==500) engine.statistics.level = 500
-				if(nextseclv==1000) engine.statistics.level = 1000
+				if(nextSecLv==500) engine.statistics.level = 500
+				if(nextSecLv==1000) engine.statistics.level = 1000
 
 				engine.gameEnded()
 				engine.staffrollEnable = false
@@ -692,36 +683,32 @@ class GrandS2:AbstractMode() {
 				secretGrade = engine.field.secretGrade
 
 				// Section Timeを記録
-				sectionlasttime = sectionTime[levelb/100]
-				sectionscomp++
-				setAverageSectionTime()
+				sectionLastTime = sectionTime[levelb/100]
+				sectionsDone++
 
 				// ST medal
 				stMedalCheck(engine, levelb/100)
 
-				if(sectionlasttime>tableTimeRegret[levelb/100]) {
+				if(sectionLastTime>tableTimeRegret[levelb/100]) {
 					// REGRET判定
-					regretdispframe = 180
+					regretDispFrame = 180
 					engine.playSE("regret")
 				} else {
 					// 段位上昇
 					grade++
 					if(grade>13) grade = 13
-					gradeflash = 180
+					gradeFlash = 180
 				}
-			} else if(engine.statistics.level>=nextseclv) {
+			} else if(engine.statistics.level>=nextSecLv) {
 				// Next Section
 				engine.playSE("levelup")
 
 				// Background切り替え
-				owner.bgMan.fadesw = true
-				owner.bgMan.fadecount = 0
-				owner.bgMan.fadebg = 20+nextseclv/100
+				owner.bgMan.nextBg = 20+nextSecLv/100
 
 				// Section Timeを記録
-				sectionlasttime = sectionTime[levelb/100]
-				sectionscomp++
-				setAverageSectionTime()
+				sectionLastTime = sectionTime[levelb/100]
+				sectionsDone++
 
 				// ST medal
 				stMedalCheck(engine, levelb/100)
@@ -730,19 +717,19 @@ class GrandS2:AbstractMode() {
 				if(engine.statistics.level>=1000) engine.bone = true
 
 				// Update level for next section
-				nextseclv += 100
+				nextSecLv += 100
 
-				if(sectionlasttime>tableTimeRegret[levelb/100]) {
+				if(sectionLastTime>tableTimeRegret[levelb/100]) {
 					// REGRET判定
-					regretdispframe = 180
+					regretDispFrame = 180
 					engine.playSE("regret")
 				} else {
 					// 段位上昇
 					grade++
 					if(grade>13) grade = 13
-					gradeflash = 180
+					gradeFlash = 180
 				}
-			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
 			// Calculate score
 
@@ -759,36 +746,36 @@ class GrandS2:AbstractMode() {
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
 		// 段位上昇時のフラッシュ
-		if(gradeflash>0) gradeflash--
+		if(gradeFlash>0) gradeFlash--
 
 		// REGRET表示
-		if(regretdispframe>0) regretdispframe--
+		if(regretDispFrame>0) regretDispFrame--
 
 		// Section Time増加
 		if(engine.timerActive&&engine.ending==0) {
 			val section = engine.statistics.level/100
 
-			if(section>=0&&section<sectionTime.size) sectionTime[section]++
+			if(section>=0&&section<sectionTime.size) sectionTime[section] = engine.statistics.time-sectionTime.take(section).sum()
 		}
 
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
-			rolltime++
+			rollTime++
 
 			// Time meter
-			val remainRollTime = ROLLTIMELIMIT-rolltime
+			val remainRollTime = ROLLTIMELIMIT-rollTime
 			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 
 			// Roll 終了
-			if(rolltime>=ROLLTIMELIMIT) {
+			if(rollTime>=ROLLTIMELIMIT) {
 				secretGrade = engine.field.secretGrade
-				rollclear = 2
+				rollClear = 2
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
 			}
-		} else if(engine.statistics.level==nextseclv-1)
+		} else if(engine.statistics.level==nextSecLv-1)
 			engine.meterColor = if(engine.meterColor==-0x1)
 				-0x10000
 			else
@@ -802,18 +789,18 @@ class GrandS2:AbstractMode() {
 
 			val time = engine.statistics.time
 			if(time<6000)
-				dectemp -= 3
+				decTemp -= 3
 			else {
-				dectemp++
-				if(time%3600<=60||time%3600>=3540) dectemp++
+				decTemp++
+				if(time%3600<=60||time%3600>=3540) decTemp++
 			}
 
-			if(sectionscomp==0) dectemp -= 4
+			if(sectionsDone==0) decTemp -= 4
 			// Blockの表示を元に戻す
 			engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NORMAL
 			// 裏段位
 			secretGrade = engine.field.secretGrade
-			decoration += dectemp+secretGrade
+			decoration += decTemp+secretGrade
 		}
 		return false
 	}
@@ -825,8 +812,8 @@ class GrandS2:AbstractMode() {
 		when(engine.statc[1]) {
 			0 -> {
 				var gcolor = COLOR.WHITE
-				if(rollclear==1||rollclear==3) gcolor = COLOR.GREEN
-				if(rollclear==2||rollclear==4) gcolor = COLOR.ORANGE
+				if(rollClear==1||rollClear==3) gcolor = COLOR.GREEN
+				if(rollClear==2||rollClear==4) gcolor = COLOR.ORANGE
 				receiver.drawMenuFont(engine, 0, 2, "GRADE", COLOR.RED)
 				receiver.drawMenuGrade(engine, 0, 2, tableGradeName[grade], gcolor, 2f)
 
@@ -847,9 +834,9 @@ class GrandS2:AbstractMode() {
 					if(sectionTime[i]>0)
 						receiver.drawMenuFont(engine, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
 
-				if(sectionavgtime>0) {
+				if(sectionAvgTime>0) {
 					receiver.drawMenuFont(engine, 0, 16, "AVERAGE", COLOR.RED)
-					receiver.drawMenuFont(engine, 2, 17, sectionavgtime.toTimeStr)
+					receiver.drawMenuFont(engine, 2, 17, sectionAvgTime.toTimeStr)
 				}
 			}
 			2 -> {
@@ -862,17 +849,17 @@ class GrandS2:AbstractMode() {
 				drawResultStats(engine, receiver, 4, COLOR.RED, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
 
 				receiver.drawMenuFont(engine, 0, 15, "DECORATION", COLOR.RED)
-				receiver.drawMenuFont(engine, 0, 16, String.format("%10d", dectemp), COLOR.WHITE)
+				receiver.drawMenuFont(engine, 0, 16, String.format("%10d", decTemp), COLOR.WHITE)
 			}
 		}
 	}
 
 	/* 結果画面の処理 */
 	override fun onResult(engine:GameEngine):Boolean {
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		owner.musMan.bgm = when {
 			engine.ending==0 -> BGM.Result(0)
-			engine.ending==2&&rollclear>0 -> BGM.Result(3)
+			engine.ending==2&&rollClear>0 -> BGM.Result(3)
 			else -> BGM.Result(2)
 		}
 		// ページ切り替え
@@ -902,7 +889,7 @@ class GrandS2:AbstractMode() {
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
 			owner.statsProp.setProperty("decoration", decoration)
-			updateRanking(grade, engine.statistics.level, engine.statistics.time, rollclear)
+			updateRanking(grade, engine.statistics.level, engine.statistics.time, rollClear)
 			if(medalST==3) updateBestSectionTime()
 
 			if(rankingRank!=-1||medalST==3) return true
@@ -925,14 +912,14 @@ class GrandS2:AbstractMode() {
 				rankingGrade[i] = rankingGrade[i-1]
 				rankingLevel[i] = rankingLevel[i-1]
 				rankingTime[i] = rankingTime[i-1]
-				rankingRollclear[i] = rankingRollclear[i-1]
+				rankingRollClear[i] = rankingRollClear[i-1]
 			}
 
 			// Add new data
 			rankingGrade[rankingRank] = gr
 			rankingLevel[rankingRank] = lv
 			rankingTime[rankingRank] = time
-			rankingRollclear[rankingRank] = clear
+			rankingRollClear[rankingRank] = clear
 		}
 	}
 
@@ -945,13 +932,13 @@ class GrandS2:AbstractMode() {
 	 */
 	private fun checkRanking(gr:Int, lv:Int, time:Int, clear:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(clear>rankingRollclear[i])
+			if(clear>rankingRollClear[i])
 				return i
-			else if(clear==rankingRollclear[i]&&gr>rankingGrade[i])
+			else if(clear==rankingRollClear[i]&&gr>rankingGrade[i])
 				return i
-			else if(clear==rankingRollclear[i]&&gr==rankingGrade[i]&&lv>rankingLevel[i])
+			else if(clear==rankingRollClear[i]&&gr==rankingGrade[i]&&lv>rankingLevel[i])
 				return i
-			else if(clear==rankingRollclear[i]&&gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
+			else if(clear==rankingRollClear[i]&&gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
 
 		return -1
 	}

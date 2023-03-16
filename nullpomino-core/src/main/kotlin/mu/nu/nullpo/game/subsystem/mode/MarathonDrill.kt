@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -70,7 +70,7 @@ class MarathonDrill:NetDummyMode() {
 	private var startLevel = 0
 
 	/** BGM number */
-	private var bgmno = 0
+	private var bgmId = 0
 
 	/** Version */
 	private var version = 0
@@ -180,7 +180,7 @@ class MarathonDrill:NetDummyMode() {
 						if(startLevel>19) startLevel = 0
 						engine.owner.bgMan.bg = startLevel
 					}
-					3 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					3 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					4 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
 				}
 
@@ -225,7 +225,7 @@ class MarathonDrill:NetDummyMode() {
 			else {
 				drawMenu(engine, it, 0, COLOR.BLUE, 0, "GAME TYPE" to if(goalType==0) "NORMAL" else "REALTIME")
 				drawMenuCompact(engine, it, "HEIGHT" to garbageHeight, "Level" to startLevel+1)
-				drawMenuBGM(engine, it, bgmno)
+				drawMenuBGM(engine, it, bgmId)
 				drawMenuCompact(engine, it, "DAS" to engine.speed.das)
 			}
 		}
@@ -248,7 +248,7 @@ class MarathonDrill:NetDummyMode() {
 
 		setSpeed(engine)
 
-		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmno]
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.values[bgmId]
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
@@ -320,8 +320,8 @@ class MarathonDrill:NetDummyMode() {
 
 			if(garbagePending>0) {
 				val fontColor = when {
-					garbagePending>=3 -> COLOR.ORANGE
 					garbagePending>=4 -> COLOR.RED
+					garbagePending>=3 -> COLOR.ORANGE
 					else -> COLOR.YELLOW
 				}
 				val strTempGarbage = String.format("%2d", garbagePending)
@@ -416,7 +416,7 @@ class MarathonDrill:NetDummyMode() {
 			get += cln*100
 			// Decrease waiting garbage
 			val pow = calcPower(engine, ev, true)
-			garbageTimer -= maxOf(0, 60-engine.statistics.level*2-cmb*7)+pow*20
+			garbageTimer -= maxOf(0, 60-engine.statistics.level*2-cmb*7)+pow*maxOf(1, 30-engine.statistics.level)/2
 			if(goalType==GOALTYPE_NORMAL)
 				while(garbagePending>0&&garbageTimer<0) {
 					garbageTimer += getGarbageMaxTime(engine.statistics.level)
@@ -504,19 +504,17 @@ class MarathonDrill:NetDummyMode() {
 
 		if(engine.gameActive&&engine.timerActive) {
 			// Levelup
-			var lvupflag = false
+			var lvupFlag = false
 			garbageTotal += lines
 
 			while(garbageTotal>=garbageNextLevelLines&&engine.statistics.level<19) {
 				garbageNextLevelLines += LEVEL_GARBAGE_LINES
 				engine.statistics.level++
-				lvupflag = true
+				lvupFlag = true
 			}
 
-			if(lvupflag) {
-				owner.bgMan.fadesw = true
-				owner.bgMan.fadecount = 0
-				owner.bgMan.fadebg = engine.statistics.level
+			if(lvupFlag) {
+				owner.bgMan.nextBg = engine.statistics.level
 				setSpeed(engine)
 				engine.playSE("levelup")
 			}
@@ -530,7 +528,7 @@ class MarathonDrill:NetDummyMode() {
 	}
 
 	override fun onResult(engine:GameEngine):Boolean {
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		owner.musMan.bgm = if(engine.statistics.time<10800) BGM.Result(1) else BGM.Result(2)
 
 		return super.onResult(engine)
@@ -576,7 +574,7 @@ class MarathonDrill:NetDummyMode() {
 	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		goalType = prop.getProperty("digchallenge.goalType", GOALTYPE_NORMAL)
 		startLevel = prop.getProperty("digchallenge.startLevel", 0)
-		bgmno = prop.getProperty("digchallenge.bgmno", 0)
+		bgmId = prop.getProperty("digchallenge.bgmno", 0)
 		owner.engine[0].speed.das = prop.getProperty("digchallenge.das", 11)
 		version = prop.getProperty("digchallenge.version", 0)
 	}
@@ -584,7 +582,7 @@ class MarathonDrill:NetDummyMode() {
 	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("digchallenge.goalType", goalType)
 		prop.setProperty("digchallenge.startLevel", startLevel)
-		prop.setProperty("digchallenge.bgmno", bgmno)
+		prop.setProperty("digchallenge.bgmno", bgmId)
 		prop.setProperty("digchallenge.das", owner.engine[0].speed.das)
 		prop.setProperty("digchallenge.version", version)
 	}
@@ -631,7 +629,7 @@ class MarathonDrill:NetDummyMode() {
 	/** NET: Send various in-game stats of [engine] */
 	override fun netSendStats(engine:GameEngine) {
 		val bg =
-			if(engine.owner.bgMan.fadesw) engine.owner.bgMan.fadebg else engine.owner.bgMan.bg
+			if(engine.owner.bgMan.fadeSW) engine.owner.bgMan.nextBg else engine.owner.bgMan.bg
 		val msg = "game\tstats\t"+
 			"${engine.statistics.scoreLine}\t${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"+
 			"${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t${engine.statistics.level}\t"+
@@ -687,7 +685,7 @@ class MarathonDrill:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	override fun netSendOptions(engine:GameEngine) {
-		val msg = "game\toption\t$goalType\t$startLevel\t$bgmno\t${engine.speed.das}\n"
+		val msg = "game\toption\t$goalType\t$startLevel\t$bgmId\t${engine.speed.das}\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
 
@@ -695,7 +693,7 @@ class MarathonDrill:NetDummyMode() {
 	override fun netRecvOptions(engine:GameEngine, message:List<String>) {
 		goalType = message[4].toInt()
 		startLevel = message[5].toInt()
-		bgmno = message[6].toInt()
+		bgmId = message[6].toInt()
 		engine.speed.das = message[7].toInt()
 	}
 

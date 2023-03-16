@@ -50,7 +50,7 @@ class VSSprintDig:AbstractMode() {
 	private var messiness = IntArray(0)
 
 	/** BGM number */
-	private var bgmno = 0
+	private var bgmId = 0
 
 	/** Sound effects ON/OFF */
 	private var enableSE = BooleanArray(0)
@@ -79,9 +79,10 @@ class VSSprintDig:AbstractMode() {
 
 	/* Mode init */
 	override fun modeInit(manager:GameManager) {
+		super.modeInit(manager)
 		goalLines = IntArray(MAX_PLAYERS)
 		messiness = IntArray(MAX_PLAYERS)
-		bgmno = 0
+		bgmId = 0
 		enableSE = BooleanArray(MAX_PLAYERS)
 		presetNumber = IntArray(MAX_PLAYERS)
 		winnerID = -1
@@ -124,7 +125,7 @@ class VSSprintDig:AbstractMode() {
 		val playerID = engine.playerID
 		goalLines[playerID] = prop.getProperty("vsdigrace.goalLines.p$playerID", 18)
 		messiness[playerID] = prop.getProperty("vsdigrace.garbagePercent.p$playerID", 100)
-		bgmno = prop.getProperty("vsdigrace.bgmno", 0)
+		bgmId = prop.getProperty("vsdigrace.bgmno", 0)
 		enableSE[playerID] = prop.getProperty("vsdigrace.enableSE.p$playerID", true)
 		presetNumber[playerID] = prop.getProperty("vsdigrace.presetNumber.p$playerID", 0)
 	}
@@ -134,7 +135,7 @@ class VSSprintDig:AbstractMode() {
 		val playerID = engine.playerID
 		prop.setProperty("vsdigrace.goalLines.p$playerID", goalLines[playerID])
 		prop.setProperty("vsdigrace.garbagePercent.p$playerID", messiness[playerID])
-		prop.setProperty("vsdigrace.bgmno", bgmno)
+		prop.setProperty("vsdigrace.bgmno", bgmId)
 		prop.setProperty("vsdigrace.enableSE.p$playerID", enableSE[playerID])
 		prop.setProperty("vsdigrace.presetNumber.p$playerID", presetNumber[playerID])
 	}
@@ -195,7 +196,7 @@ class VSSprintDig:AbstractMode() {
 						if(messiness[pid]>100) messiness[pid] = 0
 					}
 					11 -> enableSE[pid] = !enableSE[pid]
-					12 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					12 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 				}
 			}
 
@@ -255,7 +256,7 @@ class VSSprintDig:AbstractMode() {
 					"CHANGERATE" to "${messiness[pid]}%",
 					"SE" to enableSE[pid]
 				)
-				drawMenu(engine, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM" to BGM.values[bgmno])
+				drawMenu(engine, receiver, 6, EventReceiver.COLOR.PINK, 12, "BGM" to BGM.values[bgmId])
 			}
 		} else
 			receiver.drawMenuFont(engine, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
@@ -278,7 +279,7 @@ class VSSprintDig:AbstractMode() {
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
 		engine.enableSE = enableSE[engine.playerID]
-		if(engine.playerID==1) owner.musMan.bgm = BGM.values[bgmno]
+		if(engine.playerID==1) owner.musMan.bgm = BGM.values[bgmId]
 
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		engine.meterValue = 1f
@@ -389,8 +390,8 @@ class VSSprintDig:AbstractMode() {
 
 		// 1st/2nd
 		if(remainLines<enemyRemainLines)
-			receiver.drawMenuFont(engine, -2, 22, "1ST", EventReceiver.COLOR.ORANGE)
-		else if(remainLines>enemyRemainLines) receiver.drawMenuFont(engine, -2, 22, "2ND", EventReceiver.COLOR.WHITE)
+			receiver.drawMenuFont(engine, -3, 22, "1ST", EventReceiver.COLOR.ORANGE)
+		else if(remainLines>enemyRemainLines) receiver.drawMenuFont(engine, -3, 22, "2ND", EventReceiver.COLOR.WHITE)
 
 		// Timer
 		if(pid==0) receiver.drawDirectFont(256, 16, engine.statistics.time.toTimeStr)

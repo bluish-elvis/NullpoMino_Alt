@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021-2022,
+ * Copyright (c) 2021-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -48,7 +48,7 @@ import zeroxfc.nullpo.custom.libs.FlyInOutText
 import kotlin.random.Random
 
 class ScoreTrial:MarathonModeBase() {
-	// Ingame Timer
+	// In-game Timer
 	private var mainTimer = 0
 	// Ranking stuff
 	private val rankingScore = List(MAX_DIFFICULTIES) {MutableList(RANKING_MAX) {0L}}
@@ -320,7 +320,7 @@ class ScoreTrial:MarathonModeBase() {
 		o = false
 		setSpeed(engine)
 		owner.musMan.bgm = tableBGM[difficultySelected][0]
-		owner.musMan.fadesw = false
+		owner.musMan.fadeSW = false
 		if(netIsWatch) {
 			owner.musMan.bgm = BGMStatus.BGM.Silent
 		}
@@ -592,9 +592,9 @@ class ScoreTrial:MarathonModeBase() {
 			// Level up
 			engine.statistics.level++
 
-			// owner.backgroundStatus.fadesw = true;
-			// owner.backgroundStatus.fadecount = 0;
-			// owner.backgroundStatus.fadebg = engine.statistics.level / 5;
+			// owner.backgroundStatus.fadeSW = true;
+			// owner.backgroundStatus.fadeCount = 0;
+			// owner.backgroundStatus.nextBg = engine.statistics.level / 5;
 			if(engine.statistics.level==200) {
 				owner.bgMan.bg = 19
 				engine.playSE("endingstart")
@@ -622,8 +622,8 @@ class ScoreTrial:MarathonModeBase() {
 					2 -> goalLine += 8
 				}
 
-				// owner.backgroundStatus.fadesw = true;
-				// owner.backgroundStatus.fadecount = 0;
+				// owner.backgroundStatus.fadeSW = true;
+				// owner.backgroundStatus.fadeCount = 0;
 				owner.bgMan.bg = engine.statistics.level/5
 				if(engine.statistics.level==lMax&&difficultySelected!=2) {
 					owner.bgMan.bg = 19

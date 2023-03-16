@@ -94,7 +94,7 @@ import kotlin.random.Random
 	private var lineflagHidden = MutableList(hiddenHeight) {false}
 
 	/** HURRY UP地面のcount */
-	var hurryupFloorLines = 0; private set
+	var hurryUpFloorLines = 0; private set
 
 	/** Number of total blocks above minimum required in cint clears */
 	var colorClearExtraCount = 0
@@ -336,9 +336,9 @@ import kotlin.random.Random
 	// not single blocks.
 	val howManySquareClears:List<Int>
 		get() = findBlocks {!it.getAttribute(ATTRIBUTE.GARBAGE)&&(it.isGoldSquareBlock||it.isSilverSquareBlock)}
-			.filter {(y, _) -> getLineFlag(y)}.values.let {
-				listOf(it.sumOf {it.values.count {it.isGoldSquareBlock}},
-					it.sumOf {it.values.count {it.isSilverSquareBlock}}
+			.filter {(y, _) -> getLineFlag(y)}.values.let {y ->
+				listOf(y.sumOf {x -> x.values.count {it.isGoldSquareBlock}},
+					y.sumOf {x -> x.values.count {it.isSilverSquareBlock}}
 				)
 			}
 
@@ -346,7 +346,7 @@ import kotlin.random.Random
 	 * @return HURRY UPの地面を除いたField height
 	 */
 	val heightWithoutHurryupFloor:Int
-		get() = height-hurryupFloorLines
+		get() = height-hurryUpFloorLines
 
 	/** Called at initialization */
 	fun reset() {
@@ -354,7 +354,7 @@ import kotlin.random.Random
 		blockHidden = List(hiddenHeight) {MutableList(width) {null}}
 		lineflagField = MutableList(height) {false}
 		lineflagHidden = MutableList(hiddenHeight) {false}
-		hurryupFloorLines = 0
+		hurryUpFloorLines = 0
 
 		colorClearExtraCount = 0
 		colorsCleared = 0
@@ -383,7 +383,7 @@ import kotlin.random.Random
 			blockHidden = o.blockHidden.map {x -> x.map {y -> y?.let {Block(it)}}.toMutableList()}
 			lineflagField = o.lineflagField.toMutableList()
 			lineflagHidden = o.lineflagField.toMutableList()
-			hurryupFloorLines = o.hurryupFloorLines
+			hurryUpFloorLines = o.hurryUpFloorLines
 
 			colorClearExtraCount = o.colorClearExtraCount
 			colorsCleared = o.colorsCleared
@@ -519,8 +519,7 @@ import kotlin.random.Random
 	fun findBlocks(inHide:Boolean = true, cond:(b:Block)->Boolean):Map<Int, Map<Int, Block>> =
 		findBlocks((if(inHide) -1*hiddenHeight else 0) until height, cond)
 	/** Remove blocks from specific location
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
+	 * @param pos [X,y] coordinate-array
 	 * @return Previous Block if successful, null if failed
 	 */
 	@JvmName("delBlocksi") fun delBlocks(pos:Map<Int, Collection<Int>>) =
@@ -643,7 +642,7 @@ import kotlin.random.Random
 				for(it in getRow(i)) {
 					it?.setAttribute(true, ATTRIBUTE.ERASE)
 				}
-			} else if(i>=lines.sorted().first()) inv = true
+			} else if(i>=lines.minOf {it}) inv = true
 		}
 		return lines.size
 	}
@@ -1811,11 +1810,11 @@ import kotlin.random.Random
 					setBlock(j, heightWithoutHurryupFloor-1, blk)
 				}
 
-				hurryupFloorLines++
+				hurryUpFloorLines++
 			}
 		else if(lines<0) {
-			val l = minOf(lines, hurryupFloorLines)
-			hurryupFloorLines -= l
+			val l = minOf(lines, hurryUpFloorLines)
+			hurryUpFloorLines -= l
 			cutLine(height-1, l)
 		}
 	}
@@ -2333,7 +2332,7 @@ import kotlin.random.Random
 		})
 
 	fun shuffleColors(blockColors:List<Block.COLOR>, numColors:Int, rand:Random) {
-		var bC = blockColors.toMutableList()
+		val bC = blockColors.toMutableList()
 		val maxX = minOf(bC.size, numColors)
 		var j:Int
 		var i = maxX

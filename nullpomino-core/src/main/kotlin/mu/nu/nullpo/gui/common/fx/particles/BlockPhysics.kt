@@ -60,13 +60,6 @@ class BlockPhysics(x:Float = 0f, y:Float = 0f, velocity:Vector = Vector(0, 0),
 	}
 
 	override fun draw(i:Int, r:AbstractRenderer) {
-		/**
-		 * Draw instance blocks to engine.
-		 *
-		 * @param receiver Block renderer.
-		 * @param engine   Current GameEngine.
-		 * @param playerID Current player ID.
-		 */
 		for(y in 0 until blockSizeY) {
 			for(x in 0 until blockSizeX) {
 				r.drawBlock(minX+x*BS, minY+y*BS, block)

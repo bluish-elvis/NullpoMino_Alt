@@ -275,11 +275,11 @@ class AvalancheVS:AvalancheVSDummyMode() {
 					}
 					15 -> {
 						if(m>10)
-							hurryupSeconds[playerID] += change*m/10
+							hurryUpSeconds[playerID] += change*m/10
 						else
-							hurryupSeconds[playerID] += change
-						if(hurryupSeconds[playerID]<0) hurryupSeconds[playerID] = 300
-						if(hurryupSeconds[playerID]>300) hurryupSeconds[playerID] = 0
+							hurryUpSeconds[playerID] += change
+						if(hurryUpSeconds[playerID]<0) hurryUpSeconds[playerID] = 300
+						if(hurryUpSeconds[playerID]>300) hurryUpSeconds[playerID] = 0
 					}
 					16 -> newChainPower[playerID] = !newChainPower[playerID]
 					17 -> {
@@ -384,9 +384,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 					35 -> ojamaMeter[playerID] = feverThreshold[playerID]>0||!ojamaMeter[playerID]
 					36 -> {
 						useMap[playerID] = !useMap[playerID]
-						if(!useMap[playerID]) {
-							if(engine.field!=null) engine.field.reset()
-						} else
+						if(!useMap[playerID]) engine.field.reset() else
 							loadMapPreview(engine, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 					}
 					37 -> {
@@ -405,7 +403,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						loadMapPreview(engine, if(mapNumber[playerID]<0) 0 else mapNumber[playerID], true)
 					} else
 						mapNumber[playerID] = -1
-					39 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					39 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 					40 -> enableSE[playerID] = !enableSE[playerID]
 					41 -> bigDisplay = !bigDisplay
 					42, 43 -> presetNumber[playerID] = rangeCursor(presetNumber[playerID]+change, 0, 99)
@@ -526,7 +524,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						"MIN CHAIN" to rensaShibari[pid],
 						"CLEAR SIZE" to engine.colorClearSize,
 						"OJAMA RATE" to ojamaRate[pid],
-						"HURRYUP" to if(hurryupSeconds[pid]==0) "NONE" else "${hurryupSeconds[pid]}SEC",
+						"HURRYUP" to if(hurryUpSeconds[pid]==0) "NONE" else "${hurryUpSeconds[pid]}SEC",
 						"CHAINPOWER" to if(newChainPower[pid]) "FEVER" else "CLASSIC"
 					)
 
@@ -587,7 +585,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						"MAP SET" to mapSet[pid],
 						"MAP NO." to if(mapNumber[pid]<0) "RANDOM" else "${mapNumber[pid]}/${mapMaxNo[pid]-1}"
 					)
-					drawMenu(engine, receiver, COLOR.COBALT, "BGM" to BGM.values[bgmno])
+					drawMenu(engine, receiver, COLOR.COBALT, "BGM" to BGM.values[bgmId])
 					drawMenu(engine, receiver, COLOR.YELLOW, "SE" to enableSE[pid])
 					drawMenu(engine, receiver, COLOR.COBALT, "BIG DISP" to bigDisplay)
 					drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
@@ -785,8 +783,8 @@ class AvalancheVS:AvalancheVSDummyMode() {
 		if(zenKeshi[pid]&&zenKeshiType[pid]==ZENKESHI_MODE_ON) pow += zenKeshiOjama[pid]
 		//Add ojama
 		var rate = ojamaRate[pid]
-		if(hurryupSeconds[pid]>0&&engine.statistics.time>hurryupSeconds[pid])
-			rate = rate shr engine.statistics.time/(hurryupSeconds[pid]*60)
+		if(hurryUpSeconds[pid]>0&&engine.statistics.time>hurryUpSeconds[pid])
+			rate = rate shr engine.statistics.time/(hurryUpSeconds[pid]*60)
 		if(rate<=0) rate = 1
 		pow += if(inFever[pid])
 			(pts*feverPower[pid]+10*rate-1)/(10*rate)

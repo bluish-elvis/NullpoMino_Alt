@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022-2022,
+ * Copyright (c) 2022-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2022-2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2022-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -83,7 +83,7 @@ class ScoreAttackRun:AbstractMode() {
 		"gametype", "GAME MODE", COLOR.BLUE, 0, Gametype.all.map {it.label}
 	)
 	private var gametype:Int by DelegateMenuItem(itemMode)
-	override val name:String get() = "ARCADE SCORE ATTACK"
+	override val name:String get() = "Arcade Score Attack"
 	override val menu = MenuList("arcadescoreattack", itemMode)
 
 	override fun loadRanking(prop:CustomProperties) {
@@ -228,7 +228,7 @@ class ScoreAttackRun:AbstractMode() {
 
 	override fun renderLast(engine:GameEngine) {
 		if(!owner.menuOnly) {
-			receiver.drawScoreFont(engine, 0, 0, "ARCADE SCORE ATTACK", 8f)
+			receiver.drawScoreFont(engine, 0, 0, name, 8f)
 			if(gametype!=0) receiver.drawScoreFont(engine, 2, 1, "(${GAMETYPE_LABELS[gametype]} MODE)", 9f)
 
 			var colour:Int
@@ -355,20 +355,18 @@ class ScoreAttackRun:AbstractMode() {
 
 		if(tableBGMChange[bgmLv]!=-1) {
 			if(engine.statistics.lines>=tableBGMChange[bgmLv]-5) {
-				owner.musMan.fadesw = true
+				owner.musMan.fadeSW = true
 			}
 			if(engine.statistics.lines>=tableBGMChange[bgmLv]) {
 				++bgmLv
 				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
-				owner.musMan.fadesw = false
+				owner.musMan.fadeSW = false
 			}
 		}
 		if(engine.statistics.lines>=tableLevelChange[engine.statistics.level+1]&&engine.statistics.level<19) {
 			++engine.statistics.level
 			currenttime += timebonus
-			owner.bgMan.fadesw = true
-			owner.bgMan.fadecount = 0
-			owner.bgMan.fadebg = engine.statistics.level
+			owner.bgMan.nextBg = engine.statistics.level
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}

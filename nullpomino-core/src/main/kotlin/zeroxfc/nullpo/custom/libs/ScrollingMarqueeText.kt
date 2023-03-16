@@ -1,13 +1,16 @@
 /*
+ * Copyright (c) 2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2010)
+ * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
+ *
+ * Kotlin converted and modified by Venom=Nhelv
  *
  * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino.
+ * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
  *
  * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
- * Repository: https://github.com/Shots243/ModePile
+ * Original Repository: https://github.com/Shots243/ModePile
  *
  * When using this library in a mode / library pack of your own, the following
  * conditions must be satisfied:
@@ -46,9 +49,7 @@ class ScrollingMarqueeText(  // Strings that make up the headings
 	/**
 	 * Automatically draw the roll at a certain Y value.
 	 *
-	 * @param engine   Current GameEngine instance
 	 * @param receiver Current renderer
-	 * @param playerID Current player ID
 	 * @param y        Y-coordinate to draw on
 	 * @param size     Size of text to draw with
 	 * @param progress Progress of the roll (0: start, 1: end)

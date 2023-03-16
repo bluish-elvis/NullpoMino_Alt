@@ -148,10 +148,10 @@ class NetRoomInfo:Serializable {
 	//public boolean useTankMode = false;
 
 	/** Hurryup開始までの秒count(-1でHurryupなし) */
-	var hurryupSeconds = -1
+	var hurryUpSeconds = -1
 
 	/** Hurryup後に何回Blockを置くたびに床をせり上げるか */
-	var hurryupInterval = 5
+	var hurryUpInterval = 5
 
 	/** Automatically start timer type(false=NullpoMino true=TNET2) */
 	var autoStartTNET2 = false
@@ -320,8 +320,8 @@ class NetRoomInfo:Serializable {
 		autoStartActive = n.autoStartActive
 		isSomeoneCancelled = n.isSomeoneCancelled
 		reduceLineSend = n.reduceLineSend
-		hurryupSeconds = n.hurryupSeconds
-		hurryupInterval = n.hurryupInterval
+		hurryUpSeconds = n.hurryUpSeconds
+		hurryUpInterval = n.hurryUpInterval
 		autoStartTNET2 = n.autoStartTNET2
 		disableTimerAfterSomeoneCancelled = n.disableTimerAfterSomeoneCancelled
 		useMap = n.useMap
@@ -383,8 +383,8 @@ class NetRoomInfo:Serializable {
 		counter = rdata[21].toBoolean()
 		bravo = rdata[22].toBoolean()
 		reduceLineSend = rdata[23].toBoolean()
-		hurryupSeconds = rdata[24].toInt()
-		hurryupInterval = rdata[25].toInt()
+		hurryUpSeconds = rdata[24].toInt()
+		hurryUpInterval = rdata[25].toInt()
 		autoStartTNET2 = rdata[26].toBoolean()
 		disableTimerAfterSomeoneCancelled = rdata[27].toBoolean()
 		useMap = rdata[28].toBoolean()
@@ -419,7 +419,7 @@ class NetRoomInfo:Serializable {
 			"$roomID", NetUtil.urlEncode(strName), "$maxPlayers", "$playerSeatedCount", "$spectatorCount", "$playerListCount",
 			"$playing", "$ruleLock", NetUtil.urlEncode(ruleName), "$autoStartSeconds", "$gravity", "$denominator", "$are", "$areLine",
 			"$lineDelay", "$lockDelay", "$das", "$twistEnableType", "$b2b", "$combo", "$rensaBlock", "$counter", "$bravo",
-			"$reduceLineSend", "$hurryupSeconds", "$hurryupInterval", "$autoStartTNET2", "$disableTimerAfterSomeoneCancelled",
+			"$reduceLineSend", "$hurryUpSeconds", "$hurryUpInterval", "$autoStartTNET2", "$disableTimerAfterSomeoneCancelled",
 			"$useMap", "$useFractionalGarbage", "$garbageChangePerAttack", "$messiness", "", "$twistEnableEZ",
 			"$b2bChunk", NetUtil.urlEncode(strMode), "$singleplayer", "$rated", "$customRated", "$style",
 			"$divideChangeRateByPlayers"//,"$useTankMode"

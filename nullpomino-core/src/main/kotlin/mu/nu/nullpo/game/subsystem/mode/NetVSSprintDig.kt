@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -117,7 +118,6 @@ class NetVSSprintDig:NetDummyVSMode() {
 
 	/** Get number of garbage lines left
 	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 * @return Number of garbage lines left
 	 */
 	private fun getRemainGarbageLines(engine:GameEngine?):Int {
@@ -145,7 +145,6 @@ class NetVSSprintDig:NetDummyVSMode() {
 
 	/** Turn all normal blocks to gem (for values game)
 	 * @param engine GameEngine
-	 * @param playerID Player ID
 	 */
 	private fun turnAllBlocksToGem(engine:GameEngine) {
 		val field = engine.field
@@ -261,32 +260,25 @@ class NetVSSprintDig:NetDummyVSMode() {
 	/* Drawing processing at the end of every frame */
 	override fun renderLast(engine:GameEngine) {
 		super.renderLast(engine)
-
-		val x = owner.receiver.fieldX(engine)
-		val y = owner.receiver.fieldY(engine)
+		val s = EventReceiver.getScaleF(engine.displaySize)
+		val x = receiver.fieldX(engine)
+		val y = engine.fieldHeight*s
 
 		val pid = engine.playerID
 		if(netVSPlayerExist[pid]&&engine.isVisible) {
 			if((netVSIsGameActive||netVSIsPractice&&pid==0)&&engine.stat!=GameEngine.Status.RESULT) {
 				// Lines left
 				val remainLines = maxOf(0, playerRemainLines[pid])
-				var fontColor = EventReceiver.COLOR.WHITE
-				if(remainLines in 1..14) fontColor = EventReceiver.COLOR.YELLOW
-				if(remainLines in 1..8) fontColor = EventReceiver.COLOR.ORANGE
-				if(remainLines in 1..4) fontColor = EventReceiver.COLOR.RED
-
-				val strLines = "$remainLines"
-
-				when {
-					engine.displaySize!=-1 -> when(strLines.length) {
-						1 -> owner.receiver.drawMenuFont(engine, 4, 21, strLines, fontColor, 2f)
-						2 -> owner.receiver.drawMenuFont(engine, 3, 21, strLines, fontColor, 2f)
-						3 -> owner.receiver.drawMenuFont(engine, 2, 21, strLines, fontColor, 2f)
+				val fontColor =
+					when(remainLines) {
+						in 1..4 -> COLOR.RED
+						in 5..7 -> COLOR.ORANGE
+						in 8..14 -> COLOR.YELLOW
+						else -> COLOR.WHITE
 					}
-					strLines.length==1 -> owner.receiver.drawDirectFont(x+4+32, y+168, strLines, fontColor, 1f)
-					strLines.length==2 -> owner.receiver.drawDirectFont(x+4+24, y+168, strLines, fontColor, 1f)
-					strLines.length==3 -> owner.receiver.drawDirectFont(x+4+16, y+168, strLines, fontColor, 1f)
-				}
+				val strLines = "$remainLines"
+				receiver.drawMenuFont(engine, (5-strLines.length)/s, y, strLines, fontColor, 2*s)
+
 			}
 
 			if(netVSIsGameActive&&engine.stat!=GameEngine.Status.RESULT) {
@@ -296,29 +288,24 @@ class NetVSSprintDig:NetDummyVSMode() {
 
 				when {
 					engine.displaySize!=-1 -> when(place) {
-						0 -> owner.receiver.drawMenuFont(engine, -2, 22, "1ST", EventReceiver.COLOR.ORANGE)
-						1 -> owner.receiver.drawMenuFont(engine, -2, 22, "2ND", EventReceiver.COLOR.WHITE)
-						2 -> owner.receiver.drawMenuFont(engine, -2, 22, "3RD", EventReceiver.COLOR.RED)
-						3 -> owner.receiver.drawMenuFont(engine, -2, 22, "4TH", EventReceiver.COLOR.GREEN)
-						4 -> owner.receiver.drawMenuFont(engine, -2, 22, "5TH", EventReceiver.COLOR.BLUE)
-						5 -> owner.receiver.drawMenuFont(engine, -2, 22, "6TH", EventReceiver.COLOR.PURPLE)
+						0 -> receiver.drawMenuFont(engine, -3f, y, "1ST", COLOR.ORANGE)
+						1 -> receiver.drawMenuFont(engine, -3f, y, "2ND", COLOR.WHITE)
+						2 -> receiver.drawMenuFont(engine, -3f, y, "3RD", COLOR.RED)
+						3 -> receiver.drawMenuFont(engine, -3f, y, "4TH", COLOR.GREEN)
+						4 -> receiver.drawMenuFont(engine, -3f, y, "5TH", COLOR.BLUE)
+						5 -> receiver.drawMenuFont(engine, -3f, y, "6TH", COLOR.PURPLE)
 					}
-					place==0 -> owner.receiver.drawDirectFont(x, y+168, "1ST", EventReceiver.COLOR.ORANGE, .5f)
-					place==1 -> owner.receiver.drawDirectFont(x, y+168, "2ND", EventReceiver.COLOR.WHITE, .5f)
-					place==2 -> owner.receiver.drawDirectFont(x, y+168, "3RD", EventReceiver.COLOR.RED, .5f)
-					place==3 -> owner.receiver.drawDirectFont(x, y+168, "4TH", EventReceiver.COLOR.GREEN, .5f)
-					place==4 -> owner.receiver.drawDirectFont(x, y+168, "5TH", EventReceiver.COLOR.BLUE, .5f)
-					place==5 -> owner.receiver.drawDirectFont(x, y+168, "6TH", EventReceiver.COLOR.PURPLE, .5f)
+					place==0 -> receiver.drawMenuFont(engine, -3f, y, "1ST", COLOR.ORANGE, s)
+					place==1 -> receiver.drawMenuFont(engine, -3f, y, "2ND", COLOR.WHITE, s)
+					place==2 -> receiver.drawMenuFont(engine, -3f, y, "3RD", COLOR.RED, s)
+					place==3 -> receiver.drawMenuFont(engine, -3f, y, "4TH", COLOR.GREEN, s)
+					place==4 -> receiver.drawMenuFont(engine, -3f, y, "5TH", COLOR.BLUE, s)
+					place==5 -> receiver.drawMenuFont(engine, -3f, y, "6TH", COLOR.PURPLE, s)
 				}
 			} else if(!netVSIsPractice||pid!=0) {
 				val strTemp = "${netVSPlayerWinCount[pid]}/${netVSPlayerPlayCount[pid]}"
 
-				if(engine.displaySize!=-1) {
-					var y2 = 21
-					if(engine.stat==GameEngine.Status.RESULT) y2 = 22
-					owner.receiver.drawMenuFont(engine, 0, y2, strTemp, EventReceiver.COLOR.WHITE)
-				} else
-					owner.receiver.drawDirectFont(x+4, y+168, strTemp, EventReceiver.COLOR.WHITE, .5f)
+				receiver.drawMenuFont(engine, -3f, y, strTemp, COLOR.WHITE, .5f)
 			}// Games count
 		}
 	}
@@ -331,7 +318,7 @@ class NetVSSprintDig:NetDummyVSMode() {
 		if(engine.displaySize==-1) scale = .5f
 
 		drawResultScale(
-			engine, owner.receiver, 2, EventReceiver.COLOR.ORANGE, scale, "LINE",
+			engine, receiver, 2, COLOR.ORANGE, scale, "LINE",
 			String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
 			"LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps),
 			"Time", String.format("%10s", engine.statistics.time.toTimeStr)

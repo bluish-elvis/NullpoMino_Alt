@@ -46,7 +46,7 @@ class VSSprintLine:AbstractMode() {
 	private var goalLines = IntArray(0)
 
 	/** BGM number */
-	private var bgmno = 0
+	private var bgmId = 0
 
 	/** Big */
 	private var big = BooleanArray(0)
@@ -78,8 +78,9 @@ class VSSprintLine:AbstractMode() {
 
 	/* Mode init */
 	override fun modeInit(manager:GameManager) {
+		super.modeInit(manager)
 		goalLines = IntArray(MAX_PLAYERS)
-		bgmno = 0
+		bgmId = 0
 		big = BooleanArray(MAX_PLAYERS)
 		enableSE = BooleanArray(MAX_PLAYERS)
 		presetNumber = IntArray(MAX_PLAYERS)
@@ -122,7 +123,7 @@ class VSSprintLine:AbstractMode() {
 	private fun loadOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val pid = engine.playerID
 		goalLines[pid] = prop.getProperty("vslinerace.goalLines.p$pid", 40)
-		bgmno = prop.getProperty("vslinerace.bgmno", 0)
+		bgmId = prop.getProperty("vslinerace.bgmno", 0)
 		big[pid] = prop.getProperty("vslinerace.big.p$pid", false)
 		enableSE[pid] = prop.getProperty("vslinerace.enableSE.p$pid", true)
 		presetNumber[pid] = prop.getProperty("vslinerace.presetNumber.p$pid", 0)
@@ -132,7 +133,7 @@ class VSSprintLine:AbstractMode() {
 	private fun saveOtherSetting(engine:GameEngine, prop:CustomProperties) {
 		val pid = engine.playerID
 		prop.setProperty("vslinerace.goalLines.p$pid", goalLines[pid])
-		prop.setProperty("vslinerace.bgmno", bgmno)
+		prop.setProperty("vslinerace.bgmno", bgmId)
 		prop.setProperty("vslinerace.big.p$pid", big[pid])
 		prop.setProperty("vslinerace.enableSE.p$pid", enableSE[pid])
 		prop.setProperty("vslinerace.presetNumber.p$pid", presetNumber[pid])
@@ -190,7 +191,7 @@ class VSSprintLine:AbstractMode() {
 					}
 					10 -> big[playerID] = !big[playerID]
 					11 -> enableSE[playerID] = !enableSE[playerID]
-					12 -> bgmno = rangeCursor(bgmno+change, 0, BGM.count-1)
+					12 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
 				}
 			}
 
@@ -245,7 +246,7 @@ class VSSprintLine:AbstractMode() {
 				"SE" to enableSE[pid]
 			)
 			menuColor = EventReceiver.COLOR.PINK
-			drawMenuCompact(engine, receiver, "BGM" to BGM.values[bgmno])
+			drawMenuCompact(engine, receiver, "BGM" to BGM.values[bgmId])
 		} else
 			receiver.drawMenuFont(engine, 3, 10, "WAIT", EventReceiver.COLOR.YELLOW)
 	}
@@ -255,7 +256,7 @@ class VSSprintLine:AbstractMode() {
 		val playerID = engine.playerID
 		engine.big = big[playerID]
 		engine.enableSE = enableSE[playerID]
-		if(playerID==1) owner.musMan.bgm = BGM.values[bgmno]
+		if(playerID==1) owner.musMan.bgm = BGM.values[bgmId]
 
 		engine.meterColor = GameEngine.METER_COLOR_GREEN
 		engine.meterValue = 1f
@@ -292,8 +293,8 @@ class VSSprintLine:AbstractMode() {
 
 		// 1st/2nd
 		if(remainLines<enemyRemainLines)
-			receiver.drawMenuFont(engine, -2, 22, "1ST", EventReceiver.COLOR.ORANGE)
-		else if(remainLines>enemyRemainLines) receiver.drawMenuFont(engine, -2, 22, "2ND", EventReceiver.COLOR.WHITE)
+			receiver.drawMenuFont(engine, -3, 22, "1ST", EventReceiver.COLOR.ORANGE)
+		else if(remainLines>enemyRemainLines) receiver.drawMenuFont(engine, -3, 22, "2ND", EventReceiver.COLOR.WHITE)
 
 		// Timer
 		if(pid==0) receiver.drawDirectFont(256, 16, engine.statistics.time.toTimeStr)

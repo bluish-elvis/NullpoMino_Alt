@@ -206,12 +206,10 @@ interface GameMode {
 
 	/** Read rankings from [prop].
 	 *  This is used in playerInit or from netOnJoin.
-	 * @param ruleName Rule name
 	 */
 	fun loadRanking(prop:CustomProperties)
 	/** Read rankings from [prof].
 	 *  This is used in playerInit or from netOnJoin.
-	 * @param ruleName Rule name
 	 */
 	fun loadRankingPlayer(prof:ProfileProperties)
 

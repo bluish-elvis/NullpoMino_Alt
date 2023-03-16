@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2010-2022, NullNoname
-  ~ Kotlin converted and modified by Venom=Nhelv
-  ~ All rights reserved.
+  ~ Copyright (c) 2010-2023, NullNoname
+  ~ Kotlin converted and modified by Venom=Nhelv.
+  ~ THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
   ~
   ~ Redistribution and use in source and binary forms, with or without
   ~ modification, are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@
 <tns:NullpominoMenu xmlns:tns="http://www.example.org/Nullpomino" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                     xsi:schemaLocation="http://www.example.org/Nullpomino Nullpomino.xsd ">
  <tns:title>Nullpomino</tns:title>
- <tns:subTitle>Version 7.7.2022</tns:subTitle>
+ <tns:subTitle>Version 7.7.2023</tns:subTitle>
  <tns:MenuItem xsi:type="tns:MenuMenuItemType">
   <tns:name>Start</tns:name>
   <tns:description>Start a new game.</tns:description>

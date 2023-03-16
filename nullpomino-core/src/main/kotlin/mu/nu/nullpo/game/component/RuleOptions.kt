@@ -45,21 +45,21 @@ class RuleOptions:Serializable {
 
 	var pieceOffset = 0
 	/** Blockピースの回転パターンのcoordinate補正 (11ピース×4Direction) */
-	var pieceOffsetX:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-	var pieceOffsetY:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+	var pieceOffsetX = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
+	var pieceOffsetY = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
 	/** Blockピースの出現X-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnX:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+	var pieceSpawnX = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
 	/** Blockピースの出現Y-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnY:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+	var pieceSpawnY = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
 	/** BlockピースのBig時の出現X-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnXBig:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+	var pieceSpawnXBig = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
 	/** BlockピースのBig時の出現Y-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnYBig:Array<IntArray> = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+	var pieceSpawnYBig = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
 
 	/** Blockピース cint */
-	var pieceColor = IntArray(Piece.PIECE_COUNT)
+	var pieceColor = MutableList(Piece.PIECE_COUNT) {Block.COLOR_WHITE}
 	/** Blockピースの初期Direction */
-	var pieceDefaultDirection = IntArray(Piece.PIECE_COUNT)
+	var pieceDefaultDirection = MutableList(Piece.PIECE_COUNT) {0}
 
 	/** fieldより上から出現 */
 	var pieceEnterAboveField = false
@@ -149,9 +149,9 @@ class RuleOptions:Serializable {
 	/** trueにすると回転の回数制限を横移動と共有する (true: lockResetMoveLimitのみ使用) */
 	var lockResetLimitShareCount = false
 	/** 固定猶予リセットの回数を使い切った場合の処理
-	 * LOCKRESET_LIMIT_OVER_NORESET = 0 : 固定猶予をリセットしないようにする
+	 * LOCKRESET_LIMIT_OVER_NoReset = 0 : 固定猶予をリセットしないようにする
 	 * LOCKRESET_LIMIT_OVER_INSTANT = 1 : 即固定する
-	 * LOCKRESET_LIMIT_OVER_NOWALLKICK = 2 : Wallkickしないようにする */
+	 * LOCKRESET_LIMIT_OVER_NoKick = 2 : Wallkickしないようにする */
 	var lockResetLimitOver = 0
 
 	/** 固定した瞬間光る frame count */
@@ -247,7 +247,7 @@ class RuleOptions:Serializable {
 	 * @param r Copy source
 	 */
 	constructor(r:RuleOptions?) {
-		replaace(r)
+		replace(r)
 	}
 
 	/** Initialization */
@@ -258,27 +258,20 @@ class RuleOptions:Serializable {
 
 		style = 0
 		pieceOffset = PIECEOFFSET_NONE
-		pieceOffsetX = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-		pieceOffsetY = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-		pieceSpawnX = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-		pieceSpawnY = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-		pieceSpawnXBig = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-		pieceSpawnYBig = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
+		pieceOffsetX.forEach {it.fill(0)}
+		pieceOffsetY.forEach {it.fill(0)}
+		pieceSpawnX.forEach {it.fill(0)}
+		pieceSpawnY.forEach {it.fill(0)}
+		pieceSpawnXBig.forEach {it.fill(0)}
+		pieceSpawnYBig.forEach {it.fill(0)}
 
-		pieceColor = IntArray(Piece.PIECE_COUNT)
-		pieceColor[Piece.PIECE_I] = Block.COLOR_WHITE
-		pieceColor[Piece.PIECE_L] = Block.COLOR_WHITE
-		pieceColor[Piece.PIECE_O] = Block.COLOR_WHITE
-		pieceColor[Piece.PIECE_Z] = Block.COLOR_WHITE
-		pieceColor[Piece.PIECE_T] = Block.COLOR_WHITE
-		pieceColor[Piece.PIECE_J] = Block.COLOR_WHITE
-		pieceColor[Piece.PIECE_S] = Block.COLOR_WHITE
+		pieceColor.fill(Block.COLOR_WHITE)
 		pieceColor[Piece.PIECE_I1] = Block.COLOR_PURPLE
 		pieceColor[Piece.PIECE_I2] = Block.COLOR_BLUE
 		pieceColor[Piece.PIECE_I3] = Block.COLOR_GREEN
 		pieceColor[Piece.PIECE_L3] = Block.COLOR_ORANGE
 
-		pieceDefaultDirection = IntArray(Piece.PIECE_COUNT)
+		pieceDefaultDirection.fill(0)
 		pieceEnterAboveField = true
 		pieceEnterMaxDistanceY = 0
 
@@ -376,7 +369,7 @@ class RuleOptions:Serializable {
 	}
 
 	/** 設定を[r]からコピー */
-	fun replaace(r:RuleOptions?) {
+	fun replace(r:RuleOptions?) {
 		r?.let {o ->
 			strRuleName = o.strRuleName
 			strWallkick = o.strWallkick
@@ -384,14 +377,6 @@ class RuleOptions:Serializable {
 
 			style = o.style
 			pieceOffset = o.pieceOffset
-			pieceOffsetX = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-			pieceOffsetY = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-			pieceSpawnX = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-			pieceSpawnY = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-			pieceSpawnXBig = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-			pieceSpawnYBig = Array(Piece.PIECE_COUNT) {IntArray(Piece.DIRECTION_COUNT)}
-			pieceColor = IntArray(Piece.PIECE_COUNT)
-			pieceDefaultDirection = IntArray(Piece.PIECE_COUNT)
 			for(i in 0 until Piece.PIECE_COUNT) {
 				for(j in 0 until Piece.DIRECTION_COUNT) {
 					pieceOffsetX[i][j] = o.pieceOffsetX[i][j]
@@ -895,13 +880,13 @@ class RuleOptions:Serializable {
 		private const val serialVersionUID = 5781310758989780350L
 
 		/** 横移動 counterかspin counterが超過したら固定 timeリセットを無効にする */
-		const val LOCKRESET_LIMIT_OVER_NORESET = 0
+		const val LOCKRESET_LIMIT_OVER_NoReset = 0
 
 		/** 横移動 counterかspin counterが超過したら即座に固定する */
 		const val LOCKRESET_LIMIT_OVER_INSTANT = 1
 
 		/** 横移動 counterかspin counterが超過したらWallkick無効にする */
-		const val LOCKRESET_LIMIT_OVER_NOWALLKICK = 2
+		const val LOCKRESET_LIMIT_OVER_NoKick = 2
 
 		/** Blockピースのcolorパターン */
 		enum class PieceColor(val array:List<Int>) {

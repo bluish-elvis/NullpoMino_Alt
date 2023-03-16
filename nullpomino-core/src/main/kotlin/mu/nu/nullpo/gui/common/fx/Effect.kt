@@ -38,5 +38,10 @@ interface Effect {
 	var y:Float
 	/** @return true if it's expired */
 	fun update(r:AbstractRenderer):Boolean
+	/**
+	 * Draw the particles to the current renderer.
+	 * @param i
+	 * @param r Renderer to use
+	 */
 	fun draw(i:Int, r:AbstractRenderer)
 }

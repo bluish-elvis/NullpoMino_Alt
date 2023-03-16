@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -40,8 +40,15 @@ class GameManager(
 	/** EventReceiver: Manages various events, and renders everything to the screen */
 	val receiver:EventReceiver = EventReceiver(),
 	/** Game Mode */
-	var mode:GameMode? = null
+	mode:GameMode? = null
 ) {
+	/** Game Mode */
+	var mode = mode
+		set(value) {
+			value?.modeInit(this)
+			log.debug("GameManager: Mode injected = ${value?.name}")
+			field = value
+		}
 	/** Properties used by game mode */
 	var modeConfig = CustomProperties(cfgMode)
 
@@ -63,7 +70,7 @@ class GameManager(
 	var replayProp = CustomProperties()
 	/** True if replay mode */
 	var replayMode = false
-	/** True if replay rerecording */
+	/** True if replay Overwriting */
 	var replayRerecord = false
 
 	/** True if display menus only (No game screens) */
@@ -104,6 +111,7 @@ class GameManager(
 
 	init {
 		log.debug("GameManager constructor called")
+		init()
 	}
 
 	/** Initialize the game */
@@ -115,15 +123,15 @@ class GameManager(
 		replayRerecord = false
 		menuOnly = false
 
-		var players = 1
-		mode?.let {
+		val players = mode?.let {
 			modeConfig.load(cfgMode)
 			statsProp.load(statsFile)
 			it.modeInit(this)
-			players = it.players
-		}
+			it.players
+		} ?: 1
 		for(i in 0 until players)
 			engine.add(GameEngine(this, i))
+		receiver.modeInit(this)
 	}
 
 	/** Save properties to "config/setting/mode.cfg"
@@ -162,6 +170,7 @@ class GameManager(
 		engine.forEach {it.update()}
 		musMan.fadeUpdate()
 		bgMan.fadeUpdate()
+
 	}
 	/** Dispatches all render events to EventReceiver */
 	fun renderAll() {

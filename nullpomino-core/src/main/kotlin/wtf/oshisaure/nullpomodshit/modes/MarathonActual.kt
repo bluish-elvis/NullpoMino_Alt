@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022-2022,
+ * Copyright (c) 2022-2023,
  * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2022-2022)
+ * It is part of an extension library for the game NullpoMino (copyright 2022-2023)
  *
  * Kotlin converted and modified by Venom=Nhelv
  *
@@ -75,7 +75,7 @@ class MarathonActual:AbstractMode() {
 	override val rankMap
 		get() = rankMapOf("pieces" to rankingPieces, "time" to rankingTime)
 	private var totalLength = 0
-	override val name:String = "ACTUAL MARATHON"
+	override val name:String = "Actual Marathon"
 	override val menu = MenuList("actualmarathon", itemLevel, itemBig)
 
 	override fun playerInit(engine:GameEngine) {
@@ -134,7 +134,7 @@ class MarathonActual:AbstractMode() {
 
 	override fun renderLast(engine:GameEngine) {
 		if(!owner.menuOnly) {
-			receiver.drawScoreFont(engine, 0, 0, "ACTUAL MARATHON", 4f)
+			receiver.drawScoreFont(engine, 0, 0, name, 4f)
 			var topY:Int
 			if(engine.gameActive) {
 				receiver.drawScoreFont(engine, 0, 3, "SCORE", 1f)
@@ -180,12 +180,12 @@ class MarathonActual:AbstractMode() {
 		}
 		if(TABLE_BGM_CHANGE[bgmLv]!=-1) {
 			if(totalLength>=TABLE_BGM_CHANGE[bgmLv]-50) {
-				owner.musMan.fadesw = true
+				owner.musMan.fadeSW = true
 			}
 			if(totalLength>=TABLE_BGM_CHANGE[bgmLv]&&totalLength<MARATHON_LENGTH) {
 				++bgmLv
 				owner.musMan.bgm = BGMStatus.BGM.Generic(bgmLv)
-				owner.musMan.fadesw = false
+				owner.musMan.fadeSW = false
 			}
 		}
 		engine.meterValue = totalLength%LEVEL_LENGTH*1f/LEVEL_LENGTH
@@ -196,9 +196,7 @@ class MarathonActual:AbstractMode() {
 			engine.stat = GameEngine.Status.EXCELLENT
 		} else if(totalLength>=(engine.statistics.level+1)*LEVEL_LENGTH) {
 			++engine.statistics.level
-			owner.bgMan.fadesw = true
-			owner.bgMan.fadecount = 0
-			owner.bgMan.fadebg = engine.statistics.level
+			owner.bgMan.nextBg = engine.statistics.level
 			setSpeed(engine)
 			engine.playSE("levelup")
 		}

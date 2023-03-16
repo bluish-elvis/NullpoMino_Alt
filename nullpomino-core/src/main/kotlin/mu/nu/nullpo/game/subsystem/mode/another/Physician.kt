@@ -180,7 +180,7 @@ class Physician:AbstractMode() {
 	}
 
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "PHYSICIAN", EventReceiver.COLOR.COBALT)
+		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.COBALT)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {

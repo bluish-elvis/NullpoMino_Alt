@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -98,7 +98,7 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
 		super.updateImpl(container, game, delta)
-		val mY = container.screenHeight*RenderStaffRoll.img.textureHeight
+		val mY = container.screenHeight*RenderStaffRoll.bufI.height
 		rollY += delta/32f
 		if(rollY>mY) rollY -= mY
 	}
@@ -123,8 +123,8 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 		FontTTF.print(16, 432, NullpoMinoSlick.getUIText(UI_TEXT[cursor]))
 
 		FontNano.printFont(300, 0, "$rollY")
-		FontNano.printFont(300, 10, "${container.screenHeight*RenderStaffRoll.img.textureHeight}")
-		RenderStaffRoll.draw(600-RenderStaffRoll.img.width.toFloat(), 0f, rollY, 480f, Color(200, 233, 255, 200))
+		FontNano.printFont(300, 10, "${container.screenHeight*RenderStaffRoll.bufI.height}")
+		RenderStaffRoll.draw(600-RenderStaffRoll.bufI.width.toFloat(), 0f, rollY, 480f, Color(200, 233, 255, 200))
 		super.renderImpl(container, game, g)
 
 		if(UpdateChecker.isNewVersionAvailable(GameManager.versionMajor, GameManager.versionMinor)) {

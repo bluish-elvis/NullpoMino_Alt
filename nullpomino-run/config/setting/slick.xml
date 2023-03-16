@@ -69,6 +69,7 @@
  <entry key="keynav.p0.right">205</entry>
  <entry key="keynav.p0.pause">16,15</entry>
  <entry key="button.p0.retry">-1</entry>
+ <entry key="option.heavyeffect">true</entry>
  <entry key="option.firstSetupMode">false</entry>
  <entry key="option.bgmpreload">true</entry>
  <entry key="option.enableframestep">false</entry>
@@ -79,4 +80,6 @@
  <entry key="key.p0.down">208</entry>
  <entry key="option.showLocus">true</entry>
  <entry key="option.nextshadow">true</entry>
+ <entry key="option.screenwidth">1024</entry>
+ <entry key="option.screenheight">768</entry>
 </properties>

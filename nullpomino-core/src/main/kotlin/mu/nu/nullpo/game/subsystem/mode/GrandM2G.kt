@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2022, NullNoname
+ * Copyright (c) 2010-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -44,10 +44,10 @@ import kotlin.math.ln
 /** GARBAGE MANIA Mode */
 class GrandM2G:AbstractMode() {
 	/** Next Section の level (これ-1のときに levelストップする) */
-	private var nextseclv = 0
+	private var nextSecLv = 0
 
 	/** Levelが増えた flag */
-	private var lvupflag = false
+	private var lvupFlag = false
 
 	/** Hard dropした段count */
 	private var harddropBonus = 0
@@ -56,7 +56,7 @@ class GrandM2G:AbstractMode() {
 	private var comboValue = 0
 
 	/** Roll 経過 time */
-	private var rolltime = 0
+	private var rollTime = 0
 
 	/** 裏段位 */
 	private var secretGrade = 0
@@ -65,19 +65,20 @@ class GrandM2G:AbstractMode() {
 	private var bgmLv = 0
 
 	/** Section Time */
-	private var sectionTime = Array(SECTION_MAX) {0}
+	private val sectionTime = MutableList(SECTION_MAX) {0}
 
 	/** 新記録が出たSection はtrue */
-	private var sectionIsNewRecord = BooleanArray(SECTION_MAX)
+	private val sectionIsNewRecord = MutableList(SECTION_MAX) {false}
 
 	/** どこかのSection で新記録を出すとtrue */
 	private var sectionAnyNewRecord = false
 
-	/** Cleared Section count */
-	private var sectionscomp = 0
-
 	/** Average Section Time */
-	private var sectionavgtime = 0
+	private val sectionAvgTime
+		get() = sectionTime.filter {it>0}.average().toFloat()
+
+	/** Cleared Section count */
+	private var sectionsDone = 0
 
 	/** せり上がりパターン number */
 	private var garbagePos = 0
@@ -98,7 +99,7 @@ class GrandM2G:AbstractMode() {
 	private var startLevel = 0
 
 	/** When true, always ghost ON */
-	private var alwaysghost = false
+	private var alwaysGhost = false
 
 	/** When true, always 20G */
 	private var always20g = false
@@ -129,7 +130,7 @@ class GrandM2G:AbstractMode() {
 	private val bestSectionTime:List<MutableList<Int>> = List(SECTION_MAX) {MutableList(GOALTYPE_MAX) {0}}
 
 	private val decoration = 0
-	private val dectemp = 0
+	private val decTemp = 0
 
 	/* Mode name */
 	override val name = "Grand Mountain"
@@ -143,19 +144,18 @@ class GrandM2G:AbstractMode() {
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
 		goalType = 0
-		nextseclv = 0
-		lvupflag = true
+		nextSecLv = 0
+		lvupFlag = true
 		harddropBonus = 0
 		comboValue = 0
 		lastscore = 0
-		rolltime = 0
+		rollTime = 0
 		secretGrade = 0
 		bgmLv = 0
 		sectionTime.fill(0)
-		sectionIsNewRecord = BooleanArray(SECTION_MAX)
+		sectionIsNewRecord.fill(false)
 		sectionAnyNewRecord = false
-		sectionscomp = 0
-		sectionavgtime = 0
+		sectionsDone = 0
 		garbagePos = 0
 		garbageCount = 0
 		garbageTotal = 0
@@ -190,7 +190,7 @@ class GrandM2G:AbstractMode() {
 	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		goalType = prop.getProperty("garbagemania.goalType", GOALTYPE_PATTERN)
 		startLevel = prop.getProperty("garbagemania.startLevel", 0)
-		alwaysghost = prop.getProperty("garbagemania.alwaysghost", true)
+		alwaysGhost = prop.getProperty("garbagemania.alwaysghost", true)
 		always20g = prop.getProperty("garbagemania.always20g", false)
 		secAlert = prop.getProperty("garbagemania.lvstopse", true)
 		showST = prop.getProperty("garbagemania.showsectiontime", true)
@@ -200,7 +200,7 @@ class GrandM2G:AbstractMode() {
 	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("garbagemania.goalType", goalType)
 		prop.setProperty("garbagemania.startLevel", startLevel)
-		prop.setProperty("garbagemania.alwaysghost", alwaysghost)
+		prop.setProperty("garbagemania.alwaysghost", alwaysGhost)
 		prop.setProperty("garbagemania.always20g", always20g)
 		prop.setProperty("garbagemania.lvstopse", secAlert)
 		prop.setProperty("garbagemania.showsectiontime", showST)
@@ -225,14 +225,6 @@ class GrandM2G:AbstractMode() {
 			.let {if(it<0) tableGravityChangeLevel.size-1 else it}]
 	}
 
-	/** Update average section time */
-	private fun setAverageSectionTime() {
-		if(sectionscomp>0) {
-			val i = minOf(sectionscomp+startLevel, sectionTime.size)
-			sectionavgtime = sectionTime.slice(startLevel until i).sum()/i
-		} else sectionavgtime = 0
-	}
-
 	/** Section Time更新処理
 	 * @param sectionNumber Section number
 	 */
@@ -246,7 +238,7 @@ class GrandM2G:AbstractMode() {
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
-		if(!engine.owner.replayMode) {
+		if(!owner.replayMode) {
 			// Configuration changes
 			val change = updateCursor(engine, 6)
 
@@ -265,7 +257,7 @@ class GrandM2G:AbstractMode() {
 						if(startLevel>9) startLevel = 0
 						owner.bgMan.bg = startLevel
 					}
-					2 -> alwaysghost = !alwaysghost
+					2 -> alwaysGhost = !alwaysGhost
 					3 -> always20g = !always20g
 					4 -> secAlert = !secAlert
 					5 -> showST = !showST
@@ -283,7 +275,7 @@ class GrandM2G:AbstractMode() {
 			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
 				isShowBestSectionTime = false
-				sectionscomp = 0
+				sectionsDone = 0
 				return false
 			}
 
@@ -309,7 +301,7 @@ class GrandM2G:AbstractMode() {
 				else -> "COPY"
 			},
 			"Level" to (startLevel*100),
-			"FULL GHOST" to alwaysghost,
+			"FULL GHOST" to alwaysGhost,
 			"FULL 20G" to always20g, "LVSTOPSE" to secAlert, "SHOW STIME" to showST, "BIG" to big,
 		)
 	}
@@ -318,7 +310,7 @@ class GrandM2G:AbstractMode() {
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
 
-		nextseclv = maxOf(100, minOf(engine.statistics.level+100, 999))
+		nextSecLv = maxOf(100, minOf(engine.statistics.level+100, 999))
 
 		owner.bgMan.bg = engine.statistics.level/100
 
@@ -336,10 +328,10 @@ class GrandM2G:AbstractMode() {
 
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
-		receiver.drawScoreFont(engine, 0, 0, "GARBAGE MANIA", EventReceiver.COLOR.CYAN)
+		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.CYAN)
 		receiver.drawScoreFont(engine, -1, -4*2, "DECORATION", scale = .5f)
 		receiver.drawScoreBadges(engine, 0, -3, 100, decoration)
-		receiver.drawScoreBadges(engine, 5, -4, 100, dectemp)
+		receiver.drawScoreBadges(engine, 5, -4, 100, decTemp)
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g
 				&&engine.ai==null
@@ -417,7 +409,7 @@ class GrandM2G:AbstractMode() {
 				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4,
 				4
 			)
-			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextseclv), g20)
+			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextSecLv), g20)
 
 			// Time
 			receiver.drawScoreFont(
@@ -426,12 +418,12 @@ class GrandM2G:AbstractMode() {
 				else
 					EventReceiver.COLOR.BLUE
 			)
-			if(engine.ending!=2||rolltime/20%2==0)
+			if(engine.ending!=2||rollTime/20%2==0)
 				receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, g20, 2f)
 
 			// Roll 残り time
 			if(engine.gameActive&&engine.ending==2) {
-				var time = ROLLTIMELIMIT-rolltime
+				var time = ROLLTIMELIMIT-rollTime
 				if(time<0) time = 0
 				receiver.drawScoreFont(engine, 0, 17, "ROLL TIME", EventReceiver.COLOR.BLUE)
 				receiver.drawScoreNum(engine, 0, 18, time.toTimeStr, time>0&&time<10*60, 2f)
@@ -457,9 +449,9 @@ class GrandM2G:AbstractMode() {
 						receiver.drawScoreNum(engine, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
 
-				if(sectionavgtime>0) {
+				if(sectionAvgTime>0) {
 					receiver.drawScoreFont(engine, x2, 14, "AVERAGE", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreNum(engine, x2, 15, sectionavgtime.toTimeStr, 2f)
+					receiver.drawScoreNum(engine, x2, 15, sectionAvgTime.toTimeStr, 2f)
 				}
 			}
 		}
@@ -468,18 +460,18 @@ class GrandM2G:AbstractMode() {
 	/* 移動中の処理 */
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupflag) {
+		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
 			// Level up
-			if(engine.statistics.level<nextseclv-1) {
+			if(engine.statistics.level<nextSecLv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
 
 			// Hard drop bonusInitialization
 			harddropBonus = 0
 		}
-		if(engine.ending==0&&engine.statc[0]>0&&(version>=2||!engine.holdDisable)) lvupflag = false
+		if(engine.ending==0&&engine.statc[0]>0&&(version>=2||!engine.holdDisable)) lvupFlag = false
 
 		return false
 	}
@@ -487,13 +479,13 @@ class GrandM2G:AbstractMode() {
 	/* ARE中の処理 */
 	override fun onARE(engine:GameEngine):Boolean {
 		// 最後の frame
-		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupflag) {
-			if(engine.statistics.level<nextseclv-1) {
+		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
+			if(engine.statistics.level<nextSecLv-1) {
 				engine.statistics.level++
-				if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 			}
 			levelUp(engine)
-			lvupflag = true
+			lvupFlag = true
 		}
 
 		return false
@@ -509,10 +501,10 @@ class GrandM2G:AbstractMode() {
 		setSpeed(engine)
 
 		// LV100到達でghost を消す
-		if(engine.statistics.level>=100&&!alwaysghost) engine.ghost = false
+		if(engine.statistics.level>=100&&!alwaysGhost) engine.ghost = false
 
 		// BGM fadeout
-		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadesw = true
+		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadeSW = true
 	}
 
 	/* Calculate score */
@@ -650,34 +642,30 @@ class GrandM2G:AbstractMode() {
 				engine.timerActive = false
 				engine.ending = 2
 
-				sectionscomp++
-				setAverageSectionTime()
-				stNewRecordCheck(sectionscomp-1, goalType)
-			} else if(engine.statistics.level>=nextseclv) {
+				sectionsDone++
+				stNewRecordCheck(sectionsDone-1, goalType)
+			} else if(engine.statistics.level>=nextSecLv) {
 				// Next Section
 
-				sectionscomp++
-				setAverageSectionTime()
-				stNewRecordCheck(sectionscomp-1, goalType)
+				sectionsDone++
+				stNewRecordCheck(sectionsDone-1, goalType)
 
 				// Background切り替え
-				owner.bgMan.fadesw = true
-				owner.bgMan.fadecount = 0
-				owner.bgMan.fadebg = nextseclv/100
+				owner.bgMan.nextBg = nextSecLv/100
 
 				// BGM切り替え
 				if(tableBGMChange[bgmLv]!=-1&&engine.statistics.level>=tableBGMChange[bgmLv]) {
 					bgmLv++
-					owner.musMan.fadesw = false
+					owner.musMan.fadeSW = false
 					owner.musMan.bgm = BGM.values[bgmLv]
 					engine.playSE("levelup_section")
 				}
 				engine.playSE("levelup")
 
 				// Update level for next section
-				nextseclv += 100
-				if(nextseclv>999) nextseclv = 999
-			} else if(engine.statistics.level==nextseclv-1&&secAlert) engine.playSE("levelstop")
+				nextSecLv += 100
+				if(nextSecLv>999) nextSecLv = 999
+			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
 			// Calculate score
 			var bravo = 1
@@ -704,23 +692,23 @@ class GrandM2G:AbstractMode() {
 		if(engine.timerActive&&engine.ending==0) {
 			val section = engine.statistics.level/100
 
-			if(section>=0&&section<sectionTime.size) sectionTime[section]++
+			if(section>=0&&section<sectionTime.size) sectionTime[section] = engine.statistics.time-sectionTime.take(section).sum()
 		}
 
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
-			rolltime += if(version>=1&&engine.ctrl.isPress(Controller.BUTTON_F))
+			rollTime += if(version>=1&&engine.ctrl.isPress(Controller.BUTTON_F))
 				5
 			else
 				1
 
 			// Time meter
-			val remainRollTime = ROLLTIMELIMIT-rolltime
+			val remainRollTime = ROLLTIMELIMIT-rollTime
 			engine.meterValue = remainRollTime*1f/ROLLTIMELIMIT
 			engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
 			// Roll 終了
-			if(rolltime>=ROLLTIMELIMIT) {
+			if(rollTime>=ROLLTIMELIMIT) {
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
@@ -760,9 +748,9 @@ class GrandM2G:AbstractMode() {
 					if(sectionTime[i]>0)
 						receiver.drawMenuFont(engine, 2, 3+i, sectionTime[i].toTimeStr, sectionIsNewRecord[i])
 
-				if(sectionavgtime>0) {
+				if(sectionAvgTime>0) {
 					receiver.drawMenuFont(engine, 0, 14, "AVERAGE", EventReceiver.COLOR.BLUE)
-					receiver.drawMenuFont(engine, 2, 15, sectionavgtime.toTimeStr)
+					receiver.drawMenuFont(engine, 2, 15, sectionAvgTime.toTimeStr)
 				}
 			}
 			2 -> drawResultStats(

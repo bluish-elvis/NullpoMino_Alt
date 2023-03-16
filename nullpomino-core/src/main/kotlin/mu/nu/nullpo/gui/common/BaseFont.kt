@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, NullNoname
+ * Copyright (c) 2021-2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -48,10 +48,15 @@ interface BaseFont {
 		const val HYPHEN = "\u0092"
 		const val DOWN_L = "\u0093"
 		const val DOWN_S = "\u0094"
-		/** Backquote at end*/
+		/** Back-quote at end*/
 		const val DQ_END = "\u0095"
 		const val NAME_REV = "\u0096"
 		const val NAME_END = "\u0097"
+	}
+	/** Font cint constants */
+	enum class FONT(val w:Int) {
+		NORMAL(BaseFontNormal.w), NANO(BaseFontNumber.w), NUM(BaseFontNumber.w),
+		GRADE(BaseFontGrade.ws), GRADE_BIG(BaseFontGrade.wb), MEDAL(BaseFontMedal.w), TTF(BaseFontTTF.FONT_SIZE);
 	}
 
 	val rainbowCount:Int

@@ -43,15 +43,13 @@ import kotlin.random.Random
 
 /**
  * Creates a new collection of particles.
- *
- * @param length Maximum particle count.
  */
 class BlockParticleCollection {
 	val particles:MutableSet<Particle>
 	/**DTET scattering to horizontal */
 	constructor(engine:GameEngine, receiver:EventReceiver, blocks:Map<Int, Map<Int, Block>>,
 		maxVelocity:Float, isFlashing:Boolean, randomizer:Random) {
-		val bs = EventReceiver.getBlockSize(engine)
+		val bs = engine.blockSize
 		particles = blocks.flatMap {(y, row) ->
 			val colA = blocks.keys.sorted()
 			val rowA = row.keys.sorted()
@@ -74,7 +72,7 @@ class BlockParticleCollection {
 	) {
 		val colA = blocks.keys.sorted()
 		val width = engine.field.width
-		val bs = EventReceiver.getBlockSize(engine)
+		val bs = engine.blockSize
 		particles = blocks.flatMap {(y, row) ->
 			row.map {(x, b) ->
 				val py = colA.indexOf(y)

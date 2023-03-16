@@ -3,14 +3,14 @@
  <modelVersion>4.0.0</modelVersion>
  <groupId>mu.nu.nullpo</groupId>
  <artifactId>NullpoMino_Alt</artifactId>
- <version>7.7.2022</version>
+ <version>7.7.2023</version>
  <packaging>pom</packaging>
  <name>NullpoMino</name>
  <dependencies>
   <dependency>
    <groupId>mu.nu.nullpo</groupId>
    <artifactId>nullpomino-core</artifactId>
-   <version>7.7.2022</version>
+   <version>7.7.2023</version>
   </dependency>
  </dependencies>
  <modules>
@@ -21,8 +21,8 @@
  <properties>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  <kotlin.version>1.8.0</kotlin.version>
-  <java.version>18</java.version>
+  <kotlin.version>1.8.20</kotlin.version>
+  <java.version>19</java.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
   <maven.compiler.target>${java.version}</maven.compiler.target>
   <kotlin.compiler.jvmTarget>${java.version}</kotlin.compiler.jvmTarget>
