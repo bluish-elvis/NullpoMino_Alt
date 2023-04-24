@@ -39,7 +39,7 @@ import org.newdawn.slick.SlickException
 import org.newdawn.slick.state.StateBasedGame
 
 /** Dummy class for menus where the player picks from a list of options */
-abstract class DummyMenuChooseState:BaseGameState() {
+abstract class BaseMenuChooseState:BaseGameState() {
 	/** Cursor position */
 	protected var cursor = 0
 
@@ -56,9 +56,11 @@ abstract class DummyMenuChooseState:BaseGameState() {
 	protected var flashT = -1
 
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		flashY = 0
-		flashT = -1
+		flashY = minChoiceY
+		flashT = 0
 		val i = ResourceHolder.imgLine[1].copy()
+		// TTF font load
+		ResourceHolder.ttfFont?.loadGlyphs()
 		ig =
 			Image(i.height, i.width).apply {
 				graphics.clear()
@@ -101,8 +103,6 @@ abstract class DummyMenuChooseState:BaseGameState() {
 
 	@Throws(SlickException::class)
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
-		// TTF font load
-		ResourceHolder.ttfFont?.loadGlyphs()
 
 		// Update key input states
 		GameKey.gameKey[0].update(container.input)
@@ -112,21 +112,24 @@ abstract class DummyMenuChooseState:BaseGameState() {
 
 		if(numChoice>=0) {
 			// Cursor movement
+
+			var move = 0
 			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
 				cursor--
-				if(cursor<0) cursor = numChoice-1
-				ResourceHolder.soundManager.play("cursor")
-				flashY = cursor+minChoiceY
-				flashT = 0
+				if(cursor<0) {
+					cursor = numChoice-1
+					move = numChoice-1
+				} else move = -1
+
 			}
 			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 				cursor++
-				if(cursor>=numChoice) cursor = 0
-				ResourceHolder.soundManager.play("cursor")
-				flashY = cursor+minChoiceY
-				flashT = 0
+				if(cursor>=numChoice) {
+					cursor = 0
+					move = -numChoice
+				} else move = 1
 			}
-
+			if(move!=0) onCursor(container, game, delta, cursor)
 			var change = 0
 			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) change = -1
 			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) change = 1
@@ -176,6 +179,14 @@ abstract class DummyMenuChooseState:BaseGameState() {
 		}
 	}
 
+	/** Called when up or down is pressed. */
+	protected open fun onCursor(container:GameContainer, game:StateBasedGame, delta:Int, change:Int) {
+		// TTF font load
+		ResourceHolder.ttfFont?.loadGlyphs()
+		ResourceHolder.soundManager.play("cursor")
+		flashY = cursor+minChoiceY
+		flashT = 0
+	}
 	/** Called when left or right is pressed. */
 	protected open fun onChange(container:GameContainer, game:StateBasedGame, delta:Int, change:Int) {}
 

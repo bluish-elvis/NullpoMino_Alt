@@ -34,31 +34,54 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 
-class SpeedPresets(color:COLOR, defaultPreset:Int, val showG:Boolean = true, showD:Boolean = true)
-	:IntegerMenuItem("presetNumber", "Speeds", color, defaultPreset, 0..99), PresetItem {
+open class SpeedPresets(color:COLOR, defaultPreset:Int = 0,
+	/** true to Enable Gravity/denominator*/
+	val showG:Boolean = true,
+	/** true to Enable ARE,Delay,DAS adjust*/
+	showD:Boolean = true):IntegerMenuItem("presetNumber", "Speeds", color, defaultPreset, 0..99), PresetItem {
 	val spd = SpeedParam()
-	val showD:Boolean = showD||!(showG&&showD)
+	val showD:Boolean = showD||!showG
 	override val showHeight:Int
 		get() = 1+(if(showG) 2 else 0)+(if(showD) 2 else 0)
-	override val colMax = 2+if(showG) 2 else 0+if(showD) 5 else 0
+	override val colMax = 2+showG.toInt()*2+showD.toInt()*5
 	override fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int) {
-		val spd = engine.speed
+
+		receiver.drawMenuFont(
+			engine, 0, y,
+			when(focus) {
+				0 -> "LOAD"
+				1 -> "SAVE"
+				else -> "PRESET"
+			},
+			COLOR.GREEN,
+		)
+
+		if(focus in 0..1)
+			receiver.drawMenuFont(engine, 6, y, "\u0082", true)
+		receiver.drawMenuNum(engine, 7, y, valueString)
+
 		if(showG) {
 			val g = spd.gravity
 			val d = spd.denominator
-			receiver.drawMenuFont(engine, 0, y, "SPEED", color = color)
-			receiver.drawScoreSpeed(engine, -13, y+1, g, d, 5)
-			receiver.drawMenuNum(engine, 6, y, String.format("%5d", g))
-			receiver.drawMenuNum(engine, 6, y+1, String.format("%5d", d))
+			receiver.drawMenuFont(engine, 0, y+1, "SPEED", color = color)
+			receiver.drawScoreSpeed(engine, 0f, y+1.5f, g, d, 5f)
+			receiver.drawMenuNum(engine, 6, y+1, "%5d".format(g), focus==2)
+			receiver.drawMenuNum(engine, 6, y+2, "%5d".format(d), focus==3)
+			if(focus in 2..3)
+				receiver.drawMenuFont(engine, 5, y+focus-1, "\u0082", true)
 		}
 		if(showD) {
-			val y = y+if(showG) 2 else 0
+			val y = y+if(showG) 3 else 1
 
 			for(i in 0..1) {
 				val show = if(i==0) "ARE" to spd.are else "LINE" to spd.areLine
+				val pos = 2+showG.toInt()*2+i
+				if(focus==pos)
+					receiver.drawMenuFont(engine, 3+i*3, y, "\u0082", true)
 
-				receiver.drawMenuNum(engine, 4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", show.second))
+				receiver.drawMenuNum(engine, 4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", show.second), focus==pos)
 				receiver.drawMenuNano(engine, 6+i*5, y*2+1, show.first, color, .5f)
 			}
 			for(i in 0..2) {
@@ -67,67 +90,77 @@ class SpeedPresets(color:COLOR, defaultPreset:Int, val showG:Boolean = true, sho
 					1 -> "LOCK" to spd.lockDelay
 					else -> "DAS" to spd.das
 				}
+				val pos = 4+showG.toInt()*2+i
+				if(focus==pos)
+					receiver.drawMenuFont(engine, 7-i*3, y+1, "\u0082", true)
 
-				receiver.drawMenuNum(engine, 8-i*3, y, String.format(if(i==1) "%2d+" else "%2d", show.second))
-				receiver.drawMenuNano(engine, 14-i*6, y*2+1, show.first, color, .5f)
+				receiver.drawMenuNum(engine, 8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", show.second), focus==pos)
+				receiver.drawMenuNano(engine, 14-i*6, y*2+3, show.first, color, .5f)
 			}
 			receiver.drawMenuNano(engine, 0, y*2-2, "DELAYS", color, .5f)
+
 		}
 	}
 
 	override fun change(dir:Int, fast:Int, cur:Int) {
-		fun Int.proc(dir:Int, fast:Int):Int = (this+dir).let {
+		fun Int.proc(dir:Int, fast:Int, mi:Int = min, ma:Int = max):Int = (this+dir*when(fast) {
+			1 -> minOf(5, max/200)
+			2 -> minOf(10, max/100)
+			else -> 1
+		}).let {
 			when {
-				it<min -> max
-				it>max -> min
+				it<mi -> ma
+				it>ma -> mi
 				else -> it
 			}
 		}
 		if(showG) when(cur) {
-			2 -> spd.gravity = spd.gravity.proc(dir, fast)
-			3 -> spd.denominator = spd.denominator.proc(dir, fast)
-			4 -> spd.are = spd.are.proc(dir, fast)
-			5 -> spd.areLine = spd.areLine.proc(dir, fast)
-			6 -> spd.lineDelay = spd.lineDelay.proc(dir, fast)
-			7 -> spd.lockDelay = spd.lockDelay.proc(dir, fast)
-			8 -> spd.das = spd.das.proc(dir, fast)
-			else -> value
-		} else when(cur) {
-			2 -> spd.are = spd.are.proc(dir, fast)
-			3 -> spd.areLine = spd.areLine.proc(dir, fast)
-			4 -> spd.lineDelay = spd.lineDelay.proc(dir, fast)
-			5 -> spd.lockDelay = spd.lockDelay.proc(dir, fast)
-			6 -> spd.das = spd.das.proc(dir, fast)
+			2 -> spd.gravity = spd.gravity.proc(dir, fast, -1, 99999)
+			3 -> spd.denominator = spd.denominator.proc(dir, fast, -1, 99999)
+			4 -> spd.are = spd.are.proc(dir, fast, 0, 99)
+			5 -> spd.areLine = spd.areLine.proc(dir, fast, 0, 99)
+			6 -> spd.lineDelay = spd.lineDelay.proc(dir, fast, 0, 99)
+			7 -> spd.lockDelay = spd.lockDelay.proc(dir, fast, 0, 99)
+			8 -> spd.das = spd.das.proc(dir, fast, 0, 99)
+			else -> value = value.proc(dir, fast)
+		} else if(showD) when(cur) {
+			2 -> spd.are = spd.are.proc(dir, fast, 0, 99)
+			3 -> spd.areLine = spd.areLine.proc(dir, fast, 0, 99)
+			4 -> spd.lineDelay = spd.lineDelay.proc(dir, fast, 0, 99)
+			5 -> spd.lockDelay = spd.lockDelay.proc(dir, fast, 0, 99)
+			6 -> spd.das = spd.das.proc(dir, fast, 0, 99)
 			else -> value = value.proc(dir, fast)
 		}
 	}
 
-	override fun presetSave(prop:CustomProperties, modeName:String) {
+	override fun presetSave(engine:GameEngine, prop:CustomProperties, modeName:String, setId:Int) {
 		if(showG) {
-			spd.gravity = prop.getProperty("$modeName.gravity.$value", spd.gravity)
-			spd.denominator = prop.getProperty("$modeName.denominator.$value", spd.denominator)
+			prop.setProperty("$modeName.gravity.$setId", 1)
+			prop.setProperty("$modeName.denominator.$setId", spd.denominator)
 		}
 		if(showD) {
-			spd.are = prop.getProperty("$modeName.are.$value", spd.are)
-			spd.areLine = prop.getProperty("$modeName.areLine.$value", spd.areLine)
-			spd.lineDelay = prop.getProperty("$modeName.lineDelay.$value", spd.lineDelay)
-			spd.lockDelay = prop.getProperty("$modeName.lockDelay.$value", spd.lockDelay)
-			spd.das = prop.getProperty("$modeName.das.$value", spd.das)
+			prop.setProperty("$modeName.are.$setId", spd.are)
+			prop.setProperty("$modeName.areLine.$setId", spd.areLine)
+			prop.setProperty("$modeName.lineDelay.$setId", spd.lineDelay)
+			prop.setProperty("$modeName.lockDelay.$setId", spd.lockDelay)
+			prop.setProperty("$modeName.das.$setId", spd.das)
 		}
+		engine.speed.replace(spd)
 	}
 
-	override fun presetLoad(prop:CustomProperties, modeName:String) {
+	override fun presetLoad(engine:GameEngine, prop:CustomProperties, modeName:String, setId:Int) {
 		if(showG) {
-			prop.getProperty("$modeName.gravity.$value", 1)
-			prop.setProperty("$modeName.denominator.$value", spd.denominator)
+			spd.gravity = prop.getProperty("$modeName.gravity.$setId", spd.gravity)
+			spd.denominator = prop.getProperty("$modeName.denominator.$setId", spd.denominator)
 		}
 		if(showD) {
-			prop.setProperty("$modeName.are.$value", spd.are)
-			prop.setProperty("$modeName.areLine.$value", spd.areLine)
-			prop.setProperty("$modeName.lineDelay.$value", spd.lineDelay)
-			prop.setProperty("$modeName.lockDelay.$value", spd.lockDelay)
-			prop.setProperty("$modeName.das.$value", spd.das)
+			spd.are = prop.getProperty("$modeName.are.$setId", spd.are)
+			spd.areLine = prop.getProperty("$modeName.areLine.$setId", spd.areLine)
+			spd.lineDelay = prop.getProperty("$modeName.lineDelay.$setId", spd.lineDelay)
+			spd.lockDelay = prop.getProperty("$modeName.lockDelay.$setId", spd.lockDelay)
+			spd.das = prop.getProperty("$modeName.das.$setId", spd.das)
 		}
+		engine.speed.replace(spd)
 	}
 
 }

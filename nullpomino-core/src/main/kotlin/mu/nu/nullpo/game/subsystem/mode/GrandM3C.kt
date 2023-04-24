@@ -202,19 +202,19 @@ class GrandM3C:AbstractMode() {
 	private val rankingLevel = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' times */
-	private val rankingTime = MutableList(RANKING_MAX) {0}
+	private val rankingTime = MutableList(RANKING_MAX) {-1}
 
 	/** Rankings' Roll completely cleared flag */
 	private val rankingRollClear = MutableList(RANKING_MAX) {0}
 
 	/** Section Time記録 */
-	private val bestSectionTime = MutableList(SECTION_MAX) {0}
+	private val bestSectionTime = MutableList(SECTION_MAX) {i -> tableQualifyPace(i)}
 
 	/** 段位履歴 (昇格・降格試験用) */
 	private val gradeHistory = MutableList(GRADE_HISTORY_SIZE) {0}
 
-	var examRecord = listOf(0, 0)
-		get() = listOf(qualifiedGrade, demotionPoints)
+	var examRecord = mutableListOf(0, 0)
+		get() = mutableListOf(qualifiedGrade, demotionPoints)
 		set(value) {
 			field = value
 			qualifiedGrade = value[0]
@@ -276,7 +276,7 @@ class GrandM3C:AbstractMode() {
 		lastGradeTime = 0
 		hardDropBonus = 0
 		comboValue = 0
-		lastscore = 0
+		lastScore = 0
 		cool = false
 		previousCool = false
 		coolChecked = false
@@ -313,9 +313,11 @@ class GrandM3C:AbstractMode() {
 		rankingRank = -1
 		rankingGrade.fill(0)
 		rankingLevel.fill(0)
-		rankingTime.fill(0)
+		rankingTime.fill(-1)
 		rankingRollClear.fill(0)
-		bestSectionTime.fill(0)
+		bestSectionTime.forEachIndexed {i, _ ->
+			bestSectionTime[i] = tableQualifyPace(i)
+		}
 
 		engine.twistEnable = true
 		engine.twistEnableEZ = true
@@ -402,7 +404,7 @@ class GrandM3C:AbstractMode() {
 	private fun stMedalCheck(engine:GameEngine, sectionNumber:Int) {
 		val best = bestSectionTime[sectionNumber]
 
-		if(sectionLastTime<best) {
+		if(sectionLastTime<best||best<=0) {
 			if(medalST<3) {
 				engine.playSE("medal3")
 				if(medalST<1) decTemp += 3
@@ -555,15 +557,15 @@ class GrandM3C:AbstractMode() {
 					receiver.drawScoreFont(engine, 3, 2, "GRADE TIME LEVEL", COLOR.BLUE)
 
 					for(i in 0 until RANKING_MAX) {
-						val gcolor = if(rankingRollClear[i]==1||rankingRollClear[i]==3) COLOR.GREEN
-						else if(rankingRollClear[i]==2||rankingRollClear[i]==4) COLOR.ORANGE
-						else COLOR.WHITE
 						receiver.drawScoreGrade(
-							engine, 0, 3+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+							engine, 0, 3+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
-						receiver.drawScoreGrade(engine, 3, 3+i, getGradeName(rankingGrade[i]), gcolor)
+						receiver.drawScoreGrade(
+							engine, 3, 3+i, getGradeName(rankingGrade[i]), if(rankingRollClear[i]==1||rankingRollClear[i]==3) COLOR.GREEN
+							else if(rankingRollClear[i]==2||rankingRollClear[i]==4) COLOR.ORANGE else COLOR.WHITE
+						)
 						receiver.drawScoreNum(engine, 7, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
-						receiver.drawScoreNum(engine, 15, 3+i, String.format("%03d", rankingLevel[i]), i==rankingRank)
+						receiver.drawScoreNum(engine, 15, 3+i, "%03d".format(rankingLevel[i]), i==rankingRank)
 					}
 
 					receiver.drawScoreNano(engine, 0, 18, "NEXT QUALIFY PREDICATE", COLOR.YELLOW)
@@ -590,7 +592,7 @@ class GrandM3C:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime:String = String.format("%3d-%3d %s", temp, temp2, bestSectionTime[i].toTimeStr)
+						val strSectionTime:String = "%3d-%3d %s".format(temp, temp2, bestSectionTime[i].toTimeStr)
 
 						receiver.drawScoreNum(engine, 0, 3+i, strSectionTime, sectionIsNewRecord[i]&&!isAnyExam)
 
@@ -625,28 +627,28 @@ class GrandM3C:AbstractMode() {
 				)
 				receiver.drawScoreSpeed(engine, 3, 3, gp%1f, 5f)
 				receiver.drawScoreNum(
-					engine, 6, 2, String.format("%02.1f%%", (gp*100%100)), gradeFlash>0&&gradeFlash%4==0
+					engine, 6, 2, "%02.1f%%".format((gp*100%100)), gradeFlash>0&&gradeFlash%4==0
 				)
 			}
 
 			// Score
 			receiver.drawScoreFont(engine, 0, 5, "Score", if(g20) COLOR.YELLOW else COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 5, "+$lastscore")
+			receiver.drawScoreNum(engine, 5, 5, "+$lastScore")
 			receiver.drawScoreNum(engine, 0, 6, "$scDisp", 2f)
 
 			// level
 			receiver.drawScoreFont(engine, 0, 9, "Level", if(g20) COLOR.YELLOW else COLOR.BLUE)
 
-			receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
+			receiver.drawScoreNum(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)))
 			receiver.drawScoreSpeed(
 				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4,
 				4
 			)
 			if(coolCount>0) {
 				receiver.drawScoreFont(engine, 4, 11, "+")
-				receiver.drawScoreGrade(engine, 5, 11, String.format("%1d", coolCount))
+				receiver.drawScoreGrade(engine, 5, 11, "%1d".format(coolCount))
 			}
-			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextSecLv))
+			receiver.drawScoreNum(engine, 1, 12, "%3d".format(nextSecLv))
 
 			// Time
 			receiver.drawScoreFont(
@@ -1005,13 +1007,13 @@ class GrandM3C:AbstractMode() {
 
 			// Calculate score
 
-			lastscore =
+			lastScore =
 				((((levelb+li)/(if(ev.b2b>0) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+hardDropBonus)
 					*li*comboValue)+maxOf(0, engine.lockDelay-engine.lockDelayNow)
 					+engine.statistics.level/if(engine.twist) 2 else 3)*if(engine.field.isEmpty) 3 else 1
 
-			engine.statistics.scoreLine += lastscore
-			return lastscore
+			engine.statistics.scoreLine += lastScore
+			return lastScore
 		} else if(li>=1&&engine.ending==2) {
 			// Roll 中のLine clear
 			val points = if(!mRollFlag||engine.twist||ev.b2b>0) when {
@@ -1235,7 +1237,7 @@ class GrandM3C:AbstractMode() {
 					if(secretGrade>4)
 						drawResult(
 							engine, receiver, 15, COLOR.BLUE, "S. GRADE",
-							String.format("%10s", tableSecretGradeName[secretGrade-1])
+							"%10s".format(tableSecretGradeName[secretGrade-1])
 						)
 				}
 				1 -> {
@@ -1261,14 +1263,13 @@ class GrandM3C:AbstractMode() {
 
 					if(rollPointsTotal>0) {
 						receiver.drawMenuFont(engine, 0, 4, "ROLL POINT", COLOR.BLUE)
-						val strRollPointsTotal = String.format("%10g", rollPointsTotal)
-						receiver.drawMenuFont(engine, 0, 5, strRollPointsTotal)
+						receiver.drawMenuNum(engine, 0, 5, rollPointsTotal, 10 to null)
 					}
 
 					drawResultStats(
 						engine, receiver, 6, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS
 					)
-					drawResult(engine, receiver, 15, COLOR.BLUE, "DECORATION", String.format("%d", decTemp))
+					drawResult(engine, receiver, 15, COLOR.BLUE, "DECORATION", "%d".format(decTemp))
 				}
 			}
 		}
@@ -1527,6 +1528,14 @@ class GrandM3C:AbstractMode() {
 
 		/**とりカン条件タイム*/
 		private val tableQualifyTime = listOf(5 to 28800, 9 to 39600, 10 to 43210, 15 to 50000, 20 to 54000)
+		private fun tableQualifyPace(s:Int) = tableQualifyTime.let {t ->
+			minOf(t.lastIndex, t.indexOfFirst {s<it.first}).let {id ->
+				if(id<=0) t.first().let {it.second/it.first}
+				else t[id].let {x ->
+					t[id-1].let {y -> (x.second-y.second)/(x.first-y.first)}
+				}
+			}
+		}
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 4000

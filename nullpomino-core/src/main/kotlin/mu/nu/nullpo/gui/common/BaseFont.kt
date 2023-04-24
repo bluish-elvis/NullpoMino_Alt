@@ -54,7 +54,7 @@ interface BaseFont {
 		const val NAME_END = "\u0097"
 	}
 	/** Font cint constants */
-	enum class FONT(val w:Int) {
+	enum class FONT(val w:Int, val h:Int = 16) {
 		NORMAL(BaseFontNormal.w), NANO(BaseFontNumber.w), NUM(BaseFontNumber.w),
 		GRADE(BaseFontGrade.ws), GRADE_BIG(BaseFontGrade.wb), MEDAL(BaseFontMedal.w), TTF(BaseFontTTF.FONT_SIZE);
 	}
@@ -70,8 +70,12 @@ interface BaseFont {
 	 * @param color Letter cint
 	 * @param scale Enlargement factor
 	 */
-	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
+	fun printFont(x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
 		rainbow:Int = rainbowCount)
+
+	fun printFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f,
+		rainbow:Int = rainbowCount) =
+		printFont(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
 	/** flagThefalseIf it&#39;s the casefontColorTrue cint, trueIf it&#39;s the
 	 * casefontColorTrue colorDraws the string in
 	 * @param x X-coordinate

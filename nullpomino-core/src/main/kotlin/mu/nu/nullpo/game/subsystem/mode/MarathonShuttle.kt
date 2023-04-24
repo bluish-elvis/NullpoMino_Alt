@@ -108,7 +108,7 @@ class MarathonShuttle:NetDummyMode() {
 	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	override val rankMap
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
@@ -128,7 +128,7 @@ class MarathonShuttle:NetDummyMode() {
 		totalTimer = 0
 		rollTime = 0
 		lastgoal = 0
-		lastscore = 0
+		lastScore = 0
 		lasttimebonus = 0
 		sc = 0
 		scgettime = sc
@@ -138,7 +138,7 @@ class MarathonShuttle:NetDummyMode() {
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 
 		netPlayerInit(engine)
 
@@ -287,21 +287,20 @@ class MarathonShuttle:NetDummyMode() {
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE   LINE TIME", COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE   LINE TIME", COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[goalType][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, 11, topY+i, "${rankingLines[goalType][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, 16, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank, scale)
+					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 11, topY+i, "${rankingLines[goalType][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 16, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
 			// SCORE
 			receiver.drawScoreFont(engine, 0, 2, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 2, "+$lastscore")
+			receiver.drawScoreNum(engine, 5, 2, "+$lastScore")
 			val scget = scgettime<engine.statistics.score
 			if(scget) scgettime += ceil((engine.statistics.score-scgettime)/24.0).toInt()
 			sc += ceil(((scgettime-sc)/10f).toDouble()).toInt()
@@ -327,7 +326,7 @@ class MarathonShuttle:NetDummyMode() {
 				// +30sec
 				if(lasttimebonus>0&&scget&&engine.ending==0)
 					receiver.drawScoreFont(
-						engine, 6, 6, String.format("+%3.2fSEC.", lasttimebonus/60f),
+						engine, 6, 6, "+%3.2fSEC.".format(lasttimebonus/60f),
 						COLOR.YELLOW
 					)
 			} else {
@@ -467,8 +466,8 @@ class MarathonShuttle:NetDummyMode() {
 
 			// Finished
 			if(rollTime>=TIMELIMIT_ROLL&&!netIsWatch) {
-				lastscore = totalTimer*2
-				engine.statistics.scoreBonus += lastscore
+				lastScore = totalTimer*2
+				engine.statistics.scoreBonus += lastScore
 				engine.lastEvent = null
 
 				engine.gameEnded()
@@ -482,7 +481,7 @@ class MarathonShuttle:NetDummyMode() {
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Line clear bonus
 		val pts = super.calcScore(engine, ev)
-		if(pts>0) lastscore = pts
+		if(pts>0) lastScore = pts
 
 		lastgoal = calcPoint(engine, ev)
 		goal -= lastgoal
@@ -539,7 +538,7 @@ class MarathonShuttle:NetDummyMode() {
 					engine.playSE("levelup")
 				}
 		}
-		return if(pts>0) lastscore else 0
+		return if(pts>0) lastScore else 0
 	}
 
 	/* Hard drop */
@@ -625,7 +624,7 @@ class MarathonShuttle:NetDummyMode() {
 		val msg = "game\tstats\t"+
 			engine.run {
 				statistics.run {"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t"}+
-					"$goalType\t${gameActive}\t${timerActive}\t$lastscore\t$scgettime\t${lastEvent}\t"+
+					"$goalType\t${gameActive}\t${timerActive}\t$lastScore\t$scgettime\t${lastEvent}\t"+
 					"$lastgoal\t$lasttimebonus\t$regretdispframe\t$bg\t${meterValue}\t${meterColor}\t$levelTimer\t$totalTimer\t$rollTime\t$goal\n"
 			}
 		netLobby?.netPlayerClient?.send(msg)
@@ -645,7 +644,7 @@ class MarathonShuttle:NetDummyMode() {
 			{goalType = it.toInt()},
 			{engine.gameActive = it.toBoolean()},
 			{engine.timerActive = it.toBoolean()},
-			{lastscore = it.toInt()},
+			{lastScore = it.toInt()},
 			{scgettime = it.toInt()},
 			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{lastgoal = it.toInt()},

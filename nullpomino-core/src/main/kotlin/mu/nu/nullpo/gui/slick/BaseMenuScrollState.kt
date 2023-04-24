@@ -38,15 +38,15 @@ import org.newdawn.slick.Input
 import org.newdawn.slick.state.StateBasedGame
 
 /** Dummy class for menus with a scroll bar */
-abstract class DummyMenuScrollState:DummyMenuChooseState() {
+abstract class BaseMenuScrollState:BaseMenuChooseState() {
 	/** ID number of file at top of currently displayed section */
-	private var minentry = 0
+	private var minEntry = 0
 
 	/** Maximum number of entries to display at a time */
 	protected var pageHeight = 0
 
 	/** List of entries */
-	protected var list:List<String> = emptyList()
+	protected open var list:List<String> = emptyList()
 	override val numChoice:Int get() = list.size
 
 	protected var emptyError = ""
@@ -58,6 +58,16 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 	private var pDownMaxY = 0
 	private val sbHeight get() = 16*(pageHeight-1)-(LINE_WIDTH shl 1)
 
+	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
+		super.updateImpl(container, game, delta)
+		if(cursor>=list.size) cursor = 0
+		if(cursor<minEntry) minEntry = cursor
+		var maxEntry = minEntry+pageHeight-1
+		if(cursor>=maxEntry) {
+			maxEntry = cursor
+			minEntry = maxEntry-pageHeight+1
+		}
+	}
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Background
@@ -67,13 +77,7 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 		when {
 			list.isEmpty() -> FontNormal.printFontGrid(2, 10, emptyError, COLOR.RED)
 			else -> {
-				if(cursor>=list.size) cursor = 0
-				if(cursor<minentry) minentry = cursor
-				var maxentry = minentry+pageHeight-1
-				if(cursor>=maxentry) {
-					maxentry = cursor
-					minentry = maxentry-pageHeight+1
-				}
+
 				drawMenuList(g)
 				onRenderSuccess(container, game, g)
 			}
@@ -90,38 +94,38 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 		val x = MouseInput.mouseX shr 4
 		val y = MouseInput.mouseY shr 4
 		if(x>=SB_TEXT_X-1&&(clicked||MouseInput.isMenuRepeatLeft)) {
-			var maxentry = minentry+pageHeight-1
+			var maxEntry = minEntry+pageHeight-1
 			when {
-				y<=2&&minentry>0 -> {
+				y<=2&&minEntry>0 -> {
 					ResourceHolder.soundManager.play("cursor")
 					//Scroll up
-					minentry--
-					maxentry--
+					minEntry--
+					maxEntry--
 				}
-				y>=2+pageHeight&&maxentry<list.size -> {
+				y>=2+pageHeight&&maxEntry<list.size -> {
 					ResourceHolder.soundManager.play("cursor")
 					//Down arrow
-					minentry++
+					minEntry++
 				}
 				numChoice>pageHeight ->
 					maxOf(0, (MouseInput.mouseY-32)*(numChoice+1-pageHeight)/sbHeight).let {
-						if(it!=minentry) {
+						if(it!=minEntry) {
 							ResourceHolder.soundManager.play("cursor")
-							minentry = it
+							minEntry = it
 						}
 					}
 			}
-			if(cursor>=maxentry) cursor = maxentry-1
-			if(cursor<minentry) cursor = minentry
+			if(cursor>=maxEntry) cursor = maxEntry-1
+			if(cursor<minEntry) cursor = minEntry
 		} else if(clicked&&y in 3 until 2+pageHeight) {
-			val newCursor = y-3+minentry
+			val newCursor = y-3+minEntry
 			when {
 				newCursor==cursor -> return true
 				newCursor>=list.size -> return false
 				else -> {
 					ResourceHolder.soundManager.play("cursor")
 					cursor = newCursor
-					flashY = newCursor-minentry+minChoiceY
+					flashY = newCursor-minEntry+minChoiceY
 					flashT = 0
 				}
 			}
@@ -130,9 +134,9 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 	}
 
 	private fun drawMenuList(graphics:Graphics) {
-		val maxentry = minOf(minentry+pageHeight-1, list.size)
+		val maxEntry = minOf(minEntry+pageHeight-1, list.size)
 
-		for((y, i) in (minentry until maxentry).withIndex()) {
+		for((y, i) in (minEntry until maxEntry).withIndex()) {
 			FontNormal.printFontGrid(2, 3+y, list[i], cursor==i)
 			if(cursor==i) FontNormal.printFontGrid(1, 3+y, "\u0082", COLOR.RAINBOW)
 		}
@@ -150,11 +154,11 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 		//Draw inside
 		val insideHeight = sbHeight-(LINE_WIDTH shl 1)
 		val insideWidth = SB_WIDTH-(LINE_WIDTH shl 1)
-		var fillMinY = insideHeight*minentry/list.size
-		var fillHeight = ((maxentry-minentry)*insideHeight+list.size)/list.size
+		var fillMinY = insideHeight*minEntry/list.size
+		var fillHeight = ((maxEntry-minEntry)*insideHeight+list.size)/list.size
 		if(fillHeight<LINE_WIDTH) {
 			fillHeight = LINE_WIDTH
-			fillMinY = (insideHeight-fillHeight)*minentry/(list.size-pageHeight)
+			fillMinY = (insideHeight-fillHeight)*minEntry/(list.size-pageHeight)
 		}
 		graphics.color = SB_BACK_COLOR
 		graphics.fillRect(
@@ -179,35 +183,41 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 		pDownMaxY = SB_MIN_Y+LINE_WIDTH+insideHeight
 	}
 
+	override fun onCursor(container:GameContainer, game:StateBasedGame, delta:Int, change:Int) {
+		super.onCursor(container, game, delta, change)
+		flashY = cursor-minEntry+minChoiceY
+		flashT = 0
+	}
+
 	override fun onChange(container:GameContainer, game:StateBasedGame, delta:Int, change:Int) {
 		ResourceHolder.soundManager.play("cursor")
 		if(change==1) pageDown()
 		else if(change==-1) pageUp()
-		flashY = cursor-minentry
+		flashY = cursor-minEntry+minChoiceY
 		flashT = 0
 	}
 
 	private fun pageDown() {
 		val max = numChoice-pageHeight
-		if(minentry>=max) cursor = numChoice
+		if(minEntry>=max) cursor = numChoice
 		else {
 			cursor += pageHeight
-			minentry += pageHeight
-			if(minentry>max) {
-				cursor -= minentry-max
-				minentry = max
+			minEntry += pageHeight
+			if(minEntry>max) {
+				cursor -= minEntry-max
+				minEntry = max
 			}
 		}
 	}
 
 	private fun pageUp() {
-		if(minentry==0) cursor = 0
+		if(minEntry==0) cursor = 0
 		else {
 			cursor -= pageHeight
-			minentry -= pageHeight
-			if(minentry<0) {
-				cursor -= minentry
-				minentry = 0
+			minEntry -= pageHeight
+			if(minEntry<0) {
+				cursor -= minEntry
+				minEntry = 0
 			}
 		}
 	}

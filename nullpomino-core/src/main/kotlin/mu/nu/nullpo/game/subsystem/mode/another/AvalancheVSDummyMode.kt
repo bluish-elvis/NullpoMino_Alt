@@ -777,13 +777,13 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		val apm = ojamaSent[engine.playerID]*3600f/engine.statistics.time
 		drawResult(
 			engine, receiver, 3, COLOR.ORANGE,
-			"ATTACK", String.format("%10d", ojamaSent[engine.playerID]),
-			"CLEARED", String.format("%10d", engine.statistics.lines),
-			"MAX CHAIN", String.format("%10d", engine.statistics.maxChain),
-			"PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
-			"ATTACK/MIN", String.format("%10g", apm),
-			"PIECE/SEC", String.format("%10g", engine.statistics.pps),
-			"Time", String.format("%10s", owner.engine[0].statistics.time.toTimeStr)
+			"ATTACK", "%10d".format(ojamaSent[engine.playerID]),
+			"CLEARED", "%10d".format(engine.statistics.lines),
+			"MAX CHAIN", "%10d".format(engine.statistics.maxChain),
+			"PIECE", "%10d".format(engine.statistics.totalPieceLocked),
+			"ATTACK/MIN", "%10g".format(apm),
+			"PIECE/SEC", "%10g".format(engine.statistics.pps),
+			"Time", "%10s".format(owner.engine[0].statistics.time.toTimeStr)
 		)
 	}
 

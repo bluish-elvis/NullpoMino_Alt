@@ -180,7 +180,7 @@ open class PlayerSkeleton {
 	 * Given the current state, and the set of legal moves, decide the index of the move to be taken.
 	 * Score is essentially does multiply each future with its corresponding weight, and sums it all up.
 	 *
-	 * @param s Current state
+	 * @param s1 Current state
 	 * @param legalMoves Available moves to be made
 	 * @param future Temporary array for storing features
 	 * @return

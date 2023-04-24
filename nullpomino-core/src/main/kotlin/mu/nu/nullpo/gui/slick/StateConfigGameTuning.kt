@@ -287,7 +287,7 @@ class StateConfigGameTuning:BaseGameState() {
 				)
 			else imgBlock.draw(160f, 64f, (160+144).toFloat(), (64+16).toFloat(), 0f, 0f, 144f, 16f)
 			FontNormal.printFontGrid(
-				2, 4, "SKIN:${String.format("%02d", owSkin)}:", cursor==1,
+				2, 4, "SKIN:${"%02d".format(owSkin)}:", cursor==1,
 				COLOR.WHITE,
 				if(ResourceHolder.blockStickyFlagList[sk]) COLOR.BLUE else COLOR.RED
 			)

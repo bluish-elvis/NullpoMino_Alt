@@ -563,7 +563,7 @@ class SPF:AbstractMode() {
 					COLOR.CYAN,
 					18,
 					"DROP SET" to DROP_SET_NAMES[dropSet[pid]],
-					"DROP MAP" to String.format("%2d", dropMap[pid]+1)+"/"+String.format(
+					"DROP MAP" to "%2d".format(dropMap[pid]+1)+"/"+String.format(
 						"%2d",
 						DROP_PATTERNS[dropSet[pid]].size
 					)
@@ -665,9 +665,9 @@ class SPF:AbstractMode() {
 
 		// Score
 		if(engine.displaySize==1)
-			receiver.drawDirectFont(fldPosX+4, fldPosY+472, String.format("%12d", score[pid]), playerColor)
+			receiver.drawDirectFont(fldPosX+4, fldPosY+472, "%12d".format(score[pid]), playerColor)
 		else if(engine.gameStarted)
-			receiver.drawDirectFont(fldPosX-28, fldPosY+264, String.format("%8d", score[pid]), playerColor)
+			receiver.drawDirectFont(fldPosX-28, fldPosY+264, "%8d".format(score[pid]), playerColor)
 
 		// Countdown Blocks
 		if(engine.gameActive)
@@ -1154,9 +1154,9 @@ class SPF:AbstractMode() {
 		}
 
 		val apm = (ojamaSent[pid]*3600).toFloat()/engine.statistics.time.toFloat()
-		drawResult(engine, receiver, 3, COLOR.ORANGE, "ATTACK", String.format("%10d", ojamaSent[pid]))
+		drawResult(engine, receiver, 3, COLOR.ORANGE, "ATTACK", "%10d".format(ojamaSent[pid]))
 		drawResultStats(engine, receiver, 5, COLOR.ORANGE, Statistic.LINES, Statistic.PIECE)
-		drawResult(engine, receiver, 9, COLOR.ORANGE, "ATTACK/MIN", String.format("%10g", apm))
+		drawResult(engine, receiver, 9, COLOR.ORANGE, "ATTACK/MIN", "%10g".format(apm))
 		drawResultStats(
 			engine,
 			receiver,

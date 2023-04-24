@@ -38,7 +38,7 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** Options screen */
-internal class StateConfigMainMenu:DummyMenuChooseState() {
+internal class StateConfigMainMenu:BaseMenuChooseState() {
 	/** Player number */
 	private var player = 0
 
@@ -70,9 +70,9 @@ internal class StateConfigMainMenu:DummyMenuChooseState() {
 
 		FontNormal.printFontGrid(1, 3+cursor, "\u0082", player==0, COLOR.RED, COLOR.BLUE)
 
-		CHOICES.forEachIndexed {i, it ->
+		CHOICES.forEachIndexed {i, (first) ->
 			FontNormal.printFontGrid(
-				2, 3+i, "[${it.first}]", cursor==i, COLOR.WHITE,
+				2, 3+i, "[$first]", cursor==i, COLOR.WHITE,
 				if(player==0) COLOR.BLUE else COLOR.RED
 			)
 		}

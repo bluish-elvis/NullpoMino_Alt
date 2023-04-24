@@ -40,7 +40,7 @@ import java.util.LinkedList
 import java.util.zip.GZIPInputStream
 
 /** Rule selector state */
-class StateConfigRuleSelect:DummyMenuScrollState() {
+class StateConfigRuleSelect:BaseMenuScrollState() {
 	/** Player ID */
 	var player = 0
 	/** Game style ID */

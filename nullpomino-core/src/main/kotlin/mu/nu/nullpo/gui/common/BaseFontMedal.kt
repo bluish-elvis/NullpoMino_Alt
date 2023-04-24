@@ -74,9 +74,9 @@ abstract class BaseFontMedal:BaseFont {
 	 * @param tier 文字色
 	 * @param scale 拡大率
 	 */
-	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
+	fun printFont(x:Float, y:Float, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f,
 		darkness:Float = 0f) =
-		processTxt(x.toFloat(), y.toFloat(), str, tier, scale)
+		processTxt(x, y, str, tier, scale)
 		{dx:Float, dy:Float, w:Float, h:Float, sx:Int, sy:Int, sw:Int, sh:Int ->
 			FontMedal.img.draw(
 				dx, dy, w, h, sx, sy, sw, sh,
@@ -84,6 +84,8 @@ abstract class BaseFontMedal:BaseFont {
 			)
 		}
 
+	fun printFont(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f, alpha:Float = if(tier==0) 0.5f else 1f, darkness:Float = 0f) =
+		printFont(x.toFloat(), y.toFloat(), str, tier, scale, alpha, darkness)
 	/** 文字列を描画
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
@@ -101,7 +103,7 @@ abstract class BaseFontMedal:BaseFont {
 
 	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) =
-		printFont(x.toInt(), y.toInt(), str, col(color), scale, alpha)
+		printFont(x, y, str, col(color), scale, alpha)
 	//x:Float, y:Float, str:String, tier:Int, scale:Float,
 	/** Draws the string
 	 * @param x X-coordinate
@@ -110,6 +112,6 @@ abstract class BaseFontMedal:BaseFont {
 	 * @param color Letter cint
 	 * @param scale Enlargement factor
 	 */
-	override fun printFont(x:Int, y:Int, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
+	override fun printFont(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int) =
 		printFont(x, y, str, col(color), scale, alpha)
 }

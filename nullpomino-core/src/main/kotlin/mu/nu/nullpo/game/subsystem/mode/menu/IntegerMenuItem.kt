@@ -39,8 +39,8 @@ open class IntegerMenuItem(name:String, displayName:String, color:COLOR, default
 		compact:Boolean = false, perRule:Boolean = false):
 		this(name, displayName, color, defaultValue, min..max, compact, perRule)
 
-	val min get() = range.first
-	val max get() = range.last
+	val min = range.first
+	val max = range.last
 
 	override fun equals(other:Any?):Boolean = if(other is Int) value==other else super.equals(other)
 	override operator fun compareTo(other:Int) = value.compareTo(other)

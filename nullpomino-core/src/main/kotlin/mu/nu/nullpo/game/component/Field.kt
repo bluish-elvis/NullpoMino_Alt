@@ -1578,8 +1578,7 @@ import kotlin.random.Random
 	}
 
 	/** Main routine for cascade gravity.
-	 * @return `true` if something falls. `false` if
-	 * nothing falls.
+	 * @return `true` if something falls. `false` if nothing falls.
 	 */
 	fun doCascadeGravity():Boolean {
 		var result = false
@@ -1589,24 +1588,19 @@ import kotlin.random.Random
 		for(i in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
 			for(j in 0 until width) getBlock(j, i)?.let {blk ->
 				if(!blk.isEmpty&&!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
-					var fall = true
+
 					checkBlockLink(j, i)
 
-					for(k in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
-						for(l in 0 until width) {
+					val fall = !(heightWithoutHurryupFloor-1 downTo -hiddenHeight).any {k ->
+						(0 until width).any {l ->
 							getBlock(l, k)?.let {
-								if(!it.isEmpty&&it.getAttribute(ATTRIBUTE.TEMP_MARK)
-									&&!it.getAttribute(ATTRIBUTE.CASCADE_FALL)
-								) {
-									val bBelow = getBlock(l, k+1)
-
-									if(getCoordAttribute(l, k+1)==COORD_WALL||(bBelow!=null&&!bBelow.isEmpty
-											&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK))
-									)
-										fall = false
-								}
-							}
+								!it.isEmpty&&it.getAttribute(ATTRIBUTE.TEMP_MARK)&&!it.getAttribute(ATTRIBUTE.CASCADE_FALL)
+									&&getBlock(l, k+1)?.let {bBelow ->
+									getCoordAttribute(l, k+1)==COORD_WALL||(!bBelow.isEmpty&&!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK))
+								} ?: false
+							} ?: false
 						}
+					}
 
 					if(fall) {
 						result = true
@@ -1614,15 +1608,14 @@ import kotlin.random.Random
 							for(l in 0 until width)
 								getBlock(l, k)?.let {bTemp ->
 									getBlock(l, k+1)?.let {bBelow ->
-										if(getCoordAttribute(l, k+1)!=COORD_WALL&&!bTemp.isEmpty&&bBelow.isEmpty&&bTemp.getAttribute(
-												ATTRIBUTE.TEMP_MARK
-											)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)
+										if(getCoordAttribute(l, k+1)!=COORD_WALL&&!bTemp.isEmpty&&bBelow.isEmpty&&
+											!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)
 										) {
 											bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
 											bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL)
 											bTemp.setAttribute(true, ATTRIBUTE.LAST_COMMIT)
 											setBlock(l, k+1, bTemp)
-											setBlock(l, k, Block())
+											delBlock(l, k)
 										}
 									}
 								}
@@ -1652,18 +1645,18 @@ import kotlin.random.Random
 			for(j in 0 until width) {
 				getBlock(j, i)?.let {blk ->
 					if(!blk.getAttribute(ATTRIBUTE.ANTIGRAVITY)) {
-						var fall = true
 						checkBlockLink(j, i)
 
-						for(k in heightWithoutHurryupFloor-1 downTo -hiddenHeight)
-							for(l in 0 until width) getBlock(l, k)?.let {bTemp ->
-								if(bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)) {
-									getBlock(l, k+1)?.let {bBelow ->
-										if(getCoordAttribute(l, k+1)==COORD_WALL||!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK))
-											fall = false
-									}
-								}
+						val fall = !(heightWithoutHurryupFloor-1 downTo -hiddenHeight).any {k ->
+							(0 until width).any {l ->
+								getBlock(l, k)?.let {bTemp ->
+									bTemp.getAttribute(ATTRIBUTE.TEMP_MARK)&&!bTemp.getAttribute(ATTRIBUTE.CASCADE_FALL)
+										&&getBlock(l, k+1)?.let {bBelow ->
+										getCoordAttribute(l, k+1)==COORD_WALL||!bBelow.getAttribute(ATTRIBUTE.TEMP_MARK)
+									} ?: false
+								} ?: false
 							}
+						}
 
 						if(fall) {
 							result = true
@@ -1680,7 +1673,7 @@ import kotlin.random.Random
 										bTemp.setAttribute(false, ATTRIBUTE.TEMP_MARK)
 										bTemp.setAttribute(true, ATTRIBUTE.CASCADE_FALL, ATTRIBUTE.LAST_COMMIT)
 										setBlock(l, k+1, bTemp)
-										setBlock(l, k, Block())
+										delBlock(l, k)
 									}
 								}
 						}
@@ -1981,7 +1974,7 @@ import kotlin.random.Random
 		val str = StringBuilder("${javaClass.name}@${Integer.toHexString(hashCode())}\n")
 
 		for(i in -hiddenHeight until height) {
-			str.append(String.format("%3d:", i))
+			str.append("%3d:".format(i))
 
 			for(j in 0 until width) {
 				val blk = getBlock(j, i)
@@ -2255,7 +2248,7 @@ import kotlin.random.Random
 						it<maxCount&&!listOf(
 							getBlockColor(x, y-2), getBlockColor(x, y+2),
 							getBlockColor(x-2, y), getBlockColor(x+2, y)
-						).any {c -> !colors.any {p -> p.first==c}}
+						).any {c -> !colors.any {(first) -> first==c}}
 					}
 					bestSwitch = -1
 					bestSwitchCount = Integer.MAX_VALUE
@@ -2302,7 +2295,7 @@ import kotlin.random.Random
 			if(balanced) done = true
 		}
 		if(!flashMode) return
-		val gemNeeded = colors.mapIndexed {i, it -> it.first.color&&colorCounts[i]>0}
+		val gemNeeded = colors.mapIndexed {i, (first) -> first.color&&colorCounts[i]>0}
 			.toMutableList()
 		done = !gemNeeded.any()
 		while(!done) {

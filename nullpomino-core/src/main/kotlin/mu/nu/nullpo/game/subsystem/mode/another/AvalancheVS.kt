@@ -676,11 +676,11 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			strScoreMultiplier = "(${lastscores[pid]}e${lastmultiplier[pid]})"
 
 		if(engine.displaySize==1) {
-			receiver.drawDirectFont(fldPosX+4, fldPosY+440, String.format("%12d", score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX+4, fldPosY+456, String.format("%12s", strScoreMultiplier), playerColor)
+			receiver.drawDirectFont(fldPosX+4, fldPosY+440, "%12d".format(score[pid]), playerColor)
+			receiver.drawDirectFont(fldPosX+4, fldPosY+456, "%12s".format(strScoreMultiplier), playerColor)
 		} else if(engine.gameStarted) {
-			receiver.drawDirectFont(fldPosX-28, fldPosY+248, String.format("%8d", score[pid]), playerColor)
-			receiver.drawDirectFont(fldPosX-28, fldPosY+264, String.format("%8s", strScoreMultiplier), playerColor)
+			receiver.drawDirectFont(fldPosX-28, fldPosY+248, "%8d".format(score[pid]), playerColor)
+			receiver.drawDirectFont(fldPosX-28, fldPosY+264, "%8s".format(strScoreMultiplier), playerColor)
 		}
 
 		// Fever
@@ -688,22 +688,22 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			// Timer
 			if(engine.displaySize==1) {
 				receiver.drawDirectFont(fldPosX+224, fldPosY+200, "REST", playerColor, .5f)
-				receiver.drawDirectFont(fldPosX+216, fldPosY+216, String.format("%2d", feverTime[pid]/60))
-				receiver.drawDirectFont(fldPosX+248, fldPosY+224, String.format(".%d", feverTime[pid]%60/6), scale = .5f)
+				receiver.drawDirectFont(fldPosX+216, fldPosY+216, "%2d".format(feverTime[pid]/60))
+				receiver.drawDirectFont(fldPosX+248, fldPosY+224, ".%d".format(feverTime[pid]%60/6), scale = .5f)
 
 				if(feverTimeLimitAddDisplay[pid]>0)
 					receiver.drawDirectFont(
-						fldPosX+216, fldPosY+240, String.format("+%d SEC.", feverTimeLimitAdd[pid]/60),
+						fldPosX+216, fldPosY+240, "+%d SEC.".format(feverTimeLimitAdd[pid]/60),
 						COLOR.YELLOW, .5f
 					)
 			} else if(engine.gameStarted) {
 				receiver.drawDirectFont(fldPosX+128, fldPosY+184, "REST", playerColor, .5f)
-				receiver.drawDirectFont(fldPosX+120, fldPosY+200, String.format("%2d", feverTime[pid]/60))
-				receiver.drawDirectFont(fldPosX+152, fldPosY+208, String.format(".%d", feverTime[pid]%60/6), scale = .5f)
+				receiver.drawDirectFont(fldPosX+120, fldPosY+200, "%2d".format(feverTime[pid]/60))
+				receiver.drawDirectFont(fldPosX+152, fldPosY+208, ".%d".format(feverTime[pid]%60/6), scale = .5f)
 
 				if(feverTimeLimitAddDisplay[pid]>0)
 					receiver.drawDirectFont(
-						fldPosX+120, fldPosY+216, String.format("+%d SEC.", feverTimeLimitAdd[pid]/60),
+						fldPosX+120, fldPosY+216, "+%d SEC.".format(feverTimeLimitAdd[pid]/60),
 						COLOR.YELLOW, .5f
 					)
 			}
@@ -745,7 +745,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 	override fun drawX(engine:GameEngine) {
 		val playerID = engine.playerID
 		if(inFever[playerID]) {
-			val strFeverTimer = String.format("%02d", (feverTime[playerID]+59)/60)
+			val strFeverTimer = "%02d".format((feverTime[playerID]+59)/60)
 
 			for(i in 0..1)
 				if(engine.field.getBlockEmpty(2+i, 0))

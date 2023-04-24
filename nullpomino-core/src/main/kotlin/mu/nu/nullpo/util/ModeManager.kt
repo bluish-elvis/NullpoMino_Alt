@@ -68,11 +68,11 @@ class ModeManager {
 		list.count {it.isOnlineMode==netPlay}
 
 	/** 読み込まれているMode nameを取得
-	 * @param netplay falseなら通常Modeだけ, trueならネットプレイ用Modeだけ取得
+	 * @param netPlay falseなら通常Modeだけ, trueならネットプレイ用Modeだけ取得
 	 * @return Mode nameの配列
 	 */
-	fun getModeNames(netplay:Boolean):List<String> =
-		list.filter {it.isOnlineMode==netplay}.map {it.name}
+	fun getModeNames(netPlay:Boolean):List<String> =
+		list.filter {it.isOnlineMode==netPlay}.map {it.name}
 
 	/** Mode nameを取得
 	 * @param id ModeID

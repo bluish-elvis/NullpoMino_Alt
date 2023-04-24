@@ -252,6 +252,43 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 		engine.isVisible = true
 	}
 
+	override fun onSetting(engine:GameEngine):Boolean {
+
+		if(netIsNetRankingDisplayMode) {
+			netOnUpdateNetPlayRanking(engine, netGetGoalType())
+			return true
+		} else
+		// Menu
+			if(!owner.replayMode&&menu.size>0) {
+				// Configuration changes val change = updateCursor(engine, 5)
+				updateMenu(engine)
+
+				// 決定
+				if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
+					engine.playSE("decide")
+					saveSetting(owner.modeConfig, engine)
+					owner.saveModeConfig()
+					onSettingChanged(engine)
+					// NET: Signal start of the game
+					if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start${engine.playerID+1}p\n")
+					return false
+				}
+				// Cancel
+				if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitFlag = true
+
+				// NET: Netplay Ranking
+				if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!netIsWatch&&netIsNetRankingViewOK(engine))
+					netEnterNetPlayRankingScreen(netGetGoalType())
+
+			}
+		return true
+	}
+
+	override fun onSettingChanged(engine:GameEngine) {
+		// NET: Signal options change
+		if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
+	}
+
 	/** NET: When the pieces can move.
 	 * NetDummyMode will send field/next/stats/piece movements. */
 	override fun onMove(engine:GameEngine):Boolean {
@@ -608,7 +645,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			if(it.isConnected) {
 				receiver.drawDirectFont(
 					0, 480-16,
-					String.format("%40s", String.format("%d/%d", it.observerCount, it.playerCount)), when {
+					"%40s".format("%d/%d".format(it.observerCount, it.playerCount)), when {
 						it.playerCount>1 -> COLOR.RED
 						it.observerCount>0 -> COLOR.GREEN
 						else -> COLOR.BLUE
@@ -631,7 +668,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			}
 
 			receiver.drawDirectFont(
-				0, 480-32, String.format("%40s", String.format("%.0f%%", gamerate*100f)), when {
+				0, 480-32, "%40s".format("%.0f%%".format(gamerate*100f)), when {
 					gamerate<.8f -> COLOR.RED
 					gamerate<.9f -> COLOR.ORANGE
 					gamerate<1f -> COLOR.YELLOW
@@ -1019,7 +1056,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 					if(netRankingPlace[d][i]==-1)
 						receiver.drawMenuFont(engine, 1, 4+c, "N/A", rankColor)
 					else
-						receiver.drawMenuNum(engine, 1, 4+c, String.format("%3d", netRankingPlace[d][i]+1), rankColor)
+						receiver.drawMenuNum(engine, 1, 4+c, "%3d".format(netRankingPlace[d][i]+1), rankColor)
 
 					when(netRankingType) {
 						NetSPRecord.RANKINGTYPE_GENERIC_SCORE -> {
@@ -1038,7 +1075,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 							)
 							receiver.drawMenuNum(engine, 14, 4+c, "${netRankingPiece[d][i]}", i==netRankingCursor[d])
 							receiver.drawMenuNum(
-								engine, 20, 4+c, String.format("%.5g", netRankingPPS[d][i]),
+								engine, 20, 4+c, "%.5g".format(netRankingPPS[d][i]),
 								i==netRankingCursor[d]
 							)
 							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])
@@ -1050,7 +1087,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 							)
 							receiver.drawMenuNum(engine, 14, 4+c, "${netRankingLines[d][i]}", i==netRankingCursor[d])
 							receiver.drawMenuNum(
-								engine, 19, 4+c, String.format("%.5g", netRankingSPL[d][i]),
+								engine, 19, 4+c, "%.5g".format(netRankingSPL[d][i]),
 								i==netRankingCursor[d]
 							)
 							receiver.drawMenuTTF(engine, 26, 4+c, netRankingName[d][i], i==netRankingCursor[d])
@@ -1084,7 +1121,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 							)
 							receiver.drawMenuNum(
 								engine, 20, 4+c,
-								String.format("%.4g", netRankingPPS[d][i]), i==netRankingCursor[d]
+								"%.4g".format(netRankingPPS[d][i]), i==netRankingCursor[d]
 							)
 							receiver.drawMenuTTF(
 								engine, 27, 4+c, netRankingName[d][i],
@@ -1116,7 +1153,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 								i==netRankingCursor[d]
 							)
 							receiver.drawMenuNum(
-								engine, 20, 4+c, String.format("%.4g", netRankingPPS[d][i]),
+								engine, 20, 4+c, "%.4g".format(netRankingPPS[d][i]),
 								i==netRankingCursor[d]
 							)
 							receiver.drawMenuTTF(engine, 27, 4+c, netRankingName[d][i], i==netRankingCursor[d])

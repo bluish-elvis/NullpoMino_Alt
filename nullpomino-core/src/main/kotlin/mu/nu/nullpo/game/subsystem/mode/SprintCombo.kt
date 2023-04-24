@@ -77,10 +77,10 @@ class SprintCombo:NetDummyMode() {
 	private var rankingRank = 0
 
 	/** Rankings' times */
-	private val rankingTime = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}}
+	private val rankingTime = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {-1}}}
 
 	/** Rankings' Combo */
-	private val rankingCombo = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}}
+	private val rankingCombo = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {-1}}}
 
 	/** Shape type */
 	private var shapetype = 0
@@ -406,7 +406,7 @@ class SprintCombo:NetDummyMode() {
 						engine,
 						0,
 						4+i,
-						String.format("%2d", i+1),
+						"%2d".format(i+1),
 						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
 					if(rankingCombo[goalType][gameType][i]==GOAL_TABLE[goalType]-1)

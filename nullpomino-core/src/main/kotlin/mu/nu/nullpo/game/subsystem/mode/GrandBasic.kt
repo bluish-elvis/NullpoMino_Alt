@@ -139,11 +139,11 @@ class GrandBasic:AbstractMode() {
 	private val rankingLevel = MutableList(RANKING_MAX) {0}
 
 	/** Time records */
-	private val rankingTime = MutableList(RANKING_MAX) {0}
+	private val rankingTime = MutableList(RANKING_MAX) {-1}
 
 	private val bestSectionScore = MutableList(RANKING_MAX) {0L}
 	private val bestSectionHanabi = MutableList(RANKING_MAX) {0}
-	private val bestSectionTime = MutableList(RANKING_MAX) {0}
+	private val bestSectionTime = MutableList(RANKING_MAX) {DEFAULT_SECTION_TIME}
 	private var decoration = 0
 	private var decTemp = 0
 
@@ -162,7 +162,7 @@ class GrandBasic:AbstractMode() {
 		nextSecLv = 0
 		lvupFlag = true
 		comboValue = 0
-		lastscore = 0
+		lastScore = 0
 		bonusInt = 0
 		bonusSpeed = bonusInt
 		tempHanabi = bonusSpeed
@@ -183,10 +183,10 @@ class GrandBasic:AbstractMode() {
 		rankingScore.fill(0)
 		rankingHanabi.fill(0)
 		rankingLevel.fill(0)
-		rankingTime.fill(0)
+		rankingTime.fill(-1)
 		bestSectionHanabi.fill(0)
 		bestSectionScore.fill(0)
-		bestSectionTime.fill(0)
+		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 
 		engine.frameColor = GameEngine.FRAME_COLOR_GREEN
 		engine.twistEnable = true
@@ -309,7 +309,7 @@ class GrandBasic:AbstractMode() {
 					receiver.drawScoreFont(engine, 0, 2, "HANABI SCORE TIME", COLOR.BLUE)
 
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreGrade(engine, 0, 3+i, String.format("%2d", i+1), COLOR.YELLOW)
+						receiver.drawScoreGrade(engine, 0, 3+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreNum(engine, 2, 3+i, "${rankingHanabi[i]}", i==rankingRank)
 						receiver.drawScoreNum(engine, 6, 3+i, "${rankingScore[i]}", i==rankingRank)
 						receiver.drawScoreNum(engine, 13, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
@@ -325,7 +325,7 @@ class GrandBasic:AbstractMode() {
 					val totalHanabi = bestSectionHanabi.sum()
 					for(i in 0 until SECTION_MAX) {
 						val temp = i*100
-						receiver.drawScoreNum(engine, 0, 3+i, String.format("%3d-", temp), sectionIsNewRecord[i])
+						receiver.drawScoreNum(engine, 0, 3+i, "%3d-".format(temp), sectionIsNewRecord[i])
 						receiver.drawScoreNum(
 							engine, 5, 3+i, String.format(
 								"%4d %6d %s", bestSectionHanabi[i], bestSectionScore[i],
@@ -336,7 +336,7 @@ class GrandBasic:AbstractMode() {
 					}
 					receiver.drawScoreFont(engine, 0, 5+SECTION_MAX, "TOTAL", COLOR.BLUE)
 					receiver.drawScoreNum(
-						engine, 5, 6+SECTION_MAX, String.format("%4d %6d %s", totalHanabi, totalScore, totalTime.toTimeStr)
+						engine, 5, 6+SECTION_MAX, "%4d %6d %s".format(totalHanabi, totalScore, totalTime.toTimeStr)
 					)
 
 					receiver.drawScoreFont(engine, 0, 7+SECTION_MAX, "AVERAGE", COLOR.BLUE)
@@ -356,7 +356,7 @@ class GrandBasic:AbstractMode() {
 			receiver.drawScoreNum(engine, 5, 4, "$hanabi", g20||intHanabi>-100, 2f)
 
 			receiver.drawScoreFont(engine, 0, 9, "Level", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
+			receiver.drawScoreNum(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)))
 			receiver.drawScoreSpeed(
 				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4,
 				4
@@ -386,14 +386,14 @@ class GrandBasic:AbstractMode() {
 							temp = 300
 							receiver.drawScoreFont(engine, x-1, 4+i, "BONUS", COLOR.BLUE)
 							receiver.drawScoreNum(
-								engine, x, 5+i, String.format("%4d %d", sectionHanabi[i+1], sectionScore[i+1])
+								engine, x, 5+i, "%4d %d".format(sectionHanabi[i+1], sectionScore[i+1])
 							)
 						}
 
 						var strSeparator = "-"
 						if(i==sectionsDone) strSeparator = "+"
 
-						val strSection = String.format("%3d%s%4d %d", temp, strSeparator, sectionHanabi[i], sectionScore[i])
+						val strSection = "%3d%s%4d %d".format(temp, strSeparator, sectionHanabi[i], sectionScore[i])
 
 						receiver.drawScoreNum(engine, x, 3+i, strSection, sectionIsNewRecord[i])
 					}
@@ -492,7 +492,7 @@ class GrandBasic:AbstractMode() {
 					owner.bgMan.nextBg = (nextSecLv-100)/100
 				}
 			}
-			lastscore = 6*
+			lastScore = 6*
 				((((levelb+li)/(if(ev.b2b>0) 3 else 4)+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)
 					*li
 					*comboValue*if(engine.field.isEmpty) 4 else 1)
@@ -517,9 +517,9 @@ class GrandBasic:AbstractMode() {
 			)
 			halfMinBonus = false
 			lastLineTime = 0
-			if(sectionsDone>=0&&sectionsDone<sectionScore.size) sectionScore[sectionsDone] += lastscore.toLong()
-			engine.statistics.scoreLine += lastscore
-			return lastscore
+			if(sectionsDone>=0&&sectionsDone<sectionScore.size) sectionScore[sectionsDone] += lastScore.toLong()
+			engine.statistics.scoreLine += lastScore
+			return lastScore
 		}
 		return 0
 	}
@@ -601,15 +601,15 @@ class GrandBasic:AbstractMode() {
 		receiver.drawMenuFont(engine, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 		if(engine.statc[1]==0) {
-			receiver.drawMenuNum(engine, 0, 2, String.format("%04d", hanabi), 2f)
+			receiver.drawMenuNum(engine, 0, 2, "%04d".format(hanabi), 2f)
 			receiver.drawMenuFont(engine, 6, 3, "Score", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, 0, 4, String.format("%7d", engine.statistics.score), 1.9f)
+			receiver.drawMenuNum(engine, 0, 4, "%7d".format(engine.statistics.score), 1.9f)
 			drawResultStats(engine, receiver, 6, COLOR.BLUE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME)
 			drawResultRank(engine, receiver, 13, COLOR.BLUE, rankingRank)
 			if(secretGrade>4)
 				drawResult(
 					engine, receiver, 15, COLOR.BLUE, "S. GRADE",
-					String.format("%10s", tableSecretGradeName[secretGrade-1])
+					"%10s".format(tableSecretGradeName[secretGrade-1])
 				)
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.BLUE)
@@ -618,7 +618,7 @@ class GrandBasic:AbstractMode() {
 			for(i in sectionScore.indices)
 				receiver.drawMenuNum(
 					engine, 0, (if(i==SECTION_MAX) 5 else 4)+i,
-					String.format("%4d %d", sectionHanabi[i], sectionScore[i]), sectionIsNewRecord[i]
+					"%4d %d".format(sectionHanabi[i], sectionScore[i]), sectionIsNewRecord[i]
 				)
 			receiver.drawMenuFont(engine, 0, 4+SECTION_MAX, "BONUS", COLOR.BLUE)
 

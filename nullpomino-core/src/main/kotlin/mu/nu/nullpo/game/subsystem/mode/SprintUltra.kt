@@ -37,6 +37,8 @@ import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.SpeedPresets
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
@@ -46,15 +48,9 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 /** ULTRA Mode */
 class SprintUltra:NetDummyMode() {
 	private var pow = 0
-
-	/** Most recent scoring event b2b */
-	private var lastb2b = false
-
-	/** Most recent scoring event combo count */
-	private var lastcombo = 0
-
-	/** Most recent scoring event piece ID */
-	private var lastpiece = 0
+	private val itemSpd = SpeedPresets(COLOR.BLUE, 0)
+	/** Last preset number used */
+	private var presetNumber:Int by DelegateMenuItem(itemSpd)
 
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
@@ -66,9 +62,7 @@ class SprintUltra:NetDummyMode() {
 	/** Time limit type */
 	private var goalType:Int by DelegateMenuItem(itemGoal)
 
-	/** Last preset number used */
-	private var presetNumber = 0
-
+	override val menu = MenuList("ultra", itemGoal, itemSpd, itemBig)
 	/** Version */
 	private var version = 0
 
@@ -97,10 +91,7 @@ class SprintUltra:NetDummyMode() {
 	/* Initialization */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
-		lastb2b = false
-		lastcombo = 0
-		lastpiece = 0
+		lastScore = 0
 		pow = 0
 		rankingShow = 0
 
@@ -170,101 +161,13 @@ class SprintUltra:NetDummyMode() {
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
-		// NET: Net Ranking
-		if(netIsNetRankingDisplayMode)
-			netOnUpdateNetPlayRanking(engine, goalType)
-		else if(!owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 17)
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				var m = 1
-				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
-
-				when(menuCursor) {
-					0 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
-					1 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
-					2 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
-					3 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
-					4 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
-					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
-					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					7 -> big = !big
-					8 -> {
-						goalType += change
-						if(goalType<0) goalType = tableLength.size-1
-						if(goalType>tableLength.size-1) goalType = 0
-					}
-					10, 11 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
-				}
-				engine.frameColor = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
-				// NET: Signal options change
-				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
-			}
-
-			// Confirm
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-
-				if(menuCursor==16) {
-					loadPreset(engine, owner.modeConfig, presetNumber)
-
-					// NET: Signal options change
-					if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
-				} else if(menuCursor==17) {
-					savePreset(engine, owner.modeConfig, presetNumber)
-					owner.saveModeConfig()
-				} else {
-					owner.modeConfig.setProperty("ultra.presetNumber", presetNumber)
-					savePreset(engine, owner.modeConfig, -1)
-					owner.saveModeConfig()
-
-					// NET: Signal start of the game
-					if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
-
-					return false
-				}
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitFlag = true
-
-			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!netIsWatch
-				&&netIsNetRankingViewOK(engine)
-			)
-				netEnterNetPlayRankingScreen(goalType)
+		if(!owner.replayMode) {
 			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				rankingShow++
 				if(rankingShow>=RANKTYPE_MAX) rankingShow = 0
 			}
-		} else {
-			menuTime++
-			menuCursor = 0
-
-			if(menuTime>=60) menuCursor = 10
-			return menuTime<120
-		}// Replay
-
-		return true
-	}
-
-	/* Setting screen drawing */
-	override fun renderSetting(engine:GameEngine) {
-		if(netIsNetRankingDisplayMode)
-		// NET: Netplay Ranking
-			netOnRenderNetPlayRanking(engine, receiver)
-		else {
-			drawMenuSpeeds(engine, receiver, 0, COLOR.BLUE, 0)
-			drawMenuCompact(engine, receiver, "BIG" to big, "Length" to "${tableLength[goalType]} Min")
-			if(!owner.replayMode) {
-				menuColor = COLOR.GREEN
-				drawMenuCompact(engine, receiver, "LOAD" to presetNumber, "SAVE" to presetNumber)
-			}
 		}
+		return super.onSetting(engine)
 	}
 
 	/* This function will be called before the game actually begins (after
@@ -303,15 +206,15 @@ class SprintUltra:NetDummyMode() {
 				receiver.drawScoreFont(engine, 1, 4, "Score Power Lines", col1)
 
 				for(i in 0 until minOf(RANKING_MAX, 12)) {
-					receiver.drawScoreGrade(engine, 0, 5+i, String.format("%2d", i+1), col3)
+					receiver.drawScoreGrade(engine, 0, 5+i, "%2d".format(i+1), col3)
 					receiver.drawScoreNum(
-						engine, 1, 5+i, String.format("%7d", rankingScore[0][gt][i]), i==rankingRank[0]
+						engine, 1, 5+i, "%7d".format(rankingScore[0][gt][i]), i==rankingRank[0]
 					)
 					receiver.drawScoreNum(
-						engine, 8, 5+i, String.format("%5d", rankingPower[0][gt][i]), i==rankingRank[0]
+						engine, 8, 5+i, "%5d".format(rankingPower[0][gt][i]), i==rankingRank[0]
 					)
 					receiver.drawScoreNum(
-						engine, 14, 5+i, String.format("%5d", rankingLines[0][gt][i]), i==rankingRank[0]
+						engine, 14, 5+i, "%5d".format(rankingLines[0][gt][i]), i==rankingRank[0]
 					)
 				}
 
@@ -319,15 +222,15 @@ class SprintUltra:NetDummyMode() {
 				receiver.drawScoreFont(engine, 1, 12, "Power Score Lines", col1)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, 13+i, String.format("%2d", i+1), col3)
+					receiver.drawScoreGrade(engine, 0, 13+i, "%2d".format(i+1), col3)
 					receiver.drawScoreNum(
-						engine, 2, 13+i, String.format("%5d", rankingPower[1][gt][i]), i==rankingRank[1]
+						engine, 2, 13+i, "%5d".format(rankingPower[1][gt][i]), i==rankingRank[1]
 					)
 					receiver.drawScoreNum(
-						engine, 7, 13+i, String.format("%7d", rankingScore[1][gt][i]), i==rankingRank[1]
+						engine, 7, 13+i, "%7d".format(rankingScore[1][gt][i]), i==rankingRank[1]
 					)
 					receiver.drawScoreNum(
-						engine, 14, 13+i, String.format("%5d", rankingLines[1][gt][i]), i==rankingRank[1]
+						engine, 14, 13+i, "%5d".format(rankingLines[1][gt][i]), i==rankingRank[1]
 					)
 				}
 
@@ -335,31 +238,31 @@ class SprintUltra:NetDummyMode() {
 				receiver.drawScoreFont(engine, 1, 20, "Lines Score Power", col1)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, 21+i, String.format("%2d", i+1), col3)
+					receiver.drawScoreGrade(engine, 0, 21+i, "%2d".format(i+1), col3)
 					receiver.drawScoreNum(
-						engine, 2, 21+i, String.format("%5d", rankingLines[2][gt][i]), i==rankingRank[2]
+						engine, 2, 21+i, "%5d".format(rankingLines[2][gt][i]), i==rankingRank[2]
 					)
 					receiver.drawScoreNum(
-						engine, 7, 21+i, String.format("%7d", rankingScore[2][gt][i]), i==rankingRank[2]
+						engine, 7, 21+i, "%7d".format(rankingScore[2][gt][i]), i==rankingRank[2]
 					)
 					receiver.drawScoreNum(
-						engine, 14, 21+i, String.format("%5d", rankingPower[2][gt][i]), i==rankingRank[2]
+						engine, 14, 21+i, "%5d".format(rankingPower[2][gt][i]), i==rankingRank[2]
 					)
 				}
 			}
 		} else {
 			receiver.drawScoreFont(engine, 0, 3, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 3, "+${String.format("%6d", lastscore)}")
-			receiver.drawScoreNum(engine, 0, 4, String.format("%7d", scDisp), scDisp<engine.statistics.score, 2f)
+			receiver.drawScoreNum(engine, 5, 3, "+${"%6d".format(lastScore)}")
+			receiver.drawScoreNum(engine, 0, 4, "%7d".format(scDisp), scDisp<engine.statistics.score, 2f)
 
 			receiver.drawScoreFont(engine, 10, 3, "/min", COLOR.BLUE)
 			receiver.drawScoreNum(
-				engine, 10, 4, String.format("%7g", engine.statistics.spm), scDisp<engine.statistics.score,
+				engine, 10, 4, engine.statistics.spm, 7 to null, scDisp<engine.statistics.score,
 				1.5f
 			)
 
 			receiver.drawScoreFont(engine, 0, 6, "Spike", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 7, String.format("%5d", engine.statistics.attacks), 2f)
+			receiver.drawScoreNum(engine, 0, 7, "%5d".format(engine.statistics.attacks), 2f)
 
 			receiver.drawScoreFont(engine, 3, 9, "Lines", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 8, 8, "${engine.statistics.lines}", 2f)
@@ -404,10 +307,10 @@ class SprintUltra:NetDummyMode() {
 
 			// Time meter
 			engine.meterValue = remainTime*1f/limitTime
-			engine.meterColor = GameEngine.METER_COLOR_GREEN
-			if(remainTime<=30*60) engine.meterColor = GameEngine.METER_COLOR_YELLOW
-			if(remainTime<=20*60) engine.meterColor = GameEngine.METER_COLOR_ORANGE
-			if(remainTime<=10*60) engine.meterColor = GameEngine.METER_COLOR_RED
+			engine.meterColor = if(remainTime<=10*60) GameEngine.METER_COLOR_RED
+			else if(remainTime<=20*60) GameEngine.METER_COLOR_ORANGE
+			else if(remainTime<=30*60) GameEngine.METER_COLOR_YELLOW
+			else GameEngine.METER_COLOR_GREEN
 
 			if(!netIsWatch) {
 				// Out of time
@@ -438,12 +341,12 @@ class SprintUltra:NetDummyMode() {
 		// Page change
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 			engine.statc[1]--
-			if(engine.statc[1]<0) engine.statc[1] = 1
+			if(engine.statc[1]<0) engine.statc[1] = 2
 			engine.playSE("change")
 		}
 		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
 			engine.statc[1]++
-			if(engine.statc[1]>1) engine.statc[1] = 0
+			if(engine.statc[1]>2) engine.statc[1] = 0
 			engine.playSE("change")
 		}
 
@@ -453,22 +356,19 @@ class SprintUltra:NetDummyMode() {
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
 		receiver.drawMenuFont(
-			engine,
-			0,
-			0,
-			"${BaseFont.UP_L}${BaseFont.DOWN_L} PAGE${engine.statc[1]+1}/2",
-			COLOR.RED
+			engine, 0, 0, "${BaseFont.UP_L}${BaseFont.DOWN_L} PAGE${engine.statc[1]+1}/2", COLOR.RED
 		)
-		if(rankingRank[0]==0) receiver.drawMenuFont(engine, 0, 3, "NEW RECORD", COLOR.ORANGE)
-		else if(rankingRank[0]!=-1)
-			receiver.drawMenuFont(engine, 4, 3, String.format("RANK %d", rankingRank[0]+1), COLOR.ORANGE)
-		if(rankingRank[1]==0) receiver.drawMenuFont(engine, 0, 6, "NEW RECORD", COLOR.ORANGE)
-		else if(rankingRank[1]!=-1)
-			receiver.drawMenuFont(engine, 4, 6, String.format("RANK %d", rankingRank[1]+1), COLOR.ORANGE)
-		if(rankingRank[2]==0) receiver.drawMenuFont(engine, 0, 9, "NEW RECORD", COLOR.ORANGE)
-		else if(rankingRank[2]!=-1)
-			receiver.drawMenuFont(engine, 4, 9, String.format("RANK %d", rankingRank[2]+1), COLOR.ORANGE)
-
+		if(engine.statc[1]<=1) {
+			if(rankingRank[0]==0) receiver.drawMenuFont(engine, 0, 3, "NEW RECORD", COLOR.ORANGE)
+			else if(rankingRank[0]!=-1)
+				receiver.drawMenuFont(engine, 4, 3, "RANK %d".format(rankingRank[0]+1), COLOR.ORANGE)
+			if(rankingRank[1]==0) receiver.drawMenuFont(engine, 0, 6, "NEW RECORD", COLOR.ORANGE)
+			else if(rankingRank[1]!=-1)
+				receiver.drawMenuFont(engine, 4, 6, "RANK %d".format(rankingRank[1]+1), COLOR.ORANGE)
+			if(rankingRank[2]==0) receiver.drawMenuFont(engine, 0, 9, "NEW RECORD", COLOR.ORANGE)
+			else if(rankingRank[2]!=-1)
+				receiver.drawMenuFont(engine, 4, 9, "RANK %d".format(rankingRank[2]+1), COLOR.ORANGE)
+		}
 		when(engine.statc[1]) {
 			0 -> {
 				drawResultStats(engine, receiver, 1, COLOR.BLUE, Statistic.SCORE)
@@ -481,6 +381,12 @@ class SprintUltra:NetDummyMode() {
 			1 -> {
 				drawResultStats(engine, receiver, 1, COLOR.BLUE, Statistic.SPM)
 				drawResultStats(engine, receiver, 4, COLOR.BLUE, Statistic.APM)
+				drawResultStats(engine, receiver, 7, COLOR.BLUE, Statistic.LPM)
+
+				drawResultStats(engine, receiver, 10, COLOR.BLUE, Statistic.PPS, Statistic.APL)
+			}
+			1 -> {
+				drawResultStats(engine, receiver, 1, COLOR.BLUE, Statistic.MAXCOMBO, Statistic.MAXB2B, Statistic.PIECE)
 				drawResultStats(engine, receiver, 7, COLOR.BLUE, Statistic.LPM)
 
 				drawResultStats(engine, receiver, 10, COLOR.BLUE, Statistic.SPL, Statistic.APL)
@@ -587,8 +493,7 @@ class SprintUltra:NetDummyMode() {
 			"${engine.statistics.scoreBonus}\t${engine.statistics.lines}\t"+
 			"${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t$goalType\t"+
 			"${engine.gameActive}\t${engine.timerActive}\t"+
-			"$lastscore\t$scDisp\t${engine.lastEvent}\t$lastb2b\t$lastcombo\t$lastpiece\t"+
-			"$bg\n"
+			"$lastScore\t$scDisp\t${engine.lastEvent}\t$bg\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
 
@@ -605,12 +510,9 @@ class SprintUltra:NetDummyMode() {
 			{goalType = it.toInt()},
 			{engine.gameActive = it.toBoolean()},
 			{engine.timerActive = it.toBoolean()},
-			{lastscore = it.toInt()},
+			{lastScore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
 			{engine.lastEvent = ScoreEvent.parseStr(it)},
-			{lastb2b = it.toBoolean()},
-			{lastcombo = it.toInt()},
-			{lastpiece = it.toInt()},
 			{owner.bgMan.bg = it.toInt()}).zip(message).forEach {(x, y) ->
 			x(y)
 		}

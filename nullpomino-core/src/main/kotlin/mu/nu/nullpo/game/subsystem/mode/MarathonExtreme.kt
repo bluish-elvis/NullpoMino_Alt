@@ -74,7 +74,7 @@ class MarathonExtreme:NetDummyMode() {
 	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	override val rankMap
 		get() = rankMapOf(
@@ -89,14 +89,14 @@ class MarathonExtreme:NetDummyMode() {
 	override val menu = MenuList("extreme", itemEndless, itemLevel, itemBig)
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		bgmLv = 0
 		rollTime = 0
 
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 
 		netPlayerInit(engine)
 		// NET: Load name
@@ -195,22 +195,20 @@ class MarathonExtreme:NetDummyMode() {
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.RED, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.RED)
 
 				for(i in 0 until RANKING_MAX) {
 					var endlessIndex = 0
 					if(endless) endlessIndex = 1
 
 					receiver.drawScoreGrade(
-						engine, 0, topY+i, String.format("%02d", i+1),
-						if(rankingRank==i) COLOR.RAINBOW else if(rankingLines[endlessIndex][i]>=200) COLOR.ORANGE else COLOR.RED,
-						scale
+						engine, 0, topY+i, "%02d".format(i+1),
+						if(rankingRank==i) COLOR.RAINBOW else if(rankingLines[endlessIndex][i]>=200) COLOR.ORANGE else COLOR.RED
 					)
-					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[endlessIndex][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, 10, topY+i, "${rankingLines[endlessIndex][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[endlessIndex][i].toTimeStr, i==rankingRank, scale)
+					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[endlessIndex][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 10, topY+i, "${rankingLines[endlessIndex][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[endlessIndex][i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
@@ -218,7 +216,7 @@ class MarathonExtreme:NetDummyMode() {
 			receiver.drawScoreNum(engine, 5, 2, engine.statistics.lines.toString(), 2f)
 
 			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.RED)
-			receiver.drawScoreNum(engine, 5, 4, "+$lastscore")
+			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
 			val scget = scDisp<engine.statistics.score
 			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
 			if(engine.gameActive&&engine.ending==2) {
@@ -229,7 +227,7 @@ class MarathonExtreme:NetDummyMode() {
 			} else {
 				receiver.drawScoreFont(engine, 0, 7, "Level", COLOR.RED)
 				receiver.drawScoreNum(
-					engine, 5, 7, String.format("%.1f", engine.statistics.level.toDouble()+1.0+engine.statistics.lines%10*0.1),
+					engine, 5, 7, "%.1f".format(engine.statistics.level.toDouble()+1.0+engine.statistics.lines%10*0.1),
 					2f
 				)
 			}
@@ -273,7 +271,7 @@ class MarathonExtreme:NetDummyMode() {
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		super.calcScore(engine, ev)
-
+		calcPower(engine, ev, true)
 		if(engine.ending==0) {
 			// BGM fade-out effects and BGM changes
 
@@ -308,7 +306,7 @@ class MarathonExtreme:NetDummyMode() {
 				engine.playSE("levelup")
 			}
 		}
-		return if(ev.lines>0) lastscore else 0
+		return if(ev.lines>0) lastScore else 0
 	}
 
 	override fun onResult(engine:GameEngine):Boolean {
@@ -316,15 +314,33 @@ class MarathonExtreme:NetDummyMode() {
 		owner.musMan.fadeSW = false
 		owner.musMan.bgm = b
 
+		// Page change
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
+			engine.statc[1]--
+			if(engine.statc[1]<0) engine.statc[1] = 1
+			engine.playSE("change")
+		}
+		if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+			engine.statc[1]++
+			if(engine.statc[1]>1) engine.statc[1] = 0
+			engine.playSE("change")
+		}
+
 		return super.onResult(engine)
 	}
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		drawResultStats(
-			engine, receiver, 0, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.TIME, Statistic.SPM,
-			Statistic.LPM, Statistic.SPL
-		)
+		when {
+			engine.statc[1]==0 -> drawResultStats(
+				engine, receiver, 0, COLOR.RED, Statistic.SCORE, Statistic.LINES, Statistic.TIME,
+				Statistic.PIECE, Statistic.ATTACKS, Statistic.SPL
+			)
+			engine.statc[1]==1 -> drawResultStats(
+				engine, receiver, 0, COLOR.RED, Statistic.SPM, Statistic.LPM, Statistic.TIME,
+				Statistic.PPS, Statistic.APM, Statistic.SPL
+			)
+		}
 		drawResultRank(engine, receiver, 12, COLOR.RED, rankingRank)
 		drawResultNetRank(engine, receiver, 14, COLOR.RED, netRankingRank[0])
 		drawResultNetRankDaily(engine, receiver, 16, COLOR.RED, netRankingRank[1])
@@ -428,7 +444,7 @@ class MarathonExtreme:NetDummyMode() {
 		val msg = "game\tstats\t"+engine.run {
 			statistics.run {
 				"${scoreLine}\t${scoreSD}\t${scoreHD}\t${scoreBonus}\t${lines}\t${totalPieceLocked}\t${time}\t${level}\t$endless\t"
-			}+"${gameActive}\t${timerActive}\t$lastscore\t$scDisp\t${lastEvent}\t${lastEventPiece}\t$bg\t$rollTime\n"
+			}+"${gameActive}\t${timerActive}\t$lastScore\t$scDisp\t${lastEvent}\t${lastEventPiece}\t$bg\t$rollTime\n"
 		}
 		netLobby?.netPlayerClient?.send(msg)
 	}
@@ -447,7 +463,7 @@ class MarathonExtreme:NetDummyMode() {
 			{endless = it.toBoolean()},
 			{engine.gameActive = it.toBoolean()},
 			{engine.timerActive = it.toBoolean()},
-			{lastscore = it.toInt()},
+			{lastScore = it.toInt()},
 			{/*scDisp = it.toInt()*/},
 			{engine.lastEvent = ScoreEvent.parseStr(it)},
 			{engine.owner.bgMan.bg = it.toInt()},

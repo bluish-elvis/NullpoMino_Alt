@@ -1,37 +1,37 @@
 /*
- * Copyright (c) 2021-2023,
- * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
- *
- * Kotlin converted and modified by Venom=Nhelv
- *
- * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
- *
- * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
- * Original Repository: https://github.com/Shots243/ModePile
- *
- * When using this library in a mode / library pack of your own, the following
- * conditions must be satisfied:
- *     - This license must remain visible at the top of the document, unmodified.
- *     - You are allowed to use this library for any modding purpose.
- *         - If this is the case, the Library Creator must be credited somewhere.
- *             - Source comments only are fine, but in a README is recommended.
- *     - Modification of this library is allowed, but only in the condition that a
- *       pull request is made to merge the changes to the repository.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ Copyright (c) 2021-2023,
+ This library class was created by 0xFC963F18DC21 / Shots243
+ It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+
+ Kotlin converted and modified by Venom=Nhelv
+
+ Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+
+ THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+
+ Original Repository: https://github.com/Shots243/ModePile
+
+ When using this library in a mode / library pack of your own, the following
+ conditions must be satisfied:
+     - This license must remain visible at the top of the document, unmodified.
+     - You are allowed to use this library for any modding purpose.
+         - If this is the case, the Library Creator must be credited somewhere.
+             - Source comments only are fine, but in a README is recommended.
+     - Modification of this library is allowed, but only in the condition that a
+       pull request is made to merge the changes to the repository.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
  */
 
 package zeroxfc.nullpo.custom.modes
@@ -72,10 +72,10 @@ class MissionMode:MarathonModeBase() {
 	/** Rankings' scores */
 	private val rankingScore = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0L}}
 	/** Rankings' times */
-	private val rankingTime = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {-1}}
 
 	private val rankingScorePlayer = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0L}}
-	private val rankingTimePlayer = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingTimePlayer = List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {-1}}
 	private var rankingRankPlayer = 0
 	override val rankMap = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}
 		+rankingTime.mapIndexed {a, x -> "$a.time" to x})
@@ -101,7 +101,7 @@ class MissionMode:MarathonModeBase() {
 		specificPieceName = ""
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 		rankingScorePlayer.forEach {it.fill(0)}
 		rankingTimePlayer.forEach {it.fill(0)}
 		engine.playerProp.reset()
@@ -244,19 +244,13 @@ class MissionMode:MarathonModeBase() {
 		else receiver.drawScoreFont(engine, 0, 1, "(${tableGameClearMissions[goalType]} missions run)", COLOR.GREEN)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE TIME", COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-						receiver.drawScoreNum(
-							engine, 3, topY+i, "${rankingScorePlayer[goalType][i]}", i==rankingRankPlayer,
-							scale
-						)
-						receiver.drawScoreNum(
-							engine, 9, topY+i, rankingTimePlayer[goalType][i].toTimeStr, i==rankingRankPlayer, scale
-						)
+						receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+						receiver.drawScoreNum(engine, 3, topY+i, "${rankingScorePlayer[goalType][i]}", i==rankingRankPlayer)
+						receiver.drawScoreNum(engine, 9, topY+i, rankingTimePlayer[goalType][i].toTimeStr, i==rankingRankPlayer)
 					}
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
 					receiver.drawScoreFont(
@@ -266,18 +260,15 @@ class MissionMode:MarathonModeBase() {
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-						receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[goalType][i]}", i==rankingRank, scale)
-						receiver.drawScoreNum(engine, 9, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank, scale)
+						receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+						receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
+						receiver.drawScoreNum(engine, 9, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank)
 					}
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
-					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)"
-					)
-					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN",
-						COLOR.GREEN
-					)
+					if(!engine.playerProp.isLoggedIn)
+						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)")
+					if(engine.playerProp.isLoggedIn)
+						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {

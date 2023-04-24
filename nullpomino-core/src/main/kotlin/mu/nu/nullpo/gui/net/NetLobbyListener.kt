@@ -75,7 +75,7 @@ interface NetLobbyListener {
 	@Throws(IOException::class)
 	fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>)
 
-	@Deprecated("message should use List")
+	@Deprecated("message should use List", ReplaceWith("netlobbyOnMessage(lobby, client, message.toList())"))
 	@Throws(IOException::class)
 	fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:Array<String>) =
 		netlobbyOnMessage(lobby, client, message.toList())

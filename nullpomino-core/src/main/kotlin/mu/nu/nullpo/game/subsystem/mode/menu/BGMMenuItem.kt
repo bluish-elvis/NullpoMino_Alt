@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2021-2023, NullNoname
+ * Copyright (c) 2023, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
- * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
+ * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *     * Redistributions of source code must retain the above copyright
@@ -27,48 +27,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common
+package mu.nu.nullpo.game.subsystem.mode.menu
 
+import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.event.EventReceiver
-import java.util.Locale
+import mu.nu.nullpo.game.play.GameEngine
 
-abstract class BaseFontNano:BaseFont {
-	companion object {
-		const val w = 12
-		const val h = 14
+class BGMMenuItem(name:String, color:EventReceiver.COLOR, defaultValue:Int = 0):
+	StringsMenuItem(name, "BGM", color, defaultValue, BGMStatus.BGM.values.map {it.drawName}, false, false) {
+	override val valueString:String
+		get() = choiceNames[value]
+	override val colMax:Int
+		get() = 2
+
+	override fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int) {
+		val cur = focus==0
+		receiver.drawMenuFont(engine, 0, y, "BGM", color)
+		receiver.drawMenuFont(engine, 0, y+1, valueString, cur)
+		receiver.drawMenuNum(engine, 8, y, "%2d".format(value), cur)
+		if(cur) receiver.drawMenuFont(engine, 7, y, "\u0082", true)
 	}
-
-	abstract override val rainbowCount:Int
-	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float,
-		rainbow:Int,
-		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) {
-		var dx = x
-		var dy = y
-
-		str.uppercase(Locale.getDefault()).forEachIndexed {i, char ->
-			val stringChar = char.code
-
-			if(stringChar==0x0A) {
-				// 改行 (\n）
-				dy = (dy+16*scale)
-				dx = x
-			} else {// 文字出力
-				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
-				val c = stringChar-32// Character output
-				val sx = (c%32)*w
-				val sy = (c/32+col*3)*h
-
-				draw(0, dx, dy, scale, sx, sy, w, h, alpha)
-				dx += w*scale
-			}
-		}
-	}
-
-	override fun printFont(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int) =
-		processTxt(
-			x, y, str, color, scale, alpha, rainbow
-		) {i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int, a:Float ->
-			getImg(i).draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, alpha = a)
-		}
-
 }

@@ -56,10 +56,10 @@ class StateInGame:BasicGameState() {
 	private var pauseMessageHide = false
 
 	/** frame ステップ is enabled flag */
-	private var enableframestep = false
+	private var enableFrameStep = false
 
 	/** Show background flag */
-	var showbg = true; private set
+	var showBg = true; private set
 
 	/** 倍速Mode */
 	private var fastForward = 0
@@ -92,13 +92,13 @@ class StateInGame:BasicGameState() {
 
 	/** Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		enableframestep = NullpoMinoSlick.propConfig.getProperty("option.enableframestep", false)
-		showbg = NullpoMinoSlick.propConfig.getProperty("option.showbg", true)
+		enableFrameStep = NullpoMinoSlick.propConfig.getProperty("option.enableFrameStep", false)
+		showBg = NullpoMinoSlick.propConfig.getProperty("option.showBg", true)
 		fastForward = 0
 		cursor = 0
 		prevInGameFlag = false
 
-		container?.setClearEachFrame(!showbg) // Clear each frame when there is no BG
+		container?.setClearEachFrame(!showBg) // Clear each frame when there is no BG
 	}
 
 	/** Start a new game
@@ -221,7 +221,7 @@ class StateInGame:BasicGameState() {
 		gameManager?.let {
 			if(it.engine.isNotEmpty())
 				strTitle = when {
-					pause&&!enableframestep -> "[PAUSE]"
+					pause&&!enableFrameStep -> "[PAUSE]"
 					it.replayMode -> if(it.replayRerecord) "[RERECORD]" else "[REPLAY]"
 					it.engine[0].isInGame&&!it.replayMode&&!it.replayRerecord -> "[PLAY]"
 					else -> "[Menu]"
@@ -259,7 +259,7 @@ class StateInGame:BasicGameState() {
 				val offsetY = it.receiver.fieldY(it.engine[0])
 
 				// Pause menu
-				if(pause&&!enableframestep&&!pauseMessageHide) {
+				if(pause&&!enableFrameStep&&!pauseMessageHide) {
 					FontNormal.printFont(offsetX+12, offsetY+188+cursor*16, "\u0082", COLOR.RAINBOW)
 
 					FontNormal.printFont(offsetX+28, offsetY+188, "Continue", cursor==0)
@@ -302,7 +302,7 @@ class StateInGame:BasicGameState() {
 		GameKey.gameKey.forEachIndexed {i, it ->
 			it.update(
 				container.input,
-				(!pause||enableframestep)&&i<(gameManager?.engine?.size ?: 0)&&gameManager?.engine?.get(i)?.isInGame==true
+				(!pause||enableFrameStep)&&i<(gameManager?.engine?.size ?: 0)&&gameManager?.engine?.get(i)?.isInGame==true
 			)
 		}
 		// Title bar update
@@ -418,14 +418,14 @@ class StateInGame:BasicGameState() {
 			if(ResourceHolder.bgmPlaying!=m.musMan.bgm&&!m.musMan.fadeSW)
 				ResourceHolder.bgmStart(m.musMan.bgm)
 			if(ResourceHolder.bgmIsPlaying) {
-				val baseVolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
+				val baseVolume = NullpoMinoSlick.propConfig.getProperty("option.bgmVolume", 128)
 				val newVolume = maxOf(0f, minOf(m.musMan.volume*baseVolume/128f, 1f))
 				container.musicVolume = newVolume
 				if(newVolume<=0f) ResourceHolder.bgmStop()
 			}
 
 			// ゲームの処理を実行
-			if(!pause||GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_FRAMESTEP)&&enableframestep) {
+			if(!pause||GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_FRAMESTEP)&&enableFrameStep) {
 				for(i in 0 until minOf(m.players, GameKey.gameKey.size))
 					if(!m.engine[i].gameActive||((m.engine[i].ai==null||m.engine[i].aiShowHint)&&(!m.replayMode||m.replayRerecord)))
 						GameKey.gameKey[i].inputStatusUpdate(m.engine[i].ctrl)

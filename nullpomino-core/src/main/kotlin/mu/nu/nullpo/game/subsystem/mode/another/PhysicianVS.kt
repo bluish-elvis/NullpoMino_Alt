@@ -732,8 +732,8 @@ class PhysicianVS:AbstractMode() {
 		/* float apm = (float)(garbageSent[playerID] * 3600) /
  * (float)(engine.statistics.time);
  * drawResult(engine, playerID, receiver, 3, EventReceiver.COLOR.ORANGE,
- * "ATTACK", String.format("%10d", garbageSent[playerID]),
- * "ATTACK/MIN", String.format("%10g", apm)); */
+ * "ATTACK", "%10d".format(garbageSent[playerID]),
+ * "ATTACK/MIN", "%10g".format(apm)); */
 	}
 
 	/* Called when saving replay */

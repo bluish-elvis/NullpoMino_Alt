@@ -46,16 +46,17 @@ import java.util.Locale
 import java.util.zip.GZIPInputStream
 
 /** Rule select (after mode selection) */
-class StateSelectRuleFromList:DummyMenuScrollState() {
+class StateSelectRuleFromList:BaseMenuScrollState() {
 	/** HashMap of rules (ModeName->RuleEntry) */
-	private var mapRuleEntries:MutableMap<String, RuleEntry> = mutableMapOf()
+	private var mapRuleEntries:MutableMap<String, MutableList<RuleEntry>> = mutableMapOf()
 
 	/** Current mode */
-	private var strCurrentMode = ""
+	internal var strCurrentMode = ""
+	internal var intCurrentMode = 0
 
-	private val entryRules:RuleEntry get() = mapRuleEntries.getOrPut("") {RuleEntry()}
-	private val modeRules:RuleEntry get() = mapRuleEntries.getOrPut(strCurrentMode) {RuleEntry()}
-
+	private val entryRules get() = mapRuleEntries.getOrPut("") {mutableListOf()}
+	private val modeRules get() = mapRuleEntries.getOrPut(strCurrentMode) {mutableListOf()}
+	private val currentRuleList get() = (entryRules+modeRules).filter {it.mode==intCurrentMode}
 	/** Constructor */
 	init {
 		pageHeight = PAGE_HEIGHT
@@ -71,7 +72,7 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 
 	/** Load list file */
 	private fun loadRecommendedRuleList() {
-		mapRuleEntries = mutableMapOf("" to RuleEntry())
+		mapRuleEntries = mutableMapOf("" to mutableListOf())
 
 		try {
 			val reader = BufferedReader(FileReader("config/list/recommended_rules.lst"))
@@ -84,7 +85,7 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 					// Commment-line. Ignore it.
 				} else if(r.startsWith(":")) {// Mode change
 					strMode = r.substring(1)
-					mapRuleEntries[strMode] = RuleEntry()
+					mapRuleEntries.getOrPut(strMode) {mutableListOf()}.clear()
 				} else {
 					// File Path
 					val file = File(r)
@@ -96,12 +97,11 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 							val propRule = CustomProperties()
 							propRule.load(ruleIn)
 							ruleIn.close()
-
+							val ruleMode = propRule.getProperty("0.ruleOpt.style", 0)
 							val strRuleName = propRule.getProperty("0.ruleOpt.strRuleName", "")
-							if(strRuleName.isNotEmpty()) {
-								mapRuleEntries[strMode]?.listName?.add(strRuleName)
-								mapRuleEntries[strMode]?.listPath?.add(r)
-							}
+							if(strRuleName.isNotEmpty())
+								mapRuleEntries[strMode]?.add(RuleEntry(r, strRuleName, ruleMode))
+
 						} catch(e2:IOException) {
 							log.error("File $r doesn't exist", e2)
 						}
@@ -115,14 +115,10 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 
 	/** Prepare rule list */
 	private fun prepareRuleList() {
-		strCurrentMode = NullpoMinoSlick.propGlobal.getProperty("name.mode", "")
-		val entry = entryRules.listName
-		val modes = modeRules.listName
-
-		log.debug("{} {}", entry.toList(), modes.toList())
+		if(strCurrentMode.isEmpty()) strCurrentMode = NullpoMinoSlick.propGlobal.getProperty("name.mode", "")
 
 		val curRule = NullpoMinoSlick.propGlobal.getProperty("0.rule")
-		list = if(!curRule.isNullOrEmpty()) entry+modes+STR_FB else entry+modes
+		list = currentRuleList.map {it.name}.let {if(!curRule.isNullOrEmpty()) it+STR_FB else it}
 
 		val strLastRule = NullpoMinoSlick.propGlobal.getProperty("lastrule.${strCurrentMode.lowercase(Locale.getDefault())}")
 		val defaultCursor = list.indexOfFirst {it==strLastRule}
@@ -138,7 +134,7 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 	/* Render screen */
 	override fun onRenderSuccess(container:GameContainer, game:StateBasedGame, graphics:Graphics) {
 		FontNormal.printFontGrid(1, 1, "Choose your Style (${cursor+1}/${list.size})", COLOR.ORANGE)
-		FontNano.printFont(8, 36, "FOR ${strCurrentMode.uppercase()}", COLOR.ORANGE, .5f)
+		FontNano.printFont(8, 36, "FOR ${strCurrentMode.uppercase()} $intCurrentMode", COLOR.ORANGE, .5f)
 	}
 
 	/* Decide */
@@ -150,7 +146,7 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 		)
 		NullpoMinoSlick.saveConfig()
 
-		val strRulePath = if(list[cursor]==STR_FB) null else (entryRules.listPath+modeRules.listPath)[cursor]
+		val strRulePath = if(list[cursor]==STR_FB) null else currentRuleList.map {it.path}[cursor]
 
 		log.debug(strRulePath)
 		NullpoMinoSlick.stateInGame.startNewGame(strRulePath)
@@ -165,10 +161,7 @@ class StateSelectRuleFromList:DummyMenuScrollState() {
 	}
 
 	/** RuleEntry */
-	private class RuleEntry {
-		val listPath = MutableList(0) {""}
-		val listName = MutableList(0) {""}
-	}
+	private data class RuleEntry(val path:String, val name:String, val mode:Int = 0)
 
 	companion object {
 		/** Log */

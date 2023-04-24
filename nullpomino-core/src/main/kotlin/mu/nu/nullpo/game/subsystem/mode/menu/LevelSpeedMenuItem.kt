@@ -46,8 +46,8 @@ class LevelSpeedMenuItem(color:COLOR, showG:Boolean = false, showD:Boolean = fal
 			val d = spd.denominator
 			receiver.drawMenuFont(engine, 0, y, "SPEED", color = COLOR.WHITE)
 			receiver.drawScoreSpeed(engine, -13, y+1, g, d, 5)
-			receiver.drawMenuNum(engine, 6, y, String.format("%5d", g))
-			receiver.drawMenuNum(engine, 6, y+1, String.format("%5d", d))
+			receiver.drawMenuNum(engine, 6, y, "%5d".format(g))
+			receiver.drawMenuNum(engine, 6, y+1, "%5d".format(d))
 		}
 		if(showD) {
 			val y = y+if(showG) 4 else 2

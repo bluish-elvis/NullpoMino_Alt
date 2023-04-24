@@ -104,7 +104,7 @@ class RetroN:AbstractMode() {
 	 * screen. */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		softdropscore = 0
 		harddropscore = 0
 		levellines = 0
@@ -298,7 +298,7 @@ class RetroN:AbstractMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(
-						engine, 0, 4+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+						engine, 0, 4+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
 					receiver.drawScoreNum(engine, 3, 4+i, GeneralUtil.capsNum(rankingScore[gametype][i], 6), i==rankingRank)
 					receiver.drawScoreNum(
@@ -315,7 +315,7 @@ class RetroN:AbstractMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "SCORE${if(lastscore>0) "(+$lastscore)" else ""}", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 3, "SCORE${if(lastScore>0) "(+$lastScore)" else ""}", COLOR.BLUE)
 			receiver.drawScore(
 				engine, 0, 4, GeneralUtil.capsNum(scDisp, 6), font = if(engine.statistics.score<=999999) FONT.NUM else FONT.NORMAL,
 				scale = 2f
@@ -324,7 +324,7 @@ class RetroN:AbstractMode() {
 			receiver.drawScoreFont(engine, 0, 6, "LINE", COLOR.BLUE)
 			receiver.drawScore(
 				engine, 0, 7, when(gametype) {
-					GAMETYPE_TYPE_B -> String.format("-%2d", maxOf(25-engine.statistics.lines, 0))
+					GAMETYPE_TYPE_B -> "-%2d".format(maxOf(25-engine.statistics.lines, 0))
 					else -> GeneralUtil.capsNum(engine.statistics.lines, 3)
 				}, if(gametype!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.NORMAL, scale = 2f
 			)
@@ -373,7 +373,7 @@ class RetroN:AbstractMode() {
 
 		// Add score to total
 		if(pts>0) {
-			lastscore = pts
+			lastScore = pts
 			engine.statistics.scoreLine += pts
 		}
 
@@ -447,7 +447,7 @@ class RetroN:AbstractMode() {
 		if(engine.statc[1]==0) {
 			drawResultStats(engine, receiver, 3, COLOR.BLUE, Statistic.SCORE, Statistic.LINES)
 			receiver.drawMenuFont(engine, 0, 7, "Level", COLOR.BLUE)
-			val strLevel = String.format("%10s", LEVEL_NAME[engine.statistics.level])
+			val strLevel = "%10s".format(LEVEL_NAME[engine.statistics.level])
 			receiver.drawMenuFont(engine, 0, 8, strLevel)
 			drawResultStats(engine, receiver, 9, COLOR.BLUE, Statistic.SPL)
 			drawResultRank(engine, receiver, 15, COLOR.BLUE, rankingRank)
@@ -458,12 +458,12 @@ class RetroN:AbstractMode() {
 			drawResultStats(engine, receiver, 3, COLOR.BLUE, Statistic.TIME, Statistic.LPM)
 			receiver.drawMenuFont(engine, 0, 7, "I-Droughts", COLOR.BLUE)
 			receiver.drawMenuFont(engine, 0, 8, "Longest", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, 0, 8, String.format("%3d", droughts.maxOrNull() ?: 0), 2f)
+			receiver.drawMenuNum(engine, 0, 8, "%3d".format(droughts.maxOrNull() ?: 0), 2f)
 			receiver.drawMenuFont(engine, 0, 10, "Average", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, 0, 11, String.format("%3f", droughts.average()), 2f)
+			receiver.drawMenuNum(engine, 0, 11, droughts.average(), null to 3, scale = 2f)
 			drawResult(
 				engine, receiver, 13, COLOR.RED, "Burnouts",
-				String.format("%3d", engine.statistics.run {totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple})
+				"%3d".format(engine.statistics.run {totalSingle+totalDouble+totalSplitDouble+totalTriple+totalSplitTriple})
 			)
 		}
 	}

@@ -113,7 +113,7 @@ class GrandRoads:NetDummyMode() {
 	/** Ranking ecords */
 	private val rankingLines = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
 	private val rankingLifes = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
-	private val rankingTime = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(COURSE_MAX) {MutableList(RANKING_MAX) {-1}}
 	private val rankingRollClear = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
 
 	/** Returns the name of this mode */
@@ -149,7 +149,7 @@ class GrandRoads:NetDummyMode() {
 		rankingRank = -1
 		rankingLines.forEach {it.fill(0)}
 		rankingLifes.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 		rankingRollClear.forEach {it.fill(0)}
 
 		engine.twistEnable = false
@@ -291,11 +291,11 @@ class GrandRoads:NetDummyMode() {
 			engine.statistics.level = startLevel
 			engine.statistics.levelDispAdd = 1
 			engine.big = big
-			norm = (0 until startLevel).reduce {acc, i -> acc+nowCourse.goalLines(i)}
+			norm = (0 until startLevel).reduceOrNull {acc, i -> acc+nowCourse.goalLines(i)} ?: 0
 			nextLv = (0..startLevel).reduce {acc, i -> acc+nowCourse.goalLines(i)}
 			levelTimer = 0
 			setSpeed(engine)
-			bgmLv = nowCourse.bgmChange.indexOfLast {it<=startLevel}.let {if(it<0) nowCourse.bgmChange.size-1 else it}
+			bgmLv = maxOf(0, nowCourse.bgmChange.indexOfLast {it<=startLevel}.let {if(it<0) nowCourse.bgmChange.size-1 else it})
 		}
 
 		return false
@@ -315,7 +315,7 @@ class GrandRoads:NetDummyMode() {
 		receiver.drawScoreFont(engine, 0, -1, name, COLOR.PURPLE)
 		receiver.drawScoreFont(engine, 0, 0, "TIME ATTACK", COLOR.PURPLE, .75f)
 		receiver.drawScoreFont(engine, 0, 1, "${nowCourse.showName} COURSE", COLOR.PURPLE)
-		//rereceiver.drawScore(engine, playerID, -1, -4*2, "DECORATION", scale = .5f);
+		//receiver.drawScore(engine, playerID, -1, -4*2, "DECORATION", scale = .5f);
 		//receiver.drawScoreBadges(engine, playerID,0,-3,100,decoration);
 		//receiver.drawScoreBadges(engine, playerID,5,-4,100,decTemp);
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
@@ -323,36 +323,26 @@ class GrandRoads:NetDummyMode() {
 				receiver.drawScoreFont(engine, 8, 3, "Time", COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					var gcolor = COLOR.WHITE
-					if(rankingRollClear[goalType][i]==1) gcolor = COLOR.GREEN
-					if(rankingRollClear[goalType][i]==2) gcolor = COLOR.ORANGE
-					receiver.drawScoreGrade(
-						engine,
-						0,
-						4+i,
-						String.format("%2d", i+1),
-						if(i==rankingRank) COLOR.RED else COLOR.YELLOW
-					)
-
-					receiver.drawScoreNum(engine, 8, 4+i, rankingTime[goalType][i].toTimeStr, gcolor)
-					receiver.drawScoreNano(
-						engine, 10, 8+i*2, if(gcolor==COLOR.WHITE) "LINES\nCLEARED" else "LIFES\nREMAINED",
-						gcolor, .5f
-					)
+					val cleared = rankingRollClear[goalType][i]>0
+					val gColor = when {
+						rankingRollClear[goalType][i]==1 -> COLOR.GREEN
+						rankingRollClear[goalType][i]==2 -> COLOR.ORANGE
+						else -> COLOR.WHITE
+					}
+					receiver.drawScoreGrade(engine, 0, 4+i, "%2d".format(i+1), if(i==rankingRank) COLOR.RED else COLOR.YELLOW)
+					receiver.drawScoreNum(engine, 8, 4+i, rankingTime[goalType][i].toTimeStr, gColor)
+					receiver.drawScoreNano(engine, 10, 4+i, if(cleared) "LIVES\nREMAINED" else "LINES\nCLEARED", gColor, .5f)
 					receiver.drawScoreNum(
-						engine, 2, 4+i, String.format(
-							"%3d",
-							if(gcolor==COLOR.WHITE) rankingLines[goalType][i] else rankingLifes[goalType][i]
-						), gcolor
+						engine, 2, 4+i, "%3d".format(if(cleared) rankingLifes[goalType][i] else rankingLines[goalType][i]), gColor
 					)
 				}
 			}
 		} else {
 			receiver.drawScoreFont(engine, 0, 3, "Level", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 2, String.format("%02d", engine.statistics.level+1), 2f)
-			receiver.drawScoreNum(engine, 8, 3, String.format("/%3d", nowCourse.goalLevel))
-			receiver.drawScoreNum(engine, 0, 4, String.format("%3d/%3d", norm, (engine.statistics.level+1)*10))
-			receiver.drawScoreNum(engine, 0, 4, String.format("%3d/%3d", norm, (engine.statistics.level+1)*10))
+			receiver.drawScoreNum(engine, 5, 2, "%02d".format(engine.statistics.level+1), 2f)
+			receiver.drawScoreNum(engine, 8, 3, "/%3d".format(nowCourse.goalLevel))
+			receiver.drawScoreNum(engine, 0, 4, "%3d/%3d".format(norm, (engine.statistics.level+1)*10))
+			receiver.drawScoreNum(engine, 0, 4, "%3d/%3d".format(norm, (engine.statistics.level+1)*10))
 
 			receiver.drawScoreSpeed(engine, 0, 5, engine.speed.rank, 6f)
 
@@ -377,9 +367,8 @@ class GrandRoads:NetDummyMode() {
 			if(showST&&sectionTime.isNotEmpty()&&!netIsWatch) {
 				val x = if(receiver.nextDisplayType==2) 25 else 12
 				val y = if(receiver.nextDisplayType==2) 4 else 2
-				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 
-				receiver.drawScoreFont(engine, x, y, "SECTION TIME", COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, x, y, "SECTION TIME", COLOR.BLUE)
 
 				val l = maxOf(0, engine.statistics.level-20)
 				var i = l
@@ -388,8 +377,8 @@ class GrandRoads:NetDummyMode() {
 						var strSeparator = "-"
 						if(i==engine.statistics.level&&engine.ending==0) strSeparator = "+"
 
-						val strSectionTime:String = String.format("%2d%s%s", i+1, strSeparator, sectionTime[i].toTimeStr)
-						receiver.drawScoreNum(engine, x+1, y+1+i-l, strSectionTime, scale)
+						val strSectionTime:String = "%2d%s%s".format(i+1, strSeparator, sectionTime[i].toTimeStr)
+						receiver.drawScoreNum(engine, x+1, y+1+i-l, strSectionTime)
 					}
 					i++
 				}
@@ -553,9 +542,9 @@ class GrandRoads:NetDummyMode() {
 			if(engine.statistics.rollClear==2) gcolor = COLOR.ORANGE
 
 			receiver.drawMenuFont(engine, 0, 1, "LIFE REMAINED", COLOR.BLUE, .8f)
-			receiver.drawMenuNum(engine, 7, 1, String.format("%2d", engine.lives), gcolor, 2f)
+			receiver.drawMenuNum(engine, 7, 1, "%2d".format(engine.lives), gcolor, 2f)
 
-			receiver.drawMenuNum(engine, 0, 2, String.format("%04d", norm), gcolor, 2f)
+			receiver.drawMenuNum(engine, 0, 2, "%04d".format(norm), gcolor, 2f)
 			receiver.drawMenuFont(engine, 6, 3, "Lines", COLOR.BLUE, .8f)
 
 			drawResultStats(

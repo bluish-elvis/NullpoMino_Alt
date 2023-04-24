@@ -42,9 +42,10 @@ import org.newdawn.slick.Color
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
+import org.newdawn.slick.state.transition.EmptyTransition
 
 /** Title screen state */
-class StateTitle internal constructor():DummyMenuChooseState() {
+class StateTitle internal constructor():BaseMenuChooseState() {
 	/** True when new version is already checked */
 	private var isNewVersionChecked = false
 	override val numChoice:Int get() = CHOICES.size
@@ -139,9 +140,14 @@ class StateTitle internal constructor():DummyMenuChooseState() {
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("decide1")
 
-		StateSelectMode.isTopLevel = true
 		if(cursor==CHOICEID.size-1) container.exit()
-		else game.enterState(CHOICEID[cursor])
+		else CHOICEID[cursor].let {
+			game.enterState(
+				it,
+				if(it==StateSelectMode.ID) StateSelectModeFolder.TransDecideFolder() else EmptyTransition(),
+				EmptyTransition()
+			)
+		}
 
 		return false
 	}

@@ -293,7 +293,7 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 						return
 					}
 					NullpoMinoSlick.propMusic.setProperty("music.noloop.$no", noLoop)
-					// boolean streaming = NullpoMinoSlick.propConfig.getProperty("option.bgmstreaming", true);
+					// boolean streaming = NullpoMinoSlick.propConfig.getProperty("option.bgmStreaming", true);
 					newArr[no-1] = Music(filename, true)
 					ResourceHolder.bgm = arrayOf(newArr.clone())
 					if(!showerr) log.info("Loaded BGM at $filename")
@@ -333,8 +333,8 @@ class ResourceHolderCustomAssetExtension @JvmOverloads constructor(initialCapaci
 		fun playCustomBGM(name:String, noLoop:Boolean) {
 			if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
 			stopCustomBGM()
-			val bgmvolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
-			NullpoMinoSlick.appGameContainer.musicVolume = bgmvolume/128.toFloat()
+			val bgmVolume = NullpoMinoSlick.propConfig.getProperty("option.bgmVolume", 128)
+			NullpoMinoSlick.appGameContainer.musicVolume = bgmVolume/128.toFloat()
 			try {
 				if(noLoop) slickMusic[name]!!.play() else slickMusic[name]!!.play()
 			} catch(e:Throwable) {

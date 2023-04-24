@@ -90,7 +90,7 @@ class RetroModern:AbstractMode() {
 	 * screen. */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		rollTime = 0
 		norm = 0
 		special = false
@@ -102,7 +102,7 @@ class RetroModern:AbstractMode() {
 		rankingScore.forEach {it.fill(0)}
 		rankingLevel.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 		engine.twistEnable = false
 		engine.b2bEnable = false
 		engine.splitB2B = false
@@ -289,28 +289,21 @@ class RetroModern:AbstractMode() {
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2) .5f else 1f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LINE LV TIME", color = COLOR.BLUE, scale = scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LINE LV TIME", color = COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[gameType][i]}", i==rankingRank, scale)
-					receiver.drawScoreNum(
-						engine, 9, topY+i, String.format("%2d", rankingLines[gameType][i]), i==rankingRank, scale
-					)
-					receiver.drawScoreNum(
-						engine, 12, topY+i, String.format("%3d", rankingLevel[gameType][i]), i==rankingRank, scale
-					)
-					receiver.drawScoreNum(
-						engine, 16, topY+i, rankingTime[gameType][i].toTimeStr, i==rankingRank, scale
-					)
+					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[gameType][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 9, topY+i, "%2d".format(rankingLines[gameType][i]), i==rankingRank)
+					receiver.drawScoreNum(engine, 12, topY+i, "%3d".format(rankingLevel[gameType][i]), i==rankingRank)
+					receiver.drawScoreNum(engine, 16, topY+i, rankingTime[gameType][i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
 			// Game statistics
 			receiver.drawScoreFont(engine, 0, 3, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 3, "+$lastscore")
+			receiver.drawScoreNum(engine, 5, 3, "+$lastScore")
 			val scget = scDisp<engine.statistics.score
 			receiver.drawScoreNum(engine, 0, 4, "$scDisp", scget, 2f)
 			val num = lineSlot.fold(0) {s, it ->
@@ -326,7 +319,7 @@ class RetroModern:AbstractMode() {
 			receiver.drawScoreBadges(engine, 2, 6, 200, num)
 
 			receiver.drawScoreFont(engine, 0, 10, "LINE", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 11, String.format("%03d/%03d", engine.statistics.lines, totalNorma), scale = 2f)
+			receiver.drawScoreNum(engine, 0, 11, "%03d/%03d".format(engine.statistics.lines, totalNorma), scale = 2f)
 
 			receiver.drawScoreFont(engine, 0, 13, "Level", COLOR.BLUE)
 			var lvdem = 0
@@ -335,7 +328,7 @@ class RetroModern:AbstractMode() {
 			else if(engine.statistics.level<levelNorma.size) lvdem = norm*100/levelNorma[engine.statistics.level]
 			if(lvdem<0) lvdem *= -1
 			if(lvdem>=100) lvdem -= lvdem-lvdem%100
-			receiver.drawScoreNum(engine, 5, 13, String.format("%02d.%02d", engine.statistics.level, lvdem), scale = 2f)
+			receiver.drawScoreNum(engine, 5, 13, "%02d.%02d".format(engine.statistics.level, lvdem), scale = 2f)
 
 			receiver.drawScoreFont(engine, 0, 14, "Time", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, scale = 2f)
@@ -383,8 +376,8 @@ class RetroModern:AbstractMode() {
 					engine.resetStatc()
 					engine.stat = GameEngine.Status.EXCELLENT
 					if(special) {
-						lastscore = 10000000
-						engine.statistics.scoreBonus += lastscore
+						lastScore = 10000000
+						engine.statistics.scoreBonus += lastScore
 					}
 				}
 			}
@@ -408,7 +401,7 @@ class RetroModern:AbstractMode() {
 		}
 		// Add score
 		if(pts>0) {
-			lastscore = pts
+			lastScore = pts
 			engine.statistics.scoreLine += pts
 		}
 		if(engine.manualLock) {
@@ -456,7 +449,7 @@ class RetroModern:AbstractMode() {
 			else -> 0
 		}*if(lineCount>=3) 5 else 1
 		receiver.drawMenuBadges(engine, 2, engine.lastLineY-if(num>=100000) if(num>=500000) 3 else 1 else 0, num)
-		receiver.drawMenuNum(engine, 4, engine.lastLineY, "$lastscore", COLOR.CYAN)
+		receiver.drawMenuNum(engine, 4, engine.lastLineY, "$lastScore", COLOR.CYAN)
 
 		if(engine.split) when(engine.lineClearing) {
 			2 -> receiver.drawMenuFont(engine, 0f, engine.lastLinesY.minOf {it.average().toFloat()}, "SPLIT TWIN", COLOR.PURPLE)
@@ -491,7 +484,7 @@ class RetroModern:AbstractMode() {
 			}
 			if(pts>0) {
 				pts *= 10*tableBonusMult[engine.statistics.level]
-				lastscore = pts
+				lastScore = pts
 				engine.statistics.scoreBonus += pts
 				receiver.addScore(engine, engine.fieldWidth/2, engine.lastLineY, pts, COLOR.RAINBOW)
 			}

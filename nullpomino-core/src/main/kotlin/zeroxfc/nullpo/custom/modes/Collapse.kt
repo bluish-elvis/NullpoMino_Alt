@@ -1,37 +1,37 @@
 /*
- * Copyright (c) 2021-2023,
- * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
- *
- * Kotlin converted and modified by Venom=Nhelv
- *
- * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
- *
- * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
- * Original Repository: https://github.com/Shots243/ModePile
- *
- * When using this library in a mode / library pack of your own, the following
- * conditions must be satisfied:
- *     - This license must remain visible at the top of the document, unmodified.
- *     - You are allowed to use this library for any modding purpose.
- *         - If this is the case, the Library Creator must be credited somewhere.
- *             - Source comments only are fine, but in a README is recommended.
- *     - Modification of this library is allowed, but only in the condition that a
- *       pull request is made to merge the changes to the repository.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ Copyright (c) 2021-2023,
+ This library class was created by 0xFC963F18DC21 / Shots243
+ It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+
+ Kotlin converted and modified by Venom=Nhelv
+
+ Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+
+ THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+
+ Original Repository: https://github.com/Shots243/ModePile
+
+ When using this library in a mode / library pack of your own, the following
+ conditions must be satisfied:
+     - This license must remain visible at the top of the document, unmodified.
+     - You are allowed to use this library for any modding purpose.
+         - If this is the case, the Library Creator must be credited somewhere.
+             - Source comments only are fine, but in a README is recommended.
+     - Modification of this library is allowed, but only in the condition that a
+       pull request is made to merge the changes to the repository.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
  */
 
 package zeroxfc.nullpo.custom.modes
@@ -39,12 +39,13 @@ package zeroxfc.nullpo.custom.modes
 import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.slick.MouseInput
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
+import mu.nu.nullpo.gui.slick.img.RenderStaffRoll.scale
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -208,10 +209,10 @@ class Collapse:AbstractMode() {
 
 	override fun renderSetting(engine:GameEngine) {
 		drawMenu(
-			engine, receiver, 0, EventReceiver.COLOR.RED, 0, "DIFFICULTY" to DIFFICULTY_NAMES[difficulty]
+			engine, receiver, 0, COLOR.RED, 0, "DIFFICULTY" to DIFFICULTY_NAMES[difficulty]
 		)
 		drawMenu(
-			engine, receiver, 2, EventReceiver.COLOR.BLUE, 1, "BOMBS" to enableBombs.getONorOFF(),
+			engine, receiver, 2, COLOR.BLUE, 1, "BOMBS" to enableBombs.getONorOFF(),
 			"BGM" to "$bgm"
 		)
 	}
@@ -809,75 +810,52 @@ class Collapse:AbstractMode() {
 
 	override fun renderLast(engine:GameEngine) {
 		if(owner.menuOnly) return
-		receiver.drawScoreFont(engine, 0, 0, name, EventReceiver.COLOR.ORANGE)
+		receiver.drawScoreFont(engine, 0, 0, name, COLOR.ORANGE)
 		receiver.drawScoreFont(
-			engine, 0, 1, "("+DIFFICULTY_NAMES[difficulty]+" DIFFICULTY)", EventReceiver.COLOR.ORANGE
+			engine, 0, 1, "("+DIFFICULTY_NAMES[difficulty]+" DIFFICULTY)", COLOR.ORANGE
 		)
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&enableBombs&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE    LEVEL", EventReceiver.COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE    LEVEL", COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0 until MAX_RANKING) {
-						receiver.drawScoreFont(
-							engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale
-						)
-						receiver.drawScoreFont(
-							engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", i==rankingRankPlayer,
-							scale
-						)
-						receiver.drawScoreFont(
-							engine, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}", i==rankingRankPlayer,
-							scale
-						)
+						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", i==rankingRankPlayer)
+						receiver.drawScoreFont(engine, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}", i==rankingRankPlayer, scale)
 					}
-					receiver.drawScoreFont(
-						engine, 0, topY+MAX_RANKING+1, "PLAYER SCORES", EventReceiver.COLOR.BLUE
-					)
-					receiver.drawScoreFont(
-						engine, 0, topY+MAX_RANKING+2, engine.playerProp.nameDisplay, EventReceiver.COLOR.WHITE,
-						2f
-					)
-					receiver.drawScoreFont(
-						engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN", EventReceiver.COLOR.GREEN
-					)
+					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+1, "PLAYER SCORES", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
+					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
 					for(i in 0 until MAX_RANKING) {
-						receiver.drawScoreFont(
-							engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale
-						)
-						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, 12, topY+i, "${rankingLevel[difficulty][i]}", i==rankingRank, scale)
+						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank)
+						receiver.drawScoreFont(engine, 12, topY+i, "${rankingLevel[difficulty][i]}", i==rankingRank)
 					}
-					receiver.drawScoreFont(
-						engine, 0, topY+MAX_RANKING+1, "LOCAL SCORES", EventReceiver.COLOR.BLUE
-					)
-					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, 0, topY+MAX_RANKING+2, "(NOT LOGGED IN)\n(E:LOG IN)"
-					)
-					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN",
-						EventReceiver.COLOR.GREEN
-					)
+					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+1, "LOCAL SCORES", COLOR.BLUE)
+					if(!engine.playerProp.isLoggedIn)
+						receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+2, "(NOT LOGGED IN)\n(E:LOG IN)")
+					if(engine.playerProp.isLoggedIn)
+						receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				}
 			}
 		} else if(!engine.gameActive&&engine.stat===GameEngine.Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "SCORE", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 3, "SCORE", COLOR.BLUE)
 			receiver.drawScoreFont(engine, 0, 4, "$scDisp")
-			receiver.drawScoreFont(engine, 0, 6, "LEVEL", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 6, "LEVEL", COLOR.BLUE)
 			receiver.drawScoreFont(engine, 0, 7, (engine.statistics.level+1).toString())
 			if(linesLeft>=0) {
-				receiver.drawScoreFont(engine, 0, 9, "LINES LEFT", EventReceiver.COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 9, "LINES LEFT", COLOR.BLUE)
 				receiver.drawScoreFont(engine, 0, 10, "$linesLeft")
 			}
-			receiver.drawScoreFont(engine, 0, 12, "TIME", EventReceiver.COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 12, "TIME", COLOR.BLUE)
 			receiver.drawScoreFont(engine, 0, 13, engine.statistics.time.toTimeStr)
 			if(engine.playerProp.isLoggedIn) {
-				receiver.drawScoreFont(engine, 0, 15, "PLAYER", EventReceiver.COLOR.BLUE)
-				receiver.drawScoreFont(engine, 0, 16, engine.playerProp.nameDisplay, EventReceiver.COLOR.WHITE, 2f)
+				receiver.drawScoreFont(engine, 0, 15, "PLAYER", COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, 16, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
 			}
 			sTextArr.forEach {
 				val x = it.location[0]
@@ -903,28 +881,28 @@ class Collapse:AbstractMode() {
 					x+nOffX,
 					y+nOffY,
 					it.text,
-					EventReceiver.COLOR.YELLOW,
+					COLOR.YELLOW,
 					scale
-				) else receiver.drawDirectFont(x+nOffX, y+nOffY, it.text, EventReceiver.COLOR.ORANGE, scale)
+				) else receiver.drawDirectFont(x+nOffX, y+nOffY, it.text, COLOR.ORANGE, scale)
 			}
-			receiver.drawMenuFont(engine, fieldX, fieldY, "f", EventReceiver.COLOR.YELLOW)
+			receiver.drawMenuFont(engine, fieldX, fieldY, "f", COLOR.YELLOW)
 
 			if(localState==LOCALSTATE_TRANSITION) {
 				val s = "$bScore"
 				val l = s.length
 				val offset = (12-l)/2
 				receiver.drawMenuFont(
-					engine, 2, 6, "LEVEL UP", if(engine.statc[0]/2%2==0) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE
+					engine, 2, 6, "LEVEL UP", if(engine.statc[0]/2%2==0) COLOR.YELLOW else COLOR.ORANGE
 				)
-				receiver.drawMenuFont(engine, 0, 8, "BONUS POINTS", EventReceiver.COLOR.YELLOW)
+				receiver.drawMenuFont(engine, 0, 8, "BONUS POINTS", COLOR.YELLOW)
 				receiver.drawMenuFont(engine, offset, 9, s)
 			}
 
 //			receiver.drawScoreFont(engine, playerID, 0, 15, "MOUSE COORDS", EventReceiver.COLOR.BLUE);
-//			receiver.drawScoreFont(engine, playerID, 0, 16, "(" + cursorX + ", " + cursorY + ")");
+//			receiver.drawScoreFont(engine, playerID, 0, 16, "($cursorX, $cursorY");
 //
 //			receiver.drawScoreFont(engine, playerID, 0, 18, "FIELD CELL CLICKED", EventReceiver.COLOR.BLUE);
-//			receiver.drawScoreFont(engine, playerID, 0, 19, "(" + fieldX + ", " + fieldY + ")");
+//			receiver.drawScoreFont(engine, playerID, 0, 19, "($fieldX, $fieldY)");
 			if(localState==LOCALSTATE_INGAME) {
 				val fx = receiver.fieldX(engine)+4
 				val fy = receiver.fieldY(engine)+52+17*16f
@@ -940,9 +918,9 @@ class Collapse:AbstractMode() {
 						1,
 						6,
 						"ALL CLEAR!",
-						if(engine.statistics.time/2%2==0) EventReceiver.COLOR.YELLOW else EventReceiver.COLOR.ORANGE
+						if(engine.statistics.time/2%2==0) COLOR.YELLOW else COLOR.ORANGE
 					)
-					receiver.drawMenuFont(engine, 0, 8, "BONUS POINTS", EventReceiver.COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 8, "BONUS POINTS", COLOR.YELLOW)
 					receiver.drawMenuFont(engine, offset, 9, s)
 				}
 			}
@@ -950,12 +928,12 @@ class Collapse:AbstractMode() {
 	}
 
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "SCORE", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 1, java.lang.String.format("%12s", engine.statistics.score))
-		receiver.drawMenuFont(engine, 0, 2, "LEVEL", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 3, String.format("%12s", engine.statistics.level+1))
-		receiver.drawMenuFont(engine, 0, 4, "TIME", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 5, String.format("%12s", engine.statistics.time.toTimeStr))
+		receiver.drawMenuFont(engine, 0, 0, "SCORE", COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 1, "%12s".format(engine.statistics.score))
+		receiver.drawMenuFont(engine, 0, 2, "LEVEL", COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 3, "%12s".format(engine.statistics.level+1))
+		receiver.drawMenuFont(engine, 0, 4, "TIME", COLOR.BLUE)
+		receiver.drawMenuFont(engine, 0, 5, "%12s".format(engine.statistics.time.toTimeStr))
 	}
 	/**
 	 * Load settings from [prop]

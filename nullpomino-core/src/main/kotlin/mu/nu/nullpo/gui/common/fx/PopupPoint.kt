@@ -50,7 +50,7 @@ class PopupPoint(x:Int, y:Int, val pts:Int, private val c:Int):SpriteSheet(x, y)
 			dx.toInt(), dy.toInt(), "+${pts}",
 			if(ticks/2%2==0) EventReceiver.COLOR.WHITE else EventReceiver.COLOR.all[color], alpha = alpha
 		)
-		else if(pts<0) r.drawDirectNum(dx.toInt(), dy.toInt(), "${pts}", EventReceiver.COLOR.RED)
+		else if(pts<0) r.drawDirectNum(dx.toInt(), dy.toInt(), "$pts", EventReceiver.COLOR.RED)
 	}
 
 	override val dx:Float get() = x-"$pts".length*6

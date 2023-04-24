@@ -86,7 +86,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		// Init variables
-		showBG = NullpoMinoSlick.propConfig.getProperty("option.showbg", true)
+		showBG = NullpoMinoSlick.propConfig.getProperty("option.showBg", true)
 		prevInGameFlag = false
 
 		// Observer stop
@@ -125,7 +125,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 		container?.setClearEachFrame(false)
 
 		// FPS restore
-		NullpoMinoSlick.altMaxFPS = NullpoMinoSlick.propConfig.getProperty("option.maxfps", 60)
+		NullpoMinoSlick.altMaxFPS = NullpoMinoSlick.propConfig.getProperty("option.maxFps", 60)
 		appContainer?.alwaysRender = !NullpoMinoSlick.alternateFPSTiming
 		appContainer?.setUpdateOnlyWhenVisible(true)
 
@@ -191,7 +191,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 						// BGM
 						if(ResourceHolder.bgmPlaying!=gameManager.musMan.bgm) ResourceHolder.bgmStart(gameManager.musMan.bgm)
 						if(ResourceHolder.bgmIsPlaying) {
-							val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmvolume", 128)
+							val basevolume = NullpoMinoSlick.propConfig.getProperty("option.bgmVolume", 128)
 							val basevolume2 = basevolume/128.toFloat()
 							var newvolume = gameManager.musMan.volume*basevolume2
 							if(newvolume<0f) newvolume = 0f

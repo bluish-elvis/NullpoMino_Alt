@@ -139,8 +139,7 @@ class CustomProperties(name:String = ""):Properties() {
 			is Double -> getProperty(key, def)
 			is Char -> getProperty(key, def)
 			is Boolean -> getProperty(key, def)
-			is MutableList<*> -> getProperties(key, def)
-			is List<*> -> getProperties(key, def)
+			is List<*> -> if(def is MutableList<*>) getPropertiesMutable(key, def) else getProperties(key, def)
 			else -> getProperty(key, "$def")
 		} as? T ?: def
 	} catch(e:Exception) {

@@ -49,7 +49,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	private val rankingScore = List(SCORETYPE_MAX) {List(3) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}}}
 
 	/** Rankings' times */
-	private val rankingTime = List(SCORETYPE_MAX) {List(3) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}}}
+	private val rankingTime = List(SCORETYPE_MAX) {List(3) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}}}
 
 	/** Chain display enable/disable */
 	private var showChains = false
@@ -66,14 +66,12 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	/** Sprint target score */
 	private var sprintTarget = 0
 	override val rankMap
-		get() = rankMapOf(rankingScore.flatMapIndexed {a, w ->
-			w.flatMapIndexed {b, x ->
-				x.flatMapIndexed {c, y -> y.mapIndexed {d, z -> "$a.$b.$c.$d.score" to z}}
-			}
-		}+rankingTime.flatMapIndexed {a, w ->
-			w.flatMapIndexed {b, x ->
-				x.flatMapIndexed {c, y -> y.mapIndexed {d, z -> "$a.$b.$c.$d.time" to z}}
-			}
+		get() = rankMapOf(rankingScore.flatMapIndexed {a, x ->
+			x.flatMapIndexed {b, y -> y.mapIndexed {c, z -> "$a.$b.$c.score" to z}}
+
+		}+rankingTime.flatMapIndexed {a, x ->
+			x.flatMapIndexed {b, y -> y.mapIndexed {c, z -> "$a.$b.$c.time" to z}}
+
 		})
 	/* Mode name */
 	override val name = "AVALANCHE 1P (RC2)"
@@ -246,7 +244,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 				}
 
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
 							receiver.drawScoreFont(
@@ -270,7 +268,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, 0, 3, "Score", COLOR.BLUE)
-			val strScore = "${engine.statistics.score}(+${lastscore}X$lastmultiplier)"
+			val strScore = "${engine.statistics.score}(+${lastScore}X$lastmultiplier)"
 			receiver.drawScoreFont(engine, 0, 4, strScore)
 
 			receiver.drawScoreFont(engine, 0, 6, "Level", COLOR.BLUE)
@@ -395,17 +393,17 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		if(gametype==2) {
 			receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", COLOR.ORANGE)
 			receiver.drawMenuFont(engine, 0, 3, "Time", COLOR.BLUE)
-			val strTime = String.format("%10s", engine.statistics.time.toTimeStr)
+			val strTime = "%10s".format(engine.statistics.time.toTimeStr)
 			receiver.drawMenuFont(engine, 0, 4, strTime)
 			receiver.drawMenuFont(engine, 0, 5, "Score", COLOR.BLUE)
 			receiver.drawMenuFont(engine, 0, 6, "${engine.statistics.score}")
 			receiver.drawMenuFont(engine, 0, 7, "ZENKESHI", COLOR.BLUE)
-			receiver.drawMenuFont(engine, 0, 8, String.format("%10d", zenKeshiCount))
+			receiver.drawMenuFont(engine, 0, 8, "%10d".format(zenKeshiCount))
 			receiver.drawMenuFont(engine, 0, 9, "MAX CHAIN", COLOR.BLUE)
-			receiver.drawMenuFont(engine, 0, 10, String.format("%10d", engine.statistics.maxChain))
+			receiver.drawMenuFont(engine, 0, 10, "%10d".format(engine.statistics.maxChain))
 			if(rankingRank!=-1) {
 				receiver.drawMenuFont(engine, 0, 11, "RANK", COLOR.BLUE)
-				val strRank = String.format("%10d", rankingRank+1)
+				val strRank = "%10d".format(rankingRank+1)
 				receiver.drawMenuFont(engine, 0, 12, strRank)
 			}
 		} else {
@@ -413,7 +411,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 			if(rankingRank!=-1) {
 				receiver.drawMenuFont(engine, 0, 15, "RANK", COLOR.BLUE)
-				val strRank = String.format("%10d", rankingRank+1)
+				val strRank = "%10d".format(rankingRank+1)
 				receiver.drawMenuFont(engine, 0, 16, strRank)
 			}
 		}

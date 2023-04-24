@@ -35,7 +35,7 @@ import mu.nu.nullpo.util.CustomProperties
 
 class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 	val items = items.toList()
-	/** [(item.index, item.columnNum, item.showPosYBot)]*/
+	/** [(item.index: item.columnNum to item.showPosYBot)]*/
 	val menus = items.foldIndexed(emptyList<Pair<Int, Int>>()) {id, list, item ->
 		list+List(item.colMax) {id to it}
 	}

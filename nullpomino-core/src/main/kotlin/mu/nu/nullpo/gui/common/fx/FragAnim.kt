@@ -60,7 +60,7 @@ class FragAnim(val type:ANIM, x:Int, y:Int, val color:Int, val spd:Int = 0, scal
 			//Fireworks
 			HANABI -> r.resources.imgHanabi[color]
 		}.draw(
-			if(flip) dx2 else dx, dy, if(flip) dx else dx2, dy2, srcx, srcy, srcx2, srcy2, alpha
+			if(flip) dx2 else dx, dy, if(flip) dx else dx2, dy2, srcX, srcY, srcX2, srcY2, alpha
 		)
 	}
 
@@ -87,12 +87,12 @@ class FragAnim(val type:ANIM, x:Int, y:Int, val color:Int, val spd:Int = 0, scal
 	override val dy:Float get() = y-offset.y
 	override val dx2:Float get() = dx+sq
 	override val dy2:Float get() = dy+sq
-	override val srcx:Int get() = (ticks-1)%table.first*sq
-	override val srcy:Int get() = (ticks-1)/table.second*sq
-	override val srcx2:Int get() = srcx+sq
-	override val srcy2:Int get() = srcy+sq
+	override val srcX:Int get() = (ticks-1)%table.first*sq
+	override val srcY:Int get() = (ticks-1)/table.second*sq
+	override val srcX2:Int get() = srcX+sq
+	override val srcY2:Int get() = srcY+sq
 	//flip = (type==BLOCK||type==SPARK)
-	//draw(if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,srcx, srcy, srcx+sq, srcy+sq)
+	//draw(if(flip) x else x+sq, y, if(flip) x+sq else x, y+sq,srcX, srcy, srcX+sq, srcy+sq)
 
 	enum class ANIM {
 		// Normal Block, TA Block Frag

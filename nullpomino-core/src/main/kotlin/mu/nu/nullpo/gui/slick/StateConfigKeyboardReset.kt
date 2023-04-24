@@ -36,7 +36,7 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** Keyboard Reset menu */
-class StateConfigKeyboardReset:DummyMenuChooseState() {
+class StateConfigKeyboardReset:BaseMenuChooseState() {
 	/** Player number */
 	var player = 0
 	override val numChoice = 3

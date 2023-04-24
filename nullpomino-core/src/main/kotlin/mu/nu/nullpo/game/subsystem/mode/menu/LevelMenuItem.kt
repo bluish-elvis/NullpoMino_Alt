@@ -53,8 +53,8 @@ open class LevelMenuItem(name:String, displayName:String, color:COLOR, defaultVa
 			val d = spd.denominator
 			receiver.drawMenuFont(engine, 0, y+2, "SPEED", color = COLOR.WHITE)
 			receiver.drawMenuSpeed(engine, 5, y+3, g, d, 5)
-			receiver.drawMenuNum(engine, 6, y+2, String.format("%5d", g))
-			receiver.drawMenuNum(engine, 6, y+3, String.format("%5d", d))
+			receiver.drawMenuNum(engine, 6, y+2, "%5d".format(g))
+			receiver.drawMenuNum(engine, 6, y+3, "%5d".format(d))
 		}
 		if(showD) {
 			val y = y+if(showG) 4 else 2

@@ -41,6 +41,12 @@ import mu.nu.nullpo.game.component.Statistics
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.event.ScoreEvent.Twister
+import mu.nu.nullpo.game.play.GameEngine.ClearType.COLOR
+import mu.nu.nullpo.game.play.GameEngine.ClearType.GEM_COLOR
+import mu.nu.nullpo.game.play.GameEngine.ClearType.LINE
+import mu.nu.nullpo.game.play.GameEngine.ClearType.LINE_COLOR
+import mu.nu.nullpo.game.play.GameEngine.ClearType.LINE_GEM_BOMB
+import mu.nu.nullpo.game.play.GameEngine.ClearType.LINE_GEM_SPARK
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
 import mu.nu.nullpo.gui.common.fx.PopupCombo.CHAIN
@@ -478,7 +484,7 @@ class GameEngine(
 	var owDelayCancel = -1
 
 	/** Clear mode selection */
-	var clearMode:ClearType = ClearType.LINE
+	var clearMode:ClearType = LINE
 	/** Size needed for a cint-group clear */
 	var colorClearSize = 0
 	/** If true, cint clears will also clear adjacent garbage blocks. */
@@ -831,7 +837,7 @@ class GameEngine(
 
 		interruptItemNumber = null
 
-		clearMode = ClearType.LINE
+		clearMode = LINE
 		colorClearSize = -1
 		garbageColorClear = false
 		ignoreHidden = false
@@ -1236,9 +1242,9 @@ class GameEngine(
 			// Local timestamp
 			val time = Calendar.getInstance()
 			val month = time.get(Calendar.MONTH)+1
-			val strDate = String.format("%04d/%02d/%02d", time.get(Calendar.YEAR), month, time.get(Calendar.DATE))
+			val strDate = "%04d/%02d/%02d".format(time.get(Calendar.YEAR), month, time.get(Calendar.DATE))
 			val strTime =
-				String.format("%02d:%02d:%02d", time.get(Calendar.HOUR_OF_DAY), time.get(Calendar.MINUTE), time.get(Calendar.SECOND))
+				"%02d:%02d:%02d".format(time.get(Calendar.HOUR_OF_DAY), time.get(Calendar.MINUTE), time.get(Calendar.SECOND))
 			owner.replayProp.setProperty("timestamp.date", strDate)
 			owner.replayProp.setProperty("timestamp.time", strTime)
 
@@ -1548,7 +1554,7 @@ class GameEngine(
 					nextPieceArrayObject = emptyList()
 				}
 				// 出現可能なピースが1つもない場合は全て出現できるようにする
-				if(nextPieceEnable.all {false}) nextPieceEnable = List(Piece.PIECE_COUNT) {true}
+				if(nextPieceEnable.all {!it}) nextPieceEnable = List(Piece.PIECE_COUNT) {true}
 
 				nextPieceCount = 0
 				// NEXTピースの出現順を作成
@@ -1576,11 +1582,11 @@ class GameEngine(
 							if(blockColors.size<numColors||numColors<1) numColors = blockColors.size
 							val size = p.maxBlock
 							p.setColor(List(size) {blockColors[random.nextInt(numColors)]})
-							if(clearMode==ClearType.GEM_COLOR) p.block.forEach {b ->
+							if(clearMode==GEM_COLOR) p.block.forEach {b ->
 								if(random.nextFloat()<=gemRate) b.type = Block.TYPE.GEM
 							}
 						}
-						if(clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)
+						if(clearMode==LINE_GEM_BOMB||clearMode==LINE_GEM_SPARK)
 							p.block[random.nextInt(p.maxBlock)].type = Block.TYPE.GEM
 
 						p.updateConnectData()
@@ -2140,11 +2146,11 @@ class GameEngine(
 
 					if(ending==0||staffrollEnableStatistics) statistics.totalPieceLocked++// AREなし
 					lineClearing = when(clearMode) {
-						ClearType.LINE -> field.checkLineNoFlag()
-						ClearType.COLOR -> field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)
-						ClearType.LINE_COLOR -> field.checkConnectLine(colorClearSize, false, lineColorDiagonals, gemSameColor)
-						ClearType.GEM_COLOR -> field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)
-						ClearType.LINE_GEM_BOMB, ClearType.LINE_GEM_SPARK -> field.checkBombOnLine(true)
+						LINE -> field.checkLineNoFlag()
+						COLOR -> field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)
+						LINE_COLOR -> field.checkConnectLine(colorClearSize, false, lineColorDiagonals, gemSameColor)
+						GEM_COLOR -> field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)
+						LINE_GEM_BOMB, LINE_GEM_SPARK -> field.checkBombOnLine(true)
 					}
 
 					chain = 0
@@ -2280,96 +2286,118 @@ class GameEngine(
 		// 最初の frame
 		if(statc[0]==0) {
 			lineClearing = when(clearMode) {
-				ClearType.LINE -> field.checkLine()
-				ClearType.COLOR -> field.checkColor(colorClearSize, true, garbageColorClear, gemSameColor, ignoreHidden)
-				ClearType.LINE_COLOR -> field.checkConnectLine(colorClearSize, true, lineColorDiagonals, gemSameColor)
-				ClearType.GEM_COLOR -> field.gemColorCheck(colorClearSize, true, garbageColorClear, ignoreHidden)
-				ClearType.LINE_GEM_BOMB, ClearType.LINE_GEM_SPARK -> {
+				LINE -> field.checkLine()
+				COLOR -> field.checkColor(colorClearSize, true, garbageColorClear, gemSameColor, ignoreHidden)
+				LINE_COLOR -> field.checkConnectLine(colorClearSize, true, lineColorDiagonals, gemSameColor)
+				GEM_COLOR -> field.gemColorCheck(colorClearSize, true, garbageColorClear, ignoreHidden)
+				LINE_GEM_BOMB, LINE_GEM_SPARK -> {
 					val ret = field.checkBombIgnited()
-					if(clearMode==ClearType.LINE_GEM_BOMB) statc[3] = chain
+					if(clearMode==LINE_GEM_BOMB) statc[3] = chain
 					val force = statc[3]+field.checkLineNoFlag()
-					if(clearMode==ClearType.LINE_GEM_SPARK) statc[3] = force
+					if(clearMode==LINE_GEM_SPARK) statc[3] = force
 					field.igniteBomb(explodSize[force][0], explodSize[force][1], explodSize[0][0], explodSize[0][1])
 					ret
 				}
 			}
 			val ingame = ending==0||staffrollEnableStatistics
+			/**
+			 * - LINE: lines
+			 * - else: # blocks*/
 			val li = lineClearing.let {if(big&&bigHalf) it shr 1 else it}
-			// Linescountを決める
-			if(clearMode==ClearType.LINE) {
-				split = field.lastLinesHeight.size>1
+			when(clearMode) {
+				LINE -> {
+					split = field.lastLinesHeight.size>1
 
-				if(li>0) {
-					playSE("erase")
+					if(li>0) {
+						playSE(
+							when {
+								split -> "split"
+								li>=(if(twist) 2 else if(combo>0) 3 else 4) -> "erase2"
+								li>=(if(twist) 1 else 2) -> "erase1"
+								else -> "erase0"
+							}
+						)
+						lastLinesY = field.lastLinesY
+						lastLineY = field.lastLinesBottom
+						playSE("line${maxOf(1, minOf(li, 4))}")
+						if(li>=4) playSE("applause${maxOf(0, minOf(2+b2bCount, 4))}")
+						if(twist) {
+							playSE("twister")
+							if(li>=3||li>=2&&b2b) playSE("crowd1") else playSE("crowd0")
+							if(ingame)
+								when(li) {
+									1 -> if(twistMini) statistics.totalTwistSingleMini++
+									else statistics.totalTwistSingle++
+									2 -> if(split) statistics.totalTwistSplitDouble++ else if(twistMini) statistics.totalTwistDoubleMini++
+									else statistics.totalTwistDouble++
+									3 -> if(split) statistics.totalTwistSplitTriple++ else statistics.totalTwistTriple++
+								}
+						} else if(ingame)
+							when(li) {
+								1 -> statistics.totalSingle++
+								2 -> if(split) statistics.totalSplitDouble++
+								else statistics.totalDouble++
+								3 -> if(split) statistics.totalSplitTriple++
+								else statistics.totalTriple++
+								4 -> statistics.totalQuadruple++
+							}
+					}
+					// B2B bonus
+
+					if(b2bEnable)
+						if(li>=4||(split&&splitB2B)||twist) {
+							b2bCount++
+							if(b2bCount>0) {
+								playSE("b2b_combo", minOf(1.5f, 1f+(b2bCount)/13f))
+								if(ingame) {
+									when {
+										li==4 -> statistics.totalB2BQuad++
+										split -> statistics.totalB2BSplit++
+										twist -> statistics.totalB2BTwist++
+									}
+									if(b2bCount>=statistics.maxB2B) statistics.maxB2B = b2bCount
+								}
+								owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY-(combo>0).toInt(), b2bCount, CHAIN.B2B)
+							} else playSE("b2b_start")
+						} else if(b2bCount>=0&&combo<0) {
+							b2bCount = -1
+							playSE("b2b_end")
+						}
+					// Combo
+					if(comboType!=COMBO_TYPE_DISABLE&&chain==0) {
+						if(comboType==COMBO_TYPE_NORMAL||comboType==COMBO_TYPE_DOUBLE&&li>=2) combo++
+						if(combo>0) {
+							playSE("combo", minOf(2f, 1f+(combo-1)/14f))
+							owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY+b2b.toInt(), combo, CHAIN.COMBO)
+							if(ingame) if(combo>=statistics.maxCombo) statistics.maxCombo = combo
+						}
+					}
+
+					lineGravityTotalLines += lineClearing
+					statistics.blocks += li*fieldWidth
+					if(ingame) statistics.lines += li
+				}
+				LINE_GEM_BOMB, LINE_GEM_SPARK -> {
+					playSE("bomb")
+					playSE("erase0")
+				}
+				COLOR -> {
 					playSE(
 						when {
-							li>=(if(twist) 2 else if(combo>0) 3 else 4) -> "erase2"
-							li>=(if(twist) 1 else 2) -> "erase1"
+							li>=8||chain>=5 -> "erase2"
+							li>=5||chain>=2 -> "erase1"
 							else -> "erase0"
 						}
 					)
-					lastLinesY = field.lastLinesY
-					lastLineY = field.lastLinesBottom
-					playSE("line${maxOf(1, minOf(li, 4))}")
-					if(li>=4) playSE("applause${maxOf(0, minOf(2+b2bCount, 4))}")
-					if(split) playSE("split")
-					if(twist) {
-						playSE("twister")
-						if(li>=3||li>=2&&b2b) playSE("crowd1") else playSE("crowd0")
-						if(ingame)
-							when(li) {
-								1 -> if(twistMini) statistics.totalTwistSingleMini++
-								else statistics.totalTwistSingle++
-								2 -> if(split) statistics.totalTwistSplitDouble++ else if(twistMini) statistics.totalTwistDoubleMini++
-								else statistics.totalTwistDouble++
-								3 -> if(split) statistics.totalTwistSplitTriple++ else statistics.totalTwistTriple++
-							}
-					} else if(ingame)
-						when(li) {
-							1 -> statistics.totalSingle++
-							2 -> if(split) statistics.totalSplitDouble++
-							else statistics.totalDouble++
-							3 -> if(split) statistics.totalSplitTriple++
-							else statistics.totalTriple++
-							4 -> statistics.totalQuadruple++
-						}
-				}
-				// B2B bonus
-
-				if(b2bEnable)
-					if(li>=4||(split&&splitB2B)||twist) {
-						b2bCount++
-						if(b2bCount>0) {
-							playSE("b2b_combo", minOf(1.5f, 1f+(b2bCount)/13f))
-							if(ingame) {
-								when {
-									li==4 -> statistics.totalB2BQuad++
-									split -> statistics.totalB2BSplit++
-									twist -> statistics.totalB2BTwist++
-								}
-								if(b2bCount>=statistics.maxB2B) statistics.maxB2B = b2bCount
-							}
-							owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY-(combo>0).toInt(), b2bCount, CHAIN.B2B)
-						} else playSE("b2b_start")
-					} else if(b2bCount>=0&&combo<0) {
-						b2bCount = -1
-						playSE("b2b_end")
-					}
-				// Combo
-				if(comboType!=COMBO_TYPE_DISABLE&&chain==0) {
-					if(comboType==COMBO_TYPE_NORMAL||comboType==COMBO_TYPE_DOUBLE&&li>=2) combo++
-					if(combo>0) {
-						playSE("combo", minOf(2f, 1f+(combo-1)/14f))
-						owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY+b2b.toInt(), combo, CHAIN.COMBO)
-						if(ingame) if(combo>=statistics.maxCombo) statistics.maxCombo = combo
+					statistics.blocks += li
+					if(chain>0) {
+						playSE("combo", minOf(2f, 1f+(chain-1)/14f))
+						owner.receiver.addCombo(this, nowPieceX, nowPieceBottomY+b2b.toInt(), chain, CHAIN.CHAIN)
 					}
 				}
-
-				lineGravityTotalLines += lineClearing
-				if(ingame) statistics.lines += li
-			} else if(clearMode==ClearType.LINE_GEM_BOMB) {
-				playSE("bomb")
-				playSE("erase")
+				LINE_COLOR, GEM_COLOR -> {
+					statistics.blocks += li
+				}
 			}
 			if(field.howManyGemClears>0) playSE("gem")
 			val ev = ScoreEvent(nowPieceObject, li, b2bCount, combo, twistType, split)
@@ -2381,14 +2409,14 @@ class GameEngine(
 			}
 			// Calculate score
 			owner.mode?.calcScore(this, ev)?.let {
-				if(it>0)
+				if(it>0&&clearMode==LINE)
 					owner.receiver.addScore(this, nowPieceX, field.lastLinesBottom, it)
 			}
 			if(li>0) owner.receiver.calcScore(this, ev)
 
 			// Blockを消す演出を出す (まだ実際には消えていない）
 			(0 until field.height).filter {field.getLineFlag(it)}.toSet().let {row ->
-				if(clearMode==ClearType.LINE) {
+				if(clearMode==LINE) {
 					owner.mode?.lineClear(this, row)
 					owner.receiver.lineClear(this, row)
 				}
@@ -2404,12 +2432,12 @@ class GameEngine(
 
 			// Blockを消す
 			when(clearMode) {
-				ClearType.LINE -> field.clearLine()
-				ClearType.COLOR -> field.clearColor(colorClearSize, garbageColorClear, gemSameColor, ignoreHidden)
-				ClearType.LINE_COLOR -> field.clearProceed()
-				ClearType.GEM_COLOR -> lineClearing = field.gemClearColor(colorClearSize, garbageColorClear, ignoreHidden)
-				ClearType.LINE_GEM_BOMB -> lineClearing = field.clearProceed(1)
-				ClearType.LINE_GEM_SPARK -> lineClearing = field.clearProceed(2)
+				LINE -> field.clearLine()
+				COLOR -> field.clearColor(colorClearSize, garbageColorClear, gemSameColor, ignoreHidden)
+				LINE_COLOR -> field.clearProceed()
+				GEM_COLOR -> lineClearing = field.gemClearColor(colorClearSize, garbageColorClear, ignoreHidden)
+				LINE_GEM_BOMB -> lineClearing = field.clearProceed(1)
+				LINE_GEM_SPARK -> lineClearing = field.clearProceed(2)
 			}
 		}
 
@@ -2434,43 +2462,31 @@ class GameEngine(
 
 // Next ステータス
 		if(statc[0]>=lineDelay) {
-			field.also {field ->
-				if((clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)&&field.checkBombIgnited()>0) {
+			if(lineGravityType==LineGravity.CASCADE||lineGravityType==LineGravity.CASCADE_SLOW) // Cascade
+				if(statc[6]<cascadeDelay) {
+					statc[6]++
+					return
+				} else if(field.doCascadeGravity(lineGravityType)) {
+					statc[6] = 0
+					return
+				} else if(statc[6]<cascadeClearDelay) {
+					statc[6]++
+					return
+				} else if(when(clearMode) {
+						LINE -> field.checkLineNoFlag()
+						COLOR -> field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)
+						LINE_COLOR -> field.checkConnectLine(colorClearSize, false, lineColorDiagonals, gemSameColor)
+						GEM_COLOR -> field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)
+						LINE_GEM_BOMB, LINE_GEM_SPARK -> field.checkBombOnLine(true)
+					}>0) {
+					twistType = null
+					chain++
+					if(chain>statistics.maxChain) statistics.maxChain = chain
 					statc[0] = 0
 					statc[6] = 0
-					return@statLineClear
-				} else if(lineGravityType==LineGravity.CASCADE||lineGravityType==LineGravity.CASCADE_SLOW) // Cascade
-					when {
-						statc[6]<cascadeDelay -> {
-							statc[6]++
-							return@statLineClear
-						}
-						field.doCascadeGravity(lineGravityType) -> {
-							statc[6] = 0
-							return@statLineClear
-						}
-						statc[6]<cascadeClearDelay -> {
-							statc[6]++
-							return@statLineClear
-						}
-						clearMode==ClearType.LINE&&field.checkLineNoFlag()>0||
-							(clearMode==ClearType.COLOR&&
-								field.checkColor(colorClearSize, false, garbageColorClear, gemSameColor, ignoreHidden)>0||
-								clearMode==ClearType.LINE_COLOR&&
-								field.checkConnectLine(colorClearSize, false, lineColorDiagonals, gemSameColor)>0||
-								clearMode==ClearType.GEM_COLOR&&
-								field.gemColorCheck(colorClearSize, false, garbageColorClear, ignoreHidden)>0||
-								(clearMode==ClearType.LINE_GEM_BOMB||clearMode==ClearType.LINE_GEM_SPARK)&&
-								field.checkBombOnLine(true)>0) -> {
-							twistType = null
-							chain++
-							if(chain>statistics.maxChain) statistics.maxChain = chain
-							statc[0] = 0
-							statc[6] = 0
-							return@statLineClear
-						}
-					}
-			}
+					return
+				}
+
 			val skip = owner.mode?.lineClearEnd(this) ?: false
 			owner.receiver.lineClearEnd(this)
 			if(sticky>0) field.setBlockLinkByColor()
@@ -2486,38 +2502,34 @@ class GameEngine(
 						minOf(1f, 0.4f+speed.lineDelay*0.1f)
 					)
 				}
-				field.lineColorsCleared = emptyList()
+//				field.lineColorsCleared = emptyList()
 
-				if(stat==Status.LINECLEAR) {
-					resetStatc()
-					when {
-						ending==1 -> stat = Status.ENDINGSTART// Ending
-						areLine>0||lagARE -> {
-							// AREあり
-							statc[0] = 0
-							statc[1] = areLine
-							statc[2] = 1
-							stat = Status.ARE
-						}
-						interruptItemNumber!=null -> {
-							// 中断効果のあるアイテム処理
-							nowPieceObject = null
-							interruptItemPreviousStat = Status.MOVE
-							stat = Status.INTERRUPTITEM
-						}
-						else -> {
-							// AREなし
-							nowPieceObject = null
-							stat = Status.MOVE
-						}
+//				if(stat==Status.LINECLEAR) {
+				resetStatc()
+				when {
+					ending==1 -> stat = Status.ENDINGSTART// Ending
+					areLine>0||lagARE -> {
+						// AREあり
+						statc[0] = 0
+						statc[1] = areLine
+						statc[2] = 1
+						stat = Status.ARE
+					}
+					interruptItemNumber!=null -> {
+						// AREなし:中断効果のあるアイテム処理
+						nowPieceObject = null
+						interruptItemPreviousStat = Status.MOVE
+						stat = Status.INTERRUPTITEM
+					}
+					else -> {
+						// AREなし
+						nowPieceObject = null
+						stat = Status.MOVE
 					}
 				}
+//				}
 			}
-
-			return
-		}
-
-		statc[0]++
+		} else statc[0]++
 	}
 
 	/** ARE中の処理 */
@@ -2576,7 +2588,7 @@ class GameEngine(
 	/** Ending突入処理 */
 	private fun statEndingStart() {
 		//  event 発生
-		val animint = 6
+		val animInt = 6
 		statc[3] = field.height*6
 		if(owner.mode?.onEndingStart(this)==true) return
 		owner.receiver.onEndingStart(this)
@@ -2595,8 +2607,8 @@ class GameEngine(
 		if(statc[0]<lineDelay) statc[0]++
 		else if(statc[1]<statc[3]) {
 			field.let {field ->
-				if(statc[1]%animint==0) {
-					val y = field.height-statc[1]/animint
+				if(statc[1]%animInt==0) {
+					val y = field.height-statc[1]/animInt
 					field.getRow(y).mapIndexedNotNull {i, b ->
 						b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) i to it else null}
 					}.associate {it}.let {

@@ -148,17 +148,17 @@ Next I*/
 		End With
 		If Not FS Then BBSf.BltFast 0, 240 + LsrSY, BGSf, Src, DDBLTFAST_WAIT
 		*/
-		children.forEach {it ->
+		children.forEach {
 			val x = it.x
 			val y = it.y
 			val r = it.r.toInt()
 			val sx = (r%20)*32f
 			val sy = it.c*96f+(r/20%3)*32
-			it.t.reversed().forEach {s ->
-				val tr = s.r.toInt()
+			it.t.reversed().forEach {(x1, y1, r1) ->
+				val tr = r1.toInt()
 				val tsx = (tr%20)*32f
 				val tsy = it.c*96f+(tr/20%3)*32
-				img.draw(s.x, s.y, tsx, tsy, tsx+32, tsy+32)
+				img.draw(x1, y1, tsx, tsy, tsx+32, tsy+32)
 			}
 			img.draw(x, y, sx, sy, sx+32, sy+32)
 		}

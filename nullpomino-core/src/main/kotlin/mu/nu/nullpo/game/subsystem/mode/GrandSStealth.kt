@@ -128,11 +128,11 @@ class GrandSStealth:AbstractMode() {
 	/** Level records */
 	private val rankingLevel = MutableList(RANKING_MAX) {0}
 	/** Time records */
-	private val rankingTime = MutableList(RANKING_MAX) {0}
+	private val rankingTime = MutableList(RANKING_MAX) {-1}
 	/** Roll-Cleared records */
 	private val rankingRollClear = MutableList(RANKING_MAX) {0}
 	/** Best section time records */
-	private val bestSectionTime = MutableList(SECTION_MAX) {0}
+	private val bestSectionTime = MutableList(SECTION_MAX) {DEFAULT_SECTION_TIME}
 
 	/** Returns the name of this mode */
 	override val name = "Grand Phantom"
@@ -151,7 +151,7 @@ class GrandSStealth:AbstractMode() {
 		grade = 0
 		gradeFlash = 0
 		comboValue = 0
-		lastscore = 0
+		lastScore = 0
 		rollTime = 0
 		rollClear = 0
 		rollStarted = false
@@ -178,9 +178,9 @@ class GrandSStealth:AbstractMode() {
 		rankingRank = -1
 		rankingGrade.fill(0)
 		rankingLevel.fill(0)
-		rankingTime.fill(0)
+		rankingTime.fill(-1)
 		rankingRollClear.fill(0)
-		bestSectionTime.fill(0)
+		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 
 		engine.twistEnable = false
 		engine.b2bEnable = false
@@ -277,7 +277,7 @@ class GrandSStealth:AbstractMode() {
 	private fun stMedalCheck(engine:GameEngine, sectionNumber:Int) {
 		val best = bestSectionTime[sectionNumber]
 
-		if(sectionLastTime<best) {
+		if(sectionLastTime<best||best<=0) {
 			if(medalST<3) {
 				engine.playSE("medal3")
 				medalST = 3
@@ -388,15 +388,18 @@ class GrandSStealth:AbstractMode() {
 					receiver.drawScoreFont(engine, 3, topY-1, "GRADE LEVEL TIME", COLOR.PURPLE)
 
 					for(i in 0 until RANKING_MAX) {
-						var gcolor = COLOR.WHITE
-						if(rankingRollClear[i]==1) gcolor = COLOR.GREEN
-						if(rankingRollClear[i]==2) gcolor = COLOR.ORANGE
+
 						receiver.drawScoreGrade(
-							engine, 0, topY+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+							engine, 0, topY+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
 						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
-							receiver.drawScoreFont(engine, 3, topY+i, tableGradeName[rankingGrade[i]], gcolor)
-						receiver.drawScoreNum(engine, 9, topY+i, String.format("%03d", rankingLevel[i]), i==rankingRank)
+							receiver.drawScoreFont(
+								engine, 3, topY+i, tableGradeName[rankingGrade[i]],
+								if(rankingRollClear[i]==1) COLOR.GREEN
+								else if(rankingRollClear[i]==2) COLOR.ORANGE
+								else COLOR.WHITE
+							)
+						receiver.drawScoreNum(engine, 9, topY+i, "%03d".format(rankingLevel[i]), i==rankingRank)
 						receiver.drawScoreNum(engine, 15, topY+i, rankingTime[i].toTimeStr, i==rankingRank)
 					}
 
@@ -410,7 +413,7 @@ class GrandSStealth:AbstractMode() {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
-						val strSectionTime:String = String.format("%3d-%3d %s", temp, temp2, bestSectionTime[i].toTimeStr)
+						val strSectionTime:String = "%3d-%3d %s".format(temp, temp2, bestSectionTime[i].toTimeStr)
 
 						receiver.drawScoreNum(engine, 0, 3+i, strSectionTime, sectionIsNewRecord[i])
 
@@ -429,12 +432,12 @@ class GrandSStealth:AbstractMode() {
 
 			// Score
 			receiver.drawScoreFont(engine, 0, 5, "Score", COLOR.PURPLE)
-			receiver.drawScoreNum(engine, 0, 6, "$scDisp"+"\n"+lastscore)
+			receiver.drawScoreNum(engine, 0, 6, "$scDisp"+"\n"+lastScore)
 
 			receiver.drawScoreFont(engine, 0, 9, "Level", COLOR.PURPLE)
-			receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)))
+			receiver.drawScoreNum(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)))
 			receiver.drawScoreSpeed(engine, 0, 11, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
-			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextSecLv))
+			receiver.drawScoreNum(engine, 1, 12, "%3d".format(nextSecLv))
 
 			receiver.drawScoreFont(engine, 0, 14, "Time", COLOR.PURPLE)
 			receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, 2f)
@@ -468,7 +471,7 @@ class GrandSStealth:AbstractMode() {
 						var strSeparator = " "
 						if(i==section&&engine.ending==0) strSeparator = "\u0082"
 
-						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, sectionTime[i].toTimeStr)
+						val strSectionTime:String = "%3d%s%s".format(temp, strSeparator, sectionTime[i].toTimeStr)
 
 						receiver.drawScoreNum(engine, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
@@ -699,10 +702,10 @@ class GrandSStealth:AbstractMode() {
 				if(nextSecLv>999) nextSecLv = 999
 			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
-			lastscore = ((((levelb+li)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*li*comboValue
+			lastScore = ((((levelb+li)/4+engine.softdropFall+if(engine.manualLock) 1 else 0)*li*comboValue
 				*if(engine.field.isEmpty) 4 else 1)
 				+engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7)
-			engine.statistics.scoreLine += lastscore
+			engine.statistics.scoreLine += lastScore
 			//return lastscore
 		}
 		return 0
@@ -759,7 +762,7 @@ class GrandSStealth:AbstractMode() {
 				else -> COLOR.WHITE
 			}
 			receiver.drawMenuFont(engine, 0, 2, "GRADE", COLOR.PURPLE)
-			val strGrade = String.format("%10s", tableGradeName[grade])
+			val strGrade = "%10s".format(tableGradeName[grade])
 			receiver.drawMenuFont(engine, 0, 3, strGrade, col)
 
 			drawResultStats(
@@ -769,7 +772,7 @@ class GrandSStealth:AbstractMode() {
 			if(secretGrade>4)
 				drawResult(
 					engine, receiver, 15, COLOR.PURPLE, "S. GRADE",
-					String.format("%10s", tableSecretGradeName[secretGrade-1])
+					"%10s".format(tableSecretGradeName[secretGrade-1])
 				)
 		} else if(engine.statc[1]==1) {
 			receiver.drawMenuFont(engine, 0, 2, "SECTION", COLOR.PURPLE)

@@ -77,8 +77,8 @@ abstract class BaseFontNumber:BaseFont {
 		}
 	}
 
-	override fun printFont(x:Int, y:Int, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int) =
-		processTxt(x.toFloat(), y.toFloat(), str, color, scale, alpha, rainbow)
+	override fun printFont(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int) =
+		processTxt(x, y, str, color, scale, alpha, rainbow)
 		{i:Int, dx:Float, dy:Float, s:Float, sx:Int, sy:Int, w:Int, h:Int, a:Float ->
 			getImg(i).draw(dx, dy, dx+w*s, dy+h*s, sx, sy, sx+w, sy+h, alpha = a)
 		}

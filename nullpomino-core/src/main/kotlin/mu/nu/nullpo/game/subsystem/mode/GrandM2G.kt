@@ -124,10 +124,10 @@ class GrandM2G:AbstractMode() {
 	private val rankingLevel:List<MutableList<Int>> = List(RANKING_MAX) {MutableList(GOALTYPE_MAX) {0}}
 
 	/** Rankings' times */
-	private val rankingTime:List<MutableList<Int>> = List(RANKING_MAX) {MutableList(GOALTYPE_MAX) {0}}
+	private val rankingTime:List<MutableList<Int>> = List(RANKING_MAX) {MutableList(GOALTYPE_MAX) {-1}}
 
 	/** Section Time記録 */
-	private val bestSectionTime:List<MutableList<Int>> = List(SECTION_MAX) {MutableList(GOALTYPE_MAX) {0}}
+	private val bestSectionTime:List<MutableList<Int>> = List(SECTION_MAX) {MutableList(GOALTYPE_MAX) {DEFAULT_SECTION_TIME}}
 
 	private val decoration = 0
 	private val decTemp = 0
@@ -148,7 +148,7 @@ class GrandM2G:AbstractMode() {
 		lvupFlag = true
 		harddropBonus = 0
 		comboValue = 0
-		lastscore = 0
+		lastScore = 0
 		rollTime = 0
 		secretGrade = 0
 		bgmLv = 0
@@ -162,8 +162,8 @@ class GrandM2G:AbstractMode() {
 
 		rankingRank = -1
 		rankingLevel.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
-		bestSectionTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
+		bestSectionTime.forEach {it.fill(-1)}
 
 		engine.speed.are = 23
 		engine.speed.areLine = 23
@@ -229,7 +229,9 @@ class GrandM2G:AbstractMode() {
 	 * @param sectionNumber Section number
 	 */
 	private fun stNewRecordCheck(sectionNumber:Int, goalType:Int) {
-		if(sectionTime[sectionNumber]<bestSectionTime[sectionNumber][goalType]&&!owner.replayMode) {
+		if(!owner.replayMode&&
+			(sectionTime[sectionNumber]<bestSectionTime[sectionNumber][goalType]||bestSectionTime[sectionNumber][goalType]<0)
+		) {
 			sectionIsNewRecord[sectionNumber] = true
 			sectionAnyNewRecord = true
 		}
@@ -345,7 +347,7 @@ class GrandM2G:AbstractMode() {
 							engine,
 							0,
 							3+i,
-							String.format("%2d", i+1),
+							"%2d".format(i+1),
 							if(rankingRank==i) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.YELLOW
 						)
 						receiver.drawScoreNum(engine, 3, 3+i, "${rankingLevel[i][goalType]}", i==rankingRank)
@@ -393,7 +395,7 @@ class GrandM2G:AbstractMode() {
 				else
 					EventReceiver.COLOR.BLUE
 			)
-			receiver.drawScoreNum(engine, 5, 6, "+$lastscore", g20)
+			receiver.drawScoreNum(engine, 5, 6, "+$lastScore", g20)
 			receiver.drawScoreNum(engine, 0, 7, "$scDisp", g20, 2f)
 
 			// level
@@ -404,12 +406,12 @@ class GrandM2G:AbstractMode() {
 					EventReceiver.COLOR.BLUE
 			)
 
-			receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)), g20)
+			receiver.drawScoreNum(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), g20)
 			receiver.drawScoreSpeed(
 				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4,
 				4
 			)
-			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextSecLv), g20)
+			receiver.drawScoreNum(engine, 1, 12, "%3d".format(nextSecLv), g20)
 
 			// Time
 			receiver.drawScoreFont(
@@ -444,7 +446,7 @@ class GrandM2G:AbstractMode() {
 						var strSeparator = "-"
 						if(i==section&&engine.ending==0) strSeparator = "+"
 
-						val strSectionTime:String = String.format("%3d%s%s", temp, strSeparator, sectionTime[i].toTimeStr)
+						val strSectionTime:String = "%3d%s%s".format(temp, strSeparator, sectionTime[i].toTimeStr)
 
 						receiver.drawScoreNum(engine, x, 3+i, strSectionTime, sectionIsNewRecord[i])
 					}
@@ -668,13 +670,12 @@ class GrandM2G:AbstractMode() {
 			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
 			// Calculate score
-			var bravo = 1
-			if(engine.field.isEmpty) bravo = 4
+			val bravo = if(engine.field.isEmpty) 4 else 1
 
-			lastscore = ((levelb+ls)/4+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)*ls*comboValue*bravo+
+			lastScore = ((levelb+ls)/4+engine.softdropFall+(if(engine.manualLock) 1 else 0)+harddropBonus)*ls*comboValue*bravo+
 				engine.statistics.level/2+maxOf(0, engine.lockDelay-engine.lockDelayNow)*7
-			engine.statistics.scoreLine += lastscore
-			return lastscore
+			engine.statistics.scoreLine += lastScore
+			return lastScore
 		}
 		return 0
 	}
@@ -733,12 +734,12 @@ class GrandM2G:AbstractMode() {
 					engine, receiver, 2, EventReceiver.COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA,
 					Statistic.TIME
 				)
-				drawResult(engine, receiver, 10, EventReceiver.COLOR.BLUE, "GARBAGE", String.format("%10d", garbageTotal))
+				drawResult(engine, receiver, 10, EventReceiver.COLOR.BLUE, "GARBAGE", "%10d".format(garbageTotal))
 				drawResultRank(engine, receiver, 12, EventReceiver.COLOR.BLUE, rankingRank)
 				if(secretGrade>4)
 					drawResult(
 						engine, receiver, 14, EventReceiver.COLOR.BLUE, "S. GRADE",
-						String.format("%10s", tableSecretGradeName[secretGrade-1])
+						"%10s".format(tableSecretGradeName[secretGrade-1])
 					)
 			}
 			1 -> {
@@ -824,8 +825,7 @@ class GrandM2G:AbstractMode() {
 	 */
 	private fun checkRanking(lv:Int, time:Int, goalType:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(lv>rankingLevel[i][goalType])
-				return i
+			if(lv>rankingLevel[i][goalType]) return i
 			else if(lv==rankingLevel[i][goalType]&&time<rankingTime[i][goalType]) return i
 
 		return -1

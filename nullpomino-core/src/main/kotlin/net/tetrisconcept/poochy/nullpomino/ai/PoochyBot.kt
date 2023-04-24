@@ -739,9 +739,19 @@ open class PoochyBot:DummyAI(), Runnable {
 								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
 										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
-									engine.wallkick!!.executeWallkick(x, y, -1, rt, rot, allowUpward, pieceNow, fld, null)?.let {kick ->
-										newX = x+kick.offsetX
-										newY = y+kick.offsetY
+									engine.wallkick!!.executeWallkick(
+										x,
+										y,
+										-1,
+										rt,
+										rot,
+										allowUpward,
+										pieceNow,
+										fld,
+										null
+									)?.let {(offsetX, offsetY) ->
+										newX = x+offsetX
+										newY = y+offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceNow, depth)
 									}
 								}
@@ -772,9 +782,19 @@ open class PoochyBot:DummyAI(), Runnable {
 								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
 										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
-									engine.wallkick!!.executeWallkick(x, y, 1, rt, rot, allowUpward, pieceNow, fld, null)?.let {kick ->
-										newX = x+kick.offsetX
-										newY = y+kick.offsetY
+									engine.wallkick!!.executeWallkick(
+										x,
+										y,
+										1,
+										rt,
+										rot,
+										allowUpward,
+										pieceNow,
+										fld,
+										null
+									)?.let {(offsetX, offsetY) ->
+										newX = x+offsetX
+										newY = y+offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceNow, depth)
 									}
 								}
@@ -805,9 +825,19 @@ open class PoochyBot:DummyAI(), Runnable {
 								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
 										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
-									engine.wallkick!!.executeWallkick(x, y, 2, rt, rot, allowUpward, pieceNow, fld, null)?.let {kick ->
-										newX = x+kick.offsetX
-										newY = y+kick.offsetY
+									engine.wallkick!!.executeWallkick(
+										x,
+										y,
+										2,
+										rt,
+										rot,
+										allowUpward,
+										pieceNow,
+										fld,
+										null
+									)?.let {(offsetX, offsetY) ->
+										newX = x+offsetX
+										newY = y+offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceNow, depth)
 									}
 								}
@@ -930,9 +960,19 @@ open class PoochyBot:DummyAI(), Runnable {
 								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
 										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
-									engine.wallkick!!.executeWallkick(x, y, -1, rt, rot, allowUpward, pieceHold, fld, null)?.let {kick ->
-										newX = x+kick.offsetX
-										newY = y+kick.offsetY
+									engine.wallkick!!.executeWallkick(
+										x,
+										y,
+										-1,
+										rt,
+										rot,
+										allowUpward,
+										pieceHold,
+										fld,
+										null
+									)?.let {(offsetX, offsetY) ->
+										newX = x+offsetX
+										newY = y+offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceHold, depth)
 									}
 								}
@@ -963,9 +1003,19 @@ open class PoochyBot:DummyAI(), Runnable {
 								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
 										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
-									engine.wallkick!!.executeWallkick(x, y, 1, rt, rot, allowUpward, pieceHold, fld, null)?.let {kick ->
-										newX = x+kick.offsetX
-										newY = y+kick.offsetY
+									engine.wallkick!!.executeWallkick(
+										x,
+										y,
+										1,
+										rt,
+										rot,
+										allowUpward,
+										pieceHold,
+										fld,
+										null
+									)?.let {(offsetX, offsetY) ->
+										newX = x+offsetX
+										newY = y+offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceHold, depth)
 									}
 								}
@@ -996,9 +1046,19 @@ open class PoochyBot:DummyAI(), Runnable {
 								else if(engine.wallkick!=null&&engine.ruleOpt.spinWallkick) {
 									val allowUpward =
 										engine.ruleOpt.spinWallkickMaxRise<0||engine.nowWallkickRiseCount<engine.ruleOpt.spinWallkickMaxRise
-									engine.wallkick!!.executeWallkick(x, y, 2, rt, rot, allowUpward, pieceHold, fld, null)?.let {kick ->
-										newX = x+kick.offsetX
-										newY = y+kick.offsetY
+									engine.wallkick!!.executeWallkick(
+										x,
+										y,
+										2,
+										rt,
+										rot,
+										allowUpward,
+										pieceHold,
+										fld,
+										null
+									)?.let {(offsetX, offsetY) ->
+										newX = x+offsetX
+										newY = y+offsetY
 										pts = thinkMain(newX, newY, rot, rt, fld, pieceHold, depth)
 									}
 								}

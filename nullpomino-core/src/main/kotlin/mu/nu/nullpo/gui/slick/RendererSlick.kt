@@ -70,21 +70,21 @@ class RendererSlick(
 
 	/** Constructor */
 	init {
-		showBg = NullpoMinoSlick.propConfig.getProperty("option.showbg", true)
-		showLineEffect = NullpoMinoSlick.propConfig.getProperty("option.showlineeffect", true)
-		heavyEffect = NullpoMinoSlick.propConfig.getProperty("option.heavyeffect", false)
+		showBg = NullpoMinoSlick.propConfig.getProperty("option.showBg", true)
+		showLineEffect = NullpoMinoSlick.propConfig.getProperty("option.showLineEffect", true)
+		heavyEffect = NullpoMinoSlick.propConfig.getProperty("option.heavyEffect", false)
 		edgeBold = NullpoMinoSlick.propConfig.getProperty("option.edgeBold", false)
-		fieldBgBright = NullpoMinoSlick.propConfig.getProperty("option.fieldbgbright", 128)/255f
-		showFieldBgGrid = NullpoMinoSlick.propConfig.getProperty("option.showfieldbggrid", true)
-		showMeter = NullpoMinoSlick.propConfig.getProperty("option.showmeter", true)
-		showSpeed = NullpoMinoSlick.propConfig.getProperty("option.showmeter", true)
-		darkNextArea = NullpoMinoSlick.propConfig.getProperty("option.darknextarea", true)
-		nextShadow = NullpoMinoSlick.propConfig.getProperty("option.nextshadow", false)
-		lineEffectSpeed = NullpoMinoSlick.propConfig.getProperty("option.lineeffectspeed", 0)
-		outlineGhost = NullpoMinoSlick.propConfig.getProperty("option.outlineghost", false)
-		sideNext = NullpoMinoSlick.propConfig.getProperty("option.sidenext", false)
-		bigSideNext = NullpoMinoSlick.propConfig.getProperty("option.bigsidenext", false)
-		smoothFall = NullpoMinoSlick.propConfig.getProperty("option.smoothfall", false)
+		fieldBgBright = NullpoMinoSlick.propConfig.getProperty("option.fieldBgBright", 128)/255f
+		showFieldBgGrid = NullpoMinoSlick.propConfig.getProperty("option.showFieldBgGrid", true)
+		showMeter = NullpoMinoSlick.propConfig.getProperty("option.showMeter", true)
+		showSpeed = NullpoMinoSlick.propConfig.getProperty("option.showMeter", true)
+		darkNextArea = NullpoMinoSlick.propConfig.getProperty("option.darkNextArea", true)
+		nextShadow = NullpoMinoSlick.propConfig.getProperty("option.nextShadow", false)
+		lineEffectSpeed = NullpoMinoSlick.propConfig.getProperty("option.lineEffectSpeed", 0)
+		outlineGhost = NullpoMinoSlick.propConfig.getProperty("option.outlineGhost", false)
+		sideNext = NullpoMinoSlick.propConfig.getProperty("option.sideNext", false)
+		bigSideNext = NullpoMinoSlick.propConfig.getProperty("option.bigSideNext", false)
+		smoothFall = NullpoMinoSlick.propConfig.getProperty("option.smoothFall", false)
 		showLocus = NullpoMinoSlick.propConfig.getProperty("option.showLocus", false)
 		showCenter = NullpoMinoSlick.propConfig.getProperty("option.showCenter", false)
 	}
@@ -96,7 +96,7 @@ class RendererSlick(
 		g.setDrawMode(Graphics.MODE_NORMAL)
 	}
 
-	override fun printFontSpecific(x:Int, y:Int, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float) {
+	override fun printFontSpecific(x:Float, y:Float, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float) {
 		when(font) {
 			BaseFont.FONT.NANO -> FontNano.printFont(x, y, str, color, scale, alpha)
 			BaseFont.FONT.NUM -> FontNumber.printFont(x, y, str, color, scale, alpha)
@@ -106,8 +106,8 @@ class RendererSlick(
 		}
 	}
 
-	override fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, size:Int, alpha:Float) =
-		FontTTF.print(x, y, str, color, alpha, size)
+	override fun printTTFSpecific(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float) =
+		FontTTF.print(x, y, str, color, alpha, scale)
 
 	override val doesGraphicsExist get() = graphics!=null
 
@@ -277,7 +277,7 @@ class RendererSlick(
 							val y2 = engine.nowPieceBottomY+it.dataY[it.direction][i]
 
 							if(y2>=0)
-								if(outlineghost) {
+								if(outlineGhost) {
 									val blkTemp = it.block[i]
 									val x3:Float = (x+x2*blksize).toFloat()
 									val y3:Float = (y+y2*blksize).toFloat()
@@ -326,7 +326,7 @@ class RendererSlick(
 							val x2 = engine.nowPieceX+it.dataX[it.direction][i]*2
 							val y2 = engine.nowPieceBottomY+it.dataY[it.direction][i]*2
 
-							if(outlineghost) {
+							if(outlineGhost) {
 								val blkTemp = it.block[i]
 								val x3:Float = (x+x2*blksize).toFloat()
 								val y3:Float = (y+y2*blksize).toFloat()
@@ -386,7 +386,7 @@ class RendererSlick(
 					val y2 = engine.nowPieceBottomY+it.dataY[it.direction][i]
 
 					if(y2>=0)
-						if(outlineghost) {
+						if(outlineGhost) {
 							val blkTemp = it.block[i]
 							val x3:Float = (x+x2*blksize)
 							val y3:Float = (y+y2*blksize)
@@ -436,7 +436,7 @@ class RendererSlick(
 					val x2 = engine.nowPieceX+it.dataX[it.direction][i]*2
 					val y2 = engine.nowPieceBottomY+it.dataY[it.direction][i]*2
 
-					if(outlineghost) {
+					if(outlineGhost) {
 						val blkTemp = it.block[i]
 						val x3:Float = (x+x2*blksize)
 						val y3:Float = (y+y2*blksize)

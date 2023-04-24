@@ -1,177 +1,177 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-<comment>Swing language file - Japanese</comment>
+ <comment>Swing language file - Japanese</comment>
 
-<!--Title-->
-<entry key="Title_Main">NullpoMino</entry>
-<entry key="Title_Game">NullpoMino</entry>
-<entry key="Title_KeyConfig">キーボード設定</entry>
-<entry key="Title_RuleSelect">ルール選択</entry>
-<entry key="Title_AISelect">AI設定</entry>
-<entry key="Title_GeneralConfig">その他の設定</entry>
-<entry key="Title_GameTuning">チューニング設定</entry>
-<entry key="Title_UpdateCheck">更新チェック設定</entry>
+ <!--Title-->
+ <entry key="Title_Main">NullpoMino</entry>
+ <entry key="Title_Game">NullpoMino</entry>
+ <entry key="Title_KeyConfig">キーボード設定</entry>
+ <entry key="Title_RuleSelect">ルール選択</entry>
+ <entry key="Title_AISelect">AI設定</entry>
+ <entry key="Title_GeneralConfig">その他の設定</entry>
+ <entry key="Title_GameTuning">チューニング設定</entry>
+ <entry key="Title_UpdateCheck">更新チェック設定</entry>
 
-<!--Top Menu-->
-<entry key="Top_ModeSelect">ゲームモード:</entry>
-<entry key="Top_StartOffline">スタート(S)</entry>
-<entry key="Top_ServerSelect">オンラインサーバー:</entry>
-<entry key="Top_Connect">接続(N)</entry>
-<entry key="Top_NewVersion">v%s (%s) が利用可能です。</entry>
-<entry key="Top_CurrentRule">(使用中のルール)</entry>
+ <!--Top Menu-->
+ <entry key="Top_ModeSelect">ゲームモード:</entry>
+ <entry key="Top_StartOffline">スタート(S)</entry>
+ <entry key="Top_ServerSelect">オンラインサーバー:</entry>
+ <entry key="Top_Connect">接続(N)</entry>
+ <entry key="Top_NewVersion">v%s (%s) が利用可能です。</entry>
+ <entry key="Top_CurrentRule">(使用中のルール)</entry>
 
-<!--Lobby-->
-<entry key="Lobby_RoomList">ルームリスト</entry>
-<entry key="Lobby_Join">選択したルームに参加(J)</entry>
-<entry key="Lobby_Create">新しいルームを作成(C)</entry>
-<entry key="Lobby_Disconnect">切断(D)</entry>
-<entry key="Lobby_Chat">ロビーチャット</entry>
+ <!--Lobby-->
+ <entry key="Lobby_RoomList">ルームリスト</entry>
+ <entry key="Lobby_Join">選択したルームに参加(J)</entry>
+ <entry key="Lobby_Create">新しいルームを作成(C)</entry>
+ <entry key="Lobby_Disconnect">切断(D)</entry>
+ <entry key="Lobby_Chat">ロビーチャット</entry>
 
-<!--Menu-->
-<entry key="Menu_File">ファイル(F)</entry>
-<entry key="Menu_Open">リプレイを開く(O)...</entry>
-<entry key="Menu_NetPlay">ネットプレイ(N)</entry>
-<entry key="Menu_ReturnToTop">トップ画面に戻る(R)</entry>
-<entry key="Menu_Exit">終了(X)</entry>
+ <!--Menu-->
+ <entry key="Menu_File">ファイル(F)</entry>
+ <entry key="Menu_Open">リプレイを開く(O)...</entry>
+ <entry key="Menu_NetPlay">ネットプレイ(N)</entry>
+ <entry key="Menu_ReturnToTop">トップ画面に戻る(R)</entry>
+ <entry key="Menu_Exit">終了(X)</entry>
 
-<entry key="Menu_Config">設定(C)</entry>
-<entry key="Menu_RuleSelect">1P ルール選択(R)...</entry>
-<entry key="Menu_RuleSelect2P">2P ルール選択(S)...</entry>
-<entry key="Menu_GameTuning">1P チューニング設定(T)...</entry>
-<entry key="Menu_GameTuning2P">2P チューニング設定(U)...</entry>
-<entry key="Menu_AIConfig">1P ＡＩ設定(A)...</entry>
-<entry key="Menu_AIConfig2P">2P ＡＩ設定(Z)...</entry>
-<entry key="Menu_KeyConfig">1P キーボード設定(K)...</entry>
-<entry key="Menu_KeyConfig2P">2P キーボード設定(E)...</entry>
-<entry key="Menu_UpdateCheck">更新チェック設定(D)...</entry>
-<entry key="Menu_GeneralConfig">その他の設定(G)...</entry>
+ <entry key="Menu_Config">設定(C)</entry>
+ <entry key="Menu_RuleSelect">1P ルール選択(R)...</entry>
+ <entry key="Menu_RuleSelect2P">2P ルール選択(S)...</entry>
+ <entry key="Menu_GameTuning">1P チューニング設定(T)...</entry>
+ <entry key="Menu_GameTuning2P">2P チューニング設定(U)...</entry>
+ <entry key="Menu_AIConfig">1P ＡＩ設定(A)...</entry>
+ <entry key="Menu_AIConfig2P">2P ＡＩ設定(Z)...</entry>
+ <entry key="Menu_KeyConfig">1P キーボード設定(K)...</entry>
+ <entry key="Menu_KeyConfig2P">2P キーボード設定(E)...</entry>
+ <entry key="Menu_UpdateCheck">更新チェック設定(D)...</entry>
+ <entry key="Menu_GeneralConfig">その他の設定(G)...</entry>
 
-<!--KeyConfig-->
-<entry key="KeyConfig_OK">OK</entry>
-<entry key="KeyConfig_Cancel">キャンセル</entry>
-<entry key="KeyConfig_Reset0">Blockbox風の設定にリセット (デフォルト)</entry>
-<entry key="KeyConfig_Reset1">ガイドライン対応ゲーム風の設定にリセット</entry>
-<entry key="KeyConfig_Reset2">旧NullpoMinoの初期設定にリセット</entry>
-<entry key="KeyConfig_LabelHelp1">テキストボックスを左ボタンでクリックし、設定したいキーを押してください</entry>
-<entry key="KeyConfig_LabelHelp2">テキストボックスを右ボタンでクリックすると無設定に戻せます</entry>
-<entry key="KeyConfig_Tab_Ingame">ゲーム中</entry>
-<entry key="KeyConfig_Tab_Menu">メニュー</entry>
-<entry key="KeyConfig_Tab_Reset">リセット</entry>
-<entry key="KeyConfig_LabelKey0">上（ハードドロップ）</entry>
-<entry key="KeyConfig_LabelKey1">下（ソフトドロップ）</entry>
-<entry key="KeyConfig_LabelKey2">左</entry>
-<entry key="KeyConfig_LabelKey3">右</entry>
-<entry key="KeyConfig_LabelKey4">A（回転）</entry>
-<entry key="KeyConfig_LabelKey5">B（逆回転）</entry>
-<entry key="KeyConfig_LabelKey6">C（回転）</entry>
-<entry key="KeyConfig_LabelKey7">D（ホールド）</entry>
-<entry key="KeyConfig_LabelKey8">E（180度回転）</entry>
-<entry key="KeyConfig_LabelKey9">F</entry>
-<entry key="KeyConfig_LabelKey10">終了</entry>
-<entry key="KeyConfig_LabelKey11">ポーズ</entry>
-<entry key="KeyConfig_LabelKey12">モード選択画面に戻る</entry>
-<entry key="KeyConfig_LabelKey13">リトライ</entry>
-<entry key="KeyConfig_LabelKey14">フレームステップ</entry>
-<entry key="KeyConfig_LabelKey15">スクリーンショット</entry>
+ <!--KeyConfig-->
+ <entry key="KeyConfig_OK">OK</entry>
+ <entry key="KeyConfig_Cancel">キャンセル</entry>
+ <entry key="KeyConfig_Reset0">Blockbox風の設定にリセット (デフォルト)</entry>
+ <entry key="KeyConfig_Reset1">ガイドライン対応ゲーム風の設定にリセット</entry>
+ <entry key="KeyConfig_Reset2">旧NullpoMinoの初期設定にリセット</entry>
+ <entry key="KeyConfig_LabelHelp1">テキストボックスを左ボタンでクリックし、設定したいキーを押してください</entry>
+ <entry key="KeyConfig_LabelHelp2">テキストボックスを右ボタンでクリックすると無設定に戻せます</entry>
+ <entry key="KeyConfig_Tab_Ingame">ゲーム中</entry>
+ <entry key="KeyConfig_Tab_Menu">メニュー</entry>
+ <entry key="KeyConfig_Tab_Reset">リセット</entry>
+ <entry key="KeyConfig_LabelKey0">上（ハードドロップ）</entry>
+ <entry key="KeyConfig_LabelKey1">下（ソフトドロップ）</entry>
+ <entry key="KeyConfig_LabelKey2">左</entry>
+ <entry key="KeyConfig_LabelKey3">右</entry>
+ <entry key="KeyConfig_LabelKey4">A（回転）</entry>
+ <entry key="KeyConfig_LabelKey5">B（逆回転）</entry>
+ <entry key="KeyConfig_LabelKey6">C（回転）</entry>
+ <entry key="KeyConfig_LabelKey7">D（ホールド）</entry>
+ <entry key="KeyConfig_LabelKey8">E（180度回転）</entry>
+ <entry key="KeyConfig_LabelKey9">F</entry>
+ <entry key="KeyConfig_LabelKey10">終了</entry>
+ <entry key="KeyConfig_LabelKey11">ポーズ</entry>
+ <entry key="KeyConfig_LabelKey12">モード選択画面に戻る</entry>
+ <entry key="KeyConfig_LabelKey13">リトライ</entry>
+ <entry key="KeyConfig_LabelKey14">フレームステップ</entry>
+ <entry key="KeyConfig_LabelKey15">スクリーンショット</entry>
 
-<!--RuleSelect-->
-<entry key="RuleSelect_OK">OK</entry>
-<entry key="RuleSelect_Cancel">キャンセル(C)</entry>
-<entry key="RuleSelect_UseDefault">デフォルト(D)</entry>
+ <!--RuleSelect-->
+ <entry key="RuleSelect_OK">OK</entry>
+ <entry key="RuleSelect_Cancel">キャンセル(C)</entry>
+ <entry key="RuleSelect_UseDefault">デフォルト(D)</entry>
 
-<!--AISelect-->
-<entry key="AISelect_NoUse">AIを使わない(N)</entry>
-<entry key="AISelect_LabelAIMoveDelay">横移動間隔</entry>
-<entry key="AISelect_LabelAIThinkDelay">思考間隔</entry>
-<entry key="AISelect_CheckboxAIUseThread">スレッド使用(T)</entry>
-<entry key="AISelect_CheckboxAIShowHint">ヒントとして表示(H)</entry>
-<entry key="AISelect_CheckboxAIPrethink">先行思考(P)</entry>
-<entry key="AISelect_CheckboxAIShowState">思考状態表示(AIが対応している場合)(S)</entry>
-<entry key="AISelect_OK">OK</entry>
-<entry key="AISelect_Cancel">キャンセル(C)</entry>
+ <!--AISelect-->
+ <entry key="AISelect_NoUse">AIを使わない(N)</entry>
+ <entry key="AISelect_LabelAIMoveDelay">横移動間隔</entry>
+ <entry key="AISelect_LabelAIThinkDelay">思考間隔</entry>
+ <entry key="AISelect_CheckboxAIUseThread">スレッド使用(T)</entry>
+ <entry key="AISelect_CheckboxAIShowHint">ヒントとして表示(H)</entry>
+ <entry key="AISelect_CheckboxAIPrethink">先行思考(P)</entry>
+ <entry key="AISelect_CheckboxAIShowState">思考状態表示(AIが対応している場合)(S)</entry>
+ <entry key="AISelect_OK">OK</entry>
+ <entry key="AISelect_Cancel">キャンセル(C)</entry>
 
-<!--GeneralConfig-->
-<entry key="GeneralConfig_OK">OK</entry>
-<entry key="GeneralConfig_Cancel">キャンセル(C)</entry>
-<entry key="GeneralConfig_ScreenSize">画面サイズ(640x480以外はすごく重いです)</entry>
-<entry key="GeneralConfig_MaxFPS">最大FPS(デフォルトは60)</entry>
-<entry key="GeneralConfig_SEVolume">音量(1.0で100% 0.5で50%)</entry>
-<entry key="GeneralConfig_LineClearEffectSpeed">ライン消去エフェクトの速度(1で1倍、2で2倍)</entry>
-<entry key="GeneralConfig_ShowFPS">FPS表示</entry>
-<entry key="GeneralConfig_ShowBackground">背景</entry>
-<entry key="GeneralConfig_ShowMeter">フィールド右にメーター表示</entry>
-<entry key="GeneralConfig_ShowFieldBlockGraphics">フィールドのブロックの絵を表示(チェックなしの場合は枠線だけ表示)</entry>
-<entry key="GeneralConfig_SimpleBlock">シンプルな絵柄のブロックを使う</entry>
-<entry key="GeneralConfig_SE">効果音(次回起動時から有効)</entry>
-<entry key="GeneralConfig_UseNativeLookAndFeel">ネイティブのLook & Feelを使う(次回起動時から有効)</entry>
-<entry key="GeneralConfig_EnableFrameStep">フレームステップ機能</entry>
-<entry key="GeneralConfig_NextShadow">ゴーストピースの上にNEXTを表示</entry>
-<entry key="GeneralConfig_OutlineGhost">枠線型ゴーストピース</entry>
-<entry key="GeneralConfig_SideNext">フィールドの横にNEXTを表示</entry>
-<entry key="GeneralConfig_BigSideNext">フィールド横のNEXT表示を大きくする</entry>
-<entry key="GeneralConfig_PerfectFPSMode">より正確なフレームレート維持法(沢山のCPUパワーを使います)</entry>
-<entry key="GeneralConfig_PerfectYield">より正確なフレームレート維持法のときにThread.yield()を実行する</entry>
-<entry key="GeneralConfig_SyncDisplay">全フレームを確実に描画する (Toolkit.getDefaultToolkit().sync())</entry>
-<entry key="GeneralConfig_ShowLineClearEffect">ライン消去エフェクトを表示する(すごく高性能なCPUとGPUを必要とします)</entry>
-<entry key="GeneralConfig_DarkNextArea">NEXT欄の背景を暗くする</entry>
-<entry key="GeneralConfig_ShowFieldBGGrid">フィールド背景にグリッドを表示する</entry>
-<entry key="GeneralConfig_ShowInput">操作状況表示</entry>
-<entry key="GeneralConfig_TabName_Basic">基本</entry>
-<entry key="GeneralConfig_TabName_Advanced">詳細</entry>
+ <!--GeneralConfig-->
+ <entry key="GeneralConfig_OK">OK</entry>
+ <entry key="GeneralConfig_Cancel">キャンセル(C)</entry>
+ <entry key="GeneralConfig_ScreenSize">画面サイズ(640x480以外はすごく重いです)</entry>
+ <entry key="GeneralConfig_MaxFPS">最大FPS(デフォルトは60)</entry>
+ <entry key="GeneralConfig_SEVolume">音量(1.0で100% 0.5で50%)</entry>
+ <entry key="GeneralConfig_LineClearEffectSpeed">ライン消去エフェクトの速度(1で1倍、2で2倍)</entry>
+ <entry key="GeneralConfig_ShowFPS">FPS表示</entry>
+ <entry key="GeneralConfig_ShowBackground">背景</entry>
+ <entry key="GeneralConfig_ShowMeter">フィールド右にメーター表示</entry>
+ <entry key="GeneralConfig_ShowFieldBlockGraphics">フィールドのブロックの絵を表示(チェックなしの場合は枠線だけ表示)</entry>
+ <entry key="GeneralConfig_SimpleBlock">シンプルな絵柄のブロックを使う</entry>
+ <entry key="GeneralConfig_SE">効果音(次回起動時から有効)</entry>
+ <entry key="GeneralConfig_UseNativeLookAndFeel">ネイティブのLook &amp; Feelを使う(次回起動時から有効)</entry>
+ <entry key="GeneralConfig_EnableFrameStep">フレームステップ機能</entry>
+ <entry key="GeneralConfig_NextShadow">ゴーストピースの上にNEXTを表示</entry>
+ <entry key="GeneralConfig_OutlineGhost">枠線型ゴーストピース</entry>
+ <entry key="GeneralConfig_SideNext">フィールドの横にNEXTを表示</entry>
+ <entry key="GeneralConfig_BigSideNext">フィールド横のNEXT表示を大きくする</entry>
+ <entry key="GeneralConfig_PerfectFPSMode">より正確なフレームレート維持法(沢山のCPUパワーを使います)</entry>
+ <entry key="GeneralConfig_PerfectYield">より正確なフレームレート維持法のときにThread.yield()を実行する</entry>
+ <entry key="GeneralConfig_SyncDisplay">全フレームを確実に描画する (Toolkit.getDefaultToolkit().sync())</entry>
+ <entry key="GeneralConfig_ShowLineClearEffect">ライン消去エフェクトを表示する(すごく高性能なCPUとGPUを必要とします)</entry>
+ <entry key="GeneralConfig_DarkNextArea">NEXT欄の背景を暗くする</entry>
+ <entry key="GeneralConfig_ShowFieldBGGrid">フィールド背景にグリッドを表示する</entry>
+ <entry key="GeneralConfig_ShowInput">操作状況表示</entry>
+ <entry key="GeneralConfig_TabName_Basic">基本</entry>
+ <entry key="GeneralConfig_TabName_Advanced">詳細</entry>
 
-<!--GameTuning-->
-<entry key="GameTuning_RotateButtonDefaultRight_Label">Aボタンの回転方向</entry>
-<entry key="GameTuning_RotateButtonDefaultRight_Auto">自動 (ルールに従う)</entry>
-<entry key="GameTuning_RotateButtonDefaultRight_Left">左 (反時計回り)</entry>
-<entry key="GameTuning_RotateButtonDefaultRight_Right">右 (時計回り)</entry>
-<entry key="GameTuning_MoveDiagonal_Label">斜め移動</entry>
-<entry key="GameTuning_MoveDiagonal_Auto">自動 (ルールに従う)</entry>
-<entry key="GameTuning_MoveDiagonal_Disable">常に無効</entry>
-<entry key="GameTuning_MoveDiagonal_Enable">常に有効</entry>
-<entry key="GameTuning_BlockShowOutlineOnly_Label">ブロック枠線だけ表示</entry>
-<entry key="GameTuning_BlockShowOutlineOnly_Auto">自動 (モードに従う)</entry>
-<entry key="GameTuning_BlockShowOutlineOnly_Disable">常に無効</entry>
-<entry key="GameTuning_BlockShowOutlineOnly_Enable">常に有効</entry>
-<entry key="GameTuning_Skin_Label">ブロックの絵柄</entry>
-<entry key="GameTuning_Skin_Auto">自動 (ルールに従う)</entry>
-<entry key="GameTuning_OutlineType_Label">ブロック枠線</entry>
-<entry key="GameTuning_OutlineType_Auto">自動 (モードに従う)</entry>
-<entry key="GameTuning_OutlineType_None">なし</entry>
-<entry key="GameTuning_OutlineType_Normal">通常</entry>
-<entry key="GameTuning_OutlineType_Connect">繋がり表示</entry>
-<entry key="GameTuning_OutlineType_SameColor">色でくっつく</entry>
-<entry key="GameTuning_MinDAS_Label">最低DAS (-1で自動)</entry>
-<entry key="GameTuning_MaxDAS_Label">最高DAS (-1で自動)</entry>
-<entry key="GameTuning_DasDelay_Label">横移動間隔 (-1で自動)</entry>
-<entry key="GameTuning_ReverseUpDown_Label">上ボタンと下ボタンの役割を反転させる</entry>
-<entry key="GameTuning_OK">OK</entry>
-<entry key="GameTuning_Cancel">キャンセル(C)</entry>
+ <!--GameTuning-->
+ <entry key="GameTuning_RotateButtonDefaultRight_Label">Aボタンの回転方向</entry>
+ <entry key="GameTuning_RotateButtonDefaultRight_Auto">自動 (ルールに従う)</entry>
+ <entry key="GameTuning_RotateButtonDefaultRight_Left">左 (反時計回り)</entry>
+ <entry key="GameTuning_RotateButtonDefaultRight_Right">右 (時計回り)</entry>
+ <entry key="GameTuning_MoveDiagonal_Label">斜め移動</entry>
+ <entry key="GameTuning_MoveDiagonal_Auto">自動 (ルールに従う)</entry>
+ <entry key="GameTuning_MoveDiagonal_Disable">常に無効</entry>
+ <entry key="GameTuning_MoveDiagonal_Enable">常に有効</entry>
+ <entry key="GameTuning_BlockShowOutlineOnly_Label">ブロック枠線だけ表示</entry>
+ <entry key="GameTuning_BlockShowOutlineOnly_Auto">自動 (モードに従う)</entry>
+ <entry key="GameTuning_BlockShowOutlineOnly_Disable">常に無効</entry>
+ <entry key="GameTuning_BlockShowOutlineOnly_Enable">常に有効</entry>
+ <entry key="GameTuning_Skin_Label">ブロックの絵柄</entry>
+ <entry key="GameTuning_Skin_Auto">自動 (ルールに従う)</entry>
+ <entry key="GameTuning_OutlineType_Label">ブロック枠線</entry>
+ <entry key="GameTuning_OutlineType_Auto">自動 (モードに従う)</entry>
+ <entry key="GameTuning_OutlineType_None">なし</entry>
+ <entry key="GameTuning_OutlineType_Normal">通常</entry>
+ <entry key="GameTuning_OutlineType_Connect">繋がり表示</entry>
+ <entry key="GameTuning_OutlineType_SameColor">色でくっつく</entry>
+ <entry key="GameTuning_MinDAS_Label">最低DAS (-1で自動)</entry>
+ <entry key="GameTuning_MaxDAS_Label">最高DAS (-1で自動)</entry>
+ <entry key="GameTuning_DasDelay_Label">横移動間隔 (-1で自動)</entry>
+ <entry key="GameTuning_ReverseUpDown_Label">上ボタンと下ボタンの役割を反転させる</entry>
+ <entry key="GameTuning_OK">OK</entry>
+ <entry key="GameTuning_Cancel">キャンセル(C)</entry>
 
-<!--UpdateCheck-->
-<entry key="UpdateCheck_Tab_UpdateInfo">情報</entry>
-<entry key="UpdateCheck_Label_Status_Ready">「今すぐ更新チェック」ボタンをクリックすると更新チェックを行ないます。</entry>
-<entry key="UpdateCheck_Label_Status_Checking">更新チェック中…</entry>
-<entry key="UpdateCheck_Label_Status_Failed">更新チェックに失敗しました。(詳しい原因はlog/log_swing.txtにあります)</entry>
-<entry key="UpdateCheck_Label_Status_Complete">更新チェック完了</entry>
-<entry key="UpdateCheck_Label_LatestVersion">バージョン:</entry>
-<entry key="UpdateCheck_Label_ReleaseDate">公開日:</entry>
-<entry key="UpdateCheck_Label_DownloadURL">アーカイブのURL:</entry>
-<entry key="UpdateCheck_Label_InstallerURL">インストーラのURL:</entry>
-<entry key="UpdateCheck_Button_CheckNow">今すぐ更新チェック(N)</entry>
-<entry key="UpdateCheck_Button_OpenDownloadURL">Webブラウザでアーカイブをダウンロード(D)</entry>
-<entry key="UpdateCheck_Button_OpenInstallerURL">Webブラウザでインストーラをダウンロード(I)</entry>
-<entry key="UpdateCheck_Tab_Setting">設定</entry>
-<entry key="UpdateCheck_CheckBox_Enable">自動更新チェックを有効にする(E)</entry>
-<entry key="UpdateCheck_Label_XMLURL">最新版情報が書かれたXMLのURL:</entry>
-<entry key="UpdateCheck_Label_StartupMax">この回数ゲームを起動する毎に更新チェックする:</entry>
-<entry key="UpdateCheck_Button_Save">保存(S)</entry>
-<entry key="UpdateCheck_Button_Close">閉じる(C)</entry>
+ <!--UpdateCheck-->
+ <entry key="UpdateCheck_Tab_UpdateInfo">情報</entry>
+ <entry key="UpdateCheck_Label_Status_Ready">「今すぐ更新チェック」ボタンをクリックすると更新チェックを行ないます。</entry>
+ <entry key="UpdateCheck_Label_Status_Checking">更新チェック中…</entry>
+ <entry key="UpdateCheck_Label_Status_Failed">更新チェックに失敗しました。(詳しい原因はlog/log_swing.txtにあります)</entry>
+ <entry key="UpdateCheck_Label_Status_Complete">更新チェック完了</entry>
+ <entry key="UpdateCheck_Label_LatestVersion">バージョン:</entry>
+ <entry key="UpdateCheck_Label_ReleaseDate">公開日:</entry>
+ <entry key="UpdateCheck_Label_DownloadURL">アーカイブのURL:</entry>
+ <entry key="UpdateCheck_Label_InstallerURL">インストーラのURL:</entry>
+ <entry key="UpdateCheck_Button_CheckNow">今すぐ更新チェック(N)</entry>
+ <entry key="UpdateCheck_Button_OpenDownloadURL">Webブラウザでアーカイブをダウンロード(D)</entry>
+ <entry key="UpdateCheck_Button_OpenInstallerURL">Webブラウザでインストーラをダウンロード(I)</entry>
+ <entry key="UpdateCheck_Tab_Setting">設定</entry>
+ <entry key="UpdateCheck_CheckBox_Enable">自動更新チェックを有効にする(E)</entry>
+ <entry key="UpdateCheck_Label_XMLURL">最新版情報が書かれたXMLのURL:</entry>
+ <entry key="UpdateCheck_Label_StartupMax">この回数ゲームを起動する毎に更新チェックする:</entry>
+ <entry key="UpdateCheck_Button_Save">保存(S)</entry>
+ <entry key="UpdateCheck_Button_Close">閉じる(C)</entry>
 
-<!--FileChooser-->
-<entry key="FileChooser_ReplayFile">リプレイファイル (*.rep)</entry>
+ <!--FileChooser-->
+ <entry key="FileChooser_ReplayFile">リプレイファイル (*.rep)</entry>
 
-<!--InGame-->
-<entry key="InGame_Next">NEXT</entry>
-<entry key="InGame_Hold">HOLD</entry>
+ <!--InGame-->
+ <entry key="InGame_Next">NEXT</entry>
+ <entry key="InGame_Hold">HOLD</entry>
 </properties>

@@ -40,7 +40,6 @@ import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
 import java.util.LinkedList
-import java.util.Locale
 import java.util.Objects
 import kotlin.math.abs
 
@@ -497,18 +496,11 @@ class NetVSBattle:NetDummyVSMode() {
 			if(garbage[pid]>0&&netCurrentRoomInfo!!.useFractionalGarbage&&engine.stat!=GameEngine.Status.RESULT) {
 				val strTempGarbage:String
 
-				var fontColor = COLOR.WHITE
-				if(garbage[pid]>=GARBAGE_DENOMINATOR) fontColor = COLOR.YELLOW
-				if(garbage[pid]>=GARBAGE_DENOMINATOR*3) fontColor = COLOR.ORANGE
-				if(garbage[pid]>=GARBAGE_DENOMINATOR*4) fontColor = COLOR.RED
-
-				if(engine.displaySize!=-1) {
-					strTempGarbage = String.format(Locale.US, "%5.2f", garbage[pid].toFloat()/GARBAGE_DENOMINATOR)
-					receiver.drawDirectFont(x+96, y+372, strTempGarbage, fontColor, 1f)
-				} else {
-					strTempGarbage = String.format(Locale.US, "%4.1f", garbage[pid].toFloat()/GARBAGE_DENOMINATOR)
-					receiver.drawDirectFont(x+64, y+168, strTempGarbage, fontColor, .5f)
-				}
+				val fontColor = if(garbage[pid]>=GARBAGE_DENOMINATOR*4) COLOR.RED
+				else if(garbage[pid]>=GARBAGE_DENOMINATOR*3) COLOR.ORANGE
+				else if(garbage[pid]>=GARBAGE_DENOMINATOR) COLOR.YELLOW
+				else COLOR.WHITE
+				receiver.drawDirectNum(x+96, y+372, garbage[pid].toFloat()/GARBAGE_DENOMINATOR, 5 to 2, fontColor, 1f)
 			}
 
 			// Target
@@ -647,14 +639,14 @@ class NetVSBattle:NetDummyVSMode() {
 
 		drawResultScale(
 			engine, receiver, 2, COLOR.ORANGE, scale,
-			"ATTACK", String.format("%10g", garbageSent[pid].toFloat()/GARBAGE_DENOMINATOR),
-			"LINE", String.format("%10d", engine.statistics.lines),
-			"PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
-			"ATK/LINE", String.format("%10g", playerAPL[pid]),
-			"ATTACK/MIN", String.format("%10g", playerAPM[pid]),
-			"LINE/MIN", String.format("%10g", engine.statistics.lpm),
-			"PIECE/SEC", String.format("%10g", engine.statistics.pps),
-			"Time", String.format("%10s", engine.statistics.time.toTimeStr)
+			"ATTACK", "%10g".format(garbageSent[pid].toFloat()/GARBAGE_DENOMINATOR),
+			"LINE", "%10d".format(engine.statistics.lines),
+			"PIECE", "%10d".format(engine.statistics.totalPieceLocked),
+			"ATK/LINE", "%10g".format(playerAPL[pid]),
+			"ATTACK/MIN", "%10g".format(playerAPM[pid]),
+			"LINE/MIN", "%10g".format(engine.statistics.lpm),
+			"PIECE/SEC", "%10g".format(engine.statistics.pps),
+			"Time", "%10s".format(engine.statistics.time.toTimeStr)
 		)
 	}
 

@@ -133,22 +133,26 @@ class Statistics:Serializable {
 
 	/** 1Linesあたりの得点 (Score Per Line) */
 	val spl:Double get() = if(lines>0) score.toDouble()/lines.toDouble() else .0
+	/** 1Pieceあたりの得点 (Score Per Piece) */
+	val spp:Double get() = if(totalPieceLocked>0) score.toDouble()/totalPieceLocked.toDouble() else .0
 	/** 1分間あたりの得点 (Score Per Minute) */
 	val spm:Double get() = if(time>0) score*3600.0/time else .0
 	/** 1秒間あたりの得点 (Score Per Second) */
 	val sps:Double get() = if(time>0) score*60.0/time else .0
 
-	/** 1分間あたりのLinescount (Lines Per Minute) */
+	/** 1分間あたりのLines (Lines Per Minute) */
 	val lpm:Float get() = if(time>0) lines*3600f/time else 0f
-	/** 1秒間あたりのLinescount (Lines Per Second) */
+	/** 1秒間あたりのLines (Lines Per Second) */
 	val lps:Float get() = if(time>0) lines*60f/time else 0f
 	/** 1分間あたりのピースcount (Pieces Per Minute) */
 	val ppm:Float get() = if(time>0) totalPieceLocked*3600f/time else 0f
 	/** 1秒間あたりのピースcount (Pieces Per Second) */
 	val pps:Float get() = if(time>0) totalPieceLocked*60f/time else 0f
 
-	/** 1Linesあたりの攻撃 (Attack Per Lintes) */
+	/** 1Linesあたりの攻撃 (Attack Per Line) */
 	val apl:Float get() = if(lines>0) attacks.toFloat()/lines.toFloat() else 0f
+	/** 1Pieceあたりの攻撃 (Attack Per Piece) */
+	val app:Float get() = if(totalPieceLocked>0) attacks.toFloat()/totalPieceLocked.toFloat() else 0f
 	/** 1分間あたりの攻撃 (Attack Per Minutes) */
 	val apm:Float get() = if(time>0) attacks*3600f/time else 0f
 	/** 対戦評価 (VS Score)*/

@@ -55,18 +55,23 @@ class PopupCombo(x:Int, y:Int, val pts:Int, val type:CHAIN, val ex:Int = 0):Spri
 		when(type) {
 			CHAIN.B2B -> {
 				r.drawFont(x-18, y-15, "SKILL", FONT.NANO, COLOR.RED, .75f, alpha)
-				r.drawDirectNum(x-18, y, String.format("%2d", pts), COLOR.YELLOW, 1.5f, alpha)
+				r.drawDirectNum(x-18, y, "%2d".format(pts), COLOR.YELLOW, 1.5f, alpha)
 				r.drawFont(x-18, y+20, "Rush!", FONT.NANO, COLOR.ORANGE, .75f, alpha)
 			}
 			CHAIN.COMBO -> {
-				r.drawDirectNum(x-18, y-0, String.format("%2d", pts), COLOR.CYAN, 1.5f, alpha)
+				r.drawDirectNum(x-18, y-0, "%2d".format(pts), COLOR.CYAN, 1.5f, alpha)
 				r.drawFont(x+18, y+8, "REN", FONT.NANO, COLOR.BLUE, .5f, alpha)
 				r.drawFont(x-18, y+20, "Combo!", FONT.NANO, COLOR.BLUE, .75f, alpha)
+			}
+			CHAIN.CHAIN -> {
+				r.drawDirectNum(x-18, y-0, "%2d".format(pts), COLOR.YELLOW, 1.5f, alpha)
+				r.drawFont(x+18, y+8, "Hits", FONT.NANO, COLOR.ORANGE, .5f, alpha)
+				r.drawFont(x-18, y+20, "Chain!", FONT.NANO, COLOR.ORANGE, .75f, alpha)
 			}
 		}
 	}
 
 	enum class CHAIN {
-		COMBO, B2B
+		COMBO, B2B, CHAIN
 	}
 }

@@ -272,9 +272,9 @@ open class ComboRaceSeedSearch:DummyAI() {
 							fldTemp.replace(fldBackup)
 
 							if(piece.checkCollision(x, y, rot, fldTemp)) {
-								wallkick.executeWallkick(x, y, -1, rt, rot, true, piece, fldTemp, null)?.let {kick ->
-									newX = x+kick.offsetX
-									newY = piece.getBottom(newX, y+kick.offsetY, rot, fldTemp)
+								wallkick.executeWallkick(x, y, -1, rt, rot, true, piece, fldTemp, null)?.let {(offsetX, offsetY) ->
+									newX = x+offsetX
+									newY = piece.getBottom(newX, y+offsetY, rot, fldTemp)
 								}
 							}
 							if(!piece.checkCollision(newX, newY, rot, fldTemp)&&newY>piece.getBottom(newX, 0, rot, fldTemp)) {
@@ -297,9 +297,9 @@ open class ComboRaceSeedSearch:DummyAI() {
 							fldTemp.replace(fldBackup)
 
 							if(piece.checkCollision(x, y, rot, fldTemp)) {
-								wallkick.executeWallkick(x, y, 1, rt, rot, true, piece, fldTemp, null)?.let {kick ->
-									newX = x+kick.offsetX
-									newY = piece.getBottom(newX, y+kick.offsetY, rot, fldTemp)
+								wallkick.executeWallkick(x, y, 1, rt, rot, true, piece, fldTemp, null)?.let {(offsetX, offsetY) ->
+									newX = x+offsetX
+									newY = piece.getBottom(newX, y+offsetY, rot, fldTemp)
 								}
 							}
 							if(!piece.checkCollision(newX, newY, rot, fldTemp)&&newY>piece.getBottom(newX, 0, rot, fldTemp)) {

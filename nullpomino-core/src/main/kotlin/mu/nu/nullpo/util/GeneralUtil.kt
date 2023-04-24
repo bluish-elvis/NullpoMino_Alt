@@ -77,18 +77,18 @@ object GeneralUtil {
 	 */
 	val Float.toTimeStr
 		get() = if(this<0) "--:--.--" else
-			String.format("%02d:%02d.%02d", this.toInt()/3600, this.toInt()/60%60, (this%60*5f/3f).toInt())
+			"%02d:%02d.%02d".format(this.toInt()/3600, this.toInt()/60%60, (this%60*5f/3f).toInt())
 	@Deprecated("Float extended", ReplaceWith("t.toTimeStr", "mu.nu.nullpo.util.GeneralUtil.getTime"))
 	fun getTime(t:Float):String = t.toTimeStr
 
 	val Int.toTimeStr
 		get() = if(this<0) "--:--.--" else
-			String.format("%02d:%02d.%02d", this/3600, this/60%60, (this%60*5f/3f).toInt())
+			"%02d:%02d.%02d".format(this/3600, this/60%60, (this%60*5f/3f).toInt())
 	@Deprecated("Int extended", ReplaceWith("t.toTimeStr", "mu.nu.nullpo.util.GeneralUtil.getTime"))
 	fun getTime(t:Int):String = t.toTimeStr
 	val Long.toTimeStr
 		get() = if(this<0) "--:--.--" else
-			String.format("%02d:%02d.%02d", this/3600, this/60%60, (this%60*5f/3f).toInt())
+			"%02d:%02d.%02d".format(this/3600, this/60%60, (this%60*5f/3f).toInt())
 
 	/**  @return ON if b is true, OFF if b is false*/
 	@JvmOverloads
@@ -316,7 +316,7 @@ object GeneralUtil {
 			val z = (1 until digits).fold(minOf(y, 35)) {b, _ -> b.times(10)}
 			"${('A'.code+minOf(y.toInt()-10, 25)).toChar()}${if(digits>1) capsNum(x-z, digits-1) else ""}"
 		}
-		digits>0 -> String.format("%0${digits}d", x)
+		digits>0 -> "%0${digits}d".format(x)
 		else -> ""
 	}
 

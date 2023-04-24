@@ -65,11 +65,10 @@ PSkP = Rnd*/
 	}
 
 	override fun draw() {
-		dy.zip(dh).forEachIndexed {i, it ->
+		dy.zip(dh).forEachIndexed {i, (d, second) ->
 			val r = ((i%2)+py*2).let {it+if(it<0) 2 else 0}%2
-			val d = it.first
-			val s1 = it.second.first
-			val s2 = it.second.second
+			val s1 = second.first
+			val s2 = second.second
 			val sy = s1+r*s2
 			if(r<1) img.draw(0f, 0f+d, 0f, sy, 640f, sy+s2)
 			else {

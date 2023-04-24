@@ -65,7 +65,7 @@ class Deltatris:MarathonModeBase() {
 	private var scoreBbefore = 0
 	// Generic
 	private val rankingScore = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	// PROFILE
 	private var rankingRankPlayer = 0
@@ -97,7 +97,7 @@ class Deltatris:MarathonModeBase() {
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		bgmLv = 0
 		multiplier = 1f
 		mScale = 1f
@@ -274,51 +274,30 @@ class Deltatris:MarathonModeBase() {
 		val pid = engine.playerID
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
-				val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE, scale)
+				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-						receiver.drawScoreFont(
-							engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", i==rankingRankPlayer,
-							scale
-						)
-						receiver.drawScoreFont(
-							engine, 10, topY+i, "${rankingLinesPlayer[difficulty][i]}", i==rankingRankPlayer,
-							scale
-						)
-						receiver.drawScoreFont(
-							engine, 15, topY+i, rankingTimePlayer[difficulty][i].toTimeStr,
-							i==rankingRankPlayer, scale
-						)
+						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", i==rankingRankPlayer)
+						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLinesPlayer[difficulty][i]}", i==rankingRankPlayer)
+						receiver.drawScoreFont(engine, 15, topY+i, rankingTimePlayer[difficulty][i].toTimeStr, i==rankingRankPlayer)
 					}
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
-					receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE,
-						2f
-					)
+					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
-						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(
-							engine, 10, topY+i, "${rankingLines[difficulty][i]}", i==rankingRank, scale
-						)
-						receiver.drawScoreFont(
-							engine, 15, topY+i, rankingTime[difficulty][i].toTimeStr, i==rankingRank,
-							scale
-						)
+						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank)
+						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[difficulty][i]}", i==rankingRank)
+						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[difficulty][i].toTimeStr, i==rankingRank)
 					}
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
-					if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)"
-					)
-					if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-						engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN",
-						COLOR.GREEN
-					)
+					if(!engine.playerProp.isLoggedIn)
+						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)")
+					if(engine.playerProp.isLoggedIn)
+						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				}
 			}
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
@@ -334,14 +313,14 @@ class Deltatris:MarathonModeBase() {
 				}
 			}
 			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 4, "+$lastscore")
+			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
 			val scget = scDisp<engine.statistics.score
 			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
 
 			val rix:Int = receiver.scoreX(engine)
 			val riy:Int = receiver.scoreY(engine)+13*16
 			GameTextUtilities.drawDirectTextAlign(
-				receiver, rix, riy, GameTextUtilities.ALIGN_TOP_LEFT, String.format("%.2f", multiplier)+"X",
+				receiver, rix, riy, GameTextUtilities.ALIGN_TOP_LEFT, "%.2f".format(multiplier)+"X",
 				if(engine.stat===GameEngine.Status.MOVE&&engine.statc[0]>engine.speed.lockDelay*3) COLOR.RED else if(mScale>1) COLOR.ORANGE else COLOR.WHITE,
 				mScale
 			)
@@ -466,7 +445,7 @@ class Deltatris:MarathonModeBase() {
 		if(pts+cmb+spd>0) {
 			get = calcScoreCombo(pts, cmb, engine.statistics.level, spd)
 			get = (get*multiplier).toInt()
-			if(pts>0) lastscore = get
+			if(pts>0) lastScore = get
 
 			if(li>=1) engine.statistics.scoreLine += get
 			else engine.statistics.scoreBonus += get

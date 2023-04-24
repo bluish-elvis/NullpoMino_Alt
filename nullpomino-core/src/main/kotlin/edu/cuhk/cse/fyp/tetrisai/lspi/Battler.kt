@@ -55,12 +55,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	private val gameEngine get() = gameManager.engine
 	private val receiver get() = gameManager.receiver
 	private var customSeed:String? = null
-	/**
-	 * Make a new Simulator object, ready to go.
-	 * @param mode Game mode Object
-	 * @param rules Game rules Object
-	 * @param ai AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
-	 */
+
 	init {
 		/*
 		 * NOTE(oliver): This code is a domain-specific version of
@@ -199,7 +194,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 */
 	fun runSimulations(count:Int) {
 		for(i in 1..count) {
-			log.info(String.format("-------- Simulation %d of %d --------", i, count))
+			log.info("-------- Simulation %d of %d --------".format(i, count))
 			runSimulation()
 		}
 		//gameEngine.ai.shutdown(gameEngine, 0);
@@ -208,7 +203,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 * Performs multiple sequential simulations to completion (STATE == GAMEOVER),
 	 * and records statistics.
 	 *
-	 * @param count The number of simulations.
+	 * @param esp The number of simulations.
 	 */
 	fun runStatisticsSimulations(esp:Int, step:Int) {
 		val totalLines = IntArray(gameEngine.size)
@@ -217,7 +212,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		val winnerCount = IntArray(gameEngine.size)
 		for(i in winnerCount.indices) winnerCount[i] = 0
 		for(i in 0 until count) {
-			log.info(String.format("-------- Simulation %d of %d --------", i+1, count))
+			log.info("-------- Simulation %d of %d --------".format(i+1, count))
 			runSimulation()
 			//if (getGM3Grade() == 32) gm++
 			val winner:Int = gameEngine.indexOfFirst {it.stat!==GameEngine.Status.GAMEOVER}
@@ -276,7 +271,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		//
 		//		String state = gameEngine.stat.toString();
 		//
-		//		log.info(String.format("\tLevel: %3d \tPiece: %s \tState: %s", level, piece, state));
+		//		log.info("\tLevel: %3d \tPiece: %s \tState: %s".format(level, piece, state));
 			}*/
 		@JvmStatic fun main(args:Array<String>) {
 			// Logger initialization.

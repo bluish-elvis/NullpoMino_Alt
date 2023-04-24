@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
 
@@ -333,7 +334,8 @@ class VSBattle:AbstractMode() {
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
-		val pid = engine.playerID
+		val pid = if(owner.engine.any {it.ai!=null}) if((engine.playerID==0)==(engine.statc[4]!=1)) 0 else 1
+		else engine.playerID
 		if(!engine.owner.replayMode&&engine.statc[4]==0) {
 			// Configuration changes
 			val change = updateCursor(engine, 27)
@@ -444,9 +446,7 @@ class VSBattle:AbstractMode() {
 			if(menuTime>=60) menuCursor = 9
 			if(menuTime>=120) engine.statc[4] = 1
 		} else // Start
-			if(owner.engine[0].statc[4]==1&&((owner.engine[1].statc[4]==1||owner.engine[1].ai!=null)&&
-					(pid==1||engine.ctrl.isPush(Controller.BUTTON_A)))
-			) {
+			if(owner.engine.all {it.statc[4]==1}) {
 				owner.engine[0].stat = GameEngine.Status.READY
 				owner.engine[1].stat = GameEngine.Status.READY
 				owner.engine[0].resetStatc()
@@ -467,10 +467,10 @@ class VSBattle:AbstractMode() {
 						engine, receiver, 5, COLOR.GREEN, 7, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid]
 					)
 				}
-				menuCursor<19 -> {
+				menuCursor<17 -> {
 					val strTWISTEnable = listOf("OFF", "T-ONLY", "ALL")[twistEnableType[pid]]
 
-					drawMenu(engine, receiver, 0, COLOR.CYAN, 17, "GARBAGE" to garbageStyle[pid].name)
+					drawMenu(engine, receiver, 0, COLOR.CYAN, 9, "GARBAGE" to garbageStyle[pid].name)
 					receiver.drawMenuFont(engine, 0, 2, "Messiness", COLOR.YELLOW)
 					messiness[pid].map {"$it%"}.forEachIndexed {i, it ->
 						val f = menuCursor==(10+i)&&!engine.owner.replayMode
@@ -479,18 +479,19 @@ class VSBattle:AbstractMode() {
 					drawMenu(
 						engine, receiver, 4, COLOR.CYAN, 12,
 						"COUNTERING" to garbageCounter[pid], "BLOCKING" to garbageBlocking[pid],
-						"SPIN BONUS" to strTWISTEnable, "COMBO" to enableCombo[pid]
+						"SPIN BONUS" to strTWISTEnable, "COMBO" to enableCombo[pid], "B2B Split" to splitb2b[pid]
 					)
 				}
 				else -> {
 					drawMenu(
 						engine, receiver, 0, COLOR.CYAN, 17, "BIG" to big[pid], "SE" to enableSE[pid],
 						"HURRYUP" to if(hurryUpSeconds[pid]==-1) "NONE" else "${hurryUpSeconds[pid]}SEC",
-						"INTERVAL" to hurryUpInterval[pid]
+						"HU INTERVAL" to hurryUpInterval[pid]
 					)
-					drawMenu(engine, receiver, 8, COLOR.PINK, 22, "BGM" to BGM.values[bgmId], "SHOW STATS" to showStats)
+					drawMenuBGM(engine, receiver, bgmId, COLOR.PINK)
+					drawMenu(engine, receiver, 10, COLOR.PINK, 22, "BGM" to BGM.values[bgmId], "SHOW STATS" to showStats)
 					drawMenu(
-						engine, receiver, 12, COLOR.CYAN, 24, "USE MAP" to useMap[pid], "MAP SET" to mapSet[pid],
+						engine, receiver, 12, COLOR.CYAN, 23, "USE MAP" to useMap[pid], "MAP SET" to mapSet[pid],
 						"MAP NO." to if(mapNumber[pid]<0) "RANDOM" else "${mapNumber[pid]}/${mapMaxNo[pid]-1}"
 					)
 				}
@@ -584,31 +585,31 @@ class VSBattle:AbstractMode() {
 
 				if(!owner.replayMode) {
 					receiver.drawScoreFont(engine, 3, 3, "WINS", COLOR.CYAN)
-					receiver.drawScoreNum(engine, 0, 1, String.format("%2d", winCount[0]), col(0), 2f)
-					receiver.drawScoreNum(engine, 6, 1, String.format("%2d", winCount[1]), col(1), 2f)
+					receiver.drawScoreNum(engine, 0, 1, "%2d".format(winCount[0]), col(0), 2f)
+					receiver.drawScoreNum(engine, 6, 1, "%2d".format(winCount[1]), col(1), 2f)
 				}
 				receiver.drawScoreFont(engine, 2, 5, "SPIKES", COLOR.PINK)
-				receiver.drawScoreNum(engine, 1, 6, String.format("%3d", garbageSent[0]), col(0))
-				receiver.drawScoreNum(engine, 6, 6, String.format("%3d", garbageSent[1]), col(1))
+				receiver.drawScoreNum(engine, 1, 6, "%3d".format(garbageSent[0]), col(0))
+				receiver.drawScoreNum(engine, 6, 6, "%3d".format(garbageSent[1]), col(1))
 			}
 		}
 		if(showStats) {
 			receiver.drawScoreSpeed(engine, 0, 7, attackSpd[0]/50, 5f)
 			receiver.drawScoreSpeed(engine, 5, 7, attackSpd[1]/50, 5f)
-			receiver.drawScoreNum(engine, 1, 8, String.format("%5.2f", attackSpd[0]), col(0))
-			receiver.drawScoreNum(engine, 6, 8, String.format("%5.2f", attackSpd[1]), col(1))
+			receiver.drawScoreNum(engine, 1, 8, (attackSpd[0]), 5 to 2, col(0))
+			receiver.drawScoreNum(engine, 6, 8, (attackSpd[1]), 5 to 2, col(1))
 			receiver.drawScoreFont(engine, 0, 10, "RANK POINT", COLOR.PURPLE)
-			receiver.drawScoreNum(engine, 0, 11, String.format("%6.2f", score[0]), col(0))
-			receiver.drawScoreNum(engine, 5, 11, String.format("%6.2f", score[1]), col(1))
+			receiver.drawScoreNum(engine, 0, 11, (score[0]), 6 to 2, col(0))
+			receiver.drawScoreNum(engine, 5, 11, (score[1]), 6 to 2, col(1))
 			receiver.drawScoreSpeed(engine, 0, 12, score[0]/50, 5f)
 			receiver.drawScoreSpeed(engine, 5, 12, score[1]/50, 5f)
 			val x = receiver.fieldX(engine)
-			val y = receiver.fieldY(engine)+(engine.fieldHeight+2)*EventReceiver.BS+1
+			val y = receiver.fieldY(engine)+22*EventReceiver.BS+1
 
 
 			garbageEntries[pid].forEachIndexed {i, (lines, playerID, time) ->
 				receiver.drawDirectNum(
-					x+engine.fieldWidth*EventReceiver.BS, y-i*16, "${lines}", when {
+					x+engine.fieldWidth*EventReceiver.BS, y-i*16, "$lines", when {
 						time>0&&(time/2)%2==1 -> EventReceiver.getPlayerColor(playerID)
 						lines>=5 -> COLOR.RED
 						lines>=3 -> COLOR.ORANGE
@@ -622,13 +623,13 @@ class VSBattle:AbstractMode() {
 			val myCol = col(pid)
 
 			receiver.drawDirectFont(x-32, y+24, "WINS", myCol, .5f)
-			receiver.drawDirectNum(x-24, y+8, String.format("%2d", winCount[pid]))
+			receiver.drawDirectNum(x-24, y+8, "%2d".format(winCount[pid]))
 			receiver.drawDirectNano(x-32, y-8, "RP", myCol, .5f)
-			receiver.drawDirectNum(x-32, y-24, String.format("%3d", score[pid].toInt()), myCol)
-			receiver.drawDirectNano(x-14, y-8, String.format("%3d", (score[pid]*1000%1000).toInt()), myCol, 0.5f)
+			receiver.drawDirectNum(x-32, y-24, "%3d".format(score[pid].toInt()), myCol)
+			receiver.drawDirectNano(x-14, y-8, "%3d".format((score[pid]*1000%1000).toInt()), myCol, 0.5f)
 
 			receiver.drawDirectNano(x-32, y-36, "SENT", myCol, .5f)
-			receiver.drawDirectNum(x-32, y-52, String.format("%3d", garbageSent[pid]))
+			receiver.drawDirectNum(x-32, y-52, "%3d".format(garbageSent[pid]))
 
 //			}
 		}
@@ -641,7 +642,7 @@ class VSBattle:AbstractMode() {
 		var ofs = 0
 		if(pts>0&&garbage[pid]>0&&garbageCounter[pid])
 			while(garbageEntries[pid].any {it.time<=0}&&(pts-ofs)>0) {
-				val entry = garbageEntries[pid].firstOrNull {it.time<=0} ?: break
+				val entry = garbageEntries[pid].firstOrNull() ?: break
 				val gl = entry.lines
 				if(gl<=(pts-ofs)) {
 					ofs += gl
@@ -799,6 +800,7 @@ class VSBattle:AbstractMode() {
 
 	/* Called when saving replay */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
+		engine.statistics.scoreLine = engine.statistics.attacks
 		saveOtherSetting(engine, owner.replayProp)
 		val pid = engine.playerID
 		savePreset(engine, owner.replayProp, -1-pid)
@@ -809,8 +811,8 @@ class VSBattle:AbstractMode() {
 		return false
 	}
 
-	/** sent from the enemygarbage blockOf data
-	 * @param lines garbage blockcount
+	/** sent from the enemy garbage blockOf data
+	 * @param lines garbage block count
 	 * @param playerID Sender players ID
 	 * @param time Remaining Travelling frames
 	 */

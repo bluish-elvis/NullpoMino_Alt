@@ -92,7 +92,7 @@ class SprintDig:NetDummyMode() {
 		presetNumber = 0
 
 		rankingRank = -1
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 		rankingLines.forEach {it.fill(0)}
 		rankingPiece.forEach {it.fill(0)}
 
@@ -352,20 +352,20 @@ class SprintDig:NetDummyMode() {
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null&&!netIsWatch) {
-				val strPieceTemp = if(owner.receiver.nextDisplayType==2) "P." else "PIECE"
-				receiver.drawScoreFont(engine, 3, 3, "TIME     LINE $strPieceTemp", EventReceiver.COLOR.BLUE)
+				val strPieceTemp = "PIECE"
+				receiver.drawScoreFont(engine, 3, 3, "TIME   LINE Piece", EventReceiver.COLOR.BLUE)
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(
 						engine,
 						0,
 						4+i,
-						String.format("%2d", i+1),
+						"%2d".format(i+1),
 						if(rankingRank==i) EventReceiver.COLOR.RAINBOW else EventReceiver.COLOR.YELLOW
 					)
 					receiver.drawScoreNum(engine, 3, 4+i, rankingTime[goalType][i].toTimeStr, rankingRank==i)
-					receiver.drawScoreNum(engine, 12, 4+i, "${rankingLines[goalType][i]}", rankingRank==i)
-					receiver.drawScoreNum(engine, 17, 4+i, "${rankingPiece[goalType][i]}", rankingRank==i)
+					receiver.drawScoreNum(engine, 10, 4+i, "${rankingLines[goalType][i]}", rankingRank==i)
+					receiver.drawScoreNum(engine, 14, 4+i, "${rankingPiece[goalType][i]}", rankingRank==i)
 				}
 			}
 		} else {

@@ -35,24 +35,26 @@ import mu.nu.nullpo.game.component.Field
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.kotlin.konan.file.File
 
 /** GEM MANIA */
 class GrandPuzzle:AbstractMode() {
-	/** Stage set property file */
-	private var propStageSet = mapOf<Int, CustomProperties>()
+	/** Level set property file */
+	private var propStageSet = mapOf<Int, CustomProperties>().toMutableMap()
 
 	/** 残りプラチナBlockcount */
 	private var rest = 0
 
-	/** Current stage number */
+	/** Current level number */
 	private var stage = 0
 
-	/** Last stage number */
+	/** Last level number */
 	private var laststage = 0
 
 	/** Attempted stage count */
@@ -185,7 +187,7 @@ class GrandPuzzle:AbstractMode() {
 	private val rankingRate = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' times */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	/** Rankings' all clear flag */
 	private val rankingAllClear = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
@@ -203,6 +205,13 @@ class GrandPuzzle:AbstractMode() {
 	override val name = "Grand Blossom"
 	override val gameIntensity:Int = -1
 
+	override fun modeInit(manager:GameManager) {
+		super.modeInit(manager)
+		File(levelDir).listFiles
+
+		loadStageSet(-1)
+
+	}
 	/** Initialization */
 	override fun playerInit(engine:GameEngine) {
 		log.debug("playerInit called")
@@ -254,7 +263,7 @@ class GrandPuzzle:AbstractMode() {
 		rankingRank = -1
 		rankingStage.forEach {it.fill(0)}
 		rankingRate.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 		rankingAllClear.forEach {it.fill(0)}
 
 		engine.twistEnable = false
@@ -312,7 +321,7 @@ class GrandPuzzle:AbstractMode() {
 
 		//  stage Map読み込み
 		engine.createFieldIfNeeded()
-		loadMap(engine.field, propStageSet[mapSet], stage)
+		propStageSet[mapSet]?.let {loadMap(engine.field, it, stage)}
 		engine.field.setAllSkin(engine.skin)
 
 		//  stage Timeなどを設定
@@ -328,13 +337,14 @@ class GrandPuzzle:AbstractMode() {
 	 * @param id stage セット number(-1で default )
 	 */
 	private fun loadStageSet(id:Int) {
-		propStageSet.load(
+		if(propStageSet[id]==null) propStageSet[id] = CustomProperties()
+		propStageSet[id]?.load(
 			if(id>=0) {
 				log.debug("Loading stage set from custom set #$id")
-				"config/map/gemmania/custom$id.map"
+				levelDir+"custom$id.map"
 			} else {
 				log.debug("Loading stage set from default set")
-				"config/map/gemmania/default.map"
+				levelDir+"default.map"
 			}
 		)
 	}
@@ -346,10 +356,10 @@ class GrandPuzzle:AbstractMode() {
 		if(!owner.replayMode)
 			if(id>=0) {
 				log.debug("Saving stage set to custom set #$id")
-				propStageSet.save("config/map/gemmania/custom$id.map")
+				propStageSet[id]?.save("config/map/gemmania/custom$id.map")
 			} else {
 				log.debug("Saving stage set to default set")
-				propStageSet.save("config/map/gemmania/default.map")
+				propStageSet[id]?.save("config/map/gemmania/default.map")
 			}
 	}
 
@@ -490,11 +500,12 @@ class GrandPuzzle:AbstractMode() {
 						menuCursor = 0
 						menuTime = 0
 					}
-					1 -> if(propStageSet.isNotEmpty()) {
-						loadMap(engine.field, propStageSet, startStage)
-						engine.field.setAllSkin(engine.skin)
-					}
-					2 -> if(propStageSet.isNotEmpty()) saveMap(engine.field, propStageSet, startStage)
+					1 ->
+						propStageSet[mapSet]?.let {
+							loadMap(engine.field, it, startStage)
+							engine.field.setAllSkin(engine.skin)
+						}
+					2 -> propStageSet[mapSet]?.let {saveMap(engine.field, it, startStage)}
 					3 -> loadStageSet(mapSet)
 					4 -> saveStageSet(mapSet)
 				}
@@ -603,6 +614,7 @@ class GrandPuzzle:AbstractMode() {
 						if(startStage<0) startStage = MAX_STAGE_TOTAL-1
 						if(startStage>MAX_STAGE_TOTAL-1) startStage = 0
 
+						propStageSet[mapSet]?.let {loadMap(engine.field, it, startStage)}
 						engine.field.setAllSkin(engine.skin)
 					}
 					1 -> {
@@ -610,7 +622,7 @@ class GrandPuzzle:AbstractMode() {
 						if(mapSet<-1) mapSet = 99
 						if(mapSet>99) mapSet = -1
 
-						loadMap(engine.field, propStageSet, startStage)
+						propStageSet[mapSet]?.let {loadMap(engine.field, it, startStage)}
 						engine.field.setAllSkin(engine.skin)
 					}
 					2 -> alwaysGhost = !alwaysGhost
@@ -645,7 +657,7 @@ class GrandPuzzle:AbstractMode() {
 				if(mapSet<0) mapSet = 0
 
 				loadStageSet(mapSet)
-				loadMap(engine.field, propStageSet, startStage)
+				propStageSet[mapSet]?.let {loadMap(engine.field, it, startStage)}
 				engine.field.setAllSkin(engine.skin)
 
 				editModeScreen = 1
@@ -742,7 +754,7 @@ class GrandPuzzle:AbstractMode() {
 				receiver.drawMenuFont(engine, 9, 7, "${stage+1-MAX_STAGE_NORMAL}")
 			} else {
 				receiver.drawMenuFont(engine, 1, 7, "LEVEL", COLOR.GREEN)
-				val strStage = String.format("%2s", getStageName(stage))
+				val strStage = "%2s".format(getStageName(stage))
 				receiver.drawMenuFont(engine, 7, 7, strStage)
 			}
 		}
@@ -781,7 +793,7 @@ class GrandPuzzle:AbstractMode() {
 
 				for(i in 0 until RANKING_MAX) {
 					receiver.drawScoreGrade(
-						engine, 0, topY+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+						engine, 0, topY+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
 					receiver.drawScoreFont(
 						engine, 3, topY+i, getStageName(rankingStage[type][i]), when {
@@ -817,9 +829,9 @@ class GrandPuzzle:AbstractMode() {
 
 			//  level
 			receiver.drawScoreFont(engine, 0, 11, "Level", COLOR.PINK)
-			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", maxOf(0, speedlevel)))
+			receiver.drawScoreNum(engine, 1, 12, "%3d".format(maxOf(0, speedlevel)))
 			receiver.drawScoreSpeed(engine, 0, 13, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
-			receiver.drawScoreNum(engine, 1, 14, String.format("%3d", nextSecLv))
+			receiver.drawScoreNum(engine, 1, 14, "%3d".format(nextSecLv))
 
 			//  stage Time
 			if(stagetimeStart>0) {
@@ -855,9 +867,9 @@ class GrandPuzzle:AbstractMode() {
 						val strSeparator = if(i==stage&&engine.ending==0) "\u0082" else " "
 
 						val strSectionTime:String = when {
-							sectionTime[i]==-1 -> String.format("%3s%s%s", getStageName(i), strSeparator, "FAILED")
-							sectionTime[i]==-2 -> String.format("%3s%s%s", getStageName(i), strSeparator, "SKIPPED")
-							else -> String.format("%3s%s%s", getStageName(i), strSeparator, sectionTime[i].toTimeStr)
+							sectionTime[i]==-1 -> "%3s%s%s".format(getStageName(i), strSeparator, "FAILED")
+							sectionTime[i]==-2 -> "%3s%s%s".format(getStageName(i), strSeparator, "SKIPPED")
+							else -> "%3s%s%s".format(getStageName(i), strSeparator, sectionTime[i].toTimeStr)
 						}
 						val pos = i-maxOf(stage-14, 0)
 						if(pos>=0) receiver.drawScoreFont(engine, x, y+1+pos, strSectionTime)
@@ -1154,7 +1166,7 @@ class GrandPuzzle:AbstractMode() {
 
 		// STAGE XX
 		receiver.drawMenuFont(engine, 1, 2, "STAGE", COLOR.GREEN)
-		val strStage = String.format("%2s", getStageName(stage))
+		val strStage = "%2s".format(getStageName(stage))
 		receiver.drawMenuFont(engine, 7, 2, strStage)
 
 		if(clearFlag) {
@@ -1341,10 +1353,10 @@ class GrandPuzzle:AbstractMode() {
 			if(allClear==2) gcolor = COLOR.ORANGE
 
 			receiver.drawMenuFont(engine, 0, 2, "STAGE", COLOR.PINK)
-			val strStage = String.format("%10s", getStageName(stage))
+			val strStage = "%10s".format(getStageName(stage))
 			receiver.drawMenuFont(engine, 0, 3, strStage, gcolor)
 
-			drawResult(engine, receiver, 4, COLOR.PINK, "CLEAR", String.format("%9d%%", clearRate))
+			drawResult(engine, receiver, 4, COLOR.PINK, "CLEAR", "%9d%%".format(clearRate))
 			drawResultStats(engine, receiver, 6, COLOR.PINK, Statistic.LINES, Statistic.PIECE, Statistic.TIME)
 			drawResultRank(engine, receiver, 12, COLOR.PINK, rankingRank)
 		} else {
@@ -1443,10 +1455,12 @@ class GrandPuzzle:AbstractMode() {
 		/** Current version */
 		private const val CURRENT_VERSION = 1
 
-		/** Maximum stage count */
+		/** level contains directory */
+		private const val levelDir = "config/map/gemmania/"
+		/** Maximum level count */
 		private const val MAX_STAGE_TOTAL = 27
 
-		/** Normal stage count */
+		/** Normal level count */
 		private const val MAX_STAGE_NORMAL = 20
 
 		/** NEXT list */

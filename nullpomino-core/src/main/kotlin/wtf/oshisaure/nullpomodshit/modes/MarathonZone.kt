@@ -1,37 +1,37 @@
 /*
- * Copyright (c) 2022-2023,
- * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2023)
- *
- * Kotlin converted and modified by Venom=Nhelv
- *
- * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
- *
- * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
- * Original Repository: https://github.com/Shots243/ModePile
- *
- * When using this library in a mode / library pack of your own, the following
- * conditions must be satisfied:
- *     - This license must remain visible at the top of the document, unmodified.
- *     - You are allowed to use this library for any modding purpose.
- *         - If this is the case, the Library Creator must be credited somewhere.
- *             - Source comments only are fine, but in a README is recommended.
- *     - Modification of this library is allowed, but only in the condition that a
- *       pull request is made to merge the changes to the repository.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ Copyright (c) 2022-2023,
+ This library class was created by 0xFC963F18DC21 / Shots243
+ It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+
+ Kotlin converted and modified by Venom=Nhelv
+
+ Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+
+ THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+
+ Original Repository: https://github.com/Shots243/ModePile
+
+ When using this library in a mode / library pack of your own, the following
+ conditions must be satisfied:
+     - This license must remain visible at the top of the document, unmodified.
+     - You are allowed to use this library for any modding purpose.
+         - If this is the case, the Library Creator must be credited somewhere.
+             - Source comments only are fine, but in a README is recommended.
+     - Modification of this library is allowed, but only in the condition that a
+       pull request is made to merge the changes to the repository.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
  */
 
 package wtf.oshisaure.nullpomodshit.modes
@@ -92,7 +92,7 @@ class MarathonZone:NetDummyMode() {
 	/** Rankings' line counts  */
 	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	/** Rankings' times  */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	override val rankMap
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
@@ -149,7 +149,7 @@ class MarathonZone:NetDummyMode() {
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		lastb2b = false
 		lastcombo = 0
 		bgmLv = 0
@@ -163,7 +163,7 @@ class MarathonZone:NetDummyMode() {
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 		netPlayerInit(engine)
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
@@ -292,7 +292,7 @@ class MarathonZone:NetDummyMode() {
 				val topY = if((receiver.nextDisplayType==2)) 6 else 4
 				receiver.drawScoreFont(engine, 2, topY-1, "SCORE    LINE TIME", hudcolor, scale)
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, -1, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, -1, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[goalType][i]}", (i==rankingRank), scale)
 					receiver.drawScoreNum(engine, 11, topY+i, "${rankingLines[goalType][i]}", (i==rankingRank), scale)
 					receiver.drawScoreNum(
@@ -303,7 +303,7 @@ class MarathonZone:NetDummyMode() {
 			}
 		} else {
 			receiver.drawScoreFont(engine, 0, 3, "SCORE", hudcolor)
-			val strScore = "${engine.statistics.score}(+$lastscore)"
+			val strScore = "${engine.statistics.score}(+$lastScore)"
 
 			receiver.drawScoreNum(engine, 0, 4, strScore)
 			receiver.drawScoreFont(engine, 0, 6, "LINE", hudcolor)
@@ -329,7 +329,7 @@ class MarathonZone:NetDummyMode() {
 				engine, 0, 17, zoneframes.toTimeStr, colZone
 			)
 			if(zonedisplayframes<180&&lastzonelines>0) {
-				val linetxt = String.format("%2d", lastzonelines)+" LINES!"
+				val linetxt = "%2d".format(lastzonelines)+" LINES!"
 				val pointtxt = "+$lastzonebonus PTS."
 				receiver.drawMenuFont(engine, 1, engine.field.height/2, linetxt, (zonedisplayframes%2)==0)
 				receiver.drawMenuFont(
@@ -480,7 +480,7 @@ class MarathonZone:NetDummyMode() {
 		pts *= (engine.statistics.level+10)
 		// Add to score
 		if(pts>0) {
-			lastscore = pts
+			lastScore = pts
 			if(li>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
 		}
 
@@ -621,7 +621,7 @@ class MarathonZone:NetDummyMode() {
 			"${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"+
 			"${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t${engine.statistics.time}\t${engine.statistics.level}\t"+
 			"$goalType\t${engine.gameActive}\t${engine.timerActive}\t"+
-			"$lastscore\t$scDisp\t$lastb2b\t$lastcombo\t"+
+			"$lastScore\t$scDisp\t$lastb2b\t$lastcombo\t"+
 			"$bg\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
@@ -638,7 +638,7 @@ class MarathonZone:NetDummyMode() {
 		goalType = message[12].toInt()
 		engine.gameActive = message[13].toBoolean()
 		engine.timerActive = message[14].toBoolean()
-		lastscore = message[15].toInt()
+		lastScore = message[15].toInt()
 //		scDisp = message[16].toInt()
 		lastb2b = message[17].toBoolean()
 		lastcombo = message[18].toInt()
@@ -704,6 +704,6 @@ class MarathonZone:NetDummyMode() {
 		/** Number of game types  */
 		private const val GAMETYPE_MAX = 3
 		/** Number of ranking types  */
-		private val RANKING_TYPE = GAMETYPE_MAX
+		private const val RANKING_TYPE = GAMETYPE_MAX
 	}
 }

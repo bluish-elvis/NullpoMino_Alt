@@ -59,8 +59,8 @@ abstract class SpriteSheet(override var x:Float, override var y:Float,
 	open val dy:Float get() = y
 	open val dx2:Float get() = x
 	open val dy2:Float get() = y
-	open val srcx:Int get() = 0
-	open val srcy:Int get() = 0
-	open val srcx2:Int get() = 1
-	open val srcy2:Int get() = 1
+	open val srcX:Int get() = 0
+	open val srcY:Int get() = 0
+	open val srcX2:Int get() = 1
+	open val srcY2:Int get() = 1
 }

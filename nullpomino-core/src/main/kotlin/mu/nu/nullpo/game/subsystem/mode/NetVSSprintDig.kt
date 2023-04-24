@@ -319,9 +319,9 @@ class NetVSSprintDig:NetDummyVSMode() {
 
 		drawResultScale(
 			engine, receiver, 2, COLOR.ORANGE, scale, "LINE",
-			String.format("%10d", engine.statistics.lines), "PIECE", String.format("%10d", engine.statistics.totalPieceLocked),
-			"LINE/MIN", String.format("%10g", engine.statistics.lpm), "PIECE/SEC", String.format("%10g", engine.statistics.pps),
-			"Time", String.format("%10s", engine.statistics.time.toTimeStr)
+			"%10d".format(engine.statistics.lines), "PIECE", "%10d".format(engine.statistics.totalPieceLocked),
+			"LINE/MIN", "%10g".format(engine.statistics.lpm), "PIECE/SEC", "%10g".format(engine.statistics.pps),
+			"Time", "%10s".format(engine.statistics.time.toTimeStr)
 		)
 	}
 

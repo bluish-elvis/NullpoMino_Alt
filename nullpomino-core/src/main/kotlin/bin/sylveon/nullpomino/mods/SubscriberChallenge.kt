@@ -99,7 +99,7 @@ class SubscriberChallenge:NetDummyMode() {
 	/** Rankings' line counts  */
 	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	/** Rankings' times  */
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	override val rankMap
 		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.score" to x}+
@@ -114,7 +114,7 @@ class SubscriberChallenge:NetDummyMode() {
 	override val menu = MenuList("subscriberchallenge", itemMode, itemLv, itemBig)
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
@@ -125,7 +125,7 @@ class SubscriberChallenge:NetDummyMode() {
 		rankingRank = -1
 		rankingScore.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 		netPlayerInit(engine)
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
@@ -269,7 +269,7 @@ class SubscriberChallenge:NetDummyMode() {
 				val topY:Int = if((receiver.nextDisplayType==2)) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
 				for(i in 0 until RANKING_MAX) {
-					receiver.drawScoreGrade(engine, 0, topY+i, String.format("%2d", i+1), EventReceiver.COLOR.YELLOW, scale)
+					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
 					receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[goalType][i]}", (i==rankingRank), scale)
 					receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[goalType][i]}", (i==rankingRank), scale)
 					receiver.drawScoreFont(engine, 15, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank, scale)
@@ -342,7 +342,7 @@ class SubscriberChallenge:NetDummyMode() {
 		if(pts+cmb+spd>0) {
 			val get = calcScoreCombo(pts, cmb, engine.statistics.level, spd)
 
-			if(pts>0) lastscore = get
+			if(pts>0) lastScore = get
 			if(li>=1) engine.statistics.scoreLine += get
 			else engine.statistics.scoreBonus += get
 		}
@@ -377,7 +377,7 @@ class SubscriberChallenge:NetDummyMode() {
 
 		// Add to score
 		if(pts>0) {
-			lastscore = pts
+			lastScore = pts
 			lastpiece = engine.nowPieceObject?.id ?: 0
 			if(li>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
 		}
@@ -495,13 +495,9 @@ class SubscriberChallenge:NetDummyMode() {
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
 		for(i in 0 until RANKING_MAX) {
-			if(sc>rankingScore[type][i]) {
-				return i
-			} else if((sc==rankingScore[type][i])&&(li>rankingLines[type][i])) {
-				return i
-			} else if((sc==rankingScore[type][i])&&(li==rankingLines[type][i])&&(time<rankingTime[type][i])) {
-				return i
-			}
+			if(sc>rankingScore[type][i]) return i
+			else if((sc==rankingScore[type][i])&&(li>rankingLines[type][i])) return i
+			else if((sc==rankingScore[type][i])&&(li==rankingLines[type][i])&&(time<rankingTime[type][i])) return i
 		}
 		return -1
 	}
@@ -516,7 +512,7 @@ class SubscriberChallenge:NetDummyMode() {
 			"${engine.statistics.scoreLine}\t${engine.statistics.scoreSD}\t${engine.statistics.scoreHD}\t${engine.statistics.scoreBonus}\t"+
 			"${engine.statistics.lines}\t${engine.statistics.totalPieceLocked}\t"+
 			"${engine.statistics.time}\t${engine.statistics.level}\t${engine.statistics.lpm}\t${engine.statistics.spl}\t"+
-			"$goalType\t${engine.gameActive}\t${engine.timerActive}\t$lastscore\t$scDisp\t"+
+			"$goalType\t${engine.gameActive}\t${engine.timerActive}\t$lastScore\t$scDisp\t"+
 			"$subscriber\t$lastb2b\t$lastcombo\t$lastpiece\t$bg\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}

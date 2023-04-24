@@ -86,7 +86,7 @@ class GrandM1:AbstractMode() {
 	private val sectionScore = MutableList(SECTION_MAX) {0}
 
 	/** Section Time記録 */
-	private val bestSectionTime = MutableList(SECTION_MAX) {0}
+	private val bestSectionTime = MutableList(SECTION_MAX) {DEFAULT_SECTION_TIME}
 	private val bestSectionScore = MutableList(SECTION_MAX) {0}
 
 	/** 新記録が出たSection はtrue */
@@ -142,7 +142,7 @@ class GrandM1:AbstractMode() {
 	private val rankingLevel = MutableList(RANKING_MAX) {0}
 
 	/** Rankings' times */
-	private val rankingTime = MutableList(RANKING_MAX) {0}
+	private val rankingTime = MutableList(RANKING_MAX) {-1}
 
 	private var medalAC = 0
 	private var decoration = 0
@@ -150,15 +150,13 @@ class GrandM1:AbstractMode() {
 
 	/* Mode name */
 	override val name = "Grand Marathon"
+	override val gameIntensity = 1
 
 	/* Initialization */
 	override val menu:MenuList = MenuList("grademania1", itemGhost, itemAlert, itemST, itemLevel, item20g, itemBig)
 	override val rankMap
 		get() = rankMapOf(
-			"grade" to rankingGrade,
-			"level" to rankingLevel,
-			"time" to rankingTime,
-			"section.time" to bestSectionTime
+			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "section.time" to bestSectionTime
 		)
 
 	override fun playerInit(engine:GameEngine) {
@@ -169,7 +167,7 @@ class GrandM1:AbstractMode() {
 		grade = gmPier
 		lastGradeTime = 0
 		comboValue = 0
-		lastscore = 0
+		lastScore = 0
 		rollTime = 0
 		gm300 = false
 		gm500 = false
@@ -186,9 +184,9 @@ class GrandM1:AbstractMode() {
 		rankingRank = -1
 		rankingGrade.fill(0)
 		rankingLevel.fill(0)
-		rankingTime.fill(0)
+		rankingTime.fill(-1)
 		bestSectionScore.fill(0)
-		bestSectionTime.fill(0)
+		bestSectionTime.fill(DEFAULT_SECTION_TIME)
 
 		engine.twistEnable = false
 		engine.b2bEnable = true
@@ -263,7 +261,8 @@ class GrandM1:AbstractMode() {
 	 * @param sectionNumber Section number
 	 */
 	private fun stNewRecordCheck(sectionNumber:Int) {
-		if(sectionTime[sectionNumber]<bestSectionTime[sectionNumber]&&!owner.replayMode)
+		if(!owner.replayMode&&
+			(sectionTime[sectionNumber]<bestSectionTime[sectionNumber]||bestSectionTime[sectionNumber]<0))
 			sectionIsNewRecord[sectionNumber] = true
 	}
 
@@ -345,7 +344,7 @@ class GrandM1:AbstractMode() {
 
 					for(i in 0 until RANKING_MAX) {
 						receiver.drawScoreGrade(
-							engine, 0, 3+i, String.format("%2d", i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
+							engine, 0, 3+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
 						var gc = if(i==rankingRank)
 							if(engine.playerID%2==0) COLOR.YELLOW else COLOR.ORANGE
@@ -359,7 +358,7 @@ class GrandM1:AbstractMode() {
 						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
 							receiver.drawScoreGrade(engine, 3, 3+i, tableGradeName[rankingGrade[i]], gc)
 						receiver.drawScoreNum(engine, 7, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
-						receiver.drawScoreNum(engine, 15, 3+i, String.format("%03d", rankingLevel[i]), i==rankingRank)
+						receiver.drawScoreNum(engine, 15, 3+i, "%03d".format(rankingLevel[i]), i==rankingRank)
 					}
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
@@ -424,7 +423,7 @@ class GrandM1:AbstractMode() {
 			receiver.drawScoreFont(
 				engine, 0, 5, "Score", color = if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
 			)
-			receiver.drawScoreNum(engine, 5, 5, "+$lastscore", if(g20) COLOR.YELLOW else COLOR.WHITE)
+			receiver.drawScoreNum(engine, 5, 5, "+$lastScore", if(g20) COLOR.YELLOW else COLOR.WHITE)
 			receiver.drawScoreNum(
 				engine, 0, 6, "$scDisp", if(g20) COLOR.YELLOW else COLOR.WHITE,
 				2f
@@ -433,12 +432,12 @@ class GrandM1:AbstractMode() {
 			receiver.drawScoreFont(
 				engine, 0, 9, "Level", if(g20) if(gm300&&gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
 			)
-			receiver.drawScoreNum(engine, 1, 10, String.format("%3d", maxOf(engine.statistics.level, 0)), g20)
+			receiver.drawScoreNum(engine, 1, 10, "%3d".format(maxOf(engine.statistics.level, 0)), g20)
 			receiver.drawScoreSpeed(
 				engine, 0, 11, if(g20) 40 else floor(ln(engine.speed.gravity.toDouble())).toInt()*4,
 				4
 			)
-			receiver.drawScoreNum(engine, 1, 12, String.format("%3d", nextSecLv), g20)
+			receiver.drawScoreNum(engine, 1, 12, "%3d".format(nextSecLv), g20)
 
 			receiver.drawScoreFont(
 				engine, 0, 14, "Time", if(g20) if(gm500) COLOR.YELLOW else COLOR.CYAN else COLOR.BLUE
@@ -470,7 +469,7 @@ class GrandM1:AbstractMode() {
 						for(l in 0 until i)
 							strSectionTime.append("\n")
 						strSectionTime.append(
-							String.format("%3d%s%s %d\n", temp, strSeparator, sectionTime[i].toTimeStr, sectionScore[i])
+							"%3d%s%s %d\n".format(temp, strSeparator, sectionTime[i].toTimeStr, sectionScore[i])
 						)
 						receiver.drawScoreNum(
 							engine, if(x) 9 else 10, 3, "$strSectionTime", sectionIsNewRecord[i], if(x) .75f else 1f
@@ -553,13 +552,7 @@ class GrandM1:AbstractMode() {
 
 		if(li>=1) {
 			// Calculate score
-			var manuallock = 0
-			if(engine.manualLock) manuallock = 1
-
-			var bravo = 1
-			if(engine.field.isEmpty) {
-				bravo = 4
-
+			val bravo = if(engine.field.isEmpty) {
 				decTemp += li*25
 				if(li==3) decTemp += 25
 				if(li==4) decTemp += 150
@@ -567,13 +560,14 @@ class GrandM1:AbstractMode() {
 					decTemp += 3+medalAC*4// 3 10 21
 					engine.playSE("medal${++medalAC}")
 				}
-			}
+				4
+			} else 1
 
-			lastscore =
-				(((engine.statistics.level+li)/(if(ev.b2b>0) 4 else 3)+engine.softdropFall+engine.harddropFall+manuallock)
+			lastScore =
+				(((engine.statistics.level+li)/(if(ev.b2b>0) 4 else 3)+engine.softdropFall+engine.harddropFall+engine.manualLock.toInt())
 					*li*comboValue*bravo)
-			sectionScore[sectionsDone] += lastscore
-			engine.statistics.scoreLine += lastscore
+			sectionScore[sectionsDone] += lastScore
+			engine.statistics.scoreLine += lastScore
 
 			// 段位上昇
 			while(grade<17&&engine.statistics.score>=tableGradeScore[grade]) {
@@ -651,7 +645,7 @@ class GrandM1:AbstractMode() {
 				if(nextSecLv>999) nextSecLv = 999
 			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 
-			return lastscore
+			return lastScore
 		}
 		return 0
 	}
@@ -749,7 +743,7 @@ class GrandM1:AbstractMode() {
 				if(secretGrade>4)
 					drawResult(
 						engine, receiver, 15, COLOR.BLUE, "S. GRADE",
-						String.format("%10s", tableGradeName[secretGrade-1])
+						"%10s".format(tableGradeName[secretGrade-1])
 					)
 			}
 			1 -> {
@@ -769,7 +763,7 @@ class GrandM1:AbstractMode() {
 				receiver.drawMenuMedal(engine, 8, 2, "AC", medalAC)
 				drawResultStats(engine, receiver, 4, COLOR.BLUE, Statistic.LPM, Statistic.SPM, Statistic.PIECE, Statistic.PPS)
 
-				drawResult(engine, receiver, 15, COLOR.BLUE, "DECORATION", String.format("%d", decTemp))
+				drawResult(engine, receiver, 15, COLOR.BLUE, "DECORATION", "%d".format(decTemp))
 			}
 		}
 	}
@@ -851,10 +845,8 @@ class GrandM1:AbstractMode() {
 	 */
 	private fun checkRanking(gr:Int, lv:Int, time:Int):Int {
 		for(i in 0 until RANKING_MAX)
-			if(gr>rankingGrade[i])
-				return i
-			else if(gr==rankingGrade[i]&&lv>rankingLevel[i])
-				return i
+			if(gr>rankingGrade[i]) return i
+			else if(gr==rankingGrade[i]&&lv>rankingLevel[i]) return i
 			else if(gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
 
 		return -1

@@ -107,7 +107,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 	/* Initialization */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		lastscore = 0
+		lastScore = 0
 		lastmultiplier = 0
 
 		speedIndex = 0
@@ -277,7 +277,7 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 				level++
 			}
 
-			lastscore = pts
+			lastScore = pts
 			lastmultiplier = multiplier
 			val score = pts*multiplier
 			engine.statistics.scoreLine += score
@@ -320,25 +320,25 @@ abstract class Avalanche1PDummyMode:AbstractMode() {
 		receiver.drawMenuFont(engine, 0, 1, "PLAY DATA", EventReceiver.COLOR.ORANGE)
 
 		receiver.drawMenuFont(engine, 0, 3, "Score", EventReceiver.COLOR.BLUE)
-		val strScoreBefore = String.format("%10d", scoreBeforeBonus(engine.statistics))
+		val strScoreBefore = "%10d".format(scoreBeforeBonus(engine.statistics))
 		receiver.drawMenuFont(engine, 0, 4, strScoreBefore, EventReceiver.COLOR.GREEN)
 
 		receiver.drawMenuFont(engine, 0, 5, "ZENKESHI", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 6, String.format("%10d", zenKeshiCount))
+		receiver.drawMenuFont(engine, 0, 6, "%10d".format(zenKeshiCount))
 		val strZenKeshiBonus = "+$zenKeshiBonus"
 		receiver.drawMenuFont(engine, 10-strZenKeshiBonus.length, 7, strZenKeshiBonus, EventReceiver.COLOR.GREEN)
 
 		receiver.drawMenuFont(engine, 0, 8, "MAX CHAIN", EventReceiver.COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 9, String.format("%10d", engine.statistics.maxChain))
+		receiver.drawMenuFont(engine, 0, 9, "%10d".format(engine.statistics.maxChain))
 		val strMaxChainBonus = "+$maxChainBonus"
 		receiver.drawMenuFont(engine, 10-strMaxChainBonus.length, 10, strMaxChainBonus, EventReceiver.COLOR.GREEN)
 
 		receiver.drawMenuFont(engine, 0, 11, "TOTAL", EventReceiver.COLOR.BLUE)
-		val strScore = String.format("%10d", engine.statistics.score)
+		val strScore = "%10d".format(engine.statistics.score)
 		receiver.drawMenuFont(engine, 0, 12, strScore, EventReceiver.COLOR.RED)
 
 		receiver.drawMenuFont(engine, 0, 13, "Time", EventReceiver.COLOR.BLUE)
-		val strTime = String.format("%10s", engine.statistics.time.toTimeStr)
+		val strTime = "%10s".format(engine.statistics.time.toTimeStr)
 		receiver.drawMenuFont(engine, 0, 14, strTime)
 	}
 

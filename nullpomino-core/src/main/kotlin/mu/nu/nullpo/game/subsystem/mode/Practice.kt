@@ -188,7 +188,7 @@ class Practice:AbstractMode() {
 		super.playerInit(engine)
 		goal = 0
 		lastgoal = 0
-		lastscore = 0
+		lastScore = 0
 		lastb2b = false
 		lastcombo = 0
 		lastpiece = 0
@@ -524,19 +524,19 @@ class Practice:AbstractMode() {
 			cy = if(menuCursor<=1) 3 else if(menuCursor<=3) 4 else if(menuCursor<=6) 5 else cy
 
 			receiver.drawMenuFont(engine, 2, 3, "GRAVITY:", EventReceiver.COLOR.BLUE)
-			receiver.drawMenuNum(engine, 11, 3, String.format("%5d/", engine.speed.gravity), menuCursor==0)
-			receiver.drawMenuNum(engine, 16, 3, String.format("%5d", engine.speed.denominator), menuCursor==1)
+			receiver.drawMenuNum(engine, 11, 3, "%5d/".format(engine.speed.gravity), menuCursor==0)
+			receiver.drawMenuNum(engine, 16, 3, "%5d".format(engine.speed.denominator), menuCursor==1)
 			receiver.drawScoreSpeed(engine, 13, 4, engine.speed.rank, 3f)
 			receiver.drawMenuFont(engine, 2, 4, "ARE:", EventReceiver.COLOR.BLUE)
-			receiver.drawMenuNum(engine, 7, 4, String.format("%2d/", engine.speed.are), menuCursor==2)
-			receiver.drawMenuNum(engine, 11, 4, String.format("%2d", engine.speed.areLine), menuCursor==3)
+			receiver.drawMenuNum(engine, 7, 4, "%2d/".format(engine.speed.are), menuCursor==2)
+			receiver.drawMenuNum(engine, 11, 4, "%2d".format(engine.speed.areLine), menuCursor==3)
 			receiver.drawMenuFont(engine, 2, 5, "DELAY:", EventReceiver.COLOR.BLUE)
-			receiver.drawMenuNum(engine, 9, 5, String.format("%2d+", engine.speed.lockDelay), menuCursor==5)
-			receiver.drawMenuNum(engine, 12, 5, String.format("%2d", engine.speed.lineDelay), menuCursor==4)
+			receiver.drawMenuNum(engine, 9, 5, "%2d+".format(engine.speed.lockDelay), menuCursor==5)
+			receiver.drawMenuNum(engine, 12, 5, "%2d".format(engine.speed.lineDelay), menuCursor==4)
 			receiver.drawMenuFont(engine, 15, 5, "DAS:", EventReceiver.COLOR.BLUE)
-			receiver.drawMenuNum(engine, 20, 5, String.format("%2d", engine.speed.das), menuCursor==6)
+			receiver.drawMenuNum(engine, 20, 5, "%2d".format(engine.speed.das), menuCursor==6)
 			receiver.drawMenuFont(
-				engine, 2, 7, String.format("BGM:%2d %s", bgmId, "${BGM.values[bgmId]}".uppercase()),
+				engine, 2, 7, "BGM:%2d %s".format(bgmId, "${BGM.values[bgmId]}".uppercase()),
 				menuCursor==7
 			)
 			receiver.drawMenuFont(engine, 2, 8, "BIG:${big.getONorOFF()}", menuCursor==8)
@@ -581,7 +581,7 @@ class Practice:AbstractMode() {
 			receiver.drawMenuFont(engine, 2, 3, "USE BONE BLOCKS:${bone.getONorOFF()}", menuCursor==23)
 			var strHiddenFrames = "NONE"
 			if(blockHidden==-2) strHiddenFrames = "LOCK FLASH (${engine.ruleOpt.lockFlash}F)"
-			if(blockHidden>=0) strHiddenFrames = String.format("%d (%.2f SEC.)", blockHidden, blockHidden/60f)
+			if(blockHidden>=0) strHiddenFrames = "%d (%.2f SEC.)".format(blockHidden, blockHidden/60f)
 			receiver.drawMenuFont(
 				engine, 2, 4, "BLOCK HIDDEN FRAMES:$strHiddenFrames",
 				menuCursor==24
@@ -789,23 +789,22 @@ class Practice:AbstractMode() {
 			 * } */
 		} else {
 			receiver.drawScoreFont(engine, 0, 2, "Score", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 2, "+${String.format("%6d", lastscore)}")
-			receiver.drawScoreNum(engine, 0, 3, String.format("%7d", scDisp), scDisp<engine.statistics.score, 2f)
+			receiver.drawScoreNum(engine, 5, 2, "+${"%6d".format(lastScore)}")
+			receiver.drawScoreNum(engine, 0, 3, "%7d".format(scDisp), scDisp<engine.statistics.score, 2f)
 
 			receiver.drawScoreFont(engine, 10, 2, "/min", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(
-				engine, 10, 3, String.format("%7g", engine.statistics.spm), scDisp<engine.statistics.score,
-				1.5f
+				engine, 10.5f, 3f, engine.statistics.spm, 7 to null, scale = 1.5f
 			)
 
 			receiver.drawScoreFont(engine, 0, 5, "Spike", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 6, String.format("%5d", engine.statistics.attacks), 2f)
+			receiver.drawScoreNum(engine, 0, 6, "%5d".format(engine.statistics.attacks), 2f)
 
 			receiver.drawScoreFont(engine, 3, 8, "Lines", EventReceiver.COLOR.BLUE)
 			receiver.drawScoreNum(engine, 8, 7, "${engine.statistics.lines}", 2f)
 
 			receiver.drawScoreFont(engine, 4, 9, "/min", EventReceiver.COLOR.BLUE)
-			receiver.drawScoreNum(engine, 8, 9, "${engine.statistics.lpm}", 1.5f)
+			receiver.drawScoreNum(engine, 8.5f, 9f, engine.statistics.lpm, null to null, scale = 1.5f)
 
 			// Time
 			receiver.drawScoreFont(engine, 0, 18, "Time", EventReceiver.COLOR.BLUE)
@@ -827,9 +826,9 @@ class Practice:AbstractMode() {
 				LEVELTYPE_MANIA, LEVELTYPE_MANIAPLUS -> {
 					//  GrandLevel
 					receiver.drawScoreFont(engine, 0, 12, "Level", EventReceiver.COLOR.BLUE)
-					receiver.drawScoreNum(engine, 1, 13, String.format("%3d", maxOf(0, engine.statistics.level)))
+					receiver.drawScoreNum(engine, 1, 13, "%3d".format(maxOf(0, engine.statistics.level)))
 					receiver.drawScoreSpeed(engine, 0, 14, if(engine.speed.gravity<0) 40 else engine.speed.gravity/128, 4)
-					receiver.drawScoreNum(engine, 1, 15, String.format("%3d", nextSecLv))
+					receiver.drawScoreNum(engine, 1, 15, "%3d".format(nextSecLv))
 				}
 				LEVELTYPE_POINTS -> {
 					receiver.drawScoreFont(engine, 0, 11, "Level", EventReceiver.COLOR.BLUE)
@@ -1012,24 +1011,24 @@ class Practice:AbstractMode() {
 			val manualLock = engine.manualLock.toInt()
 			val speedBonus = maxOf(0, engine.lockDelay-engine.statc[0])
 			// Calculate score
-			if(leveltype==LEVELTYPE_MANIA) {
+			lastScore = if(leveltype==LEVELTYPE_MANIA) {
 				val bravo = if(engine.field.isEmpty) 4 else 1
 
-				lastscore = ((levelb+lines)/4+engine.softdropFall+manualLock+harddropBonus)*lines*comboValue*bravo+
+				((levelb+lines)/4+engine.softdropFall+manualLock+harddropBonus)*lines*comboValue*bravo+
 					engine.statistics.level/2+speedBonus*7
 			} else {
 				val bravo = 1+engine.field.isEmpty.toInt()
-				lastscore = (((levelb+lines)/4+engine.softdropFall+manualLock+harddropBonus)*lines*comboValue+speedBonus+
+				(((levelb+lines)/4+engine.softdropFall+manualLock+harddropBonus)*lines*comboValue+speedBonus+
 					engine.statistics.level/2)*bravo
 			}
 			if(engine.clearMode==GameEngine.ClearType.LINE_GEM_BOMB||engine.clearMode==GameEngine.ClearType.LINE_GEM_SPARK) {
-				lastscore /= 7+3*engine.chain
+				lastScore /= 7+3*engine.chain
 			}
-			engine.statistics.scoreLine += lastscore
+			engine.statistics.scoreLine += lastScore
 
 			setMeter(engine)
 		}
-		return if(lines>=1) lastscore else 0
+		return if(lines>=1) lastScore else 0
 	}
 
 	/** levelTypesMANIAWhen a non-systemCalculate score */
@@ -1085,7 +1084,7 @@ class Practice:AbstractMode() {
 		}
 
 		setMeter(engine)
-		return if(pts>0) lastscore else 0
+		return if(pts>0) lastScore else 0
 	}
 
 	/** MeterUpdate the amount of
@@ -1138,7 +1137,7 @@ class Practice:AbstractMode() {
 		if(secretGrade>0)
 			drawResult(
 				engine, receiver, 14, EventReceiver.COLOR.BLUE, "S. GRADE",
-				String.format("%10s", tableSecretGradeName[secretGrade-1])
+				"%10s".format(tableSecretGradeName[secretGrade-1])
 			)
 	}
 

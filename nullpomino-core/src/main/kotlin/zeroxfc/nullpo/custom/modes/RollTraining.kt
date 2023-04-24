@@ -1,37 +1,37 @@
 /*
- * Copyright (c) 2021-2022,
- * This library class was created by 0xFC963F18DC21 / Shots243
- * It is part of an extension library for the game NullpoMino (copyright 2021-2022)
- *
- * Kotlin converted and modified by Venom=Nhelv
- *
- * Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
- * Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
- *
- * THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
- *
- * Original Repository: https://github.com/Shots243/ModePile
- *
- * When using this library in a mode / library pack of your own, the following
- * conditions must be satisfied:
- *     - This license must remain visible at the top of the document, unmodified.
- *     - You are allowed to use this library for any modding purpose.
- *         - If this is the case, the Library Creator must be credited somewhere.
- *             - Source comments only are fine, but in a README is recommended.
- *     - Modification of this library is allowed, but only in the condition that a
- *       pull request is made to merge the changes to the repository.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ Copyright (c) 2021-2023,
+ This library class was created by 0xFC963F18DC21 / Shots243
+ It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+
+ Kotlin converted and modified by Venom=Nhelv
+
+ Herewith shall the term "Library Creator" be given to 0xFC963F18DC21.
+ Herewith shall the term "Game Creator" be given to the original creator of NullpoMino, NullNoname.
+
+ THIS LIBRARY AND MODE PACK WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
+
+ Original Repository: https://github.com/Shots243/ModePile
+
+ When using this library in a mode / library pack of your own, the following
+ conditions must be satisfied:
+     - This license must remain visible at the top of the document, unmodified.
+     - You are allowed to use this library for any modding purpose.
+         - If this is the case, the Library Creator must be credited somewhere.
+             - Source comments only are fine, but in a README is recommended.
+     - Modification of this library is allowed, but only in the condition that a
+       pull request is made to merge the changes to the repository.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
  */
 
 package zeroxfc.nullpo.custom.modes
@@ -104,7 +104,7 @@ class RollTraining:MarathonModeBase() {
 
 	private val rankingGrade = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 	private val rankingLines = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
-	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	private val itemHide = BooleanMenuItem("useMRoll", "Stealth", COLOR.RED, false)
 	private var useMRoll:Boolean by DelegateMenuItem(itemHide)
@@ -157,7 +157,7 @@ class RollTraining:MarathonModeBase() {
 		rankingRank = -1
 		rankingGrade.forEach {it.fill(0)}
 		rankingLines.forEach {it.fill(0)}
-		rankingTime.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
 		rankingRankPlayer = -1
 		rankingGradePlayer.forEach {it.fill(0)}
 		rankingLinesPlayer.forEach {it.fill(0)}
@@ -288,66 +288,49 @@ class RollTraining:MarathonModeBase() {
 		if(engine.stat===GameEngine.Status.SETTING||engine.stat===GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				if(showPlayerStats) {
-					val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 					val topY = if(receiver.nextDisplayType==2) 6 else 4
-					receiver.drawScoreFont(engine, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE, scale)
+					receiver.drawScoreFont(engine, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE)
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val color = if(rankingRankPlayer==i) COLOR.RED else {
 							if(usedSpeed==SPEED_TAP) {
-								if(!useMRoll&&rankingTimePlayer[rankIndex][i]>=TIME_LIMITS[0]||useMRoll&&rankingLinesPlayer[rankIndex][i]>=32) COLOR.ORANGE else COLOR.GREEN
+								if(!useMRoll&&rankingTimePlayer[rankIndex][i]>=TIME_LIMITS[0]||useMRoll&&rankingLinesPlayer[rankIndex][i]>=32)
+									COLOR.ORANGE else COLOR.GREEN
 							} else if(rankingTimePlayer[rankIndex][i]>=TIME_LIMITS[1]) COLOR.ORANGE else COLOR.GREEN
 						}
 						val gText:String = if(usedSpeed==SPEED_TAP) {
 							if(!useMRoll) "S9" else if(rankingGradePlayer[rankIndex][i]>=1.0) "GM" else "M"
 						} else {
-							"+${String.format("%.2f", rankingGradePlayer[rankIndex][i])}"
+							"+%.2f".format(rankingGradePlayer[rankIndex][i])
 						}
-						receiver.drawScoreFont(engine, 3, topY+i, gText, color, scale)
-						receiver.drawScoreFont(
-							engine, 10, topY+i, "${rankingLinesPlayer[rankIndex][i]}", i==rankingRankPlayer,
-							scale
-						)
-						receiver.drawScoreFont(
-							engine, 15, topY+i, rankingTimePlayer[rankIndex][i].toTimeStr, i==rankingRankPlayer,
-							scale
-						)
+						receiver.drawScoreFont(engine, 3, topY+i, gText, color)
+						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLinesPlayer[rankIndex][i]}", i==rankingRankPlayer)
+						receiver.drawScoreFont(engine, 15, topY+i, rankingTimePlayer[rankIndex][i].toTimeStr, i==rankingRankPlayer)
 						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "PLAYER SCORES", COLOR.BLUE)
-						receiver.drawScoreFont(
-							engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE,
-							2f
-						)
+						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
 						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 					}
 				} else {
-					val scale = if(receiver.nextDisplayType==2) 0.5f else 1.0f
 					val topY = if(receiver.nextDisplayType==2) 6 else 4
-					receiver.drawScoreFont(engine, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE, scale)
+					receiver.drawScoreFont(engine, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE)
 					for(i in 0 until RANKING_MAX) {
-						receiver.drawScoreFont(engine, 0, topY+i, String.format("%2d", i+1), COLOR.YELLOW, scale)
+						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val color = if(rankingRank==i) COLOR.RED else {
 							if(usedSpeed==SPEED_TAP) {
 								if(!useMRoll&&rankingTime[rankIndex][i]>=TIME_LIMITS[0]||useMRoll&&rankingLines[rankIndex][i]>=32) COLOR.ORANGE else COLOR.GREEN
-							} else {
-								if(rankingTime[rankIndex][i]>=TIME_LIMITS[1]) COLOR.ORANGE else COLOR.GREEN
-							}
+							} else if(rankingTime[rankIndex][i]>=TIME_LIMITS[1]) COLOR.ORANGE else COLOR.GREEN
 						}
 						val gText:String = if(usedSpeed==SPEED_TAP) {
 							if(!useMRoll) "S9" else if(rankingGrade[rankIndex][i]>=1.0) "GM" else "M"
-						} else {
-							"+${String.format("%.2f", rankingGrade[rankIndex][i])}"
-						}
-						receiver.drawScoreGrade(engine, 3, topY+i, gText, color, scale)
-						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[rankIndex][i]}", i==rankingRank, scale)
-						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[rankIndex][i].toTimeStr, i==rankingRank, scale)
+						} else "+%.2f".format(rankingGrade[rankIndex][i])
+						receiver.drawScoreGrade(engine, 3, topY+i, gText, color)
+						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[rankIndex][i]}", i==rankingRank)
+						receiver.drawScoreFont(engine, 15, topY+i, rankingTime[rankIndex][i].toTimeStr, i==rankingRank)
 						receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+1, "LOCAL SCORES", COLOR.BLUE)
-						if(!engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-							engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)"
-						)
-						if(engine.playerProp.isLoggedIn) receiver.drawScoreFont(
-							engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN",
-							COLOR.GREEN
-						)
+						if(!engine.playerProp.isLoggedIn)
+							receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, "(NOT LOGGED IN)\n(E:LOG IN)")
+						if(engine.playerProp.isLoggedIn)
+							receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 					}
 				}
 			}
@@ -362,7 +345,7 @@ class RollTraining:MarathonModeBase() {
 				gc =
 					if(!useMRoll&&engine.statistics.time>=TIME_LIMITS[0]||useMRoll&&engine.statistics.lines>=32) COLOR.ORANGE else COLOR.GREEN
 			} else {
-				grade = "+"+String.format("%.2f", tiGrade)
+				grade = "+%.2f".format(tiGrade)
 				gc = if(engine.statistics.time>=TIME_LIMITS[1]) COLOR.ORANGE else COLOR.GREEN
 			}
 			receiver.drawScoreGrade(engine, 0, 4, grade, gc)
@@ -462,14 +445,14 @@ class RollTraining:MarathonModeBase() {
 	override fun renderResult(engine:GameEngine) {
 		val grade = if(usedSpeed==SPEED_TAP)
 			if(tapGrade>=1.0) "GM" else if(useMRoll) "M" else "S9"
-		else "+"+String.format("%.2f", tiGrade)
+		else "+%.2f".format(tiGrade)
 		val gc =
 			if(if(usedSpeed==SPEED_TAP) !useMRoll&&engine.statistics.time>=TIME_LIMITS[0]||useMRoll&&engine.statistics.lines>=32
 				else engine.statistics.time>=TIME_LIMITS[1]
 			) COLOR.ORANGE else COLOR.GREEN
 
 		receiver.drawMenuFont(engine, 0, 0, if(usedSpeed==SPEED_TAP) "GRADE" else "BONUS", COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 1, String.format("%10s", grade), gc)
+		receiver.drawMenuFont(engine, 0, 1, "%10s".format(grade), gc)
 		drawResultStats(
 			engine, receiver, 2, COLOR.BLUE, Statistic.LINES,
 			Statistic.TIME, Statistic.LPM
