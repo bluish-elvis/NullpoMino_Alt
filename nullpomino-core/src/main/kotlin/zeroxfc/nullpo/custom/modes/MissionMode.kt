@@ -188,7 +188,7 @@ class MissionMode:MarathonModeBase() {
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp)
-			loadSetting(engine.playerProp.propProfile, engine)
+			loadSetting(engine, engine.playerProp.propProfile)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s
@@ -247,7 +247,7 @@ class MissionMode:MarathonModeBase() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreNum(engine, 3, topY+i, "${rankingScorePlayer[goalType][i]}", i==rankingRankPlayer)
 						receiver.drawScoreNum(engine, 9, topY+i, rankingTimePlayer[goalType][i].toTimeStr, i==rankingRankPlayer)
@@ -259,7 +259,7 @@ class MissionMode:MarathonModeBase() {
 					)
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
 						receiver.drawScoreNum(engine, 9, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank)
@@ -400,7 +400,7 @@ class MissionMode:MarathonModeBase() {
      * Called when saving replay
      */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
@@ -456,7 +456,7 @@ class MissionMode:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX) {
+		for(i in 0..<RANKING_MAX) {
 			if(sc>rankingScore[type][i]) {
 				return i
 			} else if(sc==rankingScore[type][i]&&time<rankingTime[type][i]) {
@@ -473,7 +473,7 @@ class MissionMode:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Long, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX) {
+		for(i in 0..<RANKING_MAX) {
 			if(sc>rankingScorePlayer[type][i]) {
 				return i
 			} else if(sc==rankingScorePlayer[type][i]&&time<rankingTimePlayer[type][i]) {
@@ -598,10 +598,9 @@ class MissionMode:MarathonModeBase() {
 		setSpeed(engine)
 		engine.comboType = if(missionType==Combo) GameEngine.COMBO_TYPE_NORMAL else 0
 	}
-
-	override fun setSpeed(engine:GameEngine) {
+	/*override fun setSpeed(engine:GameEngine) {
 		super.setSpeed(engine)
-	}
+	}*/
 
 	private fun missionColor(engine:GameEngine, pieceName:String):COLOR = try {
 		EventReceiver.getBlockColor(engine, Piece.Shape.valueOf(pieceName))

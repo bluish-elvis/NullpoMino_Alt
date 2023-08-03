@@ -63,17 +63,17 @@
  <!--Hold-->
  <entry key="Hold_HoldEnable">Enable hold</entry>
  <entry key="Hold_HoldInitial">Initial hold</entry>
- <entry key="Hold_HoldInitialLimit">Can't use initial hold again until release the button</entry>
+ <entry key="Hold_HoldInitialLimit">Can't use initial hold again..<release the button</entry>
  <entry key="Hold_HoldResetDirection">Reset direction</entry>
  <entry key="Hold_HoldLimit"># of times (-1:Unlimited)</entry>
 
  <!--Drop-->
  <entry key="Drop_HardDropEnable">Enable hard drop</entry>
  <entry key="Drop_HardDropLock">Instant lock by hard drop</entry>
- <entry key="Drop_HardDropLimit">Can't use hard drop again until release the button</entry>
+ <entry key="Drop_HardDropLimit">Can't use hard drop again..<release the button</entry>
  <entry key="Drop_SoftDropEnable">Enable soft drop</entry>
  <entry key="Drop_SoftDropLock">Instant lock by soft drop</entry>
- <entry key="Drop_SoftDropLimit">Can't use soft drop again until release the button</entry>
+ <entry key="Drop_SoftDropLimit">Can't use soft drop again..<release the button</entry>
  <entry key="Drop_SoftDropSurfaceLock">Instant lock by soft drop on surface</entry>
  <entry key="Drop_SoftDropSpeed">Soft drop speed (1.0=1G or x1)</entry>
  <entry key="Drop_SoftDropMultiplyNativeSpeed">Multiply soft drop speed by native speed</entry>
@@ -81,7 +81,7 @@
 
  <!--Rotate-->
  <entry key="Rotate_RotateInitial">Initial Rotate</entry>
- <entry key="Rotate_RotateInitialLimit">Can't use initial rotate again until release the button</entry>
+ <entry key="Rotate_RotateInitialLimit">Can't use initial rotate again..<release the button</entry>
  <entry key="Rotate_RotateWallkick">Enable wallkick</entry>
  <entry key="Rotate_RotateInitialWallkick">Enable wallkick on initial rotate</entry>
  <entry key="Rotate_RotateMaxUpwardWallkick"># of floorkicks allowed (-1:Unlimited)</entry>
@@ -141,7 +141,7 @@
  <entry key="Move_UpAndDown">Allow Up+Down</entry>
  <entry key="Move_LeftAndRightAllow">Allow Left+Right</entry>
  <entry key="Move_LeftAndRightUsePreviousInput">When both Left and Right are pressed, use previous button</entry>
- <entry key="Move_ShiftLock">Prevent DAS movement until drop key is lifted</entry>
+ <entry key="Move_ShiftLock">Prevent DAS movement..<drop key is lifted</entry>
 
  <!--PieceNames-->
  <entry key="PieceName0">I</entry>

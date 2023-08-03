@@ -137,7 +137,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 		zenKeshiOjama = IntArray(MAX_PLAYERS)
 		previewChain = IntArray(MAX_PLAYERS)
 		previewSubset = IntArray(MAX_PLAYERS)
-		for(i in 0 until MAX_PLAYERS) {
+		for(i in 0..<MAX_PLAYERS) {
 			previewChain[i] = 5
 			previewSubset[i] = 0
 		}
@@ -712,15 +712,15 @@ class AvalancheVS:AvalancheVSDummyMode() {
 			if(feverShowMeter[pid]&&engine.displaySize==1) {
 				if(inFever[pid]) {
 					var color = (engine.statistics.time shr 2)%FEVER_METER_COLORS.size
-					for(i in 0 until feverThreshold[pid]) {
+					for(i in 0..<feverThreshold[pid]) {
 						if(color==0) color = FEVER_METER_COLORS.size
 						color--
 						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "\u0084", FEVER_METER_COLORS[color])
 					}
 				} else {
-					for(i in feverPoints[pid] until feverThreshold[pid])
+					for(i in feverPoints[pid]..<feverThreshold[pid])
 						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "\u0083")
-					for(i in 0 until feverPoints[pid]) {
+					for(i in 0..<feverPoints[pid]) {
 						val color = feverThreshold[pid]-1-i
 						receiver.drawDirectFont(fldPosX+232, fldPosY+424-i*16, "\u0084", FEVER_METER_COLORS[color])
 					}

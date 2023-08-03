@@ -33,12 +33,11 @@ import mu.nu.nullpo.game.event.EventReceiver
 
 abstract class BaseFontGrade:BaseFont {
 	companion object {
-		const val wb = 64
-		const val ws = 16
+		const val WB = 64
+		const val WS = 32
 	}
 
-	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float,
-		rainbow:Int,
+	override fun processTxt(x:Float, y:Float, str:String, color:EventReceiver.COLOR, scale:Float, alpha:Float, rainbow:Int,
 		draw:(i:Int, dx:Float, dy:Float, scale:Float, sx:Int, sy:Int, sw:Int, sh:Int, a:Float)->Unit) =
 		if(scale>=5f/3f) {
 			//processBigFont
@@ -69,7 +68,7 @@ abstract class BaseFontGrade:BaseFont {
 					0x4B, 0x6B -> cd = 11//K
 					0x56, 0x76 -> cd = 12//V
 					0x4F, 0x6F -> cd = 13//O
-					0x47, 67 -> //G
+					0x47, 0x67 -> //G
 						cd = if(nX==0x6D||nX==0x4D) {
 							i++
 							if(nX==0x6D) 38 else 39

@@ -91,6 +91,13 @@ class Piece(id:Int = 0):Serializable {
 	 */
 	val colors get() = List(block.size) {block[it].cint}
 
+	/** ゲームが始まってから何番目に置かれるBlockか (負countだったら初期配置やgarbage block) */
+	var placeNum = -1
+		set(value) {
+		block.forEach {it.placeNum = value}
+		field = value
+	}
+
 	/** @return ピース回転軸のX-coordinate */
 	val spinCX get() = dataX.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2f
 	/** @return ピース回転軸のY-coordinate */
@@ -172,13 +179,13 @@ class Piece(id:Int = 0):Serializable {
 	/** Sets all blocks to an inum block
 	 * @param item ID number of the inum
 	 */
-	fun setItem(item:Int) = block.forEach {it.inum = item}
+	fun setItem(item:Int) = block.forEach {it.iNum = item}
 
 	/** Sets the items of the blocks individually; allows one piece to have
 	 * different inum settings for each block
 	 * @param item Array with each element specifying a cint of a block
 	 */
-	fun setItem(item:List<Int>) = block.forEachIndexed {i, it -> it.inum = item[i%item.size]}
+	fun setItem(item:List<Int>) = block.forEachIndexed {i, it -> it.iNum = item[i%item.size]}
 
 	/** Sets all blocks' hard count to [hard] */
 	fun setHard(hard:Int) = block.forEach {it.hard = hard}
@@ -233,8 +240,8 @@ class Piece(id:Int = 0):Serializable {
 	fun applyOffsetArrayX(offsetX:MutableList<Int>) {
 		offsetApplied = true
 
-		for(i in 0 until DIRECTION_COUNT) {
-			for(j in 0 until maxBlock)
+		for(i in 0..<DIRECTION_COUNT) {
+			for(j in 0..<maxBlock)
 				dataX[i][j] += offsetX[i]
 			dataOffsetX[i] = offsetX[i]
 		}
@@ -246,8 +253,8 @@ class Piece(id:Int = 0):Serializable {
 	fun applyOffsetArrayY(offsetY:MutableList<Int>) {
 		offsetApplied = true
 
-		for(i in 0 until DIRECTION_COUNT) {
-			for(j in 0 until maxBlock)
+		for(i in 0..<DIRECTION_COUNT) {
+			for(j in 0..<maxBlock)
 				dataY[i][j] += offsetY[i]
 			dataOffsetY[i] = offsetY[i]
 		}
@@ -302,7 +309,7 @@ class Piece(id:Int = 0):Serializable {
 	fun isPartialLockOut(x:Int, y:Int, rt:Int = direction):Boolean {
 		var placed = false
 		// Bigでは専用処理
-		if(big) for(i in 0 until maxBlock) {
+		if(big) for(i in 0..<maxBlock) {
 			val y2 = y+dataY[rt][i]*2
 
 			// 4Block分置く
@@ -311,7 +318,7 @@ class Piece(id:Int = 0):Serializable {
 					val y3 = y2+l
 					if(y3<0) placed = true
 				}
-		} else for(i in 0 until maxBlock) {
+		} else for(i in 0..<maxBlock) {
 			val y2 = y+dataY[rt][i]
 			if(y2<0) placed = true
 		}
@@ -327,7 +334,7 @@ class Piece(id:Int = 0):Serializable {
 		var placed = false
 		// Bigでは専用処理
 		if(big) {
-			for(i in 0 until maxBlock) {
+			for(i in 0..<maxBlock) {
 				val y2 = y+dataY[rt][i]*2
 
 				// 4Block分置く
@@ -341,7 +348,7 @@ class Piece(id:Int = 0):Serializable {
 			return placed
 		}
 
-		for(i in 0 until maxBlock) {
+		for(i in 0..<maxBlock) {
 			val y2 = y+dataY[rt][i]
 			if(y2>=0) placed = true
 		}
@@ -365,7 +372,7 @@ class Piece(id:Int = 0):Serializable {
 		var placed = false
 
 		fld?.setAllAttribute(false, Block.ATTRIBUTE.LAST_COMMIT)
-		for(i in 0 until maxBlock) {
+		for(i in 0..<maxBlock) {
 			val x2 = x+dataX[rt][i]*size //Multiply co-ordinate offset by piece size.
 			val y2 = y+dataY[rt][i]*size
 
@@ -374,8 +381,8 @@ class Piece(id:Int = 0):Serializable {
 			/* Loop through width/height of the block, setting cells in the field.
 	* If the piece is normal (size == 1), a standard, 1x1 space is allotted per block.
 	* If the piece is big (size == 2), a 2x2 space is allotted per block. */
-			for(k in 0 until size)
-				for(l in 0 until size) {
+			for(k in 0..<size)
+				for(l in 0..<size) {
 					val x3 = x2+k
 					val y3 = y2+l
 					val blk = Block(block[i])
@@ -481,7 +488,7 @@ class Piece(id:Int = 0):Serializable {
 			// Bigでは専用処理
 			if(big) return@checkCollision checkCollisionBig(x, y, rt, it)
 
-			for(i in 0 until maxBlock) {
+			for(i in 0..<maxBlock) {
 				val x2 = x+dataX[rt][i]
 				val y2 = y+dataY[rt][i]
 
@@ -502,7 +509,7 @@ class Piece(id:Int = 0):Serializable {
 	 * @return Blockに重なっていたらtrue, 重なっていないならfalse
 	 */
 	private fun checkCollisionBig(x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		for(i in 0 until maxBlock) {
+		for(i in 0..<maxBlock) {
 			val x2 = x+dataX[rt][i]*2
 			val y2 = y+dataY[rt][i]*2
 
@@ -573,28 +580,10 @@ class Piece(id:Int = 0):Serializable {
 
 	/** spin buttonを押したあとのピースのDirectionを取得
 	 * @param move spinDirection (-1:左 1:右 2:180度）
-	 * @return spin buttonを押したあとのピースのDirection
-	 */
-	fun getSpinDirection(move:Int):Int {
-		var rt = direction+move
-
-		if(move==2) {
-			if(rt>3) rt -= 4
-			if(rt<0) rt += 4
-		} else {
-			if(rt>3) rt = 0
-			if(rt<0) rt = 3
-		}
-
-		return rt
-	}
-
-	/** spin buttonを押したあとのピースのDirectionを取得
-	 * @param move spinDirection (-1:左 1:右 2:180度）
 	 * @param dir 元のDirection
 	 * @return spin buttonを押したあとのピースのDirection
 	 */
-	fun getSpinDirection(move:Int, dir:Int):Int {
+	fun getSpinDirection(move:Int, dir:Int = direction):Int {
 		var rt = dir+move
 
 		if(move==2) {
@@ -608,9 +597,55 @@ class Piece(id:Int = 0):Serializable {
 		return rt
 	}
 
+	/** fieldに置いたPieceが屋根になるかを判定
+	 * @param x X-coordinate
+	 * @param y Y-coordinate
+	 * @param fld field
+	 * @return 置いたピースの下に空白があるとtrue
+	 */
+	fun canMakeRoof(x:Int, y:Int, fld:Field?):Boolean {
+		val rt:Int = direction
+		fld?.let {
+			dataX[rt].groupBy({x -> x}, {i -> dataY[rt][i]})
+				.forEach {(px, c) ->
+					val x2 = x+px
+					val y2 = y+c.max()
+
+					if(!it.getCoordVaild(x2, y2)||!it.getBlockEmpty(x2, y2)) return@canMakeRoof false
+					if((it.getCoordVaild(x2, y2+1)||it.getCoordAttribute(x2, y2+1)!=Field.COORD_VANISH)
+						&&it.getBlockEmpty(x2, y2+1, false))
+						return@canMakeRoof true
+				}
+		}
+		return false
+	}
+
+	/** Pieceの上にブロックがあるかを判定
+	 * @param x X-coordinate
+	 * @param y Y-coordinate
+	 * @param fld field
+	 * @return 置いたピースの下に空白があるとtrue
+	 */
+	fun isUnderRoof(x:Int, y:Int, fld:Field?):Boolean {
+		val rt:Int = direction
+		fld?.let {
+			dataX[rt].groupBy({x -> x}, {i -> dataY[rt][i]})
+				.forEach {(px, c) ->
+					val x2 = x+px
+					val y2 = y+c.min()
+					for(yc in (-it.hiddenHeight..<y2).reversed())
+						if(!it.getBlockEmpty(x2, yc, true))
+							return@isUnderRoof true
+				}
+		}
+		return false
+	}
+
+	fun finesseLimit(nowPieceX:Int):Int =
+		FINESSE_LIST.getOrNull(id)?.let {it[direction%(it.size)]}
+			?.let {it[maxOf(0, minOf(nowPieceX+minimumBlockX, it.size-1))]} ?: 0
+
 	companion object {
-		/** Serial version ID */
-		private const val serialVersionUID = 1204901746632931186L
 
 		const val PIECE_NONE = -1
 		const val PIECE_I = 0
@@ -624,10 +659,6 @@ class Piece(id:Int = 0):Serializable {
 		const val PIECE_I2 = 8
 		const val PIECE_I3 = 9
 		const val PIECE_L3 = 10
-
-		/** BlockピースのName */
-		@Deprecated("This will be enumed", ReplaceWith("Shape.names", "mu.nu.nullpo.game.component.Shape"))
-		val PIECE_NAMES = Shape.names
 
 		/** 通常のBlockピースのIDのMaximumcount */
 		const val PIECE_STANDARD_COUNT = 7
@@ -648,8 +679,8 @@ class Piece(id:Int = 0):Serializable {
 				listOf(listOf(0), listOf(0), listOf(0), listOf(0)), // I1
 				listOf(listOf(0, 1), listOf(1, 1), listOf(1, 0), listOf(0, 0)), // I2
 				listOf(listOf(0, 1, 2), listOf(1, 1, 1), listOf(2, 1, 0), listOf(1, 1, 1)), // I3
-				listOf(listOf(1, 0, 0), listOf(0, 0, 1), listOf(0, 1, 1), listOf(1, 1, 0))
-			)// L3
+				listOf(listOf(1, 0, 0), listOf(0, 0, 1), listOf(0, 1, 1), listOf(1, 1, 0))// L3
+			)
 
 		/** default のBlockピースの data (Y-coordinate) */
 		val DEFAULT_PIECE_DATA_Y =
@@ -664,8 +695,8 @@ class Piece(id:Int = 0):Serializable {
 				listOf(listOf(0), listOf(0), listOf(0), listOf(0)), // I1
 				listOf(listOf(0, 0), listOf(0, 1), listOf(1, 1), listOf(1, 0)), // I2
 				listOf(listOf(1, 1, 1), listOf(0, 1, 2), listOf(1, 1, 1), listOf(2, 1, 0)), // I3
-				listOf(listOf(1, 1, 0), listOf(1, 0, 0), listOf(0, 0, 1), listOf(0, 1, 1))
-			)// L3
+				listOf(listOf(1, 1, 0), listOf(1, 0, 0), listOf(0, 0, 1), listOf(0, 1, 1))// L3
+			)
 
 		/** 新スピン bonus用座標 dataA(X-coordinate) */
 		val SPINBONUSDATA_HIGH_X =
@@ -741,6 +772,42 @@ class Piece(id:Int = 0):Serializable {
 		/** DirectionのMaximumcount */
 		const val DIRECTION_COUNT = 4
 
+		val FINESSE_LIST = listOf(
+			listOf(
+				listOf(1, 2, 1, 0, 1, 2, 1),
+				listOf(2, 2, 2, 2, 1, 1, 2, 2, 2, 2),
+			), // I
+			listOf(
+				listOf(1, 2, 1, 0, 1, 2, 2, 1),
+				listOf(2, 2, 3, 2, 1, 2, 3, 3, 2),
+				listOf(3, 4, 3, 2, 3, 4, 4, 3),
+				listOf(2, 3, 2, 1, 2, 3, 3, 2, 2),
+			), // L
+			listOf(
+				listOf(1, 2, 2, 1, 0, 1, 2, 2, 1),
+			), // O
+			listOf(
+				listOf(1, 2, 1, 0, 1, 2, 2, 1),
+				listOf(2, 2, 2, 1, 1, 2, 3, 2, 2),
+			), // Z
+			listOf(
+				listOf(1, 2, 1, 0, 1, 2, 2, 1),
+				listOf(2, 2, 3, 2, 1, 2, 3, 3, 2),
+				listOf(3, 4, 3, 2, 3, 4, 4, 3),
+				listOf(2, 3, 2, 1, 2, 3, 3, 2, 2),
+			), // T
+			listOf(
+				listOf(1, 2, 1, 0, 1, 2, 2, 1),
+				listOf(2, 2, 3, 2, 1, 2, 3, 3, 2),
+				listOf(3, 4, 3, 2, 3, 4, 4, 3),
+				listOf(2, 3, 2, 1, 2, 3, 3, 2, 2),
+			), // J
+			listOf(
+				listOf(1, 2, 1, 0, 1, 2, 2, 1),
+				listOf(2, 2, 2, 1, 1, 2, 3, 2, 2),
+			), // S
+
+		)
 		/** ピース名を取得
 		 * @param id ピースID
 		 * @return ピース名(不正な場合は ? を返す)
@@ -754,7 +821,7 @@ class Piece(id:Int = 0):Serializable {
 		I, L, O, Z, T, J, S, I1, I2, I3, L3;
 
 		companion object {
-			val all = values()
+			val all = entries
 			val names:List<String> get() = all.map {it.name}
 			fun name(id:Int):String = all.getOrNull(id)?.name ?: "?"
 		}

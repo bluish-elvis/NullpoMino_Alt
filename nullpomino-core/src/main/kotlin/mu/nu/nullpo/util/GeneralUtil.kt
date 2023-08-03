@@ -199,11 +199,9 @@ object GeneralUtil {
 			var pieceID = Piece.PIECE_I
 
 			try {
-				pieceID = Character.getNumericValue(strSrc[it])%Piece.PIECE_STANDARD_COUNT
+				pieceID = maxOf(0, Character.getNumericValue(strSrc[it])%Piece.PIECE_STANDARD_COUNT)
 			} catch(_:NumberFormatException) {
 			}
-
-			if(pieceID<0||pieceID>=Piece.PIECE_STANDARD_COUNT) pieceID = Piece.PIECE_I
 			pieceID
 		}
 	}
@@ -310,10 +308,10 @@ object GeneralUtil {
 
 	fun capsNum(x:Long, digits:Int):String = when {
 		digits<=0 -> ""
-		x<=0 -> (1 until digits).fold("0") {b, _ -> "${b}0"}
+		x<=0 -> (1..<digits).fold("0") {b, _ -> "${b}0"}
 		"$x".length>digits -> {
-			val y = (1 until digits).fold(x) {b, _ -> b.div(10)}
-			val z = (1 until digits).fold(minOf(y, 35)) {b, _ -> b.times(10)}
+			val y = (1..<digits).fold(x) {b, _ -> b.div(10)}
+			val z = (1..<digits).fold(minOf(y, 35)) {b, _ -> b.times(10)}
 			"${('A'.code+minOf(y.toInt()-10, 25)).toChar()}${if(digits>1) capsNum(x-z, digits-1) else ""}"
 		}
 		digits>0 -> "%0${digits}d".format(x)

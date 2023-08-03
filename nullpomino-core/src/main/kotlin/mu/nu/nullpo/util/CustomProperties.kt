@@ -301,9 +301,6 @@ class CustomProperties(name:String = ""):Properties() {
 	}
 
 	companion object {
-		/** Serial version */
-		private const val serialVersionUID = 2L
-
 		private val log = LogManager.getLogger()
 		private val code = StandardCharsets.UTF_8
 	}

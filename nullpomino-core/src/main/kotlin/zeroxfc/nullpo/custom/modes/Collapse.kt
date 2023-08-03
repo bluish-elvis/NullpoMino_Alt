@@ -265,7 +265,7 @@ class Collapse:AbstractMode() {
 			startGame(engine)
 			engine.owner.receiver.startGame(engine)
 			engine.stat = GameEngine.Status.CUSTOM
-			for(i in 0 until lineSpawn) {
+			for(i in 0..<lineSpawn) {
 				while(nextEmpty<engine.fieldWidth) {
 					val temp = if(linesLeft<=1) Block.COLOR.WHITE else tableColors[wRandomEngine.nextInt()]
 					nextBlocks.add(Block(temp, engine.skin).apply {
@@ -330,7 +330,7 @@ class Collapse:AbstractMode() {
 			engine.playerProp.loginScreen.updateScreen(engine)
 			if(engine.playerProp.isLoggedIn) {
 				loadRankingPlayer(engine.playerProp)
-				loadSetting(engine.playerProp.propProfile, engine)
+				loadSetting(engine, engine.playerProp.propProfile)
 			}
 			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 			true
@@ -346,21 +346,21 @@ class Collapse:AbstractMode() {
 				squares = getSquares(engine, fieldX, fieldY)
 				if(squares>=3) {
 					score = getClearScore(engine, squares)
-					for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
+					for(y in 0..<engine.field.height) for(x in 0..<engine.field.width)
 						engine.field.getBlock(x, y)?.let {
 							if(it.getAttribute(Block.ATTRIBUTE.TEMP_MARK)) it.setAttribute(true, Block.ATTRIBUTE.ERASE)
 						}
 					engine.playSE("erase${if(squares>=12) 1 else 0}")
 				} else {
 					engine.playSE("rotfail")
-					for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
+					for(y in 0..<engine.field.height) for(x in 0..<engine.field.width)
 						engine.field.getBlock(x, y)?.setAttribute(false, Block.ATTRIBUTE.TEMP_MARK)
 				}
 			} else if(b.type==Block.TYPE.GEM) {
 				fromBomb = true
 				if(b.color?.color==true) {
 					val c = b.color
-					for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
+					for(y in 0..<engine.field.height) for(x in 0..<engine.field.width)
 						engine.field.getBlock(x, y)?.let {
 							if(it.color==c&&it.type==Block.TYPE.BLOCK) {
 								it.setAttribute(true, Block.ATTRIBUTE.ERASE)
@@ -370,7 +370,7 @@ class Collapse:AbstractMode() {
 					score = (getClearScore(engine, squares)*0.75).toInt()
 				} else {
 					squares = 0
-					for(y in 0 until engine.field.height) for(x in 0 until engine.field.width)
+					for(y in 0..<engine.field.height) for(x in 0..<engine.field.width)
 						engine.field.getBlock(x, y)?.let {
 							if(isCoordWithinRadius(fieldX, fieldY, x, y, 4.5)) {
 								it.setAttribute(true, Block.ATTRIBUTE.ERASE)
@@ -513,7 +513,7 @@ class Collapse:AbstractMode() {
 			levelUp(engine, false)
 			resetBlockArray()
 			engine.resetStatc()
-			for(i in 0 until lineSpawn) {
+			for(i in 0..<lineSpawn) {
 				while(!nextFull) {
 					val index = nextEmpty
 					val temp = wRandomEngine.nextInt()
@@ -535,7 +535,7 @@ class Collapse:AbstractMode() {
 			val f:Int = engine.statc[0]-60
 			if(f%3==0&&f>=0&&15-f/3>=-1) {
 				val y = 15-f/3
-				for(x in 0 until engine.field.width)
+				for(x in 0..<engine.field.width)
 					engine.field.delBlock(x, y)?.let {receiver.blockBreak(engine, x, y, it)}
 			}
 			if(engine.statc[0]==120+16*3) engine.playSE("ready")
@@ -575,26 +575,26 @@ class Collapse:AbstractMode() {
 	}
 
 	private fun incrementField(engine:GameEngine) {
-		for(y in -1 until engine.field.height-1) {
-			for(x in 0 until engine.field.width) {
+		for(y in -1..<engine.field.height-1) {
+			for(x in 0..<engine.field.width) {
 				engine.field.getBlock(x, y)?.replace(engine.field.getBlock(x, y+1))
 			}
 		}
-		for(x in 0 until engine.field.width) {
+		for(x in 0..<engine.field.width) {
 			engine.field.getBlock(x, engine.field.height-1)?.replace(nextBlocks[x])
 		}
 	}
 
 	private fun bringColumnsCloser(engine:GameEngine) {
-		for(x in 5 downTo 1) if((0 until engine.field.height).all {y -> engine.field.getBlockEmpty(x, y)}) {
+		for(x in 5 downTo 1) if((0..<engine.field.height).all {y -> engine.field.getBlockEmpty(x, y)}) {
 			for(x2 in x downTo 1)
-				for(y in 0 until engine.field.height) engine.field.getBlock(x2, y)?.replace(engine.field.getBlock(x2-1, y))
-			for(y in 0 until engine.field.height) engine.field.delBlock(0, y)
+				for(y in 0..<engine.field.height) engine.field.getBlock(x2, y)?.replace(engine.field.getBlock(x2-1, y))
+			for(y in 0..<engine.field.height) engine.field.delBlock(0, y)
 		}
-		for(x in 6..10) if((0 until engine.field.height).all {y -> engine.field.getBlockEmpty(x, y)}) {
-			for(x2 in x..10) for(y in 0 until engine.field.height) engine.field.getBlock(x2, y)
+		for(x in 6..10) if((0..<engine.field.height).all {y -> engine.field.getBlockEmpty(x, y)}) {
+			for(x2 in x..10) for(y in 0..<engine.field.height) engine.field.getBlock(x2, y)
 				?.replace(engine.field.getBlock(x2+1, y))
-			for(y in 0 until engine.field.height) engine.field.delBlock(11, y)
+			for(y in 0..<engine.field.height) engine.field.delBlock(11, y)
 		}
 	}
 
@@ -677,8 +677,8 @@ class Collapse:AbstractMode() {
 				cursorX = MouseInput.mouseX
 				cursorY = MouseInput.mouseY
 				if(MouseInput.isMouseClicked) {
-					fieldX = (cursorX-4-receiver.fieldX(engine))/16
-					fieldY = (cursorY-52-receiver.fieldY(engine))/16
+					fieldX = (cursorX-4-(receiver.fieldX(engine)-engine.frameX).toInt())/16
+					fieldY = (cursorY-52-(receiver.fieldY(engine)-engine.frameY).toInt())/16
 				} else {
 					fieldX = -1
 					fieldY = -1
@@ -725,7 +725,7 @@ class Collapse:AbstractMode() {
 				}
 			}
 			if(engine.statc[0]<engine.field.height+1) {
-				for(i in 0 until engine.field.width) {
+				for(i in 0..<engine.field.width) {
 					engine.field.getBlock(i, engine.field.height-engine.statc[0])?.let {blk ->
 						if(!blk.getAttribute(Block.ATTRIBUTE.GARBAGE)) {
 							blk.color = Block.COLOR.BLACK
@@ -753,7 +753,7 @@ class Collapse:AbstractMode() {
 				if(rankingRankPlayer!=-1) saveRankingPlayer(engine.playerProp)
 
 				owner.saveModeConfig()
-				for(i in 0 until owner.players) {
+				for(i in 0..<owner.players) {
 					if(i==engine.playerID||engine.dieAll) {
 						owner.engine[i].field.reset()
 						owner.engine[i].resetStatc()
@@ -767,8 +767,8 @@ class Collapse:AbstractMode() {
 				engine.blockShowOutlineOnly = false
 				engine.playSE("died")
 				engine.resetFieldVisible()
-				for(i in engine.field.hiddenHeight*-1 until engine.field.height)
-					for(j in 0 until engine.field.width)
+				for(i in engine.field.hiddenHeight*-1..<engine.field.height)
+					for(j in 0..<engine.field.width)
 						engine.field.getBlock(j, i)?.let {it.color = Block.COLOR.BLACK}
 
 
@@ -819,7 +819,7 @@ class Collapse:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE    LEVEL", COLOR.BLUE)
 				if(showPlayerStats) {
-					for(i in 0 until MAX_RANKING) {
+					for(i in 0..<MAX_RANKING) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", i==rankingRankPlayer)
 						receiver.drawScoreFont(engine, 12, topY+i, "${rankingLevelPlayer[difficulty][i]}", i==rankingRankPlayer, scale)
@@ -828,7 +828,7 @@ class Collapse:AbstractMode() {
 					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
 					receiver.drawScoreFont(engine, 0, topY+MAX_RANKING+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
-					for(i in 0 until MAX_RANKING) {
+					for(i in 0..<MAX_RANKING) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank)
 						receiver.drawScoreFont(engine, 12, topY+i, "${rankingLevel[difficulty][i]}", i==rankingRank)
@@ -940,7 +940,7 @@ class Collapse:AbstractMode() {
 	 *
 	 * @param prop Property file
 	 */
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine: GameEngine, prop: CustomProperties, ruleName: String, playerID: Int) {
 		enableBombs = prop.getProperty("collapse.enableBombs", true)
 		difficulty = prop.getProperty("collapse.difficulty", 1)
 		bgm = prop.getProperty("collapse.bgm", 0)
@@ -950,7 +950,7 @@ class Collapse:AbstractMode() {
 	 *
 	 * @param prop Property file
 	 */
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("collapse.enableBombs", enableBombs)
 		prop.setProperty("collapse.difficulty", difficulty)
 		prop.setProperty("collapse.bgm", bgm)
@@ -1016,7 +1016,7 @@ class Collapse:AbstractMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, lv:Int, type:Int):Int {
-		for(i in 0 until MAX_RANKING) {
+		for(i in 0..<MAX_RANKING) {
 			if(sc>rankingScore[type][i]) {
 				return i
 			} else if(sc==rankingScore[type][i]&&lv<rankingLevel[type][i]) {
@@ -1032,7 +1032,7 @@ class Collapse:AbstractMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Long, lv:Int, type:Int):Int {
-		for(i in 0 until MAX_RANKING) {
+		for(i in 0..<MAX_RANKING) {
 			if(sc>rankingScorePlayer[type][i]) return i
 			else if(sc==rankingScorePlayer[type][i]&&lv<rankingLevelPlayer[type][i]) return i
 		}

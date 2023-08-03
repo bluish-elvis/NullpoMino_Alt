@@ -115,7 +115,6 @@ class TFrame:JFrame, KeyListener {
 	}
 
 	companion object {
-		private const val serialVersionUID = 1L
 		const val MANUAL = 0
 		const val NONE = 1
 		@JvmStatic fun main(args:Array<String>) {

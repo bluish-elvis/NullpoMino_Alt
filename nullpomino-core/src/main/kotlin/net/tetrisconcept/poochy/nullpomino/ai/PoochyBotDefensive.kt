@@ -69,7 +69,7 @@ class PoochyBotDefensive:PoochyBot() {
 		val depthsBefore = getColumnDepths(fld)
 		var deepestY = -1
 		//int deepestX = -1;
-		for(i in 0 until width-1) if(depthsBefore[i]>deepestY) {
+		for(i in 0..<width-1) if(depthsBefore[i]>deepestY) {
 			deepestY = depthsBefore[i]
 			//deepestX = i;
 		}
@@ -80,7 +80,7 @@ class PoochyBotDefensive:PoochyBot() {
 		var needLValleyBefore = 0
 		if(depthsBefore[0]>depthsBefore[1]) needIValleyBefore = (depthsBefore[0]-depthsBefore[1])/3
 		if(depthsBefore[width-1]>depthsBefore[width-2]) needIValleyBefore = (depthsBefore[width-1]-depthsBefore[width-2])/3
-		for(i in 1 until width-1) {
+		for(i in 1..<width-1) {
 			val left = depthsBefore[i-1]
 			val right = depthsBefore[i+1]
 			val lowerSide = maxOf(left, right)
@@ -196,7 +196,7 @@ class PoochyBotDefensive:PoochyBot() {
 			var needLValleyAfter = 0
 			if(depthsAfter[0]>depthsAfter[1]) needIValleyAfter = (depthsAfter[0]-depthsAfter[1])/3
 			if(depthsAfter[width-1]>depthsAfter[width-2]) needIValleyAfter = (depthsAfter[width-1]-depthsAfter[width-2])/3
-			for(i in 1 until width-1) {
+			for(i in 1..<width-1) {
 				val left = depthsAfter[i-1]
 				val right = depthsAfter[i+1]
 				val lowerSide = maxOf(left, right)
@@ -274,11 +274,11 @@ class PoochyBotDefensive:PoochyBot() {
 			//Bonus for pyramidal stack
 			val mid = width/2-1
 			var d:Int
-			for(i in 0 until mid-1) {
+			for(i in 0..<mid-1) {
 				d = depthsAfter[i]-depthsAfter[i+1]
 				pts += if(d>=0) 10 else d
 			}
-			for(i in mid+2 until width) {
+			for(i in mid+2..<width) {
 				d = depthsAfter[i]-depthsAfter[i-1]
 				pts += if(d>=0) 10 else d
 			}

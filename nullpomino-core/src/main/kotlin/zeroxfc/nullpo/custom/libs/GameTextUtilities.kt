@@ -133,7 +133,7 @@ object GameTextUtilities {
 	 */
 	fun randomString(length:Int, randomEngine:Random):String {
 		val sb = StringBuilder()
-		for(i in 0 until length) {
+		for(i in 0..<length) {
 			sb.append(CHARACTERS[randomEngine.nextInt(CHARACTERS.length)])
 		}
 		return "$sb"
@@ -258,7 +258,7 @@ object GameTextUtilities {
 				offset++
 			} else {
 				var j = (listOf(*RAINBOW_ORDER)
-					.indexOf(startColor)+i*if(reverse) -1 else 1-offset*if(reverse) -1 else 1)%RAINBOW_COLORS
+					.indexOf(startColor)+i*if(reverse) -1 else 1-offset)%RAINBOW_COLORS
 				if(j<0) j = RAINBOW_COLORS-j
 				receiver.drawDirectFont(x+(i*16*scale).toInt(), y, str.substring(i, i+1), RAINBOW_ORDER[j])
 			}

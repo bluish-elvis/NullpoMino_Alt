@@ -208,7 +208,7 @@ class GrandPuzzle:AbstractMode() {
 
 	override fun modeInit(manager:GameManager) {
 		super.modeInit(manager)
-		File(levelDir).listFiles
+		File(LEVEL_DIR).listFiles
 
 		loadStageSet(-1)
 
@@ -342,10 +342,10 @@ class GrandPuzzle:AbstractMode() {
 		propStageSet[id]?.load(
 			if(id>=0) {
 				log.debug("Loading stage set from custom set #$id")
-				levelDir+"custom$id.map"
+				LEVEL_DIR+"custom$id.map"
 			} else {
 				log.debug("Loading stage set from default set")
-				levelDir+"default.map"
+				LEVEL_DIR+"default.map"
 			}
 		)
 	}
@@ -393,7 +393,7 @@ class GrandPuzzle:AbstractMode() {
 		prop.setProperty("$id.gemmania.gimmickColor", gimmickColor)
 	}
 
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		startStage = prop.getProperty("gemmania.startstage", 0)
 		mapSet = prop.getProperty("gemmania.stageset", -1)
 		alwaysGhost = prop.getProperty("gemmania.alwaysghost", true)
@@ -405,7 +405,7 @@ class GrandPuzzle:AbstractMode() {
 		startNextc = prop.getProperty("gemmania.startnextc", 0)
 	}
 
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("gemmania.startstage", startStage)
 		prop.setProperty("gemmania.stageset", mapSet)
 		prop.setProperty("gemmania.alwaysghost", alwaysGhost)
@@ -792,7 +792,7 @@ class GrandPuzzle:AbstractMode() {
 				receiver.drawScoreFont(engine, 3, topY-1, "STAGE CLEAR TIME", COLOR.PINK)
 				val type = randomQueue.toInt()
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(
 						engine, 0, topY+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
@@ -1046,7 +1046,7 @@ class GrandPuzzle:AbstractMode() {
 	}
 
 	/* Blockピースが固定されたときの処理(calcScoreの直後) */
-	override fun pieceLocked(engine:GameEngine, lines:Int) {
+	override fun pieceLocked(engine: GameEngine, lines: Int, finesse: Boolean) {
 		// 固定 count+1
 		thisStageTotalPieceLockCount++
 
@@ -1259,7 +1259,7 @@ class GrandPuzzle:AbstractMode() {
 			}
 			if(engine.statc[0]<engine.field.height+1) {
 				// field灰色化
-				for(i in 0 until engine.field.width)
+				for(i in 0..<engine.field.width)
 					if(!engine.field.getBlockEmpty(i, engine.statc[0])) {
 						val blk = engine.field.getBlock(i, engine.statc[0])
 
@@ -1438,7 +1438,7 @@ class GrandPuzzle:AbstractMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(type:Int, stg:Int, clper:Int, time:Int, clear:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(clear>rankingAllClear[type][i]) return i
 			else if(clear==rankingAllClear[type][i]&&stg>rankingStage[type][i]) return i
 			else if(clear==rankingAllClear[type][i]&&stg==rankingStage[type][i]&&clper>rankingRate[type][i]) return i
@@ -1457,7 +1457,7 @@ class GrandPuzzle:AbstractMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** level contains directory */
-		private const val levelDir = "config/map/gemmania/"
+		private const val LEVEL_DIR = "config/map/gemmania/"
 		/** Maximum level count */
 		private const val MAX_STAGE_TOTAL = 27
 

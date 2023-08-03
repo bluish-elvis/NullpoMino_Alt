@@ -33,7 +33,7 @@
 
 package mu.nu.nullpo.gui.common.fx.particles
 
-import mu.nu.nullpo.game.event.EventReceiver
+import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.fx.Effect
 import mu.nu.nullpo.gui.common.libs.Vector
@@ -54,35 +54,36 @@ import kotlin.random.Random
  */
 class Fireworks @JvmOverloads constructor(
 	override var x:Float, override var y:Float, red:Int, green:Int, blue:Int, alpha:Int, variance:Int, gravity:Float = GRAVITY,
-	friction:Float = FRICTION, minLifeTime:Int = DEF_MIN_LIFE, maxLifeTime:Int = DEF_MAX_LIFE, maxVelocity:Float = DEF_MAX_VEL,
-	/** FireSparks + [num] * random 1x~2x */
+	friction:Float = FRICTION, minLifeTime:Int = DEF_MIN_LIFE, maxLifeTime:Int = DEF_MAX_LIFE, val maxVelocity:Float = DEF_MAX_VEL,
+	/** FireSparks += random *[num]start~end */
 	num:IntRange = 64..128,
 	/**Randomizer*/
-	randomizer:Random = Random.Default
+	rand:Random = Random.Default
 ):Effect {
-	val particles = List((num.last-num.first).let {if(it>0) randomizer.nextInt(it+1) else 0}+num.first) {
-
-		val ured:Int = red+(2*randomizer.nextFloat()*variance-variance).toInt()
-		val ugreen:Int = green+(2*randomizer.nextFloat()*variance-variance).toInt()
-		val ublue:Int = blue+(2*randomizer.nextFloat()*variance-variance).toInt()
-		val ualpha:Int = alpha+(2*randomizer.nextFloat()*variance-variance).toInt()
-		val s = 1+randomizer.nextInt(2)
-		val v = Vector(maxVelocity*cos(randomizer.nextFloat()*PI.toFloat()), (randomizer.nextDouble(2*PI)).toFloat(), true)
+	val particles = List(maxOf(1, (num.last-num.first).let {if(it>0) rand.nextInt(it+1) else 0}+num.first)) {
+		val ured:Int = red+(2*rand.nextFloat()*variance-variance).toInt()
+		val ugreen:Int = green+(2*rand.nextFloat()*variance-variance).toInt()
+		val ublue:Int = blue+(2*rand.nextFloat()*variance-variance).toInt()
+		val ualpha:Int = alpha+(2*rand.nextFloat()*variance-variance).toInt()
+		val s = 1+rand.nextInt(2)
 		val particle = Particle(
 			Particle.ParticleShape.ASprite,
-			lerp(minLifeTime, maxLifeTime, randomizer.nextFloat()),
-			x, y, v, Vector(0f, gravity), friction, s, 1f, ured, ugreen, ublue, ualpha,
+			lerp(minLifeTime, maxLifeTime, rand.nextFloat()),
+			x, y, Vector(maxVelocity*cos(rand.nextFloat()*PI.toFloat()), (rand.nextDouble(2*PI)).toFloat(), true),
+			Vector(0f, gravity), friction, s, 1f, ured, ugreen, ublue, ualpha,
 			ured*2/3, ugreen*2/3, ublue*2/3, 0
 		)
-		val v2 = Vector(maxVelocity*sin(randomizer.nextFloat()*PI.toFloat()), (randomizer.nextDouble(2*PI)).toFloat(), true)
-		val particle2 = Particle(
-			Particle.ParticleShape.ASprite,
-			lerp(minLifeTime, maxLifeTime, randomizer.nextFloat()),
-			x, y, v2, Vector(0f, gravity), friction, 1, 1f,
-			lerp(ured, 255, .9f), lerp(ugreen, 255, .9f), lerp(ublue, 255, .9f),
-			lerp(ualpha, 255, .9f), ured*4/5, ugreen*4/5, ublue*4/5, 0
-		)
-		listOf(particle, particle2)
+		if(num.first>1) {
+			val particle2 = Particle(
+				Particle.ParticleShape.ASprite,
+				lerp(minLifeTime, maxLifeTime, rand.nextFloat()),
+				x, y, Vector(maxVelocity*sin(rand.nextFloat()*PI.toFloat()), (rand.nextDouble(2*PI)).toFloat(), true),
+				Vector(0f, gravity), friction, 1, 1f,
+				lerp(ured, 255, .9f), lerp(ugreen, 255, .9f), lerp(ublue, 255, .9f),
+				lerp(ualpha, 255, .9f), ured*4/5, ugreen*4/5, ublue*4/5, 0
+			)
+			listOf(particle, particle2)
+		} else listOf(particle)
 	}.flatten()
 
 	private var ticks = 0
@@ -91,10 +92,10 @@ class Fireworks @JvmOverloads constructor(
 	)
 	private val cAlpha = lerp(alpha, 255, .5f)/255f
 	override fun draw(i:Int, r:AbstractRenderer) {
-		(100-ticks*10).let {s ->
+		((10-ticks)*(8+maxVelocity)).let {s ->
 			if(s>0)
 				r.drawBlendAdd {
-					r.resources.imgFrags[2].draw(
+					r.resources.imgFrags[0].draw(
 						x-s/2f, y-s/2f, x+s/2f, y+s/2f, maxOf(0f, 1f-ticks*.1f)*cAlpha, cColor
 					)
 				}
@@ -127,14 +128,14 @@ class Fireworks @JvmOverloads constructor(
 			listOf(0, 240, 240, 235, 20), listOf(0, 30, 240, 235, 20), listOf(210, 0, 210, 235, 20)
 		)
 
-		fun colorBy(c:EventReceiver.COLOR):List<Int> = DEF_COLORS[when(c) {
-			EventReceiver.COLOR.RED -> 1
-			EventReceiver.COLOR.ORANGE -> 2
-			EventReceiver.COLOR.YELLOW -> 3
-			EventReceiver.COLOR.GREEN -> 4
-			EventReceiver.COLOR.CYAN -> 5
-			EventReceiver.COLOR.BLUE, EventReceiver.COLOR.COBALT -> 6
-			EventReceiver.COLOR.PURPLE, EventReceiver.COLOR.PINK -> 7
+		fun colorBy(c:COLOR):List<Int> = DEF_COLORS[when(c) {
+			COLOR.RED -> 1
+			COLOR.ORANGE -> 2
+			COLOR.YELLOW -> 3
+			COLOR.GREEN -> 4
+			COLOR.CYAN -> 5
+			COLOR.BLUE, COLOR.COBALT -> 6
+			COLOR.PURPLE, COLOR.PINK -> 7
 			else -> 0
 		}]
 

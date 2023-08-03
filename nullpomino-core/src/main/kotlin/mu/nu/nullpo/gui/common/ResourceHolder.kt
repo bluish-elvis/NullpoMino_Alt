@@ -57,7 +57,7 @@ abstract class ResourceHolder {
 		}
 	}
 
-	fun getBlockIsSticky(skin:Int):Boolean = skin in 0 until imgBlockListSize&&blockStickyFlagList[skin]
+	fun getBlockIsSticky(skin:Int):Boolean = skin in 0..<imgBlockListSize&&blockStickyFlagList[skin]
 
 	protected val filterImg = FileFilter {it.isImage}
 	protected val nameSort:Comparator<File> = Comparator {x, y ->

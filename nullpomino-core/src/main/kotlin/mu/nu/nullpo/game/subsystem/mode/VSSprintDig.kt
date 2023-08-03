@@ -294,15 +294,15 @@ class VSSprintDig:AbstractMode() {
 
 		for(y:Int in h-1 downTo h-goalLines[pid]) {
 			if(hole==-1||engine.random.nextInt(100)<messiness[pid]) {
-				var newhole = -1
+				var newHole = -1
 				do
-					newhole = engine.random.nextInt(w)
-				while(newhole==hole)
-				hole = newhole
+					newHole = engine.random.nextInt(w)
+				while(newHole==hole)
+				hole = newHole
 			}
 
 			var prevColor:COLOR? = null
-			for(x:Int in 0 until w)
+			for(x:Int in 0..<w)
 				if(x!=hole) {
 					var color:COLOR = COLOR.WHITE
 					if(y==h-1) {
@@ -320,7 +320,7 @@ class VSSprintDig:AbstractMode() {
 				}
 			// Set connections
 			if(receiver.isStickySkin(engine)&&y!=h-1)
-				for(x:Int in 0 until w)
+				for(x:Int in 0..<w)
 					if(x!=hole) {
 						val blk = engine.field.getBlock(x, y)
 						if(blk!=null) {
@@ -342,7 +342,7 @@ class VSSprintDig:AbstractMode() {
 
 		for(y:Int in h-1 downTo h-goalLines[playerID])
 			if(!engine.field.getLineFlag(y))
-				for(x:Int in 0 until w) {
+				for(x:Int in 0..<w) {
 					val blk = engine.field.getBlock(x, y)
 
 					if(blk!=null&&blk.isGemBlock) hasGemBlock = true
@@ -360,14 +360,16 @@ class VSSprintDig:AbstractMode() {
 		val pid = engine.playerID
 		val enemyID = if(pid==0) 1 else 0
 
-		val x:Int = receiver.fieldX(engine)
-		val y:Int = receiver.fieldY(engine)
+		val x = receiver.fieldX(engine)
+		val y = receiver.fieldY(engine)
 
 		val remainLines = maxOf(0, getRemainGarbageLines(engine))
-		var fontColor = EventReceiver.COLOR.WHITE
-		if(remainLines in 1..14) fontColor = EventReceiver.COLOR.YELLOW
-		if(remainLines in 1..8) fontColor = EventReceiver.COLOR.ORANGE
-		if(remainLines in 1..4) fontColor = EventReceiver.COLOR.RED
+		val fontColor = when (remainLines) {
+			in 1..4 -> EventReceiver.COLOR.RED
+			in 5..8 -> EventReceiver.COLOR.ORANGE
+			in 9..14 -> EventReceiver.COLOR.YELLOW
+			else -> EventReceiver.COLOR.WHITE
+		}
 
 		val enemyRemainLines = maxOf(0, getRemainGarbageLines(owner.engine[enemyID]))
 		/* int fontColorEnemy = EventReceiver.COLOR.WHITE;

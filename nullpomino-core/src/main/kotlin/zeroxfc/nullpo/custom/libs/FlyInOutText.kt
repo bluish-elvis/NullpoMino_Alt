@@ -64,7 +64,7 @@ class FlyInOutText(  // String to draw
 	private var currentLifetime = 0
 	fun draw(receiver:EventReceiver) {
 		for(i in letterPositions.indices.reversed()) {
-			for(j in 0 until letterPositions[i].size) {
+			for(j in 0..<letterPositions[i].size) {
 				receiver.drawDirectFont(
 					letterPositions[i][j].x.toInt(), letterPositions[i][j].y.toInt(), "${mainString[j]}",
 					if((currentLifetime-i)/4%2==0&&flash) EventReceiver.COLOR.WHITE else textColors[i], textScale
@@ -75,8 +75,8 @@ class FlyInOutText(  // String to draw
 
 	fun update() {
 		for(i in letterPositions.indices) {
-			if(currentLifetime-i in 0 until flyInTime) {
-				for(j in 0 until letterPositions[i].size) {
+			if(currentLifetime-i in 0..<flyInTime) {
+				for(j in 0..<letterPositions[i].size) {
 					val v1 = Interpolation.lerp(
 						startLocation[i][j].x, destinationLocation[i][j].x,
 						(currentLifetime-i).toFloat()/flyInTime
@@ -88,7 +88,7 @@ class FlyInOutText(  // String to draw
 					letterPositions[i][j] = Vector(v1.toFloat(), v2.toFloat(), false)
 				}
 			} else if(currentLifetime-i>=flyInTime+persistTime) {
-				for(j in 0 until letterPositions[i].size) {
+				for(j in 0..<letterPositions[i].size) {
 					val v1 = Interpolation.lerp(
 						destinationLocation[i][j].x, startLocation[i][j].x,
 						(currentLifetime-i-flyInTime-persistTime).toFloat()/flyOutTime
@@ -100,7 +100,7 @@ class FlyInOutText(  // String to draw
 					letterPositions[i][j] = Vector(v1.toFloat(), v2.toFloat(), false)
 				}
 			} else if(currentLifetime-i==flyInTime) {
-				for(j in 0 until letterPositions[i].size) {
+				for(j in 0..<letterPositions[i].size) {
 					letterPositions[i][j] = Vector(
 						destinationLocation[i][j].x, destinationLocation[i][j].y, false
 					)

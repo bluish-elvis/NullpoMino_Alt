@@ -60,7 +60,7 @@ class StateInGame:BasicGameState() {
 	private var enableFrameStep = false
 
 	/** Show background flag */
-	var showBg = true; private set
+	var showBG = true; private set
 
 	/** 倍速Mode */
 	private var fastForward = 0
@@ -94,12 +94,12 @@ class StateInGame:BasicGameState() {
 	/** Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		enableFrameStep = NullpoMinoSlick.propConfig.getProperty("option.enableFrameStep", false)
-		showBg = NullpoMinoSlick.propConfig.getProperty("option.showBg", true)
+		showBG = NullpoMinoSlick.propConfig.getProperty("option.showBG", true)
 		fastForward = 0
 		cursor = 0
 		prevInGameFlag = false
 
-		container?.setClearEachFrame(!showBg) // Clear each frame when there is no BG
+		container?.setClearEachFrame(!showBG) // Clear each frame when there is no BG
 	}
 
 	/** Start a new game
@@ -115,7 +115,7 @@ class StateInGame:BasicGameState() {
 			pause = false
 
 			// Initialization for each player
-			for(i in 0 until it.players) it.engine[i].let {e ->
+			for(i in 0..<it.players) it.engine[i].let {e ->
 				// チューニング設定
 				e.owSpinDirection = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owRotateButtonDefaultRight", -1)
 				e.owSkin = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owSkin", -1)
@@ -184,7 +184,7 @@ class StateInGame:BasicGameState() {
 			pause = false
 
 			// Initialization for each player
-			for(i in 0 until it.players) {
+			for(i in 0..<it.players) {
 				// ルール
 				val ruleOpt = RuleOptions()
 				ruleOpt.readProperty(prop, i)
@@ -256,8 +256,8 @@ class StateInGame:BasicGameState() {
 			it.renderAll()
 
 			if(it.engine.isNotEmpty()) {
-				val offsetX = it.receiver.fieldX(it.engine[0])
-				val offsetY = it.receiver.fieldY(it.engine[0])
+				val offsetX = it.receiver.fieldX(it.engine[0]).toInt()
+				val offsetY = it.receiver.fieldY(it.engine[0]).toInt()
 
 				// Pause menu
 				if(pause&&!enableFrameStep&&!pauseMessageHide) {
@@ -427,7 +427,7 @@ class StateInGame:BasicGameState() {
 
 			// ゲームの処理を実行
 			if(!pause||GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_FRAMESTEP)&&enableFrameStep) {
-				for(i in 0 until minOf(m.players, GameKey.gameKey.size))
+				for(i in 0..<minOf(m.players, GameKey.gameKey.size))
 					if(!m.engine[i].gameActive||((m.engine[i].ai==null||m.engine[i].aiShowHint)&&(!m.replayMode||m.replayRerecord)))
 						GameKey.gameKey[i].inputStatusUpdate(m.engine[i].ctrl)
 

@@ -105,7 +105,7 @@ object RendererExtension {
 	 * @param y        Y-Coordinate of top left corner of 16x16 block
 	 * @param blk      Block to break
 	 */
-	fun addBlockBreakEffect(receiver:EventReceiver?, x:Int, y:Int, blk:Block?) {
+	fun addBlockBreakEffect(receiver:EventReceiver?, x:Float, y:Float, blk:Block?) {
 		if(receiver==null||blk==null) return
 		addBlockBreakEffect(receiver, if(blk.isGemBlock) 2 else 1, x, y, blk.drawColor)
 	}
@@ -118,7 +118,7 @@ object RendererExtension {
 	 * @param y          Y-Coordinate of top left corner of 16x16 block
 	 * @param color      Effect color
 	 */
-	private fun addBlockBreakEffect(receiver:EventReceiver?, effectType:Int, x:Int, y:Int, color:Int) {
+	private fun addBlockBreakEffect(receiver:EventReceiver?, effectType:Int, x:Float, y:Float, color:Int) {
 		if(receiver==null||receiver !is AbstractRenderer) return
 		val local:Class<*> = AbstractRenderer::class.java
 

@@ -131,8 +131,7 @@ open class LSPIAI:DummyAI(), Runnable {
 	 * Set button input states
 	 */
 	override fun setControl(engine:GameEngine, playerID:Int, ctrl:Controller):Int {
-		if(engine.nowPieceObject!=null&&engine.stat===GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay
-			&&engine.statc[0]>0
+		if(engine.nowPieceObject!=null&&engine.stat===GameEngine.Status.MOVE&&delay>=engine.aiMoveDelay&&engine.statc[0]>0
 			&&(!engine.aiUseThread||threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo)
 		) {
 			var input = 0 // button input data
@@ -144,27 +143,20 @@ open class LSPIAI:DummyAI(), Runnable {
 			val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 			if((bestHold||forceHold)&&engine.isHoldOK) {
 				// Hold
-				input = input or Controller.BUTTON_BIT_D
+				input = Controller.BUTTON_BIT_D
 			} else {
 				// rotation
 				if(rt!=bestRt) {
-					val lrot = engine.getSpinDirection(-1)
-					val rrot = engine.getSpinDirection(1)
-					if(abs(rt-bestRt)==2&&engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E)) {
-						input = input or Controller.BUTTON_BIT_E
-					} else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey
-						&&!engine.spinDirection&&bestRt==rrot
-					) {
-						input = input or Controller.BUTTON_BIT_B
-					} else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey
-						&&engine.spinDirection&&bestRt==lrot
-					) {
-						input = input or Controller.BUTTON_BIT_B
-					} else if(!ctrl.isPress(Controller.BUTTON_A)) {
-						input = input or Controller.BUTTON_BIT_A
-					}
+					val spL = engine.getSpinDirection(-1)
+					val spR = engine.getSpinDirection(1)
+					if(abs(rt-bestRt)==2&&engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E))
+						input = Controller.BUTTON_BIT_E
+					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey&&!engine.spinDirection&&bestRt==spR)
+						input = Controller.BUTTON_BIT_B
+					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey&&engine.spinDirection&&bestRt==spL)
+						input = Controller.BUTTON_BIT_B
+					else if(!ctrl.isPress(Controller.BUTTON_A)) input = Controller.BUTTON_BIT_A
 				}
-
 				// Whether reachable position
 				val minX = pieceNow.getMostMovableLeft(nowX, nowY, rt, fld)
 				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, fld)
@@ -325,8 +317,8 @@ open class LSPIAI:DummyAI(), Runnable {
 			// Opp now state
 			oppNowState = createState(oppFld, oppEngine)
 		}
-		for(depth in 0 until maxThinkDepth) {
-			for(rt in 0 until Piece.DIRECTION_COUNT) {
+		for(depth in 0..<maxThinkDepth) {
+			for(rt in 0..<Piece.DIRECTION_COUNT) {
 				// Peace for now
 				val minX = pieceNow!!.getMostMovableLeft(nowX, nowY, rt, engine.field)
 				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)
@@ -508,7 +500,7 @@ open class LSPIAI:DummyAI(), Runnable {
 				}
 				// Hold Peace
 				if(holdOK&&pieceHold!=null&&depth==0) {
-					val spawnX = engine.getSpawnPosX(engine.field, pieceHold)
+					val spawnX = engine.getSpawnPosX(pieceHold, engine.field)
 					val spawnY = engine.getSpawnPosY(pieceHold)
 					val minHoldX = pieceHold.getMostMovableLeft(spawnX, spawnY, rt, engine.field)
 					val maxHoldX = pieceHold.getMostMovableRight(spawnX, spawnY, rt, engine.field)
@@ -582,8 +574,8 @@ open class LSPIAI:DummyAI(), Runnable {
 			// Opp now state
 			oppnowstateOpp = createState(oppFld, oppEngine)
 		}
-		for(depth in 0 until maxThinkDepth) {
-			for(rt in 0 until Piece.DIRECTION_COUNT) {
+		for(depth in 0..<maxThinkDepth) {
+			for(rt in 0..<Piece.DIRECTION_COUNT) {
 				// Peace for now
 				val minX = pieceNow!!.getMostMovableLeft(nowX, nowY, rt, engine.field)
 				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)
@@ -765,7 +757,7 @@ open class LSPIAI:DummyAI(), Runnable {
 				}
 				// Hold Peace
 				if(holdOK&&pieceHold!=null&&depth==0) {
-					val spawnX = engine.getSpawnPosX(engine.field, pieceHold)
+					val spawnX = engine.getSpawnPosX(pieceHold, engine.field)
 					val spawnY = engine.getSpawnPosY(pieceHold)
 					val minHoldX = pieceHold.getMostMovableLeft(spawnX, spawnY, rt, engine.field)
 					val maxHoldX = pieceHold.getMostMovableRight(spawnX, spawnY, rt, engine.field)
@@ -851,13 +843,13 @@ open class LSPIAI:DummyAI(), Runnable {
 		val f:DoubleArray?
 		if(twoPlayerGame) {
 			f = player.twoPlayerBasisFunctions.getFutureArray(nowstateOpp, futurestateOpp, oppnowstateOpp, oppfuturestateOpp)
-			for(i in 0 until TwoPlayerBasisFunction.FEATURE_COUNT) {
+			for(i in 0..<TwoPlayerBasisFunction.FEATURE_COUNT) {
 				pts += f[i]*player.twoPlayerBasisFunctions.weight[i]
 				//log.error(i + ":" + f[i]);
 			}
 		} else {
 			f = player.basisFunctions.getFeatureArray(nowstateOpp, futurestateOpp)
-			for(i in 0 until BasisFunction.FUTURE_COUNT) {
+			for(i in 0..<BasisFunction.FUTURE_COUNT) {
 				pts += f[i]*player.basisFunctions.weight[i]
 				//log.error(i + ":" + f[i]);
 			}
@@ -937,13 +929,13 @@ open class LSPIAI:DummyAI(), Runnable {
 		val f:DoubleArray?
 		if(twoPlayerGame) {
 			f = player.twoPlayerBasisFunctions.getFutureArray(nowState, futureState, oppNowState, oppFutureState)
-			for(i in 0 until TwoPlayerBasisFunction.FEATURE_COUNT) {
+			for(i in 0..<TwoPlayerBasisFunction.FEATURE_COUNT) {
 				pts += f[i]*player.twoPlayerBasisFunctions.weight[i]
 				//log.error(i + ":" + f[i]);
 			}
 		} else {
 			f = player.basisFunctions.getFeatureArray(nowState, futureState)
-			for(i in 0 until BasisFunction.FUTURE_COUNT) {
+			for(i in 0..<BasisFunction.FUTURE_COUNT) {
 				pts += f[i]*player.basisFunctions.weight[i]
 				//log.error(i + ":" + f[i]);
 			}
@@ -957,17 +949,17 @@ open class LSPIAI:DummyAI(), Runnable {
 	protected fun createState(fld:Field, engine:GameEngine?):State {
 		val newState = State()
 		val transformedFld = Array(fld.fullHeight) {IntArray(width)}
-		for(c in 0 until width) {
-			for(r in -hiddenHeight until height) {
+		for(c in 0..<width) {
+			for(r in -hiddenHeight..<height) {
 				transformedFld[r+hiddenHeight][c] = if(fld.getBlockEmpty(c, r)) 0 else 1
 			}
 		}
 		var heightest:Int
 		var rr:Int
 		var tmp:Int
-		for(c in 0 until State.COLS) {
+		for(c in 0..<State.COLS) {
 			heightest = 0
-			for(r in 0 until State.ROWS) {
+			for(r in 0..<State.ROWS) {
 				try {
 					tmp = 0
 					try {
@@ -1004,17 +996,17 @@ open class LSPIAI:DummyAI(), Runnable {
 		val newState = FutureState()
 		newState.resetToCurrentState(oldState)
 		val transformedFld = Array(fld.fullHeight) {IntArray(width)}
-		for(c in 0 until width) {
-			for(r in -hiddenHeight until height) {
+		for(c in 0..<width) {
+			for(r in -hiddenHeight..<height) {
 				transformedFld[r+hiddenHeight][c] = if(fld.getBlockEmpty(c, r)) 0 else 1
 			}
 		}
 		var heightest:Int
 		var rr:Int
 		var tmp:Int
-		for(c in 0 until State.COLS) {
+		for(c in 0..<State.COLS) {
 			heightest = 0
-			for(r in 0 until State.ROWS) {
+			for(r in 0..<State.ROWS) {
 				try {
 					tmp = 0
 					try {

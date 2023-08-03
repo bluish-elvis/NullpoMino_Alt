@@ -162,36 +162,26 @@ public class PNGDecoder{
 	 * @throws UnsupportedOperationException if this PNG file can't be decoded
 	 */
 	public Format decideTextureFormat(Format fmt){
-		switch(colorType){
-			case COLOR_TRUECOLOR:
-				if((fmt==ABGR)||(fmt==RGBA)||(fmt==BGRA)||(fmt==RGB)){
-					return fmt;
-				}
-
-				return RGB;
-			case COLOR_TRUEALPHA:
-				if((fmt==ABGR)||(fmt==RGBA)||(fmt==BGRA)||(fmt==RGB)){
-					return fmt;
-				}
-
-				return RGBA;
-			case COLOR_GREYSCALE:
-				if((fmt==LUMINANCE)||(fmt==ALPHA)){
-					return fmt;
-				}
-
-				return LUMINANCE;
-			case COLOR_GREYALPHA:
-				return LUMINANCE_ALPHA;
-			case COLOR_INDEXED:
-				if((fmt==ABGR)||(fmt==RGBA)||(fmt==BGRA)){
-					return fmt;
-				}
-
-				return RGBA;
-			default:
-				throw new UnsupportedOperationException("Not yet implemented");
-		}
+		return switch(colorType){
+			case COLOR_TRUECOLOR -> {
+				if((fmt==ABGR)||(fmt==RGBA)||(fmt==BGRA)||(fmt==RGB)) yield fmt;
+				else yield RGB;
+			}
+			case COLOR_TRUEALPHA -> {
+				if((fmt==ABGR)||(fmt==RGBA)||(fmt==BGRA)||(fmt==RGB)) yield fmt;
+				else yield RGBA;
+			}
+			case COLOR_GREYSCALE -> {
+				if((fmt==LUMINANCE)||(fmt==ALPHA)) yield fmt;
+				else yield LUMINANCE;
+			}
+			case COLOR_GREYALPHA -> LUMINANCE_ALPHA;
+			case COLOR_INDEXED -> {
+				if((fmt==ABGR)||(fmt==RGBA)||(fmt==BGRA)) yield fmt;
+				else yield RGBA;
+			}
+			default -> throw new UnsupportedOperationException("Not yet implemented");
+		};
 	}
 
 	public void decode(ByteBuffer buffer,int stride,Format fmt) throws IOException{
@@ -210,48 +200,43 @@ public class PNGDecoder{
 				buffer.position(offset+y*stride);
 
 				switch(colorType){
-					case COLOR_TRUECOLOR:
+					case COLOR_TRUECOLOR -> {
 						if(fmt==ABGR) copyRGBtoABGR(buffer,curLine);
 						else if(fmt==RGBA) copyRGBtoRGBA(buffer,curLine);
 						else if(fmt==BGRA) copyRGBtoBGRA(buffer,curLine);
 						else if(fmt==RGB) copy(buffer,curLine);
 						else throw new UnsupportedOperationException("Unsupported format for this image");
-
-						break;
-					case COLOR_TRUEALPHA:
+					}
+					case COLOR_TRUEALPHA -> {
 						if(fmt==ABGR) copyRGBAtoABGR(buffer,curLine);
 						else if(fmt==RGBA) copy(buffer,curLine);
 						else if(fmt==BGRA) copyRGBAtoBGRA(buffer,curLine);
 						else if(fmt==RGB) copyRGBAtoRGB(buffer,curLine);
 						else throw new UnsupportedOperationException("Unsupported format for this image");
-
-						break;
-					case COLOR_GREYSCALE:
+					}
+					case COLOR_GREYSCALE -> {
 						if((fmt==LUMINANCE)||(fmt==ALPHA)) copy(buffer,curLine);
 						else throw new UnsupportedOperationException("Unsupported format for this image");
-
-						break;
-					case COLOR_GREYALPHA:
+					}
+					case COLOR_GREYALPHA -> {
 						if(fmt==LUMINANCE_ALPHA) copy(buffer,curLine);
 						else throw new UnsupportedOperationException("Unsupported format for this image");
-
-						break;
-					case COLOR_INDEXED:
+					}
+					case COLOR_INDEXED -> {
 						switch(bitdepth){
-							case 8: palLine=curLine; break;
-							case 4: expand4(curLine,palLine); break;
-							case 2: expand2(curLine,palLine); break;
-							case 1: expand1(curLine,palLine); break;
-							default: throw new UnsupportedOperationException("Unsupported bitdepth for this image");
+							case 8 -> palLine=curLine;
+							case 4 -> expand4(curLine, palLine);
+							case 2 -> expand2(curLine, palLine);
+							case 1 -> expand1(curLine, palLine);
+							default -> throw new UnsupportedOperationException("Unsupported bitdepth for this image");
 						}
 						if(fmt==ABGR) copyPALtoABGR(buffer,palLine);
 						else if(fmt==RGBA) copyPALtoRGBA(buffer,palLine);
 						else if(fmt==RGB) copyPALtoRGB(buffer,palLine);
 						else if(fmt==BGRA) copyPALtoBGRA(buffer,palLine);
 						else throw new UnsupportedOperationException("Unsupported format for this image");
-						break;
-					default:
-						throw new UnsupportedOperationException("Not yet implemented");
+					}
+					default -> throw new UnsupportedOperationException("Not yet implemented");
 				}
 
 				byte[] tmp=curLine;
@@ -467,22 +452,13 @@ public class PNGDecoder{
 
 	private void unfilter(byte[] curLine,byte[] prevLine) throws IOException{
 		switch(curLine[0]){
-			case 0: // none
-				break;
-			case 1:
-				unfilterSub(curLine);
-				break;
-			case 2:
-				unfilterUp(curLine,prevLine);
-				break;
-			case 3:
-				unfilterAverage(curLine,prevLine);
-				break;
-			case 4:
-				unfilterPaeth(curLine,prevLine);
-				break;
-			default:
-				throw new IOException("invalide filter type in scanline: "+curLine[0]);
+			case 0 -> {
+			} // none
+			case 1 -> unfilterSub(curLine);
+			case 2 -> unfilterUp(curLine,prevLine);
+			case 3 -> unfilterAverage(curLine,prevLine);
+			case 4 -> unfilterPaeth(curLine,prevLine);
+			default -> throw new IOException("invalide filter type in scanline: "+curLine[0]);
 		}
 	}
 
@@ -544,88 +520,67 @@ public class PNGDecoder{
 		colorType=buffer[9]&255;
 
 		switch(colorType){
-			case COLOR_GREYSCALE:
-				if(bitdepth!=8){
-					throw new IOException("Unsupported bit depth: "+bitdepth);
-				}
+			case COLOR_GREYSCALE -> {
+				if(bitdepth!=8) throw new IOException("Unsupported bit depth: "+bitdepth);
 				bytesPerPixel=1;
-				break;
-			case COLOR_GREYALPHA:
-				if(bitdepth!=8){
-					throw new IOException("Unsupported bit depth: "+bitdepth);
-				}
+			}
+			case COLOR_GREYALPHA -> {
+				if(bitdepth!=8) throw new IOException("Unsupported bit depth: "+bitdepth);
 				bytesPerPixel=2;
-				break;
-			case COLOR_TRUECOLOR:
-				if(bitdepth!=8){
-					throw new IOException("Unsupported bit depth: "+bitdepth);
-				}
+			}
+			case COLOR_TRUECOLOR -> {
+				if(bitdepth!=8) throw new IOException("Unsupported bit depth: "+bitdepth);
 				bytesPerPixel=3;
-				break;
-			case COLOR_TRUEALPHA:
-				if(bitdepth!=8){
-					throw new IOException("Unsupported bit depth: "+bitdepth);
-				}
+			}
+			case COLOR_TRUEALPHA -> {
+				if(bitdepth!=8) throw new IOException("Unsupported bit depth: "+bitdepth);
 				bytesPerPixel=4;
-				break;
-			case COLOR_INDEXED:
+			}
+			case COLOR_INDEXED -> {
 				switch(bitdepth){
-					case 8:
-					case 4:
-					case 2:
-					case 1:
-						bytesPerPixel=1;
-						break;
-					default:
-						throw new IOException("Unsupported bit depth: "+bitdepth);
+					case 8, 4, 2, 1 -> bytesPerPixel=1;
+					default -> throw new IOException("Unsupported bit depth: "+bitdepth);
 				}
-				break;
-			default:
-				throw new IOException("unsupported color format: "+colorType);
+			}
+			default -> throw new IOException("unsupported color format: "+colorType);
 		}
 
-		if(buffer[10]!=0){
-			throw new IOException("unsupported compression method");
-		}
-		if(buffer[11]!=0){
-			throw new IOException("unsupported filtering method");
-		}
-		if(buffer[12]!=0){
-			throw new IOException("unsupported interlace method");
-		}
+		if(buffer[10]!=0) throw new IOException("unsupported compression method");
+		if(buffer[11]!=0) throw new IOException("unsupported filtering method");
+		if(buffer[12]!=0) throw new IOException("unsupported interlace method");
 	}
 
 	private void readPLTE() throws IOException{
 		int paletteEntries=chunkLength/3;
-		if(paletteEntries<1||paletteEntries>256||(chunkLength%3)!=0){
+		if(paletteEntries<1||paletteEntries>256||(chunkLength%3)!=0)
 			throw new IOException("PLTE chunk has wrong length");
-		}
 		palette=new byte[paletteEntries*3];
 		readChunk(palette,0,palette.length);
 	}
 
 	private void readtRNS() throws IOException{
 		switch(colorType){
-			case COLOR_GREYSCALE:
+			case COLOR_GREYSCALE -> {
 				checkChunkLength(2);
 				transPixel=new byte[2];
 				readChunk(transPixel,0,2);
-				break;
-			case COLOR_TRUECOLOR:
+			}
+			case COLOR_TRUECOLOR -> {
 				checkChunkLength(6);
 				transPixel=new byte[6];
 				readChunk(transPixel,0,6);
-				break;
-			case COLOR_INDEXED:
+			}
+			case COLOR_INDEXED -> {
 				if(palette==null){
 					throw new IOException("tRNS chunk without PLTE chunk");
 				}
 				paletteA=new byte[palette.length/3];
 				Arrays.fill(paletteA,(byte)0xFF);
 				readChunk(paletteA,0,paletteA.length);
-				break;
-			default:
-				// just ignore it
+			}
+			default -> {
+			}
+			// just ignore it
 		}
 	}
 

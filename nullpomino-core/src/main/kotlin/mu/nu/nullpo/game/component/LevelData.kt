@@ -37,7 +37,7 @@ data class LevelData(
 	/** 出現待ち time */
 	var are:List<Int> = listOf(24),
 	/** Line clear後の出現待ち time */
-	var areLine:List<Int> = listOf(24),
+	var areLine:List<Int> = are,
 	/** Line clear time */
 	var lineDelay:List<Int> = listOf(40),
 	/** 固定 time */
@@ -51,12 +51,12 @@ data class LevelData(
 			listOf(are), listOf(areLine), listOf(lineDelay), listOf(lockDelay), listOf(das)
 		)
 
-	constructor(gravity:Int, denominator:Int,
-		are:List<Int>, areLine:List<Int>, lineDelay:List<Int>, lockDelay:List<Int>, das:List<Int>):
-		this(listOf(gravity), listOf(denominator), are, areLine, lineDelay, lockDelay, das)
+	constructor(gravity:List<Int>, denominator:List<Int>,
+		are:List<Int>,  lineDelay:List<Int>, lockDelay:List<Int>, das:List<Int>):
+		this(gravity, denominator, are, are, lineDelay, lockDelay, das)
 
-	constructor(are:List<Int>, areLine:List<Int>, lineDelay:List<Int>, lockDelay:List<Int>, das:List<Int>):
-		this(-1, 256, are, areLine, lineDelay, lockDelay, das)
+	constructor(are:List<Int>, lineDelay:List<Int>, lockDelay:List<Int>, das:List<Int>):
+		this(listOf(-1), listOf(256), are, are, lineDelay, lockDelay, das)
 
 	constructor(are:Int, areLine:Int, lineDelay:Int, lockDelay:Int, das:Int):
 		this(listOf(-1), listOf(256), are, areLine, lineDelay, lockDelay, das)

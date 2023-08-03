@@ -336,7 +336,7 @@ class SprintScore:NetDummyMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 2, topY-1, "TIME  LINE SCR/LINE", COLOR.BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 					receiver.drawScoreNum(engine, 2, topY+i, rankingTime[goalType][i].toTimeStr, rankingRank==i)
 					receiver.drawScoreNum(engine, 9, topY+i, "%3d".format(rankingLines[goalType][i]), rankingRank==i)
@@ -505,7 +505,7 @@ class SprintScore:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(time:Int, lines:Int, spl:Double):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(time<rankingTime[goalType][i]||rankingTime[goalType][i]<0)
 				return i
 			else if(time==rankingTime[goalType][i]&&(lines<rankingLines[goalType][i]||rankingLines[goalType][i]==0))

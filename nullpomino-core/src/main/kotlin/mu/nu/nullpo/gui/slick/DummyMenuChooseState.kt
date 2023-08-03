@@ -77,7 +77,7 @@ abstract class DummyMenuChooseState:BaseGameState() {
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Menu
-		if(flashT in 0 until 32) {
+		if(flashT in 0..<32) {
 			val i = flashT/3
 			val j = flashT/2
 			val y = flashY
@@ -87,11 +87,11 @@ abstract class DummyMenuChooseState:BaseGameState() {
 					0f, y*16f, container.screenWidth.toFloat(), (y+1)*16f,
 					0f, 8f*i, 80f, 8f*(1+i)
 				)
-			if(j<16)
-				ig.draw(
-					0f, y*16f, container.width.toFloat(), 16f*(1+y),
-					0f, 16f*j, 160f, 16f*(1+j)
-				)
+//			if(j<16)
+			ig.draw(
+				0f, y*16f, container.width.toFloat(), 16f*(1+y),
+				0f, 16f*j, 160f, 16f*(1+j)
+			)
 
 			g.setDrawMode(Graphics.MODE_NORMAL)
 			flashT++
@@ -155,7 +155,7 @@ abstract class DummyMenuChooseState:BaseGameState() {
 		if(MouseInput.isMouseClicked) {
 			val y = MouseInput.mouseY shr 4
 			val newCursor = y-minChoiceY
-			if(newCursor in 0 until numChoice) {
+			if(newCursor in 0..<numChoice) {
 				if(newCursor==cursor) return true
 				ResourceHolder.soundManager.play("cursor")
 				cursor = newCursor

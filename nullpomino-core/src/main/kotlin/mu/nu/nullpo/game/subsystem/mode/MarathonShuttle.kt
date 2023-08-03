@@ -123,7 +123,7 @@ class MarathonShuttle:NetDummyMode() {
 		super.playerInit(engine)
 		goal = 0
 		lastlineTime = 0
-		levelTimer = lastlineTime
+		levelTimer = 0
 		levelTimeOut = false
 		totalTimer = 0
 		rollTime = 0
@@ -131,7 +131,7 @@ class MarathonShuttle:NetDummyMode() {
 		lastScore = 0
 		lasttimebonus = 0
 		sc = 0
-		scgettime = sc
+		scgettime = 0
 		regretdispframe = 0
 		bgmLv = 0
 
@@ -143,11 +143,11 @@ class MarathonShuttle:NetDummyMode() {
 		netPlayerInit(engine)
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig, engine)
+			loadSetting(engine, owner.modeConfig)
 
 			version = CURRENT_VERSION
 		} else {
-			loadSetting(owner.replayProp, engine)
+			loadSetting(engine, owner.replayProp)
 			// NET: Load name
 			netPlayerName = owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
@@ -290,7 +290,7 @@ class MarathonShuttle:NetDummyMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE   LINE TIME", COLOR.BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, 11, topY+i, "${rankingLines[goalType][i]}", i==rankingRank)
@@ -588,7 +588,7 @@ class MarathonShuttle:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
@@ -676,7 +676,7 @@ class MarathonShuttle:NetDummyMode() {
 
 	/* Called when saving replay */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// NET: Save name
 		if(!netPlayerName.isNullOrEmpty()) prop.setProperty("${engine.playerID}.net.netPlayerName", netPlayerName)

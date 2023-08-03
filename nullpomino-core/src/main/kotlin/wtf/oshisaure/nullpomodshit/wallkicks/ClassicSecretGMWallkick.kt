@@ -66,10 +66,10 @@ class ClassicSecretGMWallkick:Wallkick {
 		val nSkin = 29
 		val wField = field.width
 		val hField = field.height
-		for(sgY in 0 until wField*2) {
+		for(sgY in 0..<wField*2) {
 			var hole = if(sgY<wField) sgY else wField*2-2-sgY
 			hole = if(hole<0) wField-1 else hole
-			for(sgX in 0 until wField) {
+			for(sgX in 0..<wField) {
 				if(sgX==hole) field.setBlock(sgX, hField-sgY-1, Block())
 				else field.setBlock(sgX, hField-sgY-1, Block(1+random.nextInt(15), random.nextInt(nSkin), 129))
 			}
@@ -81,7 +81,7 @@ class ClassicSecretGMWallkick:Wallkick {
 		return if(piece.big) {
 			checkCollisionKickBig(piece, x, y, rt, fld)
 		} else {
-			for(i in 0 until piece.maxBlock) {
+			for(i in 0..<piece.maxBlock) {
 				if(piece.dataX[rt][i]!=1+piece.dataOffsetX[rt]) {
 					val x2 = x+piece.dataX[rt][i]
 					val y2 = y+piece.dataY[rt][i]
@@ -96,7 +96,7 @@ class ClassicSecretGMWallkick:Wallkick {
 	}
 
 	private fun checkCollisionKickBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		for(i in 0 until piece.maxBlock) {
+		for(i in 0..<piece.maxBlock) {
 			if(piece.dataX[rt][i]!=1+piece.dataOffsetX[rt]) {
 				val x2 = x+piece.dataX[rt][i]*2
 				val y2 = y+piece.dataY[rt][i]*2

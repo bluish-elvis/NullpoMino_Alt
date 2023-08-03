@@ -55,7 +55,7 @@ class ShellMakerWallkick:Wallkick {
 				setBlock(piece.block[0])
 				setColor(8)
 			}
-			for(curY in 2 until field.height) for(curX in 0 until field.width) {
+			for(curY in 2..<field.height) for(curX in 0..<field.width) {
 				mino.placeToField(curX, curY, field)
 				if(piece.checkCollision(x, y, field)) field.setBlock(curX, curY, null as Block?)
 			}

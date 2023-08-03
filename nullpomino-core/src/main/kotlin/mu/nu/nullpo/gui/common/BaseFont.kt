@@ -55,8 +55,8 @@ interface BaseFont {
 	}
 	/** Font cint constants */
 	enum class FONT(val w:Int, val h:Int = 16) {
-		NORMAL(BaseFontNormal.w), NANO(BaseFontNumber.w), NUM(BaseFontNumber.w),
-		GRADE(BaseFontGrade.ws), GRADE_BIG(BaseFontGrade.wb), MEDAL(BaseFontMedal.w), TTF(BaseFontTTF.FONT_SIZE);
+		NORMAL(BaseFontNormal.W), NANO(BaseFontNano.W,BaseFontNano.H), NUM(BaseFontNumber.W),
+		GRADE(BaseFontGrade.WS), GRADE_BIG(BaseFontGrade.WB), MEDAL(BaseFontMedal.W), TTF(BaseFontTTF.FONT_SIZE);
 	}
 
 	val rainbowCount:Int

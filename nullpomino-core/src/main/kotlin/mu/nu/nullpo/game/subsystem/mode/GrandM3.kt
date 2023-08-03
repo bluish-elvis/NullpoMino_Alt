@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.LevelGrandMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.TimeMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
@@ -46,6 +47,7 @@ import org.apache.logging.log4j.LogManager
 import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 /** GRADE MANIA 3 Mode */
@@ -86,7 +88,7 @@ class GrandM3:AbstractMode() {
 	/** Combo bonus */
 	private var comboValue = 0
 
-	/** このSection でCOOLを出すとtrue */
+	/** 現在のSectionにおいてTimeCOOLを達成するとtrue つぎせくｓ */
 	private var cool = false
 
 	/** COOL count */
@@ -168,7 +170,14 @@ class GrandM3:AbstractMode() {
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
 
-	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, true, true)
+	private val itemGoal = StringsMenuItem(
+		"goalType", "GOAL", COLOR.BLUE, 0,
+		tableGoalLevel.map {"$it LEVEL"}
+	)
+	/** Game type  */
+	private var goalType:Int by DelegateMenuItem(itemGoal)
+
+	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE)
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
@@ -192,20 +201,22 @@ class GrandM3:AbstractMode() {
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
-	private var itemGrade = BooleanMenuItem("showgrade", "SHOW GRADE", COLOR.BLUE, false)
+	private val itemGrade = BooleanMenuItem("showgrade", "SHOW GRADE", COLOR.BLUE, false)
 	/** 段位表示 */
 	private var gradeDisp:Boolean by DelegateMenuItem(itemGrade)
 
-	private var itemQualify = TimeMenuItem("lv500torikan", "Lv500 Qualify", COLOR.BLUE, 25200, 0..72000)
+	private val itemQualify = TimeMenuItem("lv500torikan", "QUALIFY", COLOR.BLUE, 27000, 0..72000)
 	/** LV500の足切りTime */
 	private var lv500Qualify:Int by DelegateMenuItem(itemQualify)
 
-	private var itemExam = BooleanMenuItem("enableexam", "EXAMINATION", COLOR.YELLOW, true)
+	private val itemExam = BooleanMenuItem("enableexam", "EXAMINATION", COLOR.YELLOW, true)
 	/** 昇格・降格試験 is enabled */
 	private var enableExam:Boolean by DelegateMenuItem(itemExam)
 
-	override val menu:MenuList
-		get() = MenuList("grademania3", itemGhost, itemAlert, itemST, itemGrade, itemExam, itemLevel, item20g, itemBig, itemQualify)
+	override val menu = MenuList(
+		"grademania3",
+		itemGoal, itemGhost, itemAlert, itemST, itemGrade, itemExam, itemLevel, item20g, itemBig, itemQualify
+	)
 	/** Version */
 	private var version = 0
 
@@ -213,35 +224,39 @@ class GrandM3:AbstractMode() {
 	private var rankingRank = 0
 
 	/** Rankings' 段位 */
-	private val rankingGrade = MutableList(RANKING_MAX) {0}
+	private val rankingGrade = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' levels */
-	private val rankingLevel = MutableList(RANKING_MAX) {0}
+	private val rankingLevel = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Rankings' times */
-	private val rankingTime = MutableList(RANKING_MAX) {-1}
+	private val rankingTime = List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}
 
 	/** Rankings' Roll completely cleared flag */
-	private val rankingRollClear = MutableList(RANKING_MAX) {0}
+	private val rankingRollClear = List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}
 
 	/** Section Time記録 */
-	private val bestSectionTime = MutableList(SECTION_MAX) {tableTimeRegret[minOf(it, tableTimeRegret.lastIndex)]}
+	private val bestSectionTime = List(RANKING_TYPE) {i ->
+		MutableList(tableSectionMax[i]) {
+			when(i) {
+				0 -> tableTimeRegret[minOf(it, tableTimeRegret.lastIndex)]
+				else -> tableQualifyPace(it, 27000)
+			}
+		}
+	}
 
 	/** 段位履歴 (昇格・降格試験用) */
-	private val gradeHistory = MutableList(GRADE_HISTORY_SIZE) {0}
+	private val gradeHistory = List(RANKING_TYPE) {MutableList(GRADE_HISTORY_SIZE) {0}}
 
-	var examRecord = mutableListOf(0, 0)
-		get() = mutableListOf(qualifiedGrade, demotionPoints)
-		set(value) {
-			field = value
-			qualifiedGrade = value[0]
-			demotionPoints = value[1]
-		}
 	override val rankMap
 		get() = rankMapOf(
-			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollClear" to rankingRollClear,
-			"section.time" to bestSectionTime, "exam.history" to gradeHistory, "exam.record" to examRecord
-		)
+			rankingGrade.mapIndexed {a, x -> "$a.grade" to x}+
+				rankingLevel.mapIndexed {a, x -> "$a.level" to x}+
+				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
+				rankingRollClear.mapIndexed {a, x -> "$a.rollClear" to x}+
+				bestSectionTime.mapIndexed {a, x -> "$a.section.time" to x}+
+				gradeHistory.mapIndexed {a, x -> "$a.exam.history" to x}
+		)+rankMapOf("exam.record" to recordGrade, "exam.flaws" to demotionPoints)
 	/*override val rankPersMap:Map<String, IntArray>
 		get() = rankMap("grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "rollClear" to rankingRollClear,
 			"section.time" to bestSectionTime, "exam.history" to gradeHistory, "exam.record" to examRecord)*/
@@ -250,10 +265,10 @@ class GrandM3:AbstractMode() {
 	private var promotionalExam = 0
 
 	/** Current 認定段位 */
-	private var qualifiedGrade = 0
+	private var recordGrade = MutableList(RANKING_TYPE) {0}
 
 	/** 降格試験 point (30以上溜まると降格試験発生) */
-	private var demotionPoints = 0
+	private var demotionPoints = MutableList(RANKING_TYPE) {0}
 
 	/** 昇格試験 flag */
 	private var promotionFlag = false
@@ -321,23 +336,25 @@ class GrandM3:AbstractMode() {
 		medalST = 0
 		medalAC = 0
 
-		demotionPoints = 0
-		qualifiedGrade = 0
+		demotionPoints.fill(0)
+		recordGrade.fill(0)
+		gradeHistory.forEach {it.fill(0)}
 		promotionalExam = 0
 		passFrame = 0
 		readyFrame = 0
-		gradeHistory.fill(0)
 		demotionFlag = false
 		promotionFlag = false
 		demotionExamGrade = 0
 
 		rankingRank = -1
-		rankingGrade.fill(0)
-		rankingLevel.fill(0)
-		rankingTime.fill(-1)
-		rankingRollClear.fill(0)
-		bestSectionTime.forEachIndexed {i, _ ->
-			bestSectionTime[i] = tableTimeRegret[minOf(i, tableTimeRegret.lastIndex)]
+		rankingGrade.forEach {it.fill(0)}
+		rankingLevel.forEach {it.fill(0)}
+		rankingTime.forEach {it.fill(-1)}
+		rankingRollClear.forEach {it.fill(0)}
+		bestSectionTime.forEachIndexed {x, it ->
+			it.forEachIndexed {i, _ ->
+				bestSectionTime[x][i] = tableTimeRegret[minOf(i, tableTimeRegret.lastIndex)]
+			}
 		}
 
 		engine.twistEnable = true
@@ -352,24 +369,29 @@ class GrandM3:AbstractMode() {
 		engine.staffrollNoDeath = false
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig, engine)
+			loadSetting(engine, owner.modeConfig)
 
 			version = CURRENT_VERSION
 		} else {
-			loadSetting(owner.replayProp, engine)
+			loadSetting(engine, owner.replayProp)
 			version = owner.replayProp.getProperty("grademania3.version", 0)
 
-			System.arraycopy(tableTimeRegret, 0, bestSectionTime, 0, SECTION_MAX)
+			bestSectionTime.forEachIndexed {x, it ->
+				it.forEachIndexed {i, _ ->
+					bestSectionTime[x][i] = if(x==0) tableTimeRegret[minOf(i, tableTimeRegret.lastIndex)] else
+						tableQualifyPace(i, 27000)
+				}
+			}
 
 			if(enableExam) {
 				promotionalExam = owner.replayProp.getProperty("grademania3.exam", 0)
-				demotionPoints = owner.replayProp.getProperty("grademania3.demopoint", 0)
+				demotionPoints[goalType] = owner.replayProp.getProperty("grademania3.demopoint", 0)
 				demotionExamGrade = owner.replayProp.getProperty("grademania3.demotionExamGrade", 0)
 				if(promotionalExam>0) {
 					promotionFlag = true
 					readyFrame = 100
 					passFrame = 600
-				} else if(demotionPoints>=30) {
+				} else if(demotionPoints[goalType]>=30) {
 					demotionFlag = true
 					passFrame = 600
 				}
@@ -377,7 +399,7 @@ class GrandM3:AbstractMode() {
 				log.debug("** Exam data from replay START **")
 				log.debug("Promotional Exam Grade:${getGradeName(promotionalExam)} ($promotionalExam)")
 				log.debug("Promotional Exam Flag:$promotionFlag")
-				log.debug("Demotion Points:$demotionPoints")
+				log.debug("Demotion Points:${demotionPoints[goalType]}")
 				log.debug("Demotional Exam Grade:${getGradeName(demotionExamGrade)} ($demotionExamGrade)")
 				log.debug("Demotional Exam Flag:$demotionFlag")
 				log.debug("*** Exam data from replay END ***")
@@ -391,7 +413,7 @@ class GrandM3:AbstractMode() {
 	/** Set BGM at start of game
 	 */
 	private fun calcBgmLv(lv:Int, rLv:Int = lv):Int =
-		if(rLv>=900&&grade>=15&&coolCount>=9) BGM.GrandT().nums-1
+		if(rLv>=900&&grade>=24&&coolCount>=9) BGM.GrandT().nums-1
 		else tableBGMChange.count {lv>=it}.let {
 			minOf(it+maxOf(0, it-4)+(it>=3&&coolCount>=3).toInt(), 6)
 		}
@@ -400,22 +422,24 @@ class GrandM3:AbstractMode() {
 	 * @param engine GameEngine
 	 */
 	private fun setSpeed(engine:GameEngine) {
-		engine.speed.gravity = if(always20g||engine.statistics.time>=54000) -1
+		val mode = goalType
+		val hazardTime = 54*(tableGoalLevel[mode]+1)
+		engine.speed.gravity = if(always20g||engine.statistics.time>=hazardTime) -1
 		else tableGravityValue[tableGravityChangeLevel.indexOfFirst {internalLevel<it}
 			.let {if(it<0) tableGravityChangeLevel.size-1 else it}]
 
 
-		if(engine.statistics.time>=54000) {
+		if(engine.statistics.time>=hazardTime) {
 			engine.speed.are = 2
 			engine.speed.areLine = 1
 			engine.speed.lineDelay = 3
 			engine.speed.lockDelay = 13
 			engine.speed.das = 5
 		} else {
-			engine.speed.are = tableARE.let {it[minOf(it.size-1, internalLevel/100)]}
-			engine.speed.areLine = tableARELine.let {it[minOf(it.size-1, internalLevel/100)]}
-			engine.speed.lineDelay = tableLineDelay.let {it[minOf(it.size-1, internalLevel/100)]}
-			engine.speed.lockDelay = tableLockDelay.let {it[minOf(it.size-1, internalLevel/100)]}
+			engine.speed.are = tableARE[mode].let {it[minOf(it.size-1, internalLevel/100)]}
+			engine.speed.areLine = tableARELine[mode].let {it[minOf(it.size-1, internalLevel/100)]}
+			engine.speed.lineDelay = tableLineDelay[mode].let {it[minOf(it.size-1, internalLevel/100)]}
+			engine.speed.lockDelay = tableLockDelay[mode].let {it[minOf(it.size-1, internalLevel/100)]}
 			engine.speed.das = tableDAS.let {it[minOf(it.size-1, internalLevel/100)]}
 		}
 	}
@@ -425,7 +449,7 @@ class GrandM3:AbstractMode() {
 	 * @param sectionNumber Section number
 	 */
 	private fun stMedalCheck(engine:GameEngine, sectionNumber:Int) {
-		val best = bestSectionTime[sectionNumber]
+		val best = bestSectionTime[goalType][sectionNumber]
 
 		if(sectionLastTime<best) {
 			if(medalST<3) {
@@ -458,14 +482,12 @@ class GrandM3:AbstractMode() {
 		// COOL check
 		if(engine.statistics.level%100>=70&&!coolChecked) {
 			val section = engine.statistics.level/100
-			val coolPrevTime = sectionTime[coolSection.indexOfLast {it}][1]
+			val coolPrevTime = if(section>0) sectionTime[coolSection.indexOfLast {it}][1] else 0
 
-			if(sectionTime[1][section]<=tableTimeCool[section]&&
-				(!previousCool||sectionTime[section][1]<=coolPrevTime+(200-section*9))) {
+			if(sectionTime[section][1]<=tableTimeCool[section]&&
+				(!previousCool||sectionTime[section][1]<=coolPrevTime+(200-section*9)))
 				cool = true
-				coolSection[section] = true
-			} else
-				coolSection[section] = false
+
 			coolChecked = true
 		}
 
@@ -483,6 +505,7 @@ class GrandM3:AbstractMode() {
 	 * @param levelb Line clear前の level
 	 */
 	private fun checkRegret(engine:GameEngine, levelb:Int) {
+		if(goalType!=0) return
 		val section = levelb/100
 		if(sectionLastTime>tableTimeRegret[section]) {
 			previousCool = false
@@ -501,80 +524,43 @@ class GrandM3:AbstractMode() {
 	 * @param g 段位 number
 	 * @return 段位名(範囲外ならN / A)
 	 */
-	private fun getGradeName(g:Int):String = tableGradeName.getOrElse(g) {"N/A"}
+	private fun getGradeName(g:Int):String = (if(goalType==0) tableGradeName else tableLongGradeName).getOrElse(g) {"N/A"}
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
 		if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateMenu(engine)
-
-			if(change!=0) {
-				owner.bgMan.bg = 20+startLevel
-				engine.statistics.level = startLevel*100
-				setSpeed(engine)
-			}
-
 			// section time display切替
 			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
-
-			// 決定
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-
-				isShowBestSectionTime = false
-
-				sectionsDone = 0
-				val rand = Random.Default
-				if(!always20g&&!big&&enableExam&&rand.nextInt(EXAM_CHANCE)==0) {
-					setPromotionalGrade()
-					if(promotionalExam>qualifiedGrade) {
-						promotionFlag = true
-						readyFrame = 100
-						passFrame = 600
-					} else if(demotionPoints>=30) {
-						demotionFlag = true
-						demotionExamGrade = qualifiedGrade
-						passFrame = 600
-						demotionPoints = 0
-					}
-
-					log.debug("** Exam debug log START **")
-					log.debug("Current Qualified Grade:${getGradeName(qualifiedGrade)} ($qualifiedGrade)")
-					log.debug("Promotional Exam Grade:${getGradeName(promotionalExam)} ($promotionalExam)")
-					log.debug("Promotional Exam Flag:$promotionFlag")
-					log.debug("Demotion Points:$demotionPoints")
-					log.debug("Demotional Exam Grade:${getGradeName(demotionExamGrade)} ($demotionExamGrade)")
-					log.debug("Demotional Exam Flag:$demotionFlag")
-					log.debug("*** Exam debug log END ***")
-				}
-
-				return false
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
 		}
+		return super.onSetting(engine)
+	}
 
-		return true
+	override fun onSettingChanged(engine:GameEngine) {
+		owner.bgMan.bg = 20+startLevel
+		engine.statistics.level = startLevel*100
+		val lv = startLevel*100
+		engine.statistics.level = lv
+		internalLevel = lv
+		nextSecLv = if(startLevel>=tableSectionMax[goalType]-1) tableGoalLevel[goalType]
+		else maxOf(0, lv)+100
+		setSpeed(engine)
+
+		super.onSettingChanged(engine)
 	}
 
 	/* Called at game start */
 	override fun startGame(engine:GameEngine) {
+		decTemp = 0
+		sectionsDone = 0
 		val lv = startLevel*100
 		engine.statistics.level = lv
 		internalLevel = lv
-		decTemp = 0
-		nextSecLv = maxOf(100, minOf(lv+100, 999))
+		nextSecLv = if(startLevel>=tableSectionMax[goalType]-1) tableGoalLevel[goalType]
+		else maxOf(0, lv)+100
 
 		owner.bgMan.bg = 20+startLevel
 
@@ -596,35 +582,37 @@ class GrandM3:AbstractMode() {
 				if(!isShowBestSectionTime) {
 					// Rankings
 
-					receiver.drawScoreFont(engine, 3, 2, "GRADE TIME LEVEL", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, 2, "GRADE TIME LEVEL", COLOR.BLUE)
 
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreGrade(
 							engine, 0, 3+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
 						receiver.drawScoreGrade(
-							engine, 3, 3+i, getGradeName(rankingGrade[i]), when {
-								rankingRollClear[i]==1||rankingRollClear[i]==3 -> COLOR.GREEN
-								rankingRollClear[i]==2||rankingRollClear[i]==4 -> COLOR.ORANGE
+							engine, 2, 3+i, getGradeName(rankingGrade[goalType][i]), when {
+								rankingRollClear[goalType][i]==1||rankingRollClear[goalType][i]==3 -> COLOR.GREEN
+								rankingRollClear[goalType][i]==2||rankingRollClear[goalType][i]==4 -> COLOR.ORANGE
 								else -> COLOR.WHITE
 							}
 						)
-						receiver.drawScoreNum(engine, 7, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
-						receiver.drawScoreNum(engine, 15, 3+i, "%03d".format(rankingLevel[i]), i==rankingRank)
+						receiver.drawScoreNum(engine, 5, 3+i, rankingTime[goalType][i].toTimeStr, i==rankingRank)
+						receiver.drawScoreNum(
+							engine, 12, 3+i, "%0${if(goalType==0) 3 else 4}d".format(rankingLevel[goalType][i]),
+							i==rankingRank
+						)
 					}
 
 					receiver.drawScoreNano(engine, 0, 18, "NEXT QUALIFY PREDICATE", COLOR.YELLOW)
-					if(promotionalExam>qualifiedGrade) {
+					if(promotionalExam>recordGrade[goalType]) {
 						receiver.drawScoreFont(engine, 4, 19, BaseFont.CURSOR)
 						receiver.drawScoreGrade(engine, 5, 19, getGradeName(promotionalExam), scale = 1.67f)
 					}
-					receiver.drawScoreGrade(engine, 0, 19, getGradeName(qualifiedGrade), scale = 2f)
-
-					for(i in 0 until GRADE_HISTORY_SIZE)
-						if(gradeHistory[i]>=0)
+					receiver.drawScoreGrade(engine, 0, 19, getGradeName(recordGrade[goalType]), scale = 2f)
+					for(i in 0..<GRADE_HISTORY_SIZE)
+						if(gradeHistory[goalType][i]>=0)
 							receiver.drawScoreGrade(
-								engine, -2, 15+i, getGradeName(gradeHistory[i]),
-								if(gradeHistory[i]>qualifiedGrade) COLOR.YELLOW else COLOR.WHITE
+								engine, -2, 15+i, getGradeName(gradeHistory[goalType][i]),
+								if(gradeHistory[goalType][i]>recordGrade[goalType]) COLOR.YELLOW else COLOR.WHITE
 							)
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
@@ -633,26 +621,26 @@ class GrandM3:AbstractMode() {
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.BLUE)
 
 					var totalTime = 0
-					for(i in 0 until SECTION_MAX) {
-						val temp = minOf(i*100, 999)
-						val temp2 = minOf((i+1)*100-1, 999)
+					for(i in 0..<tableSectionMax[goalType]) {
+						val temp = minOf(i*100, tableGoalLevel[goalType])
+						val temp2 = minOf((i+1)*100-1, tableGoalLevel[goalType])
 
-						val strSectionTime:String = "%3d-%3d %s".format(temp, temp2, bestSectionTime[i].toTimeStr)
+						val strSectionTime:String = "%4d-%4d/%s".format(temp, temp2, bestSectionTime[goalType][i].toTimeStr)
 
 						receiver.drawScoreNum(engine, 0, 3+i, strSectionTime, sectionIsNewRecord[i]&&!isAnyExam)
 
-						totalTime += bestSectionTime[i]
+						totalTime += bestSectionTime[goalType][i]
 					}
 
-					receiver.drawScoreFont(engine, 0, 14, "TOTAL", COLOR.BLUE)
-					receiver.drawScoreNum(engine, 0, 15, totalTime.toTimeStr, 2f)
+					receiver.drawScoreFont(engine, 13, 2, "TOTAL", COLOR.BLUE)
+					receiver.drawScoreNum(engine, 13, 3, totalTime.toTimeStr, 2f)
 					receiver.drawScoreFont(
 						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 18 else 14,
 						"AVERAGE", COLOR.BLUE
 					)
 					receiver.drawScoreNum(
 						engine, if(receiver.nextDisplayType==2) 0 else 12, if(receiver.nextDisplayType==2) 19 else 15,
-						(totalTime/SECTION_MAX).toTimeStr, 2f
+						(totalTime/tableSectionMax[goalType]).toTimeStr, 2f
 					)
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
@@ -668,17 +656,22 @@ class GrandM3:AbstractMode() {
 				receiver.drawScoreFont(engine, 0, 2, "GRADE", if(g20) COLOR.YELLOW else COLOR.BLUE)
 				// 段位
 				receiver.drawScoreGrade(
-					engine, 0, 3, getGradeName(
-						if(grade>=32&&qualifiedGrade<32) 31 else grade
-					), gradeFlash>0&&gradeFlash%4==0, 2f
+					engine, 0, 3, getGradeName(grade), gradeFlash>0&&gradeFlash%4==0, 2f
 				)
-				val index = minOf(tableGradeDecayRate.size-1, gradeBasicInternal)
-				receiver.drawScoreGrade(engine, 3, 3, getGradeName(index), gradeFlash>0&&gradeFlash%4==0)
-				receiver.drawScoreSpeed(engine, 3, 3, gradeBasicPoint-gradeBasicDecay*1f/tableGradeDecayRate[index], 5f)
-				receiver.drawScoreNum(
-					engine, 6, 2, "%02.1f%%".format(gradeBasicPoint-gradeBasicDecay*1f/tableGradeDecayRate[index]),
-					gradeFlash>0&&gradeFlash%4==0
-				)
+				if(goalType==0) {
+					val index = minOf(tableGradeDecayRate.size-1, gradeBasicInternal)
+					receiver.drawScoreGrade(engine, 3, 3, getGradeName(index), gradeFlash>0&&gradeFlash%4==0)
+					receiver.drawScoreSpeed(engine, 3, 3, gradeBasicPoint-gradeBasicDecay*1f/tableGradeDecayRate[index], 5f)
+					receiver.drawScoreNum(
+						engine, 6, 2, "%02.1f%%".format(gradeBasicPoint-gradeBasicDecay*1f/tableGradeDecayRate[index]),
+						gradeFlash>0&&gradeFlash%4==0
+					)
+				} else {
+					receiver.drawScoreNum(
+						engine, 0, 3, "%05.1f%%".format(gradeBasicPoint-gradeBasicDecay/240f),
+						gradeFlash>0&&gradeFlash%4==0
+					)
+				}
 			}
 
 			// Score
@@ -748,25 +741,20 @@ class GrandM3:AbstractMode() {
 				val section = engine.statistics.level/100
 				for(i in sectionTime.indices)
 					if(sectionTime[i][0]>0) {
-						var temp = i*100
-						if(temp>999) temp = 999
-
-						var strSeparator = "-"
-
-
-						if(i==section&&engine.ending==0) strSeparator = "+"
+						val temp = minOf(i*100, tableGoalLevel[goalType])
+						val strSeparator = if(i==section&&engine.ending==0) "+" else "-"
 						val color = when {
 							regretSection[i] -> if(sectionIsNewRecord[i]) COLOR.ORANGE else COLOR.RED
 							coolSection[i] -> if(sectionIsNewRecord[i]) COLOR.CYAN else COLOR.GREEN
 							else -> COLOR.WHITE
 						}
 						val strSectionTime = StringBuilder()
-						for(l in 0 until i)
+						for(l in 0..<i)
 							strSectionTime.append("\n")
 						strSectionTime.append(
 							String.format(
-								"%3d%s%s %02d.%02d", temp,
-								strSeparator, sectionTime[i][0].toTimeStr, sectionTime[i][1]%60/60f
+								"%3d%s%s %02.2f", temp,
+								strSeparator, sectionTime[i][0].toTimeStr, sectionTime[i][1]/60f
 							)
 						)
 
@@ -787,6 +775,34 @@ class GrandM3:AbstractMode() {
 
 	/* Ready→Goの処理 */
 	override fun onReady(engine:GameEngine):Boolean {
+		if(!owner.replayMode&&engine.statc[0]==0) {
+			isShowBestSectionTime = false
+			sectionsDone = 0
+			if(!always20g&&!big&&enableExam) {
+				log.debug("** Exam debug log START **")
+				log.debug("Current Qualified Grade:${getGradeName(recordGrade[goalType])} (${recordGrade[goalType]})")
+				log.debug("Demotion Points:${demotionPoints[goalType]}")
+				if(demotionPoints[goalType]>=30) {
+					demotionFlag = true
+					demotionExamGrade = recordGrade[goalType]
+					passFrame = 600
+					demotionPoints[goalType] = 0
+				} else {
+					setPromotionalGrade(goalType)
+					log.debug("Promotional Chance Grade:${getGradeName(promotionalExam)} ($promotionalExam)")
+					if(promotionalExam>recordGrade[goalType]) {
+						val rand = Random.Default.nextInt(EXAM_CHANCE)
+						log.debug("Promotional Chance RNG:$rand / $EXAM_CHANCE")
+						if(rand==0) {
+							promotionFlag = true
+							readyFrame = 100
+							passFrame = 600
+						}
+					}
+				}
+				log.debug("*** Exam debug log END ***")
+			}
+		}
 		if(promotionFlag) {
 			engine.frameColor = GameEngine.FRAME_SKIN_GRADE
 
@@ -832,12 +848,12 @@ class GrandM3:AbstractMode() {
 
 		// 段位 point減少
 		if(engine.timerActive&&gradeBasicPoint>0&&engine.combo<0&&engine.lockDelayNow<engine.lockDelay-1) {
-			gradeBasicDecay++
+			gradeBasicDecay += if(goalType==0) 1 else (gradeBasicReal+2)
 
-			var index = gradeBasicInternal
-			if(index>tableGradeDecayRate.size-1) index = tableGradeDecayRate.size-1
+			val rate = if(goalType==0) tableGradeDecayRate[minOf(gradeBasicInternal, tableGradeDecayRate.size-1)]
+			else 240
 
-			if(gradeBasicDecay>=tableGradeDecayRate[index]) {
+			if(gradeBasicDecay>=rate) {
 				gradeBasicDecay = 0
 				gradeBasicPoint--
 			}
@@ -866,12 +882,7 @@ class GrandM3:AbstractMode() {
 	override fun onARE(engine:GameEngine):Boolean {
 		// 最後の frame
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
-			if(engine.statistics.level<nextSecLv-1) {
-				engine.statistics.level++
-				internalLevel++
-				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
+			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
 			lvupFlag = true
 		}
 
@@ -899,7 +910,9 @@ class GrandM3:AbstractMode() {
 		if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 		// BGM fadeout
 		val lA = internalLevel+cool.toInt()*100
-		if(tableBGMFadeout.any {it in lb..lA}) owner.musMan.fadeSW = true
+		if(tableBGMFadeout.any {it in lb..lA}||
+			900 in (engine.statistics.level-lu)..engine.statistics.level&&grade>=23&&coolCount>=9)
+			owner.musMan.fadeSW = true
 		// BGM切り替え
 		if(tableBGMChange.any {it in lb..lA}) {
 			owner.musMan.fadeSW = false
@@ -911,41 +924,41 @@ class GrandM3:AbstractMode() {
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Combo
 		val li = ev.lines
-		comboValue = if(li==0) 1
-		else maxOf(1, comboValue+2*li-2)
+		comboValue = if(li==0) 1 else maxOf(1, comboValue+2*li-2)
 
-		if(li>=1&&engine.ending==0) {
-			// 段位 point
-			val index = minOf(gradeBasicInternal, tableGradePoint[li-1].size-1)
+		val ret = if(li>=1&&engine.ending==0) {
+			if(goalType==0) {
+				// 段位 point
+				val index = minOf(gradeBasicInternal, tableGradePoint[li-1].size-1)
 
-			val basePoint = tableGradePoint[li-1][index]
-			val indexCombo = minOf(maxOf(0, ev.combo+if(ev.b2b>0) 0 else -1), tableGradeComboBonus[li-1].size-1)
-			val comboBonus = tableGradeComboBonus[li-1][indexCombo]
+				val basePoint = tableGradePoint[li-1][index]
+				val indexCombo = minOf(maxOf(0, ev.combo+if(ev.b2b>0) 0 else -1), tableGradeComboBonus[li-1].size-1)
+				val comboBonus = tableGradeComboBonus[li-1][indexCombo]
 
-			val levelBonus = 1+engine.statistics.level/250
+				val levelBonus = 1+engine.statistics.level/250
 
-			val point = basePoint.toFloat()*comboBonus*levelBonus.toFloat()
-			gradeBasicPoint += point.toInt()
+				val point = basePoint.toFloat()*comboBonus*levelBonus.toFloat()
+				gradeBasicPoint += point.toInt()
 
-			// 内部段位上昇
-			while(gradeBasicPoint>=100) {
-				gradeBasicPoint -= 100
-				gradeBasicDecay = 0
-				gradeBasicInternal++
-				engine.playSE("cool")
-				coolDispFrame = 180
-				if(tableGradeChange[gradeBasicReal]!=-1&&gradeBasicInternal>=tableGradeChange[gradeBasicReal]) {
-					decTemp++
-					gradeBasicReal++
-					if(grade<31) {
-						grade++
-						engine.playSE(if(gradeDisp) "grade${grade/8}" else "medal1")
-						gradeFlash = 180
-						lastGradeTime = engine.statistics.time
+				// 内部段位上昇
+				while(gradeBasicPoint>=100) {
+					gradeBasicPoint -= 100
+					gradeBasicDecay = 0
+					gradeBasicInternal++
+					engine.playSE("cool")
+					coolDispFrame = 180
+					if(tableGradeChange[gradeBasicReal]!=-1&&gradeBasicInternal>=tableGradeChange[gradeBasicReal]) {
+						decTemp++
+						gradeBasicReal++
+						if(grade<31) {
+							grade = minOf(31, gradeBasicReal+coolCount)
+							engine.playSE(if(gradeDisp) "grade${grade/8}" else "medal1")
+							gradeFlash = 180
+							lastGradeTime = engine.statistics.time
+						}
 					}
 				}
 			}
-
 			// 4-line clearカウント
 			if(li>=4)
 			// SK medal
@@ -1002,12 +1015,11 @@ class GrandM3:AbstractMode() {
 
 			// Level up
 			val levelb = engine.statistics.level
-			val lu = li.let {it+maxOf(0, it-2)}
-			levelUp(engine, lu)
+			levelUp(engine, li.let {it+maxOf(0, it-2)})
 
-			if(engine.statistics.level>=999) {
+			if(engine.statistics.level>=tableGoalLevel[goalType]) {
 				// Ending
-				engine.statistics.level = 999
+				engine.statistics.level = tableGoalLevel[goalType]
 				engine.timerActive = false
 				engine.ending = 1
 				rollClear = 1
@@ -1025,69 +1037,69 @@ class GrandM3:AbstractMode() {
 				checkRegret(engine, levelb)
 
 				// 条件を全て満たしているなら消えRoll 発動
-				if(grade>=24&&coolCount>=9) {
+				if(when(goalType) {
+						0 -> grade>=24&&coolCount>=9
+						else -> grade>=50
+					}) {
 					mRollFlag = true
 					engine.playSE("applause4")
 				} else engine.playSE("applause3")
-			} else if(nextSecLv==500&&engine.statistics.level>=500&&lv500Qualify>0
-				&&engine.statistics.time>lv500Qualify&&!promotionFlag&&!demotionFlag
-			) {
-				// level500とりカン
-				engine.statistics.level = 500
-				engine.gameEnded()
-				engine.staffrollEnable = false
-				engine.ending = 1
-				engine.playSE("applause2")
+			} else {
+				val torikan = if(lv500Qualify>0&&!promotionFlag&&!demotionFlag)
+					tableQualifyTimeMul.firstOrNull {(s, mul) ->
+						nextSecLv==s*100&&engine.statistics.level>=s*100&&engine.statistics.time>lv500Qualify*mul
+					}?.first else null
+				if(engine.statistics.level>=nextSecLv) {
+					// Section Timeを記録
+					sectionLastTime = sectionTime[levelb/100][0]
+					sectionsDone++
 
-				secretGrade = engine.field.secretGrade
-				lastGradeTime = engine.statistics.time
-				// Section Timeを記録
-				sectionLastTime = sectionTime[levelb/100][1]
-				sectionsDone++
+					// ST medal
+					stMedalCheck(engine, levelb/100)
 
-				// ST medal
-				stMedalCheck(engine, levelb/100)
+					// REGRET判定
+					checkRegret(engine, levelb)
 
-				// REGRET判定
-				checkRegret(engine, levelb)
-			} else if(engine.statistics.level>=nextSecLv) {
-				// Next Section
+					if(torikan==5||goalType==1&&(torikan==15||nextSecLv==999||nextSecLv==2000)) {
+						// level500,1500とりカン
+						engine.statistics.level = nextSecLv
+						engine.gameEnded()
+						engine.staffrollEnable = false
+						engine.ending = 1
+						engine.playSE("applause2")
 
-				// Background切り替え
-				owner.bgMan.nextBg = 20+nextSecLv/100
+						secretGrade = engine.field.secretGrade
+						lastGradeTime = engine.statistics.time
+					} else {
+						// Next Section
+						// Background切り替え
+						owner.bgMan.nextBg = 20+nextSecLv/100
 
-				engine.playSE("levelup")
+						engine.playSE("levelup")
+						// COOLを取ってたら
+						if(cool&&!regretSection[levelb/100]) {
+							previousCool = true
+							if(grade<31) {
+								grade++
+								gradeFlash = 180
+								lastGradeTime = engine.statistics.time
+							}
+							internalLevel += 100
+						} else previousCool = false
 
-				// Section Timeを記録
-				sectionLastTime = sectionTime[levelb/100][1]
-				sectionsDone++
-
-				// ST medal
-				stMedalCheck(engine, levelb/100)
-
-				// REGRET判定
-				checkRegret(engine, levelb)
-
-				// COOLを取ってたら
-				if(cool&&!regretSection[levelb/100]) {
-					previousCool = true
-					if(grade<31) {
-						grade++
-						gradeFlash = 180
-						if(gradeDisp) engine.playSE("grade${grade/8}")
+						cool = false
+						coolChecked = false
+						coolDisplayed = false
+						// Update level for next section
+						nextSecLv = when {
+							goalType>0&&torikan==9 -> 999
+							torikan==19 -> 2000
+							nextSecLv>tableGoalLevel[goalType]||sectionsDone>=tableSectionMax[goalType]-1 -> tableGoalLevel[goalType]
+							else -> nextSecLv+100
+						}
 					}
-					internalLevel += 100
-				} else
-					previousCool = false
-
-				cool = false
-				coolChecked = false
-				coolDisplayed = false
-				// Update level for next section
-				nextSecLv += 100
-				if(nextSecLv>999) nextSecLv = 999
-			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-
+				}
+			}
 			// Calculate score
 
 			lastScore =
@@ -1096,8 +1108,8 @@ class GrandM3:AbstractMode() {
 					+engine.statistics.level/if(engine.twist) 2 else 3)*if(engine.field.isEmpty) 3 else 1
 
 			engine.statistics.scoreLine += lastScore
-			return lastScore
-		} else if(li>=1&&engine.ending==2) {
+			lastScore
+		} else if(li>=1&&engine.ending==2&&goalType==0) {
 			// Roll 中のLine clear
 			val points = if(!mRollFlag||engine.twist||ev.b2b>0) when {
 				li<=1 -> 0.04f
@@ -1114,13 +1126,33 @@ class GrandM3:AbstractMode() {
 			rollPointsTotal += points
 			while(rollPoints>=1f&&grade<31) {
 				rollPoints -= 1f
-				grade++
+				grade = minOf(31, gradeBasicReal+coolCount+rollPointsTotal.toInt())
 				gradeFlash = 180
 			}
-			if(gradeDisp&&gradeFlash==180) engine.playSE("grade${grade/8}")
-			return (points*100).toInt()
+			(points*100).toInt()
+		} else 0
+		if(li>=1&&goalType==1) {
+			gradeBasicPoint += maxOf(
+				li*10, when(li) {
+					1 -> 2;2 -> 6;3 -> 12;else -> 24
+				}*(1+internalLevel/200),
+				when(li) {
+					1 -> 1;2 -> 4;3 -> 9;else -> 20
+				}*(internalLevel/100-2),
+				if(engine.statistics.level>=1000&&li>=4) gradeBasicInternal*30 else 0
+			)
+			gradeBasicInternal = minOf(30, (sqrt((gradeBasicPoint/50)*8+1.0)/2-.5).toInt())
+			if(gradeBasicInternal>gradeBasicReal) {
+				gradeBasicReal = gradeBasicInternal
+				grade = minOf(50, gradeBasicReal+coolCount)
+				engine.playSE("cool")
+				coolDispFrame = 180
+				gradeFlash = 180
+				lastGradeTime = engine.statistics.time
+			}
 		}
-		return 0
+		if(gradeFlash==180) engine.playSE(if(gradeDisp) "grade${grade/8}" else "medal1")
+		return ret
 	}
 
 	/* Called when hard drop used */
@@ -1171,19 +1203,25 @@ class GrandM3:AbstractMode() {
 				rollClear = 2
 
 				secretGrade = engine.field.secretGrade
+				if(goalType==0) {
+					if(!mRollFlag) {
+						rollPoints += .5f
+						rollPointsTotal += .5f
+					} else {
+						rollPoints += 1.6f
+						rollPointsTotal += 1.6f
+					}
 
-				if(!mRollFlag) {
-					rollPoints += .5f
-					rollPointsTotal += .5f
+					while(rollPoints>=1f) {
+						rollPoints -= 1f
+						if(grade<32) {
+							grade++
+							gradeFlash = 180
+						}
+					}
 				} else {
-					rollPoints += 1.6f
-					rollPointsTotal += 1.6f
-				}
-
-				while(rollPoints>=1f) {
-					rollPoints -= 1f
-					if(grade<32) {
-						grade++
+					if(mRollFlag&&gradeBasicPoint>=25000) {
+						grade = 51
 						gradeFlash = 180
 					}
 				}
@@ -1195,7 +1233,8 @@ class GrandM3:AbstractMode() {
 				engine.gameEnded()
 				engine.resetStatc()
 				engine.stat = GameEngine.Status.EXCELLENT
-				if(engine.statistics.time<28800) decTemp += (28800-engine.statistics.time)/1800
+				val timeQ = 28800*(goalType+1)
+				if(engine.statistics.time<timeQ) decTemp += (timeQ-engine.statistics.time)/1800
 			}
 		}
 	}
@@ -1206,8 +1245,7 @@ class GrandM3:AbstractMode() {
 		if(engine.statc[0]==0) {
 			secretGrade = engine.field.secretGrade
 			val time = engine.statistics.time
-			if(time<6000)
-				decTemp -= 3
+			if(time<6000) decTemp -= 3
 			else {
 				decTemp++
 				if(time%3600<=60||time%3600>=3540) decTemp++
@@ -1215,26 +1253,29 @@ class GrandM3:AbstractMode() {
 
 			if(time>41100) decTemp -= 1+(time-41100)/1800
 			if(enableExam) {
-				if(grade<qualifiedGrade-7) demotionPoints += qualifiedGrade-grade-7
+				log.debug("** Exam result log START **")
+				log.debug("Current Qualified Grade:${getGradeName(recordGrade[goalType])} (${recordGrade[goalType]})")
+				log.debug("Current Temporary Grade:${getGradeName(grade)} ($grade)")
 
+				log.debug("Promotional Chance to :${getGradeName(promotionalExam)} ($promotionalExam)")
+				log.debug("Promotional Exam Enabled:$promotionFlag")
 				if(promotionFlag&&grade>=promotionalExam) {
-					qualifiedGrade = promotionalExam
-					demotionPoints = 0
+					recordGrade[goalType] = promotionalExam
+					demotionPoints[goalType] = 0
 					decTemp += 6
 					engine.tempHanabi += 24
+				} else {
+					val demo = recordGrade[goalType]-grade-7
+					if(demo>0) demotionPoints[goalType] += demo
+					log.debug("Demotion Points:${demotionPoints[goalType]} (+ ${maxOf(0, demo)})")
 				}
+				log.debug("Demotion Exam Enabled:$demotionFlag")
 				if(demotionFlag&&grade<demotionExamGrade) {
-					qualifiedGrade = maxOf(0, demotionExamGrade-1)
+					recordGrade[goalType] = maxOf(0, demotionExamGrade-1)
 					decTemp -= 10
+					log.debug("Demoted into:${getGradeName(recordGrade[goalType])} (${recordGrade[goalType]})")
 				}
 
-				log.debug("** Exam result log START **")
-				log.debug("Current Qualified Grade:${getGradeName(qualifiedGrade)} ($qualifiedGrade)")
-				log.debug("Promotional Exam Grade:${getGradeName(promotionalExam)} ($promotionalExam)")
-				log.debug("Promotional Exam Flag:$promotionFlag")
-				log.debug("Demotion Points:$demotionPoints")
-				log.debug("Demotional Exam Grade:${getGradeName(demotionExamGrade)} ($demotionExamGrade)")
-				log.debug("Demotional Exam Flag:$demotionFlag")
 				log.debug("*** Exam result log END ***")
 			}
 			decoration += decTemp+secretGrade
@@ -1250,7 +1291,7 @@ class GrandM3:AbstractMode() {
 				receiver.drawMenuFont(engine, 0, 2, "PROMOTION", COLOR.YELLOW)
 				receiver.drawMenuFont(engine, 1, 3, "CHANCE TO", COLOR.YELLOW)
 				receiver.drawMenuGrade(
-					engine, 2, 6, getGradeName(qualifiedGrade), if(passFrame%4==0) COLOR.ORANGE else COLOR.WHITE,
+					engine, 2, 6, getGradeName(promotionalExam), if(passFrame%4==0) COLOR.ORANGE else COLOR.WHITE,
 					2f
 				)
 
@@ -1281,8 +1322,11 @@ class GrandM3:AbstractMode() {
 					}
 			} else if(demotionFlag) {
 				receiver.drawMenuFont(engine, 0, 2, "DEMOTION", COLOR.RED)
-				receiver.drawMenuFont(engine, 6, 3, "EXAM", COLOR.RED)
-
+				receiver.drawMenuFont(engine, 6, 3, "PINCH OF", COLOR.RED)
+				receiver.drawMenuGrade(
+					engine, 2, 6, getGradeName(demotionExamGrade), if(passFrame%4==0) COLOR.RED else COLOR.WHITE,
+					2f
+				)
 				if(passFrame<420)
 					if(grade<demotionExamGrade)
 						receiver.drawMenuFont(
@@ -1306,15 +1350,15 @@ class GrandM3:AbstractMode() {
 
 			when(engine.statc[1]) {
 				0 -> {
-					val rgrade = if(enableExam&&grade>=32&&qualifiedGrade<32) 31 else grade
-					val gcolor = when {
-						grade>=32&&engine.statc[2]%2==0 -> COLOR.YELLOW
-						rollClear==1||rollClear==3 -> COLOR.GREEN
-						rollClear==2||rollClear==4 -> COLOR.ORANGE
-						else -> COLOR.WHITE
-					}
 					receiver.drawMenuFont(engine, 0, 3, "GRADE", COLOR.BLUE)
-					receiver.drawMenuGrade(engine, 6, 2, getGradeName(rgrade), gcolor, 2f)
+					receiver.drawMenuGrade(
+						engine, 6, 2, getGradeName(grade), when {
+							grade>=32&&engine.statc[2]%2==0 -> COLOR.YELLOW
+							rollClear==1||rollClear==3 -> COLOR.GREEN
+							rollClear==2||rollClear==4 -> COLOR.ORANGE
+							else -> COLOR.WHITE
+						}, 2f
+					)
 
 					drawResultStats(
 						engine, receiver, 4, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL_MANIA, Statistic.TIME
@@ -1383,7 +1427,7 @@ class GrandM3:AbstractMode() {
 			} else if(demotionFlag)
 				if(passFrame==420) {
 					engine.playSE("linefall0")
-					if(grade>=qualifiedGrade) {
+					if(grade>=demotionExamGrade) {
 						engine.playSE("grade0")
 						engine.playSE("applause2")
 					} else {
@@ -1402,7 +1446,7 @@ class GrandM3:AbstractMode() {
 		owner.musMan.bgm = when {
 			engine.ending==1||engine.ending==2&&rollClear==0 -> BGM.Result(2)
 			rollClear>0||promotionFlag&&grade>=promotionalExam -> BGM.Result(3)
-			demotionFlag&&grade<=qualifiedGrade -> BGM.Result(1)
+			demotionFlag&&grade<=demotionExamGrade -> BGM.Result(1)
 			else -> BGM.Result(0)
 		}
 
@@ -1440,16 +1484,14 @@ class GrandM3:AbstractMode() {
 		// Update rankings
 		if(!owner.replayMode&&startLevel==0&&!always20g&&!big&&engine.ai==null) {
 			owner.statsProp.setProperty("decoration", decoration)
-			var rgrade = grade
-			if(enableExam&&rgrade>=32&&qualifiedGrade<32) rgrade = 31
 			// if(!enableexam || !isAnyExam())
-			updateRanking(rgrade, engine.statistics.level, lastGradeTime, rollClear)
+			updateRanking(goalType, grade, engine.statistics.level, lastGradeTime, rollClear)
 			// else
 			// rankingRank = -1;
 
-			if(enableExam) updateGradeHistory(grade)
+			if(enableExam) updateGradeHistory(grade, goalType)
 
-			if(medalST==3&&!isAnyExam) updateBestSectionTime()
+			if(medalST==3&&!isAnyExam) updateBestSectionTime(goalType)
 
 			if(rankingRank!=-1||enableExam||medalST==3) return true
 		}
@@ -1457,42 +1499,44 @@ class GrandM3:AbstractMode() {
 	}
 
 	/** Update rankings
+	 * @param t Goal Type
 	 * @param gr 段位
 	 * @param lv level
 	 * @param time Time
 	 */
-	private fun updateRanking(gr:Int, lv:Int, time:Int, clear:Int) {
-		rankingRank = checkRanking(gr, lv, time, clear)
+	private fun updateRanking(t:Int, gr:Int, lv:Int, time:Int, clear:Int) {
+		rankingRank = checkRanking(t, gr, lv, time, clear)
 
 		if(rankingRank!=-1) {
 			// Shift down ranking entries
 			for(i in RANKING_MAX-1 downTo rankingRank+1) {
-				rankingGrade[i] = rankingGrade[i-1]
-				rankingLevel[i] = rankingLevel[i-1]
-				rankingTime[i] = rankingTime[i-1]
-				rankingRollClear[i] = rankingRollClear[i-1]
+				rankingGrade[t][i] = rankingGrade[t][i-1]
+				rankingLevel[t][i] = rankingLevel[t][i-1]
+				rankingTime[t][i] = rankingTime[t][i-1]
+				rankingRollClear[t][i] = rankingRollClear[t][i-1]
 			}
 
 			// Add new data
-			rankingGrade[rankingRank] = gr
-			rankingLevel[rankingRank] = lv
-			rankingTime[rankingRank] = time
-			rankingRollClear[rankingRank] = clear
+			rankingGrade[t][rankingRank] = gr
+			rankingLevel[t][rankingRank] = lv
+			rankingTime[t][rankingRank] = time
+			rankingRollClear[t][rankingRank] = clear
 		}
 	}
 
 	/** Calculate ranking position
+	 * @param t Goal Type
 	 * @param gr 段位
 	 * @param lv level
 	 * @param time Time
 	 * @return Position (-1 if unranked)
 	 */
-	private fun checkRanking(gr:Int, lv:Int, time:Int, clear:Int):Int {
-		for(i in 0 until RANKING_MAX)
-			if(gr>rankingGrade[i]) return i
-			else if(gr==rankingGrade[i]&&clear>rankingRollClear[i]) return i
-			else if(gr==rankingGrade[i]&&clear==rankingRollClear[i]&&lv>rankingLevel[i]) return i
-			else if(gr==rankingGrade[i]&&clear==rankingRollClear[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
+	private fun checkRanking(t:Int, gr:Int, lv:Int, time:Int, clear:Int):Int {
+		for(i in 0..<RANKING_MAX)
+			if(gr>rankingGrade[t][i]) return i
+			else if(gr==rankingGrade[t][i]&&clear>rankingRollClear[t][i]) return i
+			else if(gr==rankingGrade[t][i]&&clear==rankingRollClear[t][i]&&lv>rankingLevel[t][i]) return i
+			else if(gr==rankingGrade[t][i]&&clear==rankingRollClear[t][i]&&lv==rankingLevel[t][i]&&time<rankingTime[t][i]) return i
 
 		return -1
 	}
@@ -1500,32 +1544,31 @@ class GrandM3:AbstractMode() {
 	/** 段位履歴を更新
 	 * @param gr 段位
 	 */
-	private fun updateGradeHistory(gr:Int) {
-		System.arraycopy(gradeHistory, 0, gradeHistory, 1, GRADE_HISTORY_SIZE-1)
-
-		gradeHistory[0] = gr
+	private fun updateGradeHistory(gr:Int, gt:Int) {
+		if(gradeHistory.size>=GRADE_HISTORY_SIZE) gradeHistory[gt].removeAt(0)
+		gradeHistory[gt] += gr
 
 		// Debug log
 		log.debug("** Exam grade history START **")
 		for(i in gradeHistory.indices)
-			log.debug("$i: ${getGradeName(gradeHistory[i])} (${gradeHistory[i]})")
+			log.debug("$i: ${getGradeName(gradeHistory[gt][i])} (${gradeHistory[gt][i]})")
 
 		log.debug("*** Exam grade history END ***")
-		setPromotionalGrade()
+		setPromotionalGrade(gt)
 	}
 
 	/** 昇格試験の目標段位を設定 */
-	private fun setPromotionalGrade() {
-		promotionalExam = gradeHistory.filter {it>qualifiedGrade}.let {
-			if(it.size>3) minOf(if(qualifiedGrade<31) 31 else 32, it.average().roundToInt())
-			else qualifiedGrade
+	private fun setPromotionalGrade(gt:Int) {
+		promotionalExam = gradeHistory[gt].filter {it>recordGrade[gt]}.let {
+			if(it.size>3) minOf(if(recordGrade[gt]<31) 31 else 32, it.average().roundToInt())
+			else recordGrade[gt]
 		}
 	}
 
 	/** Update best section time records */
-	private fun updateBestSectionTime() {
-		for(i in 0 until SECTION_MAX)
-			if(sectionIsNewRecord[i]) bestSectionTime[i] = sectionTime[i][0]
+	private fun updateBestSectionTime(type:Int) {
+		for(i in 0..<tableSectionMax[type])
+			if(sectionIsNewRecord[i]) bestSectionTime[type][i] = sectionTime[i][0]
 	}
 
 	companion object {
@@ -1536,7 +1579,10 @@ class GrandM3:AbstractMode() {
 		private const val CURRENT_VERSION = 2
 
 		/** Section COOL criteria Time */
-		private val tableTimeCool = listOf(3360, 3280, 3200, 3110, 3020, 2930, 2835, 2740, 2645, 2550)
+		private val tableTimeCool = listOf(
+			3360, 3280, 3200, 3110, 3020, 2930, 2835, 2740, 2645, 2550,
+			2520, 2490, 2460, 2430, 2400, 2370, 2340, 2310, 2280, 2250
+		)
 		/** Section REGRET criteria Time */
 		private val tableTimeRegret = listOf(6000, 5400, 5100, 4800, 4600, 4400, 4300, 4200, 4100, 4000)
 		/** 落下速度 table */
@@ -1553,15 +1599,39 @@ class GrandM3:AbstractMode() {
 			)
 
 		/** ARE table */
-		private val tableARE = listOf(25, 24, 23, 22, 21, 20, 18, 15, 11, 8, 6, 5, 4)
+		private val tableARE = listOf(
+			listOf(25, 24, 23, 22, 21, 20, 18, 15, 11, 8, 6, 5, 4),
+			listOf(
+				25, 22, 20, 18, 16, 15, 14, 13, 12, 11,
+				10, +9, +8, +7, +6, +6, +5, +5, +4, 4,
+			)
+		)
 		/** ARE after line clear table */
-		private val tableARELine = listOf(25, 25, 25, 24, 22, 19, 16, 12, 9, 7, 6, 5, 4)
+		private val tableARELine = listOf(
+			listOf(25, 25, 25, 24, 22, 19, 16, 12, 9, 7, 6, 5, 4),
+			tableARE[1]
+		)
 		/** Line clear times table */
-		private val tableLineDelay = listOf(40, 39, 37, 34, 30, 25, 20, 16, 13, 10, 8, 7, 6)
+		private val tableLineDelay = listOf(
+			listOf(40, 39, 37, 34, 30, 25, 16, 12, 6),
+			listOf(
+				40, 30, 25, 20, 15, 13, 12, 10, 10, +8,
+				+6, +6, +5, +4, +4, +3, +2
+			)
+		)
 		/** 固定 times table */
-		private val tableLockDelay = listOf(30, 30, 30, 30, 30, 30, 29, 28, 26, 24, 23, 22, 21)
+		private val tableLockDelay = listOf(
+			listOf(30, 30, 30, 30, 30, 30, 29, 28, 27, 25, 24, 22, 20),
+			listOf(
+				30, 30, 30, 30, 30, 29, 28, 27, 26, 26,
+				25, 25, 24, 24, 24, 23, 23, 23, 22
+			)
+		)
 		/** DAS table */
-		private val tableDAS = listOf(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 6, 6, 6)
+		private val tableDAS = listOf(
+			15, 14, 13, 12, 11, 10, 9, 8, 7, 7,
+			+6, +6, +6, +6, +5, +5, 4
+		)
 
 		/** BGM change level */
 		private val tableBGMChange = listOf(200, 500, 800, 1000)
@@ -1574,8 +1644,10 @@ class GrandM3:AbstractMode() {
 		/** Line clear時に入る段位 point */
 		private val tableGradePoint =
 			listOf(
-				listOf(10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2), listOf(20, 20, 20, 18, 16, 15, 13, 10, 11, 11, 12),
-				listOf(40, 36, 33, 30, 27, 24, 20, 18, 17, 16, 15), listOf(50, 47, 44, 40, 40, 38, 36, 34, 32, 31, 30)
+				listOf(10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2),
+				listOf(20, 20, 20, 18, 16, 15, 13, 10, 11, 11, 12),
+				listOf(40, 36, 33, 30, 27, 24, 20, 18, 17, 16, 15),
+				listOf(50, 47, 44, 40, 40, 38, 36, 34, 32, 31, 30)
 			)
 		/** 段位 pointのCombo bonus */
 		private val tableGradeComboBonus =
@@ -1604,6 +1676,13 @@ class GrandM3:AbstractMode() {
 			"m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", // 18～26
 			"M", "MK", "MV", "MO", "MM", "GM" // 27～32
 		)
+		private val tableLongGradeName = listOf(
+			"9", "8", "7", "6", "5", "4", "3", "2", "1", // 0～ 8
+			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11", "S12", "S13", // 9～21
+			"m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "mK", "mV", "mO", "mM", // 22～34
+			"M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "MK", "MV", "MO", "MM", // 35～47
+			"G", "GS", "Gm", "GM" // 48～50,51
+		)
 
 		/** 裏段位のName */
 		private val tableSecretGradeName = listOf(
@@ -1611,6 +1690,19 @@ class GrandM3:AbstractMode() {
 			"S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", // 9～17
 			"GM" // 18
 		)
+
+		/**とりカン条件タイム*/
+		val tableQualifyTimeMul =
+			listOf(5 to 1f, 9 to 1.6f, 15 to 2.275f, 19 to 2.7f)
+
+		fun tableQualifyPace(s:Int, baseTime:Int) = tableQualifyTimeMul.let {t ->
+			minOf(t.lastIndex, t.indexOfFirst {s<it.first}).let {id ->
+				if(id<=0) t.first().let {baseTime*it.second/it.first}
+				else t[id].let {(x1, x2) ->
+					t[id-1].let {(y1, y2) -> baseTime*(x2-y2)/(x1-y1)}
+				}
+			}
+		}.toInt()
 
 		/** LV999 roll time */
 		private const val ROLLTIMELIMIT = 3238
@@ -1625,6 +1717,9 @@ class GrandM3:AbstractMode() {
 		private const val EXAM_CHANCE = 2
 
 		/** Number of sections */
-		private const val SECTION_MAX = 10
+		private val tableSectionMax = listOf(10, 20)
+		private val tableGoalLevel = listOf(999, 2020)
+		private val SECTION_MAX = tableSectionMax.max()
+		private val RANKING_TYPE = tableSectionMax.size
 	}
 }

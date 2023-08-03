@@ -83,7 +83,7 @@ class NetVSSprintLine:NetDummyVSMode() {
 		var place = 0
 		val myLines = minOf(engine.statistics.lines, goalLines)
 
-		for(i in 0 until players)
+		for(i in 0..<players)
 			if(i!=pid&&netVSPlayerExist[i]&&!netVSPlayerDead[i]) {
 				val enemyLines = minOf(owner.engine[i].statistics.lines, goalLines)
 
@@ -122,15 +122,15 @@ class NetVSSprintLine:NetDummyVSMode() {
 				// Send game end message
 				val places = IntArray(NET_MAX_PLAYERS)
 				val uidArray = IntArray(NET_MAX_PLAYERS)
-				for(i in 0 until players) {
+				for(i in 0..<players) {
 					places[i] = getNowPlayerPlace(owner.engine[i])
 					uidArray[i] = -1
 				}
-				for(i in 0 until players)
-					if(places[i] in 0 until NET_MAX_PLAYERS) uidArray[places[i]] = netVSPlayerUID[i]
+				for(i in 0..<players)
+					if(places[i] in 0..<NET_MAX_PLAYERS) uidArray[places[i]] = netVSPlayerUID[i]
 
 				val strMsg = StringBuilder("racewin")
-				for(i in 0 until players)
+				for(i in 0..<players)
 					if(uidArray[i]!=-1) strMsg.append("\t").append(uidArray[i])
 				strMsg.append("\n")
 				netLobby!!.netPlayerClient!!.send("$strMsg")
@@ -155,9 +155,9 @@ class NetVSSprintLine:NetDummyVSMode() {
 				// Lines left
 				val remainLines = maxOf(0, goalLines-engine.statistics.lines)
 				val fontColor = when(remainLines) {
-					in 1..30 -> COLOR.YELLOW
-					in 1..20 -> COLOR.ORANGE
 					in 1..10 -> COLOR.RED
+					in 1..20 -> COLOR.ORANGE
+					in 1..30 -> COLOR.YELLOW
 					else -> COLOR.WHITE
 				}
 

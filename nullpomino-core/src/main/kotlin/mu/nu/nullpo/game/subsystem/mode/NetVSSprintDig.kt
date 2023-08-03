@@ -90,7 +90,7 @@ class NetVSSprintDig:NetDummyVSMode() {
 				hole = engine.random.nextInt(w-1).let {it+if(it==hole) 1 else 0}
 
 			var prevColor = -1
-			for(x in 0 until w)
+			for(x in 0..<w)
 				if(x!=hole) {
 					var color = Block.COLOR_WHITE
 					if(y==h-1) {
@@ -104,7 +104,7 @@ class NetVSSprintDig:NetDummyVSMode() {
 
 			// Set connections
 			if(y!=h-1)
-				for(x in 0 until w)
+				for(x in 0..<w)
 					if(x!=hole) {
 						val blk = field.getBlock(x, y)
 						if(blk!=null) {
@@ -130,7 +130,7 @@ class NetVSSprintDig:NetDummyVSMode() {
 
 		for(y in h-1 downTo h-goalLines)
 			if(!field.getLineFlag(y))
-				for(x in 0 until w) {
+				for(x in 0..<w) {
 					val blk = field.getBlock(x, y)
 
 					if(blk!=null&&blk.isGemBlock) hasGemBlock = true
@@ -149,8 +149,8 @@ class NetVSSprintDig:NetDummyVSMode() {
 	private fun turnAllBlocksToGem(engine:GameEngine) {
 		val field = engine.field
 
-		for(y in field.highestBlockY until field.height)
-			for(x in 0 until field.width) field.getBlock(x, y)?.type = Block.TYPE.GEM
+		for(y in field.highestBlockY..<field.height)
+			for(x in 0..<field.width) field.getBlock(x, y)?.type = Block.TYPE.GEM
 	}
 
 	/* Ready */
@@ -191,7 +191,7 @@ class NetVSSprintDig:NetDummyVSMode() {
 
 		var place = 0
 
-		for(i in 0 until players)
+		for(i in 0..<players)
 			if(i!=playerID&&netVSPlayerExist[i]&&!netVSPlayerDead[i])
 				if(playerRemainLines[playerID]>playerRemainLines[i]) place++
 				else if(playerRemainLines[playerID]==playerRemainLines[i]&&engine.field.highestBlockY<owner.engine[i].field.highestBlockY)
@@ -236,15 +236,15 @@ class NetVSSprintDig:NetDummyVSMode() {
 					// Send game end message
 					val places = IntArray(NET_MAX_PLAYERS)
 					val uidArray = IntArray(NET_MAX_PLAYERS)
-					for(i in 0 until players) {
+					for(i in 0..<players) {
 						places[i] = getNowPlayerPlace(owner.engine[i], i)
 						uidArray[i] = -1
 					}
-					for(i in 0 until players)
-						if(places[i] in 0 until NET_MAX_PLAYERS) uidArray[places[i]] = netVSPlayerUID[i]
+					for(i in 0..<players)
+						if(places[i] in 0..<NET_MAX_PLAYERS) uidArray[places[i]] = netVSPlayerUID[i]
 
 					val strMsg = StringBuilder("racewin")
-					for(i in 0 until players)
+					for(i in 0..<players)
 						if(uidArray[i]!=-1) strMsg.append("\t").append(uidArray[i])
 					strMsg.append("\n")
 					netLobby!!.netPlayerClient!!.send("$strMsg")

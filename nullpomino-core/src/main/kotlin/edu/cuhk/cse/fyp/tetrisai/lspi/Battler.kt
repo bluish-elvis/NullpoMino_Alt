@@ -211,7 +211,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		val count = esp*step
 		val winnerCount = IntArray(gameEngine.size)
 		for(i in winnerCount.indices) winnerCount[i] = 0
-		for(i in 0 until count) {
+		for(i in 0..<count) {
 			log.info("-------- Simulation %d of %d --------".format(i+1, count))
 			runSimulation()
 			//if (getGM3Grade() == 32) gm++

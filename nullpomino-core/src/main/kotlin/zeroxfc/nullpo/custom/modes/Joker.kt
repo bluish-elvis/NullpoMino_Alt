@@ -42,7 +42,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.gui.common.AbstractRenderer.FontBadge.Companion.b
-import mu.nu.nullpo.gui.common.fx.particles.BlockParticleCollection
+import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.FlyInOutText
@@ -66,7 +66,7 @@ class Joker:MarathonModeBase() {
 	// Local randomizer
 	private var localRandom:Random? = null
 	// Particle stuff
-//	private var blockParticles:BlockParticleCollection? = null
+//	private var blockParticles:Mapper? = null
 	// ANIMATION TYPE
 	private var lineClearAnimType = 0
 	// Warning texts
@@ -191,8 +191,8 @@ class Joker:MarathonModeBase() {
 					1 -> big = !big
 					2 -> {
 						lineClearAnimType += change
-						if(lineClearAnimType>BlockParticleCollection.ANIMATION_TYPES-1) lineClearAnimType = 0
-						if(lineClearAnimType<0) lineClearAnimType = BlockParticleCollection.ANIMATION_TYPES-1
+						if(lineClearAnimType>BlockParticle.ANIMATION_TYPES-1) lineClearAnimType = 0
+						if(lineClearAnimType<0) lineClearAnimType = BlockParticle.ANIMATION_TYPES-1
 					}
 				}
 
@@ -326,7 +326,7 @@ class Joker:MarathonModeBase() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "LEVEL  LINE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingLevelPlayer[i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -344,7 +344,7 @@ class Joker:MarathonModeBase() {
 					)
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingLevel[i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -423,7 +423,7 @@ class Joker:MarathonModeBase() {
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp)
-			loadSetting(engine.playerProp.propProfile, engine)
+			loadSetting(engine, engine.playerProp.propProfile)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s
@@ -586,8 +586,8 @@ class Joker:MarathonModeBase() {
 		receiver.drawMenuFont(engine, 0, 9, "%10s$$".format("%.2f".format(efficiency*100)))
 		if(engine.statistics.level>=300) {
 			receiver.drawMenuFont(engine, 0, 10, "GRADE", COLOR.BLUE)
-			val dX:Int = 4+receiver.fieldX(engine)+3*16
-			val dY:Int = 52+receiver.fieldY(engine)+(11.5*16).toInt()
+			val dX = 4+receiver.fieldX(engine)+3*16
+			val dY = 52+receiver.fieldY(engine)+(11.5*16).toInt()
 			//customHolder.drawImage("grades", dX, dY, 64*efficiencyGrade, 0, 64, 48, 255, 255, 255, 255, 1.0f)
 		}
 		drawResultNetRank(engine, receiver, 10, COLOR.BLUE, netRankingRank[0])
@@ -605,7 +605,7 @@ class Joker:MarathonModeBase() {
      * Called when saving replay
      */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
@@ -665,7 +665,7 @@ class Joker:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(lv:Int, li:Int, time:Int):Int {
-		for(i in 0 until RANKING_MAX) {
+		for(i in 0..<RANKING_MAX) {
 			if(lv>rankingLevel[i]) {
 				return i
 			} else if(lv==rankingLevel[i]&&li>rankingLines[i]) {
@@ -684,7 +684,7 @@ class Joker:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(lv:Int, li:Int, time:Int):Int {
-		for(i in 0 until RANKING_MAX) {
+		for(i in 0..<RANKING_MAX) {
 			if(lv>rankingLevelPlayer[i]) {
 				return i
 			} else if(lv==rankingLevelPlayer[i]&&li>rankingLinesPlayer[i]) {

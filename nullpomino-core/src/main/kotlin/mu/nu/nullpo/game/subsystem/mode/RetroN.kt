@@ -231,7 +231,7 @@ class RetroN:AbstractMode() {
 			COLOR.BLUE,
 			0,
 			"GAME TYPE" to GAMETYPE_NAME[gametype],
-			"DIFFICULTY" to SpeedLevel.values()[speedtype].showName,
+			"DIFFICULTY" to SpeedLevel.entries[speedtype].showName,
 			"Level" to LEVEL_NAME[startLevel],
 			"HEIGHT" to startheight,
 			"BIG" to big
@@ -296,7 +296,7 @@ class RetroN:AbstractMode() {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScoreFont(engine, 3, 3, "SCORE    LINE LV.", COLOR.BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(
 						engine, 0, 4+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
@@ -471,7 +471,7 @@ class RetroN:AbstractMode() {
 	/** This function will be called when the replay data is going to be
 	 * saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -486,7 +486,7 @@ class RetroN:AbstractMode() {
 	}
 
 	/** Load the settings from [prop] */
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		gametype = prop.getProperty("retromarathon.gametype", 0)
 		speedtype = prop.getProperty("retromarathon.speedtype", 0)
 		startLevel = prop.getProperty("retromarathon.startLevel", 0)
@@ -497,7 +497,7 @@ class RetroN:AbstractMode() {
 	/** Save the settings
 	 * @param prop CustomProperties
 	 */
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("retromarathon.gametype", gametype)
 		prop.setProperty("retromarathon.speedtype", speedtype)
 		prop.setProperty("retromarathon.startLevel", startLevel)
@@ -537,7 +537,7 @@ class RetroN:AbstractMode() {
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
 	private fun checkRanking(sc:Long, li:Int, lv:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i])
 				return i
@@ -555,7 +555,7 @@ class RetroN:AbstractMode() {
 		val startHeight = h-1
 		var f:Float
 		for(y in startHeight downTo h-tableGarbageHeight[height])
-			for(x in 0 until engine.field.width) {
+			for(x in 0..<engine.field.width) {
 				f = engine.random.nextFloat()
 				if(f<0.5)
 					engine.field.setBlock(x, y, Block((f*14).toInt()+2, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE))
@@ -586,10 +586,10 @@ class RetroN:AbstractMode() {
 		private enum class GameType(val showName:String) { A("A-"), B("B+"), C("C#") }
 
 		/** Number of game types */
-		private val GAMETYPE_MAX = GameType.values().size
+		private val GAMETYPE_MAX = GameType.entries.size
 
 		/** Game type name */
-		private val GAMETYPE_NAME = GameType.values().map {it.showName}
+		private val GAMETYPE_NAME = GameType.entries.map {it.showName}
 
 		private val GAMETYPE_TYPE_A = GameType.A.ordinal
 		private val GAMETYPE_TYPE_B = GameType.B.ordinal
@@ -602,16 +602,16 @@ class RetroN:AbstractMode() {
 			val showName:String = title ?: name
 		}
 		/** Number of speed types */
-		private val SPEED_MAX = SpeedLevel.values().size
+		private val SPEED_MAX = SpeedLevel.entries.size
 
 		/** Speed type name */
-		private val SPEED_NAME = SpeedLevel.values().map {it.showName}
+		private val SPEED_NAME = SpeedLevel.entries.map {it.showName}
 
 		/** Number of ranking records */
 		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
-		private val RANKING_TYPE = GAMETYPE_MAX*SpeedLevel.values().size
+		private val RANKING_TYPE = GAMETYPE_MAX*SpeedLevel.entries.size
 
 		/** Maximum-Level name table */
 		private val LEVEL_NAME = listOf(

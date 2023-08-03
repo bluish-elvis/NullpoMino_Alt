@@ -96,7 +96,7 @@ class GrandS1:AbstractMode() {
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
 
-	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, true, true)
+	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE)
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
@@ -137,7 +137,7 @@ class GrandS1:AbstractMode() {
 	override val name = "Grand Storm"
 	override val gameIntensity = 3
 	/* Initialization */
-	override val menu:MenuList = MenuList("speedmania1", itemLevel, itemQualify, itemAlert, itemST, itemBig)
+	override val menu = MenuList("speedmania1", itemLevel, itemQualify, itemAlert, itemST, itemBig)
 
 	override val rankMap
 		get() = rankMapOf(
@@ -190,7 +190,7 @@ class GrandS1:AbstractMode() {
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
 		} else {
-			for(i in 0 until SECTION_MAX)
+			for(i in 0..<SECTION_MAX)
 				bestSectionTime[i] = DEFAULT_SECTION_TIME
 			version = owner.replayProp.getProperty("speedmania.version", 0)
 		}
@@ -261,39 +261,28 @@ class GrandS1:AbstractMode() {
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
 		if(!owner.replayMode) {
-			// Configuration changes
-			updateMenu(engine)
-
-			if(qualify<0) qualify = 36000
-			if(qualify in 1..12300||qualify>36000) qualify = 0
-
 			// section time display切替
 			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
-			// 決定
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				isShowBestSectionTime = false
-				sectionsDone = 0
-				return false
-			}
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-		} else {
-			menuTime++
-			menuCursor = -1
-			return menuTime<60
 		}
-		return true
+		return super.onSetting(engine)
 	}
-	/* Render the settings screen */
-	override fun renderSetting(engine:GameEngine) {
-		drawMenu(
-			engine, receiver, 0, COLOR.BLUE, 0, "Level" to (startLevel*100), "LVSTOPSE" to secAlert, "SHOW STIME" to showST,
-			"BIG" to big, "LV500LIMIT" to if(qualify==0) "NONE" else qualify.toTimeStr
-		)
+
+	override fun onSettingChanged(engine:GameEngine) {
+		if(qualify in 1..6150) qualify = 12300
+		if(qualify in 6151..12299) qualify = 0
+		super.onSettingChanged(engine)
+	}
+
+	override fun onReady(engine:GameEngine):Boolean {
+		if(engine.statc[0]==0) {
+			isShowBestSectionTime = false
+			sectionsDone = 0
+			owner.musMan.fadeSW = true
+		}
+		return super.onReady(engine)
 	}
 
 	/* Called at game start */
@@ -325,9 +314,9 @@ class GrandS1:AbstractMode() {
 				if(!isShowBestSectionTime) {
 					// Rankings
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
-					receiver.drawScoreFont(engine, 2, topY-1, "LEVEL TIME", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 2, topY-1, "LEVEL  TIME", COLOR.BLUE)
 
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreGrade(
 							engine, 0, topY+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
@@ -342,7 +331,7 @@ class GrandS1:AbstractMode() {
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.BLUE)
 
 					var totalTime = 0
-					for(i in 0 until SECTION_MAX) {
+					for(i in 0..<SECTION_MAX) {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
@@ -439,11 +428,10 @@ class GrandS1:AbstractMode() {
 	/* 移動中の処理 */
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
+		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag)
 			// Level up
 			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
-			if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-		}
+
 		if(engine.ending==0&&engine.statc[0]>0&&(version>=2||!engine.holdDisable)) lvupFlag = false
 
 		// Endingスタート
@@ -457,7 +445,6 @@ class GrandS1:AbstractMode() {
 		// 最後の frame
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
 			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
-			if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 			lvupFlag = true
 		}
 
@@ -624,7 +611,7 @@ class GrandS1:AbstractMode() {
 				// Update level for next section
 				nextSecLv += 100
 				if(nextSecLv>999) nextSecLv = 999
-			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
+			}
 
 			// Calculate score
 
@@ -818,7 +805,7 @@ class GrandS1:AbstractMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(gr:Int, lv:Int, time:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(gr>rankingGrade[i]) return i
 			else if(gr==rankingGrade[i]&&lv>rankingLevel[i]) return i
 			else if(gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
@@ -828,7 +815,7 @@ class GrandS1:AbstractMode() {
 
 	/** Update best section time records */
 	private fun updateBestSectionTime() {
-		for(i in 0 until SECTION_MAX)
+		for(i in 0..<SECTION_MAX)
 			if(sectionIsNewRecord[i]) bestSectionTime[i] = sectionTime[i]
 	}
 

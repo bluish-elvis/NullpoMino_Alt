@@ -53,7 +53,7 @@ object TrainerGarbageLine {
 		val bf1 = p1.twoPlayerBasisFunctions
 		val bf2 = p2.twoPlayerBasisFunctions
 		var score = ""
-		var consecutive_all_wins = 0
+		var consecutiveAllWins = 0
 		var cnt = 0
 		var tp1wins = 0
 		var tp2wins = 0
@@ -65,7 +65,7 @@ object TrainerGarbageLine {
 			var p2wins = 0
 			var prevLength = 0
 			println("Training for $ROUNDS rounds...")
-			for(i in 0 until ROUNDS) {
+			for(i in 0..<ROUNDS) {
 				s1 = State()
 				s2 = State()
 				s1.doublePlayer = true
@@ -91,8 +91,8 @@ object TrainerGarbageLine {
 			println(draw)
 			print("P1 win rate: ")
 			println(tp1wins.toDouble()/(tp1wins+tp2wins))
-			if(p1wins>ROUNDS*8/10) consecutive_all_wins++ else consecutive_all_wins = 0
-			if(consecutive_all_wins==3) {
+			if(p1wins>ROUNDS*8/10) consecutiveAllWins++ else consecutiveAllWins = 0
+			if(consecutiveAllWins==3) {
 				println("COPY WEIGHT")
 				tp1wins = 0
 				tp2wins = 0
@@ -101,7 +101,7 @@ object TrainerGarbageLine {
 					println("${bf1.weight[i]}"+",")
 					bf2.weight[i] = bf1.weight[i]
 				}
-				consecutive_all_wins = 0
+				consecutiveAllWins = 0
 			}
 			bf1.computeWeights()
 			/*for(int i=0;i<weights.length;i++) {
@@ -113,7 +113,7 @@ object TrainerGarbageLine {
 				println("Write weight to log file")
 				out!!.write("Weight:\n")
 				for(i in bf1.weight.indices) {
-					out!!.write(bf1.weight[i].toString())
+					out!!.write("${bf1.weight[i]}")
 					out!!.write('\n'.code)
 				}
 				out!!.write('\n'.code)
@@ -137,9 +137,9 @@ object TrainerGarbageLine {
 		var i = 0
 		var spin = 0
 		val bag = intArrayOf(0, 1, 2, 3, 4, 5, 6)
-		var bag_index = 7
+		var bagIndex = 7
 		while(!s1.lost&&!s2.lost) {
-			if(bag_index<0||bag_index>6) {
+			if(bagIndex<0||bagIndex>6) {
 				val rnd:Random = ThreadLocalRandom.current()
 				for(k in bag.size-1 downTo 1) {
 					val index = rnd.nextInt(k+1)
@@ -148,9 +148,9 @@ object TrainerGarbageLine {
 					bag[index] = bag[k]
 					bag[k] = tmp
 				}
-				bag_index = 0
+				bagIndex = 0
 			}
-			val nextPiece = bag[bag_index++]
+			val nextPiece = bag[bagIndex++]
 			s1.nextPiece = nextPiece
 			s2.nextPiece = nextPiece
 			s1.makeMove(p1.pickMove(s1, s2, s1.legalMoves()))

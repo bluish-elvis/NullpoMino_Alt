@@ -34,18 +34,20 @@ import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.slick.ResourceHolder
 import mu.nu.nullpo.gui.slick.ResourceImageSlick
 import mu.nu.nullpo.gui.slick.drawImage
-import org.newdawn.slick.Color
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.Image
 
 object RenderStaffRoll:BaseStaffRoll<Image>() {
-	override var bufI:ResourceImage<Image> = ResourceImageSlick(Image(160, (strList.size*20*scale).toInt()))
 	val BG:Graphics get() = bufI.res.graphics
-	override val height get() = bufI.height
+	override val bufI:ResourceImage<Image> = ResourceImageSlick(Image(super.width, super.height))
+	override val width get() = bufI?.width ?: super.width
+	override val height get() = bufI?.height ?: super.height
+
+	init {
+		super.init()
+	}
+
 	override fun drawBuf(dx:Float, dy:Float, dw:Float, dh:Float, sx:Float, sy:Float, sw:Float, sh:Float) {
 		BG.drawImage(ResourceHolder.imgFontNano, dx, dy, dw, dh, sx, sy, sw, sh)
 	}
-
-	fun draw(x:Float, y:Float, sy:Float, h:Float, filter:Color) =
-		draw(x, y, sy, h, filter.a, Triple(filter.r, filter.g, filter.b))
 }

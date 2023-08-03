@@ -78,7 +78,7 @@ class ClassicRecoveryOnFailWallkick:Wallkick {
 				blockCount = 0
 				xi = 0
 				while(xi<field.width) {
-					for(yi in 0 until field.height) {
+					for(yi in 0..<field.height) {
 						if(!isABlockOnTheField(xi, yi, field)) {
 							piece.dataX[0][blockCount] = xi
 							piece.dataX[1][blockCount] = xi
@@ -108,7 +108,7 @@ class ClassicRecoveryOnFailWallkick:Wallkick {
 		return if(piece.big) {
 			checkCollisionKickBig(piece, x, y, rt, fld)
 		} else {
-			for(i in 0 until piece.maxBlock) {
+			for(i in 0..<piece.maxBlock) {
 				if(piece.dataX[rt][i]!=1+piece.dataOffsetX[rt]) {
 					val x2 = x+piece.dataX[rt][i]
 					val y2 = y+piece.dataY[rt][i]
@@ -123,7 +123,7 @@ class ClassicRecoveryOnFailWallkick:Wallkick {
 	}
 
 	private fun checkCollisionKickBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		for(i in 0 until piece.maxBlock) {
+		for(i in 0..<piece.maxBlock) {
 			if(piece.dataX[rt][i]!=1+piece.dataOffsetX[rt]) {
 				val x2 = x+piece.dataX[rt][i]*2
 				val y2 = y+piece.dataY[rt][i]*2

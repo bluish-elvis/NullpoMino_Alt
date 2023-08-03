@@ -294,7 +294,7 @@ class SPF:AbstractMode() {
 				reset()
 				var patternCol = 0
 				val maxHeight = height-1
-				for(x in 0 until width) {
+				for(x in 0..<width) {
 					if(patternCol>=it.size) patternCol = 0
 					for(patternRow in it[patternCol].indices) {
 						setBlockColor(x, maxHeight-patternRow, it[patternCol][patternRow])
@@ -671,8 +671,8 @@ class SPF:AbstractMode() {
 
 		// Countdown Blocks
 		if(engine.gameActive)
-			for(x in 0 until engine.field.width)
-				for(y in 0 until engine.field.height)
+			for(x in 0..<engine.field.width)
+				for(y in 0..<engine.field.height)
 					engine.field.getBlock(x, y)?.let {b ->
 						if(b.countdown>0) {
 							val textColor = when(b.secondaryColor) {
@@ -708,7 +708,7 @@ class SPF:AbstractMode() {
 		return false
 	}
 
-	override fun pieceLocked(engine:GameEngine, lines:Int) {
+	override fun pieceLocked(engine: GameEngine, lines: Int, finesse: Boolean) {
 		checkAll(engine)
 	}
 
@@ -736,9 +736,8 @@ class SPF:AbstractMode() {
 					engine.statistics.scoreLine += 10000
 					score[pid] += 10000
 				}
-				diamondBreakColor = all.entries.maxBy {it.key}.let {i ->
-					val y = i.key
-					val x = i.value.minBy {it.key}.key
+				diamondBreakColor = all.entries.maxBy {it.key}.let {(y, value) ->
+					val x = value.minBy {it.key}.key
 					field.getBlockColor(x, y+1)
 				}
 			}
@@ -808,8 +807,8 @@ class SPF:AbstractMode() {
 		if(countdownDecremented[engine.playerID]) return false
 		countdownDecremented[engine.playerID] = true
 		var result = false
-		for(y in engine.field.hiddenHeight*-1 until engine.field.height)
-			for(x in 0 until engine.field.width) {
+		for(y in engine.field.hiddenHeight*-1..<engine.field.height)
+			for(x in 0..<engine.field.width) {
 				val b = engine.field.getBlock(x, y) ?: continue
 				if(b.countdown>1)
 					b.countdown--
@@ -834,8 +833,8 @@ class SPF:AbstractMode() {
 		val height = engine.field.height
 		val hiddenHeight = engine.field.hiddenHeight
 
-		for(x in 0 until width)
-			for(y in -1*hiddenHeight until height) {
+		for(x in 0..<width)
+			for(y in -1*hiddenHeight..<height) {
 				val b = engine.field.getBlock(x, y) ?: continue
 				val color = b.color ?: continue
 				if(!color.color||b.type!=Block.TYPE.GEM) continue
@@ -1053,10 +1052,10 @@ class SPF:AbstractMode() {
 		val height = engine.field.height
 		val hiddenHeight = engine.field.hiddenHeight
 
-		for(y in -1*hiddenHeight until height)
-			for(x in 0 until width)
+		for(y in -1*hiddenHeight..<height)
+			for(x in 0..<width)
 				if(engine.field.getBlockColor(x, y)==Block.COLOR.RAINBOW) {
-					calcScore(engine, 0)
+					calcScore(engine, ScoreEvent())
 					return true
 				}
 
@@ -1075,7 +1074,7 @@ class SPF:AbstractMode() {
 			engine.field.garbageDrop(engine, drop, false, 0, ojamaCountdown[pid], 3)
 			engine.field.setAllSkin(engine.skin)
 			var patternCol = 0
-			for(x in 0 until engine.field.width) {
+			for(x in 0..<engine.field.width) {
 				if(patternCol>=dropPattern[enemyID].size) patternCol = 0
 				var patternRow = 0
 				for(y in dropRows-hiddenHeight downTo -1*hiddenHeight) {

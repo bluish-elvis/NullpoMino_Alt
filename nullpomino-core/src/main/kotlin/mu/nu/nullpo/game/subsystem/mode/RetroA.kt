@@ -185,9 +185,9 @@ class RetroA:AbstractMode() {
 				when(menuCursor) {
 					0 -> {
 						gameType = when(gameType) {
-							GAMETYPE.all.first() -> GAMETYPE.all.last()
-							GAMETYPE.all.last() -> GAMETYPE.all.first()
-							else -> GAMETYPE.all[gameType.ordinal+change]
+							GAMETYPE.entries.first() -> GAMETYPE.entries.last()
+							GAMETYPE.entries.last() -> GAMETYPE.entries.first()
+							else -> GAMETYPE.entries[gameType.ordinal+change]
 						}
 						engine.owner.bgMan.bg = if(gameType==GAMETYPE.PRESSURE) 0 else startLevel
 					}
@@ -268,7 +268,7 @@ class RetroA:AbstractMode() {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScoreFont(engine, 3, 3, "SCORE    LINE LV.", COLOR.BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(
 						engine, 0, 4+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
@@ -400,7 +400,7 @@ class RetroA:AbstractMode() {
 	/** This function will be called when the replay data is going to be
 	 * saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -412,8 +412,8 @@ class RetroA:AbstractMode() {
 	}
 
 	/** Load the settings from [prop] */
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
-		gameType = GAMETYPE.all[prop.getProperty("retromastery.gametype", 0)]
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
+		gameType = GAMETYPE.entries[prop.getProperty("retromastery.gametype", 0)]
 		startLevel = prop.getProperty("retromastery.startLevel", 0)
 		big = prop.getProperty("retromastery.big", false)
 		version = prop.getProperty("retromastery.version", 0)
@@ -422,7 +422,7 @@ class RetroA:AbstractMode() {
 	/** Save the settings
 	 * @param prop CustomProperties
 	 */
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("retromastery.gametype", gameType.ordinal)
 		prop.setProperty("retromastery.startLevel", startLevel)
 		prop.setProperty("retromastery.big", big)
@@ -462,7 +462,7 @@ class RetroA:AbstractMode() {
 	 */
 	private fun checkRanking(sc:Long, li:Int, lv:Int, type:GAMETYPE):Int {
 		val t = type.ordinal
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[t][i])
 				return i
 			else if(sc==rankingScore[t][i]&&li>rankingLines[t][i])
@@ -506,16 +506,12 @@ class RetroA:AbstractMode() {
 		/** Game type name */
 		private enum class GAMETYPE {
 			RACE200, ENDLESS, PRESSURE;
-
-			companion object {
-				val all = values()
-			}
 		}
 
 		/** Number of ranking records */
 		private const val RANKING_MAX = 13
 
 		/** Number of ranking types */
-		private val RANKING_TYPE:Int = GAMETYPE.all.size
+		private val RANKING_TYPE:Int = GAMETYPE.entries.size
 	}
 }

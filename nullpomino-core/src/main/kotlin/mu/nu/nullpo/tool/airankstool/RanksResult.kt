@@ -83,14 +83,14 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 			var progress = 0
 			setProgress(0)
 			val surfaceRankBestsList = ArrayList<SurfaceRank>(bestNRanks+1)
-			for(i in 0 until bestNRanks) {
+			for(i in 0..<bestNRanks) {
 				val rank = ranks!!.getRankValue(i)
 				surfaceRankBestsList.add(SurfaceRank(i, rank))
 			}
 			var iMin = surfaceRankBestsList.indexOf(Collections.min(surfaceRankBestsList))
 			var iMax = surfaceRankBestsList.indexOf(Collections.max(surfaceRankBestsList))
 
-			for(i in 0 until ranks!!.size) {
+			for(i in 0..<ranks!!.size) {
 				val rank = ranks!!.getRankValue(i)
 
 				val surfaceRank = SurfaceRank(i, rank)
@@ -146,7 +146,7 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 		var surfaceMirrored = 0
 
 		var factorD = (2*maxJump+1).toDouble().pow((stackWidth-2).toDouble()).toInt()
-		for(i in 0 until stackWidth-1) {
+		for(i in 0..<stackWidth-1) {
 			val `val` = surfaceWork%(2*maxJump+1)
 			surfaceMirrored += factorD*(2*maxJump-`val`)
 			surfaceWork /= 2*maxJump+1
@@ -239,8 +239,4 @@ class RanksResult(parent:JFrame, private var ranks:Ranks?, private val bestNRank
 		if(progressMonitor.isCanceled) task.cancel(true)
 	}
 
-	companion object {
-		/** */
-		private const val serialVersionUID = 1L
-	}
 }

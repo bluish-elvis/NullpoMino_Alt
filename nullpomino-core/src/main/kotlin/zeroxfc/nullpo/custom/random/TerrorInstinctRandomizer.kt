@@ -47,11 +47,7 @@ class TerrorInstinctRandomizer:Randomizer() {
 		piecePool = MutableList(pieces.size*5) {pieces[it/5]}
 		history = MutableList(4) {if(it%2==0) Piece.PIECE_S else Piece.PIECE_Z}
 		count = 0
-		for(i in pieces) {
-			for(j in 0..4) {
-				piecePool.add(i)
-			}
-		}
+		for(i in pieces) for(j in 0..4) piecePool.add(i)
 	}
 
 	override fun next():Int {
@@ -72,9 +68,7 @@ class TerrorInstinctRandomizer:Randomizer() {
 		val temp = history.removeAt(0)
 		history.add(id)
 		piecePool.removeAt(idx)
-		if(count>4) {
-			piecePool.add(temp)
-		}
+		if(count>4) piecePool.add(temp)
 	}
 
 	companion object {

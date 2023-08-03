@@ -97,11 +97,11 @@ class MarathonSquare:AbstractMode() {
 		rankingSquares.forEach {it.fill(0)}
 
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig, engine)
+			loadSetting(engine, owner.modeConfig)
 
 			version = CURRENT_VERSION
 		} else
-			loadSetting(owner.replayProp, engine)
+			loadSetting(engine, owner.replayProp)
 
 		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
 	}
@@ -240,7 +240,7 @@ class MarathonSquare:AbstractMode() {
 					2 -> receiver.drawScoreFont(engine, 3, 3, "TIME     SQUARE", EventReceiver.COLOR.BLUE)
 				}
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
@@ -342,8 +342,8 @@ class MarathonSquare:AbstractMode() {
 	 * @param field Field
 	 */
 	private fun grayoutBrokenBlocks(field:Field) {
-		for(i in field.hiddenHeight*-1 until field.heightWithoutHurryupFloor)
-			for(j in 0 until field.width)
+		for(i in field.hiddenHeight*-1..<field.heightWithoutHurryupFloor)
+			for(j in 0..<field.width)
 				field.getBlock(j, i)?.run {
 					if(!isEmpty&&getAttribute(ATTRIBUTE.BROKEN))
 						color = Block.COLOR.WHITE
@@ -401,12 +401,12 @@ class MarathonSquare:AbstractMode() {
 
 		while(!field.getLineFlag(testY)&&testY<height)
 			testY++
-		for(y in testY+hiddenHeight until affectY.size)
+		for(y in testY+hiddenHeight..<affectY.size)
 			affectY[y] = true
 
-		for(y in hiddenHeight*-1 until height)
+		for(y in hiddenHeight*-1..<height)
 			if(affectY[y+hiddenHeight])
-				for(x in 0 until field.width) {
+				for(x in 0..<field.width) {
 					field.getBlock(x, y)?.run {
 						// Change each affected block to broken and garbage, and break connections.
 						setAttribute(true, ATTRIBUTE.GARBAGE, ATTRIBUTE.BROKEN)
@@ -422,12 +422,12 @@ class MarathonSquare:AbstractMode() {
 				}
 			else if(tntAvalanche)
 			// Set antigravity when TNT avalanche is used
-				for(x in 0 until field.width) {
+				for(x in 0..<field.width) {
 					field.getBlock(x, y)?.setAttribute(true, ATTRIBUTE.ANTIGRAVITY)
 					field.getBlock(x, y-1)?.setAttribute(true, ATTRIBUTE.ANTIGRAVITY)
 				}
 		// Reset line flags
-		for(y in -1*hiddenHeight until height)
+		for(y in -1*hiddenHeight..<height)
 			engine.field.setLineFlag(y, false)
 		// Set cascade flag
 		engine.lineGravityType = GameEngine.LineGravity.CASCADE
@@ -448,7 +448,7 @@ class MarathonSquare:AbstractMode() {
 	}
 
 	/* Check for squares when piece locks */
-	override fun pieceLocked(engine:GameEngine, lines:Int) {
+	override fun pieceLocked(engine: GameEngine, lines: Int, finesse: Boolean) {
 		val sq = engine.field.checkForSquares()
 		squares += sq[0]+sq[1]
 		if(sq[0]==0&&sq[1]>0)
@@ -470,7 +470,7 @@ class MarathonSquare:AbstractMode() {
 
 	/* This function will be called when the replay data is going to be saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 		prop.setProperty("square.squares", squares)
 
 		// Update the ranking
@@ -483,7 +483,7 @@ class MarathonSquare:AbstractMode() {
 	}
 
 	/** Load the settings from [prop] */
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		gametype = prop.getProperty("square.gametype", 0)
 		outlinetype = prop.getProperty("square.outlinetype", 0)
 		twistEnableType = prop.getProperty("square.twistEnableType", 2)
@@ -498,7 +498,7 @@ class MarathonSquare:AbstractMode() {
 	/** Save the settings to CustomProperties
 	 * @param prop CustomProperties to write
 	 */
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("square.gametype", gametype)
 		prop.setProperty("square.outlinetype", outlinetype)
 		prop.setProperty("square.twistEnableType", twistEnableType)
@@ -540,7 +540,7 @@ class MarathonSquare:AbstractMode() {
 	 * @return Place (-1: Out of rank)
 	 */
 	private fun checkRanking(sc:Long, time:Int, sq:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			when {
 				gametype==0 -> {
 					// Marathon

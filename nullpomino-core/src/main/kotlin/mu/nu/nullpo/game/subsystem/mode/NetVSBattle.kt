@@ -111,7 +111,7 @@ class NetVSBattle:NetDummyVSMode() {
 	private val numberOfPossibleTargets:Int
 		get() {
 			var count = 0
-			for(i in 1 until players)
+			for(i in 1..<players)
 				if(netVSIsAttackable(i)) count++
 			return count
 		}
@@ -727,7 +727,7 @@ class NetVSBattle:NetDummyVSMode() {
 				val pts = IntArray(ATTACK_CATEGORIES)
 				var sumPts = 0
 
-				for(i in 0 until ATTACK_CATEGORIES) {
+				for(i in 0..<ATTACK_CATEGORIES) {
 					pts[i] = message[4+i].toInt()
 					sumPts += pts[i]
 				}

@@ -48,7 +48,19 @@ import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 /** ULTRA Mode */
 class SprintUltra:NetDummyMode() {
 	private var pow = 0
-	private val itemSpd = SpeedPresets(COLOR.BLUE, 0)
+	private val itemSpd = object:SpeedPresets(COLOR.BLUE, 0) {
+		override fun presetLoad(engine:GameEngine, prop:CustomProperties, ruleName:String, setId:Int) {
+			super.presetLoad(engine, prop, ruleName, setId)
+			big = prop.getProperty("$ruleName.big.$setId", false)
+			goalType = prop.getProperty("$ruleName.goalType.$setId", 1)
+		}
+
+		override fun presetSave(engine:GameEngine, prop:CustomProperties, ruleName:String, setId:Int) {
+			super.presetSave(engine, prop, ruleName, setId)
+			prop.setProperty("$ruleName.big.$setId", big)
+			prop.setProperty("$ruleName.goalType.$setId", goalType)
+		}
+	}
 	/** Last preset number used */
 	private var presetNumber:Int by DelegateMenuItem(itemSpd)
 
@@ -102,58 +114,17 @@ class SprintUltra:NetDummyMode() {
 		rankingPower.forEach {it.forEach {p -> p.fill(0)}}
 
 		owner.bgMan.bg = -14
-		engine.frameColor = GameEngine.FRAME_COLOR_BLUE
+		engine.frameColor = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
 
 		netPlayerInit(engine)
 
 		if(!owner.replayMode) {
-			presetNumber = owner.modeConfig.getProperty("ultra.presetNumber", 0)
-			loadPreset(engine, owner.modeConfig, -1)
-
 			version = CURRENT_VERSION
 		} else {
-			presetNumber = 0
-			loadPreset(engine, owner.replayProp, -1)
 			version = owner.replayProp.getProperty("ultra.version", 0)
 			// NET: Load name
 			netPlayerName = owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
-	}
-
-	/** Load options from a preset
-	 * @param engine GameEngine
-	 * @param prop Property file to read from
-	 * @param preset Preset number
-	 */
-	private fun loadPreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
-		engine.speed.gravity = prop.getProperty("ultra.gravity.$preset", 1)
-		engine.speed.denominator = prop.getProperty("ultra.denominator.$preset", 256)
-		engine.speed.are = prop.getProperty("ultra.are.$preset", 0)
-		engine.speed.areLine = prop.getProperty("ultra.areLine.$preset", 0)
-		engine.speed.lineDelay = prop.getProperty("ultra. lineDelay.$preset", 0)
-		engine.speed.lockDelay = prop.getProperty("ultra.lockDelay.$preset", 30)
-		engine.speed.das = prop.getProperty("ultra.das.$preset", 10)
-		big = prop.getProperty("ultra.big.$preset", false)
-		goalType = prop.getProperty("ultra.goalType.$preset", 0)
-	}
-
-	/** Save options to a preset
-	 * @param engine GameEngine
-	 * @param prop Property file to save to
-	 * @param preset Preset number
-	 */
-	private fun savePreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
-		prop.setProperty("ultra.gravity.$preset", engine.speed.gravity)
-		prop.setProperty("ultra.denominator.$preset", engine.speed.denominator)
-		prop.setProperty("ultra.are.$preset", engine.speed.are)
-		prop.setProperty("ultra.areLine.$preset", engine.speed.areLine)
-		prop.setProperty("ultra.lineDelay.$preset", engine.speed.lineDelay)
-		prop.setProperty("ultra.lockDelay.$preset", engine.speed.lockDelay)
-		prop.setProperty("ultra.das.$preset", engine.speed.das)
-		prop.setProperty("ultra.big.$preset", big)
-		prop.setProperty("ultra.goalType.$preset", goalType)
-
-		engine.frameColor = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
 	}
 
 	fun is20g(speed:SpeedParam) = speed.rank>=.3f
@@ -168,6 +139,12 @@ class SprintUltra:NetDummyMode() {
 			}
 		}
 		return super.onSetting(engine)
+	}
+
+	override fun onSettingChanged(engine:GameEngine) {
+		super.onSettingChanged(engine)
+		engine.frameColor = if(is20g(engine.speed)) GameEngine.FRAME_COLOR_RED else GameEngine.FRAME_COLOR_BLUE
+
 	}
 
 	/* This function will be called before the game actually begins (after
@@ -205,7 +182,7 @@ class SprintUltra:NetDummyMode() {
 				receiver.drawScoreFont(engine, 0, 3, "Score RANKING", col2)
 				receiver.drawScoreFont(engine, 1, 4, "Score Power Lines", col1)
 
-				for(i in 0 until minOf(RANKING_MAX, 12)) {
+				for(i in 0..<minOf(RANKING_MAX, 12)) {
 					receiver.drawScoreGrade(engine, 0, 5+i, "%2d".format(i+1), col3)
 					receiver.drawScoreNum(
 						engine, 1, 5+i, "%7d".format(rankingScore[0][gt][i]), i==rankingRank[0]
@@ -221,7 +198,7 @@ class SprintUltra:NetDummyMode() {
 				receiver.drawScoreFont(engine, 0, 11, "Power RANKING", col2)
 				receiver.drawScoreFont(engine, 1, 12, "Power Score Lines", col1)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, 13+i, "%2d".format(i+1), col3)
 					receiver.drawScoreNum(
 						engine, 2, 13+i, "%5d".format(rankingPower[1][gt][i]), i==rankingRank[1]
@@ -237,7 +214,7 @@ class SprintUltra:NetDummyMode() {
 				receiver.drawScoreFont(engine, 0, 19, "Lines RANKING", col2)
 				receiver.drawScoreFont(engine, 1, 20, "Lines Score Power", col1)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, 21+i, "%2d".format(i+1), col3)
 					receiver.drawScoreNum(
 						engine, 2, 21+i, "%5d".format(rankingLines[2][gt][i]), i==rankingRank[2]
@@ -255,20 +232,20 @@ class SprintUltra:NetDummyMode() {
 			receiver.drawScoreNum(engine, 5, 3, "+${"%6d".format(lastScore)}")
 			receiver.drawScoreNum(engine, 0, 4, "%7d".format(scDisp), scDisp<engine.statistics.score, 2f)
 
-			receiver.drawScoreFont(engine, 10, 3, "/min", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 5, 6, "/min", COLOR.BLUE)
 			receiver.drawScoreNum(
-				engine, 10, 4, engine.statistics.spm, 7 to null, scDisp<engine.statistics.score,
-				1.5f
+				engine, 0f, 6.3f, engine.statistics.spm, 7 to null, scDisp<engine.statistics.score,
+				1.6f
 			)
 
-			receiver.drawScoreFont(engine, 0, 6, "Spike", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 7, "%5d".format(engine.statistics.attacks), 2f)
+			receiver.drawScoreFont(engine, 0, 8, "Spike", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 9, "%5d".format(engine.statistics.attacks), 2f)
 
-			receiver.drawScoreFont(engine, 3, 9, "Lines", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 8, 8, "${engine.statistics.lines}", 2f)
+			receiver.drawScoreFont(engine, 3, 11, "Lines", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 8, 10, "${engine.statistics.lines}", 2f)
 
-			receiver.drawScoreFont(engine, 4, 10, "/min", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 8, 10, "${engine.statistics.lpm}", 1.5f)
+			receiver.drawScoreFont(engine, 4, 12, "/min", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 8, 12, engine.statistics.lpm, 7 to null, scale = 1.5f)
 
 			receiver.drawScoreFont(engine, 0, 14, "Time", COLOR.BLUE)
 			val time = maxOf(0, (tableLength[goalType])*3600-engine.statistics.time)
@@ -385,7 +362,7 @@ class SprintUltra:NetDummyMode() {
 
 				drawResultStats(engine, receiver, 10, COLOR.BLUE, Statistic.PPS, Statistic.APL)
 			}
-			1 -> {
+			2 -> {
 				drawResultStats(engine, receiver, 1, COLOR.BLUE, Statistic.MAXCOMBO, Statistic.MAXB2B, Statistic.PIECE)
 				drawResultStats(engine, receiver, 7, COLOR.BLUE, Statistic.LPM)
 
@@ -407,7 +384,7 @@ class SprintUltra:NetDummyMode() {
 
 	/* Called when saving replay */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		savePreset(engine, engine.owner.replayProp, -1)
+		itemSpd.presetSave(engine, prop, menu.propName, -1)
 		engine.owner.replayProp.setProperty("ultra.version", version)
 
 		// NET: Save name
@@ -462,7 +439,7 @@ class SprintUltra:NetDummyMode() {
 	 */
 	private fun checkRanking(type:RankingType, goal:Int, sc:Long, po:Int, li:Int):Int {
 		val ord = type.ordinal
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			when(type) {
 				RankingType.Score ->
 					when {
@@ -586,8 +563,8 @@ class SprintUltra:NetDummyMode() {
 		/** Number of ranking types */
 		private enum class RankingType { Score, Power, Lines }
 
-		private val RANKTYPE_ALL = SprintUltra.Companion.RankingType.values()
-		private val RANKTYPE_MAX = RankingType.values().size
+		private val RANKTYPE_ALL = RankingType.entries
+		private val RANKTYPE_MAX = RANKTYPE_ALL.size
 
 		/** Time limit type */
 		private val GOALTYPE_MAX = tableLength.size*2

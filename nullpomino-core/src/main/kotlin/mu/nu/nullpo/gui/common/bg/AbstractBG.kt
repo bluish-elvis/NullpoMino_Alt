@@ -50,6 +50,6 @@ abstract class AbstractBG<T>(val img:ResourceImage<T>) {
 	}
 
 	companion object {
-		const val Rg = (PI/180).toFloat()
+		const val RG = (PI/180).toFloat()
 	}
 }

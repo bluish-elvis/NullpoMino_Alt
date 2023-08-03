@@ -1800,9 +1800,6 @@ class RuleEditorFX:Application(null) {
 		}}
 
 	companion object {
-		/** Serial version */
-		private const val serialVersionUID = 1L
-
 		/** Log */
 		internal val log = LogManager.getLogger()
 

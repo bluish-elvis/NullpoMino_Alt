@@ -307,7 +307,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				fis.close()
 
 				for(pl in 0..1)
-					for(i in 0 until GameEngine.MAX_GAMESTYLE)
+					for(i in 0..<GameEngine.MAX_GAMESTYLE)
 					// TETROMINO
 						if(i==0) {
 							if(propGlobal.getProperty("$pl.rule")==null) {
@@ -527,8 +527,8 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				// なので自前で画面をコピーする
 				BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_RGB).also {ssImage ->
 
-					for(i in 0 until screenWidth)
-						for(j in 0 until screenHeight) {
+					for(i in 0..<screenWidth)
+						for(j in 0..<screenHeight) {
 							val color = screenImage.getColor(i, j+1) // SomehowY-coordinateThe+1I seem not to deviate
 
 							val rgb = color.red and 0x000000FF shl 16 or (
@@ -571,11 +571,10 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 				if(sleepTimeInMillis>=10&&(!alternateFPSPerfectMode||!ingame)) {
 					// If it is possible to use sleep
-					if(maxFps>0)
-						try {
-							Thread.sleep(sleepTimeInMillis)
-						} catch(_:InterruptedException) {
-						}
+					try {
+						Thread.sleep(sleepTimeInMillis)
+					} catch(_:InterruptedException) {
+					}
 
 					// sleep() oversleep
 					overSleepTime = System.nanoTime()-afterTime-sleepTime
@@ -642,31 +641,23 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				prevCalcTime = timeNow
 
 				// Set new target fps
-				if(altMaxFPS>0&&alternateFPSDynamicAdjust&&!alternateFPSPerfectMode)
+				if(altMaxFPS>0&&alternateFPSDynamicAdjust&&!alternateFPSPerfectMode) {
 					if(ingame) {
-						if(actualFPS<altMaxFPS-1) {
-							// Too Slow
-							altMaxFPSCurrent++
-							if(altMaxFPSCurrent>altMaxFPS+20) altMaxFPSCurrent = altMaxFPS+20
-							periodCurrent = (1.0/altMaxFPSCurrent*1000000000).toLong()
-						} else if(actualFPS>altMaxFPS+1) {
-							// Too Fast
-							altMaxFPSCurrent--
-							if(altMaxFPSCurrent<altMaxFPS) altMaxFPSCurrent = altMaxFPS
-							if(altMaxFPSCurrent<1) altMaxFPSCurrent = 1
-							periodCurrent = (1.0/altMaxFPSCurrent*1000000000).toLong()
-						}
-					} else if(!ingame&&altMaxFPSCurrent!=altMaxFPS) {
-						altMaxFPSCurrent = altMaxFPS
-						periodCurrent = (1.0/altMaxFPSCurrent*1000000000).toLong()
-					}
+						// Too Slow
+						if(actualFPS<altMaxFPS-1) altMaxFPSCurrent = minOf(altMaxFPS+20, altMaxFPSCurrent+1)
+						// Too Fast
+						else if(actualFPS>altMaxFPS+1) altMaxFPSCurrent = maxOf(1, altMaxFPS, altMaxFPSCurrent-1)
+
+					} else if(altMaxFPSCurrent!=altMaxFPS) altMaxFPSCurrent = altMaxFPS
+					periodCurrent = (1.0/altMaxFPSCurrent*1000000000).toLong()
+				}
 			}
 		}
 
 		/** FPS display */
 		internal fun drawFPS() {
 			if(propConfig.getProperty("option.showFps", true))
-				FontNano.printFont(240-42, 480-8, "${df.format(actualFPS)}FPS", COLOR.WHITE, .5f)
+				FontNano.printFont(320-42, 0, "${df.format(actualFPS)}FPS", COLOR.WHITE, .5f)
 		}
 
 		/** Observerクライアントを開始 */

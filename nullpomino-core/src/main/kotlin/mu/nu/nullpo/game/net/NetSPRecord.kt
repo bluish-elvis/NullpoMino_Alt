@@ -274,9 +274,6 @@ class NetSPRecord:Serializable {
 	}
 
 	companion object {
-		/** serialVersionUID for Serialize */
-		private const val serialVersionUID = 1L
-
 		/** Ranking type constants */
 		const val RANKINGTYPE_GENERIC_SCORE = 0
 		const val RANKINGTYPE_GENERIC_TIME = 1

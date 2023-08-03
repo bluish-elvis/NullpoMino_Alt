@@ -171,17 +171,17 @@ class BasePvPAI(PyAI):
       else:
         # rotation
         if not rt == self.bestRt:
-          lrot = engine.getRotateDirection(-1)
-          rrot = engine.getRotateDirection(1)
+          spL = engine.getRotateDirection(-1)
+          spR = engine.getRotateDirection(1)
 
           if ((Math.abs(rt - self.bestRt) == 2) and engine.ruleopt.rotateButtonAllowDouble and not ctrl.isPress(
               ctrl.BUTTON_E)):
             input |= ctrl.BUTTON_BIT_E
           elif (not ctrl.isPress(ctrl.BUTTON_B) and engine.ruleopt.rotateButtonAllowReverse and
-                not engine.isRotateButtonDefaultRight() and (self.bestRt == rrot)):
+                not engine.isRotateButtonDefaultRight() and (self.bestRt == spR)):
             input |= ctrl.BUTTON_BIT_B
           elif (not ctrl.isPress(ctrl.BUTTON_B) and engine.ruleopt.rotateButtonAllowReverse and
-                engine.isRotateButtonDefaultRight() and (self.bestRt == lrot)):
+                engine.isRotateButtonDefaultRight() and (self.bestRt == spL)):
             input |= ctrl.BUTTON_BIT_B
           elif not ctrl.isPress(ctrl.BUTTON_A):
             input |= ctrl.BUTTON_BIT_A

@@ -196,7 +196,7 @@ class GrandSStealth:AbstractMode() {
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
 		} else {
-			for(i in 0 until SECTION_MAX)
+			for(i in 0..<SECTION_MAX)
 				bestSectionTime[i] = DEFAULT_SECTION_TIME
 			version = owner.replayProp.getProperty("phantommania.version", 0)
 		}
@@ -205,7 +205,7 @@ class GrandSStealth:AbstractMode() {
 	}
 
 	/** Load the settings */
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		startLevel = prop.getProperty("phantommania.startLevel", 0)
 		secAlert = prop.getProperty("phantommania.lvstopse", true)
 		showST = prop.getProperty("phantommania.showsectiontime", true)
@@ -213,7 +213,7 @@ class GrandSStealth:AbstractMode() {
 	}
 
 	/** Save the settings */
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("phantommania.startLevel", startLevel)
 		prop.setProperty("phantommania.lvstopse", secAlert)
 		prop.setProperty("phantommania.showsectiontime", showST)
@@ -386,9 +386,9 @@ class GrandSStealth:AbstractMode() {
 				if(!isShowBestSectionTime) {
 					// Leaderboard
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
-					receiver.drawScoreFont(engine, 3, topY-1, "GRADE LEVEL TIME", COLOR.PURPLE)
+					receiver.drawScoreFont(engine, 0, topY-1, "GRADE LV TIME", COLOR.PURPLE)
 
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 
 						receiver.drawScoreGrade(
 							engine, 0, topY+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
@@ -400,8 +400,8 @@ class GrandSStealth:AbstractMode() {
 								else if(rankingRollClear[i]==2) COLOR.ORANGE
 								else COLOR.WHITE
 							)
-						receiver.drawScoreNum(engine, 9, topY+i, "%03d".format(rankingLevel[i]), i==rankingRank)
-						receiver.drawScoreNum(engine, 15, topY+i, rankingTime[i].toTimeStr, i==rankingRank)
+						receiver.drawScoreNum(engine, 5, topY+i, "%03d".format(rankingLevel[i]), i==rankingRank)
+						receiver.drawScoreNum(engine, 8, topY+i, rankingTime[i].toTimeStr, i==rankingRank)
 					}
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
@@ -410,7 +410,7 @@ class GrandSStealth:AbstractMode() {
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.PURPLE)
 
 					var totalTime = 0
-					for(i in 0 until SECTION_MAX) {
+					for(i in 0..<SECTION_MAX) {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
@@ -693,7 +693,7 @@ class GrandSStealth:AbstractMode() {
 				if(nextSecLv==300||nextSecLv==700) roMedalCheck(engine)
 
 				if(startLevel==0)
-					for(i in 0 until tableGradeLevel.size-1)
+					for(i in 0..<tableGradeLevel.size-1)
 						if(engine.statistics.level>=tableGradeLevel[i]) {
 							grade = i
 							gradeFlash = 180
@@ -824,7 +824,7 @@ class GrandSStealth:AbstractMode() {
 	/** This function will be called when the replay data is going to be
 	 * saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(owner.replayProp, engine)
+		saveSetting(engine, owner.replayProp)
 		owner.replayProp.setProperty("phantommania.version", version)
 
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
@@ -859,7 +859,7 @@ class GrandSStealth:AbstractMode() {
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
 	private fun checkRanking(gr:Int, lv:Int, time:Int, clear:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(clear>rankingRollClear[i])
 				return i
 			else if(clear==rankingRollClear[i]&&gr>rankingGrade[i])
@@ -873,7 +873,7 @@ class GrandSStealth:AbstractMode() {
 
 	/** Updates best section time records */
 	private fun updateBestSectionTime() {
-		for(i in 0 until SECTION_MAX)
+		for(i in 0..<SECTION_MAX)
 			if(sectionIsNewRecord[i]) bestSectionTime[i] = sectionTime[i]
 	}
 

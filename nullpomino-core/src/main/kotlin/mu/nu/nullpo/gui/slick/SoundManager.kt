@@ -35,8 +35,7 @@ import org.newdawn.slick.Sound
 class SoundManager
 /** Constructor
  * @param maxClips 登録できるWAVE file のMaximumcount
- */
-constructor(
+ */(
 	/** 登録できるWAVE file のMaximumcount */
 	private val maxClips:Int = 128) {
 	/** WAVE file data (Name-> data本体) */

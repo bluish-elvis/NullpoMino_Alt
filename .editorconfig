@@ -7,6 +7,7 @@ insert_final_newline=true
 max_line_length=128
 tab_width=2
 trim_trailing_whitespace=true
+ij_any_label_indent_size=2
 ij_continuation_indent_size=2
 ij_formatter_off_tag=@formatter:off
 ij_formatter_on_tag=@formatter:on
@@ -437,6 +438,11 @@ ij_markdown_min_lines_between_paragraphs=1
 ij_markdown_wrap_text_if_long=true
 ij_markdown_wrap_text_inside_blockquotes=true
 
+[*.lua]
+ij_lua_tab_width=2
+ij_lua_indent_size=2
+ij_lua_continuation_indent_size=2
+
 [{*.py,*.pyw}]
 ij_continuation_indent_size=4
 ij_python_align_collections_and_comprehensions=true
@@ -448,7 +454,7 @@ ij_python_blank_lines_after_imports=1
 ij_python_blank_lines_after_local_imports=0
 ij_python_blank_lines_around_class=1
 ij_python_blank_lines_around_method=1
-ij_python_blank_lines_around_top_level_classes_functions=2
+ij_python_blank_lines_around_top_level_classes_functions=1
 ij_python_blank_lines_before_first_method=0
 ij_python_call_parameters_new_line_after_left_paren=false
 ij_python_call_parameters_right_paren_on_new_line=false

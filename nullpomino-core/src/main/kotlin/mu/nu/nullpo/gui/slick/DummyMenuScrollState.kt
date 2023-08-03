@@ -113,7 +113,7 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 			}
 			if(cursor>=maxentry) cursor = maxentry-1
 			if(cursor<minentry) cursor = minentry
-		} else if(clicked&&y in 3 until 2+pageHeight) {
+		} else if(clicked&&y in 3..<2+pageHeight) {
 			val newCursor = y-3+minentry
 			when {
 				newCursor==cursor -> return true
@@ -132,7 +132,7 @@ abstract class DummyMenuScrollState:DummyMenuChooseState() {
 	private fun drawMenuList(graphics:Graphics) {
 		val maxentry = minOf(minentry+pageHeight-1, list.size)
 
-		for((y, i) in (minentry until maxentry).withIndex()) {
+		for((y, i) in (minentry..<maxentry).withIndex()) {
 			FontNormal.printFontGrid(2, 3+y, list[i], cursor==i)
 			if(cursor==i) FontNormal.printFontGrid(1, 3+y, "\u0082", COLOR.RAINBOW)
 		}

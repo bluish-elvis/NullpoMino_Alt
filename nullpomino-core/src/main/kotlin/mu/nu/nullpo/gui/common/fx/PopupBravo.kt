@@ -35,7 +35,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class PopupBravo(x:Int, y:Int, val w:Int, val h:Int):SpriteSheet(x, y) {
+class PopupBravo(x:Float, y:Float, val w:Int, val h:Int):SpriteSheet(x, y) {
 
 	override fun update(r:AbstractRenderer):Boolean {
 		ticks++

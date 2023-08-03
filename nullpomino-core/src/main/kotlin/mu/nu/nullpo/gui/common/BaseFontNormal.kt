@@ -34,8 +34,8 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 
 abstract class BaseFontNormal:BaseFont {
 	companion object {
-		const val w:Int = 16
-		const val h:Int = 16
+		const val W:Int = 16
+		const val H:Int = 16
 	}
 
 	override fun processTxt(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float, rainbow:Int,
@@ -46,7 +46,7 @@ abstract class BaseFontNormal:BaseFont {
 
 			if(char.code==0x0A) {
 				// New line (\n)
-				dy += h*scale
+				dy += H*scale
 				dx = x
 			} else {
 				val c = if(char.code==0x20) 96 else char.code-32// Character output
@@ -57,9 +57,9 @@ abstract class BaseFontNormal:BaseFont {
 				when {
 					scale<=.5f -> draw(0, dx, wy, scale*2, c%32*8, (c/32+fontColor*4)*8, 8, 8, a)
 					scale>=(5f/3f) -> draw(2, dx, wy, scale/2, c%32*32, (c/32+fontColor*4)*32, 32, 32, a)
-					else -> draw(1, dx, wy, scale, c%32*w, (c/32+fontColor*4)*16, 16, 16, a)
+					else -> draw(1, dx, wy, scale, c%32*W, (c/32+fontColor*4)*16, 16, 16, a)
 				}
-				dx += w*scale
+				dx += W*scale
 			}
 		}
 	}

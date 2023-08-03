@@ -57,37 +57,36 @@ open class EventReceiver {
 		WHITE, BLUE, RED, PINK, GREEN, YELLOW, CYAN, ORANGE, PURPLE, COBALT, RAINBOW;
 
 		companion object {
-			val all = COLOR.values()
+			val all = entries
 		}
 	}
 
 	/** Background display */
-	protected var showBg = false
+	protected var showBG = false
 
-	/** Show meter */
+	/** Show Meter on right field */
 	protected var showMeter = false
 
 	/** Show ARE meter */
 	protected var showSpeed = false
 
-	/** Show Outline ghost piece */
+	/** Show ghost piece as Outline */
 	protected var outlineGhost = false
-
-	/** Piece previews on sides */
-	protected var sideNext = false
-
-	/** Use bigger side previews */
-	protected var bigSideNext = false
-
-	/** @return True if you can use TTF font routines */
-	open val isTTFSupport:Boolean
-		get() = false
 
 	/** Get type of piece preview
 	 * @return 0=Above 1=Side Small 2=Side Big
 	 */
-	val nextDisplayType:Int
-		get() = if(sideNext) 1+bigSideNext.toInt() else 0
+	var nextDisplayType:Int = 0; protected set
+
+	/** Piece previews on sides */
+	protected val sideNext get() = nextDisplayType>0
+
+	/** Use bigger side previews */
+	protected val bigSideNext get() = nextDisplayType>1
+
+	/** @return True if you can use TTF font routines */
+	open val isTTFSupport:Boolean
+		get() = false
 
 	/** Get Number of Block Skins */
 	open val skinMax:Int
@@ -97,14 +96,14 @@ open class EventReceiver {
 	fun fieldX(e:GameEngine) = e.fX
 	/** @return X position of field */
 	val GameEngine.fX
-		get() = if(owner.menuOnly) 0 else owner.mode?.let {m ->
-			fieldXOffset+if(nextDisplayType==2) NEW_FIELD_OFFSET_X_BSP[m.gameStyle.ordinal][displaySize+1].let {
+		get() = if(owner.menuOnly) 0f else (owner.mode?.let {m ->
+			this.frameX+fieldXOffset+if(nextDisplayType==2) NEW_FIELD_OFFSET_X_BSP[m.gameStyle.ordinal][displaySize+1].let {
 				it[minOf(it.lastIndex, playerID)]
 			}
 			else NEW_FIELD_OFFSET_X[m.gameStyle.ordinal][displaySize+1].let {
 				it[minOf(it.lastIndex, playerID)]+if(nextDisplayType==1) blockSize else 0
 			}
-		} ?: 0
+		}) ?: 0f
 
 	/** @return Left Margin of field for Centering w/width<10 */
 	val GameEngine.fieldXOffset get() = maxOf(0, blockSize*(10-field.width)/2)
@@ -113,11 +112,13 @@ open class EventReceiver {
 	fun fieldY(e:GameEngine) = e.fY
 	/** @return Y position of field*/
 	val GameEngine.fY
-		get() = if(owner.menuOnly) 0 else owner.mode?.let {m ->
-			if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal][displaySize+1].let {it[minOf(it.lastIndex, playerID)]}
+		get() = if(owner.menuOnly) 0f else (owner.mode?.let {m ->
+			this.frameY+if(nextDisplayType==2) NEW_FIELD_OFFSET_Y_BSP[m.gameStyle.ordinal][displaySize+1].let {
+				it[minOf(it.lastIndex, playerID)]
+			}
 			else NEW_FIELD_OFFSET_Y[m.gameStyle.ordinal][displaySize+1].let {it[minOf(it.lastIndex, playerID)]}+
 				if(nextDisplayType==0) nextHeight else 0
-		} ?: 0
+		}) ?: 0f
 
 	/** @return X position of score display area*/
 	fun scoreX(e:GameEngine) = e.sX
@@ -132,7 +133,7 @@ open class EventReceiver {
 			} ?: 0)+fieldXOffset+blockSize*(field.width+3+nextDisplayType)
 
 	/** @return Y position of score display area */
-	@Deprecated("toExtend", ReplaceWith("e.sY"))
+//	@Deprecated("toExtend", ReplaceWith("e.sY"))
 	fun scoreY(e:GameEngine) = e.sY
 	/** @return Y position of score display area */
 	val GameEngine.sY
@@ -159,7 +160,7 @@ open class EventReceiver {
 	 * @param pts Number of points last gained
 	 */
 	fun addScore(engine:GameEngine, x:Int, y:Int, pts:Int, color:COLOR = getPlayerColor(engine.playerID)) =
-		addScore(engine.fX+x*engine.blockSize, engine.fY+y*engine.blockSize, pts, color)
+		addScore(engine.fX.toInt()+x*engine.blockSize, engine.fY.toInt()+y*engine.blockSize, pts, color)
 
 	open fun addCombo(x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN, ex:Int) {}
 
@@ -168,7 +169,7 @@ open class EventReceiver {
 	 * @param pts Number of points last gained
 	 */
 	fun addCombo(engine:GameEngine, x:Int, y:Int, pts:Int, type:PopupCombo.CHAIN) = addCombo(
-		engine.fX+x*engine.blockSize, engine.fY+y*engine.blockSize, pts, type, -(x+2)*engine.blockSize+18
+		engine.fX.toInt()+x*engine.blockSize, engine.fY.toInt()+y*engine.blockSize, pts, type, -(x+2)*engine.blockSize+18
 	)
 
 	/** It will be called when a fireworks shoot.
@@ -177,7 +178,7 @@ open class EventReceiver {
 	 * @param y Y-coordinate
 	 * @param color Color
 	 */
-	open fun shootFireworks(engine:GameEngine, x:Int, y:Int, color:COLOR) {
+	open fun shootFireworks(engine:GameEngine, x:Float, y:Float, color:COLOR) {
 		playSE("firecracker"+(random.nextInt(2)+1))
 	}
 
@@ -207,14 +208,12 @@ open class EventReceiver {
 	open fun drawFont(x:Float, y:Float, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) {
 	}
 
-	fun drawFont(x:Int, y:Int, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawFont(x:Number, y:Number, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawFont(x.toFloat(), y.toFloat(), str, font, color, scale, alpha)
 
-	fun drawDirectFont(x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawDirectFont(x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawFont(x, y, str, FONT.NORMAL, color, scale, alpha)
 
-	fun drawDirectFont(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
-		drawFont(x, y, str, FONT.NORMAL, color, scale, alpha)
 	/** [You don't have to override this]
 	 * Draw String to any location.
 	 * If flag is false, it will use white font cint. If flag is true, it will
@@ -225,10 +224,10 @@ open class EventReceiver {
 	 * @param str String to draw
 	 * @param flag Any boolean variable
 	 */
-	fun drawDirectFont(playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawDirectFont(playerID:Int, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawDirectFont(x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE, scale, alpha)
 
-	fun drawDirectNano(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawDirectNano(x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawFont(x, y, str, FONT.NANO, color, scale, alpha)
 
 	/** [You don't have to override this]
@@ -241,7 +240,7 @@ open class EventReceiver {
 	 * @param str String to draw
 	 * @param flag Any boolean variable
 	 */
-	fun drawDirectNano(playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawDirectNano(playerID:Int, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawDirectNano(x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE, scale, alpha)
 
 	fun drawDirectNum(x:Float, y:Float, num:Number, precise:Pair<Int?, Int?> = null to null,
@@ -249,13 +248,17 @@ open class EventReceiver {
 		"%${precise.first ?: ""}${precise.second?.let {".$it"} ?: ""}f".format(num).split('.').let {
 			val f = "${it[0]}."
 			drawFont(x, y, f, FONT.NUM, color, scale, alpha)
-			drawFont(
-				x+f.length*FONT.NUM.w*scale, y+FONT.NUM.h*scale/3f, it[1], if(scale>=1.25f) FONT.NUM else FONT.NANO,
-				color, scale*2/3, alpha
-			)
+			if(it.size>1) {
+				val ns = scale/2
+				val isBig = FONT.NANO.h*ns>=FONT.NUM.h*.75f
+				drawFont(
+					x+f.length*FONT.NUM.w*scale, y+FONT.NUM.h*(scale-ns),
+					it[1], if(isBig) FONT.NUM else FONT.NANO, color, if(isBig) ns else ns*FONT.NUM.h/FONT.NANO.h, alpha
+				)
+			}
 		}
 
-	fun drawDirectNum(x:Int, y:Int, num:Number, precise:Pair<Int?, Int?> = null to null,
+	fun drawDirectNum(x:Number, y:Number, num:Number, precise:Pair<Int?, Int?> = null to null,
 		color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawDirectNum(x.toFloat(), y.toFloat(), num, precise, color, scale, alpha)
 
@@ -267,7 +270,7 @@ open class EventReceiver {
 	 * @param color Font cint
 	 * @param scale Font size (.5f, 1f, 2f)
 	 */
-	fun drawDirectNum(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawDirectNum(x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawFont(x, y, str, FONT.NUM, color, scale, alpha)
 
 	/** [You don't have to override this]
@@ -280,7 +283,7 @@ open class EventReceiver {
 	 * @param str String to draw
 	 * @param flag Any boolean variable
 	 */
-	fun drawDirectNum(playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawDirectNum(playerID:Int, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawDirectNum(x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE, scale, alpha)
 
 	/** [You don't have to override this]
@@ -291,7 +294,7 @@ open class EventReceiver {
 	 * @param color Font cint
 	 * @param scale Font size (.5f, 1f, 2f)
 	 */
-	fun drawDirectGrade(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawDirectGrade(x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawFont(x, y, str, FONT.GRADE, color, scale, alpha)
 
 	/** [You don't have to override this]
@@ -304,7 +307,7 @@ open class EventReceiver {
 	 * @param str String to draw
 	 * @param flag Any boolean variable
 	 */
-	fun drawDirectGrade(playerID:Int, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawDirectGrade(playerID:Int, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawDirectGrade(x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE, scale, alpha)
 
 	/** [YOu don't have to override this]
@@ -314,9 +317,8 @@ open class EventReceiver {
 	 * @param str String to draw
 	 * @param color Font cint
 	 */
-	fun drawDirectTTF(x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE) {
+	fun drawDirectTTF(x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE) =
 		drawFont(x, y, str, FONT.TTF, color)
-	}
 
 	/** [You don't have to override this]
 	 * Draw String to any location.
@@ -328,9 +330,8 @@ open class EventReceiver {
 	 * @param str String to draw
 	 * @param flag Any boolean variable
 	 */
-	fun drawDirectTTF(playerID:Int, x:Int, y:Int, str:String, flag:Boolean) {
+	fun drawDirectTTF(playerID:Int, x:Number, y:Number, str:String, flag:Boolean) =
 		drawDirectTTF(x, y, str, if(flag) getPlayerColor(playerID) else COLOR.WHITE)
-	}
 
 	private fun menuPos(engine:GameEngine, x:Float, y:Float, str:String, font:FONT, scale:Float):Pair<Float, Float> {
 		var sx = if(x<-2) engine.fieldWidth*BS/2-str.length*font.w*scale/2 else BS*x
@@ -339,8 +340,11 @@ open class EventReceiver {
 			sx += engine.fX
 			sy += engine.fY
 		}
-		return Pair(sx, sy)
+		return sx to sy
 	}
+
+	private fun menuPos(engine:GameEngine, x:Number, y:Number, str:String, font:FONT, scale:Float) =
+		menuPos(engine, x.toFloat(), y.toFloat(), str, font, scale)
 	/** Draw String inside the field.
 	 * @param engine GameEngine
 	 * @param x X-coordinate
@@ -350,109 +354,87 @@ open class EventReceiver {
 	 * @param color Font cint
 	 * @param scale Font size (.5f, 1f, 2f)
 	 */
-	fun drawMenu(engine:GameEngine, x:Float, y:Float, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawMenu(engine:GameEngine, x:Number, y:Number, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		menuPos(engine, x, y, str, font, scale).let {(sx, sy) ->
 			drawFont(sx, sy, str, font, color, scale, alpha)
 		}
 
 	/** Draw String inside the field.*/
-	fun drawMenu(engine:GameEngine, x:Int, y:Int, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
-		drawMenu(engine, x*if(scale<=.5f) .5f else 1f, y*if(scale<=.5f) .5f else 1f, str, font, color, scale, alpha)
-
-	fun drawMenuFont(engine:GameEngine, x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawMenuFont(engine:GameEngine, x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawMenu(engine, x, y, str, FONT.NORMAL, color, scale, alpha)
 
-	fun drawMenuFont(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
-		drawMenu(engine, x, y, str, FONT.NORMAL, color, scale, alpha)
-
-	fun drawMenuFont(engine:GameEngine, x:Int, y:Int, str:String, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawMenuFont(engine:GameEngine, x:Number, y:Number, str:String, scale:Float = 1f, alpha:Float = 1f) =
 		drawMenu(engine, x, y, str, FONT.NORMAL, scale = scale, alpha = alpha)
 
 	/** [You don't have to override this]
 	 * Draw String inside the field.
 	 * If [flag] is false, it will use white font cint.
 	 * If [flag] is true, it will use red or blue instead.*/
-	fun drawMenuFont(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f) =
+	fun drawMenuFont(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f) =
 		drawMenuFont(engine, x, y, str, color = if(flag) getPlayerColor(engine.playerID) else COLOR.WHITE, scale = scale)
 
 	/** [You don't have to override this]
 	 * Draw Number inside the field.*/
-	fun drawMenuNum(engine:GameEngine, x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawMenuNum(engine:GameEngine, x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawMenu(engine, x, y, str, FONT.NUM, color, scale, alpha)
 
 	/** [You don't have to override this]
 	 * Draw Number inside the field.*/
-	fun drawMenuNum(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
-		drawMenu(engine, x, y, str, FONT.NUM, color, scale, alpha)
-
-	/** [You don't have to override this]
-	 * Draw Number inside the field.*/
-	fun drawMenuNum(engine:GameEngine, x:Int, y:Int, str:String, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawMenuNum(engine:GameEngine, x:Number, y:Number, str:String, scale:Float = 1f, alpha:Float = 1f) =
 		drawMenu(engine, x, y, str, FONT.NUM, scale = scale, alpha = alpha)
-
-	fun drawMenuNum(engine:GameEngine, x:Float, y:Float, num:Number, precise:Pair<Int?, Int?> = null to null,
-		color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
-		menuPos(engine, x, y, "$num", FONT.NUM, scale).let {(sx, sy) -> drawDirectNum(sx, sy, num, precise, color, scale, alpha)}
-
-	fun drawMenuNum(engine:GameEngine, x:Int, y:Int, num:Number, precise:Pair<Int?, Int?> = null to null,
-		color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
-		drawMenuNum(engine, x.toFloat(), y.toFloat(), num, precise, color, scale, alpha)
-
-	fun drawMenuNum(engine:GameEngine, x:Int, y:Int, num:Number, precise:Pair<Int?, Int?> = null to null,
-		flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
-		drawMenuNum(engine, x.toFloat(), y.toFloat(), num, precise, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale, alpha)
 
 	/** [You don't have to override this]
 	 * Draw Number inside the field.
 	 * If [flag] is false, it will use white font cint.
 	 * If [flag] is true, it will use red or blue instead.*/
-	fun drawMenuNum(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawMenuNum(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawMenuNum(engine, x, y, str, if(flag) getPlayerColor(engine.playerID) else COLOR.WHITE, scale, alpha)
 
-	/** @see drawMenu*/
-	fun drawMenuNano(engine:GameEngine, x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
-		drawMenu(engine, x, y, str, FONT.NANO, color, scale, alpha)
+	fun drawMenuNum(engine:GameEngine, x:Number, y:Number, num:Number, precise:Pair<Int?, Int?> = null to null,
+		color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+		menuPos(engine, x, y, "$num", FONT.NUM, scale).let {(sx, sy) ->
+			drawDirectNum(sx, sy, num, precise, color, scale, alpha)
+		}
+
+	fun drawMenuNum(engine:GameEngine, x:Number, y:Number, num:Number, precise:Pair<Int?, Int?> = null to null,
+		flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+		drawMenuNum(engine, x, y, num, precise, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale, alpha)
 
 	/** @see drawMenu*/
-	fun drawMenuNano(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawMenuNano(engine:GameEngine, x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawMenu(engine, x, y, str, FONT.NANO, color, scale, alpha)
 
 	/** [You don't have to override this]
 	 * Draw Small Font inside the field.
 	 * If [flag] is false, it will use white font cint.
 	 * If [flag] is true, it will use red or blue instead.*/
-	fun drawMenuNano(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawMenuNano(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawMenuNano(
 			engine, x, y, str, if(flag) if(engine.playerID%2==0) COLOR.YELLOW else COLOR.ORANGE else COLOR.WHITE, scale, alpha
 		)
 
 	/** [You don't have to override this]
 	 * Draw Grade inside the field.*/
-	fun drawMenuGrade(engine:GameEngine, x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
-		drawMenu(engine, x, y, str, FONT.GRADE, color, scale, alpha)
-
-	/** [You don't have to override this]
-	 * Draw Grade inside the field.*/
-	fun drawMenuGrade(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawMenuGrade(engine:GameEngine, x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawMenu(engine, x, y, str, FONT.GRADE, color, scale, alpha)
 
 	/** [You don't have to override this]
 	 * Draw Grade inside the field.
 	 * If [flag] is false, it will use white font cint.
 	 * If [flag] is true, it will use red or blue instead.*/
-	fun drawMenuGrade(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawMenuGrade(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawMenuGrade(engine, x, y, str, if(flag) getPlayerColor(engine.playerID) else COLOR.WHITE, scale, alpha)
 
 	/** [You don't have to override this]
 	 * Draw String inside the field.*/
-	fun drawMenuTTF(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE) =
+	fun drawMenuTTF(engine:GameEngine, x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE) =
 		drawMenu(engine, x, y, str, font = FONT.TTF, color = color)
 
 	/** [You don't have to override this]
 	 * Draw String inside the field.
 	 * If [flag] is false, it will use white font cint.
 	 * If [flag] is true, it will use red or blue instead.*/
-	fun drawMenuTTF(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean) =
+	fun drawMenuTTF(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean) =
 		drawMenuTTF(engine, x, y, str, if(flag) getPlayerColor(engine.playerID) else COLOR.WHITE)
 
 	/** Draw String to score display area.*/
@@ -460,41 +442,36 @@ open class EventReceiver {
 		if(!engine.owner.menuOnly) drawFont(engine.sX+x*BS, engine.sY+y*BS, str, font, color, scale, alpha)
 	}
 
-	fun drawScore(engine:GameEngine, x:Int, y:Int, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
-		drawScore(engine, x*if(scale<=.5f) .5f else 1f, y.toFloat(), str, font, color, scale, alpha)
+	fun drawScore(engine:GameEngine, x:Number, y:Number, str:String, font:FONT = FONT.NORMAL, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+		drawScore(engine, x.toFloat(), y.toFloat(), str, font, color, scale, alpha)
 
 	/** [You don't have to override this]
 	 *  Draw String to score display area. */
-	fun drawScoreFont(engine:GameEngine, x:Float, y:Float, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawScoreFont(engine:GameEngine, x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawScore(engine, x, y, str, FONT.NORMAL, color, scale, alpha)
 
 	/** [You don't have to override this]
 	 *  Draw String to score display area. */
-	fun drawScoreFont(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
-		drawScore(engine, x, y, str, FONT.NORMAL, color, scale, alpha)
-
-	/** [You don't have to override this]
-	 *  Draw String to score display area. */
-	fun drawScoreFont(engine:GameEngine, x:Int, y:Int, str:String, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawScoreFont(engine:GameEngine, x:Number, y:Number, str:String, scale:Float = 1f, alpha:Float = 1f) =
 		drawScore(engine, x, y, str, FONT.NORMAL, scale = scale, alpha = alpha)
 
 	/** [You don't have to override this]
 	 * Draw String to score display area.
 	 * If [flag] is false, it will use white font cint.
 	 * If [flag] is true, it will use rainbow instead.*/
-	fun drawScore(engine:GameEngine, x:Int, y:Int, str:String, font:FONT = FONT.NORMAL, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawScore(engine:GameEngine, x:Number, y:Number, str:String, font:FONT = FONT.NORMAL, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawScore(engine, x, y, str, font, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale, alpha)
 
-	fun drawScoreFont(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawScoreFont(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawScore(engine, x, y, str, FONT.NORMAL, flag, scale, alpha)
 
-	fun drawScoreNum(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawScoreNum(engine:GameEngine, x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawScore(engine, x, y, str, FONT.NUM, color, scale, alpha)
 
-	fun drawScoreNum(engine:GameEngine, x:Int, y:Int, str:String, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawScoreNum(engine:GameEngine, x:Number, y:Number, str:String, scale:Float = 1f, alpha:Float = 1f) =
 		drawScore(engine, x, y, str, FONT.NUM, scale = scale, alpha = alpha)
 
-	fun drawScoreNum(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawScoreNum(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawScoreNum(engine, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale, alpha)
 
 	fun drawScoreNum(engine:GameEngine, x:Float, y:Float, num:Number, precise:Pair<Int?, Int?> = null to null,
@@ -502,30 +479,30 @@ open class EventReceiver {
 		if(!engine.owner.menuOnly) drawDirectNum(engine.sX+x*BS, engine.sY+y*BS, num, precise, color, scale, alpha)
 	}
 
-	fun drawScoreNum(engine:GameEngine, x:Int, y:Int, num:Number, precise:Pair<Int?, Int?> = null to null,
+	fun drawScoreNum(engine:GameEngine, x:Number, y:Number, num:Number, precise:Pair<Int?, Int?> = null to null,
 		color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawScoreNum(engine, x.toFloat(), y.toFloat(), num, precise, color, scale, alpha)
 
-	fun drawScoreNum(engine:GameEngine, x:Int, y:Int, num:Number, precise:Pair<Int?, Int?> = null to null,
+	fun drawScoreNum(engine:GameEngine, x:Number, y:Number, num:Number, precise:Pair<Int?, Int?> = null to null,
 		flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
-		drawScoreNum(engine, x.toFloat(), y.toFloat(), num, precise, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale, alpha)
+		drawScoreNum(engine, x, y, num, precise, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale, alpha)
 
-	fun drawScoreNano(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawScoreNano(engine:GameEngine, x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawScore(engine, x, y, str, FONT.NANO, color, scale, alpha)
 
-	fun drawScoreNano(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawScoreNano(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawScoreNano(engine, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale, alpha)
 
-	fun drawScoreGrade(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawScoreGrade(engine:GameEngine, x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE, scale:Float = 1f, alpha:Float = 1f) =
 		drawScore(engine, x, y, str, FONT.GRADE, color, scale, alpha)
 
-	fun drawScoreGrade(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
+	fun drawScoreGrade(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean, scale:Float = 1f, alpha:Float = 1f) =
 		drawScoreGrade(engine, x, y, str, if(flag) COLOR.RAINBOW else COLOR.WHITE, scale, alpha)
 
-	fun drawScoreTTF(engine:GameEngine, x:Int, y:Int, str:String, color:COLOR = COLOR.WHITE) =
+	fun drawScoreTTF(engine:GameEngine, x:Number, y:Number, str:String, color:COLOR = COLOR.WHITE) =
 		drawScore(engine, x, y, str, FONT.TTF, color)
 
-	fun drawScoreTTF(engine:GameEngine, x:Int, y:Int, str:String, flag:Boolean) =
+	fun drawScoreTTF(engine:GameEngine, x:Number, y:Number, str:String, flag:Boolean) =
 		drawScoreTTF(engine, x, y, str, if(flag) getPlayerColor(engine.playerID) else COLOR.WHITE)
 
 	/** Draw speed meter.
@@ -558,7 +535,7 @@ open class EventReceiver {
 	 * @param sp Speed (float:0.0~1.0 int:0~40)
 	 * @param len Meter Width Grid
 	 */
-	fun drawMenuSpeed(engine:GameEngine, x:Int, y:Int, sp:Float, len:Float = 3f) =
+	fun drawMenuSpeed(engine:GameEngine, x:Number, y:Number, sp:Float, len:Float = 3f) =
 		drawMenuSpeed(engine, x.toFloat(), y.toFloat(), sp, len)
 
 	/** Draw speed meter on Field.
@@ -578,7 +555,7 @@ open class EventReceiver {
 	 * @param d gravity Denominator
 	 * @param len Meter Width Grid
 	 */
-	fun drawMenuSpeed(engine:GameEngine, x:Int, y:Int, g:Int, d:Int, len:Int = 3) =
+	fun drawMenuSpeed(engine:GameEngine, x:Number, y:Number, g:Int, d:Int, len:Int = 3) =
 		drawMenuSpeed(engine, x, y, spdRank(g, d), len.toFloat())
 
 	/** Draw speed meter on Score Area.
@@ -594,8 +571,8 @@ open class EventReceiver {
 		drawSpeedMeter(dx1, dy1, sp, len)
 	}
 
-	fun drawScoreSpeed(engine:GameEngine, x:Int, y:Int, sp:Float, len:Float = 3f) =
-		drawScoreSpeed(engine, x.toFloat(), y.toFloat(), sp, len)
+	fun drawScoreSpeed(engine:GameEngine, x:Number, y:Number, sp:Float, len:Number = 3f) =
+		drawScoreSpeed(engine, x.toFloat(), y.toFloat(), sp, len.toFloat())
 
 	/** Draw speed meter on Score Area.
 	 * @param x X-coordinate grid
@@ -603,8 +580,8 @@ open class EventReceiver {
 	 * @param sp Speed (float:0.0~1.0 int:0~40)
 	 * @param len Meter Width Grid
 	 */
-	fun drawScoreSpeed(engine:GameEngine, x:Int, y:Int, sp:Int, len:Int = 3) =
-		drawScoreSpeed(engine, x, y, sp/40f, len.toFloat())
+	fun drawScoreSpeed(engine:GameEngine, x:Number, y:Number, sp:Int, len:Number = 3) =
+		drawScoreSpeed(engine, x, y, sp/40f, len)
 
 	/** Draw speed meter on Score Area.
 	 * @param x X-coordinate grid
@@ -612,29 +589,21 @@ open class EventReceiver {
 	 * @param g gravity Value
 	 * @param d gravity Denominator
 	 */
-	fun drawScoreSpeed(engine:GameEngine, x:Float, y:Float, g:Int, d:Int, len:Float = 3f) =
+	fun drawScoreSpeed(engine:GameEngine, x:Number, y:Number, g:Int, d:Int, len:Number = 3f) =
 		drawScoreSpeed(engine, x, y, spdRank(g, d), len)
 
-	/** Draw speed meter on Score Area.
-	 * @param x X-coordinate grid
-	 * @param y Y-coordinate grid
-	 * @param g gravity Value
-	 * @param d gravity Denominator
-	 */
-	fun drawScoreSpeed(engine:GameEngine, x:Int, y:Int, g:Int, d:Int, len:Int = 3) =
-		drawScoreSpeed(engine, x, y, spdRank(g, d), len.toFloat())
-
 	/** Draw Decorations*/
-	open fun drawBadges(x:Int, y:Int, width:Int = 0, nums:Int, scale:Float = 1f) {}
+	open fun drawBadges(x:Float, y:Float, width:Int = 0, nums:Int, scale:Float = 1f) {}
+	fun drawBadges(x:Number, y:Number, width:Int = 0, nums:Int, scale:Float = 1f) =
+		drawBadges(x.toFloat(), y.toFloat(), width, nums, scale)
 
 	/** Draw Decorations at score pos*/
-	fun drawScoreBadges(engine:GameEngine, x:Int, y:Int, width:Int, nums:Int, scale:Float = 1f) =
-		drawBadges(engine.sX+x*BS, engine.sY+y*BS, width, nums, scale)
+	fun drawScoreBadges(engine:GameEngine, x:Number, y:Number, width:Int, nums:Int, scale:Float = 1f) =
+		drawBadges(engine.sX+x.toFloat()*BS, engine.sY+y.toFloat()*BS, width, nums, scale)
 
 	/** Draw Decorations at in-field pos*/
-	fun drawMenuBadges(engine:GameEngine, x:Int, y:Int, nums:Int, scale:Float = 1f) {
-		drawBadges(x*BS+engine.fX, y*BS+engine.fY, BS*10, nums, scale)
-	}
+	fun drawMenuBadges(engine:GameEngine, x:Number, y:Number, nums:Int, scale:Float = 1f) =
+		drawBadges(x.toFloat()*BS+engine.fX, y.toFloat()*BS+engine.fY, BS*10, nums, scale)
 
 	/** Draw Medal
 	 * @param x X-coordinate
@@ -642,20 +611,21 @@ open class EventReceiver {
 	 * @param tier medal Tier
 	 * @param scale size
 	 */
-	open fun drawMedal(x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {}
+	open fun drawMedal(x:Float, y:Float, str:String, tier:Int, scale:Float = 1f) {}
+	fun drawMedal(x:Number, y:Number, str:String, tier:Int, scale:Float = 1f) =
+		drawMedal(x.toFloat(), y.toFloat(), str, tier, scale)
 
 	/** Draw Medal at score pos
 	 * @param tier color
 	 */
-	fun drawScoreMedal(engine:GameEngine, x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) =
-		drawMedal(engine.sX+x*BS, engine.sY+y*BS, str, tier, scale)
+	fun drawScoreMedal(engine:GameEngine, x:Number, y:Number, str:String, tier:Int, scale:Float = 1f) =
+		drawMedal(engine.sX+x.toFloat()*BS, engine.sY+y.toFloat()*BS, str, tier, scale)
 
 	/** Draw Medal at menu pos
 	 * @param tier color
 	 */
-	fun drawMenuMedal(engine:GameEngine, x:Int, y:Int, str:String, tier:Int, scale:Float = 1f) {
-		drawMedal(x*BS+engine.fX, y*BS+engine.fY, str, tier, scale)
-	}
+	fun drawMenuMedal(engine:GameEngine, x:Number, y:Number, str:String, tier:Int, scale:Float = 1f) =
+		drawMedal(x.toFloat()*BS+engine.fX, y.toFloat()*BS+engine.fY, str, tier, scale)
 
 	/** Draw a block
 	 * @param x X-coordinate
@@ -672,7 +642,7 @@ open class EventReceiver {
 	}
 
 	@JvmOverloads
-	fun drawBlock(x:Int, y:Int, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float, attr:Int = 0, outline:Float = 0f) =
+	fun drawBlock(x:Number, y:Number, color:Int, skin:Int, bone:Boolean, darkness:Float, alpha:Float, scale:Float, attr:Int = 0, outline:Float = 0f) =
 		drawBlock(x.toFloat(), y.toFloat(), color, skin, bone, darkness, alpha, scale, attr, outline)
 
 	/** Blockクラスのインスタンスを使用してBlockを描画 (拡大率と暗さ指定可能）
@@ -683,13 +653,13 @@ open class EventReceiver {
 	 * @param darkness 暗さもしくは明るさ
 	 */
 	@JvmOverloads
-	fun drawBlock(x:Float, y:Float, block:Block, darkness:Float = 0f, alpha:Float = 1f, scale:Float = 1f, outline:Float = 0f) =
+	fun drawBlock(x:Number, y:Number, block:Block, darkness:Float = 0f, alpha:Float = 1f, scale:Float = 1f, outline:Float = 0f) =
 		drawBlock(
 			x, y, block.drawColor, block.skin, block.getAttribute(Block.ATTRIBUTE.BONE), block.darkness+darkness,
 			block.alpha*alpha, scale, block.aint, outline
 		)
 
-	@JvmOverloads fun drawBlockForceVisible(x:Float, y:Float, blk:Block, scale:Float = 1f) = drawBlock(
+	@JvmOverloads fun drawBlockForceVisible(x:Number, y:Number, blk:Block, scale:Float = 1f) = drawBlock(
 		x, y, blk.drawColor, blk.skin, blk.getAttribute(Block.ATTRIBUTE.BONE), blk.darkness/2, .25f*blk.alpha+.25f, scale, blk.aint
 	)
 
@@ -710,7 +680,7 @@ open class EventReceiver {
 			)
 		}
 
-	fun drawPiece(x:Int, y:Int, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f, ow:Float = 0f) =
+	fun drawPiece(x:Number, y:Number, piece:Piece, scale:Float = 1f, darkness:Float = 0f, alpha:Float = 1f, ow:Float = 0f) =
 		drawPiece(x.toFloat(), y.toFloat(), piece, scale, darkness, alpha, ow)
 
 	/** Get key name by button ID
@@ -926,6 +896,12 @@ open class EventReceiver {
 	 */
 	open fun calcScore(engine:GameEngine, event:ScoreEvent?) {}
 
+	/** Every Current Piece falls
+	 * @param engine GameEngine
+	 * @param fpf Number of rows the piece fell
+	 */
+	open fun afterPieceFall(engine:GameEngine, fpf:Int) {}
+
 	/** After Soft Drop is used
 	 * @param engine GameEngine
 	 * @param fall Number of rows the piece fell by Soft Drop
@@ -948,7 +924,7 @@ open class EventReceiver {
 	 * @param p piece
 	 * @param lines Number of lines to be cleared (can be 0)
 	 */
-	open fun pieceLocked(engine:GameEngine, pX:Int, pY:Int, p:Piece, lines:Int) {}
+	open fun pieceLocked(engine:GameEngine, pX:Int, pY:Int, p:Piece, lines:Int, finesse:Boolean) {}
 
 	/** It will be called at the end of line-clear phase.*/
 	open fun lineClearEnd(engine:GameEngine) {}
@@ -1026,6 +1002,7 @@ open class EventReceiver {
 		fun getBlockColor(engine:GameEngine, piece:Piece.Shape):COLOR =
 			getBlockColor(Block.intToColor(engine.ruleOpt.pieceColor[piece.ordinal]))
 
+		fun getBlockColor(b:Block):COLOR = getBlockColor(b.color, b.type)
 		fun getBlockColor(it:Pair<Block.COLOR?, Block.TYPE>):COLOR = getBlockColor(it.first, it.second)
 		fun getBlockColor(color:Block.COLOR?, type:Block.TYPE? = Block.TYPE.BLOCK):COLOR = when(type) {
 			Block.TYPE.SQUARE_GOLD -> COLOR.YELLOW

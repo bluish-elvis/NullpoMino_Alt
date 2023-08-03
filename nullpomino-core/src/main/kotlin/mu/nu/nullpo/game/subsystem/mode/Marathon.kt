@@ -99,7 +99,7 @@ class Marathon:NetDummyMode() {
 		netPlayerInit(engine)
 
 		if(!owner.replayMode) version = CURRENT_VERSION else {
-			if(version==0&&owner.replayProp.getProperty("marathon.endless", false)) goalType = 2
+			if(version==0&&owner.replayProp.getProperty("marathon.endless", false)) goalType = tableGameClearLines.size-1
 
 			// NET: Load name
 			netPlayerName = owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
@@ -143,55 +143,18 @@ class Marathon:NetDummyMode() {
 	}
 
 	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// NET: Net Ranking
-		if(netIsNetRankingDisplayMode)
-			netOnUpdateNetPlayRanking(engine, goalType)
-		else if(!owner.replayMode) {
-			// Configuration changes
-			val change = updateMenu(engine)
+	override fun onSettingChanged(engine:GameEngine) {
+		if(startLevel>(tableGameClearLines[goalType]-1)/10&&tableGameClearLines[goalType]>=0) {
+			startLevel = 0
+			owner.bgMan.bg = startLevel
+		}
 
-			if(change!=0) {
-				engine.playSE("change")
+		owner.bgMan.bg = startLevel
+		engine.statistics.level = startLevel
+		engine.frameColor = (1+startLevel)%GameEngine.FRAME_COLOR_ALL
+		setSpeed(engine)
 
-				if(startLevel>(tableGameClearLines[goalType]-1)/10&&tableGameClearLines[goalType]>=0) {
-					startLevel = 0
-					owner.bgMan.bg = startLevel
-				}
-
-				owner.bgMan.bg = startLevel
-				engine.statistics.level = startLevel
-				engine.frameColor = (1+startLevel)%GameEngine.FRAME_COLOR_ALL
-				setSpeed(engine)
-
-				// NET: Signal options change
-				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
-			}
-
-			// Confirm
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-
-				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
-
-				return false
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitFlag = true
-
-			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&startLevel==0&&!big&&engine.ai==null)
-				netEnterNetPlayRankingScreen(goalType)
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
-		}// Replay
-
-		return true
+		return super.onSettingChanged(engine)
 	}
 
 	/* Called for initialization during "Ready" screen */
@@ -209,7 +172,7 @@ class Marathon:NetDummyMode() {
 
 		setSpeed(engine)
 
-		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.Generic(bgmLv)
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else BGM.Generic(bgmLv(0))
 		engine.frameColor = (1+startLevel)%GameEngine.FRAME_COLOR_ALL
 	}
 
@@ -226,17 +189,17 @@ class Marathon:NetDummyMode() {
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LINE TIME", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 2, topY-1, "SCORE LINE TIME", COLOR.BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(
 						engine, 0, topY+i, "%2d".format(i+1),
 						if(rankingRank==i) COLOR.RAINBOW else
 							if(rankingLines[goalType][i]>tableGameClearLines[goalType]) COLOR.CYAN else COLOR.YELLOW
 					)
-					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, 9, topY+i, "${rankingLines[goalType][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 13, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank)
+					receiver.drawScoreNum(engine, 12, topY+i, rankingTime[goalType][i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
@@ -265,10 +228,10 @@ class Marathon:NetDummyMode() {
 	}
 
 	fun nextbgmLine(lines:Int) =
-		tableBGMChange[goalType].firstOrNull {lines<it} ?: tableGameClearLines[goalType].let {if(it>0) it else lines+10}
+		tableBGMChange[goalType].firstOrNull {lines+startLevel*10<it} ?: tableGameClearLines[goalType].let {if(it>0) it else lines+10}
 
 	fun bgmLv(lines:Int) =
-		tableBGMChange[goalType].indexOfFirst {lines<it}.let {if(it<0) tableBGMChange[goalType].size else it}
+		tableBGMChange[goalType].indexOfFirst {lines+startLevel*10<it}.let {if(it<0) tableBGMChange[goalType].size else it}
 	/* Calculate score */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		super.calcScore(engine, ev)
@@ -361,7 +324,7 @@ class Marathon:NetDummyMode() {
 
 	/* Called when saving replay */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(
@@ -408,7 +371,7 @@ class Marathon:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i

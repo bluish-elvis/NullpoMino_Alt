@@ -82,7 +82,7 @@ object ControllerManager {
 		ignoreAxis = MutableList(MAX_PLAYERS) {false}
 		ignorePOV = MutableList(MAX_PLAYERS) {false}
 		controllers = List(Controllers.getControllerCount()) {i ->
-			Controllers.getController(i).takeIf {it.buttonCount in MIN_BUTTONS until MAX_BUTTONS}
+			Controllers.getController(i).takeIf {it.buttonCount in MIN_BUTTONS..<MAX_BUTTONS}
 		}.filterNotNull()
 
 		log.info("Found ${controllers.size} controllers from NullpoMinoSlick app")

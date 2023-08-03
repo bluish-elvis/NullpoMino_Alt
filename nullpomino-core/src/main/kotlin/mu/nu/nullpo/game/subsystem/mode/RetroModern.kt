@@ -123,7 +123,7 @@ class RetroModern:AbstractMode() {
 		if(!owner.replayMode) {
 			version = CURRENT_VERSION
 		} else
-			loadSetting(owner.replayProp, engine)
+			loadSetting(engine, owner.replayProp)
 		if(startLevel>15) startLevel = 15
 		owner.bgMan.bg = levelBG[startLevel]
 		engine.frameColor = GameEngine.FRAME_SKIN_HEBO
@@ -290,14 +290,14 @@ class RetroModern:AbstractMode() {
 			// Leaderboard
 			if(!owner.replayMode&&!big&&startLevel==0&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LINE LV TIME", color = COLOR.BLUE)
+				receiver.drawScoreFont(engine, 2, topY-1, "SCORE LINE LV TIME", color = COLOR.BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
-					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[gameType][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 9, topY+i, "%2d".format(rankingLines[gameType][i]), i==rankingRank)
-					receiver.drawScoreNum(engine, 12, topY+i, "%3d".format(rankingLevel[gameType][i]), i==rankingRank)
-					receiver.drawScoreNum(engine, 16, topY+i, rankingTime[gameType][i].toTimeStr, i==rankingRank)
+					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[gameType][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 8.8f, topY+i, "%3d".format(rankingLines[gameType][i]), i==rankingRank)
+					receiver.drawScoreNum(engine, 13, topY+i, "%2d".format(rankingLevel[gameType][i]), i==rankingRank)
+					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[gameType][i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
@@ -590,7 +590,7 @@ class RetroModern:AbstractMode() {
 
 	/** This function will be called when the replay data is going to be saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -602,7 +602,7 @@ class RetroModern:AbstractMode() {
 	}
 
 	/** Load the settings */
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		startLevel = prop.getProperty("retromodern.startLevel", 0)
 		gameType = prop.getProperty("retromodern.gameType", 0)
 		big = prop.getProperty("retromodern.big", false)
@@ -610,7 +610,7 @@ class RetroModern:AbstractMode() {
 	}
 
 	/** Save the settings */
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("retromodern.startLevel", startLevel)
 		prop.setProperty("retromodern.gameType", gameType)
 		prop.setProperty("retromodern.big", big)
@@ -641,7 +641,7 @@ class RetroModern:AbstractMode() {
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
 	private fun checkRanking(sc:Long, lv:Int, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&lv>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&lv==rankingLines[type][i]&&li>rankingLines[type][i]) return i

@@ -23,8 +23,8 @@
  <entry key="GrandM3">上級者向けの段位認定モードです。腕前に合わせて難易度が変化します。</entry>
  <entry key="GrandM2G">灰色のブロックが下からせり上がってくるGrand Marathonモードです。</entry>
  <entry key="GrandPuzzle">配置された宝石ブロックを時間内に消すモードです。ギミックに注意！</entry>
- <entry key="GrandRoads">一定時間内に150ラインまたは200ライン消すことが目的のモードです。</entry>
- <entry key="GrandS1">最速落下から更に加速する、上級者向け段位認定モードです。一定時間内のLv500突破を目指せ！</entry>
+ <entry key="GrandRoads">一定時間内に10ライン消し続けて15～20レベルを突破しましょう。</entry>
+ <entry key="GrandS1">最速落下から更に加速する上級者向けモードです。一定時間内にLv500を目指せ！</entry>
  <entry key="GrandS2">最速落下からの加速以外でも難易度が上がり続けます。LV999を超えた先には…？</entry>
  <entry key="GrandSStealth">高速状態のまま、置いたブロックが見えなくなっていくモードです。</entry>
  <entry key="GrandZ">究極のテクニックと速度が求められるモードです。</entry>
@@ -43,7 +43,7 @@
  <entry key="Physician">フィールドに配置された宝石ブロックをすべて消していきます。</entry>
  <entry key="PhysicianVS">相手より先にすべての宝石ブロックを消す対戦モードです。</entry>
  <entry key="SPF">通常ブロックの塊を宝石ブロックで消すことで、相手にブロックを積み上げる対戦モードです。</entry>
- <entry key="[MORE...]">他のモードはこの中にあります。</entry>
+ <entry key="(more...)">他のモードはこの中にあります。</entry>
 
  <!--Folder descriptions.-->
  <!--Same rules apply as mode descriptions, but you'll need to add the "_" prefix.-->

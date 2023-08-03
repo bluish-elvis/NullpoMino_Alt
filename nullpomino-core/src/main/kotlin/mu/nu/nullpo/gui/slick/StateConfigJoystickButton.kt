@@ -91,7 +91,7 @@ class StateConfigJoystickButton:BasicGameState() {
 		FontNormal.printFontGrid(1, 1, "JOYSTICK setting (${player+1}P)", COLOR.ORANGE)
 
 		FontNormal.printFontGrid(1, 3, if(joyNumber<0) "Not Found Joystick" else "Joystick Number:$joyNumber", COLOR.RED)
-		for(it in 4 until GameKeyDummy.MAX_BUTTON) {
+		for(it in 4..<GameKeyDummy.MAX_BUTTON) {
 			val flag = keynum==it
 			FontNormal.printFontGrid(2, it+1, GameKeyDummy.arrayKeyName(false)[it], flag)
 			FontNormal.printFontGrid(13, it+1, ":", flag)
@@ -125,7 +125,7 @@ class StateConfigJoystickButton:BasicGameState() {
 
 		// Joystick button
 		if(frame>=KEYACCEPTFRAME)
-			for(i in 0 until ControllerManager.MAX_BUTTONS)
+			for(i in 0..<ControllerManager.MAX_BUTTONS)
 				try {
 					if(ControllerManager.isControllerButton(player, container.input, i)) {
 						ResourceHolder.soundManager.play("change")
@@ -140,7 +140,7 @@ class StateConfigJoystickButton:BasicGameState() {
 			JInputManager.poll()
 
 			if(frame>=KEYACCEPTFRAME)
-				for(i in 0 until JInputManager.MAX_SLICK_KEY)
+				for(i in 0..<JInputManager.MAX_SLICK_KEY)
 					if(JInputManager.isKeyDown(i)) {
 						onKey(i)
 						frame = KEYACCEPTFRAME/2

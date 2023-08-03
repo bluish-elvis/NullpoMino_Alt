@@ -42,7 +42,8 @@ abstract class AbstractMenuItem<T>(
 ) {
 	var value:T = defaultValue
 	open val valueString:String get() = "$value"
-	private val mini get() = compact&&(label+valueString).length<=9
+	val mini get() = compact&&(label+valueString).length<=9
+	/** Menu Columns height by cursor*/
 	open val colMax:Int = 1
 	open val showHeight:Int get() = if(mini) 1 else 2
 	/** Change the value.
@@ -68,6 +69,7 @@ abstract class AbstractMenuItem<T>(
 	 * @return Int
 	 */
 	open fun draw(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int, focus:Int = -1) {
+
 		if(mini) {
 			receiver.drawMenuFont(engine, 1, y, "${label}:", color = color)
 			if(focus==0) receiver.drawMenuFont(engine, 0, y, BaseFont.CURSOR, true)

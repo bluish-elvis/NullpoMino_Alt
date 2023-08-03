@@ -162,13 +162,13 @@ class GrandZ:AbstractMode() {
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
 		stacks = 0
-		joker = stacks
+		joker = 0
 		nextSecLv = 0
 		lvupFlag = true
 		rollTime = 0
 		rollStarted = false
 		gradeinternal = 0
-		grade = gradeinternal
+		grade = 0
 		gradeFlash = 0
 		comboValue = 0
 		lastScore = 0
@@ -210,7 +210,7 @@ class GrandZ:AbstractMode() {
 		owner.bgMan.bg = 30+startLevel
 	}
 
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		gametype = prop.getProperty("final.gametype", 0)
 		startLevel = prop.getProperty("final.startLevel", 0)
 		secAlert = prop.getProperty("final.lvstopse", true)
@@ -218,7 +218,7 @@ class GrandZ:AbstractMode() {
 		big = prop.getProperty("final.big", false)
 	}
 
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("final.gametype", gametype)
 		prop.setProperty("final.startLevel", startLevel)
 		prop.setProperty("final.lvstopse", secAlert)
@@ -360,7 +360,7 @@ class GrandZ:AbstractMode() {
 		engine.lives = MAX_LIVES[gametype]
 		setSpeed(engine)
 		stacks = 0
-		joker = stacks
+		joker = 0
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
@@ -374,9 +374,9 @@ class GrandZ:AbstractMode() {
 				if(!isShowBestSectionTime) {
 					// Leaderboard
 					val topY = if(receiver.nextDisplayType==2) 5 else 3
-					receiver.drawScoreFont(engine, 3, topY-1, "GRADE LEVEL TIME", COLOR.RED)
+					receiver.drawScoreFont(engine, 0, topY-1, "GRADE LV TIME", COLOR.RED)
 
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 
 						receiver.drawScoreGrade(engine, 0, topY+i, "%02d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreGrade(
@@ -387,8 +387,8 @@ class GrandZ:AbstractMode() {
 								else -> COLOR.WHITE
 							}
 						)
-						receiver.drawScoreNum(engine, 9, topY+i, "%03d".format(rankingLevel[gametype][i]), i==rankingRank)
-						receiver.drawScoreNum(engine, 15, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank)
+						receiver.drawScoreNum(engine, 5, topY+i, "%03d".format(rankingLevel[gametype][i]), i==rankingRank)
+						receiver.drawScoreNum(engine, 8, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank)
 					}
 
 					receiver.drawScoreFont(engine, 0, 19, "F:VIEW SECTION TIME", COLOR.ORANGE)
@@ -397,7 +397,7 @@ class GrandZ:AbstractMode() {
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", COLOR.RED)
 
 					var totalTime = 0
-					for(i in 0 until SECTION_MAX) {
+					for(i in 0..<SECTION_MAX) {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
@@ -815,7 +815,7 @@ class GrandZ:AbstractMode() {
 	/** This function will be called when the replay data is going to be
 	 * saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(owner.replayProp, engine)
+		saveSetting(engine, owner.replayProp)
 		owner.replayProp.setProperty("final.version", version)
 
 		// Updates leaderboard and best section time records
@@ -832,15 +832,15 @@ class GrandZ:AbstractMode() {
 	 * @param ruleName Rule name
 	 */
 	private fun saveRanking(ruleName:String) {
-		super.saveRanking((0 until RANKING_TYPE).flatMap {j ->
-			(0 until RANKING_MAX).flatMap {i ->
+		super.saveRanking((0..<RANKING_TYPE).flatMap {j ->
+			(0..<RANKING_MAX).flatMap {i ->
 				listOf(
 					"$j.$ruleName.$i.grade" to rankingGrade[j][i],
 					"$j.$ruleName.$i.level" to rankingLevel[j][i],
 					"$j.$ruleName.$i.time" to rankingTime[j][i],
 					"$j.$ruleName.$i.clear" to rankingRollClear[j][i]
 				)
-			}+(0 until SECTION_MAX).flatMap {i ->
+			}+(0..<SECTION_MAX).flatMap {i ->
 				listOf("$j,$ruleName.sectiontime.$i" to bestSectionTime[j][i])
 			}
 		})
@@ -878,7 +878,7 @@ class GrandZ:AbstractMode() {
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
 	private fun checkRanking(type:Int, gr:Int, lv:Int, time:Int, clear:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(clear>rankingRollClear[type][i])
 				return i
 			else if(clear==rankingRollClear[type][i]&&gr>rankingGrade[type][i])
@@ -895,7 +895,7 @@ class GrandZ:AbstractMode() {
 
 	/** Updates best section time records */
 	private fun updateBestSectionTime(t:Int) {
-		for(i in 0 until SECTION_MAX)
+		for(i in 0..<SECTION_MAX)
 			if(sectionIsNewRecord[i]) {
 				bestSectionTime[t][i] = sectionTime[i]
 				bestSectionLine[t][i] = sectionLine[i]

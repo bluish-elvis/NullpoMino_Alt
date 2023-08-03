@@ -58,7 +58,7 @@ class SurfaceComponent(private val maxJump:Int, private val stackWidth:Int, surf
 		minHeight = 0
 		maxHeight = 0
 		var workSurface = surface
-		for(i in 0 until stackWidth-1) {
+		for(i in 0..<stackWidth-1) {
 			surfaceDecoded[i] = workSurface%(2*maxJump+1)-maxJump
 			height += surfaceDecoded[i]
 			if(height>maxHeight) maxHeight = height
@@ -78,17 +78,13 @@ class SurfaceComponent(private val maxJump:Int, private val stackWidth:Int, surf
 		g.color = Color.WHITE
 		var posX = bounds.x+baseSizeX
 		var posY = bounds.y+baseSizeY+maxHeight*baseSizeY
-		for(x in 0 until stackWidth-1) {
+		for(x in 0..<stackWidth-1) {
 			g.drawLine(posX, posY, posX+baseSizeX, posY)
 			posX += baseSizeX
 			g.drawLine(posX, posY, posX, posY-surfaceDecoded[x]*baseSizeY)
 			posY -= surfaceDecoded[x]*baseSizeY
 		}
 		g.drawLine(posX, posY, posX+baseSizeX, posY)
-	}
-
-	companion object {
-		private const val serialVersionUID = 1L
 	}
 
 }

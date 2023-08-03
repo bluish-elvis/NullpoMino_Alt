@@ -234,7 +234,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		netPlayerName = netLobby!!.netPlayerClient!!.playerName
 		netIsWatch = netVSIsWatch()
 
-		for(i in 0 until NET_MAX_PLAYERS) {
+		for(i in 0..<NET_MAX_PLAYERS) {
 			netVSPlayerExist[i] = false
 			netVSPlayerReady[i] = false
 			netVSPlayerActive[i] = false
@@ -362,7 +362,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			if(netLobby!=null&&netLobby!!.ruleOptLock!=null) {
 				val randomizer = GeneralUtil.loadRandomizer(netLobby!!.ruleOptLock!!.strRandomizer)
 				val wallkick = GeneralUtil.loadWallkick(netLobby!!.ruleOptLock!!.strWallkick)
-				for(i in 0 until players) {
+				for(i in 0..<players) {
 					owner.engine[i].ruleOpt.replace(netLobby!!.ruleOptLock)
 					owner.engine[i].randomizer = randomizer
 					owner.engine[i].wallkick = wallkick
@@ -379,7 +379,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 	/** Set game screen layout */
 	private fun netVSSetGameScreenLayout() {
-		for(i in 0 until players)
+		for(i in 0..<players)
 			netVSSetGameScreenLayout(owner.engine[i])
 	}
 
@@ -408,7 +408,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 	/** NET-VS: Apply room's settings (such as gravity) to all GameEngine */
 	protected fun netVSApplyRoomSettings() {
-		for(i in 0 until players)
+		for(i in 0..<players)
 			netVSApplyRoomSettings(owner.engine[i])
 	}
 
@@ -517,7 +517,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		val listTeamName = mutableListOf<String>()
 		var noTeamCount = 0
 
-		for(i in 0 until players)
+		for(i in 0..<players)
 			if(netVSPlayerExist[i]&&!netVSPlayerDead[i]&&owner.engine[i].gameActive)
 				if(netVSPlayerTeam[i].isNotEmpty()) {
 					if(!listTeamName.contains(netVSPlayerTeam[i])) listTeamName.add(netVSPlayerTeam[i])
@@ -720,7 +720,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 	}
 
 	/** NET-VS: When the piece locked */
-	override fun pieceLocked(engine:GameEngine, lines:Int) {
+	override fun pieceLocked(engine: GameEngine, lines: Int, finesse: Boolean) {
 		netVSPieceMoveTimer = 0
 	}
 
@@ -994,7 +994,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 	/** NET-VS: Disconnected */
 	override fun netlobbyOnDisconnect(lobby:NetLobbyFrame, client:NetPlayerClient, ex:Throwable?) {
-		for(i in 0 until players)
+		for(i in 0..<players)
 			owner.engine[i].stat = GameEngine.Status.NOTHING
 	}
 
@@ -1040,7 +1040,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 				owner.engine[0].stat = GameEngine.Status.SETTING
 
-				for(i in 0 until players) {
+				for(i in 0..<players) {
 					owner.engine[i].field.reset()
 					owner.engine[i].nowPieceObject = null
 
@@ -1084,7 +1084,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 			owner.musMan.reset()
 			owner.bgMan.reset()
 			owner.replayProp.clear()
-			for(i in 0 until players)
+			for(i in 0..<players)
 				if(netVSPlayerExist[i]) {
 					owner.engine[i].init()
 					netVSSetGameScreenLayout(owner.engine[i])
@@ -1097,7 +1097,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 			netVSSetLockedRule() // Set locked rule/Restore rule
 
-			for(i in 0 until players) {
+			for(i in 0..<players) {
 				val engine = owner.engine[i]
 				engine.resetStatc()
 
@@ -1187,7 +1187,7 @@ abstract class NetDummyVSMode:NetDummyMode() {
 
 			if(flagTeamWin) {
 				// Team won
-				for(i in 0 until players)
+				for(i in 0..<players)
 					if(netVSPlayerExist[i]&&!netVSPlayerDead[i]) {
 						netVSPlayerPlace[i] = 1
 						owner.engine[i].gameEnded()

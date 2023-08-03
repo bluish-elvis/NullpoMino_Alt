@@ -70,7 +70,7 @@ Next I*/
 
 		fun reset(fx:Float, fy:Float) {
 			tick = 0
-			val r1 = Random.nextFloat()*360*Rg
+			val r1 = Random.nextFloat()*360*RG
 			val r2 = Random.nextFloat()*64
 			x = 312+fx*540+sin(r1)*r2
 			y = -188+fy*540+cos(r1)*r2
@@ -103,9 +103,9 @@ Next I*/
 		tick++
 		if(bx<0) bx += 640
 		if(tick>=180) tick -= 180
-		val swing = sin(tick*2*Rg)
-		fx = sin(swing*35*Rg)
-		fy = cos(swing*35*Rg)
+		val swing = sin(tick*2*RG)
+		fx = sin(swing*35*RG)
+		fy = cos(swing*35*RG)
 		children.forEach {it.update()}
 		children[tick%children.size].reset(fx, fy)
 		/*FC = FC + 2 + (FC >= 358) * 360

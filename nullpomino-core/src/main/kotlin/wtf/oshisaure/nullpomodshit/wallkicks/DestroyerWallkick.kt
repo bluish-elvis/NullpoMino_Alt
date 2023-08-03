@@ -60,7 +60,7 @@ class DestroyerWallkick:Wallkick {
 		if(piece.big) {
 			destroyBlocksKickBig(piece, x, y, rt, fld)
 		} else {
-			for(i in 0 until piece.maxBlock) {
+			for(i in 0..<piece.maxBlock) {
 				val x2 = x+piece.dataX[rt][i]
 				val y2 = y+piece.dataY[rt][i]
 				fld.setBlock(x2, y2, Block())
@@ -69,7 +69,7 @@ class DestroyerWallkick:Wallkick {
 	}
 
 	private fun destroyBlocksKickBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field) {
-		for(i in 0 until piece.maxBlock) {
+		for(i in 0..<piece.maxBlock) {
 			val x2 = x+piece.dataX[rt][i]*2
 			val y2 = y+piece.dataY[rt][i]*2
 			for(k in 0..1) {
@@ -91,7 +91,7 @@ class DestroyerWallkick:Wallkick {
 		} else {
 			var kickX = 0
 			var kickY = 0
-			var kickDir = checkInBoundsKick(piece, x+kickX, y+kickY, rt, fld)
+			var kickDir = checkInBoundsKick(piece, x, y, rt, fld)
 			while(kickDir!=-1) {
 				when(kickDir) {
 					0 -> --kickX
@@ -108,7 +108,7 @@ class DestroyerWallkick:Wallkick {
 	private fun movePieceInBoundsBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):WallkickResult {
 		var kickX = 0
 		var kickY = 0
-		var kickDir = checkInBoundsKickBig(piece, x+kickX, y+kickY, rt, fld)
+		var kickDir = checkInBoundsKickBig(piece, x, y, rt, fld)
 		while(kickDir!=-1) {
 			when(kickDir) {
 				0 -> --kickX
@@ -125,7 +125,7 @@ class DestroyerWallkick:Wallkick {
 		return if(piece.big) {
 			checkInBoundsKickBig(piece, x, y, rt, fld)
 		} else {
-			for(i in 0 until piece.maxBlock) {
+			for(i in 0..<piece.maxBlock) {
 				val x2 = x+piece.dataX[rt][i]
 				val y2 = y+piece.dataY[rt][i]
 				if(x2>=fld.width) return 0 else
@@ -138,7 +138,7 @@ class DestroyerWallkick:Wallkick {
 	}
 
 	private fun checkInBoundsKickBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Int {
-		for(i in 0 until piece.maxBlock) {
+		for(i in 0..<piece.maxBlock) {
 			val x2 = x+piece.dataX[rt][i]*2
 			val y2 = y+piece.dataY[rt][i]*2
 			for(k in 0..1) {

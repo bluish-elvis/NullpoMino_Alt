@@ -34,9 +34,9 @@ import mu.nu.nullpo.game.component.Piece
 class BagBonusBagRandomizer:BagRandomizer {
 	private var bonusbag = mutableListOf<Int>()
 	private var bonuspt:Int = pieces.size
-	override val baglen:Int get() = pieces.size+1
+	override val bagLen:Int get() = pieces.size+1
 	override val bagInit
-		get() = List(baglen) {
+		get() = List(bagLen) {
 			if(bonuspt>=bonusbag.size) {
 				bonuspt = 0
 
@@ -45,12 +45,12 @@ class BagBonusBagRandomizer:BagRandomizer {
 				while(tmp.isNotEmpty()) {
 					var i:Int
 					do i = r.nextInt(tmp.size)
-					while(if(tmp.size==baglen-1) noSZO&&(tmp[i]==Piece.Shape.S.ordinal||tmp[i]==Piece.Shape.Z.ordinal||tmp[i]==Piece.Shape.O.ordinal)
+					while(if(tmp.size==bagLen-1) noSZO&&(tmp[i]==Piece.Shape.S.ordinal||tmp[i]==Piece.Shape.Z.ordinal||tmp[i]==Piece.Shape.O.ordinal)
 						else limitPrev&&bonusbag.takeLast(minOf(4, maxOf(0, tmp.size-1))).any {b -> b==tmp[i]})
 					bonusbag += tmp.removeAt(i)
 				}
 			}
-			if(it==baglen) bonusbag[bonuspt++] else pieces[it%pieces.size]
+			if(it==bagLen) bonusbag[bonuspt++] else pieces[it%pieces.size]
 		}
 
 	constructor():super()

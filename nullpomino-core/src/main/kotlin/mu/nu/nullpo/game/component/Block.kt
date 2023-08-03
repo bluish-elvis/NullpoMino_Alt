@@ -85,12 +85,12 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	var alpha:Float = 1f
 
 	/** ゲームが始まってから何番目に置いたBlockか (負countだったら初期配置やgarbage block) */
-	var pieceNum:Int = -1; private set
+	var placeNum:Int = -1
 
 	/** アイテム enum */
 	var item:ITEM? = null
 	/** アイテム number */
-	var inum
+	var iNum
 		get() = item?.let {it.ordinal+1} ?: 0
 		set(value) {
 			item = if(value in 1..items.size) items[value-1] else null
@@ -142,8 +142,8 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 		elapsedFrames = 0
 		darkness = 0f
 		alpha = 1f
-		pieceNum = -1
-		inum = 0
+		placeNum = -1
+		iNum = 0
 		hard = 0
 		countdown = 0
 		secondaryColor = COLOR.BLACK
@@ -167,8 +167,8 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 			elapsedFrames = it.elapsedFrames
 			darkness = it.darkness
 			alpha = it.alpha
-			pieceNum = it.pieceNum
-			inum = it.inum
+			placeNum = it.placeNum
+			iNum = it.iNum
 			hard = it.hard
 			countdown = it.countdown
 			secondaryColor = it.secondaryColor
@@ -209,7 +209,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 		result = 31*result+elapsedFrames
 		result = 31*result+darkness.hashCode()
 		result = 31*result+alpha.hashCode()
-		result = 31*result+pieceNum
+		result = 31*result+placeNum
 		result = 31*result+(item?.hashCode() ?: 0)
 		result = 31*result+hard
 		result = 31*result+countdown
@@ -223,7 +223,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 		BLACK(false), WHITE(false), RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, RAINBOW(false);
 
 		companion object {
-			val all = values()
+			val all = entries
 			/** 通常のBlock colorのMaximum count */
 			val COUNT = all.size
 			/** 宝石になりうるBlock colorのMaximum count */
@@ -234,8 +234,8 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	}
 
 	enum class ITEM(val color:Block.COLOR = Block.COLOR.RED, val showName:String? = null) {
-		MIRROR, ROLL_ROLL, DEATH, XRAY, COLOR, LOCK_SPIN, HIDE_NEXT, MAGNET, FREEZE, LOCK_HOLD,
-		TURN_HORIZ, SPEED, ALL_I, TURN_VERT, REMOTE, DARK,
+		MIRROR, ROLL_ROLL(showName = "Forced S"), DEATH(showName = "BIG BLOCK"), XRAY, COLOR, LOCK_SPIN, HIDE_NEXT, MAGNET, FREEZE,
+		LOCK_HOLD, TURN_HORIZ(showName = "FLIP Horizontal"), SPEED, ALL_I, TURN_VERT(showName = "FLIP Vertical"), REMOTE, DARK,
 		DEL_TOP(Block.COLOR.BLUE, "ERASE UpHALF"),
 		DEL_BOTTOM(Block.COLOR.BLUE, "ERASE DownHALF"),
 		DEL_EVEN(Block.COLOR.BLUE, "ERASE EvEn"),
@@ -299,9 +299,7 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 	}
 
 	companion object {
-		/** Serial version ID */
-		private const val serialVersionUID = -7126899262733374545L
-		private val items = Block.ITEM.values()
+		private val items = ITEM.entries
 		/** Block colorの定数 */
 		const val COLOR_INVALID = -2
 		const val COLOR_NONE = -1

@@ -24,7 +24,7 @@ object Matrix {
 	}
 
 	private fun findFirstNonZero(m:Array<DoubleArray>, col:Int):Int {
-		for(i in col until m.size) if(m[i][col]!=0.0) return i
+		for(i in col..<m.size) if(m[i][col]!=0.0) return i
 		return -1
 	}
 
@@ -54,12 +54,12 @@ object Matrix {
 	}
 
 	@JvmStatic fun main(args:Array<String>) {
-		val A = arrayOf(doubleArrayOf(1.0, 2.0, 3.0), doubleArrayOf(2.0, 5.0, 3.0), doubleArrayOf(1.0, 0.0, 8.0))
-		val I = Array(3) {DoubleArray(3)}
+		val a = arrayOf(doubleArrayOf(1.0, 2.0, 3.0), doubleArrayOf(2.0, 5.0, 3.0), doubleArrayOf(1.0, 0.0, 8.0))
+		val i = Array(3) {DoubleArray(3)}
 		val result = Array(3) {DoubleArray(3)}
 		val tmp = Array(3) {DoubleArray(3)}
-		identity(I)
-		premultiplyInverse(A, I, result, tmp)
+		identity(i)
+		premultiplyInverse(a, i, result, tmp)
 		printField(result)
 	}
 
@@ -89,7 +89,7 @@ object Matrix {
 			val f = 1.0f/l[col][col]
 			multiplyRow(l, col, f)
 			multiplyRow(result, col, f)
-			for(row in col+1 until l.size) {
+			for(row in col+1..<l.size) {
 				if(l[row][col]!=0.0) {
 					val e = -1.0f*l[row][col]
 					addMultiple(l, row, col, e)

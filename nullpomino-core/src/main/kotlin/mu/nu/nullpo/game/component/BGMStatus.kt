@@ -54,7 +54,7 @@ class BGMStatus:Serializable {
 	/** 音楽の定数 */
 	sealed class BGM(
 		val id:Int, idx:Int = 0, val hidden:Boolean = false, nums:Int = 1, ln:String = "",
-		val sn:List<String> = emptyList()
+		sn:List<String> = emptyList()
 	) {
 		constructor(id:Int, idx:Int, nums:Int, ln:String):this(id, idx, false, nums, ln)
 		constructor(id:Int, idx:Int, ln:String, hidden:Boolean = false, sn:List<String>):this(id, idx, hidden, sn.size, ln, sn)
@@ -189,10 +189,5 @@ class BGMStatus:Serializable {
 				volume -= fadeSpd
 			else if(volume<0f) volume = 0f
 		} else if(volume!=1f) volume = 1f
-	}
-
-	companion object {
-		/** Serial version ID */
-		private const val serialVersionUID = -1003092972570497408L
 	}
 }

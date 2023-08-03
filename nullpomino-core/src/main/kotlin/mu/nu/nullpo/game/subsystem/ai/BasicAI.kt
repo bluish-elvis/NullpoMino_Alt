@@ -41,8 +41,7 @@ open class BasicAI:DummyAI(), Runnable {
 	override val name = "BASIC"
 
 	/** MaximumCompromise level */
-	val maxThinkDepth:Int
-		get() = 2
+	val maxThinkDepth:Int = 2
 	/** When true,To threadThink routineInstructing the execution of the  */
 	protected var thinkRequest = false
 
@@ -94,25 +93,21 @@ open class BasicAI:DummyAI(), Runnable {
 			val rt = pieceNow.direction
 			val fld = engine.field
 			val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
-
 			if((bestHold||forceHold)&&engine.isHoldOK)
 			// Hold
-				input = input or Controller.BUTTON_BIT_D
+				input = Controller.BUTTON_BIT_D
 			else {
 				// rotation
 				if(rt!=bestRt) {
-					val lrot = engine.getSpinDirection(-1)
-					val rrot = engine.getSpinDirection(1)
-
+					val spL = engine.getSpinDirection(-1)
+					val spR = engine.getSpinDirection(1)
 					if(abs(rt-bestRt)==2&&engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E))
-						input = input or Controller.BUTTON_BIT_E
+						input = Controller.BUTTON_BIT_E
 					else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey&&
-						((!engine.spinDirection&&bestRt==rrot)||engine.spinDirection&&bestRt==lrot)
-					)
-						input = input or Controller.BUTTON_BIT_B
-					else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
+						((!engine.spinDirection&&bestRt==spR)||engine.spinDirection&&bestRt==spL))
+						input = Controller.BUTTON_BIT_B
+					else if(!ctrl.isPress(Controller.BUTTON_A)) input = Controller.BUTTON_BIT_A
 				}
-
 				// Whether reachable position
 				val minX = pieceNow.getMostMovableLeft(nowX, nowY, rt, fld)
 				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, fld)
@@ -190,8 +185,8 @@ open class BasicAI:DummyAI(), Runnable {
 //		if(engine.field==null) return
 		val fld = Field(engine.field)
 
-		for(depth in 0 until maxThinkDepth) {
-			for(rt in 0 until Piece.DIRECTION_COUNT) {
+		for(depth in 0..<maxThinkDepth) {
+			for(rt in 0..<Piece.DIRECTION_COUNT) {
 				// Piece for now
 				val minX = pieceNow!!.getMostMovableLeft(nowX, nowY, rt, engine.field)
 				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)
@@ -358,7 +353,7 @@ open class BasicAI:DummyAI(), Runnable {
 				if(pieceHold==null) pieceHold = engine.getNextObject(engine.nextPieceCount)
 				// Hold Piece
 				if(holdOK&&pieceHold!=null&&depth==0) {
-					val spawnX = engine.getSpawnPosX(engine.field, pieceHold)
+					val spawnX = engine.getSpawnPosX(pieceHold, engine.field)
 					val spawnY = engine.getSpawnPosY(pieceHold)
 					val minHoldX = pieceHold.getMostMovableLeft(spawnX, spawnY, rt, engine.field)
 					val maxHoldX = pieceHold.getMostMovableRight(spawnX, spawnY, rt, engine.field)

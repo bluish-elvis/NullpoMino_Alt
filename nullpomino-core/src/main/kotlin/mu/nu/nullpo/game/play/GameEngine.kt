@@ -58,6 +58,7 @@ import org.apache.logging.log4j.LogManager
 import zeroxfc.nullpo.custom.libs.ProfileProperties
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.absoluteValue
 import kotlin.random.Random
 
 /** Each player's Game processing*/
@@ -85,14 +86,17 @@ class GameEngine(
 
 	/** Gravity counter (The piece falls when this reaches
 	 * to the value of speed denominator) */
-	var gcount = 0; private set
+	var gCount = 0; private set
 
 	/** The first random-seed */
 	var randSeed = 0L
 	/** Random: Used for creating various randomness */
 	var random = Random(0L)
 	/** ReplayData: Manages input data for replays */
-	var replayData = ReplayData(); private set
+	private var replayData = ReplayData()
+
+	var frameX = 0f
+	var frameY = 0f
 
 	/** AIPlayer: AI for autoplaying */
 	var ai:AIPlayer? = null
@@ -139,12 +143,12 @@ class GameEngine(
 	/** Time of game end in milliseconds */
 	var endTime = 0L
 
-	var versionMajor = 0f
-	var versionMinor = 0
+	private var versionMajor = 0f
+	private var versionMinor = 0
 	/** OLD minor version (Used for 6.9 or earlier replays) */
-	var versionMinorOld = 0f
+	private var versionMinorOld = 0f
 	/** Dev build flag */
-	val versionIsDevBuild = false
+	private val versionIsDevBuild = false
 	var quitFlag = false
 
 	/** Piece object of current piece */
@@ -168,7 +172,7 @@ class GameEngine(
 	var nextPieceArrayID = List(0) {0}
 	/** Array of next piece Objects */
 	var nextPieceArrayObject = emptyList<Piece>()
-	/** Number of pieces put (Used by next piece sequence) */
+	/** Number of pieces spawned (Used by next piece sequence) */
 	var nextPieceCount = 0
 	/** Hold piece (null: None) */
 	var holdPieceObject:Piece? = null
@@ -254,8 +258,8 @@ class GameEngine(
 	/** True if last placement is Finesse */
 	var finesse = false; private set
 	var finesseCombo = 0; private set
-	/** Number of current piece move-key tapping */
-	var keyCountMove = 0; private set
+	/** Number of current piece moves */
+	var nowPieceSteps = 0; private set
 
 	/** Most recent scoring event type */
 	var lastEvent:ScoreEvent? = null
@@ -439,16 +443,30 @@ class GameEngine(
 	 * ( such as "READY", "GO!", "GAME OVER",etc. ) */
 	var allowTextRenderByReceiver = true
 
+	/** Item enable flag */
+	var itemEnable:Block.ITEM? = null
 	/** RollRoll (Auto rotation) enable flag */
-	var itemRollRollEnable = false
+	var itemRollRollEnable
+		get() = itemEnable==Block.ITEM.ROLL_ROLL
+		set(value) {
+			itemEnable = if(value) Block.ITEM.ROLL_ROLL else null
+		}
 	/** RollRoll (Auto rotation) interval */
 	var itemRollRollInterval = 0
 	/** X-RAY enable flag */
-	var itemXRayEnable = false
+	var itemXRayEnable
+		get() = itemEnable==Block.ITEM.XRAY
+		set(value) {
+			itemEnable = if(value) Block.ITEM.XRAY else null
+		}
 	/** X-RAY counter */
 	var itemXRayCount = 0
 	/** Color-block enable flag */
-	var itemColorEnable = false
+	var itemColorEnable
+		get() = itemEnable==Block.ITEM.COLOR
+		set(value) {
+			itemEnable = if(value) Block.ITEM.COLOR else null
+		}
 	/** Color-block counter */
 	var itemColorCount = 0; private set
 
@@ -588,12 +606,12 @@ class GameEngine(
 	 */
 	val down:Int get() = if(owReverseUpDown) Controller.BUTTON_UP else Controller.BUTTON_DOWN
 
-	/** Current 横移動速度を取得*/
+	/** @return Current 横移動速度を取得*/
 	val dasDelay:Int get() = if(owARR>=0) owARR else ruleOpt.dasARR
 	/** 現在使用中のBlockスキン numberを取得*/
 	val skin:Int get() = if(owSkin>=0) owSkin else ruleOpt.skin
 
-	/** A buttonを押したときに左rotationするならfalse, 右rotationするならtrue*/
+	/** @return A buttonを押したときに左rotationするならfalse, 右rotationするならtrue*/
 	val spinDirection:Boolean get() = if(owSpinDirection>=0) owSpinDirection!=0 else ruleOpt.spinToRight
 
 	/** Is diagonal movement enabled?*/
@@ -614,13 +632,13 @@ class GameEngine(
 				}
 			} else if(ctrl.isPress(Controller.BUTTON_LEFT)) -1 else if(ctrl.isPress(Controller.BUTTON_RIGHT)) 1 else 0
 
-	/**@return 移動 count制限を超過したらtrue*/
+	/** @return 移動 count制限を超過したらtrue*/
 	val isMoveCountExceed:Boolean
 		get() = if(ruleOpt.lockResetLimitShareCount) {
 			extendedMoveCount+extendedSpinCount>=ruleOpt.lockResetMoveLimit&&ruleOpt.lockResetMoveLimit>=0
 		} else ruleOpt.lockResetMoveLimit in 0..extendedMoveCount
 
-	/**@return 回転 count制限を超過したらtrue*/
+	/** @return 回転 count制限を超過したらtrue*/
 	val isSpinCountExceed:Boolean
 		get() = if(ruleOpt.lockResetLimitShareCount) {
 			extendedMoveCount+extendedSpinCount>=ruleOpt.lockResetMoveLimit&&ruleOpt.lockResetMoveLimit>=0
@@ -645,7 +663,7 @@ class GameEngine(
 		statistics.reset()
 		speed.reset()
 		playerProp.reset()
-		gcount = 0
+		gCount = 0
 		owner.recordProp.load(owner.recorder(ruleOpt.strRuleName))
 		replayData = ReplayData()
 
@@ -733,7 +751,7 @@ class GameEngine(
 		initialHoldContinuousUse = false
 
 		finesseCombo = 0
-		keyCountMove = 0
+		nowPieceSteps = 0
 		nowPieceMoveCount = 0
 		nowPieceSpinCount = 0
 		nowPieceSpinFailCount = 0
@@ -893,10 +911,10 @@ class GameEngine(
 
 	fun stopSE(name:String) = owner.receiver.stopSE(name)
 
-	/** NEXTピース[c]番目のIDを取得*/
+	/** @return NEXTピース[c]番目のID*/
 	fun getNextID(c:Int):Int = if(nextPieceArrayObject.isEmpty()) Piece.PIECE_NONE else nextPieceArrayID[c%nextPieceArrayID.size]
 
-	/** NEXTピース[c]番目のオブジェクトを取得*/
+	/** @return NEXTピース[c]番目のオブジェクト */
 	fun getNextObject(c:Int):Piece? = try {
 		if(nextPieceArrayObject.isEmpty()) null else nextPieceArrayObject[c%nextPieceArrayObject.size]
 	} catch(_:Exception) {
@@ -908,7 +926,7 @@ class GameEngine(
 	/** 見え／消えRoll 状態のfieldを通常状態に戻す */
 	fun resetFieldVisible() {
 		field.let {f ->
-			for(x in 0 until f.width) for(y in 0 until f.height)
+			for(x in 0..<f.width) for(y in 0..<f.height)
 				f.getBlock(x, y)?.run {
 					if(color!=null) {
 						alpha = 1f
@@ -921,7 +939,7 @@ class GameEngine(
 	}
 
 	/** ソフト・Hard drop・先行ホールド・先行rotationの使用制限解除 */
-	fun checkDropContinuousUse() {
+	private fun checkDropContinuousUse() {
 		if(gameActive) {
 			if(!ctrl.isPress(down)||!ruleOpt.softdropLimit) softdropContinuousUse = false
 			if(!ctrl.isPress(up)||!ruleOpt.harddropLimit) harddropContinuousUse = false
@@ -962,10 +980,12 @@ class GameEngine(
 	 * @param y Y coord
 	 * @param p Current p object
 	 * @param f Field object
+	 * @param all when false, T-Piece only
 	 */
-	private fun checkTwisted(x:Int, y:Int, p:Piece?, f:Field?):Twister? {
+	private fun checkTwisted(x:Int, y:Int, p:Piece?, f:Field?, all:Boolean = true):Twister? {
 		p ?: return null
 		f ?: return null
+		if(!all&&p.type!=Piece.Shape.T) return null
 		if(!twistAllowKick&&kicked) return null
 		val m = if(p.big) 2 else 1
 		var res:Twister? = null
@@ -997,7 +1017,7 @@ class GameEngine(
 			val offsetX = ruleOpt.pieceOffsetX[p.id][p.direction]
 			val offsetY = ruleOpt.pieceOffsetY[p.id][p.direction]
 			if(!p.big)
-				for(i in 0 until Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction].size/2) {
+				for(i in 0..<Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction].size/2) {
 					val isHighSpot1 = (!f.getBlockEmpty(
 						x+Piece.SPINBONUSDATA_HIGH_X[p.id][p.direction][i*2]+offsetX,
 						y+Piece.SPINBONUSDATA_HIGH_Y[p.id][p.direction][i*2]+offsetY, false
@@ -1026,59 +1046,26 @@ class GameEngine(
 		return res
 	}
 
-	private fun setTwist(x:Int, y:Int, p:Piece?, f:Field?) {
-		twistType = null
-		if(p==null||f==null||p.type!=Piece.Shape.T)
-			return
+	/** @return [piece]が[field]に出現するX-coordinate */
+	fun getSpawnPosX(piece:Piece?, fld:Field = field):Int =
+		((fld.width-1-(piece?.width ?: 0))/2).let {x -> x+(big&&bigMove&&x%2!=0).toInt()}+(piece?.let {p ->
+			if(big) ruleOpt.pieceSpawnXBig[p.id][p.direction] else ruleOpt.pieceSpawnX[p.id][p.direction]
+		} ?: 0)
 
-		twistType = checkTwisted(x, y, p, f)
-	}
+	/** @return [piece]が出現するX-coordinate */
+	fun getSpawnPosX(piece:Piece?):Int = getSpawnPosX(piece, field)
 
-	/** Spin判定(全スピンルールのとき用)
-	 * @param x X-coordinate
-	 * @param y Y-coordinate
-	 * @param p Current Blockピース
-	 * @param f field
-	 */
-	private fun setAllSpin(x:Int, y:Int, p:Piece?, f:Field?) {
-		twistType = null
-
-		if((!twistAllowKick&&kicked)||p==null||f==null) return
-		twistType = checkTwisted(x, y, p, f)
-	}
-
-	/** ピースが出現するX-coordinateを取得
-	 * @param fld field
-	 * @param piece Piece
-	 * @return 出現位置のX-coordinate
-	 */
-	fun getSpawnPosX(fld:Field?, piece:Piece?):Int {
-		var x = 0
-		piece?.let {
-			x = (fld?.width ?: (0-it.width+1))/2-piece.centerX
-			if(big&&bigMove&&x%2!=0) x++
-
-			x += if(big) ruleOpt.pieceSpawnXBig[it.id][it.direction]
-			else ruleOpt.pieceSpawnX[it.id][it.direction]
-		}
-		return x
-	}
-
-	fun getSpawnPosX(piece:Piece?):Int = getSpawnPosX(field, piece)
-
-	/** ピースが出現するY-coordinateを取得
-	 * @param piece Piece
-	 * @return 出現位置のY-coordinate
-	 */
-	fun getSpawnPosY(fld:Field?, piece:Piece?):Int {
+	/** @return [piece]が[field]に出現するY-coordinate */
+	fun getSpawnPosY(piece:Piece?, fld:Field = field):Int {
 		val y = getSpawnPosY(piece)
 		var p = 0
-		while(piece?.checkCollision(getSpawnPosX(fld, piece), y-p, fld)==true&&p<ruleOpt.pieceEnterMaxDistanceY) {
+		while(piece?.checkCollision(getSpawnPosX(piece, fld), y-p, fld)==true&&p<ruleOpt.pieceEnterMaxDistanceY) {
 			p++
 		}
 		return y-p
 	}
 
+	/** @return [piece]が出現するX-coordinate */
 	fun getSpawnPosY(piece:Piece?):Int {
 		var y = 0
 		piece?.let {
@@ -1093,9 +1080,8 @@ class GameEngine(
 		return y
 	}
 
-	/** rotation buttonを押したあとのピースのDirectionを取得
+	/** @return rotation buttonを押したあとのピースのDirection
 	 * @param move rotationDirection (-1:左 1:右 2:180度）
-	 * @return rotation buttonを押したあとのピースのDirection
 	 */
 	fun getSpinDirection(move:Int):Int {
 		var rt = move
@@ -1142,8 +1128,8 @@ class GameEngine(
 		if(owBlockShowOutlineOnly==1) outlineOnly = true
 
 		field.let {f ->
-			for(i in 0 until f.width)
-				for(j in f.hiddenHeight*-1 until f.height) {
+			for(i in 0..<f.width)
+				for(j in f.hiddenHeight*-1..<f.height) {
 					f.getBlock(i, j)?.run {
 						if(elapsedFrames<0) {
 //							if(!getAttribute(Block.ATTRIBUTE.GARBAGE)) darkness = 0f
@@ -1184,8 +1170,8 @@ class GameEngine(
 			// X-RAY
 			if(gameActive) {
 				if(itemXRayEnable) {
-					for(i in 0 until f.width)
-						for(j in f.hiddenHeight*-1 until f.height) {
+					for(i in 0..<f.width)
+						for(j in f.hiddenHeight*-1..<f.height) {
 							f.getBlock(i, j)?.apply {
 								setAttribute(itemXRayCount%36==i, Block.ATTRIBUTE.VISIBLE)
 								setAttribute(itemXRayCount%36==i, Block.ATTRIBUTE.OUTLINE)
@@ -1196,8 +1182,8 @@ class GameEngine(
 
 				// COLOR
 				if(itemColorEnable) {
-					for(i in 0 until f.width)
-						for(j in f.hiddenHeight*-1 until f.height) {
+					for(i in 0..<f.width)
+						for(j in f.hiddenHeight*-1..<f.height) {
 							var bright = minOf(j, 10)
 							if(bright>=5) bright = 9-bright
 							bright = 40-((20-i+bright)*4+itemColorCount)%40
@@ -1273,7 +1259,7 @@ class GameEngine(
 		owner.replayProp.setProperty("$playerID.tuning.owBlockShowOutlineOnly", owBlockShowOutlineOnly)
 
 		owner.mode?.let {
-			it.saveSetting(owner.replayProp, ruleOpt.strRuleName, playerID)
+			it.saveSetting(this, owner.replayProp)
 			owner.saveModeConfig()
 			if(it.saveReplay(this, owner.replayProp)) {
 				it.saveRanking()
@@ -1321,7 +1307,7 @@ class GameEngine(
 	fun gameEnded() {
 		if(endTime==0L) {
 			endTime = System.nanoTime()
-			statistics.gamerate = (replayTimer/(0.00000006*(endTime-startTime))).toFloat()
+			statistics.gameRate = (replayTimer/(0.00000006*(endTime-startTime))).toFloat()
 		}
 		gameActive = false
 		timerActive = false
@@ -1512,10 +1498,10 @@ class GameEngine(
 		// Mode側が何もしない・決定したことでfalseを返した場合はReady画面へ移動
 		stat = Status.READY
 		if(playerProp.isLoggedIn) {
-			owner.mode?.saveSetting(playerProp.propProfile)
+			owner.mode?.saveSetting(this, playerProp.propProfile)
 			playerProp.saveProfileConfig()
 		}
-		owner.mode?.saveSetting(owner.modeConfig, ruleOpt.strRuleName, playerID)
+		owner.mode?.saveSetting(this, owner.modeConfig)
 		owner.saveModeConfig()
 
 		resetStatc()
@@ -1582,6 +1568,7 @@ class GameEngine(
 						p.setSkin(skin)
 						p.setAttribute(true, Block.ATTRIBUTE.VISIBLE)
 						p.setAttribute(bone, Block.ATTRIBUTE.BONE)
+						p.placeNum = it
 
 						if(randomBlockColor) {
 							if(blockColors.size<numColors||numColors<1) numColors = blockColors.size
@@ -1616,7 +1603,7 @@ class GameEngine(
 		if(statc[0]==goStart) playSE("start1")
 
 		// NEXTスキップ
-		if(statc[0] in 1 until goEnd&&holdButtonNextSkip&&isHoldOK&&ctrl.isPush(Controller.BUTTON_D)) {
+		if(statc[0] in 1..<goEnd&&holdButtonNextSkip&&isHoldOK&&ctrl.isPush(Controller.BUTTON_D)) {
 			playSE("initialhold")
 			holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
 				it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
@@ -1683,48 +1670,52 @@ class GameEngine(
 						if(nextPieceCount<0) nextPieceCount = 0
 
 						getNextObject(nextPieceCount+ruleOpt.nextDisplay-1)?.setAttribute(bone, Block.ATTRIBUTE.BONE)
-
 						nowPieceObject = getNextObjectCopy(nextPieceCount)
 						nextPieceCount++
 						if(nextPieceCount<0) nextPieceCount = 0
 					} else {
 						// 2回目以降
-						val pieceTemp = holdPieceObject
-						holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
-							it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
+						holdPieceObject.let {pieceTemp ->
+							holdPieceObject = getNextObjectCopy(nextPieceCount)?.also {
+								it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
+							}
+							nowPieceObject = pieceTemp
 						}
-						nowPieceObject = pieceTemp
 						nextPieceCount++
 						if(nextPieceCount<0) nextPieceCount = 0
 					}
 				} else // 通常ホールド
 					if(holdPieceObject==null) {
 						// 1回目
-						nowPieceObject?.big = false
 						holdPieceObject = nowPieceObject
 						nowPieceObject = getNextObjectCopy(nextPieceCount)
+
 						nextPieceCount++
 						if(nextPieceCount<0) nextPieceCount = 0
 					} else {
 						// 2回目以降
-						nowPieceObject?.big = false
-						val pieceTemp = holdPieceObject
-						holdPieceObject = nowPieceObject
-						nowPieceObject = pieceTemp
+						holdPieceObject.let {pieceTemp ->
+							holdPieceObject = nowPieceObject
+							nowPieceObject = pieceTemp
+						}
 					}
 
-				// Directionを戻す
 				holdPieceObject?.let {
+					// Directionを戻す
 					if(ruleOpt.holdResetDirection&&ruleOpt.pieceDefaultDirection[it.id]<Piece.DIRECTION_COUNT) {
 						it.direction = ruleOpt.pieceDefaultDirection[it.id]
 						it.updateConnectData()
+					}
+					nowPieceObject?.placeNum?.let {nNum ->
+						nowPieceObject?.placeNum = it.placeNum
+						it.placeNum = nNum
 					}
 				}
 
 				// 使用した count+1
 				holdUsedCount++
-				statistics.totalHoldUsed++
-
+				if(ending==0||staffrollEnableStatistics) statistics.totalHoldUsed++
+				initialSpin() //Hold swap triggered IRS
 				// ホールド無効化
 				initialHoldFlag = false
 				holdDisable = true
@@ -1741,13 +1732,13 @@ class GameEngine(
 					it.applyOffsetArray(ruleOpt.pieceOffsetX[it.id], ruleOpt.pieceOffsetY[it.id])
 				it.big = big
 				// 出現位置 (横）
-				nowPieceX = getSpawnPosX(field, it)
+				nowPieceX = getSpawnPosX(it, field)
 				nowPieceY = getSpawnPosY(it)
 				nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
 			}
 			nowPieceColorOverride = if(itemRollRollEnable/* || itemEnable==ITEM.SPIN_LOCK*/) Block.COLOR.WHITE else null
 
-			gcount = if(speed.gravity>speed.denominator&&speed.denominator>0)
+			gCount = if(speed.gravity>speed.denominator&&speed.denominator>0)
 				speed.gravity%speed.denominator
 			else 0
 
@@ -1760,7 +1751,8 @@ class GameEngine(
 			softdropFall = 0
 			harddropFall = 0
 			manualLock = false
-			finesse = true
+			finesse = false
+			nowPieceSteps = 0
 			nowPieceMoveCount = 0
 			nowPieceSpinCount = 0
 			nowPieceSpinFailCount = 0
@@ -1800,9 +1792,7 @@ class GameEngine(
 						initialHoldContinuousUse = true
 						initialHoldFlag = false
 						holdDisable = true
-						initialSpin() //Hold swap triggered IRS
-						statMove()
-						return@statMove
+						return@statMove statMove()
 					} else if(statc[0]>0&&!initialHoldFlag) playSE("holdfail")
 
 				// spin
@@ -1813,7 +1803,9 @@ class GameEngine(
 					spin = initialSpinDirection
 					initialSpinLastDirection = initialSpinDirection
 					initialSpinContinuousUse = true
-					playSE("initialrotate")
+					if(nowPieceSpinFailCount>0)
+						nowPieceSpinFailCount--
+					else playSE("initialrotate")
 				} else if(statc[0]>0||ruleOpt.moveFirstFrame) {
 					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) spin = 1 // Roll Roll
 
@@ -1848,7 +1840,7 @@ class GameEngine(
 							piece.direction = rt
 							piece.updateConnectData()
 						} else if(ruleOpt.spinWallkick&&wallkick!=null&&(initialSpinDirection==0||ruleOpt.spinInitialWallkick)
-							&&(ruleOpt.lockResetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NoKick||!isSpinCountExceed)
+							&&(ruleOpt.lockResetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NO_KICK||!isSpinCountExceed)
 						) {
 							// Wallkickを試みる
 							val allowUpward = ruleOpt.spinWallkickMaxRise<0||nowWallkickRiseCount<ruleOpt.spinWallkickMaxRise
@@ -1878,8 +1870,7 @@ class GameEngine(
 							piece.updateConnectData()
 							nowPieceSpinFailCount = 0
 
-							if(piece.checkCollision(nowPieceX, nowPieceY, rt, field))
-								nowPieceY--
+							if(piece.checkCollision(nowPieceX, nowPieceY, rt, field)) nowPieceY--
 							else if(onGroundBeforeSpin) nowPieceY++
 						}
 
@@ -1900,17 +1891,15 @@ class GameEngine(
 							playSE("rotate")
 							val twisting = checkTwisted(nowPieceX, nowPieceY, piece, field)
 							if(twisting!=null) playSE("twist")
-							nowPieceSpinCount++
-							if(nowPieceSpinCount>=if(twisting?.legit==true) 4 else 3) {
-								finesse = false
-								statistics.finesseFault++
-							}
-							if(ending==0||staffrollEnableStatistics) statistics.totalPieceSpin++
+							nowPieceSpinCount += spin.absoluteValue
+							if(nowPieceObject?.type!=Piece.Shape.O) nowPieceSteps += spin.absoluteValue
+							if(ending==0||staffrollEnableStatistics) statistics.totalPieceSpin += spin.absoluteValue
 						} else if(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_C)||
 							ctrl.isPush(Controller.BUTTON_B)||ctrl.isPush(Controller.BUTTON_E)) {
 							// rotation失敗
 							playSE("rotfail")
 							nowPieceSpinFailCount++
+							if(ruleOpt.spinHoldBuffer) initialSpin()
 						}
 					}
 
@@ -1926,7 +1915,7 @@ class GameEngine(
 							nowPieceBottomY = piece.getBottom(nowPieceX, nowPieceY, field)
 						}
 						// Blockの出現位置を上にずらせる場合はそうする
-						for(i in 0 until ruleOpt.pieceEnterMaxDistanceY) {
+						for(i in 0..<ruleOpt.pieceEnterMaxDistanceY) {
 							nowPieceY--
 
 							if(!piece.checkCollision(nowPieceX, nowPieceY, field)) {
@@ -1970,14 +1959,7 @@ class GameEngine(
 					sideMoved = true
 					if(big&&bigMove) move *= 2
 					if(dasCount==0||dasCount>=das) {
-						if(dasCount==0||statc[0]==(!ruleOpt.moveFirstFrame).toInt()) {
-							keyCountMove++
-							if(keyCountMove>=3) {
-								finesse = false
-								statistics.finesseFault++
-							}
-							shiftLock = 0
-						}
+						if(dasCount==0||statc[0]==(!ruleOpt.moveFirstFrame).toInt()) shiftLock = 0
 						shiftLock = shiftLock and ctrl.buttonBit
 						if(shiftLock==0)
 							if(dasSpeedCount>=dasDelay||dasCount==0) {
@@ -2003,6 +1985,7 @@ class GameEngine(
 
 										nowPieceMoveCount++
 										if(ending==0||staffrollEnableStatistics) statistics.totalPieceMove++
+										if(dasCount==0||statc[0]==(!ruleOpt.moveFirstFrame).toInt()) nowPieceSteps++
 										nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
 
 										lastMove = if(onGroundBeforeMove) {
@@ -2053,25 +2036,28 @@ class GameEngine(
 						(ruleOpt.moveUpAndDown||!updown)&&
 						(!onGroundBeforeMove&&!harddropContinuousUse)
 					) {
+						// This prevents soft drop from adding to the gravity speed.
+						if(!ruleOpt.softdropGravitySpeedLimit) gCount = 0
 						if(!ruleOpt.softdropGravitySpeedLimit||(softDropSpd<speed.denominator)) {// Old Soft Drop codes
-							gcount += softDropSpd.toInt()
+							gCount += softDropSpd.toInt()
 							softDropUsed = true
 						} else {// New Soft Drop codes
-							gcount = softDropSpd.toInt()
+							gCount = softDropSpd.toInt()
 							softDropUsed = true
 						}
-					} else // This prevents soft drop from adding to the gravity speed.
-						if(!ruleOpt.softdropGravitySpeedLimit&&softDropUsed) gcount = 0
+					}
 				}
 				if(ending==0||staffrollEnableStatistics) statistics.totalPieceActiveTime++
 			}
-			if(!ruleOpt.softdropGravitySpeedLimit||softDropSpd<1f||!softDropUsed) gcount += speed.gravity // Part of Old Soft Drop
+			if(!ruleOpt.softdropGravitySpeedLimit||softDropSpd<1f||!softDropUsed) gCount += speed.gravity // Part of Old Soft Drop
 
-			while((gcount>=speed.denominator||speed.gravity<0)&&!it.checkCollision(nowPieceX, nowPieceY+1, field)) {
-				if(speed.gravity>=0) gcount -= speed.denominator
-				if(ruleOpt.softdropGravitySpeedLimit) gcount -= gcount%speed.denominator
+			while((gCount>=speed.denominator||speed.gravity<0)&&!it.checkCollision(nowPieceX, nowPieceY+1, field)) {
+				if(speed.denominator!=0) {
+					if(speed.gravity>=0) gCount -= speed.denominator
+					if(ruleOpt.softdropGravitySpeedLimit) gCount -= gCount%speed.denominator
+				}
 				nowPieceY++
-				if(speed.gravity>speed.denominator/2||speed.gravity<0||softDropUsed) fpf++
+				/*if(speed.gravity>speed.denominator/2||speed.gravity<0||softDropUsed)*/ fpf++
 				if(ruleOpt.lockResetFall) {
 					lockDelayNow = 0
 					it.setDarkness(0f)
@@ -2088,7 +2074,7 @@ class GameEngine(
 					softDropFallNow++
 				} else lastMove = LastMove.FALL_AUTO
 			}
-
+			if(fpf>0) owner.receiver.afterPieceFall(this, fpf)
 			if(softDropFallNow>0) {
 				playSE("softdrop")
 				owner.mode?.afterSoftDropFall(this, softDropFallNow)
@@ -2105,9 +2091,9 @@ class GameEngine(
 
 				if(lockDelay>=99&&lockDelayNow>98) lockDelayNow = 98
 
-				it.setDarkness(minOf(.5f*lockDelayNow/lockDelay, .5f))
+				it.setDarkness(minOf(.75f*lockDelayNow/lockDelay, .75f))
 
-				if(lockDelay!=0) gcount = speed.gravity
+				if(lockDelay!=0) gCount = speed.gravity
 
 				// trueになると即固定
 				var instantLock = false
@@ -2141,20 +2127,19 @@ class GameEngine(
 					instantLock = true
 
 				// 接地即固定
-				if(lockDelay==0&&(gcount>=speed.denominator||speed.gravity<0)) instantLock = true
+				if(lockDelay==0&&(gCount>=speed.denominator||speed.gravity<0)) instantLock = true
 
 				// 固定
 				if(lockDelay in 1..lockDelayNow||instantLock) {
-
 					// Twister判定
 					if(lastMove==LastMove.SPIN_GROUND&&twistEnable)
-						if(useAllSpinBonus) setAllSpin(nowPieceX, nowPieceY, it, field)
-						else setTwist(nowPieceX, nowPieceY, it, field)
+						twistType = checkTwisted(nowPieceX, nowPieceY, it, field, useAllSpinBonus)
 
 					it.setAttribute(true, Block.ATTRIBUTE.SELF_PLACED)
 
 					val partialLockOut = it.isPartialLockOut(nowPieceX, nowPieceY)
 					it.setDarkness(.5f)
+					val underRoof = nowPieceObject!!.isUnderRoof(nowPieceX, nowPieceY, field)
 					val put = it.placeToField(nowPieceX, nowPieceY, field)
 
 					if(ruleOpt.lockFlash>0) it.setDarkness(-.8f)
@@ -2162,14 +2147,24 @@ class GameEngine(
 					playSE("lock", 1.25f-(nowPieceY+it.height)*.25f/fieldHeight)
 					holdDisable = false
 
-					if(ending==0||staffrollEnableStatistics) {
-						statistics.totalPieceLocked++// AREなし
 
-						if(finesse) {
-							statistics.finesse++
-							if(++finesseCombo>statistics.maxFinesseCombo) statistics.maxFinesseCombo = finesseCombo
-						} else {
-							finesseCombo = 0
+					if(ending==0||staffrollEnableStatistics)
+						statistics.totalPieceLocked++// AREなし
+					if(fieldWidth==10&&owner.mode?.gameStyle==GameStyle.TETROMINO) {
+						val momentum = nowPieceSteps-(2*(twistType!=null).toInt())-(2*underRoof.toInt())
+						val d = momentum-it.finesseLimit(nowPieceX)
+						val finePts = /*if(nowPieceBottomY>=fieldHeight-1||underRoof) 5 else*/ if(d<=0) 5 else maxOf(3-d, 0)
+
+						finesse = d<=0
+						if(ending==0||staffrollEnableStatistics) {
+							statistics.finessePts += finePts
+							if(finesse) {
+								statistics.finesse++
+								if(++finesseCombo>statistics.maxFinesseCombo) statistics.maxFinesseCombo = finesseCombo
+							} else {
+								statistics.finesseFault += d
+								finesseCombo = 0
+							}
 						}
 					}
 					lineClearing = when(clearMode) {
@@ -2205,8 +2200,8 @@ class GameEngine(
 						}
 					}
 
-					owner.mode?.pieceLocked(this, lineClearing)
-					owner.receiver.pieceLocked(this, nowPieceX, nowPieceY, it, lineClearing)
+					owner.mode?.pieceLocked(this, lineClearing, finesse)
+					owner.receiver.pieceLocked(this, nowPieceX, nowPieceY, it, lineClearing, finesse)
 
 					dasRepeat = false
 					dasInstant = false
@@ -2442,7 +2437,7 @@ class GameEngine(
 			if(li>0) owner.receiver.calcScore(this, ev)
 
 			// Blockを消す演出を出す (まだ実際には消えていない）
-			(0 until field.height).filter {field.getLineFlag(it)}.toSet().let {row ->
+			(0..<field.height).filter {field.getLineFlag(it)}.toSet().let {row ->
 				if(clearMode==LINE) {
 					owner.mode?.lineClear(this, row)
 					owner.receiver.lineClear(this, row)
@@ -2524,7 +2519,11 @@ class GameEngine(
 
 				if(clearMode==LINE) lastLinesY.filter {it.max()>=field.highestBlockY}.distinctBy {it.size>=3}.forEach {
 					playSE(
-						if(it.size>=3) "linefall1" else if(it.size>1) "linefall0" else "linefall",
+						when {
+							it.size>=4 -> "linefall1"
+							it.size<=1 -> "linefall"
+							else -> "linefall0"
+						},
 						maxOf(0.8f, 1.2f-it.max()/3f/fieldHeight),
 						minOf(1f, 0.4f+speed.lineDelay*0.1f)
 					)
@@ -2700,14 +2699,14 @@ class GameEngine(
 			statc[2] = if(gameActive&&!staffrollNoDeath) 0 else 1
 			stopSE("danger")
 		}
+		val topOut = statc[2]==0
 		field.let {field ->
-			val topout = statc[2]==0
-			if(!topout||lives<=0) {
+			if(!topOut||lives<=0) {
 				// もう復活できないとき
-				val animint = 6
-				statc[1] = animint*(field.height+1)
+				val animInt = 6
+				statc[1] = animInt*(field.height+1)
 				if(statc[0]==0) {
-					if(topout) playSE("dead_last")
+					if(topOut) playSE("dead_last")
 					gameEnded()
 					blockShowOutlineOnly = false
 					if(owner.players<2) owner.musMan.bgm = BGM.Silent
@@ -2715,22 +2714,22 @@ class GameEngine(
 					if(field.isEmpty) statc[0] = statc[1]
 					else {
 						resetFieldVisible()
-						if(ending==2&&!topout) playSE("gamewon")
+						if(ending==2&&!topOut) playSE("gamewon")
 						else playSE("shutter")
 					}
 				}
 				when {
 					statc[0]<statc[1] -> {
-						for(x in 0 until field.width)
-							field.getBlock(x, field.height-statc[0]/animint)?.apply {
-								if(ending==2&&!topout) {
-									if(statc[0]%animint==0) {
+						for(x in 0..<field.width)
+							field.getBlock(x, field.height-statc[0]/animInt)?.apply {
+								if(ending==2&&!topOut) {
+									if(statc[0]%animInt==0) {
 										setAttribute(false, Block.ATTRIBUTE.OUTLINE)
 										darkness = -.1f
 										elapsedFrames = -1
 									}
-									alpha = 1f-(1+statc[0]%animint)*1f/animint
-								} else if(statc[0]%animint==0) {
+									alpha = 1f-(1+statc[0]%animInt)*1f/animInt
+								} else if(statc[0]%animInt==0) {
 									if(!getAttribute(Block.ATTRIBUTE.GARBAGE)) {
 										cint = Block.COLOR_WHITE
 										setAttribute(true, Block.ATTRIBUTE.GARBAGE)
@@ -2743,7 +2742,7 @@ class GameEngine(
 						statc[0]++
 					}
 					statc[0]==statc[1] -> {
-						if(topout) playSE("gamelost")
+						if(topOut) playSE("gamelost")
 						else if(ending==2&&field.isEmpty) playSE("gamewon")
 						statc[0]++
 					}
@@ -2754,7 +2753,7 @@ class GameEngine(
 					else -> {
 						if(!owner.replayMode||owner.replayRerecord) owner.saveReplay()
 
-						for(i in 0 until owner.players)
+						for(i in 0..<owner.players)
 							if(i==playerID||dieAll) {
 								owner.engine[i].field.reset()
 								owner.engine[i].resetStatc()
@@ -2765,17 +2764,17 @@ class GameEngine(
 			} else {
 				// 復活できるとき
 				if(statc[0]==0) {
-					if(topout) playSE("dead")
-					//blockShowOutlineOnly=false;
+					/*if(topOut) */playSE("dead")
+					//blockShowOutlineOnly=false
 					resetFieldVisible()
-					for(i in field.hiddenHeight*-1 until field.height)
-						for(j in 0 until field.width)
+					for(i in field.hiddenHeight*-1..<field.height)
+						for(j in 0..<field.width)
 							field.getBlock(j, i)?.apply {color = Block.COLOR.BLACK}
 					statc[0] = 1
 				}
 				if(!field.isEmpty) {
 					val y = field.highestBlockY
-					for(i in 0 until field.width) {
+					for(i in 0..<field.width) {
 						field.getRow(y).mapIndexedNotNull {my, b ->
 							b?.let {if(it.getAttribute(Block.ATTRIBUTE.ERASE)) my to it else null}
 						}.associate {it}.let {
@@ -2951,7 +2950,7 @@ class GameEngine(
 				// 反転
 				val x = (statc[0]-20)/2-1
 
-				for(y in field.hiddenHeight*-1 until field.height)
+				for(y in field.hiddenHeight*-1..<field.height)
 					field.setBlock(field.width-x-1, y, interruptItemMirrorField.getBlock(x, y))
 			}
 			statc[0]<21+field.width*2+5 -> {
@@ -2996,8 +2995,8 @@ class GameEngine(
 		private var log = LogManager.getLogger()
 
 		/** Max number of game style */
-		val MAX_GAMESTYLE get() = GameStyle.values().size
-		val GAMESTYLE_NAMES = GameStyle.values().map {it.name}
+		val MAX_GAMESTYLE get() = GameStyle.entries.size
+		val GAMESTYLE_NAMES = GameStyle.entries.map {it.name}
 		/** Number of free status counters (used by statc array) */
 		const val MAX_STATC = 10
 

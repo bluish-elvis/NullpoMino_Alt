@@ -39,12 +39,12 @@ interface PresetItem {
 	 * @param prop Property file to save to
 	 * @param setId Preset number
 	 */
-	fun presetSave(engine:GameEngine, prop:CustomProperties, modeName:String, setId:Int)
+	fun presetSave(engine:GameEngine, prop:CustomProperties, ruleName:String, setId:Int)
 
 	/** Save options to a preset
 	 * @param engine GameEngine
 	 * @param prop Property file to save to
 	 * @param setId Preset number
 	 */
-	fun presetLoad(engine:GameEngine, prop:CustomProperties, modeName:String, setId:Int)
+	fun presetLoad(engine:GameEngine, prop:CustomProperties, ruleName:String, setId:Int)
 }

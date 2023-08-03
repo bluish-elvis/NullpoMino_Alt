@@ -82,7 +82,7 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 			ranksIteratorPart = Array(totalParts) {i ->
 				RanksIteratorPart(this, ranks!!, i, totalParts)
 			}
-			for(i in 0 until totalParts)
+			for(i in 0..<totalParts)
 				try {
 					ranksIteratorPart[i].start()
 					ranksIteratorPart[i].join()
@@ -139,7 +139,7 @@ class RanksIterator(parent:JFrame, inputFile:String, private val outputFile:Stri
 
 			ranks = Ranks(ranksFrom)
 
-			for(n in 0 until numIterations) {
+			for(n in 0..<numIterations) {
 				iteration = n
 
 				oneIteration = OneIteration(totalParts, ranks)

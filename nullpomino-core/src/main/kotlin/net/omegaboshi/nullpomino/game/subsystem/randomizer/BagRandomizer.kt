@@ -35,9 +35,9 @@ open class BagRandomizer:Randomizer {
 	open val noSZO = false
 	open val limitPrev = false
 
-	internal open val baglen:Int get() = pieces.size
+	internal open val bagLen:Int get() = pieces.size
 	private var bag = MutableList(0) {0}
-	internal open val bagInit get() = List(baglen) {pieces[it%pieces.size]}
+	internal open val bagInit get() = List(bagLen) {pieces[it%pieces.size]}
 
 	private var pt:Int = pieces.size
 	private var isFirst = true
@@ -58,7 +58,7 @@ open class BagRandomizer:Randomizer {
 		while(tmp.isNotEmpty()) {
 			var i = 0
 			do i = r.nextInt(tmp.size)
-			while(if(tmp.size==baglen) !isPieceSZOOnly&&noSZO&&isFirst&&(tmp[i]==Piece.Shape.S.ordinal||tmp[i]==Piece.Shape.Z.ordinal||tmp[i]==Piece.Shape.O.ordinal)
+			while(if(tmp.size==bagLen) !isPieceSZOOnly&&noSZO&&isFirst&&(tmp[i]==Piece.Shape.S.ordinal||tmp[i]==Piece.Shape.Z.ordinal||tmp[i]==Piece.Shape.O.ordinal)
 				else limitPrev&&bag.takeLast(minOf(4, maxOf(0, tmp.size-1))).any {it==tmp[i]})
 			isFirst = false
 			bag += tmp.removeAt(i)

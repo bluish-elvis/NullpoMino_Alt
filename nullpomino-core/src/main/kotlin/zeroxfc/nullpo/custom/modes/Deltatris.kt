@@ -224,7 +224,7 @@ class Deltatris:MarathonModeBase() {
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp)
-			loadSetting(engine.playerProp.propProfile, engine)
+			loadSetting(engine, engine.playerProp.propProfile)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s
@@ -277,7 +277,7 @@ class Deltatris:MarathonModeBase() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScorePlayer[difficulty][i]}", i==rankingRankPlayer)
 						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLinesPlayer[difficulty][i]}", i==rankingRankPlayer)
@@ -287,7 +287,7 @@ class Deltatris:MarathonModeBase() {
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[difficulty][i]}", i==rankingRank)
 						receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[difficulty][i]}", i==rankingRank)
@@ -303,8 +303,8 @@ class Deltatris:MarathonModeBase() {
 		} else if(engine.stat===GameEngine.Status.CUSTOM) {
 			engine.playerProp.loginScreen.renderScreen(receiver, engine)
 		} else {
-			val baseX:Int = receiver.fieldX(engine)+4
-			val baseY:Int = receiver.fieldY(engine)+52
+			val baseX = receiver.fieldX(engine)+4
+			val baseY = receiver.fieldY(engine)+52
 			engine.nowPieceObject?.let {cPiece ->
 				if(pCoordList.size>0) for(loc in pCoordList) {
 					val cx = baseX+16*loc[0]
@@ -317,8 +317,8 @@ class Deltatris:MarathonModeBase() {
 			val scget = scDisp<engine.statistics.score
 			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
 
-			val rix:Int = receiver.scoreX(engine)
-			val riy:Int = receiver.scoreY(engine)+13*16
+			val rix = receiver.scoreX(engine)
+			val riy = receiver.scoreY(engine)+13*16
 			GameTextUtilities.drawDirectTextAlign(
 				receiver, rix, riy, GameTextUtilities.ALIGN_TOP_LEFT, "%.2f".format(multiplier)+"X",
 				if(engine.stat===GameEngine.Status.MOVE&&engine.statc[0]>engine.speed.lockDelay*3) COLOR.RED else if(mScale>1) COLOR.ORANGE else COLOR.WHITE,
@@ -501,20 +501,20 @@ class Deltatris:MarathonModeBase() {
      */
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
 		engine.statistics.scoreHD += (fall*2*multiplier).toInt()
-		val baseX:Int = 16*engine.nowPieceX+4+receiver.fieldX(engine)
-		val baseY:Int = 16*engine.nowPieceY+52+receiver.fieldY(engine)
+		val baseX = 16*engine.nowPieceX+4+receiver.fieldX(engine)
+		val baseY = 16*engine.nowPieceY+52+receiver.fieldY(engine)
 		engine.nowPieceObject?.let {cPiece ->
 			for(i in 1..fall) {
 				pCoordList.add(intArrayOf(engine.nowPieceX, engine.nowPieceY-i))
 			}
-			for(i in 0 until cPiece.maxBlock) {
+			for(i in 0..<cPiece.maxBlock) {
 				if(!cPiece.big) {
-					val x2:Int = baseX+cPiece.dataX[cPiece.direction][i]*16
-					val y2:Int = baseY+cPiece.dataY[cPiece.direction][i]*16
+					val x2 = baseX+cPiece.dataX[cPiece.direction][i]*16
+					val y2 = baseY+cPiece.dataY[cPiece.direction][i]*16
 					RendererExtension.addBlockBreakEffect(receiver, x2, y2, cPiece.block[i])
 				} else {
-					val x2:Int = baseX+cPiece.dataX[cPiece.direction][i]*32
-					val y2:Int = baseY+cPiece.dataY[cPiece.direction][i]*32
+					val x2 = baseX+cPiece.dataX[cPiece.direction][i]*32
+					val y2 = baseY+cPiece.dataY[cPiece.direction][i]*32
 					RendererExtension.addBlockBreakEffect(receiver, x2, y2, cPiece.block[i])
 					RendererExtension.addBlockBreakEffect(receiver, x2+16, y2, cPiece.block[i])
 					RendererExtension.addBlockBreakEffect(receiver, x2, y2+16, cPiece.block[i])
@@ -611,7 +611,7 @@ class Deltatris:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX) if(sc>rankingScore[type][i]) return i
+		for(i in 0..<RANKING_MAX) if(sc>rankingScore[type][i]) return i
 		else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
 		else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&time<rankingTime[type][i]) return i
 		return -1
@@ -625,7 +625,7 @@ class Deltatris:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX) if(sc>rankingScorePlayer[type][i]) return i
+		for(i in 0..<RANKING_MAX) if(sc>rankingScorePlayer[type][i]) return i
 		else if(sc==rankingScorePlayer[type][i]&&li>rankingLinesPlayer[type][i]) return i
 		else if(sc==rankingScorePlayer[type][i]&&li==rankingLinesPlayer[type][i]&&time<rankingTimePlayer[type][i]) return i
 		return -1

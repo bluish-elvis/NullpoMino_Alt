@@ -51,7 +51,7 @@ class GameKey:GameKeyDummy {
 	fun update(input:Input, ingame:Boolean = false) {
 		if(player==0&&NullpoMinoSlick.useJInputKeyboard) JInputManager.poll()
 
-		for(i in 0 until MAX_BUTTON) {
+		for(i in 0..<MAX_BUTTON) {
 			val kmap = if(ingame) keymap else keymapNav
 
 			val flag = kmap[i].any {

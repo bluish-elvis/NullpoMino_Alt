@@ -44,15 +44,15 @@ class DTET01CircleLoop<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
 	var x = Random.nextFloat()*640
 	var y = Random.nextFloat()*480
 	override fun update() {
-		x += sin(r*Rg)*(2+speed*2.7f)
-		y -= cos(r*Rg)*(2+speed*2.7f)
+		x += sin(r*RG)*(2+speed*2.7f)
+		y -= cos(r*RG)*(2+speed*2.7f)
 		while(x<0) x += 640
 		while(x>=640) x -= 640
 		while(y<0) y += 480
 		while(y>=480) y -= 480
 		r += .075f+speed*.007f
 		if(speed>1) {
-			r -= minOf(1f, speed-1)*.5f*(1+sin(r2*Rg)*.6f)
+			r -= minOf(1f, speed-1)*.5f*(1+sin(r2*RG)*.6f)
 			while(r<0) r += 360
 			while(r>=360) r -= 360
 			r2 += (speed-1)*1.3f

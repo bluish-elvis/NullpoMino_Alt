@@ -665,7 +665,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		}
 	}
 
-	override fun pieceLocked(engine:GameEngine, clear:Int) {
+	override fun pieceLocked(engine: GameEngine, clear: Int, finesse: Boolean) {
 		cleared[engine.playerID] = false
 		ojamaDrop[engine.playerID] = false
 	}
@@ -715,7 +715,7 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 
 		val baseX = if(big[playerID]) 1 else 2
 
-		for(i in 0 until if(dangerColumnDouble[playerID]&&!big[playerID]) 2 else 1)
+		for(i in 0..<if(dangerColumnDouble[playerID]&&!big[playerID]) 2 else 1)
 			if(engine.field.getBlockEmpty(baseX+i, 0))
 				when {
 					big[playerID] -> receiver.drawMenuFont(engine, 2, 0, "\u0085", COLOR.RED, 2f)
@@ -725,8 +725,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	}
 
 	protected fun drawHardOjama(engine:GameEngine) {
-		for(x in 0 until engine.field.width)
-			for(y in 0 until engine.field.height) {
+		for(x in 0..<engine.field.width)
+			for(y in 0..<engine.field.height) {
 				val hard = engine.field.getBlock(x, y)!!.hard
 				if(hard>0)
 					if(engine.displaySize==1) receiver.drawMenuFont(engine, x*2, y*2, "$hard", COLOR.YELLOW, 2f)

@@ -268,7 +268,7 @@ class SubscriberChallenge:NetDummyMode() {
 				val scale:Float = if((receiver.nextDisplayType==2)) 0.5f else 1.0f
 				val topY:Int = if((receiver.nextDisplayType==2)) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", EventReceiver.COLOR.BLUE, scale)
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
 					receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[goalType][i]}", (i==rankingRank), scale)
 					receiver.drawScoreFont(engine, 10, topY+i, "${rankingLines[goalType][i]}", (i==rankingRank), scale)
@@ -311,7 +311,7 @@ class SubscriberChallenge:NetDummyMode() {
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
 		if(engine.gameStarted&&(engine.stat==Status.ARE||engine.stat==Status.LINECLEAR))
-			for(i in 0 until engine.field.width) for(j in engine.field.hiddenHeight*-1 until engine.field.height)
+			for(i in 0..<engine.field.width) for(j in engine.field.hiddenHeight*-1..<engine.field.height)
 				engine.field.getBlock(i, j)?.let {
 					it.skin = (++it.skin)%skinCount
 				}
@@ -494,7 +494,7 @@ class SubscriberChallenge:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX) {
+		for(i in 0..<RANKING_MAX) {
 			if(sc>rankingScore[type][i]) return i
 			else if((sc==rankingScore[type][i])&&(li>rankingLines[type][i])) return i
 			else if((sc==rankingScore[type][i])&&(li==rankingLines[type][i])&&(time<rankingTime[type][i])) return i

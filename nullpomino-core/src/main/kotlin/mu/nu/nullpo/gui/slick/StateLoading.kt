@@ -126,7 +126,7 @@ class StateLoading:BasicGameState() {
 		// 巨大な画像をあらかじめ画面に描画することでメモリにキャッシュさせる
 		when(preloadSet) {
 			0 -> {
-				for(i in 0 until ResourceHolder.blockBreakMax)
+				for(i in 0..<ResourceHolder.blockBreakMax)
 					try {
 						ResourceHolder.imgBreak[i][0].draw()
 					} catch(_:Exception) {
@@ -135,7 +135,7 @@ class StateLoading:BasicGameState() {
 				preloadSet++
 			}
 			1 -> {
-				for(i in 0 until ResourceHolder.blockBreakMax)
+				for(i in 0..<ResourceHolder.blockBreakMax)
 					try {
 						ResourceHolder.imgBreak[i][1].draw()
 					} catch(_:Exception) {
@@ -144,7 +144,7 @@ class StateLoading:BasicGameState() {
 				preloadSet++
 			}
 			2 -> {
-				for(i in 0 until ResourceHolder.pEraseMax)
+				for(i in 0..<ResourceHolder.pEraseMax)
 					try {
 						ResourceHolder.imgPErase[i].draw()
 					} catch(_:Exception) {

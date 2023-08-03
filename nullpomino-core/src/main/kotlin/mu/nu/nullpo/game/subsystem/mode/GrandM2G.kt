@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.math.floor
 import kotlin.math.ln
@@ -187,7 +188,7 @@ class GrandM2G:AbstractMode() {
 		setSpeed(engine)
 	}
 
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		goalType = prop.getProperty("garbagemania.goalType", GOALTYPE_PATTERN)
 		startLevel = prop.getProperty("garbagemania.startLevel", 0)
 		alwaysGhost = prop.getProperty("garbagemania.alwaysghost", true)
@@ -197,7 +198,7 @@ class GrandM2G:AbstractMode() {
 		big = prop.getProperty("garbagemania.big", false)
 	}
 
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("garbagemania.goalType", goalType)
 		prop.setProperty("garbagemania.startLevel", startLevel)
 		prop.setProperty("garbagemania.alwaysghost", alwaysGhost)
@@ -342,7 +343,7 @@ class GrandM2G:AbstractMode() {
 					// Rankings
 					receiver.drawScoreFont(engine, 3, 2, "LEVEL TIME", EventReceiver.COLOR.BLUE)
 
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreGrade(
 							engine,
 							0,
@@ -360,7 +361,7 @@ class GrandM2G:AbstractMode() {
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME", EventReceiver.COLOR.BLUE)
 
 					var totalTime = 0
-					for(i in 0 until SECTION_MAX) {
+					for(i in 0..<SECTION_MAX) {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
@@ -463,13 +464,7 @@ class GrandM2G:AbstractMode() {
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
 		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
-			// Level up
-			if(engine.statistics.level<nextSecLv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
-
+			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
 			// Hard drop bonusInitialization
 			harddropBonus = 0
 		}
@@ -482,11 +477,7 @@ class GrandM2G:AbstractMode() {
 	override fun onARE(engine:GameEngine):Boolean {
 		// 最後の frame
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
-			if(engine.statistics.level<nextSecLv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
+			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
 			lvupFlag = true
 		}
 
@@ -494,7 +485,8 @@ class GrandM2G:AbstractMode() {
 	}
 
 	/** levelが上がったときの共通処理 */
-	private fun levelUp(engine:GameEngine) {
+	private fun levelUp(engine:GameEngine,lu:Int=0) {
+		engine.statistics.level += lu
 		// Meter
 		engine.meterValue = engine.statistics.level%100/99f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
@@ -505,6 +497,8 @@ class GrandM2G:AbstractMode() {
 		// LV100到達でghost を消す
 		if(engine.statistics.level>=100&&!alwaysGhost) engine.ghost = false
 
+		if(lu<=0)return
+		if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 		// BGM fadeout
 		if(tableBGMFadeout[bgmLv]!=-1&&engine.statistics.level>=tableBGMFadeout[bgmLv]) owner.musMan.fadeSW = true
 	}
@@ -530,7 +524,7 @@ class GrandM2G:AbstractMode() {
 					when(goalType) {
 						GOALTYPE_RANDOM -> {
 							field.pushUp(2)
-							for(x in 0 until w/2)
+							for(x in 0..<w/2)
 								if(x!=garbagePos)
 									for(j in 0..1)
 										for(k in 0..1)
@@ -566,7 +560,7 @@ class GrandM2G:AbstractMode() {
 					// Set connections
 					if(receiver.isStickySkin(engine))
 						for(y in 1..1)
-							for(x in 0 until w)
+							for(x in 0..<w)
 								if(x!=garbagePos) field.getBlock(x, h-y)?.run {
 									if(!field.getBlockEmpty(x-1, h-y))
 										setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
@@ -577,7 +571,7 @@ class GrandM2G:AbstractMode() {
 					when(goalType) {
 						GOALTYPE_RANDOM -> {
 							field.pushUp()
-							for(x in 0 until w)
+							for(x in 0..<w)
 								if(x!=garbagePos)
 									field.setBlock(
 										x, h-1,
@@ -585,7 +579,7 @@ class GrandM2G:AbstractMode() {
 									)
 							// Set connections
 							if(receiver.isStickySkin(engine))
-								for(x in 0 until w)
+								for(x in 0..<w)
 									if(x!=garbagePos) field.getBlock(x, h-1)?.run {
 										if(!field.getBlockEmpty(x-1, h-1))
 											setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
@@ -611,7 +605,7 @@ class GrandM2G:AbstractMode() {
 						)
 					}//while(garbagePos==prevHole);
 					if(receiver.isStickySkin(engine))
-						for(x in 0 until w)
+						for(x in 0..<w)
 							if(x!=garbagePos) field.getBlock(x, h-1)?.run {
 								if(!field.getBlockEmpty(x-1, h-1))
 									setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
@@ -634,8 +628,7 @@ class GrandM2G:AbstractMode() {
 			val levelb = engine.statistics.level
 			var ls = li
 			ls += engine.field.howManyGarbageLineClears
-			engine.statistics.level += ls
-			levelUp(engine)
+			levelUp(engine,ls)
 
 			if(engine.statistics.level>=999) {
 				// Ending
@@ -667,8 +660,7 @@ class GrandM2G:AbstractMode() {
 				// Update level for next section
 				nextSecLv += 100
 				if(nextSecLv>999) nextSecLv = 999
-			} else if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-
+			}
 			// Calculate score
 			val bravo = if(engine.field.isEmpty) 4 else 1
 
@@ -785,7 +777,7 @@ class GrandM2G:AbstractMode() {
 
 	/* リプレイ保存 */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(owner.replayProp, engine)
+		saveSetting(engine, owner.replayProp)
 		owner.replayProp.setProperty("garbagemania.version", version)
 
 		// Update rankings
@@ -824,7 +816,7 @@ class GrandM2G:AbstractMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(lv:Int, time:Int, goalType:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(lv>rankingLevel[i][goalType]) return i
 			else if(lv==rankingLevel[i][goalType]&&time<rankingTime[i][goalType]) return i
 
@@ -833,7 +825,7 @@ class GrandM2G:AbstractMode() {
 
 	/** Update best section time records */
 	private fun updateBestSectionTime(goalType:Int) {
-		for(i in 0 until SECTION_MAX)
+		for(i in 0..<SECTION_MAX)
 			if(sectionIsNewRecord[i]) bestSectionTime[i][goalType] = sectionTime[i]
 	}
 

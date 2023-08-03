@@ -440,7 +440,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			}
 		}
 
-		for(i in 0 until GameEngine.MAX_GAMESTYLE) {
+		for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 			tableMPRanking[i].columnModel.run {
 				getColumn(0).preferredWidth = propConfig.getProperty("tableMPRanking.width.rank", 30) // Rank
 				getColumn(1).preferredWidth = propConfig.getProperty("tableMPRanking.width.name", 200) // Name
@@ -474,7 +474,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		propConfig.setProperty("tableUsers.width.type", tmUsers.getColumn(2).width)
 		propConfig.setProperty("tableUsers.width.name", tmUsers.getColumn(3).width)
 
-		for(i in 0 until GameEngine.MAX_GAMESTYLE) {
+		for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 			val tm = tableMPRanking[i].columnModel
 			propConfig.setProperty("tableMPRanking.width.rank", tm.getColumn(0).width)
 			propConfig.setProperty("tableMPRanking.width.name", tm.getColumn(1).width)
@@ -739,7 +739,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		pBanLength.add(lBanLength)
 
 		val comboboxBanLength =
-			JComboBox((-1 until NetServerBan.BANLENGTH_TOTAL).map {getUIText("BanType$it")}.toTypedArray()).apply {
+			JComboBox((-1..<NetServerBan.BANLENGTH_TOTAL).map {getUIText("BanType$it")}.toTypedArray()).apply {
 				toolTipText = getUIText("Ban_Length_Tip")
 				pBanLength.add(this)
 			}
@@ -957,7 +957,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			val size = message[1].toInt()
 
 			tablemodelRoomList.rowCount = 0
-			for(i in 0 until size) {
+			for(i in 0..<size) {
 				val r = NetRoomInfo(message[2+i])
 				tablemodelRoomList.addRow(createRoomListRowData(r))
 			}
@@ -972,7 +972,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			val r = NetRoomInfo(message[1])
 			val columnID = tablemodelRoomList.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
 
-			for(i in 0 until tablemodelRoomList.rowCount) {
+			for(i in 0..<tablemodelRoomList.rowCount) {
 				val strID = tablemodelRoomList.getValueAt(i, columnID) as String
 				val roomID = strID.toInt()
 
@@ -989,7 +989,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			val r = NetRoomInfo(message[1])
 			val columnID = tablemodelRoomList.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
 
-			for(i in 0 until tablemodelRoomList.rowCount) {
+			for(i in 0..<tablemodelRoomList.rowCount) {
 				val strID = tablemodelRoomList.getValueAt(i, columnID) as String
 				val roomID = strID.toInt()
 
@@ -1038,7 +1038,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			// Set number of rows
 			if(tablemodelUsers.rowCount>message.size-1) tablemodelUsers.rowCount = message.size-1
 
-			for(i in 1 until message.size) {
+			for(i in 1..<message.size) {
 				val strClientData = message[i].split(Regex("\\|")).dropLastWhile {it.isEmpty()}
 
 				val strIP = strClientData[0] // IP
@@ -1104,7 +1104,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			if(message.size<2)
 				addConsoleLog(getUIText("Console_BanList_Result_None"), Color(0, 64, 64))
 			else
-				for(i in 0 until message.size-1) {
+				for(i in 0..<message.size-1) {
 					val ban = NetServerBan()
 					ban.importString(message[i+1])
 
@@ -1350,9 +1350,6 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 
 	companion object {
 		//***** Constants *****
-		/** Serial Version ID */
-		private const val serialVersionUID = 1L
-
 		/** Constants for each screen-card */
 		private const val SCREENCARD_LOGIN = 0
 		private const val SCREENCARD_LOBBY = 1
@@ -1434,7 +1431,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			if(row!=-1) {
 				val strCopy = StringBuilder()
 
-				for(column in 0 until table.columnCount) {
+				for(column in 0..<table.columnCount) {
 					val selectedObject = table.getValueAt(row, column)
 					if(selectedObject is String)
 						if(column==0) strCopy.append(selectedObject)

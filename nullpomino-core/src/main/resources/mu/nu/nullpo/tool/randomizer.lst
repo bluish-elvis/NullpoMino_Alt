@@ -17,5 +17,5 @@ net.omegaboshi.nullpomino.game.subsystem.randomizer.DistanceLinearWeightRandomiz
 net.omegaboshi.nullpomino.game.subsystem.randomizer.DistanceQuadWeightRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.DistanceExpWeightRandomizer
 net.omegaboshi.nullpomino.game.subsystem.randomizer.FixedSequenceRandomizer
-zeroxfc.nullpo.custom.random.DroughtedPieceBiasRandomizer
+zeroxfc.nullpo.custom.random.DroughtPieceBiasRandomizer
 zeroxfc.nullpo.custom.random.TerrorInstinctRandomizer

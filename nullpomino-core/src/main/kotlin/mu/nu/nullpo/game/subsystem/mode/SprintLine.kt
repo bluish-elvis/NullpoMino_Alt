@@ -47,18 +47,18 @@ import org.apache.logging.log4j.LogManager
 /** LINE RACE Mode */
 class SprintLine:NetDummyMode() {
 	private val itemSpd = object:SpeedPresets(COLOR.BLUE, 0) {
-		override fun presetLoad(engine:GameEngine, prop:CustomProperties, modeName:String, setId:Int) {
-			super.presetLoad(engine, prop, modeName, setId)
-			bgmId = prop.getProperty("$modeName.bgmno.$setId", BGM.values.indexOf(BGM.Rush(0)))
-			big = prop.getProperty("$modeName.big.$setId", false)
-			goalType = prop.getProperty("$modeName.goalType.$setId", 1)
+		override fun presetLoad(engine:GameEngine, prop:CustomProperties, ruleName:String, setId:Int) {
+			super.presetLoad(engine, prop, ruleName, setId)
+			bgmId = prop.getProperty("$ruleName.bgmno.$setId", BGM.values.indexOf(BGM.Rush(3)))
+			big = prop.getProperty("$ruleName.big.$setId", false)
+			goalType = prop.getProperty("$ruleName.goalType.$setId", 1)
 		}
 
-		override fun presetSave(engine:GameEngine, prop:CustomProperties, modeName:String, setId:Int) {
-			super.presetSave(engine, prop, modeName, setId)
-			prop.setProperty("$modeName.bgmno.$setId", bgmId)
-			prop.setProperty("$modeName.big.$setId", big)
-			prop.setProperty("$modeName.goalType.$setId", goalType)
+		override fun presetSave(engine:GameEngine, prop:CustomProperties, ruleName:String, setId:Int) {
+			super.presetSave(engine, prop, ruleName, setId)
+			prop.setProperty("$ruleName.bgmno.$setId", bgmId)
+			prop.setProperty("$ruleName.big.$setId", big)
+			prop.setProperty("$ruleName.goalType.$setId", goalType)
 		}
 	}
 	/** Last preset number used */
@@ -89,7 +89,7 @@ class SprintLine:NetDummyMode() {
 	/** Only-Twist mode (0:OFF,1:Twist w/Single,2:TSD or not count,3:TSD ONLY or die) */
 	private var gameMode = 0
 
-	override val menu = MenuList("linerace", itemGoal, itemBGM, itemSpd, itemBig)
+	override val menu = MenuList("linerace", itemGoal, itemSpd, itemBGM, itemBig)
 
 	/** Current round's ranking position */
 	private var rankingRank = 0
@@ -117,12 +117,11 @@ class SprintLine:NetDummyMode() {
 	override fun playerInit(engine:GameEngine) {
 		log.debug("playerInit")
 
-		super.playerInit(engine)
-
 		bgmId = 0
 		big = false
 		goalType = 0
 		presetNumber = 0
+		super.playerInit(engine)
 
 		rankingRank = -1
 		rankingTime.forEach {it.fill(-1)}
@@ -134,28 +133,11 @@ class SprintLine:NetDummyMode() {
 
 		netPlayerInit(engine)
 
-		if(!owner.replayMode) {
-			loadPreset(engine, owner.modeConfig, -1)
-			presetNumber = owner.modeConfig.getProperty("linerace.presetNumber", 0)
-		} else {
-			loadPreset(engine, owner.replayProp, -1)
-			presetNumber = 0
-
+		if(owner.replayMode) {
 			// NET: Load name
 			netPlayerName = owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
 		}
 	}
-	/** Load options from a preset
-	 * @param engine GameEngine
-	 * @param prop Property file to read from
-	 * @param preset Preset number
-	 */
-	private fun loadPreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
-		itemSpd.presetLoad(engine, prop, menu.propName, preset)
-	}
-
-	private fun savePreset(engine:GameEngine, prop:CustomProperties, preset:Int) =
-		itemSpd.presetSave(engine, prop, menu.propName, preset)
 
 	/* This function will be called before the game actually begins (after
 	* Ready&Go screen disappears) */
@@ -177,19 +159,18 @@ class SprintLine:NetDummyMode() {
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null&&!netIsWatch) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "TIME   PIECE /sec", COLOR.BLUE)
+				receiver.drawScoreFont(engine, 1, topY-1, "TIME   PIECE/sec", COLOR.BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
-					receiver.drawScoreNum(engine, 3, topY+i, rankingTime[goalType][i].toTimeStr, rankingRank==i)
+					receiver.drawScoreNum(engine, 2, topY+i, rankingTime[goalType][i].toTimeStr, rankingRank==i)
 					if(rankingTime[goalType][i]>=0) {
-						receiver.drawScoreNum(engine, 10, topY+i, "${rankingPiece[goalType][i]}", rankingRank==i)
-						receiver.drawScoreNum(engine, 14, topY+i, rankingPPS[goalType][i], null to null, rankingRank==i)
+						receiver.drawScoreNum(engine, 9, topY+i, "${rankingPiece[goalType][i]}", rankingRank==i)
+						receiver.drawScoreNum(engine, 12, topY+i, rankingPPS[goalType][i], null to null, rankingRank==i)
 					}
 				}
 			}
 		} else {
-			receiver.drawMenuNano(engine, 6, 21, "LINES\nTO GO", COLOR.BLUE)
 			val remainLines = maxOf(0, GOAL_TABLE[goalType]-engine.statistics.lines)
 			val fontColor = when(remainLines) {
 				in 1..10 -> COLOR.RED
@@ -198,15 +179,19 @@ class SprintLine:NetDummyMode() {
 				else -> COLOR.WHITE
 			}
 			"$remainLines".let {
-				receiver.drawScoreNum(engine, 0, 4, it, fontColor)
 				receiver.drawMenuNum(engine, -30, 1, it, fontColor, 4f, .5f)
+				receiver.drawScoreNum(engine, 0, 3, it, fontColor, 2f)
 			}
-			receiver.drawScoreNum(engine, 0, 6, "${engine.statistics.totalPieceLocked}", 2f)
-			receiver.drawScoreFont(engine, 0, 8, "Piece\n/sec", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 5, 9, engine.statistics.pps)
+			receiver.drawScoreNano(engine, 4, 3, "LINES\nTO GO", COLOR.BLUE)
 
-			receiver.drawScoreNum(engine, 0, 11, engine.statistics.lpm)
+			receiver.drawScoreNum(engine, 0, 5, "${engine.statistics.totalPieceLocked}", 2f)
+			receiver.drawScoreFont(engine, 0, 7, "Piece\n/sec", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 5, 8, engine.statistics.pps, scale = 2f)
+			receiver.drawScoreFont(engine, 6, 7, "Finesse", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 5, 5, "${engine.statistics.finesse}", 2f)
+			receiver.drawScoreNum(engine, 0, 10, engine.statistics.lpm, scale = 2f)
 			receiver.drawScoreFont(engine, 0, 12, "Lines/MIN", COLOR.BLUE)
+
 
 			receiver.drawScoreFont(engine, 0, 15, "Time", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 0, 16, engine.statistics.time.toTimeStr, 2f)
@@ -258,7 +243,7 @@ class SprintLine:NetDummyMode() {
 
 	/* Save replay file */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		savePreset(engine, owner.replayProp, -1)
+		itemSpd.presetSave(engine, prop, menu.propName, -1)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(
@@ -310,7 +295,7 @@ class SprintLine:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(time:Int, piece:Int, pps:Float):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(time<rankingTime[goalType][i]||rankingTime[goalType][i]<=0) return i
 			else if(time==rankingTime[goalType][i]&&(piece<rankingPiece[goalType][i]||rankingPiece[goalType][i]==0)) return i
 			else if(time==rankingTime[goalType][i]&&piece==rankingPiece[goalType][i]&&pps>rankingPPS[goalType][i]) return i

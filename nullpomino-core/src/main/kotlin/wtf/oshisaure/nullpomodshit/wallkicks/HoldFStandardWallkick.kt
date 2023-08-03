@@ -55,8 +55,8 @@ class HoldFStandardWallkick:BaseStandardWallkick() {
 		return if(!ctrl!!.isPress(9)) {
 			super.executeWallkick(x, y, rtDir, rtOld, rtNew, allowUpward, piece, field, ctrl)
 		} else {
-			for(i in 0 until field.width) {
-				for(j in -field.hiddenHeight until field.height) {
+			for(i in 0..<field.width) {
+				for(j in -field.hiddenHeight..<field.height) {
 					field.setBlock(i, j, Block((i+abs(j))%7+2, piece.block[0].skin, 129))
 				}
 			}

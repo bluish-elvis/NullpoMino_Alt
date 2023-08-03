@@ -1130,18 +1130,11 @@ public class Input{
 	 * @return True if the control is pressed
 	 */
 	private boolean isControlDwn(int index,int controllerIndex){
-		switch(index){
-			case LEFT:
-				return isControllerLeft(controllerIndex);
-			case RIGHT:
-				return isControllerRight(controllerIndex);
-			case UP:
-				return isControllerUp(controllerIndex);
-			case DOWN:
-				return isControllerDown(controllerIndex);
-		}
-
-		if(index>=BUTTON1) return isButtonPressed((index-BUTTON1),controllerIndex);
+		if(index==LEFT) return isControllerLeft(controllerIndex);
+		else if(index==RIGHT) return isControllerRight(controllerIndex);
+		else if(index==UP) return isControllerUp(controllerIndex);
+		else if(index==DOWN) return isControllerDown(controllerIndex);
+		else if(index>=BUTTON1) return isButtonPressed((index-BUTTON1),controllerIndex);
 
 		throw new RuntimeException("Unknown control index");
 	}

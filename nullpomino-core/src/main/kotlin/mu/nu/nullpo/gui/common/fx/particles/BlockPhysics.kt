@@ -60,8 +60,8 @@ class BlockPhysics(x:Float = 0f, y:Float = 0f, velocity:Vector = Vector(0, 0),
 	}
 
 	override fun draw(i:Int, r:AbstractRenderer) {
-		for(y in 0 until blockSizeY) {
-			for(x in 0 until blockSizeX) {
+		for(y in 0..<blockSizeY) {
+			for(x in 0..<blockSizeX) {
 				r.drawBlock(minX+x*BS, minY+y*BS, block)
 			}
 		}

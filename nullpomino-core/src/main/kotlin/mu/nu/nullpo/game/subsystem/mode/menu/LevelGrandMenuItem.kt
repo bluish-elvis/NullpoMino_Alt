@@ -31,15 +31,11 @@ package mu.nu.nullpo.game.subsystem.mode.menu
 
 import mu.nu.nullpo.game.event.EventReceiver
 
-class LevelGrandMenuItem(color:EventReceiver.COLOR, maxSection:Int = 9, compact:Boolean = true, showG:Boolean = true, showD:Boolean = true):
-	LevelMenuItem("startLevel", "Level", color, 0, 0..maxSection, compact, showG, showD) {
-	constructor(color:EventReceiver.COLOR, compact:Boolean = true, showG:Boolean = true, showD:Boolean = true):this(
-		color, 9, compact, showG, showD
+class LevelGrandMenuItem(color:EventReceiver.COLOR, maxSection:Int = 9, showG:Boolean = true, showD:Boolean = true):
+	LevelMenuItem("startLevel", "Level", color, 0, 0..maxSection, true, showG, showD) {
+	constructor(color:EventReceiver.COLOR, showG:Boolean = true, showD:Boolean = true):this(
+		color, 9, showG, showD
 	)
-
-	constructor(color:EventReceiver.COLOR, showG:Boolean = true, showD:Boolean = true):this(color, false, showG, showD)
-	constructor(color:EventReceiver.COLOR, compact:Boolean = true):this(color, compact, false, false)
-
 	override val valueString:String
 		get() = "${value*100}"
 }

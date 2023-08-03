@@ -164,9 +164,9 @@ class GrandBasic:AbstractMode() {
 		comboValue = 0
 		lastScore = 0
 		bonusInt = 0
-		bonusSpeed = bonusInt
-		tempHanabi = bonusSpeed
-		hanabi = tempHanabi
+		bonusSpeed = 0
+		tempHanabi = 0
+		hanabi = 0
 		rollTime = 0
 		bgmLv = 0
 		halfMinLine = 0
@@ -233,55 +233,40 @@ class GrandBasic:AbstractMode() {
 	/** Main routine for game setup screen */
 	override fun onSetting(engine:GameEngine):Boolean {
 		if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateMenu(engine)
-			if(change!=0) {
-				engine.playSE("change")
-
-				if(startLevel<0) startLevel = 2
-				if(startLevel>2) startLevel = 0
-				owner.bgMan.bg = -1-startLevel
-				engine.statistics.level = startLevel*100
-				nextSecLv = engine.statistics.level+100
-				setSpeed(engine)
-			}
-
-			// Check for F button, when pressed this will flip Leaderboard/Best
-			// Section Time Records
+			// Check for F button, when pressed this will flip Leaderboard/Best Section Time Records
 			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
-
-			// Check for A button, when pressed this will begin the game
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				isShowBestSectionTime = false
-				sectionsDone = 0
-				return false
-			}
-
-			// Check for B button, when pressed this will shut down the game
-			// engine.
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
 		}
-
-		return true
+		return super.onSetting(engine)
 	}
 
+	override fun onSettingChanged(engine:GameEngine) {
+
+		if(startLevel<0) startLevel = 2
+		if(startLevel>2) startLevel = 0
+		owner.bgMan.bg = -1-startLevel
+		engine.statistics.level = startLevel*100
+		nextSecLv = engine.statistics.level+100
+		setSpeed(engine)
+		super.onSettingChanged(engine)
+	}
+
+	override fun onReady(engine:GameEngine):Boolean {
+		if(engine.statc[0]==0) {
+			isShowBestSectionTime = false
+			sectionsDone = 0
+			owner.musMan.fadeSW = true
+		}
+		return super.onReady(engine)
+	}
 	/** This function will be called before the game actually begins (after
 	 * Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel*100
 
-		nextSecLv = engine.statistics.level+100
-		if(engine.statistics.level<0) nextSecLv = 100
-		if(engine.statistics.level>=900) nextSecLv = 999
+		nextSecLv = minOf(maxOf(100, engine.statistics.level+100), 999)
 
 		owner.bgMan.bg = engine.statistics.level/-100-1
 
@@ -308,11 +293,11 @@ class GrandBasic:AbstractMode() {
 					// Score Leaderboard
 					receiver.drawScoreFont(engine, 0, 2, "HANABI SCORE TIME", COLOR.BLUE)
 
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreGrade(engine, 0, 3+i, "%2d".format(i+1), COLOR.YELLOW)
 						receiver.drawScoreNum(engine, 2, 3+i, "${rankingHanabi[i]}", i==rankingRank)
 						receiver.drawScoreNum(engine, 6, 3+i, "${rankingScore[i]}", i==rankingRank)
-						receiver.drawScoreNum(engine, 13, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
+						receiver.drawScoreNum(engine, 12, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
 					}
 
 					receiver.drawScoreFont(engine, 0, 24, "F:VIEW SECTION SCORE", COLOR.GREEN)
@@ -323,29 +308,21 @@ class GrandBasic:AbstractMode() {
 					val totalTime = bestSectionTime.sum()
 					val totalScore = bestSectionScore.sum()
 					val totalHanabi = bestSectionHanabi.sum()
-					for(i in 0 until SECTION_MAX) {
-						val temp = i*100
-						receiver.drawScoreNum(engine, 0, 3+i, "%3d-".format(temp), sectionIsNewRecord[i])
-						receiver.drawScoreNum(
-							engine, 5, 3+i, String.format(
-								"%4d %6d %s", bestSectionHanabi[i], bestSectionScore[i],
-								bestSectionTime[i].toTimeStr
-							),
-							sectionIsNewRecord[i]
-						)
-					}
-					receiver.drawScoreFont(engine, 0, 5+SECTION_MAX, "TOTAL", COLOR.BLUE)
-					receiver.drawScoreNum(
-						engine, 5, 6+SECTION_MAX, "%4d %6d %s".format(totalHanabi, totalScore, totalTime.toTimeStr)
-					)
+					for(i in 0..<SECTION_MAX) {
 
-					receiver.drawScoreFont(engine, 0, 7+SECTION_MAX, "AVERAGE", COLOR.BLUE)
-					receiver.drawScoreNum(
-						engine, 5, 8+SECTION_MAX, String.format(
-							"%4d %6d %s", totalHanabi/SECTION_MAX, totalScore/SECTION_MAX,
-							(totalTime/SECTION_MAX).toTimeStr
-						)
-					)
+						receiver.drawScoreNum(engine, 0, 3+i, "%3d${if(i==SECTION_MAX-1)"+" else "-"}".format(i*100), sectionIsNewRecord[i])
+						receiver.drawScoreNum(engine, 4, 3+i, "%4d".format(bestSectionHanabi[i]), sectionIsNewRecord[i])
+						receiver.drawScoreNum(engine, 8, 3+i, "%6d".format(bestSectionScore[i]), sectionIsNewRecord[i])
+						receiver.drawScoreNum(engine, 14, 3+i, bestSectionTime[i].toTimeStr, sectionIsNewRecord[i])
+					}
+					receiver.drawScoreFont(engine, 0, 4+SECTION_MAX, "ALL", COLOR.BLUE)
+					receiver.drawScoreNum(engine, 4, 4+SECTION_MAX, "%4d".format(totalHanabi))
+					receiver.drawScoreNum(engine, 8, 4+SECTION_MAX, "%6d".format(totalScore))
+					receiver.drawScoreNum(engine, 14, 4+SECTION_MAX, totalTime.toTimeStr)
+					receiver.drawScoreFont(engine, 0, 5+SECTION_MAX, "AVG", COLOR.BLUE)
+					receiver.drawScoreNum(engine, 4, 5+SECTION_MAX, "%4d".format(totalHanabi/SECTION_MAX))
+					receiver.drawScoreNum(engine, 8, 5+SECTION_MAX, "%6d".format(totalScore/SECTION_MAX))
+					receiver.drawScoreNum(engine, 14, 5+SECTION_MAX, (totalTime/SECTION_MAX).toTimeStr)
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW RANKING", COLOR.GREEN)
 				}
@@ -587,7 +564,8 @@ class GrandBasic:AbstractMode() {
 		if(engine.statc[0]==0) {
 			secretGrade = engine.field.secretGrade
 			intHanabi = 0
-			tempHanabi = intHanabi
+			tempHanabi = 0
+			stNewRecordCheck(SECTION_MAX-1)
 			if(engine.ending==2) {
 				decTemp += hanabi/150
 				decoration += decTemp+secretGrade
@@ -617,8 +595,8 @@ class GrandBasic:AbstractMode() {
 
 			for(i in sectionScore.indices)
 				receiver.drawMenuNum(
-					engine, 0, (if(i==SECTION_MAX) 5 else 4)+i,
-					"%4d %d".format(sectionHanabi[i], sectionScore[i]), sectionIsNewRecord[i]
+					engine, 1, (if(i==SECTION_MAX) 5 else 4)+i,
+					"%4d:%d".format(sectionHanabi[i], sectionScore[i]), sectionIsNewRecord[i]
 				)
 			receiver.drawMenuFont(engine, 0, 4+SECTION_MAX, "BONUS", COLOR.BLUE)
 
@@ -694,7 +672,7 @@ class GrandBasic:AbstractMode() {
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
 	private fun checkRanking(sc:Long, fw:Int, lv:Int, time:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			when {
 				sc>rankingScore[i] -> return i
 				fw>rankingHanabi[i] -> return i
@@ -707,7 +685,7 @@ class GrandBasic:AbstractMode() {
 
 	/** Updates best section time records */
 	private fun updateBestSectionTime() {
-		for(i in 0 until SECTION_MAX)
+		for(i in 0..<SECTION_MAX)
 			if(sectionIsNewRecord[i]) {
 				bestSectionScore[i] = sectionScore[i]
 				bestSectionHanabi[i] = sectionHanabi[i]

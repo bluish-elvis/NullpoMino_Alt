@@ -106,13 +106,13 @@ class LSPIAIGarbageLine:LSPIAI() {
 		val f:DoubleArray?
 		if(twoPlayerGame) {
 			f = player.twoPlayerBasisFunctions.getFutureArray(nowState, futureState, oppNowState, oppFutureState)
-			for(i in 0 until TwoPlayerBasisFunction.FEATURE_COUNT) {
+			for(i in 0..<TwoPlayerBasisFunction.FEATURE_COUNT) {
 				pts += f[i]*player.twoPlayerBasisFunctions.weight[i]
 				//log.error(i + ":" + f[i]);
 			}
 		} else {
 			f = player.basisFunctions.getFeatureArray(nowState, futureState)
-			for(i in 0 until BasisFunction.FUTURE_COUNT) {
+			for(i in 0..<BasisFunction.FUTURE_COUNT) {
 				pts += f[i]*player.basisFunctions.weight[i]
 				//log.error(i + ":" + f[i]);
 			}

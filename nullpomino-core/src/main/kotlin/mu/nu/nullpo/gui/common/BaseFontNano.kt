@@ -34,8 +34,8 @@ import java.util.Locale
 
 abstract class BaseFontNano:BaseFont {
 	companion object {
-		const val w = 12
-		const val h = 14
+		const val W = 12
+		const val H = 14
 	}
 
 	abstract override val rainbowCount:Int
@@ -55,11 +55,11 @@ abstract class BaseFontNano:BaseFont {
 			} else {// 文字出力
 				val col = (if(color==EventReceiver.COLOR.RAINBOW) EventReceiver.getRainbowColor(rainbow, i) else color).ordinal
 				val c = stringChar-32// Character output
-				val sx = (c%32)*w
-				val sy = (c/32+col*3)*h
+				val sx = (c%32)*W
+				val sy = (c/32+col*3)*H
 
-				draw(0, dx, dy, scale, sx, sy, w, h, alpha)
-				dx += w*scale
+				draw(0, dx, dy, scale, sx, sy, W, H, alpha)
+				dx += W*scale
 			}
 		}
 	}

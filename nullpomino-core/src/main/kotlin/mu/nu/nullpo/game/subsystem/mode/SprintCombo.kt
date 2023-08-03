@@ -30,13 +30,11 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
-import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
-import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.*
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -48,30 +46,50 @@ class SprintCombo:NetDummyMode() {
 	/** Elapsed time from last line clear */
 	private var scgettime = 0
 
-	/** Most recent scoring eventInB2BIf it&#39;s the casetrue */
-	private var lastb2b = false
-
-	/** Most recent scoring eventInCombocount */
-	private var lastcombo = 0
-
-	/** Most recent scoring eventPiece inID */
-	private var lastpiece = 0
-
-	/** BGM number */
-	private var bgmId = 0
-
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
 
 	/** HindranceLinescount type (0=5,1=10,2=18) */
-	private var goalType = 0
+	private val itemGoal = StringsMenuItem(
+		"goalType", "GOAL", COLOR.BLUE, 0, GOAL_TABLE.map {"$it LINES"}
+	)
+
+	/** Time limit type */
+	private var goalType:Int by DelegateMenuItem(itemGoal)
 
 	/** Current version */
 	private var version = 0
 
+	private val itemSpd = object:SpeedPresets(COLOR.BLUE, 0) {
+		override fun presetLoad(engine:GameEngine, prop:CustomProperties, ruleName:String, setId:Int) {
+			super.presetLoad(engine, prop, ruleName, setId)
+			bgmId = prop.getProperty("$ruleName.bgmno.$setId", BGM.values.indexOf(BGM.Rush(0)))
+			big = prop.getProperty("$ruleName.big.$setId", false)
+			goalType = prop.getProperty("$ruleName.goalType.$setId", 1)
+			shapetype = prop.getProperty("$ruleName.shapetype.$setId", 1)
+			comboWidth = prop.getProperty("$ruleName.comboWidth.$setId", 4)
+			ceilingAdjust = prop.getProperty("$ruleName.ceilingAdjust.$setId", -2)
+			spawnAboveField = prop.getProperty("$ruleName.spawnAboveField.$setId", true)
+		}
+
+		override fun presetSave(engine:GameEngine, prop:CustomProperties, ruleName:String, setId:Int) {
+			super.presetSave(engine, prop, ruleName, setId)
+			prop.setProperty("$ruleName.bgmno.$setId", bgmId)
+			prop.setProperty("$ruleName.big.$setId", big)
+			prop.setProperty("$ruleName.goalType.$setId", goalType)
+			prop.setProperty("$ruleName.shapetype.$setId", shapetype)
+			prop.setProperty("$ruleName.comboWidth.$setId", comboWidth)
+			prop.setProperty("$ruleName.ceilingAdjust.$setId", ceilingAdjust)
+			prop.setProperty("$ruleName.spawnAboveField.$setId", spawnAboveField)
+		}
+	}
 	/** Last preset number used */
-	private var presetNumber = 0
+	private var presetNumber:Int by DelegateMenuItem(itemSpd)
+
+	private val itemBGM = BGMMenuItem("bgmno", COLOR.BLUE, BGM.values.indexOf(BGM.Rush(3)))
+	/** BGM number */
+	private var bgmId:Int by DelegateMenuItem(itemBGM)
 
 	/** Current round's ranking position */
 	private var rankingRank = 0
@@ -82,14 +100,19 @@ class SprintCombo:NetDummyMode() {
 	/** Rankings' Combo */
 	private val rankingCombo = List(GOAL_TABLE.size) {List(GAMETYPE_MAX) {MutableList(RANKING_MAX) {-1}}}
 
+	/** HindranceLinescount type (0=5,1=10,2=18) */
+	private val itemShape = StringsMenuItem(
+		"shapetype", "StartShape", COLOR.BLUE, 1, SHAPE_NAME_TABLE, false, true
+	)
 	/** Shape type */
-	private var shapetype = 0
+	private var shapetype:Int by DelegateMenuItem(itemShape)
 
 	/** Stack color */
 	private var stackColor = 0
 
+	private val itemWidth = IntegerMenuItem("comboWidth", "WIDTH", COLOR.BLUE, 5, 2..10, true, true)
 	/** Width of combo well */
-	private var comboWidth = 0
+	private var comboWidth:Int by DelegateMenuItem(itemWidth)
 
 	/** */
 	private val gameType:Int
@@ -99,12 +122,14 @@ class SprintCombo:NetDummyMode() {
 			else -> 2
 		}
 
+	private val itemCeil = IntegerMenuItem("ceilingAdjust", "CEILING", COLOR.BLUE, -2, -10..10, true, true)
 	/** Height difference between ceiling and stack (negative number lowers the
 	 * stack height) */
-	private var ceilingAdjust = 0
+	private var ceilingAdjust:Int by DelegateMenuItem(itemCeil)
 
+	private var itemAbove = BooleanMenuItem("spawnAboveField", "SpawnAbove", COLOR.BLUE, true, false, true)
 	/** Piece spawns above field if true */
-	private var spawnAboveField = false
+	private var spawnAboveField:Boolean by DelegateMenuItem(itemAbove)
 
 	/** Number of remaining stack lines that need to be added when lines are
 	 * cleared */
@@ -113,18 +138,16 @@ class SprintCombo:NetDummyMode() {
 	/** Next section lines */
 	private var nextseclines = 0
 
+	override val menu = MenuList("comborace", itemGoal, itemWidth, itemShape, itemSpd, itemCeil, itemAbove, itemBGM, itemBig)
+
 	/** Returns the name of this mode */
 	override val name = "REN Sprint"
 	override val gameIntensity = 2
 	/** This function will be called when the game enters the main game
 	 * screen. */
 	override fun playerInit(engine:GameEngine) {
-		super.playerInit(engine)
 
 		scgettime = 0
-		lastb2b = false
-		lastcombo = 0
-		lastpiece = 0
 		bgmId = 0
 		big = false
 		goalType = 0
@@ -134,6 +157,7 @@ class SprintCombo:NetDummyMode() {
 		stackColor = 0
 		nextseclines = 10
 
+		super.playerInit(engine)
 		rankingRank = -1
 		rankingTime.forEach {it.forEach {p -> p.fill(0)}}
 		rankingCombo.forEach {it.forEach {p -> p.fill(0)}}
@@ -142,172 +166,10 @@ class SprintCombo:NetDummyMode() {
 
 		netPlayerInit(engine)
 
-		if(!engine.owner.replayMode) {
-			version = CURRENT_VERSION
-			presetNumber = engine.owner.modeConfig.getProperty("comborace.presetNumber", 0)
-			loadPreset(engine, engine.owner.modeConfig, -1)
-		} else {
+		if(!engine.owner.replayMode) version = CURRENT_VERSION else {
 			version = engine.owner.replayProp.getProperty("comborace.version", 0)
-			presetNumber = 0
-			loadPreset(engine, engine.owner.replayProp, -1)
-
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
-		}
-	}
-
-	/** Load the settings */
-	private fun loadPreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
-		engine.speed.gravity = prop.getProperty("comborace.gravity.$preset", 1)
-		engine.speed.denominator = prop.getProperty("comborace.denominator.$preset", 256)
-		engine.speed.are = prop.getProperty("comborace.are.$preset", 0)
-		engine.speed.areLine = prop.getProperty("comborace.areLine.$preset", 0)
-		engine.speed.lineDelay = prop.getProperty("comborace. lineDelay.$preset", 0)
-		engine.speed.lockDelay = prop.getProperty("comborace.lockDelay.$preset", 30)
-		engine.speed.das = prop.getProperty("comborace.das.$preset", 10)
-		bgmId = prop.getProperty("comborace.bgmno.$preset", BGM.values.indexOf(BGM.Rush(0)))
-		big = prop.getProperty("comborace.big.$preset", false)
-		goalType = prop.getProperty("comborace.goalType.$preset", 1)
-		shapetype = prop.getProperty("comborace.shapetype.$preset", 1)
-		comboWidth = prop.getProperty("comborace.comboWidth.$preset", 4)
-		ceilingAdjust = prop.getProperty("comborace.ceilingAdjust.$preset", -2)
-		spawnAboveField = prop.getProperty("comborace.spawnAboveField.$preset", true)
-	}
-
-	/** Save the settings */
-	private fun savePreset(engine:GameEngine, prop:CustomProperties, preset:Int) {
-		prop.setProperty("comborace.gravity.$preset", engine.speed.gravity)
-		prop.setProperty("comborace.denominator.$preset", engine.speed.denominator)
-		prop.setProperty("comborace.are.$preset", engine.speed.are)
-		prop.setProperty("comborace.areLine.$preset", engine.speed.areLine)
-		prop.setProperty("comborace.lineDelay.$preset", engine.speed.lineDelay)
-		prop.setProperty("comborace.lockDelay.$preset", engine.speed.lockDelay)
-		prop.setProperty("comborace.das.$preset", engine.speed.das)
-		prop.setProperty("comborace.bgmno.$preset", bgmId)
-		prop.setProperty("comborace.big.$preset", big)
-		prop.setProperty("comborace.goalType.$preset", goalType)
-		prop.setProperty("comborace.shapetype.$preset", shapetype)
-		prop.setProperty("comborace.comboWidth.$preset", comboWidth)
-		prop.setProperty("comborace.ceilingAdjust.$preset", ceilingAdjust)
-		prop.setProperty("comborace.spawnAboveField.$preset", spawnAboveField)
-	}
-
-	/** Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// NET: Net Ranking
-		if(netIsNetRankingDisplayMode)
-			netOnUpdateNetPlayRanking(engine, goalType)
-		else if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 13)
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				var m = 1
-				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
-
-				when(menuCursor) {
-					0 -> {
-						goalType += change
-						if(goalType<0) goalType = GOAL_TABLE.size-1
-						if(goalType>GOAL_TABLE.size-1) goalType = 0
-					}
-					1 -> {
-						shapetype += change
-						if(shapetype<0) shapetype = SHAPETYPE_MAX-1
-						if(shapetype>SHAPETYPE_MAX-1) shapetype = 0
-					}
-					2 -> {
-						comboWidth += change
-						if(comboWidth>10) comboWidth = 2
-						if(comboWidth<2) comboWidth = 10
-					}
-					3 -> {
-						ceilingAdjust += change
-						if(ceilingAdjust>10) ceilingAdjust = -10
-						if(ceilingAdjust<-10) ceilingAdjust = 10
-					}
-					4 -> engine.speed.gravity = rangeCursor(engine.speed.gravity+change*m, -1, 99999)
-					5 -> engine.speed.denominator = rangeCursor(change*m, -1, 99999)
-					6 -> engine.speed.are = rangeCursor(engine.speed.are+change, 0, 99)
-					7 -> engine.speed.areLine = rangeCursor(engine.speed.areLine+change, 0, 99)
-					8 -> engine.speed.lineDelay = rangeCursor(engine.speed.lineDelay+change, 0, 99)
-					9 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
-					10 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-					11 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
-					12, 13 -> presetNumber = rangeCursor(presetNumber+change, 0, 99)
-				}
-
-				// NET: Signal options change
-				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
-			}
-
-			// Confirm
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-
-				if(menuCursor==14) {
-					loadPreset(engine, owner.modeConfig, presetNumber)
-
-					// NET: Signal options change
-					if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
-				} else if(menuCursor==15) {
-					savePreset(engine, owner.modeConfig, presetNumber)
-					owner.saveModeConfig()
-				} else {
-					owner.modeConfig.setProperty("comborace.presetNumber", presetNumber)
-					savePreset(engine, owner.modeConfig, -1)
-					owner.saveModeConfig()
-
-					// NET: Signal start of the game
-					if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
-
-					return false
-				}
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitFlag = true
-
-			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&netIsNetRankingViewOK(engine))
-				netEnterNetPlayRankingScreen(goalType)
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
-		}// Replay
-
-		return true
-	}
-
-	/** Renders game setup screen */
-	override fun renderSetting(engine:GameEngine) {
-		if(netIsNetRankingDisplayMode)
-		// NET: Netplay Ranking
-			netOnRenderNetPlayRanking(engine, receiver)
-		else {
-			drawMenu(
-				engine, receiver, 0, COLOR.BLUE, 0,
-				"GOAL" to if(GOAL_TABLE[goalType]==-1) "ENDLESS" else GOAL_TABLE[goalType]
-			)
-			drawMenu(
-				engine, receiver, 2, if(comboWidth==4) COLOR.BLUE else COLOR.WHITE,
-				1,
-				"STARTSHAPE" to SHAPE_NAME_TABLE[shapetype]
-			)
-			menuColor = COLOR.BLUE
-			drawMenuCompact(engine, receiver, "WIDTH" to comboWidth)
-
-			drawMenuSpeeds(engine, receiver)
-			drawMenuBGM(engine, receiver, bgmId)
-			if(!engine.owner.replayMode) {
-				menuColor = COLOR.GREEN
-				drawMenuCompact(engine, receiver, "LOAD" to presetNumber, "SAVE" to presetNumber)
-			}
 		}
 	}
 
@@ -362,7 +224,7 @@ class SprintCombo:NetDummyMode() {
 		// fill stack from the bottom to the top
 		if(w>comboWidth)
 			for(y in h-1 downTo h-stackHeight) {
-				for(x in 0 until w)
+				for(x in 0..<w)
 					if(x<cx-1||x>cx-2+comboWidth)
 						engine.field.setBlock(
 							x, y,
@@ -389,24 +251,19 @@ class SprintCombo:NetDummyMode() {
 		if(owner.menuOnly) return
 
 		receiver.drawScoreFont(engine, 0, 0, name, COLOR.RED)
-		if(GOAL_TABLE[goalType]==-1)
-			receiver.drawScoreFont(engine, 0, 1, "(Endless run)", COLOR.WHITE)
-		else
-			receiver.drawScoreFont(
-				engine, 0, 1, "("+(GOAL_TABLE[goalType]-1)
-					+"CHAIN Challenge)", COLOR.WHITE
-			)
+
+		receiver.drawScoreFont(
+			engine, 0, 1, if(GOAL_TABLE[goalType]==-1) "(Endless run)" else
+				"(${GOAL_TABLE[goalType]-1}CHAIN Challenge)", COLOR.WHITE
+		)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				receiver.drawScoreFont(engine, 3, 3, "RECORD", COLOR.BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(
-						engine,
-						0,
-						4+i,
-						"%2d".format(i+1),
+						engine, 0, 4+i, "%2d".format(i+1),
 						if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
 					if(rankingCombo[goalType][gameType][i]==GOAL_TABLE[goalType]-1)
@@ -445,13 +302,7 @@ class SprintCombo:NetDummyMode() {
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		//  Attack
 		if(ev.lines>0) {
-			// B2B
-			lastb2b = ev.b2b>0
-
-			// Combo
-			lastcombo = ev.combo
 			scgettime = engine.statistics.time
-			lastpiece = ev.piece!!.id
 
 			// add any remaining stack lines
 			val w = engine.field.width
@@ -460,7 +311,7 @@ class SprintCombo:NetDummyMode() {
 				val cx = w-comboWidth/2-1
 				var tmplines = 1
 				while(tmplines<=ev.lines&&remainStack>0) {
-					for(x in 0 until w)
+					for(x in 0..<w)
 						if(x<cx-1||x>cx-2+comboWidth)
 							engine.field.setBlock(
 								x, -ceilingAdjust-tmplines,
@@ -536,7 +387,7 @@ class SprintCombo:NetDummyMode() {
 	/** This function will be called when the replay data is going to be saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		engine.owner.replayProp.setProperty("comborace.version", version)
-		savePreset(engine, engine.owner.replayProp, -1)
+		itemSpd.presetSave(engine, prop, menu.propName, -1)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(
@@ -573,7 +424,7 @@ class SprintCombo:NetDummyMode() {
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
 	private fun checkRanking(combo:Int, time:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(combo>rankingCombo[goalType][gameType][i])
 				return i
 			else if(combo==rankingCombo[goalType][gameType][i]&&time>=0&&
@@ -591,7 +442,7 @@ class SprintCombo:NetDummyMode() {
 			engine.run {
 				statistics.run {"${maxCombo}\t${lines}\t${totalPieceLocked}\t${time}\t${lpm}\t${pps}\t"}+
 					"$goalType\t${gameActive}\t${timerActive}\t${meterColor}\t${meterValue}\t"
-			}+"$bg\t$scgettime\t\t$lastb2b\t$lastcombo\t$lastpiece\n"
+			}+"$bg\t$scgettime\t\n"
 		netLobby?.netPlayerClient?.send(msg)
 	}
 
@@ -609,10 +460,7 @@ class SprintCombo:NetDummyMode() {
 			{engine.meterColor = it.toInt()},
 			{engine.meterValue = it.toFloat()},
 			{owner.bgMan.bg = it.toInt()},
-			{scgettime = it.toInt()},
-			{lastb2b = it.toBoolean()},
-			{lastcombo = it.toInt()},
-			{lastpiece = it.toInt()}
+			{scgettime = it.toInt()}
 		).zip(message).forEach {(x, y) ->
 			x(y)
 		}

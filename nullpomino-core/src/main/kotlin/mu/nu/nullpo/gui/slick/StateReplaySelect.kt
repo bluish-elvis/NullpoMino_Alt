@@ -137,7 +137,7 @@ class StateReplaySelect:BaseMenuScrollState() {
 				FontNormal.printFontGrid(1, 24, "MODE:${it.mode} RULE:${it.rule}", COLOR.CYAN)
 				FontNormal.printFontGrid(1, 25, "SCORE:${s.score} LINE:${s.lines}", COLOR.CYAN)
 				FontNormal.printFontGrid(1, 26, "LEVEL:${s.level+s.levelDispAdd} TIME:${s.time.toTimeStr}", COLOR.CYAN)
-				FontNormal.printFontGrid(1, 27, "GAME RATE:${if(s.gamerate==0f) "UNKNOWN" else "${100*s.gamerate}%"}", COLOR.CYAN)
+				FontNormal.printFontGrid(1, 27, "GAME RATE:${if(s.gameRate==0f) "UNKNOWN" else "${100*s.gameRate}%"}", COLOR.CYAN)
 				FontNano.printFontGrid(1, 28, "SEED:${s.randSeed}", COLOR.CYAN)
 			} else FontNormal.printFontGrid(1, 25, "*INVALID FILE*", COLOR.RED)
 		}

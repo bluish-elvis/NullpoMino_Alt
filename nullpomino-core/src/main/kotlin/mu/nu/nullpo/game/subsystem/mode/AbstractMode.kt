@@ -75,11 +75,11 @@ abstract class AbstractMode:GameMode {
 	protected fun rankMapOf(vararg array:Pair<String, MutableList<*>>):rankMapType = rankMapOf(listOf(*array))
 
 	protected var menuColor = COLOR.WHITE
-	/*abstract */override val menu:MenuList = MenuList(id)
+	/*abstract */override val menu = MenuList(id)
 	protected var statcMenu
-		get() = menu.statcMenu
+		get() = menu.menuSubPos
 		set(x) {
-			menu.statcMenu = x
+			menu.menuSubPos = x
 		}
 	protected var menuY
 		get() = menu.menuY
@@ -108,21 +108,21 @@ abstract class AbstractMode:GameMode {
 
 	protected fun playerProperties(playerID:Int):ProfileProperties = owner.engine[playerID].playerProp
 
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) =
-		menu.load(prop, ruleName, if(players<=1) -1 else playerID)
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) =
+		menu.load(prop, engine, ruleName, if(players<=1) -1 else playerID)
 
-	fun loadSetting(engine:GameEngine) = loadSetting(owner.modeConfig, engine)
+	fun loadSetting(engine:GameEngine) = loadSetting(engine, owner.modeConfig)
 
 	@Deprecated("Set Parameter from GameEngine", ReplaceWith("loadSetting(prop, engine)"))
-	protected fun loadSetting(prop:CustomProperties) = loadSetting(prop, owner.engine.first())
+	protected fun loadSetting(prop:CustomProperties) = loadSetting(owner.engine.first(), prop)
 
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
-		menu.save(prop, ruleName, if(players<=1) -1 else playerID)
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
+		menu.save(prop,engine,ruleName,  if(players<=1) -1 else playerID)
 		owner.saveModeConfig()
 	}
 
 	@Deprecated("Set Parameter from GameEngine", ReplaceWith("saveSetting(prop, engine)"))
-	fun saveSetting(prop:CustomProperties) = saveSetting(prop, owner.engine.first())
+	fun saveSetting(prop:CustomProperties) = saveSetting(owner.engine.first(), prop)
 
 	/** Read rankings from [prop]
 	 * This should be called from Only [GameEngine] */
@@ -168,7 +168,7 @@ abstract class AbstractMode:GameMode {
 		}
 	}
 
-	override fun pieceLocked(engine:GameEngine, lines:Int) {}
+	override fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean) {}
 	override fun lineClearEnd(engine:GameEngine):Boolean = false
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {}
 	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {}
@@ -198,7 +198,13 @@ abstract class AbstractMode:GameMode {
 	 * @param engine GameEngine
 	 * @param lines Cleared line
 	 */
-	@Deprecated("use ScoreEvent instead lines")
+	@Deprecated(
+		"use ScoreEvent instead lines",
+		ReplaceWith(
+			"calcScore(engine, ScoreEvent(engine.nowPieceObject, lines, engine.b2bCount, engine.combo, engine.twistType, engine.split))",
+			"mu.nu.nullpo.game.event.ScoreEvent"
+		)
+	)
 	fun calcScore(engine:GameEngine, lines:Int):Int =
 		calcScore(engine, ScoreEvent(engine.nowPieceObject, lines, engine.b2bCount, engine.combo, engine.twistType, engine.split))
 	/** Calculates line-clear score
@@ -344,7 +350,7 @@ abstract class AbstractMode:GameMode {
 			// 決定
 			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 				engine.playSE("decide")
-				saveSetting(owner.modeConfig, engine)
+				saveSetting(engine, owner.modeConfig)
 				owner.saveModeConfig()
 				onSettingChanged(engine)
 				return false
@@ -354,7 +360,7 @@ abstract class AbstractMode:GameMode {
 		} else {
 			menuTime++
 			menuCursor = -1
-			return menuTime<60*(1+(menu.locs.maxOrNull() ?: 0)/engine.fieldHeight)
+			return menuTime<60*(1+(menu.loc.maxOrNull() ?: 0)/engine.fieldHeight)
 		}
 		return true
 	}
@@ -370,7 +376,7 @@ abstract class AbstractMode:GameMode {
 	override fun playerInit(engine:GameEngine) {
 		menuTime = 0
 		scDisp = 0
-		loadSetting(if(owner.replayMode) owner.replayProp else owner.modeConfig, engine.ruleOpt.strRuleName, engine.playerID)
+		loadSetting(engine, if(owner.replayMode) owner.replayProp else owner.modeConfig)
 	}
 
 	override fun renderARE(engine:GameEngine) {}
@@ -395,8 +401,8 @@ abstract class AbstractMode:GameMode {
 
 	fun getTimeFontColor(time:Int):COLOR = when {
 		time<600 -> if(time/10%2==0) COLOR.RED else COLOR.WHITE
-		time in 600 until 1200 -> COLOR.ORANGE
-		time in 1200 until 1800 -> COLOR.YELLOW
+		time in 600..<1200 -> COLOR.ORANGE
+		time in 1200..<1800 -> COLOR.YELLOW
 		else -> if(time/5%12==0) COLOR.GREEN else COLOR.WHITE
 	}
 
@@ -451,11 +457,11 @@ abstract class AbstractMode:GameMode {
 			onSettingChanged(engine)
 		}
 		if(engine.ctrl.isPush(Controller.BUTTON_A))
-			menu.menus[menuCursor].let {i ->
-				menu[i.first].let {
+			menu.menus[menuCursor].let {(x, y) ->
+				menu[x].let {
 					if(it is PresetItem&&it.value is Int) {
 						menuTime = -6
-						when(i.second) {
+						when(y) {
 							0 -> it.presetLoad(engine, owner.modeConfig, menu.propName, it.value as Int)
 							1 -> {
 								it.presetSave(engine, owner.modeConfig, menu.propName, it.value as Int)
@@ -758,7 +764,7 @@ abstract class AbstractMode:GameMode {
 				Statistic.SCORE -> {
 					receiver.drawMenuFont(engine, 0, y, "Score", color, scale*.75f)
 					receiver.drawMenuNum(engine, 0, y, "%7d".format(engine.statistics.score), scale = scale*1.9f)
-					receiver.drawMenuNano(engine, 5f, y+1.25f, "Score", color = color, scale = scale*.75f)
+					receiver.drawMenuNano(engine, 7f, y+1.25f, "Score", color = color, scale = scale*.75f)
 				}
 				Statistic.ATTACKS -> {
 					receiver.drawMenuFont(engine, 6, y, "Lines", color, scale*.8f)
@@ -861,7 +867,7 @@ abstract class AbstractMode:GameMode {
 					receiver.drawMenuFont(engine, 0, y, "Spikes/Line", color, scale)
 					receiver.drawMenuNum(engine, 0, y+1, (engine.statistics.apl), 13 to null, scale = scale)
 				}
-				Statistic.APL -> {
+				Statistic.APP -> {
 					receiver.drawMenuFont(engine, 0, y, "Spikes/Mino", color, scale)
 					receiver.drawMenuNum(engine, 0, y+1, (engine.statistics.app), 13 to null, scale = scale)
 				}
@@ -901,7 +907,7 @@ abstract class AbstractMode:GameMode {
 		SCORE, ATTACKS, LINES, TIME, VS,
 		LEVEL, LEVEL_MANIA, PIECE,
 		MAXCOMBO, MAXB2B, SPL, SPM, SPS, SPP,
-		LPM, LPS, PPM, PPS, APL, APM,
+		LPM, LPS, PPM, PPS, APL, APM, APP,
 		MAXCHAIN, LEVEL_ADD_DISP
 	}
 

@@ -225,7 +225,7 @@ class NetSPRanking:Serializable {
 		if(numRecords>maxRecords) numRecords = maxRecords
 
 		listRecord.clear()
-		for(i in 0 until numRecords) {
+		for(i in 0..<numRecords) {
 			val strRecordCompressed = prop.getProperty(strKey+i)
 			if(strRecordCompressed!=null) {
 				val strRecord = NetUtil.decompressString(strRecordCompressed)
@@ -236,9 +236,6 @@ class NetSPRanking:Serializable {
 	}
 
 	companion object {
-		/** serialVersionUID for Serialize */
-		private const val serialVersionUID = 1L
-
 		/** Condense a list of rankings into a single ranking file.
 		 * @param s The list of rankings.
 		 * @return A ranking that is the combination of all the rankings.

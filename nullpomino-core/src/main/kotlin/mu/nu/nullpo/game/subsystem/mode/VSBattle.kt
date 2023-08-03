@@ -46,7 +46,7 @@ import kotlin.random.Random
 class VSBattle:AbstractMode() {
 	/** garbage blockType of */
 	private val garbageType = MutableList(MAX_PLAYERS) {0}
-	private val garbageStyle get() = garbageType.map {GarbageStyle.all[it]}
+	private val garbageStyle get() = garbageType.map {GarbageStyle.entries[it]}
 
 	/** Rate of change of garbage holes */
 	private val messiness = List(MAX_PLAYERS) {MutableList(2) {0}}
@@ -58,7 +58,7 @@ class VSBattle:AbstractMode() {
 	private val garbageBlocking = MutableList(MAX_PLAYERS) {true}
 
 	/** Has accumulated garbage blockOfcount */
-	val garbage get() = (0 until players).map {p -> garbageEntries[p].filter {it.time<=0}.sumOf {it.lines}}
+	val garbage get() = (0..<players).map {p -> garbageEntries[p].filter {it.time<=0}.sumOf {it.lines}}
 
 	/** Had sent garbage blockOfcount */
 	val garbageSent get() = owner.engine.map {it.statistics.attacks}
@@ -356,7 +356,7 @@ class VSBattle:AbstractMode() {
 					5 -> engine.speed.lockDelay = rangeCursor(engine.speed.lockDelay+change, 0, 99)
 					6 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
 					7, 8 -> presetNumber[pid] = rangeCursor(presetNumber[pid]+change, 0, 99)
-					9 -> garbageType[pid] = rangeCursor(garbageType[pid]+change, 0, GarbageStyle.all.size-1)
+					9 -> garbageType[pid] = rangeCursor(garbageType[pid]+change, 0, GarbageStyle.entries.size-1)
 					10 -> messiness[pid][0] = rangeCursor(messiness[pid][0]+change, 0, 100)
 					11 -> messiness[pid][1] = rangeCursor(messiness[pid][1]+change, 0, 100)
 					12 -> garbageCounter[pid] = !garbageCounter[pid]
@@ -635,18 +635,17 @@ class VSBattle:AbstractMode() {
 		}
 	}
 
-	private fun sendGarbage(pts:Int, playerID:Int) {
-		val pid = playerID
-		val enemyID = if(pid==0) 1 else 0
+	private fun sendGarbage(pts:Int, pID:Int) {
+		val enemyID = if(pID==0) 1 else 0
 		// Offset
 		var ofs = 0
-		if(pts>0&&garbage[pid]>0&&garbageCounter[pid])
-			while(garbageEntries[pid].any {it.time<=0}&&(pts-ofs)>0) {
-				val entry = garbageEntries[pid].firstOrNull() ?: break
+		if(pts>0&&garbage[pID]>0&&garbageCounter[pID])
+			while(garbageEntries[pID].any {it.time<=0}&&(pts-ofs)>0) {
+				val entry = garbageEntries[pID].firstOrNull() ?: break
 				val gl = entry.lines
 				if(gl<=(pts-ofs)) {
 					ofs += gl
-					garbageEntries[pid].removeFirst()
+					garbageEntries[pID].removeFirst()
 				} else {
 					entry.lines -= maxOf(0, pts-ofs)
 					ofs = pts
@@ -656,7 +655,7 @@ class VSBattle:AbstractMode() {
 		//  Attack
 		if((pts-ofs)>0) {
 			garbageEntries[enemyID].add(
-				GarbageEntry(pts-ofs, pid, maxOf(10, minOf(24, 30-owner.engine[enemyID].statistics.time/600)))
+				GarbageEntry(pts-ofs, pID, maxOf(10, minOf(24, 30-owner.engine[enemyID].statistics.time/600)))
 			)
 
 			if(owner.engine[enemyID].ai==null&&garbage[enemyID]>=4) owner.engine[enemyID].playSE("levelstop")
@@ -826,10 +825,6 @@ class VSBattle:AbstractMode() {
 			FiveLines,
 			/** All garbages will put-out on Once placing**/
 			OnceAll;
-
-			companion object {
-				val all = values()
-			}
 		}
 
 		/** Each player's garbage block cint */

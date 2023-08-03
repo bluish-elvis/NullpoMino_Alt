@@ -104,6 +104,4 @@ package mu.nu.nullpo.game.component
 		fadeCount = 0
 	}
 
-	companion object {
-	}
 }

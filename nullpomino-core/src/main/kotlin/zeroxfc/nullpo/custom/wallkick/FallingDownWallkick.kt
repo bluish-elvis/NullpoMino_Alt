@@ -68,15 +68,10 @@ class FallingDownWallkick:Wallkick {
 		// Special uses the tables defined above.
 
 		// Set kick type used.
-		var flags = 0
-		when(piece.id) {
-			Piece.PIECE_I -> flags = flags or FLAG_FLEXIBLE
-			Piece.PIECE_O -> {
-			}
-			else -> {
-				flags = flags or FLAG_FLEXIBLE
-				flags = flags or FLAG_SPECIAL
-			}
+		val flags = when(piece.id) {
+			Piece.PIECE_I -> FLAG_FLEXIBLE
+			Piece.PIECE_O -> 0
+			else -> FLAG_FLEXIBLE or FLAG_SPECIAL
 		}
 
 		// FLEXIBLE KICK

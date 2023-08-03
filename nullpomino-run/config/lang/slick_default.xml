@@ -32,9 +32,8 @@
  <entry key="ConfigGeneral_FrameStep">Toggles frame step function when paused.</entry>
  <entry key="ConfigGeneral_MaxFPS">Adjusts max FPS. (60 recommended)</entry>
  <entry key="ConfigGeneral_EdgeBold">Adjusts field blocks edge line thickness.</entry>
- <entry key="ConfigGeneral_ShowLineEffect">Toggles line clear effect. (Heavy)</entry>
  <entry key="ConfigGeneral_LineEffectSpeed">Adjusts line clear effect speed.</entry>
- <entry key="ConfigGeneral_UseBackgroundFade">Toggles heavy background fade-in/out effect.</entry>
+ <entry key="ConfigGeneral_UseHeavyEffect">Toggles heavy effect Level.</entry>
  <entry key="ConfigGeneral_FieldBGBright">Adjusts field background brightness. (0:None 255:Full)</entry>
  <entry key="ConfigGeneral_ShowFieldBGGrid">Toggles grid display of field background.</entry>
  <entry key="ConfigGeneral_SmoothFall">Toggles piece falling slowly.</entry>

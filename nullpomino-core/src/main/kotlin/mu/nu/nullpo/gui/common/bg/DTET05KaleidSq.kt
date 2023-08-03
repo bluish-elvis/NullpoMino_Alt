@@ -56,7 +56,7 @@ End With*/
 		while(y<0) y += 240
 		while(y>=240) y -= 240
 		if(speed>1) {
-			r += .0025f+(speed-1)*Rg/12
+			r += .0025f+(speed-1)*RG/12
 			while(r>=360) r -= 360
 		}
 	}

@@ -38,8 +38,7 @@ import net.omegaboshi.nullpomino.game.subsystem.randomizer.BagNoSZORandomizer
 import org.apache.logging.log4j.LogManager
 
 open class ComboRaceSeedSearch:DummyAI() {
-	private class Transition
-	constructor(val x:Int, val rt:Int, val rtSub:Int = 0, val newField:Int, val next:Transition?) {
+	private class Transition(val x:Int, val rt:Int, val rtSub:Int = 0, val newField:Int, val next:Transition?) {
 		constructor(x:Int, rt:Int, newField:Int, next:Transition):this(x, rt, 0, newField, next)
 	}
 
@@ -73,7 +72,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 		private var bestPts = 0
 		private var bestNext = 0
 
-		@JvmStatic fun main(args:Array<String>) {
+		@JvmStatic fun main() {
 			//long start = System.currentTimeMillis();
 			createTables()
 			var bestSeed = 0L
@@ -87,7 +86,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 			var rand = BagNoSZORandomizer()
 			rand.setState(nextPieceEnable)
 
-			for(seed in 0L until java.lang.Long.MAX_VALUE) {
+			for(seed in 0L..<java.lang.Long.MAX_VALUE) {
 				fld = 0x13
 				rand = BagNoSZORandomizer()
 				rand.setState(nextPieceEnable, seed)
@@ -244,7 +243,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 
 				for(p in 0..6) pieces[p].let {piece ->
 					val tempX = -1+(fldBackup.width-piece.width+1)/2
-					for(rt in 0 until Piece.DIRECTION_COUNT) {
+					for(rt in 0..<Piece.DIRECTION_COUNT) {
 						val minX = piece.getMostMovableLeft(tempX, 0, rt, fldBackup)
 						val maxX = piece.getMostMovableRight(tempX, 0, rt, fldBackup)
 
@@ -333,7 +332,7 @@ open class ComboRaceSeedSearch:DummyAI() {
 		private fun fieldToCode(field:Field, valleyX:Int = 3):Int {
 			val height = field.height
 			var result = 0
-			for(y in height-3 until height)
+			for(y in height-3..<height)
 				for(x in 0..3) {
 					result = result.shl(1)
 					if(!field.getBlockEmpty(x+valleyX, y, false)) result++

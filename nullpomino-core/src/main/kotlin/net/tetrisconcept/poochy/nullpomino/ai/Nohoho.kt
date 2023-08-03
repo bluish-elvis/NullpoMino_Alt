@@ -178,7 +178,7 @@ class Nohoho:DummyAI(), Runnable {
 				sameStatusTime = 0
 			if(bestHold&&thinkComplete&&engine.isHoldOK)
 			// Hold
-				input = input or Controller.BUTTON_BIT_D
+				input =  Controller.BUTTON_BIT_D
 			else {
 				if(DEBUG_ALL)
 					log.debug(
@@ -190,16 +190,16 @@ class Nohoho:DummyAI(), Runnable {
 				// Rotation
 				val best180 = abs(rt-bestRt)==2
 				if(rt!=bestRt) {
-					val lrot = engine.getSpinDirection(-1)
-					val rrot = engine.getSpinDirection(1)
-					if(DEBUG_ALL) log.debug("lrot = $lrot, rrot = $rrot")
+					val spL = engine.getSpinDirection(-1)
+					val spR = engine.getSpinDirection(1)
+					if(DEBUG_ALL) log.debug("spL = $spL, spR = $spR")
 
 					if(best180&&engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E))
-						input = input or Controller.BUTTON_BIT_E
-					else if(bestRt==rrot) spinDir = 1
-					else if(bestRt==lrot) spinDir = -1
+						input =  Controller.BUTTON_BIT_E
+					else if(bestRt==spR) spinDir = 1
+					else if(bestRt==spL) spinDir = -1
 					else if(engine.ruleOpt.spinReverseKey&&best180&&rt and 1>0) {
-						spinDir = if(rrot==Piece.DIRECTION_UP) 1 else -1
+						spinDir = if(spR==Piece.DIRECTION_UP) 1 else -1
 					} else spinDir = 1
 				}
 
@@ -309,7 +309,7 @@ class Nohoho:DummyAI(), Runnable {
 		val nowY:Int
 		if(inARE||pieceNow==null) {
 			pieceNow = engine.getNextObjectCopy(engine.nextPieceCount) ?: return
-			nowX = engine.getSpawnPosX(fld, pieceNow)
+			nowX = engine.getSpawnPosX(pieceNow, fld)
 			nowY = engine.getSpawnPosY(pieceNow)
 			if(holdOK&&pieceHold==null) pieceHold = engine.getNextObjectCopy(engine.nextPieceCount+1)
 		} else {
@@ -337,7 +337,7 @@ class Nohoho:DummyAI(), Runnable {
 				depths[5]<=0 -> 4
 				else -> 5
 			}
-			for(rt in 0 until Piece.DIRECTION_COUNT) {
+			for(rt in 0..<Piece.DIRECTION_COUNT) {
 				x = maxX-pieceNow.maximumBlockX
 				fld.replace(engine.field)
 				var y = pieceNow.getBottom(x, nowY, rt, fld)
@@ -382,7 +382,7 @@ class Nohoho:DummyAI(), Runnable {
 				}
 			}
 		} else
-			for(rt in 0 until Piece.DIRECTION_COUNT) {
+			for(rt in 0..<Piece.DIRECTION_COUNT) {
 				val minX = pieceNow.getMostMovableLeft(nowX, nowY, rt, engine.field)
 				val maxX = pieceNow.getMostMovableRight(nowX, nowY, rt, engine.field)
 				for(x in minX..maxX) {
@@ -410,7 +410,7 @@ class Nohoho:DummyAI(), Runnable {
 
 				// Hold piece
 				if(holdOK) pieceHold?.also {
-					val spawnX = engine.getSpawnPosX(engine.field, it)
+					val spawnX = engine.getSpawnPosX(it, engine.field)
 					val spawnY = engine.getSpawnPosY(it)
 					val minHoldX = it.getMostMovableLeft(spawnX, spawnY, rt, engine.field)
 					val maxHoldX = it.getMostMovableRight(spawnX, spawnY, rt, engine.field)
@@ -601,7 +601,7 @@ class Nohoho:DummyAI(), Runnable {
 		fun getColumnDepths(fld:Field):IntArray {
 			val width = fld.width
 			val result = IntArray(width)
-			for(x in 0 until width)
+			for(x in 0..<width)
 				result[x] = fld.getHighestBlockY(x)
 			return result
 		}

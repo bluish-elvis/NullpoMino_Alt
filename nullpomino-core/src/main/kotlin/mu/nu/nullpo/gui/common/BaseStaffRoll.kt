@@ -41,13 +41,15 @@ import java.io.IOException
 abstract class BaseStaffRoll<T> {
 	/** Log */
 	internal val log = LogManager.getLogger()
-	abstract var bufI:ResourceImage<T>
-
+	abstract val bufI:ResourceImage<T>
 	val scale = .5f
-	abstract val height:Int
+	open val width:Int = 160
+	open val height:Int get() = strList.size*14
 	protected val strList by lazy {
 		try {
-			javaClass.getResource("staff.lst")?.file?.let {BufferedReader(FileReader(it)).readLines()}
+			this::class.java.getResource("../staff.lst")?.path?.let {
+				BufferedReader(FileReader(it)).readLines()
+			}?.map {it.trim {it<=' '}}?.filterNot {it.startsWith('#')||it.startsWith("//")} // Commment-line. Ignore it.
 				?: emptyList()
 		} catch(e:IOException) {
 			log.error("Failed to load Staffroll list file", e)
@@ -65,34 +67,28 @@ abstract class BaseStaffRoll<T> {
 	abstract fun drawBuf(dx:Float, dy:Float, dw:Float, dh:Float, sx:Float, sy:Float, sw:Float, sh:Float)
 
 	/** Folder names list */
-	init {
-		val w = 12f*scale
-		val h = 14f*scale
+	protected fun init() {
+		val w = BaseFontNano.W*scale
+		val h = BaseFontNano.H*scale
 
 		var dy = 0f
-		strList.forEach {line ->
-			line.trim {it<=' '}.let {str ->
-				if(!str.startsWith('#')&&!str.startsWith("//")) { // Commment-line. Ignore it.
-					var dx = bufI.width/2f-(str.length-str.sumOf {cmp(it).toDouble()}.toFloat())*.5f*w
-					str.forEachIndexed {i, it ->
-						if(i>0||it!=':') {
-							val fontColor = when(str.first()) {
-								':' -> if(it.isUpperCase()) BLUE else GREEN
-								else -> if(it.isUpperCase()) ORANGE else WHITE
-							}
-							val chr = it.uppercaseChar().code
-							var sx = (chr-32)%32
-							var sy = (chr-32)/32+fontColor.ordinal*3
-							sx *= 12
-							sy *= 14
-							dx -= w*cmp(it)/2
-							drawBuf(dx, dy, dx+w, dy+h, sx.toFloat(), sy.toFloat(), sx+12f, sy+14f)
-							dx += w*(1f-cmp(it)/2)
-						}
+		strList.forEach {str ->
+			var dx = width/2f-(str.length-str.sumOf {cmp(it).toDouble()}.toFloat())*.5f*w
+			str.forEachIndexed {i, it ->
+				if(i>0||it!=':') {
+					val fontColor = when(str.first()) {
+						':' -> if(it.isUpperCase()) BLUE else GREEN
+						else -> if(it.isUpperCase()) ORANGE else WHITE
 					}
-					dy += 20*scale
+					val chr = it.uppercaseChar().code
+					val sx = BaseFontNano.W*((chr-32)%32)
+					val sy = BaseFontNano.H*((chr-32)/32+fontColor.ordinal*3)
+					dx -= w*cmp(it)/2
+					drawBuf(dx, dy, dx+w, dy+h, sx.toFloat(), sy.toFloat(), sx+12f, sy+14f)
+					dx += w*(1f-cmp(it)/2)
 				}
 			}
+			dy += 20*scale
 		}
 	}
 
@@ -100,7 +96,7 @@ abstract class BaseStaffRoll<T> {
 	fun draw(x:Float, y:Float, sy:Float, h:Float, alpha:Float = 1f,
 		color:Triple<Float, Float, Float> = Triple(1f, 1f, 1f)) =
 		bufI.draw(
-			x, y, x+bufI.width, y+h, 0f, sy, 0f+bufI.width, minOf(sy+h, 0f+bufI.height),
+			x, y-minOf(0f, sy), x+width, y+h, 0f, maxOf(0f, sy), 0f+width, minOf(sy+h, 0f+height),
 			alpha, color
 		)
 }

@@ -86,7 +86,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		// Init variables
-		showBG = NullpoMinoSlick.propConfig.getProperty("option.showBg", true)
+		showBG = NullpoMinoSlick.propConfig.getProperty("option.showBG", true)
 		prevInGameFlag = false
 
 		// Observer stop
@@ -319,7 +319,7 @@ class StateNetGame:BasicGameState(), NetLobbyListener {
 				gm.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
 
 				// Initialization for each player
-				for(i in 0 until gm.players)
+				for(i in 0..<gm.players)
 					gm.engine[i].init()
 
 				newModeTemp.netplayInit(netLobby)

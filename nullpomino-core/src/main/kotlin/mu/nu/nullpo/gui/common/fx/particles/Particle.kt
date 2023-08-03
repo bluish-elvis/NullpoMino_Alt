@@ -141,8 +141,7 @@ open class Particle @JvmOverloads constructor(
 					)
 				}
 			}
-			else -> {
-			}
+			else -> ticks=maxLifetime
 		}
 	}
 	/**
@@ -170,7 +169,7 @@ open class Particle @JvmOverloads constructor(
 	 * Warning: you cannot use circular & Light particles with SDL.
 	 */
 	enum class ParticleShape {
-		Rect, Oval, ARect, AOval, ASprite
+		Rect, Oval, ARect, AOval,  ASprite
 	}
 
 	companion object {

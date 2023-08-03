@@ -32,9 +32,8 @@
  <entry key="ConfigGeneral_FrameStep">○にするとポーズ中にFRAME STEPキーを押して1フレームだけ進めることができます</entry>
  <entry key="ConfigGeneral_MaxFPS">最大FPSを選択します(60推奨)</entry>
  <entry key="ConfigGeneral_EdgeBold">フィールドブロックの縁線の太さを選択します</entry>
- <entry key="ConfigGeneral_ShowLineEffect">ライン消去時にブロックが消えるアニメを表示します(重いです)</entry>
  <entry key="ConfigGeneral_LineEffectSpeed">ライン消去アニメの速さを選択します</entry>
- <entry key="ConfigGeneral_UseBackgroundFade">レベルアップ時に背景をフェードアウトさせます(重いです)</entry>
+ <entry key="ConfigGeneral_UseHeavyEffect">半透明・画像回転・パーティクル等を使用します(割と重いです)</entry>
  <entry key="ConfigGeneral_FieldBGBright">フィールド背景の明るさを選択します(0で完全に透明・255で完全に不透明)</entry>
  <entry key="ConfigGeneral_ShowFieldBGGrid">フィールド背景にグリッドを表示するかどうかを選択します</entry>
  <entry key="ConfigGeneral_SmoothFall">○にすると低速落下時にブロックがなめらかに降下します</entry>

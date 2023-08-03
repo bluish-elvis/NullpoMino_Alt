@@ -141,11 +141,10 @@ class MarathonZone:NetDummyMode() {
 	/*
 		 * Mode name
 		 */
-	override val name:String = "Zone Journey"
+	override val name = "Zone Journey"
 
 	// Initialization
-	override val menu:MenuList
-		get() = MenuList("marathonzone")
+	override val menu = MenuList("marathonzone")
 
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
@@ -291,7 +290,7 @@ class MarathonZone:NetDummyMode() {
 				val scale:Float = if((receiver.nextDisplayType==2)) 0.5f else 1.0f
 				val topY = if((receiver.nextDisplayType==2)) 6 else 4
 				receiver.drawScoreFont(engine, 2, topY-1, "SCORE    LINE TIME", hudcolor, scale)
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, -1, topY+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW, scale)
 					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[goalType][i]}", (i==rankingRank), scale)
 					receiver.drawScoreNum(engine, 11, topY+i, "${rankingLines[goalType][i]}", (i==rankingRank), scale)
@@ -318,9 +317,9 @@ class MarathonZone:NetDummyMode() {
 			receiver.drawScoreFont(engine, 0, 15, "ZONE", hudcolor)
 			val colZone = when {
 				inzone -> EventReceiver.COLOR.RAINBOW
-				zoneframes<maxzonetime/4 -> EventReceiver.COLOR.RED
-				zoneframes>=maxzonetime/2 -> EventReceiver.COLOR.YELLOW
-				zoneframes>=maxzonetime -> EventReceiver.COLOR.CYAN
+				zoneframes>=MAX_ZONE_TIME*3/4 -> EventReceiver.COLOR.CYAN
+				zoneframes>=MAX_ZONE_TIME/2 -> EventReceiver.COLOR.YELLOW
+				zoneframes<MAX_ZONE_TIME/4 -> EventReceiver.COLOR.RED
 				else -> EventReceiver.COLOR.GREEN
 			}
 
@@ -350,7 +349,7 @@ class MarathonZone:NetDummyMode() {
 	}
 
 	override fun onFirst(engine:GameEngine) {
-		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_F)&&(zoneframes>maxzonetime/4)&&!inzone) {
+		if(engine.ctrl.isPush(mu.nu.nullpo.game.component.Controller.BUTTON_F)&&(zoneframes>MAX_ZONE_TIME/4)&&!inzone) {
 			inzone = true
 			lastzonelines = 0
 			engine.frameColor = GameEngine.FRAME_COLOR_YELLOW
@@ -367,13 +366,13 @@ class MarathonZone:NetDummyMode() {
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
 		// Meter
-		engine.meterValue = (zoneframes*1f)/maxzonetime
+		engine.meterValue = (zoneframes*1f)/MAX_ZONE_TIME
 		engine.meterColor = if(inzone) GameEngine.METER_COLOR_YELLOW else GameEngine.METER_COLOR_GREEN
 		zonedisplayframes++
 		zonegaintimer++
 		if(inzone) {
 			for(y in engine.field.height-1 downTo engine.field.height-lastzonelines) {
-				for(x in 0 until engine.field.width)
+				for(x in 0..<engine.field.width)
 					engine.field.getBlock(x, y)?.color = Block.COLOR.colors()[(x+y+(zoneframes/4))%Block.COLOR.COLOR_NUM]
 			}
 			if(zoneframes>0) zoneframes--
@@ -410,14 +409,14 @@ class MarathonZone:NetDummyMode() {
 			for(y in engine.field.height-1 downTo engine.field.height-lastzonelines) {
 				engine.field.setLineFlag(y, false)
 			}
-			for(y in -engine.field.hiddenHeight until engine.field.height) {
+			for(y in -engine.field.hiddenHeight..<engine.field.height) {
 				if(engine.field.getLineFlag(y)) engine.field.cutLine(y, 1)
 			}
 			val nextLines = newlines-lastzonelines
 			if(nextLines>0) {
 				engine.field.pushUp(nextLines)
 				for(y in engine.field.height-1 downTo engine.field.height-nextLines)
-					for(x in 0 until engine.field.width)
+					for(x in 0..<engine.field.width)
 						engine.field.setBlock(x, y, Block(Block.COLOR.BLACK))
 				if(newlines>10) engine.playSE("combo_pow", minOf(2f, 1f+(newlines-11)/9f))
 				else engine.playSE("combo", minOf(2f, 1f+(newlines-1)/10f))
@@ -441,7 +440,7 @@ class MarathonZone:NetDummyMode() {
 		val li = ev.lines
 		if(!inzone&&li>0) {
 			lastzonegain = li*li*6
-			zoneframes = minOf(zoneframes+lastzonegain, maxzonetime) //20s cap
+			zoneframes = minOf(zoneframes+lastzonegain, MAX_ZONE_TIME) //20s cap
 			zonegaintimer = 0
 		}
 
@@ -555,7 +554,7 @@ class MarathonZone:NetDummyMode() {
 	 * Called when saving replay
 	 */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// NET: Save name
 		if(!netPlayerName.isNullOrEmpty()) prop.setProperty("${engine.playerID}.net.netPlayerName", netPlayerName)
@@ -565,13 +564,13 @@ class MarathonZone:NetDummyMode() {
 			updateRanking(engine.statistics.score, engine.statistics.lines, engine.statistics.time, goalType)!=-1)
 	}
 	/** Load settings from [prop] */
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine: GameEngine, prop: CustomProperties, ruleName: String, playerID: Int) {
 		startLevel = prop.getProperty("marathonzone.startLevel", 0)
 		goalType = prop.getProperty("marathonzone.gametype", 0)
 		version = prop.getProperty("marathonzone.version", 0)
 	}
 	/** Save settings to [prop] */
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("marathonzone.startLevel", startLevel)
 		prop.setProperty("marathonzone.gametype", goalType)
 		prop.setProperty("marathonzone.version", version)
@@ -608,7 +607,7 @@ class MarathonZone:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if((sc==rankingScore[type][i])&&(li>rankingLines[type][i])) return i
 			else if((sc==rankingScore[type][i])&&(li==rankingLines[type][i])&&(time<rankingTime[type][i])) return i
@@ -698,7 +697,7 @@ class MarathonZone:NetDummyMode() {
 		private val tableBGMChange = intArrayOf(5*24, 10*24, 15*24, 20*24, -1)
 		/** Line counts when game ending occurs  */
 		private val tableGameClearLines = intArrayOf(15*24, 20*24, -1)
-		private const val maxzonetime = 1200 // 20 seconds
+		private const val MAX_ZONE_TIME = 1200 // 20 seconds
 		/** Number of entries in rankings  */
 		private const val RANKING_MAX = 13
 		/** Number of game types  */

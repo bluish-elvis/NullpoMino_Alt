@@ -32,15 +32,15 @@ package mu.nu.nullpo.game.subsystem.mode.menu
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.util.CustomProperties
 
-open class IntegerMenuItem(name:String, displayName:String, color:COLOR, defaultValue:Int, val range:IntRange,
+open class IntegerMenuItem(name:String, displayName:String, color:COLOR, defaultValue:Int, var range:IntRange,
 	compact:Boolean = false, perRule:Boolean = false)
 	:AbstractMenuItem<Int>(name, displayName, color, defaultValue, compact, perRule), Comparable<Int> {
 	constructor(name:String, displayName:String, color:COLOR, defaultValue:Int, min:Int, max:Int,
 		compact:Boolean = false, perRule:Boolean = false):
 		this(name, displayName, color, defaultValue, min..max, compact, perRule)
 
-	val min = range.first
-	val max = range.last
+	val min get() = range.first
+	val max get() = range.last
 
 	override fun equals(other:Any?):Boolean = if(other is Int) value==other else super.equals(other)
 	override operator fun compareTo(other:Int) = value.compareTo(other)
@@ -52,7 +52,7 @@ open class IntegerMenuItem(name:String, displayName:String, color:COLOR, default
 	operator fun times(y:Int) = value*y
 	operator fun div(y:Int) = value/y
 	operator fun rem(y:Int) = value%y
-	infix fun until(to:Int):IntRange = value.until(to)
+	infix fun until(to:Int):IntRange = value..<to
 	operator fun rangeTo(to:Int):IntRange = value.rangeTo(to)
 
 	override val valueString:String
@@ -64,8 +64,8 @@ open class IntegerMenuItem(name:String, displayName:String, color:COLOR, default
 			2 -> minOf(10, max/100)
 			else -> 1
 		}
-		if(value<range.first) value = max
-		if(value>range.last) value = min
+		if(value<min) value = max
+		else if(value>max) value = min
 	}
 
 	override fun load(prop:CustomProperties, propName:String) {

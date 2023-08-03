@@ -49,7 +49,7 @@ class TwoPlayerBasisFunction {
 	var weight = DoubleArray(FEATURE_COUNT)
 
 	init {
-		for(i in 0 until FEATURE_COUNT) {
+		for(i in 0..<FEATURE_COUNT) {
 			a[i][i] = 0.00001
 		}
 	}
@@ -116,10 +116,10 @@ class TwoPlayerBasisFunction {
 		var coveredGaps = 0
 		var totalBlocks = 0
 		var currentPieceCells = 0
-		for(i in 0 until State.ROWS-1) {
+		for(i in 0..<State.ROWS-1) {
 			if(field!![i]!![0]==0) rowTrans++
 			if(field[i]!![State.COLS-1]==0) rowTrans++
-			for(j in 0 until State.COLS) {
+			for(j in 0..<State.COLS) {
 				if(j>0&&field[i]!![j]==0!=(field[i]!![j-1]==0)) rowTrans++
 				if(field[i]!![j]==0!=(field[i+1]!![j]==0)) colTrans++
 				if(i<top!![j]&&field[i]!![j]==0) coveredGaps++
@@ -140,10 +140,10 @@ class TwoPlayerBasisFunction {
 		var coveredGaps = 0
 		var totalBlocks = 0
 		var currentPieceCells = 0
-		for(i in 0 until State.ROWS-1) {
+		for(i in 0..<State.ROWS-1) {
 			if(field!![i]!![0]==0) rowTrans++
 			if(field[i]!![State.COLS-1]==0) rowTrans++
-			for(j in 0 until State.COLS) {
+			for(j in 0..<State.COLS) {
 				if(j>0&&field[i]!![j]==0!=(field[i]!![j-1]==0)) rowTrans++
 				if(field[i]!![j]==0!=(field[i+1]!![j]==0)) colTrans++
 				if(i<top!![j]&&field[i]!![j]==0) coveredGaps++
@@ -179,7 +179,7 @@ class TwoPlayerBasisFunction {
 		var diffTotal = 0.0
 		var squaredDiffTotal = 0.0
 		var conHoles = 0.0
-		for(j in 0 until State.COLS) { //by column
+		for(j in 0..<State.COLS) { //by column
 			total += top[j].toDouble()
 			totalHeightSquared += top[j].toDouble().pow(2.0)
 			diffTotal += (if(j>0) abs(top[j-1]-top[j]) else 0.0).toDouble()
@@ -188,15 +188,15 @@ class TwoPlayerBasisFunction {
 			minHeight = minOf(minHeight, top[j].toDouble())
 			if((j==0||top[j-1]>top[j])&&(j==c||top[j+1]>top[j])) {
 				val wellDepth =
-					if(j==0) top[j+1]-top[j] else if(j==c) top[j-1]-top[j] else minOf(top[j-1], top[j+1])-top[j]
+					if(j==0) top[1]-top[0] else if(j==c) top[j-1]-top[j] else minOf(top[j-1], top[j+1])-top[j]
 				maxWellDepth = maxOf(wellDepth.toDouble(), maxWellDepth)
 				totalWellDepth += maxWellDepth
 				totalWeightedWellDepth += (wellDepth*(wellDepth+1)/2).toDouble()
 			}
 			var consecutiveHoles = 0
-			for(i in top[j] until State.ROWS-1) {
+			for(i in top[j]..<State.ROWS-1) {
 				var full = true
-				for(k in 0 until State.COLS) {
+				for(k in 0..<State.COLS) {
 					if(k!=j&&field[i]!![k]==0) {
 						full = false
 						break
@@ -235,7 +235,7 @@ class TwoPlayerBasisFunction {
 		var diffTotal = 0.0
 		var squaredDiffTotal = 0.0
 		var conHoles = 0.0
-		for(j in 0 until State.COLS) { //by column
+		for(j in 0..<State.COLS) { //by column
 			total += top[j].toDouble()
 			totalHeightSquared += top[j].toDouble().pow(2.0)
 			diffTotal += if(j>0) abs(top[j-1]-top[j]).toDouble() else 0.0
@@ -244,15 +244,15 @@ class TwoPlayerBasisFunction {
 			minHeight = minOf(minHeight, top[j].toDouble())
 			if((j==0||top[j-1]>top[j])&&(j==c||top[j+1]>top[j])) {
 				val wellDepth =
-					if(j==0) top[j+1]-top[j] else if(j==c) top[j-1]-top[j] else minOf(top[j-1], top[j+1])-top[j]
+					if(j==0) top[1]-top[0] else if(j==c) top[j-1]-top[j] else minOf(top[j-1], top[j+1])-top[j]
 				maxWellDepth = maxOf(wellDepth.toDouble(), maxWellDepth)
 				totalWellDepth += maxWellDepth
 				totalWeightedWellDepth += (wellDepth*(wellDepth+1)/2).toDouble()
 			}
 			var consecutiveHoles = 0
-			for(i in top[j] until State.ROWS-1) {
+			for(i in top[j]..<State.ROWS-1) {
 				var full = true
-				for(k in 0 until State.COLS) {
+				for(k in 0..<State.COLS) {
 					if(k!=j&&field[i]!![k]==0) {
 						full = false
 						break

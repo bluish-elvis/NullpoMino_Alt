@@ -267,7 +267,7 @@ class RollTraining:MarathonModeBase() {
 		val s = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp)
-			loadSetting(engine.playerProp.propProfile, engine)
+			loadSetting(engine, engine.playerProp.propProfile)
 			engine.owner.bgMan.bg = startLevel
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
@@ -290,7 +290,7 @@ class RollTraining:MarathonModeBase() {
 				if(showPlayerStats) {
 					val topY = if(receiver.nextDisplayType==2) 6 else 4
 					receiver.drawScoreFont(engine, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE)
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val color = if(rankingRankPlayer==i) COLOR.RED else {
 							if(usedSpeed==SPEED_TAP) {
@@ -313,7 +313,7 @@ class RollTraining:MarathonModeBase() {
 				} else {
 					val topY = if(receiver.nextDisplayType==2) 6 else 4
 					receiver.drawScoreFont(engine, 3, topY-1, "GRADE  LINE TIME", COLOR.BLUE)
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val color = if(rankingRank==i) COLOR.RED else {
 							if(usedSpeed==SPEED_TAP) {
@@ -473,7 +473,7 @@ class RollTraining:MarathonModeBase() {
 		 * Called when saving replay
 		 */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
@@ -494,7 +494,7 @@ class RollTraining:MarathonModeBase() {
 	 *
 	 * @param prop Property file
 	 */
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine: GameEngine, prop: CustomProperties, ruleName: String, playerID: Int) {
 		startLevel = prop.getProperty("rollTraining.startLevel", 0)
 		usedSpeed = prop.getProperty("rollTraining.usedSpeed", SPEED_TI)
 		useMRoll = prop.getProperty("rollTraining.useMRoll", true)
@@ -505,7 +505,7 @@ class RollTraining:MarathonModeBase() {
 	 *
 	 * @param prop Property file
 	 */
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("rollTraining.startLevel", startLevel)
 		prop.setProperty("rollTraining.usedSpeed", usedSpeed)
 		prop.setProperty("rollTraining.useMRoll", useMRoll)
@@ -574,7 +574,7 @@ class RollTraining:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Int, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX) {
+		for(i in 0..<RANKING_MAX) {
 			if(getClear(type, time, li)>getClear(type, rankingTime[type][i], rankingLines[type][i])) {
 				return i
 			} else if(getClear(type, time, li)==getClear(
@@ -608,7 +608,7 @@ class RollTraining:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Int, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX) {
+		for(i in 0..<RANKING_MAX) {
 			if(getClear(type, time, li)>getClear(type, rankingTimePlayer[type][i], rankingLinesPlayer[type][i])) {
 				return i
 			} else if(getClear(type, time, li)==getClear(

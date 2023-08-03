@@ -80,14 +80,14 @@ class ScoreAttackRun:AbstractMode() {
 			rankingQuads.mapIndexed {a, x -> "$a.quads" to x})
 
 	private val itemMode = StringsMenuItem(
-		"gametype", "GAME MODE", COLOR.BLUE, 0, Gametype.all.map {it.label}
+		"gametype", "GAME MODE", COLOR.BLUE, 0, Gametype.entries.map {it.label}
 	)
 	private var gametype:Int by DelegateMenuItem(itemMode)
 	override val name:String get() = "Arcade Score Attack"
 	override val menu = MenuList("arcadescoreattack", itemMode)
 
 	override fun loadRanking(prop:CustomProperties) {
-		for(i in 0 until RANKING_MAX) for(j in 0 until RANKING_TYPES) {
+		for(i in 0..<RANKING_MAX) for(j in 0..<RANKING_TYPES) {
 			rankingScore[j][i] = prop.getProperty("$j.score.$i", 0L)
 			rankingLevel[j][i] = prop.getProperty("$j.level.$i", 0)
 			rankingQuads[j][i] = prop.getProperty("$j.quads$i", 0)
@@ -439,12 +439,9 @@ class ScoreAttackRun:AbstractMode() {
 
 			val label:String = label ?: name
 
-			companion object {
-				val all = values()
-			}
 		}
 
-		private val GAMETYPE_LABELS = Gametype.all.map {it.label}
+		private val GAMETYPE_LABELS = Gametype.entries.map {it.label}
 		private val RANKING_TYPES = GAMETYPE_LABELS.size
 		private const val GAMETYPE_REGULAR = 0
 		private const val GAMETYPE_SPIN = 1

@@ -36,10 +36,20 @@ import org.newdawn.slick.SlickException
 import java.io.IOException
 
 class ResourceImageSlick(override val name:String, val antiAlias:Boolean = false):ResourceImage<Image> {
+
+	constructor(it:ResourceImage<*>, antiAlias:Boolean = false):this(it.name, antiAlias)
+	constructor(i:Image, antiAlias:Boolean = false):this(i.name ?: "", antiAlias) {
+		res = i
+	}
+
+	constructor(it:ResourceImageSlick):this(it.name) {
+		res = it.copy()
+	}
+
 	override var res:Image = Image(1, 1)
 
-	override val width get() = res.width
-	override val height get() = res.height
+	override val width get() = res.width ?: 0
+	override val height get() = res.height ?: 0
 	val textureWidth get() = res.textureWidth
 	val textureHeight get() = res.textureHeight
 
@@ -71,12 +81,4 @@ class ResourceImageSlick(override val name:String, val antiAlias:Boolean = false
 
 	override fun toString():String = name
 
-	constructor(it:ResourceImage<*>, antiAlias:Boolean = false):this(it.name, antiAlias)
-	constructor(i:Image, antiAlias:Boolean = false):this(i.name ?: "", antiAlias) {
-		res = i
-	}
-
-	constructor(it:ResourceImageSlick):this(it.name) {
-		res = it.copy()
-	}
 }

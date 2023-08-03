@@ -189,19 +189,17 @@ interface GameMode {
 	/** When the current piece locked (Executed before calcScore)
 	 *  @param lines Number of lines. Can be zero.
 	 */
-	fun pieceLocked(engine:GameEngine, lines:Int)
+	fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean)
 
 	/** When line clear ends
 	 * @return true if you override everything of this screen (skips default behavior)
 	 */
 	fun lineClearEnd(engine:GameEngine):Boolean
 
-	fun loadSetting(prop:CustomProperties, ruleName:String = "", playerID:Int = -1)
-	fun loadSetting(prop:CustomProperties, engine:GameEngine) =
-		loadSetting(prop, engine.ruleOpt.strRuleName, engine.playerID)
+	fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String = engine.ruleOpt.strRuleName, playerID:Int = engine.playerID)
 
 	fun loadSetting(prof:ProfileProperties, engine:GameEngine) =
-		if(prof.isLoggedIn) loadSetting(prof.propProfile, engine.ruleOpt.strRuleName, engine.playerID)
+		if(prof.isLoggedIn) loadSetting(engine, prof.propProfile, engine.ruleOpt.strRuleName, engine.playerID)
 		else Unit
 
 	/** Read rankings from [prop].
@@ -213,9 +211,7 @@ interface GameMode {
 	 */
 	fun loadRankingPlayer(prof:ProfileProperties)
 
-	fun saveSetting(prop:CustomProperties, ruleName:String = "", playerID:Int = -1)
-	fun saveSetting(prop:CustomProperties, engine:GameEngine) =
-		saveSetting(prop, engine.ruleOpt.strRuleName, engine.playerID)
+	fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String = engine.ruleOpt.strRuleName, playerID:Int = engine.playerID)
 
 	fun saveRanking()
 	fun saveRankingPlayer(prof:ProfileProperties)

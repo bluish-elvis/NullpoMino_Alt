@@ -196,9 +196,9 @@ class MarathonExtreme:NetDummyMode() {
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.RED)
+				receiver.drawScoreFont(engine, 2, topY-1, "SCORE LINE TIME", COLOR.RED)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					var endlessIndex = 0
 					if(endless) endlessIndex = 1
 
@@ -206,9 +206,9 @@ class MarathonExtreme:NetDummyMode() {
 						engine, 0, topY+i, "%02d".format(i+1),
 						if(rankingRank==i) COLOR.RAINBOW else if(rankingLines[endlessIndex][i]>=200) COLOR.ORANGE else COLOR.RED
 					)
-					receiver.drawScoreNum(engine, 3, topY+i, "${rankingScore[endlessIndex][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 10, topY+i, "${rankingLines[endlessIndex][i]}", i==rankingRank)
-					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[endlessIndex][i].toTimeStr, i==rankingRank)
+					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[endlessIndex][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 9, topY+i, "${rankingLines[endlessIndex][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 13, topY+i, rankingTime[endlessIndex][i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
@@ -357,7 +357,7 @@ class MarathonExtreme:NetDummyMode() {
 
 	/* Called when saving replay */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(
@@ -375,14 +375,14 @@ class MarathonExtreme:NetDummyMode() {
 		return false
 	}
 
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		startLevel = prop.getProperty("extreme.startLevel", 0)
 		endless = prop.getProperty("extreme.endless", false)
 		big = prop.getProperty("extreme.big", false)
 		version = prop.getProperty("extreme.version", 0)
 	}
 
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("extreme.startLevel", startLevel)
 		prop.setProperty("extreme.endless", endless)
 		prop.setProperty("extreme.big", big)
@@ -425,7 +425,7 @@ class MarathonExtreme:NetDummyMode() {
 		var endlessIndex = 0
 		if(endlessMode) endlessIndex = 1
 
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[endlessIndex][i])
 				return i
 			else if(sc==rankingScore[endlessIndex][i]&&li>rankingLines[endlessIndex][i])

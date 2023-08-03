@@ -22,7 +22,7 @@ X SHOW: When ON, two red X's appear at the tops of the columns which trigger a l
 Page 3:
 FEVER: The number of Fever Points needed to enter Fever Mode. NONE disables Fever Mode
 F-MIN TIME: The minimum Fever Mode time credit. You start with this many seconds on the clock and can add to it.
-F-MAX TIME: The maximum Fever Mode time credit. When you reach this cap, you cannot add any more time to the clock until you enter Fever Mode.
+F-MAX TIME: The maximum Fever Mode time credit. When you reach this cap, you cannot add any more time to the clock..<you enter Fever Mode.
 F-MAP SET: The map set to use in Fever Mode.
 F-DISPLAY:
 	METER displays a series of circles for Fever Points, with solid circles representing your earned Fever Points and hollow circles representing the number of Fever Points you need to enter Fever Mode.

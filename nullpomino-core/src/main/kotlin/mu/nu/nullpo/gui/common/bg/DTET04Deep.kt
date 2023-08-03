@@ -51,7 +51,7 @@ CrsFF = Rnd * 360*/
 		while(a>=360) a -= 360
 
 		val c = tick*.2f
-		b += sin(c*Rg)*maxOf(-1f, spdN-1.1f)
+		b += sin(c*RG)*maxOf(-1f, spdN-1.1f)
 		while(b<0) b += 640
 		while(b>=640) b -= 640
 		tick++
@@ -81,7 +81,7 @@ End If*/
 		for(i in 0..79) {
 			for(j in 0..7) {
 				val ww = 5+3*(.5f+spdN)
-				val x = (b+sin((a+i*17f)*Rg)*ww*if(j%2==0) 1 else -1)%640
+				val x = (b+sin((a+i*17f)*RG)*ww*if(j%2==0) 1 else -1)%640
 				val y = i*8f+j
 				img.draw(0f, y, x, y, 640f, y+1)
 				img.draw(640-x, y, 0f, y, x, y+1)

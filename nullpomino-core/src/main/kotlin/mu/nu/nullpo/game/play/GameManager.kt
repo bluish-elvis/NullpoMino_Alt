@@ -49,7 +49,8 @@ class GameManager(
 			log.debug("GameManager: Mode injected = ${value?.name}")
 			field = value
 		}
-	/** Properties used by game mode */
+	/** Properties used by game mode
+	 * contains setting & Presets */
 	var modeConfig = CustomProperties(cfgMode)
 
 	val cfgMode get() = "config/setting/mode/${mode?.id ?: "_common"}.cfg"
@@ -58,7 +59,7 @@ class GameManager(
 	var statsProp = CustomProperties(statsFile)
 	val statsFile get() = "scores/stats"
 
-	/** Properties for Records game mode */
+	/** Properties for Ranking/Records game mode */
 	var recordProp = CustomProperties(recorder)
 
 	val recorder get() = recorder()
@@ -129,7 +130,7 @@ class GameManager(
 			it.modeInit(this)
 			it.players
 		} ?: 1
-		for(i in 0 until players)
+		for(i in 0..<players)
 			engine.add(GameEngine(this, i))
 		receiver.modeInit(this)
 	}

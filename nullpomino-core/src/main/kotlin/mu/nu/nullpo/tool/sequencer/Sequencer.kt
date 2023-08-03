@@ -264,7 +264,7 @@ class Sequencer:JFrame(), ActionListener {
 		JPanel().apply {
 			contentPane.add(this)
 			add(JLabel(getUIText("Option_Randomizer")))
-			vectorRandomizer = this::class.java.getResource("/randomizer.lst")?.path?.let {getTextFileVector(it)}
+			vectorRandomizer = this::class.java.getResource("../randomizer.lst")?.path?.let {getTextFileVector(it)}
 			comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer)).apply {
 				preferredSize = Dimension(222, 30)
 				selectedIndex = 0
@@ -386,7 +386,7 @@ class Sequencer:JFrame(), ActionListener {
 			randomizerObject = randomizerClass.getDeclaredConstructor().newInstance() as Randomizer
 			randomizerObject.setState(nextPieceEnable, getLongTextField(txtfldSeed))
 			sequence = IntArray(getIntTextField(txtfldSeqLength)) {
-				for(i in 0 until getIntTextField(txtfldSeqOffset))
+				for(i in 0..<getIntTextField(txtfldSeqOffset))
 					randomizerObject.next()
 				return@IntArray randomizerObject.next()
 			}
@@ -482,7 +482,7 @@ class Sequencer:JFrame(), ActionListener {
 		val setPieceEnableFrame = JFrame(getUIText("Title_SetPieceEnable"))
 		setPieceEnableFrame.contentPane.layout = GridLayout(0, 2, 10, 10)
 		val chkboxEnable = arrayOfNulls<JCheckBox>(Piece.PIECE_COUNT)
-		for(i in 0 until Piece.PIECE_COUNT) {
+		for(i in 0..<Piece.PIECE_COUNT) {
 			chkboxEnable[i] = JCheckBox("Piece ${getUIText("PieceName$i")}").apply {
 				isSelected = nextPieceEnable[i]
 			}
@@ -491,7 +491,7 @@ class Sequencer:JFrame(), ActionListener {
 		//if(Piece.PIECE_COUNT%2==0) setPieceEnableFrame.getContentPane().add(new JLabel(""));
 		val btnConfirm = JButton(getUIText("Button_Confirm"))
 		btnConfirm.addActionListener {
-			for(i in 0 until Piece.PIECE_COUNT)
+			for(i in 0..<Piece.PIECE_COUNT)
 				nextPieceEnable[i] = chkboxEnable[i]?.isSelected ?: false
 			setPieceEnableFrame.dispose()
 		}
@@ -513,9 +513,6 @@ class Sequencer:JFrame(), ActionListener {
 	}
 
 	companion object {
-		/** Serial Version UID */
-		private const val serialVersionUID = 1L
-
 		/** Log */
 		internal val log = LogManager.getLogger()
 

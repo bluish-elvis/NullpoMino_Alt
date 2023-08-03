@@ -91,7 +91,7 @@ open class RanksAI:DummyAI(), Runnable {
 //			val indexSteepStep = 0
 //			val isCliff = true
 
-			for(i in 0 until ranks.stackWidth-1) {
+			for(i in 0..<ranks.stackWidth-1) {
 				var diff = heights[i+1]-heights[i]
 
 				if(diff>maxJump) {
@@ -228,25 +228,19 @@ open class RanksAI:DummyAI(), Runnable {
 				val pieceTouchGround = pieceNow.checkCollision(nowX, nowY+1, fld)
 
 				if(bestHold||forceHold) {
-					if(engine.isHoldOK) input = input or Controller.BUTTON_BIT_D
+					if(engine.isHoldOK) input = Controller.BUTTON_BIT_D
 				} else {
 					if(rt!=bestRt) {
-						val lrot = engine.getSpinDirection(-1)
-						val rrot = engine.getSpinDirection(1)
+						val spL = engine.getSpinDirection(-1)
+						val spR = engine.getSpinDirection(1)
 
-						if(abs(rt-bestRt)==2&&engine.ruleOpt.spinDoubleKey
-							&&!ctrl.isPress(Controller.BUTTON_E)
-						)
-							input = input or Controller.BUTTON_BIT_E
-						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey&&
-							!engine.spinDirection&&bestRt==rrot
-						)
-							input = input or Controller.BUTTON_BIT_B
-						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey&&
-							engine.spinDirection&&bestRt==lrot
-						)
-							input = input or Controller.BUTTON_BIT_B
-						else if(!ctrl.isPress(Controller.BUTTON_A)) input = input or Controller.BUTTON_BIT_A
+						if(abs(rt-bestRt)==2&&engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E))
+							input = Controller.BUTTON_BIT_E
+						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey&&!engine.spinDirection&&bestRt==spR)
+							input = Controller.BUTTON_BIT_B
+						else if(!ctrl.isPress(Controller.BUTTON_B)&&engine.ruleOpt.spinReverseKey&&engine.spinDirection&&bestRt==spL)
+							input = Controller.BUTTON_BIT_B
+						else if(!ctrl.isPress(Controller.BUTTON_A)) input = Controller.BUTTON_BIT_A
 					}
 
 					val minX = pieceNow.getMostMovableLeft(nowX, nowY, rt, fld)
@@ -308,7 +302,7 @@ open class RanksAI:DummyAI(), Runnable {
 	fun playFictitiousMove(heights:MutableList<Int>, pieces:MutableList<Int>, holdPiece:MutableList<Int>, holdOK:MutableList<Boolean>) {
 		currentHeightMin = 25
 		currentHeightMax = 0
-		for(i in 0 until ranks!!.stackWidth) {
+		for(i in 0..<ranks!!.stackWidth) {
 			if(heights[i]<currentHeightMin) currentHeightMin = heights[i]
 			if(heights[i]>currentHeightMax) currentHeightMax = heights[i]
 		}
@@ -347,7 +341,7 @@ open class RanksAI:DummyAI(), Runnable {
 		val pieceNow = engine.nowPieceObject ?: return
 
 		// Initialization of the heights array
-		heights = (0 until ranks!!.stackWidth).map {engine.field.height-engine.field.getHighestBlockY(it)}
+		heights = (0..<ranks!!.stackWidth).map {engine.field.height-engine.field.getHighestBlockY(it)}
 			.toMutableList()
 
 		// Initialization of the pieces array (contains the current piece and the next pieces)
@@ -418,7 +412,7 @@ open class RanksAI:DummyAI(), Runnable {
 		currentHeightMax = 0
 
 		//Compute the maximum/minimum heights
-		for(i in 0 until ranks!!.stackWidth) {
+		for(i in 0..<ranks!!.stackWidth) {
 			if(heights[i]<currentHeightMin) currentHeightMin = heights[i]
 			if(heights[i]>currentHeightMax) currentHeightMax = heights[i]
 		}
@@ -440,7 +434,7 @@ open class RanksAI:DummyAI(), Runnable {
 			bestScore.rankStacking = Integer.MAX_VALUE.toFloat()
 		} else
 		// Try using hold or not
-			for(useHold in 0 until if(holdOK&&allowHold) 2 else 1) {
+			for(useHold in 0..<if(holdOK&&allowHold) 2 else 1) {
 				if(useHold==1)
 					if(holdPiece[0]==-1) {
 						holdPiece[0] = piecesCopy[0]
@@ -454,7 +448,7 @@ open class RanksAI:DummyAI(), Runnable {
 						pieceNow = piecesCopy[0]
 					}
 				// try all possible rotations{
-				for(rt in 0 until Ranks.PIECES_NUM_ROTATIONS[pieceNow]) {
+				for(rt in 0..<Ranks.PIECES_NUM_ROTATIONS[pieceNow]) {
 					// Columns go from 0 to 9 in Ranks representation
 					val minX = 0
 					val maxX = ranks!!.stackWidth-Ranks.PIECES_WIDTHS[pieceNow][rt]
@@ -534,12 +528,12 @@ open class RanksAI:DummyAI(), Runnable {
 			if(!isVerticalIRightMost) {
 				ranks!!.addToHeights(heightsWork, pieces[0], rt, x)
 
-				for(i in 0 until ranks!!.stackWidth) {
+				for(i in 0..<ranks!!.stackWidth) {
 					if(heightsWork[i]>heightMax) heightMax = heights[i]
 					if(heightsWork[i]<heightMin) heightMin = heights[i]
 				}
 			} else {
-				for(i in 0 until ranks!!.stackWidth)
+				for(i in 0..<ranks!!.stackWidth)
 					heightsWork[i] -= 4
 
 				heightMin -= 4
@@ -585,7 +579,7 @@ open class RanksAI:DummyAI(), Runnable {
 						bestScore = scoreCurrent
 					}
 				} else
-					for(h2 in 0 until if(holdOK&&allowHold) 2 else 1) {
+					for(h2 in 0..<if(holdOK&&allowHold) 2 else 1) {
 						if(h2==1)
 							if(holdPiece2[0]==-1) {
 								holdPiece2[0] = pieces2[0]
@@ -599,7 +593,7 @@ open class RanksAI:DummyAI(), Runnable {
 								pieceNow = pieces2[0]
 							}
 
-						for(rt2 in 0 until Ranks.PIECES_NUM_ROTATIONS[pieceNow]) {
+						for(rt2 in 0..<Ranks.PIECES_NUM_ROTATIONS[pieceNow]) {
 							// is the piece a vertical I ?
 							val isVerticalI2 = pieceNow==Piece.PIECE_I&&(rt2==1||rt2==3)
 

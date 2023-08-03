@@ -36,8 +36,11 @@ import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM.HANABI
 import mu.nu.nullpo.gui.common.fx.FragAnim.ANIM.SPARK
 import mu.nu.nullpo.gui.common.libs.Vector
 
-class FragAnim(val type:ANIM, x:Int, y:Int, val color:Int, val spd:Int = 0, scale:Float = 1f, alpha:Float = 1f,
-	vel:Vector = Vector(0f, 0f)):SpriteSheet(x.toFloat(), y.toFloat(), vel, scale, alpha) {
+class FragAnim(val type:ANIM, x:Float, y:Float, val color:Int, val spd:Int = 0, scale:Float = 1f, alpha:Float = 1f,
+	vel:Vector = Vector(0f, 0f)):SpriteSheet(x, y, vel, scale, alpha) {
+	constructor(type:ANIM, x:Int, y:Int, color:Int, spd:Int = 0, scale:Float = 1f, alpha:Float = 1f,
+		vel:Vector = Vector(0f, 0f)):this(type, x.toFloat(), y.toFloat(), color, spd, scale, alpha, vel)
+
 	override fun update(r:AbstractRenderer):Boolean {
 		ticks += if(type==HANABI) 1 else maxOf(1, spd)
 		if(type==HANABI) vel.y += 0.3f

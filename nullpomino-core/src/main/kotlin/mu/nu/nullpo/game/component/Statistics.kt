@@ -70,6 +70,9 @@ class Statistics:Serializable {
 	/** 有効なisPushKeyの合計 count */
 	var totalKeyPush = 0
 	var finesse = 0
+	val finessePieceRate get() = finesse*1f/totalPieceLocked
+	var finessePts = 0
+	val finessePtsRate get() = finessePts/5f/totalPieceLocked
 	var finesseFault = 0
 	var maxFinesseCombo = 0
 
@@ -162,7 +165,7 @@ class Statistics:Serializable {
 	val vs:Float get() = (attacks+garbageLines)*6000f/maxOf(1, time)
 
 	/** TAS detection: slowdown rate */
-	var gamerate = 0f
+	var gameRate = 0f
 
 	/** Roll cleared flag (0=Not Reached 1=Reached 2=Fully Survived) */
 	var rollClear = 0
@@ -176,10 +179,10 @@ class Statistics:Serializable {
 				}
 			}
 			field = it
-			rollclearHistory = listOf(it)+rollclearHistory.takeLast(historyMax)
+			rollclearHistory = listOf(it)+rollclearHistory.takeLast(HISTORY_MAX)
 		}
 	/** Roll cleared history */
-	var rollclearHistory = List(historyMax) {0}
+	var rollclearHistory = List(HISTORY_MAX) {0}
 
 	/** Roll Reached Count */
 	var rollReached = 0
@@ -257,10 +260,13 @@ class Statistics:Serializable {
 		totalB2BTwist = 0
 		totalHoldUsed = 0
 		maxCombo = 0
-		gamerate = 0f
+		gameRate = 0f
 		maxChain = 0
 		rollClear = 0
-
+		finesse = 0
+		maxFinesseCombo = 0
+		finessePts = 0
+		finesseFault = 0
 		pieces = List(Piece.PIECE_COUNT) {0}
 		randSeed = 0L
 	}
@@ -305,12 +311,15 @@ class Statistics:Serializable {
 			totalB2BTwist = b.totalB2BTwist
 			maxCombo = b.maxCombo
 			maxB2B = b.maxB2B
-			gamerate = b.gamerate
+			gameRate = b.gameRate
 			maxChain = b.maxChain
 			rollClear = b.rollClear
-			rollclearHistory =
-				b.rollclearHistory
+			rollclearHistory = b.rollclearHistory
 			garbageLines = b.garbageLines
+			finesse = b.finesse
+			maxFinesseCombo = b.maxFinesseCombo
+			finessePts = b.finessePts
+			finesseFault = b.finesseFault
 
 			pieces = b.pieces
 			randSeed = b.randSeed
@@ -359,11 +368,15 @@ class Statistics:Serializable {
 			totalB2BTwist += b.totalB2BTwist
 			maxCombo = maxOf(maxCombo, b.maxCombo)
 			maxB2B = maxOf(maxB2B, b.maxB2B)
-			gamerate = (gamerate+b.gamerate)/2f
+			gameRate = (gameRate+b.gameRate)/2f
 			maxChain = maxOf(maxCombo, b.maxChain)
 			rollClear = b.rollClear
 			garbageLines += b.garbageLines
 
+			finesse += b.finesse
+			maxFinesseCombo = maxOf(maxFinesseCombo, b.maxFinesseCombo)
+			finessePts += b.finessePts
+			finesseFault += b.finesseFault
 			pieces = pieces.mapIndexed {it, i -> it+b.pieces[i]}
 			randSeed = b.randSeed
 		}
@@ -412,11 +425,15 @@ class Statistics:Serializable {
 			"$id.statistics.totalHoldUsed" to totalHoldUsed,
 			"$id.statistics.maxCombo" to maxCombo,
 			"$id.statistics.maxB2B" to maxB2B,
-			"$id.statistics.gamerate" to gamerate,
+			"$id.statistics.gamerate" to gameRate,
 			"$id.statistics.maxChain" to maxChain,
+			"$id.statistics.finesse" to finesse,
+			"$id.statistics.maxFinesseCombo" to maxFinesseCombo,
+			"$id.statistics.finessePts" to finessePts,
+			"$id.statistics.finesseFault" to finesseFault,
 			"$id.statistics.rollClear" to rollClear,
 			"$id.statistics.randSeed" to randSeed,
-		).plus((0 until pieces.size-1).associate {
+		).plus((0..<pieces.size-1).associate {
 			"$id.statistics.pieces.$it" to pieces[it]
 		}).forEach {(key, it) ->
 			p.setProperty(key, it)
@@ -464,8 +481,12 @@ class Statistics:Serializable {
 		totalHoldUsed = p.getProperty("$id.statistics.totalHoldUsed", 0)
 		maxCombo = p.getProperty("$id.statistics.maxCombo", 0)
 		maxB2B = p.getProperty("$id.statistics.maxB2B", 0)
-		gamerate = p.getProperty("$id.statistics.gamerate", 0f)
+		gameRate = p.getProperty("$id.statistics.gamerate", 0f)
 		maxChain = p.getProperty("$id.statistics.maxChain", 0)
+		finesse = p.getProperty("$id.statistics.finesse", 0)
+		maxFinesseCombo = p.getProperty("$id.statistics.maxFinesseCombo", 0)
+		finessePts = p.getProperty("$id.statistics.finessePts", 0)
+		finesseFault = p.getProperty("$id.statistics.finesseFault", 0)
 		rollClear = p.getProperty("$id.statistics.rollClear", 0)
 		randSeed = p.getProperty("$id.statistics.randSeed", 0L)
 		pieces = List(pieces.size) {p.getProperty("$id.statistics.pieces.$it", 0)}
@@ -514,11 +535,15 @@ class Statistics:Serializable {
 			{totalHoldUsed = it.toInt()},
 			{maxCombo = it.toInt()},
 			{maxB2B = it.toInt()},
-			{gamerate = it.toFloat()},
+			{gameRate = it.toFloat()},
 			{maxChain = it.toInt()},
+			{finesse = it.toInt()},
+			{maxFinesseCombo = it.toInt()},
+			{finessePts = it.toInt()},
+			{finesseFault = it.toInt()},
 			{rollClear = it.toInt()},
 			{randSeed = it.toLong()}).plus(
-			(0 until pieces.size-1).map {i:Int ->
+			(0..<pieces.size-1).map {i:Int ->
 				{pi[i] = it.toInt()}
 			}).zip(s).forEach {(m, st) -> m(st)}
 		pieces = pi.toList()
@@ -541,7 +566,8 @@ class Statistics:Serializable {
 		"$totalTriple", "$totalSplitTriple", "$totalQuadruple", "$totalTwistZeroMini", "$totalTwistZero",
 		"$totalTwistSingleMini", "$totalTwistSingle", "$totalTwistDoubleMini", "$totalTwistDouble", "$totalTwistSplitDouble",
 		"$totalTwistTriple", "$totalTwistSplitTriple", "$totalB2BQuad", "$totalB2BSplit", "$totalB2BTwist", "$totalHoldUsed",
-		"$maxCombo", "$maxB2B", "$gamerate", "$maxChain", "$rollClear", "$randSeed"
+		"$maxCombo", "$maxB2B", "$gameRate", "$maxChain", "$finesse", "$maxFinesseCombo", "$finessePts", "$finesseFault",
+		"$rollClear", "$randSeed"
 	)+(pieces.map {"$it"})
 
 	/** Export to String
@@ -558,8 +584,6 @@ class Statistics:Serializable {
 	}
 
 	companion object {
-		/** Serial version ID */
-		private const val serialVersionUID = -499640168205398295L
-		const val historyMax = 100
+		const val HISTORY_MAX = 100
 	}
 }

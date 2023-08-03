@@ -80,7 +80,7 @@ class StateConfigKeyboardNavi:BaseMenuChooseState() {
 
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		if(cursor==0) {
-			for(i in 0 until GameKeyDummy.MAX_BUTTON)
+			for(i in 0..<GameKeyDummy.MAX_BUTTON)
 				GameKey.gameKey[player].keymapNav[i] = GameKey.gameKey[player].keymap[i]
 			ResourceHolder.soundManager.play("decide1")
 		} else if(cursor==1) {

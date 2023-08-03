@@ -30,9 +30,9 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 open class BagBonusRandomizer:BagRandomizer {
-	override val baglen:Int get() = super.baglen+1
+	override val bagLen:Int get() = super.bagLen+1
 	override val bagInit
-		get() = List(baglen) {pieces[(if(it==baglen-1) r.nextInt(pieces.size) else it)%pieces.size]}
+		get() = List(bagLen) {pieces[(if(it==bagLen-1) r.nextInt(pieces.size) else it)%pieces.size]}
 
 	constructor():super()
 	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)

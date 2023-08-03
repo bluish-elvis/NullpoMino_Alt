@@ -67,7 +67,7 @@ data class ScoreEvent(val piece:Piece? = null, val lines:Int = 0, val b2b:Int = 
 				.matchEntire(s)?.destructured?.toList()?.let {i ->
 					ScoreEvent(
 						Piece(Piece.Shape.names.indexOf(i[0])), i[1].toInt(), i[2].toInt(), i[3].toInt(),
-						Twister.all.find {it.name==i[4]}, i[5]=="1"
+						Twister.entries.find {it.name==i[4]}, i[5]=="1"
 					)
 				}
 	}
@@ -78,9 +78,5 @@ data class ScoreEvent(val piece:Piece? = null, val lines:Int = 0, val b2b:Int = 
 		val mini get() = this==POINT_MINI||this==IMMOBILE_MINI
 		val ez get() = this==IMMOBILE_EZ
 		val legit get() = !mini&&!ez
-
-		companion object {
-			val all = Twister.values()
-		}
 	}
 }

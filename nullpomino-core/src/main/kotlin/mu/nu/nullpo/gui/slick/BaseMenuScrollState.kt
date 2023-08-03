@@ -118,7 +118,7 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 			}
 			if(cursor>=maxEntry) cursor = maxEntry-1
 			if(cursor<minEntry) cursor = minEntry
-		} else if(clicked&&y in 3 until 2+pageHeight) {
+		} else if(clicked&&y in 3..<2+pageHeight) {
 			val newCursor = y-3+minEntry
 			when {
 				newCursor==cursor -> return true
@@ -137,7 +137,7 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 	private fun drawMenuList(graphics:Graphics) {
 		val maxEntry = minOf(minEntry+pageHeight-1, list.size)
 
-		for((y, i) in (minEntry until maxEntry).withIndex()) {
+		for((y, i) in (minEntry..<maxEntry).withIndex()) {
 			FontNormal.printFontGrid(2, 3+y, list[i], cursor==i)
 			if(cursor==i) FontNormal.printFontGrid(1, 3+y, BaseFont.CURSOR, COLOR.RAINBOW)
 		}

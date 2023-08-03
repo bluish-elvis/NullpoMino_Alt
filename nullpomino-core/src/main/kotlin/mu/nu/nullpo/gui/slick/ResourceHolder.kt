@@ -28,6 +28,7 @@
  */
 package mu.nu.nullpo.gui.slick
 
+import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.gui.common.BaseFontTTF
 import org.newdawn.slick.Music
@@ -122,8 +123,8 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	fun load() {
 		try {
 			loadImg(
-				NullpoMinoSlick.propConfig.getProperty("option.showBg", true),
-				NullpoMinoSlick.propConfig.getProperty("option.showLineEffect", true)
+				NullpoMinoSlick.propConfig.getProperty("option.showBG", true),
+				NullpoMinoSlick.propConfig.getProperty("option.heavyEffect", 0)>0
 			)
 		} catch(e:Throwable) {
 			log.error("Resource load failed", e)
@@ -232,8 +233,9 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		if(m!=BGM.Silent&&m!=bgmPlaying) {
 			bgm[x][y].first?.also {
 				try {
+					val z=BGMStatus.BGM.values.indexOf(m)
 					if(bgm[x][y].second) it.play() else it.loop()
-					log.info("Play BGM $x:$y ${m.longName}")
+					log.info("Play BGM #$z = $x:$y ${m.longName}")
 				} catch(e:Throwable) {
 					log.error("Failed to play BGM $x:$y ${m.longName}", e)
 				}

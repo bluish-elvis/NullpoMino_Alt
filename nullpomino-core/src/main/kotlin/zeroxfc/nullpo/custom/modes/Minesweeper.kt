@@ -90,8 +90,8 @@ class Minesweeper:AbstractMode() {
 		engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_SAMECOLOR
 		mainGrid = GameGrid()
 		blockGrid = emptyArray()
-		if(!owner.replayMode) loadSetting(owner.modeConfig, engine)
-		else loadSetting(owner.replayProp, engine)
+		if(!owner.replayMode) loadSetting(engine, owner.modeConfig)
+		else loadSetting(engine, owner.replayProp)
 
 		engine.owner.bgMan.bg = bg
 	}
@@ -148,7 +148,7 @@ class Minesweeper:AbstractMode() {
 					saveSettingPlayer(engine.playerProp)
 					engine.playerProp.saveProfileConfig()
 				} else {
-					saveSetting(owner.modeConfig, engine)
+					saveSetting(engine, owner.modeConfig)
 					owner.saveModeConfig()
 				}
 				return false
@@ -203,7 +203,7 @@ class Minesweeper:AbstractMode() {
 			// fieldInitialization
 			blockGrid = Array(height) {arrayOfNulls(width)}
 			for(y in blockGrid.indices) {
-				for(x in 0 until blockGrid[y].size) {
+				for(x in 0..<blockGrid[y].size) {
 					blockGrid[y][x] = Block()
 				}
 			}
@@ -268,7 +268,7 @@ class Minesweeper:AbstractMode() {
 					if(field.isEmpty) engine.statc[0] = field.height+1 else engine.resetFieldVisible()
 				}
 				engine.statc[0]<field.height+1 -> {
-					for(i in 0 until field.width)
+					for(i in 0..<field.width)
 						field.getBlock(i, field.height-engine.statc[0])?.let {blk ->
 							val covered = Block(Block.COLOR.BLUE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 							if(blk.toChar()==covered.toChar()) {
@@ -294,7 +294,7 @@ class Minesweeper:AbstractMode() {
 				}
 				else -> {
 					if(!owner.replayMode||owner.replayRerecord) owner.saveReplay()
-					for(i in 0 until owner.players) {
+					for(i in 0..<owner.players) {
 						if(i==engine.playerID||engine.dieAll) {
 							owner.engine[i].field.reset()
 							owner.engine[i].resetStatc()
@@ -308,8 +308,8 @@ class Minesweeper:AbstractMode() {
 				engine.blockShowOutlineOnly = false
 				engine.playSE("died")
 				engine.resetFieldVisible()
-				for(i in field.hiddenHeight*-1 until field.height)
-					for(j in 0 until field.width)
+				for(i in field.hiddenHeight*-1..<field.height)
+					for(j in 0..<field.width)
 						field.getBlock(j, i)?.apply {color = Block.COLOR.BLACK}
 
 				engine.statc[0] = 1
@@ -542,7 +542,7 @@ class Minesweeper:AbstractMode() {
 			engine.isInGame = true
 			val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 			if(engine.playerProp.isLoggedIn) {
-				loadSetting(engine.playerProp.propProfile, engine)
+				loadSetting(engine, engine.playerProp.propProfile)
 			}
 			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		}
@@ -557,7 +557,7 @@ class Minesweeper:AbstractMode() {
 		val open = Block(Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE)
 		val mine = Block(Block.COLOR.RED, Block.TYPE.GEM, engine.skin, Block.ATTRIBUTE.VISIBLE)
 		for(y in blockGrid.indices) {
-			for(x in 0 until blockGrid[y].size) {
+			for(x in 0..<blockGrid[y].size) {
 				if(mainGrid.getSquareAt(x, y).uncovered) {
 					if(!mainGrid.getSquareAt(x, y).isMine) {
 						if(blockGrid[y][x]!!.toChar()!=open.toChar()) blockGrid[y][x]!!.replace(open)
@@ -574,8 +574,8 @@ class Minesweeper:AbstractMode() {
 	}
 
 	private fun updateEngineGrid(engine:GameEngine) {
-		for(y in 0 until if(height>20) MAX_DIM else height) {
-			for(x in 0 until if(width>20) MAX_DIM else width) {
+		for(y in 0..<if(height>20) MAX_DIM else height) {
+			for(x in 0..<if(width>20) MAX_DIM else width) {
 				val px = x+offsetX
 				val py = y+offsetY
 				if(engine.field.getBlock(x, y)?.toChar()!=blockGrid[py][px]!!.toChar()) {
@@ -629,8 +629,8 @@ class Minesweeper:AbstractMode() {
 			// Block mine = new Block(Block.COLOR.GEM_RED, engine.getSkin(), Block.ATTRIBUTE.VISIBLE);
 			if(engine.stat===GameEngine.Status.CUSTOM) {
 				if(height<=MAX_DIM&&width<=MAX_DIM) {
-					for(y in 0 until height) {
-						for(x in 0 until width) {
+					for(y in 0..<height) {
+						for(x in 0..<width) {
 							if(mainGrid.getSquareAt(x, y).uncovered) {
 								if(!mainGrid.getSquareAt(x, y).isMine) {
 									val s = mainGrid.getSurroundingMines(x, y)
@@ -657,8 +657,8 @@ class Minesweeper:AbstractMode() {
 						}
 					}
 				} else {
-					for(y in 0 until minOf(height, MAX_DIM)) {
-						for(x in 0 until minOf(width, MAX_DIM)) {
+					for(y in 0..<minOf(height, MAX_DIM)) {
+						for(x in 0..<minOf(width, MAX_DIM)) {
 							val px:Int = x+offsetX
 							val py:Int = y+offsetY
 							if(mainGrid.getSquareAt(px, py).uncovered) {
@@ -689,8 +689,8 @@ class Minesweeper:AbstractMode() {
 					}
 				}
 				receiver.drawMenuFont(engine, cursorScreenX, cursorScreenY, "f", COLOR.YELLOW)
-				val foffsetX:Int = receiver.fieldX(engine)+4
-				val foffsetY:Int = receiver.fieldY(engine)+52
+				val foffsetX = receiver.fieldX(engine)+4
+				val foffsetY = receiver.fieldY(engine)+52
 				val size = 16
 				if(width>MAX_DIM) {
 					if(offsetX!=0)
@@ -731,7 +731,7 @@ class Minesweeper:AbstractMode() {
 		 */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
 		if(!owner.replayMode) {
-			saveSetting(prop, engine)
+			saveSetting(engine, prop)
 		}
 		return false
 	}
@@ -740,7 +740,7 @@ class Minesweeper:AbstractMode() {
 	 *
 	 * @param prop Property file
 	 */
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine: GameEngine, prop: CustomProperties, ruleName: String, playerID: Int) {
 		width = prop.getProperty("minesweeper.length", 15)
 		height = prop.getProperty("minesweeper.height", 15)
 		minePercentage = prop.getProperty("minesweeper.minePercentage", 15f)
@@ -753,7 +753,7 @@ class Minesweeper:AbstractMode() {
 	 *
 	 * @param prop Property file
 	 */
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("minesweeper.length", width)
 		prop.setProperty("minesweeper.height", height)
 		prop.setProperty("minesweeper.minePercentage", minePercentage)

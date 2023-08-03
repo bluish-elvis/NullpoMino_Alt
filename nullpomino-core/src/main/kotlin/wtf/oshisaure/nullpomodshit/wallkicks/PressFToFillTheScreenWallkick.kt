@@ -75,7 +75,7 @@ class PressFToFillTheScreenWallkick:Wallkick {
 			blockCount = 0
 			xi = 0
 			while(xi<field.width) {
-				for(yi in -field.hiddenHeight until field.height) {
+				for(yi in -field.hiddenHeight..<field.height) {
 					if(!isABlockOnTheField(xi, yi, field)) {
 						piece.dataX.forEach {it.add(xi)}
 						piece.dataY.forEach {it.add(xi)}

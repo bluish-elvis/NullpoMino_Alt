@@ -239,7 +239,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 					2 -> receiver.drawScoreFont(engine, 3, 3, "Time", COLOR.BLUE)
 				}
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW, scale)
 					when(gametype) {
 						0 -> {
@@ -308,7 +308,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 
 	/** Draw X on death columns*/
 	override fun drawX(engine:GameEngine) {
-		for(i in 0 until if(dangerColumnDouble) 2 else 1)
+		for(i in 0..<if(dangerColumnDouble) 2 else 1)
 			if(engine.field.getBlockEmpty(2+i, 0))
 				if(engine.displaySize==1) receiver.drawMenuFont(engine, 4+i*2, 0, "\u0085", COLOR.RED, 2f)
 				else receiver.drawMenuFont(engine, 2+i, 0, "\u0085", COLOR.RED)
@@ -418,7 +418,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		!owner.replayMode&&engine.ai==null&&engine.colorClearSize==4&&
 			updateRanking(engine.statistics.score, engine.statistics.time, gametype, scoreType, numColors)!=-1
 
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		gametype = prop.getProperty("avalanche.gametype", 0)
 		sprintTarget = prop.getProperty("avalanche.sprintTarget", 0)
 		scoreType = prop.getProperty("avalanche.scoreType", 0)
@@ -432,7 +432,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 		bigDisplay = prop.getProperty("avalanche.bigDisplay", false)
 	}
 
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("avalanche.gametype", gametype)
 		prop.setProperty("avalanche.sprintTarget", sprintTarget)
 		prop.setProperty("avalanche.scoreType", scoreType)
@@ -473,7 +473,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 	 */
 	private fun checkRanking(sc:Long, time:Int, type:Int, sctype:Int, colors:Int):Int {
 		if(type==2&&sc<SPRINT_MAX_SCORE[sprintTarget]) return -1
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(type==0) {
 				if(sc>rankingScore[sctype][colors-3][type][i])
 					return i

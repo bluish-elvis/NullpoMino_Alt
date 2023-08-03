@@ -85,7 +85,7 @@ class ReplayData:Serializable {
 		var max = maxFrame
 		if(maxFrame<0||maxFrame>inputDataArray.size) max = inputDataArray.size
 
-		for(i in 0 until max) {
+		for(i in 0..<max) {
 			val input = getInputData(i)
 			val previous = getInputData(i-1)
 			if(input!=previous) p.setProperty("$id.r.$i", input)
@@ -102,7 +102,7 @@ class ReplayData:Serializable {
 		val max = p.getProperty("$id.r.max", 0)
 		var input = 0
 
-		for(i in 0 until max) {
+		for(i in 0..<max) {
 			val data = p.getProperty("$id.r.$i", -1)
 			if(data!=-1) input = data
 			setInputData(input, i)
@@ -110,9 +110,6 @@ class ReplayData:Serializable {
 	}
 
 	companion object {
-		/** Serial version ID */
-		private const val serialVersionUID = 737226985994393117L
-
 		/** Button input dataの default の長さ */
 		const val DEFAULT_ARRAYLIST_SIZE = 60*60*15
 	}

@@ -117,7 +117,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 			nextPiece = checkOffset(nextPiece, engine)
 			//input |= calcIRS(nextPiece, engine);
 			if(threadRunning&&!thinking&&thinkCurrentPieceNo<=thinkLastPieceNo) {
-				val spawnX = engine.getSpawnPosX(engine.field, nextPiece)
+				val spawnX = engine.getSpawnPosX(nextPiece, engine.field)
 				if(bestX-spawnX>1) {
 					// left
 					input = input or Controller.BUTTON_BIT_LEFT
@@ -157,7 +157,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 			var drop = 0 //1 = up, -1 = down
 			if(bestHold&&thinkComplete&&engine.isHoldOK) {
 				// Hold
-				input = input or Controller.BUTTON_BIT_D
+				input = Controller.BUTTON_BIT_D
 				/*
 				Piece holdPiece = engine.holdPieceObject;
 				if (holdPiece != null)
@@ -187,13 +187,19 @@ class ComboRaceBot:DummyAI(), Runnable {
 				*/if(rt!=bestRt) {
 					val best180 = abs(rt-bestRt)==2
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
-					val lrot = engine.getSpinDirection(-1)
-					val rrot = engine.getSpinDirection(1)
-					if(DEBUG_ALL) log.debug("lrot = $lrot, rrot = $rrot")
+					val spL = engine.getSpinDirection(-1)
+					val spR = engine.getSpinDirection(1)
+					if(DEBUG_ALL) log.debug("spL = $spL, spR = $spR")
 					spinDir =
-						if(best180&&(engine.ruleOpt.spinDoubleKey)&&!ctrl.isPress(Controller.BUTTON_E)) 2 else if(bestRt==rrot) 1 else if(bestRt==lrot) -1 else if(engine.ruleOpt.spinReverseKey&&best180&&((rt and 1)==1)) {
-							if(rrot==Piece.DIRECTION_UP) 1 else -1
-						} else 1
+						when {
+							best180&&(engine.ruleOpt.spinDoubleKey)&&!ctrl.isPress(Controller.BUTTON_E) -> 2
+							bestRt==spR -> 1
+							bestRt==spL -> -1
+							engine.ruleOpt.spinReverseKey&&best180&&((rt and 1)==1) -> {
+								if(spR==Piece.DIRECTION_UP) 1 else -1
+							}
+							else -> 1
+						}
 				}
 
 				// Whether reachable position
@@ -237,10 +243,10 @@ class ComboRaceBot:DummyAI(), Runnable {
 				}
 			}
 			//Convert parameters to input
-			if(moveDir==-1&&!ctrl.isPress(Controller.BUTTON_LEFT)) input = input or Controller.BUTTON_BIT_LEFT
-			else if(moveDir==1&&!ctrl.isPress(Controller.BUTTON_RIGHT)) input = input or Controller.BUTTON_BIT_RIGHT
-			if(drop==1&&!ctrl.isPress(Controller.BUTTON_UP)) input = input or Controller.BUTTON_BIT_UP
-			else if(drop==-1) input = input or Controller.BUTTON_BIT_DOWN
+			if(moveDir==-1&&!ctrl.isPress(Controller.BUTTON_LEFT)) input = Controller.BUTTON_BIT_LEFT
+			else if(moveDir==1&&!ctrl.isPress(Controller.BUTTON_RIGHT)) input = Controller.BUTTON_BIT_RIGHT
+			if(drop==1&&!ctrl.isPress(Controller.BUTTON_UP)) input = Controller.BUTTON_BIT_UP
+			else if(drop==-1) input = Controller.BUTTON_BIT_DOWN
 			if(spinDir!=0) {
 				val spinRight = (engine.owSpinDirection==1||(engine.owSpinDirection==-1&&engine.ruleOpt.spinToRight))
 				if(engine.ruleOpt.spinDoubleKey&&(spinDir==2)&&!ctrl.isPress(Controller.BUTTON_E))
@@ -504,8 +510,8 @@ class ComboRaceBot:DummyAI(), Runnable {
 				code = code shr 1
 			}
 			for(p in 0..6) {
-				val tempX = engine!!.getSpawnPosX(fldBackup, pieces[p])
-				for(rt in 0 until Piece.DIRECTION_COUNT) {
+				val tempX = engine!!.getSpawnPosX(pieces[p], fldBackup)
+				for(rt in 0..<Piece.DIRECTION_COUNT) {
 					val minX = pieces[p].getMostMovableLeft(tempX, 0, rt, fldBackup)
 					val maxX = pieces[p].getMostMovableRight(tempX, 0, rt, fldBackup)
 					for(x in minX..maxX) {
@@ -657,12 +663,12 @@ class ComboRaceBot:DummyAI(), Runnable {
 				if(pieceTouchGround&&(nowX==bestX)&&(nowY==bestY)&&(rt==bestRt)) return else if(pieceTouchGround&&(nowX==bestXSub)&&(nowY==bestYSub)&&(rt==bestRtSub)) {
 					val best180 = abs(rt-bestRt)==2
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
-					val lrot = engine.getSpinDirection(-1)
-					val rrot = engine.getSpinDirection(1)
-					if(DEBUG_ALL) log.debug("lrot = $lrot, rrot = $rrot")
+					val spL = engine.getSpinDirection(-1)
+					val spR = engine.getSpinDirection(1)
+					if(DEBUG_ALL) log.debug("spL = $spL, spR = $spR")
 					val spinDir =
-						if(best180&&(engine.ruleOpt.spinDoubleKey)) 2 else if(bestRt==rrot) 1 else if(bestRt==lrot) -1 else if(engine.ruleOpt.spinReverseKey&&best180&&((rt and 1)==1)) {
-							if(rrot==Piece.DIRECTION_UP) 1 else -1
+						if(best180&&(engine.ruleOpt.spinDoubleKey)) 2 else if(bestRt==spR) 1 else if(bestRt==spL) -1 else if(engine.ruleOpt.spinReverseKey&&best180&&((rt and 1)==1)) {
+							if(spR==Piece.DIRECTION_UP) 1 else -1
 						} else 1
 					when(spinDir) {
 						-1 -> r.drawScoreFont(engine, 10, 4, "SPIN LEFT")
@@ -677,13 +683,13 @@ class ComboRaceBot:DummyAI(), Runnable {
 				if(rt!=bestRtSub) {
 					val best180 = abs(rt-bestRtSub)==2
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
-					val lrot = engine.getSpinDirection(-1)
-					val rrot = engine.getSpinDirection(1)
-					if(DEBUG_ALL) log.debug("lrot = $lrot, rrot = $rrot")
+					val spL = engine.getSpinDirection(-1)
+					val spR = engine.getSpinDirection(1)
+					if(DEBUG_ALL) log.debug("spL = $spL, spR = $spR")
 					val spinDir =//-1 = left,  1 = right, 2 = 180
-						if(best180&&(engine.ruleOpt.spinDoubleKey)) 2 else if(bestRtSub==rrot) 1 else if(bestRtSub==lrot) -1
+						if(best180&&(engine.ruleOpt.spinDoubleKey)) 2 else if(bestRtSub==spR) 1 else if(bestRtSub==spL) -1
 						else if(engine.ruleOpt.spinReverseKey&&best180&&((rt and 1)==1)) {
-							if(rrot==Piece.DIRECTION_UP) 1 else -1
+							if(spR==Piece.DIRECTION_UP) 1 else -1
 						} else 1
 					when(spinDir) {
 						-1 -> r.drawScoreFont(engine, 10, writeY, "SPIN LEFT")
@@ -786,7 +792,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 		@JvmOverloads fun fieldToCode(field:Field, valleyX:Int = maxOf(field.width-4, 0)/2):Short {
 			val height = field.height
 			var result:Short = 0
-			for(y in height-3 until height) for(x in 0..3) {
+			for(y in height-3..<height) for(x in 0..3) {
 				result = (result.toInt() shl 1).toShort()
 				if(!field.getBlockEmpty(x+valleyX, y, false)) result++
 			}

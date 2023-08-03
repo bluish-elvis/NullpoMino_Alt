@@ -60,7 +60,7 @@ class BackgroundSlidingTiles:AnimatedBackgroundHook {
 
 	constructor(skin:Int, directionRandomizer:Random, color:Int?, size:Int, darkness:Float) {
 		custom = false
-		this.skin = if(skin in 1 until ResourceHolderCustomAssetExtension.numberLoadedBlockSkins) skin else 0
+		this.skin = if(skin in 1..<ResourceHolderCustomAssetExtension.numberLoadedBlockSkins) skin else 0
 		this.color = COLOR.all[color ?: 0]
 		this.size = size
 		this.darkness = darkness
@@ -71,7 +71,7 @@ class BackgroundSlidingTiles:AnimatedBackgroundHook {
 
 	constructor(skin:Int, seed:Long, color:Int?, size:Int, darkness:Float) {
 		custom = false
-		this.skin = if(skin in 1 until ResourceHolderCustomAssetExtension.numberLoadedBlockSkins) skin else 0
+		this.skin = if(skin in 1..<ResourceHolderCustomAssetExtension.numberLoadedBlockSkins) skin else 0
 		this.color = COLOR.all[color ?: 0]
 		this.size = size
 		this.darkness = darkness
@@ -137,7 +137,7 @@ class BackgroundSlidingTiles:AnimatedBackgroundHook {
 			move = false
 			if(horizontal) {
 				for(y in gridChunks.indices) {
-					for(x in 0 until gridChunks[y].size) {
+					for(x in 0..<gridChunks[y].size) {
 						val locOld = gridChunks[y][x].anchorLocation
 						val yMod = abs(locOld[1]/width)
 						val dir = (direction+yMod)%DIRECTIONS
@@ -160,7 +160,7 @@ class BackgroundSlidingTiles:AnimatedBackgroundHook {
 				}
 				currentMovement++
 			} else {
-				for(x in 0 until gridChunks[0].size) {
+				for(x in 0..<gridChunks[0].size) {
 					for(y in gridChunks.indices) {
 						val locOld = gridChunks[y][x].anchorLocation
 						val xMod = abs(locOld[0]/width)
@@ -218,7 +218,7 @@ class BackgroundSlidingTiles:AnimatedBackgroundHook {
 	override fun draw(engine:GameEngine) {
 		customHolder.drawImage("blackBG", 0, 0)
 		for(y in gridChunks.indices) {
-			for(x in 0 until gridChunks[y].size) {
+			for(x in 0..<gridChunks[y].size) {
 				val i = gridChunks[y][x]
 				val pos = i.drawLocation
 				val ddim = i.drawDimensions

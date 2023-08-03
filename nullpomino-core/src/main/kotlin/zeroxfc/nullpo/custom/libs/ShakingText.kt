@@ -48,7 +48,7 @@ import kotlin.random.Random
 class ShakingText
 /**
  * Generates a text shaker object with an auto-generated randomizer.
- */ constructor(private val textPositionRandomizer:Random = Random.Default) {
+ */(private val textPositionRandomizer:Random = Random.Default) {
 	/**
 	 * Draws some shaken text at some pixel coordinates.
 	 *
@@ -62,8 +62,7 @@ class ShakingText
 	 * @param scale        Scale of drawn text.
 	 */
 	private fun drawDirectText(receiver:EventReceiver, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int, text:String,
-		color:EventReceiver.COLOR,
-		scale:Float) {
+		color:EventReceiver.COLOR, scale:Float) {
 		val maxDevianceX = if(maxDevianceX<0) -maxDevianceX else maxDevianceX
 		val maxDevianceY = if(maxDevianceY<0) -maxDevianceY else maxDevianceY
 		val offset = 16.0*scale
@@ -91,8 +90,8 @@ class ShakingText
 	 */
 	fun drawScoreText(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int, text:String,
 		color:EventReceiver.COLOR, scale:Float) {
-		val nx:Int = receiver.scoreX(engine)+x*if(scale<=0.5f) 8 else 16
-		val ny:Int = receiver.scoreY(engine)+y*if(scale<=0.5f) 8 else 16
+		val nx = receiver.scoreX(engine)+x*if(scale<=0.5f) 8 else 16
+		val ny = receiver.scoreY(engine)+y*if(scale<=0.5f) 8 else 16
 		drawDirectText(receiver, nx, ny, maxDevianceX, maxDevianceY, text, color, scale)
 	}
 	/**
@@ -110,8 +109,8 @@ class ShakingText
 	 */
 	fun drawMenuText(receiver:EventReceiver, engine:GameEngine, x:Int, y:Int, maxDevianceX:Int, maxDevianceY:Int, text:String,
 		color:EventReceiver.COLOR, scale:Float) {
-		val nx:Int = receiver.fieldX(engine)+x*if(scale<=0.5f) 8 else 16+4
-		val ny:Int = receiver.fieldY(engine)+y*if(scale<=0.5f) 8 else 16+52
+		val nx = receiver.fieldX(engine).toInt()+x*if(scale<=0.5f) 8 else 16+4
+		val ny = receiver.fieldY(engine).toInt()+y*if(scale<=0.5f) 8 else 16+52
 		drawDirectText(receiver, nx, ny, maxDevianceX, maxDevianceY, text, color, scale)
 	}
 }

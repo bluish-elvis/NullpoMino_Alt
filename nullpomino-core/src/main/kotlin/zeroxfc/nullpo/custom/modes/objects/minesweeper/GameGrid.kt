@@ -63,8 +63,8 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 			}
 			i++
 		}
-		for(y in 0 until height) {
-			for(x in 0 until length) {
+		for(y in 0..<height) {
+			for(x in 0..<length) {
 				if(!contents[y][x].isMine) {
 					contents[y][x].surroundingMines = getSurroundingMines(x, y)
 				}
@@ -121,17 +121,17 @@ class GameGrid @JvmOverloads constructor(val length:Int = 10, val height:Int = 1
 	}
 
 	fun uncoverAllMines() {
-		for(y in 0 until height) for(x in 0 until length)
+		for(y in 0..<height) for(x in 0..<length)
 			if(contents[y][x].isMine) contents[y][x].uncovered = true
 	}
 
 	fun uncoverNonMines() {
-		for(y in 0 until height) for(x in 0 until length)
+		for(y in 0..<height) for(x in 0..<length)
 			if(!contents[y][x].isMine) contents[y][x].uncovered = true
 	}
 
 	fun flagAllCovered() {
-		for(y in 0 until height) for(x in 0 until length)
+		for(y in 0..<height) for(x in 0..<length)
 			if(!contents[y][x].uncovered) {
 				contents[y][x].flagged = true
 				contents[y][x].question = false

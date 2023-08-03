@@ -56,7 +56,7 @@ class DTET10VWave<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
 
 	override fun draw() {
 		for(i in 0..59) {
-			val y = 30f+i*7+sin((t*1.7f+i*6)*Rg)*28
+			val y = 30f+i*7+sin((t*1.7f+i*6)*RG)*28
 			img.draw(0f, i*8f, 0f, y, 640f, y+8)
 		}
 	}

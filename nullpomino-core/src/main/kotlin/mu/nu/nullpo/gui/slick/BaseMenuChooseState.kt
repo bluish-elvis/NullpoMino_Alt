@@ -60,8 +60,6 @@ abstract class BaseMenuChooseState:BaseGameState() {
 		flashY = minChoiceY
 		flashT = 0
 		val i = ResourceHolder.imgLine[1].copy()
-		// TTF font load
-		ResourceHolder.ttfFont?.loadGlyphs()
 		ig =
 			Image(i.height, i.width).apply {
 				graphics.clear()
@@ -80,7 +78,7 @@ abstract class BaseMenuChooseState:BaseGameState() {
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
 		// Menu
-		if(flashT in 0 until 32) {
+		if(flashT in 0..<32) {
 			val i = flashT/3
 			val j = flashT/2
 			val y = flashY
@@ -90,7 +88,7 @@ abstract class BaseMenuChooseState:BaseGameState() {
 					0f, y*16f, container.screenWidth.toFloat(), (y+1)*16f,
 					0f, 8f*i, 80f, 8f*(1+i)
 				)
-			if(j<16)
+//			if(j<16)
 				ig.draw(
 					0f, y*16f, container.width.toFloat(), 16f*(1+y),
 					0f, 16f*j, 160f, 16f*(1+j)
@@ -105,6 +103,8 @@ abstract class BaseMenuChooseState:BaseGameState() {
 	@Throws(SlickException::class)
 	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
 
+		// TTF font load
+		ResourceHolder.ttfFont?.loadGlyphs()
 		// Update key input states
 		GameKey.gameKey[0].update(container.input)
 		// Mouse
@@ -159,7 +159,7 @@ abstract class BaseMenuChooseState:BaseGameState() {
 		if(MouseInput.isMouseClicked) {
 			val y = MouseInput.mouseY shr 4
 			val newCursor = y-minChoiceY
-			if(newCursor in 0 until numChoice) {
+			if(newCursor in 0..<numChoice) {
 				if(newCursor==cursor) return true
 				ResourceHolder.soundManager.play("cursor")
 				cursor = newCursor
@@ -182,8 +182,6 @@ abstract class BaseMenuChooseState:BaseGameState() {
 
 	/** Called when up or down is pressed. */
 	protected open fun onCursor(container:GameContainer, game:StateBasedGame, delta:Int, change:Int) {
-		// TTF font load
-		ResourceHolder.ttfFont?.loadGlyphs()
 		ResourceHolder.soundManager.play("cursor")
 		flashY = cursor+minChoiceY
 		flashT = 0

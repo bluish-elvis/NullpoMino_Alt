@@ -58,8 +58,8 @@ class PressEWallkick:Wallkick {
 		} else {
 			val mino = Piece(7).apply {
 				setBlock(piece.block[0])
-				for(curY in -field.hiddenHeight until field.height) {
-					for(curX in 0 until field.width) {
+				for(curY in -field.hiddenHeight..<field.height) {
+					for(curX in 0..<field.width) {
 						setColor(2+(curX-curY+field.height)%7)
 						placeToField(curX, curY, field)
 						if(checkCollisionKick(piece, x, y, rtOld, field)) field.delBlock(curX, curY)
@@ -85,7 +85,7 @@ class PressEWallkick:Wallkick {
 		}
 
 	private fun checkCollisionKickBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		for(i in 0 until piece.maxBlock) {
+		for(i in 0..<piece.maxBlock) {
 			if(piece.dataX[rt][i]!=1+piece.dataOffsetX[rt]) {
 				val x2 = x+piece.dataX[rt][i]*2
 				val y2 = y+piece.dataY[rt][i]*2

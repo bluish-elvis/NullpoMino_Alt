@@ -32,7 +32,7 @@ import java.io.File
 import javax.swing.filechooser.FileFilter
 
 /** シンプルなファイルフィルタ */
-class SimpleFileFilter constructor(
+class SimpleFileFilter(
 	/** 拡張子 */
 	var extension:String = "",
 	desc:String = ""):FileFilter() {

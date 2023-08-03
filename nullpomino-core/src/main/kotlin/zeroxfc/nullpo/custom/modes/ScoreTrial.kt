@@ -41,7 +41,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.common.fx.particles.BlockParticleCollection
+import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.FlyInOutText
@@ -71,7 +71,7 @@ class ScoreTrial:MarathonModeBase() {
 	// Lives started with
 	private var livesStartedWith = 0
 	// Particle stuff
-//	private var blockParticles:BlockParticleCollection? = null
+//	private var blockParticles:Mapper? = null
 	// Flying congratulations text
 	private var congratulationsText:FlyInOutText? = null
 	// Combo Text
@@ -190,8 +190,8 @@ class ScoreTrial:MarathonModeBase() {
 					2 -> big = !big
 					3 -> {
 						lineClearAnimType += change
-						if(lineClearAnimType>BlockParticleCollection.ANIMATION_TYPES-1) lineClearAnimType = 0
-						if(lineClearAnimType<0) lineClearAnimType = BlockParticleCollection.ANIMATION_TYPES-1
+						if(lineClearAnimType>BlockParticle.ANIMATION_TYPES-1) lineClearAnimType = 0
+						if(lineClearAnimType<0) lineClearAnimType = BlockParticle.ANIMATION_TYPES-1
 					}
 				}
 
@@ -332,7 +332,7 @@ class ScoreTrial:MarathonModeBase() {
 		val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 		if(engine.playerProp.isLoggedIn) {
 			loadRankingPlayer(engine.playerProp)
-			loadSetting(engine.playerProp.propProfile, engine)
+			loadSetting(engine, engine.playerProp.propProfile)
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s
@@ -347,7 +347,7 @@ class ScoreTrial:MarathonModeBase() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingScorePlayer[difficultySelected][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -365,7 +365,7 @@ class ScoreTrial:MarathonModeBase() {
 					)
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingScore[difficultySelected][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -566,7 +566,8 @@ class ScoreTrial:MarathonModeBase() {
 			if(pts>0) {
 				scoreBeforeIncrease = engine.statistics.score
 				lastScore = pts
-				if(li>=1) engine.statistics.scoreLine += pts else engine.statistics.scoreBonus += pts
+				engine.statistics.scoreLine += pts
+
 			}
 		}
 		if(engine.statistics.level in 50..199&&li>0&&difficultySelected==2) {
@@ -732,7 +733,7 @@ class ScoreTrial:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, diff:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[diff][i]) return i
 			else if(sc==rankingScore[diff][i]&&li>rankingLines[diff][i]) return i
 			else if(sc==rankingScore[diff][i]&&li==rankingLines[diff][i]&&time<rankingTime[diff][i]) return i
@@ -747,7 +748,7 @@ class ScoreTrial:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Long, li:Int, time:Int, diff:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScorePlayer[diff][i]) return i
 			else if(sc==rankingScorePlayer[diff][i]&&li>rankingLinesPlayer[diff][i]) return i
 			else if(sc==rankingScorePlayer[diff][i]&&li==rankingLinesPlayer[diff][i]&&time<rankingTimePlayer[diff][i]) return i

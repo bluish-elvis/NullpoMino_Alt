@@ -322,7 +322,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE      TIME", BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), YELLOW)
 					receiver.drawScoreFont(engine, 3, topY+i, "${rankingScore[numColors-3][mapSet][i]}", i==rankingRank)
 					receiver.drawScoreNum(engine, 14, topY+i, rankingTime[numColors-3][mapSet][i].toTimeStr, i==rankingRank)
@@ -538,7 +538,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean = (!owner.replayMode&&engine.ai==null
 		&&updateRanking(engine.statistics.score, engine.statistics.time, mapSet, numColors)!=-1)
 
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine: GameEngine, prop: CustomProperties, ruleName: String, playerID: Int) {
 		mapSet = prop.getProperty("avalanchefever.gametype", 0)
 		outlinetype = prop.getProperty("avalanchefever.outlinetype", 0)
 		numColors = prop.getProperty("avalanchefever.numcolors", 4)
@@ -547,7 +547,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 		bigDisplay = prop.getProperty("avalanchefever.bigDisplay", false)
 	}
 
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("avalanchefever.gametype", mapSet)
 		prop.setProperty("avalanchefever.outlinetype", outlinetype)
 		prop.setProperty("avalanchefever.numcolors", numColors)
@@ -607,7 +607,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, time:Int, type:Int, colors:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[colors-3][type][i])
 				return i
 			else if(sc==rankingScore[colors-3][type][i]&&time<rankingTime[colors-3][type][i]) return i

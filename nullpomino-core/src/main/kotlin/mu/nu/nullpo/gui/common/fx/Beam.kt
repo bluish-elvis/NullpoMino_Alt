@@ -33,7 +33,7 @@ import mu.nu.nullpo.gui.common.AbstractRenderer
 
 /** imgLine
  *  del_h.png del_v.png */
-class Beam(x:Int, y:Int, val w:Int, val h:Int):SpriteSheet(x, y) {
+class Beam(x:Float, y:Float, val w:Int, val h:Int, alpha:Float = 1f):SpriteSheet(x, y, alpha = alpha) {
 	val isV = (h>=w*5)
 	override fun update(r:AbstractRenderer):Boolean {
 		ticks++
@@ -42,7 +42,7 @@ class Beam(x:Int, y:Int, val w:Int, val h:Int):SpriteSheet(x, y) {
 
 	override fun draw(i:Int, r:AbstractRenderer) {
 		r.drawBlendAdd {
-			r.resources.imgLine[if(isV) 1 else 0].draw(x, y, dx2, dy2, srcX, srcY, srcX2, srcY2)
+			r.resources.imgLine[if(isV) 1 else 0].draw(x, y, dx2, dy2, srcX, srcY, srcX2, srcY2, alpha)
 		}
 	}
 

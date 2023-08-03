@@ -254,9 +254,9 @@ class TLabel(w:Int, h:Int) {
 		val xs = scaleX(x)
 		val ys = scaleY(y)
 		val r = penRadius
-		// double ws = factorX(2*r);
+		// double WS = factorX(2*r);
 		// double hs = factorY(2*r);
-		// if (ws <= 1 && hs <= 1) pixel(x, y);
+		// if (WS <= 1 && hs <= 1) pixel(x, y);
 		if(r<=1) pixel(x, y) else offscreen.fill(Ellipse2D.Double(xs-r/2, ys-r/2, r, r))
 	}
 
@@ -326,111 +326,111 @@ class TLabel(w:Int, h:Int) {
 		if(ws<=1&&hs<=1) pixel(x, y) else offscreen.fill(Rectangle2D.Double(xs-ws/2, ys-hs/2, ws, hs))
 	}
 	//Draw an arrow of the appropriate scale, color, position
-	fun arrow(x:Double, y:Double, w:Double, h:Double, Scale:Double, Color:Color?) {
-		rectangle(x, y, w, h, Color)
-		val xarray = doubleArrayOf(x+w/2-w/10+Scale*1/10*sqrt(h*h*25+w*w)*sqrt(3.0)/3, x+w/2-w/10, x+w/2-w/10)
-		val yarray =
-			doubleArrayOf(y, y+Scale*1/10*sqrt(h*h*25+w*w)*sqrt(2.0)/2, y-Scale*1/10*sqrt(h*h*25+w*w)*sqrt(2.0)/2)
-		setPenColor(Color)
-		filledPolygon(xarray, yarray)
+	fun arrow(x:Double, y:Double, w:Double, h:Double, scale:Double, color:Color?) {
+		rectangle(x, y, w, h, color)
+		val xArray = doubleArrayOf(x+w/2-w/10+scale*1/10*sqrt(h*h*25+w*w)*sqrt(3.0)/3, x+w/2-w/10, x+w/2-w/10)
+		val yArray =
+			doubleArrayOf(y, y+scale*1/10*sqrt(h*h*25+w*w)*sqrt(2.0)/2, y-scale*1/10*sqrt(h*h*25+w*w)*sqrt(2.0)/2)
+		setPenColor(color)
+		filledPolygon(xArray, yArray)
 		setPenColor()
 	}
 	// draw a polygon with the given (x[i], y[i]) coordinates
 	fun polygon(x:DoubleArray, y:DoubleArray) {
-		val N = x.size
+		val n = x.size
 		val path = GeneralPath()
 		path.moveTo(scaleX(x[0]).toFloat(), scaleY(y[0]).toFloat())
-		for(i in 0 until N) path.lineTo(scaleX(x[i]).toFloat(), scaleY(y[i]).toFloat())
+		for(i in 0..<n) path.lineTo(scaleX(x[i]).toFloat(), scaleY(y[i]).toFloat())
 		path.closePath()
 		offscreen.draw(path)
 	}
 	//	draw a polygon with the given (x[i], y[i]) coordinates
 	fun polygonP(x:DoubleArray, y:DoubleArray) {
-		val N = x.size
+		val n = x.size
 		val path = GeneralPath()
 		path.moveTo(x[0].toFloat(), y[0].toFloat())
-		for(i in 0 until N) path.lineTo(x[i].toFloat(), y[i].toFloat())
+		for(i in 0..<n) path.lineTo(x[i].toFloat(), y[i].toFloat())
 		path.closePath()
 		offscreen.draw(path)
 	}
 	// draw a filled polygon with the given (x[i], y[i]) coordinates
 	fun filledPolygon(x:DoubleArray, y:DoubleArray) {
-		val N = x.size
+		val n = x.size
 		val path = GeneralPath()
 		path.moveTo(scaleX(x[0]).toFloat(), scaleY(y[0]).toFloat())
-		for(i in 0 until N) path.lineTo(scaleX(x[i]).toFloat(), scaleY(y[i]).toFloat())
+		for(i in 0..<n) path.lineTo(scaleX(x[i]).toFloat(), scaleY(y[i]).toFloat())
 		path.closePath()
 		offscreen.fill(path)
 	}
 	//	draw a filled polygon with the given (x[i], y[i]) coordinates
 	fun filledPolygonP(x:DoubleArray, y:DoubleArray) {
-		val N = x.size
+		val n = x.size
 		val path = GeneralPath()
 		path.moveTo(x[0].toFloat(), y[0].toFloat())
-		for(i in 0 until N) path.lineTo(x[i].toFloat(), y[i].toFloat())
+		for(i in 0..<n) path.lineTo(x[i].toFloat(), y[i].toFloat())
 		path.closePath()
 		offscreen.fill(path)
 	}
 	//Draw rectangle at the given coordinates
 	fun rectangle(x:Double, y:Double, w:Double, h:Double) {
-		val xarray = doubleArrayOf(x-w/2, x-w/2, x+w/2, x+w/2)
-		val yarray = doubleArrayOf(y-h/2, y+h/2, y+h/2, y-h/2)
-		polygon(xarray, yarray)
+		val xArray = doubleArrayOf(x-w/2, x-w/2, x+w/2, x+w/2)
+		val yArray = doubleArrayOf(y-h/2, y+h/2, y+h/2, y-h/2)
+		polygon(xArray, yArray)
 	}
 
 	fun rectangleLL(x:Double, y:Double, w:Double, h:Double) {
-		val xarray = doubleArrayOf(x, x, x+w, x+w)
-		val yarray = doubleArrayOf(y, y+h, y+h, y)
-		polygon(xarray, yarray)
+		val xArray = doubleArrayOf(x, x, x+w, x+w)
+		val yArray = doubleArrayOf(y, y+h, y+h, y)
+		polygon(xArray, yArray)
 	}
 
 	fun rectangleP(x:Double, y:Double, w:Double, h:Double) {
-		val xarray = doubleArrayOf(x, x, x+w, x+w)
-		val yarray = doubleArrayOf(y, y+h, y+h, y)
-		polygonP(xarray, yarray)
+		val xArray = doubleArrayOf(x, x, x+w, x+w)
+		val yArray = doubleArrayOf(y, y+h, y+h, y)
+		polygonP(xArray, yArray)
 	}
 
 	fun rectangle(x:Double, y:Double, w:Double, h:Double, c:Color?) {
-		val xarray = doubleArrayOf(x-w/2, x-w/2, x+w/2, x+w/2)
-		val yarray = doubleArrayOf(y-h/2, y+h/2, y+h/2, y-h/2)
+		val xArray = doubleArrayOf(x-w/2, x-w/2, x+w/2, x+w/2)
+		val yArray = doubleArrayOf(y-h/2, y+h/2, y+h/2, y-h/2)
 		setPenColor(c)
-		filledPolygon(xarray, yarray)
+		filledPolygon(xArray, yArray)
 		setPenColor(DEFAULT_PEN_COLOR)
 	}
 
 	fun rectangleC(x:Double, y:Double, w:Double, h:Double, c:Color?) {
-		val xarray = doubleArrayOf(x, x, x+w, x+w)
-		val yarray = doubleArrayOf(y, y+h, y+h, y)
+		val xArray = doubleArrayOf(x, x, x+w, x+w)
+		val yArray = doubleArrayOf(y, y+h, y+h, y)
 		setPenColor(c)
-		filledPolygon(xarray, yarray)
+		filledPolygon(xArray, yArray)
 		setPenColor(DEFAULT_PEN_COLOR)
 	}
 
 	fun filledRectangleP(x:Double, y:Double, w:Double, h:Double, c:Color?) {
-		val xarray = doubleArrayOf(x, x, x+w, x+w)
-		val yarray = doubleArrayOf(y, y+h, y+h, y)
+		val xArray = doubleArrayOf(x, x, x+w, x+w)
+		val yArray = doubleArrayOf(y, y+h, y+h, y)
 		setPenColor(c)
-		filledPolygonP(xarray, yarray)
+		filledPolygonP(xArray, yArray)
 		setPenColor(DEFAULT_PEN_COLOR)
 	}
 
 	fun filledRectangleLL(x:Double, y:Double, w:Double, h:Double, c:Color?) {
-		val xarray = doubleArrayOf(x, x, x+w, x+w)
-		val yarray = doubleArrayOf(y, y+h, y+h, y)
+		val xArray = doubleArrayOf(x, x, x+w, x+w)
+		val yArray = doubleArrayOf(y, y+h, y+h, y)
 		setPenColor(c)
-		filledPolygon(xarray, yarray)
+		filledPolygon(xArray, yArray)
 		setPenColor(DEFAULT_PEN_COLOR)
 	}
 
-	fun rectangle(x:Double, y:Double, w:Double, h:Double, c:Color?, Border:Boolean, BorderColor:Color?) {
-		val xarray = doubleArrayOf(x-w/2, x-w/2, x+w/2, x+w/2)
-		val yarray = doubleArrayOf(y-h/2, y+h/2, y+h/2, y-h/2)
+	fun rectangle(x:Double, y:Double, w:Double, h:Double, c:Color?, border:Boolean, borderColor:Color?) {
+		val xArray = doubleArrayOf(x-w/2, x-w/2, x+w/2, x+w/2)
+		val yArray = doubleArrayOf(y-h/2, y+h/2, y+h/2, y-h/2)
 		if(c!=null) {
 			setPenColor(c)
-			filledPolygon(xarray, yarray)
+			filledPolygon(xArray, yArray)
 		}
-		setPenColor(BorderColor)
-		if(Border) polygon(xarray, yarray)
+		setPenColor(borderColor)
+		if(border) polygon(xArray, yArray)
 		setPenColor()
 	}
 	// draw picture (gif, jpg, or png) upperLeft on (x, y), rescaled to w-by-h
@@ -447,7 +447,7 @@ class TLabel(w:Int, h:Int) {
 	}
 	// draw picture (gif, jpg, or png) upperLeft on (x, y), rescaled to w-by-h
 	fun imageP(x:Double, y:Double, image:Image?) {
-		//if (ws <= 1 && hs <= 1) pixel(x, y);
+		//if (WS <= 1 && hs <= 1) pixel(x, y);
 		offscreen.drawImage(image, x.roundToLong().toInt(), y.roundToLong().toInt(), null)
 	}
 	//Invert an image
@@ -504,7 +504,7 @@ class TLabel(w:Int, h:Int) {
 		val metrics = offscreen.fontMetrics
 		val xs = scaleX(x)
 		val ys = scaleY(y)
-		//int ws = metrics.stringWidth(s);
+		//int WS = metrics.stringWidth(s);
 		val hs = metrics.descent
 		offscreen.drawString(s, xs.toFloat(), (ys+hs).toFloat())
 		setPenColor()
@@ -561,7 +561,6 @@ class TLabel(w:Int, h:Int) {
 	}
 
 	companion object {
-		private const val serialVersionUID = 1L
 		// pre-defined colors
 		val BLACK:Color = Color.BLACK
 		val BLUE:Color = Color.BLUE

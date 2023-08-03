@@ -117,7 +117,7 @@ abstract class PhysicsObject @JvmOverloads constructor(
 		ticks++
 		if(isStatic) return false
 		val v:Vector = vel/subTicks
-		for(i in 0 until subTicks) {
+		for(i in 0..<subTicks) {
 			x += v.x
 			y += v.y
 			for(obj in obstacles) {
@@ -205,11 +205,8 @@ abstract class PhysicsObject @JvmOverloads constructor(
 			val bMinY = bboxB[0][1]
 			val bMaxX = bboxB[1][0]
 			val bMaxY = bboxB[1][1]
-			if((aMaxX in bMinX..bMaxX&&aMaxY in bMinY..bMaxY)||(aMinX in bMinX..bMaxX&&aMinY in bMinY..bMaxY)||
-				(bMaxX in aMinX..aMaxX&&bMaxY in aMinY..aMaxY)||(bMinX in aMinX..aMaxX&&bMinY in aMinY..aMaxY)) {
-				return true
-			}
-			return false
+			return (aMaxX in bMinX..bMaxX&&aMaxY in bMinY..bMaxY)||(aMinX in bMinX..bMaxX&&aMinY in bMinY..bMaxY)||
+				(bMaxX in aMinX..aMaxX&&bMaxY in aMinY..aMaxY)||(bMinX in aMinX..aMaxX&&bMinY in aMinY..aMaxY)
 		}
 		/**
 		 * Conducts a flat-surface reflection.
@@ -218,8 +215,8 @@ abstract class PhysicsObject @JvmOverloads constructor(
 		 * @param vertical `true` if using a vertical mirror line. `false` if using a horizontal mirror line.
 		 */
 		fun reflectVelocity(vector:Vector, vertical:Boolean) {
-			if(vertical) vector.y = vector.y*-1
-			else vector.x = vector.x*-1
+			if(vertical) vector.y *= -1
+			else vector.x *= -1
 		}
 		/**
 		 * Conducts a flat-surface reflection.
@@ -229,10 +226,10 @@ abstract class PhysicsObject @JvmOverloads constructor(
 		 * @param restitution The amount of "bounce". Use a value between 0 and 1.
 		 */
 		fun reflectVelocityWithRestitution(vector:Vector, vertical:Boolean, restitution:Float) {
-			if(vertical) vector.y = vector.y*-1
-			else vector.x = vector.x*-1
+			if(vertical) vector.y *= -1
+			else vector.x *= -1
 
-			vector.magnitude = vector.magnitude*restitution
+			vector.magnitude *= restitution
 		}
 	}
 }

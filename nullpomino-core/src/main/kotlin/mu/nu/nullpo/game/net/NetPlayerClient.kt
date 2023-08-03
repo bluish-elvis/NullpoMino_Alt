@@ -170,7 +170,7 @@ class NetPlayerClient:NetBaseClient {
 
 			val numPlayers = message[1].toInt()
 
-			for(i in 0 until numPlayers) {
+			for(i in 0..<numPlayers) {
 				val p = NetPlayerInfo(message[2+i])
 				playerInfoList.add(p)
 			}
@@ -207,7 +207,7 @@ class NetPlayerClient:NetBaseClient {
 
 			val numRooms = message[1].toInt()
 
-			for(i in 0 until numRooms) {
+			for(i in 0..<numRooms) {
 				val r = NetRoomInfo(message[2+i])
 				roomInfoList.add(r)
 			}

@@ -35,7 +35,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.gui.common.AbstractRenderer
 
-class PopupAward(x:Int, y:Int, val event:ScoreEvent, val moveTime:Int, val ex:Int = 0):SpriteSheet(x, y) {
+class PopupAward(x:Float, y:Float, val event:ScoreEvent, val moveTime:Int, val ex:Float = 0f):SpriteSheet(x, y) {
 	val ox = x
 	override var alpha
 		get() = minOf(1f, 3f-ticks/22f)

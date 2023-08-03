@@ -39,7 +39,7 @@ package zeroxfc.nullpo.custom.random
 import mu.nu.nullpo.game.component.Piece
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 
-class DroughtedPieceBiasRandomizer:Randomizer() {
+class DroughtPieceBiasRandomizer:Randomizer() {
 	var counters = IntArray(pieces.size)
 	var history:MutableList<Int> = mutableListOf(Piece.PIECE_O, Piece.PIECE_S, Piece.PIECE_Z, Piece.PIECE_O)
 
@@ -68,19 +68,15 @@ class DroughtedPieceBiasRandomizer:Randomizer() {
 		// Find final values
 		for(i in pieces.indices) {
 			var chance = rawChances[i]/divisor
-			for(j in 0 until i) {
-				chance += rawChances[j]/divisor
-			}
+			for(j in 0..<i) chance += rawChances[j]/divisor
 			finalChances[i] = chance
 		}
 
 		// Roll up to three times to get piece that is not in history
-		for(i in 0 until if(total<INITIAL_PIECES) ROLLS_INITIAL else ROLLS) {
+		for(i in 0..<if(total<INITIAL_PIECES) ROLLS_INITIAL else ROLLS) {
 			val `val` = r.nextDouble()
 			var idx = 0
-			for(j in 1 until pieces.size) {
-				if(`val`<finalChances[j]&&`val`>=finalChances[j-1]) idx = j
-			}
+			for(j in 1..<pieces.size) if(`val`<finalChances[j]&&`val`>=finalChances[j-1]) idx = j
 			v = pieces[idx]
 			if(!history.contains(v)) {
 				counters[idx]++

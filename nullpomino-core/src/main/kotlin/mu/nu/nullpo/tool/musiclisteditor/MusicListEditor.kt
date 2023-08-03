@@ -130,7 +130,7 @@ class MusicListEditor:JFrame(), ActionListener {
 		txtfldMusicFileNames = Array(num) {JTextField(45)}
 		chkboxNoLoop = Array(num) {JCheckBox()}
 		//TODO:Tab : BGM. : Category
-		BGM.values.forEachIndexed {i, tr ->
+		BGM.values.forEachIndexed { i, tr ->
 			if(tr!=BGM.Silent) {
 				val i = i-1
 				val name = "${tr.name}.${tr.idx}"
@@ -316,36 +316,26 @@ class MusicListEditor:JFrame(), ActionListener {
 	 * [出展](http://terai.xrea.jp/Swing/DefaultEditorKit.html) */
 	private inner class TextFieldPopupMenu(field:JTextField):JPopupMenu() {
 		private val cutAction:Action = object:AbstractAction(getUIText("Popup_Cut")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.cut()
 			}
 		}
 		private val copyAction:Action = object:AbstractAction(getUIText("Popup_Copy")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.copy()
 			}
 		}
 		private val pasteAction:Action = object:AbstractAction(getUIText("Popup_Paste")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.paste()
 			}
 		}
 		private val deleteAction:Action = object:AbstractAction(getUIText("Popup_Delete")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.replaceSelection(null)
 			}
 		}
 		private val selectAllAction:Action = object:AbstractAction(getUIText("Popup_SelectAll")) {
-			private val serialVersionUID = 1L
-
 			override fun actionPerformed(evt:ActionEvent) {
 				field.selectAll()
 			}
@@ -368,14 +358,9 @@ class MusicListEditor:JFrame(), ActionListener {
 			selectAllAction.isEnabled = field.isFocusOwner
 			super.show(c, x, y)
 		}
-
-		private val serialVersionUID = 1L
 	}
 
 	companion object {
-		/** Serial version ID */
-		private const val serialVersionUID = -6480034324392568869L
-
 		/** Log */
 		internal val log = LogManager.getLogger()
 

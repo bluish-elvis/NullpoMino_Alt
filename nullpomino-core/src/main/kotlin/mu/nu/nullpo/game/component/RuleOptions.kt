@@ -133,6 +133,8 @@ class RuleOptions:Serializable {
 	var spinReverseKey = false
 	/** Eボタンを180 spinにする (falseならA,Cボタンと同じ) */
 	var spinDoubleKey = false
+	/** 回転失敗時に押していた回転ボタンを押し続けると、回転可能な移動時に先行回転する */
+	var spinHoldBuffer = true
 
 	/** 落下で固定猶予リセット */
 	var lockResetFall = false
@@ -310,6 +312,7 @@ class RuleOptions:Serializable {
 		spinToRight = true
 		spinReverseKey = true
 		spinDoubleKey = true
+		spinHoldBuffer = true
 
 		lockResetFall = true
 		lockResetMove = true
@@ -377,8 +380,8 @@ class RuleOptions:Serializable {
 
 			style = o.style
 			pieceOffset = o.pieceOffset
-			for(i in 0 until Piece.PIECE_COUNT) {
-				for(j in 0 until Piece.DIRECTION_COUNT) {
+			for(i in 0..<Piece.PIECE_COUNT) {
+				for(j in 0..<Piece.DIRECTION_COUNT) {
 					pieceOffsetX[i][j] = o.pieceOffsetX[i][j]
 					pieceOffsetY[i][j] = o.pieceOffsetY[i][j]
 					pieceSpawnX[i][j] = o.pieceSpawnX[i][j]
@@ -427,6 +430,7 @@ class RuleOptions:Serializable {
 			spinToRight = o.spinToRight
 			spinReverseKey = o.spinReverseKey
 			spinDoubleKey = o.spinDoubleKey
+			spinHoldBuffer = o.spinHoldBuffer
 
 			lockResetFall = o.lockResetFall
 			lockResetMove = o.lockResetMove
@@ -498,9 +502,9 @@ class RuleOptions:Serializable {
 
 		if(style!=r.style) return false
 		if(pieceOffset!=r.pieceOffset) return false
-		for(i in 0 until Piece.PIECE_COUNT) {
+		for(i in 0..<Piece.PIECE_COUNT) {
 			if(pieceOffset==PIECEOFFSET_ASSIGN)
-				for(j in 0 until Piece.DIRECTION_COUNT) {
+				for(j in 0..<Piece.DIRECTION_COUNT) {
 					if(pieceOffsetX[i][j]!=r.pieceOffsetX[i][j]) return false
 					if(pieceOffsetY[i][j]!=r.pieceOffsetY[i][j]) return false
 					if(pieceSpawnX[i][j]!=r.pieceSpawnX[i][j]) return false
@@ -550,6 +554,7 @@ class RuleOptions:Serializable {
 		if(spinToRight!=r.spinToRight) return false
 		if(spinReverseKey!=r.spinReverseKey) return false
 		if(spinDoubleKey!=r.spinDoubleKey) return false
+		if(spinHoldBuffer!=r.spinHoldBuffer) return false
 
 		if(lockResetFall!=r.lockResetFall) return false
 		if(lockResetMove!=r.lockResetMove) return false
@@ -619,9 +624,9 @@ class RuleOptions:Serializable {
 		p.setProperty("$id.ruleOpt.style", style)
 		p.setProperty("$id.ruleOpt.pieceOffset", pieceOffset)
 
-		for(i in 0 until Piece.PIECE_COUNT) {
+		for(i in 0..<Piece.PIECE_COUNT) {
 			if(pieceOffset==PIECEOFFSET_ASSIGN)
-				for(j in 0 until Piece.DIRECTION_COUNT) {
+				for(j in 0..<Piece.DIRECTION_COUNT) {
 					p.setProperty("$id.ruleOpt.pieceOffsetX.$i.$j", pieceOffsetX[i][j])
 					p.setProperty("$id.ruleOpt.pieceOffsetY.$i.$j", pieceOffsetY[i][j])
 					p.setProperty("$id.ruleOpt.pieceSpawnX.$i.$j", pieceSpawnX[i][j])
@@ -670,6 +675,7 @@ class RuleOptions:Serializable {
 		p.setProperty("$id.ruleOpt.rotateButtonDefaultRight", spinToRight)
 		p.setProperty("$id.ruleOpt.rotateButtonAllowReverse", spinReverseKey)
 		p.setProperty("$id.ruleOpt.rotateButtonAllowDouble", spinDoubleKey)
+		p.setProperty("$id.ruleOpt.rotateButtonHoldBuffer", spinHoldBuffer)
 
 		p.setProperty("$id.ruleOpt.lockresetFall", lockResetFall)
 		p.setProperty("$id.ruleOpt.lockresetMove", lockResetMove)
@@ -740,8 +746,8 @@ class RuleOptions:Serializable {
 
 		style = p.getProperty("$id.ruleOpt.style", 0)
 		pieceOffset = p.getProperty("$id.ruleOpt.pieceOffset", PIECEOFFSET_NONE)
-		for(i in 0 until Piece.PIECE_COUNT) {
-			for(j in 0 until Piece.DIRECTION_COUNT)
+		for(i in 0..<Piece.PIECE_COUNT) {
+			for(j in 0..<Piece.DIRECTION_COUNT)
 				when(if(offset) PIECEOFFSET_ASSIGN else pieceOffset) {
 					PIECEOFFSET_NONE -> {
 						pieceSpawnYBig[i][j] = 0
@@ -817,6 +823,7 @@ class RuleOptions:Serializable {
 		spinToRight = p.getProperty("$id.ruleOpt.rotateButtonDefaultRight", spinToRight)
 		spinReverseKey = p.getProperty("$id.ruleOpt.rotateButtonAllowReverse", spinReverseKey)
 		spinDoubleKey = p.getProperty("$id.ruleOpt.rotateButtonAllowDouble", spinDoubleKey)
+		spinHoldBuffer = p.getProperty("$id.ruleOpt.rotateButtonHoldBuffer", spinHoldBuffer)
 
 		lockResetFall = p.getProperty("$id.ruleOpt.lockresetFall", lockResetFall)
 		lockResetMove = p.getProperty("$id.ruleOpt.lockresetMove", lockResetMove)
@@ -876,17 +883,15 @@ class RuleOptions:Serializable {
 	}
 
 	companion object {
-		/** Serial version ID */
-		private const val serialVersionUID = 5781310758989780350L
 
 		/** 横移動 counterかspin counterが超過したら固定 timeリセットを無効にする */
-		const val LOCKRESET_LIMIT_OVER_NoReset = 0
+		const val LOCKRESET_LIMIT_OVER_NO_RESET = 0
 
 		/** 横移動 counterかspin counterが超過したら即座に固定する */
 		const val LOCKRESET_LIMIT_OVER_INSTANT = 1
 
 		/** 横移動 counterかspin counterが超過したらWallkick無効にする */
-		const val LOCKRESET_LIMIT_OVER_NoKick = 2
+		const val LOCKRESET_LIMIT_OVER_NO_KICK = 2
 
 		/** Blockピースのcolorパターン */
 		enum class PieceColor(val array:List<Int>) {

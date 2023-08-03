@@ -405,7 +405,7 @@ class AIRanksTool:JFrame(), ActionListener {
 				override fun windowClosed(e:WindowEvent?) {
 					var isInCombo = false
 					var index = 0
-					for(i in 1 until inputFileComboBox!!.itemCount) {
+					for(i in 1..<inputFileComboBox!!.itemCount) {
 						if(outputFile==inputFileComboBox!!.getItemAt(i)) {
 							isInCombo = true
 							index = i
@@ -494,7 +494,6 @@ class AIRanksTool:JFrame(), ActionListener {
 	}
 
 	companion object {
-		private const val serialVersionUID = 1L
 		/** Log */
 		internal val log = LogManager.getLogger()
 

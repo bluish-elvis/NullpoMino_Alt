@@ -543,9 +543,6 @@ class NetRoomInfo:Serializable {
 	}
 
 	companion object {
-		/** Serial version */
-		private const val serialVersionUID = 1L
-
 		/** Spin detection type */
 		const val SPINTYPE_4POINT = 0
 		const val SPINTYPE_IMMOBILE = 1

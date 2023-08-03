@@ -49,7 +49,7 @@ class StateConfigGeneral:BaseGameState() {
 	/** フルスクリーン flag */
 	private var fullscreen = false
 
-	/** Sound effectsON/OFF */
+	/** Sound effects ON/OFF */
 	private var se = false
 
 	/** BGMのON/OFF */
@@ -61,8 +61,8 @@ class StateConfigGeneral:BaseGameState() {
 	/** BGMストリーミングのON/OFF */
 	private var bgmStreaming = false
 
-	/** Background表示 */
-	private var showBg = false
+	/** @see mu.nu.nullpo.game.event.EventReceiver.showBG */
+	private var showBG = false
 
 	/** FPS表示 */
 	private var showFps = false
@@ -73,31 +73,28 @@ class StateConfigGeneral:BaseGameState() {
 	/** MaximumFPS */
 	private var maxFps = 0
 
-	/** Line clearエフェクト表示 */
-	private var showLineEffect = false
-
-	/** Line clear effect speed */
+	/**  @see mu.nu.nullpo.gui.common.AbstractRenderer.lineEffectSpeed */
 	private var lineEffectSpeed = 0
 
-	/** 重い演出を使う */
-	private var heavyEffect = false
+	/** @see mu.nu.nullpo.gui.common.AbstractRenderer.heavyEffect*/
+	private var heavyEffect = 0
 
-	/** 操作ブロック降下を滑らかにする */
+	/** @see mu.nu.nullpo.gui.common.AbstractRenderer.smoothFall */
 	private var smoothFall = false
 
-	/** 高速落下時の軌道を表示する */
+	/** @see mu.nu.nullpo.gui.common.AbstractRenderer.showLocus */
 	private var showLocus = false
 
-	/** fieldBackgroundの明るさ */
+	/** @see mu.nu.nullpo.gui.common.AbstractRenderer.fieldBgBright */
 	private var fieldBgBright = 0
 
-	/** 縁線を太くする */
-	protected var edgeBold = false
+	/** @see mu.nu.nullpo.gui.common.AbstractRenderer.edgeBold */
+	private var edgeBold = false
 
-	/** Show field BG grid */
+	/** @see mu.nu.nullpo.gui.common.AbstractRenderer.showFieldBgGrid */
 	private var showFieldBgGrid = false
 
-	/** NEXT欄を暗くする */
+	/** @see mu.nu.nullpo.gui.common.AbstractRenderer.darkNextArea */
 	private var darkNextArea = false
 
 	/** Sound effects volume */
@@ -106,20 +103,20 @@ class StateConfigGeneral:BaseGameState() {
 	/** BGM volume */
 	private var bgmVolume = 0
 
-	/** field右側にMeterを表示 */
+	/** @see mu.nu.nullpo.game.event.EventReceiver.showMeter */
 	private var showMeter = false
 
 	/** 垂直同期を待つ */
 	private var vsync = false
 
-	/** ghost ピースの上にNEXT表示 */
+	/** @see mu.nu.nullpo.gui.common.AbstractRenderer.nextShadow */
 	private var nextShadow = false
 
-	/** 枠線型ghost ピース */
+	/** @see mu.nu.nullpo.game.event.EventReceiver.outlineGhost */
 	private var outlineGhost = false
 
-	/** Piece preview type (0=Top 1=Side small 2=Side big) */
-	private var nexttype = 0
+	/** @see mu.nu.nullpo.game.event.EventReceiver.nextDisplayType */
+	private var nextDisplayType = 0
 
 	/** Timing of alternate FPS sleep (false=render true=update) */
 	private var alternateFPSTiming = false
@@ -136,7 +133,7 @@ class StateConfigGeneral:BaseGameState() {
 	/** Screen size type */
 	private var screenSizeType = 0
 
-	/** Show player input */
+	/** @see mu.nu.nullpo.game.play.GameManager.showInput */
 	private var showInput = false
 
 	/* Fetch this state's ID */
@@ -156,13 +153,12 @@ class StateConfigGeneral:BaseGameState() {
 		bgm = prop.getProperty("option.bgm", false)
 		bgmPreload = prop.getProperty("option.bgmPreload", false)
 		bgmStreaming = prop.getProperty("option.bgmStreaming", true)
-		showBg = prop.getProperty("option.showBg", true)
+		showBG = prop.getProperty("option.showBG", true)
 		showFps = prop.getProperty("option.showFps", true)
 		enableFrameStep = prop.getProperty("option.enableFrameStep", false)
 		maxFps = prop.getProperty("option.maxFps", 60)
-		showLineEffect = prop.getProperty("option.showLineEffect", true)
 		lineEffectSpeed = prop.getProperty("option.lineEffectSpeed", 0)
-		heavyEffect = prop.getProperty("option.heavyEffect", false)
+		heavyEffect = prop.getProperty("option.heavyEffect", 0)
 		edgeBold = NullpoMinoSlick.propConfig.getProperty("option.edgeBold", false)
 		fieldBgBright = minOf(255, prop.getProperty("option.fieldBgBright", 128))
 		showFieldBgGrid = prop.getProperty("option.showFieldBgGrid", true)
@@ -176,11 +172,7 @@ class StateConfigGeneral:BaseGameState() {
 		smoothFall = prop.getProperty("option.smoothFall", false)
 		showLocus = prop.getProperty("option.showLocus", false)
 		showInput = prop.getProperty("option.showInput", false)
-		nexttype = 0
-		if(prop.getProperty("option.sideNext", false)&&!prop.getProperty("option.bigSideNext", false))
-			nexttype = 1
-		else if(prop.getProperty("option.sideNext", false)&&prop.getProperty("option.bigSideNext", false))
-			nexttype = 2
+		nextDisplayType = prop.getProperty("option.nextDisplayType", 0)
 		alternateFPSTiming = prop.getProperty("option.alternateFPSTiming", false)
 		alternateFPSDynamicAdjust = prop.getProperty("option.alternateFPSDynamicAdjust", false)
 		alternateFPSPerfectMode = prop.getProperty("option.alternateFPSPerfectMode", false)
@@ -205,11 +197,10 @@ class StateConfigGeneral:BaseGameState() {
 		prop.setProperty("option.bgm", bgm)
 		prop.setProperty("option.bgmPreload", bgmPreload)
 		prop.setProperty("option.bgmStreaming", bgmStreaming)
-		prop.setProperty("option.showBg", showBg)
+		prop.setProperty("option.showBG", showBG)
 		prop.setProperty("option.showFps", showFps)
 		prop.setProperty("option.enableFrameStep", enableFrameStep)
 		prop.setProperty("option.maxFps", maxFps)
-		prop.setProperty("option.showLineEffect", showLineEffect)
 		prop.setProperty("option.lineEffectSpeed", lineEffectSpeed)
 		prop.setProperty("option.heavyEffect", heavyEffect)
 		prop.setProperty("option.edgeBold", edgeBold)
@@ -225,20 +216,7 @@ class StateConfigGeneral:BaseGameState() {
 		prop.setProperty("option.showInput", showInput)
 		prop.setProperty("option.smoothFall", smoothFall)
 		prop.setProperty("option.showLocus", showLocus)
-		when(nexttype) {
-			0 -> {
-				prop.setProperty("option.sideNext", false)
-				prop.setProperty("option.bigSideNext", false)
-			}
-			1 -> {
-				prop.setProperty("option.sideNext", true)
-				prop.setProperty("option.bigSideNext", false)
-			}
-			2 -> {
-				prop.setProperty("option.sideNext", true)
-				prop.setProperty("option.bigSideNext", true)
-			}
-		}
+		prop.setProperty("option.nextDisplayType", nextDisplayType)
 		prop.setProperty("option.alternateFPSTiming", alternateFPSTiming)
 		prop.setProperty("option.alternateFPSDynamicAdjust", alternateFPSDynamicAdjust)
 		prop.setProperty("option.alternateFPSPerfectMode", alternateFPSPerfectMode)
@@ -271,42 +249,41 @@ class StateConfigGeneral:BaseGameState() {
 				FontNormal.printFontGrid(2, 6, "SE Volume:$seVolume(${seVolume*100/128}%)", cursor==3)
 				FontNormal.printFontGrid(2, 7, "BGM Volume:$bgmVolume(${bgmVolume*100/128}%)", cursor==4)
 
-				FontNormal.printFontGrid(2, 9, "Show Background:"+showBg.getOX, cursor==5)
-				FontNormal.printFontGrid(2, 10, "Use Explosions:"+heavyEffect.getOX, cursor==6)
+				FontNormal.printFontGrid(2, 9, "Show Background:"+showBG.getOX, cursor==5)
+				FontNormal.printFontGrid(2, 10, "Effect Level:$heavyEffect", cursor==6)
 				FontNormal.printFontGrid(2, 11, "Show BG Fields Grid:"+showFieldBgGrid.getOX, cursor==7)
 				FontNormal.printFontGrid(2, 12, "Field BG Bright:$fieldBgBright(${fieldBgBright*100/255}%)", cursor==8)
 				FontNormal.printFontGrid(2, 13, "Blocks Edge Thickness:${1+edgeBold.toInt()}", cursor==9)
-				FontNormal.printFontGrid(2, 14, "Show Line Effect:"+showLineEffect.getOX, cursor==10)
-				FontNormal.printFontGrid(2, 15, "Line Effect Speed:${BaseFont.CROSS}"+(lineEffectSpeed+1), cursor==11)
-				FontNormal.printFontGrid(2, 16, "Show Meter:"+showMeter.getOX, cursor==12)
+				FontNormal.printFontGrid(2, 15, "Line Effect Speed:${BaseFont.CROSS}"+(lineEffectSpeed+1), cursor==10)
+				FontNormal.printFontGrid(2, 16, "Show Meter:"+showMeter.getOX, cursor==11)
 
-				FontNormal.printFontGrid(2, 18, "Dark Next Area:"+darkNextArea.getOX, cursor==13)
-				FontNormal.printFontGrid(2, 19, "Show NextPiece above Shadow :"+nextShadow.getOX, cursor==14)
-				FontNormal.printFontGrid(2, 20, "NEXT Layout type:"+NEXTTYPE_OPTIONS[nexttype], cursor==15)
+				FontNormal.printFontGrid(2, 18, "Dark Next Area:"+darkNextArea.getOX, cursor==12)
+				FontNormal.printFontGrid(2, 19, "Show NextPiece above Shadow :"+nextShadow.getOX, cursor==13)
+				FontNormal.printFontGrid(2, 20, "NEXT Layout type:"+NEXTTYPE_OPTIONS[nextDisplayType], cursor==14)
 
-				FontNormal.printFontGrid(2, 22, "Outline Ghost Piece:"+outlineGhost.getOX, cursor==16)
-				FontNormal.printFontGrid(2, 23, "CurrentPiece Smooth fall:"+smoothFall.getOX, cursor==17)
-				FontNormal.printFontGrid(2, 24, "Show CurrentPieces blur:"+showLocus.getOX, cursor==18)
-				FontNormal.printFontGrid(2, 25, "Show Input:"+showInput.getOX, cursor==19)
+				FontNormal.printFontGrid(2, 22, "Outline Ghost Piece:"+outlineGhost.getOX, cursor==15)
+				FontNormal.printFontGrid(2, 23, "CurrentPiece Smooth fall:"+smoothFall.getOX, cursor==16)
+				FontNormal.printFontGrid(2, 24, "Show CurrentPieces blur:"+showLocus.getOX, cursor==17)
+				FontNormal.printFontGrid(2, 25, "Show Input:"+showInput.getOX, cursor==18)
 			}
 			else -> {
 				FontNormal.printFontGrid(1, 1, "GENERAL OPTIONS: GRAPHICS (2/2)", COLOR.ORANGE)
 				FontNormal.printFontGrid(1, 3+cursor-20+(cursor>25).toInt(), BaseFont.CURSOR, COLOR.RAINBOW)
 
-				FontNormal.printFontGrid(2, 3, "FullScreen:"+fullscreen.getOX, cursor==20)
-				FontNormal.printFontGrid(2, 4, "Show FPS:"+showFps.getOX, cursor==21)
-				FontNormal.printFontGrid(2, 5, "MAX FPS:$maxFps", cursor==22)
-				FontNormal.printFontGrid(2, 6, "Enable Frame Step:"+enableFrameStep.getOX, cursor==23)
-				FontNormal.printFontGrid(2, 7, "FPS perfect mode:"+alternateFPSPerfectMode.getOX, cursor==24)
-				FontNormal.printFontGrid(2, 8, "FPS perfect yield:"+alternateFPSPerfectYield.getOX, cursor==25)
+				FontNormal.printFontGrid(2, 3, "FullScreen:"+fullscreen.getOX, cursor==19)
+				FontNormal.printFontGrid(2, 4, "Show FPS:"+showFps.getOX, cursor==20)
+				FontNormal.printFontGrid(2, 5, "MAX FPS:$maxFps", cursor==21)
+				FontNormal.printFontGrid(2, 6, "Enable Frame Step:"+enableFrameStep.getOX, cursor==22)
+				FontNormal.printFontGrid(2, 7, "FPS perfect mode:"+alternateFPSPerfectMode.getOX, cursor==23)
+				FontNormal.printFontGrid(2, 8, "FPS perfect yield:"+alternateFPSPerfectYield.getOX, cursor==24)
 
-				FontNormal.printFontGrid(2, 10, "BGM STREAMING:"+bgmStreaming.getOX, cursor==26)
-				FontNormal.printFontGrid(2, 11, "VSYNC:"+vsync.getOX, cursor==27)
-				FontNormal.printFontGrid(2, 12, "FPS SLEEP TIMING:"+if(alternateFPSTiming) "UPDATE" else "RENDER", cursor==28)
-				FontNormal.printFontGrid(2, 13, "FPS DYNAMIC ADJUST:"+alternateFPSDynamicAdjust.getOX, cursor==29)
+				FontNormal.printFontGrid(2, 10, "BGM STREAMING:"+bgmStreaming.getOX, cursor==25)
+				FontNormal.printFontGrid(2, 11, "VSYNC:"+vsync.getOX, cursor==26)
+				FontNormal.printFontGrid(2, 12, "FPS SLEEP TIMING:"+if(alternateFPSTiming) "UPDATE" else "RENDER", cursor==27)
+				FontNormal.printFontGrid(2, 13, "FPS DYNAMIC ADJUST:"+alternateFPSDynamicAdjust.getOX, cursor==28)
 				FontNormal.printFontGrid(
 					2, 14,
-					"SCREEN SIZE:${SCREENSIZE_TABLE[screenSizeType][0]}${BaseFont.CROSS}"+SCREENSIZE_TABLE[screenSizeType][1], cursor==30
+					"SCREEN SIZE:${SCREENSIZE_TABLE[screenSizeType][0]}${BaseFont.CROSS}"+SCREENSIZE_TABLE[screenSizeType][1], cursor==29
 				)
 			}
 		}// Slick Options
@@ -358,8 +335,12 @@ class StateConfigGeneral:BaseGameState() {
 					if(bgmVolume<0) bgmVolume = 128
 					if(bgmVolume>128) bgmVolume = 0
 				}
-				5 -> showBg = !showBg
-				6 -> heavyEffect = !heavyEffect
+				5 -> showBG = !showBG
+				6 -> {
+					heavyEffect += change
+					if(heavyEffect<0) heavyEffect = 3
+					if(heavyEffect>3) heavyEffect = 0
+				}
 				7 -> showFieldBgGrid = !showFieldBgGrid
 				8 -> {
 					fieldBgBright += change
@@ -367,39 +348,38 @@ class StateConfigGeneral:BaseGameState() {
 					if(fieldBgBright>255) fieldBgBright = 0
 				}
 				9 -> edgeBold = !edgeBold
-				10 -> showLineEffect = !showLineEffect
-				11 -> {
+				10 -> {
 					lineEffectSpeed += change
 					if(lineEffectSpeed<0) lineEffectSpeed = 9
 					if(lineEffectSpeed>9) lineEffectSpeed = 0
 				}
-				12 -> showMeter = !showMeter
-				13 -> darkNextArea = !darkNextArea
-				14 -> nextShadow = !nextShadow
-				15 -> {
-					nexttype += change
-					if(nexttype<0) nexttype = 2
-					if(nexttype>2) nexttype = 0
+				11 -> showMeter = !showMeter
+				12 -> darkNextArea = !darkNextArea
+				13 -> nextShadow = !nextShadow
+				14 -> {
+					nextDisplayType += change
+					if(nextDisplayType<0) nextDisplayType = 2
+					if(nextDisplayType>2) nextDisplayType = 0
 				}
-				16 -> outlineGhost = !outlineGhost
-				17 -> smoothFall = !smoothFall
-				18 -> showLocus = !showLocus
-				19 -> showInput = !showInput
-				20 -> fullscreen = !fullscreen
-				21 -> showFps = !showFps
-				22 -> {
+				15 -> outlineGhost = !outlineGhost
+				16 -> smoothFall = !smoothFall
+				17 -> showLocus = !showLocus
+				18 -> showInput = !showInput
+				19 -> fullscreen = !fullscreen
+				20 -> showFps = !showFps
+				21 -> {
 					maxFps += change
 					if(maxFps<0) maxFps = 99
 					if(maxFps>99) maxFps = 0
 				}
-				23 -> enableFrameStep = !enableFrameStep
-				24 -> alternateFPSPerfectMode = !alternateFPSPerfectMode
-				25 -> alternateFPSPerfectYield = !alternateFPSPerfectYield
-				26 -> bgmStreaming = !bgmStreaming
-				27 -> vsync = !vsync
-				28 -> alternateFPSTiming = !alternateFPSTiming
-				29 -> alternateFPSDynamicAdjust = !alternateFPSDynamicAdjust
-				30 -> {
+				22 -> enableFrameStep = !enableFrameStep
+				23 -> alternateFPSPerfectMode = !alternateFPSPerfectMode
+				24 -> alternateFPSPerfectYield = !alternateFPSPerfectYield
+				25 -> bgmStreaming = !bgmStreaming
+				26 -> vsync = !vsync
+				27 -> alternateFPSTiming = !alternateFPSTiming
+				28 -> alternateFPSDynamicAdjust = !alternateFPSDynamicAdjust
+				29 -> {
 					screenSizeType += change
 					if(screenSizeType<0) screenSizeType = SCREENSIZE_TABLE.size-1
 					if(screenSizeType>SCREENSIZE_TABLE.size-1) screenSizeType = 0
@@ -413,8 +393,8 @@ class StateConfigGeneral:BaseGameState() {
 			saveConfig(NullpoMinoSlick.propConfig)
 			NullpoMinoSlick.saveConfig()
 			NullpoMinoSlick.setGeneralConfig()
-			if(showLineEffect) ResourceHolder.loadLineClearEffectImages()
-			if(showBg) ResourceHolder.loadBackgroundImages()
+			if(heavyEffect>0) ResourceHolder.loadLineClearEffectImages()
+			if(showBG) ResourceHolder.loadBackgroundImages()
 			game.enterState(StateConfigMainMenu.ID)
 		}
 
@@ -438,11 +418,10 @@ class StateConfigGeneral:BaseGameState() {
 				"ConfigGeneral_SEVolume",
 				"ConfigGeneral_BGMVolume",
 				"ConfigGeneral_Background",
-				"ConfigGeneral_UseBackgroundFade",
+				"ConfigGeneral_UseHeavyEffect",
 				"ConfigGeneral_ShowFieldBGGrid",
 				"ConfigGeneral_FieldBGBright",
 				"ConfigGeneral_EdgeBold",
-				"ConfigGeneral_ShowLineEffect",
 				"ConfigGeneral_LineEffectSpeed",
 				"ConfigGeneral_ShowMeter",
 				"ConfigGeneral_DarkNextArea",

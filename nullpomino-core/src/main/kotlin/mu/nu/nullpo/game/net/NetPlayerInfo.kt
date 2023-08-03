@@ -140,7 +140,7 @@ class NetPlayerInfo:Serializable {
 		else
 			null
 
-		for(i in 0 until GameEngine.MAX_GAMESTYLE) {
+		for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 			rating[i] = n.rating[i]
 			ratingBefore[i] = n.ratingBefore[i]
 			playCount[i] = n.playCount[i]
@@ -264,9 +264,6 @@ class NetPlayerInfo:Serializable {
 	}
 
 	companion object {
-		/** Serial version */
-		private const val serialVersionUID = 1L
-
 		/** Default rating for multiplayer games */
 		const val DEFAULT_MULTIPLAYER_RATING = 1500
 	}

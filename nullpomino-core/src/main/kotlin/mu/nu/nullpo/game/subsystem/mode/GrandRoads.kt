@@ -103,7 +103,7 @@ class GrandRoads:NetDummyMode() {
 	/** Show section time */
 	private var showST:Boolean by DelegateMenuItem(itemST)
 
-	override val menu:MenuList = MenuList("timeattack", itemMode, itemLevel, itemST, itemBig)
+	override val menu = MenuList("timeattack", itemMode, itemLevel, itemST, itemBig)
 	/** Version of this mode */
 	private var version = 0
 
@@ -112,7 +112,7 @@ class GrandRoads:NetDummyMode() {
 
 	/** Ranking ecords */
 	private val rankingLines = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
-	private val rankingLifes = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
+	private val rankingLives = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
 	private val rankingTime = List(COURSE_MAX) {MutableList(RANKING_MAX) {-1}}
 	private val rankingRollClear = List(COURSE_MAX) {MutableList(RANKING_MAX) {0}}
 
@@ -128,7 +128,7 @@ class GrandRoads:NetDummyMode() {
 	override val rankMap
 		get() = rankMapOf(
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingLifes.mapIndexed {a, x -> "$a.lifes" to x}+
+				rankingLives.mapIndexed {a, x -> "$a.lives" to x}+
 				rankingTime.mapIndexed {a, x -> "$a.time" to x}+
 				rankingRollClear.mapIndexed {a, x -> "$a.rollClear" to x})
 
@@ -148,7 +148,7 @@ class GrandRoads:NetDummyMode() {
 
 		rankingRank = -1
 		rankingLines.forEach {it.fill(0)}
-		rankingLifes.forEach {it.fill(0)}
+		rankingLives.forEach {it.fill(0)}
 		rankingTime.forEach {it.fill(-1)}
 		rankingRollClear.forEach {it.fill(0)}
 
@@ -161,6 +161,7 @@ class GrandRoads:NetDummyMode() {
 		engine.bigMove = true
 		engine.staffrollEnable = false
 		engine.staffrollNoDeath = false
+		engine.lives = nowCourse.lives
 
 		netPlayerInit(engine)
 		// NET: Load name
@@ -237,52 +238,14 @@ class GrandRoads:NetDummyMode() {
 	}
 
 	/** Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// NET: Net Ranking
-		if(netIsNetRankingDisplayMode)
-			netOnUpdateNetPlayRanking(engine, netGetGoalType)
-		else if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateMenu(engine)
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				if(startLevel>nowCourse.goalLevel-1) startLevel =
-					if(menuCursor!=menu.items.indexOf(itemLevel)) 0 else nowCourse.goalLevel-1
-				engine.owner.bgMan.bg = startLevel
-				engine.statistics.level = startLevel
-				setSpeed(engine)
-				// NET: Signal options change
-				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
-			}
-
-			// Check for A button, when pressed this will begin the game
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-
-				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby!!.netPlayerClient!!.send("start1p\n")
-
-				return false
-			}
-
-			// Check for B button, when pressed this will shut down the game engine.
-			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitFlag = true
-
-			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!big
-				&&engine.ai==null
-			)
-				netEnterNetPlayRankingScreen(goalType)
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
-		}// Menu
-
-		return true
+	override fun onSettingChanged(engine:GameEngine) {
+		if(startLevel>nowCourse.goalLevel-1) startLevel =
+			if(menuCursor!=menu.items.indexOf(itemLevel)) 0 else nowCourse.goalLevel-1
+		engine.owner.bgMan.bg = startLevel
+		engine.statistics.level = startLevel
+		engine.lives = nowCourse.lives
+		setSpeed(engine)
+		super.onSettingChanged(engine)
 	}
 
 	/** Ready screen */
@@ -291,13 +254,12 @@ class GrandRoads:NetDummyMode() {
 			engine.statistics.level = startLevel
 			engine.statistics.levelDispAdd = 1
 			engine.big = big
-			norm = (0 until startLevel).reduceOrNull {acc, i -> acc+nowCourse.goalLines(i)} ?: 0
-			nextLv = (0..startLevel).reduce {acc, i -> acc+nowCourse.goalLines(i)}
+			norm = (0..startLevel).reduceOrNull {acc, i -> acc+nowCourse.goalLines(i)} ?: 0
+			nextLv = (0..startLevel+1).reduce {acc, i -> acc+nowCourse.goalLines(i)}
 			levelTimer = 0
 			setSpeed(engine)
 			bgmLv = maxOf(0, nowCourse.bgmChange.indexOfLast {it<=startLevel}.let {if(it<0) nowCourse.bgmChange.size-1 else it})
 		}
-
 		return false
 	}
 
@@ -305,7 +267,6 @@ class GrandRoads:NetDummyMode() {
 	 * (after Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
 		owner.musMan.bgm = if(netIsWatch) BGM.Silent else nowCourse.bgmList[bgmLv]
-		engine.lives = nowCourse.lives
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
@@ -322,7 +283,7 @@ class GrandRoads:NetDummyMode() {
 			if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null&&!netIsWatch) {
 				receiver.drawScoreFont(engine, 8, 3, "Time", COLOR.BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					val cleared = rankingRollClear[goalType][i]>0
 					val gColor = when {
 						rankingRollClear[goalType][i]==1 -> COLOR.GREEN
@@ -333,7 +294,7 @@ class GrandRoads:NetDummyMode() {
 					receiver.drawScoreNum(engine, 8, 4+i, rankingTime[goalType][i].toTimeStr, gColor)
 					receiver.drawScoreNano(engine, 10, 4+i, if(cleared) "LIVES\nREMAINED" else "LINES\nCLEARED", gColor, .5f)
 					receiver.drawScoreNum(
-						engine, 2, 4+i, "%3d".format(if(cleared) rankingLifes[goalType][i] else rankingLines[goalType][i]), gColor
+						engine, 2, 4+i, "%3d".format(if(cleared) rankingLives[goalType][i] else rankingLines[goalType][i]), gColor
 					)
 				}
 			}
@@ -341,16 +302,12 @@ class GrandRoads:NetDummyMode() {
 			receiver.drawScoreFont(engine, 0, 3, "Level", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 5, 2, "%02d".format(engine.statistics.level+1), 2f)
 			receiver.drawScoreNum(engine, 8, 3, "/%3d".format(nowCourse.goalLevel))
-			receiver.drawScoreNum(engine, 0, 4, "%3d/%3d".format(norm, (engine.statistics.level+1)*10))
-			receiver.drawScoreNum(engine, 0, 4, "%3d/%3d".format(norm, (engine.statistics.level+1)*10))
+			receiver.drawScoreNum(engine, 0, 4, "%3d/%3d/%3d".format(norm, nextLv, nowCourse.goalLines))
 
 			receiver.drawScoreSpeed(engine, 0, 5, engine.speed.rank, 6f)
 
 			receiver.drawScoreFont(engine, 0, 7, "TIME LIMIT", COLOR.BLUE)
-			receiver.drawScoreNum(
-				engine, 0, 8, levelTimer.toTimeStr, levelTimer in 1 until 600&&levelTimer%4==0,
-				2f
-			)
+			receiver.drawScoreNum(engine, 0, 8, levelTimer.toTimeStr, levelTimer in 1..<600&&levelTimer%4==0, 2f)
 
 			receiver.drawScoreFont(engine, 0, 10, "TOTAL TIME", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 0, 11, engine.statistics.time.toTimeStr, 2f)
@@ -374,10 +331,8 @@ class GrandRoads:NetDummyMode() {
 				var i = l
 				while(i<sectionTime.size) {
 					if(sectionTime[i]>0) {
-						var strSeparator = "-"
-						if(i==engine.statistics.level&&engine.ending==0) strSeparator = "+"
-
-						val strSectionTime:String = "%2d%s%s".format(i+1, strSeparator, sectionTime[i].toTimeStr)
+						val strSeparator = if(i==engine.statistics.level&&engine.ending==0) "+" else "-"
+						val strSectionTime = "%2d%s%s".format(i+1, strSeparator, sectionTime[i].toTimeStr)
 						receiver.drawScoreNum(engine, x+1, y+1+i-l, strSectionTime)
 					}
 					i++
@@ -469,9 +424,9 @@ class GrandRoads:NetDummyMode() {
 		// Don't do anything during the ending
 		if(engine.ending!=0) return 0
 		val lv = engine.statistics.level
-		// Add lines to norm
-		norm = engine.statistics.lines
 		val li = ev.lines
+		// Add lines to norm
+		norm += li
 		if(li>0) lastLineTime = levelTimer
 		// Decrease Pressure Hidden
 		if(engine.heboHiddenEnable&&li>0) {
@@ -489,7 +444,7 @@ class GrandRoads:NetDummyMode() {
 		// Level up
 		if(li>0&&norm>=nextLv)
 		// Game completed
-			if(lv>=nowCourse.goalLevel) {
+			if(norm>=nowCourse.goalLines||lv+engine.statistics.levelDispAdd>=nowCourse.goalLevel) {
 				engine.playSE("levelup_section")
 
 				// Update section time
@@ -507,7 +462,7 @@ class GrandRoads:NetDummyMode() {
 					engine.statistics.rollClear = if(engine.lives>=nowCourse.lives) 2 else 1
 				}
 			} else {
-				nextLv += nowCourse.goalLevel
+				nextLv += nowCourse.goalLines(lv+1)
 				if(owner.musMan.fadeSW) {
 					bgmChanged = true
 					bgmLv++
@@ -537,10 +492,11 @@ class GrandRoads:NetDummyMode() {
 			)
 
 		if(engine.statc[1]==0) {
-			var gcolor = COLOR.RED
-			if(engine.statistics.rollClear==1) gcolor = COLOR.GREEN
-			if(engine.statistics.rollClear==2) gcolor = COLOR.ORANGE
-
+			val gcolor = when(engine.statistics.rollClear) {
+				2 -> COLOR.ORANGE
+				1 -> COLOR.GREEN
+				else -> COLOR.RED
+			}
 			receiver.drawMenuFont(engine, 0, 1, "LIFE REMAINED", COLOR.BLUE, .8f)
 			receiver.drawMenuNum(engine, 7, 1, "%2d".format(engine.lives), gcolor, 2f)
 
@@ -602,7 +558,7 @@ class GrandRoads:NetDummyMode() {
 	/** This function will be called when the replay data is going to be
 	 * saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(
@@ -619,7 +575,7 @@ class GrandRoads:NetDummyMode() {
 	}
 
 	/** Load the settings from [prop] */
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		goalType = prop.getProperty("timeattack.gametype", 0)
 		startLevel = prop.getProperty("timeattack.startLevel", 0)
 		big = prop.getProperty("timeattack.big", false)
@@ -630,7 +586,7 @@ class GrandRoads:NetDummyMode() {
 	/** Save the settings
 	 * @param prop CustomProperties
 	 */
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("timeattack.gametype", goalType)
 		prop.setProperty("timeattack.startLevel", startLevel)
 		prop.setProperty("timeattack.big", big)
@@ -649,13 +605,13 @@ class GrandRoads:NetDummyMode() {
 
 		if(rankingRank!=-1) {
 			for(i in RANKING_MAX-1 downTo rankingRank+1) {
-				rankingLifes[type][i] = rankingLifes[type][i-1]
+				rankingLives[type][i] = rankingLives[type][i-1]
 				rankingLines[type][i] = rankingLines[type][i-1]
 				rankingTime[type][i] = rankingTime[type][i-1]
 				rankingRollClear[type][i] = rankingRollClear[type][i-1]
 			}
 
-			rankingLifes[type][rankingRank] = lf
+			rankingLives[type][rankingRank] = lf
 			rankingLines[type][rankingRank] = ln
 			rankingTime[type][rankingRank] = time
 			rankingRollClear[type][rankingRank] = clear
@@ -672,11 +628,11 @@ class GrandRoads:NetDummyMode() {
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
 	private fun checkRanking(lf:Int, ln:Int, time:Int, type:Int, clear:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(clear>rankingRollClear[type][i]) return i
 			else if(clear==rankingRollClear[type][i]&&ln>rankingLines[type][i]) return i
-			else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf>rankingLifes[type][i]) return i
-			else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf==rankingLifes[type][i]&&time<rankingTime[type][i])
+			else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf>rankingLives[type][i]) return i
+			else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf==rankingLives[type][i]&&time<rankingTime[type][i])
 				return i
 
 		return -1
@@ -764,7 +720,7 @@ class GrandRoads:NetDummyMode() {
 	companion object {
 		/** Current version of this mode */
 		private const val CURRENT_VERSION = 1
-		private val courses = Course.values()
+		private val courses = Course.entries
 		/** Game types */
 		enum class Course {
 			EASY, HARD, HARDEST, SUPER, XTREME, LONG, SURVIVAL, CHALLENGE, HELL, HIDE, VOID;
@@ -796,7 +752,9 @@ class GrandRoads:NetDummyMode() {
 				}
 			}
 
-			@Suppress("UNUSED_PARAMETER") fun goalLines(lv:Int) = 10
+			fun goalLines(lv:Int) = 10
+			val goalLines by lazy {(0..goalLevel).reduce {acc, i -> acc+goalLines(i)}}
+
 			val speeds by lazy {
 				// Other speed values
 				when(this) {

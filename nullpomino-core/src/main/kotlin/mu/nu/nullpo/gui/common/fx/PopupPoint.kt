@@ -40,7 +40,7 @@ class PopupPoint(x:Int, y:Int, val pts:Int, private val c:Int):SpriteSheet(x, y)
 
 	override fun update(r:AbstractRenderer):Boolean {
 		y += vel.y
-		vel.y = minOf(0.2f, -0.5f+ticks*0.03f)
+		vel.y = maxOf(-.75f, .5f-ticks*0.03f)
 		ticks++
 		return ticks>=72||pts==0
 	}

@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
 import java.awt.BorderLayout
@@ -465,7 +466,7 @@ class RuleEditor:JFrame, ActionListener {
 		propLang.loadXML("config/lang/ruleeditor_${Locale.getDefault().country}.xml")
 
 		// Look&Feel設定
-		if(propConfig.getProperty("option.usenativelookandfeel", true))
+		if(propConfig.getProperty("option.usenativelookandfeel", false))
 			try {
 				UIManager.getInstalledLookAndFeels()
 				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
@@ -606,7 +607,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		pRandomizer.add(JLabel(getUIText("Basic_Randomizer")))
 
-		vectorRandomizer = this::class.java.getResource("/randomizer.lst")?.path?.let {getTextFileVector(it)}
+		vectorRandomizer = this::class.java.getResource("../randomizer.lst")?.path?.let {getTextFileVector(it)}
 		comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer)).apply {
 			preferredSize = Dimension(200, 30)
 			pRandomizer.add(this)
@@ -779,7 +780,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		pWallkickSystem.add(JLabel(getUIText("Rotate_WallkickSystem")))
 
-		vectorWallkickSystem = getTextFileVector("config/list/wallkick.lst")
+		vectorWallkickSystem = this::class.java.getResource("../wallkick.lst")?.path?.let {getTextFileVector(it)}
 		comboboxWallkickSystem = JComboBox(createShortStringVector(vectorWallkickSystem)).apply {
 			preferredSize = Dimension(200, 30)
 			pWallkickSystem.add(this)
@@ -1390,9 +1391,9 @@ class RuleEditor:JFrame, ActionListener {
 		txtfldLockDelayLockResetLimitMove.text = r.lockResetMoveLimit.toString()
 		txtfldLockDelayLockResetLimitSpin.text = r.lockResetSpinLimit.toString()
 		when(r.lockResetLimitOver) {
-			RuleOptions.LOCKRESET_LIMIT_OVER_NoReset -> radioLockDelayLockResetLimitOverNoReset?.isSelected = true
+			RuleOptions.LOCKRESET_LIMIT_OVER_NO_RESET -> radioLockDelayLockResetLimitOverNoReset?.isSelected = true
 			RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT -> radioLockDelayLockResetLimitOverInstant?.isSelected = true
-			RuleOptions.LOCKRESET_LIMIT_OVER_NoKick -> radioLockDelayLockResetLimitOverNoWallkick?.isSelected = true
+			RuleOptions.LOCKRESET_LIMIT_OVER_NO_KICK -> radioLockDelayLockResetLimitOverNoWallkick?.isSelected = true
 		}
 
 		txtfldAREMin.text = r.minARE.toString()
@@ -1433,8 +1434,8 @@ class RuleEditor:JFrame, ActionListener {
 		chkboxMoveLeftAndRightUsePreviousInput.isSelected = r.moveLeftAndRightUsePreviousInput
 		chkboxMoveShiftLockEnable.isSelected = r.shiftLockEnable
 		comboboxPieceOffset?.selectedIndex = r.pieceOffset
-		for(i in 0 until Piece.PIECE_COUNT) {
-			for(j in 0 until Piece.DIRECTION_COUNT) {
+		for(i in 0..<Piece.PIECE_COUNT) {
+			for(j in 0..<Piece.DIRECTION_COUNT) {
 				txtfldPieceOffsetX?.let {it[i][j].text = "${r.pieceOffsetX[i][j]}"}
 				txtfldPieceOffsetY?.let {it[i][j].text = "${r.pieceOffsetY[i][j]}"}
 				txtfldPieceSpawnX?.let {it[i][j].text = "${r.pieceSpawnX[i][j]}"}
@@ -1512,11 +1513,11 @@ class RuleEditor:JFrame, ActionListener {
 		r.lockResetMoveLimit = getIntTextField(txtfldLockDelayLockResetLimitMove)
 		r.lockResetSpinLimit = getIntTextField(txtfldLockDelayLockResetLimitSpin)
 		if(radioLockDelayLockResetLimitOverNoReset!!.isSelected)
-			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NoReset
+			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NO_RESET
 		if(radioLockDelayLockResetLimitOverInstant!!.isSelected)
 			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT
 		if(radioLockDelayLockResetLimitOverNoWallkick!!.isSelected)
-			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NoKick
+			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NO_KICK
 
 		r.minARE = getIntTextField(txtfldAREMin)
 		r.maxARE = getIntTextField(txtfldAREMax)
@@ -1556,8 +1557,8 @@ class RuleEditor:JFrame, ActionListener {
 		r.moveLeftAndRightUsePreviousInput = chkboxMoveLeftAndRightUsePreviousInput.isSelected
 		r.shiftLockEnable = chkboxMoveShiftLockEnable.isSelected
 		r.pieceOffset = comboboxPieceOffset!!.selectedIndex
-		for(i in 0 until Piece.PIECE_COUNT) {
-			for(j in 0 until Piece.DIRECTION_COUNT) {
+		for(i in 0..<Piece.PIECE_COUNT) {
+			for(j in 0..<Piece.DIRECTION_COUNT) {
 				r.pieceOffsetX[i][j] = getIntTextField(txtfldPieceOffsetX!![i][j])
 				r.pieceOffsetY[i][j] = getIntTextField(txtfldPieceOffsetY!![i][j])
 				r.pieceSpawnX[i][j] = getIntTextField(txtfldPieceSpawnX!![i][j])
@@ -1606,6 +1607,7 @@ class RuleEditor:JFrame, ActionListener {
 		ruleOpt.readProperty(prop, 0, true)
 
 		log.debug("Loaded rule file from $filename")
+		log.debug("${ruleOpt.strRandomizer} / ${ruleOpt.strWallkick}")
 
 		return ruleOpt
 	}
@@ -1803,9 +1805,6 @@ class RuleEditor:JFrame, ActionListener {
 	}
 
 	companion object {
-		/** Serial version */
-		private const val serialVersionUID = 1L
-
 		/** Log */
 		internal val log = LogManager.getLogger()
 

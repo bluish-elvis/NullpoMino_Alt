@@ -124,7 +124,7 @@ class StateConfigJoystickTest:BasicGameState() {
 
 		// Joystick button
 		if(frame>=KEYACCEPTFRAME)
-			for(i in 0 until buttonCount)
+			for(i in 0..<buttonCount)
 				try {
 					if(ControllerManager.isControllerButton(player, container.input, i)) {
 						ResourceHolder.soundManager.play("change")
@@ -138,7 +138,7 @@ class StateConfigJoystickTest:BasicGameState() {
 			JInputManager.poll()
 
 			if(frame>=KEYACCEPTFRAME)
-				for(i in 0 until JInputManager.MAX_SLICK_KEY)
+				for(i in 0..<JInputManager.MAX_SLICK_KEY)
 					if(JInputManager.isKeyDown(i)) {
 						onKey(i)
 						break

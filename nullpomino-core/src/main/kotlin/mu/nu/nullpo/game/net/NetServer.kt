@@ -1116,7 +1116,7 @@ class NetServer {
 			val strPData = StringBuilder()
 			var prevRating = -1
 			var nowRank = 0
-			for(i in 0 until mpRankingList!![style].size) {
+			for(i in 0..<mpRankingList!![style].size) {
 				val p = mpRankingList!![style][i]
 				if(i==0||p.rating[style]<prevRating) {
 					prevRating = p.rating[style]
@@ -1395,7 +1395,7 @@ class NetServer {
 					if(newRoom.useMap&&!newRoom.mapList.isEmpty()) {
 						val strMapTemp = StringBuilder()
 						val maxMap = newRoom.mapList.size
-						for(i in 0 until maxMap) {
+						for(i in 0..<maxMap) {
 							strMapTemp.append(newRoom.mapList[i])
 							if(i<maxMap-1) strMapTemp.append("\t")
 						}
@@ -1581,7 +1581,7 @@ class NetServer {
 
 				if(!roomInfo!!.singleplayer) {
 					val msg = StringBuilder("gstat\t${pInfo.uid}\t${pInfo.seatID}\t${NetUtil.urlEncode(pInfo.strName)}\t")
-					for(i in 1 until message.size) {
+					for(i in 1..<message.size) {
 						msg.append(message[i])
 						if(i<message.size-1) msg.append("\t")
 					}
@@ -1623,7 +1623,7 @@ class NetServer {
 						record.style = roomInfo.style
 						record.strTimeStamp = GeneralUtil.nowGMT
 
-						val gamerate = record.stats!!.gamerate*100f
+						val gameRate = record.stats!!.gameRate*100f
 
 						val isDailyWiped = updateSPDailyRanking()
 						var rank = -1
@@ -1634,7 +1634,7 @@ class NetServer {
 						if(ranking==null) log.warn("All-time ranking not found:${record.strModeName}")
 						if(rankingDaily==null) log.warn("Daily ranking not found:${record.strModeName}")
 
-						if((ranking!=null||rankingDaily!=null)&&gamerate>=spMinGameRate) {
+						if((ranking!=null||rankingDaily!=null)&&gameRate>=spMinGameRate) {
 							if(ranking!=null) rank = ranking.registerRecord(record)
 							if(rankingDaily!=null) rankDaily = rankingDaily.registerRecord(record)
 
@@ -1675,13 +1675,13 @@ class NetServer {
 
 				val strData = StringBuilder()
 
-				for(i in 0 until maxRecord) {
+				for(i in 0..<maxRecord) {
 					var strRow = ""
 					if(i>0) strRow = ";"
 
 					val record = ranking.listRecord[i]
 					strRow += "$i${","+NetUtil.urlEncode(record.strPlayerName)},"
-					strRow += record.strTimeStamp+",${record.stats!!.gamerate},"
+					strRow += record.strTimeStamp+",${record.stats!!.gameRate},"
 					strRow += record.getStatRow(ranking.rankingType)
 
 					if(pInfo!=null&&pInfo.strName==record.strPlayerName) myRank = i
@@ -1697,7 +1697,7 @@ class NetServer {
 
 						maxRecord++
 						strRow += "${(-1)},${NetUtil.urlEncode(record.strPlayerName)},"
-						strRow += record.strTimeStamp+",${record.stats!!.gamerate},"
+						strRow += record.strTimeStamp+",${record.stats!!.gameRate},"
 						strRow += record.getStatRow(ranking.rankingType)
 
 						strData.append(strRow)
@@ -1773,7 +1773,7 @@ class NetServer {
 
 					if(seat!=-1) {
 						val msg = StringBuilder("game\t${pInfo.uid}\t$seat\t")
-						for(i in 1 until message.size) {
+						for(i in 1..<message.size) {
 							msg.append(message[i])
 							if(i<message.size-1) msg.append("\t")
 						}
@@ -1931,7 +1931,7 @@ class NetServer {
 			var mpRankingDataChange = false
 			var spRankingDataChange = false
 
-			for(i in 0 until GameEngine.MAX_GAMESTYLE) {
+			for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 				if(propPlayerData.getProperty("p.rating.$i.$strName")!=null) {
 					propPlayerData.setProperty("p.rating.$i.$strName", ratingDefault)
 					propPlayerData.setProperty("p.playCount.$i.$strName", 0)
@@ -2247,8 +2247,8 @@ class NetServer {
 					// Update rating
 					val style = roomInfo.style
 					val n = roomInfo.playerSeatDead.size
-					for(w in 0 until n-1)
-						for(l in w+1 until n) {
+					for(w in 0..<n-1)
+						for(l in w+1..<n) {
 							val wp = roomInfo.playerSeatDead[w]
 							val lp = roomInfo.playerSeatDead[l]
 
@@ -2268,7 +2268,7 @@ class NetServer {
 						}
 
 					// Notify/Save
-					for(i in 0 until n) {
+					for(i in 0..<n) {
 						val p = roomInfo.playerSeatDead[i]
 						val change = p.rating[style]-p.ratingBefore[style]
 						log.debug("#${i+1} Name:${p.strName} Rating:${p.rating[style]} ($change)")
@@ -2281,7 +2281,7 @@ class NetServer {
 					writePlayerDataToFile()
 
 					// Leaderboard update
-					for(i in 0 until n) {
+					for(i in 0..<n) {
 						val p = roomInfo.playerSeatDead[i]
 						if(p.isTripUse) mpRankingUpdate(style, p)
 					}
@@ -2482,10 +2482,10 @@ class NetServer {
 	 * @param client Client
 	 */
 	private fun sendRatedRuleList(client:SocketChannel) {
-		for(style in 0 until GameEngine.MAX_GAMESTYLE) {
+		for(style in 0..<GameEngine.MAX_GAMESTYLE) {
 			val msg = StringBuilder("rulelist\t$style")
 
-			for(i in 0 until ruleList!![style].size) {
+			for(i in 0..<ruleList!![style].size) {
 				val tempObj = ruleList!![style][i]
 
 				msg.append("\t").append(NetUtil.urlEncode(tempObj.strRuleName))
@@ -2755,7 +2755,7 @@ class NetServer {
 						val strStyle = str.substring(1)
 
 						style = -1
-						for(i in 0 until GameEngine.MAX_GAMESTYLE)
+						for(i in 0..<GameEngine.MAX_GAMESTYLE)
 							if(strStyle.equals(GameEngine.GAMESTYLE_NAMES[i], ignoreCase = true)) {
 								style = i
 								break
@@ -2815,7 +2815,7 @@ class NetServer {
 						val strStyle = str.substring(1)
 
 						style = -1
-						for(i in 0 until GameEngine.MAX_GAMESTYLE)
+						for(i in 0..<GameEngine.MAX_GAMESTYLE)
 							if(strStyle.equals(GameEngine.GAMESTYLE_NAMES[i], ignoreCase = true)) {
 								style = i
 								break
@@ -2843,11 +2843,11 @@ class NetServer {
 			log.info("Loading Multiplayer Ranking...")
 			mpRankingList = Array(GameEngine.MAX_GAMESTYLE) {LinkedList<NetPlayerInfo>()}
 
-			for(style in 0 until GameEngine.MAX_GAMESTYLE) {
+			for(style in 0..<GameEngine.MAX_GAMESTYLE) {
 				var count = propMPRanking.getProperty("$style.mpranking.count", 0)
 				if(count>maxMPRanking) count = maxMPRanking
 
-				for(i in 0 until count) {
+				for(i in 0..<count) {
 					val p = NetPlayerInfo().apply {
 						strName = propMPRanking.getProperty("$style.mpranking.strName.$i", "")
 						rating[style] = propMPRanking.getProperty("$style.mpranking.rating.$i", ratingDefault)
@@ -2873,7 +2873,7 @@ class NetServer {
 		 */
 		private fun mpRankingIndexOf(style:Int, name:String?):Int {
 			if(name==null) return -1
-			for(i in 0 until mpRankingList!![style].size) {
+			for(i in 0..<mpRankingList!![style].size) {
 				val p2 = mpRankingList!![style][i]
 				if(name==p2.strName) return i
 			}
@@ -2893,7 +2893,7 @@ class NetServer {
 			// Insert new record
 			var place = -1
 			var rankin = false
-			for(i in 0 until mpRankingList!![style].size) {
+			for(i in 0..<mpRankingList!![style].size) {
 				val p2 = mpRankingList!![style][i]
 				if(p.rating[style]>p2.rating[style]) {
 					mpRankingList!![style].add(i, p)
@@ -2918,12 +2918,12 @@ class NetServer {
 
 		/** Write player data properties (propPlayerData) to a file */
 		private fun writeMPRankingToFile() {
-			for(style in 0 until GameEngine.MAX_GAMESTYLE) {
+			for(style in 0..<GameEngine.MAX_GAMESTYLE) {
 				var count = mpRankingList!![style].size
 				if(count>maxMPRanking) count = maxMPRanking
 				propMPRanking.setProperty("$style.mpranking.count", count)
 
-				for(i in 0 until count) {
+				for(i in 0..<count) {
 					val p = mpRankingList!![style][i]
 					propMPRanking.setProperty("$style.mpranking.strName.$i", p.strName)
 					propMPRanking.setProperty("$style.mpranking.rating.$i", p.rating[style])
@@ -2969,7 +2969,7 @@ class NetServer {
 						val strStyle = str.substring(1)
 
 						style = -1
-						for(i in 0 until GameEngine.MAX_GAMESTYLE)
+						for(i in 0..<GameEngine.MAX_GAMESTYLE)
 							if(strStyle.equals(GameEngine.GAMESTYLE_NAMES[i], true)) {
 								style = i
 								break
@@ -2992,13 +2992,13 @@ class NetServer {
 
 						spModeList!![style].add(strModeName)
 
-						for(i in 0 until ruleList!![style].size+1) {
+						for(i in 0..<ruleList!![style].size+1) {
 							val ruleName:String = if(i<ruleList!![style].size) {
 								val ruleOpt = ruleList!![style][i]
 								ruleOpt.strRuleName
 							} else "any"
 
-							for(j in 0 until maxGameType+1)
+							for(j in 0..<maxGameType+1)
 								for(k in 0..1) {
 									val rankingData = NetSPRanking()
 									rankingData.strModeName = strModeName
@@ -3114,7 +3114,7 @@ class NetServer {
 		 */
 		private fun getPlayerDataFromProperty(pInfo:NetPlayerInfo) {
 			if(pInfo.isTripUse) {
-				for(i in 0 until GameEngine.MAX_GAMESTYLE) {
+				for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 					pInfo.rating[i] = propPlayerData.getProperty("p.rating.$i."+pInfo.strName, ratingDefault)
 					pInfo.playCount[i] = propPlayerData.getProperty("p.playCount.$i."+pInfo.strName, 0)
 					pInfo.winCount[i] = propPlayerData.getProperty("p.winCount.$i."+pInfo.strName, 0)
@@ -3122,7 +3122,7 @@ class NetServer {
 				pInfo.spPersonalBest.strPlayerName = pInfo.strName
 				pInfo.spPersonalBest.readProperty(propPlayerData)
 			} else {
-				for(i in 0 until GameEngine.MAX_GAMESTYLE) {
+				for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 					pInfo.rating[i] = ratingDefault
 					pInfo.playCount[i] = 0
 					pInfo.winCount[i] = 0
@@ -3136,7 +3136,7 @@ class NetServer {
 		 */
 		private fun setPlayerDataToProperty(pInfo:NetPlayerInfo) {
 			if(pInfo.isTripUse) {
-				for(i in 0 until GameEngine.MAX_GAMESTYLE) {
+				for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 					propPlayerData.setProperty("p.rating.$i."+pInfo.strName, pInfo.rating[i])
 					propPlayerData.setProperty("p.playCount.$i."+pInfo.strName, pInfo.playCount[i])
 					propPlayerData.setProperty("p.winCount.$i."+pInfo.strName, pInfo.winCount[i])

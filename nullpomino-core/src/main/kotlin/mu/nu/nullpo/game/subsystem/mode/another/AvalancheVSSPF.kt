@@ -109,7 +109,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			engine.field.reset()
 			var patternCol = 0
 			val maxHeight = engine.field.height-1
-			for(x in 0 until engine.field.width) {
+			for(x in 0..<engine.field.width) {
 				if(patternCol>=pattern.size) patternCol = 0
 				for(patternRow in pattern[patternCol].indices) {
 					engine.field.setBlockColor(x, maxHeight-patternRow, pattern[patternCol][patternRow])
@@ -535,8 +535,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 		val d = if(engine.displaySize==1) 2 else 1
 		if(engine.stat!=GameEngine.Status.RESULT&&engine.gameStarted)
-			for(x in 0 until engine.field.width)
-				for(y in 0 until engine.field.height)
+			for(x in 0..<engine.field.width)
+				for(y in 0..<engine.field.height)
 					engine.field.getBlock(x, y)?.let {b ->
 						if(!b.isEmpty&&b.countdown>0) {
 							val textColor:COLOR =
@@ -567,8 +567,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 		ojamaChecked[engine.playerID] = true
 		//Turn cleared ojama into normal blocks
-		for(x in 0 until engine.field.width)
-			for(y in -1*engine.field.hiddenHeight until engine.field.height)
+		for(x in 0..<engine.field.width)
+			for(y in -1*engine.field.hiddenHeight..<engine.field.height)
 				engine.field.getBlock(x, y)?.also {b ->
 					if(b.getAttribute(Block.ATTRIBUTE.GARBAGE)&&b.hard<4) {
 						b.hard = 0
@@ -597,8 +597,8 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 		//Decrement countdowns
 		if(ojamaCountdown[pid]!=10&&!countdownDecremented[pid]) {
 			countdownDecremented[pid] = true
-			for(y in engine.field.hiddenHeight*-1 until engine.field.height)
-				for(x in 0 until engine.field.width) {
+			for(y in engine.field.hiddenHeight*-1..<engine.field.height)
+				for(x in 0..<engine.field.width) {
 					val b = engine.field.getBlock(x, y) ?: continue
 					if(b.countdown>1) b.countdown--
 					else if(b.countdown==1) {
@@ -621,7 +621,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			engine.field.garbageDrop(engine, drop, false, 4, ojamaCountdown[pid])
 			engine.field.setAllSkin(engine.skin)
 			var patternCol = 0
-			for(x in 0 until engine.field.width) {
+			for(x in 0..<engine.field.width) {
 				if(patternCol>=dropPattern[enemyID].size) patternCol = 0
 				var patternRow = 0
 				for(y in (drop+width-1)/width-hiddenHeight downTo -1*hiddenHeight) {

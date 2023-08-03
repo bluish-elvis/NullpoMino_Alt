@@ -29,8 +29,7 @@
 
 package mu.nu.nullpo.gui.common.menu
 
-open class NumericMenuItem
-constructor(
+open class NumericMenuItem(
 	name:String,
 	color:Int,
 	state:Int = 50,

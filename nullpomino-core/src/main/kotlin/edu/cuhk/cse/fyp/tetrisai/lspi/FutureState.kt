@@ -59,7 +59,7 @@ class FutureState:State() {
 		// check if game end
 		var stk = lines
 		for(i in ROWS-1 downTo ROWS-1-stk+1) {
-			for(j in 0 until COLS) {
+			for(j in 0..<COLS) {
 				if(field[i]!![j]!=0) {
 					lost = true
 					return false
@@ -69,12 +69,12 @@ class FutureState:State() {
 		val rand = Random()
 		val hole = rand.nextInt(COLS)
 		for(i in ROWS-1 downTo 0) {
-			for(j in 0 until COLS) {
+			for(j in 0..<COLS) {
 				if(i<stk) field[i]!![j] = (if(j==hole) 0 else 1) //turn);
 				else field[i]!![j] = field[i-stk]!![j]
 			}
 		}
-		for(i in 0 until COLS) top[i] += stk
+		for(i in 0..<COLS) top[i] += stk
 		stk = 0
 		return true
 	}
@@ -82,7 +82,7 @@ class FutureState:State() {
 	private fun addLines():Boolean {
 		// check if game end
 		for(i in ROWS-1 downTo ROWS-1-linesStack+1) {
-			for(j in 0 until COLS) {
+			for(j in 0..<COLS) {
 				if(field[i]!![j]!=0) {
 					lost = true
 					return false
@@ -92,12 +92,12 @@ class FutureState:State() {
 		val rand = Random()
 		val hole = rand.nextInt(COLS)
 		for(i in ROWS-1 downTo 0) {
-			for(j in 0 until COLS) {
+			for(j in 0..<COLS) {
 				if(i<linesStack) field[i]!![j] = (if(j==hole) 0 else 1) //turn);
 				else field[i]!![j] = field[i-linesStack]!![j]
 			}
 		}
-		for(i in 0 until COLS) top[i] += linesStack
+		for(i in 0..<COLS) top[i] += linesStack
 		linesStack = 0
 		return true
 	}

@@ -40,10 +40,10 @@ import kotlin.random.Random
 
 class LandingParticles(
 	num:Int,
-	minX:Int,
-	maxX:Int,
-	startY:Int,
-	yVar:Int,
+	minX:Float,
+	maxX:Float,
+	startY:Float,
+	yVar:Float,
 	red:Int,
 	green:Int,
 	blue:Int,
@@ -52,7 +52,7 @@ class LandingParticles(
 	maxVel:Float,
 	upChance:Float,
 	/** Randomizer*/
-	randomizer:Random = Random.Default
+	randomizer:Random = Random
 ) {
 	/**
 	 * Adds a number of landing particles.<br></br>
@@ -60,7 +60,7 @@ class LandingParticles(
 	 * red, green, blue, alpha, variance (all `int` types),
 	 * maximum velocity, chance of upward movement (all `double` types)
 	 */
-	val particles = (0 until num).map {i ->
+	val particles = (0..<num).map {i ->
 		val ured:Int = red+(2*randomizer.nextFloat()*variance-variance).toInt()
 		val ugreen:Int = green+(2*randomizer.nextFloat()*variance-variance).toInt()
 		val ublue:Int = blue+(2*randomizer.nextFloat()*variance-variance).toInt()
@@ -77,7 +77,7 @@ class LandingParticles(
 			ParticleShape.Rect, Interpolation.lerp(DEF_MIN_LIFE, DEF_MAX_LIFE, randomizer.nextFloat()),
 			p.x, p.y, v, Vector.zero(), .98f, 2, 6f,
 			ured, ugreen, ublue, ualpha,
-			ured*3/2, ugreen*3/2, ublue*3/2, 64
+			ured*2/3, ugreen*2/3, ublue*2/3, 64
 		)
 	}
 

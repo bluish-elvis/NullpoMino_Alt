@@ -139,8 +139,8 @@ class ExamSpinner {
 	 * @param flag     Yellow text?
 	 */
 	@JvmOverloads fun draw(receiver:EventReceiver, engine:GameEngine, flag:Boolean = lifeTime/2%2==0) {
-		val baseX:Int = receiver.fieldX(engine)+4
-		val baseY:Int = receiver.fieldY(engine)+52
+		val baseX = receiver.fieldX(engine).toInt()+4
+		val baseY = receiver.fieldY(engine).toInt()+52
 		val size = 16
 		HUGE_O.setSkin(engine.skin)
 		var b = 255
@@ -188,7 +188,7 @@ class ExamSpinner {
 			if(close) {
 				if(lifeTime<spinDuration) {
 					// Pass1
-					for(i in 0 until splitPossibilityText[0].size) {
+					for(i in 0..<splitPossibilityText[0].size) {
 						if(locations[0]%320<=160) GameTextUtilities.drawDirectTextAlign(
 							receiver, baseX+locations[0]%320, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
 							splitPossibilityText[0][i], color,
@@ -197,7 +197,7 @@ class ExamSpinner {
 					}
 
 					// Fail1
-					for(i in 0 until splitPossibilityText[1].size) {
+					for(i in 0..<splitPossibilityText[1].size) {
 						if(locations[1]%320<=160) GameTextUtilities.drawDirectTextAlign(
 							receiver, baseX+locations[1]%320, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
 							splitPossibilityText[1][i], COLOR.COBALT,
@@ -206,7 +206,7 @@ class ExamSpinner {
 					}
 
 					// Pass1
-					for(i in 0 until splitPossibilityText[0].size) {
+					for(i in 0..<splitPossibilityText[0].size) {
 						if(locations[2]%320<=160) GameTextUtilities.drawDirectTextAlign(
 							receiver, baseX+locations[2]%320, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
 							splitPossibilityText[0][i], color,
@@ -215,7 +215,7 @@ class ExamSpinner {
 					}
 
 					// Fail1
-					for(i in 0 until splitPossibilityText[1].size) {
+					for(i in 0..<splitPossibilityText[1].size) {
 						if(locations[3]%320<=160) GameTextUtilities.drawDirectTextAlign(
 							receiver, baseX+locations[3]%320, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE,
 							splitPossibilityText[1][i], COLOR.COBALT,
@@ -225,7 +225,7 @@ class ExamSpinner {
 				} else if(lifeTime<spinDuration+120) {
 					val offset = lifeTime%3-1
 					// FailShake
-					for(i in 0 until splitPossibilityText[1].size) {
+					for(i in 0..<splitPossibilityText[1].size) {
 						GameTextUtilities.drawDirectTextAlign(
 							receiver, HBX+offset, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[1][i],
 							COLOR.COBALT,
@@ -242,22 +242,22 @@ class ExamSpinner {
 						val blk = Block(Block.COLOR.YELLOW)
 						for(y in 13..17) {
 							for(x in 3..7) {
-								val x2 = x*16+baseX
-								val y2 = y*16+baseY
+								val x2 = x*16f+baseX
+								val y2 = y*16f+baseY
 								RendererExtension.addBlockBreakEffect(receiver, x2, y2, blk)
 							}
 						}
 					}
 					if(selectedOutcome==0) {
 						// PASS
-						for(i in 0 until splitPossibilityText[0].size) {
+						for(i in 0..<splitPossibilityText[0].size) {
 							GameTextUtilities.drawDirectTextAlign(
 								receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[0][i],
 								color, 1f
 							)
 						}
 					} else {
-						for(i in 0 until splitPossibilityText[1].size) {
+						for(i in 0..<splitPossibilityText[1].size) {
 							GameTextUtilities.drawDirectTextAlign(
 								receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[1][i],
 								COLOR.COBALT, 1f
@@ -268,14 +268,14 @@ class ExamSpinner {
 			} else if(lifeTime>=60) {
 				if(selectedOutcome==0) {
 					// PASS
-					for(i in 0 until splitPossibilityText[0].size) {
+					for(i in 0..<splitPossibilityText[0].size) {
 						GameTextUtilities.drawDirectTextAlign(
 							receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[0][i],
 							color, 1f
 						)
 					}
 				} else {
-					for(i in 0 until splitPossibilityText[1].size) {
+					for(i in 0..<splitPossibilityText[1].size) {
 						GameTextUtilities.drawDirectTextAlign(
 							receiver, HBX, PBY+size*i, GameTextUtilities.ALIGN_MIDDLE_MIDDLE, splitPossibilityText[1][i],
 							COLOR.COBALT, 1f
@@ -345,8 +345,8 @@ class ExamSpinner {
 						val blk = Block(Block.COLOR.YELLOW)
 						for(y in 13..17) {
 							for(x in 3..7) {
-								val x2 = x*16+baseX
-								val y2 = y*16+baseY
+								val x2 = x*16f+baseX
+								val y2 = y*16f+baseY
 								RendererExtension.addBlockBreakEffect(receiver, x2, y2, blk)
 							}
 						}

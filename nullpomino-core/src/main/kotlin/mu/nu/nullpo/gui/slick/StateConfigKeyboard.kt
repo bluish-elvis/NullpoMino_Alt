@@ -115,7 +115,7 @@ class StateConfigKeyboard:BasicGameState() {
 		else
 			FontNormal.printFontGrid(1, 2, "Jinput mode", COLOR.PINK)
 
-		for(it in 0 until GameKeyDummy.MAX_BUTTON) {
+		for(it in 0..<GameKeyDummy.MAX_BUTTON) {
 			val flag = keynum==it
 			FontNormal.printFontGrid(2, it+4, GameKeyDummy.arrayKeyName(isNavSetting)[it], flag)
 			FontNormal.printFontGrid(13, it+4, ":", flag)
@@ -168,7 +168,7 @@ class StateConfigKeyboard:BasicGameState() {
 			JInputManager.poll()
 
 			if(frame>=KEYACCEPTFRAME)
-				for(i in 0 until JInputManager.MAX_SLICK_KEY)
+				for(i in 0..<JInputManager.MAX_SLICK_KEY)
 					if(JInputManager.isKeyDown(i)) {
 						onKey(i)
 						frame = 0
@@ -222,7 +222,7 @@ class StateConfigKeyboard:BasicGameState() {
 					if(keynum>=NUM_KEYS) {
 						ResourceHolder.soundManager.play("decide2")
 						// Save & Exit
-						for(i in 0 until NUM_KEYS)
+						for(i in 0..<NUM_KEYS)
 							if(!isNavSetting)
 								GameKey.gameKey[player].keymap[i] = keymap[i]
 							else

@@ -68,10 +68,10 @@ open class State {
 	//initialize legalMoves
 	init {
 		//for each piece type
-		for(i in 0 until N_PIECES) {
+		for(i in 0..<N_PIECES) {
 			//figure number of legal moves
 			var n = 0
-			for(j in 0 until pOrients[i]) {
+			for(j in 0..<pOrients[i]) {
 				//number of locations in this orientation
 				n += COLS+1-pWidth[i][j]
 			}
@@ -79,9 +79,9 @@ open class State {
 			legalMoves[i] = Array(n) {IntArray(2)}
 			//for each orientation
 			n = 0
-			for(j in 0 until pOrients[i]) {
+			for(j in 0..<pOrients[i]) {
 				//for each slot
-				for(k in 0 until COLS+1-pWidth[i][j]) {
+				for(k in 0..<COLS+1-pWidth[i][j]) {
 					legalMoves[i][n][ORIENT] = j
 					legalMoves[i][n][SLOT] = k
 					n++
@@ -124,7 +124,7 @@ open class State {
 	// add lines stack to field
 	private fun addLines():Boolean {
 		// check if game end
-		for(c in 0 until COLS) {
+		for(c in 0..<COLS) {
 			if(top[c]+linesStack>=ROWS) {
 				lost = true
 				return false
@@ -133,12 +133,12 @@ open class State {
 		val rand = Random()
 		val hole = rand.nextInt(COLS)
 		for(i in ROWS-1 downTo 0) {
-			for(j in 0 until COLS) {
+			for(j in 0..<COLS) {
 				if(i<linesStack) field[i]!![j] = (if(j==hole) 0 else 1) //);
 				else field[i]!![j] = field[i-linesStack]!![j]
 			}
 		}
-		for(i in 0 until COLS) top[i] += linesStack
+		for(i in 0..<COLS) top[i] += linesStack
 		linesStack = 0
 		return true
 	}
@@ -168,8 +168,8 @@ open class State {
 
 			// perfect clear
 			var perfectClear = true
-			for(i in 0 until ROWS) {
-				for(j in 0 until COLS) {
+			for(i in 0..<ROWS) {
+				for(j in 0..<COLS) {
 					if(field[i]!![j]!=0) {
 						perfectClear = false
 						break
@@ -207,8 +207,8 @@ open class State {
 
 			// perfect clear
 			var perfectClear = true
-			for(i in 0 until ROWS) {
-				for(j in 0 until COLS) {
+			for(i in 0..<ROWS) {
+				for(j in 0..<COLS) {
 					if(field[i]!![j]!=0) {
 						perfectClear = false
 						break
@@ -233,7 +233,7 @@ open class State {
 		//height if the first column makes contact
 		var height = top[slot]-pBottom[nextPiece][orient][0]
 		//for each column beyond the first in the piece
-		for(c in 1 until pWidth[nextPiece][orient]) {
+		for(c in 1..<pWidth[nextPiece][orient]) {
 			height = maxOf(height, top[slot+c]-pBottom[nextPiece][orient][c])
 		}
 
@@ -244,15 +244,15 @@ open class State {
 		}
 
 		//for each column in the piece - fill in the appropriate blocks
-		for(i in 0 until pWidth[nextPiece][orient]) {
+		for(i in 0..<pWidth[nextPiece][orient]) {
 			//from bottom to top of brick
-			for(h in height+pBottom[nextPiece][orient][i] until height+pTop[nextPiece][orient][i]) {
+			for(h in height+pBottom[nextPiece][orient][i]..<height+pTop[nextPiece][orient][i]) {
 				field[h]!![i+slot] = 1 //turn;
 			}
 		}
 
 		//adjust top
-		for(c in 0 until pWidth[nextPiece][orient]) {
+		for(c in 0..<pWidth[nextPiece][orient]) {
 			top[slot+c] = height+pTop[nextPiece][orient][c]
 		}
 		var rowsCleared = 0
@@ -260,7 +260,7 @@ open class State {
 		for(r in height+pHeight[nextPiece][orient]-1 downTo height) {
 			//check all columns in the row
 			var full = true
-			for(c in 0 until COLS) {
+			for(c in 0..<COLS) {
 				if(field[r]!![c]==0) {
 					full = false
 					break
@@ -271,9 +271,9 @@ open class State {
 				rowsCleared++
 				this.rowsCleared++
 				//for each column
-				for(c in 0 until COLS) {
+				for(c in 0..<COLS) {
 					//slide down all bricks
-					for(i in r until top[c]) {
+					for(i in r..<top[c]) {
 						if(i+1==23) field[i]!![c] = 0 else field[i]!![c] = field[i+1]!![c]
 					}
 					//lower the top
@@ -307,14 +307,14 @@ open class State {
 		label!!.line(0.0, (ROWS-3).toDouble(), COLS.toDouble(), (ROWS-3).toDouble())
 
 		//show bricks
-		for(c in 0 until COLS) {
-			for(r in 0 until top[c]) {
+		for(c in 0..<COLS) {
+			for(r in 0..<top[c]) {
 				if(field[r]!![c]!=0) {
 					drawBrick(c, r)
 				}
 			}
 		}
-		for(i in 0 until COLS) {
+		for(i in 0..<COLS) {
 			label!!.setPenColor(Color.red)
 			label!!.line(i.toDouble(), top[i].toDouble(), (i+1).toDouble(), top[i].toDouble())
 			label!!.setPenColor()
@@ -332,8 +332,8 @@ open class State {
 	}
 
 	fun drawNext(slot:Int, orient:Int) {
-		for(i in 0 until pWidth[nextPiece][orient]) {
-			for(j in pBottom[nextPiece][orient][i] until pTop[nextPiece][orient][i]) {
+		for(i in 0..<pWidth[nextPiece][orient]) {
+			for(j in pBottom[nextPiece][orient][i]..<pTop[nextPiece][orient][i]) {
 				drawBrick(i+slot, j+ROWS+1)
 			}
 		}

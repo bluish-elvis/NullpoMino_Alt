@@ -250,7 +250,7 @@ class ColorPower:MarathonModeBase() {
 			appendToHistory(v)
 			engine.getNextObject(engine.nextPieceCount+engine.ruleOpt.nextDisplay-1)?.setColor(v)
 		} else {
-			for(i in 0 until engine.nextPieceArrayObject.size) {
+			for(i in 0..<engine.nextPieceArrayObject.size) {
 				var v = -1
 				for(j in 0..7) {
 					var flag = false
@@ -334,20 +334,20 @@ class ColorPower:MarathonModeBase() {
 
 		//int x = (16 * engine.nowPieceX) + 4 + receiver.fieldX(engine, playerID) + (16 * engine.nowPieceObject.getWidth() / 2);
 		//int y = (16 * engine.nowPieceY) + 52 + receiver.fieldY(engine, playerID) + (16 * engine.nowPieceObject.getHeight() / 2);
-		val baseX:Int = 16*engine.nowPieceX+receiver.fieldX(engine)
-		val baseY:Int = 16*engine.nowPieceY+receiver.fieldY(engine)
+		val baseX= 16*engine.nowPieceX+receiver.fieldX(engine)
+		val baseY = 16*engine.nowPieceY+receiver.fieldY(engine)
 		engine.nowPieceObject?.let {cPiece ->
 			for(i in 1..fall) {
 				pCoordList!!.add(intArrayOf(engine.nowPieceX, engine.nowPieceY-i))
 			}
-			for(i in 0 until cPiece.maxBlock) {
+			for(i in 0..<cPiece.maxBlock) {
 				if(!cPiece.big) {
-					val x2:Int = baseX+cPiece.dataX[cPiece.direction][i]*16
-					val y2:Int = baseY+cPiece.dataY[cPiece.direction][i]*16
+					val x2 = baseX+cPiece.dataX[cPiece.direction][i]*16
+					val y2 = baseY+cPiece.dataY[cPiece.direction][i]*16
 					RendererExtension.addBlockBreakEffect(receiver, x2, y2, cPiece.block[i])
 				} else {
-					val x2:Int = baseX+cPiece.dataX[cPiece.direction][i]*32
-					val y2:Int = baseY+cPiece.dataY[cPiece.direction][i]*32
+					val x2 = baseX+cPiece.dataX[cPiece.direction][i]*32
+					val y2 = baseY+cPiece.dataY[cPiece.direction][i]*32
 					RendererExtension.addBlockBreakEffect(receiver, x2, y2, cPiece.block[i])
 					RendererExtension.addBlockBreakEffect(receiver, x2+16, y2, cPiece.block[i])
 					RendererExtension.addBlockBreakEffect(receiver, x2, y2+16, cPiece.block[i])
@@ -388,7 +388,7 @@ class ColorPower:MarathonModeBase() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE TIME", COLOR.BLUE)
 				if(showPlayerStats) {
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingScorePlayer[if(ruleBoundMode) 1 else 0][goalType][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -409,7 +409,7 @@ class ColorPower:MarathonModeBase() {
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+2, engine.playerProp.nameDisplay, COLOR.WHITE, 2f)
 					receiver.drawScoreFont(engine, 0, topY+RANKING_MAX+5, "F:SWITCH RANK SCREEN", COLOR.GREEN)
 				} else {
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreFont(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
 						val s = "${rankingScore[if(ruleBoundMode) 1 else 0][goalType][i]}"
 						val isLong = s.length>6&&receiver.nextDisplayType!=2
@@ -509,8 +509,8 @@ class ColorPower:MarathonModeBase() {
 				)
 			}
 			engine.nowPieceObject?.let {cPiece ->
-				val baseX:Int = receiver.fieldX(engine)
-				val baseY:Int = receiver.fieldY(engine)
+				val baseX = receiver.fieldX(engine)
+				val baseY = receiver.fieldY(engine)
 				if(pCoordList!!.size>0) {
 					for(loc in pCoordList!!) {
 						val cx = baseX+16*loc[0]
@@ -687,7 +687,7 @@ class ColorPower:MarathonModeBase() {
 			val s:Boolean = engine.playerProp.loginScreen.updateScreen(engine)
 			if(engine.playerProp.isLoggedIn) {
 				loadRankingPlayer(engine.playerProp)
-				loadSetting(engine.playerProp.propProfile, engine)
+				loadSetting(engine, engine.playerProp.propProfile)
 			}
 			if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		}
@@ -758,7 +758,7 @@ class ColorPower:MarathonModeBase() {
 		 * Called when saving replay
 		 */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// NET: Save name
 		if(!netPlayerName.isNullOrEmpty()) {
@@ -827,7 +827,7 @@ class ColorPower:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX) {
+		for(i in 0..<RANKING_MAX) {
 			if(sc>rankingScore[if(ruleBoundMode) 1 else 0][type][i]) {
 				return i
 			} else if(sc==rankingScore[if(ruleBoundMode) 1 else 0][type][i]&&li>rankingLines[if(ruleBoundMode) 1 else 0][type][i]) {
@@ -847,7 +847,7 @@ class ColorPower:MarathonModeBase() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRankingPlayer(sc:Long, li:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX) {
+		for(i in 0..<RANKING_MAX) {
 			if(sc>rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][i]) {
 				return i
 			} else if(sc==rankingScorePlayer[if(ruleBoundMode) 1 else 0][type][i]&&li>rankingLinesPlayer[if(ruleBoundMode) 1 else 0][type][i]) {

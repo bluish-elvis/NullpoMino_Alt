@@ -63,7 +63,7 @@ class Controller:Serializable {
 
 	/** 設定を[c]からコピー */
 	fun replace(c:Controller) {
-		for(i in 0 until BUTTON_COUNT) {
+		for(i in 0..<BUTTON_COUNT) {
 			buttonPress[i] = c.buttonPress[i]
 			buttonTime[i] = c.buttonTime[i]
 		}
@@ -127,7 +127,7 @@ class Controller:Serializable {
 
 	/** button input timeを更新 */
 	fun updateButtonTime() {
-		for(i in 0 until BUTTON_COUNT)
+		for(i in 0..<BUTTON_COUNT)
 			if(buttonPress[i]) buttonTime[i]++ else buttonTime[i] = 0
 	}
 
@@ -137,9 +137,6 @@ class Controller:Serializable {
 	}
 
 	companion object {
-		/** Serial version ID */
-		private const val serialVersionUID = -4855072501928533723L
-
 		/** ↑ (Hard drop) button */
 		const val BUTTON_UP = 0
 

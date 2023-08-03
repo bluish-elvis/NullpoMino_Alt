@@ -66,8 +66,8 @@ Next I*/
 			t[1].replace(t[0])
 			t[0].let {it.x = x;it.y = y;it.r = r}
 			val vel = 10+4*speed
-			x += sin(r*3*Rg)*vel
-			y -= cos(r*3*Rg)*vel
+			x += sin(r*3*RG)*vel
+			y -= cos(r*3*RG)*vel
 			r += vr*speed*minOf(1+speed/10, speed)
 			while(r<0) r += 360
 			while(r>=360) r -= 360

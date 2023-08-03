@@ -40,13 +40,13 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 		list+List(item.colMax) {id to it}
 	}
 	/** map of [items] drawed Y-coordinate grids*/
-	val locs = items.fold(emptyList<Int>()) {buf, it -> buf+((buf.lastOrNull() ?: 0)+it.showHeight)}
-	private fun locPage(page:Int, height:Int) = locs.indexOfFirst {it>=page*height}.let {if(it<0) locs.size else it}
+	val loc = items.fold(emptyList<Int>()) {buf, it -> buf+((buf.lastOrNull() ?: 0)+it.showHeight)}
+	private fun locPage(page:Int, height:Int) = loc.indexOfFirst {it>=page*height}.let {if(it<0) loc.size else it}
 	val size get() = items.size
 	operator fun get(index:Int) = items[index]
 
 	var menuCursor = 0
-	var statcMenu = 0
+	var menuSubPos = 0
 	var menuY = 0
 
 	fun change(cur:Int, dir:Int, fast:Int) {
@@ -55,30 +55,36 @@ class MenuList(val propName:String = "", vararg items:AbstractMenuItem<*>) {
 	}
 
 	fun drawMenu(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int = menuY, cur:Int = menuCursor) =
-		drawMenu(engine, playerID, receiver, y, page = locs.getOrElse(cur) {0}/engine.field.height)
+		drawMenu(engine, playerID, receiver, y, page = loc.getOrElse(cur) {0}/engine.field.height)
 
 	fun drawMenu(engine:GameEngine, playerID:Int, receiver:EventReceiver, y:Int = menuY, page:Int, offset:Int = 0) {
 		var menuY = y
-		val range = locPage(page, engine.field.height)+offset until locPage(page+1, engine.field.height)+offset
+		val range = locPage(page, engine.field.height)+offset..<locPage(page+1, engine.field.height)+offset
+		receiver.drawMenuNano(engine, 3f, -.5f, "$menuCursor / ${menus.size-1}, ${range.first}", scale = .5f)
 		items.slice(range).forEachIndexed {i, it ->
+			for(z in 0..<it.colMax) receiver.drawMenuNano(engine, -.4f, .5f+menuY+z*.5f, "${range.first+i+z}", scale = .5f)
+			val i1 = menuCursor-range.first
 			it.draw(
-				engine, playerID, receiver, menuY,
-				if(engine.owner.replayMode||menus[menuCursor].first!=i) -1 else menus[menuCursor].second
+				engine, playerID, receiver, menuY, if(engine.owner.replayMode||menus[i1].first!=i) -1 else menus[i1].second
 			)
 			menuY += it.showHeight
-			statcMenu += if(it is SpeedPresets) (if(it.showG) 2 else 0+if(it.showD) 5 else 0) else 1
+			menuSubPos += if(it is SpeedPresets) (if(it.showG) 2 else 0+if(it.showD) 5 else 0) else 1
 		}
 	}
 
-	fun load(prop:CustomProperties, ruleName:String = "", playerID:Int = -1) {
+	fun load(prop:CustomProperties, engine:GameEngine, ruleName:String = "", playerID:Int = -1) {
 		items.forEach {
 			it.load(prop, it.propName(propName, ruleName, playerID))
+			if(it is PresetItem)
+				it.presetLoad(engine, prop, ruleName, playerID)
 		}
 	}
 
-	fun save(prop:CustomProperties, ruleName:String = "", playerID:Int = -1) {
+	fun save(prop:CustomProperties, engine:GameEngine, ruleName:String = "", playerID:Int = -1) {
 		items.forEach {
 			it.save(prop, it.propName(propName, ruleName, playerID))
+			if(it is PresetItem)
+				it.presetSave(engine, prop, ruleName, playerID)
 		}
 	}
 }

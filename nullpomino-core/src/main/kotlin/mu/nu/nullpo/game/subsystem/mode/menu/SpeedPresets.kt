@@ -67,7 +67,7 @@ open class SpeedPresets(color:COLOR, defaultPreset:Int = 0,
 			val g = spd.gravity
 			val d = spd.denominator
 			receiver.drawMenuFont(engine, 0, y+1, "SPEED", color = color)
-			receiver.drawScoreSpeed(engine, 0f, y+1.5f, g, d, 5f)
+			receiver.drawMenuSpeed(engine, 0f, y+2.5f, g, d, 6f)
 			receiver.drawMenuNum(engine, 6, y+1, "%5d".format(g), focus==2)
 			receiver.drawMenuNum(engine, 6, y+2, "%5d".format(d), focus==3)
 			if(focus in 2..3)
@@ -83,7 +83,7 @@ open class SpeedPresets(color:COLOR, defaultPreset:Int = 0,
 					receiver.drawMenuFont(engine, 3+i*3, y, BaseFont.CURSOR, true)
 
 				receiver.drawMenuNum(engine, 4+i*3, y, String.format(if(i==0) "%2d/" else "%2d", show.second), focus==pos)
-				receiver.drawMenuNano(engine, 6+i*5, y*2+1, show.first, color, .5f)
+				receiver.drawMenuNano(engine, 3+i*2.5f, y+.5f, show.first, color, .5f)
 			}
 			for(i in 0..2) {
 				val show = when(i) {
@@ -96,9 +96,9 @@ open class SpeedPresets(color:COLOR, defaultPreset:Int = 0,
 					receiver.drawMenuFont(engine, 7-i*3, y+1, BaseFont.CURSOR, true)
 
 				receiver.drawMenuNum(engine, 8-i*3, y+1, String.format(if(i==1) "%2d+" else "%2d", show.second), focus==pos)
-				receiver.drawMenuNano(engine, 14-i*6, y*2+3, show.first, color, .5f)
+				receiver.drawMenuNano(engine, 7-i*3, y+1.5f, show.first, color, .5f)
 			}
-			receiver.drawMenuNano(engine, 0, y*2-2, "DELAYS", color, .5f)
+			receiver.drawMenuNano(engine, 0, y, "DELAYS", color, .5f)
 
 		}
 	}
@@ -134,32 +134,32 @@ open class SpeedPresets(color:COLOR, defaultPreset:Int = 0,
 		}
 	}
 
-	override fun presetSave(engine:GameEngine, prop:CustomProperties, modeName:String, setId:Int) {
+	override fun presetSave(engine:GameEngine, prop:CustomProperties, ruleName:String, setId:Int) {
 		if(showG) {
-			prop.setProperty("$modeName.gravity.$setId", 1)
-			prop.setProperty("$modeName.denominator.$setId", spd.denominator)
+			prop.setProperty("$ruleName.gravity.$setId", 1)
+			prop.setProperty("$ruleName.denominator.$setId", spd.denominator)
 		}
 		if(showD) {
-			prop.setProperty("$modeName.are.$setId", spd.are)
-			prop.setProperty("$modeName.areLine.$setId", spd.areLine)
-			prop.setProperty("$modeName.lineDelay.$setId", spd.lineDelay)
-			prop.setProperty("$modeName.lockDelay.$setId", spd.lockDelay)
-			prop.setProperty("$modeName.das.$setId", spd.das)
+			prop.setProperty("$ruleName.are.$setId", spd.are)
+			prop.setProperty("$ruleName.areLine.$setId", spd.areLine)
+			prop.setProperty("$ruleName.lineDelay.$setId", spd.lineDelay)
+			prop.setProperty("$ruleName.lockDelay.$setId", spd.lockDelay)
+			prop.setProperty("$ruleName.das.$setId", spd.das)
 		}
 		engine.speed.replace(spd)
 	}
 
-	override fun presetLoad(engine:GameEngine, prop:CustomProperties, modeName:String, setId:Int) {
+	override fun presetLoad(engine:GameEngine, prop:CustomProperties, ruleName:String, setId:Int) {
 		if(showG) {
-			spd.gravity = prop.getProperty("$modeName.gravity.$setId", spd.gravity)
-			spd.denominator = prop.getProperty("$modeName.denominator.$setId", spd.denominator)
+			spd.gravity = prop.getProperty("$ruleName.gravity.$setId", spd.gravity)
+			spd.denominator = prop.getProperty("$ruleName.denominator.$setId", spd.denominator)
 		}
 		if(showD) {
-			spd.are = prop.getProperty("$modeName.are.$setId", spd.are)
-			spd.areLine = prop.getProperty("$modeName.areLine.$setId", spd.areLine)
-			spd.lineDelay = prop.getProperty("$modeName.lineDelay.$setId", spd.lineDelay)
-			spd.lockDelay = prop.getProperty("$modeName.lockDelay.$setId", spd.lockDelay)
-			spd.das = prop.getProperty("$modeName.das.$setId", spd.das)
+			spd.are = prop.getProperty("$ruleName.are.$setId", spd.are)
+			spd.areLine = prop.getProperty("$ruleName.areLine.$setId", spd.areLine)
+			spd.lineDelay = prop.getProperty("$ruleName.lineDelay.$setId", spd.lineDelay)
+			spd.lockDelay = prop.getProperty("$ruleName.lockDelay.$setId", spd.lockDelay)
+			spd.das = prop.getProperty("$ruleName.das.$setId", spd.das)
 		}
 		engine.speed.replace(spd)
 	}

@@ -90,7 +90,7 @@ class ToolMapEditor:AbstractMode() {
 		listFields!!.clear()
 
 		val maxMap = propMap.getProperty("values.maxMapNumber", 0)
-		for(i in 0 until maxMap) {
+		for(i in 0..<maxMap) {
 			val fld = Field()
 			loadMap(fld, propMap, i)
 			listFields!!.add(fld)
@@ -106,7 +106,7 @@ class ToolMapEditor:AbstractMode() {
 		val maxMap = listFields!!.size
 		propMap.setProperty("values.maxMapNumber", maxMap)
 
-		for(i in 0 until maxMap)
+		for(i in 0..<maxMap)
 			saveMap(listFields!![i], propMap, i)
 
 		propMap.save("config/map/vsbattle/$setID.map")
@@ -115,8 +115,8 @@ class ToolMapEditor:AbstractMode() {
 	private fun grayToRandomColor(field:Field) {
 		val rand = Random.Default
 
-		for(i in field.hiddenHeight*-1 until field.height)
-			for(j in 0 until field.width) {
+		for(i in field.hiddenHeight*-1..<field.height)
+			for(j in 0..<field.width) {
 				val col = field.getBlockColor(j, i)
 				if(col==COLOR.BLACK||col==COLOR.WHITE) {
 					var color:COLOR

@@ -64,7 +64,7 @@ class StateConfigRuleStyleSelect:BaseMenuChooseState() {
 
 		FontNormal.printFontGrid(1, 3+cursor, BaseFont.CURSOR, COLOR.RAINBOW)
 
-		for(i in 0 until GameEngine.MAX_GAMESTYLE)
+		for(i in 0..<GameEngine.MAX_GAMESTYLE)
 			FontNormal.printFontGrid(2, 3+i, GameEngine.GAMESTYLE_NAMES[i], cursor==i)
 	}
 

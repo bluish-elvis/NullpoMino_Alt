@@ -86,11 +86,11 @@ class Physician:AbstractMode() {
 		rankingScore.fill(0L)
 		rankingTime.fill(-1)
 		if(!owner.replayMode) {
-			loadSetting(owner.modeConfig, engine)
+			loadSetting(engine, owner.modeConfig)
 
 			version = CURRENT_VERSION
 		} else
-			loadSetting(owner.replayProp, engine)
+			loadSetting(engine, owner.replayProp)
 
 		engine.frameColor = GameEngine.FRAME_COLOR_PURPLE
 		engine.clearMode = GameEngine.ClearType.LINE_COLOR
@@ -185,7 +185,7 @@ class Physician:AbstractMode() {
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&engine.ai==null) {
 				receiver.drawScoreFont(engine, 3, 3, "SCORE  TIME", EventReceiver.COLOR.BLUE)
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreFont(engine, 0, 4+i, "%2d".format(i+1), EventReceiver.COLOR.YELLOW)
 					receiver.drawScoreFont(engine, 3, 4+i, "${rankingScore[i]}", i==rankingRank)
 					receiver.drawScoreFont(engine, 10, 4+i, rankingTime[i].toTimeStr, i==rankingRank)
@@ -202,8 +202,8 @@ class Physician:AbstractMode() {
 			var red = 0
 			var yellow = 0
 			var blue = 0
-			for(y in 0 until engine.field.height)
-				for(x in 0 until engine.field.width) {
+			for(y in 0..<engine.field.height)
+				for(x in 0..<engine.field.width) {
 					engine.field.getBlock(x, y)?.run {
 						if(type==Block.TYPE.GEM) when(color) {
 							BLUE -> blue++
@@ -309,7 +309,7 @@ class Physician:AbstractMode() {
 
 	/* Called when saving replay */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// Update rankings
 		if(!owner.replayMode&&engine.ai==null) {
@@ -320,13 +320,13 @@ class Physician:AbstractMode() {
 		return false
 	}
 
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine: GameEngine, prop: CustomProperties, ruleName: String, playerID: Int) {
 		hoverBlocks = prop.getProperty("physician.hoverBlocks", 40)
 		speed = prop.getProperty("physician.speed", 1)
 		version = prop.getProperty("physician.version", 0)
 	}
 
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("physician.hoverBlocks", hoverBlocks)
 		prop.setProperty("physician.speed", speed)
 		prop.setProperty("physician.version", version)
@@ -358,7 +358,7 @@ class Physician:AbstractMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, time:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[i])
 				return i
 			else if(sc==rankingScore[i]&&time<rankingTime[i]) return i

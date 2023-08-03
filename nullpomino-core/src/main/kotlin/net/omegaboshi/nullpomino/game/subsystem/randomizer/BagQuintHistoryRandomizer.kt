@@ -33,7 +33,7 @@ class BagQuintHistoryRandomizer:BagRandomizer {
 	override val noSZO = true
 	override val limitPrev = true
 
-	override val baglen:Int get() = pieces.size*5
+	override val bagLen:Int get() = pieces.size*5
 
 	constructor():super()
 	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)

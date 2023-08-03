@@ -53,7 +53,7 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 				rasterX[i] += spdN
 				if(waveX[i]!=0f) waveX[i] = 0f
 			} else {
-				waveX[i] = sin((tick*2+(1.28f+spdN*0.01f).pow(32-i))*Rg)*waveMag(i)
+				waveX[i] = sin((tick*2+(1.28f+spdN*0.01f).pow(32-i))*RG)*waveMag(i)
 // R = Sea(I) + Sin((SeaA + 1.28 ^ (32 - I)) * Rg) * (1.15 ^ I) * (1 + (TrM = 0) * 0.4)
 				rasterX[i] += (i-2.5f)*(spdN*.09f-.05f)
 //				Sea(I) = Sea(I) + (I - 2.5) * (0.03 - (TrM > 0) * 0.08)

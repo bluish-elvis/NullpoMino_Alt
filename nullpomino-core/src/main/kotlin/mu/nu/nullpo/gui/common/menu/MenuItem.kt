@@ -29,7 +29,7 @@
 
 package mu.nu.nullpo.gui.common.menu
 
-abstract class MenuItem constructor(var name:String, val description:String = "") {
+abstract class MenuItem(var name:String, val description:String = "") {
 	var color = 0
 	var state = 0
 

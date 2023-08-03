@@ -68,7 +68,7 @@ class ClassicWallkick:Wallkick {
 		// Bigでは専用処理
 		if(piece.big) return checkCollisionKickBig(piece, x, y, rt, fld)
 
-		for(i in 0 until piece.maxBlock)
+		for(i in 0..<piece.maxBlock)
 			if(piece.dataX[rt][i]!=1+piece.dataOffsetX[rt]) {
 				val x2 = x+piece.dataX[rt][i]
 				val y2 = y+piece.dataY[rt][i]
@@ -92,7 +92,7 @@ class ClassicWallkick:Wallkick {
 	 * @return Wallkick可能ならtrue
 	 */
 	private fun checkCollisionKickBig(piece:Piece, x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		for(i in 0 until piece.maxBlock)
+		for(i in 0..<piece.maxBlock)
 			if(piece.dataX[rt][i]!=1+piece.dataOffsetX[rt]) {
 				val x2 = x+piece.dataX[rt][i]*2
 				val y2 = y+piece.dataY[rt][i]*2

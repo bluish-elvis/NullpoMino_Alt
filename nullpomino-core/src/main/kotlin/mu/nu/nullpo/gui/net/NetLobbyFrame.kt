@@ -1981,7 +1981,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			}
 		}
 
-		for(i in 0 until GameEngine.MAX_GAMESTYLE) {
+		for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 			val tm = tableMPRanking[i].columnModel
 			tm.getColumn(0).preferredWidth = propConfig.getProperty("tableMPRanking.width.rank", 30) // Rank
 			tm.getColumn(1).preferredWidth = propConfig.getProperty("tableMPRanking.width.name", 200) // Name
@@ -2517,7 +2517,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private fun saveListFromDefaultListModel(listModel:DefaultListModel<*>, filename:String):Boolean {
 		try {
 			val out = PrintWriter(filename)
-			for(i in 0 until listModel.size())
+			for(i in 0..<listModel.size())
 				out.println(listModel.get(i))
 			out.flush()
 			out.close()
@@ -2770,7 +2770,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		if(!pList.isEmpty()) {
 			listmodelRoomChatPlayerList.clear()
 
-			for(i in 0 until roomInfo.maxPlayers)
+			for(i in 0..<roomInfo.maxPlayers)
 				listmodelRoomChatPlayerList.addElement("[${(i+1)}]")
 
 			for(pInfo in pList) {
@@ -3294,7 +3294,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			else propGlobal.getProperty("0.rulefile.$it", "")
 		}
 
-		for(i in 0 until GameEngine.MAX_GAMESTYLE) {
+		for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 			val subEntries = getSubsetEntries(i)
 			for(j in subEntries.indices)
 				if(subEntries[j].filename==strCurrentFileName[i]) listboxRuleChangeRuleList[i].selectedIndex = j
@@ -3565,7 +3565,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 					val strMap = StringBuilder()
 
-					for(i in 0 until maxMap) {
+					for(i in 0..<maxMap) {
 						val strMapTemp = propMap.getProperty("values.$i", "")
 						mapList.add(strMapTemp)
 						strMap.append(strMapTemp)
@@ -3676,7 +3676,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			// Set rules
 			val strPrevTetrominoRuleFilename = propGlobal.getProperty("0.rule", "")
 
-			for(i in 0 until GameEngine.MAX_GAMESTYLE) {
+			for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 				val id = listboxRuleChangeRuleList[i].selectedIndex
 				val subEntries = getSubsetEntries(i)
 				var entry:RuleEntry? = null
@@ -3829,7 +3829,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				addSystemChatLogLater(txtpaneLobbyChatLog, strErrorMsg, Color.red)
 			} else {
 				val reason = StringBuilder()
-				for(i in 1 until message.size)
+				for(i in 1..<message.size)
 					reason.append(message[i]).append(" ")
 				addSystemChatLogLater(txtpaneLobbyChatLog, getUIText("SysMsg_LoginFail")+reason, Color.red)
 			}
@@ -3878,7 +3878,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			if(style<listRatedRuleName.size) {
 				listRatedRuleName[style].clear()
 
-				for(i in 0 until message.size-2) {
+				for(i in 0..<message.size-2) {
 					val name = NetUtil.urlDecode(message[2+i])
 					listRatedRuleName[style].add(name)
 				}
@@ -3889,7 +3889,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				listmodelCreateRoom1PRuleList.addElement(getUIText("CreateRoom1P_YourRule"))
 				listboxCreateRoom1PRuleList.selectedIndex = 0
 
-				for(i in 0 until listRatedRuleName[style].size) {
+				for(i in 0..<listRatedRuleName[style].size) {
 					val name = listRatedRuleName[style][i]
 					listmodelCreateRoom1PRuleList.addElement(name)
 				}
@@ -3969,7 +3969,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val size = message[1].toInt()
 
 			tablemodelRoomList.rowCount = 0
-			for(i in 0 until size) {
+			for(i in 0..<size) {
 				val r = NetRoomInfo(message[2+i])
 				tablemodelRoomList.addRow(createRoomListRowData(r))
 			}
@@ -3984,7 +3984,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				} else {
 					comboboxCreateRatedPresets.removeAllItems()
 					var preset:String
-					for(i in 1 until message.size) {
+					for(i in 1..<message.size) {
 						preset = NetUtil.decompressString(message[i])
 						val r = NetRoomInfo(preset)
 						presets.add(r)
@@ -4002,7 +4002,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val r = NetRoomInfo(message[1])
 			val columnID = tablemodelRoomList.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
 
-			for(i in 0 until tablemodelRoomList.rowCount) {
+			for(i in 0..<tablemodelRoomList.rowCount) {
 				val strID = tablemodelRoomList.getValueAt(i, columnID) as String
 				val roomID = strID.toInt()
 
@@ -4019,7 +4019,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val r = NetRoomInfo(message[1])
 			val columnID = tablemodelRoomList.findColumn(getUIText(ROOMTABLE_COLUMNNAMES[0]))
 
-			for(i in 0 until tablemodelRoomList.rowCount) {
+			for(i in 0..<tablemodelRoomList.rowCount) {
 				val strID = tablemodelRoomList.getValueAt(i, columnID) as String
 				val roomID = strID.toInt()
 
@@ -4232,7 +4232,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			rowdata[12] = message[15] // Games
 
 			var insertPos = 0
-			for(i in 0 until tablemodelGameStat.rowCount) {
+			for(i in 0..<tablemodelGameStat.rowCount) {
 				val strRank = tablemodelGameStat.getValueAt(i, 0) as String
 				val rank = strRank.toInt()
 
@@ -4666,7 +4666,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				if(row!=-1) {
 					val strCopy = StringBuilder()
 
-					for(column in 0 until table.columnCount) {
+					for(column in 0..<table.columnCount) {
 						val selectedObject = table.getValueAt(row, column)
 						if(selectedObject is String)
 							if(column==0)
@@ -4708,7 +4708,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 	/** Each label of Image Combobox<br></br>
 	 * [Source](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */
-	private class ComboLabel constructor(var text:String = "", var icon:Icon? = null)
+	private class ComboLabel(var text:String = "", var icon:Icon? = null)
 
 	/** ListCellRenderer for Image Combobox<br></br>
 	 * [Source](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */
@@ -4736,9 +4736,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	}
 
 	companion object {
-		/** Serial Version ID */
-		private const val serialVersionUID = 1L
-
 		/** Room-table column names. These strings will be passed to
 		 * getUIText(String) subroutine. */
 		val ROOMTABLE_COLUMNNAMES =

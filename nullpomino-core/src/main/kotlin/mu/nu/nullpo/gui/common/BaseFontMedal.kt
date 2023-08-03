@@ -34,14 +34,14 @@ import mu.nu.nullpo.gui.slick.img.FontMedal
 
 abstract class BaseFontMedal:BaseFont {
 	companion object {
-		const val w = 9
-		const val h = 24
+		const val W = 9
+		const val H = 24
 		/** paddingLeft */
-		const val pl = 5
+		const val PL = 5
 		/** paddingTop */
-		const val pt = 4
+		const val PT = 4
 		/** marginedBottom */
-		const val mb = h-pt
+		const val MB = H-PT
 	}
 
 	abstract val img:ResourceImage<*>
@@ -49,14 +49,14 @@ abstract class BaseFontMedal:BaseFont {
 
 	protected fun processTxt(x:Float, y:Float, str:String, tier:Int, scale:Float,
 		draw:(x:Float, y:Float, dx:Float, dy:Float, sx:Int, sy:Int, sw:Int, sh:Int)->Unit) {
-		val sy = maxOf(0, 4-tier)*h
+		val sy = maxOf(0, 4-tier)*H
 		val ww = str.length*9
 		val bx = x-(ww+10)/2f*(1-scale)
-		val by = y-h/2f*(1-scale)
+		val by = y-H/2f*(1-scale)
 
-		draw(bx-pl*scale, by-pt*scale, bx, by+mb*scale, 0, sy, 4, sy+h)
-		draw(bx-scale, by-pt*scale, bx+(1+ww)*scale, by+mb*scale, 4, sy, 6, sy+h)
-		draw(bx+(1+ww)*scale, by-pt*scale, bx+(5+ww)*scale, by+mb*scale, 6, sy, 10, sy+h)
+		draw(bx-PL*scale, by-PT*scale, bx, by+MB*scale, 0, sy, 4, sy+H)
+		draw(bx-scale, by-PT*scale, bx+(1+ww)*scale, by+MB*scale, 4, sy, 6, sy+H)
+		draw(bx+(1+ww)*scale, by-PT*scale, bx+(5+ww)*scale, by+MB*scale, 6, sy, 10, sy+H)
 		str.forEachIndexed {i, c ->
 			val stringChar = c.code-0x41
 			if(stringChar in 0x00..0x1B) {// Character output

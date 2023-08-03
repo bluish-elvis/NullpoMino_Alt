@@ -59,7 +59,7 @@ abstract class LimitedHistoryRandomizer:Randomizer {
 			firstPiece = false
 		} else if(strict)
 			pieces.subtract(history.toSet()).toList().let {id = it[r.nextInt(it.size)]}
-		else for(i in 0 until numrolls) {
+		else for(i in 0..<numrolls) {
 			id = r.nextInt(pieces.size)
 			if(history.take(4).none {it==id}) break
 		}

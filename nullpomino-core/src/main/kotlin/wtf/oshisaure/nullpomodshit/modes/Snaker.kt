@@ -76,7 +76,7 @@ class Snaker:AbstractMode() {
 			engine.statc[0]++
 			engine.playSE("ready")
 			val startx = 9-snakelength/2
-			for(i in 0 until snakelength) {
+			for(i in 0..<snakelength) {
 				engine.field.setBlock(startx+i, 9, Block(5, engine.skin, 1 or (if(i!=0) 32 else 0) or if(i!=snakelength-1) 64 else 0))
 			}
 			bonusX = 9
@@ -228,7 +228,7 @@ class Snaker:AbstractMode() {
 	}
 
 	private fun blockInSnake(x:Int, y:Int):Int {
-		for(i in 0 until snakelength) if(snakepositionsX[i]==x&&snakepositionsY[i]==y) return i
+		for(i in 0..<snakelength) if(snakepositionsX[i]==x&&snakepositionsY[i]==y) return i
 		return -1
 	}
 

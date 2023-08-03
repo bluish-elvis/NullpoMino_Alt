@@ -243,7 +243,7 @@ class RetroS:AbstractMode() {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
 				receiver.drawScoreFont(engine, 3, topY-1, "SCORE LINE LV TIME", COLOR.BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(engine, 0, topY+i, "${i+1}", COLOR.YELLOW)
 					receiver.drawScoreNum(
 						engine, 2, topY+i,
@@ -384,7 +384,7 @@ class RetroS:AbstractMode() {
 	/** This function will be called when the replay data is going to be
 	 * saved */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// Checks/Updates the ranking
 		if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -401,7 +401,7 @@ class RetroS:AbstractMode() {
 	}
 
 	/** Load the settings */
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		startLevel = prop.getProperty("retromania.startLevel", 0)
 		gametype = prop.getProperty("retromania.gametype", 0)
 		big = prop.getProperty("retromania.big", false)
@@ -410,7 +410,7 @@ class RetroS:AbstractMode() {
 	}
 
 	/** Save the settings */
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("retromania.startLevel", startLevel)
 		prop.setProperty("retromania.gametype", gametype)
 		prop.setProperty("retromania.big", big)
@@ -442,7 +442,7 @@ class RetroS:AbstractMode() {
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank) */
 	private fun checkRanking(sc:Long, li:Int, lv:Int, time:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(if(sc<0) sc<rankingScore[type][i] else sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&if(li<0) li<rankingLines[type][i] else li>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&

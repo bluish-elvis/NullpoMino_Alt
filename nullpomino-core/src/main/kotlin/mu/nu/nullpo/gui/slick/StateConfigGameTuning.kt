@@ -252,7 +252,7 @@ class StateConfigGameTuning:BaseGameState() {
 					FontNormal.printFontGrid(fontX, 15, "(ASSIGNED: ${strButtonF.uppercase()})", COLOR.YELLOW)
 					val spd = engine.speed
 					val ow = engine.softDropSpd
-					FontNano.printFontGrid(fontX, 13, "${spd.gravity}>$ow/${spd.denominator} ${engine.gcount}")
+					FontNano.printFontGrid(fontX, 13, "${spd.gravity}>$ow/${spd.denominator} ${engine.gCount}")
 				}
 			} catch(e:Exception) {
 				log.error("Render fail", e)

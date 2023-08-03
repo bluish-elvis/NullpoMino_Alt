@@ -30,11 +30,11 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 class BagMinusRandomizer:BagRandomizer {
-	override val baglen:Int get() = maxOf(0, super.baglen-1)
+	override val bagLen:Int get() = maxOf(0, super.bagLen-1)
 	override val bagInit:List<Int>
 		get() {
-			val cut = r.nextInt(super.baglen)
-			return List(super.baglen) {it%pieces.size}.filterIndexed {i, _ -> i!=cut}
+			val cut = r.nextInt(super.bagLen)
+			return List(super.bagLen) {it%pieces.size}.filterIndexed {i, _ -> i!=cut}
 		}
 
 	constructor():super()

@@ -267,7 +267,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				// 決定
 				if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
 					engine.playSE("decide")
-					saveSetting(owner.modeConfig, engine)
+					saveSetting(engine, owner.modeConfig)
 					owner.saveModeConfig()
 					onSettingChanged(engine)
 					// NET: Signal start of the game
@@ -308,7 +308,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: When the piece locked. NetDummyMode will send field and stats. */
-	override fun pieceLocked(engine:GameEngine, lines:Int) {
+	override fun pieceLocked(engine: GameEngine, lines: Int, finesse: Boolean) {
 		// NET: Send field and stats
 		if(engine.ending==0&&netIsNetPlay&&!netIsWatch&&(netNumSpectators>0||netForceSendMovements)) {
 			netSendField(engine)
@@ -661,8 +661,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	 */
 	fun netDrawGameRate(engine:GameEngine) {
 		if(netIsNetPlay&&!netIsWatch&&engine.gameStarted&&engine.startTime!=0L) {
-			val gamerate:Float = if(engine.endTime!=0L)
-				engine.statistics.gamerate
+			val gamerate:Float = if(engine.endTime!=0L) engine.statistics.gameRate
 			else {
 				val nowtime = System.nanoTime()
 				(engine.replayTimer/(0.00000006*(nowtime-engine.startTime))).toFloat()
@@ -708,10 +707,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	protected open fun netDrawPlayerName(engine:GameEngine) {
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) {
 			val name = netPlayerName
-			receiver.drawDirectTTF(
-				receiver.fieldX(engine),
-				receiver.fieldY(engine)-20, name!!
-			)
+			receiver.drawDirectTTF(receiver.fieldX(engine), receiver.fieldY(engine)-20, name!!)
 		}
 	}
 
@@ -886,7 +882,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 
 		val msg = StringBuilder("game\tnext\t${engine.ruleOpt.nextDisplay}\t${engine.holdDisable}\t")
 
-		for(i in -1 until engine.ruleOpt.nextDisplay) {
+		for(i in -1..<engine.ruleOpt.nextDisplay) {
 			if(i<0)
 				msg.append(holdID).append(";").append(holdDirection).append(";").append(holdColor)
 			else {
@@ -911,7 +907,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 		engine.ruleOpt.nextDisplay = maxNext
 		engine.holdDisable = message[5].toBoolean()
 
-		for(i in 0 until maxNext+1)
+		for(i in 0..<maxNext+1)
 			if(i+6<message.size) {
 				val strPieceData = message[i+6].split(Regex(";")).dropLastWhile {it.isEmpty()}
 				val pieceID = strPieceData[0].toInt()
@@ -1048,7 +1044,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 					)
 				}
 
-				for((c, i) in (startIndex until endIndex).withIndex()) {
+				for((c, i) in (startIndex..<endIndex).withIndex()) {
 					if(i==netRankingCursor[d])
 						receiver.drawMenuFont(engine, 0, 4+c, BaseFont.CURSOR, COLOR.RED)
 
@@ -1258,7 +1254,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 			netRankingSPL[d] = LinkedList()
 			netRankingRollclear[d] = LinkedList()
 
-			for(i in 0 until maxRecords) {
+			for(i in 0..<maxRecords) {
 				val arrayData = arrayRow[i].split(Regex(",")).dropLastWhile {it.isEmpty()}
 				netRankingPlace[d].add(arrayData[0].toInt())
 				val pName = NetUtil.urlDecode(arrayData[1])

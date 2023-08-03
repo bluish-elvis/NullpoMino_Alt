@@ -141,7 +141,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			nextPiece = checkOffset(nextPiece, engine)
 			input = input or calcIRS(nextPiece, engine)
 			if(threadRunning&&!thinking&&thinkComplete) {
-				val spawnX = engine.getSpawnPosX(engine.field, nextPiece)
+				val spawnX = engine.getSpawnPosX(nextPiece, engine.field)
 				if(bestX-spawnX>1)
 				// left
 				//setDAS = -1;
@@ -248,10 +248,10 @@ open class PoochyBot:DummyAI(), Runnable {
 			} else sameStatusTime = 0
 			if(bestHold&&thinkComplete&&engine.isHoldOK) {
 				// Hold
-				input = input or Controller.BUTTON_BIT_D
+				input = Controller.BUTTON_BIT_D
 
 				val holdPiece = engine.holdPieceObject
-				if(holdPiece!=null) input = input or calcIRS(holdPiece, engine)
+				if(holdPiece!=null) input = calcIRS(holdPiece, engine)
 			} else {
 				if(DEBUG_ALL) log.debug(
 					"bestX = $bestX, nowX = $nowX, bestY = $bestY, nowY = $nowY, bestRt = $bestRt, rt = $rt, bestXSub = $bestXSub, bestYSub = $bestYSub, bestRtSub = $bestRtSub"
@@ -273,7 +273,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							else if(rt and 1>0&&canFloorKick) spinI = true
 							else if(engine.isHoldOK&&!ctrl.isPress(Controller.BUTTON_D)) {
 								if(DEBUG_ALL) log.debug("Stuck I piece - use hold")
-								input = input or Controller.BUTTON_BIT_D
+								input = Controller.BUTTON_BIT_D
 
 								val holdPiece = engine.holdPieceObject
 								if(holdPiece!=null) input = input or calcIRS(holdPiece, engine)
@@ -285,7 +285,7 @@ open class PoochyBot:DummyAI(), Runnable {
 							else if(rt and 1>0&&!pieceNow.checkCollision(nowX-1, nowY, (rt+1)%4, fld)&&canFloorKick) spinI = true
 							else if(engine.isHoldOK&&!ctrl.isPress(Controller.BUTTON_D)) {
 								if(DEBUG_ALL) log.debug("Stuck I piece - use hold")
-								input = input or Controller.BUTTON_BIT_D
+								input = Controller.BUTTON_BIT_D
 
 								val holdPiece = engine.holdPieceObject
 								if(holdPiece!=null) input = input or calcIRS(holdPiece, engine)
@@ -301,29 +301,33 @@ open class PoochyBot:DummyAI(), Runnable {
 				) {
 					//if (DEBUG_ALL) log.debug("Case 1 rotation");
 
-					val lRot = engine.getSpinDirection(-1)
-					val rRot = engine.getSpinDirection(1)
-					if(DEBUG_ALL) log.debug("lrot = $lRot, rrot = $rRot")
+					val spL = engine.getSpinDirection(-1)
+					val spR = engine.getSpinDirection(1)
+					if(DEBUG_ALL) log.debug("spL = $spL, spR = $spR")
 
 					if(best180&&engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E))
-						input = input or Controller.BUTTON_BIT_E
-					else if(bestRt==rRot) spinDir = 1
-					else if(bestRt==lRot) spinDir = -1
+						input = Controller.BUTTON_BIT_E
+					else if(bestRt==spR) spinDir = 1
+					else if(bestRt==spL) spinDir = -1
 					else if(engine.ruleOpt.spinReverseKey&&best180&&rt and 1>0) {
-						spinDir = if(rRot==Piece.DIRECTION_UP) 1
+						spinDir = if(spR==Piece.DIRECTION_UP) 1
 						else -1
 					} else spinDir = 1
 				} else if(rt!=Piece.DIRECTION_UP&&xDiff>1&&engine.ruleOpt.spinReverseKey
 					&&(nowType==Piece.Shape.L||nowType==Piece.Shape.J||nowType==Piece.Shape.T)
-				) if(rt==Piece.DIRECTION_DOWN) {
-					if(engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E))
-						input = input or Controller.BUTTON_BIT_E
-					else if(nowType==Piece.Shape.L) spinDir = -1
-					else if(nowType==Piece.Shape.J) spinDir = 1
-					else if(nowType==Piece.Shape.T) if(nowX>bestX) spinDir = -1
-					else if(nowX<bestX) spinDir = 1
-				} else if(rt==Piece.DIRECTION_RIGHT) spinDir = -1
-				else if(rt==Piece.DIRECTION_LEFT) spinDir = 1//Try to keep flat side down on L, J, or T piece.
+				) when(rt) {
+					Piece.DIRECTION_DOWN -> {
+						when {
+							engine.ruleOpt.spinDoubleKey&&!ctrl.isPress(Controller.BUTTON_E) -> input = Controller.BUTTON_BIT_E
+							nowType==Piece.Shape.L -> spinDir = -1
+							nowType==Piece.Shape.J -> spinDir = 1
+							nowType==Piece.Shape.T -> if(nowX>bestX) spinDir = -1
+							else if(nowX<bestX) spinDir = 1
+						}
+					}
+					Piece.DIRECTION_RIGHT -> spinDir = -1
+					Piece.DIRECTION_LEFT -> spinDir = 1
+				}//Try to keep flat side down on L, J, or T piece.
 
 				// Whether reachable position
 				val minX = pieceNow.getMostMovableLeft(nowX, nowY, rt, fld)
@@ -552,7 +556,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		val p = checkOffset(piece, engine)
 		val nextType = p.type
 		val fld = engine.field
-		val spawnX = engine.getSpawnPosX(fld, p)
+		val spawnX = engine.getSpawnPosX(p, fld)
 		val speed = engine.speed
 		val gravityHigh = speed.gravity>speed.denominator
 		val width = fld.width
@@ -612,7 +616,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		 * Piece pieceHold = null;
 		 * if (engine.holdPieceObject != null)
 		 * pieceHold = new Piece(engine.holdPieceObject); */
-		val nowX = if(inARE) engine.getSpawnPosX(fld, pieceNow) else engine.nowPieceX
+		val nowX = if(inARE) engine.getSpawnPosX(pieceNow, fld) else engine.nowPieceX
 		val nowY = if(inARE) engine.getSpawnPosY(pieceNow) else engine.nowPieceY
 		val nowRt = if(inARE) engine.ruleOpt.pieceDefaultDirection[pieceNow?.id ?: 0] else pieceNow?.direction ?: 0
 		if(pieceHold==null) pieceHold = (if(inARE||pieceNow==null) engine.getNextObjectCopy(engine.nextPieceCount+1)
@@ -639,14 +643,14 @@ open class PoochyBot:DummyAI(), Runnable {
 		var move = 1
 		if(engine.big) move = 2
 
-		for(depth in 0 until MAX_THINK_DEPTH) {
+		for(depth in 0..<MAX_THINK_DEPTH) {
 			/* int dirCount = Piece.DIRECTION_COUNT;
 			 * if (pieceNow.id == Piece.Shape.I || pieceNow.id == Piece.Shape.S
 			 * || pieceNow.id == Piece.Shape.Z)
 			 * dirCount = 2;
 			 * else if (pieceNow.id == Piece.Shape.O)
 			 * dirCount = 1; */
-			for(rt in 0 until Piece.DIRECTION_COUNT) {
+			for(rt in 0..<Piece.DIRECTION_COUNT) {
 				var tempY = nowY
 				if(canFloorKickI&&rt and 1>0) tempY -= 2
 				else if(canFloorKickT&&rt==Piece.DIRECTION_UP) tempY--
@@ -661,7 +665,7 @@ open class PoochyBot:DummyAI(), Runnable {
 				)
 				var spawnOK = true
 				if(engine.stat===GameEngine.Status.ARE) {
-					val spawnX = engine.getSpawnPosX(fld, pieceNow)
+					val spawnX = engine.getSpawnPosX(pieceNow, fld)
 					val spawnY = engine.getSpawnPosY(pieceNow)
 					spawnOK = !pieceNow.checkCollision(spawnX, spawnY, fld)
 				}
@@ -863,7 +867,7 @@ open class PoochyBot:DummyAI(), Runnable {
 
 				// Hold piece
 				if(holdOK&&pieceHold!=null) {
-					val spawnX = engine.getSpawnPosX(engine.field, pieceHold)
+					val spawnX = engine.getSpawnPosX(pieceHold, engine.field)
 					val spawnY = engine.getSpawnPosY(pieceHold)
 					val minHoldX = maxOf(
 						mostMovableX(spawnX, spawnY, -1, engine, engine.field, pieceHold, rt),
@@ -1144,7 +1148,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		val depthsBefore = getColumnDepths(fld)
 		var deepestY = -1
 		//int deepestX = -1;
-		for(i in 0 until width-1) if(depthsBefore[i]>deepestY) deepestY = depthsBefore[i]
+		for(i in 0..<width-1) if(depthsBefore[i]>deepestY) deepestY = depthsBefore[i]
 		//deepestX = i;
 		val valleysBefore = calcValleys(depthsBefore, move)
 
@@ -1219,7 +1223,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		pts += valleyBonus
 		if(lines==1&&!danger&&depth==0&&heightAfter>=16&&holeBefore<3&&!twist&&xMax==width-1) {
 			if(DEBUG_ALL) log.debug(
-				"End of thinkMain($x, $y, $rt, "+rtOld+", fld, piece ${piece.type.name}, $depth). pts = 0 (Special Condition 3)"
+				"End of thinkMain($x, $y, $rt, "+rtOld+", fld, piece ${piece.type.name}, 0). pts = 0 (Special Condition 3)"
 			)
 			return Integer.MIN_VALUE
 		}
@@ -1327,12 +1331,12 @@ open class PoochyBot:DummyAI(), Runnable {
 				//Bonus for pyramidal stack
 				val mid = width/2-1
 				var d:Int
-				for(i in 0 until mid-1) {
+				for(i in 0..<mid-1) {
 					d = depthsAfter[i]-depthsAfter[i+1]
 					pts += if(d>=0) 10
 					else d
 				}
-				for(i in mid+2 until width) {
+				for(i in mid+2..<width) {
 					d = depthsAfter[i]-depthsAfter[i-1]
 					pts += if(d>=0) 10
 					else d
@@ -1354,14 +1358,14 @@ open class PoochyBot:DummyAI(), Runnable {
 				if(depth>0||danger) pts -= (heightBefore-heightAfter)*4
 
 			//Penalty for prematurely filling in canyon
-			if(!big&&!danger&&holeAfter>=holeBefore) for(i in 0 until width-1) if(depthsAfter[i]>depthsAfter[width-1]&&depthsBefore[i]<=depthsBefore[width-1]) {
+			if(!big&&!danger&&holeAfter>=holeBefore) for(i in 0..<width-1) if(depthsAfter[i]>depthsAfter[width-1]&&depthsBefore[i]<=depthsBefore[width-1]) {
 				pts -= 1000000
 				break
 			}
 			//Penalty for premature clears
 			if(!big&&lines>0&&lines<4&&heightAfter>10&&xMax==width-1) {
 				var minHi = 0
-				for(i in 0 until width-1) {
+				for(i in 0..<width-1) {
 					val hi = fld.getHighestBlockY(i)
 					if(hi>minHi) minHi = hi
 				}
@@ -1387,7 +1391,7 @@ open class PoochyBot:DummyAI(), Runnable {
 			if(!big&&danger&&r2ColDepth<depthsAfter[width-1]) {
 				//Bonus if edge clear is possible
 				var maxLeftDepth = depthsAfter[0]
-				for(i in 1 until width-2) maxLeftDepth = maxOf(maxLeftDepth, depthsAfter[i])
+				for(i in 1..<width-2) maxLeftDepth = maxOf(maxLeftDepth, depthsAfter[i])
 				if(r2ColDepth>maxLeftDepth) pts += 200
 			}
 		}
@@ -1615,7 +1619,7 @@ open class PoochyBot:DummyAI(), Runnable {
 		fun getColumnDepths(fld:Field):IntArray {
 			val width = fld.width
 			val result = IntArray(width)
-			for(x in 0 until width) result[x] = fld.getHighestBlockY(x)
+			for(x in 0..<width) result[x] = fld.getHighestBlockY(x)
 			return result
 		}
 	}

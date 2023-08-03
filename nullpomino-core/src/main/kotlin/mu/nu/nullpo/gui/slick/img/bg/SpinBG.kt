@@ -35,7 +35,7 @@ import org.newdawn.slick.Image
 import kotlin.math.sin
 
 class SpinBG(bg:ResourceImage<Image>):AbstractBG(bg) {
-	val sc get() = ((1+sin(this.bg.rotation*Rg)/3)*1024f/minOf(this.bg.width, this.bg.height))
+	val sc get() = ((1+sin(this.bg.rotation*RG)/3)*1024f/minOf(this.bg.width, this.bg.height))
 	val cx get() = this.bg.width/2*sc
 	val cy get() = this.bg.height/2*sc
 	var a = 0f

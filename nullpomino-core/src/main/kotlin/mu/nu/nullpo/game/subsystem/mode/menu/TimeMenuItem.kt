@@ -32,7 +32,7 @@ package mu.nu.nullpo.game.subsystem.mode.menu
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
-class TimeMenuItem constructor(name:String, displayName:String, color:COLOR, defaultValue:Int, range:IntRange,
+class TimeMenuItem(name:String, displayName:String, color:COLOR, defaultValue:Int, range:IntRange,
 	private val increment:Int = 60)
 	:IntegerMenuItem(name, displayName, color, defaultValue, range, false, true) {
 	override val valueString:String
@@ -46,6 +46,6 @@ class TimeMenuItem constructor(name:String, displayName:String, color:COLOR, def
 		}
 		value += delta
 		if(value<min) value = max
-		if(value>max) value = min
+		else if(value>max) value = min
 	}
 }

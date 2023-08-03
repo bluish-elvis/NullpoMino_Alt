@@ -145,7 +145,7 @@ class NetSPPersonalBest:Serializable {
 		val numRecords = prop.getProperty(strKey+"numRecords", 0)
 
 		listRecord.clear()
-		for(i in 0 until numRecords) {
+		for(i in 0..<numRecords) {
 			val strRecordCompressed = prop.getProperty(strKey+i)
 			if(strRecordCompressed!=null) {
 				val strRecord = NetUtil.decompressString(strRecordCompressed)
@@ -219,8 +219,4 @@ class NetSPPersonalBest:Serializable {
 		importStringArray(s.split(Regex(";")).dropLastWhile {it.isEmpty()})
 	}
 
-	companion object {
-		/** serialVersionUID for Serialize */
-		private const val serialVersionUID = 1L
-	}
 }

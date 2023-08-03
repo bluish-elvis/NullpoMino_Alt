@@ -38,7 +38,8 @@ import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.LevelGrandMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
-import mu.nu.nullpo.gui.common.fx.particles.BlockParticleCollection
+import mu.nu.nullpo.gui.common.fx.particles.BlockParticle
+import mu.nu.nullpo.gui.common.fx.particles.BlockParticle.Mapper
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -105,7 +106,7 @@ class GrandM1:AbstractMode() {
 	/** Section Time記録表示中ならtrue */
 	private var isShowBestSectionTime = false
 
-	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE, true, true)
+	private val itemLevel = LevelGrandMenuItem(COLOR.BLUE)
 	/** Level at start */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
@@ -153,7 +154,7 @@ class GrandM1:AbstractMode() {
 	override val gameIntensity = 1
 
 	/* Initialization */
-	override val menu:MenuList = MenuList("grademania1", itemGhost, itemAlert, itemST, itemLevel, item20g, itemBig)
+	override val menu = MenuList("grademania1", itemGhost, itemAlert, itemST, itemLevel, item20g, itemBig)
 	override val rankMap
 		get() = rankMapOf(
 			"grade" to rankingGrade, "level" to rankingLevel, "time" to rankingTime, "section.time" to bestSectionTime
@@ -164,7 +165,7 @@ class GrandM1:AbstractMode() {
 		nextSecLv = 0
 		lvupFlag = true
 		gmPier = 0
-		grade = gmPier
+		grade = 0
 		lastGradeTime = 0
 		comboValue = 0
 		lastScore = 0
@@ -270,43 +271,32 @@ class GrandM1:AbstractMode() {
 	override fun onSetting(engine:GameEngine):Boolean {
 		// Menu
 		if(!engine.owner.replayMode) {
-			// Configuration changes
-			if(updateMenu(engine)!=0) {
-				engine.statistics.level = startLevel*100
-				setSpeed(engine)
-				owner.bgMan.bg = minOf(9, startLevel)
-			}
-
 			// section time display切替
 			if(engine.ctrl.isPush(Controller.BUTTON_F)) {
 				engine.playSE("change")
 				isShowBestSectionTime = !isShowBestSectionTime
 			}
-
-			// 決定
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				isShowBestSectionTime = false
-				sectionsDone = 0
-				bgmLv = if(engine.statistics.level<500) 0 else 1
-				owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
-				return false
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			bgmLv = if(engine.statistics.level<500) 0 else 1
-			owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
-			return menuTime<60
 		}
-
-		return true
+		return super.onSetting(engine)
 	}
 
+	override fun onSettingChanged(engine:GameEngine) {
+
+		engine.statistics.level = startLevel*100
+		setSpeed(engine)
+		owner.bgMan.bg = minOf(9, startLevel)
+		super.onSettingChanged(engine)
+	}
+
+	override fun onReady(engine:GameEngine):Boolean {
+		if(engine.statc[0]==0) {
+			isShowBestSectionTime = false
+			sectionsDone = 0
+			bgmLv = if(engine.statistics.level<500) 0 else 1
+			owner.musMan.bgm = if(engine.statistics.level<500) BGM.GrandM(0) else BGM.GrandM(1)
+		}
+		return super.onReady(engine)
+	}
 	/* Render the settings screen */
 	/*override fun renderSetting(engine:GameEngine, playerID:Int) {
 		drawMenu(engine, playerID, receiver, 0, COLOR.BLUE, 0, "Level" to (startLevel*100), "FULL GHOST" to alwaysGhost,
@@ -340,9 +330,9 @@ class GrandM1:AbstractMode() {
 			if(!owner.replayMode&&startLevel==0&&!big&&!always20g&&engine.ai==null)
 				if(!isShowBestSectionTime) {
 					// Rankings
-					receiver.drawScoreFont(engine, 3, 2, "GRADE TIME LEVEL", COLOR.BLUE)
+					receiver.drawScoreFont(engine, 0, 2, "GRADE TIME LEVEL", COLOR.BLUE)
 
-					for(i in 0 until RANKING_MAX) {
+					for(i in 0..<RANKING_MAX) {
 						receiver.drawScoreGrade(
 							engine, 0, 3+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 						)
@@ -351,14 +341,14 @@ class GrandM1:AbstractMode() {
 						else COLOR.WHITE
 						if(rankingGrade[i]>=18) {
 							var gmP = 0
-							for(l in 1 until tablePier21GradeTime.size)
+							for(l in 1..<tablePier21GradeTime.size)
 								if(rankingTime[i]<tablePier21GradeTime[l]) gmP = l
 							gc = tablePier21GradeColor[gmP]
 						}
 						if(rankingGrade[i]>=0&&rankingGrade[i]<tableGradeName.size)
-							receiver.drawScoreGrade(engine, 3, 3+i, tableGradeName[rankingGrade[i]], gc)
-						receiver.drawScoreNum(engine, 7, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
-						receiver.drawScoreNum(engine, 15, 3+i, "%03d".format(rankingLevel[i]), i==rankingRank)
+							receiver.drawScoreGrade(engine, 2, 3+i, tableGradeName[rankingGrade[i]], gc)
+						receiver.drawScoreNum(engine, 5, 3+i, rankingTime[i].toTimeStr, i==rankingRank)
+						receiver.drawScoreNum(engine, 12, 3+i, "%03d".format(rankingLevel[i]), i==rankingRank)
 					}
 
 					receiver.drawScoreFont(engine, 0, 17, "F:VIEW SECTION TIME", COLOR.GREEN)
@@ -367,7 +357,7 @@ class GrandM1:AbstractMode() {
 					receiver.drawScoreFont(engine, 0, 2, "SECTION TIME SCORE", COLOR.BLUE)
 
 					var totalTime = 0
-					for(i in 0 until SECTION_MAX) {
+					for(i in 0..<SECTION_MAX) {
 						val temp = minOf(i*100, 999)
 						val temp2 = minOf((i+1)*100-1, 999)
 
@@ -466,7 +456,7 @@ class GrandM1:AbstractMode() {
 						var strSeparator = "-"
 						if(i==section&&engine.ending==0) strSeparator = "+"
 						val strSectionTime = StringBuilder()
-						for(l in 0 until i)
+						for(l in 0..<i)
 							strSectionTime.append("\n")
 						strSectionTime.append(
 							"%3d%s%s %d\n".format(temp, strSeparator, sectionTime[i].toTimeStr, sectionScore[i])
@@ -493,13 +483,9 @@ class GrandM1:AbstractMode() {
 	/* 移動中の処理 */
 	override fun onMove(engine:GameEngine):Boolean {
 		// 新規ピース出現時
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag) {
-			if(engine.statistics.level<nextSecLv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
-		}
+		if(engine.ending==0&&engine.statc[0]==0&&!engine.holdDisable&&!lvupFlag)
+			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
+
 		if(engine.ending==0&&engine.statc[0]>0&&(version>=1||!engine.holdDisable)) lvupFlag = false
 
 		return false
@@ -509,11 +495,7 @@ class GrandM1:AbstractMode() {
 	override fun onARE(engine:GameEngine):Boolean {
 		// 最後の frame
 		if(engine.ending==0&&engine.statc[0]>=engine.statc[1]-1&&!lvupFlag) {
-			if(engine.statistics.level<nextSecLv-1) {
-				engine.statistics.level++
-				if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
-			}
-			levelUp(engine)
+			levelUp(engine, (engine.statistics.level<nextSecLv-1).toInt())
 			lvupFlag = true
 		}
 
@@ -521,8 +503,9 @@ class GrandM1:AbstractMode() {
 	}
 
 	/** levelが上がったときの共通処理 */
-	private fun levelUp(engine:GameEngine) {
-		// Meter
+	private fun levelUp(engine:GameEngine, lu:Int = 0) {
+
+		engine.statistics.level+=lu
 		engine.meterValue = engine.statistics.level%100/99f
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 
@@ -532,13 +515,15 @@ class GrandM1:AbstractMode() {
 		// LV100到達でghost を消す
 		if(engine.statistics.level>=100&&!alwaysGhost) engine.ghost = false
 
+		if(lu<=0) return
+		if(engine.statistics.level==nextSecLv-1&&secAlert) engine.playSE("levelstop")
 		// BGM fadeout
 		if(bgmLv==0&&engine.statistics.level>=490) owner.musMan.fadeSW = true
 	}
 
 	override fun blockBreak(engine:GameEngine, blk:Map<Int, Map<Int, Block>>):Boolean {
 		engine.owner.receiver.efxFG.addAll(
-			BlockParticleCollection(engine, engine.owner.receiver, blk, 4.8f, 2f, engine.combo>=0).particles
+			Mapper(engine, engine.owner.receiver, blk, BlockParticle.Type.TGM, engine.combo>=0, 4f).particles
 		)
 		return true
 	}
@@ -587,8 +572,7 @@ class GrandM1:AbstractMode() {
 			}
 
 			// Level up
-			engine.statistics.level += li
-			levelUp(engine)
+			levelUp(engine, li)
 			if(engine.statistics.level>=999) {
 				// Ending
 				engine.statistics.level = 999
@@ -691,7 +675,7 @@ class GrandM1:AbstractMode() {
 			secretGrade = engine.field.secretGrade
 			val time = engine.statistics.time
 			if(grade>=18)
-				for(i in 1 until tablePier21GradeTime.size)
+				for(i in 1..<tablePier21GradeTime.size)
 					if(time<tablePier21GradeTime[i]) decTemp++
 
 			if(time<6000) decTemp -= 3
@@ -844,7 +828,7 @@ class GrandM1:AbstractMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(gr:Int, lv:Int, time:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(gr>rankingGrade[i]) return i
 			else if(gr==rankingGrade[i]&&lv>rankingLevel[i]) return i
 			else if(gr==rankingGrade[i]&&lv==rankingLevel[i]&&time<rankingTime[i]) return i
@@ -854,7 +838,7 @@ class GrandM1:AbstractMode() {
 
 	/** Update best section time records */
 	private fun updateBestSectionTime() {
-		for(i in 0 until SECTION_MAX)
+		for(i in 0..<SECTION_MAX)
 			if(sectionIsNewRecord[i]) {
 				bestSectionTime[i] = sectionTime[i]
 				bestSectionScore[i] = sectionScore[i]

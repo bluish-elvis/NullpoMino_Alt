@@ -47,7 +47,7 @@ class RanksIteratorPart internal constructor(private val oneIteration:OneIterati
 	}
 
 	override fun run() {
-		for(s in sMin until sMax) {
+		for(s in sMin..<sMax) {
 			ranks!!.iterateSurface(surface, surfaceDecodedWork)
 			synchronized(this) {
 				oneIteration.iterate()

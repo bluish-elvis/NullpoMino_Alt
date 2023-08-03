@@ -260,7 +260,7 @@ class MarathonDrill:NetDummyMode() {
 			engine.readyEnd = engine.goStart-1
 			engine.goEnd = engine.goStart+50
 		}
-		if(garbageHeight>0&&engine.statc[0] in 30 until 30+garbageHeight*5&&engine.statc[0]%5==0)
+		if(garbageHeight>0&&engine.statc[0] in 30..<30+garbageHeight*5&&engine.statc[0]%5==0)
 			addGarbage(engine)
 		return false
 	}
@@ -276,23 +276,23 @@ class MarathonDrill:NetDummyMode() {
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&startLevel==0) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-				receiver.drawScoreFont(engine, 3, topY-1, "SCORE  LINE DEPTH", COLOR.BLUE)
+				receiver.drawScoreFont(engine, 0, topY-1, "SCORE LINE DEPTH", COLOR.BLUE)
 
-				for(i in 0 until RANKING_MAX) {
+				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(
 						engine, 0, topY+i, "%2d".format(i+1),
 						COLOR.YELLOW
 					)
 					receiver.drawScoreNum(
-						engine, 15, topY+i, "${rankingDepth[goalType][i]}",
+						engine, 2, topY+i, "${rankingScore[goalType][i]}",
 						i==rankingRank
 					)
 					receiver.drawScoreNum(
-						engine, 3, topY+i, "${rankingScore[goalType][i]}",
+						engine, 7, topY+i, "${rankingLines[goalType][i]}",
 						i==rankingRank
 					)
 					receiver.drawScoreNum(
-						engine, 10, topY+i, "${rankingLines[goalType][i]}",
+						engine, 12, topY+i, "${rankingDepth[goalType][i]}",
 						i==rankingRank
 					)
 				}
@@ -482,10 +482,10 @@ class MarathonDrill:NetDummyMode() {
 		if(garbageHole<0||engine.random.nextFloat()<getGarbageMessRate(engine.statistics.level))
 			garbageHole = engine.random.nextInt(w)
 
-		for(i in 0 until lines) {
+		for(i in 0..<lines) {
 			field.pushUp()
 
-			for(x in 0 until w)
+			for(x in 0..<w)
 				if(x!=garbageHole)
 					field.setBlock(
 						x, h-1, Block(
@@ -496,7 +496,7 @@ class MarathonDrill:NetDummyMode() {
 
 			// Set connections
 			if(receiver.isStickySkin(engine))
-				for(x in 0 until w) {
+				for(x in 0..<w) {
 					field.getBlock(x, h-1)?.apply {
 						if(!field.getBlockEmpty(x-1, h-1, false)) setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
 						if(!field.getBlockEmpty(x+1, h-1, false)) setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
@@ -564,7 +564,7 @@ class MarathonDrill:NetDummyMode() {
 
 	/* Called when saving replay */
 	override fun saveReplay(engine:GameEngine, prop:CustomProperties):Boolean {
-		saveSetting(prop, engine)
+		saveSetting(engine, prop)
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(
@@ -580,7 +580,7 @@ class MarathonDrill:NetDummyMode() {
 		return false
 	}
 
-	override fun loadSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		goalType = prop.getProperty("digchallenge.goalType", GOALTYPE_NORMAL)
 		startLevel = prop.getProperty("digchallenge.startLevel", 0)
 		bgmId = prop.getProperty("digchallenge.bgmno", 0)
@@ -588,7 +588,7 @@ class MarathonDrill:NetDummyMode() {
 		version = prop.getProperty("digchallenge.version", 0)
 	}
 
-	override fun saveSetting(prop:CustomProperties, ruleName:String, playerID:Int) {
+	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		prop.setProperty("digchallenge.goalType", goalType)
 		prop.setProperty("digchallenge.startLevel", startLevel)
 		prop.setProperty("digchallenge.bgmno", bgmId)
@@ -627,7 +627,7 @@ class MarathonDrill:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, dep:Int, type:Int):Int {
-		for(i in 0 until RANKING_MAX)
+		for(i in 0..<RANKING_MAX)
 			if(sc>rankingScore[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
 			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&dep>rankingDepth[type][i]) return i

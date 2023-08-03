@@ -408,8 +408,8 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 			drawX(engine)
 
 		if(engine.stat!=GameEngine.Status.RESULT&&engine.gameStarted)
-			for(x in 0 until engine.field.width)
-				for(y in 0 until engine.field.height) {
+			for(x in 0..<engine.field.width)
+				for(y in 0..<engine.field.height) {
 					val b = engine.field.getBlock(x, y) ?: continue
 					if(b.isEmpty) continue
 					if(b.hard>0)
@@ -455,8 +455,8 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 			return true
 		}
 		//Decrement bomb blocks' countdowns and explode those that hit 0.
-		for(y in engine.field.hiddenHeight*-1 until engine.field.height)
-			for(x in 0 until engine.field.width) {
+		for(y in engine.field.hiddenHeight*-1..<engine.field.height)
+			for(x in 0..<engine.field.width) {
 				val b = engine.field.getBlock(x, y)
 				if(b==null)
 					continue

@@ -338,8 +338,8 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 			}
 			val sizeLimit = maxOf(engine.colorClearSize-1, 2)
 			do
-				for(i in 0 until handicapRows[engine.playerID])
-					for(j in 0 until width)
+				for(i in 0..<handicapRows[engine.playerID])
+					for(j in 0..<width)
 						if(it.getBlockEmpty(j, y-i))
 							it.setBlockColor(j, y-i, BLOCK_COLORS[rand.nextInt(numColors[engine.playerID])])
 			while(it.clearColor(sizeLimit, false, false, true)>0)
@@ -441,12 +441,12 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 				winnerID = -1
 				owner.engine[0].stat = GameEngine.Status.GAMEOVER
 				owner.engine[1].stat = GameEngine.Status.GAMEOVER
-			} else if(p2Lose&&!p1Lose) {
+			} else if(p2Lose) {
 				// 1P win
 				winnerID = 0
 				owner.engine[0].stat = GameEngine.Status.EXCELLENT
 				owner.engine[1].stat = GameEngine.Status.GAMEOVER
-			} else if(p1Lose&&!p2Lose) {
+			} else if(p1Lose) {
 				// 2P win
 				winnerID = 1
 				owner.engine[0].stat = GameEngine.Status.GAMEOVER
