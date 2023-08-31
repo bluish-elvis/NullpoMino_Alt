@@ -40,8 +40,8 @@ import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.slick.RendererExtension
-import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
+import mu.nu.nullpo.gui.slick.img.ext.RendererExtension
+import zeroxfc.nullpo.custom.libs.backgroundtypes.ResourceHolderCustomAssetExtension
 import org.apache.logging.log4j.LogManager
 
 class ExamSpinner {
@@ -79,7 +79,7 @@ class ExamSpinner {
 	private val close:Boolean
 	private val custom:Boolean
 	private val locations:IntArray = endXs.clone()
-	private var customHolder:ResourceHolderCustomAssetExtension? = null
+	private var customHolder: ResourceHolderCustomAssetExtension? = null
 	private var header:String? = null
 	private var subheading:String? = null
 	private var possibilities:List<String> = emptyList()

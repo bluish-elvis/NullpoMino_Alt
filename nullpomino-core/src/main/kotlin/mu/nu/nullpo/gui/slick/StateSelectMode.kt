@@ -41,9 +41,10 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.GameState
 import org.newdawn.slick.state.StateBasedGame
 import org.newdawn.slick.state.transition.EmptyTransition
+import org.newdawn.slick.state.transition.HorizontalSplitTransition
 
 /** Mode select screen */
-class StateSelectMode:BaseMenuScrollState() {
+internal class StateSelectMode:BaseMenuScrollState() {
 	/** True if top-level folder */
 	internal var isTopLevel = false
 	/** Current folder name */
@@ -85,13 +86,14 @@ class StateSelectMode:BaseMenuScrollState() {
 
 		cursor = getIDbyName(
 			when {
-				isTopLevel -> NullpoMinoSlick.propGlobal.getProperty("name.mode.toplevel", null)
-				strCurrentFolder.isNotEmpty() -> NullpoMinoSlick.propGlobal.getProperty("name.mode.$strCurrentFolder", null)
-				else -> NullpoMinoSlick.propGlobal.getProperty("name.mode", null)
+				isTopLevel -> NullpoMinoSlick.propGlobal.lastMode["_top"]
+				strCurrentFolder.isNotEmpty() -> NullpoMinoSlick.propGlobal.lastMode[strCurrentFolder]
+				else -> NullpoMinoSlick.propGlobal.lastMode[""]
 			}
 		)
 		if(cursor<0) cursor = 0
 		if(cursor>list.size-1) cursor = list.size-1
+		emitGrid(cursor+minChoiceY)
 	}
 
 	/** Get mode ID (not including netplay modes)
@@ -143,18 +145,16 @@ class StateSelectMode:BaseMenuScrollState() {
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		if(isTopLevel&&cursor==list.lastIndex) {
 			// More...
-			NullpoMinoSlick.propGlobal.setProperty("name.mode.toplevel", list[cursor])
+			NullpoMinoSlick.propGlobal.lastMode["_top"] = list[cursor]
 			ResourceHolder.soundManager.play("decide1")
 			game.enterState(StateSelectModeFolder.ID)
 		} else {
-			// Go to rule selector
-			if(isTopLevel) NullpoMinoSlick.propGlobal.setProperty("name.mode.toplevel", list[cursor])
+			NullpoMinoSlick.propGlobal.lastMode[if(isTopLevel) "_top" else strCurrentFolder.ifEmpty {"_all"}] = list[cursor]
 			ResourceHolder.soundManager.play("decide2")
-			if(strCurrentFolder.isNotEmpty())
-				NullpoMinoSlick.propGlobal.setProperty("name.mode.$strCurrentFolder", list[cursor])
 
-			NullpoMinoSlick.propGlobal.setProperty("name.mode", list[cursor])
+			NullpoMinoSlick.propGlobal.lastMode[""] = list[cursor]
 			//NullpoMinoSlick.saveConfig();
+			// Go to rule selector
 			game.enterState(
 				StateSelectRuleFromList.ID,
 				TransDecideMode(list[cursor], listInternal[cursor].gameStyle.ordinal),
@@ -178,7 +178,7 @@ class StateSelectMode:BaseMenuScrollState() {
 	override fun onCancel(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		game.enterState(
 			if(isTopLevel) StateTitle.ID else StateSelectModeFolder.ID,
-			StateSelectModeFolder.TransDecideFolder(), EmptyTransition()
+			StateSelectModeFolder.TransDecideFolder(), HorizontalSplitTransition()
 		)
 		return true
 	}

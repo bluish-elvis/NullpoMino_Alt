@@ -44,7 +44,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
-import mu.nu.nullpo.gui.slick.RendererExtension
+import mu.nu.nullpo.gui.slick.img.ext.RendererExtension
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.GameTextUtilities

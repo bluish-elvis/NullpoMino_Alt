@@ -472,23 +472,23 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/** NET: Initialization Completed (Never called) */
-	override fun netlobbyOnInit(lobby:NetLobbyFrame) {}
+	override fun onLobbyInit(lobby:NetLobbyFrame) {}
 
 	/** NET: Login completed (Never called) */
-	override fun netlobbyOnLoginOK(lobby:NetLobbyFrame, client:NetPlayerClient) {}
+	override fun onLoginOK(lobby:NetLobbyFrame, client:NetPlayerClient) {}
 
 	/** NET: When you enter a room (Never called) */
-	override fun netlobbyOnRoomJoin(lobby:NetLobbyFrame, client:NetPlayerClient, roomInfo:NetRoomInfo) {}
+	override fun onRoomJoin(lobby:NetLobbyFrame, client:NetPlayerClient, roomInfo:NetRoomInfo) {}
 
 	/** NET: When you returned to lobby (Never called) */
-	override fun netlobbyOnRoomLeave(lobby:NetLobbyFrame, client:NetPlayerClient) {}
+	override fun onRoomLeave(lobby:NetLobbyFrame, client:NetPlayerClient) {}
 
 	/* NET: When disconnected */
-	override fun netlobbyOnDisconnect(lobby:NetLobbyFrame, client:NetPlayerClient, ex:Throwable?) {}
+	override fun onDisconnect(lobby:NetLobbyFrame, client:NetPlayerClient, ex:Throwable?) {}
 
 	/* NET: Message received */
 	@Throws(IOException::class)
-	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>) {
+	override fun onMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>) {
 		// Player status update
 		if(message[0]=="playerupdate") netUpdatePlayerExist()
 		// When someone log out
@@ -588,7 +588,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 	}
 
 	/* NET: When the lobby window is closed */
-	override fun netlobbyOnExit(lobby:NetLobbyFrame) {
+	override fun onLobbyExit(lobby:NetLobbyFrame) {
 		try {
 			for(i in owner.engine.indices)
 				owner.engine[i].quitFlag = true

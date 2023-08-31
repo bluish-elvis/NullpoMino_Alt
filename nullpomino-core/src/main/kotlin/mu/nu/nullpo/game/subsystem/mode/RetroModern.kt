@@ -30,6 +30,8 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.LevelData
+import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
@@ -144,58 +146,19 @@ class RetroModern:AbstractMode() {
 		engine.ruleOpt.softdropGravitySpeedLimit = true
 		engine.ruleOpt.softdropSpeed = 1f
 		engine.owSDSpd = -1
-		when {
-			lv<=MAX_LEVEL -> {
-				receiver.setBGSpd(owner, .5f+gameType*.4f)
-				val d = tableDenominator[gameType][lv]
-				if(d==0)
-					engine.speed.gravity = -1
-				else {
-					engine.speed.gravity = if(d<0) d*-1 else 1
-					engine.speed.denominator = if(d>0) d else 1
-				}
-				engine.speed.areLine = tableARE[gameType][lv]
-				engine.speed.are = engine.speed.areLine
-				engine.speed.lockDelay = tableLockDelay[gameType][lv]
-				engine.speed.das = minOf(15, tableLockDelay[gameType][lv]-12)
-
-				engine.speed.lineDelay = when(gameType) {
-					0 -> 57
-					1 -> 48
-					2 -> 39
-					3 -> 30
-					else -> 20
-				}
-			}
-			lv==MAX_LEVEL+1 -> {
-				engine.speed.gravity = 1
-				engine.speed.denominator = 24
-				engine.speed.areLine = 31
-				engine.speed.are = engine.speed.areLine
-				engine.speed.lineDelay = 57
-				engine.speed.lockDelay = 44
-				engine.speed.das = 15
-			}
-			gameType==4 -> {
-				engine.speed.gravity = -1
-				engine.speed.denominator = 1
-				engine.speed.areLine = 15
-				engine.speed.are = engine.speed.areLine
-				engine.speed.lineDelay = 25
-				engine.speed.lockDelay = 22
-				engine.speed.das = 13
-			}
-			else -> {
-				engine.ruleOpt.lockResetMove = false
-				engine.speed.denominator = 1
-				engine.speed.gravity = engine.speed.denominator
-				engine.speed.areLine = 17
-				engine.speed.are = engine.speed.areLine
-				engine.speed.lineDelay = 42
-				engine.speed.lockDelay = 18
-				engine.speed.das = 6
-			}
+		if(lv<=MAX_LEVEL) {
+			receiver.setBGSpd(owner, .5f+gameType*.4f)
+			engine.speed.replace(tableSpd[gameType][lv])
+		} else if(lv==MAX_LEVEL+1)
+			engine.speed.replace(SpeedParam(1, 24, 31, 57, 44, 15))
+		else {
+			engine.ruleOpt.lockResetMove = gameType==0||gameType==4
+			engine.speed.replace(
+				if(gameType==4) SpeedParam(-1, 1, 15, 25, 22, 10)
+				else SpeedParam(1, 1, 17, 42, 21-gameType, 6)
+			)
 		}
+
 	}
 
 	/** Main routine for game setup screen */
@@ -658,30 +621,33 @@ class RetroModern:AbstractMode() {
 		private const val STRING_POWERON_PATTERN =
 			"4040050165233516506133350555213560141520224542633206134255165200333560031332022463366645230432611435533550326251231351500244220365666413154321122014634420132506140113461064400566344110153223400634050546214410040214650102256233133116353263111335043461206211262231565235306361150440653002222453302523255563545455656660124120450663502223206465164461126135621055103645066644052535021110020361422122352566156434351304346510363640453452505655142263102605202216351615031650050464160613325366023413453036542441246445101562252141201460505435130040221311400543416041660644410106141444041454511600413146353206260246251556635262420616451361336106153451563316660054255631510320566516465265421144640513424316315421664414026440165341010302443625101652205230550602002033120044344034100160442632436645325512265351205642343342312121523120061530234443062420033310461403306365402313212656105101254352514216210355230014040335464640401464125332132315552404146634264364245513600336065666305002023203545052006445544450440460"
 
-		/** Gravity table */
-		private val tableDenominator = listOf(
-			listOf(24, 15, 10, 6, 20, 5, 5, 4, 3, 3, 2, 2, 2, 2, 2, 1),
-			listOf(24, 15, 10, 4, 20, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1),
-			listOf(15, 10, +5, 3, 20, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-			listOf(+1, +1, +1, 1, 20, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-			listOf(1, 1, 1, -2, 20, 1, 1, -2, -3, -4, -4, -4, -5, -4, -3, 0)
-		)
-		/** Lock delay table */
-		private val tableLockDelay = listOf(
-			listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 24),
-			listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 27, 26, 25, 24, 20, 22),
-			listOf(39, 34, 32, 30, 39, 28, 28, 27, 26, 25, 24, 24, 24, 22, 20, 20),
-			listOf(24, 24, 24, 30, 39, 24, 24, 24, 24, 24, 24, 24, 24, 20, 20, 19),
-			listOf(24, 24, 24, 30, 39, 24, 24, 25, 25, 25, 24, 23, 23, 23, 23, 25)
-		)
-		/** ARE table */
-		private val tableARE = listOf(
-			listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 25, 26, 26),
-			listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 25, 24, 26, 25),
-			listOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 25, 24, 23, 26, 24),
-			listOf(26, 26, 26, 26, 28, 26, 26, 26, 26, 26, 25, 24, 23, 22, 26, 22),
-			listOf(26, 25, 24, 24, 28, 25, 24, 24, 24, 24, 23, 22, 22, 21, 21, 20)
-		)
+		private val tableSpd = listOf(
+			LevelData(
+				listOf(1), listOf(24, 15, 10, 6, 20, 5, 5, 4, 3, 3, 2, 2, 2, 2, 2, 1),
+				listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 26, 25, 26, 26),
+				listOf(57), listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 28, 28, 28, 28, 28, 24),
+			),
+			LevelData(
+				listOf(1), listOf(24, 15, 10, 4, 20, 3, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1),
+				listOf(31, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 26, 25, 24, 26, 25),
+				listOf(48), listOf(44, 39, 34, 30, 39, 29, 29, 29, 28, 28, 27, 26, 25, 24, 20, 22),
+			),
+			LevelData(
+				listOf(1), listOf(15, 10, +5, 3, 20, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+				listOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 25, 24, 23, 26, 24),
+				listOf(39), listOf(39, 34, 32, 30, 39, 28, 28, 27, 26, 25, 24, 24, 24, 22, 20, 20),
+			),
+			LevelData(
+				listOf(1), listOf(+1, +1, +1, 1, 20, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+				listOf(28, 28, 26, 26, 28, 26, 26, 26, 26, 26, 26, 25, 24, 23, 26, 24),
+				listOf(30), listOf(24, 24, 24, 30, 39, 24, 24, 24, 24, 24, 24, 24, 24, 20, 20, 19),
+			),
+			LevelData(
+				listOf(1, 1, 1, 2, +1, 1, 1, 2, 3, 4, 4, 4, 5, 4, 3, -1), listOf(1, 1, 1, 1, 20, 1),
+				listOf(26, 25, 24, 24, 28, 25, 24, 24, 24, 24, 23, 22, 22, 21, 21, 20),
+				listOf(20), listOf(24, 24, 24, 30, 39, 24, 24, 25, 25, 25, 24, 23, 23, 23, 23, 25)
+			)
+		).map {l -> LevelData(l.gravity, l.denominator, l.are, l.lineDelay, l.lockDelay, l.lockDelay.map {minOf(15, it-12)})}
 
 		/** Score multiply table */
 		private val tableScoreMult = listOf(

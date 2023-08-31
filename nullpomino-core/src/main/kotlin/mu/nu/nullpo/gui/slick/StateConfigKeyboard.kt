@@ -40,7 +40,7 @@ import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 
 /** Keyboard config screen state */
-class StateConfigKeyboard:BasicGameState() {
+internal class StateConfigKeyboard:BasicGameState() {
 	/** Player number */
 	var player = 0
 
@@ -227,7 +227,7 @@ class StateConfigKeyboard:BasicGameState() {
 								GameKey.gameKey[player].keymap[i] = keymap[i]
 							else
 								GameKey.gameKey[player].keymapNav[i] = keymap[i]
-						GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig)
+						GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig.ctrl.keymaps[player])
 						NullpoMinoSlick.saveConfig()
 						gameObj.enterState(StateConfigMainMenu.ID)
 					} else {

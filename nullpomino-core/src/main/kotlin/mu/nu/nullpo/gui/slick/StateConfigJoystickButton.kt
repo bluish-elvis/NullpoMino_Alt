@@ -39,7 +39,7 @@ import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 
 /** Joystick button設定画面のステート */
-class StateConfigJoystickButton:BasicGameState() {
+internal class StateConfigJoystickButton:BasicGameState() {
 	/** Player number */
 	var player = 0
 
@@ -188,7 +188,7 @@ class StateConfigJoystickButton:BasicGameState() {
 				ResourceHolder.soundManager.play("decide1")
 
 				System.arraycopy(buttonmap, 0, GameKey.gameKey[player].buttonmap, 0, GameKeyDummy.MAX_BUTTON)
-				GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig)
+				GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig.ctrl.keymaps[player])
 				NullpoMinoSlick.saveConfig()
 
 				gameObj.enterState(StateConfigJoystickMain.ID)

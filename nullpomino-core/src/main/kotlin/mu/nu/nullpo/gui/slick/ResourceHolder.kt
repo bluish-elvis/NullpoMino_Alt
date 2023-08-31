@@ -41,7 +41,7 @@ import java.io.File
 
 /** 画像や音声の管理をするクラス */
 object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
-	override val skinDir:String by lazy {NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")}
+	override val skinDir:String by lazy {NullpoMinoSlick.propGlobal.custom.skinDir}
 
 //	override val bgMax get() = imgPlayBG.size
 
@@ -110,10 +110,10 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	internal var ttfFont:UnicodeFont? = null
 
 	/** Sound effects */
-	var soundManager:SoundManager = SoundManager()
+	internal var soundManager:SoundManager = SoundManager()
 
 	/** BGM */
-	var bgm:List<MutableList<Pair<Music?, Boolean>>> = emptyList()
+	private var bgm:List<MutableList<Pair<Music?, Boolean>>> = emptyList()
 
 	/** Current BGM number */
 	private var bgmint:Pair<Int, Int> = 0 to 0
@@ -123,8 +123,8 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	fun load() {
 		try {
 			loadImg(
-				NullpoMinoSlick.propConfig.getProperty("option.showBG", true),
-				NullpoMinoSlick.propConfig.getProperty("option.heavyEffect", 0)>0
+				NullpoMinoSlick.propConfig.visual.showBG,
+				NullpoMinoSlick.propConfig.visual.heavyEffect>0
 			)
 		} catch(e:Throwable) {
 			log.error("Resource load failed", e)
@@ -141,7 +141,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		}
 
 		// Sound effects
-		if(NullpoMinoSlick.propConfig.getProperty("option.se", true)) {
+		if(NullpoMinoSlick.propConfig.audio.se) {
 			try {
 				SoundStore.get().init()
 			} catch(e:Throwable) {
@@ -157,7 +157,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		bgm = BGM.all.map {MutableList(it.size) {null to false}}
 		bgmPlaying = null
 
-		if(NullpoMinoSlick.propConfig.getProperty("option.bgmPreload", false)) BGM.all.forEach {list ->
+		if(NullpoMinoSlick.propConfig.audio.bgmPreload) BGM.all.forEach {list ->
 			list.forEach {loadBGM(it, false)}
 		}
 	}
@@ -182,7 +182,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 
 	private fun loadSE(name:String) {
 		//log.info("LoadSE $name")
-		val fn = "${NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")}/se/$name"
+		val fn = "${NullpoMinoSlick.propGlobal.custom.skinDir}/se/$name"
 		val wav = File("$fn.wav").canRead()&&soundManager.load(name, "$fn.wav")
 		if(!wav&&File("$fn.ogg").canRead()) soundManager.load(name, "$fn.ogg")
 	}
@@ -192,7 +192,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	 * @param showErr 例外が発生したときにコンソールに表示する
 	 */
 	private fun loadBGM(bgm:BGM, showErr:Boolean) {
-		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
+		if(!NullpoMinoSlick.propConfig.audio.bgm) return
 		val name = bgm.name
 		val n = bgm.longName
 		bgm.id
@@ -205,7 +205,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 					return@forEachIndexed
 				}
 
-				val streaming = NullpoMinoSlick.propConfig.getProperty("option.bgmStreaming", true)
+				val streaming = NullpoMinoSlick.propConfig.audio.bgmStreaming
 				if(File(filename).canRead()) {
 					this.bgm[bgm.id][idx] =
 						Music(filename, streaming) to NullpoMinoSlick.propMusic.getProperty("music.noloop.${bgm.name}.${bgm.idx}", false)
@@ -223,12 +223,12 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	 * @param m enums of BGM [mu.nu.nullpo.game.component.BGMStatus.BGM]
 	 */
 	internal fun bgmStart(m:BGM) {
-		if(!NullpoMinoSlick.propConfig.getProperty("option.bgm", false)) return
+		if(!NullpoMinoSlick.propConfig.audio.bgm) return
 		bgmStop()
 		val x = minOf(m.id, bgm.size-1)
 		val y = minOf(m.idx, bgm[x].size-1)
-		val bgmVol = NullpoMinoSlick.propConfig.getProperty("option.bgmVolume", 128)
-		NullpoMinoSlick.appGameContainer.musicVolume = bgmVol/256.toFloat()
+		val bgmVol = NullpoMinoSlick.propConfig.audio.bgmVolume
+		NullpoMinoSlick.appGameContainer.musicVolume = bgmVol/128.toFloat()
 
 		if(m!=BGM.Silent&&m!=bgmPlaying) {
 			bgm[x][y].first?.also {
@@ -274,7 +274,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		bgm.forEachIndexed {x, a ->
 			a.mapNotNull {it.first}.forEachIndexed {y, b ->
 				b.stop()
-				if(!NullpoMinoSlick.propConfig.getProperty("option.bgmPreload", false)) bgm[x][y] = null to false
+				if(!NullpoMinoSlick.propConfig.audio.bgmPreload) bgm[x][y] = null to false
 			}
 		}
 	}

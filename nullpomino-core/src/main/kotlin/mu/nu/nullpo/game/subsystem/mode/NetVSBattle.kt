@@ -699,8 +699,8 @@ class NetVSBattle:NetDummyVSMode() {
 
 	/* Message received */
 	@Throws(IOException::class)
-	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>) {
-		super.netlobbyOnMessage(lobby, client, message)
+	override fun onMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>) {
+		super.onMessage(lobby, client, message)
 
 		// Dead
 		if(message[0]=="dead") {

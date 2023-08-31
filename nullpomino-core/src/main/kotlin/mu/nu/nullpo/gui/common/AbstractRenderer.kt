@@ -49,40 +49,48 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 abstract class AbstractRenderer:EventReceiver() {
 	internal abstract val resources:ResourceHolder
 
-	/** 回転・パーティクルなどの重い演出を使う
-	 * 1:Line clearエフェクト表示 2:背景のアニメとフェード 3:半透明パーティクル */
-	protected var heavyEffect = 0
+	protected val heavyEffect get() = conf.heavyEffect
 
 	protected val showLineEffect get() = heavyEffect>0
 	protected val animBG get() = heavyEffect>1
 	protected val particle get() = heavyEffect>2
 
+	/** Background display */
+	protected val showBG get() = conf.showBG
+	/** Show Meter on right field */
+	protected val showMeter get() = conf.showMeter
+	/** Show ARE meter */
+	protected val showSpeed get() = conf.showSpeed
+
+	/** Show ghost piece as Outline */
+	protected val outlineGhost get() = conf.outlineGhost
+
 	/** fieldBackgroundの明るさ */
-	protected var fieldBgBright = .5f
+	protected val fieldBgBright get() = conf.fieldBgBright/255f
 
 	/** 縁線を太くする */
-	protected var edgeBold = false
+	protected val edgeBold get() = conf.edgeBold
 
 	/** Show field BG grid */
-	protected var showFieldBgGrid = false
+	protected val showFieldBgGrid get() = conf.showFieldBgGrid
 
 	/** NEXT欄を暗くする */
-	protected var darkNextArea = false
+	protected val darkNextArea get() = conf.darkNextArea
 
 	/** ghost ピースの上にNEXT表示 */
-	protected var nextShadow = false
+	protected val nextShadow get() = conf.nextShadow
 
 	/** Line clear effect speed */
-	protected var lineEffectSpeed = 1
+	protected val lineEffectSpeed get() = conf.lineEffectSpeed
 
 	/** 回転軸を表示する */
-	protected var showCenter = false
+	protected val showCenter get() = conf.showCenter
 
 	/** 操作ブロック降下を滑らかにする */
-	protected var smoothFall = false
+	protected val smoothFall get() = conf.smoothFall
 
 	/** 高速落下時の軌道を表示する */
-	protected var showLocus = false
+	protected val showLocus get() = conf.showLocus
 
 	override fun drawFont(x:Float, y:Float, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float) {
 		if(font==BaseFont.FONT.TTF) printTTFSpecific(x, y, str, color, scale, alpha)
@@ -90,7 +98,6 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	var rainbow = 0
-
 	/** Draw a block
 	 * @param x X pos
 	 * @param y Y pos
@@ -432,7 +439,7 @@ abstract class AbstractRenderer:EventReceiver() {
 				x+(bx+p.spinCX-.1f)*blkSize, y+by*blkSize+ys,
 				"${engine.nowPieceSteps}/${p.finesseLimit(engine.nowPieceX)}", COLOR.WHITE, .5f
 			)
-			drawDia(
+			if(showCenter) drawDia(
 				x+(bx+p.spinCX+.5f)*blkSize, y+(by+p.spinCY+.5f)*blkSize+ys, blkSize*2/3, blkSize*2/3,
 				engine.statc[0]/(14f-engine.speed.rank*10f), alpha = .75f,
 				outlineColor = getColorByID(p.block[engine.statc[0]%p.block.size].run {
@@ -998,11 +1005,11 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	protected abstract fun printFontSpecific(x:Float, y:Float, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float)
-	protected fun printFontSpecific(x:Int, y:Int, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float) =
+	protected fun printFontSpecific(x:Number, y:Number, str:String, font:BaseFont.FONT, color:COLOR, scale:Float, alpha:Float) =
 		printFontSpecific(x.toFloat(), y.toFloat(), str, font, color, scale, alpha)
 
 	protected abstract fun printTTFSpecific(x:Float, y:Float, str:String, color:COLOR, scale:Float, alpha:Float)
-	protected fun printTTFSpecific(x:Int, y:Int, str:String, color:COLOR, size:Int, alpha:Float) =
+	protected fun printTTFSpecific(x:Number, y:Number, str:String, color:COLOR, size:Int, alpha:Float) =
 		printTTFSpecific(x.toFloat(), y.toFloat(), str, color, size.toFloat()/BaseFontTTF.FONT_SIZE, alpha)
 
 	/***
@@ -1014,7 +1021,7 @@ abstract class AbstractRenderer:EventReceiver() {
 
 	abstract fun drawLineSpecific(x:Float, y:Float, sx:Float, sy:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, w:Float = 1f)
 
-	fun drawLineSpecific(x:Int, y:Int, sx:Int, sy:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, w:Int = 1) =
+	fun drawLineSpecific(x:Number, y:Number, sx:Number, sy:Number, color:Int = 0xFFFFFF, alpha:Float = 1f, w:Int = 1) =
 		drawLineSpecific(x.toFloat(), y.toFloat(), sx.toFloat(), sy.toFloat(), color, alpha, w.toFloat())
 
 	/** draw and Fill Rectangle */
@@ -1028,7 +1035,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	fun drawRect(
-		x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, outlineW:Int = 0,
+		x:Number, y:Number, w:Number, h:Number, color:Int = 0xFFFFFF, alpha:Float = 1f, outlineW:Int = 0,
 		outlineColor:Int = 0x000000
 	) =
 		drawRect(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha, outlineW.toFloat(), outlineColor)
@@ -1038,12 +1045,12 @@ abstract class AbstractRenderer:EventReceiver() {
 		x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Float = 1f
 	)
 
-	fun drawRectSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
+	fun drawRectSpecific(x:Number, y:Number, w:Number, h:Number, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
 		drawRectSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha, bold.toFloat())
 	/** Fiil Rectangle Solid*/
 	abstract fun fillRectSpecific(x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f)
 
-	fun fillRectSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f) =
+	fun fillRectSpecific(x:Number, y:Number, w:Number, h:Number, color:Int = 0xFFFFFF, alpha:Float = 1f) =
 		fillRectSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha)
 
 	/** draw and Fill Rectangle */
@@ -1057,7 +1064,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	fun drawDia(
-		x:Int, y:Int, w:Int, h:Int, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, outlineW:Int = 0,
+		x:Number, y:Number, w:Number, h:Number, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, outlineW:Int = 0,
 		outlineColor:Int = 0x000000
 	) =
 		drawDia(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), angle, color, alpha, outlineW.toFloat(), outlineColor)
@@ -1067,12 +1074,12 @@ abstract class AbstractRenderer:EventReceiver() {
 		x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Float = 1f
 	)
 
-	private fun drawDiaSpecific(x:Int, y:Int, w:Int, h:Int, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
+	private fun drawDiaSpecific(x:Number, y:Number, w:Number, h:Number, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
 		drawDiaSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), angle, color, alpha, bold.toFloat())
 	/** Fiil Diaangle Solid*/
 	protected abstract fun fillDiaSpecific(x:Float, y:Float, w:Float, h:Float, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f)
 
-	private fun fillDiaSpecific(x:Int, y:Int, w:Int, h:Int, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f) =
+	private fun fillDiaSpecific(x:Number, y:Number, w:Number, h:Number, angle:Float, color:Int = 0xFFFFFF, alpha:Float = 1f) =
 		fillDiaSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), angle, color, alpha)
 
 	/** draw and Fill Oval */
@@ -1086,7 +1093,7 @@ abstract class AbstractRenderer:EventReceiver() {
 	}
 
 	fun drawOval(
-		x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, outlineW:Int = 0,
+		x:Number, y:Number, w:Number, h:Number, color:Int = 0xFFFFFF, alpha:Float = 1f, outlineW:Int = 0,
 		outlineColor:Int = 0x000000
 	) =
 		drawOval(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha, outlineW.toFloat(), outlineColor)
@@ -1097,12 +1104,12 @@ abstract class AbstractRenderer:EventReceiver() {
 		bold:Float = 1f
 	)
 
-	private fun drawOvalSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
+	private fun drawOvalSpecific(x:Number, y:Number, w:Number, h:Number, color:Int = 0xFFFFFF, alpha:Float = 1f, bold:Int = 0) =
 		drawOvalSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha, bold.toFloat())
 	/** Fill Oval Solid*/
 	protected abstract fun fillOvalSpecific(x:Float, y:Float, w:Float, h:Float, color:Int = 0xFFFFFF, alpha:Float = 1f)
 
-	private fun fillOvalSpecific(x:Int, y:Int, w:Int, h:Int, color:Int = 0xFFFFFF, alpha:Float = 1f) =
+	private fun fillOvalSpecific(x:Number, y:Number, w:Number, h:Number, color:Int = 0xFFFFFF, alpha:Float = 1f) =
 		fillOvalSpecific(x.toFloat(), y.toFloat(), w.toFloat(), h.toFloat(), color, alpha)
 
 	/**

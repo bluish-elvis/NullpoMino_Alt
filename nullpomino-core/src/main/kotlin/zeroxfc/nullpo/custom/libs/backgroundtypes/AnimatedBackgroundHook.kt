@@ -37,7 +37,6 @@ package zeroxfc.nullpo.custom.libs.backgroundtypes
 
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
 import org.apache.logging.log4j.LogManager
 
 @Deprecated("Use Generic class AbstractBG")

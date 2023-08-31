@@ -126,8 +126,7 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 				else -> {
 					ResourceHolder.soundManager.play("cursor")
 					cursor = newCursor
-					flashY = newCursor-minEntry+minChoiceY
-					flashT = 0
+					emitGrid(newCursor-minEntry+minChoiceY)
 				}
 			}
 		}
@@ -186,16 +185,14 @@ abstract class BaseMenuScrollState:BaseMenuChooseState() {
 
 	override fun onCursor(container:GameContainer, game:StateBasedGame, delta:Int, change:Int) {
 		super.onCursor(container, game, delta, change)
-		flashY = cursor-minEntry+minChoiceY
-		flashT = 0
+		emitGrid(cursor-minEntry+minChoiceY)
 	}
 
 	override fun onChange(container:GameContainer, game:StateBasedGame, delta:Int, change:Int) {
 		ResourceHolder.soundManager.play("cursor")
 		if(change==1) pageDown()
 		else if(change==-1) pageUp()
-		flashY = cursor-minEntry+minChoiceY
-		flashT = 0
+		emitGrid(cursor-minEntry+minChoiceY)
 	}
 
 	private fun pageDown() {

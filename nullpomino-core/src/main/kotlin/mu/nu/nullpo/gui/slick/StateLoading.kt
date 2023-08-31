@@ -28,6 +28,8 @@
  */
 package mu.nu.nullpo.gui.slick
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.play.GameManager
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
@@ -39,13 +41,13 @@ import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 
 /** ロード画面のステート */
-class StateLoading:BasicGameState() {
+internal class StateLoading:BasicGameState() {
 	/** プリロード進行度 */
 	private var preloadSet:Int = -2
 
 	private var loadBG:Image = Image(640, 480)
 
-	private val skindir:String = NullpoMinoSlick.propConfig.getProperty("custom.skin.directory", "res")
+	private val skindir:String = NullpoMinoSlick.propGlobal.custom.skinDir
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
 
@@ -56,13 +58,12 @@ class StateLoading:BasicGameState() {
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		//  input 関連をInitialization
 		GameKey.initGlobalGameKey()
-		GameKey.gameKey[0].loadConfig(NullpoMinoSlick.propConfig)
-		GameKey.gameKey[1].loadConfig(NullpoMinoSlick.propConfig)
+		GameKey.gameKey.forEachIndexed {i, t -> NullpoMinoSlick.propConfig.ctrl.keymaps.getOrNull(i)?.let {t.loadConfig(it)}}
 
 		// 設定を反映させる
 		NullpoMinoSlick.setGeneralConfig()
 
-		if(NullpoMinoSlick.propConfig.getProperty("option.se", true))
+		if(NullpoMinoSlick.propConfig.audio.se)
 			try {
 				val clip = Sound("$skindir/jingle/welcome.ogg")
 				clip.play()
@@ -99,23 +100,24 @@ class StateLoading:BasicGameState() {
 				}
 
 				// First run
-				if(NullpoMinoSlick.propConfig.getProperty("option.firstSetupMode", true)) {
+				if(!NullpoMinoSlick.propConfig.didFirstRun) {
 					// Set various default settings here
 					GameKey.gameKey[0].loadDefaultKeymap()
-					GameKey.gameKey[0].saveConfig(NullpoMinoSlick.propConfig)
-					NullpoMinoSlick.propConfig.setProperty("option.firstSetupMode", false)
+					NullpoMinoSlick.propConfig.ctrl.keymaps[0] = GameKey.gameKey[0].map
+					NullpoMinoSlick.propConfig.didFirstRun = true
 
 					// Set default rotation button setting (only for first run)
-					if(NullpoMinoSlick.propGlobal.getProperty("global.firstSetupMode", true)) {
-						for(pl in 0..1)
-							if(NullpoMinoSlick.propGlobal.getProperty("$pl.tuning.owRotateButtonDefaultRight")==null)
-								NullpoMinoSlick.propGlobal.setProperty("$pl.tuning.owRotateButtonDefaultRight", 0)
-						NullpoMinoSlick.propGlobal.setProperty("global.firstSetupMode", false)
+					if(!NullpoMinoSlick.propGlobal.didFirstRun) {
+						NullpoMinoSlick.propGlobal.tuning.forEach {it.spinDir = 0}
+						NullpoMinoSlick.propGlobal.didFirstRun = true
 					}
 
 					// Save settings
 					NullpoMinoSlick.saveConfig()
 				}
+				log.debug(Json.encodeToString(GameKey.gameKey[0].map))
+				log.debug(Json.encodeToString(GameKey.gameKey[1].map))
+				log.debug(Json.encodeToString(ControllerManager.config))
 				// Go to title screen
 				game.enterState(StateTitle.ID)
 			}

@@ -30,8 +30,7 @@ package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
-import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.GameKeyDummy
+import mu.nu.nullpo.gui.common.ConfigGlobal.AIConf
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import org.apache.logging.log4j.LogManager
@@ -43,39 +42,20 @@ import java.io.FileReader
 import java.io.IOException
 
 /** AI config screen state */
-class StateConfigAISelect:BaseGameState() {
+internal class StateConfigAISelect:BaseMenuConfigState() {
 	/** Player ID */
 	var player = 0
-
+	override val title:String get() = "${(player+1)}P AI setting"
 	/** AIのクラス一覧 */
 	private var aiPathList:List<String> = emptyList()
 
 	/** AIのName一覧 */
 	private var aiNameList:List<String> = emptyList()
 
-	/** Current AIのクラス */
-	private var currentAI = ""
-
 	/** AIのID */
 	private var aiID = 0
 
-	/** AIの移動間隔 */
-	private var aiMoveDelay = 0
-
-	/** AIの思考の待ち time */
-	private var aiThinkDelay = 0
-
-	/** AIでスレッドを使う */
-	private var aiUseThread = false
-
-	private var aiShowHint = false
-
-	private var aiPreThink = false
-
-	private var aiShowState = false
-
-	/** Cursor position */
-	private var cursor = 0
+	private var ai = AIConf()
 
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
@@ -96,24 +76,17 @@ class StateConfigAISelect:BaseGameState() {
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		currentAI = NullpoMinoSlick.propGlobal.getProperty("$player.ai", "")
-		aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("$player.aiMoveDelay", 0)
-		aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$player.aiThinkDelay", 0)
-		aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$player.aiUseThread", true)
-		aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$player.aiShowHint", false)
-		aiPreThink = NullpoMinoSlick.propGlobal.getProperty("$player.aiPreThink", false)
-		aiShowState = NullpoMinoSlick.propGlobal.getProperty("$player.aiShowState", false)
-
+		ai = NullpoMinoSlick.propGlobal.ai.getOrElse(player) {AIConf()}
 		aiID = -1
 		for(i in aiPathList.indices)
-			if(currentAI==aiPathList[i]) aiID = i
+			if(ai.name==aiPathList[i]) aiID = i
 	}
 
 	/** AI一覧を読み込み
 	 * @param bf 読み込み元のテキストファイル
 	 * @return AI一覧
 	 */
-	fun loadAIList(bf:BufferedReader):List<String> {
+	private fun loadAIList(bf:BufferedReader):List<String> {
 		val aiArrayList = mutableListOf<String>()
 
 		while(true) {
@@ -136,7 +109,7 @@ class StateConfigAISelect:BaseGameState() {
 	 * @param aiPath AIのクラスのリスト
 	 * @return AIのName一覧
 	 */
-	fun loadAINames(aiPath:List<String>):List<String> = List(aiPath.size) {
+	private fun loadAINames(aiPath:List<String>):List<String> = List(aiPath.size) {
 		val aiClass:Class<*>
 		val aiObj:AIPlayer
 		try {
@@ -153,98 +126,51 @@ class StateConfigAISelect:BaseGameState() {
 
 	/* Draw the screen */
 	override fun renderImpl(container:GameContainer, game:StateBasedGame, g:Graphics) {
-		// Background
-		g.drawImage(ResourceHolder.imgMenuBG[1], 0f, 0f)
-
-		// Menu
-		FontNormal.printFontGrid(1, 1, "${(player+1)}P AI setting", COLOR.ORANGE)
-
-		FontNormal.printFontGrid(1, 3+cursor, BaseFont.CURSOR, COLOR.RAINBOW)
-
-		val aiName:String = if(aiID<0) "(disable)" else aiNameList[aiID]
-		FontNormal.printFontGrid(2, 3, "AI type:$aiName", cursor==0)
-		FontNormal.printFontGrid(2, 4, "AI move delay:$aiMoveDelay", cursor==1)
-		FontNormal.printFontGrid(2, 5, "AI think delay:$aiThinkDelay", cursor==2)
-		FontNormal.printFontGrid(2, 6, "AI use thread:"+aiUseThread.getONorOFF(), cursor==3)
-		FontNormal.printFontGrid(2, 7, "AI show hint:"+aiShowHint.getONorOFF(), cursor==4)
-		FontNormal.printFontGrid(2, 8, "AI pre-think:"+aiPreThink.getONorOFF(), cursor==5)
-		FontNormal.printFontGrid(2, 9, "AI show info:"+aiShowState.getONorOFF(), cursor==6)
-
+		super.renderImpl(container, game, g)
 		FontNormal.printFontGrid(1, 28, "A:OK B:CANCEL", COLOR.GREEN)
 	}
 
-	/* Update game state */
-	override fun updateImpl(container:GameContainer, game:StateBasedGame, delta:Int) {
-		// Update key input states
-		GameKey.gameKey[0].update(container.input)
+	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
+		ResourceHolder.soundManager.play("decide1")
 
-		// Cursor movement
-		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_UP)) {
-			cursor--
-			if(cursor<0) cursor = 6
-			ResourceHolder.soundManager.play("cursor")
-		}
-		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
-			cursor++
-			if(cursor>6) cursor = 0
-			ResourceHolder.soundManager.play("cursor")
-		}
+		if(player !in NullpoMinoSlick.propGlobal.ai.indices) NullpoMinoSlick.propGlobal.ai.add(player, ai)
+		else NullpoMinoSlick.propGlobal.ai[player] = ai
+		NullpoMinoSlick.saveConfig()
 
-		// Configuration changes
-		var change = 0
-		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_LEFT)) change = -1
-		if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_RIGHT)) change = 1
+		game.enterState(StateConfigMainMenu.ID)
+		return true
+	}
 
-		if(change!=0) {
-			ResourceHolder.soundManager.play("change")
+	override fun onCancel(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
+		game.enterState(StateConfigMainMenu.ID)
+		return true
+	}
 
-			when(cursor) {
-				0 -> {
-					aiID += change
+	override val columns:List<Pair<String, List<Column>>>
+		get() = listOf(
+			"" to listOf(
+				Column({"AI type:"+if(aiID<0) "(disable)" else aiNameList[aiID]}, {
+					aiID += it
 					if(aiID<-1) aiID = aiNameList.size-1
 					if(aiID>aiNameList.size-1) aiID = -1
-				}
-				1 -> {
-					aiMoveDelay += change
-					if(aiMoveDelay<-1) aiMoveDelay = 99
-					if(aiMoveDelay>99) aiMoveDelay = -1
-				}
-				2 -> {
-					aiThinkDelay += change*10
-					if(aiThinkDelay<0) aiThinkDelay = 1000
-					if(aiThinkDelay>1000) aiThinkDelay = 0
-				}
-				3 -> aiUseThread = !aiUseThread
-				4 -> aiShowHint = !aiShowHint
-				5 -> aiPreThink = !aiPreThink
-				6 -> aiShowState = !aiShowState
-			}
-		}
-
-		// Confirm button
-		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
-			ResourceHolder.soundManager.play("decide1")
-
-
-			NullpoMinoSlick.propGlobal.setProperty("$player.ai", if(aiID>=0) aiPathList[aiID] else "")
-			NullpoMinoSlick.propGlobal.setProperty("$player.aiMoveDelay", aiMoveDelay)
-			NullpoMinoSlick.propGlobal.setProperty("$player.aiThinkDelay", aiThinkDelay)
-			NullpoMinoSlick.propGlobal.setProperty("$player.aiUseThread", aiUseThread)
-			NullpoMinoSlick.propGlobal.setProperty("$player.aiShowHint", aiShowHint)
-			NullpoMinoSlick.propGlobal.setProperty("$player.aiPreThink", aiPreThink)
-			NullpoMinoSlick.propGlobal.setProperty("$player.aiShowState", aiShowState)
-			NullpoMinoSlick.saveConfig()
-
-			game.enterState(StateConfigMainMenu.ID)
-			return
-		}
-
-		// Cancel button
-		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_B)) {
-			game.enterState(StateConfigMainMenu.ID)
-			return
-		}
-	}
+					ai.name = if(aiID>=0) aiPathList[aiID] else ""
+				}),
+				Column({"AI move delay:"+ai.moveDelay}, {
+					ai.moveDelay += it
+					if(ai.moveDelay<-1) ai.moveDelay = 99
+					if(ai.moveDelay>99) ai.moveDelay = -1
+				}),
+				Column({"AI think delay:"+ai.thinkDelay}, {
+					ai.thinkDelay += it*10
+					if(ai.thinkDelay<0) ai.thinkDelay = 1000
+					if(ai.thinkDelay>1000) ai.thinkDelay = 0
+				}),
+				Column({"AI use thread:"+ai.useThread.getONorOFF()}, {!ai.useThread}),
+				Column({"AI show hint:"+ai.showHint.getONorOFF()}, {!ai.showHint}),
+				Column({"AI pre-think:"+ai.preThink.getONorOFF()}, {!ai.preThink}),
+				Column({"AI show info:"+ai.showState.getONorOFF()}, {!ai.showState}),
+			)
+		)
 
 	companion object {
 		/** This state's ID */

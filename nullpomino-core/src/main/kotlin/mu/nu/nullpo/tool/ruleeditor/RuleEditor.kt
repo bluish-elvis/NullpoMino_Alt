@@ -32,7 +32,6 @@ import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.slick.NullpoMinoSlick
 import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
 import java.awt.BorderLayout
@@ -44,7 +43,6 @@ import java.awt.event.ActionListener
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.awt.image.BufferedImage
-import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -458,7 +456,7 @@ class RuleEditor:JFrame, ActionListener {
 	/** Initialization */
 	private fun init() {
 		// 設定ファイル読み込み
-		propConfig.loadXML("config/setting/swing.xml")
+		propConfig.load("config/setting/swing.properties")
 
 		// 言語ファイル読み込み
 		if(propLangDefault.loadXML("config/lang/ruleeditor_default.xml")==null) log.error("Couldn't load default UI language file")
@@ -1304,12 +1302,8 @@ class RuleEditor:JFrame, ActionListener {
 		val vec = Vector<String>()
 
 		try {
-			val `in` = BufferedReader(FileReader(filename))
-
-			while(true) {
-				val str = `in`.readLine()
-				if(str==null||str.isEmpty()) break
-				vec.add(str)
+			FileReader(filename).buffered().use {
+				it.forEachLine {s->vec.add(s)}
 			}
 		} catch(_:IOException) {
 		}

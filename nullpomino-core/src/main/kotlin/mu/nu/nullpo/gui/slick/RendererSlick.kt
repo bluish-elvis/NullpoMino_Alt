@@ -69,21 +69,7 @@ class RendererSlick(
 
 	/** Constructor */
 	init {
-		showBG = NullpoMinoSlick.propConfig.getProperty("option.showBG", true)
-		heavyEffect = NullpoMinoSlick.propConfig.getProperty("option.heavyEffect", 0)
-		edgeBold = NullpoMinoSlick.propConfig.getProperty("option.edgeBold", false)
-		fieldBgBright = NullpoMinoSlick.propConfig.getProperty("option.fieldBgBright", 128)/255f
-		showFieldBgGrid = NullpoMinoSlick.propConfig.getProperty("option.showFieldBgGrid", true)
-		showMeter = NullpoMinoSlick.propConfig.getProperty("option.showMeter", true)
-		showSpeed = NullpoMinoSlick.propConfig.getProperty("option.showMeter", true)
-		darkNextArea = NullpoMinoSlick.propConfig.getProperty("option.darkNextArea", true)
-		nextShadow = NullpoMinoSlick.propConfig.getProperty("option.nextShadow", false)
-		lineEffectSpeed = NullpoMinoSlick.propConfig.getProperty("option.lineEffectSpeed", 0)
-		outlineGhost = NullpoMinoSlick.propConfig.getProperty("option.outlineGhost", false)
-		nextDisplayType = NullpoMinoSlick.propConfig.getProperty("option.nextDisplayType", 0)
-		smoothFall = NullpoMinoSlick.propConfig.getProperty("option.smoothFall", false)
-		showLocus = NullpoMinoSlick.propConfig.getProperty("option.showLocus", false)
-		showCenter = NullpoMinoSlick.propConfig.getProperty("option.showCenter", false)
+		conf = NullpoMinoSlick.propConfig.visual
 	}
 
 	override fun drawBlendAdd(unit:()->Unit) {
@@ -142,8 +128,7 @@ class RendererSlick(
 	/* リプレイを保存 */
 	override fun saveReplay(owner:GameManager, prop:CustomProperties, folderName:String) {
 		if(owner.mode?.isOnlineMode!=false) return
-
-		super.saveReplay(owner, prop, NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", folderName))
+		super.saveReplay(owner, prop, NullpoMinoSlick.propGlobal.custom.replayDir)
 	}
 
 	override fun drawBlockSpecific(x:Float, y:Float, sx:Int, sy:Int, sk:Int, size:Float, darkness:Float, alpha:Float) {
@@ -371,11 +356,11 @@ class RendererSlick(
 
 	override fun onFirst(engine:GameEngine) {
 		super.onFirst(engine)
-		val bgMax = resources.bgMax
-		val bgaMax = resources.bgaMax
-		val bg = engine.owner.bgMan.bg.let {if(it>=bgMax) it%bgMax else it}
-
 		if(!engine.owner.menuOnly&&showBG&&animBG) {
+			val bgMax = resources.bgMax
+			val bgaMax = resources.bgaMax
+			val bg = engine.owner.bgMan.bg.let {if(it>=bgMax) it%bgMax else it}
+
 			if(bg in 0..<bgMax)
 				bgType[bg].update()
 			else if(bg<0&&bg.absoluteValue in 1..bgaMax+1)

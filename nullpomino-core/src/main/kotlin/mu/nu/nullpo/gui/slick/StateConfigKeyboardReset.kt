@@ -37,7 +37,7 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** Keyboard Reset menu */
-class StateConfigKeyboardReset:BaseMenuChooseState() {
+internal class StateConfigKeyboardReset:BaseMenuChooseState() {
 	/** Player number */
 	var player = 0
 	override val numChoice = 3
@@ -61,7 +61,7 @@ class StateConfigKeyboardReset:BaseMenuChooseState() {
 		// Menu
 		FontNormal.printFontGrid(1, 1, "KEYBOARD RESET (${player+1}P)", COLOR.ORANGE)
 
-		FontNormal.printFontGrid(1, 3, "RESET SETTINGS TO...", COLOR.GREEN)
+		FontNormal.printFontGrid(2, 3, "RESET SETTINGS TO...", COLOR.GREEN)
 
 		FontNormal.printFontGrid(1, 4+cursor, BaseFont.CURSOR, COLOR.RAINBOW)
 
@@ -74,7 +74,7 @@ class StateConfigKeyboardReset:BaseMenuChooseState() {
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("decide1")
 		GameKey.gameKey[player].loadDefaultKeymap(cursor)
-		GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig)
+		GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig.ctrl.keymaps[player])
 		NullpoMinoSlick.saveConfig()
 		game.enterState(StateConfigMainMenu.ID)
 		return true

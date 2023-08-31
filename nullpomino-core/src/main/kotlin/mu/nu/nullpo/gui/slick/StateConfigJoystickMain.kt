@@ -31,9 +31,9 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy
+import mu.nu.nullpo.gui.common.ConfigGlobal.CtrlConf
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.gui.slick.img.FontTTF
-import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
@@ -41,7 +41,7 @@ import org.newdawn.slick.SlickException
 import org.newdawn.slick.state.StateBasedGame
 
 /** Joystick 設定メインMenu のステート */
-class StateConfigJoystickMain:BaseGameState() {
+internal class StateConfigJoystickMain:BaseMenuState() {
 	/** Player number */
 	var player = 0
 
@@ -69,28 +69,32 @@ class StateConfigJoystickMain:BaseGameState() {
 	/** Load settings
 	 * @param prop Property file to read from
 	 */
-	private fun loadConfig(prop:CustomProperties) {
-		joyUseNumber = prop.getProperty("joyUseNumber.p$player", -1)
-		joyBorder = prop.getProperty("joyBorder.p$player", 0)
-		joyIgnoreAxis = prop.getProperty("joyIgnoreAxis.p$player", false)
-		joyIgnorePOV = prop.getProperty("joyIgnorePOV.p$player", false)
-		joyMethod = prop.getProperty("option.joymethod", ControllerManager.CONTROLLER_METHOD_SLICK_DEFAULT)
+	private fun loadConfig(prop:CtrlConf) {
+		prop.joyPadConf.let {
+			joyUseNumber = it.controllerID[player]
+			joyBorder = it.border[player]
+			joyIgnoreAxis = it.ignoreAxis[player]
+			joyIgnorePOV = it.ignorePOV[player]
+		}
+		joyMethod = prop.joyMethod
 	}
 
 	/** Save settings
 	 * @param prop Property file to save to
 	 */
-	private fun saveConfig(prop:CustomProperties) {
-		prop.setProperty("joyUseNumber.p$player", joyUseNumber)
-		prop.setProperty("joyBorder.p$player", joyBorder)
-		prop.setProperty("joyIgnoreAxis.p$player", joyIgnoreAxis)
-		prop.setProperty("joyIgnorePOV.p$player", joyIgnorePOV)
-		prop.setProperty("option.joymethod", joyMethod)
+	private fun saveConfig(prop:CtrlConf) {
+		prop.joyPadConf.apply {
+			controllerID[player] = joyUseNumber
+			border[player] = joyBorder
+			ignoreAxis[player] = joyIgnoreAxis
+			ignorePOV[player] = joyIgnorePOV
+		}
+		prop.joyMethod = joyMethod
 	}
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		loadConfig(NullpoMinoSlick.propConfig)
+		loadConfig(NullpoMinoSlick.propConfig.ctrl)
 	}
 
 	/* State initialization */
@@ -173,7 +177,7 @@ class StateConfigJoystickMain:BaseGameState() {
 
 		// Confirm button
 		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
-			saveConfig(NullpoMinoSlick.propConfig)
+			saveConfig(NullpoMinoSlick.propConfig.ctrl)
 			NullpoMinoSlick.saveConfig()
 			NullpoMinoSlick.setGeneralConfig()
 
@@ -198,7 +202,7 @@ class StateConfigJoystickMain:BaseGameState() {
 
 		// Cancel button
 		if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_B)) {
-			loadConfig(NullpoMinoSlick.propConfig)
+			loadConfig(NullpoMinoSlick.propConfig.ctrl)
 			game.enterState(StateConfigMainMenu.ID)
 		}
 	}

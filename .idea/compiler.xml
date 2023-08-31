@@ -8,13 +8,13 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="nullpomino-core" />
       </profile>
       <profile name="Annotation profile for NullpoMino" enabled="true">
         <sourceOutputDir name="../target/generated-sources/annotations" />
         <sourceTestOutputDir name="../target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="nullpomino-run" />
+        <module name="nullpomino-core" />
       </profile>
     </annotationProcessing>
   </component>

@@ -32,31 +32,31 @@ import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.net.NetRoomInfo
 import java.io.IOException
 
-/** Lobby event interface (also used by netplay modes) */
+/** Lobby event interface (also used by netPlay modes) */
 interface NetLobbyListener {
 	/** Initialization Completed
 	 * @param lobby NetLobbyFrame
 	 */
-	fun netlobbyOnInit(lobby:NetLobbyFrame)
+	fun onLobbyInit(lobby:NetLobbyFrame)
 
 	/** Login completed
 	 * @param lobby NetLobbyFrame
 	 * @param client NetClient
 	 */
-	fun netlobbyOnLoginOK(lobby:NetLobbyFrame, client:NetPlayerClient)
+	fun onLoginOK(lobby:NetLobbyFrame, client:NetPlayerClient)
 
 	/** When you enter a room
 	 * @param lobby NetLobbyFrame
 	 * @param client NetClient
 	 * @param roomInfo NetRoomInfo
 	 */
-	fun netlobbyOnRoomJoin(lobby:NetLobbyFrame, client:NetPlayerClient, roomInfo:NetRoomInfo)
+	fun onRoomJoin(lobby:NetLobbyFrame, client:NetPlayerClient, roomInfo:NetRoomInfo)
 
 	/** When you returned to lobby
 	 * @param lobby NetLobbyFrame
 	 * @param client NetClient
 	 */
-	fun netlobbyOnRoomLeave(lobby:NetLobbyFrame, client:NetPlayerClient)
+	fun onRoomLeave(lobby:NetLobbyFrame, client:NetPlayerClient)
 
 	/** When disconnected
 	 * @param lobby NetLobbyFrame
@@ -64,7 +64,7 @@ interface NetLobbyListener {
 	 * @param ex A Throwable that caused disconnection (null if unknown or
 	 * normal termination)
 	 */
-	fun netlobbyOnDisconnect(lobby:NetLobbyFrame, client:NetPlayerClient, ex:Throwable?)
+	fun onDisconnect(lobby:NetLobbyFrame, client:NetPlayerClient, ex:Throwable?)
 
 	/** Message received
 	 * @param lobby NetLobbyFrame
@@ -73,15 +73,15 @@ interface NetLobbyListener {
 	 * @throws IOException When something bad occurs
 	 */
 	@Throws(IOException::class)
-	fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>)
+	fun onMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>)
 
 	@Deprecated("message should use List", ReplaceWith("netlobbyOnMessage(lobby, client, message.toList())"))
 	@Throws(IOException::class)
-	fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:Array<String>) =
-		netlobbyOnMessage(lobby, client, message.toList())
+	fun onMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:Array<String>) =
+		onMessage(lobby, client, message.toList())
 
 	/** When the lobby window is closed
 	 * @param lobby NetLobbyFrame
 	 */
-	fun netlobbyOnExit(lobby:NetLobbyFrame)
+	fun onLobbyExit(lobby:NetLobbyFrame)
 }

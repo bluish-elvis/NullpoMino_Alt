@@ -40,8 +40,8 @@
  <entry key="ConfigGeneral_ShowLocus">○にすると高速落下時のブロック残像が表示されます</entry>
  <entry key="ConfigGeneral_ShowInput">画面下に操作状況を表示するかどうかを選択します</entry>
  <entry key="ConfigGeneral_DarkNextArea">○にするとNEXT欄の背景が暗くなります</entry>
- <entry key="ConfigGeneral_SEVolume">効果音の音量を選択します(0で無音・256で最大)</entry>
- <entry key="ConfigGeneral_BGMVolume">音楽の音量を選択します(0で無音・256で最大)</entry>
+ <entry key="ConfigGeneral_SEVolume">効果音の音量を選択します(0で無音・128で最大)</entry>
+ <entry key="ConfigGeneral_BGMVolume">音楽の音量を選択します(0で無音・128で最大)</entry>
  <entry key="ConfigGeneral_ShowMeter">フィールドの横にゲームの進行状況などを表示するメーターを表示します</entry>
  <entry key="ConfigGeneral_VSync">○にすると垂直同期を保つようになります(画面のちらつきを抑えます)</entry>
  <entry key="ConfigGeneral_NextShadow">○にするとゴーストピースの真上にNEXTを表示します</entry>
@@ -69,6 +69,7 @@
  <entry key="GameTuning_MaxDAS">最高DAS(横溜め時間)を変更します</entry>
  <entry key="GameTuning_DasDelay">横移動速度を変更します(0:ワープ移動)</entry>
  <entry key="GameTuning_MoveDiagonal">斜め移動を有効にするかどうかを選択します</entry>
+ <entry key="GameTuning_SDSpd">ソフトドロップの落下速度を変更します</entry>
  <entry key="GameTuning_ReverseUpDown">上ボタンと下ボタンの役割を反転させます</entry>
  <entry key="GameTuning_BlockOutlineType">ブロック枠線の種類を選択します</entry>
  <entry key="GameTuning_BlockShowOutlineOnly">ブロックの表示を消して枠線だけを表示させます</entry>

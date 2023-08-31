@@ -36,7 +36,6 @@
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
 import zeroxfc.nullpo.custom.libs.Interpolation
 import zeroxfc.nullpo.custom.libs.MathHelper.almostEqual
 import kotlin.math.abs

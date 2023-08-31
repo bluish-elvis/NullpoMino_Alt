@@ -31,19 +31,19 @@ package mu.nu.nullpo.game.component
 
 data class LevelData(
 	/** 落下速度 */
-	var gravity:List<Int> = listOf(4),
+	val gravity:List<Int> = listOf(4),
 	/** 落下速度の分母 (gravity==denominatorなら1Gになる) */
-	var denominator:List<Int> = listOf(256),
+	val denominator:List<Int> = listOf(256),
 	/** 出現待ち time */
-	var are:List<Int> = listOf(24),
+	val are:List<Int> = listOf(24),
 	/** Line clear後の出現待ち time */
-	var areLine:List<Int> = are,
+	val areLine:List<Int> = are,
 	/** Line clear time */
-	var lineDelay:List<Int> = listOf(40),
+	val lineDelay:List<Int> = listOf(40),
 	/** 固定 time */
-	var lockDelay:List<Int> = listOf(30),
+	val lockDelay:List<Int> = listOf(30),
 	/** 横移動 time */
-	var das:List<Int> = listOf(14)
+	val das:List<Int> = listOf(14)
 ) {
 	constructor(gravity:List<Int>, denominator:List<Int>, are:Int, areLine:Int, lineDelay:Int, lockDelay:Int, das:Int):
 		this(

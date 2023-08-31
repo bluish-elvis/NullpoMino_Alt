@@ -29,6 +29,7 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
+import mu.nu.nullpo.gui.common.ConfigGlobal.RuleConf
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
 import org.newdawn.slick.GameContainer
@@ -40,7 +41,7 @@ import java.util.LinkedList
 import java.util.zip.GZIPInputStream
 
 /** Rule selector state */
-class StateConfigRuleSelect:BaseMenuScrollState() {
+internal class StateConfigRuleSelect:BaseMenuScrollState() {
 	/** Player ID */
 	var player = 0
 	/** Game style ID */
@@ -57,7 +58,7 @@ class StateConfigRuleSelect:BaseMenuScrollState() {
 	/** Current Rule name */
 	private var strCurrentRuleName = ""
 	/** Rule entries */
-	private var ruleEntries:LinkedList<RuleEntry> = LinkedList()
+	private var ruleEntries:LinkedList<RuleConf> = LinkedList()
 
 	init {
 		minChoiceY = 3
@@ -95,21 +96,21 @@ class StateConfigRuleSelect:BaseMenuScrollState() {
 		ruleEntries = LinkedList()
 
 		for(element in filelist) {
-			val entry = RuleEntry()
+			val entry = RuleConf()
 
 			val file = File("config/rule/$element")
-			entry.filename = element
-			entry.filepath = file.path
+			entry.file = element
+			entry.path = file.path
 
 			val prop = CustomProperties()
 			try {
 				val `in` = GZIPInputStream(FileInputStream("config/rule/$element"))
 				prop.load(`in`)
 				`in`.close()
-				entry.rulename = prop.getProperty("0.ruleOpt.strRuleName", "")
+				entry.name = prop.getProperty("0.ruleOpt.strRuleName", "")
 				entry.style = prop.getProperty("0.ruleOpt.style", 0)
 			} catch(e:Exception) {
-				entry.rulename = ""
+				entry.name = ""
 				entry.style = -1
 			}
 
@@ -121,13 +122,13 @@ class StateConfigRuleSelect:BaseMenuScrollState() {
 	 * @return Rule name list
 	 */
 	private fun extractRuleNameListFromRuleEntries():List<String> =
-		List(ruleEntries.size) {ruleEntries[it].rulename}
+		List(ruleEntries.size) {ruleEntries[it].name}
 
 	/** Get rule file name list as String[]
 	 * @return Rule name list
 	 */
 	private fun extractFileNameListFromRuleEntries():List<String> =
-		List(ruleEntries.size) {ruleEntries[it].filename}
+		List(ruleEntries.size) {ruleEntries[it].file}
 
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
@@ -137,18 +138,18 @@ class StateConfigRuleSelect:BaseMenuScrollState() {
 		strRuleNameList = extractRuleNameListFromRuleEntries()
 		strRuleFileList = extractFileNameListFromRuleEntries()
 		list = strRuleNameList
-
-		if(style==0) {
-			strCurrentFileName = NullpoMinoSlick.propGlobal.getProperty("$player.rulefile", "")
-			strCurrentRuleName = NullpoMinoSlick.propGlobal.getProperty("$player.rulename", "")
-		} else {
-			strCurrentFileName = NullpoMinoSlick.propGlobal.getProperty("$player.rulefile.$style", "")
-			strCurrentRuleName = NullpoMinoSlick.propGlobal.getProperty("$player.rulename.$style", "")
+		NullpoMinoSlick.propGlobal.rule[player][style].let {
+			strCurrentFileName = it.file
+			strCurrentRuleName = it.name
 		}
 
 		cursor = 0
-		for(i in ruleEntries.indices)
-			if(ruleEntries[i].filename==strCurrentFileName) cursor = i
+		ruleEntries.indexOfFirst {it.file==strCurrentFileName}.let {
+			if(it>=0) {
+				cursor = it
+				emitGrid(it+minChoiceY)
+			}
+		}
 	}
 
 	/* State initialization */
@@ -170,15 +171,7 @@ class StateConfigRuleSelect:BaseMenuScrollState() {
 		ResourceHolder.soundManager.play("decide0")
 
 		val entry = ruleEntries[cursor]
-		if(style==0) {
-			NullpoMinoSlick.propGlobal.setProperty("$player.rule", entry.filepath)
-			NullpoMinoSlick.propGlobal.setProperty("$player.rulefile", entry.filename)
-			NullpoMinoSlick.propGlobal.setProperty("$player.rulename", entry.rulename)
-		} else {
-			NullpoMinoSlick.propGlobal.setProperty("$player.rule.$style", entry.filepath)
-			NullpoMinoSlick.propGlobal.setProperty("$player.rulefile.$style", entry.filename)
-			NullpoMinoSlick.propGlobal.setProperty("$player.rulename.$style", entry.rulename)
-		}
+		NullpoMinoSlick.propGlobal.rule[player][style] = entry
 
 		NullpoMinoSlick.saveConfig()
 
@@ -197,18 +190,6 @@ class StateConfigRuleSelect:BaseMenuScrollState() {
 		ResourceHolder.soundManager.play("change")
 		list = if(list==strRuleNameList) strRuleFileList else strRuleNameList
 		return false
-	}
-
-	/** Rule entry */
-	private class RuleEntry {
-		/** File name */
-		var filename = ""
-		/** File path */
-		var filepath = ""
-		/** Rule name */
-		var rulename = ""
-		/** Game style */
-		var style = 0
 	}
 
 	companion object {

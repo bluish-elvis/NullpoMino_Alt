@@ -28,25 +28,17 @@
  */
 package mu.nu.nullpo.game.component
 
+import kotlinx.serialization.Serializable
 import mu.nu.nullpo.util.CustomProperties
-import java.io.Serializable
 
 /** リプレイで使用する button input dataのクラス */
-class ReplayData:Serializable {
+@Serializable
+data class ReplayData(
 	/** Button input data */
-	var inputDataArray:ArrayList<Int> = ArrayList(DEFAULT_ARRAYLIST_SIZE)
-
-	/** Default constructor */
-	constructor() {
-		reset()
-	}
-
-	/** Copy constructor
-	 * @param r Copy source
-	 */
-	constructor(r:ReplayData) {
-		replace(r)
-	}
+	var inputDataArray:MutableMap<Int, Int> = mutableMapOf(),//(DEFAULT_ARRAYLIST_SIZE) {0},
+	var id:Int = 0,
+	var maxFrame:Int = 0
+) {
 
 	/** Reset to defaults */
 	fun reset() {
@@ -56,8 +48,8 @@ class ReplayData:Serializable {
 	/** 設定を[r]からコピー */
 	fun replace(r:ReplayData) {
 		reset()
-		r.inputDataArray.forEachIndexed {i, it ->
-			inputDataArray.add(i, it)
+		r.inputDataArray.forEach {(i, it) ->
+			inputDataArray[i] = it
 		}
 	}
 
@@ -66,15 +58,15 @@ class ReplayData:Serializable {
 	 * @param frame frame (経過 time）
 	 */
 	fun setInputData(input:Int, frame:Int) {
-		if(frame<0||frame>=inputDataArray.size) inputDataArray.add(input)
-		else inputDataArray[frame] = input
+		if(input!=inputDataArray[frame-1]) inputDataArray[frame] = input
 	}
 
 	/** button input状況を取得
 	 * @param frame frame (経過 time）
 	 * @return button input状況のビット flag
 	 */
-	fun getInputData(frame:Int):Int = if(frame<0||frame>=inputDataArray.size) 0 else inputDataArray[frame]
+	fun getInputData(frame:Int):Int =
+		inputDataArray.getOrElse(frame) {inputDataArray.entries.lastOrNull {it.key<=frame}?.value ?: -1}
 
 	/** プロパティセットに保存
 	 * @param p プロパティセット
@@ -82,14 +74,14 @@ class ReplayData:Serializable {
 	 * @param maxFrame 保存する frame count (-1で全部保存）
 	 */
 	fun writeProperty(p:CustomProperties, id:Int, maxFrame:Int) {
-		var max = maxFrame
-		if(maxFrame<0||maxFrame>inputDataArray.size) max = inputDataArray.size
-
-		for(i in 0..<max) {
-			val input = getInputData(i)
-			val previous = getInputData(i-1)
-			if(input!=previous) p.setProperty("$id.r.$i", input)
+		this.id = id
+		val taken = inputDataArray.filter {it.key<=maxFrame}
+		val max = taken.keys.lastOrNull() ?: 0
+		taken.forEach {(i, d) ->
+			p.setProperty("$id.r.$i", d)
 		}
+//		p.setProperty("$id.r", Json.encodeToString(ReplayData(taken.toMutableMap(), id, max)))
+		this.maxFrame = max
 		p.setProperty("$id.r.max", max)
 	}
 
@@ -99,13 +91,14 @@ class ReplayData:Serializable {
 	 */
 	fun readProperty(p:CustomProperties, id:Int) {
 		reset()
-		val max = p.getProperty("$id.r.max", 0)
-		var input = 0
-
-		for(i in 0..<max) {
+		maxFrame = p.getProperty("$id.r.max", 0)
+		for(i in 0..<maxFrame) {
 			val data = p.getProperty("$id.r.$i", -1)
-			if(data!=-1) input = data
-			setInputData(input, i)
+			if(data!=-1) setInputData(data, i)
+			/*try {
+				replace(Json.decodeFromString<ReplayData>(p.getProperty("$id.r", "{}")))
+			} catch(_:Exception) {
+			}*/
 		}
 	}
 

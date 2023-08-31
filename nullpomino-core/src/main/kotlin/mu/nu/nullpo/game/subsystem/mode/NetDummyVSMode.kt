@@ -993,14 +993,14 @@ abstract class NetDummyVSMode:NetDummyMode() {
 	override fun netplayOnRetryKey(engine:GameEngine) {}
 
 	/** NET-VS: Disconnected */
-	override fun netlobbyOnDisconnect(lobby:NetLobbyFrame, client:NetPlayerClient, ex:Throwable?) {
+	override fun onDisconnect(lobby:NetLobbyFrame, client:NetPlayerClient, ex:Throwable?) {
 		for(i in 0..<players)
 			owner.engine[i].stat = GameEngine.Status.NOTHING
 	}
 
 	/** NET-VS: Message received */
 	@Throws(IOException::class)
-	override fun netlobbyOnMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>) {
+	override fun onMessage(lobby:NetLobbyFrame, client:NetPlayerClient, message:List<String>) {
 		// Player status update
 		if(message[0]=="playerupdate") {
 			val pInfo = NetPlayerInfo(message[1])

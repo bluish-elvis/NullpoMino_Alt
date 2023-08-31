@@ -43,9 +43,8 @@ import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
-/** TIME ATTACK mode (Original from NullpoUE build 010210 by Zircean.
- * This mode is heavily modified from the original.) */
-class GrandRoads:NetDummyMode() {
+/** MISSION MANIA mode */
+class GrandOrders:NetDummyMode() {
 	/** Remaining level time */
 	private var levelTimer = 0
 	private var lastLineTime = 0
@@ -119,12 +118,12 @@ class GrandRoads:NetDummyMode() {
 	/** Returns the name of this mode */
 	override val name = "Grand Roads"
 	override val gameIntensity:Int
-		get() = when(nowCourse) {
-			Course.HARD, Course.CHALLENGE -> 1
-			Course.HARDEST, Course.SUPER, Course.SURVIVAL -> 2
-			Course.XTREME, Course.HELL, Course.HIDE, Course.VOID -> 3
+		get() = 2/* when(nowCourse) {
+			Mission.HARD, Mission.CHALLENGE -> 1
+			Mission.HARDEST, Mission.SUPER, Mission.SURVIVAL -> 2
+			Mission.XTREME, Mission.HELL, Mission.Dark, Mission.VOID -> 3
 			else -> 0
-		}
+		}*/
 	override val rankMap
 		get() = rankMapOf(
 			rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
@@ -161,7 +160,6 @@ class GrandRoads:NetDummyMode() {
 		engine.bigMove = true
 		engine.staffrollEnable = false
 		engine.staffrollNoDeath = false
-		engine.lives = nowCourse.lives
 
 		netPlayerInit(engine)
 		// NET: Load name
@@ -176,22 +174,22 @@ class GrandRoads:NetDummyMode() {
 	 * @param engine GameEngine object
 	 */
 	private fun setSpeed(engine:GameEngine) {
-		engine.speed.replace(nowCourse.speeds[engine.statistics.level])
-		engine.owDelayCancel = if(nowCourse==Course.HARDEST||nowCourse==Course.LONG||nowCourse==Course.CHALLENGE) 7 else -1
+		val nowMission = nowCourse.missions[engine.statistics.level]
+		engine.speed.replace(nowMission.let {it.speeds[it.lv]})
 		// Show outline only
-		engine.blockShowOutlineOnly = nowCourse==Course.HELL||nowCourse==Course.HIDE
+		engine.blockShowOutlineOnly = nowMission is Mission.Dark
 		// Bone blocks
-		engine.bone = (nowCourse==Course.HIDE&&engine.statistics.level>=20||nowCourse==Course.VOID)
+		engine.bone = (nowMission is Mission.Monochrome)
 
 		// for test
 		/* engine.speed.are = 25; engine.speed.areLine = 25;
  * engine.speed.lineDelay = 10; engine.speed.lockDelay = 30;
  * engine.speed.das = 12; levelTimerMax = levelTimer = 3600 * 3; */
 
-		levelTimer = LevelData.lv(nowCourse.levelTimer, engine.statistics.level)+levelTimer/2
+		levelTimer = nowMission.time
 		levelTimerMax = levelTimer
 		// Blocks fade for HELL-X
-		engine.blockHidden = if(nowCourse==Course.HIDE) LevelData.lv(tableHellXFade, engine.statistics.level) else -1
+		engine.blockHidden = if(nowMission is Mission.Dark) nowMission.misc else -1
 
 
 		lastLineTime = levelTimer
@@ -201,9 +199,10 @@ class GrandRoads:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	private fun setHeboHidden(engine:GameEngine) {
-		if(nowCourse==Course.HIDE&&engine.statistics.level>=15||nowCourse==Course.VOID) {
+		val nowMission = nowCourse.missions[engine.statistics.level]
+		if(nowMission is Mission.Shutter) {
 			engine.heboHiddenEnable = true
-			when(if(nowCourse==Course.VOID) engine.statistics.level/5 else (engine.statistics.level-15)/2) {
+			when(nowMission.misc) {
 				1 -> {
 					engine.heboHiddenYLimit = 15
 					engine.heboHiddenTimerMax = (engine.heboHiddenYNow+2)*120
@@ -243,7 +242,6 @@ class GrandRoads:NetDummyMode() {
 			if(menuCursor!=menu.items.indexOf(itemLevel)) 0 else nowCourse.goalLevel-1
 		engine.owner.bgMan.bg = startLevel
 		engine.statistics.level = startLevel
-		engine.lives = nowCourse.lives
 		setSpeed(engine)
 		super.onSettingChanged(engine)
 	}
@@ -254,8 +252,9 @@ class GrandRoads:NetDummyMode() {
 			engine.statistics.level = startLevel
 			engine.statistics.levelDispAdd = 1
 			engine.big = big
-			norm = (0..startLevel).reduceOrNull {acc, i -> acc+nowCourse.goalLines(i)} ?: 0
-			nextLv = (0..startLevel+1).reduce {acc, i -> acc+nowCourse.goalLines(i)}
+			val nowMission = nowCourse.missions[engine.statistics.level]
+			norm = 0
+			nextLv = nowMission.norm
 			setSpeed(engine)
 			bgmLv = maxOf(0, nowCourse.bgmChange.indexOfLast {it<=startLevel}.let {if(it<0) nowCourse.bgmChange.size-1 else it})
 		}
@@ -265,7 +264,11 @@ class GrandRoads:NetDummyMode() {
 	/** This function will be called before the game actually begins
 	 * (after Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
-		owner.musMan.bgm = if(netIsWatch) BGM.Silent else nowCourse.bgmList[bgmLv]
+		if(owner.musMan.fadeSW) {
+			bgmLv = nowCourse.bgmChange.count {it<=engine.statistics.level}
+			owner.musMan.bgm = if(netIsWatch) BGM.Silent else nowCourse.bgmList[bgmLv]
+			owner.musMan.fadeSW = false
+		}
 	}
 
 	/** Renders HUD (leaderboard or game statistics) */
@@ -301,7 +304,7 @@ class GrandRoads:NetDummyMode() {
 			receiver.drawScoreFont(engine, 0, 3, "Level", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 5, 2, "%02d".format(engine.statistics.level+1), 2f)
 			receiver.drawScoreNum(engine, 8, 3, "/%3d".format(nowCourse.goalLevel))
-			receiver.drawScoreNum(engine, 0, 4, "%3d/%3d/%3d".format(norm, nextLv, nowCourse.goalLines))
+			receiver.drawScoreNum(engine, 0, 4, "%3d/%3d".format(norm, nextLv))
 
 			receiver.drawScoreSpeed(engine, 0, 5, engine.speed.rank, 6f)
 
@@ -354,7 +357,7 @@ class GrandRoads:NetDummyMode() {
 			rollStarted = true
 			owner.musMan.bgm = BGM.Finale(2)
 			owner.musMan.fadeSW = false
-			if(nowCourse==Course.VOID) {
+			if(nowCourse.missions[engine.statistics.level] is Mission.Dark) {
 				engine.blockHidden = engine.ruleOpt.lockFlash
 				engine.blockHiddenAnim = false
 				engine.blockOutlineType = GameEngine.BLOCK_OUTLINE_NONE
@@ -422,10 +425,19 @@ class GrandRoads:NetDummyMode() {
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
 		// Don't do anything during the ending
 		if(engine.ending!=0) return 0
+
+		val mission = nowCourse.missions[engine.statistics.level]
 		val lv = engine.statistics.level
 		val li = ev.lines
 		// Add lines to norm
-		norm += li
+		when(mission) {
+			is Mission.Doubles -> if(if(mission.misc==1) ev.lines>=2 else ev.lines==2) norm++ else if(mission.misc==2) norm=0
+			is Mission.Triples -> if(if(mission.misc==1) ev.lines>=3 else ev.lines==3) norm++ else if(mission.misc==2) norm=0
+			is Mission.Quads -> if(ev.lines==4) norm++
+			is Mission.Split -> if(ev.split&&(mission.misc !in 2..3||ev.lines==mission.misc)) if(mission.misc<=0) norm += li else norm++
+			is Mission.Twister -> if(ev.twist&&(mission.misc !in 1..3||ev.lines==mission.misc)) if(mission.misc<=0) norm += li else norm++
+			else -> norm += li
+		}
 		if(li>0) lastLineTime = levelTimer
 		// Decrease Pressure Hidden
 		if(engine.heboHiddenEnable&&li>0) {
@@ -433,17 +445,12 @@ class GrandRoads:NetDummyMode() {
 			engine.heboHiddenYNow -= li
 			if(engine.heboHiddenYNow<0) engine.heboHiddenYNow = 0
 		}
-		var bgmChanged = false
-		// BGM change
-		if(nextLv-norm>=nowCourse.goalLines(lv)/2&&bgmLv<nowCourse.bgmChange.size&&
-			(lv==nowCourse.goalLevel-1||nowCourse.bgmChange.any {it-1==lv})
-		)
-			owner.musMan.fadeSW = true// BGM fadeout
 
 		// Level up
 		if(li>0&&norm>=nextLv)
 		// Game completed
-			if(norm>=nowCourse.goalLines||lv+engine.statistics.levelDispAdd>=nowCourse.goalLevel) {
+			if(lv+engine.statistics.levelDispAdd>=nowCourse.goalLevel) {
+				owner.musMan.fadeSW = true
 				engine.playSE("levelup_section")
 
 				// Update section time
@@ -452,23 +459,21 @@ class GrandRoads:NetDummyMode() {
 				engine.ending = 1
 				engine.timerActive = false
 
-				if(nowCourse==Course.HIDE||nowCourse==Course.VOID) {
+				if(mission is Mission.Dark||mission is Mission.Shutter) {
 					// HELL-X ending & VOID ending
 					engine.staffrollEnable = true
 					engine.statistics.rollClear = 1
 				} else {
 					engine.gameEnded()
-					engine.statistics.rollClear = if(engine.lives>=nowCourse.lives) 2 else 1
+					engine.statistics.rollClear = 2
 				}
 			} else {
-				nextLv += nowCourse.goalLines(lv+1)
-				if(owner.musMan.fadeSW) {
-					bgmChanged = true
-					bgmLv++
-					owner.musMan.bgm = nowCourse.bgmList[bgmLv]
-					owner.musMan.fadeSW = false
+				if(nowCourse.bgmChange.any {it==lv}) {
+					owner.musMan.fadeSW = true// BGM fadeout
+					engine.playSE("levelup_section")
 				}
-				if(bgmChanged) engine.playSE("levelup_section")
+				norm = 0
+				nextLv = nowCourse.missions[lv+1].norm
 				engine.playSE("levelup")
 				engine.statistics.level++
 
@@ -477,7 +482,7 @@ class GrandRoads:NetDummyMode() {
 				sectionsDone++
 
 				engine.timerActive = false // Stop timer until the next piece becomes active
-				setSpeed(engine)
+				engine.stat = GameEngine.Status.READY
 			}
 		return 0
 	}
@@ -721,113 +726,83 @@ class GrandRoads:NetDummyMode() {
 		private const val CURRENT_VERSION = 1
 		private val courses = Course.entries
 		/** Game types */
-		enum class Course {
-			EASY, HARD, HARDEST, SUPER, XTREME, LONG, SURVIVAL, CHALLENGE, HELL, HIDE, VOID;
-
-			/** Gravity tables */
-			val gravity by lazy {
-				when(this) {
-					EASY -> listOf(4, 12, 48, 72, 96, 128, 256, 384, 512, 768, 1024, 1280, -1)
-					HARD -> listOf(84, 128, 256, 512, 768, 1024, 1280, -1)
-					LONG -> listOf(4, 12, 48, 72, 96, 128, 256, 384, 512, 768, 1024, 1280, -1)
-					CHALLENGE -> listOf(1, 3, 15, 30, 60, 120, 180, 240, 300, 300, -1)
-					else -> listOf(-1)
-				}
-			}
-
-			/** Denominator table */
-			val denominator by lazy {listOf(256)}
-
-			/** Max level table */
-			val goalLevel by lazy {
-				when(this) {
-					LONG -> 20
-					SURVIVAL -> 20
-					CHALLENGE -> 25
-					HELL -> 30
-					HIDE -> 30
-					VOID -> 30
-					else -> 15
-				}
-			}
-
-			fun goalLines(lv:Int) = 10
-			val goalLines by lazy {(0..goalLevel).reduce {acc, i -> acc+goalLines(i)}}
+		sealed class Mission(val lv:Int = 0, val norm:Int = 5, val time:Int = 90, val misc:Int = 0) {
+			class LevelStar(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+			class SpeedStar(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+			class Doubles(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
+			class Triples(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
+			class Quads(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
+			class Split(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
+			class Twister(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
+			class Cycle(lv:Int, time:Int):Mission(lv, 4, time)
+			class BIG(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+			class Ladder(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+			class Target(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+			class Dark(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+			class Shutter(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+			class Monochrome(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
 
 			val speeds by lazy {
-				// Other speed values
 				when(this) {
-					EASY, HARD, HARDEST -> LevelData(gravity, denominator, 25, 25, 41, 30, 15)
-					SUPER, SURVIVAL ->
-						LevelData(
-							listOf(19, 18, 17, 16, 15, 14, 13, 12, 11, 10), // ARE
-							listOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21), // Line delay
-							listOf(30, 29, 28, 27, 26, 25, 24, 23, 22, 21), // Lock delay
-							listOf(10, 10, 9, 9, 8, 8, 8, 7, 7, 7) // DAS
-						)
-					XTREME -> LevelData(6, 6, 4, 20, 7)//(6,6,4,13,7)
-					LONG ->
-						/** Speed table for BASIC */
-						LevelData(
-							gravity, denominator,
-							listOf(25, 25, 25, 25, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10), // ARE
-							listOf(25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6), // Line delay
-							listOf(30, 30, 30, 30, 29, 29, 29, 29, 28, 28, 28, 27, 27, 27, 26, 26, 25, 25, 24, 24), // Lock delay
-							listOf(15, 15, 15, 15, 15, 14, 14, 14, 14, 13, 13, 13, 12, 12, 11, 10, 9, 8, 7, 6) // DAS
-						)
-					CHALLENGE ->
-						LevelData(
-							gravity, denominator,
-							listOf(26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7), // ARE
-							listOf(40, 36, 33, 30, 27, 24, 21, 19, 17, 15, 13, 11, 9, 8, 7, 6, 5, 4, 3, 3), // Line delay
-							listOf(28, 28, 28, 27, 27, 27, 26, 26, 26, 25, 25, 25, 24, 24, 23, 22, 22, 21, 21, 20), // Lock delay
-							listOf(15, 15, 15, 15, 15, 14, 14, 14, 14, 13, 13, 13, 12, 12, 11, 10, 9, 8, 7, 6) // DAS
-						)
-					HELL, HIDE -> LevelData(2, 2, 3, 22, 7)
-					VOID -> LevelData(
-						listOf(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1), // ARE
-						listOf(8, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1, 0), // Line delay
-						listOf(25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 19, 18, 17, 16, 15), // Lock delay
-						listOf(9, 8, 8, 7, 7, 6, 6, 5, 5, 4, 4, 4, 4, 4, 4, 4) // DAS
+					is SpeedStar -> LevelData(
+						listOf(25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10), // ARE
+						listOf(30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, +9, +8, +7, +6, +5), // Line delay
+						listOf(30, 30, 29, 29, 28, 28, 27, 27, 26, 25, 25, 24, 23, 22, 21, 20), // Lock delay
+						listOf(10, 10, 10, 10, 10, 10, +9, +9, +9, +8, +8, +8, +7, +7, +7, +7) // DAS
 					)
+					else -> LevelData(listOf(4, 12, 48, 72, 96, 128, 256, 384, 512, 768, 1024, 1280, -1))
 				}
 			}
-			/** Max Life table */
-			val lives by lazy {
+			/** Game type names (short) */
+			val showName by lazy {
 				when(this) {
-					SUPER -> 3
-					XTREME -> 3
-					LONG -> 4
-					SURVIVAL -> 4
-					HELL -> 9
-					HIDE -> 9
-					VOID -> 9
-					else -> 2
+					is LevelStar -> "Level Star"
+					is SpeedStar -> "Speed Star"
+					is Doubles -> when(misc) {
+						1 -> "Doubles+"
+						2 -> "Doubles Chain"
+						else -> "Doubles"
+					}
+					is Triples -> when(misc) {
+						1 -> "Triples+"
+						2 -> "Triples Chain"
+						else -> "Triples"
+					}
+					is Quads -> "Quads"
+					is Split -> when(misc) {
+						1 -> "Splits Count"
+						2 -> "Split Double"
+						3 -> "1.2. Triples"
+						else -> "Splits Total"
+					}
+					is Twister -> when(misc) {
+						0 -> "Twister Count"
+						1 -> "Singles"
+						2 -> "Doubles"
+						3 -> "Triples"
+						else -> "Twister Total"
+					}
+					is Cycle -> "Line Cycles"
+					is BIG -> "BIG"
+					is Ladder -> "Ladder Liner"
+					is Target -> "Target Dig"
+					is Dark -> "Hidimg Dark"
+					is Shutter -> "Rising Shutter"
+					is Monochrome -> "Monochrome"
 				}
 			}
+		}
 
-			/** Level timer tables */
-			val levelTimer by lazy {
+		enum class Course {
+			EASY, HARD, HARDEST, SUPER, LONG, SURVIVAL, CHALLENGE, XTREME, VOID, HELL, HIDE;
+
+			val missions:List<Mission> by lazy {
 				when(this) {
-					EASY -> listOf(6400, 6250, 6000, 5750, 5500, 5250, 5000, 4750, 4500, 4250, 4000, 3750, 3500, 3250, 3000)
-					HARD -> listOf(4500, 4200, 4100, 3900, 3700, 3500, 3300, 3100, 2900, 2700, 2500, 2350, 2200, 2100, 2000)
-					HARDEST -> listOf(4000, 3900, 3800, 3700, 3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2500)
-					SUPER -> listOf(3600, 3500, 3400, 3300, 3200, 3100, 3000, 2900, 2800, 2700, 2550, 2400, 2250, 2100, 2000)
-					LONG -> listOf(
-						6400, 6200, 6000, 5800, 5600, 5400, 5200, 5000, 4800, 4600, // NORMAL 000-100
-						4300, 4000, 3800, 3600, 3500, 3400, 3300, 3200, 3100, 3000
-					) // NORMAL 100-200
-					SURVIVAL -> listOf(
-						4000, 3890, 3780, 3670, 3560, 3450, 3340, 3230, 3120, 3010, // ANOTHER 000-100
-						2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000
-					) // ANOTHER 100-200
-					CHALLENGE -> listOf(
-						4000, 3890, 3780, 3670, 3560, 3450, 3340, 3230, 3120, 3010, // BASIC 000-100
-						2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000
-					) // BASIC 100-200
-					else -> listOf(3000, 2900, 2800, 2700, 2600, 2500, 2400, 2300, 2200, 2100, 2000, 2000, 2000, 2000, 2000)
+					EASY -> listOf(Mission.LevelStar(1, 6, 70))
+					else -> listOf(Mission.LevelStar(1, 6, 70))
 				}
 			}
+			val goalLevel = missions.size
 
 			/** BGM table */
 			val bgmList by lazy {
@@ -912,3 +887,304 @@ class GrandRoads:NetDummyMode() {
 		private const val RANKING_MAX = 13
 	}
 }
+
+/*
+* ◆あらかじめ入っているミッションセットの解説
+
+▼BIGロード
+　BIGが何度も出てくるロードです
+　EXミッション:BIG
+
+▼トリッキーロード
+　ターゲットやイレイサーが多いロードです
+　5問目の追加条件を達成するのは一苦労？
+　EXミッション:イレイサー
+
+▼グランドロード
+　ここからミッションの総数が多くなってきます
+　追加条件のあるミッションが2つ出てくるので注意。
+　EXミッション:レベルスター
+
+▼スターロード
+　グランドロードに似ていますが、終盤に
+　速度が20Gな「ハイスピード2」が出現します。
+　EXミッション:ハイスピード2
+
+▼アナザーロード
+　ミッションの総数が多く、
+　追加条件のあるミッションもかなりあります。
+　集中力をどれだけ持続できるかが勝負の分かれ目です。
+　EXミッション:アナザー
+
+▼DSロード
+　ミッションは多いですが、1つ1つのミッションの
+　ノルマは少なめで、サクッと楽しめます。
+　しかし、終盤は制限時間が極端に短くなっています。
+　EXミッション:耐久
+
+▼デビルロード
+　アナザーロードも楽々クリアーできるプレイヤーへの挑戦状。
+　ほとんどのミッションの速度がアナザーと同じという、
+　凶悪極まりないロードです。
+　EXミッション:DEVIL 1200(REAL)　…?
+
+▼トライアル　一段～十段
+　まずはこれらのミッションで肩慣らしをするといいでしょう。
+
+▼トライアル　HM（ヘボマニア）
+　アナザーが3つもある難度の高いトライアルです。
+
+▼トライアル　ネ申（GOD）
+　(・w・)
+
+▼アマチュア・プロ・ブロンズ・シルバー・ゴールド
+　制限時間はありませんが、ミッション間のライン消去は一切発生しません。
+　常に後のミッションの事を考えてプレイする必要があります。
+
+▼プラチナ
+　時間無制限ミッションセットの中で最高の難易度を誇ります。
+
+
+◆ミッションエディタ詳細
+
+■TYPE
+※特に注意書きがない場合は、OPTIONSの値は全て無視されます。
+
+・レベルスター (LEVEL STAR)
+　指定ライン数消すとクリアとなります。
+　NORMは、ラインを消すと消したライン数だけ上昇します。
+
+・ビッグ (BIG)
+　ブロックが大きいこと以外はレベルスターと同じです。
+　NORMは、ラインを消すと（見た目での消したライン数÷２）だけ上昇します。
+
+・ダブル (DOUBLE)
+　2ライン消しを指定回数行うとクリアです。
+ □ OPTIONSの値
+　0:2ライン消しを1回行うとNORMが1つ上昇します。
+　1:2ライン消し以上を1回行うとNORMが1つ上昇します。
+　2:2ライン消しを1回行うとNORMが1つ上昇しますが他の消し方をすると
+　NORMがリセットします。
+
+・トリプル (TRIPLE)
+　3ライン消しを指定回数行うとクリアです。
+　 □ OPTIONSの値
+　0:3ライン消しを1回行うとNORMが1つ上昇します。
+　1:3ライン消し以上を1回行うとNORMが1つ上昇します。
+　2:3ライン消しを1回行うとNORMが1つ上昇しますが他の消し方をすると
+　NORMがリセットします。
+
+・ヘボリス (HEBORIS)
+　4ライン消しを指定回数行うとクリアです。
+　NORMは、4ライン消しを1回行うと1つ上昇します。
+
+・サイクル (CYCLE)
+　1ライン消し、2ライン消し、3ライン消し、4ライン消しをそれぞれ1回以上するとクリアです。
+　ノルマは必ず4に設定してください。
+
+・ターゲット (TARGET)
+　フィールド上に配置されたプラチナブロックを全て消すとNORMが1つ上昇し、別のステージが始まります。
+　せり上がり以外のギミックは発動しません。
+　□ OPTIONSの値
+　　 MIN: 出現するステージ番号の下限(0～26=Ti 27～44=EH 45～67=ACE)
+　　 MAX: 出現するステージ番号の上限(同上)
+　　 RANDTGT: 1以上にするとプラチナブロックを数値分ランダムで配置します。0(OFF)だと初期配置のままです。
+	　　　99(FULL)にすると…？
+
+・イレイサー (ERASER)
+　線のある所でラインを消すとNORMが1つ上昇します。
+　全ての線を消してもまだノルマが残っている場合は全ての線が復活します。
+　□ OPTIONSの値
+　　 MIN: 出現する線の位置の「上から数えた場合の」上限(0～21まで)
+　　 MAX: 出現する線の位置の「上から数えた場合の」下限(0～21まで)
+　　 OPT: 同時に出現する線の数(実際はこれに+1されます。0～3まで)
+
+・ハイスピード１ (HI-SPEED 1)
+・ハイスピード２ (HI-SPEED 2)
+・アナザー (ANOTHER)
+　速さ以外はレベルスターと同じです。
+　□ OPTIONSの値
+　　 OPT: アナザーで1にすると…？
+
+・シングル (SINGLE)
+　1ライン消しを指定回数行うとクリアです。
+　NORMは、1ライン消しを1回行うと1つ上昇します。
+
+・T-spin
+　T-SPINでライン消しを規定回数行うとクリアです。
+　消した列数は関係ありません。
+
+・X-RAY
+・カラー (COLOR)
+・ロールロール (ROLL ROLL)
+・ミラー (MIRROR)
+　常に同名のオジャマがかかっているレベルスターです。
+
+・回転不可 (ROTATE LOCK)
+　ブロックを回転できない＆向きがランダムな状態でレベルスターを行います。
+
+・NEXT不可視 (HIDE NEXT)
+　NEXTブロックが全く見えない状態でレベルスターを行います。
+
+・DEVIL 800
+　DEVILモードのレベル800台と同じ速度でレベルスターを行います。
+　最下段コピーせり上がりも発生します
+　□ OPTIONSの値
+　　 OPT: せり上がる間隔（0だと20に設定される）
+
+・DEVIL 1200
+　DEVILモードのレベル1200台と同じ速度でレベルスターを行います。
+　ブロックも[ ]に変化します。
+　□ OPTIONSの値
+　　 OPT: 0以外にすると　激 ム ズ　に
+
+・GARBAGE
+　レベルスターです。が、
+　最初のブロックを設置すると、大量のせり上がりが発生します。
+　□ OPTIONSの値
+　　 OPT: せり上がるライン数（18が最大）
+
+・オールドスタイル (OLD STYLE)
+　ブロック・フィールド枠・スピードが専用の物になります。
+　ブロックは接着後即次出現で、
+　NEXT表示1つまで、壁蹴り無し、HOLD不可、IRS不可となります
+　後はレベルスターと同じです。
+
+・耐久 (ENDURANCE)
+　時間切れまで耐えてください。
+　無限回転を行っているとタイマーが減らなくなります。
+　速度はアナザーと同じです。
+　ノルマは必ず1以上に設定してください。
+
+・上下左右逆転(LRUD REV)
+　操作の上と下・左と右が逆転した状態でレベルスターを行います。
+
+・ブラインド(BLIND)
+　積んであるブロックが枠しか見えない状態でレベルスターを行います。
+
+・全消し(ALL CLEAR)
+　全消しを指定回数行うとクリアです。
+　難易度の都合上、（通常は）BIGがかかります。
+　□ OPTIONSの値
+　　 OPT: 0以外にすると…？
+
+・コンボ(COMBO)
+　ノルマ値以上のコンボを決めればクリアです。
+　□ OPTIONSの値
+　　 OPT: 1にすると1ライン消しではNORMが上昇しなくなります。
+
+・B to B ヘボリス(B to B HEBORIS)
+　4ライン消しを指定回数行えばクリアですが、
+　途中で4ライン消し以外を行うと1からやり直しになります。
+
+・OOBAKA
+　（・w・）
+
+・ブロックオーダー(BLOCK ORDER)
+　指定されたブロックでラインを消さないとノルマが
+　上昇しないレベルスターです。
+　□ OPTIONSの値
+     HOLD USE: ブロックをHOLDに入れる必要があります。
+　　 OPT3: ブロックを指定します。(0～8)
+
+・シングルオーダー(SINGLE ORDER)
+　指定されたブロックで1ライン消しを行わないとノルマが
+　上昇しないシングルです。
+　□ OPTIONSの値
+     HOLD USE: ブロックをHOLDに入れる必要があります。
+　　 OPT: ブロックを指定します。(0～8)
+
+・ダブルオーダー(DOUBLE ORDER)
+　指定されたブロックで2ライン消しを行わないとノルマが
+　上昇しないダブルです。
+　□ OPTIONSの値
+     HOLD USE: ブロックをHOLDに入れる必要があります。
+　　 OPT: ブロックを指定します。(0～8)
+
+・裏トリプルオーダー(RE TRIPLE ORDER)
+　指定されたブロック"以外"で3ライン消しを行わないとノルマが
+　上昇しないトリプルです。
+　□ OPTIONSの値
+     HOLD USE: ブロックをHOLDに入れる必要があります。
+　　 OPT: カウントしないブロックを指定します。(0～8)
+
+・中抜きダブル(SPLIT DOUBLE)
+　中抜きで2ライン消しを行わないとノルマが上昇しません。
+　｜■■■■■■■■■■｜
+　｜□□□　□□□□　□｜
+　｜■■■■■■■■■■｜中抜きの例
+
+・中抜きトリプル(SPLIT TRIPLE)
+　中抜きで3ライン消しを行わないとノルマが上昇しません。
+
+・2段抜きダブル(SPLIT DOUBLE2)
+　2段抜きで2ライン消しを行わないとノルマが上昇しません。
+　｜■■■■■■■■■■｜
+　｜□□□　□□　□　□｜
+　｜□□　　□□□　　□｜
+　｜■■■■■■■■■■｜2段抜きダブルの例
+
+・T-spin ダブル(T-SPIN DOUBLE)
+　T-SPINで2ライン消しを規定回数行うとクリアです。
+
+・トリプルオーダー(TRIPLE ORDER)
+　指定されたブロックで3ライン消しを行わないとノルマが
+　上昇しないトリプルです。
+　□ OPTIONSの値
+     HOLD USE: ブロックをHOLDに入れる必要があります。
+　　 OPT: カウントしないブロックを指定します。(0～6)
+
+・イレイサーヘボリス(TRIPLE ORDER)
+　指定されたラインで4ライン消しを行わないとノルマが
+　上昇しません。
+　□ OPTIONSの値
+　　 MIN: 出現する線の位置の「上から数えた場合の」上限(0～21まで)
+　　 MAX: 出現する線の位置の「上から数えた場合の」下限(0～21まで)
+　　 OPT: 同時に出現する線の数(実際はこれに+1されます。0～3まで)
+
+・スクウェア(SQUARE)
+　4x4の正方形を指定個数作るとクリアになります。
+　正方形は
+　１．破片を含まない
+　２．ブロックが4x4の外側に繋がっていない
+　と完成します。
+
+・ゴールドスクウェア(GOLD SQUARE)
+　一種類のブロックだけを使って4x4の正方形を指定個数作ればクリアです。
+
+
+　　LEVELをPLUS #にすると速度がアナザーになり、
+　　ミッション名に「+」が付きます。
+
+■NORM
+この問題の目標ノルマです。画面右のNORM表示の分母がこれです。
+分子の部分がこの数値を超えるとミッションクリアです。
+
+■TIME
+この問題の制限時間です。ミッションスタート時から減っていき、これが0になるとゲームオーバーです。
+（耐久では0になった状態で操作中のブロックを設置するとクリアになる）
+
+■ENDING
+この問題をクリアすると何が起こるかを指定します。
+　NO    : 次の問題へ
+　END   : エンディング
+　EXTRA : この問題の最後を2ライン消しでクリアすると次の問題へ、2ライン消し以外の場合は足切りエンディング
+　EXTRA+: 基本はEXTRAと同じですが、ライン消去の演出が変わります。
+　STAFF ROLL :クリアした問題の速度、状態などはそのままで、スタッフロールに突入。
+　　　　　　　スタッフロールをクリアすればエンディング。
+　M ROLL: 基本はSTAFF ROLLと同じですが、設置したブロックが見えなくなります。
+　DEVIL+M ROLL : ひ　ど　い
+
+■ERASE LINE/RISEE LINE/RISEH LINE
+この問題をクリアしたときに上から消去(上昇)するライン数を指定します。
+0にすると消去されません。21にするとすべて消去されます。
+RISEEはせり上がるラインの穴がそろっています。
+RISEHはせり上がるラインの穴がばらばらです
+
+■OPTIONS
+追加情報です。ターゲット、イレイサー、GARBAGEで使われます。
+
+■BGM
+BGMを指定できます。番号はSOUND TESTと同じです。
+FADEにするとBGMがフェードアウトします。
+*/

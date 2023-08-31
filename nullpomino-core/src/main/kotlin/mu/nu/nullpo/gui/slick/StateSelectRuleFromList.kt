@@ -36,8 +36,9 @@ import mu.nu.nullpo.util.CustomProperties
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
+import org.newdawn.slick.state.GameState
 import org.newdawn.slick.state.StateBasedGame
-import java.io.BufferedReader
+import org.newdawn.slick.state.transition.EmptyTransition
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileReader
@@ -46,7 +47,7 @@ import java.util.Locale
 import java.util.zip.GZIPInputStream
 
 /** Rule select (after mode selection) */
-class StateSelectRuleFromList:BaseMenuScrollState() {
+internal class StateSelectRuleFromList:BaseMenuScrollState() {
 	/** HashMap of rules (ModeName->RuleEntry) */
 	private var mapRuleEntries:MutableMap<String, MutableList<RuleEntry>> = mutableMapOf()
 
@@ -75,39 +76,38 @@ class StateSelectRuleFromList:BaseMenuScrollState() {
 		mapRuleEntries = mutableMapOf("" to mutableListOf())
 
 		try {
-			val reader = BufferedReader(FileReader("config/list/recommended_rules.lst"))
 			var strMode = ""
+			FileReader("config/list/recommended_rules.lst").buffered().use {rl ->
+				rl.forEachLine {str ->
+					val r = str.trim {it<=' '} // Trim the space
 
-			reader.readLines().forEach {str ->
-				val r = str.trim {it<=' '} // Trim the space
+					if(r.startsWith("#")) {
+						// Commment-line. Ignore it.
+					} else if(r.startsWith(":")) {// Mode change
+						strMode = r.substring(1)
+						mapRuleEntries.getOrPut(strMode) {mutableListOf()}.clear()
+					} else {
+						// File Path
+						val file = File(r)
 
-				if(r.startsWith("#")) {
-					// Commment-line. Ignore it.
-				} else if(r.startsWith(":")) {// Mode change
-					strMode = r.substring(1)
-					mapRuleEntries.getOrPut(strMode) {mutableListOf()}.clear()
-				} else {
-					// File Path
-					val file = File(r)
+						if(file.exists()&&file.isFile)
+							try {
+								log.debug("${strMode.ifEmpty {"(top-level)"}} $r")
+								val ruleIn = GZIPInputStream(FileInputStream(file))
+								val propRule = CustomProperties()
+								propRule.load(ruleIn)
+								ruleIn.close()
+								val ruleMode = propRule.getProperty("0.ruleOpt.style", 0)
+								val strRuleName = propRule.getProperty("0.ruleOpt.strRuleName", "")
+								if(strRuleName.isNotEmpty())
+									mapRuleEntries[strMode]?.add(RuleEntry(r, strRuleName, ruleMode))
 
-					if(file.exists()&&file.isFile)
-						try {
-							log.debug("${strMode.ifEmpty {"(top-level)"}} $r")
-							val ruleIn = GZIPInputStream(FileInputStream(file))
-							val propRule = CustomProperties()
-							propRule.load(ruleIn)
-							ruleIn.close()
-							val ruleMode = propRule.getProperty("0.ruleOpt.style", 0)
-							val strRuleName = propRule.getProperty("0.ruleOpt.strRuleName", "")
-							if(strRuleName.isNotEmpty())
-								mapRuleEntries[strMode]?.add(RuleEntry(r, strRuleName, ruleMode))
-
-						} catch(e2:IOException) {
-							log.error("File $r doesn't exist", e2)
-						}
+							} catch(e2:IOException) {
+								log.error("File $r doesn't exist", e2)
+							}
+					}
 				}
 			}
-			reader.close()
 		} catch(e:IOException) {
 			log.error("Failed to load recommended rules list", e)
 		}
@@ -115,14 +115,15 @@ class StateSelectRuleFromList:BaseMenuScrollState() {
 
 	/** Prepare rule list */
 	private fun prepareRuleList() {
-		if(strCurrentMode.isEmpty()) strCurrentMode = NullpoMinoSlick.propGlobal.getProperty("name.mode", "")
+		if(strCurrentMode.isEmpty()) strCurrentMode = NullpoMinoSlick.propGlobal.lastMode[""]?:""
 
-		val curRule = NullpoMinoSlick.propGlobal.getProperty("0.rule")
-		list = currentRuleList.map {it.name}.let {if(!curRule.isNullOrEmpty()) it+STR_FB else it}
+		val curRule = NullpoMinoSlick.propGlobal.rule[0][0].path
+		list = currentRuleList.map {it.name}.let {if(curRule.isNotEmpty()) it+STR_FB else it}
 
-		val strLastRule = NullpoMinoSlick.propGlobal.getProperty("lastrule.${strCurrentMode.lowercase(Locale.getDefault())}")
+		val strLastRule = NullpoMinoSlick.propGlobal.lastRule[strCurrentMode.lowercase(Locale.getDefault())]
 		val defaultCursor = list.indexOfFirst {it==strLastRule}
 		cursor = if(defaultCursor<0) list.size-1 else defaultCursor
+		emitGrid(cursor+minChoiceY)
 	}
 
 	/* When the player enters this state */
@@ -140,16 +141,14 @@ class StateSelectRuleFromList:BaseMenuScrollState() {
 	/* Decide */
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("decide0")
-		NullpoMinoSlick.propGlobal.setProperty(
-			"lastrule.${strCurrentMode.lowercase(Locale.getDefault())}",
+		NullpoMinoSlick.propGlobal.lastRule[strCurrentMode.lowercase(Locale.getDefault())] =
 			if(list[cursor]==STR_FB) list[cursor] else ""
-		)
 		NullpoMinoSlick.saveConfig()
 
 		val strRulePath = if(list[cursor]==STR_FB) null else currentRuleList.map {it.path}[cursor]
 
 		log.debug(strRulePath)
-		NullpoMinoSlick.stateInGame.startNewGame(strRulePath)
+		NullpoMinoSlick.stateInGame.startNewGame(strCurrentMode, strRulePath)
 		game.enterState(StateInGame.ID)
 		return false
 	}
@@ -160,6 +159,26 @@ class StateSelectRuleFromList:BaseMenuScrollState() {
 		return true
 	}
 
+	private class TransDecideModeRule(val modeName:String, val rul:Int):EmptyTransition() {
+		override fun init(firstState:GameState?, secondState:GameState?) {/*
+			if(secondState is StateInGame) {
+				secondState.modeName = modeName
+				secondState.intCurrentMode = mode
+			}*/
+		}
+
+		override fun preRender(game:StateBasedGame?, container:GameContainer?, g:Graphics?) {
+			super.preRender(game, container, g)
+		}
+
+		override fun postRender(game:StateBasedGame?, container:GameContainer?, g:Graphics?) {
+			super.postRender(game, container, g)
+		}
+
+		override fun update(game:StateBasedGame?, container:GameContainer?, delta:Int) {
+			super.update(game, container, delta)
+		}
+	}
 	/** RuleEntry */
 	private data class RuleEntry(val path:String, val name:String, val mode:Int = 0)
 

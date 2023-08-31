@@ -1149,17 +1149,19 @@ class NetServer {
 
 				roomInfo.maxPlayers = 1
 
-				if(message.size>3) {
+				if(message.size>3) getRatedRule(0, roomInfo.ruleName)?.let {
 					roomInfo.ruleName = NetUtil.urlDecode(message[3])
-					roomInfo.ruleOpt = RuleOptions(getRatedRule(0, roomInfo.ruleName))
+					roomInfo.ruleOpt = RuleOptions(it)
 					roomInfo.ruleLock = true
 					roomInfo.rated = true
-				} else {
-					roomInfo.ruleName = pInfo.ruleOpt!!.strRuleName
-					roomInfo.ruleOpt = RuleOptions(pInfo.ruleOpt)
+				}
+				else pInfo.ruleOpt?.let {
+					roomInfo.ruleName = it.strRuleName
+					roomInfo.ruleOpt = RuleOptions(it)
 					roomInfo.ruleLock = false
 					roomInfo.rated = false
 				}
+
 
 				roomInfo.roomID = roomCount
 
@@ -1203,9 +1205,9 @@ class NetServer {
 				if(roomInfo.maxPlayers<1) roomInfo.maxPlayers = 1
 				if(roomInfo.maxPlayers>6) roomInfo.maxPlayers = 6
 
-				if(roomInfo.ruleLock) {
-					roomInfo.ruleName = pInfo.ruleOpt!!.strRuleName
-					roomInfo.ruleOpt = RuleOptions(pInfo.ruleOpt)
+				if(roomInfo.ruleLock) pInfo.ruleOpt?.let {
+					roomInfo.ruleName = it.strRuleName
+					roomInfo.ruleOpt = RuleOptions(it)
 				}
 
 				if(roomInfo.strMode.isEmpty()) roomInfo.strMode = NetUtil.urlDecode(message[3])
@@ -2744,53 +2746,51 @@ class NetServer {
 			ruleSettingIDList = Array(GameEngine.MAX_GAMESTYLE) {LinkedList<Int>()}
 
 			try {
-				val txtRuleList = BufferedReader(FileReader("config/etc/netserver_rulelist.lst"))
 				var style = 0
+				FileReader("config/etc/netserver_rulelist.lst").buffered().use {b ->
+					b.forEachLine {str ->
+						if(str.isEmpty()||str.startsWith("#")) {
+							// Empty or a comment line. Do nothing.
+						} else if(str.startsWith(":")) {
+							// Game style
+							val strStyle = str.substring(1)
 
-				txtRuleList.readLines().forEach {str ->
-					if(str.isEmpty()||str.startsWith("#")) {
-						// Empty or a comment line. Do nothing.
-					} else if(str.startsWith(":")) {
-						// Game style
-						val strStyle = str.substring(1)
+							style = -1
+							for(i in 0..<GameEngine.MAX_GAMESTYLE)
+								if(strStyle.equals(GameEngine.GAMESTYLE_NAMES[i], ignoreCase = true)) {
+									style = i
+									break
+								}
 
-						style = -1
-						for(i in 0..<GameEngine.MAX_GAMESTYLE)
-							if(strStyle.equals(GameEngine.GAMESTYLE_NAMES[i], ignoreCase = true)) {
-								style = i
-								break
-							}
-
-						if(style==-1) {
-							log.warn("{StyleChange} Unknown Style:$str")
-							style = 0
+							if(style==-1) {
+								log.warn("{StyleChange} Unknown Style:$str")
+								style = 0
+							} else
+								log.debug("{StyleChange} StyleID:$style StyleName:$strStyle")
 						} else
-							log.debug("{StyleChange} StyleID:$style StyleName:$strStyle")
-					} else
-					// Rule file
-						try {
-							var settingID = 0
-							val strTempArray = str.split(Regex(";")).dropLastWhile {it.isEmpty()}
-							if(strTempArray.size>1) settingID = strTempArray[1].toInt()
+						// Rule file
+							try {
+								var settingID = 0
+								val strTempArray = str.split(Regex(";")).dropLastWhile {it.isEmpty()}
+								if(strTempArray.size>1) settingID = strTempArray[1].toInt()
 
-							log.debug("{RuleLoad} StyleID:$style RuleFile:${strTempArray[0]} SettingID:"+settingID)
+								log.debug("{RuleLoad} StyleID:$style RuleFile:${strTempArray[0]} SettingID:"+settingID)
 
-							val `in` = GZIPInputStream(FileInputStream(strTempArray[0]))
-							val prop = CustomProperties()
-							prop.load(`in`)
-							`in`.close()
+								val `in` = GZIPInputStream(FileInputStream(strTempArray[0]))
+								val prop = CustomProperties()
+								prop.load(`in`)
+								`in`.close()
 
-							val rule = RuleOptions()
-							rule.readProperty(prop, 0)
+								val rule = RuleOptions()
+								rule.readProperty(prop, 0)
 
-							ruleList!![style].add(rule)
-							ruleSettingIDList!![style].add(settingID)
-						} catch(e2:Exception) {
-							log.warn("Failed to load rule file", e2)
-						}
+								ruleList!![style].add(rule)
+								ruleSettingIDList!![style].add(settingID)
+							} catch(e2:Exception) {
+								log.warn("Failed to load rule file", e2)
+							}
+					}
 				}
-
-				txtRuleList.close()
 			} catch(e:Exception) {
 				log.warn("Failed to load rule list", e)
 			}
@@ -2803,38 +2803,36 @@ class NetServer {
 			mpModeIsRace = Array(GameEngine.MAX_GAMESTYLE) {LinkedList<Boolean>()}
 
 			try {
-				val `in` = BufferedReader(FileReader("config/list/netlobby_multimode.lst"))
-
 				var style = 0
 
-				`in`.readLines().forEach {str ->
-					if(str.isEmpty()||str.startsWith("#")) {
-						// Empty line or comment line. Ignore it.
-					} else if(str.startsWith(":")) {
-						// Game style tag
-						val strStyle = str.substring(1)
+				FileReader("config/list/netlobby_multimode.lst").buffered().use {b ->
+					b.forEachLine {str ->
+						if(str.isEmpty()||str.startsWith("#")) {
+							// Empty line or comment line. Ignore it.
+						} else if(str.startsWith(":")) {
+							// Game style tag
+							val strStyle = str.substring(1)
 
-						style = -1
-						for(i in 0..<GameEngine.MAX_GAMESTYLE)
-							if(strStyle.equals(GameEngine.GAMESTYLE_NAMES[i], ignoreCase = true)) {
-								style = i
-								break
-							}
+							style = -1
+							for(i in 0..<GameEngine.MAX_GAMESTYLE)
+								if(strStyle.equals(GameEngine.GAMESTYLE_NAMES[i], ignoreCase = true)) {
+									style = i
+									break
+								}
 
-						if(style==-1) style = 0
-					} else {
-						// Game mode name
-						val strSplit = str.split(Regex(",")).dropLastWhile {it.isEmpty()}
-						val strModeName = strSplit[0]
-						var isRace = false
-						if(strSplit.size>1) isRace = strSplit[1].toBoolean()
+							if(style==-1) style = 0
+						} else {
+							// Game mode name
+							val strSplit = str.split(Regex(",")).dropLastWhile {it.isEmpty()}
+							val strModeName = strSplit[0]
+							var isRace = false
+							if(strSplit.size>1) isRace = strSplit[1].toBoolean()
 
-						mpModeList!![style].add(strModeName)
-						mpModeIsRace!![style].add(isRace)
+							mpModeList!![style].add(strModeName)
+							mpModeIsRace!![style].add(isRace)
+						}
 					}
 				}
-
-				`in`.close()
 			} catch(e:Exception) {
 				log.warn("Failed to load multiplayer mode list", e)
 			}
@@ -2957,71 +2955,68 @@ class NetServer {
 			if(spDailyLastUpdate!=null) spDailyLastUpdate!!.timeZone = z
 
 			try {
-				val `in` = BufferedReader(FileReader("config/list/netlobby_singlemode.lst"))
-
 				var style = 0
+				FileReader("config/list/netlobby_singlemode.lst").buffered().use {buf->
+					buf.forEachLine {str ->
+						if(str.isEmpty()||str.startsWith("#")) {
+							// Empty line or comment line. Ignore it.
+						} else if(str.startsWith(":")) {
+							// Game style tag
+							val strStyle = str.substring(1)
 
-				`in`.readLines().forEach {str ->
-					if(str.isEmpty()||str.startsWith("#")) {
-						// Empty line or comment line. Ignore it.
-					} else if(str.startsWith(":")) {
-						// Game style tag
-						val strStyle = str.substring(1)
-
-						style = -1
-						for(i in 0..<GameEngine.MAX_GAMESTYLE)
-							if(strStyle.equals(GameEngine.GAMESTYLE_NAMES[i], true)) {
-								style = i
-								break
-							}
-
-						if(style==-1) {
-							log.warn("{StyleChange} Unknown Style:$str")
-							style = 0
-						} else log.debug("{StyleChange} StyleID:$style StyleName:$strStyle")
-					} else {
-						// Game mode name
-						val strSplit = str.split(Regex(",")).dropLastWhile {it.isEmpty()}
-						val strModeName = strSplit[0]
-						var rankingType = 0
-						var maxGameType = 0
-						if(strSplit.size>1) rankingType = strSplit[1].toInt()
-						if(strSplit.size>2) maxGameType = strSplit[2].toInt()
-
-						log.debug("{Mode} Name:$strModeName RankingType:$rankingType MaxGameType:$maxGameType")
-
-						spModeList!![style].add(strModeName)
-
-						for(i in 0..<ruleList!![style].size+1) {
-							val ruleName:String = if(i<ruleList!![style].size) {
-								val ruleOpt = ruleList!![style][i]
-								ruleOpt.strRuleName
-							} else "any"
-
-							for(j in 0..<maxGameType+1)
-								for(k in 0..1) {
-									val rankingData = NetSPRanking()
-									rankingData.strModeName = strModeName
-									rankingData.strRuleName = ruleName
-									rankingData.gameType = j
-									rankingData.rankingType = rankingType
-									rankingData.style = style
-									rankingData.maxRecords = maxSPRanking
-
-									if(k==0) {
-										rankingData.readProperty(propSPRankingAlltime)
-										spRankingListAlltime!!.add(rankingData)
-										log.debug(rankingData.strRuleName+",${rankingData.strModeName},"+rankingData.gameType)
-									} else {
-										rankingData.readProperty(propSPRankingDaily)
-										spRankingListDaily!!.add(rankingData)
-									}
+							style = -1
+							for(i in 0..<GameEngine.MAX_GAMESTYLE)
+								if(strStyle.equals(GameEngine.GAMESTYLE_NAMES[i], true)) {
+									style = i
+									break
 								}
+
+							if(style==-1) {
+								log.warn("{StyleChange} Unknown Style:$str")
+								style = 0
+							} else log.debug("{StyleChange} StyleID:$style StyleName:$strStyle")
+						} else {
+							// Game mode name
+							val strSplit = str.split(Regex(",")).dropLastWhile {it.isEmpty()}
+							val strModeName = strSplit[0]
+							var rankingType = 0
+							var maxGameType = 0
+							if(strSplit.size>1) rankingType = strSplit[1].toInt()
+							if(strSplit.size>2) maxGameType = strSplit[2].toInt()
+
+							log.debug("{Mode} Name:$strModeName RankingType:$rankingType MaxGameType:$maxGameType")
+
+							spModeList!![style].add(strModeName)
+
+							for(i in 0..<ruleList!![style].size+1) {
+								val ruleName:String = if(i<ruleList!![style].size) {
+									val ruleOpt = ruleList!![style][i]
+									ruleOpt.strRuleName
+								} else "any"
+
+								for(j in 0..<maxGameType+1)
+									for(k in 0..1) {
+										val rankingData = NetSPRanking()
+										rankingData.strModeName = strModeName
+										rankingData.strRuleName = ruleName
+										rankingData.gameType = j
+										rankingData.rankingType = rankingType
+										rankingData.style = style
+										rankingData.maxRecords = maxSPRanking
+
+										if(k==0) {
+											rankingData.readProperty(propSPRankingAlltime)
+											spRankingListAlltime!!.add(rankingData)
+											log.debug(rankingData.strRuleName+",${rankingData.strModeName},"+rankingData.gameType)
+										} else {
+											rankingData.readProperty(propSPRankingDaily)
+											spRankingListDaily!!.add(rankingData)
+										}
+									}
+							}
 						}
 					}
 				}
-
-				`in`.close()
 			} catch(e:Exception) {
 				log.warn("Failed to load single player mode list", e)
 			}
@@ -3162,13 +3157,13 @@ class NetServer {
 			banList = LinkedList()
 
 			try {
-				val txtBanList = BufferedReader(FileReader("config/setting/netserver_banned.lst"))
-
-				txtBanList.readLines().forEach {str ->
-					if(str.isNotEmpty()) {
-						val ban = NetServerBan()
-						ban.importString(str)
-						if(!ban.isExpired) banList!!.add(ban)
+				FileReader("config/setting/netserver_banned.lst").buffered().use {
+					it.forEachLine {str ->
+						if(str.isNotEmpty()) {
+							val ban = NetServerBan()
+							ban.importString(str)
+							if(!ban.isExpired) banList!!.add(ban)
+						}
 					}
 				}
 			} catch(e:IOException) {
@@ -3204,13 +3199,13 @@ class NetServer {
 				lobbyChatList!!.clear()
 
 			try {
-				val txtLobbyChat = BufferedReader(FileReader("config/setting/netserver_lobbychat.log"))
-
-				txtLobbyChat.readLines().forEach {str ->
-					if(str.isNotEmpty()) {
-						val chat = NetChatMessage()
-						chat.importString(str)
-						lobbyChatList!!.add(chat)
+				FileReader("config/setting/netserver_lobbychat.log").buffered().use {
+					it.forEachLine {str ->
+						if(str.isNotEmpty()) {
+							val chat = NetChatMessage()
+							chat.importString(str)
+							lobbyChatList!!.add(chat)
+						}
 					}
 				}
 			} catch(e:IOException) {

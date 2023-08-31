@@ -396,8 +396,8 @@ class RuleEditorFX:Application(null) {
 		log.info(ParametersImpl.getParameters(this))
 		// 設定ファイル読み込み
 		try {
-			val `in` = FileInputStream("config/setting/swing.xml")
-			propConfig.loadFromXML(`in`)
+			val `in` = FileInputStream("config/setting/swing.properties")
+			propConfig.load(`in`)
 			`in`.close()
 		} catch(e:IOException) {
 		}
@@ -1237,7 +1237,7 @@ class RuleEditorFX:Application(null) {
 
 	/** Block画像を読み込み */
 	private fun loadBlockSkins() {
-		val skinDir = propConfig.getProperty("custom.skin.directory", "res")
+		val skinDir = propGlobal.custom.skinDir
 
 		var numBlocks = 0
 		while(File("$skinDir/graphics/blockskin/normal/n$numBlocks.png").canRead()) numBlocks++

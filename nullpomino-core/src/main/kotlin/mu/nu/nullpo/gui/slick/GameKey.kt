@@ -32,20 +32,14 @@ import mu.nu.nullpo.gui.common.GameKeyDummy
 import org.lwjgl.input.Keyboard
 import org.newdawn.slick.Input
 
-/** Key input state manager (Only use with Slick. Don't use inside game
- * modes!) */
-class GameKey:GameKeyDummy {
-	/** Default constructor */
-	constructor():super()
 
-	/** Constructor with player number param
-	 * @param pl Player number
-	 */
-	constructor(pl:Int):super(pl)
+/** Key input state manager (Only use with Slick. Don't use inside game modes!)
+ * @param player Player number */
+internal class GameKey(player:Int):GameKeyDummy(player) {
 
 	/** Update button input status
 	 * @param input Slick's Input class (You can get it with container.getInput())
-	 * @param ingame true if ingame
+	 * @param ingame true if in game
 	 */
 	@JvmOverloads
 	fun update(input:Input, ingame:Boolean = false) {
@@ -82,19 +76,17 @@ class GameKey:GameKeyDummy {
 	}
 
 	/** Reset in-game keyboard settings to default. Menu keys are unchanged.
-	 * @param type Settings type (0=Blockbox 1=Guideline
-	 * 2=NullpoMino-Classic 3=ThreshBind)
+	 * @param type Settings type (0=Blockbox 1=Guideline 2=NullpoMino-Classic 3=ThreshBind)
 	 */
-	fun loadDefaultGameKeymap(type:Int) {
-		System.arraycopy(defaultKeys[0][type], 0, keymap, 0, keymap.size)
+	private fun loadDefaultGameKeymap(type:Int) {
+		defaultKeys[0][type].forEachIndexed {i, t -> keymap[i] = mutableListOf(t)}
 	}
 
 	/** Reset menu keyboard settings to default. In-game keys are unchanged.
-	 * @param type Settings type (0=Blockbox 1=Guideline
-	 * 2=NullpoMino-Classic 3=ThreshBind)
+	 * @param type Settings type (0=Blockbox 1=Guideline 2=NullpoMino-Classic 3=ThreshBind)
 	 */
-	fun loadDefaultMenuKeymap(type:Int) {
-		System.arraycopy(defaultKeys[1][type], 0, keymapNav, 0, keymapNav.size)
+	private fun loadDefaultMenuKeymap(type:Int) {
+		defaultKeys[1][type].forEachIndexed {i, t -> keymapNav[i] = mutableListOf(t)}
 	}
 
 	companion object {
@@ -106,7 +98,7 @@ class GameKey:GameKeyDummy {
 			}
 
 		/** Key input state (Used by all game states) */
-		var gameKey:List<GameKey> = emptyList()
+		var gameKey:List<GameKey> = List(MAX_PLAYERS) {GameKey(it)}
 
 		/** Default key mappings */
 		val defaultKeys = listOf(
@@ -275,7 +267,8 @@ class GameKey:GameKeyDummy {
 			ControllerManager.initControllers()
 			JInputManager.initKeymap()
 			JInputManager.initKeyboard()
-			gameKey = List(2) {GameKey(it)}
+			gameKey = List(MAX_PLAYERS) {GameKey(it)}
 		}
+
 	}
 }

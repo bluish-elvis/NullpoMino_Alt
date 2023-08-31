@@ -28,9 +28,13 @@
  */
 package mu.nu.nullpo.gui.slick
 
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.net.NetObserverClient
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.ConfigGlobal
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.ModeManager
@@ -45,11 +49,9 @@ import org.newdawn.slick.SlickException
 import org.newdawn.slick.state.StateBasedGame
 import org.newdawn.slick.util.Log
 import java.awt.image.BufferedImage
-import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.FileReader
 import java.io.IOException
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -59,7 +61,7 @@ import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 
 /** NullpoMino SlickVersion */
-class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
+internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 	/* ステート (タイトルとかゲームとかのシーンのことね）を追加 */
 	override fun initStatesList(container:GameContainer) {
 		stateLoading = StateLoading()
@@ -110,9 +112,9 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		internal val log = LogManager.getLogger()
 
 		/** Save settings用Property file */
-		var propConfig = CustomProperties()
+		var propConfig = ConfigSlick(); private set
 		/** Save settings用Property file (全Version共通) */
-		var propGlobal = CustomProperties()
+		var propGlobal = ConfigGlobal(); private set
 		/** 音楽リストProperty file */
 		internal val propMusic = CustomProperties()
 		/** Observer機能用Property file */
@@ -230,14 +232,9 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			log.info("NullpoMinoSlick Start")
 			log.info(NullpoMinoSlick::class.java.getResource("/log4j2.xml")?.path ?: "")
 			// 設定ファイル読み込み
-			try {
-				val `in` = FileInputStream("config/setting/slick.xml")
-				propConfig.loadFromXML(`in`)
-				`in`.close()
-			} catch(_:IOException) {
-			}
-
 			loadGlobalConfig()
+			loadSlickConfig()
+
 			try {
 				val `in` = FileInputStream("config/setting/music.xml")
 				propMusic.loadFromXML(`in`)
@@ -291,9 +288,9 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			// Mode読み込み
 			try {
 				this::class.java.getResource("/mode.lst")?.file?.let {
-					val txtMode = BufferedReader(FileReader(it))
-					modeManager.loadGameModes(txtMode)
-					txtMode.close()
+					FileInputStream(it).bufferedReader().use {
+						modeManager.loadGameModes(it)
+					}
 				}
 			} catch(e:IOException) {
 				log.error("Mode list load failed", e)
@@ -306,20 +303,21 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				propDefaultRule.load(fis)
 				fis.close()
 
-				for(pl in 0..1)
-					for(i in 0..<GameEngine.MAX_GAMESTYLE)
-					// TETROMINO
-						if(i==0) {
-							if(propGlobal.getProperty("$pl.rule")==null) {
-								propGlobal.setProperty("$pl.rule", propDefaultRule.getProperty("default.rule", ""))
-								propGlobal.setProperty("$pl.rulefile", propDefaultRule.getProperty("default.rulefile", ""))
-								propGlobal.setProperty("$pl.rulename", propDefaultRule.getProperty("default.rulename", ""))
-							}
-						} else if(propGlobal.getProperty("$pl.rule.$i")==null) {
-							propGlobal.setProperty("$pl.rule.$i", propDefaultRule.getProperty("default.rule.$i", ""))
-							propGlobal.setProperty("$pl.rulefile.$i", propDefaultRule.getProperty("default.rulefile.$i", ""))
-							propGlobal.setProperty("$pl.rulename.$i", propDefaultRule.getProperty("default.rulename.$i", ""))
+				for(pl in 0..1) {
+					if(propGlobal.rule.getOrNull(pl).isNullOrEmpty())
+						propGlobal.rule[pl] = mutableListOf()
+					for(i in 0..<GameEngine.MAX_GAMESTYLE) {
+						val pos = if(i==0) "" else ".$i"
+						if(propGlobal.rule.getOrNull(pl)?.getOrNull(i)?.path.isNullOrEmpty()) {
+							propGlobal.rule[pl][i] = ConfigGlobal.RuleConf(
+								propDefaultRule.getProperty("default.rule$pos", ""),
+								propDefaultRule.getProperty("default.rulefile$pos", ""),
+								propDefaultRule.getProperty("default.rulename$pos", "")
+							)
 						}
+					}
+				}
+
 			} catch(_:Exception) {
 			}
 
@@ -379,8 +377,8 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 			// ゲーム画面などの初期化
 			try {
-				val sWidth = propConfig.getProperty("option.screenwidth", 640)
-				val sHeight = propConfig.getProperty("option.screenheight", 480)
+				val sWidth = propConfig.render.screenWidth
+				val sHeight = propConfig.render.screenHeight
 
 				val obj = NullpoMinoSlick()
 
@@ -395,7 +393,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				appGameContainer.setMaximumLogicUpdateInterval(0)
 				appGameContainer.setUpdateOnlyWhenVisible(false)
 				appGameContainer.setForceExit(false)
-				appGameContainer.setDisplayMode(sWidth, sHeight, propConfig.getProperty("option.fullscreen", false))
+				appGameContainer.setDisplayMode(sWidth, sHeight, propConfig.render.fullScreen)
 				appGameContainer.start()
 			} catch(e:SlickException) {
 				log.fatal("Game initialize failed (SlickException)", e)
@@ -427,21 +425,22 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			exitProcess(0)
 		}
 
+
 		/** 設定ファイルを保存 */
 		fun saveConfig() {
 			try {
-				val out = FileOutputStream("config/setting/slick.xml")
-				propConfig.storeToXML(out, "NullpoMino Slick-frontend Config")
-				out.close()
+				FileOutputStream("config/setting/slick.json", false).bufferedWriter().use {
+					it.write(Json.encodeToString(propConfig))
+				}
 			} catch(e:IOException) {
 				log.error("Failed to save Slick-specific config", e)
 			}
 
 			try {
-				val out = FileOutputStream("config/setting/global.xml")
-				propGlobal.storeToXML(out, "NullpoMino Global Config")
-				out.close()
-			} catch(e:IOException) {
+				FileOutputStream("config/setting/global.json", false).bufferedWriter().use {
+					it.write(Json.encodeToString(propGlobal))
+				}
+			} catch(e:Exception) {
 				log.error("Failed to save global config", e)
 			}
 		}
@@ -449,13 +448,17 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		/** (Re-)Load global config file */
 		internal fun loadGlobalConfig() {
 			try {
-				val `in` = FileInputStream("config/setting/global.xml")
-				propGlobal.loadFromXML(`in`)
-				`in`.close()
-			} catch(_:IOException) {
+				propGlobal = Json.decodeFromString(FileInputStream("config/setting/global.json").bufferedReader().use {it.readText()})
+			} catch(_:Exception) {
 			}
 		}
-
+		/** (Re-)Load slick config file */
+		internal fun loadSlickConfig() {
+			try {
+				propConfig = Json.decodeFromString(FileInputStream("config/setting/slick.json").bufferedReader().use {it.readText()})
+			} catch(_:Exception) {
+			}
+		}
 		/** いろいろな設定を反映させる */
 		internal fun setGeneralConfig() {
 			appGameContainer.setTargetFrameRate(-1)
@@ -463,33 +466,25 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			overSleepTime = 0L
 			noDelays = 0
 
-			alternateFPSTiming = propConfig.getProperty("option.alternateFPSTiming", false)
-			alternateFPSDynamicAdjust = propConfig.getProperty("option.alternateFPSDynamicAdjust", true)
-			alternateFPSPerfectMode = propConfig.getProperty("option.alternateFPSPerfectMode", false)
-			alternateFPSPerfectYield = propConfig.getProperty("option.alternateFPSPerfectYield", false)
-			altMaxFPS = propConfig.getProperty("option.maxFps", 60)
+			alternateFPSTiming = propConfig.render.alternateFPSTiming
+			alternateFPSDynamicAdjust = propConfig.render.alternateFPSDynamicAdjust
+			alternateFPSPerfectMode = propConfig.render.alternateFPSPerfectMode
+			alternateFPSPerfectYield = propConfig.render.alternateFPSPerfectYield
+			altMaxFPS = propConfig.render.maxFPS
 			altMaxFPSCurrent = altMaxFPS
 			periodCurrent = (1.0/altMaxFPSCurrent*1000000000).toLong()
 
-			appGameContainer.setVSync(propConfig.getProperty("option.vsync", true))
+			appGameContainer.setVSync(propConfig.render.vsync)
 			appGameContainer.alwaysRender = !alternateFPSTiming
 
 
-			appGameContainer.soundVolume = propConfig.getProperty("option.seVolume", 128)/128f
+			appGameContainer.soundVolume = propConfig.audio.seVolume/128f
 
 			ControllerManager.run {
-				method = propConfig.getProperty("option.joymethod", CONTROLLER_METHOD_NONE)
-				controllerID[0] = propConfig.getProperty("joyUseNumber.p0", -1)
-				controllerID[1] = propConfig.getProperty("joyUseNumber.p1", -1)
-				var joyBorder = propConfig.getProperty("joyBorder.p0", 0)
-				border[0] = joyBorder/32768.toFloat()
-				joyBorder = propConfig.getProperty("joyBorder.p1", 0)
-				border[1] = joyBorder/32768.toFloat()
-				ignoreAxis[0] = propConfig.getProperty("joyIgnoreAxis.p0", false)
-				ignoreAxis[1] = propConfig.getProperty("joyIgnoreAxis.p1", false)
-				ignorePOV[0] = propConfig.getProperty("joyIgnorePOV.p0", false)
-				ignorePOV[1] = propConfig.getProperty("joyIgnorePOV.p1", false)
+				method = propConfig.ctrl.joyMethod
+				config = propConfig.ctrl.joyPadConf
 			}
+
 			// useJInputKeyboard = propConfig.getProperty("option.useJInputKeyboard", true);
 		}
 
@@ -499,7 +494,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		 */
 		internal fun saveScreenShot(container:GameContainer, g:Graphics) {
 			// Filenameを決める
-			val dir = propGlobal.getProperty("custom.screenshot.directory", "ss")
+			val dir = propGlobal.custom.ssDir
 			val c = Calendar.getInstance()
 			val dfm = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss")
 			val filename = "$dir/${dfm.format(c.time)}.png"
@@ -656,7 +651,7 @@ class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 		/** FPS display */
 		internal fun drawFPS() {
-			if(propConfig.getProperty("option.showFps", true))
+			if(propConfig.general.showFPS)
 				FontNano.printFont(320-42, 0, "${df.format(actualFPS)}FPS", COLOR.WHITE, .5f)
 		}
 

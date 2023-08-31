@@ -37,7 +37,6 @@
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
 import mu.nu.nullpo.game.play.GameEngine
-import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
 
 class BackgroundImageSequenceAnim(filePaths:Array<String>, frameTime:Int, pingPong:Boolean):AnimatedBackgroundHook() {
 	private val frameTime:Int

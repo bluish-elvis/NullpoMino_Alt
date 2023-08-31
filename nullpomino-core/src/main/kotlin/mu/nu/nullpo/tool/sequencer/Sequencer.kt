@@ -39,7 +39,6 @@ import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
-import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileInputStream
@@ -100,8 +99,8 @@ class Sequencer:JFrame(), ActionListener {
 	init {
 		// Load config file
 		try {
-			FileInputStream("config/setting/swing.xml").let {
-				propConfig.loadFromXML(it)
+			FileInputStream("config/setting/swing.properties").let {
+				propConfig.load(it)
 				it.close()
 			}
 		} catch(_:IOException) {
@@ -300,14 +299,13 @@ class Sequencer:JFrame(), ActionListener {
 		val vec = Vector<String>()
 
 		try {
-			val read = BufferedReader(FileReader(filename))
-
-			while(true) {
-				val str = read.readLine()
-				if(str==null||str.isEmpty()) break
-				vec.add(str)
+			FileReader(filename).buffered().use {
+				while(true) {
+					val str = it.readLine()
+					if(str==null||str.isEmpty()) break
+					vec.add(str)
+				}
 			}
-			read.close()
 		} catch(_:IOException) {
 		}
 

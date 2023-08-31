@@ -30,7 +30,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package mu.nu.nullpo.gui.slick
+package mu.nu.nullpo.gui.slick.img.ext
 
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece

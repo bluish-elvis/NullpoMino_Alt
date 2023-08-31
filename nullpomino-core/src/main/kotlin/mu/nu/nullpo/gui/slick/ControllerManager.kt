@@ -28,20 +28,21 @@
  */
 package mu.nu.nullpo.gui.slick
 
+import mu.nu.nullpo.gui.common.ConfigGlobal.GamePadConf
+import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import org.apache.logging.log4j.LogManager
 import org.lwjgl.input.Controller
 import org.lwjgl.input.Controllers
 import org.newdawn.slick.Input
 
 /** Joystick 関連の処理 */
-object ControllerManager {
+internal object ControllerManager {
 	/** Log */
 	internal val log = LogManager.getLogger()
 
 	/** 最小/Maximum buttoncount */
 	const val MIN_BUTTONS = 3
 	const val MAX_BUTTONS = 100
-	const val MAX_PLAYERS = 2
 
 	/** Joystick 状態検出法の定数 */
 	const val CONTROLLER_METHOD_NONE = 0
@@ -55,18 +56,19 @@ object ControllerManager {
 
 	/** Joystick state */
 	var controllers = emptyList<Controller>()
-
+	var config = GamePadConf(
+		mutableListOf(-1), mutableListOf(), mutableListOf(),mutableListOf())
 	/** 各Playerが使用するJoystick の number */
-	var controllerID = MutableList(0) {0}
+	val controllerID get() = config.controllerID
 
 	/** Joystick direction key が反応する閾値 (一部検出法では使えない) */
-	var border = MutableList(0) {0f}
+	val border get() = config.border.map {it/32768f}
 
 	/** アナログスティック無視 */
-	var ignoreAxis = MutableList(0) {false}
+	val ignoreAxis get() = config.ignoreAxis
 
 	/** ハットスイッチ無視 */
-	var ignorePOV = MutableList(0) {false}
+	val ignorePOV get() = config.ignorePOV
 
 	/** Joystick のcountを取得
 	 * @return Joystick のcount
@@ -77,10 +79,10 @@ object ControllerManager {
 	/** Initialization */
 	fun initControllers() {
 		Controllers.destroy()
-		controllerID = MutableList(MAX_PLAYERS) {-1}
-		border = MutableList(MAX_PLAYERS) {0f}
-		ignoreAxis = MutableList(MAX_PLAYERS) {false}
-		ignorePOV = MutableList(MAX_PLAYERS) {false}
+		config.controllerID = MutableList(MAX_PLAYERS) {-1}
+		config.border = MutableList(MAX_PLAYERS) {0}
+		config.ignoreAxis = MutableList(MAX_PLAYERS) {false}
+		config.ignorePOV = MutableList(MAX_PLAYERS) {false}
 		controllers = List(Controllers.getControllerCount()) {i ->
 			Controllers.getController(i).takeIf {it.buttonCount in MIN_BUTTONS..<MAX_BUTTONS}
 		}.filterNotNull()
@@ -99,15 +101,13 @@ object ControllerManager {
 	 */
 	fun isControllerUp(player:Int, input:Input):Boolean {
 		try {
-			val controller = controllerID[player]
+			val controller = controllerID.getOrElse(player){-1}
 
 			return when {
 				controller<0 -> false
 				method==CONTROLLER_METHOD_SLICK_DEFAULT -> input.isControllerUp(controller)
-				method==CONTROLLER_METHOD_SLICK_ALTERNATE -> input.isControllerUp(controller)||!ignoreAxis[player]&&input.getAxisValue(
-					controller,
-					1
-				)<-border[player]
+				method==CONTROLLER_METHOD_SLICK_ALTERNATE -> input.isControllerUp(controller)||
+					!ignoreAxis[player]&&input.getAxisValue(controller, 1)<-border[player]
 				method==CONTROLLER_METHOD_LWJGL&&controller<controllers.size -> !ignoreAxis[player]&&controllers[controller].yAxisValue<-border[player]||
 					!ignorePOV[player]&&controllers[controller].povY<-border[player]
 				else -> false
@@ -126,7 +126,7 @@ object ControllerManager {
 	 */
 	fun isControllerDown(player:Int, input:Input):Boolean {
 		try {
-			val controller = controllerID[player]
+			val controller = controllerID.getOrElse(player){-1}
 
 			return when {
 				controller<0 -> false
@@ -152,7 +152,7 @@ object ControllerManager {
 	 */
 	fun isControllerLeft(player:Int, input:Input):Boolean {
 		try {
-			val controller = controllerID[player]
+			val controller = controllerID.getOrElse(player){-1}
 			return when {
 				controller<0 -> false
 				method==CONTROLLER_METHOD_SLICK_DEFAULT ->
@@ -178,7 +178,7 @@ object ControllerManager {
 	 */
 	fun isControllerRight(player:Int, input:Input):Boolean {
 		try {
-			val controller = controllerID[player]
+			val controller = controllerID.getOrElse(player){-1}
 
 			return when {
 				controller<0 -> false
@@ -205,9 +205,9 @@ object ControllerManager {
 	 */
 	fun isControllerButton(player:Int, input:Input, button:Int):Boolean {
 		try {
-			val controller = controllerID[player]
+			val controller = controllerID.getOrElse(player){-1}
 			return when {
-				controller<0||button<0 -> false
+				player>=controllerID.size||controller<0||button<0 -> false
 				method==CONTROLLER_METHOD_SLICK_DEFAULT||method==CONTROLLER_METHOD_SLICK_ALTERNATE ->
 					input.isButtonPressed(button, controller)
 				method==CONTROLLER_METHOD_LWJGL&&controller<controllers.size ->

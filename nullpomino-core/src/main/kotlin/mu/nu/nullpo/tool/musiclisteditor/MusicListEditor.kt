@@ -80,7 +80,7 @@ class MusicListEditor:JFrame(), ActionListener {
 	/** Initialization */
 	private fun init() {
 		// 設定ファイル読み込み
-		propConfig.loadXML("config/setting/swing.xml")
+		propConfig.load("config/setting/swing.properties")
 
 		// 言語ファイル読み込み
 		if(propLangDefault.loadXML("config/lang/musiclisteditor_default.xml")==null)

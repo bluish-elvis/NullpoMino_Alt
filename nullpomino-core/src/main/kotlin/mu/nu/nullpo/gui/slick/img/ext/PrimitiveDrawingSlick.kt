@@ -233,7 +233,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.slick
+package mu.nu.nullpo.gui.slick.img.ext
 
 import org.newdawn.slick.Graphics
 

@@ -135,11 +135,7 @@ class NetPlayerInfo:Serializable {
 		strHost = n.strHost
 		strTeam = n.strTeam
 
-		ruleOpt = if(n.ruleOpt!=null)
-			RuleOptions(n.ruleOpt)
-		else
-			null
-
+		ruleOpt = n.ruleOpt?.let {RuleOptions(it)}
 		for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 			rating[i] = n.rating[i]
 			ratingBefore[i] = n.ratingBefore[i]

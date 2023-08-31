@@ -28,6 +28,8 @@
  */
 package mu.nu.nullpo.game.play
 
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
@@ -49,6 +51,8 @@ import mu.nu.nullpo.game.play.GameEngine.ClearType.LINE_GEM_BOMB
 import mu.nu.nullpo.game.play.GameEngine.ClearType.LINE_GEM_SPARK
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
+import mu.nu.nullpo.gui.common.ConfigGlobal.AIConf
+import mu.nu.nullpo.gui.common.ConfigGlobal.TuneConf
 import mu.nu.nullpo.gui.common.fx.PopupCombo.CHAIN
 import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toInt
@@ -100,15 +104,42 @@ class GameEngine(
 
 	/** AIPlayer: AI for autoplaying */
 	var ai:AIPlayer? = null
-	var aiMoveDelay = 0
+	var aiConf:AIConf = AIConf()
+	/** AIの移動間隔 */
+	var aiMoveDelay
+		get() = aiConf.moveDelay
+		set(value) {
+			aiConf.moveDelay = value
+		}
 	/** AI think delay (Only when using thread) */
-	var aiThinkDelay = 0
-	var aiUseThread = false
-	var aiShowHint = false
+	var aiThinkDelay
+		get() = aiConf.thinkDelay
+		set(value) {
+			aiConf.thinkDelay = value
+		}
+	/** AIでスレッドを使う */
+	var aiUseThread
+		get() = aiConf.useThread
+		set(value) {
+			aiConf.useThread = value
+		}
+	var aiShowHint
+		get() = aiConf.showHint
+		set(value) {
+			aiConf.showHint = value
+		}
 	/** Pre-think with AI */
-	var aiPreThink = false
+	var aiPreThink
+		get() = aiConf.preThink
+		set(value) {
+			aiConf.preThink = value
+		}
 	/** Show internal state of AI */
-	var aiShowState = false
+	var aiShowState
+		get() = aiConf.showState
+		set(value) {
+			aiConf.showState = value
+		}
 	/** AI Hint piece (copy of current or hold) */
 	var aiHintPiece:Piece? = null
 	/** AI Hint X position */
@@ -475,34 +506,81 @@ class GameEngine(
 
 	/** Post-status of interruptable inum */
 	var interruptItemPreviousStat:Status = Status.MOVE; private set
-	/** Backup field for Mirror inum */
-	var interruptItemMirrorField:Field = Field(); private set
+	/** Backup field for Mirror/Exchange */
+	var interruptItemBackupField:Field = Field(); private set
 
+	/**Overwriting Rule settings(should not change from gamemode)*/
+	var owTune = TuneConf()
 	/** A button direction -1=Auto(Use rule settings) 0=Left 1=Right */
-	var owSpinDirection:Int = -1
+	var owSpinDir
+		get() = owTune.spinDir
+		set(value) {
+			owTune.spinDir = value
+		}
 	/** Block Skin (-1=Auto -2=Random 0orAbove=Fixed) */
-	var owSkin:Int = -1
-	/** Min/Max DAS (-1=Auto 0orAbove=Fixed) */
-	var owMinDAS:Int = -1
-	var owMaxDAS:Int = -1
+	var owSkin
+		get() = owTune.skin
+		set(value) {
+			owTune.skin = value
+		}
+	/** Min DAS (-1=Auto 0orAbove=Fixed) */
+	var owMinDAS
+		get() = owTune.minDAS
+		set(value) {
+			owTune.minDAS = value
+		}
+	/** Max DAS (-1=Auto 0orAbove=Fixed) */
+	var owMaxDAS
+		get() = owTune.maxDAS
+		set(value) {
+			owTune.maxDAS = value
+		}
 	/** ARR (-1=Auto 0orAbove=Fixed) */
-	var owARR:Int = -1
+	var owARR
+		get() = owTune.owARR
+		set(value) {
+			owTune.owARR = value
+		}
 	/** SoftDrop Speed -1(Below 0)=Auto
 	 * 0-6=Always Fixed 0.5/1/2/3/4/5/20G
 	 * 7-22 =Always Multiply *5-*20  */
-	var owSDSpd = -1
+	var owSDSpd
+		get() = owTune.owSDSpd
+		set(value) {
+			owTune.owSDSpd = value
+		}
 	/** Reverse roles of up/down keys in-game */
-	var owReverseUpDown = false
+	var owReverseUpDown
+		get() = owTune.reverseUpDown
+		set(value) {
+			owTune.reverseUpDown = value
+		}
 	/** Diagonal move (-1=Auto 0=Disable 1=Enable) */
-	var owMoveDiagonal:Int = -1
+	var owMoveDiagonal
+		get() = owTune.moveDiagonal
+		set(value) {
+			owTune.moveDiagonal = value
+		}
 	/** Outline type (-1:Auto 0orAbove:Fixed) */
-	var owBlockOutlineType = -1
+	var owBlockOutlineType
+		get() = owTune.blockOutlineType
+		set(value) {
+			owTune.blockOutlineType = value
+		}
 	/** Show outline only flag
 	 * (-1:Auto 0:Always Normal 1:Always Outline Only) */
-	var owBlockShowOutlineOnly = -1
+	var owBlockShowOutlineOnly
+		get() = owTune.blockShowOutlineOnly
+		set(value) {
+			owTune.blockShowOutlineOnly = value
+		}
 	/** ARE Canceling
 	 * (-1:Rule 1:Move 2:Spin 4:Hold)*/
-	var owDelayCancel = -1
+	var owDelayCancel
+		get() = owTune.delayCancel
+		set(value) {
+			owTune.delayCancel = value
+		}
 
 	/** Clear mode selection */
 	var clearMode:ClearType = LINE
@@ -612,7 +690,7 @@ class GameEngine(
 	val skin:Int get() = if(owSkin>=0) owSkin else ruleOpt.skin
 
 	/** @return A buttonを押したときに左rotationするならfalse, 右rotationするならtrue*/
-	val spinDirection:Boolean get() = if(owSpinDirection>=0) owSpinDirection!=0 else ruleOpt.spinToRight
+	val spinDirection:Boolean get() = if(owSpinDir>=0) owSpinDir!=0 else ruleOpt.spinToRight
 
 	/** Is diagonal movement enabled?*/
 	val isDiagonalMoveEnabled:Boolean; get() = if(owMoveDiagonal>=0) owMoveDiagonal==1 else ruleOpt.moveDiagonal
@@ -675,7 +753,7 @@ class GameEngine(
 			val tempRand = Random.Default
 			randSeed = tempRand.nextLong()
 			random = Random(randSeed)
-			if(owSkin==-2) owSkin = tempRand.nextInt(owner.receiver.skinMax)
+			if(owSkin<=-2) owSkin = tempRand.nextInt(owner.receiver.skinMax)
 		} else {
 			versionMajor = owner.replayProp.getProperty("version.core.major", 0f)
 			versionMinor = owner.replayProp.getProperty("version.core.minor", 0)
@@ -683,17 +761,24 @@ class GameEngine(
 
 			replayData.readProperty(owner.replayProp, playerID)
 
-			owSpinDirection = owner.replayProp.getProperty("$playerID.tuning.owRotateButtonDefaultRight", -1)
-			owSkin = owner.replayProp.getProperty("$playerID.tuning.owSkin", -1)
-			owMinDAS = owner.replayProp.getProperty("$playerID.tuning.owMinDAS", -1)
-			owMaxDAS = owner.replayProp.getProperty("$playerID.tuning.owMaxDAS", -1)
-			owARR = owner.replayProp.getProperty("$playerID.tuning.owDasDelay", -1)
-			owSDSpd = owner.replayProp.getProperty("$playerID.tuning.owSDSpd", -1)
-			owReverseUpDown = owner.replayProp.getProperty("$playerID.tuning.owReverseUpDown", false)
-			owMoveDiagonal = owner.replayProp.getProperty("$playerID.tuning.owMoveDiagonal", -1)
-			owDelayCancel = owner.replayProp.getProperty("$playerID.tuning.owDelayCancel", -1)
-			owBlockOutlineType = owner.replayProp.getProperty("$playerID.tuning.owBlockOutlineType", -1)
-			owBlockShowOutlineOnly = owner.replayProp.getProperty("$playerID.tuning.owBlockShowOutlineOnly", -1)
+			owTune = try {
+				Json.decodeFromString(owner.replayProp.getProperty("$playerID.tuning", "{}"))
+			} catch(e:Exception) {
+				log.warn(e)
+				TuneConf(
+					owner.replayProp.getProperty("$playerID.tuning.owRotateButtonDefaultRight", -1),
+					owner.replayProp.getProperty("$playerID.tuning.owSkin", -1),
+					owner.replayProp.getProperty("$playerID.tuning.owMinDAS", -1),
+					owner.replayProp.getProperty("$playerID.tuning.owMaxDAS", -1),
+					owner.replayProp.getProperty("$playerID.tuning.owDelayCancel", -1),
+					owner.replayProp.getProperty("$playerID.tuning.owDasDelay", -1),
+					owner.replayProp.getProperty("$playerID.tuning.owSDSpd", -1),
+					owner.replayProp.getProperty("$playerID.tuning.owReverseUpDown", false),
+					owner.replayProp.getProperty("$playerID.tuning.owMoveDiagonal", -1),
+					owner.replayProp.getProperty("$playerID.tuning.owBlockOutlineType", -1),
+					owner.replayProp.getProperty("$playerID.tuning.owBlockShowOutlineOnly", -1)
+				)
+			}
 
 			randSeed = owner.replayProp.getProperty("$playerID.replay.randSeed", 16L)
 			random = Random(randSeed)
@@ -1123,9 +1208,8 @@ class GameEngine(
 
 	/** fieldのBlock stateを更新 */
 	private fun fieldUpdate() {
-		var outlineOnly = blockShowOutlineOnly // Show outline only flag
-		if(owBlockShowOutlineOnly==0) outlineOnly = false
-		if(owBlockShowOutlineOnly==1) outlineOnly = true
+		val outlineOnly =  // Show outline only flag
+			if(owBlockShowOutlineOnly>=0) owBlockShowOutlineOnly>0 else blockShowOutlineOnly
 
 		field.let {f ->
 			for(i in 0..<f.width)
@@ -1245,7 +1329,7 @@ class GameEngine(
 		if(playerProp.isLoggedIn)
 			owner.replayProp.setProperty("$playerID.playerName", playerProp.nameDisplay)
 
-		owner.replayProp.setProperty("$playerID.tuning.owRotateButtonDefaultRight", owSpinDirection)
+		owner.replayProp.setProperty("$playerID.tuning.owRotateButtonDefaultRight", owSpinDir)
 		owner.replayProp.setProperty("$playerID.tuning.owSkin", owSkin)
 		owner.replayProp.setProperty("$playerID.tuning.owMinDAS", owMinDAS)
 		owner.replayProp.setProperty("$playerID.tuning.owMaxDAS", owMaxDAS)
@@ -2942,7 +3026,7 @@ class GameEngine(
 		when {
 			statc[0]==0 -> {
 				// fieldをバックアップにコピー
-				interruptItemMirrorField = Field(field)
+				interruptItemBackupField = Field(field)
 				// fieldのBlockを全部消す
 				field.reset()
 			}
@@ -2951,7 +3035,7 @@ class GameEngine(
 				val x = (statc[0]-20)/2-1
 
 				for(y in field.hiddenHeight*-1..<field.height)
-					field.setBlock(field.width-x-1, y, interruptItemMirrorField.getBlock(x, y))
+					field.setBlock(field.width-x-1, y, interruptItemBackupField.getBlock(x, y))
 			}
 			statc[0]<21+field.width*2+5 -> {
 				// 待ち time

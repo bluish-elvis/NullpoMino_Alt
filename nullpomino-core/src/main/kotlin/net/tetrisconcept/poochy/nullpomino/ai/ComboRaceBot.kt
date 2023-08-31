@@ -248,7 +248,7 @@ class ComboRaceBot:DummyAI(), Runnable {
 			if(drop==1&&!ctrl.isPress(Controller.BUTTON_UP)) input = Controller.BUTTON_BIT_UP
 			else if(drop==-1) input = Controller.BUTTON_BIT_DOWN
 			if(spinDir!=0) {
-				val spinRight = (engine.owSpinDirection==1||(engine.owSpinDirection==-1&&engine.ruleOpt.spinToRight))
+				val spinRight = (engine.owSpinDir==1||(engine.owSpinDir==-1&&engine.ruleOpt.spinToRight))
 				if(engine.ruleOpt.spinDoubleKey&&(spinDir==2)&&!ctrl.isPress(Controller.BUTTON_E))
 					input = input or Controller.BUTTON_BIT_E
 				else if((engine.ruleOpt.spinReverseKey&&!spinRight&&(spinDir==1))) {

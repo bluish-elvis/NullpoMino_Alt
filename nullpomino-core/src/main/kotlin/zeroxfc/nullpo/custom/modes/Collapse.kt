@@ -44,7 +44,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
 import mu.nu.nullpo.gui.slick.MouseInput
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick
-import mu.nu.nullpo.gui.slick.ResourceHolderCustomAssetExtension
+import zeroxfc.nullpo.custom.libs.backgroundtypes.ResourceHolderCustomAssetExtension
 import mu.nu.nullpo.gui.slick.img.RenderStaffRoll.scale
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.getONorOFF

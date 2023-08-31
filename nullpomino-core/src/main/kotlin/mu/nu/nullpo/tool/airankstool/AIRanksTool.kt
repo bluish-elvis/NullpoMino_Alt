@@ -129,7 +129,7 @@ class AIRanksTool:JFrame(), ActionListener {
 
 	init {
 		// Load config file
-		propConfig.loadXML("config/setting/swing.xml")
+		propConfig.load("config/setting/swing.properties")
 
 		// Set Look&Feel
 		if(propConfig.getProperty("option.usenativelookandfeel", true))

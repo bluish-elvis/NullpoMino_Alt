@@ -32,7 +32,7 @@ import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.Sound
 
 /** Sound effectsマネージャ */
-class SoundManager
+internal class SoundManager
 /** Constructor
  * @param maxClips 登録できるWAVE file のMaximumcount
  */(

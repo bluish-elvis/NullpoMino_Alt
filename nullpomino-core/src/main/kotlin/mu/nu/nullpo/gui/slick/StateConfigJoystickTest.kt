@@ -37,7 +37,7 @@ import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 
 /** Joystick テスト画面のステート */
-class StateConfigJoystickTest:BasicGameState() {
+internal class StateConfigJoystickTest:BasicGameState() {
 	/** Player number */
 	var player = 0
 

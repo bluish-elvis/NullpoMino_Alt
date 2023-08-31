@@ -34,6 +34,7 @@ import mu.nu.nullpo.game.component.SpeedParam.Companion.spdRank
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont.FONT
+import mu.nu.nullpo.gui.common.ConfigGlobal.VisualConf
 import mu.nu.nullpo.gui.common.fx.Effect
 import mu.nu.nullpo.gui.common.fx.PopupCombo
 import mu.nu.nullpo.util.CustomProperties
@@ -50,6 +51,7 @@ import kotlin.random.Random
 
 /** Drawing and event handling EventReceiver */
 open class EventReceiver {
+	protected var conf = VisualConf()
 	protected val random = Random.Default
 
 	/** Font cint constants */
@@ -60,18 +62,6 @@ open class EventReceiver {
 			val all = entries
 		}
 	}
-
-	/** Background display */
-	protected var showBG = false
-
-	/** Show Meter on right field */
-	protected var showMeter = false
-
-	/** Show ARE meter */
-	protected var showSpeed = false
-
-	/** Show ghost piece as Outline */
-	protected var outlineGhost = false
 
 	/** Get type of piece preview
 	 * @return 0=Above 1=Side Small 2=Side Big

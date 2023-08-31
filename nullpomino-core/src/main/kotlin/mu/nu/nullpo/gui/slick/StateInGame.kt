@@ -31,8 +31,8 @@ package mu.nu.nullpo.gui.slick
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
-import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.gui.common.ConfigGlobal.AIConf
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
@@ -46,9 +46,9 @@ import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
 
 /** ゲーム画面のステート */
-class StateInGame:BasicGameState() {
+internal class StateInGame:BasicGameState() {
 	/** ゲームのメインクラス */
-	var gameManager:GameManager? = null
+	private var gameManager:GameManager? = null
 
 	/** ポーズ flag */
 	private var pause = false
@@ -60,7 +60,7 @@ class StateInGame:BasicGameState() {
 	private var enableFrameStep = false
 
 	/** Show background flag */
-	var showBG = true; private set
+	private var showBG = true
 
 	/** 倍速Mode */
 	private var fastForward = 0
@@ -93,8 +93,8 @@ class StateInGame:BasicGameState() {
 
 	/** Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		enableFrameStep = NullpoMinoSlick.propConfig.getProperty("option.enableFrameStep", false)
-		showBG = NullpoMinoSlick.propConfig.getProperty("option.showBG", true)
+		enableFrameStep = NullpoMinoSlick.propConfig.general.enableFrameStep
+		showBG = NullpoMinoSlick.propConfig.visual.showBG
 		fastForward = 0
 		cursor = 0
 		prevInGameFlag = false
@@ -103,47 +103,34 @@ class StateInGame:BasicGameState() {
 	}
 
 	/** Start a new game
-	 * @param strRulePath Rule file path (null if you want to use user-selected
-	 * one)
+	 * @param strRulePath Rule file path (null if you want to use user-selected one)
 	 */
 	@JvmOverloads
-	fun startNewGame(strRulePath:String? = null) {
-		modeName = NullpoMinoSlick.propGlobal.getProperty("name.mode", "")
-		val modeObj = NullpoMinoSlick.modeManager[modeName]
-		if(modeObj==null) log.error("Couldn't find mode:$modeName")
+	fun startNewGame(mode:String = NullpoMinoSlick.propGlobal.lastMode[""] ?: "", strRulePath:String? = null) {
+		modeName = mode
+		val modeObj = NullpoMinoSlick.modeManager[mode]
+		if(modeObj==null) log.error("Couldn't find mode:$mode")
 		gameManager = GameManager(RendererSlick(appContainer!!.graphics), modeObj).also {
 			pause = false
 
 			// Initialization for each player
 			for(i in 0..<it.players) it.engine[i].let {e ->
 				// チューニング設定
-				e.owSpinDirection = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owRotateButtonDefaultRight", -1)
-				e.owSkin = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owSkin", -1)
-				e.owMinDAS = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMinDAS", -1)
-				e.owMaxDAS = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMaxDAS", -1)
-				e.owARR = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owDasDelay", -1)
-				e.owSDSpd = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owSDSpd", -1)
-				e.owReverseUpDown = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owReverseUpDown", false)
-				e.owMoveDiagonal = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owMoveDiagonal", -1)
-				e.owBlockOutlineType = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owBlockOutlineType", -1)
-				e.owBlockShowOutlineOnly = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owBlockShowOutlineOnly", -1)
-				e.owDelayCancel = NullpoMinoSlick.propGlobal.getProperty("$i.tuning.owDelayCancel", -1)
+				try {
+					NullpoMinoSlick.propGlobal.tuning.getOrNull(i)
+				} catch(e:Exception) {
+					log.warn(e)
+					null
+				}?.also {t -> e.owTune = t}
 
 				// ルール
-				val ruleName = strRulePath ?: NullpoMinoSlick.propGlobal.getProperty(
-					if(it.mode?.gameStyle!=null&&it.mode?.gameStyle!=GameStyle.TETROMINO) "$i.rule.${it.mode!!.gameStyle.ordinal}"
-					else "$i.rule", ""
-				)
+				val ruleName =
+					strRulePath ?: NullpoMinoSlick.propGlobal.rule.getOrNull(i)?.getOrNull(it.mode?.gameStyle?.ordinal ?: 0)?.path
 
 				val ruleOpt:RuleOptions = if(!ruleName.isNullOrEmpty()) {
 					log.info("Load rule options from $ruleName")
 					GeneralUtil.loadRule(ruleName)
-				} else {
-					log.info("Load rule options from setting file")
-					RuleOptions().apply {
-						readProperty(NullpoMinoSlick.propGlobal, i)
-					}
-				}
+				} else RuleOptions()
 				e.ruleOpt = ruleOpt
 
 				// NEXT順生成アルゴリズム
@@ -152,17 +139,13 @@ class StateInGame:BasicGameState() {
 				if(ruleOpt.strWallkick.isNotEmpty()) e.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
 
 				// AI
-				val aiName = NullpoMinoSlick.propGlobal.getProperty("$i.ai", "")
-				if(aiName.isNotEmpty()) {
-					e.ai = GeneralUtil.loadAIPlayer(aiName)
-					e.aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiMoveDelay", 0)
-					e.aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
-					e.aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
-					e.aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
-					e.aiPreThink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPreThink", false)
-					e.aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
+				NullpoMinoSlick.propGlobal.ai.getOrElse(i) {AIConf()}.let {ai ->
+					if(ai.name.isNotEmpty()) {
+						e.ai = GeneralUtil.loadAIPlayer(ai.name)
+						e.aiConf = ai
+					}
 				}
-				it.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
+				it.showInput = NullpoMinoSlick.propConfig.general.showInput
 
 				// Called at initialization
 				e.init()
@@ -197,17 +180,13 @@ class StateInGame:BasicGameState() {
 				if(ruleOpt.strWallkick.isNotEmpty()) it.engine[i].wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
 
 				// AI (リプレイ追記用）
-				val aiName = NullpoMinoSlick.propGlobal.getProperty("$i.ai", "")
-				if(aiName.isNotEmpty()) {
-					it.engine[i].ai = GeneralUtil.loadAIPlayer(aiName)
-					it.engine[i].aiMoveDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiMoveDelay", 0)
-					it.engine[i].aiThinkDelay = NullpoMinoSlick.propGlobal.getProperty("$i.aiThinkDelay", 0)
-					it.engine[i].aiUseThread = NullpoMinoSlick.propGlobal.getProperty("$i.aiUseThread", true)
-					it.engine[i].aiShowHint = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowHint", false)
-					it.engine[i].aiPreThink = NullpoMinoSlick.propGlobal.getProperty("$i.aiPreThink", false)
-					it.engine[i].aiShowState = NullpoMinoSlick.propGlobal.getProperty("$i.aiShowState", false)
+				NullpoMinoSlick.propGlobal.ai.getOrElse(i){AIConf()}.let {ai ->
+					if(ai.name.isNotEmpty()) {
+						it.engine[i].ai = GeneralUtil.loadAIPlayer(ai.name)
+						it.engine[i].aiConf = ai
+					}
 				}
-				it.showInput = NullpoMinoSlick.propConfig.getProperty("option.showInput", false)
+				it.showInput = NullpoMinoSlick.propConfig.general.showInput
 
 				// Called at initialization
 				it.engine[i].init()
@@ -419,7 +398,7 @@ class StateInGame:BasicGameState() {
 			if(ResourceHolder.bgmPlaying!=m.musMan.bgm&&!m.musMan.fadeSW)
 				ResourceHolder.bgmStart(m.musMan.bgm)
 			if(ResourceHolder.bgmIsPlaying) {
-				val baseVolume = NullpoMinoSlick.propConfig.getProperty("option.bgmVolume", 128)
+				val baseVolume = NullpoMinoSlick.propConfig.audio.bgmVolume
 				val newVolume = maxOf(0f, minOf(m.musMan.volume*baseVolume/128f, 1f))
 				container.musicVolume = newVolume
 				if(newVolume<=0f) ResourceHolder.bgmStop()

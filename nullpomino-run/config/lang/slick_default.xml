@@ -69,6 +69,7 @@
  <entry key="GameTuning_MinDAS">Adjusts minimum DAS.</entry>
  <entry key="GameTuning_MaxDAS">Adjusts maximum DAS.</entry>
  <entry key="GameTuning_DasDelay">Adjusts move delay. (0:Instant DAS)</entry>
+ <entry key="GameTuning_SDSpd">Adjusts Softdrop Velocity.</entry>
  <entry key="GameTuning_MoveDiagonal">Toggles diagonal movement of the pieces.</entry>
  <entry key="GameTuning_ReverseUpDown">Toggles the function of reverse the Up and Down buttons.</entry>
  <entry key="GameTuning_BlockOutlineType">Select the type of block outline.</entry>

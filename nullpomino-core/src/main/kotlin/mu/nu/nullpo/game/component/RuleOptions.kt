@@ -28,227 +28,279 @@
  */
 package mu.nu.nullpo.game.component
 
+import kotlinx.serialization.Serializable
 import mu.nu.nullpo.util.CustomProperties
-import java.io.Serializable
 
 /** ゲームルールの設定 data */
-class RuleOptions:Serializable {
+@Serializable
+data class RuleOptions(
 	/** このルールのName */
-	var strRuleName = ""
+	var strRuleName:String = "",
 	/** 使用するWallkickアルゴリズムのクラス名 (空文字列ならWallkickしない) */
-	var strWallkick = ""
+	var strWallkick:String = "",
 	/** 使用する出現順補正アルゴリズムのクラス名 (空文字列なら完全ランダム) */
-	var strRandomizer = ""
+	var strRandomizer:String = "",
 
 	/** Game Style */
-	var style = 0
+	var style:Int = 0,
 
-	var pieceOffset = 0
+	var pieceOffset:Int = 0,
 	/** Blockピースの回転パターンのcoordinate補正 (11ピース×4Direction) */
-	var pieceOffsetX = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
-	var pieceOffsetY = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
+	var pieceOffsetX:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
+	var pieceOffsetY:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
 	/** Blockピースの出現X-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnX = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
+	var pieceSpawnX:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
 	/** Blockピースの出現Y-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnY = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
+	var pieceSpawnY:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
 	/** BlockピースのBig時の出現X-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnXBig = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
+	var pieceSpawnXBig:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
 	/** BlockピースのBig時の出現Y-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnYBig = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
+	var pieceSpawnYBig:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
 
 	/** Blockピース cint */
-	var pieceColor = MutableList(Piece.PIECE_COUNT) {Block.COLOR_WHITE}
+	var pieceColor:MutableList<Int> = MutableList(Piece.PIECE_COUNT) {Block.COLOR_WHITE},
 	/** Blockピースの初期Direction */
-	var pieceDefaultDirection = MutableList(Piece.PIECE_COUNT) {0}
+	var pieceDefaultDirection:MutableList<Int> = MutableList(Piece.PIECE_COUNT) {0},
 
 	/** fieldより上から出現 */
-	var pieceEnterAboveField = false
+	var pieceEnterAboveField:Boolean = false,
 	/** 出現予定地が埋まっているときにY-coordinateを上にずらすMaximum count */
-	var pieceEnterMaxDistanceY = 0
+	var pieceEnterMaxDistanceY:Int = 0,
 
 	/** fieldの幅 */
-	var fieldWidth = 0
+	var fieldWidth:Int = 0,
 	/** Field height */
-	var fieldHeight = 0
+	var fieldHeight:Int = 0,
 	/** fieldより上の見えない部分の高さ */
-	var fieldHiddenHeight = 0
+	var fieldHiddenHeight:Int = 0,
 	/** fieldの天井の有無 */
-	var fieldCeiling = false
+	var fieldCeiling:Boolean = false,
 	/** field枠内に置けなかったら死ぬかどうか */
-	var fieldLockoutDeath = false
+	var fieldLockoutDeath:Boolean = false,
 	/** field枠外に１マスでもはみ出しただけで死ぬかどうか
 	 * falseだと１マスでも枠内ならばセーフ */
-	var fieldPartialLockoutDeath = false
+	var fieldPartialLockoutDeath:Boolean = false,
 
 	/** NEXTのcount */
-	var nextDisplay = 0
+	var nextDisplay:Int = 0,
 
 	/** ホールド使用可否 */
-	var holdEnable = false
+	var holdEnable:Boolean = false,
 	/** 先行ホールド */
-	var holdInitial = false
+	var holdInitial:Boolean = false,
 	/** 先行ホールド連続使用不可 */
-	var holdInitialLimit = false
+	var holdInitialLimit:Boolean = false,
 	/** ホールドを使ったときにBlockピースの向きを初期状態に戻す */
-	var holdResetDirection = false
+	var holdResetDirection:Boolean = false,
 	/** ゲーム毎にホールドできる総数 (-1:無制限) */
-	var holdLimit = 0
+	var holdLimit:Int = 0,
 
 	/** Hard drop使用可否 */
-	var harddropEnable = false
+	var harddropEnable:Boolean = false,
 	/** Hard drop即固定 */
-	var harddropLock = false
+	var harddropLock:Boolean = false,
 	/** Hard drop連続使用不可 */
-	var harddropLimit = false
+	var harddropLimit:Boolean = false,
 
 	/** Soft drop使用可否 */
-	var softdropEnable = false
+	var softdropEnable:Boolean = false,
 	/** Soft drop即固定 */
-	var softdropLock = false
+	var softdropLock:Boolean = false,
 	/** Soft drop連続使用不可 */
-	var softdropLimit = false
+	var softdropLimit:Boolean = false,
 	/** 接地状態でSoft dropすると即固定 (falseだと20Gのみ即固定) */
-	var softdropSurfaceLock = false
+	var softdropSurfaceLock:Boolean = false,
 	/** Soft drop速度 (1f=1G, .5f=0.5G) */
-	var softdropSpeed = 0f
+	var softdropSpeed:Float = 0f,
 	/** Soft drop速度を通常速度×n倍にする */
-	var softdropMultiplyNativeSpeed = false
+	var softdropMultiplyNativeSpeed:Boolean = false,
 	/** Soft drop速度を通常速度に影響させない */
-	var softdropGravitySpeedLimit = false
+	var softdropGravitySpeedLimit:Boolean = false,
 
 	/** 先行回転 */
-	var spinInitial = false
+	var spinInitial:Boolean = false,
 	/** 先行回転連続使用不可 */
-	var spinInitialLimit = false
+	var spinInitialLimit:Boolean = false,
 	/** Wallkick */
-	var spinWallkick = false
+	var spinWallkick:Boolean = false,
 	/** 先行回転でもWallkickする */
-	var spinInitialWallkick = false
+	var spinInitialWallkick:Boolean = false,
 	/** 上DirectionへのWallkickができる count (-1:無限) */
-	var spinWallkickMaxRise = 0
+	var spinWallkickMaxRise:Int = 0,
 
 	/** TrueにするとA,Cボタンを右回転にする */
-	var spinToRight = false
+	var spinToRight:Boolean = false,
 	/** Bボタンでの回転を逆方向にする (falseならA,Cボタンと同じ) */
-	var spinReverseKey = false
+	var spinReverseKey:Boolean = false,
 	/** Eボタンを180 spinにする (falseならA,Cボタンと同じ) */
-	var spinDoubleKey = false
+	var spinDoubleKey:Boolean = false,
 	/** 回転失敗時に押していた回転ボタンを押し続けると、回転可能な移動時に先行回転する */
-	var spinHoldBuffer = true
+	var spinHoldBuffer:Boolean = true,
 
 	/** 落下で固定猶予リセット */
-	var lockResetFall = false
+	var lockResetFall:Boolean = false,
 	/** 移動で固定猶予リセット */
-	var lockResetMove = false
+	var lockResetMove:Boolean = false,
 	/** 回転で固定猶予リセット */
-	var lockResetSpin = false
+	var lockResetSpin:Boolean = false,
 	/** 壁蹴りで固定猶予リセット */
-	var lockResetWallkick = false
+	var lockResetWallkick:Boolean = false,
 	/** 横移動による固定猶予リセットの回数制限 (-1:無限) */
-	var lockResetMoveLimit = 0
+	var lockResetMoveLimit:Int = 0,
 	/** 回転による固定猶予リセットの回数制限 (-1:無限) */
-	var lockResetSpinLimit = 0
+	var lockResetSpinLimit:Int = 0,
 	/** trueにすると回転の回数制限を横移動と共有する (true: lockResetMoveLimitのみ使用) */
-	var lockResetLimitShareCount = false
+	var lockResetLimitShareCount:Boolean = false,
 	/** 固定猶予リセットの回数を使い切った場合の処理
 	 * LOCKRESET_LIMIT_OVER_NoReset = 0 : 固定猶予をリセットしないようにする
 	 * LOCKRESET_LIMIT_OVER_INSTANT = 1 : 即固定する
 	 * LOCKRESET_LIMIT_OVER_NoKick = 2 : Wallkickしないようにする */
-	var lockResetLimitOver = 0
+	var lockResetLimitOver:Int = 0,
 
 	/** 固定した瞬間光る frame count */
-	var lockFlash = 0
+	var lockFlash:Int = 0,
 	/** Blockが光る専用 frame を入れる */
-	var lockFlashOnlyFrame = false
+	var lockFlashOnlyFrame:Boolean = false,
 	/** Line clear前にBlockが光る frame を入れる */
-	var lockFlashBeforeLineClear = false
+	var lockFlashBeforeLineClear:Boolean = false,
 
 	/** ARE cancel on move */
-	var areCancelMove = false
+	var areCancelMove:Boolean = false,
 	/** ARE cancel on spin */
-	var areCancelSpin = false
+	var areCancelSpin:Boolean = false,
 	/** ARE cancel on hold */
-	var areCancelHold = false
+	var areCancelHold:Boolean = false,
 
-	/** 最小/MaximumARE (-1:指定なし) */
-	var minARE = 0
-	var maxARE = 0
+	/** 最小ARE (-1:指定なし) */
+	var minARE:Int = 0,
+	/** 最大ARE (-1:指定なし) */
+	var maxARE:Int = 0,
 
-	/** 最小/MaximumARE after line clear (-1:指定なし) */
-	var minARELine = 0
-	var maxARELine = 0
+	/** 最小ARE after line clear (-1:指定なし) */
+	var minARELine:Int = 0,
+	/** 最大ARE after line clear (-1:指定なし) */
+	var maxARELine:Int = 0,
 
-	/** 最小/MaximumLine clear time (-1:指定なし) */
-	var minLineDelay = 0
-	var maxLineDelay = 0
+	/** 最小Line clear time (-1:指定なし) */
+	var minLineDelay:Int = 0,
+	/** 最大Line clear time (-1:指定なし) */
+	var maxLineDelay:Int = 0,
 
-	/** 最小/Maximum固定 time (-1:指定なし) */
-	var minLockDelay = 0
-	var maxLockDelay = 0
+	/** 最小固定 time (-1:指定なし) */
+	var minLockDelay:Int = 0,
+	/** 最大固定 time (-1:指定なし) */
+	var maxLockDelay:Int = 0,
 
-	/** 最小/Maximum横溜め time (-1:指定なし) */
-	var minDAS = 0
-	var maxDAS = 0
+	/** 最小横溜め time (-1:指定なし) */
+	var minDAS:Int = 0,
+	/** 最大横溜め time (-1:指定なし) */
+	var maxDAS:Int = 0,
 	/** 横移動間隔 */
-	var dasARR = 0
-	var shiftLockEnable = false
+	var dasARR:Int = 0,
+	var shiftLockEnable:Boolean = false,
 	/** Ready画面で横溜め可能 */
-	var dasInReady = false
+	var dasInReady:Boolean = false,
 	/** 最初の frame で横溜め可能 */
-	var dasInMoveFirstFrame = false
+	var dasInMoveFirstFrame:Boolean = false,
 	/** Blockが光った瞬間に横溜め可能 */
-	var dasInLockFlash = false
+	var dasInLockFlash:Boolean = false,
 	/** Line clear中に横溜め可能 */
-	var dasInLineClear = false
+	var dasInLineClear:Boolean = false,
 	/** ARE中に横溜め可能 */
-	var dasInARE = false
+	var dasInARE:Boolean = false,
 	/** AREの最後の frame で横溜め可能 */
-	var dasInARELastFrame = false
+	var dasInARELastFrame:Boolean = false,
 	/** Ending突入画面で横溜め可能 */
-	var dasInEndingStart = false
+	var dasInEndingStart:Boolean = false,
 	/** Charge DAS on blocked move */
-	var dasChargeOnBlockedMove = false
+	var dasChargeOnBlockedMove:Boolean = false,
 	/** Leave DAS charge alone when left/right are not held
 	 *  -- useful with dasRedirectInDelay*/
-	var dasStoreChargeOnNeutral = false
+	var dasStoreChargeOnNeutral:Boolean = false,
 	/** Allow direction changes during ARE delay without zeroing DAS charge */
-	var dasRedirectInDelay = false
+	var dasRedirectInDelay:Boolean = false,
 
 	/** 最初の frame で移動可能 */
-	var moveFirstFrame = false
+	var moveFirstFrame:Boolean = false,
 	/** 斜め移動 */
-	var moveDiagonal = false
+	var moveDiagonal:Boolean = false,
 	/** 上下同時押し許可 */
-	var moveUpAndDown = false
+	var moveUpAndDown:Boolean = false,
 	/** 左右同時押し許可 */
-	var moveLeftAndRightAllow = false
+	var moveLeftAndRightAllow:Boolean = false,
 	/** 左右同時押ししたときに前の frame の input Directionを優先する (左を押しながら右を押すと右を無視して左を優先) */
-	var moveLeftAndRightUsePreviousInput = false
+	var moveLeftAndRightUsePreviousInput:Boolean = false,
 
 	/** Line clear後に上のBlockが1段ずつ落ちるアニメーションを表示 */
-	var lineFallAnim = false
+	var lineFallAnim:Boolean = false,
 	/** Line delay cancel on move */
-	var lineCancelMove = false
+	var lineCancelMove:Boolean = false,
 	/** Line delay cancel on spin */
-	var lineCancelSpin = false
+	var lineCancelSpin:Boolean = false,
 	/** Line delay cancel on hold */
-	var lineCancelHold = false
+	var lineCancelHold:Boolean = false,
 
 	/** Blockの絵柄 */
-	var skin = 0
+	var skin:Int = 0,
 
 	/** ghost の有無 (falseならMode 側でghost を is enabledにしていても非表示) */
-	var ghost = false
+	var ghost:Boolean = false,
+) {
 
 	/** Constructor */
-	constructor() {
-		reset()
-	}
+	constructor():this(
+		"", "", "", 0, PIECEOFFSET_NONE, emptyDirs, emptyDirs, emptyDirs, emptyDirs, emptyDirs, emptyDirs,
+		MutableList(Piece.PIECE_COUNT) {
+			when(it) {
+				Piece.PIECE_I1 -> Block.COLOR_PURPLE
+				Piece.PIECE_I2 -> Block.COLOR_BLUE
+				Piece.PIECE_I3 -> Block.COLOR_GREEN
+				Piece.PIECE_L3 -> Block.COLOR_ORANGE
+				else -> Block.COLOR_WHITE
+			}
+		},
+		MutableList(Piece.PIECE_COUNT) {0},
+		true, 0, Field.DEFAULT_WIDTH, Field.DEFAULT_HEIGHT, Field.DEFAULT_HIDDEN_HEIGHT, false, true, false,
+		3, true, true, false, true, -1,
+		true, true, true,
+		true, false, false, false, .5f, false, false,
+		true, false, true, true, -1, true, true, true, true,
+		true, true, true, false, 15, 15, true,
+		LOCKRESET_LIMIT_OVER_INSTANT, 2, true, false,
+		false, false, false,
+		-1, -1, -1, -1, -1, -1, -1, -1,
+		-1, -1, 0, false, true, true,
+		true, true, true, true, true,
+		false, false, false,
+		true, true, true, true, false,
+		true, false, false, false,
+		0, true
+	)
 
 	/** Copy constructor
 	 * @param r Copy source
 	 */
-	constructor(r:RuleOptions?) {
+	constructor(r:RuleOptions):this(
+		r.strRuleName, r.strWallkick, r.strRandomizer, r.style,
+		r.pieceOffset, r.pieceOffsetX, r.pieceOffsetY, r.pieceSpawnX, r.pieceSpawnY, r.pieceSpawnXBig, r.pieceSpawnYBig,
+		r.pieceColor, r.pieceDefaultDirection,
+		r.pieceEnterAboveField, r.pieceEnterMaxDistanceY, r.fieldWidth, r.fieldHeight, r.fieldHiddenHeight, r.fieldCeiling,
+		r.fieldLockoutDeath, r.fieldPartialLockoutDeath,
+		r.nextDisplay, r.holdEnable, r.holdInitial, r.holdInitialLimit, r.holdResetDirection, r.holdLimit,
+		r.harddropEnable, r.harddropLock, r.harddropLimit, r.softdropEnable, r.softdropLock, r.softdropLimit,
+		r.softdropSurfaceLock, r.softdropSpeed, r.softdropMultiplyNativeSpeed, r.softdropGravitySpeedLimit,
+		r.spinInitial, r.spinInitialLimit, r.spinWallkick, r.spinInitialWallkick, r.spinWallkickMaxRise,
+		r.spinToRight, r.spinReverseKey, r.spinDoubleKey, r.spinHoldBuffer,
+		r.lockResetFall, r.lockResetMove, r.lockResetSpin, r.lockResetWallkick,
+		r.lockResetMoveLimit, r.lockResetSpinLimit, r.lockResetLimitShareCount, r.lockResetLimitOver,
+		r.lockFlash, r.lockFlashOnlyFrame, r.lockFlashBeforeLineClear,
+		r.areCancelMove, r.areCancelSpin, r.areCancelHold, r.minARE, r.maxARE, r.minARELine, r.maxARELine,
+		r.minLineDelay, r.maxLineDelay, r.minLockDelay, r.maxLockDelay, r.minDAS, r.maxDAS, r.dasARR,
+		r.shiftLockEnable, r.dasInReady, r.dasInMoveFirstFrame, r.dasInLockFlash, r.dasInLineClear, r.dasInARE, r.dasInARELastFrame,
+		r.dasInEndingStart, r.dasChargeOnBlockedMove, r.dasStoreChargeOnNeutral, r.dasRedirectInDelay,
+		r.moveFirstFrame, r.moveDiagonal, r.moveUpAndDown, r.moveLeftAndRightAllow, r.moveLeftAndRightUsePreviousInput,
+		r.lineFallAnim, r.lineCancelMove, r.lineCancelSpin, r.lineCancelHold, r.skin, r.ghost
+	) {
 		replace(r)
 	}
 
@@ -372,7 +424,7 @@ class RuleOptions:Serializable {
 	}
 
 	/** 設定を[r]からコピー */
-	fun replace(r:RuleOptions?) {
+	@Suppress("Destructure") fun replace(r:RuleOptions?) {
 		r?.let {o ->
 			strRuleName = o.strRuleName
 			strWallkick = o.strWallkick
@@ -380,18 +432,16 @@ class RuleOptions:Serializable {
 
 			style = o.style
 			pieceOffset = o.pieceOffset
-			for(i in 0..<Piece.PIECE_COUNT) {
-				for(j in 0..<Piece.DIRECTION_COUNT) {
-					pieceOffsetX[i][j] = o.pieceOffsetX[i][j]
-					pieceOffsetY[i][j] = o.pieceOffsetY[i][j]
-					pieceSpawnX[i][j] = o.pieceSpawnX[i][j]
-					pieceSpawnY[i][j] = o.pieceSpawnY[i][j]
-					pieceSpawnXBig[i][j] = o.pieceSpawnXBig[i][j]
-					pieceSpawnYBig[i][j] = o.pieceSpawnYBig[i][j]
-				}
-				pieceColor[i] = o.pieceColor[i]
-				pieceDefaultDirection[i] = o.pieceDefaultDirection[i]
-			}
+			pieceOffsetX = o.pieceOffsetX
+			pieceOffsetY = o.pieceOffsetY
+			pieceSpawnX = o.pieceSpawnX
+			pieceSpawnY = o.pieceSpawnY
+			pieceSpawnXBig = o.pieceSpawnXBig
+			pieceSpawnYBig = o.pieceSpawnYBig
+
+			pieceColor = o.pieceColor
+			pieceDefaultDirection = o.pieceDefaultDirection
+
 			pieceEnterAboveField = o.pieceEnterAboveField
 			pieceEnterMaxDistanceY = o.pieceEnterMaxDistanceY
 
@@ -936,5 +986,6 @@ class RuleOptions:Serializable {
 		)
 
 		val PIECEDIRECTION_ARSPRESET = listOf(0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0)
+		private val emptyDirs = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
 	}
 }

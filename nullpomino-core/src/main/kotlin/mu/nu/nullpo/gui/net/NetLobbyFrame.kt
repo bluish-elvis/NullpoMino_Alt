@@ -28,6 +28,8 @@
  */
 package mu.nu.nullpo.gui.net
 
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.net.NetBaseClient
 import mu.nu.nullpo.game.net.NetMessageListener
@@ -39,6 +41,8 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
+import mu.nu.nullpo.gui.common.ConfigGlobal
+import mu.nu.nullpo.gui.common.ConfigGlobal.RuleConf
 import mu.nu.nullpo.tool.ruleeditor.RuleEditor
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil
@@ -61,7 +65,6 @@ import java.awt.event.MouseEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.awt.image.BufferedImage
-import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -112,7 +115,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private val propConfig = CustomProperties()
 
 	/** Property file for global settings */
-	private val propGlobal = CustomProperties()
+	private var propGlobal = ConfigGlobal()
 
 	/** Property file for swing settings */
 	private val propSwingConfig = CustomProperties()
@@ -169,7 +172,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private val listboxServerList:JList<String> = JList()
 
 	/** Listbox data for servers (Server select screen) */
-	private var listmodelServerList:DefaultListModel<String> = DefaultListModel()
+	private var listModelServerList:DefaultListModel<String> = DefaultListModel()
 
 	/** Connect button (Server select screen) */
 	private val btnServerConnect:JButton = JButton()
@@ -259,10 +262,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private val roomTopBarCardLayout:CardLayout = CardLayout()
 
 	/** Top panel room screen */
-	private val subpanelRoomTopBar:JPanel = JPanel()
+	private val subPanelRoomTopBar:JPanel = JPanel()
 
 	/** Game stats panel */
-	private val subpanelGameStat:JPanel = JPanel()
+	private val subPanelGameStat:JPanel = JPanel()
 
 	/** CardLayout for game stats */
 	private var gameStatCardLayout:CardLayout = CardLayout()
@@ -271,31 +274,31 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private var tableGameStat:JTable = JTable()
 
 	/** Multiplayer game stats table data */
-	private val tablemodelGameStat:DefaultTableModel = DefaultTableModel()
+	private val tableModelGameStat:DefaultTableModel = DefaultTableModel()
 
 	/** Multiplayer game stats table */
 	private val tableGameStat1P:JTable = JTable()
 
 	/** Multiplayer game stats table data */
-	private val tablemodelGameStat1P:DefaultTableModel = DefaultTableModel()
+	private val tableModelGameStat1P:DefaultTableModel = DefaultTableModel()
 
 	/** Chat logAndPlayerPartition line of the list(Room screen) */
 	private val splitRoomChat:JSplitPane = JSplitPane()
 
 	/** Chat log(Room screen) */
-	private val txtpaneRoomChatLog:JTextPane = JTextPane()
+	private val txtPaneRoomChatLog:JTextPane = JTextPane()
 
 	/** PlayerList(Room screen) */
 	private val listboxRoomChatPlayerList:JList<String> = JList()
 
 	/** PlayerList(Room screen)Of data */
-	private val listmodelRoomChatPlayerList:DefaultListModel<String> = DefaultListModel()
+	private val listModelRoomChatPlayerList:DefaultListModel<String> = DefaultListModel()
 
 	/** The same roomPlayerInformation */
 	/** Being in the same roomPlayerReturns a list(The update does not)
 	 * @return Being in the same roomPlayerList
 	 */
-	val sameRoomPlayerInfoList:LinkedList<NetPlayerInfo> = LinkedList()
+	private val sameRoomPlayerInfoList:LinkedList<NetPlayerInfo> = LinkedList()
 
 	/** Chat input Column(Room screen) */
 	private val txtfldRoomChatInput:JTextField = JTextField()
@@ -499,7 +502,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private val btnRuleChangeCancel:JButton = JButton()
 
 	/** Rule entries (Rule change screen) */
-	private var ruleEntries:LinkedList<RuleEntry> = LinkedList()
+	private var ruleEntries:LinkedList<RuleConf> = LinkedList()
 
 	/** Tuning: A button rotation Combobox */
 	private var comboboxTuningSpinDirection:JComboBox<String> = JComboBox()
@@ -526,7 +529,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** @return Current ScreenChat log
 	 */
 	private val currentChatLogTextPane:JTextPane
-		get() = if(tabLobbyAndRoom.selectedIndex!=0) txtpaneRoomChatLog else txtpaneLobbyChatLog
+		get() = if(tabLobbyAndRoom.selectedIndex!=0) txtPaneRoomChatLog else txtpaneLobbyChatLog
 
 	/** Get current time as String (for chat log)
 	 * @return Current time as String
@@ -568,10 +571,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// Load global settings
 		try {
-			val `in` = FileInputStream("config/setting/global.cfg")
-			propGlobal.load(`in`)
-			`in`.close()
-		} catch(_:IOException) {
+			propGlobal = Json.decodeFromString(FileInputStream("config/setting/global.json").bufferedReader().use {it.readText()})
+		} catch(_:Exception) {
 		}
 
 		// SwingRead version of the configuration file
@@ -665,8 +666,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// ListenerCall
 		if(listeners!=null)
 			for(l in listeners!!)
-				l.netlobbyOnInit(this)
-		if(netDummyMode!=null) netDummyMode!!.netlobbyOnInit(this)
+				l.onLobbyInit(this)
+		if(netDummyMode!=null) netDummyMode!!.onLobbyInit(this)
 	}
 
 	/** GUI Initialization */
@@ -723,16 +724,16 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// * Server selection list box
 		if(GameManager.isDevBuild) {
-			if(!loadListToDefaultListModel(listmodelServerList, "config/setting/netlobby_serverlist_dev.cfg")) {
-				loadListToDefaultListModel(listmodelServerList, "config/list/netlobby_serverlist_default_dev.lst")
-				saveListFromDefaultListModel(listmodelServerList, "config/setting/netlobby_serverlist_dev.cfg")
+			if(!loadListToDefaultListModel(listModelServerList, "config/setting/netlobby_serverlist_dev.cfg")) {
+				loadListToDefaultListModel(listModelServerList, "config/list/netlobby_serverlist_default_dev.lst")
+				saveListFromDefaultListModel(listModelServerList, "config/setting/netlobby_serverlist_dev.cfg")
 			}
-		} else if(!loadListToDefaultListModel(listmodelServerList, "config/setting/netlobby_serverlist.cfg")) {
-			loadListToDefaultListModel(listmodelServerList, "config/list/netlobby_serverlist_default.lst")
-			saveListFromDefaultListModel(listmodelServerList, "config/setting/netlobby_serverlist.cfg")
+		} else if(!loadListToDefaultListModel(listModelServerList, "config/setting/netlobby_serverlist.cfg")) {
+			loadListToDefaultListModel(listModelServerList, "config/list/netlobby_serverlist_default.lst")
+			saveListFromDefaultListModel(listModelServerList, "config/setting/netlobby_serverlist.cfg")
 		}
 		val spListboxServerSelect = JScrollPane(listboxServerList.apply {
-			model = listmodelServerList
+			model = listModelServerList
 			componentPopupMenu = ServerSelectListBoxPopupMenu()
 			addMouseListener(ServerSelectListBoxMouseAdapter())
 			setSelectedValue(propConfig.getProperty("serverselect.listboxServerList.value", ""), true)
@@ -1017,12 +1018,12 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		splitRoom.topComponent = subpanelRoomTop
 
 		// *** Top panel room screen
-		subpanelRoomTopBar.layout = roomTopBarCardLayout
-		subpanelRoomTop.add(subpanelRoomTopBar, BorderLayout.NORTH)
+		subPanelRoomTopBar.layout = roomTopBarCardLayout
+		subpanelRoomTop.add(subPanelRoomTopBar, BorderLayout.NORTH)
 
 		// ****  buttonPanel type
 		val subpanelRoomButtons = JPanel()
-		subpanelRoomTopBar.add(subpanelRoomButtons, "Buttons")
+		subPanelRoomTopBar.add(subpanelRoomButtons, "Buttons")
 
 		// ***** Withdrawal button
 		subpanelRoomButtons.add(JButton(getUIText("Room_Leave")).also {
@@ -1063,7 +1064,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// **** Panel change team
 		val subpanelRoomTeam = JPanel(BorderLayout())
-		subpanelRoomTopBar.add(subpanelRoomTeam, "Team")
+		subPanelRoomTopBar.add(subpanelRoomTeam, "Team")
 
 		// ***** Team name input Column
 
@@ -1107,13 +1108,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		})
 
 		// *** Game stats area
-		subpanelGameStat.layout = gameStatCardLayout
-		subpanelRoomTop.add(subpanelGameStat, BorderLayout.CENTER)
+		subPanelGameStat.layout = gameStatCardLayout
+		subpanelRoomTop.add(subPanelGameStat, BorderLayout.CENTER)
 
 		// **** Multiplayer game stats table
-		tablemodelGameStat.setColumnIdentifiers(Vector(STATTABLE_COLUMNNAMES.map {getUIText(it)}))
+		tableModelGameStat.setColumnIdentifiers(Vector(STATTABLE_COLUMNNAMES.map {getUIText(it)}))
 		tableGameStat.apply {
-			model = tablemodelGameStat
+			model = tableModelGameStat
 			setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 			setDefaultEditor(Any::class.java, null)
 			autoResizeMode = JTable.AUTO_RESIZE_OFF
@@ -1137,13 +1138,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			getColumn(12).preferredWidth = propConfig.getProperty("tableGameStat.width.games", 55) // Games
 		}
 
-		subpanelGameStat.add(JScrollPane(tableGameStat).apply {
+		subPanelGameStat.add(JScrollPane(tableGameStat).apply {
 			minimumSize = Dimension(0, 0)
 		}, "GameStatMP")
 
 		// **** Single player game stats table
-		tablemodelGameStat1P.setColumnIdentifiers(Vector(STATTABLE1P_COLUMNNAMES.map {getUIText(it)}))
-		tableGameStat1P.model = tablemodelGameStat1P
+		tableModelGameStat1P.setColumnIdentifiers(Vector(STATTABLE1P_COLUMNNAMES.map {getUIText(it)}))
+		tableGameStat1P.model = tableModelGameStat1P
 		tableGameStat1P.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
 		tableGameStat1P.setDefaultEditor(Any::class.java, null)
 		tableGameStat1P.autoResizeMode = JTable.AUTO_RESIZE_OFF
@@ -1155,7 +1156,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			getColumn(1).preferredWidth = propConfig.getProperty("tableGameStat1P.width.value", 100) // Value
 		}
 
-		subpanelGameStat.add(JScrollPane(tableGameStat1P).apply {
+		subPanelGameStat.add(JScrollPane(tableGameStat1P).apply {
 			minimumSize = Dimension(0, 0)
 		}, "GameStat1P")
 
@@ -1170,16 +1171,16 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}, BorderLayout.CENTER)
 
 		// **** Chat log(Room screen)
-		txtpaneRoomChatLog.componentPopupMenu = LogPopupMenu(txtpaneRoomChatLog)
-		txtpaneRoomChatLog.addKeyListener(LogKeyAdapter())
-		splitRoomChat.leftComponent = JScrollPane(txtpaneRoomChatLog).apply {
+		txtPaneRoomChatLog.componentPopupMenu = LogPopupMenu(txtPaneRoomChatLog)
+		txtPaneRoomChatLog.addKeyListener(LogKeyAdapter())
+		splitRoomChat.leftComponent = JScrollPane(txtPaneRoomChatLog).apply {
 			minimumSize = Dimension(0, 0)
 		}
 
 		// **** PlayerList(Room screen)
 		sameRoomPlayerInfoList.clear()
-		listmodelRoomChatPlayerList.clear()
-		listboxRoomChatPlayerList.model = listmodelRoomChatPlayerList
+		listModelRoomChatPlayerList.clear()
+		listboxRoomChatPlayerList.model = listModelRoomChatPlayerList
 		listboxRoomChatPlayerList.componentPopupMenu = ListBoxPopupMenu(listboxRoomChatPlayerList)
 		splitRoomChat.rightComponent = JScrollPane(listboxRoomChatPlayerList).apply {
 			minimumSize = Dimension(0, 0)
@@ -2075,6 +2076,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		pTuningSkin.add(JLabel(getUIText("GameTuning_Skin_Label")))
 
 		val model = DefaultComboBoxModel<ComboLabel>()
+		model.addElement(ComboLabel(getUIText("GameTuning_Skin_Random")))
 		model.addElement(ComboLabel(getUIText("GameTuning_Skin_Auto")))
 		for(i in imgTuningBlockSkins.indices)
 			model.addElement(ComboLabel("$i", ImageIcon(imgTuningBlockSkins[i])))
@@ -2146,16 +2148,16 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 	/** Load block skins */
 	private fun loadBlockSkins() {
-		val skindir = propGlobal.getProperty("custom.skin.directory", "res")
+		val skinDir = propGlobal.custom.skinDir
 
 		var numSkins = 0
-		while(File("$skindir/graphics/blockskin/normal/n$numSkins.png").canRead()) {
+		while(File("$skinDir/graphics/blockskin/normal/n$numSkins.png").canRead()) {
 			numSkins++
 		}
 		log.debug("$numSkins block skins found")
 
 		imgTuningBlockSkins = Array(numSkins) {i ->
-			val imgBlock = loadImage(getURL("$skindir/graphics/blockskin/normal/n$i.png"))
+			val imgBlock = loadImage(getURL("$skinDir/graphics/blockskin/normal/n$i.png"))
 			val isSticky = imgBlock!=null&&imgBlock.width>=400&&imgBlock.height>=304
 			return@Array BufferedImage(144, 16, BufferedImage.TYPE_INT_RGB).apply {
 				if(isSticky)
@@ -2301,7 +2303,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			doc.insertString(doc.length, str!!+"\n", sas)
 			txtpane.caretPosition = doc.length
 
-			if(txtpane===txtpaneRoomChatLog) {
+			if(txtpane===txtPaneRoomChatLog) {
 				if(writerRoomLog!=null) {
 					writerRoomLog!!.println("[$strTime] $str")
 					writerRoomLog!!.flush()
@@ -2355,7 +2357,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			doc.insertString(doc.length, " $str\n", null)
 			txtpane.caretPosition = doc.length
 
-			if(txtpane===txtpaneRoomChatLog) {
+			if(txtpane===txtPaneRoomChatLog) {
 				if(writerRoomLog!=null) {
 					writerRoomLog!!.println("[$strTime]<$username> $str")
 					writerRoomLog!!.flush()
@@ -2405,7 +2407,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			doc.insertString(doc.length, " $str\n", sasMessage)
 			txtpane.caretPosition = doc.length
 
-			if(txtpane===txtpaneRoomChatLog) {
+			if(txtpane===txtPaneRoomChatLog) {
 				if(writerRoomLog!=null) {
 					writerRoomLog!!.println("[$strTime]<$username> $str")
 					writerRoomLog!!.flush()
@@ -2436,11 +2438,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun loadListToDefaultListModel(listModel:DefaultListModel<String>, filename:String):Boolean {
 		try {
-			val `in` = BufferedReader(FileReader(filename))
 			listModel.clear()
-
-			`in`.readLines().forEach {str ->
-				if(str.isNotEmpty()) listModel.addElement(str)
+			FileReader(filename).buffered().use {
+				it.forEachLine {str ->
+					if(str.isNotEmpty()) listModel.addElement(str)
+				}
 			}
 		} catch(e:IOException) {
 			log.debug("Failed to load list from $filename", e)
@@ -2457,18 +2459,18 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun loadModeList(listModel:DefaultListModel<String>, filename:String):Boolean {
 		try {
-			val `in` = BufferedReader(FileReader(filename))
 			listModel.clear()
-
-			`in`.readLines().forEach {str ->
-				if(str.isEmpty()||str.startsWith("#")) {
-					// Empty line or comment line. Ignore it.
-				} else if(str.startsWith(":")) {
-					// Game style tag. Currently unused.
-				} else {
-					// Game mode name
-					val commaIndex = str.indexOf(',')
-					if(commaIndex!=-1) listModel.addElement(str.take(commaIndex))
+			FileReader(filename).buffered().use {
+				it.forEachLine {str ->
+					if(str.isEmpty()||str.startsWith("#")) {
+						// Empty line or comment line. Ignore it.
+					} else if(str.startsWith(":")) {
+						// Game style tag. Currently unused.
+					} else {
+						// Game mode name
+						val commaIndex = str.indexOf(',')
+						if(commaIndex!=-1) listModel.addElement(str.take(commaIndex))
+					}
 				}
 			}
 		} catch(e:IOException) {
@@ -2486,19 +2488,18 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun loadModeList(listModel:DefaultComboBoxModel<String>, filename:String):Boolean {
 		try {
-			val `in` = BufferedReader(FileReader(filename))
-
 			listModel.removeAllElements()
-
-			`in`.readLines().forEach {str ->
-				if(str.isEmpty()||str.startsWith("#")) {
-					// Empty line or comment line. Ignore it.
-				} else if(str.startsWith(":")) {
-					// Game style tag. Currently unused.
-				} else {
-					// Game mode name
-					val commaIndex = str.indexOf(',')
-					if(commaIndex!=-1) listModel.addElement(str.take(commaIndex))
+			FileReader(filename).buffered().use {
+				it.forEachLine {str ->
+					if(str.isEmpty()||str.startsWith("#")) {
+						// Empty line or comment line. Ignore it.
+					} else if(str.startsWith(":")) {
+						// Game style tag. Currently unused.
+					} else {
+						// Game mode name
+						val commaIndex = str.indexOf(',')
+						if(commaIndex!=-1) listModel.addElement(str.take(commaIndex))
+					}
 				}
 			}
 		} catch(e:IOException) {
@@ -2516,11 +2517,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun saveListFromDefaultListModel(listModel:DefaultListModel<*>, filename:String):Boolean {
 		try {
-			val out = PrintWriter(filename)
-			for(i in 0..<listModel.size())
-				out.println(listModel.get(i))
-			out.flush()
-			out.close()
+			 PrintWriter(filename).use {
+				 for(i in 0..<listModel.size())
+					 it.println(listModel.get(i))
+				 it.flush()
+			 }
 		} catch(e:IOException) {
 			log.debug("Failed to save server list", e)
 			return false
@@ -2588,7 +2589,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		tabLobbyAndRoom.selectedIndex = 1
 
 		if(netPlayerClient!!.yourPlayerInfo!!.roomID!=roomID) {
-			txtpaneRoomChatLog.text = ""
+			txtPaneRoomChatLog.text = ""
 			setRoomButtonsEnabled(false)
 			netPlayerClient!!.send("roomjoin\t$roomID\t$watch\n")
 		}
@@ -2768,10 +2769,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		val pList = LinkedList(netPlayerClient!!.playerInfoList)
 
 		if(!pList.isEmpty()) {
-			listmodelRoomChatPlayerList.clear()
+			listModelRoomChatPlayerList.clear()
 
 			for(i in 0..<roomInfo.maxPlayers)
-				listmodelRoomChatPlayerList.addElement("[${(i+1)}]")
+				listModelRoomChatPlayerList.addElement("[${(i+1)}]")
 
 			for(pInfo in pList) {
 				if(pInfo.roomID==roomInfo.roomID) {
@@ -2802,11 +2803,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					else if(pInfo.ready) name += getUIText("RoomUserList_Ready")
 
 					if(pInfo.seatID>=0&&pInfo.seatID<roomInfo.maxPlayers)
-						listmodelRoomChatPlayerList.set(pInfo.seatID, "[${(pInfo.seatID+1)}] "+name)
+						listModelRoomChatPlayerList.set(pInfo.seatID, "[${(pInfo.seatID+1)}] "+name)
 					else if(pInfo.queueID!=-1)
-						listmodelRoomChatPlayerList.addElement("${(pInfo.queueID+1)}. $name")
+						listModelRoomChatPlayerList.addElement("${(pInfo.queueID+1)}. $name")
 					else
-						listmodelRoomChatPlayerList.addElement(name)
+						listModelRoomChatPlayerList.addElement(name)
 				}
 			}
 		}
@@ -2963,10 +2964,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Save global config file */
 	private fun saveGlobalConfig() {
 		try {
-			val out = FileOutputStream("config/setting/global.cfg")
-			propGlobal.store(out, "NullpoMino Global Config")
-			out.close()
-		} catch(e:IOException) {
+			propGlobal = Json.decodeFromString(FileInputStream("config/setting/global.json").bufferedReader().use {it.readText()})
+		} catch(e:Exception) {
 			log.warn("Failed to save global config file", e)
 		}
 	}
@@ -2992,10 +2991,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// ListenerCall
 		if(listeners!=null) {
 			for(l in listeners!!)
-				l.netlobbyOnExit(this)
+				l.onLobbyExit(this)
 			listeners = null
 		}
-		netDummyMode?.netlobbyOnExit(this)
+		netDummyMode?.onLobbyExit(this)
 		netDummyMode = null
 
 		dispose()
@@ -3011,8 +3010,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					+server, getUIText("MessageTitle_ServerDelete"), JOptionPane.YES_NO_OPTION
 			)
 			if(answer==JOptionPane.YES_OPTION) {
-				listmodelServerList.remove(index)
-				saveListFromDefaultListModel(listmodelServerList, "config/setting/netlobby_serverlist.cfg")
+				listModelServerList.remove(index)
+				saveListFromDefaultListModel(listModelServerList, "config/setting/netlobby_serverlist.cfg")
 			}
 		}
 	}
@@ -3022,15 +3021,15 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		val index = listboxServerList.selectedIndex
 		if(index!=-1) {
 			val strServer = listboxServerList.selectedValue as String
-			var portSpliter = strServer.indexOf(":")
-			if(portSpliter==-1) portSpliter = strServer.length
+			var portSplitter = strServer.indexOf(":")
+			if(portSplitter==-1) portSplitter = strServer.length
 
-			val strHost = strServer.take(portSpliter)
+			val strHost = strServer.take(portSplitter)
 			log.debug("Host:$strHost")
 
 			var port = NetBaseClient.DEFAULT_PORT
 			try {
-				val strPort = strServer.substring(portSpliter+1, strServer.length)
+				val strPort = strServer.substring(portSplitter+1, strServer.length)
 				port = strPort.toInt()
 			} catch(e2:Exception) {
 				log.debug("Failed to get port number; Try to use default port")
@@ -3239,21 +3238,21 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private fun createRuleEntries(filelist:Array<String>) {
 		ruleEntries.clear()
 		for(element in filelist) {
-			val entry = RuleEntry()
+			val entry = RuleConf()
 
 			val file = File("config/rule/$element")
-			entry.filename = element
-			entry.filepath = file.path
+			entry.file = element
+			entry.path = file.path
 
 			val prop = CustomProperties()
 			try {
 				val `in` = GZIPInputStream(FileInputStream("config/rule/$element"))
 				prop.load(`in`)
 				`in`.close()
-				entry.rulename = prop.getProperty("0.ruleOpt.strRuleName", "")
+				entry.name = prop.getProperty("0.ruleOpt.strRuleName", "")
 				entry.style = prop.getProperty("0.ruleOpt.style", 0)
 			} catch(e:Exception) {
-				entry.rulename = ""
+				entry.name = ""
 				entry.style = -1
 			}
 
@@ -3265,8 +3264,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 * @param currentStyle Current style
 	 * @return Subset of rule entries
 	 */
-	private fun getSubsetEntries(currentStyle:Int):LinkedList<RuleEntry> {
-		val subEntries = LinkedList<RuleEntry>()
+	private fun getSubsetEntries(currentStyle:Int):LinkedList<RuleConf> {
+		val subEntries = LinkedList<RuleConf>()
 		if(ruleEntries.size>0) ruleEntries.forEach {ruleEntry ->
 			if(ruleEntry.style==currentStyle) subEntries.add(ruleEntry)
 		}
@@ -3282,40 +3281,35 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		return Array(subEntries.size) {
 			val entry = subEntries[it]
-			return@Array entry.rulename+" (${entry.filename})"
+			return@Array entry.name+" (${entry.file})"
 		}
 	}
 
 	/** Enter rule change screen */
 	private fun enterRuleChangeScreen() {
 		// Set rule selections
-		val strCurrentFileName = Array<String>(GameEngine.MAX_GAMESTYLE) {
-			if(it==0) propGlobal.getProperty("0.rulefile", "")
-			else propGlobal.getProperty("0.rulefile.$it", "")
+		val strCurrentFileName = Array(GameEngine.MAX_GAMESTYLE) {
+			propGlobal.rule[0][it].file
 		}
 
 		for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 			val subEntries = getSubsetEntries(i)
 			for(j in subEntries.indices)
-				if(subEntries[j].filename==strCurrentFileName[i]) listboxRuleChangeRuleList[i].selectedIndex = j
+				if(subEntries[j].file==strCurrentFileName[i]) listboxRuleChangeRuleList[i].selectedIndex = j
 		}
 
 		// Tuning
-		val owSpinDirection = propGlobal.getProperty("0.tuning.owRotateButtonDefaultRight", -1)+1
-		comboboxTuningSpinDirection.selectedIndex = owSpinDirection
-		val owMoveDiagonal = propGlobal.getProperty("0.tuning.owMoveDiagonal", -1)+1
-		comboboxTuningMoveDiagonal.selectedIndex = owMoveDiagonal
-		val owBlockShowOutlineOnly = propGlobal.getProperty("0.tuning.owBlockShowOutlineOnly", -1)+1
-		comboboxTuningBlockShowOutlineOnly.selectedIndex = owBlockShowOutlineOnly
-		val owSkin = propGlobal.getProperty("0.tuning.owSkin", -1)+1
-		comboboxTuningSkin.selectedIndex = owSkin
-		val owBlockOutlineType = propGlobal.getProperty("0.tuning.owBlockOutlineType", -1)+1
-		comboboxTuningBlockOutlineType.selectedIndex = owBlockOutlineType
+		val tuning = propGlobal.tuning.first()
+		comboboxTuningSpinDirection.selectedIndex = tuning.spinDir+1
+		comboboxTuningMoveDiagonal.selectedIndex = tuning.moveDiagonal+1
+		comboboxTuningBlockShowOutlineOnly.selectedIndex = tuning.blockShowOutlineOnly+1
+		comboboxTuningSkin.selectedIndex = tuning.skin+2
+		comboboxTuningBlockOutlineType.selectedIndex = tuning.blockOutlineType+1
 
-		txtfldTuningMinDAS.text = propGlobal.getProperty("0.tuning.owMinDAS", "-1")
-		txtfldTuningMaxDAS.text = propGlobal.getProperty("0.tuning.owMaxDAS", "-1")
-		txtfldTuningDasDelay.text = propGlobal.getProperty("0.tuning.owDasDelay", "-1")
-		chkboxTuningReverseUpDown.isSelected = propGlobal.getProperty("0.tuning.owReverseUpDown", false)
+		txtfldTuningMinDAS.text = "${tuning.minDAS}"
+		txtfldTuningMaxDAS.text = "${tuning.maxDAS}"
+		txtfldTuningDasDelay.text = "${tuning.owARR}"
+		chkboxTuningReverseUpDown.isSelected = tuning.reverseUpDown
 
 		// Change screen
 		changeCurrentScreenCard(SCREENCARD_RULECHANGE)
@@ -3436,8 +3430,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		if(e.actionCommand=="Room_Leave") {
 			if(netPlayerClient!=null&&netPlayerClient!!.isConnected) netPlayerClient!!.send("roomjoin\t-1\tfalse\n")
 
-			tablemodelGameStat.rowCount = 0
-			tablemodelGameStat1P.rowCount = 0
+			tableModelGameStat.rowCount = 0
+			tableModelGameStat1P.rowCount = 0
 
 			tabLobbyAndRoom.selectedIndex = 0
 			tabLobbyAndRoom.setEnabledAt(1, false)
@@ -3447,8 +3441,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			// Listener call
 			for(l in listeners!!)
-				l.netlobbyOnRoomLeave(this, netPlayerClient!!)
-			if(netDummyMode!=null) netDummyMode!!.netlobbyOnRoomLeave(this, netPlayerClient!!)
+				l.onRoomLeave(this, netPlayerClient!!)
+			if(netDummyMode!=null) netDummyMode!!.onRoomLeave(this, netPlayerClient!!)
 		}
 		// Participation in a war button
 		if(e.actionCommand=="Room_Join") {
@@ -3464,23 +3458,23 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		if(e.actionCommand=="Room_TeamChange")
 			if(netPlayerClient!=null&&netPlayerClient!!.isConnected) {
 				txtfldRoomTeam.text = netPlayerClient!!.yourPlayerInfo!!.strTeam
-				roomTopBarCardLayout.next(subpanelRoomTopBar)
+				roomTopBarCardLayout.next(subPanelRoomTopBar)
 			}
 		// Change teamOK(Room screen)
 		if(e.actionCommand=="Room_TeamChange_OK")
 			if(netPlayerClient!=null&&netPlayerClient!!.isConnected) {
 				netPlayerClient!!.send("changeteam\t${NetUtil.urlEncode(txtfldRoomTeam.text)}\n")
-				roomTopBarCardLayout.first(subpanelRoomTopBar)
+				roomTopBarCardLayout.first(subPanelRoomTopBar)
 			}
 		// Change teamCancel(Room screen)
-		if(e.actionCommand=="Room_TeamChange_Cancel") roomTopBarCardLayout.first(subpanelRoomTopBar)
+		if(e.actionCommand=="Room_TeamChange_Cancel") roomTopBarCardLayout.first(subPanelRoomTopBar)
 		// Confirmation rule(Room screen)
 		if(e.actionCommand=="Room_ViewSetting") viewRoomDetail(netPlayerClient!!.yourPlayerInfo!!.roomID)
 		// In the Add Server screenOK button
 		if(e.actionCommand=="ServerAdd_OK") {
 			if(txtfldServerAddHost.text.isNotEmpty()) {
-				listmodelServerList.addElement(txtfldServerAddHost.text)
-				saveListFromDefaultListModel(listmodelServerList, "config/setting/netlobby_serverlist.cfg")
+				listModelServerList.addElement(txtfldServerAddHost.text)
+				saveListFromDefaultListModel(listModelServerList, "config/setting/netlobby_serverlist.cfg")
 				txtfldServerAddHost.text = ""
 			}
 			changeCurrentScreenCard(SCREENCARD_SERVERSELECT)
@@ -3507,7 +3501,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					+spinnerCreateRatedMaxPlayers.value+"\t$presetIndex\t"
 					+NetUtil.urlEncode("NET-VS-BATTLE")+"\n")
 
-				txtpaneRoomChatLog.text = ""
+				txtPaneRoomChatLog.text = ""
 				setRoomButtonsEnabled(false)
 				tabLobbyAndRoom.setEnabledAt(1, true)
 				tabLobbyAndRoom.selectedIndex = 1
@@ -3580,7 +3574,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 				msg += "\n"
 
-				txtpaneRoomChatLog.text = ""
+				txtPaneRoomChatLog.text = ""
 				setRoomButtonsEnabled(false)
 				tabLobbyAndRoom.setEnabledAt(1, true)
 				tabLobbyAndRoom.selectedIndex = 1
@@ -3650,7 +3644,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					if(listboxCreateRoom1PRuleList.selectedIndex>=1)
 						strRule = listboxCreateRoom1PRuleList.selectedValue as String
 
-					txtpaneRoomChatLog.text = ""
+					txtPaneRoomChatLog.text = ""
 					setRoomButtonsEnabled(false)
 					tabLobbyAndRoom.setEnabledAt(1, true)
 					tabLobbyAndRoom.selectedIndex = 1
@@ -3674,65 +3668,35 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// OK button (Rule change)
 		if(e.actionCommand=="RuleChange_OK") {
 			// Set rules
-			val strPrevTetrominoRuleFilename = propGlobal.getProperty("0.rule", "")
+			val strPrevTetrominoRuleFilename = propGlobal.rule[0][0].path
 
 			for(i in 0..<GameEngine.MAX_GAMESTYLE) {
 				val id = listboxRuleChangeRuleList[i].selectedIndex
 				val subEntries = getSubsetEntries(i)
-				var entry:RuleEntry? = null
-				if(id>=0) entry = subEntries[id]
-
-				if(i==0) {
-					if(id>=0) {
-						propGlobal.setProperty("0.rule", entry!!.filepath)
-						propGlobal.setProperty("0.rulefile", entry.filename)
-						propGlobal.setProperty("0.rulename", entry.rulename)
-					} else {
-						propGlobal.setProperty("0.rule", "")
-						propGlobal.setProperty("0.rulefile", "")
-						propGlobal.setProperty("0.rulename", "")
-					}
-				} else if(id>=0) {
-					propGlobal.setProperty("0.rule.$i", entry!!.filepath)
-					propGlobal.setProperty("0.rulefile.$i", entry.filename)
-					propGlobal.setProperty("0.rulename.$i", entry.rulename)
-				} else {
-					propGlobal.setProperty("0.rule.$i", "")
-					propGlobal.setProperty("0.rulefile.$i", "")
-					propGlobal.setProperty("0.rulename.$i", "")
-				}
+				val entry = if(id>=0) subEntries[id] else null
+				propGlobal.rule[0][i] = entry?.let {RuleConf(it.path, it.file, it.name)} ?: RuleConf()
 			}
 
 			// Tuning
-			val owSpinDirection = comboboxTuningSpinDirection.selectedIndex-1
-			propGlobal.setProperty("0.tuning.owRotateButtonDefaultRight", owSpinDirection)
+			propGlobal.tuning.firstOrNull()?.apply {
+				spinDir = comboboxTuningSpinDirection.selectedIndex-1
+				moveDiagonal = comboboxTuningMoveDiagonal.selectedIndex-1
+				blockShowOutlineOnly = comboboxTuningBlockShowOutlineOnly.selectedIndex-1
+				skin = comboboxTuningSkin.selectedIndex-2
 
-			val owMoveDiagonal = comboboxTuningMoveDiagonal.selectedIndex-1
-			propGlobal.setProperty("0.tuning.owMoveDiagonal", owMoveDiagonal)
+				blockOutlineType = comboboxTuningBlockOutlineType.selectedIndex-1
 
-			val owBlockShowOutlineOnly = comboboxTuningBlockShowOutlineOnly.selectedIndex-1
-			propGlobal.setProperty("0.tuning.owBlockShowOutlineOnly", owBlockShowOutlineOnly)
-
-			val owSkin = comboboxTuningSkin.selectedIndex-1
-			propGlobal.setProperty("0.tuning.owSkin", owSkin)
-
-			val owBlockOutlineType = comboboxTuningBlockOutlineType.selectedIndex-1
-			propGlobal.setProperty("0.tuning.owBlockOutlineType", owBlockOutlineType)
-
-			val owMinDAS = getIntTextField(-1, txtfldTuningMinDAS)
-			propGlobal.setProperty("0.tuning.owMinDAS", owMinDAS)
-			val owMaxDAS = getIntTextField(-1, txtfldTuningMaxDAS)
-			propGlobal.setProperty("0.tuning.owMaxDAS", owMaxDAS)
-			val owDasDelay = getIntTextField(-1, txtfldTuningDasDelay)
-			propGlobal.setProperty("0.tuning.owDasDelay", owDasDelay)
-			val owReverseUpDown = chkboxTuningReverseUpDown.isSelected
-			propGlobal.setProperty("0.tuning.owReverseUpDown", owReverseUpDown)
+				minDAS = getIntTextField(-1, txtfldTuningMinDAS)
+				maxDAS = getIntTextField(-1, txtfldTuningMaxDAS)
+				owARR = getIntTextField(-1, txtfldTuningDasDelay)
+				reverseUpDown = chkboxTuningReverseUpDown.isSelected
+			}
 
 			// Save
 			saveGlobalConfig()
 
 			// Load rule
-			val strFileName = propGlobal.getProperty("0.rule", "")
+			val strFileName = propGlobal.rule[0][0].path
 			if(strPrevTetrominoRuleFilename!=strFileName) {
 				val propRule = CustomProperties().apply {
 					try {
@@ -3852,8 +3816,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			// ListenerCall
 			for(l in listeners!!)
-				l.netlobbyOnLoginOK(this, netPlayerClient!!)
-			if(netDummyMode!=null) netDummyMode!!.netlobbyOnLoginOK(this, netPlayerClient!!)
+				l.onLoginOK(this, netPlayerClient!!)
+			if(netDummyMode!=null) netDummyMode!!.onLoginOK(this, netPlayerClient!!)
 
 			setLobbyButtonsEnabled(1)
 		}
@@ -3915,7 +3879,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 							String.format(getUIText("SysMsg_LeaveRoomWithHost"), getPlayerNameWithTripCode(p), p.strHost)
 						else
 							String.format(getUIText("SysMsg_LeaveRoom"), getPlayerNameWithTripCode(p))
-						addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color.blue)
+						addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
 					}
 				}
 			}
@@ -3930,7 +3894,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					String.format(getUIText("SysMsg_EnterRoomWithHost"), getPlayerNameWithTripCode(pInfo), pInfo.strHost)
 				else
 					String.format(getUIText("SysMsg_EnterRoom"), getPlayerNameWithTripCode(pInfo))
-				addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color.blue)
+				addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
 			}
 		}
 		// PlayerWithdrawal
@@ -3943,7 +3907,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					String.format(getUIText("SysMsg_LeaveRoomWithHost"), getPlayerNameWithTripCode(pInfo), pInfo.strHost)
 				else
 					String.format(getUIText("SysMsg_LeaveRoom"), getPlayerNameWithTripCode(pInfo))
-				addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color.blue)
+				addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
 			}
 		}
 		// Change team
@@ -4048,15 +4012,15 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 				if(seatID==-1&&queueID==-1) {
 					val strTemp = String.format(getUIText("SysMsg_StatusChange_Spectator"), getPlayerNameWithTripCode(pInfo))
-					addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color.blue)
+					addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
 					setRoomJoinButtonVisible(true)
 				} else if(seatID==-1) {
 					val strTemp = String.format(getUIText("SysMsg_StatusChange_Queue"), getPlayerNameWithTripCode(pInfo))
-					addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color.blue)
+					addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
 					setRoomJoinButtonVisible(false)
 				} else {
 					val strTemp = String.format(getUIText("SysMsg_StatusChange_Joined"), getPlayerNameWithTripCode(pInfo))
-					addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color.blue)
+					addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
 					setRoomJoinButtonVisible(false)
 				}
 
@@ -4065,10 +4029,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 						btnRoomButtonsJoin.isVisible = false
 						btnRoomButtonsSitOut.isVisible = false
 						btnRoomButtonsRanking.isVisible = false
-						gameStatCardLayout.show(subpanelGameStat, "GameStat1P")
+						gameStatCardLayout.show(subPanelGameStat, "GameStat1P")
 					} else {
 						btnRoomButtonsRanking.isVisible = netPlayerClient!!.getRoomInfo(roomID)!!.rated
-						gameStatCardLayout.show(subpanelGameStat, "GameStatMP")
+						gameStatCardLayout.show(subPanelGameStat, "GameStatMP")
 					}
 
 				SwingUtilities.invokeLater {
@@ -4080,20 +4044,20 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 				title = getUIText("Title_NetLobby")+" - "+strTitle
 				tabLobbyAndRoom.setTitleAt(1, getUIText("Lobby_Tab_Room")+strTitle)
 
-				addSystemChatLogLater(txtpaneRoomChatLog, getUIText("SysMsg_RoomJoin_Title")+strTitle, Color.blue)
-				addSystemChatLogLater(txtpaneRoomChatLog, getUIText("SysMsg_RoomJoin_ID")+roomInfo.roomID, Color.blue)
+				addSystemChatLogLater(txtPaneRoomChatLog, getUIText("SysMsg_RoomJoin_Title")+strTitle, Color.blue)
+				addSystemChatLogLater(txtPaneRoomChatLog, getUIText("SysMsg_RoomJoin_ID")+roomInfo.roomID, Color.blue)
 				if(roomInfo.ruleLock)
-					addSystemChatLogLater(txtpaneRoomChatLog, getUIText("SysMsg_RoomJoin_Rule")+roomInfo.ruleName, Color.blue)
+					addSystemChatLogLater(txtPaneRoomChatLog, getUIText("SysMsg_RoomJoin_Rule")+roomInfo.ruleName, Color.blue)
 
 				setLobbyButtonsEnabled(2)
 				changeCurrentScreenCard(SCREENCARD_LOBBY)
 
 				// ListenerCall
 				for(l in listeners!!)
-					l.netlobbyOnRoomJoin(this, netPlayerClient!!, roomInfo)
-				if(netDummyMode!=null) netDummyMode!!.netlobbyOnRoomJoin(this, netPlayerClient!!, roomInfo)
+					l.onRoomJoin(this, netPlayerClient!!, roomInfo)
+				if(netDummyMode!=null) netDummyMode!!.onRoomJoin(this, netPlayerClient!!, roomInfo)
 			} else {
-				addSystemChatLogLater(txtpaneRoomChatLog, getUIText("SysMsg_RoomJoin_Lobby"), Color.blue)
+				addSystemChatLogLater(txtPaneRoomChatLog, getUIText("SysMsg_RoomJoin_Lobby"), Color.blue)
 
 				title = getUIText("Title_NetLobby")
 				tabLobbyAndRoom.selectedIndex = 0
@@ -4105,13 +4069,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 				// ListenerCall
 				for(l in listeners!!)
-					l.netlobbyOnRoomLeave(this, netPlayerClient!!)
-				if(netDummyMode!=null) netDummyMode!!.netlobbyOnRoomLeave(this, netPlayerClient!!)
+					l.onRoomLeave(this, netPlayerClient!!)
+				if(netDummyMode!=null) netDummyMode!!.onRoomLeave(this, netPlayerClient!!)
 			}
 		}
 		// Entry Room failure
 		if(message[0]=="roomjoinfail")
-			addSystemChatLogLater(txtpaneRoomChatLog, getUIText("SysMsg_RoomJoinFail"), Color.red)
+			addSystemChatLogLater(txtPaneRoomChatLog, getUIText("SysMsg_RoomJoinFail"), Color.red)
 		// Kicked from a room
 		if(message[0]=="roomkicked") {
 			val strKickMsg = String.format(getUIText("SysMsg_Kicked_"+message[1]), NetUtil.urlDecode(message[3]), message[2])
@@ -4145,7 +4109,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			if(pInfo!=null) {
 				val calendar = GeneralUtil.importCalendarString(message[3])
 				val strMsgBody = NetUtil.urlDecode(message[4])
-				addUserChatLogLater(txtpaneRoomChatLog, getPlayerNameWithTripCode(pInfo), calendar, strMsgBody)
+				addUserChatLogLater(txtPaneRoomChatLog, getPlayerNameWithTripCode(pInfo), calendar, strMsgBody)
 			}
 		}
 		// Lobby chat/Room chat (history)
@@ -4153,7 +4117,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val strUsername = convTripCode(NetUtil.urlDecode(message[1]))
 			val calendar = GeneralUtil.importCalendarString(message[2])
 			val strMsgBody = NetUtil.urlDecode(message[3])
-			val txtpane = if(message[0]=="lobbychath") txtpaneLobbyChatLog else txtpaneRoomChatLog
+			val txtpane = if(message[0]=="lobbychath") txtpaneLobbyChatLog else txtPaneRoomChatLog
 			addRecordedUserChatLogLater(txtpane, strUsername, calendar, strMsgBody)
 		}
 		// Participation status change
@@ -4164,15 +4128,15 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			if(pInfo!=null)
 				if(message[1]=="watchonly") {
 					val strTemp = String.format(getUIText("SysMsg_StatusChange_Spectator"), getPlayerNameWithTripCode(pInfo))
-					addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color.blue)
+					addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
 					if(uid==netPlayerClient!!.playerUID) setRoomJoinButtonVisible(true)
 				} else if(message[1]=="joinqueue") {
 					val strTemp = String.format(getUIText("SysMsg_StatusChange_Queue"), getPlayerNameWithTripCode(pInfo))
-					addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color.blue)
+					addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
 					if(uid==netPlayerClient!!.playerUID) setRoomJoinButtonVisible(false)
 				} else if(message[1]=="joinseat") {
 					val strTemp = String.format(getUIText("SysMsg_StatusChange_Joined"), getPlayerNameWithTripCode(pInfo))
-					addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color.blue)
+					addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color.blue)
 					if(uid==netPlayerClient!!.playerUID) setRoomJoinButtonVisible(false)
 				}
 
@@ -4181,19 +4145,19 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Automatically start timerStart
 		if(message[0]=="autostartbegin") {
 			val strTemp = String.format(getUIText("SysMsg_AutoStartBegin"), message[1])
-			addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color(64, 128, 0))
+			addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color(64, 128, 0))
 		}
 		// game start
 		if(message[0]=="start") {
-			addSystemChatLogLater(txtpaneRoomChatLog, getUIText("SysMsg_GameStart"), Color(0, 128, 0))
-			tablemodelGameStat.rowCount = 0
-			tablemodelGameStat1P.rowCount = 0
+			addSystemChatLogLater(txtPaneRoomChatLog, getUIText("SysMsg_GameStart"), Color(0, 128, 0))
+			tableModelGameStat.rowCount = 0
+			tableModelGameStat1P.rowCount = 0
 
 			if(netPlayerClient!!.yourPlayerInfo!!.seatID!=-1) {
 				btnRoomButtonsSitOut.isEnabled = false
 				btnRoomButtonsTeamChange.isEnabled = false
 				itemLobbyMenuTeamChange.isEnabled = false
-				roomTopBarCardLayout.first(subpanelRoomTopBar)
+				roomTopBarCardLayout.first(subPanelRoomTopBar)
 			}
 		}
 		// Death
@@ -4203,7 +4167,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			if(message.size>6) {
 				val strTemp = String.format(getUIText("SysMsg_KO"), convTripCode(NetUtil.urlDecode(message[6])), name)
-				addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color(0, 128, 0))
+				addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color(0, 128, 0))
 			}
 
 			if(uid==netPlayerClient!!.playerUID) {
@@ -4232,14 +4196,14 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			rowdata[12] = message[15] // Games
 
 			var insertPos = 0
-			for(i in 0..<tablemodelGameStat.rowCount) {
-				val strRank = tablemodelGameStat.getValueAt(i, 0) as String
+			for(i in 0..<tableModelGameStat.rowCount) {
+				val strRank = tableModelGameStat.getValueAt(i, 0) as String
 				val rank = strRank.toInt()
 
 				if(myRank>rank) insertPos = i+1
 			}
 
-			tablemodelGameStat.insertRow(insertPos, rowdata)
+			tableModelGameStat.insertRow(insertPos, rowdata)
 
 			if(writerRoomLog!=null) {
 				writerRoomLog!!.print("[$currentTimeAsString] ")
@@ -4262,10 +4226,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			if(writerRoomLog!=null) writerRoomLog!!.print("[$currentTimeAsString]\n")
 
-			tablemodelGameStat1P.rowCount = 0
+			tableModelGameStat1P.rowCount = 0
 			for(element in rowData) {
 				val strTempArray = element.split(Regex(";")).dropLastWhile {it.isEmpty()}
-				tablemodelGameStat1P.addRow(strTempArray.toTypedArray())
+				tableModelGameStat1P.addRow(strTempArray.toTypedArray())
 
 				if(writerRoomLog!=null&&strTempArray.size>1)
 					writerRoomLog!!.print(
@@ -4277,7 +4241,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 		// game finished
 		if(message[0]=="finish") {
-			addSystemChatLogLater(txtpaneRoomChatLog, getUIText("SysMsg_GameEnd"), Color(0, 128, 0))
+			addSystemChatLogLater(txtPaneRoomChatLog, getUIText("SysMsg_GameEnd"), Color(0, 128, 0))
 
 			if(message.size>3&&message[3].isNotEmpty()) {
 				var flagTeamWin = false
@@ -4287,7 +4251,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 					String.format(getUIText("SysMsg_WinnerTeam"), NetUtil.urlDecode(message[3]))
 				else
 					String.format(getUIText("SysMsg_Winner"), convTripCode(NetUtil.urlDecode(message[3])))
-				addSystemChatLogLater(txtpaneRoomChatLog, strWinner, Color(0, 128, 0))
+				addSystemChatLogLater(txtPaneRoomChatLog, strWinner, Color(0, 128, 0))
 			}
 
 			btnRoomButtonsSitOut.isEnabled = true
@@ -4300,7 +4264,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			val ratingNow = message[4].toInt()
 			val ratingChange = message[5].toInt()
 			val strTemp = String.format(getUIText("SysMsg_Rating"), strPlayerName, ratingNow, ratingChange)
-			addSystemChatLogLater(txtpaneRoomChatLog, strTemp, Color(0, 128, 0))
+			addSystemChatLogLater(txtPaneRoomChatLog, strTemp, Color(0, 128, 0))
 		}
 		// Multiplayer Leaderboard
 		if(message[0]=="mpranking") {
@@ -4363,8 +4327,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// ListenerCall
 		if(listeners!=null)
 			for(l in listeners!!)
-				l.netlobbyOnMessage(this, netPlayerClient!!, message)
-		if(netDummyMode!=null) netDummyMode!!.netlobbyOnMessage(this, netPlayerClient!!, message)
+				l.onMessage(this, netPlayerClient!!, message)
+		if(netDummyMode!=null) netDummyMode!!.onMessage(this, netPlayerClient!!, message)
 	}
 
 	/* When it is cut */
@@ -4389,8 +4353,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// ListenerCall
 		if(listeners!=null)
 			for(l in listeners!!)
-				l.netlobbyOnDisconnect(this, netPlayerClient!!, ex)
-		if(netDummyMode!=null) netDummyMode!!.netlobbyOnDisconnect(this, netPlayerClient!!, ex)
+				l.onDisconnect(this, netPlayerClient!!, ex)
+		if(netDummyMode!=null) netDummyMode!!.onDisconnect(this, netPlayerClient!!, ex)
 	}
 
 	/** Add a new NetLobbyListener, but don't add NetDummyMode!
@@ -4692,18 +4656,6 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			copyAction.isEnabled = flg
 			super.show(c, x, y)
 		}
-	}
-
-	/** Rule entry for rule change screen */
-	private class RuleEntry {
-		/** File name */
-		var filename = ""
-		/** File path */
-		var filepath = ""
-		/** Rule name */
-		var rulename = ""
-		/** Game style */
-		var style = 0
 	}
 
 	/** Each label of Image Combobox<br></br>

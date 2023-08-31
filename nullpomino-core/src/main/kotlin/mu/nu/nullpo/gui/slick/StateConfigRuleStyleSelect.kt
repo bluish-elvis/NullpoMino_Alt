@@ -38,7 +38,7 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** Style select menu */
-class StateConfigRuleStyleSelect:BaseMenuChooseState() {
+internal class StateConfigRuleStyleSelect :BaseMenuChooseState() {
 	/** Player number */
 	var player = 0
 

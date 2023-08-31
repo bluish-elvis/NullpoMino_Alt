@@ -30,7 +30,6 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 import mu.nu.nullpo.game.component.Piece
-import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.io.IOException
@@ -43,23 +42,17 @@ class FixedSequenceRandomizer:Randomizer {
 	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
 
 	init {
-		val sequence = StringBuffer()
+
 		val file = File("sequence.txt")
-		val reader = BufferedReader(FileReader(file))
 		try {
-			// repeat until all lines is read
-			reader.readLines().forEach {sequence.append(it)}
+			FileReader(file).buffered().use {reader ->
+				// repeat until all lines is read
+				reader.readText().let {seq -> sequenceTranslated = IntArray(seq.length) {pieceCharToId(seq[it])}}
+			}
+			println(sequenceTranslated.contentToString())
 		} catch(e:IOException) {
 			e.printStackTrace()
-		} finally {
-			try {
-				reader.close()
-			} catch(e:IOException) {
-				e.printStackTrace()
-			}
 		}
-		sequenceTranslated = IntArray("$sequence".length) {pieceCharToId("$sequence"[it])}
-		println(sequenceTranslated.contentToString())
 	}
 
 	override fun init() {

@@ -35,8 +35,10 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR.ORANGE
 import mu.nu.nullpo.game.event.EventReceiver.COLOR.WHITE
 import org.apache.logging.log4j.LogManager
 import java.io.BufferedReader
+import java.io.FileInputStream
 import java.io.FileReader
 import java.io.IOException
+import java.io.InputStreamReader
 
 abstract class BaseStaffRoll<T> {
 	/** Log */
@@ -47,9 +49,9 @@ abstract class BaseStaffRoll<T> {
 	open val height:Int get() = strList.size*14
 	protected val strList by lazy {
 		try {
-			this::class.java.getResource("../staff.lst")?.path?.let {
-				BufferedReader(FileReader(it)).readLines()
-			}?.map {it.trim {it<=' '}}?.filterNot {it.startsWith('#')||it.startsWith("//")} // Commment-line. Ignore it.
+			this::class.java.getResource("../staff.lst")?.path?.let {t ->
+				FileInputStream(t).bufferedReader().use {it.readLines()}
+			}?.map {s -> s.trim {it<=' '}}?.filterNot {it.startsWith('#')||it.startsWith("//")} // Commment-line. Ignore it.
 				?: emptyList()
 		} catch(e:IOException) {
 			log.error("Failed to load Staffroll list file", e)

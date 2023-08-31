@@ -40,7 +40,7 @@ data class SpeedParam(
 	/** 出現待ち time */
 	var are:Int = 24,
 	/** Line clear後の出現待ち time */
-	var areLine:Int = 24,
+	var areLine:Int = are,
 	/** Line clear time */
 	var lineDelay:Int = 40,
 	/** 固定 time */
@@ -54,6 +54,10 @@ data class SpeedParam(
 
 	/** Constructor */
 	constructor():this(4, 256, 24, 24, 40, 30, 14)
+
+	/** Constructor */
+	constructor(gravity:Int, denominator:Int, are:Int, lineDelay:Int, lockDelay:Int, das:Int)
+		:this(gravity, denominator, are, are, lineDelay, lockDelay, das)
 
 	/** Copy constructor
 	 * @param s Copy source

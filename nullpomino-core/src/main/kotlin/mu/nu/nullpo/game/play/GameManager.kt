@@ -53,16 +53,15 @@ class GameManager(
 	 * contains setting & Presets */
 	var modeConfig = CustomProperties(cfgMode)
 
-	val cfgMode get() = "config/setting/mode/${mode?.id ?: "_common"}.cfg"
+	private val cfgMode get() = "config/setting/mode/${mode?.id ?: "_common"}.cfg"
 
 	/** Properties used by statistics */
 	var statsProp = CustomProperties(statsFile)
 	val statsFile get() = "scores/stats"
 
 	/** Properties for Ranking/Records game mode */
-	var recordProp = CustomProperties(recorder)
+	var recordProp = CustomProperties(recorder())
 
-	val recorder get() = recorder()
 	fun recorder(ruleName:String? = null):String =
 		"scores/${ruleName?.let {"$it/"} ?: ""}${mode?.id ?: ""}.rec"
 	//fun recorder():String = "scores/${mode?.name ?: "mode"}.rec"

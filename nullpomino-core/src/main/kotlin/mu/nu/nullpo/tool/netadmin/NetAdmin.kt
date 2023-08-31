@@ -582,20 +582,15 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		addConsoleLog(">$fullCommandLine", Color.blue)
 
 		// help/h/?
-		if(commands[0].equals("help", ignoreCase = true)||commands[0].equals("h", ignoreCase = true)||commands[0].equals(
-				"?",
-				ignoreCase = true
-			))
+		if(commands[0].equals("help", ignoreCase = true)||commands[0].equals("h", ignoreCase = true)||
+			commands[0].equals("?", ignoreCase = true))
 			try {
-				val reader:InputStreamReader = try {
+				try {
 					InputStreamReader(FileInputStream("config/lang/netadmin_help_${Locale.getDefault().country}.txt"), "UTF-8")
 				} catch(e2:IOException) {
 					InputStreamReader(FileInputStream("config/lang/netadmin_help_default.txt"), "UTF-8")
-				}
+				}.buffered().use {b->b.forEachLine {addConsoleLog(it)}}
 
-				BufferedReader(reader).readLines().forEach {addConsoleLog(it)}
-
-				reader.close()
 			} catch(e:IOException) {
 				log.error("Failed to load help file", e)
 				addConsoleLog(String.format(getUIText("Console_Help_Error"), "$e"), Color.red)

@@ -46,7 +46,7 @@ import java.io.IOException
 import java.util.zip.GZIPInputStream
 
 /** リプレイ選択画面のステート */
-class StateReplaySelect:BaseMenuScrollState() {
+internal class StateReplaySelect:BaseMenuScrollState() {
 	private var directoryPlace = mutableListOf<String>()
 	private var cursorHistory = mutableListOf<Int>()
 	private fun dirName(it:String) = modeManager[it]?.name ?: it
@@ -94,30 +94,35 @@ class StateReplaySelect:BaseMenuScrollState() {
 			cursor = cursorHistory.removeLast()
 		}
 
-		val d = NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", "replay")+
+		emitGrid(cursor+minChoiceY)
+		val d = NullpoMinoSlick.propGlobal.custom.replayDir+
 			directoryPlace.joinToString("${File.separatorChar}", "${File.separatorChar}")
 
 		val fd = File(d)
-		listInternal = fd.listFiles.sortedBy {it.name}.sortedByDescending {it.isDirectory}.map {
-			if(it.isDirectory) ReplayCol(it, it.name, stats = Statistics().apply {
-				lines = it.listFilesOrEmpty.count {lf -> isReplay(lf)}
-			}, dir = true)
-			else if(isReplay(it)) try {
-				val gis = GZIPInputStream(FileInputStream(it.javaFile()))
-				val prop = CustomProperties().apply {
-					load(gis)
-				}
-				gis.close()
-
-				ReplayCol(it, it.name, prop.getProperty("name.dir", ""), prop.getProperty("name.rule", ""),
-					Statistics().apply {
-						readProperty(prop, 0)
-					})
-			} catch(e:IOException) {
-				log.error("Failed to load replay file ($it)", e)
-				ReplayCol(it, it.name)
-			} else ReplayCol(it, it.name)
-
+		listInternal = try {
+			fd.listFiles.sortedBy {it.name}.sortedByDescending {it.isDirectory}.map {
+				if(it.isDirectory) ReplayCol(it, it.name, stats = Statistics().apply {
+					lines = it.listFilesOrEmpty.count {lf -> isReplay(lf)}
+				}, dir = true)
+				else if(isReplay(it)) try {
+					val gis = GZIPInputStream(FileInputStream(it.javaFile()))
+					val prop = CustomProperties().apply {
+						load(gis)
+					}
+					gis.close()
+					ReplayCol(
+						it, it.name, prop.getProperty("name.dir", ""),
+						prop.getProperty("name.rule", ""), Statistics().apply {
+							readProperty(prop, 0)
+						})
+				} catch(e:Exception) {
+					log.error("Failed to load replay file ($it)", e)
+					ReplayCol(it, it.name)
+				} else ReplayCol(it, it.name)
+			}
+		} catch(e:Exception) {
+			log.error("Failed to load replay folder", e)
+			emptyList()
 		}
 	}
 
@@ -154,7 +159,7 @@ class StateReplaySelect:BaseMenuScrollState() {
 				ResourceHolder.soundManager.play("twist")
 				val gis = GZIPInputStream(
 					FileInputStream(
-						NullpoMinoSlick.propGlobal.getProperty("custom.replay.directory", "replay")+
+						NullpoMinoSlick.propGlobal.custom.replayDir+
 							directoryPlace.joinToString("${File.separatorChar}", "${File.separatorChar}", "${File.separatorChar}")+
 							listInternal[cursor].name
 					)

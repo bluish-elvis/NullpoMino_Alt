@@ -28,9 +28,11 @@
  */
 package mu.nu.nullpo.gui.net
 
+import kotlinx.serialization.Serializable
 import org.apache.logging.log4j.LogManager
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.net.URI
 import java.net.URL
 import java.util.LinkedList
 import java.util.regex.Pattern
@@ -49,7 +51,10 @@ class UpdateChecker:Runnable {
 		// 終了
 		listeners.forEach {it.onUpdateCheckerEnd(status)}
 	}
-
+	@Serializable
+	data class Config(var enable:Boolean, var url:String){
+		constructor():this(true,"")
+	}
 	companion object {
 		/** Log */
 		internal val log = LogManager.getLogger()
@@ -120,53 +125,52 @@ class UpdateChecker:Runnable {
 		 */
 		private fun checkUpdate():Boolean {
 			try {
-				val url = URL(strURLofXML)
+				val url = URI.create(strURLofXML).toURL()
 				val httpCon = url.openConnection()
-				val httpIn = BufferedReader(InputStreamReader(httpCon.getInputStream()))
+				InputStreamReader(httpCon.getInputStream()).buffered().use {httpIn ->
+					httpIn.forEachLine {
+						var pat = Pattern.compile("<Version>.*</Version>")
+						var matcher = pat.matcher(it)
+						if(matcher.find()) {
+							var tempStr = matcher.group()
+							tempStr = tempStr.replace("<Version>", "")
+							tempStr = tempStr.replace("</Version>", "")
+							strLatestVersion = tempStr
+							log.debug("Latest Version:$strLatestVersion")
+						}
 
-				httpIn.readLines().forEach {
-					var pat = Pattern.compile("<Version>.*</Version>")
-					var matcher = pat.matcher(it)
-					if(matcher.find()) {
-						var tempStr = matcher.group()
-						tempStr = tempStr.replace("<Version>", "")
-						tempStr = tempStr.replace("</Version>", "")
-						strLatestVersion = tempStr
-						log.debug("Latest Version:$strLatestVersion")
+						pat = Pattern.compile("<Date>.*</Date>")
+						matcher = pat.matcher(it)
+						if(matcher.find()) {
+							var tempStr = matcher.group()
+							tempStr = tempStr.replace("<Date>", "")
+							tempStr = tempStr.replace("</Date>", "")
+							strReleaseDate = tempStr
+							log.debug("Release Date:$strReleaseDate")
+						}
+
+						pat = Pattern.compile("<DownloadURL>.*</DownloadURL>")
+						matcher = pat.matcher(it)
+						if(matcher.find()) {
+							var tempStr = matcher.group()
+							tempStr = tempStr.replace("<DownloadURL>", "")
+							tempStr = tempStr.replace("</DownloadURL>", "")
+							strDownloadURL = tempStr
+							log.debug("Download URL:$strDownloadURL")
+						}
+
+						pat = Pattern.compile("<WindowsInstallerURL>.*</WindowsInstallerURL>")
+						matcher = pat.matcher(it)
+						if(matcher.find()) {
+							var tempStr = matcher.group()
+							tempStr = tempStr.replace("<WindowsInstallerURL>", "")
+							tempStr = tempStr.replace("</WindowsInstallerURL>", "")
+							strWindowsInstallerURL = tempStr
+							log.debug("Windows Installer URL:$strWindowsInstallerURL")
+						}
 					}
 
-					pat = Pattern.compile("<Date>.*</Date>")
-					matcher = pat.matcher(it)
-					if(matcher.find()) {
-						var tempStr = matcher.group()
-						tempStr = tempStr.replace("<Date>", "")
-						tempStr = tempStr.replace("</Date>", "")
-						strReleaseDate = tempStr
-						log.debug("Release Date:$strReleaseDate")
-					}
-
-					pat = Pattern.compile("<DownloadURL>.*</DownloadURL>")
-					matcher = pat.matcher(it)
-					if(matcher.find()) {
-						var tempStr = matcher.group()
-						tempStr = tempStr.replace("<DownloadURL>", "")
-						tempStr = tempStr.replace("</DownloadURL>", "")
-						strDownloadURL = tempStr
-						log.debug("Download URL:$strDownloadURL")
-					}
-
-					pat = Pattern.compile("<WindowsInstallerURL>.*</WindowsInstallerURL>")
-					matcher = pat.matcher(it)
-					if(matcher.find()) {
-						var tempStr = matcher.group()
-						tempStr = tempStr.replace("<WindowsInstallerURL>", "")
-						tempStr = tempStr.replace("</WindowsInstallerURL>", "")
-						strWindowsInstallerURL = tempStr
-						log.debug("Windows Installer URL:$strWindowsInstallerURL")
-					}
 				}
-
-				httpIn.close()
 			} catch(e:Exception) {
 				log.error("Failed to get latest version data", e)
 				return false

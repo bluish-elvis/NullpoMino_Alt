@@ -264,6 +264,7 @@
  <entry key="GameTuning_MoveDiagonal_Label">Diagonal Move</entry>
  <entry key="GameTuning_BlockShowOutlineOnly_Label">Show Outline Only</entry>
  <entry key="GameTuning_Skin_Label">Block Skin</entry>
+ <entry key="GameTuning_Skin_Random">Random</entry>
  <entry key="GameTuning_Skin_Auto">Auto (Use rule setting)</entry>
  <entry key="GameTuning_OutlineType_Label">Outline Type</entry>
  <entry key="GameTuning_OutlineType_Auto">Auto (Depends to mode)</entry>
@@ -274,6 +275,7 @@
  <entry key="GameTuning_MinDAS_Label">Minimum DAS (-1:Auto)</entry>
  <entry key="GameTuning_MaxDAS_Label">Maximum DAS (-1:Auto)</entry>
  <entry key="GameTuning_DasDelay_Label">Move Delay (-1:Auto)</entry>
+ <entry key="GameTuning_SDSpd_Label">SoftDrop Speed</entry>
  <entry key="GameTuning_ReverseUpDown_Label">Reverse Up and Down button</entry>
 
  <!--Popup Menu-->

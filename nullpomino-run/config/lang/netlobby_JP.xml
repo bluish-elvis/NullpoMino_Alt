@@ -252,6 +252,7 @@
  <entry key="GameTuning_MoveDiagonal_Label">斜め移動</entry>
  <entry key="GameTuning_BlockShowOutlineOnly_Label">ブロック枠線だけ表示</entry>
  <entry key="GameTuning_Skin_Label">ブロックの絵柄</entry>
+ <entry key="GameTuning_Skin_Random">ランダム</entry>
  <entry key="GameTuning_Skin_Auto">自動 (ルールに従う)</entry>
  <entry key="GameTuning_OutlineType_Label">ブロック枠線</entry>
  <entry key="GameTuning_OutlineType_Auto">自動 (モードに従う)</entry>
@@ -262,6 +263,7 @@
  <entry key="GameTuning_MinDAS_Label">最低DAS (-1で自動)</entry>
  <entry key="GameTuning_MaxDAS_Label">最高DAS (-1で自動)</entry>
  <entry key="GameTuning_DasDelay_Label">横移動間隔 (-1で自動)</entry>
+ <entry key="GameTuning_SDSpd_Label">ソフトドロップの落下速度</entry>
  <entry key="GameTuning_ReverseUpDown_Label">上ボタンと下ボタンの役割を反転させる</entry>
 
  <!--Popup Menu-->

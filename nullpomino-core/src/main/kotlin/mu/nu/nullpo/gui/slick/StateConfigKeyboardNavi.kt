@@ -37,7 +37,7 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.StateBasedGame
 
 /** キーボード設定画面のステート */
-class StateConfigKeyboardNavi:BaseMenuChooseState() {
+internal class StateConfigKeyboardNavi:BaseMenuChooseState() {
 	/** Player number */
 	var player = 0
 
@@ -91,7 +91,7 @@ class StateConfigKeyboardNavi:BaseMenuChooseState() {
 			return true
 		}
 
-		GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig)
+		GameKey.gameKey[player].saveConfig(NullpoMinoSlick.propConfig.ctrl.keymaps[player])
 		NullpoMinoSlick.saveConfig()
 
 		gameObj.enterState(StateConfigMainMenu.ID)
