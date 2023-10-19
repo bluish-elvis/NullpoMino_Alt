@@ -28,33 +28,26 @@
  */
 package mu.nu.nullpo.game.component
 
-import java.io.Serializable
+import kotlinx.serialization.Serializable
 
 /** button input状態を管理するクラス */
-class Controller:Serializable {
+@Serializable
+data class Controller(
 	/** Buttonを押した状態ならtrue */
-	val buttonPress = MutableList(BUTTON_COUNT) {false}
-
+	private val buttonPress:MutableList<Boolean>,
 	/** Buttonを押しっぱなしにしている time */
-	val buttonTime = MutableList(BUTTON_COUNT) {0}
+	val buttonTime:MutableList<Int>
+) {
 
-	/** button input状態をビット flagで返す
-	 */
+	/** button input状態をビット flagで返す*/
 	val buttonBit:Int
 		get() = buttonPress.mapIndexed {i, b -> if(b) (1 shl i) else 0}.sum()
 
 	/** Constructor */
-	constructor() {
-		reset()
-	}
-
-	/** Copy constructor
-	 * @param c Copy source
-	 */
-	constructor(c:Controller) {
-		replace(c)
-	}
-
+	constructor():this(MutableList(BUTTON_COUNT) {false}, MutableList(BUTTON_COUNT) {0})
+	/** Copy constructor from [c] */
+	constructor(c:Controller):this(c.buttonPress, c.buttonTime)
+	constructor(bit:Int, time:MutableList<Int>):this((0..<BUTTON_COUNT).map {(bit and (1 shl it))>0}.toMutableList(), time)
 	/** 初期状態に戻す */
 	fun reset() {
 		clearButtonState()
@@ -103,26 +96,22 @@ class Controller:Serializable {
 	 * @param key Button number
 	 */
 	fun setButtonPressed(key:Int) {
-		if(key>=0&&key<buttonPress.size) buttonPress[key] = true
+		if(key in 0..<buttonPress.size) buttonPress[key] = true
 	}
 
 	/** buttonを押してない状態にする
 	 * @param key Button number
 	 */
 	fun setButtonUnpressed(key:Int) {
-		if(key>=0&&key<buttonPress.size) buttonPress[key] = false
+		if(key in 0..<buttonPress.size) buttonPress[key] = false
 	}
 
-	/** buttonを押した状態を設定
-	 * @param key Button number
-	 * @param pressed When true,押した, falseなら押してない
-	 */
 	fun setButtonState(key:Int, pressed:Boolean) {
-		if(key>=0&&key<buttonPress.size) buttonPress[key] = pressed
+		if(key in 0..<buttonPress.size) buttonPress[key] = pressed
 	}
 
 	fun setButtonBit(input:Int) {
-		buttonPress.forEachIndexed {i, _ -> setButtonState(i, input and (1 shl i)>0)}
+		buttonPress.forEachIndexed {i, _ -> buttonPress[i] = input and (1 shl i)>0}
 	}
 
 	/** button input timeを更新 */

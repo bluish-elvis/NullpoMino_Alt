@@ -40,7 +40,6 @@ import mu.nu.nullpo.gui.common.ConfigGlobal.TuneConf
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNano
 import mu.nu.nullpo.gui.slick.img.FontNormal
-import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.getOX
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
@@ -49,6 +48,8 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.SlickException
 import org.newdawn.slick.state.StateBasedGame
 import kotlin.random.Random
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propGlobal as pGl
+import mu.nu.nullpo.util.GeneralUtil as Util
 
 /** Game Tuning menu state */
 internal class StateConfigGameTuning:BaseMenuConfigState() {
@@ -87,7 +88,7 @@ internal class StateConfigGameTuning:BaseMenuConfigState() {
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		super.enter(container, game)
 		isPreview = false
-		conf = NullpoMinoSlick.propGlobal.tuning[player]
+		conf = pGl.tuning[player]
 	}
 
 	/* Called when leaving the state */
@@ -119,10 +120,10 @@ internal class StateConfigGameTuning:BaseMenuConfigState() {
 				e.splitB2B = true
 				e.lives = 99
 				// Rule
-				val ruleName = NullpoMinoSlick.propGlobal.rule[i][it.mode!!.gameStyle.ordinal].path
+				val ruleName = pGl.rule[i][it.mode!!.gameStyle.ordinal].path
 				val ruleOpt:RuleOptions = if(ruleName.isNotEmpty()) {
 					log.info("Load rule options from $ruleName")
-					GeneralUtil.loadRule(ruleName)
+					Util.loadRule(ruleName)
 				} else {
 					RuleOptions()
 				}
@@ -130,16 +131,16 @@ internal class StateConfigGameTuning:BaseMenuConfigState() {
 
 				// Randomizer
 				if(ruleOpt.strRandomizer.isNotEmpty())
-					e.randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
+					e.randomizer = Util.loadRandomizer(ruleOpt.strRandomizer)
 
 				// Wallkick
 				if(ruleOpt.strWallkick.isNotEmpty())
-					e.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
+					e.wallkick = Util.loadWallkick(ruleOpt.strWallkick)
 
 				// AI
-				NullpoMinoSlick.propGlobal.ai.getOrElse(i) {AIConf()}.let {ai ->
+				pGl.ai.getOrElse(i) {AIConf()}.let {ai ->
 					if(ai.name.isNotEmpty()) {
-						e.ai = GeneralUtil.loadAIPlayer(ai.name)
+						e.ai = Util.loadAIPlayer(ai.name)
 						e.aiConf = ai
 					}
 				}
@@ -285,8 +286,8 @@ internal class StateConfigGameTuning:BaseMenuConfigState() {
 		}
 		ResourceHolder.soundManager.play("decide2")
 		// Save
-		if(player !in NullpoMinoSlick.propGlobal.tuning.indices) NullpoMinoSlick.propGlobal.tuning.add(player, conf)
-		else NullpoMinoSlick.propGlobal.tuning[player] = conf
+		if(player !in pGl.tuning.indices) pGl.tuning.add(player, conf)
+		else pGl.tuning[player] = conf
 		NullpoMinoSlick.saveConfig()
 		game.enterState(StateConfigMainMenu.ID)
 		return true
@@ -294,7 +295,7 @@ internal class StateConfigGameTuning:BaseMenuConfigState() {
 
 	override fun onCancel(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("cancel")
-		conf = NullpoMinoSlick.propGlobal.tuning[player]
+		conf = pGl.tuning[player]
 		game.enterState(StateConfigMainMenu.ID)
 		return true
 	}

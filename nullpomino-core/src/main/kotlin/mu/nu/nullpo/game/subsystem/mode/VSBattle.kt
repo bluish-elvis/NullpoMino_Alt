@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -826,7 +827,6 @@ class VSBattle:AbstractMode() {
 			/** All garbages will put-out on Once placing**/
 			OnceAll;
 		}
-
 		/** Each player's garbage block cint */
 		private val PLAYER_COLOR_BLOCK = listOf(Block.COLOR.RED, Block.COLOR.BLUE)
 
@@ -835,8 +835,5 @@ class VSBattle:AbstractMode() {
 
 		/** Current version */
 		private const val CURRENT_VERSION = 5
-
-		/** Number of players */
-		private const val MAX_PLAYERS = 2
 	}
 }

@@ -64,6 +64,7 @@ import java.util.Calendar
 import java.util.Locale
 import kotlin.math.absoluteValue
 import kotlin.random.Random
+import mu.nu.nullpo.game.event.EventReceiver.Companion as ReceiverC
 
 /** Each player's Game processing*/
 class GameEngine(
@@ -440,7 +441,7 @@ class GameEngine(
 	var displaySize = 0
 
 	/** @return Width&Height of block image*/
-	val blockSize get() = EventReceiver.getBlockSize(displaySize)
+	val blockSize get() = ReceiverC.getBlockSize(displaySize)
 
 	/** Sound effects enable flag */
 	var enableSE = false
@@ -1887,8 +1888,7 @@ class GameEngine(
 					spin = initialSpinDirection
 					initialSpinLastDirection = initialSpinDirection
 					initialSpinContinuousUse = true
-					if(nowPieceSpinFailCount>0)
-						nowPieceSpinFailCount--
+					if(nowPieceSpinFailCount>0) nowPieceSpinFailCount--
 					else playSE("initialrotate")
 				} else if(statc[0]>0||ruleOpt.moveFirstFrame) {
 					if(itemRollRollEnable&&replayTimer%itemRollRollInterval==0) spin = 1 // Roll Roll
@@ -1911,113 +1911,112 @@ class GameEngine(
 				if(!ruleOpt.spinDoubleKey&&spin==2) spin = -1
 				if(!ruleOpt.spinReverseKey&&spin==1) spin = -1
 				if(spinDirection&&spin!=2) spin *= -1
-				it.also {piece ->
-					if(spin!=0&&!spun) {
-						// Direction after rotationを決める
-						var rt = getSpinDirection(spin)
 
-						// rotationできるか判定
-						if(!piece.checkCollision(nowPieceX, nowPieceY, rt, field)) {
-							// Wallkickなしでrotationできるとき
-							spun = true
-							kicked = false
-							piece.direction = rt
-							piece.updateConnectData()
-						} else if(ruleOpt.spinWallkick&&wallkick!=null&&(initialSpinDirection==0||ruleOpt.spinInitialWallkick)
-							&&(ruleOpt.lockResetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NO_KICK||!isSpinCountExceed)
-						) {
-							// Wallkickを試みる
-							val allowUpward = ruleOpt.spinWallkickMaxRise<0||nowWallkickRiseCount<ruleOpt.spinWallkickMaxRise
+				if(spin!=0&&!spun) {
+					// Direction after rotationを決める
+					var rt = getSpinDirection(spin)
 
-							wallkick?.executeWallkick(nowPieceX, nowPieceY, spin, piece.direction, rt, allowUpward, piece, field, ctrl)
-								?.let {kick ->
-									spun = true
-									kicked = true
-									playSE("wallkick")
-									nowWallkickCount++
-									if(kick.isUpward) nowWallkickRiseCount++
-									piece.direction = kick.direction
-									piece.updateConnectData()
-									nowPieceX += kick.offsetX
-									nowPieceY += kick.offsetY
+					// rotationできるか判定
+					if(!it.checkCollision(nowPieceX, nowPieceY, rt, field)) {
+						// Wallkickなしでrotationできるとき
+						spun = true
+						kicked = false
+						it.direction = rt
+						it.updateConnectData()
+					} else if(ruleOpt.spinWallkick&&wallkick!=null&&(initialSpinDirection==0||ruleOpt.spinInitialWallkick)
+						&&(ruleOpt.lockResetLimitOver!=RuleOptions.LOCKRESET_LIMIT_OVER_NO_KICK||!isSpinCountExceed)
+					) {
+						// Wallkickを試みる
+						val allowUpward = ruleOpt.spinWallkickMaxRise<0||nowWallkickRiseCount<ruleOpt.spinWallkickMaxRise
 
-									if(ruleOpt.lockResetWallkick&&!isSpinCountExceed) {
-										lockDelayNow = 0
-										piece.setDarkness(0f)
-									}
+						wallkick?.executeWallkick(nowPieceX, nowPieceY, spin, it.direction, rt, allowUpward, it, field, ctrl)
+							?.let {kick ->
+								spun = true
+								kicked = true
+								playSE("wallkick")
+								nowWallkickCount++
+								if(kick.isUpward) nowWallkickRiseCount++
+								it.direction = kick.direction
+								it.updateConnectData()
+								nowPieceX += kick.offsetX
+								nowPieceY += kick.offsetY
+
+								if(ruleOpt.lockResetWallkick&&!isSpinCountExceed) {
+									lockDelayNow = 0
+									it.setDarkness(0f)
 								}
-						} else if(dominoQuickTurn&&piece.type==Piece.Shape.I2&&nowPieceSpinFailCount>=1) {
-							// Domino Quick Turn
-							rt = getSpinDirection(2)
-							spun = true
-							piece.direction = rt
-							piece.updateConnectData()
-							nowPieceSpinFailCount = 0
+							}
+					} else if(dominoQuickTurn&&it.type==Piece.Shape.I2&&nowPieceSpinFailCount>=1) {
+						// Domino Quick Turn
+						rt = getSpinDirection(2)
+						spun = true
+						it.direction = rt
+						it.updateConnectData()
+						nowPieceSpinFailCount = 0
 
-							if(piece.checkCollision(nowPieceX, nowPieceY, rt, field)) nowPieceY--
-							else if(onGroundBeforeSpin) nowPieceY++
+						if(it.checkCollision(nowPieceX, nowPieceY, rt, field)) nowPieceY--
+						else if(onGroundBeforeSpin) nowPieceY++
+					}
+
+					if(spun) {
+						// rotation成功
+						nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
+
+						if(ruleOpt.lockResetSpin&&!isSpinCountExceed) {
+							lockDelayNow = 0
+							it.setDarkness(0f)
 						}
 
-						if(spun) {
-							// rotation成功
-							nowPieceBottomY = piece.getBottom(nowPieceX, nowPieceY, field)
+						lastMove = if(onGroundBeforeSpin) {
+							extendedSpinCount++
+							LastMove.SPIN_GROUND
+						} else LastMove.SPIN_AIR
 
-							if(ruleOpt.lockResetSpin&&!isSpinCountExceed) {
-								lockDelayNow = 0
-								piece.setDarkness(0f)
-							}
+						playSE("rotate")
+						val twisting = checkTwisted(nowPieceX, nowPieceY, it, field)
+						if(twisting!=null) playSE("twist")
+						nowPieceSpinCount += spin.absoluteValue
+						if(nowPieceObject?.type!=Piece.Shape.O) nowPieceSteps += spin.absoluteValue
+						if(ending==0||staffrollEnableStatistics) statistics.totalPieceSpin += spin.absoluteValue
+					} else if(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_C)||
+						ctrl.isPush(Controller.BUTTON_B)||ctrl.isPush(Controller.BUTTON_E)) {
+						// rotation失敗
+						playSE("rotfail")
+						nowPieceSpinFailCount++
+						if(ruleOpt.spinHoldBuffer) initialSpin()
+					}
+				}
 
-							lastMove = if(onGroundBeforeSpin) {
-								extendedSpinCount++
-								LastMove.SPIN_GROUND
-							} else LastMove.SPIN_AIR
+				initialSpinDirection = 0
 
-							playSE("rotate")
-							val twisting = checkTwisted(nowPieceX, nowPieceY, piece, field)
-							if(twisting!=null) playSE("twist")
-							nowPieceSpinCount += spin.absoluteValue
-							if(nowPieceObject?.type!=Piece.Shape.O) nowPieceSteps += spin.absoluteValue
-							if(ending==0||staffrollEnableStatistics) statistics.totalPieceSpin += spin.absoluteValue
-						} else if(ctrl.isPush(Controller.BUTTON_A)||ctrl.isPush(Controller.BUTTON_C)||
-							ctrl.isPush(Controller.BUTTON_B)||ctrl.isPush(Controller.BUTTON_E)) {
-							// rotation失敗
-							playSE("rotfail")
-							nowPieceSpinFailCount++
-							if(ruleOpt.spinHoldBuffer) initialSpin()
+				// game over check
+				if(statc[0]==0&&it.checkCollision(nowPieceX, nowPieceY, field)) {
+					val mass = if(it.big) 2 else 1
+					while(nowPieceX+it.maximumBlockX*mass>field.width) nowPieceX--
+					while(nowPieceX-it.minimumBlockX*mass<0) nowPieceX++
+					while((nowPieceBottomY-it.height)<-field.hiddenHeight) {
+						nowPieceY++
+						nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
+					}
+					// Blockの出現位置を上にずらせる場合はそうする
+					for(i in 0..<ruleOpt.pieceEnterMaxDistanceY) {
+						nowPieceY--
+
+						if(!it.checkCollision(nowPieceX, nowPieceY, field)) {
+							nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
+							break
 						}
 					}
 
-					initialSpinDirection = 0
-
-					// game over check
-					if(statc[0]==0&&piece.checkCollision(nowPieceX, nowPieceY, field)) {
-						val mass = if(piece.big) 2 else 1
-						while(nowPieceX+piece.maximumBlockX*mass>field.width) nowPieceX--
-						while(nowPieceX-piece.minimumBlockX*mass<0) nowPieceX++
-						while((nowPieceBottomY-piece.height)<-field.hiddenHeight) {
-							nowPieceY++
-							nowPieceBottomY = piece.getBottom(nowPieceX, nowPieceY, field)
-						}
-						// Blockの出現位置を上にずらせる場合はそうする
-						for(i in 0..<ruleOpt.pieceEnterMaxDistanceY) {
-							nowPieceY--
-
-							if(!piece.checkCollision(nowPieceX, nowPieceY, field)) {
-								nowPieceBottomY = piece.getBottom(nowPieceX, nowPieceY, field)
-								break
-							}
-						}
-
-						// 死亡
-						if(piece.checkCollision(nowPieceX, nowPieceY, field)) {
-							piece.placeToField(nowPieceX, nowPieceY, field)
-							nowPieceObject = null
-							stat = Status.GAMEOVER
-							stopSE("danger")
-							if(ending==2&&staffrollNoDeath) stat = Status.NOTHING
-							resetStatc()
-							return@statMove
-						}
+					// 死亡
+					if(it.checkCollision(nowPieceX, nowPieceY, field)) {
+						it.placeToField(nowPieceX, nowPieceY, field)
+						nowPieceObject = null
+						stat = Status.GAMEOVER
+						stopSE("danger")
+						if(ending==2&&staffrollNoDeath) stat = Status.NOTHING
+						resetStatc()
+						return@statMove
 					}
 				}
 			}
@@ -2048,46 +2047,45 @@ class GameEngine(
 						if(shiftLock==0)
 							if(dasSpeedCount>=dasDelay||dasCount==0) {
 								if(dasCount>0) dasSpeedCount = 1
-								it.also {
-									if(!it.checkCollision(nowPieceX+move, nowPieceY, field)) {
-										nowPieceX += move
+								if(!it.checkCollision(nowPieceX+move, nowPieceY, field)) {
+									nowPieceX += move
 
-										if(dasDelay==0&&dasCount>0&&
-											!it.checkCollision(nowPieceX+move, nowPieceY, field)
-										) {
-											if(!dasInstant) playSE("move")
-											dasRepeat = true
-											dasInstant = true
-										}
-
-										//log.debug("Successful movement: move="+move);
-
-										if(ruleOpt.lockResetMove&&!isMoveCountExceed) {
-											lockDelayNow = 0
-											it.setDarkness(0f)
-										}
-
-										nowPieceMoveCount++
-										if(ending==0||staffrollEnableStatistics) statistics.totalPieceMove++
-										if(dasCount==0||statc[0]==(!ruleOpt.moveFirstFrame).toInt()) nowPieceSteps++
-										nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
-
-										lastMove = if(onGroundBeforeMove) {
-											extendedMoveCount++
-											LastMove.SLIDE_GROUND
-										} else LastMove.SLIDE_AIR
+									if(dasDelay==0&&dasCount>0&&
+										!it.checkCollision(nowPieceX+move, nowPieceY, field)
+									) {
 										if(!dasInstant) playSE("move")
-									} else {
-										if(!dasWall) {
-											playSE("movefail")
-											dasWall = true
-										}
-										if(ruleOpt.dasChargeOnBlockedMove) {
-											dasCount = das
-											dasSpeedCount = dasDelay
-										}
+										dasRepeat = true
+										dasInstant = true
+									}
+
+									//log.debug("Successful movement: move="+move);
+
+									if(ruleOpt.lockResetMove&&!isMoveCountExceed) {
+										lockDelayNow = 0
+										it.setDarkness(0f)
+									}
+
+									nowPieceMoveCount++
+									if(ending==0||staffrollEnableStatistics) statistics.totalPieceMove++
+									if(dasCount==0||statc[0]==(!ruleOpt.moveFirstFrame).toInt()) nowPieceSteps++
+									nowPieceBottomY = it.getBottom(nowPieceX, nowPieceY, field)
+
+									lastMove = if(onGroundBeforeMove) {
+										extendedMoveCount++
+										LastMove.SLIDE_GROUND
+									} else LastMove.SLIDE_AIR
+									if(!dasInstant) playSE("move")
+								} else {
+									if(!dasWall) {
+										playSE("movefail")
+										dasWall = true
+									}
+									if(ruleOpt.dasChargeOnBlockedMove) {
+										dasCount = das
+										dasSpeedCount = dasDelay
 									}
 								}
+
 							} else dasSpeedCount++
 					}
 
@@ -2280,7 +2278,7 @@ class GameEngine(
 
 						owner.mode?.calcScore(this, ev)?.let {sc ->
 							if(sc>0)
-								owner.receiver.addScore(this, nowPieceX, nowPieceBottomY, sc, EventReceiver.getPlayerColor(playerID))
+								owner.receiver.addScore(this, nowPieceX, nowPieceBottomY, sc, ReceiverC.getPlayerColor(playerID))
 						}
 					}
 

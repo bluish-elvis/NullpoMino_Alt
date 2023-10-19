@@ -45,6 +45,7 @@ import java.io.FileReader
 import java.io.IOException
 import java.util.Locale
 import java.util.zip.GZIPInputStream
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propGlobal as pG
 
 /** Rule select (after mode selection) */
 internal class StateSelectRuleFromList:BaseMenuScrollState() {
@@ -115,12 +116,12 @@ internal class StateSelectRuleFromList:BaseMenuScrollState() {
 
 	/** Prepare rule list */
 	private fun prepareRuleList() {
-		if(strCurrentMode.isEmpty()) strCurrentMode = NullpoMinoSlick.propGlobal.lastMode[""]?:""
+		if(strCurrentMode.isEmpty()) strCurrentMode = pG.lastMode[""]?:""
 
-		val curRule = NullpoMinoSlick.propGlobal.rule[0][0].path
+		val curRule = pG.rule[0][0].path
 		list = currentRuleList.map {it.name}.let {if(curRule.isNotEmpty()) it+STR_FB else it}
 
-		val strLastRule = NullpoMinoSlick.propGlobal.lastRule[strCurrentMode.lowercase(Locale.getDefault())]
+		val strLastRule = pG.lastRule[strCurrentMode.lowercase(Locale.getDefault())]
 		val defaultCursor = list.indexOfFirst {it==strLastRule}
 		cursor = if(defaultCursor<0) list.size-1 else defaultCursor
 		emitGrid(cursor+minChoiceY)
@@ -141,7 +142,7 @@ internal class StateSelectRuleFromList:BaseMenuScrollState() {
 	/* Decide */
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		ResourceHolder.soundManager.play("decide0")
-		NullpoMinoSlick.propGlobal.lastRule[strCurrentMode.lowercase(Locale.getDefault())] =
+		pG.lastRule[strCurrentMode.lowercase(Locale.getDefault())] =
 			if(list[cursor]==STR_FB) list[cursor] else ""
 		NullpoMinoSlick.saveConfig()
 

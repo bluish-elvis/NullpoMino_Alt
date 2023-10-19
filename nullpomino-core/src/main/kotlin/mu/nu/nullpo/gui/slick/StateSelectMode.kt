@@ -42,6 +42,7 @@ import org.newdawn.slick.state.GameState
 import org.newdawn.slick.state.StateBasedGame
 import org.newdawn.slick.state.transition.EmptyTransition
 import org.newdawn.slick.state.transition.HorizontalSplitTransition
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propGlobal as pG
 
 /** Mode select screen */
 internal class StateSelectMode:BaseMenuScrollState() {
@@ -86,9 +87,9 @@ internal class StateSelectMode:BaseMenuScrollState() {
 
 		cursor = getIDbyName(
 			when {
-				isTopLevel -> NullpoMinoSlick.propGlobal.lastMode["_top"]
-				strCurrentFolder.isNotEmpty() -> NullpoMinoSlick.propGlobal.lastMode[strCurrentFolder]
-				else -> NullpoMinoSlick.propGlobal.lastMode[""]
+				isTopLevel -> pG.lastMode["_top"]
+				strCurrentFolder.isNotEmpty() -> pG.lastMode[strCurrentFolder]
+				else -> pG.lastMode[""]
 			}
 		)
 		if(cursor<0) cursor = 0
@@ -145,14 +146,14 @@ internal class StateSelectMode:BaseMenuScrollState() {
 	override fun onDecide(container:GameContainer, game:StateBasedGame, delta:Int):Boolean {
 		if(isTopLevel&&cursor==list.lastIndex) {
 			// More...
-			NullpoMinoSlick.propGlobal.lastMode["_top"] = list[cursor]
+			pG.lastMode["_top"] = list[cursor]
 			ResourceHolder.soundManager.play("decide1")
 			game.enterState(StateSelectModeFolder.ID)
 		} else {
-			NullpoMinoSlick.propGlobal.lastMode[if(isTopLevel) "_top" else strCurrentFolder.ifEmpty {"_all"}] = list[cursor]
+			pG.lastMode[if(isTopLevel) "_top" else strCurrentFolder.ifEmpty {"_all"}] = list[cursor]
 			ResourceHolder.soundManager.play("decide2")
 
-			NullpoMinoSlick.propGlobal.lastMode[""] = list[cursor]
+			pG.lastMode[""] = list[cursor]
 			//NullpoMinoSlick.saveConfig();
 			// Go to rule selector
 			game.enterState(

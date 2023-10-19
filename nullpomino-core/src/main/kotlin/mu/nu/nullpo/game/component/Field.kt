@@ -39,7 +39,7 @@ import kotlin.math.abs
 import kotlin.math.roundToLong
 import kotlin.random.Random
 
-/** Gamefield */
+/** Game Field */
 @kotlinx.serialization.Serializable class Field {
 	/** パラメータ付きConstructor
 	 * @param w fieldの幅

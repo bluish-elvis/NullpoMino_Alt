@@ -29,6 +29,7 @@
 
 package edu.cuhk.cse.fyp.tetrisai.lspi
 
+import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
@@ -37,10 +38,9 @@ import mu.nu.nullpo.game.subsystem.ai.DummyAI
 import mu.nu.nullpo.game.subsystem.mode.GameMode
 import mu.nu.nullpo.game.subsystem.mode.VSBattle
 import mu.nu.nullpo.gui.slick.SlickLog4j
-import mu.nu.nullpo.util.GeneralUtil
-import mu.nu.nullpo.util.GeneralUtil.loadRule
 import org.apache.log4j.Logger
 import org.apache.log4j.PropertyConfigurator
+import mu.nu.nullpo.util.GeneralUtil as Util
 
 /**
  * Make a new Simulator object, ready to go.
@@ -51,9 +51,9 @@ import org.apache.log4j.PropertyConfigurator
 class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	// NOTE(oliver): For other GameModes, look inside src/mu/nu/nullpo/game/subsystem/mode
 
-	private val gameManager:GameManager = GameManager(mode = mode)
-	private val gameEngine get() = gameManager.engine
-	private val receiver get() = gameManager.receiver
+	private val manager:GameManager = GameManager(mode = mode)
+	private val engine get() = manager.engine
+	private val receiver get() = manager.receiver
 	private var customSeed:String? = null
 
 	init {
@@ -64,13 +64,13 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		// UI
 //		receiver = new RendererSlick();
 		// Manager setup
-		gameManager.showInput = false
-		gameManager.engine.forEachIndexed {i, it ->
+		manager.showInput = false
+		manager.engine.forEachIndexed {i, it ->
 			// Engine setup
 			it.apply {
 				ruleOpt = rules
-				randomizer = GeneralUtil.loadRandomizer(rules.strRandomizer)
-				wallkick = GeneralUtil.loadWallkick(rules.strWallkick)
+				randomizer = Util.loadRandomizer(rules.strRandomizer)
+				wallkick = Util.loadWallkick(rules.strWallkick)
 				this.ai = if(i==0) ai else ai2
 				aiMoveDelay = 0
 				aiThinkDelay = 0
@@ -128,7 +128,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 		return -1
 	}
 	/** Get the current in-game level. */
-	fun getLevel():Int = gameEngine[0].statistics.level
+	fun getLevel():Int = engine[0].statistics.level
 
 	/**
 	 * Make a new Simulator object, ready to go.
@@ -137,7 +137,7 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 * @param rulePath path string to the rules file
 	 * @param ai AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
 	 */
-	constructor(mode:GameMode, rulePath:String, ai:DummyAI):this(mode, loadRule(rulePath), ai, ai)
+	constructor(mode:GameMode, rulePath:String, ai:DummyAI):this(mode, Util.loadRule(rulePath), ai, ai)
 
 	/**
 	 * Make a new Simulator object, ready to go.
@@ -146,12 +146,12 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 * @param rulePath path string to the rules file
 	 * @param ai,ai2 AI object to play (MAKE SURE IT SUPPORTS UNTHREADED !!! )
 	 */
-	constructor(mode:GameMode, rulePath:String, ai:DummyAI, ai2:DummyAI):this(mode, loadRule(rulePath), ai, ai2)
+	constructor(mode:GameMode, rulePath:String, ai:DummyAI, ai2:DummyAI):this(mode, Util.loadRule(rulePath), ai, ai2)
 	/**
 	 * Performs a single simulation to completion (STATE == GAMEOVER)
 	 */
-	fun runSimulation() {
-		gameEngine.forEach {
+	private fun runSimulation() {
+		engine.forEach {
 			// Start a new game.
 			it.init()
 
@@ -164,21 +164,21 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 			for(i in 0..9) it.init()
 
 			// Press and release A to start game.
-			it.ctrl.setButtonPressed(mu.nu.nullpo.game.component.Controller.BUTTON_A)
+			it.ctrl.setButtonPressed(Controller.BUTTON_A)
 			for(j in 0..9) it.update()
 
-			it.ctrl.setButtonUnpressed(mu.nu.nullpo.game.component.Controller.BUTTON_A)
+			it.ctrl.setButtonUnpressed(Controller.BUTTON_A)
 			while(it.stat!==GameEngine.Status.MOVE) it.update()
 		}
 
 		// Run the game until Game Over.
-		while(gameEngine.all {it.stat!==GameEngine.Status.GAMEOVER}) {
+		while(engine.all {it.stat!==GameEngine.Status.GAMEOVER}) {
 			for(i in 0..1) {
-				val cur = gameEngine[i].nowPieceObject
+				val cur = engine[i].nowPieceObject
 				do {
-					gameEngine[i].update()
-					if(gameEngine.any {it.stat===GameEngine.Status.GAMEOVER}) break
-				} while(cur==gameEngine[i].nowPieceObject)
+					engine[i].update()
+					if(engine.any {it.stat===GameEngine.Status.GAMEOVER}) break
+				} while(cur==engine[i].nowPieceObject)
 				val a = 1
 			}
 			//			logGameState();
@@ -206,29 +206,29 @@ class Battler(mode:GameMode, rules:RuleOptions, ai:DummyAI, ai2:DummyAI) {
 	 * @param esp The number of simulations.
 	 */
 	fun runStatisticsSimulations(esp:Int, step:Int) {
-		val totalLines = IntArray(gameEngine.size)
+		val totalLines = IntArray(engine.size)
 		for(i in totalLines.indices) totalLines[i] = 0
 		val count = esp*step
-		val winnerCount = IntArray(gameEngine.size)
+		val winnerCount = IntArray(engine.size)
 		for(i in winnerCount.indices) winnerCount[i] = 0
 		for(i in 0..<count) {
 			log.info("-------- Simulation %d of %d --------".format(i+1, count))
 			runSimulation()
 			//if (getGM3Grade() == 32) gm++
-			val winner:Int = gameEngine.indexOfFirst {it.stat!==GameEngine.Status.GAMEOVER}
+			val winner:Int = engine.indexOfFirst {it.stat!==GameEngine.Status.GAMEOVER}
 			if(winner>=0) winnerCount[winner]++
 			log.info("Winner:\t$winner")
-			for(j in winnerCount.indices) log.info("win count $j:\t${winnerCount[j]}")
-			for(j in winnerCount.indices) log.info("win count rate $j:\t${winnerCount[j].toDouble()/(i+1)}")
-			for(j in gameEngine.indices) {
+			for(j in winnerCount.indices) log.info("win count $j:\t"+winnerCount[j])
+			for(j in winnerCount.indices) log.info("win count rate $j:\t"+winnerCount[j].toDouble()/(i+1))
+			for(j in engine.indices) {
 				//int thisLines = getLineCleared(gameEngine[j]);
 				log.info("Player $j")
-				val thisLines:Int = (gameManager.mode as VSBattle).garbageSent[j]
+				val thisLines:Int = (manager.mode as VSBattle).garbageSent[j]
 				totalLines[j] += thisLines
 				log.info("Line cleared:\t$thisLines")
 				log.info("-------- stat till now --------")
 				log.info("Total line cleared:\t"+totalLines[j])
-				log.info("Line per game:\t"+(totalLines[j].toDouble()/(i+1)).toString())
+				log.info("Line per game:\t"+totalLines[j].toDouble()/(i+1))
 			}
 			/*			if (i % step == 0) {
 //				PyAI pyai = (PyAI) gameEngine.ai;

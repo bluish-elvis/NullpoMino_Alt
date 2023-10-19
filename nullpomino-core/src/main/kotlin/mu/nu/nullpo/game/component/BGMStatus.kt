@@ -33,7 +33,8 @@ import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.primaryConstructor
 
 /** 音楽の再生状況を管理するクラス */
-class BGMStatus:Serializable {
+//@kotlinx.serialization.Serializable
+class BGMStatus {
 	/** Current BGM */
 	var bgm:BGM = BGM.Silent
 	var track = 0

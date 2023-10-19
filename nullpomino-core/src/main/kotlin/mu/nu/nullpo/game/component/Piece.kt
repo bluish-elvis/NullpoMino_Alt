@@ -28,17 +28,20 @@
  */
 package mu.nu.nullpo.game.component
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import mu.nu.nullpo.game.component.Piece.Companion.DIRECTION_COUNT
-import java.io.Serializable
 import kotlin.math.roundToInt
 
 /** Blockピース
  * @param id BlockピースのID */
-class Piece(id:Int = 0):Serializable {
+@Serializable
+class Piece(@SerialName("id") private var shape:Int = 0) {
 	/** ID */
-	var id:Int = id
+	var id:Int
+		get() = shape
 		set(value) {
-			field = value
+			shape = value
 			direction = DIRECTION_UP
 			big = false
 			offsetApplied = false
@@ -53,7 +56,7 @@ class Piece(id:Int = 0):Serializable {
 	var direction = DIRECTION_UP
 
 	/** BigBlock */
-	@JvmField var big = false
+	var big = false
 
 	/** Connect blocks in this piece? */
 	var connectBlocks = true
@@ -94,9 +97,9 @@ class Piece(id:Int = 0):Serializable {
 	/** ゲームが始まってから何番目に置かれるBlockか (負countだったら初期配置やgarbage block) */
 	var placeNum = -1
 		set(value) {
-		block.forEach {it.placeNum = value}
-		field = value
-	}
+			block.forEach {it.placeNum = value}
+			field = value
+		}
 
 	/** @return ピース回転軸のX-coordinate */
 	val spinCX get() = dataX.flatten().let {(it.maxOrNull() ?: 0)-(it.minOrNull() ?: 0)}/2f
@@ -243,7 +246,7 @@ class Piece(id:Int = 0):Serializable {
 		for(i in 0..<DIRECTION_COUNT) {
 			for(j in 0..<maxBlock)
 				dataX[i][j] += offsetX[i]
-			dataOffsetX[i] = offsetX[i]
+			dataOffsetX[i] += offsetX[i]
 		}
 	}
 
@@ -256,7 +259,7 @@ class Piece(id:Int = 0):Serializable {
 		for(i in 0..<DIRECTION_COUNT) {
 			for(j in 0..<maxBlock)
 				dataY[i][j] += offsetY[i]
-			dataOffsetY[i] = offsetY[i]
+			dataOffsetY[i] += offsetY[i]
 		}
 	}
 
@@ -306,55 +309,17 @@ class Piece(id:Int = 0):Serializable {
 	 * @param rt Direction
 	 * @return 1つ以上Blockがfield枠外に置かれるならtrue, そうでないならfalse
 	 */
-	fun isPartialLockOut(x:Int, y:Int, rt:Int = direction):Boolean {
-		var placed = false
+	fun isPartialLockOut(x:Int, y:Int, rt:Int = direction):Boolean =
 		// Bigでは専用処理
-		if(big) for(i in 0..<maxBlock) {
-			val y2 = y+dataY[rt][i]*2
-
-			// 4Block分置く
-			for(k in 0..1)
-				for(l in 0..1) {
-					val y3 = y2+l
-					if(y3<0) placed = true
-				}
-		} else for(i in 0..<maxBlock) {
-			val y2 = y+dataY[rt][i]
-			if(y2<0) placed = true
-		}
-		return placed
-	}
+		(0..<maxBlock).any {i -> (y+dataY[rt][i]*if(big) 2 else 1)<0}
 	/** 1つ以上Blockをfield枠内に置けるかどうか判定(fieldに変更は加えません)
 	 * @param x X-coordinate
 	 * @param y Y-coordinate
 	 * @param rt Direction
 	 * @return 1つ以上Blockをfield枠内に置けるならtrue, そうでないならfalse
 	 */
-	fun canPlaceToVisibleField(x:Int, y:Int, rt:Int = direction):Boolean {
-		var placed = false
-		// Bigでは専用処理
-		if(big) {
-			for(i in 0..<maxBlock) {
-				val y2 = y+dataY[rt][i]*2
-
-				// 4Block分置く
-				for(k in 0..1)
-					for(l in 0..1) {
-						val y3 = y2+l
-						if(y3>=0) placed = true
-					}
-			}
-
-			return placed
-		}
-
-		for(i in 0..<maxBlock) {
-			val y2 = y+dataY[rt][i]
-			if(y2>=0) placed = true
-		}
-
-		return placed
-	}
+	fun canPlaceToVisibleField(x:Int, y:Int, rt:Int = direction):Boolean =
+		(0..<maxBlock).any {i -> (y+dataY[rt][i].let {if(big) it*2+1 else it})>=0}
 
 	/** fieldにピースを置く
 	 * @param x X-coordinate
@@ -452,8 +417,8 @@ class Piece(id:Int = 0):Serializable {
 						}
 					}
 
-					fld?.setBlock(x3, y3, blk)
-					if(y3>=0) placed = true
+					val res = fld?.setBlock(x3, y3, blk)==true
+					if(y3>=0&&res) placed = true
 				}
 		}
 
@@ -483,23 +448,17 @@ class Piece(id:Int = 0):Serializable {
 	 * @param fld field
 	 * @return Blockに重なっていたらtrue, 重なっていないならfalse
 	 */
-	fun checkCollision(x:Int, y:Int, rt:Int = direction, fld:Field?):Boolean {
+	fun checkCollision(x:Int, y:Int, rt:Int = direction, fld:Field?):Boolean =
 		fld?.let {
 			// Bigでは専用処理
-			if(big) return@checkCollision checkCollisionBig(x, y, rt, it)
-
-			for(i in 0..<maxBlock) {
+			if(big) checkCollisionBig(x, y, rt, it)
+			else (0..<maxBlock).any {i ->
 				val x2 = x+dataX[rt][i]
 				val y2 = y+dataY[rt][i]
-
-				if((x2>=it.width||y2>=it.height||it.getCoordAttribute(x2, y2)==Field.COORD_WALL)
+				(x2>=it.width||y2>=it.height||it.getCoordAttribute(x2, y2)==Field.COORD_WALL)
 					||(it.getCoordAttribute(x2, y2)!=Field.COORD_VANISH&&!it.getBlockEmpty(x2, y2))
-				)
-					return@checkCollision true
 			}
-		}
-		return false
-	}
+		} ?: false
 
 	/** ピースの当たり判定 (Big用）
 	 * @param x X-coordinate
@@ -509,24 +468,18 @@ class Piece(id:Int = 0):Serializable {
 	 * @return Blockに重なっていたらtrue, 重なっていないならfalse
 	 */
 	private fun checkCollisionBig(x:Int, y:Int, rt:Int, fld:Field):Boolean {
-		for(i in 0..<maxBlock) {
+		return (0..<maxBlock).any {i ->
 			val x2 = x+dataX[rt][i]*2
 			val y2 = y+dataY[rt][i]*2
 
 			// 4Block分調べる
-			for(k in 0..1)
-				for(l in 0..1) {
-					val x3 = x2+k
-					val y3 = y2+l
-
-					if((x3>=fld.width||y3>=fld.height||fld.getCoordAttribute(x3, y3)==Field.COORD_WALL)
-						||(fld.getCoordAttribute(x3, y3)!=Field.COORD_VANISH&&fld.getBlockEmpty(x3, y3))
-					)
-						return true
-				}
+			mapOf(0 to 0, 0 to 1, 1 to 0, 1 to 1).any {(k, l) ->
+				val x3 = x2+k
+				val y3 = y2+l
+				(x3>=fld.width||y3>=fld.height||fld.getCoordAttribute(x3, y3)==Field.COORD_WALL)
+					||(fld.getCoordAttribute(x3, y3)!=Field.COORD_VANISH&&fld.getBlockEmpty(x3, y3))
+			}
 		}
-
-		return false
 	}
 
 	/** ピースをそのまま落とした場合のY-coordinateを取得
@@ -559,8 +512,7 @@ class Piece(id:Int = 0):Serializable {
 	 */
 	fun getMostMovableLeft(nowX:Int, nowY:Int, rt:Int, fld:Field):Int {
 		var x = nowX
-		while(!checkCollision(x-1, nowY, rt, fld))
-			x--
+		while(!checkCollision(x-1, nowY, rt, fld)) x--
 		return x
 	}
 
@@ -573,8 +525,7 @@ class Piece(id:Int = 0):Serializable {
 	 */
 	fun getMostMovableRight(nowX:Int, nowY:Int, rt:Int, fld:Field):Int {
 		var x = nowX
-		while(!checkCollision(x+1, nowY, rt, fld))
-			x++
+		while(!checkCollision(x+1, nowY, rt, fld)) x++
 		return x
 	}
 
@@ -603,22 +554,20 @@ class Piece(id:Int = 0):Serializable {
 	 * @param fld field
 	 * @return 置いたピースの下に空白があるとtrue
 	 */
-	fun canMakeRoof(x:Int, y:Int, fld:Field?):Boolean {
-		val rt:Int = direction
-		fld?.let {
-			dataX[rt].groupBy({x -> x}, {i -> dataY[rt][i]})
-				.forEach {(px, c) ->
-					val x2 = x+px
-					val y2 = y+c.max()
+	fun canMakeRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {
+		val rt = direction
+		dataX[rt].groupBy({x -> x}, {i -> dataY[rt][i]})
+			.forEach {(px, c) ->
+				val x2 = x+px
+				val y2 = y+c.max()
 
-					if(!it.getCoordVaild(x2, y2)||!it.getBlockEmpty(x2, y2)) return@canMakeRoof false
-					if((it.getCoordVaild(x2, y2+1)||it.getCoordAttribute(x2, y2+1)!=Field.COORD_VANISH)
-						&&it.getBlockEmpty(x2, y2+1, false))
-						return@canMakeRoof true
-				}
-		}
-		return false
-	}
+				if(!it.getCoordVaild(x2, y2)||!it.getBlockEmpty(x2, y2)) return@let false
+				if((it.getCoordVaild(x2, y2+1)||it.getCoordAttribute(x2, y2+1)!=Field.COORD_VANISH)
+					&&it.getBlockEmpty(x2, y2+1, false))
+					return@let true
+			}
+		return@let false
+	} ?: false
 
 	/** Pieceの上にブロックがあるかを判定
 	 * @param x X-coordinate
@@ -626,20 +575,15 @@ class Piece(id:Int = 0):Serializable {
 	 * @param fld field
 	 * @return 置いたピースの下に空白があるとtrue
 	 */
-	fun isUnderRoof(x:Int, y:Int, fld:Field?):Boolean {
-		val rt:Int = direction
-		fld?.let {
-			dataX[rt].groupBy({x -> x}, {i -> dataY[rt][i]})
-				.forEach {(px, c) ->
-					val x2 = x+px
-					val y2 = y+c.min()
-					for(yc in (-it.hiddenHeight..<y2).reversed())
-						if(!it.getBlockEmpty(x2, yc, true))
-							return@isUnderRoof true
-				}
-		}
-		return false
-	}
+	fun isUnderRoof(x:Int, y:Int, fld:Field?):Boolean = fld?.let {
+		val rt = direction
+		dataX[rt].groupBy({x -> x}, {i -> dataY[rt][i]})
+			.any {(px, c) ->
+				val x2 = x+px
+				val y2 = y+c.min()
+				(-it.hiddenHeight..<y2).reversed().any {yc -> !it.getBlockEmpty(x2, yc, true)}
+			}
+	} ?: false
 
 	fun finesseLimit(nowPieceX:Int):Int =
 		FINESSE_LIST.getOrNull(id)?.let {it[direction%(it.size)]}

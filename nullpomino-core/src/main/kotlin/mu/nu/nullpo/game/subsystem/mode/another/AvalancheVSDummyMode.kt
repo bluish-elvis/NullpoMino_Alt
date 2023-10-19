@@ -38,6 +38,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
+import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
@@ -805,9 +806,6 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		val CHAIN_POWERS = listOf(
 			4, 12, 24, 33, 50, 101, 169, 254, 341, 428, 538, 648, 763, 876, 990, 999 //Arle
 		)
-
-		/** Number of players */
-		const val MAX_PLAYERS = 2
 
 		/** Ojama counter setting constants */
 		const val OJAMA_COUNTER_OFF = 0

@@ -79,9 +79,9 @@ class GameManager(
 	/** BGMStatus: Manages the status of background music */
 	val musMan:BGMStatus = BGMStatus()
 	/** BackgroundStatus: Manages the status of background image */
-	val bgMan:BackgroundStatus = BackgroundStatus()
+	val bgMan = BackgroundStatus()
 	/** GameEngine: This is where the most action takes place */
-	val engine:MutableList<GameEngine> = mutableListOf()
+	val engine = mutableListOf<GameEngine>()
 
 	/** True to show invisible blocks in replay */
 	var replayShowInvisible = false
@@ -91,20 +91,15 @@ class GameManager(
 	/** @return Number of players*/
 	val players:Int
 		get() = engine.size
-	/** Check if quit flag is true in any GameEngine object
-	 * @return true if the game should quit
-	 */
+	/** @return true if the game should quit in any GameEngine object*/
 	val quitFlag:Boolean
 		get() = engine.any {it.quitFlag}
-	/** Check if at least 1 game is active
-	 * @return true if there is an active GameEngine
-	 */
+	/**  @return true if there is an active GameEngine*/
 	val isGameActive:Boolean
 		get() = engine.any {it.gameActive}
-	/** Get winner ID
-	 * @return Player ID of last survivor.
+	/**  @return Player ID of last survivor.
 	 * -2 in single player game.
-	 * -1 in tied game.
+	 * -1 in draw game.
 	 */
 	val winner:Int
 		get() = if(players<2) -2 else engine.indexOfLast {it.stat!=GameEngine.Status.GAMEOVER}
@@ -123,6 +118,7 @@ class GameManager(
 		replayRerecord = false
 		menuOnly = false
 
+		bgMan.fadeEnabled=receiver.heavyEffect>0
 		val players = mode?.let {
 			modeConfig.load(cfgMode)
 			statsProp.load(statsFile)

@@ -34,12 +34,12 @@ import kotlin.math.sign
 import kotlin.random.Random
 
 class DTET09Prism<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
-	private val children = List(15) {Prism(it, speed)}
 	override var speed:Float = 1f
 		set(value) {
 			field = value
 			children.forEach {it.speed = value}
 		}
+	private val children = List(15) {Prism(it, speed)}
 	var by = Random.nextFloat()*240
 	override var tick
 		get() = (240-by).toInt()

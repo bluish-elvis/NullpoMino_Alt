@@ -36,7 +36,6 @@ import mu.nu.nullpo.gui.common.ConfigGlobal.AIConf
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.slick.img.FontNormal
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
 import org.newdawn.slick.GameContainer
@@ -44,6 +43,10 @@ import org.newdawn.slick.Graphics
 import org.newdawn.slick.SlickException
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propConfig as pCo
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propGlobal as pGl
+import mu.nu.nullpo.gui.slick.ResourceHolder as Res
+import mu.nu.nullpo.util.GeneralUtil as Util
 
 /** ゲーム画面のステート */
 internal class StateInGame:BasicGameState() {
@@ -77,7 +80,7 @@ internal class StateInGame:BasicGameState() {
 	/** AppGameContainer (これを使ってタイトルバーを変える) */
 	private var appContainer:AppGameContainer? = null
 
-	/** Previous ingame flag (Used by title-bar text change) */
+	/** Previous in-game flag (Used by title-bar text change) */
 	private var prevInGameFlag = false
 
 	/** Current game mode name */
@@ -87,26 +90,26 @@ internal class StateInGame:BasicGameState() {
 	override fun getID():Int = ID
 
 	/** State initialization */
-	override fun init(container:GameContainer, game:StateBasedGame) {
-		appContainer = container as AppGameContainer
+	override fun init(c:GameContainer, game:StateBasedGame) {
+		appContainer = c as AppGameContainer
 	}
 
 	/** Called when entering this state */
-	override fun enter(container:GameContainer?, game:StateBasedGame?) {
-		enableFrameStep = NullpoMinoSlick.propConfig.general.enableFrameStep
-		showBG = NullpoMinoSlick.propConfig.visual.showBG
+	override fun enter(c:GameContainer?, game:StateBasedGame?) {
+		enableFrameStep = pCo.general.enableFrameStep
+		showBG = pCo.visual.showBG
 		fastForward = 0
 		cursor = 0
 		prevInGameFlag = false
 
-		container?.setClearEachFrame(!showBG) // Clear each frame when there is no BG
+		c?.setClearEachFrame(!showBG) // Clear each frame when there is no BG
 	}
 
 	/** Start a new game
 	 * @param strRulePath Rule file path (null if you want to use user-selected one)
 	 */
 	@JvmOverloads
-	fun startNewGame(mode:String = NullpoMinoSlick.propGlobal.lastMode[""] ?: "", strRulePath:String? = null) {
+	fun startNewGame(mode:String = pGl.lastMode[""] ?: "", strRulePath:String? = null) {
 		modeName = mode
 		val modeObj = NullpoMinoSlick.modeManager[mode]
 		if(modeObj==null) log.error("Couldn't find mode:$mode")
@@ -114,38 +117,38 @@ internal class StateInGame:BasicGameState() {
 			pause = false
 
 			// Initialization for each player
-			for(i in 0..<it.players) it.engine[i].let {e ->
+			it.engine.forEachIndexed {i, e ->
 				// チューニング設定
 				try {
-					NullpoMinoSlick.propGlobal.tuning.getOrNull(i)
-				} catch(e:Exception) {
-					log.warn(e)
+					pGl.tuning.getOrNull(i)
+				} catch(ex:Exception) {
+					log.warn(ex)
 					null
 				}?.also {t -> e.owTune = t}
 
 				// ルール
 				val ruleName =
-					strRulePath ?: NullpoMinoSlick.propGlobal.rule.getOrNull(i)?.getOrNull(it.mode?.gameStyle?.ordinal ?: 0)?.path
+					strRulePath ?: pGl.rule.getOrNull(i)?.getOrNull(it.mode?.gameStyle?.ordinal ?: 0)?.path
 
 				val ruleOpt:RuleOptions = if(!ruleName.isNullOrEmpty()) {
 					log.info("Load rule options from $ruleName")
-					GeneralUtil.loadRule(ruleName)
+					Util.loadRule(ruleName)
 				} else RuleOptions()
 				e.ruleOpt = ruleOpt
 
 				// NEXT順生成アルゴリズム
-				if(ruleOpt.strRandomizer.isNotEmpty()) e.randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
+				if(ruleOpt.strRandomizer.isNotEmpty()) e.randomizer = Util.loadRandomizer(ruleOpt.strRandomizer)
 				// Wallkick
-				if(ruleOpt.strWallkick.isNotEmpty()) e.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
+				if(ruleOpt.strWallkick.isNotEmpty()) e.wallkick = Util.loadWallkick(ruleOpt.strWallkick)
 
 				// AI
-				NullpoMinoSlick.propGlobal.ai.getOrElse(i) {AIConf()}.let {ai ->
+				pGl.ai.getOrElse(i) {AIConf()}.let {ai ->
 					if(ai.name.isNotEmpty()) {
-						e.ai = GeneralUtil.loadAIPlayer(ai.name)
+						e.ai = Util.loadAIPlayer(ai.name)
 						e.aiConf = ai
 					}
 				}
-				it.showInput = NullpoMinoSlick.propConfig.general.showInput
+				it.showInput = pCo.general.showInput
 
 				// Called at initialization
 				e.init()
@@ -167,36 +170,35 @@ internal class StateInGame:BasicGameState() {
 			pause = false
 
 			// Initialization for each player
-			for(i in 0..<it.players) {
+			it.engine.forEachIndexed {i, e ->
 				// ルール
 				val ruleOpt = RuleOptions()
 				ruleOpt.readProperty(prop, i)
-				it.engine[i].ruleOpt = ruleOpt
+				e.ruleOpt = ruleOpt
 
 				// NEXT順生成アルゴリズム
-				if(ruleOpt.strRandomizer.isNotEmpty()) it.engine[i].randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
+				if(ruleOpt.strRandomizer.isNotEmpty()) e.randomizer = Util.loadRandomizer(ruleOpt.strRandomizer)
 
 				// Wallkick
-				if(ruleOpt.strWallkick.isNotEmpty()) it.engine[i].wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
+				if(ruleOpt.strWallkick.isNotEmpty()) e.wallkick = Util.loadWallkick(ruleOpt.strWallkick)
 
 				// AI (リプレイ追記用）
-				NullpoMinoSlick.propGlobal.ai.getOrElse(i){AIConf()}.let {ai ->
+				pGl.ai.getOrElse(i) {AIConf()}.let {ai ->
 					if(ai.name.isNotEmpty()) {
-						it.engine[i].ai = GeneralUtil.loadAIPlayer(ai.name)
-						it.engine[i].aiConf = ai
+						e.ai = Util.loadAIPlayer(ai.name)
+						e.aiConf = ai
 					}
 				}
-				it.showInput = NullpoMinoSlick.propConfig.general.showInput
-
+				it.showInput = pCo.general.showInput
 				// Called at initialization
-				it.engine[i].init()
+				e.init()
 			}
 		}
 		updateTitleBarCaption()
 	}
 
 	/** Update title bar text */
-	fun updateTitleBarCaption() {
+	private fun updateTitleBarCaption() {
 		var strTitle = "NullpoMino_Alt - $modeName"
 		gameManager?.let {
 			if(it.engine.isNotEmpty())
@@ -214,18 +216,18 @@ internal class StateInGame:BasicGameState() {
 	fun shutdown() {
 		gameManager?.shutdown()
 		gameManager = null
-		ResourceHolder.bgmUnloadAll()
+		Res.bgmUnloadAll()
 	}
 
 	/** Called when leaving this state */
-	override fun leave(container:GameContainer?, game:StateBasedGame?) {
-		container?.setClearEachFrame(false)
+	override fun leave(c:GameContainer?, game:StateBasedGame?) {
+		c?.setClearEachFrame(false)
 		shutdown()
 	}
 
 	/** Draw the screen */
-	override fun render(container:GameContainer, game:StateBasedGame, g:Graphics) {
-		if(!container.hasFocus()) {
+	override fun render(c:GameContainer, game:StateBasedGame, g:Graphics) {
+		if(!c.hasFocus()) {
 			if(!NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep(true)
 			return
 		}
@@ -260,7 +262,7 @@ internal class StateInGame:BasicGameState() {
 		NullpoMinoSlick.drawFPS() // FPS
 		NullpoMinoSlick.drawObserverClient() // Observer
 		if(ssFlag) {
-			NullpoMinoSlick.saveScreenShot(container, g) // Screenshot
+			NullpoMinoSlick.saveScreenShot(c, g) // Screenshot
 			ssFlag = false
 		}
 
@@ -269,19 +271,19 @@ internal class StateInGame:BasicGameState() {
 
 	/** ゲーム stateを更新 */
 	@Throws(SlickException::class)
-	override fun update(container:GameContainer, game:StateBasedGame, delta:Int) {
-		if(!container.hasFocus()) {
+	override fun update(c:GameContainer, game:StateBasedGame, delta:Int) {
+		if(!c.hasFocus()) {
 			GameKey.gameKey.forEach {it.clear()}
 			if(NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep()
 			return
 		}
 
 		// TTF font 描画
-		ResourceHolder.ttfFont?.loadGlyphs()
+		Res.ttfFont?.loadGlyphs()
 		// Update key input states
 		GameKey.gameKey.forEachIndexed {i, it ->
 			it.update(
-				container.input,
+				c.input,
 				(!pause||enableFrameStep)&&i<(gameManager?.engine?.size ?: 0)&&gameManager?.engine?.get(i)?.isInGame==true
 			)
 		}
@@ -298,14 +300,14 @@ internal class StateInGame:BasicGameState() {
 		if(GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_PAUSE)}) {
 			if(!pause) {
 				if(gameManager?.isGameActive==true&&pauseFrame<=0) {
-					ResourceHolder.soundManager.play("pause")
-					if(!ResourceHolder.bgmIsLooping) ResourceHolder.bgmPause()
+					Res.soundManager.play("pause")
+					if(!Res.bgmIsLooping) Res.bgmPause()
 					pause = true
 					cursor = 0
 				}
 			} else {// Unpause by pause key
-				ResourceHolder.soundManager.play("pause")
-				ResourceHolder.bgmResume()
+				Res.soundManager.play("pause")
+				Res.bgmResume()
 				pause = false
 				pauseFrame = 0
 			}
@@ -318,7 +320,7 @@ internal class StateInGame:BasicGameState() {
 					cursor = if(gameManager?.replayMode==true&&gameManager?.replayRerecord==false)
 						3 else 2
 
-				ResourceHolder.soundManager.play("cursor")
+				Res.soundManager.play("cursor")
 			}
 			if(GameKey.gameKey[0].isMenuRepeatKey(GameKeyDummy.BUTTON_DOWN)) {
 				cursor++
@@ -326,45 +328,45 @@ internal class StateInGame:BasicGameState() {
 
 				if((gameManager?.replayMode==false||gameManager?.replayRerecord==true)&&cursor>2) cursor = 0
 
-				ResourceHolder.soundManager.play("cursor")
+				Res.soundManager.play("cursor")
 			}
 
 			// Confirm
 			if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_A)) {
-				ResourceHolder.soundManager.play("decide0")
+				Res.soundManager.play("decide0")
 				when(cursor) {
 					0 -> { // Continue
 						pause = false
 						pauseFrame = 0
 						GameKey.gameKey[0].clear()
-						ResourceHolder.bgmResume()
+						Res.bgmResume()
 					}
 					1 -> { // Retry
-						ResourceHolder.bgmStop()
+						Res.bgmStop()
 						pause = false
 						gameManager?.reset()
 					}
 					2 -> { // End
-						ResourceHolder.bgmStop()
-						ResourceHolder.soundManager.stop("danger")
+						Res.bgmStop()
+						Res.soundManager.stop("danger")
 						gameManager?.reset()
 						game.enterState(StateTitle.ID)
 						return
 					}
 					3 -> { // Replay re-record
 						gameManager?.replayRerecord = true
-						ResourceHolder.soundManager.play("twist")
+						Res.soundManager.play("twist")
 						cursor = 0
 					}
 				}
 				updateTitleBarCaption()
 			} else if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_B)&&pauseFrame<=0) {
-				ResourceHolder.soundManager.play("pause")
+				Res.soundManager.play("pause")
 				// Unpause by cancel key
 				pause = false
 				pauseFrame = 5
 				GameKey.gameKey[0].clear()
-				ResourceHolder.bgmResume()
+				Res.bgmResume()
 				updateTitleBarCaption()
 			}
 		}// Pause menu
@@ -383,26 +385,24 @@ internal class StateInGame:BasicGameState() {
 				// Replay re-record
 				if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_D)) {
 					m.replayRerecord = true
-					ResourceHolder.soundManager.play("twist")
+					Res.soundManager.play("twist")
 					cursor = 0
 				}
 				// Show invisible blocks during replays
 				if(GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_E)) {
 					m.replayShowInvisible = !m.replayShowInvisible
-					ResourceHolder.soundManager.play("twist")
+					Res.soundManager.play("twist")
 					cursor = 0
 				}
 			} else fastForward = 0
 
 			// BGM
-			if(ResourceHolder.bgmPlaying!=m.musMan.bgm&&!m.musMan.fadeSW)
-				ResourceHolder.bgmStart(m.musMan.bgm)
-			if(ResourceHolder.bgmIsPlaying) {
-				val baseVolume = NullpoMinoSlick.propConfig.audio.bgmVolume
-				val newVolume = maxOf(0f, minOf(m.musMan.volume*baseVolume/128f, 1f))
-				container.musicVolume = newVolume
-				if(newVolume<=0f) ResourceHolder.bgmStop()
-			}
+			if(Res.bgmPlaying!=m.musMan.bgm&&!m.musMan.fadeSW)
+				Res.bgmStart(m.musMan.bgm)
+			if(Res.bgmIsPlaying) c.musicVolume =
+				maxOf(0f, minOf(m.musMan.volume*pCo.audio.bgmVolume/128f, 1f)).also {
+					if(it<=0f) Res.bgmStop()
+				}
 
 			// ゲームの処理を実行
 			if(!pause||GameKey.gameKey[0].isPushKey(GameKeyDummy.BUTTON_FRAMESTEP)&&enableFrameStep) {
@@ -414,14 +414,14 @@ internal class StateInGame:BasicGameState() {
 			}
 			// Retry button
 			if(GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_RETRY)}) {
-				ResourceHolder.bgmStop()
+				Res.bgmStop()
 				pause = false
 				m.reset()
 			}
 
 			// Return to title
 			if(m.quitFlag||GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_GIVEUP)}) {
-				ResourceHolder.bgmStop()
+				Res.bgmStop()
 				game.enterState(StateTitle.ID)
 				return@update
 			}
@@ -434,7 +434,7 @@ internal class StateInGame:BasicGameState() {
 		// Exit button
 		if(GameKey.gameKey.any {it.isPushKey(GameKeyDummy.BUTTON_QUIT)}) {
 			shutdown()
-			container.exit()
+			c.exit()
 		}
 
 		if(NullpoMinoSlick.alternateFPSTiming) NullpoMinoSlick.alternateFPSSleep(true)

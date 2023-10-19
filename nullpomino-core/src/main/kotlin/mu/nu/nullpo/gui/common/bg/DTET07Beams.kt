@@ -105,13 +105,12 @@ Next I*/
 			t.forEach {it.x = x;it.y = y;it.r = r}
 		}
 	}
-
-	private val children = List(20) {Beam(it, speed)}
 	override var speed:Float = 1f
 		set(value) {
 			field = value
 			children.forEach {it.speed = value}
 		}
+	private val children = List(20) {Beam(it, speed)}
 	var by = Random.nextFloat()*240
 	override var tick
 		get() = (240-by).toInt()

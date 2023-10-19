@@ -37,6 +37,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
@@ -505,9 +506,6 @@ class VSSprintDig:AbstractMode() {
 	companion object {
 		/** Current version */
 		private const val CURRENT_VERSION = 0
-
-		/** Number of players */
-		private const val MAX_PLAYERS = 2
 
 		/** Each player's frame cint */
 		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)

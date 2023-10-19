@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
+import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
@@ -708,7 +709,7 @@ class SPF:AbstractMode() {
 		return false
 	}
 
-	override fun pieceLocked(engine: GameEngine, lines: Int, finesse: Boolean) {
+	override fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean) {
 		checkAll(engine)
 	}
 
@@ -1197,8 +1198,6 @@ class SPF:AbstractMode() {
 			Block.COLOR.YELLOW, Block.COLOR.YELLOW, Block.COLOR.YELLOW, Block.COLOR.YELLOW, Block.COLOR.GEM_YELLOW)*/
 
 		private val ROW_VALUES = doubleArrayOf(2.3, 2.2, 2.1, 2.0, 1.9, 1.8, 1.7, 1.6, 1.5, 1.4, 1.3, 1.2, 1.1, 1.0)
-		/** Number of players */
-		private const val MAX_PLAYERS = 2
 
 		/** Names of drop values sets */
 		private val DROP_SET_NAMES = listOf("CLASSIC", "REMIX", "SWORD", "S-MIRROR", "AVALANCHE", "A-MIRROR")

@@ -49,8 +49,6 @@ import mu.nu.nullpo.util.GeneralUtil.toInt
 abstract class AbstractRenderer:EventReceiver() {
 	internal abstract val resources:ResourceHolder
 
-	protected val heavyEffect get() = conf.heavyEffect
-
 	protected val showLineEffect get() = heavyEffect>0
 	protected val animBG get() = heavyEffect>1
 	protected val particle get() = heavyEffect>2

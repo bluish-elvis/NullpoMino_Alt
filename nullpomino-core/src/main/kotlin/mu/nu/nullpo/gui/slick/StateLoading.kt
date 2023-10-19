@@ -31,6 +31,8 @@ package mu.nu.nullpo.gui.slick
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.ConfigGlobal
+import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
 import org.newdawn.slick.GameContainer
@@ -39,15 +41,17 @@ import org.newdawn.slick.Image
 import org.newdawn.slick.Sound
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propConfig as pCo
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propGlobal as pGl
 
 /** ロード画面のステート */
 internal class StateLoading:BasicGameState() {
 	/** プリロード進行度 */
-	private var preloadSet:Int = -2
+	private var preloadSet = -2
 
-	private var loadBG:Image = Image(640, 480)
+	private var loadBG = Image(640, 480)
 
-	private val skindir:String = NullpoMinoSlick.propGlobal.custom.skinDir
+	private val skinDir = pGl.custom.skinDir
 	/* Fetch this state's ID */
 	override fun getID():Int = ID
 
@@ -58,16 +62,16 @@ internal class StateLoading:BasicGameState() {
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		//  input 関連をInitialization
 		GameKey.initGlobalGameKey()
-		GameKey.gameKey.forEachIndexed {i, t -> NullpoMinoSlick.propConfig.ctrl.keymaps.getOrNull(i)?.let {t.loadConfig(it)}}
+		GameKey.gameKey.forEachIndexed {i, t -> pCo.ctrl.keymaps.getOrNull(i)?.let {t.loadConfig(it)}}
 
 		// 設定を反映させる
 		NullpoMinoSlick.setGeneralConfig()
 
-		if(NullpoMinoSlick.propConfig.audio.se)
+		if(pCo.audio.se)
 			try {
-				val clip = Sound("$skindir/jingle/welcome.ogg")
+				val clip = Sound("$skinDir/jingle/welcome.ogg")
 				clip.play()
-				loadBG = Image("$skindir/graphics/${ResourceHolder.imgTitleBG.name}.png")
+				loadBG = Image("$skinDir/graphics/${ResourceHolder.imgTitleBG.name}.png")
 				container?.graphics?.drawImage(loadBG, 0f, 0f)
 			} catch(_:Throwable) {
 			}
@@ -80,7 +84,7 @@ internal class StateLoading:BasicGameState() {
 	}
 
 	/* Update game */
-	override fun update(container:GameContainer, game:StateBasedGame, delta:Int) {
+	override fun update(c:GameContainer, game:StateBasedGame, delta:Int) {
 		when {
 			preloadSet==-2 -> preloadSet = -1
 			preloadSet==-1 -> // 画像などを読み込み
@@ -94,29 +98,30 @@ internal class StateLoading:BasicGameState() {
 			preloadSet in 0..3 -> cacheImg()
 			preloadSet>3 -> {
 				// Change title bar caption
-				if(container is AppGameContainer) {
-					container.setTitle("NullpoMino_Alt version${GameManager.versionString}")
-					container.setUpdateOnlyWhenVisible(true)
+				if(c is AppGameContainer) {
+					c.setTitle("NullpoMino_Alt version${GameManager.versionString}")
+					c.setUpdateOnlyWhenVisible(true)
 				}
 
 				// First run
-				if(!NullpoMinoSlick.propConfig.didFirstRun) {
+				if(!pCo.didFirstRun) {
 					// Set various default settings here
 					GameKey.gameKey[0].loadDefaultKeymap()
-					NullpoMinoSlick.propConfig.ctrl.keymaps[0] = GameKey.gameKey[0].map
-					NullpoMinoSlick.propConfig.didFirstRun = true
+					if(pCo.ctrl.keymaps.isEmpty()) pCo.ctrl.keymaps += List(MAX_PLAYERS) {ConfigGlobal.GameKeyMaps()}
+					GameKey.gameKey.forEachIndexed {i, it -> pCo.ctrl.keymaps[i] = it.map}
+					pCo.didFirstRun = true
 
 					// Set default rotation button setting (only for first run)
-					if(!NullpoMinoSlick.propGlobal.didFirstRun) {
-						NullpoMinoSlick.propGlobal.tuning.forEach {it.spinDir = 0}
-						NullpoMinoSlick.propGlobal.didFirstRun = true
+					if(!pGl.didFirstRun) {
+						if(pGl.tuning.isEmpty()) pGl.tuning += List(MAX_PLAYERS) {ConfigGlobal.TuneConf()}
+						pGl.tuning.forEach {it.spinDir = 0}
+						pGl.didFirstRun = true
 					}
 
 					// Save settings
 					NullpoMinoSlick.saveConfig()
 				}
-				log.debug(Json.encodeToString(GameKey.gameKey[0].map))
-				log.debug(Json.encodeToString(GameKey.gameKey[1].map))
+				GameKey.gameKey.forEach {log.debug(Json.encodeToString(it.map))}
 				log.debug(Json.encodeToString(ControllerManager.config))
 				// Go to title screen
 				game.enterState(StateTitle.ID)

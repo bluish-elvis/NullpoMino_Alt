@@ -28,7 +28,6 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.gui.common.BaseFontTTF
 import org.newdawn.slick.Music
@@ -38,6 +37,8 @@ import org.newdawn.slick.font.effects.ShadowEffect
 import org.newdawn.slick.openal.SoundStore
 import java.awt.Color
 import java.io.File
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propConfig as pCo
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propMusic as pMu
 
 /** 画像や音声の管理をするクラス */
 object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
@@ -122,10 +123,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	/** 画像や音声を読み込み */
 	fun load() {
 		try {
-			loadImg(
-				NullpoMinoSlick.propConfig.visual.showBG,
-				NullpoMinoSlick.propConfig.visual.heavyEffect>0
-			)
+			loadImg(pCo.visual.showBG, pCo.visual.heavyEffect>0)
 		} catch(e:Throwable) {
 			log.error("Resource load failed", e)
 		}
@@ -141,7 +139,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		}
 
 		// Sound effects
-		if(NullpoMinoSlick.propConfig.audio.se) {
+		if(pCo.audio.se) {
 			try {
 				SoundStore.get().init()
 			} catch(e:Throwable) {
@@ -157,7 +155,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		bgm = BGM.all.map {MutableList(it.size) {null to false}}
 		bgmPlaying = null
 
-		if(NullpoMinoSlick.propConfig.audio.bgmPreload) BGM.all.forEach {list ->
+		if(pCo.audio.bgmPreload) BGM.all.forEach {list ->
 			list.forEach {loadBGM(it, false)}
 		}
 	}
@@ -191,24 +189,23 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	 * @param bgm enum [mu.nu.nullpo.game.component.BGMStatus.BGM]
 	 * @param showErr 例外が発生したときにコンソールに表示する
 	 */
-	private fun loadBGM(bgm:BGM, showErr:Boolean) {
-		if(!NullpoMinoSlick.propConfig.audio.bgm) return
+	private fun loadBGM(bgm:BGM, showErr:Boolean = false) {
+		if(!pCo.audio.bgm) return
 		val name = bgm.name
 		val n = bgm.longName
 		bgm.id
 		this.bgm[bgm.id].forEachIndexed {idx, (first) ->
 			val sub = bgm.subName
 			if(first==null) try {
-				val filename = NullpoMinoSlick.propMusic.getProperty("music.filename.$name.$idx", null)
+				val filename = pMu.getProperty("music.filename.$name.$idx", null)
 				if(filename.isNullOrEmpty()) {
 					log.info("BGM $n:#$idx $sub not available")
 					return@forEachIndexed
 				}
 
-				val streaming = NullpoMinoSlick.propConfig.audio.bgmStreaming
+				val streaming = pCo.audio.bgmStreaming
 				if(File(filename).canRead()) {
-					this.bgm[bgm.id][idx] =
-						Music(filename, streaming) to NullpoMinoSlick.propMusic.getProperty("music.noloop.${bgm.name}.${bgm.idx}", false)
+					this.bgm[bgm.id][idx] = Music(filename, streaming) to pMu.getProperty("music.noloop.${bgm.name}.${bgm.idx}", false)
 					//log.info("Loaded BGM $n:#$idx $sub")
 				}
 			} catch(e:Throwable) {
@@ -223,17 +220,18 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 	 * @param m enums of BGM [mu.nu.nullpo.game.component.BGMStatus.BGM]
 	 */
 	internal fun bgmStart(m:BGM) {
-		if(!NullpoMinoSlick.propConfig.audio.bgm) return
+		if(!pCo.audio.bgm) return
 		bgmStop()
 		val x = minOf(m.id, bgm.size-1)
 		val y = minOf(m.idx, bgm[x].size-1)
-		val bgmVol = NullpoMinoSlick.propConfig.audio.bgmVolume
-		NullpoMinoSlick.appGameContainer.musicVolume = bgmVol/128.toFloat()
+		NullpoMinoSlick.appGameContainer.musicVolume = (pCo.audio.bgmVolume/128f).also {
+			if(it<=0) return bgmStop()
+		}
 
 		if(m!=BGM.Silent&&m!=bgmPlaying) {
 			bgm[x][y].first?.also {
 				try {
-					val z=BGMStatus.BGM.values.indexOf(m)
+					val z = BGM.values.indexOf(m)
 					if(bgm[x][y].second) it.play() else it.loop()
 					log.info("Play BGM #$z = $x:$y ${m.longName}")
 				} catch(e:Throwable) {
@@ -274,7 +272,7 @@ object ResourceHolder:mu.nu.nullpo.gui.common.ResourceHolder() {
 		bgm.forEachIndexed {x, a ->
 			a.mapNotNull {it.first}.forEachIndexed {y, b ->
 				b.stop()
-				if(!NullpoMinoSlick.propConfig.audio.bgmPreload) bgm[x][y] = null to false
+				if(!pCo.audio.bgmPreload) bgm[x][y] = null to false
 			}
 		}
 	}

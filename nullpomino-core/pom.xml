@@ -15,8 +15,8 @@
   <serialization.version>1.4.1</serialization.version>
   <maven.compiler.source>${java.version}</maven.compiler.source>
   <maven.compiler.target>${java.version}</maven.compiler.target>
-  <kotlin.compiler.languageVersion>1.9</kotlin.compiler.languageVersion>
-  <kotlin.compiler.apiVersion>1.9</kotlin.compiler.apiVersion>
+  <kotlin.compiler.languageVersion>2.0</kotlin.compiler.languageVersion>
+  <kotlin.compiler.apiVersion>2.0</kotlin.compiler.apiVersion>
   <kotlin.compiler.jvmTarget>${java.version}</kotlin.compiler.jvmTarget>
   <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
  </properties>
@@ -91,7 +91,7 @@
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-compiler-plugin</artifactId>
-    <version>3.8.1</version>
+    <version>3.11.0</version>
     <configuration>
      <source>${java.version}</source>
      <target>${java.version}</target>
@@ -255,6 +255,12 @@
    <groupId>org.apache.logging.log4j</groupId>
    <artifactId>log4j-1.2-api</artifactId>
    <version>${log4j.version}</version>
+  </dependency>
+  <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+  <dependency>
+   <groupId>commons-io</groupId>
+   <artifactId>commons-io</artifactId>
+   <version>2.14.0</version>
   </dependency>
 
   <dependency>

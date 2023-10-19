@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
+import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import kotlin.random.Random
@@ -768,8 +769,6 @@ class PhysicianVS:AbstractMode() {
 		/** Colors for speed settings */
 		private val SPEED_COLOR = listOf(COLOR.BLUE, COLOR.YELLOW, COLOR.RED)
 
-		/** Number of players */
-		private const val MAX_PLAYERS = 2
 		/** Each player's frame cint */
 		private val PLAYER_COLOR_FRAME = listOf(GameEngine.FRAME_COLOR_RED, GameEngine.FRAME_COLOR_BLUE)
 	}

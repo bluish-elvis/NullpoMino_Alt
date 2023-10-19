@@ -44,6 +44,9 @@ import org.newdawn.slick.GameContainer
 import org.newdawn.slick.Graphics
 import org.newdawn.slick.state.BasicGameState
 import org.newdawn.slick.state.StateBasedGame
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propConfig as pCo
+import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propGlobal as pGl
+import mu.nu.nullpo.gui.slick.ResourceHolder as Res
 
 /** ネットゲーム画面のステート */
 internal class StateNetGame:BasicGameState(), NetLobbyListener {
@@ -85,7 +88,7 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 	/* Called when entering this state */
 	override fun enter(container:GameContainer?, game:StateBasedGame?) {
 		// Init variables
-		showBG = NullpoMinoSlick.propConfig.visual.showBG
+		showBG = pCo.visual.showBG
 		prevInGameFlag = false
 
 		// Observer stop
@@ -108,7 +111,7 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 		// Mode initialization
 		enterNewMode(null)
 
-		if(ResourceHolder.bgmPlaying!=BGM.Menu(1)) ResourceHolder.bgmStart(BGM.Menu(1))
+		if(Res.bgmPlaying!=BGM.Menu(1)) Res.bgmStart(BGM.Menu(1))
 		// Lobby start
 		netLobby.init()
 		netLobby.isVisible = true
@@ -120,11 +123,11 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 		gameManager = null
 
 		netLobby.shutdown()
-		ResourceHolder.bgmStop()
+		Res.bgmStop()
 		container?.setClearEachFrame(false)
 
 		// FPS restore
-		NullpoMinoSlick.altMaxFPS = NullpoMinoSlick.propConfig.render.maxFPS
+		NullpoMinoSlick.altMaxFPS = pCo.render.maxFPS
 		appContainer?.alwaysRender = !NullpoMinoSlick.alternateFPSTiming
 		appContainer?.setUpdateOnlyWhenVisible(true)
 
@@ -167,7 +170,7 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 			if(!container.hasFocus()||netLobby.isFocused) GameKey.gameKey[0].clear()
 
 			// TTF font 描画
-			ResourceHolder.ttfFont?.loadGlyphs()
+			Res.ttfFont?.loadGlyphs()
 
 			// Title bar update
 
@@ -188,23 +191,18 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 
 					gameManager.mode?.let {mode ->
 						// BGM
-						if(ResourceHolder.bgmPlaying!=gameManager.musMan.bgm) ResourceHolder.bgmStart(gameManager.musMan.bgm)
-						if(ResourceHolder.bgmIsPlaying) {
-							val basevolume = NullpoMinoSlick.propConfig.audio.bgmVolume
-							val basevolume2 = basevolume/128.toFloat()
-							var newvolume = gameManager.musMan.volume*basevolume2
-							if(newvolume<0f) newvolume = 0f
-							if(newvolume>1f) newvolume = 1f
-							container.musicVolume = newvolume
-							if(newvolume<=0f) ResourceHolder.bgmStop()
-						}
+						if(Res.bgmPlaying!=gameManager.musMan.bgm) Res.bgmStart(gameManager.musMan.bgm)
+						if(Res.bgmIsPlaying)
+							container.musicVolume = maxOf(0f, minOf(1f, gameManager.musMan.volume*pCo.audio.bgmVolume/128f)).also {
+								if(it<=0f) Res.bgmStop()
+							}
 
 						// ゲームの処理を実行
 						GameKey.gameKey[0].inputStatusUpdate(gameManager.engine[0].ctrl)
 						gameManager.updateAll()
 
 						if(gameManager.quitFlag) {
-							ResourceHolder.bgmStop()
+							Res.bgmStop()
 							game.enterState(StateTitle.ID)
 							return@update
 						}
@@ -267,10 +265,10 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 				gm.init()
 				gm.engine.firstOrNull()?.let {e ->
 					// Tuning
-					NullpoMinoSlick.propGlobal.tuning.firstOrNull()?.let {e.owTune = it}
+					pGl.tuning.firstOrNull()?.let {e.owTune = it}
 					// Rule
 
-					val ruleName = gm.mode?.gameStyle?.ordinal?.let {NullpoMinoSlick.propGlobal.rule.firstOrNull()?.getOrNull(it)?.path}
+					val ruleName = gm.mode?.gameStyle?.ordinal?.let {pGl.rule.firstOrNull()?.getOrNull(it)?.path}
 					val ruleOpt:RuleOptions = if(!ruleName.isNullOrEmpty()) {
 						log.info("Load rule options from $ruleName")
 						GeneralUtil.loadRule(ruleName)
@@ -283,18 +281,17 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 					if(ruleOpt.strWallkick.isNotEmpty()) e.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
 
 					// AI
-					NullpoMinoSlick.propGlobal.ai.firstOrNull()?.let {ai ->
+					pGl.ai.firstOrNull()?.let {ai ->
 						if(ai.name.isNotEmpty()) {
 							e.ai = GeneralUtil.loadAIPlayer(ai.name)
 							e.aiConf = ai
 						}
 					}
 				}
-				gm.showInput = NullpoMinoSlick.propConfig.general.showInput
+				gm.showInput = pCo.general.showInput
 
 				// Initialization for each player
-				for(i in 0..<gm.players)
-					gm.engine[i].init()
+				gm.engine.forEach {it.init()}
 
 				newModeTemp.netplayInit(netLobby)
 			}
@@ -305,7 +302,7 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 	}
 
 	/** Update title bar text */
-	fun updateTitleBarCaption() {
+	private fun updateTitleBarCaption() {
 		var strTitle = "NullpoMino Netplay"
 
 		gameManager?.also {

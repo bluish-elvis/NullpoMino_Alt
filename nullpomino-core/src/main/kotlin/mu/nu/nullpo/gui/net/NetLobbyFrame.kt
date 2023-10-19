@@ -2517,11 +2517,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun saveListFromDefaultListModel(listModel:DefaultListModel<*>, filename:String):Boolean {
 		try {
-			 PrintWriter(filename).use {
-				 for(i in 0..<listModel.size())
-					 it.println(listModel.get(i))
-				 it.flush()
-			 }
+			PrintWriter(filename).use {
+				for(i in 0..<listModel.size())
+					it.println(listModel.get(i))
+				it.flush()
+			}
 		} catch(e:IOException) {
 			log.debug("Failed to save server list", e)
 			return false
@@ -3299,18 +3299,18 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		}
 
 		// Tuning
-		val tuning = propGlobal.tuning.first()
-		comboboxTuningSpinDirection.selectedIndex = tuning.spinDir+1
-		comboboxTuningMoveDiagonal.selectedIndex = tuning.moveDiagonal+1
-		comboboxTuningBlockShowOutlineOnly.selectedIndex = tuning.blockShowOutlineOnly+1
-		comboboxTuningSkin.selectedIndex = tuning.skin+2
-		comboboxTuningBlockOutlineType.selectedIndex = tuning.blockOutlineType+1
+		(propGlobal.tuning.firstOrNull() ?: ConfigGlobal.TuneConf()).let {
+			comboboxTuningSpinDirection.selectedIndex = it.spinDir+1
+			comboboxTuningMoveDiagonal.selectedIndex = it.moveDiagonal+1
+			comboboxTuningBlockShowOutlineOnly.selectedIndex = it.blockShowOutlineOnly+1
+			comboboxTuningSkin.selectedIndex = it.skin+2
+			comboboxTuningBlockOutlineType.selectedIndex = it.blockOutlineType+1
 
-		txtfldTuningMinDAS.text = "${tuning.minDAS}"
-		txtfldTuningMaxDAS.text = "${tuning.maxDAS}"
-		txtfldTuningDasDelay.text = "${tuning.owARR}"
-		chkboxTuningReverseUpDown.isSelected = tuning.reverseUpDown
-
+			txtfldTuningMinDAS.text = "${it.minDAS}"
+			txtfldTuningMaxDAS.text = "${it.maxDAS}"
+			txtfldTuningDasDelay.text = "${it.owARR}"
+			chkboxTuningReverseUpDown.isSelected = it.reverseUpDown
+		}
 		// Change screen
 		changeCurrentScreenCard(SCREENCARD_RULECHANGE)
 	}

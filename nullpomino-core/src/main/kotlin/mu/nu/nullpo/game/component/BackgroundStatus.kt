@@ -29,12 +29,12 @@
 package mu.nu.nullpo.game.component
 
 /** BackgroundImage state */
-@kotlinx.serialization.Serializable class BackgroundStatus {
+class BackgroundStatus() {
 	/** Background number */
 	var bg = 0
 //TODO bg:BG_RenderClass
 
-	var fadeEnabled = true
+	var fadeEnabled = false
 	/** Background fade flag */
 	var fadeSW = false; private set
 
@@ -58,16 +58,6 @@ package mu.nu.nullpo.game.component
 
 		}
 
-	/** Default constructor */
-	constructor() {
-		reset()
-	}
-
-	/** Copy constructor settings from [b] */
-	constructor(b:BackgroundStatus) {
-		replace(b)
-	}
-
 	/** Reset to defaults */
 	fun reset() {
 		bg = 0
@@ -75,6 +65,11 @@ package mu.nu.nullpo.game.component
 		fadeStat = false
 		fadeCount = 0
 		nextBg = 0
+	}
+
+	/** Copy constructor settings from [b] */
+	constructor(b:BackgroundStatus):this() {
+		replace(b)
 	}
 
 	/** copy settings from [b] */
@@ -97,7 +92,7 @@ package mu.nu.nullpo.game.component
 			} else fadeFinish()
 	}
 
-	fun fadeFinish() {
+	private fun fadeFinish() {
 		bg = nextBg
 		fadeSW = false
 		fadeStat = false

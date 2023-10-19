@@ -51,7 +51,8 @@ import kotlin.random.Random
 
 /** Drawing and event handling EventReceiver */
 open class EventReceiver {
-	protected var conf = VisualConf()
+	var conf = VisualConf(); protected set
+	val heavyEffect get() = conf.heavyEffect
 	protected val random = Random.Default
 
 	/** Font cint constants */
