@@ -33,35 +33,33 @@ import mu.nu.nullpo.game.component.Piece.Shape
 import kotlin.random.Random
 
 abstract class Randomizer {
-	private var seed:Long = 0L//Random.Default.nextLong()
-	protected var r:Random = Random(seed)
+	protected var seed:Long = 0L; private set//Random.Default.nextLong()
+	protected var r:Random = Random(seed); private set
+	/**enabled pieces*/
 	var pieces = Shape.all.map {it.ordinal}
 		private set
 
 	protected val isPieceSZOOnly:Boolean
 		get() = pieces.all {p -> listOf(Shape.S, Shape.Z, Shape.O).any {it.ordinal==p}}
 
-	constructor()
-
-	constructor(pieceEnable:List<Boolean>, seed:Long) {
-		setState(pieceEnable, seed)
-	}
-
 	abstract operator fun next():Int
+	abstract fun init()
 
 	/**
 	 * This is overridden as changing piece count screws with the counter averages.<br></br>
-	 * Therefore this calso calls `init()`.
+	 * Therefore this calls `init()`.
 	 *
-	 * @param pieceEnable Array of enabled pieces.
+	 * @param setPieces Array of enabled pieces.
 	 */
-	fun setState(pieceEnable:List<Boolean>, seed:Long = this.seed) {
+	fun setState(setPieces:Collection<Int>, seed:Long = this.seed) {
 		this.seed = seed
 		r = Random(seed)
-		pieces = Shape.all.map {it.ordinal}.filter {pieceEnable[it]}
+		pieces = setPieces.filter {i -> Shape.all.map {it.ordinal}.contains(i)}
 		init()
 	}
-
-	open fun init() {}
-
+	@JvmOverloads @JvmName("setStateBooleans")
+	fun setState(pieceEnable:List<Boolean>, seed:Long = this.seed) =
+		setState(Shape.all.map {it.ordinal}.filter {pieceEnable[it]}, seed)
+	@JvmOverloads @JvmName("setStateShape")
+	fun setState(pieceEnable:Collection<Shape>, seed:Long = this.seed) = setState(pieceEnable.map {it.ordinal}, seed)
 }

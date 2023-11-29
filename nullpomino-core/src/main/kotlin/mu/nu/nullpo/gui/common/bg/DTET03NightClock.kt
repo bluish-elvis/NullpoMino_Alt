@@ -45,11 +45,11 @@ With Kr(I)
 End With
 Next I*/
 	private class Frag(val id:Int) {
-		var x = Random.nextFloat()*704-32
-		var y = Random.nextFloat()*544-32
-		var vx = 0f
-		var vy = 0f
-		var tick = -1
+		var x = Random.nextFloat()*704-32;private set
+		var y = Random.nextFloat()*544-32;private set
+		private var vx = 0f
+		private var vy = 0f
+		var tick = -1;private set
 		fun update() {
 			if(tick<0) return
 			tick++
@@ -88,10 +88,10 @@ Next I*/
 	}
 
 	private val children = List(36) {Frag(it)}
-	var bx = Random.nextFloat()*640
+	private var bx = Random.nextFloat()*640
 	override var tick = 140
-	protected var fx = 0f; private set
-	protected var fy = 0f; private set
+	private var fx = 0f; private set
+	private var fy = 0f; private set
 
 	override fun reset() {
 		bx = Random.nextFloat()*640

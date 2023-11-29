@@ -37,6 +37,10 @@ import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.IntegerMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.BaseFont.FONT
 import mu.nu.nullpo.util.CustomProperties
@@ -46,30 +50,36 @@ import net.omegaboshi.nullpomino.game.subsystem.randomizer.NintendoRandomizer
 
 /** RETRO CLASSIC mode (Based from NES, Original from NullpoUE build 010210 by Zircean) */
 class RetroN:AbstractMode() {
-	/** Selected game type */
-	private var gametype = 0
-
-	/** Selected Speed Difficulty */
-	private var speedtype = 0
-
-	/** Selected starting level */
-	private var startLevel = 0
-
-	/** Selected garbage height */
-	private var startheight = 0
-
 	/** Used for soft drop scoring */
-	private var softdropscore = 0
+	private var sdScore = 0
 
 	/** Used for hard drop scoring */
-	private var harddropscore = 0
+	private var hdScore = 0
 
 	/** Next level lines */
-	private var levellines = 0
+	private var lvLines = 0
+
+	private val itemGame = StringsMenuItem("gametype", "GAME TYPE", COLOR.BLUE, 0, GAMETYPE_NAME)
+	/** Selected game type */
+	private var gameType:Int by DelegateMenuItem(itemGame)
+
+	private val itemSpeed = StringsMenuItem("speedtype", "DIFFICULTY", COLOR.BLUE, 0, SPEED_NAME)
+	/** Selected Speed Difficulty */
+	private var speedType:Int by DelegateMenuItem(itemSpeed)
+
+	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..19, false, true)
+	/** Selected starting level */
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
+
+	private val itemHeight = IntegerMenuItem("height", "HEIGHT", COLOR.BLUE, 0, 0..5)
+	/** Selected garbage height */
+	private var startHeight:Int by DelegateMenuItem(itemHeight)
 
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
-	/** BigMode */
+	/** Big mode on/off */
 	private var big:Boolean by DelegateMenuItem(itemBig)
+
+	override val menu = MenuList("retromarathon", itemGame, itemSpeed, itemLevel, itemHeight, itemBig)
 
 	/** Max interval of I-piece */
 	private var drought = 0
@@ -105,9 +115,9 @@ class RetroN:AbstractMode() {
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
 		lastScore = 0
-		softdropscore = 0
-		harddropscore = 0
-		levellines = 0
+		sdScore = 0
+		hdScore = 0
+		lvLines = 0
 		drought = 0
 		droughts.removeAll {true}
 
@@ -132,13 +142,13 @@ class RetroN:AbstractMode() {
 			ruleOpt.nextDisplay = 1
 			ruleOpt.harddropEnable = false
 
-			owSkin = if(speedtype==2!=startLevel>=10) 8 else 9
+			owSkin = if(speedType==2!=startLevel>=10) 8 else 9
 			owDelayCancel = 0
 		}
 
 		owner.bgMan.bg = startLevel
 		if(owner.bgMan.bg>19) owner.bgMan.bg = 19
-		levellines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
+		lvLines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
 		engine.frameColor = GameEngine.FRAME_SKIN_GB
 	}
 
@@ -148,11 +158,11 @@ class RetroN:AbstractMode() {
 	private fun setSpeed(engine:GameEngine) {
 		var lv = engine.statistics.level
 
-		engine.owSkin = if(speedtype==2!=lv>=10) 8 else 9
-		if(speedtype>0) {
+		engine.owSkin = if(speedType==2!=lv>=10) 8 else 9
+		if(speedType>0) {
 			lv = maxOf(0, minOf(lv, tableDenominatorHard.size-1))
 
-			engine.speed.gravity = if(speedtype>1) 60000 else 50007
+			engine.speed.gravity = if(speedType>1) 60000 else 50007
 			engine.speed.denominator = tableDenominatorHard[lv]*60000
 			engine.speed.das = 12
 			engine.owARR = 4
@@ -168,74 +178,9 @@ class RetroN:AbstractMode() {
 	}
 
 	/** Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// Menu
-		if(!owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 4)
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						gametype += change
-						if(gametype<0) gametype = GAMETYPE_MAX-1
-						if(gametype>GAMETYPE_MAX-1) gametype = 0
-					}
-					1 -> {
-						speedtype += change
-						if(speedtype<0) speedtype = SPEED_MAX-1
-						if(speedtype>SPEED_MAX-1) speedtype = 0
-					}
-					2 -> {
-						startLevel += change
-						if(startLevel<0) startLevel = 19
-						if(startLevel>19) startLevel = 0
-						owner.bgMan.bg = startLevel
-						levellines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
-					}
-					3 -> {
-						startheight += change
-						if(startheight<0) startheight = 5
-						if(startheight>5) startheight = 0
-					}
-					4 -> big = !big
-				}
-			}
-
-			// Check for A button, when pressed this will begin the game
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				return false
-			}
-
-			// Check for B button, when pressed this will shut down the game engine.
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
-		}
-
-		return true
-	}
-
-	/** Renders game setup screen */
-	override fun renderSetting(engine:GameEngine) {
-		drawMenu(
-			engine,
-			receiver,
-			0,
-			COLOR.BLUE,
-			0,
-			"GAME TYPE" to GAMETYPE_NAME[gametype],
-			"DIFFICULTY" to SpeedLevel.entries[speedtype].showName,
-			"Level" to LEVEL_NAME[startLevel],
-			"HEIGHT" to startheight,
-			"BIG" to big
-		)
+	override fun onSettingChanged(engine:GameEngine) {
+		lvLines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
+		super.onSettingChanged(engine)
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
@@ -255,23 +200,22 @@ class RetroN:AbstractMode() {
 					dasStoreChargeOnNeutral = true
 					dasRedirectInDelay = true
 				}
+				createFieldIfNeeded()
 			}
-
-
-			engine.createFieldIfNeeded()
-			fillGarbage(engine, startheight)
+			fillGarbage(engine, startHeight)
+			lvLines = minOf((startLevel+1)*10, maxOf(100, (startLevel-5)*10))
 		}
 		return false
 	}
 
-	/** This function will be called before the game actually begins (after
-	 * Ready&Go screen disappears) */
+	/** This function will be called before the game actually begins
+	 * (after Ready&Go screen disappears) */
 	override fun startGame(engine:GameEngine) {
 		engine.statistics.level = startLevel
 		engine.statistics.levelDispAdd = 1
 		engine.big = big
 
-		owner.musMan.bgm = BGM.RetroN((gametype+startLevel)%3)
+		owner.musMan.bgm = BGM.RetroN((gameType+startLevel)%3)
 		setSpeed(engine)
 	}
 
@@ -290,7 +234,7 @@ class RetroN:AbstractMode() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
-		receiver.drawScoreFont(engine, 0, 1, "(${SPEED_NAME[speedtype]} ${GAMETYPE_NAME[gametype]})", COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 1, "(${SPEED_NAME[speedType]} ${GAMETYPE_NAME[gameType]})", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
@@ -300,16 +244,16 @@ class RetroN:AbstractMode() {
 					receiver.drawScoreGrade(
 						engine, 0, 4+i, "%2d".format(i+1), if(rankingRank==i) COLOR.RAINBOW else COLOR.YELLOW
 					)
-					receiver.drawScoreNum(engine, 3, 4+i, GeneralUtil.capsNum(rankingScore[gametype][i], 6), i==rankingRank)
+					receiver.drawScoreNum(engine, 3, 4+i, GeneralUtil.capsNum(rankingScore[gameType][i], 6), i==rankingRank)
 					receiver.drawScoreNum(
-						engine, 12, 4+i, GeneralUtil.capsNum(rankingLines[gametype][i], 3), i==rankingRank
+						engine, 12, 4+i, GeneralUtil.capsNum(rankingLines[gameType][i], 3), i==rankingRank
 					)
 					receiver.drawScore(
 						engine,
 						17,
 						4+i,
-						LEVEL_NAME[rankingLevel[gametype][i]],
-						font = if(rankingLevel[gametype][i]<30) FONT.NUM else FONT.NORMAL,
+						LEVEL_NAME[rankingLevel[gameType][i]],
+						font = if(rankingLevel[gameType][i]<30) FONT.NUM else FONT.NORMAL,
 						flag = i==rankingRank
 					)
 				}
@@ -323,10 +267,10 @@ class RetroN:AbstractMode() {
 
 			receiver.drawScoreFont(engine, 0, 6, "LINE", COLOR.BLUE)
 			receiver.drawScore(
-				engine, 0, 7, when(gametype) {
+				engine, 0, 7, when(gameType) {
 					GAMETYPE_TYPE_B -> "-%2d".format(maxOf(25-engine.statistics.lines, 0))
 					else -> GeneralUtil.capsNum(engine.statistics.lines, 3)
-				}, if(gametype!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.NORMAL, scale = 2f
+				}, if(gameType!=GAMETYPE_TYPE_B&&engine.statistics.lines<999) FONT.NUM else FONT.NORMAL, scale = 2f
 			)
 
 			receiver.drawScoreFont(engine, 0, 9, "Level", COLOR.BLUE)
@@ -346,12 +290,12 @@ class RetroN:AbstractMode() {
 	/** Calculates line-clear score
 	 * (This function will be called even if no lines are cleared) */
 	override fun calcScore(engine:GameEngine, ev:ScoreEvent):Int {
-		softdropscore /= 2
-		engine.statistics.scoreSD += softdropscore
-		softdropscore = 0
+		sdScore /= 2
+		engine.statistics.scoreSD += sdScore
+		sdScore = 0
 
-		engine.statistics.scoreHD += harddropscore
-		harddropscore = 0
+		engine.statistics.scoreHD += hdScore
+		hdScore = 0
 
 		// Line clear score
 		var pts = 0
@@ -365,8 +309,8 @@ class RetroN:AbstractMode() {
 		}
 
 		// B-TYPE game completed
-		if(gametype==GAMETYPE_TYPE_B&&engine.statistics.lines>=25) {
-			pts += (engine.statistics.level+startheight)*1000
+		if(gameType==GAMETYPE_TYPE_B&&engine.statistics.lines>=25) {
+			pts += (engine.statistics.level+startHeight)*1000
 			engine.ending = 1
 			engine.gameEnded()
 		}
@@ -377,7 +321,7 @@ class RetroN:AbstractMode() {
 			engine.statistics.scoreLine += pts
 		}
 
-		if(gametype!=GAMETYPE_ARRANGE&&engine.statistics.score>999999&&maxScoredTime==null) {
+		if(gameType!=GAMETYPE_ARRANGE&&engine.statistics.score>999999&&maxScoredTime==null) {
 			maxScoredTime = engine.statistics.time
 			engine.playSE("applause5")
 		}
@@ -385,14 +329,14 @@ class RetroN:AbstractMode() {
 		// Update meter
 		engine.meterColor = GameEngine.METER_COLOR_LEVEL
 		engine.meterValue =
-			if(gametype==GAMETYPE_TYPE_B) minOf(engine.statistics.lines, 25)/25f else
+			if(gameType==GAMETYPE_TYPE_B) minOf(engine.statistics.lines, 25)/25f else
 				engine.statistics.lines%10*1f/9f
 
-		if(gametype!=GAMETYPE_TYPE_B&&engine.statistics.lines>=levellines) {
+		if(gameType!=GAMETYPE_TYPE_B&&engine.statistics.lines>=lvLines) {
 			// Level up
 			engine.statistics.level++
 
-			levellines += 10
+			lvLines += 10
 
 			//engine.framecolor = engine.statistics.level
 			if(engine.statistics.level>255) engine.statistics.level = 0
@@ -407,12 +351,12 @@ class RetroN:AbstractMode() {
 
 	/** This function will be called when soft-drop is used */
 	override fun afterSoftDropFall(engine:GameEngine, fall:Int) {
-		softdropscore += fall
+		sdScore += fall
 	}
 
 	/** This function will be called when hard-drop is used */
 	override fun afterHardDropFall(engine:GameEngine, fall:Int) {
-		harddropscore += fall
+		hdScore += fall
 	}
 
 	override fun onGameOver(engine:GameEngine):Boolean {
@@ -477,32 +421,12 @@ class RetroN:AbstractMode() {
 		if(!owner.replayMode&&!big&&engine.ai==null) {
 			updateRanking(
 				engine.statistics.score, engine.statistics.lines, engine.statistics.level,
-				gametype+speedtype*GAMETYPE_MAX
+				gameType+speedType*GAMETYPE_MAX
 			)
 
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Load the settings from [prop] */
-	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		gametype = prop.getProperty("retromarathon.gametype", 0)
-		speedtype = prop.getProperty("retromarathon.speedtype", 0)
-		startLevel = prop.getProperty("retromarathon.startLevel", 0)
-		startheight = prop.getProperty("retromarathon.startheight", 0)
-		big = prop.getProperty("retromarathon.big", false)
-	}
-
-	/** Save the settings
-	 * @param prop CustomProperties
-	 */
-	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("retromarathon.gametype", gametype)
-		prop.setProperty("retromarathon.speedtype", speedtype)
-		prop.setProperty("retromarathon.startLevel", startLevel)
-		prop.setProperty("retromarathon.startheight", startheight)
-		prop.setProperty("retromarathon.big", big)
 	}
 
 	/** Update the ranking

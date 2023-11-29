@@ -76,7 +76,7 @@ class MarathonZone:NetDummyMode() {
 	private var bgmLv = 0
 
 	private val itemLevel = LevelMenuItem("startlevel", "Level", EventReceiver.COLOR.BLUE, 0, 0..19)
-	/** Level at start time  */
+	/** Level at start time */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
 	private val itemMode = StringsMenuItem("goalType", "GOAL", EventReceiver.COLOR.BLUE, 0,

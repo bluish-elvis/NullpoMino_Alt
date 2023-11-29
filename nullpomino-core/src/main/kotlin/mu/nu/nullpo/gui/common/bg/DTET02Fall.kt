@@ -45,9 +45,9 @@ PSkS1(5) = 144: PSkS2(5) = 72
 PSkS1(6) = 48: PSkS2(6) = 48
 PSkS1(7) = 0: PSkS2(7) = 24
 PSkP = Rnd*/
-	val dy = listOf(0, 24, 72, 144, 240, 336, 408, 456)
-	val dh = listOf(0 to 24, 48 to 48, 144 to 72, 288 to 96, 288 to 96, 144 to 72, 48 to 48, 0 to 24)
-	var py = Random.nextFloat()
+	private val dy = listOf(0, 24, 72, 144, 240, 336, 408, 456)
+	private val dh = listOf(0 to 24, 48 to 48, 144 to 72, 288 to 96, 288 to 96, 144 to 72, 48 to 48, 0 to 24)
+	private var py = Random.nextFloat()
 	override var tick:Int
 		get() = (py*100).toInt()
 		set(value) {

@@ -129,11 +129,8 @@ internal class StateInGame:BasicGameState() {
 				// ルール
 				val ruleName =
 					strRulePath ?: pGl.rule.getOrNull(i)?.getOrNull(it.mode?.gameStyle?.ordinal ?: 0)?.path
+				val ruleOpt = Util.loadRule(ruleName)
 
-				val ruleOpt:RuleOptions = if(!ruleName.isNullOrEmpty()) {
-					log.info("Load rule options from $ruleName")
-					Util.loadRule(ruleName)
-				} else RuleOptions()
 				e.ruleOpt = ruleOpt
 
 				// NEXT順生成アルゴリズム

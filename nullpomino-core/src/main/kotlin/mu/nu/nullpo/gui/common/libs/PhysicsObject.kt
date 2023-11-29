@@ -51,7 +51,7 @@ abstract class PhysicsObject @JvmOverloads constructor(
 	private var anchorPoint:AnchorPoint = AnchorPoint.TL
 ):Cloneable {
 	/**
-	 * Property identitifiers. Is set automatically during constructions but can be overridden by external methods.
+	 * Property identifiers. Is set automatically during constructions but can be overridden by external methods.
 	 * isStatic is default true if the object cannot move.
 	 * canCollide is default true if the object can collide with other objects.
 	 * isDestructible is default true if the object can be destroyed.

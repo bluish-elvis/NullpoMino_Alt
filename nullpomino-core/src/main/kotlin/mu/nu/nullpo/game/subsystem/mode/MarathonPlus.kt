@@ -309,17 +309,17 @@ class MarathonPlus:NetDummyMode() {
 		} else {
 			receiver.drawScoreFont(engine, 0, 3, "LINE", COLOR.BLUE)
 			val level = engine.statistics.level
-			var strline = String.format(
+			var strLine = String.format(
 				if(startLevel) "%03d/100"
 				else if(level>=tableGameClearLevel[goalType]||level>=50) "%d"
 				else "%3d/%3d", engine.statistics.lines, nextsec
 			)
-			if(level>=tableGameClearLevel[goalType]&&!startLevel) strline += "/$bonusLines"
-			receiver.drawScoreNum(engine, 5, 2, strline, 2f)
-			val scget:Boolean = scDisp<engine.statistics.score
+			if(level>=tableGameClearLevel[goalType]&&!startLevel) strLine += "/$bonusLines"
+			receiver.drawScoreNum(engine, 5, 2, strLine, 2f)
+			val scGet:Boolean = scDisp<engine.statistics.score
 			receiver.drawScoreFont(engine, 0, 4, "Score", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 5, 4, "+$lastScore")
-			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scget, 2f)
+			receiver.drawScoreNum(engine, 0, 5, "$scDisp", scGet, 2f)
 
 			receiver.drawScoreFont(engine, 0, 7, "Level", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 5, 7, "$level/"+tableGameClearLevel[goalType], 2f)

@@ -41,7 +41,9 @@ import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
+import kotlin.random.Random
 
 /** MISSION MANIA mode */
 class GrandOrders:NetDummyMode() {
@@ -52,11 +54,6 @@ class GrandOrders:NetDummyMode() {
 	/** Original level time */
 	private var levelTimerMax = 0
 
-	/** Current lines (for levelup) */
-	private var norm = 0
-
-	/** Lines for Next level */
-	private var nextLv = 0
 	/** Current BGM number */
 	private var bgmLv = 0
 
@@ -76,9 +73,7 @@ class GrandOrders:NetDummyMode() {
 	private val sectionAvgTime
 		get() = sectionTime.filter {it>0}.average().toFloat()
 
-	private val itemMode = StringsMenuItem(
-		"goalType", "DIFFICULTY", COLOR.BLUE, 0, courses.map {it.showName}
-	)
+	private val itemMode = StringsMenuItem("goalType", "COURSE", COLOR.BLUE, 0, courses.map {it.showName})
 	/** Game type */
 	private var goalType:Int by DelegateMenuItem(itemMode)
 	private var nowCourse
@@ -87,10 +82,18 @@ class GrandOrders:NetDummyMode() {
 			goalType = courses.indexOfFirst {it==value}
 		}
 
-	private val itemLevel = LevelMenuItem(
-		"startlevel", "LEVEL", COLOR.RED, 0,
-		0..(courses.maxOfOrNull {it.goalLevel} ?: 0), true, true
-	)
+	/** Current Mission No. */
+	private var missionPos = 0
+	private val nowMission get() = nowCourse.missions[missionPos]
+
+	/** Current lines (for level up) */
+	private val norm get() = nowMission.prog
+
+	/** Lines for Next level */
+	private val nextLv get() = nowMission.norm
+
+	private val itemLevel =
+		LevelMenuItem("startlevel", "LEVEL", COLOR.RED, 0, 0..(courses.maxOfOrNull {it.goalLevel} ?: 0), true, true)
 	/** Selected starting level */
 	private var startLevel:Int by DelegateMenuItem(itemLevel)
 
@@ -102,7 +105,7 @@ class GrandOrders:NetDummyMode() {
 	/** Show section time */
 	private var showST:Boolean by DelegateMenuItem(itemST)
 
-	override val menu = MenuList("timeattack", itemMode, itemLevel, itemST, itemBig)
+	override val menu = MenuList("missioncourse", itemMode, itemLevel, itemST, itemBig)
 	/** Version of this mode */
 	private var version = 0
 
@@ -135,9 +138,9 @@ class GrandOrders:NetDummyMode() {
 	 * screen. */
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
-		norm = 0
 		goalType = 0
 		startLevel = 0
+		missionPos = 0
 		rollTime = 0
 		lastLineTime = 0
 		rollStarted = false
@@ -179,14 +182,14 @@ class GrandOrders:NetDummyMode() {
 		// Show outline only
 		engine.blockShowOutlineOnly = nowMission is Mission.Dark
 		// Bone blocks
-		engine.bone = (nowMission is Mission.Monochrome)
+		engine.bone = nowMission is Mission.Monochrome
 
 		// for test
 		/* engine.speed.are = 25; engine.speed.areLine = 25;
  * engine.speed.lineDelay = 10; engine.speed.lockDelay = 30;
  * engine.speed.das = 12; levelTimerMax = levelTimer = 3600 * 3; */
 
-		levelTimer = nowMission.time
+		levelTimer = nowMission.time*60
 		levelTimerMax = levelTimer
 		// Blocks fade for HELL-X
 		engine.blockHidden = if(nowMission is Mission.Dark) nowMission.misc else -1
@@ -199,49 +202,44 @@ class GrandOrders:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	private fun setHeboHidden(engine:GameEngine) {
-		val nowMission = nowCourse.missions[engine.statistics.level]
-		if(nowMission is Mission.Shutter) {
-			engine.heboHiddenEnable = true
-			when(nowMission.misc) {
-				1 -> {
-					engine.heboHiddenYLimit = 15
-					engine.heboHiddenTimerMax = (engine.heboHiddenYNow+2)*120
-				}
-				2 -> {
-					engine.heboHiddenYLimit = 17
-					engine.heboHiddenTimerMax = (engine.heboHiddenYNow+1)*90
-				}
-				3 -> {
-					engine.heboHiddenYLimit = 19
-					engine.heboHiddenTimerMax = engine.heboHiddenYNow*60+60
-				}
-				4 -> {
-					engine.heboHiddenYLimit = 19
-					engine.heboHiddenTimerMax = engine.heboHiddenYNow*45+45
-				}
-				5 -> {
-					engine.heboHiddenYLimit = 19
-					engine.heboHiddenTimerMax = engine.heboHiddenYNow*30+30
-				}
-				6 -> {
-					engine.heboHiddenYLimit = 19
-					engine.heboHiddenTimerMax = engine.heboHiddenYNow*7+15
-				}
-				7 -> {
-					engine.heboHiddenYLimit = 20
-					engine.heboHiddenTimerMax = engine.heboHiddenYNow*3+15
-				}
+		if(engine.heboHiddenEnable) when(nowMission.misc) {
+			1 -> {
+				engine.heboHiddenYLimit = 15
+				engine.heboHiddenTimerMax = (engine.heboHiddenYNow+2)*120
 			}
-		} else
-			engine.heboHiddenEnable = false
+			2 -> {
+				engine.heboHiddenYLimit = 17
+				engine.heboHiddenTimerMax = (engine.heboHiddenYNow+1)*90
+			}
+			3 -> {
+				engine.heboHiddenYLimit = 19
+				engine.heboHiddenTimerMax = engine.heboHiddenYNow*60+60
+			}
+			4 -> {
+				engine.heboHiddenYLimit = 19
+				engine.heboHiddenTimerMax = engine.heboHiddenYNow*45+45
+			}
+			5 -> {
+				engine.heboHiddenYLimit = 19
+				engine.heboHiddenTimerMax = engine.heboHiddenYNow*30+30
+			}
+			6 -> {
+				engine.heboHiddenYLimit = 19
+				engine.heboHiddenTimerMax = engine.heboHiddenYNow*7+15
+			}
+			7 -> {
+				engine.heboHiddenYLimit = 20
+				engine.heboHiddenTimerMax = engine.heboHiddenYNow*3+15
+			}
+		} else engine.heboHiddenYLimit = 0
 	}
 
 	/** Main routine for game setup screen */
 	override fun onSettingChanged(engine:GameEngine) {
-		if(startLevel>nowCourse.goalLevel-1) startLevel =
-			if(menuCursor!=menu.items.indexOf(itemLevel)) 0 else nowCourse.goalLevel-1
+		if(startLevel>nowCourse.goalLevel-1) startLevel = if(menuCursor!=menu.items.indexOf(itemLevel)) 0 else nowCourse.goalLevel-1
 		engine.owner.bgMan.bg = startLevel
 		engine.statistics.level = startLevel
+		missionPos = engine.statistics.level
 		setSpeed(engine)
 		super.onSettingChanged(engine)
 	}
@@ -252,11 +250,10 @@ class GrandOrders:NetDummyMode() {
 			engine.statistics.level = startLevel
 			engine.statistics.levelDispAdd = 1
 			engine.big = big
-			val nowMission = nowCourse.missions[engine.statistics.level]
-			norm = 0
-			nextLv = nowMission.norm
+			missionPos = engine.statistics.level
 			setSpeed(engine)
 			bgmLv = maxOf(0, nowCourse.bgmChange.indexOfLast {it<=startLevel}.let {if(it<0) nowCourse.bgmChange.size-1 else it})
+			nowMission.ready(engine)
 		}
 		return false
 	}
@@ -301,18 +298,19 @@ class GrandOrders:NetDummyMode() {
 				}
 			}
 		} else {
-			receiver.drawScoreFont(engine, 0, 3, "Level", COLOR.BLUE)
+			receiver.drawScoreFont(engine, 0, 3, "Missions", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 5, 2, "%02d".format(engine.statistics.level+1), 2f)
 			receiver.drawScoreNum(engine, 8, 3, "/%3d".format(nowCourse.goalLevel))
-			receiver.drawScoreNum(engine, 0, 4, "%3d/%3d".format(norm, nextLv))
 
-			receiver.drawScoreSpeed(engine, 0, 5, engine.speed.rank, 6f)
+			receiver.drawScoreFont(engine, 0, 6, nowMission.showName, COLOR.BLUE)
+			receiver.drawScoreSpeed(engine, 0, 7, engine.speed.rank, 6f)
+			receiver.drawScoreNum(engine, 0, 8, "%3d/%3d".format(norm, nextLv))
 
-			receiver.drawScoreFont(engine, 0, 7, "TIME LIMIT", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 8, levelTimer.toTimeStr, levelTimer in 1..<600&&levelTimer%4==0, 2f)
+			receiver.drawScoreFont(engine, 0, 10, "TIME LIMIT", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 11, levelTimer.toTimeStr, levelTimer in 1..<600&&levelTimer%4==0, 2f)
 
-			receiver.drawScoreFont(engine, 0, 10, "TOTAL TIME", COLOR.BLUE)
-			receiver.drawScoreNum(engine, 0, 11, engine.statistics.time.toTimeStr, 2f)
+			receiver.drawScoreFont(engine, 0, 13, "TOTAL TIME", COLOR.BLUE)
+			receiver.drawScoreNum(engine, 0, 14, engine.statistics.time.toTimeStr, 2f)
 
 			// Remaining ending time
 			if(engine.gameActive&&engine.ending==2&&engine.staffrollEnable) {
@@ -349,8 +347,7 @@ class GrandOrders:NetDummyMode() {
 	/** This function will be called when the piece is active */
 	override fun onMove(engine:GameEngine):Boolean {
 		// Enable timer again after the levelup
-		if(engine.ending==0&&engine.statc[0]==0&&!engine.timerActive&&!engine.holdDisable)
-			engine.timerActive = true
+		if(engine.ending==0&&engine.statc[0]==0&&!engine.timerActive&&!engine.holdDisable) engine.timerActive = true
 
 		// Ending start
 		if(engine.ending==2&&engine.staffrollEnable&&!rollStarted&&!netIsWatch) {
@@ -371,29 +368,26 @@ class GrandOrders:NetDummyMode() {
 	override fun onLast(engine:GameEngine) {
 		super.onLast(engine)
 		// Level timer
-		if(engine.timerActive&&engine.ending==0)
-			if(levelTimer>0) {
-				levelTimer--
-				if(levelTimer<=600&&levelTimer%60==0) engine.playSE("countdown")
-			} else if(!netIsWatch) {
-				engine.resetStatc()
-				engine.stat = GameEngine.Status.GAMEOVER
-			}
+		if(engine.timerActive&&engine.ending==0) if(levelTimer>0) {
+			levelTimer--
+			if(levelTimer<=600&&levelTimer%60==0) engine.playSE("countdown")
+		} else if(!netIsWatch) {
+			engine.resetStatc()
+			engine.stat = GameEngine.Status.GAMEOVER
+		}
 
 		// Update meter
 		if(engine.ending==0&&levelTimerMax!=0) {
 			engine.meterValue = levelTimer/2f/levelTimerMax
-			if(norm%10>0)
-				engine.meterValue += ((1-engine.meterValue)*(norm%10)*levelTimer/lastLineTime/10)
+			if(norm%10>0) engine.meterValue += ((1-engine.meterValue)*(norm%10)*levelTimer/lastLineTime/10)
 			engine.meterColor = GameEngine.METER_COLOR_LIMIT
 		}
 
 		// Section time
-		if(engine.timerActive&&engine.ending==0)
-			if(engine.statistics.level>=0&&engine.statistics.level<sectionTime.size) {
-				sectionTime[engine.statistics.level] = engine.statistics.time-sectionTime.take(engine.statistics.level).sum()
-				setHeboHidden(engine)
-			}
+		if(engine.timerActive&&engine.ending==0) if(engine.statistics.level>=0&&engine.statistics.level<sectionTime.size) {
+			sectionTime[engine.statistics.level] = engine.statistics.time-sectionTime.take(engine.statistics.level).sum()
+			setHeboHidden(engine)
+		}
 
 		// Ending
 		if(engine.gameActive&&engine.ending==2) {
@@ -415,8 +409,7 @@ class GrandOrders:NetDummyMode() {
 
 	override fun onGameOver(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
-			if(engine.lives>0)
-				setSpeed(engine)
+			if(engine.lives>0) setSpeed(engine)
 		}
 		return super.onGameOver(engine)
 	}
@@ -428,27 +421,14 @@ class GrandOrders:NetDummyMode() {
 
 		val mission = nowCourse.missions[engine.statistics.level]
 		val lv = engine.statistics.level
-		val li = ev.lines
+
 		// Add lines to norm
-		when(mission) {
-			is Mission.Doubles -> if(if(mission.misc==1) ev.lines>=2 else ev.lines==2) norm++ else if(mission.misc==2) norm=0
-			is Mission.Triples -> if(if(mission.misc==1) ev.lines>=3 else ev.lines==3) norm++ else if(mission.misc==2) norm=0
-			is Mission.Quads -> if(ev.lines==4) norm++
-			is Mission.Split -> if(ev.split&&(mission.misc !in 2..3||ev.lines==mission.misc)) if(mission.misc<=0) norm += li else norm++
-			is Mission.Twister -> if(ev.twist&&(mission.misc !in 1..3||ev.lines==mission.misc)) if(mission.misc<=0) norm += li else norm++
-			else -> norm += li
-		}
-		if(li>0) lastLineTime = levelTimer
-		// Decrease Pressure Hidden
-		if(engine.heboHiddenEnable&&li>0) {
-			engine.heboHiddenTimerNow = 0
-			engine.heboHiddenYNow -= li
-			if(engine.heboHiddenYNow<0) engine.heboHiddenYNow = 0
-		}
+		val checked = mission.checkProgress(engine, ev)
+		if(checked) lastLineTime = levelTimer
 
 		// Level up
-		if(li>0&&norm>=nextLv)
-		// Game completed
+		if(checked&&norm>=nextLv) {
+			// Game completed
 			if(lv+engine.statistics.levelDispAdd>=nowCourse.goalLevel) {
 				owner.musMan.fadeSW = true
 				engine.playSE("levelup_section")
@@ -468,15 +448,14 @@ class GrandOrders:NetDummyMode() {
 					engine.statistics.rollClear = 2
 				}
 			} else {
+				nowMission.unload(engine)
 				if(nowCourse.bgmChange.any {it==lv}) {
 					owner.musMan.fadeSW = true// BGM fadeout
 					engine.playSE("levelup_section")
 				}
-				norm = 0
-				nextLv = nowCourse.missions[lv+1].norm
 				engine.playSE("levelup")
 				engine.statistics.level++
-
+				missionPos = engine.statistics.level
 				owner.bgMan.nextBg = engine.statistics.level+nowCourse.bgOffset
 
 				sectionsDone++
@@ -484,16 +463,21 @@ class GrandOrders:NetDummyMode() {
 				engine.timerActive = false // Stop timer until the next piece becomes active
 				engine.stat = GameEngine.Status.READY
 			}
+		}
 		return 0
+	}
+
+	override fun onARE(engine:GameEngine):Boolean {
+		if(engine.statc[0]==0) nowMission.ready(engine)
+
+		return super.onARE(engine)
 	}
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		if(!netIsWatch)
-			receiver.drawMenuFont(
-				engine, 0, 0, "\u0090\u0093 PAGE"+(engine.statc[1]+1)
-					+"/3", COLOR.RED
-			)
+		if(!netIsWatch) receiver.drawMenuFont(
+			engine, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED
+		)
 
 		if(engine.statc[1]==0) {
 			val gcolor = when(engine.statistics.rollClear) {
@@ -508,8 +492,7 @@ class GrandOrders:NetDummyMode() {
 			receiver.drawMenuFont(engine, 6, 3, "Lines", COLOR.BLUE, .8f)
 
 			drawResultStats(
-				engine, receiver, 4, COLOR.BLUE, Statistic.LPM, Statistic.TIME, Statistic.PPS,
-				Statistic.PIECE
+				engine, receiver, 4, COLOR.BLUE, Statistic.LPM, Statistic.TIME, Statistic.PPS, Statistic.PIECE
 			)
 			drawResultRank(engine, receiver, 14, COLOR.BLUE, rankingRank)
 			drawResultNetRank(engine, receiver, 16, COLOR.BLUE, netRankingRank[0])
@@ -521,9 +504,7 @@ class GrandOrders:NetDummyMode() {
 			var x:Int
 			while(i<10&&i<sectionTime.size-engine.statc[1]*10) {
 				x = i+engine.statc[1]*10-10
-				if(x>=0)
-					if(sectionTime[x]>0)
-						receiver.drawMenuNum(engine, 2, 3+i, sectionTime[x].toTimeStr)
+				if(x>=0) if(sectionTime[x]>0) receiver.drawMenuNum(engine, 2, 3+i, sectionTime[x].toTimeStr)
 				i++
 			}
 			if(sectionAvgTime>0) {
@@ -534,10 +515,8 @@ class GrandOrders:NetDummyMode() {
 
 		if(netIsPB) receiver.drawMenuFont(engine, 2, 20, "NEW PB", COLOR.ORANGE)
 
-		if(netIsNetPlay&&netReplaySendStatus==1)
-			receiver.drawMenuFont(engine, 0, 21, "SENDING...", COLOR.PINK)
-		else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2)
-			receiver.drawMenuFont(engine, 1, 21, "A: RETRY", COLOR.RED)
+		if(netIsNetPlay&&netReplaySendStatus==1) receiver.drawMenuFont(engine, 0, 21, "SENDING...", COLOR.PINK)
+		else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2) receiver.drawMenuFont(engine, 1, 21, "A: RETRY", COLOR.RED)
 	}
 
 	/** Additional routine for game result screen */
@@ -566,8 +545,7 @@ class GrandOrders:NetDummyMode() {
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(
-			"${engine.playerID}.net.netPlayerName",
-			netPlayerName
+			"${engine.playerID}.net.netPlayerName", netPlayerName
 		)
 
 		if(!owner.replayMode&&startLevel==0&&!big&&engine.ai==null) {
@@ -578,30 +556,11 @@ class GrandOrders:NetDummyMode() {
 		return false
 	}
 
-	/** Load the settings from [prop] */
-	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		goalType = prop.getProperty("timeattack.gametype", 0)
-		startLevel = prop.getProperty("timeattack.startLevel", 0)
-		big = prop.getProperty("timeattack.big", false)
-		showST = prop.getProperty("timeattack.showsectiontime", true)
-		version = prop.getProperty("timeattack.version", 0)
-	}
-
-	/** Save the settings
-	 * @param prop CustomProperties
-	 */
-	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("timeattack.gametype", goalType)
-		prop.setProperty("timeattack.startLevel", startLevel)
-		prop.setProperty("timeattack.big", big)
-		prop.setProperty("timeattack.showsectiontime", showST)
-		prop.setProperty("timeattack.version", version)
-	}
-
 	/** Update the ranking
+	 * @param lf Lives
 	 * @param ln Lines
 	 * @param time Time
-	 * @param type Game type
+	 * @param type Course type
 	 * @param clear Game completed flag
 	 */
 	private fun updateRanking(lf:Int, ln:Int, time:Int, type:Int, clear:Int) {
@@ -624,20 +583,18 @@ class GrandOrders:NetDummyMode() {
 
 	/** This function will check the ranking and returns which place you are.
 	 * (-1: Out of rank)
-	 * @param lf Lifes
+	 * @param lf Lives
 	 * @param ln Lines
 	 * @param time Time
-	 * @param type Game type
+	 * @param type Course type
 	 * @param clear Game completed flag
 	 * @return Place (First place is 0. -1 is Out of Rank)
 	 */
 	private fun checkRanking(lf:Int, ln:Int, time:Int, type:Int, clear:Int):Int {
-		for(i in 0..<RANKING_MAX)
-			if(clear>rankingRollClear[type][i]) return i
-			else if(clear==rankingRollClear[type][i]&&ln>rankingLines[type][i]) return i
-			else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf>rankingLives[type][i]) return i
-			else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf==rankingLives[type][i]&&time<rankingTime[type][i])
-				return i
+		for(i in 0..<RANKING_MAX) if(clear>rankingRollClear[type][i]) return i
+		else if(clear==rankingRollClear[type][i]&&ln>rankingLines[type][i]) return i
+		else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf>rankingLives[type][i]) return i
+		else if(clear==rankingRollClear[type][i]&&ln==rankingLines[type][i]&&lf==rankingLives[type][i]&&time<rankingTime[type][i]) return i
 
 		return -1
 	}
@@ -671,7 +628,7 @@ class GrandOrders:NetDummyMode() {
 		levelTimer = message[13].toInt()
 		levelTimerMax = message[14].toInt()
 		rollTime = message[15].toInt()
-		norm = message[16].toInt()
+		nowMission.prog = message[16].toInt()
 		engine.owner.bgMan.bg = message[17].toInt()
 		engine.meterValue = message[18].toFloat()
 		engine.meterColor = message[19].toInt()
@@ -726,22 +683,315 @@ class GrandOrders:NetDummyMode() {
 		private const val CURRENT_VERSION = 1
 		private val courses = Course.entries
 		/** Game types */
-		sealed class Mission(val lv:Int = 0, val norm:Int = 5, val time:Int = 90, val misc:Int = 0) {
+		sealed class Mission(val lv:Int = 0,
+			/**この問題のミッションクリアまでのノルマカウントです。**/
+			val norm:Int = 5,
+			/**この問題の制限時間です。ミッションスタート時から減っていき、これが0になるとゲームオーバーです。
+			（耐久では0になった状態で操作中のブロックを設置するとクリアになる）*/
+			val time:Int = 90, val misc:Int = 0) {
+			/** 合計して[norm]ライン数を消すとクリアとなります。*/
 			class LevelStar(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+			/**高速落下状態で、合計して[norm]ラインを消すとクリアです。*/
 			class SpeedStar(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+			/**速度はSpeed Starと同じです。時間切れまで耐えてください。
+			　無限回転を行っているとタイマーが減らなくなります。*/
+			class Enduro(lv:Int, time:Int):Mission(lv, time, time)
+
+			/** 1ライン消しを[norm]回数行うとクリアです。*/
+			class Singles(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
+			/** 2ライン消しを[norm]回数行うとクリアです。
+			 * @param misc 0:2ライン消しを1回行うとNORMが1つ上昇します。
+			 *   1:2ライン消し以上を1回行うとNORMが1つ上昇します。
+			 *   2:2ライン消しを連続で行った回数がNORMになります。それ以外では０に戻ります。
+			 *   2:2ライン消し以上を連続で行った回数がNORMになります。それ未満では０に戻ります。*/
 			class Doubles(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
+			/** 3ライン消しを[norm]回数行うとクリアです。
+			 * @param misc 0:3ライン消しを1回行うとNORMが1つ上昇します。
+			 *  1:3ライン消し以上を1回行うとNORMが1つ上昇します。
+			 *  2:3ライン消しを連続で行った回数がNORMになります。それ以外では０に戻ります。
+			 *  3:3ライン消し以上を連続で行った回数がNORMになります。それ未満では０に戻ります。*/
 			class Triples(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
+			/** 4ライン消しを[norm]回数行うとクリアです。*/
 			class Quads(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
+
+			/**1ライン消し、2ライン消し、3ライン消し、4ライン消しをそれぞれ1回以上するとクリアです。*/
+			class Cycle(lv:Int, time:Int):Mission(lv, 4, time) {
+				var tmp = 0
+			}
+
+			/**[norm]回以上連続でラインを消すコンボを達成すればクリアです。
+			 * @param multiLine trueにすると1ライン消しがコンボにカウントされなくなります。*/
+			class Combo(lv:Int, norm:Int, time:Int, multiLine:Boolean = false):Mission(lv, norm, time, multiLine.toInt())
+			/** [norm]回以上連続で4ライン消しやTwistを行えばクリアです。
+			途中でそれら以外を行うと1からやり直しになります。*/
+			class B2BChain(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
+			/** 中抜きで複数ライン消しを[norm]回数行うとクリアです。*/
 			class Split(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
+			/** T-SPINでライン消しを[norm]回数行うとクリアです。 消した列数は関係ありません。*/
 			class Twister(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
-			class Cycle(lv:Int, time:Int):Mission(lv, 4, time)
+			/*
+
+・X-RAY
+・カラー (COLOR)
+・ロールロール (ROLL ROLL)
+・ミラー (MIRROR)
+　常に同名のオジャマがかかっているレベルスターです。
+
+・回転不可 (ROTATE LOCK)
+　ブロックを回転できない＆向きがランダムな状態でレベルスターを行います。
+
+・NEXT不可視 (HIDE NEXT)
+　NEXTブロックが全く見えない状態でレベルスターを行います。
+
+・DEVIL 800
+　DEVILモードのレベル800台と同じ速度でレベルスターを行います。
+　最下段コピーせり上がりも発生します
+　□ OPTIONSの値
+　　 OPT: せり上がる間隔（0だと20に設定される）
+
+・DEVIL 1200
+　DEVILモードのレベル1200台と同じ速度でレベルスターを行います。
+　ブロックも[ ]に変化します。
+　□ OPTIONSの値
+　　 OPT: 0以外にすると　激 ム ズ　に
+
+・GARBAGE
+　レベルスターです。が、
+　最初のブロックを設置すると、大量のせり上がりが発生します。
+　□ OPTIONSの値
+　　 OPT: せり上がるライン数（18が最大）
+
+・オールドスタイル (OLD STYLE)
+　ブロック・フィールド枠・スピードが専用の物になります。
+　ブロックは接着後即次出現で、
+　NEXT表示1つまで、壁蹴り無し、HOLD不可、IRS不可となります
+　後はレベルスターと同じです。
+
+・耐久 (ENDURANCE)
+
+　ノルマは必ず1以上に設定してください。
+
+・上下左右逆転(LRUD REV)
+　操作の上と下・左と右が逆転した状態でレベルスターを行います。
+
+・ブラインド(BLIND)
+　積んであるブロックが枠しか見えない状態でレベルスターを行います。
+
+・全消し(ALL CLEAR)
+　全消しを指定回数行うとクリアです。
+　難易度の都合上、（通常は）BIGがかかります。
+　□ OPTIONSの値
+　　 OPT: 0以外にすると…？
+
+・OOBAKA
+　（・w・）
+
+・ブロックオーダー(BLOCK ORDER)
+　指定されたブロックでラインを消さないとノルマが
+　上昇しないレベルスターです。
+　□ OPTIONSの値
+     HOLD USE: ブロックをHOLDに入れる必要があります。
+　　 OPT3: ブロックを指定します。(0～8)
+
+・シングルオーダー(SINGLE ORDER)
+　指定されたブロックで1ライン消しを行わないとノルマが
+　上昇しないシングルです。
+　□ OPTIONSの値
+     HOLD USE: ブロックをHOLDに入れる必要があります。
+　　 OPT: ブロックを指定します。(0～8)
+
+・ダブルオーダー(DOUBLE ORDER)
+　指定されたブロックで2ライン消しを行わないとノルマが
+　上昇しないダブルです。
+　□ OPTIONSの値
+     HOLD USE: ブロックをHOLDに入れる必要があります。
+　　 OPT: ブロックを指定します。(0～8)
+
+・裏トリプルオーダー(RE TRIPLE ORDER)
+　指定されたブロック"以外"で3ライン消しを行わないとノルマが
+　上昇しないトリプルです。
+　□ OPTIONSの値
+     HOLD USE: ブロックをHOLDに入れる必要があります。
+　　 OPT: カウントしないブロックを指定します。(0～8)
+
+・トリプルオーダー(TRIPLE ORDER)
+　指定されたブロックで3ライン消しを行わないとノルマが
+　上昇しないトリプルです。
+　□ OPTIONSの値
+     HOLD USE: ブロックをHOLDに入れる必要があります。
+　　 OPT: カウントしないブロックを指定します。(0～6)
+
+・イレイサーヘボリス(TRIPLE ORDER)
+　指定されたラインで4ライン消しを行わないとノルマが
+　上昇しません。
+　□ OPTIONSの値
+　　 MIN: 出現する線の位置の「上から数えた場合の」上限(0～21まで)
+　　 MAX: 出現する線の位置の「上から数えた場合の」下限(0～21まで)
+　　 OPT: 同時に出現する線の数(実際はこれに+1されます。0～3まで)
+
+・スクウェア(SQUARE)
+　4x4の正方形を指定個数作るとクリアになります。
+　正方形は
+　１．破片を含まない
+　２．ブロックが4x4の外側に繋がっていない
+　と完成します。
+
+・ゴールドスクウェア(GOLD SQUARE)
+　一種類のブロックだけを使って4x4の正方形を指定個数作ればクリアです。
+
+
+　　LEVELをPLUS #にすると速度がアナザーになり、
+　　ミッション名に「+」が付きます。
+
+			・ターゲット (TARGET)
+			　フィールド上に配置されたプラチナブロックを全て消すとNORMが1つ上昇し、別のステージが始まります。
+			　せり上がり以外のギミックは発動しません。
+			　□ OPTIONSの値
+			　　 MIN: 出現するステージ番号の下限(0～26=Ti 27～44=EH 45～67=ACE)
+			　　 MAX: 出現するステージ番号の上限(同上)
+			　　 RANDTGT: 1以上にするとプラチナブロックを数値分ランダムで配置します。0(OFF)だと初期配置のままです。
+			　　　99(FULL)にすると…？
+			 */
+			/** ブロックが大きい状態で合計して[norm]ライン数を消せばクリアです。
+			ただし消したライン数 = [prog]は、（見た目での消したライン数÷２）だけカウントされます。*/
 			class BIG(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
-			class Ladder(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+
+			/** 線と同じ高さでラインを合計[norm]本を消すとクリアです。
+			全ての線を消してもまだ[norm]が残っている場合は全ての線が復活します。*/
+			class Ladder(lv:Int, norm:Int, time:Int,
+				/**Range of Height spawning target lines*/
+				private val heightRange:IntRange,
+				/** Count of spawning target lines*/
+				private val multi:Int):Mission(lv, norm, time) {
+				val target = mutableSetOf<Int>()
+				fun reset(random:Random) {
+					while(target.size<minOf(norm-prog, multi)) {
+						target.add(random.nextInt(heightRange.last-heightRange.first)+heightRange.first)
+					}
+				}
+			}
+
 			class Target(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
-			class Dark(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+			class Dark(lv:Int, norm:Int, time:Int, misc:Int):Mission(lv, norm, time, misc)
 			class Shutter(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
+			/**ブロックが[ ]に変化します。*/
 			class Monochrome(lv:Int, norm:Int, time:Int):Mission(lv, norm, time)
 
+			/** Mission Ready */
+			val ready:(GameEngine)->Unit by lazy {
+				when(this) {
+					is BIG -> {e ->
+						e.big = true
+						e.bigMove = true
+						e.bigHalf = true
+					}
+					is Monochrome -> {e -> e.bone = true}
+					is Combo -> {e -> e.comboType = 1+misc}
+					is B2BChain -> {e ->
+						e.b2bEnable = true
+						e.splitB2B = true
+					}
+					is Twister -> {e ->
+						e.twistEnable = true
+						e.twistAllowKick = true
+						e.useAllSpinBonus = true
+					}
+					is Ladder -> {e -> if(target.isEmpty()) reset(e.random)}
+					is Dark -> {e ->
+						if(misc>10) {
+							e.blockHidden = maxOf(2, e.ruleOpt.lockFlash)
+							e.blockHiddenAnim = false
+							e.blockShowOutlineOnly = true
+						} else e.blockHidden = when(misc) {
+							1 -> 180
+							2 -> 150
+							3 -> 120
+							4 -> 90
+							5 -> 60
+							6 -> 45
+							7 -> 30
+							8 -> 15
+							9 -> 8
+							10 -> 3
+							else -> 200
+						}
+					}
+					is Shutter -> {e ->
+						e.heboHiddenEnable = true
+					}
+					else -> {_ ->}
+				}
+			}
+			/** Mission Unload */
+			val unload:(GameEngine)->Unit by lazy {
+				when(this) {
+					is BIG -> {e ->
+						e.big = false
+						e.bigMove = false
+						e.bigHalf = false
+					}
+					is Combo -> {e -> e.comboType = GameEngine.COMBO_TYPE_DISABLE}
+					is B2BChain -> {e ->
+						e.b2bEnable = false
+						e.splitB2B = false
+					}
+					is Twister -> {e ->
+						e.twistEnable = false
+						e.twistAllowKick = false
+						e.useAllSpinBonus = false
+					}
+					is Monochrome -> {e -> e.bone = false}
+					is Dark -> {e -> e.blockHidden = -1}
+					is Shutter -> {e ->
+						e.heboHiddenEnable = false
+						e.heboHiddenYLimit = 0
+					}
+					else -> {_ ->}
+				}
+			}
+			/** Mission Progress */
+			var prog = 0
+			/** Check if the mission progress has been updated */
+			fun checkProgress(engine:GameEngine, ev:ScoreEvent):Boolean {
+				val prev = prog
+				val li = ev.lines
+				when(this) {
+					is Doubles -> if(if(misc%2==1) li>=2 else li==2) prog++ else if(misc>=2) prog = 0
+					is Triples -> if(if(misc%2==1) li>=3 else li==3) prog++ else if(misc>=2) prog = 0
+					is Quads -> if(li==4) prog++
+					is Split -> if(ev.split&&(misc !in 2..3||li==misc)) if(misc<=0) prog += li else prog++
+					is Twister -> if(ev.twist&&(misc !in 1..3||li==misc)) if(misc<=0) prog += li else prog++
+					is Combo -> prog = ev.combo
+					is B2BChain -> prog = ev.b2b
+					is Cycle -> {
+						tmp = tmp or (1 shl li)
+						prog = tmp and 1+(tmp and 2>0).toInt()+(tmp and 4>0).toInt()+(tmp and 8>0).toInt()
+					}
+					is Shutter -> {
+						prog += li
+						// Decrease Pressure Hidden
+						if(engine.heboHiddenEnable&&li>0) {
+							engine.heboHiddenTimerNow = 0
+							engine.heboHiddenYNow -= li
+							if(engine.heboHiddenYNow<0) engine.heboHiddenYNow = 0
+						}
+					}
+					is Ladder -> {
+						target.forEach {
+							if(engine.field.lastLinesHeight.contains(it)) {
+								prog++
+								target.remove(it)
+							}
+						}
+//						if(prog<norm&&target.isEmpty()) reset(engine.random)
+					}
+					else -> prog += li
+
+				}
+				return prog>prev
+			}
+
+			/** Level data */
 			val speeds by lazy {
 				when(this) {
 					is SpeedStar -> LevelData(
@@ -750,7 +1000,27 @@ class GrandOrders:NetDummyMode() {
 						listOf(30, 30, 29, 29, 28, 28, 27, 27, 26, 25, 25, 24, 23, 22, 21, 20), // Lock delay
 						listOf(10, 10, 10, 10, 10, 10, +9, +9, +9, +8, +8, +8, +7, +7, +7, +7) // DAS
 					)
-					else -> LevelData(listOf(4, 12, 48, 72, 96, 128, 256, 384, 512, 768, 1024, 1280, -1))
+					else -> LevelData(
+						listOf(
+							+4, 12, 48, 72, 96, 128, 256, 384, 512, 768, 1024, 1280, -1
+						), listOf(256),
+						listOf(
+							25, 25, 25, 25, 25, +25, +25, +25, +25, +25, +25, +25, 25,
+							24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10
+						), // ARE
+						listOf(
+							30, 30, 30, 30, 30, +30, +30, +30, +30, +30, +30, +30, 30,
+							28, 26, 24, 22, 20, 18, 16, 14, 12, 10, +9, +8, +7, +6, +5
+						), // Line delay
+						listOf(
+							30, 30, 30, 30, 30, +30, +30, +30, +30, +30, +30, +30, 30,
+							30, 29, 29, 28, 28, 27, 27, 26, 25, 25, 24, 23, 22, 21, 20
+						), // Lock delay
+						listOf(
+							10, 10, 10, 10, 10, +10, +10, +10, +10, +10, +10, +10, 10,
+							10, 10, 10, 10, 10, +9, +9, +9, +8, +8, +8, +7, +7, +7, +7
+						) // DAS
+					)
 				}
 			}
 			/** Game type names (short) */
@@ -758,14 +1028,18 @@ class GrandOrders:NetDummyMode() {
 				when(this) {
 					is LevelStar -> "Level Star"
 					is SpeedStar -> "Speed Star"
+					is Enduro -> "Enduro"
+					is Singles -> "Singles"
 					is Doubles -> when(misc) {
 						1 -> "Doubles+"
 						2 -> "Doubles Chain"
+						3 -> "Doubles+ Chain"
 						else -> "Doubles"
 					}
 					is Triples -> when(misc) {
 						1 -> "Triples+"
 						2 -> "Triples Chain"
+						3 -> "Triples+ Chain"
 						else -> "Triples"
 					}
 					is Quads -> "Quads"
@@ -783,10 +1057,12 @@ class GrandOrders:NetDummyMode() {
 						else -> "Twister Total"
 					}
 					is Cycle -> "Line Cycles"
+					is Combo -> "Combo"
+					is B2BChain -> "B2B Chain"
 					is BIG -> "BIG"
 					is Ladder -> "Ladder Liner"
 					is Target -> "Target Dig"
-					is Dark -> "Hidimg Dark"
+					is Dark -> "Hiding Dark"
 					is Shutter -> "Rising Shutter"
 					is Monochrome -> "Monochrome"
 				}
@@ -796,6 +1072,63 @@ class GrandOrders:NetDummyMode() {
 		enum class Course {
 			EASY, HARD, HARDEST, SUPER, LONG, SURVIVAL, CHALLENGE, XTREME, VOID, HELL, HIDE;
 
+			/*
+* ◆あらかじめ入っているミッションセットの解説
+
+▼BIGロード
+　BIGが何度も出てくるロードです
+　EXミッション:BIG
+
+▼トリッキーロード
+　ターゲットやイレイサーが多いロードです
+　5問目の追加条件を達成するのは一苦労？
+　EXミッション:イレイサー
+
+▼グランドロード
+　ここからミッションの総数が多くなってきます
+　追加条件のあるミッションが2つ出てくるので注意。
+　EXミッション:レベルスター
+
+▼スターロード
+　グランドロードに似ていますが、終盤に
+　速度が20Gな「ハイスピード2」が出現します。
+　EXミッション:ハイスピード2
+
+▼アナザーロード
+　ミッションの総数が多く、
+　追加条件のあるミッションもかなりあります。
+　集中力をどれだけ持続できるかが勝負の分かれ目です。
+　EXミッション:アナザー
+
+▼DSロード
+　ミッションは多いですが、1つ1つのミッションの
+　ノルマは少なめで、サクッと楽しめます。
+　しかし、終盤は制限時間が極端に短くなっています。
+　EXミッション:耐久
+
+▼デビルロード
+　アナザーロードも楽々クリアーできるプレイヤーへの挑戦状。
+　ほとんどのミッションの速度がアナザーと同じという、
+　凶悪極まりないロードです。
+　EXミッション:DEVIL 1200(REAL)　…?
+
+▼トライアル　一段～十段
+　まずはこれらのミッションで肩慣らしをするといいでしょう。
+
+▼トライアル　HM（ヘボマニア）
+　アナザーが3つもある難度の高いトライアルです。
+
+▼トライアル　ネ申（GOD）
+　(・w・)
+
+▼アマチュア・プロ・ブロンズ・シルバー・ゴールド
+　制限時間はありませんが、ミッション間のライン消去は一切発生しません。
+　常に後のミッションの事を考えてプレイする必要があります。
+
+▼プラチナ
+　時間無制限ミッションセットの中で最高の難易度を誇ります。
+
+*/
 			val missions:List<Mission> by lazy {
 				when(this) {
 					EASY -> listOf(Mission.LevelStar(1, 6, 70))
@@ -889,280 +1222,10 @@ class GrandOrders:NetDummyMode() {
 }
 
 /*
-* ◆あらかじめ入っているミッションセットの解説
-
-▼BIGロード
-　BIGが何度も出てくるロードです
-　EXミッション:BIG
-
-▼トリッキーロード
-　ターゲットやイレイサーが多いロードです
-　5問目の追加条件を達成するのは一苦労？
-　EXミッション:イレイサー
-
-▼グランドロード
-　ここからミッションの総数が多くなってきます
-　追加条件のあるミッションが2つ出てくるので注意。
-　EXミッション:レベルスター
-
-▼スターロード
-　グランドロードに似ていますが、終盤に
-　速度が20Gな「ハイスピード2」が出現します。
-　EXミッション:ハイスピード2
-
-▼アナザーロード
-　ミッションの総数が多く、
-　追加条件のあるミッションもかなりあります。
-　集中力をどれだけ持続できるかが勝負の分かれ目です。
-　EXミッション:アナザー
-
-▼DSロード
-　ミッションは多いですが、1つ1つのミッションの
-　ノルマは少なめで、サクッと楽しめます。
-　しかし、終盤は制限時間が極端に短くなっています。
-　EXミッション:耐久
-
-▼デビルロード
-　アナザーロードも楽々クリアーできるプレイヤーへの挑戦状。
-　ほとんどのミッションの速度がアナザーと同じという、
-　凶悪極まりないロードです。
-　EXミッション:DEVIL 1200(REAL)　…?
-
-▼トライアル　一段～十段
-　まずはこれらのミッションで肩慣らしをするといいでしょう。
-
-▼トライアル　HM（ヘボマニア）
-　アナザーが3つもある難度の高いトライアルです。
-
-▼トライアル　ネ申（GOD）
-　(・w・)
-
-▼アマチュア・プロ・ブロンズ・シルバー・ゴールド
-　制限時間はありませんが、ミッション間のライン消去は一切発生しません。
-　常に後のミッションの事を考えてプレイする必要があります。
-
-▼プラチナ
-　時間無制限ミッションセットの中で最高の難易度を誇ります。
-
-
 ◆ミッションエディタ詳細
 
 ■TYPE
 ※特に注意書きがない場合は、OPTIONSの値は全て無視されます。
-
-・レベルスター (LEVEL STAR)
-　指定ライン数消すとクリアとなります。
-　NORMは、ラインを消すと消したライン数だけ上昇します。
-
-・ビッグ (BIG)
-　ブロックが大きいこと以外はレベルスターと同じです。
-　NORMは、ラインを消すと（見た目での消したライン数÷２）だけ上昇します。
-
-・ダブル (DOUBLE)
-　2ライン消しを指定回数行うとクリアです。
- □ OPTIONSの値
-　0:2ライン消しを1回行うとNORMが1つ上昇します。
-　1:2ライン消し以上を1回行うとNORMが1つ上昇します。
-　2:2ライン消しを1回行うとNORMが1つ上昇しますが他の消し方をすると
-　NORMがリセットします。
-
-・トリプル (TRIPLE)
-　3ライン消しを指定回数行うとクリアです。
-　 □ OPTIONSの値
-　0:3ライン消しを1回行うとNORMが1つ上昇します。
-　1:3ライン消し以上を1回行うとNORMが1つ上昇します。
-　2:3ライン消しを1回行うとNORMが1つ上昇しますが他の消し方をすると
-　NORMがリセットします。
-
-・ヘボリス (HEBORIS)
-　4ライン消しを指定回数行うとクリアです。
-　NORMは、4ライン消しを1回行うと1つ上昇します。
-
-・サイクル (CYCLE)
-　1ライン消し、2ライン消し、3ライン消し、4ライン消しをそれぞれ1回以上するとクリアです。
-　ノルマは必ず4に設定してください。
-
-・ターゲット (TARGET)
-　フィールド上に配置されたプラチナブロックを全て消すとNORMが1つ上昇し、別のステージが始まります。
-　せり上がり以外のギミックは発動しません。
-　□ OPTIONSの値
-　　 MIN: 出現するステージ番号の下限(0～26=Ti 27～44=EH 45～67=ACE)
-　　 MAX: 出現するステージ番号の上限(同上)
-　　 RANDTGT: 1以上にするとプラチナブロックを数値分ランダムで配置します。0(OFF)だと初期配置のままです。
-	　　　99(FULL)にすると…？
-
-・イレイサー (ERASER)
-　線のある所でラインを消すとNORMが1つ上昇します。
-　全ての線を消してもまだノルマが残っている場合は全ての線が復活します。
-　□ OPTIONSの値
-　　 MIN: 出現する線の位置の「上から数えた場合の」上限(0～21まで)
-　　 MAX: 出現する線の位置の「上から数えた場合の」下限(0～21まで)
-　　 OPT: 同時に出現する線の数(実際はこれに+1されます。0～3まで)
-
-・ハイスピード１ (HI-SPEED 1)
-・ハイスピード２ (HI-SPEED 2)
-・アナザー (ANOTHER)
-　速さ以外はレベルスターと同じです。
-　□ OPTIONSの値
-　　 OPT: アナザーで1にすると…？
-
-・シングル (SINGLE)
-　1ライン消しを指定回数行うとクリアです。
-　NORMは、1ライン消しを1回行うと1つ上昇します。
-
-・T-spin
-　T-SPINでライン消しを規定回数行うとクリアです。
-　消した列数は関係ありません。
-
-・X-RAY
-・カラー (COLOR)
-・ロールロール (ROLL ROLL)
-・ミラー (MIRROR)
-　常に同名のオジャマがかかっているレベルスターです。
-
-・回転不可 (ROTATE LOCK)
-　ブロックを回転できない＆向きがランダムな状態でレベルスターを行います。
-
-・NEXT不可視 (HIDE NEXT)
-　NEXTブロックが全く見えない状態でレベルスターを行います。
-
-・DEVIL 800
-　DEVILモードのレベル800台と同じ速度でレベルスターを行います。
-　最下段コピーせり上がりも発生します
-　□ OPTIONSの値
-　　 OPT: せり上がる間隔（0だと20に設定される）
-
-・DEVIL 1200
-　DEVILモードのレベル1200台と同じ速度でレベルスターを行います。
-　ブロックも[ ]に変化します。
-　□ OPTIONSの値
-　　 OPT: 0以外にすると　激 ム ズ　に
-
-・GARBAGE
-　レベルスターです。が、
-　最初のブロックを設置すると、大量のせり上がりが発生します。
-　□ OPTIONSの値
-　　 OPT: せり上がるライン数（18が最大）
-
-・オールドスタイル (OLD STYLE)
-　ブロック・フィールド枠・スピードが専用の物になります。
-　ブロックは接着後即次出現で、
-　NEXT表示1つまで、壁蹴り無し、HOLD不可、IRS不可となります
-　後はレベルスターと同じです。
-
-・耐久 (ENDURANCE)
-　時間切れまで耐えてください。
-　無限回転を行っているとタイマーが減らなくなります。
-　速度はアナザーと同じです。
-　ノルマは必ず1以上に設定してください。
-
-・上下左右逆転(LRUD REV)
-　操作の上と下・左と右が逆転した状態でレベルスターを行います。
-
-・ブラインド(BLIND)
-　積んであるブロックが枠しか見えない状態でレベルスターを行います。
-
-・全消し(ALL CLEAR)
-　全消しを指定回数行うとクリアです。
-　難易度の都合上、（通常は）BIGがかかります。
-　□ OPTIONSの値
-　　 OPT: 0以外にすると…？
-
-・コンボ(COMBO)
-　ノルマ値以上のコンボを決めればクリアです。
-　□ OPTIONSの値
-　　 OPT: 1にすると1ライン消しではNORMが上昇しなくなります。
-
-・B to B ヘボリス(B to B HEBORIS)
-　4ライン消しを指定回数行えばクリアですが、
-　途中で4ライン消し以外を行うと1からやり直しになります。
-
-・OOBAKA
-　（・w・）
-
-・ブロックオーダー(BLOCK ORDER)
-　指定されたブロックでラインを消さないとノルマが
-　上昇しないレベルスターです。
-　□ OPTIONSの値
-     HOLD USE: ブロックをHOLDに入れる必要があります。
-　　 OPT3: ブロックを指定します。(0～8)
-
-・シングルオーダー(SINGLE ORDER)
-　指定されたブロックで1ライン消しを行わないとノルマが
-　上昇しないシングルです。
-　□ OPTIONSの値
-     HOLD USE: ブロックをHOLDに入れる必要があります。
-　　 OPT: ブロックを指定します。(0～8)
-
-・ダブルオーダー(DOUBLE ORDER)
-　指定されたブロックで2ライン消しを行わないとノルマが
-　上昇しないダブルです。
-　□ OPTIONSの値
-     HOLD USE: ブロックをHOLDに入れる必要があります。
-　　 OPT: ブロックを指定します。(0～8)
-
-・裏トリプルオーダー(RE TRIPLE ORDER)
-　指定されたブロック"以外"で3ライン消しを行わないとノルマが
-　上昇しないトリプルです。
-　□ OPTIONSの値
-     HOLD USE: ブロックをHOLDに入れる必要があります。
-　　 OPT: カウントしないブロックを指定します。(0～8)
-
-・中抜きダブル(SPLIT DOUBLE)
-　中抜きで2ライン消しを行わないとノルマが上昇しません。
-　｜■■■■■■■■■■｜
-　｜□□□　□□□□　□｜
-　｜■■■■■■■■■■｜中抜きの例
-
-・中抜きトリプル(SPLIT TRIPLE)
-　中抜きで3ライン消しを行わないとノルマが上昇しません。
-
-・2段抜きダブル(SPLIT DOUBLE2)
-　2段抜きで2ライン消しを行わないとノルマが上昇しません。
-　｜■■■■■■■■■■｜
-　｜□□□　□□　□　□｜
-　｜□□　　□□□　　□｜
-　｜■■■■■■■■■■｜2段抜きダブルの例
-
-・T-spin ダブル(T-SPIN DOUBLE)
-　T-SPINで2ライン消しを規定回数行うとクリアです。
-
-・トリプルオーダー(TRIPLE ORDER)
-　指定されたブロックで3ライン消しを行わないとノルマが
-　上昇しないトリプルです。
-　□ OPTIONSの値
-     HOLD USE: ブロックをHOLDに入れる必要があります。
-　　 OPT: カウントしないブロックを指定します。(0～6)
-
-・イレイサーヘボリス(TRIPLE ORDER)
-　指定されたラインで4ライン消しを行わないとノルマが
-　上昇しません。
-　□ OPTIONSの値
-　　 MIN: 出現する線の位置の「上から数えた場合の」上限(0～21まで)
-　　 MAX: 出現する線の位置の「上から数えた場合の」下限(0～21まで)
-　　 OPT: 同時に出現する線の数(実際はこれに+1されます。0～3まで)
-
-・スクウェア(SQUARE)
-　4x4の正方形を指定個数作るとクリアになります。
-　正方形は
-　１．破片を含まない
-　２．ブロックが4x4の外側に繋がっていない
-　と完成します。
-
-・ゴールドスクウェア(GOLD SQUARE)
-　一種類のブロックだけを使って4x4の正方形を指定個数作ればクリアです。
-
-
-　　LEVELをPLUS #にすると速度がアナザーになり、
-　　ミッション名に「+」が付きます。
-
-■NORM
-この問題の目標ノルマです。画面右のNORM表示の分母がこれです。
-分子の部分がこの数値を超えるとミッションクリアです。
-
-■TIME
-この問題の制限時間です。ミッションスタート時から減っていき、これが0になるとゲームオーバーです。
-（耐久では0になった状態で操作中のブロックを設置するとクリアになる）
 
 ■ENDING
 この問題をクリアすると何が起こるかを指定します。

@@ -45,7 +45,7 @@ class AIRanksTester(private val numTries:Int) {
 		val pieceEnable = List(Piece.PIECE_COUNT) {it<Piece.PIECE_STANDARD_COUNT}
 		val seed = Random.Default.nextLong()
 
-		randomizer = History4RollsRandomizer(pieceEnable, seed).apply {init()}
+		randomizer = History4RollsRandomizer().apply {setState(pieceEnable, seed)}
 
 		pieces = MutableList(6) {randomizer!!.next()}
 

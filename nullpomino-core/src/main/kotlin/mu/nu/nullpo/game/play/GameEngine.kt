@@ -391,7 +391,7 @@ class GameEngine(
 	/** Ending mode (0:During the normal game) */
 	var ending = 0
 
-	/** Enable Credits phase (Credits) after ending=1 */
+	/** Enable Credits phase (Staffroll) after ending = 1 */
 	var staffrollEnable = false
 
 	/** Disable GameOver in Credits phase */
@@ -412,7 +412,7 @@ class GameEngine(
 	/** True if Ready->Go is already done */
 	var readyDone = false
 
-	/** Number of lives */
+	/** Number of Revives */
 	var lives = 0
 
 	/** Ghost piece flag */

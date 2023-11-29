@@ -29,9 +29,6 @@
 
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
-class BagNoSZORandomizer:BagRandomizer {
+class BagNoSZORandomizer:BagRandomizer() {
 	override val noSZO = true
-
-	constructor():super()
-	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
 }

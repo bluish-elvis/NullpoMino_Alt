@@ -260,10 +260,10 @@ class Sequencer:JFrame(), ActionListener {
 		}
 
 		// Randomizer
+		vectorRandomizer = this::class.java.getResource("../randomizer.lst")?.path?.let {getTextFileVector(it)}
 		JPanel().apply {
 			contentPane.add(this)
 			add(JLabel(getUIText("Option_Randomizer")))
-			vectorRandomizer = this::class.java.getResource("../randomizer.lst")?.path?.let {getTextFileVector(it)}
 			comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer)).apply {
 				preferredSize = Dimension(222, 30)
 				selectedIndex = 0
@@ -273,11 +273,11 @@ class Sequencer:JFrame(), ActionListener {
 		// Generate
 		JPanel().apply {
 			contentPane.add(this)
-			add(btnGenerate.also {
-				it.text = getUIText("Option_Generate")
-				it.setMnemonic('G')
-				it.actionCommand = "Generate"
-				it.addActionListener(this@Sequencer)
+			add(btnGenerate.apply {
+				text = getUIText("Option_Generate")
+				setMnemonic('G')
+				actionCommand = "Generate"
+				addActionListener(this@Sequencer)
 			})
 		}
 
@@ -361,17 +361,15 @@ class Sequencer:JFrame(), ActionListener {
 	 */
 	private fun getUIText(str:String):String = propLang.getProperty(str, propLangDefault.getProperty(str, str)) ?: ""
 
-	/** Get int value from a JTextField
-	 * @param txtfld JTextField
+	/** Get int value from a [txtFld]
 	 * @return An int value from JTextField (If fails, it will return zero)
 	 */
-	private fun getIntTextField(txtfld:JTextField?):Int = txtfld?.text?.toIntOrNull() ?: 0
+	private fun getIntTextField(txtFld:JTextField?):Int = txtFld?.text?.toIntOrNull() ?: 0
 
-	/** Get long value from a JTextField
-	 * @param txtfld JTextField
+	/** Get long value from a [txtFld]
 	 * @return A long value from JTextField (If fails, it will return zero)
 	 */
-	private fun getLongTextField(txtfld:JTextField?):Long = txtfld?.text?.toLongOrNull() ?: 0L
+	private fun getLongTextField(txtFld:JTextField?):Long = txtFld?.text?.toLongOrNull() ?: 0L
 
 	private fun generate() {
 		val randomizerClass:Class<*>
@@ -383,11 +381,8 @@ class Sequencer:JFrame(), ActionListener {
 			randomizerClass = Class.forName(name)
 			randomizerObject = randomizerClass.getDeclaredConstructor().newInstance() as Randomizer
 			randomizerObject.setState(nextPieceEnable, getLongTextField(txtfldSeed))
-			sequence = IntArray(getIntTextField(txtfldSeqLength)) {
-				for(i in 0..<getIntTextField(txtfldSeqOffset))
-					randomizerObject.next()
-				return@IntArray randomizerObject.next()
-			}
+			repeat(getIntTextField(txtfldSeqOffset)) {randomizerObject.next()}
+			sequence = IntArray(getIntTextField(txtfldSeqLength)) {randomizerObject.next()}
 		} catch(e:Exception) {
 			log.error("Randomizer class $name load failed", e)
 		}
@@ -414,66 +409,62 @@ class Sequencer:JFrame(), ActionListener {
 	}
 
 	override fun actionPerformed(e:ActionEvent) {
-		if(e.actionCommand=="New") {
-			// New
-		} else if(e.actionCommand=="Open") {
-			// Open
-			val c = JFileChooser("${System.getProperty("user.dir")}/replay")
-			c.fileFilter = FileFilterREP()
-
-			if(c.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
-				val file = c.selectedFile
-				val prop:CustomProperties
-
-				try {
-					prop = load(file.path)
-				} catch(e2:IOException) {
-					log.error("Failed to load replay data", e2)
-					JOptionPane.showMessageDialog(
-						this, "${getUIText("Message_FileLoadFailed")}\n$e2", getUIText("Title_FileLoadFailed"),
-						JOptionPane.ERROR_MESSAGE
-					)
-					return
-				}
-
-				readReplayToUI(prop, 0)
+		when (e.actionCommand) {
+			"New" -> {
 			}
-		} else if(e.actionCommand=="Save") {
-			// Save
-			generate()
-			display()
-			val c = JFileChooser(System.getProperty("user.dir"))
-			c.fileFilter = FileFilterTXT()
+			"Open" -> {
+				val c = JFileChooser("${System.getProperty("user.dir")}/replay")
+				c.fileFilter = FileFilterREP()
 
-			if(c.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
-				val file = c.selectedFile
-				var filename = file.path
-				if(!filename.endsWith(".txt")) filename = "$filename.txt"
+				if(c.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
+					val file = c.selectedFile
+					val prop:CustomProperties
 
-				try {
-					save(filename)
-				} catch(e2:Exception) {
-					log.error("Failed to save sequence data", e2)
-					JOptionPane.showMessageDialog(
-						this, "${getUIText("Message_FileSaveFailed")}\n$e2",
-						getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
-					)
-					return
+					try {
+						prop = load(file.path)
+					} catch(e2:IOException) {
+						log.error("Failed to load replay data", e2)
+						JOptionPane.showMessageDialog(
+							this, "${getUIText("Message_FileLoadFailed")}\n$e2", getUIText("Title_FileLoadFailed"),
+							JOptionPane.ERROR_MESSAGE
+						)
+						return
+					}
+
+					readReplayToUI(prop, 0)
 				}
 			}
-		} else if(e.actionCommand=="Reset")
-		// Reset
-			reset()
-		else if(e.actionCommand=="Set piece enable")
-		// Set piece enable
-			setPieceEnable()
-		else if(e.actionCommand=="Generate") {
-			// Generate
-			generate()
-			display()
-		} else if(e.actionCommand=="Exit")
-		// Exit
-			dispose()
+			"Save" -> {
+				generate()
+				display()
+				val c = JFileChooser(System.getProperty("user.dir"))
+				c.fileFilter = FileFilterTXT()
+
+				if(c.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
+					val file = c.selectedFile
+					var filename = file.path
+					if(!filename.endsWith(".txt")) filename = "$filename.txt"
+
+					try {
+						save(filename)
+					} catch(e2:Exception) {
+						log.error("Failed to save sequence data", e2)
+						JOptionPane.showMessageDialog(
+							this, "${getUIText("Message_FileSaveFailed")}\n$e2",
+							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
+						)
+						return
+					}
+				}
+			}
+			"Reset" -> reset()
+			"Set piece enable" -> setPieceEnable()
+			"Generate" -> {
+				generate()
+				display()
+			}
+			"Exit" -> dispose()
+		}
 	}
 
 	private fun setPieceEnable() {

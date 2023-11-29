@@ -31,45 +31,43 @@ package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 import mu.nu.nullpo.game.component.Piece
 
-open class BagRandomizer:Randomizer {
+open class BagRandomizer:Randomizer() {
+	/** no queue first */
 	open val noSZO = false
-	open val limitPrev = false
+	/** Number of previous pieces to check for duplicates */
+	open val limitPrev = 0
 
 	internal open val bagLen:Int get() = pieces.size
-	private var bag = MutableList(0) {0}
+	private val bag = MutableList(0) {0}
 	internal open val bagInit get() = List(bagLen) {pieces[it%pieces.size]}
 
 	private var pt:Int = pieces.size
 	private var isFirst = true
 
-	constructor():super()
-	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
-
 	override fun init() {
 		isFirst = true
-		bag = bagInit.toMutableList()
 		shuffle()
 	}
 
-	open fun shuffle() {
+	private fun shuffle() {
 		val tmp = bagInit.toMutableList()
 		bag.clear()
 		pt = 0
 		while(tmp.isNotEmpty()) {
-			var i = 0
-			do i = r.nextInt(tmp.size)
-			while(if(tmp.size==bagLen) !isPieceSZOOnly&&noSZO&&isFirst&&(tmp[i]==Piece.Shape.S.ordinal||tmp[i]==Piece.Shape.Z.ordinal||tmp[i]==Piece.Shape.O.ordinal)
-				else limitPrev&&bag.takeLast(minOf(4, maxOf(0, tmp.size-1))).any {it==tmp[i]})
+			var i:Int
+			var c = 0
+			do {
+				i = tmp.indices.random(r)
+				c++
+			} while(if(tmp.size==bagLen) !isPieceSZOOnly&&noSZO&&isFirst&&(tmp[i]==Piece.PIECE_S||tmp[i]==Piece.PIECE_Z||tmp[i]==Piece.PIECE_O)
+				else c<limitPrev&&bag.takeLast(minOf(4, maxOf(0, tmp.size-1))).contains(tmp[i]))
 			isFirst = false
 			bag += tmp.removeAt(i)
 		}
 	}
 
 	override fun next():Int {
-		if(pt>=bag.size) {
-			pt = 0
-			shuffle()
-		}
+		if(pt>=bag.size) shuffle()
 		return bag[pt++]
 	}
 

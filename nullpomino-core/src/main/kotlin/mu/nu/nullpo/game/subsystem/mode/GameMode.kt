@@ -45,9 +45,9 @@ typealias rankMapChild = MutableList<Comparable<Any>>
 interface GameMode {
 	/** @return Mode identifier */
 	val id:String
-	/**  @return Mode name*/
+	/** @return Mode name*/
 	val name:String
-	/**  @return Maximum number of players*/
+	/** @return Maximum number of players*/
 	val players:Int
 	/** @return Game style of this mode (0:Tetromino, 1:Avalanche, 2:Physician, 3:SPF)*/
 	val gameStyle:GameStyle
@@ -55,9 +55,9 @@ interface GameMode {
 	 *  (-1:Retro/Puzzle, 0: Generic/Guideline,
 	 *  1: Various Unique, 2:Rush Trial, 3:Grand 20G Challenge)*/
 	val gameIntensity:Int
-	/**  @return true if this is net-play only mode.*/
+	/** @return true if this is net-play only mode.*/
 	val isOnlineMode:Boolean
-	/**  @return true if this is a multiplayer mode.*/
+	/** @return true if this is a multiplayer mode.*/
 	val isVSMode:Boolean
 
 	/** State of Setting menu */

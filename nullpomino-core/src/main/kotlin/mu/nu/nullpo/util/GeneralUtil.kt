@@ -28,7 +28,6 @@
  */
 package mu.nu.nullpo.util
 
-import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
@@ -90,12 +89,12 @@ object GeneralUtil {
 		get() = if(this<0) "--:--.--" else
 			"%02d:%02d.%02d".format(this/3600, this/60%60, (this%60*5f/3f).toInt())
 
-	/**  @return ON if b is true, OFF if b is false*/
+	/** @return true -> ON , false -> OFF */
 	@JvmOverloads
-	fun Boolean.getONorOFF(islong:Boolean = false):String =
-		if(this) "\u0083 ${if(islong) "ENABLE" else "ON"}" else "\u0085 ${if(islong) "DISABLE" else "OFF"}"
+	fun Boolean.getONorOFF(isLong:Boolean = false):String =
+		if(this) "\u0083 ${if(isLong) "ENABLE" else "ON"}" else "\u0085 ${if(isLong) "DISABLE" else "OFF"}"
 
-	/** @return ○ if b is true, × if b is false*/
+	/** @return true-> ○ , false -> ×*/
 	val Boolean.getOX:String get() = if(this) "\u0083" else "\u0085"
 
 	@Deprecated("Bool extended", ReplaceWith("b.getOX", "mu.nu.nullpo.util.GeneralUtil.getOX"))
@@ -127,7 +126,7 @@ object GeneralUtil {
 
 	/** Export a Calendar to a String for saving/sending.
 	 * TimeZone is always GMT. Time is based on current time.
-	 * @return Calendar String, Each field is separated with a hyphen '-'
+	 * @return Calendar String, "yyyy-MM-dd HH:mm:ss"
 	 */
 	val nowGMT get() = Calendar.getInstance(TimeZone.getTimeZone("GMT")).strDateTime
 	@Deprecated("extended", ReplaceWith("nowGMT"))
@@ -135,7 +134,7 @@ object GeneralUtil {
 
 	/** Export a Calendar to a String for saving/sending.
 	 * TimeZone is always GMT.
-	 * @return Calendar String, Each field is separated with a hyphen '-'
+	 * @return Calendar String, "yyyy-MM-dd HH:mm:ss"
 	 */
 	val Calendar.strGMT:String
 		get() = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").apply {timeZone = TimeZone.getTimeZone("GMT")}
@@ -145,7 +144,6 @@ object GeneralUtil {
 
 	/** Create a Calendar by using a String that came from exportCalendarString.
 	 * TimeZone is always GMT.
-	 * @sample String Each field is separated with a hyphen '-'
 	 * @return Calendar, null if fails
 	 */
 	val String.GMTtoDate:Calendar?
@@ -165,46 +163,6 @@ object GeneralUtil {
 		}
 
 	fun importCalendarString(s:String):Calendar? = s.GMTtoDate
-
-	/** Get the number of piece types can appear
-	 * @param pieceEnable Piece enable flags
-	 * @return Number of piece types can appear (In the normal Tetromino games,
-	 * it returns 7)
-	 */
-	fun getNumberOfPiecesCanAppear(pieceEnable:List<Boolean>?):Int {
-		if(pieceEnable==null) return Piece.PIECE_COUNT
-
-		var count = 0
-
-		for(element in pieceEnable)
-			if(element) count++
-
-		return count
-	}
-
-	/** Returns true if enabled piece types are S,Z,O only.
-	 * @param pieceEnable Piece enable flags
-	 * @return `true` if enabled piece types are S,Z,O only.
-	 */
-	fun isPieceSZOOnly(pieceEnable:List<Boolean>?):Boolean =
-		pieceEnable?.let {it[Piece.PIECE_S]&&it[Piece.PIECE_Z]&&it[Piece.PIECE_O]} ?: false
-
-	/** Create piece ID array from a String
-	 * @param strSrc String
-	 * @return Piece ID array
-	 */
-	fun createNextPieceArrayFromNumberString(strSrc:String):List<Int> {
-		val len = strSrc.length
-		return if(len<1) emptyList() else List(len) {
-			var pieceID = Piece.PIECE_I
-
-			try {
-				pieceID = maxOf(0, Character.getNumericValue(strSrc[it])%Piece.PIECE_STANDARD_COUNT)
-			} catch(_:NumberFormatException) {
-			}
-			pieceID
-		}
-	}
 
 	/*fun <T:Any?> Class<T>.resource(path:String, fallback:String? = null):String {
 		try {
@@ -226,7 +184,9 @@ object GeneralUtil {
 	 * @param filename Filename
 	 * @return RuleOptions
 	 */
-	fun loadRule(filename:String):RuleOptions {
+	fun loadRule(filename:String?):RuleOptions {
+		if(filename.isNullOrEmpty()) return RuleOptions()
+		log.info("Load rule options from $filename")
 		val prop = CustomProperties()
 
 		try {
@@ -248,11 +208,10 @@ object GeneralUtil {
 	 * @return Randomizer (null if something fails)
 	 */
 	fun loadRandomizer(filename:String):Randomizer {
-		val randomizerClass:Class<*>
 		var randomizerObject:Randomizer = MemorylessRandomizer()
 
 		try {
-			randomizerClass = Class.forName(filename)
+			val randomizerClass = Class.forName(filename)
 			randomizerObject = randomizerClass.getDeclaredConstructor().newInstance() as Randomizer
 		} catch(e:Exception) {
 			log.warn("Failed to load Randomizer from $filename", e)

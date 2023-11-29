@@ -34,8 +34,8 @@ import mu.nu.nullpo.gui.common.libs.Vector
 import kotlin.random.Random
 
 class DTET06Texture<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
-	var x = Random.nextFloat()*640
-	var y = Random.nextFloat()*480
+	private var x = Random.nextFloat()*640
+	private var y = Random.nextFloat()*480
 	override fun update() {
 		val v = Vector(16f, speed, true)
 		x += v.x

@@ -65,9 +65,7 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 	private var currentValues = ValueWrapper()
 	private var targetValues = ValueWrapper()
 	private var valueRandomizer:Random
-	/**
-	 * Panning amount variables.
-	 */
+	/** Panning amount variables.*/
 	private var lastPan:IntArray
 	private var currentPan:IntArray
 	private var targetPan:IntArray

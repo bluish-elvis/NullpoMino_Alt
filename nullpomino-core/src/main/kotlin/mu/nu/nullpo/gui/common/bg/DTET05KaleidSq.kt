@@ -44,9 +44,9 @@ End With*/
 			field = value
 			r = speed*3
 		}
-	var r = Random.nextFloat()*360
-	var x = Random.nextFloat()*640
-	var y = Random.nextFloat()*480
+	private var r = Random.nextFloat()*360
+	private var x = Random.nextFloat()*640
+	private var y = Random.nextFloat()*480
 	override fun update() {
 		val vel = 6.6f*(1+speed/2)
 		x += sin(r)*vel

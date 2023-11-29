@@ -37,7 +37,6 @@ import mu.nu.nullpo.game.subsystem.mode.NetDummyMode
 import mu.nu.nullpo.gui.common.GameKeyDummy
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.gui.net.NetLobbyListener
-import mu.nu.nullpo.util.GeneralUtil
 import org.apache.logging.log4j.LogManager
 import org.newdawn.slick.AppGameContainer
 import org.newdawn.slick.GameContainer
@@ -47,11 +46,12 @@ import org.newdawn.slick.state.StateBasedGame
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propConfig as pCo
 import mu.nu.nullpo.gui.slick.NullpoMinoSlick.Companion.propGlobal as pGl
 import mu.nu.nullpo.gui.slick.ResourceHolder as Res
+import mu.nu.nullpo.util.GeneralUtil as Util
 
 /** ネットゲーム画面のステート */
 internal class StateNetGame:BasicGameState(), NetLobbyListener {
 	/** ゲームのメインクラス */
-	var gameManager:GameManager? = null
+	private var gameManager:GameManager? = null
 
 	/** ロビー画面 */
 	var netLobby:NetLobbyFrame = NetLobbyFrame()
@@ -269,21 +269,18 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 					// Rule
 
 					val ruleName = gm.mode?.gameStyle?.ordinal?.let {pGl.rule.firstOrNull()?.getOrNull(it)?.path}
-					val ruleOpt:RuleOptions = if(!ruleName.isNullOrEmpty()) {
-						log.info("Load rule options from $ruleName")
-						GeneralUtil.loadRule(ruleName)
-					} else RuleOptions()
+					val ruleOpt = Util.loadRule(ruleName)
 					e.ruleOpt = ruleOpt
 
 					// Randomizer
-					if(ruleOpt.strRandomizer.isNotEmpty()) e.randomizer = GeneralUtil.loadRandomizer(ruleOpt.strRandomizer)
+					if(ruleOpt.strRandomizer.isNotEmpty()) e.randomizer = Util.loadRandomizer(ruleOpt.strRandomizer)
 					// Wallkick
-					if(ruleOpt.strWallkick.isNotEmpty()) e.wallkick = GeneralUtil.loadWallkick(ruleOpt.strWallkick)
+					if(ruleOpt.strWallkick.isNotEmpty()) e.wallkick = Util.loadWallkick(ruleOpt.strWallkick)
 
 					// AI
 					pGl.ai.firstOrNull()?.let {ai ->
 						if(ai.name.isNotEmpty()) {
-							e.ai = GeneralUtil.loadAIPlayer(ai.name)
+							e.ai = Util.loadAIPlayer(ai.name)
 							e.aiConf = ai
 						}
 					}

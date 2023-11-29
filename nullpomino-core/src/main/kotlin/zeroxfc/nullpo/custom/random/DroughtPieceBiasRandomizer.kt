@@ -40,7 +40,7 @@ import mu.nu.nullpo.game.component.Piece
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 
 class DroughtPieceBiasRandomizer:Randomizer() {
-	var counters = IntArray(pieces.size)
+	private var counters = IntArray(pieces.size)
 	var history:MutableList<Int> = mutableListOf(Piece.PIECE_O, Piece.PIECE_S, Piece.PIECE_Z, Piece.PIECE_O)
 
 	override fun init() {

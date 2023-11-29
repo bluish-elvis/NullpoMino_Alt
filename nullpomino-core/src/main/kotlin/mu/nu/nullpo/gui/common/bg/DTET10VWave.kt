@@ -36,7 +36,7 @@ class DTET10VWave<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
 	//	val sc get() = ((1+sin(this.bg.rotation*PI/180)/3)*1024f/minOf(this.bg.width, this.bg.height)).toFloat()
 //	val cx get() = this.bg.width/2*sc
 //	val cy get() = this.bg.height/2*sc
-	var t = 0f
+	private var t = 0f
 	override var tick:Int
 		get() = t.toInt()
 		set(value) {

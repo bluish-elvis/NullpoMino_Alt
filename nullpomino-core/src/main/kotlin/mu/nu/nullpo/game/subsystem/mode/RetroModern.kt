@@ -31,25 +31,22 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.LevelData
+import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
 import mu.nu.nullpo.game.component.SpeedParam
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** RETRO MODERN mode (Based from NAOMI, build by Venom_Nhelv 20180131-2020 */
 class RetroModern:AbstractMode() {
 	private var totalNorma = 0
-
-	/** Selected game type */
-	private var gameType = 0
-
-	/** Selected starting level */
-	private var startLevel = 0
 
 	/** Ending Level timer */
 	private var rollTime = 0
@@ -62,9 +59,18 @@ class RetroModern:AbstractMode() {
 
 	private var special = false
 
+	private val itemMode = StringsMenuItem("gametype", "DIFFICULTY", COLOR.BLUE, 0, GAMETYPE_NAME)
+	/** Selected game type */
+	private var gameType:Int by DelegateMenuItem(itemMode)
+
+	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..15, false, true)
+	/** Selected starting level */
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
+
+	override val menu = MenuList("retromodern", itemMode, itemLevel, itemBig)
 
 	/** Version of this mode */
 	private var version = 0
@@ -162,55 +168,10 @@ class RetroModern:AbstractMode() {
 	}
 
 	/** Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 2)
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						gameType += change
-						if(gameType<0) gameType = GAMETYPE_MAX-1
-						if(gameType>GAMETYPE_MAX-1) gameType = 0
-						receiver.setBGSpd(owner, .5f+gameType*.4f, levelBG[startLevel])
-					}
-					1 -> {
-						startLevel += change
-						if(startLevel<0) startLevel = 15
-						if(startLevel>15) startLevel = 0
-						owner.bgMan.bg = levelBG[startLevel]
-						receiver.setBGSpd(owner, .5f+gameType*.4f, levelBG[startLevel])
-					}
-					2 -> big = !big
-				}
-			}
-
-			// Check for A button, when pressed this will begin the game
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				return false
-			}
-
-			// Check for B button, when pressed this will shut down the game engine.
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-		} else {
-			engine.statc[3]++
-			engine.statc[2] = -1
-
-			return engine.statc[3]<60
-		}
-
-		return true
-	}
-
-	/** Renders game setup screen */
-	override fun renderSetting(engine:GameEngine) {
-		drawMenu(
-			engine, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gameType], "Level" to startLevel, "BIG" to big
-		)
+	override fun onSettingChanged(engine:GameEngine) {
+		owner.bgMan.bg = levelBG[startLevel]
+		receiver.setBGSpd(owner, .5f+gameType*.4f, levelBG[startLevel])
+		super.onSettingChanged(engine)
 	}
 
 	private fun setBGM(lv:Int) {
@@ -239,7 +200,7 @@ class RetroModern:AbstractMode() {
 				totalNorma = MAX_LINES-startLevel*16
 				engine.statistics.level = startLevel
 			} else
-				engine.nextPieceArrayID = GeneralUtil.createNextPieceArrayFromNumberString(STRING_POWERON_PATTERN)
+				engine.nextPieceArrayID = createQueueFromIntStr(STRING_POWERON_PATTERN)
 
 		return false
 	}
@@ -267,8 +228,8 @@ class RetroModern:AbstractMode() {
 			// Game statistics
 			receiver.drawScoreFont(engine, 0, 3, "Score", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 5, 3, "+$lastScore")
-			val scget = scDisp<engine.statistics.score
-			receiver.drawScoreNum(engine, 0, 4, "$scDisp", scget, 2f)
+			val scGet = scDisp<engine.statistics.score
+			receiver.drawScoreNum(engine, 0, 4, "$scDisp", scGet, 2f)
 			val num = lineSlot.fold(0) {s, it ->
 				s+when {
 					it==1 -> 1
@@ -285,13 +246,10 @@ class RetroModern:AbstractMode() {
 			receiver.drawScoreNum(engine, 0, 11, "%03d/%03d".format(engine.statistics.lines, totalNorma), scale = 2f)
 
 			receiver.drawScoreFont(engine, 0, 13, "Level", COLOR.BLUE)
-			var lvdem = 0
-			if(rollTime>0)
-				lvdem = rollTime*100/ROLLTIMELIMIT
-			else if(engine.statistics.level<levelNorma.size) lvdem = norm*100/levelNorma[engine.statistics.level]
-			if(lvdem<0) lvdem *= -1
-			if(lvdem>=100) lvdem -= lvdem-lvdem%100
-			receiver.drawScoreNum(engine, 5, 13, "%02d.%02d".format(engine.statistics.level, lvdem), scale = 2f)
+			val lvDem = (if(rollTime>0) rollTime*100/ROLLTIMELIMIT
+			else if(engine.statistics.level<levelNorma.size) norm*100/levelNorma[engine.statistics.level]
+			else 0)%100
+			receiver.drawScoreNum(engine, 5, 13, "%02d.%02d".format(engine.statistics.level, lvDem), scale = 2f)
 
 			receiver.drawScoreFont(engine, 0, 14, "Time", COLOR.BLUE)
 			receiver.drawScoreNum(engine, 0, 15, engine.statistics.time.toTimeStr, scale = 2f)
@@ -388,17 +346,15 @@ class RetroModern:AbstractMode() {
 			lvup = li>0
 
 		if(lvup) {
-			val newlevel = ++engine.statistics.level
+			val newLv = ++engine.statistics.level
 			if(engine.ending==0)
 				if(engine.statistics.lines>=totalNorma) engine.ending = 1
 				else engine.playSE("levelup")
-			if(newlevel!=MAX_LEVEL+1) setSpeed(engine)
-			if(newlevel<levelBG.size-1) {
-				owner.bgMan.nextBg = levelBG[newlevel]
-			}
+			if(newLv!=MAX_LEVEL+1) setSpeed(engine)
+			if(newLv<levelBG.size-1) owner.bgMan.nextBg = levelBG[newLv]
 			norm = 0
 			engine.meterValue = 0f
-			setBGM(newlevel)
+			setBGM(newLv)
 		}
 		return pts
 	}
@@ -421,36 +377,51 @@ class RetroModern:AbstractMode() {
 	}
 
 	override fun lineClearEnd(engine:GameEngine):Boolean {
-		if(lineCount>=2&&lineSlot[0]!=lineSlot[1]) {
+		/*if(lineCount>=2&&lineSlot[0]!=lineSlot[1]) {
 			engine.playSE("b2b_end")
 			lineCount = 1
-		} else if(lineCount>=3) {
-			var pts = 0
-			if(lineSlot[0]==lineSlot[1]&&lineSlot[1]==lineSlot[2]) {
+		} else*/
+		fun bonus(engine:GameEngine, pts:Int) {
+			val pts1 = pts*10*tableBonusMult[engine.statistics.level]
+			lastScore = pts1
+			engine.statistics.scoreBonus += pts1
+			receiver.addScore(engine, engine.fieldWidth/2, engine.lastLineY, pts1, COLOR.RAINBOW)
+		}
+		if(lineCount==3) {
+			if(lineSlot.distinct().size<=1) {
 				val y = lineSlot[0]
 				if(y==1) {
-					pts = 5
+					bonus(engine, 5)
 					engine.playSE("b2b_start")
 				} else {
 					engine.playSE("b2b_combo")
-					if(y>=4) {
-						pts = 10000
-						engine.playSE("combo")
-					} else if(y==2) pts = 1000
-					else if(y==3) pts = 5000
-
+					bonus(
+						engine, when {
+							y>=4 -> {
+								engine.playSE("combo")
+								10000
+							}
+							y==2 -> 1000
+							y==3 -> 5000
+							else -> 0
+						}
+					)
 				}
 				lineCount = 0
-			} else {
-				if(lineSlot[0]==lineSlot[1]) engine.playSE("b2b_end")
+			} else if(lineSlot.distinct().size==2) {
+				engine.playSE("b2b_end")
 				lineCount = 1
 			}
-			if(pts>0) {
-				pts *= 10*tableBonusMult[engine.statistics.level]
-				lastScore = pts
-				engine.statistics.scoreBonus += pts
-				receiver.addScore(engine, engine.fieldWidth/2, engine.lastLineY, pts, COLOR.RAINBOW)
+		}
+		if(lineCount==4) {
+			if(lineSlot.distinct().size==4) {
+				engine.playSE("b2b_combo")
+				engine.playSE("combo")
+				bonus(engine, 10000)
+			} else {
+				engine.playSE("b2b_end")
 			}
+			lineCount = 0
 		}
 		return false
 	}
@@ -488,7 +459,7 @@ class RetroModern:AbstractMode() {
 	}
 
 	override fun onCustom(engine:GameEngine):Boolean {
-		engine.nextPieceArrayID = GeneralUtil.createNextPieceArrayFromNumberString(STRING_POWERON_PATTERN)
+		engine.nextPieceArrayID = createQueueFromIntStr(STRING_POWERON_PATTERN)
 		engine.nextPieceArrayObject = emptyList()
 		engine.holdPieceObject = null
 		engine.nextPieceCount = 0
@@ -525,9 +496,9 @@ class RetroModern:AbstractMode() {
 	override fun renderExcellent(engine:GameEngine) {
 		val col = COLOR.WHITE
 
-		receiver.drawMenuFont(engine, -.5f, 9f, "YOU REACHED", col)
+		receiver.drawMenuFont(engine, -2f, +9f, "YOU'VE REACHED", col)
 		receiver.drawMenuFont(engine, -.5f, 10f, "THE EDGE OF", col)
-		receiver.drawMenuFont(engine, -.5f, 11f, "THE JOURNEY", col)
+		receiver.drawMenuFont(engine, -1f, 11f, "THIS JOURNEY", col)
 		if(special) {
 			receiver.drawMenuFont(engine, 0f, 13f, "C.C.W.ONLY", col)
 			receiver.drawMenuFont(engine, 2.5f, 14f, "BONUS", col)
@@ -562,22 +533,6 @@ class RetroModern:AbstractMode() {
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Load the settings */
-	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		startLevel = prop.getProperty("retromodern.startLevel", 0)
-		gameType = prop.getProperty("retromodern.gameType", 0)
-		big = prop.getProperty("retromodern.big", false)
-		version = prop.getProperty("retromodern.version", 0)
-	}
-
-	/** Save the settings */
-	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("retromodern.startLevel", startLevel)
-		prop.setProperty("retromodern.gameType", gameType)
-		prop.setProperty("retromodern.big", big)
-		prop.setProperty("retromodern.version", version)
 	}
 
 	/** Update the ranking */
@@ -647,7 +602,9 @@ class RetroModern:AbstractMode() {
 				listOf(26, 25, 24, 24, 28, 25, 24, 24, 24, 24, 23, 22, 22, 21, 21, 20),
 				listOf(20), listOf(24, 24, 24, 30, 39, 24, 24, 25, 25, 25, 24, 23, 23, 23, 23, 25)
 			)
-		).map {l -> LevelData(l.gravity, l.denominator, l.are, l.lineDelay, l.lockDelay, l.lockDelay.map {minOf(15, it-12)})}
+		).map {(g, gd, are, _, lined, lock) ->
+			LevelData(g, gd, are, lined, lock, lock.map {minOf(15, it-12)})
+		}
 
 		/** Score multiply table */
 		private val tableScoreMult = listOf(

@@ -48,12 +48,12 @@ End If
 Next I*/
 	private class Beam(val id:Int, var speed:Float) {
 
-		var x = Random.nextFloat()*704-32
-		var y = Random.nextFloat()*544-32
-		var r = id*2+1f
+		var x = Random.nextFloat()*704-32;private set
+		var y = Random.nextFloat()*544-32;private set
+		var r = id*2+1f;private set
 
-		var c = id/2%2
-		var vr = (id%5-2)/5f
+		var c = id/2%2;private set
+		var vr = (id%5-2)/5f;private set
 
 		data class Stat(var x:Float, var y:Float, var r:Float) {
 			fun replace(v:Stat) {
@@ -111,7 +111,7 @@ Next I*/
 			children.forEach {it.speed = value}
 		}
 	private val children = List(20) {Beam(it, speed)}
-	var by = Random.nextFloat()*240
+	private var by = Random.nextFloat()*240
 	override var tick
 		get() = (240-by).toInt()
 		set(value) {

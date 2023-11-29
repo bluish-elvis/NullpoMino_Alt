@@ -30,12 +30,9 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 /** NES Tetris RNG */
-class NintendoRandomizer:Randomizer {
+class NintendoRandomizer:Randomizer() {
 	private var prev:Int = pieces.size
 	internal var roll:Int = pieces.size+1
-
-	constructor():super()
-	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
 
 	override fun init() {
 		prev = pieces.size
@@ -47,5 +44,4 @@ class NintendoRandomizer:Randomizer {
 		prev = id
 		return pieces[id]
 	}
-
 }

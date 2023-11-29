@@ -94,10 +94,10 @@ class GameManager(
 	/** @return true if the game should quit in any GameEngine object*/
 	val quitFlag:Boolean
 		get() = engine.any {it.quitFlag}
-	/**  @return true if there is an active GameEngine*/
+	/** @return true if there is an active GameEngine*/
 	val isGameActive:Boolean
 		get() = engine.any {it.gameActive}
-	/**  @return Player ID of last survivor.
+	/** @return Player ID of last survivor.
 	 * -2 in single player game.
 	 * -1 in draw game.
 	 */

@@ -29,9 +29,6 @@
 
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
-class BagDoublesRandomizer:BagRandomizer {
+class BagDoublesRandomizer:BagRandomizer() {
 	override val bagLen:Int get() = pieces.size*2
-
-	constructor():super()
-	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
 }

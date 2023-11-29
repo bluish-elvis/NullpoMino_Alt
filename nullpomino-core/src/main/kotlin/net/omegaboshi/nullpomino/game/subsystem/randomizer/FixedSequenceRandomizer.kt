@@ -34,15 +34,11 @@ import java.io.File
 import java.io.FileReader
 import java.io.IOException
 
-class FixedSequenceRandomizer:Randomizer {
+class FixedSequenceRandomizer:Randomizer() {
 	private var sequenceTranslated = IntArray(0)
 	private var id = -1
 
-	constructor():super()
-	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
-
 	init {
-
 		val file = File("sequence.txt")
 		try {
 			FileReader(file).buffered().use {reader ->
@@ -69,5 +65,4 @@ class FixedSequenceRandomizer:Randomizer {
 	}
 
 	override fun next():Int = sequenceTranslated[++id%sequenceTranslated.size]
-
 }

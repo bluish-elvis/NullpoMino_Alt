@@ -92,7 +92,7 @@ class ColorPower:MarathonModeBase() {
 	private var rankingRankPlayer = 0
 	/** Rankings' scores */
 	private val rankingScorePlayer = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0L}}}
-	/**  Rankings' line counts */
+	/** Rankings' line counts */
 	private val rankingLinesPlayer = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {0}}}
 	/** Rankings' times */
 	private val rankingTimePlayer = List(2) {List(RANKING_TYPE) {MutableList(RANKING_MAX) {-1}}}

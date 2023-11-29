@@ -40,10 +40,10 @@ class DTET04Deep<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
 Crs = Rnd * 360
 CrsF = Rnd * 640
 CrsFF = Rnd * 360*/
-	var a = Random.nextFloat()*360
-	var b = Random.nextFloat()*640
+	private var a = Random.nextFloat()*360
+	private var b = Random.nextFloat()*640
 	override var tick = Random.nextInt(7200)
-	var spdN = 0f
+	private var spdN = 0f
 
 	override fun update() {
 		a += 2.1f+spdN

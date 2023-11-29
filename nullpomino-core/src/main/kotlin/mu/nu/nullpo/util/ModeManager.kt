@@ -79,7 +79,7 @@ class ModeManager {
 	 * @return Mode name (idが不正なら「*INVALID MODE*」）
 	 */
 	fun getName(id:Int):String = try {
-		list[id].name
+		get(id)?.name ?:"*INVALID MODE*"
 	} catch(e:Exception) {
 		"*INVALID MODE*"
 	}
@@ -89,7 +89,7 @@ class ModeManager {
 	 * @return Mode name (idが不正なら「*INVALID MODE*」）
 	 */
 	fun getID(id:Int):String = try {
-		list[id].id
+		get(id)?.id ?:"*INVALID MODE*"
 	} catch(e:Exception) {
 		"*INVALID MODE*"
 	}

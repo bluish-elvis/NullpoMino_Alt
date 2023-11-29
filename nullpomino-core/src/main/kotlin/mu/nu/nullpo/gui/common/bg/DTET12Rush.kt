@@ -32,7 +32,7 @@ package mu.nu.nullpo.gui.common.bg
 import mu.nu.nullpo.gui.common.ResourceImage
 
 class DTET12Rush<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
-	var tickY = 0f
+	private var tickY = 0f
 	override fun update() {
 		tick -= 73
 		if(tick<0) tick += 640

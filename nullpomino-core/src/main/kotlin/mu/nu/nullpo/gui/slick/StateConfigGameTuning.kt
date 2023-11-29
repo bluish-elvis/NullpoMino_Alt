@@ -29,7 +29,6 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.Controller
-import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.component.SpeedParam.Companion.SDS_FIXED
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
@@ -121,12 +120,7 @@ internal class StateConfigGameTuning:BaseMenuConfigState() {
 				e.lives = 99
 				// Rule
 				val ruleName = pGl.rule[i][it.mode!!.gameStyle.ordinal].path
-				val ruleOpt:RuleOptions = if(ruleName.isNotEmpty()) {
-					log.info("Load rule options from $ruleName")
-					Util.loadRule(ruleName)
-				} else {
-					RuleOptions()
-				}
+				val ruleOpt = Util.loadRule(ruleName)
 				e.ruleOpt = ruleOpt
 
 				// Randomizer

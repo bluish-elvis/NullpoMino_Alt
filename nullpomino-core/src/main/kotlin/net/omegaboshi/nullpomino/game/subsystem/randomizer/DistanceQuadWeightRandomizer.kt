@@ -29,10 +29,7 @@
 
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
-class DistanceQuadWeightRandomizer:DistanceWeightRandomizer {
-	constructor():super()
-	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
-
+class DistanceQuadWeightRandomizer:DistanceWeightRandomizer() {
 	public override fun getWeight(i:Int):Int = weights[i]*weights[i]
 	public override fun isAtDistanceLimit(i:Int):Boolean = false
 }

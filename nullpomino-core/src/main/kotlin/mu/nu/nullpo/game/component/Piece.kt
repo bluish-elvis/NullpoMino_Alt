@@ -592,17 +592,17 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	companion object {
 
 		const val PIECE_NONE = -1
-		const val PIECE_I = 0
-		const val PIECE_L = 1
-		const val PIECE_O = 2
-		const val PIECE_Z = 3
-		const val PIECE_T = 4
-		const val PIECE_J = 5
-		const val PIECE_S = 6
-		const val PIECE_I1 = 7
-		const val PIECE_I2 = 8
-		const val PIECE_I3 = 9
-		const val PIECE_L3 = 10
+		val PIECE_I = Shape.I.ordinal
+		val PIECE_L = Shape.L.ordinal
+		val PIECE_O = Shape.O.ordinal
+		val PIECE_Z = Shape.Z.ordinal
+		val PIECE_T = Shape.T.ordinal
+		val PIECE_J = Shape.J.ordinal
+		val PIECE_S = Shape.S.ordinal
+		val PIECE_I1 = Shape.I1.ordinal
+		val PIECE_I2 = Shape.I2.ordinal
+		val PIECE_I3 = Shape.I3.ordinal
+		val PIECE_L3 = Shape.L3.ordinal
 
 		/** 通常のBlockピースのIDのMaximumcount */
 		const val PIECE_STANDARD_COUNT = 7
@@ -758,6 +758,30 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 		 */
 		@Deprecated("This will be enumed", ReplaceWith("Shape.name", "mu.nu.nullpo.game.component.Shape"))
 		fun getPieceName(id:Int):String = if(id>=0&&id<Shape.names.size) Shape.names[id] else "?"
+
+		/** Returns true if enabled piece types are S,Z,O only.
+		 * @param pieceEnable Piece enable flags
+		 * @return `true` if enabled piece types are S,Z,O only.
+		 */
+		fun isPieceSZOOnly(pieceEnable:List<Boolean>?):Boolean =
+			pieceEnable?.let {it[PIECE_S]&&it[PIECE_Z]&&it[PIECE_O]} ?: false
+
+		/** Create piece ID array from a String
+		 * @param strSrc String
+		 * @return Piece ID array
+		 */
+		fun createQueueFromIntStr(strSrc:String):List<Int> {
+			val len = strSrc.length
+			return if(len<1) emptyList() else List(len) {
+				var pieceID = PIECE_I
+
+				try {
+					pieceID = maxOf(0, Character.getNumericValue(strSrc[it])%PIECE_STANDARD_COUNT)
+				} catch(_:NumberFormatException) {
+				}
+				pieceID
+			}
+		}
 	}
 
 	/** BlockピースのIDの定数 */

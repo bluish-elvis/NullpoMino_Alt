@@ -192,7 +192,8 @@ internal class StateConfigKeyboard:BasicGameState() {
 			if(keyConfigRestFrame>0) {
 				// Key-set mode
 				ResourceHolder.soundManager.play("move")
-				if(keymap[keynum].size<=keypos) keymap[keynum] = (keymap[keynum]+key).toMutableList() else keymap[keynum][keypos] = key
+				if(keymap[keynum].size<=keypos) keymap[keynum] += key
+				else keymap[keynum][keypos] = key
 				keyConfigRestFrame = 0
 			} else {
 				// Menu mode
@@ -242,7 +243,7 @@ internal class StateConfigKeyboard:BasicGameState() {
 				if(key==Input.KEY_DELETE)
 					if(keynum<NUM_KEYS&&keymap[keynum][keypos]>0) {
 						ResourceHolder.soundManager.play("change")
-						keymap[keynum] = (keymap[keynum]-keymap[keynum][keypos]).toMutableList()
+						keymap[keynum] -= keymap[keynum][keypos]
 					}
 
 				// Backspace

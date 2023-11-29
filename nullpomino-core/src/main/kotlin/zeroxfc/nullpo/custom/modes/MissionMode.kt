@@ -43,6 +43,8 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.modes.MissionMode.Companion.MissionType.Clear
@@ -83,6 +85,10 @@ class MissionMode:MarathonModeBase() {
 	override val rankPersMap = rankMapOf(rankingScorePlayer.mapIndexed {a, x -> "$a.score" to x}
 		+rankingTimePlayer.mapIndexed {a, x -> "$a.time" to x})
 
+	/** Game type */
+	override val itemMode = StringsMenuItem("goalType", "COURSE", COLOR.BLUE, 0,
+		tableGameClearMissions.map{if(it<0) "ENDLESS" else "$it STAGEs"})
+	override val menu = MenuList("missionrush", itemMode, itemLevel, itemBig)
 	override val name:String
 		get() = "Mission Rush"
 
@@ -109,7 +115,7 @@ class MissionMode:MarathonModeBase() {
 
 		netPlayerInit(engine)
 		if(!owner.replayMode) version = CURRENT_VERSION else {
-			if(version==0&&owner.replayProp.getProperty("missionmode.endless", false)) goalType = 2
+			if(version==0&&owner.replayProp.getProperty("missionrush.endless", false)) goalType = 2
 
 			// NET: Load name
 			netPlayerName = engine.owner.replayProp.getProperty("${engine.playerID}.net.netPlayerName", "")
@@ -192,22 +198,6 @@ class MissionMode:MarathonModeBase() {
 		}
 		if(engine.stat===GameEngine.Status.SETTING) engine.isInGame = false
 		return s
-	}
-
-	override fun renderSetting(engine:GameEngine) {
-		if(netIsNetRankingDisplayMode) {
-			// NET: Netplay Ranking
-			netOnRenderNetPlayRanking(engine, receiver)
-		} else {
-			drawMenu(
-				engine,
-				receiver,
-				0,
-				COLOR.BLUE,
-				0,
-				"GOAL" to if(tableGameClearMissions[goalType]<0) "ENDLESS" else "${tableGameClearMissions[goalType]} MISS."
-			)
-		}
 	}
 
 	override fun onReady(engine:GameEngine):Boolean {
@@ -391,10 +381,8 @@ class MissionMode:MarathonModeBase() {
 		engine.twistAllowKick = true
 		engine.twistEnableEZ = false
 		setSpeed(engine)
-		owner.musMan.bgm = tableBGM[bgmLv]
-		if(netIsWatch) {
-			owner.musMan.bgm = BGM.Silent
-		}
+		owner.musMan.bgm = if(netIsWatch) BGM.Silent else tableBGM[bgmLv]
+
 	}
 	/*
      * Called when saving replay

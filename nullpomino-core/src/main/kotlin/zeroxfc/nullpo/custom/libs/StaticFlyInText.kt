@@ -87,9 +87,9 @@ class StaticFlyInText(private val mainString:String  // String to draw
 			}
 			return@map Vector(startX, startY) to Vector((destinationX+sMod*i), destinationY)
 		}
-		letterPositions = position.map {it.first}.toMutableList()
-		startLocation = position.map {it.first}.toMutableList()
-		destinationLocation = position.map {it.second}.toMutableList()
+		position.mapTo(letterPositions) {it.first}
+		position.mapTo(startLocation) {it.first}
+		position.mapTo(destinationLocation) {it.second}
 	}
 	/** Updates the position and lifetime of this object.*/
 	fun update() {

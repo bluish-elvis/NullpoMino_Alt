@@ -30,6 +30,9 @@ package mu.nu.nullpo.game.component
 
 import kotlinx.serialization.Serializable
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil
+import java.io.FileInputStream
+import java.util.zip.GZIPInputStream
 
 /** ゲームルールの設定 data */
 @Serializable

@@ -30,16 +30,13 @@
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 /** GB Tetris RNG */
-class GameBoyRandomizer:Randomizer {
+class GameBoyRandomizer:Randomizer() {
 	private var firstId = 0
 	internal var id:Int = firstId
 	internal val roll:Int get() = 6*pieces.size-3
 
-	constructor():super()
-	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
-
 	override fun init() {
-		firstId = r.nextInt(pieces.size)
+		firstId = pieces.indices.random(r)
 		id = firstId
 	}
 
@@ -47,5 +44,4 @@ class GameBoyRandomizer:Randomizer {
 		id = (id+r.nextInt(roll)/5+1)%pieces.size
 		return pieces[id]
 	}
-
 }

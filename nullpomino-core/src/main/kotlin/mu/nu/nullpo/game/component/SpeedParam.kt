@@ -82,13 +82,13 @@ data class SpeedParam(
 
 	/** 設定を[s]からコピー */
 	fun replace(s:SpeedParam?) {
-		s?.let {(gravity1, denominator1, are1, areLine1, lineDelay1, lockDelay1, das1) ->
-			gravity = gravity1
-			denominator = denominator1
+		s?.let {(g, den, are1, areLine1, lineD, lockD, das1) ->
+			gravity = g
+			denominator = den
 			are = are1
 			areLine = areLine1
-			lineDelay = lineDelay1
-			lockDelay = lockDelay1
+			lineDelay = lineD
+			lockDelay = lockD
 			das = das1
 		} ?: reset()
 	}

@@ -31,17 +31,11 @@ package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 import mu.nu.nullpo.game.component.Piece
 
-class History4RollsRandomizer:LimitedHistoryRandomizer {
-	constructor():super()
-	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
-
-	init {
-		numrolls = 4
-		init()
-	}
+class History4RollsRandomizer:LimitedHistoryRandomizer() {
+	override val numRolls = 4
 
 	override fun init() {
 		super.init()
-		history = intArrayOf(Piece.PIECE_Z, Piece.PIECE_Z, Piece.PIECE_Z, Piece.PIECE_Z)
+		history+=mutableListOf(Piece.PIECE_Z, Piece.PIECE_Z, Piece.PIECE_Z, Piece.PIECE_Z)
 	}
 }

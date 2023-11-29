@@ -186,8 +186,7 @@ class BGMStatus {
 	/** BGM fade状態と音量の更新 */
 	fun fadeUpdate() {
 		if(fadeSW) {
-			if(volume>0f)
-				volume -= fadeSpd
+			if(volume>0f) volume -= fadeSpd
 			else if(volume<0f) volume = 0f
 		} else if(volume!=1f) volume = 1f
 	}

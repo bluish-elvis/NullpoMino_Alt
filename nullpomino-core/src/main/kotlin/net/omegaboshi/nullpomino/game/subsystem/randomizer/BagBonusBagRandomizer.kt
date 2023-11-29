@@ -29,30 +29,21 @@
 
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
-import mu.nu.nullpo.game.component.Piece
-
-class BagBonusBagRandomizer:BagRandomizer {
-	private var bonusbag = mutableListOf<Int>()
-	private var bonuspt:Int = pieces.size
+class BagBonusBagRandomizer:BagRandomizer() {
 	override val bagLen:Int get() = pieces.size+1
 	override val bagInit
-		get() = List(bagLen) {
-			if(bonuspt>=bonusbag.size) {
-				bonuspt = 0
+		get() = super.bagInit+bonusNext()
 
-				val tmp = MutableList(pieces.size) {i -> pieces[i]}
-				bonusbag.clear()
-				while(tmp.isNotEmpty()) {
-					var i:Int
-					do i = r.nextInt(tmp.size)
-					while(if(tmp.size==bagLen-1) noSZO&&(tmp[i]==Piece.Shape.S.ordinal||tmp[i]==Piece.Shape.Z.ordinal||tmp[i]==Piece.Shape.O.ordinal)
-						else limitPrev&&bonusbag.takeLast(minOf(4, maxOf(0, tmp.size-1))).any {b -> b==tmp[i]})
-					bonusbag += tmp.removeAt(i)
-				}
-			}
-			if(it==bagLen) bonusbag[bonuspt++] else pieces[it%pieces.size]
-		}
+	private val bonusBag = MutableList(0) {0}
+	private var bonusPt = 0
+	private fun bonusInit() {
+		bonusBag.clear()
+		bonusPt = 0
+		bonusBag+=super.bagInit.shuffled(r)
+	}
 
-	constructor():super()
-	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
+	private fun bonusNext():Int {
+		if(bonusPt>=bonusBag.size) bonusInit()
+		return bonusBag[bonusPt++]
+	}
 }

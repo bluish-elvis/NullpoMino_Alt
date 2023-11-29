@@ -30,9 +30,9 @@
 package mu.nu.nullpo.game.component
 
 data class LevelData(
-	/** 落下速度 */
+	/** Fall velocity table (numerators) 落下速度 */
 	val gravity:List<Int> = listOf(4),
-	/** 落下速度の分母 (gravity==denominatorなら1Gになる) */
+	/** Fall velocity table (denominators) 落下速度の分母 (gravity==denominatorなら1Gになる) */
 	val denominator:List<Int> = listOf(256),
 	/** 出現待ち time */
 	val are:List<Int> = listOf(24),
@@ -45,24 +45,34 @@ data class LevelData(
 	/** 横移動 time */
 	val das:List<Int> = listOf(14)
 ) {
+	// areLine = are if not specified
+	constructor(gravity:List<Int>, denominator:List<Int>,
+		are:List<Int>, lineDelay:List<Int>, lockDelay:List<Int>, das:List<Int>):
+		this(gravity, denominator, are, are, lineDelay, lockDelay, das)
+
+	//if are & delays are fixed
 	constructor(gravity:List<Int>, denominator:List<Int>, are:Int, areLine:Int, lineDelay:Int, lockDelay:Int, das:Int):
 		this(
 			gravity, denominator,
 			listOf(are), listOf(areLine), listOf(lineDelay), listOf(lockDelay), listOf(das)
 		)
 
-	constructor(gravity:List<Int>, denominator:List<Int>,
-		are:List<Int>,  lineDelay:List<Int>, lockDelay:List<Int>, das:List<Int>):
-		this(gravity, denominator, are, are, lineDelay, lockDelay, das)
+	// gravity & denominator = -1 / 256 if not specified
+	constructor(are:List<Int>, areLine:List<Int>, lineDelay:List<Int>, lockDelay:List<Int>, das:List<Int>):
+		this(listOf(-1), listOf(256), are, areLine, lineDelay, lockDelay, das)
 
+	// gravity & denominator = -1 / 256, areLine = are if not specified
 	constructor(are:List<Int>, lineDelay:List<Int>, lockDelay:List<Int>, das:List<Int>):
-		this(listOf(-1), listOf(256), are, are, lineDelay, lockDelay, das)
+		this(are, are, lineDelay, lockDelay, das)
 
+	// gravity & denominator = -1 / 256 if not specified, are & delays are fixed
 	constructor(are:Int, areLine:Int, lineDelay:Int, lockDelay:Int, das:Int):
 		this(listOf(-1), listOf(256), are, areLine, lineDelay, lockDelay, das)
 
 	operator fun get(i:Int) =
 		SpeedParam(lv(gravity, i), lv(denominator, i), lv(are, i), lv(areLine, i), lv(lineDelay, i), lv(lockDelay, i), lv(das, i))
+
+	val size get() = maxOf(gravity.size, denominator.size, are.size, areLine.size, lineDelay.size, lockDelay.size, das.size)
 
 	companion object {
 		fun lv(arr:List<Int>, i:Int):Int = arr[maxOf(0, minOf(i, arr.size-1))]

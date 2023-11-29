@@ -30,6 +30,7 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
@@ -116,6 +117,19 @@ class Marathon:NetDummyMode() {
 	fun setSpeed(engine:GameEngine) {
 		val goal = tableGameClearLines[goalType]
 		val lv = minOf(maxOf(engine.statistics.lines, startLevel*10), goal)
+		val sLv =
+			maxOf(
+				0, minOf(
+					lv/when {
+						goal<=200 -> 10
+						goal<=500 -> 25
+						else -> 50
+					}, tableSpeeds.size-1
+				)
+			)
+
+		engine.speed.replace(tableSpeeds[sLv])
+
 		val ln = lv/when {
 			goal<=200 -> 1
 			goal<=500 -> 2
@@ -127,19 +141,6 @@ class Marathon:NetDummyMode() {
 		engine.speed.lockDelay = maxOf(18, minOf(48, 60-ln/7))
 		engine.speed.das = maxOf(6, minOf(14, 21-ln/10))
 
-		val sLv =
-			maxOf(
-				0, minOf(
-					lv/when {
-						goal<=200 -> 10
-						goal<=500 -> 25
-						else -> 50
-					}, tableGravity.size-1
-				)
-			)
-
-		engine.speed.gravity = tableGravity[sLv]
-		engine.speed.denominator = tableDenominator[sLv]
 	}
 
 	/* Called at settings screen */
@@ -189,7 +190,7 @@ class Marathon:NetDummyMode() {
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			if(!owner.replayMode&&!big&&engine.ai==null) {
 				val topY = if(receiver.nextDisplayType==2) 6 else 4
-					receiver.drawScoreFont(engine, 2, topY-1, "SCORE LINE TIME", COLOR.BLUE)
+				receiver.drawScoreFont(engine, 2, topY-1, "SCORE LINE TIME", COLOR.BLUE)
 
 				for(i in 0..<RANKING_MAX) {
 					receiver.drawScoreGrade(
@@ -227,8 +228,9 @@ class Marathon:NetDummyMode() {
 		super.renderLast(engine)
 	}
 
-	fun nextbgmLine(lines:Int) =
-		tableBGMChange[goalType].firstOrNull {lines+startLevel*10<it} ?: tableGameClearLines[goalType].let {if(it>0) it else lines+10}
+	private fun nextbgmLine(lines:Int) =
+		tableBGMChange[goalType].firstOrNull {lines+startLevel*10<it}
+			?: tableGameClearLines[goalType].let {if(it>0) it else lines+10}
 
 	fun bgmLv(lines:Int) =
 		tableBGMChange[goalType].indexOfFirst {lines+startLevel*10<it}.let {if(it<0) tableBGMChange[goalType].size else it}
@@ -454,11 +456,11 @@ class Marathon:NetDummyMode() {
 		/** Current version */
 		private const val CURRENT_VERSION = 2
 
-		/** Fall velocity table (numerators) */
-		private val tableGravity = listOf(1, 2, 1, 3, 3, 7, 3, 12, 30, 26, 26, 3, 1, 3, 2, 3, 5, 15, 10, -1)
-
-		/** Fall velocity table (denominators) */
-		private val tableDenominator = listOf(60, 95, 37, 85, 64, 110, 34, 97, 169, 100, 67, 5, 1, 2, 1, 1, 1, 2, 1, 1)
+		/** Fall velocity table */
+		private val tableSpeeds = LevelData(
+			listOf(1, 2, 1, 3, 3, 7, 3, 12, 30, 26, 26, 3, 1, 3, 2, 3, 5, 15, 10, -1)/*(numerators) */,
+			listOf(60, 95, 37, 85, 64, 110, 34, 97, 169, 100, 67, 5, 1, 2, 1, 1, 1, 2, 1, 1)/*(denominators)*/
+		)
 
 		/** Line counts when BGM changes occur */
 		private val tableBGMChange = listOf(

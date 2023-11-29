@@ -32,10 +32,17 @@ package mu.nu.nullpo.game.subsystem.mode
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BGMMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.IntegerMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -47,9 +54,6 @@ class MarathonDrill:NetDummyMode() {
 
 	/** Garbage timer */
 	private var garbageTimer = 0
-
-	/** Garbage Height */
-	private var garbageHeight:Int = GARBAGE_BOTTOM
 
 	/** Number of total garbage lines dug */
 	private var garbageDug = 0
@@ -64,20 +68,34 @@ class MarathonDrill:NetDummyMode() {
 	/** Number of garbage lines waiting to appear (Normal type) */
 	private var garbagePending = 0
 
-	/** Game type */
-	private var goalType = 0
-
-	/** Level at the start of the game */
-	private var startLevel = 0
-
-	/** BGM number */
-	private var bgmId = 0
-
 	/** Version */
 	private var version = 0
 
 	/** Current round's ranking position */
 	private var rankingRank = 0
+
+	private val itemLevel = LevelMenuItem("startlevel", "LEVEL", COLOR.BLUE, 0, 0..19, false, true)
+	/** Level at start */
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
+
+	private val itemMode = StringsMenuItem(
+		"goalType", "GAME TYPE", COLOR.BLUE, 0, listOf("NORMAL", "REALTIME")
+	)
+	/** Game type */
+	private var goalType:Int by DelegateMenuItem(itemMode)
+
+	private val itemHeight = IntegerMenuItem("height", "HEIGHT", COLOR.BLUE, GARBAGE_BOTTOM, 0..10, true, true)
+	/** Garbage Height */
+	private var garbageHeight:Int by DelegateMenuItem(itemHeight)
+
+	private val itemDas = IntegerMenuItem("das", "DAS", COLOR.BLUE, 0, 1..20, true, true)
+	private var das:Int by DelegateMenuItem(itemDas)
+
+	private val itemBGM = BGMMenuItem("bgmno", COLOR.BLUE, 0)
+	/** BGM number */
+	private var bgmId:Int by DelegateMenuItem(itemBGM)
+
+	override val menu = MenuList("digchallenge", itemMode, itemHeight, itemLevel, itemDas, itemBGM)
 
 	/** Rankings' scores */
 	private val rankingScore = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0L}}
@@ -89,10 +107,7 @@ class MarathonDrill:NetDummyMode() {
 	private val rankingDepth = List(GOALTYPE_MAX) {MutableList(RANKING_MAX) {0}}
 
 	override val rankMap
-		get() = rankMapOf(
-			rankingScore.mapIndexed {a, x -> "$a.stage" to x}+
-				rankingLines.mapIndexed {a, x -> "$a.lines" to x}+
-				rankingDepth.mapIndexed {a, x -> "$a.depth" to x}/*+
+		get() = rankMapOf(rankingScore.mapIndexed {a, x -> "$a.stage" to x}+rankingLines.mapIndexed {a, x -> "$a.lines" to x}+rankingDepth.mapIndexed {a, x -> "$a.depth" to x}/*+
 				rankingTime.mapIndexed {a, x -> "$a.time" to x}*/
 		)
 
@@ -136,100 +151,10 @@ class MarathonDrill:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	private fun setSpeed(engine:GameEngine) {
+		val lv = maxOf(0, minOf(engine.statistics.level, tableSpeeds.size-1))
 		engine.speed.apply {
-			if(goalType==GOALTYPE_REALTIME) {
-				gravity = 0
-				denominator = 60
-			} else {
-				val lv = maxOf(0, minOf(engine.statistics.level, tableGravity.size-1))
-				gravity = tableGravity[lv]
-				denominator = tableDenominator[lv]
-			}
-
-			are = 0
-			areLine = 0
-			lineDelay = 0
-			lockDelay = 30
-		}
-	}
-
-	/* Called at settings screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// NET: Net Ranking
-		if(netIsNetRankingDisplayMode)
-			netOnUpdateNetPlayRanking(engine, goalType)
-		else if(!engine.owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 4)
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						goalType += change
-						if(goalType<0) goalType = GOALTYPE_MAX-1
-						if(goalType>GOALTYPE_MAX-1) goalType = 0
-					}
-					1 -> {
-						garbageHeight += change
-						if(garbageHeight<0) garbageHeight = 10
-						if(garbageHeight>10) garbageHeight = 0
-					}
-					2 -> {
-						startLevel += change
-						if(startLevel<0) startLevel = 19
-						if(startLevel>19) startLevel = 0
-						engine.owner.bgMan.bg = startLevel
-					}
-					3 -> bgmId = rangeCursor(bgmId+change, 0, BGM.count-1)
-					4 -> engine.speed.das = rangeCursor(engine.speed.das+change, 0, 99)
-				}
-
-				// NET: Signal options change
-				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
-			}
-
-			// Confirm
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-
-				// Save settings
-
-				// NET: Signal start of the game
-				if(netIsNetPlay) netLobby?.netPlayerClient?.send("start1p\n")
-
-				return false
-			}
-
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)&&!netIsNetPlay) engine.quitFlag = true
-
-			// NET: Netplay Ranking
-			if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&netIsNetRankingViewOK(engine))
-				netEnterNetPlayRankingScreen(goalType)
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
-		}// Replay
-
-		return true
-	}
-
-	/* Render settings screen */
-	override fun renderSetting(engine:GameEngine) {
-		receiver.let {
-			if(netIsNetRankingDisplayMode)
-			// NET: Netplay Ranking
-				netOnRenderNetPlayRanking(engine, it)
-			else {
-				drawMenu(engine, it, 0, COLOR.BLUE, 0, "GAME TYPE" to if(goalType==0) "NORMAL" else "REALTIME")
-				drawMenuCompact(engine, it, "HEIGHT" to garbageHeight, "Level" to startLevel+1)
-				drawMenuBGM(engine, it, bgmId)
-				drawMenuCompact(engine, it, "DAS" to engine.speed.das)
-			}
+			replace(tableSpeeds[lv])
+			das = this@MarathonDrill.das
 		}
 	}
 
@@ -260,8 +185,7 @@ class MarathonDrill:NetDummyMode() {
 			engine.readyEnd = engine.goStart-1
 			engine.goEnd = engine.goStart+50
 		}
-		if(garbageHeight>0&&engine.statc[0] in 30..<30+garbageHeight*5&&engine.statc[0]%5==0)
-			addGarbage(engine)
+		if(garbageHeight>0&&engine.statc[0] in 30..<30+garbageHeight*5&&engine.statc[0]%5==0) addGarbage(engine)
 		return false
 	}
 
@@ -279,22 +203,10 @@ class MarathonDrill:NetDummyMode() {
 				receiver.drawScoreFont(engine, 0, topY-1, "SCORE LINE DEPTH", COLOR.BLUE)
 
 				for(i in 0..<RANKING_MAX) {
-					receiver.drawScoreGrade(
-						engine, 0, topY+i, "%2d".format(i+1),
-						COLOR.YELLOW
-					)
-					receiver.drawScoreNum(
-						engine, 2, topY+i, "${rankingScore[goalType][i]}",
-						i==rankingRank
-					)
-					receiver.drawScoreNum(
-						engine, 7, topY+i, "${rankingLines[goalType][i]}",
-						i==rankingRank
-					)
-					receiver.drawScoreNum(
-						engine, 12, topY+i, "${rankingDepth[goalType][i]}",
-						i==rankingRank
-					)
+					receiver.drawScoreGrade(engine, 0, topY+i, "%2d".format(i+1), COLOR.YELLOW)
+					receiver.drawScoreNum(engine, 2, topY+i, "${rankingScore[goalType][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 7, topY+i, "${rankingLines[goalType][i]}", i==rankingRank)
+					receiver.drawScoreNum(engine, 12, topY+i, "${rankingDepth[goalType][i]}", i==rankingRank)
 				}
 			}
 		} else {
@@ -312,8 +224,7 @@ class MarathonDrill:NetDummyMode() {
 			receiver.drawScoreNum(engine, 5, 12, "${engine.statistics.level+1}", scale = 2f)
 			receiver.drawScoreNum(engine, 1, 13, "$norm")
 			receiver.drawScoreSpeed(
-				engine, 0, 14, norm%LEVEL_GARBAGE_LINES*1f/(LEVEL_GARBAGE_LINES-1),
-				2f
+				engine, 0, 14, norm%LEVEL_GARBAGE_LINES*1f/(LEVEL_GARBAGE_LINES-1), 2f
 			)
 			receiver.drawScoreNum(engine, 1, 15, "$normMax")
 
@@ -357,15 +268,13 @@ class MarathonDrill:NetDummyMode() {
 						garbagePending = 0
 
 						// NET: Send field and stats
-						if(netIsNetPlay&&!netIsWatch&&netNumSpectators>0)
-							netSendField(engine)
+						if(netIsNetPlay&&!netIsWatch&&netNumSpectators>0) netSendField(engine)
 
 
 						if(engine.stat==GameEngine.Status.MOVE) engine.nowPieceObject?.let {nowPieceObject ->
 							if(nowPieceObject.checkCollision(engine.nowPieceX, engine.nowPieceY, it)) {
 								// Push up the current piece
-								while(nowPieceObject.checkCollision(engine.nowPieceX, engine.nowPieceY, it))
-									engine.nowPieceY--
+								while(nowPieceObject.checkCollision(engine.nowPieceX, engine.nowPieceY, it)) engine.nowPieceY--
 
 								// Pushed out from the visible part of the field
 								if(!nowPieceObject.canPlaceToVisibleField(engine.nowPieceX, engine.nowPieceY)) {
@@ -396,8 +305,7 @@ class MarathonDrill:NetDummyMode() {
 		val limitTime = getGarbageMaxTime(engine.statistics.level)
 		var remainTime = limitTime-garbageTimer
 		if(remainTime<0) remainTime = 0
-		engine.meterValue = if(limitTime>0)
-			remainTime*1f/limitTime else 0f
+		engine.meterValue = if(limitTime>0) remainTime*1f/limitTime else 0f
 		engine.meterColor = GameEngine.METER_COLOR_LIMIT
 	}
 
@@ -421,11 +329,10 @@ class MarathonDrill:NetDummyMode() {
 			norm += pow
 			levelUp(engine)
 			garbageTimer -= maxOf(0, 60-engine.statistics.level*2-cmb*7)+pow*maxOf(1, 30-engine.statistics.level)/2
-			if(goalType==GOALTYPE_NORMAL)
-				while(garbagePending>0&&garbageTimer<0) {
-					garbageTimer += getGarbageMaxTime(engine.statistics.level)
-					garbagePending--
-				}
+			if(goalType==GOALTYPE_NORMAL) while(garbagePending>0&&garbageTimer<0) {
+				garbageTimer += getGarbageMaxTime(engine.statistics.level)
+				garbagePending--
+			}
 
 			lastScore = get
 			engine.statistics.scoreLine += get
@@ -461,8 +368,7 @@ class MarathonDrill:NetDummyMode() {
 	 * @param lv Level
 	 * @return Garbage time limit
 	 */
-	private fun getGarbageMaxTime(lv:Int):Int =
-		GARBAGE_TIMER_TABLE[goalType][minOf(lv, GARBAGE_TIMER_TABLE[goalType].size-1)]
+	private fun getGarbageMaxTime(lv:Int):Int = GARBAGE_TIMER_TABLE[goalType][minOf(lv, GARBAGE_TIMER_TABLE[goalType].size-1)]
 
 	private fun getGarbageMessRate(lv:Int):Float =
 		GARBAGE_MESSINESS_TABLE[goalType][minOf(lv, GARBAGE_MESSINESS_TABLE[goalType].size-1)]/100f
@@ -479,32 +385,27 @@ class MarathonDrill:NetDummyMode() {
 
 		engine.playSE("garbage${if(lines>3) 1 else 0}")
 
-		if(garbageHole<0||engine.random.nextFloat()<getGarbageMessRate(engine.statistics.level))
-			garbageHole = engine.random.nextInt(w)
+		if(garbageHole<0||engine.random.nextFloat()<getGarbageMessRate(engine.statistics.level)) garbageHole =
+			engine.random.nextInt(w)
 
 		for(i in 0..<lines) {
 			field.pushUp()
 
-			for(x in 0..<w)
-				if(x!=garbageHole)
-					field.setBlock(
-						x, h-1, Block(
-							Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE,
-							Block.ATTRIBUTE.CONNECT_DOWN
-						)
-					)
+			for(x in 0..<w) if(x!=garbageHole) field.setBlock(
+				x, h-1, Block(
+					Block.COLOR.WHITE, engine.skin, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.GARBAGE, Block.ATTRIBUTE.CONNECT_DOWN
+				)
+			)
 
 			// Set connections
-			if(receiver.isStickySkin(engine))
-				for(x in 0..<w) {
-					field.getBlock(x, h-1)?.apply {
-						if(!field.getBlockEmpty(x-1, h-1, false)) setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
-						if(!field.getBlockEmpty(x+1, h-1, false)) setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
-						if(field.getBlock(x, h-2)
-								?.getAttribute(Block.ATTRIBUTE.GARBAGE)==true
-						) setAttribute(true, Block.ATTRIBUTE.CONNECT_UP)
-					}
+			if(receiver.isStickySkin(engine)) for(x in 0..<w) {
+				field.getBlock(x, h-1)?.apply {
+					if(!field.getBlockEmpty(x-1, h-1, false)) setAttribute(true, Block.ATTRIBUTE.CONNECT_LEFT)
+					if(!field.getBlockEmpty(x+1, h-1, false)) setAttribute(true, Block.ATTRIBUTE.CONNECT_RIGHT)
+					if(field.getBlock(x, h-2)?.getAttribute(Block.ATTRIBUTE.GARBAGE)==true)
+						setAttribute(true, Block.ATTRIBUTE.CONNECT_UP)
 				}
+			}
 		}
 
 		garbageTotal += lines
@@ -519,7 +420,7 @@ class MarathonDrill:NetDummyMode() {
 
 	private fun levelUp(engine:GameEngine) {
 		if(engine.gameActive&&engine.timerActive) {
-			// Levelup
+			// Level up
 			var lvupFlag = false
 			while(norm>=normMax&&engine.statistics.level<19) {
 				normMax += LEVEL_GARBAGE_LINES
@@ -554,11 +455,8 @@ class MarathonDrill:NetDummyMode() {
 
 		if(netIsPB) receiver.drawMenuFont(engine, 2, 18, "NEW PB", COLOR.ORANGE)
 
-		if(netIsNetPlay&&netReplaySendStatus==1)
-			receiver.drawMenuFont(engine, 0, 19, "SENDING...", COLOR.PINK)
-		else if(netIsNetPlay&&!netIsWatch
-			&&netReplaySendStatus==2
-		)
+		if(netIsNetPlay&&netReplaySendStatus==1) receiver.drawMenuFont(engine, 0, 19, "SENDING...", COLOR.PINK)
+		else if(netIsNetPlay&&!netIsWatch&&netReplaySendStatus==2)
 			receiver.drawMenuFont(engine, 1, 19, "A: RETRY", COLOR.RED)
 	}
 
@@ -568,8 +466,7 @@ class MarathonDrill:NetDummyMode() {
 
 		// NET: Save name
 		if(netPlayerName!=null&&netPlayerName!!.isNotEmpty()) prop.setProperty(
-			"${engine.playerID}.net.netPlayerName",
-			netPlayerName
+			"${engine.playerID}.net.netPlayerName", netPlayerName
 		)
 
 		// Update rankings
@@ -578,22 +475,6 @@ class MarathonDrill:NetDummyMode() {
 			if(updateRanking(engine.statistics.score, engine.statistics.lines, garbageDug, goalType)!=-1) return true
 		}
 		return false
-	}
-
-	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		goalType = prop.getProperty("digchallenge.goalType", GOALTYPE_NORMAL)
-		startLevel = prop.getProperty("digchallenge.startLevel", 0)
-		bgmId = prop.getProperty("digchallenge.bgmno", 0)
-		owner.engine[0].speed.das = prop.getProperty("digchallenge.das", 11)
-		version = prop.getProperty("digchallenge.version", 0)
-	}
-
-	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("digchallenge.goalType", goalType)
-		prop.setProperty("digchallenge.startLevel", startLevel)
-		prop.setProperty("digchallenge.bgmno", bgmId)
-		prop.setProperty("digchallenge.das", owner.engine[0].speed.das)
-		prop.setProperty("digchallenge.version", version)
 	}
 
 	/** Update rankings
@@ -627,10 +508,9 @@ class MarathonDrill:NetDummyMode() {
 	 * @return Position (-1 if unranked)
 	 */
 	private fun checkRanking(sc:Long, li:Int, dep:Int, type:Int):Int {
-		for(i in 0..<RANKING_MAX)
-			if(sc>rankingScore[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
-			else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&dep>rankingDepth[type][i]) return i
+		for(i in 0..<RANKING_MAX) if(sc>rankingScore[type][i]) return i
+		else if(sc==rankingScore[type][i]&&li>rankingLines[type][i]) return i
+		else if(sc==rankingScore[type][i]&&li==rankingLines[type][i]&&dep>rankingDepth[type][i]) return i
 
 		return -1
 	}
@@ -650,7 +530,10 @@ class MarathonDrill:NetDummyMode() {
 
 	/** NET: Parse Received [message] as in-game stats of [engine] */
 	override fun netRecvStats(engine:GameEngine, message:List<String>) {
-		listOf<(String)->Unit>({}, {}, {}, {},
+		listOf<(String)->Unit>({},
+			{},
+			{},
+			{},
 			{engine.statistics.scoreLine = it.toInt()},
 			{engine.statistics.scoreBonus = it.toInt()},
 			{engine.statistics.lines = it.toInt()},
@@ -733,12 +616,11 @@ class MarathonDrill:NetDummyMode() {
 
 		private const val GARBAGE_BOTTOM = 4
 
-		/** Fall velocity table (numerators) */
-		private val tableGravity = listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)
-
-		/** Fall velocity table (denominators) */
-		private val tableDenominator =
-			listOf(64, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)
+		private val tableSpeeds = LevelData(
+			listOf(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 465, 731, 1280, 1707, -1, -1, -1)/*(numerators)*/,
+			listOf(64, 50, 39, 30, 22, 16, 12, 8, 6, 4, 3, 2, 1, 256, 256, 256, 256, 256, 256, 256)/* (denominators) */,
+			0, 0, 0, 30, 14
+		)
 
 		/** Garbage speed table */
 		private val GARBAGE_TIMER_TABLE = listOf(

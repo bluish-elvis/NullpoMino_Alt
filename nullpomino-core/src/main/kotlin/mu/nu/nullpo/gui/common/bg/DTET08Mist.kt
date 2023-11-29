@@ -35,7 +35,7 @@ import kotlin.random.Random
 class DTET08Mist<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
 	/*'（スターダスト）
 For I = 0 To 59: StD(I) = Rnd * 152: Next I*/
-	val py = MutableList(60) {Random.nextFloat()*152}
+	private val py = MutableList(60) {Random.nextFloat()*152}
 	override fun update() {
 		py.forEachIndexed {i, _ ->
 			py[i] += (i*.1f-2.95f)*(.5f+speed)

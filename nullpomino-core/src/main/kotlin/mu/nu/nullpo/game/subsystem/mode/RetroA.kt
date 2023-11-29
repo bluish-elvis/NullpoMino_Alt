@@ -29,15 +29,16 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
-import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
-import mu.nu.nullpo.gui.common.BaseFont
+import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil.getONorOFF
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** RETRO MASTERY mode by Pineapple 20100722 - 20100808 */
@@ -46,12 +47,6 @@ class RetroA:AbstractMode() {
 
 	/** EventReceiver object (This receives many game events, can also be used
 	 * for drawing the fonts.) */
-
-	/** Selected game type */
-	private var gameType:GAMETYPE = GAMETYPE.RACE200
-
-	/** Selected starting level */
-	private var startLevel = 0
 
 	/** Used for soft drop scoring */
 	private var scoreSD = 0
@@ -72,10 +67,20 @@ class RetroA:AbstractMode() {
 	/** Next level lines */
 	private var levelLines = 0
 
+	private val itemMode = StringsMenuItem("mode", "GAME TYPE", COLOR.BLUE,
+		GAMETYPE.RACE200.ordinal, GAMETYPE.entries.map {it.name})
+	private var gameMode:Int by DelegateMenuItem(itemMode)
+	/** Selected game type */
+	private val gameType get() = GAMETYPE.entries[gameMode]
+
+	private val itemLevel = LevelMenuItem("startlevel", "Level", COLOR.BLUE, 0, 0..19)
+	/** Selected starting level */
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
+
 	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** BigMode */
 	private var big:Boolean by DelegateMenuItem(itemBig)
-
+	override val menu = MenuList("retromastery", itemMode, itemLevel, itemBig)
 	/** Version of this mode */
 	private var version = 0
 
@@ -147,91 +152,16 @@ class RetroA:AbstractMode() {
 	 * @param engine GameEngine object
 	 */
 	private fun setSpeed(engine:GameEngine) {
-		val lv = maxOf(0, minOf(engine.statistics.level, tableDenominator.size-1))
-
-		engine.speed.gravity = tableGravity[lv]
-		engine.speed.denominator = tableDenominator[lv]
-		engine.speed.lockDelay = tableLockDelay[lv]
-		engine.speed.lineDelay = if(lv>=10) 20 else 25
+		val lv = maxOf(0, minOf(engine.statistics.level, tableSpeed.size-1))
+		engine.speed.replace(tableSpeed[lv])
+		//engine.speed.lineDelay = if(lv>=10) 20 else 25
 	}
 
 	/** Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		// Menu
-		if(!engine.owner.replayMode) {
-			// Check for UP button, when pressed it will move cursor up.
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-				menuCursor--
-				if(menuCursor==1&&gameType==GAMETYPE.PRESSURE) menuCursor--
-				if(menuCursor<0) menuCursor = 2
-				engine.playSE("cursor")
-			}
-			// Check for DOWN button, when pressed it will move cursor down.
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-				menuCursor++
-				if(menuCursor==1&&gameType==GAMETYPE.PRESSURE) menuCursor++
-				if(menuCursor>2) menuCursor = 0
-				engine.playSE("cursor")
-			}
+	override fun onSettingChanged(engine:GameEngine) {
 
-			// Check for LEFT/RIGHT keys
-			var change = 0
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						gameType = when(gameType) {
-							GAMETYPE.entries.first() -> GAMETYPE.entries.last()
-							GAMETYPE.entries.last() -> GAMETYPE.entries.first()
-							else -> GAMETYPE.entries[gameType.ordinal+change]
-						}
-						engine.owner.bgMan.bg = if(gameType==GAMETYPE.PRESSURE) 0 else startLevel
-					}
-					1 -> {
-						startLevel += change
-						if(startLevel<0) startLevel = 19
-						if(startLevel>19) startLevel = 0
-						engine.owner.bgMan.bg = startLevel
-					}
-					2 -> big = !big
-				}
-			}
-
-			// Check for A button, when pressed this will begin the game
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				return false
-			}
-
-			// Check for B button, when pressed this will shut down the game engine.
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
-		}
-
-		return true
-	}
-
-	/** Renders game setup screen */
-	override fun renderSetting(engine:GameEngine) {
-		if(!engine.owner.replayMode)
-			receiver.drawMenuFont(engine, 0, menuCursor*2+1, BaseFont.CURSOR, COLOR.RED)
-
-		receiver.drawMenuFont(engine, 0, 0, "GAME TYPE", COLOR.BLUE)
-		receiver.drawMenuFont(engine, 1, 1, gameType.name, menuCursor==0)
-		if(gameType!=GAMETYPE.ENDLESS) {
-			receiver.drawMenuFont(engine, 0, 2, "Level", COLOR.BLUE)
-			receiver.drawMenuFont(engine, 1, 3, "%02d".format(startLevel), menuCursor==1)
-		}
-		receiver.drawMenuFont(engine, 0, 4, "BIG", COLOR.BLUE)
-		receiver.drawMenuFont(engine, 1, 5, big.getONorOFF(), menuCursor==2)
+		engine.owner.bgMan.bg = if(gameType==GAMETYPE.PRESSURE) 0 else startLevel
+		super.onSettingChanged(engine)
 	}
 
 	/** This function will be called before the game actually begins (after
@@ -411,24 +341,6 @@ class RetroA:AbstractMode() {
 		return false
 	}
 
-	/** Load the settings from [prop] */
-	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		gameType = GAMETYPE.entries[prop.getProperty("retromastery.gametype", 0)]
-		startLevel = prop.getProperty("retromastery.startLevel", 0)
-		big = prop.getProperty("retromastery.big", false)
-		version = prop.getProperty("retromastery.version", 0)
-	}
-
-	/** Save the settings
-	 * @param prop CustomProperties
-	 */
-	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("retromastery.gametype", gameType.ordinal)
-		prop.setProperty("retromastery.startLevel", startLevel)
-		prop.setProperty("retromastery.big", big)
-		prop.setProperty("retromastery.version", version)
-	}
-
 	/** Update the ranking
 	 * @param sc Score
 	 * @param li Lines
@@ -477,30 +389,35 @@ class RetroA:AbstractMode() {
 		private const val CURRENT_VERSION = 1
 
 		/** Denominator table */
-		private val tableDenominator = listOf(
-			//	0  1  2  3  4  5  6  7  8  9    +xx
-			48, 40, 32, 27, 22, 18, 15, 12, 10, 8, // 00
-			7, 6, 11, 5, 9, 4, 7, 3, 11, 10, // 10
-			9, 8, 15, 14, 13, 12, 11, 10, 9, 8, // 20
-			1
-		)
-
-		/** Gravity table */
-		private val tableGravity = listOf(
-			//	0  1  2  3  4  5  6  7  8  9    +xx
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 00
-			1, 1, 2, 1, 2, 1, 2, 1, 4, 4, // 10
-			4, 4, 8, 8, 8, 8, 8, 8, 8, 8, // 20
-			1
-		)
-
-		/** Lock delay table */
-		private val tableLockDelay = listOf(
-			//	0  1  2  3  4  5  6  7  8  9    +xx
-			60, 52, 45, 39, 34, 30, 27, 24, 22, 20, // 00
-			19, 18, 17, 16, 15, 14, 13, 12, 11, 10, // 10
-			9, 8, 8, 8, 8, 7, 7, 7, 7, 7, // 20
-			6
+		private val tableSpeed = LevelData(
+			listOf(
+				//0,1 2, 3, 4, 5, 6, 7, 8, 9,    +xx
+				1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 00
+				1, 1, 2, 1, 2, 1, 2, 1, 4, 4, // 10
+				4, 4, 8, 8, 8, 8, 8, 8, 8, 8, // 20
+				1
+			),
+			listOf(
+				//0, 1   2,  3,  4,  5,  6,  7,  8,  9    +xx
+				48, 40, 32, 27, 22, 18, 15, 12, 10, 8, // 00
+				+7, +6, 11, +5, +9, +4, +7, +3, 11, 10, // 10
+				+9, +8, 15, 14, 13, 12, 11, 10, +9, 8, // 20
+				1
+			),
+			listOf(12),
+			listOf(15),
+			listOf(
+				25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+				20
+			),
+			listOf(
+				//0, 1   2,  3,  4,  5,  6,  7,  8,  9    +xx
+				60, 52, 45, 39, 34, 30, 27, 24, 22, 20, // 00
+				19, 18, 17, 16, 15, 14, 13, 12, 11, 10, // 10
+				9, 8, 8, 8, 8, 7, 7, 7, 7, 7, // 20
+				6
+			),
+			listOf(12),
 		)
 
 		/** Game type name */

@@ -30,6 +30,7 @@ package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.LevelData
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.net.NetUtil
@@ -115,14 +116,8 @@ class MarathonExtreme:NetDummyMode() {
 	 * @param engine GameEngine
 	 */
 	fun setSpeed(engine:GameEngine) {
-		val lv = maxOf(0, minOf(engine.statistics.level, tableARE.size-1))
-
-		engine.speed.gravity = -1
-		engine.speed.are = tableARE[lv]
-		engine.speed.areLine = tableARELine[lv]
-		engine.speed.lineDelay = tableLineDelay[lv]
-		engine.speed.lockDelay = tableLockDelay[lv]
-		engine.speed.das = tableDAS[lv]
+		val lv = maxOf(0, minOf(engine.statistics.level, tableSpeed.size-1))
+		engine.speed.replace(tableSpeed[lv])
 	}
 
 	/* Called at settings screen */
@@ -515,21 +510,15 @@ class MarathonExtreme:NetDummyMode() {
 
 		/** Ending time */
 		private const val ROLLTIMELIMIT = 3238
+		private val tableSpeed = LevelData(
+			listOf(25, 24, 23, 22, 21, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)/*ARE*/,
+			listOf(20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1)/*ARE Lines*/,
+			listOf(30, 25, 20, 17, 14, 11, 9, 8, 7, 6, 5, 5, 5, 5, 5, 4, 3, 2, 1, 0)/*Line Delay*/,
+			//   50,43,36,31,26,21,18,16,14,12,10, 9, 8, 7, 6, 5, 4, 3, 2, 1
+			listOf(30, 29, 28, 27, 27, 26, 26, 25, 25, 24, 24, 23, 23, 22, 22, 22, 21, 21, 21, 20)/*Lock Delay*/,
+			listOf(10, 10, 10, 9, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4)/*DAS*/
 
-		/** ARE table */
-		private val tableARE = listOf(25, 24, 23, 22, 21, 20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
-
-		/** ARE after line clear table */
-		private val tableARELine = listOf(20, 18, 16, 14, 12, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1)
-
-		/** Line clear times table */
-		private val tableLineDelay = listOf(30, 25, 20, 17, 14, 11, 9, 8, 7, 6, 5, 5, 5, 5, 5, 4, 3, 2, 1, 0)
-		//   50,43,36,31,26,21,18,16,14,12,10, 9, 8, 7, 6, 5, 4, 3, 2, 1
-		/** Lock delay table */
-		private val tableLockDelay = listOf(30, 29, 28, 27, 27, 26, 26, 25, 25, 24, 24, 23, 23, 22, 22, 22, 21, 21, 21, 20)
-
-		/** DAS table */
-		private val tableDAS = listOf(10, 10, 10, 9, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4)
+		)
 
 		/** Line counts when BGM changes occur */
 		private val tableBGMChange = listOf(20, 40, 60, 80, 110, 140, 170)

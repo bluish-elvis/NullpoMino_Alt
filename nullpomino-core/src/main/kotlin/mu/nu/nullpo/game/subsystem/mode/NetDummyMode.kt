@@ -45,7 +45,7 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.gui.net.NetLobbyListener
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil as Util
 import mu.nu.nullpo.util.GeneralUtil.strDateTime
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
@@ -281,6 +281,10 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				if(engine.ctrl.isPush(Controller.BUTTON_D)&&netIsNetPlay&&!netIsWatch&&netIsNetRankingViewOK(engine))
 					netEnterNetPlayRankingScreen(netGetGoalType)
 
+			}else {
+				menuTime++
+				menuCursor = -1
+				return menuTime<60*(1+(menu.loc.maxOrNull() ?: 0)/engine.fieldHeight)
 			}
 		return true
 	}
@@ -618,8 +622,8 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 		if(roomInfo!=null&&roomInfo.ruleLock) netLobby?.ruleOptLock?.let {
 			// Set to locked rule
 			log.info("Set locked rule")
-			val randomizer = GeneralUtil.loadRandomizer(it.strRandomizer)
-			val wallkick = GeneralUtil.loadWallkick(it.strWallkick)
+			val randomizer = Util.loadRandomizer(it.strRandomizer)
+			val wallkick = Util.loadWallkick(it.strWallkick)
 			owner.engine[0].ruleOpt.replace(it)
 			owner.engine[0].randomizer = randomizer
 			owner.engine[0].wallkick = wallkick
@@ -1259,7 +1263,7 @@ abstract class NetDummyMode:AbstractMode(), NetLobbyListener {
 				netRankingPlace[d].add(arrayData[0].toInt())
 				val pName = NetUtil.urlDecode(arrayData[1])
 				netRankingName[d].add(pName)
-				GeneralUtil.importCalendarString(arrayData[2])?.let {netRankingDate[d].add(it)}
+				Util.importCalendarString(arrayData[2])?.let {netRankingDate[d].add(it)}
 				netRankingGamerate[d].add(arrayData[3].toFloat())
 
 				when(netRankingType) {

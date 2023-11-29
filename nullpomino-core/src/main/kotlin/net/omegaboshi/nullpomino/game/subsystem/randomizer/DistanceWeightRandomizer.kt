@@ -31,7 +31,7 @@ package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
 import mu.nu.nullpo.game.component.Piece.Shape
 
-abstract class DistanceWeightRandomizer:Randomizer {
+abstract class DistanceWeightRandomizer:Randomizer() {
 	private val initWeights = intArrayOf(3, 3, 0, 0, 3, 3, 0, 2, 2, 2, 2)
 	internal var weights = IntArray(pieces.size)
 	private var cumulative = IntArray(pieces.size)
@@ -39,9 +39,6 @@ abstract class DistanceWeightRandomizer:Randomizer {
 	internal var id = 0
 
 	private var firstPiece = true
-
-	constructor():super()
-	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
 
 	init {
 		init()

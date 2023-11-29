@@ -29,21 +29,21 @@
 package mu.nu.nullpo.game.subsystem.mode
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
-import mu.nu.nullpo.game.component.Controller
+import mu.nu.nullpo.game.component.Piece
+import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
 /** RETRO MANIA mode (Based System16, Original from NullpoUE build 121909 by Zircean) */
 class RetroS:AbstractMode() {
-	/** Selected game type */
-	private var gametype = 0
-
-	/** Selected starting level */
-	private var startLevel = 0
 
 	/** Level timer */
 	private var levelTimer = 0
@@ -51,12 +51,23 @@ class RetroS:AbstractMode() {
 	/** Amount of lines cleared (It will be reset when the level increases) */
 	private var linesAfterLastLevelUp = 0
 
+	private val itemMode = StringsMenuItem("gameType", "GAME TYPE", COLOR.BLUE, 0, GAMETYPE_NAME)
+	/** Selected game type */
+	private var gameType:Int by DelegateMenuItem(itemMode)
+
+	private val itemLevel = LevelMenuItem("startLevel", "LEVEL", COLOR.BLUE, 0, 0..15)
+	/** Selected starting level */
+	private var startLevel:Int by DelegateMenuItem(itemLevel)
+
+	private val itemBig = BooleanMenuItem("big", "BIG", COLOR.BLUE, false)
 	/** Big mode on/off */
-	private var big = false
+	private var big:Boolean by DelegateMenuItem(itemBig)
 
-	/** Poweron Pattern on/off */
-	private var poweron = false
+	private val itemPower = BooleanMenuItem("powerOn", "POWERON", COLOR.BLUE, false)
+	/** PowerOn Pattern on/off */
+	private var powerOn:Boolean by DelegateMenuItem(itemPower)
 
+	override val menu = MenuList("retromania")
 	/** Version of this mode */
 	private var version = 0
 
@@ -138,64 +149,18 @@ class RetroS:AbstractMode() {
 	 * @param engine GameEngine object
 	 */
 	private fun setSpeed(engine:GameEngine) {
-		val lv = maxOf(0, minOf(engine.statistics.level, tableDenominator[gametype].size-1))
+		val lv = maxOf(0, minOf(engine.statistics.level, tableDenominator[gameType].size-1))
 
 		engine.speed.gravity = 1
-		engine.speed.denominator = tableDenominator[gametype][lv]
+		engine.speed.denominator = tableDenominator[gameType][lv]
 
 		owner.musMan.bgm = BGM.RetroS(maxOf(0, minOf(engine.statistics.level/6, 5)))
 	}
 
 	/** Main routine for game setup screen */
-	override fun onSetting(engine:GameEngine):Boolean {
-		if(!owner.replayMode) {
-			// Configuration changes
-			val change = updateCursor(engine, 3)
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						gametype += change
-						if(gametype<0) gametype = GAMETYPE_MAX-1
-						if(gametype>GAMETYPE_MAX-1) gametype = 0
-					}
-					1 -> {
-						startLevel += change
-						if(startLevel<0) startLevel = 15
-						if(startLevel>15) startLevel = 0
-						owner.bgMan.bg = startLevel/2
-					}
-					2 -> big = !big
-					3 -> poweron = !poweron
-				}
-			}
-
-			// Check for A button, when pressed this will begin the game
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				return false
-			}
-
-			// Check for B button, when pressed this will shut down the game engine.
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
-		}
-
-		return true
-	}
-
-	/** Renders game setup screen */
-	override fun renderSetting(engine:GameEngine) {
-		drawMenu(
-			engine, receiver, 0, COLOR.BLUE, 0, "DIFFICULTY" to GAMETYPE_NAME[gametype], "Level" to startLevel, "BIG" to big,
-			"POWERON" to poweron
-		)
+	override fun onSettingChanged(engine:GameEngine) {
+		owner.bgMan.bg = startLevel/2
+		super.onSettingChanged(engine)
 	}
 
 	/** Ready */
@@ -215,8 +180,8 @@ class RetroS:AbstractMode() {
 				dasInReady = false
 				nextDisplay = 1
 			}
-			if(poweron)
-				engine.nextPieceArrayID = GeneralUtil.createNextPieceArrayFromNumberString(STRING_POWERON_PATTERN)
+			if(powerOn)
+				engine.nextPieceArrayID = createQueueFromIntStr(STRING_POWERON_PATTERN)
 		}
 		return false
 	}
@@ -235,7 +200,7 @@ class RetroS:AbstractMode() {
 	/** Renders HUD (leaderboard or game statistics) */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScoreFont(engine, 0, 0, name, COLOR.GREEN)
-		receiver.drawScoreFont(engine, 0, 1, "(${GAMETYPE_NAME[gametype]} SPEED)", COLOR.GREEN)
+		receiver.drawScoreFont(engine, 0, 1, "(${GAMETYPE_NAME[gameType]} SPEED)", COLOR.GREEN)
 
 		if(engine.stat==GameEngine.Status.SETTING||engine.stat==GameEngine.Status.RESULT&&!owner.replayMode) {
 			// Leaderboard
@@ -247,20 +212,20 @@ class RetroS:AbstractMode() {
 					receiver.drawScoreGrade(engine, 0, topY+i, "${i+1}", COLOR.YELLOW)
 					receiver.drawScoreNum(
 						engine, 2, topY+i,
-						if(rankingScore[gametype][i]>=0) "%6d".format(rankingScore[gametype][i])
-						else rankingScore[gametype][i].toTimeStr, i==rankingRank
+						if(rankingScore[gameType][i]>=0) "%6d".format(rankingScore[gameType][i])
+						else rankingScore[gameType][i].toTimeStr, i==rankingRank
 					)
 					receiver.drawScoreNum(
 						engine, 8, topY+i,
-						if(rankingLines[gametype][i]>=0) "%3d".format(rankingLines[gametype][i])
-						else rankingLines[gametype][i].toTimeStr, i==rankingRank
+						if(rankingLines[gameType][i]>=0) "%3d".format(rankingLines[gameType][i])
+						else rankingLines[gameType][i].toTimeStr, i==rankingRank
 					)
 					receiver.drawScoreNum(
 						engine, 11, topY+i,
-						if(rankingLevel[gametype][i]>=0) "%2d".format(rankingLevel[gametype][i])
-						else rankingLevel[gametype][i].toTimeStr, i==rankingRank
+						if(rankingLevel[gameType][i]>=0) "%2d".format(rankingLevel[gameType][i])
+						else rankingLevel[gameType][i].toTimeStr, i==rankingRank
 					)
-					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[gametype][i].toTimeStr, i==rankingRank)
+					receiver.drawScoreNum(engine, 15, topY+i, rankingTime[gameType][i].toTimeStr, i==rankingRank)
 				}
 			}
 		} else {
@@ -392,30 +357,12 @@ class RetroS:AbstractMode() {
 				if(engine.statistics.score>=MAX_SCORE) -maxScoreTime.toLong() else engine.statistics.score,
 				if(engine.statistics.lines>=MAX_LINES) -maxLinesTime else engine.statistics.lines,
 				if(engine.statistics.level>=MAX_LEVEL) -maxLevelTime else engine.statistics.level,
-				engine.statistics.time, gametype
+				engine.statistics.time, gameType
 			)
 
 			if(rankingRank!=-1) return true
 		}
 		return false
-	}
-
-	/** Load the settings */
-	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		startLevel = prop.getProperty("retromania.startLevel", 0)
-		gametype = prop.getProperty("retromania.gametype", 0)
-		big = prop.getProperty("retromania.big", false)
-		poweron = prop.getProperty("retromania.poweron", false)
-		version = prop.getProperty("retromania.version", 0)
-	}
-
-	/** Save the settings */
-	override fun saveSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
-		prop.setProperty("retromania.startLevel", startLevel)
-		prop.setProperty("retromania.gametype", gametype)
-		prop.setProperty("retromania.big", big)
-		prop.setProperty("retromania.poweron", poweron)
-		prop.setProperty("retromania.version", version)
 	}
 
 	/** Update the ranking */

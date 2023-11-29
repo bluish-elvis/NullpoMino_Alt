@@ -39,11 +39,11 @@ import kotlin.random.Random
 class DTET00Ocean<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
 	/*SeaA = 0
 For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
-	val rasterX = MutableList(31) {Random.nextFloat()*640}
-	val waveX = MutableList(31) {0f}
+	private val rasterX = MutableList(31) {Random.nextFloat()*640}
+	private val waveX = MutableList(31) {0f}
 	/** Speed 0f-2f*/
-	var spdN = 0f
-	var waveH = 0f; private set
+	private var spdN = 0f
+	private var waveH = 0f; private set
 	private fun waveMag(i:Int) = (1.15f.pow(i)-spdN/2)*(1.4f-spdN*.2f)
 	override fun update() {
 		tick++

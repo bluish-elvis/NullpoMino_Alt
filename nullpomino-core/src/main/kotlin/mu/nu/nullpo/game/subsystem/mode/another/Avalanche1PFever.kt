@@ -482,13 +482,12 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 				}
 				loadFeverMap(engine, feverChain)
 			}
-		} else if(engine.field!=null)
-			if(!engine.field.getBlockEmpty(2, 0)||!engine.field.getBlockEmpty(3, 0)) {
-				engine.stat = GameEngine.Status.GAMEOVER
-				engine.gameEnded()
-				engine.resetStatc()
-				engine.statc[1] = 1
-			}
+		} else if(!engine.field.getBlockEmpty(2, 0)||!engine.field.getBlockEmpty(3, 0)) {
+			engine.stat = GameEngine.Status.GAMEOVER
+			engine.gameEnded()
+			engine.resetStatc()
+			engine.statc[1] = 1
+		}
 
 		// Out of time
 		if(timeLimit<=0&&engine.timerActive) {

@@ -32,13 +32,13 @@ import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.component.Field
+import mu.nu.nullpo.game.component.Piece.Companion.createQueueFromIntStr
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import org.apache.logging.log4j.LogManager
@@ -47,7 +47,7 @@ import org.jetbrains.kotlin.konan.file.File
 /** GEM MANIA */
 class GrandPuzzle:AbstractMode() {
 	/** Level set property file */
-	private var propStageSet = mapOf<Int, CustomProperties>().toMutableMap()
+	private var propStageSet = mutableMapOf<Int, CustomProperties>()
 
 	/** 残りプラチナBlockcount */
 	private var rest = 0
@@ -733,7 +733,7 @@ class GrandPuzzle:AbstractMode() {
 				engine.nextPieceCount = startNextc
 
 				if(!randomQueue)
-					engine.nextPieceArrayID = GeneralUtil.createNextPieceArrayFromNumberString(STRING_DEFAULT_NEXT_LIST)
+					engine.nextPieceArrayID = createQueueFromIntStr(STRING_DEFAULT_NEXT_LIST)
 			}
 
 			startStage(engine)

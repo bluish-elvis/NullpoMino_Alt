@@ -39,7 +39,6 @@ import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
-import java.util.LinkedList
 import java.util.Objects
 import kotlin.math.abs
 
@@ -84,8 +83,8 @@ class NetVSBattle:NetDummyVSMode() {
 	/** Amount of garbage in garbage queue */
 	private var garbage = IntArray(0)
 
-	/** Recieved garbage entries */
-	private var garbageEntries:LinkedList<GarbageEntry> = LinkedList()
+	/** Received garbage entries */
+	private val garbageEntries:MutableList<GarbageEntry> = mutableListOf()
 
 	/** APL (Attack Per Line) */
 	private var playerAPL = FloatArray(0)
@@ -306,9 +305,9 @@ class NetVSBattle:NetDummyVSMode() {
 			for(i in pts.indices)
 				if(pts[i]>0&&garbage[pid]>0
 					&&netCurrentRoomInfo!!.counter)
-					while((!netCurrentRoomInfo!!.useFractionalGarbage&&!garbageEntries.isEmpty()&&pts[i]>0)||
-						netCurrentRoomInfo!!.useFractionalGarbage&&!garbageEntries.isEmpty()&&pts[i]>=GARBAGE_DENOMINATOR) {
-						val garbageEntry = garbageEntries.first
+					while((!netCurrentRoomInfo!!.useFractionalGarbage&&garbageEntries.isNotEmpty()&&pts[i]>0)||
+						netCurrentRoomInfo!!.useFractionalGarbage&&garbageEntries.isNotEmpty()&&pts[i]>=GARBAGE_DENOMINATOR) {
+						val garbageEntry = garbageEntries.first()
 						garbageEntry.lines -= pts[i]
 
 						if(garbageEntry.lines<=0) {
@@ -349,8 +348,8 @@ class NetVSBattle:NetDummyVSMode() {
 			if(netCurrentRoomInfo!!.divideChangeRateByPlayers) finalGarbagePercent /= netVSGetNumberOfTeamsAlive()-1
 
 			// Make regular garbage lines appear
-			while(!garbageEntries.isEmpty()) {
-				val garbageEntry = garbageEntries.poll()
+			while(garbageEntries.isNotEmpty()) {
+				val garbageEntry = garbageEntries.removeFirst()
 				smallGarbageCount += garbageEntry.lines%GARBAGE_DENOMINATOR
 
 				if(garbageEntry.lines/GARBAGE_DENOMINATOR>0) {

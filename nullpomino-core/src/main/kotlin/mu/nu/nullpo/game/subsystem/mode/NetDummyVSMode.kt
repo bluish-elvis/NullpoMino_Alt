@@ -39,7 +39,7 @@ import mu.nu.nullpo.game.net.NetRoomInfo
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.net.NetLobbyFrame
-import mu.nu.nullpo.util.GeneralUtil
+import mu.nu.nullpo.util.GeneralUtil as Util
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import java.io.IOException
 import kotlin.random.Random
@@ -360,8 +360,8 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		if(netCurrentRoomInfo!=null&&netCurrentRoomInfo!!.ruleLock) {
 			// Set to locked rule
 			if(netLobby!=null&&netLobby!!.ruleOptLock!=null) {
-				val randomizer = GeneralUtil.loadRandomizer(netLobby!!.ruleOptLock!!.strRandomizer)
-				val wallkick = GeneralUtil.loadWallkick(netLobby!!.ruleOptLock!!.strWallkick)
+				val randomizer = Util.loadRandomizer(netLobby!!.ruleOptLock!!.strRandomizer)
+				val wallkick = Util.loadWallkick(netLobby!!.ruleOptLock!!.strWallkick)
 				for(i in 0..<players) {
 					owner.engine[i].ruleOpt.replace(netLobby!!.ruleOptLock)
 					owner.engine[i].randomizer = randomizer
@@ -372,8 +372,8 @@ abstract class NetDummyVSMode:NetDummyMode() {
 		} else if(!netVSIsWatch()) {
 			// Revert rules
 			owner.engine[0].ruleOpt.replace(netLobby!!.ruleOptPlayer)
-			owner.engine[0].randomizer = GeneralUtil.loadRandomizer(owner.engine[0].ruleOpt.strRandomizer)
-			owner.engine[0].wallkick = GeneralUtil.loadWallkick(owner.engine[0].ruleOpt.strWallkick)
+			owner.engine[0].randomizer = Util.loadRandomizer(owner.engine[0].ruleOpt.strRandomizer)
+			owner.engine[0].wallkick = Util.loadWallkick(owner.engine[0].ruleOpt.strWallkick)
 		}
 	}
 

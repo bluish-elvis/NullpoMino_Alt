@@ -29,9 +29,7 @@
 
 package net.omegaboshi.nullpomino.game.subsystem.randomizer
 
-class MemorylessRandomizer:Randomizer {
-	constructor():super()
-	constructor(pieceEnable:List<Boolean>, seed:Long):super(pieceEnable, seed)
-
-	override fun next():Int = pieces[r.nextInt(pieces.size)]
+class MemorylessRandomizer:Randomizer() {
+	override fun init() {}
+	override fun next():Int = pieces.random(r)
 }
