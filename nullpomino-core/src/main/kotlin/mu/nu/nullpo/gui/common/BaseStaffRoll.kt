@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023, NullNoname
+ * Copyright (c) 2021-2024, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -34,11 +34,8 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR.GREEN
 import mu.nu.nullpo.game.event.EventReceiver.COLOR.ORANGE
 import mu.nu.nullpo.game.event.EventReceiver.COLOR.WHITE
 import org.apache.logging.log4j.LogManager
-import java.io.BufferedReader
 import java.io.FileInputStream
-import java.io.FileReader
 import java.io.IOException
-import java.io.InputStreamReader
 
 abstract class BaseStaffRoll<T> {
 	/** Log */

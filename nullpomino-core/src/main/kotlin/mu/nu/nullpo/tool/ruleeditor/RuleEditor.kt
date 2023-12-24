@@ -28,6 +28,8 @@
  */
 package mu.nu.nullpo.tool.ruleeditor
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Piece
 import mu.nu.nullpo.game.component.RuleOptions
@@ -80,28 +82,28 @@ class RuleEditor:JFrame, ActionListener {
 	/* 基本設定パネル */
 
 	/** Rule name */
-	private val txtfldRuleName:JTextField = JTextField("", 15)
+	private val txtFldRuleName = JTextField("", 15)
 
 	/** NEXT表示countのテキストfield */
-	private val txtfldNextDisplay:JTextField = JTextField("", 5)
+	private val txtFldNextDisplay = JTextField("", 5)
 
-	/** Game style combobox */
-	private var comboboxStyle:JComboBox<*>? = null
+	/** Game style comboBox */
+	private var comboBoxStyle = JComboBox<String>()
 
 	/** 絵柄のComboボックス */
-	private var comboboxSkin:JComboBox<*>? = null
+	private var comboBoxSkin = JComboBox<ComboLabel>()
 
 	/** ghost is enabled */
-	private val chkboxGhost:JCheckBox = JCheckBox()
+	private val chkBoxGhost = JCheckBox()
 
 	/** Blockピースがfield枠外から出現 */
-	private val chkboxEnterAboveField:JCheckBox = JCheckBox()
+	private val chkBoxEnterAboveField = JCheckBox()
 
 	/** 出現予定地が埋まっているときにY-coordinateを上にずらすMaximum count */
-	private val txtfldEnterMaxDistanceY:JTextField = JTextField("", 5)
+	private val txtFldEnterMaxDistanceY = JTextField("", 5)
 
 	/** NEXT順生成アルゴリズム */
-	private var comboboxRandomizer:JComboBox<*>? = null
+	private var comboBoxRandomizer:JComboBox<*>? = null
 
 	/** NEXT順生成アルゴリズムのリスト */
 	private var vectorRandomizer:Vector<String>? = null
@@ -113,103 +115,103 @@ class RuleEditor:JFrame, ActionListener {
 	/* field設定パネル */
 
 	/** fieldの幅 */
-	private val txtfldFieldWidth:JTextField = JTextField("", 5)
+	private val txtFldFieldWidth = JTextField("", 5)
 
 	/** Field height */
-	private val txtfldFieldHeight:JTextField = JTextField("", 5)
+	private val txtFldFieldHeight = JTextField("", 5)
 
 	/** fieldの見えない部分の高さ */
-	private val txtfldFieldHiddenHeight:JTextField = JTextField("", 5)
+	private val txtFldFieldHiddenHeight = JTextField("", 5)
 
 	/** fieldの天井 */
-	private val chkboxFieldCeiling:JCheckBox = JCheckBox()
+	private val chkBoxFieldCeiling = JCheckBox()
 
 	/** field枠内に置けないと死亡 */
-	private val chkboxFieldLockoutDeath:JCheckBox = JCheckBox()
+	private val chkBoxFieldLockoutDeath = JCheckBox()
 
 	/** field枠外にはみ出しただけで死亡 */
-	private val chkboxFieldPartialLockoutDeath:JCheckBox = JCheckBox()
+	private val chkBoxFieldPartialLockoutDeath = JCheckBox()
 
 	//----------------------------------------------------------------------
 	/* ホールド設定パネル */
 
 	/** ホールド is enabled */
-	private val chkboxHoldEnable:JCheckBox = JCheckBox()
+	private val chkBoxHoldEnable = JCheckBox()
 
 	/** 先行ホールド */
-	private val chkboxHoldInitial:JCheckBox = JCheckBox()
+	private val chkBoxHoldInitial = JCheckBox()
 
 	/** 先行ホールド連続使用不可 */
-	private val chkboxHoldInitialLimit:JCheckBox = JCheckBox()
+	private val chkBoxHoldInitialLimit = JCheckBox()
 
 	/** ホールドを使ったときにBlockピースの向きを初期状態に戻す */
-	private val chkboxHoldResetDirection:JCheckBox = JCheckBox()
+	private val chkBoxHoldResetDirection = JCheckBox()
 
 	/** ホールドできる count (-1:無制限) */
-	private val txtfldHoldLimit:JTextField = JTextField("", 5)
+	private val txtFldHoldLimit = JTextField("", 5)
 
 	//----------------------------------------------------------------------
 	/* ドロップ設定パネル */
 
 	/** Hard drop使用可否 */
-	private val chkboxDropHardDropEnable:JCheckBox = JCheckBox()
+	private val chkBoxDropHardDropEnable = JCheckBox()
 
 	/** Hard dropで即固定 */
-	private val chkboxDropHardDropLock:JCheckBox = JCheckBox()
+	private val chkBoxDropHardDropLock = JCheckBox()
 
 	/** Hard drop連続使用不可 */
-	private val chkboxDropHardDropLimit:JCheckBox = JCheckBox()
+	private val chkBoxDropHardDropLimit = JCheckBox()
 
 	/** Soft drop使用可否 */
-	private val chkboxDropSoftDropEnable:JCheckBox = JCheckBox()
+	private val chkBoxDropSoftDropEnable = JCheckBox()
 
 	/** Soft dropで即固定 */
-	private val chkboxDropSoftDropLock:JCheckBox = JCheckBox()
+	private val chkBoxDropSoftDropLock = JCheckBox()
 
 	/** Soft drop連続使用不可 */
-	private val chkboxDropSoftDropLimit:JCheckBox = JCheckBox()
+	private val chkBoxDropSoftDropLimit = JCheckBox()
 
 	/** 接地状態でSoft dropすると即固定 */
-	private val chkboxDropSoftDropSurfaceLock:JCheckBox = JCheckBox()
+	private val chkBoxDropSoftDropSurfaceLock = JCheckBox()
 
 	/** Soft drop速度 */
-	private val txtfldDropSoftDropSpeed:JTextField = JTextField("", 5)
+	private val txtFldDropSoftDropSpeed = JTextField("", 5)
 
 	/** Soft drop速度をCurrent 通常速度×n倍にする */
-	private val chkboxDropSoftDropMultiplyNativeSpeed:JCheckBox = JCheckBox()
+	private val chkBoxDropSoftDropMultiplyNativeSpeed = JCheckBox()
 
 	/** Use new soft drop codes */
-	private val chkboxDropSoftDropGravitySpeedLimit:JCheckBox = JCheckBox()
+	private val chkBoxDropSoftDropGravitySpeedLimit = JCheckBox()
 
 	//----------------------------------------------------------------------
 	/* rotation設定パネル */
 
 	/** 先行rotation */
-	private val chkboxSpinInitial:JCheckBox = JCheckBox()
+	private val chkBoxSpinInitial = JCheckBox()
 
 	/** 先行rotation連続使用不可 */
-	private val chkboxSpinInitialLimit:JCheckBox = JCheckBox()
+	private val chkBoxSpinInitialLimit = JCheckBox()
 
 	/** Wallkick */
-	private val chkboxSpinWallkick:JCheckBox = JCheckBox()
+	private val chkBoxSpinWallkick = JCheckBox()
 
 	/** 先行rotationでもWallkickする */
-	private val chkboxSpinInitialWallkick:JCheckBox = JCheckBox()
+	private val chkBoxSpinInitialWallkick = JCheckBox()
 
 	/** 上DirectionへのWallkickができる count (-1:無限) */
-	private val txtfldSpinWallkickRise:JTextField = JTextField("", 5)
+	private val txtFldSpinWallkickRise = JTextField("", 5)
 
 	/** falseなら左が正rotation, When true,右が正rotation */
-	private val chkboxSpinToRight:JCheckBox = JCheckBox()
+	private val chkBoxSpinToRight = JCheckBox()
 
 	/** 逆rotationを許可 (falseなら正rotationと同じ) */
-	private val chkboxSpinReverseKey:JCheckBox = JCheckBox()
+	private val chkBoxSpinReverseKey = JCheckBox()
 
 	/** 180rotationを許可 (falseなら正rotationと同じ) */
-	private val chkboxSpinDoubleKey:JCheckBox = JCheckBox()
+	private val chkBoxSpinDoubleKey = JCheckBox()
 
 	/** Wallkickアルゴリズム */
-	private var comboboxWallkickSystem:JComboBox<*>? = null
+	private var comboBoxWallkickSystem:JComboBox<String> = JComboBox<String>()
 
 	/** Wallkickアルゴリズムのリスト */
 	private var vectorWallkickSystem:Vector<String>? = null
@@ -221,31 +223,31 @@ class RuleEditor:JFrame, ActionListener {
 	/* 固定 time設定パネル */
 
 	/** 最低固定 time */
-	private val txtfldLockDelayMin:JTextField = JTextField("", 5)
+	private val txtFldLockDelayMin = JTextField("", 5)
 
 	/** 最高固定 time */
-	private val txtfldLockDelayMax:JTextField = JTextField("", 5)
+	private val txtFldLockDelayMax = JTextField("", 5)
 
 	/** 落下で固定 timeリセット */
-	private val chkboxLockDelayLockResetFall:JCheckBox = JCheckBox()
+	private val chkBoxLockDelayLockResetFall = JCheckBox()
 
 	/** 移動で固定 timeリセット */
-	private val chkboxLockDelayLockResetMove:JCheckBox = JCheckBox()
+	private val chkBoxLockDelayLockResetMove = JCheckBox()
 
 	/** rotationで固定 timeリセット */
-	private val chkboxLockDelayLockResetSpin:JCheckBox = JCheckBox()
+	private val chkBoxLockDelayLockResetSpin = JCheckBox()
 
 	/** Lock delay reset by wallkick */
-	private val chkboxLockDelayLockResetWallkick:JCheckBox = JCheckBox()
+	private val chkBoxLockDelayLockResetWallkick = JCheckBox()
 
 	/** 横移動 counterとrotation counterを共有 (横移動 counterだけ使う) */
-	private val chkboxLockDelayLockResetLimitShareCount:JCheckBox = JCheckBox()
+	private val chkBoxLockDelayLockResetLimitShareCount = JCheckBox()
 
 	/** 横移動 count制限 */
-	private val txtfldLockDelayLockResetLimitMove:JTextField = JTextField("", 5)
+	private val txtFldLockDelayLockResetLimitMove = JTextField("", 5)
 
 	/** rotation count制限 */
-	private val txtfldLockDelayLockResetLimitSpin:JTextField = JTextField("", 5)
+	private val txtFldLockDelayLockResetLimitSpin = JTextField("", 5)
 
 	/** 横移動 counterかrotation counterが超過したら固定 timeリセットを無効にする */
 	private var radioLockDelayLockResetLimitOverNoReset:JRadioButton? = null
@@ -260,164 +262,164 @@ class RuleEditor:JFrame, ActionListener {
 	/* ARE設定パネル */
 
 	/** 最低ARE */
-	private val txtfldAREMin:JTextField = JTextField("", 5)
+	private val txtFldAREMin = JTextField("", 5)
 
 	/** 最高ARE */
-	private val txtfldAREMax:JTextField = JTextField("", 5)
+	private val txtFldAREMax = JTextField("", 5)
 
 	/** 最低ARE after line clear */
-	private val txtfldARELineMin:JTextField = JTextField("", 5)
+	private val txtFldARELineMin = JTextField("", 5)
 
 	/** 最高ARE after line clear */
-	private val txtfldARELineMax:JTextField = JTextField("", 5)
+	private val txtFldARELineMax = JTextField("", 5)
 
 	/** 固定した瞬間に光る frame count */
-	private val txtfldARELockFlash:JTextField = JTextField("", 5)
+	private val txtFldARELockFlash = JTextField("", 5)
 
 	/** Blockが光る専用 frame を入れる */
-	private val chkboxARELockFlashOnlyFrame:JCheckBox = JCheckBox()
+	private val chkBoxARELockFlashOnlyFrame = JCheckBox()
 
 	/** Line clear前にBlockが光る frame を入れる */
-	private val chkboxARELockFlashBeforeLineClear:JCheckBox = JCheckBox()
+	private val chkBoxARELockFlashBeforeLineClear = JCheckBox()
 
 	/** ARE cancel on move checkbox */
-	private val chkboxARECancelMove:JCheckBox = JCheckBox()
+	private val chkBoxARECancelMove = JCheckBox()
 
 	/** ARE cancel on spin checkbox */
-	private val chkboxARECancelSpin:JCheckBox = JCheckBox()
+	private val chkBoxARECancelSpin = JCheckBox()
 
 	/** ARE cancel on hold checkbox */
-	private val chkboxARECancelHold:JCheckBox = JCheckBox()
+	private val chkBoxARECancelHold = JCheckBox()
 
 	//----------------------------------------------------------------------
 	/* Line clear設定パネル */
 
 	/** 最低Line clear time */
-	private val txtfldLineDelayMin:JTextField = JTextField("", 5)
+	private val txtFldLineDelayMin = JTextField("", 5)
 
 	/** 最高Line clear time */
-	private val txtfldLineDelayMax:JTextField = JTextField("", 5)
+	private val txtFldLineDelayMax = JTextField("", 5)
 
 	/** 落下アニメ */
-	private val chkboxLineFallAnim:JCheckBox = JCheckBox()
+	private val chkBoxLineFallAnim = JCheckBox()
 
 	/** Line delay cancel on move checkbox */
-	private val chkboxLineCancelMove:JCheckBox = JCheckBox()
+	private val chkBoxLineCancelMove = JCheckBox()
 
 	/** Line delay cancel on spin checkbox */
-	private val chkboxLineCancelSpin:JCheckBox = JCheckBox()
+	private val chkBoxLineCancelSpin = JCheckBox()
 
 	/** Line delay cancel on hold checkbox */
-	private val chkboxLineCancelHold:JCheckBox = JCheckBox()
+	private val chkBoxLineCancelHold = JCheckBox()
 
 	//----------------------------------------------------------------------
 	/* 移動設定パネル */
 
 	/** 最低横溜め time */
-	private val txtfldMoveDASMin:JTextField = JTextField("", 5)
+	private val txtFldMoveDASMin = JTextField("", 5)
 
 	/** 最高横溜め time */
-	private val txtfldMoveDASMax:JTextField = JTextField("", 5)
+	private val txtFldMoveDASMax = JTextField("", 5)
 
 	/** 横移動間隔 */
-	private val txtfldMoveDASDelay:JTextField = JTextField("", 5)
+	private val txtFldMoveDASDelay = JTextField("", 5)
 
 	/** Ready画面で横溜め可能 */
-	private val chkboxMoveDASInReady:JCheckBox = JCheckBox()
+	private val chkBoxMoveDASInReady = JCheckBox()
 
 	/** 最初の frame で横溜め可能 */
-	private val chkboxMoveDASInMoveFirstFrame:JCheckBox = JCheckBox()
+	private val chkBoxMoveDASInMoveFirstFrame = JCheckBox()
 
 	/** Blockが光った瞬間に横溜め可能 */
-	private val chkboxMoveDASInLockFlash:JCheckBox = JCheckBox()
+	private val chkBoxMoveDASInLockFlash = JCheckBox()
 
 	/** Line clear中に横溜め可能 */
-	private val chkboxMoveDASInLineClear:JCheckBox = JCheckBox()
+	private val chkBoxMoveDASInLineClear = JCheckBox()
 
 	/** ARE中に横溜め可能 */
-	private val chkboxMoveDASInARE:JCheckBox = JCheckBox()
+	private val chkBoxMoveDASInARE = JCheckBox()
 
 	/** AREの最後の frame で横溜め可能 */
-	private val chkboxMoveDASInARELastFrame:JCheckBox = JCheckBox()
+	private val chkBoxMoveDASInARELastFrame = JCheckBox()
 
 	/** Ending突入画面で横溜め可能 */
-	private val chkboxMoveDASInEndingStart:JCheckBox = JCheckBox()
+	private val chkBoxMoveDASInEndingStart = JCheckBox()
 
 	/** DAS charge on blocked move checkbox */
-	private val chkboxMoveDASChargeOnBlockedMove:JCheckBox = JCheckBox()
+	private val chkBoxMoveDASChargeOnBlockedMove = JCheckBox()
 
 	/** Store DAS Charge on neutral checkbox */
-	private val chkboxMoveDASStoreChargeOnNeutral:JCheckBox = JCheckBox()
+	private val chkBoxMoveDASStoreChargeOnNeutral = JCheckBox()
 
 	/** Redirect in delay checkbox */
-	private val chkboxMoveDASRedirectInDelay:JCheckBox = JCheckBox()
+	private val chkBoxMoveDASRedirectInDelay = JCheckBox()
 
 	/** 最初の frame に移動可能 */
-	private val chkboxMoveFirstFrame:JCheckBox = JCheckBox()
+	private val chkBoxMoveFirstFrame = JCheckBox()
 
 	/** 斜め移動 */
-	private val chkboxMoveDiagonal:JCheckBox = JCheckBox()
+	private val chkBoxMoveDiagonal = JCheckBox()
 
 	/** 上下同時押し可能 */
-	private val chkboxMoveUpAndDown:JCheckBox = JCheckBox()
+	private val chkBoxMoveUpAndDown = JCheckBox()
 
 	/** 左右同時押し可能 */
-	private val chkboxMoveLeftAndRightAllow:JCheckBox = JCheckBox()
+	private val chkBoxMoveLeftAndRightAllow = JCheckBox()
 
 	/** 左右同時押ししたときに前の frame の input Directionを優先する */
-	private val chkboxMoveLeftAndRightUsePreviousInput:JCheckBox = JCheckBox()
+	private val chkBoxMoveLeftAndRightUsePreviousInput = JCheckBox()
 
 	/** Shift lock checkbox */
-	private val chkboxMoveShiftLockEnable:JCheckBox = JCheckBox()
+	private val chkBoxMoveShiftLockEnable = JCheckBox()
 
 	//----------------------------------------------------------------------
 	/* rotationパターン補正パネル */
 
 	/** プリセット選択Comboボックス */
-	private var comboboxPieceOffset:JComboBox<*>? = null
+	private var comboBoxPieceOffset = JComboBox<String>()
 
 	/** rotationパターン補正タブ */
-	private var tabPieceOffset:JTabbedPane? = null
+	private var tabPieceOffset = JTabbedPane()
 
 	/** rotationパターン補正(X) input 欄 */
-	private var txtfldPieceOffsetX:List<List<JTextField>>? = null
+	private var txtFldPieceOffsetX:List<List<JTextField>> = emptyList()
 
 	/** rotationパターン補正(Y) input 欄 */
-	private var txtfldPieceOffsetY:List<List<JTextField>>? = null
+	private var txtFldPieceOffsetY:List<List<JTextField>> = emptyList()
 
 	//----------------------------------------------------------------------
 	/* rotationパターン補正パネル */
 
 	/** rotationパターン補正タブ */
-	private var tabPieceSpawn:JTabbedPane? = null
+	private var tabPieceSpawn = JTabbedPane()
 
 	/** 出現位置補正(X) input 欄 */
-	private var txtfldPieceSpawnX:List<List<JTextField>>? = null
+	private var txtFldPieceSpawnX:List<List<JTextField>> = emptyList()
 
 	/** 出現位置補正(Y) input 欄 */
-	private var txtfldPieceSpawnY:List<List<JTextField>>? = null
+	private var txtFldPieceSpawnY:List<List<JTextField>> = emptyList()
 
 	/** Big時出現位置補正(X) input 欄 */
-	private var txtfldPieceSpawnBigX:List<List<JTextField>>? = null
+	private var txtFldPieceSpawnBigX:List<List<JTextField>> = emptyList()
 
 	/** Big時出現位置補正(Y) input 欄 */
-	private var txtfldPieceSpawnBigY:List<List<JTextField>>? = null
+	private var txtFldPieceSpawnBigY:List<List<JTextField>> = emptyList()
 
 	//----------------------------------------------------------------------
 	/* 色設定パネル */
 
 	/** 色選択Comboボックス */
-	private var comboboxPieceColor:List<JComboBox<*>>? = null
+	private var comboBoxPieceColor:List<JComboBox<*>> = emptyList()
 
 	//----------------------------------------------------------------------
 	/* 初期Direction設定パネル */
 
 	/** 初期Direction選択Comboボックス */
-	private var comboboxPieceDirection:List<JComboBox<*>>? = null
+	private var comboBoxPieceDirection:List<JComboBox<*>> = emptyList()
 
 	//----------------------------------------------------------------------
 	/** Block画像 */
-	private var imgBlockSkins:List<BufferedImage>? = null
+	private var imgBlockSkins:List<BufferedImage> = emptyList()
 
 	/** Constructor */
 	constructor():super() {
@@ -544,26 +546,26 @@ class RuleEditor:JFrame, ActionListener {
 		tabPane.addTab(getUIText("TabName_Basic"), panelBasic)
 
 		// Rule name
-		txtfldRuleName.columns = 15
+		txtFldRuleName.columns = 15
 		panelBasic.add(JPanel().apply {
 			add(JLabel(getUIText("Basic_RuleName")))
-			add(txtfldRuleName)
+			add(txtFldRuleName)
 		})
 
 		// NEXT表示count
 		panelBasic.add(JPanel().apply {
 			add(JLabel(getUIText("Basic_NextDisplay")))
-			txtfldNextDisplay.columns = 5
-			add(txtfldNextDisplay)
+			txtFldNextDisplay.columns = 5
+			add(txtFldNextDisplay)
 		})
 
 		// Game style
 		val pStyle = JPanel()
 		pStyle.add(JLabel(getUIText("Basic_Style")))
-		comboboxStyle = JComboBox(GameEngine.GAMESTYLE_NAMES.toTypedArray()).apply {
+		comboBoxStyle = JComboBox(GameEngine.GAMESTYLE_NAMES.toTypedArray()).apply {
 			preferredSize = Dimension(100, 30)
 		}
-		pStyle.add(comboboxStyle)
+		pStyle.add(comboBoxStyle)
 		panelBasic.add(pStyle)
 
 		// 絵柄
@@ -573,22 +575,22 @@ class RuleEditor:JFrame, ActionListener {
 		pSkin.add(JLabel(getUIText("Basic_Skin")))
 
 		val model = DefaultComboBoxModel<ComboLabel>()
-		imgBlockSkins?.forEachIndexed {i, it ->
+		imgBlockSkins.forEachIndexed {i, it ->
 			model.addElement(ComboLabel("$i", ImageIcon(it)))
 		}
-		comboboxSkin = JComboBox(model).apply {
+		comboBoxSkin = JComboBox(model).apply {
 			renderer = ComboLabelCellRenderer()
 			preferredSize = Dimension(190, 30)
 		}
-		pSkin.add(comboboxSkin)
+		pSkin.add(comboBoxSkin)
 
 		// ghost
-		chkboxGhost.text = getUIText("Basic_Ghost")
-		panelBasic.add(chkboxGhost)
+		chkBoxGhost.text = getUIText("Basic_Ghost")
+		panelBasic.add(chkBoxGhost)
 
 		// field枠外から出現
-		chkboxEnterAboveField.text = getUIText("Basic_EnterAboveField")
-		panelBasic.add(chkboxEnterAboveField)
+		chkBoxEnterAboveField.text = getUIText("Basic_EnterAboveField")
+		panelBasic.add(chkBoxEnterAboveField)
 
 		// 出現予定地が埋まっているときにY-coordinateを上にずらすMaximum count
 		val pEnterMaxDistanceY = JPanel()
@@ -596,8 +598,8 @@ class RuleEditor:JFrame, ActionListener {
 
 		pEnterMaxDistanceY.add(JLabel(getUIText("Basic_EnterMaxDistanceY")))
 
-		txtfldEnterMaxDistanceY.columns = 5
-		pEnterMaxDistanceY.add(txtfldEnterMaxDistanceY)
+		txtFldEnterMaxDistanceY.columns = 5
+		pEnterMaxDistanceY.add(txtFldEnterMaxDistanceY)
 
 		// NEXT順生成アルゴリズム
 		val pRandomizer = JPanel()
@@ -606,7 +608,7 @@ class RuleEditor:JFrame, ActionListener {
 		pRandomizer.add(JLabel(getUIText("Basic_Randomizer")))
 
 		vectorRandomizer = this::class.java.getResource("../randomizer.lst")?.path?.let {getTextFileVector(it)}
-		comboboxRandomizer = JComboBox(createShortStringVector(vectorRandomizer)).apply {
+		comboBoxRandomizer = JComboBox(createShortStringVector(vectorRandomizer)).apply {
 			preferredSize = Dimension(200, 30)
 			pRandomizer.add(this)
 		}
@@ -626,32 +628,32 @@ class RuleEditor:JFrame, ActionListener {
 		// fieldの幅
 		panelField.add(JPanel().apply {
 			add(JLabel(getUIText("Field_FieldWidth")))
-			add(txtfldFieldWidth)
+			add(txtFldFieldWidth)
 		})
 
 		// Field height
 		panelField.add(JPanel().apply {
 			add(JLabel(getUIText("Field_FieldHeight")))
-			add(txtfldFieldHeight)
+			add(txtFldFieldHeight)
 		})
 
 		// fieldの見えない部分の高さ
 		panelField.add(JPanel().apply {
 			add(JLabel(getUIText("Field_FieldHiddenHeight")))
-			add(txtfldFieldHiddenHeight)
+			add(txtFldFieldHiddenHeight)
 		})
 
 		// fieldの天井
-		chkboxFieldCeiling.text = getUIText("Field_FieldCeiling")
-		panelField.add(chkboxFieldCeiling)
+		chkBoxFieldCeiling.text = getUIText("Field_FieldCeiling")
+		panelField.add(chkBoxFieldCeiling)
 
 		// field枠内に置けないと死亡
-		chkboxFieldLockoutDeath.text = getUIText("Field_FieldLockoutDeath")
-		panelField.add(chkboxFieldLockoutDeath)
+		chkBoxFieldLockoutDeath.text = getUIText("Field_FieldLockoutDeath")
+		panelField.add(chkBoxFieldLockoutDeath)
 
 		// field枠外にはみ出しただけで死亡
-		chkboxFieldPartialLockoutDeath.text = getUIText("Field_FieldPartialLockoutDeath")
-		panelField.add(chkboxFieldPartialLockoutDeath)
+		chkBoxFieldPartialLockoutDeath.text = getUIText("Field_FieldPartialLockoutDeath")
+		panelField.add(chkBoxFieldPartialLockoutDeath)
 
 		// ホールドタブ --------------------------------------------------
 		val panelHold = JPanel()
@@ -659,26 +661,26 @@ class RuleEditor:JFrame, ActionListener {
 		tabPane.addTab(getUIText("TabName_Hold"), panelHold)
 
 		// ホールド is enabled
-		chkboxHoldEnable.text = getUIText("Hold_HoldEnable")
-		panelHold.add(chkboxHoldEnable)
+		chkBoxHoldEnable.text = getUIText("Hold_HoldEnable")
+		panelHold.add(chkBoxHoldEnable)
 
 		// 先行ホールド
-		chkboxHoldInitial.text = getUIText("Hold_HoldInitial")
-		panelHold.add(chkboxHoldInitial)
+		chkBoxHoldInitial.text = getUIText("Hold_HoldInitial")
+		panelHold.add(chkBoxHoldInitial)
 
 		// 先行ホールド連続使用不可
-		chkboxHoldInitialLimit.text = getUIText("Hold_HoldInitialLimit")
-		panelHold.add(chkboxHoldInitialLimit)
+		chkBoxHoldInitialLimit.text = getUIText("Hold_HoldInitialLimit")
+		panelHold.add(chkBoxHoldInitialLimit)
 
 		// ホールドを使ったときにBlockピースの向きを初期状態に戻す
-		chkboxHoldResetDirection.text = (getUIText("Hold_HoldResetDirection"))
-		panelHold.add(chkboxHoldResetDirection)
+		chkBoxHoldResetDirection.text = (getUIText("Hold_HoldResetDirection"))
+		panelHold.add(chkBoxHoldResetDirection)
 
 		// ホールドできる count
-		txtfldHoldLimit.columns = 5
+		txtFldHoldLimit.columns = 5
 		val pHoldLimit = JPanel().apply {
 			add(JLabel(getUIText("Hold_HoldLimit")))
-			add(txtfldHoldLimit)
+			add(txtFldHoldLimit)
 		}
 		panelHold.add(pHoldLimit)
 
@@ -688,48 +690,48 @@ class RuleEditor:JFrame, ActionListener {
 		tabPane.addTab(getUIText("TabName_Drop"), panelDrop)
 
 		// Hard drop使用可否
-		chkboxDropHardDropEnable.text = getUIText("Drop_HardDropEnable")
-		panelDrop.add(chkboxDropHardDropEnable)
+		chkBoxDropHardDropEnable.text = getUIText("Drop_HardDropEnable")
+		panelDrop.add(chkBoxDropHardDropEnable)
 
 		// Hard dropで即固定
-		chkboxDropHardDropLock.text = getUIText("Drop_HardDropLock")
-		panelDrop.add(chkboxDropHardDropLock)
+		chkBoxDropHardDropLock.text = getUIText("Drop_HardDropLock")
+		panelDrop.add(chkBoxDropHardDropLock)
 
 		// Hard drop連続使用不可
-		chkboxDropHardDropLimit.text = getUIText("Drop_HardDropLimit")
-		panelDrop.add(chkboxDropHardDropLimit)
+		chkBoxDropHardDropLimit.text = getUIText("Drop_HardDropLimit")
+		panelDrop.add(chkBoxDropHardDropLimit)
 
 		// Soft drop使用可否
-		chkboxDropSoftDropEnable.text = getUIText("Drop_SoftDropEnable")
-		panelDrop.add(chkboxDropSoftDropEnable)
+		chkBoxDropSoftDropEnable.text = getUIText("Drop_SoftDropEnable")
+		panelDrop.add(chkBoxDropSoftDropEnable)
 
 		// Soft dropで即固定
-		chkboxDropSoftDropLock.text = getUIText("Drop_SoftDropLock")
-		panelDrop.add(chkboxDropSoftDropLock)
+		chkBoxDropSoftDropLock.text = getUIText("Drop_SoftDropLock")
+		panelDrop.add(chkBoxDropSoftDropLock)
 
 		// Soft drop連続使用不可
-		chkboxDropSoftDropLimit.text = getUIText("Drop_SoftDropLimit")
-		panelDrop.add(chkboxDropSoftDropLimit)
+		chkBoxDropSoftDropLimit.text = getUIText("Drop_SoftDropLimit")
+		panelDrop.add(chkBoxDropSoftDropLimit)
 
 		// 接地状態でSoft dropすると即固定
-		chkboxDropSoftDropSurfaceLock.text = getUIText("Drop_SoftDropSurfaceLock")
-		panelDrop.add(chkboxDropSoftDropSurfaceLock)
+		chkBoxDropSoftDropSurfaceLock.text = getUIText("Drop_SoftDropSurfaceLock")
+		panelDrop.add(chkBoxDropSoftDropSurfaceLock)
 
 		// Soft drop速度をCurrent 通常速度×n倍にする
-		chkboxDropSoftDropMultiplyNativeSpeed.text = getUIText("Drop_SoftDropMultiplyNativeSpeed")
-		panelDrop.add(chkboxDropSoftDropMultiplyNativeSpeed)
+		chkBoxDropSoftDropMultiplyNativeSpeed.text = getUIText("Drop_SoftDropMultiplyNativeSpeed")
+		panelDrop.add(chkBoxDropSoftDropMultiplyNativeSpeed)
 
 		// Use new soft drop codes
-		chkboxDropSoftDropGravitySpeedLimit.text = getUIText("Drop_SoftDropGravitySpeedLimit")
-		panelDrop.add(chkboxDropSoftDropGravitySpeedLimit)
+		chkBoxDropSoftDropGravitySpeedLimit.text = getUIText("Drop_SoftDropGravitySpeedLimit")
+		panelDrop.add(chkBoxDropSoftDropGravitySpeedLimit)
 
 		// Soft drop速度
 		val pDropSoftDropSpeed = JPanel()
 		panelDrop.add(pDropSoftDropSpeed)
 		pDropSoftDropSpeed.add(JLabel(getUIText("Drop_SoftDropSpeed")))
 
-		txtfldDropSoftDropSpeed.columns = (5)
-		pDropSoftDropSpeed.add(txtfldDropSoftDropSpeed)
+		txtFldDropSoftDropSpeed.columns = (5)
+		pDropSoftDropSpeed.add(txtFldDropSoftDropSpeed)
 
 		// rotationタブ --------------------------------------------------
 		val panelSpin = JPanel()
@@ -737,40 +739,40 @@ class RuleEditor:JFrame, ActionListener {
 		tabPane.addTab(getUIText("TabName_Rotate"), panelSpin)
 
 		// 先行rotation
-		chkboxSpinInitial.text = (getUIText("Rotate_RotateInitial"))
-		panelSpin.add(chkboxSpinInitial)
+		chkBoxSpinInitial.text = (getUIText("Rotate_RotateInitial"))
+		panelSpin.add(chkBoxSpinInitial)
 
 		// 先行rotation連続使用不可
-		chkboxSpinInitialLimit.text = (getUIText("Rotate_RotateInitialLimit"))
-		panelSpin.add(chkboxSpinInitialLimit)
+		chkBoxSpinInitialLimit.text = (getUIText("Rotate_RotateInitialLimit"))
+		panelSpin.add(chkBoxSpinInitialLimit)
 
 		// Wallkick
-		chkboxSpinWallkick.text = (getUIText("Rotate_RotateWallkick"))
-		panelSpin.add(chkboxSpinWallkick)
+		chkBoxSpinWallkick.text = (getUIText("Rotate_RotateWallkick"))
+		panelSpin.add(chkBoxSpinWallkick)
 
 		// 先行rotationでもWallkickする
-		chkboxSpinInitialWallkick.text = (getUIText("Rotate_RotateInitialWallkick"))
-		panelSpin.add(chkboxSpinInitialWallkick)
+		chkBoxSpinInitialWallkick.text = (getUIText("Rotate_RotateInitialWallkick"))
+		panelSpin.add(chkBoxSpinInitialWallkick)
 
 		// Aで右rotation
-		chkboxSpinToRight.text = (getUIText("Rotate_RotateButtonDefaultRight"))
-		panelSpin.add(chkboxSpinToRight)
+		chkBoxSpinToRight.text = (getUIText("Rotate_RotateButtonDefaultRight"))
+		panelSpin.add(chkBoxSpinToRight)
 
 		// 逆rotation許可
-		chkboxSpinReverseKey.text = (getUIText("Rotate_RotateButtonAllowReverse"))
-		panelSpin.add(chkboxSpinReverseKey)
+		chkBoxSpinReverseKey.text = (getUIText("Rotate_RotateButtonAllowReverse"))
+		panelSpin.add(chkBoxSpinReverseKey)
 
 		// 2rotation許可
-		chkboxSpinDoubleKey.text = (getUIText("Rotate_RotateButtonAllowDouble"))
-		panelSpin.add(chkboxSpinDoubleKey)
+		chkBoxSpinDoubleKey.text = (getUIText("Rotate_RotateButtonAllowDouble"))
+		panelSpin.add(chkBoxSpinDoubleKey)
 
 		// UpDirectionへWallkickできる count
 		val pSpinMaxUpwardWallkick = JPanel()
 		panelSpin.add(pSpinMaxUpwardWallkick)
 		pSpinMaxUpwardWallkick.add(JLabel(getUIText("Rotate_RotateMaxUpwardWallkick")))
 
-		txtfldSpinWallkickRise.columns = (5)
-		pSpinMaxUpwardWallkick.add(txtfldSpinWallkickRise)
+		txtFldSpinWallkickRise.columns = (5)
+		pSpinMaxUpwardWallkick.add(txtFldSpinWallkickRise)
 
 		// Wallkickアルゴリズム
 		val pWallkickSystem = JPanel()
@@ -779,7 +781,7 @@ class RuleEditor:JFrame, ActionListener {
 		pWallkickSystem.add(JLabel(getUIText("Rotate_WallkickSystem")))
 
 		vectorWallkickSystem = this::class.java.getResource("../wallkick.lst")?.path?.let {getTextFileVector(it)}
-		comboboxWallkickSystem = JComboBox(createShortStringVector(vectorWallkickSystem)).apply {
+		comboBoxWallkickSystem = JComboBox(createShortStringVector(vectorWallkickSystem)).apply {
 			preferredSize = Dimension(200, 30)
 			pWallkickSystem.add(this)
 		}
@@ -802,38 +804,38 @@ class RuleEditor:JFrame, ActionListener {
 		val pLockDelayMinMax = JPanel()
 		panelLockDelay.add(pLockDelayMinMax)
 
-		txtfldLockDelayMin.columns = 5
-		pLockDelayMinMax.add(txtfldLockDelayMin)
-		txtfldLockDelayMax.columns = 5
-		pLockDelayMinMax.add(txtfldLockDelayMax)
+		txtFldLockDelayMin.columns = 5
+		pLockDelayMinMax.add(txtFldLockDelayMin)
+		txtFldLockDelayMax.columns = 5
+		pLockDelayMinMax.add(txtFldLockDelayMax)
 
 		// 落下で固定 timeリセット
-		chkboxLockDelayLockResetFall.text = (getUIText("LockDelay_LockResetFall"))
-		panelLockDelay.add(chkboxLockDelayLockResetFall)
+		chkBoxLockDelayLockResetFall.text = (getUIText("LockDelay_LockResetFall"))
+		panelLockDelay.add(chkBoxLockDelayLockResetFall)
 
 		// 移動で固定 timeリセット
-		chkboxLockDelayLockResetMove.text = (getUIText("LockDelay_LockResetMove"))
-		panelLockDelay.add(chkboxLockDelayLockResetMove)
+		chkBoxLockDelayLockResetMove.text = (getUIText("LockDelay_LockResetMove"))
+		panelLockDelay.add(chkBoxLockDelayLockResetMove)
 
 		// rotationで固定 timeリセット
-		chkboxLockDelayLockResetSpin.text = (getUIText("LockDelay_LockResetRotate"))
-		panelLockDelay.add(chkboxLockDelayLockResetSpin)
+		chkBoxLockDelayLockResetSpin.text = (getUIText("LockDelay_LockResetRotate"))
+		panelLockDelay.add(chkBoxLockDelayLockResetSpin)
 
 		// Lock delay reset by wallkick
-		chkboxLockDelayLockResetWallkick.text = (getUIText("LockDelay_LockResetWallkick"))
-		panelLockDelay.add(chkboxLockDelayLockResetWallkick)
+		chkBoxLockDelayLockResetWallkick.text = (getUIText("LockDelay_LockResetWallkick"))
+		panelLockDelay.add(chkBoxLockDelayLockResetWallkick)
 
 		// 横移動 counterとrotation counterを共有 (横移動 counterだけ使う）
-		chkboxLockDelayLockResetLimitShareCount.text = (getUIText("LockDelay_LockDelayLockResetLimitShareCount"))
-		panelLockDelay.add(chkboxLockDelayLockResetLimitShareCount)
+		chkBoxLockDelayLockResetLimitShareCount.text = (getUIText("LockDelay_LockDelayLockResetLimitShareCount"))
+		panelLockDelay.add(chkBoxLockDelayLockResetLimitShareCount)
 
 		// 横移動 count制限
 		val pLockDelayLockResetLimitMove = JPanel()
 		panelLockDelay.add(pLockDelayLockResetLimitMove)
 		pLockDelayLockResetLimitMove.add(JLabel(getUIText("LockDelay_LockDelayLockResetLimitMove")))
 
-		txtfldLockDelayLockResetLimitMove.columns = 5
-		pLockDelayLockResetLimitMove.add(txtfldLockDelayLockResetLimitMove)
+		txtFldLockDelayLockResetLimitMove.columns = 5
+		pLockDelayLockResetLimitMove.add(txtFldLockDelayLockResetLimitMove)
 
 		// rotation count制限
 		val pLockDelayLockResetLimitSpin = JPanel()
@@ -841,8 +843,8 @@ class RuleEditor:JFrame, ActionListener {
 
 		pLockDelayLockResetLimitSpin.add(JLabel(getUIText("LockDelay_LockDelayLockResetLimitRotate")))
 
-		txtfldLockDelayLockResetLimitSpin.columns = 5
-		pLockDelayLockResetLimitSpin.add(txtfldLockDelayLockResetLimitSpin)
+		txtFldLockDelayLockResetLimitSpin.columns = 5
+		pLockDelayLockResetLimitSpin.add(txtFldLockDelayLockResetLimitSpin)
 
 		// 移動またはrotation count制限が超過した時の設定
 		val pLockDelayLockResetLimitOver = JPanel()
@@ -876,10 +878,10 @@ class RuleEditor:JFrame, ActionListener {
 		val pAREMinMax = JPanel()
 		panelARE.add(pAREMinMax)
 
-		txtfldAREMin.columns = 5
-		pAREMinMax.add(txtfldAREMin)
-		txtfldAREMax.columns = 5
-		pAREMinMax.add(txtfldAREMax)
+		txtFldAREMin.columns = 5
+		pAREMinMax.add(txtFldAREMin)
+		txtFldAREMax.columns = 5
+		pAREMinMax.add(txtFldAREMax)
 
 		// 最低ARE after line clearと最高ARE after line clear
 		panelARE.add(JLabel(getUIText("ARE_LineMinMax")))
@@ -887,10 +889,10 @@ class RuleEditor:JFrame, ActionListener {
 		val pARELineMinMax = JPanel()
 		panelARE.add(pARELineMinMax)
 
-		txtfldARELineMin.columns = 5
-		pARELineMinMax.add(txtfldARELineMin)
-		txtfldARELineMax.columns = 5
-		pARELineMinMax.add(txtfldARELineMax)
+		txtFldARELineMin.columns = 5
+		pARELineMinMax.add(txtFldARELineMin)
+		txtFldARELineMax.columns = 5
+		pARELineMinMax.add(txtFldARELineMax)
 
 		// 固定した瞬間に光る frame count
 		panelARE.add(JLabel(getUIText("ARE_LockFlash")))
@@ -898,28 +900,28 @@ class RuleEditor:JFrame, ActionListener {
 		val pARELockFlash = JPanel()
 		panelARE.add(pARELockFlash)
 
-		txtfldARELockFlash.columns = 5
-		pARELockFlash.add(txtfldARELockFlash)
+		txtFldARELockFlash.columns = 5
+		pARELockFlash.add(txtFldARELockFlash)
 
 		// Blockが光る専用 frame を入れる
-		chkboxARELockFlashOnlyFrame.text = (getUIText("ARE_LockFlashOnlyFrame"))
-		panelARE.add(chkboxARELockFlashOnlyFrame)
+		chkBoxARELockFlashOnlyFrame.text = (getUIText("ARE_LockFlashOnlyFrame"))
+		panelARE.add(chkBoxARELockFlashOnlyFrame)
 
 		// Line clear前にBlockが光る frame を入れる
-		chkboxARELockFlashBeforeLineClear.text = (getUIText("ARE_LockFlashBeforeLineClear"))
-		panelARE.add(chkboxARELockFlashBeforeLineClear)
+		chkBoxARELockFlashBeforeLineClear.text = (getUIText("ARE_LockFlashBeforeLineClear"))
+		panelARE.add(chkBoxARELockFlashBeforeLineClear)
 
 		// ARE cancel on move
-		chkboxARECancelMove.text = (getUIText("ARE_CancelMove"))
-		panelARE.add(chkboxARECancelMove)
+		chkBoxARECancelMove.text = (getUIText("ARE_CancelMove"))
+		panelARE.add(chkBoxARECancelMove)
 
 		// ARE cancel on move
-		chkboxARECancelSpin.text = (getUIText("ARE_CancelRotate"))
-		panelARE.add(chkboxARECancelSpin)
+		chkBoxARECancelSpin.text = (getUIText("ARE_CancelRotate"))
+		panelARE.add(chkBoxARECancelSpin)
 
 		// ARE cancel on move
-		chkboxARECancelHold.text = (getUIText("ARE_CancelHold"))
-		panelARE.add(chkboxARECancelHold)
+		chkBoxARECancelHold.text = (getUIText("ARE_CancelHold"))
+		panelARE.add(chkBoxARECancelHold)
 
 		// Line clearタブ --------------------------------------------------
 		val panelLine = JPanel()
@@ -932,26 +934,26 @@ class RuleEditor:JFrame, ActionListener {
 		val pLineMinMax = JPanel()
 		panelLine.add(pLineMinMax)
 
-		txtfldLineDelayMin.columns = (5)
-		pLineMinMax.add(txtfldLineDelayMin)
-		txtfldLineDelayMax.columns = (5)
-		pLineMinMax.add(txtfldLineDelayMax)
+		txtFldLineDelayMin.columns = (5)
+		pLineMinMax.add(txtFldLineDelayMin)
+		txtFldLineDelayMax.columns = (5)
+		pLineMinMax.add(txtFldLineDelayMax)
 
 		// 落下アニメ
-		chkboxLineFallAnim.text = (getUIText("Line_FallAnim"))
-		panelLine.add(chkboxLineFallAnim)
+		chkBoxLineFallAnim.text = (getUIText("Line_FallAnim"))
+		panelLine.add(chkBoxLineFallAnim)
 
 		// Line delay cancel on move
-		chkboxLineCancelMove.text = (getUIText("Line_CancelMove"))
-		panelLine.add(chkboxLineCancelMove)
+		chkBoxLineCancelMove.text = (getUIText("Line_CancelMove"))
+		panelLine.add(chkBoxLineCancelMove)
 
 		// Line delay cancel on spin
-		chkboxLineCancelSpin.text = (getUIText("Line_CancelRotate"))
-		panelLine.add(chkboxLineCancelSpin)
+		chkBoxLineCancelSpin.text = (getUIText("Line_CancelRotate"))
+		panelLine.add(chkBoxLineCancelSpin)
 
 		// Line delay cancel on hold
-		chkboxLineCancelHold.text = (getUIText("Line_CancelHold"))
-		panelLine.add(chkboxLineCancelHold)
+		chkBoxLineCancelHold.text = (getUIText("Line_CancelHold"))
+		panelLine.add(chkBoxLineCancelHold)
 
 		// 移動タブ --------------------------------------------------
 		val panelMove = JPanel()
@@ -964,10 +966,10 @@ class RuleEditor:JFrame, ActionListener {
 		val pMoveDASMinMax = JPanel()
 		panelMove.add(pMoveDASMinMax)
 
-		txtfldMoveDASMin.columns = (5)
-		pMoveDASMinMax.add(txtfldMoveDASMin)
-		txtfldMoveDASMax.columns = (5)
-		pMoveDASMinMax.add(txtfldMoveDASMax)
+		txtFldMoveDASMin.columns = (5)
+		pMoveDASMinMax.add(txtFldMoveDASMin)
+		txtFldMoveDASMax.columns = (5)
+		pMoveDASMinMax.add(txtFldMoveDASMax)
 
 		// 横移動間隔
 		val pMoveDASDelay = JPanel()
@@ -975,74 +977,84 @@ class RuleEditor:JFrame, ActionListener {
 
 		pMoveDASDelay.add(JLabel(getUIText("Move_DASDelay1")))
 
-		txtfldMoveDASDelay.columns = (5)
-		pMoveDASDelay.add(txtfldMoveDASDelay)
+		txtFldMoveDASDelay.columns = (5)
+		pMoveDASDelay.add(txtFldMoveDASDelay)
 
 		pMoveDASDelay.add(JLabel(getUIText("Move_DASDelay2")))
 
 		// ○○のとき横溜め可能
-		chkboxMoveDASInReady.text = (getUIText("Move_DASInReady"))
-		panelMove.add(chkboxMoveDASInReady)
-		chkboxMoveDASInMoveFirstFrame.text = (getUIText("Move_DASInMoveFirstFrame"))
-		panelMove.add(chkboxMoveDASInMoveFirstFrame)
-		chkboxMoveDASInLockFlash.text = (getUIText("Move_DASInLockFlash"))
-		panelMove.add(chkboxMoveDASInLockFlash)
-		chkboxMoveDASInLineClear.text = (getUIText("Move_DASInLineClear"))
-		panelMove.add(chkboxMoveDASInLineClear)
-		chkboxMoveDASInARE.text = (getUIText("Move_DASInARE"))
-		panelMove.add(chkboxMoveDASInARE)
-		chkboxMoveDASInARELastFrame.text = (getUIText("Move_DASInARELastFrame"))
-		panelMove.add(chkboxMoveDASInARELastFrame)
-		chkboxMoveDASInEndingStart.text = (getUIText("Move_DASInEndingStart"))
-		panelMove.add(chkboxMoveDASInEndingStart)
-		chkboxMoveDASChargeOnBlockedMove.text = (getUIText("Move_DASChargeOnBlockedMove"))
-		panelMove.add(chkboxMoveDASChargeOnBlockedMove)
-		chkboxMoveDASStoreChargeOnNeutral.text = (getUIText("Move_DASStoreChargeOnNeutral"))
-		panelMove.add(chkboxMoveDASStoreChargeOnNeutral)
-		chkboxMoveDASRedirectInDelay.text = (getUIText("Move_DASRedirectInDelay"))
-		panelMove.add(chkboxMoveDASRedirectInDelay)
+		chkBoxMoveDASInReady.text = (getUIText("Move_DASInReady"))
+		panelMove.add(chkBoxMoveDASInReady)
+		chkBoxMoveDASInMoveFirstFrame.text = (getUIText("Move_DASInMoveFirstFrame"))
+		panelMove.add(chkBoxMoveDASInMoveFirstFrame)
+		chkBoxMoveDASInLockFlash.text = (getUIText("Move_DASInLockFlash"))
+		panelMove.add(chkBoxMoveDASInLockFlash)
+		chkBoxMoveDASInLineClear.text = (getUIText("Move_DASInLineClear"))
+		panelMove.add(chkBoxMoveDASInLineClear)
+		chkBoxMoveDASInARE.text = (getUIText("Move_DASInARE"))
+		panelMove.add(chkBoxMoveDASInARE)
+		chkBoxMoveDASInARELastFrame.text = (getUIText("Move_DASInARELastFrame"))
+		panelMove.add(chkBoxMoveDASInARELastFrame)
+		chkBoxMoveDASInEndingStart.text = (getUIText("Move_DASInEndingStart"))
+		panelMove.add(chkBoxMoveDASInEndingStart)
+		chkBoxMoveDASChargeOnBlockedMove.text = (getUIText("Move_DASChargeOnBlockedMove"))
+		panelMove.add(chkBoxMoveDASChargeOnBlockedMove)
+		chkBoxMoveDASStoreChargeOnNeutral.text = (getUIText("Move_DASStoreChargeOnNeutral"))
+		panelMove.add(chkBoxMoveDASStoreChargeOnNeutral)
+		chkBoxMoveDASRedirectInDelay.text = (getUIText("Move_DASRedirectInDelay"))
+		panelMove.add(chkBoxMoveDASRedirectInDelay)
 
 		// 最初の frame に移動可能
-		chkboxMoveFirstFrame.text = (getUIText("Move_FirstFrame"))
-		panelMove.add(chkboxMoveFirstFrame)
+		chkBoxMoveFirstFrame.text = (getUIText("Move_FirstFrame"))
+		panelMove.add(chkBoxMoveFirstFrame)
 
 		// 斜め移動
-		chkboxMoveDiagonal.text = (getUIText("Move_Diagonal"))
-		panelMove.add(chkboxMoveDiagonal)
+		chkBoxMoveDiagonal.text = (getUIText("Move_Diagonal"))
+		panelMove.add(chkBoxMoveDiagonal)
 
 		// Up下同時押し
-		chkboxMoveUpAndDown.text = (getUIText("Move_UpAndDown"))
-		panelMove.add(chkboxMoveUpAndDown)
+		chkBoxMoveUpAndDown.text = (getUIText("Move_UpAndDown"))
+		panelMove.add(chkBoxMoveUpAndDown)
 
 		// 左右同時押し
-		chkboxMoveLeftAndRightAllow.text = (getUIText("Move_LeftAndRightAllow"))
-		panelMove.add(chkboxMoveLeftAndRightAllow)
+		chkBoxMoveLeftAndRightAllow.text = (getUIText("Move_LeftAndRightAllow"))
+		panelMove.add(chkBoxMoveLeftAndRightAllow)
 
 		// 左右同時押ししたときに前 frame の input を優先
-		chkboxMoveLeftAndRightUsePreviousInput.text = (getUIText("Move_LeftAndRightUsePreviousInput"))
-		panelMove.add(chkboxMoveLeftAndRightUsePreviousInput)
+		chkBoxMoveLeftAndRightUsePreviousInput.text = (getUIText("Move_LeftAndRightUsePreviousInput"))
+		panelMove.add(chkBoxMoveLeftAndRightUsePreviousInput)
 
 		// Shift lock
-		chkboxMoveShiftLockEnable.text = (getUIText("Move_ShiftLock"))
-		panelMove.add(chkboxMoveShiftLockEnable)
+		chkBoxMoveShiftLockEnable.text = (getUIText("Move_ShiftLock"))
+		panelMove.add(chkBoxMoveShiftLockEnable)
 
 		// rotationパターン補正タブ ------------------------------------------------
-		val panelPieceOffset = JPanel()
-		panelPieceOffset.layout = BoxLayout(panelPieceOffset, BoxLayout.Y_AXIS)
-		tabPane.addTab(getUIText("TabName_PieceOffset"), panelPieceOffset)
-		comboboxPieceOffset = JComboBox(RuleOptions.PIECEOFFSET_NAME.map {getUIText(it)}.toTypedArray()).apply {
-			actionCommand = "OffsetPreset"
+		val panelPieceOffset = JPanel().also {
+			it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
+			tabPane.addTab(getUIText("TabName_PieceOffset"), it)
 		}
-		comboboxPieceOffset?.addActionListener(this)
-		panelPieceOffset.add(comboboxPieceOffset)
-
+		val pPresetOffset = JPanel().also {
+			it.layout = BoxLayout(it, BoxLayout.X_AXIS)
+			panelPieceOffset.add(it)
+		}
+		comboBoxPieceOffset = JComboBox(RuleOptions.PIECEOFFSET_NAME.map {getUIText(it)}.toTypedArray()).also {
+			it.actionCommand = "OffsetPreset"
+			it.addActionListener(this)
+			pPresetOffset.add(it)
+		}
+		JButton(getUIText("Apply")).also {
+			it.setMnemonic('A')
+			it.actionCommand = "OffsetApply"
+			it.addActionListener(this)
+			pPresetOffset.add(it)
+		}
 		tabPieceOffset = JTabbedPane()
 		panelPieceOffset.add(tabPieceOffset)
 
 		// rotationパターン補正(X)タブ --------------------------------------------------
 		val panelPieceOffsetX = JPanel()
 		panelPieceOffsetX.layout = BoxLayout(panelPieceOffsetX, BoxLayout.Y_AXIS)
-		tabPieceOffset?.addTab(getUIText("TabName_PieceOffsetX"), panelPieceOffsetX)
+		tabPieceOffset.addTab(getUIText("TabName_PieceOffsetX"), panelPieceOffsetX)
 
 		val pPieceOffsetX = List(Piece.PIECE_COUNT) {
 			JPanel().apply {
@@ -1051,15 +1063,15 @@ class RuleEditor:JFrame, ActionListener {
 			}
 		}
 
-		txtfldPieceOffsetX = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceOffsetX = List(Piece.PIECE_COUNT) {i ->
 			List(Piece.DIRECTION_COUNT) {
-				JTextField("", 5).apply {pPieceOffsetX[i].add(this)}
+				JTextField("", 5).also {pPieceOffsetX[i].add(it)}
 			}
 		}
 		// rotationパターン補正(Y)タブ --------------------------------------------------
 		val panelPieceOffsetY = JPanel().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
-			tabPieceOffset?.addTab(getUIText("TabName_PieceOffsetY"), this)
+			tabPieceOffset.addTab(getUIText("TabName_PieceOffsetY"), this)
 		}
 
 		val pPieceOffsetY = List(Piece.PIECE_COUNT) {
@@ -1069,18 +1081,31 @@ class RuleEditor:JFrame, ActionListener {
 			}
 		}
 
-		txtfldPieceOffsetY = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceOffsetY = List(Piece.PIECE_COUNT) {i ->
 			List(Piece.DIRECTION_COUNT) {
-				JTextField("", 5).apply {
-					pPieceOffsetY[i].add(this)
-				}
+				JTextField("", 5).also {pPieceOffsetY[i].add(it)}
 			}
 		}
 
 		// 出現位置補正タブ ------------------------------------------------
-		val panelPieceSpawn = JPanel().apply {
-			layout = BoxLayout(this, BoxLayout.Y_AXIS)
-			tabPane.addTab(getUIText("TabName_PieceSpawn"), this)
+		val panelPieceSpawn = JPanel().also {
+			it.layout = BoxLayout(it, BoxLayout.Y_AXIS)
+			tabPane.addTab(getUIText("TabName_PieceSpawn"), it)
+		}
+		val pResetSpawn = JPanel().also {
+			it.layout = BoxLayout(it, BoxLayout.X_AXIS)
+			panelPieceSpawn.add(it)
+		}
+		val bResetSpawn = listOf(JButton("${getUIText("Basic_Reset")} SRS").apply {
+			setMnemonic('S')
+			actionCommand = "ResetSpawn_SRS"
+		}, JButton("${getUIText("Basic_Reset")} ARS").apply {
+			setMnemonic('A')
+			actionCommand = "ResetSpawn_ARS"
+		})
+		bResetSpawn.forEach {
+			it.addActionListener(this)
+			pResetSpawn.add(it)
 		}
 
 		tabPieceSpawn = JTabbedPane()
@@ -1089,7 +1114,7 @@ class RuleEditor:JFrame, ActionListener {
 		// 出現位置補正(X)タブ --------------------------------------------------
 		val panelPieceSpawnX = JPanel()
 		panelPieceSpawnX.layout = BoxLayout(panelPieceSpawnX, BoxLayout.Y_AXIS)
-		tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnX"), panelPieceSpawnX)
+		tabPieceSpawn.addTab(getUIText("TabName_PieceSpawnX"), panelPieceSpawnX)
 
 		val pPieceSpawnX = List(Piece.PIECE_COUNT) {
 			JPanel().apply {
@@ -1097,7 +1122,7 @@ class RuleEditor:JFrame, ActionListener {
 			}
 		}
 
-		txtfldPieceSpawnX = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnX = List(Piece.PIECE_COUNT) {i ->
 			panelPieceSpawnX.add(pPieceSpawnX[i])
 			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {
@@ -1109,7 +1134,7 @@ class RuleEditor:JFrame, ActionListener {
 		// 出現位置補正(Y)タブ --------------------------------------------------
 		val panelPieceSpawnY = JPanel().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
-			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnY"), this)
+			tabPieceSpawn.addTab(getUIText("TabName_PieceSpawnY"), this)
 		}
 
 		val pPieceSpawnY = List(Piece.PIECE_COUNT) {
@@ -1119,7 +1144,7 @@ class RuleEditor:JFrame, ActionListener {
 			}
 		}
 
-		txtfldPieceSpawnY = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnY = List(Piece.PIECE_COUNT) {i ->
 			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {
 					pPieceSpawnY[i].add(this)
@@ -1130,7 +1155,7 @@ class RuleEditor:JFrame, ActionListener {
 		// Big時出現位置補正(X)タブ --------------------------------------------------
 		val panelPieceSpawnBigX = JPanel().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
-			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnBigX"), this)
+			tabPieceSpawn.addTab(getUIText("TabName_PieceSpawnBigX"), this)
 		}
 
 		val pPieceSpawnBigX = List(Piece.PIECE_COUNT) {
@@ -1140,7 +1165,7 @@ class RuleEditor:JFrame, ActionListener {
 			}
 		}
 
-		txtfldPieceSpawnBigX = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnBigX = List(Piece.PIECE_COUNT) {i ->
 			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {pPieceSpawnBigX[i].add(this)}
 			}
@@ -1148,7 +1173,7 @@ class RuleEditor:JFrame, ActionListener {
 		// Big時出現位置補正(Y)タブ --------------------------------------------------
 		val panelPieceSpawnBigY = JPanel().apply {
 			layout = BoxLayout(this, BoxLayout.Y_AXIS)
-			tabPieceSpawn?.addTab(getUIText("TabName_PieceSpawnBigY"), this)
+			tabPieceSpawn.addTab(getUIText("TabName_PieceSpawnBigY"), this)
 		}
 
 		val pPieceSpawnBigY = List(Piece.PIECE_COUNT) {
@@ -1158,7 +1183,7 @@ class RuleEditor:JFrame, ActionListener {
 			}
 		}
 
-		txtfldPieceSpawnBigY = List(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnBigY = List(Piece.PIECE_COUNT) {i ->
 			List(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {pPieceSpawnBigY[i].add(this)}
 			}
@@ -1188,14 +1213,14 @@ class RuleEditor:JFrame, ActionListener {
 			pColorRow[1].add(it)
 		}
 
-		val strColorNames = Array(Block.COLOR.COUNT-1) {getUIText("ColorName$it")}
+		val strColorNames = Array(Block.COLOR.COUNT-2) {getUIText("ColorName$it")}
 		val pPieceColor = List(Piece.PIECE_COUNT) {
 			JPanel().apply {
 				pColorRow[0].add(this)
 				add(JLabel(getUIText("PieceName$it")))
 			}
 		}
-		comboboxPieceColor = List(Piece.PIECE_COUNT) {i ->
+		comboBoxPieceColor = List(Piece.PIECE_COUNT) {i ->
 			JComboBox(strColorNames).apply {
 				preferredSize = Dimension(100, 30)
 				maximumRowCount = strColorNames.size
@@ -1237,7 +1262,7 @@ class RuleEditor:JFrame, ActionListener {
 			getUIText("DirectionName$it")
 		}
 
-		comboboxPieceDirection = List(Piece.PIECE_COUNT) {
+		comboBoxPieceDirection = List(Piece.PIECE_COUNT) {
 			JComboBox(strDirectionNames).apply {
 				preferredSize = Dimension(150, 30)
 				maximumRowCount = strDirectionNames.size
@@ -1303,7 +1328,7 @@ class RuleEditor:JFrame, ActionListener {
 
 		try {
 			FileReader(filename).buffered().use {
-				it.forEachLine {s->vec.add(s)}
+				it.forEachLine {s -> vec.add(s)}
 			}
 		} catch(_:IOException) {
 		}
@@ -1333,179 +1358,169 @@ class RuleEditor:JFrame, ActionListener {
 	 * @param r ルール設定
 	 */
 	private fun readRuleToUI(r:RuleOptions) {
-		txtfldRuleName.text = r.strRuleName
-		txtfldNextDisplay.text = r.nextDisplay.toString()
-		comboboxStyle?.selectedIndex = r.style
-		comboboxSkin?.selectedIndex = r.skin
-		chkboxGhost.isSelected = r.ghost
-		chkboxEnterAboveField.isSelected = r.pieceEnterAboveField
-		txtfldEnterMaxDistanceY.text = r.pieceEnterMaxDistanceY.toString()
-		comboboxRandomizer?.selectedIndex = vectorRandomizer?.indexOf(r.strRandomizer) ?: 0
+		txtFldRuleName.text = r.strRuleName
+		txtFldNextDisplay.text = r.nextDisplay.toString()
+		comboBoxStyle.selectedIndex = r.style
+		comboBoxSkin.selectedIndex = r.skin
+		chkBoxGhost.isSelected = r.ghost
+		chkBoxEnterAboveField.isSelected = r.pieceEnterAboveField
+		txtFldEnterMaxDistanceY.text = r.pieceEnterMaxDistanceY.toString()
+		comboBoxRandomizer?.selectedIndex = vectorRandomizer?.indexOf(r.strRandomizer) ?: 0
 
-		txtfldFieldWidth.text = r.fieldWidth.toString()
-		txtfldFieldHeight.text = r.fieldHeight.toString()
-		txtfldFieldHiddenHeight.text = r.fieldHiddenHeight.toString()
-		chkboxFieldCeiling.isSelected = r.fieldCeiling
-		chkboxFieldLockoutDeath.isSelected = r.fieldLockoutDeath
-		chkboxFieldPartialLockoutDeath.isSelected = r.fieldPartialLockoutDeath
+		txtFldFieldWidth.text = r.fieldWidth.toString()
+		txtFldFieldHeight.text = r.fieldHeight.toString()
+		txtFldFieldHiddenHeight.text = r.fieldHiddenHeight.toString()
+		chkBoxFieldCeiling.isSelected = r.fieldCeiling
+		chkBoxFieldLockoutDeath.isSelected = r.fieldLockoutDeath
+		chkBoxFieldPartialLockoutDeath.isSelected = r.fieldPartialLockoutDeath
 
-		chkboxHoldEnable.isSelected = r.holdEnable
-		chkboxHoldInitial.isSelected = r.holdInitial
-		chkboxHoldInitialLimit.isSelected = r.holdInitialLimit
-		chkboxHoldResetDirection.isSelected = r.holdResetDirection
-		txtfldHoldLimit.text = r.holdLimit.toString()
+		chkBoxHoldEnable.isSelected = r.holdEnable
+		chkBoxHoldInitial.isSelected = r.holdInitial
+		chkBoxHoldInitialLimit.isSelected = r.holdInitialLimit
+		chkBoxHoldResetDirection.isSelected = r.holdResetDirection
+		txtFldHoldLimit.text = r.holdLimit.toString()
 
-		chkboxDropHardDropEnable.isSelected = r.harddropEnable
-		chkboxDropHardDropLock.isSelected = r.harddropLock
-		chkboxDropHardDropLimit.isSelected = r.harddropLimit
-		chkboxDropSoftDropEnable.isSelected = r.softdropEnable
-		chkboxDropSoftDropLock.isSelected = r.softdropLock
-		chkboxDropSoftDropLimit.isSelected = r.softdropLimit
-		chkboxDropSoftDropSurfaceLock.isSelected = r.softdropSurfaceLock
-		txtfldDropSoftDropSpeed.text = r.softdropSpeed.toString()
-		chkboxDropSoftDropMultiplyNativeSpeed.isSelected = r.softdropMultiplyNativeSpeed
-		chkboxDropSoftDropGravitySpeedLimit.isSelected = r.softdropGravitySpeedLimit
+		chkBoxDropHardDropEnable.isSelected = r.harddropEnable
+		chkBoxDropHardDropLock.isSelected = r.harddropLock
+		chkBoxDropHardDropLimit.isSelected = r.harddropLimit
+		chkBoxDropSoftDropEnable.isSelected = r.softdropEnable
+		chkBoxDropSoftDropLock.isSelected = r.softdropLock
+		chkBoxDropSoftDropLimit.isSelected = r.softdropLimit
+		chkBoxDropSoftDropSurfaceLock.isSelected = r.softdropSurfaceLock
+		txtFldDropSoftDropSpeed.text = r.softdropSpeed.toString()
+		chkBoxDropSoftDropMultiplyNativeSpeed.isSelected = r.softdropMultiplyNativeSpeed
+		chkBoxDropSoftDropGravitySpeedLimit.isSelected = r.softdropGravitySpeedLimit
 
-		chkboxSpinInitial.isSelected = r.spinInitial
-		chkboxSpinInitialLimit.isSelected = r.spinInitialLimit
-		chkboxSpinWallkick.isSelected = r.spinWallkick
-		chkboxSpinInitialWallkick.isSelected = r.spinInitialWallkick
-		txtfldSpinWallkickRise.text = r.spinWallkickMaxRise.toString()
-		chkboxSpinToRight.isSelected = r.spinToRight
-		chkboxSpinReverseKey.isSelected = r.spinReverseKey
-		chkboxSpinDoubleKey.isSelected = r.spinDoubleKey
-		comboboxWallkickSystem?.selectedIndex = vectorWallkickSystem?.indexOf(r.strWallkick) ?: 0
-		txtfldLockDelayMin.text = r.minLockDelay.toString()
-		txtfldLockDelayMax.text = r.maxLockDelay.toString()
-		chkboxLockDelayLockResetFall.isSelected = r.lockResetFall
-		chkboxLockDelayLockResetMove.isSelected = r.lockResetMove
-		chkboxLockDelayLockResetSpin.isSelected = r.lockResetSpin
-		chkboxLockDelayLockResetWallkick.isSelected = r.lockResetWallkick
-		chkboxLockDelayLockResetLimitShareCount.isSelected = r.lockResetLimitShareCount
-		txtfldLockDelayLockResetLimitMove.text = r.lockResetMoveLimit.toString()
-		txtfldLockDelayLockResetLimitSpin.text = r.lockResetSpinLimit.toString()
+		chkBoxSpinInitial.isSelected = r.spinInitial
+		chkBoxSpinInitialLimit.isSelected = r.spinInitialLimit
+		chkBoxSpinWallkick.isSelected = r.spinWallkick
+		chkBoxSpinInitialWallkick.isSelected = r.spinInitialWallkick
+		txtFldSpinWallkickRise.text = r.spinWallkickMaxRise.toString()
+		chkBoxSpinToRight.isSelected = r.spinToRight
+		chkBoxSpinReverseKey.isSelected = r.spinReverseKey
+		chkBoxSpinDoubleKey.isSelected = r.spinDoubleKey
+		comboBoxWallkickSystem.selectedIndex = vectorWallkickSystem?.indexOf(r.strWallkick) ?: 0
+		txtFldLockDelayMin.text = r.minLockDelay.toString()
+		txtFldLockDelayMax.text = r.maxLockDelay.toString()
+		chkBoxLockDelayLockResetFall.isSelected = r.lockResetFall
+		chkBoxLockDelayLockResetMove.isSelected = r.lockResetMove
+		chkBoxLockDelayLockResetSpin.isSelected = r.lockResetSpin
+		chkBoxLockDelayLockResetWallkick.isSelected = r.lockResetWallkick
+		chkBoxLockDelayLockResetLimitShareCount.isSelected = r.lockResetLimitShareCount
+		txtFldLockDelayLockResetLimitMove.text = r.lockResetMoveLimit.toString()
+		txtFldLockDelayLockResetLimitSpin.text = r.lockResetSpinLimit.toString()
 		when(r.lockResetLimitOver) {
 			RuleOptions.LOCKRESET_LIMIT_OVER_NO_RESET -> radioLockDelayLockResetLimitOverNoReset?.isSelected = true
 			RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT -> radioLockDelayLockResetLimitOverInstant?.isSelected = true
 			RuleOptions.LOCKRESET_LIMIT_OVER_NO_KICK -> radioLockDelayLockResetLimitOverNoWallkick?.isSelected = true
 		}
 
-		txtfldAREMin.text = r.minARE.toString()
-		txtfldAREMax.text = r.maxARE.toString()
-		txtfldARELineMin.text = r.minARELine.toString()
-		txtfldARELineMax.text = r.maxARELine.toString()
-		txtfldARELockFlash.text = r.lockFlash.toString()
-		chkboxARELockFlashOnlyFrame.isSelected = r.lockFlashOnlyFrame
-		chkboxARELockFlashBeforeLineClear.isSelected = r.lockFlashBeforeLineClear
-		chkboxARECancelMove.isSelected = r.areCancelMove
-		chkboxARECancelSpin.isSelected = r.areCancelSpin
-		chkboxARECancelHold.isSelected = r.areCancelHold
+		txtFldAREMin.text = r.minARE.toString()
+		txtFldAREMax.text = r.maxARE.toString()
+		txtFldARELineMin.text = r.minARELine.toString()
+		txtFldARELineMax.text = r.maxARELine.toString()
+		txtFldARELockFlash.text = r.lockFlash.toString()
+		chkBoxARELockFlashOnlyFrame.isSelected = r.lockFlashOnlyFrame
+		chkBoxARELockFlashBeforeLineClear.isSelected = r.lockFlashBeforeLineClear
+		chkBoxARECancelMove.isSelected = r.areCancelMove
+		chkBoxARECancelSpin.isSelected = r.areCancelSpin
+		chkBoxARECancelHold.isSelected = r.areCancelHold
 
-		txtfldLineDelayMin.text = r.minLineDelay.toString()
-		txtfldLineDelayMax.text = r.maxLineDelay.toString()
-		chkboxLineFallAnim.isSelected = r.lineFallAnim
-		chkboxLineCancelMove.isSelected = r.lineCancelMove
-		chkboxLineCancelSpin.isSelected = r.lineCancelSpin
-		chkboxLineCancelHold.isSelected = r.lineCancelHold
+		txtFldLineDelayMin.text = r.minLineDelay.toString()
+		txtFldLineDelayMax.text = r.maxLineDelay.toString()
+		chkBoxLineFallAnim.isSelected = r.lineFallAnim
+		chkBoxLineCancelMove.isSelected = r.lineCancelMove
+		chkBoxLineCancelSpin.isSelected = r.lineCancelSpin
+		chkBoxLineCancelHold.isSelected = r.lineCancelHold
 
-		txtfldMoveDASMin.text = r.minDAS.toString()
-		txtfldMoveDASMax.text = r.maxDAS.toString()
-		txtfldMoveDASDelay.text = r.dasARR.toString()
-		chkboxMoveDASInReady.isSelected = r.dasInReady
-		chkboxMoveDASInMoveFirstFrame.isSelected = r.dasInMoveFirstFrame
-		chkboxMoveDASInLockFlash.isSelected = r.dasInLockFlash
-		chkboxMoveDASInLineClear.isSelected = r.dasInLineClear
-		chkboxMoveDASInARE.isSelected = r.dasInARE
-		chkboxMoveDASInARELastFrame.isSelected = r.dasInARELastFrame
-		chkboxMoveDASInEndingStart.isSelected = r.dasInEndingStart
-		chkboxMoveDASChargeOnBlockedMove.isSelected = r.dasChargeOnBlockedMove
-		chkboxMoveDASStoreChargeOnNeutral.isSelected = r.dasStoreChargeOnNeutral
-		chkboxMoveDASRedirectInDelay.isSelected = r.dasRedirectInDelay
-		chkboxMoveFirstFrame.isSelected = r.moveFirstFrame
-		chkboxMoveDiagonal.isSelected = r.moveDiagonal
-		chkboxMoveUpAndDown.isSelected = r.moveUpAndDown
-		chkboxMoveLeftAndRightAllow.isSelected = r.moveLeftAndRightAllow
-		chkboxMoveLeftAndRightUsePreviousInput.isSelected = r.moveLeftAndRightUsePreviousInput
-		chkboxMoveShiftLockEnable.isSelected = r.shiftLockEnable
-		comboboxPieceOffset?.selectedIndex = r.pieceOffset
-		for(i in 0..<Piece.PIECE_COUNT) {
-			for(j in 0..<Piece.DIRECTION_COUNT) {
-				txtfldPieceOffsetX?.let {it[i][j].text = "${r.pieceOffsetX[i][j]}"}
-				txtfldPieceOffsetY?.let {it[i][j].text = "${r.pieceOffsetY[i][j]}"}
-				txtfldPieceSpawnX?.let {it[i][j].text = "${r.pieceSpawnX[i][j]}"}
-				txtfldPieceSpawnY?.let {it[i][j].text = "${r.pieceSpawnY[i][j]}"}
-				txtfldPieceSpawnBigX?.let {it[i][j].text = "${r.pieceSpawnXBig[i][j]}"}
-				txtfldPieceSpawnBigY?.let {it[i][j].text = "${r.pieceSpawnYBig[i][j]}"}
-			}
-			comboboxPieceColor?.get(i)?.selectedIndex = r.pieceColor[i]-1
-			comboboxPieceDirection?.get(i)?.selectedIndex = r.pieceDefaultDirection[i]
-		}
+		txtFldMoveDASMin.text = r.minDAS.toString()
+		txtFldMoveDASMax.text = r.maxDAS.toString()
+		txtFldMoveDASDelay.text = r.dasARR.toString()
+		chkBoxMoveDASInReady.isSelected = r.dasInReady
+		chkBoxMoveDASInMoveFirstFrame.isSelected = r.dasInMoveFirstFrame
+		chkBoxMoveDASInLockFlash.isSelected = r.dasInLockFlash
+		chkBoxMoveDASInLineClear.isSelected = r.dasInLineClear
+		chkBoxMoveDASInARE.isSelected = r.dasInARE
+		chkBoxMoveDASInARELastFrame.isSelected = r.dasInARELastFrame
+		chkBoxMoveDASInEndingStart.isSelected = r.dasInEndingStart
+		chkBoxMoveDASChargeOnBlockedMove.isSelected = r.dasChargeOnBlockedMove
+		chkBoxMoveDASStoreChargeOnNeutral.isSelected = r.dasStoreChargeOnNeutral
+		chkBoxMoveDASRedirectInDelay.isSelected = r.dasRedirectInDelay
+		chkBoxMoveFirstFrame.isSelected = r.moveFirstFrame
+		chkBoxMoveDiagonal.isSelected = r.moveDiagonal
+		chkBoxMoveUpAndDown.isSelected = r.moveUpAndDown
+		chkBoxMoveLeftAndRightAllow.isSelected = r.moveLeftAndRightAllow
+		chkBoxMoveLeftAndRightUsePreviousInput.isSelected = r.moveLeftAndRightUsePreviousInput
+		chkBoxMoveShiftLockEnable.isSelected = r.shiftLockEnable
+		comboBoxPieceOffset.selectedIndex = r.pieceOffset
+		r.pieceOffsetX.forEachIndexed {x, i -> i.forEachIndexed {y, j -> txtFldPieceOffsetX[x][y].text = "$j"}}
+		r.pieceOffsetY.forEachIndexed {x, i -> i.forEachIndexed {y, j -> txtFldPieceOffsetY[x][y].text = "$j"}}
+		r.pieceSpawnX.forEachIndexed {x, i -> i.forEachIndexed {y, j -> txtFldPieceSpawnX[x][y].text = "$j"}}
+		r.pieceSpawnY.forEachIndexed {x, i -> i.forEachIndexed {y, j -> txtFldPieceSpawnY[x][y].text = "$j"}}
+		r.pieceSpawnXBig.forEachIndexed {x, i -> i.forEachIndexed {y, j -> txtFldPieceSpawnBigX[x][y].text = "$j"}}
+		r.pieceSpawnYBig.forEachIndexed {x, i -> i.forEachIndexed {y, j -> txtFldPieceSpawnBigY[x][y].text = "$j"}}
+		comboBoxPieceColor.forEachIndexed {i, it -> it.selectedIndex = r.pieceColor[i]-1}
+		comboBoxPieceDirection.forEachIndexed {i, it -> it.selectedIndex = r.pieceDefaultDirection[i]}
 	}
 
 	/** ルール設定をUIから書き込む
 	 * @param r ルール設定
 	 */
 	private fun writeRuleFromUI(r:RuleOptions) {
-		r.strRuleName = txtfldRuleName.text.uppercase()
-		r.nextDisplay = getIntTextField(txtfldNextDisplay)
-		r.style = comboboxStyle!!.selectedIndex
-		r.skin = comboboxSkin!!.selectedIndex
-		r.ghost = chkboxGhost.isSelected
-		r.pieceEnterAboveField = chkboxEnterAboveField.isSelected
-		r.pieceEnterMaxDistanceY = getIntTextField(txtfldEnterMaxDistanceY)
-		val indexRandomizer = comboboxRandomizer!!.selectedIndex
-		if(indexRandomizer>=0)
-			r.strRandomizer = vectorRandomizer!![indexRandomizer]
-		else
-			r.strRandomizer = ""
+		r.strRuleName = txtFldRuleName.text.uppercase()
+		r.nextDisplay = getIntTextField(txtFldNextDisplay)
+		r.style = comboBoxStyle.selectedIndex
+		r.skin = comboBoxSkin.selectedIndex
+		r.ghost = chkBoxGhost.isSelected
+		r.pieceEnterAboveField = chkBoxEnterAboveField.isSelected
+		r.pieceEnterMaxDistanceY = getIntTextField(txtFldEnterMaxDistanceY)
+		val indexRandomizer = comboBoxRandomizer!!.selectedIndex
+		r.strRandomizer = if(indexRandomizer>=0) vectorRandomizer!![indexRandomizer] else ""
 
-		r.fieldWidth = getIntTextField(txtfldFieldWidth)
-		r.fieldHeight = getIntTextField(txtfldFieldHeight)
-		r.fieldHiddenHeight = getIntTextField(txtfldFieldHiddenHeight)
-		r.fieldCeiling = chkboxFieldCeiling.isSelected
-		r.fieldLockoutDeath = chkboxFieldLockoutDeath.isSelected
-		r.fieldPartialLockoutDeath = chkboxFieldPartialLockoutDeath.isSelected
+		r.fieldWidth = getIntTextField(txtFldFieldWidth)
+		r.fieldHeight = getIntTextField(txtFldFieldHeight)
+		r.fieldHiddenHeight = getIntTextField(txtFldFieldHiddenHeight)
+		r.fieldCeiling = chkBoxFieldCeiling.isSelected
+		r.fieldLockoutDeath = chkBoxFieldLockoutDeath.isSelected
+		r.fieldPartialLockoutDeath = chkBoxFieldPartialLockoutDeath.isSelected
 
-		r.holdEnable = chkboxHoldEnable.isSelected
-		r.holdInitial = chkboxHoldInitial.isSelected
-		r.holdInitialLimit = chkboxHoldInitialLimit.isSelected
-		r.holdResetDirection = chkboxHoldResetDirection.isSelected
-		r.holdLimit = getIntTextField(txtfldHoldLimit)
+		r.holdEnable = chkBoxHoldEnable.isSelected
+		r.holdInitial = chkBoxHoldInitial.isSelected
+		r.holdInitialLimit = chkBoxHoldInitialLimit.isSelected
+		r.holdResetDirection = chkBoxHoldResetDirection.isSelected
+		r.holdLimit = getIntTextField(txtFldHoldLimit)
 
-		r.harddropEnable = chkboxDropHardDropEnable.isSelected
-		r.harddropLock = chkboxDropHardDropLock.isSelected
-		r.harddropLimit = chkboxDropHardDropLimit.isSelected
-		r.softdropEnable = chkboxDropSoftDropEnable.isSelected
-		r.softdropLock = chkboxDropSoftDropLock.isSelected
-		r.softdropLimit = chkboxDropSoftDropLimit.isSelected
-		r.softdropSurfaceLock = chkboxDropSoftDropSurfaceLock.isSelected
-		r.softdropSpeed = getFloatTextField(txtfldDropSoftDropSpeed)
-		r.softdropMultiplyNativeSpeed = chkboxDropSoftDropMultiplyNativeSpeed.isSelected
-		r.softdropGravitySpeedLimit = chkboxDropSoftDropGravitySpeedLimit.isSelected
+		r.harddropEnable = chkBoxDropHardDropEnable.isSelected
+		r.harddropLock = chkBoxDropHardDropLock.isSelected
+		r.harddropLimit = chkBoxDropHardDropLimit.isSelected
+		r.softdropEnable = chkBoxDropSoftDropEnable.isSelected
+		r.softdropLock = chkBoxDropSoftDropLock.isSelected
+		r.softdropLimit = chkBoxDropSoftDropLimit.isSelected
+		r.softdropSurfaceLock = chkBoxDropSoftDropSurfaceLock.isSelected
+		r.softdropSpeed = getFloatTextField(txtFldDropSoftDropSpeed)
+		r.softdropMultiplyNativeSpeed = chkBoxDropSoftDropMultiplyNativeSpeed.isSelected
+		r.softdropGravitySpeedLimit = chkBoxDropSoftDropGravitySpeedLimit.isSelected
 
-		r.spinInitial = chkboxSpinInitial.isSelected
-		r.spinInitialLimit = chkboxSpinInitialLimit.isSelected
-		r.spinWallkick = chkboxSpinWallkick.isSelected
-		r.spinInitialWallkick = chkboxSpinInitialWallkick.isSelected
-		r.spinWallkickMaxRise = getIntTextField(txtfldSpinWallkickRise)
-		r.spinToRight = chkboxSpinToRight.isSelected
-		r.spinReverseKey = chkboxSpinReverseKey.isSelected
-		r.spinDoubleKey = chkboxSpinDoubleKey.isSelected
-		val indexWallkick = comboboxWallkickSystem!!.selectedIndex
-		if(indexWallkick>=0)
-			r.strWallkick = vectorWallkickSystem!![indexWallkick]
-		else
-			r.strWallkick = ""
+		r.spinInitial = chkBoxSpinInitial.isSelected
+		r.spinInitialLimit = chkBoxSpinInitialLimit.isSelected
+		r.spinWallkick = chkBoxSpinWallkick.isSelected
+		r.spinInitialWallkick = chkBoxSpinInitialWallkick.isSelected
+		r.spinWallkickMaxRise = getIntTextField(txtFldSpinWallkickRise)
+		r.spinToRight = chkBoxSpinToRight.isSelected
+		r.spinReverseKey = chkBoxSpinReverseKey.isSelected
+		r.spinDoubleKey = chkBoxSpinDoubleKey.isSelected
+		val indexWallkick = comboBoxWallkickSystem.selectedIndex
+		r.strWallkick = if(indexWallkick>=0) vectorWallkickSystem!![indexWallkick] else ""
 
-		r.minLockDelay = getIntTextField(txtfldLockDelayMin)
-		r.maxLockDelay = getIntTextField(txtfldLockDelayMax)
-		r.lockResetFall = chkboxLockDelayLockResetFall.isSelected
-		r.lockResetMove = chkboxLockDelayLockResetMove.isSelected
-		r.lockResetSpin = chkboxLockDelayLockResetSpin.isSelected
-		r.lockResetWallkick = chkboxLockDelayLockResetWallkick.isSelected
-		r.lockResetLimitShareCount = chkboxLockDelayLockResetLimitShareCount.isSelected
-		r.lockResetMoveLimit = getIntTextField(txtfldLockDelayLockResetLimitMove)
-		r.lockResetSpinLimit = getIntTextField(txtfldLockDelayLockResetLimitSpin)
+		r.minLockDelay = getIntTextField(txtFldLockDelayMin)
+		r.maxLockDelay = getIntTextField(txtFldLockDelayMax)
+		r.lockResetFall = chkBoxLockDelayLockResetFall.isSelected
+		r.lockResetMove = chkBoxLockDelayLockResetMove.isSelected
+		r.lockResetSpin = chkBoxLockDelayLockResetSpin.isSelected
+		r.lockResetWallkick = chkBoxLockDelayLockResetWallkick.isSelected
+		r.lockResetLimitShareCount = chkBoxLockDelayLockResetLimitShareCount.isSelected
+		r.lockResetMoveLimit = getIntTextField(txtFldLockDelayLockResetLimitMove)
+		r.lockResetSpinLimit = getIntTextField(txtFldLockDelayLockResetLimitSpin)
 		if(radioLockDelayLockResetLimitOverNoReset!!.isSelected)
 			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NO_RESET
 		if(radioLockDelayLockResetLimitOverInstant!!.isSelected)
@@ -1513,55 +1528,69 @@ class RuleEditor:JFrame, ActionListener {
 		if(radioLockDelayLockResetLimitOverNoWallkick!!.isSelected)
 			r.lockResetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NO_KICK
 
-		r.minARE = getIntTextField(txtfldAREMin)
-		r.maxARE = getIntTextField(txtfldAREMax)
-		r.minARELine = getIntTextField(txtfldARELineMin)
-		r.maxARELine = getIntTextField(txtfldARELineMax)
-		r.lockFlash = getIntTextField(txtfldARELockFlash)
-		r.lockFlashOnlyFrame = chkboxARELockFlashOnlyFrame.isSelected
-		r.lockFlashBeforeLineClear = chkboxARELockFlashBeforeLineClear.isSelected
-		r.areCancelMove = chkboxARECancelMove.isSelected
-		r.areCancelSpin = chkboxARECancelSpin.isSelected
-		r.areCancelHold = chkboxARECancelHold.isSelected
+		r.minARE = getIntTextField(txtFldAREMin)
+		r.maxARE = getIntTextField(txtFldAREMax)
+		r.minARELine = getIntTextField(txtFldARELineMin)
+		r.maxARELine = getIntTextField(txtFldARELineMax)
+		r.lockFlash = getIntTextField(txtFldARELockFlash)
+		r.lockFlashOnlyFrame = chkBoxARELockFlashOnlyFrame.isSelected
+		r.lockFlashBeforeLineClear = chkBoxARELockFlashBeforeLineClear.isSelected
+		r.areCancelMove = chkBoxARECancelMove.isSelected
+		r.areCancelSpin = chkBoxARECancelSpin.isSelected
+		r.areCancelHold = chkBoxARECancelHold.isSelected
 
-		r.minLineDelay = getIntTextField(txtfldLineDelayMin)
-		r.maxLineDelay = getIntTextField(txtfldLineDelayMax)
-		r.lineFallAnim = chkboxLineFallAnim.isSelected
-		r.lineCancelMove = chkboxLineCancelMove.isSelected
-		r.lineCancelSpin = chkboxLineCancelSpin.isSelected
-		r.lineCancelHold = chkboxLineCancelHold.isSelected
+		r.minLineDelay = getIntTextField(txtFldLineDelayMin)
+		r.maxLineDelay = getIntTextField(txtFldLineDelayMax)
+		r.lineFallAnim = chkBoxLineFallAnim.isSelected
+		r.lineCancelMove = chkBoxLineCancelMove.isSelected
+		r.lineCancelSpin = chkBoxLineCancelSpin.isSelected
+		r.lineCancelHold = chkBoxLineCancelHold.isSelected
 
-		r.minDAS = getIntTextField(txtfldMoveDASMin)
-		r.maxDAS = getIntTextField(txtfldMoveDASMax)
-		r.dasARR = getIntTextField(txtfldMoveDASDelay)
-		r.dasInReady = chkboxMoveDASInReady.isSelected
-		r.dasInMoveFirstFrame = chkboxMoveDASInMoveFirstFrame.isSelected
-		r.dasInLockFlash = chkboxMoveDASInLockFlash.isSelected
-		r.dasInLineClear = chkboxMoveDASInLineClear.isSelected
-		r.dasInARE = chkboxMoveDASInARE.isSelected
-		r.dasInARELastFrame = chkboxMoveDASInARELastFrame.isSelected
-		r.dasInEndingStart = chkboxMoveDASInEndingStart.isSelected
-		r.dasChargeOnBlockedMove = chkboxMoveDASChargeOnBlockedMove.isSelected
-		r.dasStoreChargeOnNeutral = chkboxMoveDASStoreChargeOnNeutral.isSelected
-		r.dasRedirectInDelay = chkboxMoveDASRedirectInDelay.isSelected
-		r.moveFirstFrame = chkboxMoveFirstFrame.isSelected
-		r.moveDiagonal = chkboxMoveDiagonal.isSelected
-		r.moveUpAndDown = chkboxMoveUpAndDown.isSelected
-		r.moveLeftAndRightAllow = chkboxMoveLeftAndRightAllow.isSelected
-		r.moveLeftAndRightUsePreviousInput = chkboxMoveLeftAndRightUsePreviousInput.isSelected
-		r.shiftLockEnable = chkboxMoveShiftLockEnable.isSelected
-		r.pieceOffset = comboboxPieceOffset!!.selectedIndex
-		for(i in 0..<Piece.PIECE_COUNT) {
-			for(j in 0..<Piece.DIRECTION_COUNT) {
-				r.pieceOffsetX[i][j] = getIntTextField(txtfldPieceOffsetX!![i][j])
-				r.pieceOffsetY[i][j] = getIntTextField(txtfldPieceOffsetY!![i][j])
-				r.pieceSpawnX[i][j] = getIntTextField(txtfldPieceSpawnX!![i][j])
-				r.pieceSpawnY[i][j] = getIntTextField(txtfldPieceSpawnY!![i][j])
-				r.pieceSpawnXBig[i][j] = getIntTextField(txtfldPieceSpawnBigX!![i][j])
-				r.pieceSpawnYBig[i][j] = getIntTextField(txtfldPieceSpawnBigY!![i][j])
+		r.minDAS = getIntTextField(txtFldMoveDASMin)
+		r.maxDAS = getIntTextField(txtFldMoveDASMax)
+		r.dasARR = getIntTextField(txtFldMoveDASDelay)
+		r.dasInReady = chkBoxMoveDASInReady.isSelected
+		r.dasInMoveFirstFrame = chkBoxMoveDASInMoveFirstFrame.isSelected
+		r.dasInLockFlash = chkBoxMoveDASInLockFlash.isSelected
+		r.dasInLineClear = chkBoxMoveDASInLineClear.isSelected
+		r.dasInARE = chkBoxMoveDASInARE.isSelected
+		r.dasInARELastFrame = chkBoxMoveDASInARELastFrame.isSelected
+		r.dasInEndingStart = chkBoxMoveDASInEndingStart.isSelected
+		r.dasChargeOnBlockedMove = chkBoxMoveDASChargeOnBlockedMove.isSelected
+		r.dasStoreChargeOnNeutral = chkBoxMoveDASStoreChargeOnNeutral.isSelected
+		r.dasRedirectInDelay = chkBoxMoveDASRedirectInDelay.isSelected
+		r.moveFirstFrame = chkBoxMoveFirstFrame.isSelected
+		r.moveDiagonal = chkBoxMoveDiagonal.isSelected
+		r.moveUpAndDown = chkBoxMoveUpAndDown.isSelected
+		r.moveLeftAndRightAllow = chkBoxMoveLeftAndRightAllow.isSelected
+		r.moveLeftAndRightUsePreviousInput = chkBoxMoveLeftAndRightUsePreviousInput.isSelected
+		r.shiftLockEnable = chkBoxMoveShiftLockEnable.isSelected
+		r.pieceOffset = comboBoxPieceOffset.selectedIndex
+		offsetApply()
+		r.pieceOffsetX = txtFldPieceOffsetX.map {x -> x.map {j -> getIntTextField(j)}}
+		r.pieceOffsetY = txtFldPieceOffsetY.map {x -> x.map {j -> getIntTextField(j)}}
+		r.pieceSpawnX = txtFldPieceSpawnX.map {x -> x.map {j -> getIntTextField(j)}.toMutableList()}
+		r.pieceSpawnY = txtFldPieceSpawnY.map {x -> x.map {j -> getIntTextField(j)}.toMutableList()}
+		r.pieceSpawnXBig = txtFldPieceSpawnBigX.map {x -> x.map {j -> getIntTextField(j)}.toMutableList()}
+		r.pieceSpawnYBig = txtFldPieceSpawnBigY.map {x -> x.map {j -> getIntTextField(j)}.toMutableList()}
+		r.pieceColor = comboBoxPieceColor.map {it.selectedIndex+1}
+		r.pieceDefaultDirection = comboBoxPieceDirection.map {it.selectedIndex}
+	}
+
+	private fun offsetApply() {
+		val idx = comboBoxPieceOffset.selectedIndex
+		if(idx==RuleOptions.PIECEOFFSET_ASSIGN) return
+		txtFldPieceOffsetX.forEachIndexed {i, l ->
+			l.forEachIndexed {j, it ->
+				it.text = if(idx==RuleOptions.PIECEOFFSET_BIASED) "${RuleOptions.PIECEOFFSET_ARSPRESET[0][i][j]}"
+				else "0"
 			}
-			r.pieceColor[i] = comboboxPieceColor!![i].selectedIndex+1
-			r.pieceDefaultDirection[i] = comboboxPieceDirection!![i].selectedIndex
+		}
+		txtFldPieceOffsetY.forEachIndexed {i, l ->
+			l.forEachIndexed {j, it ->
+				it.text = if(idx==RuleOptions.PIECEOFFSET_BOTTOM||idx==RuleOptions.PIECEOFFSET_BIASED)
+					"${RuleOptions.PIECEOFFSET_ARSPRESET[1][i][j]}" else "0"
+			}
 		}
 	}
 
@@ -1571,15 +1600,12 @@ class RuleEditor:JFrame, ActionListener {
 	 */
 	@Throws(IOException::class)
 	fun save(filename:String) {
-		val ruleOpt = RuleOptions()
-		writeRuleFromUI(ruleOpt)
-
-		val prop = CustomProperties()
-		ruleOpt.writeProperty(prop, 0)
-
-		val out = GZIPOutputStream(FileOutputStream(filename))
-		prop.store(out, "NullpoMino RuleData")
-		out.close()
+		val ruleOpt = RuleOptions().apply {
+			writeRuleFromUI(this)
+		}
+		GZIPOutputStream(FileOutputStream(filename, false)).bufferedWriter().use {
+			it.write(Json.encodeToString(ruleOpt))
+		}
 
 		log.debug("Saved rule file to $filename")
 	}
@@ -1591,45 +1617,71 @@ class RuleEditor:JFrame, ActionListener {
 	 */
 	@Throws(IOException::class)
 	fun load(filename:String):RuleOptions {
-		val prop = CustomProperties()
+		return try {
+			val rf = GZIPInputStream(FileInputStream(filename))
+			val ret = Json.decodeFromString<RuleOptions>(rf.bufferedReader().use {it.readText()})
+			log.debug("Loaded rule Jsons from $filename")
+			ret
+		} catch(_:Exception) {
+			val rf = GZIPInputStream(FileInputStream(filename))
+			val prop = CustomProperties()
+			prop.load(rf)
+			rf.close()
 
-		val `in` = GZIPInputStream(FileInputStream(filename))
-		prop.load(`in`)
-		`in`.close()
+			val ruleOpt = RuleOptions()
+			ruleOpt.readProperty(prop)
 
-		val ruleOpt = RuleOptions()
-		ruleOpt.readProperty(prop, 0, true)
+			log.debug("Loaded rule Properties from $filename")
+			log.debug(Json.encodeToString(ruleOpt))
 
-		log.debug("Loaded rule file from $filename")
-		log.debug("${ruleOpt.strRandomizer} / ${ruleOpt.strWallkick}")
-
-		return ruleOpt
+			ruleOpt
+		}
 	}
 
 	/** 翻訳後のUIの文字列を取得
 	 * @param str 文字列
-	 * @return 翻訳後のUIの文字列 (無いならそのままstrを返す）
+	 * @return 翻訳後のUIの文字列 (無いならそのまま[str]を返す）
 	 */
 	fun getUIText(str:String):String = propLang.getProperty(str, propLangDefault.getProperty(str, str))
 
 	/** テキストfieldからint型の値を取得
-	 * @param txtfld テキストfield
+	 * @param txtFld テキストfield
 	 * @return テキストfieldから値を取得できた場合はその値, 失敗したら0
 	 */
-	private fun getIntTextField(txtfld:JTextField):Int = txtfld.text.toIntOrNull() ?: 0
+	private fun getIntTextField(txtFld:JTextField):Int = txtFld.text.toIntOrNull() ?: 0
 
 	/** テキストfieldからfloat型の値を取得
-	 * @param txtfld テキストfield
+	 * @param txtFld テキストfield
 	 * @return テキストfieldから値を取得できた場合はその値, 失敗したら0f
 	 */
-	private fun getFloatTextField(txtfld:JTextField):Float = txtfld.text.toFloatOrNull() ?: 0f
+	private fun getFloatTextField(txtFld:JTextField):Float = txtFld.text.toFloatOrNull() ?: 0f
 
 	/** アクション発生時の処理 */
 	override fun actionPerformed(e:ActionEvent) {
-		val a:String = e.actionCommand
-		val b:Int
-		val c:JFileChooser
-		when(a) {
+		fun saveAs() {
+			val c1 = JFileChooser(strNowFile ?: "${System.getProperty("user.dir")}/config/rule")
+			c1.fileFilter = FileFilterRUL()
+			c1.selectedFile = strNowFile?.let {File(it)}
+			if(c1.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
+				val file = c1.selectedFile
+				val filename = //if(!filename.endsWith(".rul")) "${file.path}.rul" else
+					file.path
+				try {
+					save(filename)
+				} catch(e2:Exception) {
+					log.error("Failed to save rule data to $filename", e2)
+					JOptionPane.showMessageDialog(
+						this, "${getUIText("Message_FileSaveFailed")}\n$e2",
+						getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
+					)
+					return
+				}
+
+				strNowFile = filename
+				title = "${getUIText("Title_RuleEditor")}:$strNowFile"
+			}
+		}
+		when(val a = e.actionCommand) {
 			"New" -> {
 				// 新規作成
 				strNowFile = null
@@ -1638,7 +1690,7 @@ class RuleEditor:JFrame, ActionListener {
 			}
 			"Open" -> {
 				// 開く
-				c = JFileChooser("${System.getProperty("user.dir")}/config/rule")
+				val c = JFileChooser(strNowFile ?: "${System.getProperty("user.dir")}/config/rule")
 				c.fileFilter = FileFilterRUL()
 
 				if(c.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
@@ -1659,8 +1711,8 @@ class RuleEditor:JFrame, ActionListener {
 					}
 				}
 			}
-			"Save" -> {
-				if(strNowFile!=null) { // Up書き保存
+			"Save" ->
+				if(strNowFile!=null) {
 					try {
 						save(strNowFile!!)
 					} catch(e2:IOException) {
@@ -1670,85 +1722,39 @@ class RuleEditor:JFrame, ActionListener {
 							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
 						)
 					}
-				} else {
-					// Nameを付けて保存
-					c = JFileChooser("${System.getProperty("user.dir")}/config/rule")
-					c.fileFilter = FileFilterRUL()
+				} else saveAs()
 
-					if(c.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
-						val file = c.selectedFile
-						var filename = file.path
-						if(!filename.endsWith(".rul")) filename = "$filename.rul"
+			"SaveAs" -> saveAs()
 
-						try {
-							save(filename)
-						} catch(e2:Exception) {
-							log.error("Failed to save rule data to $filename", e2)
-							JOptionPane.showMessageDialog(
-								this, "${getUIText("Message_FileSaveFailed")}\n$e2",
-								getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
-							)
-							return
-						}
-
-						strNowFile = filename
-						title = "${getUIText("Title_RuleEditor")}:$strNowFile"
-					}
-				}
-			}
-			"SaveAs" -> {
-				c = JFileChooser("${System.getProperty("user.dir")}/config/rule")
-				c.fileFilter = FileFilterRUL()
-				if(c.showSaveDialog(this)==JFileChooser.APPROVE_OPTION) {
-					val file = c.selectedFile
-					var filename = file.path
-					if(!filename.endsWith(".rul")) filename = "$filename.rul"
-					try {
-						save(filename)
-					} catch(e2:Exception) {
-						log.error("Failed to save rule data to $filename", e2)
-						JOptionPane.showMessageDialog(
-							this, "${getUIText("Message_FileSaveFailed")}\n$e2",
-							getUIText("Title_FileSaveFailed"), JOptionPane.ERROR_MESSAGE
-						)
-						return
-					}
-
-					strNowFile = filename
-					title = "${getUIText("Title_RuleEditor")}:$strNowFile"
-				}
-			}
 			"OffsetPreset" -> {
-				val tog = comboboxPieceOffset!!.selectedIndex==RuleOptions.PIECEOFFSET_ASSIGN
-				for(i in txtfldPieceOffsetX!!)
-					for(j in i) j.isEditable = tog
-				for(i in txtfldPieceOffsetY!!)
-					for(j in i) j.isEditable = tog
-				for(i in txtfldPieceSpawnX!!)
-					for(j in i) j.isEditable = tog
-				for(i in txtfldPieceSpawnY!!)
-					for(j in i) j.isEditable = tog
-				for(i in txtfldPieceSpawnBigX!!)
-					for(j in i) j.isEditable = tog
-				for(i in txtfldPieceSpawnBigY!!)
-					for(j in i) j.isEditable = tog
+				val tog = comboBoxPieceOffset.selectedIndex==RuleOptions.PIECEOFFSET_ASSIGN
+				txtFldPieceOffsetX.forEach {i -> for(j in i) j.isEditable = tog}
+				txtFldPieceOffsetY.forEach {i -> for(j in i) j.isEditable = tog}
 			}
+			"OffsetApply" -> offsetApply()
 			"PresetColors_SRS", "PresetColors_ARS" -> {
-				b = if(a=="PresetColors_SRS") 1 else 0
-				for(i in comboboxPieceColor!!.indices)
-					comboboxPieceColor!![i].selectedIndex = RuleOptions.PIECECOLOR_PRESET[b][i]
+				val b = if(a=="PresetColors_SRS") 1 else 0
+				for(i in comboBoxPieceColor.indices)
+					comboBoxPieceColor[i].selectedIndex = RuleOptions.PIECECOLOR_PRESET[b][i]-1
+			}
+			"ResetSpawn_SRS", "ResetSpawn_ARS" -> {
+				txtFldPieceSpawnX.forEach {i -> for(j in i) j.text = "0"}
+				txtFldPieceSpawnY.forEach {i -> for(j in i) j.text = "0"}
+				txtFldPieceSpawnBigX.forEachIndexed {i, l ->
+					l.forEachIndexed {j, it ->
+						it.text = if(a=="ResetSpawn_ARS")
+							"${RuleOptions.PIECESPAWNXBIG_ARSPRESET[i][j]}" else "0"
+					}
+				}
+				txtFldPieceSpawnBigY.forEach {i -> for(j in i) j.text = "0"}
 			}
 			"ResetDirection_SRS", "ResetDirection_ARS" -> {
-				var i = 0
-				while(i<comboboxPieceDirection!!.size-1&&i<RuleOptions.PIECEDIRECTION_ARSPRESET.size-1) {
-					comboboxPieceDirection!![i].selectedIndex = if(a=="ResetDirection_ARS")
-						RuleOptions.PIECEDIRECTION_ARSPRESET[i]
-					else 0
-					i++
+				comboBoxPieceDirection.forEachIndexed {i, it ->
+					it.selectedIndex = if(a=="ResetDirection_ARS") RuleOptions.PIECEDIRECTION_ARSPRESET[i] else 0
 				}
 			}
 			"ResetRandomizer" // NEXT順生成アルゴリズムの選択リセット
-			-> comboboxRandomizer!!.setSelectedItem(null)
+			-> comboBoxRandomizer!!.setSelectedItem(null)
 			"Exit" // 終了
 			-> dispose()
 		}
@@ -1762,19 +1768,19 @@ class RuleEditor:JFrame, ActionListener {
 	}
 
 	/** 画像表示Comboボックスの項目<br></br>
-	 * [出典](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */
+	 * [出典](http://www.javadrive.jp/tutorial/jcomboBox/index20.html) */
 	private class ComboLabel(
 		var text:String = "",
 		var icon:Icon? = null
 	)
 
 	/** 画像表示ComboボックスのListCellRenderer<br></br>
-	 * [出典](http://www.javadrive.jp/tutorial/jcombobox/index20.html) */
+	 * [出典](http://www.javadrive.jp/tutorial/jcomboBox/index20.html) */
 	private inner class ComboLabelCellRenderer:JLabel(), ListCellRenderer<Any> {
-		fun getListCellRendererComponent(list:JList<out Nothing>?, value:Nothing?, index:Int, isSelected:Boolean,
+		/*fun getListCellRendererComponent(list:JList<out Nothing>?, value:Nothing?, index:Int, isSelected:Boolean,
 			cellHasFocus:Boolean):Component {
 			TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-		}
+		}*/
 
 		init {
 			isOpaque = true

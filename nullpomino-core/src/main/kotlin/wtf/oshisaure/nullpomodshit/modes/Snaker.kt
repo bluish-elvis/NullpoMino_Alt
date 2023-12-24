@@ -1,7 +1,7 @@
 /*
- Copyright (c) 2022-2023,
+ Copyright (c) 2022-2024,
  This library class was created by 0xFC963F18DC21 / Shots243
- It is part of an extension library for the game NullpoMino (copyright 2010-2023)
+ It is part of an extension library for the game NullpoMino (copyright 2010-2024)
 
  Kotlin converted and modified by Venom=Nhelv
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2023, NullNoname
+ * Copyright (c) 2021-2024, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *

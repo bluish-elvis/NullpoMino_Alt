@@ -144,6 +144,7 @@
  <entry key="Move_ShiftLock">Prevent DAS movement..<drop key is lifted</entry>
 
  <!--PieceNames-->
+ <entry key="Basic_Reset">Reset</entry>
  <entry key="PieceName0">I</entry>
  <entry key="PieceName1">L</entry>
  <entry key="PieceName2">O</entry>

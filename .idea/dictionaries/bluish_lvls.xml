@@ -4,28 +4,43 @@
       <w>Nhelv</w>
       <w>atmark</w>
       <w>bedatadriven</w>
+      <w>blockskin</w>
       <w>burbruee</w>
       <w>decceleration</w>
+      <w>defaultrule</w>
+      <w>deltatris</w>
       <w>delvalle</w>
       <w>disp</w>
+      <w>dtet</w>
       <w>hanabi</w>
       <w>harddrop</w>
+      <w>ibxm</w>
       <w>johnwchadwick</w>
       <w>kitaru</w>
       <w>koelle</w>
+      <w>liblwjgl</w>
       <w>linefall</w>
       <w>lockflash</w>
       <w>lockreset</w>
       <w>migowski</w>
+      <w>modedesc</w>
+      <w>modepile</w>
+      <w>netobserver</w>
       <w>nightmareci</w>
       <w>noloop</w>
       <w>nullpo</w>
       <w>nullpomino</w>
+      <w>nullpomodshit</w>
       <w>ojama</w>
+      <w>orbis</w>
       <w>oshisaure</w>
       <w>piececolor</w>
       <w>pieceoffset</w>
       <w>pilafian</w>
+      <w>puyo</w>
+      <w>rulefile</w>
+      <w>rulename</w>
+      <w>sdljava</w>
       <w>sesalamander</w>
       <w>softdrop</w>
       <w>spirale</w>
@@ -33,6 +48,7 @@
       <w>texmaster</w>
       <w>wallkick</w>
       <w>xlro</w>
+      <w>zeroxfc</w>
       <w>zircean</w>
     </words>
   </dictionary>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023, NullNoname
+ * Copyright (c) 2010-2024, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -28,7 +28,6 @@
  */
 package mu.nu.nullpo.game.component
 
-import java.io.Serializable
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.primaryConstructor
 

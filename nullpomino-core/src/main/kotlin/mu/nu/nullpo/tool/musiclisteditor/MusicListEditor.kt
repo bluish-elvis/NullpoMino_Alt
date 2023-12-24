@@ -60,7 +60,7 @@ class MusicListEditor:JFrame(), ActionListener {
 	private var tabPane:JTabbedPane = JTabbedPane()
 
 	/** 音楽のFilename用テキストボックス */
-	private var txtfldMusicFileNames:Array<JTextField> = emptyArray()
+	private var txtFldMusicFileNames:Array<JTextField> = emptyArray()
 
 	/** ループなし check ボックス */
 	private var chkboxNoLoop:Array<JCheckBox> = emptyArray()
@@ -127,7 +127,7 @@ class MusicListEditor:JFrame(), ActionListener {
 				alignmentY = Component.TOP_ALIGNMENT
 			}
 		}
-		txtfldMusicFileNames = Array(num) {JTextField(45)}
+		txtFldMusicFileNames = Array(num) {JTextField(45)}
 		chkboxNoLoop = Array(num) {JCheckBox()}
 		//TODO:Tab : BGM. : Category
 		BGM.values.forEachIndexed { i, tr ->
@@ -148,9 +148,9 @@ class MusicListEditor:JFrame(), ActionListener {
 					val pMusicTempTexts = JPanel(BorderLayout())
 					pMusicTemp.add(pMusicTempTexts, BorderLayout.EAST)
 
-					txtfldMusicFileNames[i].componentPopupMenu = TextFieldPopupMenu(txtfldMusicFileNames[i])
-					txtfldMusicFileNames[i].text = propMusic.getProperty("music.filename.$name", "")
-					pMusicTempTexts.add(txtfldMusicFileNames[i], BorderLayout.CENTER)
+					txtFldMusicFileNames[i].componentPopupMenu = TextFieldPopupMenu(txtFldMusicFileNames[i])
+					txtFldMusicFileNames[i].text = propMusic.getProperty("music.filename.$name", "")
+					pMusicTempTexts.add(txtFldMusicFileNames[i], BorderLayout.CENTER)
 
 					val pMusicTempTextsButtons = JPanel(BorderLayout())
 					pMusicTempTexts.add(pMusicTempTextsButtons, BorderLayout.EAST)
@@ -256,7 +256,7 @@ class MusicListEditor:JFrame(), ActionListener {
 			val currentDirectory = System.getProperty("user.dir")
 
 			//  default ディレクトリを設定
-			var defaultDirectory = txtfldMusicFileNames[number].text
+			var defaultDirectory = txtFldMusicFileNames[number].text
 			if(defaultDirectory.isEmpty()) defaultDirectory = "$currentDirectory/res/bgm"
 
 			val file = File(defaultDirectory)
@@ -277,7 +277,7 @@ class MusicListEditor:JFrame(), ActionListener {
 			// ファイル選択ダイアログを表示
 			if(fileChooser?.showOpenDialog(this)==JFileChooser.APPROVE_OPTION) {
 				val strPath = fileChooser!!.selectedFile.path
-				txtfldMusicFileNames[number].text = strPath
+				txtFldMusicFileNames[number].text = strPath
 			}
 		} else if(e.actionCommand.startsWith("Clear")) {
 			var number = 0
@@ -289,10 +289,10 @@ class MusicListEditor:JFrame(), ActionListener {
 				return
 			}
 
-			txtfldMusicFileNames[number].text = ""
+			txtFldMusicFileNames[number].text = ""
 		} else if(e.actionCommand=="OK") {
 			val prop = CustomProperties()
-			txtfldMusicFileNames.forEachIndexed {i, it ->
+			txtFldMusicFileNames.forEachIndexed {i, it ->
 				val track = BGM.values[i+1].let {"${it.name}.${it.idx}"}
 				prop.setProperty("music.filename.$track", it.text)
 				prop.setProperty("music.noloop.$track", chkboxNoLoop[i].isSelected)

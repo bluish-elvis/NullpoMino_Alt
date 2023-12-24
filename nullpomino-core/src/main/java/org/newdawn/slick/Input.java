@@ -403,9 +403,9 @@ public class Input{
 	public void addPrimaryListener(InputListener listener){
 		removeListener(listener);
 
-		keyListeners.add(0,listener);
-		mouseListeners.add(0,listener);
-		controllerListeners.add(0,listener);
+		keyListeners.addFirst(listener);
+		mouseListeners.addFirst(listener);
+		controllerListeners.addFirst(listener);
 
 		allListeners.add(listener);
 	}

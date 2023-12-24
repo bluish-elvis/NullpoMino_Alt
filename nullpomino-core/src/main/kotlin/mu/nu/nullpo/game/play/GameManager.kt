@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023, NullNoname
+ * Copyright (c) 2010-2024, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -187,7 +187,7 @@ class GameManager(
 		/** Major version */
 		const val versionMajor = 7.70f
 		/** Minor version */
-		const val versionMinor = 2023
+		const val versionMinor = 2024
 		/** Development-build flag (false:Release-build true:Dev-build) */
 		const val isDevBuild = true
 		/** Get minor version (For compatibility with old replays)

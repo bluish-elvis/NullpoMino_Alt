@@ -1,0 +1,7 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE terms SYSTEM "https://resources.jetbrains.com/writerside/1.0/glossary.dtd">
+<terms>
+ <term name="ARE">ピース固定後、またはライン消去時間後、次のピースまでの出現時間</term>
+ <term name="DAS">左右移動キーを押下してから高速移動し始めるまでの長押し時間</term>
+ <term name="tooltip">Tooltips show a definition when a user hovers over a term.</term>
+</terms>

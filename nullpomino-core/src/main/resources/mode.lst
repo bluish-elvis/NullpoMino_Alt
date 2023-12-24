@@ -25,6 +25,7 @@ mu.nu.nullpo.game.subsystem.mode.GrandZ
 mu.nu.nullpo.game.subsystem.mode.GrandRoads
 mu.nu.nullpo.game.subsystem.mode.Practice
 mu.nu.nullpo.game.subsystem.mode.GrandPuzzle
+mu.nu.nullpo.game.subsystem.mode.GrandOrders
 mu.nu.nullpo.game.subsystem.mode.VSBattle
 mu.nu.nullpo.game.subsystem.mode.ToolMapEditor
 mu.nu.nullpo.game.subsystem.mode.NetVSBattle

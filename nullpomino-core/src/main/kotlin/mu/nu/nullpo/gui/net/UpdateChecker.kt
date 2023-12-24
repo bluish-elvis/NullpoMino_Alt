@@ -30,10 +30,8 @@ package mu.nu.nullpo.gui.net
 
 import kotlinx.serialization.Serializable
 import org.apache.logging.log4j.LogManager
-import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.URI
-import java.net.URL
 import java.util.LinkedList
 import java.util.regex.Pattern
 

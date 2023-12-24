@@ -65,16 +65,16 @@ class Sequencer:JFrame(), ActionListener {
 
 	//----------------------------------------------------------------------
 	/** Rand-seed textfield */
-	private val txtfldSeed:JTextField = JTextField()
+	private val txtFldSeed:JTextField = JTextField()
 
 	/** Sequence Length textfield */
-	private val txtfldSeqLength:JTextField = JTextField()
+	private val txtFldSeqLength:JTextField = JTextField()
 
 	/** Sequence Section Size textfield */
-	private val txtfldSeqSize:JTextField = JTextField()
+	private val txtFldSeqSize:JTextField = JTextField()
 
 	/** Sequence Offset textfield */
-	private val txtfldSeqOffset:JTextField = JTextField()
+	private val txtFldSeqOffset:JTextField = JTextField()
 
 	/** Randomizer combobox */
 	private var comboboxRandomizer:JComboBox<*>? = null
@@ -225,7 +225,7 @@ class Sequencer:JFrame(), ActionListener {
 		JPanel().apply {
 			contentPane.add(this)
 			add(JLabel(getUIText("Option_Seed")))
-			add(txtfldSeed.apply {
+			add(txtFldSeed.apply {
 				text = "0"
 				columns = 15
 			})
@@ -235,7 +235,7 @@ class Sequencer:JFrame(), ActionListener {
 		JPanel().apply {
 			contentPane.add(this)
 			add(JLabel(getUIText("Option_SequenceLength")))
-			add(txtfldSeqLength.apply {
+			add(txtFldSeqLength.apply {
 				text = "100"
 				columns = 6
 			})
@@ -244,7 +244,7 @@ class Sequencer:JFrame(), ActionListener {
 		JPanel().apply {
 			contentPane.add(this)
 			add(JLabel(getUIText("Option_SequenceSize")))
-			add(txtfldSeqSize.apply {
+			add(txtFldSeqSize.apply {
 				text = "7"
 				columns = 3
 			})
@@ -253,7 +253,7 @@ class Sequencer:JFrame(), ActionListener {
 		JPanel().apply {
 			contentPane.add(this)
 			add(JLabel(getUIText("Option_SequenceOffset")))
-			add(txtfldSeqOffset.apply {
+			add(txtFldSeqOffset.apply {
 				text = "0"
 				columns = 6
 			})
@@ -329,7 +329,7 @@ class Sequencer:JFrame(), ActionListener {
 	}
 
 	private fun readReplayToUI(prop:CustomProperties, playerID:Int) {
-		txtfldSeed.text = prop.getProperty("$playerID.replay.randSeed", 16L).toString()
+		txtFldSeed.text = prop.getProperty("$playerID.replay.randSeed", 16L).toString()
 		comboboxRandomizer?.selectedItem = createShortString(prop.getProperty("$playerID.ruleOpt.strRandomizer", null))
 	}
 
@@ -380,9 +380,9 @@ class Sequencer:JFrame(), ActionListener {
 		try {
 			randomizerClass = Class.forName(name)
 			randomizerObject = randomizerClass.getDeclaredConstructor().newInstance() as Randomizer
-			randomizerObject.setState(nextPieceEnable, getLongTextField(txtfldSeed))
-			repeat(getIntTextField(txtfldSeqOffset)) {randomizerObject.next()}
-			sequence = IntArray(getIntTextField(txtfldSeqLength)) {randomizerObject.next()}
+			randomizerObject.setState(nextPieceEnable, getLongTextField(txtFldSeed))
+			repeat(getIntTextField(txtFldSeqOffset)) {randomizerObject.next()}
+			sequence = IntArray(getIntTextField(txtFldSeqLength)) {randomizerObject.next()}
 		} catch(e:Exception) {
 			log.error("Randomizer class $name load failed", e)
 		}
@@ -390,7 +390,7 @@ class Sequencer:JFrame(), ActionListener {
 
 	fun display() {
 		if(txtareaSequence.text!="") txtareaSequence.text = ""
-		val ct = getIntTextField(txtfldSeqSize)
+		val ct = getIntTextField(txtFldSeqSize)
 		for(i in 1..sequence.size) {
 			txtareaSequence.append(getUIText("PieceName${sequence[i-1]}"))
 			if(i%(ct*5)==0) txtareaSequence.append("\n")
@@ -399,10 +399,10 @@ class Sequencer:JFrame(), ActionListener {
 	}
 
 	fun reset() {
-		txtfldSeed.text = "0"
-		txtfldSeqLength.text = "100"
-		txtfldSeqSize.text = "7"
-		txtfldSeqOffset.text = "0"
+		txtFldSeed.text = "0"
+		txtFldSeqLength.text = "100"
+		txtFldSeqSize.text = "7"
+		txtFldSeqOffset.text = "0"
 		comboboxRandomizer?.selectedIndex = 0
 		txtareaSequence.text = ""
 		sequence = IntArray(0)

@@ -29,10 +29,8 @@
 package mu.nu.nullpo.game.component
 
 import kotlinx.serialization.Serializable
+import mu.nu.nullpo.game.component.Piece.Companion.DIRECTION_COUNT
 import mu.nu.nullpo.util.CustomProperties
-import mu.nu.nullpo.util.GeneralUtil
-import java.io.FileInputStream
-import java.util.zip.GZIPInputStream
 
 /** ゲームルールの設定 data */
 @Serializable
@@ -47,222 +45,213 @@ data class RuleOptions(
 	/** Game Style */
 	var style:Int = 0,
 
-	var pieceOffset:Int = 0,
+	var pieceOffset:Int,
 	/** Blockピースの回転パターンのcoordinate補正 (11ピース×4Direction) */
-	var pieceOffsetX:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
-	var pieceOffsetY:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
+	var pieceOffsetX:List<List<Int>>,
+	var pieceOffsetY:List<List<Int>>,
 	/** Blockピースの出現X-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnX:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
+	var pieceSpawnX:List<MutableList<Int>>,
 	/** Blockピースの出現Y-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnY:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
+	var pieceSpawnY:List<MutableList<Int>>,
 	/** BlockピースのBig時の出現X-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnXBig:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
+	var pieceSpawnXBig:List<MutableList<Int>>,
 	/** BlockピースのBig時の出現Y-coordinate補正 (11ピース×4Direction) */
-	var pieceSpawnYBig:List<MutableList<Int>> = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}},
+	var pieceSpawnYBig:List<MutableList<Int>>,
 
 	/** Blockピース cint */
-	var pieceColor:MutableList<Int> = MutableList(Piece.PIECE_COUNT) {Block.COLOR_WHITE},
+	var pieceColor:List<Int>,
 	/** Blockピースの初期Direction */
-	var pieceDefaultDirection:MutableList<Int> = MutableList(Piece.PIECE_COUNT) {0},
+	var pieceDefaultDirection:List<Int>,
 
 	/** fieldより上から出現 */
-	var pieceEnterAboveField:Boolean = false,
+	var pieceEnterAboveField:Boolean,
 	/** 出現予定地が埋まっているときにY-coordinateを上にずらすMaximum count */
-	var pieceEnterMaxDistanceY:Int = 0,
+	var pieceEnterMaxDistanceY:Int,
 
 	/** fieldの幅 */
-	var fieldWidth:Int = 0,
+	var fieldWidth:Int,
 	/** Field height */
-	var fieldHeight:Int = 0,
+	var fieldHeight:Int,
 	/** fieldより上の見えない部分の高さ */
-	var fieldHiddenHeight:Int = 0,
+	var fieldHiddenHeight:Int,
 	/** fieldの天井の有無 */
-	var fieldCeiling:Boolean = false,
+	var fieldCeiling:Boolean,
 	/** field枠内に置けなかったら死ぬかどうか */
-	var fieldLockoutDeath:Boolean = false,
+	var fieldLockoutDeath:Boolean,
 	/** field枠外に１マスでもはみ出しただけで死ぬかどうか
 	 * falseだと１マスでも枠内ならばセーフ */
-	var fieldPartialLockoutDeath:Boolean = false,
+	var fieldPartialLockoutDeath:Boolean,
 
 	/** NEXTのcount */
-	var nextDisplay:Int = 0,
+	var nextDisplay:Int,
 
 	/** ホールド使用可否 */
-	var holdEnable:Boolean = false,
+	var holdEnable:Boolean,
 	/** 先行ホールド */
-	var holdInitial:Boolean = false,
+	var holdInitial:Boolean,
 	/** 先行ホールド連続使用不可 */
-	var holdInitialLimit:Boolean = false,
+	var holdInitialLimit:Boolean,
 	/** ホールドを使ったときにBlockピースの向きを初期状態に戻す */
-	var holdResetDirection:Boolean = false,
+	var holdResetDirection:Boolean,
 	/** ゲーム毎にホールドできる総数 (-1:無制限) */
-	var holdLimit:Int = 0,
+	var holdLimit:Int,
 
 	/** Hard drop使用可否 */
-	var harddropEnable:Boolean = false,
+	var harddropEnable:Boolean,
 	/** Hard drop即固定 */
-	var harddropLock:Boolean = false,
+	var harddropLock:Boolean,
 	/** Hard drop連続使用不可 */
-	var harddropLimit:Boolean = false,
+	var harddropLimit:Boolean,
 
 	/** Soft drop使用可否 */
-	var softdropEnable:Boolean = false,
+	var softdropEnable:Boolean,
 	/** Soft drop即固定 */
-	var softdropLock:Boolean = false,
+	var softdropLock:Boolean,
 	/** Soft drop連続使用不可 */
-	var softdropLimit:Boolean = false,
+	var softdropLimit:Boolean,
 	/** 接地状態でSoft dropすると即固定 (falseだと20Gのみ即固定) */
-	var softdropSurfaceLock:Boolean = false,
+	var softdropSurfaceLock:Boolean,
 	/** Soft drop速度 (1f=1G, .5f=0.5G) */
-	var softdropSpeed:Float = 0f,
+	var softdropSpeed:Float,
 	/** Soft drop速度を通常速度×n倍にする */
-	var softdropMultiplyNativeSpeed:Boolean = false,
+	var softdropMultiplyNativeSpeed:Boolean,
 	/** Soft drop速度を通常速度に影響させない */
-	var softdropGravitySpeedLimit:Boolean = false,
+	var softdropGravitySpeedLimit:Boolean,
 
 	/** 先行回転 */
-	var spinInitial:Boolean = false,
+	var spinInitial:Boolean,
 	/** 先行回転連続使用不可 */
-	var spinInitialLimit:Boolean = false,
+	var spinInitialLimit:Boolean,
 	/** Wallkick */
-	var spinWallkick:Boolean = false,
+	var spinWallkick:Boolean,
 	/** 先行回転でもWallkickする */
-	var spinInitialWallkick:Boolean = false,
+	var spinInitialWallkick:Boolean,
 	/** 上DirectionへのWallkickができる count (-1:無限) */
-	var spinWallkickMaxRise:Int = 0,
+	var spinWallkickMaxRise:Int,
 
 	/** TrueにするとA,Cボタンを右回転にする */
-	var spinToRight:Boolean = false,
+	var spinToRight:Boolean,
 	/** Bボタンでの回転を逆方向にする (falseならA,Cボタンと同じ) */
-	var spinReverseKey:Boolean = false,
+	var spinReverseKey:Boolean,
 	/** Eボタンを180 spinにする (falseならA,Cボタンと同じ) */
-	var spinDoubleKey:Boolean = false,
+	var spinDoubleKey:Boolean,
 	/** 回転失敗時に押していた回転ボタンを押し続けると、回転可能な移動時に先行回転する */
-	var spinHoldBuffer:Boolean = true,
+	var spinHoldBuffer:Boolean,
 
 	/** 落下で固定猶予リセット */
-	var lockResetFall:Boolean = false,
+	var lockResetFall:Boolean,
 	/** 移動で固定猶予リセット */
-	var lockResetMove:Boolean = false,
+	var lockResetMove:Boolean,
 	/** 回転で固定猶予リセット */
-	var lockResetSpin:Boolean = false,
+	var lockResetSpin:Boolean,
 	/** 壁蹴りで固定猶予リセット */
-	var lockResetWallkick:Boolean = false,
+	var lockResetWallkick:Boolean,
 	/** 横移動による固定猶予リセットの回数制限 (-1:無限) */
-	var lockResetMoveLimit:Int = 0,
+	var lockResetMoveLimit:Int,
 	/** 回転による固定猶予リセットの回数制限 (-1:無限) */
-	var lockResetSpinLimit:Int = 0,
-	/** trueにすると回転の回数制限を横移動と共有する (true: lockResetMoveLimitのみ使用) */
-	var lockResetLimitShareCount:Boolean = false,
+	var lockResetSpinLimit:Int,
+	/** trueにすると回転の回数制限を横移動と共有する (lockResetMoveLimitのみ使用) */
+	var lockResetLimitShareCount:Boolean,
 	/** 固定猶予リセットの回数を使い切った場合の処理
 	 * LOCKRESET_LIMIT_OVER_NoReset = 0 : 固定猶予をリセットしないようにする
 	 * LOCKRESET_LIMIT_OVER_INSTANT = 1 : 即固定する
 	 * LOCKRESET_LIMIT_OVER_NoKick = 2 : Wallkickしないようにする */
-	var lockResetLimitOver:Int = 0,
+	var lockResetLimitOver:Int,
 
 	/** 固定した瞬間光る frame count */
-	var lockFlash:Int = 0,
+	var lockFlash:Int,
 	/** Blockが光る専用 frame を入れる */
-	var lockFlashOnlyFrame:Boolean = false,
+	var lockFlashOnlyFrame:Boolean,
 	/** Line clear前にBlockが光る frame を入れる */
-	var lockFlashBeforeLineClear:Boolean = false,
+	var lockFlashBeforeLineClear:Boolean,
 
 	/** ARE cancel on move */
-	var areCancelMove:Boolean = false,
+	var areCancelMove:Boolean,
 	/** ARE cancel on spin */
-	var areCancelSpin:Boolean = false,
+	var areCancelSpin:Boolean,
 	/** ARE cancel on hold */
-	var areCancelHold:Boolean = false,
+	var areCancelHold:Boolean,
 
 	/** 最小ARE (-1:指定なし) */
-	var minARE:Int = 0,
+	var minARE:Int = -1,
 	/** 最大ARE (-1:指定なし) */
-	var maxARE:Int = 0,
+	var maxARE:Int = -1,
 
 	/** 最小ARE after line clear (-1:指定なし) */
-	var minARELine:Int = 0,
+	var minARELine:Int = -1,
 	/** 最大ARE after line clear (-1:指定なし) */
-	var maxARELine:Int = 0,
+	var maxARELine:Int = -1,
 
 	/** 最小Line clear time (-1:指定なし) */
-	var minLineDelay:Int = 0,
+	var minLineDelay:Int = -1,
 	/** 最大Line clear time (-1:指定なし) */
-	var maxLineDelay:Int = 0,
+	var maxLineDelay:Int = -1,
 
 	/** 最小固定 time (-1:指定なし) */
-	var minLockDelay:Int = 0,
+	var minLockDelay:Int = -1,
 	/** 最大固定 time (-1:指定なし) */
-	var maxLockDelay:Int = 0,
+	var maxLockDelay:Int = -1,
 
 	/** 最小横溜め time (-1:指定なし) */
-	var minDAS:Int = 0,
+	var minDAS:Int = -1,
 	/** 最大横溜め time (-1:指定なし) */
-	var maxDAS:Int = 0,
+	var maxDAS:Int = -1,
 	/** 横移動間隔 */
-	var dasARR:Int = 0,
-	var shiftLockEnable:Boolean = false,
+	var dasARR:Int,
+	var shiftLockEnable:Boolean,
 	/** Ready画面で横溜め可能 */
-	var dasInReady:Boolean = false,
+	var dasInReady:Boolean = true,
 	/** 最初の frame で横溜め可能 */
-	var dasInMoveFirstFrame:Boolean = false,
+	var dasInMoveFirstFrame:Boolean = true,
 	/** Blockが光った瞬間に横溜め可能 */
-	var dasInLockFlash:Boolean = false,
+	var dasInLockFlash:Boolean = true,
 	/** Line clear中に横溜め可能 */
-	var dasInLineClear:Boolean = false,
+	var dasInLineClear:Boolean = true,
 	/** ARE中に横溜め可能 */
-	var dasInARE:Boolean = false,
+	var dasInARE:Boolean = true,
 	/** AREの最後の frame で横溜め可能 */
-	var dasInARELastFrame:Boolean = false,
+	var dasInARELastFrame:Boolean = true,
 	/** Ending突入画面で横溜め可能 */
-	var dasInEndingStart:Boolean = false,
+	var dasInEndingStart:Boolean = true,
 	/** Charge DAS on blocked move */
-	var dasChargeOnBlockedMove:Boolean = false,
+	var dasChargeOnBlockedMove:Boolean,
 	/** Leave DAS charge alone when left/right are not held
 	 *  -- useful with dasRedirectInDelay*/
-	var dasStoreChargeOnNeutral:Boolean = false,
+	var dasStoreChargeOnNeutral:Boolean,
 	/** Allow direction changes during ARE delay without zeroing DAS charge */
-	var dasRedirectInDelay:Boolean = false,
+	var dasRedirectInDelay:Boolean,
 
 	/** 最初の frame で移動可能 */
-	var moveFirstFrame:Boolean = false,
+	var moveFirstFrame:Boolean,
 	/** 斜め移動 */
-	var moveDiagonal:Boolean = false,
+	var moveDiagonal:Boolean,
 	/** 上下同時押し許可 */
-	var moveUpAndDown:Boolean = false,
+	var moveUpAndDown:Boolean,
 	/** 左右同時押し許可 */
-	var moveLeftAndRightAllow:Boolean = false,
+	var moveLeftAndRightAllow:Boolean,
 	/** 左右同時押ししたときに前の frame の input Directionを優先する (左を押しながら右を押すと右を無視して左を優先) */
-	var moveLeftAndRightUsePreviousInput:Boolean = false,
+	var moveLeftAndRightUsePreviousInput:Boolean,
 
 	/** Line clear後に上のBlockが1段ずつ落ちるアニメーションを表示 */
-	var lineFallAnim:Boolean = false,
+	var lineFallAnim:Boolean,
 	/** Line delay cancel on move */
-	var lineCancelMove:Boolean = false,
+	var lineCancelMove:Boolean,
 	/** Line delay cancel on spin */
-	var lineCancelSpin:Boolean = false,
+	var lineCancelSpin:Boolean,
 	/** Line delay cancel on hold */
-	var lineCancelHold:Boolean = false,
+	var lineCancelHold:Boolean,
 
 	/** Blockの絵柄 */
-	var skin:Int = 0,
+	var skin:Int,
 
 	/** ghost の有無 (falseならMode 側でghost を is enabledにしていても非表示) */
-	var ghost:Boolean = false,
+	var ghost:Boolean,
 ) {
 
 	/** Constructor */
 	constructor():this(
 		"", "", "", 0, PIECEOFFSET_NONE, emptyDirs, emptyDirs, emptyDirs, emptyDirs, emptyDirs, emptyDirs,
-		MutableList(Piece.PIECE_COUNT) {
-			when(it) {
-				Piece.PIECE_I1 -> Block.COLOR_PURPLE
-				Piece.PIECE_I2 -> Block.COLOR_BLUE
-				Piece.PIECE_I3 -> Block.COLOR_GREEN
-				Piece.PIECE_L3 -> Block.COLOR_ORANGE
-				else -> Block.COLOR_WHITE
-			}
-		},
-		MutableList(Piece.PIECE_COUNT) {0},
+		PieceColor.ARS.array, List(Piece.PIECE_COUNT) {0},
 		true, 0, Field.DEFAULT_WIDTH, Field.DEFAULT_HEIGHT, Field.DEFAULT_HIDDEN_HEIGHT, false, true, false,
 		3, true, true, false, true, -1,
 		true, true, true,
@@ -315,20 +304,16 @@ data class RuleOptions(
 
 		style = 0
 		pieceOffset = PIECEOFFSET_NONE
-		pieceOffsetX.forEach {it.fill(0)}
-		pieceOffsetY.forEach {it.fill(0)}
-		pieceSpawnX.forEach {it.fill(0)}
-		pieceSpawnY.forEach {it.fill(0)}
-		pieceSpawnXBig.forEach {it.fill(0)}
-		pieceSpawnYBig.forEach {it.fill(0)}
+		pieceOffsetX = emptyDirs
+		pieceOffsetY = emptyDirs
+		pieceSpawnX = emptyDirs
+		pieceSpawnY = emptyDirs
+		pieceSpawnXBig = emptyDirs
+		pieceSpawnYBig = emptyDirs
 
-		pieceColor.fill(Block.COLOR_WHITE)
-		pieceColor[Piece.PIECE_I1] = Block.COLOR_PURPLE
-		pieceColor[Piece.PIECE_I2] = Block.COLOR_BLUE
-		pieceColor[Piece.PIECE_I3] = Block.COLOR_GREEN
-		pieceColor[Piece.PIECE_L3] = Block.COLOR_ORANGE
+		pieceColor = PieceColor.ARS.array
 
-		pieceDefaultDirection.fill(0)
+		pieceDefaultDirection = List(Piece.PIECE_COUNT) {0}
 		pieceEnterAboveField = true
 		pieceEnterMaxDistanceY = 0
 
@@ -557,7 +542,7 @@ data class RuleOptions(
 		if(pieceOffset!=r.pieceOffset) return false
 		for(i in 0..<Piece.PIECE_COUNT) {
 			if(pieceOffset==PIECEOFFSET_ASSIGN)
-				for(j in 0..<Piece.DIRECTION_COUNT) {
+				for(j in 0..<DIRECTION_COUNT) {
 					if(pieceOffsetX[i][j]!=r.pieceOffsetX[i][j]) return false
 					if(pieceOffsetY[i][j]!=r.pieceOffsetY[i][j]) return false
 					if(pieceSpawnX[i][j]!=r.pieceSpawnX[i][j]) return false
@@ -669,7 +654,7 @@ data class RuleOptions(
 	 * @param p プロパティセット
 	 * @param id Player IDまたはPresetID
 	 */
-	fun writeProperty(p:CustomProperties, id:Int) {
+	fun writeProperty(p:CustomProperties, id:Int = 0) {
 		p.setProperty("$id.ruleOpt.strRuleName", strRuleName)
 		p.setProperty("$id.ruleOpt.strWallkick", strWallkick)
 		p.setProperty("$id.ruleOpt.strRandomizer", strRandomizer)
@@ -678,15 +663,14 @@ data class RuleOptions(
 		p.setProperty("$id.ruleOpt.pieceOffset", pieceOffset)
 
 		for(i in 0..<Piece.PIECE_COUNT) {
-			if(pieceOffset==PIECEOFFSET_ASSIGN)
-				for(j in 0..<Piece.DIRECTION_COUNT) {
-					p.setProperty("$id.ruleOpt.pieceOffsetX.$i.$j", pieceOffsetX[i][j])
-					p.setProperty("$id.ruleOpt.pieceOffsetY.$i.$j", pieceOffsetY[i][j])
-					p.setProperty("$id.ruleOpt.pieceSpawnX.$i.$j", pieceSpawnX[i][j])
-					p.setProperty("$id.ruleOpt.pieceSpawnY.$i.$j", pieceSpawnY[i][j])
-					p.setProperty("$id.ruleOpt.pieceSpawnXBig.$i.$j", pieceSpawnXBig[i][j])
-					p.setProperty("$id.ruleOpt.pieceSpawnYBig.$i.$j", pieceSpawnYBig[i][j])
-				}
+			for(j in 0..<DIRECTION_COUNT) {
+				p.setProperty("$id.ruleOpt.pieceOffsetX.$i.$j", pieceOffsetX[i][j])
+				p.setProperty("$id.ruleOpt.pieceOffsetY.$i.$j", pieceOffsetY[i][j])
+				p.setProperty("$id.ruleOpt.pieceSpawnX.$i.$j", pieceSpawnX[i][j])
+				p.setProperty("$id.ruleOpt.pieceSpawnY.$i.$j", pieceSpawnY[i][j])
+				p.setProperty("$id.ruleOpt.pieceSpawnXBig.$i.$j", pieceSpawnXBig[i][j])
+				p.setProperty("$id.ruleOpt.pieceSpawnYBig.$i.$j", pieceSpawnYBig[i][j])
+			}
 			p.setProperty("$id.ruleOpt.pieceColor.$i", pieceColor[i])
 			p.setProperty("$id.ruleOpt.pieceDefaultDirection.$i", pieceDefaultDirection[i])
 		}
@@ -792,51 +776,46 @@ data class RuleOptions(
 	 * @param id Player IDまたはPresetID
 	 */
 	@JvmOverloads
-	fun readProperty(p:CustomProperties, id:Int, offset:Boolean = false) {
+	fun readProperty(p:CustomProperties, id:Int = 0) {
 		strRuleName = p.getProperty("$id.ruleOpt.strRuleName", strRuleName)
 		strWallkick = p.getProperty("$id.ruleOpt.strWallkick", strWallkick)
 		strRandomizer = p.getProperty("$id.ruleOpt.strRandomizer", strRandomizer)
 
 		style = p.getProperty("$id.ruleOpt.style", 0)
-		pieceOffset = p.getProperty("$id.ruleOpt.pieceOffset", PIECEOFFSET_NONE)
-		for(i in 0..<Piece.PIECE_COUNT) {
-			for(j in 0..<Piece.DIRECTION_COUNT)
-				when(if(offset) PIECEOFFSET_ASSIGN else pieceOffset) {
-					PIECEOFFSET_NONE -> {
-						pieceSpawnYBig[i][j] = 0
-						pieceSpawnXBig[i][j] = 0
-						pieceSpawnY[i][j] = 0
-						pieceSpawnX[i][j] = 0
-						pieceOffsetY[i][j] = 0
-						pieceOffsetX[i][j] = 0
-					}
-					PIECEOFFSET_BIASED -> {
-						pieceOffsetX[i][j] = PIECEOFFSET_ARSPRESET[0][i][j]
-						pieceOffsetY[i][j] = PIECEOFFSET_ARSPRESET[1][i][j]
-						pieceSpawnYBig[i][j] = 0
-						pieceSpawnXBig[i][j] = pieceSpawnYBig[i][j]
-						pieceSpawnY[i][j] = pieceSpawnXBig[i][j]
-						pieceSpawnX[i][j] = pieceSpawnY[i][j]
-					}
-					PIECEOFFSET_BOTTOM -> {
-						pieceOffsetY[i][j] = PIECEOFFSET_ARSPRESET[1][i][j]
-						pieceSpawnYBig[i][j] = 0
-						pieceSpawnXBig[i][j] = pieceSpawnYBig[i][j]
-						pieceSpawnY[i][j] = pieceSpawnXBig[i][j]
-						pieceSpawnX[i][j] = pieceSpawnY[i][j]
-					}
-					PIECEOFFSET_ASSIGN -> {
-						pieceOffsetX[i][j] = p.getProperty("$id.ruleOpt.pieceOffsetX.$i.$j", pieceOffsetX[i][j])
-						pieceOffsetY[i][j] = p.getProperty("$id.ruleOpt.pieceOffsetY.$i.$j", pieceOffsetY[i][j])
-						pieceSpawnX[i][j] = p.getProperty("$id.ruleOpt.pieceSpawnX.$i.$j", pieceSpawnX[i][j])
-						pieceSpawnY[i][j] = p.getProperty("$id.ruleOpt.pieceSpawnY.$i.$j", pieceSpawnY[i][j])
-						pieceSpawnXBig[i][j] = p.getProperty("$id.ruleOpt.pieceSpawnXBig.$i.$j", pieceSpawnXBig[i][j])
-						pieceSpawnYBig[i][j] = p.getProperty("$id.ruleOpt.pieceSpawnYBig.$i.$j", pieceSpawnYBig[i][j])
-					}
-				}
+		pieceOffset = p.getProperty("$id.ruleOpt.pieceOffset", PIECEOFFSET_ASSIGN)
+		pieceOffsetX = List(Piece.PIECE_COUNT) {x ->
+			MutableList(DIRECTION_COUNT) {y ->
+				p.getProperty(
+					"$id.ruleOpt.pieceOffsetX.$x.$y",
+					if(pieceOffset==PIECEOFFSET_BIASED) PIECEOFFSET_ARSPRESET[0][x][y] else 0
+				)
+			}
+		}
+		pieceOffsetY = List(Piece.PIECE_COUNT) {x ->
+			MutableList(DIRECTION_COUNT) {y ->
+				p.getProperty(
+					"$id.ruleOpt.pieceOffsetY.$x.$y",
+					if(pieceOffset==PIECEOFFSET_BIASED||pieceOffset==PIECEOFFSET_BOTTOM)
+						PIECEOFFSET_ARSPRESET[1][x][y] else 0
+				)
+			}
+		}
+		if(pieceOffsetX==emptyDirs&&pieceOffsetY==emptyDirs)
+			pieceOffset = PIECEOFFSET_NONE
+		if(pieceOffsetY==PIECEOFFSET_ARSPRESET[1])
+			pieceOffset = if(pieceOffsetX==PIECEOFFSET_ARSPRESET[0]&&pieceSpawnXBig==PIECESPAWNXBIG_ARSPRESET)
+				PIECEOFFSET_BOTTOM else PIECEOFFSET_BIASED
 
-			pieceColor[i] = p.getProperty("$id.ruleOpt.pieceColor.$i", pieceColor[i])
-			pieceDefaultDirection[i] = p.getProperty("$id.ruleOpt.pieceDefaultDirection.$i", pieceDefaultDirection[i])
+		pieceColor = List(Piece.PIECE_COUNT) {p.getProperty("$id.ruleOpt.pieceColor.$it", pieceColor[it])}
+		pieceDefaultDirection =
+			List(Piece.PIECE_COUNT) {p.getProperty("$id.ruleOpt.pieceDefaultDirection.$it", pieceDefaultDirection[it])}
+		for(x in 0..<Piece.PIECE_COUNT) {
+			for(y in 0..<DIRECTION_COUNT) {
+				pieceSpawnX[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnX.$x.$y", 0)
+				pieceSpawnY[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnY.$x.$y", 0)
+				pieceSpawnXBig[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnXBig.$x.$y", 0)
+				pieceSpawnYBig[x][y] = p.getProperty("$id.ruleOpt.pieceSpawnYBig.$x.$y", 0)
+			}
 		}
 		pieceEnterAboveField = p.getProperty("$id.ruleOpt.pieceEnterAboveField", pieceEnterAboveField)
 		pieceEnterMaxDistanceY = p.getProperty("$id.ruleOpt.pieceEnterMaxDistanceY", pieceEnterMaxDistanceY)
@@ -948,7 +927,7 @@ data class RuleOptions(
 
 		/** Blockピースのcolorパターン */
 		enum class PieceColor(val array:List<Int>) {
-			ARS(listOf(1, 2, 3, 4, 5, 6, 7, 5, 4, 0, 0)), SRS(listOf(5, 2, 3, 1, 7, 6, 4, 1, 4, 0, 0));
+			ARS(listOf(2, 3, 4, 5, 6, 7, 8, 8, 7, 5, 3)), SRS(listOf(6, 3, 4, 2, 8, 7, 5, 8, 7, 5, 3));
 		}
 
 		const val PIECECOLOR_ARS = 0
@@ -987,8 +966,21 @@ data class RuleOptions(
 				listOf(0, 0, 0, 0)
 			)
 		)
+		val PIECESPAWNXBIG_ARSPRESET = listOf(//[piece][direction]
+			listOf(0, 0, 0, 0),
+			listOf(-1, -1, -1, -1),
+			listOf(0, 0, 0, 0),
+			listOf(-1, -1, -1, -1),
+			listOf(-1, -1, -1, -1),
+			listOf(-1, -1, -1, -1),
+			listOf(-1, -1, -1, -1),
+			listOf(-1, -1, -1, -1),
+			listOf(-1, -1, -1, -1),
+			listOf(-1, -1, -1, -1),
+			listOf(-1, -1, -1, -1)
+		)
 
-		val PIECEDIRECTION_ARSPRESET = listOf(0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0)
-		private val emptyDirs = List(Piece.PIECE_COUNT) {MutableList(Piece.DIRECTION_COUNT) {0}}
+		val PIECEDIRECTION_ARSPRESET get() = listOf(0, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0)
+		private val emptyDirs get() = List(Piece.PIECE_COUNT) {MutableList(DIRECTION_COUNT) {0}}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023, NullNoname
+ * Copyright (c) 2010-2024, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -28,7 +28,7 @@
  */
 package mu.nu.nullpo.game.play
 
-import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.component.BGMStatus.BGM
 import mu.nu.nullpo.game.component.Block
@@ -1306,7 +1306,7 @@ class GameEngine(
 		owner.replayProp.setProperty("version.core.dev", versionIsDevBuild)
 
 		owner.replayProp.setProperty("$playerID.replay.randSeed", randSeed)
-
+		owner.replayProp.setProperty("$playerID.rule",Json.encodeToString(ruleOpt))
 		replayData.writeProperty(owner.replayProp, playerID, replayTimer)
 		statistics.writeProperty(owner.replayProp, playerID)
 		ruleOpt.writeProperty(owner.replayProp, playerID)

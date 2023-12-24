@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023, NullNoname
+ * Copyright (c) 2010-2024, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -54,10 +54,10 @@ class RuleEditorFX:Application(null) {
 	/* 基本設定パネル */
 
 	/** Rule name */
-	private val txtfldRuleName:TextField = TextField()
+	private val txtFldRuleName:TextField = TextField()
 
 	/** NEXT表示countのテキストfield */
-	private val txtfldNextDisplay:TextField = TextField()
+	private val txtFldNextDisplay:TextField = TextField()
 
 	/** Game style combobox */
 	private var comboboxStyle:ComboBox<*>? = null
@@ -72,7 +72,7 @@ class RuleEditorFX:Application(null) {
 	private val chkboxEnterAboveField:CheckBox = CheckBox()
 
 	/** 出現予定地が埋まっているときにY-coordinateを上にずらすMaximum count */
-	private val txtfldEnterMaxDistanceY:TextField = TextField()
+	private val txtFldEnterMaxDistanceY:TextField = TextField()
 
 	/** NEXT順生成アルゴリズム */
 	private var comboboxRandomizer:ComboBox<*>? = null
@@ -87,13 +87,13 @@ class RuleEditorFX:Application(null) {
 	/* field設定パネル */
 
 	/** fieldの幅 */
-	private val txtfldFieldWidth:TextField = TextField()
+	private val txtFldFieldWidth:TextField = TextField()
 
 	/** Field height */
-	private val txtfldFieldHeight:TextField = TextField()
+	private val txtFldFieldHeight:TextField = TextField()
 
 	/** fieldの見えない部分の高さ */
-	private val txtfldFieldHiddenHeight:TextField = TextField()
+	private val txtFldFieldHiddenHeight:TextField = TextField()
 
 	/** fieldの天井 */
 	private val chkboxFieldCeiling:CheckBox = CheckBox()
@@ -120,7 +120,7 @@ class RuleEditorFX:Application(null) {
 	private val chkboxHoldResetDirection:CheckBox = CheckBox()
 
 	/** ホールドできる count (-1:無制限) */
-	private val txtfldHoldLimit:TextField = TextField()
+	private val txtFldHoldLimit:TextField = TextField()
 
 	//----------------------------------------------------------------------
 	/* ドロップ設定パネル */
@@ -147,7 +147,7 @@ class RuleEditorFX:Application(null) {
 	private val chkboxDropSoftDropSurfaceLock:CheckBox = CheckBox()
 
 	/** Soft drop速度 */
-	private val txtfldDropSoftDropSpeed:TextField = TextField()
+	private val txtFldDropSoftDropSpeed:TextField = TextField()
 
 	/** Soft drop速度をCurrent 通常速度×n倍にする */
 	private val chkboxDropSoftDropMultiplyNativeSpeed:CheckBox = CheckBox()
@@ -171,7 +171,7 @@ class RuleEditorFX:Application(null) {
 	private val chkboxRotateInitialWallkick:CheckBox = CheckBox()
 
 	/** 上DirectionへのWallkickができる count (-1:無限) */
-	private val txtfldRotateMaxUpwardWallkick:TextField = TextField()
+	private val txtFldRotateMaxUpwardWallkick:TextField = TextField()
 
 	/** falseなら左が正rotation, When true,右が正rotation */
 	private val chkboxRotateButtonDefaultRight:CheckBox = CheckBox()
@@ -195,10 +195,10 @@ class RuleEditorFX:Application(null) {
 	/* 固定 time設定パネル */
 
 	/** 最低固定 time */
-	private val txtfldLockDelayMin:TextField = TextField()
+	private val txtFldLockDelayMin:TextField = TextField()
 
 	/** 最高固定 time */
-	private val txtfldLockDelayMax:TextField = TextField()
+	private val txtFldLockDelayMax:TextField = TextField()
 
 	/** 落下で固定 timeリセット */
 	private val chkboxLockDelayLockResetFall:CheckBox = CheckBox()
@@ -216,10 +216,10 @@ class RuleEditorFX:Application(null) {
 	private val chkboxLockDelayLockResetLimitShareCount:CheckBox = CheckBox()
 
 	/** 横移動 count制限 */
-	private val txtfldLockDelayLockResetLimitMove:TextField = TextField()
+	private val txtFldLockDelayLockResetLimitMove:TextField = TextField()
 
 	/** rotation count制限 */
-	private val txtfldLockDelayLockResetLimitRotate:TextField = TextField()
+	private val txtFldLockDelayLockResetLimitRotate:TextField = TextField()
 
 	/** 横移動 counterかrotation counterが超過したら固定 timeリセットを無効にする */
 	private val radioLockDelayLockResetLimitOverNoReset:RadioButton = RadioButton()
@@ -234,19 +234,19 @@ class RuleEditorFX:Application(null) {
 	/* ARE設定パネル */
 
 	/** 最低ARE */
-	private val txtfldAREMin:TextField = TextField()
+	private val txtFldAREMin:TextField = TextField()
 
 	/** 最高ARE */
-	private val txtfldAREMax:TextField = TextField()
+	private val txtFldAREMax:TextField = TextField()
 
 	/** 最低ARE after line clear */
-	private val txtfldARELineMin:TextField = TextField()
+	private val txtFldARELineMin:TextField = TextField()
 
 	/** 最高ARE after line clear */
-	private val txtfldARELineMax:TextField = TextField()
+	private val txtFldARELineMax:TextField = TextField()
 
 	/** 固定した瞬間に光る frame count */
-	private val txtfldARELockFlash:TextField = TextField()
+	private val txtFldARELockFlash:TextField = TextField()
 
 	/** Blockが光る専用 frame を入れる */
 	private val chkboxARELockFlashOnlyFrame:CheckBox = CheckBox()
@@ -267,10 +267,10 @@ class RuleEditorFX:Application(null) {
 	/* Line clear設定パネル */
 
 	/** 最低Line clear time */
-	private val txtfldLineDelayMin:TextField = TextField()
+	private val txtFldLineDelayMin:TextField = TextField()
 
 	/** 最高Line clear time */
-	private val txtfldLineDelayMax:TextField = TextField()
+	private val txtFldLineDelayMax:TextField = TextField()
 
 	/** 落下アニメ */
 	private val chkboxLineFallAnim:CheckBox = CheckBox()
@@ -288,13 +288,13 @@ class RuleEditorFX:Application(null) {
 	/* 移動設定パネル */
 
 	/** 最低横溜め time */
-	private val txtfldMoveDASMin:TextField = TextField()
+	private val txtFldMoveDASMin:TextField = TextField()
 
 	/** 最高横溜め time */
-	private val txtfldMoveDASMax:TextField = TextField()
+	private val txtFldMoveDASMax:TextField = TextField()
 
 	/** 横移動間隔 */
-	private val txtfldMoveDASDelay:TextField = TextField()
+	private val txtFldMoveDASDelay:TextField = TextField()
 
 	/** Ready画面で横溜め可能 */
 	private val chkboxMoveDASInReady:CheckBox = CheckBox()
@@ -354,10 +354,10 @@ class RuleEditorFX:Application(null) {
 	private var tabPieceOffset:TabPane? = null
 
 	/** rotationパターン補正(X) input 欄 */
-	private var txtfldPieceOffsetX:Array<Array<TextField>> = emptyArray()
+	private var txtFldPieceOffsetX:Array<Array<TextField>> = emptyArray()
 
 	/** rotationパターン補正(Y) input 欄 */
-	private var txtfldPieceOffsetY:Array<Array<TextField>> = emptyArray()
+	private var txtFldPieceOffsetY:Array<Array<TextField>> = emptyArray()
 
 	//----------------------------------------------------------------------
 	/* rotationパターン補正パネル */
@@ -366,16 +366,16 @@ class RuleEditorFX:Application(null) {
 	private var tabPieceSpawn:TabPane? = null
 
 	/** 出現位置補正(X) input 欄 */
-	private var txtfldPieceSpawnX:Array<Array<TextField>> = emptyArray()
+	private var txtFldPieceSpawnX:Array<Array<TextField>> = emptyArray()
 
 	/** 出現位置補正(Y) input 欄 */
-	private var txtfldPieceSpawnY:Array<Array<TextField>> = emptyArray()
+	private var txtFldPieceSpawnY:Array<Array<TextField>> = emptyArray()
 
 	/** Big時出現位置補正(X) input 欄 */
-	private var txtfldPieceSpawnBigX:Array<Array<TextField>> = emptyArray()
+	private var txtFldPieceSpawnBigX:Array<Array<TextField>> = emptyArray()
 
 	/** Big時出現位置補正(Y) input 欄 */
-	private var txtfldPieceSpawnBigY:Array<Array<TextField>> = emptyArray()
+	private var txtFldPieceSpawnBigY:Array<Array<TextField>> = emptyArray()
 
 	//----------------------------------------------------------------------
 	/* 色設定パネル */
@@ -533,17 +533,17 @@ class RuleEditorFX:Application(null) {
 		tabPane.addTab(getUIText("TabName_Basic"), panelBasic)
 
 		// Rule name
-		txtfldRuleName.prefColumnCount = 15
+		txtFldRuleName.prefColumnCount = 15
 		panelBasic.children.addAll(listOf(Pane().apply {
 			add(Label(getUIText("Basic_RuleName")))
-			add(txtfldRuleName)
+			add(txtFldRuleName)
 		}))
 
 		// NEXT表示count
 		panelBasic.add(Pane().apply {
 			add(Label(getUIText("Basic_NextDisplay")))
-			txtfldNextDisplay.prefColumnCount = 5
-			add(txtfldNextDisplay)
+			txtFldNextDisplay.prefColumnCount = 5
+			add(txtFldNextDisplay)
 		})
 
 		// Game style
@@ -585,8 +585,8 @@ class RuleEditorFX:Application(null) {
 
 		pEnterMaxDistanceY.add(Label(getUIText("Basic_EnterMaxDistanceY")))
 
-		txtfldEnterMaxDistanceY.prefColumnCount = 5
-		pEnterMaxDistanceY.add(txtfldEnterMaxDistanceY)
+		txtFldEnterMaxDistanceY.prefColumnCount = 5
+		pEnterMaxDistanceY.add(txtFldEnterMaxDistanceY)
 
 		// NEXT順生成アルゴリズム
 		val pRandomizer = Pane()
@@ -615,19 +615,19 @@ class RuleEditorFX:Application(null) {
 		// fieldの幅
 		panelField.add(Pane().apply {
 			add(Label(getUIText("Field_FieldWidth")))
-			add(txtfldFieldWidth)
+			add(txtFldFieldWidth)
 		})
 
 		// Field height
 		panelField.add(Pane().apply {
 			add(Label(getUIText("Field_FieldHeight")))
-			add(txtfldFieldHeight)
+			add(txtFldFieldHeight)
 		})
 
 		// fieldの見えない部分の高さ
 		panelField.add(Pane().apply {
 			add(Label(getUIText("Field_FieldHiddenHeight")))
-			add(txtfldFieldHiddenHeight)
+			add(txtFldFieldHiddenHeight)
 		})
 
 		// fieldの天井
@@ -664,10 +664,10 @@ class RuleEditorFX:Application(null) {
 		panelHold.add(chkboxHoldResetDirection)
 
 		// ホールドできる count
-		txtfldHoldLimit.prefColumnCount = 5
+		txtFldHoldLimit.prefColumnCount = 5
 		val pHoldLimit = Pane().apply {
 			add(Label(getUIText("Hold_HoldLimit")))
-			add(txtfldHoldLimit)
+			add(txtFldHoldLimit)
 		}
 		panelHold.add(pHoldLimit)
 
@@ -717,8 +717,8 @@ class RuleEditorFX:Application(null) {
 		panelDrop.add(pDropSoftDropSpeed)
 		pDropSoftDropSpeed.add(Label(getUIText("Drop_SoftDropSpeed")))
 
-		txtfldDropSoftDropSpeed.prefColumnCount = 5
-		pDropSoftDropSpeed.add(txtfldDropSoftDropSpeed)
+		txtFldDropSoftDropSpeed.prefColumnCount = 5
+		pDropSoftDropSpeed.add(txtFldDropSoftDropSpeed)
 
 		// rotationタブ --------------------------------------------------
 		val panelRotate = Pane()
@@ -758,8 +758,8 @@ class RuleEditorFX:Application(null) {
 		panelRotate.add(pRotateMaxUpwardWallkick)
 		pRotateMaxUpwardWallkick.add(Label(getUIText("Rotate_RotateMaxUpwardWallkick")))
 
-		txtfldRotateMaxUpwardWallkick.prefColumnCount = 5
-		pRotateMaxUpwardWallkick.add(txtfldRotateMaxUpwardWallkick)
+		txtFldRotateMaxUpwardWallkick.prefColumnCount = 5
+		pRotateMaxUpwardWallkick.add(txtFldRotateMaxUpwardWallkick)
 
 		// Wallkickアルゴリズム
 		val pWallkickSystem = Pane()
@@ -792,10 +792,10 @@ class RuleEditorFX:Application(null) {
 		val pLockDelayMinMax = Pane()
 		panelLockDelay.add(pLockDelayMinMax)
 
-		txtfldLockDelayMin.prefColumnCount = 5
-		pLockDelayMinMax.add(txtfldLockDelayMin)
-		txtfldLockDelayMax.prefColumnCount = 5
-		pLockDelayMinMax.add(txtfldLockDelayMax)
+		txtFldLockDelayMin.prefColumnCount = 5
+		pLockDelayMinMax.add(txtFldLockDelayMin)
+		txtFldLockDelayMax.prefColumnCount = 5
+		pLockDelayMinMax.add(txtFldLockDelayMax)
 
 		// 落下で固定 timeリセット
 		chkboxLockDelayLockResetFall.text = getUIText("LockDelay_LockResetFall")
@@ -822,8 +822,8 @@ class RuleEditorFX:Application(null) {
 		panelLockDelay.add(pLockDelayLockResetLimitMove)
 		pLockDelayLockResetLimitMove.add(Label(getUIText("LockDelay_LockDelayLockResetLimitMove")))
 
-		txtfldLockDelayLockResetLimitMove.prefColumnCount = 5
-		pLockDelayLockResetLimitMove.add(txtfldLockDelayLockResetLimitMove)
+		txtFldLockDelayLockResetLimitMove.prefColumnCount = 5
+		pLockDelayLockResetLimitMove.add(txtFldLockDelayLockResetLimitMove)
 
 		// rotation count制限
 		val pLockDelayLockResetLimitRotate = Pane()
@@ -831,8 +831,8 @@ class RuleEditorFX:Application(null) {
 
 		pLockDelayLockResetLimitRotate.add(Label(getUIText("LockDelay_LockDelayLockResetLimitRotate")))
 
-		txtfldLockDelayLockResetLimitRotate.prefColumnCount = 5
-		pLockDelayLockResetLimitRotate.add(txtfldLockDelayLockResetLimitRotate)
+		txtFldLockDelayLockResetLimitRotate.prefColumnCount = 5
+		pLockDelayLockResetLimitRotate.add(txtFldLockDelayLockResetLimitRotate)
 
 		// 移動またはrotation count制限が超過した時の設定
 		val pLockDelayLockResetLimitOver = Pane()
@@ -866,10 +866,10 @@ class RuleEditorFX:Application(null) {
 		val pAREMinMax = Pane()
 		panelARE.add(pAREMinMax)
 
-		txtfldAREMin.prefColumnCount = 5
-		pAREMinMax.add(txtfldAREMin)
-		txtfldAREMax.prefColumnCount = 5
-		pAREMinMax.add(txtfldAREMax)
+		txtFldAREMin.prefColumnCount = 5
+		pAREMinMax.add(txtFldAREMin)
+		txtFldAREMax.prefColumnCount = 5
+		pAREMinMax.add(txtFldAREMax)
 
 		// 最低ARE after line clearと最高ARE after line clear
 		panelARE.add(Label(getUIText("ARE_LineMinMax")))
@@ -877,10 +877,10 @@ class RuleEditorFX:Application(null) {
 		val pARELineMinMax = Pane()
 		panelARE.add(pARELineMinMax)
 
-		txtfldARELineMin.prefColumnCount = 5
-		pARELineMinMax.add(txtfldARELineMin)
-		txtfldARELineMax.prefColumnCount = 5
-		pARELineMinMax.add(txtfldARELineMax)
+		txtFldARELineMin.prefColumnCount = 5
+		pARELineMinMax.add(txtFldARELineMin)
+		txtFldARELineMax.prefColumnCount = 5
+		pARELineMinMax.add(txtFldARELineMax)
 
 		// 固定した瞬間に光る frame count
 		panelARE.add(Label(getUIText("ARE_LockFlash")))
@@ -888,8 +888,8 @@ class RuleEditorFX:Application(null) {
 		val pARELockFlash = Pane()
 		panelARE.add(pARELockFlash)
 
-		txtfldARELockFlash.prefColumnCount = 5
-		pARELockFlash.add(txtfldARELockFlash)
+		txtFldARELockFlash.prefColumnCount = 5
+		pARELockFlash.add(txtFldARELockFlash)
 
 		// Blockが光る専用 frame を入れる
 		chkboxARELockFlashOnlyFrame.text = getUIText("ARE_LockFlashOnlyFrame")
@@ -922,10 +922,10 @@ class RuleEditorFX:Application(null) {
 		val pLineMinMax = Pane()
 		panelLine.add(pLineMinMax)
 
-		txtfldLineDelayMin.prefColumnCount = 5
-		pLineMinMax.add(txtfldLineDelayMin)
-		txtfldLineDelayMax.prefColumnCount = 5
-		pLineMinMax.add(txtfldLineDelayMax)
+		txtFldLineDelayMin.prefColumnCount = 5
+		pLineMinMax.add(txtFldLineDelayMin)
+		txtFldLineDelayMax.prefColumnCount = 5
+		pLineMinMax.add(txtFldLineDelayMax)
 
 		// 落下アニメ
 		chkboxLineFallAnim.text = getUIText("Line_FallAnim")
@@ -954,10 +954,10 @@ class RuleEditorFX:Application(null) {
 		val pMoveDASMinMax = Pane()
 		panelMove.add(pMoveDASMinMax)
 
-		txtfldMoveDASMin.prefColumnCount = 5
-		pMoveDASMinMax.add(txtfldMoveDASMin)
-		txtfldMoveDASMax.prefColumnCount = 5
-		pMoveDASMinMax.add(txtfldMoveDASMax)
+		txtFldMoveDASMin.prefColumnCount = 5
+		pMoveDASMinMax.add(txtFldMoveDASMin)
+		txtFldMoveDASMax.prefColumnCount = 5
+		pMoveDASMinMax.add(txtFldMoveDASMax)
 
 		// 横移動間隔
 		val pMoveDASDelay = Pane()
@@ -965,8 +965,8 @@ class RuleEditorFX:Application(null) {
 
 		pMoveDASDelay.add(Label(getUIText("Move_DASDelay1")))
 
-		txtfldMoveDASDelay.prefColumnCount = 5
-		pMoveDASDelay.add(txtfldMoveDASDelay)
+		txtFldMoveDASDelay.prefColumnCount = 5
+		pMoveDASDelay.add(txtFldMoveDASDelay)
 
 		pMoveDASDelay.add(Label(getUIText("Move_DASDelay2")))
 
@@ -1041,7 +1041,7 @@ class RuleEditorFX:Application(null) {
 			}
 		}
 
-		txtfldPieceOffsetX = Array(Piece.PIECE_COUNT) {i ->
+		txtFldPieceOffsetX = Array(Piece.PIECE_COUNT) {i ->
 			Array(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {pPieceOffsetX[i].add(this)}
 			}
@@ -1059,7 +1059,7 @@ class RuleEditorFX:Application(null) {
 			}
 		}
 
-		txtfldPieceOffsetY = Array(Piece.PIECE_COUNT) {i ->
+		txtFldPieceOffsetY = Array(Piece.PIECE_COUNT) {i ->
 			Array(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {
 					pPieceOffsetY[i].add(this)
@@ -1087,7 +1087,7 @@ class RuleEditorFX:Application(null) {
 			}
 		}
 
-		txtfldPieceSpawnX = Array(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnX = Array(Piece.PIECE_COUNT) {i ->
 			panelPieceSpawnX.add(pPieceSpawnX[i])
 			Array(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {
@@ -1109,7 +1109,7 @@ class RuleEditorFX:Application(null) {
 			}
 		}
 
-		txtfldPieceSpawnY = Array(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnY = Array(Piece.PIECE_COUNT) {i ->
 			Array(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {
 					pPieceSpawnY[i].add(this)
@@ -1130,7 +1130,7 @@ class RuleEditorFX:Application(null) {
 			}
 		}
 
-		txtfldPieceSpawnBigX = Array(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnBigX = Array(Piece.PIECE_COUNT) {i ->
 			Array(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {pPieceSpawnBigX[i].add(this)}
 			}
@@ -1148,7 +1148,7 @@ class RuleEditorFX:Application(null) {
 			}
 		}
 
-		txtfldPieceSpawnBigY = Array(Piece.PIECE_COUNT) {i ->
+		txtFldPieceSpawnBigY = Array(Piece.PIECE_COUNT) {i ->
 			Array(Piece.DIRECTION_COUNT) {
 				JTextField("", 5).apply {pPieceSpawnBigY[i].add(this)}
 			}
@@ -1342,18 +1342,18 @@ class RuleEditorFX:Application(null) {
 	 * @param r ルール設定
 	 */
 	private fun readRuleToUI(r:RuleOptions) {
-		txtfldRuleName.text = r.strRuleName
-		txtfldNextDisplay.text = r.nextDisplay.toString()
+		txtFldRuleName.text = r.strRuleName
+		txtFldNextDisplay.text = r.nextDisplay.toString()
 		comboboxStyle?.selectedIndex = r.style
 		comboboxSkin?.selectedIndex = r.skin
 		chkboxGhost.isSelected = r.ghost
 		chkboxEnterAboveField.isSelected = r.pieceEnterAboveField
-		txtfldEnterMaxDistanceY.text = r.pieceEnterMaxDistanceY.toString()
+		txtFldEnterMaxDistanceY.text = r.pieceEnterMaxDistanceY.toString()
 		comboboxRandomizer?.selectedIndex = vectorRandomizer?.indexOf(r.strRandomizer) ?: 0
 
-		txtfldFieldWidth.text = r.fieldWidth.toString()
-		txtfldFieldHeight.text = r.fieldHeight.toString()
-		txtfldFieldHiddenHeight.text = r.fieldHiddenHeight.toString()
+		txtFldFieldWidth.text = r.fieldWidth.toString()
+		txtFldFieldHeight.text = r.fieldHeight.toString()
+		txtFldFieldHiddenHeight.text = r.fieldHiddenHeight.toString()
 		chkboxFieldCeiling.isSelected = r.fieldCeiling
 		chkboxFieldLockoutDeath.isSelected = r.fieldLockoutDeath
 		chkboxFieldPartialLockoutDeath.isSelected = r.fieldPartialLockoutDeath
@@ -1362,7 +1362,7 @@ class RuleEditorFX:Application(null) {
 		chkboxHoldInitial.isSelected = r.holdInitial
 		chkboxHoldInitialLimit.isSelected = r.holdInitialLimit
 		chkboxHoldResetDirection.isSelected = r.holdResetDirection
-		txtfldHoldLimit.text = r.holdLimit.toString()
+		txtFldHoldLimit.text = r.holdLimit.toString()
 
 		chkboxDropHardDropEnable.isSelected = r.harddropEnable
 		chkboxDropHardDropLock.isSelected = r.harddropLock
@@ -1371,7 +1371,7 @@ class RuleEditorFX:Application(null) {
 		chkboxDropSoftDropLock.isSelected = r.softdropLock
 		chkboxDropSoftDropLimit.isSelected = r.softdropLimit
 		chkboxDropSoftDropSurfaceLock.isSelected = r.softdropSurfaceLock
-		txtfldDropSoftDropSpeed.text = r.softdropSpeed.toString()
+		txtFldDropSoftDropSpeed.text = r.softdropSpeed.toString()
 		chkboxDropSoftDropMultiplyNativeSpeed.isSelected = r.softdropMultiplyNativeSpeed
 		chkboxDropSoftDropGravitySpeedLimit.isSelected = r.softdropGravitySpeedLimit
 
@@ -1379,47 +1379,47 @@ class RuleEditorFX:Application(null) {
 		chkboxRotateInitialLimit.isSelected = r.rotateInitialLimit
 		chkboxRotateWallkick.isSelected = r.rotateWallkick
 		chkboxRotateInitialWallkick.isSelected = r.rotateInitialWallkick
-		txtfldRotateMaxUpwardWallkick.text = r.rotateMaxUpwardWallkick.toString()
+		txtFldRotateMaxUpwardWallkick.text = r.rotateMaxUpwardWallkick.toString()
 		chkboxRotateButtonDefaultRight.isSelected = r.rotateButtonDefaultRight
 		chkboxRotateButtonAllowReverse.isSelected = r.rotateButtonAllowReverse
 		chkboxRotateButtonAllowDouble.isSelected = r.rotateButtonAllowDouble
 		comboboxWallkickSystem?.selectedIndex = vectorWallkickSystem?.indexOf(r.strWallkick) ?: 0
-		txtfldLockDelayMin.text = r.minLockDelay.toString()
-		txtfldLockDelayMax.text = r.maxLockDelay.toString()
+		txtFldLockDelayMin.text = r.minLockDelay.toString()
+		txtFldLockDelayMax.text = r.maxLockDelay.toString()
 		chkboxLockDelayLockResetFall.isSelected = r.lockresetFall
 		chkboxLockDelayLockResetMove.isSelected = r.lockresetMove
 		chkboxLockDelayLockResetRotate.isSelected = r.lockresetRotate
 		chkboxLockDelayLockResetWallkick.isSelected = r.lockresetWallkick
 		chkboxLockDelayLockResetLimitShareCount.isSelected = r.lockresetLimitShareCount
-		txtfldLockDelayLockResetLimitMove.text = r.lockresetLimitMove.toString()
-		txtfldLockDelayLockResetLimitRotate.text = r.lockresetLimitRotate.toString()
+		txtFldLockDelayLockResetLimitMove.text = r.lockresetLimitMove.toString()
+		txtFldLockDelayLockResetLimitRotate.text = r.lockresetLimitRotate.toString()
 		when(r.lockresetLimitOver) {
 			RuleOptions.LOCKRESET_LIMIT_OVER_NoReset -> radioLockDelayLockResetLimitOverNoReset?.isSelected = true
 			RuleOptions.LOCKRESET_LIMIT_OVER_INSTANT -> radioLockDelayLockResetLimitOverInstant?.isSelected = true
 			RuleOptions.LOCKRESET_LIMIT_OVER_NoKick -> radioLockDelayLockResetLimitOverNoWallkick?.isSelected = true
 		}
 
-		txtfldAREMin.text = r.minARE.toString()
-		txtfldAREMax.text = r.maxARE.toString()
-		txtfldARELineMin.text = r.minARELine.toString()
-		txtfldARELineMax.text = r.maxARELine.toString()
-		txtfldARELockFlash.text = r.lockflash.toString()
+		txtFldAREMin.text = r.minARE.toString()
+		txtFldAREMax.text = r.maxARE.toString()
+		txtFldARELineMin.text = r.minARELine.toString()
+		txtFldARELineMax.text = r.maxARELine.toString()
+		txtFldARELockFlash.text = r.lockflash.toString()
 		chkboxARELockFlashOnlyFrame.isSelected = r.lockflashOnlyFrame
 		chkboxARELockFlashBeforeLineClear.isSelected = r.lockflashBeforeLineClear
 		chkboxARECancelMove.isSelected = r.areCancelMove
 		chkboxARECancelRotate.isSelected = r.areCancelRotate
 		chkboxARECancelHold.isSelected = r.areCancelHold
 
-		txtfldLineDelayMin.text = r.minLineDelay.toString()
-		txtfldLineDelayMax.text = r.maxLineDelay.toString()
+		txtFldLineDelayMin.text = r.minLineDelay.toString()
+		txtFldLineDelayMax.text = r.maxLineDelay.toString()
 		chkboxLineFallAnim.isSelected = r.lineFallAnim
 		chkboxLineCancelMove.isSelected = r.lineCancelMove
 		chkboxLineCancelRotate.isSelected = r.lineCancelRotate
 		chkboxLineCancelHold.isSelected = r.lineCancelHold
 
-		txtfldMoveDASMin.text = r.minDAS.toString()
-		txtfldMoveDASMax.text = r.maxDAS.toString()
-		txtfldMoveDASDelay.text = r.dasARR.toString()
+		txtFldMoveDASMin.text = r.minDAS.toString()
+		txtFldMoveDASMax.text = r.maxDAS.toString()
+		txtFldMoveDASDelay.text = r.dasARR.toString()
 		chkboxMoveDASInReady.isSelected = r.dasInReady
 		chkboxMoveDASInMoveFirstFrame.isSelected = r.dasInMoveFirstFrame
 		chkboxMoveDASInLockFlash.isSelected = r.dasInLockFlash
@@ -1439,12 +1439,12 @@ class RuleEditorFX:Application(null) {
 		comboboxPieceOffset?.selectedIndex = r.pieceOffset
 		for(i in 0 until Piece.PIECE_COUNT) {
 			for(j in 0 until Piece.DIRECTION_COUNT) {
-				txtfldPieceOffsetX?.let {it[i][j].text = "${r.pieceOffsetX[i][j]}"}
-				txtfldPieceOffsetY?.let {it[i][j].text = "${r.pieceOffsetY[i][j]}"}
-				txtfldPieceSpawnX?.let {it[i][j].text = "${r.pieceSpawnX[i][j]}"}
-				txtfldPieceSpawnY?.let {it[i][j].text = "${r.pieceSpawnY[i][j]}"}
-				txtfldPieceSpawnBigX?.let {it[i][j].text = "${r.pieceSpawnXBig[i][j]}"}
-				txtfldPieceSpawnBigY?.let {it[i][j].text = "${r.pieceSpawnYBig[i][j]}"}
+				txtFldPieceOffsetX?.let {it[i][j].text = "${r.pieceOffsetX[i][j]}"}
+				txtFldPieceOffsetY?.let {it[i][j].text = "${r.pieceOffsetY[i][j]}"}
+				txtFldPieceSpawnX?.let {it[i][j].text = "${r.pieceSpawnX[i][j]}"}
+				txtFldPieceSpawnY?.let {it[i][j].text = "${r.pieceSpawnY[i][j]}"}
+				txtFldPieceSpawnBigX?.let {it[i][j].text = "${r.pieceSpawnXBig[i][j]}"}
+				txtFldPieceSpawnBigY?.let {it[i][j].text = "${r.pieceSpawnYBig[i][j]}"}
 			}
 			comboboxPieceColor?.get(i)?.selectedIndex = r.pieceColor[i]-1
 			comboboxPieceDirection?.get(i)?.selectedIndex = r.pieceDefaultDirection[i]
@@ -1455,22 +1455,22 @@ class RuleEditorFX:Application(null) {
 	 * @param r ルール設定
 	 */
 	private fun writeRuleFromUI(r:RuleOptions) {
-		r.strRuleName = txtfldRuleName.text.uppercase()
-		r.nextDisplay = getIntTextField(txtfldNextDisplay)
+		r.strRuleName = txtFldRuleName.text.uppercase()
+		r.nextDisplay = getIntTextField(txtFldNextDisplay)
 		r.style = comboboxStyle!!.selectedIndex
 		r.skin = comboboxSkin!!.selectedIndex
 		r.ghost = chkboxGhost.isSelected
 		r.pieceEnterAboveField = chkboxEnterAboveField.isSelected
-		r.pieceEnterMaxDistanceY = getIntTextField(txtfldEnterMaxDistanceY)
+		r.pieceEnterMaxDistanceY = getIntTextField(txtFldEnterMaxDistanceY)
 		val indexRandomizer = comboboxRandomizer!!.selectedIndex
 		if(indexRandomizer>=0)
 			r.strRandomizer = vectorRandomizer!![indexRandomizer]
 		else
 			r.strRandomizer = ""
 
-		r.fieldWidth = getIntTextField(txtfldFieldWidth)
-		r.fieldHeight = getIntTextField(txtfldFieldHeight)
-		r.fieldHiddenHeight = getIntTextField(txtfldFieldHiddenHeight)
+		r.fieldWidth = getIntTextField(txtFldFieldWidth)
+		r.fieldHeight = getIntTextField(txtFldFieldHeight)
+		r.fieldHiddenHeight = getIntTextField(txtFldFieldHiddenHeight)
 		r.fieldCeiling = chkboxFieldCeiling.isSelected
 		r.fieldLockoutDeath = chkboxFieldLockoutDeath.isSelected
 		r.fieldPartialLockoutDeath = chkboxFieldPartialLockoutDeath.isSelected
@@ -1479,7 +1479,7 @@ class RuleEditorFX:Application(null) {
 		r.holdInitial = chkboxHoldInitial.isSelected
 		r.holdInitialLimit = chkboxHoldInitialLimit.isSelected
 		r.holdResetDirection = chkboxHoldResetDirection.isSelected
-		r.holdLimit = getIntTextField(txtfldHoldLimit)
+		r.holdLimit = getIntTextField(txtFldHoldLimit)
 
 		r.harddropEnable = chkboxDropHardDropEnable.isSelected
 		r.harddropLock = chkboxDropHardDropLock.isSelected
@@ -1488,7 +1488,7 @@ class RuleEditorFX:Application(null) {
 		r.softdropLock = chkboxDropSoftDropLock.isSelected
 		r.softdropLimit = chkboxDropSoftDropLimit.isSelected
 		r.softdropSurfaceLock = chkboxDropSoftDropSurfaceLock.isSelected
-		r.softdropSpeed = getFloatTextField(txtfldDropSoftDropSpeed)
+		r.softdropSpeed = getFloatTextField(txtFldDropSoftDropSpeed)
 		r.softdropMultiplyNativeSpeed = chkboxDropSoftDropMultiplyNativeSpeed.isSelected
 		r.softdropGravitySpeedLimit = chkboxDropSoftDropGravitySpeedLimit.isSelected
 
@@ -1496,7 +1496,7 @@ class RuleEditorFX:Application(null) {
 		r.rotateInitialLimit = chkboxRotateInitialLimit.isSelected
 		r.rotateWallkick = chkboxRotateWallkick.isSelected
 		r.rotateInitialWallkick = chkboxRotateInitialWallkick.isSelected
-		r.rotateMaxUpwardWallkick = getIntTextField(txtfldRotateMaxUpwardWallkick)
+		r.rotateMaxUpwardWallkick = getIntTextField(txtFldRotateMaxUpwardWallkick)
 		r.rotateButtonDefaultRight = chkboxRotateButtonDefaultRight.isSelected
 		r.rotateButtonAllowReverse = chkboxRotateButtonAllowReverse.isSelected
 		r.rotateButtonAllowDouble = chkboxRotateButtonAllowDouble.isSelected
@@ -1506,15 +1506,15 @@ class RuleEditorFX:Application(null) {
 		else
 			r.strWallkick = ""
 
-		r.minLockDelay = getIntTextField(txtfldLockDelayMin)
-		r.maxLockDelay = getIntTextField(txtfldLockDelayMax)
+		r.minLockDelay = getIntTextField(txtFldLockDelayMin)
+		r.maxLockDelay = getIntTextField(txtFldLockDelayMax)
 		r.lockresetFall = chkboxLockDelayLockResetFall.isSelected
 		r.lockresetMove = chkboxLockDelayLockResetMove.isSelected
 		r.lockresetRotate = chkboxLockDelayLockResetRotate.isSelected
 		r.lockresetWallkick = chkboxLockDelayLockResetWallkick.isSelected
 		r.lockresetLimitShareCount = chkboxLockDelayLockResetLimitShareCount.isSelected
-		r.lockresetLimitMove = getIntTextField(txtfldLockDelayLockResetLimitMove)
-		r.lockresetLimitRotate = getIntTextField(txtfldLockDelayLockResetLimitRotate)
+		r.lockresetLimitMove = getIntTextField(txtFldLockDelayLockResetLimitMove)
+		r.lockresetLimitRotate = getIntTextField(txtFldLockDelayLockResetLimitRotate)
 		if(radioLockDelayLockResetLimitOverNoReset!!.isSelected)
 			r.lockresetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NoReset
 		if(radioLockDelayLockResetLimitOverInstant!!.isSelected)
@@ -1522,27 +1522,27 @@ class RuleEditorFX:Application(null) {
 		if(radioLockDelayLockResetLimitOverNoWallkick!!.isSelected)
 			r.lockresetLimitOver = RuleOptions.LOCKRESET_LIMIT_OVER_NoKick
 
-		r.minARE = getIntTextField(txtfldAREMin)
-		r.maxARE = getIntTextField(txtfldAREMax)
-		r.minARELine = getIntTextField(txtfldARELineMin)
-		r.maxARELine = getIntTextField(txtfldARELineMax)
-		r.lockflash = getIntTextField(txtfldARELockFlash)
+		r.minARE = getIntTextField(txtFldAREMin)
+		r.maxARE = getIntTextField(txtFldAREMax)
+		r.minARELine = getIntTextField(txtFldARELineMin)
+		r.maxARELine = getIntTextField(txtFldARELineMax)
+		r.lockflash = getIntTextField(txtFldARELockFlash)
 		r.lockflashOnlyFrame = chkboxARELockFlashOnlyFrame.isSelected
 		r.lockflashBeforeLineClear = chkboxARELockFlashBeforeLineClear.isSelected
 		r.areCancelMove = chkboxARECancelMove.isSelected
 		r.areCancelRotate = chkboxARECancelRotate.isSelected
 		r.areCancelHold = chkboxARECancelHold.isSelected
 
-		r.minLineDelay = getIntTextField(txtfldLineDelayMin)
-		r.maxLineDelay = getIntTextField(txtfldLineDelayMax)
+		r.minLineDelay = getIntTextField(txtFldLineDelayMin)
+		r.maxLineDelay = getIntTextField(txtFldLineDelayMax)
 		r.lineFallAnim = chkboxLineFallAnim.isSelected
 		r.lineCancelMove = chkboxLineCancelMove.isSelected
 		r.lineCancelRotate = chkboxLineCancelRotate.isSelected
 		r.lineCancelHold = chkboxLineCancelHold.isSelected
 
-		r.minDAS = getIntTextField(txtfldMoveDASMin)
-		r.maxDAS = getIntTextField(txtfldMoveDASMax)
-		r.dasARR = getIntTextField(txtfldMoveDASDelay)
+		r.minDAS = getIntTextField(txtFldMoveDASMin)
+		r.maxDAS = getIntTextField(txtFldMoveDASMax)
+		r.dasARR = getIntTextField(txtFldMoveDASDelay)
 		r.dasInReady = chkboxMoveDASInReady.isSelected
 		r.dasInMoveFirstFrame = chkboxMoveDASInMoveFirstFrame.isSelected
 		r.dasInLockFlash = chkboxMoveDASInLockFlash.isSelected
@@ -1562,12 +1562,12 @@ class RuleEditorFX:Application(null) {
 		r.pieceOffset = comboboxPieceOffset!!.selectedIndex
 		for(i in 0 until Piece.PIECE_COUNT) {
 			for(j in 0 until Piece.DIRECTION_COUNT) {
-				r.pieceOffsetX[i][j] = getIntTextField(txtfldPieceOffsetX!![i][j])
-				r.pieceOffsetY[i][j] = getIntTextField(txtfldPieceOffsetY!![i][j])
-				r.pieceSpawnX[i][j] = getIntTextField(txtfldPieceSpawnX!![i][j])
-				r.pieceSpawnY[i][j] = getIntTextField(txtfldPieceSpawnY!![i][j])
-				r.pieceSpawnXBig[i][j] = getIntTextField(txtfldPieceSpawnBigX!![i][j])
-				r.pieceSpawnYBig[i][j] = getIntTextField(txtfldPieceSpawnBigY!![i][j])
+				r.pieceOffsetX[i][j] = getIntTextField(txtFldPieceOffsetX!![i][j])
+				r.pieceOffsetY[i][j] = getIntTextField(txtFldPieceOffsetY!![i][j])
+				r.pieceSpawnX[i][j] = getIntTextField(txtFldPieceSpawnX!![i][j])
+				r.pieceSpawnY[i][j] = getIntTextField(txtFldPieceSpawnY!![i][j])
+				r.pieceSpawnXBig[i][j] = getIntTextField(txtFldPieceSpawnBigX!![i][j])
+				r.pieceSpawnYBig[i][j] = getIntTextField(txtFldPieceSpawnBigY!![i][j])
 			}
 			r.pieceColor[i] = comboboxPieceColor!![i].selectedIndex+1
 			r.pieceDefaultDirection[i] = comboboxPieceDirection!![i].selectedIndex
@@ -1621,16 +1621,16 @@ class RuleEditorFX:Application(null) {
 	fun getUIText(str:String):String = propLang.getProperty(str, propLangDefault.getProperty(str, str))
 
 	/** テキストfieldからint型の値を取得
-	 * @param txtfld テキストfield
+	 * @param txtFld テキストfield
 	 * @return テキストfieldから値を取得できた場合はその値, 失敗したら0
 	 */
-	private fun getIntTextField(txtfld:JTextField):Int = txtfld.text.toIntOrNull() ?: 0
+	private fun getIntTextField(txtFld:JTextField):Int = txtFld.text.toIntOrNull() ?: 0
 
 	/** テキストfieldからfloat型の値を取得
-	 * @param txtfld テキストfield
+	 * @param txtFld テキストfield
 	 * @return テキストfieldから値を取得できた場合はその値, 失敗したら0f
 	 */
-	private fun getFloatTextField(txtfld:JTextField):Float = txtfld.text.toFloatOrNull() ?: 0f
+	private fun getFloatTextField(txtFld:JTextField):Float = txtFld.text.toFloatOrNull() ?: 0f
 
 	/** アクション発生時の処理 */
 	override fun actionPerformed(e:ActionEvent) {
@@ -1722,17 +1722,17 @@ class RuleEditorFX:Application(null) {
 			}
 			"OffsetPreset" -> {
 				val tog = comboboxPieceOffset!!.selectedIndex==RuleOptions.PIECEOFFSET_ASSIGN
-				for(i in txtfldPieceOffsetX!!)
+				for(i in txtFldPieceOffsetX!!)
 					for(j in i) j.isEditable = tog
-				for(i in txtfldPieceOffsetY!!)
+				for(i in txtFldPieceOffsetY!!)
 					for(j in i) j.isEditable = tog
-				for(i in txtfldPieceSpawnX!!)
+				for(i in txtFldPieceSpawnX!!)
 					for(j in i) j.isEditable = tog
-				for(i in txtfldPieceSpawnY!!)
+				for(i in txtFldPieceSpawnY!!)
 					for(j in i) j.isEditable = tog
-				for(i in txtfldPieceSpawnBigX!!)
+				for(i in txtFldPieceSpawnBigX!!)
 					for(j in i) j.isEditable = tog
-				for(i in txtfldPieceSpawnBigY!!)
+				for(i in txtFldPieceSpawnBigY!!)
 					for(j in i) j.isEditable = tog
 			}
 			"PresetColors_SRS", "PresetColors_ARS" -> {

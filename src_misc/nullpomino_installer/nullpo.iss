@@ -7,15 +7,15 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{92421394-0936-4142-B3BD-400D24E8D662}
 AppName=NullpoMino_Alt
-AppVersion=7.7.2021
-;AppVerName=NullpoMino-Alt 7.7.2023
+AppVersion=7.7.2024
+;AppVerName=NullpoMino-Alt 7.7.2024
 AppPublisher=NullNoname
 AppPublisherURL=http://code.google.com/p/nullpomino/
 AppSupportURL=http://code.google.com/p/nullpomino/
 AppUpdatesURL=http://code.google.com/p/nullpomino/
 DefaultDirName={sd}\NullpoMino
 DefaultGroupName=NullpoMino
-OutputBaseFilename=Nullpomino_7.7.2023
+OutputBaseFilename=Nullpomino_7.7.2024
 Compression=lzma
 SolidCompression=yes
 ; DisableProgramGroupPage=yes

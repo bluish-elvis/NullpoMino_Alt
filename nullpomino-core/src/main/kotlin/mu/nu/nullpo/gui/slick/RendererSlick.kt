@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2023, NullNoname
+ * Copyright (c) 2010-2024, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -159,7 +159,7 @@ class RendererSlick(
 
 			if(heavyEffect>0&&!bone) {
 				g.setDrawMode(Graphics.MODE_COLOR_MULTIPLY)
-				val shf = (minOf(1f, maxOf(0f, -darkness*alpha))).let {Color(1f, 1f, 1f, it)}
+				val shf = Color(1f, 1f, 1f, (minOf(1f, maxOf(0f, -darkness*alpha))))
 				val shx = if(isSticky) sx else 1
 				val shy = if(isSticky) 1 else 0
 				g.drawImage(img, x, y, (x+size), (y+size), shx*si, shy*si, (shx+1)*si, (shy+1)*si, shf)

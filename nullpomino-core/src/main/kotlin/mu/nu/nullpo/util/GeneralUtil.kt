@@ -28,9 +28,12 @@
  */
 package mu.nu.nullpo.util
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.subsystem.ai.AIPlayer
 import mu.nu.nullpo.game.subsystem.wallkick.Wallkick
+import mu.nu.nullpo.tool.ruleeditor.RuleEditor
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.MemorylessRandomizer
 import net.omegaboshi.nullpomino.game.subsystem.randomizer.Randomizer
 import org.apache.logging.log4j.LogManager
@@ -39,6 +42,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.TimeZone
 import java.util.zip.GZIPInputStream
+import java.util.zip.ZipException
 
 /** Generic static utils */
 object GeneralUtil {
@@ -187,20 +191,23 @@ object GeneralUtil {
 	fun loadRule(filename:String?):RuleOptions {
 		if(filename.isNullOrEmpty()) return RuleOptions()
 		log.info("Load rule options from $filename")
-		val prop = CustomProperties()
+		return try {
+			val rf = GZIPInputStream(FileInputStream(filename))
+			Json.decodeFromString<RuleOptions>(rf.bufferedReader().use {it.readText()})
+		} catch(_:Exception) {
+			val rf = GZIPInputStream(FileInputStream(filename))
+			val prop = CustomProperties()
+			prop.load(rf)
+			rf.close()
 
-		try {
-			val `in` = GZIPInputStream(FileInputStream(filename))
-			prop.load(`in`)
-			`in`.close()
-		} catch(e:Exception) {
-			log.warn("Failed to load rule from $filename", e)
+			val ruleOpt = RuleOptions()
+			ruleOpt.readProperty(prop)
+
+			RuleEditor.log.debug("Loaded rule file from $filename")
+			RuleEditor.log.debug(Json.encodeToString(ruleOpt))
+
+			ruleOpt
 		}
-
-		val ruleOpt = RuleOptions()
-		ruleOpt.readProperty(prop, 0)
-
-		return ruleOpt
 	}
 
 	/** Load Randomizer

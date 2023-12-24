@@ -29,7 +29,6 @@
 package mu.nu.nullpo.gui.slick
 
 import mu.nu.nullpo.game.component.BGMStatus.BGM
-import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.net.NetPlayerClient
 import mu.nu.nullpo.game.net.NetRoomInfo
 import mu.nu.nullpo.game.play.GameManager

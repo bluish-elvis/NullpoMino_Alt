@@ -28,7 +28,6 @@
  */
 package mu.nu.nullpo.gui.net
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.net.NetBaseClient
@@ -163,10 +162,10 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private val menuBar:Array<JMenuBar> = Array(SCREENCARD_NAMES.size) {JMenuBar()}
 
 	/** Text field of player name (Server select screen) */
-	private val txtfldPlayerName:JTextField = JTextField()
+	private val txtFldPlayerName:JTextField = JTextField()
 
 	/** Text field of team name (Server select screen) */
-	private val txtfldPlayerTeam:JTextField = JTextField()
+	private val txtFldPlayerTeam:JTextField = JTextField()
 
 	/** Listbox for servers (Server select screen) */
 	private val listboxServerList:JList<String> = JList()
@@ -214,7 +213,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private val btnRoomListOptions:JButton = JButton()
 
 	/** Team name input Column(Lobby screen) */
-	private val txtfldRoomListTeam:JTextField = JTextField()
+	private val txtFldRoomListTeam:JTextField = JTextField()
 
 	/** Room list table */
 	private val tableRoomList:JTable = JTable()
@@ -235,7 +234,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private var listmodelLobbyChatPlayerList:DefaultListModel<String> = DefaultListModel()
 
 	/** Chat input Column(Lobby screen) */
-	private val txtfldLobbyChatInput:JTextField = JTextField()
+	private val txtFldLobbyChatInput:JTextField = JTextField()
 
 	/** Submit chat button(Lobby screen) */
 	private val btnLobbyChatSend:JButton = JButton()
@@ -301,20 +300,20 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private val sameRoomPlayerInfoList:LinkedList<NetPlayerInfo> = LinkedList()
 
 	/** Chat input Column(Room screen) */
-	private val txtfldRoomChatInput:JTextField = JTextField()
+	private val txtFldRoomChatInput:JTextField = JTextField()
 
 	/** Submit chat button(Room screen) */
 	private val btnRoomChatSend:JButton = JButton()
 	/** Team name input Column(Room screen) */
-	private val txtfldRoomTeam:JTextField = JTextField()
+	private val txtFldRoomTeam:JTextField = JTextField()
 
 	/** Host name input Column(Server add screen) */
-	private val txtfldServerAddHost:JTextField = JTextField()
+	private val txtFldServerAddHost:JTextField = JTextField()
 
 	/** OK button(Server add screen) */
 	private val btnServerAddOK:JButton = JButton()
 
-	private val txtfldCreateRatedName:JTextField = JTextField()
+	private val txtFldCreateRatedName:JTextField = JTextField()
 
 	/** Cancel button (Created rated waiting screen) */
 	private val btnCreateRatedWaitingCancel:JButton = JButton()
@@ -335,7 +334,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private val btnCreateRatedCancel:JButton = JButton()
 
 	/** ルーム名(Create room screen) */
-	private val txtfldCreateRoomName:JTextField = JTextField()
+	private val txtFldCreateRoomName:JTextField = JTextField()
 
 	/** Game Mode (Create room screen) */
 	private val comboboxCreateRoomMode:JComboBox<String> = JComboBox()
@@ -438,7 +437,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	private val spinnerCreateRoomPresetID:JSpinner = JSpinner()
 
 	/** Preset code (Create room screen) */
-	private val txtfldCreateRoomPresetCode:JTextField = JTextField()
+	private val txtFldCreateRoomPresetCode:JTextField = JTextField()
 
 	/** OK button(Create room screen) */
 	private val btnCreateRoomOK:JButton = JButton()
@@ -517,11 +516,11 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	/** Tuning: Outline type combobox */
 	private var comboboxTuningBlockOutlineType:JComboBox<String> = JComboBox()
 	/** Tuning: Minimum DAS */
-	private val txtfldTuningMinDAS:JTextField = JTextField()
+	private val txtFldTuningMinDAS:JTextField = JTextField()
 	/** Tuning: Maximum DAS */
-	private val txtfldTuningMaxDAS:JTextField = JTextField()
+	private val txtFldTuningMaxDAS:JTextField = JTextField()
 	/** Tuning: DAS dealy */
-	private val txtfldTuningDasDelay:JTextField = JTextField()
+	private val txtFldTuningDasDelay:JTextField = JTextField()
 	/** Tuning: Checkbox to enable swapping the roles of up/down buttons
 	 * in-game */
 	private val chkboxTuningReverseUpDown:JCheckBox = JCheckBox()
@@ -706,9 +705,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelNameEntry.add(JLabel(getUIText("ServerSelect_LabelName")), BorderLayout.WEST)
 
 		// *** Name input Column
-		txtfldPlayerName.componentPopupMenu = TextComponentPopupMenu(txtfldPlayerName)
-		txtfldPlayerName.text = propConfig.getProperty("serverselect.txtfldPlayerName.text", "")
-		subpanelNameEntry.add(txtfldPlayerName, BorderLayout.CENTER)
+		txtFldPlayerName.componentPopupMenu = TextComponentPopupMenu(txtFldPlayerName)
+		txtFldPlayerName.text = propConfig.getProperty("serverselect.txtFldPlayerName.text", "")
+		subpanelNameEntry.add(txtFldPlayerName, BorderLayout.CENTER)
 
 		// ** Team name input Panel
 		val subpanelTeamEntry = JPanel(BorderLayout())
@@ -718,9 +717,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelTeamEntry.add(JLabel(getUIText("ServerSelect_LabelTeam")), BorderLayout.WEST)
 
 		// *** Team name input Column
-		txtfldPlayerTeam.componentPopupMenu = TextComponentPopupMenu(txtfldPlayerTeam)
-		txtfldPlayerTeam.text = propConfig.getProperty("serverselect.txtfldPlayerTeam.text", "")
-		subpanelTeamEntry.add(txtfldPlayerTeam, BorderLayout.CENTER)
+		txtFldPlayerTeam.componentPopupMenu = TextComponentPopupMenu(txtFldPlayerTeam)
+		txtFldPlayerTeam.text = propConfig.getProperty("serverselect.txtFldPlayerTeam.text", "")
+		subpanelTeamEntry.add(txtFldPlayerTeam, BorderLayout.CENTER)
 
 		// * Server selection list box
 		if(GameManager.isDevBuild) {
@@ -910,8 +909,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelRoomListTopBar.add(subpanelRoomListTeam, "Team")
 
 		// ***** Team name input Column
-		txtfldRoomListTeam
-		subpanelRoomListTeam.add(txtfldRoomListTeam, BorderLayout.CENTER)
+		txtFldRoomListTeam
+		subpanelRoomListTeam.add(txtFldRoomListTeam, BorderLayout.CENTER)
 
 		// ***** Team nameChange buttonPanel
 		val subpanelRoomListTeamButtons = JPanel()
@@ -987,8 +986,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelLobbyChat.add(subpanelLobbyChatInputArea, BorderLayout.SOUTH)
 
 		// **** Chat input Column(Lobby screen)
-		txtfldLobbyChatInput.componentPopupMenu = TextComponentPopupMenu(txtfldLobbyChatInput)
-		subpanelLobbyChatInputArea.add(txtfldLobbyChatInput, BorderLayout.CENTER)
+		txtFldLobbyChatInput.componentPopupMenu = TextComponentPopupMenu(txtFldLobbyChatInput)
+		subpanelLobbyChatInputArea.add(txtFldLobbyChatInput, BorderLayout.CENTER)
 
 		// **** Submit chat button(Lobby screen)
 		subpanelLobbyChatInputArea.add(btnLobbyChatSend.also {
@@ -1068,7 +1067,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		// ***** Team name input Column
 
-		subpanelRoomTeam.add(txtfldRoomTeam, BorderLayout.CENTER)
+		subpanelRoomTeam.add(txtFldRoomTeam, BorderLayout.CENTER)
 
 		// ***** Team nameChange buttonPanel
 		val subpanelRoomTeamButtons = JPanel()
@@ -1191,8 +1190,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelRoomChat.add(subpanelRoomChatInputArea, BorderLayout.SOUTH)
 
 		// **** Chat input Column(Room screen)
-		txtfldRoomChatInput.componentPopupMenu = TextComponentPopupMenu(txtfldRoomChatInput)
-		subpanelRoomChatInputArea.add(txtfldRoomChatInput, BorderLayout.CENTER)
+		txtFldRoomChatInput.componentPopupMenu = TextComponentPopupMenu(txtFldRoomChatInput)
+		subpanelRoomChatInputArea.add(txtFldRoomChatInput, BorderLayout.CENTER)
 
 		// **** Submit chat button(Room screen)
 		btnRoomChatSend.text = getUIText("Room_ChatSend")
@@ -1221,8 +1220,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelHost.add(JLabel(getUIText("ServerAdd_Host")), BorderLayout.WEST)
 
 		// *** Host name input Column
-		txtfldServerAddHost.componentPopupMenu = TextComponentPopupMenu(txtfldServerAddHost)
-		subpanelHost.add(txtfldServerAddHost, BorderLayout.CENTER)
+		txtFldServerAddHost.componentPopupMenu = TextComponentPopupMenu(txtFldServerAddHost)
+		subpanelHost.add(txtFldServerAddHost, BorderLayout.CENTER)
 
 		// **  buttonPanel type
 		val subpanelButtons = JPanel()
@@ -1297,9 +1296,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelName.add(JLabel(getUIText("CreateRated_Name")), BorderLayout.WEST)
 
 		// *** Room name textfield
-		txtfldCreateRatedName.componentPopupMenu = TextComponentPopupMenu(txtfldCreateRatedName)
-		txtfldCreateRatedName.toolTipText = getUIText("CreateRated_Name_Tip")
-		subpanelName.add(txtfldCreateRatedName, BorderLayout.CENTER)
+		txtFldCreateRatedName.componentPopupMenu = TextComponentPopupMenu(txtFldCreateRatedName)
+		txtFldCreateRatedName.toolTipText = getUIText("CreateRated_Name_Tip")
+		subpanelName.add(txtFldCreateRatedName, BorderLayout.CENTER)
 
 		// ** Subpanel for preset selection
 		val subpanelPresetSelect = JPanel(BorderLayout())
@@ -1411,9 +1410,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelName.add(JLabel(getUIText("CreateRoom_Name")), BorderLayout.WEST)
 
 		// *** Room name input Column
-		txtfldCreateRoomName.componentPopupMenu = TextComponentPopupMenu(txtfldCreateRoomName)
-		txtfldCreateRoomName.toolTipText = getUIText("CreateRoom_Name_Tip")
-		subpanelName.add(txtfldCreateRoomName, BorderLayout.CENTER)
+		txtFldCreateRoomName.componentPopupMenu = TextComponentPopupMenu(txtFldCreateRoomName)
+		txtFldCreateRoomName.toolTipText = getUIText("CreateRoom_Name_Tip")
+		subpanelName.add(txtFldCreateRoomName, BorderLayout.CENTER)
 
 		// ** Game Mode panel
 		val subpanelMode = JPanel(BorderLayout())
@@ -1837,8 +1836,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		subpanelPresetCode.add(JLabel(getUIText("CreateRoom_PresetCode")), BorderLayout.WEST)
 
 		// *** Preset code textfield
-		txtfldCreateRoomPresetCode.componentPopupMenu = TextComponentPopupMenu(txtfldCreateRoomPresetCode)
-		subpanelPresetCode.add(txtfldCreateRoomPresetCode, BorderLayout.CENTER)
+		txtFldCreateRoomPresetCode.componentPopupMenu = TextComponentPopupMenu(txtFldCreateRoomPresetCode)
+		subpanelPresetCode.add(txtFldCreateRoomPresetCode, BorderLayout.CENTER)
 
 		// *** Preset code export
 		val btnPresetCodeExport = JButton(getUIText("CreateRoom_PresetCodeExport"))
@@ -2093,8 +2092,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		pTuningMinDAS.add(JLabel(getUIText("GameTuning_MinDAS_Label")))
 
-		txtfldTuningMinDAS.columns = 5
-		pTuningMinDAS.add(txtfldTuningMinDAS)
+		txtFldTuningMinDAS.columns = 5
+		pTuningMinDAS.add(txtFldTuningMinDAS)
 
 		// *** Maximum DAS
 		val pTuningMaxDAS = JPanel()
@@ -2103,8 +2102,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		pTuningMaxDAS.add(JLabel(getUIText("GameTuning_MaxDAS_Label")))
 
-		txtfldTuningMaxDAS.columns = 5
-		pTuningMaxDAS.add(txtfldTuningMaxDAS)
+		txtFldTuningMaxDAS.columns = 5
+		pTuningMaxDAS.add(txtFldTuningMaxDAS)
 
 		// *** DAS delay
 		val pTuningDasDelay = JPanel()
@@ -2113,8 +2112,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 		pTuningDasDelay.add(JLabel(getUIText("GameTuning_DasDelay_Label")))
 
-		txtfldTuningDasDelay.columns = 5
-		pTuningDasDelay.add(txtfldTuningDasDelay)
+		txtFldTuningDasDelay.columns = 5
+		pTuningDasDelay.add(txtFldTuningDasDelay)
 
 		// *** Reverse Up/Down
 		val pTuningReverseUpDown = JPanel()
@@ -2543,7 +2542,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		itemLobbyMenuRanking.isEnabled = mode>=1
 
 		btnLobbyChatSend.isEnabled = mode>=1
-		txtfldLobbyChatInput.isEnabled = mode>=1
+		txtFldLobbyChatInput.isEnabled = mode>=1
 	}
 
 	/** Screen Room buttonOf is enabledChange the state
@@ -2556,7 +2555,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		btnRoomButtonsViewSetting.isEnabled = b
 		btnRoomButtonsRanking.isEnabled = b
 		btnRoomChatSend.isEnabled = b
-		txtfldRoomChatInput.isEnabled = b
+		txtFldRoomChatInput.isEnabled = b
 	}
 
 	/** Participation in the screen room buttonAnd withdrawal buttonSwitching
@@ -2856,8 +2855,8 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		propConfig.setProperty("lobby.splitLobbyChat.location", splitLobbyChat.dividerLocation)
 		propConfig.setProperty("room.splitRoom.location", splitRoom.dividerLocation)
 		propConfig.setProperty("room.splitRoomChat.location", splitRoomChat.dividerLocation)
-		propConfig.setProperty("serverselect.txtfldPlayerName.text", txtfldPlayerName.text)
-		propConfig.setProperty("serverselect.txtfldPlayerTeam.text", txtfldPlayerTeam.text)
+		propConfig.setProperty("serverselect.txtFldPlayerName.text", txtFldPlayerName.text)
+		propConfig.setProperty("serverselect.txtFldPlayerTeam.text", txtFldPlayerTeam.text)
 
 		propConfig.setProperty("serverselect.listboxServerList.value", listboxServerList.selectedValue ?: "")
 		tableRoomList.columnModel.let {
@@ -3037,7 +3036,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 			log.debug("Port:$port")
 
-			netPlayerClient = NetPlayerClient(strHost, port, txtfldPlayerName.text, txtfldPlayerTeam.text.trim {it<=' '}).also {
+			netPlayerClient = NetPlayerClient(strHost, port, txtFldPlayerName.text, txtFldPlayerTeam.text.trim {it<=' '}).also {
 				it.isDaemon = true
 				it.addListener(this)
 				it.start()
@@ -3117,7 +3116,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		try {
 			val roomInfo = NetRoomInfo()
 
-			val roomName = txtfldCreateRoomName.text
+			val roomName = txtFldCreateRoomName.text
 			val modeName = comboboxCreateRoomMode.selectedItem as String
 			val integerMaxPlayers = spinnerCreateRoomMaxPlayers.value as Int
 			val integerAutoStartSeconds = spinnerCreateRoomAutoStartSeconds.value as Int
@@ -3196,7 +3195,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 	 */
 	private fun importRoomInfoToCreateRoomScreen(r:NetRoomInfo?) {
 		if(r!=null) {
-			txtfldCreateRoomName.text = r.strName
+			txtFldCreateRoomName.text = r.strName
 			comboboxCreateRoomMode.selectedIndex = 0
 			if(r.strMode.isNotEmpty()) comboboxCreateRoomMode.selectedItem = r.strMode
 			spinnerCreateRoomMaxPlayers.value = r.maxPlayers
@@ -3306,9 +3305,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			comboboxTuningSkin.selectedIndex = it.skin+2
 			comboboxTuningBlockOutlineType.selectedIndex = it.blockOutlineType+1
 
-			txtfldTuningMinDAS.text = "${it.minDAS}"
-			txtfldTuningMaxDAS.text = "${it.maxDAS}"
-			txtfldTuningDasDelay.text = "${it.owARR}"
+			txtFldTuningMinDAS.text = "${it.minDAS}"
+			txtFldTuningMaxDAS.text = "${it.maxDAS}"
+			txtFldTuningDasDelay.text = "${it.owARR}"
 			chkboxTuningReverseUpDown.isSelected = it.reverseUpDown
 		}
 		// Change screen
@@ -3374,7 +3373,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Change team(Lobby screen)
 		if(e.actionCommand=="Lobby_TeamChange")
 			if(netPlayerClient!=null&&netPlayerClient!!.isConnected) {
-				txtfldRoomListTeam.text = netPlayerClient!!.yourPlayerInfo!!.strTeam
+				txtFldRoomListTeam.text = netPlayerClient!!.yourPlayerInfo!!.strTeam
 				roomListTopBarCardLayout.next(subpanelRoomListTopBar)
 			}
 		// Cut
@@ -3401,26 +3400,26 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			}
 		// Submit chat
 		if(e.actionCommand=="Lobby_ChatSend"||e.actionCommand=="Room_ChatSend") {
-			if(txtfldLobbyChatInput.text.isNotEmpty()&&netPlayerClient!=null&&netPlayerClient!!.isConnected) {
-				sendChat(false, txtfldLobbyChatInput.text)
-				txtfldLobbyChatInput.text = ""
+			if(txtFldLobbyChatInput.text.isNotEmpty()&&netPlayerClient!=null&&netPlayerClient!!.isConnected) {
+				sendChat(false, txtFldLobbyChatInput.text)
+				txtFldLobbyChatInput.text = ""
 			}
 
 			if(netPlayerClient!=null&&netPlayerClient!!.isConnected)
 				if(tabLobbyAndRoom.selectedIndex==0) {
-					if(txtfldLobbyChatInput.text.isNotEmpty()) {
-						sendChat(false, txtfldLobbyChatInput.text)
-						txtfldLobbyChatInput.text = ""
+					if(txtFldLobbyChatInput.text.isNotEmpty()) {
+						sendChat(false, txtFldLobbyChatInput.text)
+						txtFldLobbyChatInput.text = ""
 					}
-				} else if(txtfldRoomChatInput.text.isNotEmpty()) {
-					sendChat(true, txtfldRoomChatInput.text)
-					txtfldRoomChatInput.text = ""
+				} else if(txtFldRoomChatInput.text.isNotEmpty()) {
+					sendChat(true, txtFldRoomChatInput.text)
+					txtFldRoomChatInput.text = ""
 				}
 		}
 		// Change teamOK(Lobby screen)
 		if(e.actionCommand=="Lobby_TeamChange_OK")
 			if(netPlayerClient!=null&&netPlayerClient!!.isConnected) {
-				netPlayerClient!!.send("changeteam\t${NetUtil.urlEncode(txtfldRoomListTeam.text)}\n")
+				netPlayerClient!!.send("changeteam\t${NetUtil.urlEncode(txtFldRoomListTeam.text)}\n")
 				roomListTopBarCardLayout.first(subpanelRoomListTopBar)
 			}
 		// Change teamCancel(Lobby screen)
@@ -3457,13 +3456,13 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		// Change team(Room screen)
 		if(e.actionCommand=="Room_TeamChange")
 			if(netPlayerClient!=null&&netPlayerClient!!.isConnected) {
-				txtfldRoomTeam.text = netPlayerClient!!.yourPlayerInfo!!.strTeam
+				txtFldRoomTeam.text = netPlayerClient!!.yourPlayerInfo!!.strTeam
 				roomTopBarCardLayout.next(subPanelRoomTopBar)
 			}
 		// Change teamOK(Room screen)
 		if(e.actionCommand=="Room_TeamChange_OK")
 			if(netPlayerClient!=null&&netPlayerClient!!.isConnected) {
-				netPlayerClient!!.send("changeteam\t${NetUtil.urlEncode(txtfldRoomTeam.text)}\n")
+				netPlayerClient!!.send("changeteam\t${NetUtil.urlEncode(txtFldRoomTeam.text)}\n")
 				roomTopBarCardLayout.first(subPanelRoomTopBar)
 			}
 		// Change teamCancel(Room screen)
@@ -3472,16 +3471,16 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		if(e.actionCommand=="Room_ViewSetting") viewRoomDetail(netPlayerClient!!.yourPlayerInfo!!.roomID)
 		// In the Add Server screenOK button
 		if(e.actionCommand=="ServerAdd_OK") {
-			if(txtfldServerAddHost.text.isNotEmpty()) {
-				listModelServerList.addElement(txtfldServerAddHost.text)
+			if(txtFldServerAddHost.text.isNotEmpty()) {
+				listModelServerList.addElement(txtFldServerAddHost.text)
 				saveListFromDefaultListModel(listModelServerList, "config/setting/netlobby_serverlist.cfg")
-				txtfldServerAddHost.text = ""
+				txtFldServerAddHost.text = ""
 			}
 			changeCurrentScreenCard(SCREENCARD_SERVERSELECT)
 		}
 		// In the Add Server screenCancel button
 		if(e.actionCommand=="ServerAdd_Cancel") {
-			txtfldServerAddHost.text = ""
+			txtFldServerAddHost.text = ""
 			changeCurrentScreenCard(SCREENCARD_SERVERSELECT)
 		}
 		// Create rated cancel from waiting card
@@ -3494,7 +3493,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			try {
 				val presetIndex = comboboxCreateRatedPresets.selectedIndex
 				val r = presets[presetIndex]
-				r.strName = txtfldCreateRatedName.text
+				r.strName = txtFldCreateRatedName.text
 				backupRoomInfo = r
 
 				val msg = ("ratedroomcreate\t${NetUtil.urlEncode(r.strName)}\t"
@@ -3519,7 +3518,7 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 			setCreateRoomUIType(false, null)
 			importRoomInfoToCreateRoomScreen(r)
 			// Copy name and number of players
-			txtfldCreateRoomName.text = txtfldCreateRatedName.text
+			txtFldCreateRoomName.text = txtFldCreateRatedName.text
 			spinnerCreateRoomMaxPlayers.value = spinnerCreateRatedMaxPlayers.value
 			// Change screen card
 			changeCurrentScreenCard(SCREENCARD_CREATEROOM)
@@ -3605,14 +3604,14 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 		if(e.actionCommand=="CreateRoom_PresetCodeExport") {
 			val r = exportRoomInfoFromCreateRoomScreen()
 			if(r==null)
-				txtfldCreateRoomPresetCode.text = ""
+				txtFldCreateRoomPresetCode.text = ""
 			else
-				txtfldCreateRoomPresetCode.text = NetUtil.compressString(r.exportString())
+				txtFldCreateRoomPresetCode.text = NetUtil.compressString(r.exportString())
 		}
 		// Preset code import (Create Room)
 		if(e.actionCommand=="CreateRoom_PresetCodeImport")
 			try {
-				var strPresetCode = txtfldCreateRoomPresetCode.text
+				var strPresetCode = txtFldCreateRoomPresetCode.text
 				strPresetCode = strPresetCode.replace(Regex("[^a-zA-Z0-9+/=]"), "")
 				if(strPresetCode.isNotEmpty()) {
 					val strPresetCodeD = NetUtil.decompressString(strPresetCode)
@@ -3686,9 +3685,9 @@ class NetLobbyFrame:JFrame(), ActionListener, NetMessageListener {
 
 				blockOutlineType = comboboxTuningBlockOutlineType.selectedIndex-1
 
-				minDAS = getIntTextField(-1, txtfldTuningMinDAS)
-				maxDAS = getIntTextField(-1, txtfldTuningMaxDAS)
-				owARR = getIntTextField(-1, txtfldTuningDasDelay)
+				minDAS = getIntTextField(-1, txtFldTuningMinDAS)
+				maxDAS = getIntTextField(-1, txtFldTuningMaxDAS)
+				owARR = getIntTextField(-1, txtFldTuningDasDelay)
 				reverseUpDown = chkboxTuningReverseUpDown.isSelected
 			}
 

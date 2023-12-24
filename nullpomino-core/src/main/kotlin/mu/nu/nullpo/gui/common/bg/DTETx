@@ -1,0 +1,615 @@
+
+/*
+Sub BGInit() '背景初期化
+On Error GoTo CE
+Dim I As Long
+
+FAC = -(BG >= 2) * Int(Rnd * 64)
+If BG >= 2 Then
+'（海）
+SeaA = 0
+For I = 0 To 29: Sea(I) = Rnd * 640: Next I
+'（アルファベット）
+With ABG
+.R = Rnd * 360: .R2 = Rnd * 360: .X = Rnd * 640: .Y = Rnd * 480
+End With
+'（スターダスト）
+For I = 0 To 59: StD(I) = Rnd * 152: Next I
+'（キラキラ振り子）
+FSX = Rnd * 640
+FC = 140: FX = 0: FY = 0
+KrI = 0
+For I = 0 To 35
+With Kr(I)
+.V = False
+End With
+Next I
+'（オーロラ）
+Crs = Rnd * 360
+CrsF = Rnd * 640
+CrsFF = Rnd * 360
+'（紫空）
+PSkD(0) = 0: PSkD(1) = 24: PSkD(2) = 72: PSkD(3) = 144
+PSkD(4) = 240: PSkD(5) = 336: PSkD(6) = 408: PSkD(7) = 456
+PSkS1(0) = 0: PSkS2(0) = 24
+PSkS1(1) = 48: PSkS2(1) = 48
+PSkS1(2) = 144: PSkS2(2) = 72
+PSkS1(3) = 288: PSkS2(3) = 96
+PSkS1(4) = 288: PSkS2(4) = 96
+PSkS1(5) = 144: PSkS2(5) = 72
+PSkS1(6) = 48: PSkS2(6) = 48
+PSkS1(7) = 0: PSkS2(7) = 24
+PSkP = Rnd
+'（カーペット）
+With CptG
+.X = Rnd * 640: .Y = Rnd * 480
+End With
+'（ダイヤ）
+With Dia
+DiaR = Rnd * 360: .X = Rnd * 640: .Y = Rnd * 480
+End With
+'（レーザー）
+LsrSY = Rnd * 240
+For I = 0 To 59
+If (I Mod 3) = 0 Then
+With Lsr(I)
+.C = (Int(I / 2) Mod 2): .X = Rnd * 704 - 32: .Y = Rnd * 544 - 32: .R = I * 2 + 1: .RR = 1 - (I Mod 2) * 2
+End With
+Else
+Lsr(I) = Lsr(Int(I / 3) * 3)
+End If
+Next I
+'（水晶）
+CrysSY = Rnd * 240
+For I = 0 To 15
+With Crys(I)
+.A = Int(Rnd * 20): .AA = (1 + Int(Rnd * 2)) * (1 + (TrM = 2) * (I Mod 2) * 2): .X = Int(Rnd * 800) - 80: .Y = Rnd * 640 - 80: .YY = .AA * 4 + Rnd * 4 * (1 + (TrM = 2) * (I Mod 2) * 2)
+End With
+Next I
+'レベル50-199（超空間）
+Spa = 0
+'レベル200（電流）
+With EdG
+.X = Int(Rnd * 640): .Y = Int(Rnd * 480)
+End With
+'レベルMAX
+With LdG
+.X = 0: .Y = 0
+End With
+
+End If
+Exit Sub
+
+CE:
+'Beep
+End Sub
+Sub BGD(ByVal TrM As Long, ByVal Lev As Long) '背景アニメ
+On Error GoTo CE
+Dim I As Long, R As Single, R1 As Single, R2 As Single
+
+If BG >= 1 Then
+If BG >= 2 Then FAC = FAC + 1 + (FAC >= 63) * 64
+If FOC < 19 Or FIC >= 10 Then
+If BG >= 2 Then
+Select Case Stt
+Case 0 '（海）
+R = Sea(0)
+If R > 640 Then R = R - 640 Else If R < 0 Then R = R + 640
+With Src
+.Left = R: .Top = 0: .Right = 640: .Bottom = .Top + 240
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 0: .Right = R: .Bottom = .Top + 240
+End With
+If Not FS Then BBSf.BltFast 640 - R, 0, BGSf, Src, DDBLTFAST_WAIT
+For I = 0 To 29
+If TrM < 2 Then
+R = Sea(I) + Sin((SeaA + 1.28 ^ (32 - I)) * Rg) * (1.15 ^ I) * (1 + (TrM = 0) * 0.4)
+If R > 640 Then R = R - 640 Else If R < 0 Then R = R + 640
+With Src
+.Left = R: .Top = 240 + I * 8: .Right = 640: .Bottom = .Top + 8
+End With
+If Not FS Then BBSf.BltFast 0, 240 + I * 8, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 240 + I * 8: .Right = R: .Bottom = .Top + 8
+End With
+If Not FS Then BBSf.BltFast 640 - R, 240 + I * 8, BGSf, Src, DDBLTFAST_WAIT
+Else
+R = Sin((SeaA + 1.3 ^ (32 - I)) * Rg) * (1.15 ^ I - 1)
+With Src
+.Left = Sea(I): .Top = 240 + I * 5 + R: .Right = 640: .Bottom = .Top + 8
+End With
+If Not FS Then BBSf.BltFast 0, 240 + I * 8, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 240 + I * 5 + R: .Right = Sea(I): .Bottom = .Top + 8
+End With
+If Not FS Then BBSf.BltFast 640 - Sea(I), 240 + I * 8, BGSf, Src, DDBLTFAST_WAIT
+End If
+Sea(I) = Sea(I) + (I - 2.5) * (0.03 - (TrM > 0) * 0.08)
+If Sea(I) > 640 Then Sea(I) = Sea(I) - 640 Else If Sea(I) < 0 Then Sea(I) = Sea(I) + 640
+Next I
+SeaA = SeaA + 2 + (SeaA >= 358) * 360
+Case 1 '（アルファベット）
+With ABG
+.X = .X + Sin(.R * Rg) * (3 + TrM * 5): .Y = .Y - Cos(.R * Rg) * (3 + TrM * 5)
+If .X < 0 Then .X = .X + 640
+If .X >= 640 Then .X = .X - 640
+If .Y < 0 Then .Y = .Y + 480
+If .Y >= 480 Then .Y = .Y - 480
+.R = .R + 0.06 + TrM * 0.02 - (TrM >= 2) * (1 + Sin(.R2 * Rg)) * 0.6
+If .R >= 360 Then .R = .R - 360
+If .R < 0 Then .R = .R + 360
+If TrM >= 2 Then .R2 = .R2 + 2.2: If .R2 >= 360 Then .R2 = .R2 - 360
+End With
+With Src
+.Left = ABG.X: .Top = ABG.Y: .Right = 640: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = ABG.Y: .Right = ABG.X: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 640 - ABG.X, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = ABG.X: .Top = 0: .Right = 640: .Bottom = ABG.Y
+End With
+If Not FS Then BBSf.BltFast 0, 480 - ABG.Y, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 0: .Right = ABG.X: .Bottom = ABG.Y
+End With
+If Not FS Then BBSf.BltFast 640 - ABG.X, 480 - ABG.Y, BGSf, Src, DDBLTFAST_WAIT
+'For I = 0 To 77
+'With A(I)
+'If .X < 100 Then .XXX = 0.1
+'If .X > 524 Then .XXX = -0.1
+'If .Y < 100 Then .YYY = 0.1
+'If .Y > 364 Then .YYY = -0.1
+'.XX = .XX + .XXX: .YY = .YY + .YYY
+'If Abs(.XX) > .MXX Then .XX = .MXX * Sgn(.XX): .XXX = 0
+'If Abs(.YY) > .MYY Then .YY = .MYY * Sgn(.YY): .YYY = 0
+'.X = .X + .XX: .Y = .Y + .YY
+'End With
+'With Src
+'.Left = 256 + (I Mod 8) * 16: .Top = Int(I / 8) * 16: .Right = .Left + 16: .Bottom = .Top + 16
+'End With
+'BltClip A(I).X, A(I).Y, SpSf, Src
+'Next I
+
+Case 8 '（スターダスト）
+For I = 0 To 59
+StD(I) = StD(I) + (I * 0.1 - 2.95) * (1 + (TrM >= 2) * 2)
+If StD(I) < 0 Then StD(I) = StD(I) + 152
+If StD(I) >= 152 Then StD(I) = StD(I) - 152
+With Src
+.Left = 0: .Top = (I Mod 3) * 160 + StD(I): .Right = .Left + 640: .Bottom = .Top + 8
+End With
+If Not FS Then BBSf.BltFast 0, I * 8, BGSf, Src, DDBLTFAST_WAIT
+Next I
+
+'With Src
+'.Left = 0: .Top = 0: .Right = .Left + 640: .Bottom = .Top + 480
+'End With
+'If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+Case 3 '（キラキラ振り子）
+FSX = FSX - 5: If FSX < 0 Then FSX = FSX + 640
+With Src
+.Left = FSX: .Top = 0: .Right = 640: .Bottom = 240
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+If Not FS Then BBSf.BltFast 0, 240, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 0: .Right = FSX: .Bottom = 240
+End With
+If Not FS Then BBSf.BltFast 640 - FSX, 0, BGSf, Src, DDBLTFAST_WAIT
+If Not FS Then BBSf.BltFast 640 - FSX, 240, BGSf, Src, DDBLTFAST_WAIT
+For I = 0 To 35
+With Kr(I)
+If .V Then
+.A = .A + 1 + (.A >= 5) * 6
+.YY = .YY - 0.1
+.X = .X + .XX: .Y = .Y + .YY
+End If
+End With
+Next I
+For I = 0 To 35
+If Kr(I).V Then
+With Src
+.Left = 16 + Kr(I).A * 16: .Top = 368: .Right = .Left + 16: .Bottom = .Top + 16
+End With
+BltClip Kr(I).X + (Rnd * 20 - 10) * TrM, Kr(I).Y + (Rnd * 20 - 10) * TrM, BGSf, Src, DDBLTFAST_SRCCOLORKEY Or DDBLTFAST_WAIT
+End If
+Next I
+FC = FC + 2 + (FC >= 358) * 360
+FX = Sin(Sin(FC * Rg) * 35 * Rg): FY = Cos(Sin(FC * Rg) * 35 * Rg)
+KrI = KrI + 1 + (KrI = 35) * 36
+With Kr(KrI)
+.V = True: .A = 0: R1 = Rnd * 360: R2 = Rnd * 64
+.X = 312 + FX * 540 + Sin(R1 * Rg) * R2: .Y = -188 + FY * 540 + Cos(R1 * Rg) * R2
+.XX = -4 + Rnd * 8: .YY = -4 + Rnd * 8
+End With
+For I = 11 To 46 + (TrM < 2) * 4
+If I < 31 Or I > 37 Then
+With Src
+.Left = 0: .Top = 368: .Right = .Left + 16: .Bottom = .Top + 16
+End With
+BltClip 312 + FX * (I * 16 + (TrM = 2) * (FC Mod 15)), -188 + FY * (I * 16 + (TrM = 2) * (FC Mod 15)), BGSf, Src, DDBLTFAST_SRCCOLORKEY Or DDBLTFAST_WAIT
+End If
+Next I
+With Src
+.Left = 0: .Top = 240: .Right = .Left + 128: .Bottom = .Top + 128
+End With
+BltClip 256 + FX * 540, -244 + FY * 540, BGSf, Src, DDBLTFAST_SRCCOLORKEY Or DDBLTFAST_WAIT
+Case 4 '（クリスタル）
+For I = 0 To 79
+R = CrsF + Sin((Crs + I * 17) * Rg) * 7 * (TrM + 1)
+If R > 640 Then R = R - 640 Else If R < 0 Then R = R + 640
+With Src
+.Left = R: .Top = I * 8: .Right = 640: .Bottom = .Top + 8
+End With
+If Not FS Then BBSf.BltFast 0, I * 8, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = I * 8: .Right = R: .Bottom = .Top + 8
+End With
+If Not FS Then BBSf.BltFast 640 - R, I * 8, BGSf, Src, DDBLTFAST_WAIT
+Next I
+Crs = Crs + 3.5: If Crs >= 360 Then Crs = Crs - 360
+If TrM >= 2 Then
+CrsF = CrsF + Sin(CrsFF * Rg) * 2
+If CrsF < 0 Then CrsF = CrsF + 640
+If CrsF >= 640 Then CrsF = CrsF - 640
+CrsFF = CrsFF + 0.2: If CrsFF >= 360 Then CrsFF = CrsFF - 360
+End If
+Case 2 '（紫空）
+For I = 0 To 7
+R = (I Mod 2) + PSkP * 2: If R >= 2 Then R = R - 2
+If R < 1 Then
+With Src
+.Left = 0: .Top = PSkS1(I) + R * PSkS2(I): .Right = .Left + 640: .Bottom = .Top + PSkS2(I)
+End With
+If Not FS Then BBSf.BltFast 0, PSkD(I), BGSf, Src, DDBLTFAST_WAIT
+Else
+With Src
+.Left = 0: .Top = PSkS1(I) + R * PSkS2(I): .Right = .Left + 640: .Bottom = PSkS1(I) + PSkS2(I) * 2
+End With
+If Not FS Then BBSf.BltFast 0, PSkD(I), BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = PSkS1(I): .Right = .Left + 640: .Bottom = .Top + (R - 1) * PSkS2(I)
+End With
+If Not FS Then BBSf.BltFast 0, PSkD(I) + PSkS2(I) * (2 - R), BGSf, Src, DDBLTFAST_WAIT
+End If
+Next I
+If TrM = 0 Then PSkP = PSkP - 0.01: If PSkP < 0 Then PSkP = PSkP + 1
+If TrM = 1 Then PSkP = PSkP - 0.03: If PSkP < 0 Then PSkP = PSkP + 1
+If TrM = 2 Then PSkP = PSkP + 0.05: If PSkP >= 1 Then PSkP = PSkP - 1
+
+Case 6 '（カーペット）
+With CptG
+If TrM = 0 Then .X = .X - 16: .Y = .Y + 1
+If TrM = 1 Then .Y = .Y - 15
+If TrM = 2 Then .X = .X - 16: .Y = .Y + 15
+If .X < 0 Then .X = .X + 640
+If .X >= 640 Then .X = .X - 640
+If .Y < 0 Then .Y = .Y + 480
+If .Y >= 480 Then .Y = .Y - 480
+End With
+With Src
+.Left = CptG.X: .Top = CptG.Y: .Right = 640: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = CptG.Y: .Right = CptG.X: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 640 - CptG.X, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = CptG.X: .Top = 0: .Right = 640: .Bottom = CptG.Y
+End With
+If Not FS Then BBSf.BltFast 0, 480 - CptG.Y, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 0: .Right = CptG.X: .Bottom = CptG.Y
+End With
+If Not FS Then BBSf.BltFast 640 - CptG.X, 480 - CptG.Y, BGSf, Src, DDBLTFAST_WAIT
+
+Case 5 '（ダイヤ）
+With Dia
+If TrM = 0 Then .X = .X - 8: .Y = .Y + 8
+If TrM = 1 Then .X = .X + 12: .Y = .Y - 12
+If TrM = 2 Then .X = .X + Sin(DiaR * Rg) * 10: .Y = .Y - Cos(DiaR * Rg) * 10
+If .X < 0 Then .X = .X + 320
+If .X >= 320 Then .X = .X - 320
+If .Y < 0 Then .Y = .Y + 240
+If .Y >= 240 Then .Y = .Y - 240
+If TrM = 2 Then DiaR = DiaR + 0.2: If DiaR >= 360 Then DiaR = DiaR - 360
+End With
+With Src
+.Left = Dia.X: .Top = Dia.Y: .Right = 320: .Bottom = 240
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = Dia.Y: .Right = Dia.X: .Bottom = 240
+End With
+If Not FS Then BBSf.BltFast 320 - Dia.X, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = Dia.X: .Top = 0: .Right = 320: .Bottom = Dia.Y
+End With
+If Not FS Then BBSf.BltFast 0, 240 - Dia.Y, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 0: .Right = Dia.X: .Bottom = Dia.Y
+End With
+If Not FS Then BBSf.BltFast 320 - Dia.X, 240 - Dia.Y, BGSf, Src, DDBLTFAST_WAIT
+
+With Src
+.Left = 640 - Dia.X: .Top = Dia.Y: .Right = 640: .Bottom = 240
+End With
+If Not FS Then BBSf.BltFast 320, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 320: .Top = Dia.Y: .Right = 640 - Dia.X: .Bottom = 240
+End With
+If Not FS Then BBSf.BltFast 320 + Dia.X, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 640 - Dia.X: .Top = 0: .Right = 640: .Bottom = Dia.Y
+End With
+If Not FS Then BBSf.BltFast 320, 240 - Dia.Y, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 320: .Top = 0: .Right = 640 - Dia.X: .Bottom = Dia.Y
+End With
+If Not FS Then BBSf.BltFast 320 + Dia.X, 240 - Dia.Y, BGSf, Src, DDBLTFAST_WAIT
+
+With Src
+.Left = Dia.X: .Top = 480 - Dia.Y: .Right = 320: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 0, 240, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 480 - Dia.Y: .Right = Dia.X: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 320 - Dia.X, 240, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = Dia.X: .Top = 240: .Right = 320: .Bottom = 480 - Dia.Y
+End With
+If Not FS Then BBSf.BltFast 0, 240 + Dia.Y, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 240: .Right = Dia.X: .Bottom = 480 - Dia.Y
+End With
+If Not FS Then BBSf.BltFast 320 - Dia.X, 240 + Dia.Y, BGSf, Src, DDBLTFAST_WAIT
+
+With Src
+.Left = 640 - Dia.X: .Top = 480 - Dia.Y: .Right = 640: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 320, 240, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 320: .Top = 480 - Dia.Y: .Right = 640 - Dia.X: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 320 + Dia.X, 240, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 640 - Dia.X: .Top = 240: .Right = 640: .Bottom = 480 - Dia.Y
+End With
+If Not FS Then BBSf.BltFast 320, 240 + Dia.Y, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 320: .Top = 240: .Right = 640 - Dia.X: .Bottom = 480 - Dia.Y
+End With
+If Not FS Then BBSf.BltFast 320 + Dia.X, 240 + Dia.Y, BGSf, Src, DDBLTFAST_WAIT
+
+Case 7 '（レーザー）
+LsrSY = LsrSY - 4 - TrM * 3: If LsrSY < 0 Then LsrSY = LsrSY + 240
+With Src
+.Left = 0: .Top = 480 - LsrSY: .Right = 640: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 240: .Right = 640: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 0, LsrSY, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 240: .Right = 640: .Bottom = 480 - LsrSY
+End With
+If Not FS Then BBSf.BltFast 0, 240 + LsrSY, BGSf, Src, DDBLTFAST_WAIT
+
+For I = 0 To 59
+If (I Mod 3) < 2 Then
+Lsr(I) = Lsr(I + 1)
+Else
+With Lsr(I)
+If TrM = 2 Then .R = .R + .RR
+If .R < 0 Then .R = .R + 360
+If .R >= 360 Then .R = .R - 360
+.X = .X + Sin(.R * 3 * Rg) * 18: .Y = .Y - Cos(.R * 3 * Rg) * 18
+If .X < -32 Then .X = .X + 672: .RR = -.RR: .C = 1 - .C
+If .X >= 640 Then .X = .X - 672: .RR = -.RR: .C = 1 - .C
+If .Y < -32 Then .Y = .Y + 512: .RR = -.RR: .C = 1 - .C
+If .Y >= 480 Then .Y = .Y - 512: .RR = -.RR: .C = 1 - .C
+End With
+End If
+With Src
+.Left = (Lsr(I).R Mod 20) * 32: .Top = Lsr(I).C * 96 + (Int(Lsr(I).R / 20) Mod 3) * 32: .Right = .Left + 32: .Bottom = .Top + 32
+End With
+BltClip Lsr(I).X, Lsr(I).Y, BGSf, Src, DDBLTFAST_SRCCOLORKEY Or DDBLTFAST_WAIT
+Next I
+
+Case 9 '（水晶）
+CrysSY = CrysSY - 1: If CrysSY < 0 Then CrysSY = CrysSY + 240
+With Src
+.Left = 0: .Top = 240 - CrysSY: .Right = 640: .Bottom = 240
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 0: .Right = 640: .Bottom = 240
+End With
+If Not FS Then BBSf.BltFast 0, CrysSY, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 0: .Right = 640: .Bottom = 240 - CrysSY
+End With
+If Not FS Then BBSf.BltFast 0, 240 + CrysSY, BGSf, Src, DDBLTFAST_WAIT
+For I = 0 To 15
+With Crys(I)
+.A = .A + .AA
+If .A >= 20 Then .A = .A - 20
+If .A < 0 Then .A = .A + 20
+.Y = .Y + .YY
+If .Y < -80 Or .Y >= 560 Then .A = Int(Rnd * 20): .AA = (1 + Int(Rnd * 2)) * (1 + (TrM = 2) * (I Mod 2) * 2): .X = Int(Rnd * 800) - 80: .Y = Rnd * 80 - 160 - (TrM = 2) * (I Mod 2) * 640: .YY = .AA * 4 + Rnd * 4 * (1 + (TrM = 2) * (I Mod 2) * 2)
+End With
+With Src
+.Left = (Crys(I).A Mod 8) * 80: .Top = 240 + Int(Crys(I).A / 8) * 80: .Right = .Left + 80: .Bottom = .Top + 80
+End With
+BltClip Crys(I).X, Crys(I).Y, BGSf, Src, DDBLTFAST_SRCCOLORKEY Or DDBLTFAST_WAIT
+Next I
+
+Case 10 'レベル50-199（超空間）
+For I = 0 To 59
+With Src
+.Left = 0: .Top = 30 + I * 7 + Sin((Spa + I * 6) * Rg) * 28: .Right = .Left + 640: .Bottom = .Top + 8
+End With
+If Not FS Then BBSf.BltFast 0, I * 8, BGSf, Src, DDBLTFAST_WAIT
+Next I
+Spa = Spa + 1 + Lev * 0.03: If Spa >= 360 Then Spa = Spa - 360
+
+Case 11 'レベル200（電流）
+With EdG
+.X = .X - 73: If .X < 0 Then .X = .X + 640
+.Y = .Y - 72 - TA * 6: If .Y < 0 Then .Y = .Y + 480
+End With
+With Src
+.Left = EdG.X: .Top = EdG.Y: .Right = 640: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = EdG.Y: .Right = EdG.X: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 640 - EdG.X, 0, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = EdG.X: .Top = 0: .Right = 640: .Bottom = EdG.Y
+End With
+If Not FS Then BBSf.BltFast 0, 480 - EdG.Y, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 0: .Right = EdG.X: .Bottom = EdG.Y
+End With
+If Not FS Then BBSf.BltFast 640 - EdG.X, 480 - EdG.Y, BGSf, Src, DDBLTFAST_WAIT
+
+Case 13 'レベルMAX
+With LdG
+.X = TrM * 40 * (8 - ((FAC * 3) Mod 8))
+.Y = (1 - TrM) * FAC * 5: If .Y < 0 Then .Y = .Y + 480
+End With
+With Src
+.Left = LdG.X: .Top = LdG.Y: .Right = 640: .Bottom = 320
+End With
+BltClip 0, -80, BGSf, Src, DDBLTFAST_WAIT
+BltClip 0, 240, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = LdG.Y: .Right = LdG.X: .Bottom = 320
+End With
+BltClip 640 - LdG.X, -80, BGSf, Src, DDBLTFAST_WAIT
+BltClip 640 - LdG.X, 240, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = LdG.X: .Top = 0: .Right = 640: .Bottom = LdG.Y
+End With
+BltClip 0, 240 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
+BltClip 0, 560 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 0: .Right = LdG.X: .Bottom = LdG.Y
+End With
+BltClip 640 - LdG.X, 240 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
+BltClip 640 - LdG.X, 560 - LdG.Y, BGSf, Src, DDBLTFAST_WAIT
+
+End Select
+Else 'アニメなし
+Select Case Stt
+
+Case 8 '（スターダスト）
+With Src
+.Left = 0: .Top = 0: .Right = 640: .Bottom = 152
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+If Not FS Then BBSf.BltFast 0, 152, BGSf, Src, DDBLTFAST_WAIT
+If Not FS Then BBSf.BltFast 0, 304, BGSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 0: .Top = 0: .Right = 640: .Bottom = 24
+End With
+If Not FS Then BBSf.BltFast 0, 456, BGSf, Src, DDBLTFAST_WAIT
+
+Case 3 '（キラキラ振り子）
+With Src
+.Left = 0: .Top = 0: .Right = 640: .Bottom = 240
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+If Not FS Then BBSf.BltFast 0, 240, BGSf, Src, DDBLTFAST_WAIT
+
+Case 7 '（レーザー）
+With Src
+.Left = 0: .Top = 240: .Right = 640: .Bottom = 480
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+If Not FS Then BBSf.BltFast 0, 240, BGSf, Src, DDBLTFAST_WAIT
+
+Case 9 '（水晶）
+With Src
+.Left = 0: .Top = 0: .Right = 640: .Bottom = 240
+End With
+If Not FS Then BBSf.BltFast 0, 0, BGSf, Src, DDBLTFAST_WAIT
+If Not FS Then BBSf.BltFast 0, 240, BGSf, Src, DDBLTFAST_WAIT
+
+Case Else 'その他
+If Not FS Then BBSf.BltFast 0, 0, BGSf, RC0, DDBLTFAST_WAIT
+
+End Select
+End If
+End If
+St = Int(Lev / 5)
+If Lev >= 50 And Lev < 200 Then St = 10
+If Lev >= 30 - (TrM >= 1) * 20 - (TrM = 2) * 150 Then St = 11 - (Not (Fnl Or TA)) * 2
+If St <> Stt Then FF = True
+If FF Then BGF Lev
+
+Else
+If Not FS Then BBSf.BltColorFill RC0, 0
+End If
+Exit Sub
+
+CE:
+'Beep
+End Sub
+
+Sub BGF(ByVal Lev As Long) '背景フェード
+On Error GoTo CE
+Dim I As Long, U As Long, RR As Long, RR1 As Long
+
+If FOC < 30 Then
+FOC = FOC + 1
+RR = FAC
+RR1 = FOC + (FOC > 20) * (FOC - 20)
+For I = 0 To 11: For U = 0 To 1
+With Src
+.Left = 0: .Top = 232 - RR1 * 2: .Right = 40 * (8 - ((RR * 3) Mod 8)): .Bottom = 232
+End With
+If Not FS Then BBSf.BltFast U * 320 + 320 - 40 * (8 - ((RR * 3) Mod 8)), I * 40 + 40 - RR1 * 2, SpSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 40 * (8 - ((RR * 3) Mod 8)): .Top = 232 - RR1 * 2: .Right = 320: .Bottom = 232
+End With
+If Not FS Then BBSf.BltFast U * 320, I * 40 + 40 - RR1 * 2, SpSf, Src, DDBLTFAST_WAIT
+Next U, I
+Else
+If FIC = 0 Then
+Stt = Int(Lev / 5)
+If Lev >= 50 And Lev < 200 Then Stt = 10
+If Lev >= 30 - (TrM >= 1) * 20 - (TrM = 2) * 150 Then Stt = 11 - (Not (Fnl Or TA)) * 2
+BGCr Stt
+End If
+FIC = FIC + 1
+RR = FAC
+RR1 = (FIC - 10) * -(FIC >= 10)
+For I = 0 To 11: For U = 0 To 1
+With Src
+.Left = 0: .Top = 192: .Right = 40 * (8 - ((RR * 3) Mod 8)): .Bottom = 232 - RR1 * 2
+End With
+If Not FS Then BBSf.BltFast U * 320 + 320 - 40 * (8 - ((RR * 3) Mod 8)), I * 40, SpSf, Src, DDBLTFAST_WAIT
+With Src
+.Left = 40 * (8 - ((RR * 3) Mod 8)): .Top = 192: .Right = 320: .Bottom = 232 - RR1 * 2
+End With
+If Not FS Then BBSf.BltFast U * 320, I * 40, SpSf, Src, DDBLTFAST_WAIT
+Next U, I
+If FIC >= 30 Then FOC = 0: FIC = 0: FF = False
+End If
+Exit Sub
+
+CE:
+'Beep
+End Sub
+*/

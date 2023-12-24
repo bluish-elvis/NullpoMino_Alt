@@ -28,7 +28,6 @@
  */
 package mu.nu.nullpo.gui.slick
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
@@ -287,8 +286,8 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 			// Mode読み込み
 			try {
-				this::class.java.getResource("/mode.lst")?.file?.let {
-					FileInputStream(it).bufferedReader().use {
+				this::class.java.getResource("/mode.lst")?.file?.let {f ->
+					FileInputStream(f).bufferedReader().use {
 						modeManager.loadGameModes(it)
 					}
 				}
@@ -425,7 +424,6 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			exitProcess(0)
 		}
 
-
 		/** 設定ファイルを保存 */
 		fun saveConfig() {
 			try {
@@ -503,9 +501,9 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			g.isAntiAlias = false
 			// Screenshot作成
 			try {
-				val ssfolder = File(dir)
-				if(!ssfolder.exists())
-					if(ssfolder.mkdirs())
+				val ssFolder = File(dir)
+				if(!ssFolder.exists())
+					if(ssFolder.mkdirs())
 						log.info("Created screenshot folder: $dir")
 					else
 						log.info("Couldn't create screenshot folder at $dir")
@@ -549,10 +547,10 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 			propLang.getProperty(str) ?: propLangDefault.getProperty(str, str) ?: str
 
 		/** FPS cap routine
-		 * @param ingame `true` if during the gameplay
+		 * @param inGame `true` if during the gameplay
 		 */
 		@JvmOverloads
-		internal fun alternateFPSSleep(ingame:Boolean = false) {
+		internal fun alternateFPSSleep(inGame:Boolean = false) {
 			val maxFps = altMaxFPSCurrent
 
 			if(maxFps>0) {
@@ -564,7 +562,7 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				val sleepTime:Long = periodCurrent-timeDiff-overSleepTime
 				val sleepTimeInMillis:Long = sleepTime/1000000L
 
-				if(sleepTimeInMillis>=10&&(!alternateFPSPerfectMode||!ingame)) {
+				if(sleepTimeInMillis>=10&&(!alternateFPSPerfectMode||!inGame)) {
 					// If it is possible to use sleep
 					try {
 						Thread.sleep(sleepTimeInMillis)
@@ -575,7 +573,7 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 					overSleepTime = System.nanoTime()-afterTime-sleepTime
 					perfectFPSDelay = System.nanoTime()
 					sleepFlag = true
-				} else if(alternateFPSPerfectMode&&ingame||sleepTime>0) {
+				} else if(alternateFPSPerfectMode&&inGame||sleepTime>0) {
 					// Perfect FPS
 					overSleepTime = 0L
 					if(altMaxFPSCurrent>altMaxFPS+5) altMaxFPSCurrent = altMaxFPS+5
@@ -588,7 +586,7 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 						}
 					perfectFPSDelay += (1000000000/altMaxFPS).toLong()
 
-					// Don't run in superfast after the heavy slowdown
+					// Don't run in superFast after the heavy slowdown
 					if(System.nanoTime()>perfectFPSDelay+2000000000/altMaxFPS) perfectFPSDelay = System.nanoTime()
 
 					sleepFlag = true
@@ -605,17 +603,17 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 				}
 
 				beforeTime = System.nanoTime()
-				calcFPS(ingame, periodCurrent)
+				calcFPS(inGame, periodCurrent)
 			} else {
 				periodCurrent = (1.0/60*1000000000).toLong()
-				calcFPS(ingame, periodCurrent)
+				calcFPS(inGame, periodCurrent)
 			}
 		}
 
 		/** FPSの計算
 		 * @param period FPSを計算する間隔
 		 */
-		private fun calcFPS(ingame:Boolean, period:Long) {
+		private fun calcFPS(inGame:Boolean, period:Long) {
 			frameCount++
 			upTimeFrame++
 			calcInterval += period
@@ -637,7 +635,7 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 
 				// Set new target fps
 				if(altMaxFPS>0&&alternateFPSDynamicAdjust&&!alternateFPSPerfectMode) {
-					if(ingame) {
+					if(inGame) {
 						// Too Slow
 						if(actualFPS<altMaxFPS-1) altMaxFPSCurrent = minOf(altMaxFPS+20, altMaxFPSCurrent+1)
 						// Too Fast
@@ -694,13 +692,15 @@ internal class NullpoMinoSlick:StateBasedGame("NullpoMino (Now Loading...)") {
 		/** Observerクライアントからの情報を描画 */
 		internal fun drawObserverClient() {
 			netObserverClient?.let {
-				if(it.isConnected) {
-					val fontcolor = if(it.observerCount>0&&it.playerCount>0) COLOR.RED
-					else if(it.observerCount>1) COLOR.GREEN else COLOR.BLUE
-					val strObserverInfo = "%d/%d".format(it.observerCount, it.playerCount)
-					val strObserverString = "%40s".format(strObserverInfo)
-					FontNano.printFont(0, 480-16, strObserverString, fontcolor)
-				}
+				if(it.isConnected)
+					FontNano.printFont(
+						0,
+						480-16,
+						"%40s".format("%d/%d".format(it.observerCount, it.playerCount)),
+						if(it.observerCount>0&&it.playerCount>0) COLOR.RED
+						else if(it.observerCount>1) COLOR.GREEN else COLOR.BLUE
+					)
+
 			}
 		}
 	}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rules SYSTEM "https://resources.jetbrains.com/writerside/1.0/redirection-rules.dtd">
+<rules>
+    <!-- format is as follows
+    <rule id="<unique id>">
+        <accepts>page.html</accepts>
+    </rule>
+    -->
+ <rule id="7a9616fe">
+  <description>Created after removal of "Tutorial" from nullpomino-docs</description>
+  <accepts>Tutorial.html</accepts>
+ </rule>
+ <rule id="499fe007">
+  <description>Created after removal of "How to" from nullpomino-docs</description>
+  <accepts>How-to.html</accepts>
+ </rule>
+ <rule id="7fa387f8">
+  <description>Created after removal of "Reference" from nullpomino-docs</description>
+  <accepts>Reference.html</accepts>
+ </rule>
+ <rule id="2790fafa">
+  <description>Created after removal of "Overview" from nullpomino-docs</description>
+  <accepts>Overview.html</accepts>
+ </rule>
+</rules>

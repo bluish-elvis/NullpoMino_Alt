@@ -4,47 +4,47 @@ config/rule/Global-adv.rul
 config/rule/DTET.rul
 config/rule/DTET-bas.rul
 
-:MARATHON
+:Marathon
 config/rule/Standard/Standard.rul
 config/rule/Standard/StandardFastB.rul
 config/rule/Standard/StandardFriends.rul
 config/rule/Standard/StandardJ.rul
 
-:MARATHON+
+:MarathonPlus
 config/rule/Standard/StandardFriends.rul
 config/rule/Standard/Standard.rul
 config/rule/Standard/StandardFastB.rul
 config/rule/Standard/StandardJ.rul
 
-:EXTREME
-config/rule/Standard.rul
-config/rule/StandardHard.rul
-config/rule/StandardHard128.rul
+:MarathonExtreme
+config/rule/Standard/Standard.rul
+config/rule/Standard/StandardHard.rul
+config/rule/Standard/StandardHard128.rul
 
-:LINE RACE
-config/rule/StandardFastB.rul
-config/rule/StandardPlus.rul
-config/rule/StandardZero.rul
+:SprintLine
+config/rule/Standard/StandardFastB.rul
+config/rule/Standard/StandardPlus.rul
+config/rule/Standard/StandardZero.rul
 
-:SCORE RACE
-config/rule/StandardFastB.rul
-config/rule/StandardPlus.rul
-config/rule/StandardZero.rul
+:SprintScore
+config/rule/Standard/StandardFastB.rul
+config/rule/Standard/StandardPlus.rul
+config/rule/Standard/StandardZero.rul
 
-:DIG RACE
-config/rule/StandardFastB.rul
-config/rule/StandardPlus.rul
-config/rule/StandardZero.rul
+:SprintDig
+config/rule/Standard/StandardFastB.rul
+config/rule/Standard/StandardPlus.rul
+config/rule/Standard/StandardZero.rul
 
-:COMBO RACE
-config/rule/StandardFastB.rul
-config/rule/StandardPlus.rul
-config/rule/StandardZero.rul
+:SprintCombo
+config/rule/Standard/StandardFastB.rul
+config/rule/Standard/StandardPlus.rul
+config/rule/Standard/StandardZero.rul
 
-:ULTRA
-config/rule/StandardFastB.rul
-config/rule/StandardPlus.rul
-config/rule/StandardZero.rul
+:SprintUltra
+config/rule/Standard/StandardFastB.rul
+config/rule/Standard/StandardPlus.rul
+config/rule/Standard/StandardZero.rul
 
 :TECHNICIAN
 config/rule/Standard.rul
@@ -54,80 +54,80 @@ config/rule/StandardJ.rul
 
 :SQUARE
 config/rule/Square.rul
-config/rule/Standard.rul
+config/rule/Standard/Standard.rul
 
 :DIG CHALLENGE
-config/rule/StandardFastB.rul
-config/rule/StandardPlus.rul
-config/rule/StandardZero.rul
+config/rule/Standard/StandardFastB.rul
+config/rule/Standard/StandardPlus.rul
+config/rule/Standard/StandardZero.rul
 
 :RETRO MARATHON
-config/rule/NintendoR.rul
+config/rule/classic/NintendoR.rul
 
 :RETRO MASTERY
-config/rule/NintendoR.rul
+config/rule/classic/NintendoR.rul
 
 :RETRO MANIA
-config/rule/Classic0.rul
-config/rule/Classic068K.rul
-config/rule/ClassicS.rul
+config/rule/classic/Classic0.rul
+config/rule/classic/Classic068K.rul
+config/rule/classic/ClassicS.rul
 
-:GRADE MANIA
-config/rule/Classic1.rul
+:GrandMarathon
+config/rule/classic/Classic1.rul
 
-:GRADE MANIA 2
-config/rule/Classic2.rul
+:GrandMania
+config/rule/classic/Classic2.rul
 
-:GRADE MANIA 3
-config/rule/Classic3.rul
+:GrandMastery
+config/rule/classic/Classic3.rul
 config/rule/StandardHard.rul
 
-:SCORE ATTACK
-config/rule/Classic2.rul
+:GrandFestival
+config/rule/classic/Classic2.rul
 
-:SPEED MANIA
-config/rule/Classic2.rul
+:GrandStorm
+config/rule/classic/Classic2.rul
 
-:SPEED MANIA 2
-config/rule/Classic3.rul
-config/rule/StandardHard.rul
+:GrandLightnig
+config/rule/classic/Classic3.rul
+config/rule/Standard/StandardHard.rul
 
-:GARBAGE MANIA
-config/rule/Classic2.rul
+:GrandMountain
+config/rule/classic/Classic2.rul
 
-:PHANTOM MANIA
-config/rule/Classic2.rul
-config/rule/Classic3.rul
-config/rule/StandardHard.rul
+:GrandPhantom
+config/rule/classic/Classic2.rul
+config/rule/classic/Classic3.rul
+config/rule/Standard/StandardHard.rul
 
-:FINAL
-config/rule/StandardHard128.rul
-config/rule/Classic3.rul
-config/rule/StandardHard.rul
+:GrandFinale
+config/rule/Standard/StandardHard128.rul
+config/rule/classic/Classic3.rul
+config/rule/Standard/StandardHard.rul
 
-:TIME ATTACK
-config/rule/StandardHard128.rul
-config/rule/ClassicEasyA.rul
-config/rule/ClassicEasyB.rul
+:GrandRoads
+config/rule/Standard/StandardHard128.rul
+config/rule/classic/ClassicEasyA.rul
+config/rule/classic/ClassicEasyB.rul
 
 :PRACTICE
-config/rule/Standard.rul
-config/rule/StandardFastB.rul
-config/rule/StandardHard.rul
-config/rule/StandardHard128.rul
-config/rule/Classic2.rul
-config/rule/Classic3.rul
-config/rule/ClassicEasyA.rul
-config/rule/ClassicEasyB.rul
+config/rule/Standard/Standard.rul
+config/rule/Standard/StandardFastB.rul
+config/rule/Standard/StandardHard.rul
+config/rule/Standard/StandardHard128.rul
+config/rule/classic/Classic2.rul
+config/rule/classic/Classic3.rul
+config/rule/classic/ClassicEasyA.rul
+config/rule/classic/ClassicEasyB.rul
 
-:GEM MANIA
-config/rule/Classic3.rul
-config/rule/StandardHard.rul
+:GrandBlossom
+config/rule/classic/Classic3.rul
+config/rule/Standard/StandardHard.rul
 
 :VS-BATTLE
-config/rule/StandardFastB.rul
-config/rule/StandardPlus.rul
-config/rule/StandardZero.rul
+config/rule/Standard/StandardFastB.rul
+config/rule/Standard/StandardPlus.rul
+config/rule/Standard/StandardZero.rul
 
 :TOOL-VS MAP EDIT
 

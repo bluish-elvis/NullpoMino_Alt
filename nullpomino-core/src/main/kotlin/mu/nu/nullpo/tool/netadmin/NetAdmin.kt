@@ -58,7 +58,6 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
-import java.io.BufferedReader
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
@@ -86,10 +85,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	private val labelLoginMessage:JLabel = JLabel()
 
 	/** Server textbox */
-	private val txtfldServer:JTextField = JTextField()
+	private val txtFldServer:JTextField = JTextField()
 
 	/** Username textbox */
-	private val txtfldUsername:JTextField = JTextField()
+	private val txtFldUsername:JTextField = JTextField()
 
 	/** Password textbox */
 	private val passfldPassword:JPasswordField = JPasswordField()
@@ -115,7 +114,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	private val txtpaneConsoleLog:JTextPane = JTextPane()
 
 	/** Console Command textbox */
-	private val txtfldConsoleCommand:JTextField = JTextField()
+	private val txtFldConsoleCommand:JTextField = JTextField()
 
 	/** Console Command Execute button */
 	private val btnConsoleCommandExecute:JButton = JButton()
@@ -232,12 +231,12 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		spServer.add(JLabel(getUIText("Login_Server")), BorderLayout.WEST)
 
 		// ** Server textbox
-		txtfldServer.apply {
+		txtFldServer.apply {
 			columns = 30
 			text = propConfig.getProperty("login.server", "")
 			componentPopupMenu = TextComponentPopupMenu(this)
 		}
-		spServer.add(txtfldServer, BorderLayout.EAST)
+		spServer.add(txtFldServer, BorderLayout.EAST)
 
 		// * Username panel
 		val spUsername = JPanel(BorderLayout())
@@ -248,12 +247,12 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		spUsername.add(JLabel(getUIText("Login_Username")), BorderLayout.WEST)
 
 		// ** Username textbox
-		txtfldUsername.apply {
+		txtFldUsername.apply {
 			columns = 30
 			text = propConfig.getProperty("login.username", "")
 			componentPopupMenu = TextComponentPopupMenu(this)
 		}
-		spUsername.add(txtfldUsername, BorderLayout.EAST)
+		spUsername.add(txtFldUsername, BorderLayout.EAST)
 
 		// * Password panel
 		val spPassword = JPanel(BorderLayout())
@@ -341,7 +340,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		spConsole.add(spConsoleCommand, BorderLayout.SOUTH)
 
 		// *** Command textbox
-		txtfldConsoleCommand.apply {
+		txtFldConsoleCommand.apply {
 			componentPopupMenu = TextComponentPopupMenu(this)
 			spConsoleCommand.add(this, BorderLayout.CENTER)
 		}
@@ -513,8 +512,8 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	 * @param b true to enable, false to disable
 	 */
 	private fun setLoginUIEnabled(b:Boolean) {
-		txtfldServer.isEnabled = b
-		txtfldUsername.isEnabled = b
+		txtFldServer.isEnabled = b
+		txtFldUsername.isEnabled = b
 		passfldPassword.isEnabled = b
 		chkboxRememberUsername.isEnabled = b
 		chkboxRememberPassword.isEnabled = b
@@ -720,10 +719,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		val lBanIP = JLabel(getUIText("Ban_IP"))
 		pBanIP.add(lBanIP)
 
-		val txtfldBanIP = JTextField(16)
-		if(strIP!=null) txtfldBanIP.text = strIP
-		txtfldBanIP.componentPopupMenu = TextComponentPopupMenu(txtfldBanIP)
-		pBanIP.add(txtfldBanIP)
+		val txtFldBanIP = JTextField(16)
+		if(strIP!=null) txtFldBanIP.text = strIP
+		txtFldBanIP.componentPopupMenu = TextComponentPopupMenu(txtFldBanIP)
+		pBanIP.add(txtFldBanIP)
 
 		// Ban length Options
 		val pBanLength = JPanel()
@@ -746,7 +745,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		val btnConfirm = JButton(getUIText("Ban_Confirm"))
 		btnConfirm.setMnemonic('O')
 		btnConfirm.addActionListener {
-			requestBanFromGUI(txtfldBanIP.text, comboboxBanLength.selectedIndex-1, false)
+			requestBanFromGUI(txtFldBanIP.text, comboboxBanLength.selectedIndex-1, false)
 			dialogBan.dispose()
 		}
 		pButtons.add(btnConfirm)
@@ -770,13 +769,13 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 	override fun actionPerformed(e:ActionEvent) {
 		// Login
 		if(e.actionCommand=="Login_Login")
-			if(txtfldUsername.text.isNotEmpty()&&passfldPassword.password.isNotEmpty()) {
+			if(txtFldUsername.text.isNotEmpty()&&passfldPassword.password.isNotEmpty()) {
 				setLoginUIEnabled(false)
 				labelLoginMessage.foreground = Color.black
 				labelLoginMessage.text = getUIText("Login_Message_Connecting")
 
 				// Get hostname and port number
-				var strHost = txtfldServer.text
+				var strHost = txtFldServer.text
 				if(strHost.isEmpty()) strHost = "127.0.0.1"
 				var portSpliter = strHost.indexOf(':')
 				if(portSpliter==-1) portSpliter = strHost.length
@@ -802,10 +801,10 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 		if(e.actionCommand=="Login_Quit") shutdown()
 		// Execute console command
 		if(e.actionCommand=="Lobby_Console_Execute") {
-			val commandline = txtfldConsoleCommand.text
+			val commandline = txtFldConsoleCommand.text
 			val commands = commandline.split(Regex(" ")).dropLastWhile {it.isEmpty()}
 			executeConsoleCommand(commands, commandline)
-			txtfldConsoleCommand.text = ""
+			txtFldConsoleCommand.text = ""
 		}
 		// Load/Refresh Ranking
 		if(e.actionCommand=="MPRanking_Button_LoadRanking") {
@@ -859,7 +858,7 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			if(pingInterval!=NetBaseClient.PING_INTERVAL) client.startPingTask(pingInterval)
 
 			// Send login message
-			val strUsername = txtfldUsername.text
+			val strUsername = txtFldUsername.text
 
 			val rc4 = RC4(passfldPassword.password)
 			val ePassword = rc4.rc4(NetUtil.stringToBytes(strUsername))
@@ -906,9 +905,9 @@ class NetAdmin:JFrame(), ActionListener, NetMessageListener {
 			propConfig.setProperty("login.rememberUsername", chkboxRememberUsername.isSelected)
 			propConfig.setProperty("login.rememberPassword", chkboxRememberPassword.isSelected)
 
-			propConfig.setProperty("login.server", txtfldServer.text)
+			propConfig.setProperty("login.server", txtFldServer.text)
 
-			propConfig.setProperty("login.username", if(chkboxRememberUsername.isSelected) txtfldUsername.text else "")
+			propConfig.setProperty("login.username", if(chkboxRememberUsername.isSelected) txtFldUsername.text else "")
 			propConfig.setProperty(
 				"login.password", if(chkboxRememberPassword.isSelected)
 					NetUtil.compressString(String(passfldPassword.password)) else ""

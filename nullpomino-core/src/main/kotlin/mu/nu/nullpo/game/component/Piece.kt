@@ -232,7 +232,7 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	 * @param offsetX X位置補正量の配列 (int[DIRECTION_COUNT]）
 	 * @param offsetY Y位置補正量の配列 (int[DIRECTION_COUNT]）
 	 */
-	fun applyOffsetArray(offsetX:MutableList<Int>, offsetY:MutableList<Int>) {
+	fun applyOffsetArray(offsetX:List<Int>, offsetY:List<Int>) {
 		applyOffsetArrayX(offsetX)
 		applyOffsetArrayY(offsetY)
 	}
@@ -240,7 +240,7 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	/** 相対X位置をずらす
 	 * @param offsetX X位置補正量の配列 (int[DIRECTION_COUNT]）
 	 */
-	fun applyOffsetArrayX(offsetX:MutableList<Int>) {
+	fun applyOffsetArrayX(offsetX:List<Int>) {
 		offsetApplied = true
 
 		for(i in 0..<DIRECTION_COUNT) {
@@ -253,7 +253,7 @@ class Piece(@SerialName("id") private var shape:Int = 0) {
 	/** 相対Y位置をずらす
 	 * @param offsetY Y位置補正量の配列 (int[DIRECTION_COUNT]）
 	 */
-	fun applyOffsetArrayY(offsetY:MutableList<Int>) {
+	fun applyOffsetArrayY(offsetY:List<Int>) {
 		offsetApplied = true
 
 		for(i in 0..<DIRECTION_COUNT) {
