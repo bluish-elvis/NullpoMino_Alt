@@ -786,6 +786,7 @@ class GameEngine(
 		}
 		quitFlag = false
 
+		owner.musMan.bgm = BGM.Menu(4+(owner.mode?.gameIntensity ?: 0))
 		stat = Status.SETTING
 		statc.fill(0)
 
@@ -1306,10 +1307,10 @@ class GameEngine(
 		owner.replayProp.setProperty("version.core.dev", versionIsDevBuild)
 
 		owner.replayProp.setProperty("$playerID.replay.randSeed", randSeed)
-		owner.replayProp.setProperty("$playerID.rule",Json.encodeToString(ruleOpt))
 		replayData.writeProperty(owner.replayProp, playerID, replayTimer)
 		statistics.writeProperty(owner.replayProp, playerID)
-		ruleOpt.writeProperty(owner.replayProp, playerID)
+		owner.replayProp.setProperty("$playerID.rule",Json.encodeToString(ruleOpt))
+		//ruleOpt.writeProperty(owner.replayProp, playerID)
 
 		if(playerID==0) {
 			owner.mode?.let {owner.replayProp.setProperty("name.mode", it.id)}
@@ -1576,7 +1577,6 @@ class GameEngine(
 	private fun statSetting() {
 		//  event 発生
 		owner.musMan.fadeSW = false
-		owner.musMan.bgm = BGM.Menu(4+(owner.mode?.gameIntensity ?: 0))
 		if(owner.mode?.onSetting(this)==true) return
 		owner.receiver.onSetting(this)
 

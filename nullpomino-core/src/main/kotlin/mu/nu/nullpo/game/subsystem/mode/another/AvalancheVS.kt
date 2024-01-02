@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -514,7 +515,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 					drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
 					drawMenu(engine, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
 
-					receiver.drawMenuFont(engine, 0, 21, "PAGE 1/5", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/5", COLOR.YELLOW)
 				}
 				menuCursor<17 -> {
 					drawMenu(
@@ -529,7 +530,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						"CHAINPOWER" to if(newChainPower[pid]) "FEVER" else "CLASSIC"
 					)
 
-					receiver.drawMenuFont(engine, 0, 21, "PAGE 2/5", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/5", COLOR.YELLOW)
 				}
 				menuCursor<26 -> {
 					drawMenu(
@@ -551,7 +552,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						engine, receiver, "ZK-BONUS" to
 							if(zenKeshiType[pid]==ZENKESHI_MODE_FEVER) "${zenKeshiChain[pid]} CHAIN" else "${zenKeshiOjama[pid]} OJAMA"
 					)
-					receiver.drawMenuFont(engine, 0, 21, "PAGE 3/5", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/5", COLOR.YELLOW)
 				}
 				menuCursor<36 -> {
 					drawMenu(
@@ -572,7 +573,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 						"SIDE METER" to if(ojamaMeter[pid]||feverThreshold[pid]==0) "OJAMA" else "FEVER"
 					)
 
-					receiver.drawMenuFont(engine, 0, 21, "PAGE 4/5", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 4/5", COLOR.YELLOW)
 				}
 				menuCursor<44
 				-> {
@@ -591,7 +592,7 @@ class AvalancheVS:AvalancheVSDummyMode() {
 					drawMenu(engine, receiver, COLOR.COBALT, "BIG DISP" to bigDisplay)
 					drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 
-					receiver.drawMenuFont(engine, 0, 21, "PAGE 5/5", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 21, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 5/5", COLOR.YELLOW)
 				}
 				else -> {
 					receiver.drawMenuFont(engine, 0, 13, "MAP PREVIEW", COLOR.YELLOW)

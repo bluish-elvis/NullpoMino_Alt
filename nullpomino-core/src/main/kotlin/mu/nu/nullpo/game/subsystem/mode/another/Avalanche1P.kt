@@ -31,6 +31,7 @@ package mu.nu.nullpo.game.subsystem.mode.another
 import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -203,7 +204,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 				"BIG DISP" to bigDisplay
 			)
 
-			receiver.drawMenuFont(engine, 0, 19, "PAGE 1/2", COLOR.YELLOW)
+			receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/2", COLOR.YELLOW)
 		} else {
 			val strOutline = when(outlinetype) {
 				1 -> "COLOR"
@@ -212,7 +213,7 @@ class Avalanche1P:Avalanche1PDummyMode() {
 			}
 			drawMenu(engine, receiver, 0, COLOR.BLUE, 9, "OUTLINE" to strOutline, "SHOW CHAIN" to showChains)
 
-			receiver.drawMenuFont(engine, 0, 19, "PAGE 2/2", COLOR.YELLOW)
+			receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/2", COLOR.YELLOW)
 		}
 	}
 

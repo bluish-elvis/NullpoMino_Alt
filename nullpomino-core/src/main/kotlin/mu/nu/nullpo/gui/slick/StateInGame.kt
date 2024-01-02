@@ -28,6 +28,9 @@
  */
 package mu.nu.nullpo.gui.slick
 
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import mu.nu.nullpo.game.component.RuleOptions
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameManager
@@ -124,7 +127,7 @@ internal class StateInGame:BasicGameState() {
 				} catch(ex:Exception) {
 					log.warn(ex)
 					null
-				}?.also {t -> e.owTune = t}
+				}?.also {t -> e.owTune = t.copy()}
 
 				// ルール
 				val ruleName =
@@ -169,10 +172,12 @@ internal class StateInGame:BasicGameState() {
 			// Initialization for each player
 			it.engine.forEachIndexed {i, e ->
 				// ルール
-				val ruleOpt = RuleOptions()
-				ruleOpt.readProperty(prop, i)
+				val ruleOpt = try{
+					Json.decodeFromString(prop.getProperty("$i.rule"))
+				}catch (_:Exception){
+					RuleOptions().apply {readProperty(prop, i)}
+				}
 				e.ruleOpt = ruleOpt
-
 				// NEXT順生成アルゴリズム
 				if(ruleOpt.strRandomizer.isNotEmpty()) e.randomizer = Util.loadRandomizer(ruleOpt.strRandomizer)
 

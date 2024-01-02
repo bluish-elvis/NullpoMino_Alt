@@ -41,6 +41,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.IntegerMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.net.NetLobbyFrame
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -66,8 +67,6 @@ class MarathonPlus:NetDummyMode() {
 	private var bonusTime = 0
 	private var bonusTimeMax = 0
 
-	/** Bonus score from life */
-	private var bonusScore = 0
 	private var lastlives = 0
 
 	/** lines per level */
@@ -131,7 +130,6 @@ class MarathonPlus:NetDummyMode() {
 		if(ruleOptOrg.strRuleName.isEmpty()&&ruleOptOrg.strWallkick.isEmpty())
 			ruleOptOrg = engine.ruleOpt
 		lastlives = 0
-		bonusScore = 0
 		lastScore = 0
 		bgmLv = 0
 		nextsec = 0
@@ -367,8 +365,8 @@ class MarathonPlus:NetDummyMode() {
 						// Completed
 						if(!netIsWatch) {
 							if(!startLevel) {
-								bonusScore = (engine.statistics.score*(1+engine.lives)/4).toInt()
-								engine.statistics.scoreBonus += bonusScore
+								val lifeBonus = (engine.statistics.score*(1+engine.lives)/4).toInt()
+								engine.statistics.scoreBonus += lifeBonus
 							} else {
 								engine.staffrollEnable = false
 							}
@@ -469,7 +467,7 @@ class MarathonPlus:NetDummyMode() {
 				if(lv>=tableGameClearLevel[goalType]) {
 					// Bonus level unlocked
 					bonusTime = 0
-					bonusScore = (engine.statistics.score*(1+lastlives)/3f).toInt()
+					val bonusScore = (engine.statistics.score*(1+lastlives)/3f).toInt()
 					owner.bgMan.nextBg = -12
 					if(goalType==0) {
 						lastlives = engine.lives
@@ -480,8 +478,7 @@ class MarathonPlus:NetDummyMode() {
 						engine.timerActive = false
 					} else {
 						lastlives = engine.lives
-						bonusScore += bonusTime*(1+lastlives)/2
-						engine.statistics.scoreBonus += bonusScore
+						engine.statistics.scoreBonus += bonusScore+bonusTime*(1+lastlives)/2
 						engine.playSE("endingstart")
 						engine.playSE("levelup_section")
 						engine.ending = 2
@@ -590,29 +587,25 @@ class MarathonPlus:NetDummyMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "\u0090\u0093 PAGE${(engine.statc[1]+1)}/2", COLOR.RED)
+		receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${(engine.statc[1]+1)}/2", COLOR.RED)
 
 		if(engine.statc[1]==0) {
-			drawResultStats(engine, receiver, 2, COLOR.BLUE, Statistic.SCORE, Statistic.LINES)
-			if(engine.statistics.level>=tableGameClearLevel[goalType]&&(startLevel||goalType==0))
-				drawResult(engine, receiver, 6, COLOR.BLUE, "BONUS LINE", bonusLines)
-			else
-				drawResultStats(engine, receiver, 6, COLOR.BLUE, Statistic.LEVEL)
-			drawResult(
-				engine, receiver, 8, COLOR.BLUE,
-				"TOTAL TIME", "%10s".format(engine.statistics.time.toTimeStr),
-				"LV20- TIME", "%10s".format((engine.statistics.time-bonusTime).toTimeStr),
-				"BONUS TIME", "%10s".format(bonusTime.toTimeStr)
-			)
+
+			drawResultStats(engine, receiver, 1, COLOR.BLUE, Statistic.SCORE, Statistic.LINES, Statistic.LEVEL, Statistic.TIME)
+			drawResult(engine, receiver, 10, COLOR.BLUE, "BONUS PTS.", engine.statistics.scoreBonus)
 
 			drawResultRank(engine, receiver, 14, COLOR.BLUE, rankingRank)
 			drawResultNetRank(engine, receiver, 16, COLOR.BLUE, netRankingRank[0])
 			drawResultNetRankDaily(engine, receiver, 18, COLOR.BLUE, netRankingRank[1])
-		} else
+		} else {
 			drawResultStats(
 				engine, receiver, 2, COLOR.BLUE, Statistic.SPL, Statistic.SPM, Statistic.LPM, Statistic.PPS
 			)
-
+			if(engine.statistics.level>=tableGameClearLevel[goalType]&&(startLevel||goalType==0)) {
+				drawResult(engine, receiver, 11, COLOR.BLUE, "BONUS LINE", bonusLines)
+				drawResult(engine, receiver, 13, COLOR.BLUE, "BONUS TIME", "%10s".format(bonusTime.toTimeStr))
+			}
+		}
 		if(netIsPB) receiver.drawMenuFont(engine, 2, 21, "NEW PB", COLOR.ORANGE)
 
 		if(netIsNetPlay&&netReplaySendStatus==1)

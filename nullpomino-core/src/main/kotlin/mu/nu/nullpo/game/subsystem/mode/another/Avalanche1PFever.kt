@@ -223,24 +223,14 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 			if(xyzzy!=573) {
 				if(engine.ctrl.isPush(Controller.BUTTON_UP))
-					if(xyzzy==1)
-						xyzzy++
+					if(xyzzy==1) xyzzy++
 					else if(xyzzy!=2) xyzzy = 1
 				if(engine.ctrl.isPush(Controller.BUTTON_DOWN))
-					if(xyzzy==2||xyzzy==3)
-						xyzzy++
-					else
-						xyzzy = 0
+					if(xyzzy==2||xyzzy==3) xyzzy++ else xyzzy = 0
 				if(engine.ctrl.isPush(Controller.BUTTON_LEFT))
-					if(xyzzy==4||xyzzy==6)
-						xyzzy++
-					else
-						xyzzy = 0
+					if(xyzzy==4||xyzzy==6) xyzzy++ else xyzzy = 0
 				if(engine.ctrl.isPush(Controller.BUTTON_RIGHT))
-					if(xyzzy==5||xyzzy==7)
-						xyzzy++
-					else
-						xyzzy = 0
+					if(xyzzy==5||xyzzy==7) xyzzy++ else xyzzy = 0
 			}
 
 			if(engine.ctrl.isPush(Controller.BUTTON_A))
@@ -258,10 +248,8 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 				}
 
 			if(engine.ctrl.isPush(Controller.BUTTON_B))
-				if(xyzzy==8)
-					xyzzy++
-				else
-				// Cancel
+				if(xyzzy==8) xyzzy++
+				else // Cancel
 					engine.quitFlag = true
 		} else {
 			menuTime++
@@ -297,11 +285,7 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 			receiver.drawMenuFont(engine, 0, 13, "MAP PREVIEW", YELLOW)
 			receiver.drawMenuFont(engine, 0, 14, "A:DISPLAY", GREEN)
 			drawMenu(
-				engine,
-				receiver,
-				15,
-				BLUE,
-				6,
+				engine, receiver, 15, BLUE, 6,
 				"MAP SET" to FEVER_MAPS[mapSet].uppercase(),
 				"SUBSET" to mapSubsets[previewSubset].uppercase(),
 				"CHAIN" to previewChain
@@ -557,7 +541,8 @@ class Avalanche1PFever:Avalanche1PDummyMode() {
 
 	private fun loadMapSetFever(id:Int, forceReload:Boolean) {
 		if(forceReload) {
-			propFeverMap.load("config/map/avalanche/${FEVER_MAPS[id]}Endless.map")
+			propFeverMap.load(this::class.java.getResource(
+				"map/avalanche/${FEVER_MAPS[id]}Endless.map")!!.path)
 			feverChainMin = propFeverMap.getProperty("minChain", 3)
 			feverChainMax = propFeverMap.getProperty("maxChain", 15)
 			val subsets = propFeverMap.getProperty("sets")

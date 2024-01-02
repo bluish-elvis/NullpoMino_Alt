@@ -40,6 +40,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 
@@ -486,8 +487,7 @@ class GrandRoads:NetDummyMode() {
 	override fun renderResult(engine:GameEngine) {
 		if(!netIsWatch)
 			receiver.drawMenuFont(
-				engine, 0, 0, "\u0090\u0093 PAGE"+(engine.statc[1]+1)
-					+"/3", COLOR.RED
+				engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", COLOR.RED
 			)
 
 		if(engine.statc[1]==0) {

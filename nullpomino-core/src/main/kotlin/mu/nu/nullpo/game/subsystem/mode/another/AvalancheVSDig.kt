@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -249,7 +250,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 					drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
 					drawMenu(engine, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
 
-					receiver.drawMenuFont(engine, 0, 19, "PAGE 1/3", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/3", COLOR.YELLOW)
 				}
 				menuCursor<18 -> {
 					drawMenu(
@@ -265,7 +266,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 						"X SHOW" to dangerColumnShowX[pid]
 					)
 
-					receiver.drawMenuFont(engine, 0, 19, "PAGE 2/3", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/3", COLOR.YELLOW)
 				}
 				else -> {
 					drawMenu(engine, receiver, 0, COLOR.PURPLE, 18, "ROWS" to handicapRows[pid])
@@ -287,7 +288,7 @@ class AvalancheVSDig:AvalancheVSDummyMode() {
 					drawMenu(engine, receiver, COLOR.PINK, "BIG DISP" to bigDisplay)
 					drawMenuCompact(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 
-					receiver.drawMenuFont(engine, 0, 19, "PAGE 3/3", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/3", COLOR.YELLOW)
 				}
 			}
 		} else

@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -297,7 +298,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 				drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
 				drawMenu(engine, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
 
-				receiver.drawMenuFont(engine, 0, 19, "PAGE 1/4", COLOR.YELLOW)
+				receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/4", COLOR.YELLOW)
 			} else {
 				val pid = engine.playerID
 				if(menuCursor<17) {
@@ -317,7 +318,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 						"HARD OJAMA" to ojamaHard[pid]
 					)
 
-					receiver.drawMenuFont(engine, 0, 19, "PAGE 2/4", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/4", COLOR.YELLOW)
 				} else if(menuCursor<26) {
 					drawMenu(
 						engine, receiver, 0, COLOR.CYAN, 17, "X COLUMN" to if(dangerColumnDouble[pid]) "3 AND 4" else "3 ONLY",
@@ -341,7 +342,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					)
 					drawMenu(engine, receiver, COLOR.CYAN, "CHAINPOWER" to if(newChainPower[pid]) "FEVER" else "CLASSIC")
 
-					receiver.drawMenuFont(engine, 0, 19, "PAGE 3/4", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/4", COLOR.YELLOW)
 				} else {
 					drawMenu(
 						engine,
@@ -358,7 +359,7 @@ class AvalancheVSBomb:AvalancheVSDummyMode() {
 					drawMenu(engine, receiver, COLOR.COBALT, "BGM" to BGM.values[bgmId], "SE" to enableSE[pid])
 					drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 
-					receiver.drawMenuFont(engine, 0, 19, "PAGE 4/4", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 4/4", COLOR.YELLOW)
 				}
 			}
 		} else

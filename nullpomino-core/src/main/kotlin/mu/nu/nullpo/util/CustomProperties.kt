@@ -45,6 +45,7 @@ import java.util.Properties
 import java.util.Vector
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
+import java.util.zip.ZipException
 
 /** String以外も格納できるプロパティセット */
 class CustomProperties(name:String = ""):Properties() {
@@ -58,6 +59,10 @@ class CustomProperties(name:String = ""):Properties() {
 		log.debug(" $file")
 		try {
 			val f = GZIPInputStream(FileInputStream(file))
+			load(f)
+			f.close()
+		} catch(e:ZipException) {
+			val f = FileInputStream(file)
 			load(f)
 			f.close()
 		} catch(e:FileNotFoundException) {
@@ -95,14 +100,15 @@ class CustomProperties(name:String = ""):Properties() {
 	/** Save to [file].
 	 * @return true if success
 	 */
-	fun save(file:String = fileName):Boolean {
+	fun save(file:String = fileName, xml:Boolean = false):Boolean {
 		try {
 			val repFolder = File(file).parentFile
 			if(!repFolder.exists())
 				if(repFolder.mkdirs()) log.info("Created folder: ${repFolder.name}")
 				else log.error("Couldn't create folder at ${repFolder.name}")
 			val out = GZIPOutputStream(FileOutputStream(file))
-			store(out, "NullpoMino Custom Property File")
+			if(xml) storeToXML(out, "NullpoMino Custom Property File", "UTF-8")
+			else store(out, "NullpoMino Custom Property File")
 			log.debug("Saving custom property file to $file")
 			out.close()
 		} catch(e:IOException) {

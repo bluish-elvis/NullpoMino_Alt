@@ -42,6 +42,7 @@ import mu.nu.nullpo.game.component.Controller
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
 import zeroxfc.nullpo.custom.libs.ProfileProperties
@@ -266,6 +267,7 @@ class Minesweeper:AbstractMode() {
 					engine.blockShowOutlineOnly = false
 					if(owner.players<2) owner.musMan.bgm = BGMStatus.BGM.Silent
 					if(field.isEmpty) engine.statc[0] = field.height+1 else engine.resetFieldVisible()
+					engine.statc[0]++
 				}
 				engine.statc[0]<field.height+1 -> {
 					for(i in 0..<field.width)
@@ -559,15 +561,15 @@ class Minesweeper:AbstractMode() {
 		for(y in blockGrid.indices) {
 			for(x in 0..<blockGrid[y].size) {
 				if(mainGrid.getSquareAt(x, y).uncovered) {
-					if(!mainGrid.getSquareAt(x, y).isMine) {
-						if(blockGrid[y][x]!!.toChar()!=open.toChar()) blockGrid[y][x]!!.replace(open)
-					} else {
-						if(blockGrid[y][x]!!.toChar()!=mine.toChar()) blockGrid[y][x]!!.replace(mine)
-					}
+					if(!mainGrid.getSquareAt(x, y).isMine)
+						blockGrid[y][x]=open
+					 else
+						blockGrid[y][x]=mine
+
 				} else {
-					if(blockGrid[y][x]!!.toChar()!=covered.toChar()) {
-						blockGrid[y][x]!!.replace(covered)
-					}
+					if(blockGrid[y][x]!!.toChar()!=covered.toChar())
+						blockGrid[y][x]=covered
+
 				}
 			}
 		}
@@ -578,8 +580,8 @@ class Minesweeper:AbstractMode() {
 			for(x in 0..<if(width>20) MAX_DIM else width) {
 				val px = x+offsetX
 				val py = y+offsetY
-				if(engine.field.getBlock(x, y)?.toChar()!=blockGrid[py][px]!!.toChar()) {
-					engine.field.getBlock(x, y)?.replace(blockGrid[py][px])
+				if(engine.field.getBlock(x, y)!=blockGrid[py][px]) {
+					engine.field.setBlock(x, y,blockGrid[py][px])
 				}
 			}
 		}
@@ -634,6 +636,7 @@ class Minesweeper:AbstractMode() {
 							if(mainGrid.getSquareAt(x, y).uncovered) {
 								if(!mainGrid.getSquareAt(x, y).isMine) {
 									val s = mainGrid.getSurroundingMines(x, y)
+
 									if(s>0) receiver.drawMenuFont(
 										engine, x, y, "$s", when(s) {
 											1 -> COLOR.PINK
@@ -649,10 +652,8 @@ class Minesweeper:AbstractMode() {
 									)
 								}
 							} else {
-								if(mainGrid.getSquareAt(x, y).flagged)
-									receiver.drawMenuFont(engine, x, y, "b", COLOR.RED)
-								else if(mainGrid.getSquareAt(x, y).question)
-									receiver.drawMenuFont(engine, x, y, "?")
+								if(mainGrid.getSquareAt(x, y).flagged) receiver.drawMenuFont(engine, x, y, BaseFont.CURSOR, COLOR.RED)
+								else if(mainGrid.getSquareAt(x, y).question) receiver.drawMenuFont(engine, x, y, "?")
 							}
 						}
 					}
@@ -679,16 +680,13 @@ class Minesweeper:AbstractMode() {
 									)
 								}
 							} else {
-								if(mainGrid.getSquareAt(px, py).flagged) {
-									receiver.drawMenuFont(engine, x, y, "b", COLOR.RED)
-								} else if(mainGrid.getSquareAt(px, py).question) {
-									receiver.drawMenuFont(engine, x, y, "?")
-								}
+								if(mainGrid.getSquareAt(px, py).flagged) receiver.drawMenuFont(engine, x, y, BaseFont.CURSOR, COLOR.RED)
+								else if(mainGrid.getSquareAt(px, py).question) receiver.drawMenuFont(engine, x, y, "?")
 							}
 						}
 					}
 				}
-				receiver.drawMenuFont(engine, cursorScreenX, cursorScreenY, "f", COLOR.YELLOW)
+				receiver.drawMenuFont(engine, cursorScreenX, cursorScreenY, BaseFont.CIRCLE_L, COLOR.YELLOW)
 				val foffsetX = receiver.fieldX(engine)+4
 				val foffsetY = receiver.fieldY(engine)+52
 				val size = 16
@@ -700,17 +698,16 @@ class Minesweeper:AbstractMode() {
 				}
 				if(height>MAX_DIM) {
 					if(offsetY!=0)
-						receiver.drawDirectFont(foffsetX+(9.5*size).toInt(), foffsetY-2*size, "k", COLOR.YELLOW)
+						receiver.drawDirectFont(foffsetX+(9.5*size).toInt(), foffsetY-2*size, BaseFont.UP_S, COLOR.YELLOW)
 					if(offsetY!=width-MAX_DIM)
-						receiver.drawDirectFont(foffsetX+(9.5*size).toInt(), foffsetY+21*size, "n", COLOR.YELLOW)
+						receiver.drawDirectFont(foffsetX+(9.5*size).toInt(), foffsetY+21*size, BaseFont.DOWN_S, COLOR.YELLOW)
 				}
 			}
 			if(engine.playerProp.isLoggedIn||engine.playerName.isNotEmpty()) {
 				receiver.drawScoreFont(engine, 0, 20, "PLAYER", COLOR.BLUE)
 				receiver.drawScoreFont(
 					engine, 0, 21, if(owner.replayMode) engine.playerName else engine.playerProp.nameDisplay,
-					COLOR.WHITE,
-					2f
+					COLOR.WHITE, 2f
 				)
 			}
 		}
@@ -720,11 +717,11 @@ class Minesweeper:AbstractMode() {
 		 */
 	override fun renderResult(engine:GameEngine) {
 		receiver.drawMenuFont(engine, 0, 0, "TIME", COLOR.BLUE)
-		receiver.drawMenuFont(engine, 0, 1, "%10s".format(engine.statistics.time.toTimeStr))
+		receiver.drawMenuNum(engine, 0, 1, "%10s".format(engine.statistics.time.toTimeStr))
 		receiver.drawMenuFont(engine, 0, 2, "MINES", COLOR.RED)
-		receiver.drawMenuFont(engine, 0, 3, "%10s".format(mainGrid.mines))
+		receiver.drawMenuNum(engine, 0, 3, "%10s".format(mainGrid.mines))
 		receiver.drawMenuFont(engine, 0, 4, "REMAINING", COLOR.GREEN)
-		receiver.drawMenuFont(engine, 0, 5, "%10s".format(mainGrid.mines-mainGrid.flaggedSquares))
+		receiver.drawMenuNum(engine, 0, 5, "%10s".format(mainGrid.mines-mainGrid.flaggedSquares))
 	}
 	/*
 		 * Called when saving replay

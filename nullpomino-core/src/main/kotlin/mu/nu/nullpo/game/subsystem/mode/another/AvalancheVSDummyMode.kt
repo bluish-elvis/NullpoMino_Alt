@@ -362,7 +362,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 		val playerID = engine.playerID
 		if(propMap[playerID].isNullOrEmpty()||forceReload) {
 			mapMaxNo[playerID] = 0
-			propMap[playerID] = receiver.loadProperties("config/map/avalanche/${mapSet[playerID]}.map")
+			propMap[playerID] = receiver.loadProperties(
+				this::class.java.getResource("map/avalanche/${mapSet[playerID]}.map")!!.path)
 		}
 
 		if(propMap[playerID].isNullOrEmpty())
@@ -378,7 +379,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 	protected fun loadMapSetFever(engine:GameEngine, map:Int, forceReload:Boolean) {
 		val playerID = engine.playerID
 		if(propFeverMap[playerID].isNullOrEmpty()||forceReload) {
-			propFeverMap[playerID] = receiver.loadProperties("config/map/avalanche/${FEVER_MAPS[map]}.map")
+			propFeverMap[playerID] = receiver.loadProperties(
+				this::class.java.getResource("map/avalanche/${FEVER_MAPS[map]}.map")!!.path)
 			feverChainMin[playerID] = propFeverMap[playerID]?.getProperty("minChain", 3) ?: 3
 			feverChainMax[playerID] = propFeverMap[playerID]?.getProperty("maxChain", 15) ?: 15
 			val subsets = propFeverMap[playerID]?.getProperty("sets") ?: ""
@@ -452,7 +454,8 @@ abstract class AvalancheVSDummyMode:AbstractMode() {
 				engine.field.setAllSkin(engine.skin)
 			} else {
 				if(propMap[playerID].isNullOrEmpty())
-					propMap[playerID] = receiver.loadProperties("config/map/avalanche/${mapSet[playerID]}.map")
+					propMap[playerID] = receiver.loadProperties(
+						this::class.java.getResource("map/avalanche/${mapSet[playerID]}.map")!!.path)
 
 				propMap[playerID]?.let {
 					engine.createFieldIfNeeded()

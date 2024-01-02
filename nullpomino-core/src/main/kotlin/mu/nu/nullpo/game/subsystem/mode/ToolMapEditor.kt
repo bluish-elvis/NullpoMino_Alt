@@ -28,6 +28,7 @@
  */
 package mu.nu.nullpo.game.subsystem.mode
 
+import mu.nu.nullpo.game.component.BGMStatus
 import mu.nu.nullpo.game.component.Block
 import mu.nu.nullpo.game.component.Block.COLOR
 import mu.nu.nullpo.game.component.Controller
@@ -70,7 +71,7 @@ class ToolMapEditor:AbstractMode() {
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		//field.readProperty(prop, id);
-		field.stringToField(prop.getProperty("values.$id", ""))
+		field.stringToField(prop.getProperty("map.$id", ""))
 		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 	}
@@ -78,7 +79,7 @@ class ToolMapEditor:AbstractMode() {
 	/** MapSave from #[id]:[field] into [prop] */
 	private fun saveMap(field:Field, prop:CustomProperties, id:Int) {
 		//field.writeProperty(prop, id);
-		prop.setProperty("values.$id", field.fieldToString())
+		prop.setProperty("map.$id", field.fieldToString())
 	}
 
 	/** AllMapRead
@@ -89,7 +90,7 @@ class ToolMapEditor:AbstractMode() {
 
 		listFields!!.clear()
 
-		val maxMap = propMap.getProperty("values.maxMapNumber", 0)
+		val maxMap = propMap.getProperty("map.maxMapNumber", 0)
 		for(i in 0..<maxMap) {
 			val fld = Field()
 			loadMap(fld, propMap, i)
@@ -104,7 +105,7 @@ class ToolMapEditor:AbstractMode() {
 		propMap = CustomProperties()
 
 		val maxMap = listFields!!.size
-		propMap.setProperty("values.maxMapNumber", maxMap)
+		propMap.setProperty("map.maxMapNumber", maxMap)
 
 		for(i in 0..<maxMap)
 			saveMap(listFields!![i], propMap, i)
@@ -138,6 +139,7 @@ class ToolMapEditor:AbstractMode() {
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
+		owner.musMan.bgm = BGMStatus.BGM.Menu(2)
 		// Configuration changes
 		val change = updateCursor(engine, 7)
 
@@ -219,7 +221,7 @@ class ToolMapEditor:AbstractMode() {
 
 		receiver.drawMenuFont(engine, 0, 6, "MAP DATA", EventReceiver.COLOR.COBALT)
 		if(listFields!!.size>0)
-			receiver.drawMenuFont(engine, 0, 7, "$nowMapID"+"/"+(listFields!!.size-1), menuCursor in 3..5)
+			receiver.drawMenuNum(engine, 0, 7, "$nowMapID"+"/"+(listFields!!.size-1), menuCursor in 3..5)
 		else
 			receiver.drawMenuFont(engine, 0, 7, "NO MAPS", menuCursor in 3..5)
 		if(menuCursor in 3..5)
@@ -229,7 +231,7 @@ class ToolMapEditor:AbstractMode() {
 		receiver.drawMenuFont(engine, 1, 10, "[DELETE]", menuCursor==5)
 
 		receiver.drawMenuFont(engine, 0, 12, "MAP FILE", EventReceiver.COLOR.COBALT)
-		receiver.drawMenuFont(engine, 0, 13, "$nowMapSetID/99", menuCursor in 6..7)
+		receiver.drawMenuNum(engine, 0, 13, "$nowMapSetID/99", menuCursor in 6..7)
 		if(menuCursor in 6..7)
 			receiver.drawMenuFont(engine, 0, 14+menuCursor-6, BaseFont.CURSOR, EventReceiver.COLOR.RED)
 		receiver.drawMenuFont(engine, 1, 14, "[WRITE]", menuCursor==6)
@@ -241,8 +243,8 @@ class ToolMapEditor:AbstractMode() {
 	/* fieldEdit screen */
 	override fun renderFieldEdit(engine:GameEngine) {
 		receiver.drawScoreFont(engine, 0, 2, "X POS", EventReceiver.COLOR.BLUE)
-		receiver.drawScoreFont(engine, 0, 3, ""+engine.mapEditX)
+		receiver.drawScoreNum(engine, 0, 3, ""+engine.mapEditX)
 		receiver.drawScoreFont(engine, 0, 4, "Y POS", EventReceiver.COLOR.BLUE)
-		receiver.drawScoreFont(engine, 0, 5, ""+engine.mapEditY)
+		receiver.drawScoreNum(engine, 0, 5, ""+engine.mapEditY)
 	}
 }

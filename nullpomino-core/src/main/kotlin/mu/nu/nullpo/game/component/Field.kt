@@ -32,6 +32,7 @@ import mu.nu.nullpo.game.component.Block.ATTRIBUTE
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameEngine.LineGravity
 import mu.nu.nullpo.util.CustomProperties
+import mu.nu.nullpo.util.GeneralUtil.aNum
 import mu.nu.nullpo.util.GeneralUtil.filterNotNullIndexed
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import org.apache.logging.log4j.LogManager
@@ -415,7 +416,7 @@ import kotlin.random.Random
 				if(j<width-1) mapStr.append(",")
 			}
 
-			p.setProperty("$id.field.values.$i", "$mapStr")
+			p.setProperty("$id.field.map.$i", "$mapStr")
 		}
 	}
 
@@ -425,19 +426,16 @@ import kotlin.random.Random
 	 */
 	fun readProperty(p:CustomProperties, id:Int) {
 		for(i in 0..<height) {
-			val mapStr = p.getProperty("$id.field.values.$i", "")
+			val mapStr = p.getProperty("$id.field.map.$i", p.getProperty("$id.field.values.$i", ""))
 			val mapArray = mapStr.split(Regex(",")).dropLastWhile {it.isEmpty()}
 
 			for(j in mapArray.indices) {
 				val blkColor = try {
 					mapArray[j].toInt()
 				} catch(e:NumberFormatException) {
-					-1
+					mapArray[j][0].aNum
 				}
-
-				setBlockColor(j, i, blkColor)
-
-				getBlock(j, i)?.apply {elapsedFrames = -1}
+				setBlock(j, i, Block(blkColor).apply{elapsedFrames=-1})
 			}
 		}
 	}
@@ -561,11 +559,8 @@ import kotlin.random.Random
 	 */
 	fun setBlockColor(x:Int, y:Int, c:Pair<Block.COLOR, Block.TYPE>):Boolean =
 		if(getCoordVaild(x, y))
-			if(getBlock(x, y)?.also {it.color = c.first;it.type = c.second}==null) setBlock(
-				x,
-				y,
-				Block(c.first, c.second)
-			) else true
+			if(getBlock(x, y)?.also {it.color = c.first;it.type = c.second}==null)
+				setBlock(x, y, Block(c.first, c.second)) else true
 		else false
 	/** 指定した座標にあるBlock colorを変更
 	 * @param x X-coordinate
@@ -1867,11 +1862,9 @@ import kotlin.random.Random
 			try {
 				val substr = str.substring(index, minOf(str.length, index+width))
 				val row = stringToRow(substr, skin, i>=highestGarbageY, i>=highestWallY)
-				for(j in 0..<width)
-					setBlock(j, i, row[j])
+				for(j in 0..<width) setBlock(j, i, row[j])
 			} catch(e:Exception) {
-				for(j in 0..<width)
-					setBlock(j, i, Block())
+				for(j in 0..<width) delBlock(j, i)
 			}
 		}
 	}

@@ -35,6 +35,7 @@ import mu.nu.nullpo.game.event.EventReceiver
 import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -385,7 +386,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 			if(menuCursor<9) {
 				drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
 				drawMenu(engine, receiver, "FALL DELAY" to engine.cascadeDelay, "CLEAR DELAY" to engine.cascadeClearDelay)
-				receiver.drawMenuFont(engine, 0, 19, "PAGE 1/5", COLOR.YELLOW)
+				receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/5", COLOR.YELLOW)
 			} else {
 				val pid = engine.playerID
 				if(menuCursor<17) {
@@ -394,16 +395,14 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 						"COUNTER" to OJAMA_COUNTER_STRING[ojamaCounterMode[pid]],
 						"MAX ATTACK" to maxAttack[pid],
 						"MIN CHAIN" to rensaShibari[pid],
-						"CLEAR SIZE" to
-							engine.colorClearSize.toString(),
+						"CLEAR SIZE" to engine.colorClearSize.toString(),
 						"OJAMA RATE" to ojamaRate[pid],
-						"HURRYUP" to
-							if(hurryUpSeconds[pid]==0) "NONE" else "${hurryUpSeconds[pid]}SEC",
+						"HURRYUP" to if(hurryUpSeconds[pid]==0) "NONE" else "${hurryUpSeconds[pid]}SEC",
 						"X COLUMN" to if(dangerColumnDouble[pid]) "3 AND 4" else "3 ONLY",
 						"X SHOW" to dangerColumnShowX[pid]
 					)
 
-					receiver.drawMenuFont(engine, 0, 19, "PAGE 2/5", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/5", COLOR.YELLOW)
 				} else if(menuCursor<24) {
 					drawMenu(
 						engine, receiver, 0, COLOR.CYAN, 17,
@@ -425,7 +424,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 					drawMenu(engine, receiver, COLOR.CYAN, "CHAINPOWER" to if(newChainPower[pid]) "FEVER" else "CLASSIC")
 
-					receiver.drawMenuFont(engine, 0, 19, "PAGE 3/5", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/5", COLOR.YELLOW)
 				} else if(menuCursor<32) {
 					initMenu()
 					drawMenu(
@@ -440,7 +439,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 
 					drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
 
-					receiver.drawMenuFont(engine, 0, 19, "PAGE 4/5", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 4/5", COLOR.YELLOW)
 				} else {
 					receiver.drawMenuFont(engine, 0, 0, "ATTACK", COLOR.CYAN)
 					var multiplier = (100*getAttackMultiplier(dropSet[pid], dropMap[pid])).toInt()
@@ -469,7 +468,7 @@ class AvalancheVSSPF:AvalancheVSDummyMode() {
 						}"
 					)
 
-					receiver.drawMenuFont(engine, 0, 19, "PAGE 5/5", COLOR.YELLOW)
+					receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 5/5", COLOR.YELLOW)
 				}
 			}
 		} else

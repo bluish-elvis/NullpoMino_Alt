@@ -272,7 +272,7 @@ class VSBattle:AbstractMode() {
 	private fun loadMap(field:Field, prop:CustomProperties, id:Int) {
 		field.reset()
 		//field.readProperty(prop, id);
-		field.stringToField(prop.getProperty("values.$id", ""))
+		field.stringToField(prop.getProperty("map.$id", ""))
 		field.setAllAttribute(true, Block.ATTRIBUTE.VISIBLE, Block.ATTRIBUTE.OUTLINE)
 		field.setAllAttribute(false, Block.ATTRIBUTE.SELF_PLACED)
 	}
@@ -296,7 +296,7 @@ class VSBattle:AbstractMode() {
 		}
 
 		propMap[playerID]?.let {
-			mapMaxNo[playerID] = it.getProperty("values.maxMapNumber", 0)
+			mapMaxNo[playerID] = it.getProperty("map.maxMapNumber", 0)
 			engine.createFieldIfNeeded()
 			loadMap(engine.field, it, id)
 			engine.field.setAllSkin(engine.skin)
@@ -490,10 +490,10 @@ class VSBattle:AbstractMode() {
 						"HU INTERVAL" to hurryUpInterval[pid]
 					)
 					drawMenuBGM(engine, receiver, bgmId, COLOR.PINK)
-					drawMenu(engine, receiver, 10, COLOR.PINK, 22, "BGM" to BGM.values[bgmId], "SHOW STATS" to showStats)
+					drawMenu(engine, receiver, 10, COLOR.PINK, 22,  "SHOW STATS" to showStats)
 					drawMenu(
 						engine, receiver, 12, COLOR.CYAN, 23, "USE MAP" to useMap[pid], "MAP SET" to mapSet[pid],
-						"MAP NO." to if(mapNumber[pid]<0) "RANDOM" else "${mapNumber[pid]}/${mapMaxNo[pid]-1}"
+						"MAP NO." to  "${if(mapNumber[pid]<0) "RANDOM" else mapNumber[pid]}/${mapMaxNo[pid]-1}"
 					)
 				}
 			}
@@ -514,7 +514,7 @@ class VSBattle:AbstractMode() {
 						engine.field.setAllSkin(engine.skin)
 					} else {
 						if(propMap[pid]==null)
-							propMap[pid] = receiver.loadProperties("config/map/vsbattle/${mapSet[pid]}.map")
+							propMap[pid] = receiver.loadProperties("config/map/vsbattle/${mapSet[pid]}.map.gz")
 
 						propMap[pid]?.let {
 							engine.createFieldIfNeeded()

@@ -37,6 +37,11 @@ import mu.nu.nullpo.game.event.EventReceiver.COLOR
 import mu.nu.nullpo.game.event.ScoreEvent
 import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
+import mu.nu.nullpo.game.subsystem.mode.menu.BooleanMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.IntegerMenuItem
+import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
+import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
 import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
@@ -145,36 +150,52 @@ class GrandPuzzle:AbstractMode() {
 	/** カラー発動間隔 */
 	private var gimmickColor = 0
 
-	/** Current edit screen */
-	private var editModeScreen = 0
+	/** Current edit screen
+	 * 0*/
+	private var editModeScreen = Stats.GAME
 
+	private enum class Stats { GAME, EDIT_MAIN, EDIT_STAGE }
+
+	private var itemStage =
+		StringsMenuItem("startstage", "STAGE NO.", COLOR.PINK, 0, (0..<MAX_STAGE_TOTAL).map {getStageName(it)})
 	/** Stage at start */
-	private var startStage = 0
+	private var startStage:Int by DelegateMenuItem(itemStage)
 
+	private var itemMaps =
+		StringsMenuItem("stageset", "STAGE SET", COLOR.PINK, 0, (0..100).map {if(it<=0) "DEFAULT" else "EDIT #${it-1}"})
 	/** Selected stage set */
-	private var mapSet = 0
+	private var mapSet:Int by DelegateMenuItem(itemMaps)
 
+	private val itemGhost = BooleanMenuItem("alwaysghost", "FULL GHOST", COLOR.BLUE, false)
 	/** When true, always ghost ON */
-	private var alwaysGhost = false
+	private var alwaysGhost:Boolean by DelegateMenuItem(itemGhost)
 
+	private val item20g = BooleanMenuItem("always20g", "20G MODE", COLOR.BLUE, false)
 	/** When true, always 20G */
-	private var always20g = false
+	private var always20g:Boolean by DelegateMenuItem(item20g)
 
+	private val itemAlert = BooleanMenuItem("lvstopse", "Sect.ALERT", COLOR.BLUE, true)
 	/** When true, levelstop sound is enabled */
-	private var secAlert = false
+	private var secAlert:Boolean by DelegateMenuItem(itemAlert)
 
+	private val itemST = BooleanMenuItem("showsectiontime", "SHOW STIME", COLOR.BLUE, true)
 	/** When true, section time display is enabled */
-	private var showST = false
+	private var showST:Boolean by DelegateMenuItem(itemST)
 
+	private val itemRandom = BooleanMenuItem("randomnext", "RANDOM", COLOR.BLUE, false)
 	/** NEXTをランダムにする */
-	private var randomQueue = false
+	private var randomQueue:Boolean by DelegateMenuItem(itemRandom)
 
+	private val itemTraining = StringsMenuItem("training", "TRAINING", COLOR.BLUE, 0, listOf("OFF", "ON", "ON+RESET"))
 	/** Training mode */
-	private var trainingType = 0
+	private var trainingType:Int by DelegateMenuItem(itemTraining)
 
 	/** Block counter at start */
+	private val itemNextc = IntegerMenuItem("startnextc", "NEXT COUNT", COLOR.PINK, 0, STRING_DEFAULT_NEXT_LIST.indices)
 	private var startNextc = 0
 
+	override val menu =
+		MenuList("gemmania", itemStage, itemMaps, itemGhost, item20g, itemAlert, itemST, itemRandom, itemTraining, itemNextc)
 	/** Version */
 	private var version = 0
 
@@ -258,7 +279,7 @@ class GrandPuzzle:AbstractMode() {
 		gimmickXRay = 0
 		gimmickColor = 0
 
-		editModeScreen = 0
+		editModeScreen = Stats.GAME
 
 
 		rankingRank = -1
@@ -322,7 +343,7 @@ class GrandPuzzle:AbstractMode() {
 
 		//  stage Map読み込み
 		engine.createFieldIfNeeded()
-		propStageSet[mapSet]?.let {loadMap(engine.field, it, stage)}
+		propStageSet[mapSet-1]?.let {loadMap(engine.field, it, stage)}
 		engine.field.setAllSkin(engine.skin)
 
 		//  stage Timeなどを設定
@@ -339,29 +360,27 @@ class GrandPuzzle:AbstractMode() {
 	 */
 	private fun loadStageSet(id:Int) {
 		if(propStageSet[id]==null) propStageSet[id] = CustomProperties()
-		propStageSet[id]?.load(
-			if(id>=0) {
-				log.debug("Loading stage set from custom set #$id")
-				LEVEL_DIR+"custom$id.map"
-			} else {
-				log.debug("Loading stage set from default set")
-				LEVEL_DIR+"default.map"
-			}
-		)
+		if(id>=0) {
+			log.debug("Loading stage set from custom set #$id")
+			propStageSet[id]?.load(LEVEL_DIR+"custom$id.map")
+		} else {
+			log.debug("Loading stage set from default set")
+			propStageSet[-1]?.loadXML(this::class.java.getResource("/map/gemmania.map.xml")!!.path)
+		}
 	}
 
 	/** stage セットを保存
-	 * @param id stage セット number(-1で default )
+	 * @param id stage セット number
 	 */
 	private fun saveStageSet(id:Int) {
 		if(!owner.replayMode)
 			if(id>=0) {
 				log.debug("Saving stage set to custom set #$id")
-				propStageSet[id]?.save("config/map/gemmania/custom$id.map")
-			} else {
-				log.debug("Saving stage set to default set")
-				propStageSet[id]?.save("config/map/gemmania/default.map")
-			}
+				propStageSet[id]?.save("config/map/gemmania/custom$id.map", true)
+			} else
+				log.warn("unable change the default stage set")
+//				propStageSet[-1]?.save("config/map/gemmania/default.map")
+
 	}
 
 	/** MapRead into #[id]:[field] from [prop] */
@@ -395,7 +414,7 @@ class GrandPuzzle:AbstractMode() {
 
 	override fun loadSetting(engine:GameEngine, prop:CustomProperties, ruleName:String, playerID:Int) {
 		startStage = prop.getProperty("gemmania.startstage", 0)
-		mapSet = prop.getProperty("gemmania.stageset", -1)
+		mapSet = prop.getProperty("gemmania.stageset", 0)
 		alwaysGhost = prop.getProperty("gemmania.alwaysghost", true)
 		always20g = prop.getProperty("gemmania.always20g", false)
 		secAlert = prop.getProperty("gemmania.lvstopse", true)
@@ -438,248 +457,196 @@ class GrandPuzzle:AbstractMode() {
 			engine.speed.das = 9
 		}
 
-		engine.ghost = (speedlevel>=100&&!alwaysGhost)
+		engine.ghost = (speedlevel<=100||alwaysGhost)
 	}
 
 	/** Stage clearや time切れの判定
 	 * @param engine GameEngine
 	 */
-	private fun checkStageEnd(engine:GameEngine) {
+	private fun checkStageEnd(engine:GameEngine):Boolean =
 		if(clearFlag||stagetimeNow<=0&&stagetimeStart>0&&engine.timerActive) {
 			skipFlag = false
 			engine.nowPieceObject = null
 			engine.timerActive = false
 			engine.stat = GameEngine.Status.CUSTOM
 			engine.resetStatc()
+			true
 		} else if(limittimeNow<=0&&engine.timerActive) {
 			engine.nowPieceObject = null
 			engine.stat = GameEngine.Status.GAMEOVER
 			engine.resetStatc()
-		}
-	}
+			true
+		} else false
 
 	/** stage numberをStringで取得
 	 * @param stageNumber stage number
 	 * @return stage numberの文字列(21面以降はEX扱い)
 	 */
 	private fun getStageName(stageNumber:Int):String =
-		if(stageNumber>=MAX_STAGE_NORMAL) "EX"+(stageNumber+1-MAX_STAGE_NORMAL) else ""+(stageNumber+1)
+		if(stageNumber>=MAX_STAGE_NORMAL) "EX${stageNumber+1-MAX_STAGE_NORMAL}" else "${stageNumber+1}"
 
 	/* Called at settings screen */
 	override fun onSetting(engine:GameEngine):Boolean {
 		// エディットMenu  メイン画面
-		if(editModeScreen==1) {
-			// Configuration changes
-			val change = updateCursor(engine, 4)
+		when(editModeScreen) {
+			Stats.EDIT_MAIN -> {
+				// Configuration changes
+				val change = updateCursor(engine, 4)
 
-			if(change!=0) {
-				engine.playSE("change")
+				if(change!=0) {
+					engine.playSE("change")
 
-				when(menuCursor) {
-					0 -> {
-					}
-					1, 2 -> {
-						startStage += change
-						if(startStage<0) startStage = MAX_STAGE_TOTAL-1
-						if(startStage>MAX_STAGE_TOTAL-1) startStage = 0
-					}
-					3, 4 -> {
-						mapSet += change
-						if(mapSet<0) mapSet = 99
-						if(mapSet>99) mapSet = 0
-					}
-				}
-			}
-
-			// 決定
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-
-				when(menuCursor) {
-					0 -> {
-						editModeScreen = 2
-						menuCursor = 0
-						menuTime = 0
-					}
-					1 ->
-						propStageSet[mapSet]?.let {
-							loadMap(engine.field, it, startStage)
-							engine.field.setAllSkin(engine.skin)
+					when(menuCursor) {
+						0 -> {
 						}
-					2 -> propStageSet[mapSet]?.let {saveMap(engine.field, it, startStage)}
-					3 -> loadStageSet(mapSet)
-					4 -> saveStageSet(mapSet)
-				}
-			}
-
-			// Cancel
-			if(engine.ctrl.isPress(Controller.BUTTON_D)&&engine.ctrl.isPress(Controller.BUTTON_E)) {
-				editModeScreen = 0
-				menuCursor = 0
-				menuTime = 0
-			}
-		} else if(editModeScreen==2) {
-			// Up
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-				menuCursor--
-				if(menuCursor<0) menuCursor = 4
-				engine.playSE("cursor")
-			}
-			// Down
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-				menuCursor++
-				if(menuCursor>4) menuCursor = 0
-				engine.playSE("cursor")
-			}
-
-			// Configuration changes
-			var change = 0
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				var m = 1
-				if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
-				if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
-
-				when(menuCursor) {
-					0 -> {
-					}
-					1 -> {
-						stagetimeStart += change*60*m
-						if(stagetimeStart<0) stagetimeStart = 3600*20
-						if(stagetimeStart>3600*20) stagetimeStart = 0
-					}
-					2 -> {
-						limittimeStart += change*60*m
-						if(limittimeStart<0) limittimeStart = 3600*20
-						if(limittimeStart>3600*20) limittimeStart = 0
-					}
-					3 -> {
-						stagebgm += change
-						if(stagebgm<0) stagebgm = BGM.count
-						if(stagebgm>BGM.count) stagebgm = 0
-					}
-					4 -> {
-						gimmickMirror += change
-						if(gimmickMirror<0) gimmickMirror = 99
-						if(gimmickMirror>99) gimmickMirror = 0
+						1, 2 -> {
+							startStage += change
+							if(startStage<0) startStage = MAX_STAGE_TOTAL-1
+							if(startStage>MAX_STAGE_TOTAL-1) startStage = 0
+						}
+						3, 4 -> {
+							mapSet += change
+							if(mapSet<0) mapSet = 99
+							if(mapSet>99) mapSet = 0
+						}
 					}
 				}
-			}
 
-			// 決定
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
+				// 決定
+				if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
+					engine.playSE("decide")
 
-				if(menuCursor==0) {
-					engine.enterFieldEdit()
-					return true
+					when(menuCursor) {
+						0 -> {
+							editModeScreen = Stats.EDIT_STAGE
+							menuCursor = 0
+							menuTime = 0
+						}
+						1 ->
+							propStageSet[mapSet+1]?.let {
+								loadMap(engine.field, it, startStage)
+								engine.field.setAllSkin(engine.skin)
+							}
+						2 -> propStageSet[mapSet]?.let {saveMap(engine.field, it, startStage)}
+						3 -> loadStageSet(mapSet)
+						4 -> saveStageSet(mapSet)
+					}
 				}
-				editModeScreen = 1
-				menuCursor = 0
-				menuTime = 0
-			} else if(engine.ctrl.isPush(Controller.BUTTON_B)) {
+
 				// Cancel
-				editModeScreen = 1
-				menuCursor = 0
-				menuTime = 0
-			}
-		} else if(!engine.owner.replayMode) {
-			// Up
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
-				menuCursor--
-				if(menuCursor<0) menuCursor = 8
-				engine.playSE("cursor")
-			}
-			// Down
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
-				menuCursor++
-				if(menuCursor>8) menuCursor = 0
-				engine.playSE("cursor")
-			}
-
-			// Configuration changes
-			var change = 0
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
-			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
-
-			if(change!=0) {
-				engine.playSE("change")
-
-				when(menuCursor) {
-					0 -> {
-						startStage += change
-						if(startStage<0) startStage = MAX_STAGE_TOTAL-1
-						if(startStage>MAX_STAGE_TOTAL-1) startStage = 0
-
-						propStageSet[mapSet]?.let {loadMap(engine.field, it, startStage)}
-						engine.field.setAllSkin(engine.skin)
-					}
-					1 -> {
-						mapSet += change
-						if(mapSet<-1) mapSet = 99
-						if(mapSet>99) mapSet = -1
-
-						propStageSet[mapSet]?.let {loadMap(engine.field, it, startStage)}
-						engine.field.setAllSkin(engine.skin)
-					}
-					2 -> alwaysGhost = !alwaysGhost
-					3 -> always20g = !always20g
-					4 -> secAlert = !secAlert
-					5 -> showST = !showST
-					6 -> randomQueue = !randomQueue
-					7 -> {
-						trainingType += change
-						if(trainingType<0) trainingType = 2
-						if(trainingType>2) trainingType = 0
-					}
-					8 -> {
-						startNextc += change
-						if(startNextc<0) startNextc = STRING_DEFAULT_NEXT_LIST.length-1
-						if(startNextc>STRING_DEFAULT_NEXT_LIST.length-1) startNextc = 0
-					}
+				if(engine.ctrl.isPress(Controller.BUTTON_D)&&engine.ctrl.isPress(Controller.BUTTON_E)) {
+					editModeScreen = Stats.GAME
+					menuCursor = 0
+					menuTime = 0
 				}
 			}
+			Stats.EDIT_STAGE -> {
+				// エディットMenu   stage 画面
+				// Up
+				if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
+					menuCursor--
+					if(menuCursor<0) menuCursor = 4
+					engine.playSE("cursor")
+				}
+				// Down
+				if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_DOWN)) {
+					menuCursor++
+					if(menuCursor>4) menuCursor = 0
+					engine.playSE("cursor")
+				}
 
-			// 決定
-			if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
-				engine.playSE("decide")
-				return false
+				// Configuration changes
+				var change = 0
+				if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_LEFT)) change = -1
+				if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_RIGHT)) change = 1
+
+				if(change!=0) {
+					engine.playSE("change")
+
+					var m = 1
+					if(engine.ctrl.isPress(Controller.BUTTON_E)) m = 100
+					if(engine.ctrl.isPress(Controller.BUTTON_F)) m = 1000
+
+					when(menuCursor) {
+						0 -> {
+						}
+						1 -> {
+							stagetimeStart += change*60*m
+							if(stagetimeStart<0) stagetimeStart = 3600*20
+							if(stagetimeStart>3600*20) stagetimeStart = 0
+						}
+						2 -> {
+							limittimeStart += change*60*m
+							if(limittimeStart<0) limittimeStart = 3600*20
+							if(limittimeStart>3600*20) limittimeStart = 0
+						}
+						3 -> {
+							stagebgm += change
+							if(stagebgm<0) stagebgm = BGM.count
+							if(stagebgm>BGM.count) stagebgm = 0
+						}
+						4 -> {
+							gimmickMirror += change
+							if(gimmickMirror<0) gimmickMirror = 99
+							if(gimmickMirror>99) gimmickMirror = 0
+						}
+					}
+				}
+
+				// 決定
+				if(menuTime<5) menuTime++ else if(engine.ctrl.isPush(Controller.BUTTON_A)) {
+					engine.playSE("decide")
+
+					if(menuCursor==0) {
+						engine.enterFieldEdit()
+						return true
+					}
+					editModeScreen = Stats.EDIT_MAIN
+					menuCursor = 0
+					menuTime = 0
+				} else if(engine.ctrl.isPush(Controller.BUTTON_B)) {
+					// Cancel
+					editModeScreen = Stats.EDIT_MAIN
+					menuCursor = 0
+					menuTime = 0
+				}
 			}
+			else -> {
+				return if(!engine.owner.replayMode&&engine.ctrl.isPush(Controller.BUTTON_D)) {
+					// エディット
+					if(mapSet<0) mapSet = 0
 
-			// Cancel
-			if(engine.ctrl.isPush(Controller.BUTTON_B)) engine.quitFlag = true
+					loadStageSet(mapSet)
+					propStageSet[mapSet]?.let {loadMap(engine.field, it, startStage)}
+					engine.field.setAllSkin(engine.skin)
 
-			// エディット
-			if(engine.ctrl.isPush(Controller.BUTTON_D)) {
-				if(mapSet<0) mapSet = 0
-
-				loadStageSet(mapSet)
-				propStageSet[mapSet]?.let {loadMap(engine.field, it, startStage)}
-				engine.field.setAllSkin(engine.skin)
-
-				editModeScreen = 1
-				menuCursor = 0
-				menuTime = 0
+					editModeScreen = Stats.EDIT_MAIN
+					menuCursor = 0
+					menuTime = 0
+					true
+				} else super.onSetting(engine)// 普通のMenu
 			}
-		} else {
-			menuTime++
-			menuCursor = -1
-
-			return menuTime<60
-		}// 普通のMenu
-		// エディットMenu   stage 画面
-
+		}
 		return true
+	}
+
+	override fun onSettingChanged(engine:GameEngine) {
+		super.onSettingChanged(engine)
+		when(menuCursor) {
+			0, 1 -> {
+				if(startStage<0) startStage = MAX_STAGE_TOTAL-1
+				if(startStage>MAX_STAGE_TOTAL-1) startStage = 0
+
+				propStageSet[mapSet-1]?.let {loadMap(engine.field, it, startStage)}
+				engine.field.setAllSkin(engine.skin)
+			}
+		}
 	}
 
 	/* Render the settings screen */
 	override fun renderSetting(engine:GameEngine) {
 		when(editModeScreen) {
-			1 -> {
+			Stats.EDIT_MAIN -> {
 				drawMenu(
 					engine, receiver, 0, COLOR.GREEN, 0, "STAGE EDIT" to "[PUSH A]", "LOAD STAGE" to "[${getStageName(startStage)}]",
 					"SAVE STAGE" to "[${getStageName(startStage)}]", "LOAD" to "[SET $mapSet]",
@@ -689,7 +656,7 @@ class GrandPuzzle:AbstractMode() {
 				receiver.drawMenuFont(engine, 0, 19, "EXIT-> D+E", COLOR.ORANGE)
 			}
 			// エディットMenu   stage 画面
-			2 -> drawMenu(
+			Stats.EDIT_STAGE -> drawMenu(
 				engine, receiver, 0, COLOR.GREEN, 0, "MAP EDIT" to "[PUSH A]", "STAGE TIME" to stagetimeStart.toTimeStr,
 				"LIMIT TIME" to limittimeStart.toTimeStr, "BGM" to stagebgm,
 				"MIRROR" to if(gimmickMirror==0) "OFF" else gimmickMirror
@@ -697,29 +664,7 @@ class GrandPuzzle:AbstractMode() {
 			else -> {
 				// 普通のMenu
 				if(!engine.owner.replayMode) receiver.drawMenuFont(engine, 0, 19, "D:EDIT", COLOR.ORANGE)
-
-				val strTrainingType = when(trainingType) {
-					1 -> "ON"
-					2 -> "ON+RESET"
-					else -> "OFF"
-				}
-
-				drawMenu(
-					engine,
-					receiver,
-					0,
-					COLOR.PINK,
-					0,
-					"STAGE NO." to getStageName(startStage),
-					"STAGE SET" to if(mapSet<0) "DEFAULT" else "EDIT $mapSet",
-					"FULL GHOST" to alwaysGhost,
-					"FULL 20G" to always20g,
-					"LVSTOPSE" to secAlert,
-					"SHOW STIME" to showST,
-					"RANDOM" to randomQueue,
-					"TRAINING" to strTrainingType,
-					"NEXT COUNT" to startNextc
-				)
+				super.renderSetting(engine)
 			}
 		}
 	}
@@ -728,7 +673,7 @@ class GrandPuzzle:AbstractMode() {
 	override fun onReady(engine:GameEngine):Boolean {
 		if(engine.statc[0]==0) {
 			if(!engine.readyDone) {
-				loadStageSet(mapSet)
+				loadStageSet(mapSet-1)
 				stage = startStage
 				engine.nextPieceCount = startNextc
 
@@ -776,10 +721,7 @@ class GrandPuzzle:AbstractMode() {
 	/* Render score */
 	override fun renderLast(engine:GameEngine) {
 		receiver.drawScoreFont(
-			engine, 0, 0, "GRAND BLOSSOM"+if(randomQueue)
-				" (RANDOM)"
-			else
-				"", COLOR.RED
+			engine, 0, 0, "GRAND BLOSSOM"+if(randomQueue) " (RANDOM)" else "", COLOR.RED
 		)
 
 		receiver.drawScoreFont(engine, -1, -4*2, "DECORATION", scale = .5f)
@@ -1039,14 +981,10 @@ class GrandPuzzle:AbstractMode() {
 	}
 
 	/* Line clear処理が終わったときの処理 */
-	override fun lineClearEnd(engine:GameEngine):Boolean {
-		checkStageEnd(engine)
-
-		return false
-	}
+	override fun lineClearEnd(engine:GameEngine):Boolean = checkStageEnd(engine)
 
 	/* Blockピースが固定されたときの処理(calcScoreの直後) */
-	override fun pieceLocked(engine: GameEngine, lines: Int, finesse: Boolean) {
+	override fun pieceLocked(engine:GameEngine, lines:Int, finesse:Boolean) {
 		// 固定 count+1
 		thisStageTotalPieceLockCount++
 
@@ -1173,67 +1111,63 @@ class GrandPuzzle:AbstractMode() {
 		if(clearFlag) {
 			// クリア
 			receiver.drawMenuFont(
-				engine, 2, 4, "CLEAR!", if(engine.statc[0]%2==0)
-					COLOR.ORANGE
-				else
-					COLOR.WHITE
+				engine, 2, 4, "CLEAR!", if(engine.statc[0]%2==0) COLOR.ORANGE else COLOR.WHITE
 			)
 
 			receiver.drawMenuFont(engine, 0, 7, "LIMIT TIME", COLOR.PINK)
 			receiver.drawMenuFont(
-				engine,
-				1,
-				8,
-				(limittimeNow+engine.statc[1]).toTimeStr,
-				if(engine.statc[0]%2==0&&engine.statc[1]<timeextendStageClearSeconds*60) COLOR.ORANGE else COLOR.WHITE
+				engine, 1, 8, (limittimeNow+engine.statc[1]).toTimeStr,
+				if(engine.statc[0]%2==0&&engine.statc[1]<timeextendStageClearSeconds*60) COLOR.ORANGE else COLOR.WHITE,
+				1.5f
 			)
 
-			receiver.drawMenuFont(engine, 2, 10, "EXTEND", COLOR.PINK)
-			receiver.drawMenuFont(engine, 2, 11, "$timeextendStageClearSeconds SEC.")
+			if(timeextendStageClearSeconds>0) {
+				receiver.drawMenuFont(engine, 2, 10, "EXTEND", COLOR.PINK)
+				receiver.drawMenuNum(engine, 2, 11, "+%02d".format(timeextendStageClearSeconds), 2f)
+				receiver.drawMenuNano(engine, 7, 12, "SEC.", COLOR.WHITE, .5f)
+			}
 
 			receiver.drawMenuFont(engine, 0, 13, "CLEAR TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, 1, 14, cleartime.toTimeStr)
+			receiver.drawMenuNum(engine, 1, 14, cleartime.toTimeStr, 1.5f)
 
 			receiver.drawMenuFont(engine, 0, 16, "TOTAL TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, 1, 17, engine.statistics.time.toTimeStr)
+			receiver.drawMenuNum(engine, 1, 17, engine.statistics.time.toTimeStr, 1.5f)
 		} else if(skipFlag) {
 			// スキップ
 			receiver.drawMenuFont(engine, 1, 4, "SKIPPED")
-			receiver.drawMenuFont(
-				engine, 1, 5, "-30 SEC.", if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED
+			receiver.drawMenuNum(engine, 2, 11, "-30", if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED, 2f)
+			receiver.drawMenuNano(
+				engine, 7, 12, "SEC.", if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.WHITE else COLOR.RED, .5f
 			)
 
 			receiver.drawMenuFont(engine, 0, 10, "LIMIT TIME", COLOR.PINK)
-			receiver.drawMenuFont(
-				engine,
-				1,
-				11,
-				(limittimeNow-engine.statc[1]).toTimeStr,
-				if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.RED else COLOR.WHITE
+			receiver.drawMenuNum(
+				engine, 1, 11, (limittimeNow-engine.statc[1]).toTimeStr,
+				if(engine.statc[0]%2==0&&engine.statc[1]<30*60) COLOR.RED else COLOR.WHITE, 1.5f
 			)
 
 			if(trainingType==0) {
 				receiver.drawMenuFont(engine, 0, 13, "CLEAR PER.", COLOR.PINK)
-				receiver.drawMenuFont(engine, 3, 14, "$clearRate%")
+				receiver.drawMenuNum(engine, 3, 14, "$clearRate%", 2f)
 			}
 
 			receiver.drawMenuFont(engine, 0, 16, "TOTAL TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, 1, 17, engine.statistics.time.toTimeStr)
+			receiver.drawMenuNum(engine, 1, 17, engine.statistics.time.toTimeStr, 1.5f)
 		} else if(stagetimeNow<=0&&stagetimeStart>0) {
 			// Timeアップ
 			receiver.drawMenuFont(engine, 1, 0, "TIME OVER")
 			receiver.drawMenuFont(engine, 1, 5, "TRY NEXT")
 
 			receiver.drawMenuFont(engine, 0, 10, "LIMIT TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, 1, 11, limittimeNow.toTimeStr)
+			receiver.drawMenuNum(engine, 1, 11, limittimeNow.toTimeStr, 1.5f)
 
 			if(trainingType==0) {
 				receiver.drawMenuFont(engine, 0, 13, "CLEAR PER.", COLOR.PINK)
-				receiver.drawMenuFont(engine, 3, 14, "$clearRate%")
+				receiver.drawMenuNum(engine, 3, 14, "$clearRate%", 2f)
 			}
 
 			receiver.drawMenuFont(engine, 0, 16, "TOTAL TIME", COLOR.PINK)
-			receiver.drawMenuFont(engine, 1, 17, engine.statistics.time.toTimeStr)
+			receiver.drawMenuNum(engine, 1, 17, engine.statistics.time.toTimeStr, 1.5f)
 		}
 	}
 
@@ -1312,7 +1246,7 @@ class GrandPuzzle:AbstractMode() {
 	override fun renderGameOver(engine:GameEngine) {
 		if(engine.ending==0&&!noContinue)
 			if(engine.statc[0]>=engine.field.height+1&&engine.statc[0]<engine.field.height+1+600) {
-				receiver.drawMenuFont(engine, 1, 7, "CONTINUE?", COLOR.PINK)
+				receiver.drawMenuFont(engine, 1, 7, "TRY AGAIN?", COLOR.PINK)
 
 				receiver.drawMenuFont(engine, 3, 9+engine.statc[1]*2, BaseFont.CURSOR, COLOR.RED)
 				receiver.drawMenuFont(engine, 4, 9, "YES", engine.statc[1]==0)
@@ -1346,18 +1280,19 @@ class GrandPuzzle:AbstractMode() {
 
 	/* Render results screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
+		receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 		if(engine.statc[1]==0) {
-			var gcolor = COLOR.WHITE
-			if(allClear==1) gcolor = COLOR.GREEN
-			if(allClear==2) gcolor = COLOR.ORANGE
-
+			val gcolor = when(allClear) {
+				1 -> COLOR.GREEN
+				2 -> COLOR.ORANGE
+				else -> COLOR.WHITE
+			}
 			receiver.drawMenuFont(engine, 0, 2, "STAGE", COLOR.PINK)
 			val strStage = "%10s".format(getStageName(stage))
 			receiver.drawMenuFont(engine, 0, 3, strStage, gcolor)
 
-			drawResult(engine, receiver, 4, COLOR.PINK, "CLEAR", "%9d%%".format(clearRate))
+			drawResult(engine, receiver, 4, COLOR.PINK, "CLEAR", clearRate)
 			drawResultStats(engine, receiver, 6, COLOR.PINK, Statistic.LINES, Statistic.PIECE, Statistic.TIME)
 			drawResultRank(engine, receiver, 12, COLOR.PINK, rankingRank)
 		} else {
@@ -1365,11 +1300,7 @@ class GrandPuzzle:AbstractMode() {
 
 			var i = if(engine.statc[1]==1) 0 else 15
 			val y = if(engine.statc[1]==1) 3 else -12
-			while(i<if(engine.statc[1]==1)
-					15
-				else
-					sectionTime.size
-			) {
+			while(i<if(engine.statc[1]==1) 15 else sectionTime.size) {
 				if(sectionTime[i]!=0)
 					when {
 						sectionTime[i]==-1 -> receiver.drawMenuNum(engine, 2, i+y, "FAILED", COLOR.RED)

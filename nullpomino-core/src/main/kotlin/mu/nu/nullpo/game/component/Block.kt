@@ -375,11 +375,11 @@ import mu.nu.nullpo.util.GeneralUtil.toAlphaNum
 			in COLOR_WHITE..COLOR_PURPLE -> {
 				COLOR.all[v] to TYPE.BLOCK
 			}
+			in COLOR_GEM_RED..COLOR_GEM_PURPLE -> {
+				COLOR.all[v-COLOR_PURPLE] to TYPE.GEM
+			}
 			COLOR_RAINBOW -> {
 				COLOR.RAINBOW to TYPE.BLOCK
-			}
-			in COLOR_GEM_RED..COLOR_GEM_PURPLE -> {
-				COLOR.all[v-COLOR_GEM_RED] to TYPE.GEM
 			}
 			COLOR_GEM_RAINBOW -> {
 				COLOR.RAINBOW to TYPE.GEM

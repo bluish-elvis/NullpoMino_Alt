@@ -39,6 +39,7 @@ import mu.nu.nullpo.game.play.GameEngine
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.game.play.GameStyle
 import mu.nu.nullpo.game.subsystem.mode.AbstractMode
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.gui.common.GameKeyDummy.Companion.MAX_PLAYERS
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -519,7 +520,7 @@ class SPF:AbstractMode() {
 			if(menuCursor<9) {
 				drawMenuSpeeds(engine, receiver, 0, COLOR.ORANGE, 0)
 				drawMenu(engine, receiver, COLOR.GREEN, "LOAD" to presetNumber[pid], "SAVE" to presetNumber[pid])
-				receiver.drawMenuFont(engine, 0, 19, "PAGE 1/3", COLOR.YELLOW)
+				receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 1/3", COLOR.YELLOW)
 			} else if(menuCursor<18) {
 				drawMenu(engine, receiver, 0, COLOR.PINK, 9, "BGM" to BGM.values[bgmId])
 
@@ -538,7 +539,7 @@ class SPF:AbstractMode() {
 				drawMenu(engine, receiver, COLOR.CYAN, "RAINBOW" to "")
 				drawMenu(engine, receiver, "GEM POWER" to RAINBOW_POWER_NAMES[diamondPower[pid]])
 
-				receiver.drawMenuFont(engine, 0, 19, "PAGE 2/3", COLOR.YELLOW)
+				receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 2/3", COLOR.YELLOW)
 			} else {
 				receiver.drawMenuFont(engine, 0, 0, "ATTACK", COLOR.CYAN)
 				var multiplier = (100*getAttackMultiplier(dropSet[pid], dropMap[pid])).toInt()
@@ -570,7 +571,7 @@ class SPF:AbstractMode() {
 					)
 				)
 
-				receiver.drawMenuFont(engine, 0, 19, "PAGE 3/3", COLOR.YELLOW)
+				receiver.drawMenuFont(engine, 0, 19, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE 3/3", COLOR.YELLOW)
 			}
 		} else
 			receiver.drawMenuFont(engine, 3, 10, "WAIT", COLOR.YELLOW)

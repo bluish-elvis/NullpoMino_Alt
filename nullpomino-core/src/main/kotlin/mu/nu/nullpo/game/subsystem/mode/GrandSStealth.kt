@@ -754,7 +754,7 @@ class GrandSStealth:AbstractMode() {
 
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
-		receiver.drawMenuFont(engine, 0, 0, "\u0090\u0093 PAGE${(engine.statc[1]+1)}/3", COLOR.RED)
+		receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${(engine.statc[1]+1)}/3", COLOR.RED)
 
 		if(engine.statc[1]==0) {
 			val col = when(rollClear) {

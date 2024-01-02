@@ -1346,7 +1346,7 @@ class GrandM3:AbstractMode() {
 						)
 			}
 		} else {
-			receiver.drawMenuFont(engine, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED)
+			receiver.drawMenuFont(engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", COLOR.RED)
 
 			when(engine.statc[1]) {
 				0 -> {

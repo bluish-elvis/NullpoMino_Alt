@@ -40,6 +40,7 @@ import mu.nu.nullpo.game.subsystem.mode.menu.DelegateMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.LevelMenuItem
 import mu.nu.nullpo.game.subsystem.mode.menu.MenuList
 import mu.nu.nullpo.game.subsystem.mode.menu.StringsMenuItem
+import mu.nu.nullpo.gui.common.BaseFont
 import mu.nu.nullpo.util.CustomProperties
 import mu.nu.nullpo.util.GeneralUtil.toInt
 import mu.nu.nullpo.util.GeneralUtil.toTimeStr
@@ -476,7 +477,7 @@ class GrandOrders:NetDummyMode() {
 	/** Renders game result screen */
 	override fun renderResult(engine:GameEngine) {
 		if(!netIsWatch) receiver.drawMenuFont(
-			engine, 0, 0, "\u0090\u0093 PAGE${engine.statc[1]+1}/3", COLOR.RED
+			engine, 0, 0, "${BaseFont.UP_S}${BaseFont.DOWN_S} PAGE${engine.statc[1]+1}/3", COLOR.RED
 		)
 
 		if(engine.statc[1]==0) {
@@ -521,7 +522,7 @@ class GrandOrders:NetDummyMode() {
 
 	/** Additional routine for game result screen */
 	override fun onResult(engine:GameEngine):Boolean {
-		if(goalType>=Course.HELL.ordinal&&engine.statistics.rollClear>=1) owner.musMan.bgm = BGM.Result(3)
+//		if(goalType>=Course.HELL.ordinal&&engine.statistics.rollClear>=1) owner.musMan.bgm = BGM.Result(3)
 		if(!netIsWatch) {
 			if(engine.ctrl.isMenuRepeatKey(Controller.BUTTON_UP)) {
 				engine.statc[1]--
@@ -1070,7 +1071,7 @@ class GrandOrders:NetDummyMode() {
 		}
 
 		enum class Course {
-			EASY, HARD, HARDEST, SUPER, LONG, SURVIVAL, CHALLENGE, XTREME, VOID, HELL, HIDE;
+			S1;
 
 			/*
 * ◆あらかじめ入っているミッションセットの解説
@@ -1131,73 +1132,37 @@ class GrandOrders:NetDummyMode() {
 */
 			val missions:List<Mission> by lazy {
 				when(this) {
-					EASY -> listOf(Mission.LevelStar(1, 6, 70))
+					S1 -> listOf(Mission.LevelStar(1, 6, 70))
 					else -> listOf(Mission.LevelStar(1, 6, 70))
 				}
 			}
-			val goalLevel = missions.size
+			val goalLevel by lazy { missions.size}
 
 			/** BGM table */
 			val bgmList by lazy {
 				when(this) {
-					EASY -> listOf(BGM.Puzzle(0), BGM.GrandA(0), BGM.GrandM(0))
-					HARD -> listOf(BGM.Puzzle(1), BGM.Puzzle(2), BGM.GrandA(1))
-					HARDEST -> listOf(BGM.GrandM(1), BGM.GrandA(1), BGM.GrandT(1))
-					SUPER -> listOf(BGM.GrandA(2), BGM.GrandT(2), BGM.GrandA(3))
-					XTREME -> listOf(BGM.GrandT(3), BGM.GrandT(4), BGM.GrandT(5))
-					LONG -> listOf(BGM.Extra(1), BGM.GrandA(0), BGM.GrandT(0), BGM.Extra(0), BGM.GrandT(2))
-					SURVIVAL -> listOf(BGM.GrandT(2), BGM.GrandA(2), BGM.GrandT(3), BGM.GrandA(3), BGM.GrandT(4))
-					CHALLENGE -> listOf(BGM.Extra(2), BGM.GrandA(0), BGM.GrandM(1), BGM.GrandT(2), BGM.GrandA(3))
-					HELL -> listOf(BGM.Finale(2))
-					HIDE -> listOf(BGM.Finale(0))
-					VOID -> listOf(BGM.Finale(1))
+					S1 -> listOf(BGM.Puzzle(0), BGM.GrandA(0), BGM.GrandM(0))
 				}
 			}
 			/** BGM change lines table */
 			val bgmChange by lazy {
 				when(this) {
-					EASY -> listOf(5, 10)
-					HARD -> listOf(5, 10)
-					HARDEST -> listOf(5, 10)
-					SUPER -> listOf(5, 10)
-					XTREME -> listOf(5, 10)
-					LONG -> listOf(5, 10, 15)
-					SURVIVAL -> listOf(5, 10, 15)
-					CHALLENGE -> listOf(5, 10, 15, 20)
+					S1 -> listOf(5, 10)
 					else -> listOf()
 				}
 			}
 
 			val bgOffset by lazy {
 				when(this) {
-					EASY -> 0
-					HARD -> 3
-					HARDEST -> 15
-					SUPER -> 14
-					XTREME -> 15
-					LONG -> 0
-					SURVIVAL -> 10
-					CHALLENGE -> 3
-					HELL -> 10
-					HIDE -> 10
-					VOID -> 10
+					S1 -> 0
 				}
 			}
 
 			/** Game type names (short) */
 			val showName by lazy {
 				when(this) {
-					EASY -> "Easy"
-					HARD -> "Hard"
-					HARDEST -> "20G"
-					SUPER -> "Super Hard"
-					XTREME -> "eXtreme"
-					LONG -> "LONG:Normal"
-					SURVIVAL -> "Survival"
-					CHALLENGE -> "Challenge"
-					HELL -> "HELL SPEED"
-					HIDE -> "HIDDEN HELL"
-					VOID -> "Void&Speed"
+					S1 -> "Easy"
+
 				}
 			}
 		}

@@ -49,12 +49,8 @@ object MathHelper {
 	 * @param radius The testing radius
 	 * @return The result of the check. true: within. false: not within.
 	 */
-	fun isCoordWithinRadius(x:Int, y:Int, xTest:Int, yTest:Int, radius:Double):Boolean {
-		val dX = xTest-x
-		val dY = yTest-y
-		val distance = sqrt((dX*dX+dY*dY).toDouble())
-		return distance<=radius
-	}
+	fun isCoordWithinRadius(x:Int, y:Int, xTest:Int, yTest:Int, radius:Double):Boolean =
+		distanceBetween(x, y, xTest, yTest)<=radius
 	/**
 	 * Gets the direct distance between two coordinate points.
 	 *
@@ -77,10 +73,8 @@ object MathHelper {
 	 * @param divisor Divisor
 	 * @return Remainder after division
 	 */
-	fun pythonModulo(value:Int, divisor:Int):Int {
-		var dividend = value%divisor
-		if(dividend<0) dividend += divisor
-		return dividend
+	fun pythonModulo(value:Int, divisor:Int):Int = (value%divisor).let {
+		if(it<0) it+divisor else it
 	}
 	/**
 	 * Modulo operator that functions similarly to Python's % operator.
@@ -89,10 +83,8 @@ object MathHelper {
 	 * @param divisor Divisor
 	 * @return Remainder after division
 	 */
-	fun pythonModulo(value:Long, divisor:Long):Long {
-		var dividend = value%divisor
-		if(dividend<0) dividend += divisor
-		return dividend
+	fun pythonModulo(value:Long, divisor:Long) = (value%divisor).let {
+		if(it<0) it+divisor else it
 	}
 	/**
 	 * Clamps a value to within a range.
@@ -102,12 +94,10 @@ object MathHelper {
 	 * @param max   Max value
 	 * @return Clamped value
 	 */
-	fun clamp(value:Int, min:Int, max:Int):Int {
-		return when {
-			value in min..max -> value
-			value<min -> min
-			else -> max
-		}
+	fun clamp(value:Int, min:Int, max:Int):Int = when {
+		value<min -> min
+		value>max -> max
+		else -> value
 	}
 	/**
 	 * Clamps a value to within a range.
@@ -117,12 +107,10 @@ object MathHelper {
 	 * @param max   Max value
 	 * @return Clamped value
 	 */
-	fun clamp(value:Long, min:Long, max:Long):Long {
-		return when {
-			value in min..max -> value
-			value<min -> min
-			else -> max
-		}
+	fun clamp(value:Long, min:Long, max:Long):Long = when {
+		value<min -> min
+		value>max -> max
+		else -> value
 	}
 	/**
 	 * Clamps a value to within a range.
@@ -132,12 +120,10 @@ object MathHelper {
 	 * @param max   Max value
 	 * @return Clamped value
 	 */
-	fun clamp(value:Float, min:Float, max:Float):Float {
-		return when {
-			value in min..max -> value
-			value<min -> min
-			else -> max
-		}
+	fun clamp(value:Float, min:Float, max:Float):Float = when {
+		value<min -> min
+		value>max -> max
+		else -> value
 	}
 	/**
 	 * Clamps a value to within a range.
@@ -147,12 +133,10 @@ object MathHelper {
 	 * @param max   Max value
 	 * @return Clamped value
 	 */
-	fun clamp(value:Double, min:Double, max:Double):Double {
-		return when {
-			value in min..max -> value
-			value<min -> min
-			else -> max
-		}
+	fun clamp(value:Double, min:Double, max:Double):Double = when {
+		value<min -> min
+		value>max -> max
+		else -> value
 	}
 	/**
 	 * Gets the greatest common divisor between two integers.<br></br>
@@ -181,4 +165,5 @@ object MathHelper {
 	 * @return Is the difference <= eps?
 	 */
 	fun almostEqual(a:Double, b:Double, eps:Double):Boolean = abs(a-b)<eps
+	fun almostEqual(a:Float, b:Float, eps:Float):Boolean = abs(a-b)<eps
 }

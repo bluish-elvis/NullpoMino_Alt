@@ -264,7 +264,7 @@ internal class StateNetGame:BasicGameState(), NetLobbyListener {
 				gm.init()
 				gm.engine.firstOrNull()?.let {e ->
 					// Tuning
-					pGl.tuning.firstOrNull()?.let {e.owTune = it}
+					pGl.tuning.firstOrNull()?.let {e.owTune = it.copy()}
 					// Rule
 
 					val ruleName = gm.mode?.gameStyle?.ordinal?.let {pGl.rule.firstOrNull()?.getOrNull(it)?.path}
