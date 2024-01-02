@@ -30,7 +30,7 @@
 package mu.nu.nullpo.gui.common
 
 /** 画像オブジェ共通部 */
-interface ResourceImage<T> {
+interface ResourceImage<T:Any?> {
 	var res:T
 	/** 画像 Filename */
 	val name:String
@@ -69,9 +69,23 @@ interface ResourceImage<T> {
 		}
 
 		override fun load() {}
-		override val width:Int = 0
-		override val height:Int = 0
-		override fun toString():String = name
+		override val width = 0
+		override val height = 0
+		override fun toString() = name
+	}
+
+	object ResourceImageBlank:ResourceImage<Nothing?> {
+		override var res = null
+		/** 画像 Filename */
+		override val name = ""
+
+		override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float, alpha:Float, color:Triple<Float, Float, Float>) {
+		}
+
+		override fun load() {}
+		override val width = 0
+		override val height = 0
+		override fun toString() = ""
 	}
 
 }

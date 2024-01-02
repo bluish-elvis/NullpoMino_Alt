@@ -35,27 +35,41 @@
  */
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
-import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.AnchorPoint
 
-class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boolean):AnimatedBackgroundHook() {
-	private val type:Int
+class BackgroundFrameAnim<T>(img:ResourceImage<T>, private val type:Int, frameTime:Int, pingPong:Boolean):AbstractBG<T>(img) {
 	private var chunkSequence:Array<ImageChunk> = emptyArray()
 	// private ResourceHolderCustomAssetExtension customHolder;
-	private var frameTime:Int
+	var frameTime:Int = frameTime
+		set(value) {
+			field = value
+			reset()
+		}
 	private var currentTick = 0
 	private var frameCount = 0
 	private var currentFrame = 0
-	private var pingPong:Boolean
+	var pingPong:Boolean = pingPong
+		set(value) {
+			field = value
+			reset()
+		}
 	private var forward = false
+
+	init {
+		setup()
+	}
+
 	private fun setup() {
 		forward = true
 		currentFrame = 0
 		currentTick = 0
+		val dim = listOf(img.width, img.height)
 		when(type) {
 			SEQUENCE_LINEAR_HORIZONTAL -> {
-				val hDim = customHolder.getImageDimensions(imageName)
-				val hAmount = hDim[0]/640
+				val hAmount = dim[0]/640
 				chunkSequence = Array(hAmount) {i ->
 					ImageChunk(
 						AnchorPoint.TL, listOf(0, 0), listOf(i*640, 0),
@@ -65,8 +79,7 @@ class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boo
 				frameCount = hAmount
 			}
 			SEQUENCE_LINEAR_VERTICAL -> {
-				val vDim = customHolder.getImageDimensions(imageName)
-				val vAmount = vDim[1]/480
+				val vAmount = dim[1]/480
 				chunkSequence = Array(vAmount) {i ->
 					ImageChunk(
 						AnchorPoint.TL, listOf(0, 0), listOf(0, i*480),
@@ -76,9 +89,8 @@ class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boo
 				frameCount = vAmount
 			}
 			SEQUENCE_GRID_HFTV -> {
-				val gDim1 = customHolder.getImageDimensions(imageName)
-				val hCells1 = gDim1[0]/640
-				val vCells1 = gDim1[1]/480
+				val hCells1 = dim[0]/640
+				val vCells1 = dim[1]/480
 				chunkSequence = Array(vCells1*hCells1) {i ->
 					val x = i%hCells1
 					ImageChunk(
@@ -89,9 +101,8 @@ class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boo
 				frameCount = hCells1*vCells1
 			}
 			SEQUENCE_GRID_VFTH -> {
-				val gDim2 = customHolder.getImageDimensions(imageName)
-				val hCells2 = gDim2[0]/640
-				val vCells2 = gDim2[1]/480
+				val hCells2 = dim[0]/640
+				val vCells2 = dim[1]/480
 				chunkSequence = Array(vCells2*hCells2) {i ->
 					val x = i%vCells2
 					ImageChunk(
@@ -106,15 +117,6 @@ class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boo
 		}
 	}
 
-	fun setSpeed(frameTime:Int) {
-		this.frameTime = frameTime
-		reset()
-	}
-
-	fun setPingPong(pingPong:Boolean) {
-		this.pingPong = pingPong
-		reset()
-	}
 
 	override fun update() {
 		currentTick++
@@ -141,45 +143,14 @@ class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boo
 		currentTick = 0
 	}
 
-	override fun draw(engine:GameEngine) {
+	override fun draw(render:AbstractRenderer) {
 		val i = chunkSequence[currentFrame]
 		val pos = i.drawLocation
 		val ddim = i.drawDimensions
 		val sloc = i.sourceLocation
 		val sdim = i.sourceDimensions
-		customHolder.drawImage(
-			imageName, pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0],
-			sdim[1], 255, 255, 255, 255
-		)
+		img.draw(pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0], sdim[1])
 	}
-
-	override fun setBG(bg:Int) {
-		log.warn("Frame animation backgrounds do not support in-game backgrounds.")
-	}
-
-	override fun setBG(filePath:String) {
-		customHolder.loadImage(filePath, imageName)
-		log.debug("Custom frame animation background modified (New File Path: $filePath).")
-		setup()
-	}
-	/**
-	 * Allows the hot-swapping of preloaded BGs from a storage instance of a `ResourceHolderCustomAssetExtension`.
-	 *
-	 * @param holder Storage instance
-	 * @param name   Image name
-	 */
-	override fun setBGFromHolder(holder:ResourceHolderCustomAssetExtension, name:String) {
-		customHolder.putImageAt(holder.getImageAt(name), imageName)
-		log.debug("Custom frame animation background modified (New Image Reference: $name).")
-		setup()
-	}
-	/**
-	 * This last one is important. In the case that any of the child types are used, it allows identification.
-	 * The identification can be used to allow casting during operations.
-	 *
-	 * @return Identification number of child class.
-	 */
-	override val id = ANIMATION_FRAME_ANIM
 
 	companion object {
 		const val SEQUENCE_LINEAR_HORIZONTAL = 0
@@ -188,17 +159,4 @@ class BackgroundFrameAnim(filePath:String, type:Int, frameTime:Int, pingPong:Boo
 		const val SEQUENCE_GRID_VFTH = 3
 	}
 
-	init {
-		imageName = ("localBG")
-	}
-
-	init {
-		customHolder = ResourceHolderCustomAssetExtension()
-		customHolder.loadImage(filePath, imageName)
-		this.type = type
-		this.frameTime = frameTime
-		this.pingPong = pingPong
-		setup()
-		log.debug("Type $type frame animation background created (File Path: $filePath).")
-	}
 }

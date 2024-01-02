@@ -119,6 +119,7 @@ class GameManager(
 		menuOnly = false
 
 		bgMan.fadeEnabled=receiver.heavyEffect>0
+		receiver.modeInit(this)
 		val players = mode?.let {
 			modeConfig.load(cfgMode)
 			statsProp.load(statsFile)
@@ -127,7 +128,6 @@ class GameManager(
 		} ?: 1
 		for(i in 0..<players)
 			engine.add(GameEngine(this, i))
-		receiver.modeInit(this)
 	}
 
 	/** Save properties to "config/setting/mode.cfg"

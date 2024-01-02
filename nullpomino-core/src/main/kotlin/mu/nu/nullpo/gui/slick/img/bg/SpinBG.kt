@@ -29,15 +29,16 @@
 
 package mu.nu.nullpo.gui.slick.img.bg
 
-import mu.nu.nullpo.gui.common.ResourceImage
-import mu.nu.nullpo.gui.common.libs.Vector
-import org.newdawn.slick.Image
+import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.bg.AbstractBG as BaseBG
+import mu.nu.nullpo.gui.slick.ResourceImageSlick
+import kotlin.math.absoluteValue
 import kotlin.math.sin
 
-class SpinBG(bg:ResourceImage<Image>):AbstractBG(bg) {
-	val sc get() = ((1+sin(this.bg.rotation*RG)/3)*1024f/minOf(this.bg.width, this.bg.height))
-	val cx get() = this.bg.width/2*sc
-	val cy get() = this.bg.height/2*sc
+class SpinBG(bgi:ResourceImageSlick, private val addBGFX:BaseBG<*>):AbstractBG(bgi) {
+	val sc get() = ((1+sin(this.res.rotation*RG*2).absoluteValue/3)*640/minOf(this.res.width, this.res.height))
+	val cx get() = this.res.width/2*sc
+	val cy get() = this.res.height/2*sc
 	var a = 0f
 	override var speed:Float = 1f
 	override var tick:Int
@@ -47,23 +48,31 @@ class SpinBG(bg:ResourceImage<Image>):AbstractBG(bg) {
 		}
 
 	override fun update() {
-		val fact = speed*.3f
-		if(!Vector.almostEqual(speed, 0f, Float.MIN_VALUE)) {
-			a += fact
-			bg.rotation = a
-			bg.setCenterOfRotation(cx, cy)
-			while(a>=360) a -= 360
-			while(a<0) a += 360
-		}
+		val fact = speed*.1f
+		a += fact
+		a %= 360f
+		res.setCenterOfRotation(cx, cy)
 	}
 
 	override fun reset() {
 		a = 0f
-		bg.rotation = 0f
+		logger.debug("SpinBG reset")
+		addBGFX.reset()
 	}
 
-	override fun draw() {
-		bg.draw(320-bg.centerOfRotationX, 240-bg.centerOfRotationY, sc)
+	override fun draw(render:AbstractRenderer) {
+		render.drawBlackBG()
+		res.rotation = a
+		res.draw(320f-cx, 240f-cy, sc)
+		/*render.drawFont(0, 0, "${res.width}x${res.height} $sc", BaseFont.FONT.NANO, scale = .5f)
+		render.drawFont(
+			0,
+			8,
+			"${640f/minOf(this.res.width, this.res.height)} x ${sin(PI+this.res.rotation*RG*4)}",
+			BaseFont.FONT.NANO,
+			scale = .5f
+		)*/
+		addBGFX.draw(render)
 	}
 
 }

@@ -36,6 +36,7 @@
 
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.AnchorPoint
@@ -110,7 +111,7 @@ class BackgroundInterlaceVertical<T>(img:ResourceImage<T>, columnWidth:Int = DEF
 		update()
 	}
 
-	override fun draw() {
+	override fun draw(render: AbstractRenderer) {
 		chunks.forEach {i ->
 			val pos = i.drawLocation
 			val ddim = i.drawDimensions

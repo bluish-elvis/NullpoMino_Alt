@@ -29,12 +29,13 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class DTET07Beams<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
+class DTET07Beams<T>(res:ResourceImage<T>, private val bg:Boolean = true):AbstractBG<T>(res) {
 	/*'（レーザー）
 LsrSY = Rnd * 240
 For I = 0 To 59
@@ -48,12 +49,12 @@ End If
 Next I*/
 	private class Beam(val id:Int, var speed:Float) {
 
-		var x = Random.nextFloat()*704-32;private set
-		var y = Random.nextFloat()*544-32;private set
-		var r = id*2+1f;private set
+		var x = Random.nextFloat()*704-32; private set
+		var y = Random.nextFloat()*544-32; private set
+		var r = id*2+1f; private set
 
-		var c = id/2%2;private set
-		var vr = (id%5-2)/5f;private set
+		var c = id/2%2; private set
+		var vr = (id%5-2)/5f; private set
 
 		data class Stat(var x:Float, var y:Float, var r:Float) {
 			fun replace(v:Stat) {
@@ -105,6 +106,7 @@ Next I*/
 			t.forEach {it.x = x;it.y = y;it.r = r}
 		}
 	}
+
 	override var speed:Float = 1f
 		set(value) {
 			field = value
@@ -129,10 +131,12 @@ Next I*/
 		children.forEach {it.reset()}
 	}
 
-	override fun draw() {
-		img.draw(0f, 0f, 0f, 480-by, 640f, 480f)
-		img.draw(0f, by, 0f, 240f, 640f, 480f)
-		img.draw(0f, 240+by, 0f, 240f, 640f, 480-by)
+	override fun draw(render:AbstractRenderer) {
+		if(bg) {
+			img.draw(0f, 0f, 0f, 480-by, 640f, 480f)
+			img.draw(0f, by, 0f, 240f, 640f, 480f)
+			img.draw(0f, 240+by, 0f, 240f, 640f, 480-by)
+		}
 		/*LsrSY = LsrSY - 4 - TrM * 3: If LsrSY < 0 Then LsrSY = LsrSY + 240
 		With Src
 			.Left = 0: .Top = 480 - LsrSY: .Right = 640: .Bottom = 480

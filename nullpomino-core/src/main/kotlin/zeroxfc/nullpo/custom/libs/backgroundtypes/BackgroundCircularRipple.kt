@@ -35,6 +35,7 @@
  */
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.AnchorPoint
@@ -84,8 +85,7 @@ class BackgroundCircularRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 		var wS = waveSpeed
 		pulseTimerMax = pulseFrames
 		currentPulseTimer = pulseTimerMax
-		if(pulseBaseScale==null||pulseScaleVariance==null||pulseCenterX==null||pulseCenterY==null||
-			wL==null||wS==null||cellWidth==null||cellHeight==null) {
+		if(pulseBaseScale==null||pulseScaleVariance==null||pulseCenterX==null||pulseCenterY==null||cellWidth==null||cellHeight==null) {
 			chunkGrid = List(DEF_GRID_HEIGHT) {y ->
 				List(DEF_GRID_WIDTH) {x ->
 					ImageChunk(
@@ -179,7 +179,7 @@ class BackgroundCircularRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 		update()
 	}
 
-	override fun draw() {
+	override fun draw(render: AbstractRenderer) {
 		val priorityList = chunkGrid.flatten().sortedBy {it.scale[0]}.toMutableList()
 		if(almostEqual(pulseBaseScale.toDouble(), 1.0, 0.005)) {
 			img.draw()

@@ -36,63 +36,55 @@
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
 import mu.nu.nullpo.game.component.Block.COLOR
-import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.AnchorPoint
 import kotlin.math.abs
 import kotlin.random.Random
 
-class BackgroundSlidingTiles:AnimatedBackgroundHook {
+class BackgroundSlidingTiles(private val custom:ResourceImage<*>?, directionRandomizer:Random = Random.Default):
+	AbstractBG<Nothing?>(ResourceImage.ResourceImageBlank) {
+	private var darkness:Float = 0f
+	private var directionRandomizer:Random = directionRandomizer
+		set(value) {
+			field = value
+			reset()
+		}
+
 	private var gridChunks:Array<Array<ImageChunk>> = emptyArray()
 	private var colors:Array<Array<COLOR>> = emptyArray()
-	private var skin:Int? = null
+
+	private var skin:Int = 0
 	private var size = 0
 	private var color:COLOR? = null
-	private var darkness:Float? = null
-	private var custom:Boolean
-	private var directionRandomizer:Random
+
 	private var direction = 0
-	private var horizontal = false
+	private var horizontal = true
 	private var currentMovement = 0
 	private var width = 0
 	private var height = 0
 	private var move = false
 
-	constructor(skin:Int, directionRandomizer:Random, color:Int?, size:Int, darkness:Float) {
-		custom = false
-		this.skin = if(skin in 1..<ResourceHolderCustomAssetExtension.numberLoadedBlockSkins) skin else 0
-		this.color = COLOR.all[color ?: 0]
+	constructor(skin:Int, directionRandomizer:Random = Random.Default, color:Int = 0, size:Int = 1, darkness:Float = 0f):this(
+		null,
+		directionRandomizer
+	) {
+		this.skin = skin
+		this.color = COLOR.all[color]
 		this.size = size
 		this.darkness = darkness
-		this.directionRandomizer = directionRandomizer
-		setup()
-		log.debug("Non-custom sliding tiles background created (Skin: $skin).")
 	}
 
-	constructor(skin:Int, seed:Long, color:Int?, size:Int, darkness:Float) {
-		custom = false
-		this.skin = if(skin in 1..<ResourceHolderCustomAssetExtension.numberLoadedBlockSkins) skin else 0
-		this.color = COLOR.all[color ?: 0]
-		this.size = size
-		this.darkness = darkness
-		directionRandomizer = Random(seed)
+	init {
 		setup()
-		log.debug("Non-custom sliding tiles background created (Skin: $skin).")
-	}
-
-	constructor(filePath:String, directionRandomizer:Random) {
-		custom = true
-		this.directionRandomizer = directionRandomizer
-		customHolder = ResourceHolderCustomAssetExtension()
-		customHolder.loadImage(filePath, imageName)
-		setup()
-		log.debug("Custom sliding tiles background created (File Path: $filePath).")
 	}
 
 	private fun setup() {
-		customHolder.loadImage("res/graphics/blank_black_24b.png", "blackBG")
+//		customHolder.loadImage("res/graphics/blank_black_24b.png", "blackBG")
 		direction = directionRandomizer.nextInt(DIRECTIONS)
-		if(custom) {
-			val dim = customHolder.getImageDimensions(imageName)
+		if(custom!=null) {
+			val dim = listOf(custom.width, custom.height)
 			width = dim[0]
 			height = dim[1]
 			var sw = 640/dim[0]
@@ -214,86 +206,29 @@ class BackgroundSlidingTiles:AnimatedBackgroundHook {
 		currentMovement = 0
 	}
 
-	override fun draw(engine:GameEngine) {
-		customHolder.drawImage("blackBG", 0, 0)
-		for(y in gridChunks.indices) {
-			for(x in 0..<gridChunks[y].size) {
-				val i = gridChunks[y][x]
-				val pos = i.drawLocation
-				val ddim = i.drawDimensions
-				val sloc = i.sourceLocation
-				val sdim = i.sourceDimensions
-				if(custom) {
-					customHolder.drawImage(
-						imageName, pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0],
-						sdim[1], 255, 255, 255, 255
-					)
-				} else {
-					var s = 1f
-					if(size<0) s = 0.5f
-					if(size>0) s = 2f
-					engine.owner.receiver.drawBlock(
-						pos[0], pos[1], colors[y][x].ordinal, skin!!, false,
-						darkness!!, 1f, s
-					)
-				}
+	override fun draw(render:AbstractRenderer) {
+		for(y in gridChunks.indices) for(x in 0..<gridChunks[y].size) {
+			val i = gridChunks[y][x]
+			val pos = i.drawLocation
+			val ddim = i.drawDimensions
+			val sloc = i.sourceLocation
+			val sdim = i.sourceDimensions
+			if(custom!=null) custom.draw(pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0], sdim[1]) else {
+				var s = 1f
+				if(size<0) s = 0.5f
+				if(size>0) s = 2f
+				render.drawBlock(pos[0], pos[1], colors[y][x].ordinal, skin, false, darkness, 1f, s)
 			}
 		}
 	}
 
 	private fun modifyValues(color:Int?, size:Int?, darkness:Float?) {
-		if(custom) return
+		if(custom!=null) return
 		if(color!=null) this.color = COLOR.all[color]
 		if(size!=null) this.size = size
 		if(darkness!=null) this.darkness = darkness
 		if(color!=null||size!=null) reset()
 	}
-
-	fun setSeed(seed:Long) {
-		directionRandomizer = Random(seed)
-		reset()
-	}
-	/**
-	 * In this case, BG means block skin.
-	 *
-	 * @param bg Block skin to use.
-	 */
-	override fun setBG(bg:Int) {
-		custom = false
-		skin = bg
-		color = null
-		size = 0
-		darkness = 0f
-		modifyValues(null, null, null)
-		log.debug("Non-custom sliding tiles background modified (New Skin: $bg).")
-		log.warn("Please set up new values using modifyValues(...)")
-	}
-
-	override fun setBG(filePath:String) {
-		custom = true
-		customHolder.loadImage(filePath, imageName)
-		reset()
-		log.debug("Custom sliding tiles background modified (New File Path: $filePath).")
-	}
-	/**
-	 * Allows the hot-swapping of preloaded BGs from a storage instance of a `ResourceHolderCustomAssetExtension`.
-	 *
-	 * @param holder Storage instance
-	 * @param name   Image name
-	 */
-	override fun setBGFromHolder(holder:ResourceHolderCustomAssetExtension, name:String) {
-		custom = true
-		customHolder.putImageAt(holder.getImageAt(name), imageName)
-		reset()
-		log.debug("Custom sliding tiles background modified (New Image Reference: $name).")
-	}
-	/**
-	 * This last one is important. In the case that any of the child types are used, it allows identification.
-	 * The identification can be used to allow casting during operations.
-	 *
-	 * @return Identification number of child class.
-	 */
-	override val id = ANIMATION_SLIDING_TILES
 
 	companion object {
 		private const val DIRECTION_UP = 0
@@ -303,10 +238,4 @@ class BackgroundSlidingTiles:AnimatedBackgroundHook {
 		private const val DIRECTIONS = 2
 	}
 
-	init {
-		imageName = "localSkin"
-		horizontal = true
-		move = false
-		currentMovement = 0
-	}
 }

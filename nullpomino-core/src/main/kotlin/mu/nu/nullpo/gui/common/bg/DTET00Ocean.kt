@@ -29,6 +29,7 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.libs.Vector.Companion.almostEqual
 import zeroxfc.nullpo.custom.libs.Interpolation
@@ -44,11 +45,11 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 	/** Speed 0f-2f*/
 	private var spdN = 0f
 	private var waveH = 0f; private set
-	private fun waveMag(i:Int) = (1.15f.pow(i)-spdN/2)*(1.4f-spdN*.2f)
+	private fun waveMag(i:Int) = maxOf(0.1f,(1.15f.pow(i)-spdN/2)*(1.4f-spdN*.2f))
 	override fun update() {
 		tick++
 		if(tick>=180) tick = 0
-		rasterX.forEachIndexed {i, it ->
+		rasterX.forEachIndexed {i, _ ->
 			if(i==0) {
 				rasterX[i] += spdN
 				if(waveX[i]!=0f) waveX[i] = 0f
@@ -72,7 +73,7 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 		waveH = 0f
 	}
 
-	override fun draw() {
+	override fun draw(render: AbstractRenderer) {
 		rasterX.zip(waveX).forEachIndexed {i, (x, s) ->
 			if(i==0) {
 				//sky
@@ -80,12 +81,12 @@ For I = 0 To 29: Sea(I) = Rnd * 640: Next I*/
 				img.draw(640-x, 0f, 0f, 0f, x, 240f)
 			} else {
 				//ocean
-				val i = i-1
+				val j = i-1
 				val waveH = minOf(maxOf(0f, spdN-.5f), 2f)
-				val wy = i*8+((s/waveMag(i))-1)*i*waveH
+				val wy = if(j>0)minOf(maxOf(0f,j*8+((s/waveMag(j))-1)*j*waveH),232f) else 0f
 				val x1 = (x+s).let {it+if(it<0) 640 else 0}%640
-				img.draw(0f, 240f+i*8, x1, 240+wy, 640f, minOf(248+wy, 480f))
-				img.draw(640-x1, 240f+i*8, 0f, 240+wy, x1, minOf(248+wy, 480f))
+				img.draw(0f, 240f+j*8, x1, 240+wy, 640f, 248+wy)
+				img.draw(640-x1, 240f+j*8, 0f, 240+wy, x1, 248+wy)
 				/*
 		With Src
 			.Left = Sea(I): .Top = 240 + I * 5 + R: .Right = 640: .Bottom = .Top + 8

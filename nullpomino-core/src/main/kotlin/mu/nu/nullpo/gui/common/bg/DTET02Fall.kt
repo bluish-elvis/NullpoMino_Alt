@@ -29,6 +29,7 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import kotlin.random.Random
 
@@ -64,7 +65,7 @@ PSkP = Rnd*/
 		py = Random.nextFloat()
 	}
 
-	override fun draw() {
+	override fun draw(render: AbstractRenderer) {
 		dy.zip(dh).forEachIndexed {i, (d, second) ->
 			val r = ((i%2)+py*2).let {it+if(it<0) 2 else 0}%2
 			val s1 = second.first

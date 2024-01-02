@@ -29,6 +29,7 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 
 class DTET12Rush<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
@@ -45,7 +46,7 @@ class DTET12Rush<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
 		tickY = 0f
 	}
 
-	override fun draw() {
+	override fun draw(render: AbstractRenderer) {
 		val tickX = tick.toFloat()
 		img.draw(0f, 0f, tickX, tickY, 640f, 480f)
 		img.draw(640f-tickX, 0f, 0f, tickY, tickX, 480f)

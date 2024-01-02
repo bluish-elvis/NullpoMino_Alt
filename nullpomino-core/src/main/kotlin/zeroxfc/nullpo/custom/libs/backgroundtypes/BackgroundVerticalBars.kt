@@ -35,6 +35,7 @@
  */
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.AnchorPoint
@@ -112,7 +113,7 @@ class BackgroundVerticalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSize
 		update()
 	}
 
-	override fun draw() {
+	override fun draw(render:AbstractRenderer) {
 		val priorityList = ArrayList<ImageChunk>()
 		priorityList.addAll(chunks)
 		priorityList.sortWith {c1:ImageChunk, c2:ImageChunk ->

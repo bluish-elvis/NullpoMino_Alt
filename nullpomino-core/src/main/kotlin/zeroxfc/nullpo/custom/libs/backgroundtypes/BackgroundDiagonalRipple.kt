@@ -35,6 +35,7 @@
  */
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.AnchorPoint
@@ -126,7 +127,7 @@ class BackgroundDiagonalRipple<T>(img:ResourceImage<T>, cellWidth:Int? = DEF_GRI
 		update()
 	}
 
-	override fun draw() {
+	override fun draw(render:AbstractRenderer) {
 		val priorityList = chunkGrid.flatten().sortedBy {it.scale[0]}.toMutableList()
 		val baseScale = pulseBaseScale
 		if(almostEqual(baseScale.toDouble(), 1.0, 0.005)) {

@@ -29,12 +29,13 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
 
-class DTET03NightClock<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
+class DTET03NightClock<T>(img:ResourceImage<T>, private val bg:Boolean = true):AbstractBG<T>(img) {
 	/*'（キラキラ振り子）
 FSX = Rnd * 640
 FC = 140: FX = 0: FY = 0
@@ -45,11 +46,11 @@ With Kr(I)
 End With
 Next I*/
 	private class Frag(val id:Int) {
-		var x = Random.nextFloat()*704-32;private set
-		var y = Random.nextFloat()*544-32;private set
+		var x = Random.nextFloat()*704-32; private set
+		var y = Random.nextFloat()*544-32; private set
 		private var vx = 0f
 		private var vy = 0f
-		var tick = -1;private set
+		var tick = -1; private set
 		fun update() {
 			if(tick<0) return
 			tick++
@@ -113,11 +114,13 @@ FX = Sin(Sin(FC * Rg) * 35 * Rg): FY = Cos(Sin(FC * Rg) * 35 * Rg)
 KrI = KrI + 1 + (KrI = 35) * 36*/
 	}
 
-	override fun draw() {
-		img.draw(0f, 0f, bx, 0f, 640f, 240f)
-		img.draw(0f, 240f, bx, 0f, 640f, 240f)
-		img.draw(640-bx, 0f, 0f, 0f, bx, 240f)
-		img.draw(640-bx, 240f, 0f, 0f, bx, 240f)
+	override fun draw(render:AbstractRenderer) {
+		if(bg) {
+			img.draw(0f, 0f, bx, 0f, 640f, 240f)
+			img.draw(0f, 240f, bx, 0f, 640f, 240f)
+			img.draw(640-bx, 0f, 0f, 0f, bx, 240f)
+			img.draw(640-bx, 240f, 0f, 0f, bx, 240f)
+		}
 		children.filter {it.tick>=0}.forEach {
 			val sx = 16f+it.tick*16
 			img.draw(it.x+Random.nextFloat()*20-10, it.y+Random.nextFloat()*20-10, sx, 368f, sx+16, 384f)

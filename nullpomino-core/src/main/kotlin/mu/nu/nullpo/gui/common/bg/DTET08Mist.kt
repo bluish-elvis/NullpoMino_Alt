@@ -29,6 +29,7 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import kotlin.random.Random
 
@@ -48,7 +49,7 @@ For I = 0 To 59: StD(I) = Rnd * 152: Next I*/
 		py.forEachIndexed {i, _ -> py[i] = Random.nextFloat()*152}
 	}
 
-	override fun draw() {
+	override fun draw(render: AbstractRenderer) {
 		py.forEachIndexed {i, it ->
 			val sy = (i%3)*160+it
 			img.draw(0f, i*8f, 0f, sy, 640f, sy+8)

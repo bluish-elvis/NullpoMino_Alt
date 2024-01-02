@@ -35,16 +35,16 @@
  */
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
-import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.Interpolation
 import zeroxfc.nullpo.custom.libs.MathHelper.almostEqual
-import kotlin.math.abs
 import kotlin.random.Random
 
-class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
-	private var holderType = 0
-	private val sizeX:Double
-	private val sizeY:Double
+open class BackgroundTGM3StyleNoRotation<T>(img:ResourceImage<T>):AbstractBG<T>(img){
+	private val sizeX=img.width
+	private val sizeY=img.width
 
 	/**
 	 * Inside each instance:
@@ -53,58 +53,50 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 	 * @param scale - scale (current / limit)
 	 * @param frame - frame (timer / limit)
 	 */
-	private data class ValueWrapper(var angle:Double = MIN_ANGLE, var scale:Float = MIN_SCALE, var frame:Int = MIN_TRAVEL_TIME) {
+	private data class ValueWrapper(var angle:Float = 0f, var scale:Float = 1f, var frame:Int = MIN_TRAVEL_TIME) {
 		fun replace(it:ValueWrapper) {
 			angle = it.angle
 			scale = it.scale
 			frame = it.frame
 		}
+		fun reset(){
+			angle = 0f
+			scale = 1f
+			frame = 0
+		}
 	}
 
-	private var lastValues = ValueWrapper()
-	private var currentValues = ValueWrapper()
-	private var targetValues = ValueWrapper()
-	private var valueRandomizer:Random
+	private val lastValues = ValueWrapper()
+	private val currentValues = ValueWrapper()
+	private val targetValues = ValueWrapper()
+	private var valueRandomizer:Random=Random.Default
 	/** Panning amount variables.*/
-	private var lastPan:IntArray
-	private var currentPan:IntArray
-	private var targetPan:IntArray
-	private var dimTimer = 0
-	private var localPath:String
+	private val lastPan=MutableList(2){0f}
+	private val currentPan=MutableList(2){0f}
+	private val targetPan=MutableList(2){0f}
 	private var hasUpdated = false
 
-	constructor(filePath:String, valueRandomizer:Random) {
-		customHolder = ResourceHolderCustomAssetExtension()
-		customHolder.loadImage(filePath, imageName)
-		customHolder.loadImage("res/graphics/blank_black.png", "blackBG")
-		localPath = filePath
-		this.valueRandomizer = valueRandomizer
-		val imgDim = customHolder.getImageDimensions(imageName)
-		// if (holderType == HOLDER_SLICK) customHolder.setRotationCenter(imageName,(float)imgDim[0] / 2, (float)imgDim[1] / 2);
-		sizeX = imgDim[0].toDouble()
-		sizeY = imgDim[1].toDouble()
+	init {
+		hasUpdated = true
 		reset()
-		log.debug("TGM3-Style background created (File Path: $filePath).")
 	}
-
-	constructor(filePath:String, seed:Long) {
-		customHolder = ResourceHolderCustomAssetExtension()
-		customHolder.loadImage(filePath, imageName)
-		customHolder.loadImage("res/graphics/blank_black.png", "blackBG")
-		localPath = filePath
-		valueRandomizer = Random(seed)
-		val imgDim = customHolder.getImageDimensions(imageName)
-		// if (holderType == HOLDER_SLICK) customHolder.setRotationCenter(imageName,(float)imgDim[0] / 2, (float)imgDim[1] / 2);
-		sizeX = imgDim[0].toDouble()
-		sizeY = imgDim[1].toDouble()
-		reset()
-		log.debug("TGM3-Style background created (File Path: $filePath).")
+	final override fun reset() {
+		if(hasUpdated) {
+			lastValues.reset()
+			currentValues.reset()
+			targetValues.reset()
+			lastPan.fill(0f)
+			currentPan.fill(0f)
+			targetPan.fill(0f)
+			setNewTarget()
+			hasUpdated = false
+		}
 	}
 	/**
 	 * Sets a new panning location for the background image.
 	 * Rather complex and somewhat heavy.
 	 */
-	private fun setNewTarget() {
+	protected open fun setNewTarget() {
 		// Set current as last for LERP.
 		lastPan[0] = currentPan[0]
 		lastPan[1] = currentPan[1]
@@ -119,31 +111,31 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 		//  (holderType == HOLDER_SLICK) {
 		// 	// Set new rotation
 		//
-		val imgDim = customHolder.getImageDimensions(imageName)
-		targetValues.angle = (valueRandomizer.nextDouble()*(MAX_ANGLE-MIN_ANGLE))+MIN_ANGLE
+		targetValues.angle = (valueRandomizer.nextFloat()*(MAX_ANGLE-MIN_ANGLE))+MIN_ANGLE
 		// Set new scale
 		var ns:Float
 		do {
-			ns = (valueRandomizer.nextDouble()*(MAX_SCALE-MIN_SCALE)).toFloat()+MIN_SCALE
-		} while(!almostEqual(ns.toDouble(), currentValues.scale.toDouble(), 1.0))
+			ns = (valueRandomizer.nextFloat()*(MAX_SCALE-MIN_SCALE))+MIN_SCALE
+		} while(!almostEqual(ns, currentValues.scale, 1f))
 		targetValues.scale = ns
 
 		// Find max pan from center
 		// int[] imgDim = customHolder.getImageDimensions(imageName);
 
 		// if (holderType == HOLDER_SLICK) {
-		// 	differences = new int[] { (int)minOf(imgDim[0] * ns, imgDim[1] * ns) - 640, (int)minOf(imgDim[0] * ns, imgDim[1] * ns) - 480 };
+		// 	val differences =
+		//			listOf(minOf(imgDim.get(0)*ns, imgDim.get(1)*ns) as Int-640, minOf(imgDim.get(0)*ns, imgDim.get(1)*ns) as Int-480)
 		// } else {
-		val differences = listOf((imgDim[0]*ns-640).toInt()/2, (imgDim[1]*ns-480).toInt()/2)
+		val differences = listOf((sizeX*ns-640).toInt()/2, (sizeY*ns-480).toInt()/2)
 		// }
 
 		// Set new target pan
 		// double r = (differences[0] * differences[1]) / Math.sqrt( (differences[0] * differences[0] * Math.sin(targetValues.angle) * Math.sin(targetValues.angle)) + (differences[1] * differences[1] * Math.cos(targetValues.angle) * Math.cos(targetValues.angle)) );
 		// do {
-		val coefficientX:Double = (valueRandomizer.nextDouble()-0.5)*2
-		val coefficientY:Double = (valueRandomizer.nextDouble()-0.5)*2
-		targetPan[0] = (differences[0]*coefficientX).toInt()
-		targetPan[1] = (differences[1]*coefficientY).toInt()
+		val coefficientX = (valueRandomizer.nextFloat()-.5f)*2
+		val coefficientY = (valueRandomizer.nextFloat()-.5f)*2
+		targetPan[0] = (differences[0]*coefficientX)
+		targetPan[1] = (differences[1]*coefficientY)
 		// } while (
 		// 		Math.sqrt(Math.pow(targetPan[0], 2) + Math.pow(targetPan[1], 2)) > r
 		// );
@@ -161,167 +153,52 @@ class BackgroundTGM3StyleNoRotation:AnimatedBackgroundHook {
 			currentValues.frame = 0
 			setNewTarget()
 		} else {
-			val t = currentValues.frame.toDouble()/targetValues.frame.toDouble()
+			val t = currentValues.frame.toFloat()/targetValues.frame
 
-			/* if (holderType == HOLDER_SLICK) {
-			// 	currentValues.angle = Interpolation.sineStep(lastValues.angle, targetValues.angle, t);
-			// 	customHolder.setRotation(imageName, currentValues.angle.floatValue());
+			/*if (img == HOLDER_SLICK) {
+			 	currentValues.angle = Interpolation.sineStep(lastValues.angle, targetValues.angle, t)
+			 	img.setRotation(imageName, currentValues.angle.floatValue())
 			 }*/
-			currentValues.scale = Interpolation.sineStep(
-				lastValues.scale.toDouble(),
-				targetValues.scale.toDouble(), t
-			)
-				.toFloat()
+			currentValues.scale = Interpolation.sineStep(lastValues.scale, targetValues.scale, t)
 
 			// int[] imgDim = customHolder.getImageDimensions(imageName);
 			// size = (imgDim[1] * Math.sin(Math.toRadians(currentValues.angle))) + (imgDim[0] * Math.cos(Math.toRadians(currentValues.angle)));
 			// sizeY = (imgDim[1] * Math.cos(Math.toRadians(currentValues.angle))) + (imgDim[0] * Math.sin(Math.toRadians(currentValues.angle)));
 			// size *= currentValues.scale;
 			// sizeY *= currentValues.scale;
-			currentPan[0] = Interpolation.sineStep(lastPan[0].toDouble(), targetPan[0].toDouble(), t).toInt()
-			currentPan[1] = Interpolation.sineStep(lastPan[1].toDouble(), targetPan[1].toDouble(), t).toInt()
+			currentPan[0] = Interpolation.sineStep(lastPan[0], targetPan[0], t)
+			currentPan[1] = Interpolation.sineStep(lastPan[1], targetPan[1], t)
 		}
-		if(dimTimer>0) changeImage()
+//		if(dimTimer>0) changeImage()
 	}
 
-	private fun changeImage() {
-		dimTimer--
-		if(dimTimer==15) {
-			val dim = customHolder.getImageDimensions("transitory")
-			customHolder.copyImage("transitory", imageName)
-			customHolder.setRotationCenter(imageName, dim[0]/2f, dim[1]/2f)
-			reset()
-		}
-	}
 
-	override fun reset() {
-		if(hasUpdated) {
-			lastValues = ValueWrapper()
-			currentValues = ValueWrapper()
-			currentValues.scale = MIN_SCALE
-			targetValues = ValueWrapper()
-			lastValues.scale = 1f
-			currentValues.scale = MIN_SCALE
-			targetValues.scale = 1f
-			lastPan = IntArray(2)
-			currentPan = IntArray(2)
-			targetPan = IntArray(2)
-			customHolder.setRotation(imageName, 0f)
-			setNewTarget()
-			hasUpdated = false
-		}
-	}
-
-	override fun draw(engine:GameEngine) {
-		customHolder.drawImage("blackBG", 0, 0)
-		val rawImgDim = customHolder.getImageDimensions(imageName)
-		val imgDim = customHolder.getImageDimensions(imageName).map {it*(currentValues.scale).toInt()}
-
-		// log.debug("%d, %d".format(imgDim[0], imgDim[1]));
-		var v = 255
-		if(dimTimer>0) {
-			val t = dimTimer-15
-			v = Interpolation.lerp(0, 255, abs(t).toDouble()/15.0)
-		}
+	override fun draw(render:AbstractRenderer) {
+		//customHolder.drawImage("blackBG", 0, 0)
+		val imgDim = listOf(sizeX,sizeY).map {it*currentValues.scale}
 
 		// Calculate the new "size" where it is basically the size of the smallest non-spined rectangle that can inscribe the new image
 
-		customHolder.drawImage(
-			imageName, currentPan[0]+320-imgDim[0]/2, currentPan[1]+240-imgDim[1]/2, imgDim[0],
-			imgDim[1], 0, 0, rawImgDim[0], rawImgDim[1], v, v, v, 255
+		img.draw(
+			 currentPan[0]+320-imgDim[0]/2, currentPan[1]+240-imgDim[1]/2, imgDim[0],
+			imgDim[1], 0, 0, sizeX, sizeY
 		)
 	}
 
-	override fun setBG(bg:Int) {
-		log.warn(
-			"TGM3-Style backgrounds do not support the default backgrounds due to their small size."
-		)
-		log.info("Minimum recommended size: 1024 x 1024.")
+	override fun drawLite() {
+		super.drawLite()
 	}
-
-	override fun setBG(filePath:String) {
-		if(filePath!=localPath) {
-			val dimOld = customHolder.getImageDimensions(imageName)
-			customHolder.loadImage(filePath, "transitory")
-			val dim = customHolder.getImageDimensions("transitory")
-			if(dimOld[0]!=dim[0]||dimOld[1]!=dim[1]) {
-				log.warn(
-					"Using differently-sized backgrounds stop seamless transitions from occurring."
-				)
-			}
-			if(dim[0]<1024||dim[1]<1024) {
-				// Too small.
-				log.warn("Background size is smaller than recommended minimum size.")
-				log.info("Minimum recommended size: 1024 x 1024.")
-			} else {
-				// Successful.
-				dimTimer = 30
-				localPath = filePath
-				log.debug("TGM3-Sytle background modified (New File Path: $filePath).")
-			}
-		}
-	}
-	/**
-	 * Allows the hot-swapping of preloaded BGs from a storage instance of a `ResourceHolderCustomAssetExtension`.
-	 *
-	 * @param holder Storage instance
-	 * @param name   Image name
-	 */
-	override fun setBGFromHolder(holder:ResourceHolderCustomAssetExtension, name:String) {
-		val image = holder.getImageAt(name) ?: return
-		if(name!=localPath) {
-			val dimOld = customHolder.getImageDimensions(imageName)
-			customHolder.putImageAt(image, "transitory")
-			val dim = customHolder.getImageDimensions("transitory")
-			if(dimOld[0]!=dim[0]||dimOld[1]!=dim[1]) {
-				log.warn(
-					"Using differently-sized backgrounds stop seamless transitions from occurring."
-				)
-			}
-			if(dim[0]<1024||dim[1]<1024) {
-				// Too small.
-				log.warn("Background size is smaller than recommended minimum size.")
-				log.info("Minimum recommended size: 1024 x 1024.")
-			} else {
-				// Successful.
-				dimTimer = 30
-				localPath = name
-				log.debug("TGM3-Sytle background modified (New Image Name: $name).")
-			}
-		}
-	}
-	/**
-	 * This last one is important. In the case that any of the child types are used, it allows identification.
-	 * The identification can be used to allow casting during operations.
-	 *
-	 * @return Identification number of child class.
-	 */
-	override val id:Int = ANIMATION_TGM3TI_STYLE
-
 	companion object {
 		/*
      * note: screw slick's image rotation function.
      */
 		// private static final int MAX_ROTATED_SCREEN_REQUIREMENT = (int)Math.ceil(Math.sin(45) * (640 + 480));
-		private const val MIN_ANGLE = -60.0
-		private const val MAX_ANGLE = 60.0
+		private const val MIN_ANGLE = -60f
+		private const val MAX_ANGLE = 60f
 		private const val MIN_TRAVEL_TIME = 600
 		private const val MAX_TRAVEL_TIME = 1800
 		private const val MIN_SCALE = 1.5f
 		private const val MAX_SCALE = 4f
 	}
 
-	init {
-		imageName = ("localBG")
-		holderType = resourceHook
-		lastValues = ValueWrapper()
-		currentValues = ValueWrapper()
-		currentValues.scale = MIN_SCALE
-		targetValues = ValueWrapper()
-		lastPan = IntArray(2)
-		currentPan = IntArray(2)
-		targetPan = IntArray(2)
-		dimTimer = 0
-		hasUpdated = true
-	}
 }

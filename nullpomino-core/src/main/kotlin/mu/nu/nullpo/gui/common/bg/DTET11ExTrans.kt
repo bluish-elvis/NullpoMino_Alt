@@ -29,6 +29,7 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 
 class DTET11ExTrans<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
@@ -47,7 +48,7 @@ class DTET11ExTrans<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
 		tick = 0
 	}
 
-	override fun draw() {
+	override fun draw(render: AbstractRenderer) {
 		val x = minOf(640f, (speed.toInt()*40f*((8-tick*3)%8)).let {it+if(it<0) 640 else 0}%640)
 		val y = minOf(480f, ((1-speed)*tick*5).let {it+if(it<0) 480 else 0}%480)
 		/*With LdG

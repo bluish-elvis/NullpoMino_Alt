@@ -1190,6 +1190,8 @@ abstract class AbstractRenderer:EventReceiver() {
 		else fillRectSpecific(x, y, minOf(1f, s-1)*w, 2f, 0xFFFFFF)
 	}
 
+	fun drawBlackBG() = fillRectSpecific(0, 0, 640, 480, 0)
+
 	companion object {
 		/** Block colorIDに応じてColor Hexを作成
 		 * @param color Block colorID

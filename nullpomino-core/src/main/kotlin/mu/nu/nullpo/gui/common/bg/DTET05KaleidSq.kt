@@ -29,6 +29,7 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import kotlin.math.cos
 import kotlin.math.sin
@@ -67,7 +68,7 @@ End With*/
 		y = Random.nextFloat()*480
 	}
 
-	override fun draw() {
+	override fun draw(render: AbstractRenderer) {
 		img.draw(0f, 0f, x, y, 320f, 240f)
 		img.draw(320-x, 0f, 0f, y, x, 240f)
 		img.draw(0f, 240-y, x, 0f, 320f, y)

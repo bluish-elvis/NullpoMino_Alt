@@ -29,11 +29,14 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.slick.img.bg.AbstractBG
+import org.apache.log4j.Logger
 import kotlin.math.PI
 
-abstract class AbstractBG<T>(val img:ResourceImage<T>) {
-	open val bg:T get() = img.res
+abstract class AbstractBG<T: Any?>(val img:ResourceImage<T>) {
+	open val res:T get() = img.res
 	/** Speed Multiplier: Recommended .5f-1f-2f*/
 	open var speed = 1f
 	open var tick = 0
@@ -42,11 +45,15 @@ abstract class AbstractBG<T>(val img:ResourceImage<T>) {
 	/** Resets the background to its base state.*/
 	abstract fun reset()
 	/** Draws the background to the game screen.*/
-	abstract fun draw() /*{
+	abstract fun draw(render:AbstractRenderer) /*{
 		bufI.draw()
 	}*/
-	open fun drawLite() {
+	open fun drawLite() =
 		img.draw(0, 0, 640, 480, 0, 0, img.width, img.height)
+	protected val logger = Logger.getLogger(AbstractBG::class.java)
+	init {
+		logger.debug("${this::class.java.name} created: ${img.name}")
+//		img.load()
 	}
 
 	companion object {

@@ -765,7 +765,7 @@ open class EventReceiver {
 
 	/**change BGA Speed multiplier to [spd]
 	 * @param spd Recommended : 0f-2f*/
-	open fun setBGSpd(owner:GameManager, spd:Float, id:Int? = null) {}
+	open fun setBGSpd(owner:GameManager, spd:Number, id:Int? = null) {}
 
 	/** It will be called at the end of initialization for each player.*/
 	open fun playerInit(engine:GameEngine) {}

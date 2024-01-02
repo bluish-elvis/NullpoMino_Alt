@@ -209,7 +209,7 @@ class MarathonPlus:NetDummyMode() {
 				engine.playSE("change")
 
 				owner.bgMan.bg = if(startLevel) (if(goalType==0) -13 else -14) else -1
-				receiver.setBGSpd(owner, .5f+goalType*.4f+turbo)
+				receiver.setBGSpd(owner, .5f+goalType*.4f+turbo*.5f)
 				// NET: Signal options change
 				if(netIsNetPlay&&netNumSpectators>0) netSendOptions(engine)
 			}

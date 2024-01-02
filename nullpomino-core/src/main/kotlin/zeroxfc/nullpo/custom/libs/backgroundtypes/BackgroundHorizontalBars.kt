@@ -35,6 +35,7 @@
  */
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.AnchorPoint
@@ -114,7 +115,7 @@ class BackgroundHorizontalBars<T>(img:ResourceImage<T>, pulseFrames:Int, sliceSi
 		update()
 	}
 
-	override fun draw() {
+	override fun draw(render: AbstractRenderer) {
 		val priorityList = chunks.sortedBy {it.scale[1]}.toMutableList()
 		val baseScale = if(pulseBaseScale==null) BASE_SCALE else pulseBaseScale!!
 		if(almostEqual(baseScale.toDouble(), 1.0, 0.005)) {

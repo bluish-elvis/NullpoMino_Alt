@@ -36,15 +36,24 @@
 
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
-import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 
-class BackgroundImageSequenceAnim(filePaths:Array<String>, frameTime:Int, pingPong:Boolean):AnimatedBackgroundHook() {
-	private val frameTime:Int
-	private val frameCount:Int
-	private val pingPong:Boolean
+class BackgroundImageSequenceAnim(private val imgs:List<ResourceImage<*>>,
+	private val frameTime:Int, private val pingPong:Boolean)
+	:AbstractBG<Nothing?>(ResourceImage.ResourceImageBlank) {
+
+	private val frameCount:Int = imgs.size
 	private var currentTick = 0
 	private var currentFrame = 0
 	private var forward = false
+
+	init {
+//		imgs.forEach {it.load()}
+		setup()
+	}
+
 	private fun setup() {
 		forward = true
 		currentFrame = 0
@@ -76,58 +85,9 @@ class BackgroundImageSequenceAnim(filePaths:Array<String>, frameTime:Int, pingPo
 		setup()
 	}
 
-	override fun draw(engine:GameEngine) {
+	override fun draw(render:AbstractRenderer) {
 		val i = "frame$currentFrame"
-		customHolder.drawImage(i, 0, 0, 640, 480, 0, 0, 640, 480, 255, 255, 255, 255)
+		imgs[currentFrame].draw(0, 0, 640, 480, 0, 0, 640, 480)
 	}
 
-	override fun setBG(bg:Int) {
-		log.warn(
-			"Image Sequence animation backgrounds do not support this operation. Please create a new instance."
-		)
-	}
-	/**
-	 * Change BG to a custom BG using its file path.
-	 *
-	 * @param filePath File path of new background
-	 */
-	override fun setBG(filePath:String) {
-		log.warn(
-			"Image Sequence animation backgrounds do not support this operation. Please create a new instance."
-		)
-	}
-	/**
-	 * Allows the hot-swapping of preloaded BGs from a storage instance of a `ResourceHolderCustomAssetExtension`.
-	 *
-	 * @param holder Storage instance
-	 * @param name   Image name
-	 */
-	override fun setBGFromHolder(holder:ResourceHolderCustomAssetExtension, name:String) {
-		log.warn(
-			"Image Sequence animation backgrounds do not support this operation. Please create a new instance."
-		)
-	}
-	/**
-	 * This last one is important. In the case that any of the child types are used, it allows identification.
-	 * The identification can be used to allow casting during operations.
-	 *
-	 * @return Identification number of child class.
-	 */
-	override val id = ANIMATION_IMAGE_SEQUENCE_ANIM
-
-	init {
-		customHolder = ResourceHolderCustomAssetExtension()
-		for(i in filePaths.indices) {
-			customHolder.loadImage(filePaths[i], "frame$i")
-			val dim = customHolder.getImageDimensions("frame$i")
-			if(dim[0]!=640||dim[1]!=480) log.warn(
-				"Image at "+filePaths[i]+" is not 640x480. It may not render correctly."
-			)
-		}
-		this.frameTime = frameTime
-		this.pingPong = pingPong
-		frameCount = filePaths.size
-		setup()
-		log.debug("Sequence frame animation background created (Frames: "+filePaths.size+").")
-	}
 }

@@ -34,5 +34,9 @@ import mu.nu.nullpo.gui.common.bg.AbstractBG
 import org.newdawn.slick.Image
 
 abstract class AbstractBG(bg:ResourceImage<Image>):AbstractBG<Image>(bg) {
-	final override val bg:Image get() = img.res.copy()
+	final override val res:Image = img.res.copy() ?: run {
+		img.load()
+		img.res.copy() ?: Image(img.width, img.height)
+	}
+
 }

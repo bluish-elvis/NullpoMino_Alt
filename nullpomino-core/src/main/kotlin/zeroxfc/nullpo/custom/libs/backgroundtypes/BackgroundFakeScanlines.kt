@@ -37,49 +37,20 @@
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
 import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 import zeroxfc.nullpo.custom.libs.AnchorPoint
 import kotlin.random.Random
 
-class BackgroundFakeScanlines:AnimatedBackgroundHook {
+class BackgroundFakeScanlines<T>(img:ResourceImage<T>):AbstractBG<T>(img) {
 	// private ResourceHolderCustomAssetExtension customHolder;
 	private var colorRandom:Random = Random.Default
 	private var chunks:Array<ImageChunk> = emptyArray()
 	private var phase = 0
 
-	constructor(bgNumber:Int) {
-		var bgNumber = bgNumber
-		if(bgNumber<0||bgNumber>19) bgNumber = 0
-		customHolder = ResourceHolderCustomAssetExtension()
-		customHolder.loadImage("res/graphics/back$bgNumber.png", imageName)
+	init{
 		setup()
-		log.debug("Non-custom fake scanline background ($bgNumber) created.")
-	}
-
-	constructor(filePath:String) {
-		customHolder = ResourceHolderCustomAssetExtension()
-		customHolder.loadImage(filePath, imageName)
-		setup()
-		log.debug("Custom fake scanline background created (File Path: $filePath).")
-	}
-
-	override fun setBG(bg:Int) {
-		customHolder.loadImage("res/graphics/back$bg.png", imageName)
-		log.debug("Non-custom horizontal bars background modified (New BG: $bg).")
-	}
-
-	override fun setBG(filePath:String) {
-		customHolder.loadImage(filePath, imageName)
-		log.debug("Custom horizontal bars background modified (New File Path: $filePath).")
-	}
-	/**
-	 * Allows the hot-swapping of preloaded BGs from a storage instance of a `ResourceHolderCustomAssetExtension`.
-	 *
-	 * @param holder Storage instance
-	 * @param name   Image name
-	 */
-	override fun setBGFromHolder(holder:ResourceHolderCustomAssetExtension, name:String) {
-		customHolder.putImageAt(holder.getImageAt(name), imageName)
-		log.debug("Custom horizontal bars background modified (New Image Reference: $name).")
 	}
 
 	private fun setup() {
@@ -106,42 +77,26 @@ class BackgroundFakeScanlines:AnimatedBackgroundHook {
 		update()
 	}
 
-	override fun draw(engine:GameEngine) {
+	override fun draw(render:AbstractRenderer) {
 		for(id in chunks.indices) {
 			var col = 1f-BASE_LUMINANCE_OFFSET
 			if(id and 2==0) col -= BASE_LUMINANCE_OFFSET
-			if(phase>=PERIOD/2&&(id==phase-PERIOD/2||id==1+phase-PERIOD/2||id==-1+phase-PERIOD/2)) {
+			if(phase>=PERIOD/2&&(id==phase-PERIOD/2||id==1+phase-PERIOD/2||id==-1+phase-PERIOD/2))
 				col += BASE_LUMINANCE_OFFSET
-			}
+
 
 			// Randomness offset
-			col -= (0.025*colorRandom.nextDouble()).toFloat()
-			val color = (255*col).toInt()
-			val pos = chunks[id].drawLocation
-			val ddim = chunks[id].drawDimensions
-			val sloc = chunks[id].sourceLocation
-			val sdim = chunks[id].sourceDimensions
-			customHolder.drawImage(
-				imageName, pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0],
-				sdim[1], color, color, color, 255
-			)
+			col -= (.025f*colorRandom.nextFloat())
+			val pos = chunks[id].drawLocation.map{it.toFloat()}
+			val ddim = chunks[id].drawDimensions.map{it.toFloat()}
+			val sloc = chunks[id].sourceLocation.map{it.toFloat()}
+			val sdim = chunks[id].sourceDimensions.map{it.toFloat()}
+			img.draw( pos[0], pos[1], ddim[0], ddim[1], sloc[0], sloc[1], sdim[0], sdim[1], 1f, Triple(col, col, col))
 		}
 	}
-	/**
-	 * This last one is important. In the case that any of the child types are used, it allows identification.
-	 * The identification can be used to allow casting during operations.
-	 *
-	 * @return Identification number of child class.
-	 */
-	override val id:Int = ANIMATION_FAKE_SCANLINES
-
 	companion object {
 		private const val AMT = 480/2
 		private const val PERIOD = 480 // Frames
 		private const val BASE_LUMINANCE_OFFSET = 0.25f
-	}
-
-	init {
-		imageName = "localBG"
 	}
 }

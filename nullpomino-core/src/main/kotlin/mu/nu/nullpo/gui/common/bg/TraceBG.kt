@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, NullNoname
+ * Copyright (c) 2022-2024, NullNoname
  * Kotlin converted and modified by Venom=Nhelv.
  * THIS WAS NOT MADE IN ASSOCIATION WITH THE GAME CREATOR.
  *
@@ -27,19 +27,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package mu.nu.nullpo.gui.common
+package mu.nu.nullpo.gui.common.bg
 
-abstract class AbstractBG<T>(val img:ResourceImage<T>) {
-	open val bg:T get() = img.res
-	open var tick:Int = 0
-	/** Performs an update tick on the background. Advisably used in onLast.*/
-	open fun update() {}
-	/** Resets the background to its base state.*/
-	open fun reset() {}
-	/** Draws the background to the game screen.*/
-	open fun draw() {
-		img.draw()
+import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.ResourceImage
+
+class TraceBG():AbstractBG<Nothing?>(ResourceImage.ResourceImageBlank) {
+	override var speed:Float = 1f
+	override fun update() {}
+
+	private var bClear = false
+	override fun reset() {
+		bClear = true
 	}
 
-	open fun setSpeed() {}
+	override fun draw(render:AbstractRenderer) {
+		if(bClear) render.drawBlackBG()
+		else render.fillRectSpecific(0, 0, 640, 480, 0, speed*.1f)
+	}
+
 }

@@ -29,6 +29,7 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.libs.Vector
 import zeroxfc.nullpo.custom.libs.Interpolation
@@ -77,7 +78,7 @@ End If*/
 		spdN = 0f
 	}
 
-	override fun draw() {
+	override fun draw(render: AbstractRenderer) {
 		for(i in 0..79) {
 			for(j in 0..7) {
 				val ww = 5+3*(.5f+spdN)

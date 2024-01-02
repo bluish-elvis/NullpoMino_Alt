@@ -35,9 +35,10 @@ import org.newdawn.slick.Image
 import org.newdawn.slick.SlickException
 import java.io.IOException
 
-class ResourceImageSlick(override val name:String, val antiAlias:Boolean = false):ResourceImage<Image> {
+class ResourceImageSlick(override val name:String, private val antiAlias:Boolean = false):ResourceImage<Image> {
 
 	constructor(it:ResourceImage<*>, antiAlias:Boolean = false):this(it.name, antiAlias)
+	constructor(it:ResourceImage.ResourceImageStr, antiAlias:Boolean = false):this(it.name, antiAlias)
 	constructor(i:Image, antiAlias:Boolean = false):this(i.name ?: "", antiAlias) {
 		res = i
 	}
@@ -46,7 +47,7 @@ class ResourceImageSlick(override val name:String, val antiAlias:Boolean = false
 		res = it.copy()
 	}
 
-	override var res:Image = Image(1, 1)
+	override var res = Image(1, 1)
 
 	override val width get() = res.width ?: 0
 	override val height get() = res.height ?: 0
@@ -70,7 +71,7 @@ class ResourceImageSlick(override val name:String, val antiAlias:Boolean = false
 
 	override fun draw(x:Float, y:Float, x2:Float, y2:Float, srcX:Float, srcY:Float, srcX2:Float, srcY2:Float,
 		alpha:Float, color:Triple<Float, Float, Float>) =
-		res.draw(x, y, x2, y2, srcX, srcY, srcX2, srcY2, Color(color.first, color.second, color.third, alpha))
+		res.draw(x, y, x2, y2, srcX, srcY, srcX2, srcY2, Color(color.first, color.second, color.third, alpha))?:Unit
 
 	/*
 		fun draw(x:Float, y:Float) = res.draw(x, y)

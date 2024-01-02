@@ -90,6 +90,7 @@ class MarathonExtreme:NetDummyMode() {
 	override val menu = MenuList("extreme", itemEndless, itemLevel, itemBig)
 	override fun playerInit(engine:GameEngine) {
 		super.playerInit(engine)
+		engine.owner.receiver.setBGSpd(engine.owner,2)
 		lastScore = 0
 		bgmLv = 0
 		rollTime = 0

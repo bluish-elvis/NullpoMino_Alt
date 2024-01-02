@@ -33,7 +33,6 @@ import mu.nu.nullpo.game.play.GameEngine.Companion.FRAME_SKIN_GRADE
 import mu.nu.nullpo.game.play.GameManager
 import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.BaseFont
-import mu.nu.nullpo.gui.common.ResourceImage
 import mu.nu.nullpo.gui.common.bg.*
 import mu.nu.nullpo.gui.common.libs.Vector
 import mu.nu.nullpo.gui.slick.img.FontGrade
@@ -324,7 +323,7 @@ class RendererSlick(
 	}
 
 	val bgType:List<AbstractBG<Image>> by lazy {
-		resources.imgPlayBG.map {it:ResourceImage<Image> -> SpinBG(it)}
+		resources.imgPlayBG.map {SpinBG(it)}
 	}
 
 	val bgaType:List<AbstractBG<Image>> by lazy {
@@ -382,9 +381,9 @@ class RendererSlick(
 			graphics.color = Color.white
 			if(animBG) {
 				if(bg in 0..<bgMax)
-					bgType[bg].draw()
+					bgType[bg].draw(this)
 				else if(bg<0&&bg.absoluteValue in 1..bgaMax+1)
-					bgaType[bg.absoluteValue-1].draw()
+					bgaType[bg.absoluteValue-1].draw(this)
 
 				if(engine.owner.bgMan.fadeSW) {
 					val filter = Color(Color.black).apply {
@@ -443,18 +442,18 @@ Exit Sub
 		}
 	}
 
-	override fun setBGSpd(owner:GameManager, spd:Float, id:Int?) {
+	override fun setBGSpd(owner:GameManager, spd:Number, id:Int?) {
 		val bgMax = resources.bgMax
 		val bgaMax = resources.bgaMax
-
+		val sp = spd.toFloat()
 		if(!owner.menuOnly&&showBG&&animBG)
 			if(id==null) {
-				bgType.forEach {it.speed = spd}
-				bgaType.forEach {it.speed = spd}
+				bgType.forEach {it.speed = sp}
+				bgaType.forEach {it.speed = sp}
 			} else if(id in 0..<bgMax)
-				bgType[id].speed = spd
+				bgType[id].speed = sp
 			else if(id<0&&id.absoluteValue in 1..bgaMax+1)
-				bgaType[id.absoluteValue-1].speed = spd
+				bgaType[id.absoluteValue-1].speed = sp
 	}
 	/*override fun effectRender() {
 	_	effects.forEachIndexed {i, it ->

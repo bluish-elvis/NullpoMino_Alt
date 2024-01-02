@@ -29,6 +29,7 @@
 
 package mu.nu.nullpo.gui.common.bg
 
+import mu.nu.nullpo.gui.common.AbstractRenderer
 import mu.nu.nullpo.gui.common.ResourceImage
 import kotlin.math.cos
 import kotlin.math.sin
@@ -69,7 +70,7 @@ class DTET01CircleLoop<T>(bg:ResourceImage<T>):AbstractBG<T>(bg) {
 		y = Random.nextFloat()*480
 	}
 
-	override fun draw() {
+	override fun draw(render: AbstractRenderer) {
 		img.draw(0f, 0f, x, y, 640f, 480f)
 		img.draw(640-x, 0f, 0f, y, x, 480f)
 		img.draw(0f, 480-y, x, 0f, 640f, y)

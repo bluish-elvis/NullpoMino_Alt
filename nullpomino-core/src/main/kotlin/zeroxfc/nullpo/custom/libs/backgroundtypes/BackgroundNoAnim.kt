@@ -35,66 +35,12 @@
  */
 package zeroxfc.nullpo.custom.libs.backgroundtypes
 
-import mu.nu.nullpo.game.play.GameEngine
+import mu.nu.nullpo.gui.common.AbstractRenderer
+import mu.nu.nullpo.gui.common.ResourceImage
+import mu.nu.nullpo.gui.common.bg.AbstractBG
 
-class BackgroundNoAnim:AnimatedBackgroundHook {
-	/**
-	 * Almost redundant background.
-	 */
-	constructor(bgNumber:Int) {
-		var bgNumber = bgNumber
-		if(bgNumber<0||bgNumber>19) bgNumber = 0
-		customHolder = ResourceHolderCustomAssetExtension()
-		customHolder.loadImage("res/graphics/back$bgNumber.png", imageName)
-		log.debug("Non-custom static background ($bgNumber) created.")
-	}
-
-	constructor(filePath:String) {
-		customHolder = ResourceHolderCustomAssetExtension()
-		customHolder.loadImage(filePath, imageName)
-		log.debug("Custom static background created (File Path: $filePath).")
-	}
-
-	override fun update() {
-		// EMPTY
-	}
-
-	override fun reset() {
-		// EMPTY
-	}
-
-	override fun draw(engine:GameEngine) {
-		customHolder.drawImage(imageName, 0, 0)
-	}
-
-	override fun setBG(bg:Int) {
-		customHolder.loadImage("res/graphics/back$bg.png", imageName)
-		log.debug("Non-custom static background modified (New BG: $bg).")
-	}
-
-	override fun setBG(filePath:String) {
-		customHolder.loadImage(filePath, imageName)
-		log.debug("Custom static background modified (New File Path: $filePath).")
-	}
-	/**
-	 * Allows the hot-swapping of preloaded BGs from a storage instance of a `ResourceHolderCustomAssetExtension`.
-	 *
-	 * @param holder Storage instance
-	 * @param name   Image name
-	 */
-	override fun setBGFromHolder(holder:ResourceHolderCustomAssetExtension, name:String) {
-		customHolder.putImageAt(holder.getImageAt(name), imageName)
-		log.debug("Custom static background modified (New Image Reference: $name).")
-	}
-	/**
-	 * This last one is important. In the case that any of the child types are used, it allows identification.
-	 * The identification can be used to allow casting during operations.
-	 *
-	 * @return Identification number of child class.
-	 */
-	override val id = ANIMATION_NONE
-	// private ResourceHolderCustomAssetExtension customHolder;
-	init {
-		imageName = ("localBG")
-	}
+class BackgroundNoAnim<T>(img:ResourceImage<T>):AbstractBG<T>(img) {
+	override fun update() {}
+	override fun reset() {}
+	override fun draw(render: AbstractRenderer) =	drawLite()
 }
